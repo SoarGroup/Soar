@@ -17,6 +17,8 @@
 #include "exploration.h"
 #include "sml_Names.h"
 
+#include <iostream>
+
 using namespace cli;
 using namespace sml;
 
@@ -153,17 +155,21 @@ bool CommandLineInterface::ParseIndifferentSelection( gSKI::Agent* pAgent, std::
 		}
 		else if ( m_NonOptionArguments == 1 )
 		{
+			double new_val;
+			bool convert = from_string( new_val, argv[2] );
+			
+			if ( !convert )
+				return SetError( CLIError::kInvalidValue );
+			
 			if ( options.test( INDIFFERENT_EPSILON ) )
 			{
-				// validate new value
-				if ( argv[2].compare( "test" ) == 0 )
+				if ( valid_parameter_value( my_agent, "epsilon", new_val ) )
 					return DoIndifferentSelection( pAgent, 'e', &( argv[2] ) );
 				else
 					return SetError( CLIError::kInvalidValue );
 			}
 			else if ( options.test( INDIFFERENT_TEMPERATURE ) )
-				// validate new value
-				if ( argv[2].compare( "test" ) == 0 )
+				if ( valid_parameter_value( my_agent, "temperature", new_val ) )
 					return DoIndifferentSelection( pAgent, 't', &( argv[2] ) );
 				else
 					return SetError( CLIError::kInvalidValue );
@@ -181,7 +187,7 @@ bool CommandLineInterface::ParseIndifferentSelection( gSKI::Agent* pAgent, std::
 			return SetError( CLIError::kTooManyArgs );
 		
 		// make sure first argument is a valid parameter name
-		if ( ( argv[2].compare( "epsilon" ) != 0 ) && ( argv[2].compare( "temperature" ) != 0 ) )
+		if ( !valid_parameter( my_agent, argv[2].c_str() ) )
 			return SetError( CLIError::kInvalidAttribute );
 		
 		if ( m_NonOptionArguments == 1 )
@@ -189,7 +195,7 @@ bool CommandLineInterface::ParseIndifferentSelection( gSKI::Agent* pAgent, std::
 		else if ( m_NonOptionArguments == 2 )
 		{
 			// validate reduction policy
-			if ( ( argv[3].compare( "exponential" ) == 0 ) || ( argv[3].compare( "linear" ) == 0 ) )
+			if ( valid_reduction_policy( my_agent, argv[2].c_str(), argv[3].c_str() ) )
 				return DoIndifferentSelection( pAgent, 'p', &( argv[2] ), &( argv[3] ) );
 			else
 				return SetError( CLIError::kInvalidValue );
@@ -289,27 +295,55 @@ bool CommandLineInterface::DoIndifferentSelection( gSKI::Agent* pAgent, const ch
 				m_Result << param_value;
 			else
 				AppendArgTagFast( sml_Names::kParamValue, sml_Names::kTypeDouble, to_string( param_value ) );
+			
+			return true;
 		}
 		else
-			m_Result << "set epsilon value = " << *p1;
-		
-		return true;
+		{
+			double new_val;
+			from_string( new_val, *p1 );
+			
+			return set_parameter_value( my_agent, "epsilon", new_val );
+		}
 	}
 	else if ( pOp == 't' )
 	{
 		if ( !p1 )
-			m_Result << "current temperature value";
+		{
+			double param_value = get_parameter_value( my_agent, "temperature" ); 
+						
+			if ( m_RawOutput )
+				m_Result << param_value;
+			else
+				AppendArgTagFast( sml_Names::kParamValue, sml_Names::kTypeDouble, to_string( param_value ) );
+			
+			return true;
+		}
 		else
-			m_Result << "set temperature value = " << *p1;
+		{
+			double new_val;
+			from_string( new_val, *p1 );
+			
+			return set_parameter_value( my_agent, "temperature", new_val );
+		}
 	}
 	
 	// selection parameter reduction policy
 	else if ( pOp == 'p' )
 	{
 		if ( !p2 )
-			m_Result << "current " << *p1 << " reduction policy";
+		{
+			const char *policy_name = convert_reduction_policy( get_reduction_policy( my_agent, p1->c_str() ) );
+					
+			if ( m_RawOutput )
+				m_Result << policy_name;
+			else
+				AppendArgTagFast( sml_Names::kParamValue, sml_Names::kTypeString, policy_name );
+			
+			return true;
+		}
 		else
-			m_Result << "set " << *p1 << " reduction policy = " << *p2;
+			return set_reduction_policy( my_agent, p1->c_str(), p2->c_str() );
 	}
 	
 	// selection parameter reduction rate

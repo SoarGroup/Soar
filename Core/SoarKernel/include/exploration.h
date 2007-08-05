@@ -29,6 +29,7 @@ typedef struct exploration_parameter_struct
 {
 	double value;
 	long reduction_policy;
+	bool (*val_func)( double );
 	std::map<long, double> rates;
 } exploration_parameter;
 
@@ -51,6 +52,13 @@ template<class T> const char * to_string( T &x )
 	return o.str().c_str();
 }
 
+// Conversion from string to value
+template <class T> bool from_string( T &val, std::string str )
+{
+	std::stringstream i( str );
+	return ( i >> val );
+}
+
 //////////////////////////////////////////////////////////
 // Exploration Policies
 //////////////////////////////////////////////////////////
@@ -71,12 +79,40 @@ extern const long get_exploration_policy( agent *my_agent );
 //////////////////////////////////////////////////////////
 
 // add parameter
-extern exploration_parameter *add_exploration_parameter( double value );
+extern exploration_parameter *add_exploration_parameter( double value, bool (*val_func)( double ) );
 
 // validate parameter name
 extern bool valid_parameter( agent *my_agent, const char *name );
 
 // get parameter value
 extern double get_parameter_value( agent *my_agent, const char *parameter );
+
+// validate parameter value
+extern bool validate_epsilon( double value );
+extern bool validate_temperature( double value );
+
+// validate parameter value
+extern bool valid_parameter_value( agent *my_agent, const char *name, double value );
+
+// set parameter value
+extern bool set_parameter_value( agent *my_agent, const char *name, double value );
+
+//////////////////////////////////////////////////////////
+// Reduction Policies
+//////////////////////////////////////////////////////////
+
+// policy <=> name conversion
+extern const long convert_reduction_policy( const char *policy_name );
+extern const char *convert_reduction_policy( const long policy );
+
+// get parameter reduction policy
+extern const long get_reduction_policy( agent *my_agent, const char *parameter );
+
+// validate reduction policy per parameter
+extern bool valid_reduction_policy( agent *my_agent, const char *parameter, const char *policy_name );
+extern bool valid_reduction_policy( agent *my_agent, const char *parameter, const long policy );
+
+// set parameter reduction policy
+extern bool set_reduction_policy( agent *my_agent, const char *parameter, const char *policy_name );
 
 #endif

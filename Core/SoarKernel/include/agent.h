@@ -32,6 +32,7 @@
 #include "callback.h"
 #include "exploration.h"
 
+#include <string>
 #include <map>
 
 /* JC ADDED: Included to allow gski callbacks */
@@ -744,7 +745,7 @@ kernel time and total_cpu_time greater than the derived total CPU time. REW */
   enum ni_mode numeric_indifferent_mode;      /* SW 08.19.2003 */
 #endif
   
-  std::map<const char *, double> exploration_params;
+  std::map<std::string, exploration_parameter> *exploration_params;
 
 } agent;
 /*************** end of agent struct *****/

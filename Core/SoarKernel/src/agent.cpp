@@ -21,7 +21,6 @@
 
 #include <stdlib.h>
 #include <map>
-#include <iostream>
 
 #include "agent.h"
 #include "kernel.h"
@@ -323,12 +322,9 @@ agent * create_soar_agent (Kernel * thisKernel, char * agent_name) {            
 
   
   // exploration initialization
-  //newAgent->exploration_params[ "epsilon" ] = *add_exploration_parameter( 0.1 );
-  //exploration_parameter test;
-  //newAgent->exploration_params[ "epsilon" ] = 5.2;
-  std::cerr << newAgent->exploration_params.empty();
-  newAgent->exploration_params["a"]=5;
-  std::cerr << newAgent->exploration_params.empty();
+  newAgent->exploration_params = new std::map<std::string, exploration_parameter>();
+  (*newAgent->exploration_params)[ "epsilon" ] = *add_exploration_parameter( 0.1, &validate_epsilon );
+  (*newAgent->exploration_params)[ "temperature" ] = *add_exploration_parameter( 25, &validate_temperature );
   
   return newAgent;
 }
