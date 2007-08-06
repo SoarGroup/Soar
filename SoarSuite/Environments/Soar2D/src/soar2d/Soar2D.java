@@ -39,6 +39,7 @@ public class Soar2D {
 	String configFile = null;
 
 	public static final String kDefaultXMLEatersSettingsFile = "eaters.xml";
+	public static final String kDefaultXMLKitchenSettingsFile = "kitchen.xml";
 	public static final String kDefaultXMLTankSoarSettingsFile = "tanksoar.xml";
 	public static final String kDefaultXMLEatersConsoleSettingsFile = "eaters-console.xml";
 	public static final String kDefaultXMLTankSoarConsoleSettingsFile = "tanksoar-console.xml";
@@ -63,6 +64,13 @@ public class Soar2D {
 			install(kDefaultXMLEatersSettingsFile);
 		} catch (IOException e) {
 			control.severeError("IOException installing " + kDefaultXMLEatersSettingsFile + ": " + e.getMessage());
+			wm.shutdown();
+			System.exit(1);
+		}
+		try {
+			install(kDefaultXMLKitchenSettingsFile);
+		} catch (IOException e) {
+			control.severeError("IOException installing " + kDefaultXMLKitchenSettingsFile + ": " + e.getMessage());
 			wm.shutdown();
 			System.exit(1);
 		}

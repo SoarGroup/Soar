@@ -140,7 +140,22 @@ public class MoveInfo {
 			break;
 
 		case kKitchen:
-			assert false;
+			if (move) {
+				output += "(" + Names.kMoveID + ": " + Direction.stringOf[moveDirection] + ")";
+			}
+			if (moveWithObject) {
+				output += "(move-with-object)";
+			}
+			if (mix) {
+				output += "(mix)";
+			}
+			if (cook) {
+				output += "(cook)";
+			}
+			if (eat) {
+				output += "(eat)";
+			}
+			break;
 
 		}
 		

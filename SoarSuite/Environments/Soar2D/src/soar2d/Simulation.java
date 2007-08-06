@@ -10,6 +10,7 @@ import soar2d.player.book.Dog;
 import soar2d.player.book.Mouse;
 import soar2d.player.book.Robot;
 import soar2d.player.book.SoarRobot;
+import soar2d.player.cook.Cook;
 import soar2d.player.eaters.Eater;
 import soar2d.player.eaters.SoarEater;
 import soar2d.player.eaters.ToscaEater;
@@ -73,7 +74,6 @@ public class Simulation {
 			unusedColors.add(kColors[i]);
 		}
 		
-		// Tanksoar uses run til output
 		runTilOutput = Soar2D.config.getRunTilOutput();
 		
 		// Initialize Soar
@@ -303,7 +303,8 @@ public class Simulation {
 					break;
 
 				case kKitchen:
-					assert false;
+					player = new Cook(playerConfig);
+					break;
 
 				}
 				

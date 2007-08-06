@@ -24,14 +24,15 @@ public class KitchenWorld implements IWorld {
 
 	public void putInStartingLocation(Player player, GridMap map,
 			PlayersManager players, Point location) {
-
 	}
 
 	public void reset() {
 
 	}
 
-	public boolean update(GridMap map, PlayersManager players) {
+	public boolean update(GridMap _map, PlayersManager players) {
+		KitchenMap map = (KitchenMap)_map;
+		
 		Iterator<Player> iter = players.iterator();
 		while (iter.hasNext()) {
 			Player player = iter.next();
@@ -53,6 +54,9 @@ public class KitchenWorld implements IWorld {
 					// remove from cell
 					map.setPlayer(oldLocation, null);
 					players.setLocation(player, newLocation);
+					
+					// todo: collisions not handled
+					map.setPlayer(newLocation, player);
 				}
 			}
 		}
@@ -60,6 +64,8 @@ public class KitchenWorld implements IWorld {
 		updatePlayers(false, map, players);
 
 		map.updateObjects(null);
+		
+		map.spawnBasics();
 
 		// do not reset after this frame
 		return false;

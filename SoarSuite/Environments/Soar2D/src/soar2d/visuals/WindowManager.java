@@ -34,6 +34,9 @@ public class WindowManager {
 	public static Color black = null;
 	public static Color green = null;
 	public static Color purple = null;
+	public static Color brown = null;
+	public static Color lightGray = null;
+	public static Color darkGray = null;
 
 	static Display display;
 	protected Shell shell;
@@ -55,6 +58,7 @@ public class WindowManager {
 	Composite currentSide;
 
 	public static final int kEatersMainMapCellSize = 20;
+	public static final int kKitchenMainMapCellSize = 20;
 	public static final int kTanksoarMainMapCellSize = 32;
 	public static final String kFoodRemaining = "Food remaining: ";
 	public static final String kScoreRemaining = "Points remaining: ";
@@ -70,6 +74,9 @@ public class WindowManager {
 		purple = d.getSystemColor(SWT.COLOR_DARK_MAGENTA);
 		orange = new Color(d, 255, 127, 0);
 		black = d.getSystemColor(SWT.COLOR_BLACK);
+		brown = new Color(d, 128, 64, 0);
+		lightGray = new Color(d, 170, 170, 170);
+		darkGray = new Color(d, 100, 100, 100);
 	}
 	
 	public static Color getColor(String color) {
@@ -99,6 +106,15 @@ public class WindowManager {
 		}
 		if (color.equalsIgnoreCase("black")) {
 			return black;
+		}
+		if (color.equalsIgnoreCase("brown")) {
+			return brown;
+		}
+		if (color.equalsIgnoreCase("lightGray")) {
+			return lightGray;
+		}
+		if (color.equalsIgnoreCase("darkGray")) {
+			return darkGray;
 		}
 		return null;
 	}
@@ -213,6 +229,87 @@ public class WindowManager {
 		shell.setText("Eaters");
 	}
 	
+	public void setupKitchen() {
+		worldGroup = new Group(shell, SWT.NONE);
+		worldGroup.setLayout(new FillLayout());
+		visualWorld = new KitchenVisualWorld(worldGroup, SWT.NONE, kKitchenMainMapCellSize);
+		visualWorld.setMap(Soar2D.simulation.world.getMap());
+
+		visualWorld.addMouseListener(new MouseAdapter() {
+			public void mouseDown(MouseEvent e) {
+				Player player = visualWorld.getPlayerAtPixel(e.x, e.y);
+				if (player == null) {
+					return;
+				}
+				agentDisplay.selectPlayer(player);
+			}
+		});
+		visualWorld.addKeyListener(new KeyAdapter() {
+			public void keyPressed(KeyEvent e) {
+				if (humanMove == null) {
+					return;
+				}
+				boolean go = false;
+				switch (e.keyCode) {
+				case SWT.KEYPAD_8:
+					humanMove.move = true;
+					humanMove.moveDirection = Direction.kNorthInt;
+					go = true;
+					break;
+				case SWT.KEYPAD_6:
+					humanMove.move = true;
+					humanMove.moveDirection = Direction.kEastInt;
+					go = true;
+					break;
+				case SWT.KEYPAD_2:
+					humanMove.move = true;
+					humanMove.moveDirection = Direction.kSouthInt;
+					go = true;
+					break;
+				case SWT.KEYPAD_4:
+					humanMove.move = true;
+					humanMove.moveDirection = Direction.kWestInt;
+					go = true;
+					break;
+				case SWT.KEYPAD_5:
+					humanMove.moveWithObject = !humanMove.moveWithObject;
+					break;
+				case SWT.KEYPAD_1:
+					humanMove.mix = true;
+					go = true;
+					break;
+				case SWT.KEYPAD_3:
+					humanMove.cook = true;
+					go = true;
+					break;
+				case SWT.KEYPAD_0:
+					humanMove.eat = true;
+					go = true;
+					break;
+
+				case SWT.KEYPAD_MULTIPLY:
+					humanMove.stopSim = !humanMove.stopSim;
+					break;
+				default:
+					break;
+				}
+				
+				Soar2D.wm.setStatus(human.getColor() + ": " + humanMove.toString(), black);
+				
+				if (go) {
+					synchronized(humanMove) {
+						humanMove.notify();
+					}
+				}
+			}
+		});
+		
+		createRHS();
+		createKitchenSide();
+
+		shell.setText("Kitchen");
+	}
+	
 	private void createRHS() {
 		rhs = new Composite(shell, SWT.NONE);
 		{
@@ -312,6 +409,70 @@ public class WindowManager {
 		}
 
 		agentDisplay = new EatersAgentDisplay(currentSide);
+		{
+			GridData gd = new GridData();
+			agentDisplay.setLayoutData(gd);
+		}
+	}
+	
+	private void createKitchenSide() {
+		
+		currentSide = new Composite(rhs, SWT.NONE);
+		{
+			GridLayout gl = new GridLayout();
+			gl.marginHeight = 0;
+			gl.marginWidth = 0;
+			currentSide.setLayout(gl);
+			
+			GridData gd = new GridData();
+			currentSide.setLayoutData(gd);
+		}
+		
+		Group group1 = new Group(currentSide, SWT.NONE);
+		{
+			GridData gd = new GridData();
+			group1.setLayoutData(gd);
+		}
+		group1.setText("Simulation");
+		group1.setLayout(new FillLayout());
+		simButtons = new SimulationButtons(group1);
+		
+		Group group2 = new Group(currentSide, SWT.NONE);
+		{
+			GridData gd = new GridData();
+			group2.setLayoutData(gd);
+		}
+		group2.setText("Map");
+		{
+			GridLayout gl = new GridLayout();
+			gl.numColumns = 2;
+			group2.setLayout(gl);
+		}
+		
+		Label worldCountLabel = new Label(group2, SWT.NONE);
+		worldCountLabel.setText(kWorldCount);
+		{
+			GridData gd = new GridData();
+			worldCountLabel.setLayoutData(gd);
+		}
+		
+		worldCount = new Label(group2, SWT.NONE);
+		{
+			GridData gd = new GridData();
+			gd.widthHint = 50;
+			worldCount.setLayoutData(gd);
+		}
+		
+		updateCounts();
+		
+		mapButtons = new MapButtons(group2);
+		{
+			GridData gd = new GridData();
+			gd.horizontalSpan = 2;
+			mapButtons.setLayoutData(gd);
+		}
+
+		agentDisplay = new KitchenAgentDisplay(currentSide);
 		{
 			GridData gd = new GridData();
 			agentDisplay.setLayoutData(gd);
@@ -839,7 +1000,8 @@ public class WindowManager {
     		createBookSide();
     		break;
 		case kKitchen:
-			assert false;
+			createKitchenSide();
+			break;
 		}
 		
 		this.reset();
@@ -1040,7 +1202,8 @@ public class WindowManager {
 			break;
 			
 		case kKitchen:
-			assert false;
+			setupKitchen();
+			break;
 		}
 		
 		statusLine = new Label(shell, SWT.BORDER);

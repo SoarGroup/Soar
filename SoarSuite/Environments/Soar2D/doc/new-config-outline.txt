@@ -1,7 +1,7 @@
 <soar2d version="2">
 	<general>
 		<game>
-			enum { tanksoar, eaters, book }
+			enum { tanksoar, eaters, book, kitchen }
 		<map>
 			string filename
 		?<port>
@@ -14,6 +14,7 @@
 		?<async>
 			int millisecondDelay
 		?<rules>
+			?<kitchen>
 			?<eaters>
 				?<vision>
 					int cells
