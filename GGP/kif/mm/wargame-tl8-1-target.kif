@@ -53,7 +53,7 @@
 (init (location terrorist2 7 6))
 (init (location laser1 5 3))
 (init (location gin1 4 4))
-(init (location exit 8 8))
+(init (location exit 6 8)) ; SW 8/6
 (init (location flag 8 8))
 (init (location donut 5 1))
 (init (location compass 2 5))
