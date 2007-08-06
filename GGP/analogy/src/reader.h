@@ -111,22 +111,26 @@ public:
   void read_xkif(RulePtrSet& rules, set<Predicate>& preds) {
     int state = 0;
     RulePtr rule;
-    string line = read_nonempty();
+    string line = "temp";
     bool nextSentNegated = false;
-    while (!line.empty()) {
+    while (true) {
       switch (state) {
         case 0:
-          if (line == "XXX_RULE_START") {
-            expect("XXX_SENT_BEGIN");
-            rule = RulePtr(new Rule(read_sentence(preds)));
-            state = 1;
+          line = read_nonempty();
+          if (line.empty()) {
+            // finished
+            return;
           }
-          else {
-            cout << line << endl;
-            assert(false);
+          else if (line != "XXX_RULE_START") {
+            cerr << "Expected XXX_RULE_START at line " << lineno << ", got " << line << endl;
+            exit(1);
           }
+          expect("XXX_SENT_BEGIN");
+          rule = RulePtr(new Rule(read_sentence(preds)));
+          state = 1;
           break;
         case 1:
+          line = read_nonempty();
           if (line == "XXX_RULE_END") {
             if (rule->body_size() > 0) {
               // discard facts and inits
@@ -145,9 +149,12 @@ public:
           else if (line == "XXX_OR_BEGIN") {
             read_or(preds, rule);
           }
+          else {
+            cout << "Unexpected line at " << lineno << endl;
+            assert(false);
+          }
           break;
       }
-      line = read_nonempty();
     }
   }
 
