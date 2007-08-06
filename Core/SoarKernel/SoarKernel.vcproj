@@ -189,6 +189,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\src\exploration.cpp"
+				>
+			</File>
+			<File
 				RelativePath=".\src\init_soar.cpp"
 				>
 			</File>
@@ -230,6 +234,10 @@
 			</File>
 			<File
 				RelativePath=".\src\recmem.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\src\reinforcement_learning.cpp"
 				>
 			</File>
 			<File
@@ -308,6 +316,10 @@
 			</File>
 			<File
 				RelativePath=".\include\explain.h"
+				>
+			</File>
+			<File
+				RelativePath=".\include\exploration.h"
 				>
 			</File>
 			<File
@@ -391,6 +403,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\include\reinforcement_learning.h"
+				>
+			</File>
+			<File
 				RelativePath=".\src\reorder.h"
 				>
 			</File>
@@ -416,6 +432,10 @@
 			</File>
 			<File
 				RelativePath=".\include\stl_support.h"
+				>
+			</File>
+			<File
+				RelativePath=".\include\string_tofrom.h"
 				>
 			</File>
 			<File

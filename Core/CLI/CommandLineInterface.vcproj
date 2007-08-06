@@ -179,6 +179,14 @@
 				RelativePath=".\src\cli_Commands.cpp"
 				>
 			</File>
+			<File
+				RelativePath=".\src\cli_rl.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\src\cli_select.cpp"
+				>
+			</File>
 			<Filter
 				Name="Commands"
 				>
