@@ -25,7 +25,7 @@ indifferent-selection --first
 # source goodthings.soar
 
 pushd common
-source canvas.soar
+# source canvas.soar
 source status.soar
 source constant.soar
 pushd default
