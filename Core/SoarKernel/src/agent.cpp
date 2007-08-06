@@ -356,9 +356,9 @@ agent * create_soar_agent (Kernel * thisKernel, char * agent_name) {            
   (*newAgent->rl_param_tracking)[ "eligibility-trace-tolerance" ] = *add_rl_tracking( "eligibility-trace-tolerance", rl_param_number );
   
   newAgent->rl_stats = new std::map<std::string, double>();
-  (*newAgent->rl_stats)[ "update-error" ] = 1;
-  (*newAgent->rl_stats)[ "total-reward" ] = 2;
-  (*newAgent->rl_stats)[ "global-reward" ] = 3;
+  (*newAgent->rl_stats)[ "update-error" ] = 0;
+  (*newAgent->rl_stats)[ "total-reward" ] = 0;
+  (*newAgent->rl_stats)[ "global-reward" ] = 0;
   
   return newAgent;
 }
