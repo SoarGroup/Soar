@@ -54,12 +54,8 @@ public class TankSoarVisualWorld extends VisualWorld {
 			}
 		}
 		
-		assert Soar2D.config.getType() != SimType.kKitchen;
-		
-		if (Soar2D.config.getType() == SimType.kTankSoar) {
-			if (background == null) {
-				generateBackground();
-			}
+		if (background == null) {
+			generateBackground();
 		}
 		
 		// Draw world

@@ -16,7 +16,7 @@ public class KitchenConfiguration extends BaseConfiguration implements IConfigur
 	}
 
 	public String getMapExt() {
-		return "kmap";
+		return "xml";
 	}
 
 	public String getTitle() {
@@ -43,7 +43,6 @@ public class KitchenConfiguration extends BaseConfiguration implements IConfigur
 	
 	public void copy(IConfiguration config) {
 		KitchenConfiguration kConfig = (KitchenConfiguration)config;
-		assert false;
 	}
 	
 	public void setDefaultTerminals(Configuration configuration) {

@@ -68,7 +68,7 @@ public abstract class VisualWorld extends Canvas implements PaintListener {
 			break;
 			
 		case kKitchen:
-			assert false;
+			break;
 		}
 		
 		font = new Font(parent.getDisplay(), "Helvetica", 7, SWT.NONE);
@@ -167,54 +167,6 @@ public abstract class VisualWorld extends Canvas implements PaintListener {
 		gc.fillPolygon(new int[] {center.x, center.y, east.x,  east.y,  center.x, center.y + offCenter});
 		gc.fillPolygon(new int[] {center.x, center.y, south.x, south.y, center.x - offCenter, center.y});
 		gc.fillPolygon(new int[] {center.x, center.y, west.x,  west.y,  center.x, center.y - offCenter});
-	}
-	
-	void drawEaterMouth(int x, int y, int x_mult, int y_mult, int cx_mult, int cy_mult, GC gc){		
-	    switch(Soar2D.simulation.world.getWorldCount() % 8){
-			case(0):{
-			    gc.fillPolygon(new int[]{cellSize*x, cellSize*y,
-			            cellSize*x + x_mult*cellSize, cellSize * y + y_mult*cellSize,
-			            cellSize*x + cx_mult*cellSize/2, cellSize*y + cy_mult*cellSize/2});
-			    break;
-			}
-			case(1):{
-			    gc.fillPolygon(new int[]{cellSize*x + x_mult*cellSize/8, cellSize*y + y_mult*cellSize/8,
-			            cellSize*x + x_mult*(cellSize - cellSize/8), cellSize * y + y_mult*(cellSize - cellSize/8),
-			            cellSize*x + cx_mult*cellSize/2, cellSize*y + cy_mult*cellSize/2});
-			    break;
-			}
-			case(2):{
-			    gc.fillPolygon(new int[]{cellSize*x + x_mult*cellSize/4, cellSize*y + y_mult*cellSize/4,
-			            cellSize*x + x_mult*(cellSize - cellSize/4), cellSize * y + y_mult*(cellSize - cellSize/4),
-			            cellSize*x + cx_mult * cellSize/2, cellSize*y + cy_mult * cellSize/2});
-			    break;
-			}
-			case(3):{
-			    gc.fillPolygon(new int[]{cellSize*x + x_mult * 3*cellSize/8, cellSize*y + y_mult * 3*cellSize/8,
-			            cellSize*x + x_mult*(cellSize - 3*cellSize/8), cellSize * y + y_mult*(cellSize - 3*cellSize/8),
-			            cellSize*x + cx_mult*cellSize/2, cellSize*y + cy_mult*cellSize/2});
-			    break;
-			}
-			case(4): break;
-			case(5):{
-			    gc.fillPolygon(new int[]{cellSize*x + x_mult * 3*cellSize/8, cellSize*y + y_mult * 3*cellSize/8,
-			            cellSize*x + x_mult*(cellSize - 3*cellSize/8), cellSize * y + y_mult*(cellSize - 3*cellSize/8),
-			            cellSize*x + cx_mult*cellSize/2, cellSize*y + cy_mult*cellSize/2});
-			    break;
-			}
-			case(6):{
-			    gc.fillPolygon(new int[]{cellSize*x + x_mult*cellSize/4, cellSize*y + y_mult*cellSize/4,
-			            cellSize*x + x_mult*(cellSize - cellSize/4), cellSize * y + y_mult*(cellSize - cellSize/4),
-			            cellSize*x + cx_mult * cellSize/2, cellSize*y + cy_mult * cellSize/2});
-			    break;
-			}
-			case(7):{
-			    gc.fillPolygon(new int[]{cellSize*x + x_mult*cellSize/8, cellSize*y + y_mult*cellSize/8,
-			            cellSize*x + x_mult*(cellSize - cellSize/8), cellSize * y + y_mult*(cellSize - cellSize/8),
-			            cellSize*x + cx_mult*cellSize/2, cellSize*y + cy_mult*cellSize/2});
-			    break;	
-			}
-		}
 	}
 	
 	public void setRepaint() {

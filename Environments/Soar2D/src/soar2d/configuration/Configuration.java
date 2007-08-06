@@ -1015,6 +1015,9 @@ public class Configuration {
 	}
 	
 	public String getTitle() {
+		if (cModule == null) {
+			return "Soar2D";
+		}
 		return cModule.getTitle();
 	}
 
