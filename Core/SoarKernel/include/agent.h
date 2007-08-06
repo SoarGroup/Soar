@@ -31,6 +31,7 @@
 #include "chunk.h"
 #include "callback.h"
 #include "exploration.h"
+#include "reinforcement_learning.h"
 
 #include <string>
 #include <map>
@@ -746,8 +747,14 @@ kernel time and total_cpu_time greater than the derived total CPU time. REW */
   enum ni_mode numeric_indifferent_mode;      /* SW 08.19.2003 */
 #endif
   
+  // exploration
   std::map<std::string, exploration_parameter> *exploration_params;
   std::vector<const char *> *exploration_param_names;
+  
+  // reinforcement learning
+  std::map<std::string, rl_parameter> *rl_params;
+  std::map<std::string, rl_parameter_tracking> *rl_param_tracking;
+  std::map<std::string, double> *rl_stats;
 
 } agent;
 /*************** end of agent struct *****/

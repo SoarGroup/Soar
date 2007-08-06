@@ -82,6 +82,7 @@ struct node_varnames_struct;
 #include "callback.h"
 #include "io_soar.h"
 #include "exploration.h"
+#include "reinforcement_learning.h"
 
 /* ======================================================================= */
 

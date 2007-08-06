@@ -46,6 +46,7 @@
 #include "io_soar.h"
 #include "kernel_struct.h"
 #include "exploration.h"
+#include "reinforcement_learning.h"
 
 /* JC ADDED: Need to initialize gski callbacks */
 #include "gski_event_system_functions.h"
@@ -330,6 +331,34 @@ agent * create_soar_agent (Kernel * thisKernel, char * agent_name) {            
   newAgent->exploration_param_names = new std::vector<const char *>();
   (*newAgent->exploration_param_names).push_back( "epsilon" );
   (*newAgent->exploration_param_names).push_back( "temperature" );
+  
+  // rl initialization
+  newAgent->rl_params = new std::map<std::string, rl_parameter>();
+  (*newAgent->rl_params)[ "learning" ] = *add_rl_parameter( "on", &validate_rl_learning, &convert_rl_learning, &convert_rl_learning );
+  (*newAgent->rl_params)[ "accumulation-mode" ] = *add_rl_parameter( "sum", &validate_rl_accumulation, &convert_rl_accumulation, &convert_rl_accumulation );
+  (*newAgent->rl_params)[ "discount-mode" ] = *add_rl_parameter( "exponential", &validate_rl_discount, &convert_rl_discount, &convert_rl_discount );
+  (*newAgent->rl_params)[ "exponential-discount-rate" ] = *add_rl_parameter( 0.9, &validate_rl_exp_discount );
+  (*newAgent->rl_params)[ "linear-discount-rate" ] = *add_rl_parameter( 0.1, &validate_rl_lin_discount );
+  (*newAgent->rl_params)[ "learning-rate" ] = *add_rl_parameter( 0.3, &validate_rl_learning_rate );
+  (*newAgent->rl_params)[ "learning-policy" ] = *add_rl_parameter( "sarsa", &validate_rl_learning_policy, &convert_rl_learning_policy, &convert_rl_learning_policy );
+  (*newAgent->rl_params)[ "eligibility-trace-decay-rate" ] = *add_rl_parameter( 0, &validate_rl_decay_rate );
+  (*newAgent->rl_params)[ "eligibility-trace-tolerance" ] = *add_rl_parameter( 0.001, &validate_rl_trace_tolerance );
+  
+  newAgent->rl_param_tracking = new std::map<std::string, rl_parameter_tracking>();
+  (*newAgent->rl_param_tracking)[ "learning" ] = *add_rl_tracking( "learning", rl_param_string );
+  (*newAgent->rl_param_tracking)[ "accumulation-mode" ] = *add_rl_tracking( "accumulation-mode", rl_param_string );
+  (*newAgent->rl_param_tracking)[ "discount-mode" ] = *add_rl_tracking( "discount-mode", rl_param_string );
+  (*newAgent->rl_param_tracking)[ "exponential-discount-rate" ] = *add_rl_tracking( "exponential-discount-rate", rl_param_number );
+  (*newAgent->rl_param_tracking)[ "linear-discount-rate" ] = *add_rl_tracking( "linear-discount-rate", rl_param_number );
+  (*newAgent->rl_param_tracking)[ "learning-rate" ] = *add_rl_tracking( "learning-rate", rl_param_number );
+  (*newAgent->rl_param_tracking)[ "learning-policy" ] = *add_rl_tracking( "learning-policy", rl_param_string );
+  (*newAgent->rl_param_tracking)[ "eligibility-trace-decay-rate" ] = *add_rl_tracking( "eligibility-trace-decay-rate", rl_param_number );
+  (*newAgent->rl_param_tracking)[ "eligibility-trace-tolerance" ] = *add_rl_tracking( "eligibility-trace-tolerance", rl_param_number );
+  
+  newAgent->rl_stats = new std::map<std::string, double>();
+  (*newAgent->rl_stats)[ "update-error" ] = 1;
+  (*newAgent->rl_stats)[ "total-reward" ] = 2;
+  (*newAgent->rl_stats)[ "global-reward" ] = 3;
   
   return newAgent;
 }

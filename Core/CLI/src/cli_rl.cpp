@@ -13,11 +13,23 @@
 
 #include "cli_Commands.h"
 
+#include "gSKI_Agent.h"
+#include "sml_Names.h"
+
+#include "reinforcement_learning.h"
+#include "string_tofrom.h"
+
+#include <vector>
+#include <map>
+
 using namespace cli;
 using namespace sml;
 
 bool CommandLineInterface::ParseRL( gSKI::Agent* pAgent, std::vector<std::string>& argv ) 
 {
+	// get soar kernel agent - bad gSKI!
+	agent *my_agent = pAgent->GetSoarAgent();
+	
 	Options optionsData[] = 
 	{
 		{'g', "get",	0},
@@ -77,7 +89,7 @@ bool CommandLineInterface::ParseRL( gSKI::Agent* pAgent, std::vector<std::string
 			return SetError( CLIError::kTooManyArgs );
 		
 		// check attribute name here
-		if ( argv[2].compare( "test" ) == 0 )
+		if ( valid_rl_parameter( my_agent, argv[2].c_str() ) )
 			return DoRL( pAgent, 'g', &( argv[2] ) );
 		else
 			return SetError( CLIError::kInvalidAttribute );
@@ -92,11 +104,31 @@ bool CommandLineInterface::ParseRL( gSKI::Agent* pAgent, std::vector<std::string
 			return SetError( CLIError::kTooManyArgs );
 		
 		// check attribute name/potential vals here
-		if ( argv[2].compare( "test" ) == 0 )
-			if ( argv[3].compare( "testing" ) == 0 )
-				return DoRL( pAgent, 's', &( argv[2] ), &( argv[3] ) );
-			else
-				return SetError( CLIError::kInvalidValue );
+		if ( valid_rl_parameter( my_agent, argv[2].c_str() ) )
+		{
+			switch ( get_rl_parameter_type( my_agent, argv[2].c_str() ) )
+			{
+				case rl_param_string:
+					if ( !valid_rl_parameter_value( my_agent, argv[2].c_str(), argv[3].c_str() ) )
+						return SetError( CLIError::kInvalidValue );
+					else
+						return DoRL( pAgent, 's', &( argv[2] ), &( argv[3] ) );
+					break;
+					
+				case rl_param_number:
+					double temp;
+					from_string( temp, argv[3] );
+					if ( !valid_rl_parameter_value( my_agent, argv[2].c_str(), temp ) )
+						return SetError( CLIError::kInvalidValue );
+					else
+						return DoRL( pAgent, 's', &( argv[2] ), &( argv[3] ) );
+					break;
+					
+				case rl_param_invalid:
+					return SetError( CLIError::kInvalidAttribute );
+					break;
+			}
+		}
 		else
 			return SetError( CLIError::kInvalidAttribute );
 	}
@@ -109,7 +141,7 @@ bool CommandLineInterface::ParseRL( gSKI::Agent* pAgent, std::vector<std::string
 		else if ( m_NonOptionArguments == 1 )
 		{
 			// check attribute name
-			if ( argv[2].compare( "test" ) == 0 )
+			if ( valid_rl_stat( my_agent, argv[2].c_str() ) )
 				return DoRL( pAgent, 'S', &( argv[2] ) );
 			else
 				return SetError( CLIError::kInvalidAttribute );
@@ -126,19 +158,218 @@ bool CommandLineInterface::DoRL( gSKI::Agent* pAgent, const char pOp, const std:
 {
 	if ( !RequireAgent( pAgent ) ) 
 		return false;
+	
+	// get soar kernel agent - bad gSKI!
+	agent *my_agent = pAgent->GetSoarAgent();
 
 	if ( !pOp )
-		m_Result << "all info";
+	{
+		std::string temp;
+		double temp_val;
+		
+		temp = "Soar-RL learning: ";
+		temp += get_rl_parameter( my_agent, "learning", RL_RETURN_STRING );
+		if ( m_RawOutput )
+			m_Result << temp << "\n";
+		else
+			AppendArgTagFast( sml_Names::kParamValue, sml_Names::kTypeString, temp.c_str() );
+		
+		temp = "accumulation-mode: ";
+		temp += get_rl_parameter( my_agent, "accumulation-mode", RL_RETURN_STRING );
+		if ( m_RawOutput )
+			m_Result << temp << "\n\n";
+		else
+		{
+			AppendArgTagFast( sml_Names::kParamValue, sml_Names::kTypeString, temp.c_str() );
+			AppendArgTagFast( sml_Names::kParamValue, sml_Names::kTypeString, "" );
+		}
+		
+		temp = "Discount";
+		if ( m_RawOutput )
+			m_Result << temp << "\n";
+		else
+			AppendArgTagFast( sml_Names::kParamValue, sml_Names::kTypeString, temp.c_str() );
+		temp = "--------";
+		if ( m_RawOutput )
+			m_Result << temp << "\n";
+		else
+			AppendArgTagFast( sml_Names::kParamValue, sml_Names::kTypeString, temp.c_str() );
+		
+		temp = "discount-mode: ";
+		temp += get_rl_parameter( my_agent, "discount-mode", RL_RETURN_STRING );
+		if ( m_RawOutput )
+			m_Result << temp << "\n";
+		else
+			AppendArgTagFast( sml_Names::kParamValue, sml_Names::kTypeString, temp.c_str() );
+		
+		temp = "exponential-discount-rate: ";
+		temp_val = get_rl_parameter( my_agent, "exponential-discount-rate" );
+		temp += to_string( temp_val );
+		if ( m_RawOutput )
+			m_Result << temp << "\n";
+		else
+			AppendArgTagFast( sml_Names::kParamValue, sml_Names::kTypeString, temp.c_str() );
+		
+		temp = "linear-discount-rate: ";
+		temp_val = get_rl_parameter( my_agent, "linear-discount-rate" );
+		temp += to_string( temp_val );
+		if ( m_RawOutput )
+			m_Result << temp << "\n\n";
+		else
+		{
+			AppendArgTagFast( sml_Names::kParamValue, sml_Names::kTypeString, temp.c_str() );
+			AppendArgTagFast( sml_Names::kParamValue, sml_Names::kTypeString, "" );
+		}
+		
+		temp = "Learning";
+		if ( m_RawOutput )
+			m_Result << temp << "\n";
+		else
+			AppendArgTagFast( sml_Names::kParamValue, sml_Names::kTypeString, temp.c_str() );
+		temp = "--------";
+		if ( m_RawOutput )
+			m_Result << temp << "\n";
+		else
+			AppendArgTagFast( sml_Names::kParamValue, sml_Names::kTypeString, temp.c_str() );
+		
+		temp = "learning-policy: ";
+		temp += get_rl_parameter( my_agent, "learning-policy", RL_RETURN_STRING );
+		if ( m_RawOutput )
+			m_Result << temp << "\n";
+		else
+			AppendArgTagFast( sml_Names::kParamValue, sml_Names::kTypeString, temp.c_str() );
+		
+		temp = "learning-rate: ";
+		temp_val = get_rl_parameter( my_agent, "learning-rate" );
+		temp += to_string( temp_val );
+		if ( m_RawOutput )
+			m_Result << temp << "\n\n";
+		else
+		{
+			AppendArgTagFast( sml_Names::kParamValue, sml_Names::kTypeString, temp.c_str() );
+			AppendArgTagFast( sml_Names::kParamValue, sml_Names::kTypeString, "" );
+		}
+		
+		temp = "Eligibility Traces";
+		if ( m_RawOutput )
+			m_Result << temp << "\n";
+		else
+			AppendArgTagFast( sml_Names::kParamValue, sml_Names::kTypeString, temp.c_str() );
+		temp = "------------------";
+		if ( m_RawOutput )
+			m_Result << temp << "\n";
+		else
+			AppendArgTagFast( sml_Names::kParamValue, sml_Names::kTypeString, temp.c_str() );
+
+		temp = "eligibility-trace-decay-rate: ";
+		temp_val = get_rl_parameter( my_agent, "eligibility-trace-decay-rate" );
+		temp += to_string( temp_val );
+		if ( m_RawOutput )
+			m_Result << temp << "\n";
+		else
+			AppendArgTagFast( sml_Names::kParamValue, sml_Names::kTypeString, temp.c_str() );
+		
+		temp = "eligibility-trace-tolerance: ";
+		temp_val = get_rl_parameter( my_agent, "eligibility-trace-tolerance" );
+		temp += to_string( temp_val );
+		if ( m_RawOutput )
+			m_Result << temp << "\n\n";
+		else
+		{
+			AppendArgTagFast( sml_Names::kParamValue, sml_Names::kTypeString, temp.c_str() );
+			AppendArgTagFast( sml_Names::kParamValue, sml_Names::kTypeString, "" );
+		}
+		
+		return true;
+	}
 	else if ( pOp == 'g' )
-		m_Result << "get: " << *pAttr;
+	{
+		std::string output = "";
+		const char *tag_type = sml_Names::kTypeString;
+		
+		switch ( get_rl_parameter_type( my_agent, pAttr->c_str() ) )
+		{
+			case rl_param_string:
+				output += get_rl_parameter( my_agent, pAttr->c_str(), RL_RETURN_STRING );
+				break;
+				
+			case rl_param_number:
+				double temp = get_rl_parameter( my_agent, pAttr->c_str() );
+				output += to_string( temp );
+				tag_type = sml_Names::kTypeDouble;
+				break;
+		}
+					
+		if ( m_RawOutput )
+			m_Result << output;
+		else
+			AppendArgTagFast( sml_Names::kParamValue, tag_type, output.c_str() );
+		
+		return true;
+	}
 	else if ( pOp == 's' )
-		m_Result << "set: " << *pAttr << " = " << *pVal;
+	{
+		switch ( get_rl_parameter_type( my_agent, pAttr->c_str() ) )
+		{
+			case rl_param_string:
+				return set_rl_parameter( my_agent, pAttr->c_str(), pVal->c_str() );
+				break;
+				
+			case rl_param_number:
+				double temp;
+				from_string( temp, *pVal );
+				return set_rl_parameter( my_agent, pAttr->c_str(), temp );
+				
+				break;
+				
+			case rl_param_invalid:
+				return false;
+				break;
+		}
+	}
 	else if ( pOp == 'S' )
 	{
 		if ( !pAttr )
-			m_Result << "all stats";
+		{
+			double temp;
+			std::string output;
+			
+			output = "Error from last update: ";
+			temp = get_rl_stat( my_agent, "update-error" );
+			output += to_string( temp );
+			if ( m_RawOutput )
+				m_Result << output << "\n";
+			else
+				AppendArgTagFast( sml_Names::kParamValue, sml_Names::kTypeString, output.c_str() );
+			
+			output = "Total reward in last cycle: ";
+			temp = get_rl_stat( my_agent, "total-reward" );
+			output += to_string( temp );
+			if ( m_RawOutput )
+				m_Result << output << "\n";
+			else
+				AppendArgTagFast( sml_Names::kParamValue, sml_Names::kTypeString, output.c_str() );
+			
+			output = "Global reward since init: ";
+			temp = get_rl_stat( my_agent, "global-reward" );
+			output += to_string( temp );
+			if ( m_RawOutput )
+				m_Result << output << "\n";
+			else
+				AppendArgTagFast( sml_Names::kParamValue, sml_Names::kTypeString, output.c_str() );
+		}
 		else
-			m_Result << "stat: " << *pAttr;
+		{
+			double temp = get_rl_stat( my_agent, pAttr->c_str() );
+			std::string output = to_string( temp );
+			
+			if ( m_RawOutput )
+				m_Result << output;
+			else
+				AppendArgTagFast( sml_Names::kParamValue, sml_Names::kTypeDouble, output.c_str() );
+		}
+		
+		return true;
 	}
 	
 	return SetError( CLIError::kCommandNotImplemented );

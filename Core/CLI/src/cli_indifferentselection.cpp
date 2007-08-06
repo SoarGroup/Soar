@@ -14,8 +14,10 @@
 #include "cli_Commands.h"
 
 #include "gSKI_Agent.h"
-#include "exploration.h"
 #include "sml_Names.h"
+
+#include "exploration.h"
+#include "string_tofrom.h"
 
 #include <vector>
 
@@ -399,7 +401,7 @@ bool CommandLineInterface::DoIndifferentSelection( gSKI::Agent* pAgent, const ch
 			
 			// reduction policy
 			temp = (*param_names)[i];
-			temp += " reduction policy: ";
+			temp += " Reduction Policy: ";
 			temp += convert_reduction_policy( get_reduction_policy( my_agent, (*param_names)[i] ) );
 			if ( m_RawOutput )
 				m_Result << temp << "\n"; 
@@ -422,7 +424,7 @@ bool CommandLineInterface::DoIndifferentSelection( gSKI::Agent* pAgent, const ch
 					temp3 += "/";
 			}
 			temp = (*param_names)[i];
-			temp += " reduction rate (";
+			temp += " Reduction Rate (";
 			temp += temp2;
 			temp += "): ";
 			temp += temp3;
