@@ -41,7 +41,7 @@ typedef std::map<const char *, long>::iterator reduction_policy_iterator;
 //////////////////////////////////////////////////////////
 
 // Conversion of value to string
-template<class T> const char * to_string( T &x )
+template<class T> std::string to_string( T &x )
 {
 	// instantiate stream
 	std::ostringstream o;
@@ -50,7 +50,7 @@ template<class T> const char * to_string( T &x )
 	o << x;
 	
 	// spit value back as string
-	return o.str().c_str();
+	return o.str();
 }
 
 // Conversion from string to value

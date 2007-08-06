@@ -289,7 +289,7 @@ bool CommandLineInterface::DoIndifferentSelection( gSKI::Agent* pAgent, const ch
 			if ( m_RawOutput )
 				m_Result << param_value;
 			else
-				AppendArgTagFast( sml_Names::kParamValue, sml_Names::kTypeDouble, to_string( param_value ) );
+				AppendArgTagFast( sml_Names::kParamValue, sml_Names::kTypeDouble, to_string( param_value ).c_str() );
 			
 			return true;
 		}
@@ -310,7 +310,7 @@ bool CommandLineInterface::DoIndifferentSelection( gSKI::Agent* pAgent, const ch
 			if ( m_RawOutput )
 				m_Result << param_value;
 			else
-				AppendArgTagFast( sml_Names::kParamValue, sml_Names::kTypeDouble, to_string( param_value ) );
+				AppendArgTagFast( sml_Names::kParamValue, sml_Names::kTypeDouble, to_string( param_value ).c_str() );
 			
 			return true;
 		}
@@ -351,7 +351,7 @@ bool CommandLineInterface::DoIndifferentSelection( gSKI::Agent* pAgent, const ch
 			if ( m_RawOutput )
 				m_Result << reduction_rate;
 			else
-				AppendArgTagFast( sml_Names::kParamValue, sml_Names::kTypeDouble, to_string( reduction_rate ) );
+				AppendArgTagFast( sml_Names::kParamValue, sml_Names::kTypeDouble, to_string( reduction_rate ).c_str() );
 			
 			return true;
 		}
