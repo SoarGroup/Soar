@@ -3,16 +3,21 @@
 ;;; Example: TL Level 6, Scenario 3, Target Task
 ;;; See init/1 between ">>>>>" and "<<<<<" for unique aspects of this task
 ; David W. Aha (NRL)
-; 2007 July 31
+; 2007 August 2
 ; 
 ; mRogue was developed by Tom Hinrichs, Sam Wintermute, & David Aha
+;
+; Summary: This target task has, in addition to armor, both potions
+; and scrolls, whereas one source had only potions and the other
+; had only scrolls
+;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ; This file: Map (and Legend)
 ;               + = Corner
 ;    012345     - = Horizontal wall
 ;   +------+    | = Vertical wall
 ;  0|......|    . = A room location
-;  1|.awB..|    # = A corridor location
+;  1|.asB..|    # = A corridor location
 ;  2|.p@.*.|    @ = hero
 ;  3+---#--+    a = armor, p = potion, s = scroll,
 ;  4|.>H.!.|    w = weapon, ! = amulet, * = gold
@@ -108,21 +113,21 @@
 
 ; Items (that can be picked up by Hero) (amulet & gold are defined in 2.3)
 (item armor1)
-(item weapon1)
 (item potion1)
 (item potion2)
 (item scroll1)
+(item scroll2)
 
 ; Item typings (note: a bow includes a quiver and a set of arrows)
 (armor armor1 ringmail)
-(weapon weapon1 bow)
 (potion potion1 strength)
 (potion potion2 invisibility)
-(scroll scroll1 armorEnhance)
+(scroll scroll2 armorEnhance)
+(scroll scroll1 sleep)
 
 ; Locations of character and items (North Room)
 (init (location armor1 1 1))         
-(init (location weapon1 2 1))           
+(init (location scroll2 2 1))           
 (init (location bat1 3 1))         ; Monster
 (init (location potion1 1 2))
 (init (location hero 2 2))           ; our Hero
@@ -1198,7 +1203,7 @@
 
 (<= (nextMonsterLocation ?monster ?x ?y)
    (monster ?monster ?monster-type)
-   (provoked ?monster) ; SW: the above rule handles all unprovoked monsters
+   (provoked ?monster)                             ; Added 8/2/07 thanks to SW
    (true (invisible hero ?n))                      ; invisible for n more turns
    (true (location ?monster ?x ?y)))
 

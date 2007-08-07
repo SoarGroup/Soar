@@ -3,7 +3,7 @@
 ;;; Example: TL Level 6, Scenario 1, Source Task 1 
 ;;; See init/1 between ">>>>>" and "<<<<<" for unique aspects of this task
 ; David W. Aha (NRL)
-; 2007 July 31
+; 2007 August 2
 ; 
 ; mRogue was developed by Tom Hinrichs, Sam Wintermute, & David Aha
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -1194,6 +1194,7 @@
 
 (<= (nextMonsterLocation ?monster ?x ?y)
    (monster ?monster ?monster-type)
+   (provoked ?monster)                             ; Added 8/2/07 thanks to SW
    (true (invisible hero ?n))                      ; invisible for n more turns
    (true (location ?monster ?x ?y)))
 
