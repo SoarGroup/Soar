@@ -290,8 +290,8 @@ class GGPSentence:
 	
 	def __init__(self, elementGGP):
 		if isinstance(elementGGP, str):
-			self.__name = elementGGP.lower()
-			assert self.__name == "terminal" or self.__name not in GGPSentence.DEFINED_RELS
+			# must be a terminal or a user defined relation
+			assert self.__name.lower() == "terminal" or self.__name.lower() not in GGPSentence.DEFINED_RELS
 			self.__terms = []
 			self.__negated = False
 		else:
@@ -303,11 +303,18 @@ class GGPSentence:
 				relElem = elementGGP
 			
 			if isinstance(relElem, str):
-				self.__name = relElem.lower()
-				assert self.__name == "terminal" or self.__name not in GGPSentence.DEFINED_RELS
+				# must be a terminal or a user defined relation
+				self.__name = relElem
+				assert self.__name.lower() == "terminal" or self.__name.lower() not in GGPSentence.DEFINED_RELS
 				self.__terms = []
 			else:
-				self.__name = relElem[0].lower()
+				# compound sentence
+				if relElem[0].lower() in DEFINED_RELS:
+					# use lower case for reserved words
+					self.__name = relElem[0].lower()
+				else:
+					# preserve case for user defined types
+					self.__name = relElem[0]
 
 				if self.__name in ["true", "next", "init"]:
 					# these are all one place relations where the only arg is a function

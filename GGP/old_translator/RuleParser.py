@@ -204,7 +204,7 @@ def HandleMath(maths, head, base_prod, var_map, rule_index, state_name):
 			else:
 				if m.term(j).type() == 'variable':
 					# get this from a regular condition
-					assert m.term(j).name() in var_map1
+					assert m.term(j).name() in var_map1, "There appears to be an unbound variable %s" % m.term(j).name()
 					ops.append((var_map1.get_var(m.term(j).name()), 1))
 				else:
 					# constant

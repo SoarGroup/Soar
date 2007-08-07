@@ -155,19 +155,7 @@ class ElementGGP:
 			return False
 
 		for i in range(len(self.__children)):
-			if isinstance(self.__children[i], str):
-				# because rules are case-insensitive
-				c1 = self.__children[i].lower()
-			else:
-				c1 = self.__children[i]
-
-			if isinstance(other.__children[i], str):
-				# because rules are case-insensitive
-				c2 = other.__children[i].lower()
-			else:
-				c2 = other.__children[i]
-
-			if c1 != c2:
+			if self.__children[i] != other.__children[i]:
 				return False
 
 		return True
