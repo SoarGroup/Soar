@@ -54,7 +54,7 @@
 
 using namespace xmlTraceNames;
 
-#ifdef NUMERIC_INDIFFERENCE
+//#ifdef NUMERIC_INDIFFERENCE
 /* REW: 2003-01-02 Behavior Variability Kernel Experiments */
 preference *probabilistically_select(agent* thisAgent, slot * s, preference * candidates);
 
@@ -76,7 +76,7 @@ void print_candidates(agent* thisAgent, preference * candidates)
 
 /* END: 2003-01-02 Behavior Variability Kernel Experiments */
 
-#endif
+//#endif
 
 /* ------------------------------------------------------------------------
                      Decider Global Variables
@@ -1055,7 +1055,7 @@ byte run_preference_semantics (agent* thisAgent, slot *s, preference **result_ca
   for (p=s->preferences[UNARY_INDIFFERENT_PREFERENCE_TYPE]; p; p=p->next)
     p->value->common.decider_flag = UNARY_INDIFFERENT_DECIDER_FLAG;
 
-	 #ifdef NUMERIC_INDIFFERENCE
+	 //#ifdef NUMERIC_INDIFFERENCE
     /* REW: 2003-01-02 Behavior Variability Kernel Experiments
      We want to treat some binary indifferent prefs as unary indifferents,
      the second pref is really an int representing a probability value.
@@ -1069,7 +1069,7 @@ byte run_preference_semantics (agent* thisAgent, slot *s, preference **result_ca
   
   /* END: 2003-01-02 Behavior Variability Kernel Experiments  */
 
-	#endif
+	//#endif
 
   not_all_indifferent = FALSE;
   for (cand=candidates; cand!=NIL; cand=cand->next_candidate) {
@@ -1077,10 +1077,10 @@ byte run_preference_semantics (agent* thisAgent, slot *s, preference **result_ca
     if (cand->value->common.decider_flag==UNARY_INDIFFERENT_DECIDER_FLAG)
       continue;
     
-	#ifdef NUMERIC_INDIFFERENCE
+	//#ifdef NUMERIC_INDIFFERENCE
 	else if ( cand->value->common.decider_flag==UNARY_INDIFFERENT_CONSTANT_DECIDER_FLAG )
 	  continue;
-	#endif
+	//#endif
 
     /* --- check whether cand is binary indifferent to each other one --- */
     for (p=candidates; p!=NIL; p=p->next_candidate) {
@@ -1132,7 +1132,7 @@ byte run_preference_semantics (agent* thisAgent, slot *s, preference **result_ca
     	case USER_SELECT_RANDOM: 
     	{
     		
-			#ifdef NUMERIC_INDIFFERENCE
+			//#ifdef NUMERIC_INDIFFERENCE
     			
     			/* REW: 2003-01-02 Behavior Variability Kernel Experiments */
     			cand = probabilistically_select( thisAgent, s, candidates );
@@ -1146,14 +1146,14 @@ byte run_preference_semantics (agent* thisAgent, slot *s, preference **result_ca
     			*result_candidates = cand;
                 break;
                 
-			#else
+			/*#else
       
                 int num_candidates, chosen_num;
                 num_candidates = 0;
                 for (cand=candidates; cand!=NIL; cand=cand->next_candidate)
                 	num_candidates++;
 
-                /* RPM 12/05 replacing calls to rand() with calls to SoarRand; see bug 595 */
+                // RPM 12/05 replacing calls to rand() with calls to SoarRand; see bug 595
                 //chosen_num = rand() % num_candidates;
                 chosen_num = SoarRand.randInt( num_candidates-1 );
 
@@ -1166,7 +1166,7 @@ byte run_preference_semantics (agent* thisAgent, slot *s, preference **result_ca
                 *result_candidates = cand;
                 break;
                 
-			#endif
+			#endif*/
     	}
     
     	default:
@@ -1450,7 +1450,7 @@ byte run_preference_semantics_for_consistency_check (agent* thisAgent, slot *s, 
   for (p=s->preferences[UNARY_INDIFFERENT_PREFERENCE_TYPE]; p; p=p->next)
     p->value->common.decider_flag = UNARY_INDIFFERENT_DECIDER_FLAG;
 
-#ifdef NUMERIC_INDIFFERENCE
+//#ifdef NUMERIC_INDIFFERENCE
   /* REW: 2003-01-26 Behavior Variability Kernel Experiments
      We want to treat some binary indifferent prefs as unary indifferents,
      the second pref is really an int representing a probability value.
@@ -1463,7 +1463,7 @@ byte run_preference_semantics_for_consistency_check (agent* thisAgent, slot *s, 
        
       p->value->common.decider_flag = UNARY_INDIFFERENT_CONSTANT_DECIDER_FLAG;
   /* END: 2003-01-02 Behavior Variability Kernel Experiments  */
-#endif
+//#endif
 
   not_all_indifferent = FALSE;
   for (cand=candidates; cand!=NIL; cand=cand->next_candidate) {
@@ -1471,12 +1471,12 @@ byte run_preference_semantics_for_consistency_check (agent* thisAgent, slot *s, 
     if (cand->value->common.decider_flag==UNARY_INDIFFERENT_DECIDER_FLAG)
       continue;
 
-#ifdef NUMERIC_INDIFFERENCE
+//#ifdef NUMERIC_INDIFFERENCE
 		else if ( cand->value->common.decider_flag==UNARY_INDIFFERENT_CONSTANT_DECIDER_FLAG )  {
       /* print("\n Ignoring this candidate because it has a constant value for the second pref"); */
       continue;
 		}
-#endif
+//#endif
 
 	/* --- check whether cand is binary indifferent to each other one --- */
     for (p=candidates; p!=NIL; p=p->next_candidate) {
@@ -3393,7 +3393,7 @@ void create_gds_for_goal( agent* thisAgent, Symbol *goal){
    #endif
 }
 
-#ifdef NUMERIC_INDIFFERENCE
+//#ifdef NUMERIC_INDIFFERENCE
 
 /* REW: 2003-01-06 */
 /* This a helper function that sets the decider flag to candidate for
@@ -3661,4 +3661,4 @@ preference *probabilistically_select(agent* thisAgent, slot * s, preference * ca
 
 }
 
-#endif
+//#endif

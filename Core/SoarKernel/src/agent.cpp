@@ -303,9 +303,9 @@ agent * create_soar_agent (Kernel * thisKernel, char * agent_name) {            
   }
 
   newAgent->o_support_calculation_type = 4; /* KJC 7/00 */ // changed from 3 to 4 by voigtjr  (/* bugzilla bug 339 */)
-#ifdef NUMERIC_INDIFFERENCE
-  newAgent->numeric_indifferent_mode = NUMERIC_INDIFFERENT_MODE_AVG;
-#endif
+//#ifdef NUMERIC_INDIFFERENCE
+  newAgent->numeric_indifferent_mode = NUMERIC_INDIFFERENT_MODE_SUM;
+//#endif
   newAgent->attribute_preferences_mode = 0; /* RBD 4/17/95 */
 
    /* JC ADDED: Make sure that the RHS functions get initialized correctly */
