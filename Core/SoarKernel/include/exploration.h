@@ -33,8 +33,6 @@ typedef struct exploration_parameter_struct
 	std::map<long, double> rates;
 } exploration_parameter;
 
-typedef std::map<const char *, long>::iterator reduction_policy_iterator;
-
 //////////////////////////////////////////////////////////
 // Exploration Policies
 //////////////////////////////////////////////////////////
@@ -74,7 +72,7 @@ extern bool valid_parameter_value( agent *my_agent, const char *name, double val
 extern bool set_parameter_value( agent *my_agent, const char *name, double value );
 
 // list of parameter names
-extern std::vector<const char *> *get_parameter_names( agent *my_agent );
+extern std::vector<std::string> *get_parameter_names( agent *my_agent );
 
 //////////////////////////////////////////////////////////
 // Reduction Policies

@@ -328,10 +328,6 @@ agent * create_soar_agent (Kernel * thisKernel, char * agent_name) {            
   (*newAgent->exploration_params)[ "epsilon" ] = *add_exploration_parameter( 0.1, &validate_epsilon );
   (*newAgent->exploration_params)[ "temperature" ] = *add_exploration_parameter( 25, &validate_temperature );
   
-  newAgent->exploration_param_names = new std::vector<const char *>();
-  (*newAgent->exploration_param_names).push_back( "epsilon" );
-  (*newAgent->exploration_param_names).push_back( "temperature" );
-  
   // rl initialization
   newAgent->rl_params = new std::map<std::string, rl_parameter>();
   (*newAgent->rl_params)[ "learning" ] = *add_rl_parameter( "on", &validate_rl_learning, &convert_rl_learning, &convert_rl_learning );
@@ -343,17 +339,6 @@ agent * create_soar_agent (Kernel * thisKernel, char * agent_name) {            
   (*newAgent->rl_params)[ "learning-policy" ] = *add_rl_parameter( "sarsa", &validate_rl_learning_policy, &convert_rl_learning_policy, &convert_rl_learning_policy );
   (*newAgent->rl_params)[ "eligibility-trace-decay-rate" ] = *add_rl_parameter( 0, &validate_rl_decay_rate );
   (*newAgent->rl_params)[ "eligibility-trace-tolerance" ] = *add_rl_parameter( 0.001, &validate_rl_trace_tolerance );
-  
-  newAgent->rl_param_tracking = new std::map<std::string, rl_parameter_tracking>();
-  (*newAgent->rl_param_tracking)[ "learning" ] = *add_rl_tracking( "learning", rl_param_string );
-  (*newAgent->rl_param_tracking)[ "accumulation-mode" ] = *add_rl_tracking( "accumulation-mode", rl_param_string );
-  (*newAgent->rl_param_tracking)[ "discount-mode" ] = *add_rl_tracking( "discount-mode", rl_param_string );
-  (*newAgent->rl_param_tracking)[ "exponential-discount-rate" ] = *add_rl_tracking( "exponential-discount-rate", rl_param_number );
-  (*newAgent->rl_param_tracking)[ "linear-discount-rate" ] = *add_rl_tracking( "linear-discount-rate", rl_param_number );
-  (*newAgent->rl_param_tracking)[ "learning-rate" ] = *add_rl_tracking( "learning-rate", rl_param_number );
-  (*newAgent->rl_param_tracking)[ "learning-policy" ] = *add_rl_tracking( "learning-policy", rl_param_string );
-  (*newAgent->rl_param_tracking)[ "eligibility-trace-decay-rate" ] = *add_rl_tracking( "eligibility-trace-decay-rate", rl_param_number );
-  (*newAgent->rl_param_tracking)[ "eligibility-trace-tolerance" ] = *add_rl_tracking( "eligibility-trace-tolerance", rl_param_number );
   
   newAgent->rl_stats = new std::map<std::string, double>();
   (*newAgent->rl_stats)[ "update-error" ] = 0;

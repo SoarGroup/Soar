@@ -19,20 +19,6 @@
 #include "agent.h"
 #include "reinforcement_learning.h"
 
-
-/***************************************************************************
- * Function     : add_tracking
- **************************************************************************/
-rl_parameter_tracking *add_rl_tracking( const char *name, rl_param_type type )
-{
-	// new tracking entry
-	rl_parameter_tracking *newbie = new rl_parameter_tracking;
-	newbie->name = name;
-	newbie->type = type;
-	
-	return newbie;
-}
-
 /***************************************************************************
  * Function     : add_rl_parameter
  **************************************************************************/
@@ -40,8 +26,10 @@ rl_parameter *add_rl_parameter( double value, bool (*val_func)( double ) )
 {
 	// new parameter entry
 	rl_parameter *newbie = new rl_parameter;
-	newbie->number_param.value = value;
-	newbie->number_param.val_func = val_func;
+	newbie->param = new rl_parameter_union;
+	newbie->param->number_param.value = value;
+	newbie->param->number_param.val_func = val_func;
+	newbie->type = rl_param_number;
 	
 	return newbie;
 }
@@ -50,10 +38,12 @@ rl_parameter *add_rl_parameter( const char *value, bool (*val_func)( const char 
 {
 	// new parameter entry
 	rl_parameter *newbie = new rl_parameter;
-	newbie->string_param.val_func = val_func;
-	newbie->string_param.to_str = to_str;
-	newbie->string_param.from_str = from_str;
-	newbie->string_param.value = from_str( value );
+	newbie->param = new rl_parameter_union;
+	newbie->param->string_param.val_func = val_func;
+	newbie->param->string_param.to_str = to_str;
+	newbie->param->string_param.from_str = from_str;
+	newbie->param->string_param.value = from_str( value );
+	newbie->type = rl_param_string;
 	
 	return newbie;
 }
@@ -63,8 +53,7 @@ rl_parameter *add_rl_parameter( const char *value, bool (*val_func)( const char 
  **************************************************************************/
 bool valid_rl_parameter( agent *my_agent, const char *name )
 {
-	return ( ( (*my_agent->rl_params).find( name ) != (*my_agent->rl_params).end() ) &&
-			 ( (*my_agent->rl_param_tracking).find( name ) != (*my_agent->rl_param_tracking).end() ) );
+	return ( (*my_agent->rl_params).find( name ) != (*my_agent->rl_params).end() );
 }
 
 /***************************************************************************
@@ -75,7 +64,7 @@ rl_param_type get_rl_parameter_type( agent *my_agent, const char *name )
 	if ( !valid_rl_parameter( my_agent, name ) )
 		return rl_param_invalid;
 	
-	return (*my_agent->rl_param_tracking)[ name ].type;
+	return (*my_agent->rl_params)[ name ].type;
 }
 
 /***************************************************************************
@@ -86,7 +75,7 @@ const long get_rl_parameter( agent *my_agent, const char *name, const double tes
 	if ( get_rl_parameter_type( my_agent, name ) != rl_param_string )
 		return NULL;
 	
-	return (*my_agent->rl_params)[ name ].string_param.value;
+	return (*my_agent->rl_params)[ name ].param->string_param.value;
 }
 
 const char *get_rl_parameter( agent *my_agent, const char *name, const char *test )
@@ -94,7 +83,7 @@ const char *get_rl_parameter( agent *my_agent, const char *name, const char *tes
 	if ( get_rl_parameter_type( my_agent, name ) != rl_param_string )
 		return NULL;
 	
-	return (*my_agent->rl_params)[ name ].string_param.to_str( (*my_agent->rl_params)[ name ].string_param.value );
+	return (*my_agent->rl_params)[ name ].param->string_param.to_str( (*my_agent->rl_params)[ name ].param->string_param.value );
 }
 
 double get_rl_parameter( agent *my_agent, const char *name )
@@ -102,7 +91,7 @@ double get_rl_parameter( agent *my_agent, const char *name )
 	if ( get_rl_parameter_type( my_agent, name ) != rl_param_number )
 		return NULL;
 	
-	return (*my_agent->rl_params)[ name ].number_param.value;
+	return (*my_agent->rl_params)[ name ].param->number_param.value;
 }
 
 /***************************************************************************
@@ -113,7 +102,7 @@ bool valid_rl_parameter_value( agent *my_agent, const char *name, double new_val
 	if ( get_rl_parameter_type( my_agent, name ) != rl_param_number )
 		return false;
 	
-	if ( !(*my_agent->rl_params)[ name ].number_param.val_func( new_val ) )
+	if ( !(*my_agent->rl_params)[ name ].param->number_param.val_func( new_val ) )
 		return false;
 	
 	return true;
@@ -124,7 +113,7 @@ bool valid_rl_parameter_value( agent *my_agent, const char *name, const char *ne
 	if ( get_rl_parameter_type( my_agent, name ) != rl_param_string )
 		return false;
 	
-	if ( !(*my_agent->rl_params)[ name ].string_param.val_func( new_val ) )
+	if ( !(*my_agent->rl_params)[ name ].param->string_param.val_func( new_val ) )
 		return false;
 	
 	return true;
@@ -135,8 +124,8 @@ bool valid_rl_parameter_value( agent *my_agent, const char *name, const long new
 	if ( get_rl_parameter_type( my_agent, name ) != rl_param_string )
 		return false;
 	
-	const char *new_val_str = (*my_agent->rl_params)[ name ].string_param.to_str( new_val );
-	if ( !(*my_agent->rl_params)[ name ].string_param.val_func( new_val_str ) )
+	const char *new_val_str = (*my_agent->rl_params)[ name ].param->string_param.to_str( new_val );
+	if ( !(*my_agent->rl_params)[ name ].param->string_param.val_func( new_val_str ) )
 		return false;
 	
 	return true;
@@ -150,7 +139,7 @@ bool set_rl_parameter( agent *my_agent, const char *name, double new_val )
 	if ( !valid_rl_parameter_value( my_agent, name, new_val ) )
 		return false;
 	
-	(*my_agent->rl_params)[ name ].number_param.value = new_val;
+	(*my_agent->rl_params)[ name ].param->number_param.value = new_val;
 	return true;
 }
 
@@ -159,7 +148,7 @@ bool set_rl_parameter( agent *my_agent, const char *name, const char *new_val )
 	if ( !valid_rl_parameter_value( my_agent, name, new_val ) )
 		return false;
 	
-	(*my_agent->rl_params)[ name ].string_param.value = (*my_agent->rl_params)[ name ].string_param.from_str( new_val );
+	(*my_agent->rl_params)[ name ].param->string_param.value = (*my_agent->rl_params)[ name ].param->string_param.from_str( new_val );
 	return true;
 }
 
@@ -168,7 +157,7 @@ bool set_rl_parameter( agent *my_agent, const char *name, const long new_val )
 	if ( !valid_rl_parameter_value( my_agent, name, new_val ) )
 		return false;
 	
-	(*my_agent->rl_params)[ name ].string_param.value = new_val;
+	(*my_agent->rl_params)[ name ].param->string_param.value = new_val;
 	return true;
 }
 

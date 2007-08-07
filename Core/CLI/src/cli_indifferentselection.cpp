@@ -17,7 +17,7 @@
 #include "sml_Names.h"
 
 #include "exploration.h"
-#include "string_tofrom.h"
+#include "misc.h"
 
 #include <vector>
 
@@ -385,13 +385,13 @@ bool CommandLineInterface::DoIndifferentSelection( gSKI::Agent* pAgent, const ch
 		}
 		temp = "";
 		
-		std::vector<const char *> *param_names = get_parameter_names( my_agent );
+		std::vector<std::string> *param_names = get_parameter_names( my_agent );
 		for ( int i=0; i<param_names->size(); i++ )
 		{	
 			// value
 			temp = (*param_names)[i];
 			temp += ": ";
-			temp_value = get_parameter_value( my_agent, (*param_names)[i] ); 
+			temp_value = get_parameter_value( my_agent, (*param_names)[i].c_str() ); 
 			temp += to_string( temp_value );
 			
 			if ( m_RawOutput )
@@ -402,14 +402,14 @@ bool CommandLineInterface::DoIndifferentSelection( gSKI::Agent* pAgent, const ch
 			// reduction policy
 			temp = (*param_names)[i];
 			temp += " Reduction Policy: ";
-			temp += convert_reduction_policy( get_reduction_policy( my_agent, (*param_names)[i] ) );
+			temp += convert_reduction_policy( get_reduction_policy( my_agent, (*param_names)[i].c_str() ) );
 			if ( m_RawOutput )
 				m_Result << temp << "\n"; 
 			else
 				AppendArgTagFast( sml_Names::kParamValue, sml_Names::kTypeString, temp.c_str() );
 			
 			// rates
-			std::vector<const char *> *param_policies = get_reduction_policies( my_agent, (*param_names)[i] );
+			std::vector<const char *> *param_policies = get_reduction_policies( my_agent, (*param_names)[i].c_str() );
 			temp2 = "";
 			temp3 = "";
 			for ( int j=0; j<param_policies->size(); j++ )
@@ -418,7 +418,7 @@ bool CommandLineInterface::DoIndifferentSelection( gSKI::Agent* pAgent, const ch
 				if ( j != ( param_policies->size() - 1 ) )
 					temp2 += "/";
 				
-				temp_value = get_reduction_rate( my_agent, (*param_names)[i], (*param_policies)[j] );
+				temp_value = get_reduction_rate( my_agent, (*param_names)[i].c_str(), (*param_policies)[j] );
 				temp3 += to_string( temp_value );
 				if ( j != ( param_policies->size() - 1 ) )
 					temp3 += "/";

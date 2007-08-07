@@ -18,6 +18,7 @@
 
 #include "agent.h"
 #include "exploration.h"
+#include "misc.h"
 
 /***************************************************************************
  * Function     : convert_exploration_policy
@@ -162,11 +163,9 @@ bool set_parameter_value( agent *my_agent, const char *name, double value )
 /***************************************************************************
  * Function     : get_parameter_names
  **************************************************************************/
-std::vector<const char *> *get_parameter_names( agent *my_agent )
+std::vector<std::string> *get_parameter_names( agent *my_agent )
 {
-	std::vector<const char *> *return_val = new std::vector<const char *>( (*my_agent->exploration_param_names) );
-	
-	return return_val;
+	return map_keys( &(*my_agent->exploration_params) );
 }
 
 /***************************************************************************

@@ -17,7 +17,7 @@
 #include "sml_Names.h"
 
 #include "reinforcement_learning.h"
-#include "string_tofrom.h"
+#include "misc.h"
 
 #include <vector>
 #include <map>

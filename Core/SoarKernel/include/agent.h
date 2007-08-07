@@ -749,11 +749,9 @@ kernel time and total_cpu_time greater than the derived total CPU time. REW */
   
   // exploration
   std::map<std::string, exploration_parameter> *exploration_params;
-  std::vector<const char *> *exploration_param_names;
   
   // reinforcement learning
   std::map<std::string, rl_parameter> *rl_params;
-  std::map<std::string, rl_parameter_tracking> *rl_param_tracking;
   std::map<std::string, double> *rl_stats;
 
 } agent;

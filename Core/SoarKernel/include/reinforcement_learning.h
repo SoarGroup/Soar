@@ -37,6 +37,8 @@
 //////////////////////////////////////////////////////////
 // RL Types
 //////////////////////////////////////////////////////////
+enum rl_param_type { rl_param_string = 1, rl_param_number = 2, rl_param_invalid = 3 };
+
 typedef struct rl_string_parameter_struct  
 {
 	long value;
@@ -51,26 +53,17 @@ typedef struct rl_number_parameter_struct
 	bool (*val_func)( double );
 } rl_number_parameter;
 
-typedef union rl_parameter_union
+typedef union rl_parameter_union_class
 {
 	rl_string_parameter string_param;
 	rl_number_parameter number_param;
-} rl_parameter;
+} rl_parameter_union;
 
-enum rl_param_type { rl_param_string = 1, rl_param_number = 2, rl_param_invalid = 3 };
-
-typedef struct rl_parameter_tracking_struct
+typedef struct rl_parameter_struct
 {
-	const char *name;
+	rl_parameter_union *param;
 	rl_param_type type;
-} rl_parameter_tracking;
-
-//////////////////////////////////////////////////////////
-// Parameter Type Tracking
-//////////////////////////////////////////////////////////
-
-// add tracking info
-extern rl_parameter_tracking *add_rl_tracking( const char *name, rl_param_type type );
+} rl_parameter;
 
 //////////////////////////////////////////////////////////
 // Parameter Get/Set/Validate
