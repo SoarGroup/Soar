@@ -44,8 +44,9 @@ typedef struct agent_struct agent;
 #define DEFAULT_PRODUCTION_TYPE 1
 #define CHUNK_PRODUCTION_TYPE 2
 #define JUSTIFICATION_PRODUCTION_TYPE 3
+#define TEMPLATE_PRODUCTION_TYPE 4
 
-#define NUM_PRODUCTION_TYPES 4
+#define NUM_PRODUCTION_TYPES 5
 
 /* ---------------------------------------
     Match Set print parameters

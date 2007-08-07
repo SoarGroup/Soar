@@ -16,6 +16,8 @@
 #include <map>
 #include <vector>
 
+#include "production.h"
+
 //////////////////////////////////////////////////////////
 // RL Constants
 //////////////////////////////////////////////////////////
@@ -141,5 +143,15 @@ extern double get_rl_stat( agent *my_agent, const char *name );
 
 // set stat
 extern bool set_rl_stat( agent *my_agent, const char *name, double new_val );
+
+//////////////////////////////////////////////////////////
+// Production Validation
+//////////////////////////////////////////////////////////
+
+// validate template
+extern bool valid_rl_template( production *prod );
+
+// validate rl rule
+extern bool valid_rl_rule( production *prod );
 
 #endif

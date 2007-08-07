@@ -21,6 +21,7 @@
  */
 
 #include <stdlib.h>
+#include <iostream>
 
 #include "production.h"
 #include "mem.h"
@@ -34,6 +35,7 @@
 #include "symtab.h"
 #include "init_soar.h"
 #include "rete.h"
+#include "reinforcement_learning.h"
 
 #include <ctype.h>
 
@@ -1562,7 +1564,14 @@ production *make_production (agent* thisAgent,
   p->rhs_unbound_variables = NIL; /* the Rete fills this in */
   p->instantiations = NIL;
   p->interrupt = FALSE;
+  
+  p->rl_update_count = 0;
+  p->rl_rule = false;
+  if ( ( type != JUSTIFICATION_PRODUCTION_TYPE) && ( type != TEMPLATE_PRODUCTION_TYPE ) )  
+	  p->rl_rule = valid_rl_rule( p );
 
+  std::cerr << name->sc.name << ": " << p->rl_rule << "\n";
+  
   return p;
 }
 

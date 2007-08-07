@@ -34,6 +34,7 @@
 #include "print.h"
 #include "rete.h"
 #include "gski_event_system_functions.h" // for XML trace output
+#include "reinforcement_learning.h"
 
 #include <ctype.h>
 
@@ -1323,7 +1324,15 @@ byte parse_preference_specifier_without_referent (agent* thisAgent) {
         (thisAgent->lexeme.type!=R_PAREN_LEXEME) &&
         (thisAgent->lexeme.type!=UP_ARROW_LEXEME) &&
         (!is_preference_lexeme(thisAgent->lexeme.type)))
-      return BINARY_INDIFFERENT_PREFERENCE_TYPE;
+    {
+    	
+		if ((thisAgent->lexeme.type == INT_CONSTANT_LEXEME) ||
+			  (thisAgent->lexeme.type == FLOAT_CONSTANT_LEXEME))
+			return NUMERIC_INDIFFERENT_PREFERENCE_TYPE;
+		      else
+		    return BINARY_INDIFFERENT_PREFERENCE_TYPE;
+    }
+    
     /* --- forced unary preference --- */
     if (thisAgent->lexeme.type==COMMA_LEXEME) get_lexeme(thisAgent);
     return UNARY_INDIFFERENT_PREFERENCE_TYPE;
@@ -1880,6 +1889,11 @@ production *parse_production (agent* thisAgent, unsigned char* rete_addition_res
       get_lexeme(thisAgent);
       continue;
     }
+    if (!strcmp(thisAgent->lexeme.string,":template")) {
+      prod_type = TEMPLATE_PRODUCTION_TYPE;
+      get_lexeme(thisAgent);
+      continue;
+    }
 	if (!strcmp(thisAgent->lexeme.string, ":interrupt")) {
 	  print(thisAgent, "WARNING :interrupt is not supported with the current build options...");
 	  GenerateWarningXML(thisAgent, "WARNING :interrupt is not supported with the current build options...");
@@ -1958,6 +1972,16 @@ production *parse_production (agent* thisAgent, unsigned char* rete_addition_res
     return NIL;
   }
 
+  if ( prod_type == TEMPLATE_PRODUCTION_TYPE )
+  {
+	  if ( !valid_rl_template( p ) )
+	  {
+		  print_with_symbols( thisAgent, "Invalid Soar-RL template (%y)\n\n", name );
+		  excise_production( thisAgent, p, false );
+		  return NIL;
+	  }
+  }
+  
   p->documentation = documentation;
   p->declared_support = declared_support;
   p->interrupt = interrupt_on_match;

@@ -16,7 +16,12 @@
 
 #include <stdlib.h>
 
+#include <iostream>
+
 #include "agent.h"
+#include "production.h"
+#include "gdatastructs.h"
+#include "rhsfun.h"
 #include "reinforcement_learning.h"
 
 /***************************************************************************
@@ -459,4 +464,54 @@ bool set_rl_stat( agent *my_agent, const char *name, double new_val )
 	(*my_agent->rl_stats)[ name ] = new_val;
 	
 	return true;
+}
+
+/***************************************************************************
+ * Function     : valid_rl_template
+ **************************************************************************/
+bool valid_rl_template( production *prod )
+{
+	bool numeric_pref = false;
+	bool var_pref = false;
+	int num_actions = 0;
+
+	for ( action *a = prod->action_list; a; a = a->next ) 
+	{
+		num_actions++;
+		if ( ( a->type == MAKE_ACTION ) )
+		{
+			if ( a->preference_type == NUMERIC_INDIFFERENT_PREFERENCE_TYPE )
+			{
+				numeric_pref = true;
+			}
+			else if ( a->preference_type == BINARY_INDIFFERENT_PREFERENCE_TYPE )
+			{	
+				if ( rhs_value_is_symbol( a->referent ) && ( rhs_value_to_symbol( a->referent )->id.common_symbol_info.symbol_type == VARIABLE_SYMBOL_TYPE ) )
+					var_pref = true;
+			}
+		}
+	}
+
+	return ( ( num_actions == 1 ) && ( numeric_pref || var_pref ) );
+}
+
+/***************************************************************************
+ * Function     : valid_rl_rule
+ **************************************************************************/
+bool valid_rl_rule( production *prod )
+{
+	bool numeric_pref = false;
+	int num_actions = 0;
+
+	for ( action *a = prod->action_list; a; a = a->next ) 
+	{
+		num_actions++;
+		if ( ( a->type == MAKE_ACTION ) )
+		{
+			if ( a->preference_type == NUMERIC_INDIFFERENT_PREFERENCE_TYPE )
+				numeric_pref = true;
+		}
+	}
+
+	return ( numeric_pref && ( num_actions == 1 ) );
 }
