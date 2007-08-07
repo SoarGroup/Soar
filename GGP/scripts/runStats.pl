@@ -22,8 +22,15 @@ print "$machine:$path\n";
 print `grep update-state $logFile | wc -l`;
 
 #print "soln length:\n";
-print `grep ACTION $logFile | wc -l`;
+$length = `grep ACTION $logFile | wc -l`;
+chomp $length;
 
+if ($length =~ /\D*0\D*/) {
+  print `grep -A 2 increment $logFile | tail -n 1`;
+}
+else {
+  print "$length\n";
+}
 #print "actions taken:\n";
 print `grep ACTION $logFile`;
 
