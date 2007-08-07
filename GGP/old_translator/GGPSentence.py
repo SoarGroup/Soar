@@ -290,8 +290,14 @@ class GGPSentence:
 	
 	def __init__(self, elementGGP):
 		if isinstance(elementGGP, str):
+			assert elementGGP.lower() == "terminal" or elementGGP.lower() not in GGPSentence.DEFINED_RELS
+
 			# must be a terminal or a user defined relation
-			assert self.__name.lower() == "terminal" or self.__name.lower() not in GGPSentence.DEFINED_RELS
+			if elementGGP.lower() in GGPSentence.DEFINED_RELS:
+				self.__name = elementGGP.lower()
+			else:
+				self.__name = elementGGP
+
 			self.__terms = []
 			self.__negated = False
 		else:
@@ -309,7 +315,7 @@ class GGPSentence:
 				self.__terms = []
 			else:
 				# compound sentence
-				if relElem[0].lower() in DEFINED_RELS:
+				if relElem[0].lower() in GGPSentence.DEFINED_RELS:
 					# use lower case for reserved words
 					self.__name = relElem[0].lower()
 				else:
