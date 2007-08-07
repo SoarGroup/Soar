@@ -9,12 +9,12 @@
 ;;
 ;; here's the level setup:
 ;;
-;; 0|    WE|
-;; 1|    WW|
-;; 2|  NLL |
+;; 0|EW LNL|
+;; 1|WW    |
+;; 2|  WWW |
 ;; 3|WWWWWW|
-;; 4|   L N|
-;; 5|e L h |
+;; 4|WW L N|
+;; 5|W L He|
 ;;   012345
 ;; where E = exit, W = water, L = log, N = nails, H = hammer, e = explorer
 
@@ -52,6 +52,12 @@
 (obstacleType water6 water) ; >>>>>Added<<<<<
 (obstacleType water7 water) ; >>>>>Added<<<<<
 (obstacleType water8 water) ; >>>>>Added<<<<<
+(obstacleType water9 water) ; >>>>>Added<<<<<
+(obstacleType water10 water) ; >>>>>Added<<<<<
+(obstacleType water11 water) ; >>>>>Added<<<<<
+(obstacleType water12 water) ; >>>>>Added<<<<<
+(obstacleType water13 water) ; >>>>>Added<<<<<
+(obstacleType water14 water) ; >>>>>Added<<<<<
 
 (init (blocked west 0 0))
 (init (blocked west 0 1))
@@ -81,7 +87,7 @@
 (init (blocked south 4 5))
 (init (blocked south 5 5))
 
-(init (location exit     5 0))
+(init (location exit     0 0)) ;>>>>>Changed<<<<<
 
 (init (location water0   0 3)) ;>>>>>Changed<<<<<
 (init (location water1   1 3)) ;>>>>>Changed<<<<<
@@ -89,20 +95,25 @@
 (init (location water3   3 3)) ;>>>>>Changed<<<<<
 (init (location water4   4 3)) ;>>>>>Changed<<<<<
 (init (location water5   5 3)) ;>>>>>Changed<<<<<
-(init (location water6   4 0)) ; >>>>>Added<<<<<
-(init (location water7   4 1)) ; >>>>>Added<<<<<
-(init (location water8   5 1)) ; >>>>>Added<<<<<
+(init (location water6   0 1)) ; >>>>>Added<<<<<
+(init (location water7   1 1)) ; >>>>>Added<<<<<
+(init (location water8   1 0)) ; >>>>>Added<<<<<
+(init (location water9   2 2)) ; >>>>>Added<<<<<
+(init (location water10  3 2)) ; >>>>>Added<<<<<
+(init (location water11  4 2)) ; >>>>>Added<<<<<
+(init (location water12  0 4)) ; >>>>>Added<<<<<
+(init (location water13  1 4)) ; >>>>>Added<<<<<
+(init (location water14  0 5)) ; >>>>>Added<<<<<
 
 (init (location log1    3 4))
 (init (location log2    2 5))
 (init (location hammer1 4 5))
 (init (location nails1  5 4))
-(init (location log3    3 2))    ; >>>>>Added<<<<<
-(init (location log4    4 2))    ; >>>>>Added<<<<<
-(init (location nail    2 2))    ; >>>>>Added<<<<<
+(init (location log3    3 0))    ; >>>>>Added<<<<<
+(init (location nails2  4 0))    ; >>>>>Added<<<<<
+(init (location log4    5 0))    ; >>>>>Added<<<<<
 
-
-(init (location explorer 0 5))   
+(init (location explorer 5 5))   
 
 (init (health explorer 2))       ; >>>>>Changed<<<<<
 

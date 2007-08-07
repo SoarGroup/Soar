@@ -6,10 +6,10 @@
 ;;
 ;; here's the level setup:
 ;;
-;; 0| R   E|
+;; 0|     E|
 ;; 1|      |
 ;; 2|WWWWWW|
-;; 3|    N |
+;; 3| R  N |
 ;; 4|   L B|
 ;; 5|e L h |
 ;;   012345
@@ -87,7 +87,7 @@
 (init (location log2    2 5))
 (init (location hammer1 4 5))
 (init (location nails1  4 3))
-(init (location ring1   1 0))  ; >>>>>Added<<<<<
+(init (location ring1   1 3))  ; >>>>>Added<<<<<
 (init (location bottle1 5 4))  ; >>>>>Added<<<<<
 
 (init (location explorer 0 5))
