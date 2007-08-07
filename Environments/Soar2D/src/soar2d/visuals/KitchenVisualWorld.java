@@ -104,6 +104,24 @@ public class KitchenVisualWorld extends VisualWorld {
 								fill2 = cellSize - fill1 + 1;
 								gc.fillRectangle(cellSize*location.x + fill1, cellSize*location.y + fill1, cellSize - fill2, cellSize - fill2);
 								gc.drawRectangle(cellSize*location.x + fill1, cellSize*location.y + fill1, cellSize - fill2, cellSize - fill2);
+								
+							} else if (shape.equals(Shape.TRIANGLE)) {
+								fill1 = (int)(cellSize/2.8);
+								fill2 = cellSize - fill1 + 1;
+								
+								int [] verts = new int[6];
+
+								verts [0] = cellSize*location.x + cellSize/2;
+								verts [1] = cellSize*location.y + fill1;
+								
+								verts [2] = cellSize*location.x + fill1;
+								verts [3] = cellSize*location.y + fill2;
+								
+								verts [4] = cellSize*location.x + fill2;
+								verts [5] = cellSize*location.y + fill2;
+								
+								gc.fillPolygon(verts);
+								gc.drawPolygon(verts);
 							}
 						} else {
 							gc.setForeground(color);

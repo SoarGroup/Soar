@@ -49,6 +49,8 @@
   		<property name="points" value="0"></property>
   		<points></points>
   		<remove></remove>
+  		</apply></cell-object><cell-object name="mixture"><property name="id" value="mixture"></property><property name="shape" value="triangle"></property><apply>
+  		<remove></remove>
   		</apply></cell-object>
   <cell-object name="toffee">
   	<property name="smell" value="none"></property>
@@ -98,8 +100,10 @@
   		<points></points>
   		<remove></remove>
   		</apply></cell-object>
-  <cell-object name="countertop"><property name="color" value="lightGray"></property></cell-object>
-  <cell-object name="oven"><property name="color" value="darkGray"></property></cell-object>
+  <cell-object name="countertop">
+  	<property name="id" value="countertop"></property>
+  	<property name="color" value="lightGray"></property></cell-object>
+  <cell-object name="oven"><property name="id" value="oven"></property><property name="color" value="darkGray"></property></cell-object>
   <cell-object name="wall">
     <property name="block" value="true" />
     <property name="id" value="wall" />

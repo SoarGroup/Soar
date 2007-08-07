@@ -769,6 +769,10 @@ public abstract class GridMap {
 		return true;
 	}
 	
+	public CellObject createObjectByName(String name) {
+		return cellObjectManager.createObject(name);
+	}
+	
 	public boolean addObjectByName(java.awt.Point location, String name) {
 		CellObject object = cellObjectManager.createObject(name);
 		if (object == null) {

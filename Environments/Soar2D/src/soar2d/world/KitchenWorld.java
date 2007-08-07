@@ -1,11 +1,13 @@
 package soar2d.world;
 
 import java.awt.Point;
+import java.util.ArrayList;
 import java.util.Iterator;
 
 import soar2d.Direction;
 import soar2d.Soar2D;
 import soar2d.configuration.Configuration;
+import soar2d.map.CellObject;
 import soar2d.map.GridMap;
 import soar2d.map.KitchenMap;
 import soar2d.player.MoveInfo;
@@ -57,6 +59,110 @@ public class KitchenWorld implements IWorld {
 					
 					// todo: collisions not handled
 					map.setPlayer(newLocation, player);
+
+					// move stuff with the player
+					if (move.moveWithObject) {
+						ArrayList<CellObject> stuff = map.getAllWithProperty(oldLocation, "smell");
+						if (stuff.size() > 0) {
+							map.removeAllWithProperty(oldLocation, "smell");
+							
+							Iterator<CellObject> stuffIter = stuff.iterator();
+							while (stuffIter.hasNext()) {
+								map.addObjectToCell(newLocation, stuffIter.next());
+							}
+						}
+					}
+				}
+			}
+			
+			if (move.mix) {
+				ArrayList<CellObject> stuff = map.getAllWithProperty(players.getLocation(player), "smell");
+				if (stuff.size() > 1) {
+					map.removeAllWithProperty(players.getLocation(player), "smell");
+
+					CellObject mixture = map.createObjectByName("mixture");
+					mixture.addProperty("shape", "triangle");
+
+					Iterator<CellObject> stuffIter;
+
+					// texture
+					boolean powder = false;
+					mixture.addProperty("texture", "solid");
+					stuffIter = stuff.iterator();
+					while (stuffIter.hasNext()) {
+						CellObject ingredient = stuffIter.next();
+						if (ingredient.getProperty("texture").equals("liquid")) {
+							mixture.addProperty("texture", "liquid");
+							break;
+							
+						} else if (!powder && ingredient.getProperty("texture").equals("powder")) {
+							mixture.addProperty("texture", "powder");
+							powder = true;
+						}
+					}
+					
+					// color
+					boolean brown = false;
+					boolean yellow = false;
+					mixture.addProperty("color", "white");
+					stuffIter = stuff.iterator();
+					while (stuffIter.hasNext()) {
+						CellObject ingredient = stuffIter.next();
+						if (ingredient.getProperty("color").equals("black")) {
+							mixture.addProperty("color", "black");
+							break;
+						} else if (!brown) {
+							if (ingredient.getProperty("color").equals("brown")) {
+								mixture.addProperty("color", "brown");
+								brown = true;
+							} else if (!yellow && ingredient.getProperty("color").equals("yellow")) {
+								mixture.addProperty("color", "yellow");
+								yellow = true;
+							}
+						}
+					}
+					
+					// smell
+					stuffIter = stuff.iterator();
+					CellObject left = stuffIter.next();
+					Smell newSmell = toSmell(left.getProperty("smell"));
+					while (stuffIter.hasNext()) {
+						CellObject right = stuffIter.next();
+						newSmell = mixSmell(newSmell, toSmell(right.getProperty("smell")));
+					}
+					switch (newSmell) {
+					case None:
+						mixture.addProperty("smell", "none");
+						break;
+					case Mild:
+						mixture.addProperty("smell", "mild");
+						break;
+					case Strong:
+						mixture.addProperty("smell", "strong");
+						break;
+					}
+					
+					Soar2D.logger.info("New mixture: " + mixture.getProperty("texture") 
+							+ "/" + mixture.getProperty("color") 
+							+ "/" + mixture.getProperty("smell"));
+					
+					map.addObjectToCell(players.getLocation(player), mixture);
+				} else {
+					Soar2D.logger.info("Ignoring mix of less than 2 ingredients");
+				}
+			}
+			
+			if (move.cook) {
+				ArrayList<CellObject> stuff = map.getAllWithProperty(players.getLocation(player), "smell");
+				if (stuff.size() > 0) {
+					map.removeAllWithProperty(players.getLocation(player), "smell");
+				}
+			}
+			
+			if (move.eat) {
+				ArrayList<CellObject> stuff = map.getAllWithProperty(players.getLocation(player), "smell");
+				if (stuff.size() > 0) {
+					map.removeAllWithProperty(players.getLocation(player), "smell");
 				}
 			}
 		}
@@ -69,6 +175,50 @@ public class KitchenWorld implements IWorld {
 
 		// do not reset after this frame
 		return false;
+	}
+
+	private enum Smell { None, Mild, Strong };
+	
+	private Smell toSmell(String smell) {
+		if (smell.equalsIgnoreCase("strong")) {
+			return Smell.Strong;
+		}
+		if (smell.equalsIgnoreCase("mild")) {
+			return Smell.Mild;
+		}
+		return Smell.None;
+	}
+	
+	private Smell mixSmell(Smell left, Smell right) {
+		
+		switch (left) {
+		case None:
+			switch (right) {
+			case None:
+				return Smell.None;
+			case Mild:
+			case Strong:
+				return Smell.Mild;
+			}
+		case Mild:
+			switch (right) {
+			case None:
+				return Smell.Mild;
+			case Mild:
+			case Strong:
+				return Smell.Strong;
+			}
+		case Strong:
+			switch (right) {
+			case None:
+				return Smell.Mild;
+			case Mild:
+			case Strong:
+				return Smell.Strong;
+			}
+		}
+		assert false;
+		return Smell.None;
 	}
 	
 	public void updatePlayers(boolean playersChanged, GridMap map, PlayersManager players) {
