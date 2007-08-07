@@ -21,7 +21,6 @@
  */
 
 #include <stdlib.h>
-#include <iostream>
 
 #include "production.h"
 #include "mem.h"
@@ -1568,9 +1567,7 @@ production *make_production (agent* thisAgent,
   p->rl_update_count = 0;
   p->rl_rule = false;
   if ( ( type != JUSTIFICATION_PRODUCTION_TYPE) && ( type != TEMPLATE_PRODUCTION_TYPE ) )  
-	  p->rl_rule = valid_rl_rule( p );
-
-  std::cerr << name->sc.name << ": " << p->rl_rule << "\n";
+	  p->rl_rule = valid_rl_rule( p );  
   
   return p;
 }
