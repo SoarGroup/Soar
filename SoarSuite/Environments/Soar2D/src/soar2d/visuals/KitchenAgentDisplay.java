@@ -158,7 +158,11 @@ public class KitchenAgentDisplay extends AgentDisplay {
 		}
 		
 		for (int i = 0; i < m_Items.length; ++i) {
-			m_Items[i].setText(1, Integer.toString(players.get(i).getPoints()));
+			if (players.get(i).pointsChanged()) {
+				m_Items[i].setText(1, Integer.toString(players.get(i).getPointsDelta()));
+			} else {
+				m_Items[i].setText(1, "0");
+			}
 		}
 	}
 	
@@ -170,7 +174,11 @@ public class KitchenAgentDisplay extends AgentDisplay {
 		m_Items = new TableItem[players.numberOfPlayers()];
 		for (int i = 0; i < players.numberOfPlayers(); ++i) {
 			m_Items[i] = new TableItem(m_AgentTable, SWT.NONE);
-			m_Items[i].setText(new String[] {players.get(i).getName(), Integer.toString(players.get(i).getPoints())});
+			if (players.get(i).pointsChanged()) {
+				m_Items[i].setText(new String[] {players.get(i).getName(), Integer.toString(players.get(i).getPointsDelta())});
+			} else {
+				m_Items[i].setText(new String[] {players.get(i).getName(), "0" });
+			}
 			if (selectedPlayer == players.get(i)) {
 				foundSelected = true;
 				m_AgentTable.setSelection(i);

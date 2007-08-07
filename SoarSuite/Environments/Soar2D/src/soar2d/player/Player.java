@@ -85,11 +85,6 @@ public class Player {
 	 * why the change happened
 	 */
 	public void adjustPoints(int delta, String comment) {
-		if (delta == 0) {
-			logger.fine(this.name + " adjust points 0");
-			return;
-		}
-		
 		pointsChanged = (delta != 0);
 		pointsDelta = delta;
 		

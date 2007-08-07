@@ -4,6 +4,7 @@ import java.awt.Point;
 import java.util.Iterator;
 
 import soar2d.Names;
+import soar2d.Soar2D;
 import soar2d.configuration.Configuration;
 import soar2d.world.TankSoarWorld;
 
@@ -33,21 +34,27 @@ public class KitchenMap extends GridMap {
 	
 	public void spawnBasics() {
 		if (!haveButter) {
+			Soar2D.logger.info("Spawning butter");
 			this.addObjectToCell(spawnButter, this.cellObjectManager.createObject("butter"));
 		}
 		if (!haveSugar) {
+			Soar2D.logger.info("Spawning sugar");
 			this.addObjectToCell(spawnSugar, this.cellObjectManager.createObject("sugar"));
 		}
 		if (!haveEggs) {
+			Soar2D.logger.info("Spawning eggs");
 			this.addObjectToCell(spawnEggs, this.cellObjectManager.createObject("eggs"));
 		}
 		if (!haveFlour) {
+			Soar2D.logger.info("Spawning flour");
 			this.addObjectToCell(spawnFlour, this.cellObjectManager.createObject("flour"));
 		}
 		if (!haveCinnamon) {
+			Soar2D.logger.info("Spawning cinnamon");
 			this.addObjectToCell(spawnCinnamon, this.cellObjectManager.createObject("cinnamon"));
 		}
 		if (!haveMolasses) {
+			Soar2D.logger.info("Spawning molasses");
 			this.addObjectToCell(spawnMolasses, this.cellObjectManager.createObject("molasses"));
 		}
 	}
@@ -161,5 +168,13 @@ public class KitchenMap extends GridMap {
 	public void updateObjects(TankSoarWorld tsWorld) {
 		// TODO Auto-generated method stub
 		
+	}
+
+	public boolean isCountertop(Point location) {
+		return getCell(location).getObject("countertop") != null;
+	}
+	
+	public boolean isOven(Point location) {
+		return getCell(location).getObject("oven") != null;
 	}
 }
