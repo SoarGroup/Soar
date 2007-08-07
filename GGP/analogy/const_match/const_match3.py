@@ -105,26 +105,28 @@ cmap = {} # the committed mapping
 for src_p in pred_order:
 	tgt_p = pred_map[src_p]
 
-	poss_matches = cross_product(src_gnds[src_p], tgt_gnds[tgt_p])
+	if src_p not in src_gnds or tgt_p not in tgt_gnds:
+		print >> sys.stderr, "PROBABLY A BAD MATCH BETWEEN %s AND %s" % (src_p, tgt_p)
+		continue
 
-	# get the position mapping
-	# this is fake right now, but we should get this from a different script in the future
-	# right now just assume all the constant positions are preserved
-	tmp_src_g, tmp_tgt_g = poss_matches[0]
+	matches = cross_product(src_gnds[src_p], tgt_gnds[tgt_p])
+
+	# get the position mapping this is fake right now, but we should get this
+	# from a different script in the future right now just assume all the
+	# constant positions are preserved
+	tmp_src_g, tmp_tgt_g = matches[0]
 	src_p = PositionIndex.get_all_positions(tmp_src_g)
 	tgt_p = PositionIndex.get_all_positions(tmp_tgt_g)
 	pmap = dict([(p, p) for p in src_p if p in tgt_p])
 
-	good_matches = filter_matches(poss_matches, cmap, pmap)
-
 	# here we're going to match up all the grounds for this predicate
 	# the order of the matching is random and can affect the quality of the
 	# match, but I don't have any good idea about how to do it right now
-	while len(good_matches) > 0:
-		src_g, tgt_g = good_matches.pop()
-		# remove all other possible matchings involving these two grounds
-		good_matches = filter(lambda x: x[0] != src_g and x[1] != tgt_g, good_matches)
+	matches = filter_matches(matches, cmap, pmap)
+	while len(matches) > 0:
+		src_g, tgt_g = matches.pop()
 		commit_ground_match(src_g, tgt_g, cmap, pmap)
+		matches = filter_matches(matches, cmap, pmap)
 
 for src_c, tgt_c in cmap.items():
 	print '%s -> %s' % (src_c, tgt_c)
