@@ -8,6 +8,7 @@ die unless ($#ARGV == 2);
 $logFile = $ARGV[0];
 $sourceKif = $ARGV[1];
 $targetKif = $ARGV[2];
+$headerFile = "../agents/header.soar";
 
 $mapper = "./runMapper.pl";
 
@@ -20,8 +21,23 @@ checkFor($mapper);
 foreach $mapping (`$mapper $sourceKif $targetKif`) {
   chomp $mapping;
   $mapping =~ /^MATCH (\S*) (\S*)$/ or die "can't parse: $mapping\n";
-  $mappings{$1} = $2;
-  print "# MAPPING: $1 -> $2\n";
+  $orig = $1;
+  $new = $2;
+  $mappings{$orig} = $new;
+  print "# MAPPING: $orig -> $new\n";
+  
+  @multiAtts = `grep "multi-attributes $orig " $headerFile`;
+
+  if ($#multiAtts > 0) {
+    die;
+  }
+
+  if ($#multiAtts == 0) {
+    $multiAtt = $multiAtts[0];
+    chomp $multiAtt;
+    $multiAtt =~ /multi-attributes $orig (.*)$/;
+    print "multi-attributes $new $1\n";
+  }
 }
 
 foreach $line (`cat $logFile`) {
