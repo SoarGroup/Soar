@@ -48,5 +48,17 @@ public class Cook extends Player {
 		// Ignored on this level, overridden in soarcook
 		
 	}
+
+	public void moveFailed() {
+	}
+
+	public void mixFailed() {
+	}
+
+	public void cookFailed() {
+	}
+
+	public void eatFailed() {
+	}
 	
 }

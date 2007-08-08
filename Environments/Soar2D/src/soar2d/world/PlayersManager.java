@@ -117,7 +117,12 @@ public class PlayersManager {
 		
 		return angleOff(left, target);
 	}
+
+	public int size() {
+		return players.size();
+	}
 	
+
 	public double angleOff(Player left, Point2D.Double target) {
 		Point2D.Double playerVector = new Point2D.Double();
 		playerVector.x = floatLocations.get(left).x;
