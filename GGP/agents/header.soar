@@ -16,14 +16,15 @@ multi-attributes nStepsSoldier 256 # wargame
 multi-attributes horizontalStep 256 # wargame
 multi-attributes verticalStep 256 # wargame
 multi-attributes between 300 # rogue
+multi-attributes cellNearMonster 100 # rogue
 
 learn -d
 indifferent-selection --first
 
-# source goodthings.soar
+source goodthings.soar
 
 pushd common
-# source canvas.soar
+source canvas.soar
 source status.soar
 source constant.soar
 pushd default
