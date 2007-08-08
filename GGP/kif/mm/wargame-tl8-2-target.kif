@@ -2,41 +2,37 @@
 ;;; Wargame Template (August 2007)
 ;;;  - David W. Aha (adapted from files provided by SLG & U.Michigan)
 ;;;  - Uses built-in math functions
-;;;  - TL level 8, Scenario 2, Target task
+;;;  - TL level 8, Scenario 2, target task
 ;;;  - Changes located between ">>>>" and "<<<<<"
-;;;  - Basic game requires both a gun and a grenade to win 
-;;;    - Still have the Northwestern Wildcat, UMichigan Wolverine, and 
-;;;      the ISLE Feather
-;;;    - But now you no longer need feather or wolverine to win,
-;;;      and picking them up would waste time
+;;;  - Basic game requires medkit to win (see TL 6 scenario 2 source 1)
+;;;    - Changes: 
+;;;      - explorer health=2
+;;;      - inifinite reuse of medkit that raises health to 2
+;;;    - But now you also need to pickup a few things, namely:
+;;;      - The Northwestern Wildcat (not the UMichigan Wolverine or ISLE Feather)
+;;;
+;;;  - Verified solution (length 10): WNEEES<heal>N<heal>E
 ;;; Debugger: "http://games.stanford.edu:5999/director/debugrawgame?"
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-; This file:  Map (and Legend)
-; NOTE: South is at the top, North at the bottom
+; Map (and Legend)
 ;                        
 ;    1 2 3 4 5 6 7 8     
 ;   +---------------+    + = Corner
-;  8|. . . . . . . F|    . = A room location
-;   | +-+   +---+   |    - = Horizontal wall
-;  7|.|. . . . .|T .|    | = Vertical wall
-;   | +         +-+ |
-;  6|. . T . . . .|f|    @ = Soldier
-;   | +-----+     +-|    T = Terrorist
-;  5|.|. . . . . . .|    F = Flag (exit)
-;   | |             |    G = Gun
-;  4|.|. . . . . . .|    R = gRenade
-;   | |             |    w = Wildcat
-;  3|.|W . . . . G .|    W = Wolverine
-;   | +-----+ +-----|    f = Feather (dropped by Icarus)
-;  2|. @ . . . . R .|    
-;   |     +         |
-;  1|. . G|. . . . w|    
-;   +---------------+    
-; 
+;  1|. . . . . . . .|    . = A room location
+;   |               |    - = Horizontal wall
+;  2|. . . . . . . .|    | = Vertical wall
+;   | +         +---|
+;  3|.|. . . . . . T|    @ = Soldier
+;   | +-------+     |    T = Terrorist
+;  4|. . f . . . . .|    F = Flag (exit)
+;   |           +---|    G = Gun
+;  5|. . M . . . F .|    f = Feature (dropped by Icarus)
+;   | +-+     +     |    M = Medical kit
+;  6|.|. . @ W|w . .|    w = Wildcat
+;   +---------------+    W = Wolverine
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-; Debugger: "http://games.stanford.edu:5999/director/debugrawgame?"
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; ROLE Relations
@@ -48,66 +44,49 @@
 ;;; INIT Relations
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-;;;>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
-;;; Type hierarchies
-
-(type    flag item)
-(type    exit item)
-(type    gun1 item) (type    gun1     losItem) 
-(type    gun2 item) (type    gun2     losItem) 
-(type grenade item) (type grenade     aoeItem)
-(type wolverine item)
-(type wildcat item)
-(type feather item)
-
-(type    soldier animate)
-(type terrorist1 animate) (type terrorist1 terrorist) (type terrorist1 horizontalTerrorist)
-(type terrorist2 animate) (type terrorist2 terrorist) (type terrorist2 horizontalTerrorist)
-
+;;;>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 ;;; Specifies where objects start on board, where lower left is (1,1).
+;;; Object locations
+(init (location soldier 4 6))
+(init (location terrorist1 8 3))
+(init (location medKit1 3 5))
+(init (location wildcat 6 6))
+(init (location wolverine 5 6))
+(init (location feather 3 4))
+(init (location exit 7 5))
+(init (location flag 7 5))
 
-(init (location    soldier 2 2))
-(init (location terrorist1 7 7))
-(init (location terrorist2 3 6))
-(init (location       gun1 7 3))
-(init (location       gun2 3 1))
-(init (location    grenade 7 2))
-(init (location       flag 8 8)) ; This gets referenced rather than the exit
-(init (location       exit 8 8)) ; Soar change: we are assuming an exit exists, it can't be implicit in 'holding flag'
-(init (location    wildcat 8 1))
-(init (location  wolverine 2 3))
-(init (location    feather 8 6))
+;; Dynamic type hierarchies
+(type wildcat item)  
+(type wolverine item)  
+(type feather item)  
+(type medKit1 item)  
+(type medKit1 healingItem)
+(type terrorist1 animate)
+(type terrorist1 terrorist)
+(type terrorist1 horizontalTerrorist)
 
-;;; Specifies how many hit-points a character starts the game with.
-
-(init (health    soldier 1))
+;;; Character health
 (init (health terrorist1 1))
-(init (health terrorist2 2))
 
-;;; blocked[North,East] implies there is a wall to the [North,East] of a cell.
-
-(init (blockedSouth 2 2)) 
-(init (blockedSouth 2 5)) 
-(init (blockedSouth 2 7)) 
-(init (blockedSouth 3 2)) 
-(init (blockedSouth 3 5)) 
-(init (blockedSouth 4 2)) 
-(init (blockedSouth 4 5)) 
-(init (blockedSouth 5 7)) 
-(init (blockedSouth 6 2)) 
-(init (blockedSouth 6 7)) 
-(init (blockedSouth 7 2)) 
-(init (blockedSouth 7 6)) 
-(init (blockedSouth 8 2)) 
-(init (blockedSouth 8 5)) 
-
+;;; Unless otherwise specified adjacent spatial coordinates are assumed 
+;;;  accessible from one another.  
 (init (blockedEast 1 3))  
-(init (blockedEast 1 4))  
-(init (blockedEast 1 5))  
-(init (blockedEast 1 7))  
-(init (blockedEast 6 7))  
-(init (blockedEast 7 6))  
-(init (blockedEast 3 1))  
+(init (blockedEast 1 6))  
+(init (blockedEast 5 6))  
+
+(init (blockedSouth 2 5)) 
+(init (blockedSouth 2 3)) 
+(init (blockedSouth 3 3)) 
+(init (blockedSouth 4 3)) 
+(init (blockedSouth 5 3)) 
+(init (blockedSouth 7 4)) 
+(init (blockedSouth 8 4)) 
+(init (blockedSouth 7 2)) 
+(init (blockedSouth 8 2)) 
+
+;; Soldier health
+(init (health soldier 2)) ; >>>>>New! Higher!<<<<<
 ;;;<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
 
 ; SW 8/3/07: need these to have consistent spatial rep. with the other domains
@@ -127,7 +106,7 @@
   (+ ?y1 1 ?y))
 
 ;; Soldier health
-(init (health soldier 1))
+;; (init (health soldier 1)) ; >>>>>Deleted<<<<<
 
 ;; Static type hierarchy
 (type flag item)
@@ -280,31 +259,29 @@
 ;;;    1        0        1     0
 ;;;    1        1        0     0
 ;;;    1        1        1     0
-;;; Modified: Now requires additional item to hold to get max score
+;;; Modified: Now requires 3 additional items to hold to get max score
 
+; Dead
 (<= (goal soldier 0)
     (dead soldier))
-(<= (goal soldier 0)
-    (not timeOut)
-    (not (dead soldier))
-    (not (true (holding soldier flag))))
 
+; Alive, Timeout
 (<= (goal soldier 50)
     timeOut
     (not (dead soldier))
     (not (true (holding soldier flag))))
 
-(<= (goal soldier 100)
-    (not (dead soldier))
-    (true (holding soldier flag))
-    (true (holding soldier wildcat)))   ; >>>>>Added<<<<<
-
-; These are also needed
-(<= (goal soldier 75)
+; Alive, Flag, no Wildcat
+(<= (goal soldier 55)
     (not (dead soldier))
     (true (holding soldier flag))
     (not (true (holding soldier wildcat))))
 
+; Alive, Flag, Wildcat
+(<= (goal soldier 100)
+    (not (dead soldier))
+    (true (holding soldier flag))
+    (true (holding soldier wildcat)))  ; >>>>>Added<<<<<
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; View Definitions
@@ -336,7 +313,7 @@
     (index ?n)
     (nStepsSoldier ?n west ?x ?y1 ?x ?y3)
     (index ?m)
-    (< ?m ?n)
+    (> ?n ?m)
     (nStepsSoldier ?m west ?x ?y1 ?x ?y2)
     (stepBlocked west ?x ?y2))    
 
@@ -346,7 +323,7 @@
     (index ?n)
     (nStepsSoldier ?n south ?x1 ?y ?x3 ?y)
     (index ?m)
-    (< ?m ?n)
+    (> ?n ?m)
     (nStepsSoldier ?m south ?x1 ?y ?x2 ?y)
     (stepBlocked south ?x2 ?y))    
 (<= (pathBlocked east ?x ?y1 ?x ?y3)
@@ -355,7 +332,7 @@
     (index ?n)
     (nStepsSoldier ?n east ?x ?y1 ?x ?y3)
     (index ?m)
-    (< ?m ?n)
+    (> ?n ?m)
     (nStepsSoldier ?m east ?x ?y1 ?x ?y2)
     (stepBlocked east ?x ?y2))    
 
@@ -365,7 +342,7 @@
     (index ?n)
     (nStepsSoldier ?n north ?x1 ?y ?x3 ?y)
     (index ?m)
-    (< ?m ?n)
+    (> ?n ?m)
     (nStepsSoldier ?m north ?x1 ?y ?x2 ?y)
     (stepBlocked north ?x2 ?y))    
 
@@ -428,7 +405,7 @@
     (intendedSoldierLocation ?x1 ?y1) ; Soar
     (cell ?x1 ?y1)
     (cell ?x2 ?y2)
-    (< ?y1 ?y2))
+    (> ?y2 ?y1))
 
 ;;; Two cells are horizontall related [east,west] of each other if the first is
 ;;;  [right,left] of the second.
@@ -444,7 +421,7 @@
     (intendedSoldierLocation ?x1 ?y1) ; Soar
     (cell ?x1 ?y1)
     (cell ?x2 ?y2)
-    (< ?x1 ?x2))	
+    (> ?x2 ?x1))	
 	
 ;;; Defines the legal distances that an object may be thrown (0, 1, or 2 cells)
 	
@@ -455,9 +432,9 @@
 ;;; Every item (with the exception of the flag) is used if the soldier performs
 ;;;  the action that it enables.
 
-(<= (uses soldier ?item)
-    (type ?item healingItem)
-    (does soldier heal))
+; (<= (uses soldier ?item)     ; >>>>>Allow inifinite heals<<<<<
+;     (type ?item healingItem)
+;    (does soldier heal))
 (<= (uses soldier ?item)
     (type ?item losItem)
     (does soldier (shoot ?dir)))
@@ -603,7 +580,7 @@
 ;;; The soldier's health is incremented by 1 if he performs the heal action,
 ;;;  0 otherwise.
 
-(<= (healthIncrement soldier 1)
+(<= (healthIncrement soldier 2)   ; >>>>>Increased by 1<<<<<
     (does soldier heal))
 (<= (healthIncrement soldier 0)
     (not (does soldier heal)))
@@ -695,28 +672,28 @@
     (index ?d) ; SW 8/3/07
     (- ?x ?d ?x1)
     (> ?d 0)
-    (< ?d 3))
+    (> 3 ?d))
 
 (<= (cellNearTerrorist ?terrorist ?x1 ?y)
     (terroristCell ?terrorist ?x ?y)
     (index ?d) ; SW 8/3/07
     (+ ?x ?d ?x1)
     (> ?d 0)
-    (< ?d 3))
+    (> 3 ?d))
 
 (<= (cellNearTerrorist ?terrorist ?x ?y1)
     (terroristCell ?terrorist ?x ?y)
     (index ?d) ; SW 8/3/07
     (- ?y ?d ?y1)
     (> ?d 0)
-    (< ?d 3))
+    (> 3 ?d))
 
 (<= (cellNearTerrorist ?terrorist ?x ?y1)
     (terroristCell ?terrorist ?x ?y)
     (index ?d) ; SW 8/3/07
     (+ ?y ?d ?y1)
     (> ?d 0)
-    (< ?d 3))
+    (> 3 ?d))
 
 ; four diagonal cases
 (<= (cellNearTerrorist ?terrorist ?x1 ?y1) 

@@ -318,7 +318,7 @@
     (index ?n)
     (nStepsSoldier ?n west ?x ?y1 ?x ?y3)
     (index ?m)
-    (< ?m ?n)
+    (> ?n ?m)
     (nStepsSoldier ?m west ?x ?y1 ?x ?y2)
     (stepBlocked west ?x ?y2))    
 
@@ -328,7 +328,7 @@
     (index ?n)
     (nStepsSoldier ?n south ?x1 ?y ?x3 ?y)
     (index ?m)
-    (< ?m ?n)
+    (> ?n ?m)
     (nStepsSoldier ?m south ?x1 ?y ?x2 ?y)
     (stepBlocked south ?x2 ?y))    
 (<= (pathBlocked east ?x ?y1 ?x ?y3)
@@ -337,7 +337,7 @@
     (index ?n)
     (nStepsSoldier ?n east ?x ?y1 ?x ?y3)
     (index ?m)
-    (< ?m ?n)
+    (> ?n ?m)
     (nStepsSoldier ?m east ?x ?y1 ?x ?y2)
     (stepBlocked east ?x ?y2))    
 
@@ -347,7 +347,7 @@
     (index ?n)
     (nStepsSoldier ?n north ?x1 ?y ?x3 ?y)
     (index ?m)
-    (< ?m ?n)
+    (> ?n ?m)
     (nStepsSoldier ?m north ?x1 ?y ?x2 ?y)
     (stepBlocked north ?x2 ?y))    
 
@@ -410,7 +410,7 @@
     (intendedSoldierLocation ?x1 ?y1) ; Soar
     (cell ?x1 ?y1)
     (cell ?x2 ?y2)
-    (< ?y1 ?y2))
+    (> ?y2 ?y1))
 
 ;;; Two cells are horizontall related [east,west] of each other if the first is
 ;;;  [right,left] of the second.
@@ -426,7 +426,7 @@
     (intendedSoldierLocation ?x1 ?y1) ; Soar
     (cell ?x1 ?y1)
     (cell ?x2 ?y2)
-    (< ?x1 ?x2))	
+    (> ?x2 ?x1))	
 	
 ;;; Defines the legal distances that an object may be thrown (0, 1, or 2 cells)
 	
@@ -677,28 +677,28 @@
     (index ?d) ; SW 8/3/07
     (- ?x ?d ?x1)
     (> ?d 0)
-    (< ?d 3))
+    (> 3 ?d))
 
 (<= (cellNearTerrorist ?terrorist ?x1 ?y)
     (terroristCell ?terrorist ?x ?y)
     (index ?d) ; SW 8/3/07
     (+ ?x ?d ?x1)
     (> ?d 0)
-    (< ?d 3))
+    (> 3 ?d))
 
 (<= (cellNearTerrorist ?terrorist ?x ?y1)
     (terroristCell ?terrorist ?x ?y)
     (index ?d) ; SW 8/3/07
     (- ?y ?d ?y1)
     (> ?d 0)
-    (< ?d 3))
+    (> 3 ?d))
 
 (<= (cellNearTerrorist ?terrorist ?x ?y1)
     (terroristCell ?terrorist ?x ?y)
     (index ?d) ; SW 8/3/07
     (+ ?y ?d ?y1)
     (> ?d 0)
-    (< ?d 3))
+    (> 3 ?d))
 
 ; four diagonal cases
 (<= (cellNearTerrorist ?terrorist ?x1 ?y1) 

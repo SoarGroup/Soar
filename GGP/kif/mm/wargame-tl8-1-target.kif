@@ -2,38 +2,36 @@
 ;;; Wargame Template (August 2007)
 ;;;  - David W. Aha (adapted from files provided by SLG & U.Michigan)
 ;;;  - Uses built-in math functions
-;;;  - TL level 8, Scenario 1, Target task
+;;;  - TL level 8, Scenario 1, target task
 ;;;  - Changes located between ">>>>" and "<<<<<"
-;;;  - Basic game requires only using both a laser and some gin to reach the exit
-;;;  - The donut and compass are now irrelevant
-;;;    - But the beer remains relevant!
-;;;    - And it's the beer you want, although the flag is partial credit
+;;;  - Basic game requires only using a laser to win
+;;;    - Unlike the source, the compass and donut are irrelevant
+;;;    - Having beer more important than the flag
+;;;    - So there are three fewer antecedents on the goal
+;;;
+;;;  - Verified solution (length 10): ESS<shoot W>WWSWWN
 ;;; Debugger: "http://games.stanford.edu:5999/director/debugrawgame?"
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;  Map (and Legend)
-; NOTE: South is at the top, North at the bottom
+; Map (and Legend)
 ;                        
 ;    1 2 3 4 5 6 7 8     
 ;   +---------------+    + = Corner
-;  8|. . . .|. ! . F|    . = A room location
-;   |   +-+ +-+     |    - = Horizontal wall
-;  7|. .|. . .|. . .|    | = Vertical wall
-;   | + + +-+ +-+   |
-;  6|.|. . . . .|T .|    @ = Soldier
-;   | +-+     + +-+ |    T = Terrorist
-;  5|. c . . .|. .|.|    F = Flag (exit)
-;   |       +-|   + |    L = Laser
-;  4|. . . g .|. . .|    g = Gin
-;   |       +-+   +-|    d = Donut
-;  3|. . . .|L . @ .|    c = Compass
-;   |-+   +-+       |    ! = Beer
-;  2|.|. T|. . . . .|    
-;   | +---+         |
-;  1|. . . . d . . .|    
-;   +---------------+    
+;  1|. . . d . . . .|    . = A room location
+;   |       +       |    - = Horizontal wall
+;  2|. . . .|. @ L .|    | = Vertical wall
+;   | +-----+       |
+;  3|.|. . c . . . .|    @ = Soldier
+;   | +-----+       |    T = Terrorist
+;  4|T . ! . . . . g|    F = Flag (exit)
+;   |         +-----|    L = laser
+;  5|. . . . F|. . .|    R = gRenade
+;   |         |     |    d = Donut
+;  6|. . . . .|. . .|    c = Compass
+;   +---------------+    ! = Beeeer
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; ROLE Relations
@@ -48,16 +46,15 @@
 ;;;>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 ;;; Specifies where objects start on board, where lower left is (1,1).
 ;;; Object locations
-(init (location soldier 7 3))
-(init (location terrorist1 3 2))
-(init (location terrorist2 7 6))
-(init (location laser1 5 3))
-(init (location gin1 4 4))
-(init (location exit 6 8)) ; SW 8/6
-(init (location flag 8 8))
-(init (location donut 5 1))
-(init (location compass 2 5))
-(init (location beer 6 8))
+(init (location soldier 6 2))
+(init (location terrorist1 1 4))
+(init (location laser1 7 2))
+(init (location gin1 8 4))
+(init (location exit 3 4)) ; SW 8/6
+(init (location flag 5 5))
+(init (location donut 4 1))
+(init (location compass 4 3))
+(init (location beer 3 4))
 
 ;; Dynamic type hierarchies
 (type laser1 item) 
@@ -70,41 +67,26 @@
 (type terrorist1 animate)
 (type terrorist1 terrorist)
 (type terrorist1 verticalTerrorist)
-(type terrorist2 animate)
-(type terrorist2 terrorist)
-(type terrorist2 horizontalTerrorist)
 
 ;;; Character health
 (init (health terrorist1 1))
-(init (health terrorist2 1))
 
 ;;; Unless otherwise specified adjacent spatial coordinates are assumed 
 ;;;  accessible from one another.  
-(init (blockedEast 1 2))
-(init (blockedEast 3 2))
-(init (blockedEast 4 3))
-(init (blockedEast 5 4))
+(init (blockedEast 1 3))
+(init (blockedEast 4 2))
 (init (blockedEast 5 5))
-(init (blockedEast 7 5))
-(init (blockedEast 6 6))
-(init (blockedEast 5 7))
-(init (blockedEast 4 8))
-(init (blockedEast 1 6))
-(init (blockedEast 2 7))
+(init (blockedEast 5 6))
 
-(init (blockedSouth 1 2))
-(init (blockedSouth 2 1))
-(init (blockedSouth 2 5))
-(init (blockedSouth 3 1))
-(init (blockedSouth 3 7))
+(init (blockedSouth 2 2))
+(init (blockedSouth 3 2))
 (init (blockedSouth 4 2))
-(init (blockedSouth 4 6))
-(init (blockedSouth 5 3))
-(init (blockedSouth 5 4))
-(init (blockedSouth 5 7))
-(init (blockedSouth 6 6))
-(init (blockedSouth 7 5))
-(init (blockedSouth 8 3))
+(init (blockedSouth 2 3))
+(init (blockedSouth 3 3))
+(init (blockedSouth 4 3))
+(init (blockedSouth 6 4))
+(init (blockedSouth 7 4))
+(init (blockedSouth 8 4))
 ;;;<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
 
 ; SW 8/3/07: need these to have consistent spatial rep. with the other domains
@@ -259,7 +241,8 @@
 (<= terminal
     (dead soldier))
 (<= terminal
-    (true (holding soldier flag)))
+    (true (holding soldier flag))
+    (true (holding soldier beer))) ; >>>>>Added<<<<<
  
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; GOAL Relations
@@ -284,25 +267,32 @@
 (<= (goal soldier 0)
     (not timeOut)
     (not (dead soldier))
-    (not (true (holding soldier flag))))
+    (not (true (holding soldier beer))))
 
+; alive, no beer or flag
 (<= (goal soldier 50)
     timeOut
     (not (dead soldier))
     (not (true (holding soldier flag)))   ; >>>>>Changed<<<<<
     (not (true (holding soldier beer))))  ; >>>>>Changed<<<<<
 
-(<= (goal soldier 100)
-    (not (dead soldier))
-    ; (true (holding soldier flag))    ; >>>>>Deleted<<<<
-    (true (holding soldier beer)))     ; >>>>>Added<<<<<
-
-; >>>>>Forced to add this as well; Partial credit for flag<<<<<
-(<= (goal soldier 75)
+; alive, no beer but flag
+(<= (goal soldier 55)
     (not (dead soldier))
     (true (holding soldier flag))
     (not (true (holding soldier beer))))
-   
+
+; alive, beer but no flag
+(<= (goal soldier 75)
+    (not (dead soldier))
+    (not (true (holding soldier flag)))
+    (true (holding soldier beer)))
+
+; alive, beer & flag
+(<= (goal soldier 100)
+    (not (dead soldier))
+    (true (holding soldier flag))    
+    (true (holding soldier beer)))     ; >>>>>Added<<<<<
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; View Definitions
@@ -334,7 +324,7 @@
     (index ?n)
     (nStepsSoldier ?n west ?x ?y1 ?x ?y3)
     (index ?m)
-    (< ?m ?n)
+    (> ?n ?m)
     (nStepsSoldier ?m west ?x ?y1 ?x ?y2)
     (stepBlocked west ?x ?y2))    
 
@@ -344,7 +334,7 @@
     (index ?n)
     (nStepsSoldier ?n south ?x1 ?y ?x3 ?y)
     (index ?m)
-    (< ?m ?n)
+    (> ?n ?m)
     (nStepsSoldier ?m south ?x1 ?y ?x2 ?y)
     (stepBlocked south ?x2 ?y))    
 (<= (pathBlocked east ?x ?y1 ?x ?y3)
@@ -353,7 +343,7 @@
     (index ?n)
     (nStepsSoldier ?n east ?x ?y1 ?x ?y3)
     (index ?m)
-    (< ?m ?n)
+    (> ?n ?m)
     (nStepsSoldier ?m east ?x ?y1 ?x ?y2)
     (stepBlocked east ?x ?y2))    
 
@@ -363,7 +353,7 @@
     (index ?n)
     (nStepsSoldier ?n north ?x1 ?y ?x3 ?y)
     (index ?m)
-    (< ?m ?n)
+    (> ?n ?m)
     (nStepsSoldier ?m north ?x1 ?y ?x2 ?y)
     (stepBlocked north ?x2 ?y))    
 
@@ -426,7 +416,7 @@
     (intendedSoldierLocation ?x1 ?y1) ; Soar
     (cell ?x1 ?y1)
     (cell ?x2 ?y2)
-    (< ?y1 ?y2))
+    (> ?y2 ?y1))
 
 ;;; Two cells are horizontall related [east,west] of each other if the first is
 ;;;  [right,left] of the second.
@@ -442,7 +432,7 @@
     (intendedSoldierLocation ?x1 ?y1) ; Soar
     (cell ?x1 ?y1)
     (cell ?x2 ?y2)
-    (< ?x1 ?x2))	
+    (> ?x2 ?x1))	
 	
 ;;; Defines the legal distances that an object may be thrown (0, 1, or 2 cells)
 	
@@ -693,28 +683,28 @@
     (index ?d) ; SW 8/3/07
     (- ?x ?d ?x1)
     (> ?d 0)
-    (< ?d 3))
+    (> 3 ?d))
 
 (<= (cellNearTerrorist ?terrorist ?x1 ?y)
     (terroristCell ?terrorist ?x ?y)
     (index ?d) ; SW 8/3/07
     (+ ?x ?d ?x1)
     (> ?d 0)
-    (< ?d 3))
+    (> 3 ?d))
 
 (<= (cellNearTerrorist ?terrorist ?x ?y1)
     (terroristCell ?terrorist ?x ?y)
     (index ?d) ; SW 8/3/07
     (- ?y ?d ?y1)
     (> ?d 0)
-    (< ?d 3))
+    (> 3 ?d))
 
 (<= (cellNearTerrorist ?terrorist ?x ?y1)
     (terroristCell ?terrorist ?x ?y)
     (index ?d) ; SW 8/3/07
     (+ ?y ?d ?y1)
     (> ?d 0)
-    (< ?d 3))
+    (> 3 ?d))
 
 ; four diagonal cases
 (<= (cellNearTerrorist ?terrorist ?x1 ?y1) 

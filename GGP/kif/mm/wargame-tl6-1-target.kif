@@ -5,31 +5,34 @@
 ;;;  - TL level 6, Scenario 1, Target task
 ;;;  - Changes located between ">>>>" and "<<<<<"
 ;;;  - Requires both a gun and a grenade to win 
+;;;
+;;; Summary: One source has a grenade, other source has a gun, & target has both
+;;; - Different layout for each
+;;; - One solution (length 11, verified): SE<shoot n>WWWNNNNE
+;;;   - Bug: Kills all 3 terrorists with one bullet because you can still
+;;;     shoot thru walls. I'll let Sam fix this.
+;;;
 ;;; Debugger: "http://games.stanford.edu:5999/director/debugrawgame?"
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;  Map (and Legend)
-; NOTE: South is at the top, North at the bottom
+; Map (and Legend)
 ;                        
 ;    1 2 3 4 5 6 7 8     
 ;   +---------------+    + = Corner
-;  8|. . . . . . . F|    . = A room location
-;   | +-+   +---+   |    - = Horizontal wall
-;  7|.|. . . . .|T .|    | = Vertical wall
-;   | +         +-+ |
-;  6|. . T . . . .|.|    @ = Soldier
-;   | +-----+     +-|    T = Terrorist
-;  5|.|. . . . . . .|    F = Flag (exit)
-;   | |             |    G = Gun
-;  4|.|. . . . . . .|    R = gRenade
-;   | |             |
-;  3|.|. . . . . G .|    
-;   | +-----+ +-----|
-;  2|. @ . . . . R .|    
-;   |     +         |
-;  1|. . G|. . . . .|    
+;  1|. . . . . . T .|    . = A room location
+;   |               |    - = Horizontal wall
+;  2|. F T . . . . .|    | = Vertical wall
+;   | +-------------|
+;  3|.|. . . . . . T|    @ = Soldier
+;   | +---+         |    T = Terrorist
+;  4|. . R . . . . .|    F = Flag (exit)
+;   |         +-----|    G = Gun
+;  5|. . @ . . . . .|    R = gRenade
+;   |         +     |
+;  6|. . G . .|. . .|    
 ;   +---------------+    
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -45,29 +48,32 @@
 ;;;>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 ;;; Specifies where objects start on board, where lower left is (1,1).
 
-(init (location    soldier 2 2))
-(init (location terrorist1 7 7))
-(init (location terrorist2 3 6))
-(init (location       gun1 7 3))
-(init (location       gun2 3 1))
-(init (location    grenade 7 2))
-(init (location       flag 8 8)) ; This gets referenced rather than the exit
-(init (location       exit 8 8)) ; Soar change: we are assuming an exit exists, it can't be implicit in 'holding flag'
+(init (location    soldier 3 5))
+(init (location terrorist1 8 3))
+(init (location terrorist2 3 2))
+(init (location terrorist3 7 1))
+(init (location       gun1 3 6))
+(init (location   grenade1 3 4))
+(init (location       flag 2 2)) ; This gets referenced rather than the exit
+(init (location       exit 2 2)) ; Soar change: we are assuming an exit exists, it can't be implicit in 'holding flag'
 
 ;;; Dynamic type hierarchies
-(type    gun1 item) (type    gun1     losItem) 
-(type    gun2 item) (type    gun2     losItem) 
-(type grenade item) (type grenade     aoeItem)
+(type    gun1 item) 
+(type    gun1 losItem) 
+(type grenade1 item) 
+(type grenade1 aoeItem)
 
 (type    soldier animate)
 (type terrorist1 animate) (type terrorist1 terrorist) (type terrorist1 horizontalTerrorist)
 (type terrorist2 animate) (type terrorist2 terrorist) (type terrorist2 horizontalTerrorist)
+(type terrorist3 animate) (type terrorist3 terrorist) (type terrorist3 horizontalTerrorist)
 
 ;;; Specifies how many hit-points a character starts the game with.
 
 (init (health    soldier 1))
 (init (health terrorist1 1))
-(init (health terrorist2 2))
+(init (health terrorist2 1))
+(init (health terrorist3 1))
 
 ;;; blocked[North,East] implies there is a wall to the [North,East] of a cell.
 
@@ -76,27 +82,20 @@
 ;            Additionally, if the edges of the board are only going to be defined implicitly in the cells, the board must be convex.
 
 (init (blockedSouth 2 2)) 
-(init (blockedSouth 2 5)) 
-(init (blockedSouth 2 7)) 
 (init (blockedSouth 3 2)) 
-(init (blockedSouth 3 5)) 
 (init (blockedSouth 4 2)) 
-(init (blockedSouth 4 5)) 
-(init (blockedSouth 5 7)) 
+(init (blockedSouth 5 2)) 
 (init (blockedSouth 6 2)) 
-(init (blockedSouth 6 7)) 
 (init (blockedSouth 7 2)) 
-(init (blockedSouth 7 6)) 
 (init (blockedSouth 8 2)) 
-(init (blockedSouth 8 5)) 
+(init (blockedSouth 2 3)) 
+(init (blockedSouth 3 3)) 
+(init (blockedSouth 6 4)) 
+(init (blockedSouth 7 4)) 
+(init (blockedSouth 8 4)) 
 
 (init (blockedEast 1 3))  
-(init (blockedEast 1 4))  
-(init (blockedEast 1 5))  
-(init (blockedEast 1 7))  
-(init (blockedEast 6 7))  
-(init (blockedEast 7 6))  
-(init (blockedEast 3 1))  
+(init (blockedEast 5 6))  
 
 ;;;<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
 
@@ -317,7 +316,7 @@
     (index ?n)
     (nStepsSoldier ?n west ?x ?y1 ?x ?y3)
     (index ?m)
-    (< ?m ?n)
+    (> ?n ?m)
     (nStepsSoldier ?m west ?x ?y1 ?x ?y2)
     (stepBlocked west ?x ?y2))    
 
@@ -327,7 +326,7 @@
     (index ?n)
     (nStepsSoldier ?n south ?x1 ?y ?x3 ?y)
     (index ?m)
-    (< ?m ?n)
+    (> ?n ?m)
     (nStepsSoldier ?m south ?x1 ?y ?x2 ?y)
     (stepBlocked south ?x2 ?y))    
 (<= (pathBlocked east ?x ?y1 ?x ?y3)
@@ -336,7 +335,7 @@
     (index ?n)
     (nStepsSoldier ?n east ?x ?y1 ?x ?y3)
     (index ?m)
-    (< ?m ?n)
+    (> ?n ?m)
     (nStepsSoldier ?m east ?x ?y1 ?x ?y2)
     (stepBlocked east ?x ?y2))    
 
@@ -346,7 +345,7 @@
     (index ?n)
     (nStepsSoldier ?n north ?x1 ?y ?x3 ?y)
     (index ?m)
-    (< ?m ?n)
+    (> ?n ?m)
     (nStepsSoldier ?m north ?x1 ?y ?x2 ?y)
     (stepBlocked north ?x2 ?y))    
 
@@ -409,7 +408,7 @@
     (intendedSoldierLocation ?x1 ?y1) ; Soar
     (cell ?x1 ?y1)
     (cell ?x2 ?y2)
-    (< ?y1 ?y2))
+    (> ?y2 ?y1))
 
 ;;; Two cells are horizontall related [east,west] of each other if the first is
 ;;;  [right,left] of the second.
@@ -425,7 +424,7 @@
     (intendedSoldierLocation ?x1 ?y1) ; Soar
     (cell ?x1 ?y1)
     (cell ?x2 ?y2)
-    (< ?x1 ?x2))	
+    (> ?x2 ?x1))	
 	
 ;;; Defines the legal distances that an object may be thrown (0, 1, or 2 cells)
 	
@@ -676,28 +675,28 @@
     (index ?d) ; SW 8/3/07
     (- ?x ?d ?x1)
     (> ?d 0)
-    (< ?d 3))
+    (> 3 ?d))
 
 (<= (cellNearTerrorist ?terrorist ?x1 ?y)
     (terroristCell ?terrorist ?x ?y)
     (index ?d) ; SW 8/3/07
     (+ ?x ?d ?x1)
     (> ?d 0)
-    (< ?d 3))
+    (> 3 ?d))
 
 (<= (cellNearTerrorist ?terrorist ?x ?y1)
     (terroristCell ?terrorist ?x ?y)
     (index ?d) ; SW 8/3/07
     (- ?y ?d ?y1)
     (> ?d 0)
-    (< ?d 3))
+    (> 3 ?d))
 
 (<= (cellNearTerrorist ?terrorist ?x ?y1)
     (terroristCell ?terrorist ?x ?y)
     (index ?d) ; SW 8/3/07
     (+ ?y ?d ?y1)
     (> ?d 0)
-    (< ?d 3))
+    (> 3 ?d))
 
 ; four diagonal cases
 (<= (cellNearTerrorist ?terrorist ?x1 ?y1) 
