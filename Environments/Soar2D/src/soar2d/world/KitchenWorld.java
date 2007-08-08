@@ -263,8 +263,8 @@ public class KitchenWorld implements IWorld {
 							Soar2D.logger.info(player.getName() + ": creating toffee");
 							break;
 						case SugarCookies:
-							map.addObjectByName(players.getLocation(player), "sugarcoookies");
-							Soar2D.logger.info(player.getName() + ": creating sugarcoookies");
+							map.addObjectByName(players.getLocation(player), "sugarcookies");
+							Soar2D.logger.info(player.getName() + ": creating sugarcookies");
 							break;
 						case Snickerdoodles:
 							map.addObjectByName(players.getLocation(player), "snickerdoodles");
