@@ -118,8 +118,7 @@ bool CommandLineInterface::DoExcise(gSKI::Agent* pAgent, const ExciseBitset& opt
 		//ExciseInternal(pProductionManager->GetDefaultProductions(), exciseCount);
 	}
 	if (options.test(EXCISE_RL)) {					// NUMERIC_INDIFFERENCE
-		//pProductionManager->RemoveAllRLProductions(exciseCount);
-		m_Result << "excise rl";
+		pProductionManager->remove_all_rl_productions(exciseCount);
 	}
 	if (options.test(EXCISE_TASK)) {
 		pProductionManager->RemoveAllUserProductions(exciseCount);
@@ -131,8 +130,7 @@ bool CommandLineInterface::DoExcise(gSKI::Agent* pAgent, const ExciseBitset& opt
 		//if (exciseCount) this->DoInitSoar(pAgent);	// from the manual, init when --all or --task are executed
 	}
 	if (options.test(EXCISE_TEMPLATE)) {			// NUMERIC_INDIFFERENCE
-		//pProductionManager->RemoveAllTemplateProductions(exciseCount);
-		m_Result << "excise template";
+		pProductionManager->remove_all_template_productions(exciseCount);
 	}
 	if (options.test(EXCISE_USER)) {
 		pProductionManager->RemoveAllUserProductions(exciseCount);

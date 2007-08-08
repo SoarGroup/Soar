@@ -406,7 +406,8 @@ _|___/    __         _    _             ____  _               _
 	  exciseCount = exciseCount + a->num_productions_of_type[USER_PRODUCTION_TYPE] +
                                   a->num_productions_of_type[CHUNK_PRODUCTION_TYPE] +
 								  a->num_productions_of_type[JUSTIFICATION_PRODUCTION_TYPE] +
-								  a->num_productions_of_type[DEFAULT_PRODUCTION_TYPE];
+								  a->num_productions_of_type[DEFAULT_PRODUCTION_TYPE] +
+								  a->num_productions_of_type[TEMPLATE_PRODUCTION_TYPE];
       excise_all_productions(m_agent->GetSoarAgent(), false);
 	  return true;
    }
@@ -461,6 +462,52 @@ _|___/    __         _    _             ____  _               _
 	  exciseCount = exciseCount + a->num_productions_of_type[DEFAULT_PRODUCTION_TYPE];
       excise_all_productions_of_type(m_agent->GetSoarAgent(), DEFAULT_PRODUCTION_TYPE, false);
  	  return true;
+   }
+   
+   bool ProductionManager::remove_all_template_productions(int &exciseCount, Error *err) const
+   {
+	   agent * a;
+	   ClearError(err);
+	   a = m_agent->GetSoarAgent();
+	   exciseCount = exciseCount + a->num_productions_of_type[TEMPLATE_PRODUCTION_TYPE];
+	   excise_all_productions_of_type(m_agent->GetSoarAgent(), TEMPLATE_PRODUCTION_TYPE, false);
+	   return true;
+   }
+   
+   bool ProductionManager::remove_all_rl_productions(int& exciseCount, Error* err) const
+   {
+	   agent *a;
+	   ClearError( err );
+	   a = m_agent->GetSoarAgent();
+    
+	   for ( production *prod=a->all_productions_of_type[DEFAULT_PRODUCTION_TYPE]; prod != NIL; prod = prod->next )
+	   {
+		   if ( prod->rl_rule )
+		   {
+			   exciseCount++;
+			   excise_production( a, prod, a->sysparams[TRACE_LOADING_SYSPARAM] );
+		   }
+	   }
+
+	   for ( production *prod=a->all_productions_of_type[USER_PRODUCTION_TYPE]; prod != NIL; prod = prod->next )
+	   {
+		   if ( prod->rl_rule )
+		   {
+			   exciseCount++;
+			   excise_production( a, prod,a->sysparams[TRACE_LOADING_SYSPARAM] );
+		   }
+	   }
+
+	   for ( production *prod=a->all_productions_of_type[CHUNK_PRODUCTION_TYPE]; prod != NIL; prod = prod->next )
+	   {
+		   if ( prod->rl_rule )
+		   {
+			   exciseCount++;
+			   excise_production( a, prod,a->sysparams[TRACE_LOADING_SYSPARAM] );
+		   }
+	   }
+	   
+	   return true;
    }
 
    /*
