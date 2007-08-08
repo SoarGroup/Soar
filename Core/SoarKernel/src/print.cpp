@@ -970,6 +970,10 @@ void print_production (agent* thisAgent, production *p, Bool internal) {
     print_string (thisAgent, "    :justification ;# not reloadable\n");
     gSKI_MakeAgentCallbackXML(thisAgent, kFunctionAddAttribute, kProductionType, kProductionTypeJustification);
     break;
+  case TEMPLATE_PRODUCTION_TYPE:
+	print_string (thisAgent, "   :template\n");
+	gSKI_MakeAgentCallbackXML(thisAgent, kFunctionAddAttribute, kProductionType, kProductionTypeDefault);
+	break;
   }
 
   if (p->declared_support==DECLARED_O_SUPPORT)
@@ -1054,6 +1058,7 @@ char preference_type_indicator (agent* thisAgent, byte type) {
   case REJECT_PREFERENCE_TYPE: return '-';
   case PROHIBIT_PREFERENCE_TYPE: return '~';
   case RECONSIDER_PREFERENCE_TYPE: return '@';
+  case NUMERIC_INDIFFERENT_PREFERENCE_TYPE: return '=';
   case UNARY_INDIFFERENT_PREFERENCE_TYPE: return '=';
   case BINARY_INDIFFERENT_PREFERENCE_TYPE: return '=';
   case UNARY_PARALLEL_PREFERENCE_TYPE: return '&';

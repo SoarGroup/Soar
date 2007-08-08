@@ -195,6 +195,7 @@ bool CommandLineInterface::DoPrint(gSKI::Agent* pAgent, PrintBitset options, int
         pKernelHack->PrintUser(pAgent, 0, internal, filename, full, USER_PRODUCTION_TYPE);
         pKernelHack->PrintUser(pAgent, 0, internal, filename, full, CHUNK_PRODUCTION_TYPE);
         pKernelHack->PrintUser(pAgent, 0, internal, filename, full, JUSTIFICATION_PRODUCTION_TYPE);
+        pKernelHack->PrintUser(pAgent, 0, internal, filename, full, TEMPLATE_PRODUCTION_TYPE);
 		RemoveListenerAndEnableCallbacks(pAgent);
 		return true;
 	}
@@ -223,19 +224,15 @@ bool CommandLineInterface::DoPrint(gSKI::Agent* pAgent, PrintBitset options, int
 		return true;
 	}
 	if (options.test(PRINT_RL)) {
-		/*AddListenerAndDisableCallbacks(pAgent);
-		pKernelHack->PrintRL(pAgent, 0, internal, filename, full);
-		RemoveListenerAndEnableCallbacks(pAgent);*/
-		
-		m_Result << "print rl";
+		AddListenerAndDisableCallbacks(pAgent);
+		pKernelHack->print_rl_rules( pAgent, 0, internal, filename, full );
+		RemoveListenerAndEnableCallbacks(pAgent);
 		return true;
 	}
 	if (options.test(PRINT_TEMPLATE)) {
-		/*AddListenerAndDisableCallbacks(pAgent);
+		AddListenerAndDisableCallbacks(pAgent);
         pKernelHack->PrintUser(pAgent, 0, internal, filename, full, TEMPLATE_PRODUCTION_TYPE);
-		RemoveListenerAndEnableCallbacks(pAgent);*/
-		
-		m_Result << "print template";
+		RemoveListenerAndEnableCallbacks(pAgent);
 		return true;
 	}
 
@@ -253,6 +250,7 @@ bool CommandLineInterface::DoPrint(gSKI::Agent* pAgent, PrintBitset options, int
         pKernelHack->PrintUser(pAgent, 0, internal, filename, full, USER_PRODUCTION_TYPE);
         pKernelHack->PrintUser(pAgent, 0, internal, filename, full, CHUNK_PRODUCTION_TYPE);
         pKernelHack->PrintUser(pAgent, 0, internal, filename, full, JUSTIFICATION_PRODUCTION_TYPE);
+        pKernelHack->PrintUser(pAgent, 0, internal, filename, full, TEMPLATE_PRODUCTION_TYPE);
 	}
 	m_VarPrint = false;
 

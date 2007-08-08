@@ -515,3 +515,4 @@ bool valid_rl_rule( production *prod )
 
 	return ( numeric_pref && ( num_actions == 1 ) );
 }
+

@@ -210,6 +210,12 @@ namespace gSKI
 			if (!full_prod) 
 			{
 				print_with_symbols(agnt, "%y  ",prod->name);
+				
+				if ( prod->rl_rule ) 
+				{
+					print_with_symbols( agnt, "%y  ", make_float_constant( agnt, prod->rl_update_count ) );
+					print_with_symbols( agnt, "%y", rhs_value_to_symbol( prod->action_list->referent ) );
+				}
 			}
 			if (print_filename) 
 			{
@@ -899,7 +905,31 @@ namespace gSKI
 					print_filename,full_prod);
 			}
 		}
-
+		
+		void TgDWorkArounds::print_rl_rules( Agent* thisAgent, char *arg,bool internal, bool print_filename, bool full_prod)
+		{
+			Agent* internalAgent = (Agent*)(thisAgent);
+			MegaAssert(internalAgent != 0, "Bad agent pointer passed to set_sysparams.");
+			agent *my_agent = internalAgent->GetSoarAgent();
+			
+			for ( production *prod=my_agent->all_productions_of_type[ DEFAULT_PRODUCTION_TYPE ]; prod != NIL; prod = prod->next )
+			{
+				if ( prod->rl_rule )
+					do_print_for_production( my_agent, prod, internal, print_filename, full_prod );
+			}
+			
+			for ( production *prod=my_agent->all_productions_of_type[ USER_PRODUCTION_TYPE ]; prod != NIL; prod = prod->next )
+			{
+				if ( prod->rl_rule )
+					do_print_for_production( my_agent, prod, internal, print_filename, full_prod );
+			}
+			
+			for ( production *prod=my_agent->all_productions_of_type[ CHUNK_PRODUCTION_TYPE ]; prod != NIL; prod = prod->next )
+			{
+				if ( prod->rl_rule )
+					do_print_for_production( my_agent, prod, internal, print_filename, full_prod );
+			}
+		}
 
 		slot *find_slot (Symbol *id, Symbol *attr) 
 		{

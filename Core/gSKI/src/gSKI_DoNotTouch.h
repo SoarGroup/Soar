@@ -74,6 +74,11 @@ namespace gSKI
                         bool          print_filename,
                         bool          full_prod,
                         unsigned int  productionType);
+         void print_rl_rules(Agent*       thisAgent,
+                                 char*         arg,
+                                 bool          internal,
+                                 bool          print_filename,
+                                 bool          full_prod);
                      
          bool Preferences(Agent* thisAgent, int detail, bool object, const char* idString, const char* attrString);
 
