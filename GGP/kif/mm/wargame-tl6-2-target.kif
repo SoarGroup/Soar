@@ -4,6 +4,7 @@
 ;;;  - Uses built-in math functions
 ;;;  - TL level 6, Scenario 2, target task
 ;;;  - Changes located between ">>>>" and "<<<<<"
+;;;  - 8/8: Removed blastZone, and only legalThrowDist now is only {2}
 ;;; Debugger: "http://games.stanford.edu:5999/director/debugrawgame?"
 ;;;
 ;;; Summary: One source has a medkit, the other a gun, and target has both
@@ -177,8 +178,8 @@
 ;;; Also here for stylesheet convenience.  True of any cell that the soldier
 ;;;  attacks.
 
-(<= (next (blastZone ?x ?y))
-    (attacks ?x ?y soldier))
+; (<= (next (blastZone ?x ?y)) ; >>>>>Deleted<<<<<
+;     (attacks ?x ?y soldier)) ; >>>>>Deleted<<<<<
 	
 ;;; Location for animate-type objects is updated by the intendedLocation axiom.
 	
@@ -425,8 +426,8 @@
 	
 ;;; Defines the legal distances that an object may be thrown (0, 1, or 2 cells)
 	
-(<= (legalThrowDist 0))
-(<= (legalThrowDist 1))
+; (<= (legalThrowDist 0)) ; >>>>>Deleted<<<<<
+; (<= (legalThrowDist 1)) ; >>>>>Deleted<<<<<
 (<= (legalThrowDist 2))
 
 ;;; Every item (with the exception of the flag) is used if the soldier performs

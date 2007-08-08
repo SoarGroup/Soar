@@ -4,6 +4,7 @@
 ;;;  - Uses built-in math functions
 ;;;  - TL level 8, Scenario 2, Source task
 ;;;  - Changes located between ">>>>" and "<<<<<"
+;;;  - 8/8: Removed blastZone, and only legalThrowDist now is only {2}
 ;;;  - Basic game requires medkit to win (see TL 6 scenario 2 source 1)
 ;;;    - Changes: 
 ;;;      - explorer health=2
@@ -11,7 +12,7 @@
 ;;;    - But now you also need to pickup a few things, namely:
 ;;;      - The Northwestern Wildcat, UMichigan Wolverine, and the ISLE Feather
 ;;;
-;;;  - Verified solution (length 14): EWWNNSEEES<heal>E<heal>N
+;;;  - Verified solution (length 14): EWNWNSEEES<heal>E<heal>N
 ;;; Debugger: "http://games.stanford.edu:5999/director/debugrawgame?"
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
@@ -24,14 +25,14 @@
 ;   |               |    - = Horizontal wall
 ;  2|. . . . . . . .|    | = Vertical wall
 ;   | +         +---|
-;  3|.|. . . . . . .|    @ = Soldier
-;   | +-------+     |    T = Terrorist
-;  4|. . f . . . . .|    F = Flag (exit)
-;   |           +---|    G = Gun
-;  5|. . M . . . F .|    f = Feature (dropped by Icarus)
+;  3|.|. . . . .|. .|    @ = Soldier
+;   | +-------+ |   |    T = Terrorist
+;  4|.|. f . . .|. .|    F = Flag (exit)
+;   | |   +---+ +---|    G = Gun
+;  5|.|. M . . . F .|    f = Feather (dropped by Icarus)
 ;   | +-+     +     |    M = Medical kit
-;  6|.|. . @ W|w . .|    w = Wildcat
-;   +---------------+    W = Wolverine
+;  6|.|. . @ W|w . .|    w = Wildcat (hat)
+;   +---------------+    W = Wolverine (coat)
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -72,8 +73,12 @@
 ;;; Unless otherwise specified adjacent spatial coordinates are assumed 
 ;;;  accessible from one another.  
 (init (blockedEast 1 3))  
+(init (blockedEast 1 4))  
+(init (blockedEast 1 5))  
 (init (blockedEast 1 6))  
 (init (blockedEast 5 6))  
+(init (blockedEast 6 3))  
+(init (blockedEast 6 4))  
 
 (init (blockedSouth 2 5)) 
 (init (blockedSouth 2 3)) 
@@ -84,6 +89,8 @@
 (init (blockedSouth 8 4)) 
 (init (blockedSouth 7 2)) 
 (init (blockedSouth 8 2)) 
+(init (blockedSouth 4 4)) 
+(init (blockedSouth 5 4)) 
 
 ;; Soldier health
 (init (health soldier 2)) ; >>>>>New! Higher!<<<<<
@@ -170,8 +177,8 @@
 ;;; Also here for stylesheet convenience.  True of any cell that the soldier
 ;;;  attacks.
 
-(<= (next (blastZone ?x ?y))
-    (attacks ?x ?y soldier))
+; (<= (next (blastZone ?x ?y)) ; >>>>>Deleted<<<<<
+;     (attacks ?x ?y soldier)) ; >>>>>Deleted<<<<<
 	
 ;;; Location for animate-type objects is updated by the intendedLocation axiom.
 	
@@ -440,8 +447,8 @@
 	
 ;;; Defines the legal distances that an object may be thrown (0, 1, or 2 cells)
 	
-(<= (legalThrowDist 0))
-(<= (legalThrowDist 1))
+; (<= (legalThrowDist 0)) ; >>>>>Deleted<<<<<
+; (<= (legalThrowDist 1)) ; >>>>>Deleted<<<<<
 (<= (legalThrowDist 2))
 
 ;;; Every item (with the exception of the flag) is used if the soldier performs
