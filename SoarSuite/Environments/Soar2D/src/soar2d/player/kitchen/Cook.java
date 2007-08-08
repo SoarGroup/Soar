@@ -1,4 +1,4 @@
-package soar2d.player.cook;
+package soar2d.player.kitchen;
 
 import soar2d.Soar2D;
 import soar2d.player.MoveInfo;
