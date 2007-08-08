@@ -81,8 +81,6 @@ public class SoarEater extends Eater {
 		// BUGBUG remove
 		//debugInputLink();
 
-		previousLocation = new java.awt.Point(-1, -1);
-		
 		Identifier eater = agent.CreateIdWME(agent.GetInputLink(), Names.kEaterID);
 		
 		directionWME = agent.CreateStringWME(eater, Names.kDirectionID, Names.kNorth);

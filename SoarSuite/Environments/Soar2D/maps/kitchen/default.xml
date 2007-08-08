@@ -49,17 +49,21 @@
   		<property name="points" value="0"></property>
   		<points></points>
   		<remove></remove>
-  		</apply></cell-object><cell-object name="mixture"><property name="id" value="mixture"></property><property name="shape" value="triangle"></property><apply>
-  		<remove></remove>
   		</apply></cell-object>
-  <cell-object name="toffee">
+  <cell-object name="mixture"><property name="id" value="mixture"></property>
+  	<property name="shape" value="triangle"></property>
+  	<apply>
+  		<remove></remove>
+  		</apply>
+  	</cell-object><cell-object name="toffee">
   	<property name="smell" value="none"></property>
   	<property name="color" value="brown"></property>
   	<property name="texture" value="solid"></property><property name="id" value="toffee"></property><property name="shape" value="round"></property><apply>
   		<property name="points" value="1"></property>
   		<points></points>
   		<remove></remove>
-  		</apply></cell-object>
+  		</apply>
+  	<property name="product" value="true"></property></cell-object>
   <cell-object name="custard">
   	<property name="smell" value="none"></property>
   	<property name="color" value="yellow"></property>
@@ -67,7 +71,7 @@
   		<property name="points" value="1"></property>
   		<points></points>
   		<remove></remove>
-  		</apply></cell-object>
+  		</apply><property name="product" value="true"></property></cell-object>
   <cell-object name="sugarcookies">
   	<property name="smell" value="mild"></property>
   	<property name="color" value="white"></property>
@@ -75,7 +79,7 @@
   		<property name="points" value="2"></property>
   		<points></points>
   		<remove></remove>
-  		</apply></cell-object>
+  		</apply><property name="product" value="true"></property></cell-object>
   <cell-object name="snickerdoodles">
   	<property name="smell" value="mild"></property>
   	<property name="color" value="white"></property>
@@ -83,7 +87,7 @@
   		<property name="points" value="3"></property>
   		<points></points>
   		<remove></remove>
-  		</apply></cell-object>
+  		</apply><property name="product" value="true"></property></cell-object>
   <cell-object name="molassescookies">
   	<property name="smell" value="mild"></property>
   	<property name="color" value="brown"></property>
@@ -91,7 +95,7 @@
   		<property name="points" value="4"></property>
   		<points></points>
   		<remove></remove>
-  		</apply></cell-object>
+  		</apply><property name="product" value="true"></property></cell-object>
   <cell-object name="burned">
   	<property name="smell" value="strong"></property>
   	<property name="color" value="black"></property>
@@ -99,7 +103,7 @@
   		<property name="points" value="-1"></property>
   		<points></points>
   		<remove></remove>
-  		</apply></cell-object>
+  		</apply><property name="product" value="true"></property></cell-object>
   <cell-object name="countertop">
   	<property name="id" value="countertop"></property>
   	<property name="color" value="lightGray"></property></cell-object>

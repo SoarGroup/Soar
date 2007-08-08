@@ -10,7 +10,7 @@ import soar2d.player.PlayerConfig;
  */
 public class Cook extends Player {	
 	private MoveInfo move;
-
+	
 	public Cook( PlayerConfig playerConfig ) {
 		super(playerConfig) ;
 	}
@@ -42,6 +42,11 @@ public class Cook extends Player {
 		}
 		
 		return true;
+	}
+
+	public void moveWithObjectFailed() {
+		// Ignored on this level, overridden in soarcook
+		
 	}
 	
 }

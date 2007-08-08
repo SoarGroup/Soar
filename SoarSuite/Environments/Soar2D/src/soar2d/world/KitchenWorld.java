@@ -7,6 +7,7 @@ import java.util.HashSet;
 import java.util.Iterator;
 
 import soar2d.Direction;
+import soar2d.Names;
 import soar2d.Soar2D;
 import soar2d.configuration.Configuration;
 import soar2d.map.CellObject;
@@ -14,6 +15,7 @@ import soar2d.map.GridMap;
 import soar2d.map.KitchenMap;
 import soar2d.player.MoveInfo;
 import soar2d.player.Player;
+import soar2d.player.kitchen.Cook;
 
 public class KitchenWorld implements IWorld {
 
@@ -39,7 +41,7 @@ public class KitchenWorld implements IWorld {
 		
 		Iterator<Player> iter = players.iterator();
 		while (iter.hasNext()) {
-			Player player = iter.next();
+			Cook player = (Cook)iter.next();
 			MoveInfo move = players.getMove(player);
 			
 			// for visual world 
@@ -58,23 +60,61 @@ public class KitchenWorld implements IWorld {
 				
 				// Verify legal move and commit move
 				if (map.isInBounds(newLocation) && map.enterable(newLocation)) {
+					ArrayList<CellObject> myStuff = map.getAllWithProperty(oldLocation, "smell");
+
+					// verify I can move with food if I need to
+					if (move.moveWithObject) {
+						// do I have stuff?
+						if (myStuff.size() > 0) {
+							// do I have a product?
+							if (myStuff.get(0).hasProperty("product")) {
+								// yes, I have a product, destination cell must be empty
+								ArrayList<CellObject> destStuff  = map.getAllWithProperty(newLocation, "smell");
+								if (destStuff.size() > 0) {
+									// move with object fails!
+									player.moveWithObjectFailed();
+									move.moveWithObject = false;
+									Soar2D.logger.info(player.getName() + ": move-with-object fails because I can't move a product in to a non-empty cell");
+								}
+							} else {
+								// I'm moving stuff, destination cell must not contain a product
+								ArrayList<CellObject> destProducts = map.getAllWithProperty(newLocation, "product");
+								assert destProducts.size() < 2;
+								if (destProducts.size() > 0) {
+									// dest does contain a product, move with object fails!
+									player.moveWithObjectFailed();
+									move.moveWithObject = false;
+									Soar2D.logger.info(player.getName() + ": move-with-object fails because I can't move stuff in to a cell with a product");
+								}
+							}
+						} 
+					}					
+					
 					// remove from cell
 					map.setPlayer(oldLocation, null);
 					players.setLocation(player, newLocation);
 					
-					// todo: collisions not handled
+					// TODO: collisions not handled
+					
 					map.setPlayer(newLocation, player);
 
 					// move stuff with the player
 					if (move.moveWithObject) {
-						ArrayList<CellObject> stuff = map.getAllWithProperty(oldLocation, "smell");
-						if (stuff.size() > 0) {
+						if (myStuff.size() > 0) {
 							map.removeAllWithProperty(oldLocation, "smell");
 							
-							Iterator<CellObject> stuffIter = stuff.iterator();
+							Iterator<CellObject> stuffIter = myStuff.iterator();
+							String stuffNames = "(";
 							while (stuffIter.hasNext()) {
-								map.addObjectToCell(newLocation, stuffIter.next());
+								CellObject object = stuffIter.next();
+								map.addObjectToCell(newLocation, object);
+								stuffNames += object.getName();
+								if (stuffIter.hasNext()) {
+									stuffNames += ", ";
+								}
 							}
+							stuffNames += ")";
+							Soar2D.logger.info(player.getName() + ": moving with: " + stuffNames);
 						}
 					}
 				}
@@ -87,6 +127,9 @@ public class KitchenWorld implements IWorld {
 						map.removeAllWithProperty(players.getLocation(player), "smell");
 	
 						CellObject mixture = map.createObjectByName("mixture");
+						int id = idCounter++;
+						mixture.setName("mixture-" + id);
+						mixture.addProperty("mixture-id", Integer.toString(id));
 						mixture.addProperty("shape", "triangle");
 	
 						Iterator<CellObject> stuffIter;
@@ -94,11 +137,10 @@ public class KitchenWorld implements IWorld {
 						// ingredients
 						stuffIter = stuff.iterator();
 						HashSet<Integer> ingredients = new HashSet<Integer>(stuff.size());
-						int id = idCounter++;
 						while (stuffIter.hasNext()) {
 							CellObject ingredient = stuffIter.next();
 							String name = ingredient.getName();
-							if (name.equalsIgnoreCase("mixture")) {
+							if (name.startsWith("mixture")) {
 								ingredients.addAll(mixtures.get(ingredient.getIntProperty("mixture-id")));
 								
 							} else if (name.equalsIgnoreCase("butter")) {
@@ -120,11 +162,10 @@ public class KitchenWorld implements IWorld {
 								ingredients.add(kIngredientMolasses);
 								
 							} else {
-								ingredients.add(kIngredientOther);
+								assert false;
 							}
 						}
 						mixtures.put(id, ingredients);
-						mixture.addProperty("mixture-id", Integer.toString(id));
 						
 						// texture
 						boolean powder = false;
@@ -185,14 +226,18 @@ public class KitchenWorld implements IWorld {
 							assert false;
 						}
 						
-						Soar2D.logger.info(player.getName() + ": New mixture " + ingredients.toString()
+						Soar2D.logger.info(player.getName() + ": New mixture " + printIngredients(ingredients)
 								+ ": " + mixture.getProperty("texture") 
 								+ "/" + mixture.getProperty("color") 
 								+ "/" + mixture.getProperty("smell"));
 						
 						map.addObjectToCell(players.getLocation(player), mixture);
 					} else {
-						Soar2D.logger.info(player.getName() + ": Ignoring mix of less than 2 ingredients");
+						if (stuff.size() == 1 && stuff.get(0).hasProperty("product")) {
+							Soar2D.logger.info(player.getName() + ": can't mix a product");
+						} else {
+							Soar2D.logger.info(player.getName() + ": can't mix less than 2 things");
+						}
 					}
 				} else {
 					Soar2D.logger.info(player.getName() + ": Tried to mix but not at countertop or oven");
@@ -206,80 +251,86 @@ public class KitchenWorld implements IWorld {
 						Soar2D.logger.info(player.getName() + ": Too many things to cook, mix first");
 						
 					} else if (stuff.size() == 1) {
-						// consume it
-						map.removeAllWithProperty(players.getLocation(player), "smell");
-						
-						// get ingredient list
-						HashSet<Integer> ingredients = mixtures.get(stuff.get(0).getIntProperty("mixture-id"));
-						
-						// create something
-						Product product = Product.Burned;
-						
-						if (ingredients != null) {
-							if (ingredients.remove(kIngredientButter)) {
-								if (ingredients.remove(kIngredientSugar)) {
-									if (ingredients.isEmpty()) {
-										// toffee
-										product = Product.Toffee;
-										
-									} else if (ingredients.remove(kIngredientEggs)) {
-										if (ingredients.remove(kIngredientFlour)) {
-											if (ingredients.isEmpty()) {
-												// sugar cookies
-												product = Product.SugarCookies;
-	
-											} else if (ingredients.remove(kIngredientCinnamon)) {
+						CellObject ingredient = stuff.get(0);
+						if (ingredient.hasProperty("product")) {
+							Soar2D.logger.info(player.getName() + ": Can't cook a product");
+						} else {
+							// consume it
+							map.removeAllWithProperty(players.getLocation(player), "smell");
+
+							// create something
+							Product product = Product.Burned;
+							
+							if (ingredient.getName().startsWith("mixture")) {
+								// get ingredient list
+								HashSet<Integer> ingredients = mixtures.get(stuff.get(0).getIntProperty("mixture-id"));
+								assert ingredients != null;
+								
+								if (ingredients.remove(kIngredientButter)) {
+									if (ingredients.remove(kIngredientSugar)) {
+										if (ingredients.isEmpty()) {
+											// toffee
+											product = Product.Toffee;
+											
+										} else if (ingredients.remove(kIngredientEggs)) {
+											if (ingredients.remove(kIngredientFlour)) {
 												if (ingredients.isEmpty()) {
-													// snickerdoodles
-													product = Product.Snickerdoodles;
-	
-												} else if (ingredients.remove(kIngredientMolasses)) {
+													// sugar cookies
+													product = Product.SugarCookies;
+		
+												} else if (ingredients.remove(kIngredientCinnamon)) {
 													if (ingredients.isEmpty()) {
-														// molasses cookies
-														product = Product.MolassesCookies;
-													}
+														// snickerdoodles
+														product = Product.Snickerdoodles;
+		
+													} else if (ingredients.remove(kIngredientMolasses)) {
+														if (ingredients.isEmpty()) {
+															// molasses cookies
+															product = Product.MolassesCookies;
+														}
+													}										
 												}										
-											}										
+											}
+										}
+									}
+								} else if (ingredients.remove(kIngredientSugar)) {
+									if (ingredients.remove(kIngredientEggs)) {
+										if (ingredients.isEmpty()) {
+											// custard
+											product = Product.Custard;
 										}
 									}
 								}
-							} else if (ingredients.remove(kIngredientSugar)) {
-								if (ingredients.remove(kIngredientEggs)) {
-									if (ingredients.isEmpty()) {
-										// custard
-										product = Product.Custard;
-									}
-								}
 							}
+							
+							switch (product) {
+							case Burned:
+								map.addObjectByName(players.getLocation(player), "burned");
+								Soar2D.logger.info(player.getName() + ": creating burned");
+								break;
+							case Toffee:
+								map.addObjectByName(players.getLocation(player), "toffee");
+								Soar2D.logger.info(player.getName() + ": creating toffee");
+								break;
+							case SugarCookies:
+								map.addObjectByName(players.getLocation(player), "sugarcookies");
+								Soar2D.logger.info(player.getName() + ": creating sugarcookies");
+								break;
+							case Snickerdoodles:
+								map.addObjectByName(players.getLocation(player), "snickerdoodles");
+								Soar2D.logger.info(player.getName() + ": creating snickerdoodles");
+								break;
+							case MolassesCookies:
+								map.addObjectByName(players.getLocation(player), "molassescookies");
+								Soar2D.logger.info(player.getName() + ": creating molassescookies");
+								break;
+							case Custard:
+								map.addObjectByName(players.getLocation(player), "custard");
+								Soar2D.logger.info(player.getName() + ": creating custard");
+								break;
+							}
+							
 						}
-
-						switch (product) {
-						case Burned:
-							map.addObjectByName(players.getLocation(player), "burned");
-							Soar2D.logger.info(player.getName() + ": creating burned");
-							break;
-						case Toffee:
-							map.addObjectByName(players.getLocation(player), "toffee");
-							Soar2D.logger.info(player.getName() + ": creating toffee");
-							break;
-						case SugarCookies:
-							map.addObjectByName(players.getLocation(player), "sugarcookies");
-							Soar2D.logger.info(player.getName() + ": creating sugarcookies");
-							break;
-						case Snickerdoodles:
-							map.addObjectByName(players.getLocation(player), "snickerdoodles");
-							Soar2D.logger.info(player.getName() + ": creating snickerdoodles");
-							break;
-						case MolassesCookies:
-							map.addObjectByName(players.getLocation(player), "molassescookies");
-							Soar2D.logger.info(player.getName() + ": creating molassescookies");
-							break;
-						case Custard:
-							map.addObjectByName(players.getLocation(player), "custard");
-							Soar2D.logger.info(player.getName() + ": creating custard");
-							break;
-						}
-						
 					} else {
 						Soar2D.logger.info(player.getName() + ": Nothing to cook");
 					}
@@ -332,6 +383,35 @@ public class KitchenWorld implements IWorld {
 		return false;
 	}
 	
+	private String printIngredients(HashSet<Integer> ingredients) {
+		Iterator<Integer> iter = ingredients.iterator();
+		String output = "(";
+		while (iter.hasNext()) {
+			final int ingredient = iter.next().intValue();
+			if (ingredient == kIngredientButter) {
+				output += "butter";
+			} else if (ingredient == kIngredientSugar) {
+				output += "sugar";
+			} else if (ingredient == kIngredientEggs) {
+				output += "eggs";
+			} else if (ingredient == kIngredientFlour) {
+				output += "flour";
+			} else if (ingredient == kIngredientCinnamon) {
+				output += "cinnamon";
+			} else if (ingredient == kIngredientMolasses) {
+				output += "molasses";
+			} else {
+				assert false;
+			}
+			
+			if (iter.hasNext()) {
+				output += ", ";
+			}
+		}
+		output += ")";
+		return output;
+	}
+	
 	enum Product { Toffee, Custard, SugarCookies, Snickerdoodles, MolassesCookies, Burned };
 	
 	int idCounter = 0;
@@ -341,7 +421,6 @@ public class KitchenWorld implements IWorld {
 	final Integer kIngredientFlour = 3;
 	final Integer kIngredientCinnamon = 4;
 	final Integer kIngredientMolasses = 5;
-	final Integer kIngredientOther = 6;
 	
 	HashMap< Integer, HashSet<Integer> > mixtures = new HashMap< Integer, HashSet<Integer> >();
 	
