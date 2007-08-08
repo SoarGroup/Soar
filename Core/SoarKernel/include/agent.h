@@ -753,6 +753,7 @@ kernel time and total_cpu_time greater than the derived total CPU time. REW */
   // reinforcement learning
   std::map<std::string, rl_parameter> *rl_params;
   std::map<std::string, double> *rl_stats;
+  std::map<std::string, int> *rl_template_count;
 
 } agent;
 /*************** end of agent struct *****/

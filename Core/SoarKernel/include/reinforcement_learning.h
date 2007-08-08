@@ -15,6 +15,7 @@
 
 #include <map>
 #include <vector>
+#include <string>
 
 #include "production.h"
 
@@ -66,6 +67,13 @@ typedef struct rl_parameter_struct
 	rl_parameter_union *param;
 	rl_param_type type;
 } rl_parameter;
+
+typedef struct template_instantiation_struct
+{
+	std::string template_base;
+	int id;
+	
+} template_instantiation;
 
 //////////////////////////////////////////////////////////
 // Parameter Get/Set/Validate
@@ -153,5 +161,24 @@ extern bool valid_rl_template( production *prod );
 
 // validate rl rule
 extern bool valid_rl_rule( production *prod );
+
+// template instantiation
+extern template_instantiation *get_template_base( const char *prod_name );
+
+//////////////////////////////////////////////////////////
+// Template Tracking
+//////////////////////////////////////////////////////////
+
+// initializes agent's tracking of template-originated rl-rules
+extern void initialize_template_tracking( agent *my_agent );
+
+// updates the agent's tracking of template-originated rl-rules
+extern void update_template_tracking( agent *my_agent, const char *rule_name );
+
+// in the case of removing an rl-rule, may need to revert to previous id for a template
+extern void revert_template_tracking( agent *my_agent, const char *rule_name );
+
+// get the next id for a template (increments internal counter)
+extern int next_template_id( agent *my_agent, const char *template_name );
 
 #endif

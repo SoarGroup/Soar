@@ -47,6 +47,7 @@ typedef struct agent_struct agent;
 #define TEMPLATE_PRODUCTION_TYPE 4
 
 #define NUM_PRODUCTION_TYPES 5
+// Soar-RL assumes that the production types start at 0 and go to (NUM_PRODUCTION_TYPES-1) sequentially
 
 /* ---------------------------------------
     Match Set print parameters

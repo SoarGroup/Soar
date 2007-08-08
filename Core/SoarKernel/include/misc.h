@@ -16,9 +16,10 @@
 #include <sstream>
 #include <map>
 #include <vector>
+#include <string>
 
 //////////////////////////////////////////////////////////
-// String conversion functions
+// String functions
 //////////////////////////////////////////////////////////
 
 // Conversion of value to string
@@ -41,6 +42,9 @@ template <class T> bool from_string( T &val, std::string str )
 	return ( i >> val );
 }
 
+// Determine if a string represents a natural number (i.e. all numbers)
+extern bool is_natural_number( std::string *str );
+
 //////////////////////////////////////////////////////////
 // Map functions
 //////////////////////////////////////////////////////////
@@ -49,7 +53,7 @@ template <class T> bool from_string( T &val, std::string str )
 template <class X, class Y> std::vector<X> *map_keys( std::map<X,Y> *my_map )
 {
 	typename std::vector<X> *return_val = new std::vector<X>();
-	typename std::map<std::string,Y>::iterator b, e;
+	typename std::map<X,Y>::iterator b, e;
 	
 	e = my_map->end();
 	
@@ -59,5 +63,10 @@ template <class X, class Y> std::vector<X> *map_keys( std::map<X,Y> *my_map )
 	return return_val;
 }
 
+// determine if a key is being used
+template <class X, class Y> bool is_set( std::map<X,Y> *my_map, X *key )
+{
+	return ( my_map->find( *key ) != my_map->end() );
+}
 
 #endif /*MISC_H_*/

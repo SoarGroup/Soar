@@ -1564,10 +1564,13 @@ production *make_production (agent* thisAgent,
   p->instantiations = NIL;
   p->interrupt = FALSE;
   
+  // Soar-RL stuff
   p->rl_update_count = 0;
   p->rl_rule = false;
   if ( ( type != JUSTIFICATION_PRODUCTION_TYPE) && ( type != TEMPLATE_PRODUCTION_TYPE ) )  
 	  p->rl_rule = valid_rl_rule( p );  
+  
+  update_template_tracking( thisAgent, name->sc.name );
   
   return p;
 }

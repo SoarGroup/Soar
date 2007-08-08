@@ -19,6 +19,8 @@
 #include "gSKI_ProductionManager.h"
 #include "IgSKI_Production.h"
 
+#include "reinforcement_learning.h"
+
 using namespace cli;
 using namespace sml;
 
@@ -89,6 +91,9 @@ bool CommandLineInterface::ParseExcise(gSKI::Agent* pAgent, std::vector<std::str
 
 bool CommandLineInterface::DoExcise(gSKI::Agent* pAgent, const ExciseBitset& options, const std::string* pProduction) {
 	if (!RequireAgent(pAgent)) return false;
+	
+	// get soar kernel agent - bad gSKI!
+	agent *my_agent = pAgent->GetSoarAgent();
 
 	// Acquire production manager
 	gSKI::ProductionManager *pProductionManager = pAgent->GetProductionManager();
@@ -145,7 +150,9 @@ bool CommandLineInterface::DoExcise(gSKI::Agent* pAgent, const ExciseBitset& opt
 			SetErrorDetail("Production: " + *pProduction);
 			return SetError(CLIError::kProductionNotFound);
 		}
-
+		
+		// regardless of whether Soar-RL rule, may need to revert tracking to a lower id
+		revert_template_tracking( my_agent, (*pProduction).c_str() );
 		ExciseInternal(pProdIter, exciseCount);
 	}
 

@@ -15,14 +15,15 @@
  */
 
 #include <stdlib.h>
-
 #include <iostream>
 
 #include "agent.h"
 #include "production.h"
 #include "gdatastructs.h"
 #include "rhsfun.h"
+
 #include "reinforcement_learning.h"
+#include "misc.h"
 
 /***************************************************************************
  * Function     : add_rl_parameter
@@ -58,7 +59,7 @@ rl_parameter *add_rl_parameter( const char *value, bool (*val_func)( const char 
  **************************************************************************/
 bool valid_rl_parameter( agent *my_agent, const char *name )
 {
-	return ( (*my_agent->rl_params).find( name ) != (*my_agent->rl_params).end() );
+	return is_set( my_agent->rl_params, new std::string( name ) );
 }
 
 /***************************************************************************
@@ -439,7 +440,7 @@ bool validate_rl_trace_tolerance( double new_val )
  **************************************************************************/
 bool valid_rl_stat( agent *my_agent, const char *name )
 {
-	return ( (*my_agent->rl_stats).find( name ) != (*my_agent->rl_stats).end() );
+	return is_set( my_agent->rl_stats, new std::string( name ) );
 }
 
 /***************************************************************************
@@ -516,3 +517,130 @@ bool valid_rl_rule( production *prod )
 	return ( numeric_pref && ( num_actions == 1 ) );
 }
 
+/***************************************************************************
+ * Function     : get_template_base
+ **************************************************************************/
+template_instantiation *get_template_base( const char *prod_name )
+{
+	std::string temp = prod_name;
+	template_instantiation *return_val = new template_instantiation;
+	
+	// has to be at least "rl*#*a" (where a is a single letter/number/etc)
+	if ( temp.length() < 6 )
+		return NULL;
+	
+	// check first three letters are "rl*"
+	if ( temp.compare( 0, 3, "rl*" ) )
+		return NULL;
+	
+	// find second * to isolate id
+	unsigned int second_star = temp.find_first_of( '*', 3 );
+	if ( second_star == std::string::npos )
+		return NULL;
+	
+	// make sure there's something left after second_star
+	if ( second_star == ( temp.length() - 1 ) )
+		return NULL;
+	
+	// make sure id is a valid natural number
+	std::string id_str = temp.substr( 3, ( second_star - 3 ) );
+	if ( !is_natural_number( &id_str ) )
+		return NULL;
+	
+	// convert id
+	int id;
+	from_string( id, id_str );
+	
+	// return info
+	return_val->template_base = temp.substr( second_star + 1 );
+	return_val->id = id;
+	return return_val;
+}
+
+/***************************************************************************
+ * Function     : initialize_template_tracking
+ **************************************************************************/
+void initialize_template_tracking( agent *my_agent )
+{
+	std::vector<std::string> *my_keys = map_keys( my_agent->rl_template_count );
+	
+	for ( int i=0; i<my_keys->size(); i++ )
+		(*my_agent->rl_template_count)[ (*my_keys)[i] ] = 0;
+}
+
+/***************************************************************************
+ * Function     : update_template_tracking
+ **************************************************************************/
+void update_template_tracking( agent *my_agent, const char *rule_name )
+{
+	template_instantiation *origin = get_template_base( rule_name );
+	if ( origin != NULL )
+	{
+		if ( is_set( my_agent->rl_template_count, &(origin->template_base) ) )
+		{
+			if ( (*my_agent->rl_template_count)[ origin->template_base ] < origin->id )
+				(*my_agent->rl_template_count)[ origin->template_base ] = origin->id;
+		}
+		else
+		{
+			(*my_agent->rl_template_count)[ origin->template_base ] = origin->id;
+		}
+	}
+}
+
+/***************************************************************************
+ * Function     : revert_template_tracking
+ **************************************************************************/
+void revert_template_tracking( agent *my_agent, const char *rule_name )
+{
+	template_instantiation *origin = get_template_base( rule_name );
+	if ( ( origin != NULL ) && ( (*my_agent->rl_template_count)[ origin->template_base ] == origin->id ) )
+	{
+		unsigned int temp_id = 0;
+		template_instantiation *temp_origin;
+		
+		for ( int i=0; i<NUM_PRODUCTION_TYPES; i++ )
+		{
+			for ( production *prod=my_agent->all_productions_of_type[i]; prod != NIL; prod = prod->next )
+			{
+				temp_origin = get_template_base( prod->name->sc.name );
+				if ( temp_origin != NULL )
+				{
+					if ( !origin->template_base.compare( temp_origin->template_base ) )
+					{
+						if ( ( temp_origin->id != origin->id ) && ( temp_origin->id > temp_id ) )
+							temp_id = temp_origin->id;
+					}
+				}
+			}
+		}
+		
+		(*my_agent->rl_template_count)[ origin->template_base ] = temp_id;
+	}
+}
+
+/***************************************************************************
+ * Function     : next_template_id
+ **************************************************************************/
+int next_template_id( agent *my_agent, const char *template_name )
+{
+	std::string *temp = new std::string( template_name );
+	int return_val;
+	
+	if ( !is_set( my_agent->rl_template_count, temp ) )
+	{
+		// first instantiation is 1
+		return_val = 1;
+	}
+	else
+	{
+		// get current value + 1
+		return_val = (*my_agent->rl_template_count)[ *temp ];
+		return_val++;
+	}
+	
+	// increment counter
+	(*my_agent->rl_template_count)[ *temp ] = return_val;
+	
+	return return_val;
+}

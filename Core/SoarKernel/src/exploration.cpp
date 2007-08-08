@@ -106,7 +106,7 @@ exploration_parameter *add_exploration_parameter( double value, bool (*val_func)
  **************************************************************************/
 bool valid_parameter( agent *my_agent, const char *name )
 {	
-	return ( (*my_agent->exploration_params).find( name ) != (*my_agent->exploration_params).end() ); 
+	return is_set( my_agent->exploration_params, new std::string( name ) ); 
 }
 
 /***************************************************************************
@@ -215,11 +215,11 @@ bool valid_reduction_policy( agent *my_agent, const char *parameter, const char 
 }
 
 bool valid_reduction_policy( agent *my_agent, const char *parameter, const long policy )
-{
+{	
 	if ( !valid_parameter( my_agent, parameter ) )
 		return false;
 	
-	return ( (*my_agent->exploration_params)[ parameter ].rates.find( policy ) != (*my_agent->exploration_params)[ parameter ].rates.end() );
+	return is_set( my_agent->exploration_params, new std::string( parameter ) );
 }
 
 /***************************************************************************

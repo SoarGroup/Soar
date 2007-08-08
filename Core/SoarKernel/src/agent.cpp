@@ -345,6 +345,8 @@ agent * create_soar_agent (Kernel * thisKernel, char * agent_name) {            
   (*newAgent->rl_stats)[ "total-reward" ] = 0;
   (*newAgent->rl_stats)[ "global-reward" ] = 0;
   
+  newAgent->rl_template_count = new std::map<std::string, int>();
+  
   return newAgent;
 }
 
