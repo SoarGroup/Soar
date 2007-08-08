@@ -3,7 +3,7 @@ multi-attributes 2d 64 # escape
 multi-attributes adjacent 200 # rogue
 multi-attributes plus 200 # escape
 multi-attributes minus 200 # escape
-multi-attributes lessrThan 200 # escape
+multi-attributes lessThan 200 # escape
 multi-attributes greaterThan 200 # escape
 multi-attributes min 200 # rogue
 multi-attributes traversible 300 # rogue 
