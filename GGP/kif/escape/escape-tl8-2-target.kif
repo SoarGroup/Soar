@@ -1,19 +1,22 @@
-;; Escape TL level 8 scenario 2 target 
+;; Escape TL level 8 scenario 2 target
+;; - Revised: Aha, 8/8/07
 ;;
 ;; Explorer has to pick up hammer, nails, and logs to make a bridge across
-;; the water obstacles to reach...the ring
-;; - New: Must only pick up ring (R), and need not be at exit to get
-;;   maximal score. Picking up ring also is a terminal condition; not
-;;   getting to the exit.
+;; the water obstacles to reach the exit
+;; - New: 
+;;    1. Unlike the source, must also pick up a ring (R), but not the bottle
+;;    2. Unlike the source, there's a gap in the water! This change, like
+;;       (1) above, reduces a constraint on the solution
+;; - Verified solution (length 8): NEENNNWW
 ;;
-;; here's the level setup (same as for TL level 8 source #2):
+;; here's the level setup:
 ;;
-;; 0|     E|
+;; 0|  E   |
 ;; 1|      |
-;; 2|WWWWWW|
-;; 3| R  N |
-;; 4|   L B|
-;; 5|e L h |
+;; 2|WWWW  |
+;; 3| WR N |
+;; 4| WeL B|
+;; 5| WL h |
 ;;   012345
 ;; where E = exit, W = water, L = log, N = nails, H = hammer, e = explorer
 ;; and where B = bottle, R = ring
@@ -29,7 +32,6 @@
 (itemType ring1)    ; >>>>>Added<<<<<
 (itemType bottle1)  ; >>>>>Added<<<<<
 
-
 ; give the items an arbitrary ordering
 ; this is necessary so we can constrain it to only one legal combine action
 ; for a given pair of items
@@ -37,16 +39,19 @@
 (itemOrder log2 2)
 (itemOrder hammer1 3)
 (itemOrder nails1 4)
-(itemOrder ring1 5)    ; >>>>>Added<<<<<
-(itemOrder bottle1 6)  ; >>>>>Added<<<<<
+(itemOrder ring1 5)     ; >>>>>Added<<<<<
+(itemOrder bottle1 6)   ; >>>>>Added<<<<<
 
 ;; declare obstacles
 (obstacleType water0 water)
 (obstacleType water1 water)
 (obstacleType water2 water)
 (obstacleType water3 water)
-(obstacleType water4 water)
-(obstacleType water5 water)
+; (obstacleType water4 water)
+; (obstacleType water5 water)
+(obstacleType water6 water)
+(obstacleType water7 water)
+(obstacleType water8 water)
 
 (init (blocked west 0 0))
 (init (blocked west 0 1))
@@ -76,23 +81,26 @@
 (init (blocked south 4 5))
 (init (blocked south 5 5))
 
-(init (location exit     5 0))
+(init (location exit     2 0))
 
 (init (location water0   0 2))
 (init (location water1   1 2))
 (init (location water2   2 2))
 (init (location water3   3 2))
-(init (location water4   4 2))
-(init (location water5   5 2))
+; (init (location water4   4 2))
+; (init (location water5   5 2))
+(init (location water6   1 3))
+(init (location water7   1 4))
+(init (location water8   1 5))
 
 (init (location log1    3 4))
 (init (location log2    2 5))
 (init (location hammer1 4 5))
 (init (location nails1  4 3))
-(init (location ring1   1 3))  ; >>>>>Added<<<<<
+(init (location ring1   2 3))  ; >>>>>Added<<<<<
 (init (location bottle1 5 4))  ; >>>>>Added<<<<<
 
-(init (location explorer 0 5))
+(init (location explorer 2 4))
 
 (init (health explorer 1))
 
@@ -437,9 +445,9 @@
     (true (step ?t))
     (maxTime ?t))
 
-;;; The game is over if the explorer is able to reach the ring
+;;; The game is over if the explorer is able to reach the exit
 (<= terminal
-    (true (holding ring1)))  ; >>>>>Added<<<<<
+    atExit)
 
 ;;; The game is over if the explorer is killed
 (<= terminal
@@ -453,18 +461,25 @@
     killed)
 
 ;;; The explorer receives 50 points if time runs out and he has neither been
-;;;  killed nor obtained the ring
+;;;  killed nor reached the exit
 (<= (goal explorer 50)
-    (not killed)
     (true (step ?t))
     (maxTime ?t)
-    (not (true (holding ring1))))   ; >>>>>Added<<<<<
+    (not atExit)
+    (not killed))
 
-;;; The explorer receives 100 points if he gets the ring without being 
-;;;  killed...in time.
+;;; The explorer receives 100 points if he reaches the exit without being 
+;;; killed
 (<= (goal explorer 100)
+    atExit
     (not killed)
     (true (holding ring1)))    ; >>>>>Added<<<<<
+
+;;; Also had to insert these for completeness
+(<= (goal explorer 70)
+    atExit
+    (not killed)
+    (not (true (holding ring11))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; Basic axioms of mathematics (defined over the range [0,7])
