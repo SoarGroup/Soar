@@ -1,16 +1,25 @@
 ^input-link
 	^self
 		^position
-			^x <int>
-			^y <int>
-		^reward <int>
+			^x <int> current grid column
+			^y <int> current grid row
+		^reward <int> result of last action, -1 to 4
+		^random <float> just like eaters and tanksoar
 	^view
-		^north [wall open]
-		^south [wall open]
-		^east [wall open]
-		^west [wall open]
+		^north
+			^object [true false] true if there are one or more objects in the cell to the north
+			^type [wall normal countertop oven] wall means blocked
+		^south
+			^object [true false]
+			^type [wall normal countertop oven]
+		^east
+			^object [true false]
+			^type [wall normal countertop oven]
+		^west
+			^object [true false]
+			^type [wall normal countertop oven]
 	^cell
-		^object
+		*^object one per object (ingredient/mixture), can be none
 			^id [butter sugar eggs flour cinnamon molasses mixture toffee custard sugarcookies snickerdoodles molassescookies burned]
 			^texture [liquid powder solid]
 			^color [white yellow brown black]
@@ -22,7 +31,6 @@
 		^direction [north south east west]
 		^status [complete error]
 	^move-with-object
-		^direction [north south east west]
 		^status [complete error]
 	^mix
 		^status [complete error]
