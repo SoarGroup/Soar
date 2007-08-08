@@ -6,15 +6,16 @@
 ;; - Changes to the rewards (at exit)
 ;;   - 100 pts if explorer maintains initial health of 2
 ;;   - 75  pts if explorer's health is reduced to 1
+;; - Verified solution (length 16): WWNEE<combine><apply n>NNNNW<combine><apply w>WW
 ;;
 ;; here's the level setup:
 ;;
-;; 0|EW LNL|
-;; 1|WW    |
+;; 0|  EWNL|
+;; 1|WWWW L|
 ;; 2|  WWW |
 ;; 3|WWWWWW|
 ;; 4|WW L N|
-;; 5|W L He|
+;; 5|W  LHe|
 ;;   012345
 ;; where E = exit, W = water, L = log, N = nails, H = hammer, e = explorer
 
@@ -58,6 +59,8 @@
 (obstacleType water12 water) ; >>>>>Added<<<<<
 (obstacleType water13 water) ; >>>>>Added<<<<<
 (obstacleType water14 water) ; >>>>>Added<<<<<
+(obstacleType water15 water) ; >>>>>Added<<<<<
+(obstacleType water16 water) ; >>>>>Added<<<<<
 
 (init (blocked west 0 0))
 (init (blocked west 0 1))
@@ -87,29 +90,31 @@
 (init (blocked south 4 5))
 (init (blocked south 5 5))
 
-(init (location exit     0 0)) ;>>>>>Changed<<<<<
+(init (location exit     2 0)) ;>>>>>Changed<<<<<
 
-(init (location water0   0 3)) ;>>>>>Changed<<<<<
-(init (location water1   1 3)) ;>>>>>Changed<<<<<
-(init (location water2   2 3)) ;>>>>>Changed<<<<<
-(init (location water3   3 3)) ;>>>>>Changed<<<<<
-(init (location water4   4 3)) ;>>>>>Changed<<<<<
-(init (location water5   5 3)) ;>>>>>Changed<<<<<
-(init (location water6   0 1)) ; >>>>>Added<<<<<
-(init (location water7   1 1)) ; >>>>>Added<<<<<
-(init (location water8   1 0)) ; >>>>>Added<<<<<
-(init (location water9   2 2)) ; >>>>>Added<<<<<
-(init (location water10  3 2)) ; >>>>>Added<<<<<
-(init (location water11  4 2)) ; >>>>>Added<<<<<
-(init (location water12  0 4)) ; >>>>>Added<<<<<
-(init (location water13  1 4)) ; >>>>>Added<<<<<
-(init (location water14  0 5)) ; >>>>>Added<<<<<
+(init (location water0   0 1)) ;>>>>>Changed<<<<<
+(init (location water1   0 3)) ;>>>>>Changed<<<<<
+(init (location water2   0 4)) ;>>>>>Changed<<<<<
+(init (location water3   0 5)) ;>>>>>Changed<<<<<
+(init (location water4   1 1)) ;>>>>>Changed<<<<<
+(init (location water5   1 3)) ;>>>>>Changed<<<<<
+(init (location water6   1 4)) ;>>>>>Changed<<<<<
+(init (location water7   2 1)) ;>>>>>Changed<<<<<
+(init (location water8   2 2)) ;>>>>>Changed<<<<<
+(init (location water9   2 3)) ;>>>>>Changed<<<<<
+(init (location water10  3 0)) ;>>>>>Changed<<<<<
+(init (location water11  3 1)) ;>>>>>Changed<<<<<
+(init (location water12  3 2)) ;>>>>>Changed<<<<<
+(init (location water13  3 3)) ;>>>>>Changed<<<<<
+(init (location water14  4 2)) ;>>>>>Changed<<<<<
+(init (location water15  4 3)) ;>>>>>Changed<<<<<
+(init (location water16  5 3)) ;>>>>>Changed<<<<<
 
 (init (location log1    3 4))
-(init (location log2    2 5))
+(init (location log2    3 5))
 (init (location hammer1 4 5))
 (init (location nails1  5 4))
-(init (location log3    3 0))    ; >>>>>Added<<<<<
+(init (location log3    5 1))    ; >>>>>Added<<<<<
 (init (location nails2  4 0))    ; >>>>>Added<<<<<
 (init (location log4    5 0))    ; >>>>>Added<<<<<
 

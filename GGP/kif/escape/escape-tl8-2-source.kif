@@ -3,15 +3,16 @@
 ;; Explorer has to pick up hammer, nails, and logs to make a bridge across
 ;; the water obstacles to reach the exit
 ;; - New: Must also pick up a bottle (B) and a ring (R)
+;; - Verified solution (length 16): WWWNEEENWWW<combine><apply>NNN
 ;;
 ;; here's the level setup:
 ;;
-;; 0|     E|
+;; 0|  E   |
 ;; 1|      |
 ;; 2|WWWWWW|
-;; 3| R  N |
-;; 4|   L B|
-;; 5|e L h |
+;; 3| WR N |
+;; 4| W L B|
+;; 5| WL he|
 ;;   012345
 ;; where E = exit, W = water, L = log, N = nails, H = hammer, e = explorer
 ;; and where B = bottle, R = ring
@@ -26,7 +27,6 @@
 (itemType nails1)
 (itemType ring1)    ; >>>>>Added<<<<<
 (itemType bottle1)  ; >>>>>Added<<<<<
-
 
 ; give the items an arbitrary ordering
 ; this is necessary so we can constrain it to only one legal combine action
@@ -45,6 +45,9 @@
 (obstacleType water3 water)
 (obstacleType water4 water)
 (obstacleType water5 water)
+(obstacleType water6 water)
+(obstacleType water7 water)
+(obstacleType water8 water)
 
 (init (blocked west 0 0))
 (init (blocked west 0 1))
@@ -74,7 +77,7 @@
 (init (blocked south 4 5))
 (init (blocked south 5 5))
 
-(init (location exit     5 0))
+(init (location exit     2 0))
 
 (init (location water0   0 2))
 (init (location water1   1 2))
@@ -82,15 +85,18 @@
 (init (location water3   3 2))
 (init (location water4   4 2))
 (init (location water5   5 2))
+(init (location water6   1 3))
+(init (location water7   1 4))
+(init (location water8   1 5))
 
 (init (location log1    3 4))
 (init (location log2    2 5))
 (init (location hammer1 4 5))
 (init (location nails1  4 3))
-(init (location ring1   1 3))  ; >>>>>Added<<<<<
+(init (location ring1   2 3))  ; >>>>>Added<<<<<
 (init (location bottle1 5 4))  ; >>>>>Added<<<<<
 
-(init (location explorer 0 5))
+(init (location explorer 5 5))
 
 (init (health explorer 1))
 
