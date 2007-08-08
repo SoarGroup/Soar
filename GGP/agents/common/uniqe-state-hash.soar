@@ -1,0 +1,90 @@
+############
+## unique state representation rule
+##############
+# The idea is: object-coordinates (location + orientation), membership, reinforce (don't consider brace)... should uniquely specify the state.
+# Do we need the complete game state, or just part of it? Counter should be critical
+# Game state (maybe minus counter) + remanining steps should be the real game state.
+#
+sp {create*visited*states*hash*top
+	(state <s> ^top-selection true)
+-->
+	(<s> ^visited-states-hash <vsh>)
+}
+
+sp {apply*analyze-state*hash*current*gs
+	(state <s> ^duplicate-of <s2>
+				^gs <gs>
+				^operator.name analyze-state #must do this after update-state completed
+				^current-evaluation-depth <remaining-steps>
+				)
+-->
+	#(<s> ^current-state-hash (cmd struct-to-string <gs> -a <remaining-steps> -e time))
+	(<s> ^current-state-hash (cmd struct-to-string <gs> -e time))
+}
+
+#if the same game state has been experienced before in substate, it means either it's a failure or it's in the circle - failure no doubt
+# some visited states are 'failures' - hard to detect
+# most are just exceed-depth type
+sp {evaluate-operator*propose*exceed-depth*visited-state
+	(state <s> ^current-state-hash <csh>
+				^desired <d>
+				^operator.name update-search-info
+				^current-evaluation-depth <remaining-steps>
+				)
+	-(state <s2> ^duplicate-of <s>) #must be the bottom state
+	(state <ts> ^top-selection true
+				^visited-states-hash <vsh>)
+	(<vsh> ^<csh> <visited>)
+	(<visited> ^remaining-steps >= <remaining-steps>) #current must be depth-exceeded if the previously visited is depth-exceeded
+-->
+	(write (crlf) <visited> |visited-state !!!!!!!!!!!!| (crlf))
+	(<s> ^depth-exceeded <d>)
+}
+
+
+#if there is no operator tie, it won't be able to check duplicate state during the sequences of operators, but this is OK - it'll detect it in the end
+# first time, init at 0
+sp {copy*visited*state*to*top-selection*1
+	(state <s> ^top-selection true
+				^visited-states-hash <vsh>)
+	(state <s2> ^current-state-hash <csh> ^current-evaluation-depth <remaining-steps>
+				^operator.name update-search-info)  #register visited state after analyze-state
+	#(state <s3> ^duplicate-of <s2>) #copy it when in a lower sub state
+	(<vsh> -^<csh>)
+-->
+	(<vsh> ^<csh> <h>)
+	(<h> ^remaining-steps <remaining-steps>
+		^repeats 0)
+}
+
+# if existing visited state has higher or the same remaining-depths, this is depth-exceeded, update repeat counts
+sp {copy*visited*state*to*top-selection*2
+	(state <s> ^top-selection true
+				^visited-states-hash <vsh>)
+	(state <s2> ^current-state-hash <csh> ^current-evaluation-depth <remaining-steps>
+				^operator.name update-search-info)  #register visited state after analyze-state
+	#(state <s3> ^duplicate-of <s2>) #copy it when in a lower sub state
+	(<vsh> ^<csh> <h>)
+	(<h> ^repeats <repeats>
+			^remaining-steps >= <remaining-steps>)
+-->
+	(<vsh> ^<csh> <h>)
+	(<h> ^repeats <repeats> -
+				(+ <repeats> 1))
+}
+
+# if existing visited state has lower remaining-depths, this is depth-exceeded, update/increase remaining-steps to current one, and this is not a repeats
+sp {copy*visited*state*to*top-selection*3
+	(state <s> ^top-selection true
+				^visited-states-hash <vsh>)
+	(state <s2> ^current-state-hash <csh> ^current-evaluation-depth <current>
+				^operator.name update-search-info)  #register visited state after analyze-state
+	#(state <s3> ^duplicate-of <s2>) #copy it when in a lower sub state
+	(<vsh> ^<csh> <h>)
+	(<h> ^repeats <repeats>
+			^remaining-steps {<old> < <current>})
+-->
+	(<vsh> ^<csh> <h>)
+	(<h> ^remaining-steps <old> -
+							<current> +)
+}
