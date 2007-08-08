@@ -230,7 +230,8 @@ sp {build-canvas*draw*objects*compound*level-2*reinforced
 }
 
 sp {build-canvas*draw*depth*from*top
-	(state <s> ^depth-from-top <dft>)
+	(state <s> ^depth-from-top <dft>
+				^state-analyzed)
 	-(state <s2> ^duplicate-of <s>)
 -->
 	(exec draw_text | update | depth-from-top |-text 0 0 blue Depth-from-top-| <dft>)
@@ -238,21 +239,24 @@ sp {build-canvas*draw*depth*from*top
 
 sp {build-canvas*draw*depth
 	(state <s> ^superstate <> nil
-		^current-evaluation-depth <cur-dep>)
+		^current-evaluation-depth <cur-dep>
+		^state-analyzed)
 	-(state <s2> ^duplicate-of <s>)
 -->
 	(exec draw_text | update | remaining-depth-limit |-text 0 1 blue Remaining-depth-limit-| <cur-dep>)
 }
 sp {build-canvas*draw*branching
 	(state <s> ^superstate <> nil
-		^superstate.item-count <branching-factor>)
+		^superstate.item-count <branching-factor>
+		^state-analyzed)
 	-(state <s2> ^duplicate-of <s>)
 -->
 	(exec draw_text | update | branching |-text 0 2 blue Total-branch-| <branching-factor>)
 }
 sp {build-canvas*draw*remaining
 	(state <s> ^superstate <> nil
-		^remaining-operators <remaining>)
+		^remaining-operators <remaining>
+		^state-analyzed)
 	-(state <s2> ^duplicate-of <s>)
 -->
 	(exec draw_text | update | remaining |-text 0 3 blue Remaining-branch-| <remaining>)
