@@ -213,6 +213,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\src\misc.cpp"
+				>
+			</File>
+			<File
 				RelativePath=".\src\osupport.cpp"
 				>
 			</File>
