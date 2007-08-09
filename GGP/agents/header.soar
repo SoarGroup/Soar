@@ -18,6 +18,16 @@ multi-attributes verticalStep 256 # wargame
 multi-attributes between 300 # rogue
 multi-attributes cellNearMonster 100 # rogue
 
+#multi-attributes for build, the numbers are relative, seems not interfere with the above
+multi-attributes object-location 20
+multi-attributes object-size 20
+multi-attributes object-coordinates 20 #this should always go before any maths
+multi-attributes adjacent 30
+multi-attributes support-for-place 40
+multi-attributes clear 40
+multi-attributes movable 50 #movable doesn't help much
+multi-attributes result-link 100
+
 learn -d
 indifferent-selection --first
 
