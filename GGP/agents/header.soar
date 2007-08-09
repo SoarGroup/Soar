@@ -22,7 +22,6 @@ multi-attributes cellNearMonster 100 # rogue
 multi-attributes object-location 200
 multi-attributes object-size 200
 multi-attributes object-coordinates 200 #this should always go before any maths
-#multi-attributes adjacent 300 see above-- rogue uses this too
 multi-attributes support-for-place 400
 multi-attributes clear 400
 multi-attributes movable 500 #movable doesn't help much
