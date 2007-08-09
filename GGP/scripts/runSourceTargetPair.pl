@@ -1,9 +1,25 @@
 #!/usr/bin/perl
 
-die unless ($#ARGV == 2);
+
 $environment = $ARGV[0];
-$sourceKif = $ARGV[1];
-$targetKif = $ARGV[2];
+if($environment eq "build"){
+	die unless ($#ARGV == 3);
+	
+	$coreKif = $ARGV[1];
+	$sourceKif = $ARGV[2];
+	$targetKif = $ARGV[3];
+	
+	system("cat $coreKif $sourceKif > $sourceKif.merge.kif");
+	system("cat $coreKif $targetKif > $targetKif.merge.kif");
+	$sourceKif = $sourceKif.".merge.kif";
+	$targetKif = $targetKif.".merge.kif";
+}
+else{
+	die unless ($#ARGV == 2);
+	$sourceKif = $ARGV[1];
+	$targetKif = $ARGV[2];
+}
+
 
 checkFor($sourceKif);
 checkFor($targetKif);
