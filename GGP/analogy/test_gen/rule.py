@@ -1,4 +1,5 @@
 class Rule:
+	
 	def __init__(self, pos_conds, neg_conds, action, rhs, comment = ""):
 		self.__pcs = frozenset(pos_conds)
 		self.__ncs = frozenset(neg_conds)
@@ -30,6 +31,9 @@ class Rule:
 	def get_rhs(self):
 		return self.__rhs
 
+	def is_goal_rule(self):
+		return len(self.__rhs) == 0
+
 	def get_kif(self):
 		s = ""
 		pos = ''.join('(true %s) ' % p for p in self.__pcs)
@@ -56,23 +60,27 @@ class Rule:
 	def rhs_intersect(self, other):
 		return self.__rhs.intersection(other.__rhs)
 
-	def add_pconds(self, set):
-		self.__pcs = self.__pcs.union(set)
-	
-	def add_nconds(self, set):
-		self.__ncs = self.__ncs.union(set)
+	def set_rhs_intersect(self, s):
+		""" Make the rhs the intersection of the original rhs and a set """
+		self.__rhs = self.__rhs.intersection(s)
 
-	def remove_pconds(self, set):
-		self.__pcs = self.__pcs.difference(set)
+	def add_pconds(self, s):
+		self.__pcs = self.__pcs.union(s)
 	
-	def remove_nconds(self, set):
-		self.__ncs = self.__ncs.difference(set)
+	def add_nconds(self, s):
+		self.__ncs = self.__ncs.union(s)
 
-	def add_rhs(self, set):
-		self.__rhs = self.__rhs.difference(set)
+	def remove_pconds(self, s):
+		self.__pcs = self.__pcs.difference(s)
 	
-	def remove_rhs(self, set):
-		self.__rhs = self.__rhs.difference(set)
+	def remove_nconds(self, s):
+		self.__ncs = self.__ncs.difference(s)
+
+	def add_rhs(self, s):
+		self.__rhs = self.__rhs.difference(s)
+	
+	def remove_rhs(self, s):
+		self.__rhs = self.__rhs.difference(s)
 
 	def restrict_firing(self, firing_states, other_states):
 		""" restrict this rule to fire only in a particular set of states """

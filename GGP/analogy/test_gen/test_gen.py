@@ -1,5 +1,5 @@
 import random
-import pdb
+from IPython.Debugger import Pdb
 
 from rule import Rule
 
@@ -11,10 +11,14 @@ class State:
 	def get_child(self, action):
 		return self.__children[action]
 
-	def make_max_rules(self, rules):
+	def make_max_rules(self, rules, all_preds):
+		ncs = all_preds - self.preds
 		for a, c in self.__children.items():
-			rules.append(Rule(self.preds, [], a, c.preds))
-			c.make_max_rules(rules)
+			rules.append(Rule(self.preds, ncs, a, c.preds))
+			c.make_max_rules(rules, all_preds)
+
+	def next_is_goal(self, action):
+		return len(self.__children[action].preds) == 0
 
 	def consistent_with(self, r):
 		"""Returns True if a rule either doesn't fire in the state or fires
@@ -28,15 +32,17 @@ class State:
 		rules_fired = {}
 		for r in rules:
 			if r.fires_in(self):
+				if not self.next_is_goal(r.get_action()) and r.is_goal_rule():
+					return False
 				gen_sets.setdefault(r.get_action(), set()).update(r.get_rhs())
 				rules_fired.setdefault(r.get_action(), []).append(r)
 
 		for a in self.__children:
 			if a not in gen_sets: 
-				pdb.set_trace()
+				Pdb().set_trace()
 				return False
 			if gen_sets[a] != self.__children[a].preds: 
-				pdb.set_trace()
+				Pdb().set_trace()
 				return False
 
 		return True
@@ -156,35 +162,71 @@ def make_kif(rules, initial_state):
 	
 	return s
 
-def extract_commons(rules, states, rules2fstates):
+def extract_common(r1, r2, states, rules2fstates, modify_origs):
+	if r1.is_goal_rule() or r2.is_goal_rule():
+		return None
+	if r1.get_action() != r2.get_action():
+		return None
+
+	orig_fstates = rules2fstates[r1] + rules2fstates[r2]
+	pcs_int, ncs_int = r1.lhs_intersect(r2)
+	rhs_int = r1.rhs_intersect(r2)
+	if len(pcs_int) > 0 and len(rhs_int) > 0:
+		cr = Rule(pcs_int, ncs_int, r1.get_action(), rhs_int, "common rule extracted from %s and %s" % (str(r1), str(r2)))
+		consistent = True
+		for s in states:
+			if not s.consistent_with(cr):
+				# first try to change lhs
+				if not cr.restrict_firing(orig_fstates, [s]):
+					# since that didn't work, try removing some rhs 
+					# predicates
+					cr.set_rhs_intersect(s.get_child(cr.get_action()).preds)
+					if len(cr.get_rhs()) == 0:
+						return None
+
+		# common rule is acceptable
+		if modify_origs:
+			for x in [r1, r2]:
+				r1.remove_rhs(cr.get_rhs())
+		return cr
+	
+	return None
+
+
+def extract_all_commons(rules, states, rules2fstates):
 	commons = []
-	non_goal_rules = [r for r in rules if len(r.get_rhs()) > 0]
-	for i, r1 in enumerate(non_goal_rules):
-		for r2 in non_goal_rules[i+1:]:
-			if r1.get_action() != r2.get_action():
-				continue
+	to_remove = set()
+	non_goal_rules = filter(lambda r: not r.is_goal_rule(), rules)
+	i = 0
+	while i < len(non_goal_rules):
+		r1 = non_goal_rules[i]
+		r1_del = False
+		j = i + 1
+		while j < len(non_goal_rules):
+			r2 = non_goal_rules[j]
+			r2_del = False
+			cr = extract_common(r1, r2, states, rules2fstates, True)
+			if cr != None:
+				commons.append(cr)
+				if r1.is_goal_rule():
+					rules.remove(r1)
+					del non_goal_rules[i]
+					r1_del = True
+				if r2.is_goal_rule():
+					rules.remove(r2)
+					del non_goal_rules[j]
+					r2_del = True
+			if r1_del:
+				# don't loop on r1 anymore
+				break
+			elif not r2_del:
+				j += 1
 
-			orig_fstates = rules2fstates[r1] + rules2fstates[r2]
-			pcs_int, ncs_int = r1.lhs_intersect(r2)
-			rhs_int = r1.rhs_intersect(r2)
-			if len(pcs_int) > 0 and len(rhs_int) > 0:
-				cr = Rule(pcs_int, ncs_int, r1.get_action(), rhs_int, "common rule extracted from %s and %s" % (str(r1), str(r2)))
-				consistent = True
-				for s in states:
-					if not s.consistent_with(cr):
-						# first try to change lhs
-						if not cr.restrict_firing(orig_fstates, [s]):
-							# since that didn't work, try removing some rhs 
-							# predicates
-							cr.remove_rhs(s.preds)
-							if len(cr.get_rhs()) == 0:
-								consistent = False
-								break
-
-				if consistent:
-					r1.remove_rhs(cr.get_rhs())
-					r2.remove_rhs(cr.get_rhs())
-					commons.append(cr)
+		if not r1_del:
+			i += 1
+	
+	for r in to_remove:
+		rules.remove(r)
 
 	rules.extend(commons)
 
@@ -250,10 +292,10 @@ if __name__ == '__main__':
 	graph.close()
 
 	rules = []
-	root.make_max_rules(rules)
+	root.make_max_rules(rules, frozenset(tree_gen.predicates))
 	rules2fstates = Rules2FS(all_states)
 
-	extract_commons(rules, all_states, rules2fstates)
+	extract_all_commons(rules, all_states, rules2fstates)
 
 	kif = make_kif(rules, root.preds)
 
