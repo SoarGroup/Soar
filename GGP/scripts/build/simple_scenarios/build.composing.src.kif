@@ -1,0 +1,137 @@
+;;;; -*-Lisp-*-
+;;;; **************************************************************************
+;;;; * Build Game Instance: Transfer Level 6 - Composing, Source 2            *
+;;;; * Transfer Learning in Integrated Cognitive Systems Project              *
+;;;; *                                                                        *
+;;;; * David J. Stracuzzi                                                     *
+;;;; * Arizona State University                                               *
+;;;; * Completed: July 12, 2007                                               *
+;;;; * Revised:   July 20, 2007                                               *
+;;;; **************************************************************************
+;;;;
+;;;; This file contains rules, facts and persistants for a specific game 
+;;;; instance of BUILD. The file build.core.kif contains the core description
+;;;; for the BUILD domain. Appending this file to build.core.kif will produce
+;;;; a complete, playable game description.
+;;;;
+;;;; Goal:
+;;;;   Construct a tower with four levels. Each level is composed of a single
+;;;;   concrete block whose size decreases as the level in the tower increases.
+;;;;   The two bottom blocks must be reinforced.
+;;;;
+;;;; Solution Sequence (several are possible):
+;;;;   (place-adjacent c3 c4 top)         ; clear c2 
+;;;;   (place-adjacent c1 c2 top)         ; put c2 on c1
+;;;;   (rotate c2)                        ; rotate into place
+;;;;   (reinforce c1 rebar)
+;;;;   (reinforce c2 rebar)
+;;;;   (add-to-compound id1 c4)           ; compound c3 and c4 into id1
+;;;;   (add-to-compound id1 c3)
+;;;;   (place-adjacent c2 id1 top)
+;;;;   (add-to-compound id1 c2)
+;;;;   (add-to-compound id1 c1)           ; tower complete
+;;;; Goal completed as shown in file build.composing.pdf in 10 steps
+
+;;; ---------------------------------------------------------------------------
+;;; PARAMETERS: Game-instance-specific relations that define the state. 
+;;;             These will not change during the game.
+
+(max-movable-weight 999)
+(max-time 20)
+
+;;; (brace-type ?brace-material ?bracable-material)
+(brace-type steel-plate steel-beam)
+(brace-type steel-plate wood-beam)
+
+;;; (brace-properties ?brace-material ?strength ?weight)
+(brace-properties steel-plate 2 1)
+
+;;; (material-type ?type ?strength)
+(material-type ground 1000)
+(material-type concrete 50)
+(material-type steel-beam 20)
+(material-type wood-beam 10)
+
+;;; (reinforcement-type ?reinforcement-material ?reinforcable-material)
+(reinforcement-type rebar concrete)
+
+;;; (reinforcement-properties ?reinforcement-material ?strength ?weight)
+(reinforcement-properties rebar 2 2)
+
+
+;;; ---------------------------------------------------------------------------
+;;; PERSISTANTS: Relations that define the state. These may be added and
+;;;              removed during the game.
+
+(init (current-identifier id1))
+
+(init (time 0))
+
+;;; (count ?brace-reinforcement-type ?number)
+(init (count steel-plate 0))
+(init (count rebar 0))
+
+;;; (object ?object-id ?object-type)
+(init (object g1 ground))
+(init (object c1 concrete))
+(init (object c2 concrete))
+
+
+;;; (object-location ?object-id ?x ?y)
+(init (object-location g1 0 0))
+(init (object-location c1 0 1))
+(init (object-location c2 7 1))
+
+
+;;; (object-size ?object-id ?width ?height ?weight)
+(init (object-size g1 13 1 10))
+(init (object-size c1 7 3 10))
+(init (object-size c2 3 5 10))
+
+
+
+;;; ---------------------------------------------------------------------------
+;;; GOAL STATES
+;;; 1) WIN:  Building meets success conditions
+;;; 2) LOSE: Building collapsed
+;;; 3) DRAW: No actions available to agent
+;;; 4) DRAW: Maximum time-step reached
+
+(<= (goal agent 100)
+    (tower ?tower)
+    (true (object-size ?tower ?width ?height ?weight))
+    (> ?height 7)
+    (not collapsed))
+
+(<= (goal agent 0)
+    collapsed)
+
+(<= (goal agent 50)
+    (not (available-action)))
+
+(<= (goal agent 50)
+    (true (time ?t))
+    (max-time ?t))
+
+
+;;; ---------------------------------------------------------------------------
+;;; TERMINAL STATES
+;;; 1) Building meets success conditions
+;;; 2) Building collapsed
+;;; 3) No actions available to agent
+;;; 4) Maximum time-step reached
+
+(<= terminal
+    (tower ?tower)
+    (true (object-size ?tower ?width ?height ?weight))
+    (> ?height 7))
+
+(<= terminal
+    collapsed)
+
+(<= terminal
+    (not (available-action)))
+
+(<= terminal
+    (true (time ?t))
+    (max-time ?t))
