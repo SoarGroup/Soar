@@ -25,7 +25,7 @@ print `grep update-state $logFile | wc -l`;
 $length = `grep ACTION $logFile | wc -l`;
 chomp $length;
 
-if ($length =~ /\D*0\D*/) {
+if ($length =~ /^\D*0\D*$/) {
   print `grep -A 2 increment $logFile | tail -n 1`;
   print `grep increment $logFile`;
 }
