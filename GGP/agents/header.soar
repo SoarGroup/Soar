@@ -1,6 +1,6 @@
 multi-attributes rest 600 # math
 multi-attributes 2d 64 # escape
-multi-attributes adjacent 200 # rogue
+multi-attributes adjacent 250 # rogue and build
 multi-attributes plus 200 # escape
 multi-attributes minus 200 # escape
 multi-attributes lessThan 200 # escape
@@ -19,19 +19,19 @@ multi-attributes between 300 # rogue
 multi-attributes cellNearMonster 100 # rogue
 
 #multi-attributes for build, the numbers are relative, seems not interfere with the above
-multi-attributes object-location 20
-multi-attributes object-size 20
-multi-attributes object-coordinates 20 #this should always go before any maths
-multi-attributes adjacent 30
-multi-attributes support-for-place 40
-multi-attributes clear 40
-multi-attributes movable 50 #movable doesn't help much
-multi-attributes result-link 100
+multi-attributes object-location 200
+multi-attributes object-size 200
+multi-attributes object-coordinates 200 #this should always go before any maths
+#multi-attributes adjacent 300 see above-- rogue uses this too
+multi-attributes support-for-place 400
+multi-attributes clear 400
+multi-attributes movable 500 #movable doesn't help much
+multi-attributes result-link 1000
 
 learn -d
 indifferent-selection --first
 
-# source goodthings.soar
+source goodthings.soar
 
 pushd common
 # source canvas.soar
