@@ -16,6 +16,9 @@
 
 #include <stdlib.h>
 #include <iostream>
+#include <map>
+#include <vector>
+#include <string>
 
 #include "agent.h"
 #include "production.h"
@@ -534,7 +537,7 @@ template_instantiation *get_template_base( const char *prod_name )
 		return NULL;
 	
 	// find second * to isolate id
-	unsigned int second_star = temp.find_first_of( '*', 3 );
+	std::string::size_type second_star = temp.find_first_of( '*', 3 );
 	if ( second_star == std::string::npos )
 		return NULL;
 	
@@ -564,7 +567,7 @@ void initialize_template_tracking( agent *my_agent )
 {
 	std::vector<std::string> *my_keys = map_keys( my_agent->rl_template_count );
 	
-	for ( int i=0; i<my_keys->size(); i++ )
+	for ( size_t i=0; i<my_keys->size(); i++ )
 		(*my_agent->rl_template_count)[ (*my_keys)[i] ] = 0;
 }
 
@@ -596,7 +599,7 @@ void revert_template_tracking( agent *my_agent, const char *rule_name )
 	template_instantiation *origin = get_template_base( rule_name );
 	if ( ( origin != NULL ) && ( (*my_agent->rl_template_count)[ origin->template_base ] == origin->id ) )
 	{
-		unsigned int temp_id = 0;
+		int temp_id = 0;
 		template_instantiation *temp_origin;
 		
 		for ( int i=0; i<NUM_PRODUCTION_TYPES; i++ )
