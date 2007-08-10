@@ -34,6 +34,7 @@ source goodthings.soar
 
 pushd common
 # source canvas.soar
+source unique-state-hash.soar
 source status.soar
 source constant.soar
 pushd default
