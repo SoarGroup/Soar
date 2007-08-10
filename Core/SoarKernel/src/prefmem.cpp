@@ -51,7 +51,8 @@ char * preference_name[] =
   "binary indifferent",
   "binary parallel",
   "better",
-  "worse" };
+  "worse",
+  "numeric indifferent"};
 
 /*                     Preference Management Routines
 
