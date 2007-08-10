@@ -29,6 +29,7 @@ class Rule:
 		return len(self.__ncs) > 0
 
 	def get_rhs(self):
+		assert len(self.__rhs) > 0, "Don't try to get the rhs of a goal rule"
 		return self.__rhs
 
 	def is_goal_rule(self):

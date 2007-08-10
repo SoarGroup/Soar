@@ -1,6 +1,5 @@
 import random
-from IPython.Debugger import Pdb
-
+import pdb
 from rule import Rule
 
 class State:
@@ -39,24 +38,17 @@ class State:
 
 		for a in self.__children:
 			if a not in gen_sets: 
-				Pdb().set_trace()
 				return False
 			if gen_sets[a] != self.__children[a].preds: 
-				Pdb().set_trace()
 				return False
 
 		return True
 
 	def get_graphviz(self):
 		s = ''
+		my_label = str(self)
 		for a, c in self.__children.items():
-			r_label = ''.join(self.preds)
-			if len(c.preds) == 0:
-				c_label = 'goal'
-			else:
-				c_label = ''.join(c.preds)
-			s += '%s -> %s [label="%s"];\n' % (r_label, c_label, a)
-
+			s += '%s -> %s [label="%s"];\n' % (my_label, str(c), a)
 			if len(c.preds) > 0:
 				s += c.get_graphviz()
 		return s
@@ -74,6 +66,8 @@ class State:
 			map(self.__children[a], func)
 	
 	def __str__(self):
+		if len(self.preds) == 0:
+			return 'goal'
 		l = list(self.preds)
 		l.sort()
 		return ''.join(l)
@@ -97,42 +91,46 @@ class Rules2FS:
 
 class TreeGen:
 	def __init__(self):
-		self.min_branch_len = 6
-		self.max_branch_len = 10
+		self.min_branch_len = 5
+		self.max_branch_len = 8
 		self.preserve_prob = 0.3
 		self.min_pred_change = 1
-		self.max_preds = 8
-		self.predicates = [chr(i) for i in range(ord('A'), ord('M'))]
+		self.max_preds = 3
+		self.predicates = [chr(i) for i in range(ord('A'), ord('Z'))]
 		self.actions = ['l', 'r']
 
 		self.__states = set()
 
 	def generate(self):
-		initial_state = [random.choice(self.predicates) for i in range(self.max_preds)]
+		initial_state = frozenset([random.choice(self.predicates) for i in range(self.max_preds)])
 		self.__states = set()
 		return self.__generate_rec(initial_state, 0)
 
 	def __generate_rec(self, curr, branch_len):
-		if random.random() < max(0, branch_len - self.min_branch_len) / float(self.max_branch_len - self.min_branch_len):
+		self.__states.add(curr)
+		if self.max_branch_len == self.min_branch_len:
+			if branch_len == self.max_branch_len:
+				return State(frozenset(), {})
+		elif random.random() < max(0, branch_len - self.min_branch_len) / float(self.max_branch_len - self.min_branch_len):
 			return State(frozenset(), {})
 
 		children = {}
 		for a in self.actions:
+			#pdb.set_trace()
 			preserved = []
 			# randomly preserve some of the state variables
 			for p in curr:
 				if random.random() < self.preserve_prob:
 					preserved.append(p)
 
-			while len(preserved) > len(curr) - self.min_pred_change:
+			while self.max_preds - len(preserved) < self.min_pred_change:
 				preserved.pop(random.randint(0, len(preserved)-1))
 
 			# keep looping until we get a unique state
 			while True:
 				new_preds = [random.choice(self.predicates) for i in range(self.max_preds - len(preserved))]
 				next_state = frozenset(preserved + new_preds)
-				if next_state not in self.__states:
-					self.__states.add(next_state)
+				if next_state not in self.__states and len(next_state - curr) >= self.min_pred_change:
 					break
 
 			children[a] = self.__generate_rec(next_state, branch_len + 1)
@@ -285,7 +283,7 @@ if __name__ == '__main__':
 	all_states = []
 	root.get_all_states(all_states)
 
-	graph = open('graph.gdl', 'w')
+	graph = open('game.gdl', 'w')
 	graph.write("digraph g {\n");
 	graph.write(root.get_graphviz())
 	graph.write("}\n")
@@ -295,7 +293,7 @@ if __name__ == '__main__':
 	root.make_max_rules(rules, frozenset(tree_gen.predicates))
 	rules2fstates = Rules2FS(all_states)
 
-	extract_all_commons(rules, all_states, rules2fstates)
+	#extract_all_commons(rules, all_states, rules2fstates)
 
 	kif = make_kif(rules, root.preds)
 
@@ -306,4 +304,8 @@ if __name__ == '__main__':
 	for r in rules:
 		print r
 	
-	print match_rules_to_states(rules, all_states)
+	#print match_rules_to_states(rules, all_states)
+
+	from rule_graph import make_rule_graph
+
+	make_rule_graph(rules)
