@@ -51,7 +51,7 @@ foreach $line (`$analyzeKif`) {
   #  print `$makeStatic $1`; FIXME
   }
   elsif ($line =~ /counter (.*)/) {
-    push @bkProdContents, "^bookkeeping-state $1";
+    push @bkProdContents, "$1";
     print "timeout counter: $1\n";
   }
 }
@@ -61,8 +61,20 @@ if ($#bkProdContents >= 0) {
   print `echo "  (state <s> ^superstate nil ^facts <f>)" >> $soarFile`;
   print `echo "-->" >> $soarFile`;
   foreach $line (@bkProdContents) {
-    print `echo "  (<f> $line)" >> $soarFile`;
+    print `echo "  (<f> ^bookkeeping-state $line)" >> $soarFile`;
   }
   print `echo "}" >> $soarFile`;
 } 
 
+if ($#bkProdContents >= 0) {
+  if ($#bkProdContents > 0) {
+    die "ERROR: state hashing can't handle multiple bk counters.\n";
+  }
+  print `echo "sp {top-state*counters" >> $soarFile`;
+  print `echo "  (state <s> ^superstate nil ^facts <f>)" >> $soarFile`;
+  print `echo "-->" >> $soarFile`;
+  foreach $line (@bkProdContents) {
+    print `echo "  (<f> ^counter $line)" >> $soarFile`;
+  }
+  print `echo "}" >> $soarFile`;
+} 
