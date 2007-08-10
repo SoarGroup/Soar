@@ -11,11 +11,12 @@ sp {apply*analyze-state*hash*current*gs
 				^gs <gs>
 				^operator.name analyze-state #must do this after update-state completed
 				^current-evaluation-depth <remaining-steps>
-    ^top-state.facts.bookkeeping-state <bs>
+   # ^top-state.facts.bookkeeping-state <bs>
 				)
 -->
 	#(<s> ^current-state-hash (cmd struct-to-string <gs> -a <remaining-steps> -e time))
-   (<s> ^current-state-hash (cmd struct-to-string <gs> -e <bs>))
+  # (<s> ^current-state-hash (cmd struct-to-string <gs> -e <bs>))
+   (<s> ^current-state-hash (cmd struct-to-string <gs> -e time))
 }
 
 # if there is a current-state-hash during update state, it must be old
