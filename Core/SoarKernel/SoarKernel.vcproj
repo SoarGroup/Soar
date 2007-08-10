@@ -371,6 +371,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\include\misc.h"
+				>
+			</File>
+			<File
 				RelativePath=".\src\osupport.h"
 				>
 			</File>

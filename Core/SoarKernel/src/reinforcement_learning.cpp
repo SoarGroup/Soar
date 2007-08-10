@@ -36,6 +36,25 @@ extern void variablize_symbol (agent* thisAgent, Symbol **sym);
 extern void variablize_nots_and_insert_into_conditions (agent* thisAgent, not_struct *nots, condition *conds);
 extern void variablize_condition_list (agent* thisAgent, condition *cond);
 
+
+/***************************************************************************
+ * Function     : clean_parameters
+ **************************************************************************/
+void clean_parameters( agent *my_agent )
+{
+	std::vector<std::string> *my_keys = map_keys( my_agent->rl_params );
+	rl_parameter *temp;
+
+	for ( int i=0; i<my_keys->size(); i++ )
+	{
+		temp = &( (*my_agent->rl_params)[ (*my_keys)[ i ] ] );
+		delete( temp->param );
+	}
+
+	my_keys->clear();
+	delete my_keys;
+}
+
 /***************************************************************************
  * Function     : add_rl_parameter
  **************************************************************************/
@@ -70,7 +89,9 @@ rl_parameter *add_rl_parameter( const char *value, bool (*val_func)( const char 
  **************************************************************************/
 bool valid_rl_parameter( agent *my_agent, const char *name )
 {
-	return is_set( my_agent->rl_params, new std::string( name ) );
+	std::string *temp = new std::string( name );
+	return is_set( my_agent->rl_params, temp );
+	delete temp;
 }
 
 /***************************************************************************
@@ -451,7 +472,13 @@ bool validate_rl_trace_tolerance( double new_val )
  **************************************************************************/
 bool valid_rl_stat( agent *my_agent, const char *name )
 {
-	return is_set( my_agent->rl_stats, new std::string( name ) );
+	bool return_val;
+	std::string *temp = new std::string( name );
+
+	return_val = is_set( my_agent->rl_stats, temp );
+
+	delete temp;
+	return return_val;
 }
 
 /***************************************************************************
@@ -577,6 +604,9 @@ void initialize_template_tracking( agent *my_agent )
 	
 	for ( size_t i=0; i<my_keys->size(); i++ )
 		(*my_agent->rl_template_count)[ (*my_keys)[i] ] = 0;
+
+	my_keys->clear();
+	delete my_keys;
 }
 
 /***************************************************************************
@@ -653,6 +683,7 @@ int next_template_id( agent *my_agent, const char *template_name )
 	// increment counter
 	(*my_agent->rl_template_count)[ *temp ] = return_val;
 	
+	delete temp;
 	return return_val;
 }
 
@@ -695,11 +726,14 @@ int next_template_id( agent *my_agent, const char *template_name )
 	// make unique production name
 	Symbol *new_name_symbol;
 	std::string new_name = "";
+	std::string *temp_id;
 	int new_id;
 	do
 	{
 		new_id = next_template_id( my_agent, my_template->name->sc.name );
-		new_name = ( "rl*" + to_string( new_id ) + "*" + my_template->name->sc.name );
+		temp_id = to_string( new_id );
+		new_name = ( "rl*" + (*temp_id) + "*" + my_template->name->sc.name );
+		delete temp_id;
 	} while ( find_sym_constant( my_agent, new_name.c_str() ) != NIL );
 	new_name_symbol = make_sym_constant( my_agent, (char *) new_name.c_str() );
 	

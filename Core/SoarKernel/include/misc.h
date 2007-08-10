@@ -23,8 +23,10 @@
 //////////////////////////////////////////////////////////
 
 // Conversion of value to string
-template<class T> std::string to_string( T &x )
+template<class T> std::string *to_string( T &x )
 {
+	std::string *return_val;
+	
 	// instantiate stream
 	std::ostringstream o;
 	
@@ -32,7 +34,10 @@ template<class T> std::string to_string( T &x )
 	o << x;
 	
 	// spit value back as string
-	return o.str();
+	return_val = new std::string( o.str() );
+	o.flush();
+
+	return return_val;
 }
 
 // Conversion from string to value

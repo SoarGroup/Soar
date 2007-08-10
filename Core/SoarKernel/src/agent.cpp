@@ -324,21 +324,45 @@ agent * create_soar_agent (Kernel * thisKernel, char * agent_name) {            
 
   
   // exploration initialization
+  exploration_parameter *temp_exp_param;
   newAgent->exploration_params = new std::map<std::string, exploration_parameter>();
-  (*newAgent->exploration_params)[ "epsilon" ] = *add_exploration_parameter( 0.1, &validate_epsilon );
-  (*newAgent->exploration_params)[ "temperature" ] = *add_exploration_parameter( 25, &validate_temperature );
+  temp_exp_param = add_exploration_parameter( 0.1, &validate_epsilon );
+  (*newAgent->exploration_params)[ "epsilon" ] = *temp_exp_param;
+  delete temp_exp_param;
+  temp_exp_param = add_exploration_parameter( 25, &validate_temperature );
+  (*newAgent->exploration_params)[ "temperature" ] = *temp_exp_param;
+  delete temp_exp_param;
   
   // rl initialization
+  rl_parameter *temp_rl_param;
   newAgent->rl_params = new std::map<std::string, rl_parameter>();
-  (*newAgent->rl_params)[ "learning" ] = *add_rl_parameter( "on", &validate_rl_learning, &convert_rl_learning, &convert_rl_learning );
-  (*newAgent->rl_params)[ "accumulation-mode" ] = *add_rl_parameter( "sum", &validate_rl_accumulation, &convert_rl_accumulation, &convert_rl_accumulation );
-  (*newAgent->rl_params)[ "discount-mode" ] = *add_rl_parameter( "exponential", &validate_rl_discount, &convert_rl_discount, &convert_rl_discount );
-  (*newAgent->rl_params)[ "exponential-discount-rate" ] = *add_rl_parameter( 0.9, &validate_rl_exp_discount );
-  (*newAgent->rl_params)[ "linear-discount-rate" ] = *add_rl_parameter( 0.1, &validate_rl_lin_discount );
-  (*newAgent->rl_params)[ "learning-rate" ] = *add_rl_parameter( 0.3, &validate_rl_learning_rate );
-  (*newAgent->rl_params)[ "learning-policy" ] = *add_rl_parameter( "sarsa", &validate_rl_learning_policy, &convert_rl_learning_policy, &convert_rl_learning_policy );
-  (*newAgent->rl_params)[ "eligibility-trace-decay-rate" ] = *add_rl_parameter( 0, &validate_rl_decay_rate );
-  (*newAgent->rl_params)[ "eligibility-trace-tolerance" ] = *add_rl_parameter( 0.001, &validate_rl_trace_tolerance );
+  temp_rl_param = add_rl_parameter( "on", &validate_rl_learning, &convert_rl_learning, &convert_rl_learning );
+  (*newAgent->rl_params)[ "learning" ] = *temp_rl_param;
+  delete temp_rl_param;
+  temp_rl_param = add_rl_parameter( "sum", &validate_rl_accumulation, &convert_rl_accumulation, &convert_rl_accumulation );
+  (*newAgent->rl_params)[ "accumulation-mode" ] = *temp_rl_param;
+  delete temp_rl_param;
+  temp_rl_param = add_rl_parameter( "exponential", &validate_rl_discount, &convert_rl_discount, &convert_rl_discount );
+  (*newAgent->rl_params)[ "discount-mode" ] = *temp_rl_param;
+  delete temp_rl_param;
+  temp_rl_param = add_rl_parameter( 0.9, &validate_rl_exp_discount );
+  (*newAgent->rl_params)[ "exponential-discount-rate" ] = *temp_rl_param;
+  delete temp_rl_param;
+  temp_rl_param = add_rl_parameter( 0.1, &validate_rl_lin_discount );
+  (*newAgent->rl_params)[ "linear-discount-rate" ] = *temp_rl_param;
+  delete temp_rl_param;
+  temp_rl_param = add_rl_parameter( 0.3, &validate_rl_learning_rate );
+  (*newAgent->rl_params)[ "learning-rate" ] = *temp_rl_param;
+  delete temp_rl_param;
+  temp_rl_param = add_rl_parameter( "sarsa", &validate_rl_learning_policy, &convert_rl_learning_policy, &convert_rl_learning_policy );
+  (*newAgent->rl_params)[ "learning-policy" ] = *temp_rl_param;
+  delete temp_rl_param;
+  temp_rl_param = add_rl_parameter( 0, &validate_rl_decay_rate );
+  (*newAgent->rl_params)[ "eligibility-trace-decay-rate" ] = *temp_rl_param;
+  delete temp_rl_param;
+  temp_rl_param = add_rl_parameter( 0.001, &validate_rl_trace_tolerance );
+  (*newAgent->rl_params)[ "eligibility-trace-tolerance" ] = *temp_rl_param;
+  delete temp_rl_param;
   
   newAgent->rl_stats = new std::map<std::string, double>();
   (*newAgent->rl_stats)[ "update-error" ] = 0;
@@ -482,6 +506,21 @@ void destroy_soar_agent (Kernel * thisKernel, agent * delete_agent)
   }
 
   /* RPM 9/06 end */
+
+  // cleanup exploration
+  delete_agent->exploration_params->clear();
+  delete delete_agent->exploration_params;
+
+  // cleanup Soar-RL
+  clean_parameters( delete_agent );
+  delete_agent->rl_params->clear();
+  delete delete_agent->rl_params;
+
+  delete_agent->rl_stats->clear();
+  delete delete_agent->rl_stats;
+
+  delete_agent->rl_template_count->clear();
+  delete delete_agent->rl_template_count;
 
   /* Free soar agent structure */
   free((void *) delete_agent);

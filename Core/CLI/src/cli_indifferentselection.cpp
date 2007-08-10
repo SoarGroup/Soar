@@ -287,12 +287,14 @@ bool CommandLineInterface::DoIndifferentSelection( gSKI::Agent* pAgent, const ch
 		if ( !p1 )
 		{
 			double param_value = get_parameter_value( my_agent, "epsilon" ); 
+			std::string *temp = to_string( param_value );
 			
 			if ( m_RawOutput )
 				m_Result << param_value;
 			else
-				AppendArgTagFast( sml_Names::kParamValue, sml_Names::kTypeDouble, to_string( param_value ).c_str() );
+				AppendArgTagFast( sml_Names::kParamValue, sml_Names::kTypeDouble, temp->c_str() );
 			
+			delete temp;
 			return true;
 		}
 		else
@@ -308,12 +310,14 @@ bool CommandLineInterface::DoIndifferentSelection( gSKI::Agent* pAgent, const ch
 		if ( !p1 )
 		{
 			double param_value = get_parameter_value( my_agent, "temperature" ); 
-						
+			std::string *temp = to_string( param_value );
+
 			if ( m_RawOutput )
 				m_Result << param_value;
 			else
-				AppendArgTagFast( sml_Names::kParamValue, sml_Names::kTypeDouble, to_string( param_value ).c_str() );
+				AppendArgTagFast( sml_Names::kParamValue, sml_Names::kTypeDouble, temp->c_str() );
 			
+			delete temp;
 			return true;
 		}
 		else
@@ -349,12 +353,14 @@ bool CommandLineInterface::DoIndifferentSelection( gSKI::Agent* pAgent, const ch
 		if ( !p3 )
 		{
 			double reduction_rate = get_reduction_rate( my_agent, p1->c_str(), p2->c_str() );
+			std::string *temp = to_string( reduction_rate );
 			
 			if ( m_RawOutput )
 				m_Result << reduction_rate;
 			else
-				AppendArgTagFast( sml_Names::kParamValue, sml_Names::kTypeDouble, to_string( reduction_rate ).c_str() );
+				AppendArgTagFast( sml_Names::kParamValue, sml_Names::kTypeDouble, temp->c_str() );
 			
+			delete temp;
 			return true;
 		}
 		else
@@ -371,6 +377,7 @@ bool CommandLineInterface::DoIndifferentSelection( gSKI::Agent* pAgent, const ch
 	{
 		// used for output
 		std::string temp, temp2, temp3;
+		std::string *temp4;
 		double temp_value;
 		
 		temp = "Exploration Policy: ";
@@ -392,8 +399,10 @@ bool CommandLineInterface::DoIndifferentSelection( gSKI::Agent* pAgent, const ch
 			temp = (*param_names)[i];
 			temp += ": ";
 			temp_value = get_parameter_value( my_agent, (*param_names)[i].c_str() ); 
-			temp += to_string( temp_value );
-			
+			temp4 = to_string( temp_value );
+			temp += (*temp4);
+			delete temp4;
+
 			if ( m_RawOutput )
 				m_Result << temp << "\n"; 
 			else
@@ -419,7 +428,9 @@ bool CommandLineInterface::DoIndifferentSelection( gSKI::Agent* pAgent, const ch
 					temp2 += "/";
 				
 				temp_value = get_reduction_rate( my_agent, (*param_names)[i].c_str(), (*param_policies)[j] );
-				temp3 += to_string( temp_value );
+				temp4 = to_string( temp_value );
+				temp3 += (*temp4);
+				delete temp4;
 				if ( j != ( param_policies->size() - 1 ) )
 					temp3 += "/";
 			}
@@ -439,6 +450,9 @@ bool CommandLineInterface::DoIndifferentSelection( gSKI::Agent* pAgent, const ch
 			temp = "";
 		}
 		
+		param_names->clear();
+		delete param_names;
+
 		return true;
 	}
 		

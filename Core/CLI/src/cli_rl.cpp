@@ -165,6 +165,7 @@ bool CommandLineInterface::DoRL( gSKI::Agent* pAgent, const char pOp, const std:
 	if ( !pOp )
 	{
 		std::string temp;
+		std::string *temp2;
 		double temp_val;
 		
 		temp = "Soar-RL learning: ";
@@ -204,7 +205,9 @@ bool CommandLineInterface::DoRL( gSKI::Agent* pAgent, const char pOp, const std:
 		
 		temp = "exponential-discount-rate: ";
 		temp_val = get_rl_parameter( my_agent, "exponential-discount-rate" );
-		temp += to_string( temp_val );
+		temp2 = to_string( temp_val );
+		temp += (*temp2);
+		delete temp2;
 		if ( m_RawOutput )
 			m_Result << temp << "\n";
 		else
@@ -212,7 +215,9 @@ bool CommandLineInterface::DoRL( gSKI::Agent* pAgent, const char pOp, const std:
 		
 		temp = "linear-discount-rate: ";
 		temp_val = get_rl_parameter( my_agent, "linear-discount-rate" );
-		temp += to_string( temp_val );
+		temp2 = to_string( temp_val );
+		temp += (*temp2);
+		delete temp2;
 		if ( m_RawOutput )
 			m_Result << temp << "\n\n";
 		else
@@ -241,7 +246,9 @@ bool CommandLineInterface::DoRL( gSKI::Agent* pAgent, const char pOp, const std:
 		
 		temp = "learning-rate: ";
 		temp_val = get_rl_parameter( my_agent, "learning-rate" );
-		temp += to_string( temp_val );
+		temp2 = to_string( temp_val );
+		temp += (*temp2);
+		delete temp2;
 		if ( m_RawOutput )
 			m_Result << temp << "\n\n";
 		else
@@ -263,7 +270,9 @@ bool CommandLineInterface::DoRL( gSKI::Agent* pAgent, const char pOp, const std:
 
 		temp = "eligibility-trace-decay-rate: ";
 		temp_val = get_rl_parameter( my_agent, "eligibility-trace-decay-rate" );
-		temp += to_string( temp_val );
+		temp2 = to_string( temp_val );
+		temp += (*temp2);
+		delete temp2;
 		if ( m_RawOutput )
 			m_Result << temp << "\n";
 		else
@@ -271,7 +280,9 @@ bool CommandLineInterface::DoRL( gSKI::Agent* pAgent, const char pOp, const std:
 		
 		temp = "eligibility-trace-tolerance: ";
 		temp_val = get_rl_parameter( my_agent, "eligibility-trace-tolerance" );
-		temp += to_string( temp_val );
+		temp2 = to_string( temp_val );
+		temp += (*temp2);
+		delete temp2;
 		if ( m_RawOutput )
 			m_Result << temp << "\n\n";
 		else
@@ -285,6 +296,7 @@ bool CommandLineInterface::DoRL( gSKI::Agent* pAgent, const char pOp, const std:
 	else if ( pOp == 'g' )
 	{
 		std::string output = "";
+		std::string *temp2;
 		const char *tag_type = sml_Names::kTypeString;
 		
 		switch ( get_rl_parameter_type( my_agent, pAttr->c_str() ) )
@@ -295,7 +307,9 @@ bool CommandLineInterface::DoRL( gSKI::Agent* pAgent, const char pOp, const std:
 				
 			case rl_param_number:
 				double temp = get_rl_parameter( my_agent, pAttr->c_str() );
-				output += to_string( temp );
+				temp2 = to_string( temp );
+				output += (*temp2);
+				delete temp2;
 				tag_type = sml_Names::kTypeDouble;
 				break;
 		}
@@ -333,10 +347,13 @@ bool CommandLineInterface::DoRL( gSKI::Agent* pAgent, const char pOp, const std:
 		{
 			double temp;
 			std::string output;
+			std::string *temp_str;
 			
 			output = "Error from last update: ";
 			temp = get_rl_stat( my_agent, "update-error" );
-			output += to_string( temp );
+			temp_str = to_string( temp );
+			output += (*temp_str);
+			delete temp_str;
 			if ( m_RawOutput )
 				m_Result << output << "\n";
 			else
@@ -344,7 +361,9 @@ bool CommandLineInterface::DoRL( gSKI::Agent* pAgent, const char pOp, const std:
 			
 			output = "Total reward in last cycle: ";
 			temp = get_rl_stat( my_agent, "total-reward" );
-			output += to_string( temp );
+			temp_str = to_string( temp );
+			output += (*temp_str);
+			delete temp_str;
 			if ( m_RawOutput )
 				m_Result << output << "\n";
 			else
@@ -352,7 +371,9 @@ bool CommandLineInterface::DoRL( gSKI::Agent* pAgent, const char pOp, const std:
 			
 			output = "Global reward since init: ";
 			temp = get_rl_stat( my_agent, "global-reward" );
-			output += to_string( temp );
+			temp_str = to_string( temp );
+			output += (*temp_str);
+			delete temp_str;
 			if ( m_RawOutput )
 				m_Result << output << "\n";
 			else
@@ -361,7 +382,9 @@ bool CommandLineInterface::DoRL( gSKI::Agent* pAgent, const char pOp, const std:
 		else
 		{
 			double temp = get_rl_stat( my_agent, pAttr->c_str() );
-			std::string output = to_string( temp );
+			std::string *temp_str = to_string( temp );
+			std::string output = (*temp_str);
+			delete temp_str;
 			
 			if ( m_RawOutput )
 				m_Result << output;
