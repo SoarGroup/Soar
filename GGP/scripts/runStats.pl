@@ -29,6 +29,9 @@ if ($length =~ /^\D*0\D*$/) {
   print `grep -A 2 increment $logFile | tail -n 1`;
   print `grep increment $logFile`;
 }
+elsif (`tail $logFile | grep fail`) {
+  print "FAILED\n";
+}
 else {
   print "$length\n";
 }
