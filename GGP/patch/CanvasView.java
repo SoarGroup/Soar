@@ -1,4 +1,4 @@
-// put me in SoarSuite/Tools/SoarJavaDebugger/modules
+// put me in SoarSuite/Tools/SoarJavaDebugger/src/modules
 
 /********************************************************************************************
 *
