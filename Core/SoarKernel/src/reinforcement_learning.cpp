@@ -24,9 +24,17 @@
 #include "production.h"
 #include "gdatastructs.h"
 #include "rhsfun.h"
+#include "recmem.h"
+#include "chunk.h"
+#include "rete.h"
 
 #include "reinforcement_learning.h"
 #include "misc.h"
+
+extern Symbol *instantiate_rhs_value (agent* thisAgent, rhs_value rv, goal_stack_level new_id_level, char new_id_letter, struct token_struct *tok, wme *w);
+extern void variablize_symbol (agent* thisAgent, Symbol **sym);
+extern void variablize_nots_and_insert_into_conditions (agent* thisAgent, not_struct *nots, condition *conds);
+extern void variablize_condition_list (agent* thisAgent, condition *cond);
 
 /***************************************************************************
  * Function     : add_rl_parameter
@@ -647,3 +655,142 @@ int next_template_id( agent *my_agent, const char *template_name )
 	
 	return return_val;
 }
+
+/***************************************************************************
+ * Function     : build_template_instantiation
+ **************************************************************************/
+void build_template_instantiation( agent *my_agent, instantiation *my_template_instance, struct token_struct *tok, wme *w )
+{
+	Symbol *id, *attr, *value, *referent;
+	production *my_template = my_template_instance->prod;
+	action *my_action = my_template->action_list;
+	char first_letter;
+	float init_value = 0;
+
+	Bool chunk_var;
+	condition *cond_top, *cond_bottom;
+
+	// build the instantiated conditions, and bind LHS variables
+	p_node_to_conditions_and_nots( my_agent, my_template->p_node, tok, w, 
+									&( my_template_instance->top_of_instantiated_conditions ), 
+									&( my_template_instance->bottom_of_instantiated_conditions ), 
+									&( my_template_instance->nots ), NIL );
+
+	// get the preference value
+	id = instantiate_rhs_value( my_agent, my_action->id, -1, 's', tok, w );
+	attr = instantiate_rhs_value( my_agent, my_action->attr, id->id.level, 'a', tok, w );
+	first_letter = first_letter_from_symbol( attr );
+	value = instantiate_rhs_value( my_agent, my_action->value, id->id.level, first_letter, tok, w );
+	referent = instantiate_rhs_value( my_agent, my_action->referent, id->id.level, first_letter, tok, w );
+
+	if ( referent->common.symbol_type == INT_CONSTANT_SYMBOL_TYPE )
+		init_value = (float) referent->ic.value;
+	else if ( referent->common.symbol_type == FLOAT_CONSTANT_SYMBOL_TYPE )
+		init_value = referent->fc.value;
+
+	// make new action list
+	action *new_action = make_simple_action( my_agent, id, attr, value, referent );
+	new_action->preference_type = NUMERIC_INDIFFERENT_PREFERENCE_TYPE;
+
+	// make unique production name
+	Symbol *new_name_symbol;
+	std::string new_name = "";
+	int new_id;
+	do
+	{
+		new_id = next_template_id( my_agent, my_template->name->sc.name );
+		new_name = ( "rl*" + to_string( new_id ) + "*" + my_template->name->sc.name );
+	} while ( find_sym_constant( my_agent, new_name.c_str() ) != NIL );
+	new_name_symbol = make_sym_constant( my_agent, (char *) new_name.c_str() );
+	
+	// prep conditions
+	copy_condition_list( my_agent, my_template_instance->top_of_instantiated_conditions, &cond_top, &cond_bottom );
+	add_goal_or_impasse_tests_to_conds( my_agent, cond_top );
+	chunk_var = my_agent->variablize_this_chunk;
+	my_agent->variablize_this_chunk = TRUE;
+	reset_variable_generator( my_agent, cond_top, NIL );
+	my_agent->variablization_tc = get_new_tc_number( my_agent );
+	variablize_condition_list( my_agent, cond_top );
+	variablize_nots_and_insert_into_conditions( my_agent, my_template_instance->nots, cond_top );
+
+	// make new production
+	production *new_production = make_production( my_agent, USER_PRODUCTION_TYPE, new_name_symbol, &cond_top, &cond_bottom, &new_action, false );
+	my_agent->variablize_this_chunk = chunk_var;
+
+	// attempt to add to rete, remove if duplicate
+	if ( add_production_to_rete( my_agent, new_production, cond_top, 0, false ) == DUPLICATE_PRODUCTION )
+	{
+		excise_production( my_agent, new_production, false );
+		revert_template_tracking( my_agent, my_template->name->sc.name );
+	}
+	deallocate_condition_list( my_agent, cond_top );
+}
+
+/***************************************************************************
+ * Function     : make_simple_action
+ **************************************************************************/
+action *make_simple_action( agent *my_agent, Symbol *id_sym, Symbol *attr_sym, Symbol *val_sym, Symbol *ref_sym )
+{
+    action *rhs;
+    Symbol *temp;
+
+    allocate_with_pool( my_agent, &my_agent->action_pool, &rhs );
+    rhs->next = NIL;
+    rhs->type = MAKE_ACTION;
+
+    // id
+	temp = id_sym;
+	symbol_add_ref( temp );
+	variablize_symbol( my_agent, &temp );
+	rhs->id = symbol_to_rhs_value( temp );
+
+    // attribute
+    temp = attr_sym;
+	symbol_add_ref( temp );
+	variablize_symbol( my_agent, &temp );
+	rhs->attr = symbol_to_rhs_value( temp );
+
+	// value
+	temp = val_sym;
+	symbol_add_ref( temp );
+	variablize_symbol( my_agent, &temp );
+	rhs->value = symbol_to_rhs_value( temp );
+
+	// referent
+	temp = ref_sym;
+	symbol_add_ref( temp );
+	variablize_symbol( my_agent, &temp );
+	rhs->referent = symbol_to_rhs_value( temp );
+
+    return rhs;
+}
+
+/***************************************************************************
+ * Function     : add_goal_or_impasse_tests_to_conds
+ **************************************************************************/
+void add_goal_or_impasse_tests_to_conds( agent *my_agent, condition *all_conds )
+{
+	// mark each id as we add a test for it, so we don't add a test for the same id in two different places
+	Symbol *id;
+	test t;
+	complex_test *ct;
+	tc_number tc = get_new_tc_number( my_agent );
+
+	for ( condition *cond = all_conds; cond != NIL; cond = cond->next )
+	{
+		if ( cond->type != POSITIVE_CONDITION )
+			continue;
+
+		id = referent_of_equality_test( cond->data.tests.id_test );
+
+		if ( ( id->id.isa_goal || id->id.isa_impasse ) && ( id->id.tc_num != tc ) ) 
+		{
+			allocate_with_pool( my_agent, &my_agent->complex_test_pool, &ct );
+			ct->type = (char) ( ( id->id.isa_goal )?( GOAL_ID_TEST ):( IMPASSE_ID_TEST ) );
+			t = make_test_from_complex_test( ct );
+			add_new_test_to_test( my_agent, &( cond->data.tests.id_test ), t );
+			id->id.tc_num = tc;
+		}
+	}
+}
+

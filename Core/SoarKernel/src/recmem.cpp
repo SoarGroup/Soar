@@ -43,6 +43,7 @@
 #include "osupport.h"
 #include "recmem.h"
 #include "tempmem.h"
+#include "reinforcement_learning.h"
 
 /* JC ADDED: for gSKI events */
 #include "gski_event_system_functions.h"
@@ -562,13 +563,22 @@ void create_instantiation (agent* thisAgent, production *prod,
 #endif
 
    allocate_with_pool (thisAgent, &thisAgent->instantiation_pool, &inst);
-   inst->next = thisAgent->newly_created_instantiations;
-   thisAgent->newly_created_instantiations = inst;
    inst->prod = prod;
    inst->rete_token = tok;
    inst->rete_wme = w;
    inst->okay_to_variablize = TRUE;
    inst->in_ms = TRUE;
+
+   if ( prod->type != TEMPLATE_PRODUCTION_TYPE )
+   {
+	   inst->next = thisAgent->newly_created_instantiations;
+	   thisAgent->newly_created_instantiations = inst;
+   }
+   else
+   {
+	   build_template_instantiation( thisAgent, inst, tok, w );
+	   return;
+   }
 
 
    /* REW: begin   09.15.96 */

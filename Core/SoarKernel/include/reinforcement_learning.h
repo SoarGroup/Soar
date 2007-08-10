@@ -18,6 +18,8 @@
 #include <string>
 
 #include "production.h"
+#include "gdatastructs.h"
+#include "chunk.h"
 
 //////////////////////////////////////////////////////////
 // RL Constants
@@ -180,5 +182,18 @@ extern void revert_template_tracking( agent *my_agent, const char *rule_name );
 
 // get the next id for a template (increments internal counter)
 extern int next_template_id( agent *my_agent, const char *template_name );
+
+//////////////////////////////////////////////////////////
+// Template Behavior
+//////////////////////////////////////////////////////////
+
+// builds a new Soar-RL rule from a template instantiation
+extern void build_template_instantiation( agent *my_agent, instantiation *my_template_instance, struct token_struct *tok, wme *w );
+
+// creates an incredibly simple action
+extern action *make_simple_action( agent *my_gent, Symbol *id_sym, Symbol *attr_sym, Symbol *val_sym, Symbol *ref_sym );
+
+// adds a test to a condition list for goals or impasses contained within the condition list
+extern void add_goal_or_impasse_tests_to_conds(agent *my_agent, condition *all_conds);
 
 #endif
