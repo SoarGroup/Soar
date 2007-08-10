@@ -5,6 +5,7 @@
 ;;;  - TL level 8, Scenario 2, Source task
 ;;;  - Changes located between ">>>>" and "<<<<<"
 ;;;  - 8/8: Removed blastZone, and only legalThrowDist now is only {2}
+;;;  - 8/9 (Matt) : Added walls, moved terrorist
 ;;;  - Basic game requires medkit to win (see TL 6 scenario 2 source 1)
 ;;;    - Changes: 
 ;;;      - explorer health=2
@@ -12,7 +13,7 @@
 ;;;    - But now you also need to pickup a few things, namely:
 ;;;      - The Northwestern Wildcat, UMichigan Wolverine, and the ISLE Feather
 ;;;
-;;;  - Verified solution (length 14): EWNWNSEEES<heal>E<heal>N
+;;;  - Verified solution (length 14): WNNSSEENES<heal>E<heal>N
 ;;; Debugger: "http://games.stanford.edu:5999/director/debugrawgame?"
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
@@ -21,17 +22,17 @@
 ;                        
 ;    1 2 3 4 5 6 7 8     
 ;   +---------------+    + = Corner
-;  1|. . . . . . . T|    . = A room location
+;  1|. . . . . . . .|    . = A room location
 ;   |               |    - = Horizontal wall
 ;  2|. . . . . . . .|    | = Vertical wall
 ;   | +         +---|
-;  3|.|. . . . .|. .|    @ = Soldier
-;   | +-------+ |   |    T = Terrorist
-;  4|.|. f . . .|. .|    F = Flag (exit)
-;   | |   +---+ +---|    G = Gun
-;  5|.|. M . . . F .|    f = Feather (dropped by Icarus)
+;  3|.|. . T . .|. .|    @ = Soldier
+;   | +-+-----+ |   |    T = Terrorist
+;  4|. .|f|. . .|. .|    F = Flag (exit)
+;   |   | +---+ +---|    G = Gun
+;  5|. .|M|. . . F .|    f = Feather (dropped by Icarus)
 ;   | +-+     +     |    M = Medical kit
-;  6|.|. . @ W|w . .|    w = Wildcat (hat)
+;  6|. .|. @ W|w . .|    w = Wildcat (hat)
 ;   +---------------+    W = Wolverine (coat)
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
@@ -49,7 +50,7 @@
 ;;; Specifies where objects start on board, where lower left is (1,1).
 ;;; Object locations
 (init (location soldier 4 6))
-(init (location terrorist1 8 1))
+(init (location terrorist1 4 3))
 (init (location medKit1 3 5))
 (init (location wildcat 6 6))
 (init (location wolverine 5 6))
@@ -73,9 +74,11 @@
 ;;; Unless otherwise specified adjacent spatial coordinates are assumed 
 ;;;  accessible from one another.  
 (init (blockedEast 1 3))  
-(init (blockedEast 1 4))  
-(init (blockedEast 1 5))  
-(init (blockedEast 1 6))  
+(init (blockedEast 2 4))  
+(init (blockedEast 2 5))  
+(init (blockedEast 2 6))  
+(init (blockedEast 3 4))  
+(init (blockedEast 3 5))  
 (init (blockedEast 5 6))  
 (init (blockedEast 6 3))  
 (init (blockedEast 6 4))  

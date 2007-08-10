@@ -648,7 +648,6 @@
 (<= everythingelse
     atExit                          ; Endgame
     (true (carrying amulet))        ; The Hero must carry the amulet
-    (true (carrying gold))
     ; The following are added for TL level 8's source task
     (monster ?monster ?monstertype)
     (true (health ?monster 0))      ; The Hero must have killed a monster
