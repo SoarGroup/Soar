@@ -396,7 +396,7 @@ Index: Core/gSKI/src/gSKI_DoNotTouch.cpp
  
  extern Bool print_sym (agent* thisAgent, void *item, FILE* f);
  
-@@ -2652,5 +2655,101 @@
+@@ -2652,5 +2655,107 @@
  			}
  			SoarSeedRNG();
  		}
@@ -446,6 +446,12 @@ Index: Core/gSKI/src/gSKI_DoNotTouch.cpp
 +				if(attr == excluded_feature){
 +						continue;
 +				}
++        else if (attr == "action-counter") {
++          continue;
++        }
++        else if (attr == "action-sequence") {
++          continue;
++        }
 +				for (wme* w= s->wmes; w != NIL; w = w->next){
 +					std::string attr = symbol_constant_to_string(thisAgent, w->attr);
 +					std::string val = symbol_constant_to_string(thisAgent, w->value);
