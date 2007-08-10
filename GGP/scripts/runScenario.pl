@@ -10,20 +10,22 @@ $env = $ARGV[0];
 $level = $ARGV[1];
 $scenario = $ARGV[2];
 
-if ($env =~ /escape/) {
+if ($env =~ /^e/) {
+  $env = "escape";
   $source = "../kif/escape/escape-tl$level-$scenario-source.kif";
   $sourceOne = "../kif/escape/escape-tl$level-$scenario-source1.kif";
   $sourceTwo = "../kif/escape/escape-tl$level-$scenario-source2.kif";
   $target = "../kif/escape/escape-tl$level-$scenario-target.kif";
 }
-elsif ($env =~ /wargame/ or $env =~ /^mm$/) {
+elsif ($env =~ /^w/ or $env =~ /^m/) {
   $env = "mm";
   $source = "../kif/mm/wargame-tl$level-$scenario-source.kif";
   $sourceOne = "../kif/mm/wargame-tl$level-$scenario-source1.kif";
   $sourceTwo = "../kif/mm/wargame-tl$level-$scenario-source2.kif";
   $target = "../kif/mm/wargame-tl$level-$scenario-target.kif";
 }
-elsif ($env =~ /rogue/) {
+elsif ($env =~ /^r/) {
+  $env = "rogue";
   $source = "../kif/rogue/mRogue-TL-Level-$level-$scenario-Source.kif";
   $sourceOne = "../kif/rogue/mRogue-TL-Level-$level-$scenario-Source-1.kif";
   $sourceTwo = "../kif/rogue/mRogue-TL-Level-$level-$scenario-Source-2.kif";
