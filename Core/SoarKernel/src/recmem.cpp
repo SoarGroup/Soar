@@ -568,17 +568,8 @@ void create_instantiation (agent* thisAgent, production *prod,
    inst->rete_wme = w;
    inst->okay_to_variablize = TRUE;
    inst->in_ms = TRUE;
-
-   if ( prod->type != TEMPLATE_PRODUCTION_TYPE )
-   {
-	   inst->next = thisAgent->newly_created_instantiations;
-	   thisAgent->newly_created_instantiations = inst;
-   }
-   else
-   {
-	   build_template_instantiation( thisAgent, inst, tok, w );
-	   return;
-   }
+   inst->next = thisAgent->newly_created_instantiations;
+   thisAgent->newly_created_instantiations = inst;
 
 
    /* REW: begin   09.15.96 */
@@ -603,6 +594,13 @@ void create_instantiation (agent* thisAgent, production *prod,
    thisAgent->production_being_fired = inst->prod;
    prod->firing_count++;
    thisAgent->production_firing_count++;
+   
+   if ( prod->type == TEMPLATE_PRODUCTION_TYPE )
+   {
+	   build_template_instantiation( thisAgent, inst, tok, w );
+	   thisAgent->production_being_fired = NIL;
+	   return;
+   }
 
    /* --- build the instantiated conditions, and bind LHS variables --- */
    p_node_to_conditions_and_nots (thisAgent, prod->p_node, tok, w,
