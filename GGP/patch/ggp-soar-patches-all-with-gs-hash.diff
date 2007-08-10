@@ -1,6 +1,234 @@
+Index: Core/SoarKernel/include/agent.h
+===================================================================
+--- Core/SoarKernel/include/agent.h	(revision 7506)
++++ Core/SoarKernel/include/agent.h	(working copy)
+@@ -30,7 +30,9 @@
+ #include "lexer.h"
+ #include "chunk.h"
+ #include "callback.h"
+-
++// YJ 2007-08-06
++// For parsing strcutre into unique string, used for TL project
++#include <map>
+ /* JC ADDED: Included to allow gski callbacks */
+ #include "gski_event_system_data.h"
+ 
+@@ -122,6 +124,9 @@
+ typedef char * test;
+ 
+ typedef struct agent_struct {
++	// YJ 2007-08-06
++		// For parsing strcutre into unique string, used for TL project
++	std::map<std::string, int>* gs_to_int;
+   /* After v8.6.1, all conditional compilations were removed
+    * from struct definitions, including the agent struct below
+    */
+@@ -260,6 +265,8 @@
+   Symbol            * type_symbol;
+   Symbol            * wait_symbol;   /* REW:  10.24.97 */
+ 
++  Symbol            * item_count_symbol; // SBW 5/07
++
+   /* RPM 9/06 begin */
+   Symbol			* input_link_symbol;
+   Symbol			* output_link_symbol;
+Index: Core/SoarKernel/include/decide.h
+===================================================================
+--- Core/SoarKernel/include/decide.h	(revision 7506)
++++ Core/SoarKernel/include/decide.h	(working copy)
+@@ -103,6 +103,9 @@
+ /* These prototypes moved here from chunk.cpp -ajc (5/3/02) */
+ extern byte type_of_existing_impasse (agent* thisAgent, Symbol *goal);
+ 
++// SBW 5/07 added prototype
++unsigned int count_candidates(preference * candidates);
++
+ #ifdef __cplusplus
+ }
+ #endif
+Index: Core/SoarKernel/include/xmlTraceNames.h
+===================================================================
+--- Core/SoarKernel/include/xmlTraceNames.h	(revision 7506)
++++ Core/SoarKernel/include/xmlTraceNames.h	(working copy)
+@@ -158,6 +158,8 @@
+ 	static char const* const kBacktracedAlready         = "already-backtraced";
+ 	static char const* const kBacktraceSymbol1          = "symbol1";
+ 	static char const* const kBacktraceSymbol2          = "symbol2";
++	
++  static char const* const kTagLocalNegation          = "local-negation" ; // SBW 5/07
+ 
+ 	// numeric indifference stuff
+ 	static char const* const kTagCandidate      = "candidate";
+Index: Core/SoarKernel/src/chunk.cpp
+===================================================================
+--- Core/SoarKernel/src/chunk.cpp	(revision 7506)
++++ Core/SoarKernel/src/chunk.cpp	(working copy)
+@@ -472,6 +472,17 @@
+       prev_cc = cc;
+     } else {
+       /* --- not in TC, so discard the condition --- */
++
++      // this chunk will be overgeneral! don't create it
++      
++      // SBW 5/07
++      // report what local negations are preventing the chunk,
++      // and set flags like we saw a ^quiescence t so it won't be created
++      //report_local_negation (thisAgent, cc->cond); // in backtrace.cpp turned
++      //off to save log i/o FIXME
++      thisAgent->quiescence_t_flag = TRUE;
++      thisAgent->variablize_this_chunk = FALSE;
++
+       free_with_pool (&thisAgent->chunk_cond_pool, cc);
+     }
+   }
+Index: Core/SoarKernel/src/backtrace.h
+===================================================================
+--- Core/SoarKernel/src/backtrace.h	(revision 7506)
++++ Core/SoarKernel/src/backtrace.h	(working copy)
+@@ -53,6 +53,8 @@
+                                              condition *trace_cond,
+                                              int indent);
+ 
++void report_local_negation (agent* thisAgent, condition* c);
++
+ #ifdef __cplusplus
+ }
+ #endif
+Index: Core/SoarKernel/src/agent.cpp
+===================================================================
+--- Core/SoarKernel/src/agent.cpp	(revision 7506)
++++ Core/SoarKernel/src/agent.cpp	(working copy)
+@@ -20,6 +20,7 @@
+  */
+ 
+ #include <stdlib.h>
++#include <string> // SBW 8/10/07: needed for YJ's TL string parser
+ 
+ #include "agent.h"
+ #include "kernel.h"
+@@ -258,7 +259,10 @@
+   newAgent->lexeme.float_val = 0.0;
+   newAgent->lexeme.id_letter = 'A';
+   newAgent->lexeme.id_number = 0;
+-
++ 
++  // YJ 2007-08-06
++// For parsing strcutre into unique string, used for TL project
++  newAgent->gs_to_int = new std::map<std::string,int>;
+   /* Initializing all the timer structures */
+   reset_timer(&(newAgent->start_total_tv));
+   reset_timer(&(newAgent->total_cpu_time));
+@@ -375,6 +379,10 @@
+   }
+ 
+   /* Free structures stored in agent structure */
++  // YJ 2007-08-06
++// For parsing strcutre into unique string, used for TL project
++  free(delete_agent->gs_to_int);
++  //
+   free(delete_agent->name);
+   free(delete_agent->top_dir_stack->directory);
+   free(delete_agent->top_dir_stack);
+Index: Core/SoarKernel/src/symtab.cpp
+===================================================================
+--- Core/SoarKernel/src/symtab.cpp	(revision 7506)
++++ Core/SoarKernel/src/symtab.cpp	(working copy)
+@@ -573,6 +573,10 @@
+   thisAgent->constraint_failure_symbol = make_sym_constant (thisAgent, "constraint-failure");
+   thisAgent->no_change_symbol = make_sym_constant (thisAgent, "no-change");
+   thisAgent->multiple_symbol = make_sym_constant (thisAgent, "multiple");
++  
++  // SBW 5/07
++  thisAgent->item_count_symbol = make_sym_constant (thisAgent, "item-count");
++
+   thisAgent->conflict_symbol = make_sym_constant (thisAgent, "conflict");
+   thisAgent->tie_symbol = make_sym_constant (thisAgent, "tie");
+   thisAgent->item_symbol = make_sym_constant (thisAgent, "item");
+@@ -640,6 +644,9 @@
+   release_helper(thisAgent,&(thisAgent->s_context_variable));
+   release_helper(thisAgent,&(thisAgent->o_context_variable));
+ 
++  // SBW 5/07
++  release_helper(thisAgent,&(thisAgent->item_count_symbol));
++
+   /* REW: begin 10.24.97 */
+   release_helper(thisAgent,&(thisAgent->wait_symbol));
+   /* REW: end   10.24.97 */
+Index: Core/SoarKernel/src/decide.cpp
+===================================================================
+--- Core/SoarKernel/src/decide.cpp	(revision 7506)
++++ Core/SoarKernel/src/decide.cpp	(working copy)
+@@ -1858,6 +1858,7 @@
+   wme *w, *next_w;
+   preference *cand;
+   preference *bt_pref;
++  unsigned int item_count = count_candidates(items); // SBW 5/07
+ 
+   /* --- reset flags on existing items to "NOTHING" --- */
+   for (w=id->id.impasse_wmes; w!=NIL; w=w->next)
+@@ -1884,6 +1885,15 @@
+         remove_wme_from_wm (thisAgent, w);
+       }
+     }
++
++    // SBW 5/07
++    // remove item-count WME if it exists
++    else if (w->attr==thisAgent->item_count_symbol) {
++      remove_from_dll (id->id.impasse_wmes, w, next, prev);
++      symbol_remove_ref (thisAgent, w->value); // remove the reference to the integer constant
++      remove_wme_from_wm (thisAgent, w);
++    }
++
+     w = next_w;
+   }
+ 
+@@ -1901,6 +1911,17 @@
+       add_impasse_wme (thisAgent, id, thisAgent->item_symbol, cand->value, bt_pref);
+     }
+   }
++
++  // SBW 5/07
++  // update the item-count WME
++  // detect relevant impasses by having more than one item
++  if (item_count > 0) {
++    add_impasse_wme (thisAgent, id, thisAgent->item_count_symbol, 
++                     make_int_constant(thisAgent, item_count), NIL);
++  }
++  // TODO does the int constant get its reference removed when the impasse goes
++  // away?
++
+ }
+ 
+ /* ------------------------------------------------------------------
+Index: Core/SoarKernel/src/backtrace.cpp
+===================================================================
+--- Core/SoarKernel/src/backtrace.cpp	(revision 7506)
++++ Core/SoarKernel/src/backtrace.cpp	(working copy)
+@@ -689,3 +689,21 @@
+ 
+   return TRUE;
+ }
++
++// sbw 5/4/07
++// fuction to report negated conditions that are overgeneral
++// this is here (as opposed to chunk.cpp) since this file has all the right
++// includes for correct output
++
++void report_local_negation (agent* thisAgent, condition* c) {
++    // use the same code as the backtracing above
++    list* negated_to_print = NIL;
++	  push (thisAgent, c, negated_to_print);
++    
++    print_string (thisAgent, "\nLocal negation found:\n");
++    gSKI_MakeAgentCallbackXML(thisAgent, kFunctionBeginTag, kTagLocalNegation);
++    print_consed_list_of_conditions (thisAgent, negated_to_print, 2);
++    gSKI_MakeAgentCallbackXML(thisAgent, kFunctionEndTag, kTagLocalNegation);
++  
++    free_list (thisAgent, negated_to_print);
++}
 Index: Core/CLI/include/cli_CommandLineInterface.h
 ===================================================================
---- Core/CLI/include/cli_CommandLineInterface.h	(revision 7473)
+--- Core/CLI/include/cli_CommandLineInterface.h	(revision 7506)
 +++ Core/CLI/include/cli_CommandLineInterface.h	(working copy)
 @@ -704,6 +704,9 @@
  	* @param pAgent The pointer to the gSKI agent interface
@@ -14,7 +242,7 @@ Index: Core/CLI/include/cli_CommandLineInterface.h
  	virtual void HandleEvent(egSKIPrintEventId, gSKI::Agent*, const char* msg);
 Index: Core/CLI/include/cli_Commands.h
 ===================================================================
---- Core/CLI/include/cli_Commands.h	(revision 7473)
+--- Core/CLI/include/cli_Commands.h	(revision 7506)
 +++ Core/CLI/include/cli_Commands.h	(working copy)
 @@ -76,6 +76,9 @@
  		static char const* kCLIWarnings;
@@ -28,7 +256,7 @@ Index: Core/CLI/include/cli_Commands.h
  
 Index: Core/CLI/src/cli_CommandLineInterface.cpp
 ===================================================================
---- Core/CLI/src/cli_CommandLineInterface.cpp	(revision 7473)
+--- Core/CLI/src/cli_CommandLineInterface.cpp	(revision 7506)
 +++ Core/CLI/src/cli_CommandLineInterface.cpp	(working copy)
 @@ -102,6 +102,9 @@
  	m_CommandMap[Commands::kCLIWarnings]					= &cli::CommandLineInterface::ParseWarnings;
@@ -40,21 +268,9 @@ Index: Core/CLI/src/cli_CommandLineInterface.cpp
  
  	// Indicate which commands should be echoed so that all users can see them when doing a shared debugging session
  	m_EchoMap[Commands::kCLIAddWME]						= true ;
-Index: Core/CLI/src/cli_Commands.cpp
-===================================================================
---- Core/CLI/src/cli_Commands.cpp	(revision 7473)
-+++ Core/CLI/src/cli_Commands.cpp	(working copy)
-@@ -77,3 +77,6 @@
- char const* Commands::kCLIWarnings					= "warnings";
- char const* Commands::kCLIWatch						= "watch";
- char const* Commands::kCLIWatchWMEs					= "watch-wmes";
-+// YJ 2007-08-06
-+// For parsing strcutre into unique string, used for TL project
-+char const* Commands::kCLIStructToString			= "struct-to-string"; // YJ
-\ No newline at end of file
 Index: Core/CLI/src/cli_stopsoar.cpp
 ===================================================================
---- Core/CLI/src/cli_stopsoar.cpp	(revision 7473)
+--- Core/CLI/src/cli_stopsoar.cpp	(revision 7506)
 +++ Core/CLI/src/cli_stopsoar.cpp	(working copy)
 @@ -82,3 +82,44 @@
  	}
@@ -102,9 +318,21 @@ Index: Core/CLI/src/cli_stopsoar.cpp
 +	return true;
 +}
 \ No newline at end of file
+Index: Core/CLI/src/cli_Commands.cpp
+===================================================================
+--- Core/CLI/src/cli_Commands.cpp	(revision 7506)
++++ Core/CLI/src/cli_Commands.cpp	(working copy)
+@@ -77,3 +77,6 @@
+ char const* Commands::kCLIWarnings					= "warnings";
+ char const* Commands::kCLIWatch						= "watch";
+ char const* Commands::kCLIWatchWMEs					= "watch-wmes";
++// YJ 2007-08-06
++// For parsing strcutre into unique string, used for TL project
++char const* Commands::kCLIStructToString			= "struct-to-string"; // YJ
+\ No newline at end of file
 Index: Core/ClientSML/include/sml_ClientTraceXML.h
 ===================================================================
---- Core/ClientSML/include/sml_ClientTraceXML.h	(revision 7473)
+--- Core/ClientSML/include/sml_ClientTraceXML.h	(revision 7506)
 +++ Core/ClientSML/include/sml_ClientTraceXML.h	(working copy)
 @@ -124,6 +124,8 @@
  	bool IsTagAddToPotentials() const ;
@@ -117,7 +345,7 @@ Index: Core/ClientSML/include/sml_ClientTraceXML.h
  	char const* GetBacktraceSymbol1() const	;
 Index: Core/ClientSML/src/sml_ClientTraceXML.cpp
 ===================================================================
---- Core/ClientSML/src/sml_ClientTraceXML.cpp	(revision 7473)
+--- Core/ClientSML/src/sml_ClientTraceXML.cpp	(revision 7506)
 +++ Core/ClientSML/src/sml_ClientTraceXML.cpp	(working copy)
 @@ -216,6 +216,8 @@
  bool ClientTraceXML::IsTagProhibitPreference() const	{ return IsTag(sml_Names::kTagProhibitPreference) ; }
@@ -130,7 +358,7 @@ Index: Core/ClientSML/src/sml_ClientTraceXML.cpp
  char const* ClientTraceXML::GetBacktraceSymbol2() const			  { return GetAttribute(sml_Names::kBacktraceSymbol2) ; }
 Index: Core/ConnectionSML/include/sml_Names.h
 ===================================================================
---- Core/ConnectionSML/include/sml_Names.h	(revision 7473)
+--- Core/ConnectionSML/include/sml_Names.h	(revision 7506)
 +++ Core/ConnectionSML/include/sml_Names.h	(working copy)
 @@ -201,6 +201,8 @@
      static char const* const kBacktracedAlready;
@@ -143,7 +371,7 @@ Index: Core/ConnectionSML/include/sml_Names.h
      static char const* const kTagCandidate;
 Index: Core/ConnectionSML/src/sml_Names.cpp
 ===================================================================
---- Core/ConnectionSML/src/sml_Names.cpp	(revision 7473)
+--- Core/ConnectionSML/src/sml_Names.cpp	(revision 7506)
 +++ Core/ConnectionSML/src/sml_Names.cpp	(working copy)
 @@ -201,6 +201,8 @@
  char const* const sml_Names::kBacktraceSymbol1          = "symbol1";
@@ -156,7 +384,7 @@ Index: Core/ConnectionSML/src/sml_Names.cpp
  char const* const sml_Names::kCandidateName     = "name";
 Index: Core/gSKI/src/gSKI_DoNotTouch.cpp
 ===================================================================
---- Core/gSKI/src/gSKI_DoNotTouch.cpp	(revision 7473)
+--- Core/gSKI/src/gSKI_DoNotTouch.cpp	(revision 7506)
 +++ Core/gSKI/src/gSKI_DoNotTouch.cpp	(working copy)
 @@ -30,6 +30,9 @@
  #include "soar_rand.h"
@@ -272,7 +500,7 @@ Index: Core/gSKI/src/gSKI_DoNotTouch.cpp
  }// namespace
 Index: Core/gSKI/src/gSKI_DoNotTouch.h
 ===================================================================
---- Core/gSKI/src/gSKI_DoNotTouch.h	(revision 7473)
+--- Core/gSKI/src/gSKI_DoNotTouch.h	(revision 7506)
 +++ Core/gSKI/src/gSKI_DoNotTouch.h	(working copy)
 @@ -118,6 +118,9 @@
  		 void SetChunkCount(Agent* pIAgent, unsigned long count);
@@ -284,249 +512,9 @@ Index: Core/gSKI/src/gSKI_DoNotTouch.h
  	  };
     }
  }
-Index: Core/SoarKernel/include/agent.h
-===================================================================
---- Core/SoarKernel/include/agent.h	(revision 7473)
-+++ Core/SoarKernel/include/agent.h	(working copy)
-@@ -30,7 +30,9 @@
- #include "lexer.h"
- #include "chunk.h"
- #include "callback.h"
--
-+// YJ 2007-08-06
-+// For parsing strcutre into unique string, used for TL project
-+#include <map>
- /* JC ADDED: Included to allow gski callbacks */
- #include "gski_event_system_data.h"
- 
-@@ -122,6 +124,9 @@
- typedef char * test;
- 
- typedef struct agent_struct {
-+	// YJ 2007-08-06
-+		// For parsing strcutre into unique string, used for TL project
-+	std::map<std::string, int>* gs_to_int;
-   /* After v8.6.1, all conditional compilations were removed
-    * from struct definitions, including the agent struct below
-    */
-@@ -260,6 +265,8 @@
-   Symbol            * type_symbol;
-   Symbol            * wait_symbol;   /* REW:  10.24.97 */
- 
-+  Symbol            * item_count_symbol; // SBW 5/07
-+
-   /* RPM 9/06 begin */
-   Symbol			* input_link_symbol;
-   Symbol			* output_link_symbol;
-Index: Core/SoarKernel/include/decide.h
-===================================================================
---- Core/SoarKernel/include/decide.h	(revision 7473)
-+++ Core/SoarKernel/include/decide.h	(working copy)
-@@ -103,6 +103,9 @@
- /* These prototypes moved here from chunk.cpp -ajc (5/3/02) */
- extern byte type_of_existing_impasse (agent* thisAgent, Symbol *goal);
- 
-+// SBW 5/07 added prototype
-+unsigned int count_candidates(preference * candidates);
-+
- #ifdef __cplusplus
- }
- #endif
-Index: Core/SoarKernel/include/xmlTraceNames.h
-===================================================================
---- Core/SoarKernel/include/xmlTraceNames.h	(revision 7473)
-+++ Core/SoarKernel/include/xmlTraceNames.h	(working copy)
-@@ -158,6 +158,8 @@
- 	static char const* const kBacktracedAlready         = "already-backtraced";
- 	static char const* const kBacktraceSymbol1          = "symbol1";
- 	static char const* const kBacktraceSymbol2          = "symbol2";
-+	
-+  static char const* const kTagLocalNegation          = "local-negation" ; // SBW 5/07
- 
- 	// numeric indifference stuff
- 	static char const* const kTagCandidate      = "candidate";
-Index: Core/SoarKernel/src/agent.cpp
-===================================================================
---- Core/SoarKernel/src/agent.cpp	(revision 7473)
-+++ Core/SoarKernel/src/agent.cpp	(working copy)
-@@ -258,7 +258,10 @@
-   newAgent->lexeme.float_val = 0.0;
-   newAgent->lexeme.id_letter = 'A';
-   newAgent->lexeme.id_number = 0;
--
-+ 
-+  // YJ 2007-08-06
-+// For parsing strcutre into unique string, used for TL project
-+  newAgent->gs_to_int = new std::map<std::string,int>;
-   /* Initializing all the timer structures */
-   reset_timer(&(newAgent->start_total_tv));
-   reset_timer(&(newAgent->total_cpu_time));
-@@ -375,6 +378,10 @@
-   }
- 
-   /* Free structures stored in agent structure */
-+  // YJ 2007-08-06
-+// For parsing strcutre into unique string, used for TL project
-+  free(delete_agent->gs_to_int);
-+  //
-   free(delete_agent->name);
-   free(delete_agent->top_dir_stack->directory);
-   free(delete_agent->top_dir_stack);
-Index: Core/SoarKernel/src/backtrace.cpp
-===================================================================
---- Core/SoarKernel/src/backtrace.cpp	(revision 7473)
-+++ Core/SoarKernel/src/backtrace.cpp	(working copy)
-@@ -689,3 +689,21 @@
- 
-   return TRUE;
- }
-+
-+// sbw 5/4/07
-+// fuction to report negated conditions that are overgeneral
-+// this is here (as opposed to chunk.cpp) since this file has all the right
-+// includes for correct output
-+
-+void report_local_negation (agent* thisAgent, condition* c) {
-+    // use the same code as the backtracing above
-+    list* negated_to_print = NIL;
-+	  push (thisAgent, c, negated_to_print);
-+    
-+    print_string (thisAgent, "\nLocal negation found:\n");
-+    gSKI_MakeAgentCallbackXML(thisAgent, kFunctionBeginTag, kTagLocalNegation);
-+    print_consed_list_of_conditions (thisAgent, negated_to_print, 2);
-+    gSKI_MakeAgentCallbackXML(thisAgent, kFunctionEndTag, kTagLocalNegation);
-+  
-+    free_list (thisAgent, negated_to_print);
-+}
-Index: Core/SoarKernel/src/backtrace.h
-===================================================================
---- Core/SoarKernel/src/backtrace.h	(revision 7473)
-+++ Core/SoarKernel/src/backtrace.h	(working copy)
-@@ -53,6 +53,8 @@
-                                              condition *trace_cond,
-                                              int indent);
- 
-+void report_local_negation (agent* thisAgent, condition* c);
-+
- #ifdef __cplusplus
- }
- #endif
-Index: Core/SoarKernel/src/chunk.cpp
-===================================================================
---- Core/SoarKernel/src/chunk.cpp	(revision 7473)
-+++ Core/SoarKernel/src/chunk.cpp	(working copy)
-@@ -472,6 +472,16 @@
-       prev_cc = cc;
-     } else {
-       /* --- not in TC, so discard the condition --- */
-+
-+      // this chunk will be overgeneral! don't create it
-+      
-+      // SBW 5/07
-+      // report what local negations are preventing the chunk,
-+      // and set flags like we saw a ^quiescence t so it won't be created
-+      report_local_negation (thisAgent, cc->cond); // in backtrace.cpp
-+      thisAgent->quiescence_t_flag = TRUE;
-+      thisAgent->variablize_this_chunk = FALSE;
-+
-       free_with_pool (&thisAgent->chunk_cond_pool, cc);
-     }
-   }
-Index: Core/SoarKernel/src/decide.cpp
-===================================================================
---- Core/SoarKernel/src/decide.cpp	(revision 7473)
-+++ Core/SoarKernel/src/decide.cpp	(working copy)
-@@ -1858,6 +1858,7 @@
-   wme *w, *next_w;
-   preference *cand;
-   preference *bt_pref;
-+  unsigned int item_count = count_candidates(items); // SBW 5/07
- 
-   /* --- reset flags on existing items to "NOTHING" --- */
-   for (w=id->id.impasse_wmes; w!=NIL; w=w->next)
-@@ -1884,6 +1885,15 @@
-         remove_wme_from_wm (thisAgent, w);
-       }
-     }
-+
-+    // SBW 5/07
-+    // remove item-count WME if it exists
-+    else if (w->attr==thisAgent->item_count_symbol) {
-+      remove_from_dll (id->id.impasse_wmes, w, next, prev);
-+      symbol_remove_ref (thisAgent, w->value); // remove the reference to the integer constant
-+      remove_wme_from_wm (thisAgent, w);
-+    }
-+
-     w = next_w;
-   }
- 
-@@ -1901,6 +1911,17 @@
-       add_impasse_wme (thisAgent, id, thisAgent->item_symbol, cand->value, bt_pref);
-     }
-   }
-+
-+  // SBW 5/07
-+  // update the item-count WME
-+  // detect relevant impasses by having more than one item
-+  if (item_count > 0) {
-+    add_impasse_wme (thisAgent, id, thisAgent->item_count_symbol, 
-+                     make_int_constant(thisAgent, item_count), NIL);
-+  }
-+  // TODO does the int constant get its reference removed when the impasse goes
-+  // away?
-+
- }
- 
- /* ------------------------------------------------------------------
-Index: Core/SoarKernel/src/symtab.cpp
-===================================================================
---- Core/SoarKernel/src/symtab.cpp	(revision 7473)
-+++ Core/SoarKernel/src/symtab.cpp	(working copy)
-@@ -573,6 +573,10 @@
-   thisAgent->constraint_failure_symbol = make_sym_constant (thisAgent, "constraint-failure");
-   thisAgent->no_change_symbol = make_sym_constant (thisAgent, "no-change");
-   thisAgent->multiple_symbol = make_sym_constant (thisAgent, "multiple");
-+  
-+  // SBW 5/07
-+  thisAgent->item_count_symbol = make_sym_constant (thisAgent, "item-count");
-+
-   thisAgent->conflict_symbol = make_sym_constant (thisAgent, "conflict");
-   thisAgent->tie_symbol = make_sym_constant (thisAgent, "tie");
-   thisAgent->item_symbol = make_sym_constant (thisAgent, "item");
-@@ -640,6 +644,9 @@
-   release_helper(thisAgent,&(thisAgent->s_context_variable));
-   release_helper(thisAgent,&(thisAgent->o_context_variable));
- 
-+  // SBW 5/07
-+  release_helper(thisAgent,&(thisAgent->item_count_symbol));
-+
-   /* REW: begin 10.24.97 */
-   release_helper(thisAgent,&(thisAgent->wait_symbol));
-   /* REW: end   10.24.97 */
-Index: Tools/SoarJavaDebugger/src/doc/Document.java
-===================================================================
---- Tools/SoarJavaDebugger/src/doc/Document.java	(revision 7473)
-+++ Tools/SoarJavaDebugger/src/doc/Document.java	(working copy)
-@@ -144,7 +144,7 @@
- 		Module phase 	 = new Module("Phase Diagram", "A view that shows Soar's phases of execution", modules.PhaseView.class) ;
- 		Module edit 	 = new Module("Edit Production Window", "A window used to edit a production and then load it into Soar", modules.EditorView.class) ;
- 		Module fold 	 = new Module("Tree Trace Window", "Output from commands and trace output from runs is shown in a tree window.", FoldingTextView.class) ;
--
-+    Module canvas = new Module("Canvas Window", "Canvas Window", CanvasView.class);
- 		m_ModuleList.add(fold) ;
- 		m_ModuleList.add(textTrace) ;
- 		m_ModuleList.add(update) ;
-@@ -152,6 +152,7 @@
- 		m_ModuleList.add(button) ;
- 		m_ModuleList.add(phase) ;
- 		m_ModuleList.add(edit) ;
-+    m_ModuleList.add(canvas);
- 	}
- 	
- 	/** Gives us a frame to work with */
 Index: Tools/SoarJavaDebugger/src/helpers/XmlOutput.java
 ===================================================================
---- Tools/SoarJavaDebugger/src/helpers/XmlOutput.java	(revision 7473)
+--- Tools/SoarJavaDebugger/src/helpers/XmlOutput.java	(revision 7506)
 +++ Tools/SoarJavaDebugger/src/helpers/XmlOutput.java	(working copy)
 @@ -435,6 +435,16 @@
  		return text.toString() ;
@@ -545,9 +533,30 @@ Index: Tools/SoarJavaDebugger/src/helpers/XmlOutput.java
  	public static String getActionText(Agent agent, ClientTraceXML action)
  	{
  		StringBuffer text = new StringBuffer() ;
+Index: Tools/SoarJavaDebugger/src/doc/Document.java
+===================================================================
+--- Tools/SoarJavaDebugger/src/doc/Document.java	(revision 7506)
++++ Tools/SoarJavaDebugger/src/doc/Document.java	(working copy)
+@@ -144,7 +144,7 @@
+ 		Module phase 	 = new Module("Phase Diagram", "A view that shows Soar's phases of execution", modules.PhaseView.class) ;
+ 		Module edit 	 = new Module("Edit Production Window", "A window used to edit a production and then load it into Soar", modules.EditorView.class) ;
+ 		Module fold 	 = new Module("Tree Trace Window", "Output from commands and trace output from runs is shown in a tree window.", FoldingTextView.class) ;
+-
++    Module canvas = new Module("Canvas Window", "Canvas Window", CanvasView.class);
+ 		m_ModuleList.add(fold) ;
+ 		m_ModuleList.add(textTrace) ;
+ 		m_ModuleList.add(update) ;
+@@ -152,6 +152,7 @@
+ 		m_ModuleList.add(button) ;
+ 		m_ModuleList.add(phase) ;
+ 		m_ModuleList.add(edit) ;
++    m_ModuleList.add(canvas);
+ 	}
+ 	
+ 	/** Gives us a frame to work with */
 Index: Tools/SoarJavaDebugger/src/modules/FoldingTextView.java
 ===================================================================
---- Tools/SoarJavaDebugger/src/modules/FoldingTextView.java	(revision 7473)
+--- Tools/SoarJavaDebugger/src/modules/FoldingTextView.java	(revision 7506)
 +++ Tools/SoarJavaDebugger/src/modules/FoldingTextView.java	(working copy)
 @@ -863,6 +863,14 @@
  				if (output.length() != 0)
@@ -564,3 +573,35 @@ Index: Tools/SoarJavaDebugger/src/modules/FoldingTextView.java
  			else if (xmlTrace.IsTagMessage() || xmlTrace.IsTagWarning() || xmlTrace.IsTagError() || xmlTrace.IsTagVerbose())
  			{
  				StringBuffer text = new StringBuffer() ;
+Index: SoarSCons.py
+===================================================================
+--- SoarSCons.py	(revision 7506)
++++ SoarSCons.py	(working copy)
+@@ -67,11 +67,11 @@
+ 		
+ 	try:
+ 		if sys.platform == 'darwin':
+-			urllib.urlretrieve('http://winter.eecs.umich.edu/jars/osx/swt.jar', 'SoarLibrary/bin/swt.jar')
++			urllib.urlretrieve('http://ai.eecs.umich.edu/~soar/sitemaker/misc/jars/osx/swt.jar', 'SoarLibrary/bin/swt.jar')
+ 		elif sys.platform == 'cygwin':
+-			urllib.urlretrieve('http://winter.eecs.umich.edu/jars/windows/swt.jar', 'SoarLibrary/bin/swt.jar')
++			urllib.urlretrieve('http://ai.eecs.umich.edu/~soar/sitemaker/misc/jars/windows/swt.jar', 'SoarLibrary/bin/swt.jar')
+ 		else:
+-			urllib.urlretrieve('http://winter.eecs.umich.edu/jars/gtk/swt.jar', 'SoarLibrary/bin/swt.jar')
++			urllib.urlretrieve('http://ai.eecs.umich.edu/~soar/sitemaker/misc/jars/gtk/swt.jar', 'SoarLibrary/bin/swt.jar')
+ 	except IOError:
+ 		print "Error downloading swt.jar to SoarLibrary/bin: IOError"
+ 		return False
+Index: SConstruct
+===================================================================
+--- SConstruct	(revision 7506)
++++ SConstruct	(working copy)
+@@ -87,7 +87,7 @@
+ 	# This checks for the swt.jar and attempts to download it if it doesn't exist
+ 	if env['swt'] and not SoarSCons.CheckForSWTJar(conf.env):
+ 		print "Could not find swt.jar. You can obtain the jar here:"
+-		print "\thttp://winter.eecs.umich.edu/jars"
++		print "\thttp://ai.eecs.umich.edu/~soar/sitemaker/misc/jars"
+ 		print "Place swt.jar in SoarLibrary/bin"
+ 		print "You may disable swt, see help (scons -h)"
+ 		print "swt.jar required... Exiting"
