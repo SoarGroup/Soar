@@ -26,18 +26,18 @@ foreach $mapping (`$mapper $sourceKif $targetKif`) {
   $mappings{$orig} = $new;
   print "# MAPPING: $orig -> $new\n";
   
-  @multiAtts = `grep "multi-attributes $orig " $headerFile`;
+  #@multiAtts = `grep "multi-attributes $orig " $headerFile`;
 
-  if ($#multiAtts > 0) {
-    die;
-  }
+  #if ($#multiAtts > 0) {
+  #  die;
+  #}
 
-  if ($#multiAtts == 0) {
-    $multiAtt = $multiAtts[0];
-    chomp $multiAtt;
-    $multiAtt =~ /multi-attributes $orig (.*)$/;
-    print "multi-attributes $new $1\n";
-  }
+  #if ($#multiAtts == 0) {
+  #  $multiAtt = $multiAtts[0];
+  #  chomp $multiAtt;
+  #  $multiAtt =~ /multi-attributes $orig (.*)$/;
+  #  print "multi-attributes $new $1\n";
+  #}
 }
 
 foreach $line (`cat $logFile`) {

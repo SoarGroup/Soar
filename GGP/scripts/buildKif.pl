@@ -22,18 +22,9 @@ if (-e $soarFile) {
   print `mv $soarFile buildKifBackup.soar`;
 }
 
-#print `cp $file math_backup`;
-#print `./fakeMath.pl $file`;
-
 print `$compiler $file`;
 if (not -e $soarFile) {
-  clean();
   die "kif compile failed!";
 }
 
 print `$postProcess`;
-clean();
-
-sub clean() {
-#  print `cp math_backup $file`;
-}

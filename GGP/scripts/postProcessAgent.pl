@@ -14,12 +14,24 @@ if (not -e $soarFile) {
 
 $env = $ARGV[2];
 
+$maFile = $kifFile;
+$maFile =~ s/\.kif$/\.ma.soar/;
+
 $makeStatic = "./makeStatic.pl $soarFile";
-# don't need this anymore -jzxu
-#$fixVar = "./fixVar11.pl $soarFile";
 $analyzeKif = "./analyzeKif.pl $kifFile";
 
-print `echo "source $env-common.soar" >> $soarFile`;
+if (-e $maFile) {
+  # print `echo "source $maFile" >> $soarFile`; must be at beginning
+
+  $tmpFile = "bk_tmp";
+  die if (-e $tmpFile);
+
+  print `mv $soarFile $tmpFile`;
+  print `echo "source $maFile" > $soarFile`;
+  print `cat $tmpFile >> $soarFile`;
+  print `rm $tmpFile`;
+}
+
 print `$makeStatic greaterthan`;
 print `$makeStatic lessthan`;
 print `$makeStatic gtequal`;

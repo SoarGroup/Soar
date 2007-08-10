@@ -9,7 +9,7 @@ $headerFile = "../agents/header.soar";
 
 $mapper = "./runMapper.pl";
 $targetMAs = $targetKif;
-$targetMAs =~ s/\.kif$/\.ma/; 
+$targetMAs =~ s/\.kif$/\.ma.soar/; 
 clearLog($targetMAs);
 
 checkFor($sourceKif);
