@@ -659,7 +659,7 @@ int next_template_id( agent *my_agent, const char *template_name )
 /***************************************************************************
  * Function     : build_template_instantiation
  **************************************************************************/
-void build_template_instantiation( agent *my_agent, instantiation *my_template_instance, struct token_struct *tok, wme *w )
+ Symbol *build_template_instantiation( agent *my_agent, instantiation *my_template_instance, struct token_struct *tok, wme *w )
 {
 	Symbol *id, *attr, *value, *referent;
 	production *my_template = my_template_instance->prod;
@@ -722,8 +722,12 @@ void build_template_instantiation( agent *my_agent, instantiation *my_template_i
 	{
 		excise_production( my_agent, new_production, false );
 		revert_template_tracking( my_agent, my_template->name->sc.name );
+
+		new_name_symbol = NULL;
 	}
 	deallocate_condition_list( my_agent, cond_top );
+
+	return new_name_symbol;
 }
 
 /***************************************************************************

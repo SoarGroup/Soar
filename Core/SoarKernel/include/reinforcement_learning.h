@@ -188,7 +188,7 @@ extern int next_template_id( agent *my_agent, const char *template_name );
 //////////////////////////////////////////////////////////
 
 // builds a new Soar-RL rule from a template instantiation
-extern void build_template_instantiation( agent *my_agent, instantiation *my_template_instance, struct token_struct *tok, wme *w );
+extern Symbol *build_template_instantiation( agent *my_agent, instantiation *my_template_instance, struct token_struct *tok, wme *w );
 
 // creates an incredibly simple action
 extern action *make_simple_action( agent *my_gent, Symbol *id_sym, Symbol *attr_sym, Symbol *val_sym, Symbol *ref_sym );

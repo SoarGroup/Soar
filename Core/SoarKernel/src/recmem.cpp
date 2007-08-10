@@ -568,9 +568,6 @@ void create_instantiation (agent* thisAgent, production *prod,
    inst->rete_wme = w;
    inst->okay_to_variablize = TRUE;
    inst->in_ms = TRUE;
-   inst->next = thisAgent->newly_created_instantiations;
-   thisAgent->newly_created_instantiations = inst;
-
 
    /* REW: begin   09.15.96 */
    /*  We want to initialize the GDS_evaluated_already flag
@@ -597,9 +594,16 @@ void create_instantiation (agent* thisAgent, production *prod,
    
    if ( prod->type == TEMPLATE_PRODUCTION_TYPE )
    {
-	   build_template_instantiation( thisAgent, inst, tok, w );
+	   Symbol *result = build_template_instantiation( thisAgent, inst, tok, w );
+	   inst->preferences_generated = NIL;
 	   thisAgent->production_being_fired = NIL;
+
 	   return;
+   }
+   else
+   {
+	   inst->next = thisAgent->newly_created_instantiations;
+	   thisAgent->newly_created_instantiations = inst;
    }
 
    /* --- build the instantiated conditions, and bind LHS variables --- */

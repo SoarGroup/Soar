@@ -6050,7 +6050,8 @@ void p_node_left_removal (agent* thisAgent, rete_node *node, token *tok, wme *w)
       }
 
   /* REW: end   09.15.96 */
-
+	if ( node->b.p.prod->type != TEMPLATE_PRODUCTION_TYPE )
+	{
 #ifdef BUG_139_WORKAROUND
     if (node->b.p.prod->type == JUSTIFICATION_PRODUCTION_TYPE) {
 #ifdef BUG_139_WORKAROUND_WARNING
@@ -6067,6 +6068,7 @@ void p_node_left_removal (agent* thisAgent, rete_node *node, token *tok, wme *w)
   msg[BUFFER_MSG_SIZE - 1] = 0; /* ensure null termination */
   abort_with_fatal_error(thisAgent, msg);
   }
+	}
 }
 
 /* ************************************************************************
