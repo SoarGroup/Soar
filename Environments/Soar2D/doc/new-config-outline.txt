@@ -1,5 +1,6 @@
 <soar2d version="2">
 	<general>
+		?<tosca> (presence of this tag enables tosca)
 		<game>
 			enum { tanksoar, eaters, book, kitchen }
 		<map>

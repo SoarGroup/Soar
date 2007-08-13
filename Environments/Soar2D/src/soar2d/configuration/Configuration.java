@@ -34,6 +34,7 @@ public class Configuration {
 		this.setType(config.simType);
 		this.setMap(config.getMap().getAbsoluteFile());
 		this.port = config.port;
+		this.toscaEnabled = config.toscaEnabled;
 
 		// general
 		this.random = config.random;
@@ -308,6 +309,15 @@ public class Configuration {
 		general.addContent(rules);
 		
 	}
+
+	boolean toscaEnabled = false;
+	private static final String kTagTosca = "tosca";
+	public boolean getToscaEnabled() {
+		return toscaEnabled;
+	}
+	public void setToscaEnabled(boolean setting) {
+		this.toscaEnabled = setting;
+	}
 	
 	private void general(Element general) throws LoadError {
 		// this tag is required
@@ -381,6 +391,9 @@ public class Configuration {
 
 			} else if (child.getName().equalsIgnoreCase(kTagRules)) {
 				cModule.rules(child);
+
+			} else if (child.getName().equalsIgnoreCase(kTagTosca)) {
+				setToscaEnabled(true);
 
 			} else {
 				throw new LoadError("Unrecognized tag: " + child.getName());
@@ -1028,4 +1041,5 @@ public class Configuration {
 	public int getCycleTimeSlice() {
 		return cModule.getCycleTimeSlice();
 	}
+	
 }

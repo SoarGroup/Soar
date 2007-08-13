@@ -23,9 +23,6 @@ public class ToscaEater extends Eater {
 	protected EatersOutputStateVariable m_OutputVar ;
 	protected int				m_EaterNumber ;
 
-	/** This boolean switches tosca integration on and off.  When off, no Tosca code should run and we're back to regular Soar Eaters */
-	public static final boolean kToscaEnabled = false ;
-	
 	/** If true the agent will just walk forward until hitting an obstacle and then turn right.  If false, calls to Tosca code to reason about the move. */
 	private static final boolean kSimulatedOutput = false ;
 

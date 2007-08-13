@@ -157,7 +157,7 @@ public class Controller implements Kernel.UpdateEventInterface, Kernel.SystemEve
 				timeStamp = new Date().getTime();
 				Soar2D.simulation.runForever();
 			}
-		} else if (soar2d.player.eaters.ToscaEater.kToscaEnabled)
+		} else if (Soar2D.config.getToscaEnabled())
 		{
 			if (step)
 				soar2d.tosca2d.ToscaInterface.getTosca().runStep() ;

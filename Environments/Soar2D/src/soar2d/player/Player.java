@@ -201,7 +201,7 @@ public class Player {
 		
 		// Nick, for some reason, would like to keep the scores across resets
 		// Because, he says, he is super-awesome.
-		if (soar2d.player.eaters.ToscaEater.kToscaEnabled == false) {
+		if (Soar2D.config.getToscaEnabled() == false) {
 			if (playerConfig.hasPoints()) {
 				this.points = playerConfig.getPoints();
 			} else {
