@@ -14,6 +14,8 @@ import soar2d.player.eaters.Eater;
 import soar2d.player.eaters.SoarEater;
 import soar2d.player.eaters.ToscaEater;
 import soar2d.player.kitchen.Cook;
+import soar2d.player.kitchen.SoarCook;
+import soar2d.player.kitchen.ToscaCook;
 import soar2d.player.tanksoar.SoarTank;
 import soar2d.player.tanksoar.Tank;
 import soar2d.world.World;
@@ -278,7 +280,7 @@ public class Simulation {
 				boolean human = true;
 				switch(Soar2D.config.getType()) {
 				case kEaters:
-					if (soar2d.player.eaters.ToscaEater.kToscaEnabled) {
+					if (Soar2D.config.getToscaEnabled()) {
 						player = new ToscaEater(playerConfig);
 						human = false;
 					} else {
@@ -303,7 +305,12 @@ public class Simulation {
 					break;
 
 				case kKitchen:
-					player = new Cook(playerConfig);
+					if (Soar2D.config.getToscaEnabled()) {
+						player = new ToscaCook(playerConfig);
+						human = false;
+					} else {
+						player = new Cook(playerConfig);
+					}
 					break;
 
 				}
@@ -353,7 +360,7 @@ public class Simulation {
 						break;
 						
 					case kKitchen:
-						assert false;
+						player = new SoarCook(agent, playerConfig);
 
 					}
 					
