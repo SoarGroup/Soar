@@ -563,6 +563,8 @@ void create_instantiation (agent* thisAgent, production *prod,
 #endif
 
    allocate_with_pool (thisAgent, &thisAgent->instantiation_pool, &inst);
+   inst->next = thisAgent->newly_created_instantiations;
+   thisAgent->newly_created_instantiations = inst;
    inst->prod = prod;
    inst->rete_token = tok;
    inst->rete_wme = w;
@@ -591,20 +593,6 @@ void create_instantiation (agent* thisAgent, production *prod,
    thisAgent->production_being_fired = inst->prod;
    prod->firing_count++;
    thisAgent->production_firing_count++;
-   
-   if ( prod->type == TEMPLATE_PRODUCTION_TYPE )
-   {
-	   Symbol *result = build_template_instantiation( thisAgent, inst, tok, w );
-	   inst->preferences_generated = NIL;
-	   thisAgent->production_being_fired = NIL;
-
-	   return;
-   }
-   else
-   {
-	   inst->next = thisAgent->newly_created_instantiations;
-	   thisAgent->newly_created_instantiations = inst;
-   }
 
    /* --- build the instantiated conditions, and bind LHS variables --- */
    p_node_to_conditions_and_nots (thisAgent, prod->p_node, tok, w,
@@ -654,8 +642,18 @@ void create_instantiation (agent* thisAgent, production *prod,
    inst->preferences_generated = NIL;
    need_to_do_support_calculations = FALSE;
    for (a=prod->action_list; a!=NIL; a=a->next) {
-      pref = execute_action (thisAgent, a, tok, w);
-	  /* SoarTech changed from an IF stmt to a WHILE loop to support GlobalDeepCpy */
+      
+	   if ( prod->type != TEMPLATE_PRODUCTION_TYPE )
+	   {
+			pref = execute_action (thisAgent, a, tok, w);
+	   }
+	   else
+	   {
+		   pref = NIL;
+		   Symbol *result = build_template_instantiation( thisAgent, inst, tok, w );
+	   }
+	  
+	   /* SoarTech changed from an IF stmt to a WHILE loop to support GlobalDeepCpy */
       while (pref) {   
          pref->inst = inst;
          insert_at_head_of_dll (inst->preferences_generated, pref,

@@ -701,12 +701,6 @@ int next_template_id( agent *my_agent, const char *template_name )
 	Bool chunk_var;
 	condition *cond_top, *cond_bottom;
 
-	// build the instantiated conditions, and bind LHS variables
-	p_node_to_conditions_and_nots( my_agent, my_template->p_node, tok, w, 
-									&( my_template_instance->top_of_instantiated_conditions ), 
-									&( my_template_instance->bottom_of_instantiated_conditions ), 
-									&( my_template_instance->nots ), NIL );
-
 	// get the preference value
 	id = instantiate_rhs_value( my_agent, my_action->id, -1, 's', tok, w );
 	attr = instantiate_rhs_value( my_agent, my_action->attr, id->id.level, 'a', tok, w );
@@ -718,6 +712,12 @@ int next_template_id( agent *my_agent, const char *template_name )
 		init_value = (float) referent->ic.value;
 	else if ( referent->common.symbol_type == FLOAT_CONSTANT_SYMBOL_TYPE )
 		init_value = referent->fc.value;
+
+	// clean up after yourself :)
+	symbol_remove_ref( my_agent, id );
+	symbol_remove_ref( my_agent, attr );
+	symbol_remove_ref( my_agent, value );
+	symbol_remove_ref( my_agent, referent );
 
 	// make new action list
 	action *new_action = make_simple_action( my_agent, id, attr, value, referent );
@@ -752,7 +752,7 @@ int next_template_id( agent *my_agent, const char *template_name )
 	my_agent->variablize_this_chunk = chunk_var;
 
 	// attempt to add to rete, remove if duplicate
-	if ( add_production_to_rete( my_agent, new_production, cond_top, 0, false ) == DUPLICATE_PRODUCTION )
+	if ( add_production_to_rete( my_agent, new_production, cond_top, NULL, false ) == DUPLICATE_PRODUCTION )
 	{
 		excise_production( my_agent, new_production, false );
 		revert_template_tracking( my_agent, my_template->name->sc.name );
