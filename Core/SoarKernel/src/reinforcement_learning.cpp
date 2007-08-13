@@ -563,7 +563,6 @@ bool valid_rl_rule( production *prod )
 template_instantiation *get_template_base( const char *prod_name )
 {
 	std::string temp = prod_name;
-	template_instantiation *return_val = new template_instantiation;
 	
 	// has to be at least "rl*#*a" (where a is a single letter/number/etc)
 	if ( temp.length() < 6 )
@@ -592,6 +591,7 @@ template_instantiation *get_template_base( const char *prod_name )
 	from_string( id, id_str );
 	
 	// return info
+	template_instantiation *return_val = new template_instantiation;
 	return_val->template_base = temp.substr( second_star + 1 );
 	return_val->id = id;
 	return return_val;
@@ -629,6 +629,8 @@ void update_template_tracking( agent *my_agent, const char *rule_name )
 			(*my_agent->rl_template_count)[ origin->template_base ] = origin->id;
 		}
 	}
+
+	delete origin;
 }
 
 /***************************************************************************
