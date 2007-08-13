@@ -10,7 +10,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 import sml.Agent;
-import sml.StringElement;
 
 
 /**
@@ -37,7 +36,8 @@ public class Tower {
         this.game = game;
         
         Agent agent = game.getAgent();
-        pegName = agent.CreateStringWME(agent.GetInputLink(), PEG, name);
+        //pegName = 
+        agent.CreateStringWME(agent.GetInputLink(), PEG, name);
     }
     
     /**
@@ -101,8 +101,8 @@ public class Tower {
     
     private Game game;    // the game this belongs to
     private String name;  // name of the tower, should be a single letter
-    private List disks = new ArrayList(); // disks on tower, higher index = higher up
+    private List<Disk> disks = new ArrayList<Disk>(); // disks on tower, higher index = higher up
     
     // Soar stuff
-    private StringElement pegName;
+    //private StringElement pegName;
 }

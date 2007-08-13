@@ -38,7 +38,7 @@ public class MacEnvironment implements Runnable, Kernel.SystemEventInterface, Ke
     private Thread runThread;
     private boolean stopSoar = false;
     
-    private List environmentListeners = new LinkedList();
+    private List<MacEnvironmentListener> environmentListeners = new LinkedList<MacEnvironmentListener>();
     
     /* strings for Soar */
     public static final String MOVE_BOAT = "move-boat";
@@ -295,9 +295,9 @@ public class MacEnvironment implements Runnable, Kernel.SystemEventInterface, Ke
      * @param kernel  - superfluous data from kernel callback
      */
     private void fireSystemStarted(int eventID, Object data, Kernel kernel) {
-        Iterator i = environmentListeners.iterator();
+        Iterator<MacEnvironmentListener> i = environmentListeners.iterator();
         while (i.hasNext())
-            ((MacEnvironmentListener)i.next()).systemStarted(this);
+            (i.next()).systemStarted(this);
     }
     /**
      * Calls the <code>systemStopped</code> method for each listener with the
@@ -308,9 +308,9 @@ public class MacEnvironment implements Runnable, Kernel.SystemEventInterface, Ke
      * @param kernel  - superfluous data from kernel callback
      */
     private void fireSystemStopped(int eventID, Object data, Kernel kernel) {
-        Iterator i = environmentListeners.iterator();
+        Iterator<MacEnvironmentListener> i = environmentListeners.iterator();
         while (i.hasNext())
-            ((MacEnvironmentListener)i.next()).systemStopped(this);
+            (i.next()).systemStopped(this);
     }
     /**
      * Calls the <code>boatMoved</code> method for each listener with the
@@ -322,17 +322,17 @@ public class MacEnvironment implements Runnable, Kernel.SystemEventInterface, Ke
      * @param b        - number of boats moving from <code>fromBank</code>.
      */
     private void fireBoatMoved(RiverBank fromBank, int m, int c, int b) {
-        Iterator i = environmentListeners.iterator();
+        Iterator<MacEnvironmentListener> i = environmentListeners.iterator();
         while (i.hasNext())
-            ((MacEnvironmentListener)i.next()).boatMoved(this,fromBank,m,c,b);
+            (i.next()).boatMoved(this,fromBank,m,c,b);
     }
     /**
      * Calls the <code>atGoalState</code> method for each listener with
      * <code>this</code> as the argument.
      */
     private void fireAtGoalState() {
-        Iterator i = environmentListeners.iterator();
+        Iterator<MacEnvironmentListener> i = environmentListeners.iterator();
         while (i.hasNext())
-            ((MacEnvironmentListener)i.next()).atGoalState(this);
+            (i.next()).atGoalState(this);
     }
 }

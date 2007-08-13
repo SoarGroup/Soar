@@ -27,7 +27,7 @@ public class RiverBank {
         private IntElement boats;
         private Identifier otherBank;
     
-    private String side;
+    //private String side;
     private int missionaryCount;
     private int cannibalCount;
     private int boatCount;
@@ -54,7 +54,7 @@ public class RiverBank {
     public RiverBank(Agent agent, String side,
             int nmissionaries, int ncannibals, int nboats) {
         this.agent = agent;
-        this.side = side;
+        //this.side = side;
         
         missionaryCount = nmissionaries;
         cannibalCount = ncannibals;
