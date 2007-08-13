@@ -122,13 +122,39 @@ sp {elaborate*old-gs
    (<s> ^old-gs <ogs>)
 }
 
-sp {apply*game-op*top-state*report
+sp {apply*game-op*top-state*report*0
    (state <s> ^name game
               ^superstate nil
               ^operator <o>)
    (<o> ^name {<> update-state <> analyze-state <> update-search-info
                 <> save-location <> check-for-duplicate-location <name>}
-        ^p1 <parm>)
+        -^p1)
+-->
+   (write (crlf) |ACTION | <name>)
+}
+
+
+sp {apply*game-op*top-state*report*1
+   (state <s> ^name game
+              ^superstate nil
+              ^operator <o>)
+   (<o> ^name {<> update-state <> analyze-state <> update-search-info
+                <> save-location <> check-for-duplicate-location <name>}
+        ^p1 <parm>
+       -^p2)
 -->
    (write (crlf) |ACTION | <name> |(| <parm> |)|)
+}
+
+
+sp {apply*game-op*top-state*report*1
+   (state <s> ^name game
+              ^superstate nil
+              ^operator <o>)
+   (<o> ^name {<> update-state <> analyze-state <> update-search-info
+                <> save-location <> check-for-duplicate-location <name>}
+        ^p1 <parm>
+        ^p2 <p2>)
+-->
+   (write (crlf) |ACTION | <name> |(| <parm> |, | <p2> |)|)
 }
