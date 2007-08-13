@@ -3,7 +3,6 @@ package soar2d.player.book;
 import soar2d.*;
 import soar2d.map.BookMap;
 import soar2d.map.CellObject;
-import soar2d.map.GridMap;
 import soar2d.player.MoveInfo;
 import soar2d.player.Player;
 import soar2d.player.PlayerConfig;

@@ -29,7 +29,7 @@ public class SoarCook extends Cook {
 	
 	class ObjectInputLink {
 		private Identifier objectIdentifier;
-		private StringElement id, texture, color, smell;
+		private StringElement texture, color, smell;
 		
 		ObjectInputLink(String id, String texture, String color, String smell) {
 			assert this.objectIdentifier == null;
@@ -37,9 +37,9 @@ public class SoarCook extends Cook {
 			objectIdentifier = agent.CreateIdWME(cell, "object");
 			
 			if (id.startsWith("mixture")) {
-				this.id = agent.CreateStringWME(objectIdentifier, "id", "mixture");
+				agent.CreateStringWME(objectIdentifier, "id", "mixture");
 			} else {
-				this.id = agent.CreateStringWME(objectIdentifier, "id", id);
+				agent.CreateStringWME(objectIdentifier, "id", id);
 			}
 			this.texture = agent.CreateStringWME(objectIdentifier, "texture", texture);
 			this.color = agent.CreateStringWME(objectIdentifier, "color", color);

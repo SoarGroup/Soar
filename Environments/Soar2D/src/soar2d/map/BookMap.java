@@ -13,7 +13,6 @@ import soar2d.Names;
 import soar2d.Soar2D;
 import soar2d.configuration.Configuration;
 import soar2d.configuration.Configuration.SimType;
-import soar2d.map.GridMap.BookObjectInfo;
 import soar2d.world.TankSoarWorld;
 
 public class BookMap extends GridMap {

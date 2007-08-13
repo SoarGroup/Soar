@@ -3,7 +3,6 @@ package soar2d.map;
 import java.awt.Point;
 import java.util.Iterator;
 
-import soar2d.Names;
 import soar2d.Soar2D;
 import soar2d.configuration.Configuration;
 import soar2d.world.TankSoarWorld;
