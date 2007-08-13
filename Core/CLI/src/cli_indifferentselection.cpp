@@ -446,6 +446,7 @@ bool CommandLineInterface::DoIndifferentSelection( gSKI::Agent* pAgent, const ch
 				AppendArgTagFast( sml_Names::kParamValue, sml_Names::kTypeString, temp.c_str() );
 				AppendArgTagFast( sml_Names::kParamValue, sml_Names::kTypeString, "" );
 			}
+			delete param_policies;
 			
 			temp = "";
 		}

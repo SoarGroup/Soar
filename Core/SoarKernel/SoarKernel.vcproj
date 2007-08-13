@@ -48,7 +48,7 @@
 				EnableFunctionLevelLinking="true"
 				AssemblerListingLocation="$(IntDir)\"
 				ProgramDataBaseFileName="$(IntDir)\"
-				WarningLevel="3"
+				WarningLevel="4"
 				Detect64BitPortabilityProblems="false"
 				DebugInformationFormat="4"
 			/>
@@ -119,7 +119,7 @@
 				EnableFunctionLevelLinking="true"
 				AssemblerListingLocation="$(IntDir)\"
 				ProgramDataBaseFileName="$(IntDir)\"
-				WarningLevel="3"
+				WarningLevel="4"
 				Detect64BitPortabilityProblems="false"
 				DebugInformationFormat="3"
 			/>

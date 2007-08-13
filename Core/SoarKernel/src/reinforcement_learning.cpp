@@ -90,8 +90,10 @@ rl_parameter *add_rl_parameter( const char *value, bool (*val_func)( const char 
 bool valid_rl_parameter( agent *my_agent, const char *name )
 {
 	std::string *temp = new std::string( name );
-	return is_set( my_agent->rl_params, temp );
+	bool return_val = is_set( my_agent->rl_params, temp );
 	delete temp;
+
+	return return_val;
 }
 
 /***************************************************************************
