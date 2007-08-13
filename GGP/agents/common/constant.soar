@@ -116,6 +116,24 @@ sp {apply*analyze-state*handle-success
   (<s> ^success <d>)
 }
 
+sp {apply*anything*save-final-action-sequence*no-par
+   (state <s> ^superstate nil
+              ^operator <o>
+              ^final-gs.action-sequence <as>)
+   (<as> ^action <act>
+         ^count <count>)
+   (<act> ^name <name>
+          ^params <par>)
+   (<par> -^p1 <val>)
+-->
+  (<s> ^saved-action <as1>)
+  (<as1> ^action <act1>
+         ^count <count>)
+  (<act1> ^name <name>
+          ^params <par1>)
+}
+
+
 sp {apply*anything*save-final-action-sequence
    (state <s> ^superstate nil
               ^operator <o>
@@ -200,6 +218,21 @@ sp {apply*update-state*next-action
    (<s> ^next-action <na> -
                   (+ <na> 1))
 }
+
+sp {prefer*next-saved-action*no-par
+   (state <s> ^superstate nil
+              ^operator <o> +
+              ^next-action <count>
+              ^saved-action <sas>)
+   (<sas> ^count <count>
+          ^action <act>)
+   (<act> ^name <name>
+          -^params.p1 <p1>)
+   (<o> ^name <name>)
+-->
+   (<s> ^operator <o> >)
+}
+
 
 sp {prefer*next-saved-action
    (state <s> ^superstate nil
