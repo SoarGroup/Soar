@@ -359,6 +359,7 @@ public:
 	static char const* const kParamWatchProductionUser;
 	static char const* const kParamWatchProductionChunks;
 	static char const* const kParamWatchProductionJustifications;
+	static char const* const kParamWatchProductionTemplates;
 	static char const* const kParamWatchWMEDetail;
 	static char const* const kParamWatchWorkingMemoryChanges;
 	static char const* const kParamWatchPreferences;
