@@ -29,7 +29,15 @@ class Predicate {
       if (name != other.name) {
         return name < other.name;
       }
-      assert(arity == other.arity && type == other.type);
+      if (arity != other.arity or type != other.type) {
+        cout << name << endl;
+        cout << arity << endl;
+        cout << other.arity << endl;
+        cout << type << endl;
+        cout << other.type << endl;
+        assert(false);
+      }
+      //assert(arity == other.arity && type == other.type);
       return false;
     }
 

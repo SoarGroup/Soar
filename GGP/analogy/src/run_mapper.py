@@ -34,6 +34,9 @@ def run_mapper(src_kif, tgt_kif, del_tmp = True):
 	return mapping
 
 if __name__ == '__main__':
-	mapping = run_mapper(sys.argv[1], sys.argv[2])
+	if sys.argv[1] == '-d':
+		mapping = run_mapper(sys.argv[2], sys.argv[3], False)
+	else:
+		mapping = run_mapper(sys.argv[1], sys.argv[2])
 	for src in mapping:
 		print '%s %s' % (src, mapping[src])
