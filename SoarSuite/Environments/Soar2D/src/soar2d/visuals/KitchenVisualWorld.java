@@ -8,7 +8,6 @@ import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.GC;
 import org.eclipse.swt.widgets.Composite;
 
-import soar2d.Direction;
 import soar2d.Names;
 import soar2d.Soar2D;
 import soar2d.map.CellObject;

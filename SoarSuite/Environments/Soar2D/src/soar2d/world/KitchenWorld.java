@@ -7,7 +7,6 @@ import java.util.HashSet;
 import java.util.Iterator;
 
 import soar2d.Direction;
-import soar2d.Names;
 import soar2d.Soar2D;
 import soar2d.configuration.Configuration;
 import soar2d.map.CellObject;
