@@ -25,6 +25,9 @@ import javax.swing.*;
 
 public class MainFrame extends javax.swing.JFrame
 {
+	// For extension of JFrame
+	private static final long serialVersionUID = 1L;
+
 	// This class handles the SML interaction
 	Logger	m_Logger = new Logger() ;
 	String	m_Filename = "log.txt" ;
