@@ -10,7 +10,7 @@ sp {apply*analyze-state*hash*current*gs
 	(state <s> ^duplicate-of <s2>
 				^gs <gs>
 				^operator.name analyze-state #must do this after update-state completed
-				^current-evaluation-depth <remaining-steps>
+				^current-evaluation-depth <remaining-steps> > 0
     ^top-state.facts.counter <cnt>
 				)
 -->
@@ -79,12 +79,9 @@ sp {copy*visited*state*to*top-selection*1
 sp {copy*visited*state*to*top-selection*2
 	(state <s> ^top-selection true
 				^visited-states-hash <vsh>)
-	(state <s2> ^current-state-hash <csh> ^current-evaluation-depth <current>
+	(state <s2> ^current-state-hash <csh> ^current-evaluation-depth <remaining-steps>
 				^operator.name save-location)  #register visited state
 	(<vsh> ^<csh> <h>)
-	(<h> ^repeats <repeats>
-			^remaining-steps {<old> < <current>}) #visited before, but had a lower remaining-steps
 -->
-	(<h> ^remaining-steps <old> -
-							<current> +)
+	(<h> ^remaining-steps <remaining-steps>)
 }
