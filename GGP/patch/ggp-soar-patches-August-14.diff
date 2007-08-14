@@ -1,7 +1,7 @@
-Index: CLI/cli_structToString.cpp
+Index: Core/CLI/cli_structToString.cpp
 ===================================================================
---- CLI/cli_structToString.cpp	(revision 0)
-+++ CLI/cli_structToString.cpp	(revision 0)
+--- Core/CLI/cli_structToString.cpp	(revision 0)
++++ Core/CLI/cli_structToString.cpp	(revision 0)
 @@ -0,0 +1,80 @@
 +/////////////////////////////////////////////////////////////////
 +// struct-to-string command file
@@ -83,10 +83,10 @@ Index: CLI/cli_structToString.cpp
 +	return true;
 +}
 +//#endif
-Index: CLI/CommandLineInterface.vcproj
+Index: Core/CLI/CommandLineInterface.vcproj
 ===================================================================
---- CLI/CommandLineInterface.vcproj	(revision 6965)
-+++ CLI/CommandLineInterface.vcproj	(working copy)
+--- Core/CLI/CommandLineInterface.vcproj	(revision 6965)
++++ Core/CLI/CommandLineInterface.vcproj	(working copy)
 @@ -399,6 +399,10 @@
  					>
  				</File>
@@ -98,10 +98,10 @@ Index: CLI/CommandLineInterface.vcproj
  					RelativePath=".\src\cli_time.cpp"
  					>
  				</File>
-Index: CLI/include/cli_CommandLineInterface.h
+Index: Core/CLI/include/cli_CommandLineInterface.h
 ===================================================================
---- CLI/include/cli_CommandLineInterface.h	(revision 6965)
-+++ CLI/include/cli_CommandLineInterface.h	(working copy)
+--- Core/CLI/include/cli_CommandLineInterface.h	(revision 6965)
++++ Core/CLI/include/cli_CommandLineInterface.h	(working copy)
 @@ -715,6 +715,11 @@
  	*************************************************************/
  	bool DoWatchWMEs(gSKI::Agent* pAgent, const eWatchWMEsMode mode, WatchWMEsTypeBitset type, const std::string* pIdString = 0, const std::string* pAttributeString = 0, const std::string* pValueString = 0);
@@ -114,10 +114,10 @@ Index: CLI/include/cli_CommandLineInterface.h
  	// Print callback events go here
  	virtual void HandleEvent(egSKIPrintEventId, gSKI::Agent*, const char* msg);
  
-Index: CLI/include/cli_Commands.h
+Index: Core/CLI/include/cli_Commands.h
 ===================================================================
---- CLI/include/cli_Commands.h	(revision 6965)
-+++ CLI/include/cli_Commands.h	(working copy)
+--- Core/CLI/include/cli_Commands.h	(revision 6965)
++++ Core/CLI/include/cli_Commands.h	(working copy)
 @@ -76,6 +76,10 @@
  		static char const* kCLIWarnings;
  		static char const* kCLIWatch;
@@ -129,10 +129,10 @@ Index: CLI/include/cli_Commands.h
  	}; // struct
  } // namespace cli
  
-Index: CLI/src/cli_CommandLineInterface.cpp
+Index: Core/CLI/src/cli_CommandLineInterface.cpp
 ===================================================================
---- CLI/src/cli_CommandLineInterface.cpp	(revision 6965)
-+++ CLI/src/cli_CommandLineInterface.cpp	(working copy)
+--- Core/CLI/src/cli_CommandLineInterface.cpp	(revision 6965)
++++ Core/CLI/src/cli_CommandLineInterface.cpp	(working copy)
 @@ -113,6 +113,9 @@
  	m_CommandMap[Commands::kCLIWarnings]					= &cli::CommandLineInterface::ParseWarnings;
  	m_CommandMap[Commands::kCLIWatch]						= &cli::CommandLineInterface::ParseWatch;
@@ -143,10 +143,10 @@ Index: CLI/src/cli_CommandLineInterface.cpp
  
  	// Indicate which commands should be echoed so that all users can see them when doing a shared debugging session
  	m_EchoMap[Commands::kCLIAddWME]						= true ;
-Index: CLI/src/cli_Commands.cpp
+Index: Core/CLI/src/cli_Commands.cpp
 ===================================================================
---- CLI/src/cli_Commands.cpp	(revision 6965)
-+++ CLI/src/cli_Commands.cpp	(working copy)
+--- Core/CLI/src/cli_Commands.cpp	(revision 6965)
++++ Core/CLI/src/cli_Commands.cpp	(working copy)
 @@ -80,3 +80,6 @@
  char const* Commands::kCLIWarnings					= "warnings";
  char const* Commands::kCLIWatch						= "watch";
@@ -154,10 +154,10 @@ Index: CLI/src/cli_Commands.cpp
 +// YJ 2007-08-06
 +// For parsing strcutre into unique string, used for TL project
 +char const* Commands::kCLIStructToString			= "struct-to-string"; // YJ
-Index: ClientSML/include/sml_ClientIdentifier.h
+Index: Core/ClientSML/include/sml_ClientIdentifier.h
 ===================================================================
---- ClientSML/include/sml_ClientIdentifier.h	(revision 6965)
-+++ ClientSML/include/sml_ClientIdentifier.h	(working copy)
+--- Core/ClientSML/include/sml_ClientIdentifier.h	(revision 6965)
++++ Core/ClientSML/include/sml_ClientIdentifier.h	(working copy)
 @@ -40,7 +40,8 @@
  {
  	friend class Identifier ;	// Provide direct access to children.
@@ -178,10 +178,10 @@ Index: ClientSML/include/sml_ClientIdentifier.h
  	// Two identifiers (i.e. two wmes) can share the same identifier value
  	// So each identifier has a pointer to a symbol object, but two could share the same object.
  	IdentifierSymbol* m_pSymbol ;
-Index: ClientSML/include/sml_ClientTraceXML.h
+Index: Core/ClientSML/include/sml_ClientTraceXML.h
 ===================================================================
---- ClientSML/include/sml_ClientTraceXML.h	(revision 6965)
-+++ ClientSML/include/sml_ClientTraceXML.h	(working copy)
+--- Core/ClientSML/include/sml_ClientTraceXML.h	(revision 6965)
++++ Core/ClientSML/include/sml_ClientTraceXML.h	(working copy)
 @@ -124,6 +124,8 @@
  	bool IsTagAddToPotentials() const ;
  	bool IsTagProhibitPreference() const ;
@@ -191,10 +191,10 @@ Index: ClientSML/include/sml_ClientTraceXML.h
  
  	char const* GetBacktraceAlreadyBacktraced() const ;
  	char const* GetBacktraceSymbol1() const	;
-Index: ClientSML/src/sml_ClientTraceXML.cpp
+Index: Core/ClientSML/src/sml_ClientTraceXML.cpp
 ===================================================================
---- ClientSML/src/sml_ClientTraceXML.cpp	(revision 6965)
-+++ ClientSML/src/sml_ClientTraceXML.cpp	(working copy)
+--- Core/ClientSML/src/sml_ClientTraceXML.cpp	(revision 6965)
++++ Core/ClientSML/src/sml_ClientTraceXML.cpp	(working copy)
 @@ -219,6 +219,8 @@
  bool ClientTraceXML::IsTagProhibitPreference() const	{ return IsTag(sml_Names::kTagProhibitPreference) ; }
  bool ClientTraceXML::IsTagBacktraceResult() const		{ return IsTag(sml_Names::kTagBacktraceResult) ; }
@@ -204,10 +204,10 @@ Index: ClientSML/src/sml_ClientTraceXML.cpp
  char const* ClientTraceXML::GetBacktraceAlreadyBacktraced() const { return GetAttribute(sml_Names::kBacktracedAlready) ; }
  char const* ClientTraceXML::GetBacktraceSymbol1() const			  { return GetAttribute(sml_Names::kBacktraceSymbol1) ; }
  char const* ClientTraceXML::GetBacktraceSymbol2() const			  { return GetAttribute(sml_Names::kBacktraceSymbol2) ; }
-Index: ConnectionSML/include/sml_Names.h
+Index: Core/ConnectionSML/include/sml_Names.h
 ===================================================================
---- ConnectionSML/include/sml_Names.h	(revision 6965)
-+++ ConnectionSML/include/sml_Names.h	(working copy)
+--- Core/ConnectionSML/include/sml_Names.h	(revision 6965)
++++ Core/ConnectionSML/include/sml_Names.h	(working copy)
 @@ -201,6 +201,8 @@
      static char const* const kBacktracedAlready;
      static char const* const kBacktraceSymbol1;
@@ -217,10 +217,10 @@ Index: ConnectionSML/include/sml_Names.h
  
      // numeric indifference stuff
      static char const* const kTagCandidate;
-Index: ConnectionSML/src/sml_Names.cpp
+Index: Core/ConnectionSML/src/sml_Names.cpp
 ===================================================================
---- ConnectionSML/src/sml_Names.cpp	(revision 6965)
-+++ ConnectionSML/src/sml_Names.cpp	(working copy)
+--- Core/ConnectionSML/src/sml_Names.cpp	(revision 6965)
++++ Core/ConnectionSML/src/sml_Names.cpp	(working copy)
 @@ -204,6 +204,8 @@
  char const* const sml_Names::kBacktraceSymbol1          = "symbol1";
  char const* const sml_Names::kBacktraceSymbol2          = "symbol2";
@@ -230,10 +230,10 @@ Index: ConnectionSML/src/sml_Names.cpp
  // numeric indifference stuff
  char const* const sml_Names::kTagCandidate      = "candidate";
  char const* const sml_Names::kCandidateName     = "name";
-Index: gSKI/src/gSKI_DoNotTouch.cpp
+Index: Core/gSKI/src/gSKI_DoNotTouch.cpp
 ===================================================================
---- gSKI/src/gSKI_DoNotTouch.cpp	(revision 6965)
-+++ gSKI/src/gSKI_DoNotTouch.cpp	(working copy)
+--- Core/gSKI/src/gSKI_DoNotTouch.cpp	(revision 6965)
++++ Core/gSKI/src/gSKI_DoNotTouch.cpp	(working copy)
 @@ -34,6 +34,10 @@
  #include "xmlTraceNames.h" // for constants for XML function types, tags and attributes
  #include "gski_event_system_functions.h" // support for triggering XML events
@@ -372,10 +372,10 @@ Index: gSKI/src/gSKI_DoNotTouch.cpp
 +		}
  	}// class
  }// namespace
-Index: gSKI/src/gSKI_DoNotTouch.h
+Index: Core/gSKI/src/gSKI_DoNotTouch.h
 ===================================================================
---- gSKI/src/gSKI_DoNotTouch.h	(revision 6965)
-+++ gSKI/src/gSKI_DoNotTouch.h	(working copy)
+--- Core/gSKI/src/gSKI_DoNotTouch.h	(revision 6965)
++++ Core/gSKI/src/gSKI_DoNotTouch.h	(working copy)
 @@ -118,6 +118,10 @@
  		 void SetChunkCount(Agent* pIAgent, unsigned long count);
  
@@ -387,10 +387,10 @@ Index: gSKI/src/gSKI_DoNotTouch.h
  	  };
     }
  }
-Index: SoarKernel/include/agent.h
+Index: Core/SoarKernel/include/agent.h
 ===================================================================
---- SoarKernel/include/agent.h	(revision 6965)
-+++ SoarKernel/include/agent.h	(working copy)
+--- Core/SoarKernel/include/agent.h	(revision 6965)
++++ Core/SoarKernel/include/agent.h	(working copy)
 @@ -30,7 +30,10 @@
  #include "lexer.h"
  #include "chunk.h"
@@ -426,10 +426,10 @@ Index: SoarKernel/include/agent.h
    /* RPM 9/06 begin */
    Symbol			* input_link_symbol;
    Symbol			* output_link_symbol;
-Index: SoarKernel/include/decide.h
+Index: Core/SoarKernel/include/decide.h
 ===================================================================
---- SoarKernel/include/decide.h	(revision 6965)
-+++ SoarKernel/include/decide.h	(working copy)
+--- Core/SoarKernel/include/decide.h	(revision 6965)
++++ Core/SoarKernel/include/decide.h	(working copy)
 @@ -103,6 +103,9 @@
  /* These prototypes moved here from chunk.cpp -ajc (5/3/02) */
  extern byte type_of_existing_impasse (agent* thisAgent, Symbol *goal);
@@ -440,10 +440,10 @@ Index: SoarKernel/include/decide.h
  #ifdef __cplusplus
  }
  #endif
-Index: SoarKernel/include/xmlTraceNames.h
+Index: Core/SoarKernel/include/xmlTraceNames.h
 ===================================================================
---- SoarKernel/include/xmlTraceNames.h	(revision 6965)
-+++ SoarKernel/include/xmlTraceNames.h	(working copy)
+--- Core/SoarKernel/include/xmlTraceNames.h	(revision 6965)
++++ Core/SoarKernel/include/xmlTraceNames.h	(working copy)
 @@ -158,6 +158,8 @@
  	static char const* const kBacktracedAlready         = "already-backtraced";
  	static char const* const kBacktraceSymbol1          = "symbol1";
@@ -453,10 +453,10 @@ Index: SoarKernel/include/xmlTraceNames.h
  
  	// numeric indifference stuff
  	static char const* const kTagCandidate      = "candidate";
-Index: SoarKernel/src/agent.cpp
+Index: Core/SoarKernel/src/agent.cpp
 ===================================================================
---- SoarKernel/src/agent.cpp	(revision 6965)
-+++ SoarKernel/src/agent.cpp	(working copy)
+--- Core/SoarKernel/src/agent.cpp	(revision 6965)
++++ Core/SoarKernel/src/agent.cpp	(working copy)
 @@ -260,6 +260,11 @@
    newAgent->lexeme.id_letter = 'A';
    newAgent->lexeme.id_number = 0;
@@ -480,10 +480,10 @@ Index: SoarKernel/src/agent.cpp
    free(delete_agent->name);
    free(delete_agent->top_dir_stack->directory);
    free(delete_agent->top_dir_stack);
-Index: SoarKernel/src/backtrace.cpp
+Index: Core/SoarKernel/src/backtrace.cpp
 ===================================================================
---- SoarKernel/src/backtrace.cpp	(revision 6965)
-+++ SoarKernel/src/backtrace.cpp	(working copy)
+--- Core/SoarKernel/src/backtrace.cpp	(revision 6965)
++++ Core/SoarKernel/src/backtrace.cpp	(working copy)
 @@ -21,7 +21,6 @@
                          Backtracing routines
     ==================================================================== */
@@ -514,10 +514,10 @@ Index: SoarKernel/src/backtrace.cpp
 +  
 +    free_list (thisAgent, negated_to_print);
 +}
-Index: SoarKernel/src/backtrace.h
+Index: Core/SoarKernel/src/backtrace.h
 ===================================================================
---- SoarKernel/src/backtrace.h	(revision 6965)
-+++ SoarKernel/src/backtrace.h	(working copy)
+--- Core/SoarKernel/src/backtrace.h	(revision 6965)
++++ Core/SoarKernel/src/backtrace.h	(working copy)
 @@ -53,6 +53,8 @@
                                               condition *trace_cond,
                                               int indent);
@@ -527,10 +527,10 @@ Index: SoarKernel/src/backtrace.h
  #ifdef __cplusplus
  }
  #endif
-Index: SoarKernel/src/chunk.cpp
+Index: Core/SoarKernel/src/chunk.cpp
 ===================================================================
---- SoarKernel/src/chunk.cpp	(revision 6965)
-+++ SoarKernel/src/chunk.cpp	(working copy)
+--- Core/SoarKernel/src/chunk.cpp	(revision 6965)
++++ Core/SoarKernel/src/chunk.cpp	(working copy)
 @@ -471,6 +471,16 @@
        prev_cc = cc;
      } else {
@@ -548,10 +548,10 @@ Index: SoarKernel/src/chunk.cpp
        free_with_pool (&thisAgent->chunk_cond_pool, cc);
      }
    }
-Index: SoarKernel/src/decide.cpp
+Index: Core/SoarKernel/src/decide.cpp
 ===================================================================
---- SoarKernel/src/decide.cpp	(revision 6965)
-+++ SoarKernel/src/decide.cpp	(working copy)
+--- Core/SoarKernel/src/decide.cpp	(revision 6965)
++++ Core/SoarKernel/src/decide.cpp	(working copy)
 @@ -1861,6 +1861,7 @@
    wme *w, *next_w;
    preference *cand;
@@ -594,10 +594,10 @@ Index: SoarKernel/src/decide.cpp
  }
  
  /* ------------------------------------------------------------------
-Index: SoarKernel/src/mem.cpp
+Index: Core/SoarKernel/src/mem.cpp
 ===================================================================
---- SoarKernel/src/mem.cpp	(revision 6965)
-+++ SoarKernel/src/mem.cpp	(working copy)
+--- Core/SoarKernel/src/mem.cpp	(revision 6965)
++++ Core/SoarKernel/src/mem.cpp	(working copy)
 @@ -237,7 +237,7 @@
    we shouldn't check for every block added to any pool, since that is unduly expensive 
    can we keep a block counter on the agent and check it modulo some function of the limit?
@@ -616,10 +616,10 @@ Index: SoarKernel/src/mem.cpp
  
    /* --- link up the new entries onto the free list --- */
    interleave_factor = DEFAULT_INTERLEAVE_FACTOR;
-Index: SoarKernel/src/symtab.cpp
+Index: Core/SoarKernel/src/symtab.cpp
 ===================================================================
---- SoarKernel/src/symtab.cpp	(revision 6965)
-+++ SoarKernel/src/symtab.cpp	(working copy)
+--- Core/SoarKernel/src/symtab.cpp	(revision 6965)
++++ Core/SoarKernel/src/symtab.cpp	(working copy)
 @@ -572,6 +572,10 @@
    thisAgent->constraint_failure_symbol = make_sym_constant (thisAgent, "constraint-failure");
    thisAgent->no_change_symbol = make_sym_constant (thisAgent, "no-change");
@@ -641,3 +641,140 @@ Index: SoarKernel/src/symtab.cpp
    /* REW: begin 10.24.97 */
    release_helper(thisAgent,&(thisAgent->wait_symbol));
    /* REW: end   10.24.97 */
+Index: SML.sln
+===================================================================
+--- SML.sln	(revision 6965)
++++ SML.sln	(working copy)
+@@ -65,8 +65,6 @@
+ 		{4C6CC3DE-C022-4043-8E73-72FE1E1224C4} = {4C6CC3DE-C022-4043-8E73-72FE1E1224C4}
+ 	EndProjectSection
+ EndProject
+-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ClientSMLPython", "Core\ClientSMLSWIG\Python\ClientSMLPython.vcproj", "{E03209E8-6CF9-4460-B570-A28F3BFBB402}"
+-EndProject
+ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "TestSMLPerformance", "Tools\TestSMLPerformance\TestSMLPerformance.vcproj", "{12397B1B-154F-4148-B7C3-1C839967B689}"
+ 	ProjectSection(ProjectDependencies) = postProject
+ 		{4C6CC3DE-C022-4043-8E73-72FE1E1224C4} = {4C6CC3DE-C022-4043-8E73-72FE1E1224C4}
+@@ -80,6 +78,8 @@
+ EndProject
+ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "TestExternalLibraryLib", "Tools\TestExternalLibraryLib\TestExternalLibraryLib.vcproj", "{72B22CA5-D208-4D56-8A14-1C0FB9DCEF55}"
+ EndProject
++Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ClientSMLPython", "Core\ClientSMLSWIG\Python\ClientSMLPython.vcproj", "{E03209E8-6CF9-4460-B570-A28F3BFBB402}"
++EndProject
+ Global
+ 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+ 		Debug|Win32 = Debug|Win32
+@@ -492,24 +492,6 @@
+ 		{2A0EC63B-FBCA-4983-BE3D-952F7A6E842A}.Release-gSKI DLL|Win32.ActiveCfg = Release|Win32
+ 		{2A0EC63B-FBCA-4983-BE3D-952F7A6E842A}.Release-no SWIG|Win32.ActiveCfg = Release|Win32
+ 		{2A0EC63B-FBCA-4983-BE3D-952F7A6E842A}.Release-no SWIG|Win32.Build.0 = Release|Win32
+-		{E03209E8-6CF9-4460-B570-A28F3BFBB402}.Debug|Win32.ActiveCfg = Debug|Win32
+-		{E03209E8-6CF9-4460-B570-A28F3BFBB402}.Debug|Win32.Build.0 = Debug|Win32
+-		{E03209E8-6CF9-4460-B570-A28F3BFBB402}.Debug-Core|Win32.ActiveCfg = Debug|Win32
+-		{E03209E8-6CF9-4460-B570-A28F3BFBB402}.Debug-DLL|Win32.ActiveCfg = Debug|Win32
+-		{E03209E8-6CF9-4460-B570-A28F3BFBB402}.Debug-DLL|Win32.Build.0 = Debug|Win32
+-		{E03209E8-6CF9-4460-B570-A28F3BFBB402}.Debug-gSKI DLL|Win32.ActiveCfg = Release|Win32
+-		{E03209E8-6CF9-4460-B570-A28F3BFBB402}.Debug-gSKI DLL|Win32.Build.0 = Release|Win32
+-		{E03209E8-6CF9-4460-B570-A28F3BFBB402}.Debug-no SWIG|Win32.ActiveCfg = Debug|Win32
+-		{E03209E8-6CF9-4460-B570-A28F3BFBB402}.Distribution|Win32.ActiveCfg = Release|Win32
+-		{E03209E8-6CF9-4460-B570-A28F3BFBB402}.Distribution|Win32.Build.0 = Release|Win32
+-		{E03209E8-6CF9-4460-B570-A28F3BFBB402}.Release|Win32.ActiveCfg = Release|Win32
+-		{E03209E8-6CF9-4460-B570-A28F3BFBB402}.Release|Win32.Build.0 = Release|Win32
+-		{E03209E8-6CF9-4460-B570-A28F3BFBB402}.Release-Core|Win32.ActiveCfg = Release|Win32
+-		{E03209E8-6CF9-4460-B570-A28F3BFBB402}.Release-Core|Win32.Build.0 = Release|Win32
+-		{E03209E8-6CF9-4460-B570-A28F3BFBB402}.Release-DLL|Win32.ActiveCfg = Release|Win32
+-		{E03209E8-6CF9-4460-B570-A28F3BFBB402}.Release-gSKI DLL|Win32.ActiveCfg = Release|Win32
+-		{E03209E8-6CF9-4460-B570-A28F3BFBB402}.Release-no SWIG|Win32.ActiveCfg = Release|Win32
+-		{E03209E8-6CF9-4460-B570-A28F3BFBB402}.Release-no SWIG|Win32.Build.0 = Release|Win32
+ 		{12397B1B-154F-4148-B7C3-1C839967B689}.Debug|Win32.ActiveCfg = Debug|Win32
+ 		{12397B1B-154F-4148-B7C3-1C839967B689}.Debug|Win32.Build.0 = Debug|Win32
+ 		{12397B1B-154F-4148-B7C3-1C839967B689}.Debug-Core|Win32.ActiveCfg = Debug|Win32
+@@ -620,6 +602,28 @@
+ 		{72B22CA5-D208-4D56-8A14-1C0FB9DCEF55}.Release-gSKI DLL|Win32.Build.0 = Release|Win32
+ 		{72B22CA5-D208-4D56-8A14-1C0FB9DCEF55}.Release-no SWIG|Win32.ActiveCfg = Release|Win32
+ 		{72B22CA5-D208-4D56-8A14-1C0FB9DCEF55}.Release-no SWIG|Win32.Build.0 = Release|Win32
++		{E03209E8-6CF9-4460-B570-A28F3BFBB402}.Debug|Win32.ActiveCfg = Release|Win32
++		{E03209E8-6CF9-4460-B570-A28F3BFBB402}.Debug|Win32.Build.0 = Release|Win32
++		{E03209E8-6CF9-4460-B570-A28F3BFBB402}.Debug-Core|Win32.ActiveCfg = Debug|Win32
++		{E03209E8-6CF9-4460-B570-A28F3BFBB402}.Debug-Core|Win32.Build.0 = Debug|Win32
++		{E03209E8-6CF9-4460-B570-A28F3BFBB402}.Debug-DLL|Win32.ActiveCfg = Debug|Win32
++		{E03209E8-6CF9-4460-B570-A28F3BFBB402}.Debug-DLL|Win32.Build.0 = Debug|Win32
++		{E03209E8-6CF9-4460-B570-A28F3BFBB402}.Debug-gSKI DLL|Win32.ActiveCfg = Debug|Win32
++		{E03209E8-6CF9-4460-B570-A28F3BFBB402}.Debug-gSKI DLL|Win32.Build.0 = Debug|Win32
++		{E03209E8-6CF9-4460-B570-A28F3BFBB402}.Debug-no SWIG|Win32.ActiveCfg = Debug|Win32
++		{E03209E8-6CF9-4460-B570-A28F3BFBB402}.Debug-no SWIG|Win32.Build.0 = Debug|Win32
++		{E03209E8-6CF9-4460-B570-A28F3BFBB402}.Distribution|Win32.ActiveCfg = Debug|Win32
++		{E03209E8-6CF9-4460-B570-A28F3BFBB402}.Distribution|Win32.Build.0 = Debug|Win32
++		{E03209E8-6CF9-4460-B570-A28F3BFBB402}.Release|Win32.ActiveCfg = Release|Win32
++		{E03209E8-6CF9-4460-B570-A28F3BFBB402}.Release|Win32.Build.0 = Release|Win32
++		{E03209E8-6CF9-4460-B570-A28F3BFBB402}.Release-Core|Win32.ActiveCfg = Release|Win32
++		{E03209E8-6CF9-4460-B570-A28F3BFBB402}.Release-Core|Win32.Build.0 = Release|Win32
++		{E03209E8-6CF9-4460-B570-A28F3BFBB402}.Release-DLL|Win32.ActiveCfg = Release|Win32
++		{E03209E8-6CF9-4460-B570-A28F3BFBB402}.Release-DLL|Win32.Build.0 = Release|Win32
++		{E03209E8-6CF9-4460-B570-A28F3BFBB402}.Release-gSKI DLL|Win32.ActiveCfg = Release|Win32
++		{E03209E8-6CF9-4460-B570-A28F3BFBB402}.Release-gSKI DLL|Win32.Build.0 = Release|Win32
++		{E03209E8-6CF9-4460-B570-A28F3BFBB402}.Release-no SWIG|Win32.ActiveCfg = Release|Win32
++		{E03209E8-6CF9-4460-B570-A28F3BFBB402}.Release-no SWIG|Win32.Build.0 = Release|Win32
+ 	EndGlobalSection
+ 	GlobalSection(SolutionProperties) = preSolution
+ 		HideSolutionNode = FALSE
+Index: Tools/SoarJavaDebugger/doc/Document.java
+===================================================================
+--- Tools/SoarJavaDebugger/doc/Document.java	(revision 6965)
++++ Tools/SoarJavaDebugger/doc/Document.java	(working copy)
+@@ -144,7 +144,7 @@
+ 		Module phase 	 = new Module("Phase Diagram", "A view that shows Soar's phases of execution", modules.PhaseView.class) ;
+ 		Module edit 	 = new Module("Edit Production Window", "A window used to edit a production and then load it into Soar", modules.EditorView.class) ;
+ 		Module fold 	 = new Module("Tree Trace Window", "Output from commands and trace output from runs is shown in a tree window.", FoldingTextView.class) ;
+-
++    Module canvas = new Module("Canvas Window", "Canvas Window", CanvasView.class);
+ 		m_ModuleList.add(fold) ;
+ 		m_ModuleList.add(textTrace) ;
+ 		m_ModuleList.add(update) ;
+@@ -152,6 +152,7 @@
+ 		m_ModuleList.add(button) ;
+ 		m_ModuleList.add(phase) ;
+ 		m_ModuleList.add(edit) ;
++    m_ModuleList.add(canvas);
+ 	}
+ 	
+ 	/** Gives us a frame to work with */
+Index: Tools/SoarJavaDebugger/helpers/XmlOutput.java
+===================================================================
+--- Tools/SoarJavaDebugger/helpers/XmlOutput.java	(revision 6965)
++++ Tools/SoarJavaDebugger/helpers/XmlOutput.java	(working copy)
+@@ -435,6 +435,16 @@
+ 		return text.toString() ;
+ 	}
+ 	
++  // SBW 5/07
++	public static String getLocalNegationText(Agent agent, ClientTraceXML xml, String parentTagName) {
++		StringBuffer text = new StringBuffer() ;
++	  text.append("*** Chunk won't be formed due to local negation in backtrace ***") ;
++    String output = getConditionsText(agent, xml) ;
++	  text.append(output) ;
++	  text.append(kLineSeparator) ;
++		return text.toString() ;
++  }
++	
+ 	public static String getActionText(Agent agent, ClientTraceXML action)
+ 	{
+ 		StringBuffer text = new StringBuffer() ;
+Index: Tools/SoarJavaDebugger/modules/FoldingTextView.java
+===================================================================
+--- Tools/SoarJavaDebugger/modules/FoldingTextView.java	(revision 6965)
++++ Tools/SoarJavaDebugger/modules/FoldingTextView.java	(working copy)
+@@ -863,6 +863,14 @@
+ 				if (output.length() != 0)
+ 					this.appendSubText(output, TraceType.kFullLearning) ;
+ 			}
++      // SBW 5/07
++			else if (xmlTrace.IsTagLocalNegation())
++			{
++				String output = XmlOutput.getLocalNegationText(agent, xmlTrace, xmlTrace.GetTagName()) ;
++				
++				if (output.length() != 0)
++					this.appendSubText(output, TraceType.kFullLearning) ;
++			}
+ 			else if (xmlTrace.IsTagMessage() || xmlTrace.IsTagWarning() || xmlTrace.IsTagError() || xmlTrace.IsTagVerbose())
+ 			{
+ 				StringBuffer text = new StringBuffer() ;
