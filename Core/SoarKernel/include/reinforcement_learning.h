@@ -148,6 +148,9 @@ extern bool validate_rl_decay_rate( double new_val );
 // trace tolerance
 extern bool validate_rl_trace_tolerance( double new_val );
 
+// shortcut for determining if Soar-RL is enabled
+extern bool soar_rl_enabled( agent *my_agent );
+
 //////////////////////////////////////////////////////////
 // Stats
 //////////////////////////////////////////////////////////

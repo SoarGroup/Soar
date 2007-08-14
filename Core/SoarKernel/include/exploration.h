@@ -16,6 +16,8 @@
 #include <map>
 #include <vector>
 
+#include "gdatastructs.h"
+
 //////////////////////////////////////////////////////////
 // Exploration constants
 //////////////////////////////////////////////////////////
@@ -112,5 +114,27 @@ extern double get_reduction_rate( agent *my_agent, const char *parameter, const 
 // set reduction rate
 extern bool set_reduction_rate( agent *my_agent, const char *parameter, const char *policy_name, double reduction_rate );
 extern bool set_reduction_rate( agent *my_agent, const char *parameter, const long policy, double reduction_rate );
+
+//////////////////////////////////////////////////////////
+// Decision Procedures
+//////////////////////////////////////////////////////////
+
+// selects a candidate based upon the current exploration mode
+extern preference *choose_according_to_exploration_mode( agent *my_agent, slot *s, preference *candidates );
+
+// selects a candidate in a random-uniform fashion
+extern preference *probabilistically_select( preference *candidates );
+
+// selects a candidate based on a boltzmann distribution
+extern preference *boltzmann_select( agent *my_agent, preference *candidates );
+
+// selects a candidate based upon an epsilon-greedy distribution
+extern preference *epsilon_greedy_select( agent *my_agent, preference *candidates );
+
+// returns candidate with highest q-value (random amongst ties), assumes computed values
+extern preference *get_highest_q_value( preference *candidates );
+
+// computes total contribution for a candidate from each preference, as well as number of contributions
+extern void compute_value_of_candidate( agent *my_agent, preference *cand, slot *s, float default_value = 0 );
 
 #endif

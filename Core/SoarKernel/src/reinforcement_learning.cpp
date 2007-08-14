@@ -470,6 +470,14 @@ bool validate_rl_trace_tolerance( double new_val )
 /////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 /***************************************************************************
+ * Function     : soar_rl_enabled
+ **************************************************************************/
+bool soar_rl_enabled( agent *my_agent )
+{
+	return ( get_rl_parameter( my_agent, "learning", RL_RETURN_LONG ) == RL_LEARNING_ON );
+}
+
+/***************************************************************************
  * Function     : valid_rl_stat
  **************************************************************************/
 bool valid_rl_stat( agent *my_agent, const char *name )

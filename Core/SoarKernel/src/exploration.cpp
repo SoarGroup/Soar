@@ -15,8 +15,15 @@
  */
 
 #include <stdlib.h>
+#include <math.h>
+#include <float.h>
 
+#include "soar_rand.h"
 #include "agent.h"
+#include "print.h"
+#include "gski_event_system_functions.h"
+#include "xmlTraceNames.h"
+
 #include "exploration.h"
 #include "misc.h"
 
@@ -362,4 +369,334 @@ bool set_reduction_rate( agent *my_agent, const char *parameter, const long poli
 	(*my_agent->exploration_params)[ parameter ].rates[ policy ] = reduction_rate;
 	
 	return true;
+}
+
+/***************************************************************************
+ * Function     : choose_according_to_exploration_mode
+ **************************************************************************/
+preference *choose_according_to_exploration_mode( agent *my_agent, slot *s, preference *candidates )
+{
+	const long exploration_policy = get_exploration_policy( my_agent );
+	preference *return_val;
+
+	// get preference values for each candidate
+	for ( preference *cand = candidates; cand != NIL; cand = cand->next_candidate )
+		compute_value_of_candidate( my_agent, cand, s );
+
+	// should perform update here for highest valued candidate in q-learning
+	
+	switch ( exploration_policy )
+	{
+		case USER_SELECT_FIRST:
+			return_val = candidates;
+			return return_val;
+			break;
+		
+		case USER_SELECT_LAST:
+			for (return_val = candidates; return_val->next_candidate != NIL; return_val = return_val->next_candidate);
+			return return_val;
+			break;
+
+		case USER_SELECT_RANDOM:
+			return probabilistically_select( candidates );
+			break;
+
+		case USER_SELECT_E_GREEDY:
+			return epsilon_greedy_select( my_agent, candidates );
+			break;
+
+		case USER_SELECT_BOLTZMANN:
+			return boltzmann_select( my_agent, candidates );
+			break;
+	}
+	
+	return NIL;
+}
+
+/***************************************************************************
+ * Function     : probabilistically_select
+ **************************************************************************/
+preference *probabilistically_select( preference *candidates )
+{	
+	preference *cand = 0;
+	double total_probability = 0;
+	double low_probability = 0;
+	unsigned int cand_count = 0;
+	double selected_probability = 0;
+	double current_sum = 0;
+	double rn = 0;
+
+	/*
+	* General idea: in order to support negative values, shift all calculations
+	* up the absolute value of the lowest numeric value (if one exists below zero)
+	*/
+
+	for ( cand = candidates; cand != NIL; cand = cand->next_candidate )
+	{
+		if ( cand->numeric_value < low_probability )
+			low_probability = cand->numeric_value;
+		cand_count++;
+	}
+	
+	for ( cand = candidates; cand != NIL; cand = cand->next_candidate )
+		total_probability += cand->numeric_value;
+	total_probability += ( cand_count * fabs( low_probability ) );
+	
+	rn = SoarRand(); 
+	selected_probability = rn * total_probability;
+	current_sum = 0;
+
+	for ( cand = candidates; cand != NIL; cand = cand->next_candidate ) 
+	{
+		current_sum += ( cand->numeric_value + low_probability );
+		if ( selected_probability <= current_sum )
+			return cand;
+	}
+
+	return NIL;
+}
+
+/***************************************************************************
+ * Function     : boltzmann_select
+ **************************************************************************/
+preference *boltzmann_select( agent *my_agent, preference *candidates )
+{
+	preference *cand = 0;
+	double total_probability = 0;
+	double selected_probability = 0;
+	double rn = 0;
+	double current_sum = 0;
+
+	double temp = get_parameter_value( my_agent, "temperature" );
+	
+	// output trace information
+	if ( my_agent->sysparams[ TRACE_INDIFFERENT_SYSPARAM ] )
+	{
+		for ( cand = candidates; cand != NIL; cand = cand->next_candidate )
+		{
+			print_with_symbols( my_agent, "\n Candidate %y:  ", cand->value );
+			print( my_agent, "Value (Sum) = %f, (Exp) = %f", cand->numeric_value, exp( cand->numeric_value / temp ) );
+			gSKI_MakeAgentCallbackXML( my_agent, kFunctionBeginTag, kTagCandidate );
+			gSKI_MakeAgentCallbackXML( my_agent, kFunctionAddAttribute, kCandidateName, symbol_to_string( my_agent, cand->value, true, 0, 0 ) );
+			gSKI_MakeAgentCallbackXML( my_agent, kFunctionAddAttribute, kCandidateType, kCandidateTypeSum );
+			gSKI_MakeAgentCallbackXML( my_agent, kFunctionAddAttribute, kCandidateValue, cand->numeric_value );
+			gSKI_MakeAgentCallbackXML( my_agent, kFunctionAddAttribute, kCandidateExpValue, exp( cand->numeric_value / temp ) );
+			gSKI_MakeAgentCallbackXML( my_agent, kFunctionEndTag, kTagCandidate );
+		}
+	}
+
+	/**
+	 * Since we can't guarantee any combination of temperature/q-values, could be useful
+	 * to notify the user if double limit has been breached.
+	 */
+	double exp_max = log( DBL_MAX );
+	double q_max = exp_max * temp;
+
+	/*
+	 * method to increase usable range of boltzmann with double
+	 * - find the highest/lowest q-values
+	 * - take half the difference
+	 * - subtract this value from all q-values when making calculations
+	 * 
+	 * this maintains relative probabilities of selection, while reducing greatly the exponential extremes of calculations
+	 */
+	float q_diff = 0;
+	if ( candidates->next_candidate != NIL ) 
+	{
+		float q_high = candidates->numeric_value;
+		float q_low = candidates->numeric_value;
+		
+		for ( cand = candidates->next_candidate; cand != NIL; cand = cand->next_candidate ) 
+		{
+			if ( cand->numeric_value > q_high )
+				q_high = cand->numeric_value;
+			if ( cand->numeric_value < q_low )
+				q_low = cand->numeric_value;
+		}
+
+		q_diff = ( q_high - q_low ) / 2;
+	} 
+	else 
+	{
+		q_diff = candidates->numeric_value;
+	}
+
+	for (cand = candidates; cand != NIL; cand = cand->next_candidate) 
+	{
+
+		/*  Total Probability represents the range of values, we expect
+		 *  the use of negative valued preferences, so its possible the
+		 *  sum is negative, here that means a fractional probability
+		 */
+		float q_val = ( cand->numeric_value - q_diff );
+		total_probability += exp( (double) (  q_val / temp ) );
+		
+		/**
+ 		 * Let user know if adjusted q-value will overflow
+		 */
+		if ( q_val > q_max )
+		{
+			print( my_agent, "WARNING: Boltzmann update overflow! %g > %g", q_val, q_max );
+			
+			char buf[256];
+       		SNPRINTF( buf, 254, "WARNING: Boltzmann update overflow! %g > %g", q_val, q_max );
+       		gSKI_MakeAgentCallbackXML( my_agent, kFunctionBeginTag, kTagWarning );
+       		gSKI_MakeAgentCallbackXML( my_agent, kFunctionAddAttribute, kTypeString, buf );
+       		gSKI_MakeAgentCallbackXML( my_agent, kFunctionEndTag, kTagWarning );
+		}
+	}
+
+	rn = SoarRand(); // generates a number in [0,1]
+	selected_probability = rn * total_probability;
+
+	for (cand = candidates; cand != NIL; cand = cand->next_candidate) 
+	{
+		current_sum += exp( (double) ( ( cand->numeric_value - q_diff ) / temp ) );
+		
+		if ( selected_probability <= current_sum )
+			return cand;
+	}
+	
+	return NIL;
+}
+
+/***************************************************************************
+ * Function     : epsilon_greedy_select
+ **************************************************************************/
+preference *epsilon_greedy_select( agent *my_agent, preference *candidates )
+{
+	preference *cand = 0;
+
+	double epsilon = get_parameter_value( my_agent, "epsilon" );
+
+	if ( my_agent->sysparams[ TRACE_INDIFFERENT_SYSPARAM ] )
+	{
+		for ( cand = candidates; cand != NIL; cand = cand->next_candidate )
+		{
+			print_with_symbols( my_agent, "\n Candidate %y:  ", cand->value );
+			print( my_agent, "Value (Sum) = %f", cand->numeric_value );
+			gSKI_MakeAgentCallbackXML( my_agent, kFunctionBeginTag, kTagCandidate );
+			gSKI_MakeAgentCallbackXML( my_agent, kFunctionAddAttribute, kCandidateName, symbol_to_string( my_agent, cand->value, true, 0, 0 ) );
+			gSKI_MakeAgentCallbackXML( my_agent, kFunctionAddAttribute, kCandidateType, kCandidateTypeSum );
+			gSKI_MakeAgentCallbackXML( my_agent, kFunctionAddAttribute, kCandidateValue, cand->numeric_value );
+			gSKI_MakeAgentCallbackXML( my_agent, kFunctionEndTag, kTagCandidate );
+		}
+	}
+
+	if ( SoarRand() < epsilon )	
+	{
+		unsigned int cand_count = 0;
+		unsigned int chosen_num = 0;
+		
+		// select at random 
+		for ( cand = candidates; cand != NIL; cand = cand->next_candidate )
+			cand_count++;
+	
+		chosen_num = SoarRandInt( cand_count - 1 );
+	
+		cand = candidates;
+		while ( chosen_num ) 
+		{ 
+			cand = cand->next_candidate; 
+			chosen_num--; 
+		}
+	
+		return cand;
+	} 
+	else
+		return get_highest_q_value( candidates );
+	
+	return NIL;
+}
+
+/***************************************************************************
+ * Function     : get_highest_q_value
+ **************************************************************************/
+preference *get_highest_q_value( preference *candidates )
+{
+	preference *cand;
+	preference *top_cand = candidates;
+	float top_value = candidates->numeric_value;
+	int num_max_cand = 0;
+
+	for ( cand=candidates; cand!=NIL; cand=cand->next_candidate )
+	{
+		if ( cand->numeric_value > top_value ) 
+		{
+			top_value = cand->numeric_value;
+			top_cand = cand;
+			num_max_cand = 1;
+		} 
+		else if ( cand->numeric_value == top_value ) 
+			num_max_cand++;
+	}
+
+	if (num_max_cand == 1)	
+		return top_cand;
+	else 
+	{
+		// if operators tied for highest Q-value, select among tied set at random
+		unsigned int chosen_num = SoarRandInt( num_max_cand - 1 );
+		
+		cand = candidates;
+		while ( cand->numeric_value != top_value ) 
+			cand = cand->next_candidate;
+		
+		while ( chosen_num ) 
+		{
+			cand = cand->next_candidate;
+			chosen_num--;
+			
+			while ( cand->numeric_value != top_value ) 
+				cand = cand->next_candidate;
+		}
+		
+		return cand;
+	}
+}
+
+/***************************************************************************
+ * Function     : compute_value_of_candidate
+ **************************************************************************/
+void compute_value_of_candidate( agent *my_agent, preference *cand, slot *s, float default_value )
+{
+	if ( !cand ) return;
+
+	// temporary runner
+	preference *pref;
+
+	// initialize candidate values
+	cand->total_preferences_for_candidate = 0;
+	cand->numeric_value = 0;
+	
+	// all numeric indifferents
+	for ( pref = s->preferences[ NUMERIC_INDIFFERENT_PREFERENCE_TYPE ]; pref != NIL; pref = pref->next) 
+	{
+		if ( cand->value == pref->value )
+		{
+			cand->total_preferences_for_candidate += 1;
+			cand->numeric_value += get_number_from_symbol( pref->referent );
+		}
+	}
+
+	// all binary indifferents
+	for ( pref = s->preferences[ BINARY_INDIFFERENT_PREFERENCE_TYPE ]; pref != NIL; pref = pref->next ) 
+	{
+		if (cand->value == pref->value)
+		{
+			cand->total_preferences_for_candidate += 1;
+			cand->numeric_value += get_number_from_symbol( pref->referent );
+        }
+	}
+	
+	// if no contributors, provide default
+	if ( cand->total_preferences_for_candidate == 0 ) 
+	{
+		cand->numeric_value = default_value;
+		cand->total_preferences_for_candidate = 1;
+	}
+	
+	// accomodate average mode
+	if ( my_agent->numeric_indifferent_mode == NUMERIC_INDIFFERENT_MODE_AVG )
+		cand->numeric_value = cand->numeric_value / cand->total_preferences_for_candidate;
 }

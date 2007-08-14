@@ -18,6 +18,8 @@
 #include <vector>
 #include <string>
 
+#include "symtab.h"
+
 //////////////////////////////////////////////////////////
 // String functions
 //////////////////////////////////////////////////////////
@@ -73,5 +75,12 @@ template <class X, class Y> bool is_set( std::map<X,Y> *my_map, X *key )
 {
 	return ( my_map->find( *key ) != my_map->end() );
 }
+
+//////////////////////////////////////////////////////////
+// Map functions
+//////////////////////////////////////////////////////////
+
+// get a numeric value from a symbol
+extern float get_number_from_symbol( Symbol *sym );
 
 #endif /*MISC_H_*/

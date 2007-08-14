@@ -166,6 +166,7 @@ namespace xmlTraceNames
 	static char const* const kCandidateTypeSum  = "sum";
 	static char const* const kCandidateTypeAvg  = "avg";
 	static char const* const kCandidateValue    = "value";
+	static char const* const kCandidateExpValue = "exp";
 
 	// output for the verbose command
 	static char const* const kTagVerbose    = "verbose";
