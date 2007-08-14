@@ -476,7 +476,7 @@
 (<= (goal explorer 70)
     atExit
     (not killed)
-    (not (true (holding ring11))))
+    (not (true (holding ring1))))
 (<= (goal explorer 80)
     atExit
     (not killed)

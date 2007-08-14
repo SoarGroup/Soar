@@ -479,7 +479,7 @@
 (<= (goal explorer 70)
     atExit
     (not killed)
-    (not (true (holding ring11))))
+    (not (true (holding ring1))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; Basic axioms of mathematics (defined over the range [0,7])
