@@ -763,7 +763,7 @@
 
 ;;; Determine if there exists some primitive object adjacent to 
 ;;; ?object1's ?side that is further left than ?object2
-(<= (left-further-adjacent-primitive ?object1 ?object2 ?side)
+(<= (left-further-adjacent-primitive ?object1 ?object2 ?side ?other)
     (adjacent ?object1 ?other ?side)
     (true (object-location ?object2 ?obj2-x ?obj2-y))
     (true (object-location ?other ?other-x ?other-y))
@@ -774,6 +774,8 @@
 	;; leftmost-adjacent-primitive only take top
 	(distinct ?side left)
 	(distinct ?side right)
+	(distinct ?object2 ?other)
+	(distinct ?object1 ?other)
 	)
 
 ;;; Determine if there exists some object braced to ?object1 that is further
@@ -786,7 +788,7 @@
 
 ;;; Determine if there exists some primitive object adjacent to 
 ;;; ?object1's ?side that is left of ?right and right of ?object2
-(<= (left-further-adjacent-primitive-to-right ?object1 ?object2 ?right ?side)
+(<= (left-further-adjacent-primitive-to-right ?object1 ?object2 ?right ?side ?other)
     (adjacent ?object1 ?other ?side)
     (true (object-location ?object2 ?obj2-x ?obj2-y))
     (true (object-location ?right ?right-x ?right-y))
@@ -799,6 +801,7 @@
 	(distinct ?side left)
 	(distinct ?side right)
 	(distinct ?object2 ?other)
+	(distinct ?right ?other)
 	)
 
 ;;; Determine if there exists some object braced to ?object1 that is
@@ -1082,6 +1085,10 @@
     (distinct ?object1 ?object2)
     (distinct ?object1 ?support)
     (distinct ?object2 ?support)
+	
+	;; manual mod - avoid duplicate supports
+	(not (same-support-to-right ?object1 ?object2 ?support left))
+	;;(distinct ?support c1)
 	)
 
 (<= (support-for-place ?object1 ?object2 ?support right)
@@ -1102,7 +1109,66 @@
     (distinct ?object1 ?object2)
     (distinct ?object1 ?support)
     (distinct ?object2 ?support)
+	
+	;; manual mod - avoid duplicate supports
+	(not (same-support-to-right ?object1 ?object2 ?support right))
+	;;(distinct ?support c3)
+	
 	)
+
+;; manual mod
+;;;; the following 3 rules are important to make soar run
+;; leftmost support for the same height - avoid duplicate, which may explode elaboration
+;; Soar duplicate structure causes trouble in this case
+(<= (redundant-support-for-place ?object1 ?object2 ?support left)
+    (true (object-size ?object2 ?width2 ?height2 ?weight2))
+    (object-coordinates ?object1 ?x1 ?y1 ?x2 ?y2)
+    (object-coordinates ?support ?sx1 ?sy1 ?sx2 ?sy2)
+    (- ?x1 ?width2 ?minx)
+    (- ?y1 ?height2 ?miny)
+    (> ?x1 ?sx1)
+    (> ?sx2 ?minx)
+    (> ?sy2 ?miny)
+    (> ?y2 ?sy2)
+	;; manual mod
+    (movable ?object2)
+    (clear ?object2 top)
+	(not (true (member ?anycompound ?object2)))
+	(not (is-recursive-member-of-compound ?object2 ?object1))
+    (distinct ?object1 ?object2)
+    (distinct ?object1 ?support)
+    (distinct ?object2 ?support)
+	)
+
+(<= (redundant-support-for-place ?object1 ?object2 ?support right)
+    (true (object-size ?object2 ?width2 ?height2 ?weight2))
+    (object-coordinates ?object1 ?x1 ?y1 ?x2 ?y2)
+    (object-coordinates ?support ?sx1 ?sy1 ?sx2 ?sy2)
+    (+ ?x2 ?width2 ?maxx)
+    (- ?y1 ?height2 ?miny)
+    (> ?maxx ?sx1)
+    (> ?sx2 ?x2)
+    (> ?sy2 ?miny)
+    (> ?y2 ?sy2)
+	;; manual mod
+    (movable ?object2)
+    (clear ?object2 top)
+	(not (true (member ?anycompound ?object2)))
+	(not (is-recursive-member-of-compound ?object2 ?object1))
+    (distinct ?object1 ?object2)
+    (distinct ?object1 ?support)
+    (distinct ?object2 ?support)
+	)
+
+(<= (same-support-to-right ?object1 ?object2 ?support ?side) ;; side = left/right
+	(redundant-support-for-place ?object1 ?object2 ?support ?side)
+	(redundant-support-for-place ?object1 ?object2 ?another-support ?side)
+	(distinct ?support ?another-support)
+	(object-coordinates ?support ?sx1 ?sy1 ?sx2 ?sy2)
+	(object-coordinates ?another-support ?asx1 ?asy1 ?asx2 ?sy2)
+	(< ?sx1 ?asx1)
+)
+;;;; the above 3 rules are important to make soar run
 
 ;;; Calculate the amount of weight supported by ?object
 (<= (supported-weight ?object ?weight)
@@ -1152,7 +1218,7 @@
     (>= ?x22 ?x12)
 	(true (object-size ?top ?top-width ?top-height ?top-weight))
     (true (object-size ?support ?sup-width ?sup-height ?sup-weight))
-	(> ?sup-width ?top-width)
+	(>= ?sup-width ?top-width)
     (tower-recursive ?support ?bottom ?width ?support-tower-height)
 	(+ ?support-tower-height ?top-height ?height)
 	)
@@ -1166,7 +1232,7 @@
     (>= ?x22 ?x12)
 	(true (object-size ?top ?top-width ?top-height ?top-weight))
     (true (object-size ?support ?width ?sup-height ?sup-weight))
-	(> ?width ?top-width)
+	(>= ?width ?top-width)
 	(+ ?sup-height ?top-height ?height)
 	(true (object ?support ?type))
 	(distinct ?type ground)
