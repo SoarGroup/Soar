@@ -1395,17 +1395,19 @@
     (> ?sx2 ?minx)
     (> ?sy2 ?miny)
     (> ?y2 ?sy2)
-    ;; manual mod
+	;; manual mod
     (movable ?object2)
     (clear ?object2 top)
-	;;(not (is-member-of-any-compound ?object2))
 	(not (true (member ?anycompound ?object2)))
 	(not (is-recursive-member-of-compound ?object2 ?object1))
     (distinct ?object1 ?object2)
     (distinct ?object1 ?support)
     (distinct ?object2 ?support)
-	(adjacent ?object1 ?support bottom)
-    )
+	
+	;; manual mod - avoid duplicate supports
+	(not (same-support-to-right ?object1 ?object2 ?support left))
+	;;(distinct ?support c1)
+	)
 
 (<= (support-for-place ?object1 ?object2 ?support right)
     (true (object-size ?object2 ?width2 ?height2 ?weight2))
@@ -1417,17 +1419,74 @@
     (> ?sx2 ?x2)
     (> ?sy2 ?miny)
     (> ?y2 ?sy2)
-    ;; manual mod
+	;; manual mod
     (movable ?object2)
     (clear ?object2 top)
-	;;(not (is-member-of-any-compound ?object2))
 	(not (true (member ?anycompound ?object2)))
 	(not (is-recursive-member-of-compound ?object2 ?object1))
     (distinct ?object1 ?object2)
     (distinct ?object1 ?support)
     (distinct ?object2 ?support)
-	(adjacent ?object1 ?support bottom)
-    )
+	
+	;; manual mod - avoid duplicate supports
+	(not (same-support-to-right ?object1 ?object2 ?support right))
+	;;(distinct ?support c3)
+	
+	)
+
+;; manual mod
+;;;; the following 3 rules are important to make soar run
+;; leftmost support for the same height - avoid duplicate, which may explode elaboration
+;; Soar duplicate structure causes trouble in this case
+(<= (redundant-support-for-place ?object1 ?object2 ?support left)
+    (true (object-size ?object2 ?width2 ?height2 ?weight2))
+    (object-coordinates ?object1 ?x1 ?y1 ?x2 ?y2)
+    (object-coordinates ?support ?sx1 ?sy1 ?sx2 ?sy2)
+    (- ?x1 ?width2 ?minx)
+    (- ?y1 ?height2 ?miny)
+    (> ?x1 ?sx1)
+    (> ?sx2 ?minx)
+    (> ?sy2 ?miny)
+    (> ?y2 ?sy2)
+	;; manual mod
+    (movable ?object2)
+    (clear ?object2 top)
+	(not (true (member ?anycompound ?object2)))
+	(not (is-recursive-member-of-compound ?object2 ?object1))
+    (distinct ?object1 ?object2)
+    (distinct ?object1 ?support)
+    (distinct ?object2 ?support)
+	)
+
+(<= (redundant-support-for-place ?object1 ?object2 ?support right)
+    (true (object-size ?object2 ?width2 ?height2 ?weight2))
+    (object-coordinates ?object1 ?x1 ?y1 ?x2 ?y2)
+    (object-coordinates ?support ?sx1 ?sy1 ?sx2 ?sy2)
+    (+ ?x2 ?width2 ?maxx)
+    (- ?y1 ?height2 ?miny)
+    (> ?maxx ?sx1)
+    (> ?sx2 ?x2)
+    (> ?sy2 ?miny)
+    (> ?y2 ?sy2)
+	;; manual mod
+    (movable ?object2)
+    (clear ?object2 top)
+	(not (true (member ?anycompound ?object2)))
+	(not (is-recursive-member-of-compound ?object2 ?object1))
+    (distinct ?object1 ?object2)
+    (distinct ?object1 ?support)
+    (distinct ?object2 ?support)
+	)
+
+(<= (same-support-to-right ?object1 ?object2 ?support ?side) ;; side = left/right
+	(redundant-support-for-place ?object1 ?object2 ?support ?side)
+	(redundant-support-for-place ?object1 ?object2 ?another-support ?side)
+	(distinct ?support ?another-support)
+	(object-coordinates ?support ?sx1 ?sy1 ?sx2 ?sy2)
+	(object-coordinates ?another-support ?asx1 ?asy1 ?asx2 ?sy2)
+	(< ?sx1 ?asx1)
+)
+;;;; the above 3 rules are important to make soar run
 
 ;;; Calculate the amount of weight supported by ?object
 (<= (supported-weight ?object ?weight)
