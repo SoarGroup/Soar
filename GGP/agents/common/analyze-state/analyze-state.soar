@@ -158,3 +158,41 @@ sp {apply*game-op*top-state*report*2
 -->
    (write (crlf) |ACTION | <name> |(| <parm> |, | <p2> |)|)
 }
+
+sp {apply*game-op*report*0
+   (state <s> ^name game
+              -^superstate nil
+              ^operator <o>)
+   (<o> ^name {<> update-state <> analyze-state <> update-search-info
+    <> save-location <> check-for-duplicate-location <> init-game <name>}
+        -^p1)
+-->
+   (write (crlf) |action | <name>)
+}
+
+
+sp {apply*game-op*report*1
+   (state <s> ^name game
+              -^superstate nil
+              ^operator <o>)
+   (<o> ^name {<> update-state <> analyze-state <> update-search-info
+                <> save-location <> check-for-duplicate-location <name>}
+        ^p1 <parm>
+       -^p2)
+-->
+   (write (crlf) |action | <name> |(| <parm> |)|)
+}
+
+
+sp {apply*game-op*report*2
+   (state <s> ^name game
+              -^superstate nil
+              ^operator <o>)
+   (<o> ^name {<> update-state <> analyze-state <> update-search-info
+                <> save-location <> check-for-duplicate-location <name>}
+        ^p1 <parm>
+        ^p2 <p2>)
+-->
+   (write (crlf) |action | <name> |(| <parm> |, | <p2> |)|)
+}
+
