@@ -61,6 +61,7 @@ string fileWrite
   char const*   pFunctionName, 
   char const*   pArgument )
 {
+  //assert(false);
   bool append = false;
   string arg = "";
   string output = "";
@@ -365,6 +366,7 @@ int main(int argc, char *argv[]) {
   bool noSortsCanvas = false;
   bool oldAgent = false;
 
+  //Check to see if any flags have been set
   for(int i = 1; i < argc; i++) {
     if (strcmp(argv[i], "-port") == 0) {
       port = atoi(argv[i+1]);

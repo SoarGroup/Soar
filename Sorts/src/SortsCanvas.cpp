@@ -113,7 +113,9 @@ void SortsCanvas::unregisterSGO(SoarGameObject* sgo) {
       i != elements.end();
       ++i)
   {
+    msg << "removing an element" << endl;
     canvas.remove(*i);
+    msg << "removed successfully" <<endl;
   }
   canvas.remove(obj.compound);
 
@@ -121,6 +123,7 @@ void SortsCanvas::unregisterSGO(SoarGameObject* sgo) {
     canvas.remove(obj.trackingLine);
   }
   canvasObjs.erase(sgo);
+  msg << "Unregistered succesfully" <<endl;
 }
 
 void SortsCanvas::registerGroup(PerceptualGroup* group) {

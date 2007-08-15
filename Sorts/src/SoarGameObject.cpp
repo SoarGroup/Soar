@@ -73,7 +73,7 @@ void SoarGameObject::identifyBehaviors() {
       registerBehavior(attackBehavior);
       FSM* attackNear = new AttackNearFSM(this);
       registerBehavior(attackNear);
-      defaultBehaviors.push_back(attackNear);
+      defaultBehaviors.push_back(attackNear);//was attackNear
     }
     else if (name == "controlCenter") {
       FSM* trainBehavior = new TrainFSM(gob);
@@ -137,7 +137,7 @@ SoarGameObject::~SoarGameObject()
 }
 
 void SoarGameObject::removeFromGame() {
-  dbg << "YYY epitah:\n";
+  dbg << "YYY epitaph:\n";
   dbg << "the object was a good " << name << endl;
   dbg << "and served its owner, " << owner << ", well." << endl;
   dbg << "it will be missed by its group, " << pGroup << endl;
@@ -209,25 +209,21 @@ void SoarGameObject::update()
     // this happens if we are ignoring world objects
     return;
   }
-  
   if (gob->is_pending_action()) {
     msg << "ignored update, there is a pending action.\n";
     Sorts::OrtsIO->updateNextCycle(this);
     return;
   }
-  
   int fsmStatus;
 
     
   pGroup->setHasStaleMembers();
-  
   int currentFrame = Sorts::OrtsIO->getViewFrame();
   if (currentFrame == frameOfLastUpdate) {
     msg << "ignoring repeated update.\n";
     Sorts::OrtsIO->updateNextCycle(this);
     return;
   }
-
   // first carry out assigned behavior
   if (assignedBehavior != NULL) {
     fsmStatus = assignedBehavior->update();
@@ -266,17 +262,19 @@ void SoarGameObject::update()
     // don't set status to idle.. we need the last FSM status to stick
     // around when commands end
   }
-
   // do default behaviors (if action has not yet been assigned)
   for(list<FSM*>::iterator
       i  = defaultBehaviors.begin();
       i != defaultBehaviors.end();
       ++i)
   {
+    dbg<< "in the loop for a "<< name << endl;
     if (gob->is_pending_action()) {
       break;
     }
+    dbg << "still in the loop" << endl;
     (*i)->update(); // don't care about the status for now
+    dbg<< "ending the loop" << endl;
   }
 
   // spit out a warning if the object sits still for a long time
@@ -314,6 +312,7 @@ void SoarGameObject::update()
       }
     }
   }
+  dbg<< "Done with the loop" << endl;
 }
 
 

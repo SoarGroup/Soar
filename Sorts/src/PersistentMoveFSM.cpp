@@ -31,6 +31,10 @@ PersistentMoveFSM::PersistentMoveFSM(GameObj* go)
          : FSM(go) {
   name = OA_MOVE;
   moveFSM = NULL;
+  vector<sint4> temp;
+  temp.push_back(1);
+  temp.push_back(1);
+  init(temp);
 }
 
 int PersistentMoveFSM::update() {
@@ -40,7 +44,6 @@ int PersistentMoveFSM::update() {
       tempParams.clear();
       tempParams.push_back(targetLoc.x);
       tempParams.push_back(targetLoc.y);
-
       moveFSM->init(tempParams);
       moveStatus = moveFSM->update();
       state = MOVE;

@@ -42,7 +42,7 @@ void GameActionManager::processGameCommands() {
       findBuildingLoc(i->building, i->nearLocation, i->intValue);
     }
     else if (i->type == GA_SET_MINERAL_BUFFER) {
-      setMineralBuffer(mineralBuffer + i->intValue);
+      //setMineralBuffer(mineralBuffer + i->intValue);
     }
     else if (i->type == GA_CLEAR_MINERAL_BUFFER) {
       mineralBuffer = 0;

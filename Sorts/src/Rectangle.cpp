@@ -35,10 +35,11 @@ Rectangle::Rectangle(double _xmin, double _xmax, double _ymin, double _ymax)
 { }
 
 Rectangle::Rectangle(double x, double y, double width, double height, bool ugly) {
-  xmin = x - width / 2;
-  xmax = x + width / 2;
-  ymin = y - height / 2;
-  ymax = y + height / 2;
+  if(ugly){ cout<< "true"<<endl;}
+    xmin = x - width / 2;
+    xmax = x + width / 2;
+    ymin = y - height / 2;
+    ymax = y + height / 2;
 }
 
 Rectangle::Rectangle(const Rectangle& other) 

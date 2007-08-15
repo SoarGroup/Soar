@@ -50,7 +50,7 @@ PerceptualGroupManager::PerceptualGroupManager() {
   
   // the number of objects near the focus point to add
   // agent can change this, if it wishes to cheat
-  visionParams.numObjects = 100;
+  visionParams.numObjects = 200;//100;
 
   visionParams.ownerGrouping = false;
 
@@ -99,18 +99,22 @@ void PerceptualGroupManager::updateGroups() {
 
 #ifdef GAME_ONE // should be "NO_SOAR"
 #ifdef GAME_FOUR
+  
   list<PerceptualGroup*> enemies;
   for (set<PerceptualGroup*>::iterator groupIter = perceptualGroups.begin(); 
        groupIter != perceptualGroups.end(); 
        groupIter++) {
-    if ((*groupIter)->getName() == "marine" and not (*groupIter)->isFriendly()) {
+    if (((*groupIter)->getName() == "marine" ||
+	 (*groupIter)->getName() == "controlCenter")
+          and not (*groupIter)->isFriendly()) {
       enemies.push_back(*groupIter);
     }
   }
   for (set<PerceptualGroup*>::iterator groupIter = perceptualGroups.begin(); 
        groupIter != perceptualGroups.end(); 
        groupIter++) {
-    if ((*groupIter)->getName() == "marine" and (*groupIter)->isFriendly() and not (*groupIter)->getHasCommand()) {
+    if ((*groupIter)->getName() == "marine" and (*groupIter)->isFriendly() and
+        (not (*groupIter)->getHasCommand() || Sorts::frame % 50 == 0)) {
       list<int> params;
       (*groupIter)->assignAction(OA_ATTACK, params, enemies);
     }
@@ -149,6 +153,23 @@ bool PerceptualGroupManager::assignActions() {
   PerceptualGroup* sourceGroup;
   
   while (actionIter != newActions.end()){
+    if ((*actionIter).type == OA_ATTACK){
+      list<PerceptualGroup*> enemies;
+      for (set<PerceptualGroup*>::iterator groupIter=perceptualGroups.begin();
+	   groupIter != perceptualGroups.end(); 
+           groupIter++) {
+        if (((*groupIter)->getName() == "marine" || (*groupIter)->getName() == "tank" ||
+	         (*groupIter)->getName() == "worker" || (*groupIter)->getName() == "controlCenter")
+	         and not (*groupIter)->isFriendly()) {
+          enemies.push_back(*groupIter);
+        }
+      }
+
+      success &= (*(*actionIter).groups.begin())->assignAction(
+		 (*actionIter).type, (*actionIter).params, enemies);
+      actionIter++;
+      cout << "erm" << endl;
+    } else
     if ((*actionIter).type != OA_NO_SUCH_ACTION) {
       targetGroups.clear();
       list<PerceptualGroup*>& groups = (*actionIter).groups;

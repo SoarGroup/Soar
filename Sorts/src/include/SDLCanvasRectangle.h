@@ -82,7 +82,7 @@ public:
     polygonRGBA(getSurface(), vx, vy, 4, color.r, color.g, color.b, color.a);
     Uint16 px = (vx[0] + vx[1]) / 2;
     Uint16 py = (vy[0] + vy[1]) / 2;
-    lineRGBA(getSurface(), getCenterX(), getCenterY(), px, py, color.r, color.g, color.b, color.a);
+//    lineRGBA(getSurface(), getCenterX(), getCenterY(), px, py, color.r, color.g, color.b, color.a);
     SDLCanvasShape::draw();
   }
 

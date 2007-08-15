@@ -21,7 +21,7 @@
 
 #include "Vec2d.h"
 #include "FSM.h"
-#include "MoveFSM.h"
+#include "MoveAttackFSM.h"
 #include "SoarGameObject.h"
 
 class AttackManager;
@@ -29,14 +29,14 @@ class AttackManager;
 class AttackFSM : public FSM {
 
 public:
-	AttackFSM(SoarGameObject* sgob);
-	~AttackFSM();
+  AttackFSM(SoarGameObject* sgob);
+  ~AttackFSM();
 
   void init(vector<sint4> p);
-	int update();
+  int update();
   void touch();
 
-// these are all commands from the attack manager
+  // these are all commands from the attack manager
   void attack(SoarGameObject* t);
   bool isFiring();
 
@@ -60,8 +60,11 @@ public:
   int failCount;
   bool waitingForCatchup;
   bool badAttack;
+  int getRange();
+  MoveAttackFSM* moveFSM;
 
 private:
+  ScalarPoint goal;
   bool reassign;
   SoarGameObject* target;
   bool panic;
@@ -69,7 +72,6 @@ private:
   AttackManager* manager;
   int pendingManagerID;
   ScriptObj* weapon;
-  MoveFSM* moveFSM;
   Vec2d dest;
   Vector<sint4> attackParams;
   bool moving;

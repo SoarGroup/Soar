@@ -46,8 +46,16 @@ public:
   void registerFSM(AttackFSM* fsm);
   void unregisterFSM(AttackFSM* fsm);
   int direct(AttackFSM* fsm);
+  int size();
 
   set<SoarGameObject*>* getTargets() { return &targetSet; }
+  /***
+   * Method: findCentroid
+   * --------------------
+   * Iterates over the list of team members
+   * and calculates the centroid of the group.
+   */
+  Vec2d findCentroid();
 
 private: // functions
   void  selectTarget();
@@ -55,16 +63,79 @@ private: // functions
   void  reprioritize();
   void  attackArcPos(GameObj* atk, GameObj* tgt, int layer, list<Vec2d>& positions);
 
+  /***
+   * Method: assignTarget
+   * --------------------
+   *  Given an attacking unit and a target unit, this method
+   *  checks that the target being assigned does exist, adds the
+   *  attacking unit to the set of units attacking the target object,
+   *  and sets the attacking unit's target to be the target unit.
+   */
   void  assignTarget(AttackFSM* fsm, SoarGameObject* target);
+
+  /***
+   * Method unassignTarget
+   * ---------------------
+   * Removes an attacking unit's target.
+   */
   void  unassignTarget(AttackFSM* fsm);
+
+  /***
+   * Method: unassignAll
+   * -------------------
+   * Given a target, this frees all units that had been attacking it
+   * to do something else.
+   */
   void  unassignAll(SoarGameObject* target);
+
+  /***
+   * Method: findTarget
+   * ------------------
+   * Given an attack unit, this method attacks nearby enemy units,
+   * making its target selection based on enemy health and distance.
+   */
   bool  findTarget(AttackFSM* fsm);
+
+  /***
+   * Method: gather
+   * --------------
+   * Collects all attack units at a point.
+   */
+  void  gather(AttackFSM* fsm);
+
+  /***
+   * Method: attackLinePos
+   * ---------------------
+   * Determines if the attacking group is in a line, and if so we
+   * find corresponding positions across that line to attack them from.
+   */
+  bool attackLinePos(int range, list<Vec2d> &positions);
+
+  /***
+   * Method: getSlope()
+   * ---------------------
+   * Self-explanatory. Checks to see if input list has a linear
+   * correlation higher than 0.8.
+   */
+  double getSlope();
+
+  /***
+   * Method: findLineMidpoint
+   * -------------------
+   * This method finds the side of the
+   * attackers we should be on, and returns the
+   * location on a line parallel to the attackers
+   * that is across from the primary enemy target.
+   */
+  Vec2d getLineMidpoint(double slope, int range);
 
 private: // variables
   list<AttackFSM*> team;
   set<SoarGameObject*> targetSet;
   map<SoarGameObject*, AttackTargetInfo> targets;
   vector<SoarGameObject*> sortedTargets;
+  vector<SoarGameObject*> bases;
+  vector<SoarGameObject*> sortedBases;
   
   set<int> idSet;
 

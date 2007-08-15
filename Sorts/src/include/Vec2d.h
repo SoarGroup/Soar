@@ -163,7 +163,10 @@ public:
     i = _i;
     j = _j;
   }
+  
+  double getX(){return i;}
 
+  double getY(){return j;}
 private:
   double i;
   double j;

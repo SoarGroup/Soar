@@ -16,7 +16,7 @@
     along with Sorts; if not, write to the Free Software
     Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA    
 */
-#include"MoveFSM.h"
+#include"MoveAttackFSM.h"
 #include<iostream>
 #include<cmath>
 
@@ -83,7 +83,7 @@ using namespace std;
 //#define RADAR_ANGLE_DIST 12.2
 
 
-MoveFSM::MoveFSM(GameObj* go) 
+MoveAttackFSM::MoveAttackFSM(GameObj* go) 
             : FSM(go) {
   name = OA_MOVE_INTERNAL;
 
@@ -100,12 +100,13 @@ MoveFSM::MoveFSM(GameObj* go)
   usingIWWP = false;
   idleTime = 0;
   direction = 1;
+  influence = Sorts::influence;
 }
 
-MoveFSM::~MoveFSM() {
+MoveAttackFSM::~MoveAttackFSM() {
 }
 
-int MoveFSM::update() {
+int MoveAttackFSM::update() {
   currentLocation.x = (*gob->sod.x);
   currentLocation.y = (*gob->sod.y);
   msg << "current location: " << currentLocation.x << "," 
@@ -261,10 +262,10 @@ int MoveFSM::update() {
   return FSM_RUNNING;
 }
 
-void MoveFSM::init(vector<sint4> p) 
+void MoveAttackFSM::init(vector<sint4> p) 
 {
   FSM::init(p);
-
+  
   SortsSimpleTerrain::Loc l;
   l.x = p[0];
   l.y = p[1];
@@ -359,7 +360,7 @@ void MoveFSM::init(vector<sint4> p)
   }
 }
 
-void MoveFSM::initNoPath(vector<sint4> p) 
+void MoveAttackFSM::initNoPath(vector<sint4> p) 
 {
   FSM::init(p);
  
@@ -388,7 +389,7 @@ void MoveFSM::initNoPath(vector<sint4> p)
   target.y = moveParams[1];
 }
 
-void MoveFSM::stop() {
+void MoveAttackFSM::stop() {
   Vector<sint4> params;
   params.push_back(*gob->sod.x);
   params.push_back(*gob->sod.y);
@@ -398,14 +399,14 @@ void MoveFSM::stop() {
   clearWPWorkers();
 }
 
-void MoveFSM::clearWPWorkers() {
+void MoveAttackFSM::clearWPWorkers() {
   if (usingIWWP) {
     Sorts::terrainModule->removeImaginaryWorker(imaginaryWorkerWaypoint);
     usingIWWP = false;
   }
 }
 
-void MoveFSM::veerRight() {
+void MoveAttackFSM::veerRight() {
   // if there is open space to the right,
   // make that the new target.
   // if that happens, increment nextWPIndex so the current waypoint
@@ -473,7 +474,7 @@ void MoveFSM::veerRight() {
   return;
 }
 
-bool MoveFSM::veerAhead(int distToTargetSq) {
+bool MoveAttackFSM::veerAhead(int distToTargetSq) {
   // estimate where we will be next cycle
   // if there is something there, try the space to the right
   // make that the new target if it is clear
@@ -531,13 +532,13 @@ bool MoveFSM::veerAhead(int distToTargetSq) {
   return false;
 }
 
-bool MoveFSM::collision(int x, int y) {
+bool MoveAttackFSM::collision(int x, int y) {
   coordinate c(x,y);
   
   return Sorts::spatialDB->hasObjectCollision(c, *gob->sod.radius, gob);
 }
 
-bool MoveFSM::dynamicCollision(int x, int y) {
+bool MoveAttackFSM::dynamicCollision(int x, int y) {
   // return true if loc collides with a sheep or worker
   list<GameObj*> collisions;
   
@@ -566,7 +567,7 @@ bool MoveFSM::dynamicCollision(int x, int y) {
 
 // Returns the actual move vector of the object
 // New move coordinates are placed into the moveParams structure
-bool MoveFSM::getMoveVector()
+bool MoveAttackFSM::getMoveVector()
 {
  bool answer = false;
  /*// - Things don't change rapidly
@@ -621,7 +622,7 @@ bool MoveFSM::getMoveVector()
 }
 
 
-SortsSimpleTerrain::Loc MoveFSM::getHeadingVector(sint4 target_x, sint4 target_y)
+SortsSimpleTerrain::Loc MoveAttackFSM::getHeadingVector(sint4 target_x, sint4 target_y)
 {
  sint4 x = *(gob->sod.x);
  sint4 y = *(gob->sod.y);
@@ -687,7 +688,7 @@ SortsSimpleTerrain::Loc MoveFSM::getHeadingVector(sint4 target_x, sint4 target_y
  return loc;
 }
 
-bool MoveFSM::isReachableFromBuilding(SortsSimpleTerrain::Loc l) {
+bool MoveAttackFSM::isReachableFromBuilding(SortsSimpleTerrain::Loc l) {
   // HACK: this always retuns false, unless it is inside the CC (which kills
   // mining)
   SortsSimpleTerrain::Path tempPath;
@@ -706,14 +707,19 @@ bool MoveFSM::isReachableFromBuilding(SortsSimpleTerrain::Loc l) {
   return (tempPath.locs.size() > 0);
 }
 
-void MoveFSM::panic() {
+void MoveAttackFSM::panic() {
   vector<sint4> tempVec;
   tempVec.push_back(*gob->sod.x + ((int)rand() % 30) -15);
   tempVec.push_back(*gob->sod.y + ((int)rand() % 30) -15);
   initNoPath(tempVec);
 }
 
-void MoveFSM::traverse(sint4 locx, sint4 locy, ScalarPoint goal){
+
+/****************************************************************/
+/*************************** Interns ****************************/
+/****************************************************************/
+
+void MoveAttackFSM::traverse(sint4 locx, sint4 locy, ScalarPoint goal){
   std::cout << "Traverse" << endl;
   ScalarPoint moveTo;
   sint4 dx = goal.x-locx;
@@ -742,7 +748,7 @@ void MoveFSM::traverse(sint4 locx, sint4 locy, ScalarPoint goal){
 }
 
 
-bool MoveFSM::moveSimple(sint4 x, sint4 y){
+bool MoveAttackFSM::moveSimple(sint4 x, sint4 y){
   assert(x >= 0);
   assert(y >= 0);
   std::cout << gob << std::endl;
@@ -774,9 +780,9 @@ bool MoveFSM::moveSimple(sint4 x, sint4 y){
 }
 
 /********************************************************************
- * MoveFSM::move
+ * MoveAttackFSM::move
  ********************************************************************/
-Vector<sint4> MoveFSM::move(ScalarPoint loc, sint4 speed){
+Vector<sint4> MoveAttackFSM::move(ScalarPoint loc, sint4 speed){
   Vector<sint4> params;
   params.push_back(loc.x);
   params.push_back(loc.y);
@@ -784,3 +790,85 @@ Vector<sint4> MoveFSM::move(ScalarPoint loc, sint4 speed){
   return params;
 }
 
+/********************************************************************
+ * MoveManager::moveAllInfluence
+ ********************************************************************/
+void MoveAttackFSM::moveForces(sint4 x, sint4 y){
+  assert(x >= 0);
+  assert(y >= 0);
+  assert(influence != NULL);
+
+  // Check that all units are moving
+  ScalarPoint goal;
+  goal.x = x;
+  goal.y = y;  
+
+  // If our unit has stopped
+  if(*gob->sod.speed == 0){
+    idleTime++;
+      
+    // Traverse in one direction
+    if(idleTime % 2 == 0){
+      direction *= -1;
+      traverse(*gob->sod.x, *gob->sod.y, goal);
+    }
+    // Traverse in the other direction
+    else //(squad->idleTime[i] % 2 == 1)
+      traverse(*gob->sod.x, *gob->sod.y, goal);
+  }
+  // Otherwise, our unit is moving
+  else{
+    idleTime = 0;
+    gob->set_action("move", move(force_vector(goal), *gob->sod.max_speed));
+  }
+}
+
+/********************************************************************
+ * MoveManager::force_vector
+ ********************************************************************/
+ScalarPoint MoveAttackFSM::force_vector(ScalarPoint goal){
+  cout << "CALCULATING FORCES" << endl;
+  cout << "Test influence map: " << Sorts::influence->get_width_pixels() << endl;
+  pair<sint4, sint4> friendlyF;
+  pair<double, double> targetF, rockF;
+  sint4 xpos = *gob->sod.x;
+  sint4 ypos = *gob->sod.y;
+  rockF.first = rockF.second = 0.0;
+  
+  // set weighting values
+  const sint4 targetWeight = 80;
+  const sint4 rockWeight = 10;
+  
+  // calculate direction to target
+  sint4 dx = goal.x - xpos;
+  sint4 dy = goal.y - ypos;
+  double length  = sqrt(dx * dx + dy * dy);
+  targetF.first  = targetWeight * (dx / length);
+  targetF.second = targetWeight * (dy / length);
+  
+  // calculate effect of terrain
+  for(dx= -50; dx < 50; dx += 16){
+    for(dy = -50; dy < 50; dy += 16){
+      if((xpos + dx) > 0 && (ypos + dy) > 0 &&
+         (xpos + dx) < Sorts::influence->get_width_pixels() &&
+	 (ypos + dy) < Sorts::influence->get_height_pixels()){
+	double influenceValue = Sorts::influence->value_at(xpos+dx, ypos+dy);
+	double length = sqrt(dx*dx + dy*dy);
+   
+	if(influenceValue > 1000.0){
+          rockF.first  += -rockWeight* dx/length;
+	  rockF.second += -rockWeight* dy/length;
+        }
+      }
+    }
+  }
+  
+  // calculate direction and speed of movement
+  dx = (sint4) ((targetF.first  + rockF.first ));
+  dy = (sint4) ((targetF.second + rockF.second));
+  
+  goal.x = xpos + dx;
+  goal.y = ypos + dy;
+    
+  return goal;
+}

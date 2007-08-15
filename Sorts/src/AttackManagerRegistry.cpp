@@ -37,14 +37,14 @@ int AttackManagerRegistry::assignManager
     list<SoarGameObject*> members;
     (*i)->getMembers(members);
     for(list<SoarGameObject*>::iterator
-        i =  members.begin();
-        i != members.end();
-        i++)
+        j =  members.begin();
+        j != members.end();
+        j++)
     {
-      allTargets.insert(*i);
+      allTargets.insert(*j);
     }
   }
-
+  cout << "total number of targets: " << allTargets.size() << endl;
   for(list<ManagerRecord>::iterator
       i =  managers.begin();
       i != managers.end();
@@ -88,9 +88,43 @@ void AttackManagerRegistry::removeManager(AttackManager* m) {
       i++)
   {
     if ((*i).manager == m) {
+      cout << "THIS IS " << managers.size() << endl;
       managers.erase(i);
       dbg << managers.size() << endl;
       return;
     }
   }
 }
+
+int AttackManagerRegistry::numAttackUnits() {
+  int total = 0; //keeps track of the total number of units
+  for(list<ManagerRecord>::iterator i = managers.begin(); i!= managers.end();i++)
+  {
+    total += (*i).manager->size();
+  }
+  return total;
+}
+
+int AttackManagerRegistry::numGroups(){
+  return managers.size();
+}
+
+Vec2d AttackManagerRegistry::mainCentroid(){
+  int xSum, ySum, units, total;
+  xSum = ySum = units = total = 0;
+  for(list<ManagerRecord>::iterator i = managers.begin(); i!= managers.end();i++)
+  {
+    cout << "inside" << endl;
+    units = (*i).manager->size();
+    cout << "Check size: " << units << endl;
+    total += units;
+    cout << "and" << endl;
+    Vec2d centroid = (*i).manager->findCentroid();
+    cout << "we" << endl;
+    xSum += (int) centroid.getX() *  units;
+    ySum += (int) centroid.getY() *  units;
+  }
+  cout << "out" << endl;
+  return Vec2d(xSum/total, ySum/total);
+}
+

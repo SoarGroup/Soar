@@ -34,7 +34,7 @@ AttackFSM::AttackFSM(SoarGameObject* _sgob)
   name = OA_ATTACK;
   weapon = gob->component("weapon");
   ASSERT(weapon != NULL);
-  moveFSM = NULL;
+  moveFSM = new MoveAttackFSM(gob);
   manager = NULL;
   waitingForCatchup = false;
   badAttack = false;
@@ -42,6 +42,7 @@ AttackFSM::AttackFSM(SoarGameObject* _sgob)
 }
 
 AttackFSM::~AttackFSM() {
+  if (manager == NULL) msg << "We're in trouble" << endl;
   if (manager != NULL) {
     manager->unregisterFSM(this);
   }
@@ -75,10 +76,36 @@ void AttackFSM::init(vector<sint4> params) {
 }
 
 int AttackFSM::update() {
+  cout << "updating." << endl;
+  if (manager == NULL) {
+    if (disownedStatus == 0) {
+      stop();
+      return FSM_FAILURE;
+    }
+    else {
+      stop();
+      return FSM_SUCCESS;
+    }
+  }
+  int status = manager->direct(this);
+  if (status > 0) {
+    stop();
+    return FSM_SUCCESS;
+  }
+  if (status < 0) {
+    stop();
+    return FSM_FAILURE;
+  }
+  return FSM_RUNNING;
+
+  /*
+  msg << "Possible error location" << endl;
   unsigned long st = gettime();
+  
   msg << "updating.\n";
   vector<sint4> moveParams(2);
   if (manager == NULL) {
+    assert(false);
     if (disownedStatus == 0) {
       dbg << "TIME " << (gettime() - st) / 1000 << endl;
       stop();
@@ -165,6 +192,7 @@ int AttackFSM::update() {
   }
   dbg << "TIME " << (gettime() - st) / 1000 << endl;
   return FSM_RUNNING;
+  */
 }
 
 void AttackFSM::attack(SoarGameObject* t) {
@@ -191,8 +219,17 @@ bool AttackFSM::isFiring() {
 int AttackFSM::move(int x, int y, bool forcePathfind) {
   moveFails = 0;
   if (moveFSM == NULL) {
-    moveFSM = new MoveFSM(gob);
+    moveFSM = new MoveAttackFSM(gob);
   }
+  moveFSM->moveForces(x, y);
+  dest.set(0, x);
+  dest.set(1, y);
+  moving = true;
+  firstMove = true;
+  return 0;
+
+
+/*
   if (moving) {
     moveFSM->stop();
   }
@@ -228,7 +265,7 @@ int AttackFSM::move(int x, int y, bool forcePathfind) {
       moving = true;
       firstMove = true;
       return 0;
-  }
+  }*/
 }
 
 void AttackFSM::stopMoving() {
@@ -288,4 +325,9 @@ void AttackFSM::touch() {
   }
 
   expectFiring = false;
+}
+
+int AttackFSM::getRange(){
+  return (sgob->getGob())->component("weapon")->get_int("max_ground_range")
+	  * .9;
 }

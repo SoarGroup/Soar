@@ -168,7 +168,6 @@ bool SortsTerrainModule::handle_event(const Event &e)
       }
     }
   }
-
   return true;
 }
 

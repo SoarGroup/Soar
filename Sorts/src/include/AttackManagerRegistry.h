@@ -37,6 +37,34 @@ public:
 
   void removeManager(AttackManager* m);
 
+  /***
+   * Method: numAttackUnits
+   * ----------------------
+   *  This method loops over the list of manager records,
+   *  and counts the total number of attack units that
+   *  exist. It returns this value.
+   */
+
+  int numAttackUnits();
+
+  /***
+   * Method: numGroups
+   * -----------------
+   *  This method returns the number of attacking groups
+   *  (Attack Managers)
+   */
+
+  int numGroups();
+
+  /***
+   * Method: mainCentroid
+   * --------------------
+   *  This method returns the main centroid of all of the
+   *  Attack Managers
+   */
+
+  Vec2d mainCentroid();
+
 private:
   typedef struct {
     int                   id;

@@ -33,3 +33,5 @@ int                     Sorts::cyclesSoarAhead = 0;
 bool                    Sorts::catchup = false;
 int                     Sorts::frame = -1;
 SortsCanvas             Sorts::canvas;
+InfluenceMap*		Sorts::influence = NULL;
+

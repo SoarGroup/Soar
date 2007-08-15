@@ -35,6 +35,7 @@
 #include "PerceptualGroupManager.h"
 #include "FeatureMapManager.h"
 #include "GameActionManager.h"
+#include "InfluenceMap.H"
 class AttackManagerRegistry;
 class MineManager;
 
@@ -89,6 +90,7 @@ class Sorts {
     static int                      cyclesSoarAhead;
     static int frame;
     static SortsCanvas              canvas;
+    static InfluenceMap*	    influence;
 };
 
 // capital ASSERT is extra-strong version of assert that isn't disabled with

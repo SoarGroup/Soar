@@ -32,6 +32,7 @@ class Sorts;
 #include "GameStateModule.H"
 #include "GameChanges.H"
 #include "GameObj.H"
+#include "InfluenceMap.H"
 
 using namespace std;
 
@@ -82,6 +83,14 @@ private:
 
   // pointers to all the orts stuff
   GameObj *playerGameObj;
+
+  /***
+   * Method: updateInfluence
+   * -----------------------
+   * Updates the influence map. This map is used for walking
+   * around and other cool things.
+   */
+  void updateInfluence();
 
   // keep track of all game objects
   /* In the future, change these to hash maps */

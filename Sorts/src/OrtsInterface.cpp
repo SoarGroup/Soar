@@ -67,10 +67,14 @@ OrtsInterface::OrtsInterface(GameStateModule* _gsm)
 }
 
 bool OrtsInterface::handle_event(const Event& e) {
-  unsigned long st = gettime();
   pthread_mutex_lock(Sorts::mutex);
   if (e.get_who() == GameStateModule::FROM) {
     if (e.get_what() == GameStateModule::VIEW_MSG) {
+      
+      //Update the influence map used for walking
+      updateInfluence();
+
+      //Execute Soar actions and let the middleware do it's work
       dbg << "SOARCYCLES: " << Sorts::cyclesSoarAhead << endl;
       Sorts::cyclesSoarAhead = 0;
       msg << "ORTS EVENT {\n";
@@ -113,7 +117,6 @@ bool OrtsInterface::handle_event(const Event& e) {
         gsm->send_actions(); // empty, needed by server
         pthread_mutex_unlock(Sorts::mutex);
         Sorts::SoarIO->startSoar();
-        dbg << "TIME " << (gettime() - st) / 1000 << endl; 
         return true;
       }
       if (Sorts::canvas.initted()) { 
@@ -143,6 +146,7 @@ bool OrtsInterface::handle_event(const Event& e) {
       changes.clear();
 
 
+
       // since the FSM's have been updated, we should send the actions here
       gsm->send_actions();
 
@@ -163,12 +167,10 @@ bool OrtsInterface::handle_event(const Event& e) {
     msg << "ORTS EVENT }" << endl;
     Sorts::canvas.clearStatus();
     pthread_mutex_unlock(Sorts::mutex);
-    msg << "TIME " << (gettime() - st) / 1000 << endl; 
     return true;
   }
   else {
     pthread_mutex_unlock(Sorts::mutex);
-    msg << "TIME " << (gettime() - st) / 1000 << endl; 
     return false;
   }
 }
@@ -181,6 +183,7 @@ void OrtsInterface::addAppearedObject(const GameObj* gameObj) {
 void OrtsInterface::addCreatedObject(GameObj* gameObj) {
   // make sure the game object does not exist in the middleware
   ASSERT(objectMap.find(gameObj) == objectMap.end());
+  msg << gameObj->bp_name() << gameObj << endl;
  
   bool friendly = (myPid == *gameObj->sod.owner);
   bool world    = (gsm->get_game().get_player_num() == *gameObj->sod.owner);
@@ -252,6 +255,7 @@ void OrtsInterface::removeDeadObject(const GameObj* gameObj) {
   // make sure the game object exists
   ASSERT(objectMap.find(gameObj) != objectMap.end());
   deadCount++;
+  msg << "Dead Object " << gameObj->bp_name() << gameObj <<endl;
 
   SoarGameObject* sObject = objectMap[gameObj];
   bool friendly = sObject->isFriendly();
@@ -550,4 +554,20 @@ void OrtsInterface::mergeChanges(GameChanges& newChanges) {
   }
 }
 
+void OrtsInterface::updateInfluence(){
+  const Game &game = gsm->get_game();
+  const sint4 cid = game.get_client_player();
+  const Map<GameTile> &map = game.get_map();
+  const sint4 points_x = map.get_width()  * game.get_tile_points();
+  const sint4 points_y = map.get_height() * game.get_tile_points();
+
+  // ***************** Create Influence Map ******************
+  if (Sorts::influence == NULL){
+    cout << "INFLUENCE MAP CREATED" << endl;
+    Sorts::influence = new InfluenceMap(points_x, points_y, game.get_tile_points());
+    Sorts::influence->init_game(&game, cid);
+  }
+  
+  Sorts::influence->refresh_units(&game, cid);
+}
 

@@ -37,6 +37,12 @@
 
 #define NO_WAITING
 
+
+/***
+ * Functions used by the old sorts agent. We're leaving them here for now
+ * in case they get used later.
+ */
+
 inline int min(int a, int b) {
   if (a < b) {
     return a;
@@ -74,6 +80,7 @@ inline int maxRadius(GameObj* gob) {
   }
 }
 
+
 Vec2d getClosePos(GameObj* src, GameObj* tgt) {
   int srcRadius = maxRadius(src);
   int tgtRadius = maxRadius(tgt);
@@ -82,7 +89,6 @@ Vec2d getClosePos(GameObj* src, GameObj* tgt) {
 
   return tgtPos - Vec2d(tgtPos - srcPos, srcRadius + tgtRadius);
 }
-
 
 void positionsOnRectangle( int ax, int ay, int tx1, int ty1, int tx2, int ty2, 
   int offset, int distBetween, 
@@ -240,6 +246,540 @@ void positionsOnRectangle( int ax, int ay, int tx1, int ty1, int tx2, int ty2,
   cout << "end positions on rectangle\n";
 }
 
+
+/*****************************************************************
+ * AttackManager::AttackManager                                  *
+ *****************************************************************/
+AttackManager::AttackManager(const set<SoarGameObject*>& _targets) : targetSet(_targets)
+{
+  reprioritizeCounter = 0;
+  numNewAttackers = 0;
+  for(set<SoarGameObject*>::iterator
+      i  = targetSet.begin();
+      i != targetSet.end();
+      ++i)
+  {
+    targets.insert(pair<SoarGameObject*, AttackTargetInfo>(*i, AttackTargetInfo(*i)));
+    idSet.insert((*i)->getID());
+    if((*i)->getGob()->bp_name() == "controlCenter") bases.push_back(*i);
+  }
+  reprioritize();
+}
+
+/*****************************************************************
+ * AttackManager::~AttackManager                                 *
+ *****************************************************************/
+AttackManager::~AttackManager() {
+  cout << "AttackManagerKilled" << endl;
+  int status;
+  if (targets.size() == 0) {
+    status = 1;
+  }
+  else {
+    status = 0;
+  }
+
+  for(list<AttackFSM*>::iterator
+      i =  team.begin();
+      i != team.end();
+      ++i)
+  {
+#ifdef USE_CANVAS_ATTACK_MANAGER
+    //Sorts::canvas.unregisterGob((*i)->getGob());
+    Sorts::canvas.resetSGO((*i)->getSGO());
+#endif
+    (*i)->disown(status);
+  }
+}
+
+/***
+ * AttackManager::registerFSM
+ * --------------------------
+ * Add a unit to the AttackManager
+ */
+void AttackManager::registerFSM(AttackFSM* fsm) {
+  ASSERT(numNewAttackers > 0);
+  numNewAttackers--;
+  team.push_back(fsm);
+}
+
+/***
+ * Method: unregisterFSM
+ * ---------------------
+ * Removes a unit from the AttackManager.
+ */
+void AttackManager::unregisterFSM(AttackFSM* fsm) {
+  ASSERT(find(team.begin(), team.end(), fsm) != team.end());
+  team.erase(find(team.begin(), team.end(), fsm));
+  if (fsm->getTarget() != NULL) {
+    unassignTarget(fsm);
+  }
+
+#ifdef USE_CANVAS_ATTACK_MANAGER
+  // in addition to attack reassignments, this is called as a result 
+  // of units being killed, in which case the gob is
+  // already removed from the canvas
+  if (Sorts::canvas.sgoRegistered(fsm->getSGO())) {  
+    Sorts::canvas.resetSGO(fsm->getSGO());
+  }
+#endif
+  if (team.size() + numNewAttackers == 0) {
+    msg << "team size is now 0, going away.." << endl;
+    Sorts::amr->removeManager(this);
+    delete this;
+  }
+}
+
+
+/***
+ * Method: assignTarget
+ * --------------------
+ *  Given an attacking unit and a target unit, this method
+ *  checks that the target being assigned does exist, adds the
+ *  attacking unit to the set of units attacking the target object,
+ *  and sets the attacking unit's target to be the target unit.
+ */
+void AttackManager::assignTarget(AttackFSM* fsm, SoarGameObject* target) {
+  ASSERT(targets.find(target) != targets.end());
+  targets[target].assignAttacker(fsm);
+  fsm->setTarget(target);
+}
+
+/***
+ * Method: unassignTarget
+ * ----------------------
+ *  Removes an AttackFSM's (attacking finite state machine) target.
+ */
+void AttackManager::unassignTarget(AttackFSM* fsm) {
+  ASSERT(fsm->getTarget() != NULL);
+  ASSERT(targets.find(fsm->getTarget()) != targets.end());
+  targets[fsm->getTarget()].unassignAttacker(fsm);
+  fsm->setTarget(NULL);
+}
+
+/***
+ * Method: unassignAll
+ * -----------------
+ *  Given a target, this frees all units that had been
+ *  attacking it to do something else. 
+ */
+
+void AttackManager::unassignAll(SoarGameObject* target) {
+  ASSERT(targets.find(target) != targets.end());
+
+  AttackTargetInfo& info = targets[target];
+  for(set<AttackFSM*>::const_iterator
+      i  = info.attackers_begin();
+      i != info.attackers_end();
+      ++i)
+  {
+    (*i)->setTarget(NULL);
+    (*i)->setReassign(true);
+  }
+  info.unassignAll();
+}
+
+/***
+ * Method: findTarget
+ * ------------------
+ *  Given an attack unit, this method attacks nearby enemy
+ *  units, making its target selection based on enemy
+ *  health and distance.
+ *
+ *  The segments commented out were used by the old sorts
+ *  agent. Satured and unsaturated targetting should be
+ *  reintroduced. If attacking formation is reintroduced,
+ *  I think it will probably be in the MoveAttackFSM.
+ */
+
+bool AttackManager::findTarget(AttackFSM* fsm) {
+  msg << "FINDING A TARGET" << endl;
+  GameObj* gob = fsm->getGob();
+/*  vector<SoarGameObject*> saturated;
+  vector<SoarGameObject*> unsaturated;
+
+  for(vector<SoarGameObject*>::iterator
+      i  = sortedTargets.begin();
+      i != sortedTargets.end();
+      ++i)
+  {
+    if (targets[*i].isSaturated()) {
+      saturated.push_back(*i);
+    }
+    else {
+      unsaturated.push_back(*i);
+    }
+  }
+*/
+  // try to hit immediately attackable things first
+  for(vector<SoarGameObject*>::iterator
+      i  = sortedTargets.begin();
+      i != sortedTargets.end();
+      ++i)
+  {
+    if (canHit(gob, (*i)->getGob())) {
+      assignTarget(fsm, *i);
+#ifdef USE_CANVAS_ATTACK_MANAGER
+//      Sorts::canvas.trackDestination(fsm->getSGO(), 
+//                                     (*i)->getX(), (*i)->getY());
+#endif
+      msg << "NEARBY TARG" << endl;
+      return true;
+    }
+  }
+  return false;
+/*
+  dbg << "no targets nearby..\n";
+  // now try to attack the "best" target
+  for(vector<SoarGameObject*>::iterator
+      i  = sortedTargets.begin();
+      i != sortedTargets.end();
+      ++i)
+  {
+    list<Vec2d> positions;
+    attackArcPos(fsm->getGob(), (*i)->getGob(), 0, positions);
+    for(list<Vec2d>::iterator
+        j  = positions.begin();
+        j != positions.end();
+        ++j)
+    {
+      if (fsm->move((int)(*j)(0), (int)(*j)(1), false) == 0) {
+        msg <<"Moving to Position: "<<(*j)(0)<<", "<<(*j)(1)<<endl;
+        assignTarget(fsm, *i);
+#ifdef USE_CANVAS_ATTACK_MANAGER
+   //     Sorts::canvas.trackDestination(fsm->getSGO(), 
+   //                                    (*i)->getX(), (*i)->getY());
+#endif
+        dbg << "ARC TARG" << endl;
+        return true;
+      }
+      else {
+        msg << "ARC CHECK MOVE FAIL" << endl;
+      }
+    }
+  }
+
+  // finally, just run toward someone, preferrably unsaturated
+  //  for(int checkSaturated = 1; checkSaturated >= 0; checkSaturated--) {
+  for(vector<SoarGameObject*>::iterator
+      i  = sortedTargets.begin();
+      i != sortedTargets.end();
+      ++i)
+  {
+    //      if (checkSaturated == 0 || !targets[*i].isSaturated()) {
+    GameObj* tgob = (*i)->getGob();
+    Vec2d closePos = getClosePos(gob, tgob);
+    // force a pathfind, now, since the target must have had lots of
+    // failure points nearby, but should be reachable
+    msg << "Forcing a pathfind" << endl;
+    if (fsm->move((int)closePos(0), (int)closePos(1), true) == 0) {
+      assignTarget(fsm, *i);
+#ifdef USE_CANVAS_ATTACK_MANAGER
+  //    Sorts::canvas.trackDestination(fsm->getSGO(), 
+ //                                    (*i)->getX(), (*i)->getY());
+#endif
+      msg << "LAST RESORT TARG" << endl;
+      return true;
+    }
+    //      }
+  }
+  //  }
+  //  }
+  return false;*/
+}
+
+
+/***
+ * Method: direct
+ * --------------
+ * This method is called by each individual AttackFSM every turn,
+ * and it determines how these FSM's should behave. From this
+ * method, units are ordered to move, fire, or remain still. The
+ * return values inform the AttackFSM class about the state of the
+ * unit, and decisions on how to move are also based on these
+ * return values. Return values are:
+ *   > 0    - Success
+ *   = 0    - Still running
+ *   < 0    - Failure
+ */
+
+int AttackManager::direct(AttackFSM* fsm) {
+
+  //Once per frame we should update our target list
+  if (reprioritizeCounter != Sorts::frame) {
+    dbg << "forced reprioritize!\n";
+    reprioritize();
+    reprioritizeCounter = Sorts::frame;
+  }
+  msg << "NUMTARGS: " << targets.size() << endl;
+  GameObj* gob = fsm->getGob();
+  SoarGameObject* sgob = Sorts::OrtsIO->getSoarGameObject(gob);
+
+  fsm->touch(); // tell the fsm its been updated, so it can mark time
+
+  if (updateTargetList() > 0) {
+    msg << "UPDATE TARGET LIST" << endl;
+    if (targets.size() == 0) {
+      Sorts::amr->removeManager(this);
+      delete this;
+      return 1;
+    }
+    reprioritize();
+  }
+
+  if (fsm->getTarget() == NULL) findTarget(fsm);
+
+  GameObj* goal = (*sortedTargets.begin())->getGob();
+  if (fsm->getTarget() == NULL){
+   fsm->move(*goal->sod.x, *goal->sod.y, false);
+   return 0;
+  } 
+
+  GameObj* tgob = fsm->getTarget()->getGob();
+  AttackTargetInfo& info = targets[fsm->getTarget()];
+
+  if (!canHit(gob, tgob) || fsm->badAttack) {
+    fsm->move(*goal->sod.x, *goal->sod.y, false);
+  }
+  else if (!fsm->isFiring() ||  
+           sgob->getLastAttacked() != fsm->getTarget()->getID())
+  {
+    fsm->attack(fsm->getTarget());
+  }
+
+  return 0;
+}
+
+/***
+ * Method: updateTargetList
+ * ------------------------
+ *  Places the targets in the best order to attack them in.
+ */
+int AttackManager::updateTargetList() {
+  int numVanished = 0;
+  map<SoarGameObject*, AttackTargetInfo>::iterator i = targets.begin();
+  while (i != targets.end()) {
+    if (!Sorts::OrtsIO->isAlive(i->first->getID())) {
+      msg << "YYY Unit " << i->first->getID() << " is no longer alive or moved out of view" << endl;
+
+      unassignAll(i->first);
+      targetSet.erase(i->first);
+      map<SoarGameObject*, AttackTargetInfo>::iterator j = i++;
+      targets.erase(j);
+      ++numVanished;
+    }
+    else {
+      ++i;
+    }
+  }
+
+  return numVanished;
+}
+
+struct NewTargetCompare {
+  Vec2d myPos;
+
+  bool operator()(SoarGameObject* t1, SoarGameObject* t2) {
+    // first always prefer those that are armed and shooting over 
+    // those that are not
+    
+    ScriptObj* weapon1 = t1->getGob()->component("weapon");
+    ScriptObj* weapon2 = t2->getGob()->component("weapon");
+    if (weapon1 == NULL && weapon2 != NULL) {
+      return true;
+    }
+    if (weapon1 != NULL && weapon2 == NULL) {
+      return false;
+    }
+
+    Vec2d p1(*t1->getGob()->sod.x, *t1->getGob()->sod.y);
+    Vec2d p2(*t2->getGob()->sod.x, *t2->getGob()->sod.y);
+    
+    double dist1 = (myPos - p1).magSq();
+    double dist2 = (myPos - p2).magSq();
+
+    if (weapon1 == NULL && weapon2 == NULL){
+      if(dist1 < dist2) return true;
+      return false;
+    }
+    
+    int range1 = weapon1->get_int("max_ground_range");
+    int range2 = weapon2->get_int("max_ground_range");
+    
+    if (dist1 < dist2 - range2) {
+      return true;
+    }
+    else if (dist2 < dist1 - range1) {
+      return false;
+    }
+    
+    double rating1 = weaponDamageRate(t1->getGob()) * t2->getGob()->get_int("hp");
+    double rating2 = weaponDamageRate(t2->getGob()) * t1->getGob()->get_int("hp");
+
+    if (rating1 < rating2) {
+      return true;
+    }
+    else if (rating1 == rating2) { // break ties by distance
+
+      if (dist1 < dist2) {
+        return true;
+      }
+      else if (dist1 == dist2) {  // lexicographically break ties
+        return (t1->getID() < t2->getID());
+      }
+    }
+    return false;
+  }
+};
+
+void AttackManager::reprioritize() {
+  NewTargetCompare comparator;
+  comparator.myPos = findCentroid();
+
+  dbg << "YYY reprioritizing\n";
+  sortedTargets.clear();
+  sortedTargets.insert(sortedTargets.end(), targetSet.begin(), targetSet.end());
+  sort(sortedTargets.begin(), sortedTargets.end(), comparator);
+  sort(bases.begin(), bases.end(), comparator);
+}
+
+
+void AttackManager::addNewAttackers(int num) {
+  // an action has been assigned to a group, but the FSMs have not been created
+  // make sure the manager is not detroyed until this many FSMs have been
+  // added-- fix the case where the last attacker is unassigned the same cycle
+  // new attackers are added
+
+  ASSERT(numNewAttackers == 0); 
+
+  numNewAttackers = num;
+}
+
+// need to be called when we try to add attackers that are already part of this
+// manager
+void AttackManager::decNewAttackers() {
+  numNewAttackers--;
+}
+
+int AttackManager::size(){
+  return team.size();
+}
+
+/***
+ * Method: gather
+ * --------------
+ * Collects all attack units at a point.
+ */
+void AttackManager::gather(AttackFSM *fsm){
+  Vec2d gatherAt = Sorts::amr->mainCentroid();
+  msg << "er..." << endl;
+  fsm->move((sint4) gatherAt(0), (sint4) gatherAt(1), false);
+  msg  << "GATHERING AT " << gatherAt(0) << ", " << gatherAt(1) << endl;
+}
+
+Vec2d AttackManager::findCentroid(){
+  double xsum = 0, ysum = 0;
+  for(list<AttackFSM*>::iterator
+      i  = team.begin();
+      i != team.end();
+      i++)
+  {
+    xsum += *(*i)->getGob()->sod.x;
+    ysum += *(*i)->getGob()->sod.y;
+  }
+  return Vec2d(xsum / team.size(), ysum / team.size());
+}
+
+bool AttackManager:: attackLinePos(int range, list<Vec2d>& positions)
+{
+  //First, see if the enemy is in a linear formation
+  double slope = getSlope();
+  //If it's not, then return
+  if(slope == (double) NULL){
+    dbg<< "SLOPE == NULL" <<endl;
+    return false;
+  }
+
+  //otherwise, set up a line across from the
+  //primary target
+  //First, get the midpoint of the line
+  Vec2d lineMidpoint = getLineMidpoint(slope, range);
+  
+  positions.push_back(lineMidpoint);
+
+  //and add 
+  for(int i = 1; i < 5; i++)
+  {
+    Vec2d temp = Vec2d(slope, 8*i);
+    positions.push_back(lineMidpoint + temp);
+    positions.push_back(lineMidpoint - temp);
+  }
+  return true;
+}
+
+Vec2d AttackManager::getLineMidpoint(double slope, int range){ 
+  SoarGameObject* first = sortedTargets[0];
+  Vec2d enemyPos = Vec2d(first->getX(), first->getY());
+
+  //Get the distance vector from the targetted attack unit
+  Vec2d dist = Vec2d(Vec2d(-slope, 1), range);
+
+  Vec2d loc1 = enemyPos + dist;
+  Vec2d loc2 = enemyPos - dist;
+
+  Vec2d centroid = findCentroid();
+  
+  Vec2d fit1 = loc1 - centroid;
+  Vec2d fit2 = loc2 - centroid;
+
+  if(fit1.mag() < fit2.mag())
+    return loc1;
+  return loc2;
+  
+}
+
+double AttackManager::getSlope(){
+  double ySum, xSum, xxSum, xySum, Sy, Sx,
+	 slope, x, y, correlation;
+  ySum = xSum = xxSum = xySum = Sy = Sx = 0;
+  int count = targetSet.size();
+
+  //calculate the sum of the x's and the sum of the y's,
+  //which we'll use to find the slope and intercept
+  for(set<SoarGameObject*>::iterator i  = targetSet.begin();
+	i != targetSet.end(); ++i)
+  {
+    x = (*i)->getX();
+    y = (*i)->getY();
+
+    ySum += y;
+    xSum += x;
+    xxSum += x*x;
+    xySum += x*y;    
+  }
+  
+  //This is the formula for calculating the slope of a best
+  //fit line for a set of points
+  slope = (ySum*xxSum - xSum*xySum)/(count*xxSum - xSum*xSum);
+
+  for(set<SoarGameObject*>::iterator i = targetSet.begin();
+	i != targetSet.end(); ++i)
+  {
+    x = (*i)->getX();
+    y = (*i)->getY();
+
+    Sy += (y - ySum/count);
+    Sx += (x - xSum/count);
+  }
+
+  correlation = slope*Sx/Sy;
+  if(correlation > 0.8)
+    return slope;
+  return (double) NULL;
+}
+
+
+
 void AttackManager::attackArcPos( GameObj* atk, 
                                   GameObj* tgt, 
                                   int layer,
@@ -261,10 +801,21 @@ void AttackManager::attackArcPos( GameObj* atk,
       + atkRadius;
   }
 
-  range = (int)(range * 0.8); // for safety
+  range = (int)(range * 0.9); // for safety
   range -= layer * atkRadius * 2;
 
   list<Vec2d> atkPos;
+
+  /* The attackLinePos method was supposed to force
+   * our units into a line formation, but as it isn't
+   * working very well, and doesn't appear to be doing much,
+   * we're just not going to bother with this for now
+   *
+  if (attackLinePos(range, atkPos)){
+    dbg << "USING THE LINE FORMATION" << endl;
+  }
+  else*/
+
   if (*tgt->sod.shape == SHAPE_RECTANGLE) {
     int halfwidth = (*tgt->sod.x2 - *tgt->sod.x1) /  2;
     int halfheight = (*tgt->sod.y2 - *tgt->sod.y1) /  2;
@@ -306,8 +857,8 @@ void AttackManager::attackArcPos( GameObj* atk,
   {
     list<GameObj*> collisions;
     Vec2d intPos = i->roundToward(tPos);
-    if (0 <= intPos(0) && intPos(0) <= Sorts::OrtsIO->getMapXDim() && 
-        0 <= intPos(1) && intPos(1) <= Sorts::OrtsIO->getMapYDim()) 
+    if (0 <= intPos(0) && intPos(0) < Sorts::OrtsIO->getMapXDim() && 
+        0 <= intPos(1) && intPos(1) < Sorts::OrtsIO->getMapYDim()) 
     {
       Circle c(intPos(0), intPos(1), atkRadius);
       if (Sorts::spatialDB->hasObjectCollision((int)intPos(0),(int)intPos(1),atkRadius)
@@ -336,533 +887,4 @@ void AttackManager::attackArcPos( GameObj* atk,
     }
     //positions.push_back(intPos);
   }
-}
-
-AttackManager::AttackManager(const set<SoarGameObject*>& _targets) : targetSet(_targets)
-{
-  reprioritizeCounter = 0;
-  numNewAttackers = 0;
-  for(set<SoarGameObject*>::iterator
-      i  = targetSet.begin();
-      i != targetSet.end();
-      ++i)
-  {
-    targets.insert(pair<SoarGameObject*, AttackTargetInfo>(*i, AttackTargetInfo(*i)));
-    idSet.insert((*i)->getID());
-  }
-  reprioritize();
-}
-
-AttackManager::~AttackManager() {
-  int status;
-  if (targets.size() == 0) {
-    status = 1;
-  }
-  else {
-    status = 0;
-  }
-
-  for(list<AttackFSM*>::iterator
-      i =  team.begin();
-      i != team.end();
-      ++i)
-  {
-#ifdef USE_CANVAS_ATTACK_MANAGER
-    //Sorts::canvas.unregisterGob((*i)->getGob());
-    Sorts::canvas.resetSGO((*i)->getSGO());
-#endif
-    (*i)->disown(status);
-  }
-}
-
-void AttackManager::registerFSM(AttackFSM* fsm) {
-  ASSERT(numNewAttackers > 0);
-  numNewAttackers--;
-  team.push_back(fsm);
-}
-
-void AttackManager::unregisterFSM(AttackFSM* fsm) {
-  ASSERT(find(team.begin(), team.end(), fsm) != team.end());
-  team.erase(find(team.begin(), team.end(), fsm));
-  if (fsm->getTarget() != NULL) {
-    unassignTarget(fsm);
-  }
-
-#ifdef USE_CANVAS_ATTACK_MANAGER
-  // in addition to attack reassignments, this is called as a result 
-  // of units being killed, in which case the gob is
-  // already removed from the canvas
-  if (Sorts::canvas.sgoRegistered(fsm->getSGO())) {  
-    Sorts::canvas.resetSGO(fsm->getSGO());
-  }
-#endif
-  if (team.size() + numNewAttackers == 0) {
-    msg << "team size is now 0, going away.." << endl;
-    Sorts::amr->removeManager(this);
-    delete this;
-  }
-}
-
-void AttackManager::assignTarget(AttackFSM* fsm, SoarGameObject* target) {
-  ASSERT(targets.find(target) != targets.end());
-  targets[target].assignAttacker(fsm);
-  fsm->setTarget(target);
-}
-
-void AttackManager::unassignTarget(AttackFSM* fsm) {
-  ASSERT(fsm->getTarget() != NULL);
-  ASSERT(targets.find(fsm->getTarget()) != targets.end());
-  targets[fsm->getTarget()].unassignAttacker(fsm);
-  fsm->setTarget(NULL);
-}
-
-void AttackManager::unassignAll(SoarGameObject* target) {
-  ASSERT(targets.find(target) != targets.end());
-
-  AttackTargetInfo& info = targets[target];
-  for(set<AttackFSM*>::const_iterator
-      i  = info.attackers_begin();
-      i != info.attackers_end();
-      ++i)
-  {
-    (*i)->setTarget(NULL);
-    (*i)->setReassign(true);
-  }
-  info.unassignAll();
-}
-
-bool AttackManager::findTarget(AttackFSM* fsm) {
-  msg << "FINDING A TARGET" << endl;
-  GameObj* gob = fsm->getGob();
-  vector<SoarGameObject*> saturated;
-  vector<SoarGameObject*> unsaturated;
-
-  for(vector<SoarGameObject*>::iterator
-      i  = sortedTargets.begin();
-      i != sortedTargets.end();
-      ++i)
-  {
-    if (targets[*i].isSaturated()) {
-      saturated.push_back(*i);
-    }
-    else {
-      unsaturated.push_back(*i);
-    }
-  }
-
-  // try to hit immediately attackable things first
-  for(vector<SoarGameObject*>::iterator
-      i  = sortedTargets.begin();
-      i != sortedTargets.end();
-      ++i)
-  {
-    if (canHit(gob, (*i)->getGob())) {
-      assignTarget(fsm, *i);
-#ifdef USE_CANVAS_ATTACK_MANAGER
-      Sorts::canvas.trackDestination(fsm->getSGO(), 
-                                     (*i)->getX(), (*i)->getY());
-#endif
-      msg << "NEARBY TARG" << endl;
-      return true;
-    }
-  }
-
-  dbg << "no targets nearby..\n";
-  // now try to attack the "best" target
-  for(vector<SoarGameObject*>::iterator
-      i  = sortedTargets.begin();
-      i != sortedTargets.end();
-      ++i)
-  {
-    list<Vec2d> positions;
-    attackArcPos(fsm->getGob(), (*i)->getGob(), 0, positions);
-    for(list<Vec2d>::iterator
-        j  = positions.begin();
-        j != positions.end();
-        ++j)
-    {
-      if (fsm->move((int)(*j)(0), (int)(*j)(1), false) == 0) {
-        msg <<"Moving to Position: "<<(*j)(0)<<", "<<(*j)(1)<<endl;
-        assignTarget(fsm, *i);
-#ifdef USE_CANVAS_ATTACK_MANAGER
-        Sorts::canvas.trackDestination(fsm->getSGO(), 
-                                       (*i)->getX(), (*i)->getY());
-#endif
-        dbg << "ARC TARG" << endl;
-        return true;
-      }
-      else {
-        msg << "ARC CHECK MOVE FAIL" << endl;
-      }
-    }
-  }
-
-  // finally, just run toward someone, preferrably unsaturated
-  //  for(int checkSaturated = 1; checkSaturated >= 0; checkSaturated--) {
-  for(vector<SoarGameObject*>::iterator
-      i  = sortedTargets.begin();
-      i != sortedTargets.end();
-      ++i)
-  {
-    //      if (checkSaturated == 0 || !targets[*i].isSaturated()) {
-    GameObj* tgob = (*i)->getGob();
-    Vec2d closePos = getClosePos(gob, tgob);
-    // force a pathfind, now, since the target must have had lots of
-    // failure points nearby, but should be reachable
-    if (fsm->move((int)closePos(0), (int)closePos(1), true) == 0) {
-      assignTarget(fsm, *i);
-#ifdef USE_CANVAS_ATTACK_MANAGER
-      Sorts::canvas.trackDestination(fsm->getSGO(), 
-                                     (*i)->getX(), (*i)->getY());
-#endif
-      msg << "LAST RESORT TARG" << endl;
-      return true;
-    }
-    //      }
-  }
-  //  }
-  //  }
-  return false;
-}
-
-// the current strategy is basically to focus fire on one enemy
-// at a time until they're all dead, minimizing damage taken by self
-
-// In the future, also implement running weak units away
-int AttackManager::direct(AttackFSM* fsm) {
-  if (reprioritizeCounter != Sorts::frame) {
-    dbg << "forced reprioritize!\n";
-    reprioritize();
-    reprioritizeCounter = Sorts::frame;
-  }
-  msg << "NUMTARGS: " << targets.size() << endl;
-  unsigned long st = gettime();
-  GameObj* gob = fsm->getGob();
-  SoarGameObject* sgob = Sorts::OrtsIO->getSoarGameObject(gob);
-
-  fsm->touch(); // tell the fsm its been updated, so it can mark time
-
-  if ( gob->dir_dmg > 0 && 
-       ((double) gob->get_int("hp")) / gob->get_int("max_hp") < 0.2)
-  {
-    // time to run away
-    for(int i = 0; i < GameConst::DAMAGE_N; ++i) {
-      if (damageTaken(i, gob->dir_dmg)) {
-        Vec2d retreatVector = getHeadingVector(i).inv();
-        Vec2d moveDest = Vec2d(gobX(gob), gobY(gob)) + Vec2d(retreatVector, 10);
-        fsm->move((int)moveDest(0), (int)moveDest(1), false);
-        msg  << "RETREATING TO " << moveDest(0) << ", " << moveDest(1) << endl;
-        return 0;
-      }
-    }
-  }
-
-  int numUnassigned = 0;
-  for(list<AttackFSM*>::iterator
-      i  = team.begin();
-      i != team.end();
-      ++i)
-  {
-    if ((*i)->getTarget() == NULL) {
-      numUnassigned++;
-    }
-  }
-  msg << "UNASSIGNED: " << numUnassigned << endl;
-
-
-  if (updateTargetList() > 0) {
-    msg << "UPDATE TARGET LIST" << endl;
-    if (targets.size() == 0) {
-      Sorts::amr->removeManager(this);
-      delete this;
-      return 1;
-    }
-    reprioritize();
-
-    /*
-       for(list<AttackFSM*>::iterator
-       i  = team.begin();
-       i != team.end();
-       ++i)
-       {
-       if ((*i)->target != NULL) {
-       unassignTarget(*i);
-       }
-       }
-       */
-  }
-
-  if (fsm->getTarget() == NULL) {
-    unsigned long st_find = gettime();
-    if (!findTarget(fsm)) {
-      msg << "FIND TARGET FAILED" << endl;
-      fsm->failCount++;
-      if (fsm->failCount > 10) {
-        return -1;
-      }
-      return 0;
-    }
-    dbg << "TIME TO FIND TARGET: " << (gettime() - st_find) / 1000 << endl;
-  }
-
-  ASSERT(fsm->getTarget() != NULL);
-
-  if (idSet.find(fsm->getTarget()->getID()) == idSet.end()) {
-    msg << "bad target Ptr: " << fsm->getTarget()->getGob() << " id: " << fsm->getTarget()->getID() 
-      << " name: " << fsm->getTarget()->getGob()->bp_name() << endl;
-    msg << "bad target sgo ptr: " << fsm->getTarget() << endl;
-  }
-
-  msg << "attacking target: " << fsm->getTarget()->getGob()->bp_name() << " " 
-    << fsm->getTarget()->getGob() << " aka sgo " << fsm->getTarget() << endl;
-
-  fsm->failCount = 0;
-
-  GameObj* tgob = fsm->getTarget()->getGob();
-  AttackTargetInfo& info = targets[fsm->getTarget()];
-
-  if (!canHit(gob, tgob) || fsm->badAttack) {
-    if (fsm->isMoving()) {
-      Vec2d dest = fsm->getDestination();
-      if (canHit(gob, dest, tgob)) {
-        if (gob->dir_dmg == 0) {
-          double distToTarget 
-            = squaredDistance(gobX(gob), gobY(gob), gobX(tgob), gobY(tgob));
-#ifndef NO_WAITING
-          if (distToTarget < info.avgAttackerDistance() * WAIT_RATIO)
-          {
-            msg << "WAITING FOR OTHERS TO CATCH UP" << endl;
-            fsm->waitingForCatchup = true;
-          }
-#endif
-        }
-        // everything's fine, keep going
-        dbg << "TIME SPENT: " << (gettime() - st) / 1000 << endl;
-        return 0;
-      }
-      else {
-        msg << "xxx_dest can't hit. Dest: " << dest(0) << "," << dest(1) << " Targ: " << gobX(tgob) << "," << gobY(tgob) << endl;
-      }
-    }
-#ifndef NO_WAITING
-    if (fsm->waitingForCatchup) {
-      msg << "WAITING" << endl;
-      if ((gob->dir_dmg == 0) && (canHit(gob, fsm->getDestination(), tgob))) {
-        double distToTarget 
-          = squaredDistance(gobX(gob), gobY(gob), gobX(tgob), gobY(tgob));
-        if (distToTarget >= info.avgAttackerDistance() * RESUME_RATIO) {
-          fsm->waitingForCatchup = false;
-       }
-        else {
-          // keep waiting
-          dbg << "TIME SPENT: " << (gettime() - st) / 1000 << endl;
-          return 0;
-        }
-      }
-      else {
-        // forget you guys, I'm getting out of here
-        fsm->waitingForCatchup = false;
-      }
-      // otherwise, he's taking damage, or the target changed
-      // position, so start moving
-    }
-#endif
-    // not moving, or should be moving somewhere else
-    msg << "CANNOT HIT" << endl;
-
-    list<Vec2d> positions;
-    attackArcPos(gob, tgob, 0, positions);
-    for(list<Vec2d>::iterator
-        i  = positions.begin();
-        i != positions.end();
-        ++i)
-    {
-      if (fsm->move((int)(*i)(0), (int)(*i)(1), false) == 0) {
-        msg << "Moving to Position: " << (*i)(0) << ", " << (*i)(1) << endl;
-#ifdef USE_CANVAS_ATTACK_MANAGER
-        Sorts::canvas.trackDestination(fsm->getSGO(), 
-                                       (*i)(0), (*i)(1));
-#endif
-        break;
-      }
-      else {
-        msg << "ARC CHECK MOVE FAIL 2" << endl;
-      }
-    }
-    if (!fsm->isMoving()) {
-      fsm->setTarget(NULL);
-    }
-  }
-  else if (!fsm->isFiring() ||  
-           sgob->getLastAttacked() != fsm->getTarget()->getID())
-  {
-    fsm->attack(fsm->getTarget());
-  }
-
-  dbg << "TIME SPENT: " << (gettime() - st) / 1000 << endl;
-  return 0;
-}
-
-int AttackManager::updateTargetList() {
-  int numVanished = 0;
-  map<SoarGameObject*, AttackTargetInfo>::iterator i = targets.begin();
-  while (i != targets.end()) {
-    if (!Sorts::OrtsIO->isAlive(i->first->getID())) {
-      msg << "YYY Unit " << i->first->getID() << " is no longer alive or moved out of view" << endl;
-
-      unassignAll(i->first);
-      targetSet.erase(i->first);
-      map<SoarGameObject*, AttackTargetInfo>::iterator j = i++;
-      targets.erase(j);
-      ++numVanished;
-    }
-    else {
-      ++i;
-    }
-  }
-  return numVanished;
-}
-
-struct TargetCompare {
-  Vec2d myPos;
-
-  bool operator()(SoarGameObject* t1, SoarGameObject* t2) {
-    // first always prefer those that are armed and shooting over 
-    // those that are not
-    ScriptObj* weapon1 = t1->getGob()->component("weapon");
-    ScriptObj* weapon2 = t2->getGob()->component("weapon");
-    if (weapon1 != NULL && weapon2 == NULL) {
-      return true;
-    }
-    if (weapon1 == NULL && weapon2 != NULL) {
-      return false;
-    }
-
-    if (weapon1 != NULL && weapon2 != NULL) {
-      if (weapon1->get_int("shooting") == 1 && 
-          weapon2->get_int("shooting") == 0) 
-      {
-        return true;
-      }
-      if (weapon1->get_int("shooting") == 0 && 
-          weapon2->get_int("shooting") == 1) 
-      {
-        return false;
-      }
-    }
-
-    // this formula was derived by minimizing damage to your own units,
-    // and assuming that none of your units die while attacking (your
-    // damage rate stays constant)
-    double rating1 = weaponDamageRate(t1->getGob()) * t2->getGob()->get_int("hp");
-    double rating2 = weaponDamageRate(t2->getGob()) * t1->getGob()->get_int("hp");
-
-    if (rating1 < rating2) {
-      return true;
-    }
-    else if (rating1 == rating2) { // break ties by distance
-      Vec2d p1(*t1->getGob()->sod.x, *t1->getGob()->sod.y);
-      Vec2d p2(*t2->getGob()->sod.x, *t2->getGob()->sod.y);
-
-      double dist1 = (myPos - p1).magSq();
-      double dist2 = (myPos - p2).magSq();
-
-      if (dist1 < dist2) {
-        return true;
-      }
-      else if (dist1 == dist2) {  // lexicographically break ties
-        return (t1->getID() < t2->getID());
-      }
-    }
-    return false;
-  }
-};
-
-struct NewTargetCompare {
-  Vec2d myPos;
-
-  bool operator()(SoarGameObject* t1, SoarGameObject* t2) {
-    // first always prefer those that are armed and shooting over 
-    // those that are not
-    ScriptObj* weapon1 = t1->getGob()->component("weapon");
-    ScriptObj* weapon2 = t2->getGob()->component("weapon");
-    if (weapon1 != NULL && weapon2 == NULL) {
-      return true;
-    }
-    if (weapon1 == NULL && weapon2 != NULL) {
-      return false;
-    }
-
-    int range1 = weapon1->get_int("max_ground_range");
-    int range2 = weapon2->get_int("max_ground_range");
-
-    Vec2d p1(*t1->getGob()->sod.x, *t1->getGob()->sod.y);
-    Vec2d p2(*t2->getGob()->sod.x, *t2->getGob()->sod.y);
-
-    double dist1 = (myPos - p1).magSq();
-    double dist2 = (myPos - p2).magSq();
-
-    if (dist1 < dist2 - range2) {
-      return true;
-    }
-    else if (dist2 < dist1 - range1) {
-      return false;
-    }
-
-    double rating1 = weaponDamageRate(t1->getGob()) * t2->getGob()->get_int("hp");
-    double rating2 = weaponDamageRate(t2->getGob()) * t1->getGob()->get_int("hp");
-
-    if (rating1 < rating2) {
-      return true;
-    }
-    else if (rating1 == rating2) { // break ties by distance
-
-      if (dist1 < dist2) {
-        return true;
-      }
-      else if (dist1 == dist2) {  // lexicographically break ties
-        return (t1->getID() < t2->getID());
-      }
-    }
-    return false;
-  }
-};
-
-void AttackManager::reprioritize() {
-  // calculate centroid
-  double xsum = 0, ysum = 0;
-  for(list<AttackFSM*>::iterator
-      i  = team.begin();
-      i != team.end();
-      i++)
-  {
-    xsum += *(*i)->getGob()->sod.x;
-    ysum += *(*i)->getGob()->sod.y;
-  }
-
-  NewTargetCompare comparator;
-  comparator.myPos = Vec2d(xsum / team.size(), ysum / team.size());
-
-  dbg << "YYY reprioritizing\n";
-  sortedTargets.clear();
-  sortedTargets.insert(sortedTargets.end(), targetSet.begin(), targetSet.end());
-  sort(sortedTargets.begin(), sortedTargets.end(), comparator);
-}
-
-
-void AttackManager::addNewAttackers(int num) {
-  // an action has been assigned to a group, but the FSMs have not been created
-  // make sure the manager is not detroyed until this many FSMs have been
-  // added-- fix the case where the last attacker is unassigned the same cycle
-  // new attackers are added
-
-  ASSERT(numNewAttackers == 0); 
-
-  numNewAttackers = num;
-}
-
-// need to be called when we try to add attackers that are already part of this
-// manager
-void AttackManager::decNewAttackers() {
-  numNewAttackers--;
 }

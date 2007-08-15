@@ -221,6 +221,7 @@ void positionsOnCircle
 }
 
 unsigned long gettime() {
+	return 0;
   timeval t;
   gettimeofday(&t, NULL);
   return t.tv_sec * 1000000 + t.tv_usec;

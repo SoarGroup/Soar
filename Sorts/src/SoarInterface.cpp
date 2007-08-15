@@ -162,6 +162,8 @@ void SoarInterface::refreshGroup(PerceptualGroup* group) {
              != g.intProperties.end());
       InputLinkIntAttribute& attr = g.intProperties[i->first];
       if (attr.lastVal != i->second) {
+        msg << "Pointer data" << endl;
+        msg << i->first << i->second << endl;
         agent->Update(attr.wme, i->second);
         attr.lastVal = i->second;
         msg << "\tupd: " << i->first << " " << i->second << endl;

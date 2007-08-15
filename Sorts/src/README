@@ -1,0 +1,85 @@
+Some notes:
+-----------
+The interns folder is an entirely different agent that was created to easily
+test movement and attack algorithms. it should be moved to:
+    orts3/apps/interns
+The README file for the interns agent is in the interns/src folder.
+
+
+
+General Layout for Managing Attack units:
+-----------------------------------------
+
+Excluding sorts_main, these files were also the places where most of
+the modifications made by the 2007 summer interns, Adam Sanders
+and Daniel Jachowski were made.
+--------------------------------------------------------------------
+
+sorts_main:
+   Loads the soar agent and runs the strings for both the orts and sorts
+   components of the program.
+
+OrtsInterface:
+   Acts as the main event handler for the agent. In this event handler
+   perceptual groups are updated (dead units are removed, new units are
+   added), the influence map is updated, the perceptual group manager is
+   called to assign actions to all units, game objects are updated, and
+   the sorts canvas is updated. Note: when SoarGameObjects are updated,
+   the update method calls update on the FSMs.
+
+   Possible areas of improvement are to implement a server-based graphics
+   windows (provided by the -disp flag when running the server). Examples
+   of implementation can be found in the interns or sampleai agents.
+
+PerceptualGroupManager:
+   Manages all perceptual groups, and called from the OrtsInterface.
+   This is where actions are assigned to the perceptual groups, and
+   where the perceptual groups are called to update themselves.
+  
+   Possible areas of improvement are modifying the groupings of enemies.
+
+PerceptualGroup
+   Assigns actions to individual SoarGameObjects to match their
+   perceptual group.
+
+AttackFSM
+   The main method where AttackFSM's are made to complete actions. Although
+   the actual decision making is done in AttackManager, this class should
+   provide methods to complete different actions. So, it has a method to
+   execute an attack on an enemy, and a method to call MoveAttackFSM to
+   move somewhere on the board.
+
+   From the update method, the AttackManager's direct method is called,
+   which tells the AttackFSM what to do. The direct method will return
+   a value telling us if the FSM has successfully completed its task,
+   is still running, or has failed.
+
+   Possible areas of improvement are modifying the move method to allow for
+   different methods of movement (simple traversal, force based movement,
+   A* pathfinding) based on the third argument. A new method could
+   also be added to monitor whether or not a unit is moving where it
+   is supposed to be moving to.
+
+AttackManager
+   Where the decision making takes place for deciding how to prioritize
+   targets, when to move, when to attack, where to move, and calculating
+   general information on a particular attackManager. A lot of code in
+   this file is commented out or unused, because it may be useful
+   for modification.
+
+   Possible areas of improvement are to get the units to select targets
+   based on the influence map (look at Interns agent for implementation
+   ideas), determine when to use the gather function (particularly
+   for game 4), and assign units to move in formation. Moving in formation
+   may be something more for the MoveAttackFSM class, but you can decide.
+   
+MoveAttackFSM:
+   The movement FSM assigned to AttackFSMs. This is where modifications and
+   additions to the movement algorithms should take place. The force
+   calculations can be modified here, using the perceptual map.
+
+   Possible areas of improvement are adding a waypoint based movement
+   algorithm, possibly streamling the A* pathfinding method, adding
+   more types of forces to the force finding algorithm, and determing
+   a position around a target to move to, instead of just moving as
+   close to the target as possible.

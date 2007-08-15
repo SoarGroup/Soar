@@ -41,7 +41,7 @@ AttackNearFSM::AttackNearFSM(SoarGameObject* _sgob)
 }
 
 int AttackNearFSM::update() {
-  msg << "updating.\n";
+  msg << "updating." << gob->bp_name() << endl;
   if (weapon->get_int("shooting") == 1) {
     return FSM_RUNNING;
   }
