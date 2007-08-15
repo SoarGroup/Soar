@@ -3,8 +3,8 @@
 ;;;  - David W. Aha (adapted from files provided by SLG & U.Michigan)
 ;;;  - Uses built-in math functions
 ;;;  - TL level 6, Scenario 1, Source1 task
-;;;  - Changes located between ">>>>" and "<<<<<"
 ;;;  - 8/8: Removed blastZone, and only legalThrowDist now is only {2}
+;;;  - 8/14: MCM: Changed "blocked" predicate into a state predicate
 ;;;
 ;;; Summary: This has a gun, other source has a grenade, & target has both
 ;;; - Different layout for each
@@ -61,43 +61,87 @@
 ;;; Character health
 (init (health terrorist1 1))
 
+;; Test for absence of blockedEast, blockedSouth
+(blockedEast)
+(blockedSouth)
+
 ;;; Unless otherwise specified adjacent spatial coordinates are assumed 
 ;;;  accessible from one another.  
-(init (blockedEast 4 2))
-(init (blockedEast 1 3))
-(init (blockedEast 5 6))
+;;Outer walls
 
-(init (blockedSouth 2 2))
-(init (blockedSouth 3 2))
-(init (blockedSouth 4 2))
-(init (blockedSouth 2 3))
-(init (blockedSouth 3 3))
-(init (blockedSouth 4 3))
-(init (blockedSouth 6 4))
-(init (blockedSouth 7 4))
-(init (blockedSouth 8 4))
-(init (blockedSouth 5 3))
-(init (blockedSouth 6 3))
-(init (blockedSouth 7 3))
-(init (blockedSouth 8 3))
+(init (blocked west 1 1))
+(init (blocked west 1 2))
+(init (blocked west 1 3))
+(init (blocked west 1 4))
+(init (blocked west 1 5))
+(init (blocked west 1 6))
+
+(init (blocked east 8 1))
+(init (blocked east 8 2))
+(init (blocked east 8 3))
+(init (blocked east 8 4))
+(init (blocked east 8 5))
+(init (blocked east 8 6))
+
+(init (blocked north 1 1))
+(init (blocked north 2 1))
+(init (blocked north 3 1))
+(init (blocked north 4 1))
+(init (blocked north 5 1))
+(init (blocked north 6 1))
+(init (blocked north 7 1))
+(init (blocked north 8 1))
+
+(init (blocked south 1 6))
+(init (blocked south 2 6))
+(init (blocked south 3 6))
+(init (blocked south 4 6))
+(init (blocked south 5 6))
+(init (blocked south 6 6))
+(init (blocked south 7 6))
+(init (blocked south 8 6))
+
+;;Inner walls
+(init (blocked east 4 2))
+(init (blocked east 1 3))
+(init (blocked east 5 6))
+
+(init (blocked west 5 2))
+(init (blocked west 2 3))
+(init (blocked west 6 6))
+
+(init (blocked north 2 3))
+(init (blocked north 3 3))
+(init (blocked north 4 3))
+(init (blocked north 2 4))
+(init (blocked north 3 4))
+(init (blocked north 4 4))
+(init (blocked north 6 5))
+(init (blocked north 7 5))
+(init (blocked north 8 5))
+(init (blocked north 5 4))
+(init (blocked north 6 4))
+(init (blocked north 7 4))
+(init (blocked north 8 4))
+
+(init (blocked south 2 2))
+(init (blocked south 3 2))
+(init (blocked south 4 2))
+(init (blocked south 2 3))
+(init (blocked south 3 3))
+(init (blocked south 4 3))
+(init (blocked south 6 4))
+(init (blocked south 7 4))
+(init (blocked south 8 4))
+(init (blocked south 5 3))
+(init (blocked south 6 3))
+(init (blocked south 7 3))
+(init (blocked south 8 3))
 
 ;;;<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
-
+; MCM 8/14/07: Blocked is now directly represented in state.
 ; SW 8/3/07: need these to have consistent spatial rep. with the other domains
 ; Note that south and north are reversed compared to rogue/escape.
-(<= (blocked east ?x ?y)
-  (true (blockedEast ?x ?y)))
-  
-(<= (blocked west ?x ?y)
-  (true (blockedEast ?x1 ?y))
-  (+ ?x1 1 ?x))
-  
-(<= (blocked south ?x ?y)
-  (true (blockedSouth ?x ?y)))
-
-(<= (blocked north ?x ?y)
-  (true (blockedSouth ?x ?y1))
-  (+ ?y1 1 ?y))
 
 ;; Soldier health
 (init (health soldier 1))
@@ -122,6 +166,7 @@
 
 (<= (legal soldier (move ?dir))
     (true (location soldier ?x ?y))
+    (direction ?dir)
     (not (stepBlocked ?dir ?x ?y))
     (nStepsSoldier 1 ?dir ?x ?y ?xAny ?yAny))
 
@@ -153,13 +198,10 @@
 ;;; NEXT Relations
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-;;; blocked[North,East] is persistent. It is a fluent only for the sake of 
-;;;  showing up as XML when a stylesheet is used.
-
-(<= (next (blockedSouth ?x ?y))
-    (true (blockedSouth ?x ?y)))
-(<= (next (blockedEast  ?x ?y))
-    (true (blockedEast  ?x ?y)))
+;;; MCM: blockedSouth and blockedEast are now removed, replaced by only blocked
+;;; in the state.
+(<= (next (blocked ?dir ?x ?y))
+    (true (blocked ?dir ?x ?y)))
 
 ;;; Also here for stylesheet convenience.  True of any cell that the soldier
 ;;;  attacks.
@@ -277,16 +319,8 @@
 ;;; A single step ?dir from cell (?x,?y) is blocked if a wall interupts that 
 ;;;  step.
 
-(<= (stepBlocked south ?x ?y)
-    (true (blockedSouth ?x ?y)))
-(<= (stepBlocked north ?x2 ?y2)
-    (nSteps 1 south ?x1 ?y1 ?x2 ?y2)
-    (true (blockedSouth ?x1 ?y1)))
-(<= (stepBlocked east ?x ?y)
-    (true (blockedEast ?x ?y)))
-(<= (stepBlocked west ?x2 ?y2)
-    (nSteps 1 east ?x1 ?y1 ?x2 ?y2)
-    (true (blockedEast ?x1 ?y1)))
+(<= (stepBlocked ?dir ?x ?y)
+    (true (blocked ?dir ?x ?y)))
 
 ;;; A path of an arbitrary number ?n steps ?dir from cell (?x, ?y) is blocked 
 ;;;  if a wall interupts any of the steps along that path.
