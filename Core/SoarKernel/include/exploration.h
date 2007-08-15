@@ -76,6 +76,9 @@ extern bool set_parameter_value( agent *my_agent, const char *name, double value
 // list of parameter names
 extern std::vector<std::string> *get_parameter_names( agent *my_agent );
 
+// update parameters according to their reduction policies/rates
+extern void update_exploration_parameters( agent *my_agent );
+
 //////////////////////////////////////////////////////////
 // Reduction Policies
 //////////////////////////////////////////////////////////

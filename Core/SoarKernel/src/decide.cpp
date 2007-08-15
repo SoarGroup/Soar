@@ -2289,6 +2289,8 @@ void do_decision_phase (agent* thisAgent)
    */
    decide_non_context_slots(thisAgent);
    do_buffered_wm_and_ownership_changes(thisAgent);
+
+   update_exploration_parameters( thisAgent );
 }  
 
 void create_top_goal (agent* thisAgent) 
