@@ -600,6 +600,8 @@ void create_predefined_symbols (agent* thisAgent) {
   thisAgent->input_link_symbol = make_sym_constant(thisAgent, "input-link");
   thisAgent->output_link_symbol = make_sym_constant(thisAgent, "output-link");
   /* RPM 9/06 end */
+
+  thisAgent->reward_link_symbol = make_sym_constant( thisAgent, "reward-link" );
 }
 
 void release_helper(agent* thisAgent, Symbol** sym) {
@@ -648,4 +650,6 @@ void release_predefined_symbols(agent* thisAgent) {
   release_helper(thisAgent,&(thisAgent->input_link_symbol));
   release_helper(thisAgent,&(thisAgent->output_link_symbol));
   /* RPM 9/06 end */
+
+  release_helper( thisAgent, &( thisAgent->reward_link_symbol ) );
 }

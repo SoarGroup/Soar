@@ -270,6 +270,8 @@ typedef struct agent_struct {
   Symbol			* input_link_symbol;
   Symbol			* output_link_symbol;
   /* RPM 9/06 end */
+
+  Symbol            * reward_link_symbol;
   
   /* ----------------------- Symbol table stuff -------------------------- */
 

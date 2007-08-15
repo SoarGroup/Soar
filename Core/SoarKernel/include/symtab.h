@@ -225,6 +225,8 @@ typedef struct identifier_struct {
   struct slot_struct *operator_slot;
   struct preference_struct *preferences_from_goal;
 
+  union symbol_union *reward_header;		// pointer to reward_link
+
   /* REW: begin 09.15.96 */
   struct gds_struct *gds;    /* Pointer to a goal's dependency set */
   /* REW: begin 09.15.96 */

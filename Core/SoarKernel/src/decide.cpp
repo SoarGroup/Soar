@@ -1216,7 +1216,12 @@ Symbol *create_new_impasse (agent* thisAgent, Bool isa_goal, Symbol *object, Sym
                    NIL);
 
   if (isa_goal)
+  {
     add_impasse_wme (thisAgent, id, thisAgent->superstate_symbol, object, NIL);
+
+	id->id.reward_header = make_new_identifier( thisAgent, 'R', level );	
+	add_impasse_wme( thisAgent, id, thisAgent->reward_link_symbol, id->id.reward_header, NIL );
+  }
   else
     add_impasse_wme (thisAgent, id, thisAgent->object_symbol, object, NIL);
 
