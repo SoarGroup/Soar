@@ -41,8 +41,8 @@ elsif ($env =~ /^r/) {
 }
 elsif ($level =~ "10") {
   $env = "escape"; # irrelevant
-  $source = "../kif/level10/tl10-$scenario-source.kif";
-  $target = "../kif/level10/tl10-$scenario-target.kif";
+  $source = "../kif/level10/TL-Level-10-$scenario-Source.kif";
+  $target = "../kif/level10/TL-Level-10-$scenario-Target.kif";
 }
 else {die "bad environment";}
 
