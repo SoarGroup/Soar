@@ -65,23 +65,50 @@ sp {duplicate-state*update*repeats
 # first time, init at 0
 sp {copy*visited*state*to*top-selection*1
 	(state <s> ^top-selection true
+            ^counter <val>
 				^visited-states-hash <vsh>)
 	(state <s2> ^current-state-hash <csh> ^current-evaluation-depth <remaining-steps>
-				^operator.name save-location)  #register visited state
+				^operator.name save-location
+    ^superstate.name <name>)  #register visited state
 	(<vsh> -^<csh>) #not previously visited state
 -->
 	(<vsh> ^<csh> <h>)
 	(<h> ^remaining-steps <remaining-steps>
 		^repeats 0)
+   (<s> ^counter <val> -)
+   (<s> ^counter (+ <val> 1))
 }
 
 # if existing visited state has lower remaining-depths, this is not depth-exceeded, update/increase remaining-steps to current one
 sp {copy*visited*state*to*top-selection*2
 	(state <s> ^top-selection true
+            ^counter <val>
 				^visited-states-hash <vsh>)
 	(state <s2> ^current-state-hash <csh> ^current-evaluation-depth <remaining-steps>
-				^operator.name save-location)  #register visited state
+				^operator.name save-location
+    ^superstate.name <name>)  #register visited state
 	(<vsh> ^<csh> <h>)
 -->
 	(<h> ^remaining-steps <remaining-steps>)
+   (<s> ^counter <val> -)
+   (<s> ^counter (+ <val> 1))
 }
+
+sp {assert*no-store-over-max
+	(state <ts> ^top-selection true
+        ^current-evaluation-depth <ced>
+				^visited-states-hash <vsh>)
+	(<vsh> ^<csh> <visited>)
+	(<visited> ^remaining-steps > <ced>)  
+-->
+   (write (crlf) | ERROR: bad remaining-steps |)
+   (halt)
+}
+
+
+sp {top-selection*counter*init
+   (state <s> ^top-selection true)
+-->
+   (<s> ^counter 0)
+}
+
