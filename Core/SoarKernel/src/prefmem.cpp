@@ -82,6 +82,8 @@ preference *make_preference (agent* thisAgent, byte type, Symbol *id, Symbol *at
   p->slot = NIL;
   p->next_clone = NIL;
   p->prev_clone = NIL;
+  p->total_preferences_for_candidate = 0;
+  p->numeric_value = 0;
 
 #ifdef DEBUG_PREFS
   print (thisAgent, "\nAllocating preference at 0x%8x: ", (unsigned long)p);
