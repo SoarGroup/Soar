@@ -15,6 +15,8 @@
  */
 
 #include <stdlib.h>
+#include <math.h>
+
 #include <iostream>
 #include <map>
 #include <vector>
@@ -27,6 +29,7 @@
 #include "recmem.h"
 #include "chunk.h"
 #include "rete.h"
+#include "wmem.h"
 
 #include "reinforcement_learning.h"
 #include "misc.h"
@@ -50,6 +53,43 @@ void clean_parameters( agent *my_agent )
 		temp = &( (*my_agent->rl_params)[ (*my_keys)[ i ] ] );
 		delete( temp->param );
 	}
+
+	my_keys->clear();
+	delete my_keys;
+}
+
+/***************************************************************************
+ * Function     : reset_rl_data
+ **************************************************************************/
+void reset_rl_data( agent *my_agent )
+{
+	Symbol *goal = my_agent->top_goal;
+	while( goal )
+	{
+		rl_data *data = goal->id.rl_info;
+
+		//data->eligibility_traces->clear(); 
+		// free_list(thisAgent, data->prev_op_RL_rules);
+		// data->prev_op_RL_rules = NIL;
+
+		//data->previous_Q = 0;
+		data->reward = 0;
+		data->step = 0;
+		data->impasse_type = NONE_IMPASSE_TYPE;
+		
+		goal = goal->id.lower_goal;
+	}
+}
+
+/***************************************************************************
+ * Function     : reset_rl
+ **************************************************************************/
+void reset_rl_stats( agent *my_agent )
+{
+	std::vector<std::string> *my_keys = map_keys( my_agent->rl_stats );
+	
+	for ( size_t i=0; i<my_keys->size(); i++ )
+		(*my_agent->rl_stats)[ (*my_keys)[i] ] = 0;
 
 	my_keys->clear();
 	delete my_keys;
@@ -843,4 +883,92 @@ void add_goal_or_impasse_tests_to_conds( agent *my_agent, condition *all_conds )
 		}
 	}
 }
+
+/***************************************************************************
+ * Function     : tabulate_reward_value_for_goal
+ **************************************************************************/
+void tabulate_reward_value_for_goal( agent *my_agent, Symbol *goal )
+{
+	rl_data *data = goal->id.rl_info;
+
+	// Only count rewards at top state... 
+	// or for op no-change impasses.
+	if ( ( data->impasse_type != NONE_IMPASSE_TYPE ) && ( data->impasse_type != OP_NO_CHANGE_IMPASSE_TYPE ) )  
+		return;
+	
+	slot *s = goal->id.reward_header->id.slots;
+	float reward = 0.0;
+	unsigned int reward_count = 0;
+
+	if ( s )
+	{
+		for ( ; s; s = s->next )
+			for ( wme *w = s->wmes ; w; w = w->next)
+				if ( ( w->value->common.symbol_type == FLOAT_CONSTANT_SYMBOL_TYPE ) || ( w->value->common.symbol_type == INT_CONSTANT_SYMBOL_TYPE ) )
+				{
+					reward = reward + get_number_from_symbol( w->value );
+					reward_count++;
+				}
+		
+		if ( reward_count && ( get_rl_parameter( my_agent, "accumulation-mode", RL_RETURN_LONG ) == RL_ACCUMULATION_AVG ) )
+			reward = ( reward / ( (float) reward_count ) );
+
+		data->reward += discount_reward( my_agent, reward, data->step );
+	}
+
+	// update stats
+	double global_reward = get_rl_stat( my_agent, "global-reward" );
+	set_rl_stat( my_agent, "total-reward", reward );
+	set_rl_stat( my_agent, "global-reward", ( global_reward + reward ) );
+
+	data->step++;
+}
+
+/***************************************************************************
+ * Function     : tabulate_reward_values
+ **************************************************************************/
+void tabulate_reward_values( agent *my_agent )
+{
+	Symbol *goal = my_agent->top_goal;
+
+	while( goal )
+	{
+		tabulate_reward_value_for_goal( my_agent, goal );
+	    goal = goal->id.lower_goal;
+	}
+}
+
+/***************************************************************************
+ * Function     : discount_reward
+ **************************************************************************/
+float discount_reward( agent *my_agent, float reward, unsigned int step )
+{
+	double return_val = 0;
+	const long mode = get_rl_parameter( my_agent, "discount-mode", RL_RETURN_LONG );
+	double rate;
+
+	if ( mode == RL_DISCOUNT_EXPONENTIAL )
+	{
+		rate = get_rl_parameter( my_agent, "exponential-discount-rate" );
+		
+		return_val = ( reward * pow( rate, (double) step ) );
+	}
+	else if ( mode == RL_DISCOUNT_LINEAR )
+	{
+		rate = get_rl_parameter( my_agent, "linear-discount-rate" );
+		double stepped_rate = ( rate * (double) step );
+
+		if ( reward > 0 )
+		{
+			return_val = ( ( reward > stepped_rate )?( reward - stepped_rate ):( 0 ) );
+		}
+		else if ( reward < 0 )
+		{
+			return_val = ( ( fabs( reward ) > stepped_rate )?( reward + stepped_rate ):( 0 ) );
+		}
+	}
+
+	return return_val;
+}
+
 

@@ -226,6 +226,7 @@ typedef struct identifier_struct {
   struct preference_struct *preferences_from_goal;
 
   union symbol_union *reward_header;		// pointer to reward_link
+  struct rl_data_struct *rl_info;			// various Soar-RL information
 
   /* REW: begin 09.15.96 */
   struct gds_struct *gds;    /* Pointer to a goal's dependency set */

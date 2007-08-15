@@ -630,7 +630,9 @@ bool reinitialize_soar (agent* thisAgent) {
   set_sysparam(thisAgent, TRACE_WM_CHANGES_SYSPARAM,               FALSE);
   /* kjh (CUSP-B4) end */
 
+  reset_rl_data( thisAgent );
   clear_goal_stack (thisAgent);
+  reset_rl_stats( thisAgent );
 
   if (thisAgent->operand2_mode == TRUE) {
      thisAgent->active_level = 0; /* Signal that everything should be retracted */
@@ -1279,6 +1281,16 @@ void do_one_top_level_phase (agent* thisAgent)
 	  soar_invoke_callbacks(thisAgent, thisAgent, 
 		  AFTER_HALT_SOAR_CALLBACK,
 		  (soar_call_data) NULL);
+
+	  // To model episodic task, after halt, perform RL update with next-state value 0
+	  if ( soar_rl_enabled( thisAgent ) )
+	  {
+		  for ( Symbol *g = thisAgent->bottom_goal; g; g = g->id.higher_goal)
+		  {
+			  tabulate_reward_value_for_goal( thisAgent, g );
+			  //perform_Bellman_update(thisAgent, 0, g);
+		  }
+	  }
   }
   
   if (thisAgent->stop_soar) {

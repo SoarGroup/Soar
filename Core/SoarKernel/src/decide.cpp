@@ -1837,6 +1837,10 @@ void remove_existing_context_and_descendents (agent* thisAgent, Symbol *goal) {
   /* --- remove wmes for this goal, and garbage collect --- */
   remove_wmes_for_context_slot (thisAgent, goal->id.operator_slot);
   update_impasse_items (thisAgent, goal, NIL); /* causes items & fake pref's to go away */
+  
+  if ( soar_rl_enabled( thisAgent ) )
+	tabulate_reward_value_for_goal( thisAgent, goal );
+  
   remove_wme_list_from_wm (thisAgent, goal->id.impasse_wmes);
   goal->id.impasse_wmes = NIL;
   /* REW: begin   09.15.96 */
@@ -1879,6 +1883,11 @@ void remove_existing_context_and_descendents (agent* thisAgent, Symbol *goal) {
       thisAgent->nil_goal_retractions = head;
     }
   }
+
+  //delete goal->id.RL_data->eligibility_traces;
+  //free_list(thisAgent, goal->id.RL_data->prev_op_RL_rules);
+  symbol_remove_ref( thisAgent, goal->id.reward_header );
+  free_memory( thisAgent, goal->id.rl_info, MISCELLANEOUS_MEM_USAGE );
 
   /* REW: BUG
    * Tentative assertions can exist for removed goals.  However, it looks
@@ -1950,6 +1959,14 @@ void create_new_context (agent* thisAgent, Symbol *attr_of_impasse, byte impasse
   id->id.isa_goal = TRUE;
   id->id.operator_slot = make_slot (thisAgent, id, thisAgent->operator_symbol);
   id->id.allow_bottom_up_chunks = TRUE;
+
+  id->id.rl_info = static_cast<rl_data *>( allocate_memory( thisAgent, sizeof( rl_data ), MISCELLANEOUS_MEM_USAGE ) );
+  //id->id.RL_data->eligibility_traces = new SoarSTLETMap(std::less<production*>(), SoarMemoryAllocator<std::pair<production * const, double> >(thisAgent, MISCELLANEOUS_MEM_USAGE));
+  //id->id.RL_data->prev_op_RL_rules = NIL;
+  //id->id.RL_data->previous_Q = 0;
+  id->id.rl_info->reward = 0;
+  id->id.rl_info->step = 0;  
+  id->id.rl_info->impasse_type = NONE_IMPASSE_TYPE;
 
   /* --- invoke callback routine --- */
   soar_invoke_callbacks(thisAgent, thisAgent, 
@@ -2119,6 +2136,13 @@ Bool decide_context_slot (agent* thisAgent, Symbol *goal, slot *s)
       return TRUE;
    } 
    
+   if ( impasse_type != NO_CHANGE_IMPASSE_TYPE ) 
+	   goal->id.rl_info->impasse_type = impasse_type;
+   else if ( s->wmes ) 
+	   goal->id.rl_info->impasse_type = OP_NO_CHANGE_IMPASSE_TYPE;
+   else 
+	   goal->id.rl_info->impasse_type = STATE_NO_CHANGE_IMPASSE_TYPE;
+
    /* --- no winner; if an impasse of the right type already existed, just
    update the ^item set on it --- */
    if ((impasse_type == type_of_existing_impasse(thisAgent, goal)) &&
@@ -2283,7 +2307,10 @@ void do_working_memory_phase (agent* thisAgent) {
 
 void do_decision_phase (agent* thisAgent) 
 {
-   /* phase printing moved to init_soar: do_one_top_level_phase */
+	if ( soar_rl_enabled( thisAgent ) )
+		tabulate_reward_values( thisAgent );
+	
+	/* phase printing moved to init_soar: do_one_top_level_phase */
 
    decide_context_slots (thisAgent);
    do_buffered_wm_and_ownership_changes(thisAgent);

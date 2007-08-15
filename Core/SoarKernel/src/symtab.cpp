@@ -317,6 +317,10 @@ Symbol *make_new_identifier (agent* thisAgent, char name_letter, goal_stack_leve
   sym->id.tc_num = 0;
   sym->id.associated_output_links = NIL;
   sym->id.input_wmes = NIL;
+	
+  sym->id.rl_info = NIL;
+  sym->id.reward_header = NIL;
+
   add_to_hash_table (thisAgent, thisAgent->identifier_hash_table, sym);
   return sym;
 }

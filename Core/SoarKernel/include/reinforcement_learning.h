@@ -39,6 +39,11 @@
 #define RL_LEARNING_SARSA 1
 #define RL_LEARNING_Q 2
 
+// more specific forms of no change impasse types
+// made negative to never conflict with impasse constants
+#define STATE_NO_CHANGE_IMPASSE_TYPE -1
+#define OP_NO_CHANGE_IMPASSE_TYPE -2
+
 //////////////////////////////////////////////////////////
 // RL Types
 //////////////////////////////////////////////////////////
@@ -77,12 +82,27 @@ typedef struct template_instantiation_struct
 	
 } template_instantiation;
 
+typedef struct rl_data_struct {
+ 	//SoarSTLETMap *eligibility_traces;
+	//list *prev_op_RL_rules;
+	//float previous_Q;
+	float reward;
+	unsigned int step;		// the number of steps the current operator has been installed at the goal
+	byte impasse_type;		// if this goal is an impasse, what type
+} rl_data;
+
 //////////////////////////////////////////////////////////
 // Parameter Maintenance
 //////////////////////////////////////////////////////////
 
 // memory clean
 extern void clean_parameters( agent *my_agent );
+
+// reinitialize Soar-RL data structures
+extern void reset_rl_data( agent *my_agent );
+
+// reinitialize Soar-RL statistics
+extern void reset_rl_stats( agent *my_agent );
 
 //////////////////////////////////////////////////////////
 // Parameter Get/Set/Validate
@@ -205,5 +225,18 @@ extern action *make_simple_action( agent *my_gent, Symbol *id_sym, Symbol *attr_
 
 // adds a test to a condition list for goals or impasses contained within the condition list
 extern void add_goal_or_impasse_tests_to_conds(agent *my_agent, condition *all_conds);
+
+//////////////////////////////////////////////////////////
+// Reward
+//////////////////////////////////////////////////////////
+
+// tabulation of a single goal's reward
+extern void tabulate_reward_value_for_goal( agent *my_agent, Symbol *goal );
+
+// tabulation of all agent goal reward
+extern void tabulate_reward_values( agent *my_agent );
+
+// shortcut function to discount a reward value based upon current discount mode
+extern float discount_reward( agent *my_agent, float reward, unsigned int step );
 
 #endif
