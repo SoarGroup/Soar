@@ -162,6 +162,9 @@ extern bool validate_rl_learning_policy( const char *new_val );
 extern const char *convert_rl_learning_policy( const long val );
 extern const long convert_rl_learning_policy( const char *val );
 
+// trace discount rate
+extern bool validate_rl_trace_discount( double new_val );
+
 // trace decay rate
 extern bool validate_rl_decay_rate( double new_val );
 

@@ -268,6 +268,16 @@ bool CommandLineInterface::DoRL( gSKI::Agent* pAgent, const char pOp, const std:
 		else
 			AppendArgTagFast( sml_Names::kParamValue, sml_Names::kTypeString, temp.c_str() );
 
+		temp = "eligibility-trace-discount-rate: ";
+		temp_val = get_rl_parameter( my_agent, "eligibility-trace-discount-rate" );
+		temp2 = to_string( temp_val );
+		temp += (*temp2);
+		delete temp2;
+		if ( m_RawOutput )
+			m_Result << temp << "\n";
+		else
+			AppendArgTagFast( sml_Names::kParamValue, sml_Names::kTypeString, temp.c_str() );
+
 		temp = "eligibility-trace-decay-rate: ";
 		temp_val = get_rl_parameter( my_agent, "eligibility-trace-decay-rate" );
 		temp2 = to_string( temp_val );

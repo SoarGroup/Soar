@@ -357,6 +357,9 @@ agent * create_soar_agent (Kernel * thisKernel, char * agent_name) {            
   temp_rl_param = add_rl_parameter( "sarsa", &validate_rl_learning_policy, &convert_rl_learning_policy, &convert_rl_learning_policy );
   (*newAgent->rl_params)[ "learning-policy" ] = *temp_rl_param;
   delete temp_rl_param;
+  temp_rl_param = add_rl_parameter( 0.9, &validate_rl_trace_discount );
+  (*newAgent->rl_params)[ "eligibility-trace-discount-rate" ] = *temp_rl_param;
+  delete temp_rl_param;
   temp_rl_param = add_rl_parameter( 0, &validate_rl_decay_rate );
   (*newAgent->rl_params)[ "eligibility-trace-decay-rate" ] = *temp_rl_param;
   delete temp_rl_param;
