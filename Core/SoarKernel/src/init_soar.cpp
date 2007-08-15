@@ -48,6 +48,8 @@
 /* JC ADDED: Used for gski callbacks */
 #include "gski_event_system_functions.h"
 
+#include "reinforcement_learning.h"
+
 #define INIT_FILE       "init.soar"
 
 /* REW: begin 08.20.97   these defined in consistency.c  */
@@ -1288,7 +1290,7 @@ void do_one_top_level_phase (agent* thisAgent)
 		  for ( Symbol *g = thisAgent->bottom_goal; g; g = g->id.higher_goal)
 		  {
 			  tabulate_reward_value_for_goal( thisAgent, g );
-			  //perform_Bellman_update(thisAgent, 0, g);
+			  perform_rl_update( thisAgent, 0, g );
 		  }
 	  }
   }

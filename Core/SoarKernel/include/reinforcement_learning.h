@@ -16,7 +16,9 @@
 #include <map>
 #include <vector>
 #include <string>
+#include <list>
 
+#include "stl_support.h"
 #include "production.h"
 #include "gdatastructs.h"
 #include "chunk.h"
@@ -82,10 +84,12 @@ typedef struct template_instantiation_struct
 	
 } template_instantiation;
 
+typedef std::map<production *, double, std::less<production *>, SoarMemoryAllocator<std::pair<production *, double>>> soar_rl_et_map;
+
 typedef struct rl_data_struct {
- 	//SoarSTLETMap *eligibility_traces;
-	//list *prev_op_RL_rules;
-	//float previous_Q;
+ 	soar_rl_et_map *eligibility_traces;
+	list *prev_op_rl_rules;
+	float previous_q;
 	float reward;
 	unsigned int step;		// the number of steps the current operator has been installed at the goal
 	byte impasse_type;		// if this goal is an impasse, what type
@@ -103,6 +107,9 @@ extern void reset_rl_data( agent *my_agent );
 
 // reinitialize Soar-RL statistics
 extern void reset_rl_stats( agent *my_agent );
+
+// remove Soar-RL references to a production
+extern void remove_rl_refs_for_prod( agent *my_agent, production *prod );
 
 //////////////////////////////////////////////////////////
 // Parameter Get/Set/Validate
@@ -241,5 +248,15 @@ extern void tabulate_reward_values( agent *my_agent );
 
 // shortcut function to discount a reward value based upon current discount mode
 extern float discount_reward( agent *my_agent, float reward, unsigned int step );
+
+//////////////////////////////////////////////////////////
+// Updates
+//////////////////////////////////////////////////////////
+
+// Store and update data that will be needed later to perform a Bellman update for the current operator
+extern void store_rl_data( agent *my_agent, Symbol *goal, preference *cand );
+
+// update the value of Soar-RL rules
+extern void perform_rl_update( agent *my_agent, float op_value, Symbol *goal );
 
 #endif

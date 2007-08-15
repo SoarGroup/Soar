@@ -35,6 +35,8 @@
 #include "instantiations.h"
 #include "rete.h"
 
+#include "reinforcement_learning.h"
+
 //
 // Utility Headers
 #include "MegaAssert.h"

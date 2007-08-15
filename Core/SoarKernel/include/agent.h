@@ -30,8 +30,6 @@
 #include "lexer.h"
 #include "chunk.h"
 #include "callback.h"
-#include "exploration.h"
-#include "reinforcement_learning.h"
 
 #include <string>
 #include <map>
@@ -42,6 +40,12 @@
 
 /* JC ADDED: Included so we can put the RHS functions in here */
 typedef struct rhs_function_struct rhs_function;
+
+// Soar-RL types
+typedef struct rl_parameter_struct rl_parameter;
+
+// exploration types
+typedef struct exploration_parameter_struct exploration_parameter;
 
 #ifdef __cplusplus
 extern "C"

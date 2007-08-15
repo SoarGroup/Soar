@@ -1595,6 +1595,11 @@ void deallocate_production (agent* thisAgent, production *prod) {
 void excise_production (agent* thisAgent, production *prod, Bool print_sharp_sign) {
   if (prod->trace_firings) remove_pwatch (thisAgent, prod);
   remove_from_dll (thisAgent->all_productions_of_type[prod->type], prod, next, prev);
+
+  // Remove RL-related pointers to this production (unnecessary if rule never fired).
+  if ( prod->rl_rule && prod->firing_count ) 
+	  remove_rl_refs_for_prod( thisAgent, prod ); 
+
   thisAgent->num_productions_of_type[prod->type]--;
   if (print_sharp_sign) print (thisAgent, "#");
   if (prod->p_node) excise_production_from_rete (thisAgent, prod);

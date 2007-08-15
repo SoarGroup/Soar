@@ -831,8 +831,8 @@ byte require_preference_semantics (agent *thisAgent, slot *s, preference **resul
   /* --- the lone require is the winner --- */
   if ( candidates && soar_rl_enabled( thisAgent ) )
   {
-	  //compute_value_of_candidate(candidates, s, DEFAULT_CAND_VALUE_SUM);
-	  //perform_Bellman_update(thisAgent, candidates->numeric_value, s->id);
+	  compute_value_of_candidate( thisAgent, candidates, s, 0 );
+	  perform_rl_update( thisAgent, candidates->numeric_value, s->id );
   }
 
   return NONE_IMPASSE_TYPE;
@@ -890,6 +890,14 @@ byte run_preference_semantics (agent* thisAgent, slot *s, preference **result_ca
   /* === If there are only 0 or 1 candidates, we're done === */
   if ((!candidates) || (! candidates->next_candidate)) {
     *result_candidates = candidates;
+
+	if ( !consistency && soar_rl_enabled( thisAgent ) && candidates )
+	{
+		// perform update here for just one candidate
+		compute_value_of_candidate( thisAgent, candidates, s, 0 );
+		perform_rl_update( thisAgent, candidates->numeric_value, s->id );
+	}
+
     return NONE_IMPASSE_TYPE;
   }
 
@@ -1055,10 +1063,9 @@ byte run_preference_semantics (agent* thisAgent, slot *s, preference **result_ca
 	  
 	  if ( !consistency && soar_rl_enabled( thisAgent ) && candidates )
 	  {
-		// perform update here for just one candidate
-
-		//compute_value_of_candidate(candidates, s, DEFAULT_CAND_VALUE_SUM);
-		//perform_Bellman_update(thisAgent, candidates->numeric_value, s->id);
+		  // perform update here for just one candidate
+		  compute_value_of_candidate( thisAgent, candidates, s, 0 );
+		  perform_rl_update( thisAgent, candidates->numeric_value, s->id );
 	  }
 	  
 	  return NONE_IMPASSE_TYPE;
@@ -1839,7 +1846,10 @@ void remove_existing_context_and_descendents (agent* thisAgent, Symbol *goal) {
   update_impasse_items (thisAgent, goal, NIL); /* causes items & fake pref's to go away */
   
   if ( soar_rl_enabled( thisAgent ) )
+  {
 	tabulate_reward_value_for_goal( thisAgent, goal );
+	perform_rl_update( thisAgent, 0, goal ); // this update only sees reward - there is no next state
+  }
   
   remove_wme_list_from_wm (thisAgent, goal->id.impasse_wmes);
   goal->id.impasse_wmes = NIL;
@@ -1884,8 +1894,8 @@ void remove_existing_context_and_descendents (agent* thisAgent, Symbol *goal) {
     }
   }
 
-  //delete goal->id.RL_data->eligibility_traces;
-  //free_list(thisAgent, goal->id.RL_data->prev_op_RL_rules);
+  delete goal->id.rl_info->eligibility_traces;
+  free_list( thisAgent, goal->id.rl_info->prev_op_rl_rules);
   symbol_remove_ref( thisAgent, goal->id.reward_header );
   free_memory( thisAgent, goal->id.rl_info, MISCELLANEOUS_MEM_USAGE );
 
@@ -1961,9 +1971,9 @@ void create_new_context (agent* thisAgent, Symbol *attr_of_impasse, byte impasse
   id->id.allow_bottom_up_chunks = TRUE;
 
   id->id.rl_info = static_cast<rl_data *>( allocate_memory( thisAgent, sizeof( rl_data ), MISCELLANEOUS_MEM_USAGE ) );
-  //id->id.RL_data->eligibility_traces = new SoarSTLETMap(std::less<production*>(), SoarMemoryAllocator<std::pair<production * const, double> >(thisAgent, MISCELLANEOUS_MEM_USAGE));
-  //id->id.RL_data->prev_op_RL_rules = NIL;
-  //id->id.RL_data->previous_Q = 0;
+  id->id.rl_info->eligibility_traces = new soar_rl_et_map( std::less<production *>(), SoarMemoryAllocator<std::pair<production *, double>>( thisAgent, MISCELLANEOUS_MEM_USAGE ) );
+  id->id.rl_info->prev_op_rl_rules = NIL;
+  id->id.rl_info->previous_q = 0;
   id->id.rl_info->reward = 0;
   id->id.rl_info->step = 0;  
   id->id.rl_info->impasse_type = NONE_IMPASSE_TYPE;
@@ -2129,7 +2139,9 @@ Bool decide_context_slot (agent* thisAgent, Symbol *goal, slot *s)
       for(temp = candidates; temp; temp = temp->next_candidate)
          preference_remove_ref(thisAgent, temp);
       
-      /* JC ADDED: Notify gSKI of an operator selection  */
+      store_rl_data( thisAgent, goal, candidates );
+	  
+	  /* JC ADDED: Notify gSKI of an operator selection  */
       gSKI_MakeAgentCallback(gSKI_K_EVENT_OPERATOR_SELECTED, 1, thisAgent, 
                              static_cast<void*>(w));
       

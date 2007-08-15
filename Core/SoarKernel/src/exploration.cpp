@@ -26,6 +26,7 @@
 
 #include "exploration.h"
 #include "misc.h"
+#include "reinforcement_learning.h"
 
 /***************************************************************************
  * Function     : convert_exploration_policy
@@ -413,33 +414,45 @@ preference *choose_according_to_exploration_mode( agent *my_agent, slot *s, pref
 		compute_value_of_candidate( my_agent, cand, s );
 
 	// should perform update here for highest valued candidate in q-learning
+	if ( soar_rl_enabled( my_agent ) && ( get_rl_parameter( my_agent, "learning_policy", RL_RETURN_LONG ) == RL_LEARNING_Q ) )
+	{
+		float top_value = candidates->numeric_value;
+
+		for ( preference *cand=candidates; cand!=NIL; cand=cand->next_candidate )
+			if ( cand->numeric_value > top_value )
+				top_value = cand->numeric_value;
+
+		perform_rl_update( my_agent, top_value, s->id ); 
+	}
 	
 	switch ( exploration_policy )
 	{
 		case USER_SELECT_FIRST:
 			return_val = candidates;
-			return return_val;
 			break;
 		
 		case USER_SELECT_LAST:
 			for (return_val = candidates; return_val->next_candidate != NIL; return_val = return_val->next_candidate);
-			return return_val;
 			break;
 
 		case USER_SELECT_RANDOM:
-			return probabilistically_select( candidates );
+			return_val = probabilistically_select( candidates );
 			break;
 
 		case USER_SELECT_E_GREEDY:
-			return epsilon_greedy_select( my_agent, candidates );
+			return_val = epsilon_greedy_select( my_agent, candidates );
 			break;
 
 		case USER_SELECT_BOLTZMANN:
-			return boltzmann_select( my_agent, candidates );
+			return_val = boltzmann_select( my_agent, candidates );
 			break;
 	}
+
+	// should perform update here for chosen candidate in sarsa
+	if ( soar_rl_enabled( my_agent ) && ( get_rl_parameter( my_agent, "learning_policy", RL_RETURN_LONG ) == RL_LEARNING_SARSA ) )
+		perform_rl_update( my_agent, return_val->numeric_value, s->id );
 	
-	return NIL;
+	return return_val;
 }
 
 /***************************************************************************
