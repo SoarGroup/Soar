@@ -1971,7 +1971,7 @@ void create_new_context (agent* thisAgent, Symbol *attr_of_impasse, byte impasse
   id->id.allow_bottom_up_chunks = TRUE;
 
   id->id.rl_info = static_cast<rl_data *>( allocate_memory( thisAgent, sizeof( rl_data ), MISCELLANEOUS_MEM_USAGE ) );
-  id->id.rl_info->eligibility_traces = new soar_rl_et_map( std::less<production *>(), SoarMemoryAllocator<std::pair<production *, double>>( thisAgent, MISCELLANEOUS_MEM_USAGE ) );
+  id->id.rl_info->eligibility_traces = new soar_rl_et_map( std::less<production *>(), SoarMemoryAllocator<std::pair<production* const, double> >( thisAgent, MISCELLANEOUS_MEM_USAGE ) );
   id->id.rl_info->prev_op_rl_rules = NIL;
   id->id.rl_info->previous_q = 0;
   id->id.rl_info->reward = 0;

@@ -84,7 +84,7 @@ typedef struct template_instantiation_struct
 	
 } template_instantiation;
 
-typedef std::map<production *, double, std::less<production *>, SoarMemoryAllocator<std::pair<production *, double>>> soar_rl_et_map;
+typedef std::map<production *, double, std::less<production *>, SoarMemoryAllocator<std::pair<production* const, double> > > soar_rl_et_map;
 
 typedef struct rl_data_struct {
  	soar_rl_et_map *eligibility_traces;
