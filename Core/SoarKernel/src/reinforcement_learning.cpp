@@ -736,11 +736,15 @@ void revert_template_tracking( agent *my_agent, const char *rule_name )
 							temp_id = temp_origin->id;
 					}
 				}
+
+				delete temp_origin;
 			}
 		}
 		
 		(*my_agent->rl_template_count)[ origin->template_base ] = temp_id;
 	}
+
+	delete origin;
 }
 
 /***************************************************************************
@@ -835,10 +839,10 @@ int next_template_id( agent *my_agent, const char *template_name )
 	my_agent->variablize_this_chunk = chunk_var;
 
 	// attempt to add to rete, remove if duplicate
-	if ( add_production_to_rete( my_agent, new_production, cond_top, NULL, false ) == DUPLICATE_PRODUCTION )
+	if ( add_production_to_rete( my_agent, new_production, cond_top, NULL, FALSE, TRUE ) == DUPLICATE_PRODUCTION )
 	{
 		excise_production( my_agent, new_production, false );
-		revert_template_tracking( my_agent, my_template->name->sc.name );
+		revert_template_tracking( my_agent, new_name.c_str() );
 
 		new_name_symbol = NULL;
 	}
@@ -1026,7 +1030,7 @@ void perform_rl_update( agent *my_agent, float op_value, Symbol *goal )
 	rl_data *data = goal->id.rl_info;
 	soar_rl_et_map::iterator iter;
 
-	double alpha = get_rl_parameter( my_agent, "learning_rate" );
+	double alpha = get_rl_parameter( my_agent, "learning-rate" );
 	double lambda = get_rl_parameter( my_agent, "eligibility-trace-decay-rate" );
 	double gamma = get_rl_parameter( my_agent, "eligibility-trace-discount-rate" );
 	double tolerance = get_rl_parameter( my_agent, "eligibility-trace-tolerance" );
@@ -1041,7 +1045,7 @@ void perform_rl_update( agent *my_agent, float op_value, Symbol *goal )
 		else 
 			++iter;
 	}
-
+	
 	// Update trace for just fired prods
 	int num_prev_fired_rules = 0;
 	for ( cons *c = data->prev_op_rl_rules; c; c = c->rest )
@@ -1063,15 +1067,14 @@ void perform_rl_update( agent *my_agent, float op_value, Symbol *goal )
 			}
 		}
 	}
-
 	free_list( my_agent, data->prev_op_rl_rules );
 	data->prev_op_rl_rules = NIL;
 
 	// compute TD update, set stat
 	float update = data->reward;
-	update += pow( gamma, (double) data->step );
+	update += ( pow( gamma, (double) data->step ) * op_value );
 	update -= data->previous_q;
-	set_rl_stat( my_agent, "update-error", (double) update );
+	set_rl_stat( my_agent, "update-error", (double) ( -update ) );
 	
 	// For each prod in map, add alpha*delta*trace to value
 	for ( iter = data->eligibility_traces->begin(); iter != data->eligibility_traces->end(); iter++ )

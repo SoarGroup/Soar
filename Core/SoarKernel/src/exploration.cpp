@@ -414,7 +414,7 @@ preference *choose_according_to_exploration_mode( agent *my_agent, slot *s, pref
 		compute_value_of_candidate( my_agent, cand, s );
 
 	// should perform update here for highest valued candidate in q-learning
-	if ( soar_rl_enabled( my_agent ) && ( get_rl_parameter( my_agent, "learning_policy", RL_RETURN_LONG ) == RL_LEARNING_Q ) )
+	if ( soar_rl_enabled( my_agent ) && ( get_rl_parameter( my_agent, "learning-policy", RL_RETURN_LONG ) == RL_LEARNING_Q ) )
 	{
 		float top_value = candidates->numeric_value;
 
@@ -449,7 +449,7 @@ preference *choose_according_to_exploration_mode( agent *my_agent, slot *s, pref
 	}
 
 	// should perform update here for chosen candidate in sarsa
-	if ( soar_rl_enabled( my_agent ) && ( get_rl_parameter( my_agent, "learning_policy", RL_RETURN_LONG ) == RL_LEARNING_SARSA ) )
+	if ( soar_rl_enabled( my_agent ) && ( get_rl_parameter( my_agent, "learning-policy", RL_RETURN_LONG ) == RL_LEARNING_SARSA ) )
 		perform_rl_update( my_agent, return_val->numeric_value, s->id );
 	
 	return return_val;
@@ -487,6 +487,7 @@ preference *probabilistically_select( preference *candidates )
 	rn = SoarRand(); 
 	selected_probability = rn * total_probability;
 	current_sum = 0;
+	low_probability = fabs( low_probability );
 
 	for ( cand = candidates; cand != NIL; cand = cand->next_candidate ) 
 	{

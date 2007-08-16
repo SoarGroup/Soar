@@ -3517,7 +3517,7 @@ byte add_production_to_rete (agent* thisAgent,
                                                          production *p,
                              condition *lhs_top,
                              instantiation *refracted_inst,
-                             Bool warn_on_duplicates) 
+                             Bool warn_on_duplicates, Bool ignore_rhs) 
 {
   rete_node *bottom_node, *p_node;
   rete_node_level bottom_depth;
@@ -3561,7 +3561,7 @@ byte add_production_to_rete (agent* thisAgent,
   for (p_node=bottom_node->first_child; p_node!=NIL;
        p_node=p_node->next_sibling) {
     if (p_node->node_type != P_BNODE) continue;
-    if (! same_rhs (p_node->b.p.prod->action_list, p->action_list)) continue;
+    if ( !ignore_rhs && !same_rhs (p_node->b.p.prod->action_list, p->action_list)) continue;
     /* --- duplicate production found --- */
     if (warn_on_duplicates)
       print_with_symbols (thisAgent, "\nIgnoring %y because it is a duplicate of %y ",
