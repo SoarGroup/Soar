@@ -1,22 +1,13 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; Wargame Template (August 2007)
-;;;  - David W. Aha (adapted from files provided by SLG & U.Michigan)
+;;;  - Matthew Molineaux (adapted from files provided by SLG & U.Michigan)
 ;;;  - Uses built-in math functions
-;;;  - TL Level 10, Scenario 4, Target task
-;;;  - Same as TL level 6, Scenario 2, Source1 task
-;;;  - Changes located between ">>>>" and "<<<<<"
-;;;  - 8/15: Released 
+;;;  - TL level 10, Scenario 6, Source task
+;;;  - 8/16: Released
+;;;  - Must shoot a terrorist and get rid of grenade to win.
+;;;
 ;;; Debugger: "http://games.stanford.edu:5999/director/debugrawgame?"
-;;;
-;;; Summary: One source has a medkit, the other a gun, and target has both
-;;; - Different layout for each
-;;; - One solution (length 7, verified): ENE<heal>E<heal>E
-;;;   - Must loop on using <heal, move> to make this one work!
-;;;
-;;; Unusual changes
-;;; - Soldier has starting health of 2, not 1
-;;; - A healingItem increases soldier's health by 2, not 1
-;;; - A "used" healingItem can be reused an infinite number of times
+;;; Verified Solution (length 14): NENE<shoot n>ENSWWWW<throw north 2>N
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -25,17 +16,18 @@
 ;    1 2 3 4 5 6 7 8     
 ;   +---------------+    + = Corner
 ;  1|. . . . . . . .|    . = A room location
-;   |               |    - = Horizontal wall
-;  2|. . . . . . . .|    | = Vertical wall
-;   | +         +---|
-;  3|.|. . . . . . .|    @ = Soldier
-;   | +---+         |    T = Terrorist
-;  4|. . . . . . T .|    F = Flag (exit)
+;   |     +-+-------|    - = Horizontal wall
+;  2|. F .|.|T R . .|    | = Vertical wall
+;   | + +-+ +-+ +   |
+;  3|.|. . . . .|. .|    @ = Soldier
+;   | +---+   +-+---|    T = Terrorist
+;  4|. . G . . . . .|    F = Flag (exit)
 ;   |         +-----|    G = Gun
-;  5|. . M . . F . .|    R = gRenade
-;   | +-+     +     |    M = Medical kit
-;  6|.|@ . . .|. . .|    
+;  5|. . @ . .|. . .|    R = gRenade
+;   |---+     |     |
+;  6|. . . . .|. . .|    
 ;   +---------------+    
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -50,25 +42,29 @@
 
 ;;;>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 ;;; Specifies where objects start on board, where lower left is (1,1).
-;;; Object locations
-(init (location soldier 2 6))
-(init (location terrorist1 7 4))
-(init (location medKit1 3 5))
-(init (location exit 6 5))
-(init (location flag 6 5))
 
-;; Dynamic type hierarchies
-(type medKit1 item)  
-(type medKit1 healingItem)
-(type terrorist1 animate)
-(type terrorist1 terrorist)
-(type terrorist1 horizontalTerrorist)
+(init (location    soldier 3 5))
+(init (location terrorist1 5 2))
+(init (location       gun1 3 4))
+(init (location   grenade1 6 2))
+(init (location       flag 2 2)) ; This gets referenced rather than the exit
+(init (location       exit 2 2)) ; Soar change: we are assuming an exit exists, it can't be implicit in 'holding flag'
 
-;;; Character health
+;;; Dynamic type hierarchies
+(type    gun1 item) 
+(type    gun1 losItem) 
+(type grenade1 item) 
+(type grenade1 aoeItem)
+
+(type    soldier animate)
+(type terrorist1 animate) (type terrorist1 terrorist) (type terrorist1 verticalTerrorist)
+
+;;; Specifies how many hit-points a character starts the game with.
+
+(init (health    soldier 1))
 (init (health terrorist1 1))
 
-;;; Unless otherwise specified adjacent spatial coordinates are assumed 
-;;;  accessible from one another.  
+;;; blocked[North,East] implies there is a wall to the [North,East] of a cell.
 ;;Outer walls
 
 (init (blocked west 1 1))
@@ -103,42 +99,63 @@
 (init (blocked south 7 6))
 (init (blocked south 8 6))
 
-;Inner walls
-(init (blocked east 1 3))  
-(init (blocked east 1 6))  
-(init (blocked east 5 6))  
-
-(init (blocked west 2 3))  
-(init (blocked west 2 6))  
-(init (blocked west 6 6))  
-
-(init (blocked south 2 5)) 
+;;Inner walls
+(init (blocked south 4 1)) 
+(init (blocked south 5 1)) 
+(init (blocked south 6 1)) 
+(init (blocked south 7 1)) 
+(init (blocked south 8 1)) 
+(init (blocked south 3 2)) 
+(init (blocked south 5 2)) 
 (init (blocked south 2 3)) 
 (init (blocked south 3 3)) 
+(init (blocked south 6 3)) 
+(init (blocked south 7 3)) 
+(init (blocked south 8 3)) 
 (init (blocked south 6 4)) 
 (init (blocked south 7 4)) 
 (init (blocked south 8 4)) 
-(init (blocked south 7 2)) 
-(init (blocked south 8 2)) 
+(init (blocked south 1 5)) 
+(init (blocked south 2 5)) 
 
-(init (blocked north 2 6)) 
+(init (blocked north 4 2)) 
+(init (blocked north 5 2)) 
+(init (blocked north 6 2)) 
+(init (blocked north 7 2)) 
+(init (blocked north 8 2)) 
+(init (blocked north 3 3)) 
+(init (blocked north 5 3)) 
 (init (blocked north 2 4)) 
 (init (blocked north 3 4)) 
+(init (blocked north 6 4)) 
+(init (blocked north 7 4)) 
+(init (blocked north 8 4)) 
 (init (blocked north 6 5)) 
 (init (blocked north 7 5)) 
 (init (blocked north 8 5)) 
-(init (blocked north 7 3)) 
-(init (blocked north 8 3)) 
+(init (blocked north 1 6)) 
+(init (blocked north 2 6)) 
 
-;; Soldier health
-(init (health soldier 2)) ; >>>>>New! Higher!<<<<<
+(init (blocked east 1 3))  
+(init (blocked east 3 2))  
+(init (blocked east 4 2))  
+(init (blocked east 5 6))  
+(init (blocked east 6 6))  
+(init (blocked east 6 3))
+
+(init (blocked west 2 3))  
+(init (blocked west 4 2))  
+(init (blocked west 5 2))  
+(init (blocked west 6 5))
+(init (blocked west 6 6))  
+(init (blocked west 7 3))  
 ;;;<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
 ; MCM 8/14/07: Blocked is now directly represented in state.
 ; SW 8/3/07: need these to have consistent spatial rep. with the other domains
 ; Note that south and north are reversed compared to rogue/escape.
 
 ;; Soldier health
-;;; (init (health soldier 1))  ; >>>>>Deleted<<<<<
+(init (health soldier 1))
 
 ;; Static type hierarchy
 (type flag item)
@@ -160,7 +177,7 @@
 
 (<= (legal soldier (move ?dir))
     (true (location soldier ?x ?y))
-	(direction ?dir)
+    (direction ?dir)
     (not (stepBlocked ?dir ?x ?y))
     (nStepsSoldier 1 ?dir ?x ?y ?xAny ?yAny))
 
@@ -196,7 +213,6 @@
 ;;; in the state.
 (<= (next (blocked ?dir ?x ?y))
     (true (blocked ?dir ?x ?y)))
-
 
 ;;; Also here for stylesheet convenience.  True of any cell that the soldier
 ;;;  attacks.
@@ -303,9 +319,20 @@
     (not (dead soldier))
     (not (true (holding soldier flag))))
 
+;;Only get 75 points if grenade not destroyed.
+(<= (goal soldier 75)
+    (not (dead soldier))
+    (true (holding soldier flag))
+    (or
+    	(true (holding soldier grenade1))
+    	(true (location grenade1 ?x ?y))))
+
+;;Full credit if at exit, not dead, grenade gone.
 (<= (goal soldier 100)
     (not (dead soldier))
-    (true (holding soldier flag)))
+    (true (holding soldier flag))
+    (not (true (holding soldier grenade1)))
+    (not (true (location grenade1 ?x ?y))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; View Definitions
@@ -448,9 +475,9 @@
 ;;; Every item (with the exception of the flag) is used if the soldier performs
 ;;;  the action that it enables.
 
-; (<= (uses soldier ?item)      ;; >>>>>Deleted<<<<< Can heal infinite # of times
-;     (type ?item healingItem)  ;; >>>>>Deleted<<<<<
-;     (does soldier heal))      ;; >>>>>Deleted<<<<<
+(<= (uses soldier ?item)
+    (type ?item healingItem)
+    (does soldier heal))
 (<= (uses soldier ?item)
     (type ?item losItem)
     (does soldier (shoot ?dir)))
@@ -596,7 +623,7 @@
 ;;; The soldier's health is incremented by 1 if he performs the heal action,
 ;;;  0 otherwise.
 
-(<= (healthIncrement soldier 2)   ; >>>>>Increased by 1<<<<<
+(<= (healthIncrement soldier 1)
     (does soldier heal))
 (<= (healthIncrement soldier 0)
     (not (does soldier heal)))

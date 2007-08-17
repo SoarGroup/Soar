@@ -1,54 +1,29 @@
-;; Escape TL level 10 scenario 5 source 
+;; Escape Level 10, Scenario 6 Target
 ;;
-;; Based on TL Level 8 Scenario 2 source
-;; Explorer has to pick up hammer, nails, and logs to make a bridge across
-;; the water obstacles to reach the exit
-;; - New: Must also pick up a bottle (B) and a ring (R)
-;; - Verified solution (length 16): WWWNEEENWWW<combine><apply>NNN
+;; Explorer has to pick up hammer, get rid of it by bashing it 
+;; against the rock, and exit.
 ;;
 ;; here's the level setup:
 ;;
-;; 0|  E   |
-;; 1|      |
-;; 2|WWWWWW|
-;; 3| WR N |
-;; 4| W L B|
-;; 5| WL he|
-;;   012345
-;; where E = exit, W = water, L = log, N = nails, H = hammer, e = explorer
-;; and where B = bottle, R = ring
+;; 0|E       |
+;; 1|    R   |
+;; 2|        |
+;; 3|        |
+;; 4|        |
+;; 5|   H    |
+;; 6|        |
+;; 7|e       |
+;;   01234567
+;; where E = exit, R = rock, H = hammer, e = explorer
 
 (role explorer)
 (exitType exit)
 
 ;; declare items
-(itemType log1)
-(itemType log2)
 (itemType hammer1)
-(itemType nails1)
-(itemType ring1)    ; >>>>>Added<<<<<
-(itemType bottle1)  ; >>>>>Added<<<<<
-
-; give the items an arbitrary ordering
-; this is necessary so we can constrain it to only one legal combine action
-; for a given pair of items
-(itemOrder log1 1)
-(itemOrder log2 2)
-(itemOrder hammer1 3)
-(itemOrder nails1 4)
-(itemOrder ring1 5)     ; >>>>>Added<<<<<
-(itemOrder bottle1 6)   ; >>>>>Added<<<<<
 
 ;; declare obstacles
-(obstacleType water0 water)
-(obstacleType water1 water)
-(obstacleType water2 water)
-(obstacleType water3 water)
-(obstacleType water4 water)
-(obstacleType water5 water)
-(obstacleType water6 water)
-(obstacleType water7 water)
-(obstacleType water8 water)
+(obstacleType rock0 rock)
 
 (init (blocked west 0 0))
 (init (blocked west 0 1))
@@ -56,13 +31,17 @@
 (init (blocked west 0 3))
 (init (blocked west 0 4))
 (init (blocked west 0 5))
+(init (blocked west 0 6))
+(init (blocked west 0 7))
 
-(init (blocked east 5 0))
-(init (blocked east 5 1))
-(init (blocked east 5 2))
-(init (blocked east 5 3))
-(init (blocked east 5 4))
-(init (blocked east 5 5))
+(init (blocked east 7 0))
+(init (blocked east 7 1))
+(init (blocked east 7 2))
+(init (blocked east 7 3))
+(init (blocked east 7 4))
+(init (blocked east 7 5))
+(init (blocked east 7 6))
+(init (blocked east 7 7))
 
 (init (blocked north 0 0))
 (init (blocked north 1 0))
@@ -70,57 +49,54 @@
 (init (blocked north 3 0))
 (init (blocked north 4 0))
 (init (blocked north 5 0))
+(init (blocked north 6 0))
+(init (blocked north 7 0))
 
-(init (blocked south 0 5))
-(init (blocked south 1 5))
-(init (blocked south 2 5))
-(init (blocked south 3 5))
-(init (blocked south 4 5))
-(init (blocked south 5 5))
+(init (blocked south 0 7))
+(init (blocked south 1 7))
+(init (blocked south 2 7))
+(init (blocked south 3 7))
+(init (blocked south 4 7))
+(init (blocked south 5 7))
+(init (blocked south 6 7))
+(init (blocked south 7 7))
 
-(init (location exit     2 0))
+(init (location exit 0 0))
 
-(init (location water0   0 2))
-(init (location water1   1 2))
-(init (location water2   2 2))
-(init (location water3   3 2))
-(init (location water4   4 2))
-(init (location water5   5 2))
-(init (location water6   1 3))
-(init (location water7   1 4))
-(init (location water8   1 5))
+(init (location rock0 4 1))
 
-(init (location log1    3 4))
-(init (location log2    2 5))
-(init (location hammer1 4 5))
-(init (location nails1  4 3))
-(init (location ring1   2 3))  ; >>>>>Added<<<<<
-(init (location bottle1 5 4))  ; >>>>>Added<<<<<
+(init (location hammer1 3 5))
 
-(init (location explorer 5 5))
+(init (location explorer 0 7))
 
 (init (health explorer 1))
 
 ;; PROPERTIES
+
+;; hammer properties
 (init (property hammer1 hammer))
+
+;; nail properties
 (init (property nails1 doesNail))
 
+;; log properties
 (init (property log1 buoyant))
 (init (property log1 supportsWeight))
+(init (property log1 tieable))
 (init (property log1 nailable))
 
 (init (property log2 buoyant))
 (init (property log2 supportsWeight))
+(init (property log2 tieable))
 (init (property log2 nailable))
-
 
 ;; how properties combine
 ;;
 ;; Note that to simplify matters no properties are carried on automatically.
 ;; This way we don't need the not-property negations
 
-(propertyCombine tieable        tieable        tieable)
 (propertyCombine nailable       nailable       nailable)
+(propertyCombine tieable        tieable        tieable)
 (propertyCombine supportsWeight supportsWeight canBridge)
 
 (propertyCombine supportsWeight buoyant        canFloat)
@@ -132,6 +108,10 @@
 ;; and if the item is expended in the process
 (canCompromise canFloat water yes)
 (canCompromise canBridge water yes)
+
+;; a list of which properties can destroy which obstacle classes
+;; and if the item is expended in the process
+(canDestroy hammer rock yes)
 
 ;; legal combinations
 (<= (legal explorer (combine ?item1 ?item2 ?nails))
@@ -215,7 +195,6 @@
 (<= (combining ?item1 ?item2 ?comboName)
     (does explorer (combine ?item1 ?item2 ?glue))
     (true (currSymbol ?comboName)))
-
 (<= anyCombine
     (combining ?item1 ?item2 ?comboName))
 
@@ -465,23 +444,23 @@
     (not atExit)
     (not killed))
 
+;;; The explorer receives 75 points if he reaches the exit without being 
+;;;  killed, but without destroying the hammer
+(<= (goal explorer 75)
+    atExit
+    (not killed)
+    (or 
+    	(true (carrying hammer1))		 ;;The explorer still has the hammer
+    	(true (location hammer1 ?x ?y))));;The hammer is still on the ground
+
+
 ;;; The explorer receives 100 points if he reaches the exit without being 
-;;;  killed
+;;; killed, first destroying the hammer
 (<= (goal explorer 100)
     atExit
     (not killed)
-    (true (carrying bottle1))   ; >>>>>Added<<<<<
-    (true (carrying ring1)))    ; >>>>>Added<<<<<
-
-;;; MCM : conflated two goals; if you were at the exit with neither ring nor
-;;;       bottle, both (goal explorer 70) and (goal explorer 80) would be true.
-;;; Also had to insert these for completeness
-(<= (goal explorer 70)
-    atExit
-    (not killed)
-    (or
-       (not (true (carrying ring1)))
-       (not (true (carrying bottle1)))))
+   	(not (true (carrying hammer1)))	 ;;The explorer does not have the hammer
+   	(not (true (location hammer1 ?x ?y)))) ;;The hammer is not on the ground
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; Basic axioms of mathematics (defined over the range [0,7])

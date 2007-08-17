@@ -1,25 +1,25 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; micro-Rogue (mRogue) GDL Rule Set
-;;; Example: TL Level 10, Scenario 2, Source Task 
-; This scenario requires the use of a healing scroll and a weapon to reach
-; the exit. 
+;;; Example: TL Level 10, Scenario 7, Source Task 
+; This scenario requires the use of a healing scroll and a bow, in that order,
+; to reach the exit. 
 ; Auto-healing is turned off to increase transfer opportunities.
 ;
 ; 8/13: Initial Release
 ; 8/14: Turned off auto-healing; made scenario simpler
 ; 
-; Verified Solution, length 13: EENSESS<read scroll1>EWEEE
+;;; Verified Solution (Length 16): NNEEESSS<read scroll1>S<shoot><shoot>NSWW
 ; mRogue was developed by Tom Hinrichs, Sam Wintermute, & David Aha
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ; This file: Map (and Legend)
 ;               + = Corner
 ;    012345     - = Horizontal wall
 ;   +------+    | = Vertical wall
-;  0|......|    . = A room location
+;  0|..w...|    . = A room location
 ;  1|..s...|    # = A corridor location
-;  2|.@wB..|    @ = hero
-;  3+---#--+    a = armor, p = potion, s = scroll,
-;  4|....B>|    w = weapon, ! = amulet, * = gold
+;  2|..@...|    @ = hero
+;  3+-----#+    a = armor, p = potion, s = scroll,
+;  4|.K.>..|    w = weapon, ! = amulet, * = gold
 ;   +------+    > = exit
 ;               K = kestral
 ;               H = hobgoblin
@@ -102,16 +102,10 @@
 ;---------------------------------------------------------------------------
 ; >>>>>
 ; Monsters and their types
-(monster bat1 bat)
-(monster bat2 bat)
+(monster kestral1 kestral)
 
 ; Initial health of monsters (hero's health is defined in 2.3)
-(init (health bat1 3))
-(init (health bat2 3))
-
-; Bats start asleep
-(init (asleep bat1 1)) 
-(init (asleep bat2 1)) 
+(init (health kestral1 3))
 
 ; Items (that can be picked up by Hero) (amulet & gold are defined in 2.3)
 (item scroll1)
@@ -119,17 +113,16 @@
 
 ; Item typings (note: a bow includes a quiver and a set of arrows)
 (scroll scroll1 restoreHealth)
-(weapon weapon1 sword)
+(weapon weapon1 bow)
 
 ; Locations of character and items (North Room)
-(init (location bat1 3 2))         ; Monster
-(init (location bat2 4 4))         ; Monster
-(init (location hero 1 2))           ; our Hero
+(init (location kestral1 1 4))         ; Monster
+(init (location hero 2 2))           ; our Hero
+(init (location weapon1 2 0))
 (init (location scroll1 2 1))
-(init (location weapon1 2 2))
 
 ; Locations of character and items (South Room)
-(init (location exit 5 4))           ; exit
+(init (location exit 3 4))           ; exit
 ; <<<<<
 
 ;---------------------------------------------------------------------------
@@ -141,9 +134,9 @@
 (room 0 4 5 4)    ; South room
 
 ; Corridor location: <x y>
-(corridor 3 3) ; Corridor/doorway between north and south rooms
-(init (blocked west 3 3))
-(init (blocked east 3 3))
+(corridor 5 3) ; Corridor/doorway between north and south rooms
+(init (blocked west 5 3))
+(init (blocked east 5 3))
 
 ; North room
 (init (blocked west 0 0))
@@ -188,7 +181,7 @@
 (init (step 1))
 
 ; Hero's initial health
-(init (health hero 4))
+(init (health hero 2))
 
 ; Burden/1: <burdenamount>
 ; Meaning: Initially the sack is empty.
@@ -427,8 +420,15 @@
 
 ; Meaning: Quiver size decreases when throwing arrow w/ a bow
 ; - Ensures quiver contains at least one arrow
+;(<= (next (quiverSize ?newSize))
+;   (does hero (throw arrow ?dir))
+;   (true (quiverSize ?oldSize))
+;   (- ?oldSize 1 ?newSize))           ; Arithmetic
+
+; Meaning: Quiver size decreases when throwing arrow w/ a bow
+; - Ensures quiver contains at least one arrow
 (<= (next (quiverSize ?newSize))
-   (does hero (throw arrow ?dir))
+   (does hero (shoot-monster ?monster))
    (true (quiverSize ?oldSize))
    (- ?oldSize 1 ?newSize))           ; Arithmetic
 
@@ -595,6 +595,27 @@
    (true (slomo-time ?t))
    (not (currentlyEnhancedSpeed hero)))
 
+; Meaning: An arrow can hit a monster (unlimited range)
+; SW: changed to two rules, for x==x and y==y, so we don't need arbitrary nCells (very expensive for us)
+(<= (canShootAt ?monster)
+   (monster ?monster ?monster-type)               ; Generic monster
+   (true (location hero ?x ?y1))
+   (true (location ?monster ?x ?y2))
+   (not (y-blocked ?x ?y1 ?y2)))
+
+(<= (canShootAt ?monster)
+   (monster ?monster ?monster-type)               ; Generic monster
+   (true (location hero ?x1 ?y))
+   (true (location ?monster ?x2 ?y))
+   (not (x-blocked ?x1 ?x2 ?y)))
+   
+(<= (x-blocked ?x1 ?x2 ?y)
+	(between ?x1 ?x3 ?x2)
+	(not (traversible ?x3 ?y)))
+	
+(<= (y-blocked ?x ?y1 ?y2)
+	(between ?y1 ?y3 ?y2)
+	(not (traversible ?x ?y3)))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ; 4. Legal: Specifies legal moves for players
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -631,13 +652,22 @@
    (potion ?potion ?potionType))            ; Init
 
 ; Meaning: Hero can throw an arrow (if carrying a non-empty quiver)
-(<= (legal hero (throw arrow ?dir))
+;(<= (legal hero (throw arrow ?dir))
+;   (not (currentlyAsleep hero))
+;   (true (wielding ?weapon))
+;   (weapon ?weapon bow)                    ; Init
+;   (true (quiverSize ?numarrows))
+;   (> ?numarrows 0)
+;   (direction ?dir))                       ; Generic spatial
+
+; Meaning: Hero can shoot a monster (if has quiver, bow, monster in range)
+(<= (legal hero (shoot-monster ?monster))
    (not (currentlyAsleep hero))
    (true (wielding ?weapon))
    (weapon ?weapon bow)                    ; Init
    (true (quiverSize ?numarrows))
    (> ?numarrows 0)
-   (direction ?dir))                       ; Generic spatial
+   (canShootAt ?monster))                       ; Generic spatial
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ; 5. Goal: Value of a (final) state for a player
@@ -1259,17 +1289,21 @@
 
 ; Meaning: The monster is hit by an arrow (unlimited range)
 ; SW: changed to two rules, for x==x and y==y, so we don't need arbitrary nCells (very expensive for us)
-(<= (hitByArrow ?monster)
-   (monster ?monster ?monster-type)               ; Generic monster
-   (does hero (throw arrow ?dir))
-   (true (location hero ?x ?y1))
-   (true (location ?monster ?x ?y2)))             ; Action
+;(<= (hitByArrow ?monster)
+;   (monster ?monster ?monster-type)               ; Generic monster
+;   (does hero (throw arrow ?dir))
+;   (true (location hero ?x ?y1))
+;   (true (location ?monster ?x ?y2)))             ; Action
 
+;(<= (hitByArrow ?monster)
+;   (monster ?monster ?monster-type)               ; Generic monster
+;   (does hero (throw arrow ?dir))
+;   (true (location hero ?x1 ?y))
+;   (true (location ?monster ?x2 ?y)))             ; Action
+
+; If it's legal, it must succeed, now.
 (<= (hitByArrow ?monster)
-   (monster ?monster ?monster-type)               ; Generic monster
-   (does hero (throw arrow ?dir))
-   (true (location hero ?x1 ?y))
-   (true (location ?monster ?x2 ?y)))             ; Action
+	(does hero (shoot-monster ?monster)))
 
 ; Meaning: Hero adds item to sack if on it at end of time step
 ; - And it wasn't dropped in this time step
@@ -1323,9 +1357,12 @@
    (true (wielding ?currentWeapon))
    (distinct ?newWeapon ?currentWeapon))
 
+;(<= arrowThrown
+;   (direction ?dir)
+;   (does hero (throw arrow ?dir)))
+
 (<= arrowThrown
-   (direction ?dir)
-   (does hero (throw arrow ?dir)))
+   (does hero (shoot-monster ?monster)))
 
 ; Meaning: hero is invisible at the moment.
 ; helper predicate to avoid unbound vars in negative statement
