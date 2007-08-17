@@ -12,6 +12,7 @@ preserve_constants = True
 preserve_variables = True
 
 rules = []
+alphabet = [chr(i) for i in range(chr('a'), chr('z')+1)]
 
 class SymMap:
 	def __init__(self):
@@ -32,10 +33,13 @@ class SymMap:
 		while temp in self.__map.values():
 			temp += 'x'
 		self.__map[old] = temp
+	
+	def has_collision(self, s):
+		return s in self.__map.keys() or s in self.__map.values()
 
 sym_map = SymMap()
 
-def mod_string(s):
+def delete_vowels(s):
 	global sym_map
 
 	if s in preserve:
@@ -56,9 +60,30 @@ def mod_string(s):
 	if len(s_new) == 0:
 		sym_map[s] = s_old
 	else:
-		sym_map[s]= s_new
+		sym_map[s] = s_new
 	
 	return sym_map[s]
+
+def rand_str(s):
+	global sym_map
+
+	if s in preserve:
+		return s
+
+	if s in sym_map:
+		return sym_map[s]
+
+	assert not sym_map.has_collision(s), "Oops, generated a string previously that matches this one, please rerun"
+
+	s_new = ''
+	while s_new == '' or sym_map.has_collision(s_new):
+		length = random.randint(4, 8)
+		s_new = ''
+		for i in range(length):
+			s_new += random.choice(alphabet)
+	
+	sym_map[s] = s_new
+	return s_new
 
 def p_rule_list(p):
 	'''rule_list : rule rule_list
@@ -177,6 +202,13 @@ if len(sys.argv) < 2:
 	sys.exit(1)
 
 file = open(sys.argv[1], 'r').read()
+
+if len(sys.argv) > 2:
+	random.seed(sys.argv[2])
+else:
+	random.seed()
+
+mod_string = rand_str
 
 yacc.parse(file)
 
