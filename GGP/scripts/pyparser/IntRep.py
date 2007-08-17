@@ -2,19 +2,26 @@ from GDL import *
 
 class IntermediateRep:
 	def __init__(self):
-		# rules with conditions
-		self.__rules = []
+		# state update rules
+		self.__update_rules = []
+		# elab rules
+		self.__elab_rules = []
+		# rules that determine goals
+		self.__goal_rules = []
+		# rules that determine termination
+		self.__term_rules = []
+		# rules that determine legality
+		self.__legal_rules = []
 		# facts and parameters
 		self.__statics = []
 		self.__roles = []
 		self.__inits = []
-
-		self.__userrel_models = {}
-		self.__persistent_models = {}
-		self.__legal_models = {}
-
-		# a map from predicates to models (set of grounds)
-		self.__models = {}
+	
+	def copy(self):
+		c = IntermediateRep()
+		for varname in c.__dict__:
+			c.__dict__[varname] = self.__dict__[varname][:]
+		return c
 
 	def print_rules(self):
 		for s in self.__statics:
@@ -58,13 +65,30 @@ class IntermediateRep:
 			for vc in var_comps:
 				rule.add_var_constraint(vc[0], vc[1], vc[2])
 			# add the rule 
-			self.__rules.append(rule)
+			if head.get_relation() == "goal":
+				self.__goal_rules.append(rule)
+			elif head.get_relation() == "terminal":
+				self.__term_rules.append(rule)
+			elif head.get_relation() == "next":
+				self.__update_rules.append(rule)
+			elif head.get_relation() == "legal":
+				self.__legal_rules.append(rule)
+			else:
+				self.__elab_rules.append(rule)
 
-	def get_rules(self):
-		return self.__rules
+	def get_all_rules(self):
+		return self.__update_rules + \
+			   self.__elab_rules + \
+			   self.__legal_rules + \
+			   self.__goal_rules + \
+			   self.__term_rules
+	
+	def get_update_rules(self): return self.__update_rules
+	def get_elab_rules(self): return self.__elab_rules
+	def get_legal_rules(self): return self.__legal_rules
+	def get_goal_rules(self): return self.__goal_rules
+	def get_terminal_rules(self): return self.__term_rules
 
-	def get_statics(self):
-		return self.__statics
+	def get_statics(self): return self.__statics
+	def get_inits(self): return self.__inits
 
-	def get_inits(self):
-		return self.__inits

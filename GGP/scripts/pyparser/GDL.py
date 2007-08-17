@@ -52,17 +52,35 @@ class Complex:
 		return hash(tuple(self.__terms))
 
 class Sentence(Complex):
-	
+	# sentence types
+	# STATE = next, true
+	# ELAB = user defined relations
+	# MOVE = movements
+	STATE, ELAB, MOVE = range(3)
+
 	def __init__(self, relation, terms, negated = False):
 		self.__rel = relation
+		if self.__rel in ['next', 'true']:
+			self.__type = Sentence.STATE
+		elif self.__rel in ['legal', 'does']:
+			self.__type = Sentence.MOVE
+		else:
+			self.__type = Sentence.ELAB
+
 		self.__negated = negated
 		Complex.__init__(self, terms)
-
+	
 	def copy(self):
 		return Sentence(self.__rel, self.get_terms_copy(), self.__negated)
+	
+	def get_type(self):
+		return self.__type
 
 	def negate(self):
 		self.__negated = not self.__negated
+	
+	def is_negated(self):
+		return self.__negated
 
 	def get_relation(self): return self.__rel
 
@@ -201,6 +219,12 @@ class Comparison:
 	
 	def relation(self):
 		return self.__rel
+
+	def __hash__(self):
+		return hash(self.__rel)
+
+	def __eq__(self, other):
+		return self.__rel == other.__rel
 
 class Rule:
 	def __init__(self, head, body):
@@ -388,3 +412,12 @@ class Rule:
 		for b in self.__body:
 			body_str += "    %s\n" % str(b)
 		return "(<= %s\n%s)" % (str(self.__head), body_str)
+	
+	def __eq__(self, other):
+		if self.__head != other.__head: return False
+		if self.__body != other.__body: return False
+		if self.__var_constraints != other.__var_constraints: return False
+		return True
+
+	def __hash__(self):
+		return hash((self.__head, tuple(self.__body), tuple(self.__var_constraints)))
