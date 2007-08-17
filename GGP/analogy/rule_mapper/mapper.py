@@ -25,14 +25,9 @@ class CommitPoint:
 	def suppress_last(self):
 		self.map.suppress_match(self.rule_match[0], self.rule_match[1])
 
-if __name__ == '__main__':
-	gdlyacc.parse_file(sys.argv[1])
-	src_int_rep = gdlyacc.int_rep.copy()
+def do_mapping(src_int_rep, tgt_int_rep):
 	src_preds = get_predicates(src_int_rep.get_all_rules())
-	gdlyacc.parse_file(sys.argv[2])
-	tgt_int_rep = gdlyacc.int_rep.copy()
 	tgt_preds = get_predicates(tgt_int_rep.get_all_rules())
-	
 
 	# a list whose elements record which commitments were made at each
 	# step, which commitments are suppressed, number of other rule matches 
@@ -87,5 +82,13 @@ if __name__ == '__main__':
 		history = history[:unroll_i+1]
 		mapping = history[unroll_i].map
 		history[unroll_i].suppress_last()
-	
+
+	return best_map
+
+if __name__ == '__main__':
+	gdlyacc.parse_file(sys.argv[1])
+	src_int_rep = gdlyacc.int_rep.copy()
+	gdlyacc.parse_file(sys.argv[2])
+	tgt_int_rep = gdlyacc.int_rep.copy()
+	best_map = do_mapping(src_int_rep, tgt_int_rep)
 	best_map.print_pred_matches(sys.stdout)
