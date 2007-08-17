@@ -3,20 +3,20 @@ multi-attributes 2d 64 # escape
 multi-attributes adjacent 250 # rogue and build
 multi-attributes plus 200 # escape
 multi-attributes minus 200 # escape
-multi-attributes lessThan 200 # escape
-multi-attributes greaterThan 200 # escape
+multi-attributes lessthan 200 # escape
+multi-attributes greaterthan 200 # escape
 multi-attributes min 200 # rogue
 multi-attributes traversible 300 # rogue 
 multi-attributes int 1000 # escape
 multi-attributes index 1000 # wargame
 multi-attributes cell 1000 # wargame
-multi-attributes nSteps 256 # wargame
-multi-attributes nextCell 256 # rogue
-multi-attributes nStepsSoldier 256 # wargame
-multi-attributes horizontalStep 256 # wargame
-multi-attributes verticalStep 256 # wargame
+multi-attributes nsteps 256 # wargame
+multi-attributes nextcell 256 # rogue
+multi-attributes nstepssoldier 256 # wargame
+multi-attributes horizontalstep 256 # wargame
+multi-attributes verticalstep 256 # wargame
 multi-attributes between 300 # rogue
-multi-attributes cellNearMonster 100 # rogue
+multi-attributes cellnearmonster 100 # rogue
 
 #multi-attributes for build, the numbers are relative, seems not interfere with the above
 multi-attributes object-location 200
@@ -30,7 +30,7 @@ multi-attributes result-link 1000
 learn -d
 indifferent-selection --first
 
-source goodthings.soar
+# source goodthings.soar
 
 pushd common
 # source canvas.soar
