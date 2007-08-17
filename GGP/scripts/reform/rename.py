@@ -8,11 +8,11 @@ import pdb
 keywords = ['role', 'init', 'true', 'next', 'legal', 'does', 'goal', 'terminal', 'not', 'or', 'distinct', '<', '>', '>=', '+', '-', '*', '/']
 preserve = ['2d', 'location', 'greaterThan', 'lessThan', 'plus', 'minus', 'step', 'succ', 'move', 'blocked', 'int']
 
-preserve_constants = True
-preserve_variables = True
+preserve_constants = False
+preserve_variables = False
 
 rules = []
-alphabet = [chr(i) for i in range(chr('a'), chr('z')+1)]
+alphabet = [chr(i) for i in range(ord('a'), ord('z')+1)]
 
 class SymMap:
 	def __init__(self):
@@ -197,18 +197,25 @@ yacc.yacc()
 
 import sys
 
+mod_string = delete_vowels
+
+random.seed()
+
 if len(sys.argv) < 2:
 	print "need kif file"
 	sys.exit(1)
 
-file = open(sys.argv[1], 'r').read()
+for i in range(1,len(sys.argv)):
+	if sys.argv[i] == '-r':
+		mod_string = rand_str
+	if sys.argv[i] == '-c':
+		preserve_constants = True
+	if sys.argv[i] == '-v':
+		preserve_variables = True
+	if sys.argv[i] == '-s':
+		random.seed(sys.argv[i+1])
 
-if len(sys.argv) > 2:
-	random.seed(sys.argv[2])
-else:
-	random.seed()
-
-mod_string = rand_str
+file = open(sys.argv[-1], 'r').read()
 
 yacc.parse(file)
 

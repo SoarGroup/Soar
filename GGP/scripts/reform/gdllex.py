@@ -66,7 +66,7 @@ lex.lex()
 
 import sys
 
-gdl = open(sys.argv[1]).read()
+gdl = open(sys.argv[-1]).read()
 
 lex.input(gdl)
 
