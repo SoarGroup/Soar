@@ -1,12 +1,12 @@
 import os, sys
 basedir = os.path.join('..','..')
 sys.path.append(os.path.join(basedir, 'scripts','pyparser'))
-sys.path.append(os.path.join(basedir, 'analogy','src'))
+sys.path.append(os.path.join(basedir, 'analogy','rule_mapper'))
 
 import gdlyacc
 from GDL import *
 from PositionIndex import PositionIndex
-import run_mapper
+import rule_mapper
 
 import pdb
 
@@ -19,6 +19,14 @@ def cross_product(l1, l2):
 		r.extend((a1, a2) for a2 in l2)
 	
 	return r
+
+def get_all_constants(grounds):
+	consts = set()
+	for g in grounds:
+		poses = PositionIndex.get_all_positions(g)
+		for p in poses:
+			consts.add(p.fetch(g))
+	return consts
 
 def build_c2p(int_rep, map = {}):
 	""" returns a map of constants to the predicates that they appear in """
@@ -80,28 +88,38 @@ def commit_ground_match(src_g, tgt_g, cmap, pmap):
 
 
 # get the mapping
-pred_map = run_mapper.run_mapper(sys.argv[1], sys.argv[2])
-
-consts2preds_src = {} # const -> [(pos, pred)]
-consts2preds_tgt = {} # const -> [(pos, pred)]
-
 gdlyacc.parse_file(sys.argv[1])
-src_c2p = build_c2p(gdlyacc.int_rep, pred_map)
+src_int_rep = gdlyacc.int_rep.copy()
+gdlyacc.parse_file(sys.argv[2])
+tgt_int_rep = gdlyacc.int_rep.copy()
+
+best_map = rule_mapper.do_mapping(src_int_rep, tgt_int_rep)
+pred_map = dict((s.get_name(), t.get_name()) for s, t in best_map.get_pred_matches().items())
+
+#src_c2p = build_c2p(src_int_rep, pred_map)
 src_gnds = {} # pred -> [grounds]
-for g in gdlyacc.int_rep.get_statics() + gdlyacc.int_rep.get_inits():
+for g in src_int_rep.get_statics() + src_int_rep.get_inits():
 	src_gnds.setdefault(g.get_predicate(), []).append(g)
 
-gdlyacc.parse_file(sys.argv[2])
-tgt_c2p = build_c2p(gdlyacc.int_rep)
+#tgt_c2p = build_c2p(tgt_int_rep)
 tgt_gnds = {} # pred -> [grounds]
-for g in gdlyacc.int_rep.get_statics() + gdlyacc.int_rep.get_inits():
+for g in tgt_int_rep.get_statics() + tgt_int_rep.get_inits():
 	tgt_gnds.setdefault(g.get_predicate(), []).append(g)
+
+
+cmap = {} # the committed mapping
+
+# first map common constants to each other
+src_consts = get_all_constants(reduce(lambda x,y: x+y, src_gnds.values()))
+tgt_consts = get_all_constants(reduce(lambda x,y: x+y, tgt_gnds.values()))
+for sc in src_consts:
+	if sc in tgt_consts:
+		cmap[sc] = sc
 
 # this is temporary, in the future, order the predicates by how many other
 # predicates it constrains
 pred_order = filter(lambda x: x in pred_map, src_gnds.keys())
 
-cmap = {} # the committed mapping
 for src_p in pred_order:
 	tgt_p = pred_map[src_p]
 
