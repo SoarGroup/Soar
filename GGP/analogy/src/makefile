@@ -8,7 +8,7 @@ MAIN=mapper
 
 CTAGS=ctags
 
-$(MAIN): $(OBJECTS)
+$(MAIN): $(OBJECTS) $(HEADERS)
 	$(LINK) $(OBJECTS) -o $@
 
 .cpp.o: $(SOURCES) $(HEADERS)

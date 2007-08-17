@@ -10,6 +10,8 @@
 
 using namespace std;
 
+enum PlaceType { OBJECT, COORD, NUMBER, UNKNOWN };
+
 typedef pair<RulePtr, RulePtr> RulePair;
 
 struct ltRulePair {
@@ -27,14 +29,15 @@ typedef map<Predicate, Predicate> PredMapping;
 typedef pair<PredMapping, double> ScoredBodyMapping;
 typedef pair<RulePair, vector<ScoredBodyMapping> > RuleMatchType;
 typedef map<RulePair, vector<ScoredBodyMapping>, ltRulePair> RuleMatchMap;
+typedef map<Predicate, set<PlaceType> > Pred2PlaceTypeMap;
 
 class Matcher {
   public:
     Matcher
-    ( vector<Predicate> sourcePreds,
-      vector<Predicate> targetPreds,
-      RulePtrSet sourceRules,
-      RulePtrSet targetRules );
+    ( Pred2PlaceTypeMap& sourcePreds,
+      Pred2PlaceTypeMap& targetPreds,
+      RulePtrSet& sourceRules,
+      RulePtrSet& targetRules );
 
     Matcher(const Matcher& other);
 
@@ -81,15 +84,16 @@ class Matcher {
          ( vector<Condition> smaller,  // by value on purpose
            vector<Condition> larger,
            PredMapping& partialMap,
-           vector<PredMapping>& mappings ) const;
+           vector<PredMapping>& mappings,
+           bool isRev) const;
 
     double bodyMapScore(const RulePtr& sr, const RulePtr& tr, const PredMapping& m) const;
 
   private:
     RulePtrSet sourceRules;
     RulePtrSet targetRules;
-    vector<Predicate> sourcePreds;
-    vector<Predicate> targetPreds;
+    Pred2PlaceTypeMap sourcePreds;
+    Pred2PlaceTypeMap targetPreds;
     map<Predicate, Predicate> matchedPreds;
     RuleMap matchedRules;
     RuleMatchMap rMatchCands;

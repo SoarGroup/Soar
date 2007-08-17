@@ -3,6 +3,7 @@ base_dir = os.path.join('..','..')
 mapper = os.path.join(base_dir, 'analogy', 'src', 'mapper')
 sys.path.append(os.path.join(base_dir, 'scripts', 'pyparser'))
 import xkif_gen
+import gdlyacc
 
 def run_mapper(src_kif, tgt_kif, del_tmp = True):
 	xkif_gen.parse_file(src_kif)
@@ -19,8 +20,20 @@ def run_mapper(src_kif, tgt_kif, del_tmp = True):
 	xkif.write(xkif_gen.output)
 	xkif.close()
 
+	# find types
+	gdlyacc.parse_file(src_kif)
+	tmp_fd, src_types = tempfile.mkstemp()
+	print >> sys.stderr, src_types
+	os.fdopen(tmp_fd,'w').write(os.popen('python infer_types.py %s' % src_kif).read())
+
+	gdlyacc.parse_file(tgt_kif)
+	tmp_fd, tgt_types = tempfile.mkstemp()
+	print >> sys.stderr, tgt_types
+	os.fdopen(tmp_fd,'w').write(os.popen('python infer_types.py %s' % tgt_kif).read())
+
 	mapping = {}
-	for line in os.popen('%s %s %s' % (mapper, src_xkif, tgt_xkif)).readlines():
+	output = os.popen('%s %s %s %s %s' % (mapper, src_xkif, tgt_xkif, src_types, tgt_types)).readlines()
+	for line in output:
 		print line
 		if line.startswith('MATCH'):
 			tokens = line.split()
@@ -30,6 +43,8 @@ def run_mapper(src_kif, tgt_kif, del_tmp = True):
 	if del_tmp:
 		os.remove(src_xkif)
 		os.remove(tgt_xkif)
+		os.remove(src_types)
+		os.remove(tgt_types)
 
 	return mapping
 

@@ -2,6 +2,7 @@
 #include <iterator>
 #include <fstream>
 #include <set>
+#include <assert.h>
 
 #include "reader.h"
 #include "rule.h"
@@ -11,9 +12,72 @@
 
 using namespace std;
 
+void split_str(string s, vector<string>& tokens) {
+  int start = 0;
+  int i = 1;
+  while (i < s.size()) {
+    if (s[i] == ' ') {
+      tokens.push_back(s.substr(start, i - start));
+      start = i + 1;
+      i += 2;
+    }
+    else {
+      ++i;
+    }
+  }
+  if (start < s.size()) {
+    tokens.push_back(s.substr(start, s.size() - start));
+  }
+}
+
+void readTypeData(char* filename, const set<Predicate>& preds, Pred2PlaceTypeMap& m) {
+  ifstream f(filename);
+  string line;
+  while (not f.eof()) {
+    getline(f, line);
+    vector<string> toks;
+    set<PlaceType> types;
+    split_str(line, toks);
+    if (toks.size() == 0) {
+      continue;
+    }
+    for (int i = 1; i < toks.size(); ++i) {
+      if (toks[i] == "object") {
+        types.insert(OBJECT);
+      }
+      else if (toks[i] == "coordinate") {
+        types.insert(COORD);
+      }
+      else if (toks[i] == "number") {
+        types.insert(NUMBER);
+      }
+      else if (toks[i] == "unknown") {
+        types.insert(UNKNOWN);
+      }
+    }
+    // find the predicate
+    bool found = false;
+    for (set<Predicate>::const_iterator
+         i  = preds.begin();
+         i != preds.end();
+         ++i)
+    {
+      if (i->get_name() == toks[0]) {
+        m[*i] = types;
+        found = true;
+        break;
+      }
+    }
+    if (!found) {
+      cout << toks[0] << endl;
+    }
+    assert(found);
+  }
+}
+
 int main(int argc, char* argv[]) {
-  if (argc != 3) {
-    cout << "Usage: " << argv[0] << " <source xkif> <target xkif>" << endl;
+  if (argc != 5) {
+    cout << "Usage: " << argv[0] << " <src xkif> <tgt xkif> <src types> <tgt types>" << endl;
     return 1;
   }
 
@@ -21,31 +85,38 @@ int main(int argc, char* argv[]) {
   RulePtrSet trules;
   set<Predicate> spreds;
   set<Predicate> tpreds;
+  Pred2PlaceTypeMap sTypes;
+  Pred2PlaceTypeMap tTypes;
  
   Reader r1(argv[1]);
   r1.read_xkif(srules, spreds);
   Reader r2(argv[2]);
   r2.read_xkif(trules, tpreds);
 
-  Matcher matcher(
-      vector<Predicate>(spreds.begin(), spreds.end()), 
-      vector<Predicate>(tpreds.begin(), tpreds.end()), 
-      srules, 
-      trules);
+  readTypeData(argv[3], spreds, sTypes);
+  readTypeData(argv[4], tpreds, tTypes);
 
-  DEBUG(
-  for(RulePtrSet::iterator i = srules.begin(); i != srules.end(); ++i)
-  {
-    cout << **i << endl;
-  })
-  DEBUG(
-  for(RulePtrSet::iterator i = trules.begin(); i != trules.end(); ++i)
-  {
-    cout << **i << endl;
-  })
+  // if there is a predicate not in the types file, add it with all unknown types
+  for(set<Predicate>::iterator i = spreds.begin(); i != spreds.end(); ++i) {
+    if (sTypes.find(*i) == sTypes.end()) {
+      set<PlaceType> types;
+      for (int j = 0; j < i->get_arity(); ++j) {
+        types.insert(UNKNOWN);
+      }
+      sTypes[*i] = types;
+    }
+  }
+  for(set<Predicate>::iterator i = tpreds.begin(); i != tpreds.end(); ++i) {
+    if (tTypes.find(*i) == tTypes.end()) {
+      set<PlaceType> types;
+      for (int j = 0; j < i->get_arity(); ++j) {
+        types.insert(UNKNOWN);
+      }
+      tTypes[*i] = types;
+    }
+  }
 
-  DEBUG(copy(spreds.begin(), spreds.end(), ostream_iterator<Predicate>(cout, "\n"));)
-  DEBUG(copy(tpreds.begin(), tpreds.end(), ostream_iterator<Predicate>(cout, "\n"));)
+  Matcher matcher(sTypes, tTypes, srules, trules);
 
   while (true) {
     RulePtr r1;
@@ -70,7 +141,11 @@ int main(int argc, char* argv[]) {
     if (!matcher.srcPredMatched(r1->get_head()) and !matcher.tgtPredMatched(r2->get_head())) {
       matcher.addPredicateMatch(r1->get_head(), r2->get_head());
     }
-    else if (!matcher.hasPredMatchConflict(r1->get_head(), r2->get_head())) {
+    else if (matcher.hasPredMatchConflict(r1->get_head(), r2->get_head())) {
+      DEBUG(cout << "ALREADY MATCHED!" << endl;);
+      DEBUG(cout << r1->get_head() << endl << r2->get_head() << endl;)
+    }
+    else {
       DEBUG(cout << "MATCH PREDICATE CONFLICT!" << endl;)
       DEBUG(cout << r1->get_head() << endl << r2->get_head() << endl;)
     }

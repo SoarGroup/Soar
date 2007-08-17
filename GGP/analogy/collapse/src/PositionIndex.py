@@ -1,4 +1,5 @@
 import pdb
+import GDL
 
 class PositionIndex:
 	def __init__(self, index):
@@ -38,10 +39,29 @@ class PositionIndex:
 		return pos
 
 	@staticmethod
+	def get_constant_positions(sentence):
+		pos = []
+		for i in range(sentence.arity()):
+			if sentence.get_term(i).is_complex():
+				pos.extend([PositionIndex([i] + rec_pos) for rec_pos in PositionIndex.get_constant_positions_rec(sentence.get_term(i))])
+			elif isinstance(sentence.get_term(i), GDL.Constant):
+				pos.append(PositionIndex([i]))
+		return pos
+
+	@staticmethod
+	def get_constant_positions_rec(complex):
+		pos = []
+		for i in range(complex.arity()):
+			if complex.get_term(i).is_complex():
+				pos.extend([[i] + rec_pos for rec_pos in PositionIndex.get_constant_positions_rec(complex.get_term(i))])
+			elif isinstance(complex.get_term(i), GDL.Constant):
+				pos.append([i])
+		return pos
+
+	@staticmethod
 	def get_positions(sentence, term):
 		positions = PositionIndex.__get_positions_rec(sentence, term)
 		return [PositionIndex(p) for p in positions]
-	
 	
 	@staticmethod
 	def __get_positions_rec(complex, term):

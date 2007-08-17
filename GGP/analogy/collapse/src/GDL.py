@@ -1,6 +1,6 @@
 from PositionIndex import PositionIndex
 
-CompRelations = [ 'distinct', '<', '<=' ]
+CompRelations = [ 'distinct', '<', '>', '<=' ]
 
 class Sentence:
 	
@@ -10,7 +10,10 @@ class Sentence:
 		self.__negated = False
 
 	def copy(self):
-		return Sentence(self.__rel, [t.copy() for t in self.__terms])
+		c = Sentence(self.__rel, [t.copy() for t in self.__terms])
+		if self.__negated:
+			c.__negated = True
+		return c
 
 	def negate(self):
 		self.__negated = True
@@ -33,6 +36,12 @@ class Sentence:
 			result.extend(t.get_var_terms())
 		return result
 
+	def has_term(self, term):
+		for t in self.__terms:
+			if t.has_term(term):
+				return True
+		return False
+
 	def arity(self):
 		return len(self.__terms)
 	
@@ -46,6 +55,22 @@ class Sentence:
 		return None
 
 	def is_complex(self): return True
+
+	def is_comparison(self):
+		return self.__rel in CompRelations
+
+	def covers(self, other):
+		if not isinstance(other, Sentence):
+			return False
+
+		if self.__rel != other.__rel: return False
+		if len(self.__terms) != len(other.__terms): return False
+
+		for i in range(len(self.__terms)):
+			if not self.__terms[i].covers(other.__terms[i]):
+				return False
+
+		return True
 
 	def __eq__(self, other):
 		if self.__rel != other.__rel: return False
@@ -92,12 +117,28 @@ class Function:
 			result.extend(t.get_var_terms())
 		return result
 
+	def has_term(self, term):
+		
+
 	def set_term(self, i, val): self.__terms[i] = val
 
 	def is_complex(self): return True
 
 	def arity(self): return len(self.__terms)
 	
+	def covers(self, other):
+		if not isinstance(other, Function):
+			return False
+
+		if self.__rel != other.__rel: return False
+		if len(self.__terms) != len(other.__terms): return False
+
+		for i in len(self.__terms):
+			if not self.__terms[i].covers(other.__terms[i]):
+				return False
+
+		return True
+
 	def __eq__(self, other):
 		if not isinstance(other, Function): return False
 
@@ -121,19 +162,29 @@ class Function:
 
 class Variable:
 	def __init__(self, name):
-		self.__name = name
+		if name[0] == '?':
+			self.__name = name[1:]
+		else:
+			self.__name = name
 	
 	def copy(self): return Variable(self.__name)
 
 	def mangle_vars(self, prefix):
-		self.__name = "%s%s" % (prefix, name)
+		self.__name = "%s%s" % (prefix, self.__name)
 
 	def get_name(self): return self.__name
 
 	def get_var_terms(self): return [ Variable(self.__name) ]
 
+
+	def has_term(self, term):
+		return term == self
+
 	def is_complex(self): return False
 	
+	def covers(self, other):
+		return isinstance(other, Variable) or isinstance(other, Constant)
+
 	def __eq__(self, other):
 		if not isinstance(other, Variable): return False
 		return self.__name == other.__name
@@ -141,7 +192,7 @@ class Variable:
 	def __ne__(self, other):
 		return not self == other
 
-	def __str__(self): return self.__name
+	def __str__(self): return '?%s' % self.__name
 
 	def __hash__(self): return hash(self.__name)
 
@@ -158,7 +209,13 @@ class Constant:
 
 	def get_var_terms(self): return []
 
+	def has_term(self, term):
+		return self == term
+
 	def is_complex(self): return False
+
+	def covers(self, other):
+		return self == other
 
 	def __eq__(self, other):
 		if not isinstance(other, Constant): 
@@ -256,7 +313,7 @@ class Rule:
 			assert bound, "Head variable %s not bound to any body variables" % hv
 	
 	def copy(self):
-		c = Rule(self.__head, [b.copy() for b in self.__body])
+		c = Rule(self.__head.copy(), [b.copy() for b in self.__body])
 		c.__var_constraints = self.__var_constraints[:]
 		return c
 		
@@ -311,18 +368,23 @@ class Rule:
 				continue
 			if bi1 > bi:
 				nbi1 = bi1 - 1
+			else:
+				nbi1 = bi1
 			if bi2 > bi:
 				nbi2 = bi2 - 1
+			else:
+				nbi2 = bi2
 			new_var_constraints.append((nbi1, p1, nbi2, p2, comp))
+
 		self.__var_constraints = new_var_constraints
 
 		for hpos in self.__headvar_bindings:
 			to_erase = []
 			for i, bindings in enumerate(self.__headvar_bindings[hpos]):
 				if bindings[0] == bi:
-					to_erase.append[i]
+					to_erase.append(i)
 				elif bindings[0] > bi:
-					bindings[0] = bindings[0] - 1
+					self.__headvar_bindings[hpos][i] = (bindings[0]-1, bindings[1])
 
 			# have to erase backwards or else the indices will become
 			# incorrect

@@ -43,10 +43,10 @@ void bmStr(PredMapping& bm) {
 }
 
 Matcher::Matcher
-( vector<Predicate> sPreds,
-  vector<Predicate> tPreds,
-  RulePtrSet sRules,
-  RulePtrSet tRules )
+( Pred2PlaceTypeMap& sPreds,
+  Pred2PlaceTypeMap& tPreds,
+  RulePtrSet& sRules,
+  RulePtrSet& tRules )
 : sourceRules(sRules.begin(), sRules.end()), 
   targetRules(tRules.begin(), tRules.end()),
   sourcePreds(sPreds), 
@@ -79,13 +79,16 @@ Matcher::Matcher
 
   // map all predicates that appear in both source and target onto
   // each other
-  vector<Predicate>::iterator i = sourcePreds.begin();
+  Pred2PlaceTypeMap::iterator i = sourcePreds.begin();
   while (i != sourcePreds.end()) {
-    vector<Predicate>::iterator tPos = find(targetPreds.begin(), targetPreds.end(), *i);
+    Pred2PlaceTypeMap::iterator tPos = targetPreds.find(i->first);
     if (tPos != targetPreds.end()) {
-      matchedPreds.insert(PredPair(*i, *i));
-      updateRuleMatches(*i, *i);
-      i = sourcePreds.erase(i);
+      matchedPreds.insert(PredPair(i->first, i->first));
+      updateRuleMatches(i->first, i->first);
+      Pred2PlaceTypeMap::iterator j = i;
+      ++j;
+      sourcePreds.erase(i);
+      i = j;
       targetPreds.erase(tPos);
     }
     else {
@@ -120,14 +123,14 @@ void Matcher::allBodyMappings
   if (sr->body_size() < tr->body_size()) {
     sr->get_body(smaller);
     tr->get_body(larger);
-    allBodyMappingsInternal(smaller, larger, dummy, mappings);
+    allBodyMappingsInternal(smaller, larger, dummy, mappings, false);
   }
   else {
     vector<PredMapping> revPossibleMaps;
     tr->get_body(smaller);
     sr->get_body(larger);
     PredMapping tempMap;
-    allBodyMappingsInternal(smaller, larger, dummy, revPossibleMaps);
+    allBodyMappingsInternal(smaller, larger, dummy, revPossibleMaps, true);
     for(vector<PredMapping>::iterator
         i  = revPossibleMaps.begin();
         i != revPossibleMaps.end();
@@ -193,7 +196,8 @@ bool Matcher::allBodyMappingsInternal
 ( vector<Condition> smaller,  // by value on purpose
   vector<Condition> larger,
   PredMapping& partialMap,
-  vector<PredMapping>& mappings ) const
+  vector<PredMapping>& mappings,
+  bool isRev) const
 {
   if (smaller.size() == 0) {
     mappings.push_back(partialMap);
@@ -208,13 +212,19 @@ bool Matcher::allBodyMappingsInternal
       exhausted = true;
       vector<Condition>::iterator i = larger.begin();
       while (i != larger.end()) {
-        double score = predicateMatchScore(p1, i->pred);
+        double score;
+        if (isRev) {
+          score = predicateMatchScore(i->pred, p1);
+        }
+        else {
+          score = predicateMatchScore(p1, i->pred);
+        }
         if (score > 0 and p1n == i->negated) {
           Predicate p2 = i->pred;
           i = larger.erase(i);
           PredMapping notAsPartialMap(partialMap);
           notAsPartialMap.insert(PredPair(p1, p2));
-          if (allBodyMappingsInternal(smaller, larger, notAsPartialMap, mappings)) {
+          if (allBodyMappingsInternal(smaller, larger, notAsPartialMap, mappings, isRev)) {
             return true;
           }
           else {
@@ -323,23 +333,29 @@ void Matcher::updateRuleMatches(const Predicate& sp, const Predicate& tp) {
 }
 
 double Matcher::predicateMatchScore
-( const Predicate& p1, 
-  const Predicate& p2 ) const 
+( const Predicate& sp, 
+  const Predicate& tp ) const 
 {
-  map<Predicate, Predicate>::const_iterator p1_pos = matchedPreds.find(p1);
-  map<Predicate, Predicate>::const_iterator p2_pos = matchedPreds.find(p2);
-  if (p1_pos != matchedPreds.end() and p1_pos->second != p2) {
+  map<Predicate, Predicate>::const_iterator sp_pos = matchedPreds.find(sp);
+  map<Predicate, Predicate>::const_iterator tp_pos = matchedPreds.find(tp);
+  if (sp_pos != matchedPreds.end() and sp_pos->second != tp) {
     return 0;
   }
-  if (p2_pos != matchedPreds.end() and p2_pos->second != p1) {
+  if (tp_pos != matchedPreds.end() and tp_pos->second != sp) {
     return 0;
   }
-  double p1a = p1.get_arity() + 0.5;
-  double p2a = p2.get_arity() + 0.5;
-  double score = (p1a + p2a) / (fabs(p1a - p2a) + 1);
-  if (p1.get_type() == p2.get_type()) {
-    return 1.5 * score;
+  if (sp.get_arity() == 0 and tp.get_arity() == 0) {
+    return 1;
   }
+  
+  set<PlaceType> spTypes = sourcePreds.find(sp)->second;
+  set<PlaceType> tpTypes = targetPreds.find(tp)->second;
+  
+  vector<PlaceType> intersection;
+  set_intersection(spTypes.begin(), spTypes.end(), 
+                   tpTypes.begin(), tpTypes.end(), 
+                   back_inserter(intersection));
+  double score = intersection.size() / (spTypes.size() + tpTypes.size());
   return score;
 }
 
@@ -459,8 +475,8 @@ void Matcher::addPredicateMatch(const Predicate& sp, const Predicate& tp) {
   }
   cout << "MATCH " << sp << " " << tp << endl;
 
-  sourcePreds.erase(remove(sourcePreds.begin(), sourcePreds.end(), sp), sourcePreds.end());
-  targetPreds.erase(remove(targetPreds.begin(), targetPreds.end(), tp), targetPreds.end());
+  sourcePreds.erase(sp);
+  targetPreds.erase(tp);
   updateRuleMatches(sp, tp);
 }
 
@@ -522,8 +538,20 @@ bool Matcher::getBodyMaps
 void Matcher::getUnmatchedPreds
 ( vector<Predicate>& sp, vector<Predicate>& tp )
 {
-  sp.insert(sp.begin(), sourcePreds.begin(), sourcePreds.end());
-  tp.insert(tp.begin(), targetPreds.begin(), targetPreds.end());
+  for (Pred2PlaceTypeMap::iterator 
+       i  = sourcePreds.begin();
+       i != sourcePreds.end();
+       ++i)
+  {
+    sp.push_back(i->first);
+  }
+  for (Pred2PlaceTypeMap::iterator 
+       i  = targetPreds.begin();
+       i != targetPreds.end();
+       ++i)
+  {
+    tp.push_back(i->first);
+  }
 }
 
 void Matcher::getUnmatchedRules
