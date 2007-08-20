@@ -1,35 +1,21 @@
 #!/usr/bin/perl
-use Cwd 'abs_path';
+#use Cwd 'abs_path';
 
 die unless ($#ARGV == 1);
 
-$kifOne = abs_path($ARGV[0]);
-$kifTwo = abs_path($ARGV[1]);
+$kifOne = $ARGV[0];
+$kifTwo = $ARGV[1];
 
-$mapperDir = "../analogy/src";
-$mapper = "./mapper";
-$preProcessor = "../../scripts/pyparser/xkif_gen.py";
+$ENV{"GGP_PATH"}="../";
+$ENV{"PYTHONPATH"}="./pyparser/";
 
-$tempOne = "mapper_tmp1";
-$tempTwo = "mapper_tmp2";
-
-chdir($mapperDir);
+$mapper = "../analogy/const_match/const_match3.py";
 
 checkFor($kifOne);
 checkFor($kifTwo);
 checkFor($mapper);
-checkFor($preProcessor);
 
-die if (-e $tempOne);
-die if (-e $tempTwo);
-
-print `python $preProcessor $kifOne > $tempOne`;
-print `python $preProcessor $kifTwo > $tempTwo`;
-
-print lc `$mapper $tempOne $tempTwo`;
-
-print `rm $tempOne`;
-print `rm $tempTwo`;
+print lc `python $mapper $kifOne $kifTwo | grep "map predicate\\|map constant"`;
 
 
 sub checkFor() {
