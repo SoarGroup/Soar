@@ -62,8 +62,8 @@ class IntermediateRep:
 		for rb in rule_bodies:
 			rule = Rule(head, rb)
 			# process the variable comparisons
-			for vc in var_comps:
-				rule.add_var_constraint(vc[0], vc[1], vc[2])
+			for comp, t1, t2 in var_comps:
+				rule.add_var_constraint(t1, t2, comp)
 			# add the rule 
 			if head.get_relation() == "goal":
 				self.__goal_rules.append(rule)
@@ -83,6 +83,7 @@ class IntermediateRep:
 			   self.__goal_rules + \
 			   self.__term_rules
 	
+	def get_roles(self): return self.__roles
 	def get_update_rules(self): return self.__update_rules
 	def get_elab_rules(self): return self.__elab_rules
 	def get_legal_rules(self): return self.__legal_rules

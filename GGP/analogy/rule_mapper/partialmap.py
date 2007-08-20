@@ -1,4 +1,6 @@
 from comb_perm import *
+import predicate
+from GDL import Sentence
 import pdb
 
 HEAD_SCORE_FACTOR = 1.5
@@ -19,6 +21,15 @@ def cross_product(l1, l2):
 			yield (a1, a2)
 
 class PartialMap:
+
+	__place_type_weights = { predicate.AGENT : 2.0,
+	                         predicate.OBJECT : 1.0,
+	                         predicate.NUM_MIN : 1.5,
+	                         predicate.NUM_MAX : 1.5,
+	                         predicate.COORD : 0.8,
+	                         predicate.NUM : 0.6,
+	                         predicate.UNKNOWN : 0.3 }
+
 	@staticmethod
 	def create(src_int_rep, src_preds, tgt_int_rep, tgt_preds):
 		self = PartialMap()
@@ -27,9 +38,12 @@ class PartialMap:
 		self.__tgt_preds = dict((p.get_name(), p) for p in tgt_preds)
 
 		# map all predicates that are identical in source and target onto each other
-		common_preds = set(src_preds).intersection(set(tgt_preds))
+		common_pred_names = set(self.__src_preds.keys()).intersection(set(self.__tgt_preds.keys()))
+		common_pred_map = dict((self.__src_preds[i], self.__tgt_preds[i]) for i in common_pred_names)
 
-		self.__matched_preds = dict(zip(common_preds, common_preds))
+		#pdb.set_trace()
+
+		self.__matched_preds = common_pred_map
 		self.__matched_rules = {}
 		# candidate rule matchings
 		# (src_rule, tgt_rule) -> (body map, score)
@@ -78,7 +92,7 @@ class PartialMap:
 		c.__cand_rule_matches = self.__cand_rule_matches.copy()
 		return c
 
-	def __pred_match_base_score(self, sp, tp):
+	def __pred_arg_match_score(self, sp, tp):
 		if sp.get_arity() == 0 and tp.get_arity() == 0:
 			# without any arguments, we can't really compare how "similar"
 			# these two predicates are
@@ -88,9 +102,17 @@ class PartialMap:
 		# divided by the total number of arguments
 		intersect = [t for t in sp.get_place_types() if t in tp.get_place_types()]
 		#return len(intersect) / float(sp.get_arity() + tp.get_arity())
-		return len(intersect) / float(max(abs(sp.get_arity() - tp.get_arity()),1))
+		if len(intersect) == 0:
+			intersect_score = 0
+		elif len(intersect) == 1:
+			intersect_score = PartialMap.__place_type_weights[intersect[0]]
+		else:
+			intersect_score = reduce(lambda x,y:x+y, \
+					(PartialMap.__place_type_weights[i] for i in intersect))
+		return intersect_score / max(abs(sp.get_arity() - tp.get_arity()),1)
 
 	def __pred_match_score(self, sp, tp):
+		# check to make sure the predicates don't already have conflicting mappings
 		if sp in self.__matched_preds:
 			if self.__matched_preds[sp] != tp:
 				return 0
@@ -100,7 +122,14 @@ class PartialMap:
 			if tp in self.__matched_preds.values():
 				return 0
 		
-		return self.__pred_match_base_score(sp, tp)
+		# ensure that predicate types are mappable
+		# legal/does -/-> next/true, elabs
+		if Sentence.MOVE in [sp.get_type(), tp.get_type()] and \
+				sp.get_type() != tp.get_type():
+			return 0
+		
+		# if all above conditions are met, then make a rating based on argument types
+		return self.__pred_arg_match_score(sp, tp) + 0.1
 
 	def __body_map_score(self, sr, tr, m):
 		total = 0
@@ -112,17 +141,35 @@ class PartialMap:
 				return 0
 			total += pm_score
 
-		num_unmatched = max(len(sr.get_body()), len(tr.get_body())) - len(m)
-		return total - num_unmatched
-	
+		#num_unmatched = max(len(sr.get_body()), len(tr.get_body())) - len(m)
+		#return max(0.1, total - num_unmatched) 
+		return total
+
+	def __head_match_score(self, sr, tr):
+		srhead = sr.get_head()
+		trhead = tr.get_head()
+		if srhead.get_relation() == 'goal':
+			assert trhead.get_relation() == 'goal'
+			if srhead.get_term(1) == trhead.get_term(1):
+				return 1
+			else:
+				# this is only assuming that there is at least one
+				# 0 score goal and one 100 score goal for each scenario
+				return 0
+		elif srhead.get_relation() == 'terminal':
+			assert trhead.get_relation() == 'terminal'
+			return 1
+		else:
+			shp = self.__src_preds[srhead.get_predicate()]
+			thp = self.__tgt_preds[trhead.get_predicate()]
+			return self.__pred_match_score(shp, thp)
+
 	def __rule_match_score(self, sr, tr):
 		if (sr, tr) not in self.__cand_rule_matches:
 			return (None, 0)
 		
-		shp = self.__src_preds[sr.get_head().get_predicate()]
-		thp = self.__tgt_preds[tr.get_head().get_predicate()]
-		head_match_score = self.__pred_match_score(shp, thp)
-
+		# try to matche the head sentences first
+		head_match_score = self.__head_match_score(sr, tr)
 		if head_match_score == 0:
 			# if heads don't match, rules can't match
 			return (None, 0)
@@ -150,39 +197,13 @@ class PartialMap:
 			else:
 				body_maps[i] = (body_maps[i][0], new_score)
 				i += 1
-
-	def __update_all_rule_matches_pred(self, sp, tp):
-		to_erase = []
-		name_set = set((sp.get_name(), tp.get_name()))
-		for sr, tr in self.__cand_rule_matches:
-			# check if heads still match
-			shp = self.__src_preds[sr.get_head().get_predicate()]
-			thp = self.__tgt_preds[tr.get_head().get_predicate()]
-			if self.__pred_match_score(shp, thp) == 0:
-				to_erase.append((sr, tr))
-				continue
-			
-			# check if the predicates are actually in the rules
-			# i.e. if this mapping change actually affects the rule
-			spreds = [b.get_predicate() for b in sr.get_body()]
-			tpreds = [b.get_predicate() for b in tr.get_body()]
-			if sp.get_name() not in spreds and tp.get_name() not in tpreds:
-				continue
-
-			self.__update_rule_matche(sr, tr)
-			if len(self.__cand_rule_matches[(sr,tr)]) == 0:
-				to_erase.append((sr,tr))
-
-		for sr, tr in to_erase:
-			del self.__cand_rule_matches[(sr,tr)]
 	
 	def __update_all_rule_matches(self):
 		to_erase = []
 		for sr, tr in self.__cand_rule_matches:
 			# check if heads still match
-			shp = self.__src_preds[sr.get_head().get_predicate()]
-			thp = self.__tgt_preds[tr.get_head().get_predicate()]
-			if self.__pred_match_score(shp, thp) == 0:
+			head_match_score = self.__head_match_score(sr, tr)
+			if head_match_score == 0:
 				to_erase.append((sr, tr))
 				continue
 			
@@ -201,13 +222,17 @@ class PartialMap:
 			assert tp == self.__matched_preds[sp]
 		else:
 			assert tp not in self.__matched_preds.values()
-			#print "ADDING %s ==> %s" % (sp, tp)
+			print "matching predicates %s ==> %s" % (sp, tp)
 			self.__matched_preds[sp] = tp
 	
 	def add_rule_match(self, sr, tr, body_map):
 		assert sr not in self.__matched_rules
 		assert tr not in self.__matched_rules.values()
-
+		
+		print "=== matching rules ==="
+		print sr
+		print tr
+		print "--> predicate matches"
 		self.__matched_rules[sr] = tr
 		
 		# delete all other match candidates involving these rules
@@ -226,7 +251,10 @@ class PartialMap:
 
 		# body predicates
 		for sp, tp in body_map.items():
-			self.__add_predicate_match(sp, tp)
+			if self.__pred_match_score(sp, tp) >= 1:
+				self.__add_predicate_match(sp, tp)
+
+		print "=== done matching rules ==="
 
 		return self.__update_all_rule_matches()
 
@@ -255,16 +283,13 @@ class PartialMap:
 	def complete(self):
 		return len(self.__cand_rule_matches) == 0
 
-	def get_matched_preds(self):
-		return self.__matched_preds
-
 	def suppress_match(self, sr, tr):
 		del self.__cand_rule_matches[(sr, tr)]
 	
 	def score(self):
 		score = 0
 		for sp, tp in self.__matched_preds.items():
-			score += self.__pred_match_base_score(sp, tp)
+			score += self.__pred_match_score(sp, tp)
 
 		return score
 

@@ -1,8 +1,4 @@
 import os, sys
-basedir = os.path.join('..','..')
-sys.path.append(os.path.join(basedir, 'scripts','pyparser'))
-sys.path.append(os.path.join(basedir, 'analogy','src'))
-
 import gdlyacc
 from GDL import *
 from PositionIndex import PositionIndex

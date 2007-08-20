@@ -1,7 +1,5 @@
 import os, sys
-basedir = os.path.join('..','..')
-sys.path.append(os.path.join(basedir, 'scripts','pyparser'))
-sys.path.append(os.path.join(basedir, 'analogy','rule_mapper'))
+sys.path.append(os.path.join(os.environ['GGP_PATH'], 'analogy','rule_mapper'))
 
 import gdlyacc
 from GDL import *
@@ -123,6 +121,8 @@ pred_order = filter(lambda x: x in pred_map, src_gnds.keys())
 for src_p in pred_order:
 	tgt_p = pred_map[src_p]
 
+	print src_p, tgt_p
+
 	if src_p not in src_gnds or tgt_p not in tgt_gnds:
 		print >> sys.stderr, "PROBABLY A BAD MATCH BETWEEN %s AND %s" % (src_p, tgt_p)
 		continue
@@ -146,5 +146,8 @@ for src_p in pred_order:
 		commit_ground_match(src_g, tgt_g, cmap, pmap)
 		matches = filter_matches(matches, cmap, pmap)
 
+for sp, tp in pred_map.items():
+	print 'map predicate %s %s' % (sp, tp)
+
 for src_c, tgt_c in cmap.items():
-	print '%s -> %s' % (src_c, tgt_c)
+	print 'map constant %s  %s' % (src_c, tgt_c)

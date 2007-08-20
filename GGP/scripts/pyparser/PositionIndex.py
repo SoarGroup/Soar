@@ -14,6 +14,9 @@ class PositionIndex:
 	def __ne__(self, other):
 		return not self == other
 
+	def __cmp__(self, other):
+		return cmp(self.__index, other.__index)
+
 	def __hash__(self):
 		return hash(self.__index)
 	

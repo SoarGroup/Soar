@@ -1,6 +1,7 @@
+""" Data structures for elements in GDL """
 from PositionIndex import PositionIndex
 
-CompRelations = [ 'distinct', '<', '<=' ]
+CompRelations = ['distinct', '<', '>', '>=']
 
 class Complex:
 	def __init__(self, terms):
@@ -10,7 +11,7 @@ class Complex:
 		return self.__terms
 
 	def get_terms_copy(self):
-		return [t.copy for t in self.__terms]
+		return [t.copy() for t in self.__terms]
 
 	def get_term(self, i): return self.__terms[i]
 	
@@ -32,6 +33,13 @@ class Complex:
 			if isinstance(term, Variable):
 				result.append(p, term)
 		return result
+
+	def covers(self, other):
+		if self.arity() != other.arity(): return False
+		for t1,t2 in zip(self.__terms, other.__terms):
+			if not t1.covers(t2):
+				return False
+		return True
 
 	def __eq__(self, other):
 		if len(self.__terms) != len(other.__terms):
@@ -93,6 +101,11 @@ class Sentence(Complex):
 			return self.__rel
 		return None
 
+	def covers(self, other):
+		if not isinstance(other, Sentence): return False
+		if self.__rel != other.__rel: return False
+		return Complex.covers(self, other)
+
 	def __eq__(self, other):
 		if not isinstance(other, Sentence): return False
 		if self.__rel != other.__rel: return False
@@ -105,7 +118,10 @@ class Sentence(Complex):
 		if self.arity() == 0:
 			return self.__rel
 
-		return "(%s%s)" % (self.__rel, Complex.__str__(self))
+		if self.__negated:
+			return "(not (%s%s))" % (self.__rel, Complex.__str__(self))
+		else:
+			return "(%s%s)" % (self.__rel, Complex.__str__(self))
 
 	def __hash__(self): return hash((self.__rel, Complex.__hash__(self)))
 
@@ -120,6 +136,11 @@ class Function(Complex):
 	def get_name(self): return self.__name
 
 	def get_predicate(self): return self.__name
+
+	def covers(self, other):
+		if not isinstance(other, Function): return False
+		if self.__name != other.__name: return False
+		return Complex.covers(other)
 
 	def __eq__(self, other):
 		if not isinstance(other, Function): return False
@@ -138,17 +159,24 @@ class Function(Complex):
 
 class Variable:
 	def __init__(self, name):
-		self.__name = name
+		if name[0] == '?':
+			self.__name = name[1:]
+		else:
+			self.__name = name
 	
 	def copy(self): return Variable(self.__name)
 
 	def mangle_vars(self, prefix):
-		self.__name = "%s%s" % (prefix, name)
+		self.__name = "%s%s" % (prefix, self.__name)
 
 	def get_name(self): return self.__name
 
 	def is_complex(self): return False
 	
+	def covers(self, other):
+		# variables cover other variables, and constants
+		return isinstance(other, Variable) or isinstance(other, Constant)
+
 	def __eq__(self, other):
 		if not isinstance(other, Variable): return False
 		return self.__name == other.__name
@@ -156,7 +184,7 @@ class Variable:
 	def __ne__(self, other):
 		return not self == other
 
-	def __str__(self): return self.__name
+	def __str__(self): return '?%s' % self.__name
 
 	def __hash__(self): return hash(self.__name)
 
@@ -172,6 +200,9 @@ class Constant:
 	def get_name(self): return self.__name
 
 	def is_complex(self): return False
+
+	def covers(self, other):
+		return self == other
 
 	def __eq__(self, other):
 		if not isinstance(other, Constant): 
@@ -226,6 +257,9 @@ class Comparison:
 	def __eq__(self, other):
 		return self.__rel == other.__rel
 
+	def __str__(self):
+		return self.__rel
+
 class Rule:
 	def __init__(self, head, body):
 		self.__head = head
@@ -275,7 +309,7 @@ class Rule:
 			assert bound, "Head variable %s not bound to any body variables" % hv
 	
 	def copy(self):
-		c = Rule(self.__head, [b.copy() for b in self.__body])
+		c = Rule(self.__head.copy(), [b.copy() for b in self.__body])
 		c.__var_constraints = self.__var_constraints[:]
 		return c
 		
@@ -330,25 +364,23 @@ class Rule:
 				continue
 			if bi1 > bi:
 				nbi1 = bi1 - 1
+			else:
+				nbi1 = bi1
 			if bi2 > bi:
 				nbi2 = bi2 - 1
+			else:
+				nbi2 = bi2
 			new_var_constraints.append((nbi1, p1, nbi2, p2, comp))
 		self.__var_constraints = new_var_constraints
 
 		for hpos in self.__headvar_bindings:
-			to_erase = []
-			for i, bindings in enumerate(self.__headvar_bindings[hpos]):
-				if bindings[0] == bi:
-					to_erase.append[i]
-				elif bindings[0] > bi:
-					bindings[0] = bindings[0] - 1
-
-			# have to erase backwards or else the indices will become
-			# incorrect
-			to_erase.sort()
-			to_erase.reverse()
-			for e in to_erase:
-				del self.__headvar_bindings[hpos][e]
+			new_bindings = []
+			for i, binding in enumerate(self.__headvar_bindings[hpos]):
+				if binding[0] < bi:
+					new_bindings.append(binding)
+				elif binding[0] > bi:
+					new_bindings.append((binding[0]-1, binding[1]))
+			self.__headvar_bindings[hpos] = new_bindings
 
 	def get_body_predicates(self):
 		preds = set()
@@ -380,17 +412,19 @@ class Rule:
 	def add_pos_constraint(self, bi1, p1, bi2, p2, comp):
 		self.__var_constraints.append((bi1, p1, bi2, p2, comp))
 
-	# returns (b1, b2) -> [(p1, p2, comp)]
 	def get_constraints_by_body_index(self):
+		"""returns (b1, b2) -> [(p1, p2, comp)]"""
+
 		result = {}
 		for bi1, p1, bi2, p2, comp in self.__var_constraints:
 			result.setdefault((bi1, bi2), []).append((p1, p2, comp))
 		return result
 
-	# returns [(bi, pos, comp, order)], where order == 0 if the order of
-	# the original constraint was (body_index, position, bi, pos, comp)
-	# otherwise order == 1
 	def get_constraints_on(self, body_index, position):
+		"""returns [(bi, pos, comp, order)], where order == 0 if the order of
+		   the original constraint was (body_index, position, bi, pos, comp)
+		   otherwise order == 1"""
+
 		result = []
 		for bi1, p1, bi2, p2, comp in self.__var_constraints:
 			if (bi1 == body_index and p1 == position):
@@ -402,6 +436,81 @@ class Rule:
 	def get_headvar_binding(self, hpos):
 		return self.__headvar_bindings[hpos]
 
+	def get_all_headvar_bindings(self):
+		return self.__headvar_bindings
+
+	def enforce_equality(self, preserve = []):
+		"""Make good on all equality constraints by changing terms to be equal,
+		preserving certain variable names. If a variable and a constant should
+		be equal, the variable is always changed into the constant"""
+		
+		preserve_var_names = set(preserve)
+		# first enforce constraints on body
+		changed = True
+		while changed:
+			# have to run through multiple times to propogate the changes completely
+			changed = False
+			for bi1, p1, bi2, p2, comp in self.__var_constraints:
+				if comp.relation() != '==':
+					continue
+					
+				t1 = p1.fetch(self.__body[bi1])
+				t2 = p2.fetch(self.__body[bi2])
+				if t1 == t2:
+					# all is good, nothing to change
+					continue
+				if isinstance(t1, Variable) and isinstance(t2, Variable):
+					if t1.get_name() in preserve_var_names:
+						p2.set(self.__body[bi2], t1.copy())
+					elif t2.get_name() in preserve_var_names:
+						p1.set(self.__body[bi1], t2.copy())
+					else:
+						name = '__eq_%s_%s' % (t1.get_name(), t2.get_name())
+						preserve_var_names.add(name)
+						p1.set(self.__body[bi1], Variable(name))
+						p2.set(self.__body[bi2], Variable(name))
+					changed = True
+				elif isinstance(t1, Constant) and isinstance(t2, Constant):
+					assert False, "Trying to equate two unequal constants %s, %s" % (str(t1), str(t2))
+				elif isinstance(t1, Constant) and isinstance(t2, Variable):
+					p2.set(self.__body[bi2], t1.copy())
+					changed = True
+				else:
+					assert isinstance(t1, Variable) and isinstance(t2, Constant)
+					p1.set(self.__body[bi1], t2.copy())
+					changed = True
+			
+			# next enforce head variable bindings
+			for hp, bindings in self.__headvar_bindings.items():
+				ht = hp.fetch(self.__head)
+				if isinstance(ht, Constant):
+					# I guess it's possible that a variable in the head got
+					# changed to a constant somehow ...
+					for bi, bp in bindings:
+						bt = bp.fetch(self.__body[bi])
+						if ht == bt:
+							continue
+						if isinstance(bt, Constant):
+							assert False, "Trying to equate two unequal constants %s, %s" % (str(ht), str(bt))
+						else:
+							assert isinstance(bt, Variable)
+							bp.set(self.__body[bi], ht.copy())
+							changed = True
+				else:
+					assert isinstance(ht, Variable)
+					bi, bp = bindings[0]
+					bt = bt.fetch(self.__body[bi])
+					if ht.get_name() in preserve_var_names:
+						bt.set(self.__body[bi], ht.copy())
+					elif bt.get_name() in preserve_var_names:
+						ht.set(self.__head, bt.copy())
+					else:
+						name = '__eq_%s_%s' % (ht.get_name(), bt.get_name())
+						preserve_var_names.add(name)
+						bt.set(self.__body[bi], Variable(name))
+						ht.set(self.__head, Variable(name))
+					changed = True
+
 	def mangle_vars(self, prefix):
 		self.__head.mangle_vars(prefix)
 		for b in self.__body:
@@ -411,7 +520,14 @@ class Rule:
 		body_str = ""
 		for b in self.__body:
 			body_str += "    %s\n" % str(b)
-		return "(<= %s\n%s)" % (str(self.__head), body_str)
+
+		constraint_str = ""
+		for bi1, p1, bi2, p2, comp in self.__var_constraints:
+			t1 = p1.fetch(self.__body[bi1])
+			t2 = p2.fetch(self.__body[bi2])
+			constraint_str += "    (%s %s %s)\n" % (str(comp), str(t1), str(t2))
+
+		return "(<= %s\n%s%s)" % (str(self.__head), body_str, constraint_str)
 	
 	def __eq__(self, other):
 		if self.__head != other.__head: return False

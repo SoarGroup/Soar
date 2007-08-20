@@ -1,6 +1,4 @@
 import sys, os
-base_dir = os.path.join('..','..')
-sys.path.append(os.path.join(base_dir, 'scripts', 'pyparser'))
 import gdlyacc
 from partialmap import PartialMap
 from predicate import get_predicates
@@ -26,8 +24,8 @@ class CommitPoint:
 		self.map.suppress_match(self.rule_match[0], self.rule_match[1])
 
 def do_mapping(src_int_rep, tgt_int_rep):
-	src_preds = get_predicates(src_int_rep.get_all_rules())
-	tgt_preds = get_predicates(tgt_int_rep.get_all_rules())
+	src_preds = get_predicates(src_int_rep.get_all_rules(), src_int_rep.get_roles())
+	tgt_preds = get_predicates(tgt_int_rep.get_all_rules(), tgt_int_rep.get_roles())
 
 	# a list whose elements record which commitments were made at each
 	# step, which commitments are suppressed, number of other rule matches 
@@ -57,7 +55,7 @@ def do_mapping(src_int_rep, tgt_int_rep):
 			history[-1].score = score
 			if next_mapping.complete():
 				bottomed_out = True
-				num_matched = len(mapping.get_matched_preds())
+				num_matched = len(mapping.get_pred_matches())
 				#print "Matched %d out of %d source and %d target predicates" % \
 				#		(num_matched, len(src_preds), len(tgt_preds))
 				if best_map == None:

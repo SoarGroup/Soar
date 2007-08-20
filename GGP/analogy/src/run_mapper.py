@@ -1,9 +1,11 @@
 import sys, os, tempfile
-base_dir = os.path.join('..','..')
-mapper = os.path.join(base_dir, 'analogy', 'src', 'mapper')
-sys.path.append(os.path.join(base_dir, 'scripts', 'pyparser'))
 import xkif_gen
 import gdlyacc
+
+if 'GGP_PATH' in os.environ:
+	mapper = os.path.join(os.environ['GGP_PATH'], 'analogy', 'src', 'mapper')
+else:
+	mapper = 'mapper'
 
 def run_mapper(src_kif, tgt_kif, del_tmp = True):
 	xkif_gen.parse_file(src_kif)
