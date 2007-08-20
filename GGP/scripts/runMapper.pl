@@ -26,7 +26,7 @@ die if (-e $tempTwo);
 print `python $preProcessor $kifOne > $tempOne`;
 print `python $preProcessor $kifTwo > $tempTwo`;
 
-print `$mapper $tempOne $tempTwo`;
+print lc `$mapper $tempOne $tempTwo`;
 
 print `rm $tempOne`;
 print `rm $tempTwo`;

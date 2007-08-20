@@ -21,7 +21,7 @@ open $OUT, ">$targetMAs" or die;
 %mappings = ();
 foreach $mapping (`$mapper $sourceKif $targetKif`) {
   chomp $mapping;
-  $mapping =~ /^MATCH (\S*) (\S*)$/ or die "can't parse: $mapping\n";
+  $mapping =~ /^match (\S*) (\S*)$/ or die "can't parse: $mapping\n";
   $orig = $1;
   $new = $2;
   $mappings{$orig} = $new;
