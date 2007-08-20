@@ -1,50 +1,9 @@
 import sys, os, tempfile
 import gdlyacc
+import placetype
 from PositionIndex import PositionIndex
 from GDL import *
 import pdb
-
-comp_rels = ['<', '>', '>=', 'lessThan', 'greaterThan', 'succ']
-math_op_rels = ['+', '-', '*', '/', 'min', 'minus', 'plus']
-obj_loc_place = set([('location', PositionIndex([0,0]))])
-coord_places = set([('location', PositionIndex([0,p])) for p in [1,2]])
-
-# an equivalence class that has one of these places as a member must
-# be a number
-num_places = set([(c, PositionIndex([0])) for c in comp_rels] + \
-                 [(c, PositionIndex([1])) for c in comp_rels] + \
-                 [(o, PositionIndex([0])) for o in math_op_rels] + \
-                 [(o, PositionIndex([1])) for o in math_op_rels] + \
-                 [(o, PositionIndex([2])) for o in math_op_rels] + \
-                 [('int', PositionIndex([0]))])
-
-AGENT, OBJECT, COORD, NUM_MAX, NUM_MIN, NUM, UNKNOWN = range(7)
-
-place_type_names = { 
-		AGENT : 'agent',
-		OBJECT : 'object',
-		COORD : 'coord',
-		NUM_MAX : 'num_max',
-		NUM_MIN : 'num_min',
-		NUM : 'num',
-		UNKNOWN : 'unknown' }
-
-place_type_order = { 
-		OBJECT : [ AGENT ],
-		NUM : [ COORD, NUM_MAX, NUM_MIN ],
-		UNKNOWN : [ AGENT, OBJECT, NUM, COORD, NUM_MAX, NUM_MIN ] }
-
-place2type = {}
-
-for p in obj_loc_place:
-	place2type[p] = OBJECT
-
-for p in coord_places:
-	place2type[p] = COORD
-
-for p in num_places:
-	place2type[p] = NUM
-
 
 class Predicate:
 
@@ -67,7 +26,7 @@ class Predicate:
 		return hash((self.__name, self.__type, self.__ptypes))
 
 	def __str__(self):
-		return "%s %d %s" % (self.__name, self.__type, " ".join(place_type_names[t] for t in self.__ptypes))
+		return "%s %d %s" % (self.__name, self.__type, " ".join(placetype.type_names[t] for t in self.__ptypes))
 
 class EquivalenceClass:
 
@@ -86,7 +45,7 @@ class EquivalenceClass:
 			self.__mem2class[m1] = self.__count
 			self.__mem2class[m2] = self.__count
 			# class defaults to unknown type
-			self.__class2type[self.__count] = UNKNOWN
+			self.__class2type[self.__count] = placetype.UNKNOWN
 			self.__count += 1
 
 		elif m1 in self.__mem2class and m2 in self.__mem2class:
@@ -103,9 +62,9 @@ class EquivalenceClass:
 
 			if t1 == t2:
 				self.__class2type[mc] = t1
-			elif t1 in place_type_order and t2 in place_type_order[t1]:
+			elif t1 in placetype.type_order and t2 in placetype.type_order[t1]:
 				self.__class2type[mc] = t2
-			elif t2 in place_type_order and t1 in place_type_order[t2]:
+			elif t2 in placetype.type_order and t1 in placetype.type_order[t2]:
 				self.__class2type[mc] = t1
 			else:
 				assert False, "Trying to merge two classes with incompatible types %d %d" % (t1, t2)
@@ -137,12 +96,12 @@ class EquivalenceClass:
 #			# these two cancel out, it's inconclusive in the end
 #			self.__class2type[c] = NUM
 
-		elif orig_type in place_type_order:
-			if t in place_type_order[orig_type]:
+		elif orig_type in placetype.type_order:
+			if t in placetype.type_order[orig_type]:
 				# makes type more specific
 				self.__class2type[c] = t
 		else:
-			assert t in place_type_order and orig_type in place_type_order[t], "Illegal type assignment %d -> %d" % (orig_type, t)
+			assert t in placetype.type_order and orig_type in placetype.type_order[t], "Illegal type assignment %d -> %d" % (orig_type, t)
 			# don't do anything here, since the type assignment is more general
 
 	def get_member_type(self, m):
@@ -158,7 +117,7 @@ class EquivalenceClass:
 		if m not in self.__mem2class:
 			self.__mem2class[m] = self.__count
 			self.__class2mem[self.__count] = set([m])
-			self.__class2type[self.__count] = UNKNOWN
+			self.__class2type[self.__count] = placetype.UNKNOWN
 			self.__count += 1
 		return self.__mem2class[m]
 	
@@ -182,9 +141,9 @@ def check_min_max(r, ec, score):
 			if isinstance(term, Constant) and term.get_name() == 0:
 				c = ec.get_or_make_class((b.get_predicate(), p))
 				if score == 100 ^ b.is_negated():
-					ec.set_class_type(c, NUM_MIN)
+					ec.set_class_type(c, placetype.NUM_MIN)
 				else:
-					ec.set_class_type(c, NUM_MAX)
+					ec.set_class_type(c, placetype.NUM_MAX)
 
 	return place_types
 
@@ -213,6 +172,12 @@ def get_predicates(rules, roles):
 		for i,s1 in enumerate(sentences):
 			s1pred = s1.get_predicate()
 			assert s1pred != None
+
+			if s1pred in placetype.preset_types:
+				# the first place is supposed to get acted upon, not act upon the
+				# second place. The preset places are not to be acted upon
+				continue
+
 			predTypes[s1pred] = s1.get_type()
 			
 			s1pos = PositionIndex.get_all_positions(s1)
@@ -235,8 +200,8 @@ def get_predicates(rules, roles):
 					place1 = (s1pred, p1)
 					t1 = p1.fetch(s1)
 					c1 = ec.get_or_make_class(place1)
-					if place1 in place2type:
-						ec.set_class_type(c1, place2type[place1])
+					if place1 in placetype.preset_types:
+						ec.set_class_type(c1, placetype.preset_types[place1])
 					for p2 in s2pos:
 						place2 = (s2pred, p2)
 						t2 = p2.fetch(s2)
@@ -244,8 +209,8 @@ def get_predicates(rules, roles):
 								t1 == t2:
 							if place2 in goal_place_types:
 								ec.set_class_type(c1, goal_place_types[place2])
-							elif place2 in place2type:
-								ec.set_class_type(c1, place2type[place2])
+							elif place2 in placetype.preset_types:
+								ec.set_class_type(c1, placetype.preset_types[place2])
 							else:
 								# put these two places in the same equivalence class
 								place1 = (s1pred, p1)
@@ -277,7 +242,7 @@ def get_predicates(rules, roles):
 	collected = {}
 	for place in ec.get_all_members():
 		if place in possible_agent_places:
-			type = AGENT
+			type = placetype.AGENT
 		else:
 			type = ec.get_member_type(place)
 		collected.setdefault(place[0],[]).append((place, type))
@@ -297,7 +262,7 @@ def get_predicates(rules, roles):
 				continue
 			if p not in pred_names:
 				pos = PositionIndex.get_all_positions(s)
-				preds.add(Predicate(p, s.get_type(), tuple([UNKNOWN] * len(pos))))
+				preds.add(Predicate(p, s.get_type(), tuple([placetype.UNKNOWN] * len(pos))))
 
 	return preds
 
@@ -307,5 +272,5 @@ if __name__ == '__main__':
 	for p in preds:
 		print p.get_name(), p.get_type(),
 		for t in p.get_place_types():
-			print place_type_names[t],
+			print placetype.type_names[t],
 		print

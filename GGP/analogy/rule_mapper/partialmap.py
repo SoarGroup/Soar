@@ -1,6 +1,8 @@
+import sys
 from comb_perm import *
 import predicate
 from GDL import Sentence
+import placetype
 import pdb
 
 HEAD_SCORE_FACTOR = 1.5
@@ -22,13 +24,13 @@ def cross_product(l1, l2):
 
 class PartialMap:
 
-	__place_type_weights = { predicate.AGENT : 2.0,
-	                         predicate.OBJECT : 1.0,
-	                         predicate.NUM_MIN : 1.5,
-	                         predicate.NUM_MAX : 1.5,
-	                         predicate.COORD : 0.8,
-	                         predicate.NUM : 0.6,
-	                         predicate.UNKNOWN : 0.3 }
+	__place_type_weights = { placetype.AGENT : 2.0,
+	                         placetype.OBJECT : 1.0,
+	                         placetype.NUM_MIN : 1.5,
+	                         placetype.NUM_MAX : 1.5,
+	                         placetype.COORD : 0.8,
+	                         placetype.NUM : 0.6,
+	                         placetype.UNKNOWN : 0.3 }
 
 	@staticmethod
 	def create(src_int_rep, src_preds, tgt_int_rep, tgt_preds):
@@ -93,6 +95,8 @@ class PartialMap:
 		return c
 
 	def __pred_arg_match_score(self, sp, tp):
+		weights = PartialMap.__place_type_weights
+
 		if sp.get_arity() == 0 and tp.get_arity() == 0:
 			# without any arguments, we can't really compare how "similar"
 			# these two predicates are
@@ -101,14 +105,17 @@ class PartialMap:
 		# calculate the score as the number of arguments of the same type
 		# divided by the total number of arguments
 		intersect = [t for t in sp.get_place_types() if t in tp.get_place_types()]
+		intersect = placetype.type_intersect(sp.get_place_types(), tp.get_place_types())
 		#return len(intersect) / float(sp.get_arity() + tp.get_arity())
 		if len(intersect) == 0:
 			intersect_score = 0
 		elif len(intersect) == 1:
-			intersect_score = PartialMap.__place_type_weights[intersect[0]]
+			s1 = weights[intersect[0][0]]
+			s2 = weights[intersect[0][1]]
+			intersect_score = (s1 + s2) / 2.0
 		else:
-			intersect_score = reduce(lambda x,y:x+y, \
-					(PartialMap.__place_type_weights[i] for i in intersect))
+			avgs = [(weights[x[0]] + weights[x[1]]) / 2.0 for x in intersect]
+			intersect_score = reduce(lambda x, y: x+y, avgs)
 		return intersect_score / max(abs(sp.get_arity() - tp.get_arity()),1)
 
 	def __pred_match_score(self, sp, tp):
@@ -222,17 +229,17 @@ class PartialMap:
 			assert tp == self.__matched_preds[sp]
 		else:
 			assert tp not in self.__matched_preds.values()
-			print "matching predicates %s ==> %s" % (sp, tp)
+			print >> sys.stderr, "matching predicates %s ==> %s" % (sp, tp)
 			self.__matched_preds[sp] = tp
 	
 	def add_rule_match(self, sr, tr, body_map):
 		assert sr not in self.__matched_rules
 		assert tr not in self.__matched_rules.values()
 		
-		print "=== matching rules ==="
-		print sr
-		print tr
-		print "--> predicate matches"
+		print >> sys.stderr, "=== matching rules ==="
+		print >> sys.stderr, sr
+		print >> sys.stderr, tr
+		print >> sys.stderr, "--> predicate matches"
 		self.__matched_rules[sr] = tr
 		
 		# delete all other match candidates involving these rules

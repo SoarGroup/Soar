@@ -2,7 +2,7 @@ import sys, os
 import gdlyacc
 from partialmap import PartialMap
 from predicate import get_predicates
-import pdb
+import psyco
 
 def find_max(seq, func):
 	if len(seq) == 0:
@@ -88,5 +88,7 @@ if __name__ == '__main__':
 	src_int_rep = gdlyacc.int_rep.copy()
 	gdlyacc.parse_file(sys.argv[2])
 	tgt_int_rep = gdlyacc.int_rep.copy()
+	
+	psyco.full()
 	best_map = do_mapping(src_int_rep, tgt_int_rep)
 	best_map.print_pred_matches(sys.stdout)
