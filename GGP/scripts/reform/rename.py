@@ -42,38 +42,42 @@ sym_map = SymMap()
 def delete_vowels(s):
 	global sym_map
 
-	if s in preserve:
-		return s
+	sl = s.lower()
 
-	if s in sym_map:
-		return sym_map[s]
+	if sl in preserve:
+		return sl
+
+	if sl in sym_map:
+		return sym_map[sl]
 	
-	s_old = s
+	s_old = sl
 	for vowel in 'aeiouAEIOU':
 		s_new = s_old.replace(vowel, '')
 		if len(s_new) == 0:
-			sym_map[s] = s_old
+			sym_map[sl] = s_old
 			return
 		else:
 			s_old = s_new
 
 	if len(s_new) == 0:
-		sym_map[s] = s_old
+		sym_map[sl] = s_old
 	else:
-		sym_map[s] = s_new
+		sym_map[sl] = s_new
 	
-	return sym_map[s]
+	return sym_map[sl]
 
 def rand_str(s):
 	global sym_map
 
-	if s in preserve:
-		return s
+	sl = s.lower()
 
-	if s in sym_map:
-		return sym_map[s]
+	if sl in preserve:
+		return sl
 
-	assert not sym_map.has_collision(s), "Oops, generated a string previously that matches this one, please rerun"
+	if sl in sym_map:
+		return sym_map[sl]
+
+	assert not sym_map.has_collision(sl), "Oops, generated a string previously that matches this one, please rerun"
 
 	s_new = ''
 	while s_new == '' or sym_map.has_collision(s_new):
@@ -82,7 +86,7 @@ def rand_str(s):
 		for i in range(length):
 			s_new += random.choice(alphabet)
 	
-	sym_map[s] = s_new
+	sym_map[sl] = s_new
 	return s_new
 
 def p_rule_list(p):
@@ -202,7 +206,13 @@ mod_string = delete_vowels
 random.seed()
 
 if len(sys.argv) < 2:
-	print "need kif file"
+	print """
+Usage: %s [-r] [-c] [-v] [-s <seed>] <kif file>
+-r : replace symbols with random strings rather than deleting vowels
+-c : preserve constants
+-v : preserve variable names
+-s : set the random seed. If random seed is not set, the current time is used.
+""" % (sys.argv[0])
 	sys.exit(1)
 
 for i in range(1,len(sys.argv)):
