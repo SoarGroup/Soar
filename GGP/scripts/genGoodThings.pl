@@ -23,9 +23,11 @@ foreach $mapping (`$mapper $sourceKif $targetKif`) {
   $mapping =~ /^map \w+ (\S*)\s+(\S*)$/ or die "can't parse: $mapping\n";
   $orig = $1;
   $new = $2;
-  $mappings{$orig} = $new;
-  print "# MAPPING: $orig -> $new\n";
-  
+  unless ($orig =~ /^$new$/) {
+    $mappings{$orig} = $new;
+    print "# MAPPING: $orig -> $new\n";
+  }
+
   #@multiAtts = `grep "multi-attributes $orig " $headerFile`;
 
   #if ($#multiAtts > 0) {
