@@ -52,10 +52,13 @@ foreach $line (`cat $logFile`) {
     }
     if ($line =~ /(\S+) \^p1 (\S+)$/) {
       $att = $1;
+      $p1 = $2;
       if (defined $mappings{$att}) {
         $att = $mappings{$att};
       }
-      $p1 = $2;
+      if (defined $mappings{$p1}) {
+        $p1 = $mappings{$p1};
+      }
       $i++;
       print "sp {elaborate*goodthing*$rand$i\n";
       print "   (state <s> ^good-things <gt>)\n";
@@ -66,11 +69,17 @@ foreach $line (`cat $logFile`) {
     }
     elsif ($line =~ /(\S+) \^p1 (\S+) \^p2 (\S+)$/) {
       $att = $1;
+      $p1 = $2;
+      $p2 = $3;
       if (defined $mappings{$att}) {
         $att = $mappings{$att};
       }
-      $p1 = $2;
-      $p2 = $3;
+      if (defined $mappings{$p1}) {
+        $p1 = $mappings{$p1};
+      }
+      if (defined $mappings{$p2}) {
+        $p2 = $mappings{$p2};
+      }
       $i++;
       print "sp {elaborate*goodthing*$rand$i\n";
       print "   (state <s> ^good-things <gt>)\n";
@@ -81,12 +90,21 @@ foreach $line (`cat $logFile`) {
     }
     elsif ($line =~ /(\S+) \^p1 (\S+) \^p2 (\S+) \^p3 (\S+)$/) {
       $att = $1;
-      if (defined $mappings{$att}) {
-        $att = $mappings{$att};
-      }
       $p1 = $2;
       $p2 = $3;
       $p3 = $4;
+      if (defined $mappings{$att}) {
+        $att = $mappings{$att};
+      }
+      if (defined $mappings{$p1}) {
+        $p1 = $mappings{$p1};
+      }
+      if (defined $mappings{$p2}) {
+        $p2 = $mappings{$p2};
+      }
+      if (defined $mappings{$p3}) {
+        $p3 = $mappings{$p3};
+      }
       $i++;
       if (not $att =~ /location/) {
         print "sp {elaborate*goodthing*$rand$i\n";
