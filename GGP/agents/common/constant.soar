@@ -64,6 +64,7 @@ sp {apply*update-search-info
              ^do-update-search-info <du>)
 -->
   (<s> ^do-update-search-info <du> -)
+  (<s> ^depth-valid <dv>) # trigger exceed-depth if necessary
   (<s> ^do-check-for-duplicate-location <dc>)
 }
 
