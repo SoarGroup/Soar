@@ -321,7 +321,7 @@ public class SoarTank extends Tank implements Agent.RunEventInterface {
 			return;
 		}
 		
-		agent.InitSoar();
+		//agent.InitSoar();
 	}
 	
 	public void fragged() {
