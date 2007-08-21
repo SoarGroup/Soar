@@ -6,7 +6,7 @@ sp {elaborate*ts*goodthings
 
 # test running script adds productions to add actual goodthings
 
-### Appearences
+# p1..p3 Appearences
 
 sp {apply*usi*goodthing
    (state <s> ^name game
@@ -94,7 +94,7 @@ sp {apply*usi*goodthing*3
 }
 
 
-#### Removals
+# p1..p3 Removals
 sp {apply*usi*goodthing*removed
    (state <s> ^name game
               ^operator.name update-search-info
@@ -180,7 +180,7 @@ sp {apply*usi*goodthing*3*removed
    (write (crlf) |Bump due to removal of | <item> | | <p1-val> | | <p2-val> | | <p3-val>)
 }
 
-### Increments
+# p1..p3 Increments
 
 sp {apply*usi*goodthing*increment
    (state <s> ^name game
@@ -269,7 +269,7 @@ sp {apply*usi*goodthing*3*increment
    (write (crlf) |Bump due to increment of | <pname> | | <g1-pos> | | <g1-val> | | <g2-pos> | | <g2-val>)
 }
 
-### Decrements
+# p1..p3 Decrements
 
 sp {apply*usi*goodthing*decrement
    (state <s> ^name game
@@ -337,7 +337,8 @@ sp {apply*usi*goodthing*3*decrement
          ^number-position <position>
          ^predicate-name <pname>
          ^first-grounding <g1>
-         ^second-grounding <g2>)
+         ^second-grounding <g2>
+        -^third-grounding)
    (<g1> ^position <g1-pos>
          ^value <g1-val>)
    (<g2> ^position <g2-pos>

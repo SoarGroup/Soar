@@ -1,3 +1,4 @@
+# p0..p3 GS copying
 
 sp {apply*update-state*copy-gs*deep0
    (state <s> ^operator.name update-state
@@ -61,7 +62,8 @@ sp {apply*game-op*remove-old-copy
    (<ogs> ^<att> <id> -)
 }
 
-  
+# p1..p3 Additions
+
 sp {apply*analyze-state*top*note-difference
    (state <s> ^name game
               ^superstate nil
@@ -116,12 +118,70 @@ sp {apply*analyze-state*top*note-difference3
    (write (crlf) |ADDED | <item> | ^p1 | <p1-val> | ^p2 | <p2-val> | ^p3 | <p3-val>)
 }
 
+# p1..p3 Removals
+
+sp {apply*analyze-state*top*note-difference*removal
+   (state <s> ^name game
+              ^superstate nil
+              ^operator.name analyze-state
+              ^gs <gs>
+              ^old-gs <old-gs>
+              ^facts <f>)
+   -{(<gs> ^<item> <id-gs>)
+   (<id-gs> ^p1 <p1-val>)}
+  (<old-gs> ^<item> <id-oldgs>)
+    (<id-oldgs> ^p1 <p1-val>
+               -^p2)
+                   -{(<f> ^bookkeeping-state <item>)}
+-->
+   (write (crlf) |REMOVED | <item> | ^p1 | <p1-val>)
+}
+
+sp {apply*analyze-state*top*note-difference2*removal
+   (state <s> ^name game
+              ^superstate nil
+              ^operator.name analyze-state
+              ^gs <gs>
+              ^old-gs <old-gs>)
+   -{(<gs> ^<item> <id-gs>)
+   (<id-gs> ^p1 <p1-val>
+            ^p2 <p2-val>)}
+  (<old-gs> ^<item> <id-oldgs>)
+    (<id-oldgs> ^p1 <p1-val>
+                ^p2 <p2-val>
+               -^p3)
+                   -{(<f> ^bookkeeping-state <item>)}
+-->
+   (write (crlf) |REMOVED | <item> | ^p1 | <p1-val> | ^p2 | <p2-val>)
+}
+
+sp {apply*analyze-state*top*note-difference3*removal
+   (state <s> ^name game
+              ^superstate nil
+              ^operator.name analyze-state
+              ^gs <gs>
+              ^old-gs <old-gs>)
+   -{(<gs> ^<item> <id-gs>)
+   (<id-gs> ^p1 <p1-val>
+            ^p2 <p2-val>
+            ^p3 <p3-val>)}
+  (<old-gs> ^<item> <id-oldgs>)
+    (<id-oldgs> ^p1 <p1-val>
+                ^p2 <p2-val>
+                ^p3 <p3-val>)
+                   -{(<f> ^bookkeeping-state <item>)}
+-->
+   (write (crlf) |REMOVED | <item> | ^p1 | <p1-val> | ^p2 | <p2-val> | ^p3 | <p3-val>)
+}
+
+
 sp {elaborate*old-gs
    (state <s> ^name game)
 -->
    (<s> ^old-gs <ogs>)
 }
 
+# p0..p2 Actions
 sp {apply*game-op*top-state*report*0
    (state <s> ^name game
               ^superstate nil
