@@ -2,19 +2,8 @@ import sys, os
 import gdlyacc
 from partialmap import PartialMap
 from predicate import get_predicates
-import psyco
-
-def find_max(seq, func):
-	if len(seq) == 0:
-		return -1
-	max = func(seq[0])
-	mpos = 0
-	for i in range(1,len(seq)):
-		v = func(seq[i])
-		if max < v:
-			max = v
-			mpos = i
-	return (mpos, max)
+from find_max import find_max
+#import psyco
 
 class CommitPoint:
 	def __init__(self, map):
@@ -36,20 +25,27 @@ def do_mapping(src_int_rep, tgt_int_rep):
 	history.append(CommitPoint(mapping))
 	
 	best_map = None
-
+	legals_mapped = False
 	for x in range(1):
 		bottomed_out = False
 		while not bottomed_out:
-			sr, tr, bmap, score = mapping.get_best_rule_match()
-			if sr is None:
-				# there's no matches at this point, probably because they're all
-				# suppressed
-				history[-1].can_unroll = False
-				bottomed_out = True
-				continue
-
 			next_mapping = mapping.copy()
-			invalidated = next_mapping.add_rule_match(sr, tr, bmap)
+			if not legals_mapped:
+				sr, tr, invalidated, score = next_mapping.add_best_legal_rule_match()
+				if sr is None:
+					legals_mapped = True
+					continue
+			else:
+				sr, tr, bmap, score = next_mapping.get_best_rule_match()
+				if sr is None:
+					# there's no matches at this point, probably because they're all
+					# suppressed
+					history[-1].can_unroll = False
+					bottomed_out = True
+					continue
+
+				invalidated = next_mapping.add_rule_match(sr, tr, bmap)
+
 			history[-1].rule_match = (sr, tr)
 			history[-1].invalidated = invalidated
 			history[-1].score = score
@@ -89,6 +85,6 @@ if __name__ == '__main__':
 	gdlyacc.parse_file(sys.argv[2])
 	tgt_int_rep = gdlyacc.int_rep.copy()
 	
-	psyco.full()
+	#psyco.full()
 	best_map = do_mapping(src_int_rep, tgt_int_rep)
 	best_map.print_pred_matches(sys.stdout)

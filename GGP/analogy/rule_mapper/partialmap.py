@@ -3,6 +3,8 @@ from comb_perm import *
 import predicate
 from GDL import Sentence
 import placetype
+from move_effects import calc_move_effects
+from find_max import find_max
 import pdb
 
 HEAD_SCORE_FACTOR = 1.5
@@ -39,28 +41,42 @@ class PartialMap:
 		self.__src_preds = dict((p.get_name(), p) for p in src_preds)
 		self.__tgt_preds = dict((p.get_name(), p) for p in tgt_preds)
 
+		# maintain a special structure for legal rules
+		src_move_effects = calc_move_effects(src_int_rep)
+		tgt_move_effects = calc_move_effects(tgt_int_rep)
+		
+		self.__src_move_effects = {}
+		self.__tgt_move_effects = {}
+		for move, effects in src_move_effects.items():
+			pred_effects = [self.__src_preds[p] for p in effects]
+			self.__src_move_effects[move] = pred_effects
+		for move, effects in tgt_move_effects.items():
+			pred_effects = [self.__tgt_preds[p] for p in effects]
+			self.__tgt_move_effects[move] = pred_effects
+
 		# map all predicates that are identical in source and target onto each other
 		common_pred_names = set(self.__src_preds.keys()).intersection(set(self.__tgt_preds.keys()))
 		common_pred_map = dict((self.__src_preds[i], self.__tgt_preds[i]) for i in common_pred_names)
-
-		#pdb.set_trace()
 
 		self.__matched_preds = common_pred_map
 		self.__matched_rules = {}
 		# candidate rule matchings
 		# (src_rule, tgt_rule) -> (body map, score)
 		self.__cand_rule_matches = {}
+		# special extra map for legal rules
+		# (src_rule, tgt_rule) -> (effect map, score)
+		self.__cand_legal_matches = {}
 
 		# create all possible matches
-		src_rules = [src_int_rep.get_update_rules(), \
+		src_rules = [src_int_rep.get_legal_rules(), \
+		             src_int_rep.get_update_rules(), \
 		             src_int_rep.get_elab_rules(), \
-		             src_int_rep.get_legal_rules(), \
 		             src_int_rep.get_goal_rules(), \
 		             src_int_rep.get_terminal_rules()]
 
-		tgt_rules = [tgt_int_rep.get_update_rules(), \
+		tgt_rules = [tgt_int_rep.get_legal_rules(), \
+		             tgt_int_rep.get_update_rules(), \
 		             tgt_int_rep.get_elab_rules(), \
-		             tgt_int_rep.get_legal_rules(), \
 		             tgt_int_rep.get_goal_rules(), \
 		             tgt_int_rep.get_terminal_rules()]
 		
@@ -80,6 +96,18 @@ class PartialMap:
 				self.__cand_rule_matches[(sr,tr)] = \
 						filter(lambda x: x[1] > 0, zip(body_maps, body_map_scores))
 
+				if i == 0:
+					# for legal rules, make possible effect maps
+					src_move = sr.get_head().get_predicate()
+					tgt_move = tr.get_head().get_predicate()
+					src_effects = self.__src_move_effects[src_move]
+					tgt_effects = self.__tgt_move_effects[tgt_move]
+					
+					effect_maps = possible_matchings(src_effects, tgt_effects)
+					scores = [self.__effect_map_score(m) for m in effect_maps]
+					self.__cand_legal_matches[(sr,tr)] = filter(lambda x: x[1] > 0, \
+					    zip(effect_maps, scores))
+		
 		return self
 	
 	def __init__(self):
@@ -92,6 +120,9 @@ class PartialMap:
 		c.__matched_preds = self.__matched_preds.copy()
 		c.__matched_rules = self.__matched_rules.copy()
 		c.__cand_rule_matches = self.__cand_rule_matches.copy()
+		c.__src_move_effects = self.__src_move_effects.copy()
+		c.__tgt_move_effects = self.__tgt_move_effects.copy()
+		c.__cand_legal_matches = self.__cand_legal_matches.copy()
 		return c
 
 	def __pred_arg_match_score(self, sp, tp):
@@ -118,7 +149,7 @@ class PartialMap:
 			intersect_score = reduce(lambda x, y: x+y, avgs)
 		return intersect_score / max(abs(sp.get_arity() - tp.get_arity()),1)
 
-	def __pred_match_score(self, sp, tp):
+	def pred_match_score(self, sp, tp):
 		# check to make sure the predicates don't already have conflicting mappings
 		if sp in self.__matched_preds:
 			if self.__matched_preds[sp] != tp:
@@ -141,7 +172,7 @@ class PartialMap:
 	def __body_map_score(self, sr, tr, m):
 		total = 0
 		for sp, tp in m.items():
-			pm_score = self.__pred_match_score(sp, tp)
+			pm_score = self.pred_match_score(sp, tp)
 			if pm_score == 0:
 				# if two predicates are illegal to match, then the
 				# entire matching is bad
@@ -151,6 +182,17 @@ class PartialMap:
 		#num_unmatched = max(len(sr.get_body()), len(tr.get_body())) - len(m)
 		#return max(0.1, total - num_unmatched) 
 		return total
+
+	def __effect_map_score(self, effect_map):
+		"Effect map score is pretty much just like body map score"
+		score = 0
+		for se, te in effect_map.items():
+			s = self.pred_match_score(se, te)
+			if s == 0:
+				return 0
+			else:
+				score += s
+		return score
 
 	def __head_match_score(self, sr, tr):
 		srhead = sr.get_head()
@@ -169,7 +211,7 @@ class PartialMap:
 		else:
 			shp = self.__src_preds[srhead.get_predicate()]
 			thp = self.__tgt_preds[trhead.get_predicate()]
-			return self.__pred_match_score(shp, thp)
+			return self.pred_match_score(shp, thp)
 
 	def __rule_match_score(self, sr, tr):
 		if (sr, tr) not in self.__cand_rule_matches:
@@ -192,6 +234,12 @@ class PartialMap:
 		best_score += HEAD_SCORE_FACTOR * head_match_score
 		return (best_map, best_score)
 
+	def __legal_rule_match_score(self, sr, tr):
+		"Special calculations for legal moves"
+
+		best, score = find_max(self.__cand_legal_matches[(sr,tr)], lambda x: x[1])
+		return (self.__cand_legal_matches[(sr,tr)][best][0], score)
+
 	def __update_rule_match(self, sr, tr):
 		# recalculate body mapping score for all possible mappings
 		body_maps = self.__cand_rule_matches[(sr,tr)]
@@ -204,7 +252,18 @@ class PartialMap:
 			else:
 				body_maps[i] = (body_maps[i][0], new_score)
 				i += 1
-	
+
+	def __update_effect_match(self, sr, tr):
+		effect_maps = self.__cand_legal_matches[(sr,tr)]
+		i = 0
+		while i < len(effect_maps):
+			new_score = self.__effect_map_score(effect_maps[0][0])
+			if new_score == 0:
+				del effect_maps[i]
+			else:
+				effect_maps[i] = (effect_maps[i][0], new_score)
+				i += 1
+
 	def __update_all_rule_matches(self):
 		to_erase = []
 		for sr, tr in self.__cand_rule_matches:
@@ -215,11 +274,19 @@ class PartialMap:
 				continue
 			
 			self.__update_rule_match(sr, tr)
+			if sr.get_type() == Sentence.MOVE:
+				# legal rules have to also have possible effect maps
+				self.__update_effect_match(sr, tr)
+
 			if len(self.__cand_rule_matches[(sr,tr)]) == 0:
+				to_erase.append((sr,tr))
+			elif sr.get_type() == Sentence.MOVE and len(self.__cand_legal_matches[(sr,tr)]) == 0:
 				to_erase.append((sr,tr))
 
 		for sr, tr in to_erase:
 			del self.__cand_rule_matches[(sr,tr)]
+			if sr.get_type() == Sentence.MOVE:
+				del self.__cand_legal_matches[(sr,tr)]
 		
 		return len(to_erase)
 	
@@ -243,9 +310,14 @@ class PartialMap:
 		self.__matched_rules[sr] = tr
 		
 		# delete all other match candidates involving these rules
-		for sr1, tr1 in self.__cand_rule_matches.keys():
-			if sr1 == sr or tr1 == tr:
-				del self.__cand_rule_matches[(sr1, tr1)]
+		for rule_pair in self.__cand_rule_matches.keys():
+			if rule_pair[0] == sr or rule_pair[1] == tr:
+				del self.__cand_rule_matches[rule_pair]
+
+		if sr.get_type() == Sentence.MOVE:
+			for rule_pair in self.__cand_legal_matches.keys():
+				if rule_pair[0] == sr or rule_pair[1] == tr:
+					del self.__cand_legal_matches[rule_pair]
 
 		# add predicate maps
 		# first add head predicates
@@ -258,10 +330,10 @@ class PartialMap:
 
 		# body predicates
 		for sp, tp in body_map.items():
-			if self.__pred_match_score(sp, tp) >= 1:
+			if self.pred_match_score(sp, tp) >= 1:
 				self.__add_predicate_match(sp, tp)
 
-		print "=== done matching rules ==="
+		print >> sys.stderr, "=== done matching rules ==="
 
 		return self.__update_all_rule_matches()
 
@@ -280,6 +352,32 @@ class PartialMap:
 		
 		return (best_sr, best_tr, best_map, best_score)
 	
+	def add_best_legal_rule_match(self):
+		best_score = -1
+		best_effect_map = None
+		best_sr = None
+		best_tr = None
+		for rule_pair, maps  in self.__cand_legal_matches.items():
+			i, score = find_max(maps, lambda x: x[1])
+			if score > best_score:
+				best_score = score
+				best_effect_map = maps[i][0]
+				best_sr = rule_pair[0]
+				best_tr = rule_pair[1]
+		
+		if best_sr is None:
+			return (None, None, 0, 0)
+		pdb.set_trace()
+		for se, te in best_effect_map.items():
+			self.__add_predicate_match(se, te)
+		
+		self.__update_all_rule_matches()
+
+		bmap, score = self.__rule_match_score(best_sr, best_tr)
+		#assert score > 0
+		invalidated = self.add_rule_match(best_sr, best_tr, bmap)
+		return (best_sr, best_tr, invalidated, score)
+
 	def get_pred_matches(self):
 		return self.__matched_preds
 
@@ -296,7 +394,7 @@ class PartialMap:
 	def score(self):
 		score = 0
 		for sp, tp in self.__matched_preds.items():
-			score += self.__pred_match_score(sp, tp)
+			score += self.pred_match_score(sp, tp)
 
 		return score
 
