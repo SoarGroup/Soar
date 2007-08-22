@@ -785,7 +785,7 @@ int next_template_id( agent *my_agent, const char *template_name )
 	char first_letter;
 	float init_value = 0;
 
-	Bool chunk_var;
+	Bool chunk_var = my_agent->variablize_this_chunk;
 	condition *cond_top, *cond_bottom;
 
 	// get the preference value
@@ -807,6 +807,9 @@ int next_template_id( agent *my_agent, const char *template_name )
 	symbol_remove_ref( my_agent, referent );
 
 	// make new action list
+	// small hack on variablization: the artificial tc gets dealt with later, just needs to be explicit non-zero
+	my_agent->variablize_this_chunk = TRUE;
+	my_agent->variablization_tc = -1;
 	action *new_action = make_simple_action( my_agent, id, attr, value, referent );
 	new_action->preference_type = NUMERIC_INDIFFERENT_PREFERENCE_TYPE;
 
@@ -827,8 +830,6 @@ int next_template_id( agent *my_agent, const char *template_name )
 	// prep conditions
 	copy_condition_list( my_agent, my_template_instance->top_of_instantiated_conditions, &cond_top, &cond_bottom );
 	add_goal_or_impasse_tests_to_conds( my_agent, cond_top );
-	chunk_var = my_agent->variablize_this_chunk;
-	my_agent->variablize_this_chunk = TRUE;
 	reset_variable_generator( my_agent, cond_top, NIL );
 	my_agent->variablization_tc = get_new_tc_number( my_agent );
 	variablize_condition_list( my_agent, cond_top );
