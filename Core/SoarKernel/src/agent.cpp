@@ -47,6 +47,7 @@
 #include "kernel_struct.h"
 #include "exploration.h"
 #include "reinforcement_learning.h"
+#include "decision_manipulation.h"
 
 /* JC ADDED: Need to initialize gski callbacks */
 #include "gski_event_system_functions.h"
@@ -90,6 +91,8 @@ void init_soar_agent(Kernel* thisKernel, agent* thisAgent) {
   init_chunker (thisAgent);
   init_tracing (thisAgent);
   init_explain(thisAgent);  /* AGR 564 */
+  init_select(thisAgent);
+  init_predict(thisAgent);
 
 #ifdef REAL_TIME_BEHAVIOR
   /* RMJ */
@@ -374,6 +377,14 @@ agent * create_soar_agent (Kernel * thisKernel, char * agent_name) {            
   
   newAgent->rl_template_count = new std::map<std::string, int>();
   
+  // select initialization
+  newAgent->select = new select_info;
+  init_select( newAgent );
+
+  // predict initialization
+  newAgent->prediction = new std::string();
+  init_predict( newAgent );
+
   return newAgent;
 }
 
@@ -524,6 +535,13 @@ void destroy_soar_agent (Kernel * thisKernel, agent * delete_agent)
 
   delete_agent->rl_template_count->clear();
   delete delete_agent->rl_template_count;
+
+  // cleanup select
+  init_select( delete_agent );
+  delete delete_agent->select;
+
+  // cleanup predict
+  delete delete_agent->prediction;
 
   /* Free soar agent structure */
   free((void *) delete_agent);

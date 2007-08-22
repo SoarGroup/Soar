@@ -13,6 +13,11 @@
 
 #include "cli_Commands.h"
 
+#include "gSKI_Agent.h"
+#include "sml_Names.h"
+
+#include "decision_manipulation.h"
+
 using namespace cli;
 using namespace sml;
 
@@ -33,10 +38,30 @@ bool CommandLineInterface::DoSelect( gSKI::Agent* pAgent, const std::string* pOp
 	if ( !RequireAgent( pAgent ) ) 
 		return false;
 
+	// get soar kernel agent - bad gSKI!
+	agent *my_agent = pAgent->GetSoarAgent();
+
 	if ( !pOp )
-		m_Result << "current op";
+	{
+		const char *my_selection = get_selected_operator( my_agent );
+		
+		if ( my_selection != NULL )
+		{
+			if ( m_RawOutput )
+				m_Result << my_selection;
+			else
+				AppendArgTagFast( sml_Names::kOperator_ID, sml_Names::kTypeID, my_selection );
+		}
+		else
+		{
+			if ( m_RawOutput )
+				m_Result << "No operator selected.";
+			else
+				AppendArgTagFast( sml_Names::kParamMessage, sml_Names::kTypeString, "No operator selected." );
+		}
+	}
 	else
-		m_Result << "select: " << *pOp;
+		select_next_operator( my_agent, pOp->c_str() );
 	
-	return SetError( CLIError::kCommandNotImplemented );
+	return false;
 }

@@ -51,6 +51,8 @@
 
 #include "exploration.h"
 #include "reinforcement_learning.h"
+#include "decision_manipulation.h"
+#include "misc.h"
 
 /* JC ADDED: This is for event firing in gSKI */
 #include "gski_event_system_functions.h"
@@ -838,7 +840,7 @@ byte require_preference_semantics (agent *thisAgent, slot *s, preference **resul
   return NONE_IMPASSE_TYPE;
 }
 
-byte run_preference_semantics (agent* thisAgent, slot *s, preference **result_candidates, bool consistency = false) 
+byte run_preference_semantics (agent* thisAgent, slot *s, preference **result_candidates, bool consistency = false, bool predict = false) 
 {
   preference *p, *p2, *cand, *prev_cand;
   Bool match_found, not_all_indifferent, not_all_parallel;
@@ -850,6 +852,31 @@ byte run_preference_semantics (agent* thisAgent, slot *s, preference **result_ca
     if (! s->isa_context_slot) mark_slot_for_possible_removal (thisAgent, s);
     *result_candidates = NIL;
     return NONE_IMPASSE_TYPE;
+  }
+
+  // if this is the true decision slot and selection has been made, attempt force selection
+  if ( !( ( ( thisAgent->attribute_preferences_mode == 2 ) || ( thisAgent->operand2_mode == TRUE ) ) && ( !s->isa_context_slot ) ) ) 
+  {
+	  if ( get_selected_operator( thisAgent ) != NULL )
+	  {
+		  preference *force_result = force_selection( thisAgent, s->all_preferences, !predict );
+
+		  if ( force_result )
+		  {
+			  *result_candidates = force_result;
+			  return NONE_IMPASSE_TYPE;
+		  }
+		  else
+		  {
+			  print( thisAgent, "WARNING: Invalid forced selection operator id" );
+			
+			  char buf[256];
+			  SNPRINTF( buf, 254, "WARNING: Invalid forced selection operator id" );
+			  gSKI_MakeAgentCallbackXML( thisAgent, kFunctionBeginTag, kTagWarning );
+			  gSKI_MakeAgentCallbackXML( thisAgent, kFunctionAddAttribute, kTypeString, buf );
+			  gSKI_MakeAgentCallbackXML( thisAgent, kFunctionEndTag, kTagWarning );
+		  }
+	  }
   }
   
   /* === Requires === */
@@ -2049,7 +2076,7 @@ Symbol *attribute_of_existing_impasse (agent* thisAgent, Symbol *goal) {
    the given slot.
 ------------------------------------------------------------------ */
 
-Bool decide_context_slot (agent* thisAgent, Symbol *goal, slot *s) 
+Bool decide_context_slot (agent* thisAgent, Symbol *goal, slot *s, bool predict = false) 
 {
    byte impasse_type;
    Symbol *attribute_of_impasse;
@@ -2064,11 +2091,61 @@ Bool decide_context_slot (agent* thisAgent, Symbol *goal, slot *s)
              no-change impasse there --- */
       impasse_type = NO_CHANGE_IMPASSE_TYPE;
       candidates = NIL; /* we don't want any impasse ^item's later */
+
+	  if ( predict )
+	  {
+		  set_prediction( thisAgent, "none" );
+		  return TRUE;
+	  }
    } 
    else 
    {
       /* --- the slot is decidable, so run preference semantics on it --- */
       impasse_type = run_preference_semantics (thisAgent, s, &candidates);
+
+	  if ( predict )
+	  {
+		  switch ( impasse_type )
+		  {
+				case CONSTRAINT_FAILURE_IMPASSE_TYPE:
+					set_prediction( thisAgent, "constraint" );
+					break;
+				
+				case CONFLICT_IMPASSE_TYPE:
+					set_prediction( thisAgent, "conflict" );
+					break;
+
+				case TIE_IMPASSE_TYPE:
+					set_prediction( thisAgent, "tie" );
+					break;
+
+				case NO_CHANGE_IMPASSE_TYPE:
+					set_prediction( thisAgent, "none" );
+					break;
+
+				default:
+					if ( !candidates || ( candidates->value->common.symbol_type != IDENTIFIER_SYMBOL_TYPE ) )
+						set_prediction( thisAgent, "none" );
+					else
+					{
+						std::string temp = "";
+
+						// get first letter of id
+						temp += candidates->value->id.name_letter;
+
+						// get number
+						std::string *temp2 = to_string( candidates->value->id.name_number );
+						temp += (*temp2);
+						delete temp2;
+
+						set_prediction( thisAgent, temp.c_str() );
+					}
+					break;
+		  }
+
+		  return TRUE;
+	  }
+
       remove_wmes_for_context_slot (thisAgent, s); /* must remove old wme before adding
                                                       the new one (if any) */
       if (impasse_type == NONE_IMPASSE_TYPE) 
@@ -2199,7 +2276,7 @@ Bool decide_context_slot (agent* thisAgent, Symbol *goal, slot *s)
    the appropriate context slots.
 ------------------------------------------------------------------ */
 
-void decide_context_slots (agent* thisAgent) 
+void decide_context_slots (agent* thisAgent, bool predict = false) 
 {
    Symbol *goal;
    slot *s;
@@ -2237,11 +2314,13 @@ void decide_context_slots (agent* thisAgent)
       } /* end of while (TRUE) find next slot to decide */
       
       /* --- now go and decide that slot --- */
-      if (decide_context_slot (thisAgent, goal, s)) 
+      if (decide_context_slot (thisAgent, goal, s, predict)) 
          break;
       
    } /* end of while (TRUE) loop down context stack */
-   thisAgent->highest_goal_whose_context_changed = NIL;
+   
+   if ( !predict )
+	   thisAgent->highest_goal_whose_context_changed = NIL;
 }
 
 /* **********************************************************************
@@ -2317,24 +2396,30 @@ void do_working_memory_phase (agent* thisAgent) {
 
 }
 
-void do_decision_phase (agent* thisAgent) 
+void do_decision_phase (agent* thisAgent, bool predict) 
 {
-	if ( soar_rl_enabled( thisAgent ) )
+	if ( !predict && soar_rl_enabled( thisAgent ) )
 		tabulate_reward_values( thisAgent );
+
+	srand_restore_snapshot( thisAgent, !predict );
 	
 	/* phase printing moved to init_soar: do_one_top_level_phase */
 
-   decide_context_slots (thisAgent);
-   do_buffered_wm_and_ownership_changes(thisAgent);
+   decide_context_slots (thisAgent, predict);
 
-  /*
-   * Bob provided a solution to fix WME's hanging around unsupported
-   * for an elaboration cycle.
-   */
-   decide_non_context_slots(thisAgent);
-   do_buffered_wm_and_ownership_changes(thisAgent);
+   if ( !predict )
+   {
+	   do_buffered_wm_and_ownership_changes(thisAgent);
 
-   update_exploration_parameters( thisAgent );
+	  /*
+	   * Bob provided a solution to fix WME's hanging around unsupported
+	   * for an elaboration cycle.
+	   */
+	   decide_non_context_slots(thisAgent);
+	   do_buffered_wm_and_ownership_changes(thisAgent);
+
+	   update_exploration_parameters( thisAgent );
+   }
 }  
 
 void create_top_goal (agent* thisAgent) 

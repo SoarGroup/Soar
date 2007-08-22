@@ -13,6 +13,11 @@
 
 #include "cli_Commands.h"
 
+#include "gSKI_Agent.h"
+#include "sml_Names.h"
+
+#include "decision_manipulation.h"
+
 using namespace cli;
 using namespace sml;
 
@@ -33,5 +38,15 @@ bool CommandLineInterface::DoPredict( gSKI::Agent* pAgent )
 	if ( !RequireAgent( pAgent ) ) 
 		return false;
 
-	return SetError( CLIError::kCommandNotImplemented );
+	// get soar kernel agent - bad gSKI!
+	agent *my_agent = pAgent->GetSoarAgent();
+
+	const char *prediction_result = get_prediction( my_agent );
+
+	if ( m_RawOutput )
+		m_Result << prediction_result;
+	else
+		AppendArgTagFast( sml_Names::kParamMessage, sml_Names::kTypeString, prediction_result );
+
+	return true;
 }

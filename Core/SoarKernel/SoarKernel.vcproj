@@ -185,6 +185,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\src\decision_manipulation.cpp"
+				>
+			</File>
+			<File
 				RelativePath=".\src\explain.cpp"
 				>
 			</File>
@@ -316,6 +320,10 @@
 			</File>
 			<File
 				RelativePath=".\include\decide.h"
+				>
+			</File>
+			<File
+				RelativePath=".\include\decision_manipulation.h"
 				>
 			</File>
 			<File

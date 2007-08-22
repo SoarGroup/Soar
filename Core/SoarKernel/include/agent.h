@@ -47,6 +47,8 @@ typedef struct rl_parameter_struct rl_parameter;
 // exploration types
 typedef struct exploration_parameter_struct exploration_parameter;
 
+typedef struct select_info_struct select_info;
+
 #ifdef __cplusplus
 extern "C"
 {
@@ -760,6 +762,13 @@ kernel time and total_cpu_time greater than the derived total CPU time. REW */
   std::map<std::string, rl_parameter> *rl_params;
   std::map<std::string, double> *rl_stats;
   std::map<std::string, int> *rl_template_count;
+
+  // select
+  select_info *select;
+
+  // predict
+  unsigned long predict_seed;
+  std::string *prediction;
 
 } agent;
 /*************** end of agent struct *****/
