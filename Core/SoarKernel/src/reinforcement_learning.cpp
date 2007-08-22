@@ -1057,7 +1057,11 @@ void perform_rl_update( agent *my_agent, float op_value, Symbol *goal )
 
 	if ( num_prev_fired_rules )
 	{
-		double trace_increment = 1.0 / num_prev_fired_rules;
+		double trace_increment = 1.0;
+
+		if ( accumulation == RL_ACCUMULATION_SUM )
+			trace_increment /= num_prev_fired_rules;
+		
 		for ( cons *c = data->prev_op_rl_rules; c; c = c->rest )
 		{
 			if ( c->first )
@@ -1088,10 +1092,9 @@ void perform_rl_update( agent *my_agent, float op_value, Symbol *goal )
 		// update is applied depending upon type of accumulation mode
 		// sum: add the update to the existing value
 		// avg: average the update with the existing value
-		if ( accumulation == RL_ACCUMULATION_SUM )
-			temp += ( update * alpha * iter->second );
-		else if ( accumulation == RL_ACCUMULATION_AVG )
-			temp = ( temp + ( update * alpha * iter->second ) ) / 2.0;
+		temp += ( update * alpha * iter->second );
+		if ( accumulation == RL_ACCUMULATION_AVG )
+			temp /= 2.0;
 
 		// Change value of rule
 		symbol_remove_ref( my_agent, rhs_value_to_symbol( prod->action_list->referent ) );
