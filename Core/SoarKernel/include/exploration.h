@@ -125,7 +125,10 @@ extern bool set_reduction_rate( agent *my_agent, const char *parameter, const lo
 // selects a candidate based upon the current exploration mode
 extern preference *choose_according_to_exploration_mode( agent *my_agent, slot *s, preference *candidates );
 
-// selects a candidate in a random-uniform fashion
+// selects a candidate in a random fashion
+extern preference *randomly_select( preference *candidates );
+
+// selects a candidate in a softmax fashion
 extern preference *probabilistically_select( preference *candidates );
 
 // selects a candidate based on a boltzmann distribution
@@ -135,7 +138,7 @@ extern preference *boltzmann_select( agent *my_agent, preference *candidates );
 extern preference *epsilon_greedy_select( agent *my_agent, preference *candidates );
 
 // returns candidate with highest q-value (random amongst ties), assumes computed values
-extern preference *get_highest_q_value( preference *candidates );
+extern preference *get_highest_q_value_pref( preference *candidates );
 
 // computes total contribution for a candidate from each preference, as well as number of contributions
 extern void compute_value_of_candidate( agent *my_agent, preference *cand, slot *s, float default_value = 0 );

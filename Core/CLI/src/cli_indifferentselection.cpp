@@ -37,6 +37,7 @@ bool CommandLineInterface::ParseIndifferentSelection( gSKI::Agent* pAgent, std::
 		{'f', "first",				0},
 		{'l', "last",				0},
 		{'u', "random-uniform",		0},
+		{'x', "softmax",			0},
 		
 		// selection parameters
 		{'e', "epsilon",			0},
@@ -77,6 +78,9 @@ bool CommandLineInterface::ParseIndifferentSelection( gSKI::Agent* pAgent, std::
 				break;
 			case 'u':
 				options.set( INDIFFERENT_RANDOM );
+				break;
+			case 'x':
+				options.set( INDIFFERENT_SOFTMAX );
 				break;
 			
 			// selection parameters
@@ -125,7 +129,8 @@ bool CommandLineInterface::ParseIndifferentSelection( gSKI::Agent* pAgent, std::
 			  options.test( INDIFFERENT_FIRST ) ||
 			  options.test( INDIFFERENT_E_GREEDY ) ||
 			  options.test( INDIFFERENT_LAST ) ||
-			  options.test( INDIFFERENT_RANDOM ) )
+			  options.test( INDIFFERENT_RANDOM ) ||
+			  options.test( INDIFFERENT_SOFTMAX ) )
 	{
 		if ( m_NonOptionArguments )
 			return SetError( CLIError::kTooManyArgs );
@@ -141,6 +146,8 @@ bool CommandLineInterface::ParseIndifferentSelection( gSKI::Agent* pAgent, std::
 			return DoIndifferentSelection( pAgent, 'l' );
 		else if ( options.test( INDIFFERENT_RANDOM ) )
 			return DoIndifferentSelection( pAgent, 'u' );
+		else if ( options.test( INDIFFERENT_SOFTMAX ) )
+			return DoIndifferentSelection( pAgent, 'x' );
 	}
 	
 	// case: selection parameter can do zero or one non-option arguments
@@ -280,6 +287,8 @@ bool CommandLineInterface::DoIndifferentSelection( gSKI::Agent* pAgent, const ch
 		return set_exploration_policy( my_agent, "last" );
 	else if ( pOp == 'u' )
 		return set_exploration_policy( my_agent, "random-uniform" );
+	else if ( pOp == 'x' )
+		return set_exploration_policy( my_agent, "softmax" );
 	
 	// selection policy parameter
 	else if ( pOp == 'e' )

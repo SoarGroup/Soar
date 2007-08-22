@@ -43,6 +43,8 @@ const long convert_exploration_policy( const char *policy_name )
 		return USER_SELECT_LAST;
 	if ( !strcmp( policy_name, "random-uniform" ) )
 		return USER_SELECT_RANDOM;
+	if ( !strcmp( policy_name, "softmax" ) )
+		return USER_SELECT_SOFTMAX;
 	
 	return NULL;
 }
@@ -59,6 +61,8 @@ const char *convert_exploration_policy( const long policy )
 		return "last";
 	if ( policy == USER_SELECT_RANDOM )
 		return "random-uniform";
+	if ( policy == USER_SELECT_SOFTMAX )
+		return "softmax";
 	
 	return NULL;
 }
@@ -103,7 +107,7 @@ exploration_parameter *add_exploration_parameter( double value, bool (*val_func)
 	newbie->value = value;
 	newbie->reduction_policy = EXPLORATION_EXPONENTIAL;
 	newbie->val_func = val_func;
-	newbie->rates[ EXPLORATION_EXPONENTIAL ] = 0;
+	newbie->rates[ EXPLORATION_EXPONENTIAL ] = 1;
 	newbie->rates[ EXPLORATION_LINEAR ] = 0;
 	
 	return newbie;
@@ -436,6 +440,10 @@ preference *choose_according_to_exploration_mode( agent *my_agent, slot *s, pref
 			break;
 
 		case USER_SELECT_RANDOM:
+			return_val = randomly_select( candidates );
+			break;
+
+		case USER_SELECT_SOFTMAX:
 			return_val = probabilistically_select( candidates );
 			break;
 
@@ -456,42 +464,65 @@ preference *choose_according_to_exploration_mode( agent *my_agent, slot *s, pref
 }
 
 /***************************************************************************
+ * Function     : randomly_select
+ **************************************************************************/
+preference *randomly_select( preference *candidates )
+{
+	unsigned int cand_count = 0;
+	unsigned int chosen_num = 0;
+	preference *cand;
+	
+	// select at random 
+	for ( cand = candidates; cand != NIL; cand = cand->next_candidate )
+		cand_count++;
+
+	chosen_num = SoarRandInt( cand_count - 1 );
+
+	cand = candidates;
+	while ( chosen_num ) 
+	{ 
+		cand = cand->next_candidate; 
+		chosen_num--; 
+	}
+
+	return cand;
+}
+
+/***************************************************************************
  * Function     : probabilistically_select
  **************************************************************************/
 preference *probabilistically_select( preference *candidates )
 {	
 	preference *cand = 0;
 	double total_probability = 0;
-	double low_probability = 0;
-	unsigned int cand_count = 0;
 	double selected_probability = 0;
 	double current_sum = 0;
 	double rn = 0;
 
-	/*
-	* General idea: in order to support negative values, shift all calculations
-	* up the absolute value of the lowest numeric value (if one exists below zero)
-	*/
+	bool good_prefs = true;
 
+	// shouldn't support non-positive numbers
 	for ( cand = candidates; cand != NIL; cand = cand->next_candidate )
 	{
-		if ( cand->numeric_value < low_probability )
-			low_probability = cand->numeric_value;
-		cand_count++;
+		if ( cand->numeric_value <= 0 )
+		{
+			good_prefs = false;
+			break;
+		}
+		else
+			total_probability += cand->numeric_value;
 	}
 	
-	for ( cand = candidates; cand != NIL; cand = cand->next_candidate )
-		total_probability += cand->numeric_value;
-	total_probability += ( cand_count * fabs( low_probability ) );
+	if ( !good_prefs )
+		return randomly_select( candidates );
 	
-	rn = SoarRand(); 
+	rn = SoarRand();
 	selected_probability = rn * total_probability;
 	current_sum = 0;
-	low_probability = fabs( low_probability );
 
 	for ( cand = candidates; cand != NIL; cand = cand->next_candidate ) 
 	{
-		current_sum += ( cand->numeric_value + low_probability );
+		current_sum += cand->numeric_value;
 		if ( selected_probability <= current_sum )
 			return cand;
 	}
@@ -627,35 +658,17 @@ preference *epsilon_greedy_select( agent *my_agent, preference *candidates )
 	}
 
 	if ( SoarRand() < epsilon )	
-	{
-		unsigned int cand_count = 0;
-		unsigned int chosen_num = 0;
-		
-		// select at random 
-		for ( cand = candidates; cand != NIL; cand = cand->next_candidate )
-			cand_count++;
-	
-		chosen_num = SoarRandInt( cand_count - 1 );
-	
-		cand = candidates;
-		while ( chosen_num ) 
-		{ 
-			cand = cand->next_candidate; 
-			chosen_num--; 
-		}
-	
-		return cand;
-	} 
+		return randomly_select( candidates );
 	else
-		return get_highest_q_value( candidates );
+		return get_highest_q_value_pref( candidates );
 	
 	return NIL;
 }
 
 /***************************************************************************
- * Function     : get_highest_q_value
+ * Function     : get_highest_q_value_pref
  **************************************************************************/
-preference *get_highest_q_value( preference *candidates )
+preference *get_highest_q_value_pref( preference *candidates )
 {
 	preference *cand;
 	preference *top_cand = candidates;
@@ -674,7 +687,7 @@ preference *get_highest_q_value( preference *candidates )
 			num_max_cand++;
 	}
 
-	if (num_max_cand == 1)	
+	if ( num_max_cand == 1 )	
 		return top_cand;
 	else 
 	{

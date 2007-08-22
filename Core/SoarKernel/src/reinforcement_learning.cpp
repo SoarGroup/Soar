@@ -1031,6 +1031,8 @@ void perform_rl_update( agent *my_agent, float op_value, Symbol *goal )
 	rl_data *data = goal->id.rl_info;
 	soar_rl_et_map::iterator iter;
 
+	const long accumulation = get_rl_parameter( my_agent, "accumulation-mode", RL_RETURN_LONG );
+
 	double alpha = get_rl_parameter( my_agent, "learning-rate" );
 	double lambda = get_rl_parameter( my_agent, "eligibility-trace-decay-rate" );
 	double gamma = get_rl_parameter( my_agent, "eligibility-trace-discount-rate" );
@@ -1082,7 +1084,14 @@ void perform_rl_update( agent *my_agent, float op_value, Symbol *goal )
 	{	
 		production *prod = iter->first;
 		float temp = get_number_from_symbol( rhs_value_to_symbol( prod->action_list->referent ) );
-		temp += ( update * alpha * iter->second );
+
+		// update is applied depending upon type of accumulation mode
+		// sum: add the update to the existing value
+		// avg: average the update with the existing value
+		if ( accumulation == RL_ACCUMULATION_SUM )
+			temp += ( update * alpha * iter->second );
+		else if ( accumulation == RL_ACCUMULATION_AVG )
+			temp = ( temp + ( update * alpha * iter->second ) ) / 2.0;
 
 		// Change value of rule
 		symbol_remove_ref( my_agent, rhs_value_to_symbol( prod->action_list->referent ) );

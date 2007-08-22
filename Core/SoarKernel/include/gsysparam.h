@@ -80,6 +80,7 @@ typedef byte wme_trace_type;   /* must be one of the above constants */
 #define USER_SELECT_FIRST  		3		/* just choose the first candidate item */
 #define USER_SELECT_LAST   		4		/* choose the last item   AGR 615 */	
 #define USER_SELECT_RANDOM 		5		/* pick one at random */
+#define USER_SELECT_SOFTMAX		6		/* pick one at random, probabalistically biased by numeric preferences */
 
 /* ---------------------------
    And now, the sysparam's
