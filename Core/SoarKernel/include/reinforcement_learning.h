@@ -259,4 +259,7 @@ extern void store_rl_data( agent *my_agent, Symbol *goal, preference *cand );
 // update the value of Soar-RL rules
 extern void perform_rl_update( agent *my_agent, float op_value, Symbol *goal );
 
+// clears eligibility traces in accordance with watkins
+extern void watkins_clear( agent *my_agent, Symbol *goal );
+
 #endif

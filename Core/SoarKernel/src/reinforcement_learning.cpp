@@ -1052,7 +1052,7 @@ void perform_rl_update( agent *my_agent, float op_value, Symbol *goal )
 	// Update trace for just fired prods
 	int num_prev_fired_rules = 0;
 	for ( cons *c = data->prev_op_rl_rules; c; c = c->rest )
-		if (c->first) 
+		if ( c->first ) 
 			num_prev_fired_rules++;
 
 	if ( num_prev_fired_rules )
@@ -1118,4 +1118,17 @@ void perform_rl_update( agent *my_agent, float op_value, Symbol *goal )
 	data->reward = 0.0;
 	data->step = 0;
 	data->impasse_type = NONE_IMPASSE_TYPE;
+}
+
+/***************************************************************************
+ * Function     : watkins_clear
+ **************************************************************************/
+void watkins_clear( agent *my_agent, Symbol *goal )
+{
+	rl_data *data = goal->id.rl_info;
+	soar_rl_et_map::iterator iter;
+	
+	// Iterate through eligibility_traces, remove traces
+	for ( iter = data->eligibility_traces->begin(); iter != data->eligibility_traces->end(); )
+		data->eligibility_traces->erase( iter++ );
 }
