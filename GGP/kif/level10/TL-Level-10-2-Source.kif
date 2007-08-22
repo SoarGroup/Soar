@@ -828,64 +828,64 @@
 ;----------------------------------------------------------------------
 
 ; Meaning: Exhausted our travel distance
-(<= (nStepsTowardsHero 0 ?startx ?starty ?startx ?starty)
-   (cellNearMonster ?startx ?starty)) ; SW
+(<= (nStepsTowardsHero ?monster 0 ?startx ?starty ?startx ?starty)
+    (cellNearMonster ?monster ?startx ?starty)) ; SW
 
-(<= (nStepsTowardsHero 1 ?startx ?starty ?finalx ?finaly)
-   (cellNearMonster ?startx ?starty) ; SW
-   (cellNearMonster ?finalx ?finaly) ; SW
-   (singleStepTowardsHero ?startx ?starty ?finalx ?finaly))
+(<= (nStepsTowardsHero ?monster 1 ?startx ?starty ?finalx ?finaly)
+    (cellNearMonster ?monster ?startx ?starty) ; SW
+    (cellNearMonster ?monster ?finalx ?finaly) ; SW
+    (singleStepTowardsHero ?monster ?startx ?starty ?finalx ?finaly))
 
-(<= (nStepsTowardsHero 2 ?startx ?starty ?finalx ?finaly)
- (cellNearMonster ?startx ?starty)
- (cellNearMonster ?finalx ?finaly)
- (singleStepTowardsHero ?startx ?starty ?x2 ?y2)
- (cellNearMonster ?x2 ?y2)
- (singleStepTowardsHero ?x2 ?y2 ?finalx ?finaly))
+(<= (nStepsTowardsHero ?monster 2 ?startx ?starty ?finalx ?finaly)
+  (cellNearMonster ?monster ?startx ?starty)
+  (cellNearMonster ?monster ?finalx ?finaly)
+  (singleStepTowardsHero ?monster ?startx ?starty ?x2 ?y2)
+  (cellNearMonster ?monster ?x2 ?y2)
+  (singleStepTowardsHero ?monster ?x2 ?y2 ?finalx ?finaly))
 
 ; Meaning: Take one step toward destination only if you won't run into hero.
-(<= (singleStepTowardsHero ?startx ?starty ?nextx ?nexty)
-   (oneStepTowardsHero ?startx ?starty ?nextx ?nexty)
+(<= (singleStepTowardsHero ?monster ?startx ?starty ?nextx ?nexty)
+    (oneStepTowardsHero ?monster ?startx ?starty ?nextx ?nexty)
    (traversible ?nextx ?nexty)
    (nextHeroLocation ?herox ?heroy)
    (not (sameLocation ?nextx ?nexty ?herox ?heroy)))
 
 ; Meaning: Stay put and attack the hero.
-(<= (singleStepTowardsHero ?startx ?starty ?startx ?starty)
+(<= (singleStepTowardsHero ?monster ?startx ?starty ?startx ?starty)
    (nextHeroLocation ?herox ?heroy)
-   (oneStepTowardsHero ?startx ?starty ?herox ?heroy))
+    (oneStepTowardsHero ?monster ?startx ?starty ?herox ?heroy))
 
 ;;; Rather than having horizontal or vertical movement preferences
 ;;; as in Wargame, in mRogue we alternate each turn.
 
 ; Meaning: Move one step (horizontally or vertically) towards destination
-(<= (oneStepTowardsHero ?x1 ?y1 ?x3 ?y1)  ; go west
+(<= (oneStepTowardsHero ?monster ?x1 ?y1 ?x3 ?y1)  ; go west
   (nextHeroLocation ?x2 ?y1)
-  (cellNearMonster ?x1 ?y1)
+   (cellNearMonster ?monster ?x1 ?y1)
   (> ?x1 ?x2)
   (- ?x1 1 ?x3))
 
-(<= (oneStepTowardsHero ?x1 ?y1 ?x3 ?y1)  ; go east
+(<= (oneStepTowardsHero ?monster ?x1 ?y1 ?x3 ?y1)  ; go east
   (nextHeroLocation ?x2 ?y1)
-  (cellNearMonster ?x1 ?y1)
+   (cellNearMonster ?monster ?x1 ?y1)
   (> ?x2 ?x1)
   (+ ?x1 1 ?x3))
 
-(<= (oneStepTowardsHero ?x1 ?y1 ?x1 ?y3)  ; go north
+(<= (oneStepTowardsHero ?monster ?x1 ?y1 ?x1 ?y3)  ; go north
   (nextHeroLocation ?x1 ?y2)
-  (cellNearMonster ?x1 ?y1)
+   (cellNearMonster ?monster ?x1 ?y1)
   (> ?y1 ?y2)
   (- ?y1 1 ?y3))
 
-(<= (oneStepTowardsHero ?x1 ?y1 ?x1 ?y3)  ; go south
+(<= (oneStepTowardsHero ?monster ?x1 ?y1 ?x1 ?y3)  ; go south
   (nextHeroLocation ?x1 ?y2)
-  (cellNearMonster ?x1 ?y1)
+   (cellNearMonster ?monster ?x1 ?y1)
   (> ?y2 ?y1)
   (+ ?y1 1 ?y3))
 
-(<= (oneStepTowardsHero ?x1 ?y1 ?x3 ?y1)    ; go west
+(<= (oneStepTowardsHero ?monster ?x1 ?y1 ?x3 ?y1)    ; go west
   (nextHeroLocation ?x2 ?y2)
-  (cellNearMonster ?x1 ?y1)
+   (cellNearMonster ?monster ?x1 ?y1)
   (> ?x1 ?x2)
   (distinct ?y1 ?y2)
   (true odd)
@@ -893,15 +893,15 @@
 
 (<= (otherStepTowardsHero ?x1 ?y1 ?x3 ?y1)    ; go west
   (nextHeroLocation ?x2 ?y2)
-  (cellNearMonster ?x1 ?y1)
+  (cellNearMonster ?monster ?x1 ?y1)
   (> ?x1 ?x2)
   (distinct ?y1 ?y2)
   (true even)
   (- ?x1 1 ?x3))
 
-(<= (oneStepTowardsHero ?x1 ?y1 ?x3 ?y1)    ; go east
+(<= (oneStepTowardsHero ?monster ?x1 ?y1 ?x3 ?y1)    ; go east
   (nextHeroLocation ?x2 ?y2)
-  (cellNearMonster ?x1 ?y1)
+  (cellNearMonster ?monster ?x1 ?y1)
   (> ?x2 ?x1)
   (distinct ?y1 ?y2)
   (true odd)
@@ -909,15 +909,15 @@
 
 (<= (otherStepTowardsHero ?x1 ?y1 ?x3 ?y1)    ; go east
   (nextHeroLocation ?x2 ?y2)
-  (cellNearMonster ?x1 ?y1)
+  (cellNearMonster ?monster ?x1 ?y1)
   (> ?x2 ?x1)
   (distinct ?y1 ?y2)
   (true even)
   (+ ?x1 1 ?x3))
 
-(<= (oneStepTowardsHero ?x1 ?y1 ?x1 ?y3)  ; go north
+(<= (oneStepTowardsHero ?monster ?x1 ?y1 ?x1 ?y3)  ; go north
   (nextHeroLocation ?x2 ?y2)
-  (cellNearMonster ?x1 ?y1)
+  (cellNearMonster ?monster ?x1 ?y1)
   (> ?y1 ?y2)
   (distinct ?x1 ?x2)
   (true even)
@@ -925,15 +925,15 @@
 
 (<= (otherStepTowardsHero ?x1 ?y1 ?x1 ?y3)  ; go north
   (nextHeroLocation ?x2 ?y2)
-  (cellNearMonster ?x1 ?y1)
+  (cellNearMonster ?monster ?x1 ?y1)
   (> ?y1 ?y2)
   (distinct ?x1 ?x2)
   (true odd)
   (- ?y1 1 ?y3))
 
-(<= (oneStepTowardsHero ?x1 ?y1 ?x1 ?y3)  ; go south
+(<= (oneStepTowardsHero ?monster ?x1 ?y1 ?x1 ?y3)  ; go south
   (nextHeroLocation ?x2 ?y2)
-  (cellNearMonster ?x1 ?y1)
+  (cellNearMonster ?monster ?x1 ?y1)
   (> ?y2 ?y1)
   (distinct ?x1 ?x2)
   (true even)
@@ -941,7 +941,7 @@
 
 (<= (otherStepTowardsHero ?x1 ?y1 ?x1 ?y3)  ; go south
   (nextHeroLocation ?x2 ?y2)
-  (cellNearMonster ?x1 ?y1)
+  (cellNearMonster ?monster ?x1 ?y1)
   (> ?y2 ?y1)
   (distinct ?x1 ?x2)
   (true odd)
@@ -1260,7 +1260,7 @@
   (monster ?monster ?monster-type)
   (monsterSpeed ?monster-type ?base-speed)
   (relativeSpeed ?base-speed ?speed)
-  (nStepsTowardsHero ?speed ?x1 ?y1 ?x2 ?y2))
+  (nStepsTowardsHero ?monster ?speed ?x1 ?y1 ?x2 ?y2))
 
 ; Meaning: A different monster has reserved this spot for its next
 ; location.
@@ -1445,62 +1445,62 @@
   (does hero (read ?scroll)))
 
 ; Meaning: The location of a provoked monster
-(<= (relevantMonsterCell ?x ?y)
+(<= (relevantMonsterCell ?monster ?x ?y)
   (monster ?monster ?any)
   (true (location ?monster ?x ?y))
   (provoked ?monster))
 
 ; Meaning: cellNearMonster is true for any cell within manhattan
 ; distance 2 of a provoked monster (including the cell the monster is in)
-(<= (cellNearMonster ?x ?y)
-  (relevantMonsterCell ?x ?y))
+(<= (cellNearMonster ?monster ?x ?y)
+   (relevantMonsterCell ?monster ?x ?y))
 
-(<= (cellNearMonster ?x1 ?y)
-  (relevantMonsterCell ?x ?y)
+(<= (cellNearMonster ?monster ?x1 ?y)
+   (relevantMonsterCell ?monster ?x ?y)
   (int ?d)        ; must ground ?d
   (> ?d 0)
   (> 3 ?d)        ; There is no < (lessThan)
   (- ?x ?d ?x1))
 
-(<= (cellNearMonster ?x1 ?y)
-  (relevantMonsterCell ?x ?y)
+(<= (cellNearMonster ?monster ?x1 ?y)
+   (relevantMonsterCell ?monster ?x ?y)
   (int ?d)
   (> ?d 0)
   (> 3 ?d)
   (+ ?x ?d ?x1))
 
-(<= (cellNearMonster ?x ?y1)
-  (relevantMonsterCell ?x ?y)
+(<= (cellNearMonster ?monster ?x ?y1)
+   (relevantMonsterCell ?monster ?x ?y)
   (int ?d)
   (> ?d 0)
   (> 3 ?d)
   (- ?y ?d ?y1))
 
-(<= (cellNearMonster ?x ?y1)
-  (relevantMonsterCell ?x ?y)
+(<= (cellNearMonster ?monster ?x ?y1)
+   (relevantMonsterCell ?monster ?x ?y)
   (int ?d)
   (> ?d 0)
   (> 3 ?d)
   (+ ?y ?d ?y1))
 
 ; four diagonal cases
-(<= (cellNearMonster ?x1 ?y1)
-  (relevantMonsterCell ?x ?y)
+(<= (cellNearMonster ?monster ?x1 ?y1)
+   (relevantMonsterCell ?monster ?x ?y)
   (+ ?x 1 ?x1)
   (+ ?y 1 ?y1))
 
-(<= (cellNearMonster ?x1 ?y1)
-  (relevantMonsterCell ?x ?y)
+(<= (cellNearMonster ?monster ?x1 ?y1)
+   (relevantMonsterCell ?monster ?x ?y)
   (+ ?x 1 ?x1)
   (- ?y 1 ?y1))
 
-(<= (cellNearMonster ?x1 ?y1)
-  (relevantMonsterCell ?x ?y)
+(<= (cellNearMonster ?monster ?x1 ?y1)
+   (relevantMonsterCell ?monster ?x ?y)
   (- ?x 1 ?x1)
   (- ?y 1 ?y1))
 
-(<= (cellNearMonster ?x1 ?y1)
-  (relevantMonsterCell ?x ?y)
+(<= (cellNearMonster ?monster ?x1 ?y1)
+   (relevantMonsterCell ?monster ?x ?y)
   (- ?x 1 ?x1)
   (+ ?y 1 ?y1))
 
