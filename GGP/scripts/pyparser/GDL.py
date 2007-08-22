@@ -1,5 +1,7 @@
 """ Data structures for elements in GDL """
+import sys
 from PositionIndex import PositionIndex
+import pdb
 
 CompRelations = ['distinct', '<', '>', '>=']
 
@@ -272,9 +274,6 @@ class Rule:
 		# a list  (body_index1,pos1,body_index2,pos2,comparison operator)
 		self.__var_constraints = []
 
-		# a mapping head_pos -> [(body_index, body_pos)]
-		self.__headvar_bindings = {}
-
 		# explicitly add all equality constraints between variables
 		for bi1, b1 in enumerate(self.__body):
 			positions1 = PositionIndex.get_all_positions(b1)
@@ -291,6 +290,9 @@ class Rule:
 								if (p1 != p2 or bi1 != bi2) and v1 == v2:
 									self.__var_constraints.append((bi1, p1, bi2, p2, Comparison('==')))
 
+		# a mapping head_pos -> [(body_index, body_pos)]
+		self.__headvar_bindings = {}
+
 		hpositions = PositionIndex.get_all_positions(head)
 		for hp in hpositions:
 			hv = hp.fetch(head)
@@ -306,8 +308,23 @@ class Rule:
 							self.__headvar_bindings.setdefault(hp, []).append((bi, bp))
 							bound = True
 
-			assert bound, "Head variable %s not bound to any body variables" % hv
-	
+			#assert bound, "Head variable %s not bound to any body variables" % hv
+			if not bound:
+				print >> sys.stderr, "Head variable %s not bound to any body variables" % hv
+
+		# equality constraints on head
+		self.__headvar_constraints = []
+		for i, p1 in enumerate(hpositions):
+			t1 = p1.fetch(head)
+			if isinstance(t1, Variable):
+				for p2 in hpositions[i+1:]:
+					t2 = p2.fetch(head)
+					if t1 == t2:
+						self.__headvar_constraints.append((p1, p2))
+
+	def get_type(self):
+		return self.__head.get_type()
+
 	def copy(self):
 		c = Rule(self.__head.copy(), [b.copy() for b in self.__body])
 		c.__var_constraints = self.__var_constraints[:]
@@ -438,6 +455,9 @@ class Rule:
 
 	def get_all_headvar_bindings(self):
 		return self.__headvar_bindings
+	
+	def get_headvar_constraints(self):
+		return self.__headvar_constraints
 
 	def enforce_equality(self, preserve = []):
 		"""Make good on all equality constraints by changing terms to be equal,
@@ -480,6 +500,22 @@ class Rule:
 					p1.set(self.__body[bi1], t2.copy())
 					changed = True
 			
+			# enforce equality constraints on the head
+			for p1, p2 in self.__headvar_constraints:
+				t1 = p1.fetch(self.__head)
+				t2 = p2.fetch(self.__head)
+				if t1 == t2:
+					continue
+				if t1.get_name() in preserve_var_names:
+					p2.set(self.__head, t1.copy())
+				elif t2.get_name() in preserve_var_names:
+					p1.set(self.__head, t2.copy())
+				else:
+					name = '__eq_%s_%s' % (t1.get_name(), t2.get_name())
+					preserve_var_names.add(name)
+					p1.set(self.__head, Variable(name))
+					p2.set(self.__head, Variable(name))
+
 			# next enforce head variable bindings
 			for hp, bindings in self.__headvar_bindings.items():
 				ht = hp.fetch(self.__head)
@@ -498,18 +534,20 @@ class Rule:
 							changed = True
 				else:
 					assert isinstance(ht, Variable)
-					bi, bp = bindings[0]
-					bt = bt.fetch(self.__body[bi])
-					if ht.get_name() in preserve_var_names:
-						bt.set(self.__body[bi], ht.copy())
-					elif bt.get_name() in preserve_var_names:
-						ht.set(self.__head, bt.copy())
-					else:
-						name = '__eq_%s_%s' % (ht.get_name(), bt.get_name())
-						preserve_var_names.add(name)
-						bt.set(self.__body[bi], Variable(name))
-						ht.set(self.__head, Variable(name))
-					changed = True
+					for bi, bp in bindings:
+						bt = bp.fetch(self.__body[bi])
+						if ht == bt:
+							continue
+						if ht.get_name() in preserve_var_names:
+							bp.set(self.__body[bi], ht.copy())
+						elif bt.get_name() in preserve_var_names:
+							hp.set(self.__head, bt.copy())
+						else:
+							name = '__eq_%s_%s' % (ht.get_name(), bt.get_name())
+							preserve_var_names.add(name)
+							bp.set(self.__body[bi], Variable(name))
+							hp.set(self.__head, Variable(name))
+						changed = True
 
 	def mangle_vars(self, prefix):
 		self.__head.mangle_vars(prefix)
