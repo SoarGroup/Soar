@@ -864,6 +864,13 @@ byte run_preference_semantics (agent* thisAgent, slot *s, preference **result_ca
 		  if ( force_result )
 		  {
 			  *result_candidates = force_result;
+
+			  if ( !predict && soar_rl_enabled( thisAgent ) )
+			  {
+				  compute_value_of_candidate( thisAgent, force_result, s, 0 );
+				  perform_rl_update( thisAgent, force_result->numeric_value, s->id );
+			  }
+
 			  return NONE_IMPASSE_TYPE;
 		  }
 		  else
