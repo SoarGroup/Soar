@@ -182,7 +182,7 @@ sp {apply*usi*goodthing*3*removed
 
 # p1..p3 Increments
 
-sp {apply*usi*goodthing*increment
+sp {apply*usi*goodthing*increase
    (state <s> ^name game
               ^operator.name update-search-info
               ^gs <gs>
@@ -190,7 +190,7 @@ sp {apply*usi*goodthing*increment
               ^current-evaluation-depth <ced>
               ^top-state.good-things.indicator <gt>)
    (<gt> ^index <idx>
-         ^type increment
+         ^type increase
          ^number-position p1 # this better be p1, otherwise its missing the other groundings
          ^predicate-name <pname>
         -^first-grounding)
@@ -203,10 +203,10 @@ sp {apply*usi*goodthing*increment
    (<s> ^current-evaluation-depth <ced> -
                                   (+ <ced> 1))
    (<s> ^using-goodthing <idx>)
-   (write (crlf) |Bump due to increment of | <pname>)
+   (write (crlf) |Bump due to increase of | <pname>)
 }
 
-sp {apply*usi*goodthing*2*increment
+sp {apply*usi*goodthing*2*increase
    (state <s> ^name game
               ^operator.name update-search-info
               ^gs <gs>
@@ -214,7 +214,7 @@ sp {apply*usi*goodthing*2*increment
               ^current-evaluation-depth <ced>
               ^top-state.good-things.indicator <gt>)
    (<gt> ^index <idx>
-         ^type increment
+         ^type increase
          ^number-position <position>
          ^predicate-name <pname>
          ^first-grounding <g1>
@@ -232,11 +232,11 @@ sp {apply*usi*goodthing*2*increment
    (<s> ^current-evaluation-depth <ced> -
                                   (+ <ced> 1))
    (<s> ^using-goodthing <idx>)
-   (write (crlf) |Bump due to increment of | <pname> | | <g1-pos> | | <g1-val>)
+   (write (crlf) |Bump due to increase of | <pname> | | <g1-pos> | | <g1-val>)
 }
 
 
-sp {apply*usi*goodthing*3*increment
+sp {apply*usi*goodthing*3*increase
    (state <s> ^name game
               ^operator.name update-search-info
               ^gs <gs>
@@ -244,7 +244,7 @@ sp {apply*usi*goodthing*3*increment
               ^current-evaluation-depth <ced>
               ^top-state.good-things.indicator <gt>)
    (<gt> ^index <idx>
-         ^type increment
+         ^type increase
          ^number-position <position>
          ^predicate-name <pname>
          ^first-grounding <g1>
@@ -266,12 +266,12 @@ sp {apply*usi*goodthing*3*increment
    (<s> ^current-evaluation-depth <ced> -
                                   (+ <ced> 1))
    (<s> ^using-goodthing <idx>)
-   (write (crlf) |Bump due to increment of | <pname> | | <g1-pos> | | <g1-val> | | <g2-pos> | | <g2-val>)
+   (write (crlf) |Bump due to increase of | <pname> | | <g1-pos> | | <g1-val> | | <g2-pos> | | <g2-val>)
 }
 
 # p1..p3 Decrements
 
-sp {apply*usi*goodthing*decrement
+sp {apply*usi*goodthing*decrease
    (state <s> ^name game
               ^operator.name update-search-info
               ^gs <gs>
@@ -279,7 +279,7 @@ sp {apply*usi*goodthing*decrement
               ^current-evaluation-depth <ced>
               ^top-state.good-things.indicator <gt>)
    (<gt> ^index <idx>
-         ^type decrement
+         ^type decrease
          ^number-position p1 # this better be p1, otherwise its missing the other groundings
          ^predicate-name <pname>
          -^first-grounding <g1>)
@@ -292,10 +292,10 @@ sp {apply*usi*goodthing*decrement
    (<s> ^current-evaluation-depth <ced> -
                                   (+ <ced> 1))
    (<s> ^using-goodthing <idx>)
-   (write (crlf) |Bump due to decrement of | <pname>)
+   (write (crlf) |Bump due to decrease of | <pname>)
 }
 
-sp {apply*usi*goodthing*2*decrement
+sp {apply*usi*goodthing*2*decrease
    (state <s> ^name game
               ^operator.name update-search-info
               ^gs <gs>
@@ -303,7 +303,7 @@ sp {apply*usi*goodthing*2*decrement
               ^current-evaluation-depth <ced>
               ^top-state.good-things.indicator <gt>)
    (<gt> ^index <idx>
-         ^type decrement
+         ^type decrease
          ^number-position <position>
          ^predicate-name <pname>
          ^first-grounding <g1>
@@ -321,11 +321,11 @@ sp {apply*usi*goodthing*2*decrement
    (<s> ^current-evaluation-depth <ced> -
                                   (+ <ced> 1))
    (<s> ^using-goodthing <idx>)
-   (write (crlf) |Bump due to decrement of | <pname> | | <g1-pos> | | <g1-val>)
+   (write (crlf) |Bump due to decrease of | <pname> | | <g1-pos> | | <g1-val>)
 }
 
 
-sp {apply*usi*goodthing*3*decrement
+sp {apply*usi*goodthing*3*decrease
    (state <s> ^name game
               ^operator.name update-search-info
               ^gs <gs>
@@ -333,7 +333,7 @@ sp {apply*usi*goodthing*3*decrement
               ^current-evaluation-depth <ced>
               ^top-state.good-things.indicator <gt>)
    (<gt> ^index <idx>
-         ^type decrement
+         ^type decrease
          ^number-position <position>
          ^predicate-name <pname>
          ^first-grounding <g1>
@@ -356,7 +356,7 @@ sp {apply*usi*goodthing*3*decrement
    (<s> ^current-evaluation-depth <ced> -
                                   (+ <ced> 1))
    (<s> ^using-goodthing <idx>)
-   (write (crlf) |Bump due to decrement of | <pname> | | <g1-pos> | | <g1-val> | | <g2-pos> | | <g2-val>)
+   (write (crlf) |Bump due to decrease of | <pname> | | <g1-pos> | | <g1-val> | | <g2-pos> | | <g2-val>)
 }
 
 
