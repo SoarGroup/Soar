@@ -13,7 +13,7 @@ sp {evaluate-operator*propose*exceed-depth
    (state <s> ^current-evaluation-depth <= 0
           #    ^quiescence t
               ^look-ahead-operator <o>
-              ^state-analyzed <sa>
+              ^depth-valid <dv>
               ^tried-tied-operator <o>)
 -->
    (<s> ^operator <op> + =, >)
