@@ -36,10 +36,15 @@ class PartialMap:
 
 	@staticmethod
 	def create(src_int_rep, src_preds, tgt_int_rep, tgt_preds):
+		"""src_preds - [(pred, type)]
+		   tgt_preds - [(pred, type)]"""
+
 		self = PartialMap()
 		# map from predicate name to predicate structure
-		self.__src_preds = dict((p.get_name(), p) for p in src_preds)
-		self.__tgt_preds = dict((p.get_name(), p) for p in tgt_preds)
+		self.__src_preds = dict((p.get_name(), p) for p,t in src_preds)
+		self.__src_pred_types = dict(src_preds)
+		self.__tgt_preds = dict((p.get_name(), p) for p,t in tgt_preds)
+		self.__tgt_pred_types = dict(tgt_preds)
 
 		# maintain a special structure for legal rules
 		src_move_effects = calc_move_effects(src_int_rep)
@@ -166,18 +171,27 @@ class PartialMap:
 				sp.get_type() != tp.get_type():
 			return 0
 		
+		# ensure that predicates are in the same category
+		spt = self.__src_pred_types[sp]
+		tpt = self.__tgt_pred_types[tp]
+		if spt != tpt:
+			return 0
+
 		# if all above conditions are met, then make a rating based on argument types
 		return self.__pred_arg_match_score(sp, tp) + 0.1
 
 	def __body_map_score(self, sr, tr, m):
+		"Warning: can potentially change mapping"
+
 		total = 0
 		for sp, tp in m.items():
 			pm_score = self.pred_match_score(sp, tp)
 			if pm_score == 0:
-				# if two predicates are illegal to match, then the
-				# entire matching is bad
-				return 0
-			total += pm_score
+				# if two predicates are illegal to match, then don't include it
+				# in the match
+				del m[sp]
+			else:
+				total += pm_score
 
 		#num_unmatched = max(len(sr.get_body()), len(tr.get_body())) - len(m)
 		#return max(0.1, total - num_unmatched) 
@@ -367,7 +381,7 @@ class PartialMap:
 		
 		if best_sr is None:
 			return (None, None, 0, 0)
-		pdb.set_trace()
+		#pdb.set_trace()
 		for se, te in best_effect_map.items():
 			self.__add_predicate_match(se, te)
 		

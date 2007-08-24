@@ -3,7 +3,7 @@ import gdlyacc
 from partialmap import PartialMap
 from predicate import get_predicates
 from find_max import find_max
-#import psyco
+import psyco
 
 class CommitPoint:
 	def __init__(self, map):
@@ -85,6 +85,6 @@ if __name__ == '__main__':
 	gdlyacc.parse_file(sys.argv[2])
 	tgt_int_rep = gdlyacc.int_rep.copy()
 	
-	#psyco.full()
+	psyco.full()
 	best_map = do_mapping(src_int_rep, tgt_int_rep)
 	best_map.print_pred_matches(sys.stdout)
