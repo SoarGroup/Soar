@@ -1,6 +1,6 @@
 import sys, re
 
-edge_regex = re.compile(r'([A-Z]+)\s*->\s*([A-Z]+)')
+edge_regex = re.compile(r'([A-Za-z_]+)\s*->\s*([A-Za-z_]+)')
 
 def extract_nodes_edges(gdl_file):
 	nodes = set()
@@ -35,6 +35,9 @@ def gdl2graphdiff(nodes, edges, label, graphdiff_file, node_types={}):
 	name2num = dict((i[1],i[0]) for i in enumerate(nodes))
 	for e in edges:
 		graphdiff_file.write('%s %s 1\n' % (name2num[e[0]], name2num[e[1]]))
+	
+	for i, n in enumerate(nodes):
+		print '%d %s' % (i, n)
 
 def convert1(gdl_file, label, graphdiff_file):
 	nodes, edges = extract_nodes_edges(gdl_file)
@@ -56,7 +59,7 @@ if __name__ == '__main__':
 	if len(sys.argv) == 2:
 		# gdl from stdin, label as argument
 		label = sys.argv[1]
-		convert1(sys.stdin, sys.stdout, label)
+		convert1(sys.stdin, label, sys.stdout)
 	elif len(sys.argv) == 3:
 		# gdlfile label
 		gdl = open(sys.argv[1])

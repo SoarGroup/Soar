@@ -5,9 +5,12 @@ from GDL import Sentence
 import placetype
 from move_effects import calc_move_effects
 from find_max import find_max
+import options
 import pdb
 
-HEAD_SCORE_FACTOR = 1.5
+def debug_print(s):
+	#print s
+	pass
 
 def possible_matchings(s1, s2):
 	# we can't match two instances of the same predicate in one rule
@@ -122,6 +125,8 @@ class PartialMap:
 		c = PartialMap()
 		c.__src_preds = self.__src_preds
 		c.__tgt_preds = self.__tgt_preds
+		c.__src_pred_types = self.__src_pred_types.copy()
+		c.__tgt_pred_types = self.__tgt_pred_types.copy()
 		c.__matched_preds = self.__matched_preds.copy()
 		c.__matched_rules = self.__matched_rules.copy()
 		c.__cand_rule_matches = self.__cand_rule_matches.copy()
@@ -187,9 +192,13 @@ class PartialMap:
 		for sp, tp in m.items():
 			pm_score = self.pred_match_score(sp, tp)
 			if pm_score == 0:
-				# if two predicates are illegal to match, then don't include it
-				# in the match
-				del m[sp]
+				if options.ALLOW_PARTIAL_BODY_MAPS:
+					# if two predicates are illegal to match, then don't include it
+					# in the match
+					del m[sp]
+				else:
+					# if two predicates don't match, then the entire mapping is illegal
+					return 0
 			else:
 				total += pm_score
 
@@ -245,7 +254,7 @@ class PartialMap:
 				best_map = body_map
 				best_score = score
 
-		best_score += HEAD_SCORE_FACTOR * head_match_score
+		best_score += options.HEAD_SCORE_FACTOR * head_match_score
 		return (best_map, best_score)
 
 	def __legal_rule_match_score(self, sr, tr):
@@ -310,17 +319,17 @@ class PartialMap:
 			assert tp == self.__matched_preds[sp]
 		else:
 			assert tp not in self.__matched_preds.values()
-			print >> sys.stderr, "matching predicates %s ==> %s" % (sp, tp)
+			debug_print("matching predicates %s ==> %s" % (sp, tp))
 			self.__matched_preds[sp] = tp
 	
 	def add_rule_match(self, sr, tr, body_map):
 		assert sr not in self.__matched_rules
 		assert tr not in self.__matched_rules.values()
 		
-		print >> sys.stderr, "=== matching rules ==="
-		print >> sys.stderr, sr
-		print >> sys.stderr, tr
-		print >> sys.stderr, "--> predicate matches"
+		debug_print("=== matching rules ===")
+		debug_print(sr)
+		debug_print(tr)
+		debug_print("--> predicate matches")
 		self.__matched_rules[sr] = tr
 		
 		# delete all other match candidates involving these rules
@@ -347,7 +356,7 @@ class PartialMap:
 			if self.pred_match_score(sp, tp) >= 1:
 				self.__add_predicate_match(sp, tp)
 
-		print >> sys.stderr, "=== done matching rules ==="
+		debug_print("=== done matching rules ===")
 
 		return self.__update_all_rule_matches()
 

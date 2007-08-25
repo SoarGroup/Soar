@@ -1,0 +1,115 @@
+from rule import Rule
+import pdb
+
+class State:
+	def __init__(self, preds, children = {}):
+		self.preds = frozenset(preds)
+		self.__children = children
+	
+	def __contains__(self, i):
+		return i in self.preds
+
+	def __iter__(self):
+		return iter(self.preds)
+	
+	def deep_copy(self):
+		cpreds = self.preds.copy()
+		cchildren = {}
+		for a, c in self.__children.items():
+			cchildren[a] = c.deep_copy()
+		return State(cpreds, cchildren)
+
+	def get_child(self, action):
+		return self.__children[action]
+	
+	def set_child(self, action, child):
+		self.__children[action] = child
+
+	def make_max_rules(self, rules, all_preds):
+		ncs = all_preds - self.preds
+		for a, c in self.__children.items():
+			rules.append(Rule(self.preds, ncs, a, c.preds))
+			c.make_max_rules(rules, all_preds)
+
+	def is_goal(self):
+		return len(self.preds) == 0
+
+	def next_is_goal(self, action):
+		return self.__children[action].is_goal()
+	
+	def satisfies(self, pconds, nconds):
+		return pconds <= self.preds and not self.preds & nconds
+
+	def consistent_with(self, r):
+		"""Returns True if a rule either doesn't fire in the state or fires
+		consistently with the children of r"""
+		return (r.doesnt_fire_in(self)) or (r.get_rhs() <= self.__children[r.get_action()].preds)
+	
+	def implemented_by(self, rules):
+		"""Returns True if a set of rules exactly generates this state's children"""
+
+		gen_sets = {}
+		rules_fired = {}
+		for r in rules:
+			if r.fires_in(self):
+				if self.next_is_goal(r.get_action()):
+					if not r.is_goal_rule():
+						pdb.set_trace()
+						return False
+				else:
+					if r.is_goal_rule():
+						pdb.set_trace()
+						return False
+					gen_sets.setdefault(r.get_action(), set()).update(r.get_rhs())
+					rules_fired.setdefault(r.get_action(), []).append(r)
+
+		for a in self.__children:
+			if not self.next_is_goal(a):
+				if a not in gen_sets: 
+					pdb.set_trace()
+					return False
+				if gen_sets[a] != self.__children[a].preds: 
+					pdb.set_trace()
+					return False
+
+		return True
+
+	def make_graphviz(self, file, is_root=True):
+		my_label = str(self)
+		for a, c in self.__children.items():
+			file.write('%s -> %s [label="%s"];\n' % (my_label, str(c), a))
+			if len(c.preds) > 0:
+				c.make_graphviz(file, False)
+
+	def get_all_states(self, states):
+		states.append(self)
+		for a, c in self.__children.items():
+			c.get_all_states(states)
+	
+	def map(self, func):
+		"""Like the Lisp map function"""
+		func(self)
+		for a in self.__children:
+			self.__children[a].map(func)
+
+	def dist_to_goal(self, table):
+		if self.is_goal():
+			return 0
+		min_dist = float('inf')
+		for a, c in self.__children.items():
+			min_dist = min(min_dist, c.dist_to_goal())
+		table[self.preds] = min_dist
+		return min_dist
+	
+	def __str__(self):
+		if len(self.preds) == 0:
+			return 'goal'
+		l = list(self.preds)
+		l.sort()
+		return ''.join(l)
+	
+	def __hash__(self):
+		return hash(self.preds)
+
+	def __eq__(self, other):
+		return self.preds == other.preds

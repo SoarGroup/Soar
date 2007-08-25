@@ -1,4 +1,5 @@
 from multimap import MultiMap
+import random
 import pdb
 
 class Rule:
@@ -150,6 +151,8 @@ class Rule:
 		return hash((self.__pcs, self.__ncs, self.__action, self.__rhs))
 
 def cross_product(list1, list2):
+	if len(list1) == 0 or len(list2) == 0:
+		return []
 	return reduce(lambda x,y: x+y, ([e1 + e2 for e2 in list2] for e1 in list1))
 
 class RuleSet:
@@ -253,7 +256,8 @@ class RuleSet:
 		rhs = list(rule.get_rhs())
 		pcs_splits = [(i,) for i in range(len(pcs))] ; random.shuffle(pcs_splits)
 		ncs_splits = [(i,) for i in range(len(ncs))] ; random.shuffle(ncs_splits)
-		rhs_splits = [(i,) for i in range(len(rhs))] ; random.shuffle(rhs_splits)
+		# both splits must have at least one action
+		rhs_splits = [(i,) for i in range(1,len(rhs)-1)] ; random.shuffle(rhs_splits)
 
 		all_split_combs = cross_product(cross_product(pcs_splits, ncs_splits), rhs_splits)
 		for pcs_split, ncs_split, rhs_split in all_split_combs:
@@ -358,14 +362,22 @@ class RuleSet:
 			temp.sort()
 			rule.comment += "\nRemoved these negative conditions: %s" % ''.join(temp)
 	
+	def minimize_nconds(self):
+		for r in self.rules:
+			self.remove_nconds(r)
+
+	def minimize_pconds(self):
+		for r in self.rules:
+			self.remove_pconds(r)
+
 	def minimize_rules(self):
 		for r in self.rules:
 			self.remove_nconds(r)
 			self.remove_pconds(r)
 
-	def print_rules(self):
+	def write_rules(self, file):
 		for r in self.rules:
-			print r
+			file.write('%s\n' % str(r))
 
 	def make_kif(self, initial_state, file):
 		file.write("""
