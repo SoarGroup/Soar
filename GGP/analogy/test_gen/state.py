@@ -86,6 +86,12 @@ class State:
 		for a, c in self.__children.items():
 			c.get_all_states(states)
 	
+	def get_all_predicates(self):
+		preds = set(self.preds)
+		for a, c, in self.__children.items():
+			preds.update(c.get_all_predicates())
+		return preds
+
 	def map(self, func):
 		"""Like the Lisp map function"""
 		func(self)
@@ -97,7 +103,7 @@ class State:
 			return 0
 		min_dist = float('inf')
 		for a, c in self.__children.items():
-			min_dist = min(min_dist, c.dist_to_goal())
+			min_dist = min(min_dist, c.dist_to_goal(table)+1)
 		table[self.preds] = min_dist
 		return min_dist
 	

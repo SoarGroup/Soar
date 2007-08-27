@@ -6,11 +6,11 @@ def cross_product(list1, list2):
 
 class TreeGen:
 	def __init__(self):
-		self.min_branch_len = 3
-		self.max_branch_len = 4
-		self.preserve_prob = 0.3
+		self.min_branch_len = 4
+		self.max_branch_len = 5
+		self.preserve_prob = 0.5
 		self.min_pred_change = 1
-		self.max_preds = 4
+		self.max_preds = 5
 		alpha = [chr(i) for i in range(ord('A'), ord('Z')+1)]
 		self.predicates = alpha
 		#self.predicates = cross_product(alpha, alpha)

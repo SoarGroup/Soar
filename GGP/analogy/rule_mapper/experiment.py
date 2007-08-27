@@ -1,25 +1,43 @@
+"""
+Number of bins versus ratio of correct predicate matches. Also vary allowing partial body maps.
+"""
 import os, sys
-
 base_dir = os.path.join('..')
-rule_gen_dir = os.path.join(base_dir, 'test_gen')
-mapper_dir = os.path.join(base_dir, 'rule_mapper')
-src_rules = os.path.join(rule_gen_dir, 'src_rules.kif')
-tgt_rules = os.path.join(rule_gen_dir, 'tgt_rules.kif')
+sys.path.append(os.path.join(base_dir, 'test_gen'))
 
-rule_gen_cmd = 'python test_gen.py >> /dev/null'
-mapper_cmd = 'python rule_mapper2.py %s %s %d'
+import options
+import partialmap
+import rule_mapper2
+import test_gen
 
-for bins in range(1,11):
-	matches = 0
-	for i in range(20):
+import psyco
+psyco.bind(partialmap)
+psyco.bind(partialmap.PartialMap)
+
+max_bins = 10
+
+# set options
+options.ALLOW_PARTIAL_BODY_MAPS = (sys.argv[1] == '1')
+
+for bins in range(1,max_bins+1):
+	options.BINS = bins
+	score = 0
+	for i in range(options.ITERATIONS_PER_PAIR):
 		# make the rules
-		os.chdir(rule_gen_dir)
-		os.system(rule_gen_cmd)
+		src_rules, tgt_rules = test_gen.gen_split_tgt()
+		
 		# run the mapper
-		os.chdir(mapper_dir)
-		result = os.popen(mapper_cmd % (src_rules, tgt_rules, bins)).read()
-		matches += int(result)
-		print '.',
-		sys.stdout.flush()
+		total_preds = int(os.popen('python count_preds.py %s' % src_rules).read())
+		pred_matches = rule_mapper2.main(src_rules, tgt_rules)
+		num_matched = sum([sp.get_name().lower() == tp.get_name() for sp, tp in pred_matches.items()])
 
-	print '\n%d bins: %d matches avg' % (bins, matches / 10.0)
+		os.remove(src_rules)
+		os.remove(tgt_rules)
+		
+		ratio = num_matched / float(total_preds)
+		sys.stderr.write('.')
+		sys.stderr.flush()
+		score += ratio
+
+	sys.stderr.write('\n')
+	print '%d %f' % (bins, score / options.ITERATIONS_PER_PAIR)
