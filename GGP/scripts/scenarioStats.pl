@@ -51,9 +51,9 @@ elsif ($env =~ /^w/ or $env =~ /^m/) {
 elsif ($env =~ /^r/) {
   $env = "rogue";
   if ($level == 6) {
-    print `$stats mRogue-TL-Level-$level-$scenario-Source1.log`;
+    print `$stats mRogue-TL-Level-$level-$scenario-Source-1.log`;
     print "\n";
-    print `$stats mRogue-TL-Level-$level-$scenario-Source2.log`;
+    print `$stats mRogue-TL-Level-$level-$scenario-Source-2.log`;
   }
   else {
     print `$stats mRogue-TL-Level-$level-$scenario-Source.log`;
