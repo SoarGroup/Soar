@@ -42,6 +42,7 @@ public class Configuration {
 		this.remote = config.remote;
 		this.hide = config.hide;
 		this.nogui = config.nogui;
+		this.silentAgents = config.silentAgents;
 		this.asyncTimeSlice = config.asyncTimeSlice;
 
 		cModule.copy(cModule);
@@ -381,6 +382,9 @@ public class Configuration {
 				
 			} else if (child.getName().equalsIgnoreCase(kTagNoGUI)) {
 				setNoGUI(true);
+				
+			} else if (child.getName().equalsIgnoreCase(kTagSilentAgents)) {
+				setSilentAgents(true);
 				
 			} else if (child.getName().equalsIgnoreCase(kTagASync)) {
 				try {
@@ -1040,6 +1044,15 @@ public class Configuration {
 
 	public int getCycleTimeSlice() {
 		return cModule.getCycleTimeSlice();
+	}
+
+	private boolean silentAgents = false;
+	private String kTagSilentAgents = "silent-agents";
+	public void setSilentAgents(boolean setting) {
+		silentAgents = setting;
+	}
+	public boolean getSilentAgents() {
+		return silentAgents;
 	}
 	
 }

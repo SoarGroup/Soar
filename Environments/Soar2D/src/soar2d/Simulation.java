@@ -344,6 +344,11 @@ public class Simulation {
 					if (!agent.LoadProductions(playerConfig.getProductions().getAbsolutePath())) {
 						throw new CreationException("Agent " + playerConfig.getName() + " production load failed: " + agent.GetLastErrorDescription());
 					}
+					
+					// if requested, silence agent
+					if (Soar2D.config.getSilentAgents()) {
+						agent.ExecuteCommandLine("watch 0");
+					}
 			
 					Player player = null;
 					
