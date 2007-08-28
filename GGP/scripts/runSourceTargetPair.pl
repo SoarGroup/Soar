@@ -57,7 +57,10 @@ checkFor("$agentDir/$target.soar");
 clearLog($source1Log);
 clearLog($targetWithSourceLog);
 clearLog($targetWithoutSourceLog);
-clearLog($goodThings);
+#clearLog($goodThings);
+if (-e $goodThings) {
+  print `rm $goodThings`;
+}
 
 print `$canvasOff`;
 

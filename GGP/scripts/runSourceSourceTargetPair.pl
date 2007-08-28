@@ -50,7 +50,10 @@ clearLog($source1Log);
 clearLog($source2Log);
 clearLog($targetWithSourceLog);
 clearLog($targetWithoutSourceLog);
-clearLog($goodThings);
+#clearLog($goodThings);
+if (-e $goodThings) {
+  print `rm $goodThings`;
+}
 
 print `$canvasOff`;
 
