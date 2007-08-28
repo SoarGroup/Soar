@@ -1,7 +1,12 @@
-;; Escape TL 7 (abstraction) scenario 2 target
+;; ======================================================================
+;; Escape TL Level 7 (Abstraction) Scenario 2 Target
+;; - 8/27/07 (Aha): legal/2 1st rule deleted (combining by nailing)
+;;   per mapping constraint needed by Icarus (i.e., this rule contains
+;;   a constant, it's used in the source task's solution, but it's
+;;   not used in the target task's solution)
 ;;
-;; Explorer has to pick up staple gun, staples, and wood to make a bridge across
-;; the water obstacles to reach the exit
+;; Explorer has to pick up staple gun, staples, and wood to make a bridge
+;; across the water obstacles to reach the exit
 ;; - Introduced the definition of "stapable", staples, etc.
 ;;
 ;; here's the level setup:
@@ -13,7 +18,8 @@
 ;; 4| w  E |
 ;; 5|      |
 ;;   012345
-;; where E = exit, W = water, W = wood, S = staples, G = staple gun, e = explorer
+;; where E=exit, W=water, W=wood, S=staples, G=staple gun, e=explorer
+;; ======================================================================
 
 (role explorer)
 (exitType exit)
@@ -126,19 +132,20 @@
 (canCompromise canBridge water yes)
 
 ;; legal combinations
-(<= (legal explorer (combine ?item1 ?item2 ?nails))
-    (itemOrder ?item1 ?order1)
-    (itemOrder ?item2 ?order2)
-    (lessThan ?order1 ?order2)
-    (true (holding ?item))
-    (true (holding ?nails))
-    (true (holding ?item1))
-    (true (holding ?item2))
-    (true (property ?item hammer))
-    (true (property ?nails doesNail))
-    (true (property ?item1 nailable))
-    (true (property ?item2 nailable))
-    (distinct ?item1 ?item2))
+; DWA (8/27/07): This deleted per request by Shapiro/Konik re: Icarus
+; (<= (legal explorer (combine ?item1 ?item2 ?nails))
+;     (itemOrder ?item1 ?order1)
+;     (itemOrder ?item2 ?order2)
+;     (lessThan ?order1 ?order2)
+;     (true (holding ?item))
+;     (true (holding ?nails))
+;     (true (holding ?item1))
+;     (true (holding ?item2))
+;     (true (property ?item hammer))
+;     (true (property ?nails doesNail))
+;     (true (property ?item1 nailable))
+;     (true (property ?item2 nailable))
+;     (distinct ?item1 ?item2))
 
 ;; >>>>>Added<<<<<
 (<= (legal explorer (combine ?item1 ?item2 ?staples))

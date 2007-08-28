@@ -1,4 +1,9 @@
-;; Escape abstraction scenario 1 target
+;;======================================================================
+;; Escape TL Level 7 (Abstraction) Scenario 1 Target Task
+;; - 8/24/07 (Aha): legal/2 1st rule deleted (combining by nailing)
+;;   per mapping constraint needed by Icarus (i.e., this rule contains
+;;   a constant, it's used in the source task's solution, but it's
+;;   not used in the target task's solution)
 ;;
 ;; Explorer has to pick up rope and drums to make a raft to cross
 ;; the water obstacles to reach the exit
@@ -13,6 +18,7 @@
 ;; 5|  W  e|
 ;;   012345
 ;; where E = exit, W = water, R = rope, D = drum, e = explorer
+;;======================================================================
 
 (role explorer)
 (exitType exit)
@@ -114,19 +120,20 @@
 (canCompromise canBridge water yes)
 
 ;; legal combinations
-(<= (legal explorer (combine ?item1 ?item2 ?nails))
-    (itemOrder ?item1 ?order1)
-    (itemOrder ?item2 ?order2)
-    (lessThan ?order1 ?order2)
-    (true (holding ?item))
-    (true (holding ?nails))
-    (true (holding ?item1))
-    (true (holding ?item2))
-    (true (property ?item hammer))
-    (true (property ?nails doesNail))
-    (true (property ?item1 nailable))
-    (true (property ?item2 nailable))
-    (distinct ?item1 ?item2))
+; DWA (8/24/07): This deleted per request by Shapiro/Konik re: Icarus
+; (<= (legal explorer (combine ?item1 ?item2 ?nails))
+;     (itemOrder ?item1 ?order1)
+;     (itemOrder ?item2 ?order2)
+;     (lessThan ?order1 ?order2)
+;     (true (holding ?item))
+;     (true (holding ?nails))
+;     (true (holding ?item1))
+;     (true (holding ?item2))
+;     (true (property ?item hammer))
+;     (true (property ?nails doesNail))
+;     (true (property ?item1 nailable))
+;     (true (property ?item2 nailable))
+;     (distinct ?item1 ?item2))
 
 (<= (legal explorer (combine ?item1 ?item2 ?tie))
     (itemOrder ?item1 ?order1)

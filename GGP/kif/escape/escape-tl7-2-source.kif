@@ -1,8 +1,9 @@
-;; Escape TL 7 (abstraction) scenario 2 source 
+;; ======================================================================
+;; Escape TL Level 7 (Abstraction) Scenario 2 Source 
 ;;
 ;; Explorer has to pick up hammer, nails, and logs to make a bridge across
 ;; the water obstacles to reach the exit
-;; - Same as TL 7 scenario 1 source!
+;; - Same as TL Level 7 Scenario 1 Source!
 ;;
 ;; here's the level setup:
 ;;
@@ -14,6 +15,7 @@
 ;; 5|e L h |
 ;;   012345
 ;; where E = exit, W = water, L = log, N = nails, H = hammer, e = explorer
+;; ======================================================================
 
 (role explorer)
 (exitType exit)
