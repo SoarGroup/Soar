@@ -73,7 +73,7 @@ public class World {
 		Soar2D.control.resetTime();
 		resetPlayers(resetDuringRun);
 		
-		logger.info("Map loaded, world reset.");
+		logger.info(Soar2D.config.getMap().getName() + " loaded, world reset.");
 		if (map.getOpenCode() != 0) {
 			logger.info("The correct open code is: " + map.getOpenCode());
 		}
