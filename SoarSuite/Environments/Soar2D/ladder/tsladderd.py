@@ -308,6 +308,7 @@ class Tourney(threading.Thread):
 		topdir = tempfile.mkdtemp()
 		oldcwd = os.getcwd()
 		os.chdir(topdir)
+		failure = False
 
 		try:
 			self.set_up_tanks(topdir, oldcwd)
@@ -315,14 +316,16 @@ class Tourney(threading.Thread):
 				try:
 					self.parse_results()
 				except KeyError, err:
-					logging.warning("Parse failed, disabling: %s"  % str(err).strip("'"))
-					urllib.urlopen('http://tsladder:vx0beeHH@localhost:54424/TankSoarLadder/disable_participant?tournament_name=%s&tank_name=%s&reason=parse_results_failed' % (self.status.tournament_name, str(err).strip("'")))
+					logging.error("Parse failed!")
+					failure = True
+					#urllib.urlopen('http://tsladder:vx0beeHH@localhost:54424/TankSoarLadder/disable_participant?tournament_name=%s&tank_name=%s&reason=parse_results_failed' % (self.status.tournament_name, str(err).strip("'")))
 		finally:
 			# clean up our mess no matter what
 			os.chdir(oldcwd)
 			shutil.rmtree(topdir)
 
-		self.status.post()
+		if not failure:
+			self.status.post()
 		
 		self.status_lock.acquire()
 		self.status.clear_match()
@@ -366,7 +369,8 @@ class Tourney(threading.Thread):
 		self.message = message
 		self.start_condition.notify()
 
-	def stop_tournament(self):
+	def stop_tournament(self, message):
+		self.message = message
 		self.stop_event.set()
 		
 	def kill_tournament(self):
@@ -416,7 +420,7 @@ def ts_stop(tournament, message):
 	if tournament.status == None:
 		return NOT_RUNNING
 	else:
-		tournament.stop_tournament()
+		tournament.stop_tournament(message)
 		return SUCCESS
 
 def ts_status(tournament, message):
