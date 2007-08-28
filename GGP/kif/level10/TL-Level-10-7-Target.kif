@@ -129,7 +129,7 @@
 (init (blocked north 5 5))
 (init (blocked north 6 5))
 ;; Soldier health
-(init (health soldier 1)) ; >>>>>New! Higher!<<<<<
+(init (health soldier 1)) ; >>>>>New! Lower!<<<<<
 ;;;<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
 ; MCM 8/14/07: Blocked is now directly represented in state.
 ; SW 8/3/07: need these to have consistent spatial rep. with the other domains

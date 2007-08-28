@@ -6,6 +6,9 @@
 ; Similar to TL Level 8, sc. 1, source
 ; Must shoot the kestral with bow to win.
 ; 2007 August 10
+; - DWA: Modifications summary
+;     1. No need to fetch the amulet
+;     2. Command is shoot-monster/rather 1 than throw/2 
 ; 
 ; 8/20: Corrected x-blocked and y-blocked rules.
 ;

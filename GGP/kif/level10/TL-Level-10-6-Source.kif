@@ -6,6 +6,9 @@
 ;;;  - 8/16: Released
 ;;;  - Must shoot a terrorist and get rid of grenade to win.
 ;;;
+;;; Updates:
+;;;  - DWA/MM (8/28): Added typings ("(index ?x)") to grenadeOnGround
+;;;
 ;;; Debugger: "http://games.stanford.edu:5999/director/debugrawgame?"
 ;;; Verified Solution (length 14): NENE<shoot n>ENSWWWW<throw north 2>N
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -325,14 +328,19 @@
     (true (holding soldier flag))
     (or
     	(true (holding soldier grenade1))
-    	(true (location grenade1 ?x ?y))))
+    	grenadeOnGround))
 
 ;;Full credit if at exit, not dead, grenade gone.
 (<= (goal soldier 100)
     (not (dead soldier))
     (true (holding soldier flag))
     (not (true (holding soldier grenade1)))
-    (not (true (location grenade1 ?x ?y))))
+    (not grenadeOnGround))
+    
+(<= grenadeOnGround
+	(index ?x)
+	(index ?y)
+	(true (location grenade1 ?x ?y)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; View Definitions

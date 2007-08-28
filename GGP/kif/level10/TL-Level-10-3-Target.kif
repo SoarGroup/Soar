@@ -8,18 +8,21 @@
 ; Matthew C. Molineaux (Knexus)
 ; 2007 August 13
 ;
-; 8/20: Corrected x-blocked and y-blocked rules.
+; Updates:
+; - 8/20: Corrected x-blocked and y-blocked rules.
+; - 8/28: Corrected map
 ; 
 ; mRogue was developed by Tom Hinrichs, Sam Wintermute, & David Aha
 ; Verified Solution (Length 9): EN<shoot-monster kestral3>ESWSSS
+; - MCM (8/28): Corrected ascii map
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ; This file: Map (and Legend)
 ;               + = Corner
 ;    012345     - = Horizontal wall
 ;   +------+    | = Vertical wall
-;  0|..w...|    . = A room location
-;  1|.@....|    # = A corridor location
-;  2|......|    @ = hero
+;  0|......|    . = A room location
+;  1|..w...|    # = A corridor location
+;  2|.@....|    @ = hero
 ;  3|KKKKKK|    a = armor, p = potion, s = scroll,
 ;  4|......|    w = weapon, ! = amulet, * = gold
 ;  5|..>...|    > = exit

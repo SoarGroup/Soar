@@ -3,6 +3,9 @@
 ;; Explorer has to pick up hammer, get rid of it by bashing it 
 ;; against the rock, and exit.
 ;;
+;; Updates 
+;;;  - DWA/MM (8/28): Added typings ("(index ?x)") to hammerOnGround
+;;
 ;; here's the level setup:
 ;;
 ;; 0|E       |
@@ -449,9 +452,11 @@
 (<= (goal explorer 75)
     atExit
     (not killed)
+    (int ?x)
+    (int ?y)
     (or 
     	(true (carrying hammer1))		 ;;The explorer still has the hammer
-    	(true (location hammer1 ?x ?y))));;The hammer is still on the ground
+    	hammerOnGround));;The hammer is still on the ground
 
 
 ;;; The explorer receives 100 points if he reaches the exit without being 
@@ -459,8 +464,13 @@
 (<= (goal explorer 100)
     atExit
     (not killed)
-   	(not (true (carrying hammer1)))	 ;;The explorer does not have the hammer
-   	(not (true (location hammer1 ?x ?y)))) ;;The hammer is not on the ground
+    (not (true (carrying hammer1)))	   ;;The explorer does not have the hammer
+    (not hammerOnGround)) ;;The hammer is not on the ground
+
+(<= hammerOnGround
+	(int ?x)
+	(int ?y)
+	(true (location hammer1 ?x ?y)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; Basic axioms of mathematics (defined over the range [0,7])
