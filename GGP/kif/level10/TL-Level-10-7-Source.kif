@@ -7,6 +7,7 @@
 ;
 ; 8/13: Initial Release
 ; 8/14: Turned off auto-healing; made scenario simpler
+; 8/20: Corrected x-blocked and y-blocked rules.
 ; 
 ;;; Verified Solution (Length 16): NNEEESSS<read scroll1>S<shoot><shoot>NSWW
 ; mRogue was developed by Tom Hinrichs, Sam Wintermute, & David Aha
@@ -251,7 +252,7 @@
 
 ; DA (7/13): Must also drop a weapon if picking up another
 (<= (next (location ?oldWeapon ?x ?y))
-   (changeWeapon ?oldWeapon)            ; DA: We pickedup another!
+   (changeWeapon ?oldWeapon)            ; DA: We pickedUp another!
    (true (location hero ?x ?y)))
 
 ;----------------------------------------------------------------------
@@ -445,7 +446,7 @@
 ; Meaning: Hero is wearing armor that is newly picked up
 (<= (next (wearing ?armor))
    (armor ?armor ?armor-type)
-   (pickedup ?armor))
+   (pickedUp ?armor))
 
 ;--------------------------------------------------
 ; 3.4.4: Weapon-wielding relations
@@ -461,7 +462,7 @@
 ; Note: Any currently-wielded weapon would be dropped (elsewhere)
 (<= (next (wielding ?weapon))
    (weapon ?weapon ?weapon-type)
-   (pickedup ?weapon))
+   (pickedUp ?weapon))
 
 ;--------------------------------------------------
 ; 3.4.5: Sleep relations
@@ -610,10 +611,12 @@
    (not (x-blocked ?x1 ?x2 ?y)))
    
 (<= (x-blocked ?x1 ?x2 ?y)
+	(int ?y)
 	(between ?x1 ?x3 ?x2)
 	(not (traversible ?x3 ?y)))
 	
 (<= (y-blocked ?x ?y1 ?y2)
+	(int ?x)
 	(between ?y1 ?y3 ?y2)
 	(not (traversible ?x ?y3)))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -1346,14 +1349,14 @@
 (<= (changeWeapon ?currentWeapon)
    (true (wielding ?currentWeapon))       ; SW: need to ground ?weapon
    (weapon ?newWeapon ?newWeapon-type)    ; DA: Sam - is this ordering ok?
-   (pickedup ?newWeapon)                  ; DA: Also new
+   (pickedUp ?newWeapon)                  ; DA: Also new
    (distinct ?currentWeapon ?newWeapon))
 
 ; DA (7/13): Newly inserted - used in next (to prevent burden updates) and burdenChanged/0
 ; -- Same as changeWeapon/1, but this time the argument represents the *new* weapon
 (<= (weaponChange ?newWeapon)
    (weapon ?newWeapon ?newWeapon-type)
-   (pickedup ?newWeapon)
+   (pickedUp ?newWeapon)
    (true (wielding ?currentWeapon))
    (distinct ?newWeapon ?currentWeapon))
 
