@@ -10,7 +10,7 @@
 ;;;  - Basic game requires medkit to win (see TL 6 scenario 2 source 1)
 ;;;    - Changes: 
 ;;;      - explorer health=2
-;;;      - inifinite reuse of medkit that raises health to 2
+;;;      - infinite reuse of medkit that raises health to 2
 ;;;    - But now you also need to pickup a few things, namely:
 ;;;      - The Northwestern Wildcat, UMichigan Wolverine, and the ISLE Feather
 ;;;

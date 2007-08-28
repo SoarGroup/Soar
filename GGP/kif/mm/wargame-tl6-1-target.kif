@@ -12,7 +12,7 @@
 ;;; - Different layout for each
 ;;; - One solution (length 11, verified): SE<shoot n>WNWWNNNE
 ;;;   - Frozen: Kills all 3 terrorists with one bullet because you can still
-;;;     shoot thru walls. I'll let Sam fix this.
+;;;     shoot thru walls. 
 ;;;
 ;;; Debugger: "http://games.stanford.edu:5999/director/debugrawgame?"
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
