@@ -462,7 +462,7 @@ sp {apply*cdl*choose-indicator*remove-general-if-specific-present
               ^operator.name check-for-duplicate-location
               ^present-indicator <pi-specific>
               ^present-indicator <pi-general>)
-   (<pi-specific> ^type << addition removal >>)
+   (<pi-specific> ^type << addition removal change >>)
    (<pi-general> ^type << increase decrease >>
                  ^predicate-name <what>)
 -->
@@ -477,13 +477,13 @@ sp {apply*cdl*choose-indicator*remove-higher-specifics
               ^operator.name check-for-duplicate-location
               ^present-indicator <pi-high>
               ^present-indicator <pi-low>)
-   (<pi-high> ^type << addition removal >>
+   (<pi-high> ^type << addition removal change >>
               ^index <high>
               ^what <what>)
-   (<pi-low> ^type << addition removal >>
+   (<pi-low> ^type << addition removal change >>
              ^index < <high>)
 -->
-   (write (crlf) | Not using indicator for | <what> | as a lower-index specific exists.|)
+   (write (crlf) | Not using indicator as a lower-index specific exists.|)
    (<s> ^present-indicator <pi-high> -)
 }
 
