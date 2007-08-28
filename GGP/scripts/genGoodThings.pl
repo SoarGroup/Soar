@@ -82,11 +82,41 @@ sub buildIndicators() {
             $removedNum = $1;
             $additionInstance =~ /\^p$numericArgNum (\d+)/;
             $addedNum = $1;
+            
+            foreach $possiblePredicate (expandMappings($predicate)) {
+              foreach $possibleAddition (expandMappings($additionInstance)) {
+                # change indicator
+                printGtHeader();
+                print "   (<in> ^index $currentIndex\n";
+                print "         ^type change\n";
+                print "         ^predicate-name $possiblePredicate\n";
+                print "         ^number-position p$numericArgNum\n";
+                print "         ^from $removedNum\n";
+                print "         ^to $addedNum)\n";
+                $possibleAddition =~ s/^\^//;
+                @groundingPairs = split '\^', $possibleAddition;
+                @positionWords = ("first", "second", "third");
+                $groundingNum = 0;
+                foreach $groundingPair (@groundingPairs) {
+                  $groundingPair =~ /(\S+) (\S+)/ or die;
+                  $position = $1;
+                  if ($position eq "p$numericArgNum") {
+                    next;
+                  }
+                  $value = $2;
+                  print "   (<in> ^$positionWords[$groundingNum]-grounding <g$groundingNum>)\n";
+                  print "   (<g$groundingNum> ^position $position ^value $value)\n";
+                  $groundingNum++;
+                }
+
+                print "}\n";
+              }
+            }
 
             if ($addedNum > $removedNum) {
-              # increase indicator
               foreach $possiblePredicate (expandMappings($predicate)) {
                 foreach $possibleAddition (expandMappings($additionInstance)) {
+                  # increase indicator
                   printGtHeader();
                   print "   (<in> ^index $currentIndex\n";
                   print "         ^type increase\n";
@@ -109,14 +139,15 @@ sub buildIndicators() {
                   }
 
                   print "}\n";
+                  
                 }
               }
               $anyIncDec = 1;
             }
             elsif ($removedNum > $addedNum) {
-              # decrease indicator
               foreach $possiblePredicate (expandMappings($predicate)) {
                 foreach $possibleAddition (expandMappings($additionInstance)) {
+                  # decrease indicator
                   printGtHeader();
                   print "   (<in> ^index $currentIndex\n";
                   print "         ^type decrease\n";
@@ -144,12 +175,12 @@ sub buildIndicators() {
               $anyIncDec = 1;
             }
           }
-          #if ($anyIncDec) {
-          #  # prevent the removal instance from being seen as its own indicator
-          #  $removalInstance = "IS_ID";
-          #  # similarly prevent the addition instance
-          #  next ADDITIONS;
-          #}
+          if ($anyIncDec) {
+            # prevent the removal instance from being seen as its own indicator
+            $removalInstance = "IS_ID";
+            # similarly prevent the addition instance
+            next ADDITIONS;
+          }
         }
       }
 
