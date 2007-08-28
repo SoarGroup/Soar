@@ -3,6 +3,7 @@ import gdlyacc
 from partialmap import PartialMap
 from predicate import get_predicates
 from find_max import find_max
+import pdb
 
 class CommitPoint:
 	def __init__(self, map):
@@ -15,6 +16,10 @@ def do_mapping(src_int_rep, tgt_int_rep):
 	src_preds = get_predicates(src_int_rep.get_all_rules(), src_int_rep.get_roles())
 	tgt_preds = get_predicates(tgt_int_rep.get_all_rules(), tgt_int_rep.get_roles())
 
+	# someday maybe we'll be able to bin predicates into different types, but until
+	# that day ...
+	src_preds = zip(src_preds, [0] * len(src_preds))
+	tgt_preds = zip(tgt_preds, [0] * len(tgt_preds))
 	# a list whose elements record which commitments were made at each
 	# step, which commitments are suppressed, number of other rule matches 
 	# invalidated, and the score
@@ -88,6 +93,9 @@ def main(src_rules, tgt_rules):
 	return best_map.get_pred_matches()
 
 if __name__ == '__main__':
-	#import psyco
-	#psyco.bind(PartialMap)
-	main(sys.argv[1], sys.argv[2])
+	import psyco
+	psyco.bind(PartialMap)
+	matches = main(sys.argv[1], sys.argv[2])
+	for s, t in matches.items():
+		print s.get_name(), t.get_name()
+
