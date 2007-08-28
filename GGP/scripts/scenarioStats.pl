@@ -21,14 +21,28 @@ else {
 }
 
 if ($env =~ /^e/) {
-  print `$stats escape-tl$level-$scenario-source.log`;
+  if ($level == 6) {
+    print `$stats escape-tl$level-$scenario-source1.log`;
+    print "\n";
+    print `$stats escape-tl$level-$scenario-source2.log`;
+  }
+  else {
+    print `$stats escape-tl$level-$scenario-source.log`;
+  }
   print "\n";
   print `$stats escape-tl$level-$scenario-target_no_source.log`;
   print "\n";
   print `$stats escape-tl$level-$scenario-target_after_source.log`;
 }
 elsif ($env =~ /^w/ or $env =~ /^m/) {
-  print `$stats wargame-tl$level-$scenario-source.log`;
+  if ($level == 6) {
+    print `$stats wargame-tl$level-$scenario-source1.log`;
+    print "\n";
+    print `$stats wargame-tl$level-$scenario-source2.log`;
+  }
+  else {
+    print `$stats wargame-tl$level-$scenario-source.log`;
+  }
   print "\n";
   print `$stats wargame-tl$level-$scenario-target_no_source.log`;
   print "\n";
@@ -36,7 +50,14 @@ elsif ($env =~ /^w/ or $env =~ /^m/) {
 }
 elsif ($env =~ /^r/) {
   $env = "rogue";
-  print `$stats mRogue-TL-Level-$level-$scenario-Source.log`;
+  if ($level == 6) {
+    print `$stats mRogue-TL-Level-$level-$scenario-Source1.log`;
+    print "\n";
+    print `$stats mRogue-TL-Level-$level-$scenario-Source2.log`;
+  }
+  else {
+    print `$stats mRogue-TL-Level-$level-$scenario-Source.log`;
+  }
   print "\n";
   print `$stats mRogue-TL-Level-$level-$scenario-Target_no_source.log`;
   print "\n";
