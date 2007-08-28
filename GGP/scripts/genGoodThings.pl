@@ -69,10 +69,14 @@ sub buildIndicators() {
   print "\n# INDEX $currentIndex:\n\n";
   foreach $predicate (keys %additions) {
     ADDITIONS: foreach $additionInstance (@{ $additions{$predicate} }) {
+      $removalInstance =~ s/\. //; #fix some num problems: 68. == 68 (handle decimal in general?)
+      $additionInstance =~ s/\. //;
+      $removalInstance =~ s/\.$//; #fix some num problems: 68. == 68 (handle decimal in general?)
+      $additionInstance =~ s/\.$//;
       foreach $removalInstance (@{ $removals{$predicate} }) {
         if (nonNumericEqual($removalInstance, $additionInstance)) {
           $anyIncDec = 0;
-          foreach $numericArgNum (getNumericArgNums($additionInstance)) {
+          foreach $numericArgNum (getNumericArgNums($additionInstance)) {      
             $removalInstance =~ /\^p$numericArgNum (\d+)/;
             $removedNum = $1;
             $additionInstance =~ /\^p$numericArgNum (\d+)/;
@@ -122,7 +126,7 @@ sub buildIndicators() {
                   @positionWords = ("first", "second", "third");
                   $groundingNum = 0;
                   foreach $groundingPair (@groundingPairs) {
-                    $groundingPair =~ /(\S+) (\S+)/ or die;
+                    $groundingPair =~ /(\S+) (\S+)/ or die "bad GP: $groundingPair\n";
                     $position = $1;
                     if ($position eq "p$numericArgNum") {
                       next;
@@ -139,12 +143,12 @@ sub buildIndicators() {
               $anyIncDec = 1;
             }
           }
-          if ($anyIncDec) {
-            # prevent the removal instance from being seen as its own indicator
-            $removalInstance = "IS_ID";
-            # similarly prevent the addition instance
-            next ADDITIONS;
-          }
+          #if ($anyIncDec) {
+          #  # prevent the removal instance from being seen as its own indicator
+          #  $removalInstance = "IS_ID";
+          #  # similarly prevent the addition instance
+          #  next ADDITIONS;
+          #}
         }
       }
 

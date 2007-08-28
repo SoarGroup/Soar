@@ -59,7 +59,7 @@ multi-attributes result-link 1000
 learn -d
 indifferent-selection --first
 
-# source goodthings.soar
+source goodthings.soar
 
 pushd common
 # source canvas.soar

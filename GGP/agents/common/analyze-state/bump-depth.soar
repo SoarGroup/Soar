@@ -25,12 +25,12 @@ sp {apply*usi*goodthing
    (<id-gs> ^p1 <p1-val>)
   -{(<old-gs> ^<item> <id-oldgs>)
     (<id-oldgs> ^p1 <p1-val>)}
-                   -{(<s> ^used-goodthing <idx>)}
+                   -{(<s> ^used-goodthing <gt>)}
 -->
+   (<s> ^present-indicator <gt>)
    (<s> ^current-evaluation-depth <ced> -
                                   (+ <ced> 1))
-   (<s> ^using-goodthing <idx>)
-   (write (crlf) |Bump due to appearence of | <item> | | <p1-val>)
+   (write (crlf) |Indicator: appearence of | <item> | | <p1-val>)
 }
 
 
@@ -54,12 +54,12 @@ sp {apply*usi*goodthing*2
   -{(<old-gs> ^<item> <id-oldgs>)
     (<id-oldgs> ^p1 <p1-val>
                 ^p2 <p2-val>)}
-                   -{(<s> ^used-goodthing <idx>)}
+                   -{(<s> ^used-goodthing <gt>)}
 -->
+   (<s> ^present-indicator <gt>)
    (<s> ^current-evaluation-depth <ced> -
                                   (+ <ced> 1))
-   (<s> ^using-goodthing <idx>)
-   (write (crlf) |Bump due to appearence of | <item> | | <p1-val> | | <p2-val>)
+   (write (crlf) |Indicator: appearence of | <item> | | <p1-val> | | <p2-val>)
 }
 
 
@@ -85,12 +85,12 @@ sp {apply*usi*goodthing*3
     (<id-oldgs> ^p1 <p1-val>
                 ^p2 <p2-val>
                 ^p3 <p3-val>)}
-                   -{(<s> ^used-goodthing <idx>)}
+                   -{(<s> ^used-goodthing <gt>)}
 -->
+   (<s> ^present-indicator <gt>)
    (<s> ^current-evaluation-depth <ced> -
                                   (+ <ced> 1))
-   (<s> ^using-goodthing <idx>)
-   (write (crlf) |Bump due to appearence of | <item> | | <p1-val> | | <p2-val> | | <p3-val>)
+   (write (crlf) |Indicator: appearence of | <item> | | <p1-val> | | <p2-val> | | <p3-val>)
 }
 
 
@@ -112,12 +112,12 @@ sp {apply*usi*goodthing*removed
     (<id-gs> ^p1 <p1-val>)}
    (<old-gs> ^<item> <id-oldgs>)
    (<id-oldgs> ^p1 <p1-val>)
-  -{(<s> ^used-goodthing <idx>)}
+  -{(<s> ^used-goodthing <gt>)}
 -->
+   (<s> ^present-indicator <gt>)
    (<s> ^current-evaluation-depth <ced> -
                                   (+ <ced> 1))
-   (<s> ^using-goodthing <idx>)
-   (write (crlf) |Bump due to removal of | <item> | | <p1-val>)
+   (write (crlf) |Indicator: removal of | <item> | | <p1-val>)
 }
 
 
@@ -135,18 +135,18 @@ sp {apply*usi*goodthing*2*removed
    (<id-gt> ^p1 <p1-val>
             ^p2 <p2-val>
            -^p3)
-   (<gs> ^<item> <id-gs>)
-  -{(<id-gs> ^p1 <p1-val>
+   -{(<gs> ^<item> <id-gs>)
+   (<id-gs> ^p1 <p1-val>
              ^p2 <p2-val>)}
    (<old-gs> ^<item> <id-oldgs>)
    (<id-oldgs> ^p1 <p1-val>
                ^p2 <p2-val>)
-  -{(<s> ^used-goodthing <idx>)}
+  -{(<s> ^used-goodthing <gt>)}
 -->
+   (<s> ^present-indicator <gt>)
    (<s> ^current-evaluation-depth <ced> -
                                   (+ <ced> 1))
-   (<s> ^using-goodthing <idx>)
-   (write (crlf) |Bump due to removal of | <item> | | <p1-val> | | <p2-val>)
+   (write (crlf) |Indicator: removal of | <item> | | <p1-val> | | <p2-val>)
 }
 
 
@@ -172,12 +172,12 @@ sp {apply*usi*goodthing*3*removed
    (<id-oldgs> ^p1 <p1-val>
                ^p2 <p2-val>
                ^p3 <p3-val>)
-  -{(<s> ^used-goodthing <idx>)}
+  -{(<s> ^used-goodthing <gt>)}
 -->
+   (<s> ^present-indicator <gt>)
    (<s> ^current-evaluation-depth <ced> -
                                   (+ <ced> 1))
-   (<s> ^using-goodthing <idx>)
-   (write (crlf) |Bump due to removal of | <item> | | <p1-val> | | <p2-val> | | <p3-val>)
+   (write (crlf) |Indicator: removal of | <item> | | <p1-val> | | <p2-val> | | <p3-val>)
 }
 
 # p1..p3 Increments
@@ -198,12 +198,12 @@ sp {apply*usi*goodthing*increase
    (<id-gs> ^p1 <current-val>)
    (<old-gs> ^<pname> <id-oldgs>)
    (<id-oldgs> ^p1 {< <current-val> <old-val>})
-  -{(<s> ^used-goodthing <idx>)}
+  -{(<s> ^used-goodthing <gt>)}
 -->
+   (<s> ^present-indicator <gt>)
    (<s> ^current-evaluation-depth <ced> -
                                   (+ <ced> 1))
-   (<s> ^using-goodthing <idx>)
-   (write (crlf) |Bump due to increase of | <pname>)
+   (write (crlf) |Indicator: increase of | <pname>)
 }
 
 sp {apply*usi*goodthing*2*increase
@@ -227,12 +227,12 @@ sp {apply*usi*goodthing*2*increase
    (<old-gs> ^<pname> <id-oldgs>)
    (<id-oldgs> ^<position> {< <current-val> <old-val>}
             ^<g1-pos> <g1-val>)
-  -{(<s> ^used-goodthing <idx>)}
+  -{(<s> ^used-goodthing <gt>)}
 -->
+   (<s> ^present-indicator <gt>)
    (<s> ^current-evaluation-depth <ced> -
                                   (+ <ced> 1))
-   (<s> ^using-goodthing <idx>)
-   (write (crlf) |Bump due to increase of | <pname> | | <g1-pos> | | <g1-val>)
+   (write (crlf) |Indicator: increase of | <pname> | | <g1-pos> | | <g1-val>)
 }
 
 
@@ -261,12 +261,12 @@ sp {apply*usi*goodthing*3*increase
    (<id-oldgs> ^<position> {< <current-val> <old-val>}
             ^<g1-pos> <g1-val>
             ^<g2-pos> <g2-val>)
-  -{(<s> ^used-goodthing <idx>)}
+  -{(<s> ^used-goodthing <gt>)}
 -->
+   (<s> ^present-indicator <gt>)
    (<s> ^current-evaluation-depth <ced> -
                                   (+ <ced> 1))
-   (<s> ^using-goodthing <idx>)
-   (write (crlf) |Bump due to increase of | <pname> | | <g1-pos> | | <g1-val> | | <g2-pos> | | <g2-val>)
+   (write (crlf) |Indicator: increase of | <pname> | | <g1-pos> | | <g1-val> | | <g2-pos> | | <g2-val>)
 }
 
 # p1..p3 Decrements
@@ -287,11 +287,11 @@ sp {apply*usi*goodthing*decrease
    (<id-gs> ^p1 <current-val>)
    (<old-gs> ^<pname> <id-oldgs>)
    (<id-oldgs> ^p1 {> <current-val> <old-val>})
-  -{(<s> ^used-goodthing <idx>)}
+  -{(<s> ^used-goodthing <gt>)}
 -->
+   (<s> ^present-indicator <gt>)
    (<s> ^current-evaluation-depth <ced> -
                                   (+ <ced> 1))
-   (<s> ^using-goodthing <idx>)
    (write (crlf) |Bump due to decrease of | <pname>)
 }
 
@@ -316,12 +316,12 @@ sp {apply*usi*goodthing*2*decrease
    (<old-gs> ^<pname> <id-oldgs>)
    (<id-oldgs> ^<position> {> <current-val> <old-val>}
             ^<g1-pos> <g1-val>)
-  -{(<s> ^used-goodthing <idx>)}
+  -{(<s> ^used-goodthing <gt>)}
 -->
+   (<s> ^present-indicator <gt>)
    (<s> ^current-evaluation-depth <ced> -
                                   (+ <ced> 1))
-   (<s> ^using-goodthing <idx>)
-   (write (crlf) |Bump due to decrease of | <pname> | | <g1-pos> | | <g1-val>)
+   (write (crlf) |Indicator: decrease of | <pname> | | <g1-pos> | | <g1-val>)
 }
 
 
@@ -351,23 +351,106 @@ sp {apply*usi*goodthing*3*decrease
    (<id-oldgs> ^<position> {> <current-val> <old-val>}
             ^<g1-pos> <g1-val>
             ^<g2-pos> <g2-val>)
-  -{(<s> ^used-goodthing <idx>)}
+  -{(<s> ^used-goodthing <gt>)}
 -->
+   (<s> ^present-indicator <gt>)
    (<s> ^current-evaluation-depth <ced> -
                                   (+ <ced> 1))
-   (<s> ^using-goodthing <idx>)
-   (write (crlf) |Bump due to decrease of | <pname> | | <g1-pos> | | <g1-val> | | <g2-pos> | | <g2-val>)
+   (write (crlf) |Indicator: decrease of | <pname> | | <g1-pos> | | <g1-val> | | <g2-pos> | | <g2-val>)
 }
 
-
-
-sp {apply*cdl*add-used-goodthing
+# rules to choose which indicators to use up
+# if any specific indicators are present, remove any general indicators
+sp {apply*cdl*choose-indicator*remove-general-if-specific-present
    (state <s> ^name game
               ^operator.name check-for-duplicate-location
-              ^using-goodthing {<> -1 <ug>}) # -1 is special, don't use it up
+              ^present-indicator <pi-specific>
+              ^present-indicator <pi-general>)
+   (<pi-specific> ^type << addition removal >>)
+   (<pi-general> ^type << increase decrease >>
+                 ^predicate-name <what>)
 -->
-   (<s> ^used-goodthing <ug>)
+   (write (crlf) | Not using indicator for | <what> | as a specific indicator exists.|)
+   (<s> ^present-indicator <pi-general> -)
 }
+
+# if two specific indicators are present, only use those with the lowest index
+# (ideally, this would select the index that has the most indicators)
+sp {apply*cdl*choose-indicator*remove-higher-specifics
+   (state <s> ^name game
+              ^operator.name check-for-duplicate-location
+              ^present-indicator <pi-high>
+              ^present-indicator <pi-low>)
+   (<pi-high> ^type << addition removal >>
+              ^index <high>
+              ^what <what>)
+   (<pi-low> ^type << addition removal >>
+             ^index < <high>)
+-->
+   (write (crlf) | Not using indicator for | <what> | as a lower-index specific exists.|)
+   (<s> ^present-indicator <pi-high> -)
+}
+
+# if two general indicators are present, only use those with the lowest index
+# (ideally, this would select the index that has the most indicators)
+# this could remove some in parallel w/ remove-general-if-specific, but that shouldn't be a problem
+sp {apply*cdl*choose-indicator*remove-higher-generals
+   (state <s> ^name game
+              ^operator.name check-for-duplicate-location
+              ^present-indicator <pi-high>
+              ^present-indicator <pi-low>)
+   (<pi-high> ^type << increase decrease >>
+              ^index <high>
+              ^predicate-name <what>)
+   (<pi-low> ^type << increase decrease >>
+             ^index < <high>)
+-->
+   (write (crlf) | Not using indicator for | <what> | as a lower-index general exists.|)
+   (<s> ^present-indicator <pi-high> -)
+}
+
+# what indicators are 'used' when seen:
+# if a specific indicator is seen, that indicator and all others sharing the idx are used
+# if a general indicator is seen, just that indicator is used
+#  this is because we don't know general -> specific mappings
+
+sp {apply*sl*use-base-indicator
+   (state <s> ^name game
+              ^operator.name save-location
+              ^present-indicator <pi>)
+   (<pi> ^index <> -1) # -1 is special flag, don't use it up
+-->
+   (<s> ^used-goodthing <pi>)
+}
+
+sp {apply*sl*specific-indicator-spreads-to-shared-idx
+   (state <s> ^name game
+              ^operator.name save-location
+              ^present-indicator <pi>
+              ^top-state.goodthings.indicator <other>
+             -^present-indicator <other>)
+   (<pi> ^index {<> -1 <idx>}
+         ^type << addition removal >>)
+   (<other> ^index <idx>)
+-->
+   (<s> ^used-goodthing <other>)
+}
+
+# do we want this? it probably doesn't actually matter much
+
+#sp {apply*cdl*general-indicator-spreads-to-general-shared-idx
+#   (state <s> ^name game
+#              ^operator.name check-for-duplicate-location
+#              ^present-indicator <pi>
+#              ^top-state.goodthings.indicator <other>
+#             -^present-indicator <other>)
+#   (<pi> ^index <idx>
+#         ^type << increase decrease >>)
+#   (<other> ^index <idx>
+#            ^type << increase decrease >>)
+#-->
+#   (<s> ^used-goodthing <other>)
+#}
 
 sp {elaborate*inherit*used-goodthing
    (state <s> ^name game
