@@ -7,10 +7,11 @@ our $currentIndex = 0;
 our %additions = ();
 our %removals = ();
 
-die unless ($#ARGV == 2);
+die unless ($#ARGV == 3);
 $logFile = $ARGV[0];
 $sourceKif = $ARGV[1];
 $targetKif = $ARGV[2];
+$currentIndex = $ARGV[3];
 
 $mapper = "./runMapper.pl";
 
