@@ -43,6 +43,7 @@ public class Configuration {
 		this.hide = config.hide;
 		this.nogui = config.nogui;
 		this.silentAgents = config.silentAgents;
+		this.maxMemoryUsageValue = config.maxMemoryUsageValue;
 		this.asyncTimeSlice = config.asyncTimeSlice;
 
 		cModule.copy(cModule);
@@ -385,6 +386,13 @@ public class Configuration {
 				
 			} else if (child.getName().equalsIgnoreCase(kTagSilentAgents)) {
 				setSilentAgents(true);
+				
+			} else if (child.getName().equalsIgnoreCase(kTagMaxMemoryUsage)) {
+				try {
+					setMaxMemoryUsage(Integer.parseInt(child.getTextTrim()));
+				} catch (NumberFormatException e) {
+					throw new LoadError("Error parsing max memory usage.");
+				}
 				
 			} else if (child.getName().equalsIgnoreCase(kTagASync)) {
 				try {
@@ -1053,6 +1061,15 @@ public class Configuration {
 	}
 	public boolean getSilentAgents() {
 		return silentAgents;
+	}
+	
+	private int maxMemoryUsageValue = 0;
+	private String kTagMaxMemoryUsage = "max-memory-usage";
+	public void setMaxMemoryUsage(int maxMemoryUsageValue) {
+		this.maxMemoryUsageValue = maxMemoryUsageValue;
+	}
+	public int getMaxMemoryUsage() {
+		return maxMemoryUsageValue;
 	}
 	
 }
