@@ -66,8 +66,8 @@ sub buildIndicators() {
   # if any non-numeric parameters differ, normal addition/removal indicators are
   # generated
 
-  $currentIndex++;
-  print "\n# INDEX $currentIndex:\n\n";
+  #$currentIndex++;
+  #print "\n# INDEX $currentIndex:\n\n";
   foreach $predicate (keys %additions) {
     ADDITIONS: foreach $additionInstance (@{ $additions{$predicate} }) {
       $removalInstance =~ s/\. //; #fix some num problems: 68. == 68 (handle decimal in general?)
@@ -78,6 +78,7 @@ sub buildIndicators() {
         if (nonNumericEqual($removalInstance, $additionInstance)) {
           $anyIncDec = 0;
           foreach $numericArgNum (getNumericArgNums($additionInstance)) {      
+            $currentIndex++;
             $removalInstance =~ /\^p$numericArgNum (\d+)/;
             $removedNum = $1;
             $additionInstance =~ /\^p$numericArgNum (\d+)/;
@@ -186,6 +187,7 @@ sub buildIndicators() {
 
       # addition instance is not an increment or decrement
 
+      $currentIndex++;
       foreach $possiblePredicate (expandMappings($predicate)) {
         foreach $possibleAddition (expandMappings($additionInstance)) {
           printGtHeader();
@@ -203,6 +205,7 @@ sub buildIndicators() {
   foreach $predicate (keys %removals) {
     foreach $removalInstance (@{ $removals{$predicate} }) {
       unless ($removalInstance eq "IS_ID") {
+        $currentIndex++;
         foreach $possiblePredicate (expandMappings($predicate)) {
           foreach $possibleRemoval (expandMappings($removalInstance)) {
             printGtHeader();

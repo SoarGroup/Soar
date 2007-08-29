@@ -57,5 +57,5 @@ $machineDirs{"bb"} = "GGP/scripts";
 
 die unless (defined $machineAliases{$machine});
 
-print `ssh $machineAliases{$machine} "cd $machineDirs{$machine}; $getStats" | $toClip`;
+print `ssh $machineAliases{$machine} \"cd $machineDirs{$machine}; $getStats; echo end\" | $toClip`;
 
