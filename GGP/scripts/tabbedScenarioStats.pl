@@ -69,7 +69,7 @@ foreach (@targetS) { chomp; }
 
 $maxIdx = max($#source1, $#source2, $#targetS, $#targetNS);
 
-for ($i=0; $i<$maxIdx; $i++) {
+for ($i=0; $i<=$maxIdx; $i++) {
   if ($i <= $#source1) {
     print "$source1[$i]";
   }
