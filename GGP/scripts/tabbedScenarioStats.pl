@@ -73,20 +73,24 @@ for ($i=0; $i<$maxIdx; $i++) {
   if ($i <= $#source1) {
     print "$source1[$i]";
   }
+  else { print "."};
   print "\t";
   if ($level == 6) {
     if ($i <= $#source2) {
       print "$source2[$i]";
     }
+    else { print "."};
     print "\t";
   }
   if ($i <= $#targetNS) {
     print "$targetNS[$i]";
   }
+  else { print "."};
   print "\t";
   if ($i <= $#targetS) {
     print "$targetS[$i]";
   }
+  else { print "."};
   print "\n";
 }
 
