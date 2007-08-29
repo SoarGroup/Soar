@@ -12,6 +12,7 @@
 ; 8/14: Turned off auto-healing; made scenario simpler
 ; 8/22: Added logic to prevent monsters from overlapping.
 ; 8/22: Added bindings to correct Soar issue.
+; 8/29 (SW): monsterGetsLocation modifications
 ;
 ; Verified Solution, length 14: NNEEES<read scroll1>ESWSSSE
 ; mRogue was developed by Tom Hinrichs, Sam Wintermute, & David Aha
@@ -764,18 +765,18 @@
 ; Offensive-strength is the combined strength of attacking monsters.
 ; - Open to debate
 (<= (amountOfMonsterDamage ?offensive-strength 0)
- (attackedByMonster ?monster ?x ?y)                  ; SW   **** ; MCM:Unnecessary, causes bug
- (monster ?monster ?monster-type)                    ; SW   **** ; MCM:Unnecessary, causes bug
- (monsterStrength ?monster-type ?offensive-strength) ; SW   **** ; MCM:Unnecessary, causes bug
+ (attackedByMonster ?monster ?x ?y)                  ; SW   ****
+ (monster ?monster ?monster-type)                    ; SW   ****
+ (monsterStrength ?monster-type ?offensive-strength) ; SW   ****
  (heroDefense ?defense)                          ; Battle
  (> ?defense ?offensive-strength)) ; SW ****: changed from >=, bug? Would imply that no damage occurs if offense == defense..
 
 ; Meaning: Attacks whose value is equal to or greater than armor value
 ; - Open to debate (i.e., Attack value is 1 + (offense - defense))
 (<= (amountOfMonsterDamage ?offensive-strength ?hitPointsLost)
- (attackedByMonster ?monster ?x ?y)                  ; SW   **** ; MCM:Unnecessary, causes bug
- (monster ?monster ?monster-type)                    ; SW   **** ; MCM:Unnecessary, causes bug
- (monsterStrength ?monster-type ?offensive-strength) ; SW   **** ; MCM:Unnecessary, causes bug
+ (attackedByMonster ?monster ?x ?y)                  ; SW   ****
+ (monster ?monster ?monster-type)                    ; SW   ****
+ (monsterStrength ?monster-type ?offensive-strength) ; SW   ****
  (heroDefense ?defense)                          ; Battle
  (>= ?offensive-strength ?defense) ; SW: this seems necessary
  (-  ?offensive-strength ?defense ?diff)         ; Arithmetic
@@ -1245,6 +1246,7 @@
 (<= (nextMonsterLocation ?monster ?x ?y)
       (monsterGetsLocation ?monster ?x ?y))
 
+; MCM: Note: This logic may need to change for >2 monsters.
 ; Meaning: If no other monster wants to be there, you get your spot.
 (<= (monsterGetsLocation ?monster ?x ?y)
       (monster ?monster ?monster-type)
@@ -1260,24 +1262,22 @@
 ;   We'll make nStepsTowardsHero stop when the next location will be
 ;   occupied by the hero.
 (<= (monsterPlannedLocation ?monster ?x2 ?y2)
- (not (currentlyInvisible hero))
- (provoked ?monster)
- (true (location ?monster ?x1 ?y1))
- (monster ?monster ?monster-type)
- (monsterSpeed ?monster-type ?base-speed)
- (relativeSpeed ?base-speed ?speed)
- (nStepsTowardsHero ?monster ?speed ?x1 ?y1 ?x2 ?y2))
+      (not (currentlyInvisible hero))
+      (provoked ?monster)
+      (true (location ?monster ?x1 ?y1))
+      (monster ?monster ?monster-type)
+      (monsterSpeed ?monster-type ?base-speed)
+      (relativeSpeed ?base-speed ?speed)
+      (nStepsTowardsHero ?monster ?speed ?x1 ?y1 ?x2 ?y2))
 
-; Meaning: A different monster has reserved this spot for its next
-; location.
+; Meaning: A different monster has reserved this spot for its next location.
 (<= (otherMonsterPlannedLocation ?monster ?x ?y)
       (monster ?monster ?monster-type)
       (monster ?monster2 ?monster-type2)
       (monsterPlannedLocation ?monster2 ?x ?y)
       (distinct ?monster ?monster2))
 
-; Meaning: Monsters who stay where they are get
-;                  first priority.
+; Meaning: Monsters who stay where they are get first priority.
 (<= (monsterGetsLocation ?monster ?x ?y)
       (monster ?monster ?monster-type)
       (monsterPlannedLocation ?monster ?x ?y)
