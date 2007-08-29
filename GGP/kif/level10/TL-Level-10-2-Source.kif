@@ -1251,6 +1251,8 @@
       (monsterPlannedLocation ?monster ?x ?y)
       (not (otherMonsterPlannedLocation ?monster ?x ?y))
       (monster ?monster2 ?monster-type2)
+      (distinct ?monster ?monster2) ; SW 8/29
+      (not (true (location ?monster ?x ?y))) ; SW 8/29- the other rule for monsterGetsLocation handles this case
       (not (monsterStationedLocation ?monster2 ?x ?y)))
 
 ; Meaning: Move provoked monsters towards hero according to ?speed
