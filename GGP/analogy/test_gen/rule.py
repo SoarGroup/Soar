@@ -249,7 +249,9 @@ class RuleSet:
 
 	def split_rule(self, rule):
 		""" Try to split a rule into two rules while maintaining semantics """
-		assert len(rule.get_rhs()) > 1, "Resulting rules must have some actions"
+		#assert len(rule.get_rhs()) > 1, "Resulting rules must have some actions"
+		if len(rule.get_rhs()) <= 1:
+			pdb.set_trace()
 
 		pcs = list(rule.get_pconds())
 		ncs = list(rule.get_nconds())

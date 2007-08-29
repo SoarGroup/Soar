@@ -86,7 +86,7 @@ def do_mapping(src_int_rep, tgt_int_rep):
 
 	return best_map
 
-def main(src_rules, tgt_rules):
+def map_kifs(src_rules, tgt_rules):
 	gdlyacc.parse_file(src_rules)
 	src_int_rep = gdlyacc.int_rep.copy()
 	gdlyacc.parse_file(tgt_rules)
@@ -97,6 +97,8 @@ def main(src_rules, tgt_rules):
 
 if __name__ == '__main__':
 	import psyco
+	import GDL
 	psyco.bind(PartialMap)
-	pred_matches = main(sys.argv[1], sys.argv[2])
+	psyco.bind(GDL)
+	pred_matches = map_kifs(sys.argv[1], sys.argv[2])
 	print sum([sp.get_name().lower() == tp.get_name() for sp, tp in pred_matches.items()])

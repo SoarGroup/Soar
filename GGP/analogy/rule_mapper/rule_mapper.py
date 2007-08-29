@@ -12,14 +12,15 @@ class CommitPoint:
 	def suppress_last(self):
 		self.map.suppress_match(self.rule_match[0], self.rule_match[1])
 
-def do_mapping(src_int_rep, tgt_int_rep):
+def do_mapping(src_int_rep, tgt_int_rep, src_pred_bins={}, tgt_pred_bins={}):
 	src_preds = get_predicates(src_int_rep.get_all_rules(), src_int_rep.get_roles())
 	tgt_preds = get_predicates(tgt_int_rep.get_all_rules(), tgt_int_rep.get_roles())
 
-	# someday maybe we'll be able to bin predicates into different types, but until
-	# that day ...
-	src_preds = zip(src_preds, [0] * len(src_preds))
-	tgt_preds = zip(tgt_preds, [0] * len(tgt_preds))
+	# 0 is the default bin that can map to anything else. All predicates that aren't
+	# assigned bins get 0
+	src_preds = [(p, src_pred_bins.get(p.get_name(), 0)) for p in src_preds]
+	tgt_preds = [(p, tgt_pred_bins.get(p.get_name(), 0)) for p in tgt_preds]
+
 	# a list whose elements record which commitments were made at each
 	# step, which commitments are suppressed, number of other rule matches 
 	# invalidated, and the score
@@ -83,19 +84,19 @@ def do_mapping(src_int_rep, tgt_int_rep):
 
 	return best_map
 
-def main(src_rules, tgt_rules):
+def map_kifs(src_rules, tgt_rules, src_pred_bins = {}, tgt_pred_bins = {}):
 	gdlyacc.parse_file(src_rules)
 	src_int_rep = gdlyacc.int_rep.copy()
 	gdlyacc.parse_file(tgt_rules)
 	tgt_int_rep = gdlyacc.int_rep.copy()
 	
-	best_map = do_mapping(src_int_rep, tgt_int_rep)
+	best_map = do_mapping(src_int_rep, tgt_int_rep, src_pred_bins, tgt_pred_bins)
 	return best_map.get_pred_matches()
 
 if __name__ == '__main__':
 	#import psyco
 	#psyco.bind(PartialMap)
-	matches = main(sys.argv[1], sys.argv[2])
+	matches = map_kifs(sys.argv[1], sys.argv[2])
 	for s, t in matches.items():
 		print s.get_name(), t.get_name()
 

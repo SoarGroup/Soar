@@ -6,7 +6,13 @@ class Heuristic:
 	def __call__(self, state):
 		if len(state) == 0:
 			return 0
-		return (reduce(lambda x,y:x+y, (self.__w[p] for p in state)) / len(state))
+		x = [self.__w[p] for p in state if p in self.__w]
+		if len(x) == 0:
+			# no idea how far this node is from the goal, so just assume
+			# that it's always better to explore a state that we have some
+			# information about first
+			return 9999
+		return (sum(x) / len(x))
 
 def heuristic_mserr(h, root):
 	sq_sum = 0.0

@@ -59,7 +59,10 @@ class TreeGen:
 
 		# keep looping until we get a unique state
 		while True:
-			new_preds = [random.choice(self.predicates) for i in range(self.max_preds - len(preserved))]
+			min_rand = max(0, self.min_preds - len(preserved))
+			max_rand = max(min_rand, self.max_preds - len(preserved))
+			num_rand = random.randint(min_rand, max_rand)
+			new_preds = [random.choice(self.predicates) for i in range(num_rand)]
 			next_state = frozenset(preserved + new_preds)
 			if next_state not in self.__states and \
 			  (parent is None or len(next_state - parent.preds) >= self.min_pred_change):

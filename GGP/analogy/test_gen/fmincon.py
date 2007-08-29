@@ -1,3 +1,4 @@
+import os, sys
 
 def make_matlab_min_func(root):
 	fstr = ""
@@ -66,16 +67,25 @@ def make_files(root):
 	cmd_file.write('x0=[%s];\n' % ','.join(['0'] * num_vars))
 	cmd_file.write('lb=[%s];\n' % ','.join(['0'] * num_vars))
 	cmd_file.write('[x,fval] = fmincon(@objfun,x0,[],[],[],[],lb);\n')
-	cmd_file.write('csvwrite("result", x);\n')
+	cmd_file.write('csvwrite(\'result.csv\', x);\n')
 	cmd_file.close()
 
 def run_fmincon(root):
 	make_files(root)
-	server = 'scs.itd.umich.edu'
-	d = 'opt_test'
-	output_file = 'result'
-	matlab_cmd = 'matlab -nojvm -nodisplay -r \'do_opt;quit\''
-	os.system('scp objfun.m %s:%s/' % (server, d))
-	os.system('scp do_opt.m %s:%s/' % (server, d))
-	os.system('ssh %s "cd %s; %s"' % (server, d, matlab_cmd))
-	os.system('scp %s:%s/%s .' % (server, d, output_file))
+	#server = 'scs.itd.umich.edu'
+	output_file = 'result.csv'
+	matlab_cmd = 'matlab -nojvm -nodisplay -r \'do_opt;quit\' &> /dev/null'
+	#os.system('scp objfun.m %s:%s/' % (server, d))
+	#os.system('scp do_opt.m %s:%s/' % (server, d))
+	#os.system('ssh %s "cd %s; %s"' % (server, d, matlab_cmd))
+	#os.system('scp %s:%s/%s .' % (server, d, output_file))
+	assert os.system(matlab_cmd) == 0, "Matlab run failed"
+	result = [float(s) for s in open(output_file).read().split(',')]
+	return result
+
+if __name__ == '__main__':
+	from treegen import TreeGen
+	tgen = TreeGen()
+	root = tgen.generate_random()
+	result = run_fmincon(root)
+	print result

@@ -31,7 +31,8 @@ class State:
 	def make_max_rules(self, rules, all_preds):
 		ncs = all_preds - self.preds
 		for a, c in self.__children.items():
-			rules.append(Rule(self.preds, ncs, a, c.preds))
+			comment = 'Originally generated from state %s -%s-> %s' % (''.join(self.preds), a, ''.join(c.preds))
+			rules.append(Rule(self.preds, ncs, a, c.preds, comment))
 			c.make_max_rules(rules, all_preds)
 
 	def is_goal(self):

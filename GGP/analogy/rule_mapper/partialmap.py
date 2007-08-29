@@ -179,7 +179,9 @@ class PartialMap:
 		# ensure that predicates are in the same category
 		spt = self.__src_pred_types[sp]
 		tpt = self.__tgt_pred_types[tp]
-		if spt != tpt:
+		# if any of the predicates are of type 0 (no category), then
+		# the mapping is legal
+		if spt != 0 and tpt != 0 and spt != tpt:
 			return 0
 
 		# if all above conditions are met, then make a rating based on argument types

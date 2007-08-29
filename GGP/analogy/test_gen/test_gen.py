@@ -4,8 +4,26 @@ import heuristic
 from rule import *
 from state import State
 from treegen import TreeGen
-from lpsolve55 import *
 from astar import AStar
+import fmincon
+
+sys.path.append('../rule_mapper')
+import rule_mapper
+import options
+
+def make_bins(l, n):
+	if n == 0:
+		return dict((x, 0) for x in l)
+	r = l[:]
+	random.shuffle(r)
+	bins = {}
+	b = 1
+	for x in r:
+		bins[x] = b
+		b += 1
+		if b > n:
+			b = 1
+	return bins
 
 def gen_min(root, predicates):
 	all_states = []
@@ -57,8 +75,8 @@ def state_preds_lower(s):
 
 def gen_src_tgt_split():
 	tree_gen = TreeGen()
-	#src_root = tree_gen.generate_random()
-	src_root = tree_gen.generate_indicators({'I1': 3})
+	src_root = tree_gen.generate_random()
+	#src_root = tree_gen.generate_indicators({'I1': 3})
 	src_rs = gen_min(src_root, tree_gen.predicates)
 	src_fd, src_name = tempfile.mkstemp('.kif', 'src_rules')
 	src_rs.make_kif(src_root, os.fdopen(src_fd, 'w'))
@@ -70,42 +88,15 @@ def gen_src_tgt_split():
 	tgt_rs = gen_split(tgt_root, preds_lower)
 	tgt_fd, tgt_name = tempfile.mkstemp('.kif', 'tgt_rules')
 	tgt_rs.make_kif(tgt_root, os.fdopen(tgt_fd, 'w'))
-	return src_name, tgt_name
+	return src_root, src_rs, tgt_root, tgt_rs
 
-def calc_pred_estimates(root):
-	# turning this into a list fixes the predicate order in the lp
-	preds = list(root.get_all_predicates())
-	preds.sort()
-	dists = {}
-	root.dist_to_goal(dists)
-
-	# set up lpsolve
-	# start with no constraints, and each predicate as a variable
-	lp = lpsolve('make_lp', 0, len(preds))
-	lpsolve('set_verbose', lp, IMPORTANT)
-	# we want to minimize the value sum((B - Ax)^2), so actually we just want
-	# to maximize x with the constraint that Ax <= B. So set c = [1...1]
-	lpsolve('set_obj_fn', lp, [-1] * len(preds))
-	# set up the Ax <= B constraints, where A is a matrix whose rows are the
-	# memberships of each state, and B is the distance of that state to the
-	# nearest leaf
-	for p, d in dists.items():
-		# membership is an array of 0/1 such that if predicate i is in the
-		# state, then membership[i] = 1, otherwise membership[i] = 0
-		membership = map(lambda x: int(x), [(i in p) for i in preds])
-		# to get the distance estimate for a state, we average the estimates
-		# for each predicate in the state. So we have to divide each 1 in the
-		# membership array by the total number of 1's.
-		num_preds = float(sum(membership))
-		constraint = map(lambda x: x / num_preds, membership)
-		#print constraint
-		lpsolve('add_constraint', lp, constraint, LE, d)
-	
-	# solve the lp problem
-	lpsolve('solve', lp)
-	estimates, ret = lpsolve('get_variables', lp)
-	
-	return dict((preds[i], e) for i, e in enumerate(estimates))
+def gen_src_tgt_split_files():
+	src_root, src_rs, tgt_root, tgt_rs = gen_src_tgt_split()
+	src_fd, src_name = tempfile.mkstemp('.kif', 'src_rules')
+	src_rs.make_kif(src_root, os.fdopen(src_fd, 'w'))
+	tgt_fd, tgt_name = tempfile.mkstemp('.kif', 'tgt_rules')
+	tgt_rs.make_kif(tgt_root, os.fdopen(tgt_fd, 'w'))
+	return src_root, src_name, tgt_root, tgt_name
 
 def variance(l):
 	m = sum(l) / float(len(l))
@@ -134,34 +125,14 @@ def test_heuristic_gen():
 	for p, w in weights.items():
 		print '%s: %f' % (p, w)
 	
-	return
-
-	import fmincon
-	print fmincon.make_weighted_matlab_min_func(root, weights)
-
-	#make_matlab_constraints(root)
-	#make_min_func(root)
-	estimates = calc_pred_estimates(root)
-	#for p, e in estimates.items():
-	#	print p, e
-	for p, v in pvar.items():
-		print '%s: %f' % (p, v)
-	
-	h = heuristic.Heuristic(estimates)
-	print math.sqrt(heuristic.heuristic_mserr(h, root))
 	preds = list(root.get_all_predicates())
 	preds.sort()
-	weights = [0,1.0447,0.0882,0,0,0.5500,9.8617,4.8973,2.7093,0.7603,3.6829,1.6404,0,0,0,0,0.5382,0,5.9140,1.5262,2.8374,0,2.3854,1.3851,0]
+	weights = fmincon.run_fmincon(root)
 
-	h1 = heuristic.Heuristic(dict(zip(preds,weights)))
-	print math.sqrt(heuristic.heuristic_mserr(h1, root))
-
-	pred_accuracy = heuristic.pred_accuracy1(h1, root)
-	#for p, a in pred_accuracy.items():
-	#	print '%s --> %f %f' % (p, h1(p), a)
+	h = heuristic.Heuristic(dict(zip(preds,weights)))
 
 	root.make_graphviz(open('temp.dot', 'w'))
-	search = AStar(root, lambda x: h1(x.preds))
+	search = AStar(root, lambda x: h(x.preds))
 	iter = search.gen
 	iterations = 0
 	try:
@@ -171,8 +142,76 @@ def test_heuristic_gen():
 		print iterations
 		print [''.join(s.preds) for s in search.solution]
 
+def test_all(nbins):
+	src_root, src_file, tgt_root, tgt_file = gen_src_tgt_split_files()
+	
+	src_preds = list(src_root.get_all_predicates())
+	src_preds.sort()
+	src_weights = fmincon.run_fmincon(src_root)
+
+	# the heuristic for the source
+	hs = heuristic.Heuristic(dict(zip(src_preds, src_weights)))
+
+	src_search = AStar(src_root, lambda x: hs(x.preds))
+	iter = src_search.gen
+	iterations = 0
+	try:
+		while not iter.next():
+			iterations += 1
+	except StopIteration:
+		src_iters = iterations
+
+	print 'The source problem takes %d iterations' % src_iters
+	print 'Solution is', [''.join(s.preds) for s in src_search.solution]
+	
+	src_bins = make_bins(src_preds, nbins)
+	for p, b in src_bins.items():
+		print p, b
+	tgt_bins = dict((p.lower(), b) for p, b in src_bins.items())
+
+	mapping = rule_mapper.map_kifs(src_file, tgt_file, src_bins, tgt_bins)
+	str_mapping = dict((s.get_name(), t.get_name()) for s,t in mapping.items())
+	print "The mapping is ..."
+	for s,t in str_mapping.items():
+		print s, t
+	
+	num_correct = sum(int(s.lower() == t) for s,t in str_mapping.items())
+	print "Number of correct predicates:", num_correct
+
+	tgt_preds = []
+	tgt_weights = []
+	for p,w in zip(src_preds, src_weights):
+		if p in str_mapping:
+			# we assign the weight of the source predicate to the target
+			tgt_preds.append(str_mapping[p])
+			tgt_weights.append(w)
+
+	ht = heuristic.Heuristic(dict(zip(tgt_preds, tgt_weights)))
+	tgt_search = AStar(tgt_root, lambda x: ht(x.preds))
+	iter = tgt_search.gen
+	try:
+		while not iter.next():
+			iterations += 1
+	except StopIteration:
+		tgt_iters = iterations
+
+	print 'The target problem takes %d iterations' % tgt_iters
+	print 'Solution is', [''.join(s.preds) for s in tgt_search.solution]
+
+	return src_iters, tgt_iters, num_correct
+
 if __name__ == '__main__':
 	random.seed(0)
-	test_heuristic_gen()
-	#src, tgt = gen_src_tgt_split()
-	#print src, tgt
+	#test_heuristic_gen()
+	for allow_partial in [True, False]:
+		options.ALLOW_PARTIAL_BODY_MAPS = allow_partial
+		for b in range(1,11):
+			for it in range(20):
+				src_iters, tgt_iters, num_correct = test_all(b)
+				if allow_partial:
+					log = open('partial_maps.log','a')
+				else:
+					log = open('no_partial_maps.log','a')
+				log.write('%d %d %d %d\n' % (b, src_iters, tgt_iters, num_correct))
+				log.close()
+	
