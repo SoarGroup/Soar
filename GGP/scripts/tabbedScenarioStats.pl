@@ -56,9 +56,9 @@ elsif ($env =~ /^r/) {
   @targetS = `$stats mRogue-TL-Level-$level-$scenario-Target_after_source.log`;
 }
 elsif ($level =~ "10") {
-  @source1 = `$runStats TL-Level-10-$scenario-Source.log`;
-  @targetNS = `$runStats TL-Level-10-$scenario-Target_no_source.log`;
-  @targetS = `$runStats TL-Level-10-$scenario-Target_after_source.log`;
+  @source1 = `$stats TL-Level-10-$scenario-Source.log`;
+  @targetNS = `$stats TL-Level-10-$scenario-Target_no_source.log`;
+  @targetS = `$stats TL-Level-10-$scenario-Target_after_source.log`;
 }
 else {die "bad environment";}
 
