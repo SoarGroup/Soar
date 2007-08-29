@@ -22,6 +22,9 @@ class State:
 	def get_child(self, action):
 		return self.__children[action]
 	
+	def get_children(self):
+		return self.__children.values()
+
 	def set_child(self, action, child):
 		self.__children[action] = child
 
@@ -32,7 +35,7 @@ class State:
 			c.make_max_rules(rules, all_preds)
 
 	def is_goal(self):
-		return len(self.preds) == 0
+		return len(self.__children) == 0
 
 	def next_is_goal(self, action):
 		return self.__children[action].is_goal()
@@ -88,9 +91,16 @@ class State:
 	
 	def get_all_predicates(self):
 		preds = set(self.preds)
-		for a, c, in self.__children.items():
+		for c in self.__children.values():
 			preds.update(c.get_all_predicates())
 		return preds
+	
+	def num_occurrences(self, p):
+		"Returns the number of states in the subtree that p appears in"
+		n = int(p in self.preds)
+		for c in self.__children.values():
+			n += c.num_occurrences(p)
+		return n
 
 	def map(self, func):
 		"""Like the Lisp map function"""
@@ -104,18 +114,18 @@ class State:
 		min_dist = float('inf')
 		for a, c in self.__children.items():
 			min_dist = min(min_dist, c.dist_to_goal(table)+1)
-		table[self.preds] = min_dist
+		table[self] = min_dist
 		return min_dist
 	
 	def __str__(self):
-		if len(self.preds) == 0:
+		if self.is_goal():
 			return 'goal'
 		l = list(self.preds)
 		l.sort()
 		return ''.join(l)
 	
 	def __hash__(self):
-		return hash(self.preds)
+		return id(self)
 
 	def __eq__(self, other):
 		return self.preds == other.preds

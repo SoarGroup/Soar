@@ -93,8 +93,8 @@ def main(src_rules, tgt_rules):
 	return best_map.get_pred_matches()
 
 if __name__ == '__main__':
-	import psyco
-	psyco.bind(PartialMap)
+	#import psyco
+	#psyco.bind(PartialMap)
 	matches = main(sys.argv[1], sys.argv[2])
 	for s, t in matches.items():
 		print s.get_name(), t.get_name()
