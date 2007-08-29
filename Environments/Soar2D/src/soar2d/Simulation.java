@@ -349,6 +349,11 @@ public class Simulation {
 					if (Soar2D.config.getSilentAgents()) {
 						agent.ExecuteCommandLine("watch 0");
 					}
+					
+					// if requested, set max memory usage
+					if (Soar2D.config.getMaxMemoryUsage() > 0) {
+						agent.ExecuteCommandLine("max-memory-usage " + Integer.toString(Soar2D.config.getMaxMemoryUsage()));
+					}
 			
 					Player player = null;
 					
