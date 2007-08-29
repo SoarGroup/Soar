@@ -457,14 +457,18 @@ sp {apply*usi*goodthing*3*change
 
 # rules to choose which indicators to use up
 # if any specific indicators are present, remove any general indicators
+# however, remove general indicators at the same index as the specific seen (the general versions of the specific thing seen,
+# hopefully)
 sp {apply*cdl*choose-indicator*remove-general-if-specific-present
    (state <s> ^name game
               ^operator.name check-for-duplicate-location
               ^present-indicator <pi-specific>
               ^present-indicator <pi-general>)
-   (<pi-specific> ^type << addition removal change >>)
+   (<pi-specific> ^type << addition removal change >>
+                  ^index <idx>)
    (<pi-general> ^type << increase decrease >>
-                 ^predicate-name <what>)
+                 ^predicate-name <what>
+                 ^index <> <idx>)
 -->
    (write (crlf) | Not using indicator for | <what> | as a specific indicator exists.|)
    (<s> ^present-indicator <pi-general> -)
@@ -472,20 +476,22 @@ sp {apply*cdl*choose-indicator*remove-general-if-specific-present
 
 # if two specific indicators are present, only use those with the lowest index
 # (ideally, this would select the index that has the most indicators)
-sp {apply*cdl*choose-indicator*remove-higher-specifics
-   (state <s> ^name game
-              ^operator.name check-for-duplicate-location
-              ^present-indicator <pi-high>
-              ^present-indicator <pi-low>)
-   (<pi-high> ^type << addition removal change >>
-              ^index <high>
-              ^what <what>)
-   (<pi-low> ^type << addition removal change >>
-             ^index < <high>)
--->
-   (write (crlf) | Not using indicator as a lower-index specific exists.|)
-   (<s> ^present-indicator <pi-high> -)
-}
+#sp {apply*cdl*choose-indicator*remove-higher-specifics
+#   (state <s> ^name game
+#              ^operator.name check-for-duplicate-location
+#              ^present-indicator <pi-high>
+#              ^present-indicator <pi-low>)
+#   (<pi-high> ^type << addition removal change >>
+#              ^index <high>
+#              ^what <what>)
+#   (<pi-low> ^type << addition removal change >>
+#             ^index < <high>)
+#-->
+#   (write (crlf) | Not using indicator as a lower-index specific exists.|)
+#   (<s> ^present-indicator <pi-high> -)
+#}
+#
+# 
 
 # if two general indicators are present, only use those with the lowest index
 # (ideally, this would select the index that has the most indicators)
