@@ -92,8 +92,8 @@ lastDecision($targetWithoutSourceLog);
 sub clearLog() {
   $log = shift;
   if (-e $log) {
-    print "$log exists, ctrl-c now or it gets deleted!\n";
-    $foo = <STDIN>;
+#    print "$log exists, ctrl-c now or it gets deleted!\n";
+#    $foo = <STDIN>;
     print `rm $log`;
   }
 }

@@ -1,0 +1,64 @@
+#!/usr/bin/perl
+
+$machine = $ARGV[0];
+$env = $ARGV[1];
+$level = $ARGV[2];
+$scenario = $ARGV[3];
+
+if ($env =~ "10") {
+  # level 10 has no environment
+  $env = "";
+  $scenario = $level;
+  $level = 10;
+  die unless ($#ARGV == 2);
+}
+else {
+  die unless  ($#ARGV == 3);
+}
+
+$runScenario = "./runScenario.pl";
+$copyRemoteRun = "./copyRemoteRun.pl";
+
+%machineAliases = ();
+%machineDirs = ();
+
+$machineAliases{"b1"} = "bahamut";
+$machineDirs{"b1"} = "GGP/scripts";
+$machineAliases{"b"} = "bahamut";
+$machineDirs{"b"} = "GGP/scripts";
+$machineAliases{"b2"} = "bahamut";
+$machineDirs{"b2"} = "2GGP/GGP/scripts";
+$machineAliases{"b3"} = "bahamut";
+$machineDirs{"b3"} = "2GGP/GGP/scripts";
+$machineAliases{"w1"} = "wyrm";
+$machineDirs{"w1"} = "GGP/scripts";
+$machineAliases{"w"} = "wyrm";
+$machineDirs{"w"} = "GGP/scripts";
+$machineAliases{"w2"} = "wyrm";
+$machineDirs{"w2"} = "2GGP/GGP/scripts";
+$machineAliases{"s1"} = "smaug";
+$machineDirs{"s1"} = "GGP/scripts";
+$machineAliases{"s"} = "smaug";
+$machineDirs{"s"} = "GGP/scripts";
+$machineAliases{"s2"} = "smaug";
+$machineDirs{"s2"} = "2GGP/GGP/scripts";
+$machineAliases{"r1"} = "refuse";
+$machineDirs{"r1"} = "GGP/scripts";
+$machineAliases{"r"} = "refuse";
+$machineDirs{"r"} = "GGP/scripts";
+$machineAliases{"r2"} = "refuse";
+$machineDirs{"r2"} = "2GGP/GGP/scripts";
+$machineAliases{"a"} = "auk";
+$machineDirs{"a"} = "GGP/scripts";
+$machineAliases{"g"} = "grapes";
+$machineDirs{"g"} = "GGP/scripts";
+$machineAliases{"bb"} = "badboy";
+$machineDirs{"bb"} = "GGP/scripts";
+
+die unless (defined $machineAliases{$machine});
+
+print `ssh $machineAliases{$machine} \"cd $machineDirs{$machine}; $runScenario $env $level $scenario\"`;
+
+print "DONE. Press enter to copy the results to the clipboard.\n";
+$foo = <STDIN>;
+print `$copyRemoteRun $machine $env $level $scenario`;
