@@ -1,6 +1,5 @@
 #!/usr/bin/env python
 
-import time
 import socket
 import threading
 import sys
@@ -17,33 +16,13 @@ import logging
 import Queue
 import types
 
-# old disable command
-
 class MatchStatus:
-	def __init__(self, name):
+	def __init__(self, tournament_name, match_info):
 		self.error = False
 		self.error_message = "No error."
 
-		self.tournament_name = name
-		self.clear_match()
-	
-	def clear_match(self):
-		self.match_id = None
-		self.map = None
-		self.settings = None
-		self.tank_names = None
-		self.tank_filenames = None
-		self.tank_data_zips = None
-		self.tank_scores = None
-		self.tank_statuses = None
-		self.interrupted_tanks = None
-		self.mem_killed_tanks = None
-		self.log = None
-		self.start_time = None
-		self.elapsed_time = None
-		self.process = None
-	
-	def new_match(self, match_info):
+		self.tournament_name = tournament_name
+
 		self.match_id = match_info["match_id"]
 		self.map = match_info["map"]
 		self.settings = match_info["settings"]
@@ -66,7 +45,6 @@ class MatchStatus:
 		self.log = None			# zipped log, valid after completion
 		self.start_time = None		# time started
 		self.elapsed_time = None		# time elapsed after completion
-		self.process = None			# The tanksoar process
 
 	def results(self, scores, statuses, log):
 		for tank_name in self.tank_names:
@@ -102,7 +80,7 @@ class MatchStatus:
 		
 		urllib.urlopen('http://tsladder:vx0beeHH@localhost:54424/TankSoarLadder/tournaments/update_results', urllib.urlencode(results))
 		logging.info('Posted results')	
-	
+
 class MatchFiles:
 	def __init__(self, status):
 		self.status = status
@@ -117,37 +95,99 @@ class MatchFiles:
 			raise StopIteration
 		return self.status.tank_names[self.index], self.status.tank_filenames[self.index], self.status.tank_data_zips[self.index]
 
-class Tourney(threading.Thread):
-	# Locks the status member
-	# Only need to lock if the following changes:
-	#  * Presence of status member
-	#  * tournament_name
-	#  * tank_names
-	#  * match_id
-	#  * start_time
-	#  * process
-	#  * Tourney.shutdown
-	status_lock = threading.Lock()
+class Ladder(threading.Thread):
+	
+	names = []
+	names_index = 0;
+	names_lock = threading.Lock()
+	names_condition = threading.Condition(names_lock)
 
-	status = {}
-	current_tournament_name = None
+	process_lock = threading.Lock()
+	process_condition = threading.Condition(process_lock)
+	
+	current_tournament = None
 
-	# Signaled to start tournament
-	start_condition = threading.Condition(status_lock)
-
-	# Signaled to stop tournament
-	stop_event = threading.Event()
-
-	# True to end thread
 	shutdown = False
-
-	# True when killed
-	killed = True
 	
 	def __init__(self):
 		threading.Thread.__init__(self)
-	
-	def bootstrap_match(self):
+		
+	def run(self):
+		logging.info('Ladder started.')
+
+		self.names_condition.acquire()
+		
+		while True:
+			# Is the tournament list empty?
+			if len(self.names) < 1:
+				# Wait for names notification
+				self.names_condition.wait()
+
+			# Break out if we're shutting down
+			if self.shutdown:
+				self.names_condition.release()
+				break
+			
+			# Loop through if we don't have anything to run (shouldn't happen but could)
+			if len(self.names) < 1:
+				continue
+			
+			# Pick tournament to run
+			self.names_index += 1
+			self.names_index %= len(self.names)
+			self.current_tournament = self.names[self.names_index]
+			logging.info('Running tournament %s' % self.current_tournament)
+
+			# Release names lock
+			self.names_condition.release()
+			
+			# Create match status
+			status =  MatchStatus(self.current_tournament)
+			
+			# Do match
+			try:
+				self.do_match(status)
+			except Exception, e:
+				logging.warning(e)
+
+			# Break out if we're shutting down
+			if self.shutdown:
+				break
+			
+			# Re-acquire lock
+			self.start_condition.acquire()
+			
+		logging.info('Ladder shutting down.')
+				
+	def do_match(self, status):
+		self.bootstrap_match(status)
+		
+		# We have a match which means we have to post a result.
+
+		# create a temporary folder, change to it
+		topdir = tempfile.mkdtemp()
+		oldcwd = os.getcwd()
+		os.chdir(topdir)
+		failure = False
+
+		try:
+			self.set_up_tanks(status, topdir, oldcwd)
+			self.fight(status)
+			try:
+				self.parse_results(status)
+			except KeyError, err:
+				logging.error("Parse failed!")
+				failure = True
+				#urllib.urlopen('http://tsladder:vx0beeHH@localhost:54424/TankSoarLadder/disable_participant?tournament_name=%s&tank_name=%s&reason=parse_results_failed' % (self.current_tournament_name, str(err).strip("'")))
+		finally:
+			# clean up our mess no matter what
+			os.chdir(oldcwd)
+			shutil.rmtree(topdir)
+
+		if not failure:
+			status.post()
+		
+	def bootstrap_match(self, status):
 		match_info = None
 		match_file = None
 		
@@ -173,19 +213,14 @@ class Tourney(threading.Thread):
 
 		if type(match_info) == types.StringType:
 			match_info = match_info.strip()
-			logging.warning("Error getting match: %s" % (match_info))
-			return False
+			raise Exception("Error getting match: %s" % (match_info))
 
-		self.status_lock.acquire()
-		self.status[self.current_tournament_name].new_match(match_info)
-		self.status_lock.release()
+		status.new_match(match_info)
 		
-		return True
-		
-	def set_up_tanks(self, topdir, oldcwd):
+	def set_up_tanks(self, status, topdir, oldcwd):
 		# extract each tank
 		source_files = []
-		for tank_name, primary_file, tank_zip_data in MatchFiles(self.status[self.current_tournament_name]):
+		for tank_name, primary_file, tank_zip_data in MatchFiles(status):
 			logging.info("Processing %s" % tank_name)
 			# save the file
 			tank_zip_file = open("%s.zip" % tank_name, 'w')
@@ -209,62 +244,63 @@ class Tourney(threading.Thread):
 		match_settings_file = open("ladder.xml", 'w')
 
 		for x in range(len(source_files)):
-			self.status[self.current_tournament_name].settings = self.status[self.current_tournament_name].settings.replace('name%d' % x, source_files[x][0])
-			self.status[self.current_tournament_name].settings = self.status[self.current_tournament_name].settings.replace('productions%d' % x, source_files[x][1])
+			status.settings = status.settings.replace('name%d' % x, source_files[x][0])
+			status.settings = status.settings.replace('productions%d' % x, source_files[x][1])
 		
-		match_settings_file.write(self.status[self.current_tournament_name].settings)
+		match_settings_file.write(status.settings)
 		match_settings_file.close()
-		
-	def fight(self):
+
+	def fight(self, status):
 		devnull = open("/dev/null", 'w')
 
 		# Start tanksoar
-		self.status_lock.acquire()
-		self.status[self.current_tournament_name].process = subprocess.Popen(
+		self.process_condition.acquire()
+		self.process = subprocess.Popen(
 				"java -ea -jar Soar2D.jar ladder.xml", 
 				shell = True, 
 				stdout = devnull, 
 				stderr = devnull)
-		self.status_lock.release()
+		status.start_time = time.time()
+		self.start_time = status.start_time
+		self.combatants = status.convert(status.tank_names)
+		self.match_id = status.match_id
+		self.process_condition.release()
 		
-		logging.info("Soar2D TankSoar started, pid %d" % self.status[self.current_tournament_name].process.pid)
+		logging.info("Soar2D TankSoar started, pid %d" % self.process.pid)
 		
-		logging.info("Match %d started (%s)." % (self.status[self.current_tournament_name].match_id, self.status[self.current_tournament_name].map))
+		logging.info("Match %d started (%s)." % (status.match_id, status.map))
 		
-		self.status_lock.acquire()
-		self.status[self.current_tournament_name].start_time = time.time()
-		self.status_lock.release()
 
 		logging.info("Waiting for TankSoar to finish.")
 		try:
-			self.status[self.current_tournament_name].process.wait()
+			self.process.wait()
 		except OSError, e:
 			error_message = "Wait interrupted, throwing out match."
 			logging.warning(error_message)
-			self.status[self.current_tournament_name].error = True
-			self.status.error_message = error_message
+			status.error = True
+			status.error_message = error_message
 			try:
-				os.kill(self.status[self.current_tournament_name].process.pid, 9)
+				os.kill(self.process.pid, 9)
 			except OSError, e:
-				logging.warning("Failed to kill process:" % e)
-			return False
+				raise Exception("Failed to kill process:" % e)
 
+		self.process_condition.acquire()
+		self.process = None
+		self.process_condition.release()
+		
 		if self.killed:
-			logging.info("TankSoar killed.")
-			return False
+			raise Exception("TankSoar killed.")
 		
 		logging.info("TankSoar finished.")
 			
-		self.status[self.current_tournament_name].elapsed_time = time.time() - self.status[self.current_tournament_name].start_time
+		status.elapsed_time = time.time() - status.start_time
 		
-		logging.info("Match %d ended (elapsed: %.1fs)." % (self.status[self.current_tournament_name].match_id, self.status[self.current_tournament_name].elapsed_time))
-		#kernel.Shutdown()
+		logging.info("Match %d ended (wall clock elapsed: %.1fs)." % (status.match_id, status.elapsed_time))
 		devnull.close()
-		return True
 
-	def parse_results(self):
+	def parse_results(self, status):
 		# parse results
-		match_log = open("%d.log" % self.status[self.current_tournament_name].match_id, 'r')
+		match_log = open("%d.log" % status.match_id, 'r')
 
 		scores = {}
 		statuses = {}
@@ -276,11 +312,11 @@ class Tourney(threading.Thread):
 					match = re.match(r"\d+ WARNING (.+): agent exceeded maximum memory usage", line)
 					if match == None:
 						continue
-					self.status[self.current_tournament_name].mem_killed_tanks.append(match.group(1))
+					status.mem_killed_tanks.append(match.group(1))
 					logging.info("%s exceeded maximum memory usage." % match.group(1))
 					urllib.urlopen('http://tsladder:vx0beeHH@localhost:54424/TankSoarLadder/disable_participant?tournament_name=%s&tank_name=%s&reason=mem_exceeded' % (self.current_tournament_name, match.group(1)))
 					continue
-				self.status[self.current_tournament_name].interrupted_tanks.append(match.group(1))
+				status.interrupted_tanks.append(match.group(1))
 				logging.info("%s was interrupted." % match.group(1))
 				continue
 
@@ -291,120 +327,70 @@ class Tourney(threading.Thread):
 			statuses[tankname] = status
 		
 		match_log.close()
-		os.system("bzip2 --best -f %d.log" % self.status[self.current_tournament_name].match_id)
+		os.system("bzip2 --best -f %d.log" % status.match_id)
 
-		match_log_zipped = open("%d.log.bz2" % self.status[self.current_tournament_name].match_id, 'r')
-		self.status[self.current_tournament_name].results(scores, statuses, match_log_zipped.read())
+		match_log_zipped = open("%d.log.bz2" % status.match_id, 'r')
+		status.results(scores, statuses, match_log_zipped.read())
 		match_log_zipped.close()
 
 		# remove the file when done
-		os.remove("%d.log.bz2" % self.status[self.current_tournament_name].match_id)
+		os.remove("%d.log.bz2" % status.match_id)
 
-	def do_match(self):
-
-		if not self.bootstrap_match():
-			return False
+	def start_tournament(self, name):
+		self.names_condition.acquire()
 		
-		# We have a match which means we have to post a result.
-
-		# create a temporary folder, change to it
-		topdir = tempfile.mkdtemp()
-		oldcwd = os.getcwd()
-		os.chdir(topdir)
-		failure = False
+		try:
+			if name in self.names:
+				logging.warning('Tournament %s already started.' % name)
+				return False
+			
+			self.names.append(name)
+		finally:
+			self.names_condition.release()
+		return True
+	
+	def stop_tournament(self, name):
+		self.names_condition.acquire()
 
 		try:
-			self.set_up_tanks(topdir, oldcwd)
-			if self.fight():
-				try:
-					self.parse_results()
-				except KeyError, err:
-					logging.error("Parse failed!")
-					failure = True
-					#urllib.urlopen('http://tsladder:vx0beeHH@localhost:54424/TankSoarLadder/disable_participant?tournament_name=%s&tank_name=%s&reason=parse_results_failed' % (self.current_tournament_name, str(err).strip("'")))
+			if name not in self.names:
+				logging.warning('Tournament %s already stopped.' % name)
+				return False
+			self.names.remove(self.names.index(name))
 		finally:
-			# clean up our mess no matter what
-			os.chdir(oldcwd)
-			shutil.rmtree(topdir)
-
-		if not failure:
-			self.status[self.current_tournament_name].post()
-		
-		self.status_lock.acquire()
-		self.status[self.current_tournament_name].clear_match()
-		self.status_lock.release()
-
-		# check for stop
-		if self.stop_event.isSet():
-			return False
+			self.names_condition.release()
 		return True
-
-	def run(self):
-
-		self.start_condition.acquire()
-
-		while not self.shutdown:
-			self.start_condition.wait()
-			
-			try:
-				if self.shutdown:
-					break
-			
-				self.stop_event.clear()
-				self.killed = False
-			
-				self.current_tournament_name = self.message['tournament_name']
-				self.status[self.current_tournament_name] = MatchStatus(self.current_tournament_name)
-
-			finally:
-				self.start_condition.release()
-		
-			logging.info('Tournament started: %s' % self.message['tournament_name'])
-			
-			while self.do_match():
-				pass
-			
-			logging.info('Tournament stopped.')
-
-			self.start_condition.acquire()
-			self.current_tournament_name = None
-		logging.info('Tournament shutdown.')
 	
-	def start_tournament(self, message):
-		self.message = message
-		self.start_condition.notify()
+	def kill(self):
+		self.names_condition.acquire()
+		try:
+			self.names = []
+			self.process_condition.acquire()
+			try:
+				if self.process != None:
+					try:
+						os.kill(self.process.pid, 9)
+					except OSError, e:
+						logging.warning("Failed to kill process:" % e)
+						return False
+			finally:
+				self.process_condition.release()
+		finally:
+			self.names_condition.release()
+		return True
 
-	def stop_tournament(self, message):
-		self.message = message
-		self.stop_event.set()
-		
-	def kill_tournament(self):
-		self.killed = True
-		self.stop_event.set()
-		if self.current_tournament_name != None:
-			if self.status[self.current_tournament_name].process == None:
-				return True
+	def shutdown_all(self):
+		self.names_condition.acquire()
+		self.names_condition.notify()
+		self.names = []
+		self.process_condition.acquire()
+		if self.process != None:
 			try:
-				os.kill(self.status[self.current_tournament_name].process.pid, 9)
+				os.kill(self.process.pid, 9)
 			except OSError, e:
 				logging.warning("Failed to kill process:" % e)
-				return False
-		return True
-		
-	def shutdown_tournament(self):
-		self.shutdown = True
-		self.start_condition.notify()
-		self.stop_event.set()
-		if self.current_tournament_name != None:
-			if self.status[self.current_tournament_name].process == None:
-				return True
-			try:
-				os.kill(self.status[self.current_tournament_name].process.pid, 9)
-			except OSError, e:
-				logging.warning("Failed to kill process:" % e)
-				return False
-		return True
-		
+		self.names_condition.release()
+	
 SUCCESS = {'result' : True, 'message' : 'Success'}
 ALREADY_RUNNING = {'result' : False, 'message' : 'Tournament is already running'}
 NOT_RUNNING = {'result' : False, 'message' : 'Tournament is not running'}
@@ -414,59 +400,53 @@ DEMARSHALLING_FAILED = {'result' : False, 'message' : 'Demarshalling failed'}
 
 def ts_start(tournament, message):
 	logging.info("Start message received.")
-	if tournament.current_tournament_name != None:
-		return ALREADY_RUNNING
-	else:
-		tournament.start_tournament(message)
+	if tournament.start_tournament(message['tournament_name']):
 		return SUCCESS
+	return ALREADY_RUNNING
 
 def ts_stop(tournament, message):
 	logging.info("Stop message received.")
-	if tournament.current_tournament_name == None:
-		return NOT_RUNNING
-	else:
-		tournament.stop_tournament(message)
+	if tournament.start_tournament(message['tournament_name']):
 		return SUCCESS
+	return NOT_RUNNING
 
 def ts_status(tournament, message):
 	#logging.info("Status message received.")
 	response = {}
-
-	if tournament.current_tournament_name == None:
+	
+	tournament.process_condition.acquire()
+	if tournament.process == None:
 		response['running'] = False
 	else:
 		response['running'] = True
-		response['tournament_name'] = tournament.current_tournament_name
-		if tournament.status[tournament.current_tournament_name].match_id == None or tournament.status[tournament.current_tournament_name].start_time == None:
-			response['start_time'] = 0
-			response['tank_names'] = ""
-		else:
-			response['start_time'] = tournament.status[tournament.current_tournament_name].start_time
-			response['tank_names'] = tournament.status[tournament.current_tournament_name].convert(tournament.status[tournament.current_tournament_name].tank_names)
+		response['tournament_name'] = tournament.current_tournament
+		response['start_time'] = tournament.start_time
+		response['tank_names'] = tournament.combatants
+	tournament.process_condition.release()
 	
 	return response
 	
 def ts_score(tournament, message):
 	#logging.info("Score message received.")
-
-	os.system('grep score %d.log > grep_score.txt' % tournament.status[tournament.current_tournament_name].match_id)
 	response = {}
 
-	log = open("grep_score.txt", 'r')
-	response['log'] = log.read()
-	log.close()
+	self.process_condition.acquire()
+	if tournament.process == None:
+		response['log'] = "Not running."
+	else:
+		os.system('grep score %d.log > grep_score.txt' % tournament.match_id)
+		log = open("grep_score.txt", 'r')
+		response['log'] = log.read()
+		log.close()
+	self.process_condition.release()
 	
 	return response
 	
 def ts_kill(tournament, message):
 	logging.info("Kill message received.")
-	if tournament.current_tournament_name == None:
-		return NOT_RUNNING
-	else:
-		if tournament.kill_tournament():
-			return SUCCESS
-		else:
-			return FAILED_TO_KILL
+	if tournament.kill():
+		return SUCCESS
+	return FAILED_TO_KILL
 
 if __name__ == '__main__':
 
@@ -528,3 +508,4 @@ if __name__ == '__main__':
 		tournament.status_lock.release()
 
 	server.close()
+	
