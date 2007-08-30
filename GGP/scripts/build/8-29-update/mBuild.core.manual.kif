@@ -820,14 +820,14 @@
     (distinct ?tower1 ?tower2)
     (not (adjacent-to-object ?tower1 ?tower2 left))
     (not (adjacent-to-object ?tower1 ?tower2 right))
-    (coordinates-after-place ?object ?span ?side ?x1 ?x2 ?y1 ?y2)
+    (coordinates-after-place ?object ?span ?side ?x1 ?y1 ?x2 ?y2)
 	;;manual mod
-    ;;(not (object-new-region-intersected ?span ?x1 ?x2 ?y1 ?y2))
+    ;;(not (object-new-region-intersected ?span ?x1 ?y1 ?x2 ?y2))
 	;;(adjacent-to-region ?tower1 ?x1 ?x2 ?y1 ?y2 top ?object ?span)
     ;;(adjacent-to-region ?tower2 ?x1 ?x2 ?y1 ?y2 top ?object ?span)
-	(not (object-new-region-intersected ?span ?x1 ?x2 ?y1 ?y2 ?object))
-	(adjacent-to-region ?tower1 ?x1 ?x2 ?y1 ?y2 top ?object ?span)
-    (adjacent-to-region ?tower2 ?x1 ?x2 ?y1 ?y2 top ?object ?span)
+	(not (object-new-region-intersected ?span ?x1 ?y1 ?x2 ?y2 ?object))
+	(adjacent-to-region ?tower1 ?x1 ?y1 ?x2 ?y2 top ?object ?span)
+    (adjacent-to-region ?tower2 ?x1 ?y1 ?x2 ?y2 top ?object ?span)
     (true (object-dimensions ?span ?span-width ?span-height))
     (+ ?tower-height ?span-height ?height))
 
@@ -943,6 +943,11 @@
     (true (object-load ?object ?old-load))
     (delta-load ?object ?delta)
     (+ ?old-load ?delta ?load))
+;;manual add
+(<= (next (object-load ?object ?load))
+    (true (object-load ?object ?load))
+    (not (delta-load ?object ?delta))
+	)
 
 ;;; Advance time one step
 (<= (next (time ?t))
