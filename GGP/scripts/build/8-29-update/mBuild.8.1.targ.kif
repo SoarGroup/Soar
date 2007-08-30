@@ -127,7 +127,7 @@
 
 (<= (goal agent 100)
     (true (tower ?object ?height))
-    (> ?height 10)
+    (> ?height 11)
     (not structural-failure))
 
 (<= (goal agent 0)

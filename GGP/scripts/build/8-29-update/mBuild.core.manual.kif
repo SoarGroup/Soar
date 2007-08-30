@@ -434,7 +434,7 @@
     (not (adjacent-to-object ?object ?object2 top))
     (not
      (supports-moved-object-target-location ?object ?object1 ?object2 ?side))
-    (adjacent-to-other-object ?object ?object2 top)
+    (adjacent-to-other-object ?object ?object2 top) ;; there will be duplicates!
     (leftmost-adjacent-to-object ?object ?leftmost top)
     (delta-load-recursive ?object ?leftmost ?delta))
 
