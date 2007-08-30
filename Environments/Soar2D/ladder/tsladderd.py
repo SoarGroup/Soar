@@ -44,14 +44,16 @@ class MatchStatus:
 		self.interrupted_tanks = []		# list of tanks interruped for stop-soar
 		self.mem_killed_tanks = []		# list of tanks killed because of mem exceeded handler
 		self.log = None			# zipped log, valid after completion
+		self.endframe = None		# last frame, world count
 		self.start_time = None		# time started
 		self.elapsed_time = None		# time elapsed after completion
 
-	def results(self, scores, statuses, log):
+	def results(self, scores, statuses, log, endframe):
 		for tank_name in self.tank_names:
 			self.tank_scores.append(scores[tank_name])
 			self.tank_statuses.append(statuses[tank_name])
 		self.log = log
+		self.endframe = endframe
 
 	def convert(self, the_list):
 		new_list = ""
@@ -77,6 +79,7 @@ class MatchStatus:
 		results['interrupted_tanks'] = self.convert(self.interrupted_tanks)
 		results['mem_killed_tanks'] = self.convert(self.mem_killed_tanks)
 		results['log'] = self.log
+		results['endframe'] = self.endframe
 		results['elapsed_time'] = self.elapsed_time
 		
 		urllib.urlopen('http://tsladder:vx0beeHH@localhost:54424/TankSoarLadder/tournaments/update_results', urllib.urlencode(results))
@@ -320,12 +323,19 @@ class Ladder(threading.Thread):
 
 	def parse_results(self, status):
 		# parse results
-		match_log = open("%d.log" % status.match_id, 'r')
+		match_log = subprocess.Popen('tac ./%d.log' % status.match_id, shell=True, stdout=subprocess.PIPE).stdout
 
+		endframe = None
 		scores = {}
 		statuses = {}
 		for line in match_log.readlines():
-			match = re.match(r"\d+ INFO (.+): (-?\d+) \((\w+)\)", line)
+			if endframe != None:
+				match = re.match(r"^(\d+) .*", line)
+				if match != None:
+					if match.group(1) != endframe:
+						break;
+
+			match = re.match(r"(\d+) INFO (.+): (-?\d+) \((\w+)\)", line)
 			if match == None:
 				match = re.match(r"\d+ WARNING (.+): agent interrupted", line)
 				if match == None:
@@ -340,9 +350,10 @@ class Ladder(threading.Thread):
 				logging.info("%s was interrupted." % match.group(1))
 				continue
 
-			tankname, score, tank_status = match.groups()
-			logging.info("%s: %s points (%s)" % (tankname, score, tank_status))
+			frame, tankname, score, tank_status = match.groups()
+			logging.info("%s: %s points (%s) (frame: %s)" % (tankname, score, tank_status, frame))
 			
+			endframe = frame
 			scores[tankname] = score
 			statuses[tankname] = tank_status
 		
@@ -350,7 +361,7 @@ class Ladder(threading.Thread):
 		os.system("bzip2 --best -f %d.log" % status.match_id)
 
 		match_log_zipped = open("%d.log.bz2" % status.match_id, 'r')
-		status.results(scores, statuses, match_log_zipped.read())
+		status.results(scores, statuses, match_log_zipped.read(), endframe)
 		match_log_zipped.close()
 
 		# remove the file when done
@@ -464,6 +475,20 @@ def ts_score(tournament, message):
 		if tournament.process == None:
 			response['log'] = "Not running."
 		else:
+			frame = None
+			pipe = subprocess.Popen('tac ./%d.log' % tournament.match_id, shell=True, stdout=subprocess.PIPE).stdout
+			for line in pipe.readlines():
+				if frame == None:
+					match = re.match(r"^(\d+) .*", line)
+					if match != None:
+						frame = match.group(1)
+						break
+
+			if frame == None:
+				logging.warning("Didn't parse frame!")
+
+			pipe.close()
+
 			pipe = subprocess.Popen('tac ./%d.log | grep score' % tournament.match_id, shell=True, stdout=subprocess.PIPE).stdout
 
 			found = set()
@@ -476,8 +501,13 @@ def ts_score(tournament, message):
 						response['log'] += line
 						if len(found) > 1:
 							break;
+			pipe.close()
+
 			if response['log'] == "":
-				response['log'] = "No score."
+				response['log'] = "No score.\n"
+
+			if frame != None:
+				response['log'] += "Current frame: %s" % frame
 
 	finally:
 		tournament.process_condition.release()
