@@ -1,0 +1,985 @@
+;;;; -*-Lisp-*-
+;;;; **************************************************************************
+;;;; * mini-Build Game: Core Rules                                            *
+;;;; * Transfer Learning in Integrated Cognitive Systems Project              *
+;;;; *                                                                        *
+;;;; * David J. Stracuzzi                                                     *
+;;;; * Arizona State University                                               *
+;;;; * Created:   August 13, 2007                                             *
+;;;; * Revised:   August 24, 2007                                             *
+;;;; **************************************************************************
+;;;;
+;;;; Basic Assumptions and Rules:
+;;;; 1)  Environment is two dimensional, with origin in lower left corner.
+;;;;
+;;;; 2)  All objects are rectangular or square.
+;;;;
+;;;; 3)  The weight and strength (ability to support weight) of an object
+;;;;     depends on its size and material. To assure consistancy, the initial
+;;;;     weight of an object should be set by selecting a "weight factor" for
+;;;;     for each material, and then multiplying that factor by the area of
+;;;;     the object.  Likewise, the strength of an object is determined by
+;;;;     multiplying the specified "strength factor" by the width of the
+;;;;     object.
+;;;;
+;;;; 4)  Reinforcements increase object weight additively, and increase object
+;;;;     strength multiplicitively. An object may be reinforced only once.
+;;;;     There may be multiple types of reinforcement available to a given
+;;;;     material.
+;;;;
+;;;; 5)  Reinforcements are not manipulable objects. The agent has a fixed
+;;;;     number of reinforcements available at the start of the game.
+;;;;
+;;;; 6)  Any object bearing weight > strength causes collapse.
+;;;;
+;;;; 7)  The weight of an object, P1, along with the weights of the objects 
+;;;;     supported by P1, is distributed evenly among the objects that support 
+;;;;     P1.
+;;;;
+;;;; 8)  Any object not directly supported by another object will cause 
+;;;;     collapse.
+;;;;
+;;;; 9)  A tower is defined as any vertical stack of two or more non-ground
+;;;;     objects, and is identified by the top-most object in the stack.
+;;;;     The height of a tower is defined as the difference between the 
+;;;;     y-coordinate of the top-most object, and the y-coordinate of the 
+;;;;     bottom-most object.
+;;;;
+;;;; 10) A pyramid is defined as any stacking of non-ground objects such that
+;;;;     every object is on top of two supporting objects. The supporting
+;;;;     must be adjacent to each other, and either rest on the ground, or be
+;;;;     pyramids themselves.
+;;;;
+;;;; Actions:
+;;;; * (place-adjacent ?object1 ?object2 ?side)
+;;;;     Effects:
+;;;;     * ?object2 is moved such that it touches ?object1's ?side.
+;;;;       If ?side=top, then ?object2's left side is aligned with the
+;;;;       left side of ?object1.  If ?side=left or right, then the lowest
+;;;;       available support is selected such that ?object1 and ?object2
+;;;;       touch (failure if none exists). ?side=bottom is not allowed.
+;;;;     Requirements:
+;;;;     * Nothing is stacked on top of ?object2
+;;;;     * ?object2 must weigh less than "max-movable-weight"
+;;;;     * There is some object available to support ?object2
+;;;;     * ?object2's new location is different from the old
+;;;;     * ?object2 does not intersect any other object once moved
+;;;;
+;;;; * (reinforce ?object ?reinforcement-type)
+;;;;     Effects:
+;;;;     * ?object is reinforced with ?reinforcement-type
+;;;;     * ?object's weight increases by weight of ?reinforcement-type
+;;;;     * The weight of any compound above ?object in the hierarchy
+;;;;       increases by the weight of ?reinforcement-type
+;;;;     * ?object's strength is multiplied by that of ?reinforcement-type
+;;;;     Requirements:
+;;;;     * ?reinforcement-type is an appropriate material for ?object
+;;;;     * ?object has not already been reinforced
+;;;;     * ?reinforcement-type has count greater than 0
+;;;;
+;;;; Persistants:
+;;;;   (count ?reinforcement-type ?count)
+;;;;   (object-dimensions ?object ?width ?height)
+;;;;   (object-load ?object ?load)
+;;;;   (object-location ?object ?x ?y)
+;;;;   (object-strength ?object ?strength)
+;;;;   (object-type ?object ?type)
+;;;;   (object-weight ?object ?weight)
+;;;;   (pyramid ?object ?height)
+;;;;   (reinforced ?object ?reinforcement-type)
+;;;;   (time ?t)
+;;;;   (tower ?object ?height)
+
+
+;;; ---------------------------------------------------------------------------
+;;; FACTS: Domain facts. These remain fixed across all game instances.
+
+(role agent)
+
+(side bottom)
+(side left)
+(side right)
+(side top)
+
+(opposite-side bottom top)
+(opposite-side top bottom)
+(opposite-side left right)
+(opposite-side right left)
+
+;;; ---------------------------------------------------------------------------
+;;; ENTAILMENTS: Relations that must be logically derived from persistants.
+
+;;; Compute whether any object is adjacent to ?object1's ?side
+(<= (adjacent-to-any-object ?object1 ?side)
+    (true (object-type ?object1 ?type1))
+    (true (object-type ?object2 ?type2))
+    (adjacent-to-object ?object1 ?object2 ?side))
+
+;;; Determine if ?object2 is adjacent to (touching) ?object1's ?side
+(<= (adjacent-to-object ?object1 ?object2 ?side)
+    (object-coordinates ?object2 ?x1 ?y1 ?x2 ?y2)
+    (adjacent-to-region ?object1 ?x1 ?y1 ?x2 ?y2 ?side))
+
+;;; Determine the number of objects adjacent to ?object's ?side.
+(<= (adjacent-to-object-count ?object ?side ?number)
+    (object-coordinates ?object ?x1 ?y1 ?x2 ?y2)
+    (adjacent-to-region-count ?x1 ?y1 ?x2 ?y2 ?side ?number))
+
+;;; Determine whether ?object1's ?side is adjacent to any object other 
+;;; than ?object2
+(<= (adjacent-to-other-object ?object1 ?object2 ?side)
+    (true (object-type ?object2 ?type))
+    (adjacent-to-object ?object1 ?other ?side)
+    (distinct ?object2 ?other))
+
+;;;
+;; manually added
+;; ?object is the object that going to occupy the region
+;; case 1: objet-coordinates
+;; case 2: coordinates-after-place
+;; Since different obeject with the same dimension may occupy the same region one static one after moving
+;; , the extra argument ?object is kept for disambiguation purposes to avoid duplications in higher rules
+(<= (region-to-check-for-adjacent ?x1 ?y1 ?x2 ?y2 ?object)
+	(object-coordinates ?object ?x1 ?y1 ?x2 ?y2)
+)
+(<= (region-to-check-for-adjacent ?x1 ?y1 ?x2 ?y2 ?object)
+	(coordinates-after-place ?object1 ?object ?side ?x1 ?y1 ?x2 ?y2)
+)
+
+;;; Compute whether ?object is adjacent to (touching) the given region 
+;;; on ?object's ?side. Four cases, one for each side.
+(<= (adjacent-to-region ?object ?x21 ?y21 ?x22 ?y11 bottom)
+    (object-coordinates ?object ?x11 ?y11 ?x12 ?y12)
+	;;manual add
+	(region-to-check-for-adjacent ?x21 ?y21 ?x22 ?y11 ?object2)
+	;;
+   ;; (+ ?y12 0 ?y12)
+   ;; (+ ?y21 0 ?y21)
+    (> ?x12 ?x21)
+    (> ?x22 ?x11))
+
+(<= (adjacent-to-region ?object ?x21 ?y21 ?x11 ?y22 left)
+    (object-coordinates ?object ?x11 ?y11 ?x12 ?y12)
+	;;manual add
+	(region-to-check-for-adjacent ?x21 ?y21 ?x11 ?y22 ?object2)
+	;;
+    ;;(+ ?x12 0 ?x12)
+    ;;(+ ?x21 0 ?x21)
+    (> ?y12 ?y21)
+    (> ?y22 ?y11))
+
+(<= (adjacent-to-region ?object ?x12 ?y21 ?x22 ?y22 right)
+    (object-coordinates ?object ?x11 ?y11 ?x12 ?y12)
+	;;manual add
+	(region-to-check-for-adjacent ?x12 ?y21 ?x22 ?y22 ?object2)
+	;;
+    ;;(+ ?x11 0 ?x11)
+    ;;(+ ?x22 0 ?x22)
+    (> ?y12 ?y21)
+    (> ?y22 ?y11))
+
+(<= (adjacent-to-region ?object ?x21 ?y12 ?x22 ?y22 top)
+    (object-coordinates ?object ?x11 ?y11 ?x12 ?y12)
+	;;manual add
+	(region-to-check-for-adjacent ?x21 ?y12 ?x22 ?y22 ?object2)
+	;;
+    ;;(+ ?y11 0 ?y11)
+    ;;(+ ?y22 0 ?y22)
+    (> ?x12 ?x21)
+    (> ?x22 ?x11))
+
+;;; Determine the number of objects adjacent to the region's ?side
+(<= (adjacent-to-region-count ?x1 ?y1 ?x2 ?y2 ?side ?number)
+    (leftmost-adjacent-to-region ?x1 ?y1 ?x2 ?y2 ?leftmost ?side)
+    (adjacent-to-region-count-recursive ?x1 ?y1 ?x2 ?y2 
+					?leftmost ?side ?number))
+
+;;; Determine the number of objects adjacent to ?object's ?side
+;;; that are located right of ?left (including ?left).
+(<= (adjacent-to-region-count-recursive ?x1 ?y1 ?x2 ?y2 ?left ?side ?number)
+    (leftmost-adjacent-to-region-to-right ?x1 ?y1 ?x2 ?y2 ?left ?next ?side)
+    (adjacent-to-region-count-recursive ?x1 ?y1 ?x2 ?y2 ?next ?side ?n)
+    (+ ?n 1 ?number))
+
+(<= (adjacent-to-region-count-recursive ?x1 ?y1 ?x2 ?y2 ?left ?side 1)
+ ;;manual remove
+;;	(+ ?x1 0 ?x1)
+;;    (+ ?y1 0 ?y1)
+;;    (+ ?x2 0 ?x2)
+;;    (+ ?y2 0 ?y2)
+    (side ?side)
+    (true (object-type ?left ?left-type))
+    (not (adjacent-to-region-object-to-right ?x1 ?y1 ?x2 ?y2 ?left ?side))
+	;;manual add
+	(region-to-check-for-adjacent ?x1 ?y1 ?x2 ?y2 ?object2)
+	(distinct ?side left)
+	(distinct ?side right)
+	)
+
+;;; Determine if any object is adjacent to the region's ?side to right of ?left
+(<= (adjacent-to-region-object-to-right ?x1 ?y1 ?x2 ?y2 ?left ?side)
+    (opposite-side ?side ?opposite)
+    (adjacent-to-region ?left ?x1 ?y1 ?x2 ?y2 ?opposite)
+    (adjacent-to-region ?right ?x1 ?y1 ?x2 ?y2 ?opposite)
+    (left-of-object ?right ?left))
+
+;;; Agent did action predicates: these are true of the agent took the specified
+;;; action on its last turn.
+(<= (agent-did-place-action ?agent ?object2)
+    (does ?agent (place-adjacent ?object1 ?object2 ?side)))
+
+(<= (agent-did-reinforce-action ?agent ?object)
+    (does ?agent (reinforce ?object ?reinforcement-type)))
+
+(<= (agent-did-reinforce-action ?agent ?reinforcement-type)
+    (does ?agent (reinforce ?object ?reinforcement-type)))
+
+;;; Determine if ?object is clear of other objects on ?side 
+(<= (clear ?object ?side)
+    (true (object-type ?object ?type))
+    (side ?side)
+    (not (adjacent-to-any-object ?object ?side)))
+
+;;; Determine if any object causes collapse by being
+;;; 1) crushed, or
+;;; 2) unsupported
+(<= (collapsed ?object)
+    (true (object-load ?object ?load))
+    (true (object-strength ?object ?strength))
+    (> ?load ?strength))
+    
+(<= (collapsed ?object)
+    (true (object-type ?object ?type))
+    (distinct ?type ground)
+    (not (adjacent-to-any-object ?object bottom)))
+
+;;; Determines potential coordinates for ?object2 on ?object1's ?side. Cases:
+;;; 1) ?side = left
+;;; 2) ?side = right
+;;; 3) ?side = top (includes test for ?object1 is clear)
+(<= (coordinates-after-place ?object1 ?object2 left ?x1 ?y1 ?x2 ?y2)
+    (true (object-dimensions ?object2 ?width2 ?height2))
+    (true (object-location ?object1 ?x2 ?oy1))
+    (support-for-place ?object1 ?object2 ?support left)
+    (object-coordinates ?support ?sx1 ?sy1 ?sx2 ?y1)
+    (- ?x2 ?width2 ?x1)
+    (+ ?y1 ?height2 ?y2))
+
+(<= (coordinates-after-place ?object1 ?object2 right ?x1 ?y1 ?x2 ?y2)
+    (support-for-place ?object1 ?object2 ?support right)
+    (object-coordinates ?support ?sx1 ?sy1 ?sx2 ?y1)
+    (object-coordinates ?object1 ?ox1 ?oy1 ?x1 ?oy2)
+    (true (object-dimensions ?object2 ?width2 ?height2))
+    (+ ?x1 ?width2 ?x2)
+    (+ ?y1 ?height2 ?y2))
+
+(<= (coordinates-after-place ?object1 ?object2 top ?x21 ?y21 ?x22 ?y22)
+    (true (object-dimensions ?object2 ?width2 ?height2))
+    (object-coordinates ?object1 ?x21 ?y11 ?x12 ?y21)
+    (+ ?x21 ?width2 ?x22)
+    (+ ?y21 ?height2 ?y22)
+	;; manual mod
+    (distinct ?object1 ?object2)
+    (true (object-type ?object2 ?type))
+    (distinct ?type ground)
+    (movable ?object2)
+    (clear ?object2 top)
+	)
+
+;;; Calculate the change in load on ?object after some action by the agent.
+;;; 1)  ?object was moved.
+;;; 2)  Some object was moved. ?object was clear and supports neither the 
+;;;     source or target locations of the moved object.
+;;; 3)  Some object was moved. ?object was clear except for supporting the 
+;;;     source location of the moved object, but it does not support the 
+;;;     target location.
+;;; 4)  Some object was moved. ?object was clear, did not support the source
+;;;     location of moved object, but does support the target location.
+;;; 5)  Some object was moved. ?object supports both the source and target
+;;;     locations of the moved object.  Note: even if ?object supports other
+;;;     objects, no recursion is needed here. Since both source and target
+;;;     locations are accounted for, all other objects will have 0 delta.
+;;; 6)  Some object was moved. ?object supports neither source nor target
+;;;     locations of moved object, but does support some other object(s).
+;;; 7)  Some object was moved. ?object supports the source location of moved
+;;;     object plus other objects, but does not support target location.
+;;; 8)  Some object was moved. ?object does not support source location of
+;;;     moved object, but does support other objects, and it supports the 
+;;;     target location. 
+;;; 9)  Some object was reinforced. ?object is clear.
+;;; 10) Some object directly on top of ?object was reinforced.
+;;; 11) Some object not directly on ?object was reinforced, ?object
+;;;     supports other objects.
+(<= (delta-load ?object 0)
+    (does agent (place-adjacent ?object1 ?object ?side)))
+
+(<= (delta-load ?object 0) ; 2
+    (does agent (place-adjacent ?object1 ?object2 ?side))
+    (clear ?object top)
+    (not (supports-moved-object-target-location ?object ?object1 ?object2 ?side))
+    (distinct ?object ?object2))
+
+(<= (delta-load ?object ?delta) ; 3 
+    (does agent (place-adjacent ?object1 ?object2 ?side))
+    (adjacent-to-object ?object ?object2 top)
+    (not (adjacent-to-other-object ?object ?object2 top))
+    (not
+     (supports-moved-object-target-location ?object ?object1 ?object2 ?side))
+    (true (object-weight ?object2 ?weight))
+    (adjacent-to-object-count ?object2 bottom ?n)
+    ;;manual mod
+	;;(/ ?weight ?n ?temp1)
+    ;;(round ?temp1 ?temp2)
+	(/ ?weight ?n ?temp2)
+    (- 0 ?temp2 ?delta))
+
+(<= (delta-load ?object ?delta) ; 4
+    (does agent (place-adjacent ?object1 ?object2 ?side))
+    (clear ?object top)
+    (distinct ?object ?object2)
+    (coordinates-after-place ?object1 ?object2 ?side ?x1 ?y1 ?x2 ?y2)
+    (not (object-new-region-intersected ?object2 ?x1 ?y1 ?x2 ?y2))
+    (adjacent-to-region ?object ?x1 ?y1 ?x2 ?y2 top)
+    (true (object-weight ?object2 ?weight))
+    (adjacent-to-region-count ?x1 ?y1 ?x2 ?y2 bottom ?n)
+    ;;manual mod
+	;;(/ ?weight ?n ?temp)
+    ;;(round ?temp ?delta)
+	(/ ?weight ?n ?delta)
+	)
+
+(<= (delta-load ?object ?delta) ; 5 
+    (does agent (place-adjacent ?object1 ?object2 ?side))
+    (adjacent-to-object ?object ?object2 top)
+    (coordinates-after-place ?object1 ?object2 ?side ?x1 ?y1 ?x2 ?y2)
+    (not (object-new-region-intersected ?object2 ?x1 ?y1 ?x2 ?y2))
+    (adjacent-to-region ?object ?x1 ?y1 ?x2 ?y2 top)
+    (adjacent-to-object-count ?object2 bottom ?n-src)
+    (adjacent-to-region-count ?x1 ?y1 ?x2 ?y2 bottom ?n-targ)
+    (true (object-weight ?object2 ?weight))
+	;; manual mod
+    ;;(/ ?weight ?n-src ?temp-src)
+    ;;(round ?temp-src ?delta-src)
+	(/ ?weight ?n-src ?delta-src)
+
+    ;;(/ ?weight ?n-targ ?temp-targ)
+    ;;(round ?temp-targ ?delta-targ)
+	(/ ?weight ?n-targ ?delta-targ)
+    (- ?delta-targ ?delta-src ?delta)
+    (distinct ?object ?object2))
+
+(<= (delta-load ?object ?delta) ; 6
+    (does agent (place-adjacent ?object1 ?object2 ?side))
+    (not (adjacent-to-object ?object ?object2 top))
+    (not
+     (supports-moved-object-target-location ?object ?object1 ?object2 ?side))
+    (adjacent-to-other-object ?object ?object2 top)
+    (leftmost-adjacent-to-object ?object ?leftmost top)
+    (delta-load-recursive ?object ?leftmost ?delta))
+
+(<= (delta-load ?object ?delta) ; 7
+    (does agent (place-adjacent ?object1 ?object2 ?side))
+    (adjacent-to-object ?object ?object2 top)
+    (adjacent-to-other-object ?object ?object2 top)
+    (not
+     (supports-moved-object-target-location ?object ?object1 ?object2 ?side))
+    (leftmost-adjacent-to-object ?object ?leftmost top)
+    (delta-load-recursive ?object ?leftmost ?delta-supported)
+    (adjacent-to-object-count ?object2 bottom ?n)
+    (true (object-weight ?object2 ?object-weight))
+    ;; manual mod
+	;;(/ ?object-weight ?n ?temp)
+    ;;(round ?temp ?object-load)
+	(/ ?object-weight ?n ?object-load)
+    (- ?delta-supported ?object-load ?delta))
+
+(<= (delta-load ?object ?delta) ; 8
+    (does agent (place-adjacent ?object1 ?object2 ?side))
+    (not (adjacent-to-object ?object ?object2 top))
+    (adjacent-to-other-object ?object ?object2 top)
+    (coordinates-after-place ?object1 ?object2 ?side ?x1 ?y1 ?x2 ?y2)
+    (not (object-new-region-intersected ?object2 ?x1 ?y1 ?x2 ?y2))
+    (adjacent-to-region ?object ?x1 ?y1 ?x2 ?y2 top)
+    (leftmost-adjacent-to-object ?object ?leftmost top)
+    (delta-load-recursive ?object ?leftmost ?delta-supported)
+    (adjacent-to-region-count ?x1 ?y1 ?x2 ?y2 bottom ?n)
+    (true (object-weight ?object2 ?object-weight))
+    ;; manual mod
+	;;(/ ?object-weight ?n ?temp)
+    ;;(round ?temp ?object-load)
+	(/ ?object-weight ?n ?object-load)
+    (+ ?delta-supported ?object-load ?delta))
+
+(<= (delta-load ?object 0) ; 9
+    (does agent (reinforce ?reinforced ?reinforcement-type))
+    (clear ?object top))
+
+(<= (delta-load ?object ?delta) ; 10
+    (does agent (reinforce ?reinforced ?reinforcement-type))
+    (adjacent-to-object ?object ?reinforced top)
+    (adjacent-to-object-count ?reinforced bottom ?n)
+    (reinforcement-properties ?reinforcement-type ?strength ?weight)
+    ;; manual mod
+	;;(/ ?weight ?n ?temp)
+    ;;(round ?temp ?delta)
+	(/ ?weight ?n ?delta)
+	)
+
+(<= (delta-load ?object ?delta) ; 11
+    (does agent (reinforce ?reinforced ?reinforcement-type))
+    (object-coordinates ?object ?x1 ?y1 ?x2 ?y2)
+    (not (adjacent-to-region ?reinforced ?x1 ?y1 ?x2 ?y2 bottom))
+    (leftmost-adjacent-to-region ?x1 ?y1 ?x2 ?y2 ?leftmost top)
+    (delta-load-recursive ?object ?leftmost ?delta))
+
+;;; Calculate the amount of load change that ?object contributes to each 
+;;; object below it
+(<= (delta-load-contribution ?object ?delta)
+    (delta-load ?object ?obj-delta)
+    (adjacent-to-object-count ?object bottom ?n)
+    ;; manual mod
+	;;(/ ?obj-delta ?n ?temp)
+    ;;(round ?temp ?delta)
+	(/ ?obj-delta ?n ?delta)
+	)
+
+;;; Calculate the change in load supported by ?object from objects
+;;; to the right of ?left (including ?left)
+(<= (delta-load-recursive ?object ?left ?delta)
+    (leftmost-adjacent-to-object-to-right ?object ?left ?next top)
+    (delta-load-recursive ?object ?next ?next-delta)
+    (delta-load-contribution ?left ?left-delta)
+    (+ ?next-delta ?left-delta ?delta))
+
+(<= (delta-load-recursive ?object ?left ?delta)
+    (true (object-type ?left ?left-type))
+    (object-coordinates ?object ?x1 ?y1 ?x2 ?y2)
+    (not (adjacent-to-region-object-to-right ?x1 ?y1 ?x2 ?y2 ?left top))
+    (delta-load-contribution ?left ?delta))
+
+;;; Determine if object ?left is to the left of ?object
+(<= (left-of-object ?object ?left)
+    (true (object-location ?object ?ox1 ?oy1))
+    (object-coordinates ?left ?lx1 ?ly1 ?lx2 ?ly2)
+    (>= ?ox1 ?lx2)
+	
+	;;manual add
+	;; to further restrict the above rule, both objects need to touch the some of the same region on top/bottom
+	(adjacent-to-region ?object ?x1 ?y1 ?x2 ?y2 ?side)
+	(adjacent-to-region ?left ?x1 ?y1 ?x2 ?y2 ?side)
+	(distinct ?side left)
+	(distinct ?side right)
+	)
+
+
+;;; Determine if there exists some object adjacent to ?object1's ?side 
+;;; that is further left than ?object2
+;; side is actually always bottom or top
+(<= (left-further-adjacent-to-region ?x1 ?y1 ?x2 ?y2 ?object2 ?side)
+    (opposite-side ?side ?opposite)
+    (adjacent-to-region ?other ?x1 ?y1 ?x2 ?y2 ?opposite)
+    (true (object-location ?object2 ?obj2-x ?obj2-y))
+    (true (object-location ?other ?other-x ?other-y))
+    (> ?obj2-x ?other-x)
+	;; manual add
+	(adjacent-to-region ?object2 ?x1 ?y1 ?x2 ?y2 ?opposite)
+	(distinct ?side left)
+	(distinct ?side right)
+	)
+
+;;; Determine if there exists some object adjacent to the region's ?side 
+;;; that is left of ?right and right of ?object2
+(<= (left-further-adjacent-to-region-to-right ?x1 ?y1 ?x2 ?y2 
+					      ?object2 ?right ?side)
+    (opposite-side ?side ?opposite)
+    (adjacent-to-region ?other ?x1 ?y1 ?x2 ?y2 ?opposite)
+    (left-of-object ?other ?object2)
+    (left-of-object ?right ?other)
+	;;manual add
+	(adjacent-to-region ?object2 ?x1 ?y1 ?x2 ?y2 ?opposite) ;; pulled from parent rule: leftmost-adjacent-to-region-to-right
+	(adjacent-to-region ?right ?x1 ?y1 ?x2 ?y2 ?opposite);; pulled from parent rule: leftmost-adjacent-to-region-to-right
+	(distinct ?side left)
+	(distinct ?side right)
+	)
+
+;;; Determine if ?leftmost is the leftmost object adjacent to region's ?side.
+(<= (leftmost-adjacent-to-region ?x1 ?y1 ?x2 ?y2 ?leftmost ?side)
+    (opposite-side ?side ?opposite)
+    (adjacent-to-region ?leftmost ?x1 ?y1 ?x2 ?y2 ?opposite)
+    (not (left-further-adjacent-to-region ?x1 ?y1 ?x2 ?y2 ?leftmost ?side))
+	;;manual add
+	(distinct ?side left)
+	(distinct ?side right)
+	)
+
+
+;;; Determine if ?leftmost is the leftmost object adjacent to ?object's ?side.
+(<= (leftmost-adjacent-to-object ?object ?leftmost ?side)
+    (object-coordinates ?object ?x1 ?y1 ?x2 ?y2)
+    (leftmost-adjacent-to-region ?x1 ?y1 ?x2 ?y2 ?leftmost ?side))
+
+
+;;; Determine if ?leftmost is adjacent to ?object1's ?side and is
+;;; the leftmost object to the right of ?object2.
+(<= (leftmost-adjacent-to-object-to-right ?object1 ?object2 ?leftmost ?side)
+    (object-coordinates ?object1 ?x1 ?y1 ?x2 ?y2)
+    (leftmost-adjacent-to-region-to-right ?x1 ?y1 ?x2 ?y2 
+					  ?object2 ?leftmost ?side))
+
+;;; Determine if ?leftmost is adjacent to the region's ?side and is
+;;; the leftmost object to the right of ?object2.
+(<= (leftmost-adjacent-to-region-to-right ?x1 ?y1 ?x2 ?y2 
+					  ?object2 ?leftmost ?side)
+    (opposite-side ?side ?opposite)
+    (adjacent-to-region ?object2 ?x1 ?y1 ?x2 ?y2 ?opposite)
+    (adjacent-to-region ?leftmost ?x1 ?y1 ?x2 ?y2 ?opposite)
+    (left-of-object ?leftmost ?object2)
+    (not (left-further-adjacent-to-region-to-right ?x1 ?x2 ?y1 ?y2 
+						   ?object2 ?leftmost ?side))
+	;;manual add
+	(distinct ?side left)
+	(distinct ?side right)
+	)
+
+;;; Determine if an object is movable (weight < WMAX).
+(<= (movable ?object)
+    (true (object-weight ?object ?weight))
+    (max-movable-weight ?max)
+    (> ?max ?weight))
+
+;;; Determine the location of the lower-left and upper-right corners of ?object
+(<= (object-coordinates ?object ?x1 ?y1 ?x2 ?y2)
+    (true (object-dimensions ?object ?width ?height))
+    (true (object-location ?object ?x1 ?y1))
+    (+ ?x1 ?width ?x2)
+    (+ ?y1 ?height ?y2))
+
+;;; Compute whether ?object intersects the region (?x11 ?y11 ?x12 ?y12).
+(<= (object-intersects-region ?object ?x11 ?y11 ?x12 ?y12 ?moved-object)
+    (object-coordinates ?object ?x21 ?y21 ?x22 ?y22)
+	;; manual add
+	(coordinates-after-place ?any-object ?moved-object ?side ?x11 ?y11 ?x12 ?y12)
+	;;
+    (> ?x22 ?x11)
+    (> ?x12 ?x21)
+    (> ?y22 ?y11)
+    (> ?y12 ?y21))
+
+;;; Determine if any object ?intersecting intersects the given 
+;;; rectangular region. ?intersecting must be different from ?object
+(<= (object-new-region-intersected ?object ?x11 ?y11 ?x12 ?y12)
+    (true (object-type ?object ?type))
+    (object-intersects-region ?intersecting ?x11 ?y11 ?x12 ?y12 ?object)
+    (distinct ?object ?intersecting))
+
+;;; Determine if ?object has been reinforced.
+(<= (reinforced-object ?object)
+    (true (reinforced ?object ?reinforcement)))
+
+;;; Determine if any ?object is crushed or unsupported
+(<= structural-failure
+    (collapsed ?object))
+
+;;; Determine if ?object2 will touch ?object1's ?side when placed on ?support.
+(<= (support-for-place ?object1 ?object2 ?support left)
+    (true (object-dimensions ?object2 ?width2 ?height2))
+    (object-coordinates ?object1 ?x1 ?y1 ?x2 ?y2)
+    (object-coordinates ?support ?sx1 ?sy1 ?sx2 ?sy2)
+    (- ?x1 ?width2 ?minx)
+    (- ?y1 ?height2 ?miny)
+    (> ?x1 ?sx1)
+    (> ?sx2 ?minx)
+    (> ?sy2 ?miny)
+    (> ?y2 ?sy2)
+    ;; manual add
+    (movable ?object2)
+    (clear ?object2 top)
+    (distinct ?object1 ?object2)
+    (distinct ?object1 ?support)
+    (distinct ?object2 ?support)
+    ;; manual mod - avoid duplicate supports
+    (not (same-support-to-right ?object1 ?object2 ?support left))
+    )
+
+(<= (support-for-place ?object1 ?object2 ?support right)
+    (true (object-dimensions ?object2 ?width2 ?height2))
+    (object-coordinates ?object1 ?x1 ?y1 ?x2 ?y2)
+    (object-coordinates ?support ?sx1 ?sy1 ?sx2 ?sy2)
+    (+ ?x2 ?width2 ?maxx)
+    (- ?y1 ?height2 ?miny)
+    (> ?maxx ?sx1)
+    (> ?sx2 ?x2)
+    (> ?sy2 ?miny)
+    (> ?y2 ?sy2)
+    ;; manual add
+    (movable ?object2)
+    (clear ?object2 top)
+    (distinct ?object1 ?object2)
+    (distinct ?object1 ?support)
+    (distinct ?object2 ?support)
+    ;; manual mod - avoid duplicate supports
+    (not (same-support-to-right ?object1 ?object2 ?support right))
+    )
+
+;; manual mod
+;;;; the following 3 rules are important to make soar run
+;; leftmost support for the same height - avoid duplicate, which may explode elaboration
+;; Soar duplicate structure causes trouble in this case
+
+(<= (redundant-support-for-place ?object1 ?object2 ?support left)
+    (true (object-dimensions ?object2 ?width2 ?height2))
+    (object-coordinates ?object1 ?x1 ?y1 ?x2 ?y2)
+    (object-coordinates ?support ?sx1 ?sy1 ?sx2 ?sy2)
+    (- ?x1 ?width2 ?minx)
+    (- ?y1 ?height2 ?miny)
+    (> ?x1 ?sx1)
+    (> ?sx2 ?minx)
+    (> ?sy2 ?miny)
+    (> ?y2 ?sy2)
+    ;; manual add
+    (movable ?object2)
+    (clear ?object2 top)
+    (distinct ?object1 ?object2)
+    (distinct ?object1 ?support)
+    (distinct ?object2 ?support)
+    )
+
+(<= (redundant-support-for-place ?object1 ?object2 ?support right)
+    (true (object-dimensions ?object2 ?width2 ?height2))
+    (object-coordinates ?object1 ?x1 ?y1 ?x2 ?y2)
+    (object-coordinates ?support ?sx1 ?sy1 ?sx2 ?sy2)
+    (+ ?x2 ?width2 ?maxx)
+    (- ?y1 ?height2 ?miny)
+    (> ?maxx ?sx1)
+    (> ?sx2 ?x2)
+    (> ?sy2 ?miny)
+    (> ?y2 ?sy2)
+    ;; manual add
+    (movable ?object2)
+    (clear ?object2 top)
+    (distinct ?object1 ?object2)
+    (distinct ?object1 ?support)
+    (distinct ?object2 ?support)
+    )
+    
+(<= (same-support-to-right ?object1 ?object2 ?support ?side) ;; side = left/right
+	(redundant-support-for-place ?object1 ?object2 ?support ?side)
+	(redundant-support-for-place ?object1 ?object2 ?another-support ?side)
+	(distinct ?support ?another-support)
+	(object-coordinates ?support ?sx1 ?sy1 ?sx2 ?sy2)
+	(object-coordinates ?another-support ?asx1 ?asy1 ?asx2 ?sy2)
+	(< ?sx1 ?asx1)
+)
+
+;;; Determine if ?object supports the target location of ?moved after
+;;; action (place-adjacent ?reference ?moved ?side) is executed
+(<= (supports-moved-object-target-location ?object ?reference ?moved ?side)
+    (coordinates-after-place ?reference ?moved ?side ?x1 ?y1 ?x2 ?y2)
+    (not (object-new-region-intersected ?moved ?x1 ?y1 ?x2 ?y2))
+    (adjacent-to-region ?object ?x1 ?y1 ?x2 ?y2 top))
+
+;;; ---------------------------------------------------------------------------
+;;; LEGAL AXIOMS
+
+;;; Move ?object2 adjacent to (touching) ?object1's ?side. Legal if:
+;;; 1) ?object1 and ?object2 are different
+;;; 2) nothing is stacked on top of ?object2
+;;; 3) ?object2 weighs less than WMAX
+;;; 4) there is some object available to support ?object2
+;;; 5) ?object2's new location is different from the old location
+;;; 6) ?object2 does not intersect any other object once moved
+(<= (legal agent (place-adjacent ?object1 ?object2 ?side))
+    (true (object-type ?object1 ?type1))
+    (true (object-type ?object2 ?type2))
+    (distinct ?object1 ?object2)
+    (clear ?object2 top)
+    (movable ?object2)
+    (coordinates-after-place ?object1 ?object2 ?side ?x1 ?y1 ?x2 ?y2)
+    (not (object-coordinates ?object2 ?x1 ?y1 ?x2 ?y2))
+    (not (object-new-region-intersected ?object2 ?x1 ?y1 ?x2 ?y2)))
+
+;;; Reinforce ?object with ?reinforcement. Legal if:
+;;; 1) ?reinforcement-type can be used on ?object
+;;; 2) ?object has not already been reinforced
+;;; 3) There is at least 1 ?reinforcement-type available
+(<= (legal agent (reinforce ?object ?reinforcement-type))
+    (true (count ?reinforcement-type ?count))
+    (true (object-type ?object ?object-type))
+    (reinforcement-type ?reinforcement-type ?object-type)
+    (not (reinforced-object ?object))
+    (> ?count 0))
+
+;;; ---------------------------------------------------------------------------
+;;; NEXT AXIOMS
+
+;;; Move ?object2 to be adjacent to ?object1's ?side
+;;; 1) Update location of ?object2
+;;; 2) Update pyramid status of ?object2 (ground-level case)
+;;; 3) Update pyramid status of ?object2 (general case)
+;;; 4) Update tower status of ?object2 (ground-level case)
+;;; 5) Update tower status of ?object2 (general case)
+(<= (next (object-location ?object2 ?x ?y))
+    (does agent (place-adjacent ?object1 ?object2 ?side))
+    (coordinates-after-place ?object1 ?object2 ?side ?x ?y ?x2 ?y2)
+    (not (object-new-region-intersected ?object2 ?x ?y ?x2 ?y2)))
+
+(<= (next (pyramid ?object2 ?y2))
+    (does agent (place-adjacent ?object1 ?object2 ?side))
+    (coordinates-after-place ?object1 ?object2 ?side ?x1 ?y1 ?x2 ?y2)
+    (not (object-new-region-intersected ?object2 ?x1 ?y1 ?x2 ?y2))
+    (adjacent-to-region ?support1 ?x1 ?y1 ?x2 ?y2 top)
+    (adjacent-to-region ?support2 ?x1 ?y1 ?x2 ?y2 top)
+    (adjacent-to-object ?support1 ?support2 ?support-side)
+    (true (object-type ?ground1 ground))
+    (adjacent-to-object ?support1 ?ground1 bottom)
+    (true (object-type ?ground2 ground))
+    (adjacent-to-object ?support2 ?ground2 bottom))
+
+(<= (next (pyramid ?object2 ?y2))
+    (does agent (place-adjacent ?object1 ?object2 ?side))
+    (coordinates-after-place ?object1 ?object2 ?side ?x1 ?y1 ?x2 ?y2)
+    (not (object-new-region-intersected ?object2 ?x1 ?y1 ?x2 ?y2))
+    (adjacent-to-region ?support1 ?x1 ?y1 ?x2 ?y2 top)
+    (adjacent-to-region ?support2 ?x1 ?y1 ?x2 ?y2 top)
+    (adjacent-to-object ?support1 ?support2 ?support-side)
+    (true (pyramid ?support1 ?height))
+    (true (pyramid ?support1 ?height)))
+
+(<= (next (tower ?object2 ?height))
+    (does agent (place-adjacent ?object1 ?object2 ?side))
+    (coordinates-after-place ?object1 ?object2 ?side ?x1 ?y1 ?x2 ?y2)
+    (not (object-new-region-intersected ?object2 ?x1 ?y1 ?x2 ?y2))
+    (adjacent-to-region ?support ?x1 ?y1 ?x2 ?y2 top)
+    (adjacent-to-object ?ground ?support top)
+    (true (object-type ?ground ground))
+    (true (object-type ?support ?support-type))
+    (distinct ?support-type ground)
+    (true (object-dimensions ?object2 ?obj-width ?obj-height))
+    (true (object-dimensions ?support ?sup-width ?sup-height))
+    (+ ?obj-height ?sup-height ?height))
+
+(<= (next (tower ?object2 ?height))
+    (does agent (place-adjacent ?object1 ?object2 ?side))
+    (coordinates-after-place ?object1 ?object2 ?side ?x1 ?y1 ?x2 ?y2)
+    (not (object-new-region-intersected ?object2 ?x1 ?y1 ?x2 ?y2))
+    (adjacent-to-region ?support ?x1 ?y1 ?x2 ?y2 top)
+    (true (object-dimensions ?object2 ?width ?obj-height))
+    (true (tower ?support ?sup-height))
+    (+ ?obj-height ?sup-height ?height))
+
+;;; Reinforce ?object with ?material: 
+;;; 1) Declare reinforcement
+;;; 2) Update strength of ?object
+;;; 3) Update weight of ?object
+;;; 4) Reduce count of ?reinforcement-type by one
+(<= (next (reinforced ?object ?reinforcement-type))
+    (does agent (reinforce ?object ?reinforcement-type)))
+
+(<= (next (object-strength ?object ?strength))
+    (does agent (reinforce ?object ?reinforcement-type))
+    (true (object-strength ?object ?obj-strength))
+    (reinforcement-properties ?reinforcement-type ?r-strength ?r-weight)
+    (* ?obj-strength ?r-strength ?strength))
+
+(<= (next (object-weight ?object ?weight))
+    (does agent (reinforce ?object ?reinforcement-type))
+    (true (object-weight ?object ?obj-weight))
+    (reinforcement-properties ?reinforcement-type ?r-strength ?r-weight)
+    (+ ?obj-weight ?r-weight ?weight))
+
+(<= (next (count ?reinforcement-type ?new-count))
+    (does agent (reinforce ?object ?reinforcement-type))
+    (true (count ?reinforcement-type ?old-count))
+    (- ?old-count 1 ?new-count))
+
+;;; Calculate object-load anew on every time step.  Could be done
+;;; incrementally, but for now, recompute to keep things simple.
+(<= (next (object-load ?object ?load))
+    (true (object-load ?object ?old-load))
+    (delta-load ?object ?delta)
+    (+ ?old-load ?delta ?load))
+
+;;; Advance time one step
+(<= (next (time ?t))
+    (true (time ?oldt))
+    (+ ?oldt 1 ?t))
+
+;;; ---------------------------------------------------------------------------
+;;; FRAME AXIOMS (NEXT)
+
+;;; Carry forward reinforcement count if ?reinforcement-type not used
+(<= (next (count ?reinforcement-type ?count))
+    (true (count ?reinforcement-type ?count))
+    (not (agent-did-reinforce-action agent ?reinforcement-type)))
+
+;;; Carry forward all object-dimensions declarations
+(<= (next (object-dimensions ?object ?width ?height))
+    (true (object-dimensions ?object ?width ?height)))
+
+;;; Carry forward object-location declarations if ?object not moved
+(<= (next (object-location ?object ?x ?y))
+    (true (object-location ?object ?x ?y))
+    (not (agent-did-place-action agent ?object)))
+
+;;; Carry forward object-strength declarations if ?object not reinforced
+(<= (next (object-strength ?object ?strength))
+    (true (object-strength ?object ?strength))
+    (not (agent-did-reinforce-action agent ?object)))
+
+;;; Carry forward all object-type declarations
+(<= (next (object-type ?object ?type))
+    (true (object-type ?object ?type)))
+
+;;; Carry forward object-weight declarations if ?object not reinforced
+(<= (next (object-weight ?object ?weight))
+    (true (object-weight ?object ?weight))
+    (not (agent-did-reinforce-action agent ?object)))
+
+;;; Carry forward pyramid status of all objects that were not moved
+(<= (next (pyramid ?object ?height))
+    (true (pyramid ?object ?height))
+    (not (agent-did-place-action agent ?object)))
+
+;;; Carry forward all reinforced declarations
+(<= (next (reinforced ?object ?reinforcement-type))
+    (true (reinforced ?object ?reinforcement-type)))
+
+;;; Carry forward tower status of all objects that were not moved
+(<= (next (tower ?object ?height))
+    (true (tower ?object ?height))
+    (not (agent-did-place-action agent ?object)))
+
+;;; ---------------------------------------------------------------------------
+;;; END mBuild CORE DEFINITIONS
+;;;; -*-Lisp-*-
+;;;; **************************************************************************
+;;;; * mini-Build Game Instance: Simple Tower                                 *
+;;;; * Transfer Learning in Integrated Cognitive Systems Project              *
+;;;; *                                                                        *
+;;;; * David J. Stracuzzi                                                     *
+;;;; * Arizona State University                                               *
+;;;; * Completed: August 16, 2007                                             *
+;;;; * Revised:   August 17, 2007                                             *
+;;;; **************************************************************************
+;;;;
+;;;; This file contains rules, facts and persistants for a specific game
+;;;; instance of BUILD. The file build.core.kif contains the core description
+;;;; for the BUILD domain. Appending this file to build.core.kif will produce
+;;;; a complete, playable game description.
+;;;;
+;;;; Goal:
+;;;;   Construct a tower by stacking five blocks of uniform size on top of 
+;;;;   each other. The objects must be stacked in order: concrete on the 
+;;;;   bottom, steel in the middle, wood on top.
+;;;;
+;;;; Solution Sequence (several are possible):
+;;;;   (reinforce c1 rebar)
+;;;;   (place-adjacent c1 c2 top)
+;;;;   (place-adjacent c2 s1 top)
+;;;;   (place-adjacent s1 s2 top)
+;;;;   (place-adjacent s2 w1 top)
+
+;;; ---------------------------------------------------------------------------
+;;; PARAMETERS: Game-instance-specific relations that define the state.
+;;;             These will not change during the game.
+
+(max-movable-weight 100)
+(max-time 10)
+
+;;; (material-type ?type)
+(material-type ground)
+(material-type concrete)
+(material-type steel)
+(material-type wood)
+
+;;; (reinforcement-type ?reinforcement-material ?reinforcable-material)
+(reinforcement-type rebar concrete)
+
+;;; (reinforcement-properties ?reinforcement-material ?strength ?weight)
+(reinforcement-properties rebar 2 2)
+
+;;; ---------------------------------------------------------------------------
+;;; PERSISTANTS: Relations that define the state. These may be added and
+;;;              removed during the game.
+
+(init (time 0))
+
+(init (count rebar 2))
+
+(init (object-type g1 ground))
+(init (object-type c1 concrete))
+(init (object-type c2 concrete))
+(init (object-type s1 steel))
+(init (object-type s2 steel))
+(init (object-type w1 wood))
+
+(init (object-dimensions g1 10 1))
+(init (object-dimensions c1 2 2))
+(init (object-dimensions c2 2 2))
+(init (object-dimensions s1 2 2))
+(init (object-dimensions s2 2 2))
+(init (object-dimensions w1 2 2))
+
+(init (object-location g1 0 0))
+(init (object-location c1 0 1))
+(init (object-location c2 2 1))
+(init (object-location s1 4 1))
+(init (object-location s2 6 1))
+(init (object-location w1 8 1))
+
+(init (object-load g1 68))
+(init (object-load c1 0))
+(init (object-load c2 0))
+(init (object-load s1 0))
+(init (object-load s2 0))
+(init (object-load w1 0))
+
+(init (object-strength g1 1000))
+(init (object-strength c1 30))
+(init (object-strength c2 30))
+(init (object-strength s1 20))
+(init (object-strength s2 20))
+(init (object-strength w1 10))
+
+(init (object-weight g1 1000))
+(init (object-weight c1 20))
+(init (object-weight c2 20))
+(init (object-weight s1 12))
+(init (object-weight s2 12))
+(init (object-weight w1 4))
+
+;;; ---------------------------------------------------------------------------
+;;; GOAL STATES
+;;; 1) WIN:  Building meets success conditions
+;;; 2) LOSE: Building collapsed
+;;; 3) DRAW: Maximum time-step reached
+
+(<= (goal agent 100)
+    (true (tower ?object ?height))
+    (> ?height 9)
+    (not structural-failure))
+
+(<= (goal agent 0)
+    (collapsed ?object))
+
+(<= (goal agent 50)
+    (true (time ?t))
+    (max-time ?t))
+
+
+;;; ---------------------------------------------------------------------------
+;;; TERMINAL STATES
+;;; 1) Building meets success conditions
+;;; 2) Building collapsed
+;;; 3) Maximum time-step reached
+
+(<= terminal
+    (true (tower ?object ?height))
+    (> ?height 9))
+
+(<= terminal
+    (collapsed ?object))
+
+(<= terminal
+    (true (time ?t))
+    (max-time ?t))
