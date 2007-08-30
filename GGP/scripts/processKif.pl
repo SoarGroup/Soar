@@ -22,6 +22,7 @@ sub handleLine() {
   $line =~ s/\s*$//;
   if ($line =~ /^$/) { next; }
   $line = "$line\n";
+  $line =~ s/ \)/\)/g;
   $line =~ s/ /_/g;
 
   # $line = lc $line;

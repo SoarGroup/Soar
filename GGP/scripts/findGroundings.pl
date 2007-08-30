@@ -38,7 +38,7 @@ foreach $line (`cat $file`) {
       push @lines, $line;
     }
     else {
-      $line =~ s/init_//;
+      $line =~ s/init_/TRUE/;
       if ($line =~ /^([^_]+)$/) {
         $predicate = $1;
       }
@@ -179,6 +179,7 @@ while ($quiescent == 0) {
 }
 
 foreach $position (sort keys %groundings) {
+#  print "p: $position\n";
   foreach $ground (sort keys %{ $groundings{$position} }) {
     $position =~ s/\// /;
     $position =~ s/A//;
