@@ -47,6 +47,9 @@ type_similarity = {
 
 def type_intersect(s1, s2):
 	""" Gives a score of how similar two sets of types are """
+	if len(s1) == 0 or len(s2) == 0:
+		return []
+
 	if len(s1) < len(s2):
 		shorter, longer = list(s1), list(s2)
 		reverse = False
@@ -63,16 +66,21 @@ def type_intersect(s1, s2):
 		best = 0
 		best_type = None
 		for t2 in longer:
+			if t2 == t1:
+				best = 1
+				best_type = t2
+				break
+
 			if t2 in type_similarity[t1]:
 				if type_similarity[t1][t2] > best:
 					best = type_similarity[t1][t2]
 					best_type = t2
-		if t2 != None:
-			longer.remove(t2)
+		if best_type != None:
+			longer.remove(best_type)
 			if reverse:
-				type_map.append((t2, t1))
+				type_map.append((best_type, t1, best))
 			else:
-				type_map.append((t1, t2))
+				type_map.append((t1, best_type, best))
 
 	return type_map
 

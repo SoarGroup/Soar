@@ -58,12 +58,14 @@ class TreeGen:
 			preserved.pop(random.randint(0, len(preserved)-1))
 
 		# keep looping until we get a unique state
+		unused_preds = set(self.predicates) - set(preserved)
 		while True:
 			min_rand = max(0, self.min_preds - len(preserved))
 			max_rand = max(min_rand, self.max_preds - len(preserved))
 			num_rand = random.randint(min_rand, max_rand)
-			new_preds = [random.choice(self.predicates) for i in range(num_rand)]
+			new_preds = random.sample(unused_preds, num_rand)
 			next_state = frozenset(preserved + new_preds)
+			assert len(next_state) >= self.min_preds and len(next_state) <= self.max_preds
 			if next_state not in self.__states and \
 			  (parent is None or len(next_state - parent.preds) >= self.min_pred_change):
 				self.__states.add(next_state)
@@ -110,15 +112,16 @@ class TreeGen:
 			min_random = max(self.min_preds - len(ind), 0)
 			max_random = self.max_preds - len(ind)
 			num_random = random.randint(min_random, max_random)
-			random_preds = []
+			random_preds = set()
 			while len(random_preds) < num_random:
 				# choose between either using a used predicate or a new predicate
 				if random.random() < new_pred_prob or len(used_preds_pool) == 0:
-					random_preds.append(random.choice(self.predicates))
+					random_preds.add(random.choice(self.predicates))
 				else:
-					random_preds.append(random.choice(used_preds_pool))
+					random_preds.add(random.choice(used_preds_pool))
 
-			s = frozenset(ind + random_preds)
+			s = frozenset(set(ind) | random_preds)
+			assert len(s) >= self.min_preds and len(s) <= self.max_preds
 			if s not in self.__states:
 				self.__states.add(s)
 				curr.preds = s

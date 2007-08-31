@@ -309,7 +309,7 @@ class RuleSet:
 			self.__r2fs[rule] = result
 			return result
 
-	def remove_pconds(self, rule):
+	def remove_pconds(self, rule, preserved_preds):
 		"""Remove as many positive conditions as possible while maintaining semantics"""
 
 		orig_fs = self.all_firing_states(rule)
@@ -317,6 +317,9 @@ class RuleSet:
 		new_pconds = set(rule.get_pconds())
 		safe_to_del = set()
 		for p in rule.get_pconds():
+			if p in preserved_preds:
+				continue
+
 			preserves = True
 			new_pconds.remove(p)
 			for s in self.__p2ns[p]:
@@ -368,14 +371,14 @@ class RuleSet:
 		for r in self.rules:
 			self.remove_nconds(r)
 
-	def minimize_pconds(self):
+	def minimize_pconds(self, preserve):
 		for r in self.rules:
-			self.remove_pconds(r)
+			self.remove_pconds(r, preserve)
 
-	def minimize_rules(self):
+	def minimize_rules(self, preserve):
 		for r in self.rules:
 			self.remove_nconds(r)
-			self.remove_pconds(r)
+			self.remove_pconds(r, preserve)
 
 	def write_rules(self, file):
 		for r in self.rules:

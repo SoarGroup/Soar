@@ -6,27 +6,46 @@ from GDL import *
 import pdb
 
 class Predicate:
+	
+	# since there are so many predicate comparisons, this should
+	# speed up the process
+	
+	# str -> int
+	__name2id = {}
+	# int -> (name, type, place_types)
+	__id2info = {}
+	# next new predicate gets this id
+	__id_count = 0
 
 	def __init__(self, name, type, place_types):
-		self.__name = name
+		if name in Predicate.__name2id:
+			self.__id = Predicate.__name2id[name]
+			info = Predicate.__id2info[self.__id]
+			assert type == info[1] and len(place_types) == len(info[2]), '%s -> %s, %s -> %s' % (str(type), str(info[1]), str(place_types), str(info[2]))
+		else:
+			self.__id = Predicate.__id_count
+			Predicate.__id2info[Predicate.__id_count] = (name, type, place_types)
+			Predicate.__name2id[name] = Predicate.__id_count
+			Predicate.__id_count += 1
 		self.__type = type
 		self.__ptypes = tuple(place_types)
+		self.__arity = len(place_types)
 
-	def get_name(self): return self.__name
-	def get_arity(self): return len(self.__ptypes)
+	def get_name(self): return Predicate.__id2info[self.__id][0]
+	def get_arity(self): return self.__arity
 	def get_type(self): return self.__type
 	def get_place_types(self): return self.__ptypes
 
 	def __eq__(self, other):
-		return self.__name == other.__name and \
-		       self.__type == other.__type and \
-		       self.__ptypes == other.__ptypes
+		# since we've made sure that predicates with the same id
+		# has the same info, we can just compare ids here
+		return self.__id == other.__id
 	
 	def __hash__(self):
-		return hash((self.__name, self.__type, self.__ptypes))
+		return self.__id
 
 	def __str__(self):
-		return "%s %d %s" % (self.__name, self.__type, " ".join(placetype.type_names[t] for t in self.__ptypes))
+		return "%s %d %s" % (self.get_name(), self.__type, " ".join(placetype.type_names[t] for t in self.__ptypes))
 
 class EquivalenceClass:
 

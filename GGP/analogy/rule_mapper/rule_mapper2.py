@@ -1,6 +1,6 @@
 import sys, os
 import gdlyacc
-from partialmap import PartialMap
+from partialmap2 import PartialMap
 from predicate import get_predicates
 from find_max import find_max
 import pdb
@@ -30,26 +30,20 @@ def do_mapping(src_int_rep, tgt_int_rep, src_pred_bins={}, tgt_pred_bins={}):
 	history.append(CommitPoint(mapping))
 	
 	best_map = None
-	legals_mapped = False
 	for x in range(1):
 		bottomed_out = False
 		while not bottomed_out:
 			next_mapping = mapping.copy()
-			if not legals_mapped:
-				sr, tr, invalidated, score = next_mapping.add_best_legal_rule_match()
-				if sr is None:
-					legals_mapped = True
-					continue
-			else:
-				sr, tr, bmap, score = next_mapping.get_best_rule_match()
-				if sr is None:
-					# there's no matches at this point, probably because they're all
-					# suppressed
-					history[-1].can_unroll = False
-					bottomed_out = True
-					continue
 
-				invalidated = next_mapping.add_rule_match(sr, tr, bmap)
+			sr, tr, bmap, score = next_mapping.get_best_rule_match()
+			if sr is None:
+				# there's no matches at this point, probably because they're all
+				# suppressed
+				history[-1].can_unroll = False
+				bottomed_out = True
+				continue
+
+			invalidated = next_mapping.add_rule_match(sr, tr, bmap)
 
 			history[-1].rule_match = (sr, tr)
 			history[-1].invalidated = invalidated
