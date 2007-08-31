@@ -1,10 +1,11 @@
 import os, sys
 sys.path.append(os.path.join(os.environ['GGP_PATH'], 'analogy','rule_mapper'))
+sys.path.append(os.path.join(os.environ['GGP_PATH'], 'analogy','test_gen'))
 
 import gdlyacc
 from GDL import *
 from PositionIndex import PositionIndex
-import rule_mapper
+import rule_mapper2
 import psyco
 
 # constants to ignore, along with numbers
@@ -84,6 +85,7 @@ def commit_ground_match(src_g, tgt_g, cmap, pmap):
 			cmap[src_c] = tgt_c
 
 if __name__ == '__main__':
+	import psycocompile
 	# get the mapping
 	gdlyacc.parse_file(sys.argv[1])
 	src_int_rep = gdlyacc.int_rep.copy()
@@ -92,7 +94,7 @@ if __name__ == '__main__':
 
 	psyco.full()
 
-	best_map = rule_mapper.do_mapping(src_int_rep, tgt_int_rep)
+	best_map = rule_mapper2.do_mapping(src_int_rep, tgt_int_rep)
 	pred_map = dict((s.get_name(), t.get_name()) for s, t in best_map.get_pred_matches().items())
 
 	#src_c2p = build_c2p(src_int_rep, pred_map)
