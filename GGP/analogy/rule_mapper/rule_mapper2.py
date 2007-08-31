@@ -30,7 +30,7 @@ def do_mapping(src_int_rep, tgt_int_rep, src_pred_bins={}, tgt_pred_bins={}):
 	history.append(CommitPoint(mapping))
 	
 	best_map = None
-	for x in range(1):
+	for x in range(5):
 		bottomed_out = False
 		while not bottomed_out:
 			next_mapping = mapping.copy()
@@ -69,9 +69,10 @@ def do_mapping(src_int_rep, tgt_int_rep, src_pred_bins={}, tgt_pred_bins={}):
 		#unroll_i, invalidated = find_max(history, lambda x: x.invalidated)
 		#print "unrolling to %d, with %d invalidations" % (unroll_i, invalidated)
 		# unroll to most degrees of freedom
-		unroll_i, dof = find_max(history, lambda x: x.map.src_rdof(x.rule_match[0]))
+		#unroll_i, dof = find_max(history, lambda x: x.map.src_rdof(x.rule_match[0]))
 		#print "unrolling to %d, with %d dof" % (unroll_i, dof)
 
+		unroll_i = 0
 		history = history[:unroll_i+1]
 		mapping = history[unroll_i].map
 		history[unroll_i].suppress_last()
@@ -88,8 +89,8 @@ def map_kifs(src_rules, tgt_rules, src_pred_bins = {}, tgt_pred_bins = {}):
 	return best_map.get_pred_matches()
 
 if __name__ == '__main__':
-#	sys.path.append('../test_gen')
-#	import psycocompile
+	sys.path.append('../test_gen')
+	import psycocompile
 
 	matches = map_kifs(sys.argv[1], sys.argv[2])
 	for s, t in matches.items():

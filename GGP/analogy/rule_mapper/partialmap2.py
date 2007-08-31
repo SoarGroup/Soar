@@ -12,7 +12,7 @@ import options
 import pdb
 
 def debug_print(s):
-	print s
+	#print s
 	pass
 
 def possible_matchings(s1, s2):
