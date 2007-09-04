@@ -19,6 +19,9 @@ class State:
 			cchildren[a] = c.deep_copy()
 		return State(cpreds, cchildren)
 
+	def get_actions(self):
+		return self.__children.keys()
+
 	def get_child(self, action):
 		return self.__children[action]
 	
@@ -28,13 +31,19 @@ class State:
 	def set_child(self, action, child):
 		self.__children[action] = child
 
-	def make_max_rules(self, rules, all_preds):
+	def make_max_rules(self, all_preds):
+		rules = []
 		ncs = all_preds - self.preds
 		for a, c in self.__children.items():
 			comment = 'Originally generated from state %s -%s-> %s' % (''.join(self.preds), a, ''.join(c.preds))
 			rules.append(Rule(self.preds, ncs, a, c.preds, comment))
-			c.make_max_rules(rules, all_preds)
-
+		return rules
+		
+	def make_max_rules_rec(self, rules, all_preds):
+		rules.extend(self.make_max_rule(all_preds))
+		for c in self.__children.values():
+			c.make_max_rules_rec(rules, all_preds)
+	
 	def is_goal(self):
 		return len(self.__children) == 0
 
@@ -80,15 +89,20 @@ class State:
 
 	def make_graphviz(self, file, is_root=True):
 		my_label = str(self)
+		if is_root:
+			file.write('digraph g {\n')
 		for a, c in self.__children.items():
 			file.write('%s -> %s [label="%s"];\n' % (my_label, str(c), a))
 			if len(c.preds) > 0:
 				c.make_graphviz(file, False)
+		if is_root:
+			file.write('}\n')
 
-	def get_all_states(self, states):
-		states.append(self)
+	def get_all_states(self):
+		states = [self]
 		for a, c in self.__children.items():
-			c.get_all_states(states)
+			states.extend(c.get_all_states())
+		return states
 	
 	def get_all_predicates(self):
 		preds = set(self.preds)
@@ -123,7 +137,7 @@ class State:
 			return 'goal'
 		l = list(self.preds)
 		l.sort()
-		return ''.join(l)
+		return '_'.join(l)
 	
 	def __hash__(self):
 		return id(self)

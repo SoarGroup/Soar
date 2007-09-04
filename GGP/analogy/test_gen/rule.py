@@ -125,6 +125,15 @@ class Rule:
 				else:
 					self.add_nconds(set([iter(in_s).next()]))
 		return True
+	
+	def covers(self, other):
+		"""A rule r covers another rule r' if r generates all the rhs
+		predicates r' does and will fire in all states r' fires in"""
+		
+		return self.__action == other.__action and \
+		       self.__pcs <= other.__pcs and \
+		       self.__ncs <= other.__ncs and \
+		       self.__rhs >= other.__rhs
 
 	def __str__(self):
 		pcs = list(self.__pcs)
@@ -173,13 +182,25 @@ class RuleSet:
 		for s in self.states:
 			for p in  all_preds - s.preds:
 				self.__p2ns[p] = s
-
+	
 	def check_consistency(self):
 		for s in self.states:
 			if not s.implemented_by(self.rules):
 				return False
 		return True
 	
+	def make_consistent(self, rule):
+		"Modify a rule to make it only fire in the states that it's consistent with"
+		firing_states = self.all_firing_states(rule)
+		consistent = []
+		inconsistent = []
+		for s in firing_states:
+			if s.consistent_with(rule):
+				consistent.append(s)
+			else:
+				inconsistent.append(s)
+		return rule.restrict_firing(consistent, inconsistent)
+
 	def extract_common(self, r1, r2, modify_origs):
 		if r1.is_goal_rule() or r2.is_goal_rule():
 			return None
@@ -247,16 +268,27 @@ class RuleSet:
 
 		self.rules.extend(commons)
 
-	def split_rule(self, rule):
-		""" Try to split a rule into two rules while maintaining semantics """
-		#assert len(rule.get_rhs()) > 1, "Resulting rules must have some actions"
-		if len(rule.get_rhs()) <= 1:
-			pdb.set_trace()
+	def split_rule(self, rule, partition=None):
+		"""Try to split a rule into two rules while maintaining semantics.
+		partition specifies the conditions to split on"""
 
-		pcs = list(rule.get_pconds())
+		assert len(rule.get_rhs()) > 1, "Resulting rules must have some actions"
+
+		if partition is None:
+			# do random splitting
+			pcs = list(rule.get_pconds())
+			pcs_splits = [(i,) for i in range(len(pcs))] ; random.shuffle(pcs_splits)
+		else:
+			# split based on a pre-determined partitioning
+			# the rule should only have predicates from one side of the partition
+			split = rule.get_pconds() & partition
+			others = rule.get_pconds() - split
+			# order pcs like the partitioning
+			pcs = list(split) + list(others)
+			pcs_splits = [(len(split),)]
+
 		ncs = list(rule.get_nconds())
 		rhs = list(rule.get_rhs())
-		pcs_splits = [(i,) for i in range(len(pcs))] ; random.shuffle(pcs_splits)
 		ncs_splits = [(i,) for i in range(len(ncs))] ; random.shuffle(ncs_splits)
 		# both splits must have at least one action
 		rhs_splits = [(i,) for i in range(1,len(rhs)-1)] ; random.shuffle(rhs_splits)
@@ -286,14 +318,17 @@ class RuleSet:
 			r2 = Rule(pcs2, ncs2, a, rhs2, 'split from %s' % rule)
 
 			# make sure split rules aren't over-general
-			firing_states = self.all_firing_states(rule)
-			other_states = self.states.difference(firing_states)
-			if r1.restrict_firing(firing_states, other_states) and \
-					r2.restrict_firing(firing_states, other_states):
+			#firing_states = self.all_firing_states(rule)
+			#other_states = self.states - firing_states
+			#if r1.restrict_firing(firing_states, other_states) and \
+			#		r2.restrict_firing(firing_states, other_states):
+			#	return (r1, r2)
+			if self.make_consistent(r1) and self.make_consistent(r2):
 				return (r1, r2)
 
 		return None
-
+	
+		
 	def all_firing_states(self, rule):
 		"""Return all states a rule fires in"""
 		
@@ -375,10 +410,21 @@ class RuleSet:
 		for r in self.rules:
 			self.remove_pconds(r, preserve)
 
-	def minimize_rules(self, preserve):
+	def minimize_rule_conds(self, preserve):
 		for r in self.rules:
 			self.remove_nconds(r)
 			self.remove_pconds(r, preserve)
+
+	def minimize(self):
+		"""Make the rule set as small as possible by removing all rules that
+		are covered by other rules"""
+
+		for r1 in self.rules[:]:
+			for r2 in self.rules[:]:
+				if r1.covers(r2):
+					try:
+						self.rules.remove(r2)
+					except ValueError: pass
 
 	def write_rules(self, file):
 		for r in self.rules:

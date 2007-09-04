@@ -8,11 +8,11 @@ def cross_product(list1, list2):
 class TreeGen:
 	def __init__(self):
 		self.min_branch_len = 4
-		self.max_branch_len = 5
+		self.max_branch_len = 8
 		self.preserve_prob = 0.5
 		self.min_pred_change = 1
 		self.min_preds = 2
-		self.max_preds = 5
+		self.max_preds = 8
 		alpha = [chr(i) for i in range(ord('A'), ord('Z')+1)]
 		self.predicates = alpha
 		#self.predicates = cross_product(alpha, alpha)
@@ -33,7 +33,45 @@ class TreeGen:
 			children[a] = self.__generate_empty(branch_len + 1)
 		
 		return State(frozenset(), children)
-	
+
+	def __add_random_preds(self, existing):
+		if len(self.__used_preds) == 0:
+			used_preds_pool = []
+		else:
+			max_num = max(len(x) for x in self.__used_preds.values())
+			# this creates an array of used predicates where each used predicate
+			# appears n times, n being the most number of states any predicate
+			# has been in minus the number of states each predicate is already
+			# part of. So the probability of choosing a predicate that has
+			# appeared a lot is lower
+			used_preds_pool = reduce(lambda x,y: x+y, \
+			  ([p] * (max_num - len(d) + 1) for p, d in self.__used_preds.items()))
+
+		new_pred_prob = 0
+		while True:
+			# with more iterations, the probability of using a new predicate
+			# becomes greater, since it probably makes combinations of used
+			# predicates is already expended
+			new_pred_prob += 0.05
+			min_random = max(self.min_preds - len(existing), 0)
+			max_random = max(min_random, self.max_preds - len(existing))
+			num_random = random.randint(min_random, max_random)
+			random_preds = set()
+			while len(random_preds) < num_random:
+				# choose between either using a used predicate or a new predicate
+				if random.random() < new_pred_prob or len(used_preds_pool) == 0:
+					random_preds.add(random.choice(self.predicates))
+				else:
+					random_preds.add(random.choice(used_preds_pool))
+
+			s = frozenset(set(existing) | random_preds)
+			assert len(s) >= self.min_preds and len(s) <= self.max_preds
+			if s not in self.__states:
+				# this is the final set, update self.__used_preds
+				for p in random_preds:
+					self.__used_preds.setdefault(p,[]).append(s)
+				return s
+
 	def generate_random(self):
 		root = self.__generate_empty()
 		self.__populate_random(root, None)
@@ -92,40 +130,69 @@ class TreeGen:
 				self.__gen_indicators_rec(c, ind, dists)
 
 	def __populate_indicators(self, curr, ind):
-		new_pred_prob = 0
-		if len(self.__used_preds) == 0:
-			used_preds_pool = []
-		else:
-			max_num = max(len(x) for x in self.__used_preds.values())
-			# this creates an array of used predicates where each used predicate
-			# appears n times, n being the most number of states any predicate
-			# has been in minus the number of states each predicate is already
-			# part of. So the probability of choosing a predicate that has
-			# appeared a lot is lower
-			used_preds_pool = reduce(lambda x,y: x+y, \
-			  ([p] * (max_num - len(d) + 1) for p, d in self.__used_preds.items()))
-		while True:
-			# with more iterations, the probability of using a new predicate
-			# becomes greater, since it probably makes combinations of used
-			# predicates is already expended
-			new_pred_prob += 0.05
-			min_random = max(self.min_preds - len(ind), 0)
-			max_random = self.max_preds - len(ind)
-			num_random = random.randint(min_random, max_random)
-			random_preds = set()
-			while len(random_preds) < num_random:
-				# choose between either using a used predicate or a new predicate
-				if random.random() < new_pred_prob or len(used_preds_pool) == 0:
-					random_preds.add(random.choice(self.predicates))
-				else:
-					random_preds.add(random.choice(used_preds_pool))
+		# just add some random predicates to the indicators
+		s = self.__add_random_preds(ind)
+		self.__states.add(s)
+		curr.preds = s
+	
+	def generate_contradictory_indicators(self, indicators):
+		self.__used_preds = {}
+		root = self.__generate_empty()
+		dists = {}
+		root.dist_to_goal(dists)
+		# these are the 4 predicates we're going to keep shuffling
+		# around to make the contradictions
+		split_preds = random.sample(self.predicates, 4)
+		split_preds2 = random.sample(set(self.predicates) - set(split_preds), 4)
+		split_preds3 = random.sample((set(self.predicates) - set(split_preds)) - set(split_preds2), 4)
+		# randomly impose an ordering the first time
+		partition = (split_preds[:2], split_preds[2:])
 
-			s = frozenset(set(ind) | random_preds)
-			assert len(s) >= self.min_preds and len(s) <= self.max_preds
-			if s not in self.__states:
-				self.__states.add(s)
-				curr.preds = s
-				return
+		self.__gen_contradict_rec(root, partition, split_preds2, split_preds3, indicators, dists)
+		return (root, split_preds, split_preds2, split_preds3)
+
+	# split2 contains the predicates the target intends to split on. split2alt is the
+	# same thing, but for the next level down. Keep alternating these two as the tree
+	# deepens
+	def __gen_contradict_rec(self, curr, split, split2, split2alt, indicators, dists):
+		inds = indicators.get(dists[curr],[])
+		self.__populate_contradict(curr, split, split2, inds)
+		next_level_split = ((split[0][0], split[1][0]),(split[0][1],split[1][1]))
+		for c in curr.get_children():
+			if not c.is_goal():
+				self.__gen_contradict_rec(c, next_level_split, split2alt, split2, indicators, dists)
+
+	# split = [(A, C), (B, D)]
+	# second_split = (W, X, Y, Z)
+	#
+	# Assume that the source rules of the previous level will be split on the
+	# (A,B):(C,D) set, and the target will either be split on (w,x):(y,z). Make
+	# this level have the split sets (A,C):(B,D) and (M,N):(O,P), and have the
+	# source split on (A,C):(B,D) whereas the target split on (m,n):(o,p). We
+	# will then have some variation of the following mappings:
+	#
+	# A -> m, C -> n / B -> o, D -> p
+	#
+	# which is mutually exclusive from
+	# 
+	# A -> w, B -> x / C -> y, D -> z
+	#
+	# under structural consistency constraint.
+	def __populate_contradict(self, curr, split, second_split, indicators):
+		split_preds = []
+		if random.random() < 0.5:
+			split_preds.extend(split[0])
+			split_preds.extend(second_split[:2])
+		else:
+			split_preds.extend(split[1])
+			split_preds.extend(second_split[2:])
+		
+		split_preds.extend(indicators)
+		
+		# now add some random predicates to make state unique
+		s = self.__add_random_preds(split_preds)
+		self.__states.add(s)
+		curr.preds = s
 
 	def generate_buttons(self):
 		goal = State([])
@@ -166,3 +233,9 @@ class TreeGen:
 		npqr.set_child('c', npnqnr)
 		
 		return npnqnr
+
+if __name__ == '__main__':
+	indicators = dict((d, ["I%d" % d]) for d in range(10))
+	gen = TreeGen()
+	root = gen.generate_contradictory_indicators(indicators)
+	root.make_graphviz(open('contradict.dot','w'))

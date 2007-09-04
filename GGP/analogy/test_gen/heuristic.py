@@ -1,3 +1,5 @@
+import pdb
+
 class Heuristic:
 	def __init__(self, weights):
 		"weights is a table from predicate to its weight"

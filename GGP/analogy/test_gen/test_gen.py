@@ -5,10 +5,12 @@ from rule import *
 from state import State
 from treegen import TreeGen
 from astar import AStar
+from GDL import Sentence
 import fmincon
 
 sys.path.append('../rule_mapper')
-import rule_mapper
+import rule_mapper2
+from predicate import Predicate
 import options
 
 RESULTS_DIR = os.path.join(os.environ['GGP_PATH'], 'results')
@@ -33,7 +35,7 @@ def gen_min(root, predicates, preserve):
 	#root.make_graphviz(open('%s_game.gdl' % prefix,'w'))
 
 	rules = []
-	root.make_max_rules(rules, frozenset(predicates))
+	root.make_max_rules_rec(rules, frozenset(predicates))
 
 	rs = RuleSet(rules, frozenset(all_states), set(predicates))
 	rs.minimize_rules(preserve)
@@ -47,7 +49,7 @@ def gen_split(root, predicates, split_prob, preserve):
 	#root.make_graphviz(open('%s_game.gdl' % prefix,'w'))
 
 	rules = []
-	root.make_max_rules(rules, frozenset(predicates))
+	root.make_max_rules_rec(rules, frozenset(predicates))
 
 	rs = RuleSet(rules, frozenset(all_states), set(predicates))
 	
@@ -104,6 +106,66 @@ class TestEnviron:
 	
 	def gen_tree(self):
 		return eval('self.tree_gen.%s' % self.gen_method)
+	
+	def gen_contradict(self):
+		ind_map = dict((d, ['I%d' % d]) for d in range(0, 100))
+		indicators = ['I%d' % d for d in range(0, 100)]
+		src_root, contradict_preds, mapped1, mapped2 = self.tree_gen.generate_contradictory_indicators(ind_map)
+		src_preds = src_root.get_all_predicates()
+		src_rs = RuleSet([], src_root.get_all_states(), src_preds)
+		tgt_root = src_root.deep_copy()
+		tgt_root.map(state_preds_lower)
+		tgt_preds = tgt_root.get_all_predicates()
+		tgt_rs = RuleSet([], tgt_root.get_all_states(), tgt_preds)
+		
+		# the source rules will always be split on some permutation of the 4
+		# predicates which are present at every level of the tree. The target
+		# rules will be split on mapped1 or mapped2, alternating by level
+		src_partition = set(contradict_preds + indicators)
+		tgt_partition1 = set([p.lower() for p in mapped1] + indicators)
+		tgt_partition2 = set([p.lower() for p in mapped2] + indicators)
+		
+		self.__gen_contradict_rec(src_root, src_preds, tgt_root, tgt_preds, src_partition, tgt_partition1, tgt_partition2, src_rs, tgt_rs)
+		
+		src_rs.minimize_rule_conds(set(indicators) | src_partition | tgt_partition1 | tgt_partition2)
+		#src_rs.minimize()
+		tgt_rs.minimize_rule_conds(set(indicators) | src_partition | tgt_partition1 | tgt_partition2)
+		#tgt_rs.minimize()
+
+		return src_root, src_rs, tgt_root, tgt_rs
+
+	def __gen_contradict_rec(self, src_state, src_preds, tgt_state, tgt_preds, src_part, tgt_part, tgt_part_alt, src_rs, tgt_rs):
+		src_max_rules = src_state.make_max_rules(src_preds)
+		for r in src_max_rules:
+			if r.is_goal_rule():
+				src_rs.rules.append(r)
+			else:
+				rules = src_rs.split_rule(r, src_part)
+				if rules is None:
+					src_rs.rules.append(r)
+					print 'No Split'
+				else:
+					src_rs.rules.extend(rules)
+		
+		tgt_max_rules = tgt_state.make_max_rules(tgt_preds)
+		for r in tgt_max_rules:
+			if r.is_goal_rule():
+				tgt_rs.rules.append(r)
+			else:
+				rules = tgt_rs.split_rule(r, tgt_part)
+				if rules is None:
+					tgt_rs.rules.append(r)
+					print 'No Split'
+				else:
+					tgt_rs.rules.extend(rules)
+	
+		for a in src_state.get_actions():
+			src_c = src_state.get_child(a)
+			tgt_c = tgt_state.get_child(a)
+			if not src_c.is_goal():
+				assert not tgt_c.is_goal()
+				self.__gen_contradict_rec(src_c, src_preds, tgt_c, tgt_preds, src_part, tgt_part_alt, tgt_part, src_rs, tgt_rs)
+		
 
 	def gen_src_tgt_split(self, split_prob):
 		src_root = self.gen_tree()
@@ -115,14 +177,6 @@ class TestEnviron:
 		preds_lower = [p.lower() for p in self.tree_gen.predicates]
 		tgt_rs = gen_split(tgt_root, preds_lower, split_prob, set(x.lower() for x in self.preserve_preds))
 		return src_root, src_rs, tgt_root, tgt_rs
-
-	def gen_src_tgt_split_files(self, split_prob):
-		src_root, src_rs, tgt_root, tgt_rs = self.gen_src_tgt_split(split_prob)
-		src_fd, src_name = tempfile.mkstemp('.kif', 'src_rules')
-		src_rs.make_kif(src_root, os.fdopen(src_fd, 'w'))
-		tgt_fd, tgt_name = tempfile.mkstemp('.kif', 'tgt_rules')
-		tgt_rs.make_kif(tgt_root, os.fdopen(tgt_fd, 'w'))
-		return src_root, src_name, tgt_root, tgt_name
 
 	def test_heuristic_gen(self):
 		root = self.gen_tree()
@@ -152,7 +206,13 @@ class TestEnviron:
 			print [''.join(s.preds) for s in search.solution]
 
 	def test_all(self, nbins, split_prob):
-		src_root, src_file, tgt_root, tgt_file = self.gen_src_tgt_split_files(split_prob)
+		#src_root, src_rs, tgt_root, tgt_rs = self.gen_src_tgt_split(split_prob)
+		src_root, src_rs, tgt_root, tgt_rs = self.gen_contradict()
+		
+		src_file = 'source.kif'
+		tgt_file = 'target.kif'
+		src_rs.make_kif(src_root.preds, open(src_file,'w'))
+		tgt_rs.make_kif(tgt_root.preds, open(tgt_file,'w'))
 		
 		src_preds = list(src_root.get_all_predicates())
 		src_preds.sort()
@@ -173,18 +233,23 @@ class TestEnviron:
 		print 'The source problem takes %d iterations' % src_iters
 		print 'Solution is', [''.join(s.preds) for s in src_search.solution]
 		
-		src_bins = make_bins(src_preds, nbins)
-		for p, b in src_bins.items():
-			print p, b
-		tgt_bins = dict((p.lower(), b) for p, b in src_bins.items())
+		src_bins = dict((Predicate(p, Sentence.STATE, []), b) for p,b in make_bins(src_preds, nbins).items())
+		tgt_bins = dict((Predicate(p.get_name().lower(), Sentence.STATE, []), b) for p, b in src_bins.items())
 
-		mapping = rule_mapper.map_kifs(src_file, tgt_file, src_bins, tgt_bins)
+		mapping = rule_mapper2.map_kifs(src_file, tgt_file, src_bins, tgt_bins)
 		str_mapping = dict((s.get_name(), t.get_name()) for s,t in mapping.items())
 		print "The mapping is ..."
 		for s,t in str_mapping.items():
 			print s, t
 		
-		num_correct = sum(int(s.lower() == t) for s,t in str_mapping.items())
+		num_correct = 0
+		num_correct_inds = 0
+		for s, t in str_mapping.items():
+			if s.lower() == t:
+				num_correct += 1
+				if s[-1] in '0123456789':
+					num_correct_inds += 1
+
 		print "Number of correct predicates:", num_correct
 
 		tgt_preds = []
@@ -210,7 +275,7 @@ class TestEnviron:
 		os.remove(src_file)
 		os.remove(tgt_file)
 
-		ret_labels = ['len(src_preds)', 'num_correct', 'src_iters', 'tgt_iters' ]
+		ret_labels = ['len(src_preds)', 'num_correct', 'num_correct_inds', 'src_iters', 'tgt_iters' ]
 		ret_vals = eval('[%s]' % ','.join(ret_labels))
 		return (ret_labels, ret_vals)
 
@@ -239,8 +304,10 @@ if __name__ == '__main__':
 	os.chdir(result_dir)
 
 	ITERATIONS = 10
-	MAX_BINS = 10
-	SPLIT_PROBS = [0, 0.5, 1]
+	MIN_BINS = 22
+	MAX_BINS = 40
+	BIN_STEP = 2
+	SPLIT_PROBS = [0]
 
 	test_environ = TestEnviron()
 	test_environ.tree_gen.min_branch_len = 4
@@ -251,7 +318,7 @@ if __name__ == '__main__':
 	test_environ.gen_method = 'generate_indicators(%s)' % str(indicators)
 
 	first_write = True
-	for b in range(1,MAX_BINS + 1):
+	for b in range(MIN_BINS,MAX_BINS + 1, BIN_STEP):
 		for split_prob in SPLIT_PROBS:
 			for it in range(ITERATIONS):
 				ret_labels, ret_vals = test_environ.test_all(b, split_prob)
@@ -265,4 +332,3 @@ if __name__ == '__main__':
 					log = open('data.log','a')
 				log.write('%s\n' % ' '.join(str(v) for v in data))
 				log.close()
-	
