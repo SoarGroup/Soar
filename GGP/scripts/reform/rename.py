@@ -55,7 +55,7 @@ def delete_vowels(s):
 		s_new = s_old.replace(vowel, '')
 		if len(s_new) == 0:
 			sym_map[sl] = s_old
-			return
+			return sym_map[sl]
 		else:
 			s_old = s_new
 
@@ -88,6 +88,9 @@ def rand_str(s):
 	
 	sym_map[sl] = s_new
 	return s_new
+
+def uppercase(s):
+	return s.upper()
 
 def p_rule_list(p):
 	'''rule_list : rule rule_list
@@ -207,8 +210,9 @@ random.seed()
 
 if len(sys.argv) < 2:
 	print """
-Usage: %s [-r] [-c] [-v] [-s <seed>] <kif file>
+Usage: %s [-r] [-p] [-c] [-v] [-s <seed>] <kif file>
 -r : replace symbols with random strings rather than deleting vowels
+-u : replace symbols with upper case
 -c : preserve constants
 -v : preserve variable names
 -s : set the random seed. If random seed is not set, the current time is used.
@@ -218,6 +222,8 @@ Usage: %s [-r] [-c] [-v] [-s <seed>] <kif file>
 for i in range(1,len(sys.argv)):
 	if sys.argv[i] == '-r':
 		mod_string = rand_str
+	if sys.argv[i] == '-u':
+		mod_string = uppercase
 	if sys.argv[i] == '-c':
 		preserve_constants = True
 	if sys.argv[i] == '-v':
