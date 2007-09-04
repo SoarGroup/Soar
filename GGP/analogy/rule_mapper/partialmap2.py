@@ -12,7 +12,7 @@ import options
 import pdb
 
 def debug_print(s):
-	print s
+	#print >> sys.stderr, s
 	pass
 
 class PartialMap:
