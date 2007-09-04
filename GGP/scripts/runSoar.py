@@ -23,6 +23,9 @@ def run_script(script):
 		if len(line.strip()) > 0:
 			print line
 		
+	line = kernel.ExecuteCommandLine('stats', 'soar')
+	if len(line.strip()) > 0:
+		print line
 	kernel.DestroyAgent(agent)
 	kernel.Shutdown()
 	del kernel
@@ -36,6 +39,9 @@ def run_agent(agent_file, commands):
 		line = kernel.ExecuteCommandLine(c, 'soar')
 		print line
 		
+	line = kernel.ExecuteCommandLine('stats', 'soar')
+	if len(line.strip()) > 0:
+		print line
 	kernel.DestroyAgent(agent)
 	kernel.Shutdown()
 	del kernel
