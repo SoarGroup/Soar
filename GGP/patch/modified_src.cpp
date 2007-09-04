@@ -65,6 +65,17 @@ bool CommandLineInterface::ParseStructToString(gSKI::Agent* pAgent, std::vector<
 
 //trunk\Core\gSKI\src\gSKI_DoNotTouch.cpp
 
+std::string TgDWorkArounds::IdToStruct(Agent* pIAgent, int hash_id){
+			std::string returned_str = "";
+			Agent* pAgent2 = (Agent*)(pIAgent);
+			agent* thisAgent = pAgent2->GetSoarAgent();
+
+			if(hash_id >= thisAgent->int_to_gs->size()){
+				return "";
+			}
+			return thisAgent->int_to_gs->at(hash_id);
+		}
+
 std::string TgDWorkArounds::StructToString(Agent* pIAgent, std::string id, std::string additional_feature, std::string excluded_feature, std::string equivalent_symbols_id){
 			std::string returned_str = "";
 			Agent* pAgent2 = (Agent*)(pIAgent);
@@ -165,3 +176,10 @@ std::string TgDWorkArounds::StructToString(Agent* pIAgent, std::string id, std::
 		}
 //trunk\Core\gSKI\src\gSKI_DoNotTouch.h
 std::string StructToString(Agent* pIAgent, std::string id, std::string additional_feature = "",  std::string excluded_feature = "", std::string identical_symbols_id = "");
+std::string IdToStruct(Agent* pIAgent, int hash_id);
+
+// agent.h
+std::vector<std::string>* int_to_gs;
+
+//agent.cpp
+newAgent->int_to_gs = new std::vector<std::string>;
