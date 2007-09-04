@@ -1,6 +1,6 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; micro-Rogue (mRogue) GDL Rule Set
-;;; Example: TL Level 10, Scenario 1, Target Task 
+;;; Example: TL Level 10, Scenario 1, Target Task
 ; Matthew C. Molineaux(Knexus)
 ;
 ; Similar to TL Level 8, sc. 1, source
@@ -8,10 +8,15 @@
 ; 2007 August 10
 ; - DWA: Modifications summary
 ;     1. No need to fetch the amulet
-;     2. Command is shoot-monster/rather 1 than throw/2 
-; 
-; 8/20: Corrected x-blocked and y-blocked rules.
+;     2. Command is shoot-monster/rather 1 than throw/2
 ;
+; 8/20: Corrected x-blocked and y-blocked rules.
+; 8/31:
+; - Add dead/1 (an intermediate concept that is already in Wargame)
+;
+; 9/4:
+; - Revised time advancement to use + instead of succ.
+; - Added negative integers to "int" relation.
 ; mRogue was developed by Tom Hinrichs, Sam Wintermute, & David Aha
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ; This file: Map (and Legend)
@@ -67,7 +72,7 @@
 ;     - Can only throw an arrow when wielding a bow
 ;       - Decrements number of arrows in a quiver
 ;       - Assume arrow always hit a target if it is thrown towards target
-;       - Assume arrow has unlimited range, and disappears after thrown 
+;       - Assume arrow has unlimited range, and disappears after thrown
 ; - Monsters: Name (Character) [Initial health, Damage when attacking, Base speed]
 ;   - Bat (B) [3, 2, 1]: Asleep unless/until attacked
 ;   - Hobgoblin (H) [5, 3, 1]: Toughest monster in domain
@@ -109,7 +114,7 @@
 (monster kestral1 kestral)
 
 ; Initial health of Hero and monsters (hero's health is defined in 2.3)
-(init (health kestral1 2)) 
+(init (health kestral1 2))
 
 ; Items (that can be picked up by Hero) (amulet & gold are defined in 2.3)
 (item potion1)
@@ -194,7 +199,7 @@
 ; Player starts at step/state 1. Game has finite length.
 (init (step 1))
 
-; Items (that can be picked up by the Hero) 
+; Items (that can be picked up by the Hero)
 (item amulet)
 
 ; Hero's initial health
@@ -212,10 +217,10 @@
 (init (slomo-time 1))
 
 ; The exit location
-(exitType exit)
+; (exitType exit)  ;;; DWA (9/4/07): Not used
 
 ;----------------------------------------------------------------------
-; 2.4 Constants
+; 2.4 Constants (i.e., static relations)
 ;----------------------------------------------------------------------
 
 ; Meaning: Sack can contain at most this number of items
@@ -246,10 +251,10 @@
 
 ; Meaning: Updates monster location
 (<= (next (location ?monster ?x ?y))
-   (monster ?monster ?monster-type)
-   (true (health ?monster ?health))
-   (> ?health 0)                             ; built-in
-   (nextMonsterLocation ?monster ?x ?y))     ; Action
+  (monster ?monster ?monster-type)
+  (true (health ?monster ?health))
+  (> ?health 0)                             ; built-in
+  (nextMonsterLocation ?monster ?x ?y))     ; Action
 
 ; Meaning: The exit does not move
 (<= (next (location exit ?x ?y))
@@ -257,25 +262,28 @@
 
 ; Meaning: Items remain on the ground until they are picked up
 (<= (next (location ?item ?x ?y))
-   (item ?item)
-   (true (location ?item ?x ?y))
-   (not (pickedUp ?item)))        ; Object-interaction
+  (item ?item)
+  (true (location ?item ?x ?y))
+  (not (pickedUp ?item)))        ; Object-interaction
 
 ; Meaning: Dropped objects are placed at the hero's current location
 (<= (next (location ?item ?x ?y))
-   (does hero (drop ?item))
-   (true (location hero ?x ?y)))
+  (does hero (drop ?item))
+  (true (location hero ?x ?y)))
 
 ; DA (7/13): Must also drop a weapon if picking up another
 (<= (next (location ?oldWeapon ?x ?y))
-   (changeWeapon ?oldWeapon)            ; DA: We pickedUp another!
-   (true (location hero ?x ?y)))
+  (changeWeapon ?oldWeapon)            ; DA: We pickedUp another!
+  (true (location hero ?x ?y)))
 
 ;----------------------------------------------------------------------
 ; 3.2 Health updates for hero
 ;     - If the hero is attacked, his health is decreased by difference
 ;       of 1 + (monster's attack value - hero defense value)
 ;     - Health goes to max if hero reads restoreHealth scroll
+;; MCM: Rewriting for a health increase/decrease system.
+;; MCM: There can't actually be an increase and a decrease
+;; simultaneously; this is only done to make it look more like Wargame.
 ;----------------------------------------------------------------------
 
 ; Meaning: Hero incurs damage
@@ -283,32 +291,73 @@
 ; we shouldn't need to check for negative health here.
 ; DA: If the restore health scroll is simultaneously read, and
 ; monster damage is nonzero, then the scroll has no effect!
-(<= (next (health hero ?hpNew))
-   (totalMonsterDamage ?hitPointsLost)
-   (> ?hitPointsLost 0)
-   (true (health hero ?hpOld))
-   (- ?hpOld ?hitPointsLost ?hpNew))
+;(<= (next (health hero ?hpNew))
+;   (totalMonsterDamage ?hitPointsLost)
+;   (> ?hitPointsLost 0)
+;   (true (health hero ?hpOld))
+;   (- ?hpOld ?hitPointsLost ?hpNew))
+
+; Note: totalMonsterDamage maxes out at hero's current health, so
+; we shouldn't need to check for negative health here.
+; DA: If the restore health scroll is simultaneously read, and
+; monster damage is nonzero, then the scroll has no effect!
+; MCM: Rewrite to healthDecrease.
+(<= (healthDecrease hero ?dec)
+       (totalMonsterDamage ?dec))
 
 ; Hero recovers a hit point (HP) iff not attacked/etc.
-(<= (next (health hero ?hpNew))
-    (totalMonsterDamage 0)
-    (not (healthRestoredByScroll))
-    (true (health hero ?hpOld))
-    (maxHealth hero ?maxHealth)
-    (> ?maxHealth ?hpOld)
-    (+ ?hpOld 1 ?hpNew))
+;(<= (next (health hero ?hpNew))
+;    (totalMonsterDamage 0)
+;    (not (healthRestoredByScroll))
+;    (true (health hero ?hpOld))
+;    (maxHealth hero ?maxHealth)
+;    (> ?maxHealth ?hpOld)
+;    (+ ?hpOld 1 ?hpNew))
+
+; Hero recovers a hit point (HP) iff not attacked/etc.
+; MCM: Rewrite to healthIncrease.
+(<= (healthIncrease hero 1)
+   (totalMonsterDamage 0)
+   (not (healthRestoredByScroll))
+   (true (health hero ?hp))
+   (maxHealth hero ?maxHealth)
+   (> ?maxHealth ?hp))
+
+; Hero recovers no hit points while at maxhealth.
+; MCM: Rewrite to healthIncrease.
+(<= (healthIncrease hero 0)
+   (totalMonsterDamage 0)
+   (not (healthRestoredByScroll))
+   (true (health hero ?hp))
+   (maxHealth hero ?maxHealth)
+   (>= ?hp ?maxHealth))
+
+; Hero recovers no hit points when attacked.
+; MCM: Rewrite to healthIncrease.
+(<= (healthIncrease hero 0)
+   (totalMonsterDamage ?x)
+   (distinct ?x 0))
 
 ; Meaning: Hero already at maxHealth and not attacked
-(<= (next (health hero ?maxHealth))
-   (totalMonsterDamage 0)
-   (maxHealth hero ?maxHealth)
-   (true (health hero ?maxHealth)))
+;(<= (next (health hero ?maxHealth))
+;   (totalMonsterDamage 0)
+;   (maxHealth hero ?maxHealth)
+;   (true (health hero ?maxHealth)))
 
 ; Meaning: Hero read a restoreHealth scroll to regain maximum health
-(<= (next (health hero ?maxHealth))
-   (totalMonsterDamage 0)
-   (healthRestoredByScroll)
-   (maxHealth hero ?maxHealth))
+;(<= (next (health hero ?maxHealth))
+;   (totalMonsterDamage 0)
+;   (healthRestoredByScroll)
+;   (maxHealth hero ?maxHealth))
+
+; Meaning: Hero read a restoreHealth scroll to regain maximum health
+; MCM: Rewrite to healthIncrease.
+(<= (healthIncrease hero ?increase)
+  (totalMonsterDamage 0)
+  (healthRestoredByScroll)
+  (true (health hero ?health))
+  (maxHealth hero ?maxHealth)
+  (- ?maxHealth ?health ?increase))
 
 ;----------------------------------------------------------------------
 ; 3.3 Health updates for monsters
@@ -316,48 +365,90 @@
 ;       wielded weapon!
 ;     - Simplification: Only arrows can be thrown, and only when hero
 ;       wields a bow
+;; MCM: Rewriting for a health increase/decrease system.
 ;----------------------------------------------------------------------
 
 ; Meaning: Hero kills the monster (melee)
-(<= (next (health ?monster 0))
-   (monster ?monster ?monster-type)
-   (monsterAttacked ?monster)
-   (true (health ?monster ?hpOld))
-   (heroOffense ?wDamage)
-   (>= ?wDamage ?hpOld))
+;(<= (next (health ?monster 0))
+;   (monster ?monster ?monster-type)
+;   (monsterAttacked ?monster)
+;   (true (health ?monster ?hpOld))
+;   (heroOffense ?wDamage)
+;   (>= ?wDamage ?hpOld))
 
 ; Meaning: Hero hurts the monster (melee)
-(<= (next (health ?monster ?hpNew))
-   (monster ?monster ?monster-type)
-   (monsterAttacked ?monster)
-   (true (health ?monster ?hpOld))
-   (heroOffense ?wDamage)
-   (> ?hpOld ?wDamage)
-   (- ?hpOld ?wDamage ?hpNew))
+;(<= (next (health ?monster ?hpNew))
+;   (monster ?monster ?monster-type)
+;   (monsterAttacked ?monster)
+;   (true (health ?monster ?hpOld))
+;   (heroOffense ?wDamage)
+;   (> ?hpOld ?wDamage)
+;   (- ?hpOld ?wDamage ?hpNew))
+
+; Meaning: Hero hurts the monster (melee)
+(<= (healthDecrease ?monster ?dec)
+  (monster ?monster ?monster-type)
+  (monsterAttacked ?monster)
+  (heroOffense ?dec))
 
 ; Meaning: Hero kills the monster (by throwing an arrow)
 ; Hardcoding the damage value of arrows: 2
-(<= (next (health ?monster 0))
-   (monster ?monster ?monster-type)
-   (hitByArrow ?monster)
-   (true (health ?monster ?hpOld))
-   (>= 2 ?hpOld))
+;(<= (next (health ?monster 0))
+;   (monster ?monster ?monster-type)
+;   (hitByArrow ?monster)
+;   (true (health ?monster ?hpOld))
+;   (>= 2 ?hpOld))
 
 ; Meaning: Hero hurts the monster (by throwing an arrow)
 ; Hardcoding the damage value of arrows: 2
-(<= (next (health ?monster ?hpNew))
-   (monster ?monster ?monster-type)
-   (true (health ?monster ?hpOld))
-   (> ?hpOld 2)
-   (hitByArrow ?monster)
-   (- ?hpOld 2 ?hpNew))
+;(<= (next (health ?monster ?hpNew))
+;   (monster ?monster ?monster-type)
+;   (true (health ?monster ?hpOld))
+;   (> ?hpOld 2)
+;   (hitByArrow ?monster)
+;   (- ?hpOld 2 ?hpNew))
+
+; Meaning: Hero hurts the monster (by shooting)
+; Hardcoding the damage value of arrows: 2
+; MCM: Rewrite to healthDecrease
+(<= (healthDecrease ?monster 2)
+  (monster ?monster ?monster-type)
+  (hitByArrow ?monster))
 
 ; Meaning: Unattacked monster's health is unchanged
-(<= (next (health ?monster ?hp))
-   (monster ?monster ?monster-type)
-   (not (monsterAttacked ?monster))
-   (not (hitByArrow ?monster))
-   (true (health ?monster ?hp)))
+;(<= (next (health ?monster ?hp))
+;   (monster ?monster ?monster-type)
+;   (not (monsterAttacked ?monster))
+;   (not (hitByArrow ?monster))
+;   (true (health ?monster ?hp)))
+
+; Meaning: Hero kills the monster by casting a fireball
+(<= (healthDecrease ?monster ?hp)
+  (monster ?monster ?monster-type)
+  (hitByFireball ?monster)
+  (true (health ?monster ?hp)))
+
+; Meaning: Unattacked monster's health is not decreased
+(<= (healthDecrease ?monster 0)
+  (monster ?monster ?monster-type)
+  (not (monsterAttacked ?monster))
+  (not (hitByArrow ?monster))
+  (not (hitByFireball ?monster)))
+
+; Meaning: Monster's health is never increased
+; MCM: Added for health inc/dec
+(<= (healthIncrease ?monster 0)
+  (monster ?monster ?monster-type))
+
+; Meaning: General health arithmetic
+; MCM: Added for health inc/dec
+(<= (next (health ?anyone ?newHealth))
+       (true (health ?anyone ?oldHealth))
+       (healthIncrease ?anyone ?increase)
+       (healthDecrease ?anyone ?decrease)
+       (- ?increase ?decrease ?totalChange)
+       (+ ?oldHealth ?totalChange ?unboundedHealth)
+       (max ?unboundedHealth 0 ?newHealth))
 
 ;----------------------------------------------------------------------
 ; 3.4 Burden-related updates
@@ -370,34 +461,34 @@
 
 ; Meaning: Items remain in hero's sack when picked up
 (<= (next (carrying ?item))
-   (item ?item)
-   (pickedUp ?item))                  ; Object-interaction
+  (item ?item)
+  (pickedUp ?item))                  ; Object-interaction
 
 ; Meaning: Items in sack stay in sack unless dropped
 (<= (next (carrying ?item))
-   (true (carrying ?item))
-   (not (changeWeapon ?item))         ; It's not a weapon we're auto-dropping
-   (not (decrementsBurden ?item)))
+  (true (carrying ?item))
+  (not (changeWeapon ?item))         ; It's not a weapon we're auto-dropping
+  (not (decrementsBurden ?item)))
 
 ; Meaning: Maintain size of burden if it's not changed
 (<= (next (burden ?burden))
-   (not burdenChanged)
-   (true (burden ?burden)))
+  (not burdenChanged)
+  (true (burden ?burden)))
 
 ; Meaning: Increment burden by picking up an item
 ; Note: we don't have to check maxBurden here, because it's checked in pickedUp.
 (<= (next (burden ?newBurden))
-   (pickedUp ?item)                   ; Object-interaction
-   (distinct ?item gold)
-   (not (weaponChange ?item))         ; DA (7/13): burden doesn't change when changing weapons
-   (true (burden ?oldBurden))
-   (succ ?oldBurden ?newBurden))      ; Arithmetic
+  (pickedUp ?item)                   ; Object-interaction
+  (distinct ?item gold)
+  (not (weaponChange ?item))         ; DA (7/13): burden doesn't change when changing weapons
+  (true (burden ?oldBurden))
+  (succ ?oldBurden ?newBurden))      ; Arithmetic
 
 ; Meaning: Decrement burden by dropping an item or using a scroll or potion
 (<= (next (burden ?newBurden))
-   (decrementsBurden ?item)
-   (true (burden ?oldBurden))
-   (succ ?newBurden ?oldBurden))      ; Arithmetic
+  (decrementsBurden ?item)
+  (true (burden ?oldBurden))
+  (succ ?newBurden ?oldBurden))      ; Arithmetic
 
 ;--------------------------------------------------
 ; 3.4.2 Quiver size (i.e., # arrows in it)
@@ -410,8 +501,8 @@
 ; Also: don't reify the quiver apart from the bow.  It's a
 ; package, like a clip of ammo in a gun.
 (<= (next (quiverSize ?oldSize))
-   (not arrowThrown)
-   (true (quiverSize ?oldSize)))
+  (not arrowThrown)
+  (true (quiverSize ?oldSize)))
 
 ; Meaning: Quiver size decreases when throwing arrow w/ a bow
 ; - Ensures quiver contains at least one arrow
@@ -423,9 +514,9 @@
 ; Meaning: Quiver size decreases when throwing arrow w/ a bow
 ; - Ensures quiver contains at least one arrow
 (<= (next (quiverSize ?newSize))
-   (does hero (shoot-monster ?monster))
-   (true (quiverSize ?oldSize))
-   (- ?oldSize 1 ?newSize))           ; Arithmetic
+  (does hero (shoot-monster ?monster))
+  (true (quiverSize ?oldSize))
+  (- ?oldSize 1 ?newSize))           ; Arithmetic
 
 ;--------------------------------------------------
 ; 3.4.3: Armor-wearing relations
@@ -434,13 +525,13 @@
 
 ; Meaning: Hero continues wearing armor until it is dropped
 (<= (next (wearing ?item))
-   (true (wearing ?item))
-   (not (does hero (drop ?item))))  ; note: drops can occur only if sack is full
+  (true (wearing ?item))
+  (not (does hero (drop ?item))))  ; note: drops can occur only if sack is full
 
 ; Meaning: Hero is wearing armor that is newly picked up
 (<= (next (wearing ?armor))
-   (armor ?armor ?armor-type)
-   (pickedUp ?armor))
+  (armor ?armor ?armor-type)
+  (pickedUp ?armor))
 
 ;--------------------------------------------------
 ; 3.4.4: Weapon-wielding relations
@@ -448,15 +539,15 @@
 
 ; Meaning: Continue wielding a weapon wielded unless exchanging or dropping
 (<= (next (wielding ?weapon))
-   (true (wielding ?weapon))
-   (not (changeWeapon ?weapon))      
-   (not (does hero (drop ?weapon)))) ; note: drops can occur only if sack is full
+  (true (wielding ?weapon))
+  (not (changeWeapon ?weapon))
+  (not (does hero (drop ?weapon)))) ; note: drops can occur only if sack is full
 
 ; Meaning: Wield a weapon automatically if it is picked up
 ; Note: Any currently-wielded weapon would be dropped (elsewhere)
 (<= (next (wielding ?weapon))
-   (weapon ?weapon ?weapon-type)
-   (pickedUp ?weapon))
+  (weapon ?weapon ?weapon-type)
+  (pickedUp ?weapon))
 
 ;--------------------------------------------------
 ; 3.4.5: Sleep relations
@@ -464,22 +555,22 @@
 
 ; Meaning: Reading the sleep scroll induces 2 turns of sleep
 (<= (next (asleep hero 2))
-   (does hero (read ?scroll))
-   (scroll ?scroll sleepInduce))
+  (does hero (read ?scroll))
+  (scroll ?scroll sleepInduce))
 
 ; Meaning: Sleep decrement
 (<= (next (asleep hero ?n))
-   (true (asleep hero ?old-n))
-   (distinct ?old-n 1)
-   (- ?old-n 1 ?n))
+  (true (asleep hero ?old-n))
+  (distinct ?old-n 1)
+  (- ?old-n 1 ?n))
 
 ; Meaning: Let sleeping monsters sleep
 (<= (next (asleep ?monster ?n))
-   (monster ?monster ?monster-type)
-   (true (asleep ?monster ?n))
-   (true (health ?monster ?hp))
-   (distinct ?hp 0)
-   (not (provoked ?monster))) ; in this case, attacked or hit with an arrow
+  (monster ?monster ?monster-type)
+  (true (asleep ?monster ?n))
+  (true (health ?monster ?hp))
+  (distinct ?hp 0)
+  (not (provoked ?monster))) ; in this case, attacked or hit with an arrow
 
 ;--------------------------------------------------
 ; 3.4.6: Visibility
@@ -487,13 +578,13 @@
 
 ;;; Meaning: hero is invisible to monsters for the next 5 turns
 (<= (next (invisible hero 5))
-   (does hero (quaff ?potion))
-   (potion ?potion invisibility))
+  (does hero (quaff ?potion))
+  (potion ?potion invisibility))
 
 (<= (next (invisible hero ?n))
-   (true (invisible hero ?old-n))
-   (distinct ?old-n 1)
-   (- ?old-n 1 ?n))
+  (true (invisible hero ?old-n))
+  (distinct ?old-n 1)
+  (- ?old-n 1 ?n))
 
 ;--------------------------------------------------
 ; 3.4.7: Enhanced Speed, Strength, Armor
@@ -501,45 +592,47 @@
 
 ; Meaning: Hero's speed is enhanced by 1 for 5 turns
 (<= (next (enhancedSpeed hero 5))
-   (does hero (quaff ?potion))
-   (potion ?potion speed))
+  (does hero (quaff ?potion))
+  (potion ?potion speed))
 
 (<= (next (enhancedSpeed hero ?n))
-   (true (enhancedSpeed hero ?old-n))
-   (distinct ?old-n 1)
-   (- ?old-n 1 ?n))
+  (true (enhancedSpeed hero ?old-n))
+  (distinct ?old-n 1)
+  (- ?old-n 1 ?n))
 
 ; Meaning: Hero's attack strength is enhanced by 1 for 5 turns
 (<= (next (enhancedStrength hero 5))
-   (does hero (quaff ?potion))
-   (potion ?potion strength))
+  (does hero (quaff ?potion))
+  (potion ?potion strength))
 
 (<= (next (enhancedStrength hero ?n))
-   (true (enhancedStrength hero ?old-n))
-   (distinct ?old-n 1)
-   (- ?old-n 1 ?n))
+  (true (enhancedStrength hero ?old-n))
+  (distinct ?old-n 1)
+  (- ?old-n 1 ?n))
 
 (<= (next (enhancedArmor hero 5))
-   (does hero (read ?scroll))
-   (scroll ?scroll armorEnhance)
-   (true (wearing ?armor))  ; You have to be wearing armor first
-   (armor ?armor ?armor-type)
-   (armorstrength ?armor-type ?amt)
-   (>= 3 ?amt))
+  (does hero (read ?scroll))
+  (scroll ?scroll armorEnhance)
+  (true (wearing ?armor))  ; You have to be wearing armor first
+  (armor ?armor ?armor-type)
+  (armorstrength ?armor-type ?amt)
+  (>= 3 ?amt))
 
 (<= (next (enhancedArmor hero ?n))
-    (true (enhancedArmor hero ?old-n))
-    (distinct ?old-n 1)
-    (- ?old-n 1 ?n))
+   (true (enhancedArmor hero ?old-n))
+   (distinct ?old-n 1)
+   (- ?old-n 1 ?n))
 
 ;---------------------------------------------------------------------------
 ;;; 3.5 Standard GDL support rule
 ;---------------------------------------------------------------------------
 
 ; Meaning: Time advances in one step increments
+; MCM: Revised to use real arithmetic, like Wargame
 (<= (next (step ?next))
    (true (step ?current))
-   (succ ?current ?next))          ; Arithmetic
+   (+ ?current 1 ?next))          ; Arithmetic
+;;;    (succ ?current ?next))          ; Arithmetic
 
 ;---------------------------------------------------------------------------
 ;;; 3.6 Movement speed rules
@@ -550,70 +643,70 @@
 ; in. So we need to minimize useless game state changes.
 ;---------------------------------------------------------------------------
 (<= (monsterIsMoving)
-   (provoked ?monster))
+  (provoked ?monster))
 
 (<= (slomoMonsterMoving ?monster)
-   (currentlyEnhancedSpeed hero)
-   (provoked ?monster)
-   (monster ?monster ?monster-type)
-   (monsterSpeed ?monster-type .5))
+  (currentlyEnhancedSpeed hero)
+  (provoked ?monster)
+  (monster ?monster ?monster-type)
+  (monsterSpeed ?monster-type .5))
 
 ; Parity counter for 1/2 speed movement
 (<= (next odd)
-   (monsterIsMoving)
-   (true even))
+  (monsterIsMoving)
+  (true even))
 (<= (next even)
-   (monsterIsMoving)
-   (true odd))
+  (monsterIsMoving)
+  (true odd))
 (<= (next even)
-   (not (monsterIsMoving))
-   (true even))
+  (not (monsterIsMoving))
+  (true even))
 (<= (next odd)
-   (not (monsterIsMoving))
-   (true odd))
+  (not (monsterIsMoving))
+  (true odd))
 
 ; Meaning: slow-motion or "matrix" time counter for sluggish snakes
 (<= (next (slomo-time 1))
-   (slomoMonsterMoving ?monster)
-   (true (slomo-time 4)))
+  (slomoMonsterMoving ?monster)
+  (true (slomo-time 4)))
 (<= (next (slomo-time 2))
-   (slomoMonsterMoving ?monster)
-   (true (slomo-time 1)))
+  (slomoMonsterMoving ?monster)
+  (true (slomo-time 1)))
 (<= (next (slomo-time 3))
-   (slomoMonsterMoving ?monster)
-   (true (slomo-time 2)))
+  (slomoMonsterMoving ?monster)
+  (true (slomo-time 2)))
 (<= (next (slomo-time 4))
-   (slomoMonsterMoving ?monster)
-   (true (slomo-time 3)))
+  (slomoMonsterMoving ?monster)
+  (true (slomo-time 3)))
 
 (<= (next (slomo-time ?t))
-   (true (slomo-time ?t))
-   (not (currentlyEnhancedSpeed hero)))
+  (true (slomo-time ?t))
+  (not (currentlyEnhancedSpeed hero)))
 
 ; Meaning: An arrow can hit a monster (unlimited range)
 ; SW: changed to two rules, for x==x and y==y, so we don't need arbitrary nCells (very expensive for us)
 (<= (canShootAt ?monster)
-   (monster ?monster ?monster-type)               ; Generic monster
-   (true (location hero ?x ?y1))
-   (true (location ?monster ?x ?y2))
-   (not (y-blocked ?x ?y1 ?y2)))
+  (monster ?monster ?monster-type)               ; Generic monster
+  (true (location hero ?x ?y1))
+  (true (location ?monster ?x ?y2))
+  (not (y-blocked ?x ?y1 ?y2)))
 
 (<= (canShootAt ?monster)
-   (monster ?monster ?monster-type)               ; Generic monster
-   (true (location hero ?x1 ?y))
-   (true (location ?monster ?x2 ?y))
-   (not (x-blocked ?x1 ?x2 ?y)))
-   
+  (monster ?monster ?monster-type)               ; Generic monster
+  (true (location hero ?x1 ?y))
+  (true (location ?monster ?x2 ?y))
+  (not (x-blocked ?x1 ?x2 ?y)))
+
 (<= (x-blocked ?x1 ?x2 ?y)
-	(int ?y)
-	(between ?x1 ?x3 ?x2)
-	(not (traversible ?x3 ?y)))
-	
+       (int ?y)
+       (between ?x1 ?x3 ?x2)
+       (not (traversible ?x3 ?y)))
+
 (<= (y-blocked ?x ?y1 ?y2)
-	(int ?x)
-	(between ?y1 ?y3 ?y2)
-	(not (traversible ?x ?y3)))
-	
+       (int ?x)
+       (between ?y1 ?y3 ?y2)
+       (not (traversible ?x ?y3)))
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ; 4. Legal: Specifies legal moves for players
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -623,31 +716,39 @@
 
 ; Meaning: The hero may move anywhere within rooms and corridors
 ; - BUT: Moving to a monster's location is an attack, not a move!
+; MCM (8/31): Introduced stepBlocked, removed traversible
 (<= (legal hero (move ?dir))
-   (not (currentlyAsleep hero))
-   (true (location hero ?xOld ?yOld))
-   (direction ?dir)                        ; Generic spatial
-   (nextCell ?dir ?xOld ?yOld ?xNew ?yNew) ; Movement
-   (traversible ?xNew ?yNew))              ; Generic spatial
+  (not (currentlyAsleep hero))
+  (true (location hero ?xOld ?yOld))
+  (direction ?dir)                         ; Generic spatial
+  (not (stepBlocked ?dir ?xOld ?yOld))     ; Generic spatial
+  (nextCell ?dir ?xOld ?yOld ?xNew ?yNew)) ; Movement
+
+;(<= (legal hero (move ?dir))
+;   (not (currentlyAsleep hero))
+;   (true (location hero ?xOld ?yOld))
+;   (direction ?dir)                        ; Generic spatial
+;   (nextCell ?dir ?xOld ?yOld ?xNew ?yNew) ; Movement
+;   (traversible ?xNew ?yNew))              ; Generic spatial
 
 ; Meaning: Hero can drop an item (being carried) if sack is full
 (<= (legal hero (drop ?item))
-   (true (burden ?max-burden))             ; New constraint (7/13)
-   (maxBurden ?max-burden)                 ; New constraint (7/13)
-   (not (currentlyAsleep hero))
-   (true (carrying ?item)))
+  (true (burden ?max-burden))             ; New constraint (7/13)
+  (maxBurden ?max-burden)                 ; New constraint (7/13)
+  (not (currentlyAsleep hero))
+  (true (carrying ?item)))
 
 ; Meaning: Hero can read a scroll (being carried)
 (<= (legal hero (read ?scroll))
-   (not (currentlyAsleep hero))
-   (true (carrying ?scroll))
-   (scroll ?scroll ?scrollType))            ; Init
+  (not (currentlyAsleep hero))
+  (true (carrying ?scroll))
+  (scroll ?scroll ?scrollType))            ; Init
 
 ; Meaning: Hero can quaff a potion (being carried)
 (<= (legal hero (quaff ?potion))
-   (not (currentlyAsleep hero))
-   (true (carrying ?potion))
-   (potion ?potion ?potionType))            ; Init
+  (not (currentlyAsleep hero))
+  (true (carrying ?potion))
+  (potion ?potion ?potionType))            ; Init
 
 ; Meaning: Hero can throw an arrow (if carrying a non-empty quiver)
 ;(<= (legal hero (throw arrow ?dir))
@@ -660,73 +761,72 @@
 
 ; Meaning: Hero can shoot a monster (if has quiver, bow, monster in range)
 (<= (legal hero (shoot-monster ?monster))
-   (not (currentlyAsleep hero))
-   (true (wielding ?weapon))
-   (weapon ?weapon bow)                    ; Init
-   (true (quiverSize ?numarrows))
-   (> ?numarrows 0)
-   (canShootAt ?monster))                       ; Generic spatial
+  (not (currentlyAsleep hero))
+  (true (wielding ?weapon))
+  (weapon ?weapon bow)                    ; Init
+  (true (quiverSize ?numarrows))
+  (> ?numarrows 0)
+  (canShootAt ?monster))                       ; Generic spatial
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ; 5. Goal: Value of a (final) state for a player
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-; Pts Alive Exit Amulet Gold KilledMonster Weapon Armor 
+; Pts Alive Exit Amulet Gold KilledMonster Weapon Armor
 ;  0    0    *    *      *     *            *      *
 ;  50   1    NOT_ALL_THESE_OTHERS
 ; 100   1    1    1      1     1            1      1
 
-; Alive, Killed monster, at exit
-(<= (goal hero 100)
-   atexit
-   killedMonster
-   (not (true (health hero 0))))    ; Endgame
-
-; Alive, Killed monster
-(<= (goal hero 50)
-   (not atexit)
-   killedMonster
-   (not (true (health hero 0))))    ; Endgame
-
-; Alive, atexit
-(<= (goal hero 50)
-   atexit
-   (not killedMonster)
-   (not (true (health hero 0))))    ; Endgame
+; Dead
+;MCM: changed "(true (health hero 0))" to "(dead hero)"
+(<= (goal hero 0)
+   (dead hero))         ; Endgame
 
 ; Alive, not atExit
+;MCM: changed "(true (health hero 0))" to "(dead hero)"
 (<= (goal hero 25)
    (not killedMonster)
-   (not atexit)
-   (not (true (health hero 0))))         ; Endgame
+   (not atExit)
+   (not (dead hero)))         ; Endgame
 
-; Dead
-(<= (goal hero 0)
-   (true (health hero 0)))         ; Endgame
+; Alive, Killed monster
+;MCM: changed "(true (health hero 0))" to "(dead hero)"
+(<= (goal hero 50)
+   (not atExit)
+   killedMonster
+   (not (dead hero)))    ; Endgame
 
-; killing a monster is a victory condition
-(<= killedMonster
-   (monster ?monster ?monstertype)
-   (true (health ?monster 0)))
+; Alive, atExit
+;MCM: changed "(true (health hero 0))" to "(dead hero)"
+(<= (goal hero 50)
+   atExit
+   (not killedMonster)
+   (not (dead hero)))    ; Endgame
 
+; Alive, Killed monster, at exit
+;MCM: changed "(true (health hero 0))" to "(dead hero)"
+(<= (goal hero 100)
+   killedMonster
+   (not (dead hero))     ; Endgame
+   atExit)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ; 6. Terminal: Terminal state
 ;    - specifies the conditions under which the game has ended
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-; Meaning: The game is over if the hero is killed
-(<= terminal
-   (true (health hero 0)))         ; Endgame
-
 ; Meaning: The game is over if time runs out
 (<= terminal
-   (true (step ?t))
-   (maxTime ?t))                   ; Endgame
+   timeOut)
+
+; Meaning: The game is over if the hero is killed
+;MCM: changed "(true (health hero 0))" to "(dead hero)"
+(<= terminal
+   (dead hero))         ; Endgame
 
 ; Meaning: The game is over if the hero has escaped with the amulet
 (<= terminal
-   atExit)                         ; Endgame
+   atExit)              ; Endgame
 
 ;=============================================================================
 ; Supporting (Low-Level) Relations
@@ -740,130 +840,130 @@
 ; two fronts).  This should return 0 if hero is not attacked and should
 ; max out at hero's current health.
 (<= (totalMonsterDamage 0)
-   (nextHeroLocation ?x ?y)
-   (not (attackedBySomeMonster ?x ?y)))
+  (nextHeroLocation ?x ?y)
+  (not (attackedBySomeMonster ?x ?y)))
 
 ; Meaning: First monster damage
 (<= (totalMonsterDamage ?damage)
-   (nextHeroLocation ?x ?y)
-   (monster ?monster ?monster-type)
-   (attackedByMonster ?monster ?x ?y)
-   (monsterStrength ?monster-type ?strength)
-   (totalMonsterDamage1 ?monster ?strength ?x ?y ?damage))
+  (nextHeroLocation ?x ?y)
+  (monster ?monster ?monster-type)
+  (attackedByMonster ?monster ?x ?y)
+  (monsterStrength ?monster-type ?strength)
+  (totalMonsterDamage1 ?monster ?strength ?x ?y ?damage))
 
 ; Meaning: No second monster attack
 (<= (totalMonsterDamage1 ?monster ?strength ?x ?y ?damage)
-   (nextHeroLocation ?x ?y) ; SW added
-   (monster ?monster ?monster-type) ; SW added
-   (attackedByMonster ?monster ?x ?y) ; SW added   ****
-   (not (attackedBy2ndMonster ?monster ?x ?y))
-   (amountOfMonsterDamage ?strength ?d1)
-   (true (health hero ?hp))
-   (min ?d1 ?hp ?damage))
+  (nextHeroLocation ?x ?y) ; SW added
+  (monster ?monster ?monster-type) ; SW added
+  (attackedByMonster ?monster ?x ?y) ; SW added   ****
+  (not (attackedBy2ndMonster ?monster ?x ?y))
+  (amountOfMonsterDamage ?strength ?d1)
+  (true (health hero ?hp))
+  (min ?d1 ?hp ?damage))
 
 ; Meaning: Check second monster damage
 (<= (totalMonsterDamage1 ?monster1 ?strength ?x ?y ?damage)
-   (totalMonsterDamage2 ?monster1 ?strength ?x ?y ?damage))
+  (totalMonsterDamage2 ?monster1 ?strength ?x ?y ?damage))
 
 ; Meaning: combined damage from two monsters
 (<= (totalMonsterDamage2 ?monster1 ?strength1 ?x ?y ?damage)
-   (nextHeroLocation ?x ?y) ; SW added
-   (monster ?monster2 ?monster-type)
-   (monster ?monster1 ?monster-type) ; SW added   ****
-   (distinct ?monster2 ?monster1)
-   (attackedByMonster ?monster1 ?x ?y) ; SW added   ****
-   (attackedByMonster ?monster2 ?x ?y)
-   (monsterStrength ?monster-type ?strength1) ; SW added  ****
-   (monsterStrength ?monster-type ?strength2)
-   (+ ?strength1 ?strength2 ?strength)
-   (amountOfMonsterDamage ?strength ?combined-damage)
-   (true (health hero ?hp))
-   (min ?combined-damage ?hp ?damage))
+  (nextHeroLocation ?x ?y) ; SW added
+  (monster ?monster2 ?monster-type)
+  (monster ?monster1 ?monster-type) ; SW added   ****
+  (distinct ?monster2 ?monster1)
+  (attackedByMonster ?monster1 ?x ?y) ; SW added   ****
+  (attackedByMonster ?monster2 ?x ?y)
+  (monsterStrength ?monster-type ?strength1) ; SW added  ****
+  (monsterStrength ?monster-type ?strength2)
+  (+ ?strength1 ?strength2 ?strength)
+  (amountOfMonsterDamage ?strength ?combined-damage)
+  (true (health hero ?hp))
+  (min ?combined-damage ?hp ?damage))
 
 ; Meaning: There exists some monster that attacks hero at ?x ?y
 (<= (attackedBySomeMonster ?x ?y)
-   (monster ?monster ?monster-type)
-   (attackedByMonster ?monster ?x ?y))
+  (monster ?monster ?monster-type)
+  (attackedByMonster ?monster ?x ?y))
 
 ; Meaning: Monster attacks hero when provoked and within one spot of
 ; hero's next location
 (<= (attackedByMonster ?monster ?x2 ?y2)
-   (provoked ?monster)                            ; Generic monster
-   (nextHeroLocation ?x2 ?y2) ; SW added  ****
-   (true (location ?monster ?x1 ?y1))
-   (adjacent ?x1 ?y1 ?x2 ?y2))                    ; Generic spatial
+  (provoked ?monster)                            ; Generic monster
+  (nextHeroLocation ?x2 ?y2) ; SW added  ****
+  (true (location ?monster ?x1 ?y1))
+  (adjacent ?x1 ?y1 ?x2 ?y2))                    ; Generic spatial
 
 ; Meaning: Monster1 and monster2 both attack simultaneously.
 (<= (attackedBy2ndMonster ?monster1 ?x ?y)
-   (monster ?monster2 ?monster-type)
-   (monster ?monster1 ?monster-type) ; SW   ****
-   (distinct ?monster2 ?monster1)
-   (attackedByMonster ?monster2 ?x ?y)
-   (attackedByMonster ?monster1 ?x ?y))
+  (monster ?monster2 ?monster-type)
+  (monster ?monster1 ?monster-type) ; SW   ****
+  (distinct ?monster2 ?monster1)
+  (attackedByMonster ?monster2 ?x ?y)
+  (attackedByMonster ?monster1 ?x ?y))
 
 ; Meaning: No damage if monster's attack is less than defense
 ; Offensive-strength is the combined strength of attacking monsters.
 ; - Open to debate
 (<= (amountOfMonsterDamage ?offensive-strength 0)
-   (attackedByMonster ?monster ?x ?y)                  ; SW   ****
-   (monster ?monster ?monster-type)                    ; SW   ****
-   (monsterStrength ?monster-type ?offensive-strength) ; SW   ****
-   (heroDefense ?defense)                          ; Battle
-   (> ?defense ?offensive-strength)) ; SW ****: changed from >=, bug? Would imply that no damage occurs if offense == defense..
+  (attackedByMonster ?monster ?x ?y)                  ; SW   ****
+  (monster ?monster ?monster-type)                    ; SW   ****
+  (monsterStrength ?monster-type ?offensive-strength) ; SW   ****
+  (heroDefense ?defense)                          ; Battle
+  (> ?defense ?offensive-strength)) ; SW ****: changed from >=, bug? Would imply that no damage occurs if offense == defense..
 
 ; Meaning: Attacks whose value is equal to or greater than armor value
 ; - Open to debate (i.e., Attack value is 1 + (offense - defense))
 (<= (amountOfMonsterDamage ?offensive-strength ?hitPointsLost)
-   (attackedByMonster ?monster ?x ?y)                  ; SW   ****
-   (monster ?monster ?monster-type)                    ; SW   ****
-   (monsterStrength ?monster-type ?offensive-strength) ; SW   ****
-   (heroDefense ?defense)                          ; Battle
-   (>= ?offensive-strength ?defense) ; SW: this seems necessary
-   (-  ?offensive-strength ?defense ?diff)         ; Arithmetic
-   (+ ?diff 1 ?hitPointsLost))                     ; Arithmetic
+  (attackedByMonster ?monster ?x ?y)                  ; SW   ****
+  (monster ?monster ?monster-type)                    ; SW   ****
+  (monsterStrength ?monster-type ?offensive-strength) ; SW   ****
+  (heroDefense ?defense)                          ; Battle
+  (>= ?offensive-strength ?defense) ; SW: this seems necessary
+  (-  ?offensive-strength ?defense ?diff)         ; Arithmetic
+  (+ ?diff 1 ?hitPointsLost))                     ; Arithmetic
 
 ; Meaning: The current defensive strength of armor worn (if any)
 (<= (heroDefense 1)
-   (not (armored hero)))
+  (not (armored hero)))
 
 (<= (heroDefense ?defense)
-   (not (currentlyEnhancedArmor hero))
-   (true (wearing ?item))
-   (armor ?item ?armor-type)
-   (armorstrength ?armor-type ?defense))
+  (not (currentlyEnhancedArmor hero))
+  (true (wearing ?item))
+  (armor ?item ?armor-type)
+  (armorstrength ?armor-type ?defense))
 
 (<= (heroDefense ?defense)
-   (int ?n)         ; ?n is how many turns it will remain in effect (0 - 5)
-   (true (enhancedArmor hero ?n))
-   (true (wearing ?item))
-   (armor ?item ?armor-type)
-   (armorstrength ?armor-type ?base-defense)
-   (+ ?base-defense 1 ?defense))
+  (int ?n)         ; ?n is how many turns it will remain in effect (0 - 5)
+  (true (enhancedArmor hero ?n))
+  (true (wearing ?item))
+  (armor ?item ?armor-type)
+  (armorstrength ?armor-type ?base-defense)
+  (+ ?base-defense 1 ?defense))
 
 ; Meaning: The current offense strength of weapons wielded (if any)
 (<= (heroOffense 1)
-   (not (armed hero)))
+  (not (armed hero)))
 
 (<= (heroOffense ?offense)
-   (not (currentlyEnhancedStrength hero))
-   (true (wielding ?weapon))
-   (weapon ?weapon ?weapon-type)                  ; Init
-   (weaponStrength ?weapon-type ?offense))        ; Generic weapon
+  (not (currentlyEnhancedStrength hero))
+  (true (wielding ?weapon))
+  (weapon ?weapon ?weapon-type)                  ; Init
+  (weaponStrength ?weapon-type ?offense))        ; Generic weapon
 
 (<= (heroOffense ?offense)
-   (currentlyEnhancedStrength hero)
-   (true (wielding ?weapon))
-   (weapon ?weapon ?weapon-type)                  ; Init
-   (weaponStrength ?weapon-type ?offense))        ; Generic weapon SW: fixed variable name
+  (currentlyEnhancedStrength hero)
+  (true (wielding ?weapon))
+  (weapon ?weapon ?weapon-type)                  ; Init
+  (weaponStrength ?weapon-type ?offense))        ; Generic weapon SW: fixed variable name
 
 ; Meaning: Hero attacks the monster
 (<= (monsterAttacked ?monster)
-   (true (location hero ?x1 ?y1))
-   (true (location ?monster ?x2 ?y2))
-   (monster ?monster ?monster-type)
-   (adjacent ?x1 ?y1 ?x2 ?y2)
-   (does hero (move ?dir))
-   (nextCell ?dir ?x1 ?y1 ?x2 ?y2))
+  (true (location hero ?x1 ?y1))
+  (true (location ?monster ?x2 ?y2))
+  (monster ?monster ?monster-type)
+  (adjacent ?x1 ?y1 ?x2 ?y2)
+  (does hero (move ?dir))
+  (nextCell ?dir ?x1 ?y1 ?x2 ?y2))
 
 ;----------------------------------------------------------------------
 ; Movement relations (non-recursive)
@@ -871,112 +971,112 @@
 
 ; Meaning: Exhausted our travel distance
 (<= (nStepsTowardsHero 0 ?startx ?starty ?startx ?starty)
-    (cellNearMonster ?startx ?starty)) ; SW
+   (cellNearMonster ?startx ?starty)) ; SW
 
 (<= (nStepsTowardsHero 1 ?startx ?starty ?finalx ?finaly)
-    (cellNearMonster ?startx ?starty) ; SW
-    (cellNearMonster ?finalx ?finaly) ; SW
-    (singleStepTowardsHero ?startx ?starty ?finalx ?finaly))
+   (cellNearMonster ?startx ?starty) ; SW
+   (cellNearMonster ?finalx ?finaly) ; SW
+   (singleStepTowardsHero ?startx ?starty ?finalx ?finaly))
 
 (<= (nStepsTowardsHero 2 ?startx ?starty ?finalx ?finaly)
-  (cellNearMonster ?startx ?starty)
-  (cellNearMonster ?finalx ?finaly)
-  (singleStepTowardsHero ?startx ?starty ?x2 ?y2)
-  (cellNearMonster ?x2 ?y2)
-  (singleStepTowardsHero ?x2 ?y2 ?finalx ?finaly))
+ (cellNearMonster ?startx ?starty)
+ (cellNearMonster ?finalx ?finaly)
+ (singleStepTowardsHero ?startx ?starty ?x2 ?y2)
+ (cellNearMonster ?x2 ?y2)
+ (singleStepTowardsHero ?x2 ?y2 ?finalx ?finaly))
 
 ; Meaning: Take one step toward destination only if you won't run into hero.
 (<= (singleStepTowardsHero ?startx ?starty ?nextx ?nexty)
-    (oneStepTowardsHero ?startx ?starty ?nextx ?nexty)
-    (traversible ?nextx ?nexty)
-    (nextHeroLocation ?herox ?heroy)
-    (not (sameLocation ?nextx ?nexty ?herox ?heroy)))
+   (oneStepTowardsHero ?startx ?starty ?nextx ?nexty)
+   (traversible ?nextx ?nexty)
+   (nextHeroLocation ?herox ?heroy)
+   (not (sameLocation ?nextx ?nexty ?herox ?heroy)))
 
 ; Meaning: Stay put and attack the hero.
 (<= (singleStepTowardsHero ?startx ?starty ?startx ?starty)
-    (nextHeroLocation ?herox ?heroy)
-    (oneStepTowardsHero ?startx ?starty ?herox ?heroy))
+   (nextHeroLocation ?herox ?heroy)
+   (oneStepTowardsHero ?startx ?starty ?herox ?heroy))
 
 ;;; Rather than having horizontal or vertical movement preferences
 ;;; as in Wargame, in mRogue we alternate each turn.
 
 ; Meaning: Move one step (horizontally or vertically) towards destination
 (<= (oneStepTowardsHero ?x1 ?y1 ?x3 ?y1)  ; go west
-   (nextHeroLocation ?x2 ?y1)
-   (cellNearMonster ?x1 ?y1)
-   (> ?x1 ?x2)
-   (- ?x1 1 ?x3))
+  (nextHeroLocation ?x2 ?y1)
+  (cellNearMonster ?x1 ?y1)
+  (> ?x1 ?x2)
+  (- ?x1 1 ?x3))
 
 (<= (oneStepTowardsHero ?x1 ?y1 ?x3 ?y1)  ; go east
-   (nextHeroLocation ?x2 ?y1)
-   (cellNearMonster ?x1 ?y1)
-   (> ?x2 ?x1)
-   (+ ?x1 1 ?x3))
+  (nextHeroLocation ?x2 ?y1)
+  (cellNearMonster ?x1 ?y1)
+  (> ?x2 ?x1)
+  (+ ?x1 1 ?x3))
 
 (<= (oneStepTowardsHero ?x1 ?y1 ?x1 ?y3)  ; go north
-   (nextHeroLocation ?x1 ?y2)
-   (cellNearMonster ?x1 ?y1)
-   (> ?y1 ?y2)
-   (- ?y1 1 ?y3))
+  (nextHeroLocation ?x1 ?y2)
+  (cellNearMonster ?x1 ?y1)
+  (> ?y1 ?y2)
+  (- ?y1 1 ?y3))
 
 (<= (oneStepTowardsHero ?x1 ?y1 ?x1 ?y3)  ; go south
-   (nextHeroLocation ?x1 ?y2)
-   (cellNearMonster ?x1 ?y1)
-   (> ?y2 ?y1)
-   (+ ?y1 1 ?y3))
+  (nextHeroLocation ?x1 ?y2)
+  (cellNearMonster ?x1 ?y1)
+  (> ?y2 ?y1)
+  (+ ?y1 1 ?y3))
 
 (<= (oneStepTowardsHero ?x1 ?y1 ?x3 ?y1)    ; go west
-   (nextHeroLocation ?x2 ?y2)
-   (cellNearMonster ?x1 ?y1)
-   (> ?x1 ?x2)
-   (distinct ?y1 ?y2)
-   (true odd)
-   (- ?x1 1 ?x3))
+  (nextHeroLocation ?x2 ?y2)
+  (cellNearMonster ?x1 ?y1)
+  (> ?x1 ?x2)
+  (distinct ?y1 ?y2)
+  (true odd)
+  (- ?x1 1 ?x3))
 
 (<= (oneStepTowardsHero ?x1 ?y1 ?x3 ?y1)    ; go east
-   (nextHeroLocation ?x2 ?y2)
-   (cellNearMonster ?x1 ?y1)
-   (> ?x2 ?x1)
-   (distinct ?y1 ?y2)
-   (true odd)
-   (+ ?x1 1 ?x3))
+  (nextHeroLocation ?x2 ?y2)
+  (cellNearMonster ?x1 ?y1)
+  (> ?x2 ?x1)
+  (distinct ?y1 ?y2)
+  (true odd)
+  (+ ?x1 1 ?x3))
 
 (<= (oneStepTowardsHero ?x1 ?y1 ?x1 ?y3)  ; go north
-   (nextHeroLocation ?x2 ?y2)
-   (cellNearMonster ?x1 ?y1)
-   (> ?y1 ?y2)
-   (distinct ?x1 ?x2)
-   (true even)
-   (- ?y1 1 ?y3))
+  (nextHeroLocation ?x2 ?y2)
+  (cellNearMonster ?x1 ?y1)
+  (> ?y1 ?y2)
+  (distinct ?x1 ?x2)
+  (true even)
+  (- ?y1 1 ?y3))
 
 (<= (oneStepTowardsHero ?x1 ?y1 ?x1 ?y3)  ; go south
-   (nextHeroLocation ?x2 ?y2)
-   (cellNearMonster ?x1 ?y1)
-   (> ?y2 ?y1)
-   (distinct ?x1 ?x2)
-   (true even)
-   (+ ?y1 1 ?y3))
+  (nextHeroLocation ?x2 ?y2)
+  (cellNearMonster ?x1 ?y1)
+  (> ?y2 ?y1)
+  (distinct ?x1 ?x2)
+  (true even)
+  (+ ?y1 1 ?y3))
 
 ; Meaning: Direction-based relationships between coordinates
 ; - Read: one cell in ?direction of ?x1 ?y1 is ?x2 ?y2
 ; I had hoped to get rid of this, but it's used in determining
 ; legal moves.
 (<= (nextCell north ?x ?y1 ?x ?y2)
-   (int ?x)
-   (int ?y1) ; SW- new groundings
-   (- ?y1 1 ?y2))
+  (int ?x)
+  (int ?y1) ; SW- new groundings
+  (- ?y1 1 ?y2))
 (<= (nextCell south ?x ?y1 ?x ?y2)
-   (int ?x)
-   (int ?y1) ; SW- new groundings
-   (+ ?y1 1 ?y2))
+  (int ?x)
+  (int ?y1) ; SW- new groundings
+  (+ ?y1 1 ?y2))
 (<= (nextCell east ?x1 ?y ?x2 ?y)
-   (int ?y)
-   (int ?x1) ; SW- new groundings
-   (+ ?x1 1 ?x2))
+  (int ?y)
+  (int ?x1) ; SW- new groundings
+  (+ ?x1 1 ?x2))
 (<= (nextCell west ?x1 ?y ?x2 ?y)
-   (int ?y)
-   (int ?x1) ; SW- new groundings
-   (- ?x1 1 ?x2))
+  (int ?y)
+  (int ?x1) ; SW- new groundings
+  (- ?x1 1 ?x2))
 
 ;----------------------------------------------------------------------
 ; Generic spatial relations
@@ -984,17 +1084,17 @@
 
 ; Roomlocation: <x y>  (derived from "room")
 (<= (roomlocation ?x ?y)
-   (room ?tlx ?tly ?brx ?bry)
-   (between ?tlx ?x ?brx)        ; Generic spatial
-   (between ?tly ?y ?bry))       ; Generic spatial
+  (room ?tlx ?tly ?brx ?bry)
+  (between ?tlx ?x ?brx)        ; Generic spatial
+  (between ?tly ?y ?bry))       ; Generic spatial
 
 ; Meaning: ?a <= ?b <= ?c (note: permits them all to be equal)
 (<= (between ?a ?b ?c)
-   (int ?a) ; SW- must ground these
-   (int ?b)
-   (int ?c)
-   (>= ?b ?a)                    ; Arithmetic
-   (>= ?c ?b))                   ; Arithmetic
+  (int ?a) ; SW- must ground these
+  (int ?b)
+  (int ?c)
+  (>= ?b ?a)                    ; Arithmetic
+  (>= ?c ?b))                   ; Arithmetic
 
 ; Meaning: <x,y> can be traversed by a character (or hold an item)
 ; We actually don't need this for monster movement because so long
@@ -1003,9 +1103,9 @@
 ; or have non-rectangular rooms, then oneStepTowards will have to
 ; check.
 (<= (traversible ?x ?y)
-    (roomlocation ?x ?y))   ; Generic spatial
+   (roomlocation ?x ?y))   ; Generic spatial
 (<= (traversible ?x ?y)
-    (corridor ?x ?y))     ; Generic spatial
+   (corridor ?x ?y))     ; Generic spatial
 
 ; Meaning: Four possible directions of movement
 (direction north)
@@ -1020,16 +1120,21 @@
 
 ; Meaning: Same location
 (<= (sameLocation ?x ?y ?x ?y) ; SW -- must be ints
-    (int ?x)
-    (int ?y))
+   (int ?x)
+   (int ?y))
 
 ; Meaning: Adjacent locations (diagonal is not adjacent)
 (<= (adjacent ?x ?y1 ?x ?y2)
-    (int ?x)      ; SW
-    (diff ?y1 ?y2 1))
+   (int ?x)      ; SW
+   (diff ?y1 ?y2 1))
 (<= (adjacent ?x1 ?y ?x2 ?y)
-    (int ?y)      ; SW
-    (diff ?x1 ?x2 1))
+   (int ?y)      ; SW
+   (diff ?x1 ?x2 1))
+
+;MCM: Added stepBlocked from wargame to make spatial logic more similar.
+;         Traversible (based on room definition) no longer relevant.
+(<= (stepBlocked ?dir ?x ?y)
+   (true (blocked ?dir ?x ?y)))
 
 ;----------------------------------------------------------------------
 ; Generic monster relations
@@ -1058,25 +1163,25 @@
 ; If they're asleep, they wake up when hero attacks them or
 ; throws an arrow at them.
 (<= (provoked ?monster)
-   (monster ?monster ?monster-type)
-   (not (currentlyAsleep ?monster))
-   (true (location ?monster ?x ?y))
-   (room ?lx ?ty ?rx ?by)
-   (between ?lx  ?x ?rx)
-   (between ?ty ?y ?by)
-   (nextHeroLocation ?hx ?hy)
-   (between ?lx  ?hx ?rx)
-   (between ?ty ?hy ?by))
+  (monster ?monster ?monster-type)
+  (not (currentlyAsleep ?monster))
+  (true (location ?monster ?x ?y))
+  (room ?lx ?ty ?rx ?by)
+  (between ?lx  ?x ?rx)
+  (between ?ty ?y ?by)
+  (nextHeroLocation ?hx ?hy)
+  (between ?lx  ?hx ?rx)
+  (between ?ty ?hy ?by))
 
 (<= (provoked ?monster)
-   (monster ?monster ?monster-type)
-   (true (asleep ?monster ?n))
-   (monsterAttacked ?monster))
+  (monster ?monster ?monster-type)
+  (true (asleep ?monster ?n))
+  (monsterAttacked ?monster))
 
 (<= (provoked ?monster)
-   (monster ?monster ?monster-type)
-   (true (asleep ?monster ?n))
-   (hitByArrow ?monster))
+  (monster ?monster ?monster-type)
+  (true (asleep ?monster ?n))
+  (hitByArrow ?monster))
 
 ;----------------------------------------------------------------------
 ; Generic item relations
@@ -1098,8 +1203,23 @@
 
 ; Mearning: True if the hero is at the same location as the exit
 (<= atExit
-   (true (location hero ?x ?y))
-   (true (location exit ?x ?y)))
+  (true (location hero ?x ?y))
+  (true (location exit ?x ?y)))
+
+; Meaning: Time's run out for our hero!
+(<= timeOut
+  (true (step ?t))
+  (maxTime ?t))
+
+; MCM: Adding "dead" to increase mappings between wargame and rogue.
+(<= (dead ?anyone)
+   (true (health ?anyone 0)))
+
+; killing a monster is a victory condition
+;MCM: changed "(true (health ?monster 0))" to "(dead ?anymonster)"
+(<= killedMonster
+  (monster ?anymonster ?monstertype)
+  (dead ?anymonster))
 
 ;----------------------------------------------------------------------
 ; Arithmetic relations
@@ -1107,28 +1227,41 @@
 
 ; Meaning: Absolute value of difference
 (<= (diff ?n1 ?n2 ?diff)
-   (int ?n1) ; SW- new groundings
-   (int ?n2) ; SW- new groundings
-   (> ?n1 ?n2)
-   (- ?n1 ?n2 ?diff))
+  (int ?n1) ; SW- new groundings
+  (int ?n2) ; SW- new groundings
+  (> ?n1 ?n2)
+  (- ?n1 ?n2 ?diff))
 
 (<= (diff ?n1 ?n2 ?diff)
-   (int ?n1) ; SW- new groundings
-   (int ?n2) ; SW- new groundings
-   (>= ?n2 ?n1)
-   (- ?n2 ?n1 ?diff))
+  (int ?n1) ; SW- new groundings
+  (int ?n2) ; SW- new groundings
+  (>= ?n2 ?n1)
+  (- ?n2 ?n1 ?diff))
 
 
 ; Meaning: Minimum
 (<= (min ?n1 ?n2 ?n2)
-   (int ?n1) ; SW: must ground these
-   (int ?n2)
-   (> ?n1 ?n2))
+  (int ?n1) ; SW: must ground these
+  (int ?n2)
+  (> ?n1 ?n2))
 (<= (min ?n1 ?n2 ?n1)
-   (int ?n1) ; SW: must ground these
-   (int ?n2)
-   (>= ?n2 ?n1))
+  (int ?n1) ; SW: must ground these
+  (int ?n2)
+  (>= ?n2 ?n1))
 
+; Meaning: Maximum
+(<= (max ?x ?y ?x)
+       (int ?x)
+       (int ?y)
+       (> ?x ?y))
+
+(<= (max ?x ?y ?y)
+       (int ?x)
+       (int ?y)
+       (> ?y ?x))
+
+(<= (max ?x ?x ?x)
+       (int ?x))
 
 ; Meaning: Defines a (finite) succesor relation
 (succ 0 1)
@@ -1183,8 +1316,15 @@
 (succ 49 50)
 (succ 50 51)
 
-; Meaning: The integers in [0,7]
+; Meaning: The integers in [-5,7]
 ; SW -- these are used in lots of other places now
+; MCM (9/4): Added some negative integers to handle negative
+; unbounded health values
+(int -5)
+(int -4)
+(int -3)
+(int -2)
+(int -1)
 (int 0)
 (int 1)
 (int 2)
@@ -1201,96 +1341,96 @@
 ; Meaning: Hero moves one cell in direction ?dir from ?x1 ?y1
 ; - If <x1,y1> is not currently occupied by a monster.
 (<= (nextHeroLocation ?x2 ?y2)
-   (true (location hero ?x1 ?y1))
-   (does hero (move ?dir))
-   (nextCell ?dir ?x1 ?y1 ?x2 ?y2)
-   (not (monsterAt ?x2 ?y2)))
+  (true (location hero ?x1 ?y1))
+  (does hero (move ?dir))
+  (nextCell ?dir ?x1 ?y1 ?x2 ?y2)
+  (not (monsterAt ?x2 ?y2)))
 
 ; Meaning: Hero's location is unchanged if attacking a monster
 (<= (nextHeroLocation ?x1 ?y1)
-   (true (location hero ?x1 ?y1))
-   (does hero (move ?dir))
-   (nextCell ?dir ?x1 ?y1 ?x2 ?y2)
-   (monsterAt ?x2 ?y2))
+  (true (location hero ?x1 ?y1))
+  (does hero (move ?dir))
+  (nextCell ?dir ?x1 ?y1 ?x2 ?y2)
+  (monsterAt ?x2 ?y2))
 
 ; Meaning: Non-moving hero actions
 (<= (nextHeroLocation ?x ?y)
-   (true (location hero ?x ?y))
-   (not (heroMoves)))
+  (true (location hero ?x ?y))
+  (not (heroMoves)))
 
 ; Meaning: Hero moved in some direction
 (<= (heroMoves)
-   (does hero (move ?dir)))
+  (does hero (move ?dir)))
 
 ; Meaning: There's a monster currently at ?x ?y
 (<= (monsterAt ?x ?y)
-   (true (location ?monster ?x ?y))
-   (monster ?monster ?monster-type))
+  (true (location ?monster ?x ?y))
+  (monster ?monster ?monster-type))
 
 ; Meaning: Move provoked monsters towards hero according to ?speed
 ; - BUT: Cannot stop on same location as hero's location
 ;   We'll make nStepsTowardsHero stop when the next location will be
 ;   occupied by the hero.
 (<= (nextMonsterLocation ?monster ?x2 ?y2)
-   (not (currentlyInvisible hero))
-   (provoked ?monster)
-   (true (location ?monster ?x1 ?y1))
-   (monster ?monster ?monster-type)
-   (monsterSpeed ?monster-type ?base-speed)
-   (relativeSpeed ?base-speed ?speed)
-   (nStepsTowardsHero ?speed ?x1 ?y1 ?x2 ?y2))
+  (not (currentlyInvisible hero))
+  (provoked ?monster)
+  (true (location ?monster ?x1 ?y1))
+  (monster ?monster ?monster-type)
+  (monsterSpeed ?monster-type ?base-speed)
+  (relativeSpeed ?base-speed ?speed)
+  (nStepsTowardsHero ?speed ?x1 ?y1 ?x2 ?y2))
 
 ; Meaning: Unprovoked monsters don't move
 (<= (nextMonsterLocation ?monster ?x ?y)
-   (monster ?monster ?monster-type)
-   (not (provoked ?monster))
-   (true (location ?monster ?x ?y)))
+  (monster ?monster ?monster-type)
+  (not (provoked ?monster))
+  (true (location ?monster ?x ?y)))
 
 (<= (nextMonsterLocation ?monster ?x ?y)
-   (monster ?monster ?monster-type)
-   (provoked ?monster)                             ; Added 8/2/07 thanks to SW
-   (true (invisible hero ?n))                      ; invisible for n more turns
-   (true (location ?monster ?x ?y)))
+  (monster ?monster ?monster-type)
+  (provoked ?monster)                             ; Added 8/2/07 thanks to SW
+  (true (invisible hero ?n))                      ; invisible for n more turns
+  (true (location ?monster ?x ?y)))
 
 
 ; Meaning: How many steps can monster take this turn?
 ; We slow all monsters down when hero has enhancedSpeed
 (<= (relativeSpeed 0.5 ?speed)
-   (not (currentlyEnhancedSpeed hero))
-   (halfSpeed ?speed))
+  (not (currentlyEnhancedSpeed hero))
+  (halfSpeed ?speed))
 (<= (relativeSpeed 0.5 ?speed)
-   (true (enhancedSpeed hero ?n))
-   (quarterSpeed ?speed))
+  (true (enhancedSpeed hero ?n))
+  (quarterSpeed ?speed))
 (<= (relativeSpeed ?base-speed ?base-speed)
-   (speedNumber ?base-speed)                        ; SW ****
-   (distinct ?base-speed 0.5)
-   (not (currentlyEnhancedSpeed hero)))
+  (speedNumber ?base-speed)                        ; SW ****
+  (distinct ?base-speed 0.5)
+  (not (currentlyEnhancedSpeed hero)))
 (<= (relativeSpeed 1 ?speed)
-   (true (enhancedSpeed hero ?n))
-   (halfSpeed ?speed))
+  (true (enhancedSpeed hero ?n))
+  (halfSpeed ?speed))
 (<= (relativeSpeed 2 1)
-   (true (enhancedSpeed hero ?n)))
+  (true (enhancedSpeed hero ?n)))
 
 ; Anything that moves slower than Hero is handled by
 ; flipping speed from 1 to 0 every other turn
 ; (or every fourth turn for 1/4 speed monsters)
 (<= (halfSpeed 1)
-   (true odd))
+  (true odd))
 (<= (halfSpeed 0)
-   (true even))
+  (true even))
 (<= (quarterSpeed 1)
-   (true (slomo-time 4)))
+  (true (slomo-time 4)))
 (<= (quarterSpeed 0)
-   (true (slomo-time ?n))
-   (distinct ?n 4))
+  (true (slomo-time ?n))
+  (distinct ?n 4))
 
 ; Meaning: Conditions when health is restored via restoreHealth scroll
 (<= (healthRestoredByScroll)
-   (does hero (read ?scroll))
-   (scroll ?scroll restoreHealth)
-   (true (health hero ?health))
-   (maxHealth hero ?maxHealth)
-   (distinct ?health ?maxHealth))
+  (does hero (read ?scroll))
+  (scroll ?scroll restoreHealth)
+  (true (health hero ?health))
+  (maxHealth hero ?maxHealth)
+  (distinct ?health ?maxHealth))
 
 ;----------------------------------------------------------------------
 ; Object-interaction relations
@@ -1312,25 +1452,34 @@
 
 ; If it's legal, it must succeed, now.
 (<= (hitByArrow ?monster)
-	(does hero (shoot-monster ?monster)))
+       (does hero (shoot-monster ?monster)))
+
+;; Meaning: The fireball hits monsters next to the hero.
+(<= (hitByFireball ?monster)
+  (does hero (read ?scroll))
+  (scroll ?scroll fireball)
+  (monster ?monster ?monster-type)
+  (true (location ?monster ?x1 ?y1))
+  (true (location hero ?x2 ?y2))
+  (adjacent ?x1 ?y1 ?x2 ?y2))
 
 ; Meaning: Hero adds item to sack if on it at end of time step
 ; - And it wasn't dropped in this time step
 (<= (pickedUp ?item)
-   (item ?item)                         ; Generic item
-   (distinct ?item gold)
-   (true (burden ?burden))
-   (maxBurden ?max-burden)              ; Generic sack
-   (> ?max-burden ?burden)              ; Arithmetic
-   (true (location hero ?x1 ?y1))
-   (nextHeroLocation ?x2 ?y2)           ; Action
-   (not (sameLocation ?x1 ?y1 ?x2 ?y2)) ; Don't re-pick up an item after dropping it
-   (true (location ?item ?x2 ?y2)))
+  (item ?item)                         ; Generic item
+  (distinct ?item gold)
+  (true (burden ?burden))
+  (maxBurden ?max-burden)              ; Generic sack
+  (> ?max-burden ?burden)              ; Arithmetic
+  (true (location hero ?x1 ?y1))
+  (nextHeroLocation ?x2 ?y2)           ; Action
+  (not (sameLocation ?x1 ?y1 ?x2 ?y2)) ; Don't re-pick up an item after dropping it
+  (true (location ?item ?x2 ?y2)))
 
 ; Handle gold specially since it is not limited by maxBurden
 (<= (pickedUp gold)
-   (nextHeroLocation ?x ?y)
-   (true (location gold ?x ?y)))
+  (nextHeroLocation ?x ?y)
+  (true (location gold ?x ?y)))
 
 ; Meaning: Read scrolls and quaffed potions are eliminated from burden
 (<= (decrementsBurden ?item)
@@ -1338,136 +1487,136 @@
 
 ; Meaning: Dropped items are elminated from burden
 (<= (decrementsBurden ?item)
-   (does hero (drop ?item)))
+  (does hero (drop ?item)))
 
 ; Meaning: Picking up a non-gold item changes the burden
 (<= burdenChanged
-   (pickedUp ?item)            ; acquired new item
-   (not (weaponChange ?item))  ; DA: No change if changing a weapon
-   (distinct ?item gold))      ; No change if it's gold
+  (pickedUp ?item)            ; acquired new item
+  (not (weaponChange ?item))  ; DA: No change if changing a weapon
+  (distinct ?item gold))      ; No change if it's gold
 
 ; Meaning: Any decrement to the burden changes the burden
 (<= burdenChanged
-   (decrementsBurden ?item)            ; successful drop or use
-   (distinct ?item gold))
+  (decrementsBurden ?item)            ; successful drop or use
+  (distinct ?item gold))
 
 ; Meaning: This can happen when we pickup a new weapon
 (<= (changeWeapon ?currentWeapon)
-   (true (wielding ?currentWeapon))       ; SW: need to ground ?weapon
-   (weapon ?newWeapon ?newWeapon-type)    ; DA: Sam - is this ordering ok?
-   (pickedUp ?newWeapon)                  ; DA: Also new
-   (distinct ?currentWeapon ?newWeapon))
+  (true (wielding ?currentWeapon))       ; SW: need to ground ?weapon
+  (weapon ?newWeapon ?newWeapon-type)    ; DA: Sam - is this ordering ok?
+  (pickedUp ?newWeapon)                  ; DA: Also new
+  (distinct ?currentWeapon ?newWeapon))
 
 ; DA (7/13): Newly inserted - used in next (to prevent burden updates) and burdenChanged/0
 ; -- Same as changeWeapon/1, but this time the argument represents the *new* weapon
 (<= (weaponChange ?newWeapon)
-   (weapon ?newWeapon ?newWeapon-type)
-   (pickedUp ?newWeapon)
-   (true (wielding ?currentWeapon))
-   (distinct ?newWeapon ?currentWeapon))
+  (weapon ?newWeapon ?newWeapon-type)
+  (pickedUp ?newWeapon)
+  (true (wielding ?currentWeapon))
+  (distinct ?newWeapon ?currentWeapon))
 
 ;(<= arrowThrown
 ;   (direction ?dir)
 ;   (does hero (throw arrow ?dir)))
 
 (<= arrowThrown
-   (does hero (shoot-monster ?monster)))
+  (does hero (shoot-monster ?monster)))
 
 ; Meaning: hero is invisible at the moment.
 ; helper predicate to avoid unbound vars in negative statement
 (<= (currentlyInvisible hero)
-   (true (invisible hero ?n)))
+  (true (invisible hero ?n)))
 
 (<= (currentlyAsleep ?agent)
-   (true (asleep ?agent ?n)))
+  (true (asleep ?agent ?n)))
 
 (<= (currentlyEnhancedArmor hero)
-   (true (enhancedArmor hero ?n)))
+  (true (enhancedArmor hero ?n)))
 
 (<= (currentlyEnhancedStrength hero)
-   (true (enhancedStrength hero ?n)))
+  (true (enhancedStrength hero ?n)))
 
 (<= (currentlyEnhancedSpeed hero)
-   (true (enhancedSpeed hero ?n)))
+  (true (enhancedSpeed hero ?n)))
 
 (<= (armored hero)
-   (true (wearing ?armor))
-   (armor ?armor ?armor-type))
+  (true (wearing ?armor))
+  (armor ?armor ?armor-type))
 
 (<= (armed hero)
-   (true (wielding ?weapon))
-   (weapon ?weapon ?weapon-type))
+  (true (wielding ?weapon))
+  (weapon ?weapon ?weapon-type))
 
 ; Meaning: Hero quaffs a potion currently in the sack
 ; This is just a convenience relation that indicates an item has been
 ; used up and no longer counts as a burden.  The effect of the
 ; quaff or read must be handled in a next rule.
 (<= (use ?potion)
-   (does hero (quaff ?potion)))
+  (does hero (quaff ?potion)))
 
 ; Meaning: Hero reads a scroll currently in the sack
 (<= (use ?scroll)
-   (does hero (read ?scroll)))
+  (does hero (read ?scroll)))
 
 ; Meaning: The location of a provoked monster
 (<= (relevantMonsterCell ?x ?y)
-   (monster ?monster ?any)
-   (true (location ?monster ?x ?y))
-   (provoked ?monster))
+  (monster ?monster ?any)
+  (true (location ?monster ?x ?y))
+  (provoked ?monster))
 
 ; Meaning: cellNearMonster is true for any cell within manhattan
 ; distance 2 of a provoked monster (including the cell the monster is in)
 (<= (cellNearMonster ?x ?y)
-   (relevantMonsterCell ?x ?y))
+  (relevantMonsterCell ?x ?y))
 
 (<= (cellNearMonster ?x1 ?y)
-   (relevantMonsterCell ?x ?y)
-   (int ?d)        ; must ground ?d
-   (> ?d 0)
-   (> 3 ?d)        ; There is no < (lessThan)
-   (- ?x ?d ?x1))
+  (relevantMonsterCell ?x ?y)
+  (int ?d)        ; must ground ?d
+  (> ?d 0)
+  (> 3 ?d)        ; There is no < (lessThan)
+  (- ?x ?d ?x1))
 
 (<= (cellNearMonster ?x1 ?y)
-   (relevantMonsterCell ?x ?y)
-   (int ?d)
-   (> ?d 0)
-   (> 3 ?d)
-   (+ ?x ?d ?x1))
+  (relevantMonsterCell ?x ?y)
+  (int ?d)
+  (> ?d 0)
+  (> 3 ?d)
+  (+ ?x ?d ?x1))
 
 (<= (cellNearMonster ?x ?y1)
-   (relevantMonsterCell ?x ?y)
-   (int ?d)
-   (> ?d 0)
-   (> 3 ?d)
-   (- ?y ?d ?y1))
+  (relevantMonsterCell ?x ?y)
+  (int ?d)
+  (> ?d 0)
+  (> 3 ?d)
+  (- ?y ?d ?y1))
 
 (<= (cellNearMonster ?x ?y1)
-   (relevantMonsterCell ?x ?y)
-   (int ?d)
-   (> ?d 0)
-   (> 3 ?d)
-   (+ ?y ?d ?y1))
+  (relevantMonsterCell ?x ?y)
+  (int ?d)
+  (> ?d 0)
+  (> 3 ?d)
+  (+ ?y ?d ?y1))
 
 ; four diagonal cases
 (<= (cellNearMonster ?x1 ?y1)
-   (relevantMonsterCell ?x ?y)
-   (+ ?x 1 ?x1)
-   (+ ?y 1 ?y1))
+  (relevantMonsterCell ?x ?y)
+  (+ ?x 1 ?x1)
+  (+ ?y 1 ?y1))
 
 (<= (cellNearMonster ?x1 ?y1)
-   (relevantMonsterCell ?x ?y)
-   (+ ?x 1 ?x1)
-   (- ?y 1 ?y1))
+  (relevantMonsterCell ?x ?y)
+  (+ ?x 1 ?x1)
+  (- ?y 1 ?y1))
 
 (<= (cellNearMonster ?x1 ?y1)
-   (relevantMonsterCell ?x ?y)
-   (- ?x 1 ?x1)
-   (- ?y 1 ?y1))
+  (relevantMonsterCell ?x ?y)
+  (- ?x 1 ?x1)
+  (- ?y 1 ?y1))
 
 (<= (cellNearMonster ?x1 ?y1)
-   (relevantMonsterCell ?x ?y)
-   (- ?x 1 ?x1)
-   (+ ?y 1 ?y1))
+  (relevantMonsterCell ?x ?y)
+  (- ?x 1 ?x1)
+  (+ ?y 1 ?y1))
 
 
 ;;; End of file
