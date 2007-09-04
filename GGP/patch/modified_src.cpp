@@ -1,4 +1,14 @@
 // in trunk\Core\CLI\src\cli_structToString.cpp
+bool StringToInt(std::string str, int& n){
+	std::istringstream str2int(str);
+	if (str2int >> n) {
+		return true;
+	}
+	else{
+		return false;
+	}
+}
+
 bool CommandLineInterface::ParseStructToString(gSKI::Agent* pAgent, std::vector<std::string>& argv) {
 	
 	if(argv.size() < 2){
