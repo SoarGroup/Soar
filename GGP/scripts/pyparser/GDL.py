@@ -1,6 +1,7 @@
 """ Data structures for elements in GDL """
 import sys
 from PositionIndex import PositionIndex
+from cache_hash import CacheHash
 import pdb
 
 CompRelations = ['distinct', '<', '>', '>=']
@@ -262,7 +263,7 @@ class Comparison:
 	def __str__(self):
 		return self.__rel
 
-class Rule:
+class Rule(CacheHash):
 	def __init__(self, head, body):
 		self.__head = head
 		self.__body = body
@@ -322,6 +323,8 @@ class Rule:
 					if t1 == t2:
 						self.__headvar_constraints.append((p1, p2))
 
+		CacheHash.__init__(self)
+
 	def get_type(self):
 		return self.__head.get_type()
 
@@ -343,6 +346,8 @@ class Rule:
 		return len(self.__body)
 
 	def add_condition(self, cond):
+		self.mark_hash_old()
+
 		self.__body.append(cond)
 		nbi = len(self.__body) - 1
 
@@ -373,6 +378,7 @@ class Rule:
 						self.__headvar_bindings.setdefault(hp, []).append((nbi, bp))
 
 	def remove_condition(self, bi):
+		self.mark_hash_old()
 		new_var_constraints = []
 		self.__body = self.__body[:bi] + self.__body[bi+1:]
 		for bi1, p1, bi2, p2, comp in self.__var_constraints:
@@ -416,6 +422,7 @@ class Rule:
 		return False
 
 	def add_var_constraint(self, v1, v2, comparison):
+		self.mark_hash_old()
 		for bi1, b1 in enumerate(self.__body):
 			pos1 = PositionIndex.get_term_positions(b1, v1)
 			if len(pos1) > 0:
@@ -464,6 +471,8 @@ class Rule:
 		preserving certain variable names. If a variable and a constant should
 		be equal, the variable is always changed into the constant"""
 		
+		self.mark_hash_old()
+
 		preserve_var_names = set(preserve)
 		# first enforce constraints on body
 		changed = True
@@ -550,6 +559,7 @@ class Rule:
 						changed = True
 
 	def mangle_vars(self, prefix):
+		self.mark_hash_old()
 		self.__head.mangle_vars(prefix)
 		for b in self.__body:
 			b.mangle_vars(prefix)
@@ -573,5 +583,5 @@ class Rule:
 		if self.__var_constraints != other.__var_constraints: return False
 		return True
 
-	def __hash__(self):
+	def get_hash(self):
 		return hash((self.__head, tuple(self.__body), tuple(self.__var_constraints)))
