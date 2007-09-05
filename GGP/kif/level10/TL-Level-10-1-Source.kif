@@ -14,6 +14,8 @@
 ;;;  - 9/4: MCM
 ;;;    - Added "taken" intermediate relation, corresponds with mRogue
 ;;;     "pickedUp".
+;;;  - 9/4, 5:15:
+;;;    - MCM: Fixed bugs in "canShootAt", "next (location)" and "nextCell" definitions.
 ;;;
 ;;; Summary: This has a gun, other source has a grenade, & target has both
 ;;; - Different layout for each
@@ -176,8 +178,9 @@
    (nextCell ?dir ?x ?y ?xAny ?yAny))
 
 ;MCM: Added nextCell so that wargame move looks like rogue move
+;MCM (9/4): Corrected parameter names
 (<= (nextCell ?dir ?x1 ?y1 ?x2 ?y2)
-   (nStepsSoldier 1 ?dir ?x ?y ?xAny ?yAny))
+   (nStepsSoldier 1 ?dir ?x1 ?y1 ?x2 ?y2))
 
 ;;; The soldier may heal himself if he is holding a healing type item.
 ;;; DA (8/31): Added ?item parameter to heal
@@ -232,9 +235,10 @@
 ; Soar change: splitting to two cases, so we don't need distinctCell.
 ; MCM (9/4): Added intermediate "taken" to make look more
 ; like mRogue.
-(<= (next (location ?object ?xO ?yO))
-   (type ?object item)
-   (true (location ?object ?xO ?yO))
+; MCM (9/4): Fixed by changing ?object to ?item
+(<= (next (location ?item ?xO ?yO))
+   (type ?item item)
+   (true (location ?item ?xO ?yO))
    (not (taken ?item)))
 
 ;(<= (next (location ?object ?xO ?yO))
@@ -516,7 +520,7 @@
 (<= (canShootAt ?terrorist)
    (type ?terrorist terrorist)
    (true (location soldier ?x1 ?y1))
-   (intendedLocation ?terrorist ?x2 ?y2)
+   (true (location ?terrorist ?x2 ?y2))  ;;MCM (9/4): Changed from "intendedLocation"
    (index ?n)
    (direction ?dir)
    (nStepsSoldier ?n ?dir ?x1 ?y1 ?x2 ?y2))
