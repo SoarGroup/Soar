@@ -66,6 +66,21 @@ def delete_vowels(s):
 	
 	return sym_map[sl]
 
+def prefix(p, s):
+	global sym_map
+
+	sl = s.lower()
+
+	if sl in preserve:
+		return sl
+
+	if sl in sym_map:
+		return sym_map[sl]
+	
+	sym_map[sl] = p + sl
+	
+	return sym_map[sl]
+
 def rand_str(s):
 	global sym_map
 
@@ -210,12 +225,15 @@ random.seed()
 
 if len(sys.argv) < 2:
 	print """
-Usage: %s [-r] [-p] [-c] [-v] [-s <seed>] <kif file>
--r : replace symbols with random strings rather than deleting vowels
--u : replace symbols with upper case
--c : preserve constants
--v : preserve variable names
--s : set the random seed. If random seed is not set, the current time is used.
+Usage: %s [switches] <kif file>
+
+where the switches are: 
+	-r          : replace symbols with random strings rather than deleting vowels
+	-u          : replace symbols with upper case
+	-p <prefix> : replace symbols with a prefixed version
+	-c          : preserve constants
+	-v          : preserve variable names
+	-s <seed>   : set the random seed. If random seed is not set, the current time is used.
 """ % (sys.argv[0])
 	sys.exit(1)
 
@@ -230,6 +248,10 @@ for i in range(1,len(sys.argv)):
 		preserve_variables = True
 	if sys.argv[i] == '-s':
 		random.seed(sys.argv[i+1])
+	if sys.argv[i] == '-p':
+		assert len(sys.argv) > i + 1, "Need to specify a prefix"
+		prefix_str = sys.argv[i+1]
+		mod_string = lambda x: prefix(prefix_str, x)
 
 file = open(sys.argv[-1], 'r').read()
 
