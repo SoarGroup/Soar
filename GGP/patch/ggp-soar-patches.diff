@@ -285,6 +285,100 @@ Index: Core/CLI/src/cli_CommandLineInterface.cpp
  
  	// Indicate which commands should be echoed so that all users can see them when doing a shared debugging session
  	m_EchoMap[Commands::kCLIAddWME]						= true ;
+Index: Core/CLI/src/cli_stopsoar.cpp
+===================================================================
+--- Core/CLI/src/cli_stopsoar.cpp	(revision 7638)
++++ Core/CLI/src/cli_stopsoar.cpp	(working copy)
+@@ -82,3 +82,89 @@
+ 	}
+ }
+ 
++/////////////////////////////////////////////////////////////////
++// struct-to-string command file
++//
++// Author: Yongjia Wang
++// Date  : 2007-08-06
++//
++/////////////////////////////////////////////////////////////////
++
++#ifdef HAVE_CONFIG_H
++#include "config.h"
++#endif // HAVE_CONFIG_H
++
++#include "cli_CommandLineInterface.h"
++#include "sml_Names.h"
++#include "gSKI_Agent.h"
++#include "gSKI_DoNotTouch.h"
++#include "gSKI_Kernel.h"
++
++using namespace cli;
++using namespace sml;
++using namespace std;
++using namespace gSKI;
++
++
++bool StringToInt(std::string str, int& n){
++	std::istringstream str2int(str);
++	if (str2int >> n) {
++		return true;
++	}
++	else{
++		return false;
++	}
++}
++bool CommandLineInterface::ParseStructToString(gSKI::Agent* pAgent, std::vector<std::string>& argv) {
++	
++	if(argv.size() < 2){
++		m_Result << "No input identifier";
++	}
++	string struct_id = argv.at(1);
++	string additional_feature = "";
++	string excluded_feature = "";
++	string equivalent_symbols_id = "";
++	
++	int current_index = 2;
++	while(argv.size() > current_index + 1){
++		string option = argv[current_index];
++		string value = argv[current_index+1];
++
++		if(option == "-e"){
++			excluded_feature = value;
++		}
++		else if(option == "-a"){
++			additional_feature = value;
++		}
++		else if(option == "-i"){
++			equivalent_symbols_id = value;
++		}
++		current_index += 2;
++	}
++	
++
++	// Attain the evil back door of doom, even though we aren't the TgD
++	gSKI::EvilBackDoor::TgDWorkArounds* pKernelHack = m_pKernel->getWorkaroundObject();
++	for(std::vector<string>::iterator itr = argv.begin(); itr != argv.end(); ++itr){
++		//cout << *itr << endl;
++	}
++	if(struct_id.length() >= 3 && struct_id[0] =='|' && struct_id[struct_id.length() - 1] == '|'){
++		struct_id = struct_id.substr(1, struct_id.length() - 2);
++	}
++	if(equivalent_symbols_id.length() >= 3 && equivalent_symbols_id[0] =='|' && equivalent_symbols_id[equivalent_symbols_id.length() - 1] == '|'){
++		equivalent_symbols_id = equivalent_symbols_id.substr(1, equivalent_symbols_id.length() - 2);
++	}
++	int input_int;
++	
++	if(StringToInt(struct_id, input_int)){
++		string gs_str = pKernelHack->IdToStruct(pAgent, input_int);
++		m_Result << struct_id << endl;
++		m_Result << gs_str;
++	}
++	else{
++		string hash_str = pKernelHack->StructToString(pAgent, struct_id, additional_feature, excluded_feature, equivalent_symbols_id);
++		m_Result << hash_str;
++	}
++	
++	return true;
++}
 Index: Core/CLI/src/cli_Commands.cpp
 ===================================================================
 --- Core/CLI/src/cli_Commands.cpp	(revision 7638)
