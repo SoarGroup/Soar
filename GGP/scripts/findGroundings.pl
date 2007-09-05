@@ -22,7 +22,10 @@ foreach $line (`cat $file`) {
   chomp $line;
   $line =~ s/TRUE_/TRUE/;
   $line =~ s/NEXT_/NEXT/;
-  $line =~ s/NOT //;
+  if ($line =~ /NOT /) {
+    # ignore negated conditions, as the variables must be bound elsewhere
+    next;
+  }
   $line =~ s/_+/_/g;
   if ($line =~ /^distinct_/) {
     next;
@@ -43,6 +46,7 @@ foreach $line (`cat $file`) {
       push @lines, $line;
     }
     else {
+      # not in a rule, a bare declaration
       $line =~ s/init_/TRUE/;
       if ($line =~ /^([^_]+)$/) {
         $predicate = $1;
@@ -110,13 +114,27 @@ foreach $line (`cat $file`) {
   }
 }
 
+# some implied groundings
+$groundings{"+/0"}{"!Number!"} = 1;
+$groundings{"+/1"}{"!Number!"} = 1;
+$groundings{"+/0"}{"!Number!"} = 1;
+$groundings{"-/0"}{"!Number!"} = 1;
+$groundings{"-/1"}{"!Number!"} = 1;
+$groundings{"-/2"}{"!Number!"} = 1;
+$groundings{">/0"}{"!Number!"} = 1;
+$groundings{">/1"}{"!Number!"} = 1;
+$groundings{">/2"}{"!Number!"} = 1;
+$groundings{">=/0"}{"!Number!"} = 1;
+$groundings{">=/1"}{"!Number!"} = 1;
+$groundings{">=/2"}{"!Number!"} = 1;
+
 #foreach $position (keys %groundings) {
 #  foreach $ground (keys %{ $groundings{$position} }) {
 #    print "initial grounding: $position $ground\n";
 #  }
 #}
 
-%aliases = ();
+%inheritances = ();
 for ($i=0; $i<=$#rules; $i++) {
   # for each rule
   %varNames = ();
@@ -164,47 +182,67 @@ for ($i=0; $i<=$#rules; $i++) {
     else {
       die "bad line: $line\n";
     }
+
+    $varPredicate = $predicate;
+    if ($j == 0) {
+      # mark this as a predicate in the head
+      $varPredicate = "head!$predicate";
+    }
+
     if ($bind0 and not $bind0 =~ /V/) {
       ${ $groundings{"$predicate/0"} }{$bind0} = 1;
     }
     elsif ($bind0) {
-      ${ $varNames{"$predicate/0"} }{$bind0} = 1;
+      ${ $varNames{"$varPredicate/0"} }{$bind0} = 1;
     } 
     if ($bind1 and not $bind1 =~ /V/) {
       ${ $groundings{"$predicate/1"} }{$bind1} = 1;
     }
     elsif ($bind1) {
-      ${ $varNames{"$predicate/1"} }{$bind1} = 1;
+      ${ $varNames{"$varPredicate/1"} }{$bind1} = 1;
     } 
     if ($bind2 and not $bind2 =~ /V/) {
       ${ $groundings{"$predicate/2"} }{$bind2} = 1;
     }
     elsif ($bind2) {
-      ${ $varNames{"$predicate/2"} }{$bind2} = 1;
+      ${ $varNames{"$varPredicate/2"} }{$bind2} = 1;
     } 
     if ($bind3 and not $bind3 =~ /V/) {
       ${ $groundings{"$predicate/3"} }{$bind3} = 1;
     }
     elsif ($bind3) {
-      ${ $varNames{"$predicate/3"} }{$bind3} = 1;
+      ${ $varNames{"$varPredicate/3"} }{$bind3} = 1;
     } 
     if ($bind4 and not $bind4 =~ /V/) {
       ${ $groundings{"$predicate/4"} }{$bind4} = 1;
     }
     elsif ($bind4) {
-      ${ $varNames{"$predicate/4"} }{$bind4} = 1;
+      ${ $varNames{"$varPredicate/4"} }{$bind4} = 1;
     } 
   }
 
-  foreach $predicate (keys %varNames) {
-    #  print "predicate: $predicate\n";
-    foreach $variable (keys %{ $varNames{$predicate} }) {
-      #  print "  has var $variable\n";
+  # let a predicatePos inherit from another predicatePos if it is in the head
+  # what is inherited should be the intersection of the possible groundings of
+  # all of the other predicatePos's with the same variable
+  foreach $predicatePos (keys %varNames) {
+    #print "predicatePos: $predicatePos\n";
+    next unless ($predicatePos =~ /head!/); # skip all except rule-head
+    foreach $variable (keys %{ $varNames{$predicatePos} }) {
+      $predicatePos =~ s/head!//;
+      #print "  has var $variable\n";
       foreach $otherPredicate (keys %varNames) {
-        next if ($predicate =~ /^$otherPredicate$/);
-        if (defined ${ $varNames{$otherPredicate} }{$variable}) {
-          #    print "    $otherPredicate also has $variable\n";
-          ${ $aliases{$predicate} }{$otherPredicate} = 1;
+        next if ($otherPredicate =~ /head!/); # different head predicatePos's can't inherit
+        next if ($predicatePos =~ /^$otherPredicate$/);
+        if (defined $varNames{$otherPredicate}{$variable}) {
+          #print "    $otherPredicate also has $variable\n";
+          #$inheritances{$otherPredicate}{$predicatePos} = 1;
+
+          # inheritances is a hash of a hash of lists, format:
+          # $inheritance{predicateName/position}{rule-number}[list-entry] =
+          # other-predicatename/pos
+          #print "$predicatePos in rule $i is also $otherPredicate\n";
+          push @{ $inheritances{$predicatePos}{$i} }, $otherPredicate;
+          # print "there are $#{ $inheritances{$predicatePos}{$i} } sources.\n";
         }
         else {
           #      print "    $otherPredicate has no $variable\n";
@@ -220,20 +258,53 @@ while ($quiescent == 0) {
   $depth++;
   $quiescent = 1;
 
-  foreach $alias1 (keys %aliases) {
-#    print "inh from $alias1\n";
-    if ($alias1 =~ /^distinct\//) {
-      next;
-    }
-    foreach $alias2 (keys %{$aliases{$alias1} }) {
-      if ($alias2 =~ /^distinct\//) {
-        next;
+  foreach $inheritingPPos (keys %inheritances) {
+    foreach $rule (keys %{ $inheritances{$inheritingPPos} }) {
+      # build up the intersection of the groundings of all ppos's in the inheritance
+      # list
+      # the groundings in that intersection are added to the groundings of the
+      # inheritingPPos
+      # if any are added, we are no longer quiescent
+      
+      # print "inspecting $inheritingPPos in rule $rule\n";
+      # print "there are $#{ $inheritances{$inheritingPPos}{$rule} } sources.\n";
+      %inheritedSet = ();
+      $sourceString = "";
+      for ($i=0; $i<=$#{ $inheritances{$inheritingPPos}{$rule} }; $i++) {
+        $sourcePPos = $inheritances{$inheritingPPos}{$rule}[$i];
+        # print "  $inheritingPPos is also $sourcePPos\n";
+        $sourceString = "$sourceString $sourcePPos";
+        if ($i == 0) {
+          foreach $grounding (keys %{$groundings{$sourcePPos}}) {
+            # the first time through, each grounding is added to the set
+            $inheritedSet{$grounding} = 1;
+            # print "  inheriting $grounding from $sourcePPos (initially)\n";
+          }
+        }
+        else {
+          foreach $grounding (keys %{$groundings{$sourcePPos}}) {
+            # now, only those groundings that we present last time through are
+            # updated
+            if ($inheritedSet{$grounding} >= 1) {
+              # print "  $sourcePPos confirms $grounding\n";
+              $inheritedSet{$grounding} = $i+1;
+            }
+          }
+          # clean out the inheritedSet entries that weren't present this time
+          # through
+          foreach $entry (keys %inheritedSet) {
+            if ($inheritedSet{$entry} != $i+1) {
+              #   print "  $sourcePPos rules out $entry\n";
+              $inheritedSet{$entry} = -1;
+            }
+          }
+        }
       }
-      #    print "$alias1 is also $alias2\n";
-      foreach $ground (keys %{$groundings{$alias1} }) {
-        if (not defined ${ $groundings{$alias2} }{$ground}) {
-          ${ $groundings{$alias2} }{$ground} = $depth;
-          #      print "$alias2 inherit $ground from $alias1 at $depth\n";
+      foreach $ground (keys %inheritedSet) {
+        if ($inheritedSet{$ground} <= 0) { next; }
+        if (not defined $groundings{$inheritingPPos}{$ground}) {
+          $groundings{$inheritingPPos}{$ground} = $depth;
+          # print "$inheritingPPos inherit $ground from$sourceString at $depth\n";
           $quiescent = 0;
         }
       }
