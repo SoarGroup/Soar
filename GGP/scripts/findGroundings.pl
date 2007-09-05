@@ -24,10 +24,15 @@ foreach $line (`cat $file`) {
   $line =~ s/NEXT_/NEXT/;
   $line =~ s/NOT //;
   $line =~ s/_+/_/g;
+  if ($line =~ /^distinct_/) {
+    next;
+  }
   $line =~ s/_[\d\.]+/_!Number!/g;
   $bind0 = 0;
   $bind1 = 0;
   $bind2 = 0;
+  $bind3 = 0;
+  $bind4 = 0;
   
   if (not $line =~ /\w/) { next; }
   if (not $inRule) {
@@ -57,6 +62,24 @@ foreach $line (`cat $file`) {
         $bind1 = $3;
         $bind2 = $4;
       }
+      elsif ($line =~ /^([^_]+)_([^_]+)_([^_]+)_([^_]+)_([^_]+)$/) {
+        $predicate = $1;
+        $bind0 = $2;
+        $bind1 = $3;
+        $bind2 = $4;
+        $bind3 = $5;
+      }
+      elsif ($line =~ /^([^_]+)_([^_]+)_([^_]+)_([^_]+)_([^_]+)_([^_]+)$/) {
+        $predicate = $1;
+        $bind0 = $2;
+        $bind1 = $3;
+        $bind2 = $4;
+        $bind3 = $5;
+        $bind4 = $6;
+      }
+      else {
+        die "bad line: $line\n";
+      }
       
       if ($bind0) {
         ${ $groundings{"$predicate/0"} }{$bind0} = 1;
@@ -66,6 +89,12 @@ foreach $line (`cat $file`) {
       } 
       if ($bind2) {
         ${ $groundings{"$predicate/2"} }{$bind2} = 1;
+      } 
+      if ($bind3) {
+        ${ $groundings{"$predicate/3"} }{$bind3} = 1;
+      } 
+      if ($bind4) {
+        ${ $groundings{"$predicate/4"} }{$bind4} = 1;
       } 
     }
   }
@@ -97,6 +126,8 @@ for ($i=0; $i<=$#rules; $i++) {
     $bind0 = 0;
     $bind1 = 0;
     $bind2 = 0;
+    $bind3 = 0;
+    $bind4 = 0;
     if ($line =~ /^([^_]+)$/) {
       $predicate = $1;
     }
@@ -115,6 +146,24 @@ for ($i=0; $i<=$#rules; $i++) {
       $bind1 = $3;
       $bind2 = $4;
     }
+    elsif ($line =~ /^([^_]+)_([^_]+)_([^_]+)_([^_]+)_([^_]+)$/) {
+      $predicate = $1;
+      $bind0 = $2;
+      $bind1 = $3;
+      $bind2 = $4;
+      $bind3 = $5;
+    }
+    elsif ($line =~ /^([^_]+)_([^_]+)_([^_]+)_([^_]+)_([^_]+)_([^_]+)$/) {
+      $predicate = $1;
+      $bind0 = $2;
+      $bind1 = $3;
+      $bind2 = $4;
+      $bind3 = $5;
+      $bind4 = $6;
+    }
+    else {
+      die "bad line: $line\n";
+    }
     if ($bind0 and not $bind0 =~ /V/) {
       ${ $groundings{"$predicate/0"} }{$bind0} = 1;
     }
@@ -132,6 +181,18 @@ for ($i=0; $i<=$#rules; $i++) {
     }
     elsif ($bind2) {
       ${ $varNames{"$predicate/2"} }{$bind2} = 1;
+    } 
+    if ($bind3 and not $bind3 =~ /V/) {
+      ${ $groundings{"$predicate/3"} }{$bind3} = 1;
+    }
+    elsif ($bind3) {
+      ${ $varNames{"$predicate/3"} }{$bind3} = 1;
+    } 
+    if ($bind4 and not $bind4 =~ /V/) {
+      ${ $groundings{"$predicate/4"} }{$bind4} = 1;
+    }
+    elsif ($bind4) {
+      ${ $varNames{"$predicate/4"} }{$bind4} = 1;
     } 
   }
 
@@ -154,7 +215,9 @@ for ($i=0; $i<=$#rules; $i++) {
 }
 
 $quiescent = 0;
+$depth = 1;
 while ($quiescent == 0) {
+  $depth++;
   $quiescent = 1;
 
   foreach $alias1 (keys %aliases) {
@@ -166,11 +229,11 @@ while ($quiescent == 0) {
       if ($alias2 =~ /^distinct\//) {
         next;
       }
-      #     print "$alias1 is also $alias2\n";
+      #    print "$alias1 is also $alias2\n";
       foreach $ground (keys %{$groundings{$alias1} }) {
         if (not defined ${ $groundings{$alias2} }{$ground}) {
-          ${ $groundings{$alias2} }{$ground} = 1;
-          #print "$alias2 inherit $ground from $alias1\n";
+          ${ $groundings{$alias2} }{$ground} = $depth;
+          #      print "$alias2 inherit $ground from $alias1 at $depth\n";
           $quiescent = 0;
         }
       }
@@ -181,10 +244,12 @@ while ($quiescent == 0) {
 foreach $position (sort keys %groundings) {
 #  print "p: $position\n";
   foreach $ground (sort keys %{ $groundings{$position} }) {
-    $position =~ s/\// /;
-    $position =~ s/A//;
-    $position =~ s/TRUE//;
-    print "$position $ground\n";
+    $depth = $groundings{$position}{$ground};
+    $printPosition = $position;
+    $printPosition =~ s/\// /;
+    $printPosition =~ s/^AXN//;
+    $printPosition =~ s/TRUE//;
+    print "$printPosition $ground $depth\n";
   }
 }
 

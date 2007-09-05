@@ -7,7 +7,7 @@ $kifOne = $ARGV[0];
 $kifTwo = $ARGV[1];
 
 $ENV{"GGP_PATH"}="../";
-$ENV{"PYTHONPATH"}="./pyparser/";
+$ENV{"PYTHONPATH"}="./pyparser/:.";
 
 $mapper = "../analogy/const_match/const_match3.py";
 

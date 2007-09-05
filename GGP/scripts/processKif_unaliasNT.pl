@@ -60,8 +60,8 @@ sub handleLine() {
   $line =~ s/^legal_[^_]*_/L/;
   $line =~ s/ next_/ NEXT_/;
   $line =~ s/^next_/NEXT_/;
-  $line =~ s/ does_[^_]*_/ A/;
-  $line =~ s/^does_[^_]*_/A/;
+  $line =~ s/ does_[^_]*_/ AXN/;
+  $line =~ s/^does_[^_]*_/AXN/;
   $line =~ s/\?/V/g;
   print $line;
 }
