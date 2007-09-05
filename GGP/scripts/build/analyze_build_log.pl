@@ -35,7 +35,7 @@ while(my $line = <IF>){
 		$level_info->[$current_depth]->{"remaning branches"} = $1;
 	}
 	
-	if($line =~ /Operator (.+)/i){
+	if($line =~ /^\s*Operator (.+)/i){
 		$level_info->[$current_depth]->{"current action"} = $1;
 	}
 	#S10393: nudge
