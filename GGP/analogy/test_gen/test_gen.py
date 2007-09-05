@@ -110,7 +110,7 @@ class TestEnviron:
 	def gen_contradict(self):
 		ind_map = dict((d, ['I%d' % d]) for d in range(0, 100))
 		indicators = ['I%d' % d for d in range(0, 100)]
-		src_root, contradict_preds, mapped1, mapped2 = self.tree_gen.generate_contradictory_indicators(ind_map)
+		src_root, contradict_preds, mapped = self.tree_gen.generate_contradictory_indicators(ind_map)
 		src_preds = src_root.get_all_predicates()
 		src_rs = RuleSet([], src_root.get_all_states(), src_preds)
 		tgt_root = src_root.deep_copy()
@@ -122,19 +122,22 @@ class TestEnviron:
 		# predicates which are present at every level of the tree. The target
 		# rules will be split on mapped1 or mapped2, alternating by level
 		src_partition = set(contradict_preds + indicators)
-		tgt_partition1 = set([p.lower() for p in mapped1] + indicators)
-		tgt_partition2 = set([p.lower() for p in mapped2] + indicators)
+		tgt_partition = set([p.lower() for p in mapped] + indicators)
+		pdb.set_trace()
+		#tgt_partition2 = set([p.lower() for p in mapped2] + indicators)
 		
-		self.__gen_contradict_rec(src_root, src_preds, tgt_root, tgt_preds, src_partition, tgt_partition1, tgt_partition2, src_rs, tgt_rs)
+		self.__gen_contradict_rec(src_root, src_preds, tgt_root, tgt_preds, src_partition, tgt_partition, src_rs, tgt_rs)
 		
-		src_rs.minimize_rule_conds(set(indicators) | src_partition | tgt_partition1 | tgt_partition2)
+		src_to_preserve = set(indicators) | src_partition | mapped
+		tgt_to_preserve = set(p.lower() for p in src_to_preserve)
+		src_rs.minimize_rule_conds(src_to_preserve)
 		#src_rs.minimize()
-		tgt_rs.minimize_rule_conds(set(indicators) | src_partition | tgt_partition1 | tgt_partition2)
+		tgt_rs.minimize_rule_conds(tgt_to_preserve)
 		#tgt_rs.minimize()
 
 		return src_root, src_rs, tgt_root, tgt_rs
 
-	def __gen_contradict_rec(self, src_state, src_preds, tgt_state, tgt_preds, src_part, tgt_part, tgt_part_alt, src_rs, tgt_rs):
+	def __gen_contradict_rec(self, src_state, src_preds, tgt_state, tgt_preds, src_part, tgt_part, src_rs, tgt_rs):
 		src_max_rules = src_state.make_max_rules(src_preds)
 		for r in src_max_rules:
 			if r.is_goal_rule():
@@ -164,7 +167,7 @@ class TestEnviron:
 			tgt_c = tgt_state.get_child(a)
 			if not src_c.is_goal():
 				assert not tgt_c.is_goal()
-				self.__gen_contradict_rec(src_c, src_preds, tgt_c, tgt_preds, src_part, tgt_part_alt, tgt_part, src_rs, tgt_rs)
+				self.__gen_contradict_rec(src_c, src_preds, tgt_c, tgt_preds, src_part, tgt_part, src_rs, tgt_rs)
 		
 
 	def gen_src_tgt_split(self, split_prob):
@@ -247,7 +250,7 @@ class TestEnviron:
 		for s, t in str_mapping.items():
 			if s.lower() == t:
 				num_correct += 1
-				if s[-1] in '0123456789':
+				if s[0] == 'I' and s[-1] in '0123456789':
 					num_correct_inds += 1
 
 		print "Number of correct predicates:", num_correct
@@ -280,7 +283,7 @@ class TestEnviron:
 		return (ret_labels, ret_vals)
 
 if __name__ == '__main__':
-	#import psycocompile
+#	import psycocompile
 	random.seed(0)
 	#test_heuristic_gen()
 	options.ALLOW_PARTIAL_BODY_MAPS = False
@@ -310,12 +313,12 @@ if __name__ == '__main__':
 	SPLIT_PROBS = [0]
 
 	test_environ = TestEnviron()
-	test_environ.tree_gen.min_branch_len = 4
-	test_environ.tree_gen.max_branch_len = 5
+	test_environ.tree_gen.min_branch_len = 3
+	test_environ.tree_gen.max_branch_len = 4
 
-	indicators = { 1 : ['I1'], 2 : ['I2'], 3 : ['I3'], 4 : ['I4'], 5 : ['I5'] }
-	test_environ.preserve_preds = set(['I1', 'I2', 'I3', 'I4', 'I5'])
-	test_environ.gen_method = 'generate_indicators(%s)' % str(indicators)
+	#indicators = { 1 : ['I1'], 2 : ['I2'], 3 : ['I3'], 4 : ['I4'], 5 : ['I5'] }
+	#test_environ.preserve_preds = set(['I1', 'I2', 'I3', 'I4', 'I5'])
+	#test_environ.gen_method = 'generate_indicators(%s)' % str(indicators)
 
 	first_write = True
 	for b in range(MIN_BINS,MAX_BINS + 1, BIN_STEP):

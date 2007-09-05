@@ -1,4 +1,5 @@
 from multimap import MultiMap
+from ggp_utils import cross_join
 import random
 import pdb
 
@@ -159,11 +160,6 @@ class Rule:
 	def __hash__(self):
 		return hash((self.__pcs, self.__ncs, self.__action, self.__rhs))
 
-def cross_product(list1, list2):
-	if len(list1) == 0 or len(list2) == 0:
-		return []
-	return reduce(lambda x,y: x+y, ([e1 + e2 for e2 in list2] for e1 in list1))
-
 class RuleSet:
 	def __init__(self, rules, states, all_preds):
 		self.rules = rules
@@ -293,7 +289,7 @@ class RuleSet:
 		# both splits must have at least one action
 		rhs_splits = [(i,) for i in range(1,len(rhs)-1)] ; random.shuffle(rhs_splits)
 
-		all_split_combs = cross_product(cross_product(pcs_splits, ncs_splits), rhs_splits)
+		all_split_combs = cross_join(cross_join(pcs_splits, ncs_splits), rhs_splits)
 		for pcs_split, ncs_split, rhs_split in all_split_combs:
 			if rule.has_pconds():
 				pcs1 = pcs[0:pcs_split]

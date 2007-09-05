@@ -1,9 +1,8 @@
 import random
 from state import State
+from ggp_utils import cross_join
 import pdb
 
-def cross_product(list1, list2):
-	return reduce(lambda x,y: x+y, ([e1 + e2 for e2 in list2] for e1 in list1))
 
 class TreeGen:
 	def __init__(self):
@@ -15,7 +14,7 @@ class TreeGen:
 		self.max_preds = 8
 		alpha = [chr(i) for i in range(ord('A'), ord('Z')+1)]
 		self.predicates = alpha
-		#self.predicates = cross_product(alpha, alpha)
+		self.predicates = cross_join(cross_join(alpha, alpha), alpha)
 		#self.predicates.remove('OR')
 		self.actions = ['m1', 'm2']
 
@@ -143,24 +142,40 @@ class TreeGen:
 		# these are the 4 predicates we're going to keep shuffling
 		# around to make the contradictions
 		split_preds = random.sample(self.predicates, 4)
-		split_preds2 = random.sample(set(self.predicates) - set(split_preds), 4)
-		split_preds3 = random.sample((set(self.predicates) - set(split_preds)) - set(split_preds2), 4)
 		# randomly impose an ordering the first time
-		partition = (split_preds[:2], split_preds[2:])
+		#partition = (split_preds[:2], split_preds[2:])
+		# the alter egos of the predicate in the target will be constantly changed
+		ind_preds = set()
+		for i in indicators.values():
+			ind_preds |= set(i)
 
-		self.__gen_contradict_rec(root, partition, split_preds2, split_preds3, indicators, dists)
-		return (root, split_preds, split_preds2, split_preds3)
+		self.__used_split2 = ind_preds
+
+		#self.__gen_contradict_rec(root, partition, indicators, dists)
+		self.__gen_contradict_rec(root, split_preds, indicators, dists)
+		return (root, split_preds, self.__used_split2)
 
 	# split2 contains the predicates the target intends to split on. split2alt is the
 	# same thing, but for the next level down. Keep alternating these two as the tree
 	# deepens
-	def __gen_contradict_rec(self, curr, split, split2, split2alt, indicators, dists):
+	def __gen_contradict_rec(self, curr, split, indicators, dists):
 		inds = indicators.get(dists[curr],[])
+		split2 = random.sample(set(self.predicates) - self.__used_split2, 4)
+		self.__used_split2 |= set(split2)
 		self.__populate_contradict(curr, split, split2, inds)
 		next_level_split = ((split[0][0], split[1][0]),(split[0][1],split[1][1]))
 		for c in curr.get_children():
 			if not c.is_goal():
-				self.__gen_contradict_rec(c, next_level_split, split2alt, split2, indicators, dists)
+				self.__gen_contradict_rec(c, next_level_split, indicators, dists)
+
+	def __gen_contradict_rec2(self, curr, split, indicators, dists):
+		inds = indicators.get(dists[curr],[])
+		split2 = random.sample(set(self.predicates) - self.__used_split2, 4)
+		self.__used_split2 |= set(split2)
+		curr.preds = self.__add_random_preds(split + split2)
+		for c in curr.get_children():
+			if not c.is_goal():
+				self.__gen_contradict_rec(c, split, indicators, dists)
 
 	# split = [(A, C), (B, D)]
 	# second_split = (W, X, Y, Z)
