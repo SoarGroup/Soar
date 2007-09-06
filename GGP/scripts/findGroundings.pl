@@ -19,10 +19,14 @@ $findImplicitPredicates = "./findImplicitPredicates.pl $kifFile";
 
 %implicitPredicates = ();
 
+# if there are predicate-positions that are only ever bound to constants,
+# pretend that the predicate name includes the constant in question
+# (this prevents some overgenerality, eg with types in wargame)
+
 foreach $line (`$findImplicitPredicates`) {
   $line =~ /(\S+) (\d+) (\S+)/ or die;
   $implicitPredicates{"$1/$2 $3"} = 1;
-  print "ip $1/$2 is $3\n";
+#  print "ip $1/$2 is $3\n";
 }
 
 # read through a parsed kif, gather rules into an array of arrays
@@ -40,13 +44,6 @@ foreach $line (`cat $file`) {
     next;
   }
   $line =~ s/_[\d\.]+/_!Number!/g;
-  $bind[0] = 0;
-  $bind[1] = 0;
-  $bind[2] = 0;
-  $bind[3] = 0;
-  $bind[4] = 0;
-  $bind[5] = 0;
-  $bind[6] = 0;
   
   if (not $line =~ /\w/) { next; }
   if (not $inRule) {
@@ -59,72 +56,24 @@ foreach $line (`cat $file`) {
     else {
       # not in a rule, a bare declaration
       $line =~ s/init_/TRUE/;
-      if ($line =~ /^([^_]+)$/) {
-        $predicate = $1;
-      }
-      elsif ($line =~ /^([^_]+)_([^_]+)$/) {
-        $predicate = $1;
-        $bind[0] = $2;
-      }
-      elsif ($line =~ /^([^_]+)_([^_]+)_([^_]+)$/) {
-        $predicate = $1;
-        $bind[0] = $2;
-        $bind[1] = $3;
-      }
-      elsif ($line =~ /^([^_]+)_([^_]+)_([^_]+)_([^_]+)$/) {
-        $predicate = $1;
-        $bind[0] = $2;
-        $bind[1] = $3;
-        $bind[2] = $4;
-      }
-      elsif ($line =~ /^([^_]+)_([^_]+)_([^_]+)_([^_]+)_([^_]+)$/) {
-        $predicate = $1;
-        $bind[0] = $2;
-        $bind[1] = $3;
-        $bind[2] = $4;
-        $bind[3] = $5;
-      }
-      elsif ($line =~ /^([^_]+)_([^_]+)_([^_]+)_([^_]+)_([^_]+)_([^_]+)$/) {
-        $predicate = $1;
-        $bind[0] = $2;
-        $bind[1] = $3;
-        $bind[2] = $4;
-        $bind[3] = $5;
-        $bind[4] = $6;
-      }
-      elsif ($line =~ /^([^_]+)_([^_]+)_([^_]+)_([^_]+)_([^_]+)_([^_]+)_([^_]+)$/) {
-        $predicate = $1;
-        $bind[0] = $2;
-        $bind[1] = $3;
-        $bind[2] = $4;
-        $bind[3] = $5;
-        $bind[4] = $6;
-        $bind[5] = $7;
-      }
-      elsif ($line =~ /^([^_]+)_([^_]+)_([^_]+)_([^_]+)_([^_]+)_([^_]+)_([^_]+)_([^_]+)$/) {
-        $predicate = $1;
-        $bind[0] = $2;
-        $bind[1] = $3;
-        $bind[2] = $4;
-        $bind[3] = $5;
-        $bind[4] = $6;
-        $bind[5] = $7;
-        $bind[6] = $8;
-      }
-      else {
-        die "bad line: $line\n";
+     
+      @bindings = ();
+      $line =~ s/^([^_]+)// or die "can't parse to get predicate: $line";
+      $predicate = $1;
+      while ($line =~ s/^_([^_]+)//) {
+        push @bindings, $1;
       }
       
-      for ($i=0; $i<=$#bind; $i++) {
-        if ($bind[$i] and defined $implicitPredicates{"$predicate/$i $bind[$i]"}) { 
-          $predicate = "$predicate\%$bind[$i]";
-          $bind[$i] = 0;
+      for ($i=0; $i<=$#bindings; $i++) {
+        if ($bindings[$i] and defined $implicitPredicates{"$predicate/$i $bindings[$i]"}) { 
+          $predicate = "$predicate\%$i\%$bindings[$i]";
+          $bindings[$i] = 0;
         }
       }
       
-      for ($i=0; $i<=$#bind; $i++) {
-        if ($bind[$i]) {
-          $groundings{"$predicate/$i"}{$bind[$i]} = 1;
+      for ($i=0; $i<=$#bindings; $i++) {
+        if ($bindings[$i]) {
+          $groundings{"$predicate/$i"}{$bindings[$i]} = 1;
         }
       }
     }
@@ -168,89 +117,35 @@ for ($i=0; $i<=$#rules; $i++) {
 #  print "rule starting $rules[$i][0]\n";
   for ($j=0; $j<=$#{ $rules[$i] }; $j++) {
     $line = $rules[$i][$j];
-    $bind[0] = 0;
-    $bind[1] = 0;
-    $bind[2] = 0;
-    $bind[3] = 0;
-    $bind[4] = 0;
-    $bind[5] = 0;
-    $bind[6] = 0;
-    if ($line =~ /^([^_]+)$/) {
-      $predicate = $1;
-    }
-    elsif ($line =~ /^([^_]+)_([^_]+)$/) {
-      $predicate = $1;
-      $bind[0] = $2;
-    }
-    elsif ($line =~ /^([^_]+)_([^_]+)_([^_]+)$/) {
-      $predicate = $1;
-      $bind[0] = $2;
-      $bind[1] = $3;
-    }
-    elsif ($line =~ /^([^_]+)_([^_]+)_([^_]+)_([^_]+)$/) {
-      $predicate = $1;
-      $bind[0] = $2;
-      $bind[1] = $3;
-      $bind[2] = $4;
-    }
-    elsif ($line =~ /^([^_]+)_([^_]+)_([^_]+)_([^_]+)_([^_]+)$/) {
-      $predicate = $1;
-      $bind[0] = $2;
-      $bind[1] = $3;
-      $bind[2] = $4;
-      $bind[3] = $5;
-    }
-    elsif ($line =~ /^([^_]+)_([^_]+)_([^_]+)_([^_]+)_([^_]+)_([^_]+)$/) {
-      $predicate = $1;
-      $bind[0] = $2;
-      $bind[1] = $3;
-      $bind[2] = $4;
-      $bind[3] = $5;
-      $bind[4] = $6;
-    }
-    elsif ($line =~ /^([^_]+)_([^_]+)_([^_]+)_([^_]+)_([^_]+)_([^_]+)_([^_]+)$/) {
-      $predicate = $1;
-      $bind[0] = $2;
-      $bind[1] = $3;
-      $bind[2] = $4;
-      $bind[3] = $5;
-      $bind[4] = $6;
-      $bind[5] = $7;
-    }
-    elsif ($line =~ /^([^_]+)_([^_]+)_([^_]+)_([^_]+)_([^_]+)_([^_]+)_([^_]+)_([^_]+)$/) {
-      $predicate = $1;
-      $bind[0] = $2;
-      $bind[1] = $3;
-      $bind[2] = $4;
-      $bind[3] = $5;
-      $bind[4] = $6;
-      $bind[5] = $7;
-      $bind[6] = $8;
-    }
-    else {
-      die "bad line: $line\n";
+
+    @bindings = ();
+    $line =~ s/^([^_]+)// or die "can't parse to get predicate: $line";
+    $predicate = $1;
+    while ($line =~ s/^_([^_]+)//) {
+      push @bindings, $1;
     }
 
+    for ($k=0; $k<=$#bindings; $k++) {
+      if ($bindings[$k] and defined $implicitPredicates{"$predicate/$k $bindings[$k]"}) { 
+        $predicate = "$predicate\%$k\%$bindings[$k]";
+        $bindings[$k] = 0;
+      }
+    }
+    
     $varPredicate = $predicate;
     if ($j == 0) {
       # mark this as a predicate in the head
       $varPredicate = "head!$predicate";
     }
     
-    for ($k=0; $k<=$#bind; $k++) {
-      if ($bind[$k] and defined $implicitPredicates{"$predicate/$k $bind[$k]"}) { 
-        $predicate = "$predicate\%$bind[$k]";
-        $bind[$k] = 0;
-      }
-    }
     
-    for ($k=0; $k<=$#bind; $k++) {
-      if ($bind[$k] and not $bind[$k] =~ /^V/) {
-        $groundings{"$predicate/$k"}{$bind[$k]} = 1;
+    for ($k=0; $k<=$#bindings; $k++) {
+      if ($bindings[$k] and not $bindings[$k] =~ /^V/) {
+        $groundings{"$predicate/$k"}{$bindings[$k]} = 1;
       }
-      elsif ($bind[$k]) {
-        # not bound to a variable
-        $varNames{"$varPredicate/$k"}{$bind[$k]} = 1;
+      elsif ($bindings[$k]) {
+        # bound to a variable
+        $varNames{"$varPredicate/$k"}{$bindings[$k]} = 1;
       }
     }
   }
@@ -346,10 +241,30 @@ while ($quiescent == 0) {
   }
 }
 
+%expandedGroundings = ();
+# re-expand implicit predicates to actual predicates
 foreach $position (sort keys %groundings) {
+  $originalPosition = $position;
+  $position =~ s/%[^\/]+//;
+
+  die if ($position =~ /%/);
+  die unless ($position =~ /^[^_]+\/\d+$/);
+
+  # if the ppos was originally type%1%item/0, it is now type/0
+  foreach $grounding (keys %{ $groundings{$originalPosition} }) {
+    $expandedGroundings{$position}{$grounding} = $groundings{$originalPosition}{$grounding};
+  }
+}
+
+foreach $entry (keys %implicitPredicates) {
+  $entry =~ /(\S+) (\S+)/ or die;
+  $expandedGroundings{$1}{$2} = 1;
+}
+
+foreach $position (sort keys %expandedGroundings) {
 #  print "p: $position\n";
-  foreach $ground (sort keys %{ $groundings{$position} }) {
-    $depth = $groundings{$position}{$ground};
+  foreach $ground (sort keys %{ $expandedGroundings{$position} }) {
+    $depth = $expandedGroundings{$position}{$ground};
     $printPosition = $position;
     $printPosition =~ s/\// /;
     $printPosition =~ s/^AXN//;
