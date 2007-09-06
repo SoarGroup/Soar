@@ -15,6 +15,15 @@ our @rules = ();
 $ruleCount = 0;
 %groundings = ();
 
+$findImplicitPredicates = "./findImplicitPredicates.pl $kifFile";
+
+%implicitPredicates = ();
+
+foreach $line (`$findImplicitPredicates`) {
+  $line =~ /(\S+) (\d+) (\S+)/ or die;
+  $implicitPredicates{"$1/$2 $3"} = 1;
+  print "ip $1/$2 is $3\n";
+}
 
 # read through a parsed kif, gather rules into an array of arrays
 # where each outer array is a rule
@@ -31,11 +40,13 @@ foreach $line (`cat $file`) {
     next;
   }
   $line =~ s/_[\d\.]+/_!Number!/g;
-  $bind0 = 0;
-  $bind1 = 0;
-  $bind2 = 0;
-  $bind3 = 0;
-  $bind4 = 0;
+  $bind[0] = 0;
+  $bind[1] = 0;
+  $bind[2] = 0;
+  $bind[3] = 0;
+  $bind[4] = 0;
+  $bind[5] = 0;
+  $bind[6] = 0;
   
   if (not $line =~ /\w/) { next; }
   if (not $inRule) {
@@ -53,78 +64,69 @@ foreach $line (`cat $file`) {
       }
       elsif ($line =~ /^([^_]+)_([^_]+)$/) {
         $predicate = $1;
-        $bind0 = $2;
+        $bind[0] = $2;
       }
       elsif ($line =~ /^([^_]+)_([^_]+)_([^_]+)$/) {
         $predicate = $1;
-        $bind0 = $2;
-        $bind1 = $3;
+        $bind[0] = $2;
+        $bind[1] = $3;
       }
       elsif ($line =~ /^([^_]+)_([^_]+)_([^_]+)_([^_]+)$/) {
         $predicate = $1;
-        $bind0 = $2;
-        $bind1 = $3;
-        $bind2 = $4;
+        $bind[0] = $2;
+        $bind[1] = $3;
+        $bind[2] = $4;
       }
       elsif ($line =~ /^([^_]+)_([^_]+)_([^_]+)_([^_]+)_([^_]+)$/) {
         $predicate = $1;
-        $bind0 = $2;
-        $bind1 = $3;
-        $bind2 = $4;
-        $bind3 = $5;
+        $bind[0] = $2;
+        $bind[1] = $3;
+        $bind[2] = $4;
+        $bind[3] = $5;
       }
       elsif ($line =~ /^([^_]+)_([^_]+)_([^_]+)_([^_]+)_([^_]+)_([^_]+)$/) {
         $predicate = $1;
-        $bind0 = $2;
-        $bind1 = $3;
-        $bind2 = $4;
-        $bind3 = $5;
-        $bind4 = $6;
+        $bind[0] = $2;
+        $bind[1] = $3;
+        $bind[2] = $4;
+        $bind[3] = $5;
+        $bind[4] = $6;
       }
       elsif ($line =~ /^([^_]+)_([^_]+)_([^_]+)_([^_]+)_([^_]+)_([^_]+)_([^_]+)$/) {
         $predicate = $1;
-        $bind0 = $2;
-        $bind1 = $3;
-        $bind2 = $4;
-        $bind3 = $5;
-        $bind4 = $6;
-        $bind5 = $7;
+        $bind[0] = $2;
+        $bind[1] = $3;
+        $bind[2] = $4;
+        $bind[3] = $5;
+        $bind[4] = $6;
+        $bind[5] = $7;
       }
       elsif ($line =~ /^([^_]+)_([^_]+)_([^_]+)_([^_]+)_([^_]+)_([^_]+)_([^_]+)_([^_]+)$/) {
         $predicate = $1;
-        $bind0 = $2;
-        $bind1 = $3;
-        $bind2 = $4;
-        $bind3 = $5;
-        $bind4 = $6;
-        $bind5 = $7;
-        $bind6 = $8;
+        $bind[0] = $2;
+        $bind[1] = $3;
+        $bind[2] = $4;
+        $bind[3] = $5;
+        $bind[4] = $6;
+        $bind[5] = $7;
+        $bind[6] = $8;
       }
       else {
         die "bad line: $line\n";
       }
       
-      if ($bind0) {
-        ${ $groundings{"$predicate/0"} }{$bind0} = 1;
-      } 
-      if ($bind1) {
-        ${ $groundings{"$predicate/1"} }{$bind1} = 1;
-      } 
-      if ($bind2) {
-        ${ $groundings{"$predicate/2"} }{$bind2} = 1;
-      } 
-      if ($bind3) {
-        ${ $groundings{"$predicate/3"} }{$bind3} = 1;
-      } 
-      if ($bind4) {
-        ${ $groundings{"$predicate/4"} }{$bind4} = 1;
-      } 
-      if ($bind5) {
-        ${ $groundings{"$predicate/5"} }{$bind5} = 1;
-      } 
-      if ($bind6) {
-        ${ $groundings{"$predicate/6"} }{$bind6} = 1;
-      } 
+      for ($i=0; $i<=$#bind; $i++) {
+        if ($bind[$i] and defined $implicitPredicates{"$predicate/$i $bind[$i]"}) { 
+          $predicate = "$predicate\%$bind[$i]";
+          $bind[$i] = 0;
+        }
+      }
+      
+      for ($i=0; $i<=$#bind; $i++) {
+        if ($bind[$i]) {
+          $groundings{"$predicate/$i"}{$bind[$i]} = 1;
+        }
+      }
     }
   }
   elsif ($line =~ /END/) {
@@ -166,62 +168,64 @@ for ($i=0; $i<=$#rules; $i++) {
 #  print "rule starting $rules[$i][0]\n";
   for ($j=0; $j<=$#{ $rules[$i] }; $j++) {
     $line = $rules[$i][$j];
-    $bind0 = 0;
-    $bind1 = 0;
-    $bind2 = 0;
-    $bind3 = 0;
-    $bind4 = 0;
+    $bind[0] = 0;
+    $bind[1] = 0;
+    $bind[2] = 0;
+    $bind[3] = 0;
+    $bind[4] = 0;
+    $bind[5] = 0;
+    $bind[6] = 0;
     if ($line =~ /^([^_]+)$/) {
       $predicate = $1;
     }
     elsif ($line =~ /^([^_]+)_([^_]+)$/) {
       $predicate = $1;
-      $bind0 = $2;
+      $bind[0] = $2;
     }
     elsif ($line =~ /^([^_]+)_([^_]+)_([^_]+)$/) {
       $predicate = $1;
-      $bind0 = $2;
-      $bind1 = $3;
+      $bind[0] = $2;
+      $bind[1] = $3;
     }
     elsif ($line =~ /^([^_]+)_([^_]+)_([^_]+)_([^_]+)$/) {
       $predicate = $1;
-      $bind0 = $2;
-      $bind1 = $3;
-      $bind2 = $4;
+      $bind[0] = $2;
+      $bind[1] = $3;
+      $bind[2] = $4;
     }
     elsif ($line =~ /^([^_]+)_([^_]+)_([^_]+)_([^_]+)_([^_]+)$/) {
       $predicate = $1;
-      $bind0 = $2;
-      $bind1 = $3;
-      $bind2 = $4;
-      $bind3 = $5;
+      $bind[0] = $2;
+      $bind[1] = $3;
+      $bind[2] = $4;
+      $bind[3] = $5;
     }
     elsif ($line =~ /^([^_]+)_([^_]+)_([^_]+)_([^_]+)_([^_]+)_([^_]+)$/) {
       $predicate = $1;
-      $bind0 = $2;
-      $bind1 = $3;
-      $bind2 = $4;
-      $bind3 = $5;
-      $bind4 = $6;
+      $bind[0] = $2;
+      $bind[1] = $3;
+      $bind[2] = $4;
+      $bind[3] = $5;
+      $bind[4] = $6;
     }
     elsif ($line =~ /^([^_]+)_([^_]+)_([^_]+)_([^_]+)_([^_]+)_([^_]+)_([^_]+)$/) {
       $predicate = $1;
-      $bind0 = $2;
-      $bind1 = $3;
-      $bind2 = $4;
-      $bind3 = $5;
-      $bind4 = $6;
-      $bind5 = $7;
+      $bind[0] = $2;
+      $bind[1] = $3;
+      $bind[2] = $4;
+      $bind[3] = $5;
+      $bind[4] = $6;
+      $bind[5] = $7;
     }
     elsif ($line =~ /^([^_]+)_([^_]+)_([^_]+)_([^_]+)_([^_]+)_([^_]+)_([^_]+)_([^_]+)$/) {
       $predicate = $1;
-      $bind0 = $2;
-      $bind1 = $3;
-      $bind2 = $4;
-      $bind3 = $5;
-      $bind4 = $6;
-      $bind5 = $7;
-      $bind6 = $8;
+      $bind[0] = $2;
+      $bind[1] = $3;
+      $bind[2] = $4;
+      $bind[3] = $5;
+      $bind[4] = $6;
+      $bind[5] = $7;
+      $bind[6] = $8;
     }
     else {
       die "bad line: $line\n";
@@ -232,49 +236,23 @@ for ($i=0; $i<=$#rules; $i++) {
       # mark this as a predicate in the head
       $varPredicate = "head!$predicate";
     }
-
-    if ($bind0 and not $bind0 =~ /V/) {
-      ${ $groundings{"$predicate/0"} }{$bind0} = 1;
+    
+    for ($k=0; $k<=$#bind; $k++) {
+      if ($bind[$k] and defined $implicitPredicates{"$predicate/$k $bind[$k]"}) { 
+        $predicate = "$predicate\%$bind[$k]";
+        $bind[$k] = 0;
+      }
     }
-    elsif ($bind0) {
-      ${ $varNames{"$varPredicate/0"} }{$bind0} = 1;
-    } 
-    if ($bind1 and not $bind1 =~ /V/) {
-      ${ $groundings{"$predicate/1"} }{$bind1} = 1;
+    
+    for ($k=0; $k<=$#bind; $k++) {
+      if ($bind[$k] and not $bind[$k] =~ /^V/) {
+        $groundings{"$predicate/$k"}{$bind[$k]} = 1;
+      }
+      elsif ($bind[$k]) {
+        # not bound to a variable
+        $varNames{"$varPredicate/$k"}{$bind[$k]} = 1;
+      }
     }
-    elsif ($bind1) {
-      ${ $varNames{"$varPredicate/1"} }{$bind1} = 1;
-    } 
-    if ($bind2 and not $bind2 =~ /V/) {
-      ${ $groundings{"$predicate/2"} }{$bind2} = 1;
-    }
-    elsif ($bind2) {
-      ${ $varNames{"$varPredicate/2"} }{$bind2} = 1;
-    } 
-    if ($bind3 and not $bind3 =~ /V/) {
-      ${ $groundings{"$predicate/3"} }{$bind3} = 1;
-    }
-    elsif ($bind3) {
-      ${ $varNames{"$varPredicate/3"} }{$bind3} = 1;
-    } 
-    if ($bind4 and not $bind4 =~ /V/) {
-      ${ $groundings{"$predicate/4"} }{$bind4} = 1;
-    }
-    elsif ($bind4) {
-      ${ $varNames{"$varPredicate/4"} }{$bind4} = 1;
-    } 
-    if ($bind5 and not $bind5 =~ /V/) {
-      ${ $groundings{"$predicate/5"} }{$bind5} = 1;
-    }
-    elsif ($bind5) {
-      ${ $varNames{"$varPredicate/5"} }{$bind5} = 1;
-    } 
-    if ($bind6 and not $bind6 =~ /V/) {
-      ${ $groundings{"$predicate/6"} }{$bind6} = 1;
-    }
-    elsif ($bind6) {
-      ${ $varNames{"$varPredicate/6"} }{$bind6} = 1;
-    } 
   }
 
   # let a predicatePos inherit from another predicatePos if it is in the head

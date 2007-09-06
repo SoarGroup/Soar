@@ -13,7 +13,7 @@ $processor = "./processKif.pl";
 die unless (-e $kifFile);
 die unless (-e $processor);
 
-$file = "$kifFile\.proc";
+$file = "$kifFile\_fip\.proc";
 print `$processor $kifFile > $file`;
 
 $inRule = 0;
@@ -43,6 +43,8 @@ foreach $line (`cat $file`) {
   $bind2 = 0;
   $bind3 = 0;
   $bind4 = 0;
+  $bind5 = 0;
+  $bind6 = 0;
   
   if (not $line =~ /\w/) { next; }
   if (not $inRule) {
@@ -165,6 +167,8 @@ for ($i=0; $i<=$#rules; $i++) {
     $bind2 = 0;
     $bind3 = 0;
     $bind4 = 0;
+    $bind5 = 0;
+    $bind6 = 0;
     if ($line =~ /^([^_]+)$/) {
       $predicate = $1;
     }
