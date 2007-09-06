@@ -1,22 +1,26 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; micro-Rogue (mRogue) GDL Rule Set
-;;; Example: TL Level 6, Scenario 2, Source Task 2
+;;; Example: TL Level 6, Scenario 3, Source Task 1 
 ;;; See init/1 between ">>>>>" and "<<<<<" for unique aspects of this task
 ; David W. Aha (NRL)
 ; 2007 August 2
 ; 
 ; mRogue was developed by Tom Hinrichs, Sam Wintermute, & David Aha
+;
+; Summary: This source has armor and scrolls, while the other source
+; has armor and potions. The target task has all of them.
+;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ; This file: Map (and Legend)
 ;               + = Corner
 ;    012345     - = Horizontal wall
 ;   +------+    | = Vertical wall
 ;  0|......|    . = A room location
-;  1|..a...|    # = A corridor location
-;  2|@p.H.*|    @ = hero
+;  1|.a..s*|    # = A corridor location
+;  2|@..B..|    @ = hero
 ;  3+----#-+    a = armor, p = potion, s = scroll,
-;  4|...!.p|    w = weapon, ! = amulet, * = gold
-;  5|..Ks.>|    > = exit
+;  4|..H!.s|    w = weapon, ! = amulet, * = gold
+;  5|...s.>|    > = exit
 ;   +------+    K = kestral
 ;               H = hobgoblin
 ;               B = bat
@@ -99,37 +103,37 @@
 ; >>>>>
 ; Monsters and their types
 (monster hobgoblin1 hobgoblin)
-(monster kestral1 snake)
+(monster bat1 bat)
 
 ; Initial health of Hero and monsters (hero's health is defined in 2.3)
 (init (health hobgoblin1 5)) 
-(init (health kestral1 2))
+(init (health bat1 3))
 
 ; Items (that can be picked up by Hero) (amulet & gold are defined in 2.3)
 (item armor1)
-(item potion1)
-(item potion2)
 (item scroll1)
+(item scroll2)
+(item scroll3)
 
 ; Item typings (note: a bow includes a quiver and a set of arrows)
 (armor armor1 bandedmail)
-(potion potion1 invisibility)
-(potion potion2 strength)
-(scroll scroll1 sleep)
+(scroll scroll1 armorEnhance)
+(scroll scroll2 sleep)
+(scroll scroll3 restoreHealth)
 
 ; Locations of character and items (North Room)
-(init (location armor1 2 1))         
-(init (location hero 0 2))           ; our Hero
-(init (location potion1 1 2))
-(init (location hobgoblin1 3 2))     ; Monster
-(init (location gold 5 2))
+(init (location armor1 1 1))
+(init (location gold 5 1))
+(init (location hero 0 2))         ; our Hero
+(init (location bat1 3 2))         ; Monster
+(init (location scroll3 4 1))
 
 ; Locations of character and items (South Room)
+(init (location hobgoblin1 2 4))     ; Monster
 (init (location amulet 3 4))
-(init (location potion2 5 4))
-(init (location kestral1 2 5))     ; Monster
 (init (location scroll1 3 5))
-(init (location exit 5 5))         ; exit
+(init (location scroll2 5 4))
+(init (location exit 5 5))           ; exit
 ; <<<<<
 
 ;---------------------------------------------------------------------------
@@ -625,35 +629,41 @@
 ; 5. Goal: Value of a (final) state for a player
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-; Meaning: Hero receives 100 points if he escapes with the amulet
+;;; Truth table for goals in mRogue TL Level 6
+;;; (Thanks to Tom Hinrichs & Matt Molineaux, 9/6/07)
+;              100%     50%   50%    30%    0%
+; ---------------------------------------------------
+; Health != 0     t        t     t     t    nil
+; Amulet          t        t     nil   nil
+; atExit          t        nil   t     nil
+
+; Meaning: 100 points if hero survives, w/ amulet, and exits!
 (<= (goal hero 100)
-   (not (true (health hero 0)))    ; Endgame
-   (true (carrying amulet))        ; The Hero must carry the amulet
-   atExit)                         ; Endgame
+    (not (true (health hero 0)))    ; Endgame
+    (true (carrying amulet))        ; The Hero must carry the amulet
+    atExit)                         ; Endgame
 
-; Meaning: 75 points if hero has obtained the amulet but not exited
-(<= (goal hero 75)
-   (not (true (health hero 0)))    ; Endgame
-   (true (carrying amulet))
-   (not atExit))                   ; Endgame
-
-; Meaning: 50 points if hero has obtained gold but not exited
+; Meaning: 50 points if hero survives, w/ amulet, but hasn't exited
 (<= (goal hero 50)
-   (not (true (health hero 0)))    ; Endgame
-   (not (true (carrying amulet)))
-   (true (carrying gold))
-   (not atExit))                   ; Endgame
+    (not (true (health hero 0)))    ; Endgame
+    (true (carrying amulet))
+    (not atExit))                   ; Endgame
 
-; Meaning: 30 points if you just survive
+; Meaning: 50 points if hero survives, w/o amulet, but exits
+(<= (goal hero 50)
+    (not (true (health hero 0)))    ; Endgame
+    (not (true (carrying amulet)))
+    atExit)                         ; Endgame
+
+; Meaning: 30 points if hero survives w/o amulet or exiting
 (<= (goal hero 30)
-   (not (true (health hero 0)))    ; Endgame
-   (not (true (carrying amulet)))
-   (not (true (carrying gold)))
-   (not atExit))                   ; Endgame
+    (not (true (health hero 0)))    ; Endgame
+    (not (true (carrying amulet)))
+    (not atExit))                   ; Endgame
 
-; Meaning: The hero receives 0 points if he is killed
+; Meaning: 0 points if hero is killed
 (<= (goal hero 0)
-   (true (health hero 0)))         ; Endgame
+    (true (health hero 0)))         ; Endgame
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ; 6. Terminal: Terminal state

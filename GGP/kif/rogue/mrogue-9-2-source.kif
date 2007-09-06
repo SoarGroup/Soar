@@ -626,35 +626,41 @@
 ; 5. Goal: Value of a (final) state for a player
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-; Meaning: Hero receives 100 points if he escapes with the amulet
+;;; Truth table for goals in mRogue TL Level 6
+;;; (Thanks to Tom Hinrichs & Matt Molineaux, 9/6/07)
+;              100%     50%   50%    30%    0%
+; ---------------------------------------------------
+; Health != 0     t        t     t     t    nil
+; Amulet          t        t     nil   nil
+; atExit          t        nil   t     nil
+
+; Meaning: 100 points if hero survives, w/ amulet, and exits!
 (<= (goal hero 100)
-   (not (true (health hero 0)))    ; Endgame
-   (true (carrying amulet))        ; The Hero must carry the amulet
-   atExit)                         ; Endgame
+    (not (true (health hero 0)))    ; Endgame
+    (true (carrying amulet))        ; The Hero must carry the amulet
+    atExit)                         ; Endgame
 
-; Meaning: 75 points if hero has obtained the amulet but not exited
-(<= (goal hero 75)
-   (not (true (health hero 0)))    ; Endgame
-   (true (carrying amulet))
-   (not atExit))                   ; Endgame
-
-; Meaning: 50 points if hero has obtained gold but not exited
+; Meaning: 50 points if hero survives, w/ amulet, but hasn't exited
 (<= (goal hero 50)
-   (not (true (health hero 0)))    ; Endgame
-   (not (true (carrying amulet)))
-   (true (carrying gold))
-   (not atExit))                   ; Endgame
+    (not (true (health hero 0)))    ; Endgame
+    (true (carrying amulet))
+    (not atExit))                   ; Endgame
 
-; Meaning: 30 points if you just survive
+; Meaning: 50 points if hero survives, w/o amulet, but exits
+(<= (goal hero 50)
+    (not (true (health hero 0)))    ; Endgame
+    (not (true (carrying amulet)))
+    atExit)                         ; Endgame
+
+; Meaning: 30 points if hero survives w/o amulet or exiting
 (<= (goal hero 30)
-   (not (true (health hero 0)))    ; Endgame
-   (not (true (carrying amulet)))
-   (not (true (carrying gold)))
-   (not atExit))                   ; Endgame
+    (not (true (health hero 0)))    ; Endgame
+    (not (true (carrying amulet)))
+    (not atExit))                   ; Endgame
 
-; Meaning: The hero receives 0 points if he is killed
+; Meaning: 0 points if hero is killed
 (<= (goal hero 0)
-   (true (health hero 0)))         ; Endgame
+    (true (health hero 0)))         ; Endgame
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ; 6. Terminal: Terminal state
