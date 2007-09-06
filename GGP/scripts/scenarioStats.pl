@@ -22,46 +22,46 @@ else {
 
 if ($env =~ /^e/) {
   if ($level == 6) {
-    print `$stats escape-tl$level-$scenario-source1.log`;
+    print `$stats escape-$level-$scenario-source-1.log`;
     print "\n";
-    print `$stats escape-tl$level-$scenario-source2.log`;
+    print `$stats escape-$level-$scenario-source-2.log`;
   }
   else {
-    print `$stats escape-tl$level-$scenario-source.log`;
+    print `$stats escape-$level-$scenario-source.log`;
   }
   print "\n";
-  print `$stats escape-tl$level-$scenario-target_no_source.log`;
+  print `$stats escape-$level-$scenario-target_no_source.log`;
   print "\n";
-  print `$stats escape-tl$level-$scenario-target_after_source.log`;
+  print `$stats escape-$level-$scenario-target_after_source.log`;
 }
 elsif ($env =~ /^w/ or $env =~ /^m/) {
   if ($level == 6) {
-    print `$stats wargame-tl$level-$scenario-source1.log`;
+    print `$stats wargame-$level-$scenario-source-1.log`;
     print "\n";
-    print `$stats wargame-tl$level-$scenario-source2.log`;
+    print `$stats wargame-$level-$scenario-source-2.log`;
   }
   else {
-    print `$stats wargame-tl$level-$scenario-source.log`;
+    print `$stats wargame-$level-$scenario-source.log`;
   }
   print "\n";
-  print `$stats wargame-tl$level-$scenario-target_no_source.log`;
+  print `$stats wargame-$level-$scenario-target_no_source.log`;
   print "\n";
-  print `$stats wargame-tl$level-$scenario-target_after_source.log`;
+  print `$stats wargame-$level-$scenario-target_after_source.log`;
 }
 elsif ($env =~ /^r/) {
   $env = "rogue";
   if ($level == 6) {
-    print `$stats mRogue-TL-Level-$level-$scenario-Source-1.log`;
+    print `$stats mrogue-$level-$scenario-source-1.log`;
     print "\n";
-    print `$stats mRogue-TL-Level-$level-$scenario-Source-2.log`;
+    print `$stats mrogue-$level-$scenario-source-2.log`;
   }
   else {
-    print `$stats mRogue-TL-Level-$level-$scenario-Source.log`;
+    print `$stats mrogue-$level-$scenario-source.log`;
   }
   print "\n";
-  print `$stats mRogue-TL-Level-$level-$scenario-Target_no_source.log`;
+  print `$stats mrogue-$level-$scenario-target_no_source.log`;
   print "\n";
-  print `$stats mRogue-TL-Level-$level-$scenario-Target_after_source.log`;
+  print `$stats mrogue-$level-$scenario-target_after_source.log`;
 }
 elsif ($level =~ "10") {
   print `$runStats TL-Level-10-$scenario-Source.log`;
