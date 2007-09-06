@@ -24,39 +24,39 @@ else {
 
 if ($env =~ /^e/) {
   if ($level == 6) {
-    @source-1 = `$stats escape-$level-$scenario-source-1.log`;
-    @source-2 = `$stats escape-$level-$scenario-source-2.log`;
+    @source1 = `$stats escape-$level-$scenario-source-1.log`;
+    @source2 = `$stats escape-$level-$scenario-source-2.log`;
   }
   else {
-    @source-1 = `$stats escape-$level-$scenario-source.log`;
+    @source1 = `$stats escape-$level-$scenario-source.log`;
   }
   @targetNS = `$stats escape-$level-$scenario-target_no_source.log`;
   @targetS = `$stats escape-$level-$scenario-target_after_source.log`;
 }
 elsif ($env =~ /^w/ or $env =~ /^m/) {
   if ($level == 6) {
-    @source-1 = `$stats wargame-$level-$scenario-source-1.log`;
-    @source-2 = `$stats wargame-$level-$scenario-source-2.log`;
+    @source1 = `$stats wargame-$level-$scenario-source-1.log`;
+    @source2 = `$stats wargame-$level-$scenario-source-2.log`;
   }
   else {
-    @source-1 = `$stats wargame-$level-$scenario-source.log`;
+    @source1 = `$stats wargame-$level-$scenario-source.log`;
   }
   @targetNS = `$stats wargame-$level-$scenario-target_no_source.log`;
   @targetS = `$stats wargame-$level-$scenario-target_after_source.log`;
 }
 elsif ($env =~ /^r/) {
   if ($level == 6) {
-    @source-1 = `$stats mrogue-$level-$scenario-source-1.log`;
-    @source-2 = `$stats mrogue-$level-$scenario-source-2.log`;
+    @source1 = `$stats mrogue-$level-$scenario-source-1.log`;
+    @source2 = `$stats mrogue-$level-$scenario-source-2.log`;
   }
   else {
-    @source-1 = `$stats mrogue-$level-$scenario-source.log`;
+    @source1 = `$stats mrogue-$level-$scenario-source.log`;
   }
   @targetNS = `$stats mrogue-$level-$scenario-target_no_source.log`;
   @targetS = `$stats mrogue-$level-$scenario-target_after_source.log`;
 }
 elsif ($level =~ "10") {
-  @source-1 = `$stats TL-Level-10-$scenario-Source.log`;
+  @source1 = `$stats TL-Level-10-$scenario-Source.log`;
   @targetNS = `$stats TL-Level-10-$scenario-Target_no_source.log`;
   @targetS = `$stats TL-Level-10-$scenario-Target_after_source.log`;
 }

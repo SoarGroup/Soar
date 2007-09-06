@@ -21,6 +21,10 @@ print "$machine:$path\n";
 #print "total states visited: ";
 print `grep update-state $logFile | wc -l`;
 
+$line = `grep "msec/decision" $logFile | tail -n 1`;
+$line =~ /\((.*) msec/;
+print "$1\n";
+
 #print "soln length:\n";
 $length = `grep ACTION $logFile | wc -l`;
 chomp $length;
