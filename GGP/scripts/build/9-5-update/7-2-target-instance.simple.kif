@@ -230,7 +230,7 @@
 ;;; 3) DRAW: Maximum time-step reached
 
 (<= (goal agent 100)
-    (stairway right)
+    (stairway left)
     (not structural-failure))
 
 (<= (goal agent 0)
@@ -248,7 +248,7 @@
 ;;; 3) Maximum time-step reached
 
 (<= terminal
-    (stairway right))
+    (stairway left))
 
 (<= terminal
     (collapsed ?object))
