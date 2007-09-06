@@ -67,11 +67,11 @@ def CheckForSWTJar(env):
 		
 	try:
 		if sys.platform == 'darwin':
-			urllib.urlretrieve('http://winter.eecs.umich.edu/jars/osx/swt.jar', 'SoarLibrary/bin/swt.jar')
+			urllib.urlretrieve('http://ai.eecs.umich.edu/~soar/sitemaker/misc/jars/osx/swt.jar', 'SoarLibrary/bin/swt.jar')
 		elif sys.platform == 'cygwin':
-			urllib.urlretrieve('http://winter.eecs.umich.edu/jars/windows/swt.jar', 'SoarLibrary/bin/swt.jar')
+			urllib.urlretrieve('http://ai.eecs.umich.edu/~soar/sitemaker/misc/jars/windows/swt.jar', 'SoarLibrary/bin/swt.jar')
 		else:
-			urllib.urlretrieve('http://winter.eecs.umich.edu/jars/gtk/swt.jar', 'SoarLibrary/bin/swt.jar')
+			urllib.urlretrieve('http://ai.eecs.umich.edu/~soar/sitemaker/misc/jars/gtk/swt.jar', 'SoarLibrary/bin/swt.jar')
 	except IOError:
 		print "Error downloading swt.jar to SoarLibrary/bin: IOError"
 		return False

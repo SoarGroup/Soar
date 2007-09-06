@@ -87,7 +87,7 @@ if conf.env['java']:
 	# This checks for the swt.jar and attempts to download it if it doesn't exist
 	if env['swt'] and not SoarSCons.CheckForSWTJar(conf.env):
 		print "Could not find swt.jar. You can obtain the jar here:"
-		print "\thttp://winter.eecs.umich.edu/jars"
+		print "\thttp://ai.eecs.umich.edu/~soar/sitemaker/misc/jars"
 		print "Place swt.jar in SoarLibrary/bin"
 		print "You may disable swt, see help (scons -h)"
 		print "swt.jar required... Exiting"
