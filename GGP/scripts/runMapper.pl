@@ -9,13 +9,14 @@ $kifTwo = $ARGV[1];
 $ENV{"GGP_PATH"}="../";
 $ENV{"PYTHONPATH"}="./pyparser/:.";
 
-$mapper = "../analogy/const_match/const_match3.py";
+#$mapper = "python ../analogy/const_match/const_match3.py";
+$mapper = "./newConstantMapper.pl";
 
 checkFor($kifOne);
 checkFor($kifTwo);
 checkFor($mapper);
 
-print lc `python $mapper $kifOne $kifTwo | grep "map predicate\\|map constant"`;
+print lc `$mapper $kifOne $kifTwo | grep "map predicate\\|map constant"`;
 
 
 sub checkFor() {

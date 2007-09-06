@@ -13,7 +13,7 @@ $processor = "./processKif.pl";
 die unless (-e $kifFile);
 die unless (-e $processor);
 
-$file = "$kifFile\_fip\.proc";
+$file = "$kifFile\:fip\.proc";
 print `$processor $kifFile > $file`;
 
 $inRule = 0;
@@ -27,17 +27,17 @@ $ruleCount = 0;
 # where each outer array is a rule
 foreach $line (`cat $file`) {
   chomp $line;
-  $line =~ s/TRUE_/TRUE/;
-  $line =~ s/NEXT_/NEXT/;
+  $line =~ s/TRUE:/TRUE/;
+  $line =~ s/NEXT:/NEXT/;
   if ($line =~ /NOT /) {
     # ignore negated conditions, as the variables must be bound elsewhere
     next;
   }
-  $line =~ s/_+/_/g;
-  if ($line =~ /^distinct_/) {
+  $line =~ s/:+/:/g;
+  if ($line =~ /^distinct:/) {
     next;
   }
-  $line =~ s/_[\d\.]+/_!Number!/g;
+  $line =~ s/:[\d\.]+/:!Number!/g;
 
   if (not $line =~ /\w/) { next; }
   if (not $inRule) {
@@ -49,12 +49,12 @@ foreach $line (`cat $file`) {
     }
     else {
       # not in a rule, a bare declaration
-      $line =~ s/init_/TRUE/;
+      $line =~ s/init:/TRUE/;
       
       @bindings = ();
-      $line =~ s/^([^_]+)// or die "can't parse to get predicate: $line";
+      $line =~ s/^([^:]+)// or die "can't parse to get predicate: $line";
       $predicate = $1;
-      while ($line =~ s/^_([^_]+)//) {
+      while ($line =~ s/^:([^:]+)//) {
         push @bindings, $1;
       }
       
@@ -86,9 +86,9 @@ for ($i=0; $i<=$#rules; $i++) {
   for ($j=0; $j<=$#{ $rules[$i] }; $j++) {
     $line = $rules[$i][$j];
     @bindings = ();
-    $line =~ s/^([^_]+)// or die "can't parse to get predicate: $line";
+    $line =~ s/^([^:]+)// or die "can't parse to get predicate: $line";
     $predicate = $1;
-    while ($line =~ s/^_([^_]+)//) {
+    while ($line =~ s/^:([^:]+)//) {
       push @bindings, $1;
     }
     

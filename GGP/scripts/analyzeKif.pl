@@ -24,7 +24,7 @@ $ruleCount = 0;
 # where each outer array is a rule
 foreach $line (`cat $file`) {
   chomp $line;
-  $line =~ s/TRUE_/TRUE/;
+  $line =~ s/TRUE:/TRUE/;
   
   if (not $line =~ /\w/) { next; }
   if (not $inRule) {
@@ -55,16 +55,16 @@ for ($i=0; $i<=$#rules; $i++) {
   # for each rule
   
   # store the result attribute in the set of all generated attributes
-  $rules[$i][0] =~ /^([^_]*)/;
+  $rules[$i][0] =~ /^([^:]*)/;
   $headAtt = $1;
       
   $keep = 0;
   for ($j=1; $j<=$#{@rules[$i]} and not $keep; $j++) {
     # for each line in body of rule
-    $rules[$i][$j] =~ /^([^_]*)/;
+    $rules[$i][$j] =~ /^([^:]*)/;
     $att = $1;
     if ($att =~ /^NOT /) {
-      $rules[$i][$j] =~ /^NOT ([^_]*)/;
+      $rules[$i][$j] =~ /^NOT ([^:]*)/;
       $att = $1;
     }
 

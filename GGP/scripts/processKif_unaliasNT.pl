@@ -23,12 +23,12 @@ sub handleLine() {
   if ($line =~ /^$/) { next; }
   $line = "$line\n";
   $line =~ s/ \)/\)/g;
-  $line =~ s/ /_/g;
+  $line =~ s/ /:/g;
 
   #$line = lc $line;
   
-  if ($line =~ /^\(<=_/) {
-    $line =~ s/^\(<=_//;
+  if ($line =~ /^\(<=:/) {
+    $line =~ s/^\(<=://;
     print "BEGIN ";
   }
 
@@ -37,31 +37,31 @@ sub handleLine() {
     $line =~ s/^\(//;
     $line =~ s/\)$//;
   }
-  if ($line =~ /true_\(/) {
-    $line =~ s/true_\(/TRUE_/;
+  if ($line =~ /true:\(/) {
+    $line =~ s/true:\(/TRUE:/;
     $line =~ s/\)$//;
   }
-  if ($line =~ /not_\(/) {
-    $line =~ s/not_\(/NOT /;
+  if ($line =~ /not:\(/) {
+    $line =~ s/not:\(/NOT /;
     $line =~ s/\)$//;
   }
-  $line =~ s/not_/NOT /;
+  $line =~ s/not:/NOT /;
  
 
-  if ($line =~/_\(/) {
-    $line =~ s/_\(/_/;
+  if ($line =~/:\(/) {
+    $line =~ s/:\(/:/;
     $line =~ s/\)//;
   }
 
   $line =~ s/\)$/\nEND/g;
 
-  $line =~ s/goal_[^_]*_(\d+)/NEXTgoal$1/;
-  $line =~ s/ legal_[^_]*_/ L/;
-  $line =~ s/^legal_[^_]*_/L/;
-  $line =~ s/ next_/ NEXT_/;
-  $line =~ s/^next_/NEXT_/;
-  $line =~ s/ does_[^_]*_/ AXN/;
-  $line =~ s/^does_[^_]*_/AXN/;
+  $line =~ s/goal:[^:]*:(\d+)/NEXTgoal$1/;
+  $line =~ s/ legal:[^:]*:/ L/;
+  $line =~ s/^legal:[^:]*:/L/;
+  $line =~ s/ next:/ NEXT:/;
+  $line =~ s/^next:/NEXT:/;
+  $line =~ s/ does:[^:]*:/ AXN/;
+  $line =~ s/^does:[^:]*:/AXN/;
   $line =~ s/\?/V/g;
   print $line;
 }

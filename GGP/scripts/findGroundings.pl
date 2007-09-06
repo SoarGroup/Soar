@@ -33,17 +33,17 @@ foreach $line (`$findImplicitPredicates`) {
 # where each outer array is a rule
 foreach $line (`cat $file`) {
   chomp $line;
-  $line =~ s/TRUE_/TRUE/;
-  $line =~ s/NEXT_/NEXT/;
+  $line =~ s/TRUE:/TRUE/;
+  $line =~ s/NEXT:/NEXT/;
   if ($line =~ /NOT /) {
     # ignore negated conditions, as the variables must be bound elsewhere
     next;
   }
-  $line =~ s/_+/_/g;
-  if ($line =~ /^distinct_/) {
+  $line =~ s/:+/:/g;
+  if ($line =~ /^distinct:/) {
     next;
   }
-  $line =~ s/_[\d\.]+/_!Number!/g;
+  $line =~ s/:[\d\.]+/:!Number!/g;
   
   if (not $line =~ /\w/) { next; }
   if (not $inRule) {
@@ -55,12 +55,12 @@ foreach $line (`cat $file`) {
     }
     else {
       # not in a rule, a bare declaration
-      $line =~ s/init_/TRUE/;
+      $line =~ s/init:/TRUE/;
      
       @bindings = ();
-      $line =~ s/^([^_]+)// or die "can't parse to get predicate: $line";
+      $line =~ s/^([^:]+)// or die "can't parse to get predicate: $line";
       $predicate = $1;
-      while ($line =~ s/^_([^_]+)//) {
+      while ($line =~ s/^:([^:]+)//) {
         push @bindings, $1;
       }
       
@@ -119,9 +119,9 @@ for ($i=0; $i<=$#rules; $i++) {
     $line = $rules[$i][$j];
 
     @bindings = ();
-    $line =~ s/^([^_]+)// or die "can't parse to get predicate: $line";
+    $line =~ s/^([^:]+)// or die "can't parse to get predicate: $line";
     $predicate = $1;
-    while ($line =~ s/^_([^_]+)//) {
+    while ($line =~ s/^:([^:]+)//) {
       push @bindings, $1;
     }
 
@@ -248,7 +248,7 @@ foreach $position (sort keys %groundings) {
   $position =~ s/%[^\/]+//;
 
   die if ($position =~ /%/);
-  die unless ($position =~ /^[^_]+\/\d+$/);
+  die unless ($position =~ /^[^:]+\/\d+$/);
 
   # if the ppos was originally type%1%item/0, it is now type/0
   foreach $grounding (keys %{ $groundings{$originalPosition} }) {
@@ -262,7 +262,7 @@ foreach $entry (keys %implicitPredicates) {
 }
 
 foreach $position (sort keys %expandedGroundings) {
-#  print "p: $position\n";
+  #print "p: $position\n";
   foreach $ground (sort keys %{ $expandedGroundings{$position} }) {
     $depth = $expandedGroundings{$position}{$ground};
     $printPosition = $position;

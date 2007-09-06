@@ -20,24 +20,24 @@ else {
 
 if ($env =~ /^e/) {
   $env = "escape";
-  $source = "../kif/escape/escape-tl$level-$scenario-source.kif";
-  $sourceOne = "../kif/escape/escape-tl$level-$scenario-source1.kif";
-  $sourceTwo = "../kif/escape/escape-tl$level-$scenario-source2.kif";
-  $target = "../kif/escape/escape-tl$level-$scenario-target.kif";
+  $source = "../kif/escape/escape-$level-$scenario-source.kif";
+  $sourceOne = "../kif/escape/escape-$level-$scenario-source-1.kif";
+  $sourceTwo = "../kif/escape/escape-$level-$scenario-source-2.kif";
+  $target = "../kif/escape/escape-$level-$scenario-target.kif";
 }
 elsif ($env =~ /^w/ or $env =~ /^m/) {
   $env = "mm";
-  $source = "../kif/mm/wargame-tl$level-$scenario-source.kif";
-  $sourceOne = "../kif/mm/wargame-tl$level-$scenario-source1.kif";
-  $sourceTwo = "../kif/mm/wargame-tl$level-$scenario-source2.kif";
-  $target = "../kif/mm/wargame-tl$level-$scenario-target.kif";
+  $source = "../kif/mm/wargame-$level-$scenario-source.kif";
+  $sourceOne = "../kif/mm/wargame-$level-$scenario-source-1.kif";
+  $sourceTwo = "../kif/mm/wargame-$level-$scenario-source-2.kif";
+  $target = "../kif/mm/wargame-$level-$scenario-target.kif";
 }
 elsif ($env =~ /^r/) {
   $env = "rogue";
-  $source = "../kif/rogue/mRogue-TL-Level-$level-$scenario-Source.kif";
-  $sourceOne = "../kif/rogue/mRogue-TL-Level-$level-$scenario-Source-1.kif";
-  $sourceTwo = "../kif/rogue/mRogue-TL-Level-$level-$scenario-Source-2.kif";
-  $target = "../kif/rogue/mRogue-TL-Level-$level-$scenario-Target.kif";
+  $source = "../kif/rogue/mrogue-$level-$scenario-source.kif";
+  $sourceOne = "../kif/rogue/mrogue-$level-$scenario-source-1.kif";
+  $sourceTwo = "../kif/rogue/mrogue-$level-$scenario-source-2.kif";
+  $target = "../kif/rogue/mrogue-$level-$scenario-target.kif";
 }
 elsif ($level =~ "10") {
   $env = "escape"; # irrelevant
