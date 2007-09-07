@@ -76,7 +76,8 @@ public class Game implements Runnable, Kernel.UpdateEventInterface {
 
         // Register for the event we'll use to update the world
         // We update the environment when this event fires.  This allows us to either run the environment directly or from a debugger and get correct behavior
-        int updateCallback = kernel.RegisterForUpdateEvent(smlUpdateEventId.smlEVENT_AFTER_ALL_OUTPUT_PHASES, this, null) ;
+        //int updateCallback = 
+        kernel.RegisterForUpdateEvent(smlUpdateEventId.smlEVENT_AFTER_ALL_OUTPUT_PHASES, this, null) ;
 
         this.diskCount = diskCount;
         
@@ -232,12 +233,12 @@ public class Game implements Runnable, Kernel.UpdateEventInterface {
      * with the smallest disk on top and the largest disk on the bottom.
      */
     public void reset() {
-        List disks = new ArrayList(diskCount);
+        List<Disk> disks = new ArrayList<Disk>(diskCount);
         
         // collect all of the disks
-        ListIterator i = towers.listIterator();
-        while (i.hasNext()) {
-            Tower t = (Tower)i.next();
+        ListIterator<Tower> iTower = towers.listIterator();
+        while (iTower.hasNext()) {
+            Tower t = iTower.next();
             while (!t.isEmpty()) {
                 disks.add(t.getTopDisk());
                 t.removeTopDisk();
@@ -248,10 +249,10 @@ public class Game implements Runnable, Kernel.UpdateEventInterface {
         Collections.sort(disks);
         
         // place them back on the first tower in reverse order
-        Tower t = (Tower)towers.get(0);
-        i = disks.listIterator(disks.size());
-        while (i.hasPrevious())
-            t.addDisk((Disk)i.previous());
+        Tower t = towers.get(0);
+        ListIterator<Disk> iDisk = disks.listIterator(disks.size());
+        while (iDisk.hasPrevious())
+            t.addDisk(iDisk.previous());
         disks.clear();
         
         agent.Commit();
@@ -277,7 +278,7 @@ public class Game implements Runnable, Kernel.UpdateEventInterface {
      * 
      * @return  a list of all of this <code>Game</code>'s <code>Tower</code>s.
      */
-    public List getTowers()     { return Collections.unmodifiableList(towers); }
+    public List<Tower> getTowers()     { return Collections.unmodifiableList(towers); }
     /**
      * Get this Game's Soar agent.
      * 
@@ -315,8 +316,10 @@ public class Game implements Runnable, Kernel.UpdateEventInterface {
     {
     	if (kernel != null)
     	{
-			int startCallback = kernel.RegisterForSystemEvent(smlSystemEventId.smlEVENT_SYSTEM_START, listener, null) ;
-			int stopCallback  = kernel.RegisterForSystemEvent(smlSystemEventId.smlEVENT_SYSTEM_STOP, listener, null) ;
+			//int startCallback = 
+    		kernel.RegisterForSystemEvent(smlSystemEventId.smlEVENT_SYSTEM_START, listener, null) ;
+			//int stopCallback  = 
+    		kernel.RegisterForSystemEvent(smlSystemEventId.smlEVENT_SYSTEM_STOP, listener, null) ;
     	}
     }
 
@@ -355,9 +358,9 @@ public class Game implements Runnable, Kernel.UpdateEventInterface {
      * @param destination  the <code>Tower</code> a disk is being added to.
      */
     protected void fireDiskMoved(Tower source, Tower destination) {
-        Iterator i = listeners.iterator();
+        Iterator<GameListener> i = listeners.iterator();
         while (i.hasNext())
-            ((GameListener)i.next()).diskMoved(this, source, destination);
+            (i.next()).diskMoved(this, source, destination);
     }
     /**
      * Notifies any registered listeners that this <code>Game</code> has reached the
@@ -365,16 +368,16 @@ public class Game implements Runnable, Kernel.UpdateEventInterface {
      *
      */
     protected void fireAtGoalState() {
-        Iterator i = listeners.iterator();
+        Iterator<GameListener> i = listeners.iterator();
         while (i.hasNext())
-            ((GameListener)i.next()).atGoalState(this);
+            (i.next()).atGoalState(this);
     }
     
     public static final String AGENT_NAME = "TOH";
     
     private int diskCount;                     // total number of disks
-    private List towers = new ArrayList();     // towers, from left to right
-    private List listeners = new LinkedList(); // GameListeners
+    private List<Tower> towers = new ArrayList<Tower>();     // towers, from left to right
+    private List<GameListener> listeners = new LinkedList<GameListener>(); // GameListeners
     
     private boolean m_StopNow ;
     

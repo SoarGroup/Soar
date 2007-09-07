@@ -17,7 +17,7 @@ IF EXIST tmp rmdir /S /Q tmp
 mkdir tmp
 
 @echo ----------=========Compiling=========----------
-%2javac -source 1.4 -d tmp -classpath .;%SOARBIN%\swt.jar;%SOARBIN%\sml.jar -sourcepath src src\edu\umich\toh\TowersOfHanoi.java
+%2javac -source 1.5 -d tmp -classpath .;%SOARBIN%\swt.jar;%SOARBIN%\sml.jar -sourcepath src src\edu\umich\toh\TowersOfHanoi.java
 
 @echo ----------==========Jarring==========----------
 %2jar cfm toh.jar JarManifest -C tmp .

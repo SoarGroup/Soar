@@ -5,15 +5,18 @@ import java.util.HashMap;
 public class Shape {
 	public static final String kRound = "round";
 	public static final String kSquare = "square";
+	public static final String kTriangle = "triangle";
 	
 	public static final Shape ROUND = new Shape(kRound);
 	public static final Shape SQUARE = new Shape(kSquare);
+	public static final Shape TRIANGLE = new Shape(kTriangle);
 	
 	private static HashMap<String, Shape> shapeHash = new HashMap<String, Shape>();
 	
 	static {
 		shapeHash.put(kRound, ROUND);
 		shapeHash.put(kSquare, SQUARE);
+		shapeHash.put(kTriangle, TRIANGLE);
 	}
 	
 	private static int nextID = 0;

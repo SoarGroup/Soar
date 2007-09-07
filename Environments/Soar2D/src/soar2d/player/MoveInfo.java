@@ -15,7 +15,7 @@ public class MoveInfo {
 	// all
 	public boolean stopSim = false;	// stop the simulation by command
 	
-	// eaters + tanksoar
+	// eaters + tanksoar + kitchen
 	public boolean move = false;	// move
 	public int moveDirection = -1;	// direction to move
 	
@@ -50,6 +50,12 @@ public class MoveInfo {
 	public int getId;
 	public boolean drop = false;
 	public int dropId;
+	
+	// kitchen
+	public boolean moveWithObject = false;
+	public boolean mix = false;
+	public boolean cook = false;
+	public boolean eat = false;
 	
 	public class Communication {
 		public String to;
@@ -132,6 +138,25 @@ public class MoveInfo {
 				output += "(comm: " + comm.to + ": " + comm.message + ")";
 			}
 			break;
+
+		case kKitchen:
+			if (move) {
+				output += "(" + Names.kMoveID + ": " + Direction.stringOf[moveDirection] + ")";
+			}
+			if (moveWithObject) {
+				output += "(move-with-object)";
+			}
+			if (mix) {
+				output += "(mix)";
+			}
+			if (cook) {
+				output += "(cook)";
+			}
+			if (eat) {
+				output += "(eat)";
+			}
+			break;
+
 		}
 		
 		if (stopSim) {

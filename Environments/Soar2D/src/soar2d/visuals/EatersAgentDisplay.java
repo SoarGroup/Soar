@@ -1,7 +1,5 @@
 package soar2d.visuals;
 
-import java.util.*;
-
 import org.eclipse.swt.*;
 import org.eclipse.swt.events.*;
 import org.eclipse.swt.layout.*;
@@ -9,6 +7,7 @@ import org.eclipse.swt.widgets.*;
 
 import soar2d.*;
 import soar2d.player.*;
+import soar2d.world.PlayersManager;
 
 public class EatersAgentDisplay extends AgentDisplay {
 	
@@ -19,10 +18,10 @@ public class EatersAgentDisplay extends AgentDisplay {
 	
 	Group m_Group;
 	Table m_AgentTable;
-	VisualWorld m_AgentWorld;
+	EatersVisualWorld m_AgentWorld;
 	Player selectedPlayer;
 	TableItem[] m_Items = new TableItem[0];
-	ArrayList<Player> players = new ArrayList<Player>();
+	PlayersManager players;
 	Composite m_AgentButtons;
 	Button m_NewAgentButton;
 	Button m_CloneAgentButton;
@@ -34,6 +33,8 @@ public class EatersAgentDisplay extends AgentDisplay {
 		super(parent);
 
 		setLayout(new FillLayout());
+		
+		players = Soar2D.simulation.world.getPlayers();
 		
 		m_Group = new Group(this, SWT.NONE);
 		m_Group.setText("Agents");
@@ -118,7 +119,7 @@ public class EatersAgentDisplay extends AgentDisplay {
 			worldGroup.setLayout(gl);
 		}
 
-		m_AgentWorld = new VisualWorld(worldGroup, SWT.BORDER, kAgentMapCellSize);
+		m_AgentWorld = new EatersVisualWorld(worldGroup, SWT.BORDER, kAgentMapCellSize);
 		{
 			GridData gd = new GridData();
 			gd.horizontalSpan = 2;
@@ -150,7 +151,7 @@ public class EatersAgentDisplay extends AgentDisplay {
 	void selectPlayer(Player player) {
 		selectedPlayer = player;
 		m_AgentTable.setSelection(players.indexOf(player));
-		java.awt.Point playerLocation = Soar2D.simulation.world.getLocation(selectedPlayer);
+		java.awt.Point playerLocation = players.getLocation(selectedPlayer);
 		m_AgentWorld.setAgentLocation(playerLocation);
 		m_AgentWorld.enable();
 		m_AgentWorld.redraw();
@@ -165,7 +166,7 @@ public class EatersAgentDisplay extends AgentDisplay {
 
 	void worldChangeEvent() {
 		if (selectedPlayer != null) {
-			java.awt.Point playerLocation = Soar2D.simulation.world.getLocation(selectedPlayer);
+			java.awt.Point playerLocation = players.getLocation(selectedPlayer);
 			m_AgentWorld.setAgentLocation(playerLocation);
 			m_AgentWorld.redraw();
 			location.setText("(" + playerLocation.x + "," + playerLocation.y + ")");
@@ -181,8 +182,8 @@ public class EatersAgentDisplay extends AgentDisplay {
 		m_AgentTable.removeAll();
 		boolean foundSelected = false;
 		
-		m_Items = new TableItem[players.size()];
-		for (int i = 0; i < players.size(); ++i) {
+		m_Items = new TableItem[players.numberOfPlayers()];
+		for (int i = 0; i < players.numberOfPlayers(); ++i) {
 			m_Items[i] = new TableItem(m_AgentTable, SWT.NONE);
 			m_Items[i].setText(new String[] {players.get(i).getName(), Integer.toString(players.get(i).getPoints())});
 			if (selectedPlayer == players.get(i)) {
@@ -203,7 +204,7 @@ public class EatersAgentDisplay extends AgentDisplay {
 	void updateButtons() {
 		boolean running = Soar2D.control.isRunning();
 		boolean slotsAvailable = Soar2D.simulation.getUnusedColors().size() > 0;
-		boolean hasPlayers = Soar2D.simulation.hasPlayers();
+		boolean hasPlayers = players.numberOfPlayers() > 0;
 		boolean selectedEater = (selectedPlayer != null);
 		
 		m_NewAgentButton.setEnabled(!running && slotsAvailable);

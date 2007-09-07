@@ -10,14 +10,12 @@ package soar2d.tosca2d;
 
 import java.awt.Point;
 import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Iterator;
 
 import soar2d.*;
-import soar2d.player.ToscaEater;
-import soar2d.world.CellObject;
+import soar2d.map.CellObject;
+import soar2d.player.eaters.ToscaEater;
+import soar2d.world.World;
 import tosca.Boolean;
-import tosca.Double;
 import tosca.Group;
 import tosca.Integer;
 import tosca.RefValue;
@@ -120,7 +118,9 @@ public class EatersInputStateVariable extends JavaStateVariable {
 		recentMapReset = true;
 	}
 	
-	public void update(int time, soar2d.player.ToscaEater eater, World world, java.awt.Point location) {
+	public void update(int time, soar2d.player.eaters.ToscaEater eater, java.awt.Point location) {
+		World world = Soar2D.simulation.world;
+		
 		// The value is stored as a group containing some named values and
 		// then a map group which contains all of the cells around this eater
 		Group main = new Group() ;
@@ -141,8 +141,8 @@ public class EatersInputStateVariable extends JavaStateVariable {
 		if (recentMapReset) {
 			reward = cachedReward;
 			recentMapReset = false;
-		} else if (eater.getEater().pointsChanged()) {
-			reward = eater.getEater().getPointsDelta();
+		} else if (eater.pointsChanged()) {
+			reward = eater.getPointsDelta();
 		}
 		cachedReward = reward;
 		main.AddNamedValue("ExternalReward", new tosca.Double(reward));
@@ -211,12 +211,12 @@ public class EatersInputStateVariable extends JavaStateVariable {
 		
 		main.AddNamedValue("x", new tosca.Integer(location.x)) ;
 		main.AddNamedValue("y", new tosca.Integer(location.y)) ;
-		main.AddNamedValue("facing", new tosca.Integer(eater.getEater().getFacingInt())) ;
+		main.AddNamedValue("facing", new tosca.Integer(eater.getFacingInt())) ;
 		
 		Group map = new Group() ;
 		
 		java.awt.Point viewLocation = new java.awt.Point();
-		int visionRange = Soar2D.config.getEaterVision() ;
+		int visionRange = Soar2D.eConfig.getEaterVision() ;
 		for (int x = location.x - visionRange; x <= location.x + visionRange; ++x) {
 			for (int y = location.y - visionRange; y <= location.y + visionRange; ++y) {
 				viewLocation.x = x ;

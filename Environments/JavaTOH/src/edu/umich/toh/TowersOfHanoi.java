@@ -366,9 +366,9 @@ implements PaintListener, GameListener, ControlListener {
         }
         // (3) draw each disk
         bufGC.setBackground(blue);
-        List towers = game.getTowers();
+        List<Tower> towers = game.getTowers();
         for (int i = 0; i < towerX.length; ++i) {
-            Tower t = (Tower)towers.get(i);
+            Tower t = towers.get(i);
             int y = height - 6 - (diskHeight * t.getHeight());
             Disk d = t.getTopDisk();
             while (d != null) {

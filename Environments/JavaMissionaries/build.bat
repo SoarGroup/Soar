@@ -19,7 +19,7 @@ mkdir tmp\mac
 xcopy /q /y src\mac\* tmp\mac
 
 @echo ----------=========Compiling=========----------
-%2javac -source 1.4 -d tmp -classpath .;%SOARBIN%\swt.jar;%SOARBIN%\sml.jar -sourcepath src src\edu\umich\mac\MissionariesAndCannibals.java
+%2javac -source 1.5 -d tmp -classpath .;%SOARBIN%\swt.jar;%SOARBIN%\sml.jar -sourcepath src src\edu\umich\mac\MissionariesAndCannibals.java
 
 @echo ----------==========Jarring==========----------
 %2jar cfm mac.jar JarManifest -C tmp .

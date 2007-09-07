@@ -10,7 +10,8 @@ import org.eclipse.swt.layout.*;
 import org.eclipse.swt.widgets.*;
 
 import soar2d.*;
-import soar2d.Configuration.*;
+import soar2d.configuration.Configuration;
+import soar2d.configuration.Configuration.*;
 import soar2d.player.*;
 
 public class ConfigurationEditor extends Dialog {
@@ -213,7 +214,7 @@ public class ConfigurationEditor extends Dialog {
 				
 				FileDialog fd = new FileDialog(dialog, SWT.SAVE);
 				fd.setText("Save as...");
-				fd.setFilterPath(Soar2D.config.getBasePath());
+				fd.setFilterPath(Soar2D.simulation.getBasePath());
 				fd.setFilterExtensions(new String[] {"*.xml", "*.*"});
 				String settingsFileString = fd.open();
 				if (settingsFileString != null) {
@@ -308,7 +309,7 @@ public class ConfigurationEditor extends Dialog {
 			currentPage.setLayoutData(gd);
 		}
 		
-		// eaters or tanksoar
+		// what sim
 		{
 			Group simGroup = new Group(currentPage, SWT.NONE);
 			simGroup.setText("Simulation");
@@ -374,6 +375,8 @@ public class ConfigurationEditor extends Dialog {
 				gd.horizontalAlignment = SWT.BEGINNING;
 				bookButton.setLayoutData(gd);
 			}
+			
+			assert config.getType() != SimType.kKitchen;
 		}
 		
 		// map
@@ -576,6 +579,8 @@ public class ConfigurationEditor extends Dialog {
 			tanksoarButton.setSelection(false);
 			bookButton.setSelection(true);
 			break;
+		case kKitchen:
+			assert false;
 		}
 		mapText.setText(config.getMap().getAbsolutePath());
 		nogui.setSelection(config.getNoGUI());
@@ -700,7 +705,7 @@ public class ConfigurationEditor extends Dialog {
 				public void widgetSelected(SelectionEvent e) {
 					FileDialog fd = new FileDialog(dialog, SWT.OPEN);
 					fd.setText("Choose");
-					fd.setFilterPath(config.getBasePath());
+					fd.setFilterPath(Soar2D.simulation.getBasePath());
 					fd.setFileName(config.getLogFile().getName());
 					fd.setFilterExtensions(new String[] {"*.*"});
 					String logFileString = fd.open();

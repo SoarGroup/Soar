@@ -13,7 +13,11 @@
     <console />
   </logging>
   <players>
-  </players>
+  <debuggers></debuggers>
+  <player>
+  	<name>dog</name></player>
+  <player>
+  	<name>mouse</name></player></players>
   <terminals />
   <clients />
 </soar2d>

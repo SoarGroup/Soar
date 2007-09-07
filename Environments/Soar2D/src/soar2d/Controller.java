@@ -36,7 +36,9 @@ public class Controller implements Kernel.UpdateEventInterface, Kernel.SystemEve
 	private boolean shuttingDown = false;
 	
 	private long timeStamp; 
-	
+	private double totalTime = 0;
+	private double timeSlice = 0;
+
 	/**
 	 * Set to true when a stop is requested
 	 */
@@ -56,19 +58,7 @@ public class Controller implements Kernel.UpdateEventInterface, Kernel.SystemEve
 		Soar2D.logger.severe(message);
 		
 		if (Soar2D.wm.using()) {
-			String title = null;
-			switch(Soar2D.config.getType()) {
-			case kEaters:
-				title = "Eaters";
-				break;
-			case kTankSoar:
-				title = "TankSoar";
-				break;
-			case kBook:
-				title = "Book";
-				break;
-			}
-			Soar2D.wm.errorMessage(title, message);
+			Soar2D.wm.errorMessage(Soar2D.config.getTitle(), message);
 		}
 	}
 	
@@ -81,19 +71,7 @@ public class Controller implements Kernel.UpdateEventInterface, Kernel.SystemEve
 		Soar2D.logger.info(message);
 		
 		if (Soar2D.wm.using()) {
-			String title = null;
-			switch(Soar2D.config.getType()) {
-			case kEaters:
-				title = "Eaters";
-				break;
-			case kTankSoar:
-				title = "TankSoar";
-				break;
-			case kBook:
-				title = "Book";
-				break;
-			}
-			Soar2D.wm.infoMessage(title, message);
+			Soar2D.wm.infoMessage(Soar2D.config.getTitle(), message);
 		}
 	}
 	
@@ -179,7 +157,7 @@ public class Controller implements Kernel.UpdateEventInterface, Kernel.SystemEve
 				timeStamp = new Date().getTime();
 				Soar2D.simulation.runForever();
 			}
-		} else if (soar2d.player.ToscaEater.kToscaEnabled)
+		} else if (Soar2D.config.getToscaEnabled())
 		{
 			if (step)
 				soar2d.tosca2d.ToscaInterface.getTosca().runStep() ;
@@ -230,10 +208,26 @@ public class Controller implements Kernel.UpdateEventInterface, Kernel.SystemEve
 	 * a loop if necessary.
 	 */
 	public void tickEvent() {
+		timeSlice = (float)Soar2D.config.getCycleTimeSlice() / 1000.0f;
+		totalTime += timeSlice;
+
 		Soar2D.simulation.update();
 		if (Soar2D.wm.using()) {
 			Soar2D.wm.update();
 		}
+	}
+	
+	public double getTotalTime() {
+		return totalTime;
+	}
+	
+	public double getTimeSlice() {
+		return timeSlice;
+	}
+	
+	public void resetTime() {
+		totalTime = 0;
+		timeSlice = 0;
 	}
 	
 	/**
@@ -424,4 +418,20 @@ public class Controller implements Kernel.UpdateEventInterface, Kernel.SystemEve
 	 * @author Scott Lathrop
 	 *
 	 */
+	
+	private int runsTerminal = 0;
+	public void setRunsTerminal(int runsTerminal) {
+		this.runsTerminal = runsTerminal;
+	}
+	public boolean checkRunsTerminal() {
+		boolean stopNow = true;
+		
+		if (this.runsTerminal > 0) {
+			this.runsTerminal -= 1;
+			if (this.runsTerminal > 0) {
+				stopNow = false;
+			}
+		}
+		return stopNow;
+	}
 }

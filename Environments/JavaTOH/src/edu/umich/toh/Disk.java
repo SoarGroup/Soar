@@ -20,7 +20,7 @@ import sml.StringElement;
  * @author Trevor McCulloch, University of Michigan
  * @version 1.1
  */
-public class Disk implements Comparable {
+public class Disk implements Comparable<Disk> {
     /**
      * Constructor specifying which <code>Tower</code> the disk is on, the size
      * of the disk, and which disk is below it on the <code>Tower</code>.
@@ -40,14 +40,16 @@ public class Disk implements Comparable {
         Agent agent = tower.getGame().getAgent();
         holdsIdentifier = agent.CreateIdWME(agent.GetInputLink(), HOLDS);
         pegName = agent.CreateStringWME(holdsIdentifier, ON, tower.getName());
-        diskSize = agent.CreateIntWME(holdsIdentifier, DISK, size);
+        //diskSize = 
+        agent.CreateIntWME(holdsIdentifier, DISK, size);
         if (below != null) {
             diskBelowInt = agent.CreateIntWME(holdsIdentifier, ABOVE,
                     below.getSize());
         } else {
             diskBelowStr = agent.CreateStringWME(holdsIdentifier, ABOVE, NONE);
         }
-        diskIdentifier = agent.CreateIntWME(agent.GetInputLink(), DISK, size);
+        //diskIdentifier = 
+        agent.CreateIntWME(agent.GetInputLink(), DISK, size);
     }
     
     /**
@@ -137,8 +139,8 @@ public class Disk implements Comparable {
      * @return <code>this.size - o.size</code>.
      * @throws <code>ClassCastException</code>, if <code>!o instanceof Disk</code>.
      */
-    public int compareTo(Object o) {
-        return (size - ((Disk)o).size);
+    public int compareTo(Disk o) {
+        return (size - o.size);
     }
     
     /**
@@ -177,9 +179,9 @@ public class Disk implements Comparable {
     // soar stuff
     private Identifier holdsIdentifier;
     private StringElement pegName;      // name of peg the disk is on
-    private IntElement diskSize;        // size and name of disk
+    //private IntElement diskSize;        // size and name of disk
     private IntElement diskBelowInt;    // size/name of below disk (as IntElement)
     private StringElement diskBelowStr; // size/name of below disk (as StringElement)
     
-    private IntElement diskIdentifier;  // size/name of disk
+    //private IntElement diskIdentifier;  // size/name of disk
 }

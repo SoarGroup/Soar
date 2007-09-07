@@ -4,7 +4,6 @@
 package soar2d.tosca2d;
 
 import soar2d.Soar2D;
-import tosca.FunctionModule;
 import tosca.Library;
 import tosca.StateVariable;
 import tosca.Value;

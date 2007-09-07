@@ -1,7 +1,8 @@
 <soar2d version="2">
 	<general>
+		?<tosca> (presence of this tag enables tosca)
 		<game>
-			enum { tanksoar, eaters, book }
+			enum { tanksoar, eaters, book, kitchen }
 		<map>
 			string filename
 		?<port>
@@ -11,9 +12,12 @@
 		?<remote>
 		?<hide> (this is to hide the map, useful for tanksoar)
 		?<no-gui>
+		?<silent-agents> (execute command watch 0 after production load)
+		?<max-memory-usage> int bytes (execute command after production load)
 		?<async>
 			int millisecondDelay
 		?<rules>
+			?<kitchen>
 			?<eaters>
 				?<vision>
 					int cells

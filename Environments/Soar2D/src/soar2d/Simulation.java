@@ -5,8 +5,20 @@ import java.util.*;
 import java.util.logging.*;
 
 import sml.*;
-import soar2d.Configuration.SimType;
 import soar2d.player.*;
+import soar2d.player.book.Dog;
+import soar2d.player.book.Mouse;
+import soar2d.player.book.Robot;
+import soar2d.player.book.SoarRobot;
+import soar2d.player.eaters.Eater;
+import soar2d.player.eaters.SoarEater;
+import soar2d.player.eaters.ToscaEater;
+import soar2d.player.kitchen.Cook;
+import soar2d.player.kitchen.SoarCook;
+import soar2d.player.kitchen.ToscaCook;
+import soar2d.player.tanksoar.SoarTank;
+import soar2d.player.tanksoar.Tank;
+import soar2d.world.World;
 
 /**
  * @author voigtjr
@@ -64,8 +76,7 @@ public class Simulation {
 			unusedColors.add(kColors[i]);
 		}
 		
-		// Tanksoar uses run til output
-		runTilOutput = (Soar2D.config.getType() == SimType.kTankSoar);
+		runTilOutput = Soar2D.config.getRunTilOutput();
 		
 		// Initialize Soar
 		if (Soar2D.config.getRemote()) {
@@ -117,18 +128,6 @@ public class Simulation {
 		if (!doClients(false)) {
 			return false;
 		}
-		
-		// add dog and mouse (book)
-		// TODO: this could happen in the config file
-//		if (Soar2D.config.getType() == SimType.kBook) {
-//			PlayerConfig dogConfig = new PlayerConfig();
-//			dogConfig.setName(kDog);
-//			createPlayer(dogConfig);
-//			
-//			PlayerConfig mouseConfig = new PlayerConfig();
-//			mouseConfig.setName(kMouse);
-//			createPlayer(mouseConfig);
-//		}
 		
 		// add initial players
 		Iterator<PlayerConfig> iter = Soar2D.config.getPlayers().iterator();
@@ -278,22 +277,42 @@ public class Simulation {
 				Player player = null;
 				
 				// eater or tank depending on the setting
+				boolean human = true;
 				switch(Soar2D.config.getType()) {
 				case kEaters:
-					player = new Eater(playerConfig, true);
+					if (Soar2D.config.getToscaEnabled()) {
+						player = new ToscaEater(playerConfig);
+						human = false;
+					} else {
+						player = new Eater(playerConfig);
+					}
 					break;
+					
 				case kTankSoar:
 					player = new Tank(playerConfig);
 					break;
+					
 				case kBook:
 					if (playerConfig.getName().equals(kDog)) {
 						player = new Dog(playerConfig);
+						human = false;
 					} else if (playerConfig.getName().equals(kMouse)) {
 						player = new Mouse(playerConfig);
+						human = false;
 					} else {
 						player = new Robot(playerConfig);
 					}
 					break;
+
+				case kKitchen:
+					if (Soar2D.config.getToscaEnabled()) {
+						player = new ToscaCook(playerConfig);
+						human = false;
+					} else {
+						player = new Cook(playerConfig);
+					}
+					break;
+
 				}
 				
 				assert player != null;
@@ -305,7 +324,7 @@ public class Simulation {
 				}
 
 				// This can fail if there are no open squares on the map, message printed already
-				if (!world.addPlayer(player, initialLocation, true)) {
+				if (!world.addPlayer(player, initialLocation, human)) {
 					throw new CreationException();
 				}
 
@@ -325,6 +344,16 @@ public class Simulation {
 					if (!agent.LoadProductions(playerConfig.getProductions().getAbsolutePath())) {
 						throw new CreationException("Agent " + playerConfig.getName() + " production load failed: " + agent.GetLastErrorDescription());
 					}
+					
+					// if requested, silence agent
+					if (Soar2D.config.getSilentAgents()) {
+						agent.ExecuteCommandLine("watch 0");
+					}
+					
+					// if requested, set max memory usage
+					if (Soar2D.config.getMaxMemoryUsage() > 0) {
+						agent.ExecuteCommandLine("max-memory-usage " + Integer.toString(Soar2D.config.getMaxMemoryUsage()));
+					}
 			
 					Player player = null;
 					
@@ -339,6 +368,10 @@ public class Simulation {
 					case kBook:
 						player = new SoarRobot(agent, playerConfig);
 						break;
+						
+					case kKitchen:
+						player = new SoarCook(agent, playerConfig);
+
 					}
 					
 					assert player != null;
@@ -419,10 +452,10 @@ public class Simulation {
 		String os = System.getProperty("os.name");
 		String commandLine;
 		if (os.matches(".+indows.*") || os.matches("INDOWS")) {
-			commandLine = "javaw -jar \"" + Soar2D.config.getBasePath() 
+			commandLine = "javaw -jar \"" + getBasePath() 
 			+ "..\\..\\SoarLibrary\\bin\\SoarJavaDebugger.jar\" -cascade -remote -agent " + agentName;
 		} else {
-			commandLine = System.getProperty("java.home") + "/bin/java -jar " + Soar2D.config.getBasePath() 
+			commandLine = System.getProperty("java.home") + "/bin/java -jar " + getBasePath()
 			+ "../../SoarLibrary/bin/SoarJavaDebugger.jar -XstartOnFirstThread -cascade -remote -agent " + agentName;
 		}
 		
@@ -688,13 +721,6 @@ public class Simulation {
 	}
 	
 	/**
-	 * @return true if there are any players present (not necessarily soar agents)
-	 */
-	public boolean hasPlayers() {
-		return world.hasPlayers();
-	}
-
-	/**
 	 * TODO
 	 * @return true if the simulation has reached a terminal state
 	 * 
@@ -702,5 +728,9 @@ public class Simulation {
 	 */
 	public boolean isDone() {
 		return world.isTerminal();
+	}
+
+	public String getBasePath() {
+		return System.getProperty("user.dir") + System.getProperty("file.separator");
 	}
 }

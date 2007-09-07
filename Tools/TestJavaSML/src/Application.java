@@ -1,6 +1,5 @@
 import sml.Agent;
 import sml.Identifier;
-import sml.IntElement;
 import sml.Kernel;
 import sml.StringElement;
 
@@ -37,7 +36,7 @@ public class Application
 		public void runEventHandler(int eventID, Object data, Agent agent, int phase)
 		{
 			System.out.println("Received run event in Java") ;
-			Application me = (Application)data ;
+			//Application me = (Application)data ;
 		}
 
 		// We pass back the agent's name because the Java Agent object may not yet
@@ -165,7 +164,8 @@ public class Application
 		if (m_Kernel.HadError())
 			throw new IllegalStateException("Error creating agent: " + m_Kernel.GetLastErrorDescription()) ;
 		
-		String cwd = agent.ExecuteCommandLine("pwd") ;
+		//String cwd = 
+		agent.ExecuteCommandLine("pwd") ;
 		String path = pKernel.GetLibraryLocation() ;
 		path += "/Tests/testjavasml.soar" ;
 		
@@ -182,16 +182,21 @@ public class Application
 
 		// Some random adds
 		Identifier pID = pAgent.CreateIdWME(pInputLink, "plane") ;
-		StringElement pWME1 = pAgent.CreateStringWME(pID, "type", "Boeing747") ;
-		IntElement pWME2    = pAgent.CreateIntWME(pID, "speed", 200) ;
+		//StringElement pWME1 = 
+		pAgent.CreateStringWME(pID, "type", "Boeing747") ;
+		//IntElement pWME2    = 
+		pAgent.CreateIntWME(pID, "speed", 200) ;
 		
 		// Then add some tic tac toe stuff which should trigger output
 		Identifier pSquare = pAgent.CreateIdWME(pInputLink, "square") ;
 		StringElement pEmpty = pAgent.CreateStringWME(pSquare, "content", "RANDOM") ;
-		IntElement pRow = pAgent.CreateIntWME(pSquare, "row", 1) ;
-		IntElement pCol = pAgent.CreateIntWME(pSquare, "col", 2) ;
+		//IntElement pRow = 
+		pAgent.CreateIntWME(pSquare, "row", 1) ;
+		//IntElement pCol = 
+		pAgent.CreateIntWME(pSquare, "col", 2) ;
 		
-		boolean ok = pAgent.Commit() ;
+		//boolean ok = 
+		pAgent.Commit() ;
 
 		// Quick test of init-soar
 		pAgent.InitSoar() ;
@@ -199,7 +204,8 @@ public class Application
 		// Update the square's value to be empty.  This ensures that the update
 		// call is doing something.  Otherwise, when we run we won't get a match.
 		pAgent.Update(pEmpty, "EMPTY") ;
-		ok = pAgent.Commit() ;
+		//ok = 
+		pAgent.Commit() ;
 		
 		/*******************************************************
 		// Register some event handlers

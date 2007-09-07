@@ -4,7 +4,7 @@ import java.awt.geom.Point2D;
 import java.util.logging.*;
 
 import soar2d.*;
-import soar2d.world.CellObject;
+import soar2d.map.CellObject;
 
 /**
  * @author voigtjr
@@ -85,11 +85,6 @@ public class Player {
 	 * why the change happened
 	 */
 	public void adjustPoints(int delta, String comment) {
-		if (delta == 0) {
-			logger.fine(this.name + " adjust points 0");
-			return;
-		}
-		
 		pointsChanged = (delta != 0);
 		pointsDelta = delta;
 		
@@ -179,7 +174,7 @@ public class Player {
 	 * 
 	 * called to update the player's sensors and what not, this is basically an input update
 	 */
-	public void update(World world, java.awt.Point location) {
+	public void update(java.awt.Point location) {
 		moved = (location.x != this.previousLocation.x) || (location.y != this.previousLocation.y);
 		if (moved) {
 			this.previousLocation = new java.awt.Point(location);
@@ -206,7 +201,7 @@ public class Player {
 		
 		// Nick, for some reason, would like to keep the scores across resets
 		// Because, he says, he is super-awesome.
-		if (soar2d.player.ToscaEater.kToscaEnabled == false) {
+		if (Soar2D.config.getToscaEnabled() == false) {
 			if (playerConfig.hasPoints()) {
 				this.points = playerConfig.getPoints();
 			} else {
@@ -379,9 +374,14 @@ public class Player {
 		return this.velocity;
 	}
 
+	protected int locationId = -1;
+
 	public int getLocationId() {
-		assert false;
-		return -1;
+		return locationId;
+	}
+	
+	public void setLocationId(int id) {
+		locationId = id;
 	}
 
 	private double speed = 0;
@@ -466,8 +466,11 @@ public class Player {
 		}
 		return carriedObject.getIntProperty("number");
 	}
-	public void receiveMessage(Player player, String message, World world) {
-		assert false;
-		
+	public void receiveMessage(Player player, String message) {
+		assert false;		
+	}
+	
+	public String toString() {
+		return getName();
 	}
 }

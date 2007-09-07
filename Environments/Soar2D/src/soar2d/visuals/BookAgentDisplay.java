@@ -2,7 +2,6 @@ package soar2d.visuals;
 
 import java.awt.geom.Point2D;
 import java.text.NumberFormat;
-import java.util.*;
 
 import org.eclipse.swt.*;
 import org.eclipse.swt.events.*;
@@ -11,6 +10,7 @@ import org.eclipse.swt.widgets.*;
 
 import soar2d.*;
 import soar2d.player.*;
+import soar2d.world.PlayersManager;
 
 public class BookAgentDisplay extends AgentDisplay {
 	
@@ -22,7 +22,7 @@ public class BookAgentDisplay extends AgentDisplay {
 	Table m_AgentTable;
 	Player selectedPlayer;
 	TableItem[] m_Items = new TableItem[0];
-	ArrayList<Player> players = new ArrayList<Player>();
+	PlayersManager players;
 	Composite m_AgentButtons;
 	Button m_NewAgentButton;
 	Button m_CloneAgentButton;
@@ -42,6 +42,8 @@ public class BookAgentDisplay extends AgentDisplay {
 		super(parent);
 
 		setLayout(new FillLayout());
+		
+		players = Soar2D.simulation.world.getPlayers();
 		
 		m_Group = new Group(this, SWT.NONE);
 		m_Group.setText("Agents");
@@ -292,8 +294,8 @@ public class BookAgentDisplay extends AgentDisplay {
 	
 	void updateSensors() {
 		assert selectedPlayer != null;
-		java.awt.Point gl = Soar2D.simulation.world.getLocation(selectedPlayer);
-		Point2D.Double fl = Soar2D.simulation.world.getFloatLocation(selectedPlayer);
+		java.awt.Point gl = players.getLocation(selectedPlayer);
+		Point2D.Double fl = players.getFloatLocation(selectedPlayer);
 		NumberFormat nf = NumberFormat.getInstance();
 		nf.setMaximumFractionDigits(2);
 		gridLocation.setText("(" + nf.format(gl.x) + "," + nf.format(gl.y) + ")");
@@ -330,8 +332,8 @@ public class BookAgentDisplay extends AgentDisplay {
 		m_AgentTable.removeAll();
 		boolean foundSelected = false;
 		
-		m_Items = new TableItem[players.size()];
-		for (int i = 0; i < players.size(); ++i) {
+		m_Items = new TableItem[players.numberOfPlayers()];
+		for (int i = 0; i < players.numberOfPlayers(); ++i) {
 			m_Items[i] = new TableItem(m_AgentTable, SWT.NONE);
 			m_Items[i].setText(new String[] {players.get(i).getName(), Integer.toString(players.get(i).getPoints())});
 			if (selectedPlayer == players.get(i)) {
@@ -350,12 +352,13 @@ public class BookAgentDisplay extends AgentDisplay {
 	void updateButtons() {
 		boolean running = Soar2D.control.isRunning();
 		boolean slotsAvailable = Soar2D.simulation.getUnusedColors().size() > 0;
-		boolean hasPlayers = Soar2D.simulation.hasPlayers();
-		boolean selectedEater = (selectedPlayer != null);
+		boolean hasPlayers = players.numberOfPlayers() > 0;
+		boolean haveSelected = (selectedPlayer != null);
+		boolean selectedIsMutable = haveSelected && !selectedPlayer.getName().equals("cat") && !selectedPlayer.getName().equals("dog");
 		
 		m_NewAgentButton.setEnabled(!running && slotsAvailable);
-		m_CloneAgentButton.setEnabled(!running && slotsAvailable && selectedEater);
-		m_DestroyAgentButton.setEnabled(!running && hasPlayers && selectedEater);
-		m_ReloadProductionsButton.setEnabled(!running && hasPlayers && selectedEater);
+		m_CloneAgentButton.setEnabled(!running && slotsAvailable && selectedIsMutable );
+		m_DestroyAgentButton.setEnabled(!running && hasPlayers && haveSelected);
+		m_ReloadProductionsButton.setEnabled(!running && hasPlayers && haveSelected && selectedIsMutable);
  	}
 }

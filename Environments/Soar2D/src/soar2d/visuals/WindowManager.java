@@ -13,10 +13,14 @@ import org.eclipse.swt.layout.*;
 import org.eclipse.swt.widgets.*;
 
 import soar2d.*;
-import soar2d.Configuration.SimType;
+import soar2d.configuration.Configuration.SimType;
+import soar2d.map.BookMap;
+import soar2d.map.CellObject;
+import soar2d.map.EatersMap;
+import soar2d.map.GridMap;
+import soar2d.map.KitchenMap;
+import soar2d.map.TankSoarMap;
 import soar2d.player.*;
-import soar2d.world.CellObject;
-import soar2d.world.GridMap;
 
 public class WindowManager {
 	private static Logger logger = Logger.getLogger("soar2d");
@@ -30,6 +34,9 @@ public class WindowManager {
 	public static Color black = null;
 	public static Color green = null;
 	public static Color purple = null;
+	public static Color brown = null;
+	public static Color lightGray = null;
+	public static Color darkGray = null;
 
 	static Display display;
 	protected Shell shell;
@@ -51,6 +58,7 @@ public class WindowManager {
 	Composite currentSide;
 
 	public static final int kEatersMainMapCellSize = 20;
+	public static final int kKitchenMainMapCellSize = 20;
 	public static final int kTanksoarMainMapCellSize = 32;
 	public static final String kFoodRemaining = "Food remaining: ";
 	public static final String kScoreRemaining = "Points remaining: ";
@@ -66,6 +74,9 @@ public class WindowManager {
 		purple = d.getSystemColor(SWT.COLOR_DARK_MAGENTA);
 		orange = new Color(d, 255, 127, 0);
 		black = d.getSystemColor(SWT.COLOR_BLACK);
+		brown = new Color(d, 128, 64, 0);
+		lightGray = new Color(d, 170, 170, 170);
+		darkGray = new Color(d, 100, 100, 100);
 	}
 	
 	public static Color getColor(String color) {
@@ -95,6 +106,15 @@ public class WindowManager {
 		}
 		if (color.equalsIgnoreCase("black")) {
 			return black;
+		}
+		if (color.equalsIgnoreCase("brown")) {
+			return brown;
+		}
+		if (color.equalsIgnoreCase("lightGray")) {
+			return lightGray;
+		}
+		if (color.equalsIgnoreCase("darkGray")) {
+			return darkGray;
 		}
 		return null;
 	}
@@ -128,7 +148,7 @@ public class WindowManager {
 	public void setupEaters() {
 		worldGroup = new Group(shell, SWT.NONE);
 		worldGroup.setLayout(new FillLayout());
-		visualWorld = new VisualWorld(worldGroup, SWT.NONE, kEatersMainMapCellSize);
+		visualWorld = new EatersVisualWorld(worldGroup, SWT.NONE, kEatersMainMapCellSize);
 		visualWorld.setMap(Soar2D.simulation.world.getMap());
 
 		visualWorld.addMouseListener(new MouseAdapter() {
@@ -207,6 +227,87 @@ public class WindowManager {
 		createEatersSide();
 
 		shell.setText("Eaters");
+	}
+	
+	public void setupKitchen() {
+		worldGroup = new Group(shell, SWT.NONE);
+		worldGroup.setLayout(new FillLayout());
+		visualWorld = new KitchenVisualWorld(worldGroup, SWT.NONE, kKitchenMainMapCellSize);
+		visualWorld.setMap(Soar2D.simulation.world.getMap());
+
+		visualWorld.addMouseListener(new MouseAdapter() {
+			public void mouseDown(MouseEvent e) {
+				Player player = visualWorld.getPlayerAtPixel(e.x, e.y);
+				if (player == null) {
+					return;
+				}
+				agentDisplay.selectPlayer(player);
+			}
+		});
+		visualWorld.addKeyListener(new KeyAdapter() {
+			public void keyPressed(KeyEvent e) {
+				if (humanMove == null) {
+					return;
+				}
+				boolean go = false;
+				switch (e.keyCode) {
+				case SWT.KEYPAD_8:
+					humanMove.move = true;
+					humanMove.moveDirection = Direction.kNorthInt;
+					go = true;
+					break;
+				case SWT.KEYPAD_6:
+					humanMove.move = true;
+					humanMove.moveDirection = Direction.kEastInt;
+					go = true;
+					break;
+				case SWT.KEYPAD_2:
+					humanMove.move = true;
+					humanMove.moveDirection = Direction.kSouthInt;
+					go = true;
+					break;
+				case SWT.KEYPAD_4:
+					humanMove.move = true;
+					humanMove.moveDirection = Direction.kWestInt;
+					go = true;
+					break;
+				case SWT.KEYPAD_5:
+					humanMove.moveWithObject = !humanMove.moveWithObject;
+					break;
+				case SWT.KEYPAD_1:
+					humanMove.mix = true;
+					go = true;
+					break;
+				case SWT.KEYPAD_3:
+					humanMove.cook = true;
+					go = true;
+					break;
+				case SWT.KEYPAD_0:
+					humanMove.eat = true;
+					go = true;
+					break;
+
+				case SWT.KEYPAD_MULTIPLY:
+					humanMove.stopSim = !humanMove.stopSim;
+					break;
+				default:
+					break;
+				}
+				
+				Soar2D.wm.setStatus(human.getColor() + ": " + humanMove.toString(), black);
+				
+				if (go) {
+					synchronized(humanMove) {
+						humanMove.notify();
+					}
+				}
+			}
+		});
+		
+		createRHS();
+		createKitchenSide();
+
+		shell.setText("Kitchen");
 	}
 	
 	private void createRHS() {
@@ -308,6 +409,70 @@ public class WindowManager {
 		}
 
 		agentDisplay = new EatersAgentDisplay(currentSide);
+		{
+			GridData gd = new GridData();
+			agentDisplay.setLayoutData(gd);
+		}
+	}
+	
+	private void createKitchenSide() {
+		
+		currentSide = new Composite(rhs, SWT.NONE);
+		{
+			GridLayout gl = new GridLayout();
+			gl.marginHeight = 0;
+			gl.marginWidth = 0;
+			currentSide.setLayout(gl);
+			
+			GridData gd = new GridData();
+			currentSide.setLayoutData(gd);
+		}
+		
+		Group group1 = new Group(currentSide, SWT.NONE);
+		{
+			GridData gd = new GridData();
+			group1.setLayoutData(gd);
+		}
+		group1.setText("Simulation");
+		group1.setLayout(new FillLayout());
+		simButtons = new SimulationButtons(group1);
+		
+		Group group2 = new Group(currentSide, SWT.NONE);
+		{
+			GridData gd = new GridData();
+			group2.setLayoutData(gd);
+		}
+		group2.setText("Map");
+		{
+			GridLayout gl = new GridLayout();
+			gl.numColumns = 2;
+			group2.setLayout(gl);
+		}
+		
+		Label worldCountLabel = new Label(group2, SWT.NONE);
+		worldCountLabel.setText(kWorldCount);
+		{
+			GridData gd = new GridData();
+			worldCountLabel.setLayoutData(gd);
+		}
+		
+		worldCount = new Label(group2, SWT.NONE);
+		{
+			GridData gd = new GridData();
+			gd.widthHint = 50;
+			worldCount.setLayoutData(gd);
+		}
+		
+		updateCounts();
+		
+		mapButtons = new MapButtons(group2);
+		{
+			GridData gd = new GridData();
+			gd.horizontalSpan = 2;
+			mapButtons.setLayoutData(gd);
+		}
+
+		agentDisplay = new KitchenAgentDisplay(currentSide);
 		{
 			GridData gd = new GridData();
 			agentDisplay.setLayoutData(gd);
@@ -428,7 +593,7 @@ public class WindowManager {
 	public void setupBook() {
 		worldGroup = new Group(shell, SWT.NONE);
 		worldGroup.setLayout(new FillLayout());
-		visualWorld = new VisualWorld(worldGroup, SWT.NONE, Soar2D.config.getBookCellSize());
+		visualWorld = new BookVisualWorld(worldGroup, SWT.NONE, Soar2D.bConfig.getBookCellSize());
 		visualWorld.setMap(Soar2D.simulation.world.getMap());
 
 		visualWorld.addMouseListener(new MouseAdapter() {
@@ -502,7 +667,7 @@ public class WindowManager {
 	public void setupTankSoar() {
 		worldGroup = new Group(shell, SWT.NONE);
 		worldGroup.setLayout(new FillLayout());
-		visualWorld = new VisualWorld(worldGroup, SWT.NONE, kTanksoarMainMapCellSize);
+		visualWorld = new TankSoarVisualWorld(worldGroup, SWT.NONE, kTanksoarMainMapCellSize);
 		visualWorld.setMap(Soar2D.simulation.world.getMap());
 		
 		visualWorld.addKeyListener(new KeyAdapter() {
@@ -688,7 +853,8 @@ public class WindowManager {
 		}
 
 		if (Soar2D.config.getType() == SimType.kTankSoar) {
-			visualWorld.updateBackground(location);
+			TankSoarVisualWorld tsVisualWorld = (TankSoarVisualWorld)visualWorld;
+			tsVisualWorld.updateBackground(location);
 		}
 		visualWorld.redraw();
 		return;
@@ -833,6 +999,9 @@ public class WindowManager {
 		case kBook:
     		createBookSide();
     		break;
+		case kKitchen:
+			createKitchenSide();
+			break;
 		}
 		
 		this.reset();
@@ -844,7 +1013,7 @@ public class WindowManager {
 	private void enterEditMode() {
 		assert mapEditMode == false;
 		
-		if (Soar2D.simulation.world.getPlayers().size() > 0) {
+		if (Soar2D.simulation.world.getPlayers().numberOfPlayers() > 0) {
 			Soar2D.control.infoPopUp("Destroy all agents before editing the map.");
 			return;
 		}
@@ -858,7 +1027,21 @@ public class WindowManager {
 	
 		mapMenuHeader.setEnabled(false);
 		
-		this.editMap = new GridMap(Soar2D.config);
+		switch (Soar2D.config.getType()) {
+		case kEaters:
+			this.editMap = new EatersMap(Soar2D.config);
+			break;
+		case kTankSoar:
+			this.editMap = new TankSoarMap(Soar2D.config);
+			break;
+		case kBook:
+			this.editMap = new BookMap(Soar2D.config);
+			break;
+		case kKitchen:
+			this.editMap = new KitchenMap(Soar2D.config);
+			break;
+		}
+		
 		try {
 			this.editMap.load();
 		} catch (GridMap.LoadError e) {
@@ -889,36 +1072,12 @@ public class WindowManager {
 		fd.setText("Map must be saved to continue...");
 		fd.setFilterPath(Soar2D.config.getMapPath());
 		
-		switch (Soar2D.config.getType()) {
-		case kBook:
-			fd.setFilterExtensions(new String[] {"*." + Configuration.kBookMapExt, "*.*"});
-			break;
-			
-		case kEaters:
-			fd.setFilterExtensions(new String[] {"*." + Configuration.kEatersMapExt, "*.*"});
-			break;
-			
-		case kTankSoar:
-			fd.setFilterExtensions(new String[] {"*." + Configuration.kTankSoarMapExt, "*.*"});
-			break;
-		}
+		fd.setFilterExtensions(new String[] {"*." + Soar2D.config.getMapExt(), "*.*"});
 		
 		String mapFileString = fd.open();
 		if (mapFileString != null) {
 			if (!mapFileString.matches(".*\\..+")) {
-				switch (Soar2D.config.getType()) {
-				case kBook:
-					mapFileString += "." + Configuration.kBookMapExt;
-					break;
-					
-				case kEaters:
-					mapFileString += "." + Configuration.kEatersMapExt;
-					break;
-					
-				case kTankSoar:
-					mapFileString += "." + Configuration.kTankSoarMapExt;
-					break;
-				}
+				mapFileString += "." + Soar2D.config.getMapExt();
 			}
 			
 			File mapFile = new File(mapFileString);
@@ -1040,6 +1199,10 @@ public class WindowManager {
 			
 		case kBook:
 			setupBook();
+			break;
+			
+		case kKitchen:
+			setupKitchen();
 			break;
 		}
 		
@@ -1176,8 +1339,9 @@ public class WindowManager {
 	
 	void updateCounts() {
 		if (Soar2D.config.getType() == SimType.kEaters) {
-			foodCount.setText(Integer.toString(Soar2D.simulation.world.getMap().getFoodCount()));
-			scoreCount.setText(Integer.toString(Soar2D.simulation.world.getMap().getScoreCount()));
+			EatersMap eMap = (EatersMap)Soar2D.simulation.world.getMap();
+			foodCount.setText(Integer.toString(eMap.getFoodCount()));
+			scoreCount.setText(Integer.toString(eMap.getScoreCount()));
 		}
 		worldCount.setText(Integer.toString(Soar2D.simulation.world.getWorldCount()));
 	}
