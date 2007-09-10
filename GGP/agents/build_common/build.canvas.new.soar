@@ -23,61 +23,58 @@ sp {elaborate*depth*from*top
 (<s> ^depth-from-top (+ 1 <depth>))
 }
 
-sp {build-canvas*draw*objects*primitive
+sp {build-canvas*draw*objects
 	(state <s>
 		^gs <gs>
 		^top-state.max-y <max-y>
 		^top-state.x-offset <x-offset>
 		^top-state.scale <scale>)
 	-(state <s2> ^duplicate-of <s>)
-	(<gs> ^object <obj> ^object-location <loc> ^object-size <size>)
-	(<obj> ^p1 <id> ^p2 {<type> <> compound})
-	-{(<gs> ^member <M>) (<M> ^p1 <compound-id> ^p2 <id>)}
+	(<gs> ^object-type <obj> ^object-location <loc> ^object-dimensions <dim>)
 	-{(<gs> ^reinforced <r>) (<r> ^p1 <id> ^p2 <r-type>)}
 	(<loc> ^p1 <id> ^p2 <x> ^p3 <y>)
-	(<size> ^p1 <id> ^p2 <width> ^p3 <height> ^p4 <weight>)
+	(<dim> ^p1 <id> ^p2 <width> ^p3 <height>)
 -->
 	(exec draw_rectangle | update | <id> |-rec | (+ <x-offset> (* <x> <scale>)) | | (- <max-y> (+ (* <y> <scale>) (* <height> <scale>))) | | (+ <x-offset> (+ (* <x> <scale>) (* <width> <scale>))) | | (- <max-y>  (* <y> <scale>)) | blue|)
 	(exec draw_text | update | <id> |-text | (+ <x-offset> (+ 1 (* <scale> <x>))) | | (- <max-y> (+ (* <scale> <y>) 2)) | blue | <id> )
 }
 
 
-sp {build-canvas*draw*objects*primitive*reinforced
+sp {build-canvas*draw*objects*reinforced
 	(state <s>
 		^gs <gs>
 		^top-state.max-y <max-y>
 		^top-state.x-offset <x-offset>
 		^top-state.scale <scale>)
 	-(state <s2> ^duplicate-of <s>)
-	(<gs> ^object <obj> ^object-location <loc> ^object-size <size>)
-	(<obj> ^p1 <id> ^p2 {<type> <> compound})
-	-{(<gs> ^member <M>) (<M> ^p1 <compound-id> ^p2 <id>)}
+	(<gs> ^object-type <obj> ^object-location <loc> ^object-dimensions <dim>)
 	(<gs> ^reinforced <r>) (<r> ^p1 <id> ^p2 <r-type>)
 	(<loc> ^p1 <id> ^p2 <x> ^p3 <y>)
-	(<size> ^p1 <id> ^p2 <width> ^p3 <height> ^p4 <weight>)
+	(<dim> ^p1 <id> ^p2 <width> ^p3 <height>)
 -->
 	(exec draw_rectangle | update | <id> |-rec | (+ <x-offset> (* <x> <scale>)) | | (- <max-y> (+ (* <y> <scale>) (* <height> <scale>))) | | (+ <x-offset> (+ (* <x> <scale>) (* <width> <scale>))) | | (- <max-y>  (* <y> <scale>)) | blue|)
 	(exec draw_text | update | <id> |-text | (+ <x-offset> (+ 1 (* <scale> <x>))) | | (- <max-y> (+ (* <scale> <y>) 2)) | red | <id> |/| <r-type> )
 }
 
-sp {build-canvas*draw*crush
+sp {build-canvas*draw*collapsed
 	(state <s>
+		^operator.name analyze-state
 		^gs <gs>
 		^elaborations <e>
 		^top-state.max-y <max-y>
 		^top-state.x-offset <x-offset>
 		^top-state.scale <scale>)
 		-(state <s2> ^duplicate-of <s>)
-	(<gs> ^object <obj> ^object-location <loc> ^object-size <size>)
+	(<gs> ^object-type <obj> ^object-location <loc> ^object-dimensions <dim>)
 	(<obj> ^p1 <id>)
 	(<loc> ^p1 <id> ^p2 <x> ^p3 <y>)
-	(<size> ^p1 <id> ^p2 <width> ^p3 <height> ^p4 <weight>)
-	(<e> ^crushed.p1 <id>)
+	(<dim> ^p1 <id> ^p2 <width> ^p3 <height>)
+	(<e> ^collapsed.p1 <id>)
 -->
 	(exec draw_line | update | <id> |-crush | (+ <x-offset> (* <x> <scale>)) | | (- <max-y> (+ (* <y> <scale>) (* <height> <scale>))) | | (+ <x-offset> (+ (* <x> <scale>) (* <width> <scale>))) | | (- <max-y>  (* <y> <scale>)) | black|)
 }
 
-sp {build-canvas*delete*crush
+sp {build-canvas*delete*collapsed
 	(state <s>
 		^gs <gs>
 		^elaborations <e>
@@ -85,11 +82,11 @@ sp {build-canvas*delete*crush
 		^top-state.x-offset <x-offset>
 		^top-state.scale <scale>)
 		-(state <s2> ^duplicate-of <s>)
-	(<gs> ^object <obj> ^object-location <loc> ^object-size <size>)
+	(<gs> ^object-type <obj> ^object-location <loc> ^object-dimensions <dim>)
 	(<obj> ^p1 <id>)
 	(<loc> ^p1 <id> ^p2 <x> ^p3 <y>)
-	(<size> ^p1 <id> ^p2 <width> ^p3 <height> ^p4 <weight>)
-	(<e> -^crushed.p1 <id>)
+	(<dim> ^p1 <id> ^p2 <width> ^p3 <height>)
+	(<e> -^collapsed.p1 <id>)
 -->
 	(exec draw_line | delete | <id> |-crush |)
 }

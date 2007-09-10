@@ -6,12 +6,12 @@
 #	(<s> ^operator <o1> >)
 #}
 
-sp {prefer*reinforce
-	(state <s> ^operator <o1> +)
-	(<o1> ^name reinforce)
--->
-	(<s> ^operator <o1> > =)
-}
+#sp {prefer*reinforce
+#	(state <s> ^operator <o1> +)
+#	(<o1> ^name reinforce)
+#-->
+#	(<s> ^operator <o1> > =)
+#}
 
 #sp {prefer*add-to-compound
 #	(state <s> ^operator <o1> +)
@@ -135,35 +135,35 @@ sp {ebalorate*disappearing*tower
 	(<s> ^disappearing-tower <t>)
 }
 
-sp {ebalorate*higher-tower
-   (state <s> ^name game
-              ^elaborations <e>
-			  ^duplicate-of <prev-s>
-			  ^gs <gs>)
-	(<gs> ^object-size <size>)
-	(<size> ^p1 <t> ^p3 <height>)
-	(<e> ^tower.p1 <t>)
-	(<prev-s> ^elaborations.tower.p1 <t> ^gs.object-size <old-size>)
-	(<old-size> ^p1 <t> ^p3 {<old-height> < <height>})
--->
-	(<s> ^higher-tower <t>)
-}
+#sp {ebalorate*higher-tower
+#   (state <s> ^name game
+#              ^elaborations <e>
+#			  ^duplicate-of <prev-s>
+#			  ^gs <gs>)
+#	(<gs> ^object-size <size>)
+#	(<size> ^p1 <t> ^p3 <height>)
+#	(<e> ^tower.p1 <t>)
+#	(<prev-s> ^elaborations.tower.p1 <t> ^gs.object-size <old-size>)
+#	(<old-size> ^p1 <t> ^p3 {<old-height> < <height>})
+#-->
+#	(<s> ^higher-tower <t>)
+#}
 
 
-sp {apply*analyze-state*bump*new-tower*test
-   (state <s> ^name game
-              ^operator.name analyze-state
-			  ^gs <gs>
-              ^current-evaluation-depth <ced>)
-	(<s> ^new-tower <t>
-		-^disappearing-tower)
-	(<gs> ^object-size <size>)
-	(<size> ^p1 <t> ^p3 <height>)
--->
-   (<s> ^current-evaluation-depth <ced> -
-                                  (+ <ced> 1))
-   (write (crlf) |Bump 1 due to appearence of tower | <t> | of height | <height> (crlf))
-}
+#sp {apply*analyze-state*bump*new-tower*test
+#   (state <s> ^name game
+#              ^operator.name analyze-state
+#			  ^gs <gs>
+#              ^current-evaluation-depth <ced>)
+#	(<s> ^new-tower <t>
+#		-^disappearing-tower)
+#	(<gs> ^object-size <size>)
+#	(<size> ^p1 <t> ^p3 <height>)
+#-->
+#   (<s> ^current-evaluation-depth <ced> -
+#                                  (+ <ced> 1))
+#   (write (crlf) |Bump 1 due to appearence of tower | <t> | of height | <height> (crlf))
+#}
 
 sp {apply*analyze-state*bump*higher-tower*test
    (state <s> ^name game
@@ -210,36 +210,86 @@ sp {create*visited*states*hash*top
 	(<s> ^visited-states-hash <vsh>)
 }
 
+sp {init*equivalent*symbols
+	(state <s> ^superstate nil)
+-->
+	(<s> ^equivalent-symbols <es>)
+	(<es> ^p1 c1 c2 c3 c4 c6 c7 c8)
+}
+
+sp {init*identifier*symbols
+	(state <s> ^superstate nil)
+-->
+	(<s> ^identifier-symbols <es>)
+	(<es> ^p1 c1 c2 c3 c4 c5 c6 c7 c8 c9 c10 c11 s1 s2 g1)
+}
+
+
 sp {apply*analyze-state*hash*current*gs
 	(state <s> ^duplicate-of <s2>
 				^gs <gs>
 				^operator.name analyze-state #must do this after update-state completed
-				^current-evaluation-depth <remaining-steps>
+				^current-evaluation-depth <remaining-steps> > 0
+				#adding equivalent_symbols
+				#^top-state.equivalent-symbols <es>
+				^top-state.identifier-symbols <is>
 				)
 -->
 	#(<s> ^current-state-hash (cmd struct-to-string <gs> -a <remaining-steps> -e time))
-	(<s> ^current-state-hash (cmd struct-to-string <gs> -e time))
+	#(<s> ^current-state-hash (cmd struct-to-string <gs> -e time -i <es>))
+	(<s> ^current-state-hash (cmd struct-to-string <gs> -e time -s <is>))
 }
+
+##############
+## important rules to prevent intermediate explosions
+##############
+sp {elaborate*adjacent*appear*1
+	(state <s> ^elaborations <e>)
+	(<e> ^adjacent-to-object)
+-->
+	(<s> ^adjacent-appear yes)
+}
+
+sp {elaborate*adjacent*appear*2
+	(state <s> ^elaborations <e>
+				^adjacent-appear yes)
+-->
+	(<e> ^adjacent-appear <aa>)
+	(<aa> ^p1 yes)
+}
+
 
 #if the same game state has been experienced before in substate, it means either it's a failure or it's in the circle - failure no doubt
 # some visited states are 'failures' - hard to detect
 # most are just exceed-depth type
-sp {evaluate-operator*propose*exceed-depth*visited-state
+sp {duplicate-state*exceed-depth
 	(state <s> ^current-state-hash <csh>
 				^desired <d>
-				^operator.name update-search-info
-				^current-evaluation-depth <remaining-steps>
-				)
-	-(state <s2> ^duplicate-of <s>) #must be the bottom state
+				^operator.name check-for-duplicate-location
+				^current-evaluation-depth <remaining-steps>)
 	(state <ts> ^top-selection true
 				^visited-states-hash <vsh>)
 	(<vsh> ^<csh> <visited>)
-	(<visited> ^remaining-steps >= <remaining-steps>) #current must be depth-exceeded if the previously visited is depth-exceeded
+	(<visited> ^remaining-steps >= <remaining-steps>)  #current must be depth-exceeded if the previously visited is depth-exceeded
 -->
-	(write (crlf) <visited> |visited-state !!!!!!!!!!!!| (crlf))
+	(write (crlf) <csh> | visited-state !!!!!!!!!!!!| (crlf))
 	(<s> ^depth-exceeded <d>)
 }
 
+sp {duplicate-state*update*repeats
+	(state <s> ^current-state-hash <csh>
+				^operator.name check-for-duplicate-location
+				^current-evaluation-depth <remaining-steps>
+				)
+	(state <ts> ^top-selection true
+				^visited-states-hash <vsh>)
+	(<vsh> ^<csh> <visited>)
+	(<visited> ^remaining-steps >= <remaining-steps>  #current must be depth-exceeded if the previously visited is depth-exceeded
+				^repeats <repeats>)
+-->
+	(<visited> ^repeats <repeats> -
+				(+ <repeats> 1))
+}
 
 #if there is no operator tie, it won't be able to check duplicate state during the sequences of operators, but this is OK - it'll detect it in the end
 # first time, init at 0
@@ -247,45 +297,24 @@ sp {copy*visited*state*to*top-selection*1
 	(state <s> ^top-selection true
 				^visited-states-hash <vsh>)
 	(state <s2> ^current-state-hash <csh> ^current-evaluation-depth <remaining-steps>
-				^operator.name update-search-info)  #register visited state after analyze-state
-	#(state <s3> ^duplicate-of <s2>) #copy it when in a lower sub state
-	(<vsh> -^<csh>)
+				^operator.name save-location)  #register visited state
+	(<vsh> -^<csh>) #not previously visited state
 -->
 	(<vsh> ^<csh> <h>)
 	(<h> ^remaining-steps <remaining-steps>
 		^repeats 0)
+	(write |new state saved !!!!!!!!!!!!| (cmd struct-to-string <csh>))
 }
 
-# if existing visited state has higher or the same remaining-depths, this is depth-exceeded, update repeat counts
+# if existing visited state has lower remaining-depths, this is not depth-exceeded, add remaining-steps to current one
 sp {copy*visited*state*to*top-selection*2
 	(state <s> ^top-selection true
 				^visited-states-hash <vsh>)
 	(state <s2> ^current-state-hash <csh> ^current-evaluation-depth <remaining-steps>
-				^operator.name update-search-info)  #register visited state after analyze-state
-	#(state <s3> ^duplicate-of <s2>) #copy it when in a lower sub state
+				^operator.name save-location)  #register visited state
 	(<vsh> ^<csh> <h>)
-	(<h> ^repeats <repeats>
-			^remaining-steps >= <remaining-steps>)
 -->
-	(<vsh> ^<csh> <h>)
-	(<h> ^repeats <repeats> -
-				(+ <repeats> 1))
-}
-
-# if existing visited state has lower remaining-depths, this is depth-exceeded, update/increase remaining-steps to current one, and this is not a repeats
-sp {copy*visited*state*to*top-selection*3
-	(state <s> ^top-selection true
-				^visited-states-hash <vsh>)
-	(state <s2> ^current-state-hash <csh> ^current-evaluation-depth <current>
-				^operator.name update-search-info)  #register visited state after analyze-state
-	#(state <s3> ^duplicate-of <s2>) #copy it when in a lower sub state
-	(<vsh> ^<csh> <h>)
-	(<h> ^repeats <repeats>
-			^remaining-steps {<old> < <current>})
--->
-	(<vsh> ^<csh> <h>)
-	(<h> ^remaining-steps <old> -
-							<current> +)
+	(<h> ^remaining-steps <remaining-steps>)
 }
 
 learn --d
