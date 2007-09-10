@@ -282,6 +282,8 @@
 
 ;;; Determine if ?object is clear of other objects on ?side 
 (<= (clear ?object ?side)
+	;;manual add	
+	(adjacent-appear yes)
     (true (object-type ?object ?type))
     (side ?side)
     (not (adjacent-to-any-object ?object ?side)))
@@ -540,41 +542,13 @@
 
 ;;; Determine if ?object2 will touch ?object1's ?side when placed on ?support.
 (<= (support-for-place ?object1 ?object2 ?support left)
-    (true (object-dimensions ?object2 ?width2 ?height2))
-    (object-coordinates ?object1 ?x1 ?y1 ?x2 ?y2)
-    (object-coordinates ?support ?sx1 ?sy1 ?sx2 ?sy2)
-    (- ?x1 ?width2 ?minx)
-    (- ?y1 ?height2 ?miny)
-    (> ?x1 ?sx1)
-    (> ?sx2 ?minx)
-    (> ?sy2 ?miny)
-    (> ?y2 ?sy2)
-    ;; manual add
-    (movable ?object2)
-    (clear ?object2 top)
-    (distinct ?object1 ?object2)
-    (distinct ?object1 ?support)
-    (distinct ?object2 ?support)
+	(redundant-support-for-place ?object1 ?object2 ?support left)
     ;; manual mod - avoid duplicate supports
     (not (same-support-to-right ?object1 ?object2 ?support left))
     )
 
 (<= (support-for-place ?object1 ?object2 ?support right)
-    (true (object-dimensions ?object2 ?width2 ?height2))
-    (object-coordinates ?object1 ?x1 ?y1 ?x2 ?y2)
-    (object-coordinates ?support ?sx1 ?sy1 ?sx2 ?sy2)
-    (+ ?x2 ?width2 ?maxx)
-    (- ?y1 ?height2 ?miny)
-    (> ?maxx ?sx1)
-    (> ?sx2 ?x2)
-    (> ?sy2 ?miny)
-    (> ?y2 ?sy2)
-    ;; manual add
-    (movable ?object2)
-    (clear ?object2 top)
-    (distinct ?object1 ?object2)
-    (distinct ?object1 ?support)
-    (distinct ?object2 ?support)
+	(redundant-support-for-place ?object1 ?object2 ?support right)
     ;; manual mod - avoid duplicate supports
     (not (same-support-to-right ?object1 ?object2 ?support right))
     )
@@ -585,6 +559,7 @@
 ;; Soar duplicate structure causes trouble in this case
 
 (<= (redundant-support-for-place ?object1 ?object2 ?support left)
+(adjacent-appear yes)
     (true (object-dimensions ?object2 ?width2 ?height2))
     (object-coordinates ?object1 ?x1 ?y1 ?x2 ?y2)
     (object-coordinates ?support ?sx1 ?sy1 ?sx2 ?sy2)
@@ -596,13 +571,15 @@
     (> ?y2 ?sy2)
     ;; manual add
     (movable ?object2)
-    (clear ?object2 top)
+    ;;(clear ?object2 top)
+	(not (adjacent-to-object ?object2 ?another top))
     (distinct ?object1 ?object2)
     (distinct ?object1 ?support)
     (distinct ?object2 ?support)
     )
 
 (<= (redundant-support-for-place ?object1 ?object2 ?support right)
+(adjacent-appear yes)
     (true (object-dimensions ?object2 ?width2 ?height2))
     (object-coordinates ?object1 ?x1 ?y1 ?x2 ?y2)
     (object-coordinates ?support ?sx1 ?sy1 ?sx2 ?sy2)
@@ -614,7 +591,8 @@
     (> ?y2 ?sy2)
     ;; manual add
     (movable ?object2)
-    (clear ?object2 top)
+    ;;(clear ?object2 top)
+	(not (adjacent-to-object ?object2 ?another top))
     (distinct ?object1 ?object2)
     (distinct ?object1 ?support)
     (distinct ?object2 ?support)
@@ -628,15 +606,6 @@
 	(object-coordinates ?another-support ?asx1 ?asy1 ?asx2 ?sy2)
 	(< ?sx1 ?asx1)
 )
-
-;;; Determine if ?object supports the target location of ?moved after
-;;; action (place-adjacent ?reference ?moved ?side) is executed
-(<= (supports-moved-object-target-location ?object ?reference ?moved ?side)
-    (coordinates-after-place ?reference ?moved ?side ?x1 ?y1 ?x2 ?y2)
-    ;;(not (object-new-region-intersected ?moved ?x1 ?y1 ?x2 ?y2))
-	(not (object-new-region-intersected ?moved ?x1 ?y1 ?x2 ?y2 ?reference))
-    ;;(adjacent-to-region ?object ?x1 ?y1 ?x2 ?y2 top)
-	(adjacent-to-region ?object ?x1 ?y1 ?x2 ?y2 top ?reference ?moved))
 
 ;;; ---------------------------------------------------------------------------
 ;;; LEGAL AXIOMS
