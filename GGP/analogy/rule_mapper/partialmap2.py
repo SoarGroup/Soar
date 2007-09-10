@@ -275,8 +275,8 @@ class PartialMap:
 		debug_print('disqualified %d rules' % len(to_erase))
 		for sr, tr in to_erase:
 			#debug_print('RULE MATCH\n%s %s\nDISQUALIFIED' % (sr, tr))
-			if sr.get_head().get_predicate() == 'throw' and tr.get_head().get_predicate() == 'throw':
-				pdb.set_trace()
+			#if sr.get_head().get_predicate() == 'throw' and tr.get_head().get_predicate() == 'throw':
+			#	pdb.set_trace()
 			del self.__cand_rule_matches[(sr,tr)]
 		
 		return len(to_erase)
