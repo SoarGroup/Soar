@@ -1,4 +1,5 @@
 multi-attributes rest 600 # math
+multi-attributes indicator 300 # learning
 multi-attributes 2d 64 # escape
 multi-attributes adjacent 250 # rogue and build
 multi-attributes plus 200 # escape
@@ -69,11 +70,11 @@ multi-attributes result-link 1000
 learn -d
 indifferent-selection --first
 
-# source goodthings.soar
+source goodthings.soar
 
 pushd common
 # source canvas.soar
-source unique-state-hash.soar
+source ush2.soar
 source status.soar
 source constant.soar
 pushd default
