@@ -852,6 +852,11 @@
     (agent-did-nothing ?object) ;; this will never match, just for the purpose of remove object-load
 )
 
+(<= (next (diffent-from-timer ?object ?load))
+    (true (object-load ?object ?load))
+    (agent-did-nothing ?object) ;; this will never match, just for the purpose of remove object-load
+)
+
 ;;; ---------------------------------------------------------------------------
 ;;; END mBuild CORE DEFINITIONS
 
