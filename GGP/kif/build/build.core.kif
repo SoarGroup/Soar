@@ -854,3 +854,42 @@
 
 ;;; ---------------------------------------------------------------------------
 ;;; END mBuild CORE DEFINITIONS
+
+
+(<= (stairway ?direction)
+	;;(does ?agent (place-adjacent ?object1 ?object2 ?side))
+
+    (true (object-dimensions ?tower1 ?width ?obj-height)) ;top step (5 blocks)
+    (true (tower ?tower1 ?height1))
+    (adjacent-to-object ?tower1 ?support1 bottom)
+    (adjacent-to-object ?support1 ?tower2 ?direction)
+
+
+	;;manual add
+	(not (adjacent-to-object ?tower1 ?any1 top))
+	(not (adjacent-to-object ?tower2 ?any2 top))
+	(not (adjacent-to-object ?tower3 ?any3 top))
+	(not (adjacent-to-object ?tower4 ?any4 top))
+	;;(not (adjacent-to-object ?tower5 ?any5 top))
+
+    (true (tower ?tower2 ?height2))                       ;next step (4 blocks)
+    (- ?height1 ?obj-height ?height2)
+    (adjacent-to-object ?tower2 ?support2 bottom)
+    (adjacent-to-object ?support2 ?tower3 ?direction)
+
+   (true (tower ?tower3 ?height3))                       ;next step (3 blocks)
+   (- ?height2 ?obj-height ?height3)
+    (adjacent-to-object ?tower3 ?support3 bottom)
+    (adjacent-to-object ?support3 ?tower4 ?direction)
+
+;;    (true (tower ?tower4 ?height4))                       ;next step (2 blocks)
+;;    (- ?height3 ?obj-height ?height4)
+;;    (adjacent-to-object ?tower4 ?support4 bottom)
+;;    (adjacent-to-object ?support4 ?tower5 ?direction)
+	(distinct ?tower1 ?tower2)
+	(distinct ?tower1 ?tower3)
+	(distinct ?tower1 ?tower4)
+	(distinct ?tower2 ?tower3)
+	(distinct ?tower2 ?tower4)
+	(distinct ?tower3 ?tower4)
+  )    ;last step
