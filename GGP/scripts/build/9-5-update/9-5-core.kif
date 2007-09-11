@@ -839,5 +839,10 @@
     (true (tower ?object ?height))
     (not (agent-did-place-action agent ?object)))
 
+(<= (next (object-load ?object ?load))
+    (true (object-load ?object ?load))
+    (agent-did-nothing ?object) ;; this will never match, just for the purpose of remove object-load
+)
+
 ;;; ---------------------------------------------------------------------------
 ;;; END mBuild CORE DEFINITIONS
