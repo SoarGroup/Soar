@@ -1,11 +1,9 @@
 class CacheHash:
 	def __init__(self):
-		self.__hashvalid = False
+		self.recalc_hash()
 	
-	def mark_hash_old(self):
-		self.__hashvalid = False
+	def recalc_hash(self):
+		self.__hashval = self.get_hash()
 
 	def __hash__(self):
-		if not self.__hashvalid:
-			self.__hashval = self.get_hash()
 		return self.__hashval

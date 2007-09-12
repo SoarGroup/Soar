@@ -1,8 +1,9 @@
-import pdb
+from cache_hash import CacheHash
 
-class PositionIndex:
+class PositionIndex(CacheHash):
 	def __init__(self, index):
 		self.__index = tuple(index)
+		CacheHash.__init__(self)
 	
 	def __str__(self):
 		return str(self.__index)
@@ -17,7 +18,7 @@ class PositionIndex:
 	def __cmp__(self, other):
 		return cmp(self.__index, other.__index)
 
-	def __hash__(self):
+	def get_hash(self):
 		return hash(self.__index)
 	
 	@staticmethod
@@ -68,4 +69,4 @@ class PositionIndex:
 		for i in self.__index[:-1]:
 			complex = complex.get_term(i)
 		complex.set_term(self.__index[-1], val)
-
+		self.recalc_hash()

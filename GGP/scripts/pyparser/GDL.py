@@ -6,9 +6,10 @@ import pdb
 
 CompRelations = ['distinct', '<', '>', '>=']
 
-class Complex:
+class Complex(CacheHash):
 	def __init__(self, terms):
 		self.__terms = terms
+		CacheHash.__init__(self)
 
 	def get_terms(self):
 		return self.__terms
@@ -21,8 +22,11 @@ class Complex:
 	def mangle_vars(self, prefix):
 		for t in self.__terms:
 			t.mangle_vars(prefix)
+		self.recalc_hash()
 	
-	def set_term(self, i, val): self.__terms[i] = val
+	def set_term(self, i, val): 
+		self.__terms[i] = val
+		self.recalc_hash()
 
 	def arity(self): return len(self.__terms)
 
@@ -59,7 +63,7 @@ class Complex:
 			s += ' %s' % str(t)
 		return s
 
-	def __hash__(self):
+	def get_hash(self):
 		return hash(tuple(self.__terms))
 
 class Sentence(Complex):
@@ -346,8 +350,6 @@ class Rule(CacheHash):
 		return len(self.__body)
 
 	def add_condition(self, cond):
-		self.mark_hash_old()
-
 		self.__body.append(cond)
 		nbi = len(self.__body) - 1
 
@@ -377,8 +379,9 @@ class Rule(CacheHash):
 					if (hv == bv):
 						self.__headvar_bindings.setdefault(hp, []).append((nbi, bp))
 
+		self.recalc_hash()
+
 	def remove_condition(self, bi):
-		self.mark_hash_old()
 		new_var_constraints = []
 		self.__body = self.__body[:bi] + self.__body[bi+1:]
 		for bi1, p1, bi2, p2, comp in self.__var_constraints:
@@ -405,6 +408,8 @@ class Rule(CacheHash):
 					new_bindings.append((binding[0]-1, binding[1]))
 			self.__headvar_bindings[hpos] = new_bindings
 
+		self.recalc_hash()
+
 	def get_body_predicates(self):
 		preds = set()
 		for b in self.__body:
@@ -422,7 +427,6 @@ class Rule(CacheHash):
 		return False
 
 	def add_var_constraint(self, v1, v2, comparison):
-		self.mark_hash_old()
 		for bi1, b1 in enumerate(self.__body):
 			pos1 = PositionIndex.get_term_positions(b1, v1)
 			if len(pos1) > 0:
@@ -432,6 +436,7 @@ class Rule(CacheHash):
 						for p2 in pos2:
 							if p1 != p2 or bi1 != bi2:
 								self.__var_constraints.append((bi1, p1, bi2, p2, comparison))
+		self.recalc_hash()
 	
 	def add_pos_constraint(self, bi1, p1, bi2, p2, comp):
 		self.__var_constraints.append((bi1, p1, bi2, p2, comp))
@@ -471,7 +476,6 @@ class Rule(CacheHash):
 		preserving certain variable names. If a variable and a constant should
 		be equal, the variable is always changed into the constant"""
 		
-		self.mark_hash_old()
 
 		preserve_var_names = set(preserve)
 		# first enforce constraints on body
@@ -558,11 +562,14 @@ class Rule(CacheHash):
 							hp.set(self.__head, Variable(name))
 						changed = True
 
+		self.recalc_hash()
+
 	def mangle_vars(self, prefix):
-		self.mark_hash_old()
 		self.__head.mangle_vars(prefix)
 		for b in self.__body:
 			b.mangle_vars(prefix)
+
+		self.recalc_hash()
 
 	def __str__(self):
 		body_str = ""
