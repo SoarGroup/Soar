@@ -1,5 +1,5 @@
 multi-attributes rest 600 # math
-multi-attributes indicator 300 # learning
+#multi-attributes indicator 300 # learning
 multi-attributes 2d 64 # escape
 multi-attributes adjacent 250 # rogue and build
 multi-attributes plus 200 # escape
