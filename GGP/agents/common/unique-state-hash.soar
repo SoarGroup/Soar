@@ -10,12 +10,10 @@ sp {apply*analyze-state*hash*current*gs
 	(state <s> ^duplicate-of <s2>
 				^gs <gs>
 				^operator.name analyze-state #must do this after update-state completed
-				^current-evaluation-depth <remaining-steps> > 0
-    ^top-state.facts.counter <cnt>
-				)
+        ^top-state.facts.counter <cnt>
+        ^top-state.arbitrary-gs-constants <ags>)
 -->
-	#(<s> ^current-state-hash (cmd struct-to-string <gs> -a <remaining-steps> -e time))
-   (<s> ^current-state-hash (cmd struct-to-string <gs> -e <cnt>))
+   (<s> ^current-state-hash (cmd struct-to-string <gs> -e <cnt> -s <ags>))
 }
 
 # if there is a current-state-hash during update state, it must be old
@@ -42,7 +40,7 @@ sp {duplicate-state*exceed-depth
 	(<vsh> ^<csh> <visited>)
 	(<visited> ^remaining-steps >= <remaining-steps>)  #current must be depth-exceeded if the previously visited is depth-exceeded
 -->
-	(write (crlf) <csh> | visited-state !!!!!!!!!!!!| (crlf))
+	(write (crlf) | State was visited previously, ID | <csh> )
 	(<s> ^depth-exceeded <d>)
 }
 
@@ -77,7 +75,7 @@ sp {copy*visited*state*to*top-selection*1
 		^repeats 0)
    (<s> ^counter <val> -)
    (<s> ^counter (+ <val> 1))
-   (write |new state saved !!!!!!!!!!!!| (cmd struct-to-string <csh>))
+   (write |New state saved: | (cmd struct-to-string <csh>))
 }
 
 # if existing visited state has lower remaining-depths, this is not depth-exceeded, update/increase remaining-steps to current one
