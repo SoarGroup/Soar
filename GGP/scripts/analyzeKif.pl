@@ -3,7 +3,7 @@
 # -those that are on GS, but never change (fake game state)
 # -those that don't derive from non-fake GS (static elaborations)
 # -those that are on GS and change, but don't effect anything else (except a
-# goal of 0) (timeout counters)
+# goal of < 100 and terminal) (timeout counters)
 
 die unless ($#ARGV == 0);
 $kifFile = $ARGV[0];
@@ -178,7 +178,9 @@ OUTER2: foreach $att (keys %attParents) {
   }
 
   foreach $child (keys %{ $attChildren{$att} }) {
-    if ($child =~ /^TRUE/ and not $child =~ /$att/) {
+    if ($child =~ /^TRUE/ and not $child =~ /$att/ and not $child =~ /TRUEgoal/) {
+      # I suppose this could miss the case where the goal of the game is to sit
+      # still..
       next OUTER2;
     }
   }
