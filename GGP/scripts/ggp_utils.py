@@ -1,4 +1,4 @@
-
+import sys
 
 ## xpermutations.py
 ## Generators for calculating a) the permutations of a sequence and
@@ -44,6 +44,11 @@ def cross_product(l1, l2):
 		for a2 in l2:
 			yield (a1, a2)
 
+def cross_join(list1, list2):
+	"Like cross product, except the elements are joined with +"
+	if len(list1) == 0 or len(list2) == 0:
+		return []
+	return reduce(lambda x,y: x+y, ([e1 + e2 for e2 in list2] for e1 in list1))
 
 def possible_matchings(s1, s2):
 	# we can't match two instances of the same predicate in one rule
@@ -74,3 +79,7 @@ def average_tuple_list(l, i):
 			avgs.append(sum(vslice(chunk, j)) / chunk_len)
 		final[v] = tuple(avgs)
 	return final
+
+def debug_print(s):
+	#print >> sys.stderr, s
+	pass
