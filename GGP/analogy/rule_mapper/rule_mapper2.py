@@ -4,6 +4,7 @@ from partialmap2 import PartialMap
 from predicate import get_predicates
 from find_max import find_max
 import placetype
+import options
 import pdb
 
 class CommitPoint:
@@ -42,7 +43,7 @@ def do_mapping(src_int_rep, tgt_int_rep, src_pred_bins = {}, tgt_pred_bins = {})
 	history.append(CommitPoint(mapping))
 	
 	best_map = None
-	for x in range(10):
+	for x in range(options.NUM_RETRIES):
 		bottomed_out = False
 		while not bottomed_out:
 			next_mapping = mapping.copy()
@@ -102,8 +103,8 @@ def map_kifs(src_rules, tgt_rules, src_pred_bins = {}, tgt_pred_bins={}):
 	return best_map.get_pred_matches()
 
 if __name__ == '__main__':
-#	sys.path.append('../test_gen')
-#	import psycocompile
+	sys.path.append('../test_gen')
+	import psycocompile
 
 	matches = map_kifs(sys.argv[1], sys.argv[2])
 	for s, t in matches.items():

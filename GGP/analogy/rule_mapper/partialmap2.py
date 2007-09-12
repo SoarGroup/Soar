@@ -7,20 +7,17 @@ import predicate
 from GDL import Sentence
 from move_effects import calc_move_effects
 import placetype
+from equivalence_class import EquivalenceClass
 from find_max import find_max
 import options
 import pdb
-
-def debug_print(s):
-	#print >> sys.stderr, s
-	pass
 
 class PartialMap:
 	
 	MATCHED_PRED_SCORE = 1
 	MISMATCHED_PRED_SCORE = 0
 	BIN_MATCH_MULT = 2
-	BIN_MISMATCH_MULT = 0
+	BIN_MISMATCH_MULT = 0.1
 
 	# the order in which rules should be matched. The rationale behind
 	# matching move rules first is that there are usually fewer move rules
@@ -42,22 +39,24 @@ class PartialMap:
 		   tgt_preds - [(pred, type)]"""
 
 		self = PartialMap()
+
 		# map from predicate name to predicate structure
 		self.__src_preds = dict((p.get_name(), p) for p,t in src_preds)
 		self.__src_pred_types = dict(src_preds)
 		self.__tgt_preds = dict((p.get_name(), p) for p,t in tgt_preds)
 		self.__tgt_pred_types = dict(tgt_preds)
 
+		# calculate move effects
+		self.__src_move_effects = dict((move, [self.__src_preds[n] for n in names]) for move, names in calc_move_effects(src_int_rep).items())
+		self.__tgt_move_effects = dict((move, [self.__tgt_preds[n] for n in names]) for move, names in calc_move_effects(tgt_int_rep).items())
+
+		self.__pred_match_scores = {}
 		# map all predicates that are identical in source and target onto each other
 		common_pred_names = set(self.__src_preds.keys()).intersection(set(self.__tgt_preds.keys()))
 		common_pred_map = dict((self.__src_preds[i], self.__tgt_preds[i]) for i in common_pred_names)
-
-		self.__matched_preds = common_pred_map
-		# for efficiency purposes, cache predicate match scores
-		self.__pred_match_scores = {}
-		for sp in self.__src_preds.values():
-			for tp in self.__tgt_preds.values():
-				self.__pred_match_scores[(sp, tp)] = self.__calc_pred_match_score(sp, tp)
+		self.__matched_preds = {}
+		for s, t in common_pred_map.items():
+			self.__add_predicate_match(s, t)
 
 		self.__matched_rules = {}
 		# candidate rule matchings
@@ -82,20 +81,26 @@ class PartialMap:
 			for sr, tr in cross_product(src_rules[i], tgt_rules[i]):
 				# don't include the head predicate in the body, because the head
 				# will always matched to the head of the other rule
-				srbody = [self.__src_preds[b.get_predicate()] for b in sr.get_body() \
-						if b.get_predicate() != sr.get_head().get_predicate()]
-				trbody = [self.__tgt_preds[b.get_predicate()] for b in tr.get_body() \
-						if b.get_predicate() != tr.get_head().get_predicate()]
-	
+				shp = sr.get_head().get_predicate()
+				thp = tr.get_head().get_predicate()
+				srpbody = [self.__src_preds[b.get_predicate()] for b in sr.get_body() if b.get_predicate() != shp and not b.is_negated()]
+				srnbody = [self.__src_preds[b.get_predicate()] for b in sr.get_body() if b.get_predicate() != shp and b.is_negated()]
+				trpbody = [self.__tgt_preds[b.get_predicate()] for b in tr.get_body() if b.get_predicate() != thp and not b.is_negated()]
+				trnbody = [self.__tgt_preds[b.get_predicate()] for b in tr.get_body() if b.get_predicate() != thp and b.is_negated()]
+
 				# generators galore!
-				maps = possible_matchings(srbody, trbody)
-				maps_scores = ((bm, self.__body_map_score(sr, tr, bm)) for bm in maps)
-				# if a body map score == 0, then that map is illegal
-				self.__cand_rule_matches[(sr,tr)] = [map_score_pair for map_score_pair in maps_scores if map_score_pair[1] > 0]
-		
-		# calculate move effects
-		self.__src_move_effects = dict((move, [self.__src_preds[n] for n in names]) for move, names in calc_move_effects(src_int_rep).items())
-		self.__tgt_move_effects = dict((move, [self.__tgt_preds[n] for n in names]) for move, names in calc_move_effects(tgt_int_rep).items())
+				pmaps = possible_matchings(srpbody, trpbody)
+				# since this is nested in the second for, we can't use a generator
+				nmaps = [m for m in possible_matchings(srnbody, trnbody)]
+				for pm in pmaps:
+					for nm in nmaps:
+						# merge the positive maps and negative maps
+						total_map = pm.copy()
+						total_map.update(nm)
+						score = self.__body_map_score(sr, tr, total_map)
+						# if a body map score == 0, then that map is illegal
+						if score > 0:
+							self.__cand_rule_matches.setdefault((sr,tr), []).append((total_map, score))
 		
 		self.__suppressed = set()
 
@@ -136,7 +141,12 @@ class PartialMap:
 		return intersect_score / max(abs(sp.get_arity() - tp.get_arity()),1)
 
 	def pred_match_score(self, sp, tp):
-		return self.__pred_match_scores[(sp, tp)]
+		if (sp, tp) in self.__pred_match_scores:
+			return self.__pred_match_scores[(sp, tp)]
+		else:
+			score = self.__calc_pred_match_score(sp, tp)
+			self.__pred_match_scores[(sp, tp)] = score
+			return score
 	
 	def __calc_pred_match_score(self, sp, tp):
 		# check to make sure the predicates don't already have conflicting mappings
@@ -178,7 +188,7 @@ class PartialMap:
 		for sp, tp in m.items():
 			pm_score = self.pred_match_score(sp, tp)
 			if pm_score == 0:
-				if options.ALLOW_PARTIAL_BODY_MAPS:
+				if options.ALLOW_PARTIAL_MAPS:
 					# if two predicates are illegal to match, then don't include it
 					# in the match
 					del m[sp]
@@ -231,8 +241,9 @@ class PartialMap:
 		# try to matche the head sentences first
 		head_match_score = self.__head_match_score(sr, tr)
 		if head_match_score == 0:
-			# if heads don't match, rules can't match
-			return (None, 0)
+			if not options.ALLOW_PARTIAL_MAPS:
+				# if heads don't match, rules can't match
+				return (None, 0)
 
 		# find the best body mapping
 		best_score = 0
@@ -275,8 +286,6 @@ class PartialMap:
 		debug_print('disqualified %d rules' % len(to_erase))
 		for sr, tr in to_erase:
 			#debug_print('RULE MATCH\n%s %s\nDISQUALIFIED' % (sr, tr))
-			#if sr.get_head().get_predicate() == 'throw' and tr.get_head().get_predicate() == 'throw':
-			#	pdb.set_trace()
 			del self.__cand_rule_matches[(sr,tr)]
 		
 		return len(to_erase)
@@ -290,25 +299,57 @@ class PartialMap:
 			debug_print("matching predicates %s ==> %s" % (sp, tp))
 
 			# update cache
-			self.__pred_match_scores[(sp,tp)] = PartialMap.MATCHED_PRED_SCORE
+
+			if options.USE_MOVE_EFFECTS:
+				# if the predicates are does predicates, then update the predicate categories
+				# by assigning move effects of source and target rules to the same category
+				if sp.get_type() == Sentence.MOVE:
+					assert tp.get_type() == Sentence.MOVE
+					
+					src_move = sp.get_name()
+					tgt_move = tp.get_name()
+					# only update the unmatched predicates
+					src_effects = set(self.__src_move_effects[src_move]) - set(self.__matched_preds.keys())
+					tgt_effects = set(self.__tgt_move_effects[tgt_move]) - set(self.__matched_preds.values())
+
+					# I'm too lazy to maintain a counter
+					base_type = 100000 + abs(hash(src_move)) + abs(hash(tgt_move))
+
+					# if two effects had the same non-zero bin before, then distinguish them from the
+					# other effects
+					ec = EquivalenceClass()
+					for se in src_effects:
+						for te in tgt_effects:
+							st = self.__src_pred_types[se]
+							tt = self.__tgt_pred_types[te]
+							if st != 0 and tt != 0 and st == tt:
+								ec.make_equivalent(se, te)
+
+					for e in src_effects:
+						if ec.has_member(e):
+							self.__src_pred_types[e] = base_type+ec.get_class_index(e)+1
+						else:
+							self.__src_pred_types[e] = base_type
+
+					for e in tgt_effects:
+						if ec.has_member(e):
+							self.__tgt_pred_types[e] = base_type+ec.get_class_index(e)+1
+						else:
+							self.__tgt_pred_types[e] = base_type
+
+					self.__update_pred_match_scores(src_effects, tgt_effects)
+
 			for sp1, tp1 in self.__pred_match_scores:
 				if sp == sp1 or tp == tp1:
 					self.__pred_match_scores[(sp1,tp1)] = PartialMap.MISMATCHED_PRED_SCORE
 
+			self.__pred_match_scores[(sp,tp)] = PartialMap.MATCHED_PRED_SCORE
+
 			self.__matched_preds[sp] = tp
 
-	def __change_src_pred_type(self, p, t):
-		"When the predicate type changes, we have to update the cached match scores"
-		self.__src_pred_types[p] = t
+	def __update_pred_match_scores(self, src_update, tgt_update):
 		for sp, tp in self.__pred_match_scores:
-			if p == sp:
-				self.__pred_match_scores[(sp,tp)] = self.__calc_pred_match_score(sp, tp)
-
-	def __change_tgt_pred_type(self, p, t):
-		"When the predicate type changes, we have to update the cached match scores"
-		self.__tgt_pred_types[p] = t
-		for sp, tp in self.__pred_match_scores:
-			if p == tp:
+			if sp in src_update or tp in tgt_update:
 				self.__pred_match_scores[(sp,tp)] = self.__calc_pred_match_score(sp, tp)
 
 	def add_rule_match(self, sr, tr, body_map):
@@ -322,24 +363,6 @@ class PartialMap:
 
 		self.__matched_rules[sr] = tr
 
-		# if the rules are legal rules, then update the predicate categories
-		# by assigning move effects of source and target rules to the same category
-		if sr.get_type() == Sentence.MOVE:
-			assert tr.get_type() == Sentence.MOVE
-			
-			src_move = sr.get_head().get_predicate()
-			tgt_move = tr.get_head().get_predicate()
-			src_effects = self.__src_move_effects[src_move]
-			tgt_effects = self.__tgt_move_effects[tgt_move]
-
-			# I'm too lazy to maintain a counter
-			type = 100000 + hash(src_move) + hash(tgt_move)
-			
-			for e in src_effects:
-				self.__change_src_pred_type(e, type)
-			for e in tgt_effects:
-				self.__change_tgt_pred_type(e, type)
-
 		# delete all other match candidates involving these rules
 		for rule_pair in self.__cand_rule_matches.keys():
 			if rule_pair[0] == sr or rule_pair[1] == tr:
@@ -349,12 +372,15 @@ class PartialMap:
 
 		# add predicate maps
 		# first add head predicates
-		spn = sr.get_head().get_predicate()
-		tpn = tr.get_head().get_predicate()
-		if spn != None and tpn != None:
-			sp = self.__src_preds[spn]
-			tp = self.__tgt_preds[tpn]
-			self.__add_predicate_match(sp, tp)
+		# note that if partial maps are allowed, head predicates might not
+		# match, so if they don't, don't try to add the head predicate mapping
+		if self.__head_match_score(sr, tr) > 0:
+			spn = sr.get_head().get_predicate()
+			tpn = tr.get_head().get_predicate()
+			if spn != None and tpn != None:
+				sp = self.__src_preds[spn]
+				tp = self.__tgt_preds[tpn]
+				self.__add_predicate_match(sp, tp)
 
 		# body predicates
 		for sp, tp in body_map.items():

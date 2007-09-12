@@ -47,7 +47,7 @@ class Predicate:
 	def __str__(self):
 		return "%s %d %s" % (self.get_name(), self.__type, " ".join(placetype.type_names[t] for t in self.__ptypes))
 
-class EquivalenceClass:
+class TypedEquivalenceClass:
 
 	def __init__(self):
 		# maps members to the class (index) they're in
@@ -173,7 +173,7 @@ def get_predicates(rules, roles):
 	pred_names = set()
 	predTypes = {}
 	# maps places to the equivalence class they're in
-	ec = EquivalenceClass()
+	ec = TypedEquivalenceClass()
 	for r in rules:
 		goal_place_types = {}
 		if r.get_head().get_relation() == 'goal':
