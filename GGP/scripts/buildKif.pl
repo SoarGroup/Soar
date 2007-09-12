@@ -1,16 +1,14 @@
 #!/usr/bin/perl
 
-die unless ($#ARGV == 1);
-
-$env = $ARGV[0];
+die unless ($#ARGV == 0);
 
 $tmpLC = "bk_tmp";
 $tmp2 = "bk_tmp2";
 die if (-e $tmpLC);
 die if (-e $tmp2);
 
-$file = $ARGV[1];
-die "can't find $ARGV[1]" unless (-e $ARGV[1]);
+$file = $ARGV[0];
+die "can't find $ARGV[0]" unless (-e $ARGV[0]);
 die "$file not a kif" unless ($file =~ /\.kif$/);
 
 $file =~ /([^\/]*)\.kif/;
@@ -20,7 +18,7 @@ $compiler = "python ../old_translator/LoadKif.py";
 $soarFile = "../agents/$rootName\.soar";
 $lowerCase = "./lowerCase.pl";
 
-$postProcess = "./postProcessAgent.pl $file $soarFile $env";
+$postProcess = "./postProcessAgent.pl $file $soarFile";
 
 print "building $soarFile\n";
 

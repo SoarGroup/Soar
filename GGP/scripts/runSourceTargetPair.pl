@@ -1,36 +1,38 @@
 #!/usr/bin/perl
 
-
-$environment = $ARGV[0];
-if($environment eq "build"){
-	die unless ($#ARGV == 3);
-	
-	$coreKif = $ARGV[1];
-	$sourceKif = $ARGV[2];
-	$targetKif = $ARGV[3];
-	
-	system("cat $coreKif $sourceKif > $sourceKif.merge.kif");
-	system("cat $coreKif $targetKif > $targetKif.merge.kif");
-	$sourceKif = $sourceKif.".merge.kif";
-	$targetKif = $targetKif.".merge.kif";
-}
-else{
-	die unless ($#ARGV == 2);
-	$sourceKif = $ARGV[1];
-	$targetKif = $ARGV[2];
-}
-
+die unless ($#ARGV == 1);
+$sourceKif = $ARGV[0];
+$targetKif = $ARGV[1];
 
 checkFor($sourceKif);
 checkFor($targetKif);
 
 $agentDir = "../agents";
 
-$sourceKif =~ /([^\/]*)\.kif/;
-$source = $1;
+$sourceKif =~ /^(.*?)([^\/]+)\.kif$/;
+$kifPath = $1;
+$source = $2;
+
+$source =~ /^(\w+)-/;
+$environment = $1;
 
 $targetKif =~ /([^\/]*)\.kif/;
 $target = $1;
+
+$coreKif = "$kifPath$environment.core.kif";
+$tmpSource = "";
+$tmpTarget = "";
+$merged = 0;
+if (-e $coreKif) {
+  print "kif files will be merged with core: $coreKif\n";
+  $merged = 1;
+  $tmpSource = "$kifPath$source.merge.kif";
+  $tmpTarget = "$kifPath$target.merge.kif";
+	system("cat $coreKif $sourceKif > $tmpSource");
+	system("cat $coreKif $targetKif > $tmpTarget");
+  $sourceKif = $tmpSource;
+  $targetKif = $tmpTarget;
+}
 
 $source1Log = "$source\.log";
 $targetWithSourceLog = "$target\_after_source.log";
@@ -49,15 +51,19 @@ $gtOn = "./goodthingsOn.pl";
 $gtOff = "./goodthingsOff.pl";
 
 print "Building Soar agents from kif..\n";
-print `$buildKif $environment $sourceKif`;
-print `$buildKif $environment $targetKif`;
+print `$buildKif $sourceKif`;
+print `$buildKif $targetKif`;
+
+if ($merged) {
+  print `mv $agentDir/$source.merge.soar $agentDir/$source.soar`;
+  print `mv $agentDir/$target.merge.soar $agentDir/$target.soar`;
+}
 
 checkFor("$agentDir/$source.soar");
 checkFor("$agentDir/$target.soar");
 clearLog($source1Log);
 clearLog($targetWithSourceLog);
 clearLog($targetWithoutSourceLog);
-#clearLog($goodThings);
 if (-e $goodThings) {
   print `rm $goodThings`;
 }
@@ -78,6 +84,12 @@ print "found this many goodThings:\n";
 print `grep 'sp {' $goodThings | wc -l`;
 print "found the following mappings:\n";
 print `grep MAPPING $goodThings`;
+
+# done with the kif files, clean up if they were temporary
+if ($merged) {
+  print `rm $tmpSource`;
+  print `rm $tmpTarget`;
+}
 
 print "Running $target with source..\n";
 print `$runSoar -w1 $agentDir/$target.soar > $targetWithSourceLog`;

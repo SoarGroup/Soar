@@ -1,10 +1,9 @@
 #!/usr/bin/perl
 
-die unless ($#ARGV == 3);
-$environment = $ARGV[0];
-$source1Kif = $ARGV[1];
-$source2Kif = $ARGV[2];
-$targetKif = $ARGV[3];
+die unless ($#ARGV == 2);
+$source1Kif = $ARGV[0];
+$source2Kif = $ARGV[1];
+$targetKif = $ARGV[2];
 
 checkFor($source1Kif);
 checkFor($source2Kif);
@@ -39,9 +38,9 @@ $gtOn = "./goodthingsOn.pl";
 $gtOff = "./goodthingsOff.pl";
 
 print "Building Soar agents from kif..\n";
-print `$buildKif $environment $source1Kif`;
-print `$buildKif $environment $source2Kif`;
-print `$buildKif $environment $targetKif`;
+print `$buildKif $source1Kif`;
+print `$buildKif $source2Kif`;
+print `$buildKif $targetKif`;
 
 checkFor("$agentDir/$source1.soar");
 checkFor("$agentDir/$source2.soar");

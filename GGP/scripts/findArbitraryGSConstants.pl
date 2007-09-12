@@ -90,3 +90,5 @@ foreach $constant (keys %initConstants) {
     print "arbitrary $constant\n";
   }
 }
+
+print `rm $file`;

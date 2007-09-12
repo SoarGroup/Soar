@@ -1,6 +1,6 @@
 #!/usr/bin/perl
 
-die unless ($#ARGV == 2);
+die unless ($#ARGV == 1);
 
 our $kifFile = $ARGV[0];
 if (not -e $kifFile) {
@@ -12,16 +12,14 @@ if (not -e $soarFile) {
   die;
 }
 
-$env = $ARGV[2];
-
 $maFile = $kifFile;
 $maFile =~ s/\.kif$/\.ma.soar/;
 
 $makeStatic = "./makeStatic.pl $soarFile";
 $analyzeKif = "./analyzeKif.pl $kifFile";
+$arbGS = "./findArbitraryGSConstants.pl $kifFile";
 
 if (-e $maFile) {
-  # print `echo "source $maFile" >> $soarFile`; must be at beginning
 
   $tmpFile = "bk_tmp";
   die if (-e $tmpFile);
@@ -37,7 +35,6 @@ print `$makeStatic lessthan`;
 print `$makeStatic gtequal`;
 print `$makeStatic plus`;
 print `$makeStatic minus`;
-#print `$fixVar`;
 
 @bkProdContents = ();
 foreach $line (`$analyzeKif`) {
@@ -54,6 +51,14 @@ foreach $line (`$analyzeKif`) {
     push @bkProdContents, "$1";
     print "timeout counter: $1\n";
   }
+}
+
+@arbConstants = ();
+foreach $line (`$arbGS`) {
+  chomp $line;
+  $line =~ /arbitrary (.*)/ or die "can't parse: $line\n";
+  print "arbitrary game-state constant: $1\n";
+  push @arbConstants, $1;
 }
 
 if ($#bkProdContents >= 0) {
@@ -78,3 +83,15 @@ if ($#bkProdContents >= 0) {
   }
   print `echo "}" >> $soarFile`;
 } 
+
+if ($#arbConstants >= 0) {
+  print `echo "sp {top-state*arbitrary-gs-constants" >> $soarFile`;
+  print `echo "  (state <s> ^superstate nil)" >> $soarFile`;
+  print `echo "-->" >> $soarFile`;
+  print `echo "  (<s> ^arbitrary-gs-constants <ags>)" >> $soarFile`; 
+  foreach $line (@arbConstants) {
+    print `echo "  (<ags> ^constant $line)" >> $soarFile`;
+  }
+  print `echo "}" >> $soarFile`;
+} 
+
