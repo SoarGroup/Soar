@@ -285,7 +285,7 @@
 ;;; Determine if ?object is clear of other objects on ?side 
 (<= (clear ?object ?side)
 	;;manual add	
-	;;(adjacent-appear yes)
+	(adjacent-appear yes)
     (true (object-type ?object ?type))
     (side ?side)
     (not (adjacent-to-any-object ?object ?side)))
@@ -567,7 +567,7 @@
 ;; Soar duplicate structure causes trouble in this case
 
 (<= (redundant-support-for-place ?object1 ?object2 ?support left)
-;;(adjacent-appear yes)
+(adjacent-appear yes)
     (true (object-dimensions ?object2 ?width2 ?height2))
     (object-coordinates ?object1 ?x1 ?y1 ?x2 ?y2)
     (object-coordinates ?support ?sx1 ?sy1 ?sx2 ?sy2)
@@ -587,7 +587,7 @@
     )
 
 (<= (redundant-support-for-place ?object1 ?object2 ?support right)
-;;(adjacent-appear yes)
+(adjacent-appear yes)
     (true (object-dimensions ?object2 ?width2 ?height2))
     (object-coordinates ?object1 ?x1 ?y1 ?x2 ?y2)
     (object-coordinates ?support ?sx1 ?sy1 ?sx2 ?sy2)
