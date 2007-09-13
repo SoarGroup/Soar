@@ -1,8 +1,7 @@
-import sys, os
+import sys, os, random
 import gdlyacc
 from partialmap2 import PartialMap
 from predicate import get_predicates
-from find_max import find_max
 import placetype
 import options
 import pdb
@@ -103,6 +102,7 @@ def map_kifs(src_rules, tgt_rules, src_pred_bins = {}, tgt_pred_bins={}):
 	return best_map.get_pred_matches()
 
 if __name__ == '__main__':
+	random.seed(0)
 	sys.path.append('../test_gen')
 #	import psycocompile
 

@@ -165,8 +165,9 @@ class PartialMap:
 		
 		# ensure that predicate types are mappable
 		# legal/does -/-> next/true, elabs
-		if Sentence.MOVE in [sp.get_type(), tp.get_type()] and \
-				sp.get_type() != tp.get_type():
+		st = sp.get_type()
+		tt = tp.get_type()
+		if st != tt and (st == Sentence.MOVE or tt = Sentence.MOVE):
 			return 0
 		
 		# ensure that predicates are in the same category
