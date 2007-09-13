@@ -80,6 +80,18 @@ def average_tuple_list(l, i):
 		final[v] = tuple(avgs)
 	return final
 
+def find_max(seq, proj):
+	if len(seq) == 0:
+		return (-1, -1)
+	max = proj(seq[0])
+	mpos = 0
+	for i in xrange(1,len(seq)):
+		v = proj(seq[i])
+		if max < v:
+			max = v
+			mpos = i
+	return (mpos, max)
+
 def debug_print(s):
 	#print >> sys.stderr, s
 	pass
