@@ -54,7 +54,7 @@ foreach $line (`$findGroundings $sourceKif`) {
   $score = $4;
   unless ($constant =~ /!Number!/ or defined $unchangeable{$constant}) {
     push @{ $sourcePPosToGroundings{"$predicate"} }, "$constant $score";
-    push @{ $sourceConstantsToPPos{$constant} }, "$predicate $score";
+    push @{ $sourceConstantsToPPos{$constant} }, "$predicate $position $score";
   }
 }
   
@@ -79,7 +79,7 @@ foreach $line (`$findConstantDevs $sourceKif`) {
 
   unless ($constant =~ /!Number!/ or defined $unchangeable{$constant}) {
     push @{ $sourcePPosToGroundings{"$predicate"} }, "$constant $score";
-    push @{ $sourceConstantsToPPos{$constant} }, "$predicate $score";
+    push @{ $sourceConstantsToPPos{$constant} }, "$predicate $position $score";
   }
 }
 
@@ -100,27 +100,39 @@ foreach $line (`$findConstantDevs $targetKif`) {
 %constantPairUsedPredicate = ();
 
 foreach $sourceConstant (keys %sourceConstantsToPPos) {
-  #print "looking @ source constant $sourceConstant\n";
+#  print "looking @ source constant $sourceConstant\n";
   foreach $sourcePredicateSet (@{ $sourceConstantsToPPos{$sourceConstant} }) {
-    $sourcePredicateSet =~ /(\S+) (\d+)/;
+    $sourcePredicateSet =~ /(\S+) (\d+) (\d+)/;
     $sourcePredicate = $1;
-    $sourceScore = $2;
-    #  print " looking @ source predicate $sourcePredicate\n";
+    $sourcePosition = $2;
+    $sourceScore = $3;
+    #   print " looking @ source predicate $sourcePredicate\n";
     foreach $targetPredicate (@{ $sourcePredicateToTarget{$sourcePredicate} }) {
-      #    print "  looking @ target predicate $targetPredicate\n";
+      # print "  looking @ target predicate $targetPredicate\n";
       foreach $targetConstantSet (@{ $targetPredicateToGroundings{$targetPredicate} }) {
         $targetConstantSet =~ /(\d+) (\S+) (\d+)/;
         $targetPosition = $1;
         $targetConstant = $2;
         $targetScore = $3;
-        #  print "   looking @ target constant $targetConstant\n";
+        # we don't care about the positions being identical, except we don't
+        # want to count a constant that is a deriver in one and a binding in
+        # the other as a match
+        next if ($sourcePosition eq "999" and not $targetPosition eq "999");
+        next if ($targetPosition eq "999" and not $sourcePosition eq "999");
+        # print "   looking @ target constant $targetConstant\n";
+        if ($sourcePosition eq "999") {
+          $score = .95; # let bindings dominate over derivers in case of a tie
+        }
+        else {
+          $score = 1;
+        }
         if (defined $constantPairUsedPredicate{$sourceConstant}{$targetConstant}{$targetPredicate}) { next; }
         if (not defined $mappingScores{$sourceConstant}{$targetConstant}) {
-          $mappingScores{$sourceConstant}{$targetConstant} = 1;# $sourceScore + $targetScore;
+          $mappingScores{$sourceConstant}{$targetConstant} = $score;
           $mappingTargetPredicates{$sourceConstant}{$targetConstant} = "$targetPredicate/$targetPosition";
         }
         else {
-          $mappingScores{$sourceConstant}{$targetConstant} += 1;#$sourceScore + $targetScore;
+          $mappingScores{$sourceConstant}{$targetConstant} += $score;
           $mappingTargetPredicates{$sourceConstant}{$targetConstant} .= " $targetPredicate/$targetPosition";
         }
         $constantPairUsedPredicate{$sourceConstant}{$targetConstant}{$targetPredicate} = 1;
@@ -131,7 +143,8 @@ foreach $sourceConstant (keys %sourceConstantsToPPos) {
 
 %mappingsByScore = ();
 
-foreach $sourceConstant (keys %mappingScores) {
+foreach $ 
+sourceConstant (keys %mappingScores) {
   # print "for source $sourceConstant:\n";
   foreach $targetConstant (keys %{ $mappingScores{$sourceConstant} }) {
     # print " $targetConstant: $mappingScores{$sourceConstant}{$targetConstant}\n";
@@ -151,7 +164,7 @@ foreach $score (sort {$b <=> $a} keys %mappingsByScore) {
     $target = $2;
 
     if (not defined $usedSourceConstants{$source} and not defined $usedTargetConstants{$target}) {
-      #print "score $score: $source -> $target\n";
+      #  print "score $score: $source -> $target\n";
       #  print "used in $mappingTargetPredicates{$source}{$target}\n";
       print "map constant $source $target\n";
       push @usingSource, $source;
