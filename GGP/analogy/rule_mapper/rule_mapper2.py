@@ -104,7 +104,7 @@ def map_kifs(src_rules, tgt_rules, src_pred_bins = {}, tgt_pred_bins={}):
 
 if __name__ == '__main__':
 	sys.path.append('../test_gen')
-	import psycocompile
+#	import psycocompile
 
 	matches = map_kifs(sys.argv[1], sys.argv[2])
 	for s, t in matches.items():
