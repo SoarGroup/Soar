@@ -10,6 +10,7 @@ $ENV{"GGP_PATH"} = "../";
 $ENV{"PYTHONPATH"} = ".:../analogy/rule_mapper:./pyparser";
 
 $findGroundings = "./findGroundings.pl";
+$findConstantDevs = "./findConstantDerivations.pl";
 $ruleMapper = "python ../analogy/rule_mapper/rule_mapper2.py";
 
 checkFor($sourceKif);
@@ -39,6 +40,12 @@ foreach $line (`$ruleMapper $sourceKif $targetKif | grep -v UNROLL`) {
   }
 }
 
+# mappings that are always present
+push @{ $sourcePredicateToTarget{"goal"} }, "goal";
+push @{ $targetPredicateToSource{"goal"} }, "goal";
+push @{ $sourcePredicateToTarget{"terminal"} }, "terminal";
+push @{ $targetPredicateToSource{"terminal"} }, "terminal";
+
 foreach $line (`$findGroundings $sourceKif`) {
   $line =~ /(\S+) (\d+) (\S+) (\d+)/ or die;
   $predicate = $1;
@@ -57,6 +64,32 @@ foreach $line (`$findGroundings $targetKif`) {
   $position = $2;
   $constant = $3;
   $score = $4;
+  unless ($constant =~ /!Number!/ or defined $unchangeable{$constant}) {
+    push @{ $targetPredicateToGroundings{"$predicate"} }, "$position $constant $score";
+    push @{ $targetConstantsToPPos{$constant} }, "$predicate $score";
+  }
+}
+
+foreach $line (`$findConstantDevs $sourceKif`) {
+  $line =~ /(\S+) (\S+)/ or die;
+  $predicate = $1;
+  $constant = $2;
+  $position = 999; # marker for constant deriver
+  $score = 1; # not used
+
+  unless ($constant =~ /!Number!/ or defined $unchangeable{$constant}) {
+    push @{ $sourcePPosToGroundings{"$predicate"} }, "$constant $score";
+    push @{ $sourceConstantsToPPos{$constant} }, "$predicate $score";
+  }
+}
+
+foreach $line (`$findConstantDevs $targetKif`) {
+  $line =~ /(\S+) (\S+)/ or die;
+  $predicate = $1;
+  $constant = $2;
+  $position = 999; # marker for constant deriver
+  $score = 1; # not used
+
   unless ($constant =~ /!Number!/ or defined $unchangeable{$constant}) {
     push @{ $targetPredicateToGroundings{"$predicate"} }, "$position $constant $score";
     push @{ $targetConstantsToPPos{$constant} }, "$predicate $score";
@@ -118,8 +151,8 @@ foreach $score (sort {$b <=> $a} keys %mappingsByScore) {
     $target = $2;
 
     if (not defined $usedSourceConstants{$source} and not defined $usedTargetConstants{$target}) {
-      print "score $score: $source -> $target\n";
-        print "used in $mappingTargetPredicates{$source}{$target}\n";
+      #print "score $score: $source -> $target\n";
+      #  print "used in $mappingTargetPredicates{$source}{$target}\n";
       print "map constant $source $target\n";
       push @usingSource, $source;
       push @usingTarget, $target;
