@@ -100,18 +100,6 @@
 ;;(init (object-type c14 concrete))
 ;;(init (object-type c15 concrete))
 
-(memberof object-id c1)
-(memberof object-id c2)
-(memberof object-id c3)
-(memberof object-id c4)
-(memberof object-id c5)
-(memberof object-id c6)
-(memberof object-id c7)
-(memberof object-id c8)
-(memberof object-id c9)
-(memberof object-id c10)
-(memberof object-id g1)
-
 (init (object-dimensions g1 10 1))
 (init (object-dimensions c1 2 2))
 (init (object-dimensions c2 2 2))
