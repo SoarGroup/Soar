@@ -13,7 +13,9 @@ $sourceKif = $ARGV[1];
 $targetKif = $ARGV[2];
 $currentIndex = $ARGV[3];
 
-$mapper = "./runMapper.pl";
+$timeFile = "map-times";
+$mapper = "/usr/bin/time -o $timeFile -f '%E real,%U user,%S sys' ./runMapper.pl";
+
 
 checkFor($logFile);
 checkFor($sourceKif);
@@ -31,6 +33,12 @@ foreach $mapping (`$mapper $sourceKif $targetKif 2>/dev/null`) {
     print "# MAPPING: $orig -> $new\n";
   }
 }
+
+foreach $line (`cat $timeFile`) {
+  print "# MAPPER TIME $line";
+}
+
+print `rm $timeFile`;
 
 # build the additions and removals hashes for each set of additions and removals
 # adjacent to one another
