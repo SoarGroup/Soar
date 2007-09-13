@@ -20,7 +20,6 @@ $mapper = "/usr/bin/time -o $timeFile -f '%E real,%U user,%S sys' ./runMapper.pl
 checkFor($logFile);
 checkFor($sourceKif);
 checkFor($targetKif);
-checkFor($mapper);
 
 our %mappings = ();
 foreach $mapping (`$mapper $sourceKif $targetKif 2>/dev/null`) {
