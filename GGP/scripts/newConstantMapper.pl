@@ -98,6 +98,7 @@ foreach $line (`$findConstantDevs $targetKif`) {
 
 %mappingScores = ();
 %constantPairUsedPredicate = ();
+%constantPairUsedPredicateDerivation = ();
 
 foreach $sourceConstant (keys %sourceConstantsToPPos) {
 #  print "looking @ source constant $sourceConstant\n";
@@ -121,12 +122,15 @@ foreach $sourceConstant (keys %sourceConstantsToPPos) {
         next if ($targetPosition eq "999" and not $sourcePosition eq "999");
         # print "   looking @ target constant $targetConstant\n";
         if ($sourcePosition eq "999") {
-          $score = .95; # let bindings dominate over derivers in case of a tie
+          if (defined $constantPairUsedPredicateDerivation{$sourceConstant}{$targetConstant}{$targetPredicate}) { next; }
+          $constantPairUsedPredicateDerivation{$sourceConstant}{$targetConstant}{$targetPredicate} = 1;
+          $score = 1; # let bindings dominate over derivers in case of a tie
         }
         else {
+          if (defined $constantPairUsedPredicate{$sourceConstant}{$targetConstant}{$targetPredicate}) { next; }
+          $constantPairUsedPredicate{$sourceConstant}{$targetConstant}{$targetPredicate} = 1;
           $score = 1;
         }
-        if (defined $constantPairUsedPredicate{$sourceConstant}{$targetConstant}{$targetPredicate}) { next; }
         if (not defined $mappingScores{$sourceConstant}{$targetConstant}) {
           $mappingScores{$sourceConstant}{$targetConstant} = $score;
           $mappingTargetPredicates{$sourceConstant}{$targetConstant} = "$targetPredicate/$targetPosition";
@@ -135,7 +139,6 @@ foreach $sourceConstant (keys %sourceConstantsToPPos) {
           $mappingScores{$sourceConstant}{$targetConstant} += $score;
           $mappingTargetPredicates{$sourceConstant}{$targetConstant} .= " $targetPredicate/$targetPosition";
         }
-        $constantPairUsedPredicate{$sourceConstant}{$targetConstant}{$targetPredicate} = 1;
       }
     }
   }
@@ -164,8 +167,8 @@ foreach $score (sort {$b <=> $a} keys %mappingsByScore) {
     $target = $2;
 
     if (not defined $usedSourceConstants{$source} and not defined $usedTargetConstants{$target}) {
-      #  print "score $score: $source -> $target\n";
-      #  print "used in $mappingTargetPredicates{$source}{$target}\n";
+#        print "score $score: $source -> $target\n";
+#        print "used in $mappingTargetPredicates{$source}{$target}\n";
       print "map constant $source $target\n";
       push @usingSource, $source;
       push @usingTarget, $target;

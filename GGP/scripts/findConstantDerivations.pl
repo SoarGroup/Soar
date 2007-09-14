@@ -53,7 +53,7 @@ foreach $line (`cat $file`) {
   #if ($line =~ /^distinct:/) {
   #  next;
   #}
-  $line =~ s/:[\d\.]+/:!Number!/g;
+  $line =~ s/:[\d\.]+/:-?!Number!/g;
   
   if (not $line =~ /\w/) { next; }
   if (not $inRule) {
