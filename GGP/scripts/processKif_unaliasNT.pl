@@ -1,12 +1,32 @@
 #!/usr/bin/perl
 # change the format of a kif file to something easier to parse in perl
 
+$lastLine = "";
 foreach $line (`cat $ARGV[0]`) {
+  # strip comments
+  $line =~ s/\s*;.*//;
+  $line =~ s/^\s*//; # remove leading space
+  if (not $lastLine eq "") {
+    $line = "$lastLine $line"; # merge unused previous line with this line
+    $lastLine = "";
+  }
+  if ($line =~ /\?[^)]+$/) { # if line ends with a variable (no close paren)
+    # lines can end w/o paren, so we must check for variable eg (<= terminal
+    $lastLine = $line;
+    chomp $lastLine;
+    $lastLine =~ s/\s*$//; # remove trailing spaces for better appending
+    next; # skip this line and prepend it to the next
+  }
   if ($line =~ /\(or (.*)\)\s*$/) {
+    # ignore disjunctions: treat (or (statement) (statement)) as (statement) (statement)
+    # FIXME could cause errors in findGroundings, as it will think that both
+    # conditions must hold
     $line = $1;
 #    print $line;
   }
   while ($line =~ /^(\s*\(.*?\))\s*\(/) {
+    # multiple statements in a line: (something) (something)
+    # break into two lines
     $part = $1;
     $line =~ s/^\s*\(.*?\)\s*\(/\(/;
     handleLine($part);
