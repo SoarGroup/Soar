@@ -470,10 +470,9 @@ sp {apply*cdl*choose-indicator*remove-general-if-specific-present
    (<pi-specific> ^type << addition removal change >>
                   ^index <idx>)
    (<pi-general> ^type << increase decrease >>
-                 ^predicate-name <what>
                  ^index <> <idx>)
 -->
-   (write (crlf) | Not using indicator for | <what> | as a specific indicator exists.|)
+   (write (crlf) | Not using general indicator as a specific indicator exists.|)
    (<s> ^present-indicator <pi-general> -)
 }
 
@@ -505,12 +504,11 @@ sp {apply*cdl*choose-indicator*remove-higher-generals
               ^present-indicator <pi-high>
               ^present-indicator <pi-low>)
    (<pi-high> ^type << increase decrease >>
-              ^index <high>
-              ^predicate-name <what>)
+              ^index <high>)
    (<pi-low> ^type << increase decrease >>
              ^index < <high>)
 -->
-   (write (crlf) | Not using indicator for | <what> | as a lower-index general exists.|)
+   (write (crlf) | Not using indicator index | <high> | as a lower-index general exists.|)
    (<s> ^present-indicator <pi-high> -)
 }
 
