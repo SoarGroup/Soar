@@ -9,6 +9,10 @@ die unless ($#ARGV == 0);
 $logFile = $ARGV[0];
 die unless (-e $logFile);
 
+$gtFile = $logFile;
+
+$gtFile =~ s/log/goodthings.soar/;
+
 #print "last decision:\n";
 lastDecision($logFile);
 $date_string = ctime(stat($logFile)->ctime);
@@ -24,6 +28,17 @@ print `grep update-state $logFile | wc -l`;
 $line = `grep "msec/decision" $logFile | tail -n 1`;
 $line =~ /\((.*) msec/;
 print "$1\n";
+
+if (-e $gtFile) {
+  $time = `grep TIME $gtFile`;
+  chomp $time;
+  $time =~ /,(\S+?) user,/;
+  $time = $1;
+  print "$time\n";
+}
+else {
+  print "no mapping done\n";
+}
 
 #print "soln length:\n";
 $length = `grep ACTION $logFile | wc -l`;
