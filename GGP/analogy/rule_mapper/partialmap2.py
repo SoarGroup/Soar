@@ -3,7 +3,6 @@
 
 import sys
 from bestlist import BestList
-from dstuple import dstuple
 from ggp_utils import *
 import predicate
 from GDL import Sentence
@@ -11,6 +10,8 @@ from move_effects import calc_move_effects
 import placetype
 from equivalence_class import EquivalenceClass
 import options
+#from IPython.Debugger import Pdb
+#pdb = Pdb('Linux')
 import pdb
 
 class PartialMap:
@@ -158,7 +159,6 @@ class PartialMap:
 			if self.__matched_preds[sp] != tp:
 				return options.MISMATCHED_PRED_SCORE
 			else:
-				pdb.set_trace()
 				return options.MATCHED_PRED_SCORE
 		else:
 			if tp in self.__matched_preds.values():
@@ -256,9 +256,7 @@ class PartialMap:
 		best_score += options.HEAD_SCORE_FACTOR * head_match_score
 		
 		num_preds_matched = self.__num_preds_already_matched(sr, tr, best_map)
-		if num_preds_matched > 0:
-			print num_preds_matched
-		best_score *= (options.BIN_MATCH_MULT ** num_preds_matched)
+		best_score *= (options.MATCHED_RULE_MULT ** num_preds_matched)
 		return (best_map, best_score)
 
 	def __num_preds_already_matched(self, sr, tr, bm):
@@ -347,8 +345,9 @@ class PartialMap:
 			assert tp == self.__matched_preds[sp]
 		else:
 			assert tp not in self.__matched_preds.values()
-			debug_print("matching predicates %s ==> %s" % (sp, tp))
 
+			debug_print("matching predicates %s ==> %s" % (sp, tp))
+			
 			# update cache
 
 			if options.USE_MOVE_EFFECTS and sp.get_type() == Sentence.MOVE:
@@ -384,8 +383,6 @@ class PartialMap:
 		# delete all other match candidates involving these rules
 		for rule_pair in self.__cand_rule_matches.keys():
 			if rule_pair[0] == sr or rule_pair[1] == tr:
-#				if rule_pair[0].get_head().get_predicate() == 'throw' and rule_pair[1].get_head().get_predicate() == 'throw':
-#					pdb.set_trace()
 				del self.__cand_rule_matches[rule_pair]
 
 		# add predicate maps
