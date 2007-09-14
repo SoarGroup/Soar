@@ -885,7 +885,21 @@
     (adjacent-to-object ?step1 ?support1 bottom)
     (adjacent-to-object ?step2 ?support1 ?direction)
     (clear ?step1 top)
+	;;manual add
+    (stairway ?step2 ?direction ?step-number-1 ?step-height)
+	(+ 1 ?step-number-1 ?step-number)
+	;;
     (* ?step-height ?step-number ?height1))
+
+;;; Determine if three different objects are all right aligned
+(<= (right-alignment ?object1 ?object2 ?object3)
+    (object-coordinates ?object1 ?x11 ?y11 ?x ?y12)
+    (object-coordinates ?object2 ?x21 ?y21 ?x ?y22)
+    (object-coordinates ?object3 ?x31 ?y31 ?x ?y32)
+    (true (object-type ?ground ground))
+    (adjacent-to-object ?ground ?object1 top)
+    (adjacent-to-object ?object1 ?object2 top)
+    (adjacent-to-object ?object2 ?object3 top))
 
 ;;; Determine if three different objects are all left aligned and
 ;;; vertically stacked on the ground
@@ -893,16 +907,6 @@
     (true (object-location ?object1 ?x ?y1))
     (true (object-location ?object2 ?x ?y2))
     (true (object-location ?object3 ?x ?y3))
-    (true (object-type ?ground ground))
-    (adjacent-to-object ?ground ?object1 top)
-    (adjacent-to-object ?object1 ?object2 top)
-    (adjacent-to-object ?object2 ?object3 top))
-
-;;; Determine if three different objects are all right aligned
-(<= (right-alignment ?object1 ?object2 ?object3)
-    (object-coordinates ?object1 ?x11 ?y11 ?x ?y12)
-    (object-coordinates ?object2 ?x21 ?y21 ?x ?y22)
-    (object-coordinates ?object3 ?x31 ?y31 ?x ?y32)
     (true (object-type ?ground ground))
     (adjacent-to-object ?ground ?object1 top)
     (adjacent-to-object ?object1 ?object2 top)
