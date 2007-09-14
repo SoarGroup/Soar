@@ -6,454 +6,457 @@ sp {elaborate*ts*goodthings
 
 # test running script adds productions to add actual goodthings
 
+# Indicator detection rules:
+# These work, but are commented out. The test running script now adds a grounded production for
+# each indicator, which is more efficient.
 # p1..p3 Appearences
 
-sp {apply*usi*goodthing
-   (state <s> ^name game
-              ^operator.name update-search-info
-              ^gs <gs>
-              ^old-gs <old-gs>
-              ^current-evaluation-depth <ced>
-              ^top-state.good-things.indicator <gt>)
-   (<gt> ^index <idx>
-         ^type addition
-         ^what <w>)
-   (<w> ^<item> <id-gt>)
-   (<id-gt> ^p1 <p1-val>
-           -^p2)
-   (<gs> ^<item> <id-gs>)
-   (<id-gs> ^p1 <p1-val>)
-  -{(<old-gs> ^<item> <id-oldgs>)
-    (<id-oldgs> ^p1 <p1-val>)}
-                   -{(<s> ^used-goodthing <gt>)}
--->
-   (<s> ^present-indicator <gt>)
-   (<s> ^current-evaluation-depth <ced> -
-                                  (+ <ced> 1))
-   (write (crlf) |Indicator: appearence of | <item> | | <p1-val>)
-}
-
-
-sp {apply*usi*goodthing*2
-   (state <s> ^name game
-              ^operator.name update-search-info
-              ^gs <gs>
-              ^old-gs <old-gs>
-              ^current-evaluation-depth <ced>
-              ^top-state.good-things.indicator <gt>)
-   (<gt> ^index <idx>
-         ^type addition
-         ^what <w>)
-   (<w> ^<item> <id-gt>)
-   (<id-gt> ^p1 <p1-val>
-            ^p2 <p2-val>
-           -^p3)
-   (<gs> ^<item> <id-gs>)
-   (<id-gs> ^p1 <p1-val>
-            ^p2 <p2-val>)
-  -{(<old-gs> ^<item> <id-oldgs>)
-    (<id-oldgs> ^p1 <p1-val>
-                ^p2 <p2-val>)}
-                   -{(<s> ^used-goodthing <gt>)}
--->
-   (<s> ^present-indicator <gt>)
-   (<s> ^current-evaluation-depth <ced> -
-                                  (+ <ced> 1))
-   (write (crlf) |Indicator: appearence of | <item> | | <p1-val> | | <p2-val>)
-}
-
-
-sp {apply*usi*goodthing*3
-   (state <s> ^name game
-              ^operator.name update-search-info
-              ^gs <gs>
-              ^old-gs <old-gs>
-              ^current-evaluation-depth <ced>
-              ^top-state.good-things.indicator <gt>)
-   (<gt> ^index <idx>
-         ^type addition
-         ^what <w>)
-   (<w> ^<item> <id-gt>)
-   (<id-gt> ^p1 <p1-val>
-            ^p2 <p2-val>
-            ^p3 <p2-val>)
-   (<gs> ^<item> <id-gs>)
-   (<id-gs> ^p1 <p1-val>
-            ^p2 <p2-val>
-            ^p3 <p3-val>)
-  -{(<old-gs> ^<item> <id-oldgs>)
-    (<id-oldgs> ^p1 <p1-val>
-                ^p2 <p2-val>
-                ^p3 <p3-val>)}
-                   -{(<s> ^used-goodthing <gt>)}
--->
-   (<s> ^present-indicator <gt>)
-   (<s> ^current-evaluation-depth <ced> -
-                                  (+ <ced> 1))
-   (write (crlf) |Indicator: appearence of | <item> | | <p1-val> | | <p2-val> | | <p3-val>)
-}
-
-
-# p1..p3 Removals
-sp {apply*usi*goodthing*removed
-   (state <s> ^name game
-              ^operator.name update-search-info
-              ^gs <gs>
-              ^old-gs <old-gs>
-              ^current-evaluation-depth <ced>
-              ^top-state.good-things.indicator <gt>)
-   (<gt> ^index <idx>
-         ^type removal
-         ^what <w>)
-   (<w> ^<item> <id-gt>)
-   (<id-gt> ^p1 <p1-val>
-           -^p2)
-  -{(<gs> ^<item> <id-gs>)
-    (<id-gs> ^p1 <p1-val>)}
-   (<old-gs> ^<item> <id-oldgs>)
-   (<id-oldgs> ^p1 <p1-val>)
-  -{(<s> ^used-goodthing <gt>)}
--->
-   (<s> ^present-indicator <gt>)
-   (<s> ^current-evaluation-depth <ced> -
-                                  (+ <ced> 1))
-   (write (crlf) |Indicator: removal of | <item> | | <p1-val>)
-}
-
-
-sp {apply*usi*goodthing*2*removed
-   (state <s> ^name game
-              ^operator.name update-search-info
-              ^gs <gs>
-              ^old-gs <old-gs>
-              ^current-evaluation-depth <ced>
-              ^top-state.good-things.indicator <gt>)
-   (<gt> ^index <idx>
-         ^type removal
-         ^what <w>)
-   (<w> ^<item> <id-gt>)
-   (<id-gt> ^p1 <p1-val>
-            ^p2 <p2-val>
-           -^p3)
-   -{(<gs> ^<item> <id-gs>)
-   (<id-gs> ^p1 <p1-val>
-             ^p2 <p2-val>)}
-   (<old-gs> ^<item> <id-oldgs>)
-   (<id-oldgs> ^p1 <p1-val>
-               ^p2 <p2-val>)
-  -{(<s> ^used-goodthing <gt>)}
--->
-   (<s> ^present-indicator <gt>)
-   (<s> ^current-evaluation-depth <ced> -
-                                  (+ <ced> 1))
-   (write (crlf) |Indicator: removal of | <item> | | <p1-val> | | <p2-val>)
-}
-
-
-sp {apply*usi*goodthing*3*removed
-   (state <s> ^name game
-              ^operator.name update-search-info
-              ^gs <gs>
-              ^old-gs <old-gs>
-              ^current-evaluation-depth <ced>
-              ^top-state.good-things.indicator <gt>)
-   (<gt> ^index <idx>
-         ^type removal
-         ^what <w>)
-   (<w> ^<item> <id-gt>)
-   (<id-gt> ^p1 <p1-val>
-            ^p2 <p2-val>
-            ^p3 <p2-val>)
-  -{(<gs> ^<item> <id-gs>)
-    (<id-gs> ^p1 <p1-val>
-             ^p2 <p2-val>
-             ^p3 <p3-val>)}
-   (<old-gs> ^<item> <id-oldgs>)
-   (<id-oldgs> ^p1 <p1-val>
-               ^p2 <p2-val>
-               ^p3 <p3-val>)
-  -{(<s> ^used-goodthing <gt>)}
--->
-   (<s> ^present-indicator <gt>)
-   (<s> ^current-evaluation-depth <ced> -
-                                  (+ <ced> 1))
-   (write (crlf) |Indicator: removal of | <item> | | <p1-val> | | <p2-val> | | <p3-val>)
-}
-
-# p1..p3 Increments
-
-sp {apply*usi*goodthing*increase
-   (state <s> ^name game
-              ^operator.name update-search-info
-              ^gs <gs>
-              ^old-gs <old-gs>
-              ^current-evaluation-depth <ced>
-              ^top-state.good-things.indicator <gt>)
-   (<gt> ^index <idx>
-         ^type increase
-         ^number-position p1 # this better be p1, otherwise its missing the other groundings
-         ^predicate-name <pname>
-        -^first-grounding)
-   (<gs> ^<pname> <id-gs>)
-   (<id-gs> ^p1 <current-val>)
-   (<old-gs> ^<pname> <id-oldgs>)
-   (<id-oldgs> ^p1 {< <current-val> <old-val>})
-  -{(<s> ^used-goodthing <gt>)}
--->
-   (<s> ^present-indicator <gt>)
-   (<s> ^current-evaluation-depth <ced> -
-                                  (+ <ced> 1))
-   (write (crlf) |Indicator: increase of | <pname>)
-}
-
-sp {apply*usi*goodthing*2*increase
-   (state <s> ^name game
-              ^operator.name update-search-info
-              ^gs <gs>
-              ^old-gs <old-gs>
-              ^current-evaluation-depth <ced>
-              ^top-state.good-things.indicator <gt>)
-   (<gt> ^index <idx>
-         ^type increase
-         ^number-position <position>
-         ^predicate-name <pname>
-         ^first-grounding <g1>
-         -^second-grounding <g2>)
-   (<g1> ^position <g1-pos>
-         ^value <g1-val>)
-   (<gs> ^<pname> <id-gs>)
-   (<id-gs> ^<position> <current-val>
-            ^<g1-pos> <g1-val>)
-   (<old-gs> ^<pname> <id-oldgs>)
-   (<id-oldgs> ^<position> {< <current-val> <old-val>}
-            ^<g1-pos> <g1-val>)
-  -{(<s> ^used-goodthing <gt>)}
--->
-   (<s> ^present-indicator <gt>)
-   (<s> ^current-evaluation-depth <ced> -
-                                  (+ <ced> 1))
-   (write (crlf) |Indicator: increase of | <pname> | | <g1-pos> | | <g1-val>)
-}
-
-
-sp {apply*usi*goodthing*3*increase
-   (state <s> ^name game
-              ^operator.name update-search-info
-              ^gs <gs>
-              ^old-gs <old-gs>
-              ^current-evaluation-depth <ced>
-              ^top-state.good-things.indicator <gt>)
-   (<gt> ^index <idx>
-         ^type increase
-         ^number-position <position>
-         ^predicate-name <pname>
-         ^first-grounding <g1>
-         ^second-grounding <g2>)
-   (<g1> ^position <g1-pos>
-         ^value <g1-val>)
-   (<g2> ^position <g2-pos>
-         ^value <g2-val>)
-   (<gs> ^<pname> <id-gs>)
-   (<id-gs> ^<position> <current-val>
-            ^<g1-pos> <g1-val>
-            ^<g2-pos> <g2-val>)
-   (<old-gs> ^<pname> <id-oldgs>)
-   (<id-oldgs> ^<position> {< <current-val> <old-val>}
-            ^<g1-pos> <g1-val>
-            ^<g2-pos> <g2-val>)
-  -{(<s> ^used-goodthing <gt>)}
--->
-   (<s> ^present-indicator <gt>)
-   (<s> ^current-evaluation-depth <ced> -
-                                  (+ <ced> 1))
-   (write (crlf) |Indicator: increase of | <pname> | | <g1-pos> | | <g1-val> | | <g2-pos> | | <g2-val>)
-}
-
-# p1..p3 Decrements
-
-sp {apply*usi*goodthing*decrease
-   (state <s> ^name game
-              ^operator.name update-search-info
-              ^gs <gs>
-              ^old-gs <old-gs>
-              ^current-evaluation-depth <ced>
-              ^top-state.good-things.indicator <gt>)
-   (<gt> ^index <idx>
-         ^type decrease
-         ^number-position p1 # this better be p1, otherwise its missing the other groundings
-         ^predicate-name <pname>
-         -^first-grounding <g1>)
-   (<gs> ^<pname> <id-gs>)
-   (<id-gs> ^p1 <current-val>)
-   (<old-gs> ^<pname> <id-oldgs>)
-   (<id-oldgs> ^p1 {> <current-val> <old-val>})
-  -{(<s> ^used-goodthing <gt>)}
--->
-   (<s> ^present-indicator <gt>)
-   (<s> ^current-evaluation-depth <ced> -
-                                  (+ <ced> 1))
-   (write (crlf) |Indicator: decrease of | <pname>)
-}
-
-sp {apply*usi*goodthing*2*decrease
-   (state <s> ^name game
-              ^operator.name update-search-info
-              ^gs <gs>
-              ^old-gs <old-gs>
-              ^current-evaluation-depth <ced>
-              ^top-state.good-things.indicator <gt>)
-   (<gt> ^index <idx>
-         ^type decrease
-         ^number-position <position>
-         ^predicate-name <pname>
-         ^first-grounding <g1>
-         -^second-grounding <g2>)
-   (<g1> ^position <g1-pos>
-         ^value <g1-val>)
-   (<gs> ^<pname> <id-gs>)
-   (<id-gs> ^<position> <current-val>
-            ^<g1-pos> <g1-val>)
-   (<old-gs> ^<pname> <id-oldgs>)
-   (<id-oldgs> ^<position> {> <current-val> <old-val>}
-            ^<g1-pos> <g1-val>)
-  -{(<s> ^used-goodthing <gt>)}
--->
-   (<s> ^present-indicator <gt>)
-   (<s> ^current-evaluation-depth <ced> -
-                                  (+ <ced> 1))
-   (write (crlf) |Indicator: decrease of | <pname> | | <g1-pos> | | <g1-val>)
-}
-
-
-sp {apply*usi*goodthing*3*decrease
-   (state <s> ^name game
-              ^operator.name update-search-info
-              ^gs <gs>
-              ^old-gs <old-gs>
-              ^current-evaluation-depth <ced>
-              ^top-state.good-things.indicator <gt>)
-   (<gt> ^index <idx>
-         ^type decrease
-         ^number-position <position>
-         ^predicate-name <pname>
-         ^first-grounding <g1>
-         ^second-grounding <g2>
-        -^third-grounding)
-   (<g1> ^position <g1-pos>
-         ^value <g1-val>)
-   (<g2> ^position <g2-pos>
-         ^value <g2-val>)
-   (<gs> ^<pname> <id-gs>)
-   (<id-gs> ^<position> <current-val>
-            ^<g1-pos> <g1-val>
-            ^<g2-pos> <g2-val>)
-   (<old-gs> ^<pname> <id-oldgs>)
-   (<id-oldgs> ^<position> {> <current-val> <old-val>}
-            ^<g1-pos> <g1-val>
-            ^<g2-pos> <g2-val>)
-  -{(<s> ^used-goodthing <gt>)}
--->
-   (<s> ^present-indicator <gt>)
-   (<s> ^current-evaluation-depth <ced> -
-                                  (+ <ced> 1))
-   (write (crlf) |Indicator: decrease of | <pname> | | <g1-pos> | | <g1-val> | | <g2-pos> | | <g2-val>)
-}
-
-# p1..p3 Changes
-
-sp {apply*usi*goodthing*change
-   (state <s> ^name game
-              ^operator.name update-search-info
-              ^gs <gs>
-              ^old-gs <old-gs>
-              ^current-evaluation-depth <ced>
-              ^top-state.good-things.indicator <gt>)
-   (<gt> ^index <idx>
-         ^type change
-         ^from <from>
-         ^to <to>
-         ^number-position p1 # this better be p1, otherwise its missing the other groundings
-         ^predicate-name <pname>
-         -^first-grounding <g1>)
-   (<gs> ^<pname> <id-gs>)
-   (<id-gs> ^p1 <to>)
-   (<old-gs> ^<pname> <id-oldgs>)
-   (<id-oldgs> ^p1 <from>)
-  -{(<s> ^used-goodthing <gt>)}
--->
-   (<s> ^present-indicator <gt>)
-   (<s> ^current-evaluation-depth <ced> -
-                                  (+ <ced> 1))
-   (write (crlf) |Indicator: change of | <pname> | from | <from> | to | <to>)
-}
-
-sp {apply*usi*goodthing*2*change
-   (state <s> ^name game
-              ^operator.name update-search-info
-              ^gs <gs>
-              ^old-gs <old-gs>
-              ^current-evaluation-depth <ced>
-              ^top-state.good-things.indicator <gt>)
-   (<gt> ^index <idx>
-         ^type change
-         ^from <from>
-         ^to <to>
-         ^number-position <position>
-         ^predicate-name <pname>
-         ^first-grounding <g1>
-         -^second-grounding <g2>)
-   (<g1> ^position <g1-pos>
-         ^value <g1-val>)
-   (<gs> ^<pname> <id-gs>)
-   (<id-gs> ^<position> <to>
-            ^<g1-pos> <g1-val>)
-   (<old-gs> ^<pname> <id-oldgs>)
-   (<id-oldgs> ^<position> <from>
-            ^<g1-pos> <g1-val>)
-  -{(<s> ^used-goodthing <gt>)}
--->
-   (<s> ^present-indicator <gt>)
-   (<s> ^current-evaluation-depth <ced> -
-                                  (+ <ced> 1))
-   (write (crlf) |Indicator: change of | <pname> | | <g1-pos> | | <g1-val> | from | <from> | to | <to>)
-}
-
-
-sp {apply*usi*goodthing*3*change
-   (state <s> ^name game
-              ^operator.name update-search-info
-              ^gs <gs>
-              ^old-gs <old-gs>
-              ^current-evaluation-depth <ced>
-              ^top-state.good-things.indicator <gt>)
-   (<gt> ^index <idx>
-         ^type change
-         ^from <from>
-         ^to <to>
-         ^number-position <position>
-         ^predicate-name <pname>
-         ^first-grounding <g1>
-         ^second-grounding <g2>
-        -^third-grounding)
-   (<g1> ^position <g1-pos>
-         ^value <g1-val>)
-   (<g2> ^position <g2-pos>
-         ^value <g2-val>)
-   (<gs> ^<pname> <id-gs>)
-   (<id-gs> ^<position> <to>
-            ^<g1-pos> <g1-val>
-            ^<g2-pos> <g2-val>)
-   (<old-gs> ^<pname> <id-oldgs>)
-   (<id-oldgs> ^<position> <from>
-            ^<g1-pos> <g1-val>
-            ^<g2-pos> <g2-val>)
-  -{(<s> ^used-goodthing <gt>)}
--->
-   (<s> ^present-indicator <gt>)
-   (<s> ^current-evaluation-depth <ced> -
-                                  (+ <ced> 1))
-   (write (crlf) |Indicator: change of | <pname> | | <g1-pos> | | <g1-val> | | <g2-pos> | | <g2-val> | from | <from> | to | <to>)
-}
+#sp {apply*usi*goodthing
+#   (state <s> ^name game
+#              ^operator.name update-search-info
+#              ^gs <gs>
+#              ^old-gs <old-gs>
+#              ^current-evaluation-depth <ced>
+#              ^top-state.good-things.indicator <gt>)
+#   (<gt> ^index <idx>
+#         ^type addition
+#         ^what <w>)
+#   (<w> ^<item> <id-gt>)
+#   (<id-gt> ^p1 <p1-val>
+#           -^p2)
+#   (<gs> ^<item> <id-gs>)
+#   (<id-gs> ^p1 <p1-val>)
+#  -{(<old-gs> ^<item> <id-oldgs>)
+#    (<id-oldgs> ^p1 <p1-val>)}
+#                   -{(<s> ^used-goodthing <gt>)}
+#-->
+#   (<s> ^present-indicator <gt>)
+#   (<s> ^current-evaluation-depth <ced> -
+#                                  (+ <ced> 1))
+#   (write (crlf) |Indicator: appearence of | <item> | | <p1-val>)
+#}
+#
+#
+#sp {apply*usi*goodthing*2
+#   (state <s> ^name game
+#              ^operator.name update-search-info
+#              ^gs <gs>
+#              ^old-gs <old-gs>
+#              ^current-evaluation-depth <ced>
+#              ^top-state.good-things.indicator <gt>)
+#   (<gt> ^index <idx>
+#         ^type addition
+#         ^what <w>)
+#   (<w> ^<item> <id-gt>)
+#   (<id-gt> ^p1 <p1-val>
+#            ^p2 <p2-val>
+#           -^p3)
+#   (<gs> ^<item> <id-gs>)
+#   (<id-gs> ^p1 <p1-val>
+#            ^p2 <p2-val>)
+#  -{(<old-gs> ^<item> <id-oldgs>)
+#    (<id-oldgs> ^p1 <p1-val>
+#                ^p2 <p2-val>)}
+#                   -{(<s> ^used-goodthing <gt>)}
+#-->
+#   (<s> ^present-indicator <gt>)
+#   (<s> ^current-evaluation-depth <ced> -
+#                                  (+ <ced> 1))
+#   (write (crlf) |Indicator: appearence of | <item> | | <p1-val> | | <p2-val>)
+#}
+#
+#
+#sp {apply*usi*goodthing*3
+#   (state <s> ^name game
+#              ^operator.name update-search-info
+#              ^gs <gs>
+#              ^old-gs <old-gs>
+#              ^current-evaluation-depth <ced>
+#              ^top-state.good-things.indicator <gt>)
+#   (<gt> ^index <idx>
+#         ^type addition
+#         ^what <w>)
+#   (<w> ^<item> <id-gt>)
+#   (<id-gt> ^p1 <p1-val>
+#            ^p2 <p2-val>
+#            ^p3 <p2-val>)
+#   (<gs> ^<item> <id-gs>)
+#   (<id-gs> ^p1 <p1-val>
+#            ^p2 <p2-val>
+#            ^p3 <p3-val>)
+#  -{(<old-gs> ^<item> <id-oldgs>)
+#    (<id-oldgs> ^p1 <p1-val>
+#                ^p2 <p2-val>
+#                ^p3 <p3-val>)}
+#                   -{(<s> ^used-goodthing <gt>)}
+#-->
+#   (<s> ^present-indicator <gt>)
+#   (<s> ^current-evaluation-depth <ced> -
+#                                  (+ <ced> 1))
+#   (write (crlf) |Indicator: appearence of | <item> | | <p1-val> | | <p2-val> | | <p3-val>)
+#}
+#
+#
+## p1..p3 Removals
+#sp {apply*usi*goodthing*removed
+#   (state <s> ^name game
+#              ^operator.name update-search-info
+#              ^gs <gs>
+#              ^old-gs <old-gs>
+#              ^current-evaluation-depth <ced>
+#              ^top-state.good-things.indicator <gt>)
+#   (<gt> ^index <idx>
+#         ^type removal
+#         ^what <w>)
+#   (<w> ^<item> <id-gt>)
+#   (<id-gt> ^p1 <p1-val>
+#           -^p2)
+#  -{(<gs> ^<item> <id-gs>)
+#    (<id-gs> ^p1 <p1-val>)}
+#   (<old-gs> ^<item> <id-oldgs>)
+#   (<id-oldgs> ^p1 <p1-val>)
+#  -{(<s> ^used-goodthing <gt>)}
+#-->
+#   (<s> ^present-indicator <gt>)
+#   (<s> ^current-evaluation-depth <ced> -
+#                                  (+ <ced> 1))
+#   (write (crlf) |Indicator: removal of | <item> | | <p1-val>)
+#}
+#
+#
+#sp {apply*usi*goodthing*2*removed
+#   (state <s> ^name game
+#              ^operator.name update-search-info
+#              ^gs <gs>
+#              ^old-gs <old-gs>
+#              ^current-evaluation-depth <ced>
+#              ^top-state.good-things.indicator <gt>)
+#   (<gt> ^index <idx>
+#         ^type removal
+#         ^what <w>)
+#   (<w> ^<item> <id-gt>)
+#   (<id-gt> ^p1 <p1-val>
+#            ^p2 <p2-val>
+#           -^p3)
+#   -{(<gs> ^<item> <id-gs>)
+#   (<id-gs> ^p1 <p1-val>
+#             ^p2 <p2-val>)}
+#   (<old-gs> ^<item> <id-oldgs>)
+#   (<id-oldgs> ^p1 <p1-val>
+#               ^p2 <p2-val>)
+#  -{(<s> ^used-goodthing <gt>)}
+#-->
+#   (<s> ^present-indicator <gt>)
+#   (<s> ^current-evaluation-depth <ced> -
+#                                  (+ <ced> 1))
+#   (write (crlf) |Indicator: removal of | <item> | | <p1-val> | | <p2-val>)
+#}
+#
+#
+#sp {apply*usi*goodthing*3*removed
+#   (state <s> ^name game
+#              ^operator.name update-search-info
+#              ^gs <gs>
+#              ^old-gs <old-gs>
+#              ^current-evaluation-depth <ced>
+#              ^top-state.good-things.indicator <gt>)
+#   (<gt> ^index <idx>
+#         ^type removal
+#         ^what <w>)
+#   (<w> ^<item> <id-gt>)
+#   (<id-gt> ^p1 <p1-val>
+#            ^p2 <p2-val>
+#            ^p3 <p2-val>)
+#  -{(<gs> ^<item> <id-gs>)
+#    (<id-gs> ^p1 <p1-val>
+#             ^p2 <p2-val>
+#             ^p3 <p3-val>)}
+#   (<old-gs> ^<item> <id-oldgs>)
+#   (<id-oldgs> ^p1 <p1-val>
+#               ^p2 <p2-val>
+#               ^p3 <p3-val>)
+#  -{(<s> ^used-goodthing <gt>)}
+#-->
+#   (<s> ^present-indicator <gt>)
+#   (<s> ^current-evaluation-depth <ced> -
+#                                  (+ <ced> 1))
+#   (write (crlf) |Indicator: removal of | <item> | | <p1-val> | | <p2-val> | | <p3-val>)
+#}
+#
+## p1..p3 Increments
+#
+#sp {apply*usi*goodthing*increase
+#   (state <s> ^name game
+#              ^operator.name update-search-info
+#              ^gs <gs>
+#              ^old-gs <old-gs>
+#              ^current-evaluation-depth <ced>
+#              ^top-state.good-things.indicator <gt>)
+#   (<gt> ^index <idx>
+#         ^type increase
+#         ^number-position p1 # this better be p1, otherwise its missing the other groundings
+#         ^predicate-name <pname>
+#        -^first-grounding)
+#   (<gs> ^<pname> <id-gs>)
+#   (<id-gs> ^p1 <current-val>)
+#   (<old-gs> ^<pname> <id-oldgs>)
+#   (<id-oldgs> ^p1 {< <current-val> <old-val>})
+#  -{(<s> ^used-goodthing <gt>)}
+#-->
+#   (<s> ^present-indicator <gt>)
+#   (<s> ^current-evaluation-depth <ced> -
+#                                  (+ <ced> 1))
+#   (write (crlf) |Indicator: increase of | <pname>)
+#}
+#
+#sp {apply*usi*goodthing*2*increase
+#   (state <s> ^name game
+#              ^operator.name update-search-info
+#              ^gs <gs>
+#              ^old-gs <old-gs>
+#              ^current-evaluation-depth <ced>
+#              ^top-state.good-things.indicator <gt>)
+#   (<gt> ^index <idx>
+#         ^type increase
+#         ^number-position <position>
+#         ^predicate-name <pname>
+#         ^first-grounding <g1>
+#         -^second-grounding <g2>)
+#   (<g1> ^position <g1-pos>
+#         ^value <g1-val>)
+#   (<gs> ^<pname> <id-gs>)
+#   (<id-gs> ^<position> <current-val>
+#            ^<g1-pos> <g1-val>)
+#   (<old-gs> ^<pname> <id-oldgs>)
+#   (<id-oldgs> ^<position> {< <current-val> <old-val>}
+#            ^<g1-pos> <g1-val>)
+#  -{(<s> ^used-goodthing <gt>)}
+#-->
+#   (<s> ^present-indicator <gt>)
+#   (<s> ^current-evaluation-depth <ced> -
+#                                  (+ <ced> 1))
+#   (write (crlf) |Indicator: increase of | <pname> | | <g1-pos> | | <g1-val>)
+#}
+#
+#
+#sp {apply*usi*goodthing*3*increase
+#   (state <s> ^name game
+#              ^operator.name update-search-info
+#              ^gs <gs>
+#              ^old-gs <old-gs>
+#              ^current-evaluation-depth <ced>
+#              ^top-state.good-things.indicator <gt>)
+#   (<gt> ^index <idx>
+#         ^type increase
+#         ^number-position <position>
+#         ^predicate-name <pname>
+#         ^first-grounding <g1>
+#         ^second-grounding <g2>)
+#   (<g1> ^position <g1-pos>
+#         ^value <g1-val>)
+#   (<g2> ^position <g2-pos>
+#         ^value <g2-val>)
+#   (<gs> ^<pname> <id-gs>)
+#   (<id-gs> ^<position> <current-val>
+#            ^<g1-pos> <g1-val>
+#            ^<g2-pos> <g2-val>)
+#   (<old-gs> ^<pname> <id-oldgs>)
+#   (<id-oldgs> ^<position> {< <current-val> <old-val>}
+#            ^<g1-pos> <g1-val>
+#            ^<g2-pos> <g2-val>)
+#  -{(<s> ^used-goodthing <gt>)}
+#-->
+#   (<s> ^present-indicator <gt>)
+#   (<s> ^current-evaluation-depth <ced> -
+#                                  (+ <ced> 1))
+#   (write (crlf) |Indicator: increase of | <pname> | | <g1-pos> | | <g1-val> | | <g2-pos> | | <g2-val>)
+#}
+#
+## p1..p3 Decrements
+#
+#sp {apply*usi*goodthing*decrease
+#   (state <s> ^name game
+#              ^operator.name update-search-info
+#              ^gs <gs>
+#              ^old-gs <old-gs>
+#              ^current-evaluation-depth <ced>
+#              ^top-state.good-things.indicator <gt>)
+#   (<gt> ^index <idx>
+#         ^type decrease
+#         ^number-position p1 # this better be p1, otherwise its missing the other groundings
+#         ^predicate-name <pname>
+#         -^first-grounding <g1>)
+#   (<gs> ^<pname> <id-gs>)
+#   (<id-gs> ^p1 <current-val>)
+#   (<old-gs> ^<pname> <id-oldgs>)
+#   (<id-oldgs> ^p1 {> <current-val> <old-val>})
+#  -{(<s> ^used-goodthing <gt>)}
+#-->
+#   (<s> ^present-indicator <gt>)
+#   (<s> ^current-evaluation-depth <ced> -
+#                                  (+ <ced> 1))
+#   (write (crlf) |Indicator: decrease of | <pname>)
+#}
+#
+#sp {apply*usi*goodthing*2*decrease
+#   (state <s> ^name game
+#              ^operator.name update-search-info
+#              ^gs <gs>
+#              ^old-gs <old-gs>
+#              ^current-evaluation-depth <ced>
+#              ^top-state.good-things.indicator <gt>)
+#   (<gt> ^index <idx>
+#         ^type decrease
+#         ^number-position <position>
+#         ^predicate-name <pname>
+#         ^first-grounding <g1>
+#         -^second-grounding <g2>)
+#   (<g1> ^position <g1-pos>
+#         ^value <g1-val>)
+#   (<gs> ^<pname> <id-gs>)
+#   (<id-gs> ^<position> <current-val>
+#            ^<g1-pos> <g1-val>)
+#   (<old-gs> ^<pname> <id-oldgs>)
+#   (<id-oldgs> ^<position> {> <current-val> <old-val>}
+#            ^<g1-pos> <g1-val>)
+#  -{(<s> ^used-goodthing <gt>)}
+#-->
+#   (<s> ^present-indicator <gt>)
+#   (<s> ^current-evaluation-depth <ced> -
+#                                  (+ <ced> 1))
+#   (write (crlf) |Indicator: decrease of | <pname> | | <g1-pos> | | <g1-val>)
+#}
+#
+#
+#sp {apply*usi*goodthing*3*decrease
+#   (state <s> ^name game
+#              ^operator.name update-search-info
+#              ^gs <gs>
+#              ^old-gs <old-gs>
+#              ^current-evaluation-depth <ced>
+#              ^top-state.good-things.indicator <gt>)
+#   (<gt> ^index <idx>
+#         ^type decrease
+#         ^number-position <position>
+#         ^predicate-name <pname>
+#         ^first-grounding <g1>
+#         ^second-grounding <g2>
+#        -^third-grounding)
+#   (<g1> ^position <g1-pos>
+#         ^value <g1-val>)
+#   (<g2> ^position <g2-pos>
+#         ^value <g2-val>)
+#   (<gs> ^<pname> <id-gs>)
+#   (<id-gs> ^<position> <current-val>
+#            ^<g1-pos> <g1-val>
+#            ^<g2-pos> <g2-val>)
+#   (<old-gs> ^<pname> <id-oldgs>)
+#   (<id-oldgs> ^<position> {> <current-val> <old-val>}
+#            ^<g1-pos> <g1-val>
+#            ^<g2-pos> <g2-val>)
+#  -{(<s> ^used-goodthing <gt>)}
+#-->
+#   (<s> ^present-indicator <gt>)
+#   (<s> ^current-evaluation-depth <ced> -
+#                                  (+ <ced> 1))
+#   (write (crlf) |Indicator: decrease of | <pname> | | <g1-pos> | | <g1-val> | | <g2-pos> | | <g2-val>)
+#}
+#
+## p1..p3 Changes
+#
+#sp {apply*usi*goodthing*change
+#   (state <s> ^name game
+#              ^operator.name update-search-info
+#              ^gs <gs>
+#              ^old-gs <old-gs>
+#              ^current-evaluation-depth <ced>
+#              ^top-state.good-things.indicator <gt>)
+#   (<gt> ^index <idx>
+#         ^type change
+#         ^from <from>
+#         ^to <to>
+#         ^number-position p1 # this better be p1, otherwise its missing the other groundings
+#         ^predicate-name <pname>
+#         -^first-grounding <g1>)
+#   (<gs> ^<pname> <id-gs>)
+#   (<id-gs> ^p1 <to>)
+#   (<old-gs> ^<pname> <id-oldgs>)
+#   (<id-oldgs> ^p1 <from>)
+#  -{(<s> ^used-goodthing <gt>)}
+#-->
+#   (<s> ^present-indicator <gt>)
+#   (<s> ^current-evaluation-depth <ced> -
+#                                  (+ <ced> 1))
+#   (write (crlf) |Indicator: change of | <pname> | from | <from> | to | <to>)
+#}
+#
+#sp {apply*usi*goodthing*2*change
+#   (state <s> ^name game
+#              ^operator.name update-search-info
+#              ^gs <gs>
+#              ^old-gs <old-gs>
+#              ^current-evaluation-depth <ced>
+#              ^top-state.good-things.indicator <gt>)
+#   (<gt> ^index <idx>
+#         ^type change
+#         ^from <from>
+#         ^to <to>
+#         ^number-position <position>
+#         ^predicate-name <pname>
+#         ^first-grounding <g1>
+#         -^second-grounding <g2>)
+#   (<g1> ^position <g1-pos>
+#         ^value <g1-val>)
+#   (<gs> ^<pname> <id-gs>)
+#   (<id-gs> ^<position> <to>
+#            ^<g1-pos> <g1-val>)
+#   (<old-gs> ^<pname> <id-oldgs>)
+#   (<id-oldgs> ^<position> <from>
+#            ^<g1-pos> <g1-val>)
+#  -{(<s> ^used-goodthing <gt>)}
+#-->
+#   (<s> ^present-indicator <gt>)
+#   (<s> ^current-evaluation-depth <ced> -
+#                                  (+ <ced> 1))
+#   (write (crlf) |Indicator: change of | <pname> | | <g1-pos> | | <g1-val> | from | <from> | to | <to>)
+#}
+#
+#
+#sp {apply*usi*goodthing*3*change
+#   (state <s> ^name game
+#              ^operator.name update-search-info
+#              ^gs <gs>
+#              ^old-gs <old-gs>
+#              ^current-evaluation-depth <ced>
+#              ^top-state.good-things.indicator <gt>)
+#   (<gt> ^index <idx>
+#         ^type change
+#         ^from <from>
+#         ^to <to>
+#         ^number-position <position>
+#         ^predicate-name <pname>
+#         ^first-grounding <g1>
+#         ^second-grounding <g2>
+#        -^third-grounding)
+#   (<g1> ^position <g1-pos>
+#         ^value <g1-val>)
+#   (<g2> ^position <g2-pos>
+#         ^value <g2-val>)
+#   (<gs> ^<pname> <id-gs>)
+#   (<id-gs> ^<position> <to>
+#            ^<g1-pos> <g1-val>
+#            ^<g2-pos> <g2-val>)
+#   (<old-gs> ^<pname> <id-oldgs>)
+#   (<id-oldgs> ^<position> <from>
+#            ^<g1-pos> <g1-val>
+#            ^<g2-pos> <g2-val>)
+#  -{(<s> ^used-goodthing <gt>)}
+#-->
+#   (<s> ^present-indicator <gt>)
+#   (<s> ^current-evaluation-depth <ced> -
+#                                  (+ <ced> 1))
+#   (write (crlf) |Indicator: change of | <pname> | | <g1-pos> | | <g1-val> | | <g2-pos> | | <g2-val> | from | <from> | to | <to>)
+#}
 
 # rules to choose which indicators to use up
 # if any specific indicators are present, remove any general indicators

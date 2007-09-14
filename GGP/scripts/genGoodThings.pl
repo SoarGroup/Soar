@@ -12,6 +12,7 @@ $logFile = $ARGV[0];
 $sourceKif = $ARGV[1];
 $targetKif = $ARGV[2];
 $currentIndex = $ARGV[3];
+our $currentKey = $currentIndex + 1000;
 
 $timeFile = "map-times";
 $mapper = "/usr/bin/time -o $timeFile -f '%E real,%U user,%S sys' ./runMapper.pl";
@@ -90,33 +91,36 @@ sub buildIndicators() {
             $removedNum = $1;
             $additionInstance =~ /\^p$numericArgNum (\d+)/;
             $addedNum = $1;
-            
             foreach $possiblePredicate (expandMappings($predicate)) {
               foreach $possibleAddition (expandMappings($additionInstance)) {
                 # change indicator
+                $currentKey++;
+                $possibleAddition =~ s/^\^//;
+                @groundingPairs = split '\^', $possibleAddition;
                 printGtHeader();
                 print "   (<in> ^index $currentIndex\n";
                 print "         ^type change\n";
-                print "         ^predicate-name $possiblePredicate\n";
-                print "         ^number-position p$numericArgNum\n";
-                print "         ^from $removedNum\n";
-                print "         ^to $addedNum)\n";
-                $possibleAddition =~ s/^\^//;
-                @groundingPairs = split '\^', $possibleAddition;
-                @positionWords = ("first", "second", "third");
-                $groundingNum = 0;
+                print "         ^key $currentKey)\n";
+                print "}\n";
+
+                printDetectRuleHeader();
+                print "    (<in> ^key $currentKey)\n";
+                print "    (<gs> ^$possiblePredicate <predicate>)\n";
+                print "    (<old-gs> ^$possiblePredicate <old-predicate>)\n";
+                print "    (<predicate> ^p$numericArgNum $addedNum)\n";
+                print "    (<old-predicate> ^p$numericArgNum $removedNum)\n";
                 foreach $groundingPair (@groundingPairs) {
                   $groundingPair =~ /(\S+) (\S+)/ or die;
                   $position = $1;
+                  $value = $2;
                   if ($position eq "p$numericArgNum") {
                     next;
                   }
-                  $value = $2;
-                  print "   (<in> ^$positionWords[$groundingNum]-grounding <g$groundingNum>)\n";
-                  print "   (<g$groundingNum> ^position $position ^value $value)\n";
-                  $groundingNum++;
+                  print "    (<predicate> ^$position $value)\n";
+                  print "    (<old-predicate> ^$position $value)\n";
                 }
-
+                printDetectRuleMiddle();
+                print "   (write (crlf) |Indicator: change of $possiblePredicate p$numericArgNum from $removedNum to $addedNum|)\n";
                 print "}\n";
               }
             }
@@ -125,29 +129,35 @@ sub buildIndicators() {
               foreach $possiblePredicate (expandMappings($predicate)) {
                 foreach $possibleAddition (expandMappings($additionInstance)) {
                   # increase indicator
+                  $currentKey++;
+                  $possibleAddition =~ s/^\^//;
+                  @groundingPairs = split '\^', $possibleAddition;
                   printGtHeader();
                   print "   (<in> ^index $currentIndex\n";
                   print "         ^type increase\n";
-                  print "         ^predicate-name $possiblePredicate\n";
-                  print "         ^number-position p$numericArgNum)\n";
-                  $possibleAddition =~ s/^\^//;
-                  @groundingPairs = split '\^', $possibleAddition;
-                  @positionWords = ("first", "second", "third");
-                  $groundingNum = 0;
+                  print "         ^key $currentKey)\n";
+                  print "}\n";
+
+                  printDetectRuleHeader();
+                  print "    (<in> ^key $currentKey)\n";
+                  print "    (<gs> ^$possiblePredicate <predicate>)\n";
+                  print "    (<old-gs> ^$possiblePredicate <old-predicate>)\n";
+                  print "    (<predicate> ^p$numericArgNum <new-num>)\n";
+                  print "    (<old-predicate> ^p$numericArgNum {< <new-num> <old-num>})\n";
+                  
                   foreach $groundingPair (@groundingPairs) {
                     $groundingPair =~ /(\S+) (\S+)/ or die;
                     $position = $1;
+                    $value = $2;
                     if ($position eq "p$numericArgNum") {
                       next;
                     }
-                    $value = $2;
-                    print "   (<in> ^$positionWords[$groundingNum]-grounding <g$groundingNum>)\n";
-                    print "   (<g$groundingNum> ^position $position ^value $value)\n";
-                    $groundingNum++;
+                    print "    (<predicate> ^$position $value)\n";
+                    print "    (<old-predicate> ^$position $value)\n";
                   }
-
+                  printDetectRuleMiddle();
+                  print "   (write (crlf) |Indicator: increase of $possiblePredicate p$numericArgNum|)\n";
                   print "}\n";
-                  
                 }
               }
               $anyIncDec = 1;
@@ -156,27 +166,34 @@ sub buildIndicators() {
               foreach $possiblePredicate (expandMappings($predicate)) {
                 foreach $possibleAddition (expandMappings($additionInstance)) {
                   # decrease indicator
+                  $currentKey++;
+                  $possibleAddition =~ s/^\^//;
+                  @groundingPairs = split '\^', $possibleAddition;
                   printGtHeader();
                   print "   (<in> ^index $currentIndex\n";
                   print "         ^type decrease\n";
-                  print "         ^predicate-name $possiblePredicate\n";
-                  print "         ^number-position p$numericArgNum)\n";
-                  $possibleAddition =~ s/^\^//;
-                  @groundingPairs = split '\^', $possibleAddition;
-                  @positionWords = ("first", "second", "third");
-                  $groundingNum = 0;
+                  print "         ^key $currentKey)\n";
+                  print "}\n";
+
+                  printDetectRuleHeader();
+                  print "    (<in> ^key $currentKey)\n";
+                  print "    (<gs> ^$possiblePredicate <predicate>)\n";
+                  print "    (<old-gs> ^$possiblePredicate <old-predicate>)\n";
+                  print "    (<predicate> ^p$numericArgNum <new-num>)\n";
+                  print "    (<old-predicate> ^p$numericArgNum {> <new-num> <old-num>})\n";
+                  
                   foreach $groundingPair (@groundingPairs) {
-                    $groundingPair =~ /(\S+) (\S+)/ or die "bad GP: $groundingPair\n";
+                    $groundingPair =~ /(\S+) (\S+)/ or die;
                     $position = $1;
+                    $value = $2;
                     if ($position eq "p$numericArgNum") {
                       next;
                     }
-                    $value = $2;
-                    print "   (<in> ^$positionWords[$groundingNum]-grounding <g$groundingNum>)\n";
-                    print "   (<g$groundingNum> ^position $position ^value $value)\n";
-                    $groundingNum++;
+                    print "    (<predicate> ^$position $value)\n";
+                    print "    (<old-predicate> ^$position $value)\n";
                   }
-
+                  printDetectRuleMiddle();
+                  print "   (write (crlf) |Indicator: decrease of $possiblePredicate p$numericArgNum|)\n";
                   print "}\n";
                 }
               }
@@ -197,12 +214,21 @@ sub buildIndicators() {
       $currentIndex++;
       foreach $possiblePredicate (expandMappings($predicate)) {
         foreach $possibleAddition (expandMappings($additionInstance)) {
+          $currentKey++;
           printGtHeader();
           print "   (<in> ^index $currentIndex\n";
           print "         ^type addition\n";
-          print "         ^what <w>)\n";
-          print "   (<w>  ^$possiblePredicate <id>)\n";
-          print "   (<id> $possibleAddition)\n";
+          print "         ^key $currentKey)\n";
+          print "}\n";
+          
+          printDetectRuleHeader();
+          print "    (<in> ^key $currentKey)\n";
+          print "    (<gs> ^$possiblePredicate <predicate>)\n";
+          print "    (<predicate> $possibleAddition)\n";
+          print "  -{(<old-gs> ^$possiblePredicate <old-predicate>)\n";
+          print "    (<old-predicate> $possibleAddition)}\n";
+          printDetectRuleMiddle();
+          print "   (write (crlf) |Indicator: appearence of $possiblePredicate $possibleAddition|)\n";
           print "}\n";
         }
       }
@@ -215,12 +241,21 @@ sub buildIndicators() {
         $currentIndex++;
         foreach $possiblePredicate (expandMappings($predicate)) {
           foreach $possibleRemoval (expandMappings($removalInstance)) {
+            $currentKey++;
             printGtHeader();
             print "   (<in> ^index $currentIndex\n";
             print "         ^type removal\n";
-            print "         ^what <w>)\n";
-            print "   (<w>  ^$possiblePredicate <id>)\n";
-            print "   (<id> $possibleRemoval)\n";
+            print "         ^key $currentKey)\n";
+            print "}\n";
+            
+            printDetectRuleHeader();
+            print "    (<in> ^key $currentKey)\n";
+            print "  -{(<gs> ^$possiblePredicate <predicate>)\n";
+            print "    (<predicate> $possibleRemoval)}\n";
+            print "    (<old-gs> ^$possiblePredicate <old-predicate>)\n";
+            print "    (<old-predicate> $possibleRemoval)\n";
+            printDetectRuleMiddle();
+            print "   (write (crlf) |Indicator: removal of $possiblePredicate $possibleRemoval|)\n";
             print "}\n";
           }
         }
@@ -261,6 +296,25 @@ sub printGtHeader() {
   print "   (state <s> ^good-things <gt>)\n";
   print "-->\n";
   print "   (<gt> ^indicator <in>)\n";
+}
+
+sub printDetectRuleHeader() {
+  $productionCount++;
+  print "sp {apply*usi*indicator-detected*$rand$productionCount\n";
+  print "   (state <s> ^name game\n";
+  print "              ^operator.name update-search-info\n";
+  print "              ^gs <gs>\n";
+  print "              ^old-gs <old-gs>\n";
+  print "              ^current-evaluation-depth <ced>\n";
+  print "              ^top-state.good-things.indicator <in>\n";
+  print "              -^used-goodthing <in>)\n";
+}
+
+sub printDetectRuleMiddle() {
+  print "-->\n";
+  print "   (<s> ^present-indicator <in>)\n";
+  print "   (<s> ^current-evaluation-depth <ced> -\n";
+  print "                                  (+ <ced> 1))\n";
 }
 
 sub expandMappings() {
