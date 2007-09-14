@@ -145,7 +145,7 @@
 
 ;; Static type hierarchy
 (type flag item)
-(type exit item)
+(type exit place) ;MCM (9-12): Not an item
 
 ;;; The global time clock.	
 (init (time 1))
@@ -233,6 +233,12 @@
     (intendedSoldierLocation ?xE ?yE)
     (distinct ?yE ?yO))
 
+
+;;MCM: Added 9-12; exit perpetuation
+(<= (next (location ?place ?x ?y))
+    (type ?place place)
+    (true (location ?place ?x ?y)))
+
 ;;; Should the soldier walk on top of an item-type object, it will move into his
 ;;;  inventory where it will remain until it is used.
 
@@ -283,24 +289,17 @@
 
 ;;; Goals are computed according to the following table:
 ;;;
-;;; Dead? TimeOut? HasFlag? Goal
-;;; ----------------------------
-;;;    0        0        0     0   
-;;;    0        0        1   100
-;;;    0        1        0    50 
-;;;    0        1        1   100
-;;;    1        0        0     0
-;;;    1        0        1     0
-;;;    1        1        0     0
-;;;    1        1        1     0
+;;; Dead? TimeOut? HasFlag? HasBeer? Goal
+;;; -------------------------------------
+;;; t                                0
+;;; f              t        t        100
+;;; f              t        f        55   ;;;MCM: Only possible terminal is timeout
+;;; f              f        t        75   ;;;MCM: Only possible terminal is timeout
+;;; f     t        f        f        0
 ;;; Consider this table extended: You gotta get the beer
 
 (<= (goal soldier 0)
     (dead soldier))
-(<= (goal soldier 0)
-    (not timeOut)
-    (not (dead soldier))
-    (not (true (holding soldier beer))))
 
 ; alive, no beer or flag
 (<= (goal soldier 50)

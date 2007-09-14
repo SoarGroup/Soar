@@ -6,6 +6,7 @@
 ;;;  - Changes located between ">>>>" and "<<<<<"
 ;;;  - 8/8: Removed blastZone, and only legalThrowDist now is only {2}
 ;;;  - 8/15: MCM: Changed "blocked" predicate into a state predicate
+;;;  - 9/12: MCM: Changed goals due to possible multiple groundings
 ;;;  - Basic game requires only using a laser to win
 ;;;    - But here we modified the goal!
 ;;;      - Now the soldier must also pickup the following: 
@@ -150,7 +151,7 @@
 
 ;; Static type hierarchy
 (type flag item)
-(type exit item)
+(type exit place) ;MCM (9-12): Not an item
 
 ;;; The global time clock.	
 (init (time 1))
@@ -238,6 +239,12 @@
     (intendedSoldierLocation ?xE ?yE)
     (distinct ?yE ?yO))
 
+
+;;MCM: Added 9-12; exit perpetuation
+(<= (next (location ?place ?x ?y))
+    (type ?place place)
+    (true (location ?place ?x ?y)))
+
 ;;; Should the soldier walk on top of an item-type object, it will move into his
 ;;;  inventory where it will remain until it is used.
 
@@ -285,19 +292,13 @@
 ;;; GOAL Relations
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-;;; Goals are computed according to the following table:
-;;;
-;;; Dead? TimeOut? HasFlag? Goal
-;;; ----------------------------
-;;;    0        0        0     0   
-;;;    0        0        1   100
-;;;    0        1        0    50 
-;;;    0        1        1   100
-;;;    1        0        0     0
-;;;    1        0        1     0
-;;;    1        1        0     0
-;;;    1        1        1     0
-;;; Consider this table extended: Need to have donut, beer, & compass to get 100
+;;; Dead? TimeOut? HasFlag? HasItems? Goal
+;;; --------------------------------------
+;;;     f        f        f              0 ;; MCM: Not terminal case
+;;;     t                                0 ;; MCM: Dead => terminal
+;;;     f        t        f             50 ;; MCM: Timeout => terminal
+;;;     f                 t         f   60 ;; MCM: Flag => Terminal
+;;;     f                 t         t  100 ;; MCM: Flag => Terminal
 
 (<= (goal soldier 0)
     (dead soldier))
@@ -319,15 +320,15 @@
     (true (holding soldier compass)))  ; >>>>>Added<<<<<
 
 ; >>>>>Forced to add these as well<<<<<
-(<= (goal soldier 5)
+(<= (goal soldier 60) ;MCM: Changed due to possible multiple groundings
     (not (dead soldier))
     (true (holding soldier flag))
     (not (true (holding soldier beer))))
-(<= (goal soldier 33)
+(<= (goal soldier 60) ;MCM: Changed due to possible multiple groundings
     (not (dead soldier))
     (true (holding soldier flag))
     (not (true (holding soldier donut))))
-(<= (goal soldier 67)
+(<= (goal soldier 60) ;MCM: Changed due to possible multiple groundings
     (not (dead soldier))
     (true (holding soldier flag))
     (not (true (holding soldier compass))))

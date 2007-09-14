@@ -7,6 +7,8 @@
 ;;;  - 8/8: Removed blastZone, and only legalThrowDist now is only {2}
 ;;;  - 8/9 (Matt) : Added walls, moved terrorist
 ;;;  - 8/15: MCM: Changed "blocked" predicate into a state predicate
+;;;  - 9/12: MCM: Changed goals to prevent multiple groundings, 
+;;;				  terminal states without goals
 ;;;  - Basic game requires medkit to win (see TL 6 scenario 2 source 1)
 ;;;    - Changes: 
 ;;;      - explorer health=2
@@ -161,7 +163,7 @@
 
 ;; Static type hierarchy
 (type flag item)
-(type exit item)
+(type exit place)  ;; MCM: Exit should not be an item. 
 
 ;;; The global time clock.	
 (init (time 1))
@@ -249,6 +251,11 @@
     (true (location ?object ?xO ?yO))
     (intendedSoldierLocation ?xE ?yE)
     (distinct ?yE ?yO))
+    
+;;MCM: Added 9/10; perpetuates location, no longer an item
+(<= (next (location ?place ?x ?y))
+    (type ?place place)
+	(true (location ?place ?x ?y)))
 
 ;;; Should the soldier walk on top of an item-type object, it will move into his
 ;;;  inventory where it will remain until it is used.
@@ -298,35 +305,56 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 ;;; Goals are computed according to the following table:
-;;;
-;;; Dead? TimeOut? HasFlag? Goal
-;;; ----------------------------
-;;;    0        0        0     0   
-;;;    0        0        1   100
-;;;    0        1        0    50 
-;;;    0        1        1   100
-;;;    1        0        0     0
-;;;    1        0        1     0
-;;;    1        1        0     0
-;;;    1        1        1     0
+;;; MCM (9/10): Revised truth table and goals.
+;;; Dead? TimeOut? HasFlag? HasItems? Goal
+;;; --------------------------------------
+;;;    t                                 0   
+;;;    f        t                        0
+;;;    f        f        f              50 
+;;;    f        f        t         f    75 
+;;;    f        f        t         t   100
+
 ;;; Modified: Now requires 3 additional items to hold to get max score
 
 ; Dead
 (<= (goal soldier 0)
     (dead soldier))
 
-; Alive, No Flag
+; Alive, Timeout (no partial credit)
 (<= (goal soldier 0)
+    (not (dead soldier))
+    timeOut)
+
+; Alive, No Flag
+(<= (goal soldier 50)
     (not timeOut)
     (not (dead soldier))
     (not (true (holding soldier flag))))
 
-; Alive, Timeout (no partial credit)
-(<= (goal soldier 50)
-    timeOut)
+;;Alive, flag, but not all items
+;; MCM (9/10): if all missing pickups cause same value, 
+;;             they won't conflict
+(<= (goal soldier 75)
+    (not timeOut)
+    (not (dead soldier))
+    (true (holding soldier flag))
+    (not (true (holding soldier wildcat))))
+
+(<= (goal soldier 75)
+    (not timeOut)
+    (not (dead soldier))
+    (true (holding soldier flag))
+    (not (true (holding soldier wolverine))))
+
+(<= (goal soldier 75)
+    (not timeOut)
+    (not (dead soldier))
+    (true (holding soldier flag))
+    (not (true (holding soldier feather))))
 
 ; Alive, Flag, and other 3 items
 (<= (goal soldier 100)
+    (not timeOut)
     (not (dead soldier))
     (true (holding soldier flag))
     (true (holding soldier wildcat))   ; >>>>>Added<<<<<
@@ -334,18 +362,18 @@
     (true (holding soldier feather)))  ; >>>>>Added<<<<<
 
 ; Alive, Flag, but at least one thing missing
-(<= (goal soldier 55)
-    (not (dead soldier))
-    (true (holding soldier flag))
-    (not (true (holding soldier wildcat))))
-(<= (goal soldier 65)
-    (not (dead soldier))
-    (true (holding soldier flag))
-    (not (true (holding soldier wolverine))))
-(<= (goal soldier 90)    
-    (not (dead soldier))
-    (true (holding soldier flag))
-    (not (true (holding soldier feather)))) ; least valued of the 3
+;(<= (goal soldier 55)
+;    (not (dead soldier))
+;    (true (holding soldier flag))
+;    (not (true (holding soldier wildcat))))
+;(<= (goal soldier 65)
+;    (not (dead soldier))
+;    (true (holding soldier flag))
+;    (not (true (holding soldier wolverine))))
+;(<= (goal soldier 90)    
+;    (not (dead soldier))
+;    (true (holding soldier flag))
+;    (not (true (holding soldier feather)))) ; least valued of the 3
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;

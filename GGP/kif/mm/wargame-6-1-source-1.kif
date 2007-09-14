@@ -148,7 +148,7 @@
 
 ;; Static type hierarchy
 (type flag item)
-(type exit item)
+(type exit place) ;MCM (9-12): Not an item
 
 ;;; The global time clock.	
 (init (time 1))
@@ -235,6 +235,12 @@
     (true (location ?object ?xO ?yO))
     (intendedSoldierLocation ?xE ?yE)
     (distinct ?yE ?yO))
+
+
+;;MCM: Added 9-12; exit perpetuation
+(<= (next (location ?place ?x ?y))
+    (type ?place place)
+    (true (location ?place ?x ?y)))
 
 ;;; Should the soldier walk on top of an item-type object, it will move into his
 ;;;  inventory where it will remain until it is used.

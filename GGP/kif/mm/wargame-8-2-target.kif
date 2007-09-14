@@ -5,6 +5,8 @@
 ;;;  - TL level 8, Scenario 2, target task
 ;;;  - Changes located between ">>>>" and "<<<<<"
 ;;;  - 8/8: Removed blastZone, and only legalThrowDist now is only {2}
+;;;  - 9/12: MCM: Changed goals to prevent multiple groundings, 
+;;;				  terminal states without goals
 ;;;  - Basic game requires medkit to win (see TL 6 scenario 2 source 1)
 ;;;    - Changes: 
 ;;;      - explorer health=2
@@ -143,7 +145,7 @@
 
 ;; Static type hierarchy
 (type flag item)
-(type exit item)
+(type exit place) ;MCM (9-12): Not an item
 
 ;;; The global time clock.	
 (init (time 1))
@@ -231,6 +233,12 @@
     (intendedSoldierLocation ?xE ?yE)
     (distinct ?yE ?yO))
 
+
+;;MCM: Added 9-12; exit perpetuation
+(<= (next (location ?place ?x ?y))
+    (type ?place place)
+    (true (location ?place ?x ?y)))
+
 ;;; Should the soldier walk on top of an item-type object, it will move into his
 ;;;  inventory where it will remain until it is used.
 
@@ -280,36 +288,40 @@
 
 ;;; Goals are computed according to the following table:
 ;;;
-;;; Dead? TimeOut? HasFlag? Goal
-;;; ----------------------------
-;;;    0        0        0     0   
-;;;    0        0        1   100
-;;;    0        1        0    50 
-;;;    0        1        1   100
-;;;    1        0        0     0
-;;;    1        0        1     0
-;;;    1        1        0     0
-;;;    1        1        1     0
-;;; Modified: Now requires 3 additional items to hold to get max score
+;;; Dead? TimeOut? HasFlag? HasWildcat? Goal
+;;; ----------------------------------------
+;;;    t                                   0   
+;;;    f        t                          0
+;;;    f        f        f                50 
+;;;    f        f        t           f    75 
+;;;    f        f        t           t   100
+
 
 ; Dead
 (<= (goal soldier 0)
     (dead soldier))
 
-; Alive, Timeout
+; Alive, Timeout (no partial credit)
+(<= (goal soldier 0)
+    (not (dead soldier))
+    timeOut)
+
+; Alive, No flag
 (<= (goal soldier 50)
-    timeOut
+    (not timeOut)
     (not (dead soldier))
     (not (true (holding soldier flag))))
 
 ; Alive, Flag, no Wildcat
-(<= (goal soldier 55)
+(<= (goal soldier 75)
+    (not timeOut)
     (not (dead soldier))
     (true (holding soldier flag))
     (not (true (holding soldier wildcat))))
 
 ; Alive, Flag, Wildcat
 (<= (goal soldier 100)
+    (not timeOut)
     (not (dead soldier))
     (true (holding soldier flag))
     (true (holding soldier wildcat)))  ; >>>>>Added<<<<<
