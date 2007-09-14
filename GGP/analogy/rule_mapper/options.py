@@ -30,4 +30,4 @@ BIN_MATCH_MULT = 2
 BIN_MISMATCH_MULT = 0.1
 
 # multiplier for when a rule match contains an already matched predicate
-MATCHED_RULE_MULT = 10
+MATCHED_RULE_MULT = 1
