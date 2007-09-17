@@ -6,7 +6,7 @@ import random
 import pdb
 
 keywords = ['role', 'init', 'true', 'next', 'legal', 'does', 'goal', 'terminal', 'not', 'or', 'distinct', '<', '>', '>=', '+', '-', '*', '/']
-preserve = ['2d', 'location', 'greaterThan', 'lessThan', 'plus', 'minus', 'step', 'succ', 'move', 'blocked', 'int', 'north', 'south', 'east', 'west', 'exit']
+preserve = ['location', 'greaterThan', 'lessThan', 'plus', 'minus', 'step', 'succ', 'move', 'blocked', 'north', 'south', 'east', 'west', 'exit']
 
 preserve_constants = False
 preserve_variables = False
