@@ -1,0 +1,19 @@
+multi-attributes xx2d 64 # escape
+multi-attributes xxadjacent 250 # rogue and build
+multi-attributes xxplus 200 # escape
+multi-attributes xxminus 200 # escape
+multi-attributes xxlessthan 200 # escape
+multi-attributes xxgreaterthan 200 # escape
+multi-attributes xxmin 200 # rogue
+multi-attributes xxtraversible 300 # rogue 
+multi-attributes xxint 1000 # escape
+multi-attributes xxindex 1000 # wargame
+multi-attributes xxcell 1000 # wargame
+multi-attributes xxnsteps 256 # wargame
+multi-attributes xxnextcell 256 # rogue
+multi-attributes xxnstepssoldier 256 # wargame
+multi-attributes xxhorizontalstep 256 # wargame
+multi-attributes xxverticalstep 256 # wargame
+multi-attributes xxbetween 300 # rogue
+multi-attributes xxcellnearmonster 100 # rogue
+
