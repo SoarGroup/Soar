@@ -68,6 +68,14 @@ sp {apply*update-search-info
   (<s> ^do-check-for-duplicate-location <dc>)
 }
 
+sp {apply*update-state*clean-depth-valid
+  (state <s> ^name game
+             ^operator.name update-state
+             ^depth-valid <dv>)
+-->
+   (<s> ^depth-valid <dv> -)
+}
+
 sp {propose*check-for-duplicate-location
   (state <s> ^name game
              ^do-check-for-duplicate-location <du>)

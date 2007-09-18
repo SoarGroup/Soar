@@ -41,7 +41,7 @@ sp {duplicate-state*exceed-depth
 	(<visited> ^remaining-steps >= <remaining-steps>)  #current must be depth-exceeded if the previously visited is depth-exceeded
 -->
 	(write (crlf) | State was visited previously, ID | <csh> )
-	(<s> ^depth-exceeded <d>)
+	(<s> ^failure <d>)
 }
 
 sp {duplicate-state*update*repeats
