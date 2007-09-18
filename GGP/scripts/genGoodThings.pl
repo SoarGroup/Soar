@@ -29,9 +29,7 @@ foreach $mapping (`$mapper $sourceKif $targetKif 2>/dev/null`) {
   $orig = $1;
   $new = $2;
   push @{ $mappings{$orig} }, $new;
-  unless ($orig =~ /^$new$/) {
-    print "# MAPPING: $orig -> $new\n";
-  }
+  print "# MAPPING: $orig -> $new\n";
 }
 
 foreach $line (`cat $timeFile`) {
