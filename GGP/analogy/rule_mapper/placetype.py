@@ -31,6 +31,7 @@ type_names = {
 type_order = { 
 		OBJECT : [ AGENT ],
 		NUM : [ COORD, NUM_MAX, NUM_MIN ],
+		COORD : [ NUM_MAX, NUM_MIN ],
 		UNKNOWN : [ AGENT, OBJECT, NUM, COORD, NUM_MAX, NUM_MIN ] }
 
 # how similar one type is to another. A type has a similarity of 1 to itself,
