@@ -106,21 +106,22 @@ foreach $line (`$findConstantDevs $targetKif`) {
 %sourceConstantFacts = ();
 %targetConstantFacts = ();
 
-foreach $line (`$findConstantFacts $sourceKif`) {
-  $line =~ /^(\S+) (\S+) (\S+)$/ or die;
-  $predicate = $1;
-  $context = $2;
-  $constant = $3;
-  push @{ $sourceConstantFacts{$predicate}{$context} }, $constant;
-}
+# COMMON FACTS
+#foreach $line (`$findConstantFacts $sourceKif`) {
+#  $line =~ /^(\S+) (\S+) (\S+)$/ or die;
+#  $predicate = $1;
+#  $context = $2;
+#  $constant = $3;
+#  push @{ $sourceConstantFacts{$predicate}{$context} }, $constant;
+#}
 
-foreach $line (`$findConstantFacts $targetKif`) {
-  $line =~ /^(\S+) (\S+) (\S+)$/ or die;
-  $predicate = $1;
-  $context = $2;
-  $constant = $3;
-  push @{ $targetConstantFacts{$predicate}{$context} }, $constant;
-}
+#foreach $line (`$findConstantFacts $targetKif`) {
+#  $line =~ /^(\S+) (\S+) (\S+)$/ or die;
+#  $predicate = $1;
+#  $context = $2;
+#  $constant = $3;
+#  push @{ $targetConstantFacts{$predicate}{$context} }, $constant;
+#}
 
 
 
