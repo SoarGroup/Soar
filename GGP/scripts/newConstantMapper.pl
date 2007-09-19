@@ -11,6 +11,7 @@ $ENV{"PYTHONPATH"} = ".:../analogy/rule_mapper:./pyparser";
 
 $findGroundings = "./findGroundings.pl";
 $findConstantDevs = "./findConstantDerivations.pl";
+$findConstantFacts = "./findConstantFacts.pl";
 $ruleMapper = "python ../analogy/rule_mapper/rule_mapper2.py";
 
 checkFor($sourceKif);
@@ -101,6 +102,28 @@ foreach $line (`$findConstantDevs $targetKif`) {
   }
 }
 
+%sourceConstantFacts = ();
+%targetConstantFacts = ();
+
+foreach $line (`$findConstantFacts $sourceKif`) {
+  $line =~ /^(\S+) (\S+) (\S+)$/ or die;
+  $predicate = $1;
+  $context = $2;
+  $constant = $3;
+  push @{ $sourceConstantFacts{$predicate}{$context} }, $constant;
+}
+
+foreach $line (`$findConstantFacts $targetKif`) {
+  $line =~ /^(\S+) (\S+) (\S+)$/ or die;
+  $predicate = $1;
+  $context = $2;
+  $constant = $3;
+  push @{ $targetConstantFacts{$predicate}{$context} }, $constant;
+}
+
+
+
+
 %mappingScores = ();
 %constantPairUsedPredicate = ();
 %constantPairUsedPredicateDerivation = ();
@@ -149,10 +172,31 @@ foreach $sourceConstant (keys %sourceConstantsToPPos) {
   }
 }
 
+foreach $sourcePredicate (keys %sourceConstantFacts) {
+  foreach $targetPredicate (@{ $sourcePredicateToTarget{$sourcePredicate} }) {
+    foreach $context (keys %{ $sourceConstantFacts{$sourcePredicate} }) {
+      foreach $targetConstant (@{ $targetConstantFacts{$targetPredicate}{$context} }) {
+        foreach $sourceConstant (@{ $sourceConstantFacts{$sourcePredicate}{$context} }) {
+          if (not defined $mappingScores{$sourceConstant}{$targetConstant}) {
+            $mappingScores{$sourceConstant}{$targetConstant} = 1;
+            $mappingTargetPredicates{$sourceConstant}{$targetConstant} = "$targetPredicate-fact-$context";
+          }
+          else {
+            $mappingScores{$sourceConstant}{$targetConstant} += 1;
+            $mappingTargetPredicates{$sourceConstant}{$targetConstant} .= " $targetPredicate-fact-$context";
+          }
+          #print "common fact: $sourceConstant -> $targetConstant, in predicates $sourcePredicate -> $targetPredicate, context $context\n";
+        }
+      }
+    }
+  }
+}
+
+
+
 %mappingsByScore = ();
 
-foreach $ 
-sourceConstant (keys %mappingScores) {
+foreach $sourceConstant (keys %mappingScores) {
   # print "for source $sourceConstant:\n";
   foreach $targetConstant (keys %{ $mappingScores{$sourceConstant} }) {
     # print " $targetConstant: $mappingScores{$sourceConstant}{$targetConstant}\n";
