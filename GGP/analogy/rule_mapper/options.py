@@ -10,7 +10,7 @@ HEAD_SCORE_FACTOR = 1.5
 ALLOW_PARTIAL_MAPS = True
 
 # number of times to unroll the rule mapper after having found a full mapping
-NUM_RETRIES = 5
+NUM_RETRIES = 1
 
 # calculate the effects 
 USE_MOVE_EFFECTS = True
