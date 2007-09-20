@@ -113,10 +113,15 @@ sp {top-selection*counter*init
 }
 
 
-###################################
-## 2 additional rules to record failure evaluation
-## + 1 rule to retrieve failure
-#################################
+###########################
+## Rules to record failure
+############################
+#Since failure is not known until all children is evaluated,
+# It cannot be done the same way as depth-exceed, which is to record the current state with it's remaining depth, before it actually exceeds the depth
+# Failure must be recorded in the parent, with each operator evaluation and corresponding result state
+# Notice: there is a difference between real depth-exceed and visited state
+# Visited state should actually be treated as failure, but now it doesn't work correctly for some reason
+
 sp {elaborate*resulting*state
 	(state <s> ^current-state-hash <csh>
 				^superstate.operator <eval-op>
@@ -127,28 +132,41 @@ sp {elaborate*resulting*state
 	(<e> ^resulting-state-hash <csh>)
 }
 
-sp {record*evaluation*result*top-selection
-#:o-support
-	(state <s> ^top-selection true
-				^operator.name evaluate-operator)
-	(state <s2> ^evaluation <eval>)
-	(<eval> ^resulting-state-hash <state-hash>
-			^symbolic-value <eval-value>)
-	(<s> ^visited-states-hash <v>)
-	(<v> ^<state-hash> <h>)
+
+sp {create*failure*state*link
+:o-support
+	#(state <s> ^superstate nil)
+	(state <s> ^top-selection true)
 -->
-	(<h> ^symbolic-value <eval-value>)
+	(<s> ^failure-states <fs>)
 }
 
-sp {retrieve-failure
-	(state <s> ^evaluation <e>)
-	(<e> ^resulting-state-hash <state-hash>
-		-^symbolic-value)
-	(state <ts> ^top-selection true
-				^visited-states-hash <v>)
-	(<v> ^<state-hash> <h>)
-	(<h> ^symbolic-value failure) #only failure is guaranteed to always fail
+sp {record*evaluation*result*top-selection
+#:o-support
+	(state <s> ^evaluation <eval>
+				#^top-state.failure-states <fs>
+				^operator.name evaluate-operator
+				^current-evaluation-depth <remaining-steps>
+				)
+	(state <s2> ^failure-states <fs>)
+	(<eval> ^resulting-state-hash <state-hash>
+			^symbolic-value failure)
+-->
+	(<fs> ^<state-hash> <remaining-steps>) #1 means direct failure, >=2 means circular failure
+}
+
+#this will only happen after update state for states that is not direct failure
+#The state can only lead to failure
+sp {elaborate*resulting*state*failure
+	(state <s> ^current-state-hash <csh>
+				^superstate.operator <eval-op>
+				^superstate.evaluation <e>)
+	(<e> ^resulting-state-hash <csh>)
+	(<e> ^superoperator <actual-op>)
+	(<eval-op> ^superoperator <actual-op>)
+	(state <s2> ^failure-states <fs>)
+	(<fs> ^<csh>)
 -->
 	(<e> ^symbolic-value failure)
-	(write (crlf) |Found previously failed state| (crlf))
+	(write (crlf) |Found previously failed state | <csh> (crlf))
 }
