@@ -41,7 +41,8 @@ sp {duplicate-state*exceed-depth
 	(<visited> ^remaining-steps >= <remaining-steps>)  #current must be depth-exceeded if the previously visited is depth-exceeded
 -->
 	(write (crlf) | State was visited previously, ID | <csh> )
-   (<s> ^depth-exceeded <d>)
+   #(<s> ^depth-exceeded <d>)
+   (<s> ^failure <d>)
 }
 
 sp {duplicate-state*update*repeats
@@ -111,3 +112,43 @@ sp {top-selection*counter*init
    (<s> ^counter 0)
 }
 
+
+###################################
+## 2 additional rules to record failure evaluation
+## + 1 rule to retrieve failure
+#################################
+sp {elaborate*resulting*state
+	(state <s> ^current-state-hash <csh>
+				^superstate.operator <eval-op>
+				^superstate.evaluation <e>)
+	(<e> ^superoperator <actual-op>)
+	(<eval-op> ^superoperator <actual-op>)
+-->
+	(<e> ^resulting-state-hash <csh>)
+}
+
+sp {record*evaluation*result*top-selection
+#:o-support
+	(state <s> ^top-selection true
+				^operator.name evaluate-operator)
+	(state <s2> ^evaluation <eval>)
+	(<eval> ^resulting-state-hash <state-hash>
+			^symbolic-value <eval-value>)
+	(<s> ^visited-states-hash <v>)
+	(<v> ^<state-hash> <h>)
+-->
+	(<h> ^symbolic-value <eval-value>)
+}
+
+sp {retrieve-failure
+	(state <s> ^evaluation <e>)
+	(<e> ^resulting-state-hash <state-hash>
+		-^symbolic-value)
+	(state <ts> ^top-selection true
+				^visited-states-hash <v>)
+	(<v> ^<state-hash> <h>)
+	(<h> ^symbolic-value failure) #only failure is guaranteed to always fail
+-->
+	(<e> ^symbolic-value failure)
+	(write (crlf) |Found previously failed state| (crlf))
+}
