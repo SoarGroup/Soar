@@ -7,10 +7,10 @@ HEAD_SCORE_FACTOR = 1.5
 # should rule matches be allowed even if some of the body predicates can't
 # match up? Setting to False enforces structural consistency
 #ALLOW_PARTIAL_MAPS = False
-ALLOW_PARTIAL_MAPS = False 
+ALLOW_PARTIAL_MAPS = True
 
 # number of times to unroll the rule mapper after having found a full mapping
-NUM_RETRIES = 1
+NUM_RETRIES = 5
 
 # calculate the effects 
 USE_MOVE_EFFECTS = True
