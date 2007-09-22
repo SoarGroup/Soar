@@ -127,9 +127,9 @@ sp {top-selection*counter*init
 sp {record*visited-state*depth*0
 	(state <s> ^evaluation <e>)
 	(<e> ^resulting-state-hash <state-hash> ^symbolic-value depth-exceeded)
-	(state <s2> ^visited-states-hash <v>)
+	(state <s2> ^visited-states-hash <vsh>)
 -->
-	(<v> ^<state-hash> <h>)
+	(<vsh> ^<state-hash> <h>)
 	(<h> ^remaning-steps 0) #this just means it has been visited
 
 }
@@ -140,11 +140,10 @@ sp {duplicate-state*failure*0
 	(state <s> ^current-state-hash <csh>
 				^desired <d>
 				^current-evaluation-depth 0)
-	(state <ts> ^top-selection true
-				^visited-states-hash <vsh>)
+	(state <s2> ^visited-states-hash <vsh>)
 	(<vsh> ^<csh> <visited>)
 -->
-	(write (crlf) | State was visited previously, ID | <csh> )
+	(write (crlf) | Terminal state was visited previously, ID | <csh> )
    #(<s> ^depth-exceeded <d>)
    (<s> ^failure <d>)
 }
