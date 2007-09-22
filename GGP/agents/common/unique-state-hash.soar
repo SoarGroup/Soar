@@ -134,6 +134,7 @@ sp {record*visited-state*depth*0
 
 }
 
+# If don't see a new state at the end, it must be a failure
 #for evaluation-depth 0, if current-state-hash is recorded, should immediately return failure
 #this should happen immediately after analyze state
 sp {duplicate-state*failure*0
@@ -199,14 +200,16 @@ sp {record*evaluation*result*top-selection
    (state <ss> ^superstate <s>
                ^ { << failure
                    >> <svalue> } <eb>)
+   (<ss> ^current-evaluation-depth <remaining-steps>
+			^current-state-hash <state-hash>)
    (<s> ^operator <so>
         ^evaluation <e>)
    (<so> ^name evaluate-operator
          ^evaluation <e>
          ^evaluation.desired <eb>)
-	(state <s2> ^failure-states <fs>)
-	(<e> ^resulting-state-hash <state-hash>
-		^current-evaluation-depth <remaining-steps>)
+	(state <s2> ^failure-states <fs>
+				^visited-states-hash <vsh>)
+	(<vsh> -^<state-hash>.remaining-steps >= <remaining-steps>) #failure is not because of visited state
 -->
    (<fs> ^<state-hash> <remaining-steps>)
    (write (crlf) |Found failure states closure | <state-hash> | of | <remaining-steps> | steps| (crlf))
@@ -226,36 +229,4 @@ sp {retrieve*failure*from*records
 }
 
 
-
-#to always force top-selction tie
-sp {fake*tie*operator
-	(state <s> ^superstate nil)
--->
-	(<s> ^operator <o> + =)
-	(<o> ^name fake-tie)
-}
-
-#evaluation of fake-tie is always partial failure to keep it tied
-sp {fake-tie-evaluation
-	(state <s> ^operator <o> 
-				^unevaluated-operator <uo>)
-	(<o> ^name evaluate-operator
-		^superoperator <uo>)
-	(<s> ^evaluation <e> )
-	(<e> ^superoperator <uo>)
-	(<uo> ^name fake-tie)
--->
-	(<e> ^symbolic-value depth-exceeded)
-	(<s> ^unevaluated-operator <uo> -)
-}
-
-#fake-tie is failure if all other operator is failure, this means the game doesn't have a solution
-sp {apply*fake-tie-fail
-	(state <s> ^superstate nil)
-	(<s> ^operator <o>)
-	(<o> ^name fake-tie)
--->
-	(write (crlf) |Only fake-tie operaotr left in top-selection. Game failed| (crlf))
-	(halt)
-}
 
