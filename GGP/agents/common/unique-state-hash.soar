@@ -16,6 +16,9 @@ sp {apply*analyze-state*hash*current*gs
    (<s> ^current-state-hash (cmd struct-to-string <gs> -e <cnt> -s <ags>))
 }
 
+
+
+
 # if there is a current-state-hash during update state, it must be old
 # so remove it-- this happens when a tie is resolved (or there is no tie),
 # multiple game operators happen in the same state
@@ -44,6 +47,8 @@ sp {duplicate-state*exceed-depth
    #(<s> ^depth-exceeded <d>)
    (<s> ^failure <d>)
 }
+
+
 
 sp {duplicate-state*update*repeats
 	(state <s> ^current-state-hash <csh>
@@ -112,10 +117,44 @@ sp {top-selection*counter*init
    (<s> ^counter 0)
 }
 
+#####################################
+### Rules to handle depth 0
+#####################################
+# Depth 0 should also be recorded to know a state is failure, otherwise it has to figure it out after incrementing evaluation depth
+# The issue is that cannot check it at current search path, how to do this?
+#Depth exceed should be recorded with remaining depth 0
+
+sp {record*visited-state*depth*0
+	(state <s> ^evaluation <e>)
+	(<e> ^resulting-state-hash <state-hash> ^symbolic-value depth-exceeded)
+	(state <s2> ^visited-states-hash <v>)
+-->
+	(<v> ^<state-hash> <h>)
+	(<h> ^remaning-steps 0) #this just means it has been visited
+
+}
+
+#for evaluation-depth 0, if current-state-hash is recorded, should immediately return failure
+#this should happen immediately after analyze state
+sp {duplicate-state*failure*0
+	(state <s> ^current-state-hash <csh>
+				^desired <d>
+				^current-evaluation-depth 0)
+	(state <ts> ^top-selection true
+				^visited-states-hash <vsh>)
+	(<vsh> ^<csh> <visited>)
+-->
+	(write (crlf) | State was visited previously, ID | <csh> )
+   #(<s> ^depth-exceeded <d>)
+   (<s> ^failure <d>)
+}
+
+
 
 ###########################
 ## Rules to record failure
 ############################
+## YJ 9-14 2007
 #Since failure is not known until all children is evaluated,
 # It cannot be done the same way as depth-exceed, which is to record the current state with it's remaining depth, before it actually exceeds the depth
 # Failure must be recorded in the parent, with each operator evaluation and corresponding result state
@@ -134,39 +173,90 @@ sp {elaborate*resulting*state
 
 
 sp {create*failure*state*link
-:o-support
-	#(state <s> ^superstate nil)
+#:o-support
+#	(state <s> ^superstate nil)
 	(state <s> ^top-selection true)
 -->
 	(<s> ^failure-states <fs>)
 }
 
-sp {record*evaluation*result*top-selection
+#sp {record*evaluation*result*top-selection
 #:o-support
-	(state <s> ^evaluation <eval>
-				#^top-state.failure-states <fs>
-				^operator.name evaluate-operator
-				^current-evaluation-depth <remaining-steps>
-				)
+#	(state <s> ^evaluation <eval>
+#				#^top-state.failure-states <fs>
+#				^operator.name evaluate-operator
+#				^current-evaluation-depth <remaining-steps>
+#				)
+#	(state <s2> ^failure-states <fs>)
+#	(<eval> ^resulting-state-hash <state-hash>
+#			^symbolic-value failure)
+#-->
+#	(<fs> ^<state-hash> <remaining-steps>) #1 means direct failure, >=2 means circular failure
+#}
+
+#It's too late to copy from evaluation for failure, the following rule is modified from selection space
+#evaluate-operator*elaborate*symbolic-evaluation*from-subgoal
+sp {record*evaluation*result*top-selection
+   (state <ss> ^superstate <s>
+               ^ { << failure
+                   >> <svalue> } <eb>)
+   (<s> ^operator <so>
+        ^evaluation <e>)
+   (<so> ^name evaluate-operator
+         ^evaluation <e>
+         ^evaluation.desired <eb>)
 	(state <s2> ^failure-states <fs>)
-	(<eval> ^resulting-state-hash <state-hash>
-			^symbolic-value failure)
+	(<e> ^resulting-state-hash <state-hash>
+		^current-evaluation-depth <remaining-steps>)
 -->
-	(<fs> ^<state-hash> <remaining-steps>) #1 means direct failure, >=2 means circular failure
-}
+   (<fs> ^<state-hash> <remaining-steps>)
+   (write (crlf) |Found failure states closure | <state-hash> | of | <remaining-steps> | steps| (crlf))
+   }
+  
 
 #this will only happen after update state for states that is not direct failure
 #The state can only lead to failure
-sp {elaborate*resulting*state*failure
+sp {retrieve*failure*from*records
 	(state <s> ^current-state-hash <csh>
-				^superstate.operator <eval-op>
-				^superstate.evaluation <e>)
-	(<e> ^resulting-state-hash <csh>)
-	(<e> ^superoperator <actual-op>)
-	(<eval-op> ^superoperator <actual-op>)
+				^desired <d>)
 	(state <s2> ^failure-states <fs>)
-	(<fs> ^<csh>)
+	(<fs> ^<csh> <remaining-steps>)
 -->
-	(<e> ^symbolic-value failure)
-	(write (crlf) |Found previously failed state | <csh> (crlf))
+	(<s> ^failure <d>)
+	(write (crlf) |Retrieved previously failed state | <csh> | which has closure in | <remaining-steps> | steps| (crlf))
 }
+
+
+
+#to always force top-selction tie
+sp {fake*tie*operator
+	(state <s> ^superstate nil)
+-->
+	(<s> ^operator <o> + =)
+	(<o> ^name fake-tie)
+}
+
+#evaluation of fake-tie is always partial failure to keep it tied
+sp {fake-tie-evaluation
+	(state <s> ^operator <o> 
+				^unevaluated-operator <uo>)
+	(<o> ^name evaluate-operator
+		^superoperator <uo>)
+	(<s> ^evaluation <e> )
+	(<e> ^superoperator <uo>)
+	(<uo> ^name fake-tie)
+-->
+	(<e> ^symbolic-value depth-exceeded)
+	(<s> ^unevaluated-operator <uo> -)
+}
+
+#fake-tie is failure if all other operator is failure, this means the game doesn't have a solution
+sp {apply*fake-tie-fail
+	(state <s> ^superstate nil)
+	(<s> ^operator <o>)
+	(<o> ^name fake-tie)
+-->
+	(write (crlf) |Only fake-tie operaotr left in top-selection. Game failed| (crlf))
+	(halt)
+}
+
