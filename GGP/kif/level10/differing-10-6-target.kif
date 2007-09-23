@@ -1,13 +1,17 @@
-;; Escape Level 10, Scenario 3 Source
+;; Escape Level 10, Scenario 6 Target
 ;;
-;; Explorer has to pick up hammer, break through rocks, and reach exit
+;; Explorer has to pick up hammer, get rid of it by bashing it 
+;; against the rock, and exit.
+;;
+;; Updates 
+;;  1. DWA (8/28): Added typings to goal/2 (latter 2 rules)
 ;;
 ;; here's the level setup:
 ;;
 ;; 0|E       |
-;; 1|        |
+;; 1|    R   |
 ;; 2|        |
-;; 3|RRRRRRRR|
+;; 3|        |
 ;; 4|        |
 ;; 5|   H    |
 ;; 6|        |
@@ -23,13 +27,6 @@
 
 ;; declare obstacles
 (obstacleType rock0 rock)
-(obstacleType rock1 rock)
-(obstacleType rock2 rock)
-(obstacleType rock3 rock)
-(obstacleType rock4 rock)
-(obstacleType rock5 rock)
-(obstacleType rock6 rock)
-(obstacleType rock7 rock)
 
 (init (blocked west 0 0))
 (init (blocked west 0 1))
@@ -69,16 +66,9 @@
 
 (init (location exit 0 0))
 
-(init (location rock0 0 3))
-(init (location rock1 1 3))
-(init (location rock2 2 3))
-(init (location rock3 3 3))
-(init (location rock4 4 3))
-(init (location rock5 5 3))
-(init (location rock6 6 3))
-(init (location rock7 7 3))
+(init (location rock0 4 1))
 
-(init (location hammer1  3 5))
+(init (location hammer1 3 5))
 
 (init (location explorer 0 7))
 
@@ -89,27 +79,13 @@
 ;; hammer properties
 (init (property hammer1 hammer))
 
-;; nail properties
-(init (property nails1 doesNail))
-
-;; log properties
-(init (property log1 buoyant))
-(init (property log1 supportsWeight))
-(init (property log1 tieable))
-(init (property log1 nailable))
-
-(init (property log2 buoyant))
-(init (property log2 supportsWeight))
-(init (property log2 tieable))
-(init (property log2 nailable))
-
 ;; how properties combine
 ;;
 ;; Note that to simplify matters no properties are carried on automatically.
 ;; This way we don't need the not-property negations
 
-(propertyCombine nailable       nailable       nailable)
 (propertyCombine tieable        tieable        tieable)
+(propertyCombine nailable       nailable       nailable)
 (propertyCombine supportsWeight supportsWeight canBridge)
 
 (propertyCombine supportsWeight buoyant        canFloat)
@@ -131,10 +107,10 @@
     (itemOrder ?item1 ?order1)
     (itemOrder ?item2 ?order2)
     (lessThan ?order1 ?order2)
-    (true (holding ?item))
-    (true (holding ?nails))
-    (true (holding ?item1))
-    (true (holding ?item2))
+    (true (carrying ?item))
+    (true (carrying ?nails))
+    (true (carrying ?item1))
+    (true (carrying ?item2))
     (true (property ?item hammer))
     (true (property ?nails doesNail))
     (true (property ?item1 nailable))
@@ -145,9 +121,9 @@
     (itemOrder ?item1 ?order1)
     (itemOrder ?item2 ?order2)
     (lessThan ?order1 ?order2)
-    (true (holding ?item1))
-    (true (holding ?item2))
-    (true (holding ?tie))
+    (true (carrying ?item1))
+    (true (carrying ?item2))
+    (true (carrying ?tie))
     (true (property ?tie doesTie))
     (true (property ?item1 tieable))
     (true (property ?item2 tieable))
@@ -208,6 +184,7 @@
 (<= (combining ?item1 ?item2 ?comboName)
     (does explorer (combine ?item1 ?item2 ?glue))
     (true (currSymbol ?comboName)))
+
 (<= anyCombine
     (combining ?item1 ?item2 ?comboName))
 
@@ -223,7 +200,7 @@
     (true (comboType ?comboName ?item1 ?item2)))
 
 ;; the explorer holds the item after he makes it
-(<= (next (holding ?comboName))
+(<= (next (carrying ?comboName))
     (combining ?item1 ?item2 ?comboName))
 
 ;; items get used up once they are combined
@@ -237,7 +214,7 @@
 ;; player is allowed to apply items only in directions that are not
 ;; blocked, and only when there's an obstacle there
 (<= (legal explorer (apply ?item ?dir))
-    (true (holding ?item))
+    (true (carrying ?item))
     (direction ?dir)
     (true (location explorer ?x ?y))
     (not (true (blocked ?dir ?x ?y)))
@@ -305,7 +282,7 @@
 
 ;; if a player is in a cell with an undestroyed and uncompromised obstacle, 
 ;; he loses one health
-(<= damaged
+(<= (damaged explorer 1)
     (nextExplorerLocation ?x ?y)
     (obstacleType ?obstacle ?class)
     (not (true (compromised ?obstacle)))
@@ -313,10 +290,36 @@
     (not (true (destroyed ?obstacle)))
     (true (location ?obstacle ?x ?y)))
 
+;; if obstacle at next location is compromised or destroyed,
+;; explorer takes no damage. 
+(<= (damaged explorer 0)
+    (nextExplorerLocation ?x ?y)
+    (obstacleType ?obstacle ?class)
+    (true (location ?obstacle ?x ?y))
+    (or
+      (true (compromised ?obstacle))
+      (true (compromiseExpired ?obstacle))
+      (true (destroyed ?obstacle))))
+
+;; if no obstacle at next location, explorer undamaged 
+(<= (damaged explorer 0)
+    (nextExplorerLocation ?x ?y)
+    (not (obstacle-at ?x ?y)))
+    
+(<= (obstacle-at ?x ?y)
+    (obstacleType ?obstacle ?class)
+    (true (location ?obstacle ?x ?y)))
+
 ;; obstacles always stay in the same place
 (<= (next (location ?obstacle ?x ?y))
     (obstacleType ?obstacle ?class)
     (true (location ?obstacle ?x ?y)))
+
+; same as blocked fact, added for structural similarity
+; with mRogue and Wargame. 
+;; MCM(9/6): Added
+(<= (stepBlocked ?dir ?x ?y)
+	(true (blocked ?dir ?x ?y)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; Spatial axioms
@@ -362,8 +365,9 @@
     (true (location exit ?x ?y)))
 
 ;;; killed is true if the explorer's health has dropped to zero
-(<= killed 
-    (true (health explorer 0)))
+;;; MCM (9/6): Adjusted arity to make look like other domains
+(<= (killed ?any) 
+    (true (health ?any 0)))
 
 ;;; pickedUp is true of an item if the explorer will be standing on top of it
 ;;;  at the end of the current time-step
@@ -371,6 +375,12 @@
     (itemType ?item)
     (nextExplorerLocation ?x ?y)
     (true (location ?item ?x ?y)))
+
+;;; timeUp indicates when the time for solving the scenario has run out
+;;; MCM (9/6): Added (for similarity with other domains)
+(<= timeUp
+	(true (step ?t))
+	(maxTime ?t))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; The GDL required LEGAL relation - specifies legal moves for players
@@ -383,9 +393,8 @@
 (<= (legal explorer (move ?dir))
     (direction ?dir)
     (true (location explorer ?xOld ?yOld))
-    (not (true (blocked ?dir ?xOld ?yOld)))
-    (nextToExplorer ?dir ?xNew ?yNew)
-    (2d ?xNew ?yNew))
+    (not (stepBlocked ?dir ?xOld ?yOld))
+    (nextToExplorer ?dir ?xNew ?yNew))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; The GDL required NEXT relation - specifies the dynamics of fluents
@@ -398,11 +407,8 @@
 ;;;  uses a medKit, his health is increased by 1. 
 (<= (next (health explorer ?hpNew))
     (true (health explorer ?hpOld))
-    damaged
-    (minus 1 ?hpOld ?hpNew))
-(<= (next (health explorer ?hp))
-    (true (health explorer ?hp))
-    (not damaged))
+    (damaged explorer ?x) ;; MCM (9/6): Changed arguments to be more similar
+    (- ?hpOld ?x ?hpNew)) ;; MCM (9/6): Use arithmetic to be more similar
 
 ;;; The exit and walls do not move
 (<= (next (location exit ?x ?y))
@@ -418,11 +424,12 @@
 
 ;;; Items remain in the explorer's inventory from when they are picked up
 ;;;  until they are used to perform an action
-(<= (next (holding ?item))
+(<= (next (carrying ?item))
     (itemType ?item)
     (pickedUp ?item))
-(<= (next (holding ?item))
-    (true (holding ?item))
+    
+(<= (next (carrying ?item))
+    (true (carrying ?item))
     (not (used ?item)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -431,8 +438,7 @@
 
 ;;; The game is over if time runs out
 (<= terminal
-    (true (step ?t))
-    (maxTime ?t))
+    timeUp)
 
 ;;; The game is over if the explorer is able to reach the exit
 (<= terminal
@@ -440,28 +446,49 @@
 
 ;;; The game is over if the explorer is killed
 (<= terminal
-    killed)
+    (killed explorer))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; The GDL required GOAL relation - specifies player rewards
 
 ;;; The explorer receives 0 points if he is killed
 (<= (goal explorer 0)
-    killed)
+    (killed explorer))
 
 ;;; The explorer receives 50 points if time runs out and he has neither been
 ;;;  killed nor reached the exit
 (<= (goal explorer 50)
-    (true (step ?t))
-    (maxTime ?t)
+	timeUp
     (not atExit)
-    (not killed))
+    (not (killed explorer)))
+
+;;; The explorer receives 75 points if he reaches the exit without being 
+;;;  killed, but without destroying the hammer
+(<= (goal explorer 75)
+    (not (killed explorer))
+    atExit
+   	hammerOnGround);;The hammer is still on the ground
+
+;;; MCM (9/14): Split getting rid of hammer into two cases to avoid disjunct.
+;;; The explorer receives 75 points if he reaches the exit without being 
+;;;  killed, but without destroying the hammer
+(<= (goal explorer 75)
+    (not (killed explorer))
+    atExit
+   	(true (carrying hammer1)))		 ;;The explorer still has the hammer
 
 ;;; The explorer receives 100 points if he reaches the exit without being 
-;;;  killed
+;;; killed, first destroying the hammer
 (<= (goal explorer 100)
+    (not (killed explorer))
     atExit
-    (not killed))
+    (not (true (carrying hammer1)))	   ;;The explorer does not have the hammer
+    (not hammerOnGround)) ;;The hammer is not on the ground
+
+(<= hammerOnGround
+	(int ?x)
+	(int ?y)
+	(true (location hammer1 ?x ?y)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; Basic axioms of mathematics (defined over the range [0,7])
@@ -578,7 +605,8 @@
 ;;; Time advances in one second increments
 (<= (next (step ?next))
 	(true (step ?current))
-	(succ ?current ?next))
+	(+ ?current 1 ?next)) ;;MCM (9/6): Now uses built-in math to be more
+	                      ;;           structurally similar
 
 (<= (nextToExplorer north ?x ?y2)
     (int ?x)

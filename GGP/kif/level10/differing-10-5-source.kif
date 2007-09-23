@@ -6,6 +6,10 @@
 ;; - New: Must also pick up a bottle (B) and a ring (R)
 ;; - Verified solution (length 16): WWWNEEENWWW<combine><apply>NNN
 ;;
+;; MCM (9/6): Added new intermediate relations, adjusted arities, and
+;;            restated antecedents to make more compatible with other 
+;;            domains.
+;;
 ;; here's the level setup:
 ;;
 ;; 0|  E   |
@@ -132,6 +136,10 @@
 ;; and if the item is expended in the process
 (canCompromise canFloat water yes)
 (canCompromise canBridge water yes)
+
+;; a list of which properties can destroy which obstacle classes
+;; and if the item is expended in the process
+(canDestroy hammer rock yes)
 
 ;; legal combinations
 (<= (legal explorer (combine ?item1 ?item2 ?nails))
@@ -313,7 +321,7 @@
 
 ;; if a player is in a cell with an undestroyed and uncompromised obstacle, 
 ;; he loses one health
-(<= damaged
+(<= (damaged explorer 1)
     (nextExplorerLocation ?x ?y)
     (obstacleType ?obstacle ?class)
     (not (true (compromised ?obstacle)))
@@ -321,10 +329,36 @@
     (not (true (destroyed ?obstacle)))
     (true (location ?obstacle ?x ?y)))
 
+;; if obstacle at next location is compromised or destroyed,
+;; explorer takes no damage. 
+(<= (damaged explorer 0)
+    (nextExplorerLocation ?x ?y)
+    (obstacleType ?obstacle ?class)
+    (true (location ?obstacle ?x ?y))
+    (or
+      (true (compromised ?obstacle))
+      (true (compromiseExpired ?obstacle))
+      (true (destroyed ?obstacle))))
+
+;; if no obstacle at next location, explorer undamaged 
+(<= (damaged explorer 0)
+    (nextExplorerLocation ?x ?y)
+    (not (obstacle-at ?x ?y)))
+    
+(<= (obstacle-at ?x ?y)
+    (obstacleType ?obstacle ?class)
+    (true (location ?obstacle ?x ?y)))
+
 ;; obstacles always stay in the same place
 (<= (next (location ?obstacle ?x ?y))
     (obstacleType ?obstacle ?class)
     (true (location ?obstacle ?x ?y)))
+
+; same as blocked fact, added for structural similarity
+; with mRogue and Wargame. 
+;; MCM(9/6): Added
+(<= (stepBlocked ?dir ?x ?y)
+	(true (blocked ?dir ?x ?y)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; Spatial axioms
@@ -370,8 +404,9 @@
     (true (location exit ?x ?y)))
 
 ;;; killed is true if the explorer's health has dropped to zero
-(<= killed 
-    (true (health explorer 0)))
+;;; MCM (9/6): Adjusted arity to make look like other domains
+(<= (killed ?any) 
+    (true (health ?any 0)))
 
 ;;; pickedUp is true of an item if the explorer will be standing on top of it
 ;;;  at the end of the current time-step
@@ -379,6 +414,12 @@
     (itemType ?item)
     (nextExplorerLocation ?x ?y)
     (true (location ?item ?x ?y)))
+
+;;; timeUp indicates when the time for solving the scenario has run out
+;;; MCM (9/6): Added (for similarity with other domains)
+(<= timeUp
+	(true (step ?t))
+	(maxTime ?t))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; The GDL required LEGAL relation - specifies legal moves for players
@@ -391,9 +432,8 @@
 (<= (legal explorer (move ?dir))
     (direction ?dir)
     (true (location explorer ?xOld ?yOld))
-    (not (true (blocked ?dir ?xOld ?yOld)))
-    (nextToExplorer ?dir ?xNew ?yNew)
-    (2d ?xNew ?yNew))
+    (not (stepBlocked ?dir ?xOld ?yOld))
+    (nextToExplorer ?dir ?xNew ?yNew))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; The GDL required NEXT relation - specifies the dynamics of fluents
@@ -406,11 +446,8 @@
 ;;;  uses a medKit, his health is increased by 1. 
 (<= (next (health explorer ?hpNew))
     (true (health explorer ?hpOld))
-    damaged
-    (minus 1 ?hpOld ?hpNew))
-(<= (next (health explorer ?hp))
-    (true (health explorer ?hp))
-    (not damaged))
+    (damaged explorer ?x) ;; MCM (9/6): Changed arguments to be more similar
+    (- ?hpOld ?x ?hpNew)) ;; MCM (9/6): Use arithmetic to be more similar
 
 ;;; The exit and walls do not move
 (<= (next (location exit ?x ?y))
@@ -429,6 +466,7 @@
 (<= (next (carrying ?item))
     (itemType ?item)
     (pickedUp ?item))
+    
 (<= (next (carrying ?item))
     (true (carrying ?item))
     (not (used ?item)))
@@ -439,8 +477,7 @@
 
 ;;; The game is over if time runs out
 (<= terminal
-    (true (step ?t))
-    (maxTime ?t))
+    timeUp)
 
 ;;; The game is over if the explorer is able to reach the exit
 (<= terminal
@@ -448,40 +485,44 @@
 
 ;;; The game is over if the explorer is killed
 (<= terminal
-    killed)
+    (killed explorer))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; The GDL required GOAL relation - specifies player rewards
 
 ;;; The explorer receives 0 points if he is killed
 (<= (goal explorer 0)
-    killed)
+    (killed explorer))
 
 ;;; The explorer receives 50 points if time runs out and he has neither been
 ;;;  killed nor reached the exit
 (<= (goal explorer 50)
-    (true (step ?t))
-    (maxTime ?t)
+	timeUp
     (not atExit)
-    (not killed))
+    (not (killed explorer)))
 
 ;;; The explorer receives 100 points if he reaches the exit without being 
 ;;;  killed
 (<= (goal explorer 100)
     atExit
-    (not killed)
+    (not (killed explorer))
     (true (carrying bottle1))   ; >>>>>Added<<<<<
     (true (carrying ring1)))    ; >>>>>Added<<<<<
 
 ;;; MCM : conflated two goals; if you were at the exit with neither ring nor
 ;;;       bottle, both (goal explorer 70) and (goal explorer 80) would be true.
 ;;; Also had to insert these for completeness
+;;; MCM (9/14): Revised goals to remove disjunct.
 (<= (goal explorer 70)
     atExit
-    (not killed)
-    (or
-       (not (true (carrying ring1)))
-       (not (true (carrying bottle1)))))
+    (not (killed explorer))
+    (not (true (carrying ring1))))
+
+(<= (goal explorer 70)
+    atExit
+    (not (killed explorer))
+    (true (carrying ring1))
+    (not (true (carrying bottle1))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; Basic axioms of mathematics (defined over the range [0,7])
@@ -598,7 +639,8 @@
 ;;; Time advances in one second increments
 (<= (next (step ?next))
 	(true (step ?current))
-	(succ ?current ?next))
+	(+ ?current 1 ?next)) ;;MCM (9/6): Now uses built-in math to be more
+	                      ;;           structurally similar
 
 (<= (nextToExplorer north ?x ?y2)
     (int ?x)

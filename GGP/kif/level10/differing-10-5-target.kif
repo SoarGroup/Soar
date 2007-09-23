@@ -1,16 +1,18 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; Wargame Template (August 2007)
-;;;  - Matthew Molineaux (adapted from files provided by SLG & U.Michigan)
+;;;  - David W. Aha (adapted from files provided by SLG & U.Michigan)
 ;;;  - Uses built-in math functions
-;;;  - TL level 10, Scenario 6, Source task
-;;;  - 8/16: Released
-;;;  - Must shoot a terrorist and get rid of grenade to win.
+;;;  - TL level 10, Scenario 5, target task
+;;;  - 8/15: Released
+;;;  - 9/14: MCM: 
+;;;     - Updated to revised core rules for differing scenarios
+;;;     - Revised goal structure to remove disjunct.
 ;;;
-;;; Updates:
-;;;  - DWA/MM (8/28): Added typings ("(index ?x)") to grenadeOnGround
+;;;  - You need to pick up the Northwestern Wildcat and the Michigan Wolverine, 
+;;;    but not the ISLE feather.
 ;;;
+;;;  - Verified solution (length 12): WWNNEEEENWWW
 ;;; Debugger: "http://games.stanford.edu:5999/director/debugrawgame?"
-;;; Verified Solution (length 14): NENE<shoot n>ENSWWWW<throw north 2>N
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -18,19 +20,18 @@
 ;                        
 ;    1 2 3 4 5 6 7 8     
 ;   +---------------+    + = Corner
-;  1|. . . . . . . .|    . = A room location
-;   |     +-+-------|    - = Horizontal wall
-;  2|. F .|.|T R . .|    | = Vertical wall
-;   | + +-+ +-+ +   |
-;  3|.|. . . . .|. .|    @ = Soldier
-;   | +---+   +-+---|    T = Terrorist
-;  4|. . G . . . . .|    F = Flag (exit)
-;   |         +-----|    G = Gun
-;  5|. . @ . .|. . .|    R = gRenade
-;   |---+     |     |
-;  6|. . . . .|. . .|    
-;   +---------------+    
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;  1|. . . . . .|. .|    . = A room location
+;   |           |   |    - = Horizontal wall
+;  2|. . . . . .|. .|    | = Vertical wall
+;   |           |   |
+;  3|. . F . . .|. .|    @ = Soldier
+;   |---------+ |   |    T = Terrorist
+;  4|. . W . . .|. .|    F = Flag (exit)
+;   |           |   |    G = Gun
+;  5|. w . . . .|. .|    f = Feather (dropped by Icarus)
+;   |           |   |    M = Medical kit
+;  6|. . . @ . .|f .|    w = Wildcat (hat)
+;   +---------------+    W = Wolverine (coat)
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -40,36 +41,30 @@
 (role soldier)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;; INIT (and some type) Relations
+;;; INIT Relations
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 ;;;>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 ;;; Specifies where objects start on board, where lower left is (1,1).
+;;; Object locations
+(init (location soldier 4 6))
+(init (location wildcat 2 5))
+(init (location wolverine 3 4))
+(init (location feather 7 6))
+(init (location exit 3 3))
+(init (location flag 3 3))
 
-(init (location    soldier 3 5))
-(init (location terrorist1 5 2))
-(init (location       gun1 3 4))
-(init (location   grenade1 6 2))
-(init (location       flag 2 2)) ; This gets referenced rather than the exit
-(init (location       exit 2 2)) ; Soar change: we are assuming an exit exists, it can't be implicit in 'holding flag'
+;; Dynamic type hierarchies
+(type wildcat item)  
+(type wolverine item)  
+(type feather item)  
 
-;;; Dynamic type hierarchies
-(type    gun1 item) 
-(type    gun1 losItem) 
-(type grenade1 item) 
-(type grenade1 aoeItem)
-
-(type    soldier animate)
-(type terrorist1 animate) (type terrorist1 terrorist) (type terrorist1 verticalTerrorist)
-
-;;; Specifies how many hit-points a character starts the game with.
-
-(init (health    soldier 1))
+;;; Character health
 (init (health terrorist1 1))
 
-;;; blocked[North,East] implies there is a wall to the [North,East] of a cell.
+;;; Unless otherwise specified adjacent spatial coordinates are assumed 
+;;;  accessible from one another.  
 ;;Outer walls
-
 (init (blocked west 1 1))
 (init (blocked west 1 2))
 (init (blocked west 1 3))
@@ -103,70 +98,110 @@
 (init (blocked south 8 6))
 
 ;;Inner walls
-(init (blocked south 4 1)) 
-(init (blocked south 5 1)) 
-(init (blocked south 6 1)) 
-(init (blocked south 7 1)) 
-(init (blocked south 8 1)) 
-(init (blocked south 3 2)) 
-(init (blocked south 5 2)) 
-(init (blocked south 2 3)) 
-(init (blocked south 3 3)) 
-(init (blocked south 6 3)) 
-(init (blocked south 7 3)) 
-(init (blocked south 8 3)) 
-(init (blocked south 6 4)) 
-(init (blocked south 7 4)) 
-(init (blocked south 8 4)) 
-(init (blocked south 1 5)) 
-(init (blocked south 2 5)) 
+(init (blocked west 7 1))
+(init (blocked west 7 2))
+(init (blocked west 7 3))
+(init (blocked west 7 4))
+(init (blocked west 7 5))
+(init (blocked west 7 6))
 
-(init (blocked north 4 2)) 
-(init (blocked north 5 2)) 
-(init (blocked north 6 2)) 
-(init (blocked north 7 2)) 
-(init (blocked north 8 2)) 
-(init (blocked north 3 3)) 
-(init (blocked north 5 3)) 
-(init (blocked north 2 4)) 
-(init (blocked north 3 4)) 
-(init (blocked north 6 4)) 
-(init (blocked north 7 4)) 
-(init (blocked north 8 4)) 
-(init (blocked north 6 5)) 
-(init (blocked north 7 5)) 
-(init (blocked north 8 5)) 
-(init (blocked north 1 6)) 
-(init (blocked north 2 6)) 
-
-(init (blocked east 1 3))  
-(init (blocked east 3 2))  
-(init (blocked east 4 2))  
-(init (blocked east 5 6))  
-(init (blocked east 6 6))  
+(init (blocked east 6 1))
+(init (blocked east 6 2))
 (init (blocked east 6 3))
+(init (blocked east 6 4))
+(init (blocked east 6 5))
+(init (blocked east 6 6))
 
-(init (blocked west 2 3))  
-(init (blocked west 4 2))  
-(init (blocked west 5 2))  
-(init (blocked west 6 5))
-(init (blocked west 6 6))  
-(init (blocked west 7 3))  
-;;;<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
-; MCM 8/14/07: Blocked is now directly represented in state.
-; SW 8/3/07: need these to have consistent spatial rep. with the other domains
-; Note that south and north are reversed compared to rogue/escape.
+(init (blocked north 1 4))
+(init (blocked north 2 4))
+(init (blocked north 3 4))
+(init (blocked north 4 4))
+(init (blocked north 5 4))
+
+(init (blocked south 1 3))
+(init (blocked south 2 3))
+(init (blocked south 3 3))
+(init (blocked south 4 3))
+(init (blocked south 5 3))
 
 ;; Soldier health
-(init (health soldier 1))
+(init (health soldier 2)) ; >>>>>New! Higher!<<<<<
+;;;<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+
+;; Soldier health
+;; (init (health soldier 1)) ; >>>>>Deleted<<<<<
 
 ;; Static type hierarchy
-(type flag item)
-(type exit item)
+; MCM (9/14): Exit is a place, now.
+(type exit place)
 
 ;;; The global time clock.	
 (init (time 1))
 	
+
+;;MCM (9/14): Moved the Goal section to be more easily separable from domain
+;;            rules.
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;; GOAL Relations
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+;;; Goals are computed according to the following table:
+;;;
+;;; Dead? TimeOut? atExit? Wildcat? Wolverine? Goal
+;;; -----------------------------------------------
+;;;    t                                         0   
+;;;    f        f        f                       0
+;;;    f        t        f                      50 
+;;;    f                 t       f              65 
+;;;    f                 t       t          f   80 
+;;;    f                 t       t          t  100 
+
+(<= (goal soldier 0)
+    (dead soldier))
+
+(<= (goal soldier 0)
+    (not (dead soldier))
+    (not timeOut)
+    (not atExit))
+
+(<= (goal soldier 50)
+    (not (dead soldier))
+    timeOut
+	(not atExit))
+	
+; MCM (9/14) : Changed goals to remove disjuncts.
+(<= (goal soldier 65)
+    (not (dead soldier))
+	atExit
+	(not (true (carrying wildcat))))
+
+(<= (goal soldier 80)
+    (not (dead soldier))
+	atExit
+	(true (carrying wildcat))
+	(not (true (carrying wolverine))))
+
+(<= (goal soldier 100)
+    (not (dead soldier))
+    atExit
+	(true (carrying wildcat))
+	(true (carrying wolverine)))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;Rules that change across scenarios
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;; MCM (9/14): healingItems get used up in the heal action, in some scenarios.
+;;; DA (8/31): (heal ?item)
+(<= (uses ?item) ;; MCM (9/6): Modified arguments to make more similar
+    (type ?item healingItem)
+    (does soldier (heal ?item)))
+
+;;; MCM (9/14): In some scenarios, healingItems heal 1 point; in others, 2.
+;;; DA (8/31): (heal ?item)
+(<= (healthIncrement soldier 1)
+    (soldierHeals))
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; LEGAL Relations
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -182,27 +217,34 @@
     (true (location soldier ?x ?y))
     (direction ?dir)
     (not (stepBlocked ?dir ?x ?y))
-    (nStepsSoldier 1 ?dir ?x ?y ?xAny ?yAny))
+    (nextCell ?dir ?x ?y ?xAny ?yAny))
+
+;MCM: Added nextCell so that wargame move looks like rogue move
+;MCM (9/4): Corrected parameter names
+(<= (nextCell ?dir ?x1 ?y1 ?x2 ?y2)
+    (nStepsSoldier 1 ?dir ?x1 ?y1 ?x2 ?y2))
 
 ;;; The soldier may heal himself if he is holding a healing type item.
-
-(<= (legal soldier heal)
-    (true (holding soldier ?item))
+;;; DA (8/31): Added ?item parameter to heal
+;;; MCM (8/31): Changed (holding soldier ?item) to (carrying ?item)
+(<= (legal soldier (heal ?item))
+    (true (carrying ?item))
     (type ?item healingItem))
 
 ;;; The soldier may shoot in any of the cardinal directions if he is holding
 ;;;  a line-of-sight type weapon.
-
-(<= (legal soldier (shoot ?dir))
-    (true (holding soldier ?item))
+;;; MCM (8/31): Updated from shooting in a direction to shooting a monster
+;;; MCM (8/31): Changed (holding soldier ?item) to (carrying ?item)
+(<= (legal soldier (shoot ?terrorist))
+    (true (carrying ?item))
     (type ?item losItem)
-    (direction ?dir))
+	(canShootAt ?terrorist))                       ; Generic spatial
 
 ;;; The soldier may throw in any of the cardinal directions if he is holding
 ;;;  a area-of-effect type item.
-
+;;; MCM (8/31): Changed (holding soldier ?item) to (carrying ?item)
 (<= (legal soldier (throw ?dir ?dist))
-    (true (holding soldier ?item))
+    (true (carrying ?item))
     (type ?item aoeItem)
     (legalThrowDist ?dist)
     (true (location soldier ?x ?y))
@@ -217,55 +259,65 @@
 (<= (next (blocked ?dir ?x ?y))
     (true (blocked ?dir ?x ?y)))
 
-;;; Also here for stylesheet convenience.  True of any cell that the soldier
-;;;  attacks.
-
-; (<= (next (blastZone ?x ?y)) ; >>>>>Deleted<<<<<
-;     (attacks ?x ?y soldier)) ; >>>>>Deleted<<<<<
-	
-;;; Location for animate-type objects is updated by the intendedLocation axiom.
-	
-(<= (next (location ?character ?x ?y))
-    (type ?character animate)
-    (intendedLocation ?character ?x ?y))
-
 ; SW 8/3/07
 (<= (next (location soldier ?x ?y))
     (intendedSoldierLocation ?x ?y))
 
+;;; Location for animate-type objects is updated by the intendedLocation axiom.
+(<= (next (location ?character ?x ?y))
+    (type ?character animate)
+    (intendedLocation ?character ?x ?y))
+
+;MCM: Locations of places don't change.
+(<= (next (location ?place ?x ?y))
+    (type ?place place)
+    (true (location ?place ?x ?y)))
+
 ;;; Item-type objects remain where they are until the soldier walks on top of
 ;;;  them.
-
 ; Soar change: splitting to two cases, so we don't need distinctCell.
-(<= (next (location ?object ?xO ?yO))
-    (type ?object item)
-    (true (location ?object ?xO ?yO))
-    (intendedSoldierLocation ?xE ?yE)
-    (distinct ?xE ?xO))
-    ;(distinctCell ?xE ?yE ?xO ?yO))
+; MCM (9/4): Added intermediate "taken" to make look more
+; like mRogue.
+; MCM (9/4): Fixed by changing ?object to ?item
+(<= (next (location ?item ?xO ?yO))
+    (type ?item item)
+    (true (location ?item ?xO ?yO))
+    (not (taken ?item)))
 
-(<= (next (location ?object ?xO ?yO))
-    (type ?object item)
-    (true (location ?object ?xO ?yO))
-    (intendedSoldierLocation ?xE ?yE)
-    (distinct ?yE ?yO))
+;(<= (next (location ?object ?xO ?yO))
+;    (type ?object item)
+;    (true (location ?object ?xO ?yO))
+;    (intendedSoldierLocation ?xE ?yE)
+;    (distinct ?xE ?xO))
+;    ;(distinctCell ?xE ?yE ?xO ?yO))
+;
+;(<= (next (location ?object ?xO ?yO))
+;    (type ?object item)
+;    (true (location ?object ?xO ?yO))
+;    (intendedSoldierLocation ?xE ?yE)
+;    (distinct ?yE ?yO))
 
 ;;; Should the soldier walk on top of an item-type object, it will move into his
 ;;;  inventory where it will remain until it is used.
-
-(<= (next (holding soldier ?object))
+;;; MCM (8/31): Changed (holding soldier ?item) to (carrying ?item)
+;;; MCM (9/4) : Added "taken" intermediary to make more like mRogue.
+(<= (next (carrying ?object))
     (type ?object item)
-    (true (location ?object ?xO ?yO))
-    (intendedSoldierLocation ?xO ?yO)) ; Soar change: this is much more efficient
-   ; (intendedSoldierLocation ?xE ?yE)
-   ; (not (distinctCell ?xE ?yE ?xO ?yO)))
-(<= (next (holding soldier ?item))
-    (true (holding soldier ?item))
-    (not (uses soldier ?item)))
+    (taken ?object))
+
+;(<= (next (carrying ?object))
+;    (type ?object item)
+;    (true (location ?object ?xO ?yO))
+;    (intendedSoldierLocation ?xO ?yO)) ; Soar change: this is much more efficient
+;   ; (intendedSoldierLocation ?xE ?yE)
+;   ; (not (distinctCell ?xE ?yE ?xO ?yO)))
+
+(<= (next (carrying ?item))
+    (true (carrying ?item))
+    (not (uses ?item))) ;; MCM (9/6): Modified arguments to make more similar
 
 ;;; Character health is modified based on how much it is 
 ;;;  [incremented,decremented] per step.
-
 (<= (next (health ?character ?h2))
     (true (health ?character ?h1))
     (healthIncrement ?character ?hInc)
@@ -274,7 +326,6 @@
     (+ ?h1 ?deltaH ?h2))
 	
 ;;; Time ticks one second per step.	
-	
 (<= (next (time ?tNext))
     (true (time ?tCurrent))
     (+ ?tCurrent 1 ?tNext))
@@ -284,67 +335,30 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 ;;; The game is over if time runs out, the soldier has his health reduced to
-;;;  zero, or places the flag in his inventory.
-
+;;;  zero, or reaches the exit
 (<= terminal
     timeOut)
 (<= terminal
     (dead soldier))
 (<= terminal
-    (true (holding soldier flag)))
+    atExit)
+
+;;; DA (8/31): Added to be analogous with mRogue's atExit/0
+(<= atExit
+    (index ?x)
+    (index ?y)
+    (true (location soldier ?x ?y))
+    (true (location exit ?x ?y)))
  
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;; GOAL Relations
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-;;; Goals are computed according to the following table:
-;;;
-;;; Dead? TimeOut? HasFlag? Goal
-;;; ----------------------------
-;;;    0        0        0     0   
-;;;    0        0        1   100
-;;;    0        1        0    50 
-;;;    0        1        1   100
-;;;    1        0        0     0
-;;;    1        0        1     0
-;;;    1        1        0     0
-;;;    1        1        1     0
-
-(<= (goal soldier 0)
-    (dead soldier))
-(<= (goal soldier 0)
-    (not timeOut)
-    (not (dead soldier))
-    (not (true (holding soldier flag))))
-
-(<= (goal soldier 50)
-    timeOut
-    (not (dead soldier))
-    (not (true (holding soldier flag))))
-
-;;Only get 75 points if grenade not destroyed.
-(<= (goal soldier 75)
-    (not (dead soldier))
-    (true (holding soldier flag))
-    (or
-    	(true (holding soldier grenade1))
-    	grenadeOnGround))
-
-;;Full credit if at exit, not dead, grenade gone.
-(<= (goal soldier 100)
-    (not (dead soldier))
-    (true (holding soldier flag))
-    (not (true (holding soldier grenade1)))
-    (not grenadeOnGround))
-    
-(<= grenadeOnGround
-	(index ?x)
-	(index ?y)
-	(true (location grenade1 ?x ?y)))
-
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; View Definitions
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+;;; MCM (9/4): Added taken to correspond with mRogue pickedUp.
+(<= (taken ?item)
+    (type ?item item)
+    (true (location ?item ?x ?y))
+    (intendedSoldierLocation ?x ?y))
 
 ;;; A single step ?dir from cell (?x,?y) is blocked if a wall interupts that 
 ;;;  step.
@@ -359,7 +373,7 @@
 ; also, these can be restricted to blocked from the soldiers location, to get rid of useless groundings
 ; in addition, there is no need to infer unless the soldier is shooting
 (<= (pathBlocked west ?x ?y1 ?x ?y3)
-    (does soldier (shoot ?dir))
+    (does soldier (shoot ?terrorist))
     (true (location soldier ?x ?y1))
     (index ?n)
     (nStepsSoldier ?n west ?x ?y1 ?x ?y3)
@@ -369,7 +383,7 @@
     (stepBlocked west ?x ?y2))    
 
 (<= (pathBlocked south ?x1 ?y ?x3 ?y)
-    (does soldier (shoot ?dir))
+    (does soldier (shoot ?terrorist))
     (true (location soldier ?x1 ?y))
     (index ?n)
     (nStepsSoldier ?n south ?x1 ?y ?x3 ?y)
@@ -378,7 +392,7 @@
     (nStepsSoldier ?m south ?x1 ?y ?x2 ?y)
     (stepBlocked south ?x2 ?y))    
 (<= (pathBlocked east ?x ?y1 ?x ?y3)
-    (does soldier (shoot ?dir))
+    (does soldier (shoot ?terrorist))
     (true (location soldier ?x ?y1))
     (index ?n)
     (nStepsSoldier ?n east ?x ?y1 ?x ?y3)
@@ -388,7 +402,7 @@
     (stepBlocked east ?x ?y2))    
 
 (<= (pathBlocked north ?x1 ?y ?x3 ?y)
-    (does soldier (shoot ?dir))
+    (does soldier (shoot ?terrorist))
     (true (location soldier ?x1 ?y))
     (index ?n)
     (nStepsSoldier ?n north ?x1 ?y ?x3 ?y)
@@ -444,7 +458,6 @@
 
 ;;; Two cells are vertically related [south,north] of each other if the first is
 ;;;  [higher,lower] than the second.
-
 (<= (verticalRelation ?terrorist south ?x1 ?y1 ?x2 ?y2)
     (cellNearTerrorist ?terrorist ?x2 ?y2) ; Soar
     (intendedSoldierLocation ?x1 ?y1) ; Soar
@@ -460,7 +473,6 @@
 
 ;;; Two cells are horizontall related [east,west] of each other if the first is
 ;;;  [right,left] of the second.
-
 (<= (horizontalRelation ?terrorist east ?x1 ?y1 ?x2 ?y2)
     (cellNearTerrorist ?terrorist ?x2 ?y2) ; Soar
     (intendedSoldierLocation ?x1 ?y1) ; Soar
@@ -475,41 +487,49 @@
     (> ?x2 ?x1))	
 	
 ;;; Defines the legal distances that an object may be thrown (0, 1, or 2 cells)
-	
-; (<= (legalThrowDist 0)) ; >>>>>Deleted<<<<<
-; (<= (legalThrowDist 1)) ; >>>>>Deleted<<<<<
 (<= (legalThrowDist 2))
 
-;;; Every item (with the exception of the flag) is used if the soldier performs
-;;;  the action that it enables.
-
-(<= (uses soldier ?item)
-    (type ?item healingItem)
-    (does soldier heal))
-(<= (uses soldier ?item)
+;;; Every item is used if the soldier performs the action that it enables.
+(<= (uses ?item) ;; MCM (9/6): Modified arguments to make more similar
     (type ?item losItem)
-    (does soldier (shoot ?dir)))
-(<= (uses soldier ?item)
+    (does soldier (shoot ?terrorist)))
+(<= (uses ?item) ;; MCM (9/6): Modified arguments to make more similar
     (type ?item aoeItem)
     (does soldier (throw ?dir ?dist)))
 
+;; MCM: Removed logic for finding enemies in LoS; now, if a soldier shoots someone, 
+;; the square that someone is on gets attacked.
+(<= (attacks ?x ?y soldier)
+    (does soldier (shoot ?terrorist))
+    (intendedLocation ?terrorist ?x ?y))
+
+;;MCM: Old attacks logic
 ;;; Cell (?x,?y) is attacked by the soldier if the soldier performs the shoot
 ;;;  action and that cell is within a line of sight ?dir of the soldier.
 
-(<= (attacks ?x ?y soldier)
-    (does soldier (shoot ?dir))
-    (true (location soldier ?x ?y)))
-(<= (attacks ?x2 ?y2 soldier)
-    (does soldier (shoot ?dir))
+;(<= (attacks ?x ?y soldier)
+;    (does soldier (shoot ?dir))
+;    (true (location soldier ?x ?y)))
+;(<= (attacks ?x2 ?y2 soldier)
+;    (does soldier (shoot ?dir))
+;    (true (location soldier ?x1 ?y1))
+;    (index ?n)
+;    (nStepsSoldier ?n ?dir ?x1 ?y1 ?x2 ?y2)
+;    (not (pathBlocked ?dir ?x1 ?y1 ?x2 ?y2)))
+
+
+;; canShootAt added to make parameterization for (shoot ?terrorist) work.
+(<= (canShootAt ?terrorist)
+    (type ?terrorist terrorist)
     (true (location soldier ?x1 ?y1))
+    (true (location ?terrorist ?x2 ?y2))  ;;MCM (9/4): Changed from "intendedLocation"
     (index ?n)
-    (nStepsSoldier ?n ?dir ?x1 ?y1 ?x2 ?y2)
-    (not (pathBlocked ?dir ?x1 ?y1 ?x2 ?y2)))
+    (direction ?dir)
+    (nStepsSoldier ?n ?dir ?x1 ?y1 ?x2 ?y2))
     
 ;;; Cell (?x,?y) is attacked by the soldier if the soldier performs the throw
 ;;;  action and that cell is within a one cell radius of where the item thrown
 ;;;  by the soldier lands.
-
 (<= (attacks ?x2 ?y2 soldier)
     (does soldier (throw ?dir ?dist))
     (true (location soldier ?x1 ?y1))
@@ -522,14 +542,12 @@
 
 ;;; Any character of type terrorist attacks a cell (?x,?y) if that character
 ;;;  will be standing there at the beginning of the next time-step.
-
 (<= (attacks ?x ?y ?terrorist)
     (type ?terrorist terrorist)
     (intendedLocation ?terrorist ?x ?y))
 
 ;;; A terrorist attacks a cell (?x,?y) if any character of type terrorist 
 ;;;  attacks that cell.
-
 (<= (terroristAttacks ?x ?y)
     (type ?terrorist terrorist)
     (attacks ?x ?y ?terrorist))
@@ -537,11 +555,10 @@
 ;;; At the beginning of the next time-step the soldier will either be one step
 ;;;  away if he performed the step action, or in the same place if he performed
 ;;;  some other action.
-
 (<= (intendedSoldierLocation ?x2 ?y2)
     (true (location soldier ?x1 ?y1))
     (does soldier (move ?dir)) ; Soar change: 'step' action needs to be 'move' for spatial assumptions  
-    (nStepsSoldier 1 ?dir ?x1 ?y1 ?x2 ?y2))
+    (nextCell ?dir ?x1 ?y1 ?x2 ?y2))
 (<= (intendedSoldierLocation ?x ?y)
     (true (location soldier ?x ?y))
     (not (does soldier (move south)))
@@ -550,7 +567,6 @@
     (not (does soldier (move west))))    
 
 ;;; A dead terrorist is incapacitated and will not move.
-
 (<= (intendedLocation ?terrorist ?x ?y)
     (true (location ?terrorist ?x ?y))
     (type ?terrorist terrorist)
@@ -558,7 +574,6 @@
     
 ;;; A character of type [horizontal,vertical]-terrorist will perform two
 ;;; [horizontal,vertical] steps per turn.
-
 (<= (intendedLocation ?terrorist ?x3 ?y3)      ; xMumNew, yMumNew
     (type ?terrorist horizontalTerrorist)
     (not (dead ?terrorist))
@@ -577,7 +592,6 @@
 ;;; A [horizontal,vertical] step is one that will move [horizontally,vertically]
 ;;;  toward the intended location of the soldier before it will move 
 ;;;  [vertically,horizontally].
-
 (<= (horizontalStep ?terrorist ?x1 ?y1 ?x2 ?y2 ?xT ?yT)
     (wouldStepHorizontal ?terrorist ?dir ?x1 ?y1 ?xT ?yT)
     (nSteps 1 ?dir ?x1 ?y1 ?x2 ?y2))
@@ -616,7 +630,6 @@
     
 ;;; True if the step from (?x1,?y1) toward (?x2,?y2) along the direction ?dir
 ;;;  is not blocked by a wall.
-   
 (<= (wouldStepHorizontal ?terrorist ?dir ?x1 ?y1 ?x2 ?y2)
     (cellNearTerrorist ?terrorist ?x1 ?y1) ; Soar
     (intendedSoldierLocation ?x2 ?y2) ; Soar
@@ -628,17 +641,19 @@
     (verticalRelation ?terrorist ?dir ?x2 ?y2 ?x1 ?y1)
     (not (stepBlocked ?dir ?x1 ?y1)))	
 
-;;; The soldier's health is incremented by 1 if he performs the heal action,
-;;;  0 otherwise.
+;;; The soldier's health is incremented by 0 unless a healing item is used.
+;;; DA (8/31): (heal ?item)
+(<= (healthIncrement soldier 0) 
+	(not (soldierHeals)))
 
-(<= (healthIncrement soldier 1)
-    (does soldier heal))
-(<= (healthIncrement soldier 0)
-    (not (does soldier heal)))
+;MCM (9/14): Added to resolve bug with healing when more than one item in 
+;            scenario.
+(<= soldierHeals
+    (type ?item item)
+    (does soldier (heal ?item)))
     
 ;;; The soldier's health is decremented by 1 if he is attacked by a terrorist,
 ;;;  0 otherwise.
-
 (<= (healthDecrement soldier 1)
     (intendedSoldierLocation ?x ?y)
     (terroristAttacks ?x ?y))
@@ -647,70 +662,60 @@
     (not (terroristAttacks ?x ?y)))
 
 ;;; A terrorist's health may never be incremented
-
 (<= (healthIncrement ?terrorist 0)
     (type ?terrorist terrorist))
     
 ;;; A terrorist's health is decremented by 1 if he is attacked by the soldier,
 ;;;  0 otherwise.
-
 (<= (healthDecrement ?terrorist 1)
     (type ?terrorist terrorist)
-    (intendedLocation ?terrorist ?x ?y)
-    (attacks ?x ?y soldier))
+    (terroristAttacked ?terrorist))
+    
 (<= (healthDecrement ?terrorist 0)
     (type ?terrorist terrorist)
+    (not (terroristAttacked ?terrorist)))
+    
+(<= (terroristAttacked ?terrorist)
     (intendedLocation ?terrorist ?x ?y)
-    (not (attacks ?x ?y soldier)))
+    (attacks ?x ?y soldier))
 
 ;;; A character with 0 health is dead.
-
 (<= (dead ?object)
     (true (health ?object 0)))
 
-;;; Two cells are distinct if they differ on either an x- or y- coordinate
-; Soar change: this has 7,708 groundings for an 8x8 world, so it's pretty costly
-
-;(<= (distinctCell ?x1 ?y1 ?x2 ?y2)
-;    (cell ?x1 ?y1)
-;    (cell ?x2 ?y2)
-;    (distinct ?x1 ?x2))
-;(<= (distinctCell ?x1 ?y1 ?x2 ?y2)
-;    (cell ?x1 ?y1)
-;    (cell ?x2 ?y2)
-;    (distinct ?y1 ?y2))
-
 ;;; A cell is composed of two indices in the range [1,8]
-
 (<= (cell ?x ?y)
     (index ?x)
     (index ?y))
 
 ;;; Timeout occurs at time t=timeFinal
-
 (<= timeout
     (true (time ?t))
     (timeFinal ?t))
 
+(<= shotTerrorist
+    (type ?terrorist terrorist)
+    (dead ?terrorist))
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;; Static Relations
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;; Static Relations (i.e., constants)
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;; 
 
 ;;; Indices in the range [1,8].
-
 (index 1) (index 2) (index 3) (index 4) (index 5) (index 6) (index 7) (index 8)
 
 ;;; The cardinal directions {south,north,east,west}.
-
 (direction south) (direction north) (direction east) (direction west)
 
 ;;; The time at which the game will end.
-
 (timeFinal 50)
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;; Lower-level map relations
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;; 
 
 ; Soar: constrain the terrorist movement predicates to only match near terrorists
 ; This means all cells within manhattan distance 2 of a terrorist
-
 (<= (terroristCell ?terrorist ?x ?y)
     (type ?terrorist terrorist) 
     (true (location ?terrorist ?x ?y)))
