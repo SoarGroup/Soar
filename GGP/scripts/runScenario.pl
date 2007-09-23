@@ -37,8 +37,8 @@ elsif ($env =~ /^r/) {
   $target = "../kif/rogue/mrogue-$level-$scenario-target.kif";
 }
 elsif ($level =~ "10") {
-  $source = "../kif/level10/TL-Level-10-$scenario-Source.kif";
-  $target = "../kif/level10/TL-Level-10-$scenario-Target.kif";
+  $source = "../kif/level10/differing-10-$scenario-source.kif";
+  $target = "../kif/level10/differing-10-$scenario-target.kif";
 }
 elsif ($env =~ /^b/) {
   $source = "../kif/build/build-$level-$scenario-source.kif";

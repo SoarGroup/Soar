@@ -1,8 +1,8 @@
 #!/usr/bin/perl
 
 $update = "./updateGGP.pl";
-$runSTP = "./runSourceTargetPair.pl";
-$runSSTP = "./runSourceSourceTargetPair.pl";
+$runSTP = "./runsourcetargetPair.pl";
+$runSSTP = "./runsourcesourcetargetPair.pl";
 
 $env = $ARGV[0];
 $level = $ARGV[1];
@@ -64,11 +64,11 @@ elsif ($env =~ /^r/) {
   print `$stats mrogue-$level-$scenario-target_after_source.log`;
 }
 elsif ($level =~ "10") {
-  print `$runStats TL-Level-10-$scenario-Source.log`;
+  print `$runStats differing-10-$scenario-source.log`;
   print "\n";
-  print `$runStats TL-Level-10-$scenario-Target_no_source.log`;
+  print `$runStats differing-10-$scenario-target_no_source.log`;
   print "\n";
-  print `$runStats TL-Level-10-$scenario-Target_after_source.log`;
+  print `$runStats differing-10-$scenario-target_after_source.log`;
 }
 else {die "bad environment";}
 
