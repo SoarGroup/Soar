@@ -157,8 +157,8 @@
 (init (blocked south 0 2))
 (init (blocked south 1 2))
 (init (blocked south 2 2))
+(init (blocked south 3 2))
 (init (blocked south 4 2))
-(init (blocked south 5 2))
 
 ; South room
 (init (blocked west 0 4))
@@ -166,8 +166,8 @@
 (init (blocked north 0 4))
 (init (blocked north 1 4))
 (init (blocked north 2 4))
+(init (blocked north 3 4))
 (init (blocked north 4 4))
-(init (blocked north 5 4))
 (init (blocked east 5 4))
 (init (blocked east 5 5))
 (init (blocked south 0 4))
