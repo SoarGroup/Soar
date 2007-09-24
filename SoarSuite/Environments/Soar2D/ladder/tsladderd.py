@@ -26,6 +26,7 @@ class MatchStatus:
 
 		self.match_id = match_info["match_id"]
 		self.map = match_info["map"]
+		self.first_tank_name = match_info["first_tank_name"]
 		self.settings = match_info["settings"]
 		
 		# these are all lined up records
@@ -236,7 +237,10 @@ class Ladder(threading.Thread):
 			if first_name == tank_name:
 				mirror = True
 				continue
-			logging.info("Processing %s" % tank_name)
+			if tank_name == status.first_tank_name:
+				logging.info("Processing %s (first tank)" % tank_name)
+			else:
+				logging.info("Processing %s" % tank_name)
 			first_name = tank_name
 			# save the file
 			tank_zip_file = open("%s.zip" % tank_name, 'w')
