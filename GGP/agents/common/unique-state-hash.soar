@@ -27,6 +27,44 @@ sp {apply*update-state*hash*remove-stale
    (<s> ^current-state-hash <csh> -)
 }
 
+##################
+# Depth 0 states are the current border states, they must be new.
+# If it has ever been recorded before, this path should be marked as visited
+sp {create*depth-0-states*hash*top
+	(state <s> ^top-selection true)
+-->
+	(<s> ^depth-0-states-hash <d0sh>)
+}
+
+sp {create*depth-0-states*hash
+	(state <s> ^current-state-hash <csh>
+				^current-evaluation-depth 0)
+	(state <s2> ^depth-0-states-hash <d0sh>)
+	(<s> ^superstate.operator <so>
+		^superstate.evaluation <e>)
+	(<so> ^name evaluate-operator
+		^superoperator <action-op>)
+	(<e> ^superoperator <action-op>)
+-->
+	(<d0sh> ^<csh> <e>) #record the evaluation with it to avoid depth-exceed itself
+}
+
+sp {depth-0-depth-exceed
+	(state <s> ^current-state-hash <csh>
+				^current-evaluation-depth 0)
+	(<s> ^superstate.operator <so>
+		^superstate.evaluation <e>)
+	(<so> ^name evaluate-operator
+		^superoperator <action-op>)
+	(<e> ^superoperator <action-op>)
+	(state <s2> ^depth-0-states-hash <d0sh>)
+	(<d0sh> ^<csh> <e2> <> <e>)
+-->
+	(write (crlf) | State with depth 0 was visited previously, ID | <csh> )
+	(<s> ^depth-exceeded <d>)
+	(<e> ^visited-state true)
+}
+
 #if the same game state has been experienced before in substate, it means either it's a failure or it's in the circle - failure no doubt
 # some visited states are 'failures' - hard to detect
 # most are just exceed-depth type
@@ -152,12 +190,5 @@ sp {assert*no-store-over-max
 -->
    (write (crlf) | ERROR: bad remaining-steps |)
    (halt)
-}
-
-
-sp {top-selection*counter*init
-   (state <s> ^top-selection true)
--->
-   (<s> ^counter 0)
 }
 
