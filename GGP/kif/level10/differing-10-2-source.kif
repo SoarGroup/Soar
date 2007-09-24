@@ -869,15 +869,20 @@
 ; Meaning: combined damage from two monsters
 (<= (totalMonsterDamage2 ?monster1 ?strength1 ?x ?y ?damage)
    (nextHeroLocation ?x ?y) ; SW added
-   (monster ?monster2 ?monster-type)
-   (monster ?monster1 ?monster-type2) ; SW added   ****
+   (monster ?monster2 ?monster-type2)
+   (monster ?monster1 ?monster-type) ; SW added   ****
    (distinct ?monster2 ?monster1)
    (attackedByMonster ?monster1 ?x ?y) ; SW added   ****
    (attackedByMonster ?monster2 ?x ?y)
    (monsterStrength ?monster-type ?strength1) ; SW added  ****
-   (monsterStrength ?monster-type2 ?strength2)
-   (+ ?strength1 ?strength2 ?strength)
-   (amountOfMonsterDamage ?strength ?combined-damage)
+   (monsterStrength ?monster-type2 ?strength2) ; MCM: Changed to additional type
+;   (+ ?strength1 ?strength2 ?strength)
+;   (amountOfMonsterDamage ?strength ?combined-damage)
+   (amountOfMonsterDamage ?strength1 ?damage1) ; MCM: Changed from incorrect strength-added calc.
+   (amountOfMonsterDamage ?strength2 ?damage2) ; MCM: Changed from incorrect strength-added calc.
+   (>= ?strength1 ?strength2) ; SW: apply an arbitrary order so the rule can match in fewer ways
+                              ;     it still might match twice if both monsters have the same strength
+   (+ ?damage1 ?damage2 ?combined-damage)      ; MCM: Changed from incorrect strength-added calc.
    (true (health hero ?hp))
    (min ?combined-damage ?hp ?damage))
 
