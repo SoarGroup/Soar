@@ -192,3 +192,9 @@ sp {assert*no-store-over-max
    (halt)
 }
 
+sp {top-selection*counter*init
+   (state <s> ^top-selection true)
+-->
+   (<s> ^counter 0)
+}
+
