@@ -36,13 +36,63 @@ sp {duplicate-state*exceed-depth
 				^operator.name check-for-duplicate-location
 				^current-evaluation-depth <remaining-steps>)
 	(state <ts> ^top-selection true
-				^visited-states-hash <vsh>)
+			^visited-states-hash <vsh>)
 	(<vsh> ^<csh> <visited>)
 	(<visited> ^remaining-steps >= <remaining-steps>)  #current must be depth-exceeded if the previously visited is depth-exceeded
+	(<s> ^superstate.operator <so>
+		^superstate.evaluation <e>)
+	(<so> ^name evaluate-operator
+		^superoperator <action-op>)
+	(<e> ^superoperator <action-op>)
 -->
 	(write (crlf) | State was visited previously, ID | <csh> )
-   (<s> ^depth-exceeded <d>)
+	(<s> ^depth-exceeded <d>)
+	(<e> ^visited-state true)
 }
+
+sp {create*permanet*depth-exceeded*states*hash*top
+	(state <s> ^top-selection true)
+-->
+	(<s> ^permanent-depth-exceeded-states-hash <pdesh>)
+}
+
+#fail the state permanetly if all its operator evaluations are failure or depth-exceeded due to visited state
+sp {all*children*visited*state*alway*depth-exceeded
+	(state <s> ^impasse tie
+				^superstate.current-state-hash <csh>
+				^current-evaluation-depth <remaining-steps>
+				^remaining-operators 0)
+	-{(<s> ^evaluation <e>)
+		(<e> ^symbolic-value <> failure
+			-^visited-state true)
+	}
+	(state <s2> ^permanent-depth-exceeded-states-hash <pdesh>)
+-->
+	(<pdesh> ^<csh> <h>)
+	(<h> ^closure-steps <remaining-steps>)
+	(write (crlf) |Found permetent depth-exceeded state | <csh> |, closure steps |<remaining-steps>(crlf))
+}
+
+#state is depth-exceeded regardless of remaining steps
+sp {permanent-depth-exceeded-states*exceed-depth
+	(state <s> ^current-state-hash <csh>
+				^desired <d>
+				^operator.name check-for-duplicate-location)
+	(state <ts> ^top-selection true
+			^permanent-depth-exceeded-states-hash <pdesh>)
+	(<pdesh> ^<csh> <h>)
+	(<h> ^closure-steps <remaining-steps>)
+	(<s> ^superstate.operator <so>
+		^superstate.evaluation <e>)
+	(<so> ^name evaluate-operator
+		^superoperator <action-op>)
+	(<e> ^superoperator <action-op>)
+-->
+	(write (crlf) | State is permanetly depth-exceeded, ID | <csh> | closure sptes |<remaining-steps>)
+	(<s> ^depth-exceeded <d>)
+	(<e> ^visited-state true)
+}
+
 
 sp {duplicate-state*update*repeats
 	(state <s> ^current-state-hash <csh>
