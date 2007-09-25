@@ -73,7 +73,7 @@
 
 (init (time 0))
 
-(init (count rebar 10))
+(init (count rebar 3))
 
 (init (object-type g1 ground))
 (init (object-type c1 concrete))

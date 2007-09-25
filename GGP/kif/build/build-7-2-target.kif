@@ -74,7 +74,7 @@
 
 (init (time 0))
 
-(init (count titanium 10))
+(init (count titanium 3))
 
 (init (object-type g1 ground))
 (init (object-type s1 steel))
