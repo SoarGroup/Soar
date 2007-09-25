@@ -18,6 +18,7 @@ multi-attributes horizontalstep 256 # wargame
 multi-attributes verticalstep 256 # wargame
 multi-attributes between 300 # rogue
 multi-attributes cellnearmonster 100 # rogue
+multi-attributes nstepstowardshero 200 # rogue
 multi-attributes x-blocked 300
 multi-attributes y-blocked 300
 

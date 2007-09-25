@@ -66,9 +66,12 @@ sp {apply*record*terminal-state
 		^current-state-hash <csh>
 		^state-id <state-id>)
 	(<o> ^name record-terminal-state)
-	(state <s2> ^depth-0-states-hash <d0sh>)
+	(state <s2> ^depth-0-states-hash <d0sh>
+             ^counter <val>)
 -->
 	(<d0sh> ^<csh> <state-id>) #record the state-id with it to avoid depth-exceed itself
+   (<s2> ^counter <val> -)
+   (<s2> ^counter (+ <val> 1))
 }
 
 sp {depth-0-depth-exceed
@@ -132,7 +135,7 @@ sp {all*children*visited*state*alway*depth-exceeded
 -->
 	(<pdesh> ^<csh> <h>)
 	(<h> ^closure-steps <remaining-steps>)
-	(write (crlf) |Found permetent depth-exceeded state | <csh> |, closure steps |<remaining-steps>(crlf))
+	(write (crlf) |Found permenant depth-exceeded state | <csh> |, closure steps |<remaining-steps>(crlf))
 }
 
 #state is depth-exceeded regardless of remaining steps
@@ -162,13 +165,16 @@ sp {duplicate-state*update*repeats
 				^current-evaluation-depth <remaining-steps>
 				)
 	(state <ts> ^top-selection true
-				^visited-states-hash <vsh>)
+				^visited-states-hash <vsh>
+        ^counter <val>)
 	(<vsh> ^<csh> <visited>)
 	(<visited> ^remaining-steps >= <remaining-steps>  #current must be depth-exceeded if the previously visited is depth-exceeded
 				^repeats <repeats>)
 -->
 	(<visited> ^repeats <repeats> -
 				(+ <repeats> 1))
+   (<ts> ^counter <val> -)
+   (<ts> ^counter (+ <val> 1))
 }
 
 #if there is no operator tie, it won't be able to check duplicate state during the sequences of operators, but this is OK - it'll detect it in the end
