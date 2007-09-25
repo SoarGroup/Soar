@@ -39,8 +39,7 @@ sp {create*depth-0-states*hash*top
 sp {create*depth-0-states*hash
 	(state <s> ^current-state-hash <csh>
 				^current-evaluation-depth 0)
-	(state <s2> ^depth-0-states-hash <d0sh>
-             ^counter <val>)
+	(state <s2> ^depth-0-states-hash <d0sh>)
 	(<s> ^superstate.operator <so>
 		^superstate.evaluation <e>)
 	(<so> ^name evaluate-operator
@@ -48,8 +47,6 @@ sp {create*depth-0-states*hash
 	(<e> ^superoperator <action-op>)
 -->
 	(<d0sh> ^<csh> <e>) #record the evaluation with it to avoid depth-exceed itself
-   (<s2> ^counter <val> -)
-   (<s2> ^counter (+ <val> 1))
 }
 
 sp {depth-0-depth-exceed
@@ -107,14 +104,11 @@ sp {all*children*visited*state*alway*depth-exceeded
 		(<e> ^symbolic-value <> failure
 			-^visited-state true)
 	}
-	(state <s2> ^permanent-depth-exceeded-states-hash <pdesh>
-             ^counter <val>)
+	(state <s2> ^permanent-depth-exceeded-states-hash <pdesh>)
 -->
 	(<pdesh> ^<csh> <h>)
 	(<h> ^closure-steps <remaining-steps>)
 	(write (crlf) |Found permetent depth-exceeded state | <csh> |, closure steps |<remaining-steps>(crlf))
-   (<s2> ^counter <val> -)
-   (<s2> ^counter (+ <val> 1))
 }
 
 #state is depth-exceeded regardless of remaining steps
@@ -144,7 +138,6 @@ sp {duplicate-state*update*repeats
 				^current-evaluation-depth <remaining-steps>
 				)
 	(state <ts> ^top-selection true
-             ^counter <val>
 				^visited-states-hash <vsh>)
 	(<vsh> ^<csh> <visited>)
 	(<visited> ^remaining-steps >= <remaining-steps>  #current must be depth-exceeded if the previously visited is depth-exceeded
@@ -152,8 +145,6 @@ sp {duplicate-state*update*repeats
 -->
 	(<visited> ^repeats <repeats> -
 				(+ <repeats> 1))
-   (<ts> ^counter <val> -)
-   (<ts> ^counter (+ <val> 1))
 }
 
 #if there is no operator tie, it won't be able to check duplicate state during the sequences of operators, but this is OK - it'll detect it in the end
