@@ -6,7 +6,7 @@
 sp {game*apply-op*game-state-unchanged
    (state <s> ^name game
               ^operator.name {<> analyze-state <> update-state <> update-search-info 
-                              <> save-location <> check-for-duplicate-location <name>})
+                              <> save-location <> check-for-duplicate-location <> record-terminal-state <name>})
 -->
    (<s> ^game-state-unchanged true)
 }

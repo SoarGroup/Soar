@@ -54,7 +54,7 @@ sp {apply*update-state*copy-gs*deep3
 
 sp {apply*game-op*remove-old-copy
    (state <s> ^operator.name {<> update-state <> analyze-state <> update-search-info
-                               <> save-location <> check-for-duplicate-location <name>}
+          <> save-location <> check-for-duplicate-location <> record-terminal-state <name>}
               ^gs <gs>
               ^old-gs <ogs>)
    (<ogs> ^<att> <id>)
@@ -187,7 +187,7 @@ sp {apply*game-op*top-state*report*0
               ^superstate nil
               ^operator <o>)
    (<o> ^name {<> update-state <> analyze-state <> update-search-info
-    <> save-location <> check-for-duplicate-location <> init-game <name>}
+    <> save-location <> check-for-duplicate-location <> init-game <> record-terminal-state <name>}
         -^p1)
 -->
    (write (crlf) |ACTION | <name>)
@@ -199,7 +199,7 @@ sp {apply*game-op*top-state*report*1
               ^superstate nil
               ^operator <o>)
    (<o> ^name {<> update-state <> analyze-state <> update-search-info
-                <> save-location <> check-for-duplicate-location <name>}
+    <> save-location <> check-for-duplicate-location <> record-terminal-state <name>}
         ^p1 <parm>
        -^p2)
 -->
@@ -212,7 +212,7 @@ sp {apply*game-op*top-state*report*2
               ^superstate nil
               ^operator <o>)
    (<o> ^name {<> update-state <> analyze-state <> update-search-info
-                <> save-location <> check-for-duplicate-location <name>}
+    <> save-location <> check-for-duplicate-location <> record-terminal-state <name>}
         ^p1 <parm>
         ^p2 <p2>)
 -->
@@ -224,7 +224,7 @@ sp {apply*game-op*report*0
               -^superstate nil
               ^operator <o>)
    (<o> ^name {<> update-state <> analyze-state <> update-search-info
-    <> save-location <> check-for-duplicate-location <> init-game <> exceed-depth <name>}
+    <> save-location <> check-for-duplicate-location <> init-game <> exceed-depth <> record-terminal-state <name>}
         -^p1)
 -->
    (write (crlf) |action | <name>)
@@ -236,7 +236,7 @@ sp {apply*game-op*report*1
               -^superstate nil
               ^operator <o>)
    (<o> ^name {<> update-state <> analyze-state <> update-search-info
-                <> save-location <> check-for-duplicate-location <> exceed-depth <name>}
+                <> save-location <> check-for-duplicate-location <> exceed-depth <> record-terminal-state <name>}
         ^p1 <parm>
        -^p2)
 -->
@@ -249,7 +249,7 @@ sp {apply*game-op*report*2
               -^superstate nil
               ^operator <o>)
    (<o> ^name {<> update-state <> analyze-state <> update-search-info
-                <> save-location <> check-for-duplicate-location <> exceed-depth <name>}
+                <> save-location <> check-for-duplicate-location <> exceed-depth <> record-terminal-state <name>}
         ^p1 <parm>
         ^p2 <p2>)
 -->
