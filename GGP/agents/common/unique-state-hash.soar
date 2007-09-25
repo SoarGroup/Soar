@@ -16,6 +16,27 @@ sp {apply*analyze-state*hash*current*gs
    (<s> ^current-state-hash (cmd struct-to-string <gs> -e <cnt> -s <ags>))
 }
 
+#initial state
+sp {hash*initial-state*gs
+	(state <s> ^superstate nil
+				^gs <gs>
+				^facts.counter <cnt>
+				^arbitrary-gs-constants <ags>)
+	(state <s2> ^impasse tie ^superstate <s>)
+-->
+   (<s> ^current-state-hash (cmd struct-to-string <gs> -e <cnt> -s <ags>))
+}
+
+sp {record*initial-state
+	(state <s> ^superstate nil
+				^current-state-hash <csh>)
+	(state <s2> ^top-selection true
+				^permanent-depth-exceeded-states-hash <pdesh>)
+-->
+	(<pdesh> ^<csh> <h>)
+	(<h> ^closure-steps 0)#go back to initial state is always permanent failure
+	
+}
 # if there is a current-state-hash during update state, it must be old
 # so remove it-- this happens when a tie is resolved (or there is no tie),
 # multiple game operators happen in the same state
@@ -78,7 +99,7 @@ sp {depth-0-depth-exceed
 	(state <s> ^current-state-hash <csh>
 				^current-evaluation-depth 0
 				^state-id <state-id>
-				^operator.name analyze-state)
+				^operator.name update-search-info)
 	(<s> ^superstate.operator <so>
 		^superstate.evaluation <e>)
 	(<so> ^name evaluate-operator
@@ -142,7 +163,7 @@ sp {all*children*visited*state*alway*depth-exceeded
 sp {permanent-depth-exceeded-states*exceed-depth
 	(state <s> ^current-state-hash <csh>
 				^desired <d>
-				^operator.name check-for-duplicate-location)
+				^operator.name update-search-info)
 	(state <ts> ^top-selection true
 			^permanent-depth-exceeded-states-hash <pdesh>)
 	(<pdesh> ^<csh> <h>)
@@ -227,3 +248,6 @@ sp {top-selection*counter*init
 -->
    (<s> ^counter 0)
 }
+
+
+
