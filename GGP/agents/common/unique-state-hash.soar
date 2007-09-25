@@ -36,29 +36,53 @@ sp {create*depth-0-states*hash*top
 	(<s> ^depth-0-states-hash <d0sh>)
 }
 
-sp {create*depth-0-states*hash
-	(state <s> ^current-state-hash <csh>
-				^current-evaluation-depth 0)
-	(state <s2> ^depth-0-states-hash <d0sh>)
-	(<s> ^superstate.operator <so>
-		^superstate.evaluation <e>)
-	(<so> ^name evaluate-operator
-		^superoperator <action-op>)
-	(<e> ^superoperator <action-op>)
+sp {create*unique*state*symbol
+	(state <s> ^type state)
 -->
-	(<d0sh> ^<csh> <e>) #record the evaluation with it to avoid depth-exceed itself
+	(<s> ^state-id (make-constant-symbol <s>))
+}
+
+sp {propose*depth-0-states
+	(state <s> ^current-state-hash <csh>
+				^current-evaluation-depth 0
+				^state-id <state-id>)
+	(state <s2> ^depth-0-states-hash <d0sh>)
+	(<d0sh> -^<csh>)
+-->
+	(<s> ^operator <o> +)
+	(<o> ^name record-terminal-state)
+}
+
+sp {prefer*record*terminal-state
+	(state <s> ^operator <o1> + <o2> +)
+	(<o1> ^name record-terminal-state)
+	(<o2> ^name update-search-info)
+-->
+	(<s> ^operator <o1> > <o2>)
+}
+
+sp {apply*record*terminal-state
+	(state <s> ^operator <o>
+		^current-state-hash <csh>
+		^state-id <state-id>)
+	(<o> ^name record-terminal-state)
+	(state <s2> ^depth-0-states-hash <d0sh>)
+-->
+	(<d0sh> ^<csh> <state-id>) #record the state-id with it to avoid depth-exceed itself
 }
 
 sp {depth-0-depth-exceed
 	(state <s> ^current-state-hash <csh>
-				^current-evaluation-depth 0)
+				^current-evaluation-depth 0
+				^state-id <state-id>
+				^operator.name analyze-state)
 	(<s> ^superstate.operator <so>
 		^superstate.evaluation <e>)
 	(<so> ^name evaluate-operator
 		^superoperator <action-op>)
 	(<e> ^superoperator <action-op>)
 	(state <s2> ^depth-0-states-hash <d0sh>)
-	(<d0sh> ^<csh> <e2> <> <e>)
+	(<d0sh> ^<csh> <state-id2> <> <state-id>)
 -->
 	(write (crlf) | State with depth 0 was visited previously, ID | <csh> )
 	(<s> ^depth-exceeded <d>)
@@ -197,4 +221,3 @@ sp {top-selection*counter*init
 -->
    (<s> ^counter 0)
 }
-
