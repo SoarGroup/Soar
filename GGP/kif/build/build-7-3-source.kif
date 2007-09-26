@@ -1,12 +1,12 @@
 ;;;; -*-Lisp-*-
 ;;;; **************************************************************************
-;;;; * mini-Build Transfer Problem: Level 7, Scenario 3 -- Pyramids           *
+;;;; * mini-Build Transfer Problem: Level 7, Scenario 3 -- Towers             *
 ;;;; * Transfer Learning in Integrated Cognitive Systems Project              *
 ;;;; *                                                                        *
 ;;;; * David J. Stracuzzi                                                     *
 ;;;; * Arizona State University                                               *
 ;;;; * Completed: August    29, 2007                                          *
-;;;; * Revised:   September 14, 2007                                          *
+;;;; * Revised:   September 26, 2007                                          *
 ;;;; **************************************************************************
 ;;;;
 ;;;; This file contains rules, facts and persistants for a specific game
@@ -15,56 +15,48 @@
 ;;;; a complete, playable game description.
 ;;;;
 ;;;; Goal:
-;;;;   Construct a pyramid from objects of three different types. The bottom 
-;;;;   blocks must be reinforced, and only one type of object is reinforceable.
-;;;;   The pyramid must also contain an alignment of 3 blocks on the left side.
+;;;;   Produce a tower of height 7.  This requires stacking all 5 blocks into 
+;;;;   a single tower. Only one ordering of blocks will work.
 ;;;;
-;;;; Solution Sequence (several are possible):
-;;;;   (reinforce c1 rebar)
-;;;;   (reinforce c2 rebar)
-;;;;   (reinforce c3 rebar)
-;;;;   (place-adjacent c1 s1 top)
-;;;;   (place-adjacent s1 w1 top)
-;;;;   (place-adjacent w1 w2 right)
+;;;; Solution Sequence (only one is possible):
+;;;;   (stack m3 m5)
+;;;;   (stack m5 m2)
+;;;;   (stack m2 m1)
+;;;;   (stack m1 m4)
 ;;;;
 ;;;; Visualization of the initial state:
-;;;; 5
-;;;; 4     S___
-;;;; 3     0002
-;;;; 2 C_C___C___S___W___W
-;;;; 1 01000200030001000201
-;;;; 0 ++++g1++++++++++++++
-;;;;   01234567890123456789
+;;;; 3 
+;;;; 2         [-M-] [-M-]
+;;;; 1 [M1][M2][-3-]*[-5-]       * = M4 (1x1)
+;;;; 0 +++++++++g1++++++++++
+;;;;   012345678901234567890
 ;;;;
 ;;;; Visualization of the final state:
-;;;; 7
-;;;; 6 W_W___
-;;;; 5 010002
-;;;; 4 S___S___
-;;;; 3 00010002
-;;;; 2 C_C___C___  
-;;;; 1 0100020003  
-;;;; 0 ++++g1++++++++++++++
-;;;;   01234567890123456789
+;;;; 8 
+;;;; 7         *
+;;;; 6         [M1]
+;;;; 5         [M2]
+;;;; 4         [-M-]
+;;;; 3         [-5-]
+;;;; 2         [-M-]
+;;;; 1         [-3-]             * = M4 (1x1)
+;;;; 0 +++++++++g1++++++++++
+;;;;   012345678901234567890
 
 ;;; ---------------------------------------------------------------------------
 ;;; PARAMETERS: Game-instance-specific relations that define the state.
 ;;;             These will not change during the game.
 
-(max-movable-weight 100)
+(max-movable-weight 300)
 (max-time 10)
 
 ;;; (material-type ?type)
 (material-type ground)
-(material-type concrete)
-(material-type steel)
-(material-type wood)
-
-;;; (reinforcement-type ?reinforcement-material ?reinforcable-material)
-(reinforcement-type rebar concrete)
-
-;;; (reinforcement-properties ?reinforcement-material ?strength ?weight)
-(reinforcement-properties rebar 2 2)
+(material-type aluminum)
+(material-type gold)
+(material-type iron)
+(material-type lead)
+(material-type titanium)
 
 ;;; ---------------------------------------------------------------------------
 ;;; PERSISTANTS: Relations that define the state. These may be added and
@@ -72,65 +64,48 @@
 
 (init (time 0))
 
-(init (count rebar 3))
-
 (init (object-type g1 ground))
-(init (object-type c1 concrete))
-(init (object-type c2 concrete))
-(init (object-type c3 concrete))
-(init (object-type s1 steel))
-(init (object-type s2 steel))
-(init (object-type w1 wood))
-(init (object-type w2 wood))
+(init (object-type m1 aluminum))
+(init (object-type m2 gold))
+(init (object-type m3 iron))
+(init (object-type m4 lead))
+(init (object-type m5 titanium))
 
 (init (object-dimensions g1 20 1))
-(init (object-dimensions c1 2 2))
-(init (object-dimensions c2 4 2))
-(init (object-dimensions c3 4 2))
-(init (object-dimensions s1 4 2))
-(init (object-dimensions s2 4 2))
-(init (object-dimensions w1 2 2))
-(init (object-dimensions w2 4 2))
+(init (object-dimensions m1 4 1))
+(init (object-dimensions m2 4 1))
+(init (object-dimensions m3 5 2))
+(init (object-dimensions m4 1 1))
+(init (object-dimensions m5 5 2))
 
 (init (object-location g1 0 0))
-(init (object-location c1 0 1))
-(init (object-location c2 2 1))
-(init (object-location c3 6 1))
-(init (object-location s1 10 1))
-(init (object-location s2 4 3))
-(init (object-location w1 18 1))
-(init (object-location w2 14 1))
+(init (object-location m1 0 1))
+(init (object-location m2 4 1))
+(init (object-location m3 8 1))
+(init (object-location m4 13 1))
+(init (object-location m5 14 1))
 
-(init (object-load g1 292))
-(init (object-load c1 0))
-(init (object-load c2 20))
-(init (object-load c3 20))
-(init (object-load s1 0))
-(init (object-load s2 0))
-(init (object-load w1 0))
-(init (object-load w2 0))
+(init (object-load g1 565))
+(init (object-load m1 0))
+(init (object-load m2 0))
+(init (object-load m3 0))
+(init (object-load m4 0))
+(init (object-load m5 0))
 
 (init (object-strength g1 1000))
-(init (object-strength c1 12))
-(init (object-strength c2 24))
-(init (object-strength c3 24))
-(init (object-strength s1 12))
-(init (object-strength s2 12))
-(init (object-strength w1 2))
-(init (object-strength w2 4))
+(init (object-strength m1 40))
+(init (object-strength m2 60))
+(init (object-strength m3 375))
+(init (object-strength m4 5))
+(init (object-strength m5 250))
 
 (init (object-weight g1 1000))
-(init (object-weight c1 40))
-(init (object-weight c2 80))
-(init (object-weight c3 80))
-(init (object-weight s1 40))
-(init (object-weight s2 40))
-(init (object-weight w1 4))
-(init (object-weight w2 8))
+(init (object-weight m1 20))
+(init (object-weight m2 160))
+(init (object-weight m3 250))
+(init (object-weight m4 35))
+(init (object-weight m5 100))
 
-(init (pyramid s2 4))
-
-(init (tower s2 4))
 
 ;;; ---------------------------------------------------------------------------
 ;;; GOAL STATES
@@ -139,8 +114,7 @@
 ;;; 3) DRAW: Maximum time-step reached
 
 (<= (goal agent 100)
-    (true (pyramid ?object 6))
-    (left-alignment ?object1 ?object2 ?object3)
+    (true (tower ?object 7))
     (not structural-failure))
 
 (<= (goal agent 0)
@@ -158,8 +132,7 @@
 ;;; 3) Maximum time-step reached
 
 (<= terminal
-    (true (pyramid ?object 6))
-    (left-alignment ?object1 ?object2 ?object3))
+    (true (tower ?object 7)))
 
 (<= terminal
     (collapsed ?object))
