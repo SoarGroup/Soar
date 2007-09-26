@@ -1,0 +1,172 @@
+;;;; -*-Lisp-*-
+;;;; **************************************************************************
+;;;; * mini-Build Transfer Problem: Level 7, Scenario 3 -- Pyramids           *
+;;;; * Transfer Learning in Integrated Cognitive Systems Project              *
+;;;; *                                                                        *
+;;;; * David J. Stracuzzi                                                     *
+;;;; * Arizona State University                                               *
+;;;; * Completed: August    29, 2007                                          *
+;;;; * Revised:   September 14, 2007                                          *
+;;;; **************************************************************************
+;;;;
+;;;; This file contains rules, facts and persistants for a specific game
+;;;; instance of BUILD. The file build.core.kif contains the core description
+;;;; for the BUILD domain. Appending this file to build.core.kif will produce
+;;;; a complete, playable game description.
+;;;;
+;;;; Goal:
+;;;;   Construct a pyramid from objects of three different types. The bottom 
+;;;;   blocks must be reinforced, and only one type of object is reinforceable.
+;;;;   The pyramid must also contain an alignment of 3 blocks on the left side.
+;;;;
+;;;; Solution Sequence (several are possible):
+;;;;   (reinforce c1 rebar)
+;;;;   (reinforce c2 rebar)
+;;;;   (reinforce c3 rebar)
+;;;;   (place-adjacent c1 s1 top)
+;;;;   (place-adjacent s1 w1 top)
+;;;;   (place-adjacent w1 w2 right)
+;;;;
+;;;; Visualization of the initial state:
+;;;; 5
+;;;; 4     S___
+;;;; 3     0002
+;;;; 2 C_C___C___S___W___W
+;;;; 1 01000200030001000201
+;;;; 0 ++++g1++++++++++++++
+;;;;   01234567890123456789
+;;;;
+;;;; Visualization of the final state:
+;;;; 7
+;;;; 6 W_W___
+;;;; 5 010002
+;;;; 4 S___S___
+;;;; 3 00010002
+;;;; 2 C_C___C___  
+;;;; 1 0100020003  
+;;;; 0 ++++g1++++++++++++++
+;;;;   01234567890123456789
+
+;;; ---------------------------------------------------------------------------
+;;; PARAMETERS: Game-instance-specific relations that define the state.
+;;;             These will not change during the game.
+
+(max-movable-weight 100)
+(max-time 10)
+
+;;; (material-type ?type)
+(material-type ground)
+(material-type concrete)
+(material-type steel)
+(material-type wood)
+
+;;; (reinforcement-type ?reinforcement-material ?reinforcable-material)
+(reinforcement-type rebar concrete)
+
+;;; (reinforcement-properties ?reinforcement-material ?strength ?weight)
+(reinforcement-properties rebar 2 2)
+
+;;; ---------------------------------------------------------------------------
+;;; PERSISTANTS: Relations that define the state. These may be added and
+;;;              removed during the game.
+
+(init (time 0))
+
+(init (count rebar 3))
+
+(init (object-type g1 ground))
+(init (object-type c1 concrete))
+(init (object-type c2 concrete))
+(init (object-type c3 concrete))
+(init (object-type s1 steel))
+(init (object-type s2 steel))
+(init (object-type w1 wood))
+(init (object-type w2 wood))
+
+(init (object-dimensions g1 20 1))
+(init (object-dimensions c1 2 2))
+(init (object-dimensions c2 4 2))
+(init (object-dimensions c3 4 2))
+(init (object-dimensions s1 4 2))
+(init (object-dimensions s2 4 2))
+(init (object-dimensions w1 2 2))
+(init (object-dimensions w2 4 2))
+
+(init (object-location g1 0 0))
+(init (object-location c1 0 1))
+(init (object-location c2 2 1))
+(init (object-location c3 6 1))
+(init (object-location s1 10 1))
+(init (object-location s2 4 3))
+(init (object-location w1 18 1))
+(init (object-location w2 14 1))
+
+(init (object-load g1 292))
+(init (object-load c1 0))
+(init (object-load c2 20))
+(init (object-load c3 20))
+(init (object-load s1 0))
+(init (object-load s2 0))
+(init (object-load w1 0))
+(init (object-load w2 0))
+
+(init (object-strength g1 1000))
+(init (object-strength c1 12))
+(init (object-strength c2 24))
+(init (object-strength c3 24))
+(init (object-strength s1 12))
+(init (object-strength s2 12))
+(init (object-strength w1 2))
+(init (object-strength w2 4))
+
+(init (object-weight g1 1000))
+(init (object-weight c1 40))
+(init (object-weight c2 80))
+(init (object-weight c3 80))
+(init (object-weight s1 40))
+(init (object-weight s2 40))
+(init (object-weight w1 4))
+(init (object-weight w2 8))
+
+(init (pyramid s2 4))
+
+(init (tower s2 4))
+
+;;; ---------------------------------------------------------------------------
+;;; GOAL STATES
+;;; 1) WIN:  Building meets success conditions
+;;; 2) LOSE: Building collapsed
+;;; 3) DRAW: Maximum time-step reached
+
+(<= (goal agent 100)
+    (true (pyramid ?object 6))
+    (left-alignment ?object1 ?object2 ?object3)
+    (not structural-failure))
+
+(<= (goal agent 0)
+    (collapsed ?object))
+
+(<= (goal agent 50)
+    (true (time ?t))
+    (max-time ?t))
+
+
+;;; ---------------------------------------------------------------------------
+;;; TERMINAL STATES
+;;; 1) Building meets success conditions
+;;; 2) Building collapsed
+;;; 3) Maximum time-step reached
+
+(<= terminal
+    (true (pyramid ?object 6))
+    (left-alignment ?object1 ?object2 ?object3))
+
+(<= terminal
+    (collapsed ?object))
+
+(<= terminal
+    (true (time ?t))
+    (max-time ?t))
+
+;;; ---------------------------------------------------------------------------
+;;; END build-7-3-source.kif
