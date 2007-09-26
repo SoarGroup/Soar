@@ -3,6 +3,59 @@
 import os, sys
 import urllib, urllib2, base64, re
 
+begin_url = 'http://games.stanford.edu:5999/director/debuggame?'
+add_url = 'http://games.stanford.edu:5999/director/addaxioms?'
+dbg_url = 'http://games.stanford.edu:5999/director/debugwalk?'
+
+user = 'Joseph.Xu'
+password = 'TL2007'
+auth = base64.encodestring('Basic %s:%s' % (user, password))[:-1]
+
+# this re matches the line that gives the match id
+match_id_re = re.compile(r'<INPUT TYPE="HIDDEN" NAME="matchid" VALUE="DEBUG.([A-Z]\d+)"/>')
+
+# these res matches the line that determines if the agent reached the goal
+goal_succ_re = re.compile(r'<close>Exit: \(GOAL (\w+) (\d+)\)</close>')
+goal_fail_re = re.compile(r'<close>Fail: \(GOAL .*\)</close>')
+
+# these res matches the line that determines if the state is terminal
+term_succ_re = re.compile(r'<close>Exit: TERMINAL</close>')
+term_fail_re = re.compile(r'<close>Fail: TERMINAL</close>')
+
+def check_terminal(match_id):
+	vals = {'kind' : 'terminal', 'matchid' : 'DEBUG.%s' % match_id }
+	url = dbg_url + urllib.urlencode(vals)
+	req = urllib2.Request(url)
+	req.add_header('Authorization', auth)
+	page = urllib2.urlopen(req).readlines()
+	for l in page:
+		m = term_succ_re.search(l)
+		if m:
+			return True
+		m = term_fail_re.search(l)
+		if m:
+			return False
+	
+	assert False
+
+def check_goal(match_id):
+	vals = {'kind' : 'goals', 'matchid' : 'DEBUG.%s' % match_id }
+	url = dbg_url + urllib.urlencode(vals)
+	req = urllib2.Request(url)
+	req.add_header('Authorization', auth)
+	page = urllib2.urlopen(req).readlines()
+
+	for l in page:
+		m = goal_succ_re.search(l)
+		if m:
+			score = m.groups(1)
+			return score[1]
+		m = goal_fail_re.search(l)
+		if m:
+			return None
+	
+	assert False
+
 def check_moves(game, moves):
 	base_dir = os.path.join(os.environ['GGP_PATH'], 'kif')
 	
@@ -25,25 +78,6 @@ def check_moves(game, moves):
 
 	rules = open(kif).read()
 
-	begin_url = 'http://games.stanford.edu:5999/director/debuggame?'
-	add_url = 'http://games.stanford.edu:5999/director/addaxioms?'
-	dbg_url = 'http://games.stanford.edu:5999/director/debugwalk?'
-
-	# this re matches the line that gives the match id
-	match_id_re = re.compile(r'<INPUT TYPE="HIDDEN" NAME="matchid" VALUE="DEBUG.([A-Z][0-9]+)"/>')
-
-	# these res matches the line that determines if the agent reached the goal
-	goal_succ_re = re.compile(r'<close>Exit: \(GOAL ([A-Z]+) ([0-9]+)\)</close>')
-	goal_fail_re = re.compile(r'<close>Fail: \(GOAL .*\)</close>')
-
-	# these res matches the line that determines if the state is terminal
-	term_succ_re = re.compile(r'<close>Exit: TERMINAL</close>')
-	term_fail_re = re.compile(r'<close>Fail: TERMINAL</close>')
-
-	user = 'Joseph.Xu'
-	password = 'TL2007'
-	auth = base64.encodestring('Basic %s:%s' % (user, password))[:-1]
-
 	# first initiate a session and get the match id
 	req = urllib2.Request(begin_url)
 	req.add_header('Authorization', auth)
@@ -55,7 +89,6 @@ def check_moves(game, moves):
 			break
 
 	print match_id
-
 	form_data = {'rules' : rules,
 			'matchid' : 'DEBUG.%s' % match_id,
 			'stylesheet' : 'GENERIC'}
@@ -77,40 +110,14 @@ def check_moves(game, moves):
 		req = urllib2.Request(url)
 		req.add_header('Authorization', auth)
 		urllib2.urlopen(req)
-
-	# check terminal
-	vals = {'kind' : 'terminal', 'matchid' : 'DEBUG.%s' % match_id }
-	url = dbg_url + urllib.urlencode(vals)
-	req = urllib2.Request(url)
-	req.add_header('Authorization', auth)
-	page = urllib2.urlopen(req).readlines()
-	for l in page:
-		m = term_succ_re.search(l)
-		if m:
-			print "State is terminal"
-			break
-		m = term_fail_re.search(l)
-		if m:
-			print "State not terminal"
+		is_term = check_terminal(match_id)
+		if is_term:
+			goal_val = check_goal(match_id)
+			print "terminal", goal_val
 			return False
-
-	# get the goal
-	vals = {'kind' : 'goals', 'matchid' : 'DEBUG.%s' % match_id }
-	url = dbg_url + urllib.urlencode(vals)
-	req = urllib2.Request(url)
-	req.add_header('Authorization', auth)
-	page = urllib2.urlopen(req).readlines()
-
-	for l in page:
-		m = goal_succ_re.search(l)
-		if m:
-			score = m.groups(1)
-			print "Score:", score[1]
-			return True
-		m = goal_fail_re.search(l)
-		if m:
-			print "No goal"
-			return False
+	
+	print "not terminal"
+	return True
 
 if __name__ == '__main__':
 	if len(sys.argv) == 1:
