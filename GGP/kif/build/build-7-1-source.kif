@@ -1,0 +1,200 @@
+;;;; -*-Lisp-*-
+;;;; **************************************************************************
+;;;; * mini-Build Transfer Problem: Level 7, Scenario 1 -- Tower              *
+;;;; * Transfer Learning in Integrated Cognitive Systems Project              *
+;;;; *                                                                        *
+;;;; * David J. Stracuzzi                                                     *
+;;;; * Arizona State University                                               *
+;;;; * Completed: August 29, 2007                                             *
+;;;; * Revised:   August 31, 2007                                             *
+;;;; **************************************************************************
+;;;;
+;;;; This file contains rules, facts and persistants for a specific game
+;;;; instance of BUILD. The file build.core.kif contains the core description
+;;;; for the BUILD domain. Appending this file to build.core.kif will produce
+;;;; a complete, playable game description.
+;;;;
+;;;; Goal:
+;;;;   Construct a tower 13 units high by first constructing an arch 7 units
+;;;;   high, then stacking three blocks on top of it. This is the only possible
+;;;;   solution structure for this problem, as the goal stipulates properties 
+;;;;   of both the arch and the tower.
+;;;;
+;;;; Solution Sequence (several are possible):
+;;;;   (place-adjacent g1 c4 top)
+;;;;   (place-adjacent c4 c5 top)
+;;;;   (place-adjacent c5 c6 top)
+;;;;   (place-adjacent c6 c7 top)
+;;;;   (place-adjacent c7 c8 top)
+;;;;   (place-adjacent c8 c9 top)
+;;;;   (place-adjacent c9 c10 top)
+;;;;
+;;;; Visualization of the initial state:
+;;;; 6   C
+;;;; 5   03C C C
+;;;; 4   C 040506
+;;;; 3   02[-C7-]
+;;;; 2   C C C C
+;;;; 1   01080910
+;;;; 0++++g1+++++
+;;;;  01234567890
+;;;;
+;;;; Visualization of the final state:
+;;;; 3 C  
+;;;; 2 10
+;;;; 1 C   
+;;;; 0 09  
+;;;; 9 C  
+;;;; 8 08  
+;;;; 7 [-C7-]
+;;;; 6 C  C 
+;;;; 5 06 03
+;;;; 4 C  C 
+;;;; 3 05 02  
+;;;; 2 C  C 
+;;;; 1 04 01  
+;;;; 0 ++++g1+++++
+;;;;   01234567890
+
+;;; ---------------------------------------------------------------------------
+;;; PARAMETERS: Game-instance-specific relations that define the state.
+;;;             These will not change during the game.
+
+(max-movable-weight 100)
+(max-time 10)
+
+;;; (material-type ?type)
+(material-type ground)
+(material-type concrete)
+;(material-type steel)
+;(material-type wood)
+
+;;; (reinforcement-type ?reinforcement-material ?reinforcable-material)
+(reinforcement-type rebar concrete)
+
+;;; (reinforcement-properties ?reinforcement-material ?strength ?weight)
+(reinforcement-properties rebar 2 2)
+
+;;; ---------------------------------------------------------------------------
+;;; PERSISTANTS: Relations that define the state. These may be added and
+;;;              removed during the game.
+
+(init (time 0))
+
+(init (count rebar 0))
+
+(init (object-type g1 ground))
+(init (object-type c1 concrete))
+(init (object-type c2 concrete))
+(init (object-type c3 concrete))
+(init (object-type c4 concrete))
+(init (object-type c5 concrete))
+(init (object-type c6 concrete))
+(init (object-type c7 concrete))
+(init (object-type c8 concrete))
+(init (object-type c9 concrete))
+(init (object-type c10 concrete))
+
+(init (object-dimensions g1 11 1))
+(init (object-dimensions c1 2 2))
+(init (object-dimensions c2 2 2))
+(init (object-dimensions c3 2 2))
+(init (object-dimensions c4 2 2))
+(init (object-dimensions c5 2 2))
+(init (object-dimensions c6 2 2))
+(init (object-dimensions c7 6 1))
+(init (object-dimensions c8 2 2))
+(init (object-dimensions c9 2 2))
+(init (object-dimensions c10 2 2))
+
+(init (object-location g1 0 0))
+(init (object-location c1 3 1))
+(init (object-location c2 3 3))
+(init (object-location c3 3 5))
+(init (object-location c4 5 4))
+(init (object-location c5 7 4))
+(init (object-location c6 9 4))
+(init (object-location c7 5 3))
+(init (object-location c8 5 1))
+(init (object-location c9 7 1))
+(init (object-location c10 9 1))
+
+(init (object-load g1 82))
+(init (object-load c1 16))
+(init (object-load c2 8))
+(init (object-load c3 0))
+(init (object-load c4 0))
+(init (object-load c5 0))
+(init (object-load c6 0))
+(init (object-load c7 24))
+(init (object-load c8 12))
+(init (object-load c9 12))
+(init (object-load c10 12))
+
+(init (object-strength g1 1000))
+(init (object-strength c1 34))
+(init (object-strength c2 34))
+(init (object-strength c3 34))
+(init (object-strength c4 34))
+(init (object-strength c5 34))
+(init (object-strength c6 34))
+(init (object-strength c7 85))
+(init (object-strength c8 34))
+(init (object-strength c9 34))
+(init (object-strength c10 34))
+
+(init (object-weight g1 1000))
+(init (object-weight c1 8))
+(init (object-weight c2 8))
+(init (object-weight c3 8))
+(init (object-weight c4 8))
+(init (object-weight c5 8))
+(init (object-weight c6 8))
+(init (object-weight c7 12))
+(init (object-weight c8 8))
+(init (object-weight c9 8))
+(init (object-weight c10 8))
+
+(init (tower c2 4))
+(init (tower c3 6))
+(init (tower c4 5))
+(init (tower c5 5))
+(init (tower c6 5))
+(init (tower c7 3))
+
+
+;;; ---------------------------------------------------------------------------
+;;; GOAL STATES
+;;; 1) WIN:  Building meets success conditions
+;;; 2) LOSE: Building collapsed
+;;; 3) DRAW: Maximum time-step reached
+
+(<= (goal agent 100)
+    (true (arch ?tower1 ?tower2 ?span 7))
+    (true (tower ?tower 13))
+    (not structural-failure))
+
+(<= (goal agent 0)
+    (collapsed ?object))
+
+(<= (goal agent 50)
+    (true (time ?t))
+    (max-time ?t))
+
+
+;;; ---------------------------------------------------------------------------
+;;; TERMINAL STATES
+;;; 1) Building meets success conditions
+;;; 2) Building collapsed
+;;; 3) Maximum time-step reached
+
+(<= terminal
+    (true (arch ?tower1 ?tower2 ?span 7))
+    (true (tower ?tower 13)))
+
+(<= terminal
+    (collapsed ?object))
+
+(<= terminal
+    (true (time ?t))
+    (max-time ?t))
