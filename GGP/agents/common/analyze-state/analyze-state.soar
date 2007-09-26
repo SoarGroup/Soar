@@ -190,7 +190,7 @@ sp {apply*game-op*top-state*report*0
     <> save-location <> check-for-duplicate-location <> init-game <> record-terminal-state <name>}
         -^p1)
 -->
-   (write (crlf) |ACTION | <name>)
+   (write (crlf) |ACTION |<name> )
 }
 
 
@@ -203,7 +203,7 @@ sp {apply*game-op*top-state*report*1
         ^p1 <parm>
        -^p2)
 -->
-   (write (crlf) |ACTION | <name> |(| <parm> |)|)
+   (write (crlf) |ACTION (| <name> | | <parm> |)|)
 }
 
 
@@ -214,9 +214,54 @@ sp {apply*game-op*top-state*report*2
    (<o> ^name {<> update-state <> analyze-state <> update-search-info
     <> save-location <> check-for-duplicate-location <> record-terminal-state <name>}
         ^p1 <parm>
-        ^p2 <p2>)
+        ^p2 <p2>
+       -^p3)
 -->
-   (write (crlf) |ACTION | <name> |(| <parm> |, | <p2> |)|)
+   (write (crlf) |ACTION (| <name> | | <parm> | | <p2>|)|)
+}
+
+sp {apply*game-op*top-state*report*3
+   (state <s> ^name game
+              ^superstate nil
+              ^operator <o>)
+   (<o> ^name {<> update-state <> analyze-state <> update-search-info
+    <> save-location <> check-for-duplicate-location <> record-terminal-state <name>}
+        ^p1 <parm>
+        ^p2 <p2>
+        ^p3 <p3>
+       -^p4)
+-->
+   (write (crlf) |ACTION (| <name> | | <parm> | | <p2> | | <p3> |)|)
+}
+
+sp {apply*game-op*top-state*report*4
+   (state <s> ^name game
+              ^superstate nil
+              ^operator <o>)
+   (<o> ^name {<> update-state <> analyze-state <> update-search-info
+    <> save-location <> check-for-duplicate-location <> record-terminal-state <name>}
+        ^p1 <parm>
+        ^p2 <p2>
+        ^p3 <p3>
+        ^p4 <p4>
+       -^p5)
+-->
+   (write (crlf) |ACTION (| <name> | | <parm> | | <p2> | | <p3> | | <p4> |)|)
+}
+
+sp {apply*game-op*top-state*report*5
+   (state <s> ^name game
+              ^superstate nil
+              ^operator <o>)
+   (<o> ^name {<> update-state <> analyze-state <> update-search-info
+    <> save-location <> check-for-duplicate-location <> record-terminal-state <name>}
+        ^p1 <parm>
+        ^p2 <p2>
+        ^p3 <p3>
+        ^p4 <p4>
+        ^p5 <p5>)
+-->
+   (write (crlf) |ACTION (| <name> | | <parm> | | <p2> | | <p3> | | <p4> | | <p5> |)|)
 }
 
 sp {apply*game-op*report*0
