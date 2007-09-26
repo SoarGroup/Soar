@@ -30,6 +30,8 @@ $machineAliases{"bb"} = "badboy";
 $machineDirs{"bb"} = "GGP/scripts";
 $machineAliases{"f"} = "flamingo";
 $machineDirs{"f"} = "GGP/scripts";
+$machineAliases{"y"} = "d-109.232";
+$machineDirs{"y"} = "GGP/scripts";
 
 foreach $machine (keys %machineAliases) {
   print "updating $machineAliases{$machine}:$machineDirs{$machine}..\n";
