@@ -1,3 +1,5 @@
+#!/usr/bin/python
+
 import os, sys
 import urllib, urllib2, base64, re
 
@@ -18,7 +20,7 @@ def check_moves(game, moves):
 		kif = os.path.join(base_dir, 'rogue', 'mrogue-%s-%s-%s.kif' % (game[1], game[2], cond))
 	elif game[0] == 'w':
 		kif = os.path.join(base_dir, 'mm', 'wargame-%s-%s-%s.kif' % (game[1], game[2], cond))
-	elif game[0] == '10':
+	elif game[0] == 'd':
 		kif = os.path.join(base_dir, 'level10', 'differing-%s-%s-%s.kif' % (game[1], game[2], cond))
 
 	rules = open(kif).read()
@@ -29,9 +31,13 @@ def check_moves(game, moves):
 
 	# this re matches the line that gives the match id
 	match_id_re = re.compile(r'<INPUT TYPE="HIDDEN" NAME="matchid" VALUE="DEBUG.([A-Z][0-9]+)"/>')
-	# this re matches the line that determines if the agent reached the goal
+
+	# these res matches the line that determines if the agent reached the goal
 	goal_succ_re = re.compile(r'<close>Exit: \(GOAL ([A-Z]+) ([0-9]+)\)</close>')
 	goal_fail_re = re.compile(r'<close>Fail: \(GOAL .*\)</close>')
+
+	# these res matches the line that determines if the state is terminal
+	term_succ_re = re.compile(r'<close>Exit: TERMINAL</close>')
 	term_fail_re = re.compile(r'<close>Fail: TERMINAL</close>')
 
 	user = 'Joseph.Xu'
@@ -72,6 +78,22 @@ def check_moves(game, moves):
 		req.add_header('Authorization', auth)
 		urllib2.urlopen(req)
 
+	# check terminal
+	vals = {'kind' : 'terminal', 'matchid' : 'DEBUG.%s' % match_id }
+	url = dbg_url + urllib.urlencode(vals)
+	req = urllib2.Request(url)
+	req.add_header('Authorization', auth)
+	page = urllib2.urlopen(req).readlines()
+	for l in page:
+		m = term_succ_re.search(l)
+		if m:
+			print "State is terminal"
+			break
+		m = term_fail_re.search(l)
+		if m:
+			print "State not terminal"
+			return False
+
 	# get the goal
 	vals = {'kind' : 'goals', 'matchid' : 'DEBUG.%s' % match_id }
 	url = dbg_url + urllib.urlencode(vals)
@@ -84,11 +106,11 @@ def check_moves(game, moves):
 		if m:
 			score = m.groups(1)
 			print "Score:", score[1]
-			break
+			return True
 		m = goal_fail_re.search(l)
 		if m:
 			print "No goal"
-			break
+			return False
 
 if __name__ == '__main__':
 	if len(sys.argv) == 1:
