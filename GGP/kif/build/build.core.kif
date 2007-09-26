@@ -304,25 +304,6 @@
     (distinct ?type ground)
     (not (adjacent-to-any-object ?object bottom)))
 
-;;; Determines potential coordinates for ?object2 on ?object1's ?side. Cases:
-;;; 1) ?side = left
-;;; 2) ?side = right
-;;; 3) ?side = top (includes test for ?object1 is clear)
-(<= (coordinates-after-place ?object1 ?object2 left ?x1 ?y1 ?x2 ?y2)
-    (true (object-dimensions ?object2 ?width2 ?height2))
-    (true (object-location ?object1 ?x2 ?oy1))
-    (support-for-place ?object1 ?object2 ?support left)
-    (object-coordinates ?support ?sx1 ?sy1 ?sx2 ?y1)
-    (- ?x2 ?width2 ?x1)
-    (+ ?y1 ?height2 ?y2))
-
-(<= (coordinates-after-place ?object1 ?object2 right ?x1 ?y1 ?x2 ?y2)
-    (support-for-place ?object1 ?object2 ?support right)
-    (object-coordinates ?support ?sx1 ?sy1 ?sx2 ?y1)
-    (object-coordinates ?object1 ?ox1 ?oy1 ?x1 ?oy2)
-    (true (object-dimensions ?object2 ?width2 ?height2))
-    (+ ?x1 ?width2 ?x2)
-    (+ ?y1 ?height2 ?y2))
 
 (<= (coordinates-after-place ?object1 ?object2 top ?x21 ?y21 ?x22 ?y22)
     (true (object-dimensions ?object2 ?width2 ?height2))
@@ -548,72 +529,6 @@
 (<= structural-failure
     (collapsed ?object))
 
-;;; Determine if ?object2 will touch ?object1's ?side when placed on ?support.
-(<= (support-for-place ?object1 ?object2 ?support left)
-	(redundant-support-for-place ?object1 ?object2 ?support left)
-    ;; manual mod - avoid duplicate supports
-    (not (same-support-to-right ?object1 ?object2 ?support left))
-    )
-
-(<= (support-for-place ?object1 ?object2 ?support right)
-	(redundant-support-for-place ?object1 ?object2 ?support right)
-    ;; manual mod - avoid duplicate supports
-    (not (same-support-to-right ?object1 ?object2 ?support right))
-    )
-
-;; manual mod
-;;;; the following 3 rules are important to make soar run
-;; leftmost support for the same height - avoid duplicate, which may explode elaboration
-;; Soar duplicate structure causes trouble in this case
-
-(<= (redundant-support-for-place ?object1 ?object2 ?support left)
-(adjacent-appear yes)
-    (true (object-dimensions ?object2 ?width2 ?height2))
-    (object-coordinates ?object1 ?x1 ?y1 ?x2 ?y2)
-    (object-coordinates ?support ?sx1 ?sy1 ?sx2 ?sy2)
-    (- ?x1 ?width2 ?minx)
-    (- ?y1 ?height2 ?miny)
-    (> ?x1 ?sx1)
-    (> ?sx2 ?minx)
-    (> ?sy2 ?miny)
-    (> ?y2 ?sy2)
-    ;; manual add
-    (movable ?object2)
-    ;;(clear ?object2 top)
-	(not (adjacent-to-object ?object2 ?another top))
-    (distinct ?object1 ?object2)
-    (distinct ?object1 ?support)
-    (distinct ?object2 ?support)
-    )
-
-(<= (redundant-support-for-place ?object1 ?object2 ?support right)
-(adjacent-appear yes)
-    (true (object-dimensions ?object2 ?width2 ?height2))
-    (object-coordinates ?object1 ?x1 ?y1 ?x2 ?y2)
-    (object-coordinates ?support ?sx1 ?sy1 ?sx2 ?sy2)
-    (+ ?x2 ?width2 ?maxx)
-    (- ?y1 ?height2 ?miny)
-    (> ?maxx ?sx1)
-    (> ?sx2 ?x2)
-    (> ?sy2 ?miny)
-    (> ?y2 ?sy2)
-    ;; manual add
-    (movable ?object2)
-    ;;(clear ?object2 top)
-	(not (adjacent-to-object ?object2 ?another top))
-    (distinct ?object1 ?object2)
-    (distinct ?object1 ?support)
-    (distinct ?object2 ?support)
-    )
-    
-(<= (same-support-to-right ?object1 ?object2 ?support ?side) ;; side = left/right
-	(redundant-support-for-place ?object1 ?object2 ?support ?side)
-	(redundant-support-for-place ?object1 ?object2 ?another-support ?side)
-	(distinct ?support ?another-support)
-	(object-coordinates ?support ?sx1 ?sy1 ?sx2 ?sy2)
-	(object-coordinates ?another-support ?asx1 ?asy1 ?asx2 ?sy2)
-	(< ?sx1 ?asx1)
-)
 
 ;;; ---------------------------------------------------------------------------
 ;;; LEGAL AXIOMS
