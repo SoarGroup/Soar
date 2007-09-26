@@ -49,7 +49,7 @@ sp {propose*depth-0-states
 	(state <s2> ^depth-0-states-hash <d0sh>)
 	(<d0sh> -^<csh>)
 -->
-	(<s> ^operator <o> +)
+	(<s> ^operator <o> + =)
 	(<o> ^name record-terminal-state)
 }
 
@@ -63,7 +63,7 @@ sp {propose*depth-0-states*meed
         (state <s2> ^depth-0-states-hash <d0sh>)
         (<d0sh> -^<csh>)
 -->
-        (<s> ^operator <o> +)
+        (<s> ^operator <o> + =)
         (<o> ^name record-terminal-state)
 }
 
@@ -262,5 +262,14 @@ sp {top-selection*counter*init
    (state <s> ^top-selection true)
 -->
    (<s> ^counter 0)
+}
+
+sp {init*stuffs
+	(state <s> ^superstate nil
+				^facts <f>)
+-->
+	(<s> ^arbitrary-gs-constants <ags>)
+	(<f> ^counter time)
+	(<ags> ^p1 c1 c2 c3 g1)
 }
 
