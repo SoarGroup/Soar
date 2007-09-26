@@ -17,7 +17,7 @@ else {
 }
 
 $getStats = "./tabbedScenarioStats.pl $env $level $scenario";
-$toClip = "./toGnomeClipboard.py";
+#$toClip = "./toGnomeClipboard.py";
 
 %machineAliases = ();
 %machineDirs = ();
@@ -61,5 +61,5 @@ $machineDirs{"y"} = "GGP/scripts";
 
 die unless (defined $machineAliases{$machine});
 
-print `ssh $machineAliases{$machine} \"cd $machineDirs{$machine}; $getStats; echo end\" | $toClip`;
+print `ssh $machineAliases{$machine} \"cd $machineDirs{$machine}; $getStats; echo end\"`;
 

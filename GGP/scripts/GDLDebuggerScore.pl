@@ -5,6 +5,10 @@ die unless ($#ARGV == 0);
 $file = $ARGV[0];
 
 $file =~ /(\w+)-(\d+)-(\d+)-(\w+)/;
+$sourceNum = "";
+if ($file =~ /-source-(\d+)/) {
+  $sourceNum = $1;
+}
 $domain = $1;
 $level = $2;
 $scenario = $3;
@@ -16,7 +20,7 @@ $run = $1;
 
 $tmpFile = "tmp_gdlchk";
 
-print `echo \"$domain $level $scenario $run\" > $tmpFile`;
+print `echo \"$domain $level $scenario $run $sourceNum\" > $tmpFile`;
 print `grep ACTION $file | sed -e 's/ACTION //' >> $tmpFile`;
 
 $ENV{"GGP_PATH"}="../";

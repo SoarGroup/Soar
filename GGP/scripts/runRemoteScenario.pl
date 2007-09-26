@@ -63,6 +63,12 @@ die unless (defined $machineAliases{$machine});
 
 print `ssh $machineAliases{$machine} \"cd $machineDirs{$machine}; $runScenario $env $level $scenario\"`;
 
+$tmp = ".tmp_rrs_" . rand();
+while (-e $tmp) {
+  $tmp = ".tmp_rrs_" . rand();
+}
+print `$copyRemoteRun $machine $env $level $scenario > $tmp`;
 print "DONE. Press enter to copy the results to the clipboard.\n";
 $foo = <STDIN>;
-print `$copyRemoteRun $machine $env $level $scenario`;
+print `cat $tmp | ./toGnomeClipboard.py`;
+print `rm $tmp`;
