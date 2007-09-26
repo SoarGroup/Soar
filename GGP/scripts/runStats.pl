@@ -40,6 +40,9 @@ else {
   print "no mapping done\n";
 }
 
+print `svn info | grep Revision`;
+print `./GDLDebuggerScore.pl $logFile`;
+
 #print "soln length:\n";
 $length = `grep ACTION $logFile | wc -l`;
 chomp $length;
