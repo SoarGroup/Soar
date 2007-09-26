@@ -74,6 +74,19 @@ sp {propose*depth-0-states
 	(<o> ^name record-terminal-state)
 }
 
+sp {propose*depth-0-states*meed
+	(state <s> ^current-state-hash <csh>
+            ^current-evaluation-depth < <meed>
+            ^minimum-explorer-exit-distance <meed>
+				^state-id <state-id>)
+	(state <s2> ^depth-0-states-hash <d0sh>)
+	(<d0sh> -^<csh>)
+-->
+	(<s> ^operator <o> +)
+	(<o> ^name record-terminal-state)
+}
+
+
 sp {prefer*record*terminal-state
 	(state <s> ^operator <o1> + <o2> +)
 	(<o1> ^name record-terminal-state)
@@ -95,9 +108,10 @@ sp {apply*record*terminal-state
    (<s2> ^counter (+ <val> 1))
 }
 
-sp {depth-0-depth-exceed
+sp {depth-0-depth-exceed*meed
 	(state <s> ^current-state-hash <csh>
-				^current-evaluation-depth 0
+				    ^current-evaluation-depth < <meed>
+            ^minimum-explorer-exit-distance <meed>
 				^state-id <state-id>
 				^operator.name update-search-info)
 	(<s> ^superstate.operator <so>
@@ -174,7 +188,7 @@ sp {permanent-depth-exceeded-states*exceed-depth
 		^superoperator <action-op>)
 	(<e> ^superoperator <action-op>)
 -->
-	(write (crlf) | State is permanetly depth-exceeded, ID | <csh> | closure sptes |<remaining-steps>)
+   (write (crlf) | State is permanently depth-exceeded, ID | <csh> | closure steps |<remaining-steps>)
 	(<s> ^depth-exceeded <d>)
 	(<e> ^visited-state true)
 }
