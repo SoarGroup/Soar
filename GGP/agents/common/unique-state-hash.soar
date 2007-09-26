@@ -16,27 +16,6 @@ sp {apply*analyze-state*hash*current*gs
    (<s> ^current-state-hash (cmd struct-to-string <gs> -e <cnt> -s <ags>))
 }
 
-#initial state
-sp {hash*initial-state*gs
-	(state <s> ^superstate nil
-				^gs <gs>
-				^facts.counter <cnt>
-				^arbitrary-gs-constants <ags>)
-	(state <s2> ^impasse tie ^superstate <s>)
--->
-   (<s> ^current-state-hash (cmd struct-to-string <gs> -e <cnt> -s <ags>))
-}
-
-sp {record*initial-state
-	(state <s> ^superstate nil
-				^current-state-hash <csh>)
-	(state <s2> ^top-selection true
-				^permanent-depth-exceeded-states-hash <pdesh>)
--->
-	(<pdesh> ^<csh> <h>)
-	(<h> ^closure-steps 0)#go back to initial state is always permanent failure
-	
-}
 # if there is a current-state-hash during update state, it must be old
 # so remove it-- this happens when a tie is resolved (or there is no tie),
 # multiple game operators happen in the same state
@@ -106,6 +85,24 @@ sp {apply*record*terminal-state
 	(<d0sh> ^<csh> <state-id>) #record the state-id with it to avoid depth-exceed itself
    (<s2> ^counter <val> -)
    (<s2> ^counter (+ <val> 1))
+}
+
+sp {depth-0-depth-exceed
+	(state <s> ^current-state-hash <csh>
+				    ^current-evaluation-depth 0
+				^state-id <state-id>
+				^operator.name update-search-info)
+	(<s> ^superstate.operator <so>
+		^superstate.evaluation <e>)
+	(<so> ^name evaluate-operator
+		^superoperator <action-op>)
+	(<e> ^superoperator <action-op>)
+	(state <s2> ^depth-0-states-hash <d0sh>)
+	(<d0sh> ^<csh> <state-id2> <> <state-id>)
+-->
+	(write (crlf) | State with depth 0 was visited previously, ID | <csh> )
+	(<s> ^depth-exceeded <d>)
+	(<e> ^visited-state true)
 }
 
 sp {depth-0-depth-exceed*meed
