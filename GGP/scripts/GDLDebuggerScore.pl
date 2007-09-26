@@ -1,7 +1,5 @@
 #!/usr/bin/perl
 
-die unless ($#ARGV == 0);
-
 $file = $ARGV[0];
 
 $file =~ /(\w+)-(\d+)-(\d+)-(\w+)/;
@@ -25,21 +23,25 @@ print `echo \"$domain $level $scenario $run $sourceNum\" > $tmpFile`;
 print `grep ACTION $file | sed -e 's/ACTION //' >> $tmpFile`;
 
 $ENV{"GGP_PATH"}="../";
-@results =  `cat $tmpFile | python ./gmdebug.py | grep -v Making`;
-
-if ($#results != 2) {
-  print "solution does not validate\n";
+if ($ARGV[1]) { # debug flag
+  print `cat $tmpFile | python ./gmdebug.py`;
 }
 else {
-  chomp $results[1];
-  chomp $results[2];
-  $line = $results[1] . $results[2];
-  if ($line =~ /State is terminal(Score: \d+)/) {
-    print "$1\n";
+  @results =  `cat $tmpFile | python ./gmdebug.py | grep -v Making`;
+
+  if ($#results != 2) {
+    print "solution does not validate\n";
   }
   else {
-    print "solution is non-terminal!\n";
+    chomp $results[1];
+    chomp $results[2];
+    $line = $results[1] . $results[2];
+    if ($line =~ /State is terminal(Score: \d+)/) {
+      print "$1\n";
+    }
+    else {
+      print "solution is non-terminal!\n";
+    }
   }
 }
-
 print `rm $tmpFile`;
