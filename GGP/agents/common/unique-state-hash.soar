@@ -263,13 +263,3 @@ sp {top-selection*counter*init
 -->
    (<s> ^counter 0)
 }
-
-sp {init*stuffs
-	(state <s> ^superstate nil
-				^facts <f>)
--->
-	(<s> ^arbitrary-gs-constants <ags>)
-	(<f> ^counter time)
-	(<ags> ^p1 c1 c2 c3 g1)
-}
-
