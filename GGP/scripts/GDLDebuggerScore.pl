@@ -6,9 +6,6 @@ $file = $ARGV[0];
 
 $file =~ /(\w+)-(\d+)-(\d+)-(\w+)/;
 $sourceNum = "";
-if ($file =~ /-source-(\d+)/) {
-  $sourceNum = $1;
-}
 $domain = $1;
 $level = $2;
 $scenario = $3;
@@ -17,6 +14,10 @@ $domain =~ /^(.)/;
 $domain = $1;
 $run =~ /^(.)/;
 $run = $1;
+
+if ($file =~ /-source-(\d+)/) {
+  $sourceNum = $1;
+}
 
 $tmpFile = "tmp_gdlchk";
 
