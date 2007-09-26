@@ -54,15 +54,17 @@ sp {propose*depth-0-states
 }
 
 sp {propose*depth-0-states*meed
-	(state <s> ^current-state-hash <csh>
-            ^current-evaluation-depth < <meed>
-            ^minimum-explorer-exit-distance <meed>
-				^state-id <state-id>)
-	(state <s2> ^depth-0-states-hash <d0sh>)
-	(<d0sh> -^<csh>)
+        (state <s> ^current-state-hash <csh>
+            ^current-evaluation-depth  <remaining-steps>
+            ^elaborations <e> 
+			^state-id <state-id>)
+		(<e> ^minimum-explorer-exit-distance <meed>
+			-^minimum-explorer-exit-distance <= <remaining-steps>)
+        (state <s2> ^depth-0-states-hash <d0sh>)
+        (<d0sh> -^<csh>)
 -->
-	(<s> ^operator <o> +)
-	(<o> ^name record-terminal-state)
+        (<s> ^operator <o> +)
+        (<o> ^name record-terminal-state)
 }
 
 
@@ -107,10 +109,12 @@ sp {depth-0-depth-exceed
 
 sp {depth-0-depth-exceed*meed
 	(state <s> ^current-state-hash <csh>
-				    ^current-evaluation-depth < <meed>
-            ^minimum-explorer-exit-distance <meed>
+				    ^current-evaluation-depth  <remaining-steps>
+             ^elaborations <e> 
 				^state-id <state-id>
 				^operator.name update-search-info)
+	(<e> ^minimum-explorer-exit-distance <meed>
+			-^minimum-explorer-exit-distance <= <remaining-steps>)
 	(<s> ^superstate.operator <so>
 		^superstate.evaluation <e>)
 	(<so> ^name evaluate-operator
@@ -259,6 +263,4 @@ sp {top-selection*counter*init
 -->
    (<s> ^counter 0)
 }
-
-
 
