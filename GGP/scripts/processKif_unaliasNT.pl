@@ -1,11 +1,32 @@
 #!/usr/bin/perl
 # change the format of a kif file to something easier to parse in perl
+# this is a HORRIBLE script, it really needs replacing.
 
 $lastLine = "";
+$levelBeforeLine = 0;
+$levelAfterLine = 0;
 foreach $line (`cat $ARGV[0]`) {
   # strip comments
   $line =~ s/\s*;.*//;
   $line =~ s/^\s*//; # remove leading space
+  $levelBeforeLine = $levelAfterLine;
+  $levelAfterLine += parenOpenCount($line) - parenCloseCount($line);
+  #print "l: $line bc: $levelBeforeLine ac: $levelAfterLine\n";
+
+  if ($levelBeforeLine == 0 and $levelAfterLine > 0) {
+    print "BEGIN ";
+    $line =~ s/\(//; # remove the first open paren
+  }
+  if ($levelAfterLine == 0 and $levelBeforeLine > 0) {
+    $line =~ s/\)[^\)]*?$//;
+    # remove the last paren (and everything following) (print END later)
+    if ($line =~ /^\s*$/) {
+      # paren was alone, print end now and go on (the other code can't handle
+      # this case)
+      print "END\n";
+      next;
+    }
+  }
   if (not $lastLine eq "") {
     $line = "$lastLine $line"; # merge unused previous line with this line
     $lastLine = "";
@@ -17,7 +38,7 @@ foreach $line (`cat $ARGV[0]`) {
     $lastLine =~ s/\s*$//; # remove trailing spaces for better appending
     next; # skip this line and prepend it to the next
   }
-  if ($line =~ /\(or (.*)\)\s*$/) {
+  if ($line =~ /\(or (.*)$/) {
     # ignore disjunctions: treat (or (statement) (statement)) as (statement) (statement)
     # FIXME could cause errors in findGroundings, as it will think that both
     # conditions must hold
@@ -33,6 +54,10 @@ foreach $line (`cat $ARGV[0]`) {
   }
 
   handleLine($line);
+  #print "2 bc: $levelBeforeLine ac: $levelAfterLine\n";
+  if ($levelAfterLine == 0 and $levelBeforeLine > 0) {
+    print "END\n";
+  }
 }
 sub handleLine() {
   my $line = shift;
@@ -47,9 +72,9 @@ sub handleLine() {
 
   #$line = lc $line;
   
-  if ($line =~ /^\(<=:/) {
-    $line =~ s/^\(<=://;
-    print "BEGIN ";
+  if ($line =~ /^<=:/) {
+    $line =~ s/^<=://;
+    # print "BEGIN ";
   }
 
 
@@ -73,7 +98,7 @@ sub handleLine() {
     $line =~ s/\)//;
   }
 
-  $line =~ s/\)$/\nEND/g;
+  #$line =~ s/\)$/\nEND/g;
 
   $line =~ s/goal:[^:]*:(\d+)/NEXTgoal$1/;
   $line =~ s/ legal:[^:]*:/ L/;
@@ -83,5 +108,6 @@ sub handleLine() {
   $line =~ s/ does:[^:]*:/ AXN/;
   $line =~ s/^does:[^:]*:/AXN/;
   $line =~ s/\?/V/g;
+  $line =~ s/\)//; # this can happen after an OR
   print $line;
 }
