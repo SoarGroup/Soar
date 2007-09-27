@@ -422,6 +422,14 @@ sp {elaborate*depth*from*top
 (<s> ^depth-from-top (+ 1 <depth>))
 }
 
+sp {build-monitor*print*distance
+	(state <s> ^state-analyzed
+				^elaborations.minimum-explorer-exit-distance <meed>
+				^current-evaluation-depth <remaining-steps>)
+-->
+	(write (crlf) |Minimum distance | <meed> (crlf) |Remaining depths | <remaining-steps> (crlf))
+}
+
 sp {build-monitor*print*info*1p
 	(state <s> ^superstate <ss> ^depth-from-top <dft> ^current-evaluation-depth <cur-dep> ^tried-tied-operator.duplicate-of <op> ^state-analyzed)
 	(<ss> ^remaining-operators <remaining> ^item-count <branching-factor>)
