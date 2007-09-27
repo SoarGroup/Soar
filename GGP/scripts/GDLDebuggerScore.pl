@@ -29,18 +29,15 @@ if ($ARGV[1]) { # debug flag
 else {
   @results =  `cat $tmpFile | python ./gmdebug.py | grep -v Making`;
 
-  if ($#results != 2) {
+  if ($#results != 1) {
     print "solution does not validate\n";
   }
   else {
-    chomp $results[1];
-    chomp $results[2];
-    $line = $results[1] . $results[2];
-    if ($line =~ /State is terminal(Score: \d+)/) {
+    if ($results[1]  =~ /(terminal \d+)/) {
       print "$1\n";
     }
     else {
-      print "solution is non-terminal!\n";
+      print "! $results[$#results]";
     }
   }
 }
