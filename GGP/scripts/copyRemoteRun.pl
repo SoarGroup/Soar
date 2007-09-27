@@ -56,8 +56,10 @@ $machineAliases{"bb"} = "badboy";
 $machineDirs{"bb"} = "GGP/scripts";
 $machineAliases{"f"} = "flamingo";
 $machineDirs{"f"} = "GGP/scripts";
-$machineAliases{"y"} = "d-109.232";
-$machineDirs{"y"} = "GGP/scripts";
+$machineAliases{"m1"} = "d-109.232";
+$machineDirs{"m1"} = "GGP/scripts";
+$machineAliases{"m2"} = "d-109.232";
+$machineDirs{"m2"} = "2GGP/GGP/scripts";
 
 die unless (defined $machineAliases{$machine});
 
