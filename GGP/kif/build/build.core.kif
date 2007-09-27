@@ -268,7 +268,7 @@
 	(adjacent-to-region ?left ?x1 ?y1 ?x2 ?y2 ?opposite ?reference-object ?moved-object)
     (adjacent-to-region ?right ?x1 ?y1 ?x2 ?y2 ?opposite ?reference-object ?moved-object)
     ;;(left-of-object ?right ?left)
-	(left-of-object ?right ?left ?side)
+	(left-of-object ?right ?left ?opposite)
 	)
 
 ;;; Agent did action predicates: these are true of the agent took the specified
@@ -371,7 +371,8 @@
     (adjacent-to-object ?object ?left ?side)
     (adjacent-to-object ?object ?right ?side)
     ;;(left-of-object ?right ?left)
-	(left-of-object ?right ?left ?side)
+	(opposite-side ?side ?opposite)
+	(left-of-object ?right ?left ?opposite)
 	)
 
 ;;; Calculate the amount of weight that ?object contributes to each 
@@ -434,9 +435,9 @@
     ;;(adjacent-to-region ?other ?x1 ?y1 ?x2 ?y2 ?opposite)
 	(adjacent-to-region ?other ?x1 ?y1 ?x2 ?y2 ?opposite ?reference-object ?moved-object)
     ;;(left-of-object ?other ?object2)
-	(left-of-object ?other ?object2 ?side)
+	(left-of-object ?other ?object2 ?opposite)
     ;;(left-of-object ?right ?other)
-	(left-of-object ?right ?other ?side)
+	(left-of-object ?right ?other ?opposite)
 	;;manual add
 	(adjacent-to-region ?object2 ?x1 ?y1 ?x2 ?y2 ?opposite ?reference-object ?moved-object) ;; pulled from parent rule: leftmost-adjacent-to-region-to-right
 	(adjacent-to-region ?right ?x1 ?y1 ?x2 ?y2 ?opposite ?reference-object ?moved-object);; pulled from parent rule: leftmost-adjacent-to-region-to-right
@@ -476,7 +477,7 @@
     (adjacent-to-region ?object2 ?x1 ?y1 ?x2 ?y2 ?opposite ?reference-object ?moved-object)
     (adjacent-to-region ?leftmost ?x1 ?y1 ?x2 ?y2 ?opposite ?reference-object ?moved-object)
     ;;(left-of-object ?leftmost ?object2)
-	(left-of-object ?leftmost ?object2 ?side)
+	(left-of-object ?leftmost ?object2 ?opposite)
     (not (left-further-adjacent-to-region-to-right ?x1 ?y1 ?x2 ?y2 
 						   ?object2 ?leftmost ?side ?reference-object ?moved-object))
 	;;manual add
