@@ -6,7 +6,7 @@
 ;;;; * David J. Stracuzzi                                                     *
 ;;;; * Arizona State University                                               *
 ;;;; * Completed: August    29, 2007                                          *
-;;;; * Revised:   September 13, 2007                                          *
+;;;; * Revised:   September 27, 2007                                          *
 ;;;; **************************************************************************
 ;;;;
 ;;;; This file contains rules, facts and persistants for a specific game
@@ -16,57 +16,56 @@
 ;;;;
 ;;;; Goal:
 ;;;;   Construct a stairway that climbs to the right by constructing towers
-;;;;   of increasing height. The agent must rearrange blocks from five initial
-;;;;   stacks of two, placing them such that the stairway is formed, and
-;;;;   applying reinforcements as needed.
-;;;;   Note: the block material has changed.
+;;;;   of increasing height. The agent must rearrange blocks scattered on
+;;;;   the ground, placing them such that the stairway is formed, and applying 
+;;;;   reinforcement to the bottom-left most block. Note: 1) there are four
+;;;;   configurations that satisfy the goal, 2) the initial state, material 
+;;;;   types, object names, strengths,  and weights have all changed.
 ;;;;
 ;;;; Solution Sequence (several are possible):
-;;;;   (reinforce s10 titanium)
-;;;;   (place-adjacent s9 s1 top)
-;;;;   (reinforce s9 titanium)
-;;;;   (place-adjacent s1 s2 top)
-;;;;   (reinforce s8 titanium)
-;;;;   (place-adjacent s7 s3 top)
+;;;;   (reinforce w1 steel-plate)
+;;;;   (stack w2 w4)
+;;;;   (stack g1 w6)
+;;;;   (stack w1 w3)
+;;;;   (stack w3 w5)
 ;;;;
 ;;;; Visualization of the initial state:
-;;;; 4 S_S_S_S_S_
-;;;; 3 0103050709
-;;;; 2 S_S_S_S_S_
-;;;; 1 0204060810
-;;;; 0 ++++g1++++
-;;;;   0123456789
+;;;; 3 
+;;;; 2 W]W]W]W]W]W]
+;;;; 1 4]2]1]6]3]5]
+;;;; 0 +++++g1+++++
+;;;;   012345678901
 ;;;;
 ;;;; Visualization of the final state:
-;;;; 8         S_
-;;;; 7         02        
-;;;; 6       S_S_        
-;;;; 5       0301         
-;;;; 4     S_S_Sr         
-;;;; 3     050709         
-;;;; 2   S_S_SrSr         
-;;;; 1   04060810        
-;;;; 0 ++++g1++++
-;;;;   0123456789
+;;;; 7
+;;;; 6     W]
+;;;; 5     5]
+;;;; 4   W]W]
+;;;; 3   4]3]
+;;;; 2 W]W]W]
+;;;; 1 6]2]1]
+;;;; 0 +++++g1+++++
+;;;;   012345678901
 
 ;;; ---------------------------------------------------------------------------
 ;;; PARAMETERS: Game-instance-specific relations that define the state.
 ;;;             These will not change during the game.
 
-(max-movable-weight 100)
+(max-movable-weight 200)
 (max-time 10)
 
 ;;; (material-type ?type)
 (material-type ground)
-;(material-type concrete)
-(material-type steel)
-;(material-type wood)
+(material-type birch)
+(material-type ash)
+(material-type maple)
+(material-type rotted-oak)
 
 ;;; (reinforcement-type ?reinforcement-material ?reinforcable-material)
-(reinforcement-type titanium steel)
+(reinforcement-type steel-plate maple)
 
 ;;; (reinforcement-properties ?reinforcement-material ?strength ?weight)
-(reinforcement-properties titanium 2 2)
+(reinforcement-properties steel-plate 2 2)
 
 ;;; ---------------------------------------------------------------------------
 ;;; PERSISTANTS: Relations that define the state. These may be added and
@@ -74,85 +73,55 @@
 
 (init (time 0))
 
-(init (count titanium 10))
+(init (count steel-plate 6))
 
 (init (object-type g1 ground))
-(init (object-type s1 steel))
-(init (object-type s2 steel))
-(init (object-type s3 steel))
-(init (object-type s4 steel))
-(init (object-type s5 steel))
-(init (object-type s6 steel))
-(init (object-type s7 steel))
-(init (object-type s8 steel))
-(init (object-type s9 steel))
-(init (object-type s10 steel))
+(init (object-type w1 maple))
+(init (object-type w2 ash))
+(init (object-type w3 ash))
+(init (object-type w4 birch))
+(init (object-type w5 birch))
+(init (object-type w6 rotted-oak))
 
-(init (object-dimensions g1 10 1))
-(init (object-dimensions s1 2 2))
-(init (object-dimensions s2 2 2))
-(init (object-dimensions s3 2 2))
-(init (object-dimensions s4 2 2))
-(init (object-dimensions s5 2 2))
-(init (object-dimensions s6 2 2))
-(init (object-dimensions s7 2 2))
-(init (object-dimensions s8 2 2))
-(init (object-dimensions s9 2 2))
-(init (object-dimensions s10 2 2))
+(init (object-dimensions g1 12 1))
+(init (object-dimensions w1 2 2))
+(init (object-dimensions w2 2 2))
+(init (object-dimensions w3 2 2))
+(init (object-dimensions w4 2 2))
+(init (object-dimensions w5 2 2))
+(init (object-dimensions w6 2 2))
 
 (init (object-location g1 0 0))
-(init (object-location s1 0 3))
-(init (object-location s2 0 1))
-(init (object-location s3 2 3))
-(init (object-location s4 2 1))
-(init (object-location s5 4 3))
-(init (object-location s6 4 1))
-(init (object-location s7 6 3))
-(init (object-location s8 6 1))
-(init (object-location s9 8 3))
-(init (object-location s10 8 1))
+(init (object-location w1 4 1))
+(init (object-location w2 2 1))
+(init (object-location w3 8 1))
+(init (object-location w4 0 1))
+(init (object-location w5 10 1))
+(init (object-location w6 6 1))
 
-(init (object-load g1 80))
-(init (object-load s1 0))
-(init (object-load s2 8))
-(init (object-load s3 0))
-(init (object-load s4 8))
-(init (object-load s5 0))
-(init (object-load s6 8))
-(init (object-load s7 0))
-(init (object-load s8 8))
-(init (object-load s9 0))
-(init (object-load s10 8))
+(init (object-load g1 260))
+(init (object-load w1 0))
+(init (object-load w2 0))
+(init (object-load w3 0))
+(init (object-load w4 0))
+(init (object-load w5 0))
+(init (object-load w6 0))
 
 (init (object-strength g1 1000))
-(init (object-strength s1 13))
-(init (object-strength s2 13))
-(init (object-strength s3 13))
-(init (object-strength s4 13))
-(init (object-strength s5 13))
-(init (object-strength s6 13))
-(init (object-strength s7 13))
-(init (object-strength s8 13))
-(init (object-strength s9 13))
-(init (object-strength s10 13))
+(init (object-strength w1 30))
+(init (object-strength w2 20))
+(init (object-strength w3 20))
+(init (object-strength w4 10))
+(init (object-strength w5 10))
+(init (object-strength w6 2))
 
 (init (object-weight g1 1000))
-(init (object-weight s1 8))
-(init (object-weight s2 8))
-(init (object-weight s3 8))
-(init (object-weight s4 8))
-(init (object-weight s5 8))
-(init (object-weight s6 8))
-(init (object-weight s7 8))
-(init (object-weight s8 8))
-(init (object-weight s9 8))
-(init (object-weight s10 8))
-
-(init (tower s1 4))
-(init (tower s3 4))
-(init (tower s5 4))
-(init (tower s7 4))
-(init (tower s9 4))
+(init (object-weight w1 60))
+(init (object-weight w2 40))
+(init (object-weight w3 40))
+(init (object-weight w4 20))
+(init (object-weight w5 20))
+(init (object-weight w6 80))
 
 
 ;;; ---------------------------------------------------------------------------
@@ -162,7 +131,7 @@
 ;;; 3) DRAW: Maximum time-step reached
 
 (<= (goal agent 100)
-    (stairway ?top right 4 2)
+    (stairway ?top right 3 2)
     (not structural-failure))
 
 (<= (goal agent 0)
@@ -180,7 +149,7 @@
 ;;; 3) Maximum time-step reached
 
 (<= terminal
-    (stairway ?top right 4 2))
+    (stairway ?top right 3 2))
 
 (<= terminal
     (collapsed ?object))
@@ -190,4 +159,4 @@
     (max-time ?t))
 
 ;;; ---------------------------------------------------------------------------
-;;; END build-7-2-target.kif
+;;; END build-7-2-source.kif
