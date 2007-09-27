@@ -13,6 +13,10 @@ $domain = $1;
 $run =~ /^(.)/;
 $run = $1;
 
+if ($domain eq "m") { # mrogue -> r
+  $domain = "r";
+}
+
 if ($file =~ /-source-(\d+)/) {
   $sourceNum = $1;
 }
