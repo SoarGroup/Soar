@@ -217,7 +217,7 @@
 ;;; MCM (9/14): In some scenarios, healingItems heal 1 point; in others, 2.
 ;;; DA (8/31): (heal ?item)
 (<= (healthIncrement soldier 1)
-    (soldierHeals))
+    soldierHeals)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; LEGAL Relations
@@ -661,7 +661,7 @@
 ;;; The soldier's health is incremented by 0 unless a healing item is used.
 ;;; DA (8/31): (heal ?item)
 (<= (healthIncrement soldier 0) 
-	(not (soldierHeals)))
+	(not soldierHeals))
 
 ;MCM (9/14): Added to resolve bug with healing when more than one item in 
 ;            scenario.
