@@ -41,7 +41,7 @@ while(my $line = <IF>){
 	#S10393: nudge
 	if($line =~ /(S[0-9]+)\: (.+)/i){
 		my ($state_name, $op_name) = ($1, $2);
-		if($state_name ne "S1" and $op_name =~ /nudge|reinforce|add-to-compound|place-adjacent|brace|rotate/){
+		if($state_name ne "S1" and $op_name =~ /nudge|reinforce|add-to-compound|place-adjacent|brace|rotate|stack/){
 			#$level_info->[$current_depth]->{"current action"} = $op_name;
 			++$action_counts;
 		}
