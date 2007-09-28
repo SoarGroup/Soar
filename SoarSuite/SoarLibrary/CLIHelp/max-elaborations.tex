@@ -3,11 +3,9 @@
 \index{max-elaborations}
 Limit the maximum number of elaboration cycles in a given phase. Print a warning message if the limit is reached during a run. 
 \subsubsection*{Synopsis}
-\begin{verbatim}
 max-elaborations [n]
 \end{verbatim}
 \subsubsection*{Options}
-\begin{tabular}{|l|l|}
 \hline
 \emph{n}
  & Maximum allowed elaboration cycles, must be a positive integer.  \\
@@ -25,9 +23,7 @@ max-elaborations [n]
  In Soar8, \emph{max-elaborations}
  is checked during both the Propose Phase and the Apply Phase. If Soar8 runs more than the max-elaborations limit in either of these phases, Soar8 proceeds to the next phase (either Decision or Output) even if quiescence has not been reached. 
 \subsubsection*{Examples}
- The command issued with no arguments, returns the max elaborations allowed: \begin{verbatim}
 max-elaborations 
 \end{verbatim}
- to set the maximum number of elaborations in one phase to 50: \begin{verbatim}
 max-elaborations 50
 \end{verbatim}

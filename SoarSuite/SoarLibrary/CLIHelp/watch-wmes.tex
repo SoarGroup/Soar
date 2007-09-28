@@ -2,26 +2,23 @@
 \label{watch-wmes}
 \index{watch-wmes}
 \subsubsection*{Synopsis}
-\begin{verbatim}
 watch-wmes -[a|r]  -t <type>  pattern
 watch-wmes -[l|R] [-t <type>]
 \end{verbatim}
 \subsubsection*{Options}
-\begin{tabular}{|l|l|}
 \hline
-\soar{ -a, --add-filter } & Add a filter to print wmes that meet the type and pattern criteria.  \\
+\soar{\soar{ -a, --add-filter }} & Add a filter to print wmes that meet the type and pattern criteria.  \\
 \hline
-\soar{ -r, --remove-filter } & Delete filters for printing wmes that match the type and pattern criteria.  \\
+\soar{\soar{ -r, --remove-filter }} & Delete filters for printing wmes that match the type and pattern criteria.  \\
 \hline
-\soar{ -l, --list-filter } & List the filters of this type currently in use. Does not use the pattern argument.  \\
+\soar{\soar{ -l, --list-filter }} & List the filters of this type currently in use. Does not use the pattern argument.  \\
 \hline
-\soar{ -R, --reset-filter } & Delete all filters of this type. Does not use pattern arg.  \\
+\soar{\soar{ -R, --reset-filter }} & Delete all filters of this type. Does not use pattern arg.  \\
 \hline
-\soar{ -t, --type } & Follow with a type of wme filter, see below.  \\
+\soar{\soar{ -t, --type }} & Follow with a type of wme filter, see below.  \\
 \hline
 \end{tabular}
 \paragraph*{Pattern}
- The pattern is an id-attribute-value triplet: \begin{verbatim}
 \emph{id}
  \emph{attribute}
  \emph{value}
@@ -30,15 +27,14 @@ watch-wmes -[l|R] [-t <type>]
  can be used in place of the id, attribute or value as a wildcard that maches any string. Note that braces are not used anymore. 
 \paragraph*{Types}
  When using the -t flag, it must be followed by one of the following: 
-\begin{tabular}{|l|l|}
 \hline
-\soar{ adds } & Print info when a wme is \emph{added}
+\soar{\soar{ adds }} & Print info when a wme is \emph{added}
 .  \\
 \hline
-\soar{ removes } & Print info when a wme is \emph{retracted}
+\soar{\soar{ removes }} & Print info when a wme is \emph{retracted}
 .  \\
 \hline
-\soar{ both } & Print info when a wme is added \emph{or}
+\soar{\soar{ both }} & Print info when a wme is added \emph{or}
  retracted.  \\
 \hline
 \end{tabular}
@@ -57,13 +53,10 @@ watch-wmes -[l|R] [-t <type>]
 \subsubsection*{Examples}
  Users can \textbf{watch}
  an \emph{attribute}
- of a particular object (as long as that object already exists):  \begin{verbatim}
 soar> watch-wmes --add-filter -t both D1 speed *
 \end{verbatim}
  or print WMEs that retract in a specific state (provided the \textbf{state}
- already exists):  \begin{verbatim}
 soar> watch-wmes --add-filter -t removes S3 * *
 \end{verbatim}
-  or watch any relationship between objects:  \begin{verbatim}
 soar> watch-wmes --add-filter -t both * ontop *
 \end{verbatim}

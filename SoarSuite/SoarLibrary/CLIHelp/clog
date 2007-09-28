@@ -1,5 +1,7 @@
                                       Clog
 
+   Jump to: navigation, search
+
                                       Name
 
    clog - Record all user-interface input and output to a file.
@@ -7,8 +9,8 @@
                                     Synopsis
 
  clog -[Ae] filename
- clog A-c-a*NOTaEURoea string
- clog [A-c-a*NOTaEURoecdoq]
+ clog aEUR"a string
+ clog [aEUR"cdoq]
 
                                     Options
 

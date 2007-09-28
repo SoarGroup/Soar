@@ -1,5 +1,7 @@
                            Attribute-preferences-mode
 
+   Jump to: navigation, search
+
                                       Name
 
    attribute-preferences-mode - For Soar 7, this command sets and prints the
@@ -17,7 +19,7 @@
    |0|Handle preferences the normal (Soar 6) way.                           |
    |-+----------------------------------------------------------------------|
    | |Handle them the normal (Soar 6) way, but print a warning message      |
-   |1|whenever a preference other than + or A-c-a*NOTaEURoe is created for a|
+   |1|whenever a preference other than + or aEUR" is created for a          |
    | |non-context slot.                                                     |
    |-+----------------------------------------------------------------------|
    | |Whenever a preferences other than + or - is created for a non-context |

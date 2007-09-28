@@ -3,19 +3,16 @@
 \index{sp}
 Define a Soar production. 
 \subsubsection*{Synopsis}
-\begin{verbatim}
 sp {production_body}
 \end{verbatim}
 \subsubsection*{Options}
-\begin{tabular}{|l|l|}
 \hline
-\soar{ production\_body } & A Soar production.  \\
+\soar{\soar{ production\_body }} & A Soar production.  \\
 \hline
 \end{tabular}
 \subsubsection*{Description}
  The \textbf{sp}
  command creates a new production and loads it into production memory. \emph{production\_body}
- is a single argument parsed by the Soar kernel, so it should be enclosed in curly braces to avoid being parsed by other scripting languages that might be in the same proces. The overall syntax of a rule is as follows: \begin{verbatim}
   name 
       ["documentation-string"] 
       [FLAG*]
@@ -27,7 +24,6 @@ sp {production_body}
  If the name of the new production is the same as an existing one, the old production will be overwritten (excised). 
  \textbf{RULE FLAGS}
 \\ 
- The optional FLAGs are given below. Note that these switches are preceeded by a colon instead of a dash -- this is a Soar parser convention. \begin{verbatim}
 :o-support      specifies that all the RHS actions are to be given
                 o-support when the production fires 
 :no-support     specifies that all the RHS actions are only to be given
@@ -47,7 +43,6 @@ sp {production_body}
  and \textbf{no-support}
  flags are included to help with debugging, but should not be used in a standard Soar program. 
 \subsubsection*{Examples}
-\begin{verbatim}
 sp {blocks*create-problem-space   
      "This creates the top-level space"
      (state <s1> ^superstate nil)

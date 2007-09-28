@@ -3,29 +3,27 @@
 \index{learn}
 Set the parameters for chunking, Soar\~A¢\^a‚$\neg$\^a„¢s learning mechanism. 
 \subsubsection*{Synopsis}
-\begin{verbatim}
 learn [-l]
 learn -[d|E|o]
 learn -e [ab]
 \end{verbatim}
 \subsubsection*{Options}
-\begin{tabular}{|l|l|}
 \hline
-\soar{ -e, --enable, --on } & Turn chunking on. Can be modified by -a or -b.  \\
+\soar{\soar{\soar{ -e, --enable, --on }}} & Turn chunking on. Can be modified by -a or -b.  \\
 \hline
-\soar{ -d, --disable, --off } & Turn all chunking off. (default)  \\
+\soar{\soar{\soar{ -d, --disable, --off }}} & Turn all chunking off. (default)  \\
 \hline
-\soar{ -E, --except } & Learning is on, except as specified by RHS \textbf{dont-learn}
+\soar{\soar{\soar{ -E, --except }}} & Learning is on, except as specified by RHS \textbf{dont-learn}
  actions.  \\
 \hline
-\soar{ -o, --only } & Chunking is on only as specified by RHS \textbf{force-learn}
+\soar{\soar{\soar{ -o, --only }}} & Chunking is on only as specified by RHS \textbf{force-learn}
  actions.  \\
 \hline
-\soar{ -l, --list } & Prints listings of dont-learn and force-learn states.  \\
+\soar{\soar{\soar{ -l, --list }}} & Prints listings of dont-learn and force-learn states.  \\
 \hline
-\soar{ -a, --all-levels } & Build chunks whenever a subgoal returns a result. Learning must be --enabled.  \\
+\soar{\soar{\soar{ -a, --all-levels }}} & Build chunks whenever a subgoal returns a result. Learning must be --enabled.  \\
 \hline
-\soar{ -b, --bottom-up } & Build chunks only for subgoals that have not yet had any subgoals with chunks built. Learning must be --enabled.  \\
+\soar{\soar{\soar{ -b, --bottom-up }}} & Build chunks only for subgoals that have not yet had any subgoals with chunks built. Learning must be --enabled.  \\
 \hline
 \end{tabular}
 \subsubsection*{Description}
@@ -52,20 +50,17 @@ learn -e [ab]
  flags, and so, may be used in combination with them. With bottom-up learning, chunks are learned only in states in which no subgoal has yet generated a chunk. In this mode, chunks are learned only for the ``bottom'' of the subgoal hierarchy and not the intermediate levels. With experience, the subgoals at the bottom will be replaced by the chunks, allowing higher level subgoals to be chunked. 
  Learning can be turned on or off at any point during a run. 
 \subsubsection*{Examples}
- To enable learning only at the lowest subgoal level: \begin{verbatim}
 learn -e b
 \end{verbatim}
  To see all the \textbf{force-learn}
  and \textbf{dont-learn}
- states registered by RHS actions \begin{verbatim}
 learn -l
 \end{verbatim}
 \subsubsection*{Default Aliases}
-\begin{tabular}{|l|l|}
 \hline
-\soar{ Alias } & Maps to  \\
+\soar{\soar{\soar{ Alias }}} & Maps to  \\
 \hline
-\soar{ l } & learn  \\
+\soar{\soar{\soar{ l }}} & learn  \\
 \hline
 \end{tabular}
 \subsubsection*{See Also}
