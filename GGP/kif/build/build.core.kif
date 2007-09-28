@@ -627,7 +627,7 @@
     (+ ?obj-height ?sup-height ?height))
 
 (<= (next (tower ?object2 ?height))
-    (does agent (stack ?object1 ?object2 ?side))
+    (does agent (stack ?object1 ?object2))
     (coordinates-after-stack ?object1 ?object2 ?x1 ?y1 ?x2 ?y2)
     ;;manual mod
 	;;(not (object-new-region-intersected ?object2 ?x1 ?y1 ?x2 ?y2))
