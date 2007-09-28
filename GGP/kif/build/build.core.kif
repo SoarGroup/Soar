@@ -161,7 +161,7 @@
 	(object-coordinates ?object ?x1 ?y1 ?x2 ?y2)
 )
 (<= (region-to-check-for-adjacent ?x1 ?y1 ?x2 ?y2 ?reference-object ?moved-object)
-	(coordinates-after-place ?reference-object ?moved-object ?side ?x1 ?y1 ?x2 ?y2)
+	(coordinates-after-stack ?reference-object ?moved-object ?x1 ?y1 ?x2 ?y2)
 	;; this is important to speed up
 	;;(does ?agent (place-adjacent ?reference-object ?moved-object ?side))
 	(does ?agent (stack ?reference-object ?moved-object))
@@ -503,7 +503,7 @@
 (<= (object-intersects-region ?object ?x11 ?y11 ?x12 ?y12 ?reference-object ?moved-object)
     (object-coordinates ?object ?x21 ?y21 ?x22 ?y22)
 	;; manual add
-	(coordinates-after-place ?reference-object ?moved-object ?side ?x11 ?y11 ?x12 ?y12)
+	(coordinates-after-stack ?reference-object ?moved-object ?x11 ?y11 ?x12 ?y12)
 	;;
     (> ?x22 ?x11)
     (> ?x12 ?x21)
