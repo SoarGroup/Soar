@@ -62,8 +62,8 @@ New in 8.6.4
   -- Eaters and TankSoar have been rewritten and are now part of the
      Soar2D framework. This includes many enhancements.
   -- New command: load-library. See manual for details.
-  -- Extended preferences command to print wme support (see manual for
-     details).
+  -- Extended preferences command to print wme support (see the Soar
+     wiki for details).
   -- Extended print command to support printing tree structures (see
      manual for details).
   -- Added IsRemoteConnection() to client Kernel interface.
