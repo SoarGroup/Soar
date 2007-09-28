@@ -32,6 +32,10 @@ while (my $element = $html->find("script")) {
   $element->delete();
 }
 
+while (my $element = $html->look_down("id","jump-to-nav")) {
+  $element->delete();
+}
+
 while (my $element = $html->look_down("id","siteSub")) {
   $element->delete();
 }
