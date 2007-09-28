@@ -12,6 +12,7 @@ import os
 import sys
 import SoarSCons
 
+print "Soar 8.6.4"
 print "Detected OS:", os.name
 print "Detected platform:", sys.platform
 
