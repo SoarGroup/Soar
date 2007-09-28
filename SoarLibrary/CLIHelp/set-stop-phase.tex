@@ -3,28 +3,26 @@
 \index{set-stop-phase}
 Controls the phase where agents stop when running by decision. 
 \subsubsection*{Synopsis}
-\begin{verbatim}
 set-stop-phase -[ABadiop] 
 \end{verbatim}
 \subsubsection*{Options}
  Options -A and -B are optional and mutually exclusive. If not specified, the default is -B. 
  Only one of -a, -d, -i, -o, -p must be selected. 
  With no options, reports the current stop phase. 
-\begin{tabular}{|l|l|}
 \hline
-\soar{ -A, --after } & Stop after specified phase.  \\
+\soar{\soar{ -A, --after }} & Stop after specified phase.  \\
 \hline
-\soar{ -B, --before } & Stop before specified phase (the default).  \\
+\soar{\soar{ -B, --before }} & Stop before specified phase (the default).  \\
 \hline
-\soar{ -a, --apply } & Select the apply phase.  \\
+\soar{\soar{ -a, --apply }} & Select the apply phase.  \\
 \hline
-\soar{ -d, --decision } & Select the decision phase.  \\
+\soar{\soar{ -d, --decision }} & Select the decision phase.  \\
 \hline
-\soar{ -i, --input } & Select the input phase.  \\
+\soar{\soar{ -i, --input }} & Select the input phase.  \\
 \hline
-\soar{ -o, --output } & Select the output phase.  \\
+\soar{\soar{ -o, --output }} & Select the output phase.  \\
 \hline
-\soar{ -p, --proposal } & Select the proposal phase.  \\
+\soar{\soar{ -p, --proposal }} & Select the proposal phase.  \\
 \hline
 \end{tabular}
 \subsubsection*{Description}
@@ -33,7 +31,6 @@ set-stop-phase -[ABadiop]
  On initialization Soar defaults to stopping before the input phase (or after the output phase, however you like to think of it). 
  Setting the stop phase applies to all agents. 
 \subsubsection*{Examples}
-\begin{verbatim}
 set-stop-phase -Bi                 // stop before input phase
 set-stop-phase -Ad                 // stop after decision phase (before apply phase)
 set-stop-phase -d                  // stop before decision phase

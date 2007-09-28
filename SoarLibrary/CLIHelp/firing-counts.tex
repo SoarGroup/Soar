@@ -3,20 +3,18 @@
 \index{firing-counts}
 Print the number of times each production has fired. 
 \subsubsection*{Synopsis}
-\begin{verbatim}
 firing-counts [n]
 firing-counts production_names
 \end{verbatim}
 \subsubsection*{Options}
  If given, an option can take one of two forms -- an integer or a list of production names: 
-\begin{tabular}{|l|l|}
 \hline
 \emph{n}
  & List the top \emph{n}
  productions. If \emph{n}
  is 0, only the productions which haven't fired are listed  \\
 \hline
-\soar{ production\_name } & For each production in production\_names, print how many times the production has fired  \\
+\soar{\soar{\soar{ production\_name }}} & For each production in production\_names, print how many times the production has fired  \\
 \hline
 \end{tabular}
 \subsubsection*{Description}
@@ -28,21 +26,18 @@ firing-counts production_names
  Note that firing counts are reset by a call to \textbf{init-soar}
 . 
 \subsubsection*{Examples}
- This example prints the 10 productions which have fired the most times along with their firing counts: \begin{verbatim}
 firing-counts 10
 \end{verbatim}
- This example prints the firing counts of productions my*first*production and my*second*production: \begin{verbatim}
 firing-counts my*first*production my*second*production
 \end{verbatim}
 \subsubsection*{Warnings}
  Firing-counts are reset to zero after an init-soar. 
  NB: This command is slow, because the sorting takes time O(n*log n) 
 \subsubsection*{Default Aliases}
-\begin{tabular}{|l|l|}
 \hline
-\soar{ Alias } & Maps to  \\
+\soar{\soar{\soar{ Alias }}} & Maps to  \\
 \hline
-\soar{ fc } & firing-counts  \\
+\soar{\soar{\soar{ fc }}} & firing-counts  \\
 \hline
 \end{tabular}
 \subsubsection*{See Also}

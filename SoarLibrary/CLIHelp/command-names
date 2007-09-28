@@ -20,6 +20,7 @@ init-soar
 input-period
 internal-symbols
 learn
+load-library
 ls
 matches
 max-chunks
