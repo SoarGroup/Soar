@@ -21,8 +21,8 @@ Soar 8.6.4 can be downloaded from the Soar homepage at:
 Installation Requirements
 =========================
 
-* On Windows, the 19MB download file expands to ~46MB when installed.  
-  Linux disk requirements are similar.
+* On Windows, the 19MB download file expands to ~45MB when extracted.  
+  Linux and OSX disk requirements are similar.
 
 * Java 1.5.0 or newer is required to use the Java applications,
   including the debugger (Java must be available in the path). Get it 
