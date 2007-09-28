@@ -11,14 +11,12 @@ These Release Notes describe the primary changes in this
 latest release.  More detailed information can be obtained at 
 http://winter.eecs.umich.edu/soarwiki
 
-This release was generated for Windows and Linux systems.  Windows Vista
-is also supported.  OS X support is pending a volunteer willing to work 
-on it.
+This release was generated for Windows, Linux, and OSX systems.  
+Windows XP and Vista are supported.
 
 Soar 8.6.4 can be downloaded from the Soar homepage at:
 
         http://sitemaker.umich.edu/soar
-
 
 Installation Requirements
 =========================
@@ -27,7 +25,7 @@ Installation Requirements
   Linux disk requirements are similar.
 
 * Java 1.5.0 or newer is required to use the Java applications,
-  including the debugger.  (java must be available in the path). Get it 
+  including the debugger (Java must be available in the path). Get it 
   at http://java.sun.com/. Most operating systems probably already have 
   Java installed. NOTE: Java 1.4.2 is no longer supported.
 
@@ -42,7 +40,8 @@ Installation Requirements
 Build Requirements
 ==================
 
-* On all platforms, SWIG 1.3.31 is required for cross-language support (e.g. to use the Java debugger)
+* On all platforms, SWIG 1.3.31 is required for cross-language support
+  (e.g. to use the Java debugger).
 * On Windows, Visual Studio 2005 SP1 is required.
 * On Linux/Unix/OS X, Python, SCons, gcc 3.3 or later required.
 
@@ -55,7 +54,6 @@ Components of Soar 8.6.4
 * JavaEaters, JavaTankSoar, TclEaters
 * Test and Demo programs
 * Documentation
-
 
 New in 8.6.4
 ============
@@ -100,6 +98,6 @@ Known issues:
 
 If any other issues or bugs are found, please send mail to:
 
-soar-sml-list@umich.edu (preferred)
+soar-sml-list@lists.sourceforge.net (preferred)
 -or-
 soar-group@lists.sourceforge.net
