@@ -163,7 +163,8 @@
 (<= (region-to-check-for-adjacent ?x1 ?y1 ?x2 ?y2 ?reference-object ?moved-object)
 	(coordinates-after-place ?reference-object ?moved-object ?side ?x1 ?y1 ?x2 ?y2)
 	;; this is important to speed up
-	(does ?agent (place-adjacent ?reference-object ?moved-object ?side))
+	;;(does ?agent (place-adjacent ?reference-object ?moved-object ?side))
+	(does ?agent (stack ?reference-object ?moved-object))
 )
 
 ;;; Compute whether ?object is adjacent to (touching) the given region 
@@ -273,8 +274,8 @@
 
 ;;; Agent did action predicates: these are true of the agent took the specified
 ;;; action on its last turn.
-(<= (agent-did-place-action ?agent ?object2)
-    (does ?agent (place-adjacent ?object1 ?object2 ?side)))
+(<= (agent-did-stack-action ?agent ?object2)
+    (does ?agent (stack ?object1 ?object2)))
 
 (<= (agent-did-reinforce-action ?agent ?object)
     (does ?agent (reinforce ?object ?reinforcement-type)))
@@ -305,7 +306,7 @@
     (not (adjacent-to-any-object ?object bottom)))
 
 
-(<= (coordinates-after-place ?object1 ?object2 top ?x21 ?y21 ?x22 ?y22)
+(<= (coordinates-after-stack ?object1 ?object2 ?x21 ?y21 ?x22 ?y22)
     (true (object-dimensions ?object2 ?width2 ?height2))
     (object-coordinates ?object1 ?x21 ?y11 ?x12 ?y21)
     (+ ?x21 ?width2 ?x22)
@@ -541,13 +542,13 @@
 ;;; 4) there is some object available to support ?object2
 ;;; 5) ?object2's new location is different from the old location
 ;;; 6) ?object2 does not intersect any other object once moved
-(<= (legal agent (place-adjacent ?object1 ?object2 ?side))
+(<= (legal agent (stack ?object1 ?object2))
     (true (object-type ?object1 ?type1))
     (true (object-type ?object2 ?type2))
     (distinct ?object1 ?object2)
-    (clear ?object2 top)
+    ;;(clear ?object2 top)
     (movable ?object2)
-    (coordinates-after-place ?object1 ?object2 ?side ?x1 ?y1 ?x2 ?y2)
+    (coordinates-after-stack ?object1 ?object2 ?x1 ?y1 ?x2 ?y2)
     (not (object-coordinates ?object2 ?x1 ?y1 ?x2 ?y2))
     ;;(not (object-new-region-intersected ?object2 ?x1 ?y1 ?x2 ?y2))
 	(not (object-new-region-intersected ?object2 ?x1 ?y1 ?x2 ?y2 ?object1))
@@ -583,82 +584,38 @@
 ;;; 6) Determine if ?object2 formed a new tower (general case). True if ?object
 ;;;    is placed on top of an existing tower.
 (<= (next (arch ?tower1 ?tower2 ?span ?height))
-    (does agent (place-adjacent ?object ?span ?side))
+    (does agent (stack ?object ?span))
     (true (tower ?tower1 ?tower-height))
     (true (tower ?tower2 ?tower-height))
     (distinct ?tower1 ?tower2)
     (not (adjacent-to-object ?tower1 ?tower2 left))
     (not (adjacent-to-object ?tower1 ?tower2 right))
-    (coordinates-after-place ?object ?span ?side ?x1 ?y1 ?x2 ?y2)
+    (coordinates-after-stack ?object ?span ?x1 ?y1 ?x2 ?y2)
 	;;manual mod
     ;;(not (object-new-region-intersected ?span ?x1 ?y1 ?x2 ?y2))
 	;;(adjacent-to-region ?tower1 ?x1 ?x2 ?y1 ?y2 top ?object ?span)
     ;;(adjacent-to-region ?tower2 ?x1 ?x2 ?y1 ?y2 top ?object ?span)
-	(not (object-new-region-intersected ?span ?x1 ?y1 ?x2 ?y2 ?object))
+	;;(not (object-new-region-intersected ?span ?x1 ?y1 ?x2 ?y2 ?object))
 	(adjacent-to-region ?tower1 ?x1 ?y1 ?x2 ?y2 top ?object ?span)
     (adjacent-to-region ?tower2 ?x1 ?y1 ?x2 ?y2 top ?object ?span)
     (true (object-dimensions ?span ?span-width ?span-height))
     (+ ?tower-height ?span-height ?height))
 
 (<= (next (object-location ?object2 ?x ?y))
-    (does agent (place-adjacent ?object1 ?object2 ?side))
-    (coordinates-after-place ?object1 ?object2 ?side ?x ?y ?x2 ?y2)
+    (does agent (stack ?object1 ?object2))
+    (coordinates-after-stack ?object1 ?object2 ?x ?y ?x2 ?y2)
 	;; manual mod
     ;;(not (object-new-region-intersected ?object2 ?x ?y ?x2 ?y2))
-	(not (object-new-region-intersected ?object2 ?x ?y ?x2 ?y2 ?object1))
+	;;(not (object-new-region-intersected ?object2 ?x ?y ?x2 ?y2 ?object1))
 	)
 
-(<= (next (pyramid ?object2 ?height))
-    (does agent (place-adjacent ?object1 ?object2 ?side))
-    (coordinates-after-place ?object1 ?object2 ?side ?x1 ?y1 ?x2 ?y2)
-	;; manual mod
-    ;;(not (object-new-region-intersected ?object2 ?x1 ?y1 ?x2 ?y2))
-    ;;(adjacent-to-region ?support1 ?x1 ?y1 ?x2 ?y2 top)
-    ;;(adjacent-to-region ?support2 ?x1 ?y1 ?x2 ?y2 top)
-	(not (object-new-region-intersected ?object2 ?x1 ?y1 ?x2 ?y2 ?object1))
-    (adjacent-to-region ?support1 ?x1 ?y1 ?x2 ?y2 top ?object1 ?object2)
-    (adjacent-to-region ?support2 ?x1 ?y1 ?x2 ?y2 top ?object1 ?object2)
-    
-	(adjacent-to-object ?support1 ?support2 ?support-side)
-    (true (object-type ?ground1 ground))
-    (adjacent-to-object ?support1 ?ground1 bottom)
-    (true (object-type ?ground2 ground))
-    (adjacent-to-object ?support2 ?ground2 bottom)
-    (true (object-dimensions ?object2 ?obj-width ?obj-height))
-    (true (object-dimensions ?support1 ?sup1-width ?sup1-height))
-    (true (object-dimensions ?support2 ?sup2-width ?sup2-height))
-    (+ ?sup1-width ?sup2-width ?sup-width)
-    (> ?sup-width ?obj-width)
-    (+ ?obj-height ?sup1-height ?height))
-
-(<= (next (pyramid ?object2 ?height))
-    (does agent (place-adjacent ?object1 ?object2 ?side))
-    (coordinates-after-place ?object1 ?object2 ?side ?x1 ?y1 ?x2 ?y2)
-    ;; manual mod
-	;;(not (object-new-region-intersected ?object2 ?x1 ?y1 ?x2 ?y2))
-    ;;(adjacent-to-region ?support1 ?x1 ?y1 ?x2 ?y2 top)
-    ;;(adjacent-to-region ?support2 ?x1 ?y1 ?x2 ?y2 top)
-	(not (object-new-region-intersected ?object2 ?x1 ?y1 ?x2 ?y2 ?object1))
-    (adjacent-to-region ?support1 ?x1 ?y1 ?x2 ?y2 top ?object1 ?object2)
-    (adjacent-to-region ?support2 ?x1 ?y1 ?x2 ?y2 top ?object1 ?object2)
-
-    (adjacent-to-object ?support1 ?support2 ?support-side)
-    (true (pyramid ?support1 ?pyramid1-height))
-    (true (pyramid ?support2 ?pyramid2-height))
-    (true (object-dimensions ?object2 ?obj-width ?obj-height))
-    (true (object-dimensions ?support1 ?sup1-width ?sup1-height))
-    (true (object-dimensions ?support2 ?sup2-width ?sup2-height))
-    (+ ?sup1-width ?sup2-width ?sup-width)
-    (> ?sup-width ?obj-width)
-    (+ ?pyramid1-height ?obj-height ?height))
-
 (<= (next (tower ?object2 ?height))
-    (does agent (place-adjacent ?object1 ?object2 ?side))
-    (coordinates-after-place ?object1 ?object2 ?side ?x1 ?y1 ?x2 ?y2)
+    (does agent (stack ?object1 ?object2))
+    (coordinates-after-stack ?object1 ?object2 ?x1 ?y1 ?x2 ?y2)
     ;;manual mod
 	;;(not (object-new-region-intersected ?object2 ?x1 ?y1 ?x2 ?y2 ))
     ;;(adjacent-to-region ?support ?x1 ?y1 ?x2 ?y2 top)
-    (not (object-new-region-intersected ?object2 ?x1 ?y1 ?x2 ?y2 ?object1))
+    ;;(not (object-new-region-intersected ?object2 ?x1 ?y1 ?x2 ?y2 ?object1))
     (adjacent-to-region ?support ?x1 ?y1 ?x2 ?y2 top ?object1 ?object2)
 
 	(adjacent-to-object ?ground ?support top)
@@ -670,12 +627,12 @@
     (+ ?obj-height ?sup-height ?height))
 
 (<= (next (tower ?object2 ?height))
-    (does agent (place-adjacent ?object1 ?object2 ?side))
-    (coordinates-after-place ?object1 ?object2 ?side ?x1 ?y1 ?x2 ?y2)
+    (does agent (stack ?object1 ?object2 ?side))
+    (coordinates-after-stack ?object1 ?object2 ?x1 ?y1 ?x2 ?y2)
     ;;manual mod
 	;;(not (object-new-region-intersected ?object2 ?x1 ?y1 ?x2 ?y2))
     ;;(adjacent-to-region ?support ?x1 ?y1 ?x2 ?y2 top)
-	(not (object-new-region-intersected ?object2 ?x1 ?y1 ?x2 ?y2 ?object1))
+	;;(not (object-new-region-intersected ?object2 ?x1 ?y1 ?x2 ?y2 ?object1))
     (adjacent-to-region ?support ?x1 ?y1 ?x2 ?y2 top ?object1 ?object2)
 
     (true (object-dimensions ?object2 ?width ?obj-height))
@@ -719,7 +676,7 @@
 ;;; Carry forward arch declarations if ?span was not moved
 (<= (next (arch ?tower1 ?tower2 ?span ?height))
     (true (arch ?tower1 ?tower2 ?span ?height))
-    (not (agent-did-place-action agent ?span)))
+    (not (agent-did-stack-action agent ?span)))
 
 ;;; Carry forward reinforcement count if ?reinforcement-type not used
 (<= (next (count ?reinforcement-type ?count))
@@ -733,7 +690,7 @@
 ;;; Carry forward object-location declarations if ?object not moved
 (<= (next (object-location ?object ?x ?y))
     (true (object-location ?object ?x ?y))
-    (not (agent-did-place-action agent ?object)))
+    (not (agent-did-stack-action agent ?object)))
 
 ;;; Carry forward object-strength declarations if ?object not reinforced
 (<= (next (object-strength ?object ?strength))
@@ -749,11 +706,6 @@
     (true (object-weight ?object ?weight))
     (not (agent-did-reinforce-action agent ?object)))
 
-;;; Carry forward pyramid status of all objects that were not moved
-(<= (next (pyramid ?object ?height))
-    (true (pyramid ?object ?height))
-    (not (agent-did-place-action agent ?object)))
-
 ;;; Carry forward all reinforced declarations
 (<= (next (reinforced ?object ?reinforcement-type))
     (true (reinforced ?object ?reinforcement-type)))
@@ -761,7 +713,7 @@
 ;;; Carry forward tower status of all objects that were not moved
 (<= (next (tower ?object ?height))
     (true (tower ?object ?height))
-    (not (agent-did-place-action agent ?object)))
+    (not (agent-did-stack-action agent ?object)))
 
 (<= (next (object-load ?object ?load))
     (true (object-load ?object ?load))
