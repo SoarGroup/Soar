@@ -111,7 +111,7 @@
 (init (object-location m3 3 1))
 (init (object-location m4 9 2))
 (init (object-location m5 9 1))
-(init (object-location m6 18 3))
+(init (object-location m6 18 4))
 (init (object-location m7 18 1))
 
 (init (object-load g1 558))
