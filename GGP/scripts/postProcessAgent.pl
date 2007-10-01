@@ -1,4 +1,6 @@
 #!/usr/bin/perl
+$ENV{"GGP_PATH"}="../";
+$ENV{"PYTHONPATH"}="./pyparser/:.";
 
 die unless ($#ARGV == 1);
 
@@ -93,3 +95,7 @@ foreach $line (@arbConstants) {
 }
 print `echo "}" >> $soarFile`;
 
+if ($kifFile =~ /build-/) {
+  # env is build
+  print `python ./build_heuristic.py $kifFile >> $soarFile`;
+}
