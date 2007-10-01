@@ -70,7 +70,7 @@ def t_error(t):
 
 def lex_file(f):
 	lex.lex()
-	file = open(f).read()
+	file = open(f, 'rU').read()
 	lex.input(file)
 
 if __name__ == '__main__':

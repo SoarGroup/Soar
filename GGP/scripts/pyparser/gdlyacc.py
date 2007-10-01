@@ -132,7 +132,7 @@ def parse_file(filename):
 	tokens = gdllex.tokens
 
 	yacc.yacc()
-	file = open(filename, 'r').read()
+	file = open(filename, 'rU').read()
 	yacc.parse(file)
 
 if __name__ == '__main__':
