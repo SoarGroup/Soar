@@ -95,7 +95,7 @@ foreach $line (@arbConstants) {
 }
 print `echo "}" >> $soarFile`;
 
-#if ($kifFile =~ /build-/) {
+if ($kifFile =~ /build-/) {
   # env is build
-#  print `python ./build_heuristic.py $kifFile >> $soarFile`;
-#}
+  print `python ./build_heuristic.py $kifFile >> $soarFile`;
+}

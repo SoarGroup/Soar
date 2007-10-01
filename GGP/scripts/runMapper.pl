@@ -11,8 +11,8 @@ $ENV{"PYTHONPATH"}="./pyparser/:.";
 $tmp1 = "$kifOne.tmp.map";
 $tmp2 = "$kifTwo.tmp.map";
 
-print `sed 's/\$//' $kifOne |grep -v init > $tmp1`;
-print `sed 's/\$//' $kifTwo |grep -v init > $tmp2`;
+print `grep -v init $kifOne > $tmp1`;
+print `grep -v init $kifTwo > $tmp2`;
 
 #$mapper = "python ../analogy/const_match/const_match3.py";
 $mapper = "./newConstantMapper.pl";
