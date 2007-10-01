@@ -465,3 +465,24 @@ sp {build-monitor*print*info*4p-or-more
 -->
 	(write (crlf) |Depth-from-top | <dft> (crlf) |Operator | <oname> | | <v1> | | <v2> | | <v3> | | <v4> (crlf) |Branching factor | <branching-factor> (crlf)|Remaining branches | <remaining> (crlf) |Remaining depth limit | <cur-dep> (crlf))
 }
+
+# Build heuristic distance rules
+sp {elaborate*build*tower*distance
+	(state <s> ^gs <gs>
+				^elaborations <e>
+				^top-state.minimum-tower-height <goal-height>
+				^top-state.maximum-object-height <obj-height>)
+	(<gs> ^tower <t>)
+	(<t> ^p1 <id>
+		^p2 <height>)
+-->
+	(<e> ^one-minimum-explorer-exit-distance (int (/ (- <goal-height> <height>) <obj-height>)))
+}
+
+sp {elaborate*build*real*minimum-distance
+	(state <s> ^elaborations <e>)
+	(<e> ^one-minimum-explorer-exit-distance <d>
+		-^one-minimum-explorer-exit-distance < <d>)
+-->
+	(<e> ^minimum-explorer-exit-distance <d>)
+}
