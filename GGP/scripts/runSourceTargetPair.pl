@@ -28,12 +28,18 @@ if (-e $coreKif) {
   $merged = 1;
   $tmpSource = "$kifPath$source.merge.kif";
   $tmpTarget = "$kifPath$target.merge.kif";
-	system("cat $coreKif $sourceKif > $tmpSource");
-	system("cat $coreKif $targetKif > $tmpTarget");
-  $sourceKif = $tmpSource;
-  $targetKif = $tmpTarget;
+	system("cat $coreKif $sourceKif | sed 's/\$//' > $tmpSource");
+	system("cat $coreKif $targetKif | sed 's/\$//' > $tmpTarget");
+}
+else {
+  $tmpSource = "$kifPath$source.unix.kif";
+  $tmpTarget = "$kifPath$target.unix.kif";
+	system("cat $sourceKif | sed 's/\$//' > $tmpSource");
+	system("cat $targetKif | sed 's/\$//' > $tmpTarget");
 }
 
+$sourceKif = $tmpSource;
+$targetKif = $tmpTarget;
 $source1Log = "$source\.log";
 $targetWithSourceLog = "$target\_after_source.log";
 $targetWithoutSourceLog = "$target\_no_source.log";
@@ -57,6 +63,10 @@ print `$buildKif $targetKif`;
 if ($merged) {
   print `mv $agentDir/$source.merge.soar $agentDir/$source.soar`;
   print `mv $agentDir/$target.merge.soar $agentDir/$target.soar`;
+}
+else {
+  print `mv $agentDir/$source.unix.soar $agentDir/$source.soar`;
+  print `mv $agentDir/$target.unix.soar $agentDir/$target.soar`;
 }
 
 checkFor("$agentDir/$source.soar");
@@ -85,11 +95,8 @@ print `grep 'sp {' $goodThings | wc -l`;
 print "found the following mappings:\n";
 print `grep MAPPING $goodThings`;
 
-# done with the kif files, clean up if they were temporary
-if ($merged) {
-  print `rm $tmpSource`;
-  print `rm $tmpTarget`;
-}
+print `rm $tmpSource`;
+print `rm $tmpTarget`;
 
 print "Running $target with source..\n";
 print `$runSoar -w1 $agentDir/$target.soar > $targetWithSourceLog`;
