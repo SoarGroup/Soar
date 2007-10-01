@@ -36,6 +36,20 @@ foreach $line (`cat $timeFile`) {
   print "# MAPPER TIME $line";
 }
 
+foreach $line (`./findArbitraryGSConstants.pl $targetKif`) {
+  $line =~ /arbitrary (\S+)/ or die "!$line!\n";
+  push @arbitraryInTarget, $1;
+}
+
+foreach $line (`./findArbitraryGSConstants.pl $sourceKif`) {
+  $line =~ /arbitrary (\S+)/;
+  $arbitraryInSource = $1;
+  foreach $constant (@arbitraryInTarget) {
+    push @{ $mappings{$arbitraryInSource} }, $constant;
+    print "# MAPPING: $arbitraryInSource -> $constant\n";
+  }
+}
+
 print `rm $timeFile`;
 
 # build the additions and removals hashes for each set of additions and removals
