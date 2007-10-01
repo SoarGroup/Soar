@@ -25,7 +25,6 @@ def make_heuristic(ir):
 		for g in win_rules:
 			for b in g.get_body():
 				if b.get_predicate() == 'stairway':
-					print b
 					needed_height = int(b.get_term(2).get_name())
 					step_height = int(b.get_term(3).get_name())
 					break
