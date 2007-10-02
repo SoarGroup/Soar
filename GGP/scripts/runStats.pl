@@ -41,8 +41,8 @@ else {
 }
 
 print `svn info | grep Revision`;
-#print `./GDLDebuggerScore.pl $logFile`;
-print "score not checked.\n";
+print `./GDLDebuggerScore.pl $logFile`;
+#print "score not checked.\n";
 
 #print "soln length:\n";
 $length = `grep ACTION $logFile | wc -l`;
