@@ -64,6 +64,10 @@ $machineAliases{"n1"} = "winter";
 $machineDirs{"n1"} = "GGP/scripts";
 $machineAliases{"n2"} = "winter";
 $machineDirs{"n2"} = "2GGP/GGP/scripts";
+$machineAliases{"y1"} = "d-109.245";
+$machineDirs{"y1"} = "GGP/scripts";
+$machineAliases{"y2"} = "d-109.245";
+$machineDirs{"y2"} = "2GGP/GGP/scripts";
 
 die unless (defined $machineAliases{$machine});
 
