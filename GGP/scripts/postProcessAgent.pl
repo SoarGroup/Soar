@@ -16,6 +16,7 @@ if (not -e $soarFile) {
 
 $maFile = $kifFile;
 $maFile =~ s/\.kif$/\.ma.soar/;
+$maFile =~ s/\.unix//;
 
 $makeStatic = "./makeStatic.pl $soarFile";
 $analyzeKif = "./analyzeKif.pl $kifFile";
@@ -95,7 +96,7 @@ foreach $line (@arbConstants) {
 }
 print `echo "}" >> $soarFile`;
 
-if ($kifFile =~ /build-/) {
+#if ($kifFile =~ /build-/) {
   # env is build
-  print `python ./build_heuristic.py $kifFile >> $soarFile`;
-}
+#  print `python ./build_heuristic.py $kifFile >> $soarFile`;
+#}
