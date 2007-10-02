@@ -6,7 +6,7 @@
 ;;;; * David J. Stracuzzi                                                     *
 ;;;; * Arizona State University                                               *
 ;;;; * Created:   August    13, 2007                                          *
-;;;; * Revised:   September 13, 2007                                          *
+;;;; * Revised:   September 26, 2007                                          *
 ;;;; **************************************************************************
 ;;;;
 ;;;; Basic Assumptions and Rules:
@@ -45,30 +45,18 @@
 ;;;;     y-coordinate of the top-most object, and the y-coordinate of the 
 ;;;;     bottom-most object.
 ;;;;
-;;;; 10) A pyramid is defined as any stacking of non-ground objects such that
-;;;;     every object is on top of two supporting objects. The supporting
-;;;;     objects must be adjacent to each other, have combined width greater
-;;;;     than that of the upper object, and either rest on the ground, or be
-;;;;     pyramids themselves. The height of a pyramid is defined as the
-;;;;     difference between the y-coordinate of the top-most object, and the
-;;;;     y-coordinate of the bottom-most object.
-;;;;
-;;;; 11) An arch is defined as any single object (the span) supported by two 
+;;;; 10) An arch is defined as any single object (the span) supported by two 
 ;;;;     non-adjacent towers. The height of an arch is defined as the sum of
 ;;;;     the tower height and the span height.
 ;;;;
 ;;;; Actions:
-;;;; * (place-adjacent ?object1 ?object2 ?side)
+;;;; * (stack ?object1 ?object2)
 ;;;;     Effects:
-;;;;     * ?object2 is moved such that it touches ?object1's ?side.
-;;;;       If ?side=top, then ?object2's left side is aligned with the
-;;;;       left side of ?object1.  If ?side=left or right, then the lowest
-;;;;       available support is selected such that ?object1 and ?object2
-;;;;       touch (failure if none exists). ?side=bottom is not allowed.
+;;;;     * ?object2 is placed on top of ?object1 such that ?object2's left side 
+;;;;       is aligned with the left side of ?object1.  
 ;;;;     Requirements:
-;;;;     * Nothing is stacked on top of ?object2
+;;;;     * Both ?object1 and ?object2 must be clear.
 ;;;;     * ?object2 must weigh less than "max-movable-weight"
-;;;;     * There is some object available to support ?object2
 ;;;;     * ?object2's new location is different from the old
 ;;;;     * ?object2 does not intersect any other object once moved
 ;;;;
@@ -93,7 +81,6 @@
 ;;;;   (object-strength ?object ?strength)
 ;;;;   (object-type ?object ?type)
 ;;;;   (object-weight ?object ?weight)
-;;;;   (pyramid ?object ?height)
 ;;;;   (reinforced ?object ?reinforcement-type)
 ;;;;   (time ?t)
 ;;;;   (tower ?object ?height)
@@ -201,14 +188,14 @@
 
 ;;; Agent did action predicates: these are true of the agent took the specified
 ;;; action on its last turn.
-(<= (agent-did-place-action ?agent ?object2)
-    (does ?agent (place-adjacent ?object1 ?object2 ?side)))
-
 (<= (agent-did-reinforce-action ?agent ?object)
     (does ?agent (reinforce ?object ?reinforcement-type)))
 
 (<= (agent-did-reinforce-action ?agent ?reinforcement-type)
     (does ?agent (reinforce ?object ?reinforcement-type)))
+
+(<= (agent-did-stack-action ?agent ?object2)
+    (does ?agent (stack ?object1 ?object2)))
 
 ;;; Determine if ?object is clear of other objects on ?side 
 (<= (clear ?object ?side)
@@ -229,31 +216,13 @@
     (distinct ?type ground)
     (not (adjacent-to-any-object ?object bottom)))
 
-;;; Determines potential coordinates for ?object2 on ?object1's ?side. Cases:
-;;; 1) ?side = left
-;;; 2) ?side = right
-;;; 3) ?side = top (includes test for ?object1 is clear)
-(<= (coordinates-after-place ?object1 ?object2 left ?x1 ?y1 ?x2 ?y2)
-    (true (object-dimensions ?object2 ?width2 ?height2))
-    (true (object-location ?object1 ?x2 ?oy1))
-    (support-for-place ?object1 ?object2 ?support left)
-    (object-coordinates ?support ?sx1 ?sy1 ?sx2 ?y1)
-    (- ?x2 ?width2 ?x1)
-    (+ ?y1 ?height2 ?y2))
-
-(<= (coordinates-after-place ?object1 ?object2 right ?x1 ?y1 ?x2 ?y2)
-    (support-for-place ?object1 ?object2 ?support right)
-    (object-coordinates ?support ?sx1 ?sy1 ?sx2 ?y1)
-    (object-coordinates ?object1 ?ox1 ?oy1 ?x1 ?oy2)
-    (true (object-dimensions ?object2 ?width2 ?height2))
-    (+ ?x1 ?width2 ?x2)
-    (+ ?y1 ?height2 ?y2))
-
-(<= (coordinates-after-place ?object1 ?object2 top ?x21 ?y21 ?x22 ?y22)
+;;; Determines potential coordinates for ?object2 when stacked on ?object1.
+(<= (coordinates-after-stack ?object1 ?object2 ?x21 ?y21 ?x22 ?y22)
     (true (object-dimensions ?object2 ?width2 ?height2))
     (object-coordinates ?object1 ?x21 ?y11 ?x12 ?y21)
     (+ ?x21 ?width2 ?x22)
-    (+ ?y21 ?height2 ?y22))
+    (+ ?y21 ?height2 ?y22)
+    (not (object-new-region-intersected ?object2 ?x21 ?y21 ?x22 ?y22)))
 
 ;;; Calculate the change in load on ?object after some action by the agent.
 ;;; 1)  ?object was moved.
@@ -280,21 +249,19 @@
 ;;; 11) Some object not directly on ?object was reinforced, ?object
 ;;;     supports other objects.
 (<= (delta-load ?object 0)
-    (does agent (place-adjacent ?object1 ?object ?side)))
+    (does agent (stack ?object1 ?object)))
 
 (<= (delta-load ?object 0) ; 2
-    (does agent (place-adjacent ?object1 ?object2 ?side))
+    (does agent (stack ?object1 ?object2))
     (distinct ?object ?object2)
     (clear ?object top)
-    (not
-     (supports-moved-object-target-location ?object ?object1 ?object2 ?side)))
+    (not (supports-moved-object-target-location ?object ?object1 ?object2)))
 
 (<= (delta-load ?object ?delta) ; 3 
-    (does agent (place-adjacent ?object1 ?object2 ?side))
+    (does agent (stack ?object1 ?object2))
     (adjacent-to-object ?object ?object2 top)
     (not (adjacent-to-other-object ?object ?object2 top))
-    (not
-     (supports-moved-object-target-location ?object ?object1 ?object2 ?side))
+    (not (supports-moved-object-target-location ?object ?object1 ?object2))
     (true (object-weight ?object2 ?weight))
     (adjacent-to-object-count ?object2 bottom ?n)
     (/ ?weight ?n ?temp1)
@@ -302,11 +269,10 @@
     (- 0 ?temp2 ?delta))
 
 (<= (delta-load ?object ?delta) ; 4
-    (does agent (place-adjacent ?object1 ?object2 ?side))
+    (does agent (stack ?object1 ?object2))
     (distinct ?object ?object2)
     (clear ?object top)
-    (coordinates-after-place ?object1 ?object2 ?side ?x1 ?y1 ?x2 ?y2)
-    (not (object-new-region-intersected ?object2 ?x1 ?y1 ?x2 ?y2))
+    (coordinates-after-stack ?object1 ?object2 ?x1 ?y1 ?x2 ?y2)
     (adjacent-to-region ?object ?x1 ?y1 ?x2 ?y2 top)
     (true (object-weight ?object2 ?weight))
     (adjacent-to-region-count ?x1 ?y1 ?x2 ?y2 bottom ?n)
@@ -314,11 +280,10 @@
     (round ?temp ?delta))
 
 (<= (delta-load ?object ?delta) ; 5 
-    (does agent (place-adjacent ?object1 ?object2 ?side))
+    (does agent (stack ?object1 ?object2))
     (distinct ?object ?object2)
     (adjacent-to-object ?object ?object2 top)
-    (coordinates-after-place ?object1 ?object2 ?side ?x1 ?y1 ?x2 ?y2)
-    (not (object-new-region-intersected ?object2 ?x1 ?y1 ?x2 ?y2))
+    (coordinates-after-stack ?object1 ?object2 ?x1 ?y1 ?x2 ?y2)
     (adjacent-to-region ?object ?x1 ?y1 ?x2 ?y2 top)
     (adjacent-to-object-count ?object2 bottom ?n-src)
     (adjacent-to-region-count ?x1 ?y1 ?x2 ?y2 bottom ?n-targ)
@@ -330,20 +295,18 @@
     (- ?delta-targ ?delta-src ?delta))
 
 (<= (delta-load ?object ?delta) ; 6
-    (does agent (place-adjacent ?object1 ?object2 ?side))
+    (does agent (stack ?object1 ?object2))
     (not (adjacent-to-object ?object ?object2 top))
-    (not
-     (supports-moved-object-target-location ?object ?object1 ?object2 ?side))
+    (not (supports-moved-object-target-location ?object ?object1 ?object2))
     (adjacent-to-other-object ?object ?object2 top)
     (leftmost-adjacent-to-object ?object ?leftmost top)
     (delta-load-recursive ?object ?leftmost ?delta))
 
 (<= (delta-load ?object ?delta) ; 7
-    (does agent (place-adjacent ?object1 ?object2 ?side))
+    (does agent (stack ?object1 ?object2))
     (adjacent-to-object ?object ?object2 top)
     (adjacent-to-other-object ?object ?object2 top)
-    (not
-     (supports-moved-object-target-location ?object ?object1 ?object2 ?side))
+    (not (supports-moved-object-target-location ?object ?object1 ?object2))
     (leftmost-adjacent-to-object ?object ?leftmost top)
     (delta-load-recursive ?object ?leftmost ?delta-supported)
     (adjacent-to-object-count ?object2 bottom ?n)
@@ -353,11 +316,10 @@
     (- ?delta-supported ?object-load ?delta))
 
 (<= (delta-load ?object ?delta) ; 8
-    (does agent (place-adjacent ?object1 ?object2 ?side))
+    (does agent (stack ?object1 ?object2))
     (not (adjacent-to-object ?object ?object2 top))
     (adjacent-to-other-object ?object ?object2 top)
-    (coordinates-after-place ?object1 ?object2 ?side ?x1 ?y1 ?x2 ?y2)
-    (not (object-new-region-intersected ?object2 ?x1 ?y1 ?x2 ?y2))
+    (coordinates-after-stack ?object1 ?object2 ?x1 ?y1 ?x2 ?y2)
     (adjacent-to-region ?object ?x1 ?y1 ?x2 ?y2 top)
     (leftmost-adjacent-to-object ?object ?leftmost top)
     (delta-load-recursive ?object ?leftmost ?delta-supported)
@@ -545,34 +507,10 @@
 (<= structural-failure
     (collapsed ?object))
 
-;;; Determine if ?object2 will touch ?object1's ?side when placed on ?support.
-(<= (support-for-place ?object1 ?object2 ?support left)
-    (true (object-dimensions ?object2 ?width2 ?height2))
-    (object-coordinates ?object1 ?x1 ?y1 ?x2 ?y2)
-    (object-coordinates ?support ?sx1 ?sy1 ?sx2 ?sy2)
-    (- ?x1 ?width2 ?minx)
-    (- ?y1 ?height2 ?miny)
-    (> ?x1 ?sx1)
-    (> ?sx2 ?minx)
-    (> ?sy2 ?miny)
-    (> ?y2 ?sy2))
-
-(<= (support-for-place ?object1 ?object2 ?support right)
-    (true (object-dimensions ?object2 ?width2 ?height2))
-    (object-coordinates ?object1 ?x1 ?y1 ?x2 ?y2)
-    (object-coordinates ?support ?sx1 ?sy1 ?sx2 ?sy2)
-    (+ ?x2 ?width2 ?maxx)
-    (- ?y1 ?height2 ?miny)
-    (> ?maxx ?sx1)
-    (> ?sx2 ?x2)
-    (> ?sy2 ?miny)
-    (> ?y2 ?sy2))
-
 ;;; Determine if ?object supports the target location of ?moved after
-;;; action (place-adjacent ?reference ?moved ?side) is executed
-(<= (supports-moved-object-target-location ?object ?reference ?moved ?side)
-    (coordinates-after-place ?reference ?moved ?side ?x1 ?y1 ?x2 ?y2)
-    (not (object-new-region-intersected ?moved ?x1 ?y1 ?x2 ?y2))
+;;; action (stack ?reference ?moved) is executed
+(<= (supports-moved-object-target-location ?object ?reference ?moved)
+    (coordinates-after-stack ?reference ?moved ?x1 ?y1 ?x2 ?y2)
     (adjacent-to-region ?object ?x1 ?y1 ?x2 ?y2 top))
 
 ;;; ---------------------------------------------------------------------------
@@ -585,13 +523,13 @@
 ;;; 4) there is some object available to support ?object2
 ;;; 5) ?object2's new location is different from the old location
 ;;; 6) ?object2 does not intersect any other object once moved
-(<= (legal agent (place-adjacent ?object1 ?object2 ?side))
+(<= (legal agent (stack ?object1 ?object2))
     (true (object-type ?object1 ?type1))
     (true (object-type ?object2 ?type2))
     (distinct ?object1 ?object2)
     (clear ?object2 top)
     (movable ?object2)
-    (coordinates-after-place ?object1 ?object2 ?side ?x1 ?y1 ?x2 ?y2)
+    (coordinates-after-stack ?object1 ?object2 ?x1 ?y1 ?x2 ?y2)
     (not (object-coordinates ?object2 ?x1 ?y1 ?x2 ?y2))
     (not (object-new-region-intersected ?object2 ?x1 ?y1 ?x2 ?y2)))
 
@@ -613,74 +551,31 @@
 ;;; 1) Determine if ?object2 formed an arch. True if ?object2 (span) was placed
 ;;;    on top of two non-adjacent towers of equal height.
 ;;; 2) Calculate new location of ?object2
-;;; 3) Determine if ?object2 formed a new pyramid (ground-level case). True if 
-;;;    ?object2 is on top of two adjacent supports, both of which rest on the
-;;;    ground, and whose total width is greater than that of ?object2.
-;;; 4) Determine if ?object2 formed a new pyramid (general case). True if
-;;;    ?object2 is on top of two adjacent supports, both of which are pyramids
-;;;    themselves, and whose total width is greater than that of ?object2.
-;;; 5) Determine if ?object2 formed a new tower (ground-level case). True if
+;;; 3) Determine if ?object2 formed a new tower (ground-level case). True if
 ;;;    ?object is placed on top of a non-ground object, which rests on the
 ;;;    ground itself.
-;;; 6) Determine if ?object2 formed a new tower (general case). True if ?object
+;;; 4) Determine if ?object2 formed a new tower (general case). True if ?object
 ;;;    is placed on top of an existing tower.
 (<= (next (arch ?tower1 ?tower2 ?span ?height))
-    (does agent (place-adjacent ?object ?span ?side))
+    (does agent (stack ?object ?span))
     (true (tower ?tower1 ?tower-height))
     (true (tower ?tower2 ?tower-height))
     (distinct ?tower1 ?tower2)
     (not (adjacent-to-object ?tower1 ?tower2 left))
     (not (adjacent-to-object ?tower1 ?tower2 right))
-    (coordinates-after-place ?object ?span ?side ?x1 ?y1 ?x2 ?y2)
-    (not (object-new-region-intersected ?span ?x1 ?y1 ?x2 ?y2))
+    (coordinates-after-stack ?object ?span ?x1 ?y1 ?x2 ?y2)
     (adjacent-to-region ?tower1 ?x1 ?y1 ?x2 ?y2 top)
     (adjacent-to-region ?tower2 ?x1 ?y1 ?x2 ?y2 top)
     (true (object-dimensions ?span ?span-width ?span-height))
     (+ ?tower-height ?span-height ?height))
 
 (<= (next (object-location ?object2 ?x ?y))
-    (does agent (place-adjacent ?object1 ?object2 ?side))
-    (coordinates-after-place ?object1 ?object2 ?side ?x ?y ?x2 ?y2)
-    (not (object-new-region-intersected ?object2 ?x ?y ?x2 ?y2)))
-
-(<= (next (pyramid ?object2 ?height))
-    (does agent (place-adjacent ?object1 ?object2 ?side))
-    (coordinates-after-place ?object1 ?object2 ?side ?x1 ?y1 ?x2 ?y2)
-    (not (object-new-region-intersected ?object2 ?x1 ?y1 ?x2 ?y2))
-    (adjacent-to-region ?support1 ?x1 ?y1 ?x2 ?y2 top)
-    (adjacent-to-region ?support2 ?x1 ?y1 ?x2 ?y2 top)
-    (adjacent-to-object ?support1 ?support2 ?support-side)
-    (true (object-type ?ground1 ground))
-    (adjacent-to-object ?support1 ?ground1 bottom)
-    (true (object-type ?ground2 ground))
-    (adjacent-to-object ?support2 ?ground2 bottom)
-    (true (object-dimensions ?object2 ?obj-width ?obj-height))
-    (true (object-dimensions ?support1 ?sup1-width ?sup1-height))
-    (true (object-dimensions ?support2 ?sup2-width ?sup2-height))
-    (+ ?sup1-width ?sup2-width ?sup-width)
-    (> ?sup-width ?obj-width)
-    (+ ?obj-height ?sup1-height ?height))
-
-(<= (next (pyramid ?object2 ?height))
-    (does agent (place-adjacent ?object1 ?object2 ?side))
-    (coordinates-after-place ?object1 ?object2 ?side ?x1 ?y1 ?x2 ?y2)
-    (not (object-new-region-intersected ?object2 ?x1 ?y1 ?x2 ?y2))
-    (adjacent-to-region ?support1 ?x1 ?y1 ?x2 ?y2 top)
-    (adjacent-to-region ?support2 ?x1 ?y1 ?x2 ?y2 top)
-    (adjacent-to-object ?support1 ?support2 ?support-side)
-    (true (pyramid ?support1 ?pyramid1-height))
-    (true (pyramid ?support2 ?pyramid2-height))
-    (true (object-dimensions ?object2 ?obj-width ?obj-height))
-    (true (object-dimensions ?support1 ?sup1-width ?sup1-height))
-    (true (object-dimensions ?support2 ?sup2-width ?sup2-height))
-    (+ ?sup1-width ?sup2-width ?sup-width)
-    (> ?sup-width ?obj-width)
-    (+ ?pyramid1-height ?obj-height ?height))
+    (does agent (stack ?object1 ?object2))
+    (coordinates-after-stack ?object1 ?object2 ?x ?y ?x2 ?y2))
 
 (<= (next (tower ?object2 ?height))
-    (does agent (place-adjacent ?object1 ?object2 ?side))
-    (coordinates-after-place ?object1 ?object2 ?side ?x1 ?y1 ?x2 ?y2)
-    (not (object-new-region-intersected ?object2 ?x1 ?y1 ?x2 ?y2))
+    (does agent (stack ?object1 ?object2))
+    (coordinates-after-stack ?object1 ?object2 ?x1 ?y1 ?x2 ?y2)
     (adjacent-to-region ?support ?x1 ?y1 ?x2 ?y2 top)
     (adjacent-to-object ?ground ?support top)
     (true (object-type ?ground ground))
@@ -691,9 +586,8 @@
     (+ ?obj-height ?sup-height ?height))
 
 (<= (next (tower ?object2 ?height))
-    (does agent (place-adjacent ?object1 ?object2 ?side))
-    (coordinates-after-place ?object1 ?object2 ?side ?x1 ?y1 ?x2 ?y2)
-    (not (object-new-region-intersected ?object2 ?x1 ?y1 ?x2 ?y2))
+    (does agent (stack ?object1 ?object2))
+    (coordinates-after-stack ?object1 ?object2 ?x1 ?y1 ?x2 ?y2)
     (adjacent-to-region ?support ?x1 ?y1 ?x2 ?y2 top)
     (true (object-dimensions ?object2 ?width ?obj-height))
     (true (tower ?support ?sup-height))
@@ -741,7 +635,7 @@
 ;;; Carry forward arch declarations if ?span was not moved
 (<= (next (arch ?tower1 ?tower2 ?span ?height))
     (true (arch ?tower1 ?tower2 ?span ?height))
-    (not (agent-did-place-action agent ?span)))
+    (not (agent-did-stack-action agent ?span)))
 
 ;;; Carry forward reinforcement count if ?reinforcement-type not used
 (<= (next (count ?reinforcement-type ?count))
@@ -755,7 +649,7 @@
 ;;; Carry forward object-location declarations if ?object not moved
 (<= (next (object-location ?object ?x ?y))
     (true (object-location ?object ?x ?y))
-    (not (agent-did-place-action agent ?object)))
+    (not (agent-did-stack-action agent ?object)))
 
 ;;; Carry forward object-strength declarations if ?object not reinforced
 (<= (next (object-strength ?object ?strength))
@@ -771,11 +665,6 @@
     (true (object-weight ?object ?weight))
     (not (agent-did-reinforce-action agent ?object)))
 
-;;; Carry forward pyramid status of all objects that were not moved
-(<= (next (pyramid ?object ?height))
-    (true (pyramid ?object ?height))
-    (not (agent-did-place-action agent ?object)))
-
 ;;; Carry forward all reinforced declarations
 (<= (next (reinforced ?object ?reinforcement-type))
     (true (reinforced ?object ?reinforcement-type)))
@@ -783,7 +672,7 @@
 ;;; Carry forward tower status of all objects that were not moved
 (<= (next (tower ?object ?height))
     (true (tower ?object ?height))
-    (not (agent-did-place-action agent ?object)))
+    (not (agent-did-stack-action agent ?object)))
 
 ;;; ---------------------------------------------------------------------------
 ;;; END mBuild CORE DEFINITIONS
