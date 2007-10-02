@@ -74,7 +74,7 @@ def check_moves(game, moves):
 	elif game[0] == 'w':
 		kif = os.path.join(base_dir, 'mm', 'wargame-%s-%s-%s.kif' % (game[1], game[2], cond))
 	elif game[0] == 'b':
-		kif = os.path.join(base_dir, 'build', 'build-%s-%s-%s.merge.kif' % (game[1], game[2], cond))
+		kif = os.path.join(base_dir, 'build', 'build-%s-%s-%s.server-merge.kif' % (game[1], game[2], cond))
 	elif game[0] == 'd':
 		kif = os.path.join(base_dir, 'level10', 'differing-%s-%s-%s.kif' % (game[1], game[2], cond))
 

@@ -21,6 +21,19 @@ if ($file =~ /-source-(\d+)/) {
   $sourceNum = $1;
 }
 
+if ($domain eq "b") {
+  # merge build
+  if ($run eq "s") {
+    $kifName = "../kif/build/build-$level-$scenario-source.kif";
+    $mergeName = "../kif/build/build-$level-$scenario-source.server-merge.kif";
+  }
+  else {
+    $kifName = "../kif/build/build-$level-$scenario-target.kif";
+    $mergeName = "../kif/build/build-$level-$scenario-target.server-merge.kif";
+  }
+  print `cat ../kif/build/mBuild.core.kif $kifName > $mergeName`;
+}
+
 $tmpFile = "tmp_gdlchk";
 
 print `echo \"$domain $level $scenario $run $sourceNum\" > $tmpFile`;
@@ -46,3 +59,7 @@ else {
   }
 }
 print `rm $tmpFile`;
+
+if (defined $mergeName) {
+  print `rm $mergeName`;
+}
