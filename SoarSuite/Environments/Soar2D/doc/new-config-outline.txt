@@ -72,6 +72,8 @@
 					float radians (max visible angle-off is half of this)
 				?<rotate-speed>
 					float radians per sec default: pi / 4
+				?<blocks-block>
+					boolean if the blocks should block movement or not
 	?<logging>
 		?<level>
 			enum { severe, warning, info, fine, finer, finest }

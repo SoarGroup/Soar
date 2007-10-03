@@ -484,7 +484,7 @@ public class BookWorld implements IWorld {
 		if (map.getAllWithProperty(location, Names.kPropertyBlock).size() > 0) {
 			return true;
 		}
-		if (map.getAllWithProperty(location, "mblock").size() > 0) {
+		if (Soar2D.bConfig.getBlocksBlock() && map.getAllWithProperty(location, "mblock").size() > 0) {
 			// FIXME: check height
 			return true;
 		}
