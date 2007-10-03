@@ -130,7 +130,6 @@ if __name__ == '__main__':
 	create_game(match_id, game_name, player, start_clock, play_clock, owner)
 	print "Created match %s" % match_id
 
-	print "Starting Responder"
 	responder.moves = input[1:]
 	responder.port = port
 	rt = responder.ResponderThread()
@@ -138,3 +137,4 @@ if __name__ == '__main__':
 	print "Started Responder"
 	
 	start_game(match_id, False)
+	print "Started game"
