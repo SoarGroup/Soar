@@ -6,6 +6,8 @@ $scenario = $ARGV[2];
 
 $stats = "./runStats.pl";
 
+@regrets = `./scenarioRegret.pl $env $level $scenario`;
+
 if ($env =~ "10") {
   # level 10 has no environment
   $scenario = $level;
@@ -70,9 +72,22 @@ else {die "bad environment";}
 foreach (@source1) { chomp; }
 foreach (@source2) { chomp; }
 foreach (@targetNS) { chomp; }
-foreach (@targetS) { chomp; }
+@targetSWithRegret = ();
+$i = 0;
+foreach $line (@targetS) { 
+  chomp $line; 
+  if ($i == 8) {
+    foreach $regret (@regrets) {
+      # inject regret calculations
+      chomp $regret;
+      push @targetSWithRegret, $regret;
+    }
+  }
+  push @targetSWithRegret, $line;
+  $i++;
+}
 
-$maxIdx = max($#source1, $#source2, $#targetS, $#targetNS);
+$maxIdx = max($#source1, $#source2, $#targetSWithRegret, $#targetNS);
 
 for ($i=0; $i<=$maxIdx; $i++) {
   if ($i <= $#source1) {
@@ -92,8 +107,8 @@ for ($i=0; $i<=$maxIdx; $i++) {
   }
   else { print "."};
   print "\t";
-  if ($i <= $#targetS) {
-    print "$targetS[$i]";
+  if ($i <= $#targetSWithRegret) {
+    print "$targetSWithRegret[$i]";
   }
   else { print "."};
   print "\n";

@@ -39,14 +39,14 @@ if (-e $gtFile) {
   print "$time\n";
 }
 else {
-  print "no mapping done\n";
+  print "no indicators generated\n";
 }
 
-$time = `grep 'UNIX TIME' $logFile`;
-chomp $time;
-$time =~ /,(\S+?) user,/;
-$time = $1;
-print "$time\n";
+#$time = `grep 'UNIX TIME' $logFile`;
+#chomp $time;
+#$time =~ /,(\S+?) user,/;
+#$time = $1;
+#print "$time\n";
 
 print `svn info | grep Revision`;
 #print `./GDLDebuggerScore.pl $logFile`;
