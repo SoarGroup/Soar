@@ -92,7 +92,7 @@ foreach $line (`cat $timeFile`) {
 }
 print "found this many goodThings:\n";
 print `grep 'sp {' $goodThings | wc -l`;
-print `$timeCommand $genGT $source2Log $source2Kif $targetKif 0 $mappingFile2 >> $goodThings`;
+print `$timeCommand $genGT $source2Log $source2Kif $targetKif 100 $mappingFile2 >> $goodThings`;
 foreach $line (`cat $timeFile`) {
   chomp $line;
   print `echo '# GEN TIME $line' >> $goodThings`;
