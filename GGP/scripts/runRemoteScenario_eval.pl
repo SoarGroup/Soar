@@ -16,7 +16,7 @@ else {
   die unless  ($#ARGV == 3);
 }
 
-$runScenario = "./runScenario.pl";
+$runScenario = "./runScenario_eval.pl";
 $copyRemoteRun = "./copyRemoteRun.pl";
 
 %machineAliases = ();
