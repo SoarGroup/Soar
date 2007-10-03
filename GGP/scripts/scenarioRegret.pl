@@ -69,13 +69,13 @@ else {
 $goodthings =~ s/\.log/\.goodthings.soar/;
 die unless (-e $goodthings);
 
-$genTime = 0;
+$genUserTime = 0;
 $genSysTime = 0;
 foreach $line (`grep 'GEN TIME' $goodthings`) {
   chomp $line;
   $line =~ /,(\S+?) user,(\S+?) sys/;
-  $genTime += $1;
-  $genSysTime += $1;
+  $genUserTime += $1;
+  $genSysTime += $2;
 }
 
 $nsTimeLine = `grep 'UNIX TIME' $targetNS`;
@@ -100,12 +100,12 @@ $sSoarTime = $1*$2*0.001;
 
 print "$nsUser\n";
 print $nsUser + $nsSys . "\n";
-print $sUser + $genTime. "\n";
-print $sUser + $sSys + $genTime + $genSysTime. "\n";
+print $sUser + $genUserTime. "\n";
+print $sUser + $sSys + $genUserTime + $genSysTime. "\n";
 
-print regret($nsSoarTime, $sSoarTime + $genTime) . "\n";
-print regret($nsUser, $sUser + $genTime) . "\n";
-print regret($nsUser + $nsSys, $sUser + $genTime + $sSys + $genSysTime) . "\n";
+print regret($nsSoarTime, $sSoarTime + $genUserTime) . "\n";
+print regret($nsUser, $sUser + $genUserTime) . "\n";
+print regret($nsUser + $nsSys, $sUser + $genUserTime + $sSys + $genSysTime) . "\n";
 
 sub regret() {
   $ns = shift;
