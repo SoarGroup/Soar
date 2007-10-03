@@ -100,7 +100,7 @@ print `$gtOn`;
 print `touch $goodThings`;
 print "Extracting goodThings..\n";
 
-print `$timeCommand $genGT $source1Log $mappingFile 0 >> $goodThings`;
+print `$timeCommand $genGT $source1Log $sourceKif $targetKif 0 $mappingFile >> $goodThings`;
 foreach $line (`cat $timeFile`) {
   chomp $line;
   print `echo '# GEN TIME $line' >> $goodThings`;

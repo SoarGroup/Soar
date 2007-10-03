@@ -7,16 +7,16 @@ our $currentIndex = 0;
 our %additions = ();
 our %removals = ();
 
-die unless ($#ARGV == 2);
+die unless ($#ARGV == 4);
 $logFile = $ARGV[0];
-#$sourceKif = $ARGV[1];
-#$targetKif = $ARGV[2];
-$mapFile = $ARGV[1];
-$currentIndex = $ARGV[2];
+$sourceKif = $ARGV[1];
+$targetKif = $ARGV[2];
+$currentIndex = $ARGV[3];
+$mapFile = $ARGV[4];
 our $currentKey = $currentIndex + 1000;
 
-$timeFile = "map-times";
-$mapper = "/usr/bin/time -o $timeFile -f '%E real,%U user,%S sys' ./runMapper.pl";
+#$timeFile = "map-times";
+#$mapper = "/usr/bin/time -o $timeFile -f '%E real,%U user,%S sys' ./runMapper.pl";
 
 
 checkFor($logFile);
@@ -34,9 +34,9 @@ foreach $mapping (`cat $mapFile`) {
   print "# MAPPING: $orig -> $new\n";
 }
 
-foreach $line (`cat $timeFile`) {
-  print "# MAPPER TIME $line";
-}
+#foreach $line (`cat $timeFile`) {
+#  print "# MAPPER TIME $line";
+#}
 
 foreach $line (`./findArbitraryGSConstants.pl $targetKif`) {
   $line =~ /arbitrary (\S+)/ or die "!$line!\n";
@@ -52,7 +52,7 @@ foreach $line (`./findArbitraryGSConstants.pl $sourceKif`) {
   }
 }
 
-print `rm $timeFile`;
+#print `rm $timeFile`;
 
 # build the additions and removals hashes for each set of additions and removals
 # adjacent to one another

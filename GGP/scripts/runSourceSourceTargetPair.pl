@@ -85,14 +85,14 @@ lastDecision($source2Log);
 print `$gtOn`;
 print `touch $goodThings`;
 print "Extracting goodThings..\n";
-print `$timeCommand $genGT $source1Log $mappingFile1 0 >> $goodThings`;
+print `$timeCommand $genGT $source1Log $source1Kif $targetKif 0 $mappingFile1 >> $goodThings`;
 foreach $line (`cat $timeFile`) {
   chomp $line;
   print `echo '# GEN TIME $line' >> $goodThings`;
 }
 print "found this many goodThings:\n";
 print `grep 'sp {' $goodThings | wc -l`;
-print `$timeCommand $genGT $source2Log $mappingFile2 100 >> $goodThings`;
+print `$timeCommand $genGT $source2Log $source2Kif $targetKif 0 $mappingFile2 >> $goodThings`;
 foreach $line (`cat $timeFile`) {
   chomp $line;
   print `echo '# GEN TIME $line' >> $goodThings`;
