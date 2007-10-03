@@ -26,6 +26,10 @@ $targetWithSourceLog = "$target\_after_source.log";
 $targetWithoutSourceLog = "$target\_no_source.log";
 
 $goodThings = "$agentDir/goodthings.soar";
+$mappingFile1 = "tmp.mappings1";
+$mappingFile2 = "tmp.mappings2";
+$timeFile = "tmp.time";
+$timeCommand = '/usr/bin/time -o ' . $timeFile . ' -f \'%E real,%U user,%S sys\' ';
 
 $genGT = "./genGoodThings.pl";
 
@@ -54,24 +58,45 @@ if (-e $goodThings) {
   print `rm $goodThings`;
 }
 
+print "Extracting mappings (untimed)..\n";
+print `./runMapper.pl $source1Kif $targetKif 2>/dev/null > $mappingFile1`; 
+print "Extracting mappings (untimed)..\n";
+print `./runMapper.pl $source2Kif $targetKif 2>/dev/null > $mappingFile2`; 
+
 print `$canvasOff`;
 
 print `$gtOff`;
 print "Running $source1..\n";
-print `$runSoar -w1 $agentDir/$source1.soar > $source1Log`;
+print `$timeCommand $runSoar -w1 $agentDir/$source1.soar > $source1Log`;
+foreach $line (`cat $timeFile`) {
+  chomp $line;
+  print `echo '# UNIX TIME $line' >> $source1Log`;
+}
 lastDecision($source1Log);
 
 print "Running $source2..\n";
-print `$runSoar -w1 $agentDir/$source2.soar > $source2Log`;
+print `$timeCommand $runSoar -w1 $agentDir/$source2.soar > $source2Log`;
+foreach $line (`cat $timeFile`) {
+  chomp $line;
+  print `echo '# UNIX TIME $line' >> $source2Log`;
+}
 lastDecision($source2Log);
 
 print `$gtOn`;
 print `touch $goodThings`;
 print "Extracting goodThings..\n";
-print `$genGT $source1Log $source1Kif $targetKif 0 >> $goodThings`;
+print `$timeCommand $genGT $source1Log $mappingFile1 0 >> $goodThings`;
+foreach $line (`cat $timeFile`) {
+  chomp $line;
+  print `echo '# GEN TIME $line' >> $goodThings`;
+}
 print "found this many goodThings:\n";
 print `grep 'sp {' $goodThings | wc -l`;
-print `$genGT $source2Log $source2Kif $targetKif 100 >> $goodThings`;
+print `$timeCommand $genGT $source2Log $mappingFile2 100 >> $goodThings`;
+foreach $line (`cat $timeFile`) {
+  chomp $line;
+  print `echo '# GEN TIME $line' >> $goodThings`;
+}
 print `cp $goodThings $source2.goodthings.soar`;
 print "found this many goodThings:\n";
 print `grep 'sp {' $goodThings | wc -l`;
@@ -79,14 +104,26 @@ print "found the following mappings:\n";
 print `grep MAPPING $goodThings`;
 
 print "Running $target with source..\n";
-print `$runSoar -w1 $agentDir/$target.soar > $targetWithSourceLog`;
+print `$timeCommand $runSoar -w1 $agentDir/$target.soar > $targetWithSourceLog`;
+foreach $line (`cat $timeFile`) {
+  chomp $line;
+  print `echo '# UNIX TIME $line' >> $targetWithSourceLog`;
+}
+
 lastDecision($targetWithSourceLog);
 
 print `$gtOff`;
 print "Running $target without source..\n";
-print `$runSoar -w1 $agentDir/$target.soar > $targetWithoutSourceLog`;
+print `$timeCommand $runSoar -w1 $agentDir/$target.soar > $targetWithoutSourceLog`;
+foreach $line (`cat $timeFile`) {
+  chomp $line;
+  print `echo '# UNIX TIME $line' >> $targetWithoutSourceLog`;
+}
 lastDecision($targetWithoutSourceLog);
 
+print `rm $mappingFile1`;
+print `rm $mappingFile2`;
+print `rm $timeFile`;
 
 sub clearLog() {
   $log = shift;

@@ -30,19 +30,27 @@ $line =~ /\((.*) msec/;
 print "$1\n";
 
 if (-e $gtFile) {
-  $time = `grep TIME $gtFile`;
-  chomp $time;
-  $time =~ /,(\S+?) user,/;
-  $time = $1;
+  $time = 0;
+  foreach $line (`grep 'GEN TIME' $gtFile`) {
+    chomp $line;
+    $line =~ /,(\S+?) user,/;
+    $time += $1;
+  }
   print "$time\n";
 }
 else {
   print "no mapping done\n";
 }
 
+$time = `grep 'UNIX TIME' $logFile`;
+chomp $time;
+$time =~ /,(\S+?) user,/;
+$time = $1;
+print "$time\n";
+
 print `svn info | grep Revision`;
-print `./GDLDebuggerScore.pl $logFile`;
-#print "score not checked.\n";
+#print `./GDLDebuggerScore.pl $logFile`;
+print "score not checked.\n";
 
 #print "soln length:\n";
 $length = `grep ACTION $logFile | wc -l`;

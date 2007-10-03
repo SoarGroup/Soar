@@ -46,6 +46,10 @@ $targetWithoutSourceLog = "$target\_no_source.log";
 
 $goodThings = "$agentDir/goodthings.soar";
 
+$mappingFile = "tmp.mappings";
+$timeFile = "tmp.time";
+$timeCommand = '/usr/bin/time -o ' . $timeFile . ' -f \'%E real,%U user,%S sys\' ';
+
 $genGT = "./genGoodThings.pl";
 
 $runSoar = "./runSoar.py";
@@ -78,17 +82,30 @@ if (-e $goodThings) {
   print `rm $goodThings`;
 }
 
+print "Extracting mappings (untimed)..\n";
+print `./runMapper.pl $sourceKif $targetKif 2>/dev/null > $mappingFile`; 
+
 print `$canvasOff`;
 
 print `$gtOff`;
 print "Running $source..\n";
-print `$runSoar -w1 $agentDir/$source.soar > $source1Log`;
+print `$timeCommand $runSoar -w1 $agentDir/$source.soar > $source1Log`;
+foreach $line (`cat $timeFile`) {
+  chomp $line;
+  print `echo '# UNIX TIME $line' >> $source1Log`;
+}
 lastDecision($source1Log);
 
 print `$gtOn`;
 print `touch $goodThings`;
 print "Extracting goodThings..\n";
-print `$genGT $source1Log $sourceKif $targetKif 0 >> $goodThings`;
+
+print `$timeCommand $genGT $source1Log $mappingFile 0 >> $goodThings`;
+foreach $line (`cat $timeFile`) {
+  chomp $line;
+  print `echo '# GEN TIME $line' >> $goodThings`;
+}
+
 print `cp $goodThings $source.goodthings.soar`;
 print "found this many goodThings:\n";
 print `grep 'sp {' $goodThings | wc -l`;
@@ -99,14 +116,25 @@ print `rm $tmpSource`;
 print `rm $tmpTarget`;
 
 print "Running $target with source..\n";
-print `$runSoar -w1 $agentDir/$target.soar > $targetWithSourceLog`;
+print `$timeCommand $runSoar -w1 $agentDir/$target.soar > $targetWithSourceLog`;
+foreach $line (`cat $timeFile`) {
+  chomp $line;
+  print `echo '# UNIX TIME $line' >> $targetWithSourceLog`;
+}
+
 lastDecision($targetWithSourceLog);
 
 print `$gtOff`;
 print "Running $target without source..\n";
-print `$runSoar -w1 $agentDir/$target.soar > $targetWithoutSourceLog`;
+print `$timeCommand $runSoar -w1 $agentDir/$target.soar > $targetWithoutSourceLog`;
+foreach $line (`cat $timeFile`) {
+  chomp $line;
+  print `echo '# UNIX TIME $line' >> $targetWithoutSourceLog`;
+}
 lastDecision($targetWithoutSourceLog);
 
+print `rm $mappingFile`;
+print `rm $timeFile`;
 
 sub clearLog() {
   $log = shift;

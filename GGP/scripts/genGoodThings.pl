@@ -7,11 +7,12 @@ our $currentIndex = 0;
 our %additions = ();
 our %removals = ();
 
-die unless ($#ARGV == 3);
+die unless ($#ARGV == 2);
 $logFile = $ARGV[0];
-$sourceKif = $ARGV[1];
-$targetKif = $ARGV[2];
-$currentIndex = $ARGV[3];
+#$sourceKif = $ARGV[1];
+#$targetKif = $ARGV[2];
+$mapFile = $ARGV[1];
+$currentIndex = $ARGV[2];
 our $currentKey = $currentIndex + 1000;
 
 $timeFile = "map-times";
@@ -19,11 +20,12 @@ $mapper = "/usr/bin/time -o $timeFile -f '%E real,%U user,%S sys' ./runMapper.pl
 
 
 checkFor($logFile);
-checkFor($sourceKif);
-checkFor($targetKif);
+#checkFor($sourceKif);
+#checkFor($targetKif);
 
 our %mappings = ();
-foreach $mapping (`$mapper $sourceKif $targetKif 2>/dev/null`) {
+#foreach $mapping (`$mapper $sourceKif $targetKif 2>/dev/null`) {
+foreach $mapping (`cat $mapFile`) {  
   chomp $mapping;
   $mapping =~ /^map \w+ (\S*)\s+(\S*)$/ or die "can't parse: $mapping\n";
   $orig = $1;
