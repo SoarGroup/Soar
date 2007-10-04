@@ -19,6 +19,7 @@ open $OUT, ">$targetMAs" or die;
 
 %mappings = ();
 foreach $mapping (`$mapper $sourceKif $targetKif`) {
+  next if ($mapping =~ /\*/);
   print "LINE: $mapping\n";
   chomp $mapping;
   $mapping =~ /^map \w+ (\S*)\s+(\S*)$/ or die "can't parse: $mapping\n";
