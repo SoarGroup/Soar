@@ -94,7 +94,7 @@ if __name__ == '__main__':
 	else:
 		input = open(sys.argv[1]).readlines()
 
-	domain_aliases = { 'w' : 'Wargame', 'r' : 'MRogue', 'e' : 'Escape', 'd' : 'Differing' }
+	domain_aliases = { 'w' : 'Wargame', 'r' : 'MRogue', 'e' : 'Escape', 'd' : 'Differing', b : 'Build' }
 	
 	game_desc = input[0].split()
 	domain = domain_aliases[game_desc[0]]
