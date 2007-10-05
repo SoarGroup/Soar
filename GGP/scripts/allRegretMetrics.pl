@@ -74,94 +74,98 @@ foreach $line (`cat $ARGV[0]`) {
   $goodthings =~ s/\.log/\.goodthings.soar/;
   die unless (-e $goodthings);
   
-  $targetSsub = $targetS;
-  $targetSsub =~ s/log$/submit/;
-  die unless (-e $targetSsub);
-  @targetSsubStats = `cat $targetSsub`;
+  $sSub = $targetS;
+  $sSub =~ s/log$/submit/;
+  die unless (-e $sSub);
+  @sSubStats = `cat $sSub`;
   
-  $targetNSsub = $targetNS;
-  $targetNSsub =~ s/log$/submit/;
-  die unless (-e $targetNSsub);
-  @targetNSsubStats = `cat $targetNSsub`;
+  $nsSub = $targetNS;
+  $nsSub =~ s/log$/submit/;
+  die unless (-e $nsSub);
+  @nsSubStats = `cat $nsSub`;
 
-  $genUserTime = 0;
-  $genSysTime = 0;
-  $genRealTime = 0;
+  $genUser = 0;
+  $genUserSys = 0;
+  $genReal = 0;
   foreach $line (`grep 'GEN TIME' $goodthings`) {
     chomp $line;
     $line =~ /(\S+?) real,(\S+?) user,(\S+?) sys/ or die "!$result";
-    $real = $1;
-    $genUserTime += $2;
-    $genSysTime += $3;
-    $genRealTime = realSeconds($real);
+    $genReal = realSeconds($1);
+    $genUser += $2;
+    $genUserSys += $2 + $3;
   }
 
   $nsTimeLine = `grep 'UNIX TIME' $targetNS`;
   $sTimeLine = `grep 'UNIX TIME' $targetS`;
 
   $nsTimeLine =~ /(\S+?) real,(\S+?) user,(\S+?) sys/ or die "!$result";
-  $nsReal = $1;
+  $nsReal = realSeconds($1);
   $nsUser = $2;
-  $nsSys = $3;
-  $nsReal = realSeconds($nsReal);
+  $nsUserSys = $2 + $3;
 
-  $nsSubUser = $targetNSsubStats[1];
-  $nsSubUserSys = $targetNSsubStats[2];
-  $nsSubReal = $targetNSsubStats[3];
+  $nsSubUser = $nsSubStats[1];
+  $nsSubUserSys = $nsSubStats[2];
+  $nsSubReal = $nsSubStats[3];
 
   $sTimeLine =~ /(\S+?) real,(\S+?) user,(\S+?) sys/ or die "!$result";
-  $sReal = $1;
+  $sReal = realSeconds($1);
   $sUser = $2;
-  $sSys = $3;
-  $sReal = realSeconds($sReal);
+  $sUserSys = $2 + $3;
   
-  $sSubUser = $targetSsubStats[1];
-  $sSubUserSys = $targetSsubStats[2];
-  $sSubReal = $targetSsubStats[3];
+  $sSubUser = $sSubStats[1];
+  $sSubUserSys = $sSubStats[2];
+  $sSubReal = $sSubStats[3];
   
   $nsSoarLine = `grep 'decisions (' $targetNS`;
   $sSoarLine = `grep 'decisions (' $targetS`;
 
+  # grab the Soar time: Soar's decision count * time per decision
+  # also convert to seconds
   $nsSoarLine =~ /^(\d+) decisions \((\S+) msec/ or die;
-  $nsSoarTime = $1*$2*0.001;
+  $nsSoar = $1*$2*0.001;
 
   $sSoarLine =~ /^(\d+) decisions \((\S+) msec/ or die;
-  $sSoarTime = $1*$2*0.001;
+  $sSoar = $1*$2*0.001;
 
-  push @{$line[0]}, "$env-$level-$scenario";
+  @data = ();
+  push @data, "$env-$level-$scenario";
   # four versions of no-source time
-  push @{$line[1]}, $nsSoarTime;
-  push @{$line[2]}, $nsUser;
-  push @{$line[3]}, $nsUser + $nsSys;
-  push @{$line[4]}, $nsReal;
-  # four version of source time
-  push @{$line[5]}, $sSoarTime + $genUserTime;
-  push @{$line[6]}, $sUser + $genUserTime;
-  push @{$line[7]}, $sUser + $sSys + $genUserTime + $genSysTime;
-  push @{$line[8]}, $sReal + $genRealTime;
+  push @data, $nsSoar;
+  push @data, $nsUser;
+  push @data, $nsUserSys;
+  push @data, $nsReal;
+  # four versions of source time
+  push @data, $sSoar + $genUser;
+  push @data, $sUser + $genUser;
+  push @data, $sUserSys + $genUserSys;
+  push @data, $sReal + $genReal;
   # four versions of no-source time, including submission
-  push @{$line[9]}, $nsSoarTime + $nsSubUser;
-  push @{$line[10]}, $nsUser + $nsSubUser;
-  push @{$line[11]}, $nsUser + $nsSys + $nsSubUserSys;
-  push @{$line[12]}, $nsReal + $nsSubReal;
+  push @data, $nsSoar + $nsSubUser;
+  push @data, $nsUser + $nsSubUser;
+  push @data, $nsUserSys + $nsSubUserSys;
+  push @data, $nsReal + $nsSubReal;
   # four versions of source time, including submission
-  push @{$line[13]}, $sSoarTime + $genUserTime + $sSubUser;
-  push @{$line[14]}, $sUser + $genUserTime + $sSubUser;
-  push @{$line[15]}, $sUser + $sSys + $genUserTime + $genSysTime + $sSubUserSys;
-  push @{$line[16]}, $sReal + $genRealTime + $sSubReal;
+  push @data, $sSoar + $genUser + $sSubUser;
+  push @data, $sUser + $genUser + $sSubUser;
+  push @data, $sUserSys + $genUserSys + $sSubUserSys;
+  push @data, $sReal + $genReal + $sSubReal;
   # four versions of regret
-  push @{$line[17]}, regret($nsSoarTime, $sSoarTime + $genUserTime);
-  push @{$line[18]}, regret($nsUser, $sUser + $genUserTime);
-  push @{$line[19]}, regret($nsUser + $nsSys, $sUser + $genUserTime + $sSys + $genSysTime);
-  push @{$line[20]}, regret($nsReal, $sReal + $genRealTime);
+  push @data, regret($nsSoar, $sSoar + $genUser);
+  push @data, regret($nsUser, $sUser + $genUser);
+  push @data, regret($nsUserSys, $sUserSys + $genUserSys);
+  push @data, regret($nsReal, $sReal + $genReal);
   # four versions of regret, including submission
-  push @{$line[21]}, regret($nsSoarTime + $nsSubUser, $sSoarTime + $genUserTime + $sSubUser);
-  push @{$line[22]}, regret($nsUser + $nsSubUser, $sUser + $genUserTime + $sSubUser);
-  push @{$line[23]}, regret($nsUser + $nsSys + $nsSubUserSys, $sUser + $genUserTime + $sSys + $genSysTime + $sSubUserSys);
-  push @{$line[24]}, regret($nsReal + $nsSubReal, $sReal + $genRealTime + $sSubReal);
+  push @data, regret($nsSoar + $nsSubUser, $sSoar + $genUser + $sSubUser);
+  push @data, regret($nsUser + $nsSubUser, $sUser + $genUser + $sSubUser);
+  push @data, regret($nsUserSys + $nsSubUserSys, $sUserSys + $genUserSys + $sSubUserSys);
+  push @data, regret($nsReal + $nsSubReal, $sReal + $genReal + $sSubReal);
+
+  for ($i=0; $i<=$#data; $i++) {
+    push @{$line[$i]}, $data[$i];
+  }
 }
 
-for ($i=0; $i<=24; $i++) {
+for ($i=0; $i<=$#line; $i++) {
   for ($j=0; $j<=$#{$line[1]}; $j++) {
     print  "$line[$i][$j]\t";
   }
@@ -190,6 +194,10 @@ sub max() {
 }
 
 sub realSeconds() {
+  # the format for all calls to unix time command is '%E real,%U user,%S sys' 
+  # real times are reported in (hours:)minutes:seconds format, 
+  # need to convert to seconds (I should have used a %e instead of %E)
+  # all other times are reported in seconds (see man time)
   $string = shift;
   if ($string =~ /(\d+):(\d+):(\d+)/) {
     return 3600*$1 + 60*$2 + $3;
