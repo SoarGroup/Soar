@@ -57,7 +57,7 @@ def check_goal(match_id):
 	assert False
 
 def check_moves(game, moves):
-	base_dir = os.path.join(os.environ['GGP_PATH'], 'kif')
+	base_dir = os.path.join(os.environ['GGP_PATH'], 'kif/eval')
 	
 	if game[3] == 's':
 		if len(game) == 5:
