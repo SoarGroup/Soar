@@ -6,12 +6,12 @@ import random
 import pdb
 
 keywords = ['role', 'init', 'true', 'next', 'legal', 'does', 'goal', 'terminal', 'not', 'or', 'distinct', '<', '>', '>=', '+', '-', '*', '/']
-preserve = ['location', 'greaterThan', 'lessThan', 'plus', 'minus', 'step', 'succ', 'move', 'blocked', 'north', 'south', 'east', 'west', 'exit']
+
+preserve = ['2d', 'location', 'greaterThan', 'lessThan', 'plus', 'minus', 'step', 'succ', 'move', 'blocked', 'int', 'north', 'south', 'east', 'west', 'exit']
 
 preserve_constants = False
 preserve_variables = False
 
-rules = []
 alphabet = [chr(i) for i in range(ord('a'), ord('z')+1)]
 
 class SymMap:
@@ -225,7 +225,7 @@ random.seed()
 
 if len(sys.argv) < 2:
 	print """
-Usage: %s [switches] <kif file>
+Usage: %s [switches] -f <kif file> [<kif file> <kif file> ...]
 
 where the switches are: 
 	-r          : replace symbols with random strings rather than deleting vowels
@@ -252,11 +252,17 @@ for i in range(1,len(sys.argv)):
 		assert len(sys.argv) > i + 1, "Need to specify a prefix"
 		prefix_str = sys.argv[i+1]
 		mod_string = lambda x: prefix(prefix_str, x)
+	if sys.argv[i] == '-f':
+		fstart = i + 1
+		break
 
-file = open(sys.argv[-1], 'r').read()
+for f in sys.argv[fstart:]:
+	rules = []
+	file = open(f, 'rU').read()
+	yacc.parse(file)
 
-yacc.parse(file)
+	#random.shuffle(rules)
+	outfile = open('%s.renamed' % f, 'w')
+	for r in rules:
+		print >> outfile, r
 
-random.shuffle(rules)
-for r in rules:
-	print r
