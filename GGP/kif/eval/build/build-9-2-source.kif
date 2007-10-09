@@ -109,7 +109,7 @@
 (init (object-location c1 0 1))
 (init (object-location c2 2 1))
 (init (object-location c3 4 1))
-(init (object-location c4 6 1))
+(init (object-location c4 4 3)) ;; DWA (10/9/07) - edited
 (init (object-location c5 8 1))
 (init (object-location c6 10 1))
 (init (object-location c7 8 3))
