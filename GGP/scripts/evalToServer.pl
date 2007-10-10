@@ -14,24 +14,28 @@ foreach $line (`cat $ARGV[0]`) {
   chomp $results[0];
   print "$results[0]\n";
   $results[0] =~ /Created match (\d+)/ or die "!$results[0]";
-  push @row1, $1;
+  $matchID = $1;
+
+  $timeLog = $line;
+  $timeLog =~ s/log$/submit/;
+
+  push @row1, $matchID;
+  print `echo $matchID >> $timeLog`;
   
   $timeLine = `cat $timeFile | head -n 1`;
   $timeLine =~ /(\S+?) real,(\S+?) user,(\S+?) sys/ or die "!$timeLine";
 
-  $real = $1;
+  $real = realSeconds($1);
   $user = $2;
   $sys = $3;
 
-  print "real time: $real";
-  $real =~ /(\d+):(\S+)/ or die "$real!";
-  $real = $1*60 + $2;
-
-  print " = $real sec\n";
-
   push @row2, $user;
-  push @row3, $user + $sys;
+  print `echo $user >> $timeLog`;
+  $userSys = $user + $sys;
+  push @row3, $userSys;
+  print `echo $userSys >> $timeLog`;
   push @row4, $real;
+  print `echo $real >> $timeLog`;
 }
 
 print `rm $timeFile`;
@@ -56,5 +60,17 @@ for ($i=0; $i<=$#row4; $i++) {
 }
 print $OUT "\n";
 
-
-
+sub realSeconds() {
+  # the format for all calls to unix time command is '%E real,%U user,%S sys' 
+  # real times are reported in (hours:)minutes:seconds format, 
+  # need to convert to seconds (I should have used a %e instead of %E)
+  # all other times are reported in seconds (see man time)
+  $string = shift;
+  if ($string =~ /(\d+):(\d+):(\d+)/) {
+    return 3600*$1 + 60*$2 + $3;
+  }
+  elsif ($string =~ /(\d+):(\S+)/) {
+    return 60*$1 + $2;
+  }
+  die;
+}
