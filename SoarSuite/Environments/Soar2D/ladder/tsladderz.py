@@ -49,6 +49,14 @@ def kill_match(tournament_name):
 	
 	response = send(message)
 	return response
+
+def get_log(match_id):
+	message = {}
+	message['command'] = 'log'
+	message['match_id'] = match_id
+	
+	response = send(message)
+	return response
 	
 def start_tournament(tournament_name, max_duration):
 	message = {}
