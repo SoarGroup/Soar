@@ -2,15 +2,14 @@
 <map>
 	<cell-object name="fuel"><property name="id" value="fuel"></property>
 		<apply>
-			<fuel></fuel></apply></cell-object><cell-object name="red"><property name="destination" value="true"></property><property name="color" value="red"></property><apply>
-	<destination></destination></apply></cell-object><cell-object name="green"><property name="destination" value="true"></property><property name="color" value="green"></property><apply>
-	<destination></destination></apply></cell-object><cell-object name="yellow"><property name="destination" value="true"></property><property name="color" value="yellow"></property><apply>
-	<destination></destination></apply></cell-object><cell-object name="blue"><property name="destination" value="true"></property><property name="color" value="blue"></property><apply>
-	<destination></destination></apply></cell-object><cell-object name="wall-north">
+			<fuel></fuel></apply></cell-object><cell-object name="red"><property name="destination" value="true"></property><property name="color" value="red"></property></cell-object><cell-object name="green"><property name="destination" value="true"></property><property name="color" value="green"></property></cell-object><cell-object name="yellow"><property name="destination" value="true"></property><property name="color" value="yellow"></property></cell-object><cell-object name="blue"><property name="destination" value="true"></property><property name="color" value="blue"></property></cell-object><cell-object name="wall-north">
 	<property name="block" value="true"></property><property name="id" value="wall"></property><property name="direction" value="north"></property></cell-object><cell-object name="wall-east">
 	<property name="block" value="true"></property><property name="id" value="wall"></property><property name="direction" value="east"></property></cell-object><cell-object name="wall-south">
 	<property name="block" value="true"></property><property name="id" value="wall"></property><property name="direction" value="south"></property></cell-object><cell-object name="wall-west">
 	<property name="block" value="true"></property><property name="id" value="wall"></property><property name="direction" value="west"></property></cell-object>
+	<cell-object name="passenger">
+		<property name="id" value="passenger"></property>
+		<property name="passenger" value="true"></property></cell-object>
 	<cells world-size="5">
 		<row id="0">
 			<cell id="0">

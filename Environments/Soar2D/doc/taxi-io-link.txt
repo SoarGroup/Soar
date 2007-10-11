@@ -1,0 +1,41 @@
+^input-link
+    ^self
+        ^position
+            ^x <int> current grid column
+            ^y <int> current grid row
+        ^reward <int> result of last action
+        ^random <float> a random number, just like eaters and tanksoar, [0..1)
+        ^passenger [true false] true if a passenger is carried
+        ^destination [red blue green yellow]
+        ^fuel <int> fuel remaining
+    ^view
+        ^north
+            ^type [normal red blue green yellow fuel]
+            ^passenger [true false]
+        ^south
+            ^type [normal red blue green yellow fuel]
+            ^passenger [true false]
+        ^east
+            ^type [normal red blue green yellow fuel]
+            ^passenger [true false]
+        ^west
+            ^type [normal red blue green yellow fuel]
+            ^passenger [true false]
+    ^cell current cell agent is at
+        ^type [normal red blue green yellow fuel]
+        ^passenger [true false] passenger is hailing cab	
+        	
+^output-link
+	^move
+		^direction [north south east west]
+		^status [complete error]
+	^stop-sim
+		^status [complete error]
+	^pickup
+		^status [complete error]
+	^putdown
+		^status [complete error]
+	^fillup
+		^status [complete error]
+	
+		
