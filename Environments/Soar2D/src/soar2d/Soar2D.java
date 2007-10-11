@@ -9,6 +9,7 @@ import soar2d.configuration.EatersConfiguration;
 import soar2d.configuration.KitchenConfiguration;
 import soar2d.configuration.LoadError;
 import soar2d.configuration.TankSoarConfiguration;
+import soar2d.configuration.TaxiConfiguration;
 import soar2d.visuals.*;
 /*
  * A note about log levels:
@@ -44,6 +45,7 @@ public class Soar2D {
 	public static final String kDefaultXMLEatersConsoleSettingsFile = "eaters-console.xml";
 	public static final String kDefaultXMLTankSoarConsoleSettingsFile = "tanksoar-console.xml";
 	public static final String kDefaultXMLBookSettingsFile = "book.xml";
+	public static final String kDefaultXMLTaxiSettingsFile = "taxi.xml";
 
 	public static final Logger logger = Logger.getLogger("soar2d");
 	public static Configuration config = new Configuration();
@@ -51,6 +53,7 @@ public class Soar2D {
 	public static EatersConfiguration eConfig;
 	public static BookConfiguration bConfig;
 	public static KitchenConfiguration kConfig;
+	public static TaxiConfiguration xConfig;
 	public static final WindowManager wm = new WindowManager();
 	public static final Simulation simulation = new Simulation();
 	public static final Controller control = new Controller();
@@ -99,6 +102,13 @@ public class Soar2D {
 			install(kDefaultXMLBookSettingsFile);
 		} catch (IOException e) {
 			control.severeError("IOException installing " + kDefaultXMLBookSettingsFile + ": " + e.getMessage());
+			wm.shutdown();
+			System.exit(1);
+		}
+		try {
+			install(kDefaultXMLTaxiSettingsFile);
+		} catch (IOException e) {
+			control.severeError("IOException installing " + kDefaultXMLTaxiSettingsFile + ": " + e.getMessage());
 			wm.shutdown();
 			System.exit(1);
 		}

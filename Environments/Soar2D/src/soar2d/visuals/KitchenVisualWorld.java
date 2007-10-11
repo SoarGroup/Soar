@@ -129,6 +129,7 @@ public class KitchenVisualWorld extends VisualWorld {
 						}
 					}
 					
+					// BUGBUG redundant, remove
 					if (empty) {
 						gc.setBackground(WindowManager.widget_background);
 						gc.fillRectangle(cellSize*location.x, cellSize*location.y, cellSize, cellSize);

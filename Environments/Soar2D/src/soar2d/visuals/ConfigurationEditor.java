@@ -377,6 +377,7 @@ public class ConfigurationEditor extends Dialog {
 			}
 			
 			assert config.getType() != SimType.kKitchen;
+			assert config.getType() != SimType.kTaxi;
 		}
 		
 		// map
@@ -580,6 +581,8 @@ public class ConfigurationEditor extends Dialog {
 			bookButton.setSelection(true);
 			break;
 		case kKitchen:
+			assert false;
+		case kTaxi:
 			assert false;
 		}
 		mapText.setText(config.getMap().getAbsolutePath());

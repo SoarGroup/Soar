@@ -52,6 +52,7 @@ public class Names {
 	public static final String kEaterID = "eater";
 	public static final String kEnergyID = "energy";
 	public static final String kEnergyRechargerID = "energyrecharger";
+	public static final String kFillUpID = "fillup";
 	public static final String kFireID = "fire";
 	public static final String kFloatXID = "floatx";
 	public static final String kFloatYID = "floaty";
@@ -74,7 +75,9 @@ public class Names {
 	public static final String kOn = "on";
 	public static final String kOpenID = "open";
 	public static final String kOpenCodeID = "open-code";
+	public static final String kPickUpID = "pickup";
 	public static final String kPositionID = "position";
+	public static final String kPutDownID = "putdown";
 	public static final String kRadarID = "radar";
 	public static final String kRadarPowerID = "radar-power";
 	public static final String kRandomID = "random";

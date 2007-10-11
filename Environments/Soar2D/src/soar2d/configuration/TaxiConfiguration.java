@@ -5,14 +5,14 @@ import java.util.List;
 
 import org.jdom.Element;
 
-public class KitchenConfiguration extends BaseConfiguration implements IConfiguration {
+public class TaxiConfiguration extends BaseConfiguration implements IConfiguration {
 
-	KitchenConfiguration() {
+	TaxiConfiguration() {
 		super();
 		
-		this.mapPath += "kitchen" + System.getProperty("file.separator");
-		this.agentPath += "kitchen" + System.getProperty("file.separator");
-		this.map = new File(this.mapPath + "default.kmap");
+		this.mapPath += "taxi" + System.getProperty("file.separator");
+		this.agentPath += "taxi" + System.getProperty("file.separator");
+		this.map = new File(this.mapPath + "default.xml");
 	}
 
 	public String getMapExt() {
@@ -20,7 +20,7 @@ public class KitchenConfiguration extends BaseConfiguration implements IConfigur
 	}
 
 	public String getTitle() {
-		return "Kitchen";
+		return "Taxi";
 	}
 	
 	public void rules(Element rules) throws LoadError {
@@ -42,13 +42,13 @@ public class KitchenConfiguration extends BaseConfiguration implements IConfigur
 	}
 	
 	public void copy(IConfiguration config) {
-		KitchenConfiguration kConfig = (KitchenConfiguration)config;
+		TaxiConfiguration xConfig = (TaxiConfiguration)config;
 		assert false;
 	}
 	
 	public void setDefaultTerminals(Configuration configuration) {
-		configuration.setTerminalWinningScore(0);
-		configuration.setTerminalFoodRemaining(false);
+		configuration.setTerminalPassengerDelivered(true);
+		configuration.setTerminalFuelRemaining(true);
 	}
 
 	public boolean getRunTilOutput() {

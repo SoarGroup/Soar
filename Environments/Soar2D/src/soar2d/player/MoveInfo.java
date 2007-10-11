@@ -57,6 +57,11 @@ public class MoveInfo {
 	public boolean cook = false;
 	public boolean eat = false;
 	
+	// taxi
+	public boolean pickup = false;
+	public boolean putdown = false;
+	public boolean fillup = false;
+	
 	public class Communication {
 		public String to;
 		public String message;
@@ -157,6 +162,21 @@ public class MoveInfo {
 			}
 			break;
 
+		case kTaxi:
+			if (move) {
+				output += "(" + Names.kMoveID + ": " + Direction.stringOf[moveDirection] + ")";
+			}
+			if (pickup) {
+				output += "(" + Names.kPickUpID + ")";
+			}
+			if (putdown) {
+				output += "(" + Names.kPutDownID + ")";
+			}
+			if (fillup) {
+				output += "(" + Names.kFillUpID + ")";
+			}
+			break;
+			
 		}
 		
 		if (stopSim) {
