@@ -1,8 +1,7 @@
-multi-attributes x3_adjacent 250 # rogue and build
-multi-attributes x3_min 200 # rogue
-multi-attributes x3_traversible 300 # rogue 
-multi-attributes x3_nextcell 256 # rogue
-multi-attributes x3_between 300 # rogue
-multi-attributes x3_cellnearmonster 100 # rogue
-multi-attributes x3_nstepstowardshero 200 # rogue
-
+multi-attributes x3_index 1000 # wargame
+multi-attributes x3_cell 1000 # wargame
+multi-attributes x3_nsteps 256 # wargame
+multi-attributes x3_nstepssoldier 256 # wargame
+multi-attributes x3_nextcell 256 # wargame
+multi-attributes x3_horizontalstep 256 # wargame
+multi-attributes x3_verticalstep 256 # wargame

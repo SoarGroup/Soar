@@ -1,8 +1,7 @@
-multi-attributes x6_nextcell 256 # rogue
-multi-attributes x6_terroristcell 250 # rogue and build
-multi-attributes x6_nsteps 200 # rogue
-multi-attributes x6_index 100 # rogue
-multi-attributes x6_verticalstep 300 # rogue
-multi-attributes x6_wouldstepvertical 1000 # escape
-multi-attributes x6_intendedsoldierlocation 200 # rogue
-multi-attributes x6_attacks 300 # rogue 
+multi-attributes x6_index 1000 # wargame
+multi-attributes x6_cell 1000 # wargame
+multi-attributes x6_nsteps 256 # wargame
+multi-attributes x6_nstepssoldier 256 # wargame
+multi-attributes x6_nextcell 256 # wargame
+multi-attributes x6_horizontalstep 256 # wargame
+multi-attributes x6_verticalstep 256 # wargame
