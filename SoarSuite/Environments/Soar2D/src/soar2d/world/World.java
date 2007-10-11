@@ -43,6 +43,9 @@ public class World {
 			case kKitchen:
 				worldModule = new KitchenWorld();
 				break;
+			case kTaxi:
+				worldModule = new TaxiWorld();
+				break;
 
 			}
 		}
@@ -306,6 +309,23 @@ public class World {
 			if (Soar2D.config.getTerminalUnopenedBoxes()) {
 				if (eMap.getUnopenedBoxCount() <= 0) {
 					stopAndDumpStats("All of the boxes are open.");
+					return;
+				}
+			}
+		}
+
+		if (Soar2D.config.getType() == SimType.kTaxi) {
+			TaxiMap xMap = (TaxiMap)map;
+			if (Soar2D.config.getTerminalPassengerDelivered()) {
+				if (xMap.isPassengerDelivered()) {
+					stopAndDumpStats("The passenger has been delivered.");
+					return;
+				}
+			}
+		
+			if (Soar2D.config.getTerminalFuelRemaining()) {
+				if (xMap.isFuelNegative()) {
+					stopAndDumpStats("The taxi has run out of fuel.");
 					return;
 				}
 			}

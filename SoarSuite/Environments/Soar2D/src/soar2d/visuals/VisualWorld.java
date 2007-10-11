@@ -69,6 +69,9 @@ public abstract class VisualWorld extends Canvas implements PaintListener {
 			
 		case kKitchen:
 			break;
+			
+		case kTaxi:
+			break;
 		}
 		
 		font = new Font(parent.getDisplay(), "Helvetica", 7, SWT.NONE);

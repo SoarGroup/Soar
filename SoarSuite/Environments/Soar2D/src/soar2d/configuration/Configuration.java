@@ -154,8 +154,9 @@ public class Configuration {
 	private static final String kGameTankSoar = "tanksoar";
 	private static final String kGameBook = "book";
 	private static final String kGameKitchen = "kitchen";
+	private static final String kGameTaxi = "taxi";
 	private SimType simType = SimType.kEaters;
-	public enum SimType { kEaters, kTankSoar, kBook, kKitchen }	
+	public enum SimType { kEaters, kTankSoar, kBook, kKitchen, kTaxi }	
 	private IConfiguration cModule;
 	public void setType(SimType simType) {
 		this.simType = simType;
@@ -175,6 +176,10 @@ public class Configuration {
 		case kTankSoar:
 			cModule = new TankSoarConfiguration(); 
 			Soar2D.tConfig = (TankSoarConfiguration)cModule.getModule();
+			break;
+		case kTaxi:
+			cModule = new TaxiConfiguration(); 
+			Soar2D.xConfig = (TaxiConfiguration)cModule.getModule();
 			break;
 		}
 	}
@@ -343,6 +348,8 @@ public class Configuration {
 			this.setType(SimType.kBook);
 		} else if (gameName.equalsIgnoreCase(kGameKitchen)) {
 			this.setType(SimType.kKitchen);
+		} else if (gameName.equalsIgnoreCase(kGameTaxi)) {
+			this.setType(SimType.kTaxi);
 		} else {
 			throw new LoadError("Unknown game type: " + gameName);
 		}
@@ -837,6 +844,24 @@ public class Configuration {
 		return this.terminalMaxRuns;
 	}
 	
+	private boolean terminalPassengerDelivered = false;	
+	private static final String kTagPassengerDelivered = "passenger-delivered";
+	public void setTerminalPassengerDelivered(boolean setting) {
+		this.terminalPassengerDelivered = setting;
+	}
+	public boolean getTerminalPassengerDelivered() {
+		return this.terminalPassengerDelivered;
+	}
+	
+	private boolean terminalFuelRemaining = false;	
+	private static final String kTagFuelRemaining = "fuel-remaining";
+	public void setTerminalFuelRemaining(boolean setting) {
+		this.terminalFuelRemaining = setting;
+	}
+	public boolean getTerminalFuelRemaining() {
+		return this.terminalFuelRemaining;
+	}
+	
 	private void terminalsSave(Element terminals) {
 		if (this.getTerminalMaxUpdates() > 0) {
 			Element maxUpdates = new Element(kTagMaxUpdates).setText(Integer.toString(this.getTerminalMaxUpdates()));
@@ -882,6 +907,14 @@ public class Configuration {
 
 		if (this.getTerminalMaxRuns() > 0) {
 			terminals.addContent(new Element(kTagMaxRuns).setText(Integer.toString(this.terminalMaxRuns)));
+		}
+		
+		if (this.getTerminalPassengerDelivered()) {
+			terminals.addContent(new Element(kTagPassengerDelivered));
+		}
+		
+		if (this.getTerminalPassengerDelivered()) {
+			terminals.addContent(new Element(kTagFuelRemaining));
 		}
 	}
 	
@@ -944,6 +977,12 @@ public class Configuration {
 				} catch (NumberFormatException e) {
 					throw new LoadError("Error parsing max runs");
 				}
+
+			} else if (child.getName().equalsIgnoreCase(kTagPassengerDelivered)) {
+				this.setTerminalPassengerDelivered(true);
+				
+			} else if (child.getName().equalsIgnoreCase(kTagFuelRemaining)) {
+				this.setTerminalFuelRemaining(true);
 
 			} else {
 				throw new LoadError("Unrecognized tag: " + child.getName());
