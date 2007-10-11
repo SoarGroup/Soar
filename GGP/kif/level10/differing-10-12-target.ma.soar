@@ -1,0 +1,3 @@
+multi-attributes x1_nextcell 256 # rogue
+multi-attributes x1_wouldstephorizontal 200 # rogue
+multi-attributes x1_cellnearterrorist 100 # rogue

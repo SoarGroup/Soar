@@ -1,0 +1,7 @@
+multi-attributes x0_carrying 256 # wargame
+multi-attributes x0_between 256 # wargame
+multi-attributes x0_onesteptowardshero 256 # wargame
+multi-attributes x0_cellnearmonster 1000 # wargame
+multi-attributes x0_nextcell 256 # rogue
+multi-attributes x0_nextherolocation 1000 # wargame
+multi-attributes x0_samelocation 256 # wargame

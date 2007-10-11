@@ -1,0 +1,8 @@
+multi-attributes x3_nextcell 256 # rogue
+multi-attributes x3_terroristcell 250 # rogue and build
+multi-attributes x3_pathblocked 200 # rogue
+multi-attributes x3_index 100 # rogue
+multi-attributes x3_intendedlocation 300 # rogue
+multi-attributes x3_horizontalstep 1000 # escape
+multi-attributes x3_intendedsoldierlocation 200 # rogue
+multi-attributes x3_nsteps 300 # rogue 

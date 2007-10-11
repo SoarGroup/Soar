@@ -1,0 +1,8 @@
+multi-attributes x2_nextcell 256 # rogue
+multi-attributes x2_terroristcell 250 # rogue and build
+multi-attributes x2_nsteps 200 # rogue
+multi-attributes x2_index 100 # rogue
+multi-attributes x2_horizontalstep 300 # rogue
+multi-attributes x2_wouldstephorizontal 1000 # escape
+multi-attributes x2_intendedsoldierlocation 200 # rogue
+multi-attributes x2_attacks 300 # rogue 
