@@ -30,8 +30,11 @@ public class TaxiMap extends GridMap {
 	
 	// passenger
 	String passengerDestination = null;
-	public boolean hasPassenger() {
+	public boolean passengerOnMap() {
 		return passengerDestination != null;
+	}
+	public String getPassengerDestination() {
+		return passengerDestination;
 	}
 	
 	public Point getNewPassengerLocation() {
@@ -74,20 +77,22 @@ public class TaxiMap extends GridMap {
 			destinationLocations.put(object, location);
 		}
 		
-		if (object.hasProperty("passenger")) {
-			if (object.hasProperty("passenger-destination")) {
-				passengerDestination = object.getProperty("passenger-destination");
-			} else {
-				int pick = Simulation.random.nextInt(destinationColors.size());
-				Iterator<String> iter = destinationColors.iterator();
-				for (int index = 0; index < pick; index++) {
+		if (passengerDestination == null) {
+			if (object.hasProperty("passenger")) {
+				if (object.hasProperty("passenger-destination")) {
+					passengerDestination = object.getProperty("passenger-destination");
+				} else {
+					int pick = Simulation.random.nextInt(destinationColors.size());
+					Iterator<String> iter = destinationColors.iterator();
+					for (int index = 0; index < pick; index++) {
+						assert iter.hasNext();
+						iter.next();
+					}
 					assert iter.hasNext();
-					iter.next();
+					passengerDestination = iter.next();
 				}
-				assert iter.hasNext();
-				passengerDestination = iter.next();
+				logger.info("passenger destination: " + passengerDestination);
 			}
-			logger.info("passenger destination: " + passengerDestination);
 		}
 		
 		cell.addCellObject(object);
@@ -116,13 +121,12 @@ public class TaxiMap extends GridMap {
 		
 	}
 
-	public boolean isPassengerDelivered() {
-		// TODO Auto-generated method stub
-		return false;
-	}
-
 	public boolean isFuelNegative() {
 		return fuel < 0;
+	}
+	
+	public int getFuel() {
+		return fuel;
 	}
 
 	public boolean fillUp(Point location) {
@@ -170,5 +174,14 @@ public class TaxiMap extends GridMap {
 			return true;
 		}
 		return false;
+	}
+
+	boolean passengerDelivered = false;
+	public boolean isPassengerDelivered() {
+		return passengerDelivered;
+	}
+
+	public void delivered() {
+		passengerDelivered = true;
 	}
 }

@@ -6,13 +6,14 @@ import org.eclipse.swt.layout.*;
 import org.eclipse.swt.widgets.*;
 
 import soar2d.*;
+import soar2d.map.TaxiMap;
 import soar2d.player.*;
 import soar2d.world.PlayersManager;
 
 public class TaxiAgentDisplay extends AgentDisplay {
 	
 	public static final int kAgentMapCellSize = 20;
-	static final int kTableHeight = 120;
+	static final int kTableHeight = 16;
 	static final int kNameWidth = 75;
 	static final int kScoreWidth = 55;
 	
@@ -23,10 +24,11 @@ public class TaxiAgentDisplay extends AgentDisplay {
 	PlayersManager players;
 	Composite m_AgentButtons;
 	Button m_NewAgentButton;
-	Button m_CloneAgentButton;
 	Button m_DestroyAgentButton;
 	Button m_ReloadProductionsButton;
 	Label location;
+	Label destination;
+	ProgressBar fuel;
 
 	public TaxiAgentDisplay(final Composite parent) {
 		super(parent);
@@ -58,14 +60,6 @@ public class TaxiAgentDisplay extends AgentDisplay {
 		m_NewAgentButton.addSelectionListener(new SelectionAdapter() {
 			public void widgetSelected(SelectionEvent e) {
 				new CreateAgentDialog(parent.getShell()).open();
-			}
-		});
-		
-		m_CloneAgentButton = new Button(m_AgentButtons, SWT.PUSH);
-		m_CloneAgentButton.setText("Clone");
-		m_CloneAgentButton.addSelectionListener(new SelectionAdapter() {
-			public void widgetSelected(SelectionEvent e) {
-				Soar2D.simulation.clonePlayer(selectedPlayer.getName(), null);
 			}
 		});
 		
@@ -134,6 +128,42 @@ public class TaxiAgentDisplay extends AgentDisplay {
 			location.setLayoutData(gd);
 		}
 
+		Label destinationLabel = new Label(worldGroup, SWT.NONE);
+		destinationLabel.setText("Destination: ");
+		{
+			GridData gd = new GridData();
+			destinationLabel.setLayoutData(gd);
+		}
+		
+		destination = new Label(worldGroup, SWT.NONE);
+		TaxiMap xMap = (TaxiMap)Soar2D.simulation.world.getMap();
+		if (xMap.passengerOnMap()) {
+			destination.setText(xMap.getPassengerDestination());
+		} else {
+			destination.setText("-");
+		}
+		{
+			GridData gd = new GridData();
+			gd.widthHint = 60;
+			destination.setLayoutData(gd);
+		}
+		
+		Label fuelLabel = new Label(worldGroup, SWT.NONE);
+		fuelLabel.setText("Fuel: ");
+		{
+			GridData gd = new GridData();
+			fuelLabel.setLayoutData(gd);
+		}
+		
+		fuel = new ProgressBar(worldGroup, SWT.NONE);
+		fuel.setMinimum(0);
+		fuel.setMaximum(14);
+		{
+			GridData gd = new GridData();
+			gd.widthHint = 80;
+			fuel.setLayoutData(gd);
+		}
+
 		updateTaxiList();
 		updateButtons();		
 	}
@@ -152,9 +182,12 @@ public class TaxiAgentDisplay extends AgentDisplay {
 	}
 
 	void worldChangeEvent() {
+		TaxiMap xMap = (TaxiMap)Soar2D.simulation.world.getMap();
 		if (selectedPlayer != null) {
 			java.awt.Point playerLocation = players.getLocation(selectedPlayer);
 			location.setText("(" + playerLocation.x + "," + playerLocation.y + ")");
+			fuel.setSelection(xMap.getFuel());
+			fuel.setToolTipText(Integer.toString(xMap.getFuel()));
 		}
 		
 		for (int i = 0; i < m_Items.length; ++i) {
@@ -163,6 +196,12 @@ public class TaxiAgentDisplay extends AgentDisplay {
 			} else {
 				m_Items[i].setText(1, "0");
 			}
+		}
+		
+		if (xMap.passengerOnMap()) {
+			destination.setText(xMap.getPassengerDestination());
+		} else {
+			destination.setText("-");
 		}
 	}
 	
@@ -190,16 +229,19 @@ public class TaxiAgentDisplay extends AgentDisplay {
 			m_AgentTable.deselectAll();
 			location.setText("-");
 		}
+		
+		if (players.numberOfPlayers() > 0) {
+			selectPlayer(players.get(0));
+		}
 	}
 	
 	void updateButtons() {
 		boolean running = Soar2D.control.isRunning();
-		boolean slotsAvailable = Soar2D.simulation.getUnusedColors().size() > 0;
+		boolean slotsAvailable = Soar2D.simulation.getUnusedColors().size() > 6;
 		boolean hasPlayers = players.numberOfPlayers() > 0;
 		boolean selectedCook = (selectedPlayer != null);
 		
 		m_NewAgentButton.setEnabled(!running && slotsAvailable);
-		m_CloneAgentButton.setEnabled(!running && slotsAvailable && selectedCook);
 		m_DestroyAgentButton.setEnabled(!running && hasPlayers && selectedCook);
 		m_ReloadProductionsButton.setEnabled(!running && hasPlayers && selectedCook);
  	}

@@ -314,23 +314,6 @@ public class World {
 			}
 		}
 
-		if (Soar2D.config.getType() == SimType.kTaxi) {
-			TaxiMap xMap = (TaxiMap)map;
-			if (Soar2D.config.getTerminalPassengerDelivered()) {
-				if (xMap.isPassengerDelivered()) {
-					stopAndDumpStats("The passenger has been delivered.");
-					return;
-				}
-			}
-		
-			if (Soar2D.config.getTerminalFuelRemaining()) {
-				if (xMap.isFuelNegative()) {
-					stopAndDumpStats("The taxi has run out of fuel.");
-					return;
-				}
-			}
-		}
-
 		if (players.numberOfPlayers() == 0) {
 			logger.warning("Update called with no players.");
 			Soar2D.control.stopSimulation();
@@ -364,6 +347,23 @@ public class World {
 		
 		if (worldModule.update(map, players)) {
 			restartAfterUpdate = true;
+		}
+
+		if (Soar2D.config.getType() == SimType.kTaxi) {
+			TaxiMap xMap = (TaxiMap)map;
+			if (Soar2D.config.getTerminalPassengerDelivered()) {
+				if (xMap.isPassengerDelivered()) {
+					stopAndDumpStats("The passenger has been delivered.");
+					return;
+				}
+			}
+
+			if (Soar2D.config.getTerminalFuelRemaining()) {
+				if (xMap.isFuelNegative()) {
+					stopAndDumpStats("The taxi has run out of fuel.");
+					return;
+				}
+			}
 		}
 
 		if (restartAfterUpdate) {
