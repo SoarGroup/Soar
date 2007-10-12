@@ -1,6 +1,7 @@
 package soar2d.map;
 
 import java.awt.Point;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -124,8 +125,50 @@ public class TaxiMap extends GridMap {
 		return fuel < 0;
 	}
 
-	public void fillUp() {
+	public boolean fillUp(Point location) {
+		CellObject fuelObject = getObject(location, "fuel");
+		if (fuelObject == null) {
+			return false;
+		}
 		logger.info("fuel: " + Integer.toString(fuel) + " -> 14 (fillup)");
 		fuel = 14;
+		return true;
+	}
+
+	CellObject passenger = null;
+	public boolean isPassengerCarried() {
+		return passenger != null;
+	}
+	
+	public boolean pickUp(Point location) {
+		if (passenger != null) {
+			return false;
+		}
+		passenger = removeObject(location, "passenger");
+		if (passenger == null) {
+			return false;
+		}
+		return true;
+	}
+	public boolean putDown(Point location) {
+		if (passenger == null) {
+			return false;
+		}
+		addObjectToCell(location, passenger);
+		passenger = null;
+		return true;
+	}
+
+	public boolean isPassengerDestination(Point location) {
+		ArrayList<CellObject>destinations = getAllWithProperty(location, "destination");
+		if (destinations.size() < 1) {
+			return false;
+		}
+		assert destinations.size() == 1;
+		CellObject destination = destinations.get(0);
+		if (passengerDestination.equals(destination.getProperty("color"))) {
+			return true;
+		}
+		return false;
 	}
 }
