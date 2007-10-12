@@ -12,6 +12,7 @@ import soar2d.Direction;
 import soar2d.Names;
 import soar2d.Soar2D;
 import soar2d.map.CellObject;
+import soar2d.map.TaxiMap;
 import soar2d.player.Player;
 
 public class TaxiVisualWorld extends VisualWorld {
@@ -98,6 +99,13 @@ public class TaxiVisualWorld extends VisualWorld {
 					fill = cellSize/2 - size/2;
 					gc.fillRectangle(cellSize*location.x + fill, cellSize*location.y + fill, size, size);
 					gc.drawRectangle(cellSize*location.x + fill, cellSize*location.y + fill, size-1, size-1);
+					
+					TaxiMap xMap = (TaxiMap)map;
+					if (xMap.isPassengerCarried()) {
+						size = 4;
+						fill = cellSize/2 - size/2;
+						gc.drawOval(cellSize*location.x + fill, cellSize*location.y + fill, size - 1, size - 1);
+					}
 				}
 				
 				if (this.map.hasObject(location, "passenger")) {

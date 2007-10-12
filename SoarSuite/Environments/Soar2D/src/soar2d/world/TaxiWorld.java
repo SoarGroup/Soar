@@ -88,13 +88,29 @@ public class TaxiWorld implements IWorld {
 				}
 				
 			} else if (move.pickup) {
-				assert false;
+				if (map.pickUp(players.getLocation(player))) {
+					player.adjustPoints(-1, "legal pickup");
+				} else {
+					player.adjustPoints(-10, "illegal pickup");
+				}
 				
 			} else if (move.putdown) {
-				assert false;
+				if (map.putDown(players.getLocation(player))) {
+					if (map.isPassengerDestination(players.getLocation(player))) {
+						player.adjustPoints(20, "successful delivery");
+					} else {
+						player.adjustPoints(-1, "legal putdown");
+					}
+				} else {
+					player.adjustPoints(-10, "illegal putdown");
+				}
 				
 			} else if (move.fillup) {
-				map.fillUp();
+				if (map.fillUp(players.getLocation(player))) {
+					player.adjustPoints(-1, "legal fillup");
+				} else {
+					player.adjustPoints(-10, "illegal fillup");
+				}
 			}
 		}
 		
