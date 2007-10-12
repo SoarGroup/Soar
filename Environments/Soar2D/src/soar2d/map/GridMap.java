@@ -830,8 +830,8 @@ public abstract class GridMap {
 	}
 	
 	public boolean exitable(java.awt.Point location, int direction) {
-		assert false;
-		return false;
+		// BUGBUG
+		return true;
 	}
 	
 	public CellObject removeObject(java.awt.Point location, String objectName) {

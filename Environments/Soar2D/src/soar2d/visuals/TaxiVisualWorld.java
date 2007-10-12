@@ -8,6 +8,7 @@ import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.GC;
 import org.eclipse.swt.widgets.Composite;
 
+import soar2d.Direction;
 import soar2d.Names;
 import soar2d.Soar2D;
 import soar2d.map.CellObject;
@@ -48,13 +49,15 @@ public class TaxiVisualWorld extends VisualWorld {
 		}
 		
 		// Draw world
-		int fill1, fill2;
+		int fill;
 		java.awt.Point location = new java.awt.Point();
 		for(location.x = 0; location.x < map.getSize(); ++location.x){			
 			for(location.y = 0; location.y < map.getSize(); ++location.y){				
 				if ((this.map.removeObject(location, Names.kRedraw) == null) && painted) {
-					continue;
+					//continue;
 				}
+
+				//gc.drawRectangle(cellSize*location.x, cellSize*location.y, cellSize-1, cellSize-1);
 
 				boolean empty = true;
 				
@@ -65,12 +68,14 @@ public class TaxiVisualWorld extends VisualWorld {
 					empty = false;
 					CellObject destination = destinationList.get(0);
 					Color color = WindowManager.getColor(destination.getProperty(Names.kPropertyColor));
+					gc.setBackground(color);
 				    gc.fillRectangle(cellSize*location.x + 1, cellSize*location.y + 1, cellSize - 2, cellSize - 2);
 				}
 				
 				if (this.map.hasObject(location, "fuel")) {
 					empty = false;
 					Color color = WindowManager.getColor("orange");
+					gc.setBackground(color);
 				    gc.fillRectangle(cellSize*location.x + 1, cellSize*location.y + 1, cellSize - 2, cellSize - 2);
 				}
 				
@@ -80,27 +85,54 @@ public class TaxiVisualWorld extends VisualWorld {
 					empty = false;
 					
 					// BUGBUG if multiple players are supported, this needs to be changed
-					//gc.setBackground(playerColors.get(taxi));
 					gc.setBackground(WindowManager.getColor("white"));
-					gc.fillOval(cellSize*location.x, cellSize*location.y, cellSize, cellSize);
-					gc.setBackground(WindowManager.widget_background);
+
+					int size = 12;
+					fill = cellSize/2 - size/2;
+					gc.fillRectangle(cellSize*location.x + fill, cellSize*location.y + fill, size, size);
+					gc.drawRectangle(cellSize*location.x + fill, cellSize*location.y + fill, size-1, size-1);
 				}
 				
 				if (this.map.hasObject(location, "passenger")) {
 					empty = false;
 
-					fill1 = (int)(cellSize/2.8);
-					fill2 = cellSize - fill1 + 1;
+					int size = 8;
+					fill = cellSize/2 - size/2;
 					gc.setBackground(WindowManager.getColor("black"));
-					gc.fillRectangle(cellSize*location.x + fill1, cellSize*location.y + fill1, cellSize - fill2, cellSize - fill2);
-					gc.drawRectangle(cellSize*location.x + fill1, cellSize*location.y + fill1, cellSize - fill2, cellSize - fill2);
-					gc.setBackground(WindowManager.widget_background);
+					gc.fillOval(cellSize*location.x + fill, cellSize*location.y + fill, size, size);
+					gc.drawOval(cellSize*location.x + fill, cellSize*location.y + fill, size - 1, size - 1);
 				}
-				
+
 				if (empty) {
 					gc.setBackground(WindowManager.widget_background);
-					gc.fillRectangle(cellSize*location.x, cellSize*location.y, cellSize, cellSize);
+					gc.fillRectangle(cellSize*location.x+1, cellSize*location.y+1, cellSize-2, cellSize-2);
 				}
+
+				// walls
+				ArrayList<CellObject> wallList;
+				wallList = this.map.getAllWithProperty(location, "block");
+				Iterator<CellObject> wallIter = wallList.iterator();
+				while (wallIter.hasNext()) {
+					CellObject wall = (CellObject)wallIter.next();
+					switch(Direction.getInt(wall.getProperty("direction"))) {
+					case Direction.kNorthInt:
+						gc.drawLine(cellSize*location.x, cellSize*location.y, cellSize*location.x + cellSize-1, cellSize*location.y);
+						break; 
+					case Direction.kSouthInt:
+						gc.drawLine(cellSize*location.x, cellSize*location.y + cellSize-1, cellSize*location.x + cellSize-1, cellSize*location.y + cellSize-1);
+						break;
+					case Direction.kEastInt:
+						gc.drawLine(cellSize*location.x + cellSize-1, cellSize*location.y, cellSize*location.x + cellSize-1, cellSize*location.y + cellSize-1);
+						break;
+					case Direction.kWestInt:
+						gc.drawLine(cellSize*location.x, cellSize*location.y, cellSize*location.x, cellSize*location.y + cellSize-1);
+						break;
+					default:
+						assert false;
+						break;	
+					}
+				}
+				
 			}
 		}
 	}
