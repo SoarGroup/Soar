@@ -1,6 +1,9 @@
 package soar2d.map;
 
 import java.awt.Point;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 
 import soar2d.Simulation;
@@ -20,9 +23,36 @@ public class TaxiMap extends GridMap {
 	}
 	
 	public void consumeFuel() {
+		logger.info("fuel: " + Integer.toString(fuel) + " -> " + Integer.toString(fuel-1));
 		fuel -= 1;
 	}
+	
+	// passenger
+	String passengerDestination = null;
+	public boolean hasPassenger() {
+		return passengerDestination != null;
+	}
+	
+	public Point getNewPassengerLocation() {
+		Collection<Point> locations = destinationLocations.values();
+		
+		if (locations.size() < 1) {
+			return null;
+		}
+		
+		int pick = Simulation.random.nextInt(locations.size());
+		Iterator<Point> iter = locations.iterator();
+		for (int index = 0; index < pick; index++) {
+			assert iter.hasNext();
+			iter.next();
+		}
+		assert iter.hasNext();
+		return iter.next();
+	}
 
+	HashSet<String> destinationColors = new HashSet<String>();
+	HashMap<CellObject, Point> destinationLocations = new HashMap<CellObject, Point>();
+	
 	@Override
 	public void addObjectToCell(Point location, CellObject object) {
 		Cell cell = getCell(location);
@@ -36,6 +66,27 @@ public class TaxiMap extends GridMap {
 		if (object.updatable()) {
 			updatables.add(object);
 			updatablesLocations.put(object, location);
+		}
+		
+		if (object.hasProperty("destination")) {
+			destinationColors.add(object.getProperty("color"));
+			destinationLocations.put(object, location);
+		}
+		
+		if (object.hasProperty("passenger")) {
+			if (object.hasProperty("passenger-destination")) {
+				passengerDestination = object.getProperty("passenger-destination");
+			} else {
+				int pick = Simulation.random.nextInt(destinationColors.size());
+				Iterator<String> iter = destinationColors.iterator();
+				for (int index = 0; index < pick; index++) {
+					assert iter.hasNext();
+					iter.next();
+				}
+				assert iter.hasNext();
+				passengerDestination = iter.next();
+			}
+			logger.info("passenger destination: " + passengerDestination);
 		}
 		
 		cell.addCellObject(object);
@@ -53,6 +104,10 @@ public class TaxiMap extends GridMap {
 
 	@Override
 	void removalStateUpdate(CellObject object) {
+		if (object.hasProperty("destination")) {
+			destinationColors.remove(object.getProperty("color"));
+			destinationLocations.remove(object);
+		}
 	}
 
 	@Override
@@ -67,5 +122,10 @@ public class TaxiMap extends GridMap {
 
 	public boolean isFuelNegative() {
 		return fuel < 0;
+	}
+
+	public void fillUp() {
+		logger.info("fuel: " + Integer.toString(fuel) + " -> 14 (fillup)");
+		fuel = 14;
 	}
 }

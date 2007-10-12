@@ -74,9 +74,16 @@ public class TaxiVisualWorld extends VisualWorld {
 				
 				if (this.map.hasObject(location, "fuel")) {
 					empty = false;
-					Color color = WindowManager.getColor("orange");
-					gc.setBackground(color);
-				    gc.fillRectangle(cellSize*location.x + 1, cellSize*location.y + 1, cellSize - 2, cellSize - 2);
+					int size = 14;
+					fill = cellSize/2 - size/2;
+
+					gc.setForeground(WindowManager.orange);
+					gc.setBackground(WindowManager.widget_background);
+					
+					gc.fillRectangle(cellSize*location.x + fill, cellSize*location.y + fill, size, size);
+					gc.drawRectangle(cellSize*location.x + fill, cellSize*location.y + fill, size-1, size-1);
+			        
+					gc.setForeground(WindowManager.black);
 				}
 				
 				Player taxi = this.map.getPlayer(location);

@@ -830,7 +830,15 @@ public abstract class GridMap {
 	}
 	
 	public boolean exitable(java.awt.Point location, int direction) {
-		// BUGBUG
+		ArrayList<CellObject> wallList;
+		wallList = this.getAllWithProperty(location, "block");
+		Iterator<CellObject> wallIter = wallList.iterator();
+		while (wallIter.hasNext()) {
+			CellObject wall = (CellObject)wallIter.next();
+			if (direction == Direction.getInt(wall.getProperty("direction"))) {
+				return false;
+			}
+		}
 		return true;
 	}
 	

@@ -7,12 +7,14 @@ import java.util.HashSet;
 import java.util.Iterator;
 
 import soar2d.Direction;
+import soar2d.Names;
 import soar2d.Simulation;
 import soar2d.Soar2D;
 import soar2d.configuration.Configuration;
 import soar2d.map.CellObject;
 import soar2d.map.GridMap;
 import soar2d.map.KitchenMap;
+import soar2d.map.TankSoarMap;
 import soar2d.map.TaxiMap;
 import soar2d.player.MoveInfo;
 import soar2d.player.Player;
@@ -26,7 +28,14 @@ public class TaxiWorld implements IWorld {
 
 	}
 
-	public boolean postLoad(GridMap newMap) {
+	public boolean postLoad(GridMap _map) {
+		TaxiMap xMap = (TaxiMap)_map;
+		if (!xMap.hasPassenger()) {
+			if (!xMap.addRandomObjectWithProperty(xMap.getNewPassengerLocation(), "passenger")) {
+				Soar2D.control.severeError("Couldn't add passenger to map!");
+				return false;
+			}
+		}
 		return true;
 	}
 
@@ -85,7 +94,7 @@ public class TaxiWorld implements IWorld {
 				assert false;
 				
 			} else if (move.fillup) {
-				assert false;
+				map.fillUp();
 			}
 		}
 		
