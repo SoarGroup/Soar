@@ -11,6 +11,7 @@ import org.eclipse.swt.layout.*;
 import org.eclipse.swt.graphics.* ;
 import org.eclipse.swt.events.*;
 
+import sml.Agent;
 import sml.Kernel;
 
 import java.util.*;
@@ -141,6 +142,20 @@ public class EmoView extends AbstractFixedView implements Kernel.RhsFunctionInte
 		}
 		
 		return "Unknown rhs function received.";
+	}
+	
+	int rewardCallback = -1;
+	protected void registerForAgentEvents(Agent agent)
+	{
+		Kernel kernel = agent.GetKernel();
+		rewardCallback = kernel.AddRhsFunction("reward", this, null);
+	}
+
+	protected void unregisterForAgentEvents(Agent agent)
+	{
+		Kernel kernel = agent.GetKernel();
+		kernel.RemoveRhsFunction(rewardCallback);
+		rewardCallback = -1;
 	}
 
 }
