@@ -58,15 +58,13 @@ public class TaxiVisualWorld extends VisualWorld {
 					//continue;
 				}
 
-				//gc.drawRectangle(cellSize*location.x, cellSize*location.y, cellSize-1, cellSize-1);
-
-				boolean empty = true;
+				gc.setBackground(WindowManager.widget_background);
+				gc.fillRectangle(cellSize*location.x+1, cellSize*location.y+1, cellSize-2, cellSize-2);
 				
 				// destination
 				ArrayList<CellObject> destinationList;
 				destinationList = this.map.getAllWithProperty(location, "destination");
 				if (destinationList.size() > 0) {
-					empty = false;
 					CellObject destination = destinationList.get(0);
 					Color color = WindowManager.getColor(destination.getProperty(Names.kPropertyColor));
 					gc.setBackground(color);
@@ -74,7 +72,6 @@ public class TaxiVisualWorld extends VisualWorld {
 				}
 				
 				if (this.map.hasObject(location, "fuel")) {
-					empty = false;
 					int size = 14;
 					fill = cellSize/2 - size/2;
 
@@ -90,8 +87,6 @@ public class TaxiVisualWorld extends VisualWorld {
 				Player taxi = this.map.getPlayer(location);
 				
 				if (taxi != null) {
-					empty = false;
-					
 					// BUGBUG if multiple players are supported, this needs to be changed
 					gc.setBackground(WindowManager.getColor("white"));
 
@@ -109,18 +104,12 @@ public class TaxiVisualWorld extends VisualWorld {
 				}
 				
 				if (this.map.hasObject(location, "passenger")) {
-					empty = false;
 
 					int size = 8;
 					fill = cellSize/2 - size/2;
 					gc.setBackground(WindowManager.getColor("black"));
 					gc.fillOval(cellSize*location.x + fill, cellSize*location.y + fill, size, size);
 					gc.drawOval(cellSize*location.x + fill, cellSize*location.y + fill, size - 1, size - 1);
-				}
-
-				if (empty) {
-					gc.setBackground(WindowManager.widget_background);
-					gc.fillRectangle(cellSize*location.x+1, cellSize*location.y+1, cellSize-2, cellSize-2);
 				}
 
 				// walls
