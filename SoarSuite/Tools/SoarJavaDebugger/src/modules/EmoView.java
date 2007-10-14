@@ -120,6 +120,32 @@ public class EmoView extends AbstractFixedView implements Kernel.RhsFunctionInte
 		init(frame, doc, parent) ;
 	}
 
+	/************************************************************************
+	* 
+	* Set text in a thread safe way (switches to UI thread)
+	* 
+	*************************************************************************/
+	protected void setTextSafely(final String text)
+	{
+		// If Soar is running in the UI thread we can make
+		// the update directly.
+		if (!Document.kDocInOwnThread)
+		{
+			totalReward.setText(Double.toString(totalRewardValue));
+			return ;
+		}
+
+		// Have to make update in the UI thread.
+		// Callback comes in the document thread.
+        Display.getDefault().asyncExec(new Runnable() {
+            public void run() {
+            	totalReward.setText(Double.toString(totalRewardValue));
+            }
+         }) ;
+	}
+	
+	double totalRewardValue = 0;
+	
 	public String rhsFunctionHandler(int eventID, Object data,
 			String agentName, String functionName, String argument) {
 		
@@ -131,11 +157,13 @@ public class EmoView extends AbstractFixedView implements Kernel.RhsFunctionInte
 				return "Unknown argument to " + functionName;
 			}
 			
-			double totalRewardValue = Double.parseDouble(totalReward.getText());
+			//double totalRewardValue = Double.parseDouble(totalReward.getText());
 			totalRewardValue += reward;
-			totalReward.setText(Double.toString(totalRewardValue));
+			//totalReward.setText(Double.toString(totalRewardValue));
+			setTextSafely(Double.toString(totalRewardValue));
 			
-			return "Total reward changed to: " + totalReward.getText();
+			//return "Total reward changed to: " + totalReward.getText();
+			return "Total reward changed to: " + totalRewardValue;
 			
 		} else {
 			assert false;
