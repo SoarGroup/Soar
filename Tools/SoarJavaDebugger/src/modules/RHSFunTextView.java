@@ -30,11 +30,15 @@ public class RHSFunTextView extends AbstractUpdateView implements Kernel.AgentEv
 	
 	public String getModuleBaseName() { return "rhs_fun_text" ; }
 	
+	// Assume this may be empty! (no function is registered)
+	protected String rhsFunName = new String();
+	
 	public void showProperties()
 	{
-		PropertiesDialog.Property properties[] = new PropertiesDialog.Property[1] ;
+		PropertiesDialog.Property properties[] = new PropertiesDialog.Property[2] ;
 		
 		properties[0] = new PropertiesDialog.IntProperty("Update automatically every n'th decision (0 => none)", m_UpdateEveryNthDecision) ;
+		properties[1] = new PropertiesDialog.StringProperty("Name of RHS function to use to update this window", rhsFunName) ;
 		
 		boolean ok = PropertiesDialog.showDialog(m_Frame, "Properties", properties) ;
 		
@@ -47,7 +51,50 @@ public class RHSFunTextView extends AbstractUpdateView implements Kernel.AgentEv
 				this.unregisterForAgentEvents(this.getAgentFocus()) ;
 				this.registerForAgentEvents(this.getAgentFocus()) ;
 			}
-		}
+			
+			String tempRHSFunName = ((PropertiesDialog.StringProperty)properties[1]).getValue() ;
+			tempRHSFunName = tempRHSFunName.trim();
+			
+			// Make sure new one is different than old one and not zero length string
+			if (tempRHSFunName.length() <= 0 || tempRHSFunName.equals(rhsFunName)) {
+				return;
+			}
+
+			Agent agent = m_Frame.getAgentFocus() ;
+			if (agent == null) {
+				return;
+			}
+
+			// Try and register this, message and return if failure
+			Kernel kernel = agent.GetKernel();
+			int tempRHSCallback = kernel.AddRhsFunction(tempRHSFunName, this, null);
+			
+			// TODO: Verify that error check here is correct, and fix registerForAgentEvents
+			// BUGBUG: remove true
+			if (tempRHSCallback <= 0) {
+				// failed to register callback
+				MessageBox errorDialog = new MessageBox(textBox.getShell(), SWT.ICON_ERROR | SWT.OK);
+				errorDialog.setMessage("Failed to change RHS function name \"" + tempRHSFunName + "\".");
+				errorDialog.open();
+				return;
+			}
+			
+			// unregister old rhs fun
+			boolean registerOK = true ;
+
+			if (rhsCallback != -1)
+				registerOK = kernel.RemoveRhsFunction(rhsCallback);
+			
+			rhsCallback = -1;
+
+			// save new one
+			rhsFunName = tempRHSFunName;
+			rhsCallback = tempRHSCallback;
+			
+			if (!registerOK)
+				throw new IllegalStateException("Problem unregistering for events") ;
+		
+		} // Careful, returns in the previous block!
 	}
 	
 	Text textBox;
@@ -103,11 +150,22 @@ public class RHSFunTextView extends AbstractUpdateView implements Kernel.AgentEv
 	{
 		super.registerForAgentEvents(agent);
 		
+		if (rhsFunName.length() <= 0) {
+			return;
+		}
+		
 		if (agent == null)
 			return ;
 
 		Kernel kernel = agent.GetKernel();
-		rhsCallback = kernel.AddRhsFunction("reward", this, null);
+		rhsCallback = kernel.AddRhsFunction(rhsFunName, this, null);
+
+		if (rhsCallback <= 0) {
+			// failed to register callback
+			rhsCallback = -1;
+			rhsFunName = "";
+			throw new IllegalStateException("Problem registering for events") ;
+		}
 	}
 
 	protected void unregisterForAgentEvents(Agent agent)
@@ -192,7 +250,7 @@ public class RHSFunTextView extends AbstractUpdateView implements Kernel.AgentEv
 		}
 		
 		textBox = new Text(rewardContainer, SWT.MULTI | SWT.READ_ONLY);
-		textBox.setText("0");
+		updateNow();
 		{
 			GridData gd = new GridData();
 			gd.horizontalAlignment = GridData.FILL;
