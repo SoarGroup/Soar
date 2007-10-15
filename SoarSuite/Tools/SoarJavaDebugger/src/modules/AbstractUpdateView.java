@@ -12,6 +12,7 @@ package modules;
 
 import general.JavaElementXML;
 import helpers.CommandHistory;
+import helpers.FormDataHelper;
 import manager.Pane;
 import menu.ParseSelectedText;
 
@@ -26,6 +27,9 @@ import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.Font;
+import org.eclipse.swt.layout.FormAttachment;
+import org.eclipse.swt.layout.FormData;
+import org.eclipse.swt.layout.FormLayout;
 import org.eclipse.swt.widgets.Combo;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
@@ -183,8 +187,28 @@ public abstract class AbstractUpdateView extends AbstractView  implements Agent.
 		createDisplayControl(m_Container) ;
 		
 		getDisplayControl().setBackground(getBackgroundColor()) ;
+		
+		layoutControls();
 	}
 
+	/** Layout the combo box and the main display window */
+	protected void layoutControls()
+	{
+		// I'll use forms everywhere for consistency and so it's easier
+		// to extend them later if we wish to add something.
+		m_Container.setLayout(new FormLayout()) ;
+		
+		FormData attachFull = FormDataHelper.anchorFull(0) ;
+		getDisplayWindow().setLayoutData(attachFull) ;
+		
+		m_Container.layout() ;
+		
+		// Create a context menu for m_Text.
+		// It will be filled in via a call to fillInContextMenu when the menu is popped up
+		// (this allows for dynamic content)
+		createContextMenu(getDisplayControl()) ;		
+	}
+	
 	public abstract Color getBackgroundColor() ;
 	
 	// We need to remove listeners that we registered for within the debugger here.
