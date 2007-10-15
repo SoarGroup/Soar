@@ -1,6 +1,6 @@
 /********************************************************************************************
 *
-* ComboCommandView.java
+* AbstractUpdateView.java
 * 
 * Description:	
 * 
