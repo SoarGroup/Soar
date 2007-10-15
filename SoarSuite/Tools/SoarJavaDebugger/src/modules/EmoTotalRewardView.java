@@ -63,6 +63,6 @@ public class EmoTotalRewardView extends RHSFunTextView
 	@Override
 	public void onInitSoar() {
 		totalRewardValue = 0;
-		setTextSafely("0");
+		updateNow();
 	}
 }
