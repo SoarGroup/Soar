@@ -312,7 +312,7 @@ public abstract class AbstractUpdateView extends AbstractView  implements Agent.
 		// Note: We need to check the agent names match because although this is called an agentEventHandler it's
 		// an event registered with the kernel -- so it's sent to all listeners, not just the agent that is reinitializing.
 		if (this.m_UpdateOnStop && eventID == smlAgentEventId.smlEVENT_AFTER_AGENT_REINITIALIZED.swigValue() &&
-			this.getAgentFocus() != null && agentName.equals(this.getAgentFocus().GetAgentName()))
+				this.getAgentFocus() != null && agentName.equals(this.getAgentFocus().GetAgentName()))
 			updateNow() ;
 	}
 	
