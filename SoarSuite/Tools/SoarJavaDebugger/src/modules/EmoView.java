@@ -157,12 +157,9 @@ public class EmoView extends AbstractFixedView implements Kernel.RhsFunctionInte
 				return "Unknown argument to " + functionName;
 			}
 			
-			//double totalRewardValue = Double.parseDouble(totalReward.getText());
 			totalRewardValue += reward;
-			//totalReward.setText(Double.toString(totalRewardValue));
 			setTextSafely(Double.toString(totalRewardValue));
 			
-			//return "Total reward changed to: " + totalReward.getText();
 			return "Total reward changed to: " + totalRewardValue;
 			
 		} else {

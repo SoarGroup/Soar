@@ -18,6 +18,9 @@ import java.util.*;
  * A list of abstract views
  * 
  ************************************************************************/
+
+// BADBAD: we're at 1.5, we can use typed lists now instead of this class
+// for type safety
 public class AbstractViewList
 {
 	protected ArrayList	m_List = new ArrayList() ;
