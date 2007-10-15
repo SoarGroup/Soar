@@ -1,6 +1,6 @@
 /********************************************************************************************
 *
-* ComboCommandView.java
+* AbstractComboView.java
 * 
 * Description:	
 * 
@@ -38,7 +38,7 @@ import helpers.*;
 * Another derived class handles the display of those commands which may be in text or something else.
 * 
 ********************************************************************************************/
-public abstract class AbstractComboView extends AbstractView implements Agent.RunEventInterface, Agent.PrintEventInterface, Kernel.AgentEventInterface, Kernel.SystemEventInterface
+public abstract class AbstractComboView extends AbstractUpdateView implements Agent.PrintEventInterface
 {
 	protected Composite	m_ComboContainer ;
 	protected Combo 	m_CommandCombo ;
@@ -48,15 +48,6 @@ public abstract class AbstractComboView extends AbstractView implements Agent.Ru
 	
 	/** If true, we clear the command entry (combo box) line each time we execute a command */
 	protected boolean 	m_ClearComboEachCommand = false ;
-	
-	/** If true, run the current command again whenever Soar stops running */
-	protected boolean	m_UpdateOnStop = true ;
-
-	/** If > 0 run the current command at the end of every n'th decision */
-	protected int	    m_UpdateEveryNthDecision = 0 ;
-	
-	/** Count the number of decisions we've seen (if we're updating every n decisions) */
-	protected int		m_DecisionCounter = 0 ;
 	
 	/** If true, will display output from "run" commands */
 	protected boolean	m_ShowTraceOutput = false ;
@@ -70,103 +61,30 @@ public abstract class AbstractComboView extends AbstractView implements Agent.Ru
 	/** If true, the combo box is at the top of the window (otherwise at the bottom) */
 	protected boolean	m_ComboAtTop = true ;
 	
-	protected boolean   m_Updating = false ;
-	
 	/** Record a copy of the text in the combo box.  We do this so we can look up this value when executing in a non-UI thread. */
 	protected String	m_CurrentCommand ;
 			
 	/** The history of commands for this window */
 	protected CommandHistory m_CommandHistory = new CommandHistory() ;
 	
-	protected int m_StopCallback ;
-	protected int m_InitCallback ;
 	protected int m_PrintCallback ;
 	protected int m_EchoCallback ;
-	protected int m_DecisionCallback ;
 			
 	// The constructor must take no arguments so it can be called
 	// from the loading code and the new window dialog
 	public AbstractComboView()
 	{
-		m_InitCallback = -1 ;
-		m_StopCallback = -1 ;
 		m_PrintCallback = -1 ;
 		m_EchoCallback = -1 ;
-		m_DecisionCallback = -1 ;
-		m_Updating = false ;
 	}
 	
-	/** The control we're using to display the output in this case **/
-	protected abstract Control getDisplayControl() ;
-	
-	/** 
-	 * Returns the entire window, within which the display control lies.
-	 * 
-	 * Usually the display control is all there is, but this method allows us to define
-	 * a container that surrounds the display control and includes other supporting controls.
-	 * In which case this method should be overriden.
-	 */
-	protected Control getDisplayWindow() { return getDisplayControl() ; }
-	
-	/************************************************************************
-	* 
-	* Go from current selection (where right click occured) to the object
-	* selected by the user (e.g. a production name).
-	* 
-	*************************************************************************/
-	protected ParseSelectedText.SelectedObject getCurrentSelection(int mouseX, int mouseY)
-	{
-		return null ;
-	}
-	
-	/************************************************************************
-	* 
-	* Given a context menu and a control, fill in the items you want to 
-	* see in the menu.  The simplest is to just call "fillWindowMenu".
-	* 
-	* This call is made after the user has clicked to bring up the menu
-	* so we can create a dymanic menu based on the current context.
-	* 
-	* You also have to call createContextMenu() to request a context menu
-	* be attached to a specific control.
-	* 
-	*************************************************************************/
-	protected void fillInContextMenu(Menu contextMenu, Control control, int mouseX, int mouseY)
-	{
-		// Get the current selected text
-		ParseSelectedText.SelectedObject selectionObject = getCurrentSelection(mouseX, mouseY) ;
-
-		if (selectionObject == null)
-			selectionObject = new ParseSelectedText.SelectedUnknown(null) ;
-		
-		boolean simple = true ;
-		
-		// For now let's dump the output into the main trace window
-		// That lets us do interesting things by copying output into one of the
-		// scratch windows and working with it there.
-		AbstractView outputView = m_Frame.getPrimeView() ;
-		if (outputView == null) outputView = this ;
-		
-		selectionObject.fillMenu(getDocument(), this, outputView, contextMenu, simple) ;
-	}
-
-	/********************************************************************************************
-	* 
-	* Return true if this view shouldn't be user resizable.  E.g. A text window would return false
-	* but a bar for buttons would return true.
-	* 
-	********************************************************************************************/
-	public boolean isFixedSizeView()
-	{
-		return false ;
-	}
-
 	/************************************************************************
 	* 
 	* Returns true if this window can display output from commands executed through
 	* the "executeAgentCommand" method.
 	* 
 	*************************************************************************/
+	@Override
 	public boolean canDisplayOutput()
 	{
 		return true ;
@@ -220,13 +138,6 @@ public abstract class AbstractComboView extends AbstractView implements Agent.Ru
 		// (this allows for dynamic content)
 		createContextMenu(getDisplayControl()) ;		
 	}
-	
-	/********************************************************************************************
-	* 
-	* Create the window that will display the output
-	* 
-	********************************************************************************************/
-	protected abstract void createDisplayControl(Composite parent) ;
 	
 	/********************************************************************************************
 	 * 
@@ -308,21 +219,14 @@ public abstract class AbstractComboView extends AbstractView implements Agent.Ru
     	}
     } } ;
     
-	public abstract Color getBackgroundColor() ;
-	
-	// We need to remove listeners that we registered for within the debugger here.
-	// Agent listeners (from Soar) are handled separately.
-	private void removeListeners()
-	{
-		m_Frame.removeAgentFocusListener(this) ;
-	}
-	
+
 	/************************************************************************
 	* 
 	* Set the focus to this window so the user can type commands easily.
 	* Return true if this window wants the focus.
 	* 
 	*************************************************************************/
+	@Override
 	public boolean setFocus()
 	{
 		// For us, we focus on the combo box, where the user types commands.
@@ -331,6 +235,7 @@ public abstract class AbstractComboView extends AbstractView implements Agent.Ru
 		return true ;
 	}
 	
+	@Override
 	public boolean hasFocus()
 	{
 		return m_CommandCombo.isFocusControl() || getDisplayControl().isFocusControl() ;
@@ -418,20 +323,12 @@ public abstract class AbstractComboView extends AbstractView implements Agent.Ru
 			m_Updating = false ;
 	}
 		
-	public void setTextFont(Font f)
-	{
-		getDisplayControl().setFont(f) ;
-	}
-	
-	protected abstract void storeContent(JavaElementXML element) ;
-
-	protected abstract void restoreContent(JavaElementXML element) ;
-	
 	/************************************************************************
 	* 
 	* Converts this object into an XML representation.
 	* 
 	*************************************************************************/
+	@Override
 	public general.JavaElementXML convertToXML(String title, boolean storeContent)
 	{
 		JavaElementXML element = new JavaElementXML(title) ;
@@ -479,6 +376,7 @@ public abstract class AbstractComboView extends AbstractView implements Agent.Ru
 	* @param element		The XML representation of this command
 	* 
 	*************************************************************************/
+	@Override
 	public void loadFromXML(MainFrame frame, doc.Document doc, Pane parent, general.JavaElementXML element) throws Exception
 	{
 		setValues(frame, doc, parent) ;
@@ -546,32 +444,6 @@ public abstract class AbstractComboView extends AbstractView implements Agent.Ru
 		}		
 	}
 	
-	public void agentEventHandler(int eventID, Object data, String agentName)
-	{
-		// Note: We need to check the agent names match because although this is called an agentEventHandler it's
-		// an event registered with the kernel -- so it's sent to all listeners, not just the agent that is reinitializing.
-		if (this.m_UpdateOnStop && eventID == smlAgentEventId.smlEVENT_AFTER_AGENT_REINITIALIZED.swigValue() &&
-			this.getAgentFocus() != null && agentName.equals(this.getAgentFocus().GetAgentName()))
-			updateNow() ;
-	}
-	
-	public void systemEventHandler(int eventID, Object data, Kernel kernel)
-	{
-		if (this.m_UpdateOnStop && eventID == smlSystemEventId.smlEVENT_SYSTEM_STOP.swigValue())
-			updateNow() ;
-	}	
-	
-	public void runEventHandler(int eventID, Object data, Agent agent, int phase)
-	{
-		if (eventID == smlRunEventId.smlEVENT_AFTER_DECISION_CYCLE.swigValue())
-		{
-			m_DecisionCounter++ ;
-			
-			if (this.m_UpdateEveryNthDecision > 0 && (m_DecisionCounter % m_UpdateEveryNthDecision) == 0)
-				updateNow() ;
-		}		
-	}
-
 	/************************************************************************
 	* 
 	* Execute a command (send it to Soar) and display the output in a manner
@@ -583,6 +455,7 @@ public abstract class AbstractComboView extends AbstractView implements Agent.Ru
 	* The result (if any) is also returned to the caller.
 	* 
 	*************************************************************************/
+	@Override
 	public String executeAgentCommand(String command, boolean echoCommand)
 	{
 		// Check to see if this is a local command (handled directly by the debugger not Soar)
@@ -630,6 +503,7 @@ public abstract class AbstractComboView extends AbstractView implements Agent.Ru
 	* into the output window.
 	* 
 	*************************************************************************/
+	@Override
 	public void displayText(String text)
 	{
 		appendTextSafely(text) ;
@@ -683,15 +557,7 @@ public abstract class AbstractComboView extends AbstractView implements Agent.Ru
 			appendTextSafely(message) ;
 	}
 
-	/********************************************************************************************
-	 * 
-	 * Register for events of particular interest to this view
-	 * 
-	 ********************************************************************************************/
-	protected abstract void registerForViewAgentEvents(Agent agent) ;
-	protected abstract boolean unregisterForViewAgentEvents(Agent agent) ;
-	protected abstract void clearViewAgentEvents() ;
-	
+	@Override
 	protected void registerForAgentEvents(Agent agent)
 	{
 		if (agent == null)
@@ -733,16 +599,15 @@ public abstract class AbstractComboView extends AbstractView implements Agent.Ru
 	}
 	
 	/** Agent gone, so clear any callback references we have (we can't unregister because agent object already destroyed) */
+	@Override
 	protected void clearAgentEvents()
 	{
-		m_StopCallback = -1 ;
-		m_InitCallback = -1 ;
 		m_PrintCallback = -1 ;
 		m_EchoCallback = -1 ;
-		m_DecisionCallback = -1 ;
-		clearViewAgentEvents() ;
+		super.clearAgentEvents();
 	}
 	
+	@Override
 	protected void unregisterForAgentEvents(Agent agent)
 	{
 		if (agent == null)
