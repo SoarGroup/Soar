@@ -14,6 +14,7 @@ import org.eclipse.swt.events.*;
 
 import sml.Agent;
 import sml.Kernel;
+import sml.smlAgentEventId;
 
 import java.util.*;
 import debugger.MainFrame;
@@ -31,38 +32,25 @@ public class EmoTotalRewardView extends AbstractUpdateView implements Kernel.Rhs
 	
 	public void showProperties()
 	{
-		assert false;
+		PropertiesDialog.Property properties[] = new PropertiesDialog.Property[1] ;
+		
+		properties[0] = new PropertiesDialog.IntProperty("Update automatically every n'th decision (0 => none)", m_UpdateEveryNthDecision) ;
+		
+		boolean ok = PropertiesDialog.showDialog(m_Frame, "Properties", properties) ;
+		
+		if (ok) {
+			m_UpdateEveryNthDecision = ((PropertiesDialog.IntProperty)properties[0]).getValue() ;
+
+			if (this.getAgentFocus() != null)
+			{
+				// Make sure we're getting the events to match the new settings
+				this.unregisterForAgentEvents(this.getAgentFocus()) ;
+				this.registerForAgentEvents(this.getAgentFocus()) ;
+			}
+		}
 	}
 	
 	Text totalRewardText;
-
-	public general.JavaElementXML convertToXML(String title, boolean storeContent)
-	{
-		JavaElementXML element = new JavaElementXML(title) ;
-		
-		// It's useful to record the class name to uniquely identify the type
-		// of object being stored at this point in the XML tree.
-		Class cl = this.getClass() ;
-		element.addAttribute(JavaElementXML.kClassAttribute, cl.getName()) ;
-
-		// Store this object's properties.
-		element.addAttribute("Name", m_Name) ;
-
-		return element ;
-	}
-
-	public void loadFromXML(MainFrame frame, doc.Document doc, Pane parent, general.JavaElementXML element) throws Exception
-	{
-		setValues(frame, doc, parent) ;
-		
-		m_Name   = element.getAttributeThrows("Name") ;
-
-		// Register that this module's name is in use
-		frame.registerViewName(m_Name, this) ;
-
-		// Actually create the window
-		init(frame, doc, parent) ;
-	}
 
 	/************************************************************************
 	* 
@@ -154,17 +142,30 @@ public class EmoTotalRewardView extends AbstractUpdateView implements Kernel.Rhs
 			boolean wrap, boolean searchHiddenText) {
 		return false;
 	}
+	
+	int initSoarRewardResetHandler = -1;
 
 	@Override
 	protected void registerForViewAgentEvents(Agent agent) {
-		//TODO: handle init-soar so that we reset the counter
+		initSoarRewardResetHandler  = agent.GetKernel().RegisterForAgentEvent(smlAgentEventId.smlEVENT_AFTER_AGENT_REINITIALIZED, this, this) ;
 	}
 	@Override
-	protected boolean unregisterForViewAgentEvents(Agent agent) {	
-		return true;
+	protected boolean unregisterForViewAgentEvents(Agent agent) {
+		if (agent == null)
+			return true;
+
+		boolean ok = true;
+		
+		if (initSoarRewardResetHandler != -1)
+			ok = agent.GetKernel().UnregisterForAgentEvent(initSoarRewardResetHandler);
+		
+		initSoarRewardResetHandler = -1;
+		
+		return ok;
 	}
 	@Override
 	protected void clearViewAgentEvents() {
+		initSoarRewardResetHandler = -1;
 	}
 	
 	Composite rewardContainer;
@@ -241,5 +242,20 @@ public class EmoTotalRewardView extends AbstractUpdateView implements Kernel.Rhs
 
 	@Override
 	public void displayText(String text) {
+	}
+	
+	public void resetReward() {
+		totalRewardValue = 0;
+		setTextSafely("0");
+	}
+
+	public void agentEventHandler(int eventID, Object data, String agentName)
+	{
+		// Note: We need to check the agent names match because although this is called an agentEventHandler it's
+		// an event registered with the kernel -- so it's sent to all listeners, not just the agent that is reinitializing.
+		if (eventID == smlAgentEventId.smlEVENT_AFTER_AGENT_REINITIALIZED.swigValue()) {
+			resetReward();
+			updateNow() ;
+		}
 	}
 }
