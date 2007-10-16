@@ -22,38 +22,36 @@ import dialogs.PropertiesDialog;
 import dialogs.ReorderButtonsDialog;
 import doc.Document;
 
-public class EmoTotalRewardView extends RHSFunTextView
+public class RHSNumberAccumulatorView extends RHSFunTextView
 {
-	public EmoTotalRewardView()
+	public RHSNumberAccumulatorView()
 	{
-		this.labelText = "Total Reward:";
-		this.rhsFunName = "reward";
 	}
 	
-	public String getModuleBaseName() { return "emo_total_reward" ; }
+	public String getModuleBaseName() { return "rhs_number_accumulator" ; }
 	
 	@Override
 	protected void updateNow() {
-		setTextSafely(Double.toString(totalRewardValue));
+		setTextSafely(Double.toString(totalValue));
 	}
 
-	double totalRewardValue = 0;
+	double totalValue = 0;
 
 	@Override
 	public String rhsFunctionHandler(int eventID, Object data,
 			String agentName, String functionName, String argument) {
 		
 		if (functionName.equals(rhsFunName)) {
-			double reward = 0;
+			double value = 0;
 			try {
-				reward = Double.parseDouble(argument);
+				value = Double.parseDouble(argument);
 			} catch (NumberFormatException e) {
 				return "Unknown argument to " + rhsFunName;
 			}
 			
-			totalRewardValue += reward;
+			totalValue += value;
 			
-			return "Total reward changed to: " + totalRewardValue;
+			return "Total value changed to: " + totalValue;
 		}
 		
 		return "Unknown rhs function received in window " + getName() + ".";
@@ -61,7 +59,7 @@ public class EmoTotalRewardView extends RHSFunTextView
 	
 	@Override
 	public void onInitSoar() {
-		totalRewardValue = 0;
+		totalValue = 0;
 		updateNow();
 	}
 }
