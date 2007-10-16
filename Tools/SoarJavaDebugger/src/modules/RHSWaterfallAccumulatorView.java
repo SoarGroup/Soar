@@ -22,7 +22,7 @@ import dialogs.PropertiesDialog;
 import dialogs.ReorderButtonsDialog;
 import doc.Document;
 
-public class RHSWaterfallAccumulatorView extends RHSFunTextView
+public class RHSWaterfallAccumulatorView extends RHSFunTextView implements Kernel.RhsFunctionInterface
 {
 	public RHSWaterfallAccumulatorView()
 	{
@@ -45,7 +45,6 @@ public class RHSWaterfallAccumulatorView extends RHSFunTextView
 			newText.append(currentValue);
 			newText.append("\n");
 			newText.append(oldValues);
-			System.out.println("updateNow: " + oldValues);
 
 			setTextSafely(newText.toString());
 			
@@ -132,7 +131,6 @@ public class RHSWaterfallAccumulatorView extends RHSFunTextView
 				oldValues.insert(0, currentValue);
 				oldValues.insert(0, ": ");
 				oldValues.insert(0, currentTag);
-				System.out.println("rhsFunctionHandler: " + oldValues);
 			}
 			
 			//create new tag
