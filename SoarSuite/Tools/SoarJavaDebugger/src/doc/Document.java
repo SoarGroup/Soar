@@ -146,6 +146,7 @@ public class Document implements Kernel.AgentEventInterface, Kernel.SystemEventI
 		Module fold 	 = new Module("Tree Trace Window", "Output from commands and trace output from runs is shown in a tree window.", FoldingTextView.class) ;
 		Module rhsAccum	 = new Module("RHS Number Accumulator", "RHS function number (type: double) accumulator.", modules.RHSNumberAccumulatorView.class);
 		Module rhsText	 = new Module("RHS Text View", "Displays attribute-value pairs from RHS functions.", modules.RHSFunTextView.class);
+		Module waterfallText = new Module("RHS Waterfall Text View", "Tagged version of the accumulator.", modules.RHSWaterfallAccumulatorView.class);
 
 		m_ModuleList.add(fold) ;
 		m_ModuleList.add(textTrace) ;
@@ -156,6 +157,7 @@ public class Document implements Kernel.AgentEventInterface, Kernel.SystemEventI
 		m_ModuleList.add(edit) ;
 		m_ModuleList.add(rhsAccum) ;
 		m_ModuleList.add(rhsText) ;
+		m_ModuleList.add(waterfallText) ;
 		
 	}
 	

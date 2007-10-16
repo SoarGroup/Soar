@@ -362,6 +362,7 @@ public class RHSFunTextView extends AbstractUpdateView implements Kernel.AgentEv
 
 	@Override
 	public void clearDisplay() {
+		setTextSafely("");
 	}
 
 	@Override
@@ -374,6 +375,7 @@ public class RHSFunTextView extends AbstractUpdateView implements Kernel.AgentEv
 	}
 	
 	public void onInitSoar() {
+		clearDisplay();
 	}
 
 	public void agentEventHandler(int eventID, Object data, String agentName)
