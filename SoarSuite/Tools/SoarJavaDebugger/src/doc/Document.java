@@ -145,6 +145,7 @@ public class Document implements Kernel.AgentEventInterface, Kernel.SystemEventI
 		Module edit 	 = new Module("Edit Production Window", "A window used to edit a production and then load it into Soar", modules.EditorView.class) ;
 		Module fold 	 = new Module("Tree Trace Window", "Output from commands and trace output from runs is shown in a tree window.", FoldingTextView.class) ;
 		Module emo		 = new Module("Emotion Total Reward", "Total reward accumulator.", modules.EmoTotalRewardView.class);
+		Module rhsText	 = new Module("RHS Text View", "Displays attribute-value pairs from RHS functions.", modules.RHSFunTextView.class);
 
 		m_ModuleList.add(fold) ;
 		m_ModuleList.add(textTrace) ;
@@ -154,6 +155,7 @@ public class Document implements Kernel.AgentEventInterface, Kernel.SystemEventI
 		m_ModuleList.add(phase) ;
 		m_ModuleList.add(edit) ;
 		m_ModuleList.add(emo) ;
+		m_ModuleList.add(rhsText) ;
 		
 	}
 	
