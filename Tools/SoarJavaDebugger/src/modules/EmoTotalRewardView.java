@@ -26,6 +26,8 @@ public class EmoTotalRewardView extends RHSFunTextView
 {
 	public EmoTotalRewardView()
 	{
+		this.labelText = "Total Reward:";
+		this.rhsFunName = "reward";
 	}
 	
 	public String getModuleBaseName() { return "emo_total_reward" ; }
@@ -36,7 +38,7 @@ public class EmoTotalRewardView extends RHSFunTextView
 	}
 
 	double totalRewardValue = 0;
-	
+
 	@Override
 	public String rhsFunctionHandler(int eventID, Object data,
 			String agentName, String functionName, String argument) {

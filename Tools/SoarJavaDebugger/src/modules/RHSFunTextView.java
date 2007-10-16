@@ -26,24 +26,30 @@ public class RHSFunTextView extends AbstractUpdateView implements Kernel.AgentEv
 {
 	public RHSFunTextView()
 	{
+		labelText = getModuleBaseName();
 	}
 	
 	public String getModuleBaseName() { return "rhs_fun_text" ; }
 	
 	// Assume this may be empty! (no function is registered)
 	protected String rhsFunName = new String();
+	protected String labelText = new String();
+	protected Label labelTextWidget;
 	
 	public void showProperties()
 	{
-		PropertiesDialog.Property properties[] = new PropertiesDialog.Property[2] ;
+		PropertiesDialog.Property properties[] = new PropertiesDialog.Property[3] ;
 		
 		properties[0] = new PropertiesDialog.IntProperty("Update automatically every n'th decision (0 => none)", m_UpdateEveryNthDecision) ;
 		properties[1] = new PropertiesDialog.StringProperty("Name of RHS function to use to update this window", rhsFunName) ;
+		properties[2] = new PropertiesDialog.StringProperty("Label text", labelText) ;
 		
 		boolean ok = PropertiesDialog.showDialog(m_Frame, "Properties", properties) ;
 		
 		if (ok) {
 			m_UpdateEveryNthDecision = ((PropertiesDialog.IntProperty)properties[0]).getValue() ;
+			labelText = ((PropertiesDialog.StringProperty)properties[2]).getValue() ;
+			setLabelText(labelText);
 
 			if (this.getAgentFocus() != null)
 			{
@@ -119,6 +125,25 @@ public class RHSFunTextView extends AbstractUpdateView implements Kernel.AgentEv
         Display.getDefault().asyncExec(new Runnable() {
             public void run() {
             	textBox.setText(text);
+            }
+         }) ;
+	}
+	
+	protected void setLabelText(final String text)
+	{
+		// If Soar is running in the UI thread we can make
+		// the update directly.
+		if (!Document.kDocInOwnThread)
+		{
+			labelTextWidget.setText(text);
+			return ;
+		}
+		
+		// Have to make update in the UI thread.
+		// Callback comes in the document thread.
+        Display.getDefault().asyncExec(new Runnable() {
+            public void run() {
+            	labelTextWidget.setText(text);
             }
          }) ;
 	}
@@ -246,39 +271,38 @@ public class RHSFunTextView extends AbstractUpdateView implements Kernel.AgentEv
 		rhsFunInitSoarHandler = -1;
 	}
 	
-	Composite rewardContainer;
+	Composite rhsFunContainer;
 
 	@Override
 	protected void createDisplayControl(Composite parent) {
 		
-		rewardContainer = new Composite(parent, SWT.NULL);
+		rhsFunContainer = new Composite(parent, SWT.NULL);
 		FormData attachFull = FormDataHelper.anchorFull(0) ;
-		rewardContainer.setLayoutData(attachFull);
+		rhsFunContainer.setLayoutData(attachFull);
 		{
 			GridLayout gl = new GridLayout();
 			gl.numColumns = 1;
 			gl.verticalSpacing = 0;
 			gl.marginHeight = 0;
 			gl.marginWidth = 0;
-			rewardContainer.setLayout(gl);
+			rhsFunContainer.setLayout(gl);
 		}
 		
-		Label textBoxLabel = new Label(rewardContainer, SWT.NONE);
-		textBoxLabel.setText(getName());
+		labelTextWidget = new Label(rhsFunContainer, SWT.NONE);
+		labelTextWidget.setText(labelText);
 		{
 			GridData gd = new GridData(SWT.FILL, SWT.NONE, true, false);
-			//gd.grabExcessHorizontalSpace = true;
-			textBoxLabel.setLayoutData(gd);
+			labelTextWidget.setLayoutData(gd);
 		}
 		
-		textBox = new Text(rewardContainer, SWT.MULTI | SWT.READ_ONLY | SWT.H_SCROLL | SWT.V_SCROLL);
+		textBox = new Text(rhsFunContainer, SWT.MULTI | SWT.READ_ONLY | SWT.H_SCROLL | SWT.V_SCROLL);
 		updateNow();
 		{
 			GridData gd = new GridData(SWT.FILL, SWT.FILL, true, true);
 			textBox.setLayoutData(gd);
 		}
 
-		createContextMenu(textBoxLabel) ;
+		createContextMenu(labelTextWidget) ;
 		createContextMenu(textBox) ;
 	}
 	
@@ -290,7 +314,7 @@ public class RHSFunTextView extends AbstractUpdateView implements Kernel.AgentEv
 	@Override
 	protected Control getDisplayControl() {
 		// this should return the text control
-		return rewardContainer;
+		return rhsFunContainer;
 	}
 
 	@Override
@@ -356,7 +380,8 @@ public class RHSFunTextView extends AbstractUpdateView implements Kernel.AgentEv
 		element.addAttribute("UpdateOnStop", Boolean.toString(m_UpdateOnStop)) ;
 		element.addAttribute("UpdateEveryNthDecision", Integer.toString(m_UpdateEveryNthDecision)) ;
 		element.addAttribute("RHSFunctionName", rhsFunName) ;
-		
+		element.addAttribute("LabelText", labelText) ;
+				
 		if (storeContent)
 			storeContent(element) ;
 
@@ -384,8 +409,14 @@ public class RHSFunTextView extends AbstractUpdateView implements Kernel.AgentEv
 		m_UpdateOnStop	   	= element.getAttributeBooleanThrows("UpdateOnStop") ;
 		m_UpdateEveryNthDecision = element.getAttributeIntThrows("UpdateEveryNthDecision") ;
 		rhsFunName 			= element.getAttribute("RHSFunctionName");
+		labelText 			= element.getAttribute("LabelText");
+		
 		if (rhsFunName == null) {
 			rhsFunName = new String();
+		}
+		
+		if (labelText == null) {
+			labelText = new String();
 		}
 		
 		JavaElementXML log = element.findChildByName("Logger") ;
