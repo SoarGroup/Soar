@@ -113,7 +113,7 @@ public class RHSFunTextView extends AbstractUpdateView implements Kernel.AgentEv
 			textBox.setText(text);
 			return ;
 		}
-
+		
 		// Have to make update in the UI thread.
 		// Callback comes in the document thread.
         Display.getDefault().asyncExec(new Runnable() {
@@ -123,26 +123,53 @@ public class RHSFunTextView extends AbstractUpdateView implements Kernel.AgentEv
          }) ;
 	}
 	
+	/************************************************************************
+	* 
+	* Append text in a thread safe way (switches to UI thread)
+	* 
+	*************************************************************************/
+	protected void appendTextSafely(final String text)
+	{
+		// If Soar is running in the UI thread we can make
+		// the update directly.
+		if (!Document.kDocInOwnThread)
+		{
+			textBox.append(text);
+			return ;
+		}
+		
+		// Have to make update in the UI thread.
+		// Callback comes in the document thread.
+        Display.getDefault().asyncExec(new Runnable() {
+            public void run() {
+            	textBox.append(text);
+            }
+         }) ;
+	}
+	
 	public String rhsFunctionHandler(int eventID, Object data,
 			String agentName, String functionName, String argument) {
-//		
-//		if (functionName.equals("reward")) {
-//			double reward = 0;
-//			try {
-//				reward = Double.parseDouble(argument);
-//			} catch (NumberFormatException e) {
-//				return "Unknown argument to " + functionName;
-//			}
-//			
-//			totalRewardValue += reward;
-//			
-//			return "Total reward changed to: " + totalRewardValue;
-//			
-//		} else {
-//			assert false;
-//		}
-//		
-		return "Unknown rhs function received.";
+
+		if (!functionName.equals(rhsFunName)) {
+			return "Unknown rhs function received in window " + getName() + ".";
+		}
+		
+		String[] args = argument.split("\\s+");
+		StringBuilder output = new StringBuilder();
+		
+		for (int index = 0; index < args.length; index += 2) {
+			output.append(args[index]);
+			if (index + 1 < args.length) {
+				output.append(": ");
+				output.append(args[index + 1]);
+				output.append("\n");
+			}
+		}
+		
+		System.out.println(output);
+		setTextSafely(output.toString());
+		
+		return "Successfully updated " + getName();
 	}
 	
 	int rhsCallback = -1;
@@ -230,34 +257,28 @@ public class RHSFunTextView extends AbstractUpdateView implements Kernel.AgentEv
 		{
 			GridLayout gl = new GridLayout();
 			gl.numColumns = 1;
-//			gl.marginLeft = 0;
-//			gl.marginRight = 0;
-//			gl.marginTop = 0;
-//			gl.marginBottom = 0;
 			gl.verticalSpacing = 0;
-//			gl.marginBottom = 0;
 			gl.marginHeight = 0;
 			gl.marginWidth = 0;
 			rewardContainer.setLayout(gl);
 		}
 		
-		Label totalRewardLabel = new Label(rewardContainer, SWT.NONE);
-		totalRewardLabel.setText("Total Reward:");
+		Label textBoxLabel = new Label(rewardContainer, SWT.NONE);
+		textBoxLabel.setText(getName());
 		{
-			GridData gd = new GridData();
-			gd.grabExcessHorizontalSpace = true;
-			totalRewardLabel.setLayoutData(gd);
+			GridData gd = new GridData(SWT.FILL, SWT.NONE, true, false);
+			//gd.grabExcessHorizontalSpace = true;
+			textBoxLabel.setLayoutData(gd);
 		}
 		
-		textBox = new Text(rewardContainer, SWT.MULTI | SWT.READ_ONLY);
+		textBox = new Text(rewardContainer, SWT.MULTI | SWT.READ_ONLY | SWT.H_SCROLL | SWT.V_SCROLL);
 		updateNow();
 		{
-			GridData gd = new GridData();
-			gd.horizontalAlignment = GridData.FILL;
+			GridData gd = new GridData(SWT.FILL, SWT.FILL, true, true);
 			textBox.setLayoutData(gd);
 		}
 
-		createContextMenu(totalRewardLabel) ;
+		createContextMenu(textBoxLabel) ;
 		createContextMenu(textBox) ;
 	}
 	
@@ -310,6 +331,75 @@ public class RHSFunTextView extends AbstractUpdateView implements Kernel.AgentEv
 
 	@Override
 	protected void updateNow() {
-		assert false;
+		// we don't need to do anything here but subclasses might
 	}
+	
+	/************************************************************************
+	* 
+	* Converts this object into an XML representation.
+	* 
+	*************************************************************************/
+	@Override
+	public JavaElementXML convertToXML(String title, boolean storeContent) {
+		JavaElementXML element = new JavaElementXML(title) ;
+		
+		// It's useful to record the class name to uniquely identify the type
+		// of object being stored at this point in the XML tree.
+		Class cl = this.getClass() ;
+		element.addAttribute(JavaElementXML.kClassAttribute, cl.getName()) ;
+
+		if (m_Name == null)
+			throw new IllegalStateException("We've created a view with no name -- very bad") ;
+		
+		// Store this object's properties.
+		element.addAttribute("Name", m_Name) ;
+		element.addAttribute("UpdateOnStop", Boolean.toString(m_UpdateOnStop)) ;
+		element.addAttribute("UpdateEveryNthDecision", Integer.toString(m_UpdateEveryNthDecision)) ;
+		element.addAttribute("RHSFunctionName", rhsFunName) ;
+		
+		if (storeContent)
+			storeContent(element) ;
+
+		element.addChildElement(this.m_Logger.convertToXML("Logger")) ;
+		
+		return element ;
+	}
+
+	/************************************************************************
+	* 
+	* Rebuild the object from an XML representation.
+	* 
+	* @param frame			The top level window that owns this window
+	* @param doc			The document we're rebuilding
+	* @param parent			The pane window that owns this view
+	* @param element		The XML representation of this command
+	* 
+	*************************************************************************/
+	@Override
+	public void loadFromXML(MainFrame frame, Document doc, Pane parent,
+			JavaElementXML element) throws Exception {
+		setValues(frame, doc, parent) ;
+
+		m_Name			   	= element.getAttribute("Name") ;
+		m_UpdateOnStop	   	= element.getAttributeBooleanThrows("UpdateOnStop") ;
+		m_UpdateEveryNthDecision = element.getAttributeIntThrows("UpdateEveryNthDecision") ;
+		rhsFunName 			= element.getAttribute("RHSFunctionName");
+		if (rhsFunName == null) {
+			rhsFunName = new String();
+		}
+		
+		JavaElementXML log = element.findChildByName("Logger") ;
+		if (log != null)
+			this.m_Logger.loadFromXML(doc, log) ;
+
+		// Register that this module's name is in use
+		frame.registerViewName(m_Name, this) ;
+		
+		// Actually create the window
+		init(frame, doc, parent) ;
+
+		// Restore the text we saved (if we chose to save it)
+		restoreContent(element) ;
+	}
+
 }

@@ -41,23 +41,20 @@ public class EmoTotalRewardView extends RHSFunTextView
 	public String rhsFunctionHandler(int eventID, Object data,
 			String agentName, String functionName, String argument) {
 		
-		if (functionName.equals("reward")) {
+		if (functionName.equals(rhsFunName)) {
 			double reward = 0;
 			try {
 				reward = Double.parseDouble(argument);
 			} catch (NumberFormatException e) {
-				return "Unknown argument to " + functionName;
+				return "Unknown argument to " + rhsFunName;
 			}
 			
 			totalRewardValue += reward;
 			
 			return "Total reward changed to: " + totalRewardValue;
-			
-		} else {
-			assert false;
 		}
 		
-		return "Unknown rhs function received.";
+		return "Unknown rhs function received in window " + getName() + ".";
 	}
 	
 	@Override
