@@ -19,11 +19,14 @@ public class TaxiMap extends GridMap {
 	
 	public TaxiMap(Configuration config) {
 		super(config);
-
-		fuel = Simulation.random.nextInt(8) + 5; // 5-12
+		
+		fuel = Simulation.random.nextInt(1 + Soar2D.xConfig.getFuelStartingMaximum() - Soar2D.xConfig.getFuelStartingMinimum() ) + Soar2D.xConfig.getFuelStartingMinimum(); 
 	}
 	
 	public void consumeFuel() {
+		if (Soar2D.xConfig.getDisableFuel()) {
+			logger.info("fuel consumption disabled");
+		}
 		logger.info("fuel: " + Integer.toString(fuel) + " -> " + Integer.toString(fuel-1));
 		fuel -= 1;
 	}
@@ -134,8 +137,9 @@ public class TaxiMap extends GridMap {
 		if (fuelObject == null) {
 			return false;
 		}
-		logger.info("fuel: " + Integer.toString(fuel) + " -> 14 (fillup)");
-		fuel = 14;
+		int maximum = Soar2D.xConfig.getFuelMaximum();
+		logger.info("fuel: " + Integer.toString(fuel) + " -> " + maximum + " (fillup)");
+		fuel = maximum;
 		return true;
 	}
 
@@ -183,5 +187,21 @@ public class TaxiMap extends GridMap {
 
 	public void delivered() {
 		passengerDelivered = true;
+	}
+
+	public String getStringType(Point location) {
+		ArrayList<CellObject> dests = this.getAllWithProperty(location, "destination");
+		assert dests.size() < 2;
+		if (dests.size() > 0) {
+			return dests.get(0).getProperty("color");
+		}
+		
+		ArrayList<CellObject> fuels = this.getAllWithProperty(location, "fuel");
+		assert fuels.size() < 2;
+		if (fuels.size() > 0) {
+			return "fuel";
+		}
+		
+		return "normal";
 	}
 }

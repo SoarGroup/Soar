@@ -25,6 +25,8 @@
         ^type [normal red blue green yellow fuel]
         ^passenger [true false] passenger is hailing cab	
         	
+# Error status only happens when there's an architectural error.
+# Do not use "status" to determine if your command was successful or not.         	
 ^output-link
 	^move
 		^direction [north south east west]

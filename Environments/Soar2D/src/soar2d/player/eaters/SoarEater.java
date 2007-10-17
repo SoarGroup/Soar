@@ -417,7 +417,8 @@ public class SoarEater extends Eater {
 		// if we moved, update the location
 		if (moved) {
 			agent.Update(xWME, location.x);
-			agent.Update(yWME, location.y);
+			int newY = Soar2D.simulation.world.getMap().getSize() - 1 - location.y;
+			agent.Update(yWME, newY);
 		}
 		
 		// update the random no matter what
