@@ -2,11 +2,11 @@
     ^self
         ^position
             ^x <int> current grid column
-            ^y <int> current grid row
+            ^y <int> current grid row, flipped
         ^reward <int> result of last action
         ^random <float> a random number, just like eaters and tanksoar, [0..1)
         ^passenger [true false] true if a passenger is carried
-        ^destination [red blue green yellow]
+        ?^destination [red blue green yellow]
         ^fuel <int> fuel remaining
     ^view
         ^north
@@ -29,13 +29,13 @@
 	^move
 		^direction [north south east west]
 		^status [complete error]
-	^stop-sim
-		^status [complete error]
 	^pickup
 		^status [complete error]
 	^putdown
 		^status [complete error]
 	^fillup
+		^status [complete error]
+	^stop-sim
 		^status [complete error]
 	
 		
