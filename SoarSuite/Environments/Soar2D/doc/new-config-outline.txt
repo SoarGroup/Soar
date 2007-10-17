@@ -74,6 +74,14 @@
 					float radians per sec default: pi / 4
 				?<blocks-block>
 					boolean if the blocks should block movement or not
+			?<taxi>
+				?<disable-fuel> ignore fuel
+				?<fuel-starting-minimum>
+					int lower range of starting fuel, must be [0..fuel-maximum]
+				?<fuel-starting-maximum>
+					int upper range of starting fuel, must be [starting-minimum..fuel-maximum]
+				?<fuel-maximum>
+					int max fuel, must be >= starting-maximum
 	?<logging>
 		?<level>
 			enum { severe, warning, info, fine, finer, finest }

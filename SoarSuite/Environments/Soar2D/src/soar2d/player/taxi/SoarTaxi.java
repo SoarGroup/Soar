@@ -11,6 +11,7 @@ import soar2d.Names;
 import soar2d.Simulation;
 import soar2d.Soar2D;
 import soar2d.map.CellObject;
+import soar2d.map.TaxiMap;
 import soar2d.player.MoveInfo;
 import soar2d.player.Player;
 import soar2d.player.PlayerConfig;
@@ -30,10 +31,33 @@ public class SoarTaxi extends Taxi {
 	 */
 	private float random;
 	
-	/**
-	 * the wme for the random number
-	 */
+	private Identifier self;
+	private IntElement xWME;
+	private IntElement yWME;
 	private FloatElement randomWME;
+	private IntElement reward;
+	private StringElement passenger;
+	private StringElement destination;
+	private IntElement fuel;
+	
+	private Identifier view;
+	private Identifier north;
+	private StringElement northType;
+	private StringElement northPassenger;
+	private Identifier south;
+	private StringElement southType;
+	private StringElement southPassenger;
+	private Identifier east;
+	private StringElement eastType;
+	private StringElement eastPassenger;
+	private Identifier west;
+	private StringElement westType;
+	private StringElement westPassenger;
+	
+	private Identifier cell;
+	private StringElement cellType;
+	private StringElement cellPassenger;
+
 	/**
 	 * soar commands to run before this agent is destroyed
 	 */
@@ -49,14 +73,52 @@ public class SoarTaxi extends Taxi {
 		this.agent = agent;
 		this.shutdownCommands = playerConfig.getShutdownCommands();
 		
-		random = 0;
-		generateNewRandom();
-		randomWME = agent.CreateFloatWME(agent.GetInputLink(), Names.kRandomID, random);
+		initInputLink();
 		
 		if (!agent.Commit()) {
 			Soar2D.control.severeError("Failed to commit input to Soar agent " + this.getName());
 			Soar2D.control.stopSimulation();
 		}
+	}
+	
+	private void initInputLink() {
+		self = agent.CreateIdWME(agent.GetInputLink(), "self");
+		
+		Identifier position = agent.CreateIdWME(self, "position");
+		xWME = agent.CreateIntWME(position, Names.kXID, 0);
+		yWME = agent.CreateIntWME(position, Names.kYID, 0);
+
+		reward = agent.CreateIntWME(self, "reward", 0);
+		
+		random = 0;
+		generateNewRandom();
+		randomWME = agent.CreateFloatWME(self, Names.kRandomID, random);
+		
+		passenger = agent.CreateStringWME(self, "passenger", "false");
+
+		fuel = agent.CreateIntWME(self, "fuel", 0);
+		
+		view = agent.CreateIdWME(agent.GetInputLink(), "view");
+
+		north = agent.CreateIdWME(view, "north");
+		northType = agent.CreateStringWME(north, "type", "none");
+		northPassenger = agent.CreateStringWME(north, "passenger", "false");
+		
+		south = agent.CreateIdWME(view, "south");
+		southType = agent.CreateStringWME(south, "type", "none");
+		southPassenger = agent.CreateStringWME(south, "passenger", "false");
+
+		east = agent.CreateIdWME(view, "east");
+		eastType = agent.CreateStringWME(east, "type", "none");
+		eastPassenger = agent.CreateStringWME(east, "passenger", "false");
+
+		west = agent.CreateIdWME(view, "west");
+		westType = agent.CreateStringWME(west, "type", "none");
+		westPassenger = agent.CreateStringWME(west, "passenger", "false");
+
+		cell = agent.CreateIdWME(agent.GetInputLink(), "cell");
+		cellType = agent.CreateStringWME(west, "type", "none");
+		cellPassenger = agent.CreateStringWME(west, "passenger", "false");
 	}
 	
 	/**
@@ -79,8 +141,53 @@ public class SoarTaxi extends Taxi {
 		
 		// if we moved, update the location
 		if (moved) {
-			//agent.Update(xWME, location.x);
-			//agent.Update(yWME, location.y);
+			agent.Update(xWME, location.x);
+			agent.Update(yWME, location.y);
+		}
+		
+		if (pointsChanged()) {
+			agent.Update(reward, getPointsDelta());
+		}
+		
+		TaxiMap xMap = (TaxiMap)world.getMap();
+		if (xMap.isPassengerCarried()) {
+			if (!Boolean.parseBoolean(passenger.GetValueAsString())) {
+				agent.Update(passenger, "true");
+			}
+			if (destination == null) {
+				destination = agent.CreateStringWME(self, "destination", xMap.getPassengerDestination());
+			}
+			
+		} else {
+			if (Boolean.parseBoolean(passenger.GetValueAsString())) {
+				agent.Update(passenger, "false");
+			}
+			if (destination != null) {
+				agent.DestroyWME(destination);
+				destination = null;
+			}
+		}
+		
+		if (fuel.GetValue() != xMap.getFuel()) {
+			agent.Update(fuel, xMap.getFuel());
+		}
+		
+		// TODO: view
+		
+		// cell
+		if (!cellType.GetValueAsString().equals(xMap.getStringType(location))) {
+			agent.Update(cellType, xMap.getStringType(location));
+		}
+		
+		if (xMap.getObject(location, "passenger") != null) {
+			if (!Boolean.parseBoolean(cellPassenger.GetValueAsString())) {
+				agent.Update(cellPassenger, "true");
+			}
+			
+		} else {
+			if (Boolean.parseBoolean(cellPassenger.GetValueAsString())) {
+				agent.Update(cellPassenger, "false");
+			}
 		}
 		
 		// update the random no matter what
@@ -201,14 +308,21 @@ public class SoarTaxi extends Taxi {
 	public void reset() {
 		super.reset();
 		
-		//if (agent == null) {
-		//	return;
-		//}
+		if (agent == null) {
+			return;
+		}
+		
+		agent.DestroyWME(self);
+		agent.DestroyWME(view);
+		agent.DestroyWME(cell);
+		destination = null;
+		
+		this.initInputLink();
 
-		//if (!agent.Commit()) {
-		//	Soar2D.control.severeError("Failed to commit input to Soar agent " + this.getName());
-		//	Soar2D.control.stopSimulation();
-		//}
+		if (!agent.Commit()) {
+			Soar2D.control.severeError("Failed to commit input to Soar agent " + this.getName());
+			Soar2D.control.stopSimulation();
+		}
 	}
 
 	public void shutdown() {
