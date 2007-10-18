@@ -269,6 +269,9 @@ public class SoarRobot extends Robot {
 	 * @see soar2d.player.Eater#getMove()
 	 */
 	public MoveInfo getMove() {
+		if (Soar2D.config.getForceHuman()) {
+			return super.getMove();
+		}
 
 		// if there was no command issued, that is kind of strange
 		if (agent.GetNumberCommands() == 0) {

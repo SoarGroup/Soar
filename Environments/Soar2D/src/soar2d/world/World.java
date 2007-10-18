@@ -234,6 +234,11 @@ public class World {
 		
 		// Collect human input
 		Iterator<Player> humanPlayerIter = players.humanIterator();
+		if (Soar2D.config.getForceHuman()) {
+			humanPlayerIter = players.iterator();
+		} else {
+			humanPlayerIter = players.humanIterator();
+		}
 		while (humanPlayerIter.hasNext()) {
 			Player human = humanPlayerIter.next();
 			if (!human.getHumanMove()) {

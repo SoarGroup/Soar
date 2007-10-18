@@ -417,8 +417,7 @@ public class SoarEater extends Eater {
 		// if we moved, update the location
 		if (moved) {
 			agent.Update(xWME, location.x);
-			int newY = Soar2D.simulation.world.getMap().getSize() - 1 - location.y;
-			agent.Update(yWME, newY);
+			agent.Update(yWME, location.y);
 		}
 		
 		// update the random no matter what
@@ -504,6 +503,10 @@ public class SoarEater extends Eater {
 	 * @see soar2d.player.Eater#getMove()
 	 */
 	public MoveInfo getMove() {
+		if (Soar2D.config.getForceHuman()) {
+			return super.getMove();
+		}
+
 		// if there was no command issued, that is kind of strange
 		if (agent.GetNumberCommands() == 0) {
 			if (logger.isLoggable(Level.FINER)) logger.finer(getName() + " issued no command.");
