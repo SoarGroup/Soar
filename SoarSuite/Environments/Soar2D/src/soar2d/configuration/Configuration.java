@@ -279,6 +279,16 @@ public class Configuration {
 		return this.asyncTimeSlice;
 	}
 	
+	// async delay
+	private boolean forceHumanInput = false; // override soar output with human output
+	private static final String kTagForceHuman = "force-human";
+	public void setForceHuman(boolean forceHumanInput) {
+		this.forceHumanInput = forceHumanInput;
+	}
+	public boolean getForceHuman() {
+		return this.forceHumanInput;
+	}
+	
 	private void generalSave(Element general) {
 		if (general == null) return;
 
@@ -309,6 +319,10 @@ public class Configuration {
 		
 		if (this.getASyncDelay() > 0) {
 			general.addContent(new Element(kTagASync).setText(Integer.toString(this.getASyncDelay())));
+		}
+		
+		if (this.getForceHuman()) {
+			general.addContent(new Element(kTagForceHuman));
 		}
 		
 		Element rules = new Element(kTagRules);
@@ -407,6 +421,9 @@ public class Configuration {
 				} catch (NumberFormatException e) {
 					throw new LoadError("Error parsing async delay.");
 				}
+
+			} else if (child.getName().equalsIgnoreCase(kTagForceHuman)) {
+				setForceHuman(true);
 
 			} else if (child.getName().equalsIgnoreCase(kTagRules)) {
 				cModule.rules(child);

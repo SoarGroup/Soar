@@ -149,6 +149,10 @@ public class SoarTank extends Tank implements Agent.RunEventInterface {
 	}
 	
 	public MoveInfo getMove() {
+		if (Soar2D.config.getForceHuman()) {
+			return super.getMove();
+		}
+
 		resetSensors();
 
 		attemptedMove = false;

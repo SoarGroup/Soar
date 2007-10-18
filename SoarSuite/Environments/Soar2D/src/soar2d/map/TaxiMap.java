@@ -196,9 +196,7 @@ public class TaxiMap extends GridMap {
 			return dests.get(0).getProperty("color");
 		}
 		
-		ArrayList<CellObject> fuels = this.getAllWithProperty(location, "fuel");
-		assert fuels.size() < 2;
-		if (fuels.size() > 0) {
+		if (this.getObject(location, "fuel") != null) {
 			return "fuel";
 		}
 		

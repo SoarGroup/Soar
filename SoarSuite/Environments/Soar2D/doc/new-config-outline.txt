@@ -13,9 +13,11 @@
 		?<hide> (this is to hide the map, useful for tanksoar)
 		?<no-gui>
 		?<silent-agents> (execute command watch 0 after production load)
-		?<max-memory-usage> int bytes (execute command after production load)
+		?<max-memory-usage> 
+			int bytes (execute command after production load)
 		?<async>
 			int millisecondDelay
+		?<force-human> force human input for input-link debugging
 		?<rules>
 			?<kitchen>
 			?<eaters>
