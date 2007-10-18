@@ -40,19 +40,19 @@ public class SoarTaxi extends Taxi {
 	private StringElement destination;
 	private IntElement fuel;
 	
-	private Identifier view;
-	private Identifier north;
-	private StringElement northType;
-	private StringElement northPassenger;
-	private Identifier south;
-	private StringElement southType;
-	private StringElement southPassenger;
-	private Identifier east;
-	private StringElement eastType;
-	private StringElement eastPassenger;
-	private Identifier west;
-	private StringElement westType;
-	private StringElement westPassenger;
+//	private Identifier view;
+//	private Identifier north;
+//	private StringElement northType;
+//	private StringElement northPassenger;
+//	private Identifier south;
+//	private StringElement southType;
+//	private StringElement southPassenger;
+//	private Identifier east;
+//	private StringElement eastType;
+//	private StringElement eastPassenger;
+//	private Identifier west;
+//	private StringElement westType;
+//	private StringElement westPassenger;
 	
 	private Identifier cell;
 	private StringElement cellType;
@@ -98,27 +98,27 @@ public class SoarTaxi extends Taxi {
 
 		fuel = agent.CreateIntWME(self, "fuel", 0);
 		
-		view = agent.CreateIdWME(agent.GetInputLink(), "view");
-
-		north = agent.CreateIdWME(view, "north");
-		northType = agent.CreateStringWME(north, "type", "none");
-		northPassenger = agent.CreateStringWME(north, "passenger", "false");
-		
-		south = agent.CreateIdWME(view, "south");
-		southType = agent.CreateStringWME(south, "type", "none");
-		southPassenger = agent.CreateStringWME(south, "passenger", "false");
-
-		east = agent.CreateIdWME(view, "east");
-		eastType = agent.CreateStringWME(east, "type", "none");
-		eastPassenger = agent.CreateStringWME(east, "passenger", "false");
-
-		west = agent.CreateIdWME(view, "west");
-		westType = agent.CreateStringWME(west, "type", "none");
-		westPassenger = agent.CreateStringWME(west, "passenger", "false");
+//		view = agent.CreateIdWME(agent.GetInputLink(), "view");
+//
+//		north = agent.CreateIdWME(view, "north");
+//		northType = agent.CreateStringWME(north, "type", "none");
+//		northPassenger = agent.CreateStringWME(north, "passenger", "false");
+//		
+//		south = agent.CreateIdWME(view, "south");
+//		southType = agent.CreateStringWME(south, "type", "none");
+//		southPassenger = agent.CreateStringWME(south, "passenger", "false");
+//
+//		east = agent.CreateIdWME(view, "east");
+//		eastType = agent.CreateStringWME(east, "type", "none");
+//		eastPassenger = agent.CreateStringWME(east, "passenger", "false");
+//
+//		west = agent.CreateIdWME(view, "west");
+//		westType = agent.CreateStringWME(west, "type", "none");
+//		westPassenger = agent.CreateStringWME(west, "passenger", "false");
 
 		cell = agent.CreateIdWME(agent.GetInputLink(), "cell");
-		cellType = agent.CreateStringWME(west, "type", "none");
-		cellPassenger = agent.CreateStringWME(west, "passenger", "false");
+		cellType = agent.CreateStringWME(cell, "type", "none");
+		cellPassenger = agent.CreateStringWME(cell, "passenger", "false");
 	}
 	
 	/**
@@ -313,7 +313,7 @@ public class SoarTaxi extends Taxi {
 		}
 		
 		agent.DestroyWME(self);
-		agent.DestroyWME(view);
+		//agent.DestroyWME(view);
 		agent.DestroyWME(cell);
 		destination = null;
 		
