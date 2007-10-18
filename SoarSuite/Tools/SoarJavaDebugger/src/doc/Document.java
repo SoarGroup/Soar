@@ -148,6 +148,7 @@ public class Document implements Kernel.AgentEventInterface, Kernel.SystemEventI
 		Module rhsText	 = new Module("RHS Text View", "Displays attribute-value pairs from RHS functions.", modules.RHSFunTextView.class);
 		Module waterfallText = new Module("RHS Waterfall Text View", "Tagged version of the accumulator.", modules.RHSWaterfallAccumulatorView.class);
 		Module objectText = new Module("RHS Object Text View", "Similar to text view for displaying multiple objects.", modules.RHSObjectTextView.class);
+		Module operatorText = new Module("RHS Operator Text View", "Similar to object text view, but works with operators and numeric indifferents.", modules.RHSOperatorTextView.class);
 		
 		m_ModuleList.add(fold) ;
 		m_ModuleList.add(textTrace) ;
@@ -160,6 +161,7 @@ public class Document implements Kernel.AgentEventInterface, Kernel.SystemEventI
 		m_ModuleList.add(rhsText) ;
 		m_ModuleList.add(waterfallText) ;
 		m_ModuleList.add(objectText) ;
+		m_ModuleList.add(operatorText) ;
 		
 	}
 	
