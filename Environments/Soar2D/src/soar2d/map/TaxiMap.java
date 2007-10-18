@@ -7,6 +7,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 
+import soar2d.Direction;
 import soar2d.Simulation;
 import soar2d.Soar2D;
 import soar2d.configuration.Configuration;
@@ -190,6 +191,10 @@ public class TaxiMap extends GridMap {
 	}
 
 	public String getStringType(Point location) {
+		if (!this.isInBounds(location)) {
+			return "none";
+		}
+		
 		ArrayList<CellObject> dests = this.getAllWithProperty(location, "destination");
 		assert dests.size() < 2;
 		if (dests.size() > 0) {
@@ -201,5 +206,16 @@ public class TaxiMap extends GridMap {
 		}
 		
 		return "normal";
+	}
+	
+	public boolean wall(Point from, int to) {
+		Iterator<CellObject> iter = this.getAllWithProperty(from, "block").iterator();
+		while (iter.hasNext()) {
+			CellObject wall = iter.next();
+			if (wall.getProperty("direction").equals(Direction.stringOf[to])) {
+				return true;
+			}
+		}
+		return false;
 	}
 }
