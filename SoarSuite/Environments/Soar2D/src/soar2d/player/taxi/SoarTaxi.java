@@ -1,5 +1,6 @@
 package soar2d.player.taxi;
 
+import java.awt.Point;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -32,29 +33,36 @@ public class SoarTaxi extends Taxi {
 	private float random;
 	
 	private Identifier self;
+	
 	private IntElement xWME;
 	private IntElement yWME;
+	
 	private FloatElement randomWME;
 	private IntElement reward;
 	private StringElement passenger;
 	private StringElement destination;
 	private IntElement fuel;
 	
-//	private Identifier view;
-//	private Identifier north;
-//	private StringElement northType;
-//	private StringElement northPassenger;
-//	private Identifier south;
-//	private StringElement southType;
-//	private StringElement southPassenger;
-//	private Identifier east;
-//	private StringElement eastType;
-//	private StringElement eastPassenger;
-//	private Identifier west;
-//	private StringElement westType;
-//	private StringElement westPassenger;
+	private Identifier view;
+	
+	private StringElement northType;
+	private StringElement northWall;
+	private StringElement northPassenger;
+	
+	private StringElement southType;
+	private StringElement southWall;
+	private StringElement southPassenger;
+	
+	private StringElement eastType;
+	private StringElement eastWall;
+	private StringElement eastPassenger;
+	
+	private StringElement westType;
+	private StringElement westWall;
+	private StringElement westPassenger;
 	
 	private Identifier cell;
+	
 	private StringElement cellType;
 	private StringElement cellPassenger;
 
@@ -98,23 +106,27 @@ public class SoarTaxi extends Taxi {
 
 		fuel = agent.CreateIntWME(self, "fuel", 0);
 		
-//		view = agent.CreateIdWME(agent.GetInputLink(), "view");
-//
-//		north = agent.CreateIdWME(view, "north");
-//		northType = agent.CreateStringWME(north, "type", "none");
-//		northPassenger = agent.CreateStringWME(north, "passenger", "false");
-//		
-//		south = agent.CreateIdWME(view, "south");
-//		southType = agent.CreateStringWME(south, "type", "none");
-//		southPassenger = agent.CreateStringWME(south, "passenger", "false");
-//
-//		east = agent.CreateIdWME(view, "east");
-//		eastType = agent.CreateStringWME(east, "type", "none");
-//		eastPassenger = agent.CreateStringWME(east, "passenger", "false");
-//
-//		west = agent.CreateIdWME(view, "west");
-//		westType = agent.CreateStringWME(west, "type", "none");
-//		westPassenger = agent.CreateStringWME(west, "passenger", "false");
+		view = agent.CreateIdWME(agent.GetInputLink(), "view");
+
+		Identifier north = agent.CreateIdWME(view, "north");
+		northType = agent.CreateStringWME(north, "type", "none");
+		northPassenger = agent.CreateStringWME(north, "passenger", "false");
+		northWall = agent.CreateStringWME(north, "wall", "false");
+		
+		Identifier south = agent.CreateIdWME(view, "south");
+		southType = agent.CreateStringWME(south, "type", "none");
+		southPassenger = agent.CreateStringWME(south, "passenger", "false");
+		southWall = agent.CreateStringWME(south, "wall", "false");
+
+		Identifier east = agent.CreateIdWME(view, "east");
+		eastType = agent.CreateStringWME(east, "type", "none");
+		eastPassenger = agent.CreateStringWME(east, "passenger", "false");
+		eastWall = agent.CreateStringWME(east, "wall", "false");
+
+		Identifier west = agent.CreateIdWME(view, "west");
+		westType = agent.CreateStringWME(west, "type", "none");
+		westPassenger = agent.CreateStringWME(west, "passenger", "false");
+		westWall = agent.CreateStringWME(west, "wall", "false");
 
 		cell = agent.CreateIdWME(agent.GetInputLink(), "cell");
 		cellType = agent.CreateStringWME(cell, "type", "none");
@@ -173,8 +185,6 @@ public class SoarTaxi extends Taxi {
 			agent.Update(fuel, xMap.getFuel());
 		}
 		
-		// TODO: view
-		
 		// cell
 		if (!cellType.GetValueAsString().equals(xMap.getStringType(location))) {
 			agent.Update(cellType, xMap.getStringType(location));
@@ -191,6 +201,12 @@ public class SoarTaxi extends Taxi {
 			}
 		}
 		
+		// view
+		updateView(location, xMap, Direction.kNorthInt, northType, northPassenger, northWall);
+		updateView(location, xMap, Direction.kSouthInt, southType, southPassenger, southWall);
+		updateView(location, xMap, Direction.kEastInt, eastType, eastPassenger, eastWall);
+		updateView(location, xMap, Direction.kWestInt, westType, westPassenger, westWall);
+		
 		// update the random no matter what
 		float oldrandom = random;
 		do {
@@ -203,7 +219,44 @@ public class SoarTaxi extends Taxi {
 			Soar2D.control.severeError("Failed to commit input to Soar agent " + this.getName());
 			Soar2D.control.stopSimulation();
 		}
-		this.resetPointsChanged();
+		//this.resetPointsChanged();
+	}
+	
+	private void updateView(Point location, TaxiMap xMap, int direction, StringElement type, StringElement passenger, StringElement wall) {
+		Point tempLocation = new Point(location);
+		
+		Direction.translate(tempLocation, direction);
+		if (!type.GetValueAsString().equals(xMap.getStringType(tempLocation))) {
+			agent.Update(type, xMap.getStringType(tempLocation));
+		}
+		
+		if (xMap.isInBounds(tempLocation)) {
+			if (xMap.getObject(tempLocation, "passenger") != null) {
+				if (!Boolean.parseBoolean(passenger.GetValueAsString())) {
+					agent.Update(passenger, "true");
+				}
+				
+			} else {
+				if (Boolean.parseBoolean(passenger.GetValueAsString())) {
+					agent.Update(passenger, "false");
+				}
+			}
+		} else {
+			if (Boolean.parseBoolean(passenger.GetValueAsString())) {
+				agent.Update(passenger, "false");
+			}
+		}
+
+		if (xMap.wall(location, direction)) {
+			if (!Boolean.parseBoolean(wall.GetValueAsString())) {
+				agent.Update(wall, "true");
+			}
+			
+		} else {
+			if (Boolean.parseBoolean(wall.GetValueAsString())) {
+				agent.Update(wall, "false");
+			}
+		}
 	}
 	
 	public MoveInfo getMove() {
@@ -318,7 +371,7 @@ public class SoarTaxi extends Taxi {
 		}
 		
 		agent.DestroyWME(self);
-		//agent.DestroyWME(view);
+		agent.DestroyWME(view);
 		agent.DestroyWME(cell);
 		destination = null;
 		

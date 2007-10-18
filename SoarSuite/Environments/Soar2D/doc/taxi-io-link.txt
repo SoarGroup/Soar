@@ -10,16 +10,20 @@
         ^fuel <int> fuel remaining
     ^view
         ^north
-            ^type [normal red blue green yellow fuel]
+            ^type [none normal red blue green yellow fuel]
+            ^wall [true false]
             ^passenger [true false]
         ^south
-            ^type [normal red blue green yellow fuel]
+            ^type [none normal red blue green yellow fuel]
+            ^wall [true false]
             ^passenger [true false]
         ^east
-            ^type [normal red blue green yellow fuel]
+            ^type [none normal red blue green yellow fuel]
+            ^wall [true false]
             ^passenger [true false]
         ^west
-            ^type [normal red blue green yellow fuel]
+            ^type [none normal red blue green yellow fuel]
+            ^wall [true false]
             ^passenger [true false]
     ^cell current cell agent is at
         ^type [normal red blue green yellow fuel]
