@@ -23,7 +23,7 @@ xcopy /q /y src\altimages\* tmp\altimages
 xcopy /q /y src\images\* tmp\images
 
 @echo ----------=========Compiling=========----------
-%2javac.exe -source 1.4 -d tmp -classpath src;%SOARBIN%\swt.jar;%SOARBIN%\sml.jar -sourcepath src src\debugger\Application.java
+%2javac.exe -source 1.5 -d tmp -classpath src;%SOARBIN%\swt.jar;%SOARBIN%\sml.jar;%SOARBIN%\jcommon-1.0.10.jar;%SOARBIN%\jfreechart-1.0.6.jar;%SOARBIN%\jfreechart-1.0.6-swt.jar;%SOARBIN%\swtgraphics2d.jar -sourcepath src src\debugger\Application.java
 
 @echo ----------==========Jarring==========----------
 %2jar.exe cfm %SOARBIN%\SoarJavaDebugger.jar JarManifest -C tmp .
