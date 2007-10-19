@@ -28,6 +28,7 @@ public class RHSFunTextView extends AbstractUpdateView implements Kernel.AgentEv
 	{
 	}
 	
+	@Override
 	public void init(MainFrame frame, Document doc, Pane parentPane) {
 		if (labelText.length() <= 0) {
 			labelText = getModuleBaseName();
