@@ -188,7 +188,7 @@ std::vector<std::string> *get_parameter_names( agent *my_agent )
  * Function     : update_exploration_parameters
  **************************************************************************/
 void update_exploration_parameters( agent *my_agent )
-{
+{	
 	std::vector<std::string> *parameters = get_parameter_names( my_agent );
 
 	for ( std::vector<std::string>::size_type i=0; i<parameters->size(); i++ )

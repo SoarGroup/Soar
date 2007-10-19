@@ -2223,6 +2223,7 @@ Bool decide_context_slot (agent* thisAgent, Symbol *goal, slot *s, bool predict 
       for(temp = candidates; temp; temp = temp->next_candidate)
          preference_remove_ref(thisAgent, temp);
       
+      if ( soar_rl_enabled( thisAgent ) )
       store_rl_data( thisAgent, goal, candidates );
 	  
 	  /* JC ADDED: Notify gSKI of an operator selection  */
