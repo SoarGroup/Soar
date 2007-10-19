@@ -3,11 +3,13 @@ package modules;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.TreeSet;
 
 import general.JavaElementXML;
 import helpers.FormDataHelper;
 
 import manager.Pane;
+import modules.RHSOperatorTextView.OperatorValue;
 
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.layout.FormData;
@@ -124,8 +126,50 @@ public class RHSBarChartView extends AbstractUpdateView  implements Kernel.Agent
 		} // Careful, returns in the previous block!
 	}
 	
+	class OrderedString implements Comparable<OrderedString> {
+		
+		OrderedString(String string) {
+			this.string = new String(string);
+			this.value = new Integer(0);
+		}
+		
+		OrderedString(String string, int value) {
+			this.string = new String(string);
+			this.value = new Integer(value);
+		}
+		
+		OrderedString(OrderedString ov) {
+			this.string = new String(ov.string);
+			this.value = new Integer(ov.value);
+		}
+		
+		public String string;
+		public Integer value;
+		
+		// This is backwards because descending iterator is a java 1.6 feature
+		public int compareTo(OrderedString other) {
+			return this.value - other.value;
+		}
+		
+		public boolean equals(Object obj) {
+			OrderedString orderedString;
+			try {
+				orderedString = (OrderedString)obj;
+			} catch (ClassCastException e) {
+				return super.equals(obj);
+			}
+			return this.string.equals(orderedString.string);
+		}
+		
+		public int hashCode() {
+			return this.string.hashCode();
+		}
+	}
+
 	// category -> series -> value
 	HashMap<String, HashMap<String, Double> > categoryToSeriesMap = new HashMap<String, HashMap<String, Double> >();
+	TreeSet<OrderedString> categoryOrderSet = new TreeSet<OrderedString>();
+	TreeSet<OrderedString> seriesOrderSet = new TreeSet<OrderedString>();
 
 	public String rhsFunctionHandler(int eventID, Object data,
 			String agentName, String functionName, String argument) {
@@ -137,7 +181,7 @@ public class RHSBarChartView extends AbstractUpdateView  implements Kernel.Agent
 		// Syntax: 
 		//                              |--- commandLine --------------------|
 		//      exec <rhs_function_name> <command> [<args>] 
-		//      exec <rhs_function_name> addvalue <category> <series> <value>
+		//      exec <rhs_function_name> addvalue <category> <category-order> <series> <series-order> <value>
 		
 		String[] commandLine = argument.split("\\s+");
 		
@@ -146,32 +190,48 @@ public class RHSBarChartView extends AbstractUpdateView  implements Kernel.Agent
 		}
 		
 		if (commandLine[0].equals("addvalue")) {
-			if (commandLine.length != 4) {
-				return "RHSBarChartView: addvalue requires <category> <series> <value>";
+			if (commandLine.length != 6) {
+				return "RHSBarChartView: addvalue requires <category> <category-order> <series> <series-order> <value>";
+			}
+			
+			int catOrder = 0;
+			try {
+				catOrder = Integer.parseInt(commandLine[2]);
+			} catch (NumberFormatException e) {
+				return "RHSBarChartView: addvalue: parsing failed for <category-order> argument";
+			}
+			
+			int serOrder = 0;
+			try {
+				serOrder = Integer.parseInt(commandLine[4]);
+			} catch (NumberFormatException e) {
+				return "RHSBarChartView: addvalue: parsing failed for <series-order> argument";
 			}
 			
 			double value = 0;
 			try {
-				value = Double.parseDouble(commandLine[3]);
+				value = Double.parseDouble(commandLine[5]);
 			} catch (NumberFormatException e) {
 				return "RHSBarChartView: addvalue: parsing failed for <value> argument";
 			}
 			
-			updateData(commandLine[1], commandLine[2], value);
+			updateData(commandLine[1], catOrder, commandLine[3], serOrder, value);
 			return "Graph updated.";
 		}		
 		
 		return "RHSBarChartView: unknown command: " + commandLine[0];
 	}
 	
-	private void updateData(String category, String series, double value) {
+	private void updateData(String category, int categoryOrder, String series, int seriesOrder, double value) {
 		if (!categoryToSeriesMap.containsKey(category)) {
 			HashMap<String, Double> seriesToValueMap = new HashMap<String, Double>();
 			categoryToSeriesMap.put(category, seriesToValueMap);
+			categoryOrderSet.add(new OrderedString(category, categoryOrder));
 		}
 		
 		HashMap<String, Double> seriesToValueMap = categoryToSeriesMap.get(category);
 		seriesToValueMap.put(series, value);
+		seriesOrderSet.add(new OrderedString(series, seriesOrder));
 	}
 	
 	@Override
@@ -335,22 +395,18 @@ public class RHSBarChartView extends AbstractUpdateView  implements Kernel.Agent
 	}
 	
 	private void updateChart() {
-		// TODO: there exists (I think) a better way to iterate through these containers.
-		// I think there is a way to get both the key and value at the same time.
-		// Doing this would potentially simplify this code.
-		
 		// TODO: explore processing only changes instead of the entire data each update
 		
 		// for each category
-		Iterator<String> catIter = this.categoryToSeriesMap.keySet().iterator();
+		Iterator<OrderedString> catIter = this.categoryOrderSet.iterator();
 		while (catIter.hasNext()) {
-			String category = catIter.next();
+			String category = catIter.next().string;
 
 			// for each series
 			HashMap<String, Double> seriesToValueMap = categoryToSeriesMap.get(category);
-			Iterator<String> serIter = seriesToValueMap.keySet().iterator();
+			Iterator<OrderedString> serIter =  this.seriesOrderSet.iterator();
 			while (serIter.hasNext()) {
-				String series = serIter.next();
+				String series = serIter.next().string;
 				
 				// add/set value (add seems to work)
 				dataset.addValue(seriesToValueMap.get(series), series, category);
@@ -381,6 +437,8 @@ public class RHSBarChartView extends AbstractUpdateView  implements Kernel.Agent
 	@Override
 	public void clearDisplay() {
 		categoryToSeriesMap.clear();
+		categoryOrderSet.clear();
+		seriesOrderSet.clear();
 		// If Soar is running in the UI thread we can make
 		// the update directly.
 		if (!Document.kDocInOwnThread)
@@ -430,9 +488,6 @@ sp {apply*init
 (state <s> ^operator.name init)
 -->
 (<s> ^name test)
-#(write (crlf) (exec graph |settype layeredbar|))
-#(write (crlf) (exec graph |addseries series1|))
-#(write (crlf) (exec graph |addseries series2|))
 }
 
 sp {propose*update
@@ -447,12 +502,12 @@ sp {apply*update
 (state <s> ^operator.name update)
 -->
 (<s> ^toggle on)
-(write (crlf) (exec graph |addvalue category1 series1 0.5|))
-(write (crlf) (exec graph |addvalue category2 series1 0.7|))
-(write (crlf) (exec graph |addvalue category3 series1 0.1|))
-(write (crlf) (exec graph |addvalue category1 series2 0.2|))
-(write (crlf) (exec graph |addvalue category2 series2 0.4|))
-(write (crlf) (exec graph |addvalue category3 series2 0.8|))
+(write (crlf) (exec graph |addvalue category1 1 series1 1 0.5|))
+(write (crlf) (exec graph |addvalue category2 2 series1 1 0.7|))
+(write (crlf) (exec graph |addvalue category3 3 series1 1 0.1|))
+(write (crlf) (exec graph |addvalue category1 1 series2 2 0.2|))
+(write (crlf) (exec graph |addvalue category2 2 series2 2 0.4|))
+(write (crlf) (exec graph |addvalue category3 3 series2 2 0.8|))
 }
 
 sp {propose*update2
@@ -467,11 +522,11 @@ sp {apply*update2
 (state <s> ^operator.name update2)
 -->
 (<s> ^toggle on -)
-(write (crlf) (exec graph |addvalue category1 series1 0.1|))
-(write (crlf) (exec graph |addvalue category2 series1 0.2|))
-(write (crlf) (exec graph |addvalue category3 series1 0.3|))
-(write (crlf) (exec graph |addvalue category1 series2 0.6|))
-(write (crlf) (exec graph |addvalue category2 series2 0.2|))
-(write (crlf) (exec graph |addvalue category3 series2 0.5|))
+(write (crlf) (exec graph |addvalue category1 1 series1 1 0.1|))
+(write (crlf) (exec graph |addvalue category2 2 series1 1 0.2|))
+(write (crlf) (exec graph |addvalue category3 3 series1 1 0.3|))
+(write (crlf) (exec graph |addvalue category1 1 series2 2 0.6|))
+(write (crlf) (exec graph |addvalue category2 2 series2 2 0.2|))
+(write (crlf) (exec graph |addvalue category3 3 series2 2 0.5|))
 }
 */
