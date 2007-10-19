@@ -376,7 +376,7 @@ public class RHSBarChartView extends AbstractUpdateView  implements Kernel.Agent
 		frame.pack();
 		
 		rightClickLabel = new Label(rhsBarChartContainer, SWT.NONE);
-		rightClickLabel.setText("Right click here to access properties and remove window...");
+		rightClickLabel.setText("Right click here to access chart properties and remove window...");
 		{
 			GridData gd = new GridData(SWT.FILL, SWT.NONE, true, false);
 			rightClickLabel.setLayoutData(gd);
