@@ -47,6 +47,16 @@ public class RHSBarChartView extends AbstractUpdateView  implements Kernel.Agent
 	{
 	}
 	
+	protected String chartTitle = new String();
+
+	@Override
+	public void init(MainFrame frame, Document doc, Pane parentPane) {
+		if (chartTitle.length() <= 0) {
+			chartTitle = getModuleBaseName();
+		}
+		super.init(frame, doc, parentPane);
+	}
+	
 	@Override
 	public String getModuleBaseName() {
 		return "rhs_bar_chart_view";
@@ -59,15 +69,18 @@ public class RHSBarChartView extends AbstractUpdateView  implements Kernel.Agent
 
 	@Override
 	public void showProperties() {
-		PropertiesDialog.Property properties[] = new PropertiesDialog.Property[2] ;
+		PropertiesDialog.Property properties[] = new PropertiesDialog.Property[3] ;
 		
 		properties[0] = new PropertiesDialog.IntProperty("Update automatically every n'th decision (0 => none)", m_UpdateEveryNthDecision) ;
 		properties[1] = new PropertiesDialog.StringProperty("Name of RHS function to use to update this window", rhsFunName) ;
+		properties[2] = new PropertiesDialog.StringProperty("Chart title", chartTitle) ;
 		
 		boolean ok = PropertiesDialog.showDialog(m_Frame, "Properties", properties) ;
 		
 		if (ok) {
 			m_UpdateEveryNthDecision = ((PropertiesDialog.IntProperty)properties[0]).getValue() ;
+			chartTitle = ((PropertiesDialog.StringProperty)properties[2]).getValue() ;
+			chart.setTitle(chartTitle);
 
 			// TODO: abstractify some of this code, it is repeated in many of the new RHS widgets
 			if (this.getAgentFocus() != null)
@@ -344,7 +357,7 @@ public class RHSBarChartView extends AbstractUpdateView  implements Kernel.Agent
 
 		// create the chart...
         chart = ChartFactory.createBarChart(
-            "RHS Bar Chart",         // chart title
+        	chartTitle,         	  // chart title
             "Category",               // domain axis label
             "Value",                  // range axis label
             dataset,                  // data
@@ -491,7 +504,9 @@ public class RHSBarChartView extends AbstractUpdateView  implements Kernel.Agent
 		// Store this object's properties.
 		element.addAttribute("Name", m_Name) ;
 		element.addAttribute("UpdateOnStop", Boolean.toString(m_UpdateOnStop)) ;
+		element.addAttribute("UpdateEveryNthDecision", Integer.toString(m_UpdateEveryNthDecision)) ;
 		element.addAttribute("RHSFunctionName", rhsFunName) ;
+		element.addAttribute("ChartTitle", chartTitle) ;
 				
 		if (storeContent)
 			storeContent(element) ;
@@ -520,9 +535,14 @@ public class RHSBarChartView extends AbstractUpdateView  implements Kernel.Agent
 		m_UpdateOnStop	   	= element.getAttributeBooleanThrows("UpdateOnStop") ;
 		m_UpdateEveryNthDecision = element.getAttributeIntThrows("UpdateEveryNthDecision") ;
 		rhsFunName = element.getAttribute("RHSFunctionName");
-		
+		chartTitle 			= element.getAttribute("ChartTitle");
+
 		if (rhsFunName == null) {
 			rhsFunName = new String();
+		}
+		
+		if (chartTitle == null) {
+			chartTitle = new String();
 		}
 		
 		JavaElementXML log = element.findChildByName("Logger") ;
