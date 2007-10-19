@@ -1,6 +1,8 @@
 package modules;
 
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 
 import general.JavaElementXML;
 import helpers.FormDataHelper;
@@ -13,6 +15,7 @@ import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
+import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.MessageBox;
 import org.eclipse.swt.widgets.Text;
@@ -48,7 +51,7 @@ public class RHSBarChartView extends AbstractUpdateView  implements Kernel.Agent
 	}
 
 	// Assume this may be empty! (no function is registered)
-	protected String rhsFunName = new String();
+	protected String rhsFunName = new String("graph");
 	
 	int rhsCallback = -1;
 
@@ -120,6 +123,9 @@ public class RHSBarChartView extends AbstractUpdateView  implements Kernel.Agent
 		
 		} // Careful, returns in the previous block!
 	}
+	
+	// category -> series -> value
+	HashMap<String, HashMap<String, Double> > categoryToSeriesMap = new HashMap<String, HashMap<String, Double> >();
 
 	public String rhsFunctionHandler(int eventID, Object data,
 			String agentName, String functionName, String argument) {
@@ -128,9 +134,46 @@ public class RHSBarChartView extends AbstractUpdateView  implements Kernel.Agent
 			return "Unknown rhs function " + rhsFunName + " received in window " + getName() + ".";
 		}
 		
-		return "rhsFunctionHandler not implemented.";
+		// Syntax: 
+		//                              |--- commandLine --------------------|
+		//      exec <rhs_function_name> <command> [<args>] 
+		//      exec <rhs_function_name> addvalue <category> <series> <value>
+		
+		String[] commandLine = argument.split("\\s+");
+		
+		if (commandLine.length < 1) {
+			return "RHSBarChartView: no command";
+		}
+		
+		if (commandLine[0].equals("addvalue")) {
+			if (commandLine.length != 4) {
+				return "RHSBarChartView: addvalue requires <category> <series> <value>";
+			}
+			
+			double value = 0;
+			try {
+				value = Double.parseDouble(commandLine[3]);
+			} catch (NumberFormatException e) {
+				return "RHSBarChartView: addvalue: parsing failed for <value> argument";
+			}
+			
+			updateData(commandLine[1], commandLine[2], value);
+			return "Graph updated.";
+		}		
+		
+		return "RHSBarChartView: unknown command: " + commandLine[0];
 	}
-
+	
+	private void updateData(String category, String series, double value) {
+		if (!categoryToSeriesMap.containsKey(category)) {
+			HashMap<String, Double> seriesToValueMap = new HashMap<String, Double>();
+			categoryToSeriesMap.put(category, seriesToValueMap);
+		}
+		
+		HashMap<String, Double> seriesToValueMap = categoryToSeriesMap.get(category);
+		seriesToValueMap.put(series, value);
+	}
+	
 	@Override
 	protected void registerForAgentEvents(Agent agent)
 	{
@@ -218,106 +261,25 @@ public class RHSBarChartView extends AbstractUpdateView  implements Kernel.Agent
 	}
 	
 	ChartComposite frame;
+	JFreeChart chart;
+	DefaultCategoryDataset dataset;
+	
+	@Override
+	protected void createDisplayControl(Composite parent) {
+		dataset = new DefaultCategoryDataset();
 
-    /**
-     * Returns a sample dataset.
-     * 
-     * @return The dataset.
-     */
-    private static CategoryDataset createDataset() {
-        
-        // row keys...
-        String series1 = "First";
-        String series2 = "Second";
-        String series3 = "Third";
-
-        // column keys...
-        String category1 = "Category 1";
-        String category2 = "Category 2";
-        String category3 = "Category 3";
-        String category4 = "Category 4";
-        String category5 = "Category 5";
-
-        // create the dataset...
-        DefaultCategoryDataset dataset = new DefaultCategoryDataset();
-
-        dataset.addValue(1.0, series1, category1);
-        dataset.addValue(4.0, series1, category2);
-        dataset.addValue(3.0, series1, category3);
-        dataset.addValue(5.0, series1, category4);
-        dataset.addValue(5.0, series1, category5);
-
-        dataset.addValue(5.0, series2, category1);
-        dataset.addValue(7.0, series2, category2);
-        dataset.addValue(6.0, series2, category3);
-        dataset.addValue(8.0, series2, category4);
-        dataset.addValue(4.0, series2, category5);
-
-        dataset.addValue(4.0, series3, category1);
-        dataset.addValue(3.0, series3, category2);
-        dataset.addValue(2.0, series3, category3);
-        dataset.addValue(3.0, series3, category4);
-        dataset.addValue(6.0, series3, category5);
-        
-        return dataset;
-        
-    }
-    
-    /**
-     * Creates a sample chart.
-     * 
-     * @param dataset  the dataset.
-     * 
-     * @return The chart.
-     */
-    private static JFreeChart createChart(CategoryDataset dataset) {
-        
-        // create the chart...
-        JFreeChart chart = ChartFactory.createBarChart(
-            "Bar Chart Demo",         // chart title
+		// create the chart...
+        chart = ChartFactory.createBarChart(
+            "RHS Bar Chart",         // chart title
             "Category",               // domain axis label
             "Value",                  // range axis label
             dataset,                  // data
-            PlotOrientation.VERTICAL, // orientation
+            PlotOrientation.HORIZONTAL, // orientation
             true,                     // include legend
             true,                     // tooltips?
             false                     // URLs?
         );
-
-        // NOW DO SOME OPTIONAL CUSTOMISATION OF THE CHART...
-
-        // set the background color for the chart...
-        chart.setBackgroundPaint(java.awt.Color.white);
-
-        // get a reference to the plot for further customisation...
-        CategoryPlot plot = (CategoryPlot) chart.getPlot();
-        plot.setBackgroundPaint(java.awt.Color.lightGray);
-        plot.setDomainGridlinePaint(java.awt.Color.white);
-        plot.setDomainGridlinesVisible(true);
-        plot.setRangeGridlinePaint(java.awt.Color.white);
-
-        // set the range axis to display integers only...
-        final NumberAxis rangeAxis = (NumberAxis) plot.getRangeAxis();
-        rangeAxis.setStandardTickUnits(NumberAxis.createIntegerTickUnits());
-
-        // disable bar outlines...
-        BarRenderer renderer = (BarRenderer) plot.getRenderer();
-        renderer.setDrawBarOutline(false);
-
-        CategoryAxis domainAxis = plot.getDomainAxis();
-        domainAxis.setCategoryLabelPositions(
-            CategoryLabelPositions.createUpRotationLabelPositions(Math.PI / 6.0)
-        );
-        // OPTIONAL CUSTOMISATION COMPLETED.
-        
-        return chart;
-        
-    }
-    
-	@Override
-	protected void createDisplayControl(Composite parent) {
 		
-        JFreeChart chart = createChart(createDataset());
 		frame = new ChartComposite(parent, SWT.NONE, chart, true);
 		
 		FormData attachFull = FormDataHelper.anchorFull(0) ;
@@ -349,16 +311,83 @@ public class RHSBarChartView extends AbstractUpdateView  implements Kernel.Agent
 		// TODO Auto-generated method stub
 
 	}
+	
+	private void updateChart() {
+		// TODO: there exists (I think) a better way to iterate through these containers.
+		// I think there is a way to get both the key and value at the same time.
+		// Doing this would potentially simplify this code.
+		
+		// TODO: explore processing only changes instead of the entire data each update
+		
+		// for each category
+		Iterator<String> catIter = this.categoryToSeriesMap.keySet().iterator();
+		while (catIter.hasNext()) {
+			String category = catIter.next();
+
+			// for each series
+			HashMap<String, Double> seriesToValueMap = categoryToSeriesMap.get(category);
+			Iterator<String> serIter = seriesToValueMap.keySet().iterator();
+			while (serIter.hasNext()) {
+				String series = serIter.next();
+				
+				// add/set value (add seems to work)
+				dataset.addValue(seriesToValueMap.get(series), series, category);
+			}
+		}
+	}
 
 	@Override
 	protected void updateNow() {
+		// If Soar is running in the UI thread we can make
+		// the update directly.
+		if (!Document.kDocInOwnThread)
+		{
+			updateChart();
+			return ;
+		}
+		
+		// Have to make update in the UI thread.
+		// Callback comes in the document thread.
+        Display.getDefault().asyncExec(new Runnable() {
+            public void run() {
+            	updateChart();
+            }
+         }) ;
 
 	}
 
 	@Override
 	public void clearDisplay() {
-
+		categoryToSeriesMap.clear();
+		// If Soar is running in the UI thread we can make
+		// the update directly.
+		if (!Document.kDocInOwnThread)
+		{
+			dataset.clear();
+			return ;
+		}
+		
+		// Have to make update in the UI thread.
+		// Callback comes in the document thread.
+        Display.getDefault().asyncExec(new Runnable() {
+            public void run() {
+        		dataset.clear();
+            }
+         }) ;
 	}
 
+	public void onInitSoar() {
+		clearDisplay();
+	}
 
+	@Override
+	public void agentEventHandler(int eventID, Object data, String agentName)
+	{
+		// Note: We need to check the agent names match because although this is called an agentEventHandler it's
+		// an event registered with the kernel -- so it's sent to all listeners, not just the agent that is reinitializing.
+		if (eventID == smlAgentEventId.smlEVENT_AFTER_AGENT_REINITIALIZED.swigValue()) {
+			onInitSoar();
+			updateNow() ;
+		}
+	}
 }

@@ -379,6 +379,7 @@ public class RHSFunTextView extends AbstractUpdateView implements Kernel.AgentEv
 		clearDisplay();
 	}
 
+	@Override
 	public void agentEventHandler(int eventID, Object data, String agentName)
 	{
 		// Note: We need to check the agent names match because although this is called an agentEventHandler it's
