@@ -933,18 +933,23 @@ void tabulate_reward_value_for_goal( agent *my_agent, Symbol *goal )
 		return;
 	
 	slot *s = goal->id.reward_header->id.slots;
+	slot *t;
+	wme *w, *x;
 	float reward = 0.0;
 	unsigned int reward_count = 0;
 
 	if ( s )
 	{
 		for ( ; s; s = s->next )
-			for ( wme *w = s->wmes ; w; w = w->next)
-				if ( ( w->value->common.symbol_type == FLOAT_CONSTANT_SYMBOL_TYPE ) || ( w->value->common.symbol_type == INT_CONSTANT_SYMBOL_TYPE ) )
-				{
-					reward = reward + get_number_from_symbol( w->value );
-					reward_count++;
-				}
+			for ( w = s->wmes ; w; w = w->next)
+				if ( w->value->common.symbol_type == IDENTIFIER_SYMBOL_TYPE )
+					for ( t = w->value->id.slots; t; t = t->next )
+						for ( x = t->wmes; x; x = x->next )
+							if ( ( x->value->common.symbol_type == FLOAT_CONSTANT_SYMBOL_TYPE ) || ( x->value->common.symbol_type == INT_CONSTANT_SYMBOL_TYPE ) )
+							{
+								reward = reward + get_number_from_symbol( x->value );
+								reward_count++;
+							}
 		
 		if ( reward_count && ( get_rl_parameter( my_agent, "accumulation-mode", RL_RETURN_LONG ) == RL_ACCUMULATION_AVG ) )
 			reward = ( reward / ( (float) reward_count ) );
@@ -1027,7 +1032,7 @@ void store_rl_data( agent *my_agent, Symbol *goal, preference *cand )
  * Function     : perform_rl_update
  **************************************************************************/
 void perform_rl_update( agent *my_agent, float op_value, Symbol *goal )
-{	
+{
 	rl_data *data = goal->id.rl_info;
 	soar_rl_et_map::iterator iter;
 
