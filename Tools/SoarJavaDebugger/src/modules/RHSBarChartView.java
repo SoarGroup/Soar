@@ -470,6 +470,76 @@ public class RHSBarChartView extends AbstractUpdateView  implements Kernel.Agent
 			updateNow() ;
 		}
 	}
+
+	/************************************************************************
+	* 
+	* Converts this object into an XML representation.
+	* 
+	*************************************************************************/
+	@Override
+	public JavaElementXML convertToXML(String title, boolean storeContent) {
+		JavaElementXML element = new JavaElementXML(title) ;
+		
+		// It's useful to record the class name to uniquely identify the type
+		// of object being stored at this point in the XML tree.
+		Class cl = this.getClass() ;
+		element.addAttribute(JavaElementXML.kClassAttribute, cl.getName()) ;
+
+		if (m_Name == null)
+			throw new IllegalStateException("We've created a view with no name -- very bad") ;
+		
+		// Store this object's properties.
+		element.addAttribute("Name", m_Name) ;
+		element.addAttribute("UpdateOnStop", Boolean.toString(m_UpdateOnStop)) ;
+		element.addAttribute("RHSFunctionName", rhsFunName) ;
+				
+		if (storeContent)
+			storeContent(element) ;
+
+		element.addChildElement(this.m_Logger.convertToXML("Logger")) ;
+		
+		return element ;
+	}
+
+	/************************************************************************
+	* 
+	* Rebuild the object from an XML representation.
+	* 
+	* @param frame			The top level window that owns this window
+	* @param doc			The document we're rebuilding
+	* @param parent			The pane window that owns this view
+	* @param element		The XML representation of this command
+	* 
+	*************************************************************************/
+	@Override
+	public void loadFromXML(MainFrame frame, Document doc, Pane parent,
+			JavaElementXML element) throws Exception {
+		setValues(frame, doc, parent) ;
+
+		m_Name			   	= element.getAttribute("Name") ;
+		m_UpdateOnStop	   	= element.getAttributeBooleanThrows("UpdateOnStop") ;
+		m_UpdateEveryNthDecision = element.getAttributeIntThrows("UpdateEveryNthDecision") ;
+		rhsFunName = element.getAttribute("RHSFunctionName");
+		
+		if (rhsFunName == null) {
+			rhsFunName = new String();
+		}
+		
+		JavaElementXML log = element.findChildByName("Logger") ;
+		if (log != null)
+			this.m_Logger.loadFromXML(doc, log) ;
+
+		// Register that this module's name is in use
+		frame.registerViewName(m_Name, this) ;
+		
+		// Actually create the window
+		init(frame, doc, parent) ;
+
+		// Restore the text we saved (if we chose to save it)
+		restoreContent(element) ;
+	}
+
+
 }
 
 /*
