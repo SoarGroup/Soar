@@ -51,7 +51,7 @@ public class RHSBarChartView extends AbstractUpdateView  implements Kernel.Agent
 	}
 
 	// Assume this may be empty! (no function is registered)
-	protected String rhsFunName = new String("graph");
+	protected String rhsFunName = new String();
 	
 	int rhsCallback = -1;
 
@@ -263,9 +263,23 @@ public class RHSBarChartView extends AbstractUpdateView  implements Kernel.Agent
 	ChartComposite frame;
 	JFreeChart chart;
 	DefaultCategoryDataset dataset;
+	Composite rhsBarChartContainer;
+	Label rightClickLabel;
 	
 	@Override
 	protected void createDisplayControl(Composite parent) {
+		rhsBarChartContainer = new Composite(parent, SWT.NULL);
+		FormData attachFull = FormDataHelper.anchorFull(0) ;
+		rhsBarChartContainer.setLayoutData(attachFull);
+		{
+			GridLayout gl = new GridLayout();
+			gl.numColumns = 1;
+			gl.verticalSpacing = 0;
+			gl.marginHeight = 0;
+			gl.marginWidth = 0;
+			rhsBarChartContainer.setLayout(gl);
+		}
+		
 		dataset = new DefaultCategoryDataset();
 
 		// create the chart...
@@ -280,14 +294,22 @@ public class RHSBarChartView extends AbstractUpdateView  implements Kernel.Agent
             false                     // URLs?
         );
 		
-		frame = new ChartComposite(parent, SWT.NONE, chart, true);
-		
-		FormData attachFull = FormDataHelper.anchorFull(0) ;
-		frame.setLayoutData(attachFull);
+		frame = new ChartComposite(rhsBarChartContainer, SWT.NONE, chart, true);
+		{
+			GridData gd = new GridData(SWT.FILL, SWT.FILL, true, true);
+			frame.setLayoutData(gd);
+		}
 		
 		frame.pack();
+		
+		rightClickLabel = new Label(rhsBarChartContainer, SWT.NONE);
+		rightClickLabel.setText("Right click here to access properties and remove window...");
+		{
+			GridData gd = new GridData(SWT.FILL, SWT.NONE, true, false);
+			rightClickLabel.setLayoutData(gd);
+		}
 
-		createContextMenu(frame) ;
+		createContextMenu(rightClickLabel) ;
 	}
 	
 	@Override
@@ -297,7 +319,7 @@ public class RHSBarChartView extends AbstractUpdateView  implements Kernel.Agent
 
 	@Override
 	protected Control getDisplayControl() {
-		return frame;
+		return rhsBarChartContainer;
 	}
 
 	@Override
@@ -391,3 +413,65 @@ public class RHSBarChartView extends AbstractUpdateView  implements Kernel.Agent
 		}
 	}
 }
+
+/*
+
+Test code:
+
+sp {propose*init
+(state <s> ^superstate nil
+-^name)
+-->
+(<s> ^operator <o> +)
+(<o> ^name init)
+}
+
+sp {apply*init
+(state <s> ^operator.name init)
+-->
+(<s> ^name test)
+#(write (crlf) (exec graph |settype layeredbar|))
+#(write (crlf) (exec graph |addseries series1|))
+#(write (crlf) (exec graph |addseries series2|))
+}
+
+sp {propose*update
+(state <s> ^name test
+-^toggle on)
+-->
+(<s> ^operator <o> +)
+(<o> ^name update)
+}
+
+sp {apply*update
+(state <s> ^operator.name update)
+-->
+(<s> ^toggle on)
+(write (crlf) (exec graph |addvalue category1 series1 0.5|))
+(write (crlf) (exec graph |addvalue category2 series1 0.7|))
+(write (crlf) (exec graph |addvalue category3 series1 0.1|))
+(write (crlf) (exec graph |addvalue category1 series2 0.2|))
+(write (crlf) (exec graph |addvalue category2 series2 0.4|))
+(write (crlf) (exec graph |addvalue category3 series2 0.8|))
+}
+
+sp {propose*update2
+(state <s> ^name test
+^toggle on)
+-->
+(<s> ^operator <o> +)
+(<o> ^name update2)
+}
+
+sp {apply*update2
+(state <s> ^operator.name update2)
+-->
+(<s> ^toggle on -)
+(write (crlf) (exec graph |addvalue category1 series1 0.1|))
+(write (crlf) (exec graph |addvalue category2 series1 0.2|))
+(write (crlf) (exec graph |addvalue category3 series1 0.3|))
+(write (crlf) (exec graph |addvalue category1 series2 0.6|))
+(write (crlf) (exec graph |addvalue category2 series2 0.2|))
+(write (crlf) (exec graph |addvalue category3 series2 0.5|))
+}
+*/
