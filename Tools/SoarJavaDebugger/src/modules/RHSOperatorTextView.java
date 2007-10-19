@@ -47,10 +47,11 @@ public class RHSOperatorTextView extends RHSObjectTextView implements Kernel.Rhs
 		public String operator;
 		public Double value;
 		
+		// This is backwards because descending iterator is a java 1.6 feature
 		public int compareTo(OperatorValue arg0) {
-			if (this.value < arg0.value) {
+			if (this.value > arg0.value) {
 				return -1;
-			} else if (this.value > arg0.value) {
+			} else if (this.value < arg0.value) {
 				return 1;
 			}
 			return 0;
@@ -162,7 +163,9 @@ public class RHSOperatorTextView extends RHSObjectTextView implements Kernel.Rhs
 		// iterate through container and print values
 		StringBuilder output = new StringBuilder();
 		{
-			Iterator<OperatorValue> iter = orderedOperators.descendingIterator();
+			// descending iterator is 1.6 specific so we use a backward comparator
+			// and a regular comparator
+			Iterator<OperatorValue> iter = orderedOperators.iterator();
 			while (iter.hasNext()) {
 				operatorValue = iter.next();
 
