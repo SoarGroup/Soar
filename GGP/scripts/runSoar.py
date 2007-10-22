@@ -91,7 +91,7 @@ if __name__ == "__main__":
 			if len(commands) > 0:
 				run_agent(agent_file, commands)
 			else:
-				run_agent(agent_file, ['run'])
+				run_agent(agent_file, ['run 1700000'])
 		else:
 			run_script(sys.argv[nargs-1])
 	else:
