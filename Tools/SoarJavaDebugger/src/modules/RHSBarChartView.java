@@ -9,7 +9,6 @@ import general.JavaElementXML;
 import helpers.FormDataHelper;
 
 import manager.Pane;
-import modules.RHSOperatorTextView.OperatorValue;
 
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.layout.FormData;

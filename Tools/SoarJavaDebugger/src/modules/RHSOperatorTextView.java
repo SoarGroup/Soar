@@ -33,31 +33,6 @@ public class RHSOperatorTextView extends RHSObjectTextView implements Kernel.Rhs
 	
 	public String getModuleBaseName() { return "rhs_operator_text" ; }
 
-	class OperatorValue implements Comparable<OperatorValue> {
-		
-		public OperatorValue()
-		{
-		}
-		
-		OperatorValue(OperatorValue ov) {
-			this.operator = new String(ov.operator);
-			this.value = new Double(ov.value);
-		}
-		
-		public String operator;
-		public Double value;
-		
-		// This is backwards because descending iterator is a java 1.6 feature
-		public int compareTo(OperatorValue arg0) {
-			if (this.value > arg0.value) {
-				return -1;
-			} else if (this.value < arg0.value) {
-				return 1;
-			}
-			return 0;
-		}
-	}
-
 	enum ParseState { START, ACCEPTABLES, BEFORE_NUM, NUM, DONE };
 	
 	@Override
@@ -96,7 +71,7 @@ public class RHSOperatorTextView extends RHSObjectTextView implements Kernel.Rhs
 		HashMap<String, Double> operatorPreferences = new HashMap<String, Double>();
 		
 		// get preferences result, split on newlines
-		String[] prefOutput = agent.ExecuteCommandLine("pref").split("\n");
+		String[] prefOutput = agent.ExecuteCommandLine("pref s1").split("\n");
 		
 		// get preference value for each operator
 		ParseState state = ParseState.START;
@@ -149,31 +124,49 @@ public class RHSOperatorTextView extends RHSObjectTextView implements Kernel.Rhs
 			}
 		}
 		
-		TreeSet<OperatorValue> orderedOperators = new TreeSet<OperatorValue>();
-		OperatorValue operatorValue = new OperatorValue();
+		TreeMap<Double, ArrayList<String> > valueToOperators = new TreeMap<Double, ArrayList<String> >();
 		{
-			Iterator<String> iter = operatorPreferences.keySet().iterator();
+			// foreach op/val in hash
+			Set<Map.Entry<String, Double> > entrySet = operatorPreferences.entrySet();
+			Iterator<Map.Entry<String, Double> > iter = entrySet.iterator();
 			while (iter.hasNext()) {
-				operatorValue.operator = iter.next();
-				operatorValue.value = operatorPreferences.get(operatorValue.operator);
-				orderedOperators.add(new OperatorValue(operatorValue));
+				Map.Entry<String, Double> entry = iter.next();
+				
+				// if value in treemap
+				if (valueToOperators.containsKey(entry.getValue())) {
+					// add op to list
+					valueToOperators.get(entry.getValue()).add(entry.getKey());
+				} else {
+					// new entry
+					ArrayList<String> operators = new ArrayList<String>();
+					operators.add(entry.getKey());
+					valueToOperators.put(entry.getValue(), operators);
+					
+				}
 			}
 		}
-		
-		// iterate through container and print values
+
+		// iterate through treemap and print values
 		StringBuilder output = new StringBuilder();
 		{
+			Set<Map.Entry<Double, ArrayList<String> > > entrySet = valueToOperators.entrySet();
+			Iterator<Map.Entry<Double, ArrayList<String> > > iter = entrySet.iterator();
+			
 			// descending iterator is 1.6 specific so we use a backward comparator
 			// and a regular comparator
-			Iterator<OperatorValue> iter = orderedOperators.iterator();
 			while (iter.hasNext()) {
-				operatorValue = iter.next();
+				Map.Entry<Double, ArrayList<String> > entry = iter.next();
+				
+				Iterator<String> operators = entry.getValue().iterator();
+				while (operators.hasNext()) {
+					String operator = operators.next();
 
-				output.append(operatorValue.operator);
-				output.append(" (");
-				output.append(operatorValue.value);
-				output.append(")\n");
-				output.append(objectTextMap.get(operatorValue.operator));
+					output.append(operator);
+					output.append(" (");
+					output.append(entry.getKey());
+					output.append(")\n");
+					output.append(objectTextMap.get(operator));
+				}
 			}	
 		}
 		
