@@ -191,6 +191,7 @@ public class RHSFunTextView extends AbstractUpdateView implements Kernel.AgentEv
          }) ;
 	}
 	
+	StringBuilder output;
 	public String rhsFunctionHandler(int eventID, Object data,
 			String agentName, String functionName, String argument) {
 
@@ -199,7 +200,7 @@ public class RHSFunTextView extends AbstractUpdateView implements Kernel.AgentEv
 		}
 		
 		String[] args = argument.split("\\s+");
-		StringBuilder output = new StringBuilder();
+		output = new StringBuilder();
 		
 		for (int index = 0; index < args.length; index += 2) {
 			output.append(args[index]);
@@ -209,8 +210,6 @@ public class RHSFunTextView extends AbstractUpdateView implements Kernel.AgentEv
 				output.append("\n");
 			}
 		}
-		
-		setTextSafely(output.toString());
 		
 		return "Successfully updated " + getName();
 	}
@@ -363,6 +362,7 @@ public class RHSFunTextView extends AbstractUpdateView implements Kernel.AgentEv
 
 	@Override
 	public void clearDisplay() {
+		output = null;
 		setTextSafely("");
 	}
 
@@ -393,6 +393,9 @@ public class RHSFunTextView extends AbstractUpdateView implements Kernel.AgentEv
 	@Override
 	protected void updateNow() {
 		// we don't need to do anything here but subclasses might
+		if (output != null) {
+			setTextSafely(output.toString());
+		}
 	}
 	
 	/************************************************************************
