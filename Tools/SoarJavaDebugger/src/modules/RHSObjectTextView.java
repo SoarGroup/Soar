@@ -40,30 +40,29 @@ public class RHSObjectTextView extends RHSFunTextView implements Kernel.RhsFunct
 		StringBuilder output = new StringBuilder();
 		
 		// for each id
-		Set<String> keys = objectTextMap.keySet();
-		String[] sortedKeys = keys.toArray(new String[0]);
-		Arrays.sort(sortedKeys);
-		
-		for (int index = 0; index < sortedKeys.length; ++index) {
+		Set<Map.Entry<String, String> > entrySet = objectTextMap.entrySet();
+		Iterator<Map.Entry<String, String> > iter = entrySet.iterator();
+		while (iter.hasNext()) {
+			Map.Entry<String, String> entry = iter.next();
 			
 			// verify it exists
-			String result = agent.ExecuteCommandLine("print " + sortedKeys[index]);
-			if (!result.startsWith("There")) {
-				// write it in to the text
-				output.append(sortedKeys[index]);
-				output.append("\n");
-				output.append(objectTextMap.get(sortedKeys[index]));
-				
-			} else {
+			String result = agent.ExecuteCommandLine("print " + entry.getKey());
+			if (result.startsWith("There")) {
 				// it doesn't exist, remove it
-				objectTextMap.remove(sortedKeys[index]);
+				iter.remove();
+			} else {
+				// write it in to the text
+				output.append(entry.getKey());
+				output.append("\n");
+				output.append(entry.getValue());
 			}
 		}
+		
 		setTextSafely(output.toString());
 	}
 	
 	// identifier to associated text
-	HashMap<String, String> objectTextMap = new HashMap<String, String>();
+	TreeMap<String, String> objectTextMap = new TreeMap<String, String>();
 	
 	@Override
 	public String rhsFunctionHandler(int eventID, Object data,
