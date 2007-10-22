@@ -195,10 +195,6 @@ public class RHSFunTextView extends AbstractUpdateView implements Kernel.AgentEv
 	public String rhsFunctionHandler(int eventID, Object data,
 			String agentName, String functionName, String argument) {
 
-		if (!functionName.equals(rhsFunName)) {
-			return "Unknown rhs function " + rhsFunName + " received in window " + getName() + ".";
-		}
-		
 		String[] args = argument.split("\\s+");
 		output = new StringBuilder();
 		
@@ -211,7 +207,7 @@ public class RHSFunTextView extends AbstractUpdateView implements Kernel.AgentEv
 			}
 		}
 		
-		return "Successfully updated " + getName();
+		return m_Name + ":" + rhsFunName + ": RHSFunTextView: Successfully updated " + getName();
 	}
 	
 	int rhsCallback = -1;

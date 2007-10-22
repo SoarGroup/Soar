@@ -35,6 +35,17 @@ public class RHSOperatorTextView extends RHSObjectTextView implements Kernel.Rhs
 
 	enum ParseState { START, ACCEPTABLES, BEFORE_NUM, NUM, DONE };
 	
+	static final Comparator<Double> kReverseOrder = new Comparator<Double>() {
+		public int compare(Double x, Double y) {
+			if (x < y) {
+				return 1;
+			} else if (x > y) {
+				return -1;
+			}
+			return 0;
+		}
+	};
+	
 	@Override
 	protected void updateNow() {
 
@@ -124,7 +135,7 @@ public class RHSOperatorTextView extends RHSObjectTextView implements Kernel.Rhs
 			}
 		}
 		
-		TreeMap<Double, ArrayList<String> > valueToOperators = new TreeMap<Double, ArrayList<String> >();
+		TreeMap<Double, ArrayList<String> > valueToOperators = new TreeMap<Double, ArrayList<String> >(kReverseOrder);
 		{
 			// foreach op/val in hash
 			Set<Map.Entry<String, Double> > entrySet = operatorPreferences.entrySet();
@@ -165,7 +176,9 @@ public class RHSOperatorTextView extends RHSObjectTextView implements Kernel.Rhs
 					output.append(" (");
 					output.append(entry.getKey());
 					output.append(")\n");
-					output.append(objectTextMap.get(operator));
+					if (objectTextMap.containsKey(operator)) {
+						output.append(objectTextMap.get(operator));
+					}
 				}
 			}	
 		}

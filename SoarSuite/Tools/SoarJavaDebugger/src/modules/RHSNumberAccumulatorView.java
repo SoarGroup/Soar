@@ -41,20 +41,16 @@ public class RHSNumberAccumulatorView extends RHSFunTextView
 	public String rhsFunctionHandler(int eventID, Object data,
 			String agentName, String functionName, String argument) {
 		
-		if (functionName.equals(rhsFunName)) {
-			double value = 0;
-			try {
-				value = Double.parseDouble(argument);
-			} catch (NumberFormatException e) {
-				return "Unknown argument to " + rhsFunName;
-			}
-			
-			totalValue += value;
-			
-			return "Total value changed to: " + totalValue;
+		double value = 0;
+		try {
+			value = Double.parseDouble(argument);
+		} catch (NumberFormatException e) {
+			return m_Name + ":" + functionName + ": Unknown argument to " + rhsFunName;
 		}
 		
-		return "Unknown rhs function received in window " + getName() + ".";
+		totalValue += value;
+		
+		return m_Name + ":" + functionName + ": Total value changed to: " + totalValue;
 	}
 	
 	@Override
