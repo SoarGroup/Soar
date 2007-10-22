@@ -56,7 +56,9 @@ foreach $line (`cat $ARGV[0]`) {
   }
 
   $source1 = $path . $source1;
-  $source2 = $path . $source2;
+  if (defined $source2) {
+    $source2 = $path . $source2;
+  }
   $targetNS = $path . $targetNS;
   $targetS = $path . $targetS;
   die unless (-e $source1);
@@ -74,15 +76,15 @@ foreach $line (`cat $ARGV[0]`) {
   $goodthings =~ s/\.log/\.goodthings.soar/;
   die unless (-e $goodthings);
   
-  $sSub = $targetS;
-  $sSub =~ s/log$/submit/;
-  die unless (-e $sSub);
-  @sSubStats = `cat $sSub`;
+  #$sSub = $targetS;
+  #$sSub =~ s/log$/submit/;
+  #die unless (-e $sSub);
+  #@sSubStats = `cat $sSub`;
   
-  $nsSub = $targetNS;
-  $nsSub =~ s/log$/submit/;
-  die unless (-e $nsSub);
-  @nsSubStats = `cat $nsSub`;
+  #$nsSub = $targetNS;
+  #$nsSub =~ s/log$/submit/;
+  #die unless (-e $nsSub);
+  #@nsSubStats = `cat $nsSub`;
 
   $genUser = 0;
   $genUserSys = 0;
@@ -116,6 +118,32 @@ foreach $line (`cat $ARGV[0]`) {
   $sSubUserSys = $sSubStats[2];
   $sSubReal = $sSubStats[3];
   
+  $source1SoarLine = `grep 'decisions (' $source1`;
+  $source1SoarLine =~ /^(\d+) decisions \((\S+) msec/ or die "bad: $source1, $source1SoarLine";
+  $source1Decisions = $1;
+
+  $source1StatusLine = `grep -B2 "This Agent halted" $source1 | grep succeeded`;  
+  $source1Valid = 1;
+  unless ($source1StatusLine =~ /succeeded/) {
+    $source1Valid = 0;
+  }
+
+  if (defined $source2) {
+    $source2SoarLine = `grep 'decisions (' $source2`;
+    $source2SoarLine =~ /^(\d+) decisions \((\S+) msec/ or die "$source2";
+    $source2Decisions = $1;
+  
+    $source2StatusLine = `grep -B2 "This Agent halted" $source2 | grep succeeded`;  
+    $source2Valid = 1;
+    unless ($source2StatusLine =~ /succeeded/) {
+      $source2Valid = 0;
+    }
+  }
+  else {
+    $source2Decisions = "inv";
+    $source2Valid = 1;
+  }
+  
   $nsSoarLine = `grep 'decisions (' $targetNS`;
   $sSoarLine = `grep 'decisions (' $targetS`;
 
@@ -123,12 +151,30 @@ foreach $line (`cat $ARGV[0]`) {
   # also convert to seconds
   $nsSoarLine =~ /^(\d+) decisions \((\S+) msec/ or die;
   $nsSoar = $1*$2*0.001;
+  $nsDecisions = $1;
+  
+  $nsStatusLine = `grep -B2 "This Agent halted" $targetNS | grep succeeded`;  
+  $nsValid = 1;
+  unless ($nsStatusLine =~ /succeeded/) {
+    $nsValid = 0;
+  }
 
   $sSoarLine =~ /^(\d+) decisions \((\S+) msec/ or die;
   $sSoar = $1*$2*0.001;
+  $sDecisions = $1;
+
+  $sStatusLine = `grep -B2 "This Agent halted" $targetS | grep succeeded`;  
+  $sValid = 1;
+  unless ($sStatusLine =~ /succeeded/) {
+    $sValid = 0;
+  }
 
   @data = ();
   push @data, "$env-$level-$scenario";
+  push @data, $source1Decisions;
+  push @data, $source2Decisions;
+  push @data, $nsDecisions;
+  push @data, $sDecisions;
   # four versions of no-source time
   push @data, $nsSoar;
   push @data, $nsUser;
@@ -140,25 +186,51 @@ foreach $line (`cat $ARGV[0]`) {
   push @data, $sUserSys + $genUserSys;
   push @data, $sReal + $genReal;
   # four versions of no-source time, including submission
-  push @data, $nsSoar + $nsSubUser;
-  push @data, $nsUser + $nsSubUser;
-  push @data, $nsUserSys + $nsSubUserSys;
-  push @data, $nsReal + $nsSubReal;
+  #push @data, $nsSoar + $nsSubUser;
+  #push @data, $nsUser + $nsSubUser;
+  #push @data, $nsUserSys + $nsSubUserSys;
+  #push @data, $nsReal + $nsSubReal;
   # four versions of source time, including submission
-  push @data, $sSoar + $genUser + $sSubUser;
-  push @data, $sUser + $genUser + $sSubUser;
-  push @data, $sUserSys + $genUserSys + $sSubUserSys;
-  push @data, $sReal + $genReal + $sSubReal;
+  #push @data, $sSoar + $genUser + $sSubUser;
+  #push @data, $sUser + $genUser + $sSubUser;
+  #push @data, $sUserSys + $genUserSys + $sSubUserSys;
+  #push @data, $sReal + $genReal + $sSubReal;
   # four versions of regret
-  push @data, regret($nsSoar, $sSoar + $genUser);
-  push @data, regret($nsUser, $sUser + $genUser);
-  push @data, regret($nsUserSys, $sUserSys + $genUserSys);
-  push @data, regret($nsReal, $sReal + $genReal);
+  if ($source1Valid and $source2Valid and $nsValid and $sValid) {
+    push @data, regret($nsDecisions, $sDecisions);
+    push @data, regret($nsSoar, $sSoar + $genUser);
+    push @data, regret($nsUser, $sUser + $genUser);
+    push @data, regret($nsUserSys, $sUserSys + $genUserSys);
+    push @data, regret($nsReal, $sReal + $genReal);
+  }
+  else {
+    if (not $source1Valid or not $source2Valid) {
+      push @data, "source invalid";
+      push @data, "source invalid";
+      push @data, "source invalid";
+      push @data, "source invalid";
+      push @data, "source invalid";
+    }
+    elsif (not $nsValid) {
+      push @data, "target no-source invalid";
+      push @data, "target no-source invalid";
+      push @data, "target no-source invalid";
+      push @data, "target no-source invalid";
+      push @data, "target no-source invalid";
+    }
+    else {
+      push @data, "target with source invalid";
+      push @data, "target with source invalid";
+      push @data, "target with source invalid";
+      push @data, "target with source invalid";
+      push @data, "target with source invalid";
+    }
+  }
   # four versions of regret, including submission
-  push @data, regret($nsSoar + $nsSubUser, $sSoar + $genUser + $sSubUser);
-  push @data, regret($nsUser + $nsSubUser, $sUser + $genUser + $sSubUser);
-  push @data, regret($nsUserSys + $nsSubUserSys, $sUserSys + $genUserSys + $sSubUserSys);
-  push @data, regret($nsReal + $nsSubReal, $sReal + $genReal + $sSubReal);
+  #push @data, regret($nsSoar + $nsSubUser, $sSoar + $genUser + $sSubUser);
+  #push @data, regret($nsUser + $nsSubUser, $sUser + $genUser + $sSubUser);
+  #push @data, regret($nsUserSys + $nsSubUserSys, $sUserSys + $genUserSys + $sSubUserSys);
+  #push @data, regret($nsReal + $nsSubReal, $sReal + $genReal + $sSubReal);
 
   for ($i=0; $i<=$#data; $i++) {
     push @{$line[$i]}, $data[$i];
@@ -205,5 +277,5 @@ sub realSeconds() {
   elsif ($string =~ /(\d+):(\S+)/) {
     return 60*$1 + $2;
   }
-  die;
+  return "inv";
 }

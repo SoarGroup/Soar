@@ -40,6 +40,10 @@ our @scenarios = (
   "r 8 2",
   "r 9 1",
   "r 9 2",
+  "b 7 1",
+  "b 7 2",
+  "b 7 3",
+  "b 8 1",
   "10 1",
   "10 2",
   "10 3",
@@ -188,6 +192,9 @@ sub expandScenario() {
     }
     elsif ($1 =~ /w/) {
       return "wargame-$lvl-$scn";
+    }
+    elsif ($1 =~ /b/) {
+      return "build-$lvl-$scn";
     }
     else {
       die;
