@@ -1,0 +1,11 @@
+sp {reward*test
+  (state <s> ^superstate nil
+            -^operator.name test)
+-->
+  (<s> ^operator <o>)
+  (<o> ^name test)
+  (write (crlf) (exec object |I1 one|))  
+  (write (crlf) (exec object |S1 attribute value franzia|))
+  (write (crlf) (exec object |I3 three|))  
+  (write (crlf) (exec object |I2 two|))  
+}
