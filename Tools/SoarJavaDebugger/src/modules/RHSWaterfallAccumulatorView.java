@@ -103,15 +103,11 @@ public class RHSWaterfallAccumulatorView extends RHSFunTextView implements Kerne
 	public String rhsFunctionHandler(int eventID, Object data,
 			String agentName, String functionName, String argument) {
 		
-		if (!functionName.equals(rhsFunName)) {
-			return "Unknown rhs function received in window " + getName() + ".";
-		}
-		
 		String[] args = argument.split("\\s+");
 		
 		// make sure we have 2 args
 		if (args.length != 2) {
-			return "Two arguments (tag, value) are required for RHS function " + rhsFunName + ", got " + args.length + ".";
+			return m_Name + ":" + functionName + ": Two arguments (tag, value) are required for RHS function " + rhsFunName + ", got " + args.length + ".";
 		}
 		
 		double value = 0;
@@ -119,7 +115,7 @@ public class RHSWaterfallAccumulatorView extends RHSFunTextView implements Kerne
 			value = Double.parseDouble(args[1]);
 			
 		} catch (NumberFormatException e) {
-			return "RHS function " + rhsFunName + " expected number, got " + args[1];
+			return m_Name + ":" + functionName + ": expected number, got " + args[1];
 		}
 		
 		if (currentTag == null || !args[0].equals(currentTag)) {
@@ -143,7 +139,7 @@ public class RHSWaterfallAccumulatorView extends RHSFunTextView implements Kerne
 			currentValue += value;
 		}
 		
-		return currentTag + ": " + currentValue;
+		return m_Name + ":" + functionName + ": " + currentTag + ": " + currentValue;
 	}
 	
 	@Override

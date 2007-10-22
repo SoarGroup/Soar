@@ -186,10 +186,6 @@ public class RHSBarChartView extends AbstractUpdateView  implements Kernel.Agent
 	public String rhsFunctionHandler(int eventID, Object data,
 			String agentName, String functionName, String argument) {
 
-		if (!functionName.equals(rhsFunName)) {
-			return "Unknown rhs function " + rhsFunName + " received in window " + getName() + ".";
-		}
-		
 		// Syntax: 
 		//                              |--- commandLine --------------------|
 		//      exec <rhs_function_name> <command> [<args>] 
@@ -198,40 +194,40 @@ public class RHSBarChartView extends AbstractUpdateView  implements Kernel.Agent
 		String[] commandLine = argument.split("\\s+");
 		
 		if (commandLine.length < 1) {
-			return "RHSBarChartView: no command";
+			return m_Name + ":" + functionName + ": no command";
 		}
 		
 		if (commandLine[0].equals("addvalue")) {
 			if (commandLine.length != 6) {
-				return "RHSBarChartView: addvalue requires <category> <category-order> <series> <series-order> <value>";
+				return m_Name + ":" + functionName + ": addvalue requires <category> <category-order> <series> <series-order> <value>";
 			}
 			
 			int catOrder = 0;
 			try {
 				catOrder = Integer.parseInt(commandLine[2]);
 			} catch (NumberFormatException e) {
-				return "RHSBarChartView: addvalue: parsing failed for <category-order> argument";
+				return m_Name + ":" + functionName + ": addvalue: parsing failed for <category-order> argument";
 			}
 			
 			int serOrder = 0;
 			try {
 				serOrder = Integer.parseInt(commandLine[4]);
 			} catch (NumberFormatException e) {
-				return "RHSBarChartView: addvalue: parsing failed for <series-order> argument";
+				return m_Name + ":" + functionName + ": addvalue: parsing failed for <series-order> argument";
 			}
 			
 			double value = 0;
 			try {
 				value = Double.parseDouble(commandLine[5]);
 			} catch (NumberFormatException e) {
-				return "RHSBarChartView: addvalue: parsing failed for <value> argument";
+				return m_Name + ":" + functionName + ": addvalue: parsing failed for <value> argument";
 			}
 			
 			updateData(commandLine[1], catOrder, commandLine[3], serOrder, value);
-			return "Graph updated.";
+			return m_Name + ":" + functionName + ": Graph updated.";
 		}		
 		
-		return "RHSBarChartView: unknown command: " + commandLine[0];
+		return m_Name + ":" + functionName + ": unknown command: " + commandLine[0];
 	}
 	
 	private void updateData(String category, int categoryOrder, String series, int seriesOrder, double value) {

@@ -68,15 +68,11 @@ public class RHSObjectTextView extends RHSFunTextView implements Kernel.RhsFunct
 	public String rhsFunctionHandler(int eventID, Object data,
 			String agentName, String functionName, String argument) {
 		
-		if (!functionName.equals(rhsFunName)) {
-			return "Unknown rhs function received in window " + getName() + ".";
-		}
-		
 		String[] args = argument.split("\\s+");
 		
 		// make sure we have 2 args
 		if (args.length <= 1) {
-			return "RHS function " + rhsFunName + " requires at least one argument.";
+			return m_Name + ":" + functionName + ": at least one argument required.";
 		}
 		
 		// first arg is the event
@@ -97,7 +93,7 @@ public class RHSObjectTextView extends RHSFunTextView implements Kernel.RhsFunct
 
 		objectTextMap.put(args[0], output.toString());
 		
-		return "Updated " + args[0];
+		return m_Name + ":" + functionName + ": Updated " + args[0];
 	}
 	
 	@Override
