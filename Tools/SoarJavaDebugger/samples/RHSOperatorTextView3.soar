@@ -1,0 +1,28 @@
+# RHS function name: reportoperator
+
+sp {name
+(state <s> ^superstate nil)
+-->
+(<s> ^name test)
+}
+
+sp {propose1
+(state <s> ^name test)
+-->
+(<s> ^operator <o> + >)
+(<o> ^name one)
+}
+
+sp {propose2
+(state <s> ^name test)
+-->
+(<s> ^operator <o> +)
+(<o> ^name two)
+}
+
+sp {report
+(state <s> ^operator <o> +)
+(<o> ^name <name>)
+-->
+(write (crlf) (exec reportoperator <o> | name | <name> | bingo bango |))
+}
