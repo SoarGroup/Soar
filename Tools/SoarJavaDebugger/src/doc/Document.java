@@ -15,11 +15,13 @@ import doc.DocumentThread2.CommandExecCommandLine;
 import doc.DocumentThread2.CommandExecCommandLineXML;
 import doc.events.*;
 import sml.* ;
+import sml.Kernel.RhsFunctionInterface;
 import debugger.* ;
 import general.AppProperties;
 import modules.*;
 
 import java.io.IOException;
+import java.util.HashMap;
 
 import org.eclipse.swt.widgets.Display;
 
@@ -997,5 +999,49 @@ public class Document implements Kernel.AgentEventInterface, Kernel.SystemEventI
 		
 		Object result = m_DocumentThread.getExecutedCommandResult(command) ;
 		return result ;
+	}
+	
+	HashMap<String, Integer> m_RHSFunctions = new HashMap<String, Integer>();
+	
+	public boolean isRHSFunctionRegistered(String functionName) {
+		return this.m_RHSFunctions.containsKey(functionName);
+	}
+	
+	/*******************************************************************************************
+	 * 
+	 * Wrapper for RHS function registration to avoid registration of multiple handlers.
+	 * 
+	 * @return true if the function was successfully registered
+	 *******************************************************************************************
+	 */
+	public boolean registerRHSFunction(String functionName, RhsFunctionInterface handlerObject, Object callbackData) {
+		if (this.m_RHSFunctions.containsKey(functionName))
+			return false;
+		
+		Integer callbackID = this.m_Kernel.AddRhsFunction(functionName, handlerObject, callbackData);
+
+		if (callbackID.equals(-1))
+			return false;
+
+		this.m_RHSFunctions.put(functionName, callbackID);
+		return true;
+	}
+	
+	/*******************************************************************************************
+	 * 
+	 * Wrapper for RHS function un-registration to keep state to avoid registration of multiple 
+	 * handlers.
+	 * 
+	 * @return true if the function was successfully unregistered
+	 *******************************************************************************************
+	 */
+	public boolean unregisterRHSFunction(String functionName) {
+		if (!this.m_RHSFunctions.containsKey(functionName))
+			return false;
+		
+		Integer callbackID = this.m_RHSFunctions.get(functionName);
+		
+		this.m_RHSFunctions.remove(functionName);
+		return this.m_Kernel.RemoveRhsFunction(callbackID);
 	}
 }
