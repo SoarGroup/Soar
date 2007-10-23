@@ -78,20 +78,14 @@ public class RHSWaterfallAccumulatorView extends RHSFunTextView implements Kerne
 		int index = theText.indexOf("\n");
 		assert index != -1;
 
-		// set selection from 0 to newline
-		textBox.setSelection(0, index);
-		// clear selection
-		textBox.clearSelection();
-		
 		// insert new stuff
 		StringBuilder newText = new StringBuilder();
-		newText.insert(0, "\n");
-		newText.insert(0, currentValue);
-		newText.insert(0, ": ");
-		newText.insert(0, currentTag);
+		newText.append(currentTag);
+		newText.append(": ");
+		newText.append(currentValue);
+		newText.append("\n");
 		
-		textBox.insert(newText.toString());
-		
+		textBox.replaceTextRange(0, index, newText.toString());
 	}
 
 	boolean newTag = false;

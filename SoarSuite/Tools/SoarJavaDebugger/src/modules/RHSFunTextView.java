@@ -45,7 +45,7 @@ public class RHSFunTextView extends AbstractUpdateView implements Kernel.AgentEv
 	protected Label labelTextWidget;
 	protected boolean debugMessages = true;
 	
-	Text textBox;
+	StyledText textBox;
 
 	/************************************************************************
 	* 
@@ -221,17 +221,48 @@ public class RHSFunTextView extends AbstractUpdateView implements Kernel.AgentEv
 			labelTextWidget.setLayoutData(gd);
 		}
 		
-		textBox = new Text(rhsFunContainer, SWT.MULTI | SWT.READ_ONLY | SWT.H_SCROLL | SWT.V_SCROLL);
+		textBox = new StyledText(rhsFunContainer, SWT.MULTI | SWT.READ_ONLY | SWT.H_SCROLL | SWT.V_SCROLL);
 		updateNow();
 		{
 			GridData gd = new GridData(SWT.FILL, SWT.FILL, true, true);
 			textBox.setLayoutData(gd);
 		}
 
+		// We want a right click to set the selection instantly, so you can right click on an ID
+		// rather than left-clicking on the ID and then right click to bring up menu.
+		textBox.addMouseListener(new MouseAdapter() {
+			public void mouseDown(MouseEvent e)
+			{ if (e.button == 2 || e.button == 3) rightButtonPressed(e) ; } ;
+		}) ;
+		
+		textBox.setBackground(getBackgroundColor()) ;
+
+
 		createContextMenu(labelTextWidget) ;
 		createContextMenu(textBox) ;
 	}
 	
+	/*******************************************************************************************
+	 * 
+	 * When the user clicks the right mouse button, sets the selection to that location (just like a left click).
+	 * This makes right clicking on a piece of text much easier as it's just one click rather than
+	 * having to left click to place the selection and then right click to bring up the menu.
+	 * 
+	********************************************************************************************/
+	protected void rightButtonPressed(MouseEvent e)
+	{	
+		try
+		{
+			Point mouse = new Point(e.x, e.y) ;
+			int offset = textBox.getOffsetAtLocation(mouse) ;
+			textBox.setSelection(offset) ;
+		}
+		catch (IllegalArgumentException ex)
+		{
+			// If the click is out of range of the text ignore it.
+		}
+	}
+
 	@Override
 	public Color getBackgroundColor() {
 		return getMainFrame().getDisplay().getSystemColor(SWT.COLOR_WIDGET_BACKGROUND) ;
@@ -267,7 +298,21 @@ public class RHSFunTextView extends AbstractUpdateView implements Kernel.AgentEv
 	@Override
 	protected ParseSelectedText.SelectedObject getCurrentSelection(int mouseX, int mouseY)
 	{
-		int pos = textBox.getCaretPosition() ;
+		// Find out if mouseX, mouseY is over the text at all
+		try
+		{
+			Point mouse = textBox.toControl(mouseX, mouseY) ;
+			textBox.getOffsetAtLocation(mouse) ;
+		}
+		catch (IllegalArgumentException ex)
+		{
+			// If the click wasn't over any letters we come here and return null to indicate
+			// no text was selected (we'll just show the default context menu).
+			return null ;
+		}
+		
+		// Look up the currently selected text
+		int pos = textBox.getCaretOffset() ;
 		if (pos == -1)
 			return null ;
 		
