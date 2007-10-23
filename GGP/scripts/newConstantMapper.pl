@@ -33,13 +33,13 @@ $unchangeable{"east"} = 1;
 $unchangeable{"west"} = 1;
 
 # comment out block to not run predicate mapper (add in block below)
-#foreach $line (`$ruleMapper $sourceKif $targetKif | grep -v UNROLL`) {
-#  print "map predicate $line";
-#  if ($line =~ /(\S+) (\S+)/) {
-#    push @{ $sourcePredicateToTarget{$1} }, $2;
-#    push @{ $targetPredicateToSource{$2} }, $1;
-#  }
-#}
+foreach $line (`$ruleMapper $sourceKif $targetKif | grep -v UNROLL`) {
+  print "map predicate $line";
+  if ($line =~ /(\S+) (\S+)/) {
+    push @{ $sourcePredicateToTarget{$1} }, $2;
+    push @{ $targetPredicateToSource{$2} }, $1;
+  }
+}
 
 # mappings that are always present
 push @{ $sourcePredicateToTarget{"goal"} }, "goal";
@@ -60,10 +60,10 @@ foreach $line (`$findGroundings $sourceKif`) {
 }
 
 # null mapping version- add in if predicate mapper not used
-foreach $predicate (keys %sourcePPosToGroundings) {
-  push @{ $sourcePredicateToTarget{$predicate} }, $predicate;
-  push @{ $targetPredicateToSource{$predicate} }, $predicate;
-}
+#foreach $predicate (keys %sourcePPosToGroundings) {
+#  push @{ $sourcePredicateToTarget{$predicate} }, $predicate;
+#  push @{ $targetPredicateToSource{$predicate} }, $predicate;
+#}
 
 foreach $line (`$findGroundings $targetKif`) {
   $line =~ /(\S+) (\d+) (\S+) (\d+)/ or die;
@@ -89,6 +89,13 @@ foreach $line (`$findConstantDevs $sourceKif`) {
     push @{ $sourceConstantsToPPos{$constant} }, "$predicate $position $score";
   }
 }
+
+
+# block for null constant mapping
+foreach $sourceConstant (keys %sourceConstantsToPPos) {
+  print "map constant $sourceConstant $sourceConstant\n";
+}
+exit;
 
 foreach $line (`$findConstantDevs $targetKif`) {
   $line =~ /(\S+) (\S+)/ or die;
