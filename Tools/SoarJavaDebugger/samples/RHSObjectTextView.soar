@@ -6,8 +6,8 @@ sp {reward*test
 -->
   (<s> ^operator <o>)
   (<o> ^name test)
-  (write (crlf) (exec object |I1 one|))  
-  (write (crlf) (exec object |S1 attribute value franzia|))
-  (write (crlf) (exec object |I3 three|))  
-  (write (crlf) (exec object |I2 two|))  
+  (write (crlf) (exec object |I1 a b|))  
+  (write (crlf) (exec object |S1 c d e|))
+  (write (crlf) (exec object |I3 f g|))  
+  (write (crlf) (exec object |I2 attending true|))  
 }
