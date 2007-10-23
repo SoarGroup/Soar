@@ -48,84 +48,6 @@ public class RHSFunTextView extends AbstractUpdateView implements Kernel.AgentEv
 	
 	protected static HashSet<String> registeredRHSFunctions = new HashSet<String>();
 	
-	public void showProperties()
-	{
-		PropertiesDialog.Property properties[] = new PropertiesDialog.Property[4] ;
-		
-		properties[0] = new PropertiesDialog.IntProperty("Update automatically every n'th decision (0 => none)", m_UpdateEveryNthDecision) ;
-		properties[1] = new PropertiesDialog.StringProperty("Name of RHS function to use to update this window", rhsFunName) ;
-		properties[2] = new PropertiesDialog.StringProperty("Label text", labelText) ;
-		properties[3] = new PropertiesDialog.BooleanProperty("Debug messages", debugMessages) ;
-		
-		boolean ok = PropertiesDialog.showDialog(m_Frame, "Properties", properties) ;
-		
-		if (ok) {
-			m_UpdateEveryNthDecision = ((PropertiesDialog.IntProperty)properties[0]).getValue() ;
-			labelText = ((PropertiesDialog.StringProperty)properties[2]).getValue() ;
-			setLabelText(labelText);
-			debugMessages = ((PropertiesDialog.BooleanProperty)properties[3]).getValue() ;
-
-			if (this.getAgentFocus() != null)
-			{
-				// Make sure we're getting the events to match the new settings
-				this.unregisterForAgentEvents(this.getAgentFocus()) ;
-				this.registerForAgentEvents(this.getAgentFocus()) ;
-			}
-			
-			String tempRHSFunName = ((PropertiesDialog.StringProperty)properties[1]).getValue() ;
-			tempRHSFunName = tempRHSFunName.trim();
-			
-			// Make sure new one is different than old one and not zero length string
-			if (tempRHSFunName.length() <= 0 || tempRHSFunName.equals(rhsFunName)) {
-				return;
-			}
-			
-			if (registeredRHSFunctions.contains(tempRHSFunName)) {
-				// failed to register callback
-				MessageBox errorDialog = new MessageBox(this.m_Frame.getShell(), SWT.ICON_ERROR | SWT.OK);
-				errorDialog.setMessage("RHS function already registered: \"" + tempRHSFunName + "\", ignoring change.");
-				errorDialog.open();
-				return;
-			}
-
-			Agent agent = m_Frame.getAgentFocus() ;
-			if (agent == null) {
-				return;
-			}
-
-			// Try and register this, message and return if failure
-			Kernel kernel = agent.GetKernel();
-			int tempRHSCallback = kernel.AddRhsFunction(tempRHSFunName, this, null);
-			
-			// TODO: Verify that error check here is correct, and fix registerForAgentEvents
-			// BUGBUG: remove true
-			if (tempRHSCallback <= 0) {
-				// failed to register callback
-				MessageBox errorDialog = new MessageBox(this.m_Frame.getShell(), SWT.ICON_ERROR | SWT.OK);
-				errorDialog.setMessage("Failed to change RHS function name \"" + tempRHSFunName + "\".");
-				errorDialog.open();
-				return;
-			}
-			
-			// unregister old rhs fun
-			boolean registerOK = true ;
-
-			if (rhsCallback != -1)
-				registerOK = kernel.RemoveRhsFunction(rhsCallback);
-			
-			rhsCallback = -1;
-
-			// save new one
-			rhsFunName = tempRHSFunName;
-			registeredRHSFunctions.add(tempRHSFunName);
-			rhsCallback = tempRHSCallback;
-			
-			if (!registerOK)
-				throw new IllegalStateException("Problem unregistering for events") ;
-		
-		} // Careful, returns in the previous block!
-	}
-	
 	Text textBox;
 
 	/************************************************************************
@@ -414,6 +336,84 @@ public class RHSFunTextView extends AbstractUpdateView implements Kernel.AgentEv
 		if (output != null) {
 			setTextSafely(output.toString());
 		}
+	}
+	
+	public void showProperties()
+	{
+		PropertiesDialog.Property properties[] = new PropertiesDialog.Property[4] ;
+		
+		properties[0] = new PropertiesDialog.IntProperty("Update automatically every n'th decision (0 => none)", m_UpdateEveryNthDecision) ;
+		properties[1] = new PropertiesDialog.StringProperty("Name of RHS function to use to update this window", rhsFunName) ;
+		properties[2] = new PropertiesDialog.StringProperty("Label text", labelText) ;
+		properties[3] = new PropertiesDialog.BooleanProperty("Debug messages", debugMessages) ;
+		
+		boolean ok = PropertiesDialog.showDialog(m_Frame, "Properties", properties) ;
+		
+		if (ok) {
+			m_UpdateEveryNthDecision = ((PropertiesDialog.IntProperty)properties[0]).getValue() ;
+			labelText = ((PropertiesDialog.StringProperty)properties[2]).getValue() ;
+			setLabelText(labelText);
+			debugMessages = ((PropertiesDialog.BooleanProperty)properties[3]).getValue() ;
+
+			if (this.getAgentFocus() != null)
+			{
+				// Make sure we're getting the events to match the new settings
+				this.unregisterForAgentEvents(this.getAgentFocus()) ;
+				this.registerForAgentEvents(this.getAgentFocus()) ;
+			}
+			
+			String tempRHSFunName = ((PropertiesDialog.StringProperty)properties[1]).getValue() ;
+			tempRHSFunName = tempRHSFunName.trim();
+			
+			// Make sure new one is different than old one and not zero length string
+			if (tempRHSFunName.length() <= 0 || tempRHSFunName.equals(rhsFunName)) {
+				return;
+			}
+			
+			if (registeredRHSFunctions.contains(tempRHSFunName)) {
+				// failed to register callback
+				MessageBox errorDialog = new MessageBox(this.m_Frame.getShell(), SWT.ICON_ERROR | SWT.OK);
+				errorDialog.setMessage("RHS function already registered: \"" + tempRHSFunName + "\", ignoring change.");
+				errorDialog.open();
+				return;
+			}
+
+			Agent agent = m_Frame.getAgentFocus() ;
+			if (agent == null) {
+				return;
+			}
+
+			// Try and register this, message and return if failure
+			Kernel kernel = agent.GetKernel();
+			int tempRHSCallback = kernel.AddRhsFunction(tempRHSFunName, this, null);
+			
+			// TODO: Verify that error check here is correct, and fix registerForAgentEvents
+			// BUGBUG: remove true
+			if (tempRHSCallback <= 0) {
+				// failed to register callback
+				MessageBox errorDialog = new MessageBox(this.m_Frame.getShell(), SWT.ICON_ERROR | SWT.OK);
+				errorDialog.setMessage("Failed to change RHS function name \"" + tempRHSFunName + "\".");
+				errorDialog.open();
+				return;
+			}
+			
+			// unregister old rhs fun
+			boolean registerOK = true ;
+
+			if (rhsCallback != -1)
+				registerOK = kernel.RemoveRhsFunction(rhsCallback);
+			
+			rhsCallback = -1;
+
+			// save new one
+			rhsFunName = tempRHSFunName;
+			registeredRHSFunctions.add(tempRHSFunName);
+			rhsCallback = tempRHSCallback;
+			
+			if (!registerOK)
+				throw new IllegalStateException("Problem unregistering for events") ;
+		
+		} // Careful, returns in the previous block!
 	}
 	
 	/************************************************************************
