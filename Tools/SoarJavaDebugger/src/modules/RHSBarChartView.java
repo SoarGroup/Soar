@@ -82,7 +82,7 @@ public class RHSBarChartView extends AbstractUpdateView  implements Kernel.Agent
 			m_UpdateEveryNthDecision = ((PropertiesDialog.IntProperty)properties[0]).getValue() ;
 			chartTitle = ((PropertiesDialog.StringProperty)properties[2]).getValue() ;
 			chart.setTitle(chartTitle);
-			properties[3] = new PropertiesDialog.BooleanProperty("Debug messages", debugMessages) ;
+			debugMessages = ((PropertiesDialog.BooleanProperty)properties[3]).getValue() ;
 
 			// TODO: abstractify some of this code, it is repeated in many of the new RHS widgets
 			if (this.getAgentFocus() != null)
