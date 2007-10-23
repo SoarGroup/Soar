@@ -1,3 +1,5 @@
+echo RHS Function: graph
+
 sp {propose*init
 (state <s> ^superstate nil
 -^name)

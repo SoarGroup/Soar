@@ -72,7 +72,7 @@ public class RHSObjectTextView extends RHSFunTextView implements Kernel.RhsFunct
 		
 		if (commandLine.length >= 1 && commandLine[0].equals("--clear")) {
 			this.onInitSoar();
-			return m_Name + ":" + functionName + ": cleared";
+			return debugMessages ? m_Name + ":" + functionName + ": cleared" : null;
 		}
 		
 		// make sure we have 2 args
@@ -98,7 +98,7 @@ public class RHSObjectTextView extends RHSFunTextView implements Kernel.RhsFunct
 
 		objectTextMap.put(commandLine[0], output.toString());
 		
-		return m_Name + ":" + functionName + ": Updated " + commandLine[0];
+		return debugMessages ? m_Name + ":" + functionName + ": Updated " + commandLine[0] : null;
 	}
 	
 	@Override

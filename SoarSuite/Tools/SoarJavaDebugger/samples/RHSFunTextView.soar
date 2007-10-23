@@ -1,4 +1,4 @@
-# RHS Operator name: intend
+echo RHS Function: intend
 
 sp {propose*init
 (state <s> ^superstate nil
