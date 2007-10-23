@@ -143,65 +143,21 @@ public class RHSObjectTextView extends RHSFunTextView implements Kernel.RhsFunct
 			setLabelText(labelText);
 			debugMessages = ((PropertiesDialog.BooleanProperty)properties[3]).getValue() ;
 			priorityAttribute = ((PropertiesDialog.StringProperty)properties[4]).getValue() ;
+			String tempRHSFunName = ((PropertiesDialog.StringProperty)properties[1]).getValue() ;
 
 			if (this.getAgentFocus() != null)
 			{
 				// Make sure we're getting the events to match the new settings
 				this.unregisterForAgentEvents(this.getAgentFocus()) ;
+
+				rhsFunName = tempRHSFunName.trim();
+
 				this.registerForAgentEvents(this.getAgentFocus()) ;
+				
+			} else {
+				rhsFunName = tempRHSFunName;
 			}
 			
-			String tempRHSFunName = ((PropertiesDialog.StringProperty)properties[1]).getValue() ;
-			tempRHSFunName = tempRHSFunName.trim();
-			
-			// Make sure new one is different than old one and not zero length string
-			if (tempRHSFunName.length() <= 0 || tempRHSFunName.equals(rhsFunName)) {
-				return;
-			}
-			
-			if (registeredRHSFunctions.contains(tempRHSFunName)) {
-				// failed to register callback
-				MessageBox errorDialog = new MessageBox(this.m_Frame.getShell(), SWT.ICON_ERROR | SWT.OK);
-				errorDialog.setMessage("RHS function already registered: \"" + tempRHSFunName + "\", ignoring change.");
-				errorDialog.open();
-				return;
-			}
-
-			Agent agent = m_Frame.getAgentFocus() ;
-			if (agent == null) {
-				return;
-			}
-
-			// Try and register this, message and return if failure
-			Kernel kernel = agent.GetKernel();
-			int tempRHSCallback = kernel.AddRhsFunction(tempRHSFunName, this, null);
-			
-			// TODO: Verify that error check here is correct, and fix registerForAgentEvents
-			// BUGBUG: remove true
-			if (tempRHSCallback <= 0) {
-				// failed to register callback
-				MessageBox errorDialog = new MessageBox(this.m_Frame.getShell(), SWT.ICON_ERROR | SWT.OK);
-				errorDialog.setMessage("Failed to change RHS function name \"" + tempRHSFunName + "\".");
-				errorDialog.open();
-				return;
-			}
-			
-			// unregister old rhs fun
-			boolean registerOK = true ;
-
-			if (rhsCallback != -1)
-				registerOK = kernel.RemoveRhsFunction(rhsCallback);
-			
-			rhsCallback = -1;
-
-			// save new one
-			rhsFunName = tempRHSFunName;
-			registeredRHSFunctions.add(tempRHSFunName);
-			rhsCallback = tempRHSCallback;
-			
-			if (!registerOK)
-				throw new IllegalStateException("Problem unregistering for events") ;
-		
 		} // Careful, returns in the previous block!
 	}
 	
@@ -257,24 +213,14 @@ public class RHSObjectTextView extends RHSFunTextView implements Kernel.RhsFunct
 		m_Name			   	= element.getAttribute("Name") ;
 		m_UpdateOnStop	   	= element.getAttributeBooleanThrows("UpdateOnStop") ;
 		m_UpdateEveryNthDecision = element.getAttributeIntThrows("UpdateEveryNthDecision") ;
-		String tempRHSFunName = element.getAttribute("RHSFunctionName");
+		rhsFunName			= element.getAttribute("RHSFunctionName");
 		labelText 			= element.getAttribute("LabelText");
 		debugMessages		= element.getAttributeBooleanThrows("DebugMessages");
 		priorityAttribute 	= element.getAttribute("PriorityAttribute");
 		
-		if (tempRHSFunName == null) {
-			tempRHSFunName = new String();
+		if (rhsFunName == null) {
+			rhsFunName = new String();
 		}
-		
-		if (registeredRHSFunctions.contains(tempRHSFunName)) {
-			MessageBox errorDialog = new MessageBox(this.m_Frame.getShell(), SWT.ICON_ERROR | SWT.OK);
-			errorDialog.setMessage("RHS function already registered: \"" + tempRHSFunName + "\", ignoring change.");
-			errorDialog.open();
-			
-			tempRHSFunName = new String();
-		}
-		
-		rhsFunName = tempRHSFunName;
 		
 		if (labelText == null) {
 			labelText = new String();
