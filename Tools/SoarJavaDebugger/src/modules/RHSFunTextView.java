@@ -122,7 +122,7 @@ public class RHSFunTextView extends AbstractUpdateView implements Kernel.AgentEv
 		
 		if (commandLine.length >= 1 && commandLine[0].equals("--clear")) {
 			this.onInitSoar();
-			return debugMessages ? m_Name + ":" + functionName + ": cleared" : null;
+			return debugMessages ? m_Name + ":" + functionName + ": cleared" : "";
 		}
 		
 		output = new StringBuilder();
@@ -136,7 +136,7 @@ public class RHSFunTextView extends AbstractUpdateView implements Kernel.AgentEv
 			}
 		}
 		
-		return debugMessages ? m_Name + ":" + functionName + ": updated " + getName() : null;
+		return debugMessages ? m_Name + ":" + functionName + ": updated " + getName() : "";
 	}
 	
 	protected void registerForAgentEvents(Agent agent)

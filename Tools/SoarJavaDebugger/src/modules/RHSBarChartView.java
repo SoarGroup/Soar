@@ -202,7 +202,7 @@ public class RHSBarChartView extends AbstractUpdateView  implements Kernel.Agent
 		
 		if (commandLine[0].equals("--clear")) {
 			this.onInitSoar();
-			return debugMessages ? m_Name + ":" + functionName + ": cleared" : null;
+			return debugMessages ? m_Name + ":" + functionName + ": cleared" : "";
 			
 		} else if (commandLine[0].equals("addvalue")) {
 			if (commandLine.length != 6) {
@@ -231,7 +231,7 @@ public class RHSBarChartView extends AbstractUpdateView  implements Kernel.Agent
 			}
 			
 			updateData(commandLine[1], catOrder, commandLine[3], serOrder, value);
-			return debugMessages ? m_Name + ":" + functionName + ": Graph updated." : null;
+			return debugMessages ? m_Name + ":" + functionName + ": Graph updated." : "";
 		}		
 		
 		return m_Name + ":" + functionName + ": unknown command: " + commandLine[0];
