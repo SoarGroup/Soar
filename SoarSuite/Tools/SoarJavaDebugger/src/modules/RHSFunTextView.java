@@ -4,6 +4,7 @@ import general.JavaElementXML;
 import helpers.FormDataHelper;
 
 import manager.Pane;
+import menu.ParseSelectedText;
 
 import org.eclipse.swt.*;
 import org.eclipse.swt.widgets.*;
@@ -374,6 +375,18 @@ public class RHSFunTextView extends AbstractUpdateView implements Kernel.AgentEv
 	@Override
 	public void copy() {
 		textBox.copy();
+	}
+	
+	@Override
+	protected ParseSelectedText.SelectedObject getCurrentSelection(int mouseX, int mouseY)
+	{
+		int pos = textBox.getCaretPosition() ;
+		if (pos == -1)
+			return null ;
+		
+		ParseSelectedText selection = new ParseSelectedText(textBox.getText(), pos) ;
+		
+		return selection.getParsedObject(this.m_Document, this.getAgentFocus()) ;
 	}
 
 	@Override
