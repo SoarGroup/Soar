@@ -197,7 +197,11 @@ public class RHSBarChartView extends AbstractUpdateView  implements Kernel.Agent
 			return m_Name + ":" + functionName + ": no command";
 		}
 		
-		if (commandLine[0].equals("addvalue")) {
+		if (commandLine[0].equals("--clear")) {
+			this.onInitSoar();
+			return m_Name + ":" + functionName + ": cleared";
+			
+		} else if (commandLine[0].equals("addvalue")) {
 			if (commandLine.length != 6) {
 				return m_Name + ":" + functionName + ": addvalue requires <category> <category-order> <series> <series-order> <value>";
 			}

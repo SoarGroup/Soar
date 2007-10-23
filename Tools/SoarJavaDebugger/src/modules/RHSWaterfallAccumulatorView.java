@@ -103,22 +103,27 @@ public class RHSWaterfallAccumulatorView extends RHSFunTextView implements Kerne
 	public String rhsFunctionHandler(int eventID, Object data,
 			String agentName, String functionName, String argument) {
 		
-		String[] args = argument.split("\\s+");
+		String[] commandLine = argument.split("\\s+");
+		
+		if (commandLine.length >= 1 && commandLine[0].equals("--clear")) {
+			this.onInitSoar();
+			return m_Name + ":" + functionName + ": cleared";
+		}
 		
 		// make sure we have 2 args
-		if (args.length != 2) {
-			return m_Name + ":" + functionName + ": Two arguments (tag, value) are required for RHS function " + rhsFunName + ", got " + args.length + ".";
+		if (commandLine.length != 2) {
+			return m_Name + ":" + functionName + ": Two arguments (tag, value) are required for RHS function " + rhsFunName + ", got " + commandLine.length + ".";
 		}
 		
 		double value = 0;
 		try {
-			value = Double.parseDouble(args[1]);
+			value = Double.parseDouble(commandLine[1]);
 			
 		} catch (NumberFormatException e) {
-			return m_Name + ":" + functionName + ": expected number, got " + args[1];
+			return m_Name + ":" + functionName + ": expected number, got " + commandLine[1];
 		}
 		
-		if (currentTag == null || !args[0].equals(currentTag)) {
+		if (currentTag == null || !commandLine[0].equals(currentTag)) {
 			newTag = true;
 			
 			if (currentTag != null) {
@@ -130,7 +135,7 @@ public class RHSWaterfallAccumulatorView extends RHSFunTextView implements Kerne
 			}
 			
 			//create new tag
-			currentTag = new String(args[0]);
+			currentTag = new String(commandLine[0]);
 			
 			// reset value
 			currentValue = value;

@@ -68,10 +68,15 @@ public class RHSObjectTextView extends RHSFunTextView implements Kernel.RhsFunct
 	public String rhsFunctionHandler(int eventID, Object data,
 			String agentName, String functionName, String argument) {
 		
-		String[] args = argument.split("\\s+");
+		String[] commandLine = argument.split("\\s+");
+		
+		if (commandLine.length >= 1 && commandLine[0].equals("--clear")) {
+			this.onInitSoar();
+			return m_Name + ":" + functionName + ": cleared";
+		}
 		
 		// make sure we have 2 args
-		if (args.length <= 1) {
+		if (commandLine.length <= 1) {
 			return m_Name + ":" + functionName + ": at least one argument required.";
 		}
 		
@@ -79,21 +84,21 @@ public class RHSObjectTextView extends RHSFunTextView implements Kernel.RhsFunct
 		StringBuilder output = new StringBuilder();
 		
 		// the rest, if any, are attribute/value pairs
-		for (int index = 1; index < args.length; index += 2) {
+		for (int index = 1; index < commandLine.length; index += 2) {
 			// TODO: make this indentation a property?
 			output.append("  ");
 			
-			output.append(args[index]);
-			if (index + 1 < args.length) {
+			output.append(commandLine[index]);
+			if (index + 1 < commandLine.length) {
 				output.append(": ");
-				output.append(args[index + 1]);
+				output.append(commandLine[index + 1]);
 			}
 			output.append("\n");
 		}
 
-		objectTextMap.put(args[0], output.toString());
+		objectTextMap.put(commandLine[0], output.toString());
 		
-		return m_Name + ":" + functionName + ": Updated " + args[0];
+		return m_Name + ":" + functionName + ": Updated " + commandLine[0];
 	}
 	
 	@Override

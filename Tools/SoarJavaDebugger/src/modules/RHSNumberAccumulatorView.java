@@ -41,6 +41,11 @@ public class RHSNumberAccumulatorView extends RHSFunTextView
 	public String rhsFunctionHandler(int eventID, Object data,
 			String agentName, String functionName, String argument) {
 		
+		if (functionName.equals("--clear")) {
+			this.onInitSoar();
+			return m_Name + ":" + functionName + ": cleared";
+		}
+		
 		double value = 0;
 		try {
 			value = Double.parseDouble(argument);
