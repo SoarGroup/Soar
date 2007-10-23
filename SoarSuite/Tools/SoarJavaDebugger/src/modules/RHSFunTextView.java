@@ -195,19 +195,25 @@ public class RHSFunTextView extends AbstractUpdateView implements Kernel.AgentEv
 	public String rhsFunctionHandler(int eventID, Object data,
 			String agentName, String functionName, String argument) {
 
-		String[] args = argument.split("\\s+");
+		String[] commandLine = argument.split("\\s+");
+		
+		if (commandLine.length >= 1 && commandLine[0].equals("--clear")) {
+			this.onInitSoar();
+			return m_Name + ":" + functionName + ": cleared";
+		}
+		
 		output = new StringBuilder();
 		
-		for (int index = 0; index < args.length; index += 2) {
-			output.append(args[index]);
-			if (index + 1 < args.length) {
+		for (int index = 0; index < commandLine.length; index += 2) {
+			output.append(commandLine[index]);
+			if (index + 1 < commandLine.length) {
 				output.append(": ");
-				output.append(args[index + 1]);
+				output.append(commandLine[index + 1]);
 				output.append("\n");
 			}
 		}
 		
-		return m_Name + ":" + rhsFunName + ": RHSFunTextView: Successfully updated " + getName();
+		return m_Name + ":" + functionName + ": updated " + getName();
 	}
 	
 	int rhsCallback = -1;
