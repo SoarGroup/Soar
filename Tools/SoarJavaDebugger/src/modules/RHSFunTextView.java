@@ -386,11 +386,11 @@ public class RHSFunTextView extends AbstractUpdateView implements Kernel.AgentEv
 		setValues(frame, doc, parent) ;
 
 		m_Name			   	= element.getAttribute("Name") ;
-		m_UpdateOnStop	   	= element.getAttributeBooleanThrows("UpdateOnStop") ;
-		m_UpdateEveryNthDecision = element.getAttributeIntThrows("UpdateEveryNthDecision") ;
+		m_UpdateOnStop	   	= element.getAttributeBooleanDefault("UpdateOnStop", true) ;
+		m_UpdateEveryNthDecision = element.getAttributeIntDefault("UpdateEveryNthDecision", 0) ;
 		rhsFunName			= element.getAttribute("RHSFunctionName");
 		labelText 			= element.getAttribute("LabelText");
-		debugMessages		= element.getAttributeBooleanThrows("DebugMessages");
+		debugMessages		= element.getAttributeBooleanDefault("DebugMessages", true);
 
 		if (rhsFunName == null) {
 			rhsFunName = new String();
