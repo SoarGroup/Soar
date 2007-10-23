@@ -1,4 +1,4 @@
-# RHS function name: reportoperator
+echo RHS Function: reportoperator
 
 sp {name
 (state <s> ^superstate nil)

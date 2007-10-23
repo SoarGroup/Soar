@@ -107,7 +107,7 @@ public class RHSWaterfallAccumulatorView extends RHSFunTextView implements Kerne
 		
 		if (commandLine.length >= 1 && commandLine[0].equals("--clear")) {
 			this.onInitSoar();
-			return m_Name + ":" + functionName + ": cleared";
+			return debugMessages ? m_Name + ":" + functionName + ": cleared" : null;
 		}
 		
 		// make sure we have 2 args
@@ -144,7 +144,7 @@ public class RHSWaterfallAccumulatorView extends RHSFunTextView implements Kerne
 			currentValue += value;
 		}
 		
-		return m_Name + ":" + functionName + ": " + currentTag + ": " + currentValue;
+		return debugMessages ? m_Name + ":" + functionName + ": " + currentTag + ": " + currentValue : null;
 	}
 	
 	@Override

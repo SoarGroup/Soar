@@ -1,3 +1,5 @@
+echo RHS Function: object
+
 sp {reward*test
   (state <s> ^superstate nil
             -^operator.name test)

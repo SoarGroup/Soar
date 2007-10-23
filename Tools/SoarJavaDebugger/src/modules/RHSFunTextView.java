@@ -43,16 +43,18 @@ public class RHSFunTextView extends AbstractUpdateView implements Kernel.AgentEv
 	
 	protected String labelText = new String();
 	protected Label labelTextWidget;
+	protected boolean debugMessages = true;
 	
 	protected static HashSet<String> registeredRHSFunctions = new HashSet<String>();
 	
 	public void showProperties()
 	{
-		PropertiesDialog.Property properties[] = new PropertiesDialog.Property[3] ;
+		PropertiesDialog.Property properties[] = new PropertiesDialog.Property[4] ;
 		
 		properties[0] = new PropertiesDialog.IntProperty("Update automatically every n'th decision (0 => none)", m_UpdateEveryNthDecision) ;
 		properties[1] = new PropertiesDialog.StringProperty("Name of RHS function to use to update this window", rhsFunName) ;
 		properties[2] = new PropertiesDialog.StringProperty("Label text", labelText) ;
+		properties[3] = new PropertiesDialog.BooleanProperty("Debug messages", debugMessages) ;
 		
 		boolean ok = PropertiesDialog.showDialog(m_Frame, "Properties", properties) ;
 		
@@ -60,6 +62,7 @@ public class RHSFunTextView extends AbstractUpdateView implements Kernel.AgentEv
 			m_UpdateEveryNthDecision = ((PropertiesDialog.IntProperty)properties[0]).getValue() ;
 			labelText = ((PropertiesDialog.StringProperty)properties[2]).getValue() ;
 			setLabelText(labelText);
+			debugMessages = ((PropertiesDialog.BooleanProperty)properties[3]).getValue() ;
 
 			if (this.getAgentFocus() != null)
 			{
@@ -199,7 +202,7 @@ public class RHSFunTextView extends AbstractUpdateView implements Kernel.AgentEv
 		
 		if (commandLine.length >= 1 && commandLine[0].equals("--clear")) {
 			this.onInitSoar();
-			return m_Name + ":" + functionName + ": cleared";
+			return debugMessages ? m_Name + ":" + functionName + ": cleared" : null;
 		}
 		
 		output = new StringBuilder();
@@ -213,7 +216,7 @@ public class RHSFunTextView extends AbstractUpdateView implements Kernel.AgentEv
 			}
 		}
 		
-		return m_Name + ":" + functionName + ": updated " + getName();
+		return debugMessages ? m_Name + ":" + functionName + ": updated " + getName() : null;
 	}
 	
 	int rhsCallback = -1;
@@ -423,6 +426,7 @@ public class RHSFunTextView extends AbstractUpdateView implements Kernel.AgentEv
 		element.addAttribute("UpdateEveryNthDecision", Integer.toString(m_UpdateEveryNthDecision)) ;
 		element.addAttribute("RHSFunctionName", rhsFunName) ;
 		element.addAttribute("LabelText", labelText) ;
+		element.addAttribute("DebugMessages", Boolean.toString(debugMessages)) ;
 				
 		if (storeContent)
 			storeContent(element) ;
@@ -452,6 +456,7 @@ public class RHSFunTextView extends AbstractUpdateView implements Kernel.AgentEv
 		m_UpdateEveryNthDecision = element.getAttributeIntThrows("UpdateEveryNthDecision") ;
 		String tempRHSFunName = element.getAttribute("RHSFunctionName");
 		labelText 			= element.getAttribute("LabelText");
+		debugMessages		= element.getAttributeBooleanThrows("DebugMessages");
 		
 		if (tempRHSFunName == null) {
 			tempRHSFunName = new String();

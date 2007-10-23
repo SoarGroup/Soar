@@ -43,7 +43,7 @@ public class RHSNumberAccumulatorView extends RHSFunTextView
 		
 		if (functionName.equals("--clear")) {
 			this.onInitSoar();
-			return m_Name + ":" + functionName + ": cleared";
+			return debugMessages ? m_Name + ":" + functionName + ": cleared" : null;
 		}
 		
 		double value = 0;
@@ -55,7 +55,7 @@ public class RHSNumberAccumulatorView extends RHSFunTextView
 		
 		totalValue += value;
 		
-		return m_Name + ":" + functionName + ": Total value changed to: " + totalValue;
+		return debugMessages ? m_Name + ":" + functionName + ": Total value changed to: " + totalValue : null;
 	}
 	
 	@Override

@@ -1,4 +1,4 @@
-# RHS Operator name: op
+echo RHS Function: op
 
 num --sum
 

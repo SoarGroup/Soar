@@ -65,14 +65,16 @@ public class RHSBarChartView extends AbstractUpdateView  implements Kernel.Agent
 	protected String rhsFunName = new String();
 	
 	int rhsCallback = -1;
+	protected boolean debugMessages = true;
 
 	@Override
 	public void showProperties() {
-		PropertiesDialog.Property properties[] = new PropertiesDialog.Property[3] ;
+		PropertiesDialog.Property properties[] = new PropertiesDialog.Property[4] ;
 		
 		properties[0] = new PropertiesDialog.IntProperty("Update automatically every n'th decision (0 => none)", m_UpdateEveryNthDecision) ;
 		properties[1] = new PropertiesDialog.StringProperty("Name of RHS function to use to update this window", rhsFunName) ;
 		properties[2] = new PropertiesDialog.StringProperty("Chart title", chartTitle) ;
+		properties[3] = new PropertiesDialog.BooleanProperty("Debug messages", debugMessages) ;
 		
 		boolean ok = PropertiesDialog.showDialog(m_Frame, "Properties", properties) ;
 		
@@ -80,6 +82,7 @@ public class RHSBarChartView extends AbstractUpdateView  implements Kernel.Agent
 			m_UpdateEveryNthDecision = ((PropertiesDialog.IntProperty)properties[0]).getValue() ;
 			chartTitle = ((PropertiesDialog.StringProperty)properties[2]).getValue() ;
 			chart.setTitle(chartTitle);
+			properties[3] = new PropertiesDialog.BooleanProperty("Debug messages", debugMessages) ;
 
 			// TODO: abstractify some of this code, it is repeated in many of the new RHS widgets
 			if (this.getAgentFocus() != null)
@@ -199,7 +202,7 @@ public class RHSBarChartView extends AbstractUpdateView  implements Kernel.Agent
 		
 		if (commandLine[0].equals("--clear")) {
 			this.onInitSoar();
-			return m_Name + ":" + functionName + ": cleared";
+			return debugMessages ? m_Name + ":" + functionName + ": cleared" : null;
 			
 		} else if (commandLine[0].equals("addvalue")) {
 			if (commandLine.length != 6) {
@@ -228,7 +231,7 @@ public class RHSBarChartView extends AbstractUpdateView  implements Kernel.Agent
 			}
 			
 			updateData(commandLine[1], catOrder, commandLine[3], serOrder, value);
-			return m_Name + ":" + functionName + ": Graph updated.";
+			return debugMessages ? m_Name + ":" + functionName + ": Graph updated." : null;
 		}		
 		
 		return m_Name + ":" + functionName + ": unknown command: " + commandLine[0];
@@ -506,6 +509,7 @@ public class RHSBarChartView extends AbstractUpdateView  implements Kernel.Agent
 		element.addAttribute("UpdateEveryNthDecision", Integer.toString(m_UpdateEveryNthDecision)) ;
 		element.addAttribute("RHSFunctionName", rhsFunName) ;
 		element.addAttribute("ChartTitle", chartTitle) ;
+		element.addAttribute("DebugMessages", Boolean.toString(debugMessages)) ;
 				
 		if (storeContent)
 			storeContent(element) ;
@@ -535,6 +539,7 @@ public class RHSBarChartView extends AbstractUpdateView  implements Kernel.Agent
 		m_UpdateEveryNthDecision = element.getAttributeIntThrows("UpdateEveryNthDecision") ;
 		rhsFunName = element.getAttribute("RHSFunctionName");
 		chartTitle 			= element.getAttribute("ChartTitle");
+		debugMessages		= element.getAttributeBooleanThrows("DebugMessages");
 
 		if (rhsFunName == null) {
 			rhsFunName = new String();
