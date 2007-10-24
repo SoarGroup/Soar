@@ -24,10 +24,6 @@ import doc.Document;
 
 public class RHSWaterfallAccumulatorView extends RHSFunTextView implements Kernel.RhsFunctionInterface
 {
-	public RHSWaterfallAccumulatorView()
-	{
-	}
-	
 	public String getModuleBaseName() { return "rhs_waterfall_accumulator" ; }
 	
 	@Override

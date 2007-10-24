@@ -10,6 +10,8 @@
 ********************************************************************************************/
 package modules;
 
+import java.util.ArrayList;
+
 import general.JavaElementXML;
 import helpers.CommandHistory;
 import helpers.FormDataHelper;
@@ -43,6 +45,7 @@ import sml.smlPrintEventId;
 import sml.smlRunEventId;
 import sml.smlSystemEventId;
 import debugger.MainFrame;
+import dialogs.PropertiesDialog;
 import doc.Document;
 
 /********************************************************************************************
@@ -424,6 +427,43 @@ public abstract class AbstractUpdateView extends AbstractView  implements Agent.
 		
 		if (!ok)
 			throw new IllegalStateException("Problem unregistering for events") ;
+	}
+	
+	private int propertiesStartingIndex;
+
+	protected void initProperties(ArrayList<PropertiesDialog.Property> properties) {
+		propertiesStartingIndex = properties.size();
+		
+		properties.add(new PropertiesDialog.IntProperty("Update automatically every n'th decision (0 => none)", m_UpdateEveryNthDecision));
+	}
+	
+	protected void processProperties(ArrayList<PropertiesDialog.Property> properties) {
+		m_UpdateEveryNthDecision = ((PropertiesDialog.IntProperty)properties.get(propertiesStartingIndex)).getValue() ;
+	}
+	
+	@Override
+	public void showProperties()
+	{
+		ArrayList<PropertiesDialog.Property> properties = new ArrayList<PropertiesDialog.Property>();
+		initProperties(properties);
+		
+		if (!PropertiesDialog.showDialog(m_Frame, "Properties", properties.toArray(new PropertiesDialog.Property[0]))) {
+			return;
+		}
+		
+		processProperties(properties);
+		
+		reRegisterEvents();
+
+	}
+	
+	protected void reRegisterEvents() {
+		if (this.getAgentFocus() != null)
+		{
+			// Make sure we're getting the events to match the new settings
+			this.unregisterForAgentEvents(this.getAgentFocus()) ;
+			this.registerForAgentEvents(this.getAgentFocus()) ;
+		}
 	}
 }
 
