@@ -176,11 +176,20 @@ public class World {
 		
 		Point location = players.getLocation(player);
 		assert location != null;
-		logger.info(player.getName() + ": Spawning at (" + 
-				location.x + "," + location.y + ")");
+		printSpawnMessage(player, location);
 		
 		worldModule.updatePlayers(true, map, players);
 		return true;
+	}
+	
+	void printSpawnMessage(Player player, Point location) {
+		if (Soar2D.config.getType() == SimType.kTankSoar) {
+			logger.info(player.getName() + ": Spawning at (" + 
+					location.x + "," + location.y + "), facing " + soar2d.Direction.stringOf[player.getFacingInt()]);
+		} else {
+			logger.info(player.getName() + ": Spawning at (" + 
+					location.x + "," + location.y + ")");
+		}
 	}
 	
 	void stopAndDumpStats(String message) {
@@ -422,8 +431,7 @@ public class World {
 		// reset the player state
 		player.fragged();
 
-		Soar2D.logger.info(player.getName() + ": Spawning at (" + 
-				location.x + "," + location.y + ")");
+		printSpawnMessage(player, location);
 	}
 	
 	public void reset() {
