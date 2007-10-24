@@ -115,7 +115,7 @@ public class RHSOperatorTextView extends RHSObjectTextView
 					if (oid != null) {
 						Double value = oid.getDoubleOrder();
 						value += Double.parseDouble(match2);
-						System.out.println(oid + " --> " + value);
+						//System.out.println(oid + " --> " + value);
 						
 						oid.setDoubleOrder(value);
 					}
