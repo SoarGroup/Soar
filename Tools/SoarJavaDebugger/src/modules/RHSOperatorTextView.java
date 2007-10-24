@@ -4,6 +4,7 @@ import general.JavaElementXML;
 import helpers.FormDataHelper;
 
 import manager.Pane;
+import modules.RHSObjectTextView.OrderedIdentifier;
 
 import org.eclipse.swt.*;
 import org.eclipse.swt.widgets.*;
@@ -30,17 +31,6 @@ public class RHSOperatorTextView extends RHSObjectTextView
 	public String getModuleBaseName() { return "rhs_operator_text" ; }
 
 	enum ParseState { START, ACCEPTABLES, BEFORE_NUM, NUM, DONE };
-	
-	static final Comparator<Double> kReverseOrder = new Comparator<Double>() {
-		public int compare(Double x, Double y) {
-			if (x < y) {
-				return 1;
-			} else if (x > y) {
-				return -1;
-			}
-			return 0;
-		}
-	};
 	
 	@Override
 	protected void updateNow() {
@@ -75,7 +65,7 @@ public class RHSOperatorTextView extends RHSObjectTextView
 			return;
 		}
 		
-		HashMap<String, Double> operatorPreferences = new HashMap<String, Double>();
+		HashSet<String> reported = new HashSet<String>();		
 		
 		// get preferences result, split on newlines
 		String[] prefOutput = agent.ExecuteCommandLine("pref s1").split("\n");
@@ -98,7 +88,11 @@ public class RHSOperatorTextView extends RHSObjectTextView
 				matcher = Pattern.compile("^\\s+(O\\d+)\\s+.*").matcher(prefOutput[index]);
 				if (matcher.matches()) {
 					match1 = matcher.group(1);
-					operatorPreferences.put(new String(match1), new Double(0));
+
+					OrderedIdentifier oid = this.idToOrdered.get(match1);
+					if (oid != null) {
+						reported.add(new String(match1));
+					}
 				} else {
 					state = ParseState.BEFORE_NUM;
 				}
@@ -116,9 +110,15 @@ public class RHSOperatorTextView extends RHSObjectTextView
 				if (matcher.matches()) {
 					match1 = matcher.group(1);
 					match2 = matcher.group(2);
-					Double value = operatorPreferences.get(match1);
-					value += Double.parseDouble(match2);
-					operatorPreferences.put(new String(match1), value);
+					
+					OrderedIdentifier oid = this.idToOrdered.get(match1);
+					if (oid != null) {
+						Double value = oid.getDoubleOrder();
+						value += Double.parseDouble(match2);
+						System.out.println(oid + " --> " + value);
+						
+						oid.setDoubleOrder(value);
+					}
 				} else {
 					state = ParseState.DONE;
 				}
@@ -132,52 +132,29 @@ public class RHSOperatorTextView extends RHSObjectTextView
 				break;
 			}
 		}
-		
-		TreeMap<Double, ArrayList<String> > valueToOperators = new TreeMap<Double, ArrayList<String> >(kReverseOrder);
+
+		this.idToOrdered.keySet().retainAll(reported);
+		this.sortedIdentifiers.clear();
 		{
-			// foreach op/val in hash
-			Set<Map.Entry<String, Double> > entrySet = operatorPreferences.entrySet();
-			Iterator<Map.Entry<String, Double> > iter = entrySet.iterator();
+			Iterator<Map.Entry<String, OrderedIdentifier> > iter = this.idToOrdered.entrySet().iterator();
 			while (iter.hasNext()) {
-				Map.Entry<String, Double> entry = iter.next();
-				
-				// if value in treemap
-				if (valueToOperators.containsKey(entry.getValue())) {
-					// add op to list
-					valueToOperators.get(entry.getValue()).add(entry.getKey());
-				} else {
-					// new entry
-					ArrayList<String> operators = new ArrayList<String>();
-					operators.add(entry.getKey());
-					valueToOperators.put(entry.getValue(), operators);
-					
-				}
+				this.sortedIdentifiers.add(iter.next().getValue());
 			}
 		}
-
-		// iterate through treemap and print values
+		
+		// iterate through sortedIdentifiers and print values
 		StringBuilder output = new StringBuilder();
 		{
-			Set<Map.Entry<Double, ArrayList<String> > > entrySet = valueToOperators.entrySet();
-			Iterator<Map.Entry<Double, ArrayList<String> > > iter = entrySet.iterator();
-			
-			// descending iterator is 1.6 specific so we use a backward comparator
-			// and a regular comparator
+			Iterator<OrderedIdentifier> iter = this.sortedIdentifiers.iterator();
 			while (iter.hasNext()) {
-				Map.Entry<Double, ArrayList<String> > entry = iter.next();
+				OrderedIdentifier oid = iter.next();
 				
-				Iterator<String> operators = entry.getValue().iterator();
-				while (operators.hasNext()) {
-					String operator = operators.next();
+				output.append(oid.getIdentifier());
+				output.append(" (");
+				output.append(oid.getDoubleOrder());
+				output.append(")\n");
+				output.append(oid.getAttributes());
 
-					output.append(operator);
-					output.append(" (");
-					output.append(entry.getKey());
-					output.append(")\n");
-					if (objectTextMap.containsKey(operator)) {
-						output.append(objectTextMap.get(operator));
-					}
-				}
 			}	
 		}
 		

@@ -27,8 +27,6 @@ public class RHSObjectTextView extends RHSFunTextView implements Kernel.RhsFunct
 {
 	public String getModuleBaseName() { return "rhs_object_text" ; }
 	
-	protected String priorityAttribute = new String();
-	
 	@Override
 	protected void updateNow() {
 		Agent agent = m_Frame.getAgentFocus() ;
@@ -36,48 +34,111 @@ public class RHSObjectTextView extends RHSFunTextView implements Kernel.RhsFunct
 			return;
 		}
 		
+		//System.out.println("--> Update ");
 		StringBuilder output = new StringBuilder();
 		
 		// for each id
-		Set<Map.Entry<String, String> > entrySet = objectTextMap.entrySet();
-		Iterator<Map.Entry<String, String> > iter = entrySet.iterator();
+		Iterator<OrderedIdentifier> iter = sortedIdentifiers.iterator();
 		while (iter.hasNext()) {
-			Map.Entry<String, String> entry = iter.next();
+			OrderedIdentifier orderedIdentifier = iter.next();
 			
 			// verify it exists
-			String result = agent.ExecuteCommandLine("print " + entry.getKey());
+			String result = agent.ExecuteCommandLine("print " + orderedIdentifier.getIdentifier());
 			if (result.startsWith("There")) {
 				// it doesn't exist, remove it
 				iter.remove();
 			} else {
-				// write it in to the text
-				if (priorityObject != null && priorityObject.equals(entry.getKey())) {
-					StringBuilder priority = new StringBuilder();
-					priority.append(entry.getKey());
-					priority.append("\n");
-					priority.append(entry.getValue());
-
-					output.insert(0, priority);
-				} else {
-					output.append(entry.getKey());
-					output.append("\n");
-					output.append(entry.getValue());
-				}
+				output.append(orderedIdentifier.getIdentifier());
+				output.append("\n");
+				output.append(orderedIdentifier.getAttributes());
 			}
 		}
 		
 		setTextSafely(output.toString());
 	}
+
+	public class OrderedIdentifier implements Comparable<OrderedIdentifier> {
+
+		public OrderedIdentifier(String id) {
+			this.id = id;
+		}
+		
+		public String getIdentifier() {
+			return this.id;
+		}
+
+		protected String id;
+		protected int order = 0;
+		protected String attributes = new String();
+		protected double doubleOrder = 0;
+
+		public int compareTo(OrderedIdentifier other) {
+			if (this.order == other.order) {
+				if (this.doubleOrder == other.doubleOrder) {
+					return this.id.compareTo(other.id);
+				}
+				if (this.doubleOrder < other.doubleOrder) {
+					return 1;
+				} else if (this.doubleOrder > other.doubleOrder) {
+					return -1;
+				}
+				return 0;
+			}
+//			System.out.println("*** comparing " + this.id + " to " + other.id);
+			return other.order - this.order;
+		}
+		
+		@Override
+		public boolean equals(Object o) {
+			OrderedIdentifier other;
+			try {
+				other = (OrderedIdentifier)o;
+			} catch (ClassCastException e) {
+				return super.equals(o);
+			}
+			return this.id.equals(other.id);
+		}
+
+		public String getAttributes() {
+			return this.attributes;
+		}
+
+		public void setAttributes(String attributes) {
+			assert attributes != null;
+			this.attributes = attributes;
+		}
+
+		public int getOrder() {
+			return this.order;
+		}
+
+		public void setOrder(int order) {
+			this.order = order;
+		}
+
+		public double getDoubleOrder() {
+			return doubleOrder;
+		}
+
+		public void setDoubleOrder(double doubleOrder) {
+			this.doubleOrder = doubleOrder;
+		}
+		
+		@Override
+		public String toString() {
+			return this.id + " (" + this.order + ", " + this.doubleOrder + ")";
+		}
+	}
 	
-	// identifier to associated text
-	TreeMap<String, String> objectTextMap = new TreeMap<String, String>();
-	String priorityObject = null;
+	// Identifier to metadata map
+	HashMap<String, OrderedIdentifier> idToOrdered = new HashMap<String, OrderedIdentifier>();
+	// The sorted objects
+	TreeSet<OrderedIdentifier> sortedIdentifiers = new TreeSet<OrderedIdentifier>();
 	
 	@Override
 	public String rhsFunctionHandler(int eventID, Object data,
 			String agentName, String functionName, String argument) {
 		
-		priorityObject = null;
 		String[] commandLine = argument.split("\\s+");
 		
 		if (commandLine.length >= 1 && commandLine[0].equals("--clear")) {
@@ -87,7 +148,39 @@ public class RHSObjectTextView extends RHSFunTextView implements Kernel.RhsFunct
 		
 		// make sure we have 2 args
 		if (commandLine.length <= 1) {
-			return m_Name + ":" + functionName + ": at least one argument required.";
+			return m_Name + ":" + functionName + ": at least two arguments required.";
+		}
+		
+		// check for order command
+		if (commandLine[1].equals("--order")) {
+			// make sure we have a third arg
+			if (commandLine.length < 3) {
+				return m_Name + ":" + functionName + ": --order requires an argument";
+			}
+			
+			int value = 0;
+			try {
+				value = Integer.parseInt(commandLine[2]);
+			} catch (NumberFormatException e) {
+				return m_Name + ":" + functionName + ": --order requires an integer argument";
+			}
+			
+			OrderedIdentifier orderedIdentifier = idToOrdered.get(commandLine[0]);
+			if (orderedIdentifier == null) {
+				orderedIdentifier = new OrderedIdentifier(commandLine[0]);
+				//System.out.println("Creating new oid " + orderedIdentifier);
+			} else {
+				sortedIdentifiers.remove(orderedIdentifier);
+				//System.out.println("Found oid " + orderedIdentifier);
+			}
+			
+			orderedIdentifier.setOrder(value);
+
+			//System.out.println("Saving oid " + orderedIdentifier);
+			idToOrdered.put(commandLine[0], orderedIdentifier);
+			sortedIdentifiers.add(orderedIdentifier);
+			
+			return debugMessages ? m_Name + ":" + functionName + ": Updated order for " + commandLine[0] : "";
 		}
 		
 		// first arg is the event
@@ -95,10 +188,6 @@ public class RHSObjectTextView extends RHSFunTextView implements Kernel.RhsFunct
 		
 		// the rest, if any, are attribute/value pairs
 		for (int index = 1; index < commandLine.length; index += 2) {
-			
-			if (priorityAttribute.equals(commandLine[index])) {
-				priorityObject = commandLine[0];
-			}
 			
 			// TODO: make this indentation a property?
 			output.append("  ");
@@ -110,116 +199,28 @@ public class RHSObjectTextView extends RHSFunTextView implements Kernel.RhsFunct
 			}
 			output.append("\n");
 		}
-
-		objectTextMap.put(commandLine[0], output.toString());
+		
+		OrderedIdentifier orderedIdentifier = idToOrdered.get(commandLine[0]);
+		if (orderedIdentifier == null) {
+			orderedIdentifier = new OrderedIdentifier(commandLine[0]);
+			//System.out.println("Creating new oid " + orderedIdentifier);
+		} else {
+			sortedIdentifiers.remove(orderedIdentifier);
+			//System.out.println("Found oid " + orderedIdentifier);
+		}
+		orderedIdentifier.setAttributes(output.toString());
+		
+		//System.out.println("Saving oid " + orderedIdentifier);
+		idToOrdered.put(commandLine[0], orderedIdentifier);
+		sortedIdentifiers.add(orderedIdentifier);
 		
 		return debugMessages ? m_Name + ":" + functionName + ": Updated " + commandLine[0] : "";
 	}
 	
 	@Override
 	public void onInitSoar() {
-		objectTextMap.clear();
+		idToOrdered.clear();
+		sortedIdentifiers.clear();
 		updateNow();
-	}
-
-	private int propertiesStartingIndex;
-	
-	@Override
-	protected void initProperties(ArrayList<PropertiesDialog.Property> properties) {
-		super.initProperties(properties);
-
-		propertiesStartingIndex = properties.size();
-		
-		properties.add(new PropertiesDialog.StringProperty("Priority attribute (objects with this move to top of list)", priorityAttribute));
-	}
-	
-	@Override
-	protected void processProperties(ArrayList<PropertiesDialog.Property> properties) {
-		super.processProperties(properties);
-
-		priorityAttribute = ((PropertiesDialog.StringProperty)properties.get(propertiesStartingIndex)).getValue() ;
-	}
-	
-	/************************************************************************
-	* 
-	* Converts this object into an XML representation.
-	* 
-	*************************************************************************/
-	@Override
-	public JavaElementXML convertToXML(String title, boolean storeContent) {
-		JavaElementXML element = new JavaElementXML(title) ;
-		
-		// It's useful to record the class name to uniquely identify the type
-		// of object being stored at this point in the XML tree.
-		Class cl = this.getClass() ;
-		element.addAttribute(JavaElementXML.kClassAttribute, cl.getName()) ;
-
-		if (m_Name == null)
-			throw new IllegalStateException("We've created a view with no name -- very bad") ;
-		
-		// Store this object's properties.
-		element.addAttribute("Name", m_Name) ;
-		element.addAttribute("UpdateOnStop", Boolean.toString(m_UpdateOnStop)) ;
-		element.addAttribute("UpdateEveryNthDecision", Integer.toString(m_UpdateEveryNthDecision)) ;
-		element.addAttribute("RHSFunctionName", rhsFunName) ;
-		element.addAttribute("LabelText", labelText) ;
-		element.addAttribute("DebugMessages", Boolean.toString(debugMessages)) ;
-		element.addAttribute("PriorityAttribute", priorityAttribute) ;
-				
-		if (storeContent)
-			storeContent(element) ;
-
-		element.addChildElement(this.m_Logger.convertToXML("Logger")) ;
-		
-		return element ;
-	}
-
-	/************************************************************************
-	* 
-	* Rebuild the object from an XML representation.
-	* 
-	* @param frame			The top level window that owns this window
-	* @param doc			The document we're rebuilding
-	* @param parent			The pane window that owns this view
-	* @param element		The XML representation of this command
-	* 
-	*************************************************************************/
-	@Override
-	public void loadFromXML(MainFrame frame, Document doc, Pane parent,
-			JavaElementXML element) throws Exception {
-		setValues(frame, doc, parent) ;
-
-		m_Name			   	= element.getAttribute("Name") ;
-		m_UpdateOnStop	   	= element.getAttributeBooleanDefault("UpdateOnStop", true) ;
-		m_UpdateEveryNthDecision = element.getAttributeIntDefault("UpdateEveryNthDecision", 0) ;
-		rhsFunName			= element.getAttribute("RHSFunctionName");
-		labelText 			= element.getAttribute("LabelText");
-		debugMessages		= element.getAttributeBooleanDefault("DebugMessages", true);
-		priorityAttribute 	= element.getAttribute("PriorityAttribute");
-		
-		if (rhsFunName == null) {
-			rhsFunName = new String();
-		}
-		
-		if (labelText == null) {
-			labelText = new String();
-		}
-		
-		if (priorityAttribute == null) {
-			priorityAttribute = new String();
-		}
-		
-		JavaElementXML log = element.findChildByName("Logger") ;
-		if (log != null)
-			this.m_Logger.loadFromXML(doc, log) ;
-
-		// Register that this module's name is in use
-		frame.registerViewName(m_Name, this) ;
-		
-		// Actually create the window
-		init(frame, doc, parent) ;
-
-		// Restore the text we saved (if we chose to save it)
-		restoreContent(element) ;
 	}
 }

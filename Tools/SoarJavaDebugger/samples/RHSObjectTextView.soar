@@ -10,4 +10,5 @@ sp {reward*test
   (write (crlf) (exec object |S1 c d e|))
   (write (crlf) (exec object |I3 f g|))  
   (write (crlf) (exec object |I2 attending true|))  
+  (write (crlf) (exec object |I3 --order 3|))
 }
