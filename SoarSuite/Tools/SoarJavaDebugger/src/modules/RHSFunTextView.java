@@ -23,12 +23,8 @@ import dialogs.PropertiesDialog;
 import dialogs.ReorderButtonsDialog;
 import doc.Document;
 
-public class RHSFunTextView extends AbstractUpdateView implements Kernel.AgentEventInterface, Kernel.RhsFunctionInterface
+public class RHSFunTextView extends AbstractRHSFunView implements Kernel.RhsFunctionInterface
 {
-	public RHSFunTextView()
-	{
-	}
-	
 	@Override
 	public void init(MainFrame frame, Document doc, Pane parentPane) {
 		if (labelText.length() <= 0) {
@@ -39,11 +35,8 @@ public class RHSFunTextView extends AbstractUpdateView implements Kernel.AgentEv
 	
 	public String getModuleBaseName() { return "rhs_fun_text" ; }
 	
-	protected String rhsFunName = new String();
-	
 	protected String labelText = new String();
 	protected Label labelTextWidget;
-	protected boolean debugMessages = true;
 	
 	StyledText textBox;
 
@@ -139,62 +132,10 @@ public class RHSFunTextView extends AbstractUpdateView implements Kernel.AgentEv
 		return debugMessages ? m_Name + ":" + functionName + ": updated " + getName() : "";
 	}
 	
-	protected void registerForAgentEvents(Agent agent)
-	{
-		super.registerForAgentEvents(agent);
-		
-		if (rhsFunName.length() > 0) {
-			if (!this.m_Document.registerRHSFunction(rhsFunName, this, null)) {
-				// failed to register function
-				MessageBox errorDialog = new MessageBox(this.m_Frame.getShell(), SWT.ICON_ERROR | SWT.OK);
-				errorDialog.setMessage("RHS function already registered: \"" + rhsFunName);
-				errorDialog.open();
-				rhsFunName = "";
-			}
-		}
-	}
-
-	protected void unregisterForAgentEvents(Agent agent)
-	{
-		super.unregisterForAgentEvents(agent);
-	
-		if (rhsFunName.length() > 0) {
-			boolean ok = m_Document.unregisterRHSFunction(rhsFunName);
-
-			if (!ok)
-				throw new IllegalStateException("Problem unregistering for events") ;
-		}
-	}
-
 	@Override
 	public boolean find(String text, boolean searchDown, boolean matchCase,
 			boolean wrap, boolean searchHiddenText) {
 		return false;
-	}
-	
-	int rhsFunInitSoarHandler = -1;
-
-	@Override
-	protected void registerForViewAgentEvents(Agent agent) {
-		rhsFunInitSoarHandler  = agent.GetKernel().RegisterForAgentEvent(smlAgentEventId.smlEVENT_AFTER_AGENT_REINITIALIZED, this, this) ;
-	}
-	@Override
-	protected boolean unregisterForViewAgentEvents(Agent agent) {
-		if (agent == null)
-			return true;
-
-		boolean ok = true;
-		
-		if (rhsFunInitSoarHandler != -1)
-			ok = agent.GetKernel().UnregisterForAgentEvent(rhsFunInitSoarHandler);
-		
-		rhsFunInitSoarHandler = -1;
-		
-		return ok;
-	}
-	@Override
-	protected void clearViewAgentEvents() {
-		rhsFunInitSoarHandler = -1;
 	}
 	
 	Composite rhsFunContainer;
@@ -325,19 +266,9 @@ public class RHSFunTextView extends AbstractUpdateView implements Kernel.AgentEv
 	public void displayText(String text) {
 	}
 	
+	@Override
 	public void onInitSoar() {
 		clearDisplay();
-	}
-
-	@Override
-	public void agentEventHandler(int eventID, Object data, String agentName)
-	{
-		// Note: We need to check the agent names match because although this is called an agentEventHandler it's
-		// an event registered with the kernel -- so it's sent to all listeners, not just the agent that is reinitializing.
-		if (eventID == smlAgentEventId.smlEVENT_AFTER_AGENT_REINITIALIZED.swigValue()) {
-			onInitSoar();
-			updateNow() ;
-		}
 	}
 
 	@Override
@@ -347,39 +278,20 @@ public class RHSFunTextView extends AbstractUpdateView implements Kernel.AgentEv
 			setTextSafely(output.toString());
 		}
 	}
+
+	private int propertiesStartingIndex;
+
+	protected void initProperties(ArrayList<PropertiesDialog.Property> properties) {
+		super.initProperties(properties);
+		propertiesStartingIndex = properties.size();
+		
+		properties.add(new PropertiesDialog.StringProperty("Label text", labelText));
+	}
 	
-	public void showProperties()
-	{
-		PropertiesDialog.Property properties[] = new PropertiesDialog.Property[4] ;
-		
-		properties[0] = new PropertiesDialog.IntProperty("Update automatically every n'th decision (0 => none)", m_UpdateEveryNthDecision) ;
-		properties[1] = new PropertiesDialog.StringProperty("Name of RHS function to use to update this window", rhsFunName) ;
-		properties[2] = new PropertiesDialog.StringProperty("Label text", labelText) ;
-		properties[3] = new PropertiesDialog.BooleanProperty("Debug messages", debugMessages) ;
-		
-		boolean ok = PropertiesDialog.showDialog(m_Frame, "Properties", properties) ;
-		
-		if (ok) {
-			m_UpdateEveryNthDecision = ((PropertiesDialog.IntProperty)properties[0]).getValue() ;
-			labelText = ((PropertiesDialog.StringProperty)properties[2]).getValue() ;
-			setLabelText(labelText);
-			debugMessages = ((PropertiesDialog.BooleanProperty)properties[3]).getValue() ;
-			String tempRHSFunName = ((PropertiesDialog.StringProperty)properties[1]).getValue() ;
-
-			if (this.getAgentFocus() != null)
-			{
-				// Make sure we're getting the events to match the new settings
-				this.unregisterForAgentEvents(this.getAgentFocus()) ;
-
-				rhsFunName = tempRHSFunName.trim();
-
-				this.registerForAgentEvents(this.getAgentFocus()) ;
-				
-			} else {
-				rhsFunName = tempRHSFunName;
-			}
-			
-		} // Careful, returns in the previous block!
+	protected void processProperties(ArrayList<PropertiesDialog.Property> properties) {
+		super.processProperties(properties);
+		labelText = ((PropertiesDialog.StringProperty)properties.get(propertiesStartingIndex)).getValue() ;
+		setLabelText(labelText);
 	}
 	
 	/************************************************************************

@@ -24,10 +24,6 @@ import doc.Document;
 
 public class RHSNumberAccumulatorView extends RHSFunTextView
 {
-	public RHSNumberAccumulatorView()
-	{
-	}
-	
 	public String getModuleBaseName() { return "rhs_number_accumulator" ; }
 	
 	@Override

@@ -25,12 +25,8 @@ import dialogs.PropertiesDialog;
 import dialogs.ReorderButtonsDialog;
 import doc.Document;
 
-public class RHSOperatorTextView extends RHSObjectTextView implements Kernel.RhsFunctionInterface
+public class RHSOperatorTextView extends RHSObjectTextView
 {
-	public RHSOperatorTextView()
-	{
-	}
-	
 	public String getModuleBaseName() { return "rhs_operator_text" ; }
 
 	enum ParseState { START, ACCEPTABLES, BEFORE_NUM, NUM, DONE };

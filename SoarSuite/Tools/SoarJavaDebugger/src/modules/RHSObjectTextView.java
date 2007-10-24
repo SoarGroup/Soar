@@ -17,6 +17,7 @@ import sml.Kernel;
 import sml.smlAgentEventId;
 
 import java.util.*;
+
 import debugger.MainFrame;
 import dialogs.PropertiesDialog;
 import dialogs.ReorderButtonsDialog;
@@ -24,10 +25,6 @@ import doc.Document;
 
 public class RHSObjectTextView extends RHSFunTextView implements Kernel.RhsFunctionInterface
 {
-	public RHSObjectTextView()
-	{
-	}
-	
 	public String getModuleBaseName() { return "rhs_object_text" ; }
 	
 	protected String priorityAttribute = new String();
@@ -125,40 +122,22 @@ public class RHSObjectTextView extends RHSFunTextView implements Kernel.RhsFunct
 		updateNow();
 	}
 
-	public void showProperties()
-	{
-		PropertiesDialog.Property properties[] = new PropertiesDialog.Property[5] ;
-		
-		properties[0] = new PropertiesDialog.IntProperty("Update automatically every n'th decision (0 => none)", m_UpdateEveryNthDecision) ;
-		properties[1] = new PropertiesDialog.StringProperty("Name of RHS function to use to update this window", rhsFunName) ;
-		properties[2] = new PropertiesDialog.StringProperty("Label text", labelText) ;
-		properties[3] = new PropertiesDialog.BooleanProperty("Debug messages", debugMessages) ;
-		properties[4] = new PropertiesDialog.StringProperty("Priority attribute (objects with this move to top of list)", priorityAttribute) ;
-		
-		boolean ok = PropertiesDialog.showDialog(m_Frame, "Properties", properties) ;
-		
-		if (ok) {
-			m_UpdateEveryNthDecision = ((PropertiesDialog.IntProperty)properties[0]).getValue() ;
-			labelText = ((PropertiesDialog.StringProperty)properties[2]).getValue() ;
-			setLabelText(labelText);
-			debugMessages = ((PropertiesDialog.BooleanProperty)properties[3]).getValue() ;
-			priorityAttribute = ((PropertiesDialog.StringProperty)properties[4]).getValue() ;
-			String tempRHSFunName = ((PropertiesDialog.StringProperty)properties[1]).getValue() ;
+	private int propertiesStartingIndex;
+	
+	@Override
+	protected void initProperties(ArrayList<PropertiesDialog.Property> properties) {
+		super.initProperties(properties);
 
-			if (this.getAgentFocus() != null)
-			{
-				// Make sure we're getting the events to match the new settings
-				this.unregisterForAgentEvents(this.getAgentFocus()) ;
+		propertiesStartingIndex = properties.size();
+		
+		properties.add(new PropertiesDialog.StringProperty("Priority attribute (objects with this move to top of list)", priorityAttribute));
+	}
+	
+	@Override
+	protected void processProperties(ArrayList<PropertiesDialog.Property> properties) {
+		super.processProperties(properties);
 
-				rhsFunName = tempRHSFunName.trim();
-
-				this.registerForAgentEvents(this.getAgentFocus()) ;
-				
-			} else {
-				rhsFunName = tempRHSFunName;
-			}
-			
-		} // Careful, returns in the previous block!
+		priorityAttribute = ((PropertiesDialog.StringProperty)properties.get(propertiesStartingIndex)).getValue() ;
 	}
 	
 	/************************************************************************
