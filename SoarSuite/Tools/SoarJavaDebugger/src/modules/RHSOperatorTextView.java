@@ -88,7 +88,8 @@ public class RHSOperatorTextView extends RHSObjectTextView
 		for (int index = 0; index < prefOutput.length; ++index) {
 			switch (state) {
 			case START:
-				if (prefOutput[index].contains("acceptables")) {
+				matcher = Pattern.compile("acceptables:$").matcher(prefOutput[index]);
+				if (matcher.matches()) {
 					state = ParseState.ACCEPTABLES;
 				}
 				break;
@@ -104,7 +105,8 @@ public class RHSOperatorTextView extends RHSObjectTextView
 				break;
 				
 			case BEFORE_NUM:
-				if (prefOutput[index].contains("indifferents")) {
+				matcher = Pattern.compile(".*indifferents:$").matcher(prefOutput[index]);
+				if (matcher.matches()) {
 					state = ParseState.NUM;
 				}
 				break;
