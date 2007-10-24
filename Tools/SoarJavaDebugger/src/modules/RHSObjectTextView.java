@@ -82,7 +82,7 @@ public class RHSObjectTextView extends RHSFunTextView implements Kernel.RhsFunct
 				} else if (this.doubleOrder > other.doubleOrder) {
 					return -1;
 				}
-				return 0;
+				return this.id.compareTo(other.id);
 			}
 //			System.out.println("*** comparing " + this.id + " to " + other.id);
 			return other.order - this.order;
