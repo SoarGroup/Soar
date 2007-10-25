@@ -147,7 +147,7 @@ sub buildIndicators() {
                   $possibleAddition =~ s/^\^//;
                   @groundingPairs = split '\^', $possibleAddition;
                   printGtHeader();
-                  print "   (<in> ^index $currentIndex\n";
+                  print "   (<in> ^xxindex $currentIndex\n";
                   print "         ^type increase\n";
                   print "         ^key $currentKey)\n";
                   print "}\n";
@@ -184,7 +184,7 @@ sub buildIndicators() {
                   $possibleAddition =~ s/^\^//;
                   @groundingPairs = split '\^', $possibleAddition;
                   printGtHeader();
-                  print "   (<in> ^index $currentIndex\n";
+                  print "   (<in> ^xxindex $currentIndex\n";
                   print "         ^type decrease\n";
                   print "         ^key $currentKey)\n";
                   print "}\n";
