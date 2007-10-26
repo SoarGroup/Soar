@@ -70,6 +70,8 @@ New in 8.6.4
   -- Modified StringEventCallback to return a string.
   -- Now generate proper Java enums for SML Java interface.
   -- Major refactoring of portability support (e.g. portability.h)
+  -- Same-machine remote connections are now more efficient (especially
+     on Linux).
   -- Other minor enhancements.
 
 * Bug fixes
@@ -87,7 +89,6 @@ New in 8.6.4
 Known issues:
 =============
 
-* Remote connections on Linux can be slow.
 * ^status complete appears on the ^output-link immediately instead 
   of during the next input phase.
 * The Soar 7 mode implementation currently relies on an ugly hack. If
