@@ -736,11 +736,12 @@ bool ElementXMLImpl::SetComment(const char* comment)
 /*************************************************************
 * @brief Returns the comment for this element.
 *
-* @returns The comment string for this element (or NULL if there is none)
+* @returns The comment string for this element (or zero-length string if there is none)
 *************************************************************/
 char const* ElementXMLImpl::GetComment()
 {
-	return m_Comment;
+	if(m_Comment) return m_Comment;
+   return "";
 }
 
 ////////////////////////////////////////////////////////////////

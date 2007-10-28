@@ -166,7 +166,7 @@ const char* ClientXML::GetAttribute(const char* attName) const
 /*************************************************************
 * @brief Get the character data for this element.
 *
-* @returns	Returns the character data for this element.  This can return null if the element has no character data.
+* @returns	Returns the character data for this element.  If the element has no character data, returns zero-length string.
 *			The character data returned will not include any XML escape sequences (e.g. &lt;). 
 *			It will include the original special characters (e.g. "<").
 *************************************************************/
