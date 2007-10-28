@@ -11,10 +11,10 @@ our @machines = (
   "s2",
   "n1",
   "n2",
-  "g",
+#  "g",
   "a",
   "f"
-#  "bb"
+  "bb"
 );
 
 our @scenarios = (
