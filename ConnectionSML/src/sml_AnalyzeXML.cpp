@@ -67,7 +67,7 @@ char const* AnalyzeXML::GetCommandName() const
 char const* AnalyzeXML::GetResultString() const
 {
 	if (m_pResult) return m_pResult->GetCharacterData() ;
-	return NULL ;
+	return NULL ; // this should never happen, since GetCharacterData will return a zero-length string if there is no character data
 }
 
 int AnalyzeXML::GetResultInt(int defaultValue) const
