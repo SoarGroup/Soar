@@ -299,7 +299,7 @@ bool ElementXML::SetComment(char const* pComment)
 /*************************************************************
 * @brief Returns the comment for this element.
 *
-* @returns The comment string for this element (or NULL if there is none)
+* @returns The comment string for this element (or zero-length string if there is none)
 *************************************************************/
 char const* ElementXML::GetComment() const
 {
@@ -524,7 +524,7 @@ void ElementXML::SetBinaryCharacterData(char* characterData, int length, bool co
 /*************************************************************
 * @brief Get the character data for this element.
 *
-* @returns	Returns the character data for this element.  This can return null if the element has no character data.
+* @returns	Returns the character data for this element.  If the element has no character data, returns zero-length string.
 *			The character data returned will not include any XML escape sequences (e.g. &lt;). 
 *			It will include the original special characters (e.g. "<").
 *************************************************************/
