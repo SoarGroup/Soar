@@ -114,7 +114,7 @@ sub buildIndicators() {
                 printGtHeader();
                 print "   (<in> ^index $currentIndex\n";
                 print "         ^type change\n";
-                print "         ^xxkey $currentKey)\n";
+                print "         ^key $currentKey)\n";
                 print "}\n";
 
                 printDetectRuleHeader();

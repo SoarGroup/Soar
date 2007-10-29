@@ -70,14 +70,14 @@ multi-attributes result-link 1000
 ####### Build Multi-attributes
 ##############################################
 
-learn -d
+learn --on
 indifferent-selection --first
 
 # source goodthings.soar
 
 pushd common
 # source canvas.soar
-source unique-state-hash.soar
+#source unique-state-hash.soar
 source status.soar
 source constant.soar
 #source build-hack.soar
