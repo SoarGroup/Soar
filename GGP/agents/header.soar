@@ -77,7 +77,7 @@ indifferent-selection --first
 
 pushd common
 # source canvas.soar
-source unique-state-hash.soar
+#source unique-state-hash.soar
 source status.soar
 source constant.soar
 #source build-hack.soar
