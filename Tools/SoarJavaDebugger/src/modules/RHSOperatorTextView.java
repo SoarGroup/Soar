@@ -73,6 +73,15 @@ public class RHSOperatorTextView extends RHSObjectTextView
 			return;
 		}
 		
+		// clear out old values
+		{
+			Iterator<OrderedIdentifier> iter = idToOrdered.values().iterator();
+			while (iter.hasNext()) {
+				OrderedIdentifier oid = iter.next();
+				oid.resetValues();
+			}
+		}
+		
 		HashSet<String> reported = new HashSet<String>();		
 		
 		// get preferences result, split on newlines
