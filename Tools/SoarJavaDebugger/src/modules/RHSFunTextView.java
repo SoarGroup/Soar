@@ -39,6 +39,8 @@ public class RHSFunTextView extends AbstractRHSFunView implements Kernel.RhsFunc
 	protected Label labelTextWidget;
 	
 	StyledText textBox;
+	
+	boolean clear = false;
 
 	/************************************************************************
 	* 
@@ -114,8 +116,8 @@ public class RHSFunTextView extends AbstractRHSFunView implements Kernel.RhsFunc
 		String[] commandLine = argument.split("\\s+");
 		
 		if (commandLine.length >= 1 && commandLine[0].equals("--clear")) {
-			this.onInitSoar();
-			return debugMessages ? m_Name + ":" + functionName + ": cleared" : "";
+			clear = true;
+			return debugMessages ? m_Name + ":" + functionName + ": set to clear" : "";
 		}
 		
 		output = new StringBuilder();
@@ -273,10 +275,14 @@ public class RHSFunTextView extends AbstractRHSFunView implements Kernel.RhsFunc
 
 	@Override
 	protected void updateNow() {
-		// we don't need to do anything here but subclasses might
+		if (clear) {
+			this.onInitSoar();
+		}
+		
 		if (output != null) {
 			setTextSafely(output.toString());
 		}
+		
 	}
 
 	private int propertiesStartingIndex;

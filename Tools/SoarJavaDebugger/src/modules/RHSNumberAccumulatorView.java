@@ -38,8 +38,8 @@ public class RHSNumberAccumulatorView extends RHSFunTextView
 			String agentName, String functionName, String argument) {
 		
 		if (functionName.equals("--clear")) {
-			this.onInitSoar();
-			return debugMessages ? m_Name + ":" + functionName + ": cleared" : "";
+			clear = true;
+			return debugMessages ? m_Name + ":" + functionName + ": set to clear" : "";
 		}
 		
 		double value = 0;
@@ -56,6 +56,10 @@ public class RHSNumberAccumulatorView extends RHSFunTextView
 	
 	@Override
 	public void onInitSoar() {
+		if (clear) {
+			this.onInitSoar();
+		}
+		
 		totalValue = 0;
 		updateNow();
 	}

@@ -28,6 +28,10 @@ public class RHSWaterfallAccumulatorView extends RHSFunTextView implements Kerne
 	
 	@Override
 	protected void updateNow() {
+		if (clear) {
+			this.onInitSoar();
+		}
+		
 		if (currentTag == null) {
 			this.clearDisplay();
 			return;
@@ -96,8 +100,8 @@ public class RHSWaterfallAccumulatorView extends RHSFunTextView implements Kerne
 		String[] commandLine = argument.split("\\s+");
 		
 		if (commandLine.length >= 1 && commandLine[0].equals("--clear")) {
-			this.onInitSoar();
-			return debugMessages ? m_Name + ":" + functionName + ": cleared" : "";
+			clear = true;
+			return debugMessages ? m_Name + ":" + functionName + ": set to clear" : "";
 		}
 		
 		// make sure we have 2 args

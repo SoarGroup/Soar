@@ -29,6 +29,10 @@ public class RHSObjectTextView extends RHSFunTextView implements Kernel.RhsFunct
 	
 	@Override
 	protected void updateNow() {
+		if (clear) {
+			this.onInitSoar();
+		}
+		
 		Agent agent = m_Frame.getAgentFocus() ;
 		if (agent == null) {
 			return;
@@ -142,8 +146,8 @@ public class RHSObjectTextView extends RHSFunTextView implements Kernel.RhsFunct
 		String[] commandLine = argument.split("\\s+");
 		
 		if (commandLine.length >= 1 && commandLine[0].equals("--clear")) {
-			this.onInitSoar();
-			return debugMessages ? m_Name + ":" + functionName + ": cleared" : "";
+			clear = true;
+			return debugMessages ? m_Name + ":" + functionName + ": set to clear" : "";
 		}
 		
 		// make sure we have 2 args
