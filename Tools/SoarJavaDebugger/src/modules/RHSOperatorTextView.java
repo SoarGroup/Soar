@@ -60,6 +60,10 @@ public class RHSOperatorTextView extends RHSObjectTextView
 //		
 //		if (true) return;
 		
+		if (this.idToOrdered.size() < 1) {
+			return;
+		}
+		
 		Agent agent = m_Frame.getAgentFocus() ;
 		if (agent == null) {
 			return;
