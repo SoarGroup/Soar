@@ -29,7 +29,7 @@ public class RHSWaterfallAccumulatorView extends RHSFunTextView implements Kerne
 	@Override
 	protected void updateNow() {
 		if (clear) {
-			this.onInitSoar();
+			this.clearDisplay();
 		}
 		
 		if (currentTag == null) {
@@ -142,11 +142,17 @@ public class RHSWaterfallAccumulatorView extends RHSFunTextView implements Kerne
 	}
 	
 	@Override
-	public void onInitSoar() {
+	public void clearDisplay() {
 		newTag = false;
 		currentValue = 0;
 		currentTag = null;
 		oldValues = new StringBuilder();
+		super.clearDisplay();
+	}
+	
+	@Override
+	public void onInitSoar() {
+		this.clearDisplay();
 		updateNow();
 	}
 }

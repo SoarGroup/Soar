@@ -28,6 +28,9 @@ public class RHSNumberAccumulatorView extends RHSFunTextView
 	
 	@Override
 	protected void updateNow() {
+		if (clear) {
+			clearDisplay();
+		}
 		setTextSafely(Double.toString(totalValue));
 	}
 
@@ -53,14 +56,16 @@ public class RHSNumberAccumulatorView extends RHSFunTextView
 		
 		return debugMessages ? m_Name + ":" + functionName + ": Total value changed to: " + totalValue : "";
 	}
+
+	@Override
+	public void clearDisplay() {
+		totalValue = 0;
+		super.clearDisplay();
+	}
 	
 	@Override
 	public void onInitSoar() {
-		if (clear) {
-			this.onInitSoar();
-		}
-		
-		totalValue = 0;
+		clearDisplay();
 		updateNow();
 	}
 }

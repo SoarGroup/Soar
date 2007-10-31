@@ -30,7 +30,7 @@ public class RHSObjectTextView extends RHSFunTextView implements Kernel.RhsFunct
 	@Override
 	protected void updateNow() {
 		if (clear) {
-			this.onInitSoar();
+			this.clearDisplay();
 		}
 		
 		Agent agent = m_Frame.getAgentFocus() ;
@@ -222,9 +222,15 @@ public class RHSObjectTextView extends RHSFunTextView implements Kernel.RhsFunct
 	}
 	
 	@Override
-	public void onInitSoar() {
+	public void clearDisplay() {
 		idToOrdered.clear();
 		sortedIdentifiers.clear();
+		super.clearDisplay();
+	}
+	
+	@Override
+	public void onInitSoar() {
+		clearDisplay();
 		updateNow();
 	}
 }

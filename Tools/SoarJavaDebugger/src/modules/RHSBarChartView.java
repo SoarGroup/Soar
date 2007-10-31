@@ -112,6 +112,8 @@ public class RHSBarChartView extends AbstractRHSFunView implements Kernel.RhsFun
 			return this.string.hashCode();
 		}
 	}
+	
+	boolean clear = false;
 
 	// category -> series -> value
 	HashMap<String, HashMap<String, Double> > categoryToSeriesMap = new HashMap<String, HashMap<String, Double> >();
@@ -133,7 +135,7 @@ public class RHSBarChartView extends AbstractRHSFunView implements Kernel.RhsFun
 		}
 		
 		if (commandLine[0].equals("--clear")) {
-			this.onInitSoar();
+			clear = true;
 			return debugMessages ? m_Name + ":" + functionName + ": cleared" : "";
 			
 		} else if (commandLine[0].equals("addvalue")) {
@@ -284,9 +286,13 @@ public class RHSBarChartView extends AbstractRHSFunView implements Kernel.RhsFun
 			}
 		}
 	}
-
+	
 	@Override
 	protected void updateNow() {
+		if (clear) {
+			clearDisplay();
+		}
+		
 		// If Soar is running in the UI thread we can make
 		// the update directly.
 		if (!Document.kDocInOwnThread)
