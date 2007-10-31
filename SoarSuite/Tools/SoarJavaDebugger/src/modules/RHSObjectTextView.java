@@ -75,6 +75,11 @@ public class RHSObjectTextView extends RHSFunTextView implements Kernel.RhsFunct
 		protected int order = 0;
 		protected String attributes = new String();
 		protected double doubleOrder = 0;
+		
+		public void resetValues() {
+			order = 0;
+			doubleOrder = 0;
+		}
 
 		public int compareTo(OrderedIdentifier other) {
 			if (this.order == other.order) {
