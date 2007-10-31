@@ -52,9 +52,36 @@ public class RHSObjectTextView extends RHSFunTextView implements Kernel.RhsFunct
 				// it doesn't exist, remove it
 				iter.remove();
 			} else {
-				output.append(orderedIdentifier.getIdentifier());
-				output.append("\n");
-				output.append(orderedIdentifier.getAttributes());
+				// it may just be in parens:
+				if (result.contains("(" + orderedIdentifier.getIdentifier().toUpperCase() + ")")) {
+					// if it is, don't print:
+					
+					//-----
+					//As you'll recall, we remove old objects from the object window when
+					//their ids can no longer be printed.  Unfortunately, there appears to be
+					//a "bug" in Soar (I use that term loosely because I don't really
+					//understand what's going on).  Sometimes when the id is no longer
+					//connected to the state, they can still be printed (but show up as
+					//empty).  For example, I might get this:
+					//
+					//print e27
+					//(E27)
+					//
+					//We should detect this case and treat it the same as if it couldn't be
+					//printed.  So if, when we do the print check, we just get the id in
+					//parentheses, then it should be removed.  I can imagine someone actually
+					//having legitimate ids like this that they want to show in the window,
+					//but I think we should design this for the other 99.999% of cases :)
+					//-----
+
+					// it doesn't exist, remove it
+					iter.remove();
+					
+				} else {
+					output.append(orderedIdentifier.getIdentifier());
+					output.append("\n");
+					output.append(orderedIdentifier.getAttributes());
+				}
 			}
 		}
 		
