@@ -34,6 +34,10 @@ public class RHSOperatorTextView extends RHSObjectTextView
 	
 	@Override
 	protected void updateNow() {
+		if (clear) {
+			this.onInitSoar();
+		}
+		
 
 //		String test1 = "  O154 (verify) =0 :I";
 //		String test2 = "  O154 (verify) =0.244948 :I";
