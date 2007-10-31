@@ -35,7 +35,7 @@ public class RHSOperatorTextView extends RHSObjectTextView
 	@Override
 	protected void updateNow() {
 		if (clear) {
-			this.onInitSoar();
+			this.clearDisplay();
 		}
 		
 

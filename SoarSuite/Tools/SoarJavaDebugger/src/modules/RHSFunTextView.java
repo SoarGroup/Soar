@@ -276,7 +276,7 @@ public class RHSFunTextView extends AbstractRHSFunView implements Kernel.RhsFunc
 	@Override
 	protected void updateNow() {
 		if (clear) {
-			this.onInitSoar();
+			clearDisplay();
 		}
 		
 		if (output != null) {
