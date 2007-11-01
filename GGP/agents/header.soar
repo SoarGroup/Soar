@@ -70,7 +70,7 @@ multi-attributes result-link 1000
 ####### Build Multi-attributes
 ##############################################
 
-learn --on
+learn --off
 indifferent-selection --first
 
 # source goodthings.soar

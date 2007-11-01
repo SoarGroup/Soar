@@ -3,7 +3,7 @@
 die unless ($#ARGV == 0);
 
 our @machines = (
-  "b1",
+#  "b1",
   "b2",
   "w1",
   "w2",
@@ -11,9 +11,9 @@ our @machines = (
   "s2",
   "n1",
   "n2",
-#  "g",
+  "g",
   "a",
-  "f"
+  "f",
   "bb"
 );
 
