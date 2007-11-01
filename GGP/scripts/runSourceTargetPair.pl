@@ -96,6 +96,18 @@ foreach $line (`cat $timeFile`) {
 }
 lastDecision($source1Log);
 
+if (`grep '1700000 decisions' $source1Log`) {
+  print "Aborting scenario, timeout on source\n";
+  print `touch $goodThings`;
+  print `touch $targetWithSourceLog`;
+  print `touch $targetWithoutSourceLog`;
+  print `rm $tmpSource`;
+  print `rm $tmpTarget`;
+  print `rm $mappingFile`;
+  print `rm $timeFile`;
+  exit;
+}
+
 print `$gtOn`;
 print `touch $goodThings`;
 print "Extracting goodThings..\n";
