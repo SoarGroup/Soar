@@ -30,6 +30,7 @@ public class RHSNumberAccumulatorView extends RHSFunTextView
 	protected void updateNow() {
 		if (clear) {
 			clearDisplay();
+			clear = false;
 		}
 		setTextSafely(Double.toString(totalValue));
 	}

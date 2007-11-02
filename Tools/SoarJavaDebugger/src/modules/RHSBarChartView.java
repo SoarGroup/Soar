@@ -291,6 +291,7 @@ public class RHSBarChartView extends AbstractRHSFunView implements Kernel.RhsFun
 	protected void updateNow() {
 		if (clear) {
 			clearDisplay();
+			clear = false;
 		}
 		
 		// If Soar is running in the UI thread we can make
