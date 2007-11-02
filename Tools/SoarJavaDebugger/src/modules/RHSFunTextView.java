@@ -109,7 +109,7 @@ public class RHSFunTextView extends AbstractRHSFunView implements Kernel.RhsFunc
          }) ;
 	}
 	
-	StringBuilder output;
+	StringBuilder output = new StringBuilder();
 	public String rhsFunctionHandler(int eventID, Object data,
 			String agentName, String functionName, String argument) {
 
@@ -229,8 +229,8 @@ public class RHSFunTextView extends AbstractRHSFunView implements Kernel.RhsFunc
 
 	@Override
 	public void clearDisplay() {
-		output = null;
-		setTextSafely("");
+		output = new StringBuilder();
+		setTextSafely(output.toString());
 	}
 
 	@Override
@@ -280,10 +280,7 @@ public class RHSFunTextView extends AbstractRHSFunView implements Kernel.RhsFunc
 			clear = false;
 		}
 		
-		if (output != null) {
-			setTextSafely(output.toString());
-		}
-		
+		setTextSafely(output.toString());
 	}
 
 	private int propertiesStartingIndex;
