@@ -30,6 +30,7 @@ public class RHSWaterfallAccumulatorView extends RHSFunTextView implements Kerne
 	protected void updateNow() {
 		if (clear) {
 			this.clearDisplay();
+			clear = false;
 		}
 		
 		if (currentTag == null) {

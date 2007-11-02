@@ -36,6 +36,7 @@ public class RHSOperatorTextView extends RHSObjectTextView
 	protected void updateNow() {
 		if (clear) {
 			this.clearDisplay();
+			clear = false;
 		}
 		
 

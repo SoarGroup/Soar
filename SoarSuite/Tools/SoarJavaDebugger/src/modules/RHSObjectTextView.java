@@ -31,6 +31,7 @@ public class RHSObjectTextView extends RHSFunTextView implements Kernel.RhsFunct
 	protected void updateNow() {
 		if (clear) {
 			this.clearDisplay();
+			clear = false;
 		}
 		
 		Agent agent = m_Frame.getAgentFocus() ;

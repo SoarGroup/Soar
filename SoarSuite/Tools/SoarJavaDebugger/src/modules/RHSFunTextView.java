@@ -277,6 +277,7 @@ public class RHSFunTextView extends AbstractRHSFunView implements Kernel.RhsFunc
 	protected void updateNow() {
 		if (clear) {
 			clearDisplay();
+			clear = false;
 		}
 		
 		if (output != null) {
