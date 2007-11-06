@@ -87,14 +87,14 @@ if ($#bkProdContents >= 0) {
   print `echo "}" >> $soarFile`;
 } 
 
-print `echo "sp {top-state*arbitrary-gs-constants" >> $soarFile`;
-print `echo "  (state <s> ^superstate nil)" >> $soarFile`;
-print `echo "-->" >> $soarFile`;
-print `echo "  (<s> ^arbitrary-gs-constants <ags>)" >> $soarFile`; 
-foreach $line (@arbConstants) {
-  print `echo "  (<ags> ^constant $line)" >> $soarFile`;
-}
-print `echo "}" >> $soarFile`;
+#print `echo "sp {top-state*arbitrary-gs-constants" >> $soarFile`;
+#print `echo "  (state <s> ^superstate nil)" >> $soarFile`;
+#print `echo "-->" >> $soarFile`;
+#print `echo "  (<s> ^arbitrary-gs-constants <ags>)" >> $soarFile`; 
+#foreach $line (@arbConstants) {
+#  print `echo "  (<ags> ^constant $line)" >> $soarFile`;
+#}
+#print `echo "}" >> $soarFile`;
 
 #if ($kifFile =~ /build-/) {
   # env is build

@@ -141,6 +141,7 @@ foreach $line (`cat $ARGV[0]`) {
   $source1Valid = 1;
   unless ($source1StatusLine =~ /succeeded/) {
     $source1Valid = 0;
+    $source1Decisions = "timeout-1700000";
   }
 
   if (defined $source2) {
@@ -156,6 +157,7 @@ foreach $line (`cat $ARGV[0]`) {
     $source2Valid = 1;
     unless ($source2StatusLine =~ /succeeded/) {
       $source2Valid = 0;
+      $source2Decisions = "timeout-1700000";
     }
   }
   else {
