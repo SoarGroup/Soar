@@ -13,7 +13,7 @@ our @machines = (
   "n2",
   "g",
   "a",
-  "f",
+#  "f",
   "bb"
 );
 

@@ -74,8 +74,11 @@ foreach $line (`cat $ARGV[0]`) {
   }
 
   $goodthings =~ s/\.log/\.goodthings.soar/;
-  die unless (-e $goodthings);
+  #die "no $goodthings" unless (-e $goodthings);
   
+  $sDecisions = -1;
+  $nsDecisions = -1;
+
   #$sSub = $targetS;
   #$sSub =~ s/log$/submit/;
   #die unless (-e $sSub);
@@ -86,9 +89,9 @@ foreach $line (`cat $ARGV[0]`) {
   #die unless (-e $nsSub);
   #@nsSubStats = `cat $nsSub`;
 
-  $genUser = 0;
-  $genUserSys = 0;
-  $genReal = 0;
+  $genUser = "nd";
+  $genUserSys = "nd";
+  $genReal = "nd";
   foreach $line (`grep 'GEN TIME' $goodthings`) {
     chomp $line;
     $line =~ /(\S+?) real,(\S+?) user,(\S+?) sys/ or die "!$result";
@@ -100,19 +103,31 @@ foreach $line (`cat $ARGV[0]`) {
   $nsTimeLine = `grep 'UNIX TIME' $targetNS`;
   $sTimeLine = `grep 'UNIX TIME' $targetS`;
 
-  $nsTimeLine =~ /(\S+?) real,(\S+?) user,(\S+?) sys/ or die "!$result";
-  $nsReal = realSeconds($1);
-  $nsUser = $2;
-  $nsUserSys = $2 + $3;
+  if ($nsTimeLine =~ /(\S+?) real,(\S+?) user,(\S+?) sys/) {
+    $nsReal = realSeconds($1);
+    $nsUser = $2;
+    $nsUserSys = $2 + $3;
+  }
+  else {
+    $nsReal = "nd";
+    $nsUser = "nd";
+    $nsUserSys = "nd";
+  }
 
   $nsSubUser = $nsSubStats[1];
   $nsSubUserSys = $nsSubStats[2];
   $nsSubReal = $nsSubStats[3];
 
-  $sTimeLine =~ /(\S+?) real,(\S+?) user,(\S+?) sys/ or die "!$result";
-  $sReal = realSeconds($1);
-  $sUser = $2;
-  $sUserSys = $2 + $3;
+  if ($sTimeLine =~ /(\S+?) real,(\S+?) user,(\S+?) sys/){
+    $sReal = realSeconds($1);
+    $sUser = $2;
+    $sUserSys = $2 + $3;
+  }
+  else {
+    $sReal = "nd";
+    $sUser = "nd";
+    $sUserSys = "nd";
+  }
   
   $sSubUser = $sSubStats[1];
   $sSubUserSys = $sSubStats[2];
@@ -130,8 +145,12 @@ foreach $line (`cat $ARGV[0]`) {
 
   if (defined $source2) {
     $source2SoarLine = `grep 'decisions (' $source2`;
-    $source2SoarLine =~ /^(\d+) decisions \((\S+) msec/ or die "$source2";
-    $source2Decisions = $1;
+    if ($source2SoarLine =~ /^(\d+) decisions \((\S+) msec/) {
+      $source2Decisions = $1;
+    }
+    else {
+      $source2Decisions = "nd";
+    }
   
     $source2StatusLine = `grep -B2 "This Agent halted" $source2 | grep succeeded`;  
     $source2Valid = 1;
@@ -149,9 +168,14 @@ foreach $line (`cat $ARGV[0]`) {
 
   # grab the Soar time: Soar's decision count * time per decision
   # also convert to seconds
-  $nsSoarLine =~ /^(\d+) decisions \((\S+) msec/ or die;
-  $nsSoar = $1*$2*0.001;
-  $nsDecisions = $1;
+  if ($nsSoarLine =~ /^(\d+) decisions \((\S+) msec/) {
+    $nsSoar = $1*$2*0.001;
+    $nsDecisions = $1;
+  }
+  else {
+    $nsSoar = "nd"; # no data
+    $nsDecisions = "nd";
+  }
   
   $nsStatusLine = `grep -B2 "This Agent halted" $targetNS | grep succeeded`;  
   $nsValid = 1;
@@ -159,9 +183,16 @@ foreach $line (`cat $ARGV[0]`) {
     $nsValid = 0;
   }
 
-  $sSoarLine =~ /^(\d+) decisions \((\S+) msec/ or die;
-  $sSoar = $1*$2*0.001;
-  $sDecisions = $1;
+  $sSoar = -1;
+  $sDecisions = -1;
+  if ($sSoarLine =~ /^(\d+) decisions \((\S+) msec/) {
+    $sSoar = $1*$2*0.001;
+    $sDecisions = $1;
+  }
+  else {
+    $sSoar = "nd";
+    $sDecisions = "nd";
+  }
 
   $sStatusLine = `grep -B2 "This Agent halted" $targetS | grep succeeded`;  
   $sValid = 1;
