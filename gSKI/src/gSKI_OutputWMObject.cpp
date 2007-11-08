@@ -49,7 +49,6 @@ namespace gSKI
       // gSymbol will add the reference to the soar symbol but since
       // I also hold onto the symbol I'll add one too
       m_gsym = new gSymbol(manager->GetSoarAgent(), m_sym, this, false);
-      m_manager->registerObjectSymbol(m_gsym);
 
       symbol_add_ref(m_sym);
    }
