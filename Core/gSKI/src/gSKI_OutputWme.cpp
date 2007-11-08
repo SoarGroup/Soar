@@ -54,10 +54,6 @@ namespace gSKI
          ((OutputWMObject*)valobj)->AddRef();
       }
       m_gvalue = new gSymbol(m_manager->GetSoarAgent(), wme->value, valobj, true);
-      if(valobj)
-      {
-         m_manager->registerObjectSymbol(m_gvalue);
-      }
 
       m_timetag = wme->timetag;
 
