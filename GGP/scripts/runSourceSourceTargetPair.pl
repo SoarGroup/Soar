@@ -74,17 +74,17 @@ foreach $line (`cat $timeFile`) {
 }
 lastDecision($source1Log);
 
-if (`grep '1700000 decisions' $source1Log`) {
-  print "Aborting scenario, timeout on source\n";
-  print `touch $goodThings`;
-  print `touch $source2Log`;
-  print `touch $targetWithSourceLog`;
-  print `touch $targetWithoutSourceLog`;
-  print `rm $mappingFile1`;
-  print `rm $mappingFile2`;
-  print `rm $timeFile`;
-  exit;
-}
+#if (`grep '1700000 decisions' $source1Log`) {
+#  print "Aborting scenario, timeout on source\n";
+#  print `touch $goodThings`;
+#  print `touch $source2Log`;
+#  print `touch $targetWithSourceLog`;
+#  print `touch $targetWithoutSourceLog`;
+#  print `rm $mappingFile1`;
+#  print `rm $mappingFile2`;
+#  print `rm $timeFile`;
+#  exit;
+#}
 
 print "Running $source2..\n";
 print `$timeCommand $runSoar -w1 $agentDir/$source2.soar > $source2Log`;
@@ -94,16 +94,16 @@ foreach $line (`cat $timeFile`) {
 }
 lastDecision($source2Log);
 
-if (`grep '1700000 decisions' $source2Log`) {
-  print "Aborting scenario, timeout on source\n";
-  print `touch $goodThings`;
-  print `touch $targetWithSourceLog`;
-  print `touch $targetWithoutSourceLog`;
-  print `rm $mappingFile1`;
-  print `rm $mappingFile2`;
-  print `rm $timeFile`;
-  exit;
-}
+#if (`grep '1700000 decisions' $source2Log`) {
+#  print "Aborting scenario, timeout on source\n";
+#  print `touch $goodThings`;
+#  print `touch $targetWithSourceLog`;
+#  print `touch $targetWithoutSourceLog`;
+#  print `rm $mappingFile1`;
+#  print `rm $mappingFile2`;
+#  print `rm $timeFile`;
+#  exit;
+#}
 
 print `$gtOn`;
 print `touch $goodThings`;

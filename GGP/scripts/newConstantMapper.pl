@@ -224,7 +224,7 @@ foreach $score (sort {$b <=> $a} keys %mappingsByScore) {
     $source = $1;
     $target = $2;
 
-    if (not defined $usedSourceConstants{$source} or not defined $usedTargetConstants{$target}) {
+    if (not defined $usedSourceConstants{$source} and not defined $usedTargetConstants{$target}) {
 #        print "score $score: $source -> $target\n";
 #        print "used in $mappingTargetPredicates{$source}{$target}\n";
       print "map constant $source $target\n";
