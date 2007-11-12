@@ -21,7 +21,7 @@ sp {selection*propose*init-current-evaluation-depth*top-selection*minimum-distan
 -->
    (<s> ^operator <op> + =, >)
    (<op> ^name init-current-evaluation-depth
-         ^value (+ 1 <meed>))
+         ^value <meed>)
 }
 
 sp {selection*propose*init-current-evaluation-depth*top-selection*start-depth
