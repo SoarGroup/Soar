@@ -157,6 +157,8 @@ for ($i=0; $i<=$#rules; $i++) {
     #print "predicatePos: $predicatePos\n";
     next unless ($predicatePos =~ /head!/); # skip all except rule-head
     foreach $variable (keys %{ $varNames{$predicatePos} }) {
+      # there can only be one such $variable, since this is only for things in
+      # the head
       $predicatePos =~ s/head!//;
       #print "  has var $variable\n";
       foreach $otherPredicate (keys %varNames) {
