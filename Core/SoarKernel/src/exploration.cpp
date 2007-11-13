@@ -84,7 +84,10 @@ bool set_exploration_policy( agent *my_agent, const long policy )
 {	
 	const char *policy_name = convert_exploration_policy( policy );
 	if ( policy_name != NULL )
+	{
 		set_sysparam( my_agent, USER_SELECT_MODE_SYSPARAM, policy );
+		return true;
+	}
 	
 	return false;
 }
