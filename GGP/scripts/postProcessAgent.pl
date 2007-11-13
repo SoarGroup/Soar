@@ -101,7 +101,57 @@ print `echo "}" >> $soarFile`;
 #  print `python ./build_heuristic.py $kifFile >> $soarFile`;
 #}
 
-%init_depths = ("build-7-1-target.soar", 7,
+%src_depths = ("../agents/build-7-1-source.unix.soar", 7,
+  "../agents/build-7-2-source.unix.soar", 5,
+  "../agents/build-7-3-source.unix.soar", 7,
+  "../agents/build-8-1-source.unix.soar", 5,
+  "../agents/differing-10-11-source.unix.soar", 14,
+  "../agents/differing-10-12-source.unix.soar", 14,
+  "../agents/differing-10-13-source.unix.soar", 14,
+  "../agents/differing-10-14-source.unix.soar", 13,
+  "../agents/differing-10-15-source.unix.soar", 16,
+  "../agents/differing-10-16-source.unix.soar", 14,
+  "../agents/differing-10-17-source.unix.soar", 16,
+  "../agents/differing-10-18-source.unix.soar", 11,
+  "../agents/differing-10-1-source.unix.soar", 14,
+  "../agents/differing-10-2-source.unix.soar", 14,
+  "../agents/differing-10-3-source.unix.soar", 14,
+  "../agents/differing-10-4-source.unix.soar", 13,
+  "../agents/differing-10-5-source.unix.soar", 16,
+  "../agents/differing-10-6-source.unix.soar", 14,
+  "../agents/differing-10-7-source.unix.soar", 16,
+  "../agents/differing-10-8-source.unix.soar", 11,
+  "../agents/escape-6-1-source-1.unix.soar", 19,
+  "../agents/escape-6-1-source-2.unix.soar", 14,
+  "../agents/escape-6-2-source-1.unix.soar", 18,
+  "../agents/escape-6-2-source-2.unix.soar", 17,
+  "../agents/escape-7-1-source.unix.soar", 14,
+  "../agents/escape-7-2-source.unix.soar", 14,
+  "../agents/escape-8-1-source.unix.soar", 16,
+  "../agents/escape-8-2-source.unix.soar", 16,
+  "../agents/escape-9-1-source.unix.soar", 19,
+  "../agents/mrogue-6-1-source-1.unix.soar", 12,
+  "../agents/mrogue-6-1-source-2.unix.soar", 12,
+  "../agents/mrogue-6-2-source-1.unix.soar", 12,
+  "../agents/mrogue-6-2-source-2.unix.soar", 12,
+  "../agents/mrogue-6-3-source-1.unix.soar", 14,
+  "../agents/mrogue-6-3-source-2.unix.soar", 14,
+  "../agents/mrogue-8-1-source.unix.soar", 14,
+  "../agents/mrogue-8-2-source.unix.soar", 13,
+  "../agents/mrogue-9-1-source.unix.soar", 12,
+  "../agents/mrogue-9-2-source.unix.soar", 12,
+  "../agents/wargame-6-1-source-1.unix.soar", 14,
+  "../agents/wargame-6-1-source-2.unix.soar", 10,
+  "../agents/wargame-6-2-source-1.unix.soar", 7,
+  "../agents/wargame-6-2-source-2.unix.soar", 14,
+  "../agents/wargame-7-1-source.unix.soar", 13,
+  "../agents/wargame-7-2-source.unix.soar", 18,
+  "../agents/wargame-8-1-source.unix.soar", 14,
+  "../agents/wargame-8-2-source.unix.soar", 13,
+  "../agents/wargame-9-1-source.unix.soar", 13,
+  "../agents/wargame-9-2-source.unix.soar", 18);
+
+%tgt_depths = ("build-7-1-target.soar", 7,
 "../agents/build-7-2-target.unix.soar", 5,
 "../agents/build-7-3-target.unix.soar", 7,
 "../agents/build-8-1-target.unix.soar", 5,
@@ -148,7 +198,7 @@ $depth_prod="
 sp {elaborate*start-depth
    (state <s> ^superstate nil)
 -->
-   (<s> ^start-depth $init_depths{$soarFile})}";
+   (<s> ^start-depth $src_depths{$soarFile})}";
 
 open(AGENT, ">>$soarFile");
 print AGENT $depth_prod;
