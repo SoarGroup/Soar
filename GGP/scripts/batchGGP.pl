@@ -4,13 +4,13 @@ die unless ($#ARGV == 0);
 
 our @machines = (
   "b1",
-#  "b2",
+  "b2",
   "w1",
-  "w2",
+#  "w2",
   "s1",
   "s2",
-  "n1",
-  "n2",
+#  "n1",
+#  "n2",
   "g",
   "a",
   "f",
@@ -64,7 +64,7 @@ our @scenarios = (
 
 $runName = $ARGV[0];
 
-our $runDir = "/home/swinterm/GGP-batches/$runName";
+our $runDir = "$ENV{HOME}/GGP-batches/$runName";
 if (not -d "$runDir") {
   print "creating $runDir\n";
   print `mkdir $runDir`;

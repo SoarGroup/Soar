@@ -88,7 +88,7 @@ else {
 }
 
 print `ssh $machineAliases{$machine} \"cd $machineDirs{$machine}; $runScenario $env $level $scenario\"`;
-print `scp $machineAliases{$machine}:$machineDirs{$machine}/$longEnv-$level-$scenario-* /home/swinterm/ggp-logs`;
+print `scp $machineAliases{$machine}:$machineDirs{$machine}/$longEnv-$level-$scenario-* $ENV{'HOME'}/ggp-logs`;
 
 $tmp = ".tmp_rrs_" . rand();
 while (-e $tmp) {

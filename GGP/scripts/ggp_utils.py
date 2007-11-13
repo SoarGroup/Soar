@@ -46,9 +46,12 @@ def cross_product(l1, l2):
 
 def cross_join(list1, list2):
 	"Like cross product, except the elements are joined with +"
-	if len(list1) == 0 or len(list2) == 0:
-		return []
-	return reduce(lambda x,y: x+y, ([e1 + e2 for e2 in list2] for e1 in list1))
+	#if len(list1) == 0 or len(list2) == 0:
+	#	return []
+	for e1 in list1:
+		for e2 in list2:
+			yield e1 + e2
+	#return reduce(lambda x,y: x+y, ([e1 + e2 for e2 in list2] for e1 in list1))
 
 def possible_matchings(s1, s2):
 	# we can't match two instances of the same predicate in one rule
