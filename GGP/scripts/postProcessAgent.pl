@@ -187,12 +187,14 @@ print `echo "}" >> $soarFile`;
 "../agents/wargame-9-1-target.unix.soar", 13,
 "../agents/wargame-9-2-target.unix.soar", 18);
 
-$depth_prod="
-sp {elaborate*start-depth
-   (state <s> ^superstate nil)
--->
-   (<s> ^start-depth $src_depths{$soarFile})}";
+if (defined $src_depths{$soarFile}) {
+  $depth_prod="
+  sp {elaborate*start-depth
+    (state <s> ^superstate nil)
+  -->
+    (<s> ^start-depth $src_depths{$soarFile})}";
 
-open(AGENT, ">>$soarFile");
-print AGENT $depth_prod;
-close AGENT;
+  open(AGENT, ">>$soarFile");
+  print AGENT $depth_prod;
+  close AGENT;
+}
