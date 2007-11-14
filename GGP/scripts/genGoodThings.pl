@@ -327,8 +327,8 @@ sub printDetectRuleHeader() {
 sub printDetectRuleMiddle() {
   print "-->\n";
   print "   (<s> ^present-indicator <in>)\n";
-  print "   (<s> ^current-evaluation-depth <ced> -\n";
-  print "                                  (+ <ced> 1))\n";
+  print "   #(<s> ^current-evaluation-depth <ced> -\n";
+  print "   #                               (+ <ced> 1))\n";
 }
 
 sub expandMappings() {

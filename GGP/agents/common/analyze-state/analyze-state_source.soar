@@ -8,6 +8,7 @@ popd
 source allowed-directions.soar
 source bump-depth.soar
 source dont-redo-depth-exceeded.soar
+source lookahead-bias.soar
 source portals.soar
 source prune-action-disabling.soar
 source prune-alternate-paths.soar
