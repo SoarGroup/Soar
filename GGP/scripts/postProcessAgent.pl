@@ -191,7 +191,7 @@ $depth_prod="
 sp {elaborate*start-depth
    (state <s> ^superstate nil)
 -->
-   (<s> ^start-depth $tgt_depths{$soarFile})}";
+   (<s> ^start-depth $src_depths{$soarFile})}";
 
 open(AGENT, ">>$soarFile");
 print AGENT $depth_prod;
