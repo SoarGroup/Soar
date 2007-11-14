@@ -144,7 +144,7 @@ print `echo "}" >> $soarFile`;
   "../agents/wargame-9-1-target.unix.soar", 13,
   "../agents/wargame-9-2-target.unix.soar", 18);
 
-%tgt_depths = ("build-7-1-target.merge.soar", 7,
+%tgt_depths = ("../agents/build-7-1-target.merge.soar", 7,
 "../agents/build-7-2-target.merge.soar", 5,
 "../agents/build-7-3-target.merge.soar", 7,
 "../agents/build-8-1-target.merge.soar", 5,
