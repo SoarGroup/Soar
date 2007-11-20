@@ -38,6 +38,9 @@ namespace cli {
 		INDIFFERENT_EPSILON,
 		INDIFFERENT_TEMPERATURE,
 		
+		// reduction control
+		INDIFFERENT_RED_AUTO,
+		
 		// selection parameter reduction
 		INDIFFERENT_RED_POLICY,
 		INDIFFERENT_RED_RATE,

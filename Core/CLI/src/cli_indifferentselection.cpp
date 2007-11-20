@@ -43,6 +43,9 @@ bool CommandLineInterface::ParseIndifferentSelection( gSKI::Agent* pAgent, std::
 		{'e', "epsilon",			0},
 		{'t', "temperature",		0},
 		
+		// auto-reduction control
+		{'a', "auto-reduce",		0},
+		
 		// selection parameter reduction
 		{'p', "reduction-policy",	0},
 		{'r', "reduction-rate",		0},
@@ -89,6 +92,11 @@ bool CommandLineInterface::ParseIndifferentSelection( gSKI::Agent* pAgent, std::
 				break;
 			case 't':
 				options.set( INDIFFERENT_TEMPERATURE );
+				break;
+				
+			// auto-reduction control
+			case 'a':
+				options.set( INDIFFERENT_RED_AUTO );
 				break;
 				
 			// selection parameter reduction
@@ -182,6 +190,25 @@ bool CommandLineInterface::ParseIndifferentSelection( gSKI::Agent* pAgent, std::
 					return DoIndifferentSelection( pAgent, 't', &( argv[2] ) );
 				else
 					return SetError( CLIError::kInvalidValue );
+		}
+		else
+			return SetError( CLIError::kTooManyArgs );
+	}
+	
+	// case: auto reduction control can do zero or one non-option arguments
+	else if ( options.test( INDIFFERENT_RED_AUTO ) )
+	{
+		// get value
+		if ( m_NonOptionArguments == 0 )
+		{
+			return DoIndifferentSelection( pAgent, 'a' );
+		}
+		else if ( m_NonOptionArguments == 1 )
+		{
+			if ( ( argv[2].compare("on") == 0 ) || ( argv[2].compare("off") == 0 ) )
+				return DoIndifferentSelection( pAgent, 'a', &( argv[2] ) );
+			else
+				return SetError( CLIError::kInvalidValue );
 		}
 		else
 			return SetError( CLIError::kTooManyArgs );
@@ -290,6 +317,26 @@ bool CommandLineInterface::DoIndifferentSelection( gSKI::Agent* pAgent, const ch
 	else if ( pOp == 'x' )
 		return set_exploration_policy( my_agent, "softmax" );
 	
+	// auto-update control
+	else if ( pOp == 'a' )
+	{
+		if ( !p1 )
+		{
+			bool setting = get_auto_update_exploration( my_agent );
+			
+			if ( m_RawOutput )
+				m_Result << ( ( setting )?( "on" ):( "off" ) );
+			else
+				AppendArgTagFast( sml_Names::kParamValue, sml_Names::kTypeString, ( ( setting )?( "on" ):( "off" ) ) );
+			
+			return true;
+		}
+		else
+		{	
+			return set_auto_update_exploration( my_agent, ( p1->compare("on") == 0 ) );
+		}
+	}
+	
 	// selection policy parameter
 	else if ( pOp == 'e' )
 	{
@@ -391,6 +438,17 @@ bool CommandLineInterface::DoIndifferentSelection( gSKI::Agent* pAgent, const ch
 		
 		temp = "Exploration Policy: ";
 		temp += convert_exploration_policy( get_exploration_policy( my_agent ) );
+		
+		if ( m_RawOutput )
+			m_Result << temp << "\n"; 
+		else
+		{
+			AppendArgTagFast( sml_Names::kParamValue, sml_Names::kTypeString, temp.c_str() );
+		}
+		temp = "";
+		
+		temp = "Automatic Policy Parameter Reduction: ";
+		temp += ( ( get_auto_update_exploration( my_agent ) )?( "on" ):( "off" ) );
 		
 		if ( m_RawOutput )
 			m_Result << temp << "\n\n"; 

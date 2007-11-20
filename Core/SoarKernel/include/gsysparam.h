@@ -81,6 +81,7 @@ typedef byte wme_trace_type;   /* must be one of the above constants */
 #define USER_SELECT_LAST   		4		/* choose the last item   AGR 615 */	
 #define USER_SELECT_RANDOM 		5		/* pick one at random */
 #define USER_SELECT_SOFTMAX		6		/* pick one at random, probabalistically biased by numeric preferences */
+#define USER_SELECT_INVALID		7		/* should be 1+ last item, used for validity checking */
 
 /* ---------------------------
    And now, the sysparam's
@@ -165,8 +166,11 @@ typedef byte wme_trace_type;   /* must be one of the above constants */
 /* KJC 8/06:  generate warning and event if memory usage exceeds this value */
 #define MAX_MEMORY_USAGE_SYSPARAM                36
 
+/* NLD: auto-reduction of exploration parameters */
+#define USER_SELECT_REDUCE_SYSPARAM				 37
+
 /* --- Warning: if you add sysparams, be sure to update the next line! --- */
-#define HIGHEST_SYSPARAM_NUMBER                  36
+#define HIGHEST_SYSPARAM_NUMBER                  37
 
 /* -----------------------------------------
    Sysparams[] stores the parameters; set_sysparam()

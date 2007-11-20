@@ -29,6 +29,20 @@
 #include "reinforcement_learning.h"
 
 /***************************************************************************
+ * Function     : valid_exploration_policy
+ **************************************************************************/
+
+bool valid_exploration_policy( const char *policy_name )
+{
+	return ( convert_exploration_policy( policy_name ) != NULL );
+}
+
+bool valid_exploration_policy( const long policy )
+{
+	return ( ( policy > NULL ) && ( policy < USER_SELECT_INVALID ) );
+}
+
+/***************************************************************************
  * Function     : convert_exploration_policy
  **************************************************************************/
 const long convert_exploration_policy( const char *policy_name )
@@ -82,8 +96,7 @@ bool set_exploration_policy( agent *my_agent, const char *policy_name )
 
 bool set_exploration_policy( agent *my_agent, const long policy )
 {	
-	const char *policy_name = convert_exploration_policy( policy );
-	if ( policy_name != NULL )
+	if ( valid_exploration_policy( policy ) )
 	{
 		set_sysparam( my_agent, USER_SELECT_MODE_SYSPARAM, policy );
 		return true;
@@ -188,32 +201,53 @@ std::vector<std::string> *get_parameter_names( agent *my_agent )
 }
 
 /***************************************************************************
+ * Function     : get_auto_update_exploration
+ **************************************************************************/
+bool get_auto_update_exploration( agent *my_agent )
+{
+	return ( my_agent->sysparams[USER_SELECT_REDUCE_SYSPARAM] != FALSE );
+}
+
+/***************************************************************************
+ * Function     : set_auto_update_exploration
+ **************************************************************************/
+bool set_auto_update_exploration( agent *my_agent, bool setting )
+{
+	my_agent->sysparams[USER_SELECT_REDUCE_SYSPARAM] = ( ( setting )?( TRUE ):( FALSE ) );
+	
+	return true;
+}
+
+/***************************************************************************
  * Function     : update_exploration_parameters
  **************************************************************************/
 void update_exploration_parameters( agent *my_agent )
 {	
-	std::vector<std::string> *parameters = get_parameter_names( my_agent );
-
-	for ( std::vector<std::string>::size_type i=0; i<parameters->size(); i++ )
+	if ( get_auto_update_exploration( my_agent ) )
 	{
-		const char *parameter_name = (*parameters)[ i ].c_str();
-		const long reduction_policy = get_reduction_policy( my_agent, parameter_name );
-		double reduction_rate = get_reduction_rate( my_agent, parameter_name, reduction_policy );
-		double current_value = get_parameter_value( my_agent, parameter_name );
-
-		if ( reduction_policy == EXPLORATION_EXPONENTIAL )
+		std::vector<std::string> *parameters = get_parameter_names( my_agent );
+	
+		for ( std::vector<std::string>::size_type i=0; i<parameters->size(); i++ )
 		{
-			if ( reduction_rate != 1 )
-				set_parameter_value( my_agent, parameter_name, ( current_value * reduction_rate ) );
+			const char *parameter_name = (*parameters)[ i ].c_str();
+			const long reduction_policy = get_reduction_policy( my_agent, parameter_name );
+			double reduction_rate = get_reduction_rate( my_agent, parameter_name, reduction_policy );
+			double current_value = get_parameter_value( my_agent, parameter_name );
+	
+			if ( reduction_policy == EXPLORATION_EXPONENTIAL )
+			{
+				if ( reduction_rate != 1 )
+					set_parameter_value( my_agent, parameter_name, ( current_value * reduction_rate ) );
+			}
+			else if ( reduction_policy == EXPLORATION_LINEAR )
+			{
+				if ( ( current_value > 0 ) && ( reduction_rate != 0 ) )
+					set_parameter_value( my_agent, parameter_name, ( ( ( current_value - reduction_rate ) > 0 )?( current_value - reduction_rate ):( 0 ) ) );
+			}
 		}
-		else if ( reduction_policy == EXPLORATION_LINEAR )
-		{
-			if ( ( current_value > 0 ) && ( reduction_rate != 0 ) )
-				set_parameter_value( my_agent, parameter_name, ( ( ( current_value - reduction_rate ) > 0 )?( current_value - reduction_rate ):( 0 ) ) );
-		}
+	
+		delete parameters;
 	}
-
-	delete parameters;
 }
 
 /***************************************************************************

@@ -469,6 +469,7 @@ void init_sysparams (agent* thisAgent) {
   thisAgent->sysparams[LEARNING_EXCEPT_SYSPARAM] = FALSE;  /* KJC 8/96 */
   thisAgent->sysparams[LEARNING_ALL_GOALS_SYSPARAM] = TRUE;
   thisAgent->sysparams[USER_SELECT_MODE_SYSPARAM] = USER_SELECT_SOFTMAX;
+  thisAgent->sysparams[USER_SELECT_REDUCE_SYSPARAM] = FALSE;
   thisAgent->sysparams[PRINT_WARNINGS_SYSPARAM] = TRUE;
   thisAgent->sysparams[PRINT_ALIAS_SYSPARAM] = TRUE;  /* AGR 627 */
   thisAgent->sysparams[EXPLAIN_SYSPARAM] = FALSE; /* KJC 7/96 */

@@ -39,6 +39,10 @@ typedef struct exploration_parameter_struct
 // Exploration Policies
 //////////////////////////////////////////////////////////
 
+// validity
+extern bool valid_exploration_policy( const char *policy_name );
+extern bool valid_exploration_policy( const long policy );
+
 // policy <=> name conversion
 extern const long convert_exploration_policy( const char *policy_name );
 extern const char *convert_exploration_policy( const long policy );
@@ -75,6 +79,10 @@ extern bool set_parameter_value( agent *my_agent, const char *name, double value
 
 // list of parameter names
 extern std::vector<std::string> *get_parameter_names( agent *my_agent );
+
+// control of auto-updates
+extern bool get_auto_update_exploration( agent *my_agent );
+extern bool set_auto_update_exploration( agent *my_agent, bool setting );
 
 // update parameters according to their reduction policies/rates
 extern void update_exploration_parameters( agent *my_agent );
