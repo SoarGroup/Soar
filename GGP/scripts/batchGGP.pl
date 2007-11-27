@@ -3,18 +3,18 @@
 die unless ($#ARGV == 0);
 
 our @machines = (
-  "b1",
+#  "b1",
 #  "b2",
   "w1",
   "w2",
-  "s1",
-  "s2",
-  "n1",
-  "n2",
-  "g",
-  "a",
-  "f",
-  "bb"
+#  "s1",
+#  "s2",
+#  "n1",
+#  "n2",
+#  "g",
+#  "a",
+#  "f",
+#  "bb"
 );
 
 our @scenarios = (
