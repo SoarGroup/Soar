@@ -65,7 +65,7 @@ in the main config file taxi.xml.
 	<cell-object name="passenger">
 		<property name="id" value="passenger"/>
 		<property name="passenger" value="true"/>
-		<property name="passenger-destination" value="red"/>
+		<!--property name="passenger-destination" value="red"/-->
 	</cell-object>
 	<cells world-size="5">
 		<row id="0">

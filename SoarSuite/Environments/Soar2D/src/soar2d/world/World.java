@@ -72,7 +72,7 @@ public class World {
 		
 		map = newMap;
 		
-		reset();
+		reset(map);
 		Soar2D.control.resetTime();
 		resetPlayers(resetDuringRun);
 		
@@ -434,10 +434,10 @@ public class World {
 		printSpawnMessage(player, location);
 	}
 	
-	public void reset() {
+	public void reset(GridMap map) {
 		worldCount = 0;
 		printedStats = false;
-		worldModule.reset();
+		worldModule.reset(map);
 		//System.out.println(map);
 	}
 	

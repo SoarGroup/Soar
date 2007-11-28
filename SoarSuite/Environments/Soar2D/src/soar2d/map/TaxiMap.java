@@ -32,21 +32,87 @@ public class TaxiMap extends GridMap {
 		fuel -= 1;
 	}
 	
-	// passenger
-	String passengerDestination = null;
-	public boolean passengerOnMap() {
-		return passengerDestination != null;
-	}
-	public String getPassengerDestination() {
-		return passengerDestination;
+	// passenger section
+	CellObject passenger;
+	Point passengerLocation;
+	Point passengerDefaultLocation;
+	String passengerDestination;
+	String passengerDefaultDestination;
+
+	public void setPassengerDefaults() {
+		assert passenger == null;
+		if (this.passengerLocation != null) {
+			this.passengerDefaultLocation = new Point(this.passengerLocation);
+			this.passenger = this.getObject(passengerLocation, "passenger");
+		} else {
+			this.passenger = cellObjectManager.createObject("passenger");
+		}
+		
+		if (this.passenger.hasProperty("passenger-destination")) {
+			this.passengerDefaultDestination = this.passenger.getProperty("passenger-destination");
+		}
 	}
 	
-	public Point getNewPassengerLocation() {
-		Collection<Point> locations = destinationLocations.values();
-		
-		if (locations.size() < 1) {
-			return null;
+	public String getPassengerDestination() {
+		assert passengerDestination != null;
+		return passengerDestination;
+	}
+	private void setPassengerDestination() {
+		if (passengerDefaultDestination != null) {
+			passengerDestination = passengerDefaultDestination;
+		} else {
+			
+			int pick = Simulation.random.nextInt(destinationMap.values().size());
+			Iterator<String> iter = destinationMap.values().iterator();
+			for (int index = 0; index < pick; index++) {
+				assert iter.hasNext();
+				iter.next();
+			}
+			assert iter.hasNext();
+			passengerDestination = iter.next();
 		}
+		
+		logger.info("passenger destination: " + passengerDestination);
+	}
+	
+	public boolean pickUp(Point location) {
+		if (passengerLocation == null) {
+			return false;
+		}
+		if (location.equals(passengerLocation)) {
+			CellObject obj = removeObject(location, "passenger");
+			assert obj != null;
+			passengerLocation = null;
+			return true;
+		}
+		return false;
+	}
+	public boolean putDown(Point location) {
+		if (passengerLocation != null) {
+			return false;
+		}
+		addObjectToCell(location, passenger);
+		return true;
+	}
+	public boolean isPassengerCarried() {
+		return passengerLocation == null;
+	}
+	
+	public void placePassengerAndSetDestination() {
+		assert passenger != null;
+		
+		if (passengerLocation != null) {
+			if (passengerLocation.equals(passengerDefaultLocation)) {
+				setPassengerDestination();
+				return;
+			}
+			
+			boolean ret = pickUp(passengerLocation);
+			assert ret;
+		}
+		
+		Collection<Point> locations = destinationLocations.values();
+		assert locations.size() > 1;
 		
 		int pick = Simulation.random.nextInt(locations.size());
 		Iterator<Point> iter = locations.iterator();
@@ -55,11 +121,31 @@ public class TaxiMap extends GridMap {
 			iter.next();
 		}
 		assert iter.hasNext();
-		return iter.next();
+		passengerLocation = iter.next();
+		addObjectToCell(passengerLocation, passenger);
+		
+		setPassengerDestination();
 	}
 
-	HashSet<String> destinationColors = new HashSet<String>();
+	public boolean isPassengerDestination(Point location) {
+		if (passengerDestination.equals(destinationMap.get(location))) {
+			return true;
+		}
+		return false;
+	}
+
+	boolean passengerDelivered = false;
+	public boolean isPassengerDelivered() {
+		return passengerDelivered;
+	}
+	public void deliverPassenger() {
+		passengerDelivered = true;
+	}
+
+	// end passenger section
+	
 	HashMap<CellObject, Point> destinationLocations = new HashMap<CellObject, Point>();
+	HashMap<Point, String> destinationMap = new HashMap<Point, String>();
 	
 	@Override
 	public void addObjectToCell(Point location, CellObject object) {
@@ -77,26 +163,12 @@ public class TaxiMap extends GridMap {
 		}
 		
 		if (object.hasProperty("destination")) {
-			destinationColors.add(object.getProperty("color"));
 			destinationLocations.put(object, location);
+			destinationMap.put(location, object.getProperty("color"));
 		}
 		
-		if (passengerDestination == null) {
-			if (object.hasProperty("passenger")) {
-				if (object.hasProperty("passenger-destination")) {
-					passengerDestination = object.getProperty("passenger-destination");
-				} else {
-					int pick = Simulation.random.nextInt(destinationColors.size());
-					Iterator<String> iter = destinationColors.iterator();
-					for (int index = 0; index < pick; index++) {
-						assert iter.hasNext();
-						iter.next();
-					}
-					assert iter.hasNext();
-					passengerDestination = iter.next();
-				}
-				logger.info("passenger destination: " + passengerDestination);
-			}
+		if (object.hasProperty("passenger")) {
+			this.passengerLocation = new Point(location);
 		}
 		
 		cell.addCellObject(object);
@@ -115,8 +187,8 @@ public class TaxiMap extends GridMap {
 	@Override
 	void removalStateUpdate(CellObject object) {
 		if (object.hasProperty("destination")) {
-			destinationColors.remove(object.getProperty("color"));
-			destinationLocations.remove(object);
+			Point location = destinationLocations.remove(object);
+			destinationMap.remove(location);
 		}
 	}
 
@@ -142,52 +214,6 @@ public class TaxiMap extends GridMap {
 		logger.info("fuel: " + Integer.toString(fuel) + " -> " + maximum + " (fillup)");
 		fuel = maximum;
 		return true;
-	}
-
-	CellObject passenger = null;
-	public boolean isPassengerCarried() {
-		return passenger != null;
-	}
-	
-	public boolean pickUp(Point location) {
-		if (passenger != null) {
-			return false;
-		}
-		passenger = removeObject(location, "passenger");
-		if (passenger == null) {
-			return false;
-		}
-		return true;
-	}
-	public boolean putDown(Point location) {
-		if (passenger == null) {
-			return false;
-		}
-		addObjectToCell(location, passenger);
-		passenger = null;
-		return true;
-	}
-
-	public boolean isPassengerDestination(Point location) {
-		ArrayList<CellObject>destinations = getAllWithProperty(location, "destination");
-		if (destinations.size() < 1) {
-			return false;
-		}
-		assert destinations.size() == 1;
-		CellObject destination = destinations.get(0);
-		if (passengerDestination.equals(destination.getProperty("color"))) {
-			return true;
-		}
-		return false;
-	}
-
-	boolean passengerDelivered = false;
-	public boolean isPassengerDelivered() {
-		return passengerDelivered;
-	}
-
-	public void delivered() {
-		passengerDelivered = true;
 	}
 
 	public String getStringType(Point location) {
