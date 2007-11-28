@@ -38,10 +38,10 @@ public class TaxiMap extends GridMap {
 	Point passengerDefaultLocation;
 	String passengerDestination;
 	String passengerDefaultDestination;
-	String passengerStartingDestination;
+	String passengerFormerDestination;
 	
-	public String getPassengerStartingDestination() {
-		return passengerStartingDestination;
+	public String getPassengerFormerDestination() {
+		return passengerFormerDestination;
 	}
 
 	public void setPassengerDefaults() {
@@ -63,7 +63,7 @@ public class TaxiMap extends GridMap {
 		return passengerDestination;
 	}
 	private void setPassengerDestination() {
-		passengerStartingDestination = destinationMap.get(passengerLocation);
+		passengerFormerDestination = destinationMap.get(passengerLocation);
 		
 		if (passengerDefaultDestination != null) {
 			passengerDestination = passengerDefaultDestination;
@@ -99,6 +99,7 @@ public class TaxiMap extends GridMap {
 			return false;
 		}
 		addObjectToCell(location, passenger);
+		passengerFormerDestination = destinationMap.get(location);
 		return true;
 	}
 	public boolean isPassengerCarried() {
