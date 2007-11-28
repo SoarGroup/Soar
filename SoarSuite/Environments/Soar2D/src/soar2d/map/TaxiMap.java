@@ -38,6 +38,11 @@ public class TaxiMap extends GridMap {
 	Point passengerDefaultLocation;
 	String passengerDestination;
 	String passengerDefaultDestination;
+	String passengerStartingDestination;
+	
+	public String getPassengerStartingDestination() {
+		return passengerStartingDestination;
+	}
 
 	public void setPassengerDefaults() {
 		assert passenger == null;
@@ -58,6 +63,8 @@ public class TaxiMap extends GridMap {
 		return passengerDestination;
 	}
 	private void setPassengerDestination() {
+		passengerStartingDestination = destinationMap.get(passengerLocation);
+		
 		if (passengerDefaultDestination != null) {
 			passengerDestination = passengerDefaultDestination;
 		} else {

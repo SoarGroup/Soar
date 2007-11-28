@@ -42,6 +42,7 @@ public class SoarTaxi extends Taxi {
 	private StringElement passenger;
 	private StringElement destination;
 	private IntElement fuel;
+	private StringElement startingDestination;
 	
 	private Identifier view;
 	
@@ -180,7 +181,15 @@ public class SoarTaxi extends Taxi {
 				destination = null;
 			}
 		}
-		
+
+		if (startingDestination == null) {
+			startingDestination = agent.CreateStringWME(self, "starting-destination", xMap.getPassengerStartingDestination());
+		} else {
+			if (!xMap.getPassengerStartingDestination().equals(startingDestination.GetValue())) {
+				agent.Update(startingDestination, xMap.getPassengerStartingDestination());
+			}
+		}
+
 		if (fuel.GetValue() != xMap.getFuel()) {
 			agent.Update(fuel, xMap.getFuel());
 		}
