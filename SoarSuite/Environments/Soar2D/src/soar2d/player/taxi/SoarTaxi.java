@@ -42,7 +42,7 @@ public class SoarTaxi extends Taxi {
 	private StringElement passenger;
 	private StringElement destination;
 	private IntElement fuel;
-	private StringElement startingDestination;
+	private StringElement formerDestination;
 	
 	private Identifier view;
 	
@@ -104,6 +104,7 @@ public class SoarTaxi extends Taxi {
 		randomWME = agent.CreateFloatWME(self, Names.kRandomID, random);
 		
 		passenger = agent.CreateStringWME(self, "passenger", "false");
+		formerDestination = agent.CreateStringWME(self, "former-destination", "none");
 
 		fuel = agent.CreateIntWME(self, "fuel", 0);
 		
@@ -182,11 +183,15 @@ public class SoarTaxi extends Taxi {
 			}
 		}
 
-		if (startingDestination == null) {
-			startingDestination = agent.CreateStringWME(self, "starting-destination", xMap.getPassengerStartingDestination());
+		String dest = xMap.getPassengerFormerDestination();
+		System.out.println(dest);
+		if (dest == null) {
+			if (!formerDestination.GetValueAsString().equals("none")) {
+				agent.Update(formerDestination, "none");
+			}
 		} else {
-			if (!xMap.getPassengerStartingDestination().equals(startingDestination.GetValue())) {
-				agent.Update(startingDestination, xMap.getPassengerStartingDestination());
+			if (!formerDestination.GetValueAsString().equals(dest)) {
+				agent.Update(formerDestination, dest);
 			}
 		}
 
