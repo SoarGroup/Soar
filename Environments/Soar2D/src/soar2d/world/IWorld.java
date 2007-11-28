@@ -12,7 +12,7 @@ public interface IWorld {
 	public void updatePlayers(boolean playersChanged, GridMap map, PlayersManager players);
 	public void fragPlayer(Player player, GridMap map, PlayersManager players, Point location);
 	public void putInStartingLocation(Player player, GridMap map, PlayersManager players, Point location);
-	public void reset();
+	public void reset(GridMap map);
 	public int getMinimumAvailableLocations();
 	public void resetPlayer(GridMap map, Player player, PlayersManager players, boolean resetDuringRun);
 	public GridMap newMap(Configuration config);

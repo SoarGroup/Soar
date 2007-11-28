@@ -29,13 +29,9 @@ public class TaxiWorld implements IWorld {
 	}
 
 	public boolean postLoad(GridMap _map) {
-		TaxiMap xMap = (TaxiMap)_map;
-		if (!xMap.passengerOnMap()) {
-			if (!xMap.addRandomObjectWithProperty(xMap.getNewPassengerLocation(), "passenger")) {
-				Soar2D.control.severeError("Couldn't add passenger to map!");
-				return false;
-			}
-		}
+		TaxiMap map = (TaxiMap)_map;
+		map.setPassengerDefaults();
+		reset(_map);
 		return true;
 	}
 
@@ -43,7 +39,9 @@ public class TaxiWorld implements IWorld {
 			PlayersManager players, Point location) {
 	}
 
-	public void reset() {
+	public void reset(GridMap _map) {
+		TaxiMap map = (TaxiMap)_map;
+		map.placePassengerAndSetDestination();
 	}
 	
 	public boolean update(GridMap _map, PlayersManager players) {
@@ -97,7 +95,7 @@ public class TaxiWorld implements IWorld {
 			} else if (move.putdown) {
 				if (map.putDown(players.getLocation(player))) {
 					if (map.isPassengerDestination(players.getLocation(player))) {
-						map.delivered();
+						map.deliverPassenger();
 						player.adjustPoints(20, "successful delivery");
 					} else {
 						player.adjustPoints(-1, "legal putdown");

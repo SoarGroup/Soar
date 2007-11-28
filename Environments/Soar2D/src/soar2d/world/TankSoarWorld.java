@@ -483,7 +483,7 @@ public class TankSoarWorld implements IWorld {
 		
 	}
 	
-	public void reset() {
+	public void reset(GridMap map) {
 		missileID = 0;
 		missileReset = 0;
 	}

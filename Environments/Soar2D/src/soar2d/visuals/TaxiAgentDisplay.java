@@ -137,7 +137,7 @@ public class TaxiAgentDisplay extends AgentDisplay {
 		
 		destination = new Label(worldGroup, SWT.NONE);
 		TaxiMap xMap = (TaxiMap)Soar2D.simulation.world.getMap();
-		if (xMap.passengerOnMap()) {
+		if (xMap.getPassengerDestination() != null) {
 			destination.setText(xMap.getPassengerDestination());
 		} else {
 			destination.setText("-");
@@ -200,7 +200,7 @@ public class TaxiAgentDisplay extends AgentDisplay {
 			}
 		}
 		
-		if (xMap.passengerOnMap()) {
+		if (xMap.getPassengerDestination() != null) {
 			destination.setText(xMap.getPassengerDestination());
 		} else {
 			destination.setText("-");

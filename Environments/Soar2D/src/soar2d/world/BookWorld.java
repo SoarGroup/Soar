@@ -305,7 +305,7 @@ public class BookWorld implements IWorld {
 		
 	}
 		
-	public void reset() {
+	public void reset(GridMap map) {
 	}
 	
 	public void fragPlayer(Player player, GridMap _map, PlayersManager players, Point location) {
