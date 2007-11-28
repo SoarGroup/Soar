@@ -8,6 +8,7 @@
         ^passenger [true false] true if a passenger is carried
         ?^destination [red blue green yellow]
         ^fuel <int> fuel remaining
+        ^starting-destination [red blue green yellow none] what destination the passenger started on
     ^view
         ^north
             ^type [none normal red blue green yellow fuel]
