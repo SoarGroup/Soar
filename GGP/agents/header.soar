@@ -71,7 +71,7 @@ multi-attributes result-link 1000
 ##############################################
 
 learn --off
-indifferent-selection --first
+#indifferent-selection --first
 
 # source goodthings.soar
 
