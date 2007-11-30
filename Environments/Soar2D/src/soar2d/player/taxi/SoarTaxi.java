@@ -184,7 +184,6 @@ public class SoarTaxi extends Taxi {
 		}
 
 		String dest = xMap.getPassengerFormerDestination();
-		System.out.println(dest);
 		if (dest == null) {
 			if (!formerDestination.GetValueAsString().equals("none")) {
 				agent.Update(formerDestination, "none");
