@@ -1,0 +1,1613 @@
+# MAPPING: atexit -> x4_atexit
+# MAPPING: timeup -> x4_timeout
+# MAPPING: itemtype -> x4_soldierheals
+# MAPPING: move -> move
+# MAPPING: used -> x4_uses
+# MAPPING: pickedup -> x4_healthincrement
+# MAPPING: apply -> x4_throw
+# MAPPING: blocked -> blocked
+# MAPPING: damaged -> x4_healthdecrement
+# MAPPING: currsymbol -> x4_intendedlocation
+# MAPPING: stepblocked -> x4_stepblocked
+# MAPPING: + -> +
+# MAPPING: - -> -
+# MAPPING: nexttoexplorer -> x4_nstepssoldier
+# MAPPING: combine -> x4_shoot
+# MAPPING: location -> location
+# MAPPING: health -> x4_health
+# MAPPING: maxtime -> x4_timefinal
+# MAPPING: obstacle-at -> x4_terroristattacks
+# MAPPING: direction -> x4_legalthrowdist
+# MAPPING: combining -> x4_attacks
+# MAPPING: candestroy -> x4_index
+# MAPPING: dodestroy -> x4_canshootat
+# MAPPING: carrying -> x4_carrying
+# MAPPING: compromiseexpired -> x4_terroristattacked
+# MAPPING: killed -> x4_dead
+# MAPPING: obstacletype -> x4_type
+# MAPPING: property -> x4_direction
+# MAPPING: step -> x4_time
+# MAPPING: docompromise -> x4_terroristcell
+# MAPPING: nextexplorerlocation -> x4_intendedsoldierlocation
+# MAPPING: explorer -> x4_soldier
+# MAPPING: yes -> x4_lositem
+# MAPPING: yes -> x4_aoeitem
+# MAPPING: yes -> x4_verticalterrorist
+# MAPPING: yes -> x4_animate
+# MAPPING: yes -> x4_healingitem
+# MAPPING: yes -> x4_horizontalterrorist
+# MAPPING: yes -> x4_terrorist
+# MAPPING: yes -> x4_place
+# MAPPING: yes -> x4_item
+# MAPPING: tieable -> x4_lositem
+# MAPPING: tieable -> x4_aoeitem
+# MAPPING: tieable -> x4_verticalterrorist
+# MAPPING: tieable -> x4_animate
+# MAPPING: tieable -> x4_healingitem
+# MAPPING: tieable -> x4_horizontalterrorist
+# MAPPING: tieable -> x4_terrorist
+# MAPPING: tieable -> x4_place
+# MAPPING: tieable -> x4_item
+# MAPPING: hammer -> x4_lositem
+# MAPPING: hammer -> x4_aoeitem
+# MAPPING: hammer -> x4_verticalterrorist
+# MAPPING: hammer -> x4_animate
+# MAPPING: hammer -> x4_healingitem
+# MAPPING: hammer -> x4_horizontalterrorist
+# MAPPING: hammer -> x4_terrorist
+# MAPPING: hammer -> x4_place
+# MAPPING: hammer -> x4_item
+# MAPPING: doesnail -> x4_lositem
+# MAPPING: doesnail -> x4_aoeitem
+# MAPPING: doesnail -> x4_verticalterrorist
+# MAPPING: doesnail -> x4_animate
+# MAPPING: doesnail -> x4_healingitem
+# MAPPING: doesnail -> x4_horizontalterrorist
+# MAPPING: doesnail -> x4_terrorist
+# MAPPING: doesnail -> x4_place
+# MAPPING: doesnail -> x4_item
+# MAPPING: doestie -> x4_lositem
+# MAPPING: doestie -> x4_aoeitem
+# MAPPING: doestie -> x4_verticalterrorist
+# MAPPING: doestie -> x4_animate
+# MAPPING: doestie -> x4_healingitem
+# MAPPING: doestie -> x4_horizontalterrorist
+# MAPPING: doestie -> x4_terrorist
+# MAPPING: doestie -> x4_place
+# MAPPING: doestie -> x4_item
+# MAPPING: nailable -> x4_lositem
+# MAPPING: nailable -> x4_aoeitem
+# MAPPING: nailable -> x4_verticalterrorist
+# MAPPING: nailable -> x4_animate
+# MAPPING: nailable -> x4_healingitem
+# MAPPING: nailable -> x4_horizontalterrorist
+# MAPPING: nailable -> x4_terrorist
+# MAPPING: nailable -> x4_place
+# MAPPING: nailable -> x4_item
+# MAPPING: ring1 -> x4_wolverine
+# MAPPING: ring1 -> x4_wildcat
+# MAPPING: bottle1 -> x4_wolverine
+# MAPPING: bottle1 -> x4_wildcat
+# MAPPING: water2 -> x4_feather
+# MAPPING: water3 -> x4_feather
+# MAPPING: water7 -> x4_feather
+# MAPPING: water4 -> x4_feather
+# MAPPING: water1 -> x4_feather
+# MAPPING: water6 -> x4_feather
+# MAPPING: water0 -> x4_feather
+# MAPPING: water -> x4_feather
+# MAPPING: water8 -> x4_feather
+# MAPPING: water5 -> x4_feather
+sp {elaborate*goodthing*179988894781
+   (state <s> ^good-things <gt>)
+-->
+   (<gt> ^indicator <in>)
+   (<in> ^index 1
+         ^type addition
+         ^key 1001)
+}
+sp {apply*usi*indicator-detected*179988894782
+   (state <s> ^name game
+              ^operator.name update-search-info
+              ^gs <gs>
+              ^old-gs <old-gs>
+              ^current-evaluation-depth <ced>
+              ^top-state.good-things.indicator <in>
+              -^used-goodthing <in>)
+    (<in> ^key 1001)
+    (<gs> ^x4_carrying <predicate>)
+    (<predicate> ^p1 x4_wolverine)
+  -{(<old-gs> ^x4_carrying <old-predicate>)
+    (<old-predicate> ^p1 x4_wolverine)}
+-->
+   (<s> ^present-indicator <in>)
+   #(<s> ^current-evaluation-depth <ced> -
+   #                               (+ <ced> 1))
+   (write (crlf) |Indicator: appearence of x4_carrying ^p1 x4_wolverine|)
+}
+sp {elaborate*goodthing*179988894783
+   (state <s> ^good-things <gt>)
+-->
+   (<gt> ^indicator <in>)
+   (<in> ^index 1
+         ^type addition
+         ^key 1002)
+}
+sp {apply*usi*indicator-detected*179988894784
+   (state <s> ^name game
+              ^operator.name update-search-info
+              ^gs <gs>
+              ^old-gs <old-gs>
+              ^current-evaluation-depth <ced>
+              ^top-state.good-things.indicator <in>
+              -^used-goodthing <in>)
+    (<in> ^key 1002)
+    (<gs> ^x4_carrying <predicate>)
+    (<predicate> ^p1 x4_wildcat)
+  -{(<old-gs> ^x4_carrying <old-predicate>)
+    (<old-predicate> ^p1 x4_wildcat)}
+-->
+   (<s> ^present-indicator <in>)
+   #(<s> ^current-evaluation-depth <ced> -
+   #                               (+ <ced> 1))
+   (write (crlf) |Indicator: appearence of x4_carrying ^p1 x4_wildcat|)
+}
+sp {elaborate*goodthing*179988894785
+   (state <s> ^good-things <gt>)
+-->
+   (<gt> ^indicator <in>)
+   (<in> ^index 2
+         ^type addition
+         ^key 1003)
+}
+sp {apply*usi*indicator-detected*179988894786
+   (state <s> ^name game
+              ^operator.name update-search-info
+              ^gs <gs>
+              ^old-gs <old-gs>
+              ^current-evaluation-depth <ced>
+              ^top-state.good-things.indicator <in>
+              -^used-goodthing <in>)
+    (<in> ^key 1003)
+    (<gs> ^x4_carrying <predicate>)
+    (<predicate> ^p1 hammer1)
+  -{(<old-gs> ^x4_carrying <old-predicate>)
+    (<old-predicate> ^p1 hammer1)}
+-->
+   (<s> ^present-indicator <in>)
+   #(<s> ^current-evaluation-depth <ced> -
+   #                               (+ <ced> 1))
+   (write (crlf) |Indicator: appearence of x4_carrying ^p1 hammer1|)
+}
+sp {elaborate*goodthing*179988894787
+   (state <s> ^good-things <gt>)
+-->
+   (<gt> ^indicator <in>)
+   (<in> ^index 3
+         ^type addition
+         ^key 1004)
+}
+sp {apply*usi*indicator-detected*179988894788
+   (state <s> ^name game
+              ^operator.name update-search-info
+              ^gs <gs>
+              ^old-gs <old-gs>
+              ^current-evaluation-depth <ced>
+              ^top-state.good-things.indicator <in>
+              -^used-goodthing <in>)
+    (<in> ^key 1004)
+    (<gs> ^x4_carrying <predicate>)
+    (<predicate> ^p1 nails1)
+  -{(<old-gs> ^x4_carrying <old-predicate>)
+    (<old-predicate> ^p1 nails1)}
+-->
+   (<s> ^present-indicator <in>)
+   #(<s> ^current-evaluation-depth <ced> -
+   #                               (+ <ced> 1))
+   (write (crlf) |Indicator: appearence of x4_carrying ^p1 nails1|)
+}
+sp {elaborate*goodthing*179988894789
+   (state <s> ^good-things <gt>)
+-->
+   (<gt> ^indicator <in>)
+   (<in> ^index 4
+         ^type addition
+         ^key 1005)
+}
+sp {apply*usi*indicator-detected*1799888947810
+   (state <s> ^name game
+              ^operator.name update-search-info
+              ^gs <gs>
+              ^old-gs <old-gs>
+              ^current-evaluation-depth <ced>
+              ^top-state.good-things.indicator <in>
+              -^used-goodthing <in>)
+    (<in> ^key 1005)
+    (<gs> ^x4_carrying <predicate>)
+    (<predicate> ^p1 log1)
+  -{(<old-gs> ^x4_carrying <old-predicate>)
+    (<old-predicate> ^p1 log1)}
+-->
+   (<s> ^present-indicator <in>)
+   #(<s> ^current-evaluation-depth <ced> -
+   #                               (+ <ced> 1))
+   (write (crlf) |Indicator: appearence of x4_carrying ^p1 log1|)
+}
+sp {elaborate*goodthing*1799888947811
+   (state <s> ^good-things <gt>)
+-->
+   (<gt> ^indicator <in>)
+   (<in> ^index 5
+         ^type addition
+         ^key 1006)
+}
+sp {apply*usi*indicator-detected*1799888947812
+   (state <s> ^name game
+              ^operator.name update-search-info
+              ^gs <gs>
+              ^old-gs <old-gs>
+              ^current-evaluation-depth <ced>
+              ^top-state.good-things.indicator <in>
+              -^used-goodthing <in>)
+    (<in> ^key 1006)
+    (<gs> ^x4_carrying <predicate>)
+    (<predicate> ^p1 log2)
+  -{(<old-gs> ^x4_carrying <old-predicate>)
+    (<old-predicate> ^p1 log2)}
+-->
+   (<s> ^present-indicator <in>)
+   #(<s> ^current-evaluation-depth <ced> -
+   #                               (+ <ced> 1))
+   (write (crlf) |Indicator: appearence of x4_carrying ^p1 log2|)
+}
+sp {elaborate*goodthing*1799888947813
+   (state <s> ^good-things <gt>)
+-->
+   (<gt> ^indicator <in>)
+   (<in> ^index 6
+         ^type addition
+         ^key 1007)
+}
+sp {apply*usi*indicator-detected*1799888947814
+   (state <s> ^name game
+              ^operator.name update-search-info
+              ^gs <gs>
+              ^old-gs <old-gs>
+              ^current-evaluation-depth <ced>
+              ^top-state.good-things.indicator <in>
+              -^used-goodthing <in>)
+    (<in> ^key 1007)
+    (<gs> ^x4_carrying <predicate>)
+    (<predicate> ^p1 combo1)
+  -{(<old-gs> ^x4_carrying <old-predicate>)
+    (<old-predicate> ^p1 combo1)}
+-->
+   (<s> ^present-indicator <in>)
+   #(<s> ^current-evaluation-depth <ced> -
+   #                               (+ <ced> 1))
+   (write (crlf) |Indicator: appearence of x4_carrying ^p1 combo1|)
+}
+sp {elaborate*goodthing*1799888947815
+   (state <s> ^good-things <gt>)
+-->
+   (<gt> ^indicator <in>)
+   (<in> ^index 7
+         ^type addition
+         ^key 1008)
+}
+sp {apply*usi*indicator-detected*1799888947816
+   (state <s> ^name game
+              ^operator.name update-search-info
+              ^gs <gs>
+              ^old-gs <old-gs>
+              ^current-evaluation-depth <ced>
+              ^top-state.good-things.indicator <in>
+              -^used-goodthing <in>)
+    (<in> ^key 1008)
+    (<gs> ^x4_intendedlocation <predicate>)
+    (<predicate> ^p1 combo2)
+  -{(<old-gs> ^x4_intendedlocation <old-predicate>)
+    (<old-predicate> ^p1 combo2)}
+-->
+   (<s> ^present-indicator <in>)
+   #(<s> ^current-evaluation-depth <ced> -
+   #                               (+ <ced> 1))
+   (write (crlf) |Indicator: appearence of x4_intendedlocation ^p1 combo2|)
+}
+sp {elaborate*goodthing*1799888947817
+   (state <s> ^good-things <gt>)
+-->
+   (<gt> ^indicator <in>)
+   (<in> ^index 8
+         ^type addition
+         ^key 1009)
+}
+sp {apply*usi*indicator-detected*1799888947818
+   (state <s> ^name game
+              ^operator.name update-search-info
+              ^gs <gs>
+              ^old-gs <old-gs>
+              ^current-evaluation-depth <ced>
+              ^top-state.good-things.indicator <in>
+              -^used-goodthing <in>)
+    (<in> ^key 1009)
+    (<gs> ^combotype <predicate>)
+    (<predicate> ^p1 combo1 ^p2 log1 ^p3 log2)
+  -{(<old-gs> ^combotype <old-predicate>)
+    (<old-predicate> ^p1 combo1 ^p2 log1 ^p3 log2)}
+-->
+   (<s> ^present-indicator <in>)
+   #(<s> ^current-evaluation-depth <ced> -
+   #                               (+ <ced> 1))
+   (write (crlf) |Indicator: appearence of combotype ^p1 combo1 ^p2 log1 ^p3 log2|)
+}
+sp {elaborate*goodthing*1799888947819
+   (state <s> ^good-things <gt>)
+-->
+   (<gt> ^indicator <in>)
+   (<in> ^index 9
+         ^type addition
+         ^key 1010)
+}
+sp {apply*usi*indicator-detected*1799888947820
+   (state <s> ^name game
+              ^operator.name update-search-info
+              ^gs <gs>
+              ^old-gs <old-gs>
+              ^current-evaluation-depth <ced>
+              ^top-state.good-things.indicator <in>
+              -^used-goodthing <in>)
+    (<in> ^key 1010)
+    (<gs> ^x4_direction <predicate>)
+    (<predicate> ^p1 combo1 ^p2 x4_lositem)
+  -{(<old-gs> ^x4_direction <old-predicate>)
+    (<old-predicate> ^p1 combo1 ^p2 x4_lositem)}
+-->
+   (<s> ^present-indicator <in>)
+   #(<s> ^current-evaluation-depth <ced> -
+   #                               (+ <ced> 1))
+   (write (crlf) |Indicator: appearence of x4_direction ^p1 combo1 ^p2 x4_lositem|)
+}
+sp {elaborate*goodthing*1799888947821
+   (state <s> ^good-things <gt>)
+-->
+   (<gt> ^indicator <in>)
+   (<in> ^index 9
+         ^type addition
+         ^key 1011)
+}
+sp {apply*usi*indicator-detected*1799888947822
+   (state <s> ^name game
+              ^operator.name update-search-info
+              ^gs <gs>
+              ^old-gs <old-gs>
+              ^current-evaluation-depth <ced>
+              ^top-state.good-things.indicator <in>
+              -^used-goodthing <in>)
+    (<in> ^key 1011)
+    (<gs> ^x4_direction <predicate>)
+    (<predicate> ^p1 combo1 ^p2 x4_aoeitem)
+  -{(<old-gs> ^x4_direction <old-predicate>)
+    (<old-predicate> ^p1 combo1 ^p2 x4_aoeitem)}
+-->
+   (<s> ^present-indicator <in>)
+   #(<s> ^current-evaluation-depth <ced> -
+   #                               (+ <ced> 1))
+   (write (crlf) |Indicator: appearence of x4_direction ^p1 combo1 ^p2 x4_aoeitem|)
+}
+sp {elaborate*goodthing*1799888947823
+   (state <s> ^good-things <gt>)
+-->
+   (<gt> ^indicator <in>)
+   (<in> ^index 9
+         ^type addition
+         ^key 1012)
+}
+sp {apply*usi*indicator-detected*1799888947824
+   (state <s> ^name game
+              ^operator.name update-search-info
+              ^gs <gs>
+              ^old-gs <old-gs>
+              ^current-evaluation-depth <ced>
+              ^top-state.good-things.indicator <in>
+              -^used-goodthing <in>)
+    (<in> ^key 1012)
+    (<gs> ^x4_direction <predicate>)
+    (<predicate> ^p1 combo1 ^p2 x4_verticalterrorist)
+  -{(<old-gs> ^x4_direction <old-predicate>)
+    (<old-predicate> ^p1 combo1 ^p2 x4_verticalterrorist)}
+-->
+   (<s> ^present-indicator <in>)
+   #(<s> ^current-evaluation-depth <ced> -
+   #                               (+ <ced> 1))
+   (write (crlf) |Indicator: appearence of x4_direction ^p1 combo1 ^p2 x4_verticalterrorist|)
+}
+sp {elaborate*goodthing*1799888947825
+   (state <s> ^good-things <gt>)
+-->
+   (<gt> ^indicator <in>)
+   (<in> ^index 9
+         ^type addition
+         ^key 1013)
+}
+sp {apply*usi*indicator-detected*1799888947826
+   (state <s> ^name game
+              ^operator.name update-search-info
+              ^gs <gs>
+              ^old-gs <old-gs>
+              ^current-evaluation-depth <ced>
+              ^top-state.good-things.indicator <in>
+              -^used-goodthing <in>)
+    (<in> ^key 1013)
+    (<gs> ^x4_direction <predicate>)
+    (<predicate> ^p1 combo1 ^p2 x4_animate)
+  -{(<old-gs> ^x4_direction <old-predicate>)
+    (<old-predicate> ^p1 combo1 ^p2 x4_animate)}
+-->
+   (<s> ^present-indicator <in>)
+   #(<s> ^current-evaluation-depth <ced> -
+   #                               (+ <ced> 1))
+   (write (crlf) |Indicator: appearence of x4_direction ^p1 combo1 ^p2 x4_animate|)
+}
+sp {elaborate*goodthing*1799888947827
+   (state <s> ^good-things <gt>)
+-->
+   (<gt> ^indicator <in>)
+   (<in> ^index 9
+         ^type addition
+         ^key 1014)
+}
+sp {apply*usi*indicator-detected*1799888947828
+   (state <s> ^name game
+              ^operator.name update-search-info
+              ^gs <gs>
+              ^old-gs <old-gs>
+              ^current-evaluation-depth <ced>
+              ^top-state.good-things.indicator <in>
+              -^used-goodthing <in>)
+    (<in> ^key 1014)
+    (<gs> ^x4_direction <predicate>)
+    (<predicate> ^p1 combo1 ^p2 x4_healingitem)
+  -{(<old-gs> ^x4_direction <old-predicate>)
+    (<old-predicate> ^p1 combo1 ^p2 x4_healingitem)}
+-->
+   (<s> ^present-indicator <in>)
+   #(<s> ^current-evaluation-depth <ced> -
+   #                               (+ <ced> 1))
+   (write (crlf) |Indicator: appearence of x4_direction ^p1 combo1 ^p2 x4_healingitem|)
+}
+sp {elaborate*goodthing*1799888947829
+   (state <s> ^good-things <gt>)
+-->
+   (<gt> ^indicator <in>)
+   (<in> ^index 9
+         ^type addition
+         ^key 1015)
+}
+sp {apply*usi*indicator-detected*1799888947830
+   (state <s> ^name game
+              ^operator.name update-search-info
+              ^gs <gs>
+              ^old-gs <old-gs>
+              ^current-evaluation-depth <ced>
+              ^top-state.good-things.indicator <in>
+              -^used-goodthing <in>)
+    (<in> ^key 1015)
+    (<gs> ^x4_direction <predicate>)
+    (<predicate> ^p1 combo1 ^p2 x4_horizontalterrorist)
+  -{(<old-gs> ^x4_direction <old-predicate>)
+    (<old-predicate> ^p1 combo1 ^p2 x4_horizontalterrorist)}
+-->
+   (<s> ^present-indicator <in>)
+   #(<s> ^current-evaluation-depth <ced> -
+   #                               (+ <ced> 1))
+   (write (crlf) |Indicator: appearence of x4_direction ^p1 combo1 ^p2 x4_horizontalterrorist|)
+}
+sp {elaborate*goodthing*1799888947831
+   (state <s> ^good-things <gt>)
+-->
+   (<gt> ^indicator <in>)
+   (<in> ^index 9
+         ^type addition
+         ^key 1016)
+}
+sp {apply*usi*indicator-detected*1799888947832
+   (state <s> ^name game
+              ^operator.name update-search-info
+              ^gs <gs>
+              ^old-gs <old-gs>
+              ^current-evaluation-depth <ced>
+              ^top-state.good-things.indicator <in>
+              -^used-goodthing <in>)
+    (<in> ^key 1016)
+    (<gs> ^x4_direction <predicate>)
+    (<predicate> ^p1 combo1 ^p2 x4_terrorist)
+  -{(<old-gs> ^x4_direction <old-predicate>)
+    (<old-predicate> ^p1 combo1 ^p2 x4_terrorist)}
+-->
+   (<s> ^present-indicator <in>)
+   #(<s> ^current-evaluation-depth <ced> -
+   #                               (+ <ced> 1))
+   (write (crlf) |Indicator: appearence of x4_direction ^p1 combo1 ^p2 x4_terrorist|)
+}
+sp {elaborate*goodthing*1799888947833
+   (state <s> ^good-things <gt>)
+-->
+   (<gt> ^indicator <in>)
+   (<in> ^index 9
+         ^type addition
+         ^key 1017)
+}
+sp {apply*usi*indicator-detected*1799888947834
+   (state <s> ^name game
+              ^operator.name update-search-info
+              ^gs <gs>
+              ^old-gs <old-gs>
+              ^current-evaluation-depth <ced>
+              ^top-state.good-things.indicator <in>
+              -^used-goodthing <in>)
+    (<in> ^key 1017)
+    (<gs> ^x4_direction <predicate>)
+    (<predicate> ^p1 combo1 ^p2 x4_place)
+  -{(<old-gs> ^x4_direction <old-predicate>)
+    (<old-predicate> ^p1 combo1 ^p2 x4_place)}
+-->
+   (<s> ^present-indicator <in>)
+   #(<s> ^current-evaluation-depth <ced> -
+   #                               (+ <ced> 1))
+   (write (crlf) |Indicator: appearence of x4_direction ^p1 combo1 ^p2 x4_place|)
+}
+sp {elaborate*goodthing*1799888947835
+   (state <s> ^good-things <gt>)
+-->
+   (<gt> ^indicator <in>)
+   (<in> ^index 9
+         ^type addition
+         ^key 1018)
+}
+sp {apply*usi*indicator-detected*1799888947836
+   (state <s> ^name game
+              ^operator.name update-search-info
+              ^gs <gs>
+              ^old-gs <old-gs>
+              ^current-evaluation-depth <ced>
+              ^top-state.good-things.indicator <in>
+              -^used-goodthing <in>)
+    (<in> ^key 1018)
+    (<gs> ^x4_direction <predicate>)
+    (<predicate> ^p1 combo1 ^p2 x4_item)
+  -{(<old-gs> ^x4_direction <old-predicate>)
+    (<old-predicate> ^p1 combo1 ^p2 x4_item)}
+-->
+   (<s> ^present-indicator <in>)
+   #(<s> ^current-evaluation-depth <ced> -
+   #                               (+ <ced> 1))
+   (write (crlf) |Indicator: appearence of x4_direction ^p1 combo1 ^p2 x4_item|)
+}
+sp {elaborate*goodthing*1799888947837
+   (state <s> ^good-things <gt>)
+-->
+   (<gt> ^indicator <in>)
+   (<in> ^index 10
+         ^type addition
+         ^key 1019)
+}
+sp {apply*usi*indicator-detected*1799888947838
+   (state <s> ^name game
+              ^operator.name update-search-info
+              ^gs <gs>
+              ^old-gs <old-gs>
+              ^current-evaluation-depth <ced>
+              ^top-state.good-things.indicator <in>
+              -^used-goodthing <in>)
+    (<in> ^key 1019)
+    (<gs> ^x4_direction <predicate>)
+    (<predicate> ^p1 combo1 ^p2 x4_lositem)
+  -{(<old-gs> ^x4_direction <old-predicate>)
+    (<old-predicate> ^p1 combo1 ^p2 x4_lositem)}
+-->
+   (<s> ^present-indicator <in>)
+   #(<s> ^current-evaluation-depth <ced> -
+   #                               (+ <ced> 1))
+   (write (crlf) |Indicator: appearence of x4_direction ^p1 combo1 ^p2 x4_lositem|)
+}
+sp {elaborate*goodthing*1799888947839
+   (state <s> ^good-things <gt>)
+-->
+   (<gt> ^indicator <in>)
+   (<in> ^index 10
+         ^type addition
+         ^key 1020)
+}
+sp {apply*usi*indicator-detected*1799888947840
+   (state <s> ^name game
+              ^operator.name update-search-info
+              ^gs <gs>
+              ^old-gs <old-gs>
+              ^current-evaluation-depth <ced>
+              ^top-state.good-things.indicator <in>
+              -^used-goodthing <in>)
+    (<in> ^key 1020)
+    (<gs> ^x4_direction <predicate>)
+    (<predicate> ^p1 combo1 ^p2 x4_aoeitem)
+  -{(<old-gs> ^x4_direction <old-predicate>)
+    (<old-predicate> ^p1 combo1 ^p2 x4_aoeitem)}
+-->
+   (<s> ^present-indicator <in>)
+   #(<s> ^current-evaluation-depth <ced> -
+   #                               (+ <ced> 1))
+   (write (crlf) |Indicator: appearence of x4_direction ^p1 combo1 ^p2 x4_aoeitem|)
+}
+sp {elaborate*goodthing*1799888947841
+   (state <s> ^good-things <gt>)
+-->
+   (<gt> ^indicator <in>)
+   (<in> ^index 10
+         ^type addition
+         ^key 1021)
+}
+sp {apply*usi*indicator-detected*1799888947842
+   (state <s> ^name game
+              ^operator.name update-search-info
+              ^gs <gs>
+              ^old-gs <old-gs>
+              ^current-evaluation-depth <ced>
+              ^top-state.good-things.indicator <in>
+              -^used-goodthing <in>)
+    (<in> ^key 1021)
+    (<gs> ^x4_direction <predicate>)
+    (<predicate> ^p1 combo1 ^p2 x4_verticalterrorist)
+  -{(<old-gs> ^x4_direction <old-predicate>)
+    (<old-predicate> ^p1 combo1 ^p2 x4_verticalterrorist)}
+-->
+   (<s> ^present-indicator <in>)
+   #(<s> ^current-evaluation-depth <ced> -
+   #                               (+ <ced> 1))
+   (write (crlf) |Indicator: appearence of x4_direction ^p1 combo1 ^p2 x4_verticalterrorist|)
+}
+sp {elaborate*goodthing*1799888947843
+   (state <s> ^good-things <gt>)
+-->
+   (<gt> ^indicator <in>)
+   (<in> ^index 10
+         ^type addition
+         ^key 1022)
+}
+sp {apply*usi*indicator-detected*1799888947844
+   (state <s> ^name game
+              ^operator.name update-search-info
+              ^gs <gs>
+              ^old-gs <old-gs>
+              ^current-evaluation-depth <ced>
+              ^top-state.good-things.indicator <in>
+              -^used-goodthing <in>)
+    (<in> ^key 1022)
+    (<gs> ^x4_direction <predicate>)
+    (<predicate> ^p1 combo1 ^p2 x4_animate)
+  -{(<old-gs> ^x4_direction <old-predicate>)
+    (<old-predicate> ^p1 combo1 ^p2 x4_animate)}
+-->
+   (<s> ^present-indicator <in>)
+   #(<s> ^current-evaluation-depth <ced> -
+   #                               (+ <ced> 1))
+   (write (crlf) |Indicator: appearence of x4_direction ^p1 combo1 ^p2 x4_animate|)
+}
+sp {elaborate*goodthing*1799888947845
+   (state <s> ^good-things <gt>)
+-->
+   (<gt> ^indicator <in>)
+   (<in> ^index 10
+         ^type addition
+         ^key 1023)
+}
+sp {apply*usi*indicator-detected*1799888947846
+   (state <s> ^name game
+              ^operator.name update-search-info
+              ^gs <gs>
+              ^old-gs <old-gs>
+              ^current-evaluation-depth <ced>
+              ^top-state.good-things.indicator <in>
+              -^used-goodthing <in>)
+    (<in> ^key 1023)
+    (<gs> ^x4_direction <predicate>)
+    (<predicate> ^p1 combo1 ^p2 x4_healingitem)
+  -{(<old-gs> ^x4_direction <old-predicate>)
+    (<old-predicate> ^p1 combo1 ^p2 x4_healingitem)}
+-->
+   (<s> ^present-indicator <in>)
+   #(<s> ^current-evaluation-depth <ced> -
+   #                               (+ <ced> 1))
+   (write (crlf) |Indicator: appearence of x4_direction ^p1 combo1 ^p2 x4_healingitem|)
+}
+sp {elaborate*goodthing*1799888947847
+   (state <s> ^good-things <gt>)
+-->
+   (<gt> ^indicator <in>)
+   (<in> ^index 10
+         ^type addition
+         ^key 1024)
+}
+sp {apply*usi*indicator-detected*1799888947848
+   (state <s> ^name game
+              ^operator.name update-search-info
+              ^gs <gs>
+              ^old-gs <old-gs>
+              ^current-evaluation-depth <ced>
+              ^top-state.good-things.indicator <in>
+              -^used-goodthing <in>)
+    (<in> ^key 1024)
+    (<gs> ^x4_direction <predicate>)
+    (<predicate> ^p1 combo1 ^p2 x4_horizontalterrorist)
+  -{(<old-gs> ^x4_direction <old-predicate>)
+    (<old-predicate> ^p1 combo1 ^p2 x4_horizontalterrorist)}
+-->
+   (<s> ^present-indicator <in>)
+   #(<s> ^current-evaluation-depth <ced> -
+   #                               (+ <ced> 1))
+   (write (crlf) |Indicator: appearence of x4_direction ^p1 combo1 ^p2 x4_horizontalterrorist|)
+}
+sp {elaborate*goodthing*1799888947849
+   (state <s> ^good-things <gt>)
+-->
+   (<gt> ^indicator <in>)
+   (<in> ^index 10
+         ^type addition
+         ^key 1025)
+}
+sp {apply*usi*indicator-detected*1799888947850
+   (state <s> ^name game
+              ^operator.name update-search-info
+              ^gs <gs>
+              ^old-gs <old-gs>
+              ^current-evaluation-depth <ced>
+              ^top-state.good-things.indicator <in>
+              -^used-goodthing <in>)
+    (<in> ^key 1025)
+    (<gs> ^x4_direction <predicate>)
+    (<predicate> ^p1 combo1 ^p2 x4_terrorist)
+  -{(<old-gs> ^x4_direction <old-predicate>)
+    (<old-predicate> ^p1 combo1 ^p2 x4_terrorist)}
+-->
+   (<s> ^present-indicator <in>)
+   #(<s> ^current-evaluation-depth <ced> -
+   #                               (+ <ced> 1))
+   (write (crlf) |Indicator: appearence of x4_direction ^p1 combo1 ^p2 x4_terrorist|)
+}
+sp {elaborate*goodthing*1799888947851
+   (state <s> ^good-things <gt>)
+-->
+   (<gt> ^indicator <in>)
+   (<in> ^index 10
+         ^type addition
+         ^key 1026)
+}
+sp {apply*usi*indicator-detected*1799888947852
+   (state <s> ^name game
+              ^operator.name update-search-info
+              ^gs <gs>
+              ^old-gs <old-gs>
+              ^current-evaluation-depth <ced>
+              ^top-state.good-things.indicator <in>
+              -^used-goodthing <in>)
+    (<in> ^key 1026)
+    (<gs> ^x4_direction <predicate>)
+    (<predicate> ^p1 combo1 ^p2 x4_place)
+  -{(<old-gs> ^x4_direction <old-predicate>)
+    (<old-predicate> ^p1 combo1 ^p2 x4_place)}
+-->
+   (<s> ^present-indicator <in>)
+   #(<s> ^current-evaluation-depth <ced> -
+   #                               (+ <ced> 1))
+   (write (crlf) |Indicator: appearence of x4_direction ^p1 combo1 ^p2 x4_place|)
+}
+sp {elaborate*goodthing*1799888947853
+   (state <s> ^good-things <gt>)
+-->
+   (<gt> ^indicator <in>)
+   (<in> ^index 10
+         ^type addition
+         ^key 1027)
+}
+sp {apply*usi*indicator-detected*1799888947854
+   (state <s> ^name game
+              ^operator.name update-search-info
+              ^gs <gs>
+              ^old-gs <old-gs>
+              ^current-evaluation-depth <ced>
+              ^top-state.good-things.indicator <in>
+              -^used-goodthing <in>)
+    (<in> ^key 1027)
+    (<gs> ^x4_direction <predicate>)
+    (<predicate> ^p1 combo1 ^p2 x4_item)
+  -{(<old-gs> ^x4_direction <old-predicate>)
+    (<old-predicate> ^p1 combo1 ^p2 x4_item)}
+-->
+   (<s> ^present-indicator <in>)
+   #(<s> ^current-evaluation-depth <ced> -
+   #                               (+ <ced> 1))
+   (write (crlf) |Indicator: appearence of x4_direction ^p1 combo1 ^p2 x4_item|)
+}
+sp {elaborate*goodthing*1799888947855
+   (state <s> ^good-things <gt>)
+-->
+   (<gt> ^indicator <in>)
+   (<in> ^index 11
+         ^type addition
+         ^key 1028)
+}
+sp {apply*usi*indicator-detected*1799888947856
+   (state <s> ^name game
+              ^operator.name update-search-info
+              ^gs <gs>
+              ^old-gs <old-gs>
+              ^current-evaluation-depth <ced>
+              ^top-state.good-things.indicator <in>
+              -^used-goodthing <in>)
+    (<in> ^key 1028)
+    (<gs> ^x4_direction <predicate>)
+    (<predicate> ^p1 combo1 ^p2 canbridge)
+  -{(<old-gs> ^x4_direction <old-predicate>)
+    (<old-predicate> ^p1 combo1 ^p2 canbridge)}
+-->
+   (<s> ^present-indicator <in>)
+   #(<s> ^current-evaluation-depth <ced> -
+   #                               (+ <ced> 1))
+   (write (crlf) |Indicator: appearence of x4_direction ^p1 combo1 ^p2 canbridge|)
+}
+sp {elaborate*goodthing*1799888947857
+   (state <s> ^good-things <gt>)
+-->
+   (<gt> ^indicator <in>)
+   (<in> ^index 12
+         ^type addition
+         ^key 1029)
+}
+sp {apply*usi*indicator-detected*1799888947858
+   (state <s> ^name game
+              ^operator.name update-search-info
+              ^gs <gs>
+              ^old-gs <old-gs>
+              ^current-evaluation-depth <ced>
+              ^top-state.good-things.indicator <in>
+              -^used-goodthing <in>)
+    (<in> ^key 1029)
+    (<gs> ^x4_direction <predicate>)
+    (<predicate> ^p1 combo1 ^p2 canbridge)
+  -{(<old-gs> ^x4_direction <old-predicate>)
+    (<old-predicate> ^p1 combo1 ^p2 canbridge)}
+-->
+   (<s> ^present-indicator <in>)
+   #(<s> ^current-evaluation-depth <ced> -
+   #                               (+ <ced> 1))
+   (write (crlf) |Indicator: appearence of x4_direction ^p1 combo1 ^p2 canbridge|)
+}
+sp {elaborate*goodthing*1799888947859
+   (state <s> ^good-things <gt>)
+-->
+   (<gt> ^indicator <in>)
+   (<in> ^index 13
+         ^type addition
+         ^key 1030)
+}
+sp {apply*usi*indicator-detected*1799888947860
+   (state <s> ^name game
+              ^operator.name update-search-info
+              ^gs <gs>
+              ^old-gs <old-gs>
+              ^current-evaluation-depth <ced>
+              ^top-state.good-things.indicator <in>
+              -^used-goodthing <in>)
+    (<in> ^key 1030)
+    (<gs> ^x4_direction <predicate>)
+    (<predicate> ^p1 combo1 ^p2 canfloat)
+  -{(<old-gs> ^x4_direction <old-predicate>)
+    (<old-predicate> ^p1 combo1 ^p2 canfloat)}
+-->
+   (<s> ^present-indicator <in>)
+   #(<s> ^current-evaluation-depth <ced> -
+   #                               (+ <ced> 1))
+   (write (crlf) |Indicator: appearence of x4_direction ^p1 combo1 ^p2 canfloat|)
+}
+sp {elaborate*goodthing*1799888947861
+   (state <s> ^good-things <gt>)
+-->
+   (<gt> ^indicator <in>)
+   (<in> ^index 14
+         ^type addition
+         ^key 1031)
+}
+sp {apply*usi*indicator-detected*1799888947862
+   (state <s> ^name game
+              ^operator.name update-search-info
+              ^gs <gs>
+              ^old-gs <old-gs>
+              ^current-evaluation-depth <ced>
+              ^top-state.good-things.indicator <in>
+              -^used-goodthing <in>)
+    (<in> ^key 1031)
+    (<gs> ^x4_direction <predicate>)
+    (<predicate> ^p1 combo1 ^p2 canfloat)
+  -{(<old-gs> ^x4_direction <old-predicate>)
+    (<old-predicate> ^p1 combo1 ^p2 canfloat)}
+-->
+   (<s> ^present-indicator <in>)
+   #(<s> ^current-evaluation-depth <ced> -
+   #                               (+ <ced> 1))
+   (write (crlf) |Indicator: appearence of x4_direction ^p1 combo1 ^p2 canfloat|)
+}
+sp {elaborate*goodthing*1799888947863
+   (state <s> ^good-things <gt>)
+-->
+   (<gt> ^indicator <in>)
+   (<in> ^index 15
+         ^type addition
+         ^key 1032)
+}
+sp {apply*usi*indicator-detected*1799888947864
+   (state <s> ^name game
+              ^operator.name update-search-info
+              ^gs <gs>
+              ^old-gs <old-gs>
+              ^current-evaluation-depth <ced>
+              ^top-state.good-things.indicator <in>
+              -^used-goodthing <in>)
+    (<in> ^key 1032)
+    (<gs> ^x4_direction <predicate>)
+    (<predicate> ^p1 combo1 ^p2 supportsweight)
+  -{(<old-gs> ^x4_direction <old-predicate>)
+    (<old-predicate> ^p1 combo1 ^p2 supportsweight)}
+-->
+   (<s> ^present-indicator <in>)
+   #(<s> ^current-evaluation-depth <ced> -
+   #                               (+ <ced> 1))
+   (write (crlf) |Indicator: appearence of x4_direction ^p1 combo1 ^p2 supportsweight|)
+}
+sp {elaborate*goodthing*1799888947865
+   (state <s> ^good-things <gt>)
+-->
+   (<gt> ^indicator <in>)
+   (<in> ^index 16
+         ^type addition
+         ^key 1033)
+}
+sp {apply*usi*indicator-detected*1799888947866
+   (state <s> ^name game
+              ^operator.name update-search-info
+              ^gs <gs>
+              ^old-gs <old-gs>
+              ^current-evaluation-depth <ced>
+              ^top-state.good-things.indicator <in>
+              -^used-goodthing <in>)
+    (<in> ^key 1033)
+    (<gs> ^x4_direction <predicate>)
+    (<predicate> ^p1 combo1 ^p2 supportsweight)
+  -{(<old-gs> ^x4_direction <old-predicate>)
+    (<old-predicate> ^p1 combo1 ^p2 supportsweight)}
+-->
+   (<s> ^present-indicator <in>)
+   #(<s> ^current-evaluation-depth <ced> -
+   #                               (+ <ced> 1))
+   (write (crlf) |Indicator: appearence of x4_direction ^p1 combo1 ^p2 supportsweight|)
+}
+sp {elaborate*goodthing*1799888947867
+   (state <s> ^good-things <gt>)
+-->
+   (<gt> ^indicator <in>)
+   (<in> ^index 17
+         ^type removal
+         ^key 1034)
+}
+sp {apply*usi*indicator-detected*1799888947868
+   (state <s> ^name game
+              ^operator.name update-search-info
+              ^gs <gs>
+              ^old-gs <old-gs>
+              ^current-evaluation-depth <ced>
+              ^top-state.good-things.indicator <in>
+              -^used-goodthing <in>)
+    (<in> ^key 1034)
+  -{(<gs> ^x4_carrying <predicate>)
+    (<predicate> ^p1 nails1)}
+    (<old-gs> ^x4_carrying <old-predicate>)
+    (<old-predicate> ^p1 nails1)
+-->
+   (<s> ^present-indicator <in>)
+   #(<s> ^current-evaluation-depth <ced> -
+   #                               (+ <ced> 1))
+   (write (crlf) |Indicator: removal of x4_carrying ^p1 nails1|)
+}
+sp {elaborate*goodthing*1799888947869
+   (state <s> ^good-things <gt>)
+-->
+   (<gt> ^indicator <in>)
+   (<in> ^index 18
+         ^type removal
+         ^key 1035)
+}
+sp {apply*usi*indicator-detected*1799888947870
+   (state <s> ^name game
+              ^operator.name update-search-info
+              ^gs <gs>
+              ^old-gs <old-gs>
+              ^current-evaluation-depth <ced>
+              ^top-state.good-things.indicator <in>
+              -^used-goodthing <in>)
+    (<in> ^key 1035)
+  -{(<gs> ^x4_carrying <predicate>)
+    (<predicate> ^p1 log1)}
+    (<old-gs> ^x4_carrying <old-predicate>)
+    (<old-predicate> ^p1 log1)
+-->
+   (<s> ^present-indicator <in>)
+   #(<s> ^current-evaluation-depth <ced> -
+   #                               (+ <ced> 1))
+   (write (crlf) |Indicator: removal of x4_carrying ^p1 log1|)
+}
+sp {elaborate*goodthing*1799888947871
+   (state <s> ^good-things <gt>)
+-->
+   (<gt> ^indicator <in>)
+   (<in> ^index 19
+         ^type removal
+         ^key 1036)
+}
+sp {apply*usi*indicator-detected*1799888947872
+   (state <s> ^name game
+              ^operator.name update-search-info
+              ^gs <gs>
+              ^old-gs <old-gs>
+              ^current-evaluation-depth <ced>
+              ^top-state.good-things.indicator <in>
+              -^used-goodthing <in>)
+    (<in> ^key 1036)
+  -{(<gs> ^x4_carrying <predicate>)
+    (<predicate> ^p1 log2)}
+    (<old-gs> ^x4_carrying <old-predicate>)
+    (<old-predicate> ^p1 log2)
+-->
+   (<s> ^present-indicator <in>)
+   #(<s> ^current-evaluation-depth <ced> -
+   #                               (+ <ced> 1))
+   (write (crlf) |Indicator: removal of x4_carrying ^p1 log2|)
+}
+sp {elaborate*goodthing*1799888947873
+   (state <s> ^good-things <gt>)
+-->
+   (<gt> ^indicator <in>)
+   (<in> ^index 20
+         ^type removal
+         ^key 1037)
+}
+sp {apply*usi*indicator-detected*1799888947874
+   (state <s> ^name game
+              ^operator.name update-search-info
+              ^gs <gs>
+              ^old-gs <old-gs>
+              ^current-evaluation-depth <ced>
+              ^top-state.good-things.indicator <in>
+              -^used-goodthing <in>)
+    (<in> ^key 1037)
+  -{(<gs> ^x4_intendedlocation <predicate>)
+    (<predicate> ^p1 combo1)}
+    (<old-gs> ^x4_intendedlocation <old-predicate>)
+    (<old-predicate> ^p1 combo1)
+-->
+   (<s> ^present-indicator <in>)
+   #(<s> ^current-evaluation-depth <ced> -
+   #                               (+ <ced> 1))
+   (write (crlf) |Indicator: removal of x4_intendedlocation ^p1 combo1|)
+}
+sp {elaborate*goodthing*1799888947875
+   (state <s> ^good-things <gt>)
+-->
+   (<gt> ^indicator <in>)
+   (<in> ^index 21
+         ^type addition
+         ^key 1038)
+}
+sp {apply*usi*indicator-detected*1799888947876
+   (state <s> ^name game
+              ^operator.name update-search-info
+              ^gs <gs>
+              ^old-gs <old-gs>
+              ^current-evaluation-depth <ced>
+              ^top-state.good-things.indicator <in>
+              -^used-goodthing <in>)
+    (<in> ^key 1038)
+    (<gs> ^x4_carrying <predicate>)
+    (<predicate> ^p1 x4_wolverine)
+  -{(<old-gs> ^x4_carrying <old-predicate>)
+    (<old-predicate> ^p1 x4_wolverine)}
+-->
+   (<s> ^present-indicator <in>)
+   #(<s> ^current-evaluation-depth <ced> -
+   #                               (+ <ced> 1))
+   (write (crlf) |Indicator: appearence of x4_carrying ^p1 x4_wolverine|)
+}
+sp {elaborate*goodthing*1799888947877
+   (state <s> ^good-things <gt>)
+-->
+   (<gt> ^indicator <in>)
+   (<in> ^index 21
+         ^type addition
+         ^key 1039)
+}
+sp {apply*usi*indicator-detected*1799888947878
+   (state <s> ^name game
+              ^operator.name update-search-info
+              ^gs <gs>
+              ^old-gs <old-gs>
+              ^current-evaluation-depth <ced>
+              ^top-state.good-things.indicator <in>
+              -^used-goodthing <in>)
+    (<in> ^key 1039)
+    (<gs> ^x4_carrying <predicate>)
+    (<predicate> ^p1 x4_wildcat)
+  -{(<old-gs> ^x4_carrying <old-predicate>)
+    (<old-predicate> ^p1 x4_wildcat)}
+-->
+   (<s> ^present-indicator <in>)
+   #(<s> ^current-evaluation-depth <ced> -
+   #                               (+ <ced> 1))
+   (write (crlf) |Indicator: appearence of x4_carrying ^p1 x4_wildcat|)
+}
+sp {elaborate*goodthing*1799888947879
+   (state <s> ^good-things <gt>)
+-->
+   (<gt> ^indicator <in>)
+   (<in> ^index 22
+         ^type addition
+         ^key 1040)
+}
+sp {apply*usi*indicator-detected*1799888947880
+   (state <s> ^name game
+              ^operator.name update-search-info
+              ^gs <gs>
+              ^old-gs <old-gs>
+              ^current-evaluation-depth <ced>
+              ^top-state.good-things.indicator <in>
+              -^used-goodthing <in>)
+    (<in> ^key 1040)
+    (<gs> ^compromised <predicate>)
+    (<predicate> ^p1 x4_feather)
+  -{(<old-gs> ^compromised <old-predicate>)
+    (<old-predicate> ^p1 x4_feather)}
+-->
+   (<s> ^present-indicator <in>)
+   #(<s> ^current-evaluation-depth <ced> -
+   #                               (+ <ced> 1))
+   (write (crlf) |Indicator: appearence of compromised ^p1 x4_feather|)
+}
+sp {elaborate*goodthing*1799888947881
+   (state <s> ^good-things <gt>)
+-->
+   (<gt> ^indicator <in>)
+   (<in> ^index 23
+         ^type addition
+         ^key 1041)
+}
+sp {apply*usi*indicator-detected*1799888947882
+   (state <s> ^name game
+              ^operator.name update-search-info
+              ^gs <gs>
+              ^old-gs <old-gs>
+              ^current-evaluation-depth <ced>
+              ^top-state.good-things.indicator <in>
+              -^used-goodthing <in>)
+    (<in> ^key 1041)
+    (<gs> ^compromised <predicate>)
+    (<predicate> ^p1 x4_feather)
+  -{(<old-gs> ^compromised <old-predicate>)
+    (<old-predicate> ^p1 x4_feather)}
+-->
+   (<s> ^present-indicator <in>)
+   #(<s> ^current-evaluation-depth <ced> -
+   #                               (+ <ced> 1))
+   (write (crlf) |Indicator: appearence of compromised ^p1 x4_feather|)
+}
+sp {elaborate*goodthing*1799888947883
+   (state <s> ^good-things <gt>)
+-->
+   (<gt> ^indicator <in>)
+   (<in> ^index 24
+         ^type addition
+         ^key 1042)
+}
+sp {apply*usi*indicator-detected*1799888947884
+   (state <s> ^name game
+              ^operator.name update-search-info
+              ^gs <gs>
+              ^old-gs <old-gs>
+              ^current-evaluation-depth <ced>
+              ^top-state.good-things.indicator <in>
+              -^used-goodthing <in>)
+    (<in> ^key 1042)
+    (<gs> ^compromised <predicate>)
+    (<predicate> ^p1 x4_feather)
+  -{(<old-gs> ^compromised <old-predicate>)
+    (<old-predicate> ^p1 x4_feather)}
+-->
+   (<s> ^present-indicator <in>)
+   #(<s> ^current-evaluation-depth <ced> -
+   #                               (+ <ced> 1))
+   (write (crlf) |Indicator: appearence of compromised ^p1 x4_feather|)
+}
+sp {elaborate*goodthing*1799888947885
+   (state <s> ^good-things <gt>)
+-->
+   (<gt> ^indicator <in>)
+   (<in> ^index 25
+         ^type addition
+         ^key 1043)
+}
+sp {apply*usi*indicator-detected*1799888947886
+   (state <s> ^name game
+              ^operator.name update-search-info
+              ^gs <gs>
+              ^old-gs <old-gs>
+              ^current-evaluation-depth <ced>
+              ^top-state.good-things.indicator <in>
+              -^used-goodthing <in>)
+    (<in> ^key 1043)
+    (<gs> ^compromised <predicate>)
+    (<predicate> ^p1 x4_feather)
+  -{(<old-gs> ^compromised <old-predicate>)
+    (<old-predicate> ^p1 x4_feather)}
+-->
+   (<s> ^present-indicator <in>)
+   #(<s> ^current-evaluation-depth <ced> -
+   #                               (+ <ced> 1))
+   (write (crlf) |Indicator: appearence of compromised ^p1 x4_feather|)
+}
+sp {elaborate*goodthing*1799888947887
+   (state <s> ^good-things <gt>)
+-->
+   (<gt> ^indicator <in>)
+   (<in> ^index 26
+         ^type removal
+         ^key 1044)
+}
+sp {apply*usi*indicator-detected*1799888947888
+   (state <s> ^name game
+              ^operator.name update-search-info
+              ^gs <gs>
+              ^old-gs <old-gs>
+              ^current-evaluation-depth <ced>
+              ^top-state.good-things.indicator <in>
+              -^used-goodthing <in>)
+    (<in> ^key 1044)
+  -{(<gs> ^x4_carrying <predicate>)
+    (<predicate> ^p1 combo1)}
+    (<old-gs> ^x4_carrying <old-predicate>)
+    (<old-predicate> ^p1 combo1)
+-->
+   (<s> ^present-indicator <in>)
+   #(<s> ^current-evaluation-depth <ced> -
+   #                               (+ <ced> 1))
+   (write (crlf) |Indicator: removal of x4_carrying ^p1 combo1|)
+}
+sp {elaborate*goodthing*1799888947889
+   (state <s> ^good-things <gt>)
+-->
+   (<gt> ^indicator <in>)
+   (<in> ^index 27
+         ^type addition
+         ^key 1045)
+}
+sp {apply*usi*indicator-detected*1799888947890
+   (state <s> ^name game
+              ^operator.name update-search-info
+              ^gs <gs>
+              ^old-gs <old-gs>
+              ^current-evaluation-depth <ced>
+              ^top-state.good-things.indicator <in>
+              -^used-goodthing <in>)
+    (<in> ^key 1045)
+    (<gs> ^x4_terroristattacked <predicate>)
+    (<predicate> ^p1 x4_feather)
+  -{(<old-gs> ^x4_terroristattacked <old-predicate>)
+    (<old-predicate> ^p1 x4_feather)}
+-->
+   (<s> ^present-indicator <in>)
+   #(<s> ^current-evaluation-depth <ced> -
+   #                               (+ <ced> 1))
+   (write (crlf) |Indicator: appearence of x4_terroristattacked ^p1 x4_feather|)
+}
+sp {elaborate*goodthing*1799888947891
+   (state <s> ^good-things <gt>)
+-->
+   (<gt> ^indicator <in>)
+   (<in> ^index 28
+         ^type addition
+         ^key 1046)
+}
+sp {apply*usi*indicator-detected*1799888947892
+   (state <s> ^name game
+              ^operator.name update-search-info
+              ^gs <gs>
+              ^old-gs <old-gs>
+              ^current-evaluation-depth <ced>
+              ^top-state.good-things.indicator <in>
+              -^used-goodthing <in>)
+    (<in> ^key 1046)
+    (<gs> ^x4_terroristattacked <predicate>)
+    (<predicate> ^p1 x4_feather)
+  -{(<old-gs> ^x4_terroristattacked <old-predicate>)
+    (<old-predicate> ^p1 x4_feather)}
+-->
+   (<s> ^present-indicator <in>)
+   #(<s> ^current-evaluation-depth <ced> -
+   #                               (+ <ced> 1))
+   (write (crlf) |Indicator: appearence of x4_terroristattacked ^p1 x4_feather|)
+}
+sp {elaborate*goodthing*1799888947893
+   (state <s> ^good-things <gt>)
+-->
+   (<gt> ^indicator <in>)
+   (<in> ^index 29
+         ^type addition
+         ^key 1047)
+}
+sp {apply*usi*indicator-detected*1799888947894
+   (state <s> ^name game
+              ^operator.name update-search-info
+              ^gs <gs>
+              ^old-gs <old-gs>
+              ^current-evaluation-depth <ced>
+              ^top-state.good-things.indicator <in>
+              -^used-goodthing <in>)
+    (<in> ^key 1047)
+    (<gs> ^x4_terroristattacked <predicate>)
+    (<predicate> ^p1 x4_feather)
+  -{(<old-gs> ^x4_terroristattacked <old-predicate>)
+    (<old-predicate> ^p1 x4_feather)}
+-->
+   (<s> ^present-indicator <in>)
+   #(<s> ^current-evaluation-depth <ced> -
+   #                               (+ <ced> 1))
+   (write (crlf) |Indicator: appearence of x4_terroristattacked ^p1 x4_feather|)
+}
+sp {elaborate*goodthing*1799888947895
+   (state <s> ^good-things <gt>)
+-->
+   (<gt> ^indicator <in>)
+   (<in> ^index 30
+         ^type addition
+         ^key 1048)
+}
+sp {apply*usi*indicator-detected*1799888947896
+   (state <s> ^name game
+              ^operator.name update-search-info
+              ^gs <gs>
+              ^old-gs <old-gs>
+              ^current-evaluation-depth <ced>
+              ^top-state.good-things.indicator <in>
+              -^used-goodthing <in>)
+    (<in> ^key 1048)
+    (<gs> ^x4_terroristattacked <predicate>)
+    (<predicate> ^p1 x4_feather)
+  -{(<old-gs> ^x4_terroristattacked <old-predicate>)
+    (<old-predicate> ^p1 x4_feather)}
+-->
+   (<s> ^present-indicator <in>)
+   #(<s> ^current-evaluation-depth <ced> -
+   #                               (+ <ced> 1))
+   (write (crlf) |Indicator: appearence of x4_terroristattacked ^p1 x4_feather|)
+}
+sp {elaborate*goodthing*1799888947897
+   (state <s> ^good-things <gt>)
+-->
+   (<gt> ^indicator <in>)
+   (<in> ^index 31
+         ^type removal
+         ^key 1049)
+}
+sp {apply*usi*indicator-detected*1799888947898
+   (state <s> ^name game
+              ^operator.name update-search-info
+              ^gs <gs>
+              ^old-gs <old-gs>
+              ^current-evaluation-depth <ced>
+              ^top-state.good-things.indicator <in>
+              -^used-goodthing <in>)
+    (<in> ^key 1049)
+  -{(<gs> ^compromised <predicate>)
+    (<predicate> ^p1 x4_feather)}
+    (<old-gs> ^compromised <old-predicate>)
+    (<old-predicate> ^p1 x4_feather)
+-->
+   (<s> ^present-indicator <in>)
+   #(<s> ^current-evaluation-depth <ced> -
+   #                               (+ <ced> 1))
+   (write (crlf) |Indicator: removal of compromised ^p1 x4_feather|)
+}
+sp {elaborate*goodthing*1799888947899
+   (state <s> ^good-things <gt>)
+-->
+   (<gt> ^indicator <in>)
+   (<in> ^index 32
+         ^type removal
+         ^key 1050)
+}
+sp {apply*usi*indicator-detected*17998889478100
+   (state <s> ^name game
+              ^operator.name update-search-info
+              ^gs <gs>
+              ^old-gs <old-gs>
+              ^current-evaluation-depth <ced>
+              ^top-state.good-things.indicator <in>
+              -^used-goodthing <in>)
+    (<in> ^key 1050)
+  -{(<gs> ^compromised <predicate>)
+    (<predicate> ^p1 x4_feather)}
+    (<old-gs> ^compromised <old-predicate>)
+    (<old-predicate> ^p1 x4_feather)
+-->
+   (<s> ^present-indicator <in>)
+   #(<s> ^current-evaluation-depth <ced> -
+   #                               (+ <ced> 1))
+   (write (crlf) |Indicator: removal of compromised ^p1 x4_feather|)
+}
+sp {elaborate*goodthing*17998889478101
+   (state <s> ^good-things <gt>)
+-->
+   (<gt> ^indicator <in>)
+   (<in> ^index 33
+         ^type removal
+         ^key 1051)
+}
+sp {apply*usi*indicator-detected*17998889478102
+   (state <s> ^name game
+              ^operator.name update-search-info
+              ^gs <gs>
+              ^old-gs <old-gs>
+              ^current-evaluation-depth <ced>
+              ^top-state.good-things.indicator <in>
+              -^used-goodthing <in>)
+    (<in> ^key 1051)
+  -{(<gs> ^compromised <predicate>)
+    (<predicate> ^p1 x4_feather)}
+    (<old-gs> ^compromised <old-predicate>)
+    (<old-predicate> ^p1 x4_feather)
+-->
+   (<s> ^present-indicator <in>)
+   #(<s> ^current-evaluation-depth <ced> -
+   #                               (+ <ced> 1))
+   (write (crlf) |Indicator: removal of compromised ^p1 x4_feather|)
+}
+sp {elaborate*goodthing*17998889478103
+   (state <s> ^good-things <gt>)
+-->
+   (<gt> ^indicator <in>)
+   (<in> ^index 34
+         ^type removal
+         ^key 1052)
+}
+sp {apply*usi*indicator-detected*17998889478104
+   (state <s> ^name game
+              ^operator.name update-search-info
+              ^gs <gs>
+              ^old-gs <old-gs>
+              ^current-evaluation-depth <ced>
+              ^top-state.good-things.indicator <in>
+              -^used-goodthing <in>)
+    (<in> ^key 1052)
+  -{(<gs> ^compromised <predicate>)
+    (<predicate> ^p1 x4_feather)}
+    (<old-gs> ^compromised <old-predicate>)
+    (<old-predicate> ^p1 x4_feather)
+-->
+   (<s> ^present-indicator <in>)
+   #(<s> ^current-evaluation-depth <ced> -
+   #                               (+ <ced> 1))
+   (write (crlf) |Indicator: removal of compromised ^p1 x4_feather|)
+}
+sp {elaborate*goodthing*17998889478105
+   (state <s> ^good-things <gt>)
+-->
+   (<gt> ^indicator <in>)
+   (<in> ^index 35
+         ^type removal
+         ^key 1053)
+}
+sp {apply*usi*indicator-detected*17998889478106
+   (state <s> ^name game
+              ^operator.name update-search-info
+              ^gs <gs>
+              ^old-gs <old-gs>
+              ^current-evaluation-depth <ced>
+              ^top-state.good-things.indicator <in>
+              -^used-goodthing <in>)
+    (<in> ^key 1053)
+  -{(<gs> ^x4_terroristattacked <predicate>)
+    (<predicate> ^p1 x4_feather)}
+    (<old-gs> ^x4_terroristattacked <old-predicate>)
+    (<old-predicate> ^p1 x4_feather)
+-->
+   (<s> ^present-indicator <in>)
+   #(<s> ^current-evaluation-depth <ced> -
+   #                               (+ <ced> 1))
+   (write (crlf) |Indicator: removal of x4_terroristattacked ^p1 x4_feather|)
+}
+sp {elaborate*goodthing*17998889478107
+   (state <s> ^good-things <gt>)
+-->
+   (<gt> ^indicator <in>)
+   (<in> ^index 36
+         ^type removal
+         ^key 1054)
+}
+sp {apply*usi*indicator-detected*17998889478108
+   (state <s> ^name game
+              ^operator.name update-search-info
+              ^gs <gs>
+              ^old-gs <old-gs>
+              ^current-evaluation-depth <ced>
+              ^top-state.good-things.indicator <in>
+              -^used-goodthing <in>)
+    (<in> ^key 1054)
+  -{(<gs> ^x4_terroristattacked <predicate>)
+    (<predicate> ^p1 x4_feather)}
+    (<old-gs> ^x4_terroristattacked <old-predicate>)
+    (<old-predicate> ^p1 x4_feather)
+-->
+   (<s> ^present-indicator <in>)
+   #(<s> ^current-evaluation-depth <ced> -
+   #                               (+ <ced> 1))
+   (write (crlf) |Indicator: removal of x4_terroristattacked ^p1 x4_feather|)
+}
+sp {elaborate*goodthing*17998889478109
+   (state <s> ^good-things <gt>)
+-->
+   (<gt> ^indicator <in>)
+   (<in> ^index 37
+         ^type removal
+         ^key 1055)
+}
+sp {apply*usi*indicator-detected*17998889478110
+   (state <s> ^name game
+              ^operator.name update-search-info
+              ^gs <gs>
+              ^old-gs <old-gs>
+              ^current-evaluation-depth <ced>
+              ^top-state.good-things.indicator <in>
+              -^used-goodthing <in>)
+    (<in> ^key 1055)
+  -{(<gs> ^x4_terroristattacked <predicate>)
+    (<predicate> ^p1 x4_feather)}
+    (<old-gs> ^x4_terroristattacked <old-predicate>)
+    (<old-predicate> ^p1 x4_feather)
+-->
+   (<s> ^present-indicator <in>)
+   #(<s> ^current-evaluation-depth <ced> -
+   #                               (+ <ced> 1))
+   (write (crlf) |Indicator: removal of x4_terroristattacked ^p1 x4_feather|)
+}
+sp {elaborate*goodthing*17998889478111
+   (state <s> ^good-things <gt>)
+-->
+   (<gt> ^indicator <in>)
+   (<in> ^index 38
+         ^type removal
+         ^key 1056)
+}
+sp {apply*usi*indicator-detected*17998889478112
+   (state <s> ^name game
+              ^operator.name update-search-info
+              ^gs <gs>
+              ^old-gs <old-gs>
+              ^current-evaluation-depth <ced>
+              ^top-state.good-things.indicator <in>
+              -^used-goodthing <in>)
+    (<in> ^key 1056)
+  -{(<gs> ^x4_terroristattacked <predicate>)
+    (<predicate> ^p1 x4_feather)}
+    (<old-gs> ^x4_terroristattacked <old-predicate>)
+    (<old-predicate> ^p1 x4_feather)
+-->
+   (<s> ^present-indicator <in>)
+   #(<s> ^current-evaluation-depth <ced> -
+   #                               (+ <ced> 1))
+   (write (crlf) |Indicator: removal of x4_terroristattacked ^p1 x4_feather|)
+}
+# GEN TIME 0:00.55 real,0.48 user,0.06 sys

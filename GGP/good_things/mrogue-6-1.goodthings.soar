@@ -1,0 +1,1920 @@
+# MAPPING: healthrestoredbyscroll -> healthrestoredbyscroll
+# MAPPING: burdenchanged -> burdenchanged
+# MAPPING: arrowthrown -> arrowthrown
+# MAPPING: odd -> odd
+# MAPPING: monsterismoving -> monsterismoving
+# MAPPING: even -> even
+# MAPPING: atexit -> atexit
+# MAPPING: heromoves -> heromoves
+# MAPPING: roomlocation -> roomlocation
+# MAPPING: weaponchange -> weaponchange
+# MAPPING: slomomonstermoving -> slomomonstermoving
+# MAPPING: nextcell -> nextcell
+# MAPPING: armored -> armored
+# MAPPING: step -> step
+# MAPPING: maxburden -> maxburden
+# MAPPING: int -> int
+# MAPPING: halfspeed -> halfspeed
+# MAPPING: corridor -> corridor
+# MAPPING: move -> move
+# MAPPING: relevantmonstercell -> relevantmonstercell
+# MAPPING: nextherolocation -> nextherolocation
+# MAPPING: wielding -> wielding
+# MAPPING: potion -> potion
+# MAPPING: asleep -> asleep
+# MAPPING: speednumber -> speednumber
+# MAPPING: enhancedarmor -> enhancedarmor
+# MAPPING: pickedup -> pickedup
+# MAPPING: nextmonsterlocation -> nextmonsterlocation
+# MAPPING: armed -> armed
+# MAPPING: monsterat -> monsterat
+# MAPPING: slomo-time -> slomo-time
+# MAPPING: use -> use
+# MAPPING: quiversize -> quiversize
+# MAPPING: min -> min
+# MAPPING: armor -> armor
+# MAPPING: monsterstrength -> monsterstrength
+# MAPPING: + -> +
+# MAPPING: attackedbymonster -> attackedbymonster
+# MAPPING: - -> -
+# MAPPING: maxhealth -> maxhealth
+# MAPPING: cellnearmonster -> cellnearmonster
+# MAPPING: weaponstrength -> weaponstrength
+# MAPPING: enhancedspeed -> enhancedspeed
+# MAPPING: health -> health
+# MAPPING: location -> location
+# MAPPING: adjacent -> adjacent
+# MAPPING: between -> between
+# MAPPING: provoked -> provoked
+# MAPPING: quarterspeed -> quarterspeed
+# MAPPING: maxtime -> maxtime
+# MAPPING: samelocation -> samelocation
+# MAPPING: attackedby2ndmonster -> attackedby2ndmonster
+# MAPPING: herodefense -> herodefense
+# MAPPING: wearing -> wearing
+# MAPPING: direction -> direction
+# MAPPING: currentlyenhancedspeed -> currentlyenhancedspeed
+# MAPPING: monster -> monster
+# MAPPING: herooffense -> herooffense
+# MAPPING: read -> read
+# MAPPING: relativespeed -> relativespeed
+# MAPPING: nstepstowardshero -> nstepstowardshero
+# MAPPING: totalmonsterdamage -> totalmonsterdamage
+# MAPPING: currentlyenhancedstrength -> currentlyenhancedstrength
+# MAPPING: succ -> succ
+# MAPPING: attackedbysomemonster -> attackedbysomemonster
+# MAPPING: enhancedstrength -> enhancedstrength
+# MAPPING: monsterattacked -> monsterattacked
+# MAPPING: burden -> burden
+# MAPPING: currentlyasleep -> currentlyasleep
+# MAPPING: invisible -> invisible
+# MAPPING: traversible -> traversible
+# MAPPING: throw -> throw
+# MAPPING: decrementsburden -> decrementsburden
+# MAPPING: monsterspeed -> monsterspeed
+# MAPPING: currentlyinvisible -> currentlyinvisible
+# MAPPING: room -> room
+# MAPPING: onesteptowardshero -> onesteptowardshero
+# MAPPING: amountofmonsterdamage -> amountofmonsterdamage
+# MAPPING: weapon -> weapon
+# MAPPING: drop -> drop
+# MAPPING: hitbyarrow -> hitbyarrow
+# MAPPING: diff -> diff
+# MAPPING: armorstrength -> armorstrength
+# MAPPING: changeweapon -> changeweapon
+# MAPPING: carrying -> carrying
+# MAPPING: quaff -> quaff
+# MAPPING: item -> item
+# MAPPING: singlesteptowardshero -> singlesteptowardshero
+# MAPPING: blocked -> blocked
+# MAPPING: currentlyenhancedarmor -> currentlyenhancedarmor
+# MAPPING: totalmonsterdamage2 -> totalmonsterdamage2
+# MAPPING: scroll -> scroll
+# MAPPING: totalmonsterdamage1 -> totalmonsterdamage1
+# MAPPING: hero -> hero
+# MAPPING: gold -> gold
+# MAPPING: bow -> bow
+# MAPPING: restorehealth -> armorenhance
+# MAPPING: restorehealth -> restorehealth
+# MAPPING: restorehealth -> sleepinduce
+# MAPPING: strength -> invisibility
+# MAPPING: strength -> strength
+# MAPPING: strength -> speed
+# MAPPING: speed -> invisibility
+# MAPPING: speed -> strength
+# MAPPING: speed -> speed
+# MAPPING: arrow -> arrow
+# MAPPING: armorenhance -> armorenhance
+# MAPPING: armorenhance -> restorehealth
+# MAPPING: armorenhance -> sleepinduce
+# MAPPING: invisibility -> invisibility
+# MAPPING: invisibility -> strength
+# MAPPING: invisibility -> speed
+# MAPPING: sleepinduce -> armorenhance
+# MAPPING: sleepinduce -> restorehealth
+# MAPPING: sleepinduce -> sleepinduce
+# MAPPING: amulet -> amulet
+# MAPPING: snake -> snake
+# MAPPING: snake -> hobgoblin
+# MAPPING: hobgoblin -> snake
+# MAPPING: hobgoblin -> hobgoblin
+# MAPPING: potion2 -> potion2
+# MAPPING: potion2 -> potion1
+# MAPPING: scroll1 -> scroll1
+# MAPPING: potion1 -> potion2
+# MAPPING: potion1 -> potion1
+# MAPPING: weapon1 -> weapon1
+# MAPPING: mace -> mace
+# MAPPING: kestral -> bat
+# MAPPING: kestral -> kestral
+# MAPPING: bat -> bat
+# MAPPING: bat -> kestral
+# MAPPING: sword -> sword
+# MAPPING: ringmail -> ringmail
+# MAPPING: ringmail -> bandedmail
+# MAPPING: hobgoblin1 -> hobgoblin1
+# MAPPING: hobgoblin1 -> snake1
+# MAPPING: bandedmail -> ringmail
+# MAPPING: bandedmail -> bandedmail
+# MAPPING: snake1 -> hobgoblin1
+# MAPPING: snake1 -> snake1
+sp {elaborate*goodthing*146588569041
+   (state <s> ^good-things <gt>)
+-->
+   (<gt> ^indicator <in>)
+   (<in> ^index 1
+         ^type change
+         ^key 1001)
+}
+sp {apply*usi*indicator-detected*146588569042
+   (state <s> ^name game
+              ^operator.name update-search-info
+              ^gs <gs>
+              ^old-gs <old-gs>
+              ^current-evaluation-depth <ced>
+              ^top-state.good-things.indicator <in>
+              -^used-goodthing <in>)
+    (<in> ^key 1001)
+    (<gs> ^burden <predicate>)
+    (<old-gs> ^burden <old-predicate>)
+    (<predicate> ^p1 1)
+    (<old-predicate> ^p1 0)
+-->
+   (<s> ^present-indicator <in>)
+   #(<s> ^current-evaluation-depth <ced> -
+   #                               (+ <ced> 1))
+   (write (crlf) |Indicator: change of burden p1 from 0 to 1|)
+}
+sp {elaborate*goodthing*146588569043
+   (state <s> ^good-things <gt>)
+-->
+   (<gt> ^indicator <in>)
+   (<in> ^index 1
+         ^type increase
+         ^key 1002)
+}
+sp {apply*usi*indicator-detected*146588569044
+   (state <s> ^name game
+              ^operator.name update-search-info
+              ^gs <gs>
+              ^old-gs <old-gs>
+              ^current-evaluation-depth <ced>
+              ^top-state.good-things.indicator <in>
+              -^used-goodthing <in>)
+    (<in> ^key 1002)
+    (<gs> ^burden <predicate>)
+    (<old-gs> ^burden <old-predicate>)
+    (<predicate> ^p1 <new-num>)
+    (<old-predicate> ^p1 {< <new-num> <old-num>})
+-->
+   (<s> ^present-indicator <in>)
+   #(<s> ^current-evaluation-depth <ced> -
+   #                               (+ <ced> 1))
+   (write (crlf) |Indicator: increase of burden p1|)
+}
+sp {elaborate*goodthing*146588569045
+   (state <s> ^good-things <gt>)
+-->
+   (<gt> ^indicator <in>)
+   (<in> ^index 2
+         ^type addition
+         ^key 1003)
+}
+sp {apply*usi*indicator-detected*146588569046
+   (state <s> ^name game
+              ^operator.name update-search-info
+              ^gs <gs>
+              ^old-gs <old-gs>
+              ^current-evaluation-depth <ced>
+              ^top-state.good-things.indicator <in>
+              -^used-goodthing <in>)
+    (<in> ^key 1003)
+    (<gs> ^carrying <predicate>)
+    (<predicate> ^p1 weapon1)
+  -{(<old-gs> ^carrying <old-predicate>)
+    (<old-predicate> ^p1 weapon1)}
+-->
+   (<s> ^present-indicator <in>)
+   #(<s> ^current-evaluation-depth <ced> -
+   #                               (+ <ced> 1))
+   (write (crlf) |Indicator: appearence of carrying ^p1 weapon1|)
+}
+sp {elaborate*goodthing*146588569047
+   (state <s> ^good-things <gt>)
+-->
+   (<gt> ^indicator <in>)
+   (<in> ^index 3
+         ^type addition
+         ^key 1004)
+}
+sp {apply*usi*indicator-detected*146588569048
+   (state <s> ^name game
+              ^operator.name update-search-info
+              ^gs <gs>
+              ^old-gs <old-gs>
+              ^current-evaluation-depth <ced>
+              ^top-state.good-things.indicator <in>
+              -^used-goodthing <in>)
+    (<in> ^key 1004)
+    (<gs> ^wielding <predicate>)
+    (<predicate> ^p1 weapon1)
+  -{(<old-gs> ^wielding <old-predicate>)
+    (<old-predicate> ^p1 weapon1)}
+-->
+   (<s> ^present-indicator <in>)
+   #(<s> ^current-evaluation-depth <ced> -
+   #                               (+ <ced> 1))
+   (write (crlf) |Indicator: appearence of wielding ^p1 weapon1|)
+}
+sp {elaborate*goodthing*146588569049
+   (state <s> ^good-things <gt>)
+-->
+   (<gt> ^indicator <in>)
+   (<in> ^index 4
+         ^type change
+         ^key 1005)
+}
+sp {apply*usi*indicator-detected*1465885690410
+   (state <s> ^name game
+              ^operator.name update-search-info
+              ^gs <gs>
+              ^old-gs <old-gs>
+              ^current-evaluation-depth <ced>
+              ^top-state.good-things.indicator <in>
+              -^used-goodthing <in>)
+    (<in> ^key 1005)
+    (<gs> ^health <predicate>)
+    (<old-gs> ^health <old-predicate>)
+    (<predicate> ^p2 2)
+    (<old-predicate> ^p2 4)
+    (<predicate> ^p1 hero)
+    (<old-predicate> ^p1 hero)
+-->
+   (<s> ^present-indicator <in>)
+   #(<s> ^current-evaluation-depth <ced> -
+   #                               (+ <ced> 1))
+   (write (crlf) |Indicator: change of health p2 from 4 to 2|)
+}
+sp {elaborate*goodthing*1465885690411
+   (state <s> ^good-things <gt>)
+-->
+   (<gt> ^indicator <in>)
+   (<in> ^index 4
+         ^type decrease
+         ^key 1006)
+}
+sp {apply*usi*indicator-detected*1465885690412
+   (state <s> ^name game
+              ^operator.name update-search-info
+              ^gs <gs>
+              ^old-gs <old-gs>
+              ^current-evaluation-depth <ced>
+              ^top-state.good-things.indicator <in>
+              -^used-goodthing <in>)
+    (<in> ^key 1006)
+    (<gs> ^health <predicate>)
+    (<old-gs> ^health <old-predicate>)
+    (<predicate> ^p2 <new-num>)
+    (<old-predicate> ^p2 {> <new-num> <old-num>})
+    (<predicate> ^p1 hero)
+    (<old-predicate> ^p1 hero)
+-->
+   (<s> ^present-indicator <in>)
+   #(<s> ^current-evaluation-depth <ced> -
+   #                               (+ <ced> 1))
+   (write (crlf) |Indicator: decrease of health p2|)
+}
+sp {elaborate*goodthing*1465885690413
+   (state <s> ^good-things <gt>)
+-->
+   (<gt> ^indicator <in>)
+   (<in> ^index 5
+         ^type change
+         ^key 1007)
+}
+sp {apply*usi*indicator-detected*1465885690414
+   (state <s> ^name game
+              ^operator.name update-search-info
+              ^gs <gs>
+              ^old-gs <old-gs>
+              ^current-evaluation-depth <ced>
+              ^top-state.good-things.indicator <in>
+              -^used-goodthing <in>)
+    (<in> ^key 1007)
+    (<gs> ^health <predicate>)
+    (<old-gs> ^health <old-predicate>)
+    (<predicate> ^p2 3)
+    (<old-predicate> ^p2 2)
+    (<predicate> ^p1 hero)
+    (<old-predicate> ^p1 hero)
+-->
+   (<s> ^present-indicator <in>)
+   #(<s> ^current-evaluation-depth <ced> -
+   #                               (+ <ced> 1))
+   (write (crlf) |Indicator: change of health p2 from 2 to 3|)
+}
+sp {elaborate*goodthing*1465885690415
+   (state <s> ^good-things <gt>)
+-->
+   (<gt> ^indicator <in>)
+   (<in> ^index 5
+         ^type increase
+         ^key 1008)
+}
+sp {apply*usi*indicator-detected*1465885690416
+   (state <s> ^name game
+              ^operator.name update-search-info
+              ^gs <gs>
+              ^old-gs <old-gs>
+              ^current-evaluation-depth <ced>
+              ^top-state.good-things.indicator <in>
+              -^used-goodthing <in>)
+    (<in> ^key 1008)
+    (<gs> ^health <predicate>)
+    (<old-gs> ^health <old-predicate>)
+    (<predicate> ^p2 <new-num>)
+    (<old-predicate> ^p2 {< <new-num> <old-num>})
+    (<predicate> ^p1 hero)
+    (<old-predicate> ^p1 hero)
+-->
+   (<s> ^present-indicator <in>)
+   #(<s> ^current-evaluation-depth <ced> -
+   #                               (+ <ced> 1))
+   (write (crlf) |Indicator: increase of health p2|)
+}
+sp {elaborate*goodthing*1465885690417
+   (state <s> ^good-things <gt>)
+-->
+   (<gt> ^indicator <in>)
+   (<in> ^index 6
+         ^type change
+         ^key 1009)
+}
+sp {apply*usi*indicator-detected*1465885690418
+   (state <s> ^name game
+              ^operator.name update-search-info
+              ^gs <gs>
+              ^old-gs <old-gs>
+              ^current-evaluation-depth <ced>
+              ^top-state.good-things.indicator <in>
+              -^used-goodthing <in>)
+    (<in> ^key 1009)
+    (<gs> ^health <predicate>)
+    (<old-gs> ^health <old-predicate>)
+    (<predicate> ^p2 4)
+    (<old-predicate> ^p2 3)
+    (<predicate> ^p1 hero)
+    (<old-predicate> ^p1 hero)
+-->
+   (<s> ^present-indicator <in>)
+   #(<s> ^current-evaluation-depth <ced> -
+   #                               (+ <ced> 1))
+   (write (crlf) |Indicator: change of health p2 from 3 to 4|)
+}
+sp {elaborate*goodthing*1465885690419
+   (state <s> ^good-things <gt>)
+-->
+   (<gt> ^indicator <in>)
+   (<in> ^index 6
+         ^type increase
+         ^key 1010)
+}
+sp {apply*usi*indicator-detected*1465885690420
+   (state <s> ^name game
+              ^operator.name update-search-info
+              ^gs <gs>
+              ^old-gs <old-gs>
+              ^current-evaluation-depth <ced>
+              ^top-state.good-things.indicator <in>
+              -^used-goodthing <in>)
+    (<in> ^key 1010)
+    (<gs> ^health <predicate>)
+    (<old-gs> ^health <old-predicate>)
+    (<predicate> ^p2 <new-num>)
+    (<old-predicate> ^p2 {< <new-num> <old-num>})
+    (<predicate> ^p1 hero)
+    (<old-predicate> ^p1 hero)
+-->
+   (<s> ^present-indicator <in>)
+   #(<s> ^current-evaluation-depth <ced> -
+   #                               (+ <ced> 1))
+   (write (crlf) |Indicator: increase of health p2|)
+}
+sp {elaborate*goodthing*1465885690421
+   (state <s> ^good-things <gt>)
+-->
+   (<gt> ^indicator <in>)
+   (<in> ^index 7
+         ^type change
+         ^key 1011)
+}
+sp {apply*usi*indicator-detected*1465885690422
+   (state <s> ^name game
+              ^operator.name update-search-info
+              ^gs <gs>
+              ^old-gs <old-gs>
+              ^current-evaluation-depth <ced>
+              ^top-state.good-things.indicator <in>
+              -^used-goodthing <in>)
+    (<in> ^key 1011)
+    (<gs> ^health <predicate>)
+    (<old-gs> ^health <old-predicate>)
+    (<predicate> ^p2 2)
+    (<old-predicate> ^p2 4)
+    (<predicate> ^p1 hero)
+    (<old-predicate> ^p1 hero)
+-->
+   (<s> ^present-indicator <in>)
+   #(<s> ^current-evaluation-depth <ced> -
+   #                               (+ <ced> 1))
+   (write (crlf) |Indicator: change of health p2 from 4 to 2|)
+}
+sp {elaborate*goodthing*1465885690423
+   (state <s> ^good-things <gt>)
+-->
+   (<gt> ^indicator <in>)
+   (<in> ^index 7
+         ^type decrease
+         ^key 1012)
+}
+sp {apply*usi*indicator-detected*1465885690424
+   (state <s> ^name game
+              ^operator.name update-search-info
+              ^gs <gs>
+              ^old-gs <old-gs>
+              ^current-evaluation-depth <ced>
+              ^top-state.good-things.indicator <in>
+              -^used-goodthing <in>)
+    (<in> ^key 1012)
+    (<gs> ^health <predicate>)
+    (<old-gs> ^health <old-predicate>)
+    (<predicate> ^p2 <new-num>)
+    (<old-predicate> ^p2 {> <new-num> <old-num>})
+    (<predicate> ^p1 hero)
+    (<old-predicate> ^p1 hero)
+-->
+   (<s> ^present-indicator <in>)
+   #(<s> ^current-evaluation-depth <ced> -
+   #                               (+ <ced> 1))
+   (write (crlf) |Indicator: decrease of health p2|)
+}
+sp {elaborate*goodthing*1465885690425
+   (state <s> ^good-things <gt>)
+-->
+   (<gt> ^indicator <in>)
+   (<in> ^index 8
+         ^type change
+         ^key 1013)
+}
+sp {apply*usi*indicator-detected*1465885690426
+   (state <s> ^name game
+              ^operator.name update-search-info
+              ^gs <gs>
+              ^old-gs <old-gs>
+              ^current-evaluation-depth <ced>
+              ^top-state.good-things.indicator <in>
+              -^used-goodthing <in>)
+    (<in> ^key 1013)
+    (<gs> ^health <predicate>)
+    (<old-gs> ^health <old-predicate>)
+    (<predicate> ^p2 3)
+    (<old-predicate> ^p2 2)
+    (<predicate> ^p1 hero)
+    (<old-predicate> ^p1 hero)
+-->
+   (<s> ^present-indicator <in>)
+   #(<s> ^current-evaluation-depth <ced> -
+   #                               (+ <ced> 1))
+   (write (crlf) |Indicator: change of health p2 from 2 to 3|)
+}
+sp {elaborate*goodthing*1465885690427
+   (state <s> ^good-things <gt>)
+-->
+   (<gt> ^indicator <in>)
+   (<in> ^index 8
+         ^type increase
+         ^key 1014)
+}
+sp {apply*usi*indicator-detected*1465885690428
+   (state <s> ^name game
+              ^operator.name update-search-info
+              ^gs <gs>
+              ^old-gs <old-gs>
+              ^current-evaluation-depth <ced>
+              ^top-state.good-things.indicator <in>
+              -^used-goodthing <in>)
+    (<in> ^key 1014)
+    (<gs> ^health <predicate>)
+    (<old-gs> ^health <old-predicate>)
+    (<predicate> ^p2 <new-num>)
+    (<old-predicate> ^p2 {< <new-num> <old-num>})
+    (<predicate> ^p1 hero)
+    (<old-predicate> ^p1 hero)
+-->
+   (<s> ^present-indicator <in>)
+   #(<s> ^current-evaluation-depth <ced> -
+   #                               (+ <ced> 1))
+   (write (crlf) |Indicator: increase of health p2|)
+}
+sp {elaborate*goodthing*1465885690429
+   (state <s> ^good-things <gt>)
+-->
+   (<gt> ^indicator <in>)
+   (<in> ^index 9
+         ^type change
+         ^key 1015)
+}
+sp {apply*usi*indicator-detected*1465885690430
+   (state <s> ^name game
+              ^operator.name update-search-info
+              ^gs <gs>
+              ^old-gs <old-gs>
+              ^current-evaluation-depth <ced>
+              ^top-state.good-things.indicator <in>
+              -^used-goodthing <in>)
+    (<in> ^key 1015)
+    (<gs> ^health <predicate>)
+    (<old-gs> ^health <old-predicate>)
+    (<predicate> ^p2 4)
+    (<old-predicate> ^p2 3)
+    (<predicate> ^p1 hero)
+    (<old-predicate> ^p1 hero)
+-->
+   (<s> ^present-indicator <in>)
+   #(<s> ^current-evaluation-depth <ced> -
+   #                               (+ <ced> 1))
+   (write (crlf) |Indicator: change of health p2 from 3 to 4|)
+}
+sp {elaborate*goodthing*1465885690431
+   (state <s> ^good-things <gt>)
+-->
+   (<gt> ^indicator <in>)
+   (<in> ^index 9
+         ^type increase
+         ^key 1016)
+}
+sp {apply*usi*indicator-detected*1465885690432
+   (state <s> ^name game
+              ^operator.name update-search-info
+              ^gs <gs>
+              ^old-gs <old-gs>
+              ^current-evaluation-depth <ced>
+              ^top-state.good-things.indicator <in>
+              -^used-goodthing <in>)
+    (<in> ^key 1016)
+    (<gs> ^health <predicate>)
+    (<old-gs> ^health <old-predicate>)
+    (<predicate> ^p2 <new-num>)
+    (<old-predicate> ^p2 {< <new-num> <old-num>})
+    (<predicate> ^p1 hero)
+    (<old-predicate> ^p1 hero)
+-->
+   (<s> ^present-indicator <in>)
+   #(<s> ^current-evaluation-depth <ced> -
+   #                               (+ <ced> 1))
+   (write (crlf) |Indicator: increase of health p2|)
+}
+sp {elaborate*goodthing*1465885690433
+   (state <s> ^good-things <gt>)
+-->
+   (<gt> ^indicator <in>)
+   (<in> ^index 10
+         ^type change
+         ^key 1017)
+}
+sp {apply*usi*indicator-detected*1465885690434
+   (state <s> ^name game
+              ^operator.name update-search-info
+              ^gs <gs>
+              ^old-gs <old-gs>
+              ^current-evaluation-depth <ced>
+              ^top-state.good-things.indicator <in>
+              -^used-goodthing <in>)
+    (<in> ^key 1017)
+    (<gs> ^burden <predicate>)
+    (<old-gs> ^burden <old-predicate>)
+    (<predicate> ^p1 2)
+    (<old-predicate> ^p1 1)
+-->
+   (<s> ^present-indicator <in>)
+   #(<s> ^current-evaluation-depth <ced> -
+   #                               (+ <ced> 1))
+   (write (crlf) |Indicator: change of burden p1 from 1 to 2|)
+}
+sp {elaborate*goodthing*1465885690435
+   (state <s> ^good-things <gt>)
+-->
+   (<gt> ^indicator <in>)
+   (<in> ^index 10
+         ^type increase
+         ^key 1018)
+}
+sp {apply*usi*indicator-detected*1465885690436
+   (state <s> ^name game
+              ^operator.name update-search-info
+              ^gs <gs>
+              ^old-gs <old-gs>
+              ^current-evaluation-depth <ced>
+              ^top-state.good-things.indicator <in>
+              -^used-goodthing <in>)
+    (<in> ^key 1018)
+    (<gs> ^burden <predicate>)
+    (<old-gs> ^burden <old-predicate>)
+    (<predicate> ^p1 <new-num>)
+    (<old-predicate> ^p1 {< <new-num> <old-num>})
+-->
+   (<s> ^present-indicator <in>)
+   #(<s> ^current-evaluation-depth <ced> -
+   #                               (+ <ced> 1))
+   (write (crlf) |Indicator: increase of burden p1|)
+}
+sp {elaborate*goodthing*1465885690437
+   (state <s> ^good-things <gt>)
+-->
+   (<gt> ^indicator <in>)
+   (<in> ^index 11
+         ^type addition
+         ^key 1019)
+}
+sp {apply*usi*indicator-detected*1465885690438
+   (state <s> ^name game
+              ^operator.name update-search-info
+              ^gs <gs>
+              ^old-gs <old-gs>
+              ^current-evaluation-depth <ced>
+              ^top-state.good-things.indicator <in>
+              -^used-goodthing <in>)
+    (<in> ^key 1019)
+    (<gs> ^carrying <predicate>)
+    (<predicate> ^p1 amulet)
+  -{(<old-gs> ^carrying <old-predicate>)
+    (<old-predicate> ^p1 amulet)}
+-->
+   (<s> ^present-indicator <in>)
+   #(<s> ^current-evaluation-depth <ced> -
+   #                               (+ <ced> 1))
+   (write (crlf) |Indicator: appearence of carrying ^p1 amulet|)
+}
+sp {elaborate*goodthing*1465885690439
+   (state <s> ^good-things <gt>)
+-->
+   (<gt> ^indicator <in>)
+   (<in> ^index 12
+         ^type change
+         ^key 1020)
+}
+sp {apply*usi*indicator-detected*1465885690440
+   (state <s> ^name game
+              ^operator.name update-search-info
+              ^gs <gs>
+              ^old-gs <old-gs>
+              ^current-evaluation-depth <ced>
+              ^top-state.good-things.indicator <in>
+              -^used-goodthing <in>)
+    (<in> ^key 1020)
+    (<gs> ^health <predicate>)
+    (<old-gs> ^health <old-predicate>)
+    (<predicate> ^p2 1)
+    (<old-predicate> ^p2 4)
+    (<predicate> ^p1 hero)
+    (<old-predicate> ^p1 hero)
+-->
+   (<s> ^present-indicator <in>)
+   #(<s> ^current-evaluation-depth <ced> -
+   #                               (+ <ced> 1))
+   (write (crlf) |Indicator: change of health p2 from 4 to 1|)
+}
+sp {elaborate*goodthing*1465885690441
+   (state <s> ^good-things <gt>)
+-->
+   (<gt> ^indicator <in>)
+   (<in> ^index 12
+         ^type decrease
+         ^key 1021)
+}
+sp {apply*usi*indicator-detected*1465885690442
+   (state <s> ^name game
+              ^operator.name update-search-info
+              ^gs <gs>
+              ^old-gs <old-gs>
+              ^current-evaluation-depth <ced>
+              ^top-state.good-things.indicator <in>
+              -^used-goodthing <in>)
+    (<in> ^key 1021)
+    (<gs> ^health <predicate>)
+    (<old-gs> ^health <old-predicate>)
+    (<predicate> ^p2 <new-num>)
+    (<old-predicate> ^p2 {> <new-num> <old-num>})
+    (<predicate> ^p1 hero)
+    (<old-predicate> ^p1 hero)
+-->
+   (<s> ^present-indicator <in>)
+   #(<s> ^current-evaluation-depth <ced> -
+   #                               (+ <ced> 1))
+   (write (crlf) |Indicator: decrease of health p2|)
+}
+sp {elaborate*goodthing*1465885690443
+   (state <s> ^good-things <gt>)
+-->
+   (<gt> ^indicator <in>)
+   (<in> ^index 13
+         ^type change
+         ^key 1022)
+}
+sp {apply*usi*indicator-detected*1465885690444
+   (state <s> ^name game
+              ^operator.name update-search-info
+              ^gs <gs>
+              ^old-gs <old-gs>
+              ^current-evaluation-depth <ced>
+              ^top-state.good-things.indicator <in>
+              -^used-goodthing <in>)
+    (<in> ^key 1022)
+    (<gs> ^health <predicate>)
+    (<old-gs> ^health <old-predicate>)
+    (<predicate> ^p2 2)
+    (<old-predicate> ^p2 1)
+    (<predicate> ^p1 hero)
+    (<old-predicate> ^p1 hero)
+-->
+   (<s> ^present-indicator <in>)
+   #(<s> ^current-evaluation-depth <ced> -
+   #                               (+ <ced> 1))
+   (write (crlf) |Indicator: change of health p2 from 1 to 2|)
+}
+sp {elaborate*goodthing*1465885690445
+   (state <s> ^good-things <gt>)
+-->
+   (<gt> ^indicator <in>)
+   (<in> ^index 13
+         ^type increase
+         ^key 1023)
+}
+sp {apply*usi*indicator-detected*1465885690446
+   (state <s> ^name game
+              ^operator.name update-search-info
+              ^gs <gs>
+              ^old-gs <old-gs>
+              ^current-evaluation-depth <ced>
+              ^top-state.good-things.indicator <in>
+              -^used-goodthing <in>)
+    (<in> ^key 1023)
+    (<gs> ^health <predicate>)
+    (<old-gs> ^health <old-predicate>)
+    (<predicate> ^p2 <new-num>)
+    (<old-predicate> ^p2 {< <new-num> <old-num>})
+    (<predicate> ^p1 hero)
+    (<old-predicate> ^p1 hero)
+-->
+   (<s> ^present-indicator <in>)
+   #(<s> ^current-evaluation-depth <ced> -
+   #                               (+ <ced> 1))
+   (write (crlf) |Indicator: increase of health p2|)
+}
+sp {elaborate*goodthing*1465885690447
+   (state <s> ^good-things <gt>)
+-->
+   (<gt> ^indicator <in>)
+   (<in> ^index 14
+         ^type change
+         ^key 1024)
+}
+sp {apply*usi*indicator-detected*1465885690448
+   (state <s> ^name game
+              ^operator.name update-search-info
+              ^gs <gs>
+              ^old-gs <old-gs>
+              ^current-evaluation-depth <ced>
+              ^top-state.good-things.indicator <in>
+              -^used-goodthing <in>)
+    (<in> ^key 1024)
+    (<gs> ^burden <predicate>)
+    (<old-gs> ^burden <old-predicate>)
+    (<predicate> ^p1 3)
+    (<old-predicate> ^p1 2)
+-->
+   (<s> ^present-indicator <in>)
+   #(<s> ^current-evaluation-depth <ced> -
+   #                               (+ <ced> 1))
+   (write (crlf) |Indicator: change of burden p1 from 2 to 3|)
+}
+sp {elaborate*goodthing*1465885690449
+   (state <s> ^good-things <gt>)
+-->
+   (<gt> ^indicator <in>)
+   (<in> ^index 14
+         ^type increase
+         ^key 1025)
+}
+sp {apply*usi*indicator-detected*1465885690450
+   (state <s> ^name game
+              ^operator.name update-search-info
+              ^gs <gs>
+              ^old-gs <old-gs>
+              ^current-evaluation-depth <ced>
+              ^top-state.good-things.indicator <in>
+              -^used-goodthing <in>)
+    (<in> ^key 1025)
+    (<gs> ^burden <predicate>)
+    (<old-gs> ^burden <old-predicate>)
+    (<predicate> ^p1 <new-num>)
+    (<old-predicate> ^p1 {< <new-num> <old-num>})
+-->
+   (<s> ^present-indicator <in>)
+   #(<s> ^current-evaluation-depth <ced> -
+   #                               (+ <ced> 1))
+   (write (crlf) |Indicator: increase of burden p1|)
+}
+sp {elaborate*goodthing*1465885690451
+   (state <s> ^good-things <gt>)
+-->
+   (<gt> ^indicator <in>)
+   (<in> ^index 15
+         ^type addition
+         ^key 1026)
+}
+sp {apply*usi*indicator-detected*1465885690452
+   (state <s> ^name game
+              ^operator.name update-search-info
+              ^gs <gs>
+              ^old-gs <old-gs>
+              ^current-evaluation-depth <ced>
+              ^top-state.good-things.indicator <in>
+              -^used-goodthing <in>)
+    (<in> ^key 1026)
+    (<gs> ^carrying <predicate>)
+    (<predicate> ^p1 potion2)
+  -{(<old-gs> ^carrying <old-predicate>)
+    (<old-predicate> ^p1 potion2)}
+-->
+   (<s> ^present-indicator <in>)
+   #(<s> ^current-evaluation-depth <ced> -
+   #                               (+ <ced> 1))
+   (write (crlf) |Indicator: appearence of carrying ^p1 potion2|)
+}
+sp {elaborate*goodthing*1465885690453
+   (state <s> ^good-things <gt>)
+-->
+   (<gt> ^indicator <in>)
+   (<in> ^index 15
+         ^type addition
+         ^key 1027)
+}
+sp {apply*usi*indicator-detected*1465885690454
+   (state <s> ^name game
+              ^operator.name update-search-info
+              ^gs <gs>
+              ^old-gs <old-gs>
+              ^current-evaluation-depth <ced>
+              ^top-state.good-things.indicator <in>
+              -^used-goodthing <in>)
+    (<in> ^key 1027)
+    (<gs> ^carrying <predicate>)
+    (<predicate> ^p1 potion1)
+  -{(<old-gs> ^carrying <old-predicate>)
+    (<old-predicate> ^p1 potion1)}
+-->
+   (<s> ^present-indicator <in>)
+   #(<s> ^current-evaluation-depth <ced> -
+   #                               (+ <ced> 1))
+   (write (crlf) |Indicator: appearence of carrying ^p1 potion1|)
+}
+sp {elaborate*goodthing*1465885690455
+   (state <s> ^good-things <gt>)
+-->
+   (<gt> ^indicator <in>)
+   (<in> ^index 16
+         ^type change
+         ^key 1028)
+}
+sp {apply*usi*indicator-detected*1465885690456
+   (state <s> ^name game
+              ^operator.name update-search-info
+              ^gs <gs>
+              ^old-gs <old-gs>
+              ^current-evaluation-depth <ced>
+              ^top-state.good-things.indicator <in>
+              -^used-goodthing <in>)
+    (<in> ^key 1028)
+    (<gs> ^health <predicate>)
+    (<old-gs> ^health <old-predicate>)
+    (<predicate> ^p2 3)
+    (<old-predicate> ^p2 2)
+    (<predicate> ^p1 hero)
+    (<old-predicate> ^p1 hero)
+-->
+   (<s> ^present-indicator <in>)
+   #(<s> ^current-evaluation-depth <ced> -
+   #                               (+ <ced> 1))
+   (write (crlf) |Indicator: change of health p2 from 2 to 3|)
+}
+sp {elaborate*goodthing*1465885690457
+   (state <s> ^good-things <gt>)
+-->
+   (<gt> ^indicator <in>)
+   (<in> ^index 16
+         ^type increase
+         ^key 1029)
+}
+sp {apply*usi*indicator-detected*1465885690458
+   (state <s> ^name game
+              ^operator.name update-search-info
+              ^gs <gs>
+              ^old-gs <old-gs>
+              ^current-evaluation-depth <ced>
+              ^top-state.good-things.indicator <in>
+              -^used-goodthing <in>)
+    (<in> ^key 1029)
+    (<gs> ^health <predicate>)
+    (<old-gs> ^health <old-predicate>)
+    (<predicate> ^p2 <new-num>)
+    (<old-predicate> ^p2 {< <new-num> <old-num>})
+    (<predicate> ^p1 hero)
+    (<old-predicate> ^p1 hero)
+-->
+   (<s> ^present-indicator <in>)
+   #(<s> ^current-evaluation-depth <ced> -
+   #                               (+ <ced> 1))
+   (write (crlf) |Indicator: increase of health p2|)
+}
+sp {elaborate*goodthing*1465885690459
+   (state <s> ^good-things <gt>)
+-->
+   (<gt> ^indicator <in>)
+   (<in> ^index 17
+         ^type change
+         ^key 1030)
+}
+sp {apply*usi*indicator-detected*1465885690460
+   (state <s> ^name game
+              ^operator.name update-search-info
+              ^gs <gs>
+              ^old-gs <old-gs>
+              ^current-evaluation-depth <ced>
+              ^top-state.good-things.indicator <in>
+              -^used-goodthing <in>)
+    (<in> ^key 1030)
+    (<gs> ^health <predicate>)
+    (<old-gs> ^health <old-predicate>)
+    (<predicate> ^p2 4)
+    (<old-predicate> ^p2 3)
+    (<predicate> ^p1 hero)
+    (<old-predicate> ^p1 hero)
+-->
+   (<s> ^present-indicator <in>)
+   #(<s> ^current-evaluation-depth <ced> -
+   #                               (+ <ced> 1))
+   (write (crlf) |Indicator: change of health p2 from 3 to 4|)
+}
+sp {elaborate*goodthing*1465885690461
+   (state <s> ^good-things <gt>)
+-->
+   (<gt> ^indicator <in>)
+   (<in> ^index 17
+         ^type increase
+         ^key 1031)
+}
+sp {apply*usi*indicator-detected*1465885690462
+   (state <s> ^name game
+              ^operator.name update-search-info
+              ^gs <gs>
+              ^old-gs <old-gs>
+              ^current-evaluation-depth <ced>
+              ^top-state.good-things.indicator <in>
+              -^used-goodthing <in>)
+    (<in> ^key 1031)
+    (<gs> ^health <predicate>)
+    (<old-gs> ^health <old-predicate>)
+    (<predicate> ^p2 <new-num>)
+    (<old-predicate> ^p2 {< <new-num> <old-num>})
+    (<predicate> ^p1 hero)
+    (<old-predicate> ^p1 hero)
+-->
+   (<s> ^present-indicator <in>)
+   #(<s> ^current-evaluation-depth <ced> -
+   #                               (+ <ced> 1))
+   (write (crlf) |Indicator: increase of health p2|)
+}
+# GEN TIME 0:00.13 real,0.10 user,0.02 sys
+# MAPPING: healthrestoredbyscroll -> healthrestoredbyscroll
+# MAPPING: burdenchanged -> burdenchanged
+# MAPPING: arrowthrown -> arrowthrown
+# MAPPING: odd -> odd
+# MAPPING: monsterismoving -> monsterismoving
+# MAPPING: even -> even
+# MAPPING: atexit -> atexit
+# MAPPING: heromoves -> heromoves
+# MAPPING: roomlocation -> roomlocation
+# MAPPING: weaponchange -> weaponchange
+# MAPPING: slomomonstermoving -> slomomonstermoving
+# MAPPING: nextcell -> nextcell
+# MAPPING: armored -> armored
+# MAPPING: step -> step
+# MAPPING: maxburden -> maxburden
+# MAPPING: int -> int
+# MAPPING: halfspeed -> halfspeed
+# MAPPING: corridor -> corridor
+# MAPPING: move -> move
+# MAPPING: relevantmonstercell -> relevantmonstercell
+# MAPPING: nextherolocation -> nextherolocation
+# MAPPING: wielding -> wielding
+# MAPPING: potion -> potion
+# MAPPING: asleep -> asleep
+# MAPPING: speednumber -> speednumber
+# MAPPING: enhancedarmor -> enhancedarmor
+# MAPPING: pickedup -> pickedup
+# MAPPING: nextmonsterlocation -> nextmonsterlocation
+# MAPPING: armed -> armed
+# MAPPING: monsterat -> monsterat
+# MAPPING: slomo-time -> slomo-time
+# MAPPING: use -> use
+# MAPPING: quiversize -> quiversize
+# MAPPING: min -> min
+# MAPPING: armor -> armor
+# MAPPING: monsterstrength -> monsterstrength
+# MAPPING: + -> +
+# MAPPING: attackedbymonster -> attackedbymonster
+# MAPPING: - -> -
+# MAPPING: maxhealth -> maxhealth
+# MAPPING: cellnearmonster -> cellnearmonster
+# MAPPING: weaponstrength -> weaponstrength
+# MAPPING: enhancedspeed -> enhancedspeed
+# MAPPING: health -> health
+# MAPPING: location -> location
+# MAPPING: adjacent -> adjacent
+# MAPPING: between -> between
+# MAPPING: provoked -> provoked
+# MAPPING: quarterspeed -> quarterspeed
+# MAPPING: maxtime -> maxtime
+# MAPPING: samelocation -> samelocation
+# MAPPING: attackedby2ndmonster -> attackedby2ndmonster
+# MAPPING: herodefense -> herodefense
+# MAPPING: wearing -> wearing
+# MAPPING: direction -> direction
+# MAPPING: currentlyenhancedspeed -> currentlyenhancedspeed
+# MAPPING: monster -> monster
+# MAPPING: herooffense -> herooffense
+# MAPPING: read -> read
+# MAPPING: relativespeed -> relativespeed
+# MAPPING: nstepstowardshero -> nstepstowardshero
+# MAPPING: totalmonsterdamage -> totalmonsterdamage
+# MAPPING: currentlyenhancedstrength -> currentlyenhancedstrength
+# MAPPING: succ -> succ
+# MAPPING: attackedbysomemonster -> attackedbysomemonster
+# MAPPING: enhancedstrength -> enhancedstrength
+# MAPPING: monsterattacked -> monsterattacked
+# MAPPING: burden -> burden
+# MAPPING: currentlyasleep -> currentlyasleep
+# MAPPING: invisible -> invisible
+# MAPPING: traversible -> traversible
+# MAPPING: throw -> throw
+# MAPPING: decrementsburden -> decrementsburden
+# MAPPING: monsterspeed -> monsterspeed
+# MAPPING: currentlyinvisible -> currentlyinvisible
+# MAPPING: room -> room
+# MAPPING: onesteptowardshero -> onesteptowardshero
+# MAPPING: amountofmonsterdamage -> amountofmonsterdamage
+# MAPPING: weapon -> weapon
+# MAPPING: drop -> drop
+# MAPPING: hitbyarrow -> hitbyarrow
+# MAPPING: diff -> diff
+# MAPPING: armorstrength -> armorstrength
+# MAPPING: changeweapon -> changeweapon
+# MAPPING: carrying -> carrying
+# MAPPING: quaff -> quaff
+# MAPPING: item -> item
+# MAPPING: singlesteptowardshero -> singlesteptowardshero
+# MAPPING: blocked -> blocked
+# MAPPING: currentlyenhancedarmor -> currentlyenhancedarmor
+# MAPPING: totalmonsterdamage2 -> totalmonsterdamage2
+# MAPPING: scroll -> scroll
+# MAPPING: totalmonsterdamage1 -> totalmonsterdamage1
+# MAPPING: hero -> hero
+# MAPPING: gold -> gold
+# MAPPING: bow -> bow
+# MAPPING: restorehealth -> armorenhance
+# MAPPING: restorehealth -> restorehealth
+# MAPPING: restorehealth -> sleepinduce
+# MAPPING: strength -> invisibility
+# MAPPING: strength -> strength
+# MAPPING: strength -> speed
+# MAPPING: speed -> invisibility
+# MAPPING: speed -> strength
+# MAPPING: speed -> speed
+# MAPPING: arrow -> arrow
+# MAPPING: armorenhance -> armorenhance
+# MAPPING: armorenhance -> restorehealth
+# MAPPING: armorenhance -> sleepinduce
+# MAPPING: invisibility -> invisibility
+# MAPPING: invisibility -> strength
+# MAPPING: invisibility -> speed
+# MAPPING: sleepinduce -> armorenhance
+# MAPPING: sleepinduce -> restorehealth
+# MAPPING: sleepinduce -> sleepinduce
+# MAPPING: amulet -> amulet
+# MAPPING: snake -> snake
+# MAPPING: snake -> hobgoblin
+# MAPPING: hobgoblin -> snake
+# MAPPING: hobgoblin -> hobgoblin
+# MAPPING: potion2 -> potion2
+# MAPPING: potion2 -> potion1
+# MAPPING: scroll1 -> scroll1
+# MAPPING: potion1 -> potion2
+# MAPPING: potion1 -> potion1
+# MAPPING: ringmail -> ringmail
+# MAPPING: kestral -> bat
+# MAPPING: kestral -> kestral
+# MAPPING: bat -> bat
+# MAPPING: bat -> kestral
+# MAPPING: armor1 -> armor1
+# MAPPING: sword -> sword
+# MAPPING: sword -> mace
+# MAPPING: mace -> sword
+# MAPPING: mace -> mace
+# MAPPING: hobgoblin1 -> hobgoblin1
+# MAPPING: hobgoblin1 -> snake1
+# MAPPING: bandedmail -> bandedmail
+# MAPPING: snake1 -> hobgoblin1
+# MAPPING: snake1 -> snake1
+sp {elaborate*goodthing*116958634691
+   (state <s> ^good-things <gt>)
+-->
+   (<gt> ^indicator <in>)
+   (<in> ^index 101
+         ^type change
+         ^key 1101)
+}
+sp {apply*usi*indicator-detected*116958634692
+   (state <s> ^name game
+              ^operator.name update-search-info
+              ^gs <gs>
+              ^old-gs <old-gs>
+              ^current-evaluation-depth <ced>
+              ^top-state.good-things.indicator <in>
+              -^used-goodthing <in>)
+    (<in> ^key 1101)
+    (<gs> ^burden <predicate>)
+    (<old-gs> ^burden <old-predicate>)
+    (<predicate> ^p1 1)
+    (<old-predicate> ^p1 0)
+-->
+   (<s> ^present-indicator <in>)
+   #(<s> ^current-evaluation-depth <ced> -
+   #                               (+ <ced> 1))
+   (write (crlf) |Indicator: change of burden p1 from 0 to 1|)
+}
+sp {elaborate*goodthing*116958634693
+   (state <s> ^good-things <gt>)
+-->
+   (<gt> ^indicator <in>)
+   (<in> ^index 101
+         ^type increase
+         ^key 1102)
+}
+sp {apply*usi*indicator-detected*116958634694
+   (state <s> ^name game
+              ^operator.name update-search-info
+              ^gs <gs>
+              ^old-gs <old-gs>
+              ^current-evaluation-depth <ced>
+              ^top-state.good-things.indicator <in>
+              -^used-goodthing <in>)
+    (<in> ^key 1102)
+    (<gs> ^burden <predicate>)
+    (<old-gs> ^burden <old-predicate>)
+    (<predicate> ^p1 <new-num>)
+    (<old-predicate> ^p1 {< <new-num> <old-num>})
+-->
+   (<s> ^present-indicator <in>)
+   #(<s> ^current-evaluation-depth <ced> -
+   #                               (+ <ced> 1))
+   (write (crlf) |Indicator: increase of burden p1|)
+}
+sp {elaborate*goodthing*116958634695
+   (state <s> ^good-things <gt>)
+-->
+   (<gt> ^indicator <in>)
+   (<in> ^index 102
+         ^type addition
+         ^key 1103)
+}
+sp {apply*usi*indicator-detected*116958634696
+   (state <s> ^name game
+              ^operator.name update-search-info
+              ^gs <gs>
+              ^old-gs <old-gs>
+              ^current-evaluation-depth <ced>
+              ^top-state.good-things.indicator <in>
+              -^used-goodthing <in>)
+    (<in> ^key 1103)
+    (<gs> ^wearing <predicate>)
+    (<predicate> ^p1 armor1)
+  -{(<old-gs> ^wearing <old-predicate>)
+    (<old-predicate> ^p1 armor1)}
+-->
+   (<s> ^present-indicator <in>)
+   #(<s> ^current-evaluation-depth <ced> -
+   #                               (+ <ced> 1))
+   (write (crlf) |Indicator: appearence of wearing ^p1 armor1|)
+}
+sp {elaborate*goodthing*116958634697
+   (state <s> ^good-things <gt>)
+-->
+   (<gt> ^indicator <in>)
+   (<in> ^index 103
+         ^type addition
+         ^key 1104)
+}
+sp {apply*usi*indicator-detected*116958634698
+   (state <s> ^name game
+              ^operator.name update-search-info
+              ^gs <gs>
+              ^old-gs <old-gs>
+              ^current-evaluation-depth <ced>
+              ^top-state.good-things.indicator <in>
+              -^used-goodthing <in>)
+    (<in> ^key 1104)
+    (<gs> ^carrying <predicate>)
+    (<predicate> ^p1 armor1)
+  -{(<old-gs> ^carrying <old-predicate>)
+    (<old-predicate> ^p1 armor1)}
+-->
+   (<s> ^present-indicator <in>)
+   #(<s> ^current-evaluation-depth <ced> -
+   #                               (+ <ced> 1))
+   (write (crlf) |Indicator: appearence of carrying ^p1 armor1|)
+}
+sp {elaborate*goodthing*116958634699
+   (state <s> ^good-things <gt>)
+-->
+   (<gt> ^indicator <in>)
+   (<in> ^index 104
+         ^type change
+         ^key 1105)
+}
+sp {apply*usi*indicator-detected*1169586346910
+   (state <s> ^name game
+              ^operator.name update-search-info
+              ^gs <gs>
+              ^old-gs <old-gs>
+              ^current-evaluation-depth <ced>
+              ^top-state.good-things.indicator <in>
+              -^used-goodthing <in>)
+    (<in> ^key 1105)
+    (<gs> ^health <predicate>)
+    (<old-gs> ^health <old-predicate>)
+    (<predicate> ^p2 2)
+    (<old-predicate> ^p2 4)
+    (<predicate> ^p1 hero)
+    (<old-predicate> ^p1 hero)
+-->
+   (<s> ^present-indicator <in>)
+   #(<s> ^current-evaluation-depth <ced> -
+   #                               (+ <ced> 1))
+   (write (crlf) |Indicator: change of health p2 from 4 to 2|)
+}
+sp {elaborate*goodthing*1169586346911
+   (state <s> ^good-things <gt>)
+-->
+   (<gt> ^indicator <in>)
+   (<in> ^index 104
+         ^type decrease
+         ^key 1106)
+}
+sp {apply*usi*indicator-detected*1169586346912
+   (state <s> ^name game
+              ^operator.name update-search-info
+              ^gs <gs>
+              ^old-gs <old-gs>
+              ^current-evaluation-depth <ced>
+              ^top-state.good-things.indicator <in>
+              -^used-goodthing <in>)
+    (<in> ^key 1106)
+    (<gs> ^health <predicate>)
+    (<old-gs> ^health <old-predicate>)
+    (<predicate> ^p2 <new-num>)
+    (<old-predicate> ^p2 {> <new-num> <old-num>})
+    (<predicate> ^p1 hero)
+    (<old-predicate> ^p1 hero)
+-->
+   (<s> ^present-indicator <in>)
+   #(<s> ^current-evaluation-depth <ced> -
+   #                               (+ <ced> 1))
+   (write (crlf) |Indicator: decrease of health p2|)
+}
+sp {elaborate*goodthing*1169586346913
+   (state <s> ^good-things <gt>)
+-->
+   (<gt> ^indicator <in>)
+   (<in> ^index 105
+         ^type change
+         ^key 1107)
+}
+sp {apply*usi*indicator-detected*1169586346914
+   (state <s> ^name game
+              ^operator.name update-search-info
+              ^gs <gs>
+              ^old-gs <old-gs>
+              ^current-evaluation-depth <ced>
+              ^top-state.good-things.indicator <in>
+              -^used-goodthing <in>)
+    (<in> ^key 1107)
+    (<gs> ^health <predicate>)
+    (<old-gs> ^health <old-predicate>)
+    (<predicate> ^p2 3)
+    (<old-predicate> ^p2 2)
+    (<predicate> ^p1 hero)
+    (<old-predicate> ^p1 hero)
+-->
+   (<s> ^present-indicator <in>)
+   #(<s> ^current-evaluation-depth <ced> -
+   #                               (+ <ced> 1))
+   (write (crlf) |Indicator: change of health p2 from 2 to 3|)
+}
+sp {elaborate*goodthing*1169586346915
+   (state <s> ^good-things <gt>)
+-->
+   (<gt> ^indicator <in>)
+   (<in> ^index 105
+         ^type increase
+         ^key 1108)
+}
+sp {apply*usi*indicator-detected*1169586346916
+   (state <s> ^name game
+              ^operator.name update-search-info
+              ^gs <gs>
+              ^old-gs <old-gs>
+              ^current-evaluation-depth <ced>
+              ^top-state.good-things.indicator <in>
+              -^used-goodthing <in>)
+    (<in> ^key 1108)
+    (<gs> ^health <predicate>)
+    (<old-gs> ^health <old-predicate>)
+    (<predicate> ^p2 <new-num>)
+    (<old-predicate> ^p2 {< <new-num> <old-num>})
+    (<predicate> ^p1 hero)
+    (<old-predicate> ^p1 hero)
+-->
+   (<s> ^present-indicator <in>)
+   #(<s> ^current-evaluation-depth <ced> -
+   #                               (+ <ced> 1))
+   (write (crlf) |Indicator: increase of health p2|)
+}
+sp {elaborate*goodthing*1169586346917
+   (state <s> ^good-things <gt>)
+-->
+   (<gt> ^indicator <in>)
+   (<in> ^index 106
+         ^type change
+         ^key 1109)
+}
+sp {apply*usi*indicator-detected*1169586346918
+   (state <s> ^name game
+              ^operator.name update-search-info
+              ^gs <gs>
+              ^old-gs <old-gs>
+              ^current-evaluation-depth <ced>
+              ^top-state.good-things.indicator <in>
+              -^used-goodthing <in>)
+    (<in> ^key 1109)
+    (<gs> ^health <predicate>)
+    (<old-gs> ^health <old-predicate>)
+    (<predicate> ^p2 4)
+    (<old-predicate> ^p2 3)
+    (<predicate> ^p1 hero)
+    (<old-predicate> ^p1 hero)
+-->
+   (<s> ^present-indicator <in>)
+   #(<s> ^current-evaluation-depth <ced> -
+   #                               (+ <ced> 1))
+   (write (crlf) |Indicator: change of health p2 from 3 to 4|)
+}
+sp {elaborate*goodthing*1169586346919
+   (state <s> ^good-things <gt>)
+-->
+   (<gt> ^indicator <in>)
+   (<in> ^index 106
+         ^type increase
+         ^key 1110)
+}
+sp {apply*usi*indicator-detected*1169586346920
+   (state <s> ^name game
+              ^operator.name update-search-info
+              ^gs <gs>
+              ^old-gs <old-gs>
+              ^current-evaluation-depth <ced>
+              ^top-state.good-things.indicator <in>
+              -^used-goodthing <in>)
+    (<in> ^key 1110)
+    (<gs> ^health <predicate>)
+    (<old-gs> ^health <old-predicate>)
+    (<predicate> ^p2 <new-num>)
+    (<old-predicate> ^p2 {< <new-num> <old-num>})
+    (<predicate> ^p1 hero)
+    (<old-predicate> ^p1 hero)
+-->
+   (<s> ^present-indicator <in>)
+   #(<s> ^current-evaluation-depth <ced> -
+   #                               (+ <ced> 1))
+   (write (crlf) |Indicator: increase of health p2|)
+}
+sp {elaborate*goodthing*1169586346921
+   (state <s> ^good-things <gt>)
+-->
+   (<gt> ^indicator <in>)
+   (<in> ^index 107
+         ^type change
+         ^key 1111)
+}
+sp {apply*usi*indicator-detected*1169586346922
+   (state <s> ^name game
+              ^operator.name update-search-info
+              ^gs <gs>
+              ^old-gs <old-gs>
+              ^current-evaluation-depth <ced>
+              ^top-state.good-things.indicator <in>
+              -^used-goodthing <in>)
+    (<in> ^key 1111)
+    (<gs> ^health <predicate>)
+    (<old-gs> ^health <old-predicate>)
+    (<predicate> ^p2 3)
+    (<old-predicate> ^p2 4)
+    (<predicate> ^p1 hero)
+    (<old-predicate> ^p1 hero)
+-->
+   (<s> ^present-indicator <in>)
+   #(<s> ^current-evaluation-depth <ced> -
+   #                               (+ <ced> 1))
+   (write (crlf) |Indicator: change of health p2 from 4 to 3|)
+}
+sp {elaborate*goodthing*1169586346923
+   (state <s> ^good-things <gt>)
+-->
+   (<gt> ^indicator <in>)
+   (<in> ^index 107
+         ^type decrease
+         ^key 1112)
+}
+sp {apply*usi*indicator-detected*1169586346924
+   (state <s> ^name game
+              ^operator.name update-search-info
+              ^gs <gs>
+              ^old-gs <old-gs>
+              ^current-evaluation-depth <ced>
+              ^top-state.good-things.indicator <in>
+              -^used-goodthing <in>)
+    (<in> ^key 1112)
+    (<gs> ^health <predicate>)
+    (<old-gs> ^health <old-predicate>)
+    (<predicate> ^p2 <new-num>)
+    (<old-predicate> ^p2 {> <new-num> <old-num>})
+    (<predicate> ^p1 hero)
+    (<old-predicate> ^p1 hero)
+-->
+   (<s> ^present-indicator <in>)
+   #(<s> ^current-evaluation-depth <ced> -
+   #                               (+ <ced> 1))
+   (write (crlf) |Indicator: decrease of health p2|)
+}
+sp {elaborate*goodthing*1169586346925
+   (state <s> ^good-things <gt>)
+-->
+   (<gt> ^indicator <in>)
+   (<in> ^index 108
+         ^type change
+         ^key 1113)
+}
+sp {apply*usi*indicator-detected*1169586346926
+   (state <s> ^name game
+              ^operator.name update-search-info
+              ^gs <gs>
+              ^old-gs <old-gs>
+              ^current-evaluation-depth <ced>
+              ^top-state.good-things.indicator <in>
+              -^used-goodthing <in>)
+    (<in> ^key 1113)
+    (<gs> ^health <predicate>)
+    (<old-gs> ^health <old-predicate>)
+    (<predicate> ^p2 4)
+    (<old-predicate> ^p2 3)
+    (<predicate> ^p1 hero)
+    (<old-predicate> ^p1 hero)
+-->
+   (<s> ^present-indicator <in>)
+   #(<s> ^current-evaluation-depth <ced> -
+   #                               (+ <ced> 1))
+   (write (crlf) |Indicator: change of health p2 from 3 to 4|)
+}
+sp {elaborate*goodthing*1169586346927
+   (state <s> ^good-things <gt>)
+-->
+   (<gt> ^indicator <in>)
+   (<in> ^index 108
+         ^type increase
+         ^key 1114)
+}
+sp {apply*usi*indicator-detected*1169586346928
+   (state <s> ^name game
+              ^operator.name update-search-info
+              ^gs <gs>
+              ^old-gs <old-gs>
+              ^current-evaluation-depth <ced>
+              ^top-state.good-things.indicator <in>
+              -^used-goodthing <in>)
+    (<in> ^key 1114)
+    (<gs> ^health <predicate>)
+    (<old-gs> ^health <old-predicate>)
+    (<predicate> ^p2 <new-num>)
+    (<old-predicate> ^p2 {< <new-num> <old-num>})
+    (<predicate> ^p1 hero)
+    (<old-predicate> ^p1 hero)
+-->
+   (<s> ^present-indicator <in>)
+   #(<s> ^current-evaluation-depth <ced> -
+   #                               (+ <ced> 1))
+   (write (crlf) |Indicator: increase of health p2|)
+}
+sp {elaborate*goodthing*1169586346929
+   (state <s> ^good-things <gt>)
+-->
+   (<gt> ^indicator <in>)
+   (<in> ^index 109
+         ^type change
+         ^key 1115)
+}
+sp {apply*usi*indicator-detected*1169586346930
+   (state <s> ^name game
+              ^operator.name update-search-info
+              ^gs <gs>
+              ^old-gs <old-gs>
+              ^current-evaluation-depth <ced>
+              ^top-state.good-things.indicator <in>
+              -^used-goodthing <in>)
+    (<in> ^key 1115)
+    (<gs> ^burden <predicate>)
+    (<old-gs> ^burden <old-predicate>)
+    (<predicate> ^p1 2)
+    (<old-predicate> ^p1 1)
+-->
+   (<s> ^present-indicator <in>)
+   #(<s> ^current-evaluation-depth <ced> -
+   #                               (+ <ced> 1))
+   (write (crlf) |Indicator: change of burden p1 from 1 to 2|)
+}
+sp {elaborate*goodthing*1169586346931
+   (state <s> ^good-things <gt>)
+-->
+   (<gt> ^indicator <in>)
+   (<in> ^index 109
+         ^type increase
+         ^key 1116)
+}
+sp {apply*usi*indicator-detected*1169586346932
+   (state <s> ^name game
+              ^operator.name update-search-info
+              ^gs <gs>
+              ^old-gs <old-gs>
+              ^current-evaluation-depth <ced>
+              ^top-state.good-things.indicator <in>
+              -^used-goodthing <in>)
+    (<in> ^key 1116)
+    (<gs> ^burden <predicate>)
+    (<old-gs> ^burden <old-predicate>)
+    (<predicate> ^p1 <new-num>)
+    (<old-predicate> ^p1 {< <new-num> <old-num>})
+-->
+   (<s> ^present-indicator <in>)
+   #(<s> ^current-evaluation-depth <ced> -
+   #                               (+ <ced> 1))
+   (write (crlf) |Indicator: increase of burden p1|)
+}
+sp {elaborate*goodthing*1169586346933
+   (state <s> ^good-things <gt>)
+-->
+   (<gt> ^indicator <in>)
+   (<in> ^index 110
+         ^type addition
+         ^key 1117)
+}
+sp {apply*usi*indicator-detected*1169586346934
+   (state <s> ^name game
+              ^operator.name update-search-info
+              ^gs <gs>
+              ^old-gs <old-gs>
+              ^current-evaluation-depth <ced>
+              ^top-state.good-things.indicator <in>
+              -^used-goodthing <in>)
+    (<in> ^key 1117)
+    (<gs> ^carrying <predicate>)
+    (<predicate> ^p1 amulet)
+  -{(<old-gs> ^carrying <old-predicate>)
+    (<old-predicate> ^p1 amulet)}
+-->
+   (<s> ^present-indicator <in>)
+   #(<s> ^current-evaluation-depth <ced> -
+   #                               (+ <ced> 1))
+   (write (crlf) |Indicator: appearence of carrying ^p1 amulet|)
+}
+sp {elaborate*goodthing*1169586346935
+   (state <s> ^good-things <gt>)
+-->
+   (<gt> ^indicator <in>)
+   (<in> ^index 111
+         ^type change
+         ^key 1118)
+}
+sp {apply*usi*indicator-detected*1169586346936
+   (state <s> ^name game
+              ^operator.name update-search-info
+              ^gs <gs>
+              ^old-gs <old-gs>
+              ^current-evaluation-depth <ced>
+              ^top-state.good-things.indicator <in>
+              -^used-goodthing <in>)
+    (<in> ^key 1118)
+    (<gs> ^health <predicate>)
+    (<old-gs> ^health <old-predicate>)
+    (<predicate> ^p2 2)
+    (<old-predicate> ^p2 4)
+    (<predicate> ^p1 hero)
+    (<old-predicate> ^p1 hero)
+-->
+   (<s> ^present-indicator <in>)
+   #(<s> ^current-evaluation-depth <ced> -
+   #                               (+ <ced> 1))
+   (write (crlf) |Indicator: change of health p2 from 4 to 2|)
+}
+sp {elaborate*goodthing*1169586346937
+   (state <s> ^good-things <gt>)
+-->
+   (<gt> ^indicator <in>)
+   (<in> ^index 111
+         ^type decrease
+         ^key 1119)
+}
+sp {apply*usi*indicator-detected*1169586346938
+   (state <s> ^name game
+              ^operator.name update-search-info
+              ^gs <gs>
+              ^old-gs <old-gs>
+              ^current-evaluation-depth <ced>
+              ^top-state.good-things.indicator <in>
+              -^used-goodthing <in>)
+    (<in> ^key 1119)
+    (<gs> ^health <predicate>)
+    (<old-gs> ^health <old-predicate>)
+    (<predicate> ^p2 <new-num>)
+    (<old-predicate> ^p2 {> <new-num> <old-num>})
+    (<predicate> ^p1 hero)
+    (<old-predicate> ^p1 hero)
+-->
+   (<s> ^present-indicator <in>)
+   #(<s> ^current-evaluation-depth <ced> -
+   #                               (+ <ced> 1))
+   (write (crlf) |Indicator: decrease of health p2|)
+}
+sp {elaborate*goodthing*1169586346939
+   (state <s> ^good-things <gt>)
+-->
+   (<gt> ^indicator <in>)
+   (<in> ^index 112
+         ^type change
+         ^key 1120)
+}
+sp {apply*usi*indicator-detected*1169586346940
+   (state <s> ^name game
+              ^operator.name update-search-info
+              ^gs <gs>
+              ^old-gs <old-gs>
+              ^current-evaluation-depth <ced>
+              ^top-state.good-things.indicator <in>
+              -^used-goodthing <in>)
+    (<in> ^key 1120)
+    (<gs> ^health <predicate>)
+    (<old-gs> ^health <old-predicate>)
+    (<predicate> ^p2 3)
+    (<old-predicate> ^p2 2)
+    (<predicate> ^p1 hero)
+    (<old-predicate> ^p1 hero)
+-->
+   (<s> ^present-indicator <in>)
+   #(<s> ^current-evaluation-depth <ced> -
+   #                               (+ <ced> 1))
+   (write (crlf) |Indicator: change of health p2 from 2 to 3|)
+}
+sp {elaborate*goodthing*1169586346941
+   (state <s> ^good-things <gt>)
+-->
+   (<gt> ^indicator <in>)
+   (<in> ^index 112
+         ^type increase
+         ^key 1121)
+}
+sp {apply*usi*indicator-detected*1169586346942
+   (state <s> ^name game
+              ^operator.name update-search-info
+              ^gs <gs>
+              ^old-gs <old-gs>
+              ^current-evaluation-depth <ced>
+              ^top-state.good-things.indicator <in>
+              -^used-goodthing <in>)
+    (<in> ^key 1121)
+    (<gs> ^health <predicate>)
+    (<old-gs> ^health <old-predicate>)
+    (<predicate> ^p2 <new-num>)
+    (<old-predicate> ^p2 {< <new-num> <old-num>})
+    (<predicate> ^p1 hero)
+    (<old-predicate> ^p1 hero)
+-->
+   (<s> ^present-indicator <in>)
+   #(<s> ^current-evaluation-depth <ced> -
+   #                               (+ <ced> 1))
+   (write (crlf) |Indicator: increase of health p2|)
+}
+sp {elaborate*goodthing*1169586346943
+   (state <s> ^good-things <gt>)
+-->
+   (<gt> ^indicator <in>)
+   (<in> ^index 113
+         ^type change
+         ^key 1122)
+}
+sp {apply*usi*indicator-detected*1169586346944
+   (state <s> ^name game
+              ^operator.name update-search-info
+              ^gs <gs>
+              ^old-gs <old-gs>
+              ^current-evaluation-depth <ced>
+              ^top-state.good-things.indicator <in>
+              -^used-goodthing <in>)
+    (<in> ^key 1122)
+    (<gs> ^burden <predicate>)
+    (<old-gs> ^burden <old-predicate>)
+    (<predicate> ^p1 3)
+    (<old-predicate> ^p1 2)
+-->
+   (<s> ^present-indicator <in>)
+   #(<s> ^current-evaluation-depth <ced> -
+   #                               (+ <ced> 1))
+   (write (crlf) |Indicator: change of burden p1 from 2 to 3|)
+}
+sp {elaborate*goodthing*1169586346945
+   (state <s> ^good-things <gt>)
+-->
+   (<gt> ^indicator <in>)
+   (<in> ^index 113
+         ^type increase
+         ^key 1123)
+}
+sp {apply*usi*indicator-detected*1169586346946
+   (state <s> ^name game
+              ^operator.name update-search-info
+              ^gs <gs>
+              ^old-gs <old-gs>
+              ^current-evaluation-depth <ced>
+              ^top-state.good-things.indicator <in>
+              -^used-goodthing <in>)
+    (<in> ^key 1123)
+    (<gs> ^burden <predicate>)
+    (<old-gs> ^burden <old-predicate>)
+    (<predicate> ^p1 <new-num>)
+    (<old-predicate> ^p1 {< <new-num> <old-num>})
+-->
+   (<s> ^present-indicator <in>)
+   #(<s> ^current-evaluation-depth <ced> -
+   #                               (+ <ced> 1))
+   (write (crlf) |Indicator: increase of burden p1|)
+}
+sp {elaborate*goodthing*1169586346947
+   (state <s> ^good-things <gt>)
+-->
+   (<gt> ^indicator <in>)
+   (<in> ^index 114
+         ^type addition
+         ^key 1124)
+}
+sp {apply*usi*indicator-detected*1169586346948
+   (state <s> ^name game
+              ^operator.name update-search-info
+              ^gs <gs>
+              ^old-gs <old-gs>
+              ^current-evaluation-depth <ced>
+              ^top-state.good-things.indicator <in>
+              -^used-goodthing <in>)
+    (<in> ^key 1124)
+    (<gs> ^carrying <predicate>)
+    (<predicate> ^p1 potion2)
+  -{(<old-gs> ^carrying <old-predicate>)
+    (<old-predicate> ^p1 potion2)}
+-->
+   (<s> ^present-indicator <in>)
+   #(<s> ^current-evaluation-depth <ced> -
+   #                               (+ <ced> 1))
+   (write (crlf) |Indicator: appearence of carrying ^p1 potion2|)
+}
+sp {elaborate*goodthing*1169586346949
+   (state <s> ^good-things <gt>)
+-->
+   (<gt> ^indicator <in>)
+   (<in> ^index 114
+         ^type addition
+         ^key 1125)
+}
+sp {apply*usi*indicator-detected*1169586346950
+   (state <s> ^name game
+              ^operator.name update-search-info
+              ^gs <gs>
+              ^old-gs <old-gs>
+              ^current-evaluation-depth <ced>
+              ^top-state.good-things.indicator <in>
+              -^used-goodthing <in>)
+    (<in> ^key 1125)
+    (<gs> ^carrying <predicate>)
+    (<predicate> ^p1 potion1)
+  -{(<old-gs> ^carrying <old-predicate>)
+    (<old-predicate> ^p1 potion1)}
+-->
+   (<s> ^present-indicator <in>)
+   #(<s> ^current-evaluation-depth <ced> -
+   #                               (+ <ced> 1))
+   (write (crlf) |Indicator: appearence of carrying ^p1 potion1|)
+}
+sp {elaborate*goodthing*1169586346951
+   (state <s> ^good-things <gt>)
+-->
+   (<gt> ^indicator <in>)
+   (<in> ^index 115
+         ^type change
+         ^key 1126)
+}
+sp {apply*usi*indicator-detected*1169586346952
+   (state <s> ^name game
+              ^operator.name update-search-info
+              ^gs <gs>
+              ^old-gs <old-gs>
+              ^current-evaluation-depth <ced>
+              ^top-state.good-things.indicator <in>
+              -^used-goodthing <in>)
+    (<in> ^key 1126)
+    (<gs> ^health <predicate>)
+    (<old-gs> ^health <old-predicate>)
+    (<predicate> ^p2 4)
+    (<old-predicate> ^p2 3)
+    (<predicate> ^p1 hero)
+    (<old-predicate> ^p1 hero)
+-->
+   (<s> ^present-indicator <in>)
+   #(<s> ^current-evaluation-depth <ced> -
+   #                               (+ <ced> 1))
+   (write (crlf) |Indicator: change of health p2 from 3 to 4|)
+}
+sp {elaborate*goodthing*1169586346953
+   (state <s> ^good-things <gt>)
+-->
+   (<gt> ^indicator <in>)
+   (<in> ^index 115
+         ^type increase
+         ^key 1127)
+}
+sp {apply*usi*indicator-detected*1169586346954
+   (state <s> ^name game
+              ^operator.name update-search-info
+              ^gs <gs>
+              ^old-gs <old-gs>
+              ^current-evaluation-depth <ced>
+              ^top-state.good-things.indicator <in>
+              -^used-goodthing <in>)
+    (<in> ^key 1127)
+    (<gs> ^health <predicate>)
+    (<old-gs> ^health <old-predicate>)
+    (<predicate> ^p2 <new-num>)
+    (<old-predicate> ^p2 {< <new-num> <old-num>})
+    (<predicate> ^p1 hero)
+    (<old-predicate> ^p1 hero)
+-->
+   (<s> ^present-indicator <in>)
+   #(<s> ^current-evaluation-depth <ced> -
+   #                               (+ <ced> 1))
+   (write (crlf) |Indicator: increase of health p2|)
+}
+# GEN TIME 0:00.12 real,0.10 user,0.02 sys
