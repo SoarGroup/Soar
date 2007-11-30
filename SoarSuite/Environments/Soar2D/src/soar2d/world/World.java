@@ -372,6 +372,13 @@ public class World {
 				}
 			}
 
+			if (Soar2D.config.getTerminalPassengerPickUp()) {
+				if (xMap.isPassengerCarried()) {
+					stopAndDumpStats("The passenger has been picked up.");
+					return;
+				}
+			}
+			
 			if (Soar2D.config.getTerminalFuelRemaining()) {
 				if (xMap.isFuelNegative()) {
 					stopAndDumpStats("The taxi has run out of fuel.");

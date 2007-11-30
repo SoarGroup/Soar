@@ -69,6 +69,9 @@ public class Configuration {
 		this.terminalMaxUpdatesContinue = config.terminalMaxUpdatesContinue;
 		this.terminalWinningScore = config.terminalWinningScore;
 		this.terminalWinningScoreContinue = config.terminalWinningScoreContinue;
+		this.terminalPassengerDelivered = config.terminalPassengerDelivered;
+		this.terminalFuelRemaining = config.terminalFuelRemaining;
+		this.terminalPassengerPickUp = config.terminalPassengerPickUp;
 		
 		// clients
 		this.clients = new ArrayList<ClientConfig>(config.clients);
@@ -879,6 +882,15 @@ public class Configuration {
 		return this.terminalFuelRemaining;
 	}
 	
+	private boolean terminalPassengerPickUp = false;	
+	private static final String kTagPassengerPickUp = "passenger-pick-up";
+	public void setTerminalPassengerPickUp(boolean setting) {
+		this.terminalPassengerPickUp = setting;
+	}
+	public boolean getTerminalPassengerPickUp() {
+		return this.terminalPassengerPickUp;
+	}
+	
 	private void terminalsSave(Element terminals) {
 		if (this.getTerminalMaxUpdates() > 0) {
 			Element maxUpdates = new Element(kTagMaxUpdates).setText(Integer.toString(this.getTerminalMaxUpdates()));
@@ -932,6 +944,10 @@ public class Configuration {
 		
 		if (this.getTerminalPassengerDelivered()) {
 			terminals.addContent(new Element(kTagFuelRemaining));
+		}
+		
+		if (this.getTerminalPassengerPickUp()) {
+			terminals.addContent(new Element(kTagPassengerPickUp));
 		}
 	}
 	
@@ -1000,6 +1016,9 @@ public class Configuration {
 				
 			} else if (child.getName().equalsIgnoreCase(kTagFuelRemaining)) {
 				this.setTerminalFuelRemaining(true);
+
+			} else if (child.getName().equalsIgnoreCase(kTagPassengerPickUp)) {
+				this.setTerminalPassengerPickUp(true);
 
 			} else {
 				throw new LoadError("Unrecognized tag: " + child.getName());
