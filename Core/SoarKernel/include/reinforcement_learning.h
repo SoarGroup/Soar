@@ -91,8 +91,8 @@ typedef struct rl_data_struct {
 	list *prev_op_rl_rules;
 	float previous_q;
 	float reward;
-	unsigned int step;		// the number of steps the current operator has been installed at the goal
-	byte impasse_type;		// if this goal is an impasse, what type
+	unsigned int step;			// the number of steps the current operator has been installed at the goal
+	signed int impasse_type;	// if this goal is an impasse, what type
 } rl_data;
 
 //////////////////////////////////////////////////////////
