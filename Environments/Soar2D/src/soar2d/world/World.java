@@ -373,16 +373,22 @@ public class World {
 			}
 
 			if (Soar2D.config.getTerminalPassengerPickUp()) {
-				if (xMap.isPassengerCarried()) {
+				if (stopNextCyclePassengerPickUp) {
+					this.stopNextCyclePassengerPickUp = false;
 					stopAndDumpStats("The passenger has been picked up.");
 					return;
+				} else if (xMap.isPassengerCarried()) {
+					this.stopNextCyclePassengerPickUp = true;
 				}
 			}
 			
 			if (Soar2D.config.getTerminalFuelRemaining()) {
-				if (xMap.isFuelNegative()) {
+				if (stopNextCycleFuelRemaining) {
+					this.stopNextCycleFuelRemaining = false;
 					stopAndDumpStats("The taxi has run out of fuel.");
 					return;
+				} else if (xMap.isFuelNegative()) {
+					this.stopNextCycleFuelRemaining = true;
 				}
 			}
 		}
@@ -416,6 +422,8 @@ public class World {
 		}
 	}
 	
+	private boolean stopNextCyclePassengerPickUp = false;
+	private boolean stopNextCycleFuelRemaining = false;
 	
 	void fragPlayer(Player player) {
 		// remove from past cell
@@ -445,6 +453,8 @@ public class World {
 		worldCount = 0;
 		printedStats = false;
 		worldModule.reset(map);
+		this.stopNextCycleFuelRemaining = false;
+		this.stopNextCyclePassengerPickUp = false;
 		//System.out.println(map);
 	}
 	
