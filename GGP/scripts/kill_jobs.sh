@@ -1,7 +1,5 @@
-#!/usr/bin/python
-import os
-
-m = "bahamut smaug grapes auk badboy flamingo winter wyrm"
+#!/bin/sh
+m="bahamut smaug grapes auk badboy flamingo winter wyrm"
 
 for i in $m; do
   echo $i
