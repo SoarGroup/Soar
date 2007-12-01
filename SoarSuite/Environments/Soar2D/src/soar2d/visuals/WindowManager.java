@@ -122,6 +122,9 @@ public class WindowManager {
 	}
 
 	public boolean initialize() {
+		if (display != null)
+			return true;
+		
 		try {
 			display = new Display();
 		} catch (java.lang.UnsatisfiedLinkError e) {
