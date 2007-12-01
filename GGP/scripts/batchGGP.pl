@@ -2,20 +2,24 @@
 
 die unless ($#ARGV == 0);
 
-our @machines = (
-#  "b1",
-#  "b2",
-  "w1",
+our @fast = ( 
+  "b1", 
+  "b2", 
+  "w1", 
   "w2",
-#  "s1",
-#  "s2",
-#  "n1",
-#  "n2",
-#  "g",
-#  "a",
-#  "f",
+  "n1",
+  "n2",
+#  "s1", 
+#  "s2"
+);
+our @slow = ( 
+  "g",
+  "a",
+  "f",
 #  "bb"
 );
+
+our @machines = (@fast, @slow);
 
 our @scenarios = (
   "e 6 1",
@@ -62,30 +66,46 @@ our @scenarios = (
   "10 18"
 );
 
-$runName = $ARGV[0];
+our @hard = (
+  "r 6 3"
+);
 
+our @easy = ();
+
+foreach $s (@scenarios) {
+  unless (grep(/^$s$/, @hard)) {
+    push(@easy, $s);
+  }
+}
+
+print @easy . " easy problems and " . @hard . " hard ones.\n";
+
+our $remote = "./runRemoteScenarioNoSource.pl";
+
+$runName = $ARGV[0];
 our $runDir = "$ENV{HOME}/GGP-batches/$runName";
+
 if (not -d "$runDir") {
   print "creating $runDir\n";
   print `mkdir $runDir`;
 }
 
 our %doneScenarios = ();
-foreach $scenario (@scenarios) {
-  $doneScenarios{$scenario} = 0;
+foreach (@scenarios) {
+  $doneScenarios{$_} = 0;
 }
 
 our %startedScenarios = ();
-foreach $scenario (@scenarios) {
-  $startedScenarios{$scenario} = 0;
+foreach (@scenarios) {
+  $startedScenarios{$_} = 0;
 }
 
 
 our %scenarioMachines = ();
 our %openMachines = ();
 
-foreach $machine (@machines) {
-  $openMachines{$machine} = 1;
+foreach (@machines) {
+  $openMachines{$_} = 1;
 }
 
 our $parity = 0;
@@ -97,20 +117,29 @@ while (1) {
     exit(1);
   }
 
-  MACHINE: foreach $machine (keys %openMachines) {
-    if ($openMachines{$machine} != 1) {
+  # first, fill up all the fast machines with hard jobs
+  FAST: foreach $m (@fast) {
+    if ($openMachines{$m} != 1) {
+      next;
+    }
+    foreach $s (@hard) {
+      if ($startedScenarios{$s} == 0 and $doneScenarios{$s} == 0) {
+        startScenario($s, $m);
+        next FAST;
+      }
+    }
+  }
+
+  # now run the easy jobs on any free machine
+  MACHINE: foreach $m (@machines) {
+    if ($openMachines{$m} != 1) {
       next;
     }
     #print "finding a job for $machine\n";
-    for ($i=0; $i<=$#scenarios; $i++) {
-      $s = $scenarios[$i];
+    foreach $s (@easy) {
       #print "maybe $s? $startedScenarios{$s} $doneScenarios{$s}\n";
       if ($startedScenarios{$s} == 0 and $doneScenarios{$s} == 0) {
-        print "starting " . expandScenario($s) . " on machine $machine.\n";
-        system("./runRemoteScenario_headless.pl $runDir $machine $s > /dev/null 2>&1 &");
-        $scenarioMachines{$s} = $machine;
-        $startedScenarios{$s} = 1;
-        $openMachines{$machine} = -1;
+        startScenario($s, $m);
         next MACHINE;
       }
     }
@@ -119,6 +148,15 @@ while (1) {
   close $REPORT;
   sleep (10);
   print ".";
+}
+
+sub startScenario() {
+  my($s,$m) = @_;
+  print "starting " . expandScenario($s) . " on machine $m.\n";
+  system("$remote $runDir $m $s > /dev/null 2>&1 &");
+  $scenarioMachines{$s} = $m;
+  $startedScenarios{$s} = 1;
+  $openMachines{$m} = -1;
 }
 
 sub updateDoneScenarios() {

@@ -31,4 +31,4 @@ elsif ($env =~ /^b/) {
 }
 else {die "bad environment";}
 
-exec ("./runTarget.pl $target");
+exec ("./runTarget.pl $target &>> /tmp/ran");

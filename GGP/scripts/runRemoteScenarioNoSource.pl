@@ -87,5 +87,9 @@ else {
   $longEnv = "differing";
 }
 
-print `ssh $machineAliases{$machine} \"cd $machineDirs{$machine}; $runScenario $env $level $scenario\"`;
-print `scp $machineAliases{$machine}:$machineDirs{$machine}/$longEnv-$level-$scenario-* $dir/`;
+$run_cmd = "ssh $machineAliases{$machine} \"cd $machineDirs{$machine}; $runScenario $env $level $scenario\"";
+$copy_cmd = "scp $machineAliases{$machine}:$machineDirs{$machine}/$longEnv-$level-$scenario-* $dir/";
+print $run_cmd;
+system($run_cmd);
+print $copy_cmd;
+system($copy_cmd);

@@ -18,7 +18,6 @@ $target =~ /^(\w+)-/;
 $environment = $1;
 
 $coreKif = "$kifPath$environment.core.kif";
-$tmpSource = "";
 $tmpTarget = "";
 $merged = 0;
 if (-e $coreKif) {
@@ -80,6 +79,7 @@ print `$canvasOff`;
 print `rm $tmpTarget`;
 
 print "Running $target with source..\n";
+print `$gtOn`;
 print `$timeCommand $runSoar -w1 $agentDir/$target.soar > $targetWithSourceLog`;
 foreach $line (`cat $timeFile`) {
   chomp $line;
