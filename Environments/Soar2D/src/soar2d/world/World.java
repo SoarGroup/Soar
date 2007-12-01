@@ -366,9 +366,12 @@ public class World {
 		if (Soar2D.config.getType() == SimType.kTaxi) {
 			TaxiMap xMap = (TaxiMap)map;
 			if (Soar2D.config.getTerminalPassengerDelivered()) {
-				if (xMap.isPassengerDelivered()) {
+				if (stopNextCyclePassengerDelivered) {
+					this.stopNextCyclePassengerDelivered = false;
 					stopAndDumpStats("The passenger has been delivered.");
 					return;
+				} else if (xMap.isPassengerDelivered()) {
+					this.stopNextCyclePassengerDelivered = true;
 				}
 			}
 
@@ -424,6 +427,7 @@ public class World {
 	
 	private boolean stopNextCyclePassengerPickUp = false;
 	private boolean stopNextCycleFuelRemaining = false;
+	private boolean stopNextCyclePassengerDelivered = false;
 	
 	void fragPlayer(Player player) {
 		// remove from past cell
@@ -455,6 +459,7 @@ public class World {
 		worldModule.reset(map);
 		this.stopNextCycleFuelRemaining = false;
 		this.stopNextCyclePassengerPickUp = false;
+		this.stopNextCyclePassengerDelivered = false;
 		//System.out.println(map);
 	}
 	
