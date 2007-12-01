@@ -67,6 +67,9 @@ our @scenarios = (
 );
 
 our @hard = (
+  "b 7 1",
+  "b 7 3",
+  "r 6 1",
   "r 6 3"
 );
 

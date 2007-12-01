@@ -87,9 +87,9 @@ else {
   $longEnv = "differing";
 }
 
-$run_cmd = "ssh $machineAliases{$machine} \"cd $machineDirs{$machine}; $runScenario $env $level $scenario\"";
-$copy_cmd = "scp $machineAliases{$machine}:$machineDirs{$machine}/$longEnv-$level-$scenario-* $dir/";
-print $run_cmd;
-system($run_cmd);
-print $copy_cmd;
-system($copy_cmd);
+system("ssh $machineAliases{$machine} \"cd $machineDirs{$machine}; $runScenario $env $level $scenario\"");
+
+@logs = map {"$machineDirs{$machine}/$longEnv-$level-$scenario-$_"} ("target_no_source.log", "target_after_source.log");
+foreach (@logs) {
+  system("scp $machineAliases{$machine}:$_ $dir/");
+}
