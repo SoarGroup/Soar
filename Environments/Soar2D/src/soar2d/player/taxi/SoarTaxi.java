@@ -162,6 +162,8 @@ public class SoarTaxi extends Taxi {
 		
 		if (pointsChanged()) {
 			agent.Update(reward, getPointsDelta());
+		} else {
+			agent.Update(reward, 0);
 		}
 		
 		TaxiMap xMap = (TaxiMap)world.getMap();
