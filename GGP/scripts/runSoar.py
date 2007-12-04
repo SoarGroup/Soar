@@ -1,10 +1,12 @@
 #!/usr/bin/env python
 
 import signal
-import sys
+import os, sys
 import Python_sml_ClientInterface
 
 psci = Python_sml_ClientInterface
+
+SOCKET_DIR=os.path.join(os.environ['HOME'], '.soartmp')
 
 kernel = None
 agent = None
@@ -76,10 +78,17 @@ def sig_handler(signum, frame):
 	kernel.Shutdown()
 	sys.exit(1)
 
+def pick_port():
+	p = 12121
+	used = os.listdir(SOCKET_DIR)
+	while str(p) in used:
+		p += 1
+	return p
+
 if __name__ == "__main__":
 	signal.signal(signal.SIGINT, sig_handler)
 
-	kernel = psci.Kernel.CreateKernelInNewThread()
+	kernel = psci.Kernel.CreateKernelInNewThread(psci.Kernel.kDefaultLibraryName, pick_port())
 	agent = kernel.CreateAgent('soar')
 	agent.RegisterForPrintEvent(psci.smlEVENT_PRINT, PrintCallback, None)
 
