@@ -87,6 +87,10 @@ else {
   $longEnv = "differing";
 }
 
+# log the current run so that we can kill it easily
+open STAT, '>>/tmp/GGP-batch-runs';
+print STAT, "$$ $env $level $scenario\n";
+
 system("ssh $machineAliases{$machine} \"cd $machineDirs{$machine}; $runScenario $env $level $scenario\"");
 
 @logs = map {"$machineDirs{$machine}/$longEnv-$level-$scenario-$_"} ("target_no_source.log", "target_after_source.log");

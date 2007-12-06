@@ -1,6 +1,8 @@
 #!/usr/bin/perl
 
-die unless ($#ARGV == 0);
+our $remote = "./runRemoteScenarioNoSource.pl";
+
+die unless ($#ARGV == 1);
 
 our @fast = ( 
   "b1", 
@@ -9,8 +11,8 @@ our @fast = (
   "w2",
   "n1",
   "n2",
-#  "s1", 
-#  "s2"
+  "s1", 
+  "s2"
 );
 our @slow = ( 
   "g",
@@ -21,7 +23,7 @@ our @slow = (
 
 our @machines = (@fast, @slow);
 
-our @scenarios = (
+our @scenarios_base = (
   "e 6 1",
   "e 6 2",
   "e 7 1",
@@ -66,12 +68,28 @@ our @scenarios = (
   "10 18"
 );
 
-our @hard = (
+our @hard_base = (
   "b 7 1",
   "b 7 3",
   "r 6 1",
   "r 6 3"
 );
+
+$dirBase = "$ENV{HOME}/GGP-batches/$ARGV[0]";
+$numRuns = int($ARGV[1]);
+
+# repeat each scenario $numRuns times, in a separate directory
+@scenarios = ();
+@hard = ();
+foreach $i (1 .. $numRuns) {
+  $d = "$dirBase$i";
+  if (not -d $d) {
+    print "creating $d\n";
+    print `mkdir $d`;
+  }
+  @scenarios = (@scenarios, map { "$_ $i" } @scenarios_base);
+  @hard = (@hard, map {"$_ $i"} @hard_base);
+}
 
 our @easy = ();
 
@@ -79,18 +97,6 @@ foreach $s (@scenarios) {
   unless (grep(/^$s$/, @hard)) {
     push(@easy, $s);
   }
-}
-
-print @easy . " easy problems and " . @hard . " hard ones.\n";
-
-our $remote = "./runRemoteScenarioNoSource.pl";
-
-$runName = $ARGV[0];
-our $runDir = "$ENV{HOME}/GGP-batches/$runName";
-
-if (not -d "$runDir") {
-  print "creating $runDir\n";
-  print `mkdir $runDir`;
 }
 
 our %doneScenarios = ();
@@ -102,7 +108,6 @@ our %startedScenarios = ();
 foreach (@scenarios) {
   $startedScenarios{$_} = 0;
 }
-
 
 our %scenarioMachines = ();
 our %openMachines = ();
@@ -155,8 +160,12 @@ while (1) {
 
 sub startScenario() {
   my($s,$m) = @_;
+  $s =~ /(.*) (\d+)$/;
+  $scenario = $1;
+  $dirn = $2;
+  $rundir = "$dirBase@blah$dirn";
   print "starting " . expandScenario($s) . " on machine $m.\n";
-  system("$remote $runDir $m $s > /dev/null 2>&1 &");
+  system("$remote $rundir $m $scenario > /dev/null 2>&1 &");
   $scenarioMachines{$s} = $m;
   $startedScenarios{$s} = 1;
   $openMachines{$m} = -1;
@@ -170,16 +179,22 @@ sub updateDoneScenarios() {
     $file = expandScenario($s) . "-target_after_source.log";
     $tns = expandScenario($s) . "-target_no_source.log";
     if ($doneScenarios{$s} == 0) {
-      if (-e "$runDir/$file") {
-        print expandScenario($s) ." is done. s/ns: ";
-        print decisionCount("$runDir/$file") . "/" . decisionCount("$runDir/$tns") . "\n";
-        
-        if (defined $scenarioMachines{$s}) {
-          $openMachines{$scenarioMachines{$s}} = 1;
-          #print "open $scenarioMachines{$s}\n";
+      if (-e $file) {
+        if (-s $file > 0) {
+          print expandScenario($s) ." is done. s/ns: ";
+          print decisionCount($file) . "/" . decisionCount($tns) . "\n";
+
+          if (defined $scenarioMachines{$s}) {
+            $openMachines{$scenarioMachines{$s}} = 1;
+            #print "open $scenarioMachines{$s}\n";
+          }
+          $doneScenarios{$s} = 1;
+          $totalDone++;
         }
-        $doneScenarios{$s} = 1;
-        $totalDone++;
+        else {
+          # this scenario wasn't run correctly. Probably cancelled and should be restarted
+          $startedScenarios{$s} = 0;
+        }
       }
     }
     else {
@@ -189,17 +204,17 @@ sub updateDoneScenarios() {
   }
 
   if ($parity == 0) {
-    open REPORT, ">batch-log";
+    open REPORT, ">batch-log-$$";
     print REPORT "batchGGP log\n";
     print REPORT `date`;
-    print REPORT "logs are stored in $runDir\n";
+    print REPORT "logs are stored in $dirBase\n";
     foreach $scenario (@scenarios) {
       $fullScenario = expandScenario($scenario);
       $file = "$fullScenario-target_after_source.log";
       $tns = "$fullScenario-target_no_source.log";
       if ($doneScenarios{$scenario} == 1) {
         print REPORT "$fullScenario is done. s/ns: "; 
-        print REPORT decisionCount("$runDir/$file") . "/" . decisionCount("$runDir/$tns") . "\n";
+        print REPORT decisionCount($file) . "/" . decisionCount($tns) . "\n";
       }
       elsif ($startedScenarios{$scenario} == 1) {
         print REPORT "$fullScenario is running on $scenarioMachines{$scenario}.\n";
@@ -220,31 +235,34 @@ sub updateDoneScenarios() {
 
 sub expandScenario() {
   $scen = shift;
-  if ($scen =~ /(\S+) (\d+) (\d+)/) {
+  if ($scen =~ /(\S+) (\d+) (\d+) (\d+)/) {
     $env = $1;
     $lvl = $2;
     $scn = $3;
+    $count = $4;
 
     if ($1 =~ /e/) {
-      return "escape-$lvl-$scn";
+      return "$dirBase$count/escape-$lvl-$scn";
     }
     elsif ($1 =~ /r/) {
-      return "mrogue-$lvl-$scn";
+      return "$dirBase$count/mrogue-$lvl-$scn";
     }
     elsif ($1 =~ /w/) {
-      return "wargame-$lvl-$scn";
+      return "$dirBase$count/wargame-$lvl-$scn";
     }
     elsif ($1 =~ /b/) {
-      return "build-$lvl-$scn";
+      return "$dirBase$count/build-$lvl-$scn";
     }
     else {
       die;
     }
   }
-  elsif ($scen =~ /10 (\d+)/) {
-    return "differing-10-$1";
+  elsif ($scen =~ /10 (\d+) (\d+)/) {
+    return "$dirBase$2/differing-10-$1";
   }
-  else {die;}
+  else {
+    die;
+  }
 }
     
 sub decisionCount() {
