@@ -47,24 +47,27 @@
 #   (<s> ^operator <o> + =)
 #}
 
-sp {selection*elaborate*pre-eval-to-pref*worst
-   (state <s> ^name selection
-              ^operator <o> +
-              ^evaluate-worst <it>)
-   (<o> ^name evaluate-operator
-        ^superoperator <it>)
--->
-   (<s> ^operator <o> + < =)
-}
 
-
-sp {selection*detect-no-indicator
-   (state <s> ^name evaluate-operator
-              ^tried-tied-operator.duplicate-of <it>
-              ^superstate <ss>
-              ^operator.name check-for-duplicate-location
-             -^present-indicator)
--->
-   (<ss> ^evaluate-worst <it>)
-   (write (crlf) |No indicator, backing up if alternatives.|)
-}
+# THESE TWO RULES FOR BIASING
+#
+#sp {selection*elaborate*pre-eval-to-pref*worst
+#   (state <s> ^name selection
+#              ^operator <o> +
+#              ^evaluate-worst <it>)
+#   (<o> ^name evaluate-operator
+#        ^superoperator <it>)
+#-->
+#   (<s> ^operator <o> + < =)
+#}
+#
+#
+#sp {selection*detect-no-indicator
+#   (state <s> ^name evaluate-operator
+#              ^tried-tied-operator.duplicate-of <it>
+#              ^superstate <ss>
+#              ^operator.name check-for-duplicate-location
+#             -^present-indicator)
+#-->
+#   (<ss> ^evaluate-worst <it>)
+#   (write (crlf) |No indicator, backing up if alternatives.|)
+#}

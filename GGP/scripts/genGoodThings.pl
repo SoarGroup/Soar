@@ -315,8 +315,8 @@ sub printGtHeader() {
 sub printDetectRuleHeader() {
   $productionCount++;
   print "sp {apply*usi*indicator-detected*$rand$productionCount\n";
-#  print "   (state <s> ^name game\n";
-  print "   (state <s> ^crap crap\n";
+  print "   (state <s> ^name game\n";
+#  print "   (state <s> ^crap crap\n";
   print "              ^operator.name update-search-info\n";
   print "              ^gs <gs>\n";
   print "              ^old-gs <old-gs>\n";
@@ -328,8 +328,9 @@ sub printDetectRuleHeader() {
 sub printDetectRuleMiddle() {
   print "-->\n";
   print "   (<s> ^present-indicator <in>)\n";
-  print "   #(<s> ^current-evaluation-depth <ced> -\n";
-  print "   #                               (+ <ced> 1))\n";
+  # take out this ced change to avoid bumping (but still detect)
+  print "   (<s> ^current-evaluation-depth <ced> -\n";
+  print "                                  (+ <ced> 1))\n";
 }
 
 sub expandMappings() {
