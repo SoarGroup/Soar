@@ -192,9 +192,12 @@ if (defined $tgt_depths{$soarFile}) {
 sp {elaborate*start-depth
   (state <s> ^superstate nil)
 -->
-(<s> ^start-depth $tgt_depths{$soarFile})}\n";
+(<s> ^start-depth $src_depths{$soarFile})}\n";
 
   open(AGENT, ">>$soarFile");
   print AGENT $depth_prod;
   close AGENT;
+}
+else {
+  `echo "Depth for $soarFile not found" >> /tmp/GGP-errors`;
 }

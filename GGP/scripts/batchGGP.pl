@@ -82,10 +82,10 @@ $numRuns = int($ARGV[1]);
 @scenarios = ();
 @hard = ();
 foreach $i (1 .. $numRuns) {
-  $d = "$dirBase$i";
+  $d = "$dirBase$/i";
   if (not -d $d) {
     print "creating $d\n";
-    print `mkdir $d`;
+    print `mkdir -p $d`;
   }
   @scenarios = (@scenarios, map { "$_ $i" } @scenarios_base);
   @hard = (@hard, map {"$_ $i"} @hard_base);
@@ -163,7 +163,7 @@ sub startScenario() {
   $s =~ /(.*) (\d+)$/;
   $scenario = $1;
   $dirn = $2;
-  $rundir = "$dirBase@blah$dirn";
+  $rundir = "$dirBase/$dirn";
   print "starting " . expandScenario($s) . " on machine $m.\n";
   system("$remote $rundir $m $scenario > /dev/null 2>&1 &");
   $scenarioMachines{$s} = $m;
@@ -242,23 +242,23 @@ sub expandScenario() {
     $count = $4;
 
     if ($1 =~ /e/) {
-      return "$dirBase$count/escape-$lvl-$scn";
+      return "$dirBase/$count/escape-$lvl-$scn";
     }
     elsif ($1 =~ /r/) {
-      return "$dirBase$count/mrogue-$lvl-$scn";
+      return "$dirBase/$count/mrogue-$lvl-$scn";
     }
     elsif ($1 =~ /w/) {
-      return "$dirBase$count/wargame-$lvl-$scn";
+      return "$dirBase/$count/wargame-$lvl-$scn";
     }
     elsif ($1 =~ /b/) {
-      return "$dirBase$count/build-$lvl-$scn";
+      return "$dirBase/$count/build-$lvl-$scn";
     }
     else {
       die;
     }
   }
   elsif ($scen =~ /10 (\d+) (\d+)/) {
-    return "$dirBase$2/differing-10-$1";
+    return "$dirBase/$2/differing-10-$1";
   }
   else {
     die;

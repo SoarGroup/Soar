@@ -89,7 +89,7 @@ else {
 
 # log the current run so that we can kill it easily
 open STAT, '>>/tmp/GGP-batch-runs';
-print STAT, "$$ $env $level $scenario\n";
+print STAT "$$ $env $level $scenario\n";
 
 system("ssh $machineAliases{$machine} \"cd $machineDirs{$machine}; $runScenario $env $level $scenario\"");
 
