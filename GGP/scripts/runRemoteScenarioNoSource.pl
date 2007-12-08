@@ -90,8 +90,18 @@ else {
 # log the current run so that we can kill it easily
 open STAT, '>>/tmp/GGP-batch-runs';
 print STAT "$$ $env $level $scenario\n";
+close STAT;
 
-system("ssh $machineAliases{$machine} \"cd $machineDirs{$machine}; $runScenario $env $level $scenario\"");
+$cmd = "ssh $machineAliases{$machine} \"cd $machineDirs{$machine}; $runScenario $env $level $scenario\"";
+system($cmd);
+
+if ($?) {
+  # error occurred somewhere
+  print "#$#$#$#$# WARNING: $cmd exited abnormally\n";
+  open ERR, '>>/tmp/GGP-errors';
+  print ERR "$cmd exited abnormally\n";
+  close ERR;
+}
 
 @logs = map {"$machineDirs{$machine}/$longEnv-$level-$scenario-$_"} ("target_no_source.log", "target_after_source.log");
 foreach (@logs) {

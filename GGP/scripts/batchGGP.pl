@@ -82,7 +82,7 @@ $numRuns = int($ARGV[1]);
 @scenarios = ();
 @hard = ();
 foreach $i (1 .. $numRuns) {
-  $d = "$dirBase$/i";
+  $d = "$dirBase/$i";
   if (not -d $d) {
     print "creating $d\n";
     print `mkdir -p $d`;

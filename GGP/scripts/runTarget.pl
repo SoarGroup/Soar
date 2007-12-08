@@ -68,9 +68,14 @@ if (-e $goodThings) {
 }
 
 $target =~ /^(.*)-target$/;
-$savedGT="../good_things/$1.goodthings.soar";
+
+# copy the appropriate file, depending on if you want to bump or not
+#$savedGT="../good_things/$1.goodthings.soar";
+$savedGT="../good_things/$1.goodthings.bump.soar";
+
 checkFor($savedGT);
 print `cp $savedGT $goodThings`;
+checkFor($goodThings);
 
 # run the targets with and without good things
 
