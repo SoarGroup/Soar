@@ -1,15 +1,18 @@
 #!/usr/bin/perl
 
+#@expected_logs = ("target_no_source.log", "target_after_source.log");
+@expected_logs = ("target_after_source.log");
+
 $dir = $ARGV[0];
 $machine = $ARGV[1];
 $env = $ARGV[2];
 $level = $ARGV[3];
-$scenario = $ARGV[4];
+$num = $ARGV[4];
 
 if ($env =~ "10") {
   # level 10 has no environment
   $env = "";
-  $scenario = $level;
+  $num = $level;
   $level = 10;
   die unless ($#ARGV == 3);
 }
@@ -89,11 +92,15 @@ else {
 
 # log the current run so that we can kill it easily
 open STAT, '>>/tmp/GGP-batch-runs';
-print STAT "$$ $env $level $scenario\n";
+print STAT "$$ $env $level $num\n";
 close STAT;
 
-$cmd = "ssh $machineAliases{$machine} \"cd $machineDirs{$machine}; $runScenario $env $level $scenario\"";
+$cmd = "ssh $machineAliases{$machine} \"cd $machineDirs{$machine}; $runScenario $env $level $num\"";
 system($cmd);
+
+$scenario_name = "$longEnv-$level-$num";
+$remote_file_base = "$machineAliases{$machine}:$machineDirs{$machine}/$scenario_name";
+$local_file_base = "$dir/$scenario_name";
 
 if ($?) {
   # error occurred somewhere
@@ -101,9 +108,14 @@ if ($?) {
   open ERR, '>>/tmp/GGP-errors';
   print ERR "$cmd exited abnormally\n";
   close ERR;
+  # copy over logs with .err appended to names
+  @log_copy_cmds = map {"scp $remote_file_base-$_ $local_file_base-$_.err"} @expected_logs;
+}
+else {
+  # copy over logs normally
+  @log_copy_cmds = map {"scp $remote_file_base-$_ $local_file_base-$_"} @expected_logs;
 }
 
-@logs = map {"$machineDirs{$machine}/$longEnv-$level-$scenario-$_"} ("target_no_source.log", "target_after_source.log");
-foreach (@logs) {
-  system("scp $machineAliases{$machine}:$_ $dir/");
+foreach (@log_copy_cmds) {
+  system($_);
 }
