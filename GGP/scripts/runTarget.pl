@@ -84,7 +84,11 @@ print `$canvasOff`;
 print `rm $tmpTarget`;
 
 print "Running $target with source..\n";
-print `$gtOn`;
+
+# we're only going to transfer source depth
+#print `$gtOn`;
+print `$gtOff`;
+
 print `$timeCommand $runSoar -w1 $agentDir/$target.soar > $targetWithSourceLog`;
 foreach $line (`cat $timeFile`) {
   chomp $line;
@@ -93,15 +97,15 @@ foreach $line (`cat $timeFile`) {
 
 lastDecision($targetWithSourceLog);
 
-print `$gtOff`;
-print `echo 'excise elaborate*start-depth' >> $agentDir/$target.soar`;
-print "Running $target without source..\n";
-print `$timeCommand $runSoar -w1 $agentDir/$target.soar > $targetWithoutSourceLog`;
-foreach $line (`cat $timeFile`) {
-  chomp $line;
-  print `echo '# UNIX TIME $line' >> $targetWithoutSourceLog`;
-}
-lastDecision($targetWithoutSourceLog);
+##print `$gtOff`;
+##print `echo 'excise elaborate*start-depth' >> $agentDir/$target.soar`;
+##print "Running $target without source..\n";
+##print `$timeCommand $runSoar -w1 $agentDir/$target.soar > $targetWithoutSourceLog`;
+##foreach $line (`cat $timeFile`) {
+##  chomp $line;
+##  print `echo '# UNIX TIME $line' >> $targetWithoutSourceLog`;
+##}
+##lastDecision($targetWithoutSourceLog);
 
 print `rm $timeFile`;
 

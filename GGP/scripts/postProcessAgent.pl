@@ -187,19 +187,19 @@ print `echo "}" >> $soarFile`;
 "wargame-9-1", 13,
 "wargame-9-2", 18);
 
-#$soarFile =~ /((build|differing|escape|mrogue|wargame)-\d+-\d+)/;
-#
-#if (defined $tgt_depths{$1}) {
-#  $depth_prod="
-#sp {elaborate*start-depth
-#  (state <s> ^superstate nil)
-#-->
-#(<s> ^start-depth $src_depths{$1})}\n";
-#
-#  open(AGENT, ">>$soarFile");
-#  print AGENT $depth_prod;
-#  close AGENT;
-#}
-#else {
-#  `echo "Depth for $1 not found" >> /tmp/GGP-errors`;
-#}
+$soarFile =~ /((build|differing|escape|mrogue|wargame)-\d+-\d+)/;
+
+if (defined $src_depths{$1}) {
+  $depth_prod="
+sp {elaborate*start-depth
+  (state <s> ^superstate nil)
+-->
+(<s> ^start-depth $src_depths{$1})}\n";
+
+  open(AGENT, ">>$soarFile");
+  print AGENT $depth_prod;
+  close AGENT;
+}
+else {
+  `echo "Depth for $1 not found" >> /tmp/GGP-errors`;
+}
