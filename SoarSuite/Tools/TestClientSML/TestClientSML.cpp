@@ -1589,7 +1589,7 @@ bool TestSML(bool embedded, bool useClientThread, bool fullyOptimized, bool simp
 
 		// Set this to true to give us lots of extra debug information on remote clients
 		// (useful in a test app like this).
-		// pKernel->SetTraceCommunications(true) ;
+	    // pKernel->SetTraceCommunications(true) ;
 
 		cout << "Soar kernel version " << pKernel->GetSoarKernelVersion() << endl ;
 		cout << "Soar client version " << pKernel->GetSoarClientVersion() << endl ;
@@ -1638,18 +1638,6 @@ bool TestSML(bool embedded, bool useClientThread, bool fullyOptimized, bool simp
 
 			if (!pAgent)
 				cout << "Error creating agent" << endl ;
-
-			// Added by voigtjr to test state of input link and output link
-			if (pAgent->GetInputLink() == 0)
-			{
-				cout << "*** ERROR: Input link null after agent creation" << endl;
-				return false;
-			}
-			if (pAgent->GetOutputLink() == 0)
-			{
-				cout << "*** ERROR: Output link null after agent creation" << endl;
-				return false;
-			}
 
 			bool ok = true ;
 
