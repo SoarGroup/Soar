@@ -538,32 +538,29 @@ preference *probabilistically_select( preference *candidates )
 	double current_sum = 0;
 	double rn = 0;
 
-	bool good_prefs = true;
-
-	// shouldn't support non-positive numbers
+	// count up positive numbers
 	for ( cand = candidates; cand != NIL; cand = cand->next_candidate )
-	{
-		if ( cand->numeric_value <= 0 )
-		{
-			good_prefs = false;
-			break;
-		}
-		else
+		if ( cand->numeric_value > 0 )
 			total_probability += cand->numeric_value;
-	}
 	
-	if ( !good_prefs )
+	// if nothing positive, resort to random
+	if ( total_probability == 0 )
 		return randomly_select( candidates );
 	
+	// choose a random preference within the distribution
 	rn = SoarRand();
 	selected_probability = rn * total_probability;
 	current_sum = 0;
 
+	// select the candidate based upon the chosen preference
 	for ( cand = candidates; cand != NIL; cand = cand->next_candidate ) 
 	{
-		current_sum += cand->numeric_value;
-		if ( selected_probability <= current_sum )
-			return cand;
+		if ( cand->numeric_value > 0 )
+		{
+			current_sum += cand->numeric_value;
+			if ( selected_probability <= current_sum )
+				return cand;
+		}
 	}
 
 	return NIL;
