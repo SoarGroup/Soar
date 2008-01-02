@@ -169,8 +169,11 @@ typedef byte wme_trace_type;   /* must be one of the above constants */
 /* NLD: auto-reduction of exploration parameters */
 #define USER_SELECT_REDUCE_SYSPARAM				 37
 
+/* NLD: Soar-RL learning parameter */
+#define RL_ENABLED								 38
+
 /* --- Warning: if you add sysparams, be sure to update the next line! --- */
-#define HIGHEST_SYSPARAM_NUMBER                  37
+#define HIGHEST_SYSPARAM_NUMBER                  38
 
 /* -----------------------------------------
    Sysparams[] stores the parameters; set_sysparam()

@@ -243,8 +243,14 @@ bool set_rl_parameter( agent *my_agent, const char *name, const char *new_val )
 {
 	if ( !valid_rl_parameter_value( my_agent, name, new_val ) )
 		return false;
+
+	const long converted_val = (*my_agent->rl_params)[ name ].param->string_param.from_str( new_val );
+
+	// learning special case
+	if ( strcmp( name, "learning" ) == 0 )
+		set_sysparam( my_agent, RL_ENABLED, converted_val );
 	
-	(*my_agent->rl_params)[ name ].param->string_param.value = (*my_agent->rl_params)[ name ].param->string_param.from_str( new_val );
+	(*my_agent->rl_params)[ name ].param->string_param.value = converted_val;
 	return true;
 }
 
@@ -252,6 +258,10 @@ bool set_rl_parameter( agent *my_agent, const char *name, const long new_val )
 {
 	if ( !valid_rl_parameter_value( my_agent, name, new_val ) )
 		return false;
+
+	// learning special case
+	if ( strcmp( name, "learning" ) == 0 )
+		set_sysparam( my_agent, RL_ENABLED, new_val );
 	
 	(*my_agent->rl_params)[ name ].param->string_param.value = new_val;
 	return true;
@@ -545,7 +555,7 @@ bool validate_rl_trace_tolerance( double new_val )
  **************************************************************************/
 bool soar_rl_enabled( agent *my_agent )
 {
-	return ( get_rl_parameter( my_agent, "learning", RL_RETURN_LONG ) == RL_LEARNING_ON );
+	return ( my_agent->sysparams[ RL_ENABLED ] == RL_LEARNING_ON );
 }
 
 /***************************************************************************
