@@ -313,6 +313,7 @@ public class SoarRobot extends Robot {
 					move.backward = true;
 				
 				} else if (direction.equalsIgnoreCase(Names.kStopID)) {
+					move.move = true;
 					move.forward = true;
 					move.backward = true;
 					commandId.AddStatusComplete();
@@ -356,6 +357,7 @@ public class SoarRobot extends Robot {
 					move.rotateDirection = Names.kRotateRight;
 				
 				} else if (direction.equalsIgnoreCase(Names.kStopID)) {
+					move.rotate = true;
 					move.rotateDirection = Names.kRotateStop;
 					commandId.AddStatusComplete();
 					continue;
