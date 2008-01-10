@@ -1032,10 +1032,28 @@ void store_rl_data( agent *my_agent, Symbol *goal, preference *cand )
     data->previous_q = cand->numeric_value;
 	
 	// Make list of just-fired prods
+	unsigned int just_fired = 0;
 	for ( preference *pref = goal->id.operator_slot->preferences[ NUMERIC_INDIFFERENT_PREFERENCE_TYPE ]; pref; pref = pref->next )
 		if ( ( op == pref->value ) && pref->inst->prod->rl_rule )
 			if ( pref->inst->prod->rl_rule ) 
+			{
+				if ( !just_fired )
+				{
+					free_list( my_agent, data->prev_op_rl_rules );
+					data->prev_op_rl_rules = NIL;
+				}
+				
 				push( my_agent, pref->inst->prod, data->prev_op_rl_rules );
+				just_fired++;
+			}
+
+	if ( just_fired )
+	{
+		data->reward_age = 0;
+		data->num_prev_op_rl_rules = just_fired;
+	}
+	else
+		data->reward_age++;
 }
 
 /***************************************************************************
@@ -1053,6 +1071,12 @@ void perform_rl_update( agent *my_agent, float op_value, Symbol *goal )
 	double gamma = get_rl_parameter( my_agent, "eligibility-trace-discount-rate" );
 	double tolerance = get_rl_parameter( my_agent, "eligibility-trace-tolerance" );
 
+	// compute TD update, set stat
+	float update = data->reward * pow( gamma, (double) data->reward_age );
+	update += ( pow( gamma, (double) data->step ) * op_value );
+	update -= data->previous_q;
+	set_rl_stat( my_agent, "update-error", (double) ( -update ) );
+
 	// Iterate through eligibility_traces, decay traces. If less than TOLERANCE, remove from map.
 	for ( iter = data->eligibility_traces->begin(); iter != data->eligibility_traces->end(); )
 	{
@@ -1065,17 +1089,12 @@ void perform_rl_update( agent *my_agent, float op_value, Symbol *goal )
 	}
 	
 	// Update trace for just fired prods
-	int num_prev_fired_rules = 0;
-	for ( cons *c = data->prev_op_rl_rules; c; c = c->rest )
-		if ( c->first ) 
-			num_prev_fired_rules++;
-
-	if ( num_prev_fired_rules )
+	if ( data->num_prev_op_rl_rules )
 	{
 		double trace_increment = 1.0;
 
 		if ( accumulation == RL_ACCUMULATION_SUM )
-			trace_increment /= num_prev_fired_rules;
+			trace_increment /= data->num_prev_op_rl_rules;
 		
 		for ( cons *c = data->prev_op_rl_rules; c; c = c->rest )
 		{
@@ -1089,14 +1108,6 @@ void perform_rl_update( agent *my_agent, float op_value, Symbol *goal )
 			}
 		}
 	}
-	free_list( my_agent, data->prev_op_rl_rules );
-	data->prev_op_rl_rules = NIL;
-
-	// compute TD update, set stat
-	float update = data->reward;
-	update += ( pow( gamma, (double) data->step ) * op_value );
-	update -= data->previous_q;
-	set_rl_stat( my_agent, "update-error", (double) ( -update ) );
 	
 	// For each prod in map, add alpha*delta*trace to value
 	for ( iter = data->eligibility_traces->begin(); iter != data->eligibility_traces->end(); iter++ )

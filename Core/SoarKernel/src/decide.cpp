@@ -1929,7 +1929,7 @@ void remove_existing_context_and_descendents (agent* thisAgent, Symbol *goal) {
   }
 
   delete goal->id.rl_info->eligibility_traces;
-  free_list( thisAgent, goal->id.rl_info->prev_op_rl_rules);
+  free_list( thisAgent, goal->id.rl_info->prev_op_rl_rules );
   symbol_remove_ref( thisAgent, goal->id.reward_header );
   free_memory( thisAgent, goal->id.rl_info, MISCELLANEOUS_MEM_USAGE );
 
@@ -2009,6 +2009,8 @@ void create_new_context (agent* thisAgent, Symbol *attr_of_impasse, byte impasse
   id->id.rl_info->prev_op_rl_rules = NIL;
   id->id.rl_info->previous_q = 0;
   id->id.rl_info->reward = 0;
+  id->id.rl_info->reward_age = 0;
+  id->id.rl_info->num_prev_op_rl_rules = 0;
   id->id.rl_info->step = 0;  
   id->id.rl_info->impasse_type = NONE_IMPASSE_TYPE;
 
@@ -2224,7 +2226,7 @@ Bool decide_context_slot (agent* thisAgent, Symbol *goal, slot *s, bool predict 
          preference_remove_ref(thisAgent, temp);
       
       if ( soar_rl_enabled( thisAgent ) )
-      store_rl_data( thisAgent, goal, candidates );
+		store_rl_data( thisAgent, goal, candidates );
 	  
 	  /* JC ADDED: Notify gSKI of an operator selection  */
       gSKI_MakeAgentCallback(gSKI_K_EVENT_OPERATOR_SELECTED, 1, thisAgent, 
