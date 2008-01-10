@@ -39,7 +39,7 @@ bool valid_exploration_policy( const char *policy_name )
 
 bool valid_exploration_policy( const long policy )
 {
-	return ( ( policy > NULL ) && ( policy < USER_SELECT_INVALID ) );
+	return ( ( policy > 0 ) && ( policy < USER_SELECT_INVALID ) );
 }
 
 /***************************************************************************
@@ -116,40 +116,68 @@ const long get_exploration_policy( agent *my_agent )
 /***************************************************************************
  * Function     : add_exploration_parameter
  **************************************************************************/
-exploration_parameter *add_exploration_parameter( double value, bool (*val_func)( double ) )
+exploration_parameter *add_exploration_parameter( double value, bool (*val_func)( double ), const char *name )
 {
 	// new parameter entry
 	exploration_parameter *newbie = new exploration_parameter;
 	newbie->value = value;
-	newbie->reduction_policy = EXPLORATION_EXPONENTIAL;
+	newbie->name = name;
+	newbie->reduction_policy = EXPLORATION_REDUCTION_EXPONENTIAL;
 	newbie->val_func = val_func;
-	newbie->rates[ EXPLORATION_EXPONENTIAL ] = 1;
-	newbie->rates[ EXPLORATION_LINEAR ] = 0;
+	newbie->rates[ EXPLORATION_REDUCTION_EXPONENTIAL ] = 1;
+	newbie->rates[ EXPLORATION_REDUCTION_LINEAR ] = 0;
 	
 	return newbie;
 }
 
 /***************************************************************************
- * Function     : valid_parameter
+ * Function     : convert_exploration_parameter
  **************************************************************************/
-bool valid_parameter( agent *my_agent, const char *name )
-{	
-	std::string *temp = new std::string( name );
-	bool return_val = is_set( my_agent->exploration_params, temp );
-	delete temp;
+const long convert_exploration_parameter( agent *my_agent, const char *name )
+{
+	for ( int i=0; i<EXPLORATION_PARAMS; i++ )
+		if ( !strcmp( name, my_agent->exploration_params[ i ]->name ) )
+			return (const long) i;
 	
-	return return_val;
+	return EXPLORATION_PARAMS;
+}
+
+const char *convert_exploration_parameter( agent *my_agent, const long parameter )
+{
+	return ( ( ( parameter >= 0 ) && ( parameter < EXPLORATION_PARAMS ) )?( my_agent->exploration_params[ parameter ]->name ):( NULL ) );
+}
+
+/***************************************************************************
+ * Function     : valid_exploration_parameter
+ **************************************************************************/
+const bool valid_exploration_parameter( agent *my_agent, const char *name )
+{
+	return ( convert_exploration_parameter( my_agent, name ) != EXPLORATION_PARAMS );
+}
+
+const bool valid_exploration_parameter( agent *my_agent, const long parameter )
+{
+	return ( convert_exploration_parameter( my_agent, parameter ) != NULL );
 }
 
 /***************************************************************************
  * Function     : get_parameter_value
  **************************************************************************/
 double get_parameter_value( agent *my_agent, const char *parameter )
-{
-	if ( !valid_parameter( my_agent, parameter ) )
+{	
+	const long param = convert_exploration_parameter( my_agent, parameter );
+	if ( param == EXPLORATION_PARAMS )
 		return 0;
 	
-	return (*my_agent->exploration_params)[ parameter ].value;
+	return my_agent->exploration_params[ param ]->value;
+}
+
+double get_parameter_value( agent *my_agent, const long parameter )
+{
+	if ( valid_exploration_parameter( my_agent, parameter ) )
+		return my_agent->exploration_params[ parameter ]->value;
+
+	return 0;
 }
 
 /***************************************************************************
@@ -173,10 +201,19 @@ bool validate_temperature( double value )
  **************************************************************************/
 bool valid_parameter_value( agent *my_agent, const char *name, double value )
 {
-	if ( !valid_parameter( my_agent, name ) )
+	const long param = convert_exploration_parameter( my_agent, name );
+	if ( param == EXPLORATION_PARAMS )
 		return false;
 	
-	return (*my_agent->exploration_params)[ name ].val_func( value );
+	return my_agent->exploration_params[ param ]->val_func( value );
+}
+
+bool valid_parameter_value( agent *my_agent, const long parameter, double value )
+{
+	if ( valid_exploration_parameter( my_agent, parameter ) )
+		return my_agent->exploration_params[ parameter ]->val_func( value );
+
+	return false;
 }
 
 /***************************************************************************
@@ -184,20 +221,24 @@ bool valid_parameter_value( agent *my_agent, const char *name, double value )
  **************************************************************************/
 bool set_parameter_value( agent *my_agent, const char *name, double value )
 {
-	if ( !valid_parameter_value( my_agent, name, value ) )
+	const long param = convert_exploration_parameter( my_agent, name );
+	if ( param == EXPLORATION_PARAMS )
 		return false;
 	
-	(*my_agent->exploration_params)[ name ].value = value;
+	my_agent->exploration_params[ param ]->value = value;
 	
 	return true;
 }
 
-/***************************************************************************
- * Function     : get_parameter_names
- **************************************************************************/
-std::vector<std::string> *get_parameter_names( agent *my_agent )
+bool set_parameter_value( agent *my_agent, const long parameter, double value )
 {
-	return map_keys( &(*my_agent->exploration_params) );
+	if ( valid_exploration_parameter( my_agent, parameter ) )
+	{
+		my_agent->exploration_params[ parameter ]->value = value;
+		return true;
+	}
+	else
+		return false;
 }
 
 /***************************************************************************
@@ -205,7 +246,7 @@ std::vector<std::string> *get_parameter_names( agent *my_agent )
  **************************************************************************/
 bool get_auto_update_exploration( agent *my_agent )
 {
-	return ( my_agent->sysparams[USER_SELECT_REDUCE_SYSPARAM] != FALSE );
+	return ( my_agent->sysparams[ USER_SELECT_REDUCE_SYSPARAM ] != FALSE );
 }
 
 /***************************************************************************
@@ -213,7 +254,7 @@ bool get_auto_update_exploration( agent *my_agent )
  **************************************************************************/
 bool set_auto_update_exploration( agent *my_agent, bool setting )
 {
-	my_agent->sysparams[USER_SELECT_REDUCE_SYSPARAM] = ( ( setting )?( TRUE ):( FALSE ) );
+	my_agent->sysparams[ USER_SELECT_REDUCE_SYSPARAM ] = ( ( setting )?( TRUE ):( FALSE ) );
 	
 	return true;
 }
@@ -224,29 +265,29 @@ bool set_auto_update_exploration( agent *my_agent, bool setting )
 void update_exploration_parameters( agent *my_agent )
 {	
 	if ( get_auto_update_exploration( my_agent ) )
-	{
-		std::vector<std::string> *parameters = get_parameter_names( my_agent );
-	
-		for ( std::vector<std::string>::size_type i=0; i<parameters->size(); i++ )
+	{			
+		for ( int i=0; i<EXPLORATION_PARAMS; i++ )
 		{
-			const char *parameter_name = (*parameters)[ i ].c_str();
-			const long reduction_policy = get_reduction_policy( my_agent, parameter_name );
-			double reduction_rate = get_reduction_rate( my_agent, parameter_name, reduction_policy );
-			double current_value = get_parameter_value( my_agent, parameter_name );
+			const long reduction_policy = get_reduction_policy( my_agent, i );
+			double reduction_rate = get_reduction_rate( my_agent, i, reduction_policy );			
 	
-			if ( reduction_policy == EXPLORATION_EXPONENTIAL )
+			if ( reduction_policy == EXPLORATION_REDUCTION_EXPONENTIAL )
 			{
 				if ( reduction_rate != 1 )
-					set_parameter_value( my_agent, parameter_name, ( current_value * reduction_rate ) );
+				{
+					double current_value = get_parameter_value( my_agent, i );
+
+					set_parameter_value( my_agent, i, ( current_value * reduction_rate ) );
+				}
 			}
-			else if ( reduction_policy == EXPLORATION_LINEAR )
+			else if ( reduction_policy == EXPLORATION_REDUCTION_LINEAR )
 			{
+				double current_value = get_parameter_value( my_agent, i );
+				
 				if ( ( current_value > 0 ) && ( reduction_rate != 0 ) )
-					set_parameter_value( my_agent, parameter_name, ( ( ( current_value - reduction_rate ) > 0 )?( current_value - reduction_rate ):( 0 ) ) );
+					set_parameter_value( my_agent, i, ( ( ( current_value - reduction_rate ) > 0 )?( current_value - reduction_rate ):( 0 ) ) );
 			}
 		}
-	
-		delete parameters;
 	}
 }
 
@@ -256,18 +297,18 @@ void update_exploration_parameters( agent *my_agent )
 const long convert_reduction_policy( const char *policy_name )
 {
 	if ( !strcmp( policy_name, "exponential" ) )
-		return EXPLORATION_EXPONENTIAL;
+		return EXPLORATION_REDUCTION_EXPONENTIAL;
 	if ( !strcmp( policy_name, "linear" ) )
-		return EXPLORATION_LINEAR;
+		return EXPLORATION_REDUCTION_LINEAR;
 	
-	return NULL;
+	return EXPLORATION_REDUCTIONS;
 }
 
 const char *convert_reduction_policy( const long policy )
 {
-	if ( policy == EXPLORATION_EXPONENTIAL )
+	if ( policy == EXPLORATION_REDUCTION_EXPONENTIAL )
 		return "exponential";
-	if ( policy == EXPLORATION_LINEAR )
+	if ( policy == EXPLORATION_REDUCTION_LINEAR )
 		return "linear";
 	
 	return NULL;
@@ -278,10 +319,19 @@ const char *convert_reduction_policy( const long policy )
  **************************************************************************/
 const long get_reduction_policy( agent *my_agent, const char *parameter )
 {
-	if ( !valid_parameter( my_agent, parameter ) )
-		return false;
-	
-	return (*my_agent->exploration_params)[ parameter ].reduction_policy;
+	const long param = convert_exploration_parameter( my_agent, parameter );
+	if ( param == EXPLORATION_PARAMS )
+		return EXPLORATION_REDUCTIONS;
+
+	return my_agent->exploration_params[ param ]->reduction_policy;
+}
+
+const long get_reduction_policy( agent *my_agent, const long parameter )
+{
+	if ( valid_exploration_parameter( my_agent, parameter ) )
+		return my_agent->exploration_params[ parameter ]->reduction_policy;
+	else
+		return EXPLORATION_REDUCTIONS;
 }
 
 /***************************************************************************
@@ -289,24 +339,17 @@ const long get_reduction_policy( agent *my_agent, const char *parameter )
  **************************************************************************/
 bool valid_reduction_policy( agent *my_agent, const char *parameter, const char *policy_name )
 {	
-	const long policy = convert_reduction_policy( policy_name );
-	if ( policy == NULL )
-		return false;
-	
-	return valid_reduction_policy( my_agent, parameter, policy );
+	return ( convert_reduction_policy( policy_name ) != EXPLORATION_REDUCTIONS );
 }
 
 bool valid_reduction_policy( agent *my_agent, const char *parameter, const long policy )
 {	
-	if ( !valid_parameter( my_agent, parameter ) )
-		return false;
-	
-	long *temp = new long;
-	*temp = policy;
-	bool return_val = is_set( (&(*my_agent->exploration_params)[ parameter ].rates), temp );
-	delete temp;
+	return ( convert_reduction_policy( policy ) != NULL );
+}
 
-	return return_val;
+bool valid_reduction_policy( agent *my_agent, const long parameter, const long policy )
+{	
+	return ( convert_reduction_policy( policy ) != NULL );
 }
 
 /***************************************************************************
@@ -314,32 +357,29 @@ bool valid_reduction_policy( agent *my_agent, const char *parameter, const long 
  **************************************************************************/
 bool set_reduction_policy( agent *my_agent, const char *parameter, const char *policy_name )
 {
+	const long param = convert_exploration_parameter( my_agent, parameter );
+	if ( param == EXPLORATION_PARAMS )
+		return EXPLORATION_REDUCTIONS;
+	
 	const long policy = convert_reduction_policy( policy_name );
-	if ( policy == NULL )
-		return false;
+	if ( policy == EXPLORATION_REDUCTIONS )
+		return false;		
 	
-	if ( !valid_reduction_policy( my_agent, parameter, policy ) )
-		return false;
-	
-	(*my_agent->exploration_params)[ parameter ].reduction_policy = policy;
+	my_agent->exploration_params[ param ]->reduction_policy = policy;
 	
 	return true;
 }
 
-/***************************************************************************
- * Function     : get_reduction_policies
- **************************************************************************/
-std::vector<const char *> *get_reduction_policies( agent *my_agent, const char *parameter )
+bool set_reduction_policy( agent *my_agent, const long parameter, const long policy )
 {
-	std::vector<const char *> *return_val = new std::vector<const char *>();
-	
-	if ( valid_reduction_policy( my_agent, parameter, "exponential" ) )
-		return_val->push_back( "exponential" );
-	
-	if ( valid_reduction_policy( my_agent, parameter, "linear" ) )
-		return_val->push_back( "linear" );
-	
-	return return_val;
+	if ( valid_exploration_parameter( my_agent, parameter ) &&
+		 valid_reduction_policy( my_agent, parameter, policy ) )
+	{
+		my_agent->exploration_params[ parameter ]->reduction_policy = policy;
+		return true;
+	}
+
+	return false;
 }
 
 /***************************************************************************
@@ -347,25 +387,29 @@ std::vector<const char *> *get_reduction_policies( agent *my_agent, const char *
  **************************************************************************/
 bool valid_reduction_rate( agent *my_agent, const char *parameter, const char *policy_name, double reduction_rate )
 {
+	const long param = convert_exploration_parameter( my_agent, parameter );
+	if ( param == EXPLORATION_PARAMS )
+		return EXPLORATION_REDUCTIONS;
+	
 	const long policy = convert_reduction_policy( policy_name );
-	if ( policy == NULL )
+	if ( policy == EXPLORATION_REDUCTIONS )
 		return false;
 	
-	return valid_reduction_rate( my_agent, parameter, policy, reduction_rate );
+	return valid_reduction_rate( my_agent, param, policy, reduction_rate );
 }
 
-bool valid_reduction_rate( agent *my_agent, const char *parameter, const long policy, double reduction_rate )
+bool valid_reduction_rate( agent *my_agent, const long parameter, const long policy, double reduction_rate )
 {
 	if ( !valid_reduction_policy( my_agent, parameter, policy ) )
 		return false;
 	
 	switch ( policy )
 	{
-		case EXPLORATION_EXPONENTIAL:
+		case EXPLORATION_REDUCTION_EXPONENTIAL:
 			return valid_exponential( reduction_rate );
 			break;
 			
-		case EXPLORATION_LINEAR:
+		case EXPLORATION_REDUCTION_LINEAR:
 			return valid_linear( reduction_rate );
 			break;
 			
@@ -396,22 +440,24 @@ bool valid_linear( double reduction_rate )
  **************************************************************************/
 double get_reduction_rate( agent *my_agent, const char *parameter, const char *policy_name )
 {
-	const long policy = convert_reduction_policy( policy_name );
-	if ( policy == NULL )
+	const long param = convert_exploration_parameter( my_agent, parameter );
+	if ( param == EXPLORATION_PARAMS )
 		return 0;
 	
-	return get_reduction_rate( my_agent, parameter, policy );
+	const long policy = convert_reduction_policy( policy_name );
+	if ( policy == EXPLORATION_REDUCTIONS )
+		return 0;
+	
+	return get_reduction_rate( my_agent, param, policy );
 }
 
-double get_reduction_rate( agent *my_agent, const char *parameter, const long policy )
-{
-	if ( !valid_parameter( my_agent, parameter ) )
-		return 0;
+double get_reduction_rate( agent *my_agent, const long parameter, const long policy )
+{	
+	if ( valid_exploration_parameter( my_agent, parameter ) &&
+		 valid_reduction_policy( my_agent, parameter, policy ) )
+		return my_agent->exploration_params[ parameter ]->rates[ policy ];
 	
-	if ( !valid_reduction_policy( my_agent, parameter, policy ) )
-		return 0;
-	
-	return (*my_agent->exploration_params)[ parameter ].rates[ policy ];
+	return 0;
 }
 
 /***************************************************************************
@@ -419,27 +465,28 @@ double get_reduction_rate( agent *my_agent, const char *parameter, const long po
  **************************************************************************/
 bool set_reduction_rate( agent *my_agent, const char *parameter, const char *policy_name, double reduction_rate )
 {
-	const long policy = convert_reduction_policy( policy_name );
-	if ( policy == NULL )
+	const long param = convert_exploration_parameter( my_agent, parameter );
+	if ( param == EXPLORATION_PARAMS )
 		return false;
 	
-	return set_reduction_rate( my_agent, parameter, policy, reduction_rate );
+	const long policy = convert_reduction_policy( policy_name );
+	if ( policy == EXPLORATION_REDUCTIONS )
+		return false;
+	
+	return set_reduction_rate( my_agent, param, policy, reduction_rate );
 }
 
-bool set_reduction_rate( agent *my_agent, const char *parameter, const long policy, double reduction_rate )
+bool set_reduction_rate( agent *my_agent, const long parameter, const long policy, double reduction_rate )
 {
-	if ( !valid_parameter( my_agent, parameter ) )
-		return false;
-	
-	if ( !valid_reduction_policy( my_agent, parameter, policy ) )
-		return false;
-	
-	if ( !valid_reduction_rate( my_agent, parameter, policy, reduction_rate ) )
-		return false;
-	
-	(*my_agent->exploration_params)[ parameter ].rates[ policy ] = reduction_rate;
-	
-	return true;
+	if ( valid_exploration_parameter( my_agent, parameter ) &&
+		 valid_reduction_policy( my_agent, parameter, policy ) &&
+		 valid_reduction_rate( my_agent, parameter, policy, reduction_rate ) )
+	{
+		my_agent->exploration_params[ parameter ]->rates[ policy ] = reduction_rate;
+		return true;
+	}
+			
+	return false;
 }
 
 /***************************************************************************
@@ -577,7 +624,7 @@ preference *boltzmann_select( agent *my_agent, preference *candidates )
 	double rn = 0;
 	double current_sum = 0;
 
-	double temp = get_parameter_value( my_agent, "temperature" );
+	double temp = get_parameter_value( my_agent, (const long) EXPLORATION_PARAM_TEMPERATURE );
 	
 	// output trace information
 	if ( my_agent->sysparams[ TRACE_INDIFFERENT_SYSPARAM ] )
@@ -677,7 +724,7 @@ preference *epsilon_greedy_select( agent *my_agent, preference *candidates )
 {
 	preference *cand = 0;
 
-	double epsilon = get_parameter_value( my_agent, "epsilon" );
+	double epsilon = get_parameter_value( my_agent, (const long) EXPLORATION_PARAM_EPSILON );
 
 	if ( my_agent->sysparams[ TRACE_INDIFFERENT_SYSPARAM ] )
 	{

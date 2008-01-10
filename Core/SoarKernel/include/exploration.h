@@ -13,26 +13,29 @@
 #ifndef EXPLORATION_H
 #define EXPLORATION_H
 
-#include <map>
-#include <vector>
-
 #include "gdatastructs.h"
 
 //////////////////////////////////////////////////////////
 // Exploration constants
 //////////////////////////////////////////////////////////
-#define EXPLORATION_EXPONENTIAL 1
-#define EXPLORATION_LINEAR 2
+#define EXPLORATION_REDUCTION_EXPONENTIAL	0
+#define EXPLORATION_REDUCTION_LINEAR		1
+#define EXPLORATION_REDUCTIONS				2 // set as greatest reduction + 1
+
+#define EXPLORATION_PARAM_EPSILON			0
+#define EXPLORATION_PARAM_TEMPERATURE		1
+#define EXPLORATION_PARAMS					2 // set as greatest param + 1
 
 //////////////////////////////////////////////////////////
 // Exploration Types
 //////////////////////////////////////////////////////////
 typedef struct exploration_parameter_struct  
 {
+	const char *name;
 	double value;
 	long reduction_policy;
 	bool (*val_func)( double );
-	std::map<long, double> rates;
+	double rates[ EXPLORATION_REDUCTIONS ];
 } exploration_parameter;
 
 //////////////////////////////////////////////////////////
@@ -59,13 +62,19 @@ extern const long get_exploration_policy( agent *my_agent );
 //////////////////////////////////////////////////////////
 
 // add parameter
-extern exploration_parameter *add_exploration_parameter( double value, bool (*val_func)( double ) );
+extern exploration_parameter *add_exploration_parameter( double value, bool (*val_func)( double ), const char *name );
+
+// convert parameter name
+extern const long convert_exploration_parameter( agent *my_agent, const char *name );
+extern const char *convert_exploration_parameter( agent *my_agent, const long parameter );
 
 // validate parameter name
-extern bool valid_parameter( agent *my_agent, const char *name );
+extern const bool valid_exploration_parameter( agent *my_agent, const char *name );
+extern const bool valid_exploration_parameter( agent *my_agent, const long parameter );
 
 // get parameter value
 extern double get_parameter_value( agent *my_agent, const char *parameter );
+extern double get_parameter_value( agent *my_agent, const long parameter );
 
 // validate parameter value
 extern bool validate_epsilon( double value );
@@ -73,12 +82,11 @@ extern bool validate_temperature( double value );
 
 // validate parameter value
 extern bool valid_parameter_value( agent *my_agent, const char *name, double value );
+extern bool valid_parameter_value( agent *my_agent, const long parameter, double value );
 
 // set parameter value
 extern bool set_parameter_value( agent *my_agent, const char *name, double value );
-
-// list of parameter names
-extern std::vector<std::string> *get_parameter_names( agent *my_agent );
+extern bool set_parameter_value( agent *my_agent, const long parameter, double value );
 
 // control of auto-updates
 extern bool get_auto_update_exploration( agent *my_agent );
@@ -97,16 +105,16 @@ extern const char *convert_reduction_policy( const long policy );
 
 // get parameter reduction policy
 extern const long get_reduction_policy( agent *my_agent, const char *parameter );
+extern const long get_reduction_policy( agent *my_agent, const long parameter );
 
 // validate reduction policy per parameter
 extern bool valid_reduction_policy( agent *my_agent, const char *parameter, const char *policy_name );
 extern bool valid_reduction_policy( agent *my_agent, const char *parameter, const long policy );
+extern bool valid_reduction_policy( agent *my_agent, const long parameter, const long policy );
 
 // set parameter reduction policy
 extern bool set_reduction_policy( agent *my_agent, const char *parameter, const char *policy_name );
-
-// list of reduction policies
-extern std::vector<const char *> *get_reduction_policies( agent *my_agent, const char *parameter );
+extern bool set_reduction_policy( agent *my_agent, const long parameter, const long policy );
 
 //////////////////////////////////////////////////////////
 // Reduction Rates
@@ -114,17 +122,17 @@ extern std::vector<const char *> *get_reduction_policies( agent *my_agent, const
 
 // validate reduction rate
 extern bool valid_reduction_rate( agent *my_agent, const char *parameter, const char *policy_name, double reduction_rate );
-extern bool valid_reduction_rate( agent *my_agent, const char *parameter, const long policy, double reduction_rate );
+extern bool valid_reduction_rate( agent *my_agent, const long parameter, const long policy, double reduction_rate );
 extern bool valid_exponential( double reduction_rate );
 extern bool valid_linear( double reduction_rate );
 
 // get reduction rate
 extern double get_reduction_rate( agent *my_agent, const char *parameter, const char *policy_name );
-extern double get_reduction_rate( agent *my_agent, const char *parameter, const long policy );
+extern double get_reduction_rate( agent *my_agent, const long parameter, const long policy );
 
 // set reduction rate
 extern bool set_reduction_rate( agent *my_agent, const char *parameter, const char *policy_name, double reduction_rate );
-extern bool set_reduction_rate( agent *my_agent, const char *parameter, const long policy, double reduction_rate );
+extern bool set_reduction_rate( agent *my_agent, const long parameter, const long policy, double reduction_rate );
 
 //////////////////////////////////////////////////////////
 // Decision Procedures

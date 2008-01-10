@@ -223,7 +223,7 @@ bool CommandLineInterface::ParseIndifferentSelection( gSKI::Agent* pAgent, std::
 			return SetError( CLIError::kTooManyArgs );
 		
 		// make sure first argument is a valid parameter name
-		if ( !valid_parameter( my_agent, argv[2].c_str() ) )
+		if ( !valid_exploration_parameter( my_agent, argv[2].c_str() ) )
 			return SetError( CLIError::kInvalidAttribute );
 		
 		if ( m_NonOptionArguments == 1 )
@@ -247,7 +247,7 @@ bool CommandLineInterface::ParseIndifferentSelection( gSKI::Agent* pAgent, std::
 			return SetError( CLIError::kTooManyArgs );
 		
 		// make sure first argument is a valid parameter name
-		if ( !valid_parameter( my_agent, argv[2].c_str() ) )
+		if ( !valid_exploration_parameter( my_agent, argv[2].c_str() ) )
 			return SetError( CLIError::kInvalidAttribute );
 		
 		// make sure second argument is a valid reduction policy
@@ -459,13 +459,12 @@ bool CommandLineInterface::DoIndifferentSelection( gSKI::Agent* pAgent, const ch
 		}
 		temp = "";
 		
-		std::vector<std::string> *param_names = get_parameter_names( my_agent );
-		for ( int i=0; i<param_names->size(); i++ )
+		for ( int i=0; i<EXPLORATION_PARAMS; i++ )
 		{	
 			// value
-			temp = (*param_names)[i];
+			temp = convert_exploration_parameter( my_agent, i );
 			temp += ": ";
-			temp_value = get_parameter_value( my_agent, (*param_names)[i].c_str() ); 
+			temp_value = get_parameter_value( my_agent, i ); 
 			temp4 = to_string( temp_value );
 			temp += (*temp4);
 			delete temp4;
@@ -476,32 +475,31 @@ bool CommandLineInterface::DoIndifferentSelection( gSKI::Agent* pAgent, const ch
 				AppendArgTagFast( sml_Names::kParamValue, sml_Names::kTypeString, temp.c_str() );
 			
 			// reduction policy
-			temp = (*param_names)[i];
+			temp = convert_exploration_parameter( my_agent, i );
 			temp += " Reduction Policy: ";
-			temp += convert_reduction_policy( get_reduction_policy( my_agent, (*param_names)[i].c_str() ) );
+			temp += convert_reduction_policy( get_reduction_policy( my_agent, i ) );
 			if ( m_RawOutput )
-				m_Result << temp << "\n"; 
+				m_Result << temp << "\n";
 			else
 				AppendArgTagFast( sml_Names::kParamValue, sml_Names::kTypeString, temp.c_str() );
 			
-			// rates
-			std::vector<const char *> *param_policies = get_reduction_policies( my_agent, (*param_names)[i].c_str() );
+			// rates			
 			temp2 = "";
 			temp3 = "";
-			for ( int j=0; j<param_policies->size(); j++ )
+			for ( int j=0; j<EXPLORATION_REDUCTIONS; j++ )
 			{
-				temp2 += (*param_policies)[j];
-				if ( j != ( param_policies->size() - 1 ) )
+				temp2 += convert_reduction_policy( j );
+				if ( j != ( EXPLORATION_REDUCTIONS - 1 ) )
 					temp2 += "/";
 				
-				temp_value = get_reduction_rate( my_agent, (*param_names)[i].c_str(), (*param_policies)[j] );
+				temp_value = get_reduction_rate( my_agent, i, j );
 				temp4 = to_string( temp_value );
 				temp3 += (*temp4);
 				delete temp4;
-				if ( j != ( param_policies->size() - 1 ) )
+				if ( j != ( EXPLORATION_REDUCTIONS - 1 ) )
 					temp3 += "/";
 			}
-			temp = (*param_names)[i];
+			temp = convert_exploration_parameter( my_agent, i );
 			temp += " Reduction Rate (";
 			temp += temp2;
 			temp += "): ";
@@ -513,13 +511,9 @@ bool CommandLineInterface::DoIndifferentSelection( gSKI::Agent* pAgent, const ch
 				AppendArgTagFast( sml_Names::kParamValue, sml_Names::kTypeString, temp.c_str() );
 				AppendArgTagFast( sml_Names::kParamValue, sml_Names::kTypeString, "" );
 			}
-			delete param_policies;
 			
 			temp = "";
 		}
-		
-		param_names->clear();
-		delete param_names;
 
 		return true;
 	}

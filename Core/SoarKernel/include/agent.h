@@ -31,9 +31,10 @@
 #include "chunk.h"
 #include "callback.h"
 
+#include "exploration.h"
+
 #include <string>
 #include <map>
-#include <vector>
 
 /* JC ADDED: Included to allow gski callbacks */
 #include "gski_event_system_data.h"
@@ -44,8 +45,6 @@ typedef struct rhs_function_struct rhs_function;
 // Soar-RL types
 typedef struct rl_parameter_struct rl_parameter;
 
-// exploration types
-typedef struct exploration_parameter_struct exploration_parameter;
 
 typedef struct select_info_struct select_info;
 
@@ -756,7 +755,7 @@ kernel time and total_cpu_time greater than the derived total CPU time. REW */
   //#endif
   
   // exploration
-  std::map<std::string, exploration_parameter> *exploration_params;
+  exploration_parameter *exploration_params[ EXPLORATION_PARAMS ];
   
   // reinforcement learning
   std::map<std::string, rl_parameter> *rl_params;

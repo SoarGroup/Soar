@@ -327,14 +327,8 @@ agent * create_soar_agent (Kernel * thisKernel, char * agent_name) {            
 
   
   // exploration initialization
-  exploration_parameter *temp_exp_param;
-  newAgent->exploration_params = new std::map<std::string, exploration_parameter>();
-  temp_exp_param = add_exploration_parameter( 0.1, &validate_epsilon );
-  (*newAgent->exploration_params)[ "epsilon" ] = *temp_exp_param;
-  delete temp_exp_param;
-  temp_exp_param = add_exploration_parameter( 25, &validate_temperature );
-  (*newAgent->exploration_params)[ "temperature" ] = *temp_exp_param;
-  delete temp_exp_param;
+  newAgent->exploration_params[ EXPLORATION_PARAM_EPSILON ] = add_exploration_parameter( 0.1, &validate_epsilon, "epsilon" );
+  newAgent->exploration_params[ EXPLORATION_PARAM_TEMPERATURE ] = add_exploration_parameter( 25, &validate_temperature, "temperature" );
   
   // rl initialization
   rl_parameter *temp_rl_param;
@@ -522,8 +516,8 @@ void destroy_soar_agent (Kernel * thisKernel, agent * delete_agent)
   /* RPM 9/06 end */
 
   // cleanup exploration
-  delete_agent->exploration_params->clear();
-  delete delete_agent->exploration_params;
+  for ( int i=0; i<EXPLORATION_PARAMS; i++ )
+	  delete delete_agent->exploration_params[ i ];
 
   // cleanup Soar-RL
   clean_parameters( delete_agent );
