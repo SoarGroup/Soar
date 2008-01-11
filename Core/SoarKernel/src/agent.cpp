@@ -331,43 +331,20 @@ agent * create_soar_agent (Kernel * thisKernel, char * agent_name) {            
   newAgent->exploration_params[ EXPLORATION_PARAM_TEMPERATURE ] = add_exploration_parameter( 25, &validate_temperature, "temperature" );
   
   // rl initialization
-  rl_parameter *temp_rl_param;
-  newAgent->rl_params = new std::map<std::string, rl_parameter>();
-  temp_rl_param = add_rl_parameter( "on", &validate_rl_learning, &convert_rl_learning, &convert_rl_learning );
-  (*newAgent->rl_params)[ "learning" ] = *temp_rl_param;
-  delete temp_rl_param;
-  temp_rl_param = add_rl_parameter( "sum", &validate_rl_accumulation, &convert_rl_accumulation, &convert_rl_accumulation );
-  (*newAgent->rl_params)[ "accumulation-mode" ] = *temp_rl_param;
-  delete temp_rl_param;
-  temp_rl_param = add_rl_parameter( "exponential", &validate_rl_discount, &convert_rl_discount, &convert_rl_discount );
-  (*newAgent->rl_params)[ "discount-mode" ] = *temp_rl_param;
-  delete temp_rl_param;
-  temp_rl_param = add_rl_parameter( 0.9, &validate_rl_exp_discount );
-  (*newAgent->rl_params)[ "exponential-discount-rate" ] = *temp_rl_param;
-  delete temp_rl_param;
-  temp_rl_param = add_rl_parameter( 0.1, &validate_rl_lin_discount );
-  (*newAgent->rl_params)[ "linear-discount-rate" ] = *temp_rl_param;
-  delete temp_rl_param;
-  temp_rl_param = add_rl_parameter( 0.3, &validate_rl_learning_rate );
-  (*newAgent->rl_params)[ "learning-rate" ] = *temp_rl_param;
-  delete temp_rl_param;
-  temp_rl_param = add_rl_parameter( "sarsa", &validate_rl_learning_policy, &convert_rl_learning_policy, &convert_rl_learning_policy );
-  (*newAgent->rl_params)[ "learning-policy" ] = *temp_rl_param;
-  delete temp_rl_param;
-  temp_rl_param = add_rl_parameter( 0.9, &validate_rl_trace_discount );
-  (*newAgent->rl_params)[ "eligibility-trace-discount-rate" ] = *temp_rl_param;
-  delete temp_rl_param;
-  temp_rl_param = add_rl_parameter( 0, &validate_rl_decay_rate );
-  (*newAgent->rl_params)[ "eligibility-trace-decay-rate" ] = *temp_rl_param;
-  delete temp_rl_param;
-  temp_rl_param = add_rl_parameter( 0.001, &validate_rl_trace_tolerance );
-  (*newAgent->rl_params)[ "eligibility-trace-tolerance" ] = *temp_rl_param;
-  delete temp_rl_param;
-  
-  newAgent->rl_stats = new std::map<std::string, double>();
-  (*newAgent->rl_stats)[ "update-error" ] = 0;
-  (*newAgent->rl_stats)[ "total-reward" ] = 0;
-  (*newAgent->rl_stats)[ "global-reward" ] = 0;
+  newAgent->rl_params[ RL_PARAM_LEARNING ] = add_rl_parameter( "learning", "on", &validate_rl_learning, &convert_rl_learning, &convert_rl_learning );
+  newAgent->rl_params[ RL_PARAM_ACCUMULATION_MODE ] = add_rl_parameter( "accumulation-mode", "sum", &validate_rl_accumulation, &convert_rl_accumulation, &convert_rl_accumulation );
+  newAgent->rl_params[ RL_PARAM_DISCOUNT_MODE ] = add_rl_parameter( "discount-mode", "exponential", &validate_rl_discount, &convert_rl_discount, &convert_rl_discount );
+  newAgent->rl_params[ RL_PARAM_EXP_DISCOUNT_RATE ] = add_rl_parameter( "exponential-discount-rate", 0.9, &validate_rl_exp_discount );
+  newAgent->rl_params[ RL_PARAM_LIN_DISCOUNT_RATE ] = add_rl_parameter( "linear-discount-rate", 0.1, &validate_rl_lin_discount );
+  newAgent->rl_params[ RL_PARAM_LEARNING_RATE ] = add_rl_parameter( "learning-rate", 0.3, &validate_rl_learning_rate );
+  newAgent->rl_params[ RL_PARAM_LEARNING_POLICY ] = add_rl_parameter( "learning-policy", "sarsa", &validate_rl_learning_policy, &convert_rl_learning_policy, &convert_rl_learning_policy );
+  newAgent->rl_params[ RL_PARAM_ET_DISCOUNT_RATE ] = add_rl_parameter( "eligibility-trace-discount-rate", 0.9, &validate_rl_trace_discount );
+  newAgent->rl_params[ RL_PARAM_ET_DECAY_RATE ] = add_rl_parameter( "eligibility-trace-decay-rate", 0, &validate_rl_decay_rate );
+  newAgent->rl_params[ RL_PARAM_ET_TOLERANCE ] = add_rl_parameter( "eligibility-trace-tolerance", 0.001, &validate_rl_trace_tolerance );
+
+  newAgent->rl_stats[ RL_STAT_UPDATE_ERROR ] = add_rl_stat( "update-error" );
+  newAgent->rl_stats[ RL_STAT_TOTAL_REWARD ] = add_rl_stat( "total-reward" );
+  newAgent->rl_stats[ RL_STAT_GLOBAL_REWARD ] = add_rl_stat( "global-reward" );
   
   newAgent->rl_template_count = new std::map<std::string, int>();
   
@@ -521,11 +498,7 @@ void destroy_soar_agent (Kernel * thisKernel, agent * delete_agent)
 
   // cleanup Soar-RL
   clean_parameters( delete_agent );
-  delete_agent->rl_params->clear();
-  delete delete_agent->rl_params;
-
-  delete_agent->rl_stats->clear();
-  delete delete_agent->rl_stats;
+  clean_stats( delete_agent );
 
   delete_agent->rl_template_count->clear();
   delete delete_agent->rl_template_count;

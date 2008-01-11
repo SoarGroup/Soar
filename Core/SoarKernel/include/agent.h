@@ -32,6 +32,7 @@
 #include "callback.h"
 
 #include "exploration.h"
+#include "reinforcement_learning.h"
 
 #include <string>
 #include <map>
@@ -44,7 +45,7 @@ typedef struct rhs_function_struct rhs_function;
 
 // Soar-RL types
 typedef struct rl_parameter_struct rl_parameter;
-
+typedef struct rl_stat_struct rl_stat;
 
 typedef struct select_info_struct select_info;
 
@@ -758,8 +759,9 @@ kernel time and total_cpu_time greater than the derived total CPU time. REW */
   exploration_parameter *exploration_params[ EXPLORATION_PARAMS ];
   
   // reinforcement learning
-  std::map<std::string, rl_parameter> *rl_params;
-  std::map<std::string, double> *rl_stats;
+  rl_parameter *rl_params[ RL_PARAMS ];
+  rl_stat *rl_stats[ RL_STATS ];
+
   std::map<std::string, int> *rl_template_count;
 
   // select

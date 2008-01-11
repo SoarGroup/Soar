@@ -45,17 +45,17 @@ extern void variablize_condition_list (agent* thisAgent, condition *cond);
  **************************************************************************/
 void clean_parameters( agent *my_agent )
 {
-	std::vector<std::string> *my_keys = map_keys( my_agent->rl_params );
-	rl_parameter *temp;
+	for ( int i=0; i<RL_PARAMS; i++ )
+	  delete my_agent->rl_params[ i ];
+}
 
-	for ( int i=0; i<my_keys->size(); i++ )
-	{
-		temp = &( (*my_agent->rl_params)[ (*my_keys)[ i ] ] );
-		delete( temp->param );
-	}
-
-	my_keys->clear();
-	delete my_keys;
+/***************************************************************************
+ * Function     : clean_stats
+ **************************************************************************/
+void clean_stats( agent *my_agent )
+{
+	for ( int i=0; i<RL_STATS; i++ )
+	  delete my_agent->rl_stats[ i ];
 }
 
 /***************************************************************************
@@ -87,13 +87,8 @@ void reset_rl_data( agent *my_agent )
  **************************************************************************/
 void reset_rl_stats( agent *my_agent )
 {
-	std::vector<std::string> *my_keys = map_keys( my_agent->rl_stats );
-	
-	for ( size_t i=0; i<my_keys->size(); i++ )
-		(*my_agent->rl_stats)[ (*my_keys)[i] ] = 0;
-
-	my_keys->clear();
-	delete my_keys;
+	for ( int i=0; i<RL_STATS; i++ )
+		my_agent->rl_stats[ i ]->value = 0;
 }
 
 /***************************************************************************
@@ -114,7 +109,7 @@ void remove_rl_refs_for_prod( agent *my_agent, production *prod )
 /***************************************************************************
  * Function     : add_rl_parameter
  **************************************************************************/
-rl_parameter *add_rl_parameter( double value, bool (*val_func)( double ) )
+rl_parameter *add_rl_parameter( const char *name, double value, bool (*val_func)( double ) )
 {
 	// new parameter entry
 	rl_parameter *newbie = new rl_parameter;
@@ -122,11 +117,12 @@ rl_parameter *add_rl_parameter( double value, bool (*val_func)( double ) )
 	newbie->param->number_param.value = value;
 	newbie->param->number_param.val_func = val_func;
 	newbie->type = rl_param_number;
+	newbie->name = name;
 	
 	return newbie;
 }
 
-rl_parameter *add_rl_parameter( const char *value, bool (*val_func)( const char * ), const char *(*to_str)( long ), const long (*from_str)( const char * ) )
+rl_parameter *add_rl_parameter( const char *name, const char *value, bool (*val_func)( const long ), const char *(*to_str)( long ), const long (*from_str)( const char * ) )
 {
 	// new parameter entry
 	rl_parameter *newbie = new rl_parameter;
@@ -136,8 +132,29 @@ rl_parameter *add_rl_parameter( const char *value, bool (*val_func)( const char 
 	newbie->param->string_param.from_str = from_str;
 	newbie->param->string_param.value = from_str( value );
 	newbie->type = rl_param_string;
+	newbie->name = name;
 	
 	return newbie;
+}
+
+/***************************************************************************
+ * Function     : convert_rl_parameter
+ **************************************************************************/
+const char *convert_rl_parameter( agent *my_agent, const long param )
+{
+	if ( ( param < 0 ) || ( param >= RL_PARAMS ) )
+		return NULL;
+
+	return my_agent->rl_params[ param ]->name;
+}
+
+const long convert_rl_parameter( agent *my_agent, const char *name )
+{
+	for ( int i=0; i<RL_PARAMS; i++ )
+		if ( !strcmp( name, my_agent->rl_params[ i ]->name ) )
+			return i;
+
+	return RL_PARAMS;
 }
 
 /***************************************************************************
@@ -145,11 +162,12 @@ rl_parameter *add_rl_parameter( const char *value, bool (*val_func)( const char 
  **************************************************************************/
 bool valid_rl_parameter( agent *my_agent, const char *name )
 {
-	std::string *temp = new std::string( name );
-	bool return_val = is_set( my_agent->rl_params, temp );
-	delete temp;
+	return ( convert_rl_parameter( my_agent, name ) != RL_PARAMS );
+}
 
-	return return_val;
+bool valid_rl_parameter( agent *my_agent, const long param )
+{
+	return ( convert_rl_parameter( my_agent, param ) != NULL );
 }
 
 /***************************************************************************
@@ -157,10 +175,19 @@ bool valid_rl_parameter( agent *my_agent, const char *name )
  **************************************************************************/
 rl_param_type get_rl_parameter_type( agent *my_agent, const char *name )
 {
-	if ( !valid_rl_parameter( my_agent, name ) )
+	const long param = convert_rl_parameter( my_agent, name );
+	if ( param == RL_PARAMS )
 		return rl_param_invalid;
 	
-	return (*my_agent->rl_params)[ name ].type;
+	return my_agent->rl_params[ param ]->type;
+}
+
+rl_param_type get_rl_parameter_type( agent *my_agent, const long param )
+{
+	if ( !valid_rl_parameter( my_agent, param ) )
+		return rl_param_invalid;
+
+	return my_agent->rl_params[ param ]->type;
 }
 
 /***************************************************************************
@@ -168,26 +195,73 @@ rl_param_type get_rl_parameter_type( agent *my_agent, const char *name )
  **************************************************************************/
 const long get_rl_parameter( agent *my_agent, const char *name, const double test )
 {
-	if ( get_rl_parameter_type( my_agent, name ) != rl_param_string )
+	const long param = convert_rl_parameter( my_agent, name );
+	if ( param == RL_PARAMS )
 		return NULL;
 	
-	return (*my_agent->rl_params)[ name ].param->string_param.value;
+	if ( get_rl_parameter_type( my_agent, param ) != rl_param_string )
+		return NULL;
+	
+	return my_agent->rl_params[ param ]->param->string_param.value;
 }
 
 const char *get_rl_parameter( agent *my_agent, const char *name, const char *test )
 {
-	if ( get_rl_parameter_type( my_agent, name ) != rl_param_string )
+	const long param = convert_rl_parameter( my_agent, name );
+	if ( param == RL_PARAMS )
 		return NULL;
 	
-	return (*my_agent->rl_params)[ name ].param->string_param.to_str( (*my_agent->rl_params)[ name ].param->string_param.value );
+	if ( get_rl_parameter_type( my_agent, param ) != rl_param_string )
+		return NULL;
+	
+	return my_agent->rl_params[ param ]->param->string_param.to_str( my_agent->rl_params[ param ]->param->string_param.value );
 }
 
 double get_rl_parameter( agent *my_agent, const char *name )
 {
-	if ( get_rl_parameter_type( my_agent, name ) != rl_param_number )
+	const long param = convert_rl_parameter( my_agent, name );
+	if ( param == RL_PARAMS )
 		return NULL;
 	
-	return (*my_agent->rl_params)[ name ].param->number_param.value;
+	if ( get_rl_parameter_type( my_agent, param ) != rl_param_number )
+		return NULL;
+	
+	return my_agent->rl_params[ param ]->param->number_param.value;
+}
+
+//
+
+const long get_rl_parameter( agent *my_agent, const long param, const double test )
+{
+	if ( !valid_rl_parameter( my_agent, param ) )
+		return NULL;
+
+	if ( get_rl_parameter_type( my_agent, param ) != rl_param_string )
+		return NULL;
+	
+	return my_agent->rl_params[ param ]->param->string_param.value;
+}
+
+const char *get_rl_parameter( agent *my_agent, const long param, const char *test )
+{
+	if ( !valid_rl_parameter( my_agent, param ) )
+		return NULL;
+	
+	if ( get_rl_parameter_type( my_agent, param ) != rl_param_string )
+		return NULL;
+	
+	return my_agent->rl_params[ param ]->param->string_param.to_str( my_agent->rl_params[ param ]->param->string_param.value );
+}
+
+double get_rl_parameter( agent *my_agent, const long param )
+{
+	if ( !valid_rl_parameter( my_agent, param ) )
+		return NULL;
+	
+	if ( get_rl_parameter_type( my_agent, param ) != rl_param_number )
+		return NULL;
+	
+	return my_agent->rl_params[ param ]->param->number_param.value;
 }
 
 /***************************************************************************
@@ -195,36 +269,73 @@ double get_rl_parameter( agent *my_agent, const char *name )
  **************************************************************************/
 bool valid_rl_parameter_value( agent *my_agent, const char *name, double new_val )
 {
-	if ( get_rl_parameter_type( my_agent, name ) != rl_param_number )
+	const long param = convert_rl_parameter( my_agent, name );
+	if ( param == RL_PARAMS )
 		return false;
 	
-	if ( !(*my_agent->rl_params)[ name ].param->number_param.val_func( new_val ) )
+	if ( get_rl_parameter_type( my_agent, param ) != rl_param_number )
 		return false;
 	
-	return true;
+	return my_agent->rl_params[ param ]->param->number_param.val_func( new_val );
 }
 
 bool valid_rl_parameter_value( agent *my_agent, const char *name, const char *new_val )
 {
-	if ( get_rl_parameter_type( my_agent, name ) != rl_param_string )
+	const long param = convert_rl_parameter( my_agent, name );
+	if ( param == RL_PARAMS )
 		return false;
 	
-	if ( !(*my_agent->rl_params)[ name ].param->string_param.val_func( new_val ) )
+	if ( get_rl_parameter_type( my_agent, param ) != rl_param_string )
 		return false;
 	
-	return true;
+	return my_agent->rl_params[ param ]->param->string_param.val_func( my_agent->rl_params[ param ]->param->string_param.from_str( new_val ) );
 }
 
 bool valid_rl_parameter_value( agent *my_agent, const char *name, const long new_val )
 {
-	if ( get_rl_parameter_type( my_agent, name ) != rl_param_string )
+	const long param = convert_rl_parameter( my_agent, name );
+	if ( param == RL_PARAMS )
 		return false;
 	
-	const char *new_val_str = (*my_agent->rl_params)[ name ].param->string_param.to_str( new_val );
-	if ( !(*my_agent->rl_params)[ name ].param->string_param.val_func( new_val_str ) )
+	if ( get_rl_parameter_type( my_agent, param ) != rl_param_string )
 		return false;
 	
-	return true;
+	return my_agent->rl_params[ param ]->param->string_param.val_func( new_val );
+}
+
+//
+
+bool valid_rl_parameter_value( agent *my_agent, const long param, double new_val )
+{
+	if ( !valid_rl_parameter( my_agent, param ) )
+		return false;
+	
+	if ( get_rl_parameter_type( my_agent, param ) != rl_param_number )
+		return false;
+	
+	return my_agent->rl_params[ param ]->param->number_param.val_func( new_val );
+}
+
+bool valid_rl_parameter_value( agent *my_agent, const long param, const char *new_val )
+{
+	if ( !valid_rl_parameter( my_agent, param ) )
+		return false;
+	
+	if ( get_rl_parameter_type( my_agent, param ) != rl_param_string )
+		return false;
+	
+	return my_agent->rl_params[ param ]->param->string_param.val_func( my_agent->rl_params[ param ]->param->string_param.from_str( new_val ) );
+}
+
+bool valid_rl_parameter_value( agent *my_agent, const long param, const long new_val )
+{
+	if ( !valid_rl_parameter( my_agent, param ) )
+		return false;
+	
+	if ( get_rl_parameter_type( my_agent, param ) != rl_param_string )
+		return false;
+	
+	return my_agent->rl_params[ param ]->param->string_param.val_func( new_val );
 }
 
 /***************************************************************************
@@ -232,41 +343,97 @@ bool valid_rl_parameter_value( agent *my_agent, const char *name, const long new
  **************************************************************************/
 bool set_rl_parameter( agent *my_agent, const char *name, double new_val )
 {
-	if ( !valid_rl_parameter_value( my_agent, name, new_val ) )
+	const long param = convert_rl_parameter( my_agent, name );
+	if ( param == RL_PARAMS )
 		return false;
 	
-	(*my_agent->rl_params)[ name ].param->number_param.value = new_val;
+	if ( !valid_rl_parameter_value( my_agent, param, new_val ) )
+		return false;
+	
+	my_agent->rl_params[ param ]->param->number_param.value = new_val;
+
 	return true;
 }
 
 bool set_rl_parameter( agent *my_agent, const char *name, const char *new_val )
 {
-	if ( !valid_rl_parameter_value( my_agent, name, new_val ) )
+	const long param = convert_rl_parameter( my_agent, name );
+	if ( param == RL_PARAMS )
+		return false;
+	
+	if ( !valid_rl_parameter_value( my_agent, param, new_val ) )
 		return false;
 
-	const long converted_val = (*my_agent->rl_params)[ name ].param->string_param.from_str( new_val );
+	const long converted_val = my_agent->rl_params[ param ]->param->string_param.from_str( new_val );
 
 	// learning special case
-	if ( strcmp( name, "learning" ) == 0 )
+	if ( param == RL_PARAM_LEARNING )
 		set_sysparam( my_agent, RL_ENABLED, converted_val );
 	
-	(*my_agent->rl_params)[ name ].param->string_param.value = converted_val;
+	my_agent->rl_params[ param ]->param->string_param.value = converted_val;
+
 	return true;
 }
 
 bool set_rl_parameter( agent *my_agent, const char *name, const long new_val )
 {
-	if ( !valid_rl_parameter_value( my_agent, name, new_val ) )
+	const long param = convert_rl_parameter( my_agent, name );
+	if ( param == RL_PARAMS )
+		return false;
+	
+	if ( !valid_rl_parameter_value( my_agent, param, new_val ) )
 		return false;
 
 	// learning special case
-	if ( strcmp( name, "learning" ) == 0 )
+	if ( param == RL_PARAM_LEARNING )
 		set_sysparam( my_agent, RL_ENABLED, new_val );
 	
-	(*my_agent->rl_params)[ name ].param->string_param.value = new_val;
+	my_agent->rl_params[ param ]->param->string_param.value = new_val;
+
 	return true;
 }
 
+//
+
+bool set_rl_parameter( agent *my_agent, const long param, double new_val )
+{
+	if ( !valid_rl_parameter_value( my_agent, param, new_val ) )
+		return false;
+	
+	my_agent->rl_params[ param ]->param->number_param.value = new_val;
+
+	return true;
+}
+
+bool set_rl_parameter( agent *my_agent, const long param, const char *new_val )
+{
+	if ( !valid_rl_parameter_value( my_agent, param, new_val ) )
+		return false;
+
+	const long converted_val = my_agent->rl_params[ param ]->param->string_param.from_str( new_val );
+
+	// learning special case
+	if ( param == RL_PARAM_LEARNING )
+		set_sysparam( my_agent, RL_ENABLED, converted_val );
+	
+	my_agent->rl_params[ param ]->param->string_param.value = converted_val;
+
+	return true;
+}
+
+bool set_rl_parameter( agent *my_agent, const long param, const long new_val )
+{	
+	if ( !valid_rl_parameter_value( my_agent, param, new_val ) )
+		return false;
+
+	// learning special case
+	if ( param == RL_PARAM_LEARNING )
+		set_sysparam( my_agent, RL_ENABLED, new_val );
+	
+	my_agent->rl_params[ param ]->param->string_param.value = new_val;
+
+	return true;
+}
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////
 // learning
@@ -275,15 +442,15 @@ bool set_rl_parameter( agent *my_agent, const char *name, const long new_val )
 /***************************************************************************
  * Function     : validate_rl_learning
  **************************************************************************/
-bool validate_rl_learning( const char *new_val )
+bool validate_rl_learning( const long new_val )
 {
-	return ( !strcmp( new_val, "on" ) || !strcmp( new_val, "off" ) );
+	return ( ( new_val == RL_LEARNING_ON ) || ( new_val == RL_LEARNING_OFF ) );
 }
 
 /***************************************************************************
  * Function     : convert_rl_learning
  **************************************************************************/
-const char *convert_rl_learning( long val )
+const char *convert_rl_learning( const long val )
 {
 	const char *return_val = NULL;
 	
@@ -323,15 +490,15 @@ const long convert_rl_learning( const char *val )
 /***************************************************************************
  * Function     : validate_rl_accumulation
  **************************************************************************/
-bool validate_rl_accumulation( const char *new_val )
+bool validate_rl_accumulation( const long new_val )
 {
-	return ( !strcmp( new_val, "sum" ) || !strcmp( new_val, "avg" ) );
+	return ( ( new_val == RL_ACCUMULATION_SUM ) || ( new_val == RL_ACCUMULATION_AVG ) );
 }
 
 /***************************************************************************
  * Function     : convert_rl_accumulation
  **************************************************************************/
-const char *convert_rl_accumulation( long val )
+const char *convert_rl_accumulation( const long val )
 {
 	const char *return_val = NULL;
 	
@@ -371,15 +538,15 @@ const long convert_rl_accumulation( const char *val )
 /***************************************************************************
  * Function     : validate_rl_discount
  **************************************************************************/
-bool validate_rl_discount( const char *new_val )
+bool validate_rl_discount( const long new_val )
 {
-	return ( !strcmp( new_val, "exponential" ) || !strcmp( new_val, "linear" ) );
+	return ( ( new_val == RL_DISCOUNT_EXPONENTIAL ) || ( new_val == RL_DISCOUNT_LINEAR ) );
 }
 
 /***************************************************************************
  * Function     : convert_rl_discount
  **************************************************************************/
-const char *convert_rl_discount( long val )
+const char *convert_rl_discount( const long val )
 {
 	const char *return_val = NULL;
 	
@@ -419,7 +586,7 @@ const long convert_rl_discount( const char *val )
 /***************************************************************************
  * Function     : validate_rl_exp_discount
  **************************************************************************/
-bool validate_rl_exp_discount( double new_val )
+bool validate_rl_exp_discount( const double new_val )
 {
 	return ( ( new_val >= 0 ) && ( new_val <= 1 ) );
 }
@@ -434,7 +601,7 @@ bool validate_rl_exp_discount( double new_val )
 /***************************************************************************
  * Function     : validate_rl_lin_discount
  **************************************************************************/
-bool validate_rl_lin_discount( double new_val )
+bool validate_rl_lin_discount( const double new_val )
 {
 	return ( new_val >= 0 );
 }
@@ -449,7 +616,7 @@ bool validate_rl_lin_discount( double new_val )
 /***************************************************************************
  * Function     : validate_rl_learning_rate
  **************************************************************************/
-bool validate_rl_learning_rate( double new_val )
+bool validate_rl_learning_rate( const double new_val )
 {
 	return ( ( new_val >= 0 ) && ( new_val <= 1 ) );
 }
@@ -464,15 +631,15 @@ bool validate_rl_learning_rate( double new_val )
 /***************************************************************************
  * Function     : validate_rl_learning_policy
  **************************************************************************/
-bool validate_rl_learning_policy( const char *new_val )
+bool validate_rl_learning_policy( const long new_val )
 {
-	return ( !strcmp( new_val, "sarsa" ) || !strcmp( new_val, "q-learning" ) );
+	return ( ( new_val == RL_LEARNING_SARSA ) || ( new_val == RL_LEARNING_Q ) );
 }
 
 /***************************************************************************
  * Function     : convert_rl_learning_policy
  **************************************************************************/
-const char *convert_rl_learning_policy( long val )
+const char *convert_rl_learning_policy( const long val )
 {
 	const char *return_val = NULL;
 	
@@ -512,7 +679,7 @@ const long convert_rl_learning_policy( const char *val )
 /***************************************************************************
  * Function     : validate_rl_trace_discount
  **************************************************************************/
-bool validate_rl_trace_discount( double new_val )
+bool validate_rl_trace_discount( const double new_val )
 {
 	return ( ( new_val >= 0 ) && ( new_val <= 1 ) );
 }
@@ -527,7 +694,7 @@ bool validate_rl_trace_discount( double new_val )
 /***************************************************************************
  * Function     : validate_rl_decay_rate
  **************************************************************************/
-bool validate_rl_decay_rate( double new_val )
+bool validate_rl_decay_rate( const double new_val )
 {
 	return ( ( new_val >= 0 ) && ( new_val <= 1 ) );
 }
@@ -542,7 +709,7 @@ bool validate_rl_decay_rate( double new_val )
 /***************************************************************************
  * Function     : validate_rl_trace_tolerance
  **************************************************************************/
-bool validate_rl_trace_tolerance( double new_val )
+bool validate_rl_trace_tolerance( const double new_val )
 {
 	return ( new_val > 0 );
 }
@@ -559,17 +726,49 @@ bool soar_rl_enabled( agent *my_agent )
 }
 
 /***************************************************************************
+ * Function     : add_rl_stat
+ **************************************************************************/
+rl_stat *add_rl_stat( const char *name )
+{
+	// new stat entry
+	rl_stat *newbie = new rl_stat;
+	newbie->name = name;
+	newbie->value = 0;
+	
+	return newbie;
+}
+
+/***************************************************************************
+ * Function     : convert_rl_stat
+ **************************************************************************/
+const long convert_rl_stat( agent *my_agent, const char *name )
+{
+	for ( int i=0; i<RL_STATS; i++ )
+		if ( !strcmp( name, my_agent->rl_stats[ i ]->name ) )
+			return i;
+
+	return RL_STATS;
+}
+
+const char *convert_rl_stat( agent *my_agent, const long stat )
+{
+	if ( ( stat < 0 ) || ( stat >= RL_STATS ) )
+		return NULL;
+
+	return my_agent->rl_stats[ stat ]->name;
+}
+
+/***************************************************************************
  * Function     : valid_rl_stat
  **************************************************************************/
 bool valid_rl_stat( agent *my_agent, const char *name )
 {
-	bool return_val;
-	std::string *temp = new std::string( name );
+	return ( convert_rl_stat( my_agent, name ) != RL_STATS );
+}
 
-	return_val = is_set( my_agent->rl_stats, temp );
-
-	delete temp;
-	return return_val;
+bool valid_rl_stat( agent *my_agent, const long stat )
+{
+	return ( convert_rl_stat( my_agent, stat ) != NULL );
 }
 
 /***************************************************************************
@@ -577,10 +776,19 @@ bool valid_rl_stat( agent *my_agent, const char *name )
  **************************************************************************/
 double get_rl_stat( agent *my_agent, const char *name )
 {
-	if ( !valid_rl_stat( my_agent, name ) )
+	const long stat = convert_rl_stat( my_agent, name );
+	if ( stat == RL_STATS )
 		return 0;
-	
-	return (*my_agent->rl_stats)[ name ];
+
+	return my_agent->rl_stats[ stat ]->value;
+}
+
+double get_rl_stat( agent *my_agent, const long stat )
+{
+	if ( !valid_rl_stat( my_agent, stat ) )
+		return 0;
+
+	return my_agent->rl_stats[ stat ]->value;
 }
 
 /***************************************************************************
@@ -588,10 +796,21 @@ double get_rl_stat( agent *my_agent, const char *name )
  **************************************************************************/
 bool set_rl_stat( agent *my_agent, const char *name, double new_val )
 {
-	if ( !valid_rl_stat( my_agent, name ) )
+	const long stat = convert_rl_stat( my_agent, name );
+	if ( stat == RL_STATS )
 		return false;
 	
-	(*my_agent->rl_stats)[ name ] = new_val;
+	my_agent->rl_stats[ stat ]->value = new_val;
+	
+	return true;
+}
+
+bool set_rl_stat( agent *my_agent, const long stat, double new_val )
+{
+	if ( !valid_rl_stat( my_agent, stat ) )
+		return false;
+	
+	my_agent->rl_stats[ stat ]->value = new_val;
 	
 	return true;
 }
@@ -961,16 +1180,16 @@ void tabulate_reward_value_for_goal( agent *my_agent, Symbol *goal )
 								reward_count++;
 							}
 		
-		if ( reward_count && ( get_rl_parameter( my_agent, "accumulation-mode", RL_RETURN_LONG ) == RL_ACCUMULATION_AVG ) )
+		if ( reward_count && ( get_rl_parameter( my_agent, RL_PARAM_ACCUMULATION_MODE, RL_RETURN_LONG ) == RL_ACCUMULATION_AVG ) )
 			reward = ( reward / ( (float) reward_count ) );
 
 		data->reward += discount_reward( my_agent, reward, data->step );
 	}
 
 	// update stats
-	double global_reward = get_rl_stat( my_agent, "global-reward" );
-	set_rl_stat( my_agent, "total-reward", reward );
-	set_rl_stat( my_agent, "global-reward", ( global_reward + reward ) );
+	double global_reward = get_rl_stat( my_agent, RL_STAT_GLOBAL_REWARD );
+	set_rl_stat( my_agent, RL_STAT_TOTAL_REWARD, reward );
+	set_rl_stat( my_agent, RL_STAT_GLOBAL_REWARD, ( global_reward + reward ) );
 
 	data->step++;
 }
@@ -995,18 +1214,18 @@ void tabulate_reward_values( agent *my_agent )
 float discount_reward( agent *my_agent, float reward, unsigned int step )
 {
 	double return_val = 0;
-	const long mode = get_rl_parameter( my_agent, "discount-mode", RL_RETURN_LONG );
+	const long mode = get_rl_parameter( my_agent, RL_PARAM_DISCOUNT_MODE, RL_RETURN_LONG );
 	double rate;
 
 	if ( mode == RL_DISCOUNT_EXPONENTIAL )
 	{
-		rate = get_rl_parameter( my_agent, "exponential-discount-rate" );
+		rate = get_rl_parameter( my_agent, RL_PARAM_EXP_DISCOUNT_RATE );
 		
 		return_val = ( reward * pow( rate, (double) step ) );
 	}
 	else if ( mode == RL_DISCOUNT_LINEAR )
 	{
-		rate = get_rl_parameter( my_agent, "linear-discount-rate" );
+		rate = get_rl_parameter( my_agent, RL_PARAM_LIN_DISCOUNT_RATE );
 		double stepped_rate = ( rate * (double) step );
 
 		if ( reward > 0 )
@@ -1064,18 +1283,18 @@ void perform_rl_update( agent *my_agent, float op_value, Symbol *goal )
 	rl_data *data = goal->id.rl_info;
 	soar_rl_et_map::iterator iter;
 
-	const long accumulation = get_rl_parameter( my_agent, "accumulation-mode", RL_RETURN_LONG );
+	const long accumulation = get_rl_parameter( my_agent, RL_PARAM_ACCUMULATION_MODE, RL_RETURN_LONG );
 
-	double alpha = get_rl_parameter( my_agent, "learning-rate" );
-	double lambda = get_rl_parameter( my_agent, "eligibility-trace-decay-rate" );
-	double gamma = get_rl_parameter( my_agent, "eligibility-trace-discount-rate" );
-	double tolerance = get_rl_parameter( my_agent, "eligibility-trace-tolerance" );
+	double alpha = get_rl_parameter( my_agent, RL_PARAM_LEARNING_RATE );
+	double lambda = get_rl_parameter( my_agent, RL_PARAM_ET_DECAY_RATE );
+	double gamma = get_rl_parameter( my_agent, RL_PARAM_ET_DISCOUNT_RATE );
+	double tolerance = get_rl_parameter( my_agent, RL_PARAM_ET_TOLERANCE );
 
 	// compute TD update, set stat
 	float update = data->reward * pow( gamma, (double) data->reward_age );
 	update += ( pow( gamma, (double) data->step ) * op_value );
 	update -= data->previous_q;
-	set_rl_stat( my_agent, "update-error", (double) ( -update ) );
+	set_rl_stat( my_agent, (const long) RL_STAT_UPDATE_ERROR, (double) ( -update ) );
 
 	// Iterate through eligibility_traces, decay traces. If less than TOLERANCE, remove from map.
 	for ( iter = data->eligibility_traces->begin(); iter != data->eligibility_traces->end(); )

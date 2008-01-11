@@ -14,11 +14,9 @@
 #define REINFORCEMENT_LEARNING_H
 
 #include <map>
-#include <vector>
 #include <string>
 #include <list>
 
-#include "stl_support.h"
 #include "production.h"
 #include "gdatastructs.h"
 #include "chunk.h"
@@ -41,10 +39,36 @@
 #define RL_LEARNING_SARSA 1
 #define RL_LEARNING_Q 2
 
+// names of params
+#define RL_PARAM_LEARNING					0
+#define RL_PARAM_ACCUMULATION_MODE			1
+#define RL_PARAM_DISCOUNT_MODE				2
+#define RL_PARAM_EXP_DISCOUNT_RATE			3
+#define RL_PARAM_LIN_DISCOUNT_RATE			4
+#define RL_PARAM_LEARNING_RATE				5
+#define RL_PARAM_LEARNING_POLICY			6
+#define RL_PARAM_ET_DISCOUNT_RATE			7
+#define RL_PARAM_ET_DECAY_RATE				8
+#define RL_PARAM_ET_TOLERANCE				9
+#define RL_PARAMS							10 // must be 1+ last rl param
+
+// names of stats
+#define RL_STAT_UPDATE_ERROR				0
+#define RL_STAT_TOTAL_REWARD				1
+#define RL_STAT_GLOBAL_REWARD				2
+#define RL_STATS							3 // must be 1+ last rl stat
+
 // more specific forms of no change impasse types
 // made negative to never conflict with impasse constants
 #define STATE_NO_CHANGE_IMPASSE_TYPE -1
 #define OP_NO_CHANGE_IMPASSE_TYPE -2
+
+
+//
+// These must go below constants
+//
+
+#include "stl_support.h"
 
 //////////////////////////////////////////////////////////
 // RL Types
@@ -54,7 +78,7 @@ enum rl_param_type { rl_param_string = 1, rl_param_number = 2, rl_param_invalid 
 typedef struct rl_string_parameter_struct  
 {
 	long value;
-	bool (*val_func)( const char * );
+	bool (*val_func)( const long );
 	const char *(*to_str)( const long );
 	const long (*from_str)( const char * );
 } rl_string_parameter;
@@ -75,15 +99,22 @@ typedef struct rl_parameter_struct
 {
 	rl_parameter_union *param;
 	rl_param_type type;
+	const char *name;
 } rl_parameter;
+
+typedef struct rl_stat_struct
+{
+	double value;
+	const char *name;
+} rl_stat;
 
 typedef struct template_instantiation_struct
 {
 	std::string template_base;
 	int id;
-	
 } template_instantiation;
 
+template <class T> class SoarMemoryAllocator;
 typedef std::map<production *, double, std::less<production *>, SoarMemoryAllocator<std::pair<production* const, double> > > soar_rl_et_map;
 
 typedef struct rl_data_struct {
@@ -103,6 +134,7 @@ typedef struct rl_data_struct {
 
 // memory clean
 extern void clean_parameters( agent *my_agent );
+extern void clean_stats( agent *my_agent );
 
 // reinitialize Soar-RL data structures
 extern void reset_rl_data( agent *my_agent );
@@ -118,67 +150,85 @@ extern void remove_rl_refs_for_prod( agent *my_agent, production *prod );
 //////////////////////////////////////////////////////////
 
 // add parameter
-extern rl_parameter *add_rl_parameter( double value, bool (*val_func)( double ) );
-extern rl_parameter *add_rl_parameter( const char *value, bool (*val_func)( const char * ), const char *(*to_str)( long ), const long (*from_str)( const char * ) );
+extern rl_parameter *add_rl_parameter( const char *name, double value, bool (*val_func)( double ) );
+extern rl_parameter *add_rl_parameter( const char *name, const char *value, bool (*val_func)( const long ), const char *(*to_str)( long ), const long (*from_str)( const char * ) );
+
+// convert parameter
+extern const char *convert_rl_parameter( agent *my_agent, const long param );
+extern const long convert_rl_parameter( agent *my_agent, const char *name );
 
 // validate parameter
 extern bool valid_rl_parameter( agent *my_agent, const char *name );
+extern bool valid_rl_parameter( agent *my_agent, const long param );
 
 // parameter type
 extern rl_param_type get_rl_parameter_type( agent *my_agent, const char *name );
+extern rl_param_type get_rl_parameter_type( agent *my_agent, const long param );
 
 // get parameter
 extern const long get_rl_parameter( agent *my_agent, const char *name, const double test );
 extern const char *get_rl_parameter( agent *my_agent, const char *name, const char *test );
 extern double get_rl_parameter( agent *my_agent, const char *name );
 
+extern const long get_rl_parameter( agent *my_agent, const long param, const double test );
+extern const char *get_rl_parameter( agent *my_agent, const long param, const char *test );
+extern double get_rl_parameter( agent *my_agent, const long param );
+
 // validate parameter value
 extern bool valid_rl_parameter_value( agent *my_agent, const char *name, double new_val );
 extern bool valid_rl_parameter_value( agent *my_agent, const char *name, const char *new_val );
 extern bool valid_rl_parameter_value( agent *my_agent, const char *name, const long new_val );
+
+extern bool valid_rl_parameter_value( agent *my_agent, const long param, double new_val );
+extern bool valid_rl_parameter_value( agent *my_agent, const long param, const char *new_val );
+extern bool valid_rl_parameter_value( agent *my_agent, const long param, const long new_val );
 
 // set parameter
 extern bool set_rl_parameter( agent *my_agent, const char *name, double new_val );
 extern bool set_rl_parameter( agent *my_agent, const char *name, const char *new_val );
 extern bool set_rl_parameter( agent *my_agent, const char *name, const long new_val );
 
+extern bool set_rl_parameter( agent *my_agent, const long param, double new_val );
+extern bool set_rl_parameter( agent *my_agent, const long param, const char *new_val );
+extern bool set_rl_parameter( agent *my_agent, const long param, const long new_val );
+
 // learning
-extern bool validate_rl_learning( const char *new_val );
+extern bool validate_rl_learning( const long new_val );
 extern const char *convert_rl_learning( const long val );
 extern const long convert_rl_learning( const char *val );
 
 // accumulation mode
-extern bool validate_rl_accumulation( const char *new_val );
+extern bool validate_rl_accumulation( const long new_val );
 extern const char *convert_rl_accumulation( const long val );
 extern const long convert_rl_accumulation( const char *val );
 
 // discount mode
-extern bool validate_rl_discount( const char *new_val );
+extern bool validate_rl_discount( const long new_val );
 extern const char *convert_rl_discount( const long val );
 extern const long convert_rl_discount( const char *val );
 
 // exponential discount rate
-extern bool validate_rl_exp_discount( double new_val );
+extern bool validate_rl_exp_discount( const double new_val );
 
 // linear discount rate
-extern bool validate_rl_lin_discount( double new_val );
+extern bool validate_rl_lin_discount( const double new_val );
 
 // learning rate
-extern bool validate_rl_learning_rate( double new_val );
+extern bool validate_rl_learning_rate( const double new_val );
 
 // learning policy
-extern bool validate_rl_learning_policy( const char *new_val );
+extern bool validate_rl_learning_policy( const long new_val );
 extern const char *convert_rl_learning_policy( const long val );
 extern const long convert_rl_learning_policy( const char *val );
 
 // trace discount rate
-extern bool validate_rl_trace_discount( double new_val );
+extern bool validate_rl_trace_discount( const double new_val );
 
 // trace decay rate
-extern bool validate_rl_decay_rate( double new_val );
+extern bool validate_rl_decay_rate( const double new_val );
 
 // trace tolerance
-extern bool validate_rl_trace_tolerance( double new_val );
+extern bool validate_rl_trace_tolerance( const double new_val );
 
 // shortcut for determining if Soar-RL is enabled
 extern bool soar_rl_enabled( agent *my_agent );
@@ -187,14 +237,24 @@ extern bool soar_rl_enabled( agent *my_agent );
 // Stats
 //////////////////////////////////////////////////////////
 
+// add stat
+extern rl_stat *add_rl_stat( const char *name );
+
+// convert stat
+extern const long convert_rl_stat( agent *my_agent, const char *name );
+extern const char *convert_rl_stat( agent *my_agent, const long stat );
+
 // valid stat
 extern bool valid_rl_stat( agent *my_agent, const char *name );
+extern bool valid_rl_stat( agent *my_agent, const long stat );
 
 // get stat
 extern double get_rl_stat( agent *my_agent, const char *name );
+extern double get_rl_stat( agent *my_agent, const long stat );
 
 // set stat
 extern bool set_rl_stat( agent *my_agent, const char *name, double new_val );
+extern bool set_rl_stat( agent *my_agent, const long stat, double new_val );
 
 //////////////////////////////////////////////////////////
 // Production Validation
