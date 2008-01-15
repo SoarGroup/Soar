@@ -66,7 +66,9 @@ conf.env.Append(CPPFLAGS = ' -DSCONS')
 
 # We need to know if we're on darwin because malloc.h doesn't exist, functions are in stdlib.h
 if sys.platform == "darwin":
-	conf.env.Append(CPPFLAGS = ' -DSCONS_DARWIN')
+	conf.env.Append(CPPFLAGS = ' -DSCONS_DARWIN -isysroot /Developer/SDKs/MacOSX10.4u.sdk -arch ppc -arch i386')
+	conf.env.Append(LINKFLAGS = ' -isysroot /Developer/SDKs/MacOSX10.4u.sdk -arch ppc -arch i386')	
+
 
 # All C/C++ modules rely or should rely on this include path (houses portability.h)
 conf.env.Append(CPPPATH = ['#Core/shared'])
@@ -96,7 +98,13 @@ if conf.env['java']:
 
 # check SWIG version if necessary
 # SWIG is necessary if one of the swig projects is going to be built
-if conf.env['java'] or conf.env['python'] or conf.env['csharp'] or conf.env['tcl']:
+if conf.env['static']:
+	conf.env['java'] = False
+	conf.env['python'] = False
+	conf.env['csharp'] = False
+	conf.env['tcl'] = False	
+	conf.env.Append(CPPFLAGS = ' -DSTATIC_LINKED')
+elif conf.env['java'] or conf.env['python'] or conf.env['csharp'] or conf.env['tcl']:
 	if not SoarSCons.CheckSWIG(conf.env):
 		explainSWIG = ""
 		if conf.env['java']:
