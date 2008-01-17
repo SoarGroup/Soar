@@ -66,8 +66,9 @@ conf.env.Append(CPPFLAGS = ' -DSCONS')
 
 # We need to know if we're on darwin because malloc.h doesn't exist, functions are in stdlib.h
 if sys.platform == "darwin":
-	conf.env.Append(CPPFLAGS = ' -DSCONS_DARWIN -isysroot /Developer/SDKs/MacOSX10.4u.sdk -arch ppc -arch i386')
-	conf.env.Append(LINKFLAGS = ' -isysroot /Developer/SDKs/MacOSX10.4u.sdk -arch ppc -arch i386')	
+	conf.env.Append(CPPFLAGS = ' -DSCONS_DARWIN')
+	#conf.env.Append(CPPFLAGS = ' -DSCONS_DARWIN -isysroot /Developer/SDKs/MacOSX10.4u.sdk -arch ppc -arch ')
+	#conf.env.Append(LINKFLAGS = ' -isysroot /Developer/SDKs/MacOSX10.4u.sdk -arch ppc -arch i386')	
 
 
 # All C/C++ modules rely or should rely on this include path (houses portability.h)
