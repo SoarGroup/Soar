@@ -76,6 +76,10 @@ public class CellObject {
 	 */
 	boolean energyApply = false;
 	/**
+	 * add fuel to the player (map) during the apply
+	 */
+	boolean fuelApply = false;
+	/**
 	 * If this is true, only apply energy if shields are up.
 	 * Useful for attacking missiles.
 	 */
@@ -188,6 +192,10 @@ public class CellObject {
 	
 	public void setResetApply(boolean setting) {
 		resetApply = setting;
+	}
+	
+	public void setFuelApply(boolean setting) {
+		fuelApply = setting;
 	}
 	
 	public void setPointsApply(boolean setting) {

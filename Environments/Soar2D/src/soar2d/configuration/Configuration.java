@@ -69,6 +69,9 @@ public class Configuration {
 		this.terminalMaxUpdatesContinue = config.terminalMaxUpdatesContinue;
 		this.terminalWinningScore = config.terminalWinningScore;
 		this.terminalWinningScoreContinue = config.terminalWinningScoreContinue;
+		this.terminalPassengerDelivered = config.terminalPassengerDelivered;
+		this.terminalFuelRemaining = config.terminalFuelRemaining;
+		this.terminalPassengerPickUp = config.terminalPassengerPickUp;
 		
 		// clients
 		this.clients = new ArrayList<ClientConfig>(config.clients);
@@ -154,8 +157,9 @@ public class Configuration {
 	private static final String kGameTankSoar = "tanksoar";
 	private static final String kGameBook = "book";
 	private static final String kGameKitchen = "kitchen";
+	private static final String kGameTaxi = "taxi";
 	private SimType simType = SimType.kEaters;
-	public enum SimType { kEaters, kTankSoar, kBook, kKitchen }	
+	public enum SimType { kEaters, kTankSoar, kBook, kKitchen, kTaxi }	
 	private IConfiguration cModule;
 	public void setType(SimType simType) {
 		this.simType = simType;
@@ -175,6 +179,10 @@ public class Configuration {
 		case kTankSoar:
 			cModule = new TankSoarConfiguration(); 
 			Soar2D.tConfig = (TankSoarConfiguration)cModule.getModule();
+			break;
+		case kTaxi:
+			cModule = new TaxiConfiguration(); 
+			Soar2D.xConfig = (TaxiConfiguration)cModule.getModule();
 			break;
 		}
 	}
@@ -274,6 +282,16 @@ public class Configuration {
 		return this.asyncTimeSlice;
 	}
 	
+	// async delay
+	private boolean forceHumanInput = false; // override soar output with human output
+	private static final String kTagForceHuman = "force-human";
+	public void setForceHuman(boolean forceHumanInput) {
+		this.forceHumanInput = forceHumanInput;
+	}
+	public boolean getForceHuman() {
+		return this.forceHumanInput;
+	}
+	
 	private void generalSave(Element general) {
 		if (general == null) return;
 
@@ -304,6 +322,10 @@ public class Configuration {
 		
 		if (this.getASyncDelay() > 0) {
 			general.addContent(new Element(kTagASync).setText(Integer.toString(this.getASyncDelay())));
+		}
+		
+		if (this.getForceHuman()) {
+			general.addContent(new Element(kTagForceHuman));
 		}
 		
 		Element rules = new Element(kTagRules);
@@ -343,6 +365,8 @@ public class Configuration {
 			this.setType(SimType.kBook);
 		} else if (gameName.equalsIgnoreCase(kGameKitchen)) {
 			this.setType(SimType.kKitchen);
+		} else if (gameName.equalsIgnoreCase(kGameTaxi)) {
+			this.setType(SimType.kTaxi);
 		} else {
 			throw new LoadError("Unknown game type: " + gameName);
 		}
@@ -400,6 +424,9 @@ public class Configuration {
 				} catch (NumberFormatException e) {
 					throw new LoadError("Error parsing async delay.");
 				}
+
+			} else if (child.getName().equalsIgnoreCase(kTagForceHuman)) {
+				setForceHuman(true);
 
 			} else if (child.getName().equalsIgnoreCase(kTagRules)) {
 				cModule.rules(child);
@@ -837,6 +864,33 @@ public class Configuration {
 		return this.terminalMaxRuns;
 	}
 	
+	private boolean terminalPassengerDelivered = false;	
+	private static final String kTagPassengerDelivered = "passenger-delivered";
+	public void setTerminalPassengerDelivered(boolean setting) {
+		this.terminalPassengerDelivered = setting;
+	}
+	public boolean getTerminalPassengerDelivered() {
+		return this.terminalPassengerDelivered;
+	}
+	
+	private boolean terminalFuelRemaining = false;	
+	private static final String kTagFuelRemaining = "fuel-remaining";
+	public void setTerminalFuelRemaining(boolean setting) {
+		this.terminalFuelRemaining = setting;
+	}
+	public boolean getTerminalFuelRemaining() {
+		return this.terminalFuelRemaining;
+	}
+	
+	private boolean terminalPassengerPickUp = false;	
+	private static final String kTagPassengerPickUp = "passenger-pick-up";
+	public void setTerminalPassengerPickUp(boolean setting) {
+		this.terminalPassengerPickUp = setting;
+	}
+	public boolean getTerminalPassengerPickUp() {
+		return this.terminalPassengerPickUp;
+	}
+	
 	private void terminalsSave(Element terminals) {
 		if (this.getTerminalMaxUpdates() > 0) {
 			Element maxUpdates = new Element(kTagMaxUpdates).setText(Integer.toString(this.getTerminalMaxUpdates()));
@@ -882,6 +936,18 @@ public class Configuration {
 
 		if (this.getTerminalMaxRuns() > 0) {
 			terminals.addContent(new Element(kTagMaxRuns).setText(Integer.toString(this.terminalMaxRuns)));
+		}
+		
+		if (this.getTerminalPassengerDelivered()) {
+			terminals.addContent(new Element(kTagPassengerDelivered));
+		}
+		
+		if (this.getTerminalPassengerDelivered()) {
+			terminals.addContent(new Element(kTagFuelRemaining));
+		}
+		
+		if (this.getTerminalPassengerPickUp()) {
+			terminals.addContent(new Element(kTagPassengerPickUp));
 		}
 	}
 	
@@ -944,6 +1010,15 @@ public class Configuration {
 				} catch (NumberFormatException e) {
 					throw new LoadError("Error parsing max runs");
 				}
+
+			} else if (child.getName().equalsIgnoreCase(kTagPassengerDelivered)) {
+				this.setTerminalPassengerDelivered(true);
+				
+			} else if (child.getName().equalsIgnoreCase(kTagFuelRemaining)) {
+				this.setTerminalFuelRemaining(true);
+
+			} else if (child.getName().equalsIgnoreCase(kTagPassengerPickUp)) {
+				this.setTerminalPassengerPickUp(true);
 
 			} else {
 				throw new LoadError("Unrecognized tag: " + child.getName());

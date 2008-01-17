@@ -20,6 +20,7 @@ import soar2d.map.EatersMap;
 import soar2d.map.GridMap;
 import soar2d.map.KitchenMap;
 import soar2d.map.TankSoarMap;
+import soar2d.map.TaxiMap;
 import soar2d.player.*;
 
 public class WindowManager {
@@ -58,6 +59,7 @@ public class WindowManager {
 	Composite currentSide;
 
 	public static final int kEatersMainMapCellSize = 20;
+	public static final int kTaxiMainMapCellSize = 20;
 	public static final int kKitchenMainMapCellSize = 20;
 	public static final int kTanksoarMainMapCellSize = 32;
 	public static final String kFoodRemaining = "Food remaining: ";
@@ -120,6 +122,11 @@ public class WindowManager {
 	}
 
 	public boolean initialize() {
+		// can be called multiple times
+		if (display != null) {
+			return true;
+		}
+
 		try {
 			display = new Display();
 		} catch (java.lang.UnsatisfiedLinkError e) {
@@ -310,6 +317,74 @@ public class WindowManager {
 		shell.setText("Kitchen");
 	}
 	
+	public void setupTaxi() {
+		worldGroup = new Group(shell, SWT.NONE);
+		worldGroup.setLayout(new FillLayout());
+		visualWorld = new TaxiVisualWorld(worldGroup, SWT.NONE, kTaxiMainMapCellSize);
+		visualWorld.setMap(Soar2D.simulation.world.getMap());
+
+		visualWorld.addMouseListener(new MouseAdapter() {
+			public void mouseDown(MouseEvent e) {
+				Player player = visualWorld.getPlayerAtPixel(e.x, e.y);
+				if (player == null) {
+					return;
+				}
+				agentDisplay.selectPlayer(player);
+			}
+		});
+		visualWorld.addKeyListener(new KeyAdapter() {
+			public void keyPressed(KeyEvent e) {
+				if (humanMove == null) {
+					return;
+				}
+				switch (e.keyCode) {
+				case SWT.KEYPAD_8:
+					humanMove.move = true;
+					humanMove.moveDirection = Direction.kNorthInt;
+					break;
+				case SWT.KEYPAD_6:
+					humanMove.move = true;
+					humanMove.moveDirection = Direction.kEastInt;
+					break;
+				case SWT.KEYPAD_2:
+					humanMove.move = true;
+					humanMove.moveDirection = Direction.kSouthInt;
+					break;
+				case SWT.KEYPAD_4:
+					humanMove.move = true;
+					humanMove.moveDirection = Direction.kWestInt;
+					break;
+				case SWT.KEYPAD_5:
+					humanMove.fillup = true;
+					break;
+				case SWT.KEYPAD_1:
+					humanMove.pickup = true;
+					break;
+				case SWT.KEYPAD_3:
+					humanMove.putdown = true;
+					break;
+
+				case SWT.KEYPAD_MULTIPLY:
+					humanMove.stopSim = !humanMove.stopSim;
+					break;
+				default:
+					break;
+				}
+				
+				Soar2D.wm.setStatus(human.getColor() + ": " + humanMove.toString(), black);
+				
+				synchronized(humanMove) {
+					humanMove.notify();
+				}
+			}
+		});
+		
+		createRHS();
+		createTaxiSide();
+
+		shell.setText("Taxi");
+	}
+	
 	private void createRHS() {
 		rhs = new Composite(shell, SWT.NONE);
 		{
@@ -473,6 +548,70 @@ public class WindowManager {
 		}
 
 		agentDisplay = new KitchenAgentDisplay(currentSide);
+		{
+			GridData gd = new GridData();
+			agentDisplay.setLayoutData(gd);
+		}
+	}
+	
+	private void createTaxiSide() {
+		
+		currentSide = new Composite(rhs, SWT.NONE);
+		{
+			GridLayout gl = new GridLayout();
+			gl.marginHeight = 0;
+			gl.marginWidth = 0;
+			currentSide.setLayout(gl);
+			
+			GridData gd = new GridData();
+			currentSide.setLayoutData(gd);
+		}
+		
+		Group group1 = new Group(currentSide, SWT.NONE);
+		{
+			GridData gd = new GridData();
+			group1.setLayoutData(gd);
+		}
+		group1.setText("Simulation");
+		group1.setLayout(new FillLayout());
+		simButtons = new SimulationButtons(group1);
+		
+		Group group2 = new Group(currentSide, SWT.NONE);
+		{
+			GridData gd = new GridData();
+			group2.setLayoutData(gd);
+		}
+		group2.setText("Map");
+		{
+			GridLayout gl = new GridLayout();
+			gl.numColumns = 2;
+			group2.setLayout(gl);
+		}
+		
+		Label worldCountLabel = new Label(group2, SWT.NONE);
+		worldCountLabel.setText(kWorldCount);
+		{
+			GridData gd = new GridData();
+			worldCountLabel.setLayoutData(gd);
+		}
+		
+		worldCount = new Label(group2, SWT.NONE);
+		{
+			GridData gd = new GridData();
+			gd.widthHint = 50;
+			worldCount.setLayoutData(gd);
+		}
+		
+		updateCounts();
+		
+		mapButtons = new MapButtons(group2);
+		{
+			GridData gd = new GridData();
+			gd.horizontalSpan = 2;
+			mapButtons.setLayoutData(gd);
+		}
+
+		agentDisplay = new TaxiAgentDisplay(currentSide);
 		{
 			GridData gd = new GridData();
 			agentDisplay.setLayoutData(gd);
@@ -1002,6 +1141,9 @@ public class WindowManager {
 		case kKitchen:
 			createKitchenSide();
 			break;
+		case kTaxi:
+			createTaxiSide();
+			break;
 		}
 		
 		this.reset();
@@ -1039,6 +1181,10 @@ public class WindowManager {
 			break;
 		case kKitchen:
 			this.editMap = new KitchenMap(Soar2D.config);
+			break;
+			
+		case kTaxi:
+			this.editMap = new TaxiMap(Soar2D.config);
 			break;
 		}
 		
@@ -1203,6 +1349,10 @@ public class WindowManager {
 			
 		case kKitchen:
 			setupKitchen();
+			break;
+			
+		case kTaxi:
+			setupTaxi();
 			break;
 		}
 		

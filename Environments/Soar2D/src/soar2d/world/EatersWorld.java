@@ -47,7 +47,7 @@ public class EatersWorld implements IWorld {
 		
 	}
 	
-	public void reset() {
+	public void reset(GridMap map) {
 		this.restartAfterUpdate = false;
 	}
 	

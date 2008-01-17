@@ -683,8 +683,6 @@ namespace gSKI {
       */
       void Reinitialize();
 
-      void registerObjectSymbol(gSymbol* pSym);
-
       /**
        * @brief Listen for changes to wmes attached to the output link.
        *
@@ -752,7 +750,6 @@ namespace gSKI {
       // TODO: Properly comment these methods
       void ReleaseAllWmes();
       void ReleaseAllWMObjects();
-      void ReleaseAllSymbols();
 
       ///////////////// LISTENER MANAGEMENT STUFF ////////////////////////////
       /** 
@@ -819,11 +816,6 @@ namespace gSKI {
       typedef tWmeMap::iterator tWmeMapItr;
 
       tWmeMap m_wmemap;
-
-      typedef std::set<gSymbol*> tSymSet;
-      typedef tSymSet::iterator tSymSetItr;
-
-      tSymSet m_symSet;
    };
 }
 

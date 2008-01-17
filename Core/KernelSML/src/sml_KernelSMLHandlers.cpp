@@ -905,13 +905,22 @@ bool KernelSML::AddInputWME(gSKI::Agent* pAgent, char const* pID, char const* pA
 	// So where we had planned to map from client time tag to kernel time tag, we'll instead
 	// map from client time tag to IWme*.
 	// That means we need to be careful to delete the IWme* objects later.
-	if (pWME)
+	if (pWME && addingToInputLink)
 		pAgentSML->RecordTimeTag(pTimeTag, pWME) ;
 
 	// We'll release this when the table of time tags is eventually destroyed or
 	// when the wme is deleted.
 //	pWME->Release() ;
 
+	// If this is the output lin, we have to release the WME immediately,
+	// otherwise there is a memory leak because there is no way for the client
+	// to remove WMEs once they're added to the output link. The WME will get
+	// cleaned up properly when the output command retracts and it is garbage
+	// collected (DR 11/8/2007)
+	if(!addingToInputLink)
+	{
+		pWME->Release();
+	}
 	pParentObject->Release() ;
 
 	// If we have an error object, check that it hasn't been set by an earlier call.

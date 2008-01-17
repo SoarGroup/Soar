@@ -5,6 +5,7 @@ import java.util.*;
 import java.util.logging.*;
 
 import sml.*;
+import soar2d.configuration.Configuration.SimType;
 import soar2d.player.*;
 import soar2d.player.book.Dog;
 import soar2d.player.book.Mouse;
@@ -18,6 +19,8 @@ import soar2d.player.kitchen.SoarCook;
 import soar2d.player.kitchen.ToscaCook;
 import soar2d.player.tanksoar.SoarTank;
 import soar2d.player.tanksoar.Tank;
+import soar2d.player.taxi.SoarTaxi;
+import soar2d.player.taxi.Taxi;
 import soar2d.world.World;
 
 /**
@@ -230,6 +233,12 @@ public class Simulation {
 	 */
 	public void createPlayer(PlayerConfig playerConfigIn) {
 		
+		if ((Soar2D.config.getType() == SimType.kTaxi) && (configs.size() > 1)) {
+			// if this is removed, revisit white color below!
+			Soar2D.control.severeError("Taxi game type only supports 1 player.");
+			return;
+		}
+		
 		PlayerConfig playerConfig = new PlayerConfig(playerConfigIn);
 		
 		// if a color was specified
@@ -257,7 +266,7 @@ public class Simulation {
 			// set it
 			playerConfig.setColor(color);
 		}
-
+		
 		// if we don't have a name
 		if (!playerConfig.hasName()) {
 			// then use our color
@@ -311,6 +320,10 @@ public class Simulation {
 					} else {
 						player = new Cook(playerConfig);
 					}
+					break;
+					
+				case kTaxi:
+					player = new Taxi(playerConfig);
 					break;
 
 				}
@@ -368,9 +381,11 @@ public class Simulation {
 					case kBook:
 						player = new SoarRobot(agent, playerConfig);
 						break;
-						
 					case kKitchen:
 						player = new SoarCook(agent, playerConfig);
+						break;
+					case kTaxi:
+						player = new SoarTaxi(agent, playerConfig);
 
 					}
 					

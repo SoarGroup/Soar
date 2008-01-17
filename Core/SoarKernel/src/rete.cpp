@@ -1196,10 +1196,15 @@ Bool get_next_assertion (agent* thisAgent, production **prod,
         
         if ((thisAgent->ms_i_assertions) ||
            (thisAgent->ms_o_assertions)) {
-           char msg[BUFFER_MSG_SIZE];
-           strncpy(msg,"\nrete.c: Error: No active goal, but assertions are on the assertion list.", BUFFER_MSG_SIZE);
-           msg[BUFFER_MSG_SIZE - 1] = 0; /* ensure null termination */
-           abort_with_fatal_error(thisAgent, msg);
+
+		   // Commented out 11/2007
+		   // laird: I would like us to remove that error message that happens 
+		   // in Obscurebot. It just freaks people out and we have yet to see an error in Soar because of it.
+
+           //char msg[BUFFER_MSG_SIZE];
+           //strncpy(msg,"\nrete.c: Error: No active goal, but assertions are on the assertion list.", BUFFER_MSG_SIZE);
+           //msg[BUFFER_MSG_SIZE - 1] = 0; /* ensure null termination */
+           //abort_with_fatal_error(thisAgent, msg);
            
         }   
         

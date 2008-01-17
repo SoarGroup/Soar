@@ -82,6 +82,9 @@ public class BookConfiguration extends BaseConfiguration implements IConfigurati
 					throw new LoadError("Error parsing " + kTagVisionCone);
 				}
 				
+			} else if (child.getName().equalsIgnoreCase(kTagBlocksBlock)) {
+				this.setBlocksBlock(Boolean.parseBoolean(child.getTextTrim()));
+				
 			} else {
 				throw new LoadError("Unrecognized tag: " + child.getName());
 			}
@@ -98,6 +101,7 @@ public class BookConfiguration extends BaseConfiguration implements IConfigurati
 		book.addContent(new Element(kTagBookCellSize).setText(Integer.toString(this.getBookCellSize())));
 		book.addContent(new Element(kTagCycleTimeSlice).setText(Integer.toString(this.getCycleTimeSlice())));
 		book.addContent(new Element(kTagVisionCone).setText(Double.toString(this.getVisionCone())));
+		book.addContent(new Element(kTagBlocksBlock).setText(Boolean.toString(this.getBlocksBlock())));
 		rules.addContent(book);
 	}
 	private static final String kTagColoredRooms = "colored-rooms";
@@ -153,6 +157,15 @@ public class BookConfiguration extends BaseConfiguration implements IConfigurati
 		this.visionCone = visionCone;
 	}
 
+	private static final String kTagBlocksBlock = "blocks-block";
+	private boolean blocksBlock = true;
+	public boolean getBlocksBlock() {
+		return this.blocksBlock;
+	}
+	public void setBlocksBlock(boolean blocksBlock) {
+		this.blocksBlock = blocksBlock;
+	}
+
 	public void copy(IConfiguration config) {
 		BookConfiguration bConfig = (BookConfiguration)config;
 		this.coloredRooms = bConfig.coloredRooms;
@@ -160,6 +173,7 @@ public class BookConfiguration extends BaseConfiguration implements IConfigurati
 		this.bookCellSize = bConfig.bookCellSize;
 		this.cycleTimeSlice = bConfig.cycleTimeSlice;
 		this.visionCone = bConfig.visionCone;
+		this.blocksBlock = bConfig.blocksBlock;
 	}
 	public void setDefaultTerminals(Configuration configuration) {
 		configuration.setTerminalWinningScore(0);

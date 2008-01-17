@@ -43,6 +43,9 @@ public class World {
 			case kKitchen:
 				worldModule = new KitchenWorld();
 				break;
+			case kTaxi:
+				worldModule = new TaxiWorld();
+				break;
 
 			}
 		}
@@ -69,7 +72,7 @@ public class World {
 		
 		map = newMap;
 		
-		reset();
+		reset(map);
 		Soar2D.control.resetTime();
 		resetPlayers(resetDuringRun);
 		
@@ -173,11 +176,20 @@ public class World {
 		
 		Point location = players.getLocation(player);
 		assert location != null;
-		logger.info(player.getName() + ": Spawning at (" + 
-				location.x + "," + location.y + ")");
+		printSpawnMessage(player, location);
 		
 		worldModule.updatePlayers(true, map, players);
 		return true;
+	}
+	
+	void printSpawnMessage(Player player, Point location) {
+		if (Soar2D.config.getType() == SimType.kTankSoar) {
+			logger.info(player.getName() + ": Spawning at (" + 
+					location.x + "," + location.y + "), facing " + soar2d.Direction.stringOf[player.getFacingInt()]);
+		} else {
+			logger.info(player.getName() + ": Spawning at (" + 
+					location.x + "," + location.y + ")");
+		}
 	}
 	
 	void stopAndDumpStats(String message) {
@@ -231,6 +243,11 @@ public class World {
 		
 		// Collect human input
 		Iterator<Player> humanPlayerIter = players.humanIterator();
+		if (Soar2D.config.getForceHuman()) {
+			humanPlayerIter = players.iterator();
+		} else {
+			humanPlayerIter = players.humanIterator();
+		}
 		while (humanPlayerIter.hasNext()) {
 			Player human = humanPlayerIter.next();
 			if (!human.getHumanMove()) {
@@ -346,6 +363,39 @@ public class World {
 			restartAfterUpdate = true;
 		}
 
+		if (Soar2D.config.getType() == SimType.kTaxi) {
+			TaxiMap xMap = (TaxiMap)map;
+			if (Soar2D.config.getTerminalPassengerDelivered()) {
+				if (stopNextCyclePassengerDelivered) {
+					this.stopNextCyclePassengerDelivered = false;
+					stopAndDumpStats("The passenger has been delivered.");
+					return;
+				} else if (xMap.isPassengerDelivered()) {
+					this.stopNextCyclePassengerDelivered = true;
+				}
+			}
+
+			if (Soar2D.config.getTerminalPassengerPickUp()) {
+				if (stopNextCyclePassengerPickUp) {
+					this.stopNextCyclePassengerPickUp = false;
+					stopAndDumpStats("The passenger has been picked up.");
+					return;
+				} else if (xMap.isPassengerCarried()) {
+					this.stopNextCyclePassengerPickUp = true;
+				}
+			}
+			
+			if (Soar2D.config.getTerminalFuelRemaining()) {
+				if (stopNextCycleFuelRemaining) {
+					this.stopNextCycleFuelRemaining = false;
+					stopAndDumpStats("The taxi has run out of fuel.");
+					return;
+				} else if (xMap.isFuelNegative()) {
+					this.stopNextCycleFuelRemaining = true;
+				}
+			}
+		}
+
 		if (restartAfterUpdate) {
 			int[] scores = getSortedScores();
 			boolean draw = false;
@@ -375,6 +425,9 @@ public class World {
 		}
 	}
 	
+	private boolean stopNextCyclePassengerPickUp = false;
+	private boolean stopNextCycleFuelRemaining = false;
+	private boolean stopNextCyclePassengerDelivered = false;
 	
 	void fragPlayer(Player player) {
 		// remove from past cell
@@ -397,14 +450,16 @@ public class World {
 		// reset the player state
 		player.fragged();
 
-		Soar2D.logger.info(player.getName() + ": Spawning at (" + 
-				location.x + "," + location.y + ")");
+		printSpawnMessage(player, location);
 	}
 	
-	public void reset() {
+	public void reset(GridMap map) {
 		worldCount = 0;
 		printedStats = false;
-		worldModule.reset();
+		worldModule.reset(map);
+		this.stopNextCycleFuelRemaining = false;
+		this.stopNextCyclePassengerPickUp = false;
+		this.stopNextCyclePassengerDelivered = false;
 		//System.out.println(map);
 	}
 	

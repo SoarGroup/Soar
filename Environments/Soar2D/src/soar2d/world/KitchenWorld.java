@@ -31,7 +31,7 @@ public class KitchenWorld implements IWorld {
 			PlayersManager players, Point location) {
 	}
 
-	public void reset() {
+	public void reset(GridMap map) {
 
 	}
 	

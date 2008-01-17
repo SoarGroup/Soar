@@ -3,24 +3,22 @@
 \index{matches}
 Prints information about partial matches and the match set. 
 \subsubsection*{Synopsis}
-\begin{verbatim}
 matches [-nctw] production_name
 matches -[a|r] [-nctw]
 \end{verbatim}
 \subsubsection*{Options}
-\begin{tabular}{|l|l|}
 \hline
-\soar{production\_name} & Print partial match information for the named production.  \\
+\soar{\soar{\soar{production\_name}}} & Print partial match information for the named production.  \\
 \hline
-\soar{ -n, --names, -c, --count } & For the match set, print only the names of the productions that are about to fire or retract (the default). If printing partial matches for a production, just list the partial match counts.  \\
+\soar{\soar{\soar{ -n, --names, -c, --count }}} & For the match set, print only the names of the productions that are about to fire or retract (the default). If printing partial matches for a production, just list the partial match counts.  \\
 \hline
-\soar{ -t, --timetags } & Also print the timetags of the wmes at the first failing condition  \\
+\soar{\soar{\soar{ -t, --timetags }}} & Also print the timetags of the wmes at the first failing condition  \\
 \hline
-\soar{ -w, --wmes } & Also print the full wmes, not just the timetags, at the first failing condition.  \\
+\soar{\soar{\soar{ -w, --wmes }}} & Also print the full wmes, not just the timetags, at the first failing condition.  \\
 \hline
-\soar{ -a, --assertions } & List only productions about to fire.  \\
+\soar{\soar{\soar{ -a, --assertions }}} & List only productions about to fire.  \\
 \hline
-\soar{ -r, --retractions } & List only productions about to retract.  \\
+\soar{\soar{\soar{ -r, --retractions }}} & List only productions about to retract.  \\
 \hline
 \end{tabular}
 \subsubsection*{Description}
@@ -49,9 +47,7 @@ matches -[a|r] [-nctw]
  (\textbf{run -p 1}
 ). 
 \subsubsection*{Examples}
- This example prints the productions which are about to fire and the wmes that match the productions on their left-hand sides: \begin{verbatim}
 matches --assertions --wmes
 \end{verbatim}
- This example prints the wme timetags for a single production. \begin{verbatim}
 matches -t my*first*production
 \end{verbatim}

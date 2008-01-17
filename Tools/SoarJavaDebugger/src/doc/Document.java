@@ -15,11 +15,13 @@ import doc.DocumentThread2.CommandExecCommandLine;
 import doc.DocumentThread2.CommandExecCommandLineXML;
 import doc.events.*;
 import sml.* ;
+import sml.Kernel.RhsFunctionInterface;
 import debugger.* ;
 import general.AppProperties;
 import modules.*;
 
 import java.io.IOException;
+import java.util.HashMap;
 
 import org.eclipse.swt.widgets.Display;
 
@@ -144,6 +146,12 @@ public class Document implements Kernel.AgentEventInterface, Kernel.SystemEventI
 		Module phase 	 = new Module("Phase Diagram", "A view that shows Soar's phases of execution", modules.PhaseView.class) ;
 		Module edit 	 = new Module("Edit Production Window", "A window used to edit a production and then load it into Soar", modules.EditorView.class) ;
 		Module fold 	 = new Module("Tree Trace Window", "Output from commands and trace output from runs is shown in a tree window.", FoldingTextView.class) ;
+		Module rhsAccum	 = new Module("RHS Number Accumulator", "RHS function number (type: double) accumulator.", modules.RHSNumberAccumulatorView.class);
+		Module rhsText	 = new Module("RHS Text View", "Displays attribute-value pairs from RHS functions.", modules.RHSFunTextView.class);
+		Module waterfallText = new Module("RHS Waterfall Text View", "Tagged version of the accumulator.", modules.RHSWaterfallAccumulatorView.class);
+		Module objectText = new Module("RHS Object Text View", "Similar to text view for displaying multiple objects.", modules.RHSObjectTextView.class);
+		Module operatorText = new Module("RHS Operator Text View", "Similar to object text view, but works with operators and numeric indifferents.", modules.RHSOperatorTextView.class);
+		Module barChart  = new Module("RHS Bar Chart View", "Simple RHS function controlled bar chart.", modules.RHSBarChartView.class);
 
 		m_ModuleList.add(fold) ;
 		m_ModuleList.add(textTrace) ;
@@ -152,6 +160,13 @@ public class Document implements Kernel.AgentEventInterface, Kernel.SystemEventI
 		m_ModuleList.add(button) ;
 		m_ModuleList.add(phase) ;
 		m_ModuleList.add(edit) ;
+		m_ModuleList.add(rhsAccum) ;
+		m_ModuleList.add(rhsText) ;
+		m_ModuleList.add(waterfallText) ;
+		m_ModuleList.add(objectText) ;
+		m_ModuleList.add(operatorText) ;
+		m_ModuleList.add(barChart) ;
+		
 	}
 	
 	/** Gives us a frame to work with */
@@ -984,5 +999,49 @@ public class Document implements Kernel.AgentEventInterface, Kernel.SystemEventI
 		
 		Object result = m_DocumentThread.getExecutedCommandResult(command) ;
 		return result ;
+	}
+	
+	HashMap<String, Integer> m_RHSFunctions = new HashMap<String, Integer>();
+	
+	public boolean isRHSFunctionRegistered(String functionName) {
+		return this.m_RHSFunctions.containsKey(functionName);
+	}
+	
+	/*******************************************************************************************
+	 * 
+	 * Wrapper for RHS function registration to avoid registration of multiple handlers.
+	 * 
+	 * @return true if the function was successfully registered
+	 *******************************************************************************************
+	 */
+	public boolean registerRHSFunction(String functionName, RhsFunctionInterface handlerObject, Object callbackData) {
+		if (this.m_RHSFunctions.containsKey(functionName))
+			return false;
+		
+		Integer callbackID = this.m_Kernel.AddRhsFunction(functionName, handlerObject, callbackData);
+
+		if (callbackID.equals(-1))
+			return false;
+
+		this.m_RHSFunctions.put(functionName, callbackID);
+		return true;
+	}
+	
+	/*******************************************************************************************
+	 * 
+	 * Wrapper for RHS function un-registration to keep state to avoid registration of multiple 
+	 * handlers.
+	 * 
+	 * @return true if the function was successfully unregistered
+	 *******************************************************************************************
+	 */
+	public boolean unregisterRHSFunction(String functionName) {
+		if (!this.m_RHSFunctions.containsKey(functionName))
+			return false;
+		
+		Integer callbackID = this.m_RHSFunctions.get(functionName);
+		
+		this.m_RHSFunctions.remove(functionName);
+		return this.m_Kernel.RemoveRhsFunction(callbackID);
 	}
 }

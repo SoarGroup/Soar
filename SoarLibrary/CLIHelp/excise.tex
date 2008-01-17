@@ -3,24 +3,22 @@
 \index{excise}
 Delete Soar productions from production memory. 
 \subsubsection*{Synopsis}
-\begin{verbatim}
 excise production_name [production_name ...]
 excise -[acdtu]
 \end{verbatim}
 \subsubsection*{Options}
-\begin{tabular}{|l|l|}
 \hline
-\soar{ -a, --all } & Remove all productions from memory and perform an init-soar command  \\
+\soar{\soar{\soar{\soar{ -a, --all }}}} & Remove all productions from memory and perform an init-soar command  \\
 \hline
-\soar{ -c, --chunks } & Remove all chunks (learned productions) and justifications from memory  \\
+\soar{\soar{\soar{\soar{ -c, --chunks }}}} & Remove all chunks (learned productions) and justifications from memory  \\
 \hline
-\soar{ -d, --default } & Remove all default productions (:default) from memory  \\
+\soar{\soar{\soar{\soar{ -d, --default }}}} & Remove all default productions (:default) from memory  \\
 \hline
-\soar{ -t, --task } & Remove chunks, justifications, and user productions from memory  \\
+\soar{\soar{\soar{\soar{ -t, --task }}}} & Remove chunks, justifications, and user productions from memory  \\
 \hline
-\soar{ -u, --user } & Remove all user productions (but not chunks or default rules) from memory  \\
+\soar{\soar{\soar{\soar{ -u, --user }}}} & Remove all user productions (but not chunks or default rules) from memory  \\
 \hline
-\soar{production\_name} & Remove the specific production with this name.  \\
+\soar{\soar{\soar{\soar{production\_name}}}} & Remove the specific production with this name.  \\
 \hline
 \end{tabular}
 \subsubsection*{Description}
@@ -28,18 +26,15 @@ excise -[acdtu]
  or \textbf{--all}
  also causes an init-soar. 
 \subsubsection*{Examples}
- This command removes the production my*first*production and all chunks: \begin{verbatim}
 excise my*first*production --chunks
 \end{verbatim}
- This removes all productions and does an init-soar: \begin{verbatim}
 excise --all
 \end{verbatim}
 \subsubsection*{Default Aliases}
-\begin{tabular}{|l|l|}
 \hline
-\soar{ Alias } & Maps to  \\
+\soar{\soar{\soar{\soar{ Alias }}}} & Maps to  \\
 \hline
-\soar{ ex } & excise  \\
+\soar{\soar{\soar{\soar{ ex }}}} & excise  \\
 \hline
 \end{tabular}
 \subsubsection*{See Also}

@@ -26,6 +26,7 @@ class MatchStatus:
 
 		self.match_id = match_info["match_id"]
 		self.map = match_info["map"]
+		self.first_tank_name = match_info["first_tank_name"]
 		self.settings = match_info["settings"]
 		
 		# these are all lined up records
@@ -43,16 +44,14 @@ class MatchStatus:
 
 		self.interrupted_tanks = []		# list of tanks interruped for stop-soar
 		self.mem_killed_tanks = []		# list of tanks killed because of mem exceeded handler
-		self.log = None			# zipped log, valid after completion
 		self.endframe = None		# last frame, world count
 		self.start_time = None		# time started
 		self.elapsed_time = None		# time elapsed after completion
 
-	def results(self, scores, statuses, log, endframe):
+	def results(self, scores, statuses, endframe):
 		for tank_name in self.tank_names:
 			self.tank_scores.append(scores[tank_name])
 			self.tank_statuses.append(statuses[tank_name])
-		self.log = log
 		self.endframe = endframe
 
 	def convert(self, the_list):
@@ -78,7 +77,6 @@ class MatchStatus:
 		results['tank_statuses'] = self.convert(self.tank_statuses)
 		results['interrupted_tanks'] = self.convert(self.interrupted_tanks)
 		results['mem_killed_tanks'] = self.convert(self.mem_killed_tanks)
-		results['log'] = self.log
 		results['endframe'] = self.endframe
 		results['elapsed_time'] = self.elapsed_time
 		
@@ -236,7 +234,10 @@ class Ladder(threading.Thread):
 			if first_name == tank_name:
 				mirror = True
 				continue
-			logging.info("Processing %s" % tank_name)
+			if tank_name == status.first_tank_name:
+				logging.info("Processing %s (first tank)" % tank_name)
+			else:
+				logging.info("Processing %s" % tank_name)
 			first_name = tank_name
 			# save the file
 			tank_zip_file = open("%s.zip" % tank_name, 'w')
@@ -359,13 +360,9 @@ class Ladder(threading.Thread):
 		
 		match_log.close()
 		os.system("bzip2 --best -f %d.log" % status.match_id)
+		shutil.move("%d.log.bz2" % status.match_id, "ladder")
 
-		match_log_zipped = open("%d.log.bz2" % status.match_id, 'r')
-		status.results(scores, statuses, match_log_zipped.read(), endframe)
-		match_log_zipped.close()
-
-		# remove the file when done
-		os.remove("%d.log.bz2" % status.match_id)
+		status.results(scores, statuses, endframe)
 
 	def start_tournament(self, name):
 		self.names_condition.acquire()
@@ -513,6 +510,14 @@ def ts_score(tournament, message):
 		tournament.process_condition.release()
 	
 	return response
+
+def ts_log(message):
+	#logging.info("Log message received.")
+	pipe = subprocess.Popen('bzcat ladder/%s.log.bz2' % message['match_id'], shell=True, stdout=subprocess.PIPE).stdout
+	response = pipe.read()
+	if len(response) == 0:
+		response = "Match not found."
+	return response
 	
 def ts_kill(tournament, message):
 	logging.info("Kill message received.")
@@ -562,6 +567,8 @@ if __name__ == '__main__':
 						response = ts_score(tournament, message)
 					elif message['command'] == 'kill':
 						response = ts_kill(tournament, message)
+					elif message['command'] == 'log':
+						response = ts_log(message)
 					else:
 						logging.error('Unknown message from %s: %s' % (details[0], message))
 						response = UNKNOWN_COMMAND

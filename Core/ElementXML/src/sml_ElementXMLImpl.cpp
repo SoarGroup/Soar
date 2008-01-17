@@ -736,11 +736,12 @@ bool ElementXMLImpl::SetComment(const char* comment)
 /*************************************************************
 * @brief Returns the comment for this element.
 *
-* @returns The comment string for this element (or NULL if there is none)
+* @returns The comment string for this element (or zero-length string if there is none)
 *************************************************************/
 char const* ElementXMLImpl::GetComment()
 {
-	return m_Comment;
+	if(m_Comment) return m_Comment;
+   return "";
 }
 
 ////////////////////////////////////////////////////////////////
@@ -786,13 +787,14 @@ void ElementXMLImpl::SetBinaryCharacterData(char* characterData, int length, boo
 /*************************************************************
 * @brief Get the character data for this element.
 *
-* @returns	Returns the character data for this element.  This can return null if the element has no character data.
+* @returns	Returns the character data for this element.  If the element has no character data, returns zero-length string.
 *			The character data returned will not include any XML escape sequences (e.g. &lt;). 
 *			It will include the original special characters (e.g. "<").
 *************************************************************/
 char const* ElementXMLImpl::GetCharacterData() const
 {
-	return this->m_CharacterData ;
+	if(this->m_CharacterData)  return this->m_CharacterData;
+   return "";
 }
 
 /*************************************************************

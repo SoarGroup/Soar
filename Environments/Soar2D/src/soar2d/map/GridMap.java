@@ -205,6 +205,7 @@ public abstract class GridMap {
 	private static final String kTagRewardInfo = "reward-info";
 	private static final String kTagUseOpenCode = "use-open-code";
 	private static final String kTagReset = "reset";
+	private static final String kTagFuel = "fuel";
 
 	private void applySave(Element apply, CellObject template) {
 		Iterator<String> iter = template.propertiesApply.keySet().iterator();
@@ -255,6 +256,10 @@ public abstract class GridMap {
 		if (template.resetApply) {
 			apply.addContent(new Element(kTagReset));
 		}
+		
+		if (template.fuelApply) {
+			apply.addContent(new Element(kTagFuel));
+		}
 	}
 
 	private void apply(Element apply, CellObject template) throws LoadError {
@@ -292,6 +297,9 @@ public abstract class GridMap {
 
 			} else if (child.getName().equalsIgnoreCase(kTagReset)) {
 				template.setResetApply(true);
+
+			} else if (child.getName().equalsIgnoreCase(kTagFuel)) {
+				template.setFuelApply(true);
 
 			} else {
 				throw new LoadError("Unrecognized tag: " + child.getName());
@@ -819,6 +827,19 @@ public abstract class GridMap {
 	
 	public boolean enterable(java.awt.Point location) {
 		return getCell(location).enterable();
+	}
+	
+	public boolean exitable(java.awt.Point location, int direction) {
+		ArrayList<CellObject> wallList;
+		wallList = this.getAllWithProperty(location, "block");
+		Iterator<CellObject> wallIter = wallList.iterator();
+		while (wallIter.hasNext()) {
+			CellObject wall = (CellObject)wallIter.next();
+			if (direction == Direction.getInt(wall.getProperty("direction"))) {
+				return false;
+			}
+		}
+		return true;
 	}
 	
 	public CellObject removeObject(java.awt.Point location, String objectName) {

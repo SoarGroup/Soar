@@ -13,9 +13,11 @@
 		?<hide> (this is to hide the map, useful for tanksoar)
 		?<no-gui>
 		?<silent-agents> (execute command watch 0 after production load)
-		?<max-memory-usage> int bytes (execute command after production load)
+		?<max-memory-usage> 
+			int bytes (execute command after production load)
 		?<async>
 			int millisecondDelay
+		?<force-human> force human input for input-link debugging
 		?<rules>
 			?<kitchen>
 			?<eaters>
@@ -72,6 +74,16 @@
 					float radians (max visible angle-off is half of this)
 				?<rotate-speed>
 					float radians per sec default: pi / 4
+				?<blocks-block>
+					boolean if the blocks should block movement or not
+			?<taxi>
+				?<disable-fuel> ignore fuel
+				?<fuel-starting-minimum>
+					int lower range of starting fuel, must be [0..fuel-maximum]
+				?<fuel-starting-maximum>
+					int upper range of starting fuel, must be [starting-minimum..fuel-maximum]
+				?<fuel-maximum>
+					int max fuel, must be >= starting-maximum
 	?<logging>
 		?<level>
 			enum { severe, warning, info, fine, finer, finest }
@@ -121,6 +133,9 @@
 		?<unopened-boxes>
 		?<max-runs>
 			int maxRuns 		# note that this and food-remaining's maxRuns are independent
+		?<passenger-delivered>
+		?<fuel-remaining>
+		?<passenger-pick-up>				# debugging terminal, stop when passenger is picked up
 
 	?<clients>
 		*<client>

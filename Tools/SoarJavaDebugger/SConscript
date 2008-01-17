@@ -8,9 +8,9 @@ Import('env')
 env = env.Copy()
 
 if sys.platform == 'cygwin':
-    SoarSCons.SetJavaPaths(env, '"Core/ClientSMLSWIG/Java/sml.jar;SoarLibrary/bin/swt.jar"')
+    SoarSCons.SetJavaPaths(env, '"Core/ClientSMLSWIG/Java/sml.jar;SoarLibrary/bin/swt.jar;SoarLibrary/bin/jcommon-1.0.10.jar;SoarLibrary/bin/jfreechart-1.0.6.jar;SoarLibrary/bin/jfreechart-1.0.6-swt.jar;SoarLibrary/bin/swtgraphics2d.jar"')
 else:
-    SoarSCons.SetJavaPaths(env, 'Core/ClientSMLSWIG/Java/sml.jar:SoarLibrary/bin/swt.jar')
+    SoarSCons.SetJavaPaths(env, 'Core/ClientSMLSWIG/Java/sml.jar:SoarLibrary/bin/swt.jar:SoarLibrary/bin/jcommon-1.0.10.jar:SoarLibrary/bin/jfreechart-1.0.6.jar:SoarLibrary/bin/jfreechart-1.0.6-swt.jar:SoarLibrary/bin/swtgraphics2d.jar')
 
 javacStep = env.Java(target = 'classes', source = 'src')
 

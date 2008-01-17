@@ -269,6 +269,9 @@ public class SoarRobot extends Robot {
 	 * @see soar2d.player.Eater#getMove()
 	 */
 	public MoveInfo getMove() {
+		if (Soar2D.config.getForceHuman()) {
+			return super.getMove();
+		}
 
 		// if there was no command issued, that is kind of strange
 		if (agent.GetNumberCommands() == 0) {
@@ -310,6 +313,7 @@ public class SoarRobot extends Robot {
 					move.backward = true;
 				
 				} else if (direction.equalsIgnoreCase(Names.kStopID)) {
+					move.move = true;
 					move.forward = true;
 					move.backward = true;
 					commandId.AddStatusComplete();
@@ -353,6 +357,7 @@ public class SoarRobot extends Robot {
 					move.rotateDirection = Names.kRotateRight;
 				
 				} else if (direction.equalsIgnoreCase(Names.kStopID)) {
+					move.rotate = true;
 					move.rotateDirection = Names.kRotateStop;
 					commandId.AddStatusComplete();
 					continue;
