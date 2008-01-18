@@ -1271,7 +1271,7 @@ void store_rl_data( agent *my_agent, Symbol *goal, preference *cand )
 		data->reward_age = 0;
 		data->num_prev_op_rl_rules = just_fired;
 	}
-	else
+	else if ( data->prev_op_rl_rules != NIL )
 		data->reward_age++;
 }
 
@@ -1297,14 +1297,22 @@ void perform_rl_update( agent *my_agent, float op_value, Symbol *goal )
 	set_rl_stat( my_agent, (const long) RL_STAT_UPDATE_ERROR, (double) ( -update ) );
 
 	// Iterate through eligibility_traces, decay traces. If less than TOLERANCE, remove from map.
-	for ( iter = data->eligibility_traces->begin(); iter != data->eligibility_traces->end(); )
+	if ( lambda == 0 )
 	{
-		iter->second *= lambda;
-		iter->second *= pow( gamma, (double) data->step );
-		if ( iter->second < tolerance ) 
-			data->eligibility_traces->erase( iter++ );
-		else 
-			++iter;
+		if ( !data->eligibility_traces->empty() )
+			data->eligibility_traces->clear();
+	}
+	else
+	{
+		for ( iter = data->eligibility_traces->begin(); iter != data->eligibility_traces->end(); )
+		{
+			iter->second *= lambda;
+			iter->second *= pow( gamma, (double) data->step );
+			if ( iter->second < tolerance ) 
+				data->eligibility_traces->erase( iter++ );
+			else 
+				++iter;
+		}
 	}
 	
 	// Update trace for just fired prods
