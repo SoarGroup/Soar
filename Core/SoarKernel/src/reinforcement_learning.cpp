@@ -72,10 +72,12 @@ void reset_rl_data( agent *my_agent )
 		
 		free_list( my_agent, data->prev_op_rl_rules );
 		data->prev_op_rl_rules = NIL;
+		data->num_prev_op_rl_rules = 0;
 
 		data->previous_q = 0;
 		data->reward = 0;
 		data->step = 0;
+		data->reward_age = 0;
 		data->impasse_type = NONE_IMPASSE_TYPE;
 		
 		goal = goal->id.lower_goal;
