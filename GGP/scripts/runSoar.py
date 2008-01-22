@@ -6,8 +6,6 @@ import Python_sml_ClientInterface
 
 psci = Python_sml_ClientInterface
 
-SOCKET_DIR=os.path.join(os.environ['HOME'], '.soartmp')
-
 kernel = None
 agent = None
 
@@ -80,6 +78,11 @@ def sig_handler(signum, frame):
 
 def pick_port():
 	p = 12121
+	if sys.platform == 'win32':
+		# don't know how to do this in windows
+		return p;
+
+	SOCKET_DIR=os.path.join(os.environ['HOME'], '.soartmp')
 	used = os.listdir(SOCKET_DIR)
 	while str(p) in used:
 		p += 1
