@@ -331,16 +331,17 @@ agent * create_soar_agent (Kernel * thisKernel, char * agent_name) {            
   newAgent->exploration_params[ EXPLORATION_PARAM_TEMPERATURE ] = add_exploration_parameter( 25, &validate_temperature, "temperature" );
   
   // rl initialization
-  newAgent->rl_params[ RL_PARAM_LEARNING ] = add_rl_parameter( "learning", "on", &validate_rl_learning, &convert_rl_learning, &convert_rl_learning );
-  newAgent->rl_params[ RL_PARAM_ACCUMULATION_MODE ] = add_rl_parameter( "accumulation-mode", "sum", &validate_rl_accumulation, &convert_rl_accumulation, &convert_rl_accumulation );
-  newAgent->rl_params[ RL_PARAM_DISCOUNT_MODE ] = add_rl_parameter( "discount-mode", "exponential", &validate_rl_discount, &convert_rl_discount, &convert_rl_discount );
+  newAgent->rl_params[ RL_PARAM_LEARNING ] = add_rl_parameter( "learning", RL_LEARNING_ON, &validate_rl_learning, &convert_rl_learning, &convert_rl_learning );
+  newAgent->rl_params[ RL_PARAM_ACCUMULATION_MODE ] = add_rl_parameter( "accumulation-mode", RL_ACCUMULATION_SUM, &validate_rl_accumulation, &convert_rl_accumulation, &convert_rl_accumulation );
+  newAgent->rl_params[ RL_PARAM_DISCOUNT_MODE ] = add_rl_parameter( "discount-mode", RL_DISCOUNT_EXPONENTIAL, &validate_rl_discount, &convert_rl_discount, &convert_rl_discount );
   newAgent->rl_params[ RL_PARAM_EXP_DISCOUNT_RATE ] = add_rl_parameter( "exponential-discount-rate", 0.9, &validate_rl_exp_discount );
   newAgent->rl_params[ RL_PARAM_LIN_DISCOUNT_RATE ] = add_rl_parameter( "linear-discount-rate", 0.1, &validate_rl_lin_discount );
   newAgent->rl_params[ RL_PARAM_LEARNING_RATE ] = add_rl_parameter( "learning-rate", 0.3, &validate_rl_learning_rate );
-  newAgent->rl_params[ RL_PARAM_LEARNING_POLICY ] = add_rl_parameter( "learning-policy", "sarsa", &validate_rl_learning_policy, &convert_rl_learning_policy, &convert_rl_learning_policy );
+  newAgent->rl_params[ RL_PARAM_LEARNING_POLICY ] = add_rl_parameter( "learning-policy", RL_LEARNING_SARSA, &validate_rl_learning_policy, &convert_rl_learning_policy, &convert_rl_learning_policy );
   newAgent->rl_params[ RL_PARAM_ET_DISCOUNT_RATE ] = add_rl_parameter( "eligibility-trace-discount-rate", 0.9, &validate_rl_trace_discount );
   newAgent->rl_params[ RL_PARAM_ET_DECAY_RATE ] = add_rl_parameter( "eligibility-trace-decay-rate", 0, &validate_rl_decay_rate );
   newAgent->rl_params[ RL_PARAM_ET_TOLERANCE ] = add_rl_parameter( "eligibility-trace-tolerance", 0.001, &validate_rl_trace_tolerance );
+  newAgent->rl_params[ RL_PARAM_TEMPORAL_EXTENSION ] = add_rl_parameter( "temporal-extension", RL_TE_ON, &validate_te_enabled, &convert_te_enabled, &convert_te_enabled );
 
   newAgent->rl_stats[ RL_STAT_UPDATE_ERROR ] = add_rl_stat( "update-error" );
   newAgent->rl_stats[ RL_STAT_TOTAL_REWARD ] = add_rl_stat( "total-reward" );

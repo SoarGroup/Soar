@@ -39,6 +39,9 @@
 #define RL_LEARNING_SARSA 1
 #define RL_LEARNING_Q 2
 
+#define RL_TE_ON 1
+#define RL_TE_OFF 2
+
 // names of params
 #define RL_PARAM_LEARNING					0
 #define RL_PARAM_ACCUMULATION_MODE			1
@@ -50,7 +53,8 @@
 #define RL_PARAM_ET_DISCOUNT_RATE			7
 #define RL_PARAM_ET_DECAY_RATE				8
 #define RL_PARAM_ET_TOLERANCE				9
-#define RL_PARAMS							10 // must be 1+ last rl param
+#define RL_PARAM_TEMPORAL_EXTENSION			10
+#define RL_PARAMS							11 // must be 1+ last rl param
 
 // names of stats
 #define RL_STAT_UPDATE_ERROR				0
@@ -151,7 +155,7 @@ extern void remove_rl_refs_for_prod( agent *my_agent, production *prod );
 
 // add parameter
 extern rl_parameter *add_rl_parameter( const char *name, double value, bool (*val_func)( double ) );
-extern rl_parameter *add_rl_parameter( const char *name, const char *value, bool (*val_func)( const long ), const char *(*to_str)( long ), const long (*from_str)( const char * ) );
+extern rl_parameter *add_rl_parameter( const char *name, const long value, bool (*val_func)( const long ), const char *(*to_str)( long ), const long (*from_str)( const char * ) );
 
 // convert parameter
 extern const char *convert_rl_parameter( agent *my_agent, const long param );
@@ -229,6 +233,11 @@ extern bool validate_rl_decay_rate( const double new_val );
 
 // trace tolerance
 extern bool validate_rl_trace_tolerance( const double new_val );
+
+// temporal-extension
+extern bool validate_te_enabled( const long new_val );
+extern const char *convert_te_enabled( const long val );
+extern const long convert_te_enabled( const char *val );
 
 // shortcut for determining if Soar-RL is enabled
 extern bool soar_rl_enabled( agent *my_agent );

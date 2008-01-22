@@ -175,6 +175,13 @@ bool CommandLineInterface::DoRL( gSKI::Agent* pAgent, const char pOp, const std:
 		else
 			AppendArgTagFast( sml_Names::kParamValue, sml_Names::kTypeString, temp.c_str() );
 		
+		temp = "temporal-extension: ";
+		temp += get_rl_parameter( my_agent, RL_PARAM_TEMPORAL_EXTENSION, RL_RETURN_STRING );
+		if ( m_RawOutput )
+			m_Result << temp << "\n";
+		else
+			AppendArgTagFast( sml_Names::kParamValue, sml_Names::kTypeString, temp.c_str() );
+		
 		temp = "accumulation-mode: ";
 		temp += get_rl_parameter( my_agent, RL_PARAM_ACCUMULATION_MODE, RL_RETURN_STRING );
 		if ( m_RawOutput )

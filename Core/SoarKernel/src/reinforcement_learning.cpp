@@ -124,7 +124,7 @@ rl_parameter *add_rl_parameter( const char *name, double value, bool (*val_func)
 	return newbie;
 }
 
-rl_parameter *add_rl_parameter( const char *name, const char *value, bool (*val_func)( const long ), const char *(*to_str)( long ), const long (*from_str)( const char * ) )
+rl_parameter *add_rl_parameter( const char *name, const long value, bool (*val_func)( const long ), const char *(*to_str)( long ), const long (*from_str)( const char * ) )
 {
 	// new parameter entry
 	rl_parameter *newbie = new rl_parameter;
@@ -132,7 +132,7 @@ rl_parameter *add_rl_parameter( const char *name, const char *value, bool (*val_
 	newbie->param->string_param.val_func = val_func;
 	newbie->param->string_param.to_str = to_str;
 	newbie->param->string_param.from_str = from_str;
-	newbie->param->string_param.value = from_str( value );
+	newbie->param->string_param.value = value;
 	newbie->type = rl_param_string;
 	newbie->name = name;
 	
@@ -719,6 +719,54 @@ bool validate_rl_trace_tolerance( const double new_val )
 /////////////////////////////////////////////////////////////////////////////////////////////////////////
 /////////////////////////////////////////////////////////////////////////////////////////////////////////
 
+/////////////////////////////////////////////////////////////////////////////////////////////////////////
+// temporal-extension
+/////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+/***************************************************************************
+ * Function     : validate_te_enabled
+ **************************************************************************/
+bool validate_te_enabled( const long new_val )
+{
+	return ( ( new_val == RL_TE_ON ) || ( new_val == RL_TE_OFF ) );
+}
+
+/***************************************************************************
+ * Function     : convert_te_enabled
+ **************************************************************************/
+const char *convert_te_enabled( const long val )
+{
+	const char *return_val = NULL;
+	
+	switch ( val )
+	{
+		case RL_TE_ON:
+			return_val = "on";
+			break;
+			
+		case RL_TE_OFF:
+			return_val = "off";
+			break;
+	}
+	
+	return return_val;
+}
+
+const long convert_te_enabled( const char *val )
+{
+	long return_val = NULL;
+	
+	if ( !strcmp( val, "on" ) )
+		return_val = RL_TE_ON;
+	else if ( !strcmp( val, "off" ) )
+		return_val = RL_TE_OFF;
+	
+	return return_val;
+}
+
+/////////////////////////////////////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////////////////////////////////////
+
 /***************************************************************************
  * Function     : soar_rl_enabled
  **************************************************************************/
@@ -1251,6 +1299,8 @@ void store_rl_data( agent *my_agent, Symbol *goal, preference *cand )
 	rl_data *data = goal->id.rl_info;
 	Symbol *op = cand->value;
     data->previous_q = cand->numeric_value;
+
+	bool using_gaps = ( get_rl_parameter( my_agent, RL_PARAM_TEMPORAL_EXTENSION, RL_RETURN_LONG ) == RL_TE_ON );
 	
 	// Make list of just-fired prods
 	unsigned int just_fired = 0;
@@ -1272,6 +1322,11 @@ void store_rl_data( agent *my_agent, Symbol *goal, preference *cand )
 	{
 		data->reward_age = 0;
 		data->num_prev_op_rl_rules = just_fired;
+	}
+	else if ( !using_gaps )
+	{
+		data->prev_op_rl_rules = NIL;
+		data->num_prev_op_rl_rules = 0;
 	}
 	else if ( data->prev_op_rl_rules != NIL )
 		data->reward_age++;
