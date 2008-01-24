@@ -13,6 +13,7 @@
 #ifndef MISC_H_
 #define MISC_H_
 
+#include <iomanip>
 #include <sstream>
 #include <map>
 #include <vector>
@@ -33,7 +34,7 @@ template<class T> std::string *to_string( T &x )
 	std::ostringstream o;
 	
 	// get value into stream
-	o << x;
+	o << std::setprecision( 16 ) << x;
 	
 	// spit value back as string
 	return_val = new std::string( o.str() );
@@ -81,6 +82,6 @@ template <class X, class Y> bool is_set( std::map<X,Y> *my_map, X *key )
 //////////////////////////////////////////////////////////
 
 // get a numeric value from a symbol
-extern float get_number_from_symbol( Symbol *sym );
+extern double get_number_from_symbol( Symbol *sym );
 
 #endif /*MISC_H_*/

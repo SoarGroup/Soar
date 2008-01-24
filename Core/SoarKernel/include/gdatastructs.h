@@ -218,7 +218,7 @@ typedef struct preference_struct {
   struct preference_struct *next_result;
 
   unsigned int total_preferences_for_candidate;
-  float numeric_value;
+  double numeric_value;
 
 } preference;
 

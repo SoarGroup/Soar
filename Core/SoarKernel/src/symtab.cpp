@@ -105,7 +105,7 @@ unsigned long hash_int_constant_raw_info (long value, short num_bits) {
   return compress ((unsigned long)value, num_bits);
 }
 
-unsigned long hash_float_constant_raw_info (float value, short num_bits) {
+unsigned long hash_float_constant_raw_info (double value, short num_bits) {
   return compress ((unsigned long)value, num_bits);
 }
 
@@ -244,7 +244,7 @@ Symbol *find_int_constant (agent* thisAgent, long value) {
   return NIL;
 }
 
-Symbol *find_float_constant (agent* thisAgent, float value) {
+Symbol *find_float_constant (agent* thisAgent, double value) {
   unsigned long hash_value;
   Symbol *sym;
 
@@ -360,7 +360,7 @@ Symbol *make_int_constant (agent* thisAgent, long value) {
   return sym;
 }
 
-Symbol *make_float_constant (agent* thisAgent, float value) {
+Symbol *make_float_constant (agent* thisAgent, double value) {
   Symbol *sym;
 
   sym = find_float_constant(thisAgent, value);

@@ -31,12 +31,12 @@ bool is_natural_number( std::string *str )
 /***************************************************************************
  * Function     : get_number_from_symbol
  **************************************************************************/
-float get_number_from_symbol( Symbol *sym )
+double get_number_from_symbol( Symbol *sym )
 {
 	if ( sym->common.symbol_type == FLOAT_CONSTANT_SYMBOL_TYPE )
 		return sym->fc.value;
 	else if ( sym->common.symbol_type == INT_CONSTANT_SYMBOL_TYPE )
-		return (float) sym->ic.value;
+		return (double) sym->ic.value;
 	
 	return 0.0;
 }

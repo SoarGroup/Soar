@@ -494,7 +494,7 @@ bool set_reduction_rate( agent *my_agent, const long parameter, const long polic
  **************************************************************************/
 preference *choose_according_to_exploration_mode( agent *my_agent, slot *s, preference *candidates )
 {
-	float top_value = candidates->numeric_value;
+	double top_value = candidates->numeric_value;
 	const long exploration_policy = get_exploration_policy( my_agent );
 	preference *return_val;
 
@@ -657,11 +657,11 @@ preference *boltzmann_select( agent *my_agent, preference *candidates )
 	 * 
 	 * this maintains relative probabilities of selection, while reducing greatly the exponential extremes of calculations
 	 */
-	float q_diff = 0;
+	double q_diff = 0;
 	if ( candidates->next_candidate != NIL ) 
 	{
-		float q_high = candidates->numeric_value;
-		float q_low = candidates->numeric_value;
+		double q_high = candidates->numeric_value;
+		double q_low = candidates->numeric_value;
 		
 		for ( cand = candidates->next_candidate; cand != NIL; cand = cand->next_candidate ) 
 		{
@@ -685,7 +685,7 @@ preference *boltzmann_select( agent *my_agent, preference *candidates )
 		 *  the use of negative valued preferences, so its possible the
 		 *  sum is negative, here that means a fractional probability
 		 */
-		float q_val = ( cand->numeric_value - q_diff );
+		double q_val = ( cand->numeric_value - q_diff );
 		total_probability += exp( (double) (  q_val / temp ) );
 		
 		/**
@@ -755,7 +755,7 @@ preference *get_highest_q_value_pref( preference *candidates )
 {
 	preference *cand;
 	preference *top_cand = candidates;
-	float top_value = candidates->numeric_value;
+	double top_value = candidates->numeric_value;
 	int num_max_cand = 0;
 
 	for ( cand=candidates; cand!=NIL; cand=cand->next_candidate )
@@ -797,7 +797,7 @@ preference *get_highest_q_value_pref( preference *candidates )
 /***************************************************************************
  * Function     : compute_value_of_candidate
  **************************************************************************/
-void compute_value_of_candidate( agent *my_agent, preference *cand, slot *s, float default_value )
+void compute_value_of_candidate( agent *my_agent, preference *cand, slot *s, double default_value )
 {
 	if ( !cand ) return;
 

@@ -426,7 +426,7 @@ Bool determine_type_of_constituent_string (agent* thisAgent) {
   if (possible_fc) {
     errno = 0;
     thisAgent->lexeme.type = FLOAT_CONSTANT_LEXEME;
-    thisAgent->lexeme.float_val = (float) my_strtod (thisAgent->lexeme.string,NULL,10); 
+    thisAgent->lexeme.float_val = (double) my_strtod (thisAgent->lexeme.string,NULL,10); 
     if (errno) {
       print (thisAgent, "Error: bad floating point number\n");
       print_location_of_most_recent_lexeme(thisAgent);

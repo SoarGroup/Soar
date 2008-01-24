@@ -157,6 +157,6 @@ extern preference *epsilon_greedy_select( agent *my_agent, preference *candidate
 extern preference *get_highest_q_value_pref( preference *candidates );
 
 // computes total contribution for a candidate from each preference, as well as number of contributions
-extern void compute_value_of_candidate( agent *my_agent, preference *cand, slot *s, float default_value = 0 );
+extern void compute_value_of_candidate( agent *my_agent, preference *cand, slot *s, double default_value = 0 );
 
 #endif

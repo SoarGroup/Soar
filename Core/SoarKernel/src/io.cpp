@@ -160,7 +160,7 @@ Symbol *get_io_int_constant (agent* thisAgent, long value) {
   return make_int_constant (thisAgent, value);
 }
 
-Symbol *get_io_float_constant (agent* thisAgent, float value) {
+Symbol *get_io_float_constant (agent* thisAgent, double value) {
   return make_float_constant (thisAgent, value);
 }
 
@@ -773,7 +773,7 @@ Bool tio_whitespace[256];
 
 Symbol *get_io_symbol_from_tio_constituent_string (agent* thisAgent, char *input_string) {
   int int_val;
-  float float_val;
+  double float_val;
   Bool possible_id, possible_var, possible_sc, possible_ic, possible_fc;
   Bool rereadable;
   
@@ -800,7 +800,7 @@ Symbol *get_io_symbol_from_tio_constituent_string (agent* thisAgent, char *input
   /* --- check whether it's a floating point number --- */
   if (possible_fc) {
     errno = 0;
-    float_val = (float) my_strtod (input_string,NULL,10); 
+    float_val = (double) my_strtod (input_string,NULL,10); 
     if (errno) {
       print (thisAgent, "Text Input Error: bad floating point number\n");
       return NIL;

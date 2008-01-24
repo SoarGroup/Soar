@@ -1062,7 +1062,7 @@ int next_template_id( agent *my_agent, const char *template_name )
 	production *my_template = my_template_instance->prod;
 	action *my_action = my_template->action_list;
 	char first_letter;
-	float init_value = 0;
+	double init_value = 0;
 
 	Bool chunk_var = my_agent->variablize_this_chunk;
 	condition *cond_top, *cond_bottom;
@@ -1075,7 +1075,7 @@ int next_template_id( agent *my_agent, const char *template_name )
 	referent = instantiate_rhs_value( my_agent, my_action->referent, id->id.level, first_letter, tok, w );
 
 	if ( referent->common.symbol_type == INT_CONSTANT_SYMBOL_TYPE )
-		init_value = (float) referent->ic.value;
+		init_value = (double) referent->ic.value;
 	else if ( referent->common.symbol_type == FLOAT_CONSTANT_SYMBOL_TYPE )
 		init_value = referent->fc.value;
 
@@ -1214,7 +1214,7 @@ void tabulate_reward_value_for_goal( agent *my_agent, Symbol *goal )
 	slot *s = goal->id.reward_header->id.slots;
 	slot *t;
 	wme *w, *x;
-	float reward = 0.0;
+	double reward = 0.0;
 	unsigned int reward_count = 0;
 
 	if ( s )
@@ -1231,7 +1231,7 @@ void tabulate_reward_value_for_goal( agent *my_agent, Symbol *goal )
 							}
 		
 		if ( reward_count && ( get_rl_parameter( my_agent, RL_PARAM_ACCUMULATION_MODE, RL_RETURN_LONG ) == RL_ACCUMULATION_AVG ) )
-			reward = ( reward / ( (float) reward_count ) );
+			reward = ( reward / ( (double) reward_count ) );
 
 		data->reward += discount_reward( my_agent, reward, data->step );
 	}
@@ -1261,7 +1261,7 @@ void tabulate_reward_values( agent *my_agent )
 /***************************************************************************
  * Function     : discount_reward
  **************************************************************************/
-float discount_reward( agent *my_agent, float reward, unsigned int step )
+double discount_reward( agent *my_agent, double reward, unsigned int step )
 {
 	double return_val = 0;
 	const long mode = get_rl_parameter( my_agent, RL_PARAM_DISCOUNT_MODE, RL_RETURN_LONG );
@@ -1335,7 +1335,7 @@ void store_rl_data( agent *my_agent, Symbol *goal, preference *cand )
 /***************************************************************************
  * Function     : perform_rl_update
  **************************************************************************/
-void perform_rl_update( agent *my_agent, float op_value, Symbol *goal )
+void perform_rl_update( agent *my_agent, double op_value, Symbol *goal )
 {
 	rl_data *data = goal->id.rl_info;
 	soar_rl_et_map::iterator iter;
@@ -1348,7 +1348,7 @@ void perform_rl_update( agent *my_agent, float op_value, Symbol *goal )
 	double tolerance = get_rl_parameter( my_agent, RL_PARAM_ET_TOLERANCE );
 
 	// compute TD update, set stat
-	float update = data->reward * pow( gamma, (double) data->reward_age );
+	double update = data->reward * pow( gamma, (double) data->reward_age );
 	update += ( pow( gamma, (double) data->step ) * op_value );
 	update -= data->previous_q;
 	set_rl_stat( my_agent, (const long) RL_STAT_UPDATE_ERROR, (double) ( -update ) );
@@ -1397,7 +1397,7 @@ void perform_rl_update( agent *my_agent, float op_value, Symbol *goal )
 	for ( iter = data->eligibility_traces->begin(); iter != data->eligibility_traces->end(); iter++ )
 	{	
 		production *prod = iter->first;
-		float temp = get_number_from_symbol( rhs_value_to_symbol( prod->action_list->referent ) );
+		double temp = get_number_from_symbol( rhs_value_to_symbol( prod->action_list->referent ) );
 
 		// update is applied depending upon type of accumulation mode
 		// sum: add the update to the existing value

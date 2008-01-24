@@ -124,8 +124,8 @@ typedef std::map<production *, double, std::less<production *>, SoarMemoryAlloca
 typedef struct rl_data_struct {
  	soar_rl_et_map *eligibility_traces;
 	list *prev_op_rl_rules;
-	float previous_q;
-	float reward;
+	double previous_q;
+	double reward;
 	unsigned int reward_age;	// the number of steps since a cycle containing rl rules
 	unsigned int num_prev_op_rl_rules;
 	unsigned int step;			// the number of steps the current operator has been installed at the goal
@@ -318,7 +318,7 @@ extern void tabulate_reward_value_for_goal( agent *my_agent, Symbol *goal );
 extern void tabulate_reward_values( agent *my_agent );
 
 // shortcut function to discount a reward value based upon current discount mode
-extern float discount_reward( agent *my_agent, float reward, unsigned int step );
+extern double discount_reward( agent *my_agent, double reward, unsigned int step );
 
 //////////////////////////////////////////////////////////
 // Updates
@@ -328,7 +328,7 @@ extern float discount_reward( agent *my_agent, float reward, unsigned int step )
 extern void store_rl_data( agent *my_agent, Symbol *goal, preference *cand );
 
 // update the value of Soar-RL rules
-extern void perform_rl_update( agent *my_agent, float op_value, Symbol *goal );
+extern void perform_rl_update( agent *my_agent, double op_value, Symbol *goal );
 
 // clears eligibility traces in accordance with watkins
 extern void watkins_clear( agent *my_agent, Symbol *goal );
