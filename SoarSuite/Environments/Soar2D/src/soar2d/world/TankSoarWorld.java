@@ -543,6 +543,8 @@ public class TankSoarWorld implements IWorld {
 						color = other.getColor();
 					} else if (newDistance == distance) {
 						if (Simulation.random.nextBoolean()) {
+							// BUGBUG: note that this is not random, later ones are biased
+							// not determined important
 							distance = newDistance;
 							color = other.getColor();
 						}
