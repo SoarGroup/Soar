@@ -24,6 +24,9 @@
 #ifndef ELEMENTXML_IMPL_H
 #define ELEMENTXML_IMPL_H
 
+//#define DEBUG_REFCOUNTS 1
+//#define DEBUG_TRY 1
+
 // A null pointer
 #ifndef NULL
 #define NULL 0
@@ -100,6 +103,10 @@ protected:
 	bool			m_DataIsBinary ;	// If true, then the character data is treated as a binary buffer (can contain embedded nulls) and the binary length is needed
 	int				m_BinaryDataLength ;// Gives the length of the character data buffer, when it's being treated as a binary buffer.  (only valid if m_IsDataBinary is true).
 	ElementXMLImpl*	m_pParent ;			// The parent of this object (can be NULL)
+
+#ifdef DEBUG_REFCOUNTS
+	CRITICAL_SECTION m_CS;
+#endif //DEBUG_REFCOUNTS
 
 	xmlStringList	m_StringsToDelete ;	// List of strings we now own and should delete when we are destroyed.
 
