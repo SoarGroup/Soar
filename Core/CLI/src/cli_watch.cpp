@@ -38,6 +38,7 @@ bool CommandLineInterface::ParseWatch(gSKI::Agent* pAgent, std::vector<std::stri
 		{'p',"phases",					2},
 		{'P',"productions",				2},
 		{'r',"preferences",				2},
+		{'R',"rl",						2},
 		{'t',"timetags",				0},
 		{'T',"templates",				2},
 		{'u',"user-productions",		2},
@@ -179,6 +180,16 @@ bool CommandLineInterface::ParseWatch(gSKI::Agent* pAgent, std::vector<std::stri
 					settings.reset(WATCH_PREFERENCES);
 				} else {
 					settings.set(WATCH_PREFERENCES);
+				}
+				break;
+
+			case 'R'://rl
+				options.set(WATCH_RL);
+				if (m_OptionArgument.size()) {
+					if (!CheckOptargRemoveOrZero()) return false; //error, code set in CheckOptargRemoveOrZero
+					settings.reset(WATCH_RL);
+				} else {
+					settings.set(WATCH_RL);
 				}
 				break;
 
@@ -389,6 +400,7 @@ bool CommandLineInterface::DoWatch(gSKI::Agent* pAgent, const WatchBitset& optio
 			}
 			m_Result << "\n  Backtracing:  " << (pSysparams[TRACE_BACKTRACING_SYSPARAM] ? "on" : "off");
 			m_Result << "\n  Indifferent selection:  " << (pSysparams[TRACE_INDIFFERENT_SYSPARAM] ? "on" : "off");
+			m_Result << "\n  Soar-RL:  " << (pSysparams[TRACE_RL_SYSPARAM] ? "on" : "off");
 
 		} else {
 			char buf[kMinBufferSize];
@@ -431,6 +443,9 @@ bool CommandLineInterface::DoWatch(gSKI::Agent* pAgent, const WatchBitset& optio
 
 			AppendArgTag(sml_Names::kParamWatchIndifferentSelection, sml_Names::kTypeBoolean, 
 				pSysparams[TRACE_INDIFFERENT_SYSPARAM] ? sml_Names::kTrue : sml_Names::kFalse);
+
+			AppendArgTag(sml_Names::kParamWatchRL, sml_Names::kTypeBoolean, 
+				pSysparams[TRACE_RL_SYSPARAM] ? sml_Names::kTrue : sml_Names::kFalse);
 		}
 
 		return true;
@@ -455,6 +470,10 @@ bool CommandLineInterface::DoWatch(gSKI::Agent* pAgent, const WatchBitset& optio
 
 	if (options.test(WATCH_INDIFFERENT)) {
 		pKernelHack->SetSysparam(pAgent, TRACE_INDIFFERENT_SYSPARAM, settings.test(WATCH_INDIFFERENT));
+	}
+
+	if (options.test(WATCH_RL)) {
+		pKernelHack->SetSysparam(pAgent, TRACE_RL_SYSPARAM, settings.test(WATCH_RL));
 	}
 
 	if (options.test(WATCH_JUSTIFICATIONS)) {

@@ -190,6 +190,7 @@ namespace cli {
 		WATCH_LEARNING,
 		WATCH_BACKTRACING,
 		WATCH_INDIFFERENT,
+		WATCH_RL,
 		WATCH_NUM_OPTIONS, // must be last
 	};
 

@@ -31,6 +31,10 @@
 #include "rete.h"
 #include "wmem.h"
 
+#include "xmlTraceNames.h"
+#include "gski_event_system_functions.h"
+#include "print.h"
+
 #include "reinforcement_learning.h"
 #include "misc.h"
 
@@ -1320,6 +1324,20 @@ void store_rl_data( agent *my_agent, Symbol *goal, preference *cand )
 
 	if ( just_fired )
 	{
+		if ( my_agent->sysparams[ TRACE_RL_SYSPARAM ] )
+		{
+			if ( data->reward_age != 0 )
+			{
+				print( my_agent, "WARNING: gap ended" );
+				
+				char buf[256];
+       			SNPRINTF( buf, 254, "WARNING: gap ended" );
+       			gSKI_MakeAgentCallbackXML( my_agent, kFunctionBeginTag, kTagWarning );
+       			gSKI_MakeAgentCallbackXML( my_agent, kFunctionAddAttribute, kTypeString, buf );
+       			gSKI_MakeAgentCallbackXML( my_agent, kFunctionEndTag, kTagWarning );
+			}
+		}
+		
 		data->reward_age = 0;
 		data->num_prev_op_rl_rules = just_fired;
 	}
@@ -1329,7 +1347,23 @@ void store_rl_data( agent *my_agent, Symbol *goal, preference *cand )
 		data->num_prev_op_rl_rules = 0;
 	}
 	else if ( data->prev_op_rl_rules != NIL )
+	{
+		if ( my_agent->sysparams[ TRACE_RL_SYSPARAM ] )
+		{
+			if ( data->reward_age == 0 )
+			{
+				print( my_agent, "WARNING: gap started" );
+				
+				char buf[256];
+       			SNPRINTF( buf, 254, "WARNING: gap started" );
+       			gSKI_MakeAgentCallbackXML( my_agent, kFunctionBeginTag, kTagWarning );
+       			gSKI_MakeAgentCallbackXML( my_agent, kFunctionAddAttribute, kTypeString, buf );
+       			gSKI_MakeAgentCallbackXML( my_agent, kFunctionEndTag, kTagWarning );
+			}
+		}
+		
 		data->reward_age++;
+	}
 }
 
 /***************************************************************************

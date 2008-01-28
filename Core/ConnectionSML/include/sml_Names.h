@@ -366,6 +366,7 @@ public:
 	static char const* const kParamWatchLearning;
 	static char const* const kParamWatchBacktracing;
 	static char const* const kParamWatchIndifferentSelection;
+	static char const* const kParamWatchRL;
 
 	// Values (these are not case sensitive unlike the rest)
 	static char const* const kTrue ;
