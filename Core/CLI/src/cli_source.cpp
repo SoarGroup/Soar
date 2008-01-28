@@ -251,7 +251,7 @@ bool CommandLineInterface::DoSource(gSKI::Agent* pAgent, std::string filename) {
 		if (DoCommandInternal(pAgent, command)) {
 			// Add trailing newline if result changed size
 			unsigned newResultSize = m_Result.str().size();
-			if (oldResultSize != newResultSize) {
+			if (newResultSize > 0 && (oldResultSize != newResultSize)) {
 				// but don't add after sp's
 				if (m_Result.str()[m_Result.str().size()-1] != '*') {
 					m_Result << '\n';
