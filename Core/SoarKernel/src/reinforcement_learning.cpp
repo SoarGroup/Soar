@@ -1304,7 +1304,8 @@ void store_rl_data( agent *my_agent, Symbol *goal, preference *cand )
 	Symbol *op = cand->value;
     data->previous_q = cand->numeric_value;
 
-	bool using_gaps = ( get_rl_parameter( my_agent, RL_PARAM_TEMPORAL_EXTENSION, RL_RETURN_LONG ) == RL_TE_ON );
+	bool using_te = ( get_rl_parameter( my_agent, RL_PARAM_TEMPORAL_EXTENSION, RL_RETURN_LONG ) == RL_TE_ON );
+	double num_gaps = get_rl_stat( my_agent, RL_STAT_NUM_GAPS );
 	
 	// Make list of just-fired prods
 	unsigned int just_fired = 0;
@@ -1326,43 +1327,43 @@ void store_rl_data( agent *my_agent, Symbol *goal, preference *cand )
 	{
 		if ( my_agent->sysparams[ TRACE_RL_SYSPARAM ] )
 		{
-			if ( data->reward_age != 0 )
+			if ( ( data->reward_age != 0 ) || ( num_gaps == 0 ) )
 			{
 				print( my_agent, "WARNING: gap ended" );
-				
-				char buf[256];
-       			SNPRINTF( buf, 254, "WARNING: gap ended" );
+								       			
        			gSKI_MakeAgentCallbackXML( my_agent, kFunctionBeginTag, kTagWarning );
-       			gSKI_MakeAgentCallbackXML( my_agent, kFunctionAddAttribute, kTypeString, buf );
+       			gSKI_MakeAgentCallbackXML( my_agent, kFunctionAddAttribute, kTypeString, "WARNING: gap ended" );
        			gSKI_MakeAgentCallbackXML( my_agent, kFunctionEndTag, kTagWarning );
 			}
 		}
+
+		if ( ( data->reward_age != 0 ) || ( num_gaps == 0 ) )
+			set_rl_stat( my_agent, RL_STAT_NUM_GAPS, ( num_gaps + 1 ) );
 		
 		data->reward_age = 0;
 		data->num_prev_op_rl_rules = just_fired;
 	}
-	else if ( !using_gaps )
+	else if ( !using_te )
 	{
 		data->prev_op_rl_rules = NIL;
 		data->num_prev_op_rl_rules = 0;
 	}
-	else if ( data->prev_op_rl_rules != NIL )
+	else
 	{
 		if ( my_agent->sysparams[ TRACE_RL_SYSPARAM ] )
 		{
 			if ( data->reward_age == 0 )
 			{
 				print( my_agent, "WARNING: gap started" );
-				
-				char buf[256];
-       			SNPRINTF( buf, 254, "WARNING: gap started" );
+								
        			gSKI_MakeAgentCallbackXML( my_agent, kFunctionBeginTag, kTagWarning );
-       			gSKI_MakeAgentCallbackXML( my_agent, kFunctionAddAttribute, kTypeString, buf );
+       			gSKI_MakeAgentCallbackXML( my_agent, kFunctionAddAttribute, kTypeString, "WARNING: gap started" );
        			gSKI_MakeAgentCallbackXML( my_agent, kFunctionEndTag, kTagWarning );
 			}
 		}
 		
-		data->reward_age++;
+		if ( data->prev_op_rl_rules != NIL )
+			data->reward_age++;
 	}
 }
 

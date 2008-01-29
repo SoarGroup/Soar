@@ -395,6 +395,16 @@ bool CommandLineInterface::DoRL( gSKI::Agent* pAgent, const char pOp, const std:
 				m_Result << output << "\n";
 			else
 				AppendArgTagFast( sml_Names::kParamValue, sml_Names::kTypeString, output.c_str() );
+
+			output = "Number of gaps: ";
+			temp = get_rl_stat( my_agent, RL_STAT_NUM_GAPS );
+			temp_str = to_string( temp );
+			output += (*temp_str);
+			delete temp_str;
+			if ( m_RawOutput )
+				m_Result << output << "\n";
+			else
+				AppendArgTagFast( sml_Names::kParamValue, sml_Names::kTypeString, output.c_str() );
 		}
 		else
 		{

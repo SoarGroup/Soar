@@ -1880,7 +1880,7 @@ void remove_existing_context_and_descendents (agent* thisAgent, Symbol *goal) {
   update_impasse_items (thisAgent, goal, NIL); /* causes items & fake pref's to go away */
   
   if ( soar_rl_enabled( thisAgent ) )
-  {
+  {	  
 	tabulate_reward_value_for_goal( thisAgent, goal );
 	perform_rl_update( thisAgent, 0, goal ); // this update only sees reward - there is no next state
   }
@@ -2010,6 +2010,7 @@ void create_new_context (agent* thisAgent, Symbol *attr_of_impasse, byte impasse
   id->id.rl_info->previous_q = 0;
   id->id.rl_info->reward = 0;
   id->id.rl_info->reward_age = 0;
+  id->id.rl_info->num_gaps = 0;
   id->id.rl_info->num_prev_op_rl_rules = 0;
   id->id.rl_info->step = 0;  
   id->id.rl_info->impasse_type = NONE_IMPASSE_TYPE;
