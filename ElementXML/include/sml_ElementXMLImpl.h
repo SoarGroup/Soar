@@ -105,7 +105,11 @@ protected:
 	ElementXMLImpl*	m_pParent ;			// The parent of this object (can be NULL)
 
 #ifdef DEBUG_REFCOUNTS
+#ifdef _MSC_VER
 	CRITICAL_SECTION m_CS;
+#else //_MSC_VER
+	pthread_mutex_t mlock;
+#endif //_MSC_VER
 #endif //DEBUG_REFCOUNTS
 
 	xmlStringList	m_StringsToDelete ;	// List of strings we now own and should delete when we are destroyed.
