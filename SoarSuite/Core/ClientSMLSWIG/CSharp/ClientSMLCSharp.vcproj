@@ -96,7 +96,7 @@
 			/>
 			<Tool
 				Name="VCPostBuildEventTool"
-				CommandLine="csc /target:library /out:build\smlCSharp.dll build\*.cs&#x0D;&#x0A;xcopy build\*.dll &quot;$(SolutionDir)\SoarLibrary\bin&quot; /Y /I /Q&#x0D;&#x0A;del build\*.dll&#x0D;&#x0A;"
+				CommandLine="csc /target:library /keyfile:PublicPrivateKeyFile.snk /out:build\smlCSharp.dll build\*.cs&#x0D;&#x0A;xcopy build\*.dll &quot;$(SolutionDir)\SoarLibrary\bin&quot; /Y /I /Q&#x0D;&#x0A;del build\*.dll&#x0D;&#x0A;"
 			/>
 		</Configuration>
 		<Configuration
@@ -177,7 +177,7 @@
 			/>
 			<Tool
 				Name="VCPostBuildEventTool"
-				CommandLine="csc /target:library /out:build\smlCSharp.dll build\*.cs&#x0D;&#x0A;xcopy build\*.dll &quot;$(SolutionDir)\SoarLibrary\bin&quot; /Y /I /Q&#x0D;&#x0A;del build\*.dll&#x0D;&#x0A;"
+				CommandLine="csc /target:library /keyfile:PublicPrivateKeyFile.snk /out:build\smlCSharp.dll build\*.cs&#x0D;&#x0A;xcopy build\*.dll &quot;$(SolutionDir)\SoarLibrary\bin&quot; /Y /I /Q&#x0D;&#x0A;del build\*.dll&#x0D;&#x0A;"
 			/>
 		</Configuration>
 	</Configurations>
