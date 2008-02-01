@@ -85,9 +85,8 @@ print `rm $tmpTarget`;
 
 print "Running $target with source..\n";
 
-# we're only going to transfer source depth
-#print `$gtOn`;
-print `$gtOff`;
+print `$gtOn`;
+#print `$gtOff`;
 
 print `$timeCommand $runSoar -w1 $agentDir/$target.soar > $targetWithSourceLog`;
 foreach $line (`cat $timeFile`) {

@@ -4,24 +4,22 @@ our $remote = "./runRemoteScenarioNoSource.pl";
 
 die unless ($#ARGV == 1);
 
-our @fast = ( 
-  "b1", 
-  "b2", 
-  "w1", 
+our @all_machines = (
+  "b1",
+  "b2",
+  "w1",
   "w2",
   "n1",
   "n2",
-  "s1", 
-  "s2"
-);
-our @slow = ( 
+  "s1",
+  "s2",
   "g",
   "a",
   "f",
-#  "bb"
+  "bb",
+  "r1",
+  "r2"
 );
-
-our @machines = (@fast, @slow);
 
 our @scenarios_base = (
   "e 6 1",
@@ -39,13 +37,13 @@ our @scenarios_base = (
   "w 8 2",
   "w 9 1",
   "w 9 2",
-  "r 6 1",
-  "r 6 2",
-  "r 6 3",
-  "r 8 1",
-  "r 8 2",
-  "r 9 1",
-  "r 9 2",
+#  "r 6 1",
+#  "r 6 2",
+#  "r 6 3",
+#  "r 8 1",
+#  "r 8 2",
+#  "r 9 1",
+#  "r 9 2",
   "b 7 1",
   "b 7 2",
   "b 7 3",
@@ -71,8 +69,8 @@ our @scenarios_base = (
 our @hard_base = (
   "b 7 1",
   "b 7 3",
-  "r 6 1",
-  "r 6 3"
+#  "r 6 1",
+#  "r 6 3"
 );
 
 $dirBase = "$ENV{HOME}/GGP-batches/$ARGV[0]";
@@ -112,12 +110,16 @@ foreach (@scenarios) {
 our %scenarioMachines = ();
 our %openMachines = ();
 
-foreach (@machines) {
+foreach (@all_machines) {
   $openMachines{$_} = 1;
 }
 
 our $parity = 0;
 while (1) {
+  @fast = get_machines("fast");
+  @slow = get_machines("slow");
+  @machines = (@fast, @slow);
+
   $doneCount = updateDoneScenarios();
   #print "$doneCount are done\n";
   if ($doneCount == ($#scenarios + 1)) {
@@ -267,7 +269,24 @@ sub expandScenario() {
     
 sub decisionCount() {
   $file = shift;
-  $line = `tail -n 100 $file | grep 'O:' | tail -n 1`;
-  $line =~ /(\d+):/;
-  return $1;
+  if (-e $file) {
+    $line = `tail -n 100 $file | grep 'O:' | tail -n 1`;
+    $line =~ /(\d+):/;
+    return $1;
+  }
+  else {
+    return "***";
+  }
+}
+
+sub get_machines() {
+  $f = shift;
+  @m = ();
+  open(F, "< $f") or die;
+  while (<F>) {
+    chomp;
+    push(@m, $_) if not /#/;
+  }
+  close(F);
+  return @m;
 }
