@@ -1,0 +1,180 @@
+<?xml version="1.0"?>
+<doc>
+    <assembly>
+        <name>SimulationTutorial2.Y2006.M06.Proxy</name>
+    </assembly>
+    <members>
+        <member name="T:Robotics.SimulationTutorial2.Proxy.Contract">
+            <summary>
+            SimulationTutorial2 Contract
+            </summary>
+        </member>
+        <member name="F:Robotics.SimulationTutorial2.Proxy.Contract.Identifier">
+            The Unique Contract Identifier for the SimulationTutorial2 service
+        </member>
+        <member name="M:Robotics.SimulationTutorial2.Proxy.Contract.ServiceModel">
+            The Dss Service dssModel Contract(s)
+        </member>
+        <member name="M:Robotics.SimulationTutorial2.Proxy.Contract.CreateService(Microsoft.Dss.Services.Constructor.ConstructorPort,Microsoft.Dss.ServiceModel.Dssp.PartnerType[])">
+            <summary>
+            Creates an instance of the service associated with this contract
+            </summary>
+            <param name="contructorServicePort">Contractor Service that will create the instance</param>
+            <param name="partners">Optional list of service partners for new service instance</param>
+            <returns>Result PortSet for retrieving service creation response</returns>
+        </member>
+        <member name="M:Robotics.SimulationTutorial2.Proxy.Contract.CreateService(Microsoft.Dss.Services.Constructor.ConstructorPort)">
+            <summary>
+            Creates an instance of the service associated with this contract
+            </summary>
+            <param name="contructorServicePort">Contractor Service that will create the instance</param>
+            <returns>Result PortSet for retrieving service creation response</returns>
+        </member>
+        <member name="T:Robotics.SimulationTutorial2.Proxy.State">
+            <summary>
+            State
+            </summary>
+        </member>
+        <member name="M:Robotics.SimulationTutorial2.Proxy.State.CopyTo(Microsoft.Dss.Core.IDssSerializable)">
+            <summary>
+            Copy To State
+            </summary>
+        </member>
+        <member name="M:Robotics.SimulationTutorial2.Proxy.State.Clone">
+            <summary>
+            Clone State
+            </summary>
+        </member>
+        <member name="M:Robotics.SimulationTutorial2.Proxy.State.Serialize(System.IO.BinaryWriter)">
+            <summary>
+            Serialize Serialize
+            </summary>
+        </member>
+        <member name="M:Robotics.SimulationTutorial2.Proxy.State.Deserialize(System.IO.BinaryReader)">
+            <summary>
+            Deserialize Deserialize
+            </summary>
+        </member>
+        <member name="P:Robotics.SimulationTutorial2.Proxy.State.Message">
+            <summary>
+            Message
+            </summary>
+        </member>
+        <member name="P:Robotics.SimulationTutorial2.Proxy.State.TableCount">
+            <summary>
+            Table Count
+            </summary>
+        </member>
+        <member name="T:Robotics.SimulationTutorial2.Proxy.TableEntity">
+            <summary>
+            Table Entity
+            </summary>
+        </member>
+        <member name="M:Robotics.SimulationTutorial2.Proxy.TableEntity.CopyTo(Microsoft.Dss.Core.IDssSerializable)">
+            <summary>
+            Copy To Table Entity
+            </summary>
+        </member>
+        <member name="M:Robotics.SimulationTutorial2.Proxy.TableEntity.Clone">
+            <summary>
+            Clone Table Entity
+            </summary>
+        </member>
+        <member name="M:Robotics.SimulationTutorial2.Proxy.TableEntity.Serialize(System.IO.BinaryWriter)">
+            <summary>
+            Serialize Serialize
+            </summary>
+        </member>
+        <member name="M:Robotics.SimulationTutorial2.Proxy.TableEntity.Deserialize(System.IO.BinaryReader)">
+            <summary>
+            Deserialize Deserialize
+            </summary>
+        </member>
+        <member name="T:Robotics.SimulationTutorial2.Proxy.SimulationTutorial2Operations">
+            <summary>
+            Simulation Tutorial2 Operations
+            </summary>
+        </member>
+        <member name="M:Robotics.SimulationTutorial2.Proxy.SimulationTutorial2Operations.DsspDefaultLookup">
+            <summary>
+            Required Lookup request body type
+            </summary>
+        </member>
+        <member name="M:Robotics.SimulationTutorial2.Proxy.SimulationTutorial2Operations.DsspDefaultLookup(Microsoft.Dss.ServiceModel.Dssp.LookupRequestType)">
+            <summary>
+            Post Dssp Default Lookup and return the response port.
+            </summary>
+        </member>
+        <member name="M:Robotics.SimulationTutorial2.Proxy.SimulationTutorial2Operations.DsspDefaultDrop">
+            <summary>
+            A request to drop the service.
+            </summary>
+        </member>
+        <member name="M:Robotics.SimulationTutorial2.Proxy.SimulationTutorial2Operations.DsspDefaultDrop(Microsoft.Dss.ServiceModel.Dssp.DropRequestType)">
+            <summary>
+            Post Dssp Default Drop and return the response port.
+            </summary>
+        </member>
+        <member name="M:Robotics.SimulationTutorial2.Proxy.SimulationTutorial2Operations.HttpGet">
+            <summary>
+            DsspHttp Get request body
+            </summary>
+        </member>
+        <member name="M:Robotics.SimulationTutorial2.Proxy.SimulationTutorial2Operations.HttpGet(Microsoft.Dss.Core.DsspHttp.HttpGetRequestType)">
+            <summary>
+            Post Http Get and return the response port.
+            </summary>
+        </member>
+        <member name="M:Robotics.SimulationTutorial2.Proxy.SimulationTutorial2Operations.Replace">
+            <summary>
+            State
+            </summary>
+        </member>
+        <member name="M:Robotics.SimulationTutorial2.Proxy.SimulationTutorial2Operations.Replace(Robotics.SimulationTutorial2.Proxy.State)">
+            <summary>
+            Post Replace and return the response port.
+            </summary>
+        </member>
+        <member name="T:Robotics.SimulationTutorial2.Proxy.Replace">
+            <summary>
+            Replace
+            </summary>
+        </member>
+        <member name="M:Robotics.SimulationTutorial2.Proxy.Replace.#ctor">
+            <summary>
+            Replace
+            </summary>
+        </member>
+        <member name="M:Robotics.SimulationTutorial2.Proxy.Replace.#ctor(Robotics.SimulationTutorial2.Proxy.State)">
+            <summary>
+            Replace
+            </summary>
+        </member>
+        <member name="M:Robotics.SimulationTutorial2.Proxy.Replace.#ctor(Robotics.SimulationTutorial2.Proxy.State,Microsoft.Dss.ServiceModel.Dssp.DsspResponsePort{Microsoft.Dss.ServiceModel.Dssp.DefaultReplaceResponseType})">
+            <summary>
+            Replace
+            </summary>
+        </member>
+        <member name="T:Robotics.SimulationTutorial2.Properties.Resources">
+            <summary>
+              A strongly-typed resource class, for looking up localized strings, etc.
+            </summary>
+        </member>
+        <member name="P:Robotics.SimulationTutorial2.Properties.Resources.ResourceManager">
+            <summary>
+              Returns the cached ResourceManager instance used by this class.
+            </summary>
+        </member>
+        <member name="P:Robotics.SimulationTutorial2.Properties.Resources.Culture">
+            <summary>
+              Overrides the current thread's CurrentUICulture property for all
+              resource lookups using this strongly typed resource class.
+            </summary>
+        </member>
+        <member name="P:Robotics.SimulationTutorial2.Properties.Resources.DssModel">
+            <summary>
+              Looks up a resource file similar to DssModel.
+            </summary>
+        </member>
+    </members>
+</doc>
