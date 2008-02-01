@@ -3,15 +3,15 @@
     <ProjectType>Local</ProjectType>
     <ProductVersion>8.0.50215</ProductVersion>
     <SchemaVersion>2.0</SchemaVersion>
-    <ProjectGuid>{9AA7DBF7-12A1-481F-8F27-569AD1465B16}</ProjectGuid>
+    <ProjectGuid>{0FFF40C9-570A-418E-B4E5-02853535145A}</ProjectGuid>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
     <ApplicationIcon>
     </ApplicationIcon>
     <AssemblyKeyContainerName>
     </AssemblyKeyContainerName>
-    <AssemblyName>SimulationTutorial2.Y2006.M06.Proxy</AssemblyName>
-    <RootNamespace>Robotics.SimulationTutorial2</RootNamespace>
+    <AssemblyName>SimpleDashboard.Y2006.M01.Proxy</AssemblyName>
+    <RootNamespace>Microsoft.Robotics.Services.SimpleDashboard</RootNamespace>
     <AssemblyOriginatorKeyFile>C:\Microsoft Robotics Studio (1.5)\samples\mrisamples.snk</AssemblyOriginatorKeyFile>
     <DefaultClientScript>JScript</DefaultClientScript>
     <DefaultHTMLPageLayout>Grid</DefaultHTMLPageLayout>
@@ -33,7 +33,7 @@
     <ConfigurationOverrideFile>
     </ConfigurationOverrideFile>
     <DefineConstants>DEBUG;TRACE;INSTRUMENTED;DSSPROXY</DefineConstants>
-    <DocumentationFile>SimulationTutorial2.Y2006.M06.proxy.xml</DocumentationFile>
+    <DocumentationFile>SimpleDashboard.Y2006.M01.proxy.xml</DocumentationFile>
     <DebugSymbols>true</DebugSymbols>
     <FileAlignment>4096</FileAlignment>
     <NoStdLib>false</NoStdLib>
@@ -52,7 +52,7 @@
     <ConfigurationOverrideFile>
     </ConfigurationOverrideFile>
     <DefineConstants>TRACE;INSTRUMENTED;DSSPROXY</DefineConstants>
-    <DocumentationFile>SimulationTutorial2.Y2006.M06.proxy.xml</DocumentationFile>
+    <DocumentationFile>SimpleDashboard.Y2006.M01.proxy.xml</DocumentationFile>
     <DebugSymbols>true</DebugSymbols>
     <DebugType>pdbonly</DebugType>
     <FileAlignment>4096</FileAlignment>
@@ -73,7 +73,11 @@
         <SpecificVersion>False</SpecificVersion>
         <Private>False</Private>
     </Reference>
-    <Reference Include="SimulationEngine.Proxy">
+    <Reference Include="System.Windows.Forms">
+        <SpecificVersion>False</SpecificVersion>
+        <Private>False</Private>
+    </Reference>
+    <Reference Include="Ccr.Core">
         <SpecificVersion>False</SpecificVersion>
         <Private>False</Private>
     </Reference>
@@ -85,11 +89,7 @@
         <SpecificVersion>False</SpecificVersion>
         <Private>False</Private>
     </Reference>
-    <Reference Include="Ccr.Core">
-        <SpecificVersion>False</SpecificVersion>
-        <Private>False</Private>
-    </Reference>
-    <Reference Include="SimulationEngine.Proxy">
+    <Reference Include="GameController.Y2006.M09.Proxy">
         <SpecificVersion>False</SpecificVersion>
         <Private>False</Private>
     </Reference>
@@ -97,27 +97,23 @@
         <SpecificVersion>False</SpecificVersion>
         <Private>False</Private>
     </Reference>
+    <Reference Include="SickLRF.Y2005.M12.Proxy">
+        <SpecificVersion>False</SpecificVersion>
+        <Private>False</Private>
+    </Reference>
+    <Reference Include="System.Drawing">
+        <SpecificVersion>False</SpecificVersion>
+        <Private>False</Private>
+    </Reference>
     <Reference Include="System">
         <SpecificVersion>False</SpecificVersion>
         <Private>False</Private>
     </Reference>
-    <Reference Include="SimulationCommon.Proxy">
+    <Reference Include="smlCSharp">
         <SpecificVersion>False</SpecificVersion>
         <Private>False</Private>
     </Reference>
-    <Reference Include="SimulatedDifferentialDrive.2006.M06.Proxy">
-        <SpecificVersion>False</SpecificVersion>
-        <Private>False</Private>
-    </Reference>
-    <Reference Include="SimulatedLRF.Y2006.M05.Proxy">
-        <SpecificVersion>False</SpecificVersion>
-        <Private>False</Private>
-    </Reference>
-    <Reference Include="SimulatedBumper.Y2006.M05.Proxy">
-        <SpecificVersion>False</SpecificVersion>
-        <Private>False</Private>
-    </Reference>
-    <Reference Include="SimulatedWebcam.Y2006.M09.Proxy">
+    <Reference Include="Ccr.Adapters.WinForms">
         <SpecificVersion>False</SpecificVersion>
         <Private>False</Private>
     </Reference>
@@ -129,7 +125,7 @@
   </ItemGroup>
 <ItemGroup>
   <Compile Include="AssemblyInfo.cs" />
-  <Compile Include="Robotics.SimulationTutorial2.Proxy.SimulationTutorial2Types.cs" />
+  <Compile Include="Microsoft.Robotics.Services.SimpleDashboard.Proxy.SimpleDashboardTypes.cs" />
   <Compile Include="Properties\Resources.Designer.cs">
     <AutoGen>True</AutoGen>
     <DesignTime>True</DesignTime>

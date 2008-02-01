@@ -1,0 +1,175 @@
+<?xml version="1.0"?>
+<doc>
+    <assembly>
+        <name>SimpleDashboard.Y2006.M01.Proxy</name>
+    </assembly>
+    <members>
+        <member name="T:Microsoft.Robotics.Services.SimpleDashboard.Proxy.Contract">
+            <summary>
+            SimpleDashboard Contract
+            </summary>
+        </member>
+        <member name="F:Microsoft.Robotics.Services.SimpleDashboard.Proxy.Contract.Identifier">
+            The Unique Contract Identifier for the SimpleDashboard service
+        </member>
+        <member name="M:Microsoft.Robotics.Services.SimpleDashboard.Proxy.Contract.ServiceModel">
+            The Dss Service dssModel Contract(s)
+        </member>
+        <member name="M:Microsoft.Robotics.Services.SimpleDashboard.Proxy.Contract.CreateService(Microsoft.Dss.Services.Constructor.ConstructorPort,Microsoft.Dss.ServiceModel.Dssp.PartnerType[])">
+            <summary>
+            Creates an instance of the service associated with this contract
+            </summary>
+            <param name="contructorServicePort">Contractor Service that will create the instance</param>
+            <param name="partners">Optional list of service partners for new service instance</param>
+            <returns>Result PortSet for retrieving service creation response</returns>
+        </member>
+        <member name="M:Microsoft.Robotics.Services.SimpleDashboard.Proxy.Contract.CreateService(Microsoft.Dss.Services.Constructor.ConstructorPort)">
+            <summary>
+            Creates an instance of the service associated with this contract
+            </summary>
+            <param name="contructorServicePort">Contractor Service that will create the instance</param>
+            <returns>Result PortSet for retrieving service creation response</returns>
+        </member>
+        <member name="T:Microsoft.Robotics.Services.SimpleDashboard.Proxy.SimpleDashboardState">
+            <summary>
+            Simple Dashboard State
+            </summary>
+        </member>
+        <member name="M:Microsoft.Robotics.Services.SimpleDashboard.Proxy.SimpleDashboardState.CopyTo(Microsoft.Dss.Core.IDssSerializable)">
+            <summary>
+            Copy To Simple Dashboard State
+            </summary>
+        </member>
+        <member name="M:Microsoft.Robotics.Services.SimpleDashboard.Proxy.SimpleDashboardState.Clone">
+            <summary>
+            Clone Simple Dashboard State
+            </summary>
+        </member>
+        <member name="M:Microsoft.Robotics.Services.SimpleDashboard.Proxy.SimpleDashboardState.Serialize(System.IO.BinaryWriter)">
+            <summary>
+            Serialize Serialize
+            </summary>
+        </member>
+        <member name="M:Microsoft.Robotics.Services.SimpleDashboard.Proxy.SimpleDashboardState.Deserialize(System.IO.BinaryReader)">
+            <summary>
+            Deserialize Deserialize
+            </summary>
+        </member>
+        <member name="P:Microsoft.Robotics.Services.SimpleDashboard.Proxy.SimpleDashboardState.Log">
+            <summary>
+            Log
+            </summary>
+        </member>
+        <member name="P:Microsoft.Robotics.Services.SimpleDashboard.Proxy.SimpleDashboardState.LogFile">
+            <summary>
+            Log File
+            </summary>
+        </member>
+        <member name="T:Microsoft.Robotics.Services.SimpleDashboard.Proxy.SimpleDashboardOperations">
+            <summary>
+            Simple Dashboard Operations
+            </summary>
+        </member>
+        <member name="M:Microsoft.Robotics.Services.SimpleDashboard.Proxy.SimpleDashboardOperations.DsspDefaultLookup">
+            <summary>
+            Required Lookup request body type
+            </summary>
+        </member>
+        <member name="M:Microsoft.Robotics.Services.SimpleDashboard.Proxy.SimpleDashboardOperations.DsspDefaultLookup(Microsoft.Dss.ServiceModel.Dssp.LookupRequestType)">
+            <summary>
+            Post Dssp Default Lookup and return the response port.
+            </summary>
+        </member>
+        <member name="M:Microsoft.Robotics.Services.SimpleDashboard.Proxy.SimpleDashboardOperations.DsspDefaultDrop">
+            <summary>
+            A request to drop the service.
+            </summary>
+        </member>
+        <member name="M:Microsoft.Robotics.Services.SimpleDashboard.Proxy.SimpleDashboardOperations.DsspDefaultDrop(Microsoft.Dss.ServiceModel.Dssp.DropRequestType)">
+            <summary>
+            Post Dssp Default Drop and return the response port.
+            </summary>
+        </member>
+        <member name="M:Microsoft.Robotics.Services.SimpleDashboard.Proxy.SimpleDashboardOperations.Get">
+            <summary>
+            Required Get body type
+            </summary>
+        </member>
+        <member name="M:Microsoft.Robotics.Services.SimpleDashboard.Proxy.SimpleDashboardOperations.Get(Microsoft.Dss.ServiceModel.Dssp.GetRequestType)">
+            <summary>
+            Post Get and return the response port.
+            </summary>
+        </member>
+        <member name="M:Microsoft.Robotics.Services.SimpleDashboard.Proxy.SimpleDashboardOperations.Replace">
+            <summary>
+            Simple Dashboard State
+            </summary>
+        </member>
+        <member name="M:Microsoft.Robotics.Services.SimpleDashboard.Proxy.SimpleDashboardOperations.Replace(Microsoft.Robotics.Services.SimpleDashboard.Proxy.SimpleDashboardState)">
+            <summary>
+            Post Replace and return the response port.
+            </summary>
+        </member>
+        <member name="T:Microsoft.Robotics.Services.SimpleDashboard.Proxy.Get">
+            <summary>
+            Gets the current state of the service.
+            </summary>
+        </member>
+        <member name="M:Microsoft.Robotics.Services.SimpleDashboard.Proxy.Get.#ctor">
+            <summary>
+            Gets the current state of the service.
+            </summary>
+        </member>
+        <member name="M:Microsoft.Robotics.Services.SimpleDashboard.Proxy.Get.#ctor(Microsoft.Dss.ServiceModel.Dssp.GetRequestType)">
+            <summary>
+            Gets the current state of the service.
+            </summary>
+        </member>
+        <member name="M:Microsoft.Robotics.Services.SimpleDashboard.Proxy.Get.#ctor(Microsoft.Dss.ServiceModel.Dssp.GetRequestType,Microsoft.Ccr.Core.PortSet{Microsoft.Robotics.Services.SimpleDashboard.Proxy.SimpleDashboardState,W3C.Soap.Fault})">
+            <summary>
+            Gets the current state of the service.
+            </summary>
+        </member>
+        <member name="T:Microsoft.Robotics.Services.SimpleDashboard.Proxy.Replace">
+            <summary>
+            Changes (or indicates a change to) the entire state of the service.
+            </summary>
+        </member>
+        <member name="M:Microsoft.Robotics.Services.SimpleDashboard.Proxy.Replace.#ctor">
+            <summary>
+            Changes (or indicates a change to) the entire state of the service.
+            </summary>
+        </member>
+        <member name="M:Microsoft.Robotics.Services.SimpleDashboard.Proxy.Replace.#ctor(Microsoft.Robotics.Services.SimpleDashboard.Proxy.SimpleDashboardState)">
+            <summary>
+            Changes (or indicates a change to) the entire state of the service.
+            </summary>
+        </member>
+        <member name="M:Microsoft.Robotics.Services.SimpleDashboard.Proxy.Replace.#ctor(Microsoft.Robotics.Services.SimpleDashboard.Proxy.SimpleDashboardState,Microsoft.Ccr.Core.PortSet{Microsoft.Dss.ServiceModel.Dssp.DefaultReplaceResponseType,W3C.Soap.Fault})">
+            <summary>
+            Changes (or indicates a change to) the entire state of the service.
+            </summary>
+        </member>
+        <member name="T:Microsoft.Robotics.Services.SimpleDashboard.Properties.Resources">
+            <summary>
+              A strongly-typed resource class, for looking up localized strings, etc.
+            </summary>
+        </member>
+        <member name="P:Microsoft.Robotics.Services.SimpleDashboard.Properties.Resources.ResourceManager">
+            <summary>
+              Returns the cached ResourceManager instance used by this class.
+            </summary>
+        </member>
+        <member name="P:Microsoft.Robotics.Services.SimpleDashboard.Properties.Resources.Culture">
+            <summary>
+              Overrides the current thread's CurrentUICulture property for all
+              resource lookups using this strongly typed resource class.
+            </summary>
+        </member>
+        <member name="P:Microsoft.Robotics.Services.SimpleDashboard.Properties.Resources.DssModel">
+            <summary>
+              Looks up a resource file similar to DssModel.
+            </summary>
+        </member>
+    </members>
+</doc>

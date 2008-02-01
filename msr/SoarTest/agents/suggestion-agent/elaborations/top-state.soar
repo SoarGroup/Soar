@@ -1,0 +1,10 @@
+sp {elaborate*task*msr
+   (state <s> ^superstate nil)
+   -->
+   (<s> ^name msr)}
+
+sp {elaborate*top-state*top-state
+  (state <s> ^name msr)
+-->
+  (<s> ^top-state <s>)}
+

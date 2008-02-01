@@ -7,6 +7,7 @@
 //-----------------------------------------------------------------------
 
 using Microsoft.Ccr.Core;
+using Microsoft.Ccr.Adapters.WinForms;
 using Microsoft.Dss.Core;
 using Microsoft.Dss.Core.Attributes;
 using Microsoft.Dss.ServiceModel.Dssp;
@@ -36,8 +37,6 @@ using System.Net;
 using System.Threading;
 #endregion
 
-using sml;
-
 namespace Robotics.SimulationTutorial2
 {
     [DisplayName("Simulation Tutorial 2")]
@@ -59,8 +58,6 @@ namespace Robotics.SimulationTutorial2
         private SimulationTutorial2Operations _mainPort = 
             new SimulationTutorial2Operations();
 
-        Soar _soar = new Soar();
-
         public SimulationTutorial2(DsspServiceCreationPort creationPort) : 
                 base(creationPort)
         {
@@ -71,17 +68,11 @@ namespace Robotics.SimulationTutorial2
         {
             base.Start();
 
-            // Initialize Soar
-            _soar.Init();
-
             // Orient sim camera view point
             SetupCamera();
             // Add objects (entities) in our simulated world
             PopulateWorld();
 
-            // Start Soar after everything is loaded
-            Thread soarThread = new Thread(new ThreadStart(_soar.Run));
-            soarThread.Start();
         }
 
         #region CODECLIP 01-2

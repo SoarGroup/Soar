@@ -3,27 +3,27 @@
     <ProjectType>Local</ProjectType>
     <ProductVersion>8.0.50727</ProductVersion>
     <SchemaVersion>2.0</SchemaVersion>
-    <ProjectGuid>{DFDC51DD-FABC-4650-B260-CA6996FAC7C1}</ProjectGuid>
+    <ProjectGuid>{0EF15C7D-0506-4BB0-A9AA-DBEBA64BB630}</ProjectGuid>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
     <ApplicationIcon>
     </ApplicationIcon>
     <AssemblyKeyContainerName>
     </AssemblyKeyContainerName>
-    <AssemblyName>SimulationTutorial2.Y2006.M06</AssemblyName>
-    <RootNamespace>Robotics.SimulationTutorial2</RootNamespace>
+    <AssemblyName>SimpleDashboard.Y2006.M01</AssemblyName>
+    <RootNamespace>Microsoft.Robotics.Services.SimpleDashboard</RootNamespace>
     <AssemblyOriginatorKeyFile>C:\Microsoft Robotics Studio (1.5)\samples\mrisamples.snk</AssemblyOriginatorKeyFile>
     <DefaultClientScript>JScript</DefaultClientScript>
     <DefaultHTMLPageLayout>Grid</DefaultHTMLPageLayout>
     <DefaultTargetSchema>IE50</DefaultTargetSchema>
     <DelaySign>False</DelaySign>
-    <SignAssembly>true</SignAssembly>
     <OutputType>Library</OutputType>
     <RunPostBuildEvent>OnOutputUpdated</RunPostBuildEvent>
     <StartupObject>
     </StartupObject>
     <FileUpgradeFlags>
     </FileUpgradeFlags>
+    <SignAssembly>True</SignAssembly>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <OutputPath>C:\Microsoft Robotics Studio (1.5)\bin\</OutputPath>
@@ -70,76 +70,76 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="Ccr.Adapters.WinForms, Version=1.5.507.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL" />
+    <Reference Include="Ccr.Adapters.WinForms, Version=1.0.0.0, Culture=neutral, PublicKeyToken=d12f30389d94881d, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <Private>False</Private>
+    </Reference>
     <Reference Include="DssRuntime">
       <SpecificVersion>False</SpecificVersion>
       <Private>False</Private>
     </Reference>
-    <Reference Include="mscorlib">
-      <SpecificVersion>False</SpecificVersion>
-    </Reference>
-    <Reference Include="Ccr.Core">
+    <Reference Include="DssRuntime.Proxy">
       <SpecificVersion>False</SpecificVersion>
       <Private>False</Private>
     </Reference>
-    <Reference Include="DssBase">
+    <Reference Include="GameController.Y2006.M09.Proxy, Version=1.0.0.0, Culture=neutral, PublicKeyToken=d12f30389d94881d, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
       <Private>False</Private>
     </Reference>
-    <Reference Include="PhysicsEngine, Version=1.0.2348.9909, Culture=neutral, PublicKeyToken=d12f30389d94881d, processorArchitecture=x86">
+    <Reference Include="RoboticsCommon.Proxy">
       <SpecificVersion>False</SpecificVersion>
       <Private>False</Private>
     </Reference>
-    <Reference Include="RoboticsCommon">
+    <Reference Include="SickLRF.Y2005.M12.proxy, Version=0.0.0.0, Culture=neutral, PublicKeyToken=d12f30389d94881d, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
       <Private>False</Private>
     </Reference>
-    <Reference Include="SimulatedBumper.Y2006.M05.Proxy, Version=1.0.0.0, Culture=neutral, PublicKeyToken=6f5a65c6ba7cb1d3, processorArchitecture=MSIL">
+    <Reference Include="SimulationCommon.Proxy">
       <SpecificVersion>False</SpecificVersion>
       <Private>False</Private>
     </Reference>
-    <Reference Include="SimulatedDifferentialDrive.2006.M06.Proxy, Version=1.0.0.0, Culture=neutral, PublicKeyToken=6f5a65c6ba7cb1d3, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <Private>False</Private>
-    </Reference>
-    <Reference Include="SimulatedLRF.Y2006.M05.Proxy, Version=1.0.0.0, Culture=neutral, PublicKeyToken=6f5a65c6ba7cb1d3, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <Private>False</Private>
-    </Reference>
-    <Reference Include="SimulatedWebcam.Y2006.M09.Proxy, Version=1.0.0.0, Culture=neutral, PublicKeyToken=6f5a65c6ba7cb1d3, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <Private>False</Private>
-    </Reference>
-    <Reference Include="SimulationCommon">
-      <SpecificVersion>False</SpecificVersion>
-      <Private>False</Private>
-    </Reference>
-    <Reference Include="SimulationEngine, Version=1.0.0.0, Culture=neutral, PublicKeyToken=d12f30389d94881d, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <Private>False</Private>
-    </Reference>
-    <Reference Include="SimulationEngine.Proxy, Version=1.0.0.0, Culture=neutral, PublicKeyToken=d12f30389d94881d, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <Private>False</Private>
-    </Reference>
+    <Reference Include="smlCSharp, Version=0.0.0.0, Culture=neutral, PublicKeyToken=505d4249033ecfa8, processorArchitecture=MSIL" />
     <Reference Include="System">
-      <SpecificVersion>False</SpecificVersion>
+      <Name>System</Name>
     </Reference>
     <Reference Include="System.Data" />
     <Reference Include="System.Drawing" />
     <Reference Include="System.Windows.Forms" />
     <Reference Include="System.Xml">
+      <Name>System.XML</Name>
+    </Reference>
+    <Reference Include="DssBase">
       <SpecificVersion>False</SpecificVersion>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="Ccr.Core">
+      <SpecificVersion>False</SpecificVersion>
+      <Private>False</Private>
     </Reference>
   </ItemGroup>
   <ItemGroup>
     <Compile Include="AssemblyInfo.cs" />
-    <Compile Include="SimulationTutorial2.cs" />
-    <AppDesigner Include="Properties" />
+    <Compile Include="DriveControl.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="DriveControl.Designer.cs">
+      <DependentUpon>DriveControl.cs</DependentUpon>
+    </Compile>
+    <Compile Include="SimpleDashboard.cs" />
+    <Compile Include="SimpleDashboardState.cs" />
+    <Compile Include="SimpleDashboardTypes.cs" />
+    <Compile Include="Soar.cs" />
+    <AppDesigner Include="Properties\" />
   </ItemGroup>
   <ItemGroup>
-    <Content Include="..\..\Config\SimulationTutorial2.manifest.xml">
-      <Link>SimulationTutorial2.manifest.xml</Link>
+    <EmbeddedResource Include="DriveControl.resx">
+      <SubType>Designer</SubType>
+      <DependentUpon>DriveControl.cs</DependentUpon>
+    </EmbeddedResource>
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="..\..\Config\SimpleDashboard.manifest.xml">
+      <Link>SimpleDashboard.manifest.xml</Link>
     </Content>
   </ItemGroup>
   <ItemGroup>

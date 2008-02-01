@@ -16,14 +16,14 @@ using interopservices = System.Runtime.InteropServices;
 #if NET_CF20
 
 
-[assembly: ServiceDeclaration(DssServiceDeclaration.Proxy, SourceAssemblyKey="cf.simulationtutorial2.y2006.m06, version=0.0.0.0, culture=neutral, publickeytoken=e" +
-    "2c165af91199ba2")]
+[assembly: ServiceDeclaration(DssServiceDeclaration.Proxy, SourceAssemblyKey="cf.simpledashboard.y2006.m01, version=0.0.0.0, culture=neutral, publickeytoken=e2c16" +
+    "5af91199ba2")]
 
 #else
 
 
-[assembly: ServiceDeclaration(DssServiceDeclaration.Proxy, SourceAssemblyKey="simulationtutorial2.y2006.m06, version=0.0.0.0, culture=neutral, publickeytoken=e" +
-    "2c165af91199ba2")]
+[assembly: ServiceDeclaration(DssServiceDeclaration.Proxy, SourceAssemblyKey="simpledashboard.y2006.m01, version=0.0.0.0, culture=neutral, publickeytoken=e2c16" +
+    "5af91199ba2")]
 
 #endif
 [assembly: System.Security.SecurityTransparentAttribute()]

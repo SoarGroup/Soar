@@ -1,0 +1,3 @@
+pushd suggestion-agent
+source suggestion-agent_source.soar
+popd

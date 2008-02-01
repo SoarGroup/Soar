@@ -23,13 +23,9 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SimulatedWebcam", "..\..\Si
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SickLRF", "..\..\Sensors\SickLRF\SickLRF.csproj", "{AC5D5E54-CA38-447A-A9A3-5541DCE2F81A}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SimpleDashboard", "..\..\Misc\SimpleDashboard\SimpleDashboard.csproj", "{0EF15C7D-0506-4BB0-A9AA-DBEBA64BB630}"
-	ProjectSection(ProjectDependencies) = postProject
-		{2B91A604-A8BE-43DD-8A44-60B735C11184} = {2B91A604-A8BE-43DD-8A44-60B735C11184}
-		{AC5D5E54-CA38-447A-A9A3-5541DCE2F81A} = {AC5D5E54-CA38-447A-A9A3-5541DCE2F81A}
-	EndProjectSection
-EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GameController", "..\..\Misc\GameController\GameController.csproj", "{2B91A604-A8BE-43DD-8A44-60B735C11184}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SimpleDashboard", "SimpleDashboard\SimpleDashboard.csproj", "{0EF15C7D-0506-4BB0-A9AA-DBEBA64BB630}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -61,14 +57,14 @@ Global
 		{AC5D5E54-CA38-447A-A9A3-5541DCE2F81A}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{AC5D5E54-CA38-447A-A9A3-5541DCE2F81A}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{AC5D5E54-CA38-447A-A9A3-5541DCE2F81A}.Release|Any CPU.Build.0 = Release|Any CPU
-		{0EF15C7D-0506-4BB0-A9AA-DBEBA64BB630}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{0EF15C7D-0506-4BB0-A9AA-DBEBA64BB630}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{0EF15C7D-0506-4BB0-A9AA-DBEBA64BB630}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{0EF15C7D-0506-4BB0-A9AA-DBEBA64BB630}.Release|Any CPU.Build.0 = Release|Any CPU
 		{2B91A604-A8BE-43DD-8A44-60B735C11184}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{2B91A604-A8BE-43DD-8A44-60B735C11184}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{2B91A604-A8BE-43DD-8A44-60B735C11184}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{2B91A604-A8BE-43DD-8A44-60B735C11184}.Release|Any CPU.Build.0 = Release|Any CPU
+		{0EF15C7D-0506-4BB0-A9AA-DBEBA64BB630}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{0EF15C7D-0506-4BB0-A9AA-DBEBA64BB630}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{0EF15C7D-0506-4BB0-A9AA-DBEBA64BB630}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{0EF15C7D-0506-4BB0-A9AA-DBEBA64BB630}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
