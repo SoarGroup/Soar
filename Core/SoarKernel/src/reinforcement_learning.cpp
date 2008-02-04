@@ -1304,8 +1304,7 @@ void store_rl_data( agent *my_agent, Symbol *goal, preference *cand )
 	Symbol *op = cand->value;
     data->previous_q = cand->numeric_value;
 
-	bool using_te = ( get_rl_parameter( my_agent, RL_PARAM_TEMPORAL_EXTENSION, RL_RETURN_LONG ) == RL_TE_ON );
-	double num_gaps = get_rl_stat( my_agent, RL_STAT_NUM_GAPS );
+	bool using_gaps = ( get_rl_parameter( my_agent, RL_PARAM_TEMPORAL_EXTENSION, RL_RETURN_LONG ) == RL_TE_ON );
 	
 	// Make list of just-fired prods
 	unsigned int just_fired = 0;
@@ -1327,26 +1326,21 @@ void store_rl_data( agent *my_agent, Symbol *goal, preference *cand )
 	{
 		if ( my_agent->sysparams[ TRACE_RL_SYSPARAM ] )
 		{
-			if ( ( data->reward_age != 0 ) || ( num_gaps == 0 ) )
+			if ( data->reward_age != 0 )
 			{
-				print( my_agent, "WARNING: gap ended" );
-								       			
+				char buf[256];
+				SNPRINTF( buf, 254, "WARNING: gap ended (%c%d)", goal->id.name_letter, goal->id.name_number );
+				
+				print( my_agent, buf );
+				
        			gSKI_MakeAgentCallbackXML( my_agent, kFunctionBeginTag, kTagWarning );
-       			gSKI_MakeAgentCallbackXML( my_agent, kFunctionAddAttribute, kTypeString, "WARNING: gap ended" );
+       			gSKI_MakeAgentCallbackXML( my_agent, kFunctionAddAttribute, kTypeString, buf );
        			gSKI_MakeAgentCallbackXML( my_agent, kFunctionEndTag, kTagWarning );
 			}
 		}
-
-		if ( ( data->reward_age != 0 ) || ( num_gaps == 0 ) )
-			set_rl_stat( my_agent, RL_STAT_NUM_GAPS, ( num_gaps + 1 ) );
 		
 		data->reward_age = 0;
 		data->num_prev_op_rl_rules = just_fired;
-	}
-	else if ( !using_te )
-	{
-		data->prev_op_rl_rules = NIL;
-		data->num_prev_op_rl_rules = 0;
 	}
 	else
 	{
@@ -1354,16 +1348,24 @@ void store_rl_data( agent *my_agent, Symbol *goal, preference *cand )
 		{
 			if ( data->reward_age == 0 )
 			{
-				print( my_agent, "WARNING: gap started" );
-								
+				char buf[256];
+				SNPRINTF( buf, 254, "WARNING: gap started (%c%d)", goal->id.name_letter, goal->id.name_number );
+				
+				print( my_agent, buf );
+				
        			gSKI_MakeAgentCallbackXML( my_agent, kFunctionBeginTag, kTagWarning );
-       			gSKI_MakeAgentCallbackXML( my_agent, kFunctionAddAttribute, kTypeString, "WARNING: gap started" );
+       			gSKI_MakeAgentCallbackXML( my_agent, kFunctionAddAttribute, kTypeString, buf );
        			gSKI_MakeAgentCallbackXML( my_agent, kFunctionEndTag, kTagWarning );
 			}
 		}
 		
-		if ( data->prev_op_rl_rules != NIL )
-			data->reward_age++;
+		if ( !using_gaps )
+		{
+			data->prev_op_rl_rules = NIL;
+			data->num_prev_op_rl_rules = 0;
+		}
+		
+		data->reward_age++;
 	}
 }
 
@@ -1376,6 +1378,7 @@ void perform_rl_update( agent *my_agent, double op_value, Symbol *goal )
 	soar_rl_et_map::iterator iter;
 
 	const long accumulation = get_rl_parameter( my_agent, RL_PARAM_ACCUMULATION_MODE, RL_RETURN_LONG );
+	bool using_gaps = ( get_rl_parameter( my_agent, RL_PARAM_TEMPORAL_EXTENSION, RL_RETURN_LONG ) == RL_TE_ON );
 
 	double alpha = get_rl_parameter( my_agent, RL_PARAM_LEARNING_RATE );
 	double lambda = get_rl_parameter( my_agent, RL_PARAM_ET_DECAY_RATE );
@@ -1383,7 +1386,11 @@ void perform_rl_update( agent *my_agent, double op_value, Symbol *goal )
 	double tolerance = get_rl_parameter( my_agent, RL_PARAM_ET_TOLERANCE );
 
 	// compute TD update, set stat
-	double update = data->reward * pow( gamma, (double) data->reward_age );
+	double update = data->reward;
+
+	if ( using_gaps )
+		update *= pow( gamma, (double) data->reward_age );
+
 	update += ( pow( gamma, (double) data->step ) * op_value );
 	update -= data->previous_q;
 	set_rl_stat( my_agent, (const long) RL_STAT_UPDATE_ERROR, (double) ( -update ) );

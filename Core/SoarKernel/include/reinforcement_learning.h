@@ -60,8 +60,7 @@
 #define RL_STAT_UPDATE_ERROR				0
 #define RL_STAT_TOTAL_REWARD				1
 #define RL_STAT_GLOBAL_REWARD				2
-#define RL_STAT_NUM_GAPS					3
-#define RL_STATS							4 // must be 1+ last rl stat
+#define RL_STATS							3 // must be 1+ last rl stat
 
 // more specific forms of no change impasse types
 // made negative to never conflict with impasse constants
@@ -127,12 +126,10 @@ typedef struct rl_data_struct {
 	list *prev_op_rl_rules;
 	double previous_q;
 	double reward;
-	unsigned int reward_age;			// the number of steps since a cycle containing rl rules
-	unsigned int num_prev_op_rl_rules;	// the number of rl rules fired in the previous cycle
-	unsigned int step;					// the number of steps the current operator has been installed at the goal
-	signed int impasse_type;			// if this goal is an impasse, what type
-
-	signed int num_gaps;				// number of gaps encountered
+	unsigned int reward_age;	// the number of steps since a cycle containing rl rules
+	unsigned int num_prev_op_rl_rules;
+	unsigned int step;			// the number of steps the current operator has been installed at the goal
+	signed int impasse_type;	// if this goal is an impasse, what type
 } rl_data;
 
 //////////////////////////////////////////////////////////

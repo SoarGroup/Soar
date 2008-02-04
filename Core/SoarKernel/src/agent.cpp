@@ -346,7 +346,6 @@ agent * create_soar_agent (Kernel * thisKernel, char * agent_name) {            
   newAgent->rl_stats[ RL_STAT_UPDATE_ERROR ] = add_rl_stat( "update-error" );
   newAgent->rl_stats[ RL_STAT_TOTAL_REWARD ] = add_rl_stat( "total-reward" );
   newAgent->rl_stats[ RL_STAT_GLOBAL_REWARD ] = add_rl_stat( "global-reward" );
-  newAgent->rl_stats[ RL_STAT_NUM_GAPS ] = add_rl_stat( "num-gaps" );
   
   newAgent->rl_template_count = new std::map<std::string, int>();
   
