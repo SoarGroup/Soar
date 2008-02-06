@@ -1,0 +1,27 @@
+sp {wander*propose*stop
+   (state <s> ^name wander
+              ^io.input-link <il>
+             -^turn)
+   (<il> ^sensors.bumper.front.pressed true
+         ^time <time>
+         ^config.delay.stop <delay>)
+-->
+   (<s> ^operator <op> +)
+   (<op> ^name stop
+         ^actions.drive-power.stop true
+         ^stop.timeout (+ <time> <delay>)
+         ^reverse.direction backward
+         ^turn.direction left)
+}
+
+sp {apply*stop
+   (state <s> ^operator <op>)
+   (<op> ^name stop
+         ^stop.timeout <timeout>
+         ^reverse.direction <rdir>
+         ^turn.direction <tdir>)
+-->
+   (<s> ^stop.timeout <timeout>
+        ^reverse.direction <rdir>
+        ^turn.direction <tdir>)
+}

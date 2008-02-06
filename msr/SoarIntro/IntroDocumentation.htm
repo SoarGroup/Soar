@@ -1,0 +1,303 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" >
+<head>
+    <title>MSRS Intro to Autonomous Robotics Documentation</title>
+    <link href="Styles/Standard.css" rel="stylesheet" type="text/css" />
+</head>
+<body>
+<div class="page">
+<a href="http://sky.fit.qut.edu.au/~taylort2/MSRS/index.htm"><img src="Images/MSRSCodePage.jpg" alt="MSRS Code Page Home" border="0" /></a>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<img src="Images/IntroBanner.gif" alt="MSRS Intro Program" />
+<hr />
+<p class="heading"><span class="dropcap">D</span>ocumentation for Intro to Autonomous Robotics</p>
+<p>
+This page contains basic instructions for using the Intro program. Please read through
+the whole page before you attempt to install the program. Most of your questions
+should be answered by this page. You should also read the <a href="readme.txt">readme.txt</a> file that comes
+with the code in the ZIP file.
+</p>
+<h2>Requirements and Installation</h2>
+<p>
+To get started, you need to install the Microsoft Robotics Studio on your PC.
+A download is available that is free for non-commercial use: <a href="http://msdn.microsoft.com/robotics/downloads/">Robotics Studio Download Site</a>.
+It requires the Ageia Phyics Engine, XNA and .NET 3.0 runtimes, which will all be installed automatically.
+</p>
+<p>If you want to
+write your own code, then you will need Visual Studio 2005, but since there is not much
+point in using a Robotics Software Development Kit (SDK) without a compiler, I assume that
+you already have Visual Studio. You can also use the Express Edition of
+Visual Studio which you can download for free.
+</p>
+<p>
+Download the QUT MSRS code using the link on the previous page. Unzip the file into
+your MSRS root directory. It will create the following folder:<br />
+<tt>&lt;MSRS&gt;\Apps\QUT\Intro</tt><br />
+where &lt;MSRS&gt; is the directory that your copy of MSRS is installed in. In my
+case this is &quot;C:\Microsoft Robotics Studio (1.5)&quot; for Version 1.5.
+</p>
+<p>
+Notice that my MSRS is installed on my C: drive. If yours is on a different
+drive, then you will have to modify several settings in the Visual Studio
+project before compiling. See the <a href="readme.txt">readme.txt</a> for more information.
+</p>
+<p>
+<b>IMPORTANT NOTE:</b> In the explanations that follow I have assumed that
+you unzipped the Intro program into &lt;MSRS&gt;\Apps\QUT\Intro. I have also
+assumed that you have installed the Maze Simulator and that it is working,
+as well as my modified version of the Dashboard.
+</p>
+
+<h2>How to run the Intro program</h2>
+<p>
+You have the option of either re-building the program yourself or just using it.
+If you do not want to build the code, or you don't have Microsoft
+Visual Studio 2005, then the executables are included in the ZIP file
+and there are instructions for setting it up and running it in <a href="readme.txt">readme.txt</a>.
+</p>
+<p>
+As with all MSRS programs, you need to start the Intro from a MSRS DOS command prompt window,
+or using the debugger in Visual Studio. Let's begin with running the program directly.
+Make sure you have followed the installation instructions exactly.
+</p>
+<h3>Starting a MSRS Service</h3>
+<p>
+When you installed MSRS, it would have created a folder in your Start
+Menu that contains a shortcut for "Robotics Studio Command Prompt".
+Open one of these windows now.
+</p>
+<p>
+At the command prompt, enter the following command:<br />
+<tt>dsshost -port:50000 -tcpport:50001 -manifest:"Apps/QUT/Intro/Intro.manifest.xml"</tt><br />
+A batch file, called RunIntro.bat, is included in the ZIP file and it contains
+this command to help make this easier.
+This batch file must be in the MSRS root directory for it to work properly.<br />
+<b>IMPORTANT NOTE:</b> Dsshost.exe is the main control program for MSRS. It is responsible for
+starting services, i.e. programs like Intro. You must run it from the MSRS root directory
+because it looks for various components beginning at the current directory when you
+run it.
+</p>
+<h3>Using the Visual Studio Debugger</h3>
+<p>
+If you want to rebuild the code, then you can open the Visual Studio Solution
+from a MSRS Command Prompt window. Open a window, change directories to the correct
+directory, and then start Visual Studio using the following commands:<br />
+<tt>cd Apps\QUT\Intro<br />
+devenv Intro.sln</tt><br />
+</p>
+<p>
+Alternatively, just find the Intro.sln file in Windows Explorer and double-click
+on it. This should start Visual Studio 2005.
+</p>
+<p>
+Once the solution is open in Visual Studio, you can start it with the debugger by
+selecting Debug \ Start Debugging or pressing F5.<br />
+<b>IMPORTANT NOTE:</b> Make sure that you have updated the Project settings if your
+MSRS installation is not on the C: drive. The instructions are in <a href="readme.txt">readme.txt</a>.
+</p>
+<h2>Using the Intro program</h2>
+<p>
+When Intro starts, it will create two windows: A <a href="Images/SimulatorInitialView.jpg">Simulator</a>
+and a <a href="Images/Dashboard.gif">Dashboard</a>. These are
+shown below. Click on the images for larger views.
+</p>
+<a href="Images/SimulatorInitialView.jpg"><img src="Images/SimulatorInitialView_small.jpg" alt="Simulator View" hspace="5" border="0" /></a><a href="Images/Dashboard.gif"><img src="Images/Dashboard_small.gif" alt="Dashboard" hspace="5" border="0" /></a>
+<p>
+The little object in the centre of the Simulation window is the Pioneer robot.
+This maze world has textured floor and walls and brightly coloured objects.
+None of them are moveable (except for the balls), i.e. they all have infinite mass.
+This is something you can change in the Maze Simulator later if so that the robot
+can push things around.
+</p>
+<p>
+To change your viewpoint in the Simulator, click on the window and drag with
+the mouse. You can also use the standard gaming keys, A, S, D and W, for
+moving around. Note that A and D are strafe keys, not rotate. The S and W
+keys move forwards and backwards along the line of sight. Use the mouse to
+change the direction of motion. The E and Q keys can be used to move
+up and down. It's easy to get used to, especially if you are a gamer.
+</p>
+<p>
+In the Dashboard, you must enter localhost as the name of the Remote
+Node and Port number 50001. Then click on the Connect button.<br />
+Two services will appear in the listbox. Double-click on the
+<i>simulateddifferentialdrive</i> service, then click on the <b>Drive</b> button.
+You are now ready to control the robot!
+</p>
+<p>
+<b>NOTE:</b> If you are using the modified Dashboard, then it will
+remember the Node and Port if you save the settings from the File menu.
+It also remembers the position of the Dashboard on the screen.
+This can be very handy because it saves time and makes the Dashboard
+easier to use.
+</p>
+<p>
+Use the mouse to drag on the trackball with the cross-hairs
+(just above the <b>Stop</b> button). If you
+drag left, the robot will rotate left; if you drag upwards, the robot
+will move forwards; and so on. Take a while to get the hang of it. Just be aware
+that the robot has inertia and will not move until you drag a
+certain distance away from the centre. Also, it will not stop
+immediately when you release the mouse button.
+</p>
+<p>
+Now comes the trick! Drive the robot towards a wall and let it
+run into the wall. Release the mouse button as soon as it hits
+the wall and the Intro program will take over. The robot will sense
+that a bumper has been pressed, and start executing a "behaviour" that
+makes it move away from walls and wander around.
+</p>
+<p>
+While the robot is wandering, you will see log messages in the DOS
+command window. These tell you when the robot detects a bump, and
+what speed it is setting the motors to. The messages should be
+self-explanatory.
+</p>
+
+<h3>Changing the Configuration</h3>
+<p>
+The first time that you run the program it will create a configuration
+file in Apps\QUT\Config directory called Intro.Config.xml. You can edit
+this file to change several parameters that affect the behaviour of the
+robot.
+</p>
+<p>
+The following parameters are currently available via the config file:
+</p>
+<table>
+<tr>
+  <td><b>Property</b></td><td><b>Default</b></td><td>&nbsp;</td><td><b>Purpose</b></td>
+</tr>
+<tr>
+  <td>MotorOn</td><td align="right">true</td><td>&nbsp;</td><td>Not currently used</td>
+</tr>
+<tr>
+  <td>ForwardMovesOnly</td><td align="right">true</td><td>&nbsp;</td><td>Robot normally drives forward</td>
+</tr>
+<tr>
+  <td>StopTimeout</td><td align="right">1500</td><td>&nbsp;</td><td>Time that robot will stop after a collision</td>
+</tr>
+<tr>
+  <td>BackUpTimeout</td><td align="right">1000</td><td>&nbsp;</td><td>Time spent backing up after stopping due to collision</td>
+</tr>
+<tr>
+  <td>TurnTimeout</td><td align="right">500</td><td>&nbsp;</td><td>Time spent turning after backing up</td>
+</tr>
+<tr>
+  <td>MinimumDriveTimeout</td><td align="right">500</td><td>&nbsp;</td><td>Minimum time spent driving forwards</td>
+</tr>
+<tr>
+  <td>MinimumPower</td><td align="right">0.2</td><td>&nbsp;</td><td>Minimum motor power</td>
+</tr>
+<tr>
+  <td>MaximumPower</td><td align="right">0.6</td><td>&nbsp;</td><td>Maximum motor power</td>
+</tr>
+<tr>
+  <td>BackUpPower</td><td align="right">0.4</td><td>&nbsp;</td><td>Motor power while backing up</td>
+</tr>
+</table>
+<p>
+By adjusting these parameters, you can make the robot faster or slower.
+Be aware that if you make it too fast it increases the chances that
+the robot will knock itself over, especially the Lego NXT. Also, the
+Lego NXT does not have a rear bumper, so it must have ForwardMovesOnly
+set to true, otherwise it will simply run into a wall backwards and
+crash.
+</p>
+<p>
+The timing parameters can be used to change how the robot explores.
+This is a matter of trial an error. All the timeouts are in milliseconds,
+i.e. 1000 is one second.
+</p>
+
+<h3>Additional Features</h3>
+<p>
+If you are using the Pioneer robot, you can also use the
+Laser Range Finder, but that is not discussed here. That's something
+you can play around with on your own. You will see red lines appearing
+on the walls as the robot moves around. This is the laser. Pretty cool!
+</p>
+<p>
+The Pioneer robot also has a camera mounted on top. You can switch to
+the robot view using F8 or by selecting the robocam in the Camera menu.
+(You can also select the camera in the Dashboard to open a separate
+WebCam window.)
+This makes for interesting viewing while the robot is exploring. You
+will see how much it gets bumped around and also how stupid it is!
+</p>
+
+<h2>Shutting down the Intro</h2>
+<p>
+When you get tired of playing, or the robot has crashed, you can stop
+the program by going back to the DOS Command Prompt window and typing Ctrl-C, i.e. hold
+down Ctrl and press 'c'. This stops the Dsshost program, and with it all of
+the associated services that it started. Note that this might take a little while.
+</p>
+<p>
+If you exit the Simulator or the Dashboard, this will not cause the Intro
+program to terminate. You must type Ctrl-c, or if you are running the program
+from the Visual Studio Debugger, then stop debugging.
+</p>
+
+<h2>Changing the Maze</h2>
+<p>
+The Intro uses the Maze Simulator. The Maze Simulator reads a bitmap (image) file
+to decide what the maze looks like. The maze used by default is shown below:
+</p>
+<img src ="Images/ModelLarge.gif" />
+<p>
+Refer to the
+<a href="../MazeSimulator/MazeSimulatorDocumentation.htm">Maze Simulator Documentation</a>
+for details on how to change the maze.
+</p>
+
+<h2>Changing the Robot Type</h2>
+<p>
+There are two simulated robots that can be used:<br />
+Pioneer 3DX<br />
+Lego NXT.
+</p>
+<p>
+To change which robot is used, you must edit the config file for the
+Maze Simulator. This should be in the store directory and is called
+MazeSimulator.Config.xml. Look towards the bottom of the file and
+change the RobotType to be either Pioneer3DX or LegoNXT (with no
+spaces in the name).
+</p>
+
+<h2>Notes</h2>
+<p>
+In Version 1.5 of MSRS there has been a change to the
+lighting in the Simulator. Consequently the obstacles in the Maze
+are washed out compared to previous versions. However, the
+shadows are not as bad now.
+</p>
+<p>
+Also, there seems to have been a change to the collision detection
+behaviour. As a result, the robot appears to drive slightly inside
+the walls. This causes a reaction that sometimes explosively
+forces the robot away from the wall! I have seen it thrown so
+hard that it tumbled end over end for several meters. This is
+clearly not correct, and I have reported the problem to Microsoft.
+</p>
+<p>
+However, because this program relies on the robot bumping into
+walls, it will sometimes fall over. If this happens, you can
+select Edit from the Mode menu and then adjust the Pose of the
+robot. Or if you can't be bothered, just stop the simulation and
+start again.
+</p>
+
+<p>
+<a href="Intro.htm">[&nbsp;Overview&nbsp;]</a>&nbsp;|&nbsp;<a href="IntroTutorial.htm">[&nbsp;Tutorial&nbsp;]</a>
+</p>
+
+<hr />
+<div class="footer">
+Page maintained by:
+<a href="m&#97;&#105;&#108;t&#111;:T.Taylor&#64;qut&#46;edu&#46;au">T.Taylor&#64;qut.edu.au</a>
+&nbsp;&nbsp;&nbsp;Last Updated: 18-Jul-2007
+</div>
+
+</div>
+
+</body>
+</html>

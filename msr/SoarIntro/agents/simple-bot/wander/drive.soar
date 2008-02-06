@@ -1,0 +1,13 @@
+sp {wander*propose*drive
+   (state <s> ^name wander
+              ^io.input-link <il>
+             -^turn)
+   (<il> ^sensors.bumper.front.pressed false
+         ^config.power.drive <torque>)
+-->
+   (<s> ^operator <op> +)
+   (<op> ^name drive
+         ^actions.drive-power <power>)
+   (<power> ^left <torque>
+            ^right <torque>)
+}

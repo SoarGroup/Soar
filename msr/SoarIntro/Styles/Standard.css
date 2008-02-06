@@ -1,0 +1,61 @@
+﻿body
+{
+    background-color: White;
+    color: #663300;
+    font-size: 10pt;
+    font-family: Arial, Sans-Serif;
+    margin: 10px;
+}
+
+.page
+{
+    margin-left: 10px;
+    padding-left: 8%;
+    padding-right: 5%;
+}
+.heading
+{
+    margin-left: -30px;
+    font-size: 24pt;
+    color: #cc3300;
+    font-family: Arial, Sans-Serif;
+    font-weight: bold;
+    padding-bottom: 0.2em;
+}
+
+.dropcap
+{ font-size: 150%; font-weight: bold; float: left;
+text-indent: 0px; margin-top: -0.2em; }
+
+h1
+{
+    margin-left: -30px;
+    font-size: 24pt;
+    color: #cc3300;
+    font-family: Arial, Sans-Serif;
+    font-weight: bold;
+    text-indent: -30px;
+}
+
+h2
+{
+    margin-left: -20px;
+    font-size: 18pt;
+    color: #993300;
+    font-family: Arial, Sans-Serif;
+    font-weight: bold;
+}
+
+h3
+{
+    font-size: 14pt;
+    color: #663300;
+    font-family: Arial, Sans-Serif;
+    font-weight: bold;
+    margin-left: -10px;
+}
+
+hr
+{
+    color: #cc3300;
+}

@@ -1,0 +1,245 @@
+<?xml version="1.0"?>
+<doc>
+    <assembly>
+        <name>Intro.Y2006.M08.Proxy</name>
+    </assembly>
+    <members>
+        <member name="T:Robotics.Intro.Proxy.Contract">
+            <summary>
+            Intro Contract
+            </summary>
+        </member>
+        <member name="F:Robotics.Intro.Proxy.Contract.Identifier">
+            The Unique Contract Identifier for the Intro service
+        </member>
+        <member name="M:Robotics.Intro.Proxy.Contract.ServiceModel">
+            The Dss Service dssModel Contract(s)
+        </member>
+        <member name="M:Robotics.Intro.Proxy.Contract.CreateService(Microsoft.Dss.Services.Constructor.ConstructorPort,Microsoft.Dss.ServiceModel.Dssp.PartnerType[])">
+            <summary>
+            Creates an instance of the service associated with this contract
+            </summary>
+            <param name="contructorServicePort">Contractor Service that will create the instance</param>
+            <param name="partners">Optional list of service partners for new service instance</param>
+            <returns>Result PortSet for retrieving service creation response</returns>
+        </member>
+        <member name="M:Robotics.Intro.Proxy.Contract.CreateService(Microsoft.Dss.Services.Constructor.ConstructorPort)">
+            <summary>
+            Creates an instance of the service associated with this contract
+            </summary>
+            <param name="contructorServicePort">Contractor Service that will create the instance</param>
+            <returns>Result PortSet for retrieving service creation response</returns>
+        </member>
+        <member name="T:Robotics.Intro.Proxy.IntroState">
+            <summary>
+            Intro State
+            </summary>
+        </member>
+        <member name="M:Robotics.Intro.Proxy.IntroState.CopyTo(Microsoft.Dss.Core.IDssSerializable)">
+            <summary>
+            Copy To Intro State
+            </summary>
+        </member>
+        <member name="M:Robotics.Intro.Proxy.IntroState.Clone">
+            <summary>
+            Clone Intro State
+            </summary>
+        </member>
+        <member name="M:Robotics.Intro.Proxy.IntroState.Serialize(System.IO.BinaryWriter)">
+            <summary>
+            Serialize Serialize
+            </summary>
+        </member>
+        <member name="M:Robotics.Intro.Proxy.IntroState.Deserialize(System.IO.BinaryReader)">
+            <summary>
+            Deserialize Deserialize
+            </summary>
+        </member>
+        <member name="P:Robotics.Intro.Proxy.IntroState.MotorOn">
+            <summary>
+            Motor On
+            </summary>
+        </member>
+        <member name="P:Robotics.Intro.Proxy.IntroState.ForwardMovesOnly">
+            <summary>
+            Forward Moves Only
+            </summary>
+        </member>
+        <member name="P:Robotics.Intro.Proxy.IntroState.StopTimeout">
+            <summary>
+            Stop Timeout
+            </summary>
+        </member>
+        <member name="P:Robotics.Intro.Proxy.IntroState.BackUpTimeout">
+            <summary>
+            Back Up Timeout
+            </summary>
+        </member>
+        <member name="P:Robotics.Intro.Proxy.IntroState.TurnTimeout">
+            <summary>
+            Turn Timeout
+            </summary>
+        </member>
+        <member name="P:Robotics.Intro.Proxy.IntroState.MinimumDriveTimeout">
+            <summary>
+            Minimum Drive Timeout
+            </summary>
+        </member>
+        <member name="P:Robotics.Intro.Proxy.IntroState.MinimumPower">
+            <summary>
+            Minimum Power
+            </summary>
+        </member>
+        <member name="P:Robotics.Intro.Proxy.IntroState.MaximumPower">
+            <summary>
+            Maximum Power
+            </summary>
+        </member>
+        <member name="P:Robotics.Intro.Proxy.IntroState.BackUpPower">
+            <summary>
+            Back Up Power
+            </summary>
+        </member>
+        <member name="P:Robotics.Intro.Proxy.IntroState.nextTimestamp">
+            <summary>
+            Next Timestamp
+            </summary>
+        </member>
+        <member name="P:Robotics.Intro.Proxy.IntroState.lastBumperNum">
+            <summary>
+            Last Bumper Num
+            </summary>
+        </member>
+        <member name="P:Robotics.Intro.Proxy.IntroState.insideBehavior">
+            <summary>
+            Inside Behavior
+            </summary>
+        </member>
+        <member name="T:Robotics.Intro.Proxy.MoveStates">
+            <summary>
+            Move States
+            </summary>
+        </member>
+        <member name="F:Robotics.Intro.Proxy.MoveStates.Stop">
+            <summary>
+            Stop
+            </summary>
+        </member>
+        <member name="F:Robotics.Intro.Proxy.MoveStates.Turn">
+            <summary>
+            Turn
+            </summary>
+        </member>
+        <member name="F:Robotics.Intro.Proxy.MoveStates.MoveStraight">
+            <summary>
+            Move Straight
+            </summary>
+        </member>
+        <member name="T:Robotics.Intro.Proxy.IntroOperations">
+            <summary>
+            Intro Operations
+            </summary>
+        </member>
+        <member name="M:Robotics.Intro.Proxy.IntroOperations.DsspDefaultLookup">
+            <summary>
+            Required Lookup request body type
+            </summary>
+        </member>
+        <member name="M:Robotics.Intro.Proxy.IntroOperations.DsspDefaultLookup(Microsoft.Dss.ServiceModel.Dssp.LookupRequestType)">
+            <summary>
+            Post Dssp Default Lookup and return the response port.
+            </summary>
+        </member>
+        <member name="M:Robotics.Intro.Proxy.IntroOperations.DsspDefaultDrop">
+            <summary>
+            A request to drop the service.
+            </summary>
+        </member>
+        <member name="M:Robotics.Intro.Proxy.IntroOperations.DsspDefaultDrop(Microsoft.Dss.ServiceModel.Dssp.DropRequestType)">
+            <summary>
+            Post Dssp Default Drop and return the response port.
+            </summary>
+        </member>
+        <member name="M:Robotics.Intro.Proxy.IntroOperations.Get">
+            <summary>
+            Required Get body type
+            </summary>
+        </member>
+        <member name="M:Robotics.Intro.Proxy.IntroOperations.Get(Microsoft.Dss.ServiceModel.Dssp.GetRequestType)">
+            <summary>
+            Post Get and return the response port.
+            </summary>
+        </member>
+        <member name="M:Robotics.Intro.Proxy.IntroOperations.Replace">
+            <summary>
+            Intro State
+            </summary>
+        </member>
+        <member name="M:Robotics.Intro.Proxy.IntroOperations.Replace(Robotics.Intro.Proxy.IntroState)">
+            <summary>
+            Post Replace and return the response port.
+            </summary>
+        </member>
+        <member name="T:Robotics.Intro.Proxy.Get">
+            <summary>
+            Get
+            </summary>
+        </member>
+        <member name="M:Robotics.Intro.Proxy.Get.#ctor">
+            <summary>
+            Get
+            </summary>
+        </member>
+        <member name="M:Robotics.Intro.Proxy.Get.#ctor(Microsoft.Dss.ServiceModel.Dssp.GetRequestType)">
+            <summary>
+            Get
+            </summary>
+        </member>
+        <member name="M:Robotics.Intro.Proxy.Get.#ctor(Microsoft.Dss.ServiceModel.Dssp.GetRequestType,Microsoft.Ccr.Core.PortSet{Robotics.Intro.Proxy.IntroState,W3C.Soap.Fault})">
+            <summary>
+            Get
+            </summary>
+        </member>
+        <member name="T:Robotics.Intro.Proxy.Replace">
+            <summary>
+            Replace
+            </summary>
+        </member>
+        <member name="M:Robotics.Intro.Proxy.Replace.#ctor">
+            <summary>
+            Replace
+            </summary>
+        </member>
+        <member name="M:Robotics.Intro.Proxy.Replace.#ctor(Robotics.Intro.Proxy.IntroState)">
+            <summary>
+            Replace
+            </summary>
+        </member>
+        <member name="M:Robotics.Intro.Proxy.Replace.#ctor(Robotics.Intro.Proxy.IntroState,Microsoft.Ccr.Core.PortSet{Microsoft.Dss.ServiceModel.Dssp.DefaultReplaceResponseType,W3C.Soap.Fault})">
+            <summary>
+            Replace
+            </summary>
+        </member>
+        <member name="T:Robotics.Intro.Properties.Resources">
+            <summary>
+              A strongly-typed resource class, for looking up localized strings, etc.
+            </summary>
+        </member>
+        <member name="P:Robotics.Intro.Properties.Resources.ResourceManager">
+            <summary>
+              Returns the cached ResourceManager instance used by this class.
+            </summary>
+        </member>
+        <member name="P:Robotics.Intro.Properties.Resources.Culture">
+            <summary>
+              Overrides the current thread's CurrentUICulture property for all
+              resource lookups using this strongly typed resource class.
+            </summary>
+        </member>
+        <member name="P:Robotics.Intro.Properties.Resources.DssModel">
+            <summary>
+              Looks up a resource file similar to DssModel.
+            </summary>
+        </member>
+    </members>
+</doc>

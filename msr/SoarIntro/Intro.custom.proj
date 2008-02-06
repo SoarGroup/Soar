@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="Windows-1252"?>
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+    <PropertyGroup>
+        <SampleSubDir>Intro</SampleSubDir>
+        <Layout>sampleservice</Layout>
+
+    </PropertyGroup>
+    <ItemGroup>
+        <LayoutFiles Include="Intro.manifest.xml">
+            <InProject>false</InProject>
+            <SubDir>$(LayoutConfigDir)</SubDir>
+        </LayoutFiles>
+
+    </ItemGroup>
+</Project>

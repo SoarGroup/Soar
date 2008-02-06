@@ -1,0 +1,6 @@
+sp {simple-bot*propose*wander
+   (state <s> ^name simple-bot)
+-->
+   (<s> ^operator <op> +)
+   (<op> ^name wander)
+}

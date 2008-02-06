@@ -1,0 +1,15 @@
+sp {suggestion-agent*propose*override
+   (state <s> ^name simple-bot
+              ^io.input-link.override <over>)
+   (<over>    ^active true
+              ^drive-power <drive>)
+   (<drive>   ^left <left>
+              ^right <right>
+              ^stop <stop>)
+-->
+   (<s> ^operator <op> + >)
+   (<op> ^name override
+         ^actions.drive-power.left <left>
+         ^actions.drive-power.right <right>
+         ^actions.drive-power.stop <stop>)
+}

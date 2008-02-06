@@ -1,0 +1,160 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" >
+<head>
+    <title>MSRS Intro to Autonomous Robotics</title>
+    <link href="Styles/Standard.css" rel="stylesheet" type="text/css" />
+</head>
+<body>
+<div class="page">
+<a href="http://sky.fit.qut.edu.au/~taylort2/MSRS/index.htm"><img src="Images/MSRSCodePage.jpg" alt="MSRS Code Page Home" border="0" /></a>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<img src="Images/IntroBanner.gif" alt="MSRS Intro Program" />
+<hr />
+<p class="heading"><span class="dropcap">I</span>ntroduction to Autonomous Robotics</p>
+<p>
+This program demonstrates how to make a robot wander around on its own.
+It is not very sophisticated and it still has some serious problems, but
+it illustrates several key points and is fun to play with (at least
+for a little while). Note that NO hardware is required!
+</p>
+<p>
+<b>IMPORTANT NOTE:</b> This program requires the
+<a href="../MazeSimulator/MazeSimulator.htm">Maze Simulator</a>.
+Also, the manifest specifies my modified version of the Simple Dashboard, although
+this can easily be changed to use the one included in the MSRS distribution.
+</p>
+<h2>Background</h2>
+<p>
+Microsoft provides a set of Tutorials for MSRS. (They are installed as part of the
+package and are also available online.) However, the first
+couple of the Robotics Tutorials require you to have a real robot.
+This is a stumbling block for many people, not just because of the
+cost of a robot but because playing with real hardware is difficult
+and time consuming. (Believe me, I've been doing it for years. I will
+take a simulator instead of a real robot any day!)
+</p>
+<p>
+So my concept was to take these Tutorials and turn them into something
+that can be used "out of the box". What you have here is the completed
+code for what I call the "Introduction to Autonomous Robotics". I will
+write a Tutorial to go with this code when I have the time, but in the
+meantime I believe that "learning by doing" is a much more instructive
+approach than reading a bunch of web pages. Download the code and
+try it out!
+</p>
+<h3>What it does</h3>
+<p>
+Basically, the program controls a simulated robot (either a Pioneer 3DX
+or a Lego NXT) to make it wander around in a maze-like world. It uses
+the Simulator that comes as part of MSRS as well as the Dashboard which
+can be used to control the simulated robot either with the mouse or
+a joystick.
+</p>
+<p>
+There are many different issues that need to be addressed when you
+start to build a robotics system. This example only uses the
+simplest of sensors -- a bump sensor -- which is basically a switch
+that is triggered when the robot bumps into something. The simulated
+robot has two of these: one at the front and one at the back. These
+are called Contact Sensors, for obvious reasons.
+</p>
+<p>
+One of the problems with a bump sensor is that by the time the robot
+has bumped into something, it is too late! If you play with this
+program for long enough, you will eventually see the robot knock
+itself over, or perhaps get stuck up against a wall with it's
+wheels off the ground. These are not good outcomes for a robot that
+is supposed to be wandering. And they could cause physical damage
+to the robot or the object it bumps into, which could even be a
+person!
+</p>
+<p>
+Obviously, we would like the robot to "see" obstacles <b>BEFORE</b> it
+runs into them. This is where sensors like Sonar and Infra-red
+detectors come in. These are called Range Sensors because they
+return a value which indicates how far away the nearest obstacle
+is. Unfortunately, they are not 100% reliable for reasons that
+we will see later. However, they are non-contact sensors which
+is much safer for the robot and it's human operators.
+</p>
+<p>
+In this simulation, there is a Laser Range Finder mounted
+on the top of the Pioneer robot. The next program in this series will
+make use of a Range Sensor for improved wandering.
+</p>
+<p>
+<b>NOTE:</b> Version 1.5 of MSRS does not support Sonar sensors
+in the simulation. Therefore it is not possible to use a Lego robot
+with a Sonar range sensor.
+</p>
+<p>
+Taking this one step further, the ideal would be to
+use a camera and really see what is there. There is a simulated
+web camera in MSRS, so you can see what the robot sees. Making the
+robot navigate and build a map using only vision is my area of
+research, and it is a very complex task.
+</p>
+<p>
+<b>NOTE:</b> Currently, the Pioneer simulation has a camera mounted
+on top of the robot. However, I have not added a camera to the Lego robot.
+This is left as an exercise.
+</p>
+
+<h2>Available Resources</h2>
+<h3>Documentation</h3>
+<p>
+A <a href="IntroDocumentation.htm">Documentation page</a> is provided with instructions on how to run the program.
+All of these web pages are included in the ZIP file so you don't have to go back to the Internet
+all the time. You should also read the <a href="readme.txt">readme.txt</a> which is included in the ZIP file.
+</p>
+<h3>Tutorial</h3>
+<p>
+There is a very simple <a href="IntroTutorial.htm">Tutorial</a> for
+the Intro program. You can use
+the software without having to make any changes to the code.</p>
+<p>You should also try the Microsoft Robotics Tutorials on which this program is based.
+The Tutorial page explains how to do this using the Simulator instead of a real robot.
+</p>
+<h3>Software</h3>
+<p>This software might be developed further. The following version is available now:<br />
+<a href="http://sky.fit.qut.edu.au/~taylort2/MSRS/Downloads/QUTJul2007.zip">QUT MSRS Apps</a> 18-Jul-2007<br />
+This version was built with the version 1.5 release of MSRS.<br />
+Please read the <a href="readme.txt">readme.txt</a> for installation instructions.<br />
+</p>
+<p>
+You will also need the <a href="../MazeSimulator/MazeSimulator.htm">Maze Simulator</a>
+program which is required to run the Intro because it creates the walls.</p>
+<p>
+The manifest that is
+supplied in the ZIP file uses the <a href="../Dashboard/Dashboard.htm">Dashboard</a>
+which is a modified version of the Simple Dashboard that is supplied with MSRS. You do not
+have to use my version of the Dashboard and you can change the manifest to use the Microsoft
+version if you wish. (See the comments in the manifest.) However, my version has additional
+features that you might find useful.
+</p>
+<p>
+Obviously, you need to Microsoft Robotics Studio software as well.
+</p>
+
+<h2>Legal Stuff</h2>
+<p>
+This code is based very heavily on the Microsoft MSRS Tutorials
+and feedback from the MSRS developers. It is not warranted to be
+suitable for any purpose other than playing around with MSRS. There
+are known bugs, and it is not intended as a definitive example of
+how to write robotic systems.
+</p>
+
+<p>
+<a href="IntroDocumentation.htm">[&nbsp;Documentation&nbsp;]</a>&nbsp;|&nbsp;<a href="IntroTutorial.htm">[&nbsp;Tutorial&nbsp;]</a>
+</p>
+
+<hr />
+<div class="footer">
+Page maintained by:
+<a href="m&#97;&#105;&#108;t&#111;:T.Taylor&#64;qut&#46;edu&#46;au">T.Taylor&#64;qut.edu.au</a>
+&nbsp;&nbsp;&nbsp;Last Updated: 18-Jul-2007
+</div>
+
+</div>
+
+</body>
+</html>
