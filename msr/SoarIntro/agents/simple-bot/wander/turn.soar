@@ -1,26 +1,32 @@
 sp {wander*propose*turn
    (state <s> ^name wander
               ^io.input-link <il>
-              ^reverse.timeout <timeout>
-              ^turn.direction left)
+              ^top-state.motion-state <ms>)
+   (<ms> ^current reversing
+         ^timeout <timeout>)
    (<il> ^time <time> >= <timeout>
-         ^config.power.turn <power>
+         ^config.power.drive <power>
          ^config.delay.turn <delay>)
 -->
    (<s> ^operator <op> +)
    (<op> ^name turn
          ^actions.drive-power <drive>
-         ^turn.timeout (+ <time> <delay>))
+         ^timeout (+ <time> <delay>))
    (<drive> ^left (* <power> -1)
             ^right <power>)
 }
 
 sp {apply*turn
-   (state <s> ^operator <op>)
+   (state <s> ^operator <op>
+              ^top-state.motion-state <ms>)
+   (<ms> ^current <current-state> <> turning
+         ^timeout <current-timeout>)
    (<op> ^name turn
-         ^turn.timeout <timeout>)
+         ^timeout <timeout>)
 -->
-   (<s> ^reverse <rev> -
-        ^turn.timeout <timeout>)
+   (<ms> ^current <current-state> -
+         ^current turning
+         ^timeout <current-timeout> -
+         ^timeout <timeout>)
 }
 

@@ -10,7 +10,7 @@ VERSION 4
 7	4	FOPERATOR top-state top-state.soar 8
 8	0	OPERATOR initialize-simple-bot initialize-simple-bot.soar 9
 9	0	OPERATOR override override.soar 10
-10	0	HLOPERATOR wander wander.soar wander 33 11
+10	0	HLOPERATOR wander wander.soar wander 31 11
 11	10	FOPERATOR elaborations elaborations.soar 12
 12	10	OPERATOR drive drive.soar 13
 13	10	OPERATOR reset reset.soar 14

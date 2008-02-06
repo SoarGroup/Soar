@@ -15,146 +15,142 @@ SOAR_ID 12
 SOAR_ID 13
 SOAR_ID 14
 ENUMERATION 15 2 false true
-FLOAT_RANGE 16 0.0 Infinity
-FLOAT_RANGE 17 0.0 Infinity
-ENUMERATION 18 2 false true
-SOAR_ID 19
-SOAR_ID 20
-FLOAT_RANGE 21 -1.0 1.0
-FLOAT_RANGE 22 -1.0 1.0
-ENUMERATION 23 2 false true
-FLOAT_RANGE 24 0.0 Infinity
-FLOAT_RANGE 25 0.0 1.0
-SOAR_ID 26
-SOAR_ID 27
-FLOAT_RANGE 28 0.0 1.0
-FLOAT_RANGE 29 0.0 1.0
-ENUMERATION 30 2 false true
+ENUMERATION 16 2 false true
+SOAR_ID 17
+SOAR_ID 18
+FLOAT_RANGE 19 -1.0 1.0
+FLOAT_RANGE 20 -1.0 1.0
+ENUMERATION 21 2 false true
+FLOAT_RANGE 22 0.0 Infinity
+FLOAT_RANGE 23 0.0 1.0
+SOAR_ID 24
+SOAR_ID 25
+FLOAT_RANGE 26 0.0 1.0
+FLOAT_RANGE 27 0.0 1.0
+ENUMERATION 28 2 false true
+SOAR_ID 29
+ENUMERATION 30 1 wander
 SOAR_ID 31
-ENUMERATION 32 1 wander
-SOAR_ID 33
-ENUMERATION 34 1 state
-ENUMERATION 35 1 wander
-ENUMERATION 36 1 drive
+ENUMERATION 32 1 state
+ENUMERATION 33 1 wander
+ENUMERATION 34 1 drive
+SOAR_ID 35
+ENUMERATION 36 1 stop
 SOAR_ID 37
-ENUMERATION 38 1 stop
+ENUMERATION 38 1 reverse
 SOAR_ID 39
-ENUMERATION 40 1 reverse
+ENUMERATION 40 1 turn
 SOAR_ID 41
-ENUMERATION 42 1 turn
+ENUMERATION 42 1 reset
 SOAR_ID 43
-ENUMERATION 44 1 reset
-SOAR_ID 45
-SOAR_ID 46
-ENUMERATION 47 1 wait
-ENUMERATION 48 1 elaboration
-SOAR_ID 49
-SOAR_ID 50
-FLOAT_RANGE 51 -1.0 1.0
-FLOAT_RANGE 52 -1.0 1.0
-ENUMERATION 53 2 false true
-ENUMERATION 54 2 complete error
+SOAR_ID 44
+ENUMERATION 45 1 wait
+ENUMERATION 46 1 elaboration
+SOAR_ID 47
+SOAR_ID 48
+FLOAT_RANGE 49 -1.0 1.0
+FLOAT_RANGE 50 -1.0 1.0
+ENUMERATION 51 2 false true
+ENUMERATION 52 2 complete error
+SOAR_ID 53
+SOAR_ID 54
 SOAR_ID 55
 SOAR_ID 56
-SOAR_ID 57
-SOAR_ID 58
-ENUMERATION 59 1 state
-ENUMERATION 60 1 none
+ENUMERATION 57 1 state
+ENUMERATION 58 1 none
+SOAR_ID 59
+SOAR_ID 60
 SOAR_ID 61
-SOAR_ID 62
-SOAR_ID 63
-FLOAT_RANGE 64 0.0 Infinity
-FLOAT_RANGE 65 0.0 Infinity
-FLOAT_RANGE 66 0.0 Infinity
-ENUMERATION 67 2 backward forward
-ENUMERATION 68 2 left right
-SOAR_ID 69
-FLOAT_RANGE 70 0.0 Infinity
-FLOAT_RANGE 71 0.0 Infinity
-FLOAT_RANGE 72 0.0 Infinity
-85
-0 attribute 59
-0 choices 60
+FLOAT_RANGE 62 0.0 Infinity
+FLOAT_RANGE 63 0.0 Infinity
+ENUMERATION 64 2 backward forward
+ENUMERATION 65 2 left right
+SOAR_ID 66
+FLOAT_RANGE 67 0.0 Infinity
+FLOAT_RANGE 68 0.0 Infinity
+FLOAT_RANGE 69 0.0 Infinity
+ENUMERATION 70 2 false true
+ENUMERATION 71 2 false true
+ENUMERATION 72 5 driving idle reversing stopping turning
+81
+0 attribute 57
+0 choices 58
 0 io 1
+0 motion-state 59
 0 name 7
 0 operator 4
 0 operator 9
-0 operator 31
-0 operator 46
+0 operator 29
+0 operator 44
+0 reverse 64
 0 superstate 6
 0 top-state 0
 0 type 5
 1 input-link 2
 1 output-link 3
-2 config 26
-2 override 19
-2 random 25
+2 config 24
+2 override 17
+2 random 23
 2 sensors 11
-2 time 24
-3 drive-power 50
+2 time 22
+3 drive-power 48
 4 name 8
-9 actions 49
+9 actions 47
 9 name 10
 11 bumper 12
 12 front 13
 12 rear 14
 13 pressed 15
-13 time 16
-14 pressed 18
-14 time 17
-19 active 23
-19 drive-power 20
-20 left 51
-20 right 22
-20 stop 30
-26 delay 69
-26 power 27
-27 drive 28
-27 reverse 29
-31 name 32
-33 io 1
-33 name 35
-33 operator 37
-33 operator 39
-33 operator 41
-33 operator 43
-33 operator 45
-33 reverse 62
-33 stop 61
-33 superstate 0
-33 top-state 0
-33 turn 63
-33 type 34
-37 actions 55
+13 was-pressed 70
+14 pressed 16
+14 was-pressed 71
+17 active 21
+17 drive-power 18
+18 left 49
+18 right 20
+18 stop 28
+24 delay 66
+24 power 25
+25 drive 26
+25 reverse 27
+29 name 30
+31 io 1
+31 name 33
+31 operator 35
+31 operator 37
+31 operator 39
+31 operator 41
+31 operator 43
+31 superstate 0
+31 top-state 0
+31 type 32
+35 actions 53
+35 name 34
+37 actions 54
 37 name 36
-39 actions 56
+37 timeout 62
+39 actions 55
 39 name 38
-39 reverse 62
-39 stop 61
-39 turn 63
-41 actions 57
+39 reverse 60
+41 actions 56
 41 name 40
-41 reverse 62
-43 actions 58
+41 turn 61
 43 name 42
-43 turn 63
-45 name 44
-46 name 47
-46 random 48
-49 drive-power 50
-50 left 21
-50 right 52
-50 status 54
-50 stop 53
-55 drive-power 50
-56 drive-power 50
-57 drive-power 50
-58 drive-power 50
-61 timeout 64
-62 direction 67
-62 timeout 65
-63 direction 68
-63 timeout 66
-69 reverse 71
-69 stop 70
-69 turn 72
+44 name 45
+44 random 46
+47 drive-power 48
+48 left 19
+48 right 50
+48 status 52
+48 stop 51
+53 drive-power 48
+54 drive-power 48
+55 drive-power 48
+56 drive-power 48
+59 current 72
+59 timeout 62
+61 direction 65
+61 timeout 63
+66 reverse 68
+66 stop 67
+66 turn 69

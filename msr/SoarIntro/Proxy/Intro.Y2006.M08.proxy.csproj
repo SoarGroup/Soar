@@ -3,7 +3,7 @@
     <ProjectType>Local</ProjectType>
     <ProductVersion>8.0.50215</ProductVersion>
     <SchemaVersion>2.0</SchemaVersion>
-    <ProjectGuid>{B23F199D-BBA5-47BC-ACEE-85E0C5A5575F}</ProjectGuid>
+    <ProjectGuid>{93A3C2EA-A89C-4C44-B2A4-F9441FBA3BB8}</ProjectGuid>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
     <ApplicationIcon>

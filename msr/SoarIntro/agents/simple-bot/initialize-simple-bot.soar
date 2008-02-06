@@ -10,6 +10,7 @@ sp {apply*initialize-simple-bot
    (state <s> ^operator <op>)
    (<op> ^name initialize-simple-bot)
 -->
-   (<s> ^name simple-bot)
+   (<s> ^name simple-bot
+        ^motion-state.current idle)
 }
 

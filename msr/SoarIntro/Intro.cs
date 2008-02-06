@@ -103,6 +103,8 @@ namespace Robotics.Intro
 
         }
 
+        private DateTime _simulationStart;
+
         /// <summary>
         /// Service Start
         /// </summary>
@@ -118,6 +120,8 @@ namespace Robotics.Intro
                 // Do any other initialization here for the default
                 // settings that you might want ...
             }
+
+            _simulationStart = DateTime.Now;
 
             // There should be some code in here to validate the settings
             // from the config file just in case the user entered some
@@ -171,8 +175,10 @@ namespace Robotics.Intro
         private FloatElement _overrideLeftWME;
         private FloatElement _overrideRightWME;
         private StringElement _overrideActiveWME;
+        private StringElement _frontBumperWasPressedWME;
         private StringElement _frontBumperPressedWME;
         private FloatElement _frontBumperTimeWME;
+        private StringElement _rearBumperWasPressedWME;
         private StringElement _rearBumperPressedWME;
         private FloatElement _rearBumperTimeWME;
         private FloatElement _timeWME;
@@ -188,12 +194,10 @@ namespace Robotics.Intro
         private bool _overrideActive = false; // not protected on read
         private double _overrideLeft = 0;
         private double _overrideRight = 0;
-        private bool _frontBumperChanged = false; // not protected on read
+        private bool _frontBumperWasPressed = false;
+        private bool _rearBumperWasPressed = false;
         private bool _frontBumperPressed = false;
-        private double _frontBumperTime = 0;
-        private bool _rearBumperChanged = false; // not protected on read
         private bool _rearBumperPressed = false;
-        private double _rearBumperTime = 0;
 
         private void InitializeSoar()
         {
@@ -208,6 +212,8 @@ namespace Robotics.Intro
             // we store errors in the kernel in this case.  Once this create is done we can work directly with the agent.
             if (_kernel.HadError())
                 throw new Exception("Error creating agent: " + _kernel.GetLastErrorDescription());
+
+            _kernel.SetAutoCommit(false);
 
             //Trace.WriteLine(_agent.ExecuteCommandLine("pwd"));
             _agent.LoadProductions("Apps/QUT/SoarIntro/agents/simple-bot.soar");
@@ -231,17 +237,14 @@ namespace Robotics.Intro
 
             Identifier delayWME = _agent.CreateIdWME(configWME, "delay");
 
-            DateTime stopDelay = new DateTime(_state.StopTimeout * 10000); // units are 100 nanoseconds, 1 millisecond == 1 000 000 nanoseconds
-            LogInfo(LogGroups.Console, "Stop delay: " + stopDelay.ToOADate());
-            FloatElement stopDelayWME = _agent.CreateFloatWME(delayWME, "stop", stopDelay.ToOADate());
+            LogInfo(LogGroups.Console, "Stop delay: " + _state.StopTimeout);
+            FloatElement stopDelayWME = _agent.CreateFloatWME(delayWME, "stop", _state.StopTimeout);
 
-            DateTime reverseDelay = new DateTime(_state.BackUpTimeout * 10000);
-            LogInfo(LogGroups.Console, "Reverse delay: " + reverseDelay.ToOADate());
-            FloatElement reverseDelayWME = _agent.CreateFloatWME(delayWME, "reverse", reverseDelay.ToOADate());
+            LogInfo(LogGroups.Console, "Reverse delay: " + _state.BackUpTimeout);
+            FloatElement reverseDelayWME = _agent.CreateFloatWME(delayWME, "reverse", _state.BackUpTimeout);
 
-            DateTime turnDelay = new DateTime(_state.TurnTimeout * 10000);
-            LogInfo(LogGroups.Console, "Turn delay: " + turnDelay.ToOADate());
-            FloatElement turnDelayWME = _agent.CreateFloatWME(delayWME, "turn", turnDelay.ToOADate());
+            LogInfo(LogGroups.Console, "Turn delay: " + _state.TurnTimeout);
+            FloatElement turnDelayWME = _agent.CreateFloatWME(delayWME, "turn", _state.TurnTimeout);
 
             _timeWME = _agent.CreateFloatWME(inputLink, "time", 0);
             _randomWME = _agent.CreateFloatWME(inputLink, "random", 0);
@@ -250,15 +253,66 @@ namespace Robotics.Intro
             Identifier bumperWME = _agent.CreateIdWME(sensorsWME, "bumper");
             Identifier frontWME = _agent.CreateIdWME(bumperWME, "front");
             _frontBumperPressedWME = _agent.CreateStringWME(frontWME, "pressed", "false");
-            _frontBumperTimeWME = _agent.CreateFloatWME(frontWME, "time", 0);
+            _frontBumperWasPressedWME = _agent.CreateStringWME(frontWME, "was-pressed", "false");
             Identifier rearWME = _agent.CreateIdWME(bumperWME, "rear");
             _rearBumperPressedWME = _agent.CreateStringWME(rearWME, "pressed", "false");
-            _rearBumperTimeWME = _agent.CreateFloatWME(rearWME, "time", 0);
+            _rearBumperWasPressedWME = _agent.CreateStringWME(rearWME, "was-pressed", "false");
+
+            // commit input link structure
+            _agent.Commit();
 
             _updateCall = new sml.Kernel.UpdateEventCallback(UpdateEventCallback);
             int callbackId = _kernel.RegisterForUpdateEvent(sml.smlUpdateEventId.smlEVENT_AFTER_ALL_OUTPUT_PHASES, _updateCall, null);
 
+            // spawn debugger
+            //SpawnDebugger();
+
             LogInfo(LogGroups.Console, "Soar initialized.");
+        }
+
+        private void SpawnDebugger()
+        {
+            LogInfo(LogGroups.Console, "Spawning debugger...");
+            System.Diagnostics.Process debuggerProc = new System.Diagnostics.Process();
+            debuggerProc.EnableRaisingEvents = false;
+            debuggerProc.StartInfo.WorkingDirectory = "bin";
+            debuggerProc.StartInfo.FileName = "java";
+            debuggerProc.StartInfo.Arguments = "-jar SoarJavaDebugger.jar -remote";
+            debuggerProc.Start();
+
+            // wait for it
+            LogInfo(LogGroups.Console, "Starting debugger...");
+            bool ready = false;
+            // do this loop if timeout seconds is 0 (code for wait indefinitely) or if we have tries left
+            for (int tries = 0; tries < 15; ++tries)
+            {
+                _kernel.GetAllConnectionInfo();
+                if (_kernel.HasConnectionInfoChanged())
+                {
+                    for (int i = 0; i < _kernel.GetNumberConnections(); ++i)
+                    {
+                        ConnectionInfo info = _kernel.GetConnectionInfo(i);
+                        if (info.GetName() == "java-debugger")
+                        {
+                            if (info.GetAgentStatus() == sml_Names.kStatusReady)
+                            {
+                                ready = true;
+                                break;
+                            }
+                        }
+                    }
+                    if (ready)
+                    {
+                        break;
+                    }
+                }
+                LogInfo(LogGroups.Console, "Waiting for java-debugger...");
+                Thread.Sleep(1000);
+            }
+
+            if (!ready)
+                LogInfo(LogGroups.Console, "Debugger spawn failed!");
+
         }
 
         private void UpdateEventCallback(sml.smlUpdateEventId eventID, IntPtr callbackData, IntPtr kernelPtr, smlRunFlags runFlags)
@@ -286,7 +340,6 @@ namespace Robotics.Intro
                 switch (commandName)
                 {
                     case "drive-power":
-
                         String leftPowerString = command.GetParameterValue("left");
                         if (leftPowerString != null)
                         {
@@ -364,59 +417,53 @@ namespace Robotics.Intro
                 _agent.Update(_overrideRightWME, overrideRight);
             }
 
-            if (_frontBumperChanged || _rearBumperChanged)
+            bool frontBumperWasPressed = false;
+            bool rearBumperWasPressed = false;
+            bool frontBumperPressed = false;
+            bool rearBumperPressed = false;
+
+            // lock state
+            lock (this)
             {
-                bool frontBumperChanged = false;
-                bool frontBumperPressed = false;
-                double frontBumperTime = 0;
+                // cache state
+                frontBumperWasPressed = _frontBumperWasPressed;
+                rearBumperWasPressed = _rearBumperWasPressed;
+                frontBumperPressed = _frontBumperPressed;
+                rearBumperPressed = _rearBumperPressed;
 
-                bool rearBumperChanged = false;
-                bool rearBumperPressed = false;
-                double rearBumperTime = 0;
+                // reset flag
+                _frontBumperWasPressed = false;
+                _rearBumperWasPressed = false;
 
-                // lock state
-                lock (this)
-                {
-                    // cache state for input link
-                    if (_frontBumperChanged)
-                    {
-                        frontBumperChanged = true;
-                        frontBumperPressed = _frontBumperPressed;
-                        frontBumperTime = _frontBumperTime;
-                    }
-
-                    if (_rearBumperChanged)
-                    {
-                        rearBumperChanged = true;
-                        rearBumperPressed = _rearBumperPressed;
-                        rearBumperTime = _rearBumperTime;
-                    }
-
-                    // reset flag
-                    _frontBumperChanged = false;
-                    _rearBumperChanged = false;
-
-                    // unlock state
-                }
-
-                // write input link from cache
-                if (frontBumperChanged)
-                {
-                    LogInfo(LogGroups.Console, "Front: " + (frontBumperPressed ? "Pressed" : "Released") + " @ " + frontBumperTime);
-                    _agent.Update(_frontBumperPressedWME, frontBumperPressed.ToString().ToLowerInvariant());
-                    _agent.Update(_frontBumperTimeWME, frontBumperTime);
-                }
-
-                if (rearBumperChanged)
-                {
-                    LogInfo(LogGroups.Console, "Rear: " + (rearBumperPressed ? "Pressed" : "Released") + " @ " + rearBumperTime);
-                    _agent.Update(_rearBumperPressedWME, rearBumperPressed.ToString().ToLowerInvariant());
-                    _agent.Update(_rearBumperTimeWME, rearBumperTime);
-                }
+                // unlock state
             }
 
-            _agent.Update(_timeWME, System.DateTime.Now.ToOADate());
+
+            if (frontBumperWasPressed != bool.Parse(_frontBumperWasPressedWME.GetValue()))
+            {
+                _agent.Update(_frontBumperWasPressedWME, frontBumperWasPressed.ToString().ToLowerInvariant());
+            }
+            if (rearBumperWasPressed != bool.Parse(_rearBumperWasPressedWME.GetValue()))
+            {
+                _agent.Update(_rearBumperWasPressedWME, rearBumperWasPressed.ToString().ToLowerInvariant());
+            }
+            if (frontBumperPressed != bool.Parse(_frontBumperPressedWME.GetValue()))
+            {
+                _agent.Update(_frontBumperPressedWME, frontBumperPressed.ToString().ToLowerInvariant());
+            }
+            if (rearBumperPressed != bool.Parse(_rearBumperPressedWME.GetValue()))
+            {
+                _agent.Update(_rearBumperPressedWME, rearBumperPressed.ToString().ToLowerInvariant());
+            }
+
+            DateTimeConverter dtc = new DateTimeConverter();
+
+            TimeSpan elapsed = System.DateTime.Now - _simulationStart;
+            _agent.Update(_timeWME, elapsed.TotalMilliseconds);
             _agent.Update(_randomWME, _randomGen.NextDouble());
+
+            // commit input link changes
+            _agent.Commit();
         }
 
         private void RunSoar()
@@ -537,18 +584,19 @@ namespace Robotics.Intro
             {
                 lock (this)
                 {
-                    _frontBumperChanged = true;
+                    //LogInfo(LogGroups.Console, "Front: " + (frontBumperPressed ? "Pressed" : "Released") + " @ " + frontBumperTime);
                     _frontBumperPressed = notification.Body.Pressed;
-                    _frontBumperTime = System.DateTime.Now.ToOADate();
+                    if (_frontBumperPressed)
+                        _frontBumperWasPressed = true;
                 }
             }
             else if (bumperName.Contains("rear"))
             {
                 lock (this)
                 {
-                    _rearBumperChanged = true;
                     _rearBumperPressed = notification.Body.Pressed;
-                    _rearBumperTime = System.DateTime.Now.ToOADate();
+                    if (_rearBumperPressed)
+                        _rearBumperWasPressed = true;
                 }
             }
         }

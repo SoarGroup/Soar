@@ -8,8 +8,9 @@ sp {apply*operator*create-action-command
    (<ol> ^<att> <value3>)
    (<value3> ^<att2> <value2>)}
 
+
 sp {apply*operator*remove-command
-   (state <s> ^operator.actions
+   (state <s> ^operator
               ^io.output-link <ol>)
    (<ol> ^<att> <value>)
    (<value> ^status complete)

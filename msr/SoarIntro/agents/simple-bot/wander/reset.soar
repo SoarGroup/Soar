@@ -1,7 +1,9 @@
 sp {wander*propose*reset
    (state <s> ^name wander
               ^io.input-link <il>
-              ^turn.timeout <timeout>)
+              ^top-state.motion-state <ms>)
+   (<ms> ^current turning
+         ^timeout <timeout>)
    (<il> ^time >= <timeout>)
 -->
    (<s> ^operator <op> +)
@@ -9,8 +11,13 @@ sp {wander*propose*reset
 }
 
 sp {apply*reset
-   (state <s> ^operator <op>)
+   (state <s> ^operator <op>
+              ^top-state.motion-state <ms>)
+   (<ms> ^current <current-state> <> idle
+         ^timeout <current-timeout>)
    (<op> ^name reset)
 -->
-   (<s> ^turn <t> -)
+   (<ms> ^current <current-state> -
+         ^current idle
+         ^timeout <current-timeout> -)
 }
