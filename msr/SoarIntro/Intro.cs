@@ -614,9 +614,6 @@ namespace Robotics.Intro
         void StopNow()
         {
             drive.AllStopRequest stopReq = new drive.AllStopRequest();
-            string msg;
-            msg = "Stop";
-            LogInfo(LogGroups.Console, msg);
 
             // TT Jul-2007 - Oops! This Arbiter.Choice was not activated
             Arbiter.Activate(TaskQueue,

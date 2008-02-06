@@ -3,12 +3,12 @@
   <MoveState>Stop</MoveState>
   <MotorOn>true</MotorOn>
   <ForwardMovesOnly>true</ForwardMovesOnly>
-  <StopTimeout>1500</StopTimeout>
+  <StopTimeout>0</StopTimeout>
   <BackUpTimeout>1000</BackUpTimeout>
   <TurnTimeout>500</TurnTimeout>
   <MinimumDriveTimeout>500</MinimumDriveTimeout>
   <MinimumPower>0.2</MinimumPower>
-  <MaximumPower>0.5</MaximumPower>
+  <MaximumPower>0.4</MaximumPower>
   <BackUpPower>0.35</BackUpPower>
   <DrivePowerLeft>0</DrivePowerLeft>
   <DrivePowerRight>0</DrivePowerRight>
