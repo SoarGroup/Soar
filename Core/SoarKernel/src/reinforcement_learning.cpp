@@ -935,7 +935,7 @@ int get_template_id( const char *prod_name )
 		return -1;
 	
 	// find last * to isolate id
-	std::string::size_type last_star = temp.find_last_of( '*', 3 );
+	std::string::size_type last_star = temp.find_last_of( '*' );
 	if ( last_star == std::string::npos )
 		return -1;
 	
