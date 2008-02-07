@@ -1,4 +1,4 @@
-73
+77
 SOAR_ID 0
 SOAR_ID 1
 SOAR_ID 2
@@ -72,7 +72,11 @@ FLOAT_RANGE 69 0.0 Infinity
 ENUMERATION 70 2 false true
 ENUMERATION 71 2 false true
 ENUMERATION 72 5 driving idle reversing stopping turning
-81
+INTEGER_RANGE 73 0 600
+FLOAT_RANGE 74 0.0 1.0
+FLOAT_RANGE 75 0.0 1.0
+FLOAT_RANGE 76 0.0 Infinity
+85
 0 attribute 57
 0 choices 58
 0 io 1
@@ -116,6 +120,7 @@ ENUMERATION 72 5 driving idle reversing stopping turning
 29 name 30
 31 io 1
 31 name 33
+31 noise 73
 31 operator 35
 31 operator 37
 31 operator 39
@@ -123,6 +128,8 @@ ENUMERATION 72 5 driving idle reversing stopping turning
 31 operator 43
 31 superstate 0
 31 top-state 0
+31 turn-left-power 75
+31 turn-right-power 74
 31 type 32
 35 actions 53
 35 name 34
@@ -153,4 +160,5 @@ ENUMERATION 72 5 driving idle reversing stopping turning
 61 timeout 63
 66 reverse 68
 66 stop 67
-66 turn 69
+66 turn 76
+66 variance 69

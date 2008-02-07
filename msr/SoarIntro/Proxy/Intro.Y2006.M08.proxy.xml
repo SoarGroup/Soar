@@ -80,6 +80,11 @@
             Turn Timeout
             </summary>
         </member>
+        <member name="P:Robotics.Intro.Proxy.IntroState.TimeoutVariance">
+            <summary>
+            Timeout Variance
+            </summary>
+        </member>
         <member name="P:Robotics.Intro.Proxy.IntroState.MinimumDriveTimeout">
             <summary>
             Minimum Drive Timeout

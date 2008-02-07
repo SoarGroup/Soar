@@ -72,6 +72,8 @@ namespace Robotics.Intro
         [DataMember]
         public int TurnTimeout = 500;
         [DataMember]
+        public int TimeoutVariance = 400;
+        [DataMember]
         public int MinimumDriveTimeout = 500;
 
         // TT Dec-2006 - Moved the power settings here also

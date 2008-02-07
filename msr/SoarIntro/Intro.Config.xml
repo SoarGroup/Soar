@@ -6,6 +6,7 @@
   <StopTimeout>0</StopTimeout>
   <BackUpTimeout>1000</BackUpTimeout>
   <TurnTimeout>500</TurnTimeout>
+  <TimeoutVariance>400</TimeoutVariance>
   <MinimumDriveTimeout>500</MinimumDriveTimeout>
   <MinimumPower>0.2</MinimumPower>
   <MaximumPower>0.4</MaximumPower>

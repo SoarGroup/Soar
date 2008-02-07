@@ -1,7 +1,8 @@
 sp {wander*propose*stop
    (state <s> ^name wander
               ^io.input-link <il>
-              ^top-state.motion-state.current driving)
+              ^top-state.motion-state.current driving
+              ^noise <noise>)
    (<il> ^sensors.bumper.front.was-pressed true
          ^time <time>
          ^config.delay.stop <delay>)
@@ -9,7 +10,7 @@ sp {wander*propose*stop
    (<s> ^operator <op> +)
    (<op> ^name stop
          ^actions.drive-power.stop true
-         ^timeout (+ <time> <delay>))
+         ^timeout (+ (+ <time> <delay>) <noise>))
 }
 
 sp {apply*stop

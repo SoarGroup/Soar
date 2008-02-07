@@ -246,6 +246,9 @@ namespace Robotics.Intro
             LogInfo(LogGroups.Console, "Turn delay: " + _state.TurnTimeout);
             FloatElement turnDelayWME = _agent.CreateFloatWME(delayWME, "turn", _state.TurnTimeout);
 
+            LogInfo(LogGroups.Console, "Delay variance: " + _state.TurnTimeout);
+            FloatElement varianceWME = _agent.CreateFloatWME(delayWME, "variance", _state.TimeoutVariance);
+
             _timeWME = _agent.CreateFloatWME(inputLink, "time", 0);
             _randomWME = _agent.CreateFloatWME(inputLink, "random", 0);
 

@@ -27,6 +27,7 @@ namespace Dss.Transforms.TransformIntro
             target.StopTimeout = from.StopTimeout;
             target.BackUpTimeout = from.BackUpTimeout;
             target.TurnTimeout = from.TurnTimeout;
+            target.TimeoutVariance = from.TimeoutVariance;
             target.MinimumDriveTimeout = from.MinimumDriveTimeout;
             target.MinimumPower = from.MinimumPower;
             target.MaximumPower = from.MaximumPower;
@@ -47,6 +48,7 @@ namespace Dss.Transforms.TransformIntro
             target.StopTimeout = from.StopTimeout;
             target.BackUpTimeout = from.BackUpTimeout;
             target.TurnTimeout = from.TurnTimeout;
+            target.TimeoutVariance = from.TimeoutVariance;
             target.MinimumDriveTimeout = from.MinimumDriveTimeout;
             target.MinimumPower = from.MinimumPower;
             target.MaximumPower = from.MaximumPower;

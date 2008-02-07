@@ -97,6 +97,8 @@ namespace Robotics.Intro.Proxy
         
         private Int32 _turnTimeout;
         
+        private Int32 _timeoutVariance;
+        
         private Int32 _minimumDriveTimeout;
         
         private Double _minimumPower;
@@ -188,6 +190,22 @@ namespace Robotics.Intro.Proxy
             set
             {
                 this._turnTimeout = value;
+            }
+        }
+        
+        /// <summary>
+        /// Timeout Variance
+        /// </summary>
+        [DataMember()]
+        public Int32 TimeoutVariance
+        {
+            get
+            {
+                return this._timeoutVariance;
+            }
+            set
+            {
+                this._timeoutVariance = value;
             }
         }
         
@@ -317,6 +335,7 @@ namespace Robotics.Intro.Proxy
             typedTarget.StopTimeout = this.StopTimeout;
             typedTarget.BackUpTimeout = this.BackUpTimeout;
             typedTarget.TurnTimeout = this.TurnTimeout;
+            typedTarget.TimeoutVariance = this.TimeoutVariance;
             typedTarget.MinimumDriveTimeout = this.MinimumDriveTimeout;
             typedTarget.MinimumPower = this.MinimumPower;
             typedTarget.MaximumPower = this.MaximumPower;
@@ -338,6 +357,7 @@ namespace Robotics.Intro.Proxy
             target.StopTimeout = this.StopTimeout;
             target.BackUpTimeout = this.BackUpTimeout;
             target.TurnTimeout = this.TurnTimeout;
+            target.TimeoutVariance = this.TimeoutVariance;
             target.MinimumDriveTimeout = this.MinimumDriveTimeout;
             target.MinimumPower = this.MinimumPower;
             target.MaximumPower = this.MaximumPower;
@@ -363,6 +383,8 @@ namespace Robotics.Intro.Proxy
             writer.Write(BackUpTimeout);
 
             writer.Write(TurnTimeout);
+
+            writer.Write(TimeoutVariance);
 
             writer.Write(MinimumDriveTimeout);
 
@@ -394,6 +416,8 @@ namespace Robotics.Intro.Proxy
             BackUpTimeout = reader.ReadInt32();
 
             TurnTimeout = reader.ReadInt32();
+
+            TimeoutVariance = reader.ReadInt32();
 
             MinimumDriveTimeout = reader.ReadInt32();
 

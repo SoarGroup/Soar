@@ -8,9 +8,9 @@
         <dssp:Contract>http://schemas.tempuri.org/2006/08/mazesimulator.html</dssp:Contract>
       </ServiceRecordType>
 
-      <ServiceRecordType>
+      <!--ServiceRecordType>
         <dssp:Contract>http://schemas.microsoft.com/robotics/2006/10/dashboard.html</dssp:Contract>
-      </ServiceRecordType>
+      </ServiceRecordType-->
 
 <!--
 If you want to use the Simple Dashboard from Microsoft Robotics Studio,
