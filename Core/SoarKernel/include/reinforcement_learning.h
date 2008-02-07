@@ -285,6 +285,9 @@ extern void update_template_tracking( agent *my_agent, const char *rule_name );
 // get the next id for a template (increments internal counter)
 extern int next_template_id( agent *my_agent );
 
+// reverts internal counter
+extern void revert_template_id( agent *my_agent );
+
 //////////////////////////////////////////////////////////
 // Template Behavior
 //////////////////////////////////////////////////////////

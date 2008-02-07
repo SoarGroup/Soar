@@ -982,6 +982,14 @@ int next_template_id( agent *my_agent )
 }
 
 /***************************************************************************
+ * Function     : revert_template_id
+ **************************************************************************/
+void revert_template_id( agent *my_agent )
+{
+	my_agent->rl_template_count--;
+}
+
+/***************************************************************************
  * Function     : build_template_instantiation
  **************************************************************************/
  Symbol *build_template_instantiation( agent *my_agent, instantiation *my_template_instance, struct token_struct *tok, wme *w )
@@ -1051,6 +1059,7 @@ int next_template_id( agent *my_agent )
 	if ( add_production_to_rete( my_agent, new_production, cond_top, NULL, FALSE, TRUE ) == DUPLICATE_PRODUCTION )
 	{
 		excise_production( my_agent, new_production, false );
+		revert_template_id( my_agent );
 
 		new_name_symbol = NULL;
 	}
