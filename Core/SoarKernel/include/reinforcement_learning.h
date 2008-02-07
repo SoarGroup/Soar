@@ -112,12 +112,6 @@ typedef struct rl_stat_struct
 	const char *name;
 } rl_stat;
 
-typedef struct template_instantiation_struct
-{
-	std::string template_base;
-	int id;
-} template_instantiation;
-
 template <class T> class SoarMemoryAllocator;
 typedef std::map<production *, double, std::less<production *>, SoarMemoryAllocator<std::pair<production* const, double> > > soar_rl_et_map;
 
@@ -276,7 +270,7 @@ extern bool valid_rl_template( production *prod );
 extern bool valid_rl_rule( production *prod );
 
 // template instantiation
-extern template_instantiation *get_template_base( const char *prod_name );
+extern int get_template_id( const char *prod_name );
 
 //////////////////////////////////////////////////////////
 // Template Tracking
@@ -288,11 +282,8 @@ extern void initialize_template_tracking( agent *my_agent );
 // updates the agent's tracking of template-originated rl-rules
 extern void update_template_tracking( agent *my_agent, const char *rule_name );
 
-// in the case of removing an rl-rule, may need to revert to previous id for a template
-extern void revert_template_tracking( agent *my_agent, const char *rule_name );
-
 // get the next id for a template (increments internal counter)
-extern int next_template_id( agent *my_agent, const char *template_name );
+extern int next_template_id( agent *my_agent );
 
 //////////////////////////////////////////////////////////
 // Template Behavior

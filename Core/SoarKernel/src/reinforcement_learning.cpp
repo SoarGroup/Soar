@@ -920,43 +920,38 @@ bool valid_rl_rule( production *prod )
 }
 
 /***************************************************************************
- * Function     : get_template_base
+ * Function     : get_template_id
  **************************************************************************/
-template_instantiation *get_template_base( const char *prod_name )
+int get_template_id( const char *prod_name )
 {
 	std::string temp = prod_name;
 	
-	// has to be at least "rl*#*a" (where a is a single letter/number/etc)
+	// has to be at least "rl*a*#" (where a is a single letter/number/etc)
 	if ( temp.length() < 6 )
-		return NULL;
+		return -1;
 	
 	// check first three letters are "rl*"
 	if ( temp.compare( 0, 3, "rl*" ) )
-		return NULL;
+		return -1;
 	
-	// find second * to isolate id
-	std::string::size_type second_star = temp.find_first_of( '*', 3 );
-	if ( second_star == std::string::npos )
-		return NULL;
+	// find last * to isolate id
+	std::string::size_type last_star = temp.find_last_of( '*', 3 );
+	if ( last_star == std::string::npos )
+		return -1;
 	
-	// make sure there's something left after second_star
-	if ( second_star == ( temp.length() - 1 ) )
-		return NULL;
+	// make sure there's something left after last_star
+	if ( last_star == ( temp.length() - 1 ) )
+		return -1;
 	
 	// make sure id is a valid natural number
-	std::string id_str = temp.substr( 3, ( second_star - 3 ) );
+	std::string id_str = temp.substr( last_star + 1 );
 	if ( !is_natural_number( &id_str ) )
-		return NULL;
+		return -1;
 	
 	// convert id
 	int id;
 	from_string( id, id_str );
-	
-	// return info
-	template_instantiation *return_val = new template_instantiation;
-	return_val->template_base = temp.substr( second_star + 1 );
-	return_val->id = id;
-	return return_val;
+	return id;
 }
 
 /***************************************************************************
@@ -964,13 +959,7 @@ template_instantiation *get_template_base( const char *prod_name )
  **************************************************************************/
 void initialize_template_tracking( agent *my_agent )
 {
-	std::vector<std::string> *my_keys = map_keys( my_agent->rl_template_count );
-	
-	for ( size_t i=0; i<my_keys->size(); i++ )
-		(*my_agent->rl_template_count)[ (*my_keys)[i] ] = 0;
-
-	my_keys->clear();
-	delete my_keys;
+	my_agent->rl_template_count = 1;
 }
 
 /***************************************************************************
@@ -978,83 +967,18 @@ void initialize_template_tracking( agent *my_agent )
  **************************************************************************/
 void update_template_tracking( agent *my_agent, const char *rule_name )
 {
-	template_instantiation *origin = get_template_base( rule_name );
-	if ( origin != NULL )
-	{
-		if ( is_set( my_agent->rl_template_count, &(origin->template_base) ) )
-		{
-			if ( (*my_agent->rl_template_count)[ origin->template_base ] < origin->id )
-				(*my_agent->rl_template_count)[ origin->template_base ] = origin->id;
-		}
-		else
-		{
-			(*my_agent->rl_template_count)[ origin->template_base ] = origin->id;
-		}
-	}
+	int new_id = get_template_id( rule_name );
 
-	delete origin;
-}
-
-/***************************************************************************
- * Function     : revert_template_tracking
- **************************************************************************/
-void revert_template_tracking( agent *my_agent, const char *rule_name )
-{
-	template_instantiation *origin = get_template_base( rule_name );
-	if ( ( origin != NULL ) && ( (*my_agent->rl_template_count)[ origin->template_base ] == origin->id ) )
-	{
-		int temp_id = 0;
-		template_instantiation *temp_origin;
-		
-		for ( int i=0; i<NUM_PRODUCTION_TYPES; i++ )
-		{
-			for ( production *prod=my_agent->all_productions_of_type[i]; prod != NIL; prod = prod->next )
-			{
-				temp_origin = get_template_base( prod->name->sc.name );
-				if ( temp_origin != NULL )
-				{
-					if ( !origin->template_base.compare( temp_origin->template_base ) )
-					{
-						if ( ( temp_origin->id != origin->id ) && ( temp_origin->id > temp_id ) )
-							temp_id = temp_origin->id;
-					}
-				}
-
-				delete temp_origin;
-			}
-		}
-		
-		(*my_agent->rl_template_count)[ origin->template_base ] = temp_id;
-	}
-
-	delete origin;
+	if ( ( new_id != -1 ) && ( new_id > my_agent->rl_template_count ) )
+		my_agent->rl_template_count = ( new_id + 1 );
 }
 
 /***************************************************************************
  * Function     : next_template_id
  **************************************************************************/
-int next_template_id( agent *my_agent, const char *template_name )
+int next_template_id( agent *my_agent )
 {
-	std::string *temp = new std::string( template_name );
-	int return_val;
-	
-	if ( !is_set( my_agent->rl_template_count, temp ) )
-	{
-		// first instantiation is 1
-		return_val = 1;
-	}
-	else
-	{
-		// get current value + 1
-		return_val = (*my_agent->rl_template_count)[ *temp ];
-		return_val++;
-	}
-	
-	// increment counter
-	(*my_agent->rl_template_count)[ *temp ] = return_val;
-	
-	delete temp;
-	return return_val;
+	return (my_agent->rl_template_count++);
 }
 
 /***************************************************************************
@@ -1099,13 +1023,14 @@ int next_template_id( agent *my_agent, const char *template_name )
 	// make unique production name
 	Symbol *new_name_symbol;
 	std::string new_name = "";
+	std::string empty_string = "";
 	std::string *temp_id;
 	int new_id;
 	do
 	{
-		new_id = next_template_id( my_agent, my_template->name->sc.name );
+		new_id = next_template_id( my_agent );
 		temp_id = to_string( new_id );
-		new_name = ( "rl*" + (*temp_id) + "*" + my_template->name->sc.name );
+		new_name = ( "rl*" + empty_string + my_template->name->sc.name + "*" + (*temp_id) );
 		delete temp_id;
 	} while ( find_sym_constant( my_agent, new_name.c_str() ) != NIL );
 	new_name_symbol = make_sym_constant( my_agent, (char *) new_name.c_str() );
@@ -1126,7 +1051,6 @@ int next_template_id( agent *my_agent, const char *template_name )
 	if ( add_production_to_rete( my_agent, new_production, cond_top, NULL, FALSE, TRUE ) == DUPLICATE_PRODUCTION )
 	{
 		excise_production( my_agent, new_production, false );
-		revert_template_tracking( my_agent, new_name.c_str() );
 
 		new_name_symbol = NULL;
 	}

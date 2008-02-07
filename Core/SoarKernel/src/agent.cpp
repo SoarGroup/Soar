@@ -346,8 +346,8 @@ agent * create_soar_agent (Kernel * thisKernel, char * agent_name) {            
   newAgent->rl_stats[ RL_STAT_UPDATE_ERROR ] = add_rl_stat( "update-error" );
   newAgent->rl_stats[ RL_STAT_TOTAL_REWARD ] = add_rl_stat( "total-reward" );
   newAgent->rl_stats[ RL_STAT_GLOBAL_REWARD ] = add_rl_stat( "global-reward" );
-  
-  newAgent->rl_template_count = new std::map<std::string, int>();
+
+  initialize_template_tracking( newAgent );
   
   // select initialization
   newAgent->select = new select_info;
@@ -500,9 +500,6 @@ void destroy_soar_agent (Kernel * thisKernel, agent * delete_agent)
   // cleanup Soar-RL
   clean_parameters( delete_agent );
   clean_stats( delete_agent );
-
-  delete_agent->rl_template_count->clear();
-  delete delete_agent->rl_template_count;
 
   // cleanup select
   init_select( delete_agent );

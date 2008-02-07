@@ -762,7 +762,7 @@ kernel time and total_cpu_time greater than the derived total CPU time. REW */
   rl_parameter *rl_params[ RL_PARAMS ];
   rl_stat *rl_stats[ RL_STATS ];
 
-  std::map<std::string, int> *rl_template_count;
+  int rl_template_count;
 
   // select
   select_info *select;

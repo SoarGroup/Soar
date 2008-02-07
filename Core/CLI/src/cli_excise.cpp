@@ -151,8 +151,6 @@ bool CommandLineInterface::DoExcise(gSKI::Agent* pAgent, const ExciseBitset& opt
 			return SetError(CLIError::kProductionNotFound);
 		}
 		
-		// regardless of whether Soar-RL rule, may need to revert tracking to a lower id
-		revert_template_tracking( my_agent, (*pProduction).c_str() );
 		ExciseInternal(pProdIter, exciseCount);
 	}
 
