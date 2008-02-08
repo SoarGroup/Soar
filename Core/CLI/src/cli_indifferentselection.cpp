@@ -36,7 +36,7 @@ bool CommandLineInterface::ParseIndifferentSelection( gSKI::Agent* pAgent, std::
 		{'g', "epsilon-greedy",		0},
 		{'f', "first",				0},
 		{'l', "last",				0},
-		{'u', "random-uniform",		0},
+		//{'u', "random-uniform",		0},
 		{'x', "softmax",			0},
 		
 		// selection parameters
@@ -79,9 +79,9 @@ bool CommandLineInterface::ParseIndifferentSelection( gSKI::Agent* pAgent, std::
 			case 'l':
 				options.set( INDIFFERENT_LAST );
 				break;
-			case 'u':
+			/*case 'u':
 				options.set( INDIFFERENT_RANDOM );
-				break;
+				break;*/
 			case 'x':
 				options.set( INDIFFERENT_SOFTMAX );
 				break;
@@ -137,7 +137,7 @@ bool CommandLineInterface::ParseIndifferentSelection( gSKI::Agent* pAgent, std::
 			  options.test( INDIFFERENT_FIRST ) ||
 			  options.test( INDIFFERENT_E_GREEDY ) ||
 			  options.test( INDIFFERENT_LAST ) ||
-			  options.test( INDIFFERENT_RANDOM ) ||
+			  //options.test( INDIFFERENT_RANDOM ) ||
 			  options.test( INDIFFERENT_SOFTMAX ) )
 	{
 		if ( m_NonOptionArguments )
@@ -152,8 +152,8 @@ bool CommandLineInterface::ParseIndifferentSelection( gSKI::Agent* pAgent, std::
 			return DoIndifferentSelection( pAgent, 'f' );
 		else if ( options.test( INDIFFERENT_LAST ) )
 			return DoIndifferentSelection( pAgent, 'l' );
-		else if ( options.test( INDIFFERENT_RANDOM ) )
-			return DoIndifferentSelection( pAgent, 'u' );
+		/*else if ( options.test( INDIFFERENT_RANDOM ) )
+			return DoIndifferentSelection( pAgent, 'u' );*/
 		else if ( options.test( INDIFFERENT_SOFTMAX ) )
 			return DoIndifferentSelection( pAgent, 'x' );
 	}
@@ -312,8 +312,8 @@ bool CommandLineInterface::DoIndifferentSelection( gSKI::Agent* pAgent, const ch
 		return set_exploration_policy( my_agent, "first" );
 	else if ( pOp == 'l' )
 		return set_exploration_policy( my_agent, "last" );
-	else if ( pOp == 'u' )
-		return set_exploration_policy( my_agent, "random-uniform" );
+	/*else if ( pOp == 'u' )
+		return set_exploration_policy( my_agent, "random-uniform" );*/
 	else if ( pOp == 'x' )
 		return set_exploration_policy( my_agent, "softmax" );
 	
