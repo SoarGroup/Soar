@@ -113,6 +113,8 @@ namespace Robotics.Intro.Proxy
         
         private Int32 _insideBehavior;
         
+        private Boolean _spawnDebugger;
+        
         /// <summary>
         /// Motor On
         /// </summary>
@@ -322,6 +324,22 @@ namespace Robotics.Intro.Proxy
         }
         
         /// <summary>
+        /// Spawn Debugger
+        /// </summary>
+        [DataMember()]
+        public Boolean SpawnDebugger
+        {
+            get
+            {
+                return this._spawnDebugger;
+            }
+            set
+            {
+                this._spawnDebugger = value;
+            }
+        }
+        
+        /// <summary>
         /// Copy To Intro State
         /// </summary>
         public virtual void CopyTo(IDssSerializable target)
@@ -343,6 +361,7 @@ namespace Robotics.Intro.Proxy
             typedTarget.nextTimestamp = this.nextTimestamp;
             typedTarget.lastBumperNum = this.lastBumperNum;
             typedTarget.insideBehavior = this.insideBehavior;
+            typedTarget.SpawnDebugger = this.SpawnDebugger;
         }
         
         /// <summary>
@@ -365,6 +384,7 @@ namespace Robotics.Intro.Proxy
             target.nextTimestamp = this.nextTimestamp;
             target.lastBumperNum = this.lastBumperNum;
             target.insideBehavior = this.insideBehavior;
+            target.SpawnDebugger = this.SpawnDebugger;
             return target;
 
         }
@@ -400,6 +420,8 @@ namespace Robotics.Intro.Proxy
 
             writer.Write(insideBehavior);
 
+            writer.Write(SpawnDebugger);
+
         }
         
         /// <summary>
@@ -432,6 +454,8 @@ namespace Robotics.Intro.Proxy
             lastBumperNum = reader.ReadInt32();
 
             insideBehavior = reader.ReadInt32();
+
+            SpawnDebugger = reader.ReadBoolean();
 
             return this;
 

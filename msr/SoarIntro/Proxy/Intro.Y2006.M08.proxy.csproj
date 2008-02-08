@@ -3,7 +3,7 @@
     <ProjectType>Local</ProjectType>
     <ProductVersion>8.0.50215</ProductVersion>
     <SchemaVersion>2.0</SchemaVersion>
-    <ProjectGuid>{C5423463-6180-4C0B-B62C-DE81F198874C}</ProjectGuid>
+    <ProjectGuid>{BB567818-BA18-403C-9F78-1C2C60D6737D}</ProjectGuid>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
     <ApplicationIcon>
@@ -86,6 +86,10 @@
         <Private>False</Private>
     </Reference>
     <Reference Include="RoboticsCommon.Proxy">
+        <SpecificVersion>False</SpecificVersion>
+        <Private>False</Private>
+    </Reference>
+    <Reference Include="SickLRF.Y2005.M12.Proxy">
         <SpecificVersion>False</SpecificVersion>
         <Private>False</Private>
     </Reference>

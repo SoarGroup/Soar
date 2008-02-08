@@ -35,6 +35,7 @@ namespace Dss.Transforms.TransformIntro
             target.nextTimestamp = from.nextTimestamp;
             target.lastBumperNum = from.lastBumperNum;
             target.insideBehavior = from.insideBehavior;
+            target.SpawnDebugger = from.SpawnDebugger;
             return target;
         }
 
@@ -56,6 +57,7 @@ namespace Dss.Transforms.TransformIntro
             target.nextTimestamp = from.nextTimestamp;
             target.lastBumperNum = from.lastBumperNum;
             target.insideBehavior = from.insideBehavior;
+            target.SpawnDebugger = from.SpawnDebugger;
             return target;
         }
 

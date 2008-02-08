@@ -90,6 +90,7 @@
       <SpecificVersion>False</SpecificVersion>
       <Private>False</Private>
     </Reference>
+    <Reference Include="SickLRF.Y2005.M12.proxy, Version=0.0.0.0, Culture=neutral, PublicKeyToken=d183f0e3c2276485, processorArchitecture=MSIL" />
     <Reference Include="smlCSharp, Version=0.0.0.0, Culture=neutral, PublicKeyToken=505d4249033ecfa8, processorArchitecture=MSIL">
       <Private>False</Private>
     </Reference>

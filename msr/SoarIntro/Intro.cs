@@ -45,6 +45,8 @@ using motor = Microsoft.Robotics.Services.Motor.Proxy;
 // and service that implements a DifferentialDrive.
 using drive = Microsoft.Robotics.Services.Drive.Proxy;
 
+using sicklrf = Microsoft.Robotics.Services.Sensors.SickLRF.Proxy;
+
 using sml;
 using System.Threading;
 
@@ -92,6 +94,10 @@ namespace Robotics.Intro
            Contract = drive.Contract.Identifier,
             CreationPolicy = PartnerCreationPolicy.UseExisting)]
         drive.DriveOperations _drivePort = new drive.DriveOperations();
+
+        [Partner("Laser", Contract = sicklrf.Contract.Identifier, CreationPolicy = PartnerCreationPolicy.UseExisting)]
+        sicklrf.SickLRFOperations _laserPort = new sicklrf.SickLRFOperations();
+        sicklrf.SickLRFOperations _laserNotify = new sicklrf.SickLRFOperations();
 
         /// <summary>
         /// Default Service Constructor
@@ -232,22 +238,14 @@ namespace Robotics.Intro
             Identifier configWME = _agent.CreateIdWME(inputLink, "config");
             
             Identifier powerWME = _agent.CreateIdWME(configWME, "power");
-            FloatElement driveWME = _agent.CreateFloatWME(powerWME, "drive", _state.MaximumPower);
-            FloatElement reverseWME = _agent.CreateFloatWME(powerWME, "reverse", _state.BackUpPower);
+            _agent.CreateFloatWME(powerWME, "drive", _state.MaximumPower);
+            _agent.CreateFloatWME(powerWME, "reverse", _state.BackUpPower);
 
             Identifier delayWME = _agent.CreateIdWME(configWME, "delay");
-
-            LogInfo(LogGroups.Console, "Stop delay: " + _state.StopTimeout);
-            FloatElement stopDelayWME = _agent.CreateFloatWME(delayWME, "stop", _state.StopTimeout);
-
-            LogInfo(LogGroups.Console, "Reverse delay: " + _state.BackUpTimeout);
-            FloatElement reverseDelayWME = _agent.CreateFloatWME(delayWME, "reverse", _state.BackUpTimeout);
-
-            LogInfo(LogGroups.Console, "Turn delay: " + _state.TurnTimeout);
-            FloatElement turnDelayWME = _agent.CreateFloatWME(delayWME, "turn", _state.TurnTimeout);
-
-            LogInfo(LogGroups.Console, "Delay variance: " + _state.TurnTimeout);
-            FloatElement varianceWME = _agent.CreateFloatWME(delayWME, "variance", _state.TimeoutVariance);
+            _agent.CreateFloatWME(delayWME, "stop", _state.StopTimeout);
+            _agent.CreateFloatWME(delayWME, "reverse", _state.BackUpTimeout);
+            _agent.CreateFloatWME(delayWME, "turn", _state.TurnTimeout);
+            _agent.CreateFloatWME(delayWME, "variance", _state.TimeoutVariance);
 
             _timeWME = _agent.CreateFloatWME(inputLink, "time", 0);
             _randomWME = _agent.CreateFloatWME(inputLink, "random", 0);
@@ -265,10 +263,13 @@ namespace Robotics.Intro
             _agent.Commit();
 
             _updateCall = new sml.Kernel.UpdateEventCallback(UpdateEventCallback);
-            int callbackId = _kernel.RegisterForUpdateEvent(sml.smlUpdateEventId.smlEVENT_AFTER_ALL_OUTPUT_PHASES, _updateCall, null);
+            _kernel.RegisterForUpdateEvent(sml.smlUpdateEventId.smlEVENT_AFTER_ALL_OUTPUT_PHASES, _updateCall, null);
 
             // spawn debugger
-            //SpawnDebugger();
+            if (_state.SpawnDebugger)
+            {
+                SpawnDebugger();
+            }
 
             LogInfo(LogGroups.Console, "Soar initialized.");
         }

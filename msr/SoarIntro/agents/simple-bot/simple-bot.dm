@@ -1,4 +1,4 @@
-77
+84
 SOAR_ID 0
 SOAR_ID 1
 SOAR_ID 2
@@ -76,7 +76,14 @@ INTEGER_RANGE 73 0 600
 FLOAT_RANGE 74 0.0 1.0
 FLOAT_RANGE 75 0.0 1.0
 FLOAT_RANGE 76 0.0 Infinity
-85
+SOAR_ID 77
+ENUMERATION 78 2 false true
+SOAR_ID 79
+SOAR_ID 80
+SOAR_ID 81
+STRING 82
+SOAR_ID 83
+94
 0 attribute 57
 0 choices 58
 0 io 1
@@ -102,6 +109,8 @@ FLOAT_RANGE 76 0.0 Infinity
 9 actions 47
 9 name 10
 11 bumper 12
+11 com 79
+11 sicklrf 77
 12 front 13
 12 rear 14
 13 pressed 15
@@ -162,3 +171,10 @@ FLOAT_RANGE 76 0.0 Infinity
 66 stop 67
 66 turn 76
 66 variance 69
+77 obstacle 78
+79 broadcast 80
+80 next 81
+81 next 83
+81 value 82
+83 next 81
+83 value 82

@@ -93,6 +93,9 @@ namespace Robotics.Intro
         [DataMember]
         public int insideBehavior = 0;
 
+        [DataMember]
+        public bool SpawnDebugger = false;
+
     }
 
     public class IntroOperations : PortSet<DsspDefaultLookup, DsspDefaultDrop, Get, Replace>

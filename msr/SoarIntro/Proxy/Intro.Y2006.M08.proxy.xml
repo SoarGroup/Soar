@@ -120,6 +120,11 @@
             Inside Behavior
             </summary>
         </member>
+        <member name="P:Robotics.Intro.Proxy.IntroState.SpawnDebugger">
+            <summary>
+            Spawn Debugger
+            </summary>
+        </member>
         <member name="T:Robotics.Intro.Proxy.MoveStates">
             <summary>
             Move States
