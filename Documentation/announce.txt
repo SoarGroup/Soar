@@ -1,0 +1,117 @@
+Soar 8.6.4 Release Notes
+========================
+
+This release of Soar includes reinforcement learning code (Soar-RL).
+
+Soar-RL is the architectural integration of reinforcement learning 
+(RL) with Soar.  The RL mechanism will automatically learn value 
+functions as a Soar agent executes.  These value functions represent, 
+for a given working memory state and proposed operator, the expected 
+sum of future rewards the agent will receive if it selects that 
+operator.  
+
+The 8.6.4 release notes follow.
+
+Soar 8.6.4 Release Notes
+========================
+
+Soar-8.6.4 includes all source code, many demo programs, and a 
+number of applications that serve as examples of how to interface 
+Soar to an external Environment.  There is support for integrating 
+Soar with C++, Java, Tcl, Python and C# applications.  Many Tools
+that aid in development of Soar programs are also included.
+
+These Release Notes describe the primary changes in this 
+latest release.  More detailed information can be obtained at 
+http://winter.eecs.umich.edu/soarwiki
+
+This release was generated for Windows, Linux, and OSX systems.  
+Windows XP and Vista are supported.
+
+Soar 8.6.4 can be downloaded from the Soar homepage at:
+
+        http://sitemaker.umich.edu/soar
+
+Installation Requirements
+=========================
+
+* On Windows, the 19MB download file expands to ~45MB when extracted.  
+  Linux and OSX disk requirements are similar.
+
+* Java 1.5.0 or newer is required to use the Java applications,
+  including the debugger (Java must be available in the path). Get it 
+  at http://java.sun.com/. Most operating systems probably already have 
+  Java installed. NOTE: Java 1.4.2 is no longer supported.
+
+* If you want to run Tcl applications on Linux, Tcl 8.4.x or later is
+  required (note that the tutorial applications are now available in
+  Java).  Also note that we do not currently support threaded builds
+  of Tcl (e.g. ActiveTcl 8.4.11.2 or later).
+
+* The included Python libraries support Python 2.4.  Python 2.5 support
+  requires a rebuild of the ClientSMLPython project.
+
+Build Requirements
+==================
+
+* On all platforms, SWIG 1.3.31 is required for cross-language support
+  (e.g. to use the Java debugger).
+* On Windows, Visual Studio 2005 SP1 is required.
+* On Linux/Unix/OS X, Python, SCons, gcc 3.3 or later required.
+
+Components of Soar 8.6.4
+========================
+* Pre-built libraries and executables for Windows (SoarLibrary/bin)
+* all source code, config files, and OS tools for automated Soar builds
+* SoarJavaDebugger 
+* VisualSoar
+* JavaEaters, JavaTankSoar, TclEaters
+* Test and Demo programs
+* Documentation
+
+New in 8.6.4
+============
+
+* Components and Capabilities added
+  -- Eaters and TankSoar have been rewritten and are now part of the
+     Soar2D framework. This includes many enhancements.
+  -- New command: load-library. See manual for details.
+  -- Extended preferences command to print wme support (see the Soar
+     wiki for details).
+  -- Extended print command to support printing tree structures (see
+     manual for details).
+  -- Added IsRemoteConnection() to client Kernel interface.
+  -- Modified StringEventCallback to return a string.
+  -- Now generate proper Java enums for SML Java interface.
+  -- Major refactoring of portability support (e.g. portability.h)
+  -- Other minor enhancements.
+
+* Bug fixes
+  -- Lots of TankSoar and Eaters bugfixes
+  -- Fixed command-to-file command
+  -- Fixed more memory leaks.
+  -- Fixed stats bug.
+  -- Fixed print depth/indentation bug.
+  -- Several other minor fixes
+
+* Other updates
+  -- Updated to SWT 3.3
+
+
+Known issues:
+=============
+
+* Remote connections on Linux can be slow.
+* ^status complete appears on the ^output-link immediately instead 
+  of during the next input phase.
+* The Soar 7 mode implementation currently relies on an ugly hack. If
+  you experience problems in this mode, please let us know.
+* In TankSoar, the obscure-bot sometimes generates a scary-looking
+  kernel error message.  It appears to be safe to ignore.
+* Many other minor issues (see bugzilla for details).
+
+If any other issues or bugs are found, please send mail to:
+
+soar-sml-list@lists.sourceforge.net (preferred)
+-or-
+soar-group@lists.sourceforge.net
