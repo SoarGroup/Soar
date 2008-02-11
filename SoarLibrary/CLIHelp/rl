@@ -1,0 +1,71 @@
+                              Documentation/CLI/rl
+
+                                      Name
+
+   rl - Get/Set Soar-RL parameters and statistics
+
+                                    Synopsis
+
+ rl
+ rl [-g|--get] <parameter>
+ rl [-s|--set] <parameter>
+ rl [-S|--stats] <statistic>
+
+                                   Parameters
+
+   +----------------------------------------------+
+   |-g, --get  |Retrieve a Soar-RL parameter value|
+   |-----------+----------------------------------|
+   |-s, --set  |Set a Soar-RL parameter value     |
+   |-----------+----------------------------------|
+   |-S, --stats|Access Soar-RL statistics         |
+   +----------------------------------------------+
+
+                                  Description
+
+   This command is used to get/set all parameters in Soar-RL. Additionally
+   used to access statistics. See tables below for available parameters, full
+   information is in the Soar-RL manual.
+
+                                   Parameters
+
+   Without any options: summary table of parameter settings
+
+   +---------------------------------------------------------------+
+   |Parameter Name                 |Acceptable Values  |Default    |
+   |-------------------------------+-------------------+-----------|
+   |learning                       |on, off            |on         |
+   |-------------------------------+-------------------+-----------|
+   |accumulation-mode              |sum, avg           |sum        |
+   |-------------------------------+-------------------+-----------|
+   |temporal-extension             |on, off            |on         |
+   |-------------------------------+-------------------+-----------|
+   |-------------------------------+-------------------+-----------|
+   |discount-mode                  |exponential, linear|exponential|
+   |-------------------------------+-------------------+-----------|
+   |exponential-discount-rate      |[0, 1]             |0.9        |
+   |-------------------------------+-------------------+-----------|
+   |linear-discount-rate           |[0, inf)           |0.1        |
+   |-------------------------------+-------------------+-----------|
+   |-------------------------------+-------------------+-----------|
+   |learning-rate                  |[0, 1]             |0.3        |
+   |-------------------------------+-------------------+-----------|
+   |learning-policy                |sarsa, q-learning  |sarsa      |
+   |-------------------------------+-------------------+-----------|
+   |-------------------------------+-------------------+-----------|
+   |eligibility-trace-decay-rate   |[0, 1]             |0          |
+   |-------------------------------+-------------------+-----------|
+   |eligibility-trace-discount-rate|[0, 1]             |0.9        |
+   |-------------------------------+-------------------+-----------|
+   |eligibility-trace-tolerance    |(0, inf)           |0.001      |
+   +---------------------------------------------------------------+
+
+                                    Examples
+
+   This command gets the value of the learning-rate parameter:
+
+ rl --get learning-rate
+
+   This command sets the value of the learning-rate parameter to 0.5:
+
+ rl --set learning-rate 0.5
