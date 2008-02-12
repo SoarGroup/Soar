@@ -346,7 +346,7 @@ bool CommandLineInterface::DoIndifferentSelection( gSKI::Agent* pAgent, const ch
 			std::string *temp = to_string( param_value );
 			
 			if ( m_RawOutput )
-				m_Result << param_value;
+				m_Result << (*temp);
 			else
 				AppendArgTagFast( sml_Names::kParamValue, sml_Names::kTypeDouble, temp->c_str() );
 			
@@ -369,7 +369,7 @@ bool CommandLineInterface::DoIndifferentSelection( gSKI::Agent* pAgent, const ch
 			std::string *temp = to_string( param_value );
 
 			if ( m_RawOutput )
-				m_Result << param_value;
+				m_Result << (*temp);
 			else
 				AppendArgTagFast( sml_Names::kParamValue, sml_Names::kTypeDouble, temp->c_str() );
 			
