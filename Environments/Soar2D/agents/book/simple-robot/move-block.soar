@@ -1,8 +1,7 @@
 sp {wander*propose*move-block
    (state <s> ^name book
-              ^block-id <bid>)
+              ^block-id)
 -->
    (<s> ^operator <o> +)
-   (<o> ^name move-block
-        ^block-id <bid>)
+   (<o> ^name move-block)
 }
