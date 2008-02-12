@@ -49,7 +49,9 @@ public class BookMap extends GridMap {
 			info.floatLocation.x += Soar2D.bConfig.getBookCellSize() / 2.0;
 			info.floatLocation.y += Soar2D.bConfig.getBookCellSize() / 2.0;
 			info.object = object;
-			object.addProperty("object-id", Integer.toString(newObjectId()));
+			if (!object.hasProperty("object-id")) {
+				object.addProperty("object-id", Integer.toString(newObjectId()));
+			}
 			if (getAllWithProperty(info.location, Names.kPropertyNumber).size() > 0) {
 				info.area = getAllWithProperty(info.location, Names.kPropertyNumber).get(0).getIntProperty(Names.kPropertyNumber);
 			}
