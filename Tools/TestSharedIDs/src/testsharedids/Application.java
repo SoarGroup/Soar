@@ -31,6 +31,7 @@ public class Application implements Kernel.UpdateEventInterface, Agent.PrintEven
 
 	private void Test()
 	{
+		System.out.println("--- Initialization");
 		kernel = Kernel.CreateKernelInNewThread("SoarKernelSML");
 		
 		// Make sure the kernel was ok
@@ -38,7 +39,7 @@ public class Application implements Kernel.UpdateEventInterface, Agent.PrintEven
 			throw new IllegalStateException("Error initializing kernel: " + kernel.GetLastErrorDescription()) ;
 		
 		String version = kernel.GetSoarKernelVersion() ;
-		System.out.println("Soar version " + version) ;
+		System.out.println("--- Kernel created, version " + version) ;
 		
 		// Create an agent
 		agent = kernel.CreateAgent("javatest") ;
@@ -60,98 +61,131 @@ public class Application implements Kernel.UpdateEventInterface, Agent.PrintEven
 			throw new IllegalStateException("Error getting the input link") ;
 		
 		Identifier map = agent.CreateIdWME(inputLink, "map");
-		centerCell = agent.CreateIdWME(map, "cell");
+		centerCell = agent.CreateIdWME(map, "center");
+		agent.CreateStringWME(centerCell, "data", "center");
 		eastCell = agent.CreateIdWME(map, "east");
+		agent.CreateStringWME(eastCell, "data", "east");
 		westCell = agent.CreateIdWME(map, "west");
+		agent.CreateStringWME(westCell, "data", "west");
 		
 		target = agent.CreateIdWME(inputLink, "target");
 		targetCell = agent.CreateSharedIdWME(target, "cell", centerCell);
 		if (targetCell == null)
 			throw new IllegalStateException("Error creating cell shared ID from target");
+		verifyTarget("center");
 		
 		agent.Commit();
 		
-		System.out.println("Agent created, input link initialized.");
+		System.out.println("--- Agent created, input link initialized.");
 		
 		updateCount = 0;
+		System.out.println("--- Starting Soar");
 		kernel.RunAllAgents(9);
-		
-		System.out.println("----------------");
-		System.out.println("final:");
+		System.out.println("--- Soar finished");
+
+		System.out.println("--- final input link:");
 		System.out.println(agent.ExecuteCommandLine("print --depth 10 --internal i2"));
-		System.out.println("----------------");
 		
+		System.out.println("--- shutting down");
 		kernel.Shutdown();
 		kernel.delete();
 		kernel = null;
 		agent = null;
 	}
 	
+	private void verifyTarget(String shouldBe) {
+		System.out.println("=== Target verification");
+		System.out.println("=== attribute:    " + targetCell.GetAttribute());
+		System.out.println("=== id name:      " + targetCell.GetIdentifierName());
+		System.out.println("=== num children: " + targetCell.GetNumberChildren());
+		System.out.println("=== time tag:     " + targetCell.GetTimeTag());
+		System.out.println("=== value:        " + targetCell.GetValueAsString());
+		WMElement data = targetCell.FindByAttribute("data", 0);
+		if (data == null) {
+			if (shouldBe == null) {
+				System.out.println("=== child data:   null");
+			} else { 
+				String message = "!!! child data:   null (should be " + shouldBe + ")";
+				System.out.println(message);
+				throw new IllegalStateException(message);
+			}
+		} else {
+			if (data.GetValueAsString().equals(shouldBe)) {
+				System.out.println("=== child data:   " + data.GetValueAsString());
+			} else {
+				String message = "!!! child data:   " + data.GetValueAsString() + " (should be " + shouldBe + ")";
+				System.out.println(message);
+				throw new IllegalStateException(message);
+			}
+		}
+	}
+	
 	private int updateCount = 0;
 	public void updateEventHandler(int eventID, Object data, Kernel kernel, int runFlags) {
+		System.out.println("--- update " + ++updateCount + " started");
+
 		assert eventID == smlUpdateEventId.smlEVENT_AFTER_ALL_OUTPUT_PHASES.swigValue();
 		assert data == null;
 		assert this.kernel == kernel;
 		
-		System.out.println("----------------");
-		System.out.println("update: " + ++updateCount);
+		System.out.println("--- print --depth 10 --internal i2");
 		System.out.println(agent.ExecuteCommandLine("print --depth 10 --internal i2"));
 		
 		// Move the target
 		switch (updateCount)
 		{
 		case 1:
-			System.out.println("update: moving east");
+			System.out.println("--- environment moving target east");
 			agent.DestroyWME(targetCell);
-			agent.Commit();
 			targetCell = agent.CreateSharedIdWME(target, "cell", eastCell);
+			verifyTarget("east");
 			break;
 		case 2:
-			System.out.println("update: moving center");
+			System.out.println("--- environment moving target center");
 			agent.DestroyWME(targetCell);
-			agent.Commit();
 			targetCell = agent.CreateSharedIdWME(target, "cell", centerCell);
+			verifyTarget("center");
 			break;
 		case 3:
-			System.out.println("update: moving west");
+			System.out.println("--- environment moving target west");
 			agent.DestroyWME(targetCell);
-			agent.Commit();
 			targetCell = agent.CreateSharedIdWME(target, "cell", westCell);
+			verifyTarget("west");
 			break;
 		case 4:
-			System.out.println("update: moving center");
+			System.out.println("--- environment moving target center");
 			agent.DestroyWME(targetCell);
-			agent.Commit();
 			targetCell = agent.CreateSharedIdWME(target, "cell", centerCell);
+			verifyTarget("center");
 			break;
 		case 5:
-			System.out.println("update: moving east");
+			System.out.println("--- environment moving target east");
 			agent.DestroyWME(targetCell);
-			agent.Commit();
 			targetCell = agent.CreateSharedIdWME(target, "cell", eastCell);
+			verifyTarget("east");
 			break;
 		case 6:
-			System.out.println("update: moving center");
+			System.out.println("--- environment moving target center");
 			agent.DestroyWME(targetCell);
-			agent.Commit();
 			targetCell = agent.CreateSharedIdWME(target, "cell", centerCell);
+			verifyTarget("center");
 			break;
 		case 7:
-			System.out.println("update: moving west");
+			System.out.println("--- environment moving target west");
 			agent.DestroyWME(targetCell);
-			agent.Commit();
 			targetCell = agent.CreateSharedIdWME(target, "cell", westCell);
+			verifyTarget("west");
 			break;
 		case 8:
-			System.out.println("update: moving center");
+			System.out.println("--- environment moving target center");
 			agent.DestroyWME(targetCell);
-			agent.Commit();
 			targetCell = agent.CreateSharedIdWME(target, "cell", centerCell);
+			verifyTarget("center");
 			break;
 		}
 		
-		System.out.println("----------------");
 		agent.Commit();
+		System.out.println("--- update finished, Soar resuming");
 	}
 
 	public void printEventHandler(int eventID, Object data, Agent agent, String message) {
@@ -170,7 +204,6 @@ public class Application implements Kernel.UpdateEventInterface, Agent.PrintEven
 		try
 		{
 			Test() ;
-			
 			msg = "Test succeeded";
 		}
 		catch (Throwable t)
