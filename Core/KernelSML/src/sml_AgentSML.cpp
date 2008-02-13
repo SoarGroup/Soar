@@ -260,24 +260,33 @@ bool AgentSML::ConvertID(char const* pClientID, std::string* pKernelID)
 
 void AgentSML::RecordIDMapping(char const* pClientID, char const* pKernelID)
 {
+	// Do we already have a mapping?
 	IdentifierMapIter iter = m_IdentifierMap.find(pClientID);
 
 	if (iter == m_IdentifierMap.end())
 	{
+		// We don't, create a mapping, this indicates a reference count of 1
 		m_IdentifierMap[pClientID] = pKernelID ;
 
 		// Record in both directions, so we can clean up (at which time we only know the kernel side ID).
 		m_ToClientIdentifierMap[pKernelID] = pClientID ;
+
+		// Note that we leave the entry out of m_IdentifierRefMap, we only use
+		// that for counts of two or greater
 	}
 	else
 	{
+		// The mapping already exists, so we need to check and see if we have a reference
+		// count for it yet
 		IdentifierRefMapIter iter = m_IdentifierRefMap.find(pClientID);
 		if (iter == m_IdentifierRefMap.end())
 		{
+			// there is no reference count and this is the second reference, so set it to two
 			m_IdentifierRefMap[pClientID] = 2 ;
 		}
 		else 
 		{
+			// there is a reference count, increment it
 			iter->second += 1;
 		}
 	}
@@ -285,6 +294,7 @@ void AgentSML::RecordIDMapping(char const* pClientID, char const* pKernelID)
 
 void AgentSML::RemoveID(char const* pKernelID)
 {
+	// first, find the identifer
 	IdentifierMapIter iter = m_ToClientIdentifierMap.find(pKernelID) ;
 
 	// This identifier should have been in the table
@@ -292,21 +302,26 @@ void AgentSML::RemoveID(char const* pKernelID)
 	if (iter == m_ToClientIdentifierMap.end())
 		return ;
 
+	// cache the identifer value
 	std::string& clientID = iter->second ;
 
-	// Delete this mapping from tables if ref count zero
+	// decrement the reference count and remove the identifier from the maps if it is there
 	IdentifierRefMapIter refIter = m_IdentifierRefMap.find(clientID);
 	if (refIter == m_IdentifierRefMap.end())
 	{
-		// ref count 1 -> 0
+		// when we have an entry in the m_IdentifierMap but not m_IdentifierRefMap, this 
+		// means our ref count is one, so we're decrementing to zero, so we remove it
 		m_IdentifierMap.erase(clientID) ;
 		m_ToClientIdentifierMap.erase(pKernelID) ;
 		return;
 	}
 	else 
 	{
+		// if we have an entry, decrement it
 		refIter->second -= 1;
 
+		// if the count falls to 1, remove it from this map since presence in the map requires 
+		// at least a ref count of two
 		if (refIter->second < 2) {
 			m_IdentifierRefMap.erase(refIter);
 		}
