@@ -28,7 +28,57 @@ public class Application implements Kernel.UpdateEventInterface, Agent.PrintEven
 
 	private Identifier target;
 	private Identifier targetCell;
+	
+	private void Test2()
+	{
+		System.out.println("--- Initialization");
+		kernel = Kernel.CreateKernelInNewThread("SoarKernelSML");
+		
+		// Make sure the kernel was ok
+		if (kernel.HadError())
+			throw new IllegalStateException("Error initializing kernel: " + kernel.GetLastErrorDescription()) ;
+		
+		String version = kernel.GetSoarKernelVersion() ;
+		System.out.println("--- Kernel created, version " + version) ;
+		
+		// Create an agent
+		agent = kernel.CreateAgent("javatest") ;
 
+		if (kernel.HadError())
+			throw new IllegalStateException("Error creating agent: " + kernel.GetLastErrorDescription()) ;
+		
+		agent.ExecuteCommandLine("watch --wmes");
+
+		agent.RegisterForPrintEvent(smlPrintEventId.smlEVENT_PRINT, this, null);
+		
+		Identifier inputLink = agent.GetInputLink();
+
+		if (inputLink == null)
+			throw new IllegalStateException("Error getting the input link") ;
+		
+		System.out.println("--- initial creation");
+
+		Identifier test2map = agent.CreateIdWME(inputLink, "map");
+		Identifier test2Target = agent.CreateIdWME(inputLink, "target");
+		Identifier test2Cell1 = agent.CreateIdWME(test2map, "cell");
+		Identifier test2cell2 = agent.CreateSharedIdWME(test2Target, "cell", test2Cell1);
+		
+		System.out.println("--- deletion");
+		agent.DestroyWME(test2cell2);
+		
+		System.out.println("--- recreation");
+		test2cell2 = agent.CreateSharedIdWME(test2Target, "cell", test2Cell1);
+		
+		System.out.println("--- step");
+		kernel.RunAllAgents(1);
+
+		System.out.println("--- shutting down");
+		kernel.Shutdown();
+		kernel.delete();
+		kernel = null;
+		agent = null;
+	}
+	
 	private void Test()
 	{
 		System.out.println("--- Initialization");
@@ -48,9 +98,6 @@ public class Application implements Kernel.UpdateEventInterface, Agent.PrintEven
 			throw new IllegalStateException("Error creating agent: " + kernel.GetLastErrorDescription()) ;
 		
 		agent.ExecuteCommandLine("watch --wmes");
-		
-		// This is what most environments do
-		kernel.SetAutoCommit(false);
 		
 		kernel.RegisterForUpdateEvent(smlUpdateEventId.smlEVENT_AFTER_ALL_OUTPUT_PHASES, this, null);
 		agent.RegisterForPrintEvent(smlPrintEventId.smlEVENT_PRINT, this, null);
@@ -73,8 +120,6 @@ public class Application implements Kernel.UpdateEventInterface, Agent.PrintEven
 		if (targetCell == null)
 			throw new IllegalStateException("Error creating cell shared ID from target");
 		verifyTarget("center");
-		
-		agent.Commit();
 		
 		System.out.println("--- Agent created, input link initialized.");
 		
@@ -184,7 +229,6 @@ public class Application implements Kernel.UpdateEventInterface, Agent.PrintEven
 			break;
 		}
 		
-		agent.Commit();
 		System.out.println("--- update finished, Soar resuming");
 	}
 
@@ -203,7 +247,7 @@ public class Application implements Kernel.UpdateEventInterface, Agent.PrintEven
 		
 		try
 		{
-			Test() ;
+			Test2() ;
 			msg = "Test succeeded";
 		}
 		catch (Throwable t)
