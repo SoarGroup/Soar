@@ -247,7 +247,7 @@ public class Application implements Kernel.UpdateEventInterface, Agent.PrintEven
 		
 		try
 		{
-			Test2() ;
+			Test() ;
 			msg = "Test succeeded";
 		}
 		catch (Throwable t)
