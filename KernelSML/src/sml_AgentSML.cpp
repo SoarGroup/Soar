@@ -260,48 +260,56 @@ bool AgentSML::ConvertID(char const* pClientID, std::string* pKernelID)
 
 void AgentSML::RecordIDMapping(char const* pClientID, char const* pKernelID)
 {
-	IdentifierRefMapIter iter = m_IdentifierRefMap.find(pClientID);
+	IdentifierMapIter iter = m_IdentifierMap.find(pClientID);
 
-	if (iter == m_IdentifierRefMap.end())
+	if (iter == m_IdentifierMap.end())
 	{
 		m_IdentifierMap[pClientID] = pKernelID ;
-		m_IdentifierRefMap[pClientID] = 1;
 
 		// Record in both directions, so we can clean up (at which time we only know the kernel side ID).
 		m_ToClientIdentifierMap[pKernelID] = pClientID ;
 	}
 	else
 	{
-		iter->second += 1;
+		IdentifierRefMapIter iter = m_IdentifierRefMap.find(pClientID);
+		if (iter == m_IdentifierRefMap.end())
+		{
+			m_IdentifierRefMap[pClientID] = 2 ;
+		}
+		else 
+		{
+			iter->second += 1;
+		}
 	}
 }
 
 void AgentSML::RemoveID(char const* pKernelID)
 {
-	std::string clientID;
+	IdentifierMapIter iter = m_ToClientIdentifierMap.find(pKernelID) ;
 
-	{
-		IdentifierMapIter iter = m_ToClientIdentifierMap.find(pKernelID) ;
+	// This identifier should have been in the table
+	assert (iter != m_ToClientIdentifierMap.end()) ;
+	if (iter == m_ToClientIdentifierMap.end())
+		return ;
 
-		// This identifier should have been in the table
-		assert (iter != m_ToClientIdentifierMap.end()) ;
-		if (iter == m_ToClientIdentifierMap.end())
-			return ;
-
-		clientID = iter->second ;
-	}
-
-	// Decrement ref count
-	IdentifierRefMapIter iter = m_IdentifierRefMap.find(clientID);
-	assert (iter != m_IdentifierRefMap.end()) ;
-	assert (iter->second > 0);
-	iter->second -= 1;
+	std::string& clientID = iter->second ;
 
 	// Delete this mapping from tables if ref count zero
-	if (iter->second == 0) {
+	IdentifierRefMapIter refIter = m_IdentifierRefMap.find(clientID);
+	if (refIter == m_IdentifierRefMap.end())
+	{
+		// ref count 1 -> 0
 		m_IdentifierMap.erase(clientID) ;
-		m_IdentifierRefMap.erase(iter);
 		m_ToClientIdentifierMap.erase(pKernelID) ;
+		return;
+	}
+	else 
+	{
+		refIter->second -= 1;
+
+		if (refIter->second < 2) {
+			m_IdentifierRefMap.erase(refIter);
+		}
 	}
 }
 
