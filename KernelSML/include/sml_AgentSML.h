@@ -41,6 +41,11 @@ typedef std::map< std::string, std::string >	IdentifierMap ;
 typedef IdentifierMap::iterator				IdentifierMapIter ;
 typedef IdentifierMap::const_iterator		IdentifierMapConstIter ;
 
+// Keep track of instances of client side ids
+typedef std::map< std::string, int >		IdentifierRefMap ;
+typedef IdentifierRefMap::iterator			IdentifierRefMapIter ;
+typedef IdentifierRefMap::const_iterator	IdentifierRefMapConstIter ;
+
 // Map from a client side time tag (as a string) to a kernel side WME* object
 // (Had planned to just map the time tag to a kernel time tag...but it turns out
 //  there's no quick way to look up an object in the kernel from its time tag).
@@ -65,6 +70,9 @@ protected:
 
 	// Map from client side identifiers to kernel side ones
 	IdentifierMap	m_IdentifierMap ;
+
+	// Keep track of number of instances of client side identifiers
+	IdentifierRefMap m_IdentifierRefMap;
 
 	// Map from client side time tags (as strings) to kernel side WME* objects
 	TimeTagMap		m_TimeTagMap ;

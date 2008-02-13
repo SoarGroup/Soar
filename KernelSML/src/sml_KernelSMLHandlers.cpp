@@ -871,14 +871,16 @@ bool KernelSML::AddInputWME(gSKI::Agent* pAgent, char const* pID, char const* pA
 		{
 			// Add a WME with an identifier value
 			pWME = pInputWM->AddWmeNewObject(pParentObject, pAttribute, pError) ;
-			
-			if (pWME)
-			{
-				// We need to record the id that the kernel assigned to this object and match it against the id the
-				// client is using, so that in future we can map the client's id to the kernel's.
-				char const* pKernelID = pWME->GetValue()->GetString() ;
-				pAgentSML->RecordIDMapping(pValue, pKernelID) ;
-			}
+		}
+
+		if (pWME)
+		{
+			// We need to record the id that the kernel assigned to this object and match it against the id the
+			// client is using, so that in future we can map the client's id to the kernel's.
+			// voigtjr 02/2008: We need to call RecordIDMapping regardless of whether it is already
+			// mapped because we need to keep track of reference counts to behave correctly regarding shared IDs
+			char const* pKernelID = pWME->GetValue()->GetString() ;
+			pAgentSML->RecordIDMapping(pValue, pKernelID) ;
 		}
 	}
 	else if (IsStringEqual(sml_Names::kTypeInt, pType))
