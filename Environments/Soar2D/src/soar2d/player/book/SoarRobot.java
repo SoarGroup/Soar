@@ -1,5 +1,6 @@
 package soar2d.player.book;
 
+import java.awt.Point;
 import java.awt.geom.Point2D;
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -9,6 +10,7 @@ import java.lang.Math;
 
 import sml.Agent;
 import sml.Identifier;
+import soar2d.Direction;
 import soar2d.Names;
 import soar2d.Simulation;
 import soar2d.Soar2D;
@@ -28,6 +30,7 @@ public class SoarRobot extends Robot {
 	private boolean fragged = true;
 	
 	SelfInputLink selfIL;
+	
 	int oldLocationId;
 	
 	private ArrayList<String> shutdownCommands;	// soar commands to run before this agent is destroyed
@@ -165,9 +168,11 @@ public class SoarRobot extends Robot {
 			agent.Update(selfIL.col, location.x);
 			agent.Update(selfIL.row, location.y);
 			
-			Point2D.Double floatLocation = players.getFloatLocation(this);
-			agent.Update(selfIL.x, floatLocation.x);
-			agent.Update(selfIL.y, floatLocation.y);
+			if (Soar2D.bConfig.getContinuous()) {
+				Point2D.Double floatLocation = players.getFloatLocation(this);
+				agent.Update(selfIL.x, floatLocation.x);
+				agent.Update(selfIL.y, floatLocation.y);
+			}
 			
 			// heading
 			agent.Update(selfIL.yaw, getHeadingRadians());
@@ -176,22 +181,33 @@ public class SoarRobot extends Robot {
 			agent.Update(selfIL.cycle, world.getWorldCount());
 		}
 		
-		// velocity
-		agent.Update(selfIL.speed, Math.sqrt((getVelocity().x * getVelocity().x) + (getVelocity().y * getVelocity().y)));
-		agent.Update(selfIL.dx, getVelocity().x);
-		agent.Update(selfIL.dy, getVelocity().y);
-		agent.Update(selfIL.rotation, this.getRotationSpeed());
-		
-		// collisions
-		if (collisionX) {
-			agent.Update(selfIL.collisionX, "true");
+		if (Soar2D.bConfig.getContinuous()) {
+			// velocity
+			agent.Update(selfIL.speed, Math.sqrt((getVelocity().x * getVelocity().x) + (getVelocity().y * getVelocity().y)));
+			agent.Update(selfIL.dx, getVelocity().x);
+			agent.Update(selfIL.dy, getVelocity().y);
+			agent.Update(selfIL.rotation, this.getRotationSpeed());
+
+			// collisions
+			if (collisionX) {
+				agent.Update(selfIL.collisionX, "true");
+			} else {
+				agent.Update(selfIL.collisionX, "false");
+			}
+			if (collisionY) {
+				agent.Update(selfIL.collisionY, "true");
+			} else {
+				agent.Update(selfIL.collisionY, "false");
+			}
 		} else {
-			agent.Update(selfIL.collisionX, "false");
-		}
-		if (collisionY) {
-			agent.Update(selfIL.collisionY, "true");
-		} else {
-			agent.Update(selfIL.collisionY, "false");
+			// facing
+			agent.Update(selfIL.direction, Direction.stringOf[getFacingInt()]);
+			
+			// blocked
+			Point facedLocation = new Point(location);
+			Direction.translate(facedLocation, getFacingInt());
+			boolean blocked = map.isBlocked(facedLocation);
+			agent.Update(selfIL.blocked, blocked ? "true" : "false");
 		}
 		
 		// time
@@ -279,6 +295,197 @@ public class SoarRobot extends Robot {
 			return new MoveInfo();
 		}
 
+		if (Soar2D.bConfig.getContinuous()) 
+			return getMoveContinuous();
+		return getMoveDiscrete();
+	}
+	
+	private MoveInfo getMoveDiscrete() {
+		// go through the commands
+		MoveInfo move = new MoveInfo();
+		for (int i = 0; i < agent.GetNumberCommands(); ++i) {
+			Identifier commandId = agent.GetCommand(i);
+			String commandName = commandId.GetAttribute();
+			
+			if (commandName.equalsIgnoreCase(Names.kMoveID)) {
+				if (move.move) {
+					logger.warning(getName() + " multiple move commands issued");
+					commandId.AddStatusError();
+					continue;
+				}
+				
+				String direction = commandId.GetParameterValue(Names.kDirectionID);
+				
+				if (direction == null) {
+					logger.warning(getName() + " move command missing direction parameter");
+					commandId.AddStatusError();
+					continue;
+				}
+				
+				if (direction.equalsIgnoreCase(Names.kForwardID)) {
+					move.forward = true;
+					
+				} else if (direction.equalsIgnoreCase(Names.kBackwardID)) {
+					move.backward = true;
+				
+				} else {
+					logger.warning(getName() + "unrecognized move direction: " + direction);
+					commandId.AddStatusError();
+					continue;
+				}
+
+				move.move = true;
+				commandId.AddStatusComplete();
+
+			} else if (commandName.equalsIgnoreCase(Names.kRotateID)) {
+				if (move.rotate) {
+					logger.warning(getName() + " multiple rotate commands issued");
+					commandId.AddStatusError();
+					continue;
+				}
+				
+				String direction = commandId.GetParameterValue(Names.kDirectionID);
+				
+				if (direction == null) {
+					logger.warning(getName() + " rotate command missing direction parameter");
+					commandId.AddStatusError();
+					continue;
+				}
+				
+				if (direction.equalsIgnoreCase(Names.kLeftID)) {
+					move.rotateDirection = Names.kRotateLeft;
+					
+				} else if (direction.equalsIgnoreCase(Names.kRightID)) {
+					move.rotateDirection = Names.kRotateRight;
+				
+				} else {
+					logger.warning(getName() + "unrecognized rotate direction: " + direction);
+					commandId.AddStatusError();
+					continue;
+					
+				}
+
+				move.rotate = true;
+				commandId.AddStatusComplete();
+
+			} else if (commandName.equalsIgnoreCase(Names.kStopSimID)) {
+				if (move.stopSim) {
+					logger.warning(getName() + " multiple stop-sim commands issued");
+					commandId.AddStatusError();
+					continue;
+				}
+				move.stopSim = true;
+				commandId.AddStatusComplete();
+				
+			} else if (commandName.equalsIgnoreCase(Names.kGetID)) {
+				if (move.get) {
+					logger.warning(getName() + " multiple get commands issued");
+					commandId.AddStatusError();
+					continue;
+				}
+
+				if (move.drop) {
+					logger.warning(getName() + " get: both get and drop simultaneously issued");
+					commandId.AddStatusError();
+					continue;
+				}
+				
+				String idString = commandId.GetParameterValue("id");
+				if (idString == null) {
+					logger.warning(getName() + " get command missing id parameter");
+					commandId.AddStatusError();
+					continue;
+				}
+				try {
+					move.getId = Integer.parseInt(idString);
+				} catch (NumberFormatException e) {
+					logger.warning(getName() + " get command id parameter improperly formatted");
+					commandId.AddStatusError();
+					continue;
+				}
+				
+				ObjectInputLink oIL = selfIL.getOIL(move.getId);
+				if (oIL == null) {
+					logger.warning(getName() + " get command invalid id " + move.getId);
+					commandId.AddStatusError();
+					continue;
+				}
+				if (oIL.range.GetValue() > Soar2D.bConfig.getBookCellSize()) {
+					logger.warning(getName() + " get command object out of range");
+					commandId.AddStatusError();
+					continue;
+				}
+				
+				move.get = true;
+				getCommandId = commandId;
+				move.getLocation = new java.awt.Point(oIL.col.GetValue(), oIL.row.GetValue());
+				
+			} else if (commandName.equalsIgnoreCase(Names.kDropID)) {
+				if (move.drop) {
+					logger.warning(getName() + " multiple drop commands issued");
+					commandId.AddStatusError();
+					continue;
+				}
+
+				if (move.get) {
+					logger.warning(getName() + " drop: both drop and get simultaneously issued");
+					commandId.AddStatusError();
+					continue;
+				}
+				
+				String idString = commandId.GetParameterValue("id");
+				if (idString == null) {
+					logger.warning(getName() + " drop command missing id parameter");
+					commandId.AddStatusError();
+					continue;
+				}
+				try {
+					move.dropId = Integer.parseInt(idString);
+				} catch (NumberFormatException e) {
+					logger.warning(getName() + " drop command id parameter improperly formatted");
+					commandId.AddStatusError();
+					continue;
+				}
+				
+				move.drop = true;
+				commandId.AddStatusComplete();
+				
+			} else if (commandName.equalsIgnoreCase("communicate")) {
+				MoveInfo.Communication comm = move.new Communication();
+				String toString = commandId.GetParameterValue("to");
+				if (toString == null) {
+					logger.warning(getName() + " communicate command missing to parameter");
+					commandId.AddStatusError();
+					continue;
+				}
+				comm.to = toString;
+				
+				String messageString = commandId.GetParameterValue("message");
+				if (messageString == null) {
+					logger.warning(getName() + " communicate command missing message parameter");
+					commandId.AddStatusError();
+					continue;
+				}
+				comm.message = messageString;
+				
+				move.messages.add(comm);
+				commandId.AddStatusComplete();
+				
+			} else {
+				logger.warning("Unknown command: " + commandName);
+				commandId.AddStatusError();
+			}
+		}
+		agent.ClearOutputLinkChanges();
+		if (!agent.Commit()) {
+			Soar2D.control.severeError("Failed to commit input to Soar agent " + this.getName());
+			Soar2D.control.stopSimulation();
+		}
+		return move;
+	}
+	
+	private MoveInfo getMoveContinuous() {
+				
 		// go through the commands
 		MoveInfo move = new MoveInfo();
 		for (int i = 0; i < agent.GetNumberCommands(); ++i) {

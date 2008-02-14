@@ -11,6 +11,7 @@ import org.eclipse.swt.graphics.GC;
 import org.eclipse.swt.graphics.Path;
 import org.eclipse.swt.widgets.Composite;
 
+import soar2d.Direction;
 import soar2d.Names;
 import soar2d.Soar2D;
 import soar2d.map.CellObject;
@@ -130,23 +131,27 @@ public class BookVisualWorld extends VisualWorld {
 			Point2D.Double offset = new Point2D.Double(0,0);
 			
 			Path path = new Path(gc.getDevice());
+			double heading = player.getHeadingRadians();
+			if (Soar2D.bConfig.getContinuous() == false) {
+				heading = Direction.radiansOf[player.getFacingInt()];
+			}
 
 			// first, move to the point representing the tip of the chevron
-			offset.y = (float)kDotSize * (float)Math.sin((double)player.getHeadingRadians());
-			offset.x = (float)kDotSize * (float)Math.cos((double)player.getHeadingRadians());
+			offset.y = (float)kDotSize * (float)Math.sin(heading);
+			offset.x = (float)kDotSize * (float)Math.cos(heading);
 			Point2D.Double original = new Point2D.Double(offset.x, offset.y);
 			path.moveTo((float)(center.x + offset.x), (float)(center.y + offset.y));
 			//System.out.println("First: " + offset);
 
 			// next draw a line to the corner
-			offset.y = kDotSize/2.0f * (float)Math.sin(player.getHeadingRadians() + (3*Math.PI)/4);
-			offset.x = kDotSize/2.0f * (float)Math.cos(player.getHeadingRadians() + (3*Math.PI)/4);
+			offset.y = kDotSize/2.0f * (float)Math.sin(heading + (3*Math.PI)/4);
+			offset.x = kDotSize/2.0f * (float)Math.cos(heading + (3*Math.PI)/4);
 			path.lineTo((float)(center.x + offset.x), (float)(center.y + offset.y));
 			//System.out.println("Second: " + offset);
 
 			// next draw a line to the other corner
-			offset.y = kDotSize/2.0f * (float)Math.sin(player.getHeadingRadians() - (3*Math.PI)/4);
-			offset.x = kDotSize/2.0f * (float)Math.cos(player.getHeadingRadians() - (3*Math.PI)/4);
+			offset.y = kDotSize/2.0f * (float)Math.sin(heading - (3*Math.PI)/4);
+			offset.x = kDotSize/2.0f * (float)Math.cos(heading - (3*Math.PI)/4);
 			path.lineTo((float)(center.x + offset.x), (float)(center.y + offset.y));				
 			//System.out.println("Third: " + offset);
 

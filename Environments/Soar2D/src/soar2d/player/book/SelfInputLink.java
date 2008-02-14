@@ -9,6 +9,8 @@ import sml.FloatElement;
 import sml.Identifier;
 import sml.IntElement;
 import sml.StringElement;
+import soar2d.Direction;
+import soar2d.Soar2D;
 import soar2d.map.CellObject;
 import soar2d.map.GridMap;
 import soar2d.player.Player;
@@ -16,38 +18,40 @@ import soar2d.world.PlayersManager;
 import soar2d.world.World;
 
 class SelfInputLink {
-	SoarRobot robot;
-	Identifier self;
-	Identifier angle;
-	FloatElement yaw;
-	IntElement area;
-	Identifier areaDescription;
-	ArrayList<BarrierInputLink> wallsIL = new ArrayList<BarrierInputLink>();
-	ArrayList<GatewayInputLink> gatewaysIL = new ArrayList<GatewayInputLink>();
-	private HashMap<Integer, ObjectInputLink> objectsIL = new HashMap<Integer, ObjectInputLink>();
-	private HashMap<Player, PlayerInputLink> playersIL = new HashMap<Player, PlayerInputLink>();
-	private HashSet<MessageInputLink> messagesIL = new HashSet<MessageInputLink>();
-	Identifier collision;
-	StringElement collisionX;
-	StringElement collisionY;
-	IntElement cycle;
-	IntElement score;
-	Identifier position;
-	FloatElement x;
-	FloatElement y;
-	IntElement row;
-	IntElement col;
-	FloatElement random;
-	FloatElement time;
-	Identifier velocity;
-	FloatElement speed;
-	FloatElement dx;
-	FloatElement dy;
-	FloatElement rotation;
-	Identifier carry;
-	StringElement carryType;
-	IntElement carryId;
-	
+	protected SoarRobot robot;
+	protected Identifier self;
+	protected Identifier angle;
+	protected FloatElement yaw;
+	protected IntElement area;
+	protected Identifier areaDescription;
+	protected ArrayList<BarrierInputLink> wallsIL = new ArrayList<BarrierInputLink>();
+	protected ArrayList<GatewayInputLink> gatewaysIL = new ArrayList<GatewayInputLink>();
+	protected HashMap<Integer, ObjectInputLink> objectsIL = new HashMap<Integer, ObjectInputLink>();
+	protected HashMap<Player, PlayerInputLink> playersIL = new HashMap<Player, PlayerInputLink>();
+	protected HashSet<MessageInputLink> messagesIL = new HashSet<MessageInputLink>();
+	protected Identifier collision;
+	protected StringElement collisionX;
+	protected StringElement collisionY;
+	protected IntElement cycle;
+	protected IntElement score;
+	protected Identifier position;
+	protected FloatElement x;
+	protected FloatElement y;
+	protected IntElement row;
+	protected IntElement col;
+	protected FloatElement random;
+	protected FloatElement time;
+	protected Identifier velocity;
+	protected FloatElement speed;
+	protected FloatElement dx;
+	protected FloatElement dy;
+	protected FloatElement rotation;
+	protected Identifier carry;
+	protected StringElement carryType;
+	protected IntElement carryId;
+	protected StringElement direction;
+	protected StringElement blocked;
+
 	SelfInputLink(SoarRobot robot) {
 		this.robot = robot;
 	}
@@ -62,30 +66,42 @@ class SelfInputLink {
 		angle = robot.agent.CreateIdWME(self, "angle");
 		{
 			yaw = robot.agent.CreateFloatWME(angle, "yaw", robot.getHeadingRadians());
+			if (Soar2D.bConfig.getContinuous() == false) {
+				direction = robot.agent.CreateStringWME(angle, "direction", Direction.stringOf[robot.getFacingInt()]);
+			}
+		}
+		if (Soar2D.bConfig.getContinuous() == false) {
+			blocked = robot.agent.CreateStringWME(self, "blocked", "false");
 		}
 		area = robot.agent.CreateIntWME(self, "area", -1);
-		collision = robot.agent.CreateIdWME(self, "collision");
-		{
-			collisionX = robot.agent.CreateStringWME(collision, "x", "false");
-			collisionY = robot.agent.CreateStringWME(collision, "y", "false");
+		if (Soar2D.bConfig.getContinuous()) {
+			collision = robot.agent.CreateIdWME(self, "collision");
+			{
+				collisionX = robot.agent.CreateStringWME(collision, "x", "false");
+				collisionY = robot.agent.CreateStringWME(collision, "y", "false");
+			}
 		}
 		cycle = robot.agent.CreateIntWME(self, "cycle", 0);
 		score = robot.agent.CreateIntWME(self, "score", 0);
 		position = robot.agent.CreateIdWME(self, "position");
 		{
-			x = robot.agent.CreateFloatWME(position, "x", 0);
-			y = robot.agent.CreateFloatWME(position, "y", 0);
+			if (Soar2D.bConfig.getContinuous()) {
+				x = robot.agent.CreateFloatWME(position, "x", 0);
+				y = robot.agent.CreateFloatWME(position, "y", 0);
+			}
 			row = robot.agent.CreateIntWME(position, "row", 0);
 			col = robot.agent.CreateIntWME(position, "col", 0);
 		}
 		random = robot.agent.CreateFloatWME(self, "random", robot.random);
 		time = robot.agent.CreateFloatWME(self, "time", 0);
-		velocity = robot.agent.CreateIdWME(self, "velocity");
-		{
-			speed = robot.agent.CreateFloatWME(velocity, "speed", 0);
-			dx = robot.agent.CreateFloatWME(velocity, "dx", 0);
-			dy = robot.agent.CreateFloatWME(velocity, "dy", 0);
-			rotation = robot.agent.CreateFloatWME(velocity, "rotation", 0);
+		if (Soar2D.bConfig.getContinuous()) {
+			velocity = robot.agent.CreateIdWME(self, "velocity");
+			{
+				speed = robot.agent.CreateFloatWME(velocity, "speed", 0);
+				dx = robot.agent.CreateFloatWME(velocity, "dx", 0);
+				dy = robot.agent.CreateFloatWME(velocity, "dy", 0);
+				rotation = robot.agent.CreateFloatWME(velocity, "rotation", 0);
+			}
 		}
 	}
 	
@@ -139,11 +155,13 @@ class SelfInputLink {
 			if (pIL.col.GetValue() != players.getLocation(player).x) {
 				robot.agent.Update(pIL.col, players.getLocation(player).x);
 			}
-			if (pIL.x.GetValue() != players.getFloatLocation(player).x) {
-				robot.agent.Update(pIL.x, players.getFloatLocation(player).x);
-			}
-			if (pIL.y.GetValue() != players.getFloatLocation(player).y) {
-				robot.agent.Update(pIL.y, players.getFloatLocation(player).y);
+			if (Soar2D.bConfig.getContinuous()) {
+				if (pIL.x.GetValue() != players.getFloatLocation(player).x) {
+					robot.agent.Update(pIL.x, players.getFloatLocation(player).x);
+				}
+				if (pIL.y.GetValue() != players.getFloatLocation(player).y) {
+					robot.agent.Update(pIL.y, players.getFloatLocation(player).y);
+				}
 			}
 			if (pIL.range.GetValue() != range) {
 				robot.agent.Update(pIL.range, range);
@@ -182,11 +200,13 @@ class SelfInputLink {
 			if (oIL.col.GetValue() != objectInfo.location.x) {
 				robot.agent.Update(oIL.col, objectInfo.location.x);
 			}
-			if (oIL.x.GetValue() != objectInfo.floatLocation.x) {
-				robot.agent.Update(oIL.x, objectInfo.location.x);
-			}
-			if (oIL.y.GetValue() != objectInfo.floatLocation.y) {
-				robot.agent.Update(oIL.y, objectInfo.location.y);
+			if (Soar2D.bConfig.getContinuous()) {
+				if (oIL.x.GetValue() != objectInfo.floatLocation.x) {
+					robot.agent.Update(oIL.x, objectInfo.location.x);
+				}
+				if (oIL.y.GetValue() != objectInfo.floatLocation.y) {
+					robot.agent.Update(oIL.y, objectInfo.location.y);
+				}
 			}
 			if (oIL.range.GetValue() != range) {
 				robot.agent.Update(oIL.range, range);

@@ -1,4 +1,4 @@
-101
+116
 SOAR_ID 0
 SOAR_ID 1
 SOAR_ID 2
@@ -100,7 +100,22 @@ FLOAT_RANGE 97 0.0 Infinity
 SOAR_ID 98
 SOAR_ID 99
 SOAR_ID 100
-101
+SOAR_ID 101
+SOAR_ID 102
+FLOAT_RANGE 103 -Infinity Infinity
+INTEGER_RANGE 104 -2147483648 2147483647
+SOAR_ID 105
+INTEGER_RANGE 106 -2147483648 2147483647
+INTEGER_RANGE 107 -2147483648 2147483647
+FLOAT_RANGE 108 -Infinity Infinity
+FLOAT_RANGE 109 -Infinity Infinity
+FLOAT_RANGE 110 -Infinity Infinity
+STRING 111
+SOAR_ID 112
+STRING 113
+STRING 114
+ENUMERATION 115 2 complete error
+116
 0 attribute 14
 0 choices 15
 0 impasse 16
@@ -114,7 +129,9 @@ SOAR_ID 100
 1 output-link 3
 2 area-description 24
 2 object 79
+2 player 101
 2 self 21
+3 communicate 112
 3 drop 92
 3 get 91
 3 move 6
@@ -202,3 +219,16 @@ SOAR_ID 100
 98 yaw 40
 99 yaw 36
 100 yaw 80
+101 angle-off 102
+101 area 104
+101 name 111
+101 position 105
+101 range 110
+102 yaw 103
+105 col 106
+105 row 107
+105 x 108
+105 y 109
+112 message 114
+112 status 115
+112 to 113
