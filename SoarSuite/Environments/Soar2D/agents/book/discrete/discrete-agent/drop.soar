@@ -1,0 +1,8 @@
+sp {discrete-agent*propose*drop
+   (state <s> ^name book
+              ^io.input-link.self.carry.id <id>)
+-->
+   (<s> ^operator <op> + =)
+   (<op> ^name drop
+         ^actions.drop.id <id>)
+}

@@ -1,4 +1,4 @@
-145
+146
 SOAR_ID 0
 SOAR_ID 1
 SOAR_ID 2
@@ -144,7 +144,8 @@ FLOAT_RANGE 141 0.0 Infinity
 SOAR_ID 142
 SOAR_ID 143
 SOAR_ID 144
-159
+ENUMERATION 145 1 true
+160
 0 attribute 19
 0 block-id 114
 0 choices 20
@@ -161,6 +162,7 @@ SOAR_ID 144
 1 input-link 2
 1 output-link 3
 2 area-description 29
+2 continuous 145
 2 object 98
 2 self 26
 3 move 6

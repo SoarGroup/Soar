@@ -62,6 +62,11 @@ public class Direction {
 	public final static String[] stringOf = new String[5];
 	
 	/**
+	 * Use to convert an int to a string direction
+	 */
+	public final static double[] radiansOf = new double[5];
+	
+	/**
 	 * Use to convert from direction int to indicator int
 	 */
 	public final static int[] indicators = new int[5];
@@ -110,6 +115,12 @@ public class Direction {
 		stringOf[kEastInt] = Names.kEast;
 		stringOf[kSouthInt] = Names.kSouth;
 		stringOf[kWestInt] = Names.kWest;
+		
+		radiansOf[0] = 0.0;					
+		radiansOf[kNorthInt] = 3 * Math.PI / 2;
+		radiansOf[kEastInt] = 0.0;
+		radiansOf[kSouthInt] = Math.PI / 2;
+		radiansOf[kWestInt] = Math.PI;
 		
 		backwardOf[0] = 0;					
 		backwardOf[kNorthInt] = kSouthInt;	// backward of north is south

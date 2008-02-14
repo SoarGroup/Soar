@@ -138,11 +138,13 @@ public class PlayersManager {
 		
 		// make target unit vector
 		double targetVectorLength = Math.sqrt(Math.pow(targetVector.x, 2) + Math.pow(targetVector.y, 2));
-		if (targetVectorLength <= 0) {
-			assert false;
+		if (targetVectorLength > 0) {
+			targetVector.x /= targetVectorLength;
+			targetVector.y /= targetVectorLength;
+		} else {
+			targetVector.x = 0;
+			targetVector.y = 0;
 		}
-		targetVector.x /= targetVectorLength;
-		targetVector.y /= targetVectorLength;
 		
 		// make player facing vector
 		playerVector.x = Math.cos(left.getHeadingRadians());
