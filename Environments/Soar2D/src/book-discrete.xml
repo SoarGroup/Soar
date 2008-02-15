@@ -2,9 +2,10 @@
   <general>
     <game>book</game>
     <map>maps/book/default.bmap</map>
-    <seed>0</seed>
+    <seed>1</seed>
     <rules>
-      <book />
+      <book >
+      	<continuous>false</continuous></book>
     </rules>
   </general>
   <logging>
@@ -14,12 +15,6 @@
   </logging>
   <players>
   <debuggers></debuggers>
-  <!-- 
-  <player>
-  	<name>dog</name></player>
-  <player>
-  	<name>mouse</name></player></players>
-  	 -->
   <terminals />
   <clients />
 </soar2d>
