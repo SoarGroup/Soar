@@ -490,126 +490,15 @@ const long convert_rl_learning( const char *val )
 /////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////
-// accumulation mode
-/////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-/***************************************************************************
- * Function     : validate_rl_accumulation
- **************************************************************************/
-bool validate_rl_accumulation( const long new_val )
-{
-	return ( ( new_val == RL_ACCUMULATION_SUM ) || ( new_val == RL_ACCUMULATION_AVG ) );
-}
-
-/***************************************************************************
- * Function     : convert_rl_accumulation
- **************************************************************************/
-const char *convert_rl_accumulation( const long val )
-{
-	const char *return_val = NULL;
-	
-	switch ( val )
-	{
-		case RL_ACCUMULATION_SUM:
-			return_val = "sum";
-			break;
-			
-		case RL_ACCUMULATION_AVG:
-			return_val = "avg";
-			break;
-	}
-	
-	return return_val;
-}
-
-const long convert_rl_accumulation( const char *val )
-{
-	long return_val = NULL;
-	
-	if ( !strcmp( val, "sum" ) )
-		return_val = RL_ACCUMULATION_SUM;
-	else if ( !strcmp( val, "avg" ) )
-		return_val = RL_ACCUMULATION_AVG;
-	
-	return return_val;
-}
-
-/////////////////////////////////////////////////////////////////////////////////////////////////////////
-/////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-/////////////////////////////////////////////////////////////////////////////////////////////////////////
-// discount mode
+// discount rate
 /////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 /***************************************************************************
  * Function     : validate_rl_discount
  **************************************************************************/
-bool validate_rl_discount( const long new_val )
-{
-	return ( ( new_val == RL_DISCOUNT_EXPONENTIAL ) || ( new_val == RL_DISCOUNT_LINEAR ) );
-}
-
-/***************************************************************************
- * Function     : convert_rl_discount
- **************************************************************************/
-const char *convert_rl_discount( const long val )
-{
-	const char *return_val = NULL;
-	
-	switch ( val )
-	{
-		case RL_DISCOUNT_EXPONENTIAL:
-			return_val = "exponential";
-			break;
-			
-		case RL_DISCOUNT_LINEAR:
-			return_val = "linear";
-			break;
-	}
-	
-	return return_val;
-}
-
-const long convert_rl_discount( const char *val )
-{
-	long return_val = NULL;
-	
-	if ( !strcmp( val, "exponential" ) )
-		return_val = RL_DISCOUNT_EXPONENTIAL;
-	else if ( !strcmp( val, "linear" ) )
-		return_val = RL_DISCOUNT_LINEAR;
-	
-	return return_val;
-}
-
-/////////////////////////////////////////////////////////////////////////////////////////////////////////
-/////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-/////////////////////////////////////////////////////////////////////////////////////////////////////////
-// exponential discount rate
-/////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-/***************************************************************************
- * Function     : validate_rl_exp_discount
- **************************************************************************/
-bool validate_rl_exp_discount( const double new_val )
+bool validate_rl_discount( const double new_val )
 {
 	return ( ( new_val >= 0 ) && ( new_val <= 1 ) );
-}
-
-/////////////////////////////////////////////////////////////////////////////////////////////////////////
-/////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-/////////////////////////////////////////////////////////////////////////////////////////////////////////
-// linear discount rate
-/////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-/***************************************************************************
- * Function     : validate_rl_lin_discount
- **************************************************************************/
-bool validate_rl_lin_discount( const double new_val )
-{
-	return ( new_val >= 0 );
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -673,21 +562,6 @@ const long convert_rl_learning_policy( const char *val )
 		return_val = RL_LEARNING_Q;
 	
 	return return_val;
-}
-
-/////////////////////////////////////////////////////////////////////////////////////////////////////////
-/////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-/////////////////////////////////////////////////////////////////////////////////////////////////////////
-// eligibility trace discount rate
-/////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-/***************************************************************************
- * Function     : validate_rl_trace_discount
- **************************************************************************/
-bool validate_rl_trace_discount( const double new_val )
-{
-	return ( ( new_val >= 0 ) && ( new_val <= 1 ) );
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -1166,10 +1040,6 @@ void tabulate_reward_value_for_goal( agent *my_agent, Symbol *goal )
 								reward = reward + get_number_from_symbol( x->value );
 								reward_count++;
 							}
-		
-		if ( reward_count && ( get_rl_parameter( my_agent, RL_PARAM_ACCUMULATION_MODE, RL_RETURN_LONG ) == RL_ACCUMULATION_AVG ) )
-			reward = ( reward / ( (double) reward_count ) );
-
 		data->reward += discount_reward( my_agent, reward, data->step );
 	}
 
@@ -1200,32 +1070,9 @@ void tabulate_reward_values( agent *my_agent )
  **************************************************************************/
 double discount_reward( agent *my_agent, double reward, unsigned int step )
 {
-	double return_val = 0;
-	const long mode = get_rl_parameter( my_agent, RL_PARAM_DISCOUNT_MODE, RL_RETURN_LONG );
-	double rate;
+	double rate = get_rl_parameter( my_agent, RL_PARAM_DISCOUNT_RATE );
 
-	if ( mode == RL_DISCOUNT_EXPONENTIAL )
-	{
-		rate = get_rl_parameter( my_agent, RL_PARAM_EXP_DISCOUNT_RATE );
-		
-		return_val = ( reward * pow( rate, (double) step ) );
-	}
-	else if ( mode == RL_DISCOUNT_LINEAR )
-	{
-		rate = get_rl_parameter( my_agent, RL_PARAM_LIN_DISCOUNT_RATE );
-		double stepped_rate = ( rate * (double) step );
-
-		if ( reward > 0 )
-		{
-			return_val = ( ( reward > stepped_rate )?( reward - stepped_rate ):( 0 ) );
-		}
-		else if ( reward < 0 )
-		{
-			return_val = ( ( fabs( reward ) > stepped_rate )?( reward + stepped_rate ):( 0 ) );
-		}
-	}
-
-	return return_val;
+	return ( reward * pow( rate, (double) step ) );
 }
 
 /***************************************************************************
@@ -1310,12 +1157,11 @@ void perform_rl_update( agent *my_agent, double op_value, Symbol *goal )
 	rl_data *data = goal->id.rl_info;
 	soar_rl_et_map::iterator iter;
 
-	const long accumulation = get_rl_parameter( my_agent, RL_PARAM_ACCUMULATION_MODE, RL_RETURN_LONG );
 	bool using_gaps = ( get_rl_parameter( my_agent, RL_PARAM_TEMPORAL_EXTENSION, RL_RETURN_LONG ) == RL_TE_ON );
 
 	double alpha = get_rl_parameter( my_agent, RL_PARAM_LEARNING_RATE );
 	double lambda = get_rl_parameter( my_agent, RL_PARAM_ET_DECAY_RATE );
-	double gamma = get_rl_parameter( my_agent, RL_PARAM_ET_DISCOUNT_RATE );
+	double gamma = get_rl_parameter( my_agent, RL_PARAM_DISCOUNT_RATE );
 	double tolerance = get_rl_parameter( my_agent, RL_PARAM_ET_TOLERANCE );
 
 	// compute TD update, set stat
@@ -1350,10 +1196,7 @@ void perform_rl_update( agent *my_agent, double op_value, Symbol *goal )
 	// Update trace for just fired prods
 	if ( data->num_prev_op_rl_rules )
 	{
-		double trace_increment = 1.0;
-
-		if ( accumulation == RL_ACCUMULATION_SUM )
-			trace_increment /= data->num_prev_op_rl_rules;
+		double trace_increment = ( 1.0 / data->num_prev_op_rl_rules );
 		
 		for ( cons *c = data->prev_op_rl_rules; c; c = c->rest )
 		{
@@ -1377,9 +1220,7 @@ void perform_rl_update( agent *my_agent, double op_value, Symbol *goal )
 		// update is applied depending upon type of accumulation mode
 		// sum: add the update to the existing value
 		// avg: average the update with the existing value
-		temp += ( update * alpha * iter->second );
-		if ( accumulation == RL_ACCUMULATION_AVG )
-			temp /= 2.0;
+		temp += ( update * alpha * iter->second );		
 
 		// Change value of rule
 		symbol_remove_ref( my_agent, rhs_value_to_symbol( prod->action_list->referent ) );
