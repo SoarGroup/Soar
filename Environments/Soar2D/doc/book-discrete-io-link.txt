@@ -1,12 +1,14 @@
-full implementation:
---------------------
 ^input-link
 	^continuous false
 	^self
 		^angle 
 			^yaw <float> direction I am facing
 			^facing [north south east west] direction I am facing
-		^blocked [false true] the square in front of me is blocked
+		^blocked the cell is blocked
+			^forward [false true] 
+			^backward [false true]
+			^left [false true]
+			^right [false true]
 		^area <int> unique id number for the area I am in
 		^cycle <int> world update count
 		^score <int> my score

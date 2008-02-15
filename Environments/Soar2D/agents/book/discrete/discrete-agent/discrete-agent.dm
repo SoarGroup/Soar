@@ -1,4 +1,4 @@
-112
+116
 SOAR_ID 0
 SOAR_ID 1
 SOAR_ID 2
@@ -111,7 +111,11 @@ SOAR_ID 108
 SOAR_ID 109
 ENUMERATION 110 2 rotate-left rotate-right
 SOAR_ID 111
-116
+SOAR_ID 112
+ENUMERATION 113 2 false true
+ENUMERATION 114 2 false true
+ENUMERATION 115 2 false true
+120
 0 attribute 14
 0 choices 15
 0 impasse 16
@@ -149,7 +153,7 @@ SOAR_ID 111
 18 random 20
 21 angle 22
 21 area 55
-21 blocked 102
+21 blocked 112
 21 carry 57
 21 cycle 47
 21 position 49
@@ -228,3 +232,7 @@ SOAR_ID 111
 109 actions 111
 109 name 110
 111 rotate 8
+112 backward 113
+112 forward 115
+112 left 114
+112 right 102
