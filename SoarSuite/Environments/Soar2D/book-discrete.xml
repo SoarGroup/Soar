@@ -2,7 +2,7 @@
   <general>
     <game>book</game>
     <map>maps/book/default.bmap</map>
-    <seed>0</seed>
+    <seed>1</seed>
     <rules>
       <book >
       	<continuous>false</continuous></book>
@@ -16,10 +16,7 @@
   <players>
   <debuggers></debuggers>
   <player>
-  	<productions>agents/book/discrete/discrete-agent.soar</productions>
-  	<x>21</x>
-  	<y>10</y>
-  	<color>red</color></player></players>
+  	<productions>agents/book/discrete/discrete-agent.soar</productions></player></players>
   <terminals />
   <clients />
 </soar2d>

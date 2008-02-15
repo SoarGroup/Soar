@@ -45,6 +45,7 @@ public class Soar2D {
 	public static final String kDefaultXMLEatersConsoleSettingsFile = "eaters-console.xml";
 	public static final String kDefaultXMLTankSoarConsoleSettingsFile = "tanksoar-console.xml";
 	public static final String kDefaultXMLBookSettingsFile = "book.xml";
+	public static final String kDefaultXMLBookDiscreteSettingsFile = "book-discrete.xml";
 	public static final String kDefaultXMLTaxiSettingsFile = "taxi.xml";
 
 	public static final Logger logger = Logger.getLogger("soar2d");
@@ -106,6 +107,14 @@ public class Soar2D {
 		} catch (IOException e) {
 			wm.initialize();
 			control.severeError("IOException installing " + kDefaultXMLBookSettingsFile + ": " + e.getMessage());
+			wm.shutdown();
+			System.exit(1);
+		}
+		try {
+			install(kDefaultXMLBookDiscreteSettingsFile);
+		} catch (IOException e) {
+			wm.initialize();
+			control.severeError("IOException installing " + kDefaultXMLBookDiscreteSettingsFile + ": " + e.getMessage());
 			wm.shutdown();
 			System.exit(1);
 		}
