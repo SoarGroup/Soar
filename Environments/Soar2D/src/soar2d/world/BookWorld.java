@@ -454,8 +454,7 @@ public class BookWorld implements IWorld {
 	public double fmod(double a, double mod) {
 		double result = a;
 		assert mod > 0;
-		while (Math.abs(result) > mod) {
-			assert mod > 0;
+		while (Math.abs(result) >= mod) {
 			if (result > 0) {
 				result -= mod;
 			} else {
