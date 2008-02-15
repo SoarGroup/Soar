@@ -9,7 +9,7 @@ VERSION 4
 6	4	FOPERATOR monitor monitor.soar 7
 7	4	FOPERATOR output output.soar 8
 8	4	FOPERATOR top-state top-state.soar 9
-9	0	OPERATOR drop drop.soar 13
-10	0	OPERATOR get get.soar 12
-11	0	OPERATOR move move.soar 10
+9	0	OPERATOR drop drop.soar 10
+10	0	OPERATOR get get.soar 11
+11	0	OPERATOR move move.soar 12
 END

@@ -1,7 +1,7 @@
 sp {discrete-agent*propose*move*forward
    (state <s> ^name book
               ^io.input-link.self.position <p>
-             -^io.input-link.self.blocked true)
+             -^io.input-link.self.blocked.forward true)
    (<p> ^col <c>
         ^row <r>)
 -->

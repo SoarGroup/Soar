@@ -50,7 +50,10 @@ class SelfInputLink {
 	protected StringElement carryType;
 	protected IntElement carryId;
 	protected StringElement direction;
-	protected StringElement blocked;
+	protected StringElement blockedForward;
+	protected StringElement blockedBackward;
+	protected StringElement blockedLeft;
+	protected StringElement blockedRight;
 
 	SelfInputLink(SoarRobot robot) {
 		this.robot = robot;
@@ -71,7 +74,11 @@ class SelfInputLink {
 			}
 		}
 		if (Soar2D.bConfig.getContinuous() == false) {
-			blocked = robot.agent.CreateStringWME(self, "blocked", "false");
+			Identifier blocked = robot.agent.CreateIdWME(self, "blocked");
+			blockedForward = robot.agent.CreateStringWME(blocked, "forward", "false");
+			blockedBackward = robot.agent.CreateStringWME(blocked, "backward", "false");
+			blockedLeft = robot.agent.CreateStringWME(blocked, "left", "false");
+			blockedRight = robot.agent.CreateStringWME(blocked, "right", "false");
 		}
 		area = robot.agent.CreateIntWME(self, "area", -1);
 		if (Soar2D.bConfig.getContinuous()) {

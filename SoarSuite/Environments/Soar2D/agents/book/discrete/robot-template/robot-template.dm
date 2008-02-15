@@ -1,4 +1,4 @@
-100
+104
 SOAR_ID 0
 SOAR_ID 1
 SOAR_ID 2
@@ -98,8 +98,12 @@ SOAR_ID 95
 STRING 96
 STRING 97
 INTEGER_RANGE 98 0 2147483647
-ENUMERATION 99 2 false true
-100
+SOAR_ID 99
+ENUMERATION 100 2 false true
+ENUMERATION 101 2 false true
+ENUMERATION 102 2 false true
+ENUMERATION 103 2 false true
+104
 0 attribute 14
 0 choices 15
 0 impasse 16
@@ -200,3 +204,7 @@ ENUMERATION 99 2 false true
 95 cycle 98
 95 from 96
 95 message 97
+99 backward 103
+99 forward 100
+99 left 102
+99 right 101
