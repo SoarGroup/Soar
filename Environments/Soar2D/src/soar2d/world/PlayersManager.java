@@ -7,6 +7,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.ListIterator;
 
+import soar2d.Soar2D;
 import soar2d.player.MoveInfo;
 import soar2d.player.Player;
 
@@ -127,7 +128,13 @@ public class PlayersManager {
 		Point2D.Double playerVector = new Point2D.Double();
 		playerVector.x = floatLocations.get(left).x;
 		playerVector.y = floatLocations.get(left).y;
-		
+
+		if (Soar2D.bConfig.getContinuous() == false) {
+			// translate the player's location back a little bit to increase peripheral vision
+			playerVector.x -= Math.cos(left.getHeadingRadians());
+			playerVector.y -= Math.sin(left.getHeadingRadians());
+		}
+			
 		Point2D.Double targetVector = new Point2D.Double();
 		targetVector.x = target.x;
 		targetVector.y = target.y;

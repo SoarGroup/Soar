@@ -18,7 +18,8 @@
   <player>
   	<productions>agents/book/discrete/discrete-agent.soar</productions>
   	<x>21</x>
-  	<y>10</y></player></players>
+  	<y>10</y>
+  	<color>red</color></player></players>
   <terminals />
   <clients />
 </soar2d>
