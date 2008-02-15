@@ -13,8 +13,7 @@
     <file>soar2d.log</file>
     <console />
   </logging>
-  <players></players>
-  <debuggers></debuggers>
+  <players><debuggers></debuggers></players>
   <terminals />
   <clients />
 </soar2d>
