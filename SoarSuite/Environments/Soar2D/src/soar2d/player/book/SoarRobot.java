@@ -415,8 +415,9 @@ public class SoarRobot extends Robot {
 					commandId.AddStatusError();
 					continue;
 				}
+				if (oIL.row.GetValue() != selfIL.row.GetValue() || oIL.col.GetValue() != selfIL.col.GetValue())
 				if (oIL.range.GetValue() > Soar2D.bConfig.getBookCellSize()) {
-					logger.warning(getName() + " get command object out of range");
+					logger.warning(getName() + " get command object not in same cell");
 					commandId.AddStatusError();
 					continue;
 				}
