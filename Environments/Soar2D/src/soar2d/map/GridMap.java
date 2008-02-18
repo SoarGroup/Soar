@@ -1089,6 +1089,11 @@ public abstract class GridMap {
 		return blocked;
 	}
 	
+	public boolean isBlocked(Point location) {
+		Cell cell = getCell(location);
+		return !cell.enterable() || cell.getPlayer() != null;
+	}
+	
 	public int getSoundNear(java.awt.Point location) {
 		if (Soar2D.simulation.world.getPlayers().numberOfPlayers() < 2) {
 			return 0;

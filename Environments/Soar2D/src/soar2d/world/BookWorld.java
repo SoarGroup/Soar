@@ -10,6 +10,7 @@ import java.util.logging.Level;
 
 import soar2d.Names;
 import soar2d.Soar2D;
+import soar2d.Direction;
 import soar2d.configuration.Configuration;
 import soar2d.map.BookMap;
 import soar2d.map.CellObject;
@@ -26,11 +27,141 @@ public class BookWorld implements IWorld {
 		}
 		return true;
 	}
-
-	public boolean update(GridMap _map, PlayersManager players) {
-		BookMap map = (BookMap)_map;
-		final double time = Soar2D.control.getTimeSlice();
+	
+	private boolean updateDiscrete(BookMap map, PlayersManager players, double time) {
 		
+		Iterator<Player> iter = players.iterator();
+		while (iter.hasNext()) {
+			Player player = iter.next();
+			
+			assert player.getRotationSpeed() == 0;
+			assert player.getSpeed() == 0;
+			assert player.getVelocity().x == 0.0;
+			
+			MoveInfo move = players.getMove(player);
+			
+			Soar2D.logger.finer("Processing move: " + player.getName());
+			
+			// rotate
+			if (move.rotate) {
+				int facing = player.getFacingInt();
+				double heading = player.getHeadingRadians();
+				if (move.rotateDirection.equals(Names.kRotateLeft)) {
+					Soar2D.logger.finer("Rotate: left");
+					player.setFacingInt(Direction.leftOf[facing]);
+					heading -= Math.PI / 2;
+				} 
+				else if (move.rotateDirection.equals(Names.kRotateRight)) {
+					Soar2D.logger.finer("Rotate: right");
+					player.setFacingInt(Direction.rightOf[facing]);
+					heading += Math.PI / 2;
+				} 
+				else {
+					Soar2D.logger.warning("Rotate: invalid direction");
+					move.rotate = false;
+				}
+				
+				// update heading if we rotate
+				if (move.rotate) {
+					if (heading < 0) {
+						Soar2D.logger.finest("Correcting computed negative heading");
+						heading += 2 * Math.PI;
+					} 
+
+					heading = fmod(heading, 2 * Math.PI);
+					Soar2D.logger.finer("Rotating, computed heading: " + heading);
+					player.setHeadingRadians(heading);
+				}
+			} 
+
+			// translate
+			if (move.forward || move.backward) {
+				Point oldLocation = players.getLocation(player);
+				Point newLocation = new Point(oldLocation);
+
+				if (move.forward && move.backward) {
+					Soar2D.logger.warning("Move: both forward and backward indicated, ignoring");
+				} 
+				else if (move.forward) {
+					Soar2D.logger.finer("Move: forward");
+					Direction.translate(newLocation, player.getFacingInt());
+				}
+				else if (move.backward) {
+					Soar2D.logger.finer("Move: backward");
+					Direction.translate(newLocation, Direction.backwardOf[player.getFacingInt()]);
+				}
+				
+				if (checkBlocked(newLocation, map)) {
+					Soar2D.logger.info("Move: collision (blocked)");
+				} else {
+					map.setPlayer(oldLocation, null);
+					players.setLocation(player, newLocation);
+					player.setLocationId(map.getLocationId(newLocation));
+					map.setPlayer(newLocation, player);
+					
+					players.setFloatLocation(player, defaultFloatLocation(newLocation));
+				}
+			}
+
+			if (move.get) {
+				get(map, move, player);
+			}
+			
+			if (move.drop) {
+				assert Soar2D.bConfig.getBlocksBlock() == false;
+				
+				Soar2D.logger.finer("Move: drop");
+				
+				// FIXME: store drop info for processing later
+				map.addObjectToCell(players.getLocation(player), player.drop());
+			}
+			
+			handleCommunication(move, player, players);
+		}
+		
+		handleBookCollisions(players, map, findCollisions(players));
+		
+		updatePlayers(false, map, players);
+		
+		// do not reset after update
+		return false;
+	}
+
+	private void handleCommunication(MoveInfo move, Player player, PlayersManager players) {
+		// handle communication
+		Iterator<MoveInfo.Communication> commIter = move.messages.iterator();
+		while (commIter.hasNext()) {
+			MoveInfo.Communication comm = commIter.next();
+			Player toPlayer = players.get(comm.to);
+			if (toPlayer == null) {
+				Soar2D.logger.warning("Move: communicate: unknown player: " + comm.to);
+				continue;
+			}
+			
+			toPlayer.receiveMessage(player, comm.message);
+		}
+	}
+
+	private void get(BookMap map, MoveInfo move, Player player) {
+		Soar2D.logger.finer("Move: get, location " + move.getLocation.x + "," + move.getLocation.y);
+		CellObject block = map.getObject(move.getLocation, "mblock");
+		if (block == null || player.isCarrying()) {
+			if (block == null) {
+				Soar2D.logger.warning("get command failed, no object");
+			} else {
+				Soar2D.logger.warning("get command failed, full");
+			}
+			move.get = false;
+			player.updateGetStatus(false);
+		} else {
+			// FIXME: store get info for processing later
+			player.carry(map.getAllWithProperty(move.getLocation, "mblock").get(0));
+			map.removeObject(move.getLocation, "mblock");
+			player.updateGetStatus(true);
+		}
+	}
+
+	private boolean updateContinuous(BookMap map, PlayersManager players, double time) {
 		Iterator<Player> iter = players.iterator();
 		while (iter.hasNext()) {
 			Player player = iter.next();
@@ -149,28 +280,13 @@ public class BookWorld implements IWorld {
 
 			// if we have velocity, process move
 			if (player.getSpeed() != 0) {
-				bookMovePlayer(player, map, players, time);
+				bookMovePlayerContinuous(player, map, players, time);
 			} else {
 				player.setVelocity(new Point2D.Double(0,0));
 			}
 			
 			if (move.get) {
-				Soar2D.logger.finer("Move: get, location " + move.getLocation.x + "," + move.getLocation.y);
-				CellObject block = map.getObject(move.getLocation, "mblock");
-				if (block == null || player.isCarrying()) {
-					if (block == null) {
-						Soar2D.logger.warning("get command failed, no object");
-					} else {
-						Soar2D.logger.warning("get command failed, full");
-					}
-					move.get = false;
-					player.updateGetStatus(false);
-				} else {
-					// FIXME: store get info for processing later
-					player.carry(map.getAllWithProperty(move.getLocation, "mblock").get(0));
-					map.removeObject(move.getLocation, "mblock");
-					player.updateGetStatus(true);
-				}
+				get(map, move, player);
 			}
 			
 			if (move.drop) {
@@ -199,18 +315,7 @@ public class BookWorld implements IWorld {
 				}
 			}
 			
-			// handle communication
-			Iterator<MoveInfo.Communication> commIter = move.messages.iterator();
-			while (commIter.hasNext()) {
-				MoveInfo.Communication comm = commIter.next();
-				Player toPlayer = players.get(comm.to);
-				if (toPlayer == null) {
-					Soar2D.logger.warning("Move: communicate: unknown player: " + comm.to);
-					continue;
-				}
-				
-				toPlayer.receiveMessage(player, comm.message);
-			}
+			handleCommunication(move, player, players);
 		}
 		
 		handleBookCollisions(players, map, findCollisions(players));
@@ -219,6 +324,13 @@ public class BookWorld implements IWorld {
 		
 		// do not reset after update
 		return false;
+	}
+
+	public boolean update(GridMap _map, PlayersManager players) {
+		double time = Soar2D.control.getTimeSlice();
+		if (Soar2D.bConfig.getContinuous())
+			return updateContinuous((BookMap)_map, players, time);
+		return updateDiscrete((BookMap)_map, players, time);
 	}
 	
 	private ArrayList<ArrayList<Player>> findCollisions(PlayersManager players) {
@@ -342,8 +454,7 @@ public class BookWorld implements IWorld {
 	public double fmod(double a, double mod) {
 		double result = a;
 		assert mod > 0;
-		while (Math.abs(result) > mod) {
-			assert mod > 0;
+		while (Math.abs(result) >= mod) {
 			if (result > 0) {
 				result -= mod;
 			} else {
@@ -353,7 +464,7 @@ public class BookWorld implements IWorld {
 		return result;
 	}
 	
-	private void bookMovePlayer(Player player, BookMap map, PlayersManager players, double time) {
+	private void bookMovePlayerContinuous(Player player, BookMap map, PlayersManager players, double time) {
 		final int cellSize = Soar2D.bConfig.getBookCellSize();
 		
 		Point oldLocation = players.getLocation(player);

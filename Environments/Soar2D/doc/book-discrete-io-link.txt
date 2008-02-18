@@ -1,0 +1,91 @@
+^input-link
+	^continuous false
+	^self
+		^angle 
+			^yaw <float> direction I am facing
+			^facing [north south east west] direction I am facing
+		^blocked the cell is blocked
+			^forward [false true] 
+			^backward [false true]
+			^left [false true]
+			^right [false true]
+		^area <int> unique id number for the area I am in
+		^cycle <int> world update count
+		^score <int> my score
+		^position
+			^row <int> what row I'm in
+			^col <int> what column I'm in
+		^random <float> [0..1) random number
+		^time <float> seconds since simulation started
+		^carry
+			^type <string> [block ramp]
+			^id <int>
+	^area-description details for the area I am in
+		+^wall one for each wall segment
+			^id <int> unique identification number of segment
+			^left location of one end
+				^row <int> 
+				^col <int>
+			^right location of other end
+				^row <int>
+				^col <int>
+			^center
+				^angle-off 
+					^yaw <float> angle to center of wall
+			^direction [north south east west] direction to turn to face the wall
+		*^gateway one for each gateway segment
+			^id <int> unique identification number of segment
+			^left location of one end
+				^row <int>
+				^col <int>
+			^right location of other end
+				^row <int>
+				^col <int>
+			^center
+				^angle-off 
+					^yaw <float> angle to center of gateway
+				^range <float> distance to center of gateway
+			^direction [north south east west] direction to turn to face the gateway
+			+^to <int> id of room this gateway leads to
+	+^object
+		^angle-off 
+			^yaw <float> relative to direction I'm facing
+		^area <int> unique id number
+		^id <int> object id number (separate from area/wall ids)
+		^type <string> [block ramp cat dog gateway]
+		^position
+			^row <int> current row
+			^col <int> current row
+		^range <float>
+		^visible <string> [yes no] objects stay on input link for 2 cycles after they disappear
+	+^player
+		^angle-off 
+			^yaw <float> relative to direction I'm facing
+		^area <int> unique id number
+		^name <string> name of the robot (used in messaging)
+		^position
+			^row <int> current row
+			^col <int> current row
+		^range <float>
+	+^message
+		^from <string> who sent it
+		^message <string> the message
+		^cycle <int> when it was received (survives for 3 cycles)
+^output-link
+	^move
+		^direction [forward backward] one square
+		^status [complete error]
+	^rotate
+		^direction [left right] direction to turn, 90 degrees
+		^status [complete error]
+	^get
+		^id <int>
+		^status [complete error]
+	^drop
+		^id <int>
+		^status [complete error]
+	^communicate
+		^to <string> name of player to send message to
+		^message <string> the message
+		^status [complete error]
+		

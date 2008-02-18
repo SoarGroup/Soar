@@ -14,6 +14,8 @@
 0 potentially movable objects
 
 0 
+0 
+0 
 0 drop something
 
 0 pick up something
@@ -165,5 +167,21 @@
 
 0 
 0 radians, positive is right turn
+
 0 radians, positive is right turn
+
 0 radians, positive is right turn
+
+0 
+0 
+0 
+0 
+0 
+0 
+0 
+0 
+0 
+0 
+0 
+0 
+0 

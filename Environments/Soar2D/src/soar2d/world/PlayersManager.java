@@ -7,6 +7,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.ListIterator;
 
+import soar2d.Soar2D;
 import soar2d.player.MoveInfo;
 import soar2d.player.Player;
 
@@ -127,7 +128,13 @@ public class PlayersManager {
 		Point2D.Double playerVector = new Point2D.Double();
 		playerVector.x = floatLocations.get(left).x;
 		playerVector.y = floatLocations.get(left).y;
-		
+
+		if (Soar2D.bConfig.getContinuous() == false) {
+			// translate the player's location back a little bit to increase peripheral vision
+			playerVector.x -= Math.cos(left.getHeadingRadians());
+			playerVector.y -= Math.sin(left.getHeadingRadians());
+		}
+			
 		Point2D.Double targetVector = new Point2D.Double();
 		targetVector.x = target.x;
 		targetVector.y = target.y;
@@ -138,11 +145,13 @@ public class PlayersManager {
 		
 		// make target unit vector
 		double targetVectorLength = Math.sqrt(Math.pow(targetVector.x, 2) + Math.pow(targetVector.y, 2));
-		if (targetVectorLength <= 0) {
-			assert false;
+		if (targetVectorLength > 0) {
+			targetVector.x /= targetVectorLength;
+			targetVector.y /= targetVectorLength;
+		} else {
+			targetVector.x = 0;
+			targetVector.y = 0;
 		}
-		targetVector.x /= targetVectorLength;
-		targetVector.y /= targetVectorLength;
 		
 		// make player facing vector
 		playerVector.x = Math.cos(left.getHeadingRadians());

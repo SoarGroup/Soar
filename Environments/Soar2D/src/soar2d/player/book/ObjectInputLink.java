@@ -4,6 +4,7 @@ import sml.FloatElement;
 import sml.Identifier;
 import sml.IntElement;
 import sml.StringElement;
+import soar2d.Soar2D;
 import soar2d.map.GridMap;
 import soar2d.world.World;
 
@@ -39,8 +40,10 @@ class ObjectInputLink {
 		{
 			this.col = robot.agent.CreateIntWME(position, "col", info.location.x);
 			this.row = robot.agent.CreateIntWME(position, "row", info.location.y);
-			this.x = robot.agent.CreateFloatWME(position, "x", info.floatLocation.x);
-			this.y = robot.agent.CreateFloatWME(position, "y", info.floatLocation.y);
+			if (Soar2D.bConfig.getContinuous()) {
+				this.x = robot.agent.CreateFloatWME(position, "x", info.floatLocation.x);
+				this.y = robot.agent.CreateFloatWME(position, "y", info.floatLocation.y);
+			}
 		}
 		this.range = robot.agent.CreateFloatWME(parent, "range", range);
 		this.visible = robot.agent.CreateStringWME(parent, "visible", "yes");
