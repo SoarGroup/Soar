@@ -160,8 +160,8 @@ int main() {
 		cout << endl << "watch 0 learning on" << endl;
 		stTest1_learnon.PrintResults();
 
-		//cout << endl << endl << "Press enter to exit.";
-		//cin.get();
+		cout << endl << endl << "Press enter to exit.";
+		cin.get();
 
 	} // end local scope
 

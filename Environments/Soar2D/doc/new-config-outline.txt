@@ -76,6 +76,8 @@
 					float radians per sec default: pi / 4
 				?<blocks-block>
 					boolean if the blocks should block movement or not
+				?<continuous>
+					boolean use continuous behavior, true by default
 			?<taxi>
 				?<disable-fuel> ignore fuel
 				?<fuel-starting-minimum>

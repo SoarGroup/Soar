@@ -40,7 +40,7 @@ bool CommandLineInterface::ParseWatch(gSKI::Agent* pAgent, std::vector<std::stri
 		{'r',"preferences",				2},
 		{'R',"rl",						2},
 		{'t',"timetags",				0},
-		{'T',"templates",				2},
+		{'T',"template",				2},
 		{'u',"user-productions",		2},
 		{'w',"wmes",					2},
 		{0, 0, 0}

@@ -178,20 +178,13 @@ bool CommandLineInterface::DoRL( gSKI::Agent* pAgent, const char pOp, const std:
 		temp = "temporal-extension: ";
 		temp += get_rl_parameter( my_agent, RL_PARAM_TEMPORAL_EXTENSION, RL_RETURN_STRING );
 		if ( m_RawOutput )
-			m_Result << temp << "\n";
-		else
-			AppendArgTagFast( sml_Names::kParamValue, sml_Names::kTypeString, temp.c_str() );
-		
-		temp = "accumulation-mode: ";
-		temp += get_rl_parameter( my_agent, RL_PARAM_ACCUMULATION_MODE, RL_RETURN_STRING );
-		if ( m_RawOutput )
 			m_Result << temp << "\n\n";
 		else
 		{
 			AppendArgTagFast( sml_Names::kParamValue, sml_Names::kTypeString, temp.c_str() );
 			AppendArgTagFast( sml_Names::kParamValue, sml_Names::kTypeString, "" );
 		}
-		
+						
 		temp = "Discount";
 		if ( m_RawOutput )
 			m_Result << temp << "\n";
@@ -202,26 +195,9 @@ bool CommandLineInterface::DoRL( gSKI::Agent* pAgent, const char pOp, const std:
 			m_Result << temp << "\n";
 		else
 			AppendArgTagFast( sml_Names::kParamValue, sml_Names::kTypeString, temp.c_str() );
-		
-		temp = "discount-mode: ";
-		temp += get_rl_parameter( my_agent, RL_PARAM_DISCOUNT_MODE, RL_RETURN_STRING );
-		if ( m_RawOutput )
-			m_Result << temp << "\n";
-		else
-			AppendArgTagFast( sml_Names::kParamValue, sml_Names::kTypeString, temp.c_str() );
-		
-		temp = "exponential-discount-rate: ";
-		temp_val = get_rl_parameter( my_agent, RL_PARAM_EXP_DISCOUNT_RATE );
-		temp2 = to_string( temp_val );
-		temp += (*temp2);
-		delete temp2;
-		if ( m_RawOutput )
-			m_Result << temp << "\n";
-		else
-			AppendArgTagFast( sml_Names::kParamValue, sml_Names::kTypeString, temp.c_str() );
-		
-		temp = "linear-discount-rate: ";
-		temp_val = get_rl_parameter( my_agent, RL_PARAM_LIN_DISCOUNT_RATE );
+						
+		temp = "discount-rate: ";
+		temp_val = get_rl_parameter( my_agent, RL_PARAM_DISCOUNT_RATE );
 		temp2 = to_string( temp_val );
 		temp += (*temp2);
 		delete temp2;
@@ -233,6 +209,7 @@ bool CommandLineInterface::DoRL( gSKI::Agent* pAgent, const char pOp, const std:
 			AppendArgTagFast( sml_Names::kParamValue, sml_Names::kTypeString, "" );
 		}
 		
+				
 		temp = "Learning";
 		if ( m_RawOutput )
 			m_Result << temp << "\n";
@@ -274,17 +251,7 @@ bool CommandLineInterface::DoRL( gSKI::Agent* pAgent, const char pOp, const std:
 			m_Result << temp << "\n";
 		else
 			AppendArgTagFast( sml_Names::kParamValue, sml_Names::kTypeString, temp.c_str() );
-
-		temp = "eligibility-trace-discount-rate: ";
-		temp_val = get_rl_parameter( my_agent, RL_PARAM_ET_DISCOUNT_RATE );
-		temp2 = to_string( temp_val );
-		temp += (*temp2);
-		delete temp2;
-		if ( m_RawOutput )
-			m_Result << temp << "\n";
-		else
-			AppendArgTagFast( sml_Names::kParamValue, sml_Names::kTypeString, temp.c_str() );
-
+		
 		temp = "eligibility-trace-decay-rate: ";
 		temp_val = get_rl_parameter( my_agent, RL_PARAM_ET_DECAY_RATE );
 		temp2 = to_string( temp_val );

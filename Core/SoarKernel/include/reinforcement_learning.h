@@ -30,12 +30,6 @@
 #define RL_LEARNING_ON 1
 #define RL_LEARNING_OFF 2
 
-#define RL_ACCUMULATION_SUM 1
-#define RL_ACCUMULATION_AVG 2
-
-#define RL_DISCOUNT_EXPONENTIAL 1
-#define RL_DISCOUNT_LINEAR 2
-
 #define RL_LEARNING_SARSA 1
 #define RL_LEARNING_Q 2
 
@@ -44,17 +38,13 @@
 
 // names of params
 #define RL_PARAM_LEARNING					0
-#define RL_PARAM_ACCUMULATION_MODE			1
-#define RL_PARAM_DISCOUNT_MODE				2
-#define RL_PARAM_EXP_DISCOUNT_RATE			3
-#define RL_PARAM_LIN_DISCOUNT_RATE			4
-#define RL_PARAM_LEARNING_RATE				5
-#define RL_PARAM_LEARNING_POLICY			6
-#define RL_PARAM_ET_DISCOUNT_RATE			7
-#define RL_PARAM_ET_DECAY_RATE				8
-#define RL_PARAM_ET_TOLERANCE				9
-#define RL_PARAM_TEMPORAL_EXTENSION			10
-#define RL_PARAMS							11 // must be 1+ last rl param
+#define RL_PARAM_DISCOUNT_RATE				1
+#define RL_PARAM_LEARNING_RATE				2
+#define RL_PARAM_LEARNING_POLICY			3
+#define RL_PARAM_ET_DECAY_RATE				4
+#define RL_PARAM_ET_TOLERANCE				5
+#define RL_PARAM_TEMPORAL_EXTENSION			6
+#define RL_PARAMS							7 // must be 1+ last rl param
 
 // names of stats
 #define RL_STAT_UPDATE_ERROR				0
@@ -195,21 +185,8 @@ extern bool validate_rl_learning( const long new_val );
 extern const char *convert_rl_learning( const long val );
 extern const long convert_rl_learning( const char *val );
 
-// accumulation mode
-extern bool validate_rl_accumulation( const long new_val );
-extern const char *convert_rl_accumulation( const long val );
-extern const long convert_rl_accumulation( const char *val );
-
-// discount mode
-extern bool validate_rl_discount( const long new_val );
-extern const char *convert_rl_discount( const long val );
-extern const long convert_rl_discount( const char *val );
-
-// exponential discount rate
-extern bool validate_rl_exp_discount( const double new_val );
-
-// linear discount rate
-extern bool validate_rl_lin_discount( const double new_val );
+// discount rate
+extern bool validate_rl_discount( const double new_val );
 
 // learning rate
 extern bool validate_rl_learning_rate( const double new_val );
@@ -218,9 +195,6 @@ extern bool validate_rl_learning_rate( const double new_val );
 extern bool validate_rl_learning_policy( const long new_val );
 extern const char *convert_rl_learning_policy( const long val );
 extern const long convert_rl_learning_policy( const char *val );
-
-// trace discount rate
-extern bool validate_rl_trace_discount( const double new_val );
 
 // trace decay rate
 extern bool validate_rl_decay_rate( const double new_val );

@@ -1,6 +1,7 @@
 full implementation:
 --------------------
 ^input-link
+	^continuous true
 	^self
 		^angle 
 			^yaw <float> direction I am facing

@@ -69,7 +69,7 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="python25.lib"
+				AdditionalDependencies="python25_d.lib"
 				OutputFile="..\..\..\SoarLibrary\bin\_Python_sml_ClientInterface_d.pyd"
 				LinkIncremental="2"
 				AdditionalLibraryDirectories="&quot;$(PY_LIB)&quot;"

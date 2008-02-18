@@ -85,6 +85,9 @@ public class BookConfiguration extends BaseConfiguration implements IConfigurati
 			} else if (child.getName().equalsIgnoreCase(kTagBlocksBlock)) {
 				this.setBlocksBlock(Boolean.parseBoolean(child.getTextTrim()));
 				
+			} else if (child.getName().equalsIgnoreCase(kTagContinuous)) {
+				this.setContinuous(Boolean.parseBoolean(child.getTextTrim()));
+				
 			} else {
 				throw new LoadError("Unrecognized tag: " + child.getName());
 			}
@@ -102,8 +105,11 @@ public class BookConfiguration extends BaseConfiguration implements IConfigurati
 		book.addContent(new Element(kTagCycleTimeSlice).setText(Integer.toString(this.getCycleTimeSlice())));
 		book.addContent(new Element(kTagVisionCone).setText(Double.toString(this.getVisionCone())));
 		book.addContent(new Element(kTagBlocksBlock).setText(Boolean.toString(this.getBlocksBlock())));
+		book.addContent(new Element(kTagContinuous).setText(Boolean.toString(this.getContinuous())));
+		
 		rules.addContent(book);
 	}
+	
 	private static final String kTagColoredRooms = "colored-rooms";
 	private static final String kTagSpeed = "speed";
 	private boolean coloredRooms = false;
@@ -149,7 +155,7 @@ public class BookConfiguration extends BaseConfiguration implements IConfigurati
 	}
 	
 	private static final String kTagVisionCone = "vision-cone";
-	private double visionCone = (3 * Math.PI) / 4;
+	private double visionCone = Math.PI; // 180 degrees
 	public double getVisionCone() {
 		return this.visionCone;
 	}
@@ -166,6 +172,18 @@ public class BookConfiguration extends BaseConfiguration implements IConfigurati
 		this.blocksBlock = blocksBlock;
 	}
 
+	private static final String kTagContinuous = "continuous";
+	private boolean continuous = false;
+	public boolean getContinuous() {
+		return this.continuous;
+	}
+	public void setContinuous(boolean continuous) {
+		this.continuous = continuous;
+		if (continuous == false) {
+			this.blocksBlock = false;
+		}
+	}
+
 	public void copy(IConfiguration config) {
 		BookConfiguration bConfig = (BookConfiguration)config;
 		this.coloredRooms = bConfig.coloredRooms;
@@ -174,6 +192,7 @@ public class BookConfiguration extends BaseConfiguration implements IConfigurati
 		this.cycleTimeSlice = bConfig.cycleTimeSlice;
 		this.visionCone = bConfig.visionCone;
 		this.blocksBlock = bConfig.blocksBlock;
+		this.continuous = bConfig.continuous;
 	}
 	public void setDefaultTerminals(Configuration configuration) {
 		configuration.setTerminalWinningScore(0);

@@ -27,6 +27,13 @@
 
 #include <algorithm>	// For "for_each"
 
+#ifdef DEBUG_REFCOUNTS
+#ifndef _MSC_VER
+#include <pthread.h>
+#endif //_MSC_VER
+#endif //DEBUG_REFCOUNTS
+
+
 using namespace sml ;
 
 ////////////////////////////////////////////////////////////////
@@ -273,6 +280,16 @@ ElementXMLImpl::ElementXMLImpl(void)
 	// Guessing at the approx number of strings we'll store makes adding
 	// attributes substantially faster.
 	m_StringsToDelete.reserve(20) ;
+
+#ifdef DEBUG_REFCOUNTS
+#ifdef _MSC_VER
+	InitializeCriticalSection(&m_CS);
+#else //_MSC_VER
+	pthread_mutexattr_t attr;
+	pthread_mutexattr_init(&attr);
+	pthread_mutex_init( &mlock, &attr );
+#endif //_MSC_VER
+#endif //DEBUG_REFCOUNTS
 }
 
 // Provide a static way to call release ref to get round an STL challenge.
@@ -286,6 +303,14 @@ static inline void StaticReleaseRef(ElementXMLImpl* pXML)
 *************************************************************/
 ElementXMLImpl::~ElementXMLImpl(void)
 {
+#ifdef DEBUG_REFCOUNTS
+#ifdef _MSC_VER
+	DeleteCriticalSection(&m_CS);
+#else //_MSC_VER
+	pthread_mutex_destroy(&mlock);
+#endif //_MSC_VER
+#endif //DEBUG_REFCOUNTS
+
 	// Delete the comment
 	DeleteString(m_Comment) ;
 
@@ -345,6 +370,7 @@ ElementXMLImpl* ElementXMLImpl::MakeCopy() const
 
 	pCopy->m_ErrorCode		  = m_ErrorCode ;
 	pCopy->m_UseCData		  = m_UseCData ;
+
 	pCopy->m_RefCount		  = 1 ;
 
 	// Start with a null parent and override this later
@@ -389,15 +415,42 @@ ElementXMLImpl* ElementXMLImpl::MakeCopy() const
 *************************************************************/
 int ElementXMLImpl::ReleaseRef()
 {
+#ifdef DEBUG_REFCOUNTS
+#ifdef _MSC_VER
+#ifdef DEBUG_TRY
+	if (TryEnterCriticalSection(&m_CS) == 0)
+#endif //DEBUG_TRY
+		// with DEBUG_TRY defined, setting a breakpoint on this line will stop things
+		// right when two threads are trying to access the ref count at the same time
+		EnterCriticalSection(&m_CS);
+#else //_MSC_VER
+#ifdef DEBUG_TRY
+	if (pthread_mutex_trylock(&mlock) != 0)
+#endif //DEBUG_TRY
+		// with DEBUG_TRY defined, setting a breakpoint on this line will stop things
+		// right when two threads are trying to access the ref count at the same time
+		pthread_mutex_lock( &mlock );
+#endif //_MSC_VER
+#endif //DEBUG_REFCOUNTS
+
 	m_RefCount-- ;
 
 	// Have to store this locally, before we call "delete this"
 	int refCount = m_RefCount ;
 
-//	printf("Release Ref for hXML = 0x%x making ref count %d\n", (int)this, m_RefCount) ;
+#ifdef DEBUG_REFCOUNTS
+#ifdef _MSC_VER
+	LeaveCriticalSection(&m_CS);
+#else //_MSC_VER
+	pthread_mutex_unlock( &mlock );
+#endif //_MSC_VER
+#endif //DEBUG_REFCOUNTS
 
-	if (m_RefCount == 0)
+	//	printf("Release Ref for hXML = 0x%x making ref count %d\n", (int)this, refCount) ;
+
+	if (refCount == 0)
 		delete this ;
+
 
 	return refCount ;
 }
@@ -410,9 +463,35 @@ int ElementXMLImpl::ReleaseRef()
 *************************************************************/
 int ElementXMLImpl::AddRef()
 {
+#ifdef DEBUG_REFCOUNTS
+#ifdef _MSC_VER
+#ifdef DEBUG_TRY
+	if (TryEnterCriticalSection(&m_CS) == 0)
+#endif //DEBUG_TRY
+		// with DEBUG_TRY defined, setting a breakpoint on this line will stop things
+		// right when two threads are trying to access the ref count at the same time
+		EnterCriticalSection(&m_CS);
+#else //_MSC_VER
+#ifdef DEBUG_TRY
+	if (pthread_mutex_trylock(&mlock) != 0)
+#endif //DEBUG_TRY
+		// with DEBUG_TRY defined, setting a breakpoint on this line will stop things
+		// right when two threads are trying to access the ref count at the same time
+		pthread_mutex_lock( &mlock );
+#endif //_MSC_VER
+#endif //DEBUG_REFCOUNTS
+
 	m_RefCount++ ;
 
 //	printf("Add Ref for hXML = 0x%x making ref count %d\n", (int)this, m_RefCount) ;
+
+#ifdef DEBUG_REFCOUNTS
+#ifdef _MSC_VER
+	LeaveCriticalSection(&m_CS);
+#else //_MSC_VER
+	pthread_mutex_unlock( &mlock );
+#endif //_MSC_VER
+#endif //DEBUG_REFCOUNTS
 
 	return m_RefCount ;
 }

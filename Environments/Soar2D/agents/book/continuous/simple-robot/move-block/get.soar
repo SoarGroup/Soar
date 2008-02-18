@@ -1,7 +1,7 @@
 sp {wander*propose*get
    (state <s> ^name move-block
-              ^block-id <bid>
-              ^io.input-link.object.id <bid>)
+              ^top-state.block-id <bid>
+             -^io.input-link.self.carry.id <bid>)
 -->
    (<s> ^operator <o> + =)
    (<o> ^name get

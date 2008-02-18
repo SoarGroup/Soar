@@ -69,7 +69,7 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="tcl85.lib"
+				AdditionalDependencies="tcl84.lib"
 				OutputFile="..\..\..\SoarLibrary\bin\Tcl_sml_ClientInterface\Tcl_sml_ClientInterface.dll"
 				LinkIncremental="2"
 				AdditionalLibraryDirectories="&quot;$(TCL_LIB)&quot;"
@@ -103,7 +103,7 @@
 			<Tool
 				Name="VCPostBuildEventTool"
 				Description="Make Tcl package"
-				CommandLine="cd ..\..\..\SoarLibrary\bin\&#x0D;&#x0A;set PATH=%PATH%;$(TargetDir)..&#x0D;&#x0A;&quot;%TCL_BIN%\tclsh85&quot; makeTclSMLPackage.tcl&#x0D;&#x0A;"
+				CommandLine="cd ..\..\..\SoarLibrary\bin\&#x0D;&#x0A;set PATH=%PATH%;$(TargetDir)..&#x0D;&#x0A;&quot;%TCL_BIN%\tclsh&quot; makeTclSMLPackage.tcl&#x0D;&#x0A;"
 			/>
 		</Configuration>
 		<Configuration
@@ -160,7 +160,7 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="tcl85.lib"
+				AdditionalDependencies="tcl84.lib"
 				OutputFile="..\..\..\SoarLibrary\bin\Tcl_sml_ClientInterface\Tcl_sml_ClientInterface.dll"
 				LinkIncremental="1"
 				AdditionalLibraryDirectories="&quot;$(TCL_LIB)&quot;"
@@ -196,7 +196,7 @@
 			<Tool
 				Name="VCPostBuildEventTool"
 				Description="Make Tcl package"
-				CommandLine="cd ..\..\..\SoarLibrary\bin\&#x0D;&#x0A;set PATH=%PATH%;$(TargetDir)..&#x0D;&#x0A;&quot;%TCL_BIN%\tclsh85&quot; makeTclSMLPackage.tcl&#x0D;&#x0A;"
+				CommandLine="cd ..\..\..\SoarLibrary\bin\&#x0D;&#x0A;set PATH=%PATH%;$(TargetDir)..&#x0D;&#x0A;&quot;%TCL_BIN%\tclsh&quot; makeTclSMLPackage.tcl&#x0D;&#x0A;"
 			/>
 		</Configuration>
 	</Configurations>

@@ -2,6 +2,7 @@ package soar2d.visuals;
 
 import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.Random;
 
 import org.eclipse.swt.events.PaintEvent;
 import org.eclipse.swt.graphics.Color;
@@ -265,7 +266,10 @@ public class TankSoarVisualWorld extends VisualWorld {
 		if (backgroundObject.hasProperty(Names.kPropertyImageMin)) {
 			int min = backgroundObject.getIntProperty(Names.kPropertyImageMin);
 			int max = backgroundObject.getIntProperty(Names.kPropertyImageMax);
-			int pick = Simulation.random.nextInt(max - min + 1);
+			// Do not use the simulation's random number generator because it will change
+			// headless run behavior
+			Random myRandom = new Random();
+			int pick = myRandom.nextInt(max - min + 1);
 			pick += min;
 			imageName = imageName.substring(0, imageName.indexOf(".")) + pick + imageName.substring(imageName.indexOf("."));
 		}

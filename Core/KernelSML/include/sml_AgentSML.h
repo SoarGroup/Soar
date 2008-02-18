@@ -36,10 +36,17 @@ namespace sml {
 class OutputListener ;
 class KernelSML ;
 
+// badbad: shouldn't we be using hash_maps for these?
+
 // Map from a client side identifier to a kernel side one (e.g. "o3" => "O5")
 typedef std::map< std::string, std::string >	IdentifierMap ;
 typedef IdentifierMap::iterator				IdentifierMapIter ;
 typedef IdentifierMap::const_iterator		IdentifierMapConstIter ;
+
+// Keep track of instances of client side ids
+typedef std::map< std::string, int >		IdentifierRefMap ;
+typedef IdentifierRefMap::iterator			IdentifierRefMapIter ;
+typedef IdentifierRefMap::const_iterator	IdentifierRefMapConstIter ;
 
 // Map from a client side time tag (as a string) to a kernel side WME* object
 // (Had planned to just map the time tag to a kernel time tag...but it turns out
@@ -65,6 +72,9 @@ protected:
 
 	// Map from client side identifiers to kernel side ones
 	IdentifierMap	m_IdentifierMap ;
+
+	// Keep track of number of instances of client side identifiers
+	IdentifierRefMap m_IdentifierRefMap;
 
 	// Map from client side time tags (as strings) to kernel side WME* objects
 	TimeTagMap		m_TimeTagMap ;
@@ -184,6 +194,10 @@ public:
 	*			of wmes at once, so it makes up the ids for those objects.
 	*			But the kernel will assign them a different value when the
 	*			wme is actually added in the kernel.
+	*
+	*			RecordIDMapping should be called whenever an identifier is created 
+	*			or linked to on the client side because it increments reference counts
+	*			to that id so that shared ids work correctly
 	*************************************************************/
 	bool ConvertID(char const* pClientID, std::string* pKernelID) ;
 	void RecordIDMapping(char const* pClientID, char const* pKernelID) ;

@@ -4,6 +4,7 @@ import sml.FloatElement;
 import sml.Identifier;
 import sml.IntElement;
 import sml.StringElement;
+import soar2d.Soar2D;
 import soar2d.player.Player;
 import soar2d.world.PlayersManager;
 import soar2d.world.World;
@@ -39,8 +40,10 @@ class PlayerInputLink { // FIXME should share code with OIL
 		{
 			this.col = robot.agent.CreateIntWME(position, "col", players.getLocation(player).x);
 			this.row = robot.agent.CreateIntWME(position, "row", players.getLocation(player).y);
-			this.x = robot.agent.CreateFloatWME(position, "x", players.getFloatLocation(player).x);
-			this.y = robot.agent.CreateFloatWME(position, "y", players.getFloatLocation(player).y);
+			if (Soar2D.bConfig.getContinuous()) {
+				this.x = robot.agent.CreateFloatWME(position, "x", players.getFloatLocation(player).x);
+				this.y = robot.agent.CreateFloatWME(position, "y", players.getFloatLocation(player).y);
+			}
 		}
 		this.range = robot.agent.CreateFloatWME(parent, "range", range);
 		
