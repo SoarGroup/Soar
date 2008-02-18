@@ -10,6 +10,16 @@ for a given working memory state and proposed operator, the expected
 sum of future rewards the agent will receive if it selects that 
 operator.  
 
+Note: in the final version of Soar-RL, all Soar impasses will be 
+treated identically.  In the case of an impasse other than 
+operator no-change, the time period at the superstate during 
+which no operator is selected will be treated as a “gap” in rule 
+coverage, and perceived reward will be discounted with respect to 
+decision cycles passed.
+
+This release also includes an important bug fix regarding shared ids,
+see bugzilla bug number 1027 for details.
+
 The 8.6.4 release notes follow.
 
 Soar 8.6.4 Release Notes
