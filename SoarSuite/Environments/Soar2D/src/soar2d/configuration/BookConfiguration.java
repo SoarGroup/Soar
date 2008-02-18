@@ -155,7 +155,7 @@ public class BookConfiguration extends BaseConfiguration implements IConfigurati
 	}
 	
 	private static final String kTagVisionCone = "vision-cone";
-	private double visionCone = (3 * Math.PI) / 4;
+	private double visionCone = Math.PI; // 180 degrees
 	public double getVisionCone() {
 		return this.visionCone;
 	}

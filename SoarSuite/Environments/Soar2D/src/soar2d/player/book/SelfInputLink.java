@@ -19,6 +19,7 @@ import soar2d.world.World;
 
 class SelfInputLink {
 	protected SoarRobot robot;
+	protected StringElement continuous;
 	protected Identifier self;
 	protected Identifier angle;
 	protected FloatElement yaw;
@@ -65,6 +66,8 @@ class SelfInputLink {
 		assert il != null;
 		assert self == null;
 
+		continuous = robot.agent.CreateStringWME(il, "continuous", Soar2D.bConfig.getContinuous() ? "true" : "false");
+		
 		self = robot.agent.CreateIdWME(il, "self");
 		angle = robot.agent.CreateIdWME(self, "angle");
 		{
@@ -263,8 +266,23 @@ class SelfInputLink {
 	}
 	
 	void destroyAreaDescription() {
-		wallsIL = new ArrayList<BarrierInputLink>();
-		gatewaysIL = new ArrayList<GatewayInputLink>();
+		{
+			Iterator<BarrierInputLink> iter = wallsIL.iterator();
+			while (iter.hasNext()) {
+				BarrierInputLink thing = iter.next();
+				robot.agent.DestroyWME(thing.parent);
+			}
+			wallsIL = new ArrayList<BarrierInputLink>();
+		}
+
+		{
+			Iterator<GatewayInputLink> iter = gatewaysIL.iterator();
+			while (iter.hasNext()) {
+				GatewayInputLink thing = iter.next();
+				robot.agent.DestroyWME(thing.parent);
+			}
+			gatewaysIL = new ArrayList<GatewayInputLink>();
+		}
 
 		if (areaDescription == null) {
 			return;
@@ -277,12 +295,37 @@ class SelfInputLink {
 	void destroy() {
 		assert self != null;
 		robot.agent.DestroyWME(self);
+		robot.agent.DestroyWME(continuous);
+		
 		destroyAreaDescription();
 
-		objectsIL = new HashMap<Integer, ObjectInputLink>();
-		playersIL = new HashMap<Player, PlayerInputLink>();
-		messagesIL = new HashSet<MessageInputLink>();
+		{
+			Iterator<ObjectInputLink> iter = objectsIL.values().iterator();
+			while (iter.hasNext()) {
+				ObjectInputLink thing = iter.next();
+				robot.agent.DestroyWME(thing.parent);
+			}
+			objectsIL = new HashMap<Integer, ObjectInputLink>();
+		}
 
+		{
+			Iterator<PlayerInputLink> iter = playersIL.values().iterator();
+			while (iter.hasNext()) {
+				PlayerInputLink thing = iter.next();
+				robot.agent.DestroyWME(thing.parent);
+			}
+			playersIL = new HashMap<Player, PlayerInputLink>();
+		}
+		
+		{
+			Iterator<MessageInputLink> iter = messagesIL.iterator();
+			while (iter.hasNext()) {
+				MessageInputLink thing = iter.next();
+				robot.agent.DestroyWME(thing.parent);
+			}
+			messagesIL = new HashSet<MessageInputLink>();
+		}
+		
 		self = areaDescription = carry = null;
 	}
 	

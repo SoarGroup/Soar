@@ -236,6 +236,7 @@ public class SoarRobot extends Robot {
 				double angleOff = players.angleOff(this, bInfo.floatLocation);
 				if (Math.abs(angleOff) <= maxAngleOff) {
 					selfIL.addOrUpdateObject(bInfo, world, angleOff);
+					logger.finer(getName() + ": object " + bInfo.object.getProperty("object-id") + " added to input link");
 				} else {
 					logger.finer(getName() + ": object " + bInfo.object.getProperty("object-id") + " out of cone");
 				}
