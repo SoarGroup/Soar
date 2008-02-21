@@ -1,9 +1,9 @@
 sp {elaborate*task*book
    (state <s> ^superstate nil)
    -->
-   (<s> ^name book)}
+   (<s> ^name discrete-agent)}
 
 sp {elaborate*top-state*top-state
-  (state <s> ^name book)
+  (state <s> ^superstate nil)
 -->
   (<s> ^top-state <s>)}

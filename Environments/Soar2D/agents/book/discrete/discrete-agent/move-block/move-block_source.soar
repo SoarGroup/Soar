@@ -1,0 +1,3 @@
+source elaborations.soar
+source drop-block.soar
+source move.soar

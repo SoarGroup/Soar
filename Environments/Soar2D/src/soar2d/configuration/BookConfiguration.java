@@ -173,7 +173,7 @@ public class BookConfiguration extends BaseConfiguration implements IConfigurati
 	}
 
 	private static final String kTagContinuous = "continuous";
-	private boolean continuous = false;
+	private boolean continuous = true;
 	public boolean getContinuous() {
 		return this.continuous;
 	}

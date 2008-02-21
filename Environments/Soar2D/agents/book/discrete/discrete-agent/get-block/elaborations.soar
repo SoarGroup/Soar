@@ -1,0 +1,36 @@
+sp {get-block*elaborate*substate
+   (state <s> ^name get-block
+              ^superstate.operator <so>)
+   (<so> ^name get-block
+         ^block <block>)
+-->
+   (<s> ^block <block>)
+}
+
+sp {get-block*elaborate*col-different
+   (state <s> ^name get-block
+              ^block.position <blpos>
+              ^io.input-link.self.position <mypos>)
+   (<blpos> ^col <blcol>)
+   (<mypos> ^col <mycol> <> <blcol>)
+-->
+   (<s> ^different.row true)
+}
+
+sp {get-block*elaborate*row-different
+   (state <s> ^name get-block
+              ^block.position <blpos>
+              ^io.input-link.self.position <mypos>)
+   (<blpos> ^row <blrow>)
+   (<mypos> ^row <myrow> <> <blrow>)
+-->
+   (<s> ^different.col true)
+}
+
+
+sp {orient*elaborate*state*blocked-reorient
+   (state <s> ^name get-block
+              ^io.input-link.self.blocked.forward true)
+-->
+   (<s> ^oriented true -)
+}

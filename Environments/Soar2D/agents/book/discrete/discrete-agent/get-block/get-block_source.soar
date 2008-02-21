@@ -1,0 +1,8 @@
+source elaborations.soar
+source orient.soar
+pushd orient
+source orient_source.soar
+popd
+source pick-up-block.soar
+source move-forward.soar
+source reorient.soar

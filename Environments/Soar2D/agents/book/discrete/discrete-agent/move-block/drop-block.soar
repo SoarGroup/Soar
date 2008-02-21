@@ -1,0 +1,17 @@
+sp {move-block*propose*drop-block
+   (state <s> ^name move-block
+              ^carry.id <id>)
+-->
+   (<s> ^operator <op> + =)
+   (<op> ^name drop-block
+         ^actions.drop.id <id>)
+}
+
+sp {apply*drop-block*remember-block
+   (state <s> ^operator <op>
+              ^top-state <ts>
+              ^carry.id <id>)
+   (<op> ^name drop-block)
+-->
+   (<ts> ^have-carried <id>)
+}

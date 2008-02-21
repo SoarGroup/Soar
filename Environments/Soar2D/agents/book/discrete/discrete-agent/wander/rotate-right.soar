@@ -1,0 +1,9 @@
+sp {wander*propose*rotate*right
+   (state <s> ^name wander
+              ^io.input-link.self.angle.direction <d>
+              ^io.input-link.self.blocked.right false)
+-->
+   (<s> ^operator <op> + = 20)
+   (<op> ^name rotate-right
+         ^actions.rotate.direction right)
+}
