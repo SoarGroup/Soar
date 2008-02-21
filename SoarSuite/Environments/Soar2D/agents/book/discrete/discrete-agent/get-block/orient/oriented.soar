@@ -1,0 +1,24 @@
+sp {orient*propose*oriented*positive
+   (state <s> ^name orient
+              ^yaw <yaw> < 1.57
+              ^rotated-once true)
+-->
+   (<s> ^operator <op> + >)
+   (<op> ^name oriented)
+}
+
+sp {orient*propose*oriented*negative
+   (state <s> ^name orient
+              ^yaw <yaw> > -1.57)
+-->
+   (<s> ^operator <op> + >)
+   (<op> ^name oriented)
+}
+
+sp {apply*oriented
+   (state <s> ^operator <op>
+              ^superstate <ss>)
+   (<op> ^name oriented)
+-->
+   (<ss> ^oriented true)
+}

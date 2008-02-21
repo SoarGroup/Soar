@@ -1,0 +1,10 @@
+sp {get-block*propose*orient
+   (state <s> ^name get-block
+              ^block.angle-off.yaw <yaw>
+             -^oriented true)
+-->
+   (<s> ^operator <op> + =)
+   (<op> ^name orient
+         ^yaw <yaw>)
+}
+

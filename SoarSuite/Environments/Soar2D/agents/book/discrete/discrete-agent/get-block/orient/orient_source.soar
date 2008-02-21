@@ -1,0 +1,4 @@
+source elaborations.soar
+source oriented.soar
+source rotate-left.soar
+source rotate-right.soar

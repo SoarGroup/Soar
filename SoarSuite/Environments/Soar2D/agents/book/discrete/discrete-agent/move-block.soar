@@ -1,0 +1,8 @@
+sp {discrete-agent*propose*move-block
+   (state <s> ^name discrete-agent
+              ^io.input-link.self.carry <carry>)
+-->
+   (<s> ^operator <op> + >)
+   (<op> ^name move-block
+         ^carry <carry>)
+}

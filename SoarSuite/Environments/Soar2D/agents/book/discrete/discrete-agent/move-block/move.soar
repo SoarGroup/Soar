@@ -1,0 +1,12 @@
+sp {move-block*propose*move
+   (state <s> ^name move-block
+              ^io.input-link.self <self>)
+   (<self> ^position <p>
+           ^blocked.forward false)
+   (<p> ^col <c>
+        ^row <r>)
+-->
+   (<s> ^operator <op> + >)
+   (<op> ^name move
+         ^actions.move.direction forward)
+}
