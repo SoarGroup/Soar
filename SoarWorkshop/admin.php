@@ -102,7 +102,7 @@
 </tr>
 </table></p>
 
-<h3>All email addresses for cut-and-paste:</h3>
+<h3>All email addresses for copy-and-paste:</h3>
 
 <?php
 	print $all_emails;
