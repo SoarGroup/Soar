@@ -175,7 +175,7 @@ public class SoarRobot extends Robot {
 			}
 			
 			// heading
-			agent.Update(selfIL.yaw, getHeadingRadians());
+			agent.Update(selfIL.yaw, Direction.toDisplayRadians(getHeadingRadians()));
 			
 			// update the clock
 			agent.Update(selfIL.cycle, world.getWorldCount());
@@ -623,6 +623,8 @@ public class SoarRobot extends Robot {
 					commandId.AddStatusError();
 					continue;
 				}
+				
+				move.rotateAbsoluteHeading = Direction.toInternalRadians(move.rotateAbsoluteHeading);
 
 				move.rotateAbsolute = true;
 				rotateCommandId = commandId;

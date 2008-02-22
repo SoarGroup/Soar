@@ -9,24 +9,19 @@ VERSION 4
 6	4	FOPERATOR monitor monitor.soar 7
 7	4	FOPERATOR output output.soar 8
 8	4	FOPERATOR top-state top-state.soar 9
-9	0	HLOPERATOR get-block get-block.soar get-block 110 14
-10	9	FOPERATOR elaborations elaborations.soar 16
-11	9	HLOPERATOR orient orient.soar orient 135 27
-12	11	FOPERATOR elaborations elaborations.soar 28
-13	11	OPERATOR oriented oriented.soar 33
-14	11	OPERATOR rotate-left rotate-left.soar 29
-15	11	OPERATOR rotate-right rotate-right.soar 30
-16	9	OPERATOR pick-up-block pick-up-block.soar 20
-17	9	OPERATOR move-forward move-forward.soar 34
-18	9	OPERATOR reorient reorient.soar 35
-19	0	HLOPERATOR move-block move-block.soar move-block 122 15
-20	19	FOPERATOR elaborations elaborations.soar 22
-21	19	OPERATOR drop-block drop-block.soar 21
-22	19	OPERATOR move move.soar 23
-23	0	HLOPERATOR wander wander.soar wander 115 13
-24	23	FOPERATOR elaborations elaborations.soar 18
-25	23	OPERATOR move-forward move-forward.soar 19
-26	23	OPERATOR rotate-left rotate-left.soar 24
-27	23	OPERATOR rotate-right rotate-right.soar 25
-28	23	OPERATOR turn-around turn-around.soar 26
+9	0	HLOPERATOR get-block get-block.soar get-block 110 10
+10	9	FOPERATOR elaborations elaborations.soar 11
+11	9	OPERATOR move-forward move-forward.soar 12
+12	9	OPERATOR pick-up-block pick-up-block.soar 13
+13	9	OPERATOR rotate rotate.soar 14
+14	0	HLOPERATOR move-block move-block.soar move-block 122 15
+15	14	FOPERATOR elaborations elaborations.soar 16
+16	14	OPERATOR drop-block drop-block.soar 17
+17	14	OPERATOR move move.soar 18
+18	0	HLOPERATOR wander wander.soar wander 115 19
+19	18	FOPERATOR elaborations elaborations.soar 20
+20	18	OPERATOR move-forward move-forward.soar 21
+21	18	OPERATOR rotate-left rotate-left.soar 22
+22	18	OPERATOR rotate-right rotate-right.soar 23
+23	18	OPERATOR turn-around turn-around.soar 24
 END

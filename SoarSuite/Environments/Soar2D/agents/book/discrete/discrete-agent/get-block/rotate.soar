@@ -1,0 +1,19 @@
+sp {get-block*propose*rotate
+   (state <s> ^name get-block
+              ^rotate <dir>)
+-->
+   (<s> ^operator <op> + =)
+   (<op> ^name rotate
+         ^actions.rotate.direction <dir>)
+}
+
+sp {get-block*compare*rotate
+   (state <s> ^name get-block
+              ^aligned
+              ^operator <op1> +
+                        <op2> +)
+   (<op1> ^name rotate)
+   (<op2> ^name move-forward)
+-->
+   (<s> ^operator <op1> > <op2>)
+}

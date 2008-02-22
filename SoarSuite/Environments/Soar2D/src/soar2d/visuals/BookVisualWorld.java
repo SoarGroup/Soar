@@ -132,9 +132,6 @@ public class BookVisualWorld extends VisualWorld {
 			
 			Path path = new Path(gc.getDevice());
 			double heading = player.getHeadingRadians();
-			if (Soar2D.bConfig.getContinuous() == false) {
-				heading = Direction.radiansOf[player.getFacingInt()];
-			}
 
 			// first, move to the point representing the tip of the chevron
 			offset.y = (float)kDotSize * (float)Math.sin(heading);
