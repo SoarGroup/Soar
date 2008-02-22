@@ -45,16 +45,13 @@ public class BookWorld implements IWorld {
 			// rotate
 			if (move.rotate) {
 				int facing = player.getFacingInt();
-				double heading = player.getHeadingRadians();
 				if (move.rotateDirection.equals(Names.kRotateLeft)) {
 					Soar2D.logger.finer("Rotate: left");
 					player.setFacingInt(Direction.leftOf[facing]);
-					heading -= Math.PI / 2;
 				} 
 				else if (move.rotateDirection.equals(Names.kRotateRight)) {
 					Soar2D.logger.finer("Rotate: right");
 					player.setFacingInt(Direction.rightOf[facing]);
-					heading += Math.PI / 2;
 				} 
 				else {
 					Soar2D.logger.warning("Rotate: invalid direction");
@@ -62,16 +59,6 @@ public class BookWorld implements IWorld {
 				}
 				
 				// update heading if we rotate
-				if (move.rotate) {
-					if (heading < 0) {
-						Soar2D.logger.finest("Correcting computed negative heading");
-						heading += 2 * Math.PI;
-					} 
-
-					heading = fmod(heading, 2 * Math.PI);
-					Soar2D.logger.finer("Rotating, computed heading: " + heading);
-					player.setHeadingRadians(heading);
-				}
 			} 
 
 			// translate
@@ -190,7 +177,7 @@ public class BookWorld implements IWorld {
 					Soar2D.logger.finest("Correcting command negative heading");
 					move.rotateAbsoluteHeading += 2 * Math.PI;
 				}
-				move.rotateAbsoluteHeading = fmod(move.rotateAbsoluteHeading, 2 * Math.PI);
+				move.rotateAbsoluteHeading = Direction.fmod(move.rotateAbsoluteHeading, 2 * Math.PI);
 
 				Soar2D.logger.finer("Rotate absolute: " + move.rotateAbsoluteHeading);
 				
@@ -203,7 +190,7 @@ public class BookWorld implements IWorld {
 					Soar2D.logger.finest("Correcting command negative heading");
 					absoluteHeading += 2 * Math.PI;
 				}
-				absoluteHeading = fmod(absoluteHeading, 2 * Math.PI);
+				absoluteHeading = Direction.fmod(absoluteHeading, 2 * Math.PI);
 				Soar2D.logger.finer("Rotate relative: " + move.rotateRelativeYaw + ", absolute: " + absoluteHeading);
 				setRotationAndAbsoluteHeading(player, absoluteHeading, time);
 			}
@@ -217,7 +204,7 @@ public class BookWorld implements IWorld {
 					Soar2D.logger.finest("Correcting computed negative heading");
 					heading += 2 * Math.PI;
 				} 
-				heading = fmod(heading, 2 * Math.PI);
+				heading = Direction.fmod(heading, 2 * Math.PI);
 
 				Soar2D.logger.finer("Rotating, computed heading: " + heading);
 				
@@ -451,19 +438,6 @@ public class BookWorld implements IWorld {
 		}
 	}
 
-	public double fmod(double a, double mod) {
-		double result = a;
-		assert mod > 0;
-		while (Math.abs(result) >= mod) {
-			if (result > 0) {
-				result -= mod;
-			} else {
-				result += mod;
-			}
-		}
-		return result;
-	}
-	
 	private void bookMovePlayerContinuous(Player player, BookMap map, PlayersManager players, double time) {
 		final int cellSize = Soar2D.bConfig.getBookCellSize();
 		

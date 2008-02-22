@@ -6,7 +6,7 @@ sp {get-block*propose*move-forward
    (<p> ^col <c>
         ^row <r>)
 -->
-   (<s> ^operator <op> + >)
+   (<s> ^operator <op> + =)
    (<op> ^name move-forward
          ^actions.move.direction forward)
 }

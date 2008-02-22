@@ -71,7 +71,7 @@ class SelfInputLink {
 		self = robot.agent.CreateIdWME(il, "self");
 		angle = robot.agent.CreateIdWME(self, "angle");
 		{
-			yaw = robot.agent.CreateFloatWME(angle, "yaw", robot.getHeadingRadians());
+			yaw = robot.agent.CreateFloatWME(angle, "yaw", Direction.toDisplayRadians(robot.getHeadingRadians()));
 			if (Soar2D.bConfig.getContinuous() == false) {
 				direction = robot.agent.CreateStringWME(angle, "direction", Direction.stringOf[robot.getFacingInt()]);
 			}
@@ -266,36 +266,23 @@ class SelfInputLink {
 	}
 	
 	void destroyAreaDescription() {
-		{
-			Iterator<BarrierInputLink> iter = wallsIL.iterator();
-			while (iter.hasNext()) {
-				BarrierInputLink thing = iter.next();
-				robot.agent.DestroyWME(thing.parent);
-			}
-			wallsIL = new ArrayList<BarrierInputLink>();
-		}
-
-		{
-			Iterator<GatewayInputLink> iter = gatewaysIL.iterator();
-			while (iter.hasNext()) {
-				GatewayInputLink thing = iter.next();
-				robot.agent.DestroyWME(thing.parent);
-			}
-			gatewaysIL = new ArrayList<GatewayInputLink>();
-		}
 
 		if (areaDescription == null) {
 			return;
 		}
 		robot.agent.DestroyWME(areaDescription);
 		areaDescription = null;
-		
+		wallsIL = new ArrayList<BarrierInputLink>();
+		gatewaysIL = new ArrayList<GatewayInputLink>();	
 	}
 	
 	void destroy() {
 		assert self != null;
 		robot.agent.DestroyWME(self);
+		self = null;
+		carry = null;
 		robot.agent.DestroyWME(continuous);
+		continuous = null;
 		
 		destroyAreaDescription();
 
@@ -325,8 +312,6 @@ class SelfInputLink {
 			}
 			messagesIL = new HashSet<MessageInputLink>();
 		}
-		
-		self = areaDescription = carry = null;
 	}
 	
 	void carry(CellObject object) {

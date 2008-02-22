@@ -1,4 +1,4 @@
-168
+154
 SOAR_ID 0
 SOAR_ID 1
 SOAR_ID 2
@@ -132,45 +132,31 @@ ENUMERATION 129 1 rotate-right
 SOAR_ID 130
 ENUMERATION 131 1 turn-around
 SOAR_ID 132
-ENUMERATION 133 1 orient
+ENUMERATION 133 1 move-forward
 SOAR_ID 134
 SOAR_ID 135
-ENUMERATION 136 1 state
-ENUMERATION 137 1 orient
-ENUMERATION 138 1 rotate-left
+SOAR_ID 136
+SOAR_ID 137
+SOAR_ID 138
 SOAR_ID 139
-ENUMERATION 140 1 rotate-right
-SOAR_ID 141
-ENUMERATION 142 1 oriented
+ENUMERATION 140 1 drop-block
+INTEGER_RANGE 141 0 2147483647
+ENUMERATION 142 1 true
 SOAR_ID 143
-ENUMERATION 144 1 move-forward
-SOAR_ID 145
-ENUMERATION 146 1 reorient
+SOAR_ID 144
+ENUMERATION 145 2 col row
+SOAR_ID 146
 SOAR_ID 147
-SOAR_ID 148
+ENUMERATION 148 1 rotate
 SOAR_ID 149
 SOAR_ID 150
-SOAR_ID 151
-SOAR_ID 152
-ENUMERATION 153 1 drop-block
-INTEGER_RANGE 154 0 2147483647
-SOAR_ID 155
-ENUMERATION 156 1 true
-ENUMERATION 157 1 true
-ENUMERATION 158 1 true
-FLOAT_RANGE 159 -Infinity Infinity
-SOAR_ID 160
-SOAR_ID 161
-ENUMERATION 162 2 col row
-ENUMERATION 163 1 true
-SOAR_ID 164
-SOAR_ID 165
-SOAR_ID 166
-SOAR_ID 167
-192
+ENUMERATION 151 2 col row
+ENUMERATION 152 1 blocked-rotate
+SOAR_ID 153
+174
 0 attribute 14
 0 choices 15
-0 have-carried 154
+0 have-carried 141
 0 impasse 16
 0 io 1
 0 name 17
@@ -281,21 +267,22 @@ SOAR_ID 167
 106 name 107
 108 carry 57
 108 name 109
+110 aligned 151
 110 block 60
-110 different 155
 110 io 1
 110 name 112
 110 operator 114
 110 operator 121
 110 operator 134
-110 operator 145
-110 operator 147
-110 oriented 158
-110 reorient 162
+110 operator 149
+110 operator 153
+110 oriented 142
+110 reorient 145
+110 rotate 11
 110 superstate 0
 110 top-state 0
 110 type 111
-114 actions 161
+114 actions 144
 114 name 113
 115 io 1
 115 name 117
@@ -306,57 +293,38 @@ SOAR_ID 167
 115 superstate 0
 115 top-state 0
 115 type 116
-119 actions 148
+119 actions 135
 119 name 118
-121 actions 160
+121 actions 143
 121 name 120
 122 carry 57
 122 io 1
 122 name 124
 122 operator 126
-122 operator 152
+122 operator 139
 122 superstate 0
 122 top-state 0
 122 type 123
-126 actions 166
+126 actions 146
 126 name 125
-128 actions 149
+128 actions 136
 128 name 127
-130 actions 150
+130 actions 137
 130 name 129
-132 actions 151
+132 actions 138
 132 name 131
 134 name 133
-134 yaw 159
-135 io 1
-135 name 137
-135 operator 139
-135 operator 141
-135 operator 143
-135 rotated-once 163
-135 superstate 110
-135 top-state 0
-135 type 136
-135 yaw 159
-139 actions 164
-139 name 138
-141 actions 165
-141 name 140
-143 name 142
-145 name 144
-147 axis 162
-147 name 146
-148 move 6
-149 rotate 8
+135 move 6
+136 rotate 8
+137 rotate 8
+138 rotate 8
+139 actions 147
+139 name 140
+143 get 70
+144 move 6
+146 move 6
+147 drop 71
+149 actions 150
+149 name 148
 150 rotate 8
-151 rotate 8
-152 actions 167
-152 name 153
-155 col 156
-155 row 157
-160 get 70
-161 move 6
-164 rotate 8
-165 rotate 8
-166 move 6
-167 drop 71
+153 name 152

@@ -6,31 +6,52 @@ sp {get-block*elaborate*substate
 -->
    (<s> ^block <block>)
 }
-
-sp {get-block*elaborate*col-different
+sp {get-block*elaborate*aligned-col
    (state <s> ^name get-block
-              ^block.position <blpos>
-              ^io.input-link.self.position <mypos>)
-   (<blpos> ^col <blcol>)
-   (<mypos> ^col <mycol> <> <blcol>)
+              ^block.position.col <c>
+              ^io.input-link.self.position.col <c>)
 -->
-   (<s> ^different.row true)
+   (<s> ^aligned col)
 }
 
-sp {get-block*elaborate*row-different
+sp {get-block*elaborate*aligned-row
    (state <s> ^name get-block
-              ^block.position <blpos>
-              ^io.input-link.self.position <mypos>)
-   (<blpos> ^row <blrow>)
-   (<mypos> ^row <myrow> <> <blrow>)
+              ^block.position.row <r>
+              ^io.input-link.self.position.row <r>)
 -->
-   (<s> ^different.col true)
+   (<s> ^aligned row)
 }
 
-
-sp {orient*elaborate*state*blocked-reorient
+sp {get-block*elaborate*aligned-rotate-right
    (state <s> ^name get-block
-              ^io.input-link.self.blocked.forward true)
+              ^aligned
+              ^block.angle-off.yaw > 0.78 )
 -->
-   (<s> ^oriented true -)
+   (<s> ^rotate right)
+}
+
+sp {get-block*elaborate*aligned-rotate-left
+   (state <s> ^name get-block
+              ^aligned
+              ^block.angle-off.yaw < -0.78 )
+-->
+   (<s> ^rotate left)
+}
+
+sp {get-block*elaborate*blocked-rotate-right
+   (state <s> ^name get-block
+              ^io.input-link.self.blocked.forward true
+              ^io.input-link.self.blocked.left false
+              ^block.angle-off.yaw > 0.78 )
+-->
+   (<s> ^rotate right)
+}
+
+sp {get-block*elaborate*blocked-rotate-left
+   (state <s> ^name get-block
+              ^io.input-link.self.blocked.forward true
+              ^io.input-link.self.blocked.right false
+              ^block.angle-off.yaw < -0.78 )
+-->
+   (<s> ^rotate left)
 }

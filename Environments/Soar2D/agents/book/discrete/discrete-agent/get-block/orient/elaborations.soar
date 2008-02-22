@@ -1,8 +1,0 @@
-sp {orient*elaborate*substate
-   (state <s> ^name orient
-              ^superstate.operator <so>)
-   (<so> ^name orient
-         ^yaw <yaw>)
--->
-   (<s> ^yaw <yaw>)
-}

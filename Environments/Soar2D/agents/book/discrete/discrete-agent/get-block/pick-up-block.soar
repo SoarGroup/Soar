@@ -1,10 +1,10 @@
 sp {get-block*propose*pick-up-block
    (state <s> ^name get-block
               ^block.id <id>
-             -^different.col true
-             -^different.row true)
+              ^aligned row
+              ^aligned col)
 -->
-   (<s> ^operator <op> + =)
+   (<s> ^operator <op> + >)
    (<op> ^name pick-up-block
          ^actions.get.id <id>)
 }
