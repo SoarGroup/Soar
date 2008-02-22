@@ -16,9 +16,17 @@
     	exit;
     }
     
-    if ( isset( $_GET['delete'] ) )
+    if ( isset( $_POST['delete'] ) )
     {
-		remove_by_id($_GET['delete']);  	
+    	if ( $_POST['sure'] )
+    	{
+	    	//$_SESSION['msg'] = 'Would have deleted ' . $_POST['delete'] . '!';
+			remove_by_id($_POST['delete']);  	
+    	}
+    	else 
+    	{
+    		$_SESSION['msg'] = 'You need to click "I\'m sure" to delete a record!';
+    	}
     }
 ?>
 <?php
@@ -29,7 +37,6 @@
 
 <p><table border='1'>
 <tr>
-<th>Actions</th>
 <th>Name</th>
 <th>Affiliation</th>
 <th>Phone</th>
@@ -41,6 +48,7 @@
 <th>Time 3</th>
 <th>Title 3</th>
 <th>Other</th>
+<th>Actions</th>
 </tr>
 <?php
 	$all_emails = '';
@@ -50,7 +58,6 @@
 	$total_registered = mysql_num_rows($result);
 	while ($reg = mysql_fetch_assoc($result)) {
 		print '<tr style="font-size: x-small; font-family: sans-serif;">';
-		print '<td><a href="admin.php?delete=' . $reg['id'] . '">delete</a></td>';
 		print '<td>' . htmlentities($reg['name']) . '</td>';		
 		print '<td>' . htmlentities($reg['affiliation']) . '</td>';		
 		print '<td>' . htmlentities($reg['phone']) . '</td>';		
@@ -62,6 +69,11 @@
 		print '<td>' . htmlentities($reg['pres3time']) . '</td>';		
 		print '<td>' . htmlentities($reg['pres3title']) . '</td>';		
 		print '<td>' . htmlentities($reg['other']) . '</td>';		
+		print '<td><form action="admin.php" method="POST">' .
+				'<input type="submit" value="Delete" /><br />' .
+				'<input type="checkbox" name="sure" /> I\'m sure' .
+				'<input type="hidden" name="delete" value="' . $reg['id'] . '"' .
+				'</form></td>';
 		print '</tr>';
 		
 		$all_emails .= htmlentities($reg['email']) . ', ';
