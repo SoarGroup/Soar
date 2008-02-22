@@ -1,0 +1,8 @@
+sp {wander*prefer*rotate-when-jailed
+   (state <s> ^name wander
+              ^operator <op> +
+              -^io.input-link.area-description.gateway)
+   (<op> ^name << rotate-left rotate-right >>)
+-->
+   (<s> ^operator <op> + = 1 )
+}

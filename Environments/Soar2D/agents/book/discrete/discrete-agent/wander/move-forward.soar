@@ -5,7 +5,7 @@ sp {wander*propose*move*forward
    (<p> ^col <c>
         ^row <r>)
 -->
-   (<s> ^operator <op> + = 90)
+   (<s> ^operator <op> + = 2 )
    (<op> ^name move-forward
          ^actions.move.direction forward)
 }

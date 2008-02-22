@@ -192,23 +192,42 @@ public class BookMap extends GridMap {
 			int n = 0;
 			centerpoint = new Point2D.Double(0,0);
 			
-			switch (direction) {
-			case Direction.kNorthInt:
-			case Direction.kSouthInt:
-				// horizontal
-				m = left.x;
-				n = right.x;
-				centerpoint.y = left.y * Soar2D.bConfig.getBookCellSize();
-				break;
-			case Direction.kEastInt:
-			case Direction.kWestInt:
-				// vertical
-				m = left.y;
-				n = right.y;
+			if (left.equals(right) == false) {
+				switch (direction) {
+				case Direction.kNorthInt:
+				case Direction.kSouthInt:
+					// horizontal
+					m = left.x;
+					n = right.x;
+					centerpoint.y = left.y * Soar2D.bConfig.getBookCellSize();
+					break;
+				case Direction.kEastInt:
+				case Direction.kWestInt:
+					// vertical
+					m = left.y;
+					n = right.y;
+					centerpoint.x = left.x * Soar2D.bConfig.getBookCellSize();
+					break;
+				}
+			} else {
+				// single block
 				centerpoint.x = left.x * Soar2D.bConfig.getBookCellSize();
-				break;
+				centerpoint.y = left.y * Soar2D.bConfig.getBookCellSize();
+
+				switch (direction) {
+				case Direction.kNorthInt:
+					centerpoint.y += Soar2D.bConfig.getBookCellSize();
+				case Direction.kSouthInt:
+					centerpoint.x += Soar2D.bConfig.getBookCellSize() / 2;
+					break;
+				case Direction.kWestInt:
+					centerpoint.x += Soar2D.bConfig.getBookCellSize();
+				case Direction.kEastInt:
+					centerpoint.y += Soar2D.bConfig.getBookCellSize() / 2;
+					break;
+				}
+				return centerpoint;
 			}
-			
 			int numberOfBlocks = n - m;
 			java.awt.Point upperLeft = left;
 			// take abs, also note that if negative then we need to calculate center from the upper-left block
@@ -218,6 +237,7 @@ public class BookMap extends GridMap {
 				upperLeft = right;
 			}
 			numberOfBlocks += 1; // endpoints 0,0 and 0,3 represent 4 blocks
+			assert numberOfBlocks > 1;
 			
 			if (left.x == right.x) {
 				// vertical

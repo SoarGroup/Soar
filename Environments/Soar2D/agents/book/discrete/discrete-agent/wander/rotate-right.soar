@@ -3,7 +3,17 @@ sp {wander*propose*rotate*right
               ^io.input-link.self.angle.direction <d>
               ^io.input-link.self.blocked.right false)
 -->
-   (<s> ^operator <op> + = 5)
+   (<s> ^operator <op> + = 0)
    (<op> ^name rotate-right
          ^actions.rotate.direction right)
+}
+
+sp {wander*prefer*rotate-right-to-gate
+   (state <s> ^name wander
+              ^operator <op> +
+              ^io.input-link.area-description.gateway <g>)
+   (<g> ^center.angle-off.yaw > 1.18 < 1.60 )
+   (<op> ^name rotate-right)
+-->
+   (<s> ^operator <op> + = 2 )
 }

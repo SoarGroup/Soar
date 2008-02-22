@@ -1,6 +1,7 @@
 sp {wander*propose*turn-around*left
    (state <s> ^name wander
               ^io.input-link.self.angle.direction <d>
+              ^io.input-link.self.blocked.forward true
               ^io.input-link.self.blocked.left true
               ^io.input-link.self.blocked.right true)
 -->
