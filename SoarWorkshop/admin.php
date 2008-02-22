@@ -41,6 +41,7 @@
 <th>Affiliation</th>
 <th>Phone</th>
 <th>Email</th>
+<th>Fee</th>
 <th>Time 1</th>
 <th>Title 1</th>
 <th bgcolor="silver">Time 2</th>
@@ -62,6 +63,7 @@
 		print '<td>' . htmlentities($reg['affiliation']) . '</td>';		
 		print '<td>' . htmlentities($reg['phone']) . '</td>';		
 		print '<td><a href="mailto:' . htmlentities($reg['email']) . '">' . htmlentities($reg['email']) . '</a></td>';		
+		print '<td>' . ($reg['paymethod'] == 'onarrival' ? '$100' : '$0') . '</td>';		
 		print '<td>' . htmlentities($reg['pres1time']) . '</td>';		
 		print '<td>' . htmlentities($reg['pres1title']) . '</td>';		
 		print '<td bgcolor="silver">' . htmlentities($reg['pres2time']) . '</td>';		
