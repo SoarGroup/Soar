@@ -31,11 +31,15 @@ public class ConfigurationEditor extends Dialog {
 	Button tanksoarButton;
 	Button eatersButton;
 	Button bookButton;
+	Button kitchenButton;
+	Button taxiButton;
 	Text mapText;
 	Button remote;
 	Button hide;
 	Button nogui;
 	Text async;
+	Button silentagent;
+	Text port;
 
 	// logging
 	Combo loggingLevelCombo;
@@ -43,6 +47,7 @@ public class ConfigurationEditor extends Dialog {
 	Text loggingNameText;
 	Button loggingConsoleButton;
 	Button loggingTimeButton;
+	Button loggingSoarPrintButton;
 	
 	// agents
 	Text agentsNameText;
@@ -81,6 +86,11 @@ public class ConfigurationEditor extends Dialog {
 	Text winningScore;
 	Button terminalFoodRemaining;
 	Button terminalUnopenedBoxes;
+	Button terminalMaxRuns;
+	Text maxRuns;
+	Button terminalPassengerDelivered;
+	Button terminalFuelRemaining;
+	Button terminalPassengerPickUp;
 	
 	// clients
 	ClientConfig clientConfig;
@@ -197,6 +207,11 @@ public class ConfigurationEditor extends Dialog {
 				config = new Configuration();
 				config.setType(Soar2D.config.getType());
 				config.setDefaultTerminals();
+				TreeItem clients = tree.getItem(4);
+				clients.removeAll();
+				TreeItem agents = tree.getItem(2);
+				agents.removeAll();
+				tree.redraw();
 				updateCurrentPage();
 			}
 		});
@@ -332,7 +347,6 @@ public class ConfigurationEditor extends Dialog {
 				public void widgetSelected(SelectionEvent e) {
 					config.setType(SimType.kTankSoar);
 					config.setDefaultTerminals();
-					config.setASyncDelay(0);
 					generalUpdate();
 				}
 			});
@@ -349,7 +363,6 @@ public class ConfigurationEditor extends Dialog {
 				public void widgetSelected(SelectionEvent e) {
 					config.setType(SimType.kEaters);
 					config.setDefaultTerminals();
-					config.setASyncDelay(0);
 					generalUpdate();
 				}
 			});
@@ -366,7 +379,6 @@ public class ConfigurationEditor extends Dialog {
 				public void widgetSelected(SelectionEvent e) {
 					config.setType(SimType.kBook);
 					config.setDefaultTerminals();
-					config.setASyncDelay(500);
 					generalUpdate();
 				}
 			});
@@ -376,8 +388,37 @@ public class ConfigurationEditor extends Dialog {
 				bookButton.setLayoutData(gd);
 			}
 			
-			assert config.getType() != SimType.kKitchen;
-			assert config.getType() != SimType.kTaxi;
+			kitchenButton = new Button(simGroup, SWT.RADIO);
+			kitchenButton.setText("Kitchen");
+			kitchenButton.setSelection(config.getType() == SimType.kKitchen);
+			kitchenButton.addSelectionListener(new SelectionAdapter() {
+				public void widgetSelected(SelectionEvent e) {
+					config.setType(SimType.kKitchen);
+					config.setDefaultTerminals();
+					generalUpdate();
+				}
+			});
+			{
+				GridData gd = new GridData();
+				gd.horizontalAlignment = SWT.BEGINNING;
+				kitchenButton.setLayoutData(gd);
+			}
+			
+			taxiButton = new Button(simGroup, SWT.RADIO);
+			taxiButton.setText("Taxi");
+			taxiButton.setSelection(config.getType() == SimType.kTaxi);
+			taxiButton.addSelectionListener(new SelectionAdapter() {
+				public void widgetSelected(SelectionEvent e) {
+					config.setType(SimType.kTaxi);
+					config.setDefaultTerminals();
+					generalUpdate();
+				}
+			});
+			{
+				GridData gd = new GridData();
+				gd.horizontalAlignment = SWT.BEGINNING;
+				taxiButton.setLayoutData(gd);
+			}
 		}
 		
 		// map
@@ -437,7 +478,7 @@ public class ConfigurationEditor extends Dialog {
 		nogui.setText("Do not use GUI");
 		nogui.addSelectionListener(new SelectionAdapter() {
 			public void widgetSelected(SelectionEvent e) {
-				config.setNoGUI(config.getNoGUI());
+				config.setNoGUI(!config.getNoGUI());
 				generalUpdate();
 			}
 		});
@@ -448,7 +489,7 @@ public class ConfigurationEditor extends Dialog {
 			nogui.setLayoutData(gd);
 		}
 
-		// graphical
+		// 
 		Label asyncLabel = new Label(currentPage, SWT.NONE);
 		asyncLabel.setText("Asynchronous time slice, milliseconds (0: run synchronously):");
 		{
@@ -478,13 +519,43 @@ public class ConfigurationEditor extends Dialog {
 			async.setLayoutData(gd);
 		}
 		
+		// 
+		Label portLabel = new Label(currentPage, SWT.NONE);
+		portLabel.setText("Port to listen on:");
+		{
+			GridData gd = new GridData();
+			gd.horizontalAlignment = SWT.BEGINNING;
+			gd.horizontalSpan = 3;
+			portLabel.setLayoutData(gd);
+		}
+		
+		port = new Text(currentPage, SWT.SINGLE | SWT.BORDER);
+		port.addFocusListener(new FocusAdapter() {
+			public void focusLost(FocusEvent e) {
+				int newPort;
+				try {
+					newPort = Integer.parseInt(port.getText());
+				} catch (NumberFormatException exception) {
+					newPort = Soar2D.config.getPort();
+				}
+				config.setPort(newPort);
+				generalUpdate();
+			}
+		});
+		{
+			GridData gd = new GridData();
+			gd.horizontalAlignment = GridData.FILL;
+			gd.horizontalSpan = 3;
+			port.setLayoutData(gd);
+		}
+		
 
 		// world display
 		hide = new Button(currentPage, SWT.CHECK);
 		hide.setText("Hide world");
 		hide.addSelectionListener(new SelectionAdapter() {
 			public void widgetSelected(SelectionEvent e) {
-				config.setHide(config.getHide());
+				config.setHide(!config.getHide());
 				generalUpdate();
 			}
 		});
@@ -500,7 +571,11 @@ public class ConfigurationEditor extends Dialog {
 		useSeed.setText("Use random seed");
 		useSeed.addSelectionListener(new SelectionAdapter() {
 			public void widgetSelected(SelectionEvent e) {
-				config.setRandomSeed(0);
+				if (config.hasRandomSeed()) {
+					config.unsetRandomSeed();
+				} else {
+					config.setRandomSeed(0);
+				}
 				generalUpdate();
 			}
 		});
@@ -557,6 +632,21 @@ public class ConfigurationEditor extends Dialog {
 			remote.setLayoutData(gd);
 		}
 
+		silentagent = new Button(currentPage, SWT.CHECK);
+		silentagent.setText("Execute 'watch 0' after source");
+		silentagent.addSelectionListener(new SelectionAdapter() {
+			public void widgetSelected(SelectionEvent e) {
+				config.setSilentAgents(!config.getSilentAgents());
+				generalUpdate();
+			}
+		});
+		{
+			GridData gd = new GridData();
+			gd.horizontalAlignment = SWT.BEGINNING;
+			gd.horizontalSpan = 3;
+			silentagent.setLayoutData(gd);
+		}
+
 		generalUpdate();
 		
 		rhs.layout(true);
@@ -569,30 +659,48 @@ public class ConfigurationEditor extends Dialog {
 			eatersButton.setSelection(true);
 			tanksoarButton.setSelection(false);
 			bookButton.setSelection(false);
+			kitchenButton.setSelection(false);
+			taxiButton.setSelection(false);
 			break;
 		case kTankSoar:
 			eatersButton.setSelection(false);
 			tanksoarButton.setSelection(true);
 			bookButton.setSelection(false);
+			kitchenButton.setSelection(false);
+			taxiButton.setSelection(false);
 			break;
 		case kBook:
 			eatersButton.setSelection(false);
 			tanksoarButton.setSelection(false);
 			bookButton.setSelection(true);
+			kitchenButton.setSelection(false);
+			taxiButton.setSelection(false);
 			break;
 		case kKitchen:
-			assert false;
+			eatersButton.setSelection(false);
+			tanksoarButton.setSelection(false);
+			bookButton.setSelection(false);
+			kitchenButton.setSelection(true);
+			taxiButton.setSelection(false);
+			break;
 		case kTaxi:
-			assert false;
+			eatersButton.setSelection(false);
+			tanksoarButton.setSelection(false);
+			bookButton.setSelection(false);
+			kitchenButton.setSelection(false);
+			taxiButton.setSelection(true);
+			break;
 		}
 		mapText.setText(config.getMap().getAbsolutePath());
 		nogui.setSelection(config.getNoGUI());
 		async.setText(Integer.toString(config.getASyncDelay()));
+		port.setText(Integer.toString(config.getPort()));
 		hide.setSelection(config.getHide());
-		useSeed.setSelection(!config.hasRandomSeed());
+		useSeed.setSelection(config.hasRandomSeed());
 		seedText.setEnabled(useSeed.getSelection());
 		seedText.setText(Integer.toString(config.getRandomSeed()));
 		remote.setSelection(config.getRemote());
+		silentagent.setSelection(config.getSilentAgents());
 	}
 
 	public void loggingPage() {
@@ -725,7 +833,7 @@ public class ConfigurationEditor extends Dialog {
 		loggingTimeButton.setText("Print a time stamp with each message");
 		loggingTimeButton.addSelectionListener(new SelectionAdapter() {
 			public void widgetSelected(SelectionEvent e) {
-				config.setLogTime(config.getLogTime());
+				config.setLogTime(!config.getLogTime());
 				loggingUpdate();
 			}
 		});
@@ -775,6 +883,21 @@ public class ConfigurationEditor extends Dialog {
 			}
 		});
 
+		// log soar print events
+		loggingSoarPrintButton = new Button(currentPage, SWT.CHECK);
+		loggingSoarPrintButton.setText("Log Soar print events to Soar2D log");
+		loggingSoarPrintButton.addSelectionListener(new SelectionAdapter() {
+			public void widgetSelected(SelectionEvent e) {
+				config.setLogSoarPrint(!config.getLogSoarPrint());
+				loggingUpdate();
+			}
+		});
+		{
+			GridData gd = new GridData();
+			gd.horizontalAlignment = SWT.BEGINNING;
+			loggingSoarPrintButton.setLayoutData(gd);
+		}
+		
 		loggingUpdate();
 
 		rhs.layout(true);
@@ -792,6 +915,7 @@ public class ConfigurationEditor extends Dialog {
 		}
 		loggingConsoleButton.setSelection(config.getLogConsole());
 		loggingTimeButton.setSelection(config.getLogTime());
+		loggingSoarPrintButton.setSelection(config.getLogSoarPrint());
 	}
 	
 	public void agentsPage(final TreeItem selectedItem, int selectedIndex) {
@@ -1655,6 +1779,86 @@ public class ConfigurationEditor extends Dialog {
 			terminalUnopenedBoxes.setLayoutData(gd);
 		}
 
+		terminalMaxRuns = new Button(currentPage, SWT.CHECK);
+		terminalMaxRuns.setText("Number of runs to complete before stopping");
+		terminalMaxRuns.setSelection(config.getTerminalMaxRuns() > 0);
+		terminalMaxRuns.addSelectionListener(new SelectionAdapter() {
+			public void widgetSelected(SelectionEvent e) {
+				terminalsUpdate();
+			}
+		});
+		{
+			GridData gd = new GridData();
+			terminalMaxRuns.setLayoutData(gd);
+		}
+		
+		// max updates requires a number of updates
+		maxRuns = new Text(currentPage, SWT.SINGLE | SWT.BORDER);
+		maxRuns.addFocusListener(new FocusAdapter() {
+			public void focusLost(FocusEvent e) {
+				try {
+					config.setTerminalMaxRuns(Integer.parseInt(maxRuns.getText()));
+				} catch (NumberFormatException exeption) {}
+				terminalsUpdate();
+			}
+		});
+		maxRuns.addKeyListener(new KeyAdapter() {
+			public void keyPressed(KeyEvent e) {
+				if (!Character.isDigit(e.character)) {
+					e.doit = false;
+				}
+			}
+			public void keyReleased(KeyEvent e) {
+				terminalsUpdate();
+			}
+		});
+		{
+			GridData gd = new GridData();
+			gd.horizontalAlignment = GridData.FILL;
+			gd.horizontalIndent = 20;
+			gd.grabExcessHorizontalSpace = true;
+			maxRuns.setLayoutData(gd);
+		}
+
+		terminalPassengerDelivered = new Button(currentPage, SWT.CHECK);
+		terminalPassengerDelivered.setText("Stop when the passenger is delivered (Taxi)");
+		terminalPassengerDelivered.setSelection(config.getTerminalPassengerDelivered());
+		terminalPassengerDelivered.addSelectionListener(new SelectionAdapter() {
+			public void widgetSelected(SelectionEvent e) {
+				config.setTerminalPassengerDelivered(terminalPassengerDelivered.getSelection());
+			}
+		});
+		{
+			GridData gd = new GridData();
+			terminalPassengerDelivered.setLayoutData(gd);
+		}
+
+		terminalFuelRemaining = new Button(currentPage, SWT.CHECK);
+		terminalFuelRemaining.setText("Stop when there is no fuel remaining (Taxi)");
+		terminalFuelRemaining.setSelection(config.getTerminalFoodRemaining());
+		terminalFuelRemaining.addSelectionListener(new SelectionAdapter() {
+			public void widgetSelected(SelectionEvent e) {
+				config.setTerminalFoodRemaining(terminalFuelRemaining.getSelection());
+			}
+		});
+		{
+			GridData gd = new GridData();
+			terminalFuelRemaining.setLayoutData(gd);
+		}
+
+		terminalPassengerPickUp = new Button(currentPage, SWT.CHECK);
+		terminalPassengerPickUp.setText("Stop when the passenger is picked up (Taxi)");
+		terminalPassengerPickUp.setSelection(config.getTerminalPassengerPickUp());
+		terminalPassengerPickUp.addSelectionListener(new SelectionAdapter() {
+			public void widgetSelected(SelectionEvent e) {
+				config.setTerminalPassengerPickUp(terminalPassengerPickUp.getSelection());
+			}
+		});
+		{
+			GridData gd = new GridData();
+			terminalPassengerPickUp.setLayoutData(gd);
+		}
+
 		terminalsUpdate();
 		
 		rhs.layout(true);
@@ -1677,6 +1881,15 @@ public class ConfigurationEditor extends Dialog {
 			winningScore.setEnabled(false);
 			winningScore.setText("");
 		}
+		
+		if (terminalMaxRuns.getSelection()) {
+			maxRuns.setEnabled(true);
+			maxRuns.setText(Integer.toString(config.getTerminalMaxRuns()));
+		} else {
+			maxRuns.setEnabled(false);
+			maxRuns.setText("");
+		}
+		
 	}
 	
 	public void clientsPage(final TreeItem selectedItem, int selectedIndex) {
@@ -1891,6 +2104,7 @@ public class ConfigurationEditor extends Dialog {
 						TreeItem newClient = new TreeItem(clients, SWT.NONE);
 						String name = clientConfig.name;
 						newClient.setText(name);
+						clients.setExpanded(true);
 						tree.redraw();
 						clientsUpdate(selectedItem);
 					}

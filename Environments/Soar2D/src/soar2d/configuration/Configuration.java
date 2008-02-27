@@ -320,6 +320,10 @@ public class Configuration {
 			general.addContent(new Element(kTagNoGUI));
 		}
 		
+		if (this.getSilentAgents()) {
+			general.addContent(new Element(kTagSilentAgents));
+		}
+		
 		if (this.getASyncDelay() > 0) {
 			general.addContent(new Element(kTagASync).setText(Integer.toString(this.getASyncDelay())));
 		}
@@ -766,7 +770,24 @@ public class Configuration {
 	
 	// terminals
 	public void setDefaultTerminals() {
+		clearAllTerminals();
 		cModule.setDefaultTerminals(this);
+	}
+	
+	private void clearAllTerminals() {
+		this.terminalAgentCommand = false;
+		this.terminalFoodRemaining = false;
+		this.terminalFoodRemainingContinue = 0;
+		this.terminalFuelRemaining = false;
+		this.terminalMaxRuns = 0;
+		this.terminalMaxUpdates = 0;
+		this.terminalMaxUpdatesContinue = false;
+		this.terminalPassengerDelivered = false;
+		this.terminalPassengerPickUp = false;
+		this.terminalPointsRemaining = false;
+		this.terminalUnopenedBoxes = false;
+		this.terminalWinningScore = 0;
+		this.terminalWinningScoreContinue = false;
 	}
 
 	// terminal points remaining

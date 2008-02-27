@@ -142,14 +142,13 @@ public class WindowManager {
 		if (shell == null) {
 			display.dispose();
 			display = null;
-			return false;
-		}
+			return false;		}
 		initColors(display);
 		return true;
 	}
 	
 	public boolean using() {
-		return shell != null;
+		return !Soar2D.config.getNoGUI();
 	}
 	
 	public void setupEaters() {

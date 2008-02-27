@@ -195,8 +195,6 @@ public class BookConfiguration extends BaseConfiguration implements IConfigurati
 		this.continuous = bConfig.continuous;
 	}
 	public void setDefaultTerminals(Configuration configuration) {
-		configuration.setTerminalWinningScore(0);
-		configuration.setTerminalFoodRemaining(false);
 	}
 
 	public boolean getRunTilOutput() {
