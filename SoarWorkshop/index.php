@@ -199,16 +199,20 @@
 			University of Michigan North Campus.</p>
 		<ul>
 			<li>
+				<strong>Holiday Inn</strong>
+				<ul>
+				<li><font color="red">Ask for Soar Workshop rooms, must reserve before April 11!</font></li>
+				<li>800-800-5560; fax: 734-769-4747; <a href="http://hiannarbor.com/">
+					http://hiannarbor.com/</a></li>
+				</ul></li>
+			<li>
 				<strong>Hawthorn Suites</strong> 734-327-0011; fax: 743-327-6109; <a href="http://www.hawthorn.com/">
 					http://www.hawthorn.com/</a>
 			<li>
 
-				<strong>Microtel</strong> 734-997-9100; fax: 734-997-9012; <a href="http://www.microtelinn.com/reservations/locationdetail.asp?facid=2058">
+				<strong>Microtel</strong> <font color="red">possibly sold out</font>
+				734-997-9100; fax: 734-997-9012; <a href="http://www.microtelinn.com/reservations/locationdetail.asp?facid=2058">
 					http://www.microtelinn.com/reservations/locationdetail.asp?facid=2058</a>
-			<li>
-				<strong>Holiday Inn</strong> &nbsp;800-800-5560; fax: 734-769-4747; <a href="http://hiannarbor.com/">
-					http://hiannarbor.com/</a></li>
-
 		</ul>
 		<p>
 			Two hotels very close but not adjacent:</p>
