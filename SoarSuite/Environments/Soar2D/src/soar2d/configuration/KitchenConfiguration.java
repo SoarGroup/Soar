@@ -47,8 +47,6 @@ public class KitchenConfiguration extends BaseConfiguration implements IConfigur
 	}
 	
 	public void setDefaultTerminals(Configuration configuration) {
-		configuration.setTerminalWinningScore(0);
-		configuration.setTerminalFoodRemaining(false);
 	}
 
 	public boolean getRunTilOutput() {

@@ -2,7 +2,7 @@
 	<general>
 		?<tosca> (presence of this tag enables tosca)
 		<game>
-			enum { tanksoar, eaters, book, kitchen }
+			enum { tanksoar, eaters, book, kitchen, taxi }
 		<map>
 			string filename
 		?<port>

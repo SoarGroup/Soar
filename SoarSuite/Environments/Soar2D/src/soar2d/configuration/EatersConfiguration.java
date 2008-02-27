@@ -148,7 +148,6 @@ public class EatersConfiguration extends BaseConfiguration implements IConfigura
 	}
 	
 	public void setDefaultTerminals(Configuration configuration) {
-		configuration.setTerminalWinningScore(0);
 		configuration.setTerminalFoodRemaining(true);
 	}
 
