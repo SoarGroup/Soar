@@ -168,7 +168,7 @@ public class SoarRobot extends Robot {
 			agent.Update(selfIL.col, location.x);
 			agent.Update(selfIL.row, location.y);
 			
-			if (Soar2D.bConfig.getContinuous()) {
+			if (Soar2D.config.bConfig.getContinuous()) {
 				Point2D.Double floatLocation = players.getFloatLocation(this);
 				agent.Update(selfIL.x, floatLocation.x);
 				agent.Update(selfIL.y, floatLocation.y);
@@ -181,7 +181,7 @@ public class SoarRobot extends Robot {
 			agent.Update(selfIL.cycle, world.getWorldCount());
 		}
 		
-		if (Soar2D.bConfig.getContinuous()) {
+		if (Soar2D.config.bConfig.getContinuous()) {
 			// velocity
 			agent.Update(selfIL.speed, Math.sqrt((getVelocity().x * getVelocity().x) + (getVelocity().y * getVelocity().y)));
 			agent.Update(selfIL.dx, getVelocity().x);
@@ -232,7 +232,7 @@ public class SoarRobot extends Robot {
 			CellObject bObj = bookObjectIter.next();
 			GridMap.BookObjectInfo bInfo = map.getBookObjectInfo(bObj);
 			if (bInfo.area == locationId) {
-				double maxAngleOff = Soar2D.bConfig.getVisionCone() / 2;
+				double maxAngleOff = Soar2D.config.bConfig.getVisionCone() / 2;
 				double angleOff = players.angleOff(this, bInfo.floatLocation);
 				if (Math.abs(angleOff) <= maxAngleOff) {
 					selfIL.addOrUpdateObject(bInfo, world, angleOff);
@@ -301,7 +301,7 @@ public class SoarRobot extends Robot {
 			return new MoveInfo();
 		}
 
-		if (Soar2D.bConfig.getContinuous()) 
+		if (Soar2D.config.bConfig.getContinuous()) 
 			return getMoveContinuous();
 		return getMoveDiscrete();
 	}
@@ -417,7 +417,7 @@ public class SoarRobot extends Robot {
 					continue;
 				}
 				if (oIL.row.GetValue() != selfIL.row.GetValue() || oIL.col.GetValue() != selfIL.col.GetValue())
-				if (oIL.range.GetValue() > Soar2D.bConfig.getBookCellSize()) {
+				if (oIL.range.GetValue() > Soar2D.config.bConfig.getBookCellSize()) {
 					logger.warning(getName() + " get command object not in same cell");
 					commandId.AddStatusError();
 					continue;
@@ -695,7 +695,7 @@ public class SoarRobot extends Robot {
 					commandId.AddStatusError();
 					continue;
 				}
-				if (oIL.range.GetValue() > Soar2D.bConfig.getBookCellSize()) {
+				if (oIL.range.GetValue() > Soar2D.config.bConfig.getBookCellSize()) {
 					logger.warning(getName() + " get command object out of range");
 					commandId.AddStatusError();
 					continue;

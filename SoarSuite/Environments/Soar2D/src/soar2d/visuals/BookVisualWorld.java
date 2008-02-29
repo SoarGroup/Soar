@@ -71,7 +71,7 @@ public class BookVisualWorld extends VisualWorld {
 					
 					if (map.getAllWithProperty(location, Names.kPropertyGatewayRender).size() == 0) {
 
-						if (!Soar2D.bConfig.getColoredRooms()) {
+						if (!Soar2D.config.bConfig.getColoredRooms()) {
 							// normal:
 							gc.setBackground(WindowManager.widget_background);
 						} else {

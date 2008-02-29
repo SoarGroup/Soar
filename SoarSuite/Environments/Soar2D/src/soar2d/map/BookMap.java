@@ -44,10 +44,10 @@ public class BookMap extends GridMap {
 			BookObjectInfo info = new BookObjectInfo();
 			info.location = new Point(location);
 			info.floatLocation = new Point2D.Double();
-			info.floatLocation.x = info.location.x * Soar2D.bConfig.getBookCellSize();
-			info.floatLocation.y = info.location.y * Soar2D.bConfig.getBookCellSize();
-			info.floatLocation.x += Soar2D.bConfig.getBookCellSize() / 2.0;
-			info.floatLocation.y += Soar2D.bConfig.getBookCellSize() / 2.0;
+			info.floatLocation.x = info.location.x * Soar2D.config.bConfig.getBookCellSize();
+			info.floatLocation.y = info.location.y * Soar2D.config.bConfig.getBookCellSize();
+			info.floatLocation.x += Soar2D.config.bConfig.getBookCellSize() / 2.0;
+			info.floatLocation.y += Soar2D.config.bConfig.getBookCellSize() / 2.0;
 			info.object = object;
 			if (!object.hasProperty("object-id")) {
 				object.addProperty("object-id", Integer.toString(newObjectId()));
@@ -199,31 +199,31 @@ public class BookMap extends GridMap {
 					// horizontal
 					m = left.x;
 					n = right.x;
-					centerpoint.y = left.y * Soar2D.bConfig.getBookCellSize();
+					centerpoint.y = left.y * Soar2D.config.bConfig.getBookCellSize();
 					break;
 				case Direction.kEastInt:
 				case Direction.kWestInt:
 					// vertical
 					m = left.y;
 					n = right.y;
-					centerpoint.x = left.x * Soar2D.bConfig.getBookCellSize();
+					centerpoint.x = left.x * Soar2D.config.bConfig.getBookCellSize();
 					break;
 				}
 			} else {
 				// single block
-				centerpoint.x = left.x * Soar2D.bConfig.getBookCellSize();
-				centerpoint.y = left.y * Soar2D.bConfig.getBookCellSize();
+				centerpoint.x = left.x * Soar2D.config.bConfig.getBookCellSize();
+				centerpoint.y = left.y * Soar2D.config.bConfig.getBookCellSize();
 
 				switch (direction) {
 				case Direction.kNorthInt:
-					centerpoint.y += Soar2D.bConfig.getBookCellSize();
+					centerpoint.y += Soar2D.config.bConfig.getBookCellSize();
 				case Direction.kSouthInt:
-					centerpoint.x += Soar2D.bConfig.getBookCellSize() / 2;
+					centerpoint.x += Soar2D.config.bConfig.getBookCellSize() / 2;
 					break;
 				case Direction.kWestInt:
-					centerpoint.x += Soar2D.bConfig.getBookCellSize();
+					centerpoint.x += Soar2D.config.bConfig.getBookCellSize();
 				case Direction.kEastInt:
-					centerpoint.y += Soar2D.bConfig.getBookCellSize() / 2;
+					centerpoint.y += Soar2D.config.bConfig.getBookCellSize() / 2;
 					break;
 				}
 				return centerpoint;
@@ -242,23 +242,23 @@ public class BookMap extends GridMap {
 			if (left.x == right.x) {
 				// vertical
 				// add half to y
-				centerpoint.y = upperLeft.y * Soar2D.bConfig.getBookCellSize();
-				centerpoint.y += (numberOfBlocks / 2.0) * Soar2D.bConfig.getBookCellSize();
+				centerpoint.y = upperLeft.y * Soar2D.config.bConfig.getBookCellSize();
+				centerpoint.y += (numberOfBlocks / 2.0) * Soar2D.config.bConfig.getBookCellSize();
 				
 				// if west, we gotta add a cell size to x
 				if (direction == Direction.kWestInt) {
-					centerpoint.x += Soar2D.bConfig.getBookCellSize();
+					centerpoint.x += Soar2D.config.bConfig.getBookCellSize();
 				}
 				
 			} else {
 				// horizontal
 				// add half to x
-				centerpoint.x = upperLeft.x * Soar2D.bConfig.getBookCellSize();
-				centerpoint.x += (numberOfBlocks / 2.0) * Soar2D.bConfig.getBookCellSize();
+				centerpoint.x = upperLeft.x * Soar2D.config.bConfig.getBookCellSize();
+				centerpoint.x += (numberOfBlocks / 2.0) * Soar2D.config.bConfig.getBookCellSize();
 
 				// if north, we gotta add a cell size to y
 				if (direction == Direction.kNorthInt) {
-					centerpoint.y += Soar2D.bConfig.getBookCellSize();
+					centerpoint.y += Soar2D.config.bConfig.getBookCellSize();
 				}
 			}
 			return centerpoint;
