@@ -40,7 +40,7 @@ class ObjectInputLink {
 		{
 			this.col = robot.agent.CreateIntWME(position, "col", info.location.x);
 			this.row = robot.agent.CreateIntWME(position, "row", info.location.y);
-			if (Soar2D.bConfig.getContinuous()) {
+			if (Soar2D.config.bConfig.getContinuous()) {
 				this.x = robot.agent.CreateFloatWME(position, "x", info.floatLocation.x);
 				this.y = robot.agent.CreateFloatWME(position, "y", info.floatLocation.y);
 			}

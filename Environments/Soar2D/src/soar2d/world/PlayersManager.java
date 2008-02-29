@@ -129,7 +129,7 @@ public class PlayersManager {
 		playerVector.x = floatLocations.get(left).x;
 		playerVector.y = floatLocations.get(left).y;
 
-		if (Soar2D.bConfig.getContinuous() == false) {
+		if (Soar2D.config.bConfig.getContinuous() == false) {
 			// translate the player's location back a little bit to increase peripheral vision
 			playerVector.x -= Math.cos(left.getHeadingRadians());
 			playerVector.y -= Math.sin(left.getHeadingRadians());

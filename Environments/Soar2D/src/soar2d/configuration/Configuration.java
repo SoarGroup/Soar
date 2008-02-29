@@ -24,6 +24,12 @@ import soar2d.player.*;
  */
 public class Configuration {
 	
+	public TankSoarConfiguration tConfig;
+	public EatersConfiguration eConfig;
+	public BookConfiguration bConfig;
+	public KitchenConfiguration kConfig;
+	public TaxiConfiguration xConfig;
+
 	// misc non-configurable configuration
 
 	public Configuration() {}
@@ -162,27 +168,32 @@ public class Configuration {
 	public enum SimType { kEaters, kTankSoar, kBook, kKitchen, kTaxi }	
 	private IConfiguration cModule;
 	public void setType(SimType simType) {
+		bConfig = null;
+		eConfig = null;
+		kConfig = null;
+		tConfig = null;
+		xConfig = null;
 		this.simType = simType;
 		switch (simType) {
 		case kBook:
 			cModule = new BookConfiguration();
-			Soar2D.bConfig = (BookConfiguration)cModule.getModule();
+			bConfig = (BookConfiguration)cModule.getModule();
 			break;
 		case kEaters:
 			cModule = new EatersConfiguration(); 
-			Soar2D.eConfig = (EatersConfiguration)cModule.getModule();
+			eConfig = (EatersConfiguration)cModule.getModule();
 			break;
 		case kKitchen:
 			cModule = new KitchenConfiguration(); 
-			Soar2D.kConfig = (KitchenConfiguration)cModule.getModule();
+			kConfig = (KitchenConfiguration)cModule.getModule();
 			break;
 		case kTankSoar:
 			cModule = new TankSoarConfiguration(); 
-			Soar2D.tConfig = (TankSoarConfiguration)cModule.getModule();
+			tConfig = (TankSoarConfiguration)cModule.getModule();
 			break;
 		case kTaxi:
 			cModule = new TaxiConfiguration(); 
-			Soar2D.xConfig = (TaxiConfiguration)cModule.getModule();
+			xConfig = (TaxiConfiguration)cModule.getModule();
 			break;
 		}
 	}

@@ -181,7 +181,7 @@ public class TankSoarAgentDisplay extends AgentDisplay {
 
 		m_Radar = new ProgressBar(row5, SWT.NONE | SWT.VERTICAL);
 		m_Radar.setMinimum(0);
-		m_Radar.setMaximum(Soar2D.tConfig.getRadarHeight());
+		m_Radar.setMaximum(Soar2D.config.tConfig.getRadarHeight());
 		{
 			GridData gd = new GridData();
 			gd.heightHint = m_AgentWorld.getHeight();

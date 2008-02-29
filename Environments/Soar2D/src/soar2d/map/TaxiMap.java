@@ -21,11 +21,11 @@ public class TaxiMap extends GridMap {
 	public TaxiMap(Configuration config) {
 		super(config);
 		
-		fuel = Simulation.random.nextInt(1 + Soar2D.xConfig.getFuelStartingMaximum() - Soar2D.xConfig.getFuelStartingMinimum() ) + Soar2D.xConfig.getFuelStartingMinimum(); 
+		fuel = Simulation.random.nextInt(1 + Soar2D.config.xConfig.getFuelStartingMaximum() - Soar2D.config.xConfig.getFuelStartingMinimum() ) + Soar2D.config.xConfig.getFuelStartingMinimum(); 
 	}
 	
 	public void consumeFuel() {
-		if (Soar2D.xConfig.getDisableFuel()) {
+		if (Soar2D.config.xConfig.getDisableFuel()) {
 			logger.info("fuel consumption disabled");
 		}
 		logger.info("fuel: " + Integer.toString(fuel) + " -> " + Integer.toString(fuel-1));
@@ -218,7 +218,7 @@ public class TaxiMap extends GridMap {
 		if (fuelObject == null) {
 			return false;
 		}
-		int maximum = Soar2D.xConfig.getFuelMaximum();
+		int maximum = Soar2D.config.xConfig.getFuelMaximum();
 		logger.info("fuel: " + Integer.toString(fuel) + " -> " + maximum + " (fillup)");
 		fuel = maximum;
 		return true;

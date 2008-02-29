@@ -34,7 +34,7 @@ public class Dog extends Player {
 				}
 				if (player.getLocationId() == this.getLocationId()) {
 					double angleOff = players.angleOff(this, player);
-					double maxAngleOff = Soar2D.bConfig.getVisionCone() / 2;
+					double maxAngleOff = Soar2D.config.bConfig.getVisionCone() / 2;
 					if (Math.abs(angleOff) <= maxAngleOff) {
 						target = player;
 						targetAngleOff = angleOff;
