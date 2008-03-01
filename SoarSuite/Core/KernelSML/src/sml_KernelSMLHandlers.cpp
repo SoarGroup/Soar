@@ -1344,6 +1344,10 @@ bool KernelSML::HandleCommandLine(gSKI::Agent* pAgent, char const* pCommandName,
 				if (pFilteredOutput == NULL)
 					pFilteredOutput = "" ;
 
+            if(filteredError)
+            {
+               pConnection->AddErrorToSMLResponse(pResponse, pFilteredOutput, -1) ;
+            }
 				bool res = this->ReturnResult(pConnection, pResponse, pFilteredOutput) ;
 
 				// Can only clean this up after we're finished using it or pFilteredLine will become invalid
@@ -1388,3 +1392,4 @@ bool KernelSML::HandleExpandCommandLine(gSKI::Agent* pAgent, char const* pComman
 	// Make the call.
 	return m_CommandLineInterface.ExpandCommand(pConnection, pLine, pResponse) ;
 }
+
