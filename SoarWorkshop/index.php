@@ -201,7 +201,7 @@
 			<li>
 				<strong>Holiday Inn</strong>
 				<ul>
-				<li><font color="red">Ask for Soar Workshop rooms, must reserve before April 11!</font></li>
+				<li><font color="red">Ask for <strong>Soar Workshop</strong> rooms, must reserve before April 11!</font></li>
 				<li>800-800-5560; fax: 734-769-4747; <a href="http://hiannarbor.com/">
 					http://hiannarbor.com/</a></li>
 				</ul></li>
