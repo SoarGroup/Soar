@@ -11,6 +11,7 @@ import soar2d.Names;
 import soar2d.Simulation;
 import soar2d.Soar2D;
 import soar2d.map.CellObject;
+import soar2d.player.InputLinkMetadata;
 import soar2d.player.MoveInfo;
 import soar2d.player.Player;
 import soar2d.player.PlayerConfig;
@@ -67,6 +68,8 @@ public class SoarEater extends Eater {
 	 *  the same location)
 	 */
 	boolean fragged = false;
+	
+	InputLinkMetadata metadata;
 
 	/**
 	 * @param agent a valid soar agent
@@ -104,8 +107,25 @@ public class SoarEater extends Eater {
 		generateNewRandom();
 		randomWME = agent.CreateFloatWME(agent.GetInputLink(), Names.kRandomID, random);
 		
+		loadMetadata();
+		
 		if (!agent.Commit()) {
 			Soar2D.control.severeError("Failed to commit input to Soar agent " + this.getName());
+			Soar2D.control.stopSimulation();
+		}
+	}
+	
+	private void loadMetadata() {
+		metadata = new InputLinkMetadata(agent);
+		try {
+			if (Soar2D.config.getMetadata() != null) {
+				metadata.load(Soar2D.config.getMetadata());
+			}
+			if (Soar2D.simulation.world.getMap().getMetadata() != null) {
+				metadata.load(Soar2D.simulation.world.getMap().getMetadata());
+			}
+		} catch (Exception e) {
+			Soar2D.control.severeError("Failed to load metadata: " + this.getName() + ": " + e.getMessage());
 			Soar2D.control.stopSimulation();
 		}
 	}
@@ -641,6 +661,11 @@ public class SoarEater extends Eater {
 		
 		updateFacingWME();
 		updateScoreWME();
+		
+		metadata.destroy();
+		metadata = null;
+		loadMetadata();
+
 		if (!agent.Commit()) {
 			Soar2D.control.severeError("Failed to commit input to Soar agent " + this.getName());
 			Soar2D.control.stopSimulation();

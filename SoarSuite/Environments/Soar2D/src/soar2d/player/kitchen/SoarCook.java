@@ -13,6 +13,7 @@ import soar2d.Simulation;
 import soar2d.Soar2D;
 import soar2d.map.CellObject;
 import soar2d.map.KitchenMap;
+import soar2d.player.InputLinkMetadata;
 import soar2d.player.MoveInfo;
 import soar2d.player.PlayerConfig;
 import soar2d.world.World;
@@ -27,6 +28,8 @@ public class SoarCook extends Cook {
 	FloatElement randomWME;
 	Identifier self, view, cell;
 	
+	InputLinkMetadata metadata;
+
 	class ObjectInputLink {
 		private Identifier objectIdentifier;
 		private StringElement texture, color, smell;
@@ -110,8 +113,25 @@ public class SoarCook extends Cook {
 		cell = agent.CreateIdWME(agent.GetInputLink(), "cell");
 		type = agent.CreateStringWME(cell, "type", "normal");
 		randomWME = agent.CreateFloatWME(agent.GetInputLink(), "random", random);
+		
+		loadMetadata();
 	}
 
+	private void loadMetadata() {
+		metadata = new InputLinkMetadata(agent);
+		try {
+			if (Soar2D.config.getMetadata() != null) {
+				metadata.load(Soar2D.config.getMetadata());
+			}
+			if (Soar2D.simulation.world.getMap().getMetadata() != null) {
+				metadata.load(Soar2D.simulation.world.getMap().getMetadata());
+			}
+		} catch (Exception e) {
+			Soar2D.control.severeError("Failed to load metadata: " + this.getName() + ": " + e.getMessage());
+			Soar2D.control.stopSimulation();
+		}
+	}
+	
 	@Override
 	public void moveWithObjectFailed() {
 		moveWithObjectCommand.AddStatusError();
@@ -371,9 +391,12 @@ public class SoarCook extends Cook {
 		agent.DestroyWME(self);
 		agent.DestroyWME(view);
 		agent.DestroyWME(cell);
+		metadata.destroy();
+		metadata = null;
 		
 		initInputLink();
-		
+
+
 		if (!agent.Commit()) {
 			Soar2D.control.severeError("Failed to commit input to Soar agent " + this.getName());
 			Soar2D.control.stopSimulation();

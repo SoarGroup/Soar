@@ -21,3 +21,6 @@
 			+<cell>
 				*<object>
 					string name
+	?<metadata>
+		string path to file
+	

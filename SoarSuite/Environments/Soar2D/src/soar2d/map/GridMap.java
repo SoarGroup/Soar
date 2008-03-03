@@ -2,6 +2,7 @@ package soar2d.map;
 
 import java.awt.Point;
 import java.awt.geom.Point2D;
+import java.io.File;
 import java.io.IOException;
 import java.util.*;
 import java.util.logging.Logger;
@@ -72,12 +73,12 @@ public abstract class GridMap {
 					cellObject(child);
 				} else if (child.getName().equalsIgnoreCase(kTagCells)) {
 					cells(child);
+				} else if (child.getName().equalsIgnoreCase(kTagMetadata)) {
+					setMetadata(new File(child.getTextTrim()));
 				} else {
 					throw new LoadError("unrecognized tag: " + child.getName());
 				}
 			}
-			
-			
 			
 		} catch (IOException e) {
 			throw new LoadError("I/O exception: " + e.getMessage());
@@ -88,6 +89,16 @@ public abstract class GridMap {
 		}
 	}
 	
+	// metadata file
+	private File metadata;
+	private static final String kTagMetadata = "metadata";
+	public void setMetadata(File metadata) {
+		this.metadata = metadata.getAbsoluteFile();
+	}
+	public File getMetadata() {
+		return this.metadata;
+	}
+
 	public String generateXMLString() {
 		Element root = new Element(kTagMap);
 		
@@ -103,7 +114,11 @@ public abstract class GridMap {
 		Element cells = new Element(kTagCells);
 		cellsSave(cells);
 		root.addContent(cells);
-		
+
+		if (this.getMetadata() != null) {
+			root.addContent(new Element(kTagMetadata).setText(getMetadata().getPath()));
+		}
+
 		XMLOutputter out = new XMLOutputter(Format.getPrettyFormat());
 		return out.outputString(root);
 	}

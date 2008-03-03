@@ -5,6 +5,7 @@ import java.util.logging.*;
 
 import sml.*;
 import soar2d.*;
+import soar2d.player.InputLinkMetadata;
 import soar2d.player.MoveInfo;
 import soar2d.player.Player;
 import soar2d.player.PlayerConfig;
@@ -69,6 +70,8 @@ public class SoarTank extends Tank implements Agent.RunEventInterface {
 	private boolean attemptedMove = false;
 	private boolean mem_exceeded = false;
 	
+	InputLinkMetadata metadata;
+
 	public SoarTank(Agent agent, PlayerConfig playerConfig) {
 		super(playerConfig);
 		this.agent = agent;
@@ -86,6 +89,23 @@ public class SoarTank extends Tank implements Agent.RunEventInterface {
 		m_InputLink = agent.GetInputLink();
 
 		previousLocation = new java.awt.Point(-1, -1);
+		
+		loadMetadata();
+	}
+	
+	private void loadMetadata() {
+		metadata = new InputLinkMetadata(agent);
+		try {
+			if (Soar2D.config.getMetadata() != null) {
+				metadata.load(Soar2D.config.getMetadata());
+			}
+			if (Soar2D.simulation.world.getMap().getMetadata() != null) {
+				metadata.load(Soar2D.simulation.world.getMap().getMetadata());
+			}
+		} catch (Exception e) {
+			Soar2D.control.severeError("Failed to load metadata: " + this.getName() + ": " + e.getMessage());
+			Soar2D.control.stopSimulation();
+		}
 	}
 	
 	public void runEventHandler(int eventID, Object data, Agent agent, int phase) {
@@ -324,6 +344,11 @@ public class SoarTank extends Tank implements Agent.RunEventInterface {
 		if (agent == null) {
 			return;
 		}
+		
+		metadata.destroy();
+		metadata = null;
+		
+		loadMetadata();
 		
 		//agent.InitSoar();
 	}

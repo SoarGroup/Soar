@@ -18,6 +18,7 @@ import soar2d.map.BookMap;
 import soar2d.map.CellObject;
 import soar2d.map.GridMap;
 import soar2d.map.BookMap.Barrier;
+import soar2d.player.InputLinkMetadata;
 import soar2d.player.MoveInfo;
 import soar2d.player.Player;
 import soar2d.player.PlayerConfig;
@@ -34,6 +35,8 @@ public class SoarRobot extends Robot {
 	int oldLocationId;
 	
 	private ArrayList<String> shutdownCommands;	// soar commands to run before this agent is destroyed
+
+	InputLinkMetadata metadata;
 
 	/**
 	 * @param agent a valid soar agent
@@ -53,8 +56,25 @@ public class SoarRobot extends Robot {
 		selfIL = new SelfInputLink(this);
 		selfIL.initialize();
 		
+		loadMetadata();
+		
 		if (!agent.Commit()) {
 			Soar2D.control.severeError("Failed to commit input to Soar agent " + this.getName());
+			Soar2D.control.stopSimulation();
+		}
+	}
+	
+	private void loadMetadata() {
+		metadata = new InputLinkMetadata(agent);
+		try {
+			if (Soar2D.config.getMetadata() != null) {
+				metadata.load(Soar2D.config.getMetadata());
+			}
+			if (Soar2D.simulation.world.getMap().getMetadata() != null) {
+				metadata.load(Soar2D.simulation.world.getMap().getMetadata());
+			}
+		} catch (Exception e) {
+			Soar2D.control.severeError("Failed to load metadata: " + this.getName() + ": " + e.getMessage());
 			Soar2D.control.stopSimulation();
 		}
 	}
@@ -821,6 +841,9 @@ public class SoarRobot extends Robot {
 		
 		selfIL.destroy();
 
+		metadata.destroy();
+		metadata = null;
+
 		if (!agent.Commit()) {
 			Soar2D.control.severeError("Failed to commit input to Soar agent " + this.getName());
 			Soar2D.control.stopSimulation();
@@ -829,6 +852,7 @@ public class SoarRobot extends Robot {
 		agent.InitSoar();
 
 		selfIL.initialize();
+		loadMetadata();
 		agent.ClearOutputLinkChanges();
 		if (!agent.Commit()) {
 			Soar2D.control.severeError("Failed to commit input to Soar agent " + this.getName());
