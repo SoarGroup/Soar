@@ -83,12 +83,12 @@ public class EatersWorld implements IWorld {
 				map.setPlayer(oldLocation, null);
 				
 				if (move.jump) {
-					player.adjustPoints(Soar2D.eConfig.getJumpPenalty(), "jump penalty");
+					player.adjustPoints(Soar2D.config.eConfig.getJumpPenalty(), "jump penalty");
 				}
 				players.setLocation(player, newLocation);
 				
 			} else {
-				player.adjustPoints(Soar2D.eConfig.getWallPenalty(), "wall collision");
+				player.adjustPoints(Soar2D.config.eConfig.getWallPenalty(), "wall collision");
 			}
 		}
 	}

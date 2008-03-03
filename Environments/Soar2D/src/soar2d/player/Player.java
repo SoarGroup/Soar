@@ -154,6 +154,7 @@ public class Player {
 	 */
 	public void setFacingInt(int facingInt) {
 		this.facingInt = facingInt;
+		this.headingRadians = Direction.radiansOf[getFacingInt()];
 	}
 
 	public String getColor() {
@@ -194,9 +195,9 @@ public class Player {
 		previousLocation = new java.awt.Point(-1, -1);
 		
 		if (playerConfig.hasFacing()) {
-			this.facingInt = playerConfig.getFacing();
+			this.setFacingInt(playerConfig.getFacing());
 		} else {
-			this.facingInt = Simulation.random.nextInt(4) + 1;
+			this.setFacingInt(Simulation.random.nextInt(4) + 1);
 		}
 		
 		// Nick, for some reason, would like to keep the scores across resets
@@ -212,7 +213,6 @@ public class Player {
 		pointsChanged = true;
 		pointsDelta = 0;
 		
-		headingRadians = 0;
 		collisionX = false;
 		collisionY = false;
 		rotationSpeed = 0;

@@ -2,6 +2,7 @@ package soar2d.map;
 
 import java.awt.Point;
 import java.awt.geom.Point2D;
+import java.io.File;
 import java.io.IOException;
 import java.util.*;
 import java.util.logging.Logger;
@@ -72,12 +73,12 @@ public abstract class GridMap {
 					cellObject(child);
 				} else if (child.getName().equalsIgnoreCase(kTagCells)) {
 					cells(child);
+				} else if (child.getName().equalsIgnoreCase(kTagMetadata)) {
+					setMetadata(new File(child.getTextTrim()));
 				} else {
 					throw new LoadError("unrecognized tag: " + child.getName());
 				}
 			}
-			
-			
 			
 		} catch (IOException e) {
 			throw new LoadError("I/O exception: " + e.getMessage());
@@ -88,6 +89,16 @@ public abstract class GridMap {
 		}
 	}
 	
+	// metadata file
+	private File metadata;
+	private static final String kTagMetadata = "metadata";
+	public void setMetadata(File metadata) {
+		this.metadata = metadata.getAbsoluteFile();
+	}
+	public File getMetadata() {
+		return this.metadata;
+	}
+
 	public String generateXMLString() {
 		Element root = new Element(kTagMap);
 		
@@ -103,7 +114,11 @@ public abstract class GridMap {
 		Element cells = new Element(kTagCells);
 		cellsSave(cells);
 		root.addContent(cells);
-		
+
+		if (this.getMetadata() != null) {
+			root.addContent(new Element(kTagMetadata).setText(getMetadata().getPath()));
+		}
+
 		XMLOutputter out = new XMLOutputter(Format.getPrettyFormat());
 		return out.outputString(root);
 	}
@@ -646,12 +661,12 @@ public abstract class GridMap {
 			addWallAndRemoveFood(new java.awt.Point(col, size - 1));
 		}
 		
-		double probability = Soar2D.eConfig.getLowProbability();
+		double probability = Soar2D.config.eConfig.getLowProbability();
 		for (int row = 2; row < size - 2; ++row) {
 			for (int col = 2; col < size - 2; ++col) {
 				if (noWallsOnCorners(row, col)) {
 					if (wallOnAnySide(row, col)) {
-						probability = Soar2D.eConfig.getHighProbability();					
+						probability = Soar2D.config.eConfig.getHighProbability();					
 					}
 					if (Simulation.random.nextDouble() < probability) {
 						if (mapCells[row][col] == null) {
@@ -659,7 +674,7 @@ public abstract class GridMap {
 						}
 						addWallAndRemoveFood(new java.awt.Point(col, row));
 					}
-					probability = Soar2D.eConfig.getLowProbability();
+					probability = Soar2D.config.eConfig.getLowProbability();
 				}
 			}
 		}
@@ -1126,7 +1141,7 @@ public abstract class GridMap {
 			searchList.removeFirst();
 			parentCell = getCell(parentLocation);
 			distance = parentCell.distance;
-			if (distance >= Soar2D.tConfig.getMaxSmellDistance()) {
+			if (distance >= Soar2D.config.tConfig.getMaxSmellDistance()) {
 				//System.out.println(parentCell + " too far");
 				continue;
 			}

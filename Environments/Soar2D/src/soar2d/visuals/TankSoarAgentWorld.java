@@ -27,8 +27,8 @@ public class TankSoarAgentWorld extends Canvas implements PaintListener {
 	public TankSoarAgentWorld(Composite parent, int style) {
 		super(parent, style);
 		
-		radar = new Image[Soar2D.tConfig.getRadarWidth()][Soar2D.tConfig.getRadarHeight()];
-		tanks = new Color[Soar2D.tConfig.getRadarWidth()][Soar2D.tConfig.getRadarHeight()];
+		radar = new Image[Soar2D.config.tConfig.getRadarWidth()][Soar2D.config.tConfig.getRadarHeight()];
+		tanks = new Color[Soar2D.config.tConfig.getRadarWidth()][Soar2D.config.tConfig.getRadarHeight()];
 
 		question = new Image(WindowManager.display, Soar2D.class.getResourceAsStream("/images/tanksoar/question.gif"));
 		tankImage = new Image(WindowManager.display, Soar2D.class.getResourceAsStream("/images/tanksoar/tank-mini.gif"));
@@ -82,8 +82,8 @@ public class TankSoarAgentWorld extends Canvas implements PaintListener {
 
 		RadarCell[][] tankRadar = tank.getRadar();
 		int distance = tank.getObservedDistance();
-		for(int x = 0; x < Soar2D.tConfig.getRadarWidth(); ++x){
-			for(int y = 0; y < Soar2D.tConfig.getRadarHeight(); ++y){
+		for(int x = 0; x < Soar2D.config.tConfig.getRadarWidth(); ++x){
+			for(int y = 0; y < Soar2D.config.tConfig.getRadarHeight(); ++y){
 				if ((y < distance) || (y == distance && x == 1)) {
 					if (x == 1 && y == 0) {
 						radar[x][y] = tankImage;
@@ -146,11 +146,11 @@ public class TankSoarAgentWorld extends Canvas implements PaintListener {
 	}
 
 	public int getWidth() {
-		return kCellSize * Soar2D.tConfig.getRadarWidth();
+		return kCellSize * Soar2D.config.tConfig.getRadarWidth();
 	}
 	
 	public int getHeight() {
-		return kCellSize * Soar2D.tConfig.getRadarHeight();
+		return kCellSize * Soar2D.config.tConfig.getRadarHeight();
 	}
 
 	public void enable() {

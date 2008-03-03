@@ -24,6 +24,12 @@ import soar2d.player.*;
  */
 public class Configuration {
 	
+	public TankSoarConfiguration tConfig;
+	public EatersConfiguration eConfig;
+	public BookConfiguration bConfig;
+	public KitchenConfiguration kConfig;
+	public TaxiConfiguration xConfig;
+
 	// misc non-configurable configuration
 
 	public Configuration() {}
@@ -45,6 +51,7 @@ public class Configuration {
 		this.silentAgents = config.silentAgents;
 		this.maxMemoryUsageValue = config.maxMemoryUsageValue;
 		this.asyncTimeSlice = config.asyncTimeSlice;
+		this.metadata = new File(config.metadata.getAbsolutePath());
 
 		cModule.copy(cModule);
 
@@ -162,27 +169,32 @@ public class Configuration {
 	public enum SimType { kEaters, kTankSoar, kBook, kKitchen, kTaxi }	
 	private IConfiguration cModule;
 	public void setType(SimType simType) {
+		bConfig = null;
+		eConfig = null;
+		kConfig = null;
+		tConfig = null;
+		xConfig = null;
 		this.simType = simType;
 		switch (simType) {
 		case kBook:
 			cModule = new BookConfiguration();
-			Soar2D.bConfig = (BookConfiguration)cModule.getModule();
+			bConfig = (BookConfiguration)cModule.getModule();
 			break;
 		case kEaters:
 			cModule = new EatersConfiguration(); 
-			Soar2D.eConfig = (EatersConfiguration)cModule.getModule();
+			eConfig = (EatersConfiguration)cModule.getModule();
 			break;
 		case kKitchen:
 			cModule = new KitchenConfiguration(); 
-			Soar2D.kConfig = (KitchenConfiguration)cModule.getModule();
+			kConfig = (KitchenConfiguration)cModule.getModule();
 			break;
 		case kTankSoar:
 			cModule = new TankSoarConfiguration(); 
-			Soar2D.tConfig = (TankSoarConfiguration)cModule.getModule();
+			tConfig = (TankSoarConfiguration)cModule.getModule();
 			break;
 		case kTaxi:
 			cModule = new TaxiConfiguration(); 
-			Soar2D.xConfig = (TaxiConfiguration)cModule.getModule();
+			xConfig = (TaxiConfiguration)cModule.getModule();
 			break;
 		}
 	}
@@ -282,7 +294,7 @@ public class Configuration {
 		return this.asyncTimeSlice;
 	}
 	
-	// async delay
+	// human input
 	private boolean forceHumanInput = false; // override soar output with human output
 	private static final String kTagForceHuman = "force-human";
 	public void setForceHuman(boolean forceHumanInput) {
@@ -292,6 +304,16 @@ public class Configuration {
 		return this.forceHumanInput;
 	}
 	
+	// metadata file
+	private File metadata;
+	private static final String kTagMetadata = "metadata";
+	public void setMetadata(File metadata) {
+		this.metadata = metadata.getAbsoluteFile();
+	}
+	public File getMetadata() {
+		return this.metadata;
+	}
+
 	private void generalSave(Element general) {
 		if (general == null) return;
 
@@ -320,12 +342,20 @@ public class Configuration {
 			general.addContent(new Element(kTagNoGUI));
 		}
 		
+		if (this.getSilentAgents()) {
+			general.addContent(new Element(kTagSilentAgents));
+		}
+		
 		if (this.getASyncDelay() > 0) {
 			general.addContent(new Element(kTagASync).setText(Integer.toString(this.getASyncDelay())));
 		}
 		
 		if (this.getForceHuman()) {
 			general.addContent(new Element(kTagForceHuman));
+		}
+		
+		if (this.getMetadata() != null) {
+			general.addContent(new Element(kTagMetadata).setText(getMetadata().getPath()));
 		}
 		
 		Element rules = new Element(kTagRules);
@@ -427,6 +457,9 @@ public class Configuration {
 
 			} else if (child.getName().equalsIgnoreCase(kTagForceHuman)) {
 				setForceHuman(true);
+
+			} else if (child.getName().equalsIgnoreCase(kTagMetadata)) {
+				setMetadata(new File(child.getTextTrim()));
 
 			} else if (child.getName().equalsIgnoreCase(kTagRules)) {
 				cModule.rules(child);
@@ -766,7 +799,24 @@ public class Configuration {
 	
 	// terminals
 	public void setDefaultTerminals() {
+		clearAllTerminals();
 		cModule.setDefaultTerminals(this);
+	}
+	
+	private void clearAllTerminals() {
+		this.terminalAgentCommand = false;
+		this.terminalFoodRemaining = false;
+		this.terminalFoodRemainingContinue = 0;
+		this.terminalFuelRemaining = false;
+		this.terminalMaxRuns = 0;
+		this.terminalMaxUpdates = 0;
+		this.terminalMaxUpdatesContinue = false;
+		this.terminalPassengerDelivered = false;
+		this.terminalPassengerPickUp = false;
+		this.terminalPointsRemaining = false;
+		this.terminalUnopenedBoxes = false;
+		this.terminalWinningScore = 0;
+		this.terminalWinningScoreContinue = false;
 	}
 
 	// terminal points remaining
@@ -1146,5 +1196,4 @@ public class Configuration {
 	public int getMaxMemoryUsage() {
 		return maxMemoryUsageValue;
 	}
-	
 }

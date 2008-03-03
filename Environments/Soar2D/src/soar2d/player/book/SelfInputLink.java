@@ -66,17 +66,17 @@ class SelfInputLink {
 		assert il != null;
 		assert self == null;
 
-		continuous = robot.agent.CreateStringWME(il, "continuous", Soar2D.bConfig.getContinuous() ? "true" : "false");
+		continuous = robot.agent.CreateStringWME(il, "continuous", Soar2D.config.bConfig.getContinuous() ? "true" : "false");
 		
 		self = robot.agent.CreateIdWME(il, "self");
 		angle = robot.agent.CreateIdWME(self, "angle");
 		{
-			yaw = robot.agent.CreateFloatWME(angle, "yaw", robot.getHeadingRadians());
-			if (Soar2D.bConfig.getContinuous() == false) {
+			yaw = robot.agent.CreateFloatWME(angle, "yaw", Direction.toDisplayRadians(robot.getHeadingRadians()));
+			if (Soar2D.config.bConfig.getContinuous() == false) {
 				direction = robot.agent.CreateStringWME(angle, "direction", Direction.stringOf[robot.getFacingInt()]);
 			}
 		}
-		if (Soar2D.bConfig.getContinuous() == false) {
+		if (Soar2D.config.bConfig.getContinuous() == false) {
 			Identifier blocked = robot.agent.CreateIdWME(self, "blocked");
 			blockedForward = robot.agent.CreateStringWME(blocked, "forward", "false");
 			blockedBackward = robot.agent.CreateStringWME(blocked, "backward", "false");
@@ -84,7 +84,7 @@ class SelfInputLink {
 			blockedRight = robot.agent.CreateStringWME(blocked, "right", "false");
 		}
 		area = robot.agent.CreateIntWME(self, "area", -1);
-		if (Soar2D.bConfig.getContinuous()) {
+		if (Soar2D.config.bConfig.getContinuous()) {
 			collision = robot.agent.CreateIdWME(self, "collision");
 			{
 				collisionX = robot.agent.CreateStringWME(collision, "x", "false");
@@ -95,7 +95,7 @@ class SelfInputLink {
 		score = robot.agent.CreateIntWME(self, "score", 0);
 		position = robot.agent.CreateIdWME(self, "position");
 		{
-			if (Soar2D.bConfig.getContinuous()) {
+			if (Soar2D.config.bConfig.getContinuous()) {
 				x = robot.agent.CreateFloatWME(position, "x", 0);
 				y = robot.agent.CreateFloatWME(position, "y", 0);
 			}
@@ -104,7 +104,7 @@ class SelfInputLink {
 		}
 		random = robot.agent.CreateFloatWME(self, "random", robot.random);
 		time = robot.agent.CreateFloatWME(self, "time", 0);
-		if (Soar2D.bConfig.getContinuous()) {
+		if (Soar2D.config.bConfig.getContinuous()) {
 			velocity = robot.agent.CreateIdWME(self, "velocity");
 			{
 				speed = robot.agent.CreateFloatWME(velocity, "speed", 0);
@@ -165,7 +165,7 @@ class SelfInputLink {
 			if (pIL.col.GetValue() != players.getLocation(player).x) {
 				robot.agent.Update(pIL.col, players.getLocation(player).x);
 			}
-			if (Soar2D.bConfig.getContinuous()) {
+			if (Soar2D.config.bConfig.getContinuous()) {
 				if (pIL.x.GetValue() != players.getFloatLocation(player).x) {
 					robot.agent.Update(pIL.x, players.getFloatLocation(player).x);
 				}
@@ -210,7 +210,7 @@ class SelfInputLink {
 			if (oIL.col.GetValue() != objectInfo.location.x) {
 				robot.agent.Update(oIL.col, objectInfo.location.x);
 			}
-			if (Soar2D.bConfig.getContinuous()) {
+			if (Soar2D.config.bConfig.getContinuous()) {
 				if (oIL.x.GetValue() != objectInfo.floatLocation.x) {
 					robot.agent.Update(oIL.x, objectInfo.location.x);
 				}
@@ -266,36 +266,23 @@ class SelfInputLink {
 	}
 	
 	void destroyAreaDescription() {
-		{
-			Iterator<BarrierInputLink> iter = wallsIL.iterator();
-			while (iter.hasNext()) {
-				BarrierInputLink thing = iter.next();
-				robot.agent.DestroyWME(thing.parent);
-			}
-			wallsIL = new ArrayList<BarrierInputLink>();
-		}
-
-		{
-			Iterator<GatewayInputLink> iter = gatewaysIL.iterator();
-			while (iter.hasNext()) {
-				GatewayInputLink thing = iter.next();
-				robot.agent.DestroyWME(thing.parent);
-			}
-			gatewaysIL = new ArrayList<GatewayInputLink>();
-		}
 
 		if (areaDescription == null) {
 			return;
 		}
 		robot.agent.DestroyWME(areaDescription);
 		areaDescription = null;
-		
+		wallsIL = new ArrayList<BarrierInputLink>();
+		gatewaysIL = new ArrayList<GatewayInputLink>();	
 	}
 	
 	void destroy() {
 		assert self != null;
 		robot.agent.DestroyWME(self);
+		self = null;
+		carry = null;
 		robot.agent.DestroyWME(continuous);
+		continuous = null;
 		
 		destroyAreaDescription();
 
@@ -325,8 +312,6 @@ class SelfInputLink {
 			}
 			messagesIL = new HashSet<MessageInputLink>();
 		}
-		
-		self = areaDescription = carry = null;
 	}
 	
 	void carry(CellObject object) {

@@ -181,5 +181,36 @@ public class Direction {
 	
 	private Direction() {
 	}
+
+	public static double toDisplayRadians(double internalRadians) {
+		while (internalRadians < 0) {
+			internalRadians += 2 * Math.PI;
+		}
+		return fmod(internalRadians + Math.PI / 2, 2 * Math.PI);
+	}
+	
+	public static double toInternalRadians(double displayRadians) {
+		while (displayRadians < 0) {
+			displayRadians += 2 * Math.PI;
+		}
+		displayRadians = fmod(displayRadians - Math.PI / 2, 2 * Math.PI);
+		while (displayRadians < 0) {
+			displayRadians += 2 * Math.PI;
+		}
+		return displayRadians;
+	}
+	
+	public static double fmod(double a, double mod) {
+		double result = a;
+		assert mod > 0;
+		while (Math.abs(result) >= mod) {
+			if (result > 0) {
+				result -= mod;
+			} else {
+				result += mod;
+			}
+		}
+		return result;
+	}
 }
 

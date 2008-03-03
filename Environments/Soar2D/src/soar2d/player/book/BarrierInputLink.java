@@ -44,7 +44,7 @@ class BarrierInputLink {
 		center = robot.agent.CreateIdWME(parent, "center");
 		{
 			centerpoint = barrier.centerpoint();
-			if (Soar2D.bConfig.getContinuous()) {
+			if (Soar2D.config.bConfig.getContinuous()) {
 				x = robot.agent.CreateFloatWME(center, "x", centerpoint.x);
 				y = robot.agent.CreateFloatWME(center, "y", centerpoint.y);
 			}

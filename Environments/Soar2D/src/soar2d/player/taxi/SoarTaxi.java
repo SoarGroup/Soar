@@ -13,6 +13,7 @@ import soar2d.Simulation;
 import soar2d.Soar2D;
 import soar2d.map.CellObject;
 import soar2d.map.TaxiMap;
+import soar2d.player.InputLinkMetadata;
 import soar2d.player.MoveInfo;
 import soar2d.player.Player;
 import soar2d.player.PlayerConfig;
@@ -71,6 +72,8 @@ public class SoarTaxi extends Taxi {
 	 * soar commands to run before this agent is destroyed
 	 */
 	private ArrayList<String> shutdownCommands;
+
+	InputLinkMetadata metadata;
 
 	/**
 	 * @param agent a valid soar agent
@@ -133,6 +136,23 @@ public class SoarTaxi extends Taxi {
 		cell = agent.CreateIdWME(agent.GetInputLink(), "cell");
 		cellType = agent.CreateStringWME(cell, "type", "none");
 		cellPassenger = agent.CreateStringWME(cell, "passenger", "false");
+		
+		loadMetadata();
+	}
+	
+	private void loadMetadata() {
+		metadata = new InputLinkMetadata(agent);
+		try {
+			if (Soar2D.config.getMetadata() != null) {
+				metadata.load(Soar2D.config.getMetadata());
+			}
+			if (Soar2D.simulation.world.getMap().getMetadata() != null) {
+				metadata.load(Soar2D.simulation.world.getMap().getMetadata());
+			}
+		} catch (Exception e) {
+			Soar2D.control.severeError("Failed to load metadata: " + this.getName() + ": " + e.getMessage());
+			Soar2D.control.stopSimulation();
+		}
 	}
 	
 	/**
@@ -390,6 +410,9 @@ public class SoarTaxi extends Taxi {
 		agent.DestroyWME(cell);
 		destination = null;
 		
+		metadata.destroy();
+		metadata = null;
+
 		this.initInputLink();
 
 		if (!agent.Commit()) {

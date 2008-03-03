@@ -173,7 +173,7 @@ public class BookConfiguration extends BaseConfiguration implements IConfigurati
 	}
 
 	private static final String kTagContinuous = "continuous";
-	private boolean continuous = false;
+	private boolean continuous = true;
 	public boolean getContinuous() {
 		return this.continuous;
 	}
@@ -195,8 +195,6 @@ public class BookConfiguration extends BaseConfiguration implements IConfigurati
 		this.continuous = bConfig.continuous;
 	}
 	public void setDefaultTerminals(Configuration configuration) {
-		configuration.setTerminalWinningScore(0);
-		configuration.setTerminalFoodRemaining(false);
 	}
 
 	public boolean getRunTilOutput() {

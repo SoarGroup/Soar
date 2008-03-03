@@ -5,6 +5,7 @@ import java.util.logging.*;
 
 import sml.*;
 import soar2d.*;
+import soar2d.player.InputLinkMetadata;
 import soar2d.player.MoveInfo;
 import soar2d.player.Player;
 import soar2d.player.PlayerConfig;
@@ -69,14 +70,16 @@ public class SoarTank extends Tank implements Agent.RunEventInterface {
 	private boolean attemptedMove = false;
 	private boolean mem_exceeded = false;
 	
+	InputLinkMetadata metadata;
+
 	public SoarTank(Agent agent, PlayerConfig playerConfig) {
 		super(playerConfig);
 		this.agent = agent;
 		this.shutdownCommands = playerConfig.getShutdownCommands();
 
 
-		radarCellIDs = new Identifier[Soar2D.tConfig.getRadarWidth()][Soar2D.tConfig.getRadarHeight()];
-		radarColors = new StringElement[Soar2D.tConfig.getRadarWidth()][Soar2D.tConfig.getRadarHeight()];
+		radarCellIDs = new Identifier[Soar2D.config.tConfig.getRadarWidth()][Soar2D.config.tConfig.getRadarHeight()];
+		radarColors = new StringElement[Soar2D.config.tConfig.getRadarWidth()][Soar2D.config.tConfig.getRadarHeight()];
 
 
 		assert agent != null;
@@ -86,6 +89,23 @@ public class SoarTank extends Tank implements Agent.RunEventInterface {
 		m_InputLink = agent.GetInputLink();
 
 		previousLocation = new java.awt.Point(-1, -1);
+		
+		loadMetadata();
+	}
+	
+	private void loadMetadata() {
+		metadata = new InputLinkMetadata(agent);
+		try {
+			if (Soar2D.config.getMetadata() != null) {
+				metadata.load(Soar2D.config.getMetadata());
+			}
+			if (Soar2D.simulation.world.getMap().getMetadata() != null) {
+				metadata.load(Soar2D.simulation.world.getMap().getMetadata());
+			}
+		} catch (Exception e) {
+			Soar2D.control.severeError("Failed to load metadata: " + this.getName() + ": " + e.getMessage());
+			Soar2D.control.stopSimulation();
+		}
 	}
 	
 	public void runEventHandler(int eventID, Object data, Agent agent, int phase) {
@@ -324,6 +344,11 @@ public class SoarTank extends Tank implements Agent.RunEventInterface {
 		if (agent == null) {
 			return;
 		}
+		
+		metadata.destroy();
+		metadata = null;
+		
+		loadMetadata();
 		
 		//agent.InitSoar();
 	}
@@ -799,9 +824,9 @@ public class SoarTank extends Tank implements Agent.RunEventInterface {
 		if (Soar2D.logger.isLoggable(Level.FINEST)) {
 			logger.finest(this.getName() + ": radar data: generating new"); 
 		}
-		for (height = 0; height < Soar2D.tConfig.getRadarHeight(); ++height) {
+		for (height = 0; height < Soar2D.config.tConfig.getRadarHeight(); ++height) {
 			boolean done = false;
-			for (int width = 0; width < Soar2D.tConfig.getRadarWidth(); ++width) {
+			for (int width = 0; width < Soar2D.config.tConfig.getRadarWidth(); ++width) {
 				// Always skip self, this screws up the tanks.
 				if (width == 1 && height == 0) {
 					if (Soar2D.logger.isLoggable(Level.FINEST)) {
@@ -846,8 +871,8 @@ public class SoarTank extends Tank implements Agent.RunEventInterface {
 		if (Soar2D.logger.isLoggable(Level.FINEST)) {
 			logger.finest(this.getName() + ": radar data: updating"); 
 		}
-		for (int width = 0; width < Soar2D.tConfig.getRadarWidth(); ++width) {
-			for (int height = 0; height < Soar2D.tConfig.getRadarHeight(); ++height) {
+		for (int width = 0; width < Soar2D.config.tConfig.getRadarWidth(); ++width) {
+			for (int height = 0; height < Soar2D.config.tConfig.getRadarHeight(); ++height) {
 				// Always skip self, this screws up the tanks.
 				if (width == 1 && height == 0) {
 					if (Soar2D.logger.isLoggable(Level.FINEST)) {
@@ -913,8 +938,8 @@ public class SoarTank extends Tank implements Agent.RunEventInterface {
 	}
 
 	private void clearRadar() {
-		for (int width = 0; width < Soar2D.tConfig.getRadarWidth(); ++width) {
-			for (int height = 0; height < Soar2D.tConfig.getRadarHeight(); ++height) {
+		for (int width = 0; width < Soar2D.config.tConfig.getRadarWidth(); ++width) {
+			for (int height = 0; height < Soar2D.config.tConfig.getRadarHeight(); ++height) {
 				radarCellIDs[width][height] = null;
 				radarColors[width][height] = null;
 			}

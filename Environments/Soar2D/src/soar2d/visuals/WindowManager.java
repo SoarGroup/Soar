@@ -142,14 +142,13 @@ public class WindowManager {
 		if (shell == null) {
 			display.dispose();
 			display = null;
-			return false;
-		}
+			return false;		}
 		initColors(display);
 		return true;
 	}
 	
 	public boolean using() {
-		return shell != null;
+		return !Soar2D.config.getNoGUI();
 	}
 	
 	public void setupEaters() {
@@ -732,7 +731,7 @@ public class WindowManager {
 	public void setupBook() {
 		worldGroup = new Group(shell, SWT.NONE);
 		worldGroup.setLayout(new FillLayout());
-		visualWorld = new BookVisualWorld(worldGroup, SWT.NONE, Soar2D.bConfig.getBookCellSize());
+		visualWorld = new BookVisualWorld(worldGroup, SWT.NONE, Soar2D.config.bConfig.getBookCellSize());
 		visualWorld.setMap(Soar2D.simulation.world.getMap());
 
 		visualWorld.addMouseListener(new MouseAdapter() {
@@ -1539,7 +1538,7 @@ public class WindowManager {
 	}
 	
 	public void playerEvent() {
-		if (visualWorld != null) {
+		if (visualWorld != null && !visualWorld.isDisposed()) {
 			visualWorld.setRepaint();
 			visualWorld.redraw();
 			VisualWorld.remapPlayerColors();

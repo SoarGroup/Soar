@@ -31,11 +31,56 @@ public class ConfigurationEditor extends Dialog {
 	Button tanksoarButton;
 	Button eatersButton;
 	Button bookButton;
+	Button kitchenButton;
+	Button taxiButton;
 	Text mapText;
 	Button remote;
 	Button hide;
 	Button nogui;
 	Text async;
+	Button silentagent;
+	Text port;
+	Text metadataText;
+	
+	// rules/eaters
+	Text eatersVisionText;
+	Text eatersWallPenaltyText;
+	Text eatersJumpPenaltyText;
+	Text eatersLowProbText;
+	Text eatersHighProbText;
+	
+	// rules/tanksoar
+	Text tanksoarDefaultMissilesText;
+	Text tanksoarDefaultEnergyText;
+	Text tanksoarDefaultHealthText;
+	Text tanksoarCollisionPenaltyText;
+	Text tanksoarMaxMissilePacksText;
+	Text tanksoarMissilePackRespawnText;
+	Text tanksoarShieldEnergyUsageText;
+	Text tanksoarMissileHitAwardText;
+	Text tanksoarMissileHitPenaltyText;
+	Text tanksoarKillAwardText;
+	Text tanksoarKillPenaltyText;
+	Text tanksoarRadarWidthText;
+	Text tanksoarRadarHeightText;
+	Text tanksoarSmellDistanceText;
+	Text tanksoarResetThresholdText;
+
+	// rules/book
+	Button bookColoredRoomsButton;
+	Text bookSpeedText;
+	Text bookCellSizeText;
+	Text bookCycleTimeSliceText;
+	Text bookVisionConeText;
+	Text bookRotateSpeedText;
+	Button bookBlocksBlockButton;
+	Button bookContinuousButton;
+	
+	// rules/taxi
+	Button taxiDisableFuelButton;
+	Text taxiFuelStartingMinText;
+	Text taxiFuelStartingMaxText;
+	Text taxiFuelMaxText;
 
 	// logging
 	Combo loggingLevelCombo;
@@ -43,6 +88,7 @@ public class ConfigurationEditor extends Dialog {
 	Text loggingNameText;
 	Button loggingConsoleButton;
 	Button loggingTimeButton;
+	Button loggingSoarPrintButton;
 	
 	// agents
 	Text agentsNameText;
@@ -81,6 +127,11 @@ public class ConfigurationEditor extends Dialog {
 	Text winningScore;
 	Button terminalFoodRemaining;
 	Button terminalUnopenedBoxes;
+	Button terminalMaxRuns;
+	Text maxRuns;
+	Button terminalPassengerDelivered;
+	Button terminalFuelRemaining;
+	Button terminalPassengerPickUp;
 	
 	// clients
 	ClientConfig clientConfig;
@@ -94,10 +145,43 @@ public class ConfigurationEditor extends Dialog {
 	Button createClientButton;
 	Button removeClientButton;
 
+	// layout presets
+	private static GridData kSpan3Beginning;
+	private static GridData kSpan3Fill;
+	private static GridData kSpan2Beginning;
+	
+	static {
+		kSpan3Beginning = new GridData();
+		kSpan3Beginning.horizontalAlignment = SWT.BEGINNING;
+		kSpan3Beginning.horizontalSpan = 3;
+
+		kSpan3Fill = new GridData();
+		kSpan3Fill.horizontalAlignment = SWT.FILL;
+		kSpan3Fill.horizontalSpan = 3;
+		
+		kSpan2Beginning = new GridData();
+		kSpan2Beginning.horizontalAlignment = SWT.BEGINNING;
+		kSpan2Beginning.horizontalSpan = 2;
+
+	}
+	
 	public ConfigurationEditor(Shell parent) {
 		super(parent);
 		config = new Configuration(Soar2D.config);
 	}
+
+	final String kGeneral = "General";
+	final int kGeneralIndex = 0;
+	final String kRules = "Rules";
+	final int kRulesIndex = 1;
+	final String kLogging = "Logging";
+	final int kLoggingIndex = 2;
+	final String kAgents = "Agents";
+	final int kAgentsIndex = 3;
+	final String kTerminals = "Terminals";
+	final int kTerminalsIndex = 4;
+	final String kClients = "Clients";
+	final int kClientsIndex = 5;
 
 	public void open() {
 
@@ -123,14 +207,11 @@ public class ConfigurationEditor extends Dialog {
 			}
 		});
 		
-		final String kGeneral = "General";
-		final String kLogging = "Logging";
-		final String kAgents = "Agents";
-		final String kTerminals = "Terminals";
-		final String kClients = "Clients";
-
 		TreeItem general = new TreeItem(tree, SWT.NONE);
 		general.setText(kGeneral);
+		
+		TreeItem rules = new TreeItem(tree, SWT.NONE);
+		rules.setText(kRules);
 		
 		TreeItem logging = new TreeItem(tree, SWT.NONE);
 		logging.setText(kLogging);
@@ -167,6 +248,8 @@ public class ConfigurationEditor extends Dialog {
 			client.setText(name);
 		}
 
+		clients.setExpanded(true);
+
 		rhs = new Composite(dialog, SWT.NONE);
 		{
 			GridLayout gl = new GridLayout();
@@ -197,6 +280,11 @@ public class ConfigurationEditor extends Dialog {
 				config = new Configuration();
 				config.setType(Soar2D.config.getType());
 				config.setDefaultTerminals();
+				TreeItem clients = tree.getItem(kClientsIndex);
+				clients.removeAll();
+				TreeItem agents = tree.getItem(kAgentsIndex);
+				agents.removeAll();
+				tree.redraw();
 				updateCurrentPage();
 			}
 		});
@@ -270,19 +358,22 @@ public class ConfigurationEditor extends Dialog {
 				index = parentItem.indexOf(selectedItem);
 			}
 			switch (tree.indexOf(parentItem)) {
-			case 0:
+			case kGeneralIndex:
 				generalPage();
 				break;
-			case 1:
+			case kRulesIndex:
+				rulesPage();
+				break;
+			case kLoggingIndex:
 				loggingPage();
 				break;
-			case 2:
+			case kAgentsIndex:
 				agentsPage(selectedItem, index);
 				break;
-			case 3:
+			case kTerminalsIndex:
 				terminalsPage();
 				break;
-			case 4:
+			case kClientsIndex:
 				clientsPage(selectedItem, index);
 				break;
 			}
@@ -332,15 +423,10 @@ public class ConfigurationEditor extends Dialog {
 				public void widgetSelected(SelectionEvent e) {
 					config.setType(SimType.kTankSoar);
 					config.setDefaultTerminals();
-					config.setASyncDelay(0);
 					generalUpdate();
 				}
 			});
-			{
-				GridData gd = new GridData();
-				gd.horizontalAlignment = SWT.BEGINNING;
-				tanksoarButton.setLayoutData(gd);
-			}
+			tanksoarButton.setLayoutData(kSpan3Beginning);
 
 			eatersButton = new Button(simGroup, SWT.RADIO);
 			eatersButton.setText("Eaters");
@@ -349,15 +435,10 @@ public class ConfigurationEditor extends Dialog {
 				public void widgetSelected(SelectionEvent e) {
 					config.setType(SimType.kEaters);
 					config.setDefaultTerminals();
-					config.setASyncDelay(0);
 					generalUpdate();
 				}
 			});
-			{
-				GridData gd = new GridData();
-				gd.horizontalAlignment = SWT.BEGINNING;
-				eatersButton.setLayoutData(gd);
-			}
+			eatersButton.setLayoutData(kSpan3Beginning);
 			
 			bookButton = new Button(simGroup, SWT.RADIO);
 			bookButton.setText("Book");
@@ -366,30 +447,41 @@ public class ConfigurationEditor extends Dialog {
 				public void widgetSelected(SelectionEvent e) {
 					config.setType(SimType.kBook);
 					config.setDefaultTerminals();
-					config.setASyncDelay(500);
 					generalUpdate();
 				}
 			});
-			{
-				GridData gd = new GridData();
-				gd.horizontalAlignment = SWT.BEGINNING;
-				bookButton.setLayoutData(gd);
-			}
+			bookButton.setLayoutData(kSpan3Beginning);
 			
-			assert config.getType() != SimType.kKitchen;
-			assert config.getType() != SimType.kTaxi;
+			kitchenButton = new Button(simGroup, SWT.RADIO);
+			kitchenButton.setText("Kitchen");
+			kitchenButton.setSelection(config.getType() == SimType.kKitchen);
+			kitchenButton.addSelectionListener(new SelectionAdapter() {
+				public void widgetSelected(SelectionEvent e) {
+					config.setType(SimType.kKitchen);
+					config.setDefaultTerminals();
+					generalUpdate();
+				}
+			});
+			kitchenButton.setLayoutData(kSpan3Beginning);
+			
+			taxiButton = new Button(simGroup, SWT.RADIO);
+			taxiButton.setText("Taxi");
+			taxiButton.setSelection(config.getType() == SimType.kTaxi);
+			taxiButton.addSelectionListener(new SelectionAdapter() {
+				public void widgetSelected(SelectionEvent e) {
+					config.setType(SimType.kTaxi);
+					config.setDefaultTerminals();
+					generalUpdate();
+				}
+			});
+			taxiButton.setLayoutData(kSpan3Beginning);
 		}
 		
 		// map
 		{
 			Label mapLabel = new Label(currentPage, SWT.NONE);
 			mapLabel.setText("Map:");
-			{
-				GridData gd = new GridData();
-				gd.horizontalAlignment = GridData.BEGINNING;
-				gd.horizontalSpan = 3;
-				mapLabel.setLayoutData(gd);
-			}
+			mapLabel.setLayoutData(kSpan3Beginning);
 			
 			mapText = new Text(currentPage, SWT.SINGLE | SWT.BORDER);
 			mapText.addFocusListener(new FocusAdapter() {
@@ -437,26 +529,16 @@ public class ConfigurationEditor extends Dialog {
 		nogui.setText("Do not use GUI");
 		nogui.addSelectionListener(new SelectionAdapter() {
 			public void widgetSelected(SelectionEvent e) {
-				config.setNoGUI(config.getNoGUI());
+				config.setNoGUI(!config.getNoGUI());
 				generalUpdate();
 			}
 		});
-		{
-			GridData gd = new GridData();
-			gd.horizontalAlignment = SWT.BEGINNING;
-			gd.horizontalSpan = 3;
-			nogui.setLayoutData(gd);
-		}
+		nogui.setLayoutData(kSpan3Beginning);
 
-		// graphical
+		// 
 		Label asyncLabel = new Label(currentPage, SWT.NONE);
 		asyncLabel.setText("Asynchronous time slice, milliseconds (0: run synchronously):");
-		{
-			GridData gd = new GridData();
-			gd.horizontalAlignment = SWT.BEGINNING;
-			gd.horizontalSpan = 3;
-			asyncLabel.setLayoutData(gd);
-		}
+		asyncLabel.setLayoutData(kSpan3Beginning);
 		
 		async = new Text(currentPage, SWT.SINGLE | SWT.BORDER);
 		async.addFocusListener(new FocusAdapter() {
@@ -471,45 +553,53 @@ public class ConfigurationEditor extends Dialog {
 				generalUpdate();
 			}
 		});
-		{
-			GridData gd = new GridData();
-			gd.horizontalAlignment = GridData.FILL;
-			gd.horizontalSpan = 3;
-			async.setLayoutData(gd);
-		}
+		async.setLayoutData(kSpan3Fill);
 		
+		// 
+		Label portLabel = new Label(currentPage, SWT.NONE);
+		portLabel.setText("Port to listen on:");
+		portLabel.setLayoutData(kSpan3Beginning);
+		
+		port = new Text(currentPage, SWT.SINGLE | SWT.BORDER);
+		port.addFocusListener(new FocusAdapter() {
+			public void focusLost(FocusEvent e) {
+				int newPort;
+				try {
+					newPort = Integer.parseInt(port.getText());
+				} catch (NumberFormatException exception) {
+					newPort = Soar2D.config.getPort();
+				}
+				config.setPort(newPort);
+				generalUpdate();
+			}
+		});
+		port.setLayoutData(kSpan3Fill);
 
 		// world display
 		hide = new Button(currentPage, SWT.CHECK);
 		hide.setText("Hide world");
 		hide.addSelectionListener(new SelectionAdapter() {
 			public void widgetSelected(SelectionEvent e) {
-				config.setHide(config.getHide());
+				config.setHide(!config.getHide());
 				generalUpdate();
 			}
 		});
-		{
-			GridData gd = new GridData();
-			gd.horizontalAlignment = SWT.BEGINNING;
-			gd.horizontalSpan = 3;
-			hide.setLayoutData(gd);
-		}
+		hide.setLayoutData(kSpan3Beginning);
 
 		// random seed
 		useSeed = new Button(currentPage, SWT.CHECK);
 		useSeed.setText("Use random seed");
 		useSeed.addSelectionListener(new SelectionAdapter() {
 			public void widgetSelected(SelectionEvent e) {
-				config.setRandomSeed(0);
+				if (config.hasRandomSeed()) {
+					config.unsetRandomSeed();
+				} else {
+					config.setRandomSeed(0);
+				}
 				generalUpdate();
 			}
 		});
-		{
-			GridData gd = new GridData();
-			gd.horizontalAlignment = SWT.BEGINNING;
-			gd.horizontalSpan = 3;
-			useSeed.setLayoutData(gd);
-		}
+		useSeed.setLayoutData(kSpan3Beginning);
 			
 		Label seedLabel = new Label(currentPage, SWT.NONE);
 		seedLabel.setText("Random seed:");
@@ -550,11 +640,70 @@ public class ConfigurationEditor extends Dialog {
 				generalUpdate();
 			}
 		});
+		remote.setLayoutData(kSpan3Beginning);
+
+		silentagent = new Button(currentPage, SWT.CHECK);
+		silentagent.setText("Execute 'watch 0' after source");
+		silentagent.addSelectionListener(new SelectionAdapter() {
+			public void widgetSelected(SelectionEvent e) {
+				config.setSilentAgents(!config.getSilentAgents());
+				generalUpdate();
+			}
+		});
+		silentagent.setLayoutData(kSpan3Beginning);
+
+		// metadata
 		{
-			GridData gd = new GridData();
-			gd.horizontalAlignment = SWT.BEGINNING;
-			gd.horizontalSpan = 3;
-			remote.setLayoutData(gd);
+			Label metadataLabel = new Label(currentPage, SWT.NONE);
+			metadataLabel.setText("Metadata:");
+			{
+				GridData gd = new GridData();
+				gd.horizontalAlignment = GridData.BEGINNING;
+				gd.horizontalSpan = 3;
+				metadataLabel.setLayoutData(gd);
+			}
+			
+			metadataText = new Text(currentPage, SWT.SINGLE | SWT.BORDER);
+			metadataText.addFocusListener(new FocusAdapter() {
+				public void focusLost(FocusEvent e) {
+					String metadataFileString = metadataText.getText();
+					if (metadataFileString != null) {
+						config.setMetadata(new File(metadataFileString));
+					}
+					generalUpdate();
+				}
+			});
+			{
+				GridData gd = new GridData();
+				gd.horizontalAlignment = GridData.FILL;
+				gd.horizontalSpan = 2;
+				gd.grabExcessHorizontalSpace = true;
+				metadataText.setLayoutData(gd);
+			}
+			
+			Button metadataBrowse = new Button(currentPage, SWT.PUSH);
+			metadataBrowse.setText("Browse...");
+			{
+				GridData gd = new GridData();
+				gd.horizontalAlignment = GridData.END;
+				metadataBrowse.setLayoutData(gd);
+			}
+			metadataBrowse.addSelectionListener(new SelectionAdapter() {
+				public void widgetSelected(SelectionEvent e) {
+					FileDialog fd = new FileDialog(dialog, SWT.OPEN);
+					fd.setText("Open");
+					if (config.getMetadata() != null) {
+						fd.setFilterPath(config.getMetadata().getPath());
+						fd.setFileName(config.getMetadata().getName());
+					}
+					fd.setFilterExtensions(new String[] {"*.*"});
+					String metadataFileString = fd.open();
+					if (metadataFileString != null) {
+						config.setMetadata(new File(metadataFileString));
+					}
+					generalUpdate();
+				}
+			});
 		}
 
 		generalUpdate();
@@ -569,30 +718,743 @@ public class ConfigurationEditor extends Dialog {
 			eatersButton.setSelection(true);
 			tanksoarButton.setSelection(false);
 			bookButton.setSelection(false);
+			kitchenButton.setSelection(false);
+			taxiButton.setSelection(false);
 			break;
 		case kTankSoar:
 			eatersButton.setSelection(false);
 			tanksoarButton.setSelection(true);
 			bookButton.setSelection(false);
+			kitchenButton.setSelection(false);
+			taxiButton.setSelection(false);
 			break;
 		case kBook:
 			eatersButton.setSelection(false);
 			tanksoarButton.setSelection(false);
 			bookButton.setSelection(true);
+			kitchenButton.setSelection(false);
+			taxiButton.setSelection(false);
 			break;
 		case kKitchen:
-			assert false;
+			eatersButton.setSelection(false);
+			tanksoarButton.setSelection(false);
+			bookButton.setSelection(false);
+			kitchenButton.setSelection(true);
+			taxiButton.setSelection(false);
+			break;
 		case kTaxi:
-			assert false;
+			eatersButton.setSelection(false);
+			tanksoarButton.setSelection(false);
+			bookButton.setSelection(false);
+			kitchenButton.setSelection(false);
+			taxiButton.setSelection(true);
+			break;
 		}
 		mapText.setText(config.getMap().getAbsolutePath());
 		nogui.setSelection(config.getNoGUI());
 		async.setText(Integer.toString(config.getASyncDelay()));
+		port.setText(Integer.toString(config.getPort()));
 		hide.setSelection(config.getHide());
-		useSeed.setSelection(!config.hasRandomSeed());
+		useSeed.setSelection(config.hasRandomSeed());
 		seedText.setEnabled(useSeed.getSelection());
 		seedText.setText(Integer.toString(config.getRandomSeed()));
 		remote.setSelection(config.getRemote());
+		silentagent.setSelection(config.getSilentAgents());
+		if (config.getMetadata() != null) {
+			metadataText.setText(config.getMetadata().getAbsolutePath());
+		} else {
+			metadataText.setText("");
+		}
+	}
+
+	public void rulesPage() {
+		if (currentPage != null) {
+			currentPage.dispose();
+		}
+		currentPage = new Composite(rhs, SWT.NONE);
+		{
+			GridLayout gl = new GridLayout();
+			gl.marginHeight = 0;
+			gl.marginWidth = 0;
+			gl.numColumns = 2;
+			currentPage.setLayout(gl);
+			
+			GridData gd = new GridData();
+			gd.grabExcessHorizontalSpace = true;
+			gd.grabExcessVerticalSpace = true;
+			gd.horizontalAlignment = SWT.FILL;
+			gd.verticalAlignment = SWT.FILL;
+			currentPage.setLayoutData(gd);
+		}
+		
+		switch(config.getType()) {
+		case kEaters:
+			rulesEatersPage();
+			rulesEatersUpdate();
+			break;
+		case kTankSoar:
+			rulesTankSoarPage();
+			rulesTankSoarUpdate();
+			break;
+		case kBook:
+			rulesBookPage();
+			rulesBookUpdate();
+			break;
+		case kKitchen:
+			rulesKitchenPage();
+			rulesKitchenUpdate();
+			break;
+		case kTaxi:
+			rulesTaxiPage();
+			rulesTaxiUpdate();
+			break;
+		}
+
+		rhs.layout(true);
+		dialog.layout(true);
+	}
+	private void rulesEatersPage() {
+//		Text eatersVisionText;
+//		Text eatersWallPenaltyText;
+//		Text eatersJumpPenaltyText;
+//		Text eatersLowProbText;
+//		Text eatersHighProbText;
+		
+		Label visionLabel = new Label(currentPage, SWT.NONE);
+		visionLabel.setText("Eater vision (cells):");
+
+		eatersVisionText = new Text(currentPage, SWT.SINGLE | SWT.BORDER);
+		eatersVisionText.addFocusListener(new FocusAdapter() {
+			public void focusLost(FocusEvent e) {
+				int newVision;
+				try {
+					newVision = Integer.parseInt(eatersVisionText.getText());
+				} catch (NumberFormatException exception) {
+					newVision = Soar2D.config.eConfig.getEaterVision();
+				}
+				config.eConfig.setEaterVision(newVision);
+				rulesEatersUpdate();
+			}
+		});
+		eatersVisionText.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_FILL | GridData.GRAB_HORIZONTAL));
+
+		Label wallPenaltyLabel = new Label(currentPage, SWT.NONE);
+		wallPenaltyLabel.setText("Wall collision penalty:");
+
+		eatersWallPenaltyText = new Text(currentPage, SWT.SINGLE | SWT.BORDER);
+		eatersWallPenaltyText.addFocusListener(new FocusAdapter() {
+			public void focusLost(FocusEvent e) {
+				int newPenalty;
+				try {
+					newPenalty = Integer.parseInt(eatersWallPenaltyText.getText());
+				} catch (NumberFormatException exception) {
+					newPenalty = Soar2D.config.eConfig.getWallPenalty();
+				}
+				config.eConfig.setWallPenalty(newPenalty);
+				rulesEatersUpdate();
+			}
+		});
+		eatersWallPenaltyText.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_FILL | GridData.GRAB_HORIZONTAL));
+
+		Label jumpPenaltyLabel = new Label(currentPage, SWT.NONE);
+		jumpPenaltyLabel.setText("Jump action penalty:");
+
+		eatersJumpPenaltyText = new Text(currentPage, SWT.SINGLE | SWT.BORDER);
+		eatersJumpPenaltyText.addFocusListener(new FocusAdapter() {
+			public void focusLost(FocusEvent e) {
+				int newPenalty;
+				try {
+					newPenalty = Integer.parseInt(eatersJumpPenaltyText.getText());
+				} catch (NumberFormatException exception) {
+					newPenalty = Soar2D.config.eConfig.getJumpPenalty();
+				}
+				config.eConfig.setJumpPenalty(newPenalty);
+				rulesEatersUpdate();
+			}
+		});
+		eatersJumpPenaltyText.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_FILL | GridData.GRAB_HORIZONTAL));
+
+		Label lowProbLabel = new Label(currentPage, SWT.NONE);
+		lowProbLabel.setText("Map generation low param:");
+
+		eatersLowProbText = new Text(currentPage, SWT.SINGLE | SWT.BORDER);
+		eatersLowProbText.addFocusListener(new FocusAdapter() {
+			public void focusLost(FocusEvent e) {
+				double newProb;
+				try {
+					newProb = Double.parseDouble(eatersLowProbText.getText());
+				} catch (NumberFormatException exception) {
+					newProb = Soar2D.config.eConfig.getLowProbability();
+				}
+				config.eConfig.setLowProbability(newProb);
+				rulesEatersUpdate();
+			}
+		});
+		eatersLowProbText.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_FILL | GridData.GRAB_HORIZONTAL));
+
+		Label highProbLabel = new Label(currentPage, SWT.NONE);
+		highProbLabel.setText("Map generation high param:");
+
+		eatersHighProbText = new Text(currentPage, SWT.SINGLE | SWT.BORDER);
+		eatersHighProbText.addFocusListener(new FocusAdapter() {
+			public void focusLost(FocusEvent e) {
+				double newProb;
+				try {
+					newProb = Double.parseDouble(eatersHighProbText.getText());
+				} catch (NumberFormatException exception) {
+					newProb = Soar2D.config.eConfig.getHighProbability();
+				}
+				config.eConfig.setHighProbability(newProb);
+				rulesEatersUpdate();
+			}
+		});
+		eatersHighProbText.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_FILL | GridData.GRAB_HORIZONTAL));
+	}
+	private void rulesEatersUpdate() {
+		eatersVisionText.setText(Integer.toString(config.eConfig.getEaterVision()));
+		eatersWallPenaltyText.setText(Integer.toString(config.eConfig.getWallPenalty()));
+		eatersJumpPenaltyText.setText(Integer.toString(config.eConfig.getJumpPenalty()));
+		eatersLowProbText.setText(Double.toString(config.eConfig.getLowProbability()));
+		eatersHighProbText.setText(Double.toString(config.eConfig.getHighProbability()));
+	}
+	
+	private void rulesTankSoarPage() {
+//		Text tanksoarDefaultMissilesText;
+//		Text tanksoarDefaultEnergyText;
+//		Text tanksoarDefaultHealthText;
+//		Text tanksoarCollisionPenaltyText;
+//		Text tanksoarMaxMissilePacksText;
+//		Text tanksoarMissilePackRespawnText;
+//		Text tanksoarShieldEnergyUsageText;
+//		Text tanksoarMissileHitAwardText;
+//		Text tanksoarMissileHitPenaltyText;
+//		Text tanksoarKillAwardText;
+//		Text tanksoarKillPenaltyText;
+//		Text tanksoarRadarWidthText;
+//		Text tanksoarRadarHeightText;
+//		Text tanksoarSmellDistanceText;
+//		Text tanksoarResetThresholdText;
+
+		Label defaultMissilesLabel = new Label(currentPage, SWT.NONE);
+		defaultMissilesLabel.setText("Starting missiles:");
+
+		tanksoarDefaultMissilesText = new Text(currentPage, SWT.SINGLE | SWT.BORDER);
+		tanksoarDefaultMissilesText.addFocusListener(new FocusAdapter() {
+			public void focusLost(FocusEvent e) {
+				int text;
+				try {
+					text = Integer.parseInt(tanksoarDefaultMissilesText.getText());
+				} catch (NumberFormatException exception) {
+					text = Soar2D.config.tConfig.getDefaultMissiles();
+				}
+				config.tConfig.setDefaultMissiles(text);
+				rulesTankSoarUpdate();
+			}
+		});
+		tanksoarDefaultMissilesText.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_FILL | GridData.GRAB_HORIZONTAL));
+
+		Label defaultEnergyLabel = new Label(currentPage, SWT.NONE);
+		defaultEnergyLabel.setText("Starting energy:");
+
+		tanksoarDefaultEnergyText = new Text(currentPage, SWT.SINGLE | SWT.BORDER);
+		tanksoarDefaultEnergyText.addFocusListener(new FocusAdapter() {
+			public void focusLost(FocusEvent e) {
+				int text;
+				try {
+					text = Integer.parseInt(tanksoarDefaultEnergyText.getText());
+				} catch (NumberFormatException exception) {
+					text = Soar2D.config.tConfig.getDefaultEnergy();
+				}
+				config.tConfig.setDefaultEnergy(text);
+				rulesTankSoarUpdate();
+			}
+		});
+		tanksoarDefaultEnergyText.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_FILL | GridData.GRAB_HORIZONTAL));
+
+		Label defaultHealthLabel = new Label(currentPage, SWT.NONE);
+		defaultHealthLabel.setText("Starting health:");
+
+		tanksoarDefaultHealthText = new Text(currentPage, SWT.SINGLE | SWT.BORDER);
+		tanksoarDefaultHealthText.addFocusListener(new FocusAdapter() {
+			public void focusLost(FocusEvent e) {
+				int text;
+				try {
+					text = Integer.parseInt(tanksoarDefaultHealthText.getText());
+				} catch (NumberFormatException exception) {
+					text = Soar2D.config.tConfig.getDefaultHealth();
+				}
+				config.tConfig.setDefaultHealth(text);
+				rulesTankSoarUpdate();
+			}
+		});
+		tanksoarDefaultHealthText.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_FILL | GridData.GRAB_HORIZONTAL));
+
+		Label collisionPenaltyLabel = new Label(currentPage, SWT.NONE);
+		collisionPenaltyLabel.setText("Collision penalty:");
+
+		tanksoarCollisionPenaltyText = new Text(currentPage, SWT.SINGLE | SWT.BORDER);
+		tanksoarCollisionPenaltyText.addFocusListener(new FocusAdapter() {
+			public void focusLost(FocusEvent e) {
+				int text;
+				try {
+					text = Integer.parseInt(tanksoarCollisionPenaltyText.getText());
+				} catch (NumberFormatException exception) {
+					text = Soar2D.config.tConfig.getCollisionPenalty();
+				}
+				config.tConfig.setCollisionPenalty(text);
+				rulesTankSoarUpdate();
+			}
+		});
+		tanksoarCollisionPenaltyText.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_FILL | GridData.GRAB_HORIZONTAL));
+
+		Label maxMissilePacksLabel = new Label(currentPage, SWT.NONE);
+		maxMissilePacksLabel.setText("Max missile packs:");
+
+		tanksoarMaxMissilePacksText = new Text(currentPage, SWT.SINGLE | SWT.BORDER);
+		tanksoarMaxMissilePacksText.addFocusListener(new FocusAdapter() {
+			public void focusLost(FocusEvent e) {
+				int text;
+				try {
+					text = Integer.parseInt(tanksoarMaxMissilePacksText.getText());
+				} catch (NumberFormatException exception) {
+					text = Soar2D.config.tConfig.getMaxMissilePacks();
+				}
+				config.tConfig.setMaxMissilePacks(text);
+				rulesTankSoarUpdate();
+			}
+		});
+		tanksoarMaxMissilePacksText.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_FILL | GridData.GRAB_HORIZONTAL));
+
+		Label missilePackRespawnLabel = new Label(currentPage, SWT.NONE);
+		missilePackRespawnLabel.setText("Missile pack respawn chance:");
+
+		tanksoarMissilePackRespawnText = new Text(currentPage, SWT.SINGLE | SWT.BORDER);
+		tanksoarMissilePackRespawnText.addFocusListener(new FocusAdapter() {
+			public void focusLost(FocusEvent e) {
+				int text;
+				try {
+					text = Integer.parseInt(tanksoarMissilePackRespawnText.getText());
+				} catch (NumberFormatException exception) {
+					text = Soar2D.config.tConfig.getMissilePackRespawnChance();
+				}
+				config.tConfig.setMissilePackRespawnChance(text);
+				rulesTankSoarUpdate();
+			}
+		});
+		tanksoarMissilePackRespawnText.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_FILL | GridData.GRAB_HORIZONTAL));
+
+		Label shieldEnergyUsageLabel = new Label(currentPage, SWT.NONE);
+		shieldEnergyUsageLabel.setText("Shield energy usage:");
+
+		tanksoarShieldEnergyUsageText = new Text(currentPage, SWT.SINGLE | SWT.BORDER);
+		tanksoarShieldEnergyUsageText.addFocusListener(new FocusAdapter() {
+			public void focusLost(FocusEvent e) {
+				int text;
+				try {
+					text = Integer.parseInt(tanksoarShieldEnergyUsageText.getText());
+				} catch (NumberFormatException exception) {
+					text = Soar2D.config.tConfig.getShieldEnergyUsage();
+				}
+				config.tConfig.setShieldEnergyUsage(text);
+				rulesTankSoarUpdate();
+			}
+		});
+		tanksoarShieldEnergyUsageText.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_FILL | GridData.GRAB_HORIZONTAL));
+
+		Label missileHitAwardLabel = new Label(currentPage, SWT.NONE);
+		missileHitAwardLabel.setText("Missile hit award:");
+
+		tanksoarMissileHitAwardText = new Text(currentPage, SWT.SINGLE | SWT.BORDER);
+		tanksoarMissileHitAwardText.addFocusListener(new FocusAdapter() {
+			public void focusLost(FocusEvent e) {
+				int text;
+				try {
+					text = Integer.parseInt(tanksoarMissileHitAwardText.getText());
+				} catch (NumberFormatException exception) {
+					text = Soar2D.config.tConfig.getMissileHitAward();
+				}
+				config.tConfig.setMissileHitAward(text);
+				rulesTankSoarUpdate();
+			}
+		});
+		tanksoarMissileHitAwardText.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_FILL | GridData.GRAB_HORIZONTAL));
+
+		Label missileHitPenaltyLabel = new Label(currentPage, SWT.NONE);
+		missileHitPenaltyLabel.setText("Missile hit penalty:");
+
+		tanksoarMissileHitPenaltyText = new Text(currentPage, SWT.SINGLE | SWT.BORDER);
+		tanksoarMissileHitPenaltyText.addFocusListener(new FocusAdapter() {
+			public void focusLost(FocusEvent e) {
+				int text;
+				try {
+					text = Integer.parseInt(tanksoarMissileHitPenaltyText.getText());
+				} catch (NumberFormatException exception) {
+					text = Soar2D.config.tConfig.getMissileHitPenalty();
+				}
+				config.tConfig.setMissileHitPenalty(text);
+				rulesTankSoarUpdate();
+			}
+		});
+		tanksoarMissileHitPenaltyText.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_FILL | GridData.GRAB_HORIZONTAL));
+
+		Label killAwardLabel = new Label(currentPage, SWT.NONE);
+		killAwardLabel.setText("Frag award:");
+
+		tanksoarKillAwardText = new Text(currentPage, SWT.SINGLE | SWT.BORDER);
+		tanksoarKillAwardText.addFocusListener(new FocusAdapter() {
+			public void focusLost(FocusEvent e) {
+				int text;
+				try {
+					text = Integer.parseInt(tanksoarKillAwardText.getText());
+				} catch (NumberFormatException exception) {
+					text = Soar2D.config.tConfig.getKillAward();
+				}
+				config.tConfig.setKillAward(text);
+				rulesTankSoarUpdate();
+			}
+		});
+		tanksoarKillAwardText.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_FILL | GridData.GRAB_HORIZONTAL));
+
+		Label killPenaltyLabel = new Label(currentPage, SWT.NONE);
+		killPenaltyLabel.setText("Frag penalty:");
+
+		tanksoarKillPenaltyText = new Text(currentPage, SWT.SINGLE | SWT.BORDER);
+		tanksoarKillPenaltyText.addFocusListener(new FocusAdapter() {
+			public void focusLost(FocusEvent e) {
+				int text;
+				try {
+					text = Integer.parseInt(tanksoarKillPenaltyText.getText());
+				} catch (NumberFormatException exception) {
+					text = Soar2D.config.tConfig.getKillPenalty();
+				}
+				config.tConfig.setKillPenalty(text);
+				rulesTankSoarUpdate();
+			}
+		});
+		tanksoarKillPenaltyText.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_FILL | GridData.GRAB_HORIZONTAL));
+
+		Label radarWidthLabel = new Label(currentPage, SWT.NONE);
+		radarWidthLabel.setText("Radar width:");
+
+		tanksoarRadarWidthText = new Text(currentPage, SWT.SINGLE | SWT.BORDER);
+		tanksoarRadarWidthText.addFocusListener(new FocusAdapter() {
+			public void focusLost(FocusEvent e) {
+				int text;
+				try {
+					text = Integer.parseInt(tanksoarRadarWidthText.getText());
+				} catch (NumberFormatException exception) {
+					text = Soar2D.config.tConfig.getRadarWidth();
+				}
+				config.tConfig.setRadarWidth(text);
+				rulesTankSoarUpdate();
+			}
+		});
+		tanksoarRadarWidthText.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_FILL | GridData.GRAB_HORIZONTAL));
+
+		Label radarHeightLabel = new Label(currentPage, SWT.NONE);
+		radarHeightLabel.setText("Radar height:");
+
+		tanksoarRadarHeightText = new Text(currentPage, SWT.SINGLE | SWT.BORDER);
+		tanksoarRadarHeightText.addFocusListener(new FocusAdapter() {
+			public void focusLost(FocusEvent e) {
+				int text;
+				try {
+					text = Integer.parseInt(tanksoarRadarHeightText.getText());
+				} catch (NumberFormatException exception) {
+					text = Soar2D.config.tConfig.getRadarHeight();
+				}
+				config.tConfig.setRadarHeight(text);
+				rulesTankSoarUpdate();
+			}
+		});
+		tanksoarRadarHeightText.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_FILL | GridData.GRAB_HORIZONTAL));
+
+		Label maxSmellDistanceLabel = new Label(currentPage, SWT.NONE);
+		maxSmellDistanceLabel.setText("Max smell distance:");
+
+		tanksoarSmellDistanceText = new Text(currentPage, SWT.SINGLE | SWT.BORDER);
+		tanksoarSmellDistanceText.addFocusListener(new FocusAdapter() {
+			public void focusLost(FocusEvent e) {
+				int text;
+				try {
+					text = Integer.parseInt(tanksoarSmellDistanceText.getText());
+				} catch (NumberFormatException exception) {
+					text = Soar2D.config.tConfig.getMaxSmellDistance();
+				}
+				config.tConfig.setMaxSmellDistance(text);
+				rulesTankSoarUpdate();
+			}
+		});
+		tanksoarSmellDistanceText.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_FILL | GridData.GRAB_HORIZONTAL));
+
+		Label resetThresholdLabel = new Label(currentPage, SWT.NONE);
+		resetThresholdLabel.setText("Reset threshold:");
+
+		tanksoarResetThresholdText = new Text(currentPage, SWT.SINGLE | SWT.BORDER);
+		tanksoarResetThresholdText.addFocusListener(new FocusAdapter() {
+			public void focusLost(FocusEvent e) {
+				int text;
+				try {
+					text = Integer.parseInt(tanksoarResetThresholdText.getText());
+				} catch (NumberFormatException exception) {
+					text = Soar2D.config.tConfig.getMissileResetThreshold();
+				}
+				config.tConfig.setMissileResetThreshold(text);
+				rulesTankSoarUpdate();
+			}
+		});
+		tanksoarResetThresholdText.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_FILL | GridData.GRAB_HORIZONTAL));
+
+	}
+	private void rulesTankSoarUpdate() {
+		tanksoarDefaultMissilesText.setText(Integer.toString(config.tConfig.getDefaultMissiles()));
+		tanksoarDefaultEnergyText.setText(Integer.toString(config.tConfig.getDefaultEnergy()));
+		tanksoarDefaultHealthText.setText(Integer.toString(config.tConfig.getDefaultHealth()));
+		tanksoarCollisionPenaltyText.setText(Integer.toString(config.tConfig.getCollisionPenalty()));
+		tanksoarMaxMissilePacksText.setText(Integer.toString(config.tConfig.getMaxMissilePacks()));
+		tanksoarMissilePackRespawnText.setText(Integer.toString(config.tConfig.getMissilePackRespawnChance()));
+		tanksoarShieldEnergyUsageText.setText(Integer.toString(config.tConfig.getShieldEnergyUsage()));
+		tanksoarMissileHitAwardText.setText(Integer.toString(config.tConfig.getMissileHitAward()));
+		tanksoarMissileHitPenaltyText.setText(Integer.toString(config.tConfig.getMissileHitPenalty()));
+		tanksoarKillAwardText.setText(Integer.toString(config.tConfig.getKillAward()));
+		tanksoarKillPenaltyText.setText(Integer.toString(config.tConfig.getKillPenalty()));
+		tanksoarRadarWidthText.setText(Integer.toString(config.tConfig.getRadarWidth()));
+		tanksoarRadarHeightText.setText(Integer.toString(config.tConfig.getRadarHeight()));
+		tanksoarSmellDistanceText.setText(Integer.toString(config.tConfig.getMaxSmellDistance()));
+		tanksoarResetThresholdText.setText(Integer.toString(config.tConfig.getMissileResetThreshold()));
+		
+	}
+	private void rulesBookPage() {
+//		Button bookColoredRoomsButton;
+//		Text bookSpeedText;
+//		Text bookCellSizeText;
+//		Text bookCycleTimeSliceText;
+//		Text bookVisionConeText;
+//		Text bookRotateSpeedText;
+//		Button bookBlocksBlockButton;
+//		Button bookContinuousButton;
+		
+		bookColoredRoomsButton = new Button(currentPage, SWT.CHECK);
+		bookColoredRoomsButton.setText("Colored rooms");
+		bookColoredRoomsButton.addSelectionListener(new SelectionAdapter() {
+			public void widgetSelected(SelectionEvent e) {
+				config.bConfig.setColoredRooms(!config.bConfig.getColoredRooms());
+				rulesBookUpdate();
+			}
+		});
+		bookColoredRoomsButton.setLayoutData(kSpan2Beginning);
+
+		Label speedLabel = new Label(currentPage, SWT.NONE);
+		speedLabel.setText("Speed:");
+
+		bookSpeedText = new Text(currentPage, SWT.SINGLE | SWT.BORDER);
+		bookSpeedText.addFocusListener(new FocusAdapter() {
+			public void focusLost(FocusEvent e) {
+				int text;
+				try {
+					text = Integer.parseInt(bookSpeedText.getText());
+				} catch (NumberFormatException exception) {
+					text = Soar2D.config.bConfig.getSpeed();
+				}
+				config.bConfig.setSpeed(text);
+				rulesBookUpdate();
+			}
+		});
+		bookSpeedText.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_FILL | GridData.GRAB_HORIZONTAL));
+
+		Label cellSizeLabel = new Label(currentPage, SWT.NONE);
+		cellSizeLabel.setText("Cell size:");
+
+		bookCellSizeText = new Text(currentPage, SWT.SINGLE | SWT.BORDER);
+		bookCellSizeText.addFocusListener(new FocusAdapter() {
+			public void focusLost(FocusEvent e) {
+				int text;
+				try {
+					text = Integer.parseInt(bookCellSizeText.getText());
+				} catch (NumberFormatException exception) {
+					text = Soar2D.config.bConfig.getBookCellSize();
+				}
+				config.bConfig.setBookCellSize(text);
+				rulesBookUpdate();
+			}
+		});
+		bookCellSizeText.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_FILL | GridData.GRAB_HORIZONTAL));
+
+		Label cycleTimeSliceLabel = new Label(currentPage, SWT.NONE);
+		cycleTimeSliceLabel.setText("Time slice:");
+
+		bookCycleTimeSliceText = new Text(currentPage, SWT.SINGLE | SWT.BORDER);
+		bookCycleTimeSliceText.addFocusListener(new FocusAdapter() {
+			public void focusLost(FocusEvent e) {
+				int text;
+				try {
+					text = Integer.parseInt(bookCycleTimeSliceText.getText());
+				} catch (NumberFormatException exception) {
+					text = Soar2D.config.bConfig.getCycleTimeSlice();
+				}
+				config.bConfig.setCycleTimeSlice(text);
+				rulesBookUpdate();
+			}
+		});
+		bookCycleTimeSliceText.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_FILL | GridData.GRAB_HORIZONTAL));
+
+		Label visionConeLabel = new Label(currentPage, SWT.NONE);
+		visionConeLabel.setText("Field of view:");
+
+		bookVisionConeText = new Text(currentPage, SWT.SINGLE | SWT.BORDER);
+		bookVisionConeText.addFocusListener(new FocusAdapter() {
+			public void focusLost(FocusEvent e) {
+				double text;
+				try {
+					text = Double.parseDouble(bookVisionConeText.getText());
+				} catch (NumberFormatException exception) {
+					text = Soar2D.config.bConfig.getVisionCone();
+				}
+				config.bConfig.setVisionCone(text);
+				rulesBookUpdate();
+			}
+		});
+		bookVisionConeText.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_FILL | GridData.GRAB_HORIZONTAL));
+
+		Label rotateSpeedLabel = new Label(currentPage, SWT.NONE);
+		rotateSpeedLabel.setText("Rotation speed:");
+
+		bookRotateSpeedText = new Text(currentPage, SWT.SINGLE | SWT.BORDER);
+		bookRotateSpeedText.addFocusListener(new FocusAdapter() {
+			public void focusLost(FocusEvent e) {
+				float text;
+				try {
+					text = Float.parseFloat(bookRotateSpeedText.getText());
+				} catch (NumberFormatException exception) {
+					text = Soar2D.config.bConfig.getRotateSpeed();
+				}
+				config.bConfig.setRotateSpeed(text);
+				rulesBookUpdate();
+			}
+		});
+		bookRotateSpeedText.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_FILL | GridData.GRAB_HORIZONTAL));
+
+		bookBlocksBlockButton = new Button(currentPage, SWT.CHECK);
+		bookBlocksBlockButton.setText("Blocks block");
+		bookBlocksBlockButton.addSelectionListener(new SelectionAdapter() {
+			public void widgetSelected(SelectionEvent e) {
+				config.bConfig.setBlocksBlock(!config.bConfig.getBlocksBlock());
+				rulesBookUpdate();
+			}
+		});
+		bookBlocksBlockButton.setLayoutData(kSpan2Beginning);
+
+		bookContinuousButton = new Button(currentPage, SWT.CHECK);
+		bookContinuousButton.setText("Continuous");
+		bookContinuousButton.addSelectionListener(new SelectionAdapter() {
+			public void widgetSelected(SelectionEvent e) {
+				config.bConfig.setContinuous(!config.bConfig.getContinuous());
+				rulesBookUpdate();
+			}
+		});
+		bookContinuousButton.setLayoutData(kSpan2Beginning);
+
+	}
+	private void rulesBookUpdate() {
+		bookColoredRoomsButton.setSelection(config.bConfig.getColoredRooms());
+		bookSpeedText.setText(Integer.toString(config.bConfig.getSpeed()));
+		bookCellSizeText.setText(Integer.toString(config.bConfig.getBookCellSize()));
+		bookCycleTimeSliceText.setText(Integer.toString(config.bConfig.getCycleTimeSlice()));
+		bookVisionConeText.setText(Double.toString(config.bConfig.getVisionCone()));
+		bookRotateSpeedText.setText(Float.toString(config.bConfig.getRotateSpeed()));
+		bookBlocksBlockButton.setSelection(config.bConfig.getBlocksBlock());
+		bookContinuousButton.setSelection(config.bConfig.getContinuous());
+	}
+	private void rulesKitchenPage() {
+		Label kitchenLabel = new Label(currentPage, SWT.NONE);
+		kitchenLabel.setText("No rules settings for kitchen environment.");
+		{
+			GridData gd = new GridData();
+			gd.horizontalAlignment = GridData.BEGINNING;
+			gd.horizontalIndent = 20;
+			kitchenLabel.setLayoutData(gd);
+		}
+	}
+	private void rulesTaxiPage() {
+//		Button taxiDisableFuelButton;
+//		Text taxiFuelStartingMinText;
+//		Text taxiFuelStartingMaxText;
+//		Text taxiFuelMaxText;
+		
+		taxiDisableFuelButton = new Button(currentPage, SWT.CHECK);
+		taxiDisableFuelButton.setText("Disable fuel");
+		taxiDisableFuelButton.addSelectionListener(new SelectionAdapter() {
+			public void widgetSelected(SelectionEvent e) {
+				config.xConfig.setDisableFuel(!config.xConfig.getDisableFuel());
+				rulesBookUpdate();
+			}
+		});
+		taxiDisableFuelButton.setLayoutData(kSpan2Beginning);
+
+		Label fuelStartingMinLabel = new Label(currentPage, SWT.NONE);
+		fuelStartingMinLabel.setText("Fuel starting minimum:");
+
+		taxiFuelStartingMinText = new Text(currentPage, SWT.SINGLE | SWT.BORDER);
+		taxiFuelStartingMinText.addFocusListener(new FocusAdapter() {
+			public void focusLost(FocusEvent e) {
+				int text;
+				try {
+					text = Integer.parseInt(taxiFuelStartingMinText.getText());
+				} catch (NumberFormatException exception) {
+					text = Soar2D.config.xConfig.getFuelStartingMinimum();
+				}
+				config.xConfig.setFuelStartingMinimum(text);
+				rulesTaxiUpdate();
+			}
+		});
+		taxiFuelStartingMinText.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_FILL | GridData.GRAB_HORIZONTAL));
+
+		Label fuelStartingMaxLabel = new Label(currentPage, SWT.NONE);
+		fuelStartingMaxLabel.setText("Fuel starting maximum:");
+
+		taxiFuelStartingMaxText = new Text(currentPage, SWT.SINGLE | SWT.BORDER);
+		taxiFuelStartingMaxText.addFocusListener(new FocusAdapter() {
+			public void focusLost(FocusEvent e) {
+				int text;
+				try {
+					text = Integer.parseInt(taxiFuelStartingMaxText.getText());
+				} catch (NumberFormatException exception) {
+					text = Soar2D.config.xConfig.getFuelStartingMaximum();
+				}
+				config.xConfig.setFuelStartingMaximum(text);
+				rulesTaxiUpdate();
+			}
+		});
+		taxiFuelStartingMaxText.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_FILL | GridData.GRAB_HORIZONTAL));
+
+		Label fuelMaxLabel = new Label(currentPage, SWT.NONE);
+		fuelMaxLabel.setText("Fuel maximum:");
+
+		taxiFuelMaxText = new Text(currentPage, SWT.SINGLE | SWT.BORDER);
+		taxiFuelMaxText.addFocusListener(new FocusAdapter() {
+			public void focusLost(FocusEvent e) {
+				int text;
+				try {
+					text = Integer.parseInt(taxiFuelMaxText.getText());
+				} catch (NumberFormatException exception) {
+					text = Soar2D.config.xConfig.getFuelMaximum();
+				}
+				config.xConfig.setFuelMaximum(text);
+				rulesTaxiUpdate();
+			}
+		});
+		taxiFuelMaxText.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_FILL | GridData.GRAB_HORIZONTAL));
+
+	}
+	
+	private void rulesKitchenUpdate() {
+		
+	}
+	private void rulesTaxiUpdate() {
+		taxiDisableFuelButton.setSelection(config.xConfig.getDisableFuel());
+		taxiFuelStartingMinText.setText(Integer.toString(config.xConfig.getFuelStartingMinimum()));
+		taxiFuelStartingMaxText.setText(Integer.toString(config.xConfig.getFuelStartingMaximum()));
+		taxiFuelMaxText.setText(Integer.toString(config.xConfig.getFuelMaximum()));
 	}
 
 	public void loggingPage() {
@@ -643,12 +1505,7 @@ public class ConfigurationEditor extends Dialog {
 					loggingUpdate();
 				}
 			});
-			{
-				GridData gd = new GridData();
-				gd.horizontalAlignment = SWT.BEGINNING;
-				gd.horizontalSpan = 2;
-				loggingConsoleButton.setLayoutData(gd);
-			}
+			loggingConsoleButton.setLayoutData(kSpan2Beginning);
 
 			loggingFileButton = new Button(targetsGroup, SWT.CHECK);
 			loggingFileButton.setText("File");
@@ -663,12 +1520,7 @@ public class ConfigurationEditor extends Dialog {
 					loggingUpdate();
 				}
 			});
-			{
-				GridData gd = new GridData();
-				gd.horizontalAlignment = SWT.BEGINNING;
-				gd.horizontalSpan = 2;
-				loggingFileButton.setLayoutData(gd);
-			}
+			loggingFileButton.setLayoutData(kSpan2Beginning);
 			
 			Label loggingNameLabel = new Label(targetsGroup, SWT.NONE);
 			loggingNameLabel.setText("Log file:");
@@ -725,7 +1577,7 @@ public class ConfigurationEditor extends Dialog {
 		loggingTimeButton.setText("Print a time stamp with each message");
 		loggingTimeButton.addSelectionListener(new SelectionAdapter() {
 			public void widgetSelected(SelectionEvent e) {
-				config.setLogTime(config.getLogTime());
+				config.setLogTime(!config.getLogTime());
 				loggingUpdate();
 			}
 		});
@@ -737,10 +1589,6 @@ public class ConfigurationEditor extends Dialog {
 		
 		Label loggingLevelLabel = new Label(currentPage, SWT.NONE);
 		loggingLevelLabel.setText("Log detail level:");
-		{
-			GridData gd = new GridData();
-			loggingLevelLabel.setLayoutData(gd);
-		}
 		
 		loggingLevelCombo = new Combo(currentPage, SWT.READ_ONLY);
 		{
@@ -775,6 +1623,21 @@ public class ConfigurationEditor extends Dialog {
 			}
 		});
 
+		// log soar print events
+		loggingSoarPrintButton = new Button(currentPage, SWT.CHECK);
+		loggingSoarPrintButton.setText("Log Soar print events to Soar2D log");
+		loggingSoarPrintButton.addSelectionListener(new SelectionAdapter() {
+			public void widgetSelected(SelectionEvent e) {
+				config.setLogSoarPrint(!config.getLogSoarPrint());
+				loggingUpdate();
+			}
+		});
+		{
+			GridData gd = new GridData();
+			gd.horizontalAlignment = SWT.BEGINNING;
+			loggingSoarPrintButton.setLayoutData(gd);
+		}
+		
 		loggingUpdate();
 
 		rhs.layout(true);
@@ -792,6 +1655,7 @@ public class ConfigurationEditor extends Dialog {
 		}
 		loggingConsoleButton.setSelection(config.getLogConsole());
 		loggingTimeButton.setSelection(config.getLogTime());
+		loggingSoarPrintButton.setSelection(config.getLogSoarPrint());
 	}
 	
 	public void agentsPage(final TreeItem selectedItem, int selectedIndex) {
@@ -1084,10 +1948,6 @@ public class ConfigurationEditor extends Dialog {
 			
 			Label yLabel = new Label(newAgentGroup, SWT.NONE);
 			yLabel.setText("Y:");
-			{
-				GridData gd = new GridData();
-				yLabel.setLayoutData(gd);
-			}
 
 			agentCoordinatesY = new Text(newAgentGroup, SWT.SINGLE | SWT.BORDER);
 			agentCoordinatesY.addFocusListener(new FocusAdapter() {
@@ -1110,7 +1970,7 @@ public class ConfigurationEditor extends Dialog {
 			});
 			{
 				GridData gd = new GridData();
-					gd.widthHint = 20;
+				gd.widthHint = 20;
 				gd.horizontalSpan = 2;
 				agentCoordinatesY.setLayoutData(gd);
 			}
@@ -1143,10 +2003,6 @@ public class ConfigurationEditor extends Dialog {
 					agentsUpdate(selectedItem);
 				}
 			});
-			{
-				GridData gd = new GridData();
-				agentFacing.setLayoutData(gd);
-			}
 			
 			agentFacingCombo = new Combo(nittyGritty, SWT.READ_ONLY);
 			{
@@ -1184,10 +2040,6 @@ public class ConfigurationEditor extends Dialog {
 					agentsUpdate(selectedItem);
 				}
 			});
-			{
-				GridData gd = new GridData();
-				agentPoints.setLayoutData(gd);
-			}
 
 			agentPointsText = new Text(nittyGritty, SWT.SINGLE | SWT.BORDER);
 			agentPointsText.addFocusListener(new FocusAdapter() {
@@ -1219,10 +2071,6 @@ public class ConfigurationEditor extends Dialog {
 					agentsUpdate(selectedItem);
 				}
 			});
-			{
-				GridData gd = new GridData();
-				agentHealth.setLayoutData(gd);
-			}
 			
 			agentHealthText = new Text(nittyGritty, SWT.SINGLE | SWT.BORDER);
 			agentHealthText.addFocusListener(new FocusAdapter() {
@@ -1253,10 +2101,6 @@ public class ConfigurationEditor extends Dialog {
 					agentsUpdate(selectedItem);
 				}
 			});
-			{
-				GridData gd = new GridData();
-				agentEnergy.setLayoutData(gd);
-			}
 			
 			agentEnergyText = new Text(nittyGritty, SWT.SINGLE | SWT.BORDER);
 			agentEnergyText.addFocusListener(new FocusAdapter() {
@@ -1287,10 +2131,6 @@ public class ConfigurationEditor extends Dialog {
 					agentsUpdate(selectedItem);
 				}
 			});
-			{
-				GridData gd = new GridData();
-				agentMissiles.setLayoutData(gd);
-			}
 			
 			agentMissilesText = new Text(nittyGritty, SWT.SINGLE | SWT.BORDER);
 			agentMissilesText.addFocusListener(new FocusAdapter() {
@@ -1316,7 +2156,7 @@ public class ConfigurationEditor extends Dialog {
 				createAgentButton.addSelectionListener(new SelectionAdapter() {
 					public void widgetSelected(SelectionEvent e) {
 						config.getPlayers().add(new PlayerConfig(playerConfig));
-						TreeItem agents = tree.getItem(2);
+						TreeItem agents = tree.getItem(kAgentsIndex);
 						TreeItem newAgent = new TreeItem(agents, SWT.NONE);
 						String name;
 						if (playerConfig.hasName()) {
@@ -1366,7 +2206,7 @@ public class ConfigurationEditor extends Dialog {
 					playerConfig = null;
 					selectedItem.dispose();
 					tree.redraw();
-					TreeItem newSelection = tree.getItem(2);
+					TreeItem newSelection = tree.getItem(kAgentsIndex);
 					tree.setSelection(newSelection);
 					agentsPage(null, -1);
 				}
@@ -1532,10 +2372,6 @@ public class ConfigurationEditor extends Dialog {
 				terminalsUpdate();
 			}
 		});
-		{
-			GridData gd = new GridData();
-			terminalMaxUpdates.setLayoutData(gd);
-		}
 		
 		// max updates requires a number of updates
 		maxUpdates = new Text(currentPage, SWT.SINGLE | SWT.BORDER);
@@ -1573,10 +2409,6 @@ public class ConfigurationEditor extends Dialog {
 				config.setTerminalAgentCommand(terminalAgentCommand.getSelection());
 			}
 		});
-		{
-			GridData gd = new GridData();
-			terminalAgentCommand.setLayoutData(gd);
-		}
 
 		terminalWinningScore = new Button(currentPage, SWT.CHECK);
 		terminalWinningScore.setText("Stop when a score is achieved");
@@ -1586,10 +2418,6 @@ public class ConfigurationEditor extends Dialog {
 				terminalsUpdate();
 			}
 		});
-		{
-			GridData gd = new GridData();
-			terminalWinningScore.setLayoutData(gd);
-		}
 
 		// winning score requires a score
 		winningScore = new Text(currentPage, SWT.SINGLE | SWT.BORDER);
@@ -1624,10 +2452,6 @@ public class ConfigurationEditor extends Dialog {
 				config.setTerminalPointsRemaining(terminalPointsRemaining.getSelection());
 			}
 		});
-		{
-			GridData gd = new GridData();
-			terminalPointsRemaining.setLayoutData(gd);
-		}
 
 		terminalFoodRemaining = new Button(currentPage, SWT.CHECK);
 		terminalFoodRemaining.setText("Stop when there is no food remaining (Eaters)");
@@ -1637,10 +2461,6 @@ public class ConfigurationEditor extends Dialog {
 				config.setTerminalFoodRemaining(terminalFoodRemaining.getSelection());
 			}
 		});
-		{
-			GridData gd = new GridData();
-			terminalFoodRemaining.setLayoutData(gd);
-		}
 
 		terminalUnopenedBoxes = new Button(currentPage, SWT.CHECK);
 		terminalUnopenedBoxes.setText("Stop when there are no unopened boxes (Eaters)");
@@ -1650,10 +2470,70 @@ public class ConfigurationEditor extends Dialog {
 				config.setTerminalUnopenedBoxes(terminalUnopenedBoxes.getSelection());
 			}
 		});
+
+		terminalMaxRuns = new Button(currentPage, SWT.CHECK);
+		terminalMaxRuns.setText("Number of runs to complete before stopping");
+		terminalMaxRuns.setSelection(config.getTerminalMaxRuns() > 0);
+		terminalMaxRuns.addSelectionListener(new SelectionAdapter() {
+			public void widgetSelected(SelectionEvent e) {
+				terminalsUpdate();
+			}
+		});
+		
+		// max updates requires a number of updates
+		maxRuns = new Text(currentPage, SWT.SINGLE | SWT.BORDER);
+		maxRuns.addFocusListener(new FocusAdapter() {
+			public void focusLost(FocusEvent e) {
+				try {
+					config.setTerminalMaxRuns(Integer.parseInt(maxRuns.getText()));
+				} catch (NumberFormatException exeption) {}
+				terminalsUpdate();
+			}
+		});
+		maxRuns.addKeyListener(new KeyAdapter() {
+			public void keyPressed(KeyEvent e) {
+				if (!Character.isDigit(e.character)) {
+					e.doit = false;
+				}
+			}
+			public void keyReleased(KeyEvent e) {
+				terminalsUpdate();
+			}
+		});
 		{
 			GridData gd = new GridData();
-			terminalUnopenedBoxes.setLayoutData(gd);
+			gd.horizontalAlignment = GridData.FILL;
+			gd.horizontalIndent = 20;
+			gd.grabExcessHorizontalSpace = true;
+			maxRuns.setLayoutData(gd);
 		}
+
+		terminalPassengerDelivered = new Button(currentPage, SWT.CHECK);
+		terminalPassengerDelivered.setText("Stop when the passenger is delivered (Taxi)");
+		terminalPassengerDelivered.setSelection(config.getTerminalPassengerDelivered());
+		terminalPassengerDelivered.addSelectionListener(new SelectionAdapter() {
+			public void widgetSelected(SelectionEvent e) {
+				config.setTerminalPassengerDelivered(terminalPassengerDelivered.getSelection());
+			}
+		});
+
+		terminalFuelRemaining = new Button(currentPage, SWT.CHECK);
+		terminalFuelRemaining.setText("Stop when there is no fuel remaining (Taxi)");
+		terminalFuelRemaining.setSelection(config.getTerminalFoodRemaining());
+		terminalFuelRemaining.addSelectionListener(new SelectionAdapter() {
+			public void widgetSelected(SelectionEvent e) {
+				config.setTerminalFoodRemaining(terminalFuelRemaining.getSelection());
+			}
+		});
+
+		terminalPassengerPickUp = new Button(currentPage, SWT.CHECK);
+		terminalPassengerPickUp.setText("Stop when the passenger is picked up (Taxi)");
+		terminalPassengerPickUp.setSelection(config.getTerminalPassengerPickUp());
+		terminalPassengerPickUp.addSelectionListener(new SelectionAdapter() {
+			public void widgetSelected(SelectionEvent e) {
+				config.setTerminalPassengerPickUp(terminalPassengerPickUp.getSelection());
+			}
+		});
 
 		terminalsUpdate();
 		
@@ -1677,6 +2557,15 @@ public class ConfigurationEditor extends Dialog {
 			winningScore.setEnabled(false);
 			winningScore.setText("");
 		}
+		
+		if (terminalMaxRuns.getSelection()) {
+			maxRuns.setEnabled(true);
+			maxRuns.setText(Integer.toString(config.getTerminalMaxRuns()));
+		} else {
+			maxRuns.setEnabled(false);
+			maxRuns.setText("");
+		}
+		
 	}
 	
 	public void clientsPage(final TreeItem selectedItem, int selectedIndex) {
@@ -1714,10 +2603,6 @@ public class ConfigurationEditor extends Dialog {
 		
 		Label notice = new Label(currentPage, SWT.NONE);
 		notice.setText("Note: debugger clients are handled in agent configuration.");
-		{
-			GridData gd = new GridData();
-			notice.setLayoutData(gd);
-		}
 		
 		{
 			Group newClientGroup = new Group(currentPage, SWT.NONE);
@@ -1740,10 +2625,6 @@ public class ConfigurationEditor extends Dialog {
 			
 			Label clientNameLabel = new Label(newClientGroup, SWT.NONE);
 			clientNameLabel.setText("Client name:");
-			{
-				GridData gd = new GridData();
-				clientNameLabel.setLayoutData(gd);
-			}
 		
 			clientName = new Text(newClientGroup, SWT.SINGLE | SWT.BORDER);
 			clientName.setText(clientConfig.name);
@@ -1786,17 +2667,9 @@ public class ConfigurationEditor extends Dialog {
 					clientsUpdate(selectedItem);
 				}
 			});
-			{
-				GridData gd = new GridData();
-				clientCommandButton.setLayoutData(gd);
-			}
 			
 			Label clientCommandLabel = new Label(newClientGroup, SWT.NONE);
 			clientCommandLabel.setText("Command:");
-			{
-				GridData gd = new GridData();
-				clientCommandLabel.setLayoutData(gd);
-			}
 		
 			clientCommand = new Text(newClientGroup, SWT.SINGLE | SWT.BORDER);
 			if (clientConfig.command != null) {
@@ -1836,17 +2709,9 @@ public class ConfigurationEditor extends Dialog {
 					clientsUpdate(selectedItem);
 				}
 			});
-			{
-				GridData gd = new GridData();
-				clientTimeoutButton.setLayoutData(gd);
-			}
 			
 			Label clientTimeoutLabel = new Label(newClientGroup, SWT.NONE);
 			clientTimeoutLabel.setText("Timeout (seconds):");
-			{
-				GridData gd = new GridData();
-				clientTimeoutLabel.setLayoutData(gd);
-			}
 		
 			clientTimeout = new Text(newClientGroup, SWT.SINGLE | SWT.BORDER);
 			clientTimeout.addFocusListener(new FocusAdapter() {
@@ -1876,10 +2741,6 @@ public class ConfigurationEditor extends Dialog {
 					clientsUpdate(selectedItem);
 				}
 			});
-			{
-				GridData gd = new GridData();
-				clientAfter.setLayoutData(gd);
-			}
 			
 			if (selectedItem == null) {
 				createClientButton = new Button(newClientGroup, SWT.PUSH);
@@ -1887,10 +2748,11 @@ public class ConfigurationEditor extends Dialog {
 				createClientButton.addSelectionListener(new SelectionAdapter() {
 					public void widgetSelected(SelectionEvent e) {
 						config.clients.add(new ClientConfig(clientConfig));
-						TreeItem clients = tree.getItem(4);
+						TreeItem clients = tree.getItem(kClientsIndex);
 						TreeItem newClient = new TreeItem(clients, SWT.NONE);
 						String name = clientConfig.name;
 						newClient.setText(name);
+						clients.setExpanded(true);
 						tree.redraw();
 						clientsUpdate(selectedItem);
 					}
@@ -1915,7 +2777,7 @@ public class ConfigurationEditor extends Dialog {
 					clientConfig = null;
 					selectedItem.dispose();
 					tree.redraw();
-					TreeItem newSelection = tree.getItem(4);
+					TreeItem newSelection = tree.getItem(kClientsIndex);
 					tree.setSelection(newSelection);
 					clientsPage(null, -1);
 				}

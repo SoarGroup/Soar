@@ -45,16 +45,13 @@ public class BookWorld implements IWorld {
 			// rotate
 			if (move.rotate) {
 				int facing = player.getFacingInt();
-				double heading = player.getHeadingRadians();
 				if (move.rotateDirection.equals(Names.kRotateLeft)) {
 					Soar2D.logger.finer("Rotate: left");
 					player.setFacingInt(Direction.leftOf[facing]);
-					heading -= Math.PI / 2;
 				} 
 				else if (move.rotateDirection.equals(Names.kRotateRight)) {
 					Soar2D.logger.finer("Rotate: right");
 					player.setFacingInt(Direction.rightOf[facing]);
-					heading += Math.PI / 2;
 				} 
 				else {
 					Soar2D.logger.warning("Rotate: invalid direction");
@@ -62,16 +59,6 @@ public class BookWorld implements IWorld {
 				}
 				
 				// update heading if we rotate
-				if (move.rotate) {
-					if (heading < 0) {
-						Soar2D.logger.finest("Correcting computed negative heading");
-						heading += 2 * Math.PI;
-					} 
-
-					heading = fmod(heading, 2 * Math.PI);
-					Soar2D.logger.finer("Rotating, computed heading: " + heading);
-					player.setHeadingRadians(heading);
-				}
 			} 
 
 			// translate
@@ -108,7 +95,7 @@ public class BookWorld implements IWorld {
 			}
 			
 			if (move.drop) {
-				assert Soar2D.bConfig.getBlocksBlock() == false;
+				assert Soar2D.config.bConfig.getBlocksBlock() == false;
 				
 				Soar2D.logger.finer("Move: drop");
 				
@@ -173,11 +160,11 @@ public class BookWorld implements IWorld {
 			if (move.rotate) {
 				if (move.rotateDirection.equals(Names.kRotateLeft)) {
 					Soar2D.logger.finer("Rotate: left");
-					player.setRotationSpeed(Soar2D.bConfig.getRotateSpeed() * -1 * time);
+					player.setRotationSpeed(Soar2D.config.bConfig.getRotateSpeed() * -1 * time);
 				} 
 				else if (move.rotateDirection.equals(Names.kRotateRight)) {
 					Soar2D.logger.finer("Rotate: right");
-					player.setRotationSpeed(Soar2D.bConfig.getRotateSpeed() * time);
+					player.setRotationSpeed(Soar2D.config.bConfig.getRotateSpeed() * time);
 				} 
 				else if (move.rotateDirection.equals(Names.kRotateStop)) {
 					Soar2D.logger.finer("Rotate: stop");
@@ -190,7 +177,7 @@ public class BookWorld implements IWorld {
 					Soar2D.logger.finest("Correcting command negative heading");
 					move.rotateAbsoluteHeading += 2 * Math.PI;
 				}
-				move.rotateAbsoluteHeading = fmod(move.rotateAbsoluteHeading, 2 * Math.PI);
+				move.rotateAbsoluteHeading = Direction.fmod(move.rotateAbsoluteHeading, 2 * Math.PI);
 
 				Soar2D.logger.finer("Rotate absolute: " + move.rotateAbsoluteHeading);
 				
@@ -203,7 +190,7 @@ public class BookWorld implements IWorld {
 					Soar2D.logger.finest("Correcting command negative heading");
 					absoluteHeading += 2 * Math.PI;
 				}
-				absoluteHeading = fmod(absoluteHeading, 2 * Math.PI);
+				absoluteHeading = Direction.fmod(absoluteHeading, 2 * Math.PI);
 				Soar2D.logger.finer("Rotate relative: " + move.rotateRelativeYaw + ", absolute: " + absoluteHeading);
 				setRotationAndAbsoluteHeading(player, absoluteHeading, time);
 			}
@@ -217,7 +204,7 @@ public class BookWorld implements IWorld {
 					Soar2D.logger.finest("Correcting computed negative heading");
 					heading += 2 * Math.PI;
 				} 
-				heading = fmod(heading, 2 * Math.PI);
+				heading = Direction.fmod(heading, 2 * Math.PI);
 
 				Soar2D.logger.finer("Rotating, computed heading: " + heading);
 				
@@ -267,11 +254,11 @@ public class BookWorld implements IWorld {
 			} 
 			else if (move.forward) {
 				Soar2D.logger.finer("Move: forward");
-				player.setSpeed(Soar2D.bConfig.getSpeed());
+				player.setSpeed(Soar2D.config.bConfig.getSpeed());
 			}
 			else if (move.backward) {
 				Soar2D.logger.finer("Move: backward");
-				player.setSpeed(Soar2D.bConfig.getSpeed() * -1);
+				player.setSpeed(Soar2D.config.bConfig.getSpeed() * -1);
 			}
 			
 			// reset collision sensor
@@ -291,14 +278,14 @@ public class BookWorld implements IWorld {
 			
 			if (move.drop) {
 				Point2D.Double dropFloatLocation = new Point2D.Double(players.getFloatLocation(player).x, players.getFloatLocation(player).y);
-				dropFloatLocation.x += Soar2D.bConfig.getBookCellSize() * Math.cos(player.getHeadingRadians());
-				dropFloatLocation.y += Soar2D.bConfig.getBookCellSize() * Math.sin(player.getHeadingRadians());
-				java.awt.Point dropLocation = new java.awt.Point((int)dropFloatLocation.x / Soar2D.bConfig.getBookCellSize(), (int)dropFloatLocation.y / Soar2D.bConfig.getBookCellSize());
+				dropFloatLocation.x += Soar2D.config.bConfig.getBookCellSize() * Math.cos(player.getHeadingRadians());
+				dropFloatLocation.y += Soar2D.config.bConfig.getBookCellSize() * Math.sin(player.getHeadingRadians());
+				java.awt.Point dropLocation = new java.awt.Point((int)dropFloatLocation.x / Soar2D.config.bConfig.getBookCellSize(), (int)dropFloatLocation.y / Soar2D.config.bConfig.getBookCellSize());
 				
 				if (dropLocation.equals(players.getLocation(player))) {
-					dropFloatLocation.x += (Soar2D.bConfig.getBookCellSize() * 0.42) * Math.cos(player.getHeadingRadians());
-					dropFloatLocation.y += (Soar2D.bConfig.getBookCellSize() * 0.42) * Math.sin(player.getHeadingRadians());
-					dropLocation = new java.awt.Point((int)dropFloatLocation.x / Soar2D.bConfig.getBookCellSize(), (int)dropFloatLocation.y / Soar2D.bConfig.getBookCellSize());
+					dropFloatLocation.x += (Soar2D.config.bConfig.getBookCellSize() * 0.42) * Math.cos(player.getHeadingRadians());
+					dropFloatLocation.y += (Soar2D.config.bConfig.getBookCellSize() * 0.42) * Math.sin(player.getHeadingRadians());
+					dropLocation = new java.awt.Point((int)dropFloatLocation.x / Soar2D.config.bConfig.getBookCellSize(), (int)dropFloatLocation.y / Soar2D.config.bConfig.getBookCellSize());
 					assert !dropLocation.equals(players.getLocation(player));
 				}
 
@@ -328,7 +315,7 @@ public class BookWorld implements IWorld {
 
 	public boolean update(GridMap _map, PlayersManager players) {
 		double time = Soar2D.control.getTimeSlice();
-		if (Soar2D.bConfig.getContinuous())
+		if (Soar2D.config.bConfig.getContinuous())
 			return updateContinuous((BookMap)_map, players, time);
 		return updateDiscrete((BookMap)_map, players, time);
 	}
@@ -407,11 +394,11 @@ public class BookWorld implements IWorld {
 		}
 		
 		if (relativeHeading > Math.PI) {
-			player.setRotationSpeed(Soar2D.bConfig.getRotateSpeed() * -1 * time);
+			player.setRotationSpeed(Soar2D.config.bConfig.getRotateSpeed() * -1 * time);
 			player.setDestinationHeading(targetHeading);
 		}
 		else {
-			player.setRotationSpeed(Soar2D.bConfig.getRotateSpeed() * time);
+			player.setRotationSpeed(Soar2D.config.bConfig.getRotateSpeed() * time);
 			player.setDestinationHeading(targetHeading);
 		}
 		
@@ -434,7 +421,7 @@ public class BookWorld implements IWorld {
 
 	private Point2D.Double defaultFloatLocation(Point location) {
 		Point2D.Double floatLocation = new Point2D.Double();
-		final int cellSize = Soar2D.bConfig.getBookCellSize();
+		final int cellSize = Soar2D.config.bConfig.getBookCellSize();
 		
 		// default to center of square
 		floatLocation.x = (location.x * cellSize) + (cellSize / 2); 
@@ -451,21 +438,8 @@ public class BookWorld implements IWorld {
 		}
 	}
 
-	public double fmod(double a, double mod) {
-		double result = a;
-		assert mod > 0;
-		while (Math.abs(result) >= mod) {
-			if (result > 0) {
-				result -= mod;
-			} else {
-				result += mod;
-			}
-		}
-		return result;
-	}
-	
 	private void bookMovePlayerContinuous(Player player, BookMap map, PlayersManager players, double time) {
-		final int cellSize = Soar2D.bConfig.getBookCellSize();
+		final int cellSize = Soar2D.config.bConfig.getBookCellSize();
 		
 		Point oldLocation = players.getLocation(player);
 		Point newLocation = new Point(oldLocation);
@@ -595,7 +569,7 @@ public class BookWorld implements IWorld {
 		if (map.getAllWithProperty(location, Names.kPropertyBlock).size() > 0) {
 			return true;
 		}
-		if (Soar2D.bConfig.getBlocksBlock() && map.getAllWithProperty(location, "mblock").size() > 0) {
+		if (Soar2D.config.bConfig.getBlocksBlock() && map.getAllWithProperty(location, "mblock").size() > 0) {
 			// FIXME: check height
 			return true;
 		}

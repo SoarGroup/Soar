@@ -329,7 +329,6 @@ public class TankSoarConfiguration extends BaseConfiguration implements IConfigu
 
 	public void setDefaultTerminals(Configuration configuration) {
 		configuration.setTerminalWinningScore(50);
-		configuration.setTerminalFoodRemaining(false);
 	}
 
 	public boolean getRunTilOutput() {

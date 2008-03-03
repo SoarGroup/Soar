@@ -18,6 +18,7 @@ import soar2d.map.BookMap;
 import soar2d.map.CellObject;
 import soar2d.map.GridMap;
 import soar2d.map.BookMap.Barrier;
+import soar2d.player.InputLinkMetadata;
 import soar2d.player.MoveInfo;
 import soar2d.player.Player;
 import soar2d.player.PlayerConfig;
@@ -34,6 +35,8 @@ public class SoarRobot extends Robot {
 	int oldLocationId;
 	
 	private ArrayList<String> shutdownCommands;	// soar commands to run before this agent is destroyed
+
+	InputLinkMetadata metadata;
 
 	/**
 	 * @param agent a valid soar agent
@@ -53,8 +56,25 @@ public class SoarRobot extends Robot {
 		selfIL = new SelfInputLink(this);
 		selfIL.initialize();
 		
+		loadMetadata();
+		
 		if (!agent.Commit()) {
 			Soar2D.control.severeError("Failed to commit input to Soar agent " + this.getName());
+			Soar2D.control.stopSimulation();
+		}
+	}
+	
+	private void loadMetadata() {
+		metadata = new InputLinkMetadata(agent);
+		try {
+			if (Soar2D.config.getMetadata() != null) {
+				metadata.load(Soar2D.config.getMetadata());
+			}
+			if (Soar2D.simulation.world.getMap().getMetadata() != null) {
+				metadata.load(Soar2D.simulation.world.getMap().getMetadata());
+			}
+		} catch (Exception e) {
+			Soar2D.control.severeError("Failed to load metadata: " + this.getName() + ": " + e.getMessage());
 			Soar2D.control.stopSimulation();
 		}
 	}
@@ -168,20 +188,20 @@ public class SoarRobot extends Robot {
 			agent.Update(selfIL.col, location.x);
 			agent.Update(selfIL.row, location.y);
 			
-			if (Soar2D.bConfig.getContinuous()) {
+			if (Soar2D.config.bConfig.getContinuous()) {
 				Point2D.Double floatLocation = players.getFloatLocation(this);
 				agent.Update(selfIL.x, floatLocation.x);
 				agent.Update(selfIL.y, floatLocation.y);
 			}
 			
 			// heading
-			agent.Update(selfIL.yaw, getHeadingRadians());
+			agent.Update(selfIL.yaw, Direction.toDisplayRadians(getHeadingRadians()));
 			
 			// update the clock
 			agent.Update(selfIL.cycle, world.getWorldCount());
 		}
 		
-		if (Soar2D.bConfig.getContinuous()) {
+		if (Soar2D.config.bConfig.getContinuous()) {
 			// velocity
 			agent.Update(selfIL.speed, Math.sqrt((getVelocity().x * getVelocity().x) + (getVelocity().y * getVelocity().y)));
 			agent.Update(selfIL.dx, getVelocity().x);
@@ -232,7 +252,7 @@ public class SoarRobot extends Robot {
 			CellObject bObj = bookObjectIter.next();
 			GridMap.BookObjectInfo bInfo = map.getBookObjectInfo(bObj);
 			if (bInfo.area == locationId) {
-				double maxAngleOff = Soar2D.bConfig.getVisionCone() / 2;
+				double maxAngleOff = Soar2D.config.bConfig.getVisionCone() / 2;
 				double angleOff = players.angleOff(this, bInfo.floatLocation);
 				if (Math.abs(angleOff) <= maxAngleOff) {
 					selfIL.addOrUpdateObject(bInfo, world, angleOff);
@@ -301,7 +321,7 @@ public class SoarRobot extends Robot {
 			return new MoveInfo();
 		}
 
-		if (Soar2D.bConfig.getContinuous()) 
+		if (Soar2D.config.bConfig.getContinuous()) 
 			return getMoveContinuous();
 		return getMoveDiscrete();
 	}
@@ -417,7 +437,7 @@ public class SoarRobot extends Robot {
 					continue;
 				}
 				if (oIL.row.GetValue() != selfIL.row.GetValue() || oIL.col.GetValue() != selfIL.col.GetValue())
-				if (oIL.range.GetValue() > Soar2D.bConfig.getBookCellSize()) {
+				if (oIL.range.GetValue() > Soar2D.config.bConfig.getBookCellSize()) {
 					logger.warning(getName() + " get command object not in same cell");
 					commandId.AddStatusError();
 					continue;
@@ -623,6 +643,8 @@ public class SoarRobot extends Robot {
 					commandId.AddStatusError();
 					continue;
 				}
+				
+				move.rotateAbsoluteHeading = Direction.toInternalRadians(move.rotateAbsoluteHeading);
 
 				move.rotateAbsolute = true;
 				rotateCommandId = commandId;
@@ -693,7 +715,7 @@ public class SoarRobot extends Robot {
 					commandId.AddStatusError();
 					continue;
 				}
-				if (oIL.range.GetValue() > Soar2D.bConfig.getBookCellSize()) {
+				if (oIL.range.GetValue() > Soar2D.config.bConfig.getBookCellSize()) {
 					logger.warning(getName() + " get command object out of range");
 					commandId.AddStatusError();
 					continue;
@@ -819,6 +841,9 @@ public class SoarRobot extends Robot {
 		
 		selfIL.destroy();
 
+		metadata.destroy();
+		metadata = null;
+
 		if (!agent.Commit()) {
 			Soar2D.control.severeError("Failed to commit input to Soar agent " + this.getName());
 			Soar2D.control.stopSimulation();
@@ -827,6 +852,7 @@ public class SoarRobot extends Robot {
 		agent.InitSoar();
 
 		selfIL.initialize();
+		loadMetadata();
 		agent.ClearOutputLinkChanges();
 		if (!agent.Commit()) {
 			Soar2D.control.severeError("Failed to commit input to Soar agent " + this.getName());

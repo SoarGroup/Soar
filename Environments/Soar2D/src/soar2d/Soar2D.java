@@ -50,11 +50,6 @@ public class Soar2D {
 
 	public static final Logger logger = Logger.getLogger("soar2d");
 	public static Configuration config = new Configuration();
-	public static TankSoarConfiguration tConfig;
-	public static EatersConfiguration eConfig;
-	public static BookConfiguration bConfig;
-	public static KitchenConfiguration kConfig;
-	public static TaxiConfiguration xConfig;
 	public static final WindowManager wm = new WindowManager();
 	public static final Simulation simulation = new Simulation();
 	public static final Controller control = new Controller();
