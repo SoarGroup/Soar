@@ -40,6 +40,7 @@ public class ConfigurationEditor extends Dialog {
 	Text async;
 	Button silentagent;
 	Text port;
+	Text metadataText;
 	
 	// rules/eaters
 	Text eatersVisionText;
@@ -651,6 +652,60 @@ public class ConfigurationEditor extends Dialog {
 		});
 		silentagent.setLayoutData(kSpan3Beginning);
 
+		// metadata
+		{
+			Label metadataLabel = new Label(currentPage, SWT.NONE);
+			metadataLabel.setText("Metadata:");
+			{
+				GridData gd = new GridData();
+				gd.horizontalAlignment = GridData.BEGINNING;
+				gd.horizontalSpan = 3;
+				metadataLabel.setLayoutData(gd);
+			}
+			
+			metadataText = new Text(currentPage, SWT.SINGLE | SWT.BORDER);
+			metadataText.addFocusListener(new FocusAdapter() {
+				public void focusLost(FocusEvent e) {
+					String metadataFileString = metadataText.getText();
+					if (metadataFileString != null) {
+						config.setMetadata(new File(metadataFileString));
+					}
+					generalUpdate();
+				}
+			});
+			{
+				GridData gd = new GridData();
+				gd.horizontalAlignment = GridData.FILL;
+				gd.horizontalSpan = 2;
+				gd.grabExcessHorizontalSpace = true;
+				metadataText.setLayoutData(gd);
+			}
+			
+			Button metadataBrowse = new Button(currentPage, SWT.PUSH);
+			metadataBrowse.setText("Browse...");
+			{
+				GridData gd = new GridData();
+				gd.horizontalAlignment = GridData.END;
+				metadataBrowse.setLayoutData(gd);
+			}
+			metadataBrowse.addSelectionListener(new SelectionAdapter() {
+				public void widgetSelected(SelectionEvent e) {
+					FileDialog fd = new FileDialog(dialog, SWT.OPEN);
+					fd.setText("Open");
+					if (config.getMetadata() != null) {
+						fd.setFilterPath(config.getMetadata().getPath());
+						fd.setFileName(config.getMetadata().getName());
+					}
+					fd.setFilterExtensions(new String[] {"*.*"});
+					String metadataFileString = fd.open();
+					if (metadataFileString != null) {
+						config.setMetadata(new File(metadataFileString));
+					}
+					generalUpdate();
+				}
+			});
+		}
+
 		generalUpdate();
 		
 		rhs.layout(true);
@@ -705,6 +760,11 @@ public class ConfigurationEditor extends Dialog {
 		seedText.setText(Integer.toString(config.getRandomSeed()));
 		remote.setSelection(config.getRemote());
 		silentagent.setSelection(config.getSilentAgents());
+		if (config.getMetadata() != null) {
+			metadataText.setText(config.getMetadata().getAbsolutePath());
+		} else {
+			metadataText.setText("");
+		}
 	}
 
 	public void rulesPage() {

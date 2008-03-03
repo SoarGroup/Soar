@@ -18,6 +18,8 @@
 		?<async>
 			int millisecondDelay
 		?<force-human> force human input for input-link debugging
+		?<metadata>
+			string path to file
 		?<rules>
 			?<kitchen>
 			?<eaters>

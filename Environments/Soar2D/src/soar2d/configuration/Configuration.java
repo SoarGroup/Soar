@@ -51,6 +51,7 @@ public class Configuration {
 		this.silentAgents = config.silentAgents;
 		this.maxMemoryUsageValue = config.maxMemoryUsageValue;
 		this.asyncTimeSlice = config.asyncTimeSlice;
+		this.metadata = new File(config.metadata.getAbsolutePath());
 
 		cModule.copy(cModule);
 
@@ -293,7 +294,7 @@ public class Configuration {
 		return this.asyncTimeSlice;
 	}
 	
-	// async delay
+	// human input
 	private boolean forceHumanInput = false; // override soar output with human output
 	private static final String kTagForceHuman = "force-human";
 	public void setForceHuman(boolean forceHumanInput) {
@@ -303,6 +304,16 @@ public class Configuration {
 		return this.forceHumanInput;
 	}
 	
+	// metadata file
+	private File metadata;
+	private static final String kTagMetadata = "metadata";
+	public void setMetadata(File metadata) {
+		this.metadata = metadata.getAbsoluteFile();
+	}
+	public File getMetadata() {
+		return this.metadata;
+	}
+
 	private void generalSave(Element general) {
 		if (general == null) return;
 
@@ -341,6 +352,10 @@ public class Configuration {
 		
 		if (this.getForceHuman()) {
 			general.addContent(new Element(kTagForceHuman));
+		}
+		
+		if (this.getMetadata() != null) {
+			general.addContent(new Element(kTagMetadata).setText(getMetadata().getPath()));
 		}
 		
 		Element rules = new Element(kTagRules);
@@ -442,6 +457,9 @@ public class Configuration {
 
 			} else if (child.getName().equalsIgnoreCase(kTagForceHuman)) {
 				setForceHuman(true);
+
+			} else if (child.getName().equalsIgnoreCase(kTagMetadata)) {
+				setMetadata(new File(child.getTextTrim()));
 
 			} else if (child.getName().equalsIgnoreCase(kTagRules)) {
 				cModule.rules(child);
@@ -1178,5 +1196,4 @@ public class Configuration {
 	public int getMaxMemoryUsage() {
 		return maxMemoryUsageValue;
 	}
-	
 }

@@ -1538,7 +1538,7 @@ public class WindowManager {
 	}
 	
 	public void playerEvent() {
-		if (visualWorld != null) {
+		if (visualWorld != null && !visualWorld.isDisposed()) {
 			visualWorld.setRepaint();
 			visualWorld.redraw();
 			VisualWorld.remapPlayerColors();
