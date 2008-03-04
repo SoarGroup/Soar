@@ -88,6 +88,9 @@ public class BookConfiguration extends BaseConfiguration implements IConfigurati
 			} else if (child.getName().equalsIgnoreCase(kTagContinuous)) {
 				this.setContinuous(Boolean.parseBoolean(child.getTextTrim()));
 				
+			} else if (child.getName().equalsIgnoreCase(kTagZeroIsEast)) {
+				this.setZeroIsEast(Boolean.parseBoolean(child.getTextTrim()));
+				
 			} else {
 				throw new LoadError("Unrecognized tag: " + child.getName());
 			}
@@ -106,6 +109,7 @@ public class BookConfiguration extends BaseConfiguration implements IConfigurati
 		book.addContent(new Element(kTagVisionCone).setText(Double.toString(this.getVisionCone())));
 		book.addContent(new Element(kTagBlocksBlock).setText(Boolean.toString(this.getBlocksBlock())));
 		book.addContent(new Element(kTagContinuous).setText(Boolean.toString(this.getContinuous())));
+		book.addContent(new Element(kTagZeroIsEast).setText(Boolean.toString(this.getZeroIsEast())));
 		
 		rules.addContent(book);
 	}
@@ -184,6 +188,15 @@ public class BookConfiguration extends BaseConfiguration implements IConfigurati
 		}
 	}
 
+	private static final String kTagZeroIsEast = "zero-is-east";
+	private boolean zeroIsEast = false;
+	public boolean getZeroIsEast() {
+		return this.zeroIsEast;
+	}
+	public void setZeroIsEast(boolean zeroIsEast) {
+		this.zeroIsEast = zeroIsEast;
+	}
+
 	public void copy(IConfiguration config) {
 		BookConfiguration bConfig = (BookConfiguration)config;
 		this.coloredRooms = bConfig.coloredRooms;
@@ -193,6 +206,7 @@ public class BookConfiguration extends BaseConfiguration implements IConfigurati
 		this.visionCone = bConfig.visionCone;
 		this.blocksBlock = bConfig.blocksBlock;
 		this.continuous = bConfig.continuous;
+		this.zeroIsEast = bConfig.zeroIsEast;
 	}
 	public void setDefaultTerminals(Configuration configuration) {
 	}
