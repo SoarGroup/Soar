@@ -80,6 +80,8 @@
 					boolean if the blocks should block movement or not
 				?<continuous>
 					boolean use continuous behavior, true by default
+				?<zero-is-east>
+					boolean true means heading zero starts east and is increasing clockwise, false by default (heading north is zero)
 			?<taxi>
 				?<disable-fuel> ignore fuel
 				?<fuel-starting-minimum>
