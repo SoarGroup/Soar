@@ -195,7 +195,11 @@ public class SoarRobot extends Robot {
 			}
 			
 			// heading
-			agent.Update(selfIL.yaw, Direction.toDisplayRadians(getHeadingRadians()));
+			if (Soar2D.config.bConfig.getZeroIsEast() == false) {
+				agent.Update(selfIL.yaw, Direction.toDisplayRadians(getHeadingRadians()));
+			} else {
+				agent.Update(selfIL.yaw, getHeadingRadians());
+			}
 			
 			// update the clock
 			agent.Update(selfIL.cycle, world.getWorldCount());
@@ -644,7 +648,11 @@ public class SoarRobot extends Robot {
 					continue;
 				}
 				
-				move.rotateAbsoluteHeading = Direction.toInternalRadians(move.rotateAbsoluteHeading);
+				if (Soar2D.config.bConfig.getZeroIsEast() == false) {
+					move.rotateAbsoluteHeading = Direction.toInternalRadians(move.rotateAbsoluteHeading);
+				} else {
+					move.rotateAbsoluteHeading = move.rotateAbsoluteHeading;
+				}
 
 				move.rotateAbsolute = true;
 				rotateCommandId = commandId;

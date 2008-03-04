@@ -75,6 +75,7 @@ public class ConfigurationEditor extends Dialog {
 	Text bookRotateSpeedText;
 	Button bookBlocksBlockButton;
 	Button bookContinuousButton;
+	Button bookZeroIsEastButton;
 	
 	// rules/taxi
 	Button taxiDisableFuelButton;
@@ -1354,6 +1355,16 @@ public class ConfigurationEditor extends Dialog {
 		});
 		bookContinuousButton.setLayoutData(kSpan2Beginning);
 
+		bookZeroIsEastButton = new Button(currentPage, SWT.CHECK);
+		bookZeroIsEastButton.setText("Zero is east (as opposed to North)");
+		bookZeroIsEastButton.addSelectionListener(new SelectionAdapter() {
+			public void widgetSelected(SelectionEvent e) {
+				config.bConfig.setZeroIsEast(!config.bConfig.getZeroIsEast());
+				rulesBookUpdate();
+			}
+		});
+		bookZeroIsEastButton.setLayoutData(kSpan2Beginning);
+
 	}
 	private void rulesBookUpdate() {
 		bookColoredRoomsButton.setSelection(config.bConfig.getColoredRooms());
@@ -1364,6 +1375,7 @@ public class ConfigurationEditor extends Dialog {
 		bookRotateSpeedText.setText(Float.toString(config.bConfig.getRotateSpeed()));
 		bookBlocksBlockButton.setSelection(config.bConfig.getBlocksBlock());
 		bookContinuousButton.setSelection(config.bConfig.getContinuous());
+		bookZeroIsEastButton.setSelection(config.bConfig.getZeroIsEast());
 	}
 	private void rulesKitchenPage() {
 		Label kitchenLabel = new Label(currentPage, SWT.NONE);
