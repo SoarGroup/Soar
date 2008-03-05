@@ -2488,16 +2488,6 @@ public class ConfigurationEditor extends Dialog {
 				terminalsUpdate();
 			}
 		});
-		maxRuns.addKeyListener(new KeyAdapter() {
-			public void keyPressed(KeyEvent e) {
-				if (!Character.isDigit(e.character)) {
-					e.doit = false;
-				}
-			}
-			public void keyReleased(KeyEvent e) {
-				terminalsUpdate();
-			}
-		});
 		{
 			GridData gd = new GridData();
 			gd.horizontalAlignment = GridData.FILL;

@@ -350,7 +350,7 @@ public class SoarTank extends Tank implements Agent.RunEventInterface {
 		
 		loadMetadata();
 		
-		//agent.InitSoar();
+		agent.InitSoar();
 	}
 	
 	public void fragged() {
