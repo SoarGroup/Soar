@@ -3,7 +3,7 @@
     <ProjectType>Local</ProjectType>
     <ProductVersion>8.0.50215</ProductVersion>
     <SchemaVersion>2.0</SchemaVersion>
-    <ProjectGuid>{D54359C3-39E8-44EA-BD7F-3E02D4C9D346}</ProjectGuid>
+    <ProjectGuid>{2D639B81-3915-4D46-8DBC-B0E5EB5328D6}</ProjectGuid>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
     <ApplicationIcon>
@@ -82,6 +82,18 @@
         <Private>False</Private>
     </Reference>
     <Reference Include="DssRuntime">
+        <SpecificVersion>False</SpecificVersion>
+        <Private>False</Private>
+    </Reference>
+    <Reference Include="RoboticsCommon.Proxy">
+        <SpecificVersion>False</SpecificVersion>
+        <Private>False</Private>
+    </Reference>
+    <Reference Include="smlCSharp">
+        <SpecificVersion>False</SpecificVersion>
+        <Private>False</Private>
+    </Reference>
+    <Reference Include="SickLRF.Y2005.M12.Proxy">
         <SpecificVersion>False</SpecificVersion>
         <Private>False</Private>
     </Reference>

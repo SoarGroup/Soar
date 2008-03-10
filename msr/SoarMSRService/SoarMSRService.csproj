@@ -98,13 +98,13 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="AssemblyInfo.cs" />
+    <Compile Include="SensorState.cs" />
     <Compile Include="Soar.cs" />
     <Compile Include="SoarMSR.cs" />
     <Compile Include="SoarMSRTypes.cs" />
     <AppDesigner Include="Properties" />
   </ItemGroup>
   <ItemGroup>
-    <Content Include="SoarMSR.Config.xml" />
     <Content Include="SoarMSRService.manifest.xml" />
   </ItemGroup>
   <ItemGroup>

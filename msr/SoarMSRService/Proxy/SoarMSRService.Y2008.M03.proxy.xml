@@ -55,9 +55,59 @@
             Deserialize Deserialize
             </summary>
         </member>
+        <member name="P:Robotics.SoarMSR.Proxy.SoarMSRState.AgentName">
+            <summary>
+            Agent Name
+            </summary>
+        </member>
+        <member name="P:Robotics.SoarMSR.Proxy.SoarMSRState.Productions">
+            <summary>
+            Productions
+            </summary>
+        </member>
         <member name="P:Robotics.SoarMSR.Proxy.SoarMSRState.SpawnDebugger">
             <summary>
             Spawn Debugger
+            </summary>
+        </member>
+        <member name="P:Robotics.SoarMSR.Proxy.SoarMSRState.HasRandomSeed">
+            <summary>
+            Has Random Seed
+            </summary>
+        </member>
+        <member name="P:Robotics.SoarMSR.Proxy.SoarMSRState.RandomSeed">
+            <summary>
+            Random Seed
+            </summary>
+        </member>
+        <member name="P:Robotics.SoarMSR.Proxy.SoarMSRState.DrivePower">
+            <summary>
+            Drive Power
+            </summary>
+        </member>
+        <member name="P:Robotics.SoarMSR.Proxy.SoarMSRState.ReversePower">
+            <summary>
+            Reverse Power
+            </summary>
+        </member>
+        <member name="P:Robotics.SoarMSR.Proxy.SoarMSRState.StopTimeout">
+            <summary>
+            Stop Timeout
+            </summary>
+        </member>
+        <member name="P:Robotics.SoarMSR.Proxy.SoarMSRState.BackUpTimeout">
+            <summary>
+            Back Up Timeout
+            </summary>
+        </member>
+        <member name="P:Robotics.SoarMSR.Proxy.SoarMSRState.TurnTimeout">
+            <summary>
+            Turn Timeout
+            </summary>
+        </member>
+        <member name="P:Robotics.SoarMSR.Proxy.SoarMSRState.TimeoutVariance">
+            <summary>
+            Timeout Variance
             </summary>
         </member>
         <member name="T:Robotics.SoarMSR.Proxy.SoarMSROperations">

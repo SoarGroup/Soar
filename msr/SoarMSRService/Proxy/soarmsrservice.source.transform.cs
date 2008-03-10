@@ -22,7 +22,17 @@ namespace Dss.Transforms.TransformSoarMSRService
         {
             Robotics.SoarMSR.SoarMSRState target = new Robotics.SoarMSR.SoarMSRState();
             Robotics.SoarMSR.Proxy.SoarMSRState from = transformFrom as Robotics.SoarMSR.Proxy.SoarMSRState;
+            target.AgentName = from.AgentName;
+            target.Productions = from.Productions;
             target.SpawnDebugger = from.SpawnDebugger;
+            target.HasRandomSeed = from.HasRandomSeed;
+            target.RandomSeed = from.RandomSeed;
+            target.DrivePower = from.DrivePower;
+            target.ReversePower = from.ReversePower;
+            target.StopTimeout = from.StopTimeout;
+            target.BackUpTimeout = from.BackUpTimeout;
+            target.TurnTimeout = from.TurnTimeout;
+            target.TimeoutVariance = from.TimeoutVariance;
             return target;
         }
 
@@ -31,7 +41,17 @@ namespace Dss.Transforms.TransformSoarMSRService
         {
             Robotics.SoarMSR.Proxy.SoarMSRState target = new Robotics.SoarMSR.Proxy.SoarMSRState();
             Robotics.SoarMSR.SoarMSRState from = transformFrom as Robotics.SoarMSR.SoarMSRState;
+            target.AgentName = from.AgentName;
+            target.Productions = from.Productions;
             target.SpawnDebugger = from.SpawnDebugger;
+            target.HasRandomSeed = from.HasRandomSeed;
+            target.RandomSeed = from.RandomSeed;
+            target.DrivePower = from.DrivePower;
+            target.ReversePower = from.ReversePower;
+            target.StopTimeout = from.StopTimeout;
+            target.BackUpTimeout = from.BackUpTimeout;
+            target.TurnTimeout = from.TurnTimeout;
+            target.TimeoutVariance = from.TimeoutVariance;
             return target;
         }
 

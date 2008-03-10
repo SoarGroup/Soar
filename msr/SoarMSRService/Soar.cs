@@ -2,14 +2,39 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 
+using sml;
+using System.Threading;
+using System.ComponentModel;
+using System.Diagnostics;
+
+using bumper = Microsoft.Robotics.Services.ContactSensor.Proxy;
+using drive = Microsoft.Robotics.Services.Drive.Proxy;
+using sicklrf = Microsoft.Robotics.Services.Sensors.SickLRF.Proxy;
+
 namespace Robotics.SoarMSR
 {
     class Soar
     {
+        // Logging
+        public delegate void LogHandler(string message);
+        public event LogHandler Log;
+        protected void OnLog(string message)
+        {
+            if (Log != null)
+            {
+                Log(message);
+            }
+        }
+
+        // Output
+        drive.DriveOperations _drivePort;
+
+        // Soar variables
         private sml.Kernel _kernel;
         private sml.Agent _agent;
         private sml.Kernel.UpdateEventCallback _updateCall;
 
+        // Input link
         private FloatElement _overrideLeftWME;
         private FloatElement _overrideRightWME;
         private StringElement _overrideActiveWME;
@@ -22,45 +47,56 @@ namespace Robotics.SoarMSR
         private FloatElement _timeWME;
         private FloatElement _randomWME;
 
+        // Input link support
         private Random _random;
 
-        private bool _running = false;
-        private bool _stop = false;
+        // State
+        private DateTime _simulationStart;
+        private bool _running;
+        private bool _stop;
+        public BumperState Bumper = new BumperState();
+        public OverrideState Override = new OverrideState();
 
-        // this state needs to be reentrant
-        private bool _overrideChanged = false; // not protected on read
-        private bool _overrideActive = false; // not protected on read
-        private double _overrideLeft = 0;
-        private double _overrideRight = 0;
-        private bool _frontBumperWasPressed = false;
-        private bool _rearBumperWasPressed = false;
-        private bool _frontBumperPressed = false;
-        private bool _rearBumperPressed = false;
-
-        private void InitializeSoar()
+        public void InitializeSoar(SoarMSRState initialState, drive.DriveOperations drivePort)
         {
+            if (_kernel != null)
+            {
+                throw new Exception("Soar: Already initialized");
+            }
+
             _kernel = sml.Kernel.CreateKernelInNewThread("SoarKernelSML");
             if (_kernel.HadError())
-                throw new Exception("Error initializing kernel: " + _kernel.GetLastErrorDescription());
+            {
+                _kernel = null;
+                throw new Exception("Soar: Error initializing kernel: " + _kernel.GetLastErrorDescription());
+            }
 
-            _agent = _kernel.CreateAgent("hal");
+            _running = false;
+            _stop = false;
+
+            _agent = _kernel.CreateAgent(initialState.AgentName);
 
             // We test the kernel for an error after creating an agent as the agent
             // object may not be properly constructed if the create call failed so
             // we store errors in the kernel in this case.  Once this create is done we can work directly with the agent.
             if (_kernel.HadError())
-                throw new Exception("Error creating agent: " + _kernel.GetLastErrorDescription());
+                throw new Exception("Soar: Error creating agent: " + _kernel.GetLastErrorDescription());
 
             _kernel.SetAutoCommit(false);
+            _agent.SetBlinkIfNoChange(false);
 
-            //Trace.WriteLine(_agent.ExecuteCommandLine("pwd"));
-            _agent.LoadProductions("Apps/QUT/SoarIntro/agents/simple-bot.soar");
+            bool result = _agent.LoadProductions(initialState.Productions);
+            if (!result)
+            {
+                throw new Exception("Soar: Error loading productions " + initialState.Productions
+                    + " (current working directory: " + _agent.ExecuteCommandLine("pwd") + ")");
+            }
 
             // Prepare communication channel
             Identifier inputLink = _agent.GetInputLink();
 
             if (inputLink == null)
-                throw new Exception("Error getting the input link");
+                throw new Exception("Soar: Error getting the input link");
 
             Identifier overrideWME = _agent.CreateIdWME(inputLink, "override");
             _overrideLeftWME = _agent.CreateFloatWME(overrideWME, "left", 0);
@@ -70,17 +106,14 @@ namespace Robotics.SoarMSR
             Identifier configWME = _agent.CreateIdWME(inputLink, "config");
 
             Identifier powerWME = _agent.CreateIdWME(configWME, "power");
-            _agent.CreateFloatWME(powerWME, "drive", _state.MaximumPower);
-            _agent.CreateFloatWME(powerWME, "reverse", _state.BackUpPower);
+            _agent.CreateFloatWME(powerWME, "drive", initialState.DrivePower);
+            _agent.CreateFloatWME(powerWME, "reverse", initialState.ReversePower);
 
             Identifier delayWME = _agent.CreateIdWME(configWME, "delay");
-            _agent.CreateFloatWME(delayWME, "stop", _state.StopTimeout);
-            _agent.CreateFloatWME(delayWME, "reverse", _state.BackUpTimeout);
-            _agent.CreateFloatWME(delayWME, "turn", _state.TurnTimeout);
-            _agent.CreateFloatWME(delayWME, "variance", _state.TimeoutVariance);
-
-            _timeWME = _agent.CreateFloatWME(inputLink, "time", 0);
-            _randomWME = _agent.CreateFloatWME(inputLink, "random", 0);
+            _agent.CreateFloatWME(delayWME, "stop", initialState.StopTimeout);
+            _agent.CreateFloatWME(delayWME, "reverse", initialState.BackUpTimeout);
+            _agent.CreateFloatWME(delayWME, "turn", initialState.TurnTimeout);
+            _agent.CreateFloatWME(delayWME, "variance", initialState.TimeoutVariance);
 
             Identifier sensorsWME = _agent.CreateIdWME(inputLink, "sensors");
             Identifier bumperWME = _agent.CreateIdWME(sensorsWME, "bumper");
@@ -90,6 +123,26 @@ namespace Robotics.SoarMSR
             Identifier rearWME = _agent.CreateIdWME(bumperWME, "rear");
             _rearBumperPressedWME = _agent.CreateStringWME(rearWME, "pressed", "false");
             _rearBumperWasPressedWME = _agent.CreateStringWME(rearWME, "was-pressed", "false");
+            
+            // Current time WME
+            _timeWME = _agent.CreateFloatWME(inputLink, "time", 0);
+
+            // Random number WME and supporting state
+            _randomWME = _agent.CreateFloatWME(inputLink, "random", 0);
+            if (initialState.HasRandomSeed)
+            {
+                _random = new Random(initialState.RandomSeed);
+                Trace.WriteLine("Seeding Soar's random number generator.");
+                _agent.ExecuteCommandLine("srand " + initialState.RandomSeed);
+                if (_agent.HadError())
+                {
+                    throw new Exception("Failed to seed Soar's random number generator");
+                }
+            }
+            else
+            {
+                _random = new Random();
+            }
 
             // commit input link structure
             _agent.Commit();
@@ -98,26 +151,28 @@ namespace Robotics.SoarMSR
             _kernel.RegisterForUpdateEvent(sml.smlUpdateEventId.smlEVENT_AFTER_ALL_OUTPUT_PHASES, _updateCall, null);
 
             // spawn debugger
-            if (_state.SpawnDebugger)
+            if (initialState.SpawnDebugger)
             {
                 SpawnDebugger();
             }
 
-            LogInfo(LogGroups.Console, "Soar initialized.");
+            _drivePort = drivePort;
+
+            _simulationStart = DateTime.Now;
+
+            OnLog("Soar initialized.");
         }
 
         private void SpawnDebugger()
         {
-            LogInfo(LogGroups.Console, "Spawning debugger...");
             System.Diagnostics.Process debuggerProc = new System.Diagnostics.Process();
             debuggerProc.EnableRaisingEvents = false;
             debuggerProc.StartInfo.WorkingDirectory = "bin";
             debuggerProc.StartInfo.FileName = "java";
             debuggerProc.StartInfo.Arguments = "-jar SoarJavaDebugger.jar -remote";
+            Trace.WriteLine("Spawning debugger in " + debuggerProc.StartInfo.WorkingDirectory);
             debuggerProc.Start();
 
-            // wait for it
-            LogInfo(LogGroups.Console, "Starting debugger...");
             bool ready = false;
             // do this loop if timeout seconds is 0 (code for wait indefinitely) or if we have tries left
             for (int tries = 0; tries < 15; ++tries)
@@ -142,13 +197,12 @@ namespace Robotics.SoarMSR
                         break;
                     }
                 }
-                LogInfo(LogGroups.Console, "Waiting for java-debugger...");
+                Trace.WriteLine("Waiting for java-debugger...");
                 Thread.Sleep(1000);
             }
 
             if (!ready)
-                LogInfo(LogGroups.Console, "Debugger spawn failed!");
-
+                OnLog("Debugger spawn failed!");
         }
 
         private void UpdateEventCallback(sml.smlUpdateEventId eventID, IntPtr callbackData, IntPtr kernelPtr, smlRunFlags runFlags)
@@ -157,7 +211,7 @@ namespace Robotics.SoarMSR
             if (_stop)
             {
                 _stop = false;
-                LogInfo(LogGroups.Console, "Soar: Update: Stopping all agents.");
+                OnLog("Soar: Update: Stopping all agents.");
                 _kernel.StopAllAgents();
                 return;
             }
@@ -198,7 +252,7 @@ namespace Robotics.SoarMSR
                                 receivedCommand = true;
                                 request.LeftWheelPower = 0;
                                 request.RightWheelPower = 0;
-                                StopNow();
+                                //TODO: StopNow();
                             }
                         }
 
@@ -208,117 +262,88 @@ namespace Robotics.SoarMSR
                         }
                         else
                         {
-                            LogInfo(LogGroups.Console, "Soar: Unknown drive-power command.");
+                            OnLog("Soar: Unknown drive-power command.");
                             command.AddStatusError();
                         }
 
                         break;
 
+                    case "stop-sim":
+                        command.AddStatusComplete();
+                        break;
+
                     default:
-                        LogInfo(LogGroups.Console, "Soar: Unknown command.");
+                        OnLog("Soar: Unknown command.");
                         command.AddStatusError();
                         break;
                 }
             }
+
             if (receivedCommand && _drivePort != null)
             {
                 _drivePort.SetDrivePower(request);
             }
 
-            bool overrideActive = bool.Parse(_overrideActiveWME.GetValue());
-            if (_overrideActive != overrideActive)
-                _agent.Update(_overrideActiveWME, _overrideActive.ToString().ToLowerInvariant());
+            _agent.Update(_overrideActiveWME, Override.OverrideActive.ToString().ToLowerInvariant());
 
-            if (_overrideChanged)
+            OverrideState cachedOverrideState;
+            lock (Override)
             {
-                double overrideLeft;
-                double overrideRight;
-
-                // lock state
-                lock (this)
-                {
-                    // cache state for input link
-                    overrideLeft = _overrideLeft;
-                    overrideRight = _overrideRight;
-
-                    // reset flag
-                    _overrideChanged = false;
-
-                    // unlock state
-                }
-
-                // write input link from cache
-                LogInfo(LogGroups.Console, "Override: (" + overrideLeft + "," + overrideRight + ")");
-                _agent.Update(_overrideLeftWME, overrideLeft);
-                _agent.Update(_overrideRightWME, overrideRight);
-            }
-
-            bool frontBumperWasPressed = false;
-            bool rearBumperWasPressed = false;
-            bool frontBumperPressed = false;
-            bool rearBumperPressed = false;
-
-            // lock state
-            lock (this)
-            {
-                // cache state
-                frontBumperWasPressed = _frontBumperWasPressed;
-                rearBumperWasPressed = _rearBumperWasPressed;
-                frontBumperPressed = _frontBumperPressed;
-                rearBumperPressed = _rearBumperPressed;
-
-                // reset flag
-                _frontBumperWasPressed = false;
-                _rearBumperWasPressed = false;
+                // cache state for input link
+                cachedOverrideState = new OverrideState(Override);
 
                 // unlock state
             }
 
+            // write input link from cache
+            _agent.Update(_overrideActiveWME, cachedOverrideState.OverrideActive.ToString().ToLowerInvariant());
+            _agent.Update(_overrideLeftWME, cachedOverrideState.OverrideLeft);
+            _agent.Update(_overrideRightWME, cachedOverrideState.OverrideRight);
 
-            if (frontBumperWasPressed != bool.Parse(_frontBumperWasPressedWME.GetValue()))
+            BumperState cachedBumperState;
+            // lock state
+            lock (Bumper)
             {
-                _agent.Update(_frontBumperWasPressedWME, frontBumperWasPressed.ToString().ToLowerInvariant());
-            }
-            if (rearBumperWasPressed != bool.Parse(_rearBumperWasPressedWME.GetValue()))
-            {
-                _agent.Update(_rearBumperWasPressedWME, rearBumperWasPressed.ToString().ToLowerInvariant());
-            }
-            if (frontBumperPressed != bool.Parse(_frontBumperPressedWME.GetValue()))
-            {
-                _agent.Update(_frontBumperPressedWME, frontBumperPressed.ToString().ToLowerInvariant());
-            }
-            if (rearBumperPressed != bool.Parse(_rearBumperPressedWME.GetValue()))
-            {
-                _agent.Update(_rearBumperPressedWME, rearBumperPressed.ToString().ToLowerInvariant());
+                // cache state
+                cachedBumperState = new BumperState(Bumper);
+
+                // reset flag
+                Bumper.Reset();
+
+                // unlock state
             }
 
-            DateTimeConverter dtc = new DateTimeConverter();
+            _agent.Update(_frontBumperPressedWME, cachedBumperState.FrontBumperPressed.ToString().ToLowerInvariant());
+            _agent.Update(_rearBumperPressedWME, cachedBumperState.RearBumperPressed.ToString().ToLowerInvariant());
+
+            _agent.Update(_frontBumperWasPressedWME, cachedBumperState.FrontBumperWasPressed.ToString().ToLowerInvariant());
+            _agent.Update(_rearBumperWasPressedWME, cachedBumperState.RearBumperWasPressed.ToString().ToLowerInvariant());
 
             TimeSpan elapsed = System.DateTime.Now - _simulationStart;
             _agent.Update(_timeWME, elapsed.TotalMilliseconds);
-            _agent.Update(_randomWME, _randomGen.NextDouble());
+            _agent.Update(_randomWME, _random.NextDouble());
 
             // commit input link changes
             _agent.Commit();
         }
 
-        private void RunSoar()
+        public void RunSoar()
         {
             _running = true;
-            LogInfo(LogGroups.Console, "Soar: Started.");
+            OnLog("Soar: Started.");
             _kernel.RunAllAgentsForever();
             _running = false;
-            LogInfo(LogGroups.Console, "Soar: Stopped.");
+            OnLog("Soar: Stopped.");
         }
 
-        private void ShutdownSoar()
+        public void ShutdownSoar()
         {
             if (_kernel == null)
                 return;
 
             while (_running)
             {
-                LogInfo(LogGroups.Console, "Soar: Stop requested.");
+                OnLog("Soar: Stop requested.");
                 _stop = true;
                 System.Threading.Thread.Sleep(100);
             }
@@ -326,8 +351,6 @@ namespace Robotics.SoarMSR
             _kernel.Shutdown();
             _kernel = null;
         }
-
-        // ---------------- End Soar Code
-
     }
+
 }

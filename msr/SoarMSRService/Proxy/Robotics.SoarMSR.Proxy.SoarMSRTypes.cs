@@ -87,7 +87,59 @@ namespace Robotics.SoarMSR.Proxy
     public class SoarMSRState : ICloneable, IDssSerializable
     {
         
+        private String _agentName;
+        
+        private String _productions;
+        
         private Boolean _spawnDebugger;
+        
+        private Boolean _hasRandomSeed;
+        
+        private Int32 _randomSeed;
+        
+        private Double _drivePower;
+        
+        private Double _reversePower;
+        
+        private Int32 _stopTimeout;
+        
+        private Int32 _backUpTimeout;
+        
+        private Int32 _turnTimeout;
+        
+        private Int32 _timeoutVariance;
+        
+        /// <summary>
+        /// Agent Name
+        /// </summary>
+        [DataMember()]
+        public String AgentName
+        {
+            get
+            {
+                return this._agentName;
+            }
+            set
+            {
+                this._agentName = value;
+            }
+        }
+        
+        /// <summary>
+        /// Productions
+        /// </summary>
+        [DataMember()]
+        public String Productions
+        {
+            get
+            {
+                return this._productions;
+            }
+            set
+            {
+                this._productions = value;
+            }
+        }
         
         /// <summary>
         /// Spawn Debugger
@@ -106,6 +158,134 @@ namespace Robotics.SoarMSR.Proxy
         }
         
         /// <summary>
+        /// Has Random Seed
+        /// </summary>
+        [DataMember()]
+        public Boolean HasRandomSeed
+        {
+            get
+            {
+                return this._hasRandomSeed;
+            }
+            set
+            {
+                this._hasRandomSeed = value;
+            }
+        }
+        
+        /// <summary>
+        /// Random Seed
+        /// </summary>
+        [DataMember()]
+        public Int32 RandomSeed
+        {
+            get
+            {
+                return this._randomSeed;
+            }
+            set
+            {
+                this._randomSeed = value;
+            }
+        }
+        
+        /// <summary>
+        /// Drive Power
+        /// </summary>
+        [DataMember()]
+        public Double DrivePower
+        {
+            get
+            {
+                return this._drivePower;
+            }
+            set
+            {
+                this._drivePower = value;
+            }
+        }
+        
+        /// <summary>
+        /// Reverse Power
+        /// </summary>
+        [DataMember()]
+        public Double ReversePower
+        {
+            get
+            {
+                return this._reversePower;
+            }
+            set
+            {
+                this._reversePower = value;
+            }
+        }
+        
+        /// <summary>
+        /// Stop Timeout
+        /// </summary>
+        [DataMember()]
+        public Int32 StopTimeout
+        {
+            get
+            {
+                return this._stopTimeout;
+            }
+            set
+            {
+                this._stopTimeout = value;
+            }
+        }
+        
+        /// <summary>
+        /// Back Up Timeout
+        /// </summary>
+        [DataMember()]
+        public Int32 BackUpTimeout
+        {
+            get
+            {
+                return this._backUpTimeout;
+            }
+            set
+            {
+                this._backUpTimeout = value;
+            }
+        }
+        
+        /// <summary>
+        /// Turn Timeout
+        /// </summary>
+        [DataMember()]
+        public Int32 TurnTimeout
+        {
+            get
+            {
+                return this._turnTimeout;
+            }
+            set
+            {
+                this._turnTimeout = value;
+            }
+        }
+        
+        /// <summary>
+        /// Timeout Variance
+        /// </summary>
+        [DataMember()]
+        public Int32 TimeoutVariance
+        {
+            get
+            {
+                return this._timeoutVariance;
+            }
+            set
+            {
+                this._timeoutVariance = value;
+            }
+        }
+        
+        /// <summary>
         /// Copy To SoarMSR State
         /// </summary>
         public virtual void CopyTo(IDssSerializable target)
@@ -114,7 +294,17 @@ namespace Robotics.SoarMSR.Proxy
 
             if (typedTarget == null)
                 throw new ArgumentException("CopyTo({0}) requires type {0}", this.GetType().FullName);
+            typedTarget.AgentName = this.AgentName;
+            typedTarget.Productions = this.Productions;
             typedTarget.SpawnDebugger = this.SpawnDebugger;
+            typedTarget.HasRandomSeed = this.HasRandomSeed;
+            typedTarget.RandomSeed = this.RandomSeed;
+            typedTarget.DrivePower = this.DrivePower;
+            typedTarget.ReversePower = this.ReversePower;
+            typedTarget.StopTimeout = this.StopTimeout;
+            typedTarget.BackUpTimeout = this.BackUpTimeout;
+            typedTarget.TurnTimeout = this.TurnTimeout;
+            typedTarget.TimeoutVariance = this.TimeoutVariance;
         }
         
         /// <summary>
@@ -124,7 +314,17 @@ namespace Robotics.SoarMSR.Proxy
         {
             SoarMSRState target = new SoarMSRState();
 
+            target.AgentName = this.AgentName;
+            target.Productions = this.Productions;
             target.SpawnDebugger = this.SpawnDebugger;
+            target.HasRandomSeed = this.HasRandomSeed;
+            target.RandomSeed = this.RandomSeed;
+            target.DrivePower = this.DrivePower;
+            target.ReversePower = this.ReversePower;
+            target.StopTimeout = this.StopTimeout;
+            target.BackUpTimeout = this.BackUpTimeout;
+            target.TurnTimeout = this.TurnTimeout;
+            target.TimeoutVariance = this.TimeoutVariance;
             return target;
 
         }
@@ -134,7 +334,41 @@ namespace Robotics.SoarMSR.Proxy
         /// </summary>
         public virtual void Serialize(System.IO.BinaryWriter writer)
         {
+            if (AgentName == null) writer.Write((byte)0);
+            else
+            {
+                // null flag
+                writer.Write((byte)1);
+
+                writer.Write(AgentName);
+            }
+
+            if (Productions == null) writer.Write((byte)0);
+            else
+            {
+                // null flag
+                writer.Write((byte)1);
+
+                writer.Write(Productions);
+            }
+
             writer.Write(SpawnDebugger);
+
+            writer.Write(HasRandomSeed);
+
+            writer.Write(RandomSeed);
+
+            writer.Write(DrivePower);
+
+            writer.Write(ReversePower);
+
+            writer.Write(StopTimeout);
+
+            writer.Write(BackUpTimeout);
+
+            writer.Write(TurnTimeout);
+
+            writer.Write(TimeoutVariance);
 
         }
         
@@ -143,7 +377,35 @@ namespace Robotics.SoarMSR.Proxy
         /// </summary>
         public virtual object Deserialize(System.IO.BinaryReader reader)
         {
+            if (reader.ReadByte() == 0) {}
+            else
+            {
+                AgentName = reader.ReadString();
+            } //nullable
+
+            if (reader.ReadByte() == 0) {}
+            else
+            {
+                Productions = reader.ReadString();
+            } //nullable
+
             SpawnDebugger = reader.ReadBoolean();
+
+            HasRandomSeed = reader.ReadBoolean();
+
+            RandomSeed = reader.ReadInt32();
+
+            DrivePower = reader.ReadDouble();
+
+            ReversePower = reader.ReadDouble();
+
+            StopTimeout = reader.ReadInt32();
+
+            BackUpTimeout = reader.ReadInt32();
+
+            TurnTimeout = reader.ReadInt32();
+
+            TimeoutVariance = reader.ReadInt32();
 
             return this;
 
