@@ -1,0 +1,16 @@
+sp {propose*initialize-simple-bot
+   (state <s> ^superstate nil
+             -^name)
+-->
+   (<s> ^operator <o> +)
+   (<o> ^name initialize-simple-bot)
+}
+
+sp {apply*initialize-simple-bot
+   (state <s> ^operator <op>)
+   (<op> ^name initialize-simple-bot)
+-->
+   (<s> ^name simple-bot
+        ^motion-state.current idle)
+}
+

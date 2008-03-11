@@ -1,0 +1,32 @@
+sp {wander*propose*reverse
+   (state <s> ^name wander
+              ^io.input-link <il>
+              ^top-state.motion-state <ms>
+              ^noise <noise>)
+   (<ms> ^current stopping
+         ^timeout <timeout>)
+   (<il> ^time <time> >= <timeout>
+         ^config.power.reverse <power>
+         ^config.delay.reverse <delay>)
+-->
+   (<s> ^operator <op> +)
+   (<op> ^name reverse
+         ^actions.drive-power <drive>
+         ^timeout (+ (+ <time> <delay>) <noise>))
+   (<drive> ^left (* <power> -1)
+            ^right (* <power> -1))
+}
+
+sp {apply*reverse
+   (state <s> ^operator <op>
+              ^top-state.motion-state <ms>)
+   (<ms> ^current <current-state> <> reversing
+         ^timeout <current-timeout>)
+   (<op> ^name reverse
+         ^timeout <timeout>)
+-->
+   (<ms> ^current <current-state> -
+         ^current reversing
+         ^timeout <current-timeout> -
+         ^timeout <timeout>)
+}

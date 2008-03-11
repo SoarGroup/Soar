@@ -35,9 +35,10 @@ namespace Robotics.SoarMSR
         private sml.Kernel.UpdateEventCallback _updateCall;
 
         // Input link
+        private StringElement _overrideActiveWME;
         private FloatElement _overrideLeftWME;
         private FloatElement _overrideRightWME;
-        private StringElement _overrideActiveWME;
+        private StringElement _overrideStopWME;
         private StringElement _frontBumperWasPressedWME;
         private StringElement _frontBumperPressedWME;
         private FloatElement _frontBumperTimeWME;
@@ -99,9 +100,11 @@ namespace Robotics.SoarMSR
                 throw new Exception("Soar: Error getting the input link");
 
             Identifier overrideWME = _agent.CreateIdWME(inputLink, "override");
-            _overrideLeftWME = _agent.CreateFloatWME(overrideWME, "left", 0);
-            _overrideRightWME = _agent.CreateFloatWME(overrideWME, "right", 0);
             _overrideActiveWME = _agent.CreateStringWME(overrideWME, "active", "false");
+            Identifier drivePowerWME = _agent.CreateIdWME(overrideWME, "drive-power");
+            _overrideLeftWME = _agent.CreateFloatWME(drivePowerWME, "left", 0);
+            _overrideRightWME = _agent.CreateFloatWME(drivePowerWME, "right", 0);
+            _overrideStopWME = _agent.CreateStringWME(drivePowerWME, "stop", "false");
 
             Identifier configWME = _agent.CreateIdWME(inputLink, "config");
 

@@ -1,0 +1,23 @@
+sp {wander*propose*drive
+   (state <s> ^name wander
+              ^io.input-link <il>
+              ^top-state.motion-state.current idle)
+   (<il> ^sensors.bumper.front.was-pressed false
+         ^config.power.drive <torque>)
+-->
+   (<s> ^operator <op> +)
+   (<op> ^name drive
+         ^actions.drive-power <power>)
+   (<power> ^left <torque>
+            ^right <torque>)
+}
+
+sp {apply*drive
+   (state <s> ^operator <op>
+              ^top-state.motion-state <ms>)
+   (<ms> ^current <current-state> <> driving)
+   (<op> ^name drive)
+-->
+   (<ms> ^current <current-state> -
+         ^current driving)
+}

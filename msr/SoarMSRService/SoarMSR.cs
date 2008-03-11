@@ -38,13 +38,11 @@ namespace Robotics.SoarMSR
         [ServicePort("/soarmsr", AllowMultipleInstances = false)]
         protected SoarMSROperations _mainPort = new SoarMSROperations();
 
-        [Partner("bumper", Contract = bumper.Contract.Identifier,
-             CreationPolicy = PartnerCreationPolicy.UseExisting)]
+        [Partner("bumper", Contract = bumper.Contract.Identifier, CreationPolicy = PartnerCreationPolicy.UseExisting)]
         protected bumper.ContactSensorArrayOperations _bumperPort = new bumper.ContactSensorArrayOperations();
         protected bumper.ContactSensorArrayOperations _bumperNotify = new bumper.ContactSensorArrayOperations();
 
-        [Partner("Drive", Contract = drive.Contract.Identifier,
-            CreationPolicy = PartnerCreationPolicy.UseExisting)]
+        [Partner("Drive", Contract = drive.Contract.Identifier, CreationPolicy = PartnerCreationPolicy.UseExisting)]
         protected drive.DriveOperations _drivePort = new drive.DriveOperations();
 
         [Partner("Laser", Contract = sicklrf.Contract.Identifier, CreationPolicy = PartnerCreationPolicy.UseExisting)]
@@ -87,6 +85,8 @@ namespace Robotics.SoarMSR
             _soar.Log += LogHandler;
             _soar.InitializeSoar(_state, _drivePort);
 
+            SubscribeToBumpers();
+
             // Start Soar after everything is loaded
             Thread soarThread = new Thread(new ThreadStart(_soar.RunSoar));
             soarThread.Start();
@@ -94,14 +94,12 @@ namespace Robotics.SoarMSR
 
         protected void SubscribeToBumpers()
         {
-
             _bumperPort.Subscribe(_bumperNotify);
             Activate(
                 Arbiter.Interleave(
                     new TeardownReceiverGroup(),
                     new ExclusiveReceiverGroup(
-                        Arbiter.Receive<bumper.Update>
-                            (true, _bumperNotify, BumperHandler)
+                        Arbiter.Receive<bumper.Update>(true, _bumperNotify, BumperHandler)
                     ),
                     new ConcurrentReceiverGroup()
                 )

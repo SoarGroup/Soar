@@ -37,7 +37,7 @@ namespace Robotics.SoarMSR
         public string AgentName = "SoarMSRAgent";
 
         [DataMember]
-        public string Productions = "Apps/QUT/SoarIntro/agents/simple-bot.soar";
+        public string Productions = "Apps/QUT/SoarMSRService/agents/simple-bot.soar";
 
         [DataMember]
         public bool SpawnDebugger = true;
