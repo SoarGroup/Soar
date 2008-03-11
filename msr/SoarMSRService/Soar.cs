@@ -6,13 +6,53 @@ using sml;
 using System.Threading;
 using System.ComponentModel;
 using System.Diagnostics;
-
-using bumper = Microsoft.Robotics.Services.ContactSensor.Proxy;
 using drive = Microsoft.Robotics.Services.Drive.Proxy;
-using sicklrf = Microsoft.Robotics.Services.Sensors.SickLRF.Proxy;
 
 namespace Robotics.SoarMSR
 {
+    public class DriveOutputState
+    {
+        private double _leftWheelPower = 0;
+        public double LeftWheelPower
+        {
+            get { return _leftWheelPower; }
+            set 
+            {
+                if (!_allStop)
+                    _leftWheelPower = value; 
+            }
+        }
+
+        private double _rightWheelPower = 0;
+        public double RightWheelPower
+        {
+            get { return _rightWheelPower; }
+            set 
+            {
+                if (!_allStop)
+                    _rightWheelPower = value; 
+            }
+        }
+
+        private bool _allStop = false;
+        public bool AllStop
+        {
+            get { return _allStop; }
+            set
+            {
+                if (value)
+                    _leftWheelPower = _rightWheelPower = 0;
+                _allStop = value;
+            }
+        }
+
+        public static implicit operator drive.SetDrivePowerRequest(DriveOutputState output)
+        {
+            return new drive.SetDrivePowerRequest(output.LeftWheelPower, output.RightWheelPower);
+        }
+
+    }
+
     class Soar
     {
         // Logging
@@ -27,7 +67,15 @@ namespace Robotics.SoarMSR
         }
 
         // Output
-        drive.DriveOperations _drivePort;
+        public delegate void DriveOutputHandler(DriveOutputState output);
+        public event DriveOutputHandler DriveOutput;
+        protected void OnDriveOutput(DriveOutputState output)
+        {
+            if (DriveOutput != null)
+            {
+                DriveOutput(output);
+            }
+        }
 
         // Soar variables
         private sml.Kernel _kernel;
@@ -58,7 +106,7 @@ namespace Robotics.SoarMSR
         public BumperState Bumper = new BumperState();
         public OverrideState Override = new OverrideState();
 
-        public void InitializeSoar(SoarMSRState initialState, drive.DriveOperations drivePort)
+        public void InitializeSoar(SoarMSRState initialState)
         {
             if (_kernel != null)
             {
@@ -159,8 +207,6 @@ namespace Robotics.SoarMSR
                 SpawnDebugger();
             }
 
-            _drivePort = drivePort;
-
             _simulationStart = DateTime.Now;
 
             OnLog("Soar initialized.");
@@ -219,11 +265,20 @@ namespace Robotics.SoarMSR
                 return;
             }
 
+            ProcessOutputLink();
+            ProcessInputLink();
+
+            // commit input link changes
+            _agent.Commit();
+        }
+
+        private void ProcessOutputLink()
+        {
             // read output link, cache commands
             int numberOfCommands = _agent.GetNumberCommands();
             Identifier command;
-            bool receivedCommand = false;
-            drive.SetDrivePowerRequest request = new drive.SetDrivePowerRequest();
+            bool driveOutputReceived = false;
+            DriveOutputState driveOutput = new DriveOutputState();
 
             for (int i = 0; i < numberOfCommands; ++i)
             {
@@ -236,36 +291,31 @@ namespace Robotics.SoarMSR
                         String leftPowerString = command.GetParameterValue("left");
                         if (leftPowerString != null)
                         {
-                            receivedCommand = true;
-                            request.LeftWheelPower = double.Parse(leftPowerString);
+                            driveOutputReceived = true;
+                            driveOutput.LeftWheelPower = double.Parse(leftPowerString);
                         }
 
                         String rightPowerString = command.GetParameterValue("right");
                         if (rightPowerString != null)
                         {
-                            receivedCommand = true;
-                            request.RightWheelPower = double.Parse(rightPowerString);
+                            driveOutputReceived = true;
+                            driveOutput.RightWheelPower = double.Parse(rightPowerString);
                         }
 
                         String stopString = command.GetParameterValue("stop");
                         if (stopString != null)
                         {
-                            if (bool.Parse(stopString))
-                            {
-                                receivedCommand = true;
-                                request.LeftWheelPower = 0;
-                                request.RightWheelPower = 0;
-                                //TODO: StopNow();
-                            }
+                            driveOutputReceived = true;
+                            driveOutput.AllStop = bool.Parse(stopString);
                         }
 
-                        if (receivedCommand)
+                        if (driveOutputReceived)
                         {
                             command.AddStatusComplete();
                         }
                         else
                         {
-                            OnLog("Soar: Unknown drive-power command.");
+                            OnLog("Soar: Unknown or incomplete drive-power command.");
                             command.AddStatusError();
                         }
 
@@ -282,14 +332,20 @@ namespace Robotics.SoarMSR
                 }
             }
 
-            if (receivedCommand && _drivePort != null)
+            // This is out here because the commands may be split up between multiple attributes
+            if (driveOutputReceived)
             {
-                _drivePort.SetDrivePower(request);
+                OnDriveOutput(driveOutput);
             }
 
+        }
+
+        private void ProcessInputLink()
+        {
             _agent.Update(_overrideActiveWME, Override.OverrideActive.ToString().ToLowerInvariant());
 
             OverrideState cachedOverrideState;
+            // lock state
             lock (Override)
             {
                 // cache state for input link
@@ -326,8 +382,6 @@ namespace Robotics.SoarMSR
             _agent.Update(_timeWME, elapsed.TotalMilliseconds);
             _agent.Update(_randomWME, _random.NextDouble());
 
-            // commit input link changes
-            _agent.Commit();
         }
 
         public void RunSoar()

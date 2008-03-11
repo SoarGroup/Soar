@@ -83,7 +83,8 @@ namespace Robotics.SoarMSR
             SaveState(_state);
 
             _soar.Log += LogHandler;
-            _soar.InitializeSoar(_state, _drivePort);
+            _soar.DriveOutput += DriveOutputHandler;
+            _soar.InitializeSoar(_state);
 
             SubscribeToBumpers();
 
@@ -144,10 +145,32 @@ namespace Robotics.SoarMSR
             yield break;
         }
 
+        protected void DriveOutputHandler(DriveOutputState output)
+        {
+            if (output.AllStop)
+            {
+                Arbiter.Activate(TaskQueue,
+                    Arbiter.Choice(
+                       _drivePort.AllStop(new drive.AllStopRequest()),
+                       delegate(DefaultUpdateResponseType success) { },
+                       delegate(W3C.Soap.Fault failure)
+                       {
+                           LogError("Failed to Stop!");
+                       }
+                    )
+                );
+            }
+            else
+            {
+                _drivePort.SetDrivePower(output);
+            }
+        }
+
         protected override void Shutdown()
         {
             _soar.ShutdownSoar();
             _soar.Log -= LogHandler;
+            _soar.DriveOutput -= DriveOutputHandler;
 
             base.Shutdown();
         }
