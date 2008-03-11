@@ -15,6 +15,7 @@ using System.Threading;
 using bumper = Microsoft.Robotics.Services.ContactSensor.Proxy;
 using drive = Microsoft.Robotics.Services.Drive.Proxy;
 using sicklrf = Microsoft.Robotics.Services.Sensors.SickLRF.Proxy;
+using System.Diagnostics;
 
 
 namespace Robotics.SoarMSR
@@ -76,6 +77,8 @@ namespace Robotics.SoarMSR
             // from the config file just in case the user entered some
             // invalid values ...
 
+            _halfObstacleAngleRange = _state.ObstacleAngleRange / 2.0f;
+
             // Now save the State
             // This creates a new file the first time it is run.
             // Later, it re-reads the existing file, but by then
@@ -87,6 +90,7 @@ namespace Robotics.SoarMSR
             _soar.InitializeSoar(_state);
 
             SubscribeToBumpers();
+            SubscribeToSickLRF();
 
             // Start Soar after everything is loaded
             Thread soarThread = new Thread(new ThreadStart(_soar.RunSoar));
@@ -130,6 +134,103 @@ namespace Robotics.SoarMSR
                 {
                     _soar.Bumper.RearBumperPressed = notification.Body.Pressed;
                 }
+            }
+        }
+
+        protected void SubscribeToSickLRF()
+        {
+            _laserPort.Subscribe(_laserNotify);
+            Activate(
+                Arbiter.Interleave(
+                    new TeardownReceiverGroup(),
+                    new ExclusiveReceiverGroup(),
+                    new ConcurrentReceiverGroup(
+                        Arbiter.Receive<sicklrf.Replace>(true, _laserNotify, LaserHandler)
+                    )
+                )
+            );
+        }
+
+        private double _halfObstacleAngleRange;
+        protected void LaserHandler(sicklrf.Replace replace)
+        {
+            // Angular Range = r
+            // Desired Angular Range = rd
+            // Minimum Angle = amin = (r/2) - (rd/2)
+            // Maximum Angle = amax = (r/2) + (rd/2)
+            // Angular Resolution = e
+            // Minimum measurement = mmin = floor(amin / e)
+            // Maximum measurement = mmax = ceil(amax / e)
+            // Assert e > 0
+            // Assert rd > e
+            // Total measurements = mtot
+            // Assert mtot > 1 (or two)
+
+            if (replace == null)
+                return;
+
+            sicklrf.State laserState = replace.Body;
+            if (laserState == null)
+                return;
+
+            if (laserState.DistanceMeasurements == null)
+                return;
+
+            if (laserState.DistanceMeasurements.Length < 2)
+                return;
+
+            if (laserState.AngularResolution <= 0)
+                return;
+
+            if ((_halfObstacleAngleRange * 2) <= laserState.AngularResolution)
+                return;
+
+            double halfRange = laserState.AngularRange / 2.0f;
+            double amin = halfRange - _halfObstacleAngleRange;
+            double amax = halfRange + _halfObstacleAngleRange;
+
+            int mmin = (int)Math.Floor(amin / laserState.AngularResolution);
+            int mmax = (int)Math.Ceiling(amax / laserState.AngularResolution);
+
+            // TODO: check that MinimumObstacleRange is less than this
+            int computedRange = 8000; // 8000 is around the maximum reported value from the sicklrf
+
+            if (mmin == mmax)
+            {
+                computedRange = laserState.DistanceMeasurements[mmin];
+            }
+            else
+            {
+                if (_state.ObstacleRangeAverage)
+                {
+                    computedRange = laserState.DistanceMeasurements[mmin];
+
+                    for (int index = mmin + 1; index <= mmax; ++index)
+                    {
+                        computedRange += laserState.DistanceMeasurements[index];
+                    }
+
+                    computedRange /= (mmax - mmin);
+                }
+                else
+                {
+                    for (int index = mmin; index <= mmax; ++index)
+                    {
+                        computedRange = Math.Min(computedRange, laserState.DistanceMeasurements[index]);
+                    }
+                }
+                
+            }
+
+            Trace.WriteLine("samples: " + (mmax - mmin) + ", range: " + computedRange);
+
+            if (computedRange <= _state.MinimumObstacleRange)
+            {
+                _soar.Obstacle = true;
+            }
+            else
+            {
+                _soar.Obstacle = false;
             }
         }
 

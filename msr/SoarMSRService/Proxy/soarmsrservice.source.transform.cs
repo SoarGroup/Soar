@@ -33,6 +33,9 @@ namespace Dss.Transforms.TransformSoarMSRService
             target.BackUpTimeout = from.BackUpTimeout;
             target.TurnTimeout = from.TurnTimeout;
             target.TimeoutVariance = from.TimeoutVariance;
+            target.ObstacleAngleRange = from.ObstacleAngleRange;
+            target.MinimumObstacleRange = from.MinimumObstacleRange;
+            target.ObstacleRangeAverage = from.ObstacleRangeAverage;
             return target;
         }
 
@@ -52,6 +55,9 @@ namespace Dss.Transforms.TransformSoarMSRService
             target.BackUpTimeout = from.BackUpTimeout;
             target.TurnTimeout = from.TurnTimeout;
             target.TimeoutVariance = from.TimeoutVariance;
+            target.ObstacleAngleRange = from.ObstacleAngleRange;
+            target.MinimumObstacleRange = from.MinimumObstacleRange;
+            target.ObstacleRangeAverage = from.ObstacleRangeAverage;
             return target;
         }
 

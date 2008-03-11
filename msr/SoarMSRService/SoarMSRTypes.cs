@@ -65,6 +65,16 @@ namespace Robotics.SoarMSR
 
         [DataMember]
         public int TimeoutVariance = 400;
+
+        [DataMember]
+        public int ObstacleAngleRange = 45;
+
+        [DataMember]
+        public int MinimumObstacleRange = 750;
+
+        [DataMember]
+        public bool ObstacleRangeAverage = false;
+
     }
 
     /// <summary>

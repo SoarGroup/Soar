@@ -3,7 +3,8 @@ sp {wander*propose*stop
               ^io.input-link <il>
               ^top-state.motion-state.current driving
               ^noise <noise>)
-   (<il> ^sensors.bumper.front.was-pressed true
+   (<il> #^sensors.bumper.front.was-pressed true
+         ^sensors.sicklrf.obstacle true
          ^time <time>
          ^config.delay.stop <delay>)
 -->

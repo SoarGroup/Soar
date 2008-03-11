@@ -89,10 +89,9 @@ namespace Robotics.SoarMSR
         private StringElement _overrideStopWME;
         private StringElement _frontBumperWasPressedWME;
         private StringElement _frontBumperPressedWME;
-        private FloatElement _frontBumperTimeWME;
         private StringElement _rearBumperWasPressedWME;
         private StringElement _rearBumperPressedWME;
-        private FloatElement _rearBumperTimeWME;
+        private StringElement _obstacleWME;
         private FloatElement _timeWME;
         private FloatElement _randomWME;
 
@@ -103,8 +102,9 @@ namespace Robotics.SoarMSR
         private DateTime _simulationStart;
         private bool _running;
         private bool _stop;
-        public BumperState Bumper = new BumperState();
-        public OverrideState Override = new OverrideState();
+        public BumperState Bumper;
+        public OverrideState Override;
+        public bool Obstacle;
 
         public void InitializeSoar(SoarMSRState initialState)
         {
@@ -141,6 +141,11 @@ namespace Robotics.SoarMSR
                     + " (current working directory: " + _agent.ExecuteCommandLine("pwd") + ")");
             }
 
+            // reset state
+            Bumper = new BumperState();
+            Override = new OverrideState();
+            Obstacle = false;
+
             // Prepare communication channel
             Identifier inputLink = _agent.GetInputLink();
 
@@ -167,6 +172,7 @@ namespace Robotics.SoarMSR
             _agent.CreateFloatWME(delayWME, "variance", initialState.TimeoutVariance);
 
             Identifier sensorsWME = _agent.CreateIdWME(inputLink, "sensors");
+            
             Identifier bumperWME = _agent.CreateIdWME(sensorsWME, "bumper");
             Identifier frontWME = _agent.CreateIdWME(bumperWME, "front");
             _frontBumperPressedWME = _agent.CreateStringWME(frontWME, "pressed", "false");
@@ -174,6 +180,9 @@ namespace Robotics.SoarMSR
             Identifier rearWME = _agent.CreateIdWME(bumperWME, "rear");
             _rearBumperPressedWME = _agent.CreateStringWME(rearWME, "pressed", "false");
             _rearBumperWasPressedWME = _agent.CreateStringWME(rearWME, "was-pressed", "false");
+
+            Identifier sickLRFWME = _agent.CreateIdWME(sensorsWME, "sicklrf");
+            _obstacleWME = _agent.CreateStringWME(sickLRFWME, "obstacle", "false");
             
             // Current time WME
             _timeWME = _agent.CreateFloatWME(inputLink, "time", 0);
@@ -342,6 +351,18 @@ namespace Robotics.SoarMSR
 
         private void ProcessInputLink()
         {
+            OverrideInputLink();
+            BumperInputLink();
+
+            _agent.Update(_obstacleWME, Obstacle.ToString().ToLowerInvariant());
+
+            TimeSpan elapsed = System.DateTime.Now - _simulationStart;
+            _agent.Update(_timeWME, elapsed.TotalMilliseconds);
+            _agent.Update(_randomWME, _random.NextDouble());
+        }
+
+        private void OverrideInputLink()
+        {
             _agent.Update(_overrideActiveWME, Override.OverrideActive.ToString().ToLowerInvariant());
 
             OverrideState cachedOverrideState;
@@ -358,7 +379,10 @@ namespace Robotics.SoarMSR
             _agent.Update(_overrideActiveWME, cachedOverrideState.OverrideActive.ToString().ToLowerInvariant());
             _agent.Update(_overrideLeftWME, cachedOverrideState.OverrideLeft);
             _agent.Update(_overrideRightWME, cachedOverrideState.OverrideRight);
+        }
 
+        private void BumperInputLink()
+        {
             BumperState cachedBumperState;
             // lock state
             lock (Bumper)
@@ -377,11 +401,6 @@ namespace Robotics.SoarMSR
 
             _agent.Update(_frontBumperWasPressedWME, cachedBumperState.FrontBumperWasPressed.ToString().ToLowerInvariant());
             _agent.Update(_rearBumperWasPressedWME, cachedBumperState.RearBumperWasPressed.ToString().ToLowerInvariant());
-
-            TimeSpan elapsed = System.DateTime.Now - _simulationStart;
-            _agent.Update(_timeWME, elapsed.TotalMilliseconds);
-            _agent.Update(_randomWME, _random.NextDouble());
-
         }
 
         public void RunSoar()
@@ -405,8 +424,14 @@ namespace Robotics.SoarMSR
                 System.Threading.Thread.Sleep(100);
             }
 
+            // clear state
+            Bumper = null;
+            Override = null;
+            Obstacle = false;
+
             _kernel.Shutdown();
             _kernel = null;
+
         }
     }
 

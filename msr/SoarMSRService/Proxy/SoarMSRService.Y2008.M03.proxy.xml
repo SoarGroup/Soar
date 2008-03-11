@@ -110,6 +110,21 @@
             Timeout Variance
             </summary>
         </member>
+        <member name="P:Robotics.SoarMSR.Proxy.SoarMSRState.ObstacleAngleRange">
+            <summary>
+            Obstacle Angle Range
+            </summary>
+        </member>
+        <member name="P:Robotics.SoarMSR.Proxy.SoarMSRState.MinimumObstacleRange">
+            <summary>
+            Minimum Obstacle Range
+            </summary>
+        </member>
+        <member name="P:Robotics.SoarMSR.Proxy.SoarMSRState.ObstacleRangeAverage">
+            <summary>
+            Obstacle Range Average
+            </summary>
+        </member>
         <member name="T:Robotics.SoarMSR.Proxy.SoarMSROperations">
             <summary>
             SoarMSR Operations

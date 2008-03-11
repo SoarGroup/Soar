@@ -109,6 +109,12 @@ namespace Robotics.SoarMSR.Proxy
         
         private Int32 _timeoutVariance;
         
+        private Int32 _obstacleAngleRange;
+        
+        private Int32 _minimumObstacleRange;
+        
+        private Boolean _obstacleRangeAverage;
+        
         /// <summary>
         /// Agent Name
         /// </summary>
@@ -286,6 +292,54 @@ namespace Robotics.SoarMSR.Proxy
         }
         
         /// <summary>
+        /// Obstacle Angle Range
+        /// </summary>
+        [DataMember()]
+        public Int32 ObstacleAngleRange
+        {
+            get
+            {
+                return this._obstacleAngleRange;
+            }
+            set
+            {
+                this._obstacleAngleRange = value;
+            }
+        }
+        
+        /// <summary>
+        /// Minimum Obstacle Range
+        /// </summary>
+        [DataMember()]
+        public Int32 MinimumObstacleRange
+        {
+            get
+            {
+                return this._minimumObstacleRange;
+            }
+            set
+            {
+                this._minimumObstacleRange = value;
+            }
+        }
+        
+        /// <summary>
+        /// Obstacle Range Average
+        /// </summary>
+        [DataMember()]
+        public Boolean ObstacleRangeAverage
+        {
+            get
+            {
+                return this._obstacleRangeAverage;
+            }
+            set
+            {
+                this._obstacleRangeAverage = value;
+            }
+        }
+        
+        /// <summary>
         /// Copy To SoarMSR State
         /// </summary>
         public virtual void CopyTo(IDssSerializable target)
@@ -305,6 +359,9 @@ namespace Robotics.SoarMSR.Proxy
             typedTarget.BackUpTimeout = this.BackUpTimeout;
             typedTarget.TurnTimeout = this.TurnTimeout;
             typedTarget.TimeoutVariance = this.TimeoutVariance;
+            typedTarget.ObstacleAngleRange = this.ObstacleAngleRange;
+            typedTarget.MinimumObstacleRange = this.MinimumObstacleRange;
+            typedTarget.ObstacleRangeAverage = this.ObstacleRangeAverage;
         }
         
         /// <summary>
@@ -325,6 +382,9 @@ namespace Robotics.SoarMSR.Proxy
             target.BackUpTimeout = this.BackUpTimeout;
             target.TurnTimeout = this.TurnTimeout;
             target.TimeoutVariance = this.TimeoutVariance;
+            target.ObstacleAngleRange = this.ObstacleAngleRange;
+            target.MinimumObstacleRange = this.MinimumObstacleRange;
+            target.ObstacleRangeAverage = this.ObstacleRangeAverage;
             return target;
 
         }
@@ -370,6 +430,12 @@ namespace Robotics.SoarMSR.Proxy
 
             writer.Write(TimeoutVariance);
 
+            writer.Write(ObstacleAngleRange);
+
+            writer.Write(MinimumObstacleRange);
+
+            writer.Write(ObstacleRangeAverage);
+
         }
         
         /// <summary>
@@ -406,6 +472,12 @@ namespace Robotics.SoarMSR.Proxy
             TurnTimeout = reader.ReadInt32();
 
             TimeoutVariance = reader.ReadInt32();
+
+            ObstacleAngleRange = reader.ReadInt32();
+
+            MinimumObstacleRange = reader.ReadInt32();
+
+            ObstacleRangeAverage = reader.ReadBoolean();
 
             return this;
 
