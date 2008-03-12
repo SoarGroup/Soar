@@ -1292,7 +1292,7 @@ void do_one_top_level_phase (agent* thisAgent)
 		  for ( Symbol *g = thisAgent->bottom_goal; g; g = g->id.higher_goal)
 		  {
 			  tabulate_reward_value_for_goal( thisAgent, g );
-			  perform_rl_update( thisAgent, 0, g );
+			  perform_rl_update( thisAgent, 0, 0, 0, g );
 		  }
 	  }
   }

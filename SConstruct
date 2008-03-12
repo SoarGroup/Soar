@@ -20,7 +20,7 @@ if os.name != "posix":
 	print "Unsupported OS."
 	Exit(1)
 
-pythonDefault = 'yes'
+pythonDefault = 'no'
 if sys.platform == 'cygwin':
 	print "Disabling python by default, it will not yet build on this platform."
 	pythonDefault = 'no'
@@ -42,7 +42,7 @@ opts.AddOptions(
 	BoolOption('static', 'Use static linking when possible', 'no'), 
 	BoolOption('debug', 'Build with debugging symbols', 'yes'),
 	BoolOption('warnings', 'Build with warnings', 'yes'),
-	EnumOption('optimization', 'Build with optimization (May cause run-time errors!)', 'full', ['no','partial','full'], {}, 1),
+	EnumOption('optimization', 'Build with optimization (May cause run-time errors!)', 'no', ['no','partial','full'], {}, 1),
 	BoolOption('eclipse', 'Build everything except the java projects (prepare for eclipse)', 'no'),
 	BoolOption('preprocessor', 'Only run preprocessor', 'no'),
 	BoolOption('verbose', 'Verbose compiler output', 'no'),

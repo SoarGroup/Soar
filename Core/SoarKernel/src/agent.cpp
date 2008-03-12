@@ -22,6 +22,9 @@
 #include <stdlib.h>
 #include <map>
 #include <vector>
+#include <utility>
+using std::map;
+using std::pair;
 
 #include "agent.h"
 #include "kernel.h"
@@ -338,10 +341,16 @@ agent * create_soar_agent (Kernel * thisKernel, char * agent_name) {            
   newAgent->rl_params[ RL_PARAM_ET_DECAY_RATE ] = add_rl_parameter( "eligibility-trace-decay-rate", 0, &validate_rl_decay_rate );
   newAgent->rl_params[ RL_PARAM_ET_TOLERANCE ] = add_rl_parameter( "eligibility-trace-tolerance", 0.001, &validate_rl_trace_tolerance );
   newAgent->rl_params[ RL_PARAM_TEMPORAL_EXTENSION ] = add_rl_parameter( "temporal-extension", RL_TE_ON, &validate_te_enabled, &convert_te_enabled, &convert_te_enabled );
+  newAgent->rl_params[ RL_PARAM_SA_SPACE_SIZE ] = add_rl_parameter( "sa-space-size", 0.0, &validate_rl_sa_space );
+  newAgent->rl_params[ RL_PARAM_R_MAX ] = add_rl_parameter( "rmax", 0.0, &validate_rl_rmax );
+  newAgent->rl_params[ RL_PARAM_OOB_PROB ] = add_rl_parameter( "oob-prob", 0.05, &validate_rl_oob_prob );
 
   newAgent->rl_stats[ RL_STAT_UPDATE_ERROR ] = add_rl_stat( "update-error" );
   newAgent->rl_stats[ RL_STAT_TOTAL_REWARD ] = add_rl_stat( "total-reward" );
   newAgent->rl_stats[ RL_STAT_GLOBAL_REWARD ] = add_rl_stat( "global-reward" );
+
+  newAgent->rl_q_bounds = new rl_q_bound_map(std::less<production*>(), SoarMemoryAllocator<pair<production* const, rl_q_bound_data > >(newAgent, MISCELLANEOUS_MEM_USAGE));
+  newAgent->rl_prob_divisor = 1;
 
   initialize_template_tracking( newAgent );
   

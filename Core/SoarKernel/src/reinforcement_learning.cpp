@@ -1,3 +1,4 @@
+/* vim:set noexpandtab: */
 #include <portability.h>
 
 /*************************************************************************
@@ -37,6 +38,8 @@
 
 #include "reinforcement_learning.h"
 #include "misc.h"
+
+#define ZETA2 1.6449340668 // sum of the harmonic series 1/k^2
 
 extern Symbol *instantiate_rhs_value (agent* thisAgent, rhs_value rv, goal_stack_level new_id_level, char new_id_letter, struct token_struct *tok, wme *w);
 extern void variablize_symbol (agent* thisAgent, Symbol **sym);
@@ -531,6 +534,10 @@ bool validate_rl_learning_policy( const long new_val )
 	return ( ( new_val == RL_LEARNING_SARSA ) || ( new_val == RL_LEARNING_Q ) );
 }
 
+bool validate_rl_sa_space(const double new_val) { return new_val >= 0; }
+bool validate_rl_rmax(const double new_val) { return new_val >= 0.0; }
+bool validate_rl_oob_prob(const double new_val) { return 0 < new_val && new_val < 1; }
+
 /***************************************************************************
  * Function     : convert_rl_learning_policy
  **************************************************************************/
@@ -939,6 +946,8 @@ void revert_template_id( agent *my_agent )
 	}
 	deallocate_condition_list( my_agent, cond_top );
 
+	initialize_q_bounds(my_agent, new_production);
+
 	return new_name_symbol;
 }
 
@@ -1151,9 +1160,13 @@ void store_rl_data( agent *my_agent, Symbol *goal, preference *cand )
 
 /***************************************************************************
  * Function     : perform_rl_update
+ *
+ * Vminb and Vmaxb are used to update bound info
+ *
  **************************************************************************/
-void perform_rl_update( agent *my_agent, double op_value, Symbol *goal )
+void perform_rl_update( agent *my_agent, double op_value, double Vminb, double Vmaxb, Symbol *goal )
 {
+	print(my_agent, "\n### RL update with op_v: %f vmin: %f vmax: %f\n", op_value, Vminb, Vmaxb);
 	rl_data *data = goal->id.rl_info;
 	soar_rl_et_map::iterator iter;
 
@@ -1238,7 +1251,42 @@ void perform_rl_update( agent *my_agent, double op_value, Symbol *goal )
 					pref->referent = make_float_constant( my_agent, temp );
 				}
 			}
-		}	
+		}
+
+		/* we can only update q bounds for TD(0) for now */
+		print(my_agent, "lambda: %f\n", iter->second);
+		if (iter->second == 1.0) {
+			if (my_agent->rl_q_bounds->find(prod) == my_agent->rl_q_bounds->end()) {
+				initialize_q_bounds(my_agent, prod);
+			}
+			rl_q_bound_data &bounds = (*my_agent->rl_q_bounds)[prod];
+			int t = ++bounds.num_updates;
+
+			double confidence = get_rl_parameter(my_agent, RL_PARAM_OOB_PROB);
+			double kSA = t * t * get_rl_parameter( my_agent, RL_PARAM_SA_SPACE_SIZE );
+			/* alternative calculations include
+			 *
+			 * double kSA = number of total TD updates ^ 2
+			 * double kSA = (number of total TD updates / lowerbound on SA space size) ^ 2
+			 *
+			 * As long as sum of all 1 / (c * kSA) <= 1
+			 */
+
+			double log_term = log(ZETA2 * kSA / confidence);
+			// pi was introduced just to make the equation simpler
+			double pi = 1.0 - alpha;
+			double Vmax = get_rl_parameter(my_agent, RL_PARAM_R_MAX) / (1.0 - gamma);
+			double sqrt_term1 = sqrt(0.5 * ((pow(pi, 2 *    t   ) - 1) / (pi * pi - 1)) * log_term);
+			double sqrt_term2 = sqrt(0.5 * ((pow(pi, 2 * (t - 1)) - 1) / (pi * pi - 1)) * log_term);
+			double beta = Vmax * (sqrt_term1 - pi * sqrt_term2);
+
+			bounds.q_min += alpha * (data->reward + gamma * Vminb - beta);
+			bounds.q_max += alpha * (data->reward + gamma * Vmaxb + beta);
+			print(my_agent, "\n============ BOUNDS UPDATE ============\n");
+			print_production(my_agent, prod, 0);
+			print(my_agent, "Qmin: %f Qmax: %f N: %d\n", bounds.q_min, bounds.q_max, bounds.num_updates);
+			print(my_agent, "!!!!!!!!!!!! BOUNDS UPDATE !!!!!!!!!!!!\n");
+		}
 	}
 
 	data->reward = 0.0;
@@ -1257,4 +1305,22 @@ void watkins_clear( agent *my_agent, Symbol *goal )
 	// Iterate through eligibility_traces, remove traces
 	for ( iter = data->eligibility_traces->begin(); iter != data->eligibility_traces->end(); )
 		data->eligibility_traces->erase( iter++ );
+}
+
+void initialize_q_bounds(agent* my_agent, production* p) {
+	// set initial upper and lower bounds for the q values
+	double vmax = get_rl_parameter(my_agent, RL_PARAM_R_MAX) / ( 1.0 - get_rl_parameter(my_agent, RL_PARAM_DISCOUNT_RATE) );
+	double conf = get_rl_parameter(my_agent, RL_PARAM_OOB_PROB);
+
+	/* I'm not sure what this should be yet, I'm just grabbing it out of even-dar
+	 * as a place holder. jzxu 03/07/2008 */
+	double qmax_0 = vmax * log(ZETA2 * get_rl_parameter(my_agent, RL_PARAM_SA_SPACE_SIZE) / conf);
+	(*my_agent->rl_q_bounds)[p].q_min = -qmax_0;
+	(*my_agent->rl_q_bounds)[p].q_max = qmax_0;
+	(*my_agent->rl_q_bounds)[p].num_updates = 0;
+
+	print(my_agent, "\n============ BOUNDS CREATE ============\n");
+	print_production(my_agent, p, 0);
+	print(my_agent, "Qmin: %f Qmax: %f N: %d\n", -qmax_0, qmax_0, 0);
+	print(my_agent, "!!!!!!!!!!!! BOUNDS CREATE !!!!!!!!!!!!\n");
 }

@@ -44,7 +44,10 @@
 #define RL_PARAM_ET_DECAY_RATE				4
 #define RL_PARAM_ET_TOLERANCE				5
 #define RL_PARAM_TEMPORAL_EXTENSION			6
-#define RL_PARAMS							7 // must be 1+ last rl param
+#define RL_PARAM_SA_SPACE_SIZE        7
+#define RL_PARAM_R_MAX                8
+#define RL_PARAM_OOB_PROB            9
+#define RL_PARAMS							       10 // must be 1+ last rl param
 
 // names of stats
 #define RL_STAT_UPDATE_ERROR				0
@@ -115,6 +118,13 @@ typedef struct rl_data_struct {
 	unsigned int step;			// the number of steps the current operator has been installed at the goal
 	signed int impasse_type;	// if this goal is an impasse, what type
 } rl_data;
+
+typedef struct rl_q_bound_data_struct {
+  double q_min;
+  double q_max;
+  int num_updates;
+} rl_q_bound_data;
+
 
 //////////////////////////////////////////////////////////
 // Parameter Maintenance
@@ -207,6 +217,11 @@ extern bool validate_te_enabled( const long new_val );
 extern const char *convert_te_enabled( const long val );
 extern const long convert_te_enabled( const char *val );
 
+// action space size and Rmax
+extern bool validate_rl_sa_space(const double new_val);
+extern bool validate_rl_rmax(const double new_val);
+extern bool validate_rl_oob_prob(const double new_val);
+
 // shortcut for determining if Soar-RL is enabled
 extern bool soar_rl_enabled( agent *my_agent );
 
@@ -296,9 +311,10 @@ extern double discount_reward( agent *my_agent, double reward, unsigned int step
 extern void store_rl_data( agent *my_agent, Symbol *goal, preference *cand );
 
 // update the value of Soar-RL rules
-extern void perform_rl_update( agent *my_agent, double op_value, Symbol *goal );
+extern void perform_rl_update( agent *my_agent, double op_value, double Vminb, double Vmaxb, Symbol *goal );
 
 // clears eligibility traces in accordance with watkins
 extern void watkins_clear( agent *my_agent, Symbol *goal );
 
+extern void initialize_q_bounds(agent* my_agent, production* p);
 #endif

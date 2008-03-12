@@ -834,7 +834,9 @@ byte require_preference_semantics (agent *thisAgent, slot *s, preference **resul
   if ( candidates && soar_rl_enabled( thisAgent ) )
   {
 	  compute_value_of_candidate( thisAgent, candidates, s, 0 );
-	  perform_rl_update( thisAgent, candidates->numeric_value, s->id );
+    double Vminb = (*thisAgent->rl_q_bounds)[candidates->inst->prod].q_min;
+    double Vmaxb = (*thisAgent->rl_q_bounds)[candidates->inst->prod].q_max;
+	  perform_rl_update( thisAgent, candidates->numeric_value, Vminb, Vmaxb, s->id );
   }
 
   return NONE_IMPASSE_TYPE;
@@ -868,7 +870,9 @@ byte run_preference_semantics (agent* thisAgent, slot *s, preference **result_ca
 			  if ( !predict && soar_rl_enabled( thisAgent ) )
 			  {
 				  compute_value_of_candidate( thisAgent, force_result, s, 0 );
-				  perform_rl_update( thisAgent, force_result->numeric_value, s->id );
+          double Vminb = (*thisAgent->rl_q_bounds)[force_result->inst->prod].q_min;
+          double Vmaxb = (*thisAgent->rl_q_bounds)[force_result->inst->prod].q_max;
+				  perform_rl_update( thisAgent, force_result->numeric_value, Vminb, Vmaxb, s->id );
 			  }
 
 			  return NONE_IMPASSE_TYPE;
@@ -929,7 +933,9 @@ byte run_preference_semantics (agent* thisAgent, slot *s, preference **result_ca
 	{
 		// perform update here for just one candidate
 		compute_value_of_candidate( thisAgent, candidates, s, 0 );
-		perform_rl_update( thisAgent, candidates->numeric_value, s->id );
+    double Vminb = (*thisAgent->rl_q_bounds)[candidates->inst->prod].q_min;
+    double Vmaxb = (*thisAgent->rl_q_bounds)[candidates->inst->prod].q_max;
+		perform_rl_update( thisAgent, candidates->numeric_value, Vminb, Vmaxb, s->id );
 	}
 
     return NONE_IMPASSE_TYPE;
@@ -1099,7 +1105,9 @@ byte run_preference_semantics (agent* thisAgent, slot *s, preference **result_ca
 	  {
 		  // perform update here for just one candidate
 		  compute_value_of_candidate( thisAgent, candidates, s, 0 );
-		  perform_rl_update( thisAgent, candidates->numeric_value, s->id );
+      double Vminb = (*thisAgent->rl_q_bounds)[candidates->inst->prod].q_min;
+      double Vmaxb = (*thisAgent->rl_q_bounds)[candidates->inst->prod].q_max;
+		  perform_rl_update( thisAgent, candidates->numeric_value, Vminb, Vmaxb, s->id );
 	  }
 	  
 	  return NONE_IMPASSE_TYPE;
@@ -1881,8 +1889,8 @@ void remove_existing_context_and_descendents (agent* thisAgent, Symbol *goal) {
   
   if ( soar_rl_enabled( thisAgent ) )
   {
-	tabulate_reward_value_for_goal( thisAgent, goal );
-	perform_rl_update( thisAgent, 0, goal ); // this update only sees reward - there is no next state
+    tabulate_reward_value_for_goal( thisAgent, goal );
+    perform_rl_update( thisAgent, 0, 0, 0, goal ); // this update only sees reward - there is no next state
   }
   
   remove_wme_list_from_wm (thisAgent, goal->id.impasse_wmes);

@@ -175,8 +175,11 @@ typedef byte wme_trace_type;   /* must be one of the above constants */
 /* NLD: Soar-RL trace information */
 #define TRACE_RL_SYSPARAM						 39
 
+/* jzxu: chunking confidence (percentage) */
+#define CHUNK_CONFIDENCE                         40
+
 /* --- Warning: if you add sysparams, be sure to update the next line! --- */
-#define HIGHEST_SYSPARAM_NUMBER                  39
+#define HIGHEST_SYSPARAM_NUMBER                  40
 
 /* -----------------------------------------
    Sysparams[] stores the parameters; set_sysparam()
