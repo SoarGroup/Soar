@@ -23,11 +23,12 @@
 
 					</td>
 					<td>
-						<p><EM> The&nbsp;Center for Cognitive Architecture&nbsp;at the University of Michigan 
+						<p><EM>The Center for Cognitive Architecture at the University of Michigan 
 								and Soar Technology, Inc. are pleased to announce the 28th Soar Workshop will 
 								be held</EM> <STRONG>Monday, May 5 through Wednesday, May 7, 2008, in Ann Arbor, 
-								MI</STRONG> <em>beginning with a dinner on May 4.</em>
-						</p>
+								MI</STRONG> <em>beginning with a dinner on May 4. <strong>Greg Trafton</strong> 
+								(NRL) and <strong>Paul Benjamin</strong> (Pace University) are the invited speakers 
+								this year and will be talking on cognitive robotics.</em>
 						<p><EM>All workshop information will be available on 
 								this web page. Periodic updates may be announced to 
 								<a href="http://lists.sourceforge.net/mailman/listinfo/soar-group">soar-group</a> 
@@ -227,6 +228,7 @@
 		</ul>
 		<p>
 			<a href="#Top">(Up to Top)</a></p>
+		<hr>
 
 <?php
 	include 'footer.php';
