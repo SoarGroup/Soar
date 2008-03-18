@@ -341,8 +341,9 @@ agent * create_soar_agent (Kernel * thisKernel, char * agent_name) {            
   newAgent->rl_params[ RL_PARAM_ET_DECAY_RATE ] = add_rl_parameter( "eligibility-trace-decay-rate", 0, &validate_rl_decay_rate );
   newAgent->rl_params[ RL_PARAM_ET_TOLERANCE ] = add_rl_parameter( "eligibility-trace-tolerance", 0.001, &validate_rl_trace_tolerance );
   newAgent->rl_params[ RL_PARAM_TEMPORAL_EXTENSION ] = add_rl_parameter( "temporal-extension", RL_TE_ON, &validate_te_enabled, &convert_te_enabled, &convert_te_enabled );
-  newAgent->rl_params[ RL_PARAM_SA_SPACE_SIZE ] = add_rl_parameter( "sa-space-size", 0.0, &validate_rl_sa_space );
-  newAgent->rl_params[ RL_PARAM_R_MAX ] = add_rl_parameter( "rmax", 0.0, &validate_rl_rmax );
+  newAgent->rl_params[ RL_PARAM_SA_SPACE_SIZE ] = add_rl_parameter( "sa-space-size", 1.0, &validate_rl_sa_space );
+  newAgent->rl_params[ RL_PARAM_R_MAX ] = add_rl_parameter( "rmax", 1.0, &validate_rl_rmax );
+  newAgent->rl_params[ RL_PARAM_V_MAX ] = add_rl_parameter( "vmax", 0.0, &validate_rl_rmax );
   newAgent->rl_params[ RL_PARAM_OOB_PROB ] = add_rl_parameter( "oob-prob", 0.05, &validate_rl_oob_prob );
 
   newAgent->rl_stats[ RL_STAT_UPDATE_ERROR ] = add_rl_stat( "update-error" );

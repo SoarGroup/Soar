@@ -496,31 +496,35 @@ bool set_reduction_rate( agent *my_agent, const long parameter, const long polic
 preference *choose_according_to_exploration_mode( agent *my_agent, slot *s, preference *candidates )
 {
 	double top_value = candidates->numeric_value;
-  production* best_prod = candidates->inst->prod;
 	const long exploration_policy = get_exploration_policy( my_agent );
 	preference *return_val;
-  double Vmaxb = (*my_agent->rl_q_bounds)[best_prod].q_max;
-  double Vminb = (*my_agent->rl_q_bounds)[best_prod].q_min;
+  double Vmaxb = 1;
+  double Vminb = -1;
 
 	// get preference values for each candidate
-	for ( preference *cand = candidates; cand != NIL; cand = cand->next_candidate )
+	for ( preference *cand = candidates; cand != NIL; cand = cand->next_candidate ) {
 		compute_value_of_candidate( my_agent, cand, s );
+  }
 
 	// should find highest valued candidate in q-learning
-	if ( soar_rl_enabled( my_agent ) && ( get_rl_parameter( my_agent, RL_PARAM_LEARNING_POLICY, RL_RETURN_LONG ) == RL_LEARNING_Q ) )
+	if ( soar_rl_enabled( my_agent ) && ( get_rl_parameter( my_agent, RL_PARAM_LEARNING_POLICY, RL_RETURN_LONG ) == RL_LEARNING_Q ) ) {
 		for ( preference *cand=candidates; cand!=NIL; cand=cand->next_candidate ) {
-      production* p = cand->inst->prod;
 			if ( cand->numeric_value > top_value ) {
 				top_value = cand->numeric_value;
-        best_prod = cand->inst->prod;
-      }
-      if ( (*my_agent->rl_q_bounds)[p].q_max > Vmaxb ) {
-        Vmaxb = (*my_agent->rl_q_bounds)[p].q_max;
-      }
-      if ( (*my_agent->rl_q_bounds)[p].q_min < Vminb ) {
-        Vminb = (*my_agent->rl_q_bounds)[p].q_min;
       }
     }
+		for ( preference *cand=s->id->id.operator_slot->preferences[NUMERIC_INDIFFERENT_PREFERENCE_TYPE]; cand!=NIL; cand=cand->next ) {
+      production* p = cand->inst->prod;
+      if (my_agent->rl_q_bounds->find(p) != my_agent->rl_q_bounds->end()) {
+        if ( (*my_agent->rl_q_bounds)[p].q_max > Vmaxb ) {
+          Vmaxb = (*my_agent->rl_q_bounds)[p].q_max;
+        }
+        if ( (*my_agent->rl_q_bounds)[p].q_min < Vminb ) {
+          Vminb = (*my_agent->rl_q_bounds)[p].q_min;
+        }
+      }
+    }
+  }
 	
 	switch ( exploration_policy )
 	{
@@ -551,8 +555,12 @@ preference *choose_according_to_exploration_mode( agent *my_agent, slot *s, pref
 
 	// should perform update here for chosen candidate in sarsa
 	if ( soar_rl_enabled( my_agent ) && ( get_rl_parameter( my_agent, RL_PARAM_LEARNING_POLICY, RL_RETURN_LONG ) == RL_LEARNING_SARSA ) ) {
-    Vminb = (*my_agent->rl_q_bounds)[return_val->inst->prod].q_min;
-    Vmaxb = (*my_agent->rl_q_bounds)[return_val->inst->prod].q_max;
+    if (my_agent->rl_q_bounds->find(return_val->inst->prod) != my_agent->rl_q_bounds->end()) {
+      Vminb = (*my_agent->rl_q_bounds)[return_val->inst->prod].q_min;
+      Vmaxb = (*my_agent->rl_q_bounds)[return_val->inst->prod].q_max;
+    }
+    print(my_agent, "\nsarsa production choice is %s\n", return_val->inst->prod->name->sc.name);
+    print(my_agent, "\ncalling from sarsa Q: %f Qmin: %f Qmax: %f\n", return_val->numeric_value, Vminb, Vmaxb);
 		perform_rl_update( my_agent, return_val->numeric_value, Vminb, Vmaxb, s->id );
   }
 	else if ( soar_rl_enabled( my_agent ) && ( get_rl_parameter( my_agent, RL_PARAM_LEARNING_POLICY, RL_RETURN_LONG ) == RL_LEARNING_Q ) )
@@ -560,6 +568,7 @@ preference *choose_according_to_exploration_mode( agent *my_agent, slot *s, pref
 		if ( return_val->numeric_value != top_value )
 			watkins_clear( my_agent, s->id );
 
+    print(my_agent, "\ncalling from Q-learning: %f Qmin: %f Qmax: %f\n", top_value, Vminb, Vmaxb);
 		perform_rl_update( my_agent, top_value, Vminb, Vmaxb, s->id );
 	}
 	

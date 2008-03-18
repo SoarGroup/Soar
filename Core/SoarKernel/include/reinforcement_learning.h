@@ -46,8 +46,9 @@
 #define RL_PARAM_TEMPORAL_EXTENSION			6
 #define RL_PARAM_SA_SPACE_SIZE        7
 #define RL_PARAM_R_MAX                8
-#define RL_PARAM_OOB_PROB            9
-#define RL_PARAMS							       10 // must be 1+ last rl param
+#define RL_PARAM_V_MAX                9
+#define RL_PARAM_OOB_PROB            10
+#define RL_PARAMS							       11 // must be 1+ last rl param
 
 // names of stats
 #define RL_STAT_UPDATE_ERROR				0

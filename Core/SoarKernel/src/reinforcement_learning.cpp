@@ -946,7 +946,12 @@ void revert_template_id( agent *my_agent )
 	}
 	deallocate_condition_list( my_agent, cond_top );
 
-	initialize_q_bounds(my_agent, new_production);
+	/*
+	if (my_agent->rl_q_bounds->find(new_production) == my_agent->rl_q_bounds->end()) {
+		print(my_agent, "create %s\n", new_name.c_str());
+		initialize_q_bounds(my_agent, new_production);
+	}
+	*/
 
 	return new_name_symbol;
 }
@@ -1099,17 +1104,17 @@ void store_rl_data( agent *my_agent, Symbol *goal, preference *cand )
 	unsigned int just_fired = 0;
 	for ( preference *pref = goal->id.operator_slot->preferences[ NUMERIC_INDIFFERENT_PREFERENCE_TYPE ]; pref; pref = pref->next )
 		if ( ( op == pref->value ) && pref->inst->prod->rl_rule )
-			if ( pref->inst->prod->rl_rule ) 
+			// if ( pref->inst->prod->rl_rule ) jzxu 03/17/08: there seems to be no point to this second test, so I'm taking it out
+		{
+			if ( !just_fired )
 			{
-				if ( !just_fired )
-				{
-					free_list( my_agent, data->prev_op_rl_rules );
-					data->prev_op_rl_rules = NIL;
-				}
-				
-				push( my_agent, pref->inst->prod, data->prev_op_rl_rules );
-				just_fired++;
+				free_list( my_agent, data->prev_op_rl_rules );
+				data->prev_op_rl_rules = NIL;
 			}
+
+			push( my_agent, pref->inst->prod, data->prev_op_rl_rules );
+			just_fired++;
+		}
 
 	if ( just_fired )
 	{
@@ -1166,7 +1171,6 @@ void store_rl_data( agent *my_agent, Symbol *goal, preference *cand )
  **************************************************************************/
 void perform_rl_update( agent *my_agent, double op_value, double Vminb, double Vmaxb, Symbol *goal )
 {
-	print(my_agent, "\n### RL update with op_v: %f vmin: %f vmax: %f\n", op_value, Vminb, Vmaxb);
 	rl_data *data = goal->id.rl_info;
 	soar_rl_et_map::iterator iter;
 
@@ -1254,7 +1258,6 @@ void perform_rl_update( agent *my_agent, double op_value, double Vminb, double V
 		}
 
 		/* we can only update q bounds for TD(0) for now */
-		print(my_agent, "lambda: %f\n", iter->second);
 		if (iter->second == 1.0) {
 			if (my_agent->rl_q_bounds->find(prod) == my_agent->rl_q_bounds->end()) {
 				initialize_q_bounds(my_agent, prod);
@@ -1263,7 +1266,8 @@ void perform_rl_update( agent *my_agent, double op_value, double Vminb, double V
 			int t = ++bounds.num_updates;
 
 			double confidence = get_rl_parameter(my_agent, RL_PARAM_OOB_PROB);
-			double kSA = t * t * get_rl_parameter( my_agent, RL_PARAM_SA_SPACE_SIZE );
+			double kSA1 = t * t * get_rl_parameter( my_agent, RL_PARAM_SA_SPACE_SIZE );
+			double kSA2 = (t-1) * (t-1) * get_rl_parameter( my_agent, RL_PARAM_SA_SPACE_SIZE );
 			/* alternative calculations include
 			 *
 			 * double kSA = number of total TD updates ^ 2
@@ -1272,20 +1276,29 @@ void perform_rl_update( agent *my_agent, double op_value, double Vminb, double V
 			 * As long as sum of all 1 / (c * kSA) <= 1
 			 */
 
-			double log_term = log(ZETA2 * kSA / confidence);
+			double log_term1 = log(ZETA2 * kSA1 / confidence);
+			double log_term2 = log(ZETA2 * kSA2 / confidence);
 			// pi was introduced just to make the equation simpler
 			double pi = 1.0 - alpha;
-			double Vmax = get_rl_parameter(my_agent, RL_PARAM_R_MAX) / (1.0 - gamma);
-			double sqrt_term1 = sqrt(0.5 * ((pow(pi, 2 *    t   ) - 1) / (pi * pi - 1)) * log_term);
-			double sqrt_term2 = sqrt(0.5 * ((pow(pi, 2 * (t - 1)) - 1) / (pi * pi - 1)) * log_term);
+			double Vmax = get_rl_parameter(my_agent, RL_PARAM_V_MAX);
+			if (Vmax == 0.0) {
+				Vmax = get_rl_parameter(my_agent, RL_PARAM_R_MAX) / (1.0 - gamma);
+			}
+
+			double sqrt_term1 =               sqrt(0.5 * ((1 - pow(pi, 2 *    t   )) / (1 - pi * pi)) * log_term1);
+			double sqrt_term2 = (t == 1 ? 0 : sqrt(0.5 * ((1 - pow(pi, 2 * (t - 1))) / (1 - pi * pi)) * log_term2));
+
 			double beta = Vmax * (sqrt_term1 - pi * sqrt_term2);
 
-			bounds.q_min += alpha * (data->reward + gamma * Vminb - beta);
-			bounds.q_max += alpha * (data->reward + gamma * Vmaxb + beta);
-			print(my_agent, "\n============ BOUNDS UPDATE ============\n");
-			print_production(my_agent, prod, 0);
-			print(my_agent, "Qmin: %f Qmax: %f N: %d\n", bounds.q_min, bounds.q_max, bounds.num_updates);
-			print(my_agent, "!!!!!!!!!!!! BOUNDS UPDATE !!!!!!!!!!!!\n");
+
+			bounds.q_min = (1-alpha) * bounds.q_min + alpha * (data->reward + gamma * Vminb - beta);
+			bounds.q_max = (1-alpha) * bounds.q_max + alpha * (data->reward + gamma * Vmaxb + beta);
+			//print(my_agent, "update %s\n", prod->name);
+			//print(my_agent, "\n============ BOUNDS UPDATE ============\n");
+			//print_production(my_agent, prod, 0);
+			//print(my_agent, "sqrt_term1: %f sqrt_term2: %f\n", sqrt_term1, sqrt_term2);
+			print(my_agent, "\nbound_update %s Q: %f Qmin: %f Qmax: %f N: %d\n", prod->name->sc.name, temp, bounds.q_min, bounds.q_max, bounds.num_updates);
+			//print(my_agent, "!!!!!!!!!!!! BOUNDS UPDATE !!!!!!!!!!!!\n");
 		}
 	}
 
@@ -1309,18 +1322,30 @@ void watkins_clear( agent *my_agent, Symbol *goal )
 
 void initialize_q_bounds(agent* my_agent, production* p) {
 	// set initial upper and lower bounds for the q values
-	double vmax = get_rl_parameter(my_agent, RL_PARAM_R_MAX) / ( 1.0 - get_rl_parameter(my_agent, RL_PARAM_DISCOUNT_RATE) );
+	double Vmax = get_rl_parameter(my_agent, RL_PARAM_V_MAX);
+	if (Vmax == 0.0) {
+		Vmax = get_rl_parameter(my_agent, RL_PARAM_R_MAX) / (1.0 - get_rl_parameter(my_agent, RL_PARAM_DISCOUNT_RATE));
+	}
 	double conf = get_rl_parameter(my_agent, RL_PARAM_OOB_PROB);
 
 	/* I'm not sure what this should be yet, I'm just grabbing it out of even-dar
 	 * as a place holder. jzxu 03/07/2008 */
-	double qmax_0 = vmax * log(ZETA2 * get_rl_parameter(my_agent, RL_PARAM_SA_SPACE_SIZE) / conf);
+	double qmax_0 = Vmax * log(ZETA2 * get_rl_parameter(my_agent, RL_PARAM_SA_SPACE_SIZE) / conf);
 	(*my_agent->rl_q_bounds)[p].q_min = -qmax_0;
 	(*my_agent->rl_q_bounds)[p].q_max = qmax_0;
 	(*my_agent->rl_q_bounds)[p].num_updates = 0;
 
-	print(my_agent, "\n============ BOUNDS CREATE ============\n");
-	print_production(my_agent, p, 0);
-	print(my_agent, "Qmin: %f Qmax: %f N: %d\n", -qmax_0, qmax_0, 0);
-	print(my_agent, "!!!!!!!!!!!! BOUNDS CREATE !!!!!!!!!!!!\n");
+	//print(my_agent, "\n============ BOUNDS CREATE ============\n");
+	//print_production(my_agent, p, 0);
+	print(my_agent, "\nbound_create %s Qmin: %f Qmax: %f N: %d\n", p->name->sc.name, -qmax_0, qmax_0, 0);
+	//print(my_agent, "!!!!!!!!!!!! BOUNDS CREATE !!!!!!!!!!!!\n");
 }
+
+/* don't need this yet
+void print_q_bounds(agent* my_agent) {
+	rl_q_bound_map::iterator i;
+	for (i = my_agent->rl_q_bounds.begin(); i != my_agent->rl_q_bounds.end(); ++i) {
+		print(my_agent, "%s %d %f %f\n", i->first->name->sc.name, i->second.num_updates, i->second.q_min, i->second.q_max);
+	}
+}
+*/
