@@ -117,6 +117,6 @@
   <PropertyGroup>
     <PreBuildEvent>
     </PreBuildEvent>
-    <PostBuildEvent>"C:\Microsoft Robotics Studio (1.5)\bin\dssproxy.exe" /dll:"$(TargetPath)" /proxyprojectpath:"$(ProjectDir)Proxy " /keyfile:"$(AssemblyOriginatorKeyFile)" $(ProxyDelaySign) $(CompactFrameworkProxyGen) /binpath:". " /referencepath:"C:\Microsoft Robotics Studio (1.5)\bin\ " /referencepath:"C:\Microsoft Robotics Studio (1.5)\bin\ " </PostBuildEvent>
+    <PostBuildEvent>"C:\Microsoft Robotics Studio (1.5)\bin\DssProxy.exe" /dll:"$(TargetPath)" /proxyprojectpath:"$(ProjectDir)Proxy " /keyfile:"$(AssemblyOriginatorKeyFile)" $(ProxyDelaySign) $(CompactFrameworkProxyGen) /binpath:". " @(ReferencePath-&gt;'/referencepath:"%(RootDir)%(Directory) "', ' ')</PostBuildEvent>
   </PropertyGroup>
 </Project>

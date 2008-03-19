@@ -222,7 +222,7 @@ namespace Robotics.SoarMSR
                 
             }
 
-            Trace.WriteLine("samples: " + (mmax - mmin) + ", range: " + computedRange);
+            //Trace.WriteLine("samples: " + (mmax - mmin) + ", range: " + computedRange);
 
             if (computedRange <= _state.MinimumObstacleRange)
             {

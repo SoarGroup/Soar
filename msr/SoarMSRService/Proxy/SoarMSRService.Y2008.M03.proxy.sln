@@ -1,6 +1,6 @@
 Microsoft Visual Studio Solution File, Format Version 9.00
 # Visual Studio 2005
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SoarMSRService.Y2008.M03.proxy", "SoarMSRService.Y2008.M03.proxy.csproj", "{1E1C8772-C263-4B1D-B38B-45D126EC89E4}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SoarMSRService.Y2008.M03.proxy", "SoarMSRService.Y2008.M03.proxy.csproj", "{20672867-8DFF-4927-A999-C7757A92057C}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -8,10 +8,10 @@ Global
 		Release|Any CPU = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{1E1C8772-C263-4B1D-B38B-45D126EC89E4}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{1E1C8772-C263-4B1D-B38B-45D126EC89E4}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{1E1C8772-C263-4B1D-B38B-45D126EC89E4}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{1E1C8772-C263-4B1D-B38B-45D126EC89E4}.Release|Any CPU.Build.0 = Release|Any CPU
+		{20672867-8DFF-4927-A999-C7757A92057C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{20672867-8DFF-4927-A999-C7757A92057C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{20672867-8DFF-4927-A999-C7757A92057C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{20672867-8DFF-4927-A999-C7757A92057C}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
