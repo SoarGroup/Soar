@@ -55,11 +55,11 @@ public:
 	// Commands are added to this queue that this connection will
 	// process in the future.  E.g. A client would use this call to add
 	// a command to the queue that the kernel would then execute.
-	void AddToIncomingMessageQueue(ElementXML* pMsg)
+	void AddToIncomingMessageQueue(ElementXML_Handle hMsg)
 	{
 		// Make sure only one thread modifies the message queue at a time.
 		soar_thread::Lock lock(&m_IncomingMutex) ;
-		m_IncomingMessageQueue.push(pMsg) ;
+		m_IncomingMessageQueue.push(hMsg) ;
 
 		// Wake up anybody who's waiting for a response
 		m_WaitEvent.TriggerEvent() ;
