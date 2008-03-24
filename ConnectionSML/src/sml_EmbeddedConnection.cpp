@@ -118,9 +118,7 @@ ElementXML_Handle LocalProcessMessage(Connection_Receiver_Handle hReceiverConnec
 	if (action == SML_MESSAGE_ACTION_ASYNCH)
 	{
 		// Store the incoming message on a queue and execute it on the receiver's thread (our thread) at a later point.
-		ElementXML* pIncomingMsg = new ElementXML(hIncomingMsg) ;
-
-		((EmbeddedConnectionAsynch*)pConnection)->AddToIncomingMessageQueue(pIncomingMsg) ;
+		((EmbeddedConnectionAsynch*)pConnection)->AddToIncomingMessageQueue(hIncomingMsg) ;
 
 		// There is no immediate response to an asynch message.
 		// The response will be sent back to the caller as another asynch message later, once the command has been executed.
