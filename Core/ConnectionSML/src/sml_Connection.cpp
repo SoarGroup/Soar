@@ -96,8 +96,8 @@ Connection::~Connection()
 	// Clear out any messages sitting on the queues
 	while (m_IncomingMessageQueue.size() > 0)
 	{
-		ElementXML* pMsg = m_IncomingMessageQueue.back() ;
-		delete pMsg ;
+		ElementXML_Handle hMsg = m_IncomingMessageQueue.back() ;
+		delete hMsg ;
 
 		m_IncomingMessageQueue.pop() ;
 	}
@@ -1051,9 +1051,12 @@ ElementXML* Connection::PopIncomingMessageQueue()
 		return NULL ;
 
 	// 	Read the first message that's waiting
-	ElementXML* pIncomingMsg = m_IncomingMessageQueue.front() ;
+	ElementXML_Handle hIncomingMsg = m_IncomingMessageQueue.front() ;
 	m_IncomingMessageQueue.pop() ;
 
+   ElementXML* pIncomingMsg = new ElementXML(hIncomingMsg);
+
+   // The guy receiving this expects to delete this object anyway when they're done
 	return pIncomingMsg ;
 }
 
