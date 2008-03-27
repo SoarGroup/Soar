@@ -433,10 +433,12 @@ int ElementXMLImpl::ReleaseRef()
 #endif //_MSC_VER
 #endif //DEBUG_REFCOUNTS
 
-	m_RefCount-- ;
+   // Have to store this locally, before we call "delete this"
+   volatile long refCount = atomic_dec(&m_RefCount);
 
-	// Have to store this locally, before we call "delete this"
-	int refCount = m_RefCount ;
+   // The above is the atomic (thread-safe) equivalent of this
+   //m_RefCount-- ;
+	//int refCount = m_RefCount ;
 
 #ifdef DEBUG_REFCOUNTS
 #ifdef _MSC_VER
@@ -480,8 +482,12 @@ int ElementXMLImpl::AddRef()
 		pthread_mutex_lock( &mlock );
 #endif //_MSC_VER
 #endif //DEBUG_REFCOUNTS
+      
 
-	m_RefCount++ ;
+	atomic_inc(&m_RefCount);
+   
+   // The above is the atomic (thread-safe) equivalent of this
+   //m_RefCount++ ;
 
 //	printf("Add Ref for hXML = 0x%x making ref count %d\n", (int)this, m_RefCount) ;
 
