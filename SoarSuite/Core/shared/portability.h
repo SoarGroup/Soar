@@ -39,7 +39,7 @@ static inline long atomic_dec( volatile long *v )
 // requires GCC>=4.2.0
 #elif __GNUC__ > 4 || \
     (__GNUC__ == 4 && (__GNUC_MINOR__ > 2 || \
-                       (__GNUC_MINOR__ == 2))
+                       (__GNUC_MINOR__ == 2)))
 
 static inline long atomic_inc( volatile long  *v )
 {
