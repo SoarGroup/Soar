@@ -82,6 +82,8 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "pcre", "Core\pcre\pcre.vcpr
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "SoarKernel", "Core\SoarKernel\SoarKernel.vcproj", "{844AB204-F1B2-43D5-A6E5-1EA19FF289F2}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Tests", "Tests\Tests.vcproj", "{DBEC0FA9-01A1-4E5A-9B3A-8AFC7A7EBFCF}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Win32 = Debug|Win32
@@ -644,6 +646,28 @@ Global
 		{844AB204-F1B2-43D5-A6E5-1EA19FF289F2}.Release-gSKI DLL|Win32.Build.0 = Release|Win32
 		{844AB204-F1B2-43D5-A6E5-1EA19FF289F2}.Release-no SWIG|Win32.ActiveCfg = Release|Win32
 		{844AB204-F1B2-43D5-A6E5-1EA19FF289F2}.Release-no SWIG|Win32.Build.0 = Release|Win32
+		{DBEC0FA9-01A1-4E5A-9B3A-8AFC7A7EBFCF}.Debug|Win32.ActiveCfg = Debug|Win32
+		{DBEC0FA9-01A1-4E5A-9B3A-8AFC7A7EBFCF}.Debug|Win32.Build.0 = Debug|Win32
+		{DBEC0FA9-01A1-4E5A-9B3A-8AFC7A7EBFCF}.Debug-Core|Win32.ActiveCfg = Debug|Win32
+		{DBEC0FA9-01A1-4E5A-9B3A-8AFC7A7EBFCF}.Debug-Core|Win32.Build.0 = Debug|Win32
+		{DBEC0FA9-01A1-4E5A-9B3A-8AFC7A7EBFCF}.Debug-DLL|Win32.ActiveCfg = Debug|Win32
+		{DBEC0FA9-01A1-4E5A-9B3A-8AFC7A7EBFCF}.Debug-DLL|Win32.Build.0 = Debug|Win32
+		{DBEC0FA9-01A1-4E5A-9B3A-8AFC7A7EBFCF}.Debug-gSKI DLL|Win32.ActiveCfg = Debug|Win32
+		{DBEC0FA9-01A1-4E5A-9B3A-8AFC7A7EBFCF}.Debug-gSKI DLL|Win32.Build.0 = Debug|Win32
+		{DBEC0FA9-01A1-4E5A-9B3A-8AFC7A7EBFCF}.Debug-no SWIG|Win32.ActiveCfg = Debug|Win32
+		{DBEC0FA9-01A1-4E5A-9B3A-8AFC7A7EBFCF}.Debug-no SWIG|Win32.Build.0 = Debug|Win32
+		{DBEC0FA9-01A1-4E5A-9B3A-8AFC7A7EBFCF}.Distribution|Win32.ActiveCfg = Debug|Win32
+		{DBEC0FA9-01A1-4E5A-9B3A-8AFC7A7EBFCF}.Distribution|Win32.Build.0 = Debug|Win32
+		{DBEC0FA9-01A1-4E5A-9B3A-8AFC7A7EBFCF}.Release|Win32.ActiveCfg = Release|Win32
+		{DBEC0FA9-01A1-4E5A-9B3A-8AFC7A7EBFCF}.Release|Win32.Build.0 = Release|Win32
+		{DBEC0FA9-01A1-4E5A-9B3A-8AFC7A7EBFCF}.Release-Core|Win32.ActiveCfg = Release|Win32
+		{DBEC0FA9-01A1-4E5A-9B3A-8AFC7A7EBFCF}.Release-Core|Win32.Build.0 = Release|Win32
+		{DBEC0FA9-01A1-4E5A-9B3A-8AFC7A7EBFCF}.Release-DLL|Win32.ActiveCfg = Release|Win32
+		{DBEC0FA9-01A1-4E5A-9B3A-8AFC7A7EBFCF}.Release-DLL|Win32.Build.0 = Release|Win32
+		{DBEC0FA9-01A1-4E5A-9B3A-8AFC7A7EBFCF}.Release-gSKI DLL|Win32.ActiveCfg = Release|Win32
+		{DBEC0FA9-01A1-4E5A-9B3A-8AFC7A7EBFCF}.Release-gSKI DLL|Win32.Build.0 = Release|Win32
+		{DBEC0FA9-01A1-4E5A-9B3A-8AFC7A7EBFCF}.Release-no SWIG|Win32.ActiveCfg = Release|Win32
+		{DBEC0FA9-01A1-4E5A-9B3A-8AFC7A7EBFCF}.Release-no SWIG|Win32.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
