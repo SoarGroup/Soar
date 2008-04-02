@@ -219,7 +219,7 @@
 				>
 			</File>
 			<File
-				RelativePath=".\multiagenttest.cpp"
+				RelativePath=".\src\multiagenttest.cpp"
 				>
 			</File>
 			<File
