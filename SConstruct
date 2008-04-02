@@ -209,4 +209,5 @@ SConscript('#Tools/TestMultiAgent/SConscript')
 SConscript('#Tools/TestSMLEvents/SConscript')
 SConscript('#Tools/TestSMLPerformance/SConscript')
 SConscript('#Tools/TestSoarPerformance/SConscript')
+SConscript('#Tests/SConscript')
 
