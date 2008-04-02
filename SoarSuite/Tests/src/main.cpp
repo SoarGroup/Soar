@@ -33,7 +33,7 @@ int main( int argc, char** argv )
 	CPPUNIT_NS::CompilerOutputter outputter( &result, std::cerr );
 	outputter.write();                      
 
-	if ( pause && !result.wasSuccessful() )
+	if ( pause )
 	{
 		std::cout << std::endl << "Press enter to exit." << std::endl;
 		std::cin.get();

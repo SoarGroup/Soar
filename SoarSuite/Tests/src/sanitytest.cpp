@@ -23,6 +23,8 @@ There are many more options and details. See online resources:
 
  */
 
+#include <portability.h>
+
 #include <cppunit/extensions/HelperMacros.h>
 
 class SanityTest : public CPPUNIT_NS::TestCase
@@ -44,8 +46,6 @@ protected:
 };
 
 CPPUNIT_TEST_SUITE_REGISTRATION( SanityTest ); // Registers the test so it will be used
-
-#include <iostream>
 
 bool SanityTest::up = false;
 
