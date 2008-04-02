@@ -961,38 +961,39 @@ void chunk_instantiation (agent* thisAgent,
   
   if (thisAgent->operand2_mode == TRUE) {
 	  
-      if (thisAgent->sysparams[LEARNING_ON_SYSPARAM] == TRUE) {
-		  if (pref->id->id.level < (inst->match_goal_level - 1)) {
-			  making_topmost_chunk     = FALSE;
-			  allow_variablization     = FALSE;
-			  inst->okay_to_variablize = FALSE;
-			  
-              if (thisAgent->soar_verbose_flag == TRUE) {
-				  printf("\n   in chunk_instantiation: making justification only");
-                  GenerateVerboseXML(thisAgent, "in chunk_instantiation: making justification only");
-              }
-		  }
-		  
-		  else {
-			  making_topmost_chunk     = TRUE;
-			  allow_variablization     = (thisAgent->sysparams[LEARNING_ON_SYSPARAM] != 0);
-			  inst->okay_to_variablize = (byte) thisAgent->sysparams[LEARNING_ON_SYSPARAM];
-			  
-              if (thisAgent->soar_verbose_flag == TRUE) {
-				  printf("\n   in chunk_instantiation: resetting allow_variablization to %s", ((allow_variablization) ? "TRUE" : "FALSE"));
-                  if(allow_variablization) {
-                      GenerateVerboseXML(thisAgent, "in chunk_instantiation: resetting allow_variablization to TRUE");
-                  } else {
-                      GenerateVerboseXML(thisAgent, "in chunk_instantiation: resetting allow_variablization to FALSE");
-                  }
-              }
-		  }
+    if (thisAgent->sysparams[LEARNING_ON_SYSPARAM] == TRUE) {
+      if (pref->id->id.level < (inst->match_goal_level - 1)) {
+        making_topmost_chunk     = FALSE;
+        allow_variablization     = FALSE;
+        inst->okay_to_variablize = FALSE;
+
+        if (thisAgent->soar_verbose_flag == TRUE) {
+          printf("\n   in chunk_instantiation: making justification only");
+          GenerateVerboseXML(thisAgent, "in chunk_instantiation: making justification only");
+        }
       }
-	  
+
       else {
-		  making_topmost_chunk = TRUE;
+        making_topmost_chunk     = TRUE;
+        allow_variablization     = (thisAgent->sysparams[LEARNING_ON_SYSPARAM] != 0);
+        inst->okay_to_variablize = (byte) thisAgent->sysparams[LEARNING_ON_SYSPARAM];
+
+        if (thisAgent->soar_verbose_flag == TRUE) {
+          printf("\n   in chunk_instantiation: resetting allow_variablization to %s", ((allow_variablization) ? "TRUE" : "FALSE"));
+          if(allow_variablization) {
+            GenerateVerboseXML(thisAgent, "in chunk_instantiation: resetting allow_variablization to TRUE");
+          } 
+          else {
+            GenerateVerboseXML(thisAgent, "in chunk_instantiation: resetting allow_variablization to FALSE");
+          }
+        }
       }
-	  
+    }
+
+    else {
+      making_topmost_chunk = TRUE;
+    }
+
   }
   
   /* REW: end   09.15.96 */
@@ -1002,27 +1003,32 @@ void chunk_instantiation (agent* thisAgent,
   if (!results) goto chunking_done;
   
   /* --- update flags on goal stack for bottom-up chunking --- */
-  { Symbol *g;
-  for (g=inst->match_goal->id.higher_goal;
-  g && g->id.allow_bottom_up_chunks;
-  g=g->id.higher_goal)
+  { 
+    Symbol *g;
+    for (g=inst->match_goal->id.higher_goal;
+         g && g->id.allow_bottom_up_chunks;
+         g=g->id.higher_goal)
       g->id.allow_bottom_up_chunks = FALSE;
   }
   
   grounds_level = inst->match_goal_level - 1;
+
+  // jzxu: start the chunking probability at 1, multiply with lower probs as we
+  // backtrace
+  thisAgent->chunk_prob = 1;
   
   thisAgent->backtrace_number++; 
   if (thisAgent->backtrace_number==0) 
-	  thisAgent->backtrace_number=1;
+    thisAgent->backtrace_number=1;
   thisAgent->grounds_tc++; 
   if (thisAgent->grounds_tc==0) 
-	  thisAgent->grounds_tc=1;
+    thisAgent->grounds_tc=1;
   thisAgent->potentials_tc++; 
   if (thisAgent->potentials_tc==0) 
-	  thisAgent->potentials_tc=1;
+    thisAgent->potentials_tc=1;
   thisAgent->locals_tc++; 
   if (thisAgent->locals_tc==0) 
-	  thisAgent->locals_tc=1;
+    thisAgent->locals_tc=1;
   thisAgent->grounds = NIL;
   thisAgent->positive_potentials = NIL;
   thisAgent->locals = NIL;
@@ -1030,7 +1036,7 @@ void chunk_instantiation (agent* thisAgent,
   
   if (allow_variablization &&
       (! thisAgent->sysparams[LEARNING_ALL_GOALS_SYSPARAM]))
-	  allow_variablization = inst->match_goal->id.allow_bottom_up_chunks;
+    allow_variablization = inst->match_goal->id.allow_bottom_up_chunks;
   
 	  /* DJP : Need to initialize chunk_free_flag to be FALSE, as default before
   looking for problem spaces and setting the chunk_free_flag below  */
@@ -1082,17 +1088,17 @@ void chunk_instantiation (agent* thisAgent,
   
   /* --- backtrace through the instantiation that produced each result --- */
   for (pref=results; pref!=NIL; pref=pref->next_result) {
-	  if (thisAgent->sysparams[TRACE_BACKTRACING_SYSPARAM]) {
-		  print_string (thisAgent, "\nFor result preference ");
-          gSKI_MakeAgentCallbackXML(thisAgent, kFunctionBeginTag, kTagBacktraceResult);
-		  print_preference (thisAgent, pref);
-		  print_string (thisAgent, " ");
-	  }
-	  backtrace_through_instantiation (thisAgent, pref->inst, grounds_level, NULL, 0);
-      
-      if (thisAgent->sysparams[TRACE_BACKTRACING_SYSPARAM]) {
-          gSKI_MakeAgentCallbackXML(thisAgent, kFunctionEndTag, kTagBacktraceResult);
-      }
+    if (thisAgent->sysparams[TRACE_BACKTRACING_SYSPARAM]) {
+      print_string (thisAgent, "\nFor result preference ");
+      gSKI_MakeAgentCallbackXML(thisAgent, kFunctionBeginTag, kTagBacktraceResult);
+      print_preference (thisAgent, pref);
+      print_string (thisAgent, " ");
+    }
+    backtrace_through_instantiation (thisAgent, pref->inst, grounds_level, NULL, 0);
+
+    if (thisAgent->sysparams[TRACE_BACKTRACING_SYSPARAM]) {
+      gSKI_MakeAgentCallbackXML(thisAgent, kFunctionEndTag, kTagBacktraceResult);
+    }
   }
   
   thisAgent->quiescence_t_flag = FALSE;
@@ -1114,6 +1120,13 @@ void chunk_instantiation (agent* thisAgent,
 	  tc_for_grounds);
   }
   
+  // jzxu: we had to wait until all backtracing was finished before having the
+  // final value of this chunk's probability. Test it here
+  
+  if (thisAgent->chunk_prob < thisAgent->sysparams[CHUNK_CONFIDENCE]) {
+    thisAgent->variablize_this_chunk = FALSE;
+  }
+
   /* --- get symbol for name of new chunk or justification --- */
   if (thisAgent->variablize_this_chunk) {
 	  /* kjh (B14) begin */

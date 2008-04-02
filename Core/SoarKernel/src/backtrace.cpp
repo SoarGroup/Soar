@@ -176,7 +176,7 @@ void print_consed_list_of_condition_wmes (agent* thisAgent, list *c, int indent)
 void backtrace_through_instantiation (agent* thisAgent, 
                                       instantiation *inst,
                                       goal_stack_level grounds_level,
-		                                condition *trace_cond,
+                                      condition *trace_cond,
                                       int indent) {
 
   tc_number tc;   /* use this to mark ids in the ground set */
@@ -215,7 +215,6 @@ void backtrace_through_instantiation (agent* thisAgent,
   inst->backtrace_number = thisAgent->backtrace_number;
 
   /* Record information on the production being backtraced through */
-  /* if (thisAgent->explain_flag) { */
   if (thisAgent->sysparams[EXPLAIN_SYSPARAM]) {
     temp_explain_backtrace.trace_cond = trace_cond;  /* Not copied yet */
     if (trace_cond == NULL)   /* Backtracing for a result */
@@ -311,59 +310,33 @@ void backtrace_through_instantiation (agent* thisAgent,
   for (c=inst->top_of_instantiated_conditions; c!=NIL; c=c->next) {
     if (c->type==POSITIVE_CONDITION) {
 
-      /* REW: begin 11.22.97 */
-      /* print (thisAgent, "\n Checking...");print_wme(c->bt.wme_);
-      if (c->bt.trace) print ("c->bt.trace exists..."); else print("\n    no c->bt.trace...");
-      if (c->bt.wme_) { 
-	print ("c->bt.wme_....");
-	if  (c->bt.wme_->preference)
-	  print("c->bt.wme_->preference");
-	else 
-	  print("\n no c->bt.wme_->preference");
-      }	else
-	print ("\nNo WME No Preference!!!!!!");
-      print("\n"); 
-      if ((c->bt.trace) && (c->bt.wme_->preference)){
-      if (c->bt.trace != c->bt.wme_->preference) {
-	print("\n bt.trace and WME preferences not equal:\n");
-	print(thisAgent, "\nWME:"); print_wme(c->bt.wme_);
-	print("\n bt.trace:"); 
-	if (c->bt.trace) print_preference(c->bt.trace); else print(" NIL\n");
-	print("\n bt.wme_->preference:"); 
-        if (c->bt.wme_->preference) print_preference(c->bt.wme_->preference);
-	else print(" NIL\n");
-	c->bt.trace = c->bt.wme_->preference;
-	c->bt.level = c->bt.wme_->id->id.level;
-      }
-      }*/
-      /* REW: end   11.22.97 */ 
       /* --- positive cond's are grounds, potentials, or locals --- */
       if (referent_of_equality_test(c->data.tests.id_test)->id.tc_num == tc) {
         add_to_grounds (thisAgent, c);
         if (thisAgent->sysparams[TRACE_BACKTRACING_SYSPARAM] || 
             thisAgent->sysparams[EXPLAIN_SYSPARAM])
-	  push (thisAgent, c, grounds_to_print);
+          push (thisAgent, c, grounds_to_print);
       } 
       else if (c->bt.level <= grounds_level) {
         add_to_potentials (thisAgent, c);
         if (thisAgent->sysparams[TRACE_BACKTRACING_SYSPARAM] || 
             thisAgent->sysparams[EXPLAIN_SYSPARAM])
-	  push (thisAgent, c, pots_to_print);
+          push (thisAgent, c, pots_to_print);
       } 
       else {
         add_to_locals (thisAgent, c);
         if (thisAgent->sysparams[TRACE_BACKTRACING_SYSPARAM] || 
             thisAgent->sysparams[EXPLAIN_SYSPARAM])
-	        push (thisAgent, c, locals_to_print);
+          push (thisAgent, c, locals_to_print);
       }
     } 
     else {
       /* --- negative or nc cond's are either grounds or potentials --- */
       add_to_chunk_cond_set (thisAgent, &thisAgent->negated_set, 
-		                     make_chunk_cond_for_condition(thisAgent, c));
+          make_chunk_cond_for_condition(thisAgent, c));
       if (thisAgent->sysparams[TRACE_BACKTRACING_SYSPARAM] || 
-            thisAgent->sysparams[EXPLAIN_SYSPARAM])
-	push (thisAgent, c, negateds_to_print);
+          thisAgent->sysparams[EXPLAIN_SYSPARAM])
+        push (thisAgent, c, negateds_to_print);
     }
   } /* end of for loop */
 

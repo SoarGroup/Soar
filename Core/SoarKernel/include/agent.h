@@ -532,6 +532,10 @@ kernel time and total_cpu_time greater than the derived total CPU time. REW */
   preference        * extra_result_prefs_from_instantiation;
   Bool                quiescence_t_flag;
   char                chunk_name_prefix[kChunkNamePrefixMaxLength];  /* kjh (B14) */
+
+  // jzxu 4/02/2008
+  // this is the probability associated with the current chunk
+  double              chunk_prob;
   
   /* ----------------------- Misc. top-level stuff -------------------------- */
   
