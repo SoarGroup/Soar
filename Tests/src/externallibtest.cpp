@@ -40,7 +40,7 @@ void ExternalLibTest::tearDown()
 {
 }
 
-void PrintCallbackHandler(sml::smlPrintEventId id, void* pUserData, sml::Agent* pAgent, char const* pMessage) {
+void PrintCallbackHandler(sml::smlPrintEventId, void*, sml::Agent*, char const* pMessage) {
 	if(std::string( pMessage ) == "Success!") {
 		ExternalLibTest::bSuccess = true;
 	}
@@ -59,7 +59,7 @@ void ExternalLibTest::testExternalLib()
 	sml::Agent* pAgent = pKernel->CreateAgent( "soar1" );
 	CPPUNIT_ASSERT( pAgent != NULL );
 
-	int callbackID1 = pAgent->RegisterForPrintEvent( sml::smlEVENT_PRINT, PrintCallbackHandler, 0 );
+	pAgent->RegisterForPrintEvent( sml::smlEVENT_PRINT, PrintCallbackHandler, 0 );
 
 	CPPUNIT_ASSERT_MESSAGE( "Failed to load productions from ../Tests/TestExternalLibrary.soar.  Is working directory set to SoarLibrary/bin?", pAgent->LoadProductions( "../Tests/TestExternalLibrary.soar" ) );
 

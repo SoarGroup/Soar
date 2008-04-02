@@ -21,6 +21,9 @@ public:
 	void setUp();		
 	void tearDown();	
 
+	static void MyPrintEventHandler( sml::smlPrintEventId id, void* pUserData, sml::Agent* pAgent, char const* pMessage );
+	static void MyUpdateEventHandler( sml::smlUpdateEventId id, void* pUserData, sml::Kernel* pKernel, sml::smlRunFlags runFlags );
+
 protected:
 	void testTwoAgents();
 	void testTenAgents();
@@ -47,7 +50,7 @@ void MultiAgentTest::tearDown()
 {
 }
 
-void MyPrintEventHandler( sml::smlPrintEventId id, void* pUserData, sml::Agent* pAgent, char const* pMessage )
+void MultiAgentTest::MyPrintEventHandler( sml::smlPrintEventId, void* pUserData, sml::Agent*, char const* pMessage )
 {
 	// In this case the user data is a string we're building up
 	std::stringstream* pTrace = static_cast<std::stringstream*>( pUserData ) ;
@@ -91,7 +94,7 @@ void UpdateInput( sml::Agent* pAgent, int value )
 	CPPUNIT_ASSERT( pAgent->Commit() );
 }
 
-void MyUpdateEventHandler( sml::smlUpdateEventId id, void* pUserData, sml::Kernel* pKernel, sml::smlRunFlags runFlags )
+void MultiAgentTest::MyUpdateEventHandler( sml::smlUpdateEventId, void*, sml::Kernel* pKernel, sml::smlRunFlags )
 {
 	int agents = pKernel->GetNumberAgents() ;
 	for (int agentIndex = 0 ; agentIndex < agents ; ++agentIndex)
@@ -221,10 +224,10 @@ void MultiAgentTest::doTest()
 
 		// Collect the trace output from the run
 		trace.push_back( new std::stringstream() );
-		callbackPrint.push_back( pAgent->RegisterForPrintEvent( sml::smlEVENT_PRINT, MyPrintEventHandler, trace[agentCounter] ) );
+		callbackPrint.push_back( pAgent->RegisterForPrintEvent( sml::smlEVENT_PRINT, MultiAgentTest::MyPrintEventHandler, trace[agentCounter] ) );
 	}
 
-	int	callbackUpdate = pKernel->RegisterForUpdateEvent( sml::smlEVENT_AFTER_ALL_GENERATED_OUTPUT, MyUpdateEventHandler, NULL ) ;
+	pKernel->RegisterForUpdateEvent( sml::smlEVENT_AFTER_ALL_GENERATED_OUTPUT, MultiAgentTest::MyUpdateEventHandler, NULL ) ;
 
 	// Run for a first set of output, so we can see whether that worked
 	pKernel->RunAllTilOutput() ;
@@ -237,7 +240,7 @@ void MultiAgentTest::doTest()
 	for (int i = 0 ; i < kFirstRun ; i++)
 	{
 		// Run for a bit
-		char const* pResult = pKernel->RunAllTilOutput() ;
+		pKernel->RunAllTilOutput() ;
 	}
 
 	reportAgentStatus(pKernel, numberAgents, trace) ;
@@ -250,7 +253,7 @@ void MultiAgentTest::doTest()
 	for (int i = 0 ; i < kSecondRun ; i++)
 	{
 		// Run for a bit
-		char const* pResult = pKernel->RunAllTilOutput() ;
+		pKernel->RunAllTilOutput() ;
 	}
 
 	reportAgentStatus(pKernel, numberAgents, trace) ;
