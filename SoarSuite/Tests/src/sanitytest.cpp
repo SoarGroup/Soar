@@ -64,4 +64,6 @@ void SanityTest::tearDown()
 void SanityTest::testSanity()
 {
 	CPPUNIT_ASSERT( up );
+	// TODO: platform independent version of this:
+	//CPPUNIT_ASSERT_MESSAGE( "Set working directory to SoarLibrary/bin", cwdEndsWith == "SoarLibrary/bin" );
 }

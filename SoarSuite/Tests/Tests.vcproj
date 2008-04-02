@@ -215,6 +215,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\src\externallibtest.cpp"
+				>
+			</File>
+			<File
 				RelativePath=".\src\main.cpp"
 				>
 			</File>
