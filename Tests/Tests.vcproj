@@ -90,7 +90,7 @@
 			/>
 			<Tool
 				Name="VCPostBuildEventTool"
-				CommandLine="xcopy build\Tests.exe ..\SoarLibrary\bin /y&#x0D;&#x0A;cd ..\SoarLibrary\bin&#x0D;&#x0A;Tests.exe -nopause"
+				CommandLine="xcopy build\Tests.exe ..\SoarLibrary\bin /y&#x0D;&#x0A;cd ..\SoarLibrary\bin&#x0D;&#x0A;Tests.exe -nopause&#x0D;&#x0A;"
 			/>
 		</Configuration>
 		<Configuration
@@ -168,7 +168,7 @@
 			/>
 			<Tool
 				Name="VCPostBuildEventTool"
-				CommandLine="xcopy build\Tests.exe ..\SoarLibrary\bin /y&#x0D;&#x0A;cd ..\SoarLibrary\bin&#x0D;&#x0A;Tests.exe -nopause"
+				CommandLine="xcopy build\Tests.exe ..\SoarLibrary\bin /y&#x0D;&#x0A;cd ..\SoarLibrary\bin&#x0D;&#x0A;Tests.exe -nopause&#x0D;&#x0A;"
 			/>
 		</Configuration>
 	</Configurations>
@@ -216,6 +216,10 @@
 			</File>
 			<File
 				RelativePath=".\src\main.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\multiagenttest.cpp"
 				>
 			</File>
 			<File
