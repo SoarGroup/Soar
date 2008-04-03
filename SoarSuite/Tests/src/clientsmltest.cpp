@@ -10,6 +10,11 @@
 #include "sml_Client.h"
 #include "sml_Utils.h"
 
+#ifndef _WIN32
+#include <unistd.h>
+#include <sys/wait.h>
+#endif // !_WIN32
+
 class ClientSMLTest : public CPPUNIT_NS::TestCase
 {
 	CPPUNIT_TEST_SUITE( ClientSMLTest );	
@@ -77,6 +82,8 @@ private:
 #ifdef _WIN32
     STARTUPINFO si;
     PROCESS_INFORMATION pi;
+#else // _WIN32
+    pid_t pid;
 #endif // _WIN32
 
 };
@@ -189,10 +196,8 @@ void ClientSMLTest::tearDown()
 
 	if ( remote )
 	{
-#ifdef _WIN32
 		cleanUpListener();
 		if ( verbose ) std::cout << "Cleaned up listener." << std::endl;
-#endif // _WIN32
 	}
 }
 
@@ -239,7 +244,6 @@ void ClientSMLTest::testNewThreadNoAutoCommit()
 
 void ClientSMLTest::testRemote()
 {
-#ifdef _WIN32
 	remote = true;
 	spawnListener();
 
@@ -251,13 +255,10 @@ void ClientSMLTest::testRemote()
 	doTest();
 
 	if ( verbose ) std::cout << "Test complete." << std::endl;
-
-#endif // _WIN32
 }
 
 void ClientSMLTest::testRemoteNoAutoCommit()
 {
-#ifdef _WIN32
 	remote = true;
 	spawnListener();
 
@@ -269,7 +270,6 @@ void ClientSMLTest::testRemoteNoAutoCommit()
 	doTest();
 
 	if ( verbose ) std::cout << "Test complete." << std::endl;
-#endif // _WIN32
 }
 
 void ClientSMLTest::spawnListener()
@@ -298,6 +298,16 @@ void ClientSMLTest::spawnListener()
 	std::stringstream errorMessage;
 	errorMessage << "CreateProcess error code: " << GetLastError();
 	CPPUNIT_ASSERT_MESSAGE( errorMessage.str().c_str(), success );
+#else // _WIN32
+	pid = fork();
+	CPPUNIT_ASSERT_MESSAGE( "fork error", pid >= 0 );
+	if ( pid == 0 )
+	{
+		// child
+		execl("Tests", "Tests", "--listener", static_cast< char* >( 0 ));
+		// does not return on success
+		CPPUNIT_ASSERT_MESSAGE( "execl failed", false );
+	}
 #endif // _WIN32
 
 	sml::Sleep( 1, 0 );
@@ -312,6 +322,11 @@ void ClientSMLTest::cleanUpListener()
     // Close process and thread handles. 
     CloseHandle( pi.hProcess );
     CloseHandle( pi.hThread );
+#else // _WIN32
+	int status( 0 );
+	wait( &status );
+	CPPUNIT_ASSERT_MESSAGE( "listener didn't terminate properly", WIFEXITED( status ) );
+	CPPUNIT_ASSERT_MESSAGE( "listener terminated with nonzero status", WEXITSTATUS( status ) == 0 );
 #endif // _WIN32
 }
 
