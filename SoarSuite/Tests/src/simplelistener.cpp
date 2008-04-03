@@ -4,10 +4,9 @@
 #include <sstream>
 #include <iostream>
 
-#include "sml_Client.h"
 #include "sml_Utils.h"
 
-extern bool g_CancelPressed;
+extern bool g_Cancel;
 
 std::string listenerRhsFunctionHandler(sml::smlRhsEventId id, void* pUserData, sml::Agent* pAgent, char const* pFunctionName, char const* pArgument){
 	// Return the argument we are passed plus some of our text
@@ -18,6 +17,17 @@ std::string listenerRhsFunctionHandler(sml::smlRhsEventId id, void* pUserData, s
 	std::stringstream res;
 	res << "my listener result " << pArgument;
 	return res.str() ;
+}
+
+bool SimpleListener::shutdownMessageReceived = false;
+std::string SimpleListener::MyClientMessageHandler( sml::smlRhsEventId, void* pUserData, sml::Agent*, char const*, char const* pMessage)
+{
+	if ( pMessage && std::string( pMessage ) == "shutdown" )
+	{
+		//std::cout << "SimpleListener got shutdown message." << std::endl;
+		shutdownMessageReceived = true;
+	}
+	return "ok";
 }
 
 // Create a process that listens for remote commands and lives
@@ -39,10 +49,15 @@ int SimpleListener::run()
 		return 1;
 	}
 
+	//std::cout << "SimpleListener alive." << std::endl;
+
 	pKernel->SetConnectionInfo( "listener", "ready", "ready" );
 
 	// Register here so we can test the order that RHS functions are called
 	pKernel->AddRhsFunction( "test-rhs", &listenerRhsFunctionHandler, 0 ) ;
+
+	// register for this so we know when to stop
+	pKernel->RegisterForClientMessageEvent( "test-listener", SimpleListener::MyClientMessageHandler, 0 ) ;
 
 	// Comment this in if you need to debug the messages going back and forth.
 	//pKernel->SetTraceCommunications(true) ;
@@ -55,22 +70,20 @@ int SimpleListener::run()
 	if (useCurrentThread) { life *= 10 ; pauseMsecsTotal /= 10 ; }
 
 	// How often we check to see if the list of connections has changed.
-	//int checkConnections = 500 / pauseMsecsTotal ;
-	//int counter = checkConnections ;
+	int checkConnections = 500 / pauseMsecsTotal ;
+	int counter = checkConnections ;
 
-	for (int i = 0 ; i < life && !g_CancelPressed ; i++)
+	for (int i = 0 ; i < life && !g_Cancel && !shutdownMessageReceived ; i++)
 	{
 		// Don't need to check for incoming as we're using the NewThread model.
-		if (useCurrentThread)
-		{
-			bool check = pKernel->CheckForIncomingCommands() ;
-			unused(check);
-		}
+		if (useCurrentThread) pKernel->CheckForIncomingCommands() ;
 
 		sml::Sleep(pauseSecs, pauseMsecs) ;
 	}
 
 	delete pKernel ;
+
+	//std::cout << "SimpleListener done." << std::endl;
 
 	return 0;
 }
