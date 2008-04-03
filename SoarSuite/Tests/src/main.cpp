@@ -1,3 +1,5 @@
+#include "portability.h"
+
 #include <cppunit/TestRunner.h>
 #include <cppunit/TestResult.h>
 #include <cppunit/TestResultCollector.h>
@@ -6,11 +8,39 @@
 #include <cppunit/extensions/TestFactoryRegistry.h>
 #include <cppunit/CompilerOutputter.h>
 
+#include "simplelistener.h"
+
+bool g_CancelPressed = false;
+
+#if defined(_WIN32) || defined(_WINDOWS) || defined(__WIN32__)
+
+BOOL WINAPI handle_ctrlc( DWORD dwCtrlType )
+{
+	if ( dwCtrlType == CTRL_C_EVENT )
+	{
+		g_CancelPressed = true;
+		return TRUE;
+	}
+
+	return FALSE;
+}
+
+#endif
+
 int main( int argc, char** argv )
 {
+#if defined(_WIN32) || defined(_WINDOWS) || defined(__WIN32__)
+	SetConsoleCtrlHandler( handle_ctrlc, TRUE );
+#endif
+
 	bool pause = true;
 	if ( argc >= 2 )
 	{
+		if ( std::string( argv[1] ) == "--listener" ) 
+		{
+			SimpleListener simpleListener( 3000, 12121 );
+			return simpleListener.run();
+		}
 		if ( std::string( argv[1] ) == "--nopause" ) pause = false;
 	}
 
