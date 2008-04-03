@@ -10,28 +10,26 @@
 
 #include "simplelistener.h"
 
-bool g_CancelPressed = false;
+bool g_Cancel = false;
 
-#if defined(_WIN32) || defined(_WINDOWS) || defined(__WIN32__)
-
+#ifdef _WIN32
 BOOL WINAPI handle_ctrlc( DWORD dwCtrlType )
 {
 	if ( dwCtrlType == CTRL_C_EVENT )
 	{
-		g_CancelPressed = true;
+		g_Cancel = true;
 		return TRUE;
 	}
 
 	return FALSE;
 }
-
-#endif
+#endif // _WIN32
 
 int main( int argc, char** argv )
 {
-#if defined(_WIN32) || defined(_WINDOWS) || defined(__WIN32__)
+#ifdef _WIN32
 	SetConsoleCtrlHandler( handle_ctrlc, TRUE );
-#endif
+#endif // _WIN32
 
 	bool pause = true;
 	if ( argc >= 2 )

@@ -90,7 +90,7 @@
 			/>
 			<Tool
 				Name="VCPostBuildEventTool"
-				CommandLine="xcopy build\Tests.exe ..\SoarLibrary\bin /y&#x0D;&#x0A;cd ..\SoarLibrary\bin&#x0D;&#x0A;Tests.exe -nopause&#x0D;&#x0A;"
+				CommandLine="xcopy build\Tests.exe ..\SoarLibrary\bin /y&#x0D;&#x0A;rem cd ..\SoarLibrary\bin&#x0D;&#x0A;rem Tests.exe -nopause&#x0D;&#x0A;"
 			/>
 		</Configuration>
 		<Configuration
@@ -168,7 +168,7 @@
 			/>
 			<Tool
 				Name="VCPostBuildEventTool"
-				CommandLine="xcopy build\Tests.exe ..\SoarLibrary\bin /y&#x0D;&#x0A;cd ..\SoarLibrary\bin&#x0D;&#x0A;Tests.exe -nopause&#x0D;&#x0A;"
+				CommandLine="xcopy build\Tests.exe ..\SoarLibrary\bin /y&#x0D;&#x0A;rem cd ..\SoarLibrary\bin&#x0D;&#x0A;rem Tests.exe -nopause&#x0D;&#x0A;"
 			/>
 		</Configuration>
 	</Configurations>
