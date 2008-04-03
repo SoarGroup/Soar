@@ -55,6 +55,7 @@ public:
 	static std::string MyRhsFunctionHandler(sml::smlRhsEventId id, void* pUserData, sml::Agent* pAgent, char const* pFunctionName, char const* pArgument);
 
 private:
+	void createKernel( bool embedded, bool useClientThread, bool fullyOptimized, bool simpleInitSoar, bool autoCommit, int port = 12121 );
 	void doTest();
 	void doAgentTest( sml::Agent* pAgent );
 
@@ -76,6 +77,7 @@ void ClientSMLTest::setUp()
 	pKernel = NULL;
 	numberAgents = 1;
 	simpleInitSoar = false;
+	clientXMLStorage = NULL;
 
 	// kernel initialized in test
 }
@@ -140,13 +142,7 @@ void ClientSMLTest::tearDown()
 void ClientSMLTest::testEmbeddedDirectInit()
 {
 	numberAgents = 1;
-
-	pKernel = sml::Kernel::CreateKernelInCurrentThread( sml::Kernel::GetDefaultLibraryName(), true );
-	CPPUNIT_ASSERT( pKernel != NULL );
-	CPPUNIT_ASSERT_MESSAGE( pKernel->GetLastErrorDescription(), !pKernel->HadError() );
-
-	pKernel->SetAutoCommit( true ) ;
-
+	createKernel(true, true, true, true, true);
 	simpleInitSoar = true;
 
 	doTest();
@@ -155,12 +151,7 @@ void ClientSMLTest::testEmbeddedDirectInit()
 void ClientSMLTest::testEmbeddedDirect()
 {
 	numberAgents = 1;
-
-	pKernel = sml::Kernel::CreateKernelInCurrentThread( sml::Kernel::GetDefaultLibraryName(), true );
-	CPPUNIT_ASSERT( pKernel != NULL );
-	CPPUNIT_ASSERT_MESSAGE( pKernel->GetLastErrorDescription(), !pKernel->HadError() );
-
-	pKernel->SetAutoCommit( true ) ;
+	createKernel(true, true, true, false, true);
 
 	doTest();
 }
@@ -168,12 +159,7 @@ void ClientSMLTest::testEmbeddedDirect()
 void ClientSMLTest::testEmbedded()
 {
 	numberAgents = 1;
-
-	pKernel = sml::Kernel::CreateKernelInCurrentThread( sml::Kernel::GetDefaultLibraryName(), false );
-	CPPUNIT_ASSERT( pKernel != NULL );
-	CPPUNIT_ASSERT_MESSAGE( pKernel->GetLastErrorDescription(), !pKernel->HadError() );
-
-	pKernel->SetAutoCommit( true ) ;
+	createKernel(true, true, false, false, true);
 
 	doTest();
 }
@@ -181,12 +167,7 @@ void ClientSMLTest::testEmbedded()
 void ClientSMLTest::testNewThread()
 {
 	numberAgents = 1;
-
-	pKernel = sml::Kernel::CreateKernelInNewThread( "SoarKernelSML" );
-	CPPUNIT_ASSERT( pKernel != NULL );
-	CPPUNIT_ASSERT_MESSAGE( pKernel->GetLastErrorDescription(), !pKernel->HadError() );
-
-	pKernel->SetAutoCommit( true ) ;
+	createKernel(true, false, false, false, true);
 
 	doTest();
 }
@@ -194,14 +175,22 @@ void ClientSMLTest::testNewThread()
 void ClientSMLTest::testNewThreadNoAutoCommit()
 {
 	numberAgents = 1;
+	createKernel(true, false, false, false, false);
 
-	pKernel = sml::Kernel::CreateKernelInNewThread( "SoarKernelSML" );
+	doTest();
+}
+
+void ClientSMLTest::createKernel( bool embedded, bool useClientThread, bool fullyOptimized, bool simpleInitSoar, bool autoCommit, int port )
+{
+	pKernel = embedded ?
+		(useClientThread ? sml::Kernel::CreateKernelInCurrentThread( sml::Kernel::GetDefaultLibraryName(), fullyOptimized, sml::Kernel::GetDefaultPort())
+		: sml::Kernel::CreateKernelInNewThread("SoarKernelSML", sml::Kernel::GetDefaultPort()))
+		: sml::Kernel::CreateRemoteConnection(true, NULL, port) ;
+
 	CPPUNIT_ASSERT( pKernel != NULL );
 	CPPUNIT_ASSERT_MESSAGE( pKernel->GetLastErrorDescription(), !pKernel->HadError() );
 
 	pKernel->SetAutoCommit( false ) ;
-
-	doTest();
 }
 
 void ClientSMLTest::MySystemEventHandler( sml::smlSystemEventId, void*, sml::Kernel* )
