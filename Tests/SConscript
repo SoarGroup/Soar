@@ -11,11 +11,18 @@ env.Prepend(CPPPATH = [
 			'../Core/ElementXML/include',
 			'../Core/ConnectionSML/include'])
 
-libadd = [ 'ClientSML', 
-	   'ConnectionSML',
-	   'ElementXML', 
-	   'cppunit',
-	   ]
+if sys.platform == "darwin":
+	libadd = [ 'ClientSML', 
+		   'ConnectionSML',
+		   'ElementXML', 
+		   'cppunit-osx',
+		   ]
+else:
+	libadd = [ 'ClientSML', 
+		   'ConnectionSML',
+		   'ElementXML', 
+		   'cppunit-linux',
+		   ]
 
 if sys.platform == 'cygwin':
 	libadd.extend(['ws2_32',])
