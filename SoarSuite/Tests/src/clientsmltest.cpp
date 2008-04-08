@@ -22,6 +22,11 @@ class ClientSMLTest : public CPPUNIT_NS::TestCase
 {
 	CPPUNIT_TEST_SUITE( ClientSMLTest );	
 
+	// bug submitted by luke.b.miklos@boeing.com
+	// memory grows quickly with time, shouldn't
+	// figure out a way to test this without it being infinite (find the ref count error)
+	//CPPUNIT_TEST( infiniteMemoryTest );
+
 	CPPUNIT_TEST( testEmbeddedDirectInit );
 	CPPUNIT_TEST( testEmbeddedDirect );
 	CPPUNIT_TEST( testEmbedded );
@@ -37,6 +42,8 @@ public:
 	void tearDown();	
 
 protected:
+	void infiniteMemoryTest();
+	
 	void testEmbeddedDirectInit();
 	void testEmbeddedDirect();
 	void testEmbedded();
@@ -47,6 +54,9 @@ protected:
 
 private:
 	void createKernelAndAgents( bool embedded, bool useClientThread, bool fullyOptimized, bool autoCommit, int port = 12121 );
+
+	void doFullTest();
+
 	std::string getAgentName( int agentIndex );
 	void initAgent( sml::Agent* pAgent );
 	void loadProductions( sml::Agent* pAgent );
@@ -54,7 +64,11 @@ private:
 	void doClientMessageHandlerTest( sml::Agent* pAgent );
 	void doFilterHandlerTest( sml::Agent* pAgent );
 	void doWMETests( sml::Agent* pAgent );
+	void doPatternTest( sml::Agent* pAgent );
+	void doAliasTest( sml::Agent* pAgent );
+	void doXMLTest( sml::Agent* pAgent );
 	void doAgentTest( sml::Agent* pAgent );
+
 	void spawnListener();
 	void cleanUpListener();
 
@@ -158,6 +172,28 @@ void ClientSMLTest::tearDown()
 	}
 }
 
+void ClientSMLTest::doFullTest()
+{
+	for ( int agentCounter = 0 ; agentCounter < numberAgents ; ++agentCounter )
+	{
+		sml::Agent* pAgent = pKernel->GetAgent( getAgentName( agentCounter ).c_str() ) ;
+		CPPUNIT_ASSERT( pAgent != NULL );
+
+		loadProductions( pAgent );
+		doRHSHandlerTest( pAgent );
+		initAgent( pAgent );
+		doClientMessageHandlerTest( pAgent );
+		doFilterHandlerTest( pAgent );
+		initAgent( pAgent );
+		doWMETests( pAgent );
+		initAgent( pAgent );
+		doPatternTest( pAgent );
+		doAliasTest( pAgent ) ;
+		doXMLTest( pAgent ) ;
+		doAgentTest( pAgent ) ;
+	}
+}
+
 void ClientSMLTest::testEmbeddedDirectInit()
 {
 	numberAgents = 1;
@@ -177,21 +213,7 @@ void ClientSMLTest::testEmbeddedDirect()
 	numberAgents = 1;
 	createKernelAndAgents(true, true, true, true);
 
-	for ( int agentCounter = 0 ; agentCounter < numberAgents ; ++agentCounter )
-	{
-		sml::Agent* pAgent = pKernel->GetAgent( getAgentName( agentCounter ).c_str() ) ;
-		CPPUNIT_ASSERT( pAgent != NULL );
-
-		loadProductions( pAgent );
-		doRHSHandlerTest( pAgent );
-		initAgent( pAgent );
-		doClientMessageHandlerTest( pAgent );
-		doFilterHandlerTest( pAgent );
-		initAgent( pAgent );
-		doWMETests( pAgent );
-		initAgent( pAgent );
-		doAgentTest( pAgent ) ;
-	}
+	doFullTest();
 }
 
 void ClientSMLTest::testEmbedded()
@@ -199,21 +221,7 @@ void ClientSMLTest::testEmbedded()
 	numberAgents = 1;
 	createKernelAndAgents(true, true, false, true);
 
-	for ( int agentCounter = 0 ; agentCounter < numberAgents ; ++agentCounter )
-	{
-		sml::Agent* pAgent = pKernel->GetAgent( getAgentName( agentCounter ).c_str() ) ;
-		CPPUNIT_ASSERT( pAgent != NULL );
-
-		loadProductions( pAgent );
-		doRHSHandlerTest( pAgent );
-		initAgent( pAgent );
-		doClientMessageHandlerTest( pAgent );
-		doFilterHandlerTest( pAgent );
-		initAgent( pAgent );
-		doWMETests( pAgent );
-		initAgent( pAgent );
-		doAgentTest( pAgent ) ;
-	}
+	doFullTest();
 }
 
 void ClientSMLTest::testNewThread()
@@ -221,21 +229,7 @@ void ClientSMLTest::testNewThread()
 	numberAgents = 1;
 	createKernelAndAgents(true, false, false, true);
 
-	for ( int agentCounter = 0 ; agentCounter < numberAgents ; ++agentCounter )
-	{
-		sml::Agent* pAgent = pKernel->GetAgent( getAgentName( agentCounter ).c_str() ) ;
-		CPPUNIT_ASSERT( pAgent != NULL );
-
-		loadProductions( pAgent );
-		doRHSHandlerTest( pAgent );
-		initAgent( pAgent );
-		doClientMessageHandlerTest( pAgent );
-		doFilterHandlerTest( pAgent );
-		initAgent( pAgent );
-		doWMETests( pAgent );
-		initAgent( pAgent );
-		doAgentTest( pAgent ) ;
-	}
+	doFullTest();
 }
 
 void ClientSMLTest::testNewThreadNoAutoCommit()
@@ -243,21 +237,7 @@ void ClientSMLTest::testNewThreadNoAutoCommit()
 	numberAgents = 1;
 	createKernelAndAgents(true, false, false, false);
 
-	for ( int agentCounter = 0 ; agentCounter < numberAgents ; ++agentCounter )
-	{
-		sml::Agent* pAgent = pKernel->GetAgent( getAgentName( agentCounter ).c_str() ) ;
-		CPPUNIT_ASSERT( pAgent != NULL );
-
-		loadProductions( pAgent );
-		doRHSHandlerTest( pAgent );
-		initAgent( pAgent );
-		doClientMessageHandlerTest( pAgent );
-		doFilterHandlerTest( pAgent );
-		initAgent( pAgent );
-		doWMETests( pAgent );
-		initAgent( pAgent );
-		doAgentTest( pAgent ) ;
-	}
+	doFullTest();
 }
 
 void ClientSMLTest::testRemote()
@@ -270,21 +250,7 @@ void ClientSMLTest::testRemote()
 	numberAgents = 1;
 	createKernelAndAgents( false, false, false, true );
 
-	for ( int agentCounter = 0 ; agentCounter < numberAgents ; ++agentCounter )
-	{
-		sml::Agent* pAgent = pKernel->GetAgent( getAgentName( agentCounter ).c_str() ) ;
-		CPPUNIT_ASSERT( pAgent != NULL );
-
-		loadProductions( pAgent );
-		doRHSHandlerTest( pAgent );
-		initAgent( pAgent );
-		doClientMessageHandlerTest( pAgent );
-		doFilterHandlerTest( pAgent );
-		initAgent( pAgent );
-		doWMETests( pAgent );
-		initAgent( pAgent );
-		doAgentTest( pAgent ) ;
-	}
+	doFullTest();
 
 	if ( verbose ) std::cout << "Test complete." << std::endl;
 }
@@ -299,23 +265,33 @@ void ClientSMLTest::testRemoteNoAutoCommit()
 	numberAgents = 1;
 	createKernelAndAgents( false, false, false, false );
 
-	for ( int agentCounter = 0 ; agentCounter < numberAgents ; ++agentCounter )
-	{
-		sml::Agent* pAgent = pKernel->GetAgent( getAgentName( agentCounter ).c_str() ) ;
-		CPPUNIT_ASSERT( pAgent != NULL );
-
-		loadProductions( pAgent );
-		doRHSHandlerTest( pAgent );
-		initAgent( pAgent );
-		doClientMessageHandlerTest( pAgent );
-		doFilterHandlerTest( pAgent );
-		initAgent( pAgent );
-		doWMETests( pAgent );
-		initAgent( pAgent );
-		doAgentTest( pAgent ) ;
-	}
+	doFullTest();
 
 	if ( verbose ) std::cout << "Test complete." << std::endl;
+}
+
+void ClientSMLTest::infiniteMemoryTest()
+{
+	numberAgents = 1;
+	createKernelAndAgents(true, true, true, true);
+
+	sml::Agent* pAgent = pKernel->GetAgent( getAgentName( 0 ).c_str() ) ;
+	CPPUNIT_ASSERT( pAgent != NULL );
+
+	pAgent->ExecuteCommandLine("waitsnc --on");
+	sml::Identifier* pInputLink = pAgent->GetInputLink();
+	for(;;)
+	{
+		//add new WME & it's children
+		sml::Identifier* pRootWME       = pAgent->CreateIdWME( pInputLink, "RootWME" ) ;
+		// duplicated creating and destroying child element instead of root element
+
+		//Run the agent for 1 cycle
+		pAgent->RunSelf(1);
+
+		//delete the new WME
+		CPPUNIT_ASSERT( pAgent->DestroyWME( pRootWME ) );
+	}
 }
 
 void ClientSMLTest::spawnListener()
@@ -642,17 +618,25 @@ void ClientSMLTest::doWMETests( sml::Agent* pAgent )
 	//pAgent->Commit() ;
 }
 
-void ClientSMLTest::doAgentTest( sml::Agent* pAgent )
+void ClientSMLTest::doPatternTest( sml::Agent* pAgent )
 {
 	// Throw in a pattern as a test
 	std::string pattern = pAgent->ExecuteCommandLine( "print -i (s1 ^* *)" ) ;
 	CPPUNIT_ASSERT_MESSAGE( "print -i (s1 ^* *)", pAgent->GetLastCommandLineResult() );
+}
 
-	CPPUNIT_ASSERT( pKernel->ExpandCommandLine( "p s1" ) );
+void ClientSMLTest::doAliasTest( sml::Agent* pAgent )
+{
+	CPPUNIT_ASSERT( pKernel->ExpandCommandLine( "p s1" ) );	// test for null first
+	CPPUNIT_ASSERT( std::string( pKernel->ExpandCommandLine( "p s1" ) ) == "print s1" );
+
 	CPPUNIT_ASSERT( pKernel->IsRunCommand( "d 3" ) );
 	CPPUNIT_ASSERT( pKernel->IsRunCommand( "e 5" ) );
 	CPPUNIT_ASSERT( pKernel->IsRunCommand( "run -d 10" ) );
+}
 
+void ClientSMLTest::doXMLTest( sml::Agent* pAgent )
+{
 	// Test calling CommandLineXML.
 	sml::ClientAnalyzedXML xml ;
 	CPPUNIT_ASSERT( pKernel->ExecuteCommandLineXML( "set-library-location", NULL, &xml ) );
@@ -689,7 +673,10 @@ void ClientSMLTest::doAgentTest( sml::Agent* pAgent )
 		wmeChild.DeleteString( wmeString ) ;
 	}
 	xml2.DeleteString(xmlString) ;
+}
 
+void ClientSMLTest::doAgentTest( sml::Agent* pAgent )
+{
 	// Test that we get a callback after the decision cycle runs
 	// We'll pass in an "int" and use it to count decisions (just as an example of passing user data around)
 	int count( 0 );
