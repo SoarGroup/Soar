@@ -54,7 +54,7 @@ int SimpleListener::run()
 	pKernel->SetConnectionInfo( "listener", "ready", "ready" );
 
 	// Register here so we can test the order that RHS functions are called
-	pKernel->AddRhsFunction( "test-rhs", &listenerRhsFunctionHandler, 0 ) ;
+	//pKernel->AddRhsFunction( "test-rhs", &listenerRhsFunctionHandler, 0 ) ;
 
 	// register for this so we know when to stop
 	pKernel->RegisterForClientMessageEvent( "test-listener", SimpleListener::MyClientMessageHandler, 0 ) ;
@@ -81,7 +81,8 @@ int SimpleListener::run()
 		sml::Sleep(pauseSecs, pauseMsecs) ;
 	}
 
-	delete pKernel ;
+	pKernel->Shutdown();	// this is technically redundant
+	delete pKernel ;		// since this calls it
 
 	//std::cout << "SimpleListener done." << std::endl;
 
