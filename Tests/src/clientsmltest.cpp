@@ -9,6 +9,9 @@
 #include "sml_Connection.h"
 #include "sml_Client.h"
 #include "sml_Utils.h"
+#include "thread_Event.h"
+
+#include "handlers.h"
 
 #ifndef _WIN32
 #include <unistd.h>
@@ -42,30 +45,15 @@ protected:
 	void testRemote();
 	void testRemoteNoAutoCommit();
 
-public:
-	// callbacks
-	static void MyShutdownHandler(sml::smlSystemEventId id, void* pUserData, sml::Kernel* pKernel);
-	static void MyDeletionHandler(sml::smlAgentEventId id, void* pUserData, sml::Agent* pAgent);
-	static void MySystemEventHandler( sml::smlSystemEventId id, void* pUserData, sml::Kernel* pKernel );
-	static void MyCreationHandler( sml::smlAgentEventId id, void* pUserData, sml::Agent* pAgent );
-	static void MyEchoEventHandler( sml::smlPrintEventId id, void* pUserData, sml::Agent* pAgent, char const* pMsg );
-	static void MyProductionHandler( sml::smlProductionEventId id, void* pUserData, sml::Agent* pAgent, char const* pProdName, char const* pInstantiation );
-	static std::string MyClientMessageHandler( sml::smlRhsEventId id, void* pUserData, sml::Agent* pAgent, char const* pMessageType, char const* pMessage);
-	static std::string MyFilterHandler( sml::smlRhsEventId id, void* pUserData, sml::Agent* pAgent, char const* pMessageType, char const* pCommandLine);
-	static void MyRunEventHandler( sml::smlRunEventId id, void* pUserData, sml::Agent* pAgent, sml::smlPhase phase);
-	static void MyUpdateEventHandler( sml::smlUpdateEventId id, void* pUserData, sml::Kernel* pKernel, sml::smlRunFlags runFlags);
-	static void MyOutputNotificationHandler(void* pUserData, sml::Agent* pAgent);
-	static void MyRunSelfRemovingHandler( sml::smlRunEventId id, void* pUserData, sml::Agent* pAgent, sml::smlPhase phase);
-	static std::string MyStringEventHandler( sml::smlStringEventId id, void* pUserData, sml::Kernel* pKernel, char const* pData );
-	static void MyDuplicateRunEventHandler( sml::smlRunEventId id, void* pUserData, sml::Agent* pAgent, sml::smlPhase phase );
-	static void MyPrintEventHandler( sml::smlPrintEventId id, void* pUserData, sml::Agent* pAgent, char const* pMessage );
-	static void MyXMLEventHandler( sml::smlXMLEventId id, void* pUserData, sml::Agent* pAgent, sml::ClientXML* pXML );
-	static void MyInterruptHandler(sml::smlRunEventId id, void* pUserData, sml::Agent* pAgent, sml::smlPhase phase);
-	static std::string MyRhsFunctionHandler(sml::smlRhsEventId id, void* pUserData, sml::Agent* pAgent, char const* pFunctionName, char const* pArgument);
-
 private:
-	void createKernel( bool embedded, bool useClientThread, bool fullyOptimized, bool simpleInitSoar, bool autoCommit, int port = 12121 );
-	void doTest();
+	void createKernelAndAgents( bool embedded, bool useClientThread, bool fullyOptimized, bool autoCommit, int port = 12121 );
+	std::string getAgentName( int agentIndex );
+	void initAgent( sml::Agent* pAgent );
+	void loadProductions( sml::Agent* pAgent );
+	void doRHSHandlerTest( sml::Agent* pAgent );
+	void doClientMessageHandlerTest( sml::Agent* pAgent );
+	void doFilterHandlerTest( sml::Agent* pAgent );
+	void doWMETests( sml::Agent* pAgent );
 	void doAgentTest( sml::Agent* pAgent );
 	void spawnListener();
 	void cleanUpListener();
@@ -76,7 +64,6 @@ private:
 
 	sml::Kernel* pKernel;
 	int numberAgents; // This number determines how many agents are created.  We create <n>, test <n> and then delete <n>
-	bool simpleInitSoar;
 	bool remote;
 
 #ifdef _WIN32
@@ -98,27 +85,10 @@ void ClientSMLTest::setUp()
 {
 	pKernel = NULL;
 	numberAgents = 1;
-	simpleInitSoar = false;
 	clientXMLStorage = NULL;
 	remote = false;
 
 	// kernel initialized in test
-}
-
-void ClientSMLTest::MyShutdownHandler(sml::smlSystemEventId, void* pUserData, sml::Kernel*)
-{
-	if ( verbose ) std::cout << "Received before system shutdown event" << std::endl ;
-	CPPUNIT_ASSERT( pUserData );
-	bool* pHandlerReceived = static_cast< bool* >( pUserData );
-	*pHandlerReceived = true;
-}
-
-void ClientSMLTest::MyDeletionHandler(sml::smlAgentEventId, void* pUserData, sml::Agent*)
-{
-	if ( verbose ) std::cout << "Received notification before agent was deleted" << std::endl ;
-	CPPUNIT_ASSERT( pUserData );
-	bool* pHandlerReceived = static_cast< bool* >( pUserData );
-	*pHandlerReceived = true;
 }
 
 void ClientSMLTest::tearDown()
@@ -129,10 +99,7 @@ void ClientSMLTest::tearDown()
 	if ( verbose ) std::cout << "Destroy the agent now" << std::endl ;
 	for (int agentDeletions = 0 ; agentDeletions < numberAgents ; agentDeletions++)
 	{
-		std::stringstream name;
-		name << kBaseName << 1 + agentDeletions;
-
-		sml::Agent* pAgent = pKernel->GetAgent( name.str().c_str() ) ;
+		sml::Agent* pAgent = pKernel->GetAgent( getAgentName( agentDeletions ).c_str() ) ;
 		CPPUNIT_ASSERT( pAgent != NULL );
 
 		// The Before_Agent_Destroyed callback is a tricky one so we'll register for it to test it.
@@ -141,7 +108,7 @@ void ClientSMLTest::tearDown()
 		// Interestingly, we don't explicitly unregister this callback because the agent has already been destroyed so
 		// that's another test, that this callback is cleaned up correctly (and automatically).
 		bool deletionHandlerReceived( false );
-		pKernel->RegisterForAgentEvent( sml::smlEVENT_BEFORE_AGENT_DESTROYED, ClientSMLTest::MyDeletionHandler, &deletionHandlerReceived ) ;
+		pKernel->RegisterForAgentEvent( sml::smlEVENT_BEFORE_AGENT_DESTROYED, Handlers::MyDeletionHandler, &deletionHandlerReceived ) ;
 
 		// Explicitly destroy our agent as a test, before we delete the kernel itself.
 		// (Actually, if this is a remote connection we need to do this or the agent
@@ -153,36 +120,26 @@ void ClientSMLTest::tearDown()
 
 	if ( verbose ) std::cout << "Calling shutdown on the kernel now" << std::endl ;
 
-	bool shutdownHandlerReceived( false );
-	pKernel->RegisterForSystemEvent( sml::smlEVENT_BEFORE_SHUTDOWN, ClientSMLTest::MyShutdownHandler, &shutdownHandlerReceived ) ;
-
 	if ( remote )
 	{
+		soar_thread::Event shutdownEvent;
+		pKernel->RegisterForSystemEvent( sml::smlEVENT_BEFORE_SHUTDOWN, Handlers::MyEventShutdownHandler, &shutdownEvent ) ;
+
+		// BUGBUG
+		// ClientSML thread dies inelegantly here spewing forth error messages
+		// about sockets/pipes not being shut down correctly.
 		std::string shutdownResponse = pKernel->SendClientMessage(0, "test-listener", "shutdown") ;
 		CPPUNIT_ASSERT( shutdownResponse == "ok" );	
-		
-		// The kernel, at this point, has to be assumed to be not running.
 
+		CPPUNIT_ASSERT_MESSAGE( "Listener side kernel shutdown failed to fire smlEVENT_BEFORE_SHUTDOWN", shutdownEvent.WaitForEvent(5, 0) );
+
+		// Note, in the remote case, this does not fire smlEVENT_BEFORE_SHUTDOWN
+		// the listener side shutdown does trigger the event when it is deleted, see simplelistener.cpp
 		pKernel->Shutdown() ;
-		// BUGBUG ?
-		// With a remote kernel, we can't both shut it down like this 
-		// (with a client message) and receive a smlEVENT_BEFORE_SHUTDOWN 
-		// event because when the listener shuts itself down it does not 
-		// fire the smlEVENT_BEFORE_SHUTDOWN event handler, because it is
-		// already shutdown. 
-		// I think the client side SML would have to recognize that 
-		// something is waiting to receive that message when Shutdown() 
-		// (above) is called. I'm not sure this is feasable, so this 
-		// might need to just be a known problem/workaround.
-		// We could have the listener sleep for an arbitrary amount of 
-		// time after receiving the shutdown call (above) but this seems
-		// kludgey. How much time to wait? Why not just handle this 
-		// special case on this side since you will have had to have 
-		// written the listener for it to shutdown via user command 
-		// anyway?
-		//CPPUNIT_ASSERT( shutdownHandlerReceived );
-
+		
 	} else {
+		bool shutdownHandlerReceived( false );
+		pKernel->RegisterForSystemEvent( sml::smlEVENT_BEFORE_SHUTDOWN, Handlers::MyBoolShutdownHandler, &shutdownHandlerReceived ) ;
 		pKernel->Shutdown() ;
 		CPPUNIT_ASSERT( shutdownHandlerReceived );
 	}
@@ -204,42 +161,103 @@ void ClientSMLTest::tearDown()
 void ClientSMLTest::testEmbeddedDirectInit()
 {
 	numberAgents = 1;
-	createKernel(true, true, true, true, true);
-	simpleInitSoar = true;
+	createKernelAndAgents(true, true, true, true);
 
-	doTest();
+	for ( int agentCounter = 0 ; agentCounter < numberAgents ; ++agentCounter )
+	{
+		sml::Agent* pAgent = pKernel->GetAgent( getAgentName( agentCounter ).c_str() ) ;
+		CPPUNIT_ASSERT( pAgent != NULL );
+
+		initAgent( pAgent );
+	}
 }
 
 void ClientSMLTest::testEmbeddedDirect()
 {
 	numberAgents = 1;
-	createKernel(true, true, true, false, true);
+	createKernelAndAgents(true, true, true, true);
 
-	doTest();
+	for ( int agentCounter = 0 ; agentCounter < numberAgents ; ++agentCounter )
+	{
+		sml::Agent* pAgent = pKernel->GetAgent( getAgentName( agentCounter ).c_str() ) ;
+		CPPUNIT_ASSERT( pAgent != NULL );
+
+		loadProductions( pAgent );
+		doRHSHandlerTest( pAgent );
+		initAgent( pAgent );
+		doClientMessageHandlerTest( pAgent );
+		doFilterHandlerTest( pAgent );
+		initAgent( pAgent );
+		doWMETests( pAgent );
+		initAgent( pAgent );
+		doAgentTest( pAgent ) ;
+	}
 }
 
 void ClientSMLTest::testEmbedded()
 {
 	numberAgents = 1;
-	createKernel(true, true, false, false, true);
+	createKernelAndAgents(true, true, false, true);
 
-	doTest();
+	for ( int agentCounter = 0 ; agentCounter < numberAgents ; ++agentCounter )
+	{
+		sml::Agent* pAgent = pKernel->GetAgent( getAgentName( agentCounter ).c_str() ) ;
+		CPPUNIT_ASSERT( pAgent != NULL );
+
+		loadProductions( pAgent );
+		doRHSHandlerTest( pAgent );
+		initAgent( pAgent );
+		doClientMessageHandlerTest( pAgent );
+		doFilterHandlerTest( pAgent );
+		initAgent( pAgent );
+		doWMETests( pAgent );
+		initAgent( pAgent );
+		doAgentTest( pAgent ) ;
+	}
 }
 
 void ClientSMLTest::testNewThread()
 {
 	numberAgents = 1;
-	createKernel(true, false, false, false, true);
+	createKernelAndAgents(true, false, false, true);
 
-	doTest();
+	for ( int agentCounter = 0 ; agentCounter < numberAgents ; ++agentCounter )
+	{
+		sml::Agent* pAgent = pKernel->GetAgent( getAgentName( agentCounter ).c_str() ) ;
+		CPPUNIT_ASSERT( pAgent != NULL );
+
+		loadProductions( pAgent );
+		doRHSHandlerTest( pAgent );
+		initAgent( pAgent );
+		doClientMessageHandlerTest( pAgent );
+		doFilterHandlerTest( pAgent );
+		initAgent( pAgent );
+		doWMETests( pAgent );
+		initAgent( pAgent );
+		doAgentTest( pAgent ) ;
+	}
 }
 
 void ClientSMLTest::testNewThreadNoAutoCommit()
 {
 	numberAgents = 1;
-	createKernel(true, false, false, false, false);
+	createKernelAndAgents(true, false, false, false);
 
-	doTest();
+	for ( int agentCounter = 0 ; agentCounter < numberAgents ; ++agentCounter )
+	{
+		sml::Agent* pAgent = pKernel->GetAgent( getAgentName( agentCounter ).c_str() ) ;
+		CPPUNIT_ASSERT( pAgent != NULL );
+
+		loadProductions( pAgent );
+		doRHSHandlerTest( pAgent );
+		initAgent( pAgent );
+		doClientMessageHandlerTest( pAgent );
+		doFilterHandlerTest( pAgent );
+		initAgent( pAgent );
+		doWMETests( pAgent );
+		initAgent( pAgent );
+		doAgentTest( pAgent ) ;
+	}
 }
 
 void ClientSMLTest::testRemote()
@@ -250,9 +268,23 @@ void ClientSMLTest::testRemote()
 	if ( verbose ) std::cout << "Spawned listener." << std::endl;
 
 	numberAgents = 1;
-	createKernel( false, false, false, false, true );
+	createKernelAndAgents( false, false, false, true );
 
-	doTest();
+	for ( int agentCounter = 0 ; agentCounter < numberAgents ; ++agentCounter )
+	{
+		sml::Agent* pAgent = pKernel->GetAgent( getAgentName( agentCounter ).c_str() ) ;
+		CPPUNIT_ASSERT( pAgent != NULL );
+
+		loadProductions( pAgent );
+		doRHSHandlerTest( pAgent );
+		initAgent( pAgent );
+		doClientMessageHandlerTest( pAgent );
+		doFilterHandlerTest( pAgent );
+		initAgent( pAgent );
+		doWMETests( pAgent );
+		initAgent( pAgent );
+		doAgentTest( pAgent ) ;
+	}
 
 	if ( verbose ) std::cout << "Test complete." << std::endl;
 }
@@ -265,9 +297,23 @@ void ClientSMLTest::testRemoteNoAutoCommit()
 	if ( verbose ) std::cout << "Spawned listener." << std::endl;
 
 	numberAgents = 1;
-	createKernel( false, false, false, false, false );
+	createKernelAndAgents( false, false, false, false );
 
-	doTest();
+	for ( int agentCounter = 0 ; agentCounter < numberAgents ; ++agentCounter )
+	{
+		sml::Agent* pAgent = pKernel->GetAgent( getAgentName( agentCounter ).c_str() ) ;
+		CPPUNIT_ASSERT( pAgent != NULL );
+
+		loadProductions( pAgent );
+		doRHSHandlerTest( pAgent );
+		initAgent( pAgent );
+		doClientMessageHandlerTest( pAgent );
+		doFilterHandlerTest( pAgent );
+		initAgent( pAgent );
+		doWMETests( pAgent );
+		initAgent( pAgent );
+		doAgentTest( pAgent ) ;
+	}
 
 	if ( verbose ) std::cout << "Test complete." << std::endl;
 }
@@ -330,7 +376,7 @@ void ClientSMLTest::cleanUpListener()
 #endif // _WIN32
 }
 
-void ClientSMLTest::createKernel( bool embedded, bool useClientThread, bool fullyOptimized, bool simpleInitSoar, bool autoCommit, int port )
+void ClientSMLTest::createKernelAndAgents( bool embedded, bool useClientThread, bool fullyOptimized, bool autoCommit, int port )
 {
 	pKernel = embedded ?
 		(useClientThread ? sml::Kernel::CreateKernelInCurrentThread( sml::Kernel::GetDefaultLibraryName(), fullyOptimized, sml::Kernel::GetDefaultPort())
@@ -341,45 +387,7 @@ void ClientSMLTest::createKernel( bool embedded, bool useClientThread, bool full
 	CPPUNIT_ASSERT_MESSAGE( pKernel->GetLastErrorDescription(), !pKernel->HadError() );
 
 	pKernel->SetAutoCommit( false ) ;
-}
 
-void ClientSMLTest::MySystemEventHandler( sml::smlSystemEventId, void*, sml::Kernel* )
-{
-	// see comments above registration line
-	if ( verbose ) std::cout << "Received kernel event" << std::endl ;
-}
-
-void ClientSMLTest::MyCreationHandler( sml::smlAgentEventId, void* pUserData, sml::Agent* )
-{
-	if ( verbose ) std::cout << "Received notification when agent was created" << std::endl ;
-	CPPUNIT_ASSERT( pUserData );
-	bool* pHandlerReceived = static_cast< bool* >( pUserData );
-	*pHandlerReceived = true;
-}
-
-void ClientSMLTest::MyEchoEventHandler( sml::smlPrintEventId, void* pUserData, sml::Agent*, char const* pMsg )
-{
-	if ( verbose && pMsg )
-		std::cout << " ----> Received an echo event with contents: " << pMsg << std::endl ;    
-	CPPUNIT_ASSERT( pMsg != NULL );
-	CPPUNIT_ASSERT( pUserData );
-	bool* pHandlerReceived = static_cast< bool* >( pUserData );
-	*pHandlerReceived = true;
-}
-
-void ClientSMLTest::MyProductionHandler( sml::smlProductionEventId id, void* pUserData, sml::Agent*, char const*, char const* )
-{
-	CPPUNIT_ASSERT( pUserData );
-	int* pInt = static_cast< int* >( pUserData );
-
-	// Increase the count
-	*pInt += 1 ;
-
-	CPPUNIT_ASSERT( id == sml::smlEVENT_BEFORE_PRODUCTION_REMOVED );
-}
-
-void ClientSMLTest::doTest()
-{
 	// Set this to true to give us lots of extra debug information on remote clients
 	// (useful in a test app like this).
     // pKernel->SetTraceCommunications(true) ;
@@ -393,290 +401,121 @@ void ClientSMLTest::doTest()
 	// Register a kernel event handler...unfortunately I can't seem to find an event
 	// that gSKI actually fires, so this handler won't get called.  Still, the code is there
 	// on the SML side should anyone ever hook up this type of event inside the kernel/gSKI...
-	pKernel->RegisterForSystemEvent( sml::smlEVENT_AFTER_RESTART, ClientSMLTest::MySystemEventHandler, NULL ) ;
+	pKernel->RegisterForSystemEvent( sml::smlEVENT_AFTER_RESTART, Handlers::MySystemEventHandler, NULL ) ;
 
 	bool creationHandlerReceived( false );
-	pKernel->RegisterForAgentEvent( sml::smlEVENT_AFTER_AGENT_CREATED, ClientSMLTest::MyCreationHandler, &creationHandlerReceived ) ;
+	pKernel->RegisterForAgentEvent( sml::smlEVENT_AFTER_AGENT_CREATED, Handlers::MyCreationHandler, &creationHandlerReceived ) ;
 	
 	// Report the number of agents (always 0 unless this is a remote connection to a CLI or some such)
 	CPPUNIT_ASSERT( pKernel->GetNumberAgents() == 0 );
 
-	// PHASE ONE: Agent creation
-	for ( int agentCounter = 0 ; agentCounter < numberAgents ; agentCounter++ )
+	for ( int agentCounter = 0 ; agentCounter < numberAgents ; ++agentCounter )
 	{
-		std::stringstream name;
-		name << kBaseName << 1 + agentCounter;
-
 		// NOTE: We don't delete the agent pointer.  It's owned by the kernel
-		sml::Agent* pAgent = pKernel->CreateAgent( name.str().c_str() ) ;
+		sml::Agent* pAgent = pKernel->CreateAgent( getAgentName( agentCounter ).c_str() ) ;
 		CPPUNIT_ASSERT_MESSAGE( pKernel->GetLastErrorDescription(), !pKernel->HadError() );
 		CPPUNIT_ASSERT( pAgent != NULL );
 		CPPUNIT_ASSERT( creationHandlerReceived );
 		creationHandlerReceived = false;
 
-		if (simpleInitSoar) 
-		{
-			sml::Sleep(0, 200) ;
-
-			if ( verbose ) std::cout << "Performing simple init-soar..." << std::endl;
-			pAgent->InitSoar() ;
-
-			sml::Sleep(0, 200) ;
-
-			// that's it for this test
-			return;
-		}
-
-		// TODO boost filesystem
-		std::stringstream path;
-		path << pKernel->GetLibraryLocation() << "/Tests/testsml.soar" ;
-
-		// Listen to the echo of the load
-		bool echoHandlerReceived( false );
-		int echoCallback = pAgent->RegisterForPrintEvent( sml::smlEVENT_ECHO, ClientSMLTest::MyEchoEventHandler, &echoHandlerReceived ) ;
-		
-		pAgent->LoadProductions( path.str().c_str(), true ) ;
-		CPPUNIT_ASSERT_MESSAGE( "LoadProductions", pAgent->GetLastCommandLineResult() );
-		// BUGBUG: this does not work
-		//CPPUNIT_ASSERT( echoHandlerReceived );
-		echoHandlerReceived = false;
-		CPPUNIT_ASSERT_MESSAGE( pAgent->GetLastErrorDescription(), pAgent->UnregisterForPrintEvent(echoCallback) );
-		CPPUNIT_ASSERT_MESSAGE( pAgent->GetLastErrorDescription(), !pAgent->HadError() );
-
-		if ( verbose ) std::cout << "Loaded productions" << std::endl ;
-
-		CPPUNIT_ASSERT( pAgent->IsProductionLoaded( "apply*move" ) );
-		CPPUNIT_ASSERT( !pAgent->IsProductionLoaded( "made*up*name" ) );
-
-		int excisedCount( 0 );
-		int prodCall = pAgent->RegisterForProductionEvent( sml::smlEVENT_BEFORE_PRODUCTION_REMOVED, ClientSMLTest::MyProductionHandler, &excisedCount ) ;
-
-		pAgent->ExecuteCommandLine( "excise --all" ) ;
-		CPPUNIT_ASSERT_MESSAGE( "excise --all", pAgent->GetLastCommandLineResult() );
-		CPPUNIT_ASSERT( excisedCount > 0 );
-
-		pAgent->LoadProductions( path.str().c_str(), true ) ;
-		CPPUNIT_ASSERT_MESSAGE( "LoadProductions", pAgent->GetLastCommandLineResult() );
-		CPPUNIT_ASSERT( !echoHandlerReceived );	// We unregistered this
-
-		CPPUNIT_ASSERT( pAgent->UnregisterForProductionEvent( prodCall ) );
+		// a number of tests below depend on running full decision cycles.
+		pAgent->ExecuteCommandLine( "set-stop-phase --before --input" ) ;
+		CPPUNIT_ASSERT_MESSAGE( "set-stop-phase --before --input", pAgent->GetLastCommandLineResult() );
 	}
 
-	// PHASE TWO: Agent tests
-	for (int agentTests = 0 ; agentTests < numberAgents ; agentTests++)
-	{
-		std::stringstream name;
-		name << kBaseName << 1 + agentTests;
-
-		sml::Agent* pAgent = pKernel->GetAgent( name.str().c_str() ) ;
-		CPPUNIT_ASSERT( pAgent != NULL );
-
-		// Run a suite of tests on this agent
-		doAgentTest( pAgent ) ;
-	}
+	CPPUNIT_ASSERT( pKernel->GetNumberAgents() == numberAgents );
 }
 
-std::string ClientSMLTest::MyClientMessageHandler( sml::smlRhsEventId, void* pUserData, sml::Agent*, char const*, char const* pMessage)
+void ClientSMLTest::initAgent( sml::Agent* pAgent )
 {
-	std::stringstream res;
-	res << "handler-message" << pMessage;
-
-	CPPUNIT_ASSERT( pUserData );
-	bool* pHandlerReceived = static_cast< bool* >( pUserData );
-	*pHandlerReceived = true;
-
-	return res.str() ;
+	if ( verbose ) std::cout << "Performing simple init-soar..." << std::endl;
+	pAgent->InitSoar() ;
+	CPPUNIT_ASSERT_MESSAGE( "init-soar", pAgent->GetLastCommandLineResult() );
 }
 
-// This is a very dumb filter--it adds "--depth 2" to all commands passed to it.
-std::string ClientSMLTest::MyFilterHandler( sml::smlRhsEventId, void* pUserData, sml::Agent*, char const*, char const* pCommandLine)
+void ClientSMLTest::loadProductions( sml::Agent* pAgent )
 {
-	if ( verbose ) std::cout << "Received xml " << pCommandLine << std::endl ;
+	// TODO boost filesystem
+	std::stringstream path;
+	path << pKernel->GetLibraryLocation() << "/Tests/testsml.soar" ;
 
-	sml::ElementXML* pXML = sml::ElementXML::ParseXMLFromString( pCommandLine ) ;
-	CPPUNIT_ASSERT( pXML );
-	CPPUNIT_ASSERT( pXML->GetAttribute( sml::sml_Names::kFilterCommand ) );
+	// Listen to the echo of the load
+	bool echoHandlerReceived( false );
+	int echoCallback = pAgent->RegisterForPrintEvent( sml::smlEVENT_ECHO, Handlers::MyEchoEventHandler, &echoHandlerReceived ) ;
+	
+	pAgent->LoadProductions( path.str().c_str(), true ) ;
+	CPPUNIT_ASSERT_MESSAGE( "LoadProductions", pAgent->GetLastCommandLineResult() );
+	// BUGBUG: this does not work
+	//CPPUNIT_ASSERT( echoHandlerReceived );
+	echoHandlerReceived = false;
+	CPPUNIT_ASSERT_MESSAGE( pAgent->GetLastErrorDescription(), pAgent->UnregisterForPrintEvent(echoCallback) );
+	CPPUNIT_ASSERT_MESSAGE( pAgent->GetLastErrorDescription(), !pAgent->HadError() );
 
-	std::stringstream commandLine;
-	commandLine << pXML->GetAttribute( sml::sml_Names::kFilterCommand ) << " --depth 2";
+	if ( verbose ) std::cout << "Loaded productions" << std::endl ;
 
-	// Replace the command attribute in the XML
-	CPPUNIT_ASSERT( pXML->AddAttribute( sml::sml_Names::kFilterCommand, commandLine.str().c_str() ) );
+	CPPUNIT_ASSERT( pAgent->IsProductionLoaded( "apply*move" ) );
+	CPPUNIT_ASSERT( !pAgent->IsProductionLoaded( "made*up*name" ) );
 
-	// Convert the XML back to a string and put it into a std::string ready to return
-	char *pXMLString = pXML->GenerateXMLString(true) ;
-	CPPUNIT_ASSERT( pXMLString );
-	std::string res( pXMLString );
+	int excisedCount( 0 );
+	int prodCall = pAgent->RegisterForProductionEvent( sml::smlEVENT_BEFORE_PRODUCTION_REMOVED, Handlers::MyProductionHandler, &excisedCount ) ;
 
-	pXML->DeleteString( pXMLString );
-	delete pXML ;
+	pAgent->ExecuteCommandLine( "excise --all" ) ;
+	CPPUNIT_ASSERT_MESSAGE( "excise --all", pAgent->GetLastCommandLineResult() );
+	CPPUNIT_ASSERT( excisedCount > 0 );
 
-	CPPUNIT_ASSERT( pUserData );
-	bool* pHandlerReceived = static_cast< bool* >( pUserData );
-	*pHandlerReceived = true;
+	pAgent->LoadProductions( path.str().c_str(), true ) ;
+	CPPUNIT_ASSERT_MESSAGE( "LoadProductions", pAgent->GetLastCommandLineResult() );
+	CPPUNIT_ASSERT( !echoHandlerReceived );	// We unregistered this
 
-	return res ;
+	CPPUNIT_ASSERT( pAgent->UnregisterForProductionEvent( prodCall ) );
 }
 
-void ClientSMLTest::MyRunEventHandler( sml::smlRunEventId, void* pUserData, sml::Agent*, sml::smlPhase)
-{
-	CPPUNIT_ASSERT( pUserData );
-	int* pInt = static_cast< int* >( pUserData );
-
-	// Increase the count
-	*pInt = *pInt + 1 ;
-
-	if ( verbose ) std::cout << "Received an event callback" << std::endl ;
+std::string ClientSMLTest::getAgentName( int agentIndex ) {
+	std::stringstream name;
+	name << kBaseName << 1 + agentIndex;
+	return name.str();
 }
 
-void ClientSMLTest::MyUpdateEventHandler( sml::smlUpdateEventId, void* pUserData, sml::Kernel*, sml::smlRunFlags )
+void ClientSMLTest::doRHSHandlerTest( sml::Agent* pAgent )
 {
-	CPPUNIT_ASSERT( pUserData );
-	int* pInt = static_cast< int* >( pUserData );
-
-	// Increase the count
-	*pInt = *pInt + 1 ;
-
-	if ( verbose ) std::cout << "Received an update callback" << std::endl ;
-}
-
-void ClientSMLTest::MyOutputNotificationHandler(void* pUserData, sml::Agent*)
-{
-	CPPUNIT_ASSERT( pUserData );
-	int* pInt = static_cast< int* >( pUserData );
-
-	// Increase the count
-	*pInt = *pInt + 1 ;
-
-	if ( verbose ) std::cout << "Received an output notification callback" << std::endl ;
-}
-
-void ClientSMLTest::MyRunSelfRemovingHandler( sml::smlRunEventId, void* pUserData, sml::Agent* pAgent, sml::smlPhase)
-{
-	CPPUNIT_ASSERT( pUserData );
-	int* myCallback = static_cast< int* >( pUserData );
-
-	// This callback removes itself from the list of callbacks 
-	// as a test to see if we can do that inside a callback handler.
-	CPPUNIT_ASSERT( *myCallback != -1 );
-	CPPUNIT_ASSERT( pAgent->UnregisterForRunEvent( *myCallback ) );
-
-	*myCallback = -1 ;
-}
-
-std::string ClientSMLTest::MyStringEventHandler( sml::smlStringEventId id, void* pUserData, sml::Kernel*, char const* )
-{
-	CPPUNIT_ASSERT( pUserData );
-	bool* pHandlerReceived = static_cast< bool* >( pUserData );
-	*pHandlerReceived = true;
-
-	// new: string events need to return empty string on success
-	return "";
-}
-
-// Register a second handler for the same event, to make sure that's ok.
-void ClientSMLTest::MyDuplicateRunEventHandler( sml::smlRunEventId, void* pUserData, sml::Agent*, sml::smlPhase )
-{
-	CPPUNIT_ASSERT( pUserData );
-	int* pInt = static_cast< int* >( pUserData );
-	CPPUNIT_ASSERT( *pInt == 25 );
-}
-
-void ClientSMLTest::MyPrintEventHandler( sml::smlPrintEventId, void* pUserData, sml::Agent*, char const* pMessage )
-{
-	// In this case the user data is a string we're building up
-	CPPUNIT_ASSERT( pUserData );
-	std::stringstream* pTrace = static_cast< std::stringstream* >( pUserData );
-
-	(*pTrace) << pMessage ;
-}
-
-void ClientSMLTest::MyXMLEventHandler( sml::smlXMLEventId, void* pUserData, sml::Agent*, sml::ClientXML* pXML )
-{
-	// pXML should be some structured trace output.
-	// Let's examine it a bit.
-	// We'll start by turning it back into XML so we can look at it in the debugger.
-	char* pStr = pXML->GenerateXMLString( true ) ;
-	CPPUNIT_ASSERT( pStr );
-
-	// This will always succeed.  If this isn't really trace XML
-	// the methods checking on tag names etc. will just fail
-	sml::ClientTraceXML* pRootXML = pXML->ConvertToTraceXML() ;
-	CPPUNIT_ASSERT( pRootXML );
-
-	// The root object is just a <trace> tag.  The substance is in the children
-	// so we'll get the first child which should exist.
-	sml::ClientTraceXML childXML ;
-	CPPUNIT_ASSERT( pRootXML->GetChild( &childXML, 0 ) );
-	sml::ClientTraceXML* pTraceXML = &childXML ;
-
-	if (pTraceXML->IsTagState())
-	{
-		CPPUNIT_ASSERT( pTraceXML->GetDecisionCycleCount() );
-		std::string count = pTraceXML->GetDecisionCycleCount() ;
-
-		CPPUNIT_ASSERT( pTraceXML->GetStateID() );
-		std::string stateID = pTraceXML->GetStateID() ;
-
-		CPPUNIT_ASSERT( pTraceXML->GetImpasseObject() );
-		std::string impasseObject = pTraceXML->GetImpasseObject() ;
-
-		CPPUNIT_ASSERT( pTraceXML->GetImpasseType() );
-		std::string impasseType = pTraceXML->GetImpasseType() ;
-
-		if ( verbose ) std::cout << "Trace ==> " << count << ":" << stateID << " (" << impasseObject << " " << impasseType << ")" << std::endl ;
-	}
-
-	// Make a copy of the object we've been passed which should remain valid
-	// after the event handler has completed.  We only keep the last message
-	// in this test.  This is a stress test for our memory allocation logic.
-	// We're not allowed to keep pXML that we're passed, but we can copy it and keep the copy.
-	// (The copy is very efficient, the underlying object is ref-counted).
-	if (clientXMLStorage != NULL)
-		delete clientXMLStorage ;
-	clientXMLStorage = new sml::ClientXML(pXML) ;
-
-	pXML->DeleteString( pStr ) ;
-
-	CPPUNIT_ASSERT( pUserData );
-	bool* pHandlerReceived = static_cast< bool* >( pUserData );
-	*pHandlerReceived = true;
-}
-
-void ClientSMLTest::MyInterruptHandler(sml::smlRunEventId, void* pUserData, sml::Agent* pAgent, sml::smlPhase)
-{
-	pAgent->GetKernel()->StopAllAgents() ;
-
-	CPPUNIT_ASSERT( pUserData );
-	bool* pHandlerReceived = static_cast< bool* >( pUserData );
-	*pHandlerReceived = true;
-}
-
-std::string ClientSMLTest::MyRhsFunctionHandler(sml::smlRhsEventId, void*, sml::Agent*, char const*, char const* pArgument)
-{
-	if ( verbose ) std::cout << "Received rhs function call with argument: " << pArgument << std::endl ;
-
-	std::string res = "my rhs result " ;
-	res += pArgument ;
-
-	return res ;
-}
-
-void ClientSMLTest::doAgentTest( sml::Agent* pAgent )
-{
-	// a number of tests below depend on running full decision cycles.
-	pAgent->ExecuteCommandLine( "set-stop-phase --before --input" ) ;
-	CPPUNIT_ASSERT_MESSAGE( "set-stop-phase --before --input", pAgent->GetLastCommandLineResult() );
+	bool rhsFunctionHandlerReceived( false );
 
 	// Record a RHS function
-	int callback_rhs1 = pKernel->AddRhsFunction("test-rhs", ClientSMLTest::MyRhsFunctionHandler, 0) ; 
-	int callback_rhs_dup = pKernel->AddRhsFunction("test-rhs", ClientSMLTest::MyRhsFunctionHandler, 0) ;
+	int callback_rhs1 = pKernel->AddRhsFunction( "test-rhs", Handlers::MyRhsFunctionHandler, &rhsFunctionHandlerReceived ) ; 
+	int callback_rhs_dup = pKernel->AddRhsFunction( "test-rhs", Handlers::MyRhsFunctionHandler, &rhsFunctionHandlerReceived ) ;
 
 	CPPUNIT_ASSERT_MESSAGE( "Duplicate RHS function registration should be detected and be ignored", callback_rhs_dup == callback_rhs1 );
 
+	// need this to fire production that calls test-rhs
+	sml::Identifier* pSquare = pAgent->CreateIdWME(pAgent->GetInputLink(), "square") ;
+	CPPUNIT_ASSERT( pSquare );
+	sml::StringElement* pEmpty = pAgent->CreateStringWME(pSquare, "content", "EMPTY") ;
+	CPPUNIT_ASSERT( pEmpty );
+	sml::IntElement* pRow = pAgent->CreateIntWME(pSquare, "row", 1) ;
+	CPPUNIT_ASSERT( pRow );
+	sml::IntElement* pCol = pAgent->CreateIntWME(pSquare, "col", 2) ;
+	CPPUNIT_ASSERT( pCol );
+	CPPUNIT_ASSERT( pAgent->Commit() );
+
+	pKernel->RunAllAgents( 1 ) ;
+	CPPUNIT_ASSERT_MESSAGE( "RunAllAgents", pAgent->GetLastCommandLineResult() );
+
+	CPPUNIT_ASSERT( rhsFunctionHandlerReceived );
+
+	CPPUNIT_ASSERT( pKernel->RemoveRhsFunction(callback_rhs1) );
+
+	// Re-add it without the bool that is getting popped off the stack
+	CPPUNIT_ASSERT( pKernel->AddRhsFunction( "test-rhs", Handlers::MyRhsFunctionHandler, 0 ) ); 
+
+	CPPUNIT_ASSERT( pAgent->DestroyWME( pSquare ) );
+	CPPUNIT_ASSERT( pAgent->Commit() );
+}
+
+void ClientSMLTest::doClientMessageHandlerTest( sml::Agent* pAgent )
+{
 	// Record a client message handler
 	bool clientHandlerReceived( false );
-	int clientCallback = pKernel->RegisterForClientMessageEvent( "test-client", ClientSMLTest::MyClientMessageHandler, &clientHandlerReceived ) ;
+	int clientCallback = pKernel->RegisterForClientMessageEvent( "test-client", Handlers::MyClientMessageHandler, &clientHandlerReceived ) ;
 
 	// This is a bit dopey--but we'll send a message to ourselves for this test
 	std::string response = pKernel->SendClientMessage(pAgent, "test-client", "test-message") ;
@@ -685,33 +524,34 @@ void ClientSMLTest::doAgentTest( sml::Agent* pAgent )
 	CPPUNIT_ASSERT( response == "handler-messagetest-message" );
 
 	CPPUNIT_ASSERT( pKernel->UnregisterForClientMessageEvent( clientCallback ) );
+}
 
+void ClientSMLTest::doFilterHandlerTest( sml::Agent* pAgent )
+{
 	// Record a filter
 	bool filterHandlerReceived( false );
-	int clientFilter = pKernel->RegisterForClientMessageEvent( sml::sml_Names::kFilterName, ClientSMLTest::MyFilterHandler, &filterHandlerReceived ) ;
+	int clientFilter = pKernel->RegisterForClientMessageEvent( sml::sml_Names::kFilterName, Handlers::MyFilterHandler, &filterHandlerReceived ) ;
 
 	// Our filter adds "--depth 2" to all commands
 	// so this should give us the result of "print s1 --depth 2"
-	std::string command = pAgent->ExecuteCommandLine("print s1") ;
+	std::string output = pAgent->ExecuteCommandLine("print s1") ;
 	CPPUNIT_ASSERT_MESSAGE( "print s1", pAgent->GetLastCommandLineResult() );
 
 	CPPUNIT_ASSERT( filterHandlerReceived );
 	filterHandlerReceived = false;
 
-	// TODO: check output
-	if ( verbose ) std::cout << command << std::endl ;
+	// depth 2 should reveal I2
+	CPPUNIT_ASSERT( output.find( "I2" ) != std::string::npos );
 
 	// This is important -- if we don't unregister all subsequent commands will
 	// come to our filter and promptly fail!
 	CPPUNIT_ASSERT( pKernel->UnregisterForClientMessageEvent( clientFilter ) );
+}
 
+void ClientSMLTest::doWMETests( sml::Agent* pAgent )
+{
 	sml::Identifier* pInputLink = pAgent->GetInputLink() ;
 	CPPUNIT_ASSERT( pInputLink );
-
-	pAgent->InitSoar();
-	CPPUNIT_ASSERT_MESSAGE( "init-soar", pAgent->GetLastCommandLineResult() );
-
-	//int inputReceived = pAgent->RegisterForXMLEvent(smlEVENT_XML_INPUT_RECEIVED, MyXMLInputReceivedHandler, 0) ;
 
 	// Some simple tests
 	sml::StringElement* pWME = pAgent->CreateStringWME( pInputLink, "my-att", "my-value" ) ;
@@ -746,10 +586,7 @@ void ClientSMLTest::doAgentTest( sml::Agent* pAgent )
 	CPPUNIT_ASSERT( pAgent->ExecuteCommandLine("print F1") );	// BUGBUG: This wme remains in memory even after we add the "RunSelf" at which point it should be gone.
 	CPPUNIT_ASSERT_MESSAGE( "print F1", pAgent->GetLastCommandLineResult() );
 
-	pAgent->InitSoar();
-	CPPUNIT_ASSERT_MESSAGE( "init-soar", pAgent->GetLastCommandLineResult() );
-
-	//pAgent->UnregisterForXMLEvent(inputReceived) ;
+	initAgent( pAgent );
 
 	CPPUNIT_ASSERT( pAgent->CreateStringWME(pID, "type", "Boeing747") );
 
@@ -761,8 +598,7 @@ void ClientSMLTest::doAgentTest( sml::Agent* pAgent )
 
 	CPPUNIT_ASSERT( pAgent->Commit() );
 
-	pAgent->InitSoar();
-	CPPUNIT_ASSERT_MESSAGE( "init-soar", pAgent->GetLastCommandLineResult() );
+	initAgent( pAgent );
 	
 	// Test the blink option
 	pAgent->SetBlinkIfNoChange( false ) ;
@@ -804,10 +640,10 @@ void ClientSMLTest::doAgentTest( sml::Agent* pAgent )
 	// Delete one of the shared WMEs to make sure that's ok
 	//pAgent->DestroyWME(pID) ;
 	//pAgent->Commit() ;
+}
 
-	pAgent->InitSoar();
-	CPPUNIT_ASSERT_MESSAGE( "init-soar", pAgent->GetLastCommandLineResult() );
-	
+void ClientSMLTest::doAgentTest( sml::Agent* pAgent )
+{
 	// Throw in a pattern as a test
 	std::string pattern = pAgent->ExecuteCommandLine( "print -i (s1 ^* *)" ) ;
 	CPPUNIT_ASSERT_MESSAGE( "print -i (s1 ^* *)", pAgent->GetLastCommandLineResult() );
@@ -857,18 +693,18 @@ void ClientSMLTest::doAgentTest( sml::Agent* pAgent )
 	// Test that we get a callback after the decision cycle runs
 	// We'll pass in an "int" and use it to count decisions (just as an example of passing user data around)
 	int count( 0 );
-	int callback1 = pAgent->RegisterForRunEvent( sml::smlEVENT_AFTER_DECISION_CYCLE, ClientSMLTest::MyRunEventHandler, &count );
-	int callback_dup = pAgent->RegisterForRunEvent( sml::smlEVENT_AFTER_DECISION_CYCLE, ClientSMLTest::MyRunEventHandler, &count );
+	int callback1 = pAgent->RegisterForRunEvent( sml::smlEVENT_AFTER_DECISION_CYCLE, Handlers::MyRunEventHandler, &count );
+	int callback_dup = pAgent->RegisterForRunEvent( sml::smlEVENT_AFTER_DECISION_CYCLE, Handlers::MyRunEventHandler, &count );
 
 	CPPUNIT_ASSERT_MESSAGE( "Duplicate handler registration should be detected and be ignored", callback1 == callback_dup );
 
 	// This callback unregisters itself in the callback -- as a test to see if we can do that safely.
 	int selfRemovingCallback( -1 );
-	selfRemovingCallback = pAgent->RegisterForRunEvent( sml::smlEVENT_AFTER_DECISION_CYCLE, ClientSMLTest::MyRunSelfRemovingHandler, &selfRemovingCallback ) ;
+	selfRemovingCallback = pAgent->RegisterForRunEvent( sml::smlEVENT_AFTER_DECISION_CYCLE, Handlers::MyRunSelfRemovingHandler, &selfRemovingCallback ) ;
 
 	// Register for a String event
 	bool stringEventHandlerReceived( false );
-	int stringCall = pKernel->RegisterForStringEvent( sml::smlEVENT_EDIT_PRODUCTION, ClientSMLTest::MyStringEventHandler, &stringEventHandlerReceived ) ;
+	int stringCall = pKernel->RegisterForStringEvent( sml::smlEVENT_EDIT_PRODUCTION, Handlers::MyStringEventHandler, &stringEventHandlerReceived ) ;
 	CPPUNIT_ASSERT( pKernel->ExecuteCommandLine( "edit-production my*production", NULL ) );
 	CPPUNIT_ASSERT_MESSAGE( "edit-production my*production", pAgent->GetLastCommandLineResult() );
 	CPPUNIT_ASSERT( stringEventHandlerReceived );
@@ -879,21 +715,20 @@ void ClientSMLTest::doAgentTest( sml::Agent* pAgent )
 	// Register this one ahead of the previous handler (so it will fire before MyRunEventHandler)
 	bool addToBack = true ;
 	int testData( 25 ) ;
-	int callback2 = pAgent->RegisterForRunEvent( sml::smlEVENT_AFTER_DECISION_CYCLE, ClientSMLTest::MyDuplicateRunEventHandler, &testData, !addToBack) ;
+	int callback2 = pAgent->RegisterForRunEvent( sml::smlEVENT_AFTER_DECISION_CYCLE, Handlers::MyDuplicateRunEventHandler, &testData, !addToBack) ;
 
 	// Run returns the result (succeeded, failed etc.)
 	// To catch the trace output we have to register a print event listener
 	std::stringstream trace ;	// We'll pass this into the handler and build up the output in it
 	std::string structured ;	// Structured trace goes here
-	int callbackp = pAgent->RegisterForPrintEvent( sml::smlEVENT_PRINT, ClientSMLTest::MyPrintEventHandler, &trace) ;
+	int callbackp = pAgent->RegisterForPrintEvent( sml::smlEVENT_PRINT, Handlers::MyPrintEventHandler, &trace) ;
 
-	bool xmlEventHandlerReceived( false );
-	int callbackx = pAgent->RegisterForXMLEvent( sml::smlEVENT_XML_TRACE_OUTPUT, ClientSMLTest::MyXMLEventHandler, &xmlEventHandlerReceived ) ;
+	int callbackx = pAgent->RegisterForXMLEvent( sml::smlEVENT_XML_TRACE_OUTPUT, Handlers::MyXMLEventHandler, &clientXMLStorage ) ;
 
 	int beforeCount( 0 );
 	int afterCount( 0 );
-	int callback_before = pAgent->RegisterForRunEvent( sml::smlEVENT_BEFORE_RUN_STARTS, ClientSMLTest::MyRunEventHandler, &beforeCount ) ;
-	int callback_after = pAgent->RegisterForRunEvent( sml::smlEVENT_AFTER_RUN_ENDS, ClientSMLTest::MyRunEventHandler, &afterCount ) ;
+	int callback_before = pAgent->RegisterForRunEvent( sml::smlEVENT_BEFORE_RUN_STARTS, Handlers::MyRunEventHandler, &beforeCount ) ;
+	int callback_after = pAgent->RegisterForRunEvent( sml::smlEVENT_AFTER_RUN_ENDS, Handlers::MyRunEventHandler, &afterCount ) ;
 
 	//Some temp code to generate more complex watch traces.  Not usually part of the test
 	/*
@@ -909,10 +744,10 @@ void ClientSMLTest::doAgentTest( sml::Agent* pAgent )
 	// Test that we get a callback after the all output phases complete
 	// We'll pass in an "int" and use it to count output phases
 	int outputPhases( 0 );
-	int callback_u = pKernel->RegisterForUpdateEvent( sml::smlEVENT_AFTER_ALL_OUTPUT_PHASES, ClientSMLTest::MyUpdateEventHandler, &outputPhases ) ;
+	int callback_u = pKernel->RegisterForUpdateEvent( sml::smlEVENT_AFTER_ALL_OUTPUT_PHASES, Handlers::MyUpdateEventHandler, &outputPhases ) ;
 
 	int phaseCount( 0 );
-	int callbackPhase = pAgent->RegisterForRunEvent( sml::smlEVENT_BEFORE_PHASE_EXECUTED, ClientSMLTest::MyRunEventHandler, &phaseCount ) ;
+	int callbackPhase = pAgent->RegisterForRunEvent( sml::smlEVENT_BEFORE_PHASE_EXECUTED, Handlers::MyRunEventHandler, &phaseCount ) ;
 
 	// Nothing should match here
 	pAgent->RunSelf(4) ;
@@ -938,8 +773,6 @@ void ClientSMLTest::doAgentTest( sml::Agent* pAgent )
 	CPPUNIT_ASSERT( afterCount == 1 );
 
 	CPPUNIT_ASSERT( pAgent->UnregisterForRunEvent(callbackPhase) );
-
-	CPPUNIT_ASSERT( xmlEventHandlerReceived );
 
 	// By this point the static variable ClientXMLStorage should have been filled in 
 	// and it should be valid, even though the event handler for MyXMLEventHandler has completed.
@@ -1005,20 +838,20 @@ void ClientSMLTest::doAgentTest( sml::Agent* pAgent )
 	CPPUNIT_ASSERT( pAgent->Commit() );
 
 	int myCount( 0 );
-	int callback_run_count = pAgent->RegisterForRunEvent( sml::smlEVENT_AFTER_DECISION_CYCLE, ClientSMLTest::MyRunEventHandler, &myCount) ;
+	int callback_run_count = pAgent->RegisterForRunEvent( sml::smlEVENT_AFTER_DECISION_CYCLE, Handlers::MyRunEventHandler, &myCount) ;
 
 	int outputsGenerated( 0 ) ;
-	int callback_g = pKernel->RegisterForUpdateEvent( sml::smlEVENT_AFTER_ALL_GENERATED_OUTPUT, ClientSMLTest::MyUpdateEventHandler, &outputsGenerated) ;
+	int callback_g = pKernel->RegisterForUpdateEvent( sml::smlEVENT_AFTER_ALL_GENERATED_OUTPUT, Handlers::MyUpdateEventHandler, &outputsGenerated) ;
 
 	int outputNotifications( 0 ) ;
-	int callback_notify = pAgent->RegisterForOutputNotification( ClientSMLTest::MyOutputNotificationHandler, &outputNotifications) ;
+	int callback_notify = pAgent->RegisterForOutputNotification( Handlers::MyOutputNotificationHandler, &outputNotifications) ;
 
 	// Can't test this at the same time as testing the getCommand() methods as registering for this clears the output link information
 	//int outputHandler = pAgent->AddOutputHandler("move", MyOutputEventHandler, NULL) ;
 
 	if ( verbose ) std::cout << "About to do first run-til-output" << std::endl ;
 
-	int callbackp1 = pAgent->RegisterForPrintEvent( sml::smlEVENT_PRINT, ClientSMLTest::MyPrintEventHandler, &trace) ;
+	int callbackp1 = pAgent->RegisterForPrintEvent( sml::smlEVENT_PRINT, Handlers::MyPrintEventHandler, &trace) ;
 
 	// Now we should match (if we really loaded the tictactoe example rules) and so generate some real output
 	// We'll use RunAll just to test it out.  Could use RunSelf and get same result (presumably)
@@ -1135,7 +968,7 @@ void ClientSMLTest::doAgentTest( sml::Agent* pAgent )
 	// interrupts Soar immediately after a decision cycle.
 	// Removed the test part for now. Stats doesn't report anything.
 	bool interruptHandlerReceived( false );
-	int callback3 = pAgent->RegisterForRunEvent( sml::smlEVENT_AFTER_DECISION_CYCLE, ClientSMLTest::MyInterruptHandler, &interruptHandlerReceived ) ;
+	int callback3 = pAgent->RegisterForRunEvent( sml::smlEVENT_AFTER_DECISION_CYCLE, Handlers::MyInterruptHandler, &interruptHandlerReceived ) ;
 
 	pAgent->InitSoar();
 	CPPUNIT_ASSERT_MESSAGE( "init-soar", pAgent->GetLastCommandLineResult() );
@@ -1159,8 +992,6 @@ void ClientSMLTest::doAgentTest( sml::Agent* pAgent )
 	}
 */
 	CPPUNIT_ASSERT( pAgent->UnregisterForRunEvent(callback3) );
-
-	CPPUNIT_ASSERT( pKernel->RemoveRhsFunction(callback_rhs1) );
 
 	/* These comments haven't kept up with the test -- does a lot more now
 	cout << endl << "If this test worked should see something like this (above here):" << endl ;

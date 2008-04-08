@@ -223,6 +223,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\src\handlers.cpp"
+				>
+			</File>
+			<File
 				RelativePath=".\src\main.cpp"
 				>
 			</File>
@@ -244,6 +248,10 @@
 			Filter="h;hpp;hxx;hm;inl;inc;xsd"
 			UniqueIdentifier="{93995380-89BD-4b04-88EB-625FBE52EBFB}"
 			>
+			<File
+				RelativePath=".\include\handlers.h"
+				>
+			</File>
 			<File
 				RelativePath=".\include\simplelistener.h"
 				>
