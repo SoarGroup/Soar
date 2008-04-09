@@ -212,6 +212,32 @@ bool EmbeddedConnection::AttachConnection(char const* pLibraryName, bool optimiz
 	if (!hLibrary)
 	{
 		SetError(Error::kLibraryNotFound) ;
+      
+      char* message;
+#ifdef WINDOWS_SHARED
+      int error = GetLastError() ;
+
+      FormatMessage(
+         FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM,
+         0,
+         error,
+         0,
+         (char*) &message,
+         0, 0 );
+
+      message = strerror(error);
+
+      PrintDebugFormat("****Error: %s", message);
+
+      LocalFree(message);
+
+#elif defined(LINUX_SHARED)
+      message = dlerror();
+      PrintDebugFormat("Error: %s", message);
+      //BUGBUG? does message need to be released?
+
+#endif
+      
 		return false ;
 	}
 
