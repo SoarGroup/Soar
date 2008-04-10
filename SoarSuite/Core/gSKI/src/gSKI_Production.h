@@ -276,7 +276,7 @@ namespace gSKI {
          * class is called when it is destroyed.  This will always be 
          * neccesary because this is a purebase class.
          */
-        ~Production();
+        virtual ~Production();
    };
 }
 #endif

@@ -50,7 +50,7 @@ namespace gSKI {
       * 
       * Including adestructor for the usual C++ safety reasons.
       */     
-    ~WorkingMemory();
+    virtual ~WorkingMemory();
 
      /**
       * @brief Returns a pointer to the Agent that owns this WorkingMemory

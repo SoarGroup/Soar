@@ -80,7 +80,7 @@ public:
 	void save_yourself(std::ofstream* outfile);
 
 
-	~WME_Id();
+	virtual ~WME_Id();
 
 private:
 

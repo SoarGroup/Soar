@@ -101,7 +101,7 @@ class CommandLineInterface : public gSKI::IPrintListener, public gSKI::IProducti
 public:
 
 	EXPORT CommandLineInterface();
-	EXPORT ~CommandLineInterface();
+	EXPORT virtual ~CommandLineInterface();
 
 	/*************************************************************
 	* @brief Set the kernel this command line module is interfacing with.
