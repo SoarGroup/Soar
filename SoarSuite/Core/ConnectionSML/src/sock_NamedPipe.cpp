@@ -128,7 +128,7 @@ bool NamedPipe::SendBuffer(char const* pSendBuffer, size_t bufferSize)
 				else
 #endif
 				{
-					sml::PrintDebug("Error: Error sending message") ;
+					//sml::PrintDebug("Error: Error sending message") ;
 					sml::ReportSystemErrorMessage() ;
 					return false ;
 				}
@@ -190,18 +190,18 @@ bool NamedPipe::IsReadDataAvailable(long secondsWait, long millisecondsWait)
 		}
 
 		if(GetLastError() == ERROR_BROKEN_PIPE) {
-			sml::PrintDebug("Remote pipe has closed gracefully") ;
+			//sml::PrintDebug("Remote pipe has closed gracefully") ;
 			Close() ;
 			return false;
 		}
 
-		sml::PrintDebug("Error: Error checking if data is available to be read") ;
+		//sml::PrintDebug("Error: Error checking if data is available to be read") ;
 		sml::ReportSystemErrorMessage() ;
 
 		// We treat these errors as all being fatal, which they all appear to be.
 		// If we later decide we can survive certain ones, we should test for them here
 		// and not always close the socket.
-		sml::PrintDebug("Closing our side of the pipe because of error") ;
+		//sml::PrintDebug("Closing our side of the pipe because of error") ;
 		Close() ;
 
 		return false ;

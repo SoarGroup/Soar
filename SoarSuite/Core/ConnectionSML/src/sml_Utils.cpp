@@ -64,7 +64,7 @@ void sml::ReportSystemErrorMessage()
 	message = strerror(error);
 #endif // _WIN32
 
-	PrintDebugFormat("Error: %s", message);
+	//PrintDebugFormat("Error: %s", message);
 
 #ifdef _WIN32
 	LocalFree(message);

@@ -110,6 +110,7 @@ namespace gSKI
 
       if(m_gsym)
       {
+		  m_manager->unregisterObjectSymbol(m_gsym);
          m_gsym->Release();
       }
    }
@@ -331,7 +332,6 @@ namespace gSKI
             m_childmap.erase(it2);
 			m_childmapInOrder.remove(wme) ;
          }
-
       }
    }
 
@@ -544,7 +544,19 @@ namespace gSKI
       // Updating these wmes ( which creates raw kernel wmes from gSKI InputWmes
       // if they haven't already been created )
       if ( iwme != 0 ) {
-		iwme->Update(forceAdds, forceRemoves);
+
+		  std::string objectID;
+	    if ( iwme->GetValue()->GetType() == gSKI_OBJECT )
+	    {
+		  objectID = iwme->GetValue()->GetString();
+		}
+
+		bool removed = iwme->Update(forceAdds, forceRemoves);
+
+		if (objectID.length() && removed)
+		{
+			m_manager->RemoveObjectByID(objectID.c_str());
+		}
       } else {
 		MegaAssert( false, "Null InputWme registered with InputWMObject!" );
       }

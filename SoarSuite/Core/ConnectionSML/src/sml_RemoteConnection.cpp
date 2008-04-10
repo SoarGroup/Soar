@@ -184,7 +184,7 @@ void RemoteConnection::SendMsg(ElementXML* pMsg)
 	// If we had an error close the connection
 	if (!ok)
 	{
-		sml::PrintDebug("Socket has closed down abruptly (during send), so we'll close the connection") ;
+		//sml::PrintDebug("Socket has closed down abruptly (during send), so we'll close the connection") ;
 		SetError(Error::kSocketError) ;
 		CloseConnection() ;
 	}

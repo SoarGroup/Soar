@@ -231,7 +231,7 @@ bool Socket::SendBuffer(char const* pSendBuffer, size_t bufferSize)
 				else
 #endif
 				{
-					sml::PrintDebug("Error: Error sending message") ;
+					//sml::PrintDebug("Error: Error sending message") ;
 					sml::ReportSystemErrorMessage() ;
 					return false ;
 				}
