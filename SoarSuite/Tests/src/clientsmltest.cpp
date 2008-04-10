@@ -318,15 +318,19 @@ void ClientSMLTest::infiniteMemoryTest()
 
 	pAgent->ExecuteCommandLine("waitsnc --on");
 	
+#ifdef _WIN32
 	_CrtMemState memState;
 	_CrtMemCheckpoint( &memState );
 	//_CrtSetBreakAlloc( 2913 );
+#endif
 
 	//pAgent->RunSelf(3); // 3 cycles to allow one additional clean-up phase after identifier destruction
 	pAgent->RunSelf(6000); 
 
+#ifdef WIN32
 	_CrtMemDumpStatistics( &memState );
 	_CrtMemDumpAllObjectsSince( &memState );
+#endif
 }
 
 void ClientSMLTest::spawnListener()
