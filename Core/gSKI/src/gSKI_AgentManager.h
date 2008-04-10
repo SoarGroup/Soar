@@ -602,6 +602,8 @@ namespace gSKI
              * @brief The callback method for run events
              */
             virtual void HandleEvent(egSKIRunEventId eventId, Agent* agentPtr, egSKIPhaseType phase);
+
+			virtual ~AgentRunCompletedListener() {}
          private:
             AgentManager* m_am;  /**< We will call agent manager */
          };

@@ -52,7 +52,7 @@ namespace gSKI
        *  cleaned up (including agents).  It will not clean up client owned elements
        *  like cloned WMEs and KernelFactories
        */
-       ~Kernel();
+       virtual ~Kernel();
 
       /**
         * @brief Returns a pointer to the Kernel Factory that created it.

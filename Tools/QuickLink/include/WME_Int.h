@@ -31,7 +31,7 @@ public:
 	// output information to recreate object
 	void save_yourself(std::ofstream* outfile);
 
-	~WME_Int() {}
+	virtual ~WME_Int() {}
 
 private:
 
