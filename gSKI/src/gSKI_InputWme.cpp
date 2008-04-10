@@ -160,7 +160,7 @@ namespace gSKI
     //Update();
   }
 
-  void InputWme::Update(bool forceAdds, bool forceRemoves)
+  bool InputWme::Update(bool forceAdds, bool forceRemoves)
   {
      // Adding the WME directly to working memory if were in the input or output phase
      egSKIPhaseType curphase = m_manager->GetAgent()->GetCurrentPhase();
@@ -231,9 +231,10 @@ namespace gSKI
 			 // can be released, because the removal of the kernel wme won't occur until the next
 			 // input phase after RemoveWme is called.  Thus "RemoveWme" now includes a reference decrement
 			 // as part of its actions, providing the client a good way to do clean up.
-			 this->Release() ;
+			 return this->Release() ;
 		 }
      }
+	 return false;
   }
 
 }
