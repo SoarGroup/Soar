@@ -54,7 +54,7 @@ namespace gSKI {
        * 
        * Including adestructor for the usual C++ safety reasons.
        */     
-      ~InputWorkingMemory();
+      virtual ~InputWorkingMemory();
 
       /**
        * @brief Returns a pointer to the Agent that owns this InputWorkingMemory
@@ -488,6 +488,7 @@ namespace gSKI {
        */
       void RemoveObject(IWMObject* object,
                         Error* err = 0);
+	  void RemoveObjectByID(const char* id, Error* err = 0);
 
       /** 
        * @brief A convenience method for removing all the wmes owned by
@@ -760,6 +761,8 @@ namespace gSKI {
       };
 
       void registerObjectSymbol(gSymbol* pSym);
+      void unregisterObjectSymbol(gSymbol* pSym);
+
    private:
 
       void ReleaseAllWmes();

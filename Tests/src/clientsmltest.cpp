@@ -23,8 +23,7 @@ class ClientSMLTest : public CPPUNIT_NS::TestCase
 	CPPUNIT_TEST_SUITE( ClientSMLTest );	
 
 	// bug submitted by luke.b.miklos@boeing.com
-	// memory grows quickly with time, shouldn't
-	// uncomment only for specific debugging, see function
+	// see bugzilla bug 1034
 	//CPPUNIT_TEST( infiniteMemoryTest );
 
 	CPPUNIT_TEST( testEmbeddedDirectInit );
@@ -270,31 +269,32 @@ void ClientSMLTest::testRemoteNoAutoCommit()
 	if ( verbose ) std::cout << "Test complete." << std::endl;
 }
 
-sml::Identifier* g_pInputLink = 0;
-
 void memoryTestUpdateHandler( sml::smlUpdateEventId id, void* pUserData, sml::Kernel* pKernel, sml::smlRunFlags runFlags)
 {
 	static int step(0);
 	static sml::Identifier* pRootWME( 0 );
+	static sml::StringElement* pChildWME( 0 );
 
 	CPPUNIT_ASSERT( pUserData );
 	sml::Agent* pAgent = static_cast< sml::Agent* >( pUserData );
 
-	std::cout << "step: " << step << std::endl;
+	//std::cout << "step: " << step << std::endl;
 
-	// switch ( step % 2 ) // change to see memory leak (see notes in infiniteMemoryTest first)
-	switch ( step )
+	switch ( step % 3 )
 	{
 	case 0:
 		//add new WME & it's children
-		pRootWME = pAgent->CreateIdWME( g_pInputLink, "RootWME" ) ;
+		pRootWME = pAgent->CreateIdWME( pAgent->GetInputLink(), "RootWME" ) ;
+		//pChildWME = pAgent->CreateStringWME( pRootWME, "attr", "value" ) ;
 		// duplicated creating and destroying child element instead of root element
 		++step;
 		break;
 
 	case 1:
+		//std::cerr << pAgent->ExecuteCommandLine("p --depth 3 S1") << std::endl;
 		//delete the new WME
 		CPPUNIT_ASSERT( pAgent->DestroyWME( pRootWME ) );
+		pChildWME = 0;
 		++step;
 		break;
 
@@ -306,6 +306,8 @@ void memoryTestUpdateHandler( sml::smlUpdateEventId id, void* pUserData, sml::Ke
 
 void ClientSMLTest::infiniteMemoryTest()
 {
+	// see bugzilla bug 1034
+
 	numberAgents = 1;
 	createKernelAndAgents(true, true, true, true);
 
@@ -316,31 +318,15 @@ void ClientSMLTest::infiniteMemoryTest()
 
 	pAgent->ExecuteCommandLine("waitsnc --on");
 	
-	g_pInputLink = pAgent->GetInputLink();
-
-	// 1) to see memory grow infinitely:
-	//     1a) uncomment for loop 
-	//     1b) change switch in memoryTestUpdateHandler to step % 2
-	//     1c) watch memory during run with task manager
-	// 2) to see memory leak, comment for loop and put breakpoint at _CrtMemDumpAllObjectsSince, step over that line
-	//    and examine output window. first leak isn't really a leak, it is just the event being copied in to the
-	//    event list. the second leak (2909 on my machine) seems to be the real issue
-	//     2a) to break at memory leak, uncomment _CrtSetBreakAlloc with appropriate allocation index
-
-	// see bugzilla bug 1034
-
 	_CrtMemState memState;
 	_CrtMemCheckpoint( &memState );
-	//_CrtSetBreakAlloc( 2909 );
+	//_CrtSetBreakAlloc( 2913 );
 
-	//for(;;)
-	{
-		pAgent->RunSelf(3); // 3 cycles to allow one additional clean-up phase after identifier destruction
-	}
+	//pAgent->RunSelf(3); // 3 cycles to allow one additional clean-up phase after identifier destruction
+	pAgent->RunSelf(6000); 
 
 	_CrtMemDumpStatistics( &memState );
 	_CrtMemDumpAllObjectsSince( &memState );
-
 }
 
 void ClientSMLTest::spawnListener()

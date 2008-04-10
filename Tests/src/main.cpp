@@ -63,7 +63,8 @@ int main( int argc, char** argv )
 
 	if ( pause )
 	{
-		std::cout << std::endl << "Press enter to exit." << std::endl;
+		std::cout << std::endl << "Strange errors? Make sure working directory is 'SoarLibrary/bin'."
+			<< std::endl << "Press enter to exit." << std::endl;
 		std::cin.get();
 	}
 
