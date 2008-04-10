@@ -306,6 +306,7 @@ namespace gSKI
 
       InputWMObject* value = new InputWMObject(this, *attr);
       m_wmobjectmap.insert(tWMObjMap::value_type( value->GetSoarSymbol()->common.hash_id, value ));
+	  //std::cerr << "m_wmobjectmap.size() after adding "<< value->GetSoarSymbol()->common.hash_id << " -> " << attr << ":" << m_wmobjectmap.size() << std::endl;
 
       IWme* pWme = AddWme(wmObject, attribute, value->GetId());
       attribute->Release(); // The WME adds a reference on construction
@@ -466,6 +467,47 @@ namespace gSKI
       MegaAssert(false, "NOT IMPLEMENTED YET!");
    }
 
+	void InputWorkingMemory::RemoveObjectByID(const char* idstring, Error* err)
+	{
+		ClearError(err);
+
+		// Make sure we got enough of an id string to do the lookup
+		if (!idstring || strlen(idstring) < 2)
+		{
+		   SetErrorExtended(err, 
+			   gSKIERR_SYMBOL_NOT_OBJECT, 
+			   "Invalid id string passed to GetObjectById function!" );
+		   return ;
+		}
+
+		// Get the first letter in the identifier
+		char letter = idstring[0] ;
+
+		// Get the numeric part of the identifier (if this isn't a number we'll get back 0)
+		unsigned long value = atol(&idstring[1]) ;
+
+		// See if there's a symbol matching this in the kernel.
+		Symbol* id = find_identifier(GetSoarAgent(), letter, value) ;
+
+		if (!id)
+		{
+		   SetErrorExtended(err, 
+			   gSKIERR_SYMBOL_NOT_OBJECT, 
+			   "Failed to find a matching identifier in GetObjectById function!" );
+		   return ;
+		}
+
+		InputWMObject* pWMObject = NULL ;
+		tWMObjMap::iterator iter = m_wmobjectmap.find(id->common.hash_id) ;
+
+		if (iter == m_wmobjectmap.end())
+		{
+			MegaAssert( false, "didn't find object, this shouldn't be an assert");
+		}
+
+		iter->second->Release();
+		m_wmobjectmap.erase( iter );
+	}
    /*
      ===============================
      
@@ -898,6 +940,14 @@ namespace gSKI
       {
          pSym->AddRef();
       }
+   }
+   
+   void InputWorkingMemory::unregisterObjectSymbol(gSymbol* pSym)
+   {
+      MegaAssert(pSym->GetType() == gSKI_OBJECT, "Tried to unregister non-object symbol");
+
+      if (m_symMap.erase(pSym)) 
+		  pSym->Release();
    }
    
    void InputWorkingMemory::ReleaseAllWmes() 

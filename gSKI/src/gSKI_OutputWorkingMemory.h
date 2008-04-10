@@ -61,7 +61,7 @@ namespace gSKI {
       * 
       * Including adestructor for the usual C++ safety reasons.
       */     
-    ~OutputWorkingMemory();
+    virtual ~OutputWorkingMemory();
 
      /**
       * @brief Returns a pointer to the Agent that owns this OutputWorkingMemory
