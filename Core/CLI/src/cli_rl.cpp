@@ -34,7 +34,7 @@ bool CommandLineInterface::ParseRL( gSKI::Agent* pAgent, std::vector<std::string
 	{
 		{'g', "get",	0},
 		{'s', "set",	0},
-		{'S', "stat",	0},
+		{'S', "stats",	0},
 		{0, 0, 0} // null
 	};
 	RLBitset options(0);
