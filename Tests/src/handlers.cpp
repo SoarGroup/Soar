@@ -266,6 +266,8 @@ void Handlers::MyMemoryLeakUpdateHandler( sml::smlUpdateEventId id, void* pUserD
 	switch ( step % 3 )
 	{
 	case 0:
+		CPPUNIT_ASSERT( pAgent->GetIWMObjMapSize() == 1 ); // root
+
 		pRootID = pAgent->CreateIdWME( pAgent->GetInputLink(), "pRootID" ) ;
 		pRootString = pAgent->CreateStringWME( pAgent->GetInputLink(), "pRootString", "RootValue" ) ;
 		pRootFloat = pAgent->CreateFloatWME( pAgent->GetInputLink(), "pRootFloat", 1.0 ) ;
@@ -275,10 +277,17 @@ void Handlers::MyMemoryLeakUpdateHandler( sml::smlUpdateEventId id, void* pUserD
 		pChildString = pAgent->CreateStringWME( pRootID, "pChildString", "ChildValue" ) ;
 		pChildFloat = pAgent->CreateFloatWME( pRootID, "pChildFloat", 2.0 ) ;
 		pChildInt = pAgent->CreateIntWME( pRootID, "pChildInt", 2 ) ;
+
+		CPPUNIT_ASSERT( pAgent->GetIWMObjMapSize() == 3 ); // root, pRootID, pChildID
 		break;
 
 	case 1:
+		CPPUNIT_ASSERT( pAgent->GetIWMObjMapSize() == 3 ); // root, pRootID, pChildID
+
 		CPPUNIT_ASSERT( pAgent->DestroyWME( pChildID ) );		// BUGBUG: Should be destroyed by deletion of pRootID
+
+		// These three child leaks are not detected by looking at GetIWMObjMapSize
+		// TODO: figure out how to detect these
 		CPPUNIT_ASSERT( pAgent->DestroyWME( pChildString ) );	// BUGBUG: Should be destroyed by deletion of pRootID
 		CPPUNIT_ASSERT( pAgent->DestroyWME( pChildFloat ) );	// BUGBUG: Should be destroyed by deletion of pRootID
 		CPPUNIT_ASSERT( pAgent->DestroyWME( pChildInt ) );		// BUGBUG: Should be destroyed by deletion of pRootID
@@ -287,6 +296,8 @@ void Handlers::MyMemoryLeakUpdateHandler( sml::smlUpdateEventId id, void* pUserD
 		CPPUNIT_ASSERT( pAgent->DestroyWME( pRootString ) );
 		CPPUNIT_ASSERT( pAgent->DestroyWME( pRootFloat ) );
 		CPPUNIT_ASSERT( pAgent->DestroyWME( pRootInt ) );
+
+		CPPUNIT_ASSERT( pAgent->GetIWMObjMapSize() == 3 ); // root, pRootID, pChildID, removed after step
 
 		pRootID = 0;
 		pRootString = 0;
@@ -300,6 +311,7 @@ void Handlers::MyMemoryLeakUpdateHandler( sml::smlUpdateEventId id, void* pUserD
 		break;
 
 	default:
+		CPPUNIT_ASSERT( pAgent->GetIWMObjMapSize() == 1 ); // root
 		break;
 	}
 
