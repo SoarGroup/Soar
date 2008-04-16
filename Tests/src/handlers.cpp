@@ -272,9 +272,9 @@ void Handlers::MyMemoryLeakUpdateHandler( sml::smlUpdateEventId id, void* pUserD
 		pRootInt = pAgent->CreateIntWME( pAgent->GetInputLink(), "pRootInt", 1 ) ;
 
 		pChildID = pAgent->CreateIdWME( pRootID, "pChildID" ) ;
-		pChildString = pAgent->CreateStringWME( pRootID, "ChildWME", "ChildValue" ) ;
-		pChildFloat = pAgent->CreateFloatWME( pRootID, "ChildWME", 2.0 ) ;
-		pChildInt = pAgent->CreateIntWME( pRootID, "ChildWME", 2 ) ;
+		pChildString = pAgent->CreateStringWME( pRootID, "pChildString", "ChildValue" ) ;
+		pChildFloat = pAgent->CreateFloatWME( pRootID, "pChildFloat", 2.0 ) ;
+		pChildInt = pAgent->CreateIntWME( pRootID, "pChildInt", 2 ) ;
 		break;
 
 	case 1:
