@@ -24,7 +24,7 @@ class ClientSMLTest : public CPPUNIT_NS::TestCase
 
 	// bug submitted by luke.b.miklos@boeing.com
 	// see bugzilla bug 1034
-	CPPUNIT_TEST( infiniteMemoryTest );
+	//CPPUNIT_TEST( infiniteMemoryTest );
 
 	CPPUNIT_TEST( testEmbeddedDirectInit );
 	CPPUNIT_TEST( testEmbeddedDirect );
@@ -293,7 +293,7 @@ void memoryTestUpdateHandler( sml::smlUpdateEventId id, void* pUserData, sml::Ke
 	CPPUNIT_ASSERT( pUserData );
 	sml::Agent* pAgent = static_cast< sml::Agent* >( pUserData );
 
-	std::cout << "step: " << step << std::endl;
+	//std::cout << "step: " << step << std::endl;
 
 	switch ( step % 3 )
 	{
