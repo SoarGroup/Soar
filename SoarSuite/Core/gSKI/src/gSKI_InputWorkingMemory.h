@@ -760,14 +760,10 @@ namespace gSKI {
          return pWme;
       };
 
-      void registerObjectSymbol(gSymbol* pSym);
-      void unregisterObjectSymbol(gSymbol* pSym);
-
    private:
 
       void ReleaseAllWmes();
       void ReleaseAllWMObjects();
-      void ReleaseAllSymbols();
 
       Agent* m_agent; /**< The agent associated with this working memory */
 
@@ -782,13 +778,6 @@ namespace gSKI {
       typedef tWmeMap::iterator tWmeMapItr;
 
       tWmeMap m_wmemap;
-
-      // TODO: Why are we keeping this set of symbols around???
-      // Remove it if it isn't necessary
-      typedef std::set<gSymbol*> tSymMap;
-      typedef tSymMap::iterator tSymMapItr;
-
-      tSymMap m_symMap;
    };
 }
 
