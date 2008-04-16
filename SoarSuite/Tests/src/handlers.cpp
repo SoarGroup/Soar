@@ -267,21 +267,26 @@ void Handlers::MyMemoryLeakUpdateHandler( sml::smlUpdateEventId id, void* pUserD
 	{
 	case 0:
 		pRootID = pAgent->CreateIdWME( pAgent->GetInputLink(), "pRootID" ) ;
-		//pRootString = pAgent->CreateStringWME( pAgent->GetInputLink(), "pRootString", "RootValue" ) ;
-		//pRootFloat = pAgent->CreateFloatWME( pAgent->GetInputLink(), "pRootFloat", 1.0 ) ;
-		//pRootInt = pAgent->CreateIntWME( pAgent->GetInputLink(), "pRootInt", 1 ) ;
+		pRootString = pAgent->CreateStringWME( pAgent->GetInputLink(), "pRootString", "RootValue" ) ;
+		pRootFloat = pAgent->CreateFloatWME( pAgent->GetInputLink(), "pRootFloat", 1.0 ) ;
+		pRootInt = pAgent->CreateIntWME( pAgent->GetInputLink(), "pRootInt", 1 ) ;
 
 		pChildID = pAgent->CreateIdWME( pRootID, "pChildID" ) ;
-		//pChildString = pAgent->CreateStringWME( pRootID, "ChildWME", "ChildValue" ) ;
-		//pChildFloat = pAgent->CreateFloatWME( pRootID, "ChildWME", 2.0 ) ;
-		//pChildInt = pAgent->CreateIntWME( pRootID, "ChildWME", 2 ) ;
+		pChildString = pAgent->CreateStringWME( pRootID, "ChildWME", "ChildValue" ) ;
+		pChildFloat = pAgent->CreateFloatWME( pRootID, "ChildWME", 2.0 ) ;
+		pChildInt = pAgent->CreateIntWME( pRootID, "ChildWME", 2 ) ;
 		break;
 
 	case 1:
-		CPPUNIT_ASSERT( pAgent->DestroyWME( pRootID ) );	// Deletes children
-		//CPPUNIT_ASSERT( pAgent->DestroyWME( pRootString ) );
-		//CPPUNIT_ASSERT( pAgent->DestroyWME( pRootFloat ) );
-		//CPPUNIT_ASSERT( pAgent->DestroyWME( pRootInt ) );
+		CPPUNIT_ASSERT( pAgent->DestroyWME( pChildID ) );		// BUGBUG: Should be destroyed by deletion of pRootID
+		CPPUNIT_ASSERT( pAgent->DestroyWME( pChildString ) );	// BUGBUG: Should be destroyed by deletion of pRootID
+		CPPUNIT_ASSERT( pAgent->DestroyWME( pChildFloat ) );	// BUGBUG: Should be destroyed by deletion of pRootID
+		CPPUNIT_ASSERT( pAgent->DestroyWME( pChildInt ) );		// BUGBUG: Should be destroyed by deletion of pRootID
+
+		CPPUNIT_ASSERT( pAgent->DestroyWME( pRootID ) );		// BUGBUG: Should destroy children, doesn't
+		CPPUNIT_ASSERT( pAgent->DestroyWME( pRootString ) );
+		CPPUNIT_ASSERT( pAgent->DestroyWME( pRootFloat ) );
+		CPPUNIT_ASSERT( pAgent->DestroyWME( pRootInt ) );
 
 		pRootID = 0;
 		pRootString = 0;

@@ -303,7 +303,7 @@ void ClientSMLTest::testRootIdentifierMemoryLeak()
 #ifdef _WIN32
 	_CrtMemState memState;
 	_CrtMemCheckpoint( &memState );
-	//_CrtSetBreakAlloc( 2929 );
+	//_CrtSetBreakAlloc( 2926 );
 #endif
 
 	pAgent->RunSelf(3); // 3 cycles to allow one additional clean-up phase after identifier destruction

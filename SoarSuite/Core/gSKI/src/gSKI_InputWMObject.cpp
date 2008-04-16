@@ -386,17 +386,7 @@ namespace gSKI
 
 		}
 
-		// DJP: When doing cleanup of objects prior to an init-soar, some of the children aren't
-		// released because the parent is destroyed first.
-		// Changing the order to release the children first resolves this.
-		// It may be safe to move all updates of children to here before updating the parent
-		// but because we're close to a release I'm only moving the ones known to cause
-		// a problem which is the "forceRemoves" case.  (Quick tests for always updating children
-		// before parents suggest it's safe).
-		if (forceRemoves)
-		{
-			UpdateWMObjectChildren(processedObjects, forceAdds, forceRemoves) ;
-		}
+		UpdateWMObjectChildren(processedObjects, forceAdds, forceRemoves) ;
 
 		// DJP: We'll use the InOrder list of wmes so that this sequence is consistent between different runs
 		// (i.e. wme A is already created before wme B if you called to add wme A first, so variability is
@@ -435,15 +425,6 @@ namespace gSKI
 				MegaAssert( false, "Null InputWme registered with InputWMObject!" );
 			}
 		}
-
-		// DJP: The normal case is that we're not doing forced removes just prior to an init-soar
-		// and so we'll do this in the order originally designed into gSKI where the children
-		// are updated after the parent.  See my comment up above about possibly moving this update children
-		// call to occur before the parent in all cases (it may be better).
-		if (!forceRemoves)
-		{
-			UpdateWMObjectChildren(processedObjects, forceAdds, forceRemoves) ;
-		}
 	}
 
 	void InputWMObject::UpdateWMObjectChildren(std::set<InputWMObject*>& processedObjects, bool forceAdds, bool forceRemoves)
@@ -468,5 +449,4 @@ namespace gSKI
 			}
 		}
 	}
-
 }
