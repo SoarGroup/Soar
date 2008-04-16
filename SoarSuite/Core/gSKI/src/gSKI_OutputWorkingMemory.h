@@ -708,6 +708,8 @@ namespace gSKI {
        */
 	  virtual void Update(bool forceAdds, bool forceRemoves) { }
 
+ 	  virtual int GetWMObjMapSize() const;
+
    private:
       /**
        * @brief Used to retrieve an input wme given an id, attribute and value triplet

@@ -22,10 +22,7 @@ class ClientSMLTest : public CPPUNIT_NS::TestCase
 {
 	CPPUNIT_TEST_SUITE( ClientSMLTest );	
 
-	// bug submitted by luke.b.miklos@boeing.com
-	// see bugzilla bug 1034
-	//CPPUNIT_TEST( testRootIdentifierMemoryLeak );
-
+	CPPUNIT_TEST( testRootIdentifierMemoryLeak );  // see bugzilla bug 1034
 	CPPUNIT_TEST( testEmbeddedDirectInit );
 	CPPUNIT_TEST( testEmbeddedDirect );
 	CPPUNIT_TEST( testEmbedded );

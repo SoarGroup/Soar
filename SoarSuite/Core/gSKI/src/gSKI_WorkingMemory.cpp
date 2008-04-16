@@ -798,4 +798,9 @@ namespace gSKI
 
 	  // Nothing to listen for yet.
    }
+
+   int WorkingMemory::GetWMObjMapSize() const 
+   { 
+	   return static_cast<int>(this->m_wmobjectmap.size()); 
+   }
 }

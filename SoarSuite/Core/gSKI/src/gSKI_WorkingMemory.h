@@ -685,6 +685,8 @@ namespace gSKI {
 									IWorkingMemoryListener* listener, 
 									Error*                  err = 0) ;
 
+   	  virtual int GetWMObjMapSize() const;
+
    private:
       /**
        * @brief Used to retrieve an input wme given an id, attribute and value triplet

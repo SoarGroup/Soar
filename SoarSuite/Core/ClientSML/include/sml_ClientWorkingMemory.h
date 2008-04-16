@@ -97,6 +97,8 @@ public:
 	Identifier*		CreateIdWME(Identifier* parent, char const* pAttribute) ;
 	Identifier*		CreateSharedIdWME(Identifier* parent, char const* pAttribute, Identifier* pSharedValue) ;
 
+	int GetIWMObjMapSize();	// For unit tests, see bug 1034 and ClientSMLTest
+
 	void			UpdateString(StringElement* pWME, char const* pValue) ;
 	void			UpdateInt(IntElement* pWME, int value) ;
 	void			UpdateFloat(FloatElement* pWME, double value) ;
@@ -119,6 +121,7 @@ public:
 	bool			IsCommitRequired() ;
 	bool			Commit() ;
 	bool			IsAutoCommitEnabled() ;
+
 };
 
 }//closes namespace
