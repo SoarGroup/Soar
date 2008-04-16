@@ -64,7 +64,6 @@ namespace gSKI
       m_gsym = new gSymbol(m_manager->GetSoarAgent(), 
                            m_sym,
                            this, false);
-      m_manager->registerObjectSymbol(m_gsym);
 
       symbol_add_ref(m_sym);
    }
@@ -91,7 +90,6 @@ namespace gSKI
                           
       // Creating the GSKI symbol also
       m_gsym = new gSymbol(m_manager->GetSoarAgent(), m_sym, this, false);
-      m_manager->registerObjectSymbol(m_gsym);
    }
 
    /*
@@ -110,7 +108,6 @@ namespace gSKI
 
       if(m_gsym)
       {
-		  m_manager->unregisterObjectSymbol(m_gsym);
          m_gsym->Release();
       }
    }
