@@ -244,3 +244,59 @@ std::string Handlers::MyRhsFunctionHandler(sml::smlRhsEventId, void* pUserData, 
 	return res.str() ;
 }
 
+void Handlers::MyMemoryLeakUpdateHandler( sml::smlUpdateEventId id, void* pUserData, sml::Kernel* pKernel, sml::smlRunFlags runFlags )
+{
+	static int step(0);
+
+	static sml::Identifier* pRootID( 0 );
+	static sml::StringElement* pRootString( 0 );
+	static sml::FloatElement* pRootFloat( 0 );
+	static sml::IntElement* pRootInt( 0 );
+
+	static sml::Identifier* pChildID( 0 );
+	static sml::StringElement* pChildString( 0 );
+	static sml::FloatElement* pChildFloat( 0 );
+	static sml::IntElement* pChildInt( 0 );
+
+	CPPUNIT_ASSERT( pUserData );
+	sml::Agent* pAgent = static_cast< sml::Agent* >( pUserData );
+
+	//std::cout << "step: " << step << std::endl;
+
+	switch ( step % 3 )
+	{
+	case 0:
+		pRootID = pAgent->CreateIdWME( pAgent->GetInputLink(), "pRootID" ) ;
+		//pRootString = pAgent->CreateStringWME( pAgent->GetInputLink(), "pRootString", "RootValue" ) ;
+		//pRootFloat = pAgent->CreateFloatWME( pAgent->GetInputLink(), "pRootFloat", 1.0 ) ;
+		//pRootInt = pAgent->CreateIntWME( pAgent->GetInputLink(), "pRootInt", 1 ) ;
+
+		pChildID = pAgent->CreateIdWME( pRootID, "pChildID" ) ;
+		//pChildString = pAgent->CreateStringWME( pRootID, "ChildWME", "ChildValue" ) ;
+		//pChildFloat = pAgent->CreateFloatWME( pRootID, "ChildWME", 2.0 ) ;
+		//pChildInt = pAgent->CreateIntWME( pRootID, "ChildWME", 2 ) ;
+		break;
+
+	case 1:
+		CPPUNIT_ASSERT( pAgent->DestroyWME( pRootID ) );	// Deletes children
+		//CPPUNIT_ASSERT( pAgent->DestroyWME( pRootString ) );
+		//CPPUNIT_ASSERT( pAgent->DestroyWME( pRootFloat ) );
+		//CPPUNIT_ASSERT( pAgent->DestroyWME( pRootInt ) );
+
+		pRootID = 0;
+		pRootString = 0;
+		pRootFloat = 0;
+		pRootInt = 0;
+
+		pChildID = 0;
+		pChildString = 0;
+		pChildFloat = 0;
+		pChildInt = 0;
+		break;
+
+	default:
+		break;
+	}
+
+	++step;
+}
