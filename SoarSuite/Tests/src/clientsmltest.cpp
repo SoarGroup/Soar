@@ -24,7 +24,7 @@ class ClientSMLTest : public CPPUNIT_NS::TestCase
 
 	// bug submitted by luke.b.miklos@boeing.com
 	// see bugzilla bug 1034
-	//CPPUNIT_TEST( infiniteMemoryTest );
+	//CPPUNIT_TEST( testRootIdentifierMemoryLeak );
 
 	CPPUNIT_TEST( testEmbeddedDirectInit );
 	CPPUNIT_TEST( testEmbeddedDirect );
@@ -33,6 +33,7 @@ class ClientSMLTest : public CPPUNIT_NS::TestCase
 	CPPUNIT_TEST( testNewThreadNoAutoCommit );
 	CPPUNIT_TEST( testRemote );
 	CPPUNIT_TEST( testRemoteNoAutoCommit );
+	//CPPUNIT_TEST( testRefCount );
 
 	CPPUNIT_TEST_SUITE_END();
 
@@ -41,7 +42,7 @@ public:
 	void tearDown();	
 
 protected:
-	void infiniteMemoryTest();
+	void testRootIdentifierMemoryLeak();
 	
 	void testEmbeddedDirectInit();
 	void testEmbeddedDirect();
@@ -50,6 +51,7 @@ protected:
 	void testNewThreadNoAutoCommit();
 	void testRemote();
 	void testRemoteNoAutoCommit();
+	//void testRefCount();
 
 private:
 	void createKernelAndAgents( bool embedded, bool useClientThread, bool fullyOptimized, bool autoCommit, int port = 12121 );
@@ -284,41 +286,7 @@ void ClientSMLTest::testRemoteNoAutoCommit()
 	}
 }
 
-void memoryTestUpdateHandler( sml::smlUpdateEventId id, void* pUserData, sml::Kernel* pKernel, sml::smlRunFlags runFlags)
-{
-	static int step(0);
-	static sml::Identifier* pRootWME( 0 );
-	static sml::StringElement* pChildWME( 0 );
-
-	CPPUNIT_ASSERT( pUserData );
-	sml::Agent* pAgent = static_cast< sml::Agent* >( pUserData );
-
-	//std::cout << "step: " << step << std::endl;
-
-	switch ( step % 3 )
-	{
-	case 0:
-		//add new WME & it's children
-		pRootWME = pAgent->CreateIdWME( pAgent->GetInputLink(), "RootWME" ) ;
-		//pChildWME = pAgent->CreateStringWME( pRootWME, "attr", "value" ) ;
-		// duplicated creating and destroying child element instead of root element
-		break;
-
-	case 1:
-		//std::cerr << pAgent->ExecuteCommandLine("p --depth 3 S1") << std::endl;
-		//delete the new WME
-		CPPUNIT_ASSERT( pAgent->DestroyWME( pRootWME ) );
-		pChildWME = 0;
-		break;
-
-	default:
-		break;
-	}
-
-	++step;
-}
-
-void ClientSMLTest::infiniteMemoryTest()
+void ClientSMLTest::testRootIdentifierMemoryLeak()
 {
 	// see bugzilla bug 1034
 
@@ -328,21 +296,20 @@ void ClientSMLTest::infiniteMemoryTest()
 	sml::Agent* pAgent = pKernel->GetAgent( getAgentName( 0 ).c_str() ) ;
 	CPPUNIT_ASSERT( pAgent != NULL );
 
-	pKernel->RegisterForUpdateEvent( sml::smlEVENT_AFTER_ALL_OUTPUT_PHASES, memoryTestUpdateHandler, pAgent ) ;
+	pKernel->RegisterForUpdateEvent( sml::smlEVENT_AFTER_ALL_OUTPUT_PHASES, Handlers::MyMemoryLeakUpdateHandler, pAgent ) ;
 
 	pAgent->ExecuteCommandLine("waitsnc --on");
 	
 #ifdef _WIN32
 	_CrtMemState memState;
 	_CrtMemCheckpoint( &memState );
-	//_CrtSetBreakAlloc( 2892 );
+	//_CrtSetBreakAlloc( 2929 );
 #endif
 
-	//pAgent->RunSelf(3); // 3 cycles to allow one additional clean-up phase after identifier destruction
-	pAgent->RunSelf(6000); 
+	pAgent->RunSelf(3); // 3 cycles to allow one additional clean-up phase after identifier destruction
+	//pAgent->RunSelf(6000); 
 
 #ifdef WIN32
-	_CrtMemDumpStatistics( &memState );
 	_CrtMemDumpAllObjectsSince( &memState );
 #endif
 }
