@@ -66,7 +66,6 @@ namespace gSKI
       // Releasing all the stored objects
       ReleaseAllWmes();
       ReleaseAllWMObjects();
-      ReleaseAllSymbols();
    }
    
    /*
@@ -928,29 +927,9 @@ namespace gSKI
       }
       ReleaseAllWmes();
       ReleaseAllWMObjects();
-      ReleaseAllSymbols();
    }
 
-   void InputWorkingMemory::registerObjectSymbol(gSymbol* pSym)
-   {
-      MegaAssert(pSym->GetType() == gSKI_OBJECT, "Tried to register non-object symbol");
-
-      std::pair<tSymMapItr, bool> r = m_symMap.insert(pSym);
-      if(r.second)
-      {
-         pSym->AddRef();
-      }
-   }
-   
-   void InputWorkingMemory::unregisterObjectSymbol(gSymbol* pSym)
-   {
-      MegaAssert(pSym->GetType() == gSKI_OBJECT, "Tried to unregister non-object symbol");
-
-      if (m_symMap.erase(pSym)) 
-		  pSym->Release();
-   }
-   
-   void InputWorkingMemory::ReleaseAllWmes() 
+  void InputWorkingMemory::ReleaseAllWmes() 
    {
       // Iterating over all input wmes and releasing them
       for ( tWmeMapItr it = m_wmemap.begin(); it != m_wmemap.end(); ++it ) 
@@ -977,16 +956,6 @@ namespace gSKI
       }
 
       m_wmobjectmap.clear();
-   }
-
-   void InputWorkingMemory::ReleaseAllSymbols() 
-   {
-      for ( tSymMapItr it = m_symMap.begin();
-            it != m_symMap.end();
-            ++it ) {
-         (*it)->Release();
-      }
-      m_symMap.clear();
    }
 
     /**
