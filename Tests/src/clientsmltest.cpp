@@ -308,6 +308,7 @@ void ClientSMLTest::testRootIdentifierMemoryLeak()
 
 	pAgent->RunSelf(3); // 3 cycles to allow one additional clean-up phase after identifier destruction
 	//pAgent->RunSelf(6000); 
+	//pAgent->RunSelfForever();
 
 #ifdef WIN32
 	_CrtMemDumpAllObjectsSince( &memState );
