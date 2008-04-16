@@ -24,7 +24,7 @@ class ClientSMLTest : public CPPUNIT_NS::TestCase
 
 	// bug submitted by luke.b.miklos@boeing.com
 	// see bugzilla bug 1034
-	//CPPUNIT_TEST( infiniteMemoryTest );
+	CPPUNIT_TEST( infiniteMemoryTest );
 
 	CPPUNIT_TEST( testEmbeddedDirectInit );
 	CPPUNIT_TEST( testEmbeddedDirect );
@@ -106,7 +106,10 @@ void ClientSMLTest::setUp()
 
 void ClientSMLTest::tearDown()
 {
-	if ( !pKernel ) return;
+	if ( !pKernel )
+	{
+		return;
+	}
 
 	// Agent deletion
 	if ( verbose ) std::cout << "Destroy the agent now" << std::endl ;
@@ -244,14 +247,20 @@ void ClientSMLTest::testRemote()
 	remote = true;
 	spawnListener();
 
-	if ( verbose ) std::cout << "Spawned listener." << std::endl;
+	if ( verbose )
+	{
+		std::cout << "Spawned listener." << std::endl;
+	}
 
 	numberAgents = 1;
 	createKernelAndAgents( false, false, false, true );
 
 	doFullTest();
 
-	if ( verbose ) std::cout << "Test complete." << std::endl;
+	if ( verbose )
+	{
+		std::cout << "Test complete." << std::endl;
+	}
 }
 
 void ClientSMLTest::testRemoteNoAutoCommit()
@@ -259,14 +268,20 @@ void ClientSMLTest::testRemoteNoAutoCommit()
 	remote = true;
 	spawnListener();
 
-	if ( verbose ) std::cout << "Spawned listener." << std::endl;
+	if ( verbose )
+	{
+		std::cout << "Spawned listener." << std::endl;
+	}
 
 	numberAgents = 1;
 	createKernelAndAgents( false, false, false, false );
 
 	doFullTest();
 
-	if ( verbose ) std::cout << "Test complete." << std::endl;
+	if ( verbose )
+	{
+		std::cout << "Test complete." << std::endl;
+	}
 }
 
 void memoryTestUpdateHandler( sml::smlUpdateEventId id, void* pUserData, sml::Kernel* pKernel, sml::smlRunFlags runFlags)
@@ -278,7 +293,7 @@ void memoryTestUpdateHandler( sml::smlUpdateEventId id, void* pUserData, sml::Ke
 	CPPUNIT_ASSERT( pUserData );
 	sml::Agent* pAgent = static_cast< sml::Agent* >( pUserData );
 
-	//std::cout << "step: " << step << std::endl;
+	std::cout << "step: " << step << std::endl;
 
 	switch ( step % 3 )
 	{
@@ -287,7 +302,6 @@ void memoryTestUpdateHandler( sml::smlUpdateEventId id, void* pUserData, sml::Ke
 		pRootWME = pAgent->CreateIdWME( pAgent->GetInputLink(), "RootWME" ) ;
 		//pChildWME = pAgent->CreateStringWME( pRootWME, "attr", "value" ) ;
 		// duplicated creating and destroying child element instead of root element
-		++step;
 		break;
 
 	case 1:
@@ -295,13 +309,13 @@ void memoryTestUpdateHandler( sml::smlUpdateEventId id, void* pUserData, sml::Ke
 		//delete the new WME
 		CPPUNIT_ASSERT( pAgent->DestroyWME( pRootWME ) );
 		pChildWME = 0;
-		++step;
 		break;
 
 	default:
 		break;
 	}
-		
+
+	++step;
 }
 
 void ClientSMLTest::infiniteMemoryTest()
@@ -321,7 +335,7 @@ void ClientSMLTest::infiniteMemoryTest()
 #ifdef _WIN32
 	_CrtMemState memState;
 	_CrtMemCheckpoint( &memState );
-	//_CrtSetBreakAlloc( 2913 );
+	//_CrtSetBreakAlloc( 2892 );
 #endif
 
 	//pAgent->RunSelf(3); // 3 cycles to allow one additional clean-up phase after identifier destruction
@@ -443,7 +457,10 @@ void ClientSMLTest::createKernelAndAgents( bool embedded, bool useClientThread, 
 
 void ClientSMLTest::initAgent( sml::Agent* pAgent )
 {
-	if ( verbose ) std::cout << "Performing simple init-soar..." << std::endl;
+	if ( verbose )
+	{
+		std::cout << "Performing simple init-soar..." << std::endl;
+	}
 	pAgent->InitSoar() ;
 	CPPUNIT_ASSERT_MESSAGE( "init-soar", pAgent->GetLastCommandLineResult() );
 }
@@ -466,7 +483,10 @@ void ClientSMLTest::loadProductions( sml::Agent* pAgent )
 	CPPUNIT_ASSERT_MESSAGE( pAgent->GetLastErrorDescription(), pAgent->UnregisterForPrintEvent(echoCallback) );
 	CPPUNIT_ASSERT_MESSAGE( pAgent->GetLastErrorDescription(), !pAgent->HadError() );
 
-	if ( verbose ) std::cout << "Loaded productions" << std::endl ;
+	if ( verbose )
+	{
+		std::cout << "Loaded productions" << std::endl ;
+	}
 
 	CPPUNIT_ASSERT( pAgent->IsProductionLoaded( "apply*move" ) );
 	CPPUNIT_ASSERT( !pAgent->IsProductionLoaded( "made*up*name" ) );
@@ -708,7 +728,10 @@ void ClientSMLTest::doXMLTest( sml::Agent* pAgent )
 		traceChild.GetChild( &wmeChild, i ) ;
 		char* wmeString = wmeChild.GenerateXMLString( true ) ;
 		CPPUNIT_ASSERT( wmeString );
-		if ( verbose ) std::cout << wmeString << std::endl ;
+		if ( verbose )
+		{
+			std::cout << wmeString << std::endl ;
+		}
 		wmeChild.DeleteString( wmeString ) ;
 	}
 	xml2.DeleteString(xmlString) ;
@@ -818,9 +841,15 @@ void ClientSMLTest::doAgentTest( sml::Agent* pAgent )
 	CPPUNIT_ASSERT( pKernel->UnregisterForUpdateEvent(callback_u) );
 
 	// Print out the standard trace and the same thing as a structured XML trace
-	if ( verbose ) std::cout << trace.str() << std::endl ;
+	if ( verbose )
+	{
+		std::cout << trace.str() << std::endl ;
+	}
 	trace.clear();
-	if ( verbose ) std::cout << structured << std::endl ;
+	if ( verbose )
+	{
+		std::cout << structured << std::endl ;
+	}
 
 	/*
 	printWMEs(pAgent->GetInputLink()) ;
@@ -875,7 +904,10 @@ void ClientSMLTest::doAgentTest( sml::Agent* pAgent )
 	// Can't test this at the same time as testing the getCommand() methods as registering for this clears the output link information
 	//int outputHandler = pAgent->AddOutputHandler("move", MyOutputEventHandler, NULL) ;
 
-	if ( verbose ) std::cout << "About to do first run-til-output" << std::endl ;
+	if ( verbose )
+	{
+		std::cout << "About to do first run-til-output" << std::endl ;
+	}
 
 	int callbackp1 = pAgent->RegisterForPrintEvent( sml::smlEVENT_PRINT, Handlers::MyPrintEventHandler, &trace) ;
 
@@ -888,8 +920,14 @@ void ClientSMLTest::doAgentTest( sml::Agent* pAgent )
 	CPPUNIT_ASSERT_MESSAGE( "Error in RunTilOutput -- it didn't stop on the output", myCount <= 10 );
 	CPPUNIT_ASSERT_MESSAGE( "Error in callback handler for MyRunEventHandler -- failed to update count", myCount > 0 );
 
-	if ( verbose ) std::cout << "Agent ran for " << myCount << " decisions before we got output" << std::endl ;
-	if ( verbose ) std::cout << trace.str() << std::endl ;
+	if ( verbose )
+	{
+		std::cout << "Agent ran for " << myCount << " decisions before we got output" << std::endl ;
+	}
+	if ( verbose )
+	{
+		std::cout << trace.str() << std::endl ;
+	}
 	trace.clear();
 
 	CPPUNIT_ASSERT_MESSAGE( "Error in AFTER_ALL_GENERATED event.", outputsGenerated == 1 );
