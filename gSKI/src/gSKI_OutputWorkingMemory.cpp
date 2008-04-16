@@ -764,4 +764,10 @@ namespace gSKI
       
       return iobj;
    }
+
+   int OutputWorkingMemory::GetWMObjMapSize() const
+   { 
+	   return static_cast<int>(this->m_wmobjectmap.size()); 
+   }
+
 }

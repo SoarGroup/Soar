@@ -760,6 +760,8 @@ namespace gSKI {
          return pWme;
       };
 
+	  virtual int GetWMObjMapSize() const; // for unit tests
+
    private:
 
       void ReleaseAllWmes();
