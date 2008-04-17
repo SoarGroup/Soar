@@ -244,7 +244,17 @@ std::string Handlers::MyRhsFunctionHandler(sml::smlRhsEventId, void* pUserData, 
 	return res.str() ;
 }
 
+void Handlers::MyMemoryLeakUpdateHandlerDestroyChildren( sml::smlUpdateEventId id, void* pUserData, sml::Kernel* pKernel, sml::smlRunFlags runFlags )
+{
+	MyMemoryLeakUpdateHandlerInternal( true, id, pUserData, pKernel, runFlags );
+}
+
 void Handlers::MyMemoryLeakUpdateHandler( sml::smlUpdateEventId id, void* pUserData, sml::Kernel* pKernel, sml::smlRunFlags runFlags )
+{
+	MyMemoryLeakUpdateHandlerInternal( false, id, pUserData, pKernel, runFlags );
+}
+
+void Handlers::MyMemoryLeakUpdateHandlerInternal( bool destroyChildren, sml::smlUpdateEventId id, void* pUserData, sml::Kernel* pKernel, sml::smlRunFlags runFlags )
 {
 	static int step(0);
 
@@ -284,13 +294,16 @@ void Handlers::MyMemoryLeakUpdateHandler( sml::smlUpdateEventId id, void* pUserD
 	case 1:
 		CPPUNIT_ASSERT( pAgent->GetIWMObjMapSize() == 3 ); // root, pRootID, pChildID
 
-		CPPUNIT_ASSERT( pAgent->DestroyWME( pChildID ) );		// BUGBUG: Should be destroyed by deletion of pRootID
+		if ( destroyChildren )
+		{
+			CPPUNIT_ASSERT( pAgent->DestroyWME( pChildID ) );		// BUGBUG: Should be destroyed by deletion of pRootID
 
-		// These three child leaks are not detected by looking at GetIWMObjMapSize
-		// TODO: figure out how to detect these
-		CPPUNIT_ASSERT( pAgent->DestroyWME( pChildString ) );	// BUGBUG: Should be destroyed by deletion of pRootID
-		CPPUNIT_ASSERT( pAgent->DestroyWME( pChildFloat ) );	// BUGBUG: Should be destroyed by deletion of pRootID
-		CPPUNIT_ASSERT( pAgent->DestroyWME( pChildInt ) );		// BUGBUG: Should be destroyed by deletion of pRootID
+			// These three child leaks are not detected by looking at GetIWMObjMapSize
+			// TODO: figure out how to detect these
+			CPPUNIT_ASSERT( pAgent->DestroyWME( pChildString ) );	// BUGBUG: Should be destroyed by deletion of pRootID
+			CPPUNIT_ASSERT( pAgent->DestroyWME( pChildFloat ) );	// BUGBUG: Should be destroyed by deletion of pRootID
+			CPPUNIT_ASSERT( pAgent->DestroyWME( pChildInt ) );		// BUGBUG: Should be destroyed by deletion of pRootID
+		}
 
 		CPPUNIT_ASSERT( pAgent->DestroyWME( pRootID ) );		// BUGBUG: Should destroy children, doesn't
 		CPPUNIT_ASSERT( pAgent->DestroyWME( pRootString ) );

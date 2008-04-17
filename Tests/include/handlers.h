@@ -30,7 +30,12 @@ public:
 	static void MyXMLEventHandler( sml::smlXMLEventId id, void* pUserData, sml::Agent* pAgent, sml::ClientXML* pXML );
 	static void MyInterruptHandler( sml::smlRunEventId id, void* pUserData, sml::Agent* pAgent, sml::smlPhase phase );
 	static std::string MyRhsFunctionHandler( sml::smlRhsEventId id, void* pUserData, sml::Agent* pAgent, char const* pFunctionName, char const* pArgument );
+	static void MyMemoryLeakUpdateHandlerDestroyChildren( sml::smlUpdateEventId id, void* pUserData, sml::Kernel* pKernel, sml::smlRunFlags runFlags );
 	static void MyMemoryLeakUpdateHandler( sml::smlUpdateEventId id, void* pUserData, sml::Kernel* pKernel, sml::smlRunFlags runFlags );
+
+private:
+	static void MyMemoryLeakUpdateHandlerInternal( bool destroyAll, sml::smlUpdateEventId id, void* pUserData, sml::Kernel* pKernel, sml::smlRunFlags runFlags );
+
 };
 
 #endif HANDLERS_H
