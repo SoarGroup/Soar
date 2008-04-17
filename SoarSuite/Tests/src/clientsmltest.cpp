@@ -22,7 +22,8 @@ class ClientSMLTest : public CPPUNIT_NS::TestCase
 {
 	CPPUNIT_TEST_SUITE( ClientSMLTest );	
 
-	CPPUNIT_TEST( testRootIdentifierMemoryLeak );  // see bugzilla bug 1034
+	CPPUNIT_TEST( testWMEMemoryLeakDestroyChildren );	// see bugzilla bugs 1034, 1035
+	CPPUNIT_TEST( testWMEMemoryLeak );					// see bugzilla bugs 1034, 1035
 	CPPUNIT_TEST( testEmbeddedDirectInit );
 	CPPUNIT_TEST( testEmbeddedDirect );
 	CPPUNIT_TEST( testEmbedded );
@@ -39,8 +40,9 @@ public:
 	void tearDown();	
 
 protected:
-	void testRootIdentifierMemoryLeak();
-	
+
+	void testWMEMemoryLeakDestroyChildren();
+	void testWMEMemoryLeak();
 	void testEmbeddedDirectInit();
 	void testEmbeddedDirect();
 	void testEmbedded();
@@ -54,6 +56,8 @@ private:
 	void createKernelAndAgents( bool embedded, bool useClientThread, bool fullyOptimized, bool autoCommit, int port = 12121 );
 
 	void doFullTest();
+
+	void testWMEMemoryLeakInternal( sml::UpdateEventHandler handler );
 
 	std::string getAgentName( int agentIndex );
 	void initAgent( sml::Agent* pAgent );
@@ -283,9 +287,19 @@ void ClientSMLTest::testRemoteNoAutoCommit()
 	}
 }
 
-void ClientSMLTest::testRootIdentifierMemoryLeak()
+void ClientSMLTest::testWMEMemoryLeakDestroyChildren()
 {
-	// see bugzilla bug 1034
+	testWMEMemoryLeakInternal( Handlers::MyMemoryLeakUpdateHandlerDestroyChildren );
+}
+
+void ClientSMLTest::testWMEMemoryLeak()
+{
+	testWMEMemoryLeakInternal( Handlers::MyMemoryLeakUpdateHandler );
+}
+
+void ClientSMLTest::testWMEMemoryLeakInternal( sml::UpdateEventHandler handler )
+{
+	// see bugzilla bug 1034, 1035
 
 	numberAgents = 1;
 	createKernelAndAgents(true, true, true, true);
@@ -293,7 +307,7 @@ void ClientSMLTest::testRootIdentifierMemoryLeak()
 	sml::Agent* pAgent = pKernel->GetAgent( getAgentName( 0 ).c_str() ) ;
 	CPPUNIT_ASSERT( pAgent != NULL );
 
-	pKernel->RegisterForUpdateEvent( sml::smlEVENT_AFTER_ALL_OUTPUT_PHASES, Handlers::MyMemoryLeakUpdateHandler, pAgent ) ;
+	pKernel->RegisterForUpdateEvent( sml::smlEVENT_AFTER_ALL_OUTPUT_PHASES, handler, pAgent ) ;
 
 	pAgent->ExecuteCommandLine("waitsnc --on");
 	
