@@ -54,8 +54,8 @@ typedef struct rl_stat_struct rl_stat;
 
 // mapping from rl productions to their q bounds
 template <class T> class SoarMemoryAllocator;
-typedef struct rl_q_bound_data_struct rl_q_bound_data;
-typedef map<production *, rl_q_bound_data, std::less<production *>, SoarMemoryAllocator<pair<production* const, rl_q_bound_data> > > rl_q_bound_map;
+typedef struct rl_qconf_data_struct rl_qconf_data;
+typedef map<production *, rl_qconf_data, std::less<production *>, SoarMemoryAllocator<pair<production* const, rl_qconf_data> > > rl_qconf_map;
 
 typedef struct select_info_struct select_info;
 
@@ -780,14 +780,15 @@ kernel time and total_cpu_time greater than the derived total CPU time. REW */
 
   /* mapping from productions to the upper and lower bounds for Q(s,a)
    * associated with that production */
-  rl_q_bound_map *rl_q_bounds;
+  rl_qconf_map *rl_qconf;
 
   /* The last value that we divided by in place of |S|*|A| to obtain the
    * q_bound update estimate. We want to update this so that the sum over all
    * values used is equal to 1 at all times. 
    * Right now I'm just going to increment this for every q update, even if
    * they occur at the same time. */
-  int rl_prob_divisor;
+  // not using this right now
+  //int rl_prob_divisor;
 
   // select
   select_info *select;

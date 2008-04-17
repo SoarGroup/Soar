@@ -169,6 +169,11 @@ void print_consed_list_of_condition_wmes (agent* thisAgent, list *c, int indent)
   }
 }
 
+/* Calculate the probability with which this production fired */
+//double production_fire_prob(agent* thisAgent, production* p) {
+//  return 1.0; // always chunk
+//}
+
 /* This is the wme which is causing this production to be backtraced through. 
    It is NULL when backtracing for a result preference.                   */
 
@@ -404,6 +409,11 @@ void backtrace_through_instantiation (agent* thisAgent,
   free_list (thisAgent, pots_to_print);
   free_list (thisAgent, locals_to_print);
   free_list (thisAgent, negateds_to_print);
+
+  // update the probability of the result preference by multiplying it with
+  // this production's preference
+  //double prod_prob = production_fire_prob(thisAgent, inst->prod);
+  thisAgent->chunk_prob *= inst->prob;
 }
 
 /* ---------------------------------------------------------------
@@ -662,3 +672,4 @@ Bool trace_ungrounded_potentials (agent* thisAgent, goal_stack_level grounds_lev
 
   return TRUE;
 }
+

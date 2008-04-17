@@ -65,6 +65,9 @@ extern "C"
         testing this flag, we avoid duplicating this work.  The value is set
         to FALSE whenever an instantiation is created. 
 
+      prob: Probability that this instantiation is created given its conditions
+        are satisfied. jzxu 4/04/2008
+
    Reference counts on instantiations:
       +1 if it's in the match set
       +1 for each preference it created that's still around
@@ -97,6 +100,7 @@ typedef struct instantiation_struct {
   Bool in_ms;  /* TRUE iff this inst. is still in the match set */
   tc_number backtrace_number;
   Bool GDS_evaluated_already;
+  double prob;
 } instantiation;
 
 /* REW: begin 09.15.96 */

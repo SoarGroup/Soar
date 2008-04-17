@@ -513,17 +513,20 @@ preference *choose_according_to_exploration_mode( agent *my_agent, slot *s, pref
 				top_value = cand->numeric_value;
       }
     }
-		for ( preference *cand=s->id->id.operator_slot->preferences[NUMERIC_INDIFFERENT_PREFERENCE_TYPE]; cand!=NIL; cand=cand->next ) {
+#if Q_CONFIDENCE_METHOD == HOEFFDING_BOUNDING
+    //for ( preference *cand=s->id->id.operator_slot->preferences[NUMERIC_INDIFFERENT_PREFERENCE_TYPE]; cand!=NIL; cand=cand->next ) {
+    for ( preference *cand=s->preferences[NUMERIC_INDIFFERENT_PREFERENCE_TYPE]; cand!=NIL; cand=cand->next ) {
       production* p = cand->inst->prod;
-      if (my_agent->rl_q_bounds->find(p) != my_agent->rl_q_bounds->end()) {
-        if ( (*my_agent->rl_q_bounds)[p].q_max > Vmaxb ) {
-          Vmaxb = (*my_agent->rl_q_bounds)[p].q_max;
+      if (my_agent->rl_qconf->find(p) != my_agent->rl_qconf->end()) {
+        if ( (*my_agent->rl_qconf)[p].q_max > Vmaxb ) {
+          Vmaxb = (*my_agent->rl_qconf)[p].q_max;
         }
-        if ( (*my_agent->rl_q_bounds)[p].q_min < Vminb ) {
-          Vminb = (*my_agent->rl_q_bounds)[p].q_min;
+        if ( (*my_agent->rl_qconf)[p].q_min < Vminb ) {
+          Vminb = (*my_agent->rl_qconf)[p].q_min;
         }
       }
     }
+#endif
   }
 	
 	switch ( exploration_policy )
@@ -553,11 +556,69 @@ preference *choose_according_to_exploration_mode( agent *my_agent, slot *s, pref
 			break;
 	}
 
+#if Q_CONFIDENCE_METHOD == INTERVAL_ESTIMATION || Q_CONFIDENCE_METHOD == HOEFFDING_BOUNDING
+  // check if there is separation of bounds
+  production* selected = NULL;
+  for ( preference *cand=s->preferences[NUMERIC_INDIFFERENT_PREFERENCE_TYPE]; cand!=NIL; cand=cand->next ) {
+    if (return_val->value == cand->value) {
+      selected = cand->inst->prod;
+      break;
+    }
+  }
+  if (!selected) {
+    print(my_agent, "SOMETHING'S WRONG\n");
+  }
+  if (my_agent->rl_qconf->find(selected) == my_agent->rl_qconf->end()) {
+    // initialize the bounds for this production
+    initialize_qconf(my_agent, selected);
+  }
+  double firing_qmin = (*my_agent->rl_qconf)[selected].q_min;
+  double firing_qmax = (*my_agent->rl_qconf)[selected].q_max;
+  if (firing_qmin > firing_qmax) {
+    // not enough info to calculate bounds yet
+    return_val->inst->prob = 0.0;
+  }
+  else {
+    print(my_agent, "[%f,%f] ", firing_qmin, firing_qmax);
+    bool separated = true;
+    int n_cands = 0;
+    for ( preference *cand=s->id->id.operator_slot->preferences[NUMERIC_INDIFFERENT_PREFERENCE_TYPE]; cand!=NIL; cand=cand->next ) {
+      production* p = cand->inst->prod;
+      n_cands++;
+      if (p != selected and my_agent->rl_qconf->find(p) != my_agent->rl_qconf->end()) {
+        rl_qconf_data &conf_data = (*my_agent->rl_qconf)[p];
+        print(my_agent, "[%f,%f] ", conf_data.q_min, conf_data.q_max);
+        if (conf_data.q_min > conf_data.q_max) {
+          // no data on this interval, so we can't claim separation
+          separated = false;
+          break;
+        }
+        if ((*my_agent->rl_qconf)[p].q_max > firing_qmin) {
+          // intervals overlap
+          separated = false;
+          break;
+        }
+      }
+    }
+    print(my_agent, "\n");
+
+    if (separated) {
+      // 1 - probability that all true q values are within their confidence intervals
+      return_val->inst->prob = pow(1.0 - get_rl_parameter(my_agent, RL_PARAM_BOUND_CONFIDENCE), n_cands);
+      print(my_agent, "Separated. Prob is %f\n", return_val->inst->prob);
+    }
+    else {
+      print(my_agent, "Not separated.\n");
+      return_val->inst->prob = 0.0;
+    }
+  }
+#endif
+
 	// should perform update here for chosen candidate in sarsa
 	if ( soar_rl_enabled( my_agent ) && ( get_rl_parameter( my_agent, RL_PARAM_LEARNING_POLICY, RL_RETURN_LONG ) == RL_LEARNING_SARSA ) ) {
-    if (my_agent->rl_q_bounds->find(return_val->inst->prod) != my_agent->rl_q_bounds->end()) {
-      Vminb = (*my_agent->rl_q_bounds)[return_val->inst->prod].q_min;
-      Vmaxb = (*my_agent->rl_q_bounds)[return_val->inst->prod].q_max;
+    if (my_agent->rl_qconf->find(return_val->inst->prod) != my_agent->rl_qconf->end()) {
+      Vminb = (*my_agent->rl_qconf)[return_val->inst->prod].q_min;
+      Vmaxb = (*my_agent->rl_qconf)[return_val->inst->prod].q_max;
     }
     print(my_agent, "\nsarsa production choice is %s\n", return_val->inst->prod->name->sc.name);
     print(my_agent, "\ncalling from sarsa Q: %f Qmin: %f Qmax: %f\n", return_val->numeric_value, Vminb, Vmaxb);

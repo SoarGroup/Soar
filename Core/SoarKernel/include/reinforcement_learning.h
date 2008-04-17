@@ -16,10 +16,18 @@
 #include <map>
 #include <string>
 #include <list>
+#include <set>
 
 #include "production.h"
 #include "gdatastructs.h"
 #include "chunk.h"
+
+// choosing the q value confidence method
+#define HOEFFDING_BOUNDING  0
+#define INTERVAL_ESTIMATION 1
+#define BAYESIAN_ESTIMATION 2
+
+#define Q_CONFIDENCE_METHOD INTERVAL_ESTIMATION
 
 //////////////////////////////////////////////////////////
 // RL Constants
@@ -42,13 +50,25 @@
 #define RL_PARAM_LEARNING_RATE				2
 #define RL_PARAM_LEARNING_POLICY			3
 #define RL_PARAM_ET_DECAY_RATE				4
-#define RL_PARAM_ET_TOLERANCE				5
-#define RL_PARAM_TEMPORAL_EXTENSION			6
-#define RL_PARAM_SA_SPACE_SIZE        7
-#define RL_PARAM_R_MAX                8
-#define RL_PARAM_V_MAX                9
-#define RL_PARAM_OOB_PROB            10
+#define RL_PARAM_ET_TOLERANCE         5
+#define RL_PARAM_TEMPORAL_EXTENSION   6
+
+#if Q_CONFIDENCE_METHOD == HOEFFDING_BOUNDING || Q_CONFIDENCE_METHOD == INTERVAL_ESTIMATION
+#define RL_PARAM_BOUND_CONFIDENCE     7
+#if Q_CONFIDENCE_METHOD == HOEFFDING_BOUNDING
+#define RL_PARAM_SA_SPACE_SIZE        8
+#define RL_PARAM_R_MAX                9
+#define RL_PARAM_V_MAX                10
 #define RL_PARAMS							       11 // must be 1+ last rl param
+
+#elif Q_CONFIDENCE_METHOD == INTERVAL_ESTIMATION
+#define RL_PARAM_IE_WINSIZE           8
+#define RL_PARAM_IE_LOWER_INDEX       9
+#define RL_PARAM_IE_UPPER_INDEX       10
+#define RL_PARAMS                     11
+
+#endif
+#endif
 
 // names of stats
 #define RL_STAT_UPDATE_ERROR				0
@@ -120,11 +140,21 @@ typedef struct rl_data_struct {
 	signed int impasse_type;	// if this goal is an impasse, what type
 } rl_data;
 
-typedef struct rl_q_bound_data_struct {
+typedef struct rl_qconf_data_struct {
+#if Q_CONFIDENCE_METHOD == INTERVAL_ESTIMATION   
+  double q_min;
+  double q_max;
+  // previous n sample window sorted by value
+  std::multiset<double> win_by_val;
+  // previous n sample window sorted by time
+  std::list<double> win_by_time;
+
+#elif Q_CONFIDENCE_METHOD == HOEFFDING_BOUNDING
   double q_min;
   double q_max;
   int num_updates;
-} rl_q_bound_data;
+#endif
+} rl_qconf_data;
 
 
 //////////////////////////////////////////////////////////
@@ -218,10 +248,8 @@ extern bool validate_te_enabled( const long new_val );
 extern const char *convert_te_enabled( const long val );
 extern const long convert_te_enabled( const char *val );
 
-// action space size and Rmax
-extern bool validate_rl_sa_space(const double new_val);
-extern bool validate_rl_rmax(const double new_val);
-extern bool validate_rl_oob_prob(const double new_val);
+extern bool validate_nonnegative(const double new_val);
+extern bool validate_probability(const double new_val);
 
 // shortcut for determining if Soar-RL is enabled
 extern bool soar_rl_enabled( agent *my_agent );
@@ -314,8 +342,10 @@ extern void store_rl_data( agent *my_agent, Symbol *goal, preference *cand );
 // update the value of Soar-RL rules
 extern void perform_rl_update( agent *my_agent, double op_value, double Vminb, double Vmaxb, Symbol *goal );
 
+// initialize confidence info for a production
+extern void initialize_qconf(agent* my_agent, production* p);
+
 // clears eligibility traces in accordance with watkins
 extern void watkins_clear( agent *my_agent, Symbol *goal );
 
-extern void initialize_q_bounds(agent* my_agent, production* p);
 #endif

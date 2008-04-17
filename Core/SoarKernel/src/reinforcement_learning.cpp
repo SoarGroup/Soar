@@ -20,8 +20,11 @@
 
 #include <iostream>
 #include <map>
+#include <set>
 #include <vector>
 #include <string>
+
+using std::multiset;
 
 #include "agent.h"
 #include "production.h"
@@ -534,9 +537,9 @@ bool validate_rl_learning_policy( const long new_val )
 	return ( ( new_val == RL_LEARNING_SARSA ) || ( new_val == RL_LEARNING_Q ) );
 }
 
-bool validate_rl_sa_space(const double new_val) { return new_val >= 0; }
-bool validate_rl_rmax(const double new_val) { return new_val >= 0.0; }
-bool validate_rl_oob_prob(const double new_val) { return 0 < new_val && new_val < 1; }
+
+bool validate_nonnegative(const double new_val) { return new_val >= 0.0; }
+bool validate_probability(const double new_val) { return 0.0 <= new_val && new_val <= 1.0; }
 
 /***************************************************************************
  * Function     : convert_rl_learning_policy
@@ -947,7 +950,7 @@ void revert_template_id( agent *my_agent )
 	deallocate_condition_list( my_agent, cond_top );
 
 	/*
-	if (my_agent->rl_q_bounds->find(new_production) == my_agent->rl_q_bounds->end()) {
+	if (my_agent->rl_qconf->find(new_production) == my_agent->rl_qconf->end()) {
 		print(my_agent, "create %s\n", new_name.c_str());
 		initialize_q_bounds(my_agent, new_production);
 	}
@@ -1163,6 +1166,34 @@ void store_rl_data( agent *my_agent, Symbol *goal, preference *cand )
 	}
 }
 
+void initialize_qconf(agent* my_agent, production* p) {
+#if Q_CONFIDENCE_METHOD == HOEFFDING_BOUNDING
+	// set initial upper and lower bounds for the q values
+	double Vmax = get_rl_parameter(my_agent, RL_PARAM_V_MAX);
+	if (Vmax == 0.0) {
+		Vmax = get_rl_parameter(my_agent, RL_PARAM_R_MAX) / (1.0 - get_rl_parameter(my_agent, RL_PARAM_DISCOUNT_RATE));
+	}
+	double conf = get_rl_parameter(my_agent, RL_PARAM_OOB_PROB);
+
+	/* I'm not sure what this should be yet, I'm just grabbing it out of even-dar
+	 * as a place holder. jzxu 03/07/2008 */
+	double qmax_0 = Vmax * log(ZETA2 * get_rl_parameter(my_agent, RL_PARAM_SA_SPACE_SIZE) / conf);
+	(*my_agent->rl_qconf)[p].q_min = -qmax_0;
+	(*my_agent->rl_qconf)[p].q_max = qmax_0;
+	(*my_agent->rl_qconf)[p].num_updates = 0;
+
+	//print(my_agent, "\n============ BOUNDS CREATE ============\n");
+	//print_production(my_agent, p, 0);
+	print(my_agent, "\nbound_create %s Qmin: %f Qmax: %f N: %d\n", p->name->sc.name, -qmax_0, qmax_0, 0);
+	//print(my_agent, "!!!!!!!!!!!! BOUNDS CREATE !!!!!!!!!!!!\n");
+#elif Q_CONFIDENCE_METHOD == INTERVAL_ESTIMATION
+  // as a sentinel for not being able to determine bounds yet, set q_min >
+  // q_max
+  (*my_agent->rl_qconf)[p].q_min = 1;
+  (*my_agent->rl_qconf)[p].q_max = 0;
+#endif
+}
+
 /***************************************************************************
  * Function     : perform_rl_update
  *
@@ -1257,12 +1288,13 @@ void perform_rl_update( agent *my_agent, double op_value, double Vminb, double V
 			}
 		}
 
+#if Q_CONFIDENCE_METHOD == HOEFFDING_BOUNDING
 		/* we can only update q bounds for TD(0) for now */
 		if (iter->second == 1.0) {
-			if (my_agent->rl_q_bounds->find(prod) == my_agent->rl_q_bounds->end()) {
-				initialize_q_bounds(my_agent, prod);
+			if (my_agent->rl_qconf->find(prod) == my_agent->rl_qconf->end()) {
+				initialize_qconf(my_agent, prod);
 			}
-			rl_q_bound_data &bounds = (*my_agent->rl_q_bounds)[prod];
+			rl_qconf_data &bounds = (*my_agent->rl_qconf)[prod];
 			int t = ++bounds.num_updates;
 
 			double confidence = get_rl_parameter(my_agent, RL_PARAM_OOB_PROB);
@@ -1300,6 +1332,48 @@ void perform_rl_update( agent *my_agent, double op_value, double Vminb, double V
 			print(my_agent, "\nbound_update %s Q: %f Qmin: %f Qmax: %f N: %d\n", prod->name->sc.name, temp, bounds.q_min, bounds.q_max, bounds.num_updates);
 			//print(my_agent, "!!!!!!!!!!!! BOUNDS UPDATE !!!!!!!!!!!!\n");
 		}
+#elif Q_CONFIDENCE_METHOD == INTERVAL_ESTIMATION
+    // maybe int. est. can easily handle eligibility traces?
+    if (iter->second == 1.0) {
+			if (my_agent->rl_qconf->find(prod) == my_agent->rl_qconf->end()) {
+				initialize_qconf(my_agent, prod);
+			}
+      int window_size = get_rl_parameter(my_agent, RL_PARAM_IE_WINSIZE);
+      int r = get_rl_parameter(my_agent, RL_PARAM_IE_LOWER_INDEX);
+      int s = get_rl_parameter(my_agent, RL_PARAM_IE_UPPER_INDEX);
+      
+      rl_qconf_data &conf_data = (*my_agent->rl_qconf)[prod];
+      conf_data.win_by_val.insert(temp);
+      conf_data.win_by_time.push_back(temp);
+      if (conf_data.win_by_time.size() > window_size) {
+        // keep a constant window size
+        double stale = conf_data.win_by_time.front();
+        // because multiset will erase all elements of the same value using
+        // erase(val), I have to use find to get the position of one element
+        // and erase that position
+        multiset<double>::iterator stale_pos = conf_data.win_by_val.find(stale);
+        conf_data.win_by_val.erase(stale_pos);
+        conf_data.win_by_time.pop_front();
+        
+        // set the min and max to be the values with predetermined indexes
+        // we only do this when the window has filled up
+        std::multiset<double>::iterator i;
+        int c;
+        for(i = conf_data.win_by_val.begin(), c = 0;
+            i != conf_data.win_by_val.end(); ++i, ++c)
+        {
+          if (c == r) {
+            conf_data.q_min = *i;
+          }
+          else if (c == s) {
+            conf_data.q_max = *i;
+            break;
+          }
+        }
+      }
+      print(my_agent, "\nbound_update %s Q: %f Qmin: %f Qmax: %f N: %d\n", prod->name->sc.name, temp, conf_data.q_min, conf_data.q_max, conf_data.win_by_val.size());
+    }
+#endif
 	}
 
 	data->reward = 0.0;
@@ -1320,31 +1394,11 @@ void watkins_clear( agent *my_agent, Symbol *goal )
 		data->eligibility_traces->erase( iter++ );
 }
 
-void initialize_q_bounds(agent* my_agent, production* p) {
-	// set initial upper and lower bounds for the q values
-	double Vmax = get_rl_parameter(my_agent, RL_PARAM_V_MAX);
-	if (Vmax == 0.0) {
-		Vmax = get_rl_parameter(my_agent, RL_PARAM_R_MAX) / (1.0 - get_rl_parameter(my_agent, RL_PARAM_DISCOUNT_RATE));
-	}
-	double conf = get_rl_parameter(my_agent, RL_PARAM_OOB_PROB);
-
-	/* I'm not sure what this should be yet, I'm just grabbing it out of even-dar
-	 * as a place holder. jzxu 03/07/2008 */
-	double qmax_0 = Vmax * log(ZETA2 * get_rl_parameter(my_agent, RL_PARAM_SA_SPACE_SIZE) / conf);
-	(*my_agent->rl_q_bounds)[p].q_min = -qmax_0;
-	(*my_agent->rl_q_bounds)[p].q_max = qmax_0;
-	(*my_agent->rl_q_bounds)[p].num_updates = 0;
-
-	//print(my_agent, "\n============ BOUNDS CREATE ============\n");
-	//print_production(my_agent, p, 0);
-	print(my_agent, "\nbound_create %s Qmin: %f Qmax: %f N: %d\n", p->name->sc.name, -qmax_0, qmax_0, 0);
-	//print(my_agent, "!!!!!!!!!!!! BOUNDS CREATE !!!!!!!!!!!!\n");
-}
 
 /* don't need this yet
 void print_q_bounds(agent* my_agent) {
-	rl_q_bound_map::iterator i;
-	for (i = my_agent->rl_q_bounds.begin(); i != my_agent->rl_q_bounds.end(); ++i) {
+	rl_qconf_map::iterator i;
+	for (i = my_agent->rl_qconf.begin(); i != my_agent->rl_qconf.end(); ++i) {
 		print(my_agent, "%s %d %f %f\n", i->first->name->sc.name, i->second.num_updates, i->second.q_min, i->second.q_max);
 	}
 }

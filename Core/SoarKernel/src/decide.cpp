@@ -835,8 +835,8 @@ byte require_preference_semantics (agent *thisAgent, slot *s, preference **resul
   if ( candidates && soar_rl_enabled( thisAgent ) )
   {
     compute_value_of_candidate( thisAgent, candidates, s, 0 );
-    double Vminb = (*thisAgent->rl_q_bounds)[candidates->inst->prod].q_min;
-    double Vmaxb = (*thisAgent->rl_q_bounds)[candidates->inst->prod].q_max;
+    double Vminb = (*thisAgent->rl_qconf)[candidates->inst->prod].q_min;
+    double Vmaxb = (*thisAgent->rl_qconf)[candidates->inst->prod].q_max;
     print(thisAgent, "\ncalling with lone require Q: %f Qmin: %f Qmax: %f\n", candidates->numeric_value, Vminb, Vmaxb);
     perform_rl_update( thisAgent, candidates->numeric_value, Vminb, Vmaxb, s->id );
   }
@@ -872,8 +872,8 @@ byte run_preference_semantics (agent* thisAgent, slot *s, preference **result_ca
         if ( !predict && soar_rl_enabled( thisAgent ) )
         {
           compute_value_of_candidate( thisAgent, force_result, s, 0 );
-          double Vminb = (*thisAgent->rl_q_bounds)[force_result->inst->prod].q_min;
-          double Vmaxb = (*thisAgent->rl_q_bounds)[force_result->inst->prod].q_max;
+          double Vminb = (*thisAgent->rl_qconf)[force_result->inst->prod].q_min;
+          double Vmaxb = (*thisAgent->rl_qconf)[force_result->inst->prod].q_max;
           print(thisAgent, "\ncalling with force result Q: %f Qmin: %f Qmax: %f\n", force_result->numeric_value, Vminb, Vmaxb);
           perform_rl_update( thisAgent, force_result->numeric_value, Vminb, Vmaxb, s->id );
         }
@@ -936,8 +936,8 @@ byte run_preference_semantics (agent* thisAgent, slot *s, preference **result_ca
   {
     // perform update here for just one candidate
     compute_value_of_candidate( thisAgent, candidates, s, 0 );
-    double Vminb = (*thisAgent->rl_q_bounds)[candidates->inst->prod].q_min;
-    double Vmaxb = (*thisAgent->rl_q_bounds)[candidates->inst->prod].q_max;
+    double Vminb = (*thisAgent->rl_qconf)[candidates->inst->prod].q_min;
+    double Vmaxb = (*thisAgent->rl_qconf)[candidates->inst->prod].q_max;
     print(thisAgent, "\ncalling with just one candidate Q: %f Qmin: %f Qmax: %f\n", candidates->numeric_value, Vminb, Vmaxb);
     perform_rl_update( thisAgent, candidates->numeric_value, Vminb, Vmaxb, s->id );
   }
@@ -1109,8 +1109,8 @@ byte run_preference_semantics (agent* thisAgent, slot *s, preference **result_ca
     {
       // perform update here for just one candidate
       compute_value_of_candidate( thisAgent, candidates, s, 0 );
-      double Vminb = (*thisAgent->rl_q_bounds)[candidates->inst->prod].q_min;
-      double Vmaxb = (*thisAgent->rl_q_bounds)[candidates->inst->prod].q_max;
+      double Vminb = (*thisAgent->rl_qconf)[candidates->inst->prod].q_min;
+      double Vmaxb = (*thisAgent->rl_qconf)[candidates->inst->prod].q_max;
       print(thisAgent, "\ncalling with just one candidate Q: %f Qmin: %f Qmax: %f\n", candidates->numeric_value, Vminb, Vmaxb);
       perform_rl_update( thisAgent, candidates->numeric_value, Vminb, Vmaxb, s->id );
     }

@@ -570,6 +570,8 @@ void create_instantiation (agent* thisAgent, production *prod,
    inst->rete_wme = w;
    inst->okay_to_variablize = TRUE;
    inst->in_ms = TRUE;
+   // jzxu 4/04/2008 
+   inst->prob = 1.0;
 
    /* REW: begin   09.15.96 */
    /*  We want to initialize the GDS_evaluated_already flag
