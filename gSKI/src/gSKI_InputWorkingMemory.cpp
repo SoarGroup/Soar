@@ -264,7 +264,12 @@ namespace gSKI
 		IWMObject* wmobj = oldwme->GetOwningObject();
 		const ISymbol* attr = oldwme->GetAttribute();
 
-		RemoveWme(oldwme);
+		// I'm not sure this will work: the remove wme function has been modified to mark
+		// substructure for removal and I'm not sure that's what we want to do when replacing 
+		// a wme. I'm not implementing this because InputWorkingMemory::ReplaceWme doesn't
+		// seem to even be used and we're not keeping gSKI around
+		MegaAssert(false, "NOT IMPLEMENTED");
+		//RemoveWme(oldwme);
 
 		// Now adding the new wme
 		return AddWme(wmobj, attr, newvalue);
@@ -323,8 +328,7 @@ namespace gSKI
 		return 0;
 	}
 
-	void InputWorkingMemory::RemoveWme(IWme* wme,
-		Error* err)
+	void InputWorkingMemory::RemoveWme(IWme* wme, Error* err)
 	{
 		ClearError(err);
 		if ( wme == 0 ) {
@@ -334,9 +338,19 @@ namespace gSKI
 			return;
 		}
 
+		// Get the WMObject that owns the wme.
+		IWMObject* iwmobj = wme->GetOwningObject();
+		InputWMObject* inwmobj = GetOrCreateObjectFromInterface( iwmobj );
+
+		// Shed the useless wme interface
 		InputWme* inwme = GetOrCreateWmeFromInterface(wme);
 
-		inwme->Remove();
+		// Tell the object that owns the wme to mark it for deletion and mark everything under it for deletion.
+		inwmobj->MarkWmeForRemoval( inwme, this->GetAgent(), this->GetAgent()->GetRemoveWmeCallback() );
+
+		// Old code: Can't call Remove directly, need to use
+		//InputWme* inwme = GetOrCreateWmeFromInterface(wme);
+		//inwme->Remove();
 	}
 
 	void InputWorkingMemory::RemoveObject(IWMObject* object,
@@ -382,7 +396,15 @@ namespace gSKI
 
 		if (iter == m_wmobjectmap.end())
 		{
-			MegaAssert( false, "didn't find object, this shouldn't be an assert");
+			// Due to the new behavior of removewme, we sometimes do not find an ID in our records that still exists
+			// in the kernel. It's unfortunate we're keeping records for this. 
+			
+			// I'm not completely sure about this but I think that the reason the ID still exists in the kernel 
+			// is due to timing, we may remove it from our records before the adds and removes are processed.
+
+			// TODO: verify my theory matches reality
+			//MegaAssert( false, "didn't find object, this shouldn't be an assert");
+			return;
 		}
 
 		iter->second->Release();
