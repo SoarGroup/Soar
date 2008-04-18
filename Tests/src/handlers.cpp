@@ -258,15 +258,21 @@ void Handlers::MyMemoryLeakUpdateHandlerInternal( bool destroyChildren, sml::sml
 {
 	static int step(0);
 
-	static sml::Identifier* pRootID( 0 );
+	static sml::Identifier* pRootID1( 0 );
+	static sml::Identifier* pRootID2( 0 );
 	static sml::StringElement* pRootString( 0 );
 	static sml::FloatElement* pRootFloat( 0 );
 	static sml::IntElement* pRootInt( 0 );
 
-	static sml::Identifier* pChildID( 0 );
+	static sml::Identifier* pChildID1( 0 );
+	static sml::Identifier* pChildID2( 0 );
+	static sml::Identifier* pChildID3( 0 );
+	static sml::Identifier* pChildID4( 0 );
 	static sml::StringElement* pChildString( 0 );
 	static sml::FloatElement* pChildFloat( 0 );
 	static sml::IntElement* pChildInt( 0 );
+
+	static sml::Identifier* pSharedID( 0 );
 
 	CPPUNIT_ASSERT( pUserData );
 	sml::Agent* pAgent = static_cast< sml::Agent* >( pUserData );
@@ -276,55 +282,94 @@ void Handlers::MyMemoryLeakUpdateHandlerInternal( bool destroyChildren, sml::sml
 	switch ( step % 3 )
 	{
 	case 0:
-		CPPUNIT_ASSERT( pAgent->GetIWMObjMapSize() == 1 ); // root
+		if ( pAgent->GetKernel()->IsRemoteConnection() == false )
+		{
+			CPPUNIT_ASSERT( pAgent->GetIWMObjMapSize() == 1 ); // root
+		}
 
-		pRootID = pAgent->CreateIdWME( pAgent->GetInputLink(), "pRootID" ) ;
-		pRootString = pAgent->CreateStringWME( pAgent->GetInputLink(), "pRootString", "RootValue" ) ;
-		pRootFloat = pAgent->CreateFloatWME( pAgent->GetInputLink(), "pRootFloat", 1.0 ) ;
-		pRootInt = pAgent->CreateIntWME( pAgent->GetInputLink(), "pRootInt", 1 ) ;
+		pRootID1 = pAgent->CreateIdWME( pAgent->GetInputLink(), "a" ) ;
+		pRootID2 = pAgent->CreateIdWME( pAgent->GetInputLink(), "b" ) ;
+		pRootString = pAgent->CreateStringWME( pAgent->GetInputLink(), "g", "gvalue" ) ;
+		pRootFloat = pAgent->CreateFloatWME( pAgent->GetInputLink(), "h", 1.0 ) ;
+		pRootInt = pAgent->CreateIntWME( pAgent->GetInputLink(), "i", 1 ) ;
 
-		pChildID = pAgent->CreateIdWME( pRootID, "pChildID" ) ;
-		pChildString = pAgent->CreateStringWME( pRootID, "pChildString", "ChildValue" ) ;
-		pChildFloat = pAgent->CreateFloatWME( pRootID, "pChildFloat", 2.0 ) ;
-		pChildInt = pAgent->CreateIntWME( pRootID, "pChildInt", 2 ) ;
+		pChildID1 = pAgent->CreateIdWME( pRootID1, "c" ) ;
+		pChildID2 = pAgent->CreateIdWME( pRootID1, "d" ) ;
+		pChildID3 = pAgent->CreateIdWME( pRootID2, "e" ) ;
+		pChildID4 = pAgent->CreateIdWME( pRootID2, "f" ) ;
+		pChildString = pAgent->CreateStringWME( pRootID1, "j", "jvalue" ) ;
+		pChildFloat = pAgent->CreateFloatWME( pRootID1, "k", 2.0 ) ;
+		pChildInt = pAgent->CreateIntWME( pRootID1, "l", 2 ) ;
 
-		CPPUNIT_ASSERT( pAgent->GetIWMObjMapSize() == 3 ); // root, pRootID, pChildID
+		pSharedID = pAgent->CreateSharedIdWME( pRootID1, "m", pChildID1 );
+
+		CPPUNIT_ASSERT( pAgent->Commit() );
+
+		if ( pAgent->GetKernel()->IsRemoteConnection() == false )
+		{
+			CPPUNIT_ASSERT( pAgent->GetIWMObjMapSize() == 7 ); // root, pRootID x 2, pChildID x 4
+		}
 		break;
 
 	case 1:
-		CPPUNIT_ASSERT( pAgent->GetIWMObjMapSize() == 3 ); // root, pRootID, pChildID
+		if ( pAgent->GetKernel()->IsRemoteConnection() == false )
+		{
+			CPPUNIT_ASSERT( pAgent->GetIWMObjMapSize() == 7 ); // root, pRootID x 2, pChildID x 4
+		}
 
 		if ( destroyChildren )
 		{
-			CPPUNIT_ASSERT( pAgent->DestroyWME( pChildID ) );		// BUGBUG: Should be destroyed by deletion of pRootID
+			// Destroying the children should be unnecessary but should not be illegal
+			CPPUNIT_ASSERT( pAgent->DestroyWME( pChildID1 ) );
+			CPPUNIT_ASSERT( pAgent->DestroyWME( pChildID2 ) );
+			CPPUNIT_ASSERT( pAgent->DestroyWME( pChildID3 ) );
+			CPPUNIT_ASSERT( pAgent->DestroyWME( pChildID4 ) );
 
 			// These three child leaks are not detected by looking at GetIWMObjMapSize
 			// TODO: figure out how to detect these
-			CPPUNIT_ASSERT( pAgent->DestroyWME( pChildString ) );	// BUGBUG: Should be destroyed by deletion of pRootID
-			CPPUNIT_ASSERT( pAgent->DestroyWME( pChildFloat ) );	// BUGBUG: Should be destroyed by deletion of pRootID
-			CPPUNIT_ASSERT( pAgent->DestroyWME( pChildInt ) );		// BUGBUG: Should be destroyed by deletion of pRootID
+			CPPUNIT_ASSERT( pAgent->DestroyWME( pChildString ) );	
+			CPPUNIT_ASSERT( pAgent->DestroyWME( pChildFloat ) );	
+			CPPUNIT_ASSERT( pAgent->DestroyWME( pChildInt ) );		
 		}
 
-		CPPUNIT_ASSERT( pAgent->DestroyWME( pRootID ) );		// BUGBUG: Should destroy children, doesn't
+		CPPUNIT_ASSERT( pAgent->DestroyWME( pRootID1 ) );		
+		CPPUNIT_ASSERT( pAgent->DestroyWME( pRootID2 ) );		
 		CPPUNIT_ASSERT( pAgent->DestroyWME( pRootString ) );
 		CPPUNIT_ASSERT( pAgent->DestroyWME( pRootFloat ) );
 		CPPUNIT_ASSERT( pAgent->DestroyWME( pRootInt ) );
 
-		CPPUNIT_ASSERT( pAgent->GetIWMObjMapSize() == 3 ); // root, pRootID, pChildID, removed after step
+		// Destroying the original apparently destroys this.
+		//CPPUNIT_ASSERT( pAgent->DestroyWME( pSharedID ) );	// BUGBUG destroying this too should probably not be an error
 
-		pRootID = 0;
+		CPPUNIT_ASSERT( pAgent->Commit() );
+
+		if ( pAgent->GetKernel()->IsRemoteConnection() == false )
+		{
+			CPPUNIT_ASSERT( pAgent->GetIWMObjMapSize() == 7 ); // root, pRootID x 2, pChildID x 4, removed after step
+		}
+
+		pRootID1 = 0;
+		pRootID2 = 0;
 		pRootString = 0;
 		pRootFloat = 0;
 		pRootInt = 0;
 
-		pChildID = 0;
+		pChildID1 = 0;
+		pChildID2 = 0;
+		pChildID3 = 0;
+		pChildID4 = 0;
 		pChildString = 0;
 		pChildFloat = 0;
 		pChildInt = 0;
+
+		pSharedID = 0;
 		break;
 
 	default:
-		CPPUNIT_ASSERT( pAgent->GetIWMObjMapSize() == 1 ); // root
+		if ( pAgent->GetKernel()->IsRemoteConnection() == false )
+		{
+			CPPUNIT_ASSERT( pAgent->GetIWMObjMapSize() == 1 ); // root
+		}
 		break;
 	}
 

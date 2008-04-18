@@ -27,6 +27,8 @@
 #include <string>
 #include <list>
 
+typedef void (*RemoveWmeCallback)( gSKI::Agent*, gSKI::IWme* pWME );
+
 namespace gSKI {
 
    class InputWorkingMemory;
@@ -312,6 +314,14 @@ namespace gSKI {
      void Update(std::set<InputWMObject*>& processedObjects, bool forceAdds, bool forceRemoves);
      void UpdateWMObjectChildren(std::set<InputWMObject*>& processedObjects, bool forceAdds, bool forceRemoves);
      Symbol* GetSoarSymbol() { return m_sym; }
+
+	 // This is called when InputWorkingMemory wants to delete a specific wme. Used to call Remove on the 
+	 // WME itself but that didn't cover the case where sub-structure needed to be updated (marked for removal).
+	 void MarkWmeForRemoval( InputWme* wme, Agent* pAgent, RemoveWmeCallback callback );
+	 // This is called when the wme representing this InputWMObject has been deleted (rather marked for deletion)
+	 // so anything referred to by this InputWMObject needs to also be deleted. The actual deletion occurs 
+	 // in the next update phase.
+	 void MarkForRemoval( std::set<InputWMObject*>& processedObjects, Agent* pAgent, RemoveWmeCallback callback );
      
    private:
      Symbol* m_sym;

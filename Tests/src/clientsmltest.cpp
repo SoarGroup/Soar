@@ -22,8 +22,6 @@ class ClientSMLTest : public CPPUNIT_NS::TestCase
 {
 	CPPUNIT_TEST_SUITE( ClientSMLTest );	
 
-	CPPUNIT_TEST( testWMEMemoryLeakDestroyChildren );	// see bugzilla bugs 1034, 1035
-	CPPUNIT_TEST( testWMEMemoryLeak );					// see bugzilla bugs 1034, 1035
 	CPPUNIT_TEST( testEmbeddedDirectInit );
 	CPPUNIT_TEST( testEmbeddedDirect );
 	CPPUNIT_TEST( testEmbedded );
@@ -31,7 +29,10 @@ class ClientSMLTest : public CPPUNIT_NS::TestCase
 	CPPUNIT_TEST( testNewThreadNoAutoCommit );
 	CPPUNIT_TEST( testRemote );
 	CPPUNIT_TEST( testRemoteNoAutoCommit );
-	//CPPUNIT_TEST( testRefCount );
+	CPPUNIT_TEST( testWMEMemoryLeakDestroyChildren );	// see bugzilla bug 1034
+	CPPUNIT_TEST( testWMEMemoryLeak );					// see bugzilla bug 1035
+	CPPUNIT_TEST( testWMEMemoryLeakNoAutoCommit );		// see bugzilla bug 1035
+	CPPUNIT_TEST( testWMEMemoryLeakRemote );			// see bugzilla bug 1035
 
 	CPPUNIT_TEST_SUITE_END();
 
@@ -43,6 +44,8 @@ protected:
 
 	void testWMEMemoryLeakDestroyChildren();
 	void testWMEMemoryLeak();
+	void testWMEMemoryLeakNoAutoCommit();
+	void testWMEMemoryLeakRemote();
 	void testEmbeddedDirectInit();
 	void testEmbeddedDirect();
 	void testEmbedded();
@@ -50,14 +53,13 @@ protected:
 	void testNewThreadNoAutoCommit();
 	void testRemote();
 	void testRemoteNoAutoCommit();
-	//void testRefCount();
 
 private:
 	void createKernelAndAgents( bool embedded, bool useClientThread, bool fullyOptimized, bool autoCommit, int port = 12121 );
 
 	void doFullTest();
 
-	void testWMEMemoryLeakInternal( sml::UpdateEventHandler handler );
+	void testWMEMemoryLeakInternal( sml::UpdateEventHandler handler, bool autoCommit, bool embedded );
 
 	std::string getAgentName( int agentIndex );
 	void initAgent( sml::Agent* pAgent );
@@ -289,20 +291,33 @@ void ClientSMLTest::testRemoteNoAutoCommit()
 
 void ClientSMLTest::testWMEMemoryLeakDestroyChildren()
 {
-	testWMEMemoryLeakInternal( Handlers::MyMemoryLeakUpdateHandlerDestroyChildren );
+	testWMEMemoryLeakInternal( Handlers::MyMemoryLeakUpdateHandlerDestroyChildren, true, true );
 }
 
 void ClientSMLTest::testWMEMemoryLeak()
 {
-	testWMEMemoryLeakInternal( Handlers::MyMemoryLeakUpdateHandler );
+	testWMEMemoryLeakInternal( Handlers::MyMemoryLeakUpdateHandler, true, true );
 }
 
-void ClientSMLTest::testWMEMemoryLeakInternal( sml::UpdateEventHandler handler )
+void ClientSMLTest::testWMEMemoryLeakNoAutoCommit()
+{
+	testWMEMemoryLeakInternal( Handlers::MyMemoryLeakUpdateHandler, false, true );
+}
+
+void ClientSMLTest::testWMEMemoryLeakRemote()
+{
+	remote = true;
+	spawnListener();
+
+	testWMEMemoryLeakInternal( Handlers::MyMemoryLeakUpdateHandler, true, false );
+}
+
+void ClientSMLTest::testWMEMemoryLeakInternal( sml::UpdateEventHandler handler, bool autoCommit, bool embedded )
 {
 	// see bugzilla bug 1034, 1035
 
 	numberAgents = 1;
-	createKernelAndAgents(true, true, true, true);
+	createKernelAndAgents(embedded, true, true, autoCommit);
 
 	sml::Agent* pAgent = pKernel->GetAgent( getAgentName( 0 ).c_str() ) ;
 	CPPUNIT_ASSERT( pAgent != NULL );
@@ -314,7 +329,7 @@ void ClientSMLTest::testWMEMemoryLeakInternal( sml::UpdateEventHandler handler )
 #ifdef _WIN32
 	_CrtMemState memState;
 	_CrtMemCheckpoint( &memState );
-	//_CrtSetBreakAlloc( 2926 );
+	//_CrtSetBreakAlloc( 2975 );
 #endif
 
 	pAgent->RunSelf(3); // 3 cycles to allow one additional clean-up phase after identifier destruction
@@ -394,7 +409,7 @@ void ClientSMLTest::createKernelAndAgents( bool embedded, bool useClientThread, 
 	CPPUNIT_ASSERT( pKernel != NULL );
 	CPPUNIT_ASSERT_MESSAGE( pKernel->GetLastErrorDescription(), !pKernel->HadError() );
 
-	pKernel->SetAutoCommit( false ) ;
+	pKernel->SetAutoCommit( autoCommit ) ;
 
 	// Set this to true to give us lots of extra debug information on remote clients
 	// (useful in a test app like this).

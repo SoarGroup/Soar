@@ -210,6 +210,9 @@ public:
 	gSKI::IWme* ConvertTimeTag(char const* pTimeTag) ;
 	void RecordTimeTag(char const* pTimeTag, gSKI::IWme* pWme) ;
 	void RemoveTimeTag(char const* pTimeTag) ;
+	// Used by callback from gSKI to remove records of a wme (timetag) that 
+	// is getting removed due to an object (identifier) deletion
+	void RemoveTimeTagByWmeSLOW(gSKI::IWme* pWme) ;	
 
 	void RecordLongTimeTag(long timeTag, gSKI::IWme* pWme) ;
 	void RemoveLongTimeTag(long timeTag) ;
