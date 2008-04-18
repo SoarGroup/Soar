@@ -453,6 +453,10 @@ protected:
 	// Remove a value from working memory.  The time tag is the string form of an int.
 	bool RemoveInputWME(gSKI::Agent* pAgent, char const* pTimeTag, gSKI::Error* pError) ;
 
+	// Remove a value from our records that has been removed by the kernel from working memory.
+	static void RemoveInputWMERecordsCallback(gSKI::Agent* pAgent, gSKI::IWme* pWME);
+	void RemoveInputWMERecords(gSKI::Agent* pAgent, gSKI::IWme* pWME) ;
+
 	// There should always be exactly one local connection to the kernel (the process that loaded us).
 	Connection* GetEmbeddedConnection() ;
 

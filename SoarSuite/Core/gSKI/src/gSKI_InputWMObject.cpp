@@ -449,4 +449,52 @@ namespace gSKI
 			}
 		}
 	}
+
+	void InputWMObject::MarkWmeForRemoval( InputWme* wme, Agent* pAgent, RemoveWmeCallback callback )
+	{
+		// Call remove on the wme to mark it for removal
+		wme->Remove();
+
+		// Keep track of what we have processed so that we avoid cycles
+		std::set<InputWMObject*> processedObjects;
+
+		// If this WME is an object and therefore in the childmap, we need to mark that object (all of its wmes)
+		// for deletion.
+		tWmeObjIt iter = m_childmap.find(wme);
+		if ( iter == m_childmap.end() )
+		{
+			// Didn't find it.
+			return;
+		}
+
+		// Mark that entire object for removal
+		iter->second->MarkForRemoval( processedObjects, pAgent, callback );
+	}
+
+	void InputWMObject::MarkForRemoval( std::set<InputWMObject*>& processedObjects, Agent* pAgent, RemoveWmeCallback callback )
+	{
+		// Don't process this object twice
+		// see processedObjects in Update methods above for more comments
+		if ( processedObjects.find(this) != processedObjects.end() ) 
+		{
+			return;
+		} 
+		else 
+		{
+			processedObjects.insert(this);
+		}
+
+		// iterate through wmes and mark them for removal
+		for ( std::set<InputWme*>::const_iterator iter1 = m_vwmes.begin(); iter1 != m_vwmes.end(); ++iter1 ) 
+		{
+				(*iter1)->Remove();
+				callback( pAgent, (*iter1));
+		}
+
+		// Iterate through child objects marking them for removal
+		for ( tWmeObjIt iter2 = m_childmap.begin(); iter2 != m_childmap.end(); ++iter2 ) 
+		{
+				iter2->second->MarkForRemoval( processedObjects, pAgent, callback );
+		}
+	}
 }

@@ -36,6 +36,9 @@ public:
 private:
 	static void MyMemoryLeakUpdateHandlerInternal( bool destroyAll, sml::smlUpdateEventId id, void* pUserData, sml::Kernel* pKernel, sml::smlRunFlags runFlags );
 
+	// This class is meant to be used to contain static functions only and never instantiated.
+	Handlers() {}
+	Handlers(const Handlers&) {}
 };
 
 #endif HANDLERS_H
