@@ -82,6 +82,8 @@ bool CommandLineInterface::ParseCommandToFile(gSKI::Agent* pAgent, std::vector<s
 	}
 
 	std::string oldResult(m_Result.str());
+	m_Result.str("");
+	std::string wtf(m_Result.str());
 
 	// Fire off command
 	bool ret = DoCommandInternal(pAgent, newArgv);
@@ -90,7 +92,7 @@ bool CommandLineInterface::ParseCommandToFile(gSKI::Agent* pAgent, std::vector<s
 	if (ret)
 	{
 		ctfOutput.assign(m_Result.str());
-		m_Result.clear();
+		m_Result.str("");
 	} 
 	else 
 	{
