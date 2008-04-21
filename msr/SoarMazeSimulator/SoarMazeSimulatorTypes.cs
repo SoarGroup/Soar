@@ -258,7 +258,7 @@ namespace Robotics.SoarMazeSimulator
         }
     }
 
-    public class MazeSimulatorOperations : PortSet<DsspDefaultLookup, DsspDefaultDrop, Get, Replace>
+    public class SoarMazeSimulatorOperations : PortSet<DsspDefaultLookup, DsspDefaultDrop, Get, Replace>
 //        ImageUpdate>
     {
     }
