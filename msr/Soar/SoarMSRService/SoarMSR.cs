@@ -29,7 +29,7 @@ namespace Robotics.SoarMSR
     public class SoarMSRService : DsspServiceBase
     {
         // For saving and restoring state
-        public const string InitialStateUri = ServicePaths.MountPoint + @"/Apps/QUT/Config/SoarMSR.Config.xml";
+        public const string InitialStateUri = ServicePaths.MountPoint + @"/Apps/Soar/Config/SoarMSR.Config.xml";
         [InitialStatePartner(Optional = true, ServiceUri = InitialStateUri)]
         protected SoarMSRState _state;
         

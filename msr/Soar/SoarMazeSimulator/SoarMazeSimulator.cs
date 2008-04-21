@@ -48,7 +48,7 @@ namespace Robotics.SoarMazeSimulator
     {
         #region setup
 
-        public const string InitialStateUri = ServicePaths.MountPoint + @"/Apps/QUT/Config/SoarMazeSimulator.Config.xml";
+        public const string InitialStateUri = ServicePaths.MountPoint + @"/Apps/Soar/Config/SoarMazeSimulator.Config.xml";
 
         // Add an InitialStatePartner so that the config file will be read
         // NOTE: Creating a new instance of the state here will NOT
@@ -158,7 +158,7 @@ namespace Robotics.SoarMazeSimulator
             // Jul-2007:
             // Changed the location of the files
             if (_state.Maze == null || _state.Maze == "")
-                _state.Maze = "Apps/QUT/SoarMazeSimulator/ModelLarge.bmp";
+                _state.Maze = "Apps/Soar/SoarMazeSimulator/ModelLarge.bmp";
 
             // Make sure that there is a floor texture
             // Plenty of others to try, e.g. concrete.jpg.

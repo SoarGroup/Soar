@@ -6,7 +6,7 @@
   
   <CreateServiceList>
     <ServiceRecordType>
-      <dssp:Contract>http://schemas.tempuri.org/2006/08/soarmazesimulator.html</dssp:Contract>
+      <dssp:Contract>http://schemas.tempuri.org/2008/03/soarmazesimulator.html</dssp:Contract>
     </ServiceRecordType>
 
     <ServiceRecordType>

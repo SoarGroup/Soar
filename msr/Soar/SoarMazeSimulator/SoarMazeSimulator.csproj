@@ -10,7 +10,7 @@
     </ApplicationIcon>
     <AssemblyKeyContainerName>
     </AssemblyKeyContainerName>
-    <AssemblyName>SoarMazeSimulator.Y2006.M08</AssemblyName>
+    <AssemblyName>SoarMazeSimulator.Y2008.M03</AssemblyName>
     <RootNamespace>Robotics.SoarMazeSimulator</RootNamespace>
     <AssemblyOriginatorKeyFile>C:\Microsoft Robotics Studio (1.5)\samples\mrisamples.snk</AssemblyOriginatorKeyFile>
     <DefaultClientScript>JScript</DefaultClientScript>

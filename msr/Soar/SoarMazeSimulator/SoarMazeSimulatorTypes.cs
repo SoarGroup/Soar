@@ -37,7 +37,7 @@ namespace Robotics.SoarMazeSimulator
     
     public sealed class Contract
     {
-        public const string Identifier = "http://schemas.tempuri.org/2006/08/soarmazesimulator.html";
+        public const string Identifier = "http://schemas.tempuri.org/2008/03/soarmazesimulator.html";
         /// Prevent this class from being instantiated
         private Contract()
         {
