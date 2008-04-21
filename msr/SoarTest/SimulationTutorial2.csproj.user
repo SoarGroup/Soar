@@ -1,8 +1,0 @@
-﻿<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
-  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
-    <StartAction>Program</StartAction>
-    <StartProgram>C:\Microsoft Robotics Studio (1.5)\bin\DssHost.exe</StartProgram>
-    <StartArguments>-p:50000 -t:50001 -m:"samples\config\simulationtutorial2.manifest.xml"</StartArguments>
-    <StartWorkingDirectory>C:\Microsoft Robotics Studio (1.5)\</StartWorkingDirectory>
-  </PropertyGroup>
-</Project>

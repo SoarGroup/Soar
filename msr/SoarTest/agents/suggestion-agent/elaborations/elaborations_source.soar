@@ -1,4 +1,0 @@
-source _all.soar
-source monitor.soar
-source output.soar
-source top-state.soar
