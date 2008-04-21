@@ -1,35 +1,12 @@
 //------------------------------------------------------------------------------
 // SoarMazeSimulator.cs
 //
-// Original version written by Ben Axelrod 15-Aug-2006
-// Updated by Trevor Taylor 26-Aug-2006
-// Updated again 19-Sep-2006 for the September CTP
-// Updated 7-Oct-2006 for October CTP
-// Recompiled under the November CTP on 8-Nov-2006
-// Updated for V1.0 on 15-Dec-2006
+// Original version written by Ben Axelrod and Trevor Taylor
+// http://www.soft-tech.com.au/MSRS/
 //
-// May/June 2007:
-// Modified slightly for a new Simulated Differential Drive entity
-// so that RotateDegrees and DriveDistance could be used with the
-// V1.5 CTP.
-//
-// These functions were added in V1.5, but they have bugs so I still
-// use my own version. Also, for use with the ExplorerSim I need to
-// get the robot's pose which is not implemented in V1.5, but is in
-// my version.
-//
-// July 2007:
-// Updated for new directory structure (as recommended by Microsoft)
-// and change in behaviour in V1.5 for config files.
-// 
-// This code is freely available
-//
-// IMPORTANT NOTE: Please read the readme.txt for information
-// on how this code works. You need to copy the wall texture
-// files to the MSRS media store. If you don't set it up properly
-// then you will have invisible walls!!!
-//
+// Updated for use with Soar by Jonathan Voigt
 //------------------------------------------------------------------------------
+
 using Microsoft.Ccr.Core;
 using Microsoft.Dss.Core;
 using Microsoft.Dss.Core.Attributes;
@@ -49,21 +26,14 @@ using Microsoft.Robotics.Simulation;
 using Microsoft.Robotics.Simulation.Engine;
 using engineproxy = Microsoft.Robotics.Simulation.Engine.Proxy;
 using Microsoft.Robotics.Simulation.Physics;
-// TT - October CTP has changed these
-//using drive = Microsoft.Robotics.Services.Drive.Simulated.Proxy;
-//using lrf = Microsoft.Robotics.Services.LaserRangeFinder.Simulated.Proxy;
-//using bumper = Microsoft.Robotics.Services.Bumper.Simulated.Proxy;
 using drive = Microsoft.Robotics.Services.Simulation.Drive.Proxy;
 using lrf = Microsoft.Robotics.Services.Simulation.Sensors.LaserRangeFinder.Proxy;
 using bumper = Microsoft.Robotics.Services.Simulation.Sensors.Bumper.Proxy;
-// TT - Added in October CTP
 using simwebcam = Microsoft.Robotics.Services.Simulation.Sensors.SimulatedWebcam.Proxy;
 using Microsoft.Robotics.PhysicalModel;
 using System.ComponentModel;
 #endregion
 
-// TT - No longer exists in October CTP
-//using Microsoft.Robotics.Simulation.Graphics;
 using Microsoft.Robotics.Simulation.Physics;
 using Microsoft.Robotics.PhysicalModel;
 
@@ -74,11 +44,10 @@ namespace Robotics.SoarMazeSimulator
     [Description("The SoarMazeSimulator Service")]
     [Contract(Contract.Identifier)]
     ////IMPORTANT
-    public class MazeSimulatorService : DsspServiceBase
+    public class SoarMazeSimulatorService : DsspServiceBase
     {
         #region setup
 
-        // TT Jul-2007 - Change in behaviour for V1.5
         public const string InitialStateUri = ServicePaths.MountPoint + @"/Apps/QUT/Config/SoarMazeSimulator.Config.xml";
 
         // Add an InitialStatePartner so that the config file will be read
@@ -88,7 +57,6 @@ namespace Robotics.SoarMazeSimulator
         [InitialStatePartner(Optional = true, ServiceUri = InitialStateUri)]
         private SoarMazeSimulatorState _state = null;
 
-        // TT - Increased to 16 in Oct 2006
         // Added MassMap and created a local copy of HeightMap
         // in case there were not enough items in the State.
         // Added a flag as well to create a sphere instead of a box.
@@ -110,12 +78,12 @@ namespace Robotics.SoarMazeSimulator
         private engineproxy.SimulationEnginePort _engineServicePort = new engineproxy.SimulationEnginePort();
 
         [ServicePort("/soarmazesimulator", AllowMultipleInstances=false)]
-        private MazeSimulatorOperations _mainPort = new MazeSimulatorOperations();
+        private SoarMazeSimulatorOperations _mainPort = new SoarMazeSimulatorOperations();
 
         /// <summary>
         /// Default Service Constructor
         /// </summary>
-        public MazeSimulatorService(DsspServiceCreationPort creationPort) : base(creationPort)
+        public SoarMazeSimulatorService(DsspServiceCreationPort creationPort) : base(creationPort)
         {
 
         }
@@ -296,7 +264,6 @@ namespace Robotics.SoarMazeSimulator
             PopulateWorld();
         }
 
-
         // TT Dec-2006 - Copied from Sim Tutorial 2 in V1.0
         private void SetupCamera()
         {
@@ -309,7 +276,7 @@ namespace Robotics.SoarMazeSimulator
             // looking along the Z axis
             view.EyePosition = new Vector3(0.0f, 7.0f, -7.0f);
             view.LookAtPoint = new Vector3(0.0f, 5.0f, -5.0f);
-            SimulationEngine.GlobalInstancePort.Update(view);
+            _simEnginePort.Update(view);
         }
 
         #endregion
@@ -1005,8 +972,7 @@ namespace Robotics.SoarMazeSimulator
 
             // Finaly insert the motor base and its two children 
             // to the simulation
-            //_simEnginePort.Insert(robotBaseEntity);
-            SimulationEngine.GlobalInstancePort.Insert(robotBaseEntity);
+            _simEnginePort.Insert(robotBaseEntity);
 
         }
 
@@ -1197,7 +1163,7 @@ namespace Robotics.SoarMazeSimulator
 
             // Finaly insert the motor base and its two children 
             // to the simulation
-            SimulationEngine.GlobalInstancePort.Insert(robotBaseEntity);
+            _simEnginePort.Insert(robotBaseEntity);
         }
 
 
@@ -1282,5 +1248,4 @@ namespace Robotics.SoarMazeSimulator
         #endregion
 
     }
-
 }
