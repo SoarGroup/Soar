@@ -955,6 +955,11 @@ EXPORT void sml_DirectReleaseWMObject(Direct_WMObject_Handle parent)
 	((IWMObject*)parent)->Release() ;
 }
 
+EXPORT int sml_DirectGetIWMObjMapSize(Direct_WorkingMemory_Handle wm)
+{
+	return ((IWorkingMemory*)wm)->GetWMObjMapSize();
+}
+
 /*
 EXPORT Direct_Agent_Handle sml_DirectGetAgent(char const* pAgentName)
 {

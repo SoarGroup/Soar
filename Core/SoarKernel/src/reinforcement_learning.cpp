@@ -1019,8 +1019,8 @@ void tabulate_reward_value_for_goal( agent *my_agent, Symbol *goal )
 
 	// Only count rewards at top state... 
 	// or for op no-change impasses.
-	if ( ( data->impasse_type != NONE_IMPASSE_TYPE ) && ( data->impasse_type != OP_NO_CHANGE_IMPASSE_TYPE ) )  
-		return;
+	//if ( ( data->impasse_type != NONE_IMPASSE_TYPE ) && ( data->impasse_type != OP_NO_CHANGE_IMPASSE_TYPE ) )  
+	//	return;
 	
 	slot *s = goal->id.reward_header->id.slots;
 	slot *t;

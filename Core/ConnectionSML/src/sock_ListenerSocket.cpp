@@ -199,7 +199,7 @@ Socket* ListenerSocket::CheckForClientConnection()
 	if (connectedSocket == INVALID_SOCKET)
 		return NULL ;
 
-	sml::PrintDebug("Received a connection") ;
+	//sml::PrintDebug("Received a connection") ;
 
 	// Create a generic CTSocket because once the connection has been
 	// made all sockets are both servers and clients.  No need to distinguish.

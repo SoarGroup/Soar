@@ -1621,3 +1621,8 @@ bool Agent::SynchronizeOutputLink()
 {
 	return GetWM()->SynchronizeOutputLink() ;
 }
+
+int Agent::GetIWMObjMapSize()
+{
+	return GetWM()->GetIWMObjMapSize();
+}

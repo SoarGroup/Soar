@@ -161,7 +161,7 @@ bool CommandLineInterface::DoCLog(gSKI::Agent* pAgent, const eLogMode mode, cons
 
 		case LOG_ADD:
 			if (!m_pLogFile) return SetError(CLIError::kLogNotOpen);
-			(*m_pLogFile) << pToAdd << std::endl;
+			(*m_pLogFile) << *pToAdd << std::endl;
 			return true;
 
 		case LOG_CLOSE:

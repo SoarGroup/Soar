@@ -170,6 +170,8 @@ bool KernelSML::HandleCreateAgent(gSKI::Agent* pAgentPtr, char const* pCommandNa
 		pInputLink->GetRootObject(&pRoot) ;
 		pAgent->GetInputLink()->AddInputProducer(pRoot, pInputProducer) ;
 		pRoot->Release() ;
+
+		pAgent->SetRemoveWmeCallback( RemoveInputWMERecordsCallback );
 	}
 
 	// Return true if we got an agent constructed.
@@ -981,6 +983,41 @@ bool KernelSML::RemoveInputWME(gSKI::Agent* pAgent, char const* pTimeTag, gSKI::
 		return !gSKI::isError(*pError) ;
 
 	return true ;
+}
+
+void KernelSML::RemoveInputWMERecordsCallback(gSKI::Agent* pAgent, gSKI::IWme* pWME)
+{
+	s_pKernel->RemoveInputWMERecords(pAgent, pWME);
+}
+
+void KernelSML::RemoveInputWMERecords(gSKI::Agent* pAgent, gSKI::IWme* pWME)
+{
+	if (!pAgent || !pWME)
+		return;
+
+	// We store additional information for SML in the AgentSML structure, so look that up.
+	AgentSML* pAgentSML = GetAgentSML(pAgent) ;
+
+	// If this is an identifier, need to remove it from the ID mapping table too.
+	if (pWME->GetValue()->GetType() == gSKI_OBJECT)
+	{
+		// Get the kernel-side identifier
+		std::string id = pWME->GetValue()->GetString() ;
+
+		// Look up the wmobject for this id
+		//IWMObject* pObject = NULL ;
+		//pInputWM->GetObjectById(id.c_str(), &pObject, pError) ;
+
+		//assert(!pError || !gSKI::isError(*pError)) ;
+		//pInputWM->RemoveObject(pObject) ;
+
+		// Remove it from the id mapping table
+		pAgentSML->RemoveID(id.c_str()) ;
+	}
+
+	// Remove the object from the time tag table because
+	// we no longer own it.
+	pAgentSML->RemoveTimeTagByWmeSLOW(pWME) ;
 }
 
 static char const* GetValueType(egSKISymbolType type)

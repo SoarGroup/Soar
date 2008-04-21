@@ -35,7 +35,7 @@ public:
 	// this should be called by the update event handler
 	void display_output(sml::Kernel* pKernel);
 
-	~View_Console() {}
+	virtual ~View_Console() {}
 
 private:
 	View_Console();

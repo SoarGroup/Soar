@@ -103,7 +103,7 @@ class CommandLineInterface : public gSKI::IPrintListener, public gSKI::IProducti
 public:
 
 	EXPORT CommandLineInterface();
-	EXPORT ~CommandLineInterface();
+	EXPORT virtual ~CommandLineInterface();
 
 	/*************************************************************
 	* @brief Set the kernel this command line module is interfacing with.
@@ -852,6 +852,8 @@ protected:
 
 	void LogQuery(); // for CLog command
 
+	std::string GenerateErrorString();
+
 ////////////////////////////////////////////
 	// New options code
 
@@ -889,7 +891,6 @@ protected:
 	sml::XMLTrace*		m_XMLEventTag;			// Used to collect up the xml events
 	bool				m_EchoResult;			// If true, copy result of command to echo event stream
 	EchoMap				m_EchoMap;				// If command appears in this map, always echo it.
-	bool				m_CloseLogAfterOutput;	// Used in command-to-file command ParseCommandToFile, closes log after output
 	bool				m_VarPrint;				// Used in print command to put <>'s around identifiers.
 	sml::XMLTrace*		m_XMLResult;			// Used to collect up XML output from commands that directly support that.
 

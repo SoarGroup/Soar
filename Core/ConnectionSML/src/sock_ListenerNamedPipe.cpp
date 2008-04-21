@@ -119,7 +119,7 @@ NamedPipe* ListenerNamedPipe::CheckForClientConnection()
 	if (!connected)
 		return NULL ;
 
-	sml::PrintDebug("Received a connection") ;
+	//sml::PrintDebug("Received a connection") ;
 
 	// Create a generic NamedPipe because once the connection has been
 	// made all pipes are both servers and clients.  No need to distinguish.

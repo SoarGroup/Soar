@@ -54,7 +54,7 @@ namespace gSKI {
        * 
        * Including adestructor for the usual C++ safety reasons.
        */     
-      ~InputWorkingMemory();
+      virtual ~InputWorkingMemory();
 
       /**
        * @brief Returns a pointer to the Agent that owns this InputWorkingMemory
@@ -488,6 +488,7 @@ namespace gSKI {
        */
       void RemoveObject(IWMObject* object,
                         Error* err = 0);
+	  void RemoveObjectByID(const char* id, Error* err = 0);
 
       /** 
        * @brief A convenience method for removing all the wmes owned by
@@ -759,12 +760,12 @@ namespace gSKI {
          return pWme;
       };
 
-      void registerObjectSymbol(gSymbol* pSym);
+	  virtual int GetWMObjMapSize() const; // for unit tests
+
    private:
 
       void ReleaseAllWmes();
       void ReleaseAllWMObjects();
-      void ReleaseAllSymbols();
 
       Agent* m_agent; /**< The agent associated with this working memory */
 
@@ -779,13 +780,6 @@ namespace gSKI {
       typedef tWmeMap::iterator tWmeMapItr;
 
       tWmeMap m_wmemap;
-
-      // TODO: Why are we keeping this set of symbols around???
-      // Remove it if it isn't necessary
-      typedef std::set<gSymbol*> tSymMap;
-      typedef tSymMap::iterator tSymMapItr;
-
-      tSymMap m_symMap;
    };
 }
 

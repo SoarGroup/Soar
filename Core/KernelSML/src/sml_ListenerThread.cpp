@@ -29,7 +29,7 @@ void ListenerThread::Run()
 {
 	
 	// Create the listener
-	sml::PrintDebugFormat("Listening on port %d", m_Port) ;
+	//sml::PrintDebugFormat("Listening on port %d", m_Port) ;
 	bool ok = m_ListenerSocket.CreateListener(m_Port) ;
 	
 	if (!ok)
@@ -41,7 +41,7 @@ void ListenerThread::Run()
 #ifdef ENABLE_LOCAL_SOCKETS
 
 	// Create the listener
-	sml::PrintDebugFormat("Listening on file %s%d", sock::GetLocalSocketDir().c_str(), m_Port) ;
+	//sml::PrintDebugFormat("Listening on file %s%d", sock::GetLocalSocketDir().c_str(), m_Port) ;
 
 	ok = m_LocalListenerSocket.CreateListener(m_Port, true);
 
@@ -61,7 +61,7 @@ void ListenerThread::Run()
 	pipeName << "\\\\.\\pipe\\" << username << "-" << m_Port;
 
 	// Create the listener
-	sml::PrintDebugFormat("Listening on pipe %s", pipeName.str().c_str()) ;
+	//sml::PrintDebugFormat("Listening on pipe %s", pipeName.str().c_str()) ;
 
 	ok = m_ListenerNamedPipe.CreateListener(pipeName.str().c_str()) ;
 
@@ -135,7 +135,7 @@ void ListenerThread::Run()
 
 void ListenerThread::CreateConnection(DataSender* pSender)
 {
-	sml::PrintDebugFormat("Got new connection on %s", pSender->GetName().c_str()) ;
+	//sml::PrintDebugFormat("Got new connection on %s", pSender->GetName().c_str()) ;
 
 	// Create a new connection object for this socket
 	Connection* pConnection = Connection::CreateRemoteConnection(pSender) ;

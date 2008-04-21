@@ -49,6 +49,8 @@ typedef void						(*DirectRunFunction)(char const*, bool, int, int, int) ;
 typedef void						(*DirectReleaseWMEFunction)(Direct_WorkingMemory_Handle, Direct_WME_Handle, long) ;
 typedef void						(*DirectReleaseWMObjectFunction)(Direct_WMObject_Handle) ;
 
+typedef int							(*DirectGetIWMObjMapSizeFunction)(Direct_WorkingMemory_Handle wm) ;
+
 /*************************************************************
 * @brief	Add a wme.
 * @param wm			The working memory object (either input or output)
@@ -102,6 +104,8 @@ EXPORT void sml_DirectRun(char const* pAgentName, bool forever, int stepSize, in
 
 EXPORT void sml_DirectReleaseWME(Direct_WorkingMemory_Handle, Direct_WME_Handle wme, long) ;
 EXPORT void sml_DirectReleaseWMObject(Direct_WMObject_Handle parent) ;
+
+EXPORT int sml_DirectGetIWMObjMapSize(Direct_WorkingMemory_Handle wm);	// for unit test, see bug 1034 and ClientSMLTest
 
 #ifdef __cplusplus
 } // extern C
