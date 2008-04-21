@@ -654,8 +654,10 @@ public class ConfigurationEditor extends Dialog {
 			metadataText.addFocusListener(new FocusAdapter() {
 				public void focusLost(FocusEvent e) {
 					String metadataFileString = metadataText.getText();
-					if (metadataFileString != null) {
+					if (metadataFileString != null && metadataFileString.length() != 0) {
 						config.setMetadata(new File(metadataFileString));
+					} else {
+						config.setMetadata(null);
 					}
 					generalUpdate();
 				}

@@ -51,7 +51,9 @@ public class Configuration {
 		this.silentAgents = config.silentAgents;
 		this.maxMemoryUsageValue = config.maxMemoryUsageValue;
 		this.asyncTimeSlice = config.asyncTimeSlice;
-		this.metadata = new File(config.metadata.getAbsolutePath());
+		if (config.metadata != null) {
+			this.metadata = new File(config.metadata.getAbsolutePath());
+		}
 
 		cModule.copy(cModule);
 
@@ -308,6 +310,10 @@ public class Configuration {
 	private File metadata;
 	private static final String kTagMetadata = "metadata";
 	public void setMetadata(File metadata) {
+		if (metadata == null) {
+			this.metadata = null;
+			return;
+		}
 		this.metadata = metadata.getAbsoluteFile();
 	}
 	public File getMetadata() {
