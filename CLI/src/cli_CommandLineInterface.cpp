@@ -160,7 +160,6 @@ EXPORT CommandLineInterface::CommandLineInterface() {
 	m_XMLEventTag = 0 ;
 	m_EchoResult = false ;
 	m_pAgentSML = 0 ;
-	m_CloseLogAfterOutput = false;
 	m_VarPrint = false;
 
 	m_XMLResult = new XMLTrace() ;
@@ -229,12 +228,6 @@ EXPORT bool CommandLineInterface::DoCommand(Connection* pConnection, gSKI::Agent
 
 	GetLastResultSML(pConnection, pResponse);
 
-	// Close log if asked to
-	if (m_CloseLogAfterOutput) {
-		m_CloseLogAfterOutput = false;
-		DoCLog(pAgent, LOG_CLOSE, 0, 0, true);
-	}
-
 	// Always returns true to indicate that we've generated any needed error message already
 	return true;
 }
@@ -285,25 +278,8 @@ void CommandLineInterface::GetLastResultSML(sml::Connection* pConnection, sml::E
 		}
 	} else {
 		// The command failed, add the error message
-		string errorDescription = CLIError::GetErrorDescription(m_LastError);
-		if (m_LastErrorDetail.size()) {
-			errorDescription += "\nError detail: ";
-			errorDescription += m_LastErrorDetail;
-		}
-		if (m_Result.str().size()) {
-			errorDescription += "\nResult before error happened:\n";
-			errorDescription += m_Result.str();
-		}
-		if (gSKI::isError(m_gSKIError)) {
-			errorDescription += "\ngSKI Error code: ";
-			char buf[kMinBufferSize];
-			Int2String(m_gSKIError.Id, buf, kMinBufferSize);
-			errorDescription += buf;
-			errorDescription += "\ngSKI Error text: ";
-			errorDescription += m_gSKIError.Text;
-			errorDescription += "\ngSKI Error details: ";
-			errorDescription += m_gSKIError.ExtendedMsg;
-		}
+		string errorDescription = GenerateErrorString();
+
 		pConnection->AddErrorToSMLResponse(pResponse, errorDescription.c_str(), m_LastError);
 		EchoString(pConnection, errorDescription.c_str()) ;
 
@@ -317,6 +293,31 @@ void CommandLineInterface::GetLastResultSML(sml::Connection* pConnection, sml::E
 	m_LastError = CLIError::kNoError;	
 	m_LastErrorDetail.clear();			
 	gSKI::ClearError(&m_gSKIError);
+}
+
+string CommandLineInterface::GenerateErrorString()
+{
+	string errorDescription = CLIError::GetErrorDescription(m_LastError);
+	if (m_LastErrorDetail.size()) {
+		errorDescription += "\nError detail: ";
+		errorDescription += m_LastErrorDetail;
+	}
+	if (m_Result.str().size()) {
+		errorDescription += "\nResult before error happened:\n";
+		errorDescription += m_Result.str();
+	}
+	if (gSKI::isError(m_gSKIError)) {
+		errorDescription += "\ngSKI Error code: ";
+		char buf[kMinBufferSize];
+		Int2String(m_gSKIError.Id, buf, kMinBufferSize);
+		errorDescription += buf;
+		errorDescription += "\ngSKI Error text: ";
+		errorDescription += m_gSKIError.Text;
+		errorDescription += "\ngSKI Error details: ";
+		errorDescription += m_gSKIError.ExtendedMsg;
+	}
+
+	return errorDescription;
 }
 
 /************************************************************* 	 
