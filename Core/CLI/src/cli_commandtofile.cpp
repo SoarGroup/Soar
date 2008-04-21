@@ -81,14 +81,37 @@ bool CommandLineInterface::ParseCommandToFile(gSKI::Agent* pAgent, std::vector<s
 		newArgv.push_back(argv[i]);
 	}
 
-	// Open log
-	if (!DoCLog(pAgent, mode, &filename, 0, true)) {
+	std::string oldResult(m_Result.str());
+
+	// Fire off command
+	bool ret = DoCommandInternal(pAgent, newArgv);
+
+	std::string ctfOutput;
+	if (ret)
+	{
+		ctfOutput.assign(m_Result.str());
+		m_Result.clear();
+	} 
+	else 
+	{
+		ctfOutput = GenerateErrorString();
+	}
+
+	if (!DoCLog(pAgent, LOG_NEW, &filename, 0, true))
+	{
 		return false;
 	}
 
-	// Set flag to close log after output:
-	m_CloseLogAfterOutput = true;
+	if (!DoCLog(pAgent, LOG_ADD, 0, &ctfOutput, true))
+	{
+		return false;
+	}
 
-	// Fire off command
-	return DoCommandInternal(pAgent, newArgv);
+	if (!DoCLog(pAgent, LOG_CLOSE, 0, 0, true))
+	{
+		return false;
+	}
+
+	m_Result << oldResult;
+	return ret;
 }
