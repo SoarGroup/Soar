@@ -120,6 +120,7 @@ namespace Robotics.SoarMSR
             }
 
             string bumperName = notification.Body.Name.ToLowerInvariant();
+            //Trace.WriteLine(bumperName + " @ " + DateTime.Now + ": " + notification.Body.Pressed);
 
             if (bumperName.Contains("front"))
             {
@@ -185,7 +186,8 @@ namespace Robotics.SoarMSR
             if ((_halfObstacleAngleRange * 2) <= laserState.AngularResolution)
                 return;
 
-            double halfRange = laserState.AngularRange / 2.0f;
+            // Note: this assumes laserState.AngularRange % 2 = 0
+            int halfRange = laserState.AngularRange / 2;
             double amin = halfRange - _halfObstacleAngleRange;
             double amax = halfRange + _halfObstacleAngleRange;
 
@@ -201,25 +203,10 @@ namespace Robotics.SoarMSR
             }
             else
             {
-                if (_state.ObstacleRangeAverage)
+                for (int index = mmin; index <= mmax; ++index)
                 {
-                    computedRange = laserState.DistanceMeasurements[mmin];
-
-                    for (int index = mmin + 1; index <= mmax; ++index)
-                    {
-                        computedRange += laserState.DistanceMeasurements[index];
-                    }
-
-                    computedRange /= (mmax - mmin);
+                    computedRange = Math.Min(computedRange, laserState.DistanceMeasurements[index]);
                 }
-                else
-                {
-                    for (int index = mmin; index <= mmax; ++index)
-                    {
-                        computedRange = Math.Min(computedRange, laserState.DistanceMeasurements[index]);
-                    }
-                }
-                
             }
 
             //Trace.WriteLine("samples: " + (mmax - mmin) + ", range: " + computedRange);

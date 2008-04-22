@@ -13,5 +13,4 @@
   <TimeoutVariance>400</TimeoutVariance>
   <ObstacleAngleRange>45</ObstacleAngleRange>
   <MinimumObstacleRange>750</MinimumObstacleRange>
-  <ObstacleRangeAverage>false</ObstacleRangeAverage>
 </SoarMSRState>

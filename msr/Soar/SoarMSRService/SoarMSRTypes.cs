@@ -72,9 +72,6 @@ namespace Robotics.SoarMSR
         [DataMember]
         public int MinimumObstacleRange = 750;
 
-        [DataMember]
-        public bool ObstacleRangeAverage = false;
-
     }
 
     /// <summary>

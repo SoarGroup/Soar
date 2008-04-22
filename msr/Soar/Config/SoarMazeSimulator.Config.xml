@@ -1,6 +1,6 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <SoarMazeSimulatorState xmlns:s="http://www.w3.org/2003/05/soap-envelope" xmlns:wsa="http://schemas.xmlsoap.org/ws/2004/08/addressing" xmlns:d="http://schemas.microsoft.com/xw/2004/10/dssp.html" xmlns="http://schemas.tempuri.org/2008/03/soarmazesimulator.html">
-  <Maze>Apps/Soar/SoarMazeSimulator/ModelLarge.bmp</Maze>
+  <Maze>Apps/Soar/SoarMazeSimulator/ModelSmall.bmp</Maze>
   <GroundTexture>cellfloor.jpg</GroundTexture>
   <WallTextures>
     <string>QUT_Textures/water.jpg</string>
