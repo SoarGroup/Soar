@@ -150,6 +150,15 @@ bool Kernel::IsRemoteConnection()
 }
 
 /*************************************************************
+* @brief True if this is a direct connection to the kernel
+*		 (i.e. direct calls to gSKI are possible)
+*************************************************************/
+bool Kernel::IsDirectConnection()
+{
+	return GetConnection() && GetConnection()->IsDirectConnection() ;
+}
+
+/*************************************************************
 * @brief Preparation for deleting the kernel.
 *		 Agents are destroyed at this point (if we own the kernel)
 *		 After calling shutdown the kernel cannot be restarted
