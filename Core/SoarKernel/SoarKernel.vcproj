@@ -335,7 +335,7 @@
 				>
 			</File>
 			<File
-				RelativePath=".\include\io.h"
+				RelativePath=".\include\io_soar.h"
 				>
 			</File>
 			<File
