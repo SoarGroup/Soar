@@ -31,6 +31,7 @@ class ClientSMLTest : public CPPUNIT_NS::TestCase
 	CPPUNIT_TEST( testRemoteNoAutoCommit );
 	CPPUNIT_TEST( testWMEMemoryLeakDestroyChildren );	// see bugzilla bug 1034
 	CPPUNIT_TEST( testWMEMemoryLeak );					// see bugzilla bug 1035
+	CPPUNIT_TEST( testWMEMemoryLeakNotOptimized );		// see bugzilla bug 1035
 	CPPUNIT_TEST( testWMEMemoryLeakNoAutoCommit );		// see bugzilla bug 1035
 	CPPUNIT_TEST( testWMEMemoryLeakRemote );			// see bugzilla bug 1035
 
@@ -44,6 +45,7 @@ protected:
 
 	void testWMEMemoryLeakDestroyChildren();
 	void testWMEMemoryLeak();
+	void testWMEMemoryLeakNotOptimized();
 	void testWMEMemoryLeakNoAutoCommit();
 	void testWMEMemoryLeakRemote();
 	void testEmbeddedDirectInit();
@@ -59,7 +61,7 @@ private:
 
 	void doFullTest();
 
-	void testWMEMemoryLeakInternal( sml::UpdateEventHandler handler, bool autoCommit, bool embedded );
+	void testWMEMemoryLeakInternal( sml::UpdateEventHandler handler, bool autoCommit, bool embedded, bool fullyOptimized );
 
 	std::string getAgentName( int agentIndex );
 	void initAgent( sml::Agent* pAgent );
@@ -291,17 +293,22 @@ void ClientSMLTest::testRemoteNoAutoCommit()
 
 void ClientSMLTest::testWMEMemoryLeakDestroyChildren()
 {
-	testWMEMemoryLeakInternal( Handlers::MyMemoryLeakUpdateHandlerDestroyChildren, true, true );
+	testWMEMemoryLeakInternal( Handlers::MyMemoryLeakUpdateHandlerDestroyChildren, true, true, true );
 }
 
 void ClientSMLTest::testWMEMemoryLeak()
 {
-	testWMEMemoryLeakInternal( Handlers::MyMemoryLeakUpdateHandler, true, true );
+	testWMEMemoryLeakInternal( Handlers::MyMemoryLeakUpdateHandler, true, true, true );
+}
+
+void ClientSMLTest::testWMEMemoryLeakNotOptimized()
+{
+	testWMEMemoryLeakInternal( Handlers::MyMemoryLeakUpdateHandler, true, true, false );
 }
 
 void ClientSMLTest::testWMEMemoryLeakNoAutoCommit()
 {
-	testWMEMemoryLeakInternal( Handlers::MyMemoryLeakUpdateHandler, false, true );
+	testWMEMemoryLeakInternal( Handlers::MyMemoryLeakUpdateHandler, false, true, true );
 }
 
 void ClientSMLTest::testWMEMemoryLeakRemote()
@@ -309,15 +316,15 @@ void ClientSMLTest::testWMEMemoryLeakRemote()
 	remote = true;
 	spawnListener();
 
-	testWMEMemoryLeakInternal( Handlers::MyMemoryLeakUpdateHandler, true, false );
+	testWMEMemoryLeakInternal( Handlers::MyMemoryLeakUpdateHandler, true, false, true );
 }
 
-void ClientSMLTest::testWMEMemoryLeakInternal( sml::UpdateEventHandler handler, bool autoCommit, bool embedded )
+void ClientSMLTest::testWMEMemoryLeakInternal( sml::UpdateEventHandler handler, bool autoCommit, bool embedded, bool fullyOptimized )
 {
 	// see bugzilla bug 1034, 1035
 
 	numberAgents = 1;
-	createKernelAndAgents(embedded, true, true, autoCommit);
+	createKernelAndAgents(embedded, true, fullyOptimized, autoCommit);
 
 	sml::Agent* pAgent = pKernel->GetAgent( getAgentName( 0 ).c_str() ) ;
 	CPPUNIT_ASSERT( pAgent != NULL );

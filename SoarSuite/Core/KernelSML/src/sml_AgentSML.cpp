@@ -298,8 +298,9 @@ void AgentSML::RemoveID(char const* pKernelID)
 	IdentifierMapIter iter = m_ToClientIdentifierMap.find(pKernelID) ;
 
 	// This identifier should have been in the table
-	// Note: It might not be because the kernel may have already removed it if a parent
-	// object (identifier) was removed. See RemoveTimeTagByWmeSLOW, KernelSML::RemoveInputWMERecords
+	// Note: sometimes this is called by gSKI when it is removing wmes. gSKI doesn't know if
+	// we're a direct connection and therefore aren't using this map, so in that case we need to not
+	// update this. Therefore, we can't assert here.
 	//assert (iter != m_ToClientIdentifierMap.end()) ;
 	if (iter == m_ToClientIdentifierMap.end())
 		return ;
