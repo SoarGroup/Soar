@@ -82,16 +82,13 @@ bool acquiring_new_connection = false;
 
 int main()
 {
-#ifdef _DEBUG
-	// When we have a memory leak, set this variable to
-	// the allocation number (e.g. 122) and then we'll break
-	// when that allocation occurs.
-	//_crtBreakAlloc = 112;
-	_CrtSetDbgFlag ( _CRTDBG_ALLOC_MEM_DF | _CRTDBG_LEAK_CHECK_DF ); 
-	// we put everything in its own scope so memory leak detection can be done
+#ifdef _WIN32
+	_CrtMemState memState;
+	_CrtMemCheckpoint( &memState );
+	_CrtSetBreakAlloc( 165 );
+#endif //_WIN32
+
 	{
-#endif //_DEBUG
-		
 		// create and load the command map
 		command_map_t command_map;
 		load_command_map(command_map);
@@ -155,9 +152,10 @@ int main()
 		process_memory.clear();
 		input.IC_Shutdown();
 		ql_interface.QL_Shutdown();
-#ifdef _DEBUG
 	}
-#endif //_DEBUG
+#ifdef _WIN32
+	_CrtMemDumpAllObjectsSince( &memState );
+#endif //_WIN32
 }
 
 void load_command_map(command_map_t& command_map)
