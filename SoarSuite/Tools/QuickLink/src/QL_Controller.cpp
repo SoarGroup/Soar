@@ -85,7 +85,7 @@ int main()
 #ifdef _WIN32
 	_CrtMemState memState;
 	_CrtMemCheckpoint( &memState );
-	_CrtSetBreakAlloc( 165 );
+	//_CrtSetBreakAlloc( 165 );
 #endif //_WIN32
 
 	{
