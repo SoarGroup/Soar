@@ -28,7 +28,6 @@ class ClientSMLTest : public CPPUNIT_NS::TestCase
 	CPPUNIT_TEST( testNewThread );
 	CPPUNIT_TEST( testNewThreadNoAutoCommit );
 	CPPUNIT_TEST( testRemote );
-	CPPUNIT_TEST( testRemoteShutdownMessage );
 	CPPUNIT_TEST( testRemoteNoAutoCommit );
 	CPPUNIT_TEST( testSimpleCopy );
 	CPPUNIT_TEST( testSimpleReteNetLoader );
@@ -59,7 +58,6 @@ protected:
 	void testNewThread();
 	void testNewThreadNoAutoCommit();
 	void testRemote();
-	void testRemoteShutdownMessage();
 	void testRemoteNoAutoCommit();
 	void testSimpleCopy();
 	void testSimpleReteNetLoader();
@@ -99,7 +97,6 @@ private:
 	sml::Kernel* pKernel;
 	int numberAgents; // This number determines how many agents are created.  We create <n>, test <n> and then delete <n>
 	bool remote;
-	bool useShutdownMessage;
 
 #ifdef _WIN32
     STARTUPINFO si;
@@ -122,7 +119,6 @@ void ClientSMLTest::setUp()
 	numberAgents = 1;
 	clientXMLStorage = NULL;
 	remote = false;
-	useShutdownMessage = false;
 
 	// kernel initialized in test
 }
@@ -164,16 +160,13 @@ void ClientSMLTest::tearDown()
 		soar_thread::Event shutdownEvent;
 		pKernel->RegisterForSystemEvent( sml::smlEVENT_BEFORE_SHUTDOWN, Handlers::MyEventShutdownHandler, &shutdownEvent ) ;
 
-		if ( useShutdownMessage )
-		{
-			// BUGBUG
-			// ClientSML thread dies inelegantly here spewing forth error messages
-			// about sockets/pipes not being shut down correctly.
-			std::string shutdownResponse = pKernel->SendClientMessage(0, "test-listener", "shutdown") ;
-			CPPUNIT_ASSERT( shutdownResponse == "ok" );	
+		// BUGBUG
+		// ClientSML thread dies inelegantly here spewing forth error messages
+		// about sockets/pipes not being shut down correctly.
+		std::string shutdownResponse = pKernel->SendClientMessage(0, "test-listener", "shutdown") ;
+		CPPUNIT_ASSERT( shutdownResponse == "ok" );	
 
-			CPPUNIT_ASSERT_MESSAGE( "Listener side kernel shutdown failed to fire smlEVENT_BEFORE_SHUTDOWN", shutdownEvent.WaitForEvent(5, 0) );
-		}
+		CPPUNIT_ASSERT_MESSAGE( "Listener side kernel shutdown failed to fire smlEVENT_BEFORE_SHUTDOWN", shutdownEvent.WaitForEvent(5, 0) );
 
 		// Note, in the remote case, this does not fire smlEVENT_BEFORE_SHUTDOWN
 		// the listener side shutdown does trigger the event when it is deleted, see simplelistener.cpp
@@ -272,28 +265,6 @@ void ClientSMLTest::testNewThreadNoAutoCommit()
 void ClientSMLTest::testRemote()
 {
 	remote = true;
-	spawnListener();
-
-	if ( verbose )
-	{
-		std::cout << "Spawned listener." << std::endl;
-	}
-
-	numberAgents = 1;
-	createKernelAndAgents( false, false, false, true );
-
-	doFullTest();
-
-	if ( verbose )
-	{
-		std::cout << "Test complete." << std::endl;
-	}
-}
-
-void ClientSMLTest::testRemoteShutdownMessage()
-{
-	remote = true;
-	useShutdownMessage = true;	// same as testRemote except for this
 	spawnListener();
 
 	if ( verbose )
