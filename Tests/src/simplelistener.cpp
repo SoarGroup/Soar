@@ -73,25 +73,11 @@ int SimpleListener::run()
 	// How often we check to see if the list of connections has changed.
 	int checkConnections = 500 / pauseMsecsTotal ;
 	int counter = checkConnections ;
-	bool done = false;
-	bool connected = false;
 
-	for (int i = 0 ; i < life && !g_Cancel && !shutdownMessageReceived && !done ; i++)
+	for (int i = 0 ; i < life && !g_Cancel && !shutdownMessageReceived ; i++)
 	{
 		// Don't need to check for incoming as we're using the NewThread model.
 		if (useCurrentThread) pKernel->CheckForIncomingCommands() ;
-
-		// Have to call this before calling GetNumberConnections is valid.
-		pKernel->GetAllConnectionInfo() ;
-		
-		int nConnections = pKernel->GetNumberConnections() ;
-
-		// Wait until another system has connected and disconnected, then do an init-soar
-		if (nConnections == 2)
-			connected = true ;
-
-		if (nConnections == 1 && connected)
-			done = true ;
 
 		sml::Sleep(pauseSecs, pauseMsecs) ;
 	}
