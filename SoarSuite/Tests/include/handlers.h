@@ -16,7 +16,6 @@ public:
 	static void MyDeletionHandler( sml::smlAgentEventId id, void* pUserData, sml::Agent* pAgent );
 	static void MySystemEventHandler( sml::smlSystemEventId id, void* pUserData, sml::Kernel* pKernel );
 	static void MyCreationHandler( sml::smlAgentEventId id, void* pUserData, sml::Agent* pAgent );
-	static void MyEchoEventHandler( sml::smlPrintEventId id, void* pUserData, sml::Agent* pAgent, char const* pMsg );
 	static void MyProductionHandler( sml::smlProductionEventId id, void* pUserData, sml::Agent* pAgent, char const* pProdName, char const* pInstantiation );
 	static std::string MyClientMessageHandler( sml::smlRhsEventId id, void* pUserData, sml::Agent* pAgent, char const* pMessageType, char const* pMessage );
 	static std::string MyFilterHandler( sml::smlRhsEventId id, void* pUserData, sml::Agent* pAgent, char const* pMessageType, char const* pCommandLine );
@@ -32,6 +31,7 @@ public:
 	static std::string MyRhsFunctionHandler( sml::smlRhsEventId id, void* pUserData, sml::Agent* pAgent, char const* pFunctionName, char const* pArgument );
 	static void MyMemoryLeakUpdateHandlerDestroyChildren( sml::smlUpdateEventId id, void* pUserData, sml::Kernel* pKernel, sml::smlRunFlags runFlags );
 	static void MyMemoryLeakUpdateHandler( sml::smlUpdateEventId id, void* pUserData, sml::Kernel* pKernel, sml::smlRunFlags runFlags );
+	static void MyCallStopOnUpdateEventHandler( sml::smlUpdateEventId id, void* pUserData, sml::Kernel* pKernel, sml::smlRunFlags runFlags );
 
 private:
 	static void MyMemoryLeakUpdateHandlerInternal( bool destroyAll, sml::smlUpdateEventId id, void* pUserData, sml::Kernel* pKernel, sml::smlRunFlags runFlags );

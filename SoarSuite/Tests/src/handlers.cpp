@@ -47,14 +47,6 @@ void Handlers::MyCreationHandler( sml::smlAgentEventId, void* pUserData, sml::Ag
 	*pHandlerReceived = true;
 }
 
-void Handlers::MyEchoEventHandler( sml::smlPrintEventId, void* pUserData, sml::Agent*, char const* pMsg )
-{
-	CPPUNIT_ASSERT( pMsg != NULL );
-	CPPUNIT_ASSERT( pUserData );
-	bool* pHandlerReceived = static_cast< bool* >( pUserData );
-	*pHandlerReceived = true;
-}
-
 void Handlers::MyProductionHandler( sml::smlProductionEventId id, void* pUserData, sml::Agent*, char const*, char const* )
 {
 	CPPUNIT_ASSERT( pUserData );
@@ -375,3 +367,9 @@ void Handlers::MyMemoryLeakUpdateHandlerInternal( bool destroyChildren, sml::sml
 
 	++step;
 }
+
+void Handlers::MyCallStopOnUpdateEventHandler( sml::smlUpdateEventId, void*, sml::Kernel* pKernel, sml::smlRunFlags )
+{
+	pKernel->StopAllAgents();
+}
+
