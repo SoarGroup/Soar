@@ -1553,6 +1553,7 @@ public class WindowManager {
 			display.syncExec(new Runnable() {
 				public void run() {
 					visualWorld.setMap(Soar2D.simulation.world.getMap());
+					agentDisplay.setMap(Soar2D.simulation.world.getMap());
 					updateWorldGroup();
 					agentDisplay.worldChangeEvent();
 					visualWorld.redraw();

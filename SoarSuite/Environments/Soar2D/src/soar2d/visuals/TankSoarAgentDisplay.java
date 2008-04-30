@@ -6,6 +6,7 @@ import org.eclipse.swt.layout.*;
 import org.eclipse.swt.widgets.*;
 
 import soar2d.*;
+import soar2d.map.GridMap;
 import soar2d.player.*;
 import soar2d.world.PlayersManager;
 
