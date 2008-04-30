@@ -3,6 +3,7 @@ package soar2d.visuals;
 import org.eclipse.swt.*;
 import org.eclipse.swt.widgets.*;
 
+import soar2d.map.GridMap;
 import soar2d.player.Player;
 
 public class AgentDisplay extends Composite {
@@ -25,5 +26,8 @@ public class AgentDisplay extends Composite {
 
 	void agentEvent() {
 		assert false;
+	}
+
+	public void setMap(GridMap map) {
 	}
 }
