@@ -496,6 +496,9 @@ void destroy_soar_agent (Kernel * thisKernel, agent * delete_agent)
   // cleanup Soar-RL
   clean_parameters( delete_agent );
   clean_stats( delete_agent );
+  
+  // cleanup EpMem
+  epmem_clean_agent( delete_agent );
 
   // cleanup select
   init_select( delete_agent );

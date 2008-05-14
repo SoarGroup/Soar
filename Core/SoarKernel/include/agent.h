@@ -34,6 +34,8 @@
 #include "exploration.h"
 #include "reinforcement_learning.h"
 
+#include "episodic_memory.h"
+
 #include <string>
 #include <map>
 
@@ -46,6 +48,9 @@ typedef struct rhs_function_struct rhs_function;
 // Soar-RL types
 typedef struct rl_parameter_struct rl_parameter;
 typedef struct rl_stat_struct rl_stat;
+
+// EpMem types
+typedef struct epmem_data_struct epmem_data;
 
 typedef struct select_info_struct select_info;
 
@@ -763,6 +768,9 @@ kernel time and total_cpu_time greater than the derived total CPU time. REW */
   rl_stat *rl_stats[ RL_STATS ];
 
   int rl_template_count;
+  
+  // episodic memory
+  epmem_data *epmem_header;
 
   // select
   select_info *select;

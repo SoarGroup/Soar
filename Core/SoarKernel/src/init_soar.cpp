@@ -49,6 +49,7 @@
 #include "gski_event_system_functions.h"
 
 #include "reinforcement_learning.h"
+#include "episodic_memory.h"
 
 #define INIT_FILE       "init.soar"
 
@@ -477,6 +478,8 @@ void init_sysparams (agent* thisAgent) {
   thisAgent->sysparams[USE_LONG_CHUNK_NAMES] = TRUE;  /* kjh(B14) */
   thisAgent->sysparams[TRACE_OPERAND2_REMOVALS_SYSPARAM] = FALSE;
   thisAgent->sysparams[TIMERS_ENABLED] = TRUE;
+  
+  thisAgent->sysparams[EPMEM_ENABLED] = TRUE;
 }
 
 /* ===================================================================
@@ -1093,6 +1096,11 @@ void do_one_top_level_phase (agent* thisAgent)
 	  /** KJC June 05:  moved output function timers into do_output_cycle ***/
 
 	  do_output_cycle(thisAgent);
+	  
+	  if ( thisAgent->sysparams[EPMEM_ENABLED] )
+	  {
+		  epmem_update( thisAgent );
+	  }
 
  	  soar_invoke_callbacks(thisAgent, thisAgent, 
 			 AFTER_OUTPUT_PHASE_CALLBACK,
@@ -1661,6 +1669,10 @@ void init_agent_memory(agent* thisAgent)
   add_input_wme (thisAgent, thisAgent->io_header,
                  thisAgent->output_link_symbol,
                  thisAgent->io_header_output);
+  
+  // Create the ^epmem buffer
+  epmem_create_buffer( thisAgent, thisAgent->top_state );
+  epmem_init( thisAgent );
 
   // KJC & RPM 10/06
   // A lot of stuff isn't initialized properly until the input and output cycles are run the first time.
