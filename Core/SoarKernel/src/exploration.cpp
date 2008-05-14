@@ -490,6 +490,119 @@ bool set_reduction_rate( agent *my_agent, const long parameter, const long polic
 	return false;
 }
 
+#if Q_CONFIDENCE_METHOD == INTERVAL_ESTIMATION || Q_CONFIDENCE_METHOD == HOEFFDING_BOUNDING
+/* Check if there is separation between the intervals of the acceptable numeric
+ * indifferent operators. jzxu 04/24/2008 */
+Bool intervals_separated(agent* my_agent, slot* s) {
+  preference *cand=s->preferences[NUMERIC_INDIFFERENT_PREFERENCE_TYPE];
+  production* highest_p = cand->inst->prod;
+  if (!cand->next) {
+    return TRUE;
+  }
+  if (my_agent->rl_qconf->find(highest_p) == my_agent->rl_qconf->end()) {
+    return FALSE;
+  }
+  double highest_q_max = (*my_agent->rl_qconf)[highest_p].q_max;
+  double highest_q_min = (*my_agent->rl_qconf)[highest_p].q_min;
+  if (highest_q_max < highest_q_min) {
+    return FALSE;
+  }
+  Bool second_highest_q_max_filled = FALSE;
+  double second_highest_q_max;
+  double qmin, qmax;
+  for ( ; cand!=NIL; cand=cand->next ) {
+    production* p = cand->inst->prod;
+    if (p == highest_p) {
+      continue;
+    }
+    if (my_agent->rl_qconf->find(p) != my_agent->rl_qconf->end()) {
+      qmin = (*my_agent->rl_qconf)[p].q_min;
+      qmax = (*my_agent->rl_qconf)[p].q_max;
+      if (qmax > highest_q_max) {
+        second_highest_q_max = highest_q_max;
+        highest_q_max = qmax;
+        highest_q_min = qmin;
+        highest_p = p;
+      }
+      else if (!second_highest_q_max_filled) {
+        second_highest_q_max = qmax;
+        second_highest_q_max_filled = TRUE;
+      }
+      else if (qmax > second_highest_q_max) {
+        second_highest_q_max = qmax;
+      }
+    }
+    else {
+      // a candidate for which we don't know anything about the interval
+      return FALSE;
+    }
+  }
+  return second_highest_q_max < highest_q_min;
+}
+
+/* Calculate the probability that the true Q value of a particular operator is
+ * higher than that of all others. jzxu 04/24/2008 */
+double superior_q_prob(agent* my_agent, slot* s, preference* candidates, preference* selected) {
+  // check if there is separation of bounds
+  production* selected_p = NULL;
+  for ( preference *cand=s->preferences[NUMERIC_INDIFFERENT_PREFERENCE_TYPE]; cand!=NIL; cand=cand->next ) {
+    if (selected->value == cand->value) {
+      selected_p = cand->inst->prod;
+      break;
+    }
+  }
+  if (my_agent->rl_qconf->find(selected_p) == my_agent->rl_qconf->end()) {
+    // initialize the bounds for this production
+    initialize_qconf(my_agent, selected_p);
+  }
+  double firing_qmin = (*my_agent->rl_qconf)[selected_p].q_min;
+  double firing_qmax = (*my_agent->rl_qconf)[selected_p].q_max;
+  if (firing_qmin > firing_qmax) {
+    // not enough info to calculate bounds yet
+    return 0;
+  }
+  else {
+    print(my_agent, "[%f,%f] ", firing_qmin, firing_qmax);
+    bool separated = true;
+    int n_cands = 0;
+    for ( preference *cand=s->id->id.operator_slot->preferences[NUMERIC_INDIFFERENT_PREFERENCE_TYPE]; cand!=NIL; cand=cand->next ) {
+      production* p = cand->inst->prod;
+      n_cands++;
+      if (p != selected_p) {
+        if (my_agent->rl_qconf->find(p) != my_agent->rl_qconf->end()) {
+          rl_qconf_data &conf_data = (*my_agent->rl_qconf)[p];
+          print(my_agent, "[%f,%f] ", conf_data.q_min, conf_data.q_max);
+          if (conf_data.q_min > conf_data.q_max) {
+            // no data on this interval, so we can't claim separation
+            return 0;
+          }
+          if ((*my_agent->rl_qconf)[p].q_max >= firing_qmin) {
+            // intervals overlap
+            return 0;
+          }
+        }
+        else {
+          initialize_qconf(my_agent, p);
+          return 0;
+        }
+      }
+    }
+    print(my_agent, "\n");
+
+    if (separated) {
+      // 1 - probability that all true q values are within their confidence intervals
+      double prob = pow(1.0 - get_rl_parameter(my_agent, RL_PARAM_BOUND_CONFIDENCE), n_cands);
+      print(my_agent, "Separated. Prob is %f\n", prob);
+      return prob;
+    }
+    else {
+      print(my_agent, "Not separated.\n");
+      return 0;
+    }
+  }
+}
+#endif
+
 /***************************************************************************
  * Function     : choose_according_to_exploration_mode
  **************************************************************************/
@@ -557,61 +670,7 @@ preference *choose_according_to_exploration_mode( agent *my_agent, slot *s, pref
 	}
 
 #if Q_CONFIDENCE_METHOD == INTERVAL_ESTIMATION || Q_CONFIDENCE_METHOD == HOEFFDING_BOUNDING
-  // check if there is separation of bounds
-  production* selected = NULL;
-  for ( preference *cand=s->preferences[NUMERIC_INDIFFERENT_PREFERENCE_TYPE]; cand!=NIL; cand=cand->next ) {
-    if (return_val->value == cand->value) {
-      selected = cand->inst->prod;
-      break;
-    }
-  }
-  if (!selected) {
-    print(my_agent, "SOMETHING'S WRONG\n");
-  }
-  if (my_agent->rl_qconf->find(selected) == my_agent->rl_qconf->end()) {
-    // initialize the bounds for this production
-    initialize_qconf(my_agent, selected);
-  }
-  double firing_qmin = (*my_agent->rl_qconf)[selected].q_min;
-  double firing_qmax = (*my_agent->rl_qconf)[selected].q_max;
-  if (firing_qmin > firing_qmax) {
-    // not enough info to calculate bounds yet
-    return_val->inst->prob = 0.0;
-  }
-  else {
-    print(my_agent, "[%f,%f] ", firing_qmin, firing_qmax);
-    bool separated = true;
-    int n_cands = 0;
-    for ( preference *cand=s->id->id.operator_slot->preferences[NUMERIC_INDIFFERENT_PREFERENCE_TYPE]; cand!=NIL; cand=cand->next ) {
-      production* p = cand->inst->prod;
-      n_cands++;
-      if (p != selected and my_agent->rl_qconf->find(p) != my_agent->rl_qconf->end()) {
-        rl_qconf_data &conf_data = (*my_agent->rl_qconf)[p];
-        print(my_agent, "[%f,%f] ", conf_data.q_min, conf_data.q_max);
-        if (conf_data.q_min > conf_data.q_max) {
-          // no data on this interval, so we can't claim separation
-          separated = false;
-          break;
-        }
-        if ((*my_agent->rl_qconf)[p].q_max > firing_qmin) {
-          // intervals overlap
-          separated = false;
-          break;
-        }
-      }
-    }
-    print(my_agent, "\n");
-
-    if (separated) {
-      // 1 - probability that all true q values are within their confidence intervals
-      return_val->inst->prob = pow(1.0 - get_rl_parameter(my_agent, RL_PARAM_BOUND_CONFIDENCE), n_cands);
-      print(my_agent, "Separated. Prob is %f\n", return_val->inst->prob);
-    }
-    else {
-      print(my_agent, "Not separated.\n");
-      return_val->inst->prob = 0.0;
-    }
-  }
+  return_val->inst->prob = superior_q_prob(my_agent, s, candidates, return_val);
 #endif
 
 	// should perform update here for chosen candidate in sarsa

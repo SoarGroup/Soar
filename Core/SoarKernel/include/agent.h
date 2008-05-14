@@ -288,6 +288,11 @@ typedef struct agent_struct {
   /* RPM 9/06 end */
 
   Symbol            * reward_link_symbol;
+
+  //jzxu 04/26/2008 more symbols, for exposing q values on tie impasse
+  Symbol* rl_entry_symbol;
+  Symbol* qvalue_symbol;
+  Symbol* action_symbol;
   
   /* ----------------------- Symbol table stuff -------------------------- */
 

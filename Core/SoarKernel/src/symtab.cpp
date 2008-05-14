@@ -587,6 +587,11 @@ void create_predefined_symbols (agent* thisAgent) {
   thisAgent->goal_symbol = make_sym_constant (thisAgent, "goal");
   thisAgent->name_symbol = make_sym_constant (thisAgent, "name");
 
+  //jzxu 04/26/2008
+  thisAgent->rl_entry_symbol = make_sym_constant (thisAgent, "rl_entry");
+  thisAgent->qvalue_symbol = make_sym_constant (thisAgent, "q_value");
+  thisAgent->action_symbol = make_sym_constant (thisAgent, "action");
+
   thisAgent->ts_context_variable = make_variable (thisAgent, "<ts>");
   thisAgent->to_context_variable = make_variable (thisAgent, "<to>");
   thisAgent->sss_context_variable = make_variable (thisAgent, "<sss>");

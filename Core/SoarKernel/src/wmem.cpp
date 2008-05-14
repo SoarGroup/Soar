@@ -182,7 +182,10 @@ void remove_wme_list_from_wm (agent* thisAgent, wme *w)
    while (w) 
    {
       next_w = w->next;
-      
+      // jzxu 4/28/2008
+      if (strcmp(w->attr->sc.name, "rl_entry") == 0) {
+        symbol_remove_ref(thisAgent, w->value);
+      }
       remove_wme_from_wm (thisAgent, w);
       
       w = next_w;

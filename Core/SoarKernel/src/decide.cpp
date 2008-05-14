@@ -1,4 +1,5 @@
 /* vim:set expandtab shiftwidth=2 tabstop=2: */
+#include <float.h>
 #include <portability.h>
 #include "soar_rand.h" // provides SoarRand, a better random number generator (see bug 595)
 
@@ -1140,17 +1141,17 @@ byte run_preference_semantics (agent* thisAgent, slot *s, preference **result_ca
   {
     if (cand->value->common.decider_flag==UNARY_INDIFFERENT_DECIDER_FLAG)
       continue;
-  else if ( cand->value->common.decider_flag==UNARY_INDIFFERENT_CONSTANT_DECIDER_FLAG )
-    continue;
+    else if ( cand->value->common.decider_flag==UNARY_INDIFFERENT_CONSTANT_DECIDER_FLAG )
+      continue;
 
     /* --- check whether cand is binary indifferent to each other one --- */
     for (p=candidates; p!=NIL; p=p->next_candidate) {
       if (p==cand) continue;
       match_found = FALSE;
       for (p2=s->preferences[BINARY_INDIFFERENT_PREFERENCE_TYPE]; p2!=NIL;
-           p2=p2->next)
+          p2=p2->next)
         if ( ((p2->value==cand->value)&&(p2->referent==p->value)) ||
-             ((p2->value==p->value)&&(p2->referent==cand->value)) ) {
+            ((p2->value==p->value)&&(p2->referent==cand->value)) ) {
           match_found = TRUE;
           break;
         }
@@ -1166,6 +1167,35 @@ byte run_preference_semantics (agent* thisAgent, slot *s, preference **result_ca
   {
     if ( !consistency )
     {
+      /* Create an impasse if: 
+       * 1. the attribute ^impasse-on-rl t exists on the state
+       * 2. There is not a single operator whose Q value is clearly superior to all others
+       * jzxu experimental 04/23/2008 */
+      slot *slot;
+      wme* w;
+      Bool impasse_flag = FALSE;
+      for (slot = s->id->id.slots; slot != NULL && impasse_flag == 0; slot = slot->next) {
+        for ( w = slot->wmes; w != NULL && impasse_flag == 0; w = w->next) {
+          if (strcmp(w->attr->sc.name, "impasse-on-rl") == 0 && strcmp(w->value->sc.name, "t") == 0) {
+            impasse_flag = TRUE;
+            break;
+          }
+        }
+        if (impasse_flag) {
+          break;
+        }
+      }
+      if (impasse_flag) {
+#if Q_CONFIDENCE_METHOD == HOEFFDING_BOUNDING || Q_CONFIDENCE_METHOD == INTERVAL_ESTIMATION
+        if (!intervals_separated(thisAgent, s)) {
+          *result_candidates = candidates;
+          return TIE_IMPASSE_TYPE;
+        }
+#else
+        *result_candidates = candidates;
+        return TIE_IMPASSE_TYPE;
+#endif
+      }
       (*result_candidates) = choose_according_to_exploration_mode( thisAgent, s, candidates ); 
       (*result_candidates)->next_candidate = NIL;
     }
@@ -1495,6 +1525,55 @@ void update_impasse_items (agent* thisAgent, Symbol *id, preference *items) {
       cand->value->common.a.decider_wme->preference = bt_pref;
     } else {
       add_impasse_wme (thisAgent, id, thisAgent->item_symbol, cand->value, bt_pref);
+    }
+  }
+  
+  if (id->id.higher_goal) {
+    preference *rl_prefs = id->id.higher_goal->id.operator_slot->preferences[NUMERIC_INDIFFERENT_PREFERENCE_TYPE];
+    /* for rl rules, expose the q-values to the impasse jzxu 04/26/2008 */
+    for (preference* p = items; p != NIL; p = p->next_candidate) {
+      Symbol* op = p->value;
+      compute_value_of_candidate(thisAgent, p, id->id.higher_goal->id.operator_slot, DBL_MAX);
+      if (p->numeric_value == DBL_MAX) {
+        print_with_symbols(thisAgent, "No preferences for %y", p->value);
+        continue;
+      }
+      Symbol* op_id = make_new_identifier(thisAgent, 'Q', id->id.level);
+      add_impasse_wme(thisAgent, id, thisAgent->rl_entry_symbol, op_id, NIL);
+      add_input_wme(thisAgent, op_id, thisAgent->qvalue_symbol, make_float_constant(thisAgent, p->numeric_value));
+      add_input_wme(thisAgent, op_id, thisAgent->action_symbol, op);
+      /*
+      Bool q_val_found = FALSE;
+      //for (preference* rl_pref = id->id.higher_goal->id.preferences_from_goal; rl_pref != NIL; rl_pref = rl_pref->next_candidate) 
+      for (preference* rl_pref = rl_prefs; rl_pref != NIL; rl_pref = rl_pref->next) {
+        if (rl_pref->value == op && rl_pref->referent != NIL) {
+          // jzxu 04/26/2008: I hope the level argument is set correctly, I'm just guessing here
+          Symbol* op_id = make_new_identifier(thisAgent, 'Q', id->id.level);
+          //Symbol* q_val_const = make_float_constant(thisAgent, get_number_from_symbol(rl_pref->referent));
+          add_impasse_wme(thisAgent, id, thisAgent->rl_entry_symbol, op_id, NIL);
+          //wme_add_ref(rl_entry_wme);
+          //slot* q_val_slot = make_slot(thisAgent, op_id, thisAgent->qvalue_symbol);
+          //slot* action_slot = make_slot(thisAgent, op_id, thisAgent->action_symbol);
+
+          wme* qval_wme = add_input_wme(thisAgent, op_id, thisAgent->qvalue_symbol, rl_pref->referent);
+          //wme_add_ref(qval_wme);
+          //wme* q_val = make_wme(thisAgent, op_id, thisAgent->qvalue_symbol, rl_pref->referent, FALSE);
+          //insert_at_head_of_dll (q_val_slot->wmes, q_val, next, prev);
+          //add_wme_to_wm(thisAgent, q_val);
+
+          wme* action_wme = add_input_wme(thisAgent, op_id, thisAgent->action_symbol, op);
+          //wme_add_ref(action_wme);
+          //wme* op_ptr = make_wme(thisAgent, op_id, thisAgent->action_symbol, op, FALSE);
+          //insert_at_head_of_dll (action_slot->wmes, op_ptr, next, prev);
+          //add_wme_to_wm(thisAgent, op_ptr);
+
+          q_val_found = TRUE;
+          break;
+        }
+      }
+      if (!q_val_found) {
+        print(thisAgent, "Couldn't find a q value associated with an operator\n");
+      }*/
     }
   }
 }

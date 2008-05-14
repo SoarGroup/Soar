@@ -159,4 +159,10 @@ extern preference *get_highest_q_value_pref( preference *candidates );
 // computes total contribution for a candidate from each preference, as well as number of contributions
 extern void compute_value_of_candidate( agent *my_agent, preference *cand, slot *s, double default_value = 0 );
 
+// jzxu 04/24/2008
+#if Q_CONFIDENCE_METHOD == INTERVAL_ESTIMATION || Q_CONFIDENCE_METHOD == HOEFFDING_BOUNDING
+extern Bool intervals_separated(agent* my_agent, slot* s);
+extern double superior_q_prob(agent* my_agent, slot* s, preference* candidates, preference* selected);
+#endif
+
 #endif

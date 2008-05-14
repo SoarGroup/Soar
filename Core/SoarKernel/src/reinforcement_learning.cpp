@@ -41,6 +41,7 @@ using std::multiset;
 
 #include "reinforcement_learning.h"
 #include "misc.h"
+#include "decide.h"
 
 #define ZETA2 1.6449340668 // sum of the harmonic series 1/k^2
 
@@ -1403,3 +1404,4 @@ void print_q_bounds(agent* my_agent) {
 	}
 }
 */
+
