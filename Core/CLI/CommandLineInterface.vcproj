@@ -231,6 +231,10 @@
 					>
 				</File>
 				<File
+					RelativePath=".\src\cli_epmem.cpp"
+					>
+				</File>
+				<File
 					RelativePath=".\src\cli_excise.cpp"
 					>
 				</File>
