@@ -24,6 +24,7 @@ libadd = [
 	   'CommandLineInterface',
 	   'gSKI',
 	   'SoarKernel',
+	   'sqlite3',
 	   ]
 
 if sys.platform == 'cygwin':
@@ -39,6 +40,7 @@ libpath = [
 	    '../ConnectionSML',
 	    '../ElementXML', 
 	    '../pcre', 
+	    '../../SoarLibrary/lib',
 	    ]
 
 if env['static']:

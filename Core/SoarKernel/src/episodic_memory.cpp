@@ -17,6 +17,7 @@
 #include <stdlib.h>
 
 #include <iostream>
+#include <string>
 
 #include "symtab.h"
 #include "io_soar.h"
@@ -28,13 +29,22 @@
 
 #include "episodic_memory.h"
 
+#include "sqlite3.h"
+
+using namespace std;
+
 /***************************************************************************
  * Function     : epmem_clean_parameters
  **************************************************************************/
 void epmem_clean_parameters( agent *my_agent )
 {
 	for ( int i=0; i<EPMEM_PARAMS; i++ )
-	  delete my_agent->epmem_params[ i ];
+	{
+		if ( my_agent->epmem_params[ i ]->type == epmem_param_string )
+			delete my_agent->epmem_params[ i ]->param->string_param.value;
+			
+		delete my_agent->epmem_params[ i ];
+	}
 }
 
 /***************************************************************************
@@ -58,10 +68,23 @@ epmem_parameter *epmem_add_parameter( const char *name, const long value, bool (
 	// new parameter entry
 	epmem_parameter *newbie = new epmem_parameter;
 	newbie->param = new epmem_parameter_union;
+	newbie->param->constant_param.val_func = val_func;
+	newbie->param->constant_param.to_str = to_str;
+	newbie->param->constant_param.from_str = from_str;
+	newbie->param->constant_param.value = value;
+	newbie->type = epmem_param_constant;
+	newbie->name = name;
+	
+	return newbie;
+}
+
+epmem_parameter *epmem_add_parameter( const char *name, const char *value, bool (*val_func)( const char * ) )
+{
+	// new parameter entry
+	epmem_parameter *newbie = new epmem_parameter;
+	newbie->param = new epmem_parameter_union;
+	newbie->param->string_param.value = new string( value );
 	newbie->param->string_param.val_func = val_func;
-	newbie->param->string_param.to_str = to_str;
-	newbie->param->string_param.from_str = from_str;
-	newbie->param->string_param.value = value;
 	newbie->type = epmem_param_string;
 	newbie->name = name;
 	
@@ -130,10 +153,10 @@ const long epmem_get_parameter( agent *my_agent, const char *name, const double 
 	if ( param == EPMEM_PARAMS )
 		return NULL;
 	
-	if ( epmem_get_parameter_type( my_agent, param ) != epmem_param_string )
+	if ( epmem_get_parameter_type( my_agent, param ) != epmem_param_constant )
 		return NULL;
 	
-	return my_agent->epmem_params[ param ]->param->string_param.value;
+	return my_agent->epmem_params[ param ]->param->constant_param.value;
 }
 
 const char *epmem_get_parameter( agent *my_agent, const char *name, const char *test )
@@ -142,10 +165,12 @@ const char *epmem_get_parameter( agent *my_agent, const char *name, const char *
 	if ( param == EPMEM_PARAMS )
 		return NULL;
 	
-	if ( epmem_get_parameter_type( my_agent, param ) != epmem_param_string )
+	if ( epmem_get_parameter_type( my_agent, param ) == epmem_param_string )
+		return my_agent->epmem_params[ param ]->param->string_param.value->c_str();
+	if ( epmem_get_parameter_type( my_agent, param ) != epmem_param_constant )
 		return NULL;
 	
-	return my_agent->epmem_params[ param ]->param->string_param.to_str( my_agent->epmem_params[ param ]->param->string_param.value );
+	return my_agent->epmem_params[ param ]->param->constant_param.to_str( my_agent->epmem_params[ param ]->param->constant_param.value );
 }
 
 double epmem_get_parameter( agent *my_agent, const char *name )
@@ -167,10 +192,10 @@ const long epmem_get_parameter( agent *my_agent, const long param, const double 
 	if ( !epmem_valid_parameter( my_agent, param ) )
 		return NULL;
 
-	if ( epmem_get_parameter_type( my_agent, param ) != epmem_param_string )
+	if ( epmem_get_parameter_type( my_agent, param ) != epmem_param_constant )
 		return NULL;
 	
-	return my_agent->epmem_params[ param ]->param->string_param.value;
+	return my_agent->epmem_params[ param ]->param->constant_param.value;
 }
 
 const char *epmem_get_parameter( agent *my_agent, const long param, const char *test )
@@ -178,10 +203,12 @@ const char *epmem_get_parameter( agent *my_agent, const long param, const char *
 	if ( !epmem_valid_parameter( my_agent, param ) )
 		return NULL;
 	
-	if ( epmem_get_parameter_type( my_agent, param ) != epmem_param_string )
+	if ( epmem_get_parameter_type( my_agent, param ) == epmem_param_string )
+		return my_agent->epmem_params[ param ]->param->string_param.value->c_str();
+	if ( epmem_get_parameter_type( my_agent, param ) != epmem_param_constant )
 		return NULL;
 	
-	return my_agent->epmem_params[ param ]->param->string_param.to_str( my_agent->epmem_params[ param ]->param->string_param.value );
+	return my_agent->epmem_params[ param ]->param->constant_param.to_str( my_agent->epmem_params[ param ]->param->constant_param.value );
 }
 
 double epmem_get_parameter( agent *my_agent, const long param )
@@ -216,10 +243,12 @@ bool epmem_valid_parameter_value( agent *my_agent, const char *name, const char 
 	if ( param == EPMEM_PARAMS )
 		return false;
 	
-	if ( epmem_get_parameter_type( my_agent, param ) != epmem_param_string )
+	if ( epmem_get_parameter_type( my_agent, param ) == epmem_param_string )
+		return my_agent->epmem_params[ param ]->param->string_param.val_func( new_val );
+	if ( epmem_get_parameter_type( my_agent, param ) != epmem_param_constant )
 		return false;
 	
-	return my_agent->epmem_params[ param ]->param->string_param.val_func( my_agent->epmem_params[ param ]->param->string_param.from_str( new_val ) );
+	return my_agent->epmem_params[ param ]->param->constant_param.val_func( my_agent->epmem_params[ param ]->param->constant_param.from_str( new_val ) );
 }
 
 bool epmem_valid_parameter_value( agent *my_agent, const char *name, const long new_val )
@@ -228,10 +257,10 @@ bool epmem_valid_parameter_value( agent *my_agent, const char *name, const long 
 	if ( param == EPMEM_PARAMS )
 		return false;
 	
-	if ( epmem_get_parameter_type( my_agent, param ) != epmem_param_string )
+	if ( epmem_get_parameter_type( my_agent, param ) != epmem_param_constant )
 		return false;
 	
-	return my_agent->epmem_params[ param ]->param->string_param.val_func( new_val );
+	return my_agent->epmem_params[ param ]->param->constant_param.val_func( new_val );
 }
 
 //
@@ -252,10 +281,12 @@ bool epmem_valid_parameter_value( agent *my_agent, const long param, const char 
 	if ( !epmem_valid_parameter( my_agent, param ) )
 		return false;
 	
-	if ( epmem_get_parameter_type( my_agent, param ) != epmem_param_string )
+	if ( epmem_get_parameter_type( my_agent, param ) == epmem_param_string )
+		return my_agent->epmem_params[ param ]->param->string_param.val_func( new_val );
+	if ( epmem_get_parameter_type( my_agent, param ) != epmem_param_constant )
 		return false;
 	
-	return my_agent->epmem_params[ param ]->param->string_param.val_func( my_agent->epmem_params[ param ]->param->string_param.from_str( new_val ) );
+	return my_agent->epmem_params[ param ]->param->constant_param.val_func( my_agent->epmem_params[ param ]->param->constant_param.from_str( new_val ) );
 }
 
 bool epmem_valid_parameter_value( agent *my_agent, const long param, const long new_val )
@@ -263,10 +294,10 @@ bool epmem_valid_parameter_value( agent *my_agent, const long param, const long 
 	if ( !epmem_valid_parameter( my_agent, param ) )
 		return false;
 	
-	if ( epmem_get_parameter_type( my_agent, param ) != epmem_param_string )
+	if ( epmem_get_parameter_type( my_agent, param ) != epmem_param_constant )
 		return false;
 	
-	return my_agent->epmem_params[ param ]->param->string_param.val_func( new_val );
+	return my_agent->epmem_params[ param ]->param->constant_param.val_func( new_val );
 }
 
 /***************************************************************************
@@ -287,7 +318,7 @@ bool epmem_set_parameter( agent *my_agent, const char *name, double new_val )
 }
 
 bool epmem_set_parameter( agent *my_agent, const char *name, const char *new_val )
-{
+{	
 	const long param = epmem_convert_parameter( my_agent, name );
 	if ( param == EPMEM_PARAMS )
 		return false;
@@ -295,13 +326,19 @@ bool epmem_set_parameter( agent *my_agent, const char *name, const char *new_val
 	if ( !epmem_valid_parameter_value( my_agent, param, new_val ) )
 		return false;
 
-	const long converted_val = my_agent->epmem_params[ param ]->param->string_param.from_str( new_val );
+	if ( epmem_get_parameter_type( my_agent, param ) == epmem_param_string )
+	{
+		(*my_agent->epmem_params[ param ]->param->string_param.value) = new_val;
+		return true;
+	}
+	
+	const long converted_val = my_agent->epmem_params[ param ]->param->constant_param.from_str( new_val );
 
 	// learning special case
 	if ( param == EPMEM_PARAM_LEARNING )
 		set_sysparam( my_agent, EPMEM_ENABLED, converted_val );
 	
-	my_agent->epmem_params[ param ]->param->string_param.value = converted_val;
+	my_agent->epmem_params[ param ]->param->constant_param.value = converted_val;
 
 	return true;
 }
@@ -319,7 +356,7 @@ bool epmem_set_parameter( agent *my_agent, const char *name, const long new_val 
 	if ( param == EPMEM_PARAM_LEARNING )
 		set_sysparam( my_agent, EPMEM_ENABLED, new_val );
 	
-	my_agent->epmem_params[ param ]->param->string_param.value = new_val;
+	my_agent->epmem_params[ param ]->param->constant_param.value = new_val;
 
 	return true;
 }
@@ -341,13 +378,19 @@ bool epmem_set_parameter( agent *my_agent, const long param, const char *new_val
 	if ( !epmem_valid_parameter_value( my_agent, param, new_val ) )
 		return false;
 
-	const long converted_val = my_agent->epmem_params[ param ]->param->string_param.from_str( new_val );
+	if ( epmem_get_parameter_type( my_agent, param ) == epmem_param_string )
+	{
+		(*my_agent->epmem_params[ param ]->param->string_param.value) = new_val;
+		return true;
+	}
+	
+	const long converted_val = my_agent->epmem_params[ param ]->param->constant_param.from_str( new_val );
 
 	// learning special case
 	if ( param == EPMEM_PARAM_LEARNING )
 		set_sysparam( my_agent, EPMEM_ENABLED, converted_val );
 	
-	my_agent->epmem_params[ param ]->param->string_param.value = converted_val;
+	my_agent->epmem_params[ param ]->param->constant_param.value = converted_val;
 
 	return true;
 }
@@ -361,7 +404,7 @@ bool epmem_set_parameter( agent *my_agent, const long param, const long new_val 
 	if ( param == EPMEM_PARAM_LEARNING )
 		set_sysparam( my_agent, EPMEM_ENABLED, new_val );
 	
-	my_agent->epmem_params[ param ]->param->string_param.value = new_val;
+	my_agent->epmem_params[ param ]->param->constant_param.value = new_val;
 
 	return true;
 }
@@ -409,6 +452,69 @@ const long epmem_convert_learning( const char *val )
 		return_val = EPMEM_LEARNING_OFF;
 	
 	return return_val;
+}
+
+/////////////////////////////////////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+/////////////////////////////////////////////////////////////////////////////////////////////////////////
+// database
+/////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+/***************************************************************************
+ * Function     : epmem_validate_database
+ **************************************************************************/
+bool epmem_validate_database( const long new_val )
+{
+	return ( ( new_val == EPMEM_DB_MEM ) || ( new_val == EPMEM_DB_FILE ) );
+}
+
+/***************************************************************************
+ * Function     : epmem_convert_database
+ **************************************************************************/
+const char *epmem_convert_database( const long val )
+{
+	const char *return_val = NULL;
+	
+	switch ( val )
+	{
+		case EPMEM_DB_MEM:
+			return_val = "memory";
+			break;
+			
+		case EPMEM_DB_FILE:
+			return_val = "file";
+			break;
+	}
+	
+	return return_val;
+}
+
+const long epmem_convert_database( const char *val )
+{
+	long return_val = NULL;
+	
+	if ( !strcmp( val, "memory" ) )
+		return_val = EPMEM_DB_MEM;
+	else if ( !strcmp( val, "file" ) )
+		return_val = EPMEM_DB_FILE;
+	
+	return return_val;
+}
+
+/////////////////////////////////////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+/////////////////////////////////////////////////////////////////////////////////////////////////////////
+// path
+/////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+/***************************************************************************
+ * Function     : epmem_validate_path
+ **************************************************************************/
+bool epmem_validate_path( const char *new_val )
+{
+	return true;
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -582,5 +688,60 @@ void epmem_update( agent *my_agent )
 		gSKI_MakeAgentCallbackXML( my_agent, kFunctionBeginTag, kTagWarning );
 		gSKI_MakeAgentCallbackXML( my_agent, kFunctionAddAttribute, kTypeString, buf );
 		gSKI_MakeAgentCallbackXML( my_agent, kFunctionEndTag, kTagWarning );
+		
+		//
+		
+		if ( my_agent->epmem_db_status == -1 )
+		{			
+			const char *db_path;
+			if ( epmem_get_parameter( my_agent, EPMEM_PARAM_DB, EPMEM_RETURN_LONG ) == EPMEM_DB_MEM )
+				db_path = ":memory:";
+			else
+				db_path = epmem_get_parameter( my_agent, EPMEM_PARAM_PATH, EPMEM_RETURN_STRING );
+			
+			// attempt connection
+			my_agent->epmem_db_status = sqlite3_open_v2( db_path, &(my_agent->epmem_db), SQLITE_OPEN_READWRITE | SQLITE_OPEN_CREATE, NULL );
+			if ( my_agent->epmem_db_status )
+			{
+				char buf[256];
+				SNPRINTF( buf, 254, "DB ERROR: %s", sqlite3_errmsg( my_agent->epmem_db ) );
+				
+				print( my_agent, buf );
+						
+				gSKI_MakeAgentCallbackXML( my_agent, kFunctionBeginTag, kTagWarning );
+				gSKI_MakeAgentCallbackXML( my_agent, kFunctionAddAttribute, kTypeString, buf );
+				gSKI_MakeAgentCallbackXML( my_agent, kFunctionEndTag, kTagWarning );
+			}
+			else
+			{
+				const char *tail;
+				sqlite3_stmt *create;
+				
+				sqlite3_prepare_v2( my_agent->epmem_db, "CREATE TABLE IF NOT EXISTS wme_count (timestamp INT NOT NULL,wme_ct INT NOT NULL)", -1, &create, &tail );
+				sqlite3_step( create );
+				sqlite3_reset( create );
+				sqlite3_finalize( create );
+				
+				sqlite3_prepare_v2( my_agent->epmem_db, "BEGIN", -1, &(my_agent->epmem_stmt_begin), &tail );
+				sqlite3_prepare_v2( my_agent->epmem_db, "COMMIT", -1, &(my_agent->epmem_stmt_commit), &tail );
+				sqlite3_prepare_v2( my_agent->epmem_db, "INSERT INTO wme_count (timestamp,wme_ct) VALUES (strftime('%s','now'),?)", -1, &(my_agent->epmem_stmt_insert), &tail );				
+			}
+		}
+		
+		if ( my_agent->epmem_db_status != SQLITE_OK )
+			return;
+		
+		// start transaction
+		sqlite3_step( my_agent->epmem_stmt_begin );
+		sqlite3_reset( my_agent->epmem_stmt_begin );
+		
+		// add episode
+		sqlite3_bind_int( my_agent->epmem_stmt_insert, 1, my_agent->num_wmes_in_rete );
+		sqlite3_step( my_agent->epmem_stmt_insert );
+		sqlite3_reset( my_agent->epmem_stmt_insert );
+		
+		// end transaction
+		sqlite3_step( my_agent->epmem_stmt_commit );
+		sqlite3_reset( my_agent->epmem_stmt_commit );
 	}
 }

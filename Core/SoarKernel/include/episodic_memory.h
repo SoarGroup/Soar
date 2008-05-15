@@ -13,6 +13,8 @@
 #ifndef EPISODIC_MEMORY_H
 #define EPISODIC_MEMORY_H
 
+#include <string>
+
 #include "symtab.h"
 #include "wmem.h"
 
@@ -25,9 +27,14 @@
 #define EPMEM_LEARNING_ON 1
 #define EPMEM_LEARNING_OFF 2
 
+#define EPMEM_DB_MEM 1
+#define EPMEM_DB_FILE 2
+
 // names of params
 #define EPMEM_PARAM_LEARNING					0
-#define EPMEM_PARAMS							1 // must be 1+ last epmem param
+#define EPMEM_PARAM_DB							1
+#define EPMEM_PARAM_PATH						2
+#define EPMEM_PARAMS							3 // must be 1+ last epmem param
 
 // names of stats
 #define EPMEM_STAT_DUMMY					0
@@ -42,15 +49,15 @@
 //////////////////////////////////////////////////////////
 // EpMem Types
 //////////////////////////////////////////////////////////
-enum epmem_param_type { epmem_param_string = 1, epmem_param_number = 2, epmem_param_invalid = 3 };
+enum epmem_param_type { epmem_param_constant = 1, epmem_param_number = 2, epmem_param_string = 3, epmem_param_invalid = 4 };
 
-typedef struct epmem_string_parameter_struct  
+typedef struct epmem_constant_parameter_struct  
 {
 	long value;
 	bool (*val_func)( const long );
 	const char *(*to_str)( const long );
 	const long (*from_str)( const char * );
-} epmem_string_parameter;
+} epmem_constant_parameter;
 
 typedef struct epmem_number_parameter_struct  
 {
@@ -58,10 +65,17 @@ typedef struct epmem_number_parameter_struct
 	bool (*val_func)( double );
 } epmem_number_parameter;
 
+typedef struct epmem_string_parameter_struct  
+{
+	std::string *value;
+	bool (*val_func)( const char * );
+} epmem_string_parameter;
+
 typedef union epmem_parameter_union_class
 {
-	epmem_string_parameter string_param;
+	epmem_constant_parameter constant_param;
 	epmem_number_parameter number_param;
+	epmem_string_parameter string_param;
 } epmem_parameter_union;
 
 typedef struct epmem_parameter_struct
@@ -92,6 +106,7 @@ extern void epmem_clean_parameters( agent *my_agent );
 // add parameter
 extern epmem_parameter *epmem_add_parameter( const char *name, double value, bool (*val_func)( double ) );
 extern epmem_parameter *epmem_add_parameter( const char *name, const long value, bool (*val_func)( const long ), const char *(*to_str)( long ), const long (*from_str)( const char * ) );
+extern epmem_parameter *epmem_add_parameter( const char *name, const char *value, bool (*val_func)( const char * ) );
 
 // convert parameter
 extern const char *epmem_convert_parameter( agent *my_agent, const long param );
@@ -136,6 +151,14 @@ extern bool epmem_set_parameter( agent *my_agent, const long param, const long n
 extern bool epmem_validate_learning( const long new_val );
 extern const char *epmem_convert_learning( const long val );
 extern const long epmem_convert_learning( const char *val );
+
+// database
+extern bool epmem_validate_database( const long new_val );
+extern const char *epmem_convert_database( const long val );
+extern const long epmem_convert_database( const char *val );
+
+// path
+extern bool epmem_validate_path( const char *new_val );
 
 // shortcut for determining if EpMem is enabled
 extern bool epmem_enabled( agent *my_agent );

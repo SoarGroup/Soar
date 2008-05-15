@@ -35,6 +35,7 @@
 #include "reinforcement_learning.h"
 
 #include "episodic_memory.h"
+#include "sqlite3.h"
 
 #include <string>
 #include <map>
@@ -777,6 +778,12 @@ kernel time and total_cpu_time greater than the derived total CPU time. REW */
   // epmem
   epmem_parameter *epmem_params[ EPMEM_PARAMS ];
   epmem_stat *epmem_stats[ EPMEM_STATS ];
+  
+  sqlite3 *epmem_db;
+  int epmem_db_status;
+  sqlite3_stmt *epmem_stmt_begin;
+  sqlite3_stmt *epmem_stmt_commit;
+  sqlite3_stmt *epmem_stmt_insert;
 
   // select
   select_info *select;

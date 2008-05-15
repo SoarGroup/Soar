@@ -49,6 +49,7 @@
 #include "reinforcement_learning.h"
 #include "decision_manipulation.h"
 #include "episodic_memory.h"
+#include "sqlite3.h"
 
 /* JC ADDED: Need to initialize gski callbacks */
 #include "gski_event_system_functions.h"
@@ -348,8 +349,13 @@ agent * create_soar_agent (Kernel * thisKernel, char * agent_name) {            
   
   // epmem initialization
   newAgent->epmem_params[ EPMEM_PARAM_LEARNING ] = epmem_add_parameter( "learning", EPMEM_LEARNING_ON, &epmem_validate_learning, &epmem_convert_learning, &epmem_convert_learning );
+  newAgent->epmem_params[ EPMEM_PARAM_DB ] = epmem_add_parameter( "database", EPMEM_DB_FILE, &epmem_validate_database, &epmem_convert_database, &epmem_convert_database );
+  newAgent->epmem_params[ EPMEM_PARAM_PATH ] = epmem_add_parameter( "path", "", &epmem_validate_path );
   
   newAgent->epmem_stats[ EPMEM_STAT_DUMMY ] = epmem_add_stat( "dummy" );
+  
+  newAgent->epmem_db = NULL;
+  newAgent->epmem_db_status = -1;
   
   // select initialization
   newAgent->select = new select_info;
@@ -505,6 +511,14 @@ void destroy_soar_agent (Kernel * thisKernel, agent * delete_agent)
   
   // cleanup EpMem
   epmem_clean_parameters( delete_agent );
+  if ( delete_agent->epmem_db_status != -1 )
+  {
+	  sqlite3_finalize( delete_agent->epmem_stmt_begin );
+	  sqlite3_finalize( delete_agent->epmem_stmt_commit );
+	  sqlite3_finalize( delete_agent->epmem_stmt_insert );
+	  
+	  sqlite3_close( delete_agent->epmem_db );
+  }
   
   // cleanup select
   init_select( delete_agent );

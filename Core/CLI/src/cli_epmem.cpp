@@ -105,7 +105,7 @@ bool CommandLineInterface::ParseEpMem( gSKI::Agent* pAgent, std::vector<std::str
 		{
 			switch ( epmem_get_parameter_type( my_agent, argv[2].c_str() ) )
 			{
-				case epmem_param_string:
+				case epmem_param_constant:
 					if ( !epmem_valid_parameter_value( my_agent, argv[2].c_str(), argv[3].c_str() ) )
 						return SetError( CLIError::kInvalidValue );
 					else
@@ -116,6 +116,13 @@ bool CommandLineInterface::ParseEpMem( gSKI::Agent* pAgent, std::vector<std::str
 					double temp;
 					from_string( temp, argv[3] );
 					if ( !epmem_valid_parameter_value( my_agent, argv[2].c_str(), temp ) )
+						return SetError( CLIError::kInvalidValue );
+					else
+						return DoEpMem( pAgent, 's', &( argv[2] ), &( argv[3] ) );
+					break;
+					
+				case epmem_param_string:
+					if ( !epmem_valid_parameter_value( my_agent, argv[2].c_str(), argv[3].c_str() ) )
 						return SetError( CLIError::kInvalidValue );
 					else
 						return DoEpMem( pAgent, 's', &( argv[2] ), &( argv[3] ) );
@@ -170,7 +177,21 @@ bool CommandLineInterface::DoEpMem( gSKI::Agent* pAgent, const char pOp, const s
 		if ( m_RawOutput )
 			m_Result << temp << "\n";
 		else
-			AppendArgTagFast( sml_Names::kParamValue, sml_Names::kTypeString, temp.c_str() );	
+			AppendArgTagFast( sml_Names::kParamValue, sml_Names::kTypeString, temp.c_str() );
+		
+		temp = "database: ";
+			temp += epmem_get_parameter( my_agent, (const long) EPMEM_PARAM_DB, EPMEM_RETURN_STRING );
+			if ( m_RawOutput )
+				m_Result << temp << "\n";
+			else
+				AppendArgTagFast( sml_Names::kParamValue, sml_Names::kTypeString, temp.c_str() );
+				
+		temp = "path: ";
+			temp += epmem_get_parameter( my_agent, (const long) EPMEM_PARAM_PATH, EPMEM_RETURN_STRING );
+			if ( m_RawOutput )
+				m_Result << temp << "\n";
+			else
+				AppendArgTagFast( sml_Names::kParamValue, sml_Names::kTypeString, temp.c_str() );
 		
 		return true;
 	}
@@ -182,7 +203,7 @@ bool CommandLineInterface::DoEpMem( gSKI::Agent* pAgent, const char pOp, const s
 		
 		switch ( epmem_get_parameter_type( my_agent, pAttr->c_str() ) )
 		{
-			case epmem_param_string:
+			case epmem_param_constant:
 				output += epmem_get_parameter( my_agent, pAttr->c_str(), EPMEM_RETURN_STRING );
 				break;
 				
@@ -192,6 +213,10 @@ bool CommandLineInterface::DoEpMem( gSKI::Agent* pAgent, const char pOp, const s
 				output += (*temp2);
 				delete temp2;
 				tag_type = sml_Names::kTypeDouble;
+				break;
+				
+			case epmem_param_string:
+				output += epmem_get_parameter( my_agent, pAttr->c_str(), EPMEM_RETURN_STRING );
 				break;
 		}
 					
@@ -206,15 +231,18 @@ bool CommandLineInterface::DoEpMem( gSKI::Agent* pAgent, const char pOp, const s
 	{
 		switch ( epmem_get_parameter_type( my_agent, pAttr->c_str() ) )
 		{
-			case epmem_param_string:
+			case epmem_param_constant:
 				return epmem_set_parameter( my_agent, pAttr->c_str(), pVal->c_str() );
 				break;
 				
 			case epmem_param_number:
 				double temp;
 				from_string( temp, *pVal );
-				return epmem_set_parameter( my_agent, pAttr->c_str(), temp );
+				return epmem_set_parameter( my_agent, pAttr->c_str(), temp );				
+				break;
 				
+			case epmem_param_string:
+				return epmem_set_parameter( my_agent, pAttr->c_str(), pVal->c_str() );
 				break;
 				
 			case epmem_param_invalid:
