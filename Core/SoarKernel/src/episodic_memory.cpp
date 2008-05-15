@@ -25,76 +25,47 @@
 #include "episodic_memory.h"
 
 /***************************************************************************
- * Function     : epmem_init
+ * Function     : epmem_reset
  **************************************************************************/
-void epmem_init( agent *my_agent )
+void epmem_reset( agent *my_agent )
 {
-	my_agent->epmem_header->last_tag = 0;
+	Symbol *goal = my_agent->top_goal;
+	while( goal )
+	{
+		epmem_data *data = goal->id.epmem_info;
+				
+		data->last_tag = 0;
+		
+		goal = goal->id.lower_goal;
+	}
 }
 
 /***************************************************************************
  * Function     : epmem_update
  **************************************************************************/
 void epmem_update( agent *my_agent )
-{	
-	return;
+{
 	slot *s;
 	wme *w;
 	Symbol *ol = my_agent->io_header_output;
 	bool new_memory = false;
-	
+		
 	// examine all commands on the output-link for any
 	// that appeared since last memory was recorded
 	for ( s = ol->id.slots; s != NIL; s = s->next )
 	{
 		for ( w = s->wmes; w != NIL; w = w->next )
 		{
-			if ( w->timetag > my_agent->epmem_header->last_tag )
+			if ( w->timetag > my_agent->bottom_goal->id.epmem_info->last_tag )
 			{
 				new_memory = true;
-				my_agent->epmem_header->last_tag = w->timetag; 
+				my_agent->bottom_goal->id.epmem_info->last_tag = w->timetag; 
 			}
 		}
 	}
 	
 	if ( new_memory )
 	{
-		std::cerr << "NEW EPISODE!!" << std::endl;
+		//std::cerr << "NEW EPISODE (" << my_agent->bottom_goal->id.name_letter << my_agent->bottom_goal->id.name_number << ")!!" << std::endl;
 	}
-}
-
-/***************************************************************************
- * Function     : epmem_create_buffer
- **************************************************************************/
-void epmem_create_buffer( agent *my_agent, Symbol *s )
-{	
-	// allocate a new epmem_data header
-	epmem_data *d = (epmem_data *)allocate_memory( my_agent, sizeof( epmem_data ), MISCELLANEOUS_MEM_USAGE );
-	
-	// assign values
-	d->state = s;
-	
-	// create epmem wme symbols
-	d->id_epmem = make_new_identifier( my_agent, 'E', s->id.level );
-	d->id_cmd = make_new_identifier( my_agent, 'C', s->id.level );
-	d->id_result = make_new_identifier( my_agent, 'R', s->id.level );
-	
-	// create epmem wme's	
-	d->wme_epmem = add_input_wme( my_agent, s, make_sym_constant( my_agent, "epmem" ), d->id_epmem );
-	wme_add_ref( d->wme_epmem );
-	d->wme_cmd = add_input_wme( my_agent, d->id_epmem, make_sym_constant( my_agent, "command" ), d->id_cmd );
-	wme_add_ref( d->wme_cmd );
-	d->wme_result = add_input_wme( my_agent, d->id_epmem, make_sym_constant( my_agent, "result" ), d->id_result );
-	wme_add_ref( d->wme_result );
-	
-	// save on top-state
-	my_agent->epmem_header = d;
-}
-
-/***************************************************************************
- * Function     : epmem_clean_agent
- **************************************************************************/
-void epmem_clean_agent( agent *my_agent )
-{	
-	free_memory( my_agent, my_agent->epmem_header, MISCELLANEOUS_MEM_USAGE );
 }

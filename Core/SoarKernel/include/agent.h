@@ -49,9 +49,6 @@ typedef struct rhs_function_struct rhs_function;
 typedef struct rl_parameter_struct rl_parameter;
 typedef struct rl_stat_struct rl_stat;
 
-// EpMem types
-typedef struct epmem_data_struct epmem_data;
-
 typedef struct select_info_struct select_info;
 
 #ifdef __cplusplus
@@ -283,6 +280,10 @@ typedef struct agent_struct {
   /* RPM 9/06 end */
 
   Symbol            * reward_link_symbol;
+
+  Symbol            * epmem_symbol;
+  Symbol            * epmem_cmd_symbol;
+  Symbol            * epmem_result_symbol;
   
   /* ----------------------- Symbol table stuff -------------------------- */
 
@@ -768,9 +769,6 @@ kernel time and total_cpu_time greater than the derived total CPU time. REW */
   rl_stat *rl_stats[ RL_STATS ];
 
   int rl_template_count;
-  
-  // episodic memory
-  epmem_data *epmem_header;
 
   // select
   select_info *select;

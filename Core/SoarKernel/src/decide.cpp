@@ -54,6 +54,8 @@
 #include "decision_manipulation.h"
 #include "misc.h"
 
+#include "episodic_memory.h"
+
 /* JC ADDED: This is for event firing in gSKI */
 #include "gski_event_system_functions.h"
 
@@ -1262,6 +1264,15 @@ Symbol *create_new_impasse (agent* thisAgent, Bool isa_goal, Symbol *object, Sym
 
 	id->id.reward_header = make_new_identifier( thisAgent, 'R', level );	
 	add_impasse_wme( thisAgent, id, thisAgent->reward_link_symbol, id->id.reward_header, NIL );
+
+	id->id.epmem_header = make_new_identifier( thisAgent, 'E', level );	
+	add_impasse_wme( thisAgent, id, thisAgent->epmem_symbol, id->id.epmem_header, NIL );
+
+	id->id.epmem_cmd_header = make_new_identifier( thisAgent, 'C', level );
+	add_input_wme( thisAgent, id->id.epmem_header, thisAgent->epmem_cmd_symbol, id->id.epmem_cmd_header );
+
+	id->id.epmem_result_header = make_new_identifier( thisAgent, 'R', level );	
+	add_input_wme( thisAgent, id->id.epmem_header, thisAgent->epmem_result_symbol, id->id.epmem_result_header );
   }
   else
     add_impasse_wme (thisAgent, id, thisAgent->object_symbol, object, NIL);
@@ -1933,6 +1944,11 @@ void remove_existing_context_and_descendents (agent* thisAgent, Symbol *goal) {
   symbol_remove_ref( thisAgent, goal->id.reward_header );
   free_memory( thisAgent, goal->id.rl_info, MISCELLANEOUS_MEM_USAGE );
 
+  symbol_remove_ref( thisAgent, goal->id.epmem_cmd_header );
+  symbol_remove_ref( thisAgent, goal->id.epmem_result_header );
+  symbol_remove_ref( thisAgent, goal->id.epmem_header );
+  free_memory( thisAgent, goal->id.epmem_info, MISCELLANEOUS_MEM_USAGE );
+
   /* REW: BUG
    * Tentative assertions can exist for removed goals.  However, it looks
    * like the removal forces a tentative retraction, which then leads to
@@ -2013,6 +2029,9 @@ void create_new_context (agent* thisAgent, Symbol *attr_of_impasse, byte impasse
   id->id.rl_info->num_prev_op_rl_rules = 0;
   id->id.rl_info->step = 0;  
   id->id.rl_info->impasse_type = NONE_IMPASSE_TYPE;
+
+  id->id.epmem_info = static_cast<epmem_data *>( allocate_memory( thisAgent, sizeof( epmem_data ), MISCELLANEOUS_MEM_USAGE ) );
+  id->id.epmem_info->last_tag = 0;
 
   /* --- invoke callback routine --- */
   soar_invoke_callbacks(thisAgent, thisAgent, 

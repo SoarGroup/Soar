@@ -31,16 +31,7 @@
 //////////////////////////////////////////////////////////
 typedef struct epmem_data_struct 
 {
-	Symbol *state;				// top-state
 	unsigned long last_tag;		// last update to output-link
-	
-	Symbol *id_epmem;
-	Symbol *id_cmd;
-	Symbol *id_result;			// id symbols for wme's
-	
-	wme *wme_epmem;
-	wme *wme_cmd;
-	wme *wme_result;			// wme references
 } epmem_data;
 
 //////////////////////////////////////////////////////////
@@ -48,15 +39,9 @@ typedef struct epmem_data_struct
 //////////////////////////////////////////////////////////
 
 // init
-extern void epmem_init( agent *my_agent );
+extern void epmem_reset( agent *my_agent );
 
 // Grand Central Station of EpMem
 extern void epmem_update( agent *my_agent );
-
-// EpMem WM
-extern void epmem_create_buffer( agent *my_agent, Symbol *s );
-
-// Clean later
-extern void epmem_clean_agent( agent *my_agent );
 
 #endif

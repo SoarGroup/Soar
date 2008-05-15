@@ -641,6 +641,8 @@ bool reinitialize_soar (agent* thisAgent) {
   clear_goal_stack (thisAgent);
   reset_rl_stats( thisAgent );
 
+  epmem_reset( thisAgent );
+
   if (thisAgent->operand2_mode == TRUE) {
      thisAgent->active_level = 0; /* Signal that everything should be retracted */
      thisAgent->FIRING_TYPE = IE_PRODS;
@@ -1670,10 +1672,6 @@ void init_agent_memory(agent* thisAgent)
                  thisAgent->output_link_symbol,
                  thisAgent->io_header_output);
   
-  // Create the ^epmem buffer
-  epmem_create_buffer( thisAgent, thisAgent->top_state );
-  epmem_init( thisAgent );
-
   // KJC & RPM 10/06
   // A lot of stuff isn't initialized properly until the input and output cycles are run the first time.
   // Because of this, SW had to put in a hack to work around changes made to the output-link in the first
