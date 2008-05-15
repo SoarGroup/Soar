@@ -83,6 +83,7 @@ struct node_varnames_struct;
 #include "io_soar.h"
 #include "exploration.h"
 #include "reinforcement_learning.h"
+#include "episodic_memory.h"
 
 /* ======================================================================= */
 

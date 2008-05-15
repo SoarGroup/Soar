@@ -48,6 +48,7 @@
 #include "exploration.h"
 #include "reinforcement_learning.h"
 #include "decision_manipulation.h"
+#include "episodic_memory.h"
 
 /* JC ADDED: Need to initialize gski callbacks */
 #include "gski_event_system_functions.h"
@@ -345,6 +346,11 @@ agent * create_soar_agent (Kernel * thisKernel, char * agent_name) {            
 
   initialize_template_tracking( newAgent );
   
+  // epmem initialization
+  newAgent->epmem_params[ EPMEM_PARAM_LEARNING ] = epmem_add_parameter( "learning", EPMEM_LEARNING_ON, &epmem_validate_learning, &epmem_convert_learning, &epmem_convert_learning );
+  
+  newAgent->epmem_stats[ EPMEM_STAT_DUMMY ] = epmem_add_stat( "dummy" );
+  
   // select initialization
   newAgent->select = new select_info;
   init_select( newAgent );
@@ -496,6 +502,9 @@ void destroy_soar_agent (Kernel * thisKernel, agent * delete_agent)
   // cleanup Soar-RL
   clean_parameters( delete_agent );
   clean_stats( delete_agent );
+  
+  // cleanup EpMem
+  epmem_clean_parameters( delete_agent );
   
   // cleanup select
   init_select( delete_agent );

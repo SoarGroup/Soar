@@ -49,6 +49,10 @@ typedef struct rhs_function_struct rhs_function;
 typedef struct rl_parameter_struct rl_parameter;
 typedef struct rl_stat_struct rl_stat;
 
+// EpMem types
+typedef struct epmem_parameter_struct epmem_parameter;
+typedef struct epmem_stat_struct epmem_stat;
+
 typedef struct select_info_struct select_info;
 
 #ifdef __cplusplus
@@ -769,6 +773,10 @@ kernel time and total_cpu_time greater than the derived total CPU time. REW */
   rl_stat *rl_stats[ RL_STATS ];
 
   int rl_template_count;
+  
+  // epmem
+  epmem_parameter *epmem_params[ EPMEM_PARAMS ];
+  epmem_stat *epmem_stats[ EPMEM_STATS ];
 
   // select
   select_info *select;

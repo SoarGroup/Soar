@@ -642,6 +642,7 @@ bool reinitialize_soar (agent* thisAgent) {
   reset_rl_stats( thisAgent );
 
   epmem_reset( thisAgent );
+  epmem_reset_stats( thisAgent );
 
   if (thisAgent->operand2_mode == TRUE) {
      thisAgent->active_level = 0; /* Signal that everything should be retracted */
@@ -1099,7 +1100,7 @@ void do_one_top_level_phase (agent* thisAgent)
 
 	  do_output_cycle(thisAgent);
 	  
-	  if ( thisAgent->sysparams[EPMEM_ENABLED] )
+	  if ( epmem_enabled( thisAgent ) )
 	  {
 		  epmem_update( thisAgent );
 	  }

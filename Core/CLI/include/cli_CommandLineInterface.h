@@ -78,6 +78,7 @@ typedef std::list<sml::ElementXML*> ElementXMLList;
 typedef ElementXMLList::iterator ElementXMLListIter;
 
 // Define bitsets for various commands
+typedef std::bitset<EPMEM_NUM_OPTIONS> EpMemBitset;
 typedef std::bitset<EXCISE_NUM_OPTIONS> ExciseBitset;
 typedef std::bitset<INDIFFERENT_NUM_OPTIONS> IndifferentBitset;
 typedef std::bitset<LEARN_NUM_OPTIONS> LearnBitset;
@@ -197,6 +198,7 @@ protected:
 	bool ParseEcho(gSKI::Agent* pAgent, std::vector<std::string>& argv);
 	bool ParseEchoCommands(gSKI::Agent* pAgent, std::vector<std::string>& argv) ;
 	bool ParseEditProduction(gSKI::Agent* pAgent, std::vector<std::string>& argv);
+	bool ParseEpMem(gSKI::Agent* pAgent, std::vector<std::string>& argv);
 	bool ParseExcise(gSKI::Agent* pAgent, std::vector<std::string>& argv);
 	bool ParseExplainBacktraces(gSKI::Agent* pAgent, std::vector<std::string>& argv);
 	bool ParseFiringCounts(gSKI::Agent* pAgent, std::vector<std::string>& argv);
@@ -338,6 +340,15 @@ protected:
 	* @param productionName Production to edit
 	*************************************************************/
 	bool DoEditProduction(std::string productionName);
+	
+	/*************************************************************
+	* @brief epmem command
+	* @param pAgent The pointer to the gSKI agent interface
+	* @param pOp the epmem switch to implement, pass 0 (null) for full parameter configuration
+	* @param pAttr the attribute to get/set/stats, pass 0 (null) only if no pOp (all config) or stats (full stats)
+	* @param pVal the value to set, pass 0 (null) only if no pOp (all config), get, or stats
+	*************************************************************/
+	bool DoEpMem(gSKI::Agent* pAgent, const char pOp = 0, const std::string *pAttr = 0, const std::string *pVal = 0);
 
 	/*************************************************************
 	* @brief excise command
