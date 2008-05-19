@@ -21,7 +21,6 @@
 
 #include <stdlib.h>
 #include <map>
-#include <vector>
 
 #include "agent.h"
 #include "kernel.h"
@@ -347,16 +346,6 @@ agent * create_soar_agent (Kernel * thisKernel, char * agent_name) {            
 
   initialize_template_tracking( newAgent );
   
-  // epmem initialization
-  newAgent->epmem_params[ EPMEM_PARAM_LEARNING ] = epmem_add_parameter( "learning", EPMEM_LEARNING_ON, &epmem_validate_learning, &epmem_convert_learning, &epmem_convert_learning );
-  newAgent->epmem_params[ EPMEM_PARAM_DB ] = epmem_add_parameter( "database", EPMEM_DB_FILE, &epmem_validate_database, &epmem_convert_database, &epmem_convert_database );
-  newAgent->epmem_params[ EPMEM_PARAM_PATH ] = epmem_add_parameter( "path", "", &epmem_validate_path );
-  
-  newAgent->epmem_stats[ EPMEM_STAT_DUMMY ] = epmem_add_stat( "dummy" );
-  
-  newAgent->epmem_db = NULL;
-  newAgent->epmem_db_status = -1;
-  
   // select initialization
   newAgent->select = new select_info;
   init_select( newAgent );
@@ -364,6 +353,26 @@ agent * create_soar_agent (Kernel * thisKernel, char * agent_name) {            
   // predict initialization
   newAgent->prediction = new std::string();
   init_predict( newAgent );
+  
+  // epmem initialization
+  newAgent->epmem_params[ EPMEM_PARAM_LEARNING ] = epmem_add_parameter( "learning", EPMEM_LEARNING_ON, &epmem_validate_learning, &epmem_convert_learning, &epmem_convert_learning );
+  newAgent->epmem_params[ EPMEM_PARAM_DB ] = epmem_add_parameter( "database", EPMEM_DB_FILE, &epmem_validate_database, &epmem_convert_database, &epmem_convert_database );
+  newAgent->epmem_params[ EPMEM_PARAM_PATH ] = epmem_add_parameter( "path", "", &epmem_validate_path );
+    
+  newAgent->epmem_params[ EPMEM_PARAM_INDEXING ] = epmem_add_parameter( "indexing", EPMEM_INDEXING_BIGTREE_INSTANCE, &epmem_validate_indexing, &epmem_convert_indexing, &epmem_convert_indexing );
+  newAgent->epmem_params[ EPMEM_PARAM_PROVENANCE ] = epmem_add_parameter( "provenance", EPMEM_PROVENANCE_OFF, &epmem_validate_provenance, &epmem_convert_provenance, &epmem_convert_provenance );
+    
+  newAgent->epmem_params[ EPMEM_PARAM_TRIGGER ] = epmem_add_parameter( "trigger", EPMEM_TRIGGER_OUTPUT, &epmem_validate_trigger, &epmem_convert_trigger, &epmem_convert_trigger );
+    
+  newAgent->epmem_stats[ EPMEM_STAT_DUMMY ] = epmem_add_stat( "dummy" );
+    
+  newAgent->epmem_db = NULL;
+  newAgent->epmem_db_status = -1;
+  newAgent->epmem_time_counter = 1;
+  newAgent->epmem_id_counter = 1;
+  for ( int i=0; i<EPMEM_MAX_STATEMENTS; i++ )
+  	newAgent->epmem_statements[ i ] = NULL;  
+  newAgent->epmem_dyn_statements = new std::map<int, sqlite3_stmt *>();
 
   return newAgent;
 }
@@ -509,23 +518,45 @@ void destroy_soar_agent (Kernel * thisKernel, agent * delete_agent)
   clean_parameters( delete_agent );
   clean_stats( delete_agent );
   
-  // cleanup EpMem
-  epmem_clean_parameters( delete_agent );
-  if ( delete_agent->epmem_db_status != -1 )
-  {
-	  sqlite3_finalize( delete_agent->epmem_stmt_begin );
-	  sqlite3_finalize( delete_agent->epmem_stmt_commit );
-	  sqlite3_finalize( delete_agent->epmem_stmt_insert );
-	  
-	  sqlite3_close( delete_agent->epmem_db );
-  }
-  
   // cleanup select
   init_select( delete_agent );
   delete delete_agent->select;
 
   // cleanup predict
   delete delete_agent->prediction;
+  
+  // cleanup EpMem
+  if ( delete_agent->epmem_db_status != -1 )
+  {
+    int i;
+  	
+    // perform cleanup as necessary
+    const long indexing = epmem_get_parameter( delete_agent, EPMEM_PARAM_INDEXING, EPMEM_RETURN_LONG );
+    switch ( indexing )
+    {
+      case EPMEM_INDEXING_BIGTREE_INSTANCE:
+        sqlite3_bind_int( delete_agent->epmem_statements[ EPMEM_STMT_VAR_SET ], 1, EPMEM_VAR_BIGTREE_MAX_ID );
+        sqlite3_bind_int( delete_agent->epmem_statements[ EPMEM_STMT_VAR_SET ], 2, delete_agent->epmem_id_counter );
+    	sqlite3_step( delete_agent->epmem_statements[ EPMEM_STMT_VAR_SET ] );
+    	sqlite3_reset( delete_agent->epmem_statements[ EPMEM_STMT_VAR_SET ] );
+        break;
+    }
+    
+  	for ( i=0; i<EPMEM_MAX_STATEMENTS; i++ )
+  	  if ( delete_agent->epmem_statements[ i ] != NULL )
+  	    sqlite3_finalize( delete_agent->epmem_statements[ i ] );
+  	
+  	std::map<int, sqlite3_stmt *>::iterator p = delete_agent->epmem_dyn_statements->begin(); 
+  	while ( p != delete_agent->epmem_dyn_statements->end() )
+  	{
+      sqlite3_finalize( p->second );
+      p++;
+  	}
+  	delete delete_agent->epmem_dyn_statements;
+  	  
+  	sqlite3_close( delete_agent->epmem_db );
+  }
+  epmem_clean_parameters( delete_agent );
 
   /* Free soar agent structure */
   free((void *) delete_agent);

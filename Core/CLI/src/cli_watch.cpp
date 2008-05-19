@@ -28,6 +28,7 @@ bool CommandLineInterface::ParseWatch(gSKI::Agent* pAgent, std::vector<std::stri
 		{'c',"chunks",					2},
 		{'d',"decisions",				2},
 		{'D',"default-productions",		2},
+		{'e',"epmem",					2},
 		{'f',"fullwmes",				0},
 		{'i',"indifferent-selection",	2},
 		{'j',"justifications",			2},
@@ -93,6 +94,16 @@ bool CommandLineInterface::ParseWatch(gSKI::Agent* pAgent, std::vector<std::stri
 					settings.reset(WATCH_DEFAULT);
 				} else {
 					settings.set(WATCH_DEFAULT);
+				}
+				break;
+				
+			case 'e'://epmem
+				options.set(WATCH_EPMEM);
+				if (m_OptionArgument.size()) {
+					if (!CheckOptargRemoveOrZero()) return false; //error, code set in CheckOptargRemoveOrZero
+					settings.reset(WATCH_EPMEM);
+				} else {
+					settings.set(WATCH_EPMEM);
 				}
 				break;
 
@@ -401,6 +412,7 @@ bool CommandLineInterface::DoWatch(gSKI::Agent* pAgent, const WatchBitset& optio
 			m_Result << "\n  Backtracing:  " << (pSysparams[TRACE_BACKTRACING_SYSPARAM] ? "on" : "off");
 			m_Result << "\n  Indifferent selection:  " << (pSysparams[TRACE_INDIFFERENT_SYSPARAM] ? "on" : "off");
 			m_Result << "\n  Soar-RL:  " << (pSysparams[TRACE_RL_SYSPARAM] ? "on" : "off");
+			m_Result << "\n  EpMem:  " << (pSysparams[TRACE_EPMEM_SYSPARAM] ? "on" : "off");
 
 		} else {
 			char buf[kMinBufferSize];
@@ -446,6 +458,9 @@ bool CommandLineInterface::DoWatch(gSKI::Agent* pAgent, const WatchBitset& optio
 
 			AppendArgTag(sml_Names::kParamWatchRL, sml_Names::kTypeBoolean, 
 				pSysparams[TRACE_RL_SYSPARAM] ? sml_Names::kTrue : sml_Names::kFalse);
+			
+			AppendArgTag(sml_Names::kParamWatchEpMem, sml_Names::kTypeBoolean, 
+				pSysparams[TRACE_EPMEM_SYSPARAM] ? sml_Names::kTrue : sml_Names::kFalse);
 		}
 
 		return true;
@@ -474,6 +489,10 @@ bool CommandLineInterface::DoWatch(gSKI::Agent* pAgent, const WatchBitset& optio
 
 	if (options.test(WATCH_RL)) {
 		pKernelHack->SetSysparam(pAgent, TRACE_RL_SYSPARAM, settings.test(WATCH_RL));
+	}
+	
+	if (options.test(WATCH_EPMEM)) {
+		pKernelHack->SetSysparam(pAgent, TRACE_EPMEM_SYSPARAM, settings.test(WATCH_EPMEM));
 	}
 
 	if (options.test(WATCH_JUSTIFICATIONS)) {

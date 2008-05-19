@@ -781,9 +781,10 @@ kernel time and total_cpu_time greater than the derived total CPU time. REW */
   
   sqlite3 *epmem_db;
   int epmem_db_status;
-  sqlite3_stmt *epmem_stmt_begin;
-  sqlite3_stmt *epmem_stmt_commit;
-  sqlite3_stmt *epmem_stmt_insert;
+  int epmem_time_counter;
+  int epmem_id_counter;
+  sqlite3_stmt *epmem_statements[ EPMEM_MAX_STATEMENTS ];
+  std::map<int, sqlite3_stmt *> *epmem_dyn_statements;
 
   // select
   select_info *select;

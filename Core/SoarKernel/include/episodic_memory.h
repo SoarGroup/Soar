@@ -30,11 +30,44 @@
 #define EPMEM_DB_MEM 1
 #define EPMEM_DB_FILE 2
 
+#define EPMEM_INDEXING_BIGTREE_INSTANCE 1
+
+#define EPMEM_PROVENANCE_ON 1
+#define EPMEM_PROVENANCE_OFF 2
+
+#define EPMEM_TRIGGER_OUTPUT 1
+
+// bigtree query types
+#define EPMEM_BIGTREE_INSERT					0
+#define EPMEM_BIGTREE_SELECT					1
+#define EPMEM_BIGTREE_NULL						2
+#define EPMEM_BIGTREE_QUERIES					3
+
+// statement storage
+// 0 - 9 => common
+// 10 - 19 => indexing
+// 20 - 29 => storage
+#define EPMEM_STMT_BEGIN						0
+#define EPMEM_STMT_COMMIT						1
+#define EPMEM_STMT_ROLLBACK						2
+#define EPMEM_STMT_VAR_GET						3
+#define EPMEM_STMT_VAR_SET						4
+
+#define EPMEM_STMT_BIGTREE_ADD_EPISODE			10
+
+#define EPMEM_MAX_STATEMENTS 					30 // must be at least 1+ largest of any STMT constant
+
+// epmem variable id's
+#define EPMEM_VAR_BIGTREE_MAX_ID				1
+
 // names of params
 #define EPMEM_PARAM_LEARNING					0
 #define EPMEM_PARAM_DB							1
 #define EPMEM_PARAM_PATH						2
-#define EPMEM_PARAMS							3 // must be 1+ last epmem param
+#define EPMEM_PARAM_INDEXING					3
+#define EPMEM_PARAM_PROVENANCE					4
+#define EPMEM_PARAM_TRIGGER						5
+#define EPMEM_PARAMS							6 // must be 1+ last epmem param
 
 // names of stats
 #define EPMEM_STAT_DUMMY					0
@@ -160,6 +193,21 @@ extern const long epmem_convert_database( const char *val );
 // path
 extern bool epmem_validate_path( const char *new_val );
 
+// indexing
+extern bool epmem_validate_indexing( const long new_val );
+extern const char *epmem_convert_indexing( const long val );
+extern const long epmem_convert_indexing( const char *val );
+
+// provenance
+extern bool epmem_validate_provenance( const long new_val );
+extern const char *epmem_convert_provenance( const long val );
+extern const long epmem_convert_provenance( const char *val );
+
+// provenance
+extern bool epmem_validate_trigger( const long new_val );
+extern const char *epmem_convert_trigger( const long val );
+extern const long epmem_convert_trigger( const char *val );
+
 // shortcut for determining if EpMem is enabled
 extern bool epmem_enabled( agent *my_agent );
 
@@ -197,7 +245,10 @@ extern bool epmem_set_stat( agent *my_agent, const long stat, double new_val );
 // init
 extern void epmem_reset( agent *my_agent );
 
-// Grand Central Station of EpMem
-extern void epmem_update( agent *my_agent );
+// Called to add a new episode to the store
+extern void epmem_new_episode( agent *my_agent );
+
+// Called to consider adding new episodes to the store
+extern void epmem_consider_new_episode( agent *my_agent );
 
 #endif

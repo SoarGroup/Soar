@@ -175,24 +175,90 @@ bool CommandLineInterface::DoEpMem( gSKI::Agent* pAgent, const char pOp, const s
 		temp = "EpMem learning: ";
 		temp += epmem_get_parameter( my_agent, (const long) EPMEM_PARAM_LEARNING, EPMEM_RETURN_STRING );
 		if ( m_RawOutput )
+			m_Result << temp << "\n\n";
+		else
+		{
+			AppendArgTagFast( sml_Names::kParamValue, sml_Names::kTypeString, temp.c_str() );
+			AppendArgTagFast( sml_Names::kParamValue, sml_Names::kTypeString, "" );
+		}
+		
+		temp = "Storage";
+		if ( m_RawOutput )
+			m_Result << temp << "\n";
+		else
+			AppendArgTagFast( sml_Names::kParamValue, sml_Names::kTypeString, temp.c_str() );
+		temp = "-------";
+		if ( m_RawOutput )
 			m_Result << temp << "\n";
 		else
 			AppendArgTagFast( sml_Names::kParamValue, sml_Names::kTypeString, temp.c_str() );
 		
 		temp = "database: ";
-			temp += epmem_get_parameter( my_agent, (const long) EPMEM_PARAM_DB, EPMEM_RETURN_STRING );
-			if ( m_RawOutput )
-				m_Result << temp << "\n";
-			else
-				AppendArgTagFast( sml_Names::kParamValue, sml_Names::kTypeString, temp.c_str() );
+		temp += epmem_get_parameter( my_agent, (const long) EPMEM_PARAM_DB, EPMEM_RETURN_STRING );
+		if ( m_RawOutput )
+			m_Result << temp << "\n";
+		else
+			AppendArgTagFast( sml_Names::kParamValue, sml_Names::kTypeString, temp.c_str() );
 				
 		temp = "path: ";
-			temp += epmem_get_parameter( my_agent, (const long) EPMEM_PARAM_PATH, EPMEM_RETURN_STRING );
-			if ( m_RawOutput )
-				m_Result << temp << "\n";
-			else
-				AppendArgTagFast( sml_Names::kParamValue, sml_Names::kTypeString, temp.c_str() );
+		temp += epmem_get_parameter( my_agent, (const long) EPMEM_PARAM_PATH, EPMEM_RETURN_STRING );
+		if ( m_RawOutput )
+			m_Result << temp << "\n\n";
+		else
+		{
+			AppendArgTagFast( sml_Names::kParamValue, sml_Names::kTypeString, temp.c_str() );
+			AppendArgTagFast( sml_Names::kParamValue, sml_Names::kTypeString, "" );
+		}
 		
+		temp = "Representation";
+		if ( m_RawOutput )
+			m_Result << temp << "\n";
+		else
+			AppendArgTagFast( sml_Names::kParamValue, sml_Names::kTypeString, temp.c_str() );
+		temp = "--------------";
+		if ( m_RawOutput )
+			m_Result << temp << "\n";
+		else
+			AppendArgTagFast( sml_Names::kParamValue, sml_Names::kTypeString, temp.c_str() );
+				
+		temp = "indexing: ";
+		temp += epmem_get_parameter( my_agent, (const long) EPMEM_PARAM_INDEXING, EPMEM_RETURN_STRING );
+		if ( m_RawOutput )
+			m_Result << temp << "\n";
+		else
+			AppendArgTagFast( sml_Names::kParamValue, sml_Names::kTypeString, temp.c_str() );
+		
+		temp = "provenance: ";
+		temp += epmem_get_parameter( my_agent, (const long) EPMEM_PARAM_PROVENANCE, EPMEM_RETURN_STRING );
+		if ( m_RawOutput )
+			m_Result << temp << "\n\n";
+		else
+		{
+			AppendArgTagFast( sml_Names::kParamValue, sml_Names::kTypeString, temp.c_str() );
+			AppendArgTagFast( sml_Names::kParamValue, sml_Names::kTypeString, "" );
+		}
+		
+		temp = "Space";
+		if ( m_RawOutput )
+			m_Result << temp << "\n";
+		else
+			AppendArgTagFast( sml_Names::kParamValue, sml_Names::kTypeString, temp.c_str() );
+		temp = "-----";
+		if ( m_RawOutput )
+			m_Result << temp << "\n";
+		else
+			AppendArgTagFast( sml_Names::kParamValue, sml_Names::kTypeString, temp.c_str() );
+		
+		temp = "trigger: ";
+		temp += epmem_get_parameter( my_agent, (const long) EPMEM_PARAM_TRIGGER, EPMEM_RETURN_STRING );
+		if ( m_RawOutput )
+			m_Result << temp << "\n\n";
+		else
+		{
+			AppendArgTagFast( sml_Names::kParamValue, sml_Names::kTypeString, temp.c_str() );
+			AppendArgTagFast( sml_Names::kParamValue, sml_Names::kTypeString, "" );
+		}
+					
 		return true;
 	}
 	else if ( pOp == 'g' )
