@@ -264,6 +264,7 @@ bool CommandLineInterface::DoEpMem( gSKI::Agent* pAgent, const char pOp, const s
 	else if ( pOp == 'g' )
 	{
 		std::string output = "";
+		double temp;
 		std::string *temp2;
 		const char *tag_type = sml_Names::kTypeString;
 		
@@ -274,7 +275,7 @@ bool CommandLineInterface::DoEpMem( gSKI::Agent* pAgent, const char pOp, const s
 				break;
 				
 			case epmem_param_number:
-				double temp = epmem_get_parameter( my_agent, pAttr->c_str() );
+				temp = epmem_get_parameter( my_agent, pAttr->c_str() );
 				temp2 = to_string( temp );
 				output += (*temp2);
 				delete temp2;

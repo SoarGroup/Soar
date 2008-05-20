@@ -951,24 +951,10 @@ void epmem_new_episode( agent *my_agent )
 			// further statement preparation depends upon representation options
 			const long indexing = epmem_get_parameter( my_agent, EPMEM_PARAM_INDEXING, EPMEM_RETURN_LONG );
 			const long provenance = epmem_get_parameter( my_agent, EPMEM_PARAM_PROVENANCE, EPMEM_RETURN_LONG );
-			switch ( indexing )
-			{
-				case EPMEM_INDEXING_BIGTREE_INSTANCE:									
-					sqlite3_prepare_v2( my_agent->epmem_db, "INSERT INTO episodes (id,time,weight) VALUES (?,?,?)", -1, &( my_agent->epmem_statements[ EPMEM_STMT_BIGTREE_ADD_EPISODE ] ), &tail );
-															
-					break;
-			}
-			
-			switch ( provenance )
-			{
-				case EPMEM_PROVENANCE_ON:
-					break;
-					
-				case EPMEM_PROVENANCE_OFF:
-					break;
-			}
-			
-			// at this point initialize the database for receipt of episodes			
+						
+			// at this point initialize the database for receipt of episodes
+			sqlite3_step( my_agent->epmem_statements[ EPMEM_STMT_BEGIN ] );
+			sqlite3_reset( my_agent->epmem_statements[ EPMEM_STMT_BEGIN ] );
 			switch ( indexing )
 			{
 				case EPMEM_INDEXING_BIGTREE_INSTANCE:					
@@ -990,7 +976,10 @@ void epmem_new_episode( agent *my_agent )
 					// time index (for next)
 					sqlite3_prepare_v2( my_agent->epmem_db, "CREATE INDEX IF NOT EXISTS time ON episodes (time)", -1, &create, &tail );
 					sqlite3_step( create );					
-					sqlite3_finalize( create );					
+					sqlite3_finalize( create );
+
+					// custom statement for inserting episodes
+					sqlite3_prepare_v2( my_agent->epmem_db, "INSERT INTO episodes (id,time,weight) VALUES (?,?,?)", -1, &( my_agent->epmem_statements[ EPMEM_STMT_BIGTREE_ADD_EPISODE ] ), &tail );
 					
 					// first id table
 					sqlite3_prepare_v2( my_agent->epmem_db, "CREATE TABLE IF NOT EXISTS id_0 (id INT PRIMARY KEY,name TEXT,value NONE)", -1, &create, &tail );
@@ -1054,7 +1043,9 @@ void epmem_new_episode( agent *my_agent )
 					
 				case EPMEM_PROVENANCE_OFF:
 					break;
-			}						
+			}
+			sqlite3_step( my_agent->epmem_statements[ EPMEM_STMT_COMMIT ] );
+			sqlite3_reset( my_agent->epmem_statements[ EPMEM_STMT_COMMIT ] );
 		}
 	}
 	
@@ -1062,321 +1053,158 @@ void epmem_new_episode( agent *my_agent )
 	if ( my_agent->epmem_db_status != SQLITE_OK )
 		return;
 	
-	// for now we are only recording episodes at the top state
-	Symbol *temp_sym;
-	wme **wmes = NULL;
-	int len = 0;
-	int pos = 0;
-	int i;
-	int parent_id = 0;
-	int child_id;
-	vector<Symbol *> syms;
-	vector<int> ids;
-	
-	wmes = epmem_get_augs_of_id( my_agent, my_agent->top_goal, my_agent->top_goal->id.tc_num+3, &len );
-	while ( wmes != NULL )
+	if ( epmem_get_parameter( my_agent, EPMEM_PARAM_INDEXING, EPMEM_RETURN_LONG ) == EPMEM_INDEXING_BIGTREE_INSTANCE )
 	{
-		for ( i=0; i<len; i++ )
-		{
-			// find wme id
-			child_id = -1;
-			if ( wmes[i]->value->common.symbol_type != IDENTIFIER_SYMBOL_TYPE )
-			{
-				sqlite3_bind_text( (*my_agent->epmem_dyn_statements)[ ( ( parent_id * EPMEM_BIGTREE_QUERIES ) + EPMEM_BIGTREE_SELECT ) ], 1, (const char *) wmes[i]->attr->sc.name, -1, SQLITE_STATIC );
-				switch( wmes[i]->value->common.symbol_type )
-			    {
-			        case SYM_CONSTANT_SYMBOL_TYPE:
-			            sqlite3_bind_text( (*my_agent->epmem_dyn_statements)[ ( ( parent_id * EPMEM_BIGTREE_QUERIES ) + EPMEM_BIGTREE_SELECT ) ], 2, (const char *) wmes[i]->value->sc.name, -1, SQLITE_STATIC );
-			            break;
-			            
-			        case INT_CONSTANT_SYMBOL_TYPE:
-			        	sqlite3_bind_int( (*my_agent->epmem_dyn_statements)[ ( ( parent_id * EPMEM_BIGTREE_QUERIES ) + EPMEM_BIGTREE_SELECT ) ], 2, wmes[i]->value->ic.value );
-			            break;
+		// for now we are only recording episodes at the top state
+		Symbol *parent_sym;
+		wme **wmes = NULL;
+		int len = 0;
+		int pos = 0;
+		int i;
+		int parent_id;
+		int child_id;
+		int tc = my_agent->top_goal->id.tc_num + 3;
+		vector<Symbol *> syms;
+		vector<int> ids;
+
+		syms.push_back( my_agent->top_goal );
+		ids.push_back( 0 );	
 		
-			        case FLOAT_CONSTANT_SYMBOL_TYPE:
-			        	sqlite3_bind_double( (*my_agent->epmem_dyn_statements)[ ( ( parent_id * EPMEM_BIGTREE_QUERIES ) + EPMEM_BIGTREE_SELECT ) ], 2, wmes[i]->value->fc.value );
-			            break;
-			    }
-				
-				if ( sqlite3_step( (*my_agent->epmem_dyn_statements)[ ( ( parent_id * EPMEM_BIGTREE_QUERIES ) + EPMEM_BIGTREE_SELECT ) ] ) == SQLITE_ROW )
-					child_id = sqlite3_column_int( (*my_agent->epmem_dyn_statements)[ ( ( parent_id * EPMEM_BIGTREE_QUERIES ) + EPMEM_BIGTREE_SELECT ) ], 0 );
-				
-				sqlite3_reset( (*my_agent->epmem_dyn_statements)[ ( ( parent_id * EPMEM_BIGTREE_QUERIES ) + EPMEM_BIGTREE_SELECT ) ] );
-			}
-			else
-			{
-				sqlite3_bind_text( (*my_agent->epmem_dyn_statements)[ ( ( parent_id * EPMEM_BIGTREE_QUERIES ) + EPMEM_BIGTREE_NULL ) ], 1, (const char *) wmes[i]->attr->sc.name, -1, SQLITE_STATIC );
-				if ( sqlite3_step( (*my_agent->epmem_dyn_statements)[ ( ( parent_id * EPMEM_BIGTREE_QUERIES ) + EPMEM_BIGTREE_NULL ) ] ) == SQLITE_ROW )
-					child_id = sqlite3_column_int( (*my_agent->epmem_dyn_statements)[ ( ( parent_id * EPMEM_BIGTREE_QUERIES ) + EPMEM_BIGTREE_NULL ) ], 0 );
-				
-				sqlite3_reset( (*my_agent->epmem_dyn_statements)[ ( ( parent_id * EPMEM_BIGTREE_QUERIES ) + EPMEM_BIGTREE_NULL ) ] );
-			}
-			
-			// insert on no id
-			if ( child_id == -1 )
-			{
-				child_id = (my_agent->epmem_id_counter++);
-					
-				// insert
-				sqlite3_bind_int( (*my_agent->epmem_dyn_statements)[ ( ( parent_id * EPMEM_BIGTREE_QUERIES ) + EPMEM_BIGTREE_INSERT ) ], 1, child_id );
-				sqlite3_bind_text( (*my_agent->epmem_dyn_statements)[ ( ( parent_id * EPMEM_BIGTREE_QUERIES ) + EPMEM_BIGTREE_INSERT ) ], 2, (const char *) wmes[i]->attr->sc.name, -1, SQLITE_STATIC );				
-				switch ( wmes[i]->value->common.symbol_type )
-				{
-					case SYM_CONSTANT_SYMBOL_TYPE:
-						sqlite3_bind_text( (*my_agent->epmem_dyn_statements)[ ( ( parent_id * EPMEM_BIGTREE_QUERIES ) + EPMEM_BIGTREE_INSERT ) ], 3, (const char *) wmes[i]->value->sc.name, -1, SQLITE_STATIC );
-						break;
-						
-					case INT_CONSTANT_SYMBOL_TYPE:
-						sqlite3_bind_int( (*my_agent->epmem_dyn_statements)[ ( ( parent_id * EPMEM_BIGTREE_QUERIES ) + EPMEM_BIGTREE_INSERT ) ], 3, wmes[i]->value->ic.value );
-						break;
-						
-					case FLOAT_CONSTANT_SYMBOL_TYPE:
-						sqlite3_bind_double( (*my_agent->epmem_dyn_statements)[ ( ( parent_id * EPMEM_BIGTREE_QUERIES ) + EPMEM_BIGTREE_INSERT ) ], 3, wmes[i]->value->fc.value );
-						break;
-						
-					case IDENTIFIER_SYMBOL_TYPE:
-						sqlite3_bind_null( (*my_agent->epmem_dyn_statements)[ ( ( parent_id * EPMEM_BIGTREE_QUERIES ) + EPMEM_BIGTREE_INSERT ) ], 3 );
-						break;
-				}
-				sqlite3_step( (*my_agent->epmem_dyn_statements)[ ( ( parent_id * EPMEM_BIGTREE_QUERIES ) + EPMEM_BIGTREE_INSERT ) ] );
-				sqlite3_reset( (*my_agent->epmem_dyn_statements)[ ( ( parent_id * EPMEM_BIGTREE_QUERIES ) + EPMEM_BIGTREE_INSERT ) ] );
-				
-				// also create new id table
-				if ( wmes[i]->value->common.symbol_type == IDENTIFIER_SYMBOL_TYPE )
-				{
-					sqlite3_stmt *create;
-					const char *tail;
-					char temp_sql[256];				
-					
-					// id table
-					SNPRINTF( temp_sql, 254, "CREATE TABLE IF NOT EXISTS id_%d (id INT PRIMARY KEY,name TEXT,value NONE)", child_id );
-					sqlite3_prepare_v2( my_agent->epmem_db, temp_sql, -1, &create, &tail );
-					sqlite3_step( create );
-					sqlite3_finalize( create );
-					
-					// main index
-					SNPRINTF( temp_sql, 254, "CREATE INDEX IF NOT EXISTS name_value ON id_%d (name,value)", child_id );
-					sqlite3_prepare_v2( my_agent->epmem_db, temp_sql, -1, &create, &tail );
-					sqlite3_step( create );					
-					sqlite3_finalize( create );
-					
-					// create insert query for the id
-					SNPRINTF( temp_sql, 254, "INSERT INTO id_%d (id,name,value) VALUES (?,?,?)", child_id );
-					sqlite3_prepare_v2( my_agent->epmem_db, temp_sql, -1, &create, &tail );
-					(*my_agent->epmem_dyn_statements)[ ( ( child_id * EPMEM_BIGTREE_QUERIES ) + EPMEM_BIGTREE_INSERT ) ] = create;
-					create = NULL;
-					
-					// create select query for the id
-					SNPRINTF( temp_sql, 254, "SELECT id FROM id_%d WHERE name=? AND value=?", child_id );
-					sqlite3_prepare_v2( my_agent->epmem_db, temp_sql, -1, &create, &tail );
-					(*my_agent->epmem_dyn_statements)[ ( ( child_id * EPMEM_BIGTREE_QUERIES ) + EPMEM_BIGTREE_SELECT ) ] = create;
-					create = NULL;
-					
-					// create null query for the id
-					SNPRINTF( temp_sql, 254, "SELECT id FROM id_%d WHERE name=? AND value IS NULL", child_id );
-					sqlite3_prepare_v2( my_agent->epmem_db, temp_sql, -1, &create, &tail );
-					(*my_agent->epmem_dyn_statements)[ ( ( child_id * EPMEM_BIGTREE_QUERIES ) + EPMEM_BIGTREE_NULL ) ] = create;
-					create = NULL;
-				}
-			}
-			
-			// keep track of identifiers (for further study)
-			if ( wmes[i]->value->common.symbol_type == IDENTIFIER_SYMBOL_TYPE )
-			{
-				syms.push_back( wmes[i]->id );
-				ids.push_back( child_id );
-			}
-		}
-		
-		/*if ( !syms.empty() )
-		{
-			temp_sym = syms[ pos ];
+		sqlite3_step( my_agent->epmem_statements[ EPMEM_STMT_BEGIN ] );
+		sqlite3_reset( my_agent->epmem_statements[ EPMEM_STMT_BEGIN ] );
+		while ( pos != syms.size() )
+		{		
+			parent_sym = syms[ pos ];
 			parent_id = ids[ pos ];
-			pos++;
-			
-			wmes = epmem_get_augs_of_id( my_agent, temp_sym, temp_sym->id.tc_num+3, &len );
+			pos++;				
+			wmes = epmem_get_augs_of_id( my_agent, parent_sym, tc, &len );
+
+			if ( wmes != NULL )
+			{
+				for ( i=0; i<len; i++ )
+				{
+					// find wme id
+					child_id = -1;
+					if ( wmes[i]->value->common.symbol_type != IDENTIFIER_SYMBOL_TYPE )
+					{
+						sqlite3_bind_text( (*my_agent->epmem_dyn_statements)[ ( ( parent_id * EPMEM_BIGTREE_QUERIES ) + EPMEM_BIGTREE_SELECT ) ], 1, (const char *) wmes[i]->attr->sc.name, -1, SQLITE_STATIC );
+						switch( wmes[i]->value->common.symbol_type )
+						{
+							case SYM_CONSTANT_SYMBOL_TYPE:
+								sqlite3_bind_text( (*my_agent->epmem_dyn_statements)[ ( ( parent_id * EPMEM_BIGTREE_QUERIES ) + EPMEM_BIGTREE_SELECT ) ], 2, (const char *) wmes[i]->value->sc.name, -1, SQLITE_STATIC );
+								break;
+					            
+							case INT_CONSTANT_SYMBOL_TYPE:
+			        			sqlite3_bind_int( (*my_agent->epmem_dyn_statements)[ ( ( parent_id * EPMEM_BIGTREE_QUERIES ) + EPMEM_BIGTREE_SELECT ) ], 2, wmes[i]->value->ic.value );
+								break;
+				
+							case FLOAT_CONSTANT_SYMBOL_TYPE:
+			        			sqlite3_bind_double( (*my_agent->epmem_dyn_statements)[ ( ( parent_id * EPMEM_BIGTREE_QUERIES ) + EPMEM_BIGTREE_SELECT ) ], 2, wmes[i]->value->fc.value );
+								break;
+						}
+						
+						if ( sqlite3_step( (*my_agent->epmem_dyn_statements)[ ( ( parent_id * EPMEM_BIGTREE_QUERIES ) + EPMEM_BIGTREE_SELECT ) ] ) == SQLITE_ROW )
+							child_id = sqlite3_column_int( (*my_agent->epmem_dyn_statements)[ ( ( parent_id * EPMEM_BIGTREE_QUERIES ) + EPMEM_BIGTREE_SELECT ) ], 0 );
+						
+						sqlite3_reset( (*my_agent->epmem_dyn_statements)[ ( ( parent_id * EPMEM_BIGTREE_QUERIES ) + EPMEM_BIGTREE_SELECT ) ] );
+					}
+					else
+					{
+						sqlite3_bind_text( (*my_agent->epmem_dyn_statements)[ ( ( parent_id * EPMEM_BIGTREE_QUERIES ) + EPMEM_BIGTREE_NULL ) ], 1, (const char *) wmes[i]->attr->sc.name, -1, SQLITE_STATIC );
+						if ( sqlite3_step( (*my_agent->epmem_dyn_statements)[ ( ( parent_id * EPMEM_BIGTREE_QUERIES ) + EPMEM_BIGTREE_NULL ) ] ) == SQLITE_ROW )
+							child_id = sqlite3_column_int( (*my_agent->epmem_dyn_statements)[ ( ( parent_id * EPMEM_BIGTREE_QUERIES ) + EPMEM_BIGTREE_NULL ) ], 0 );
+						
+						sqlite3_reset( (*my_agent->epmem_dyn_statements)[ ( ( parent_id * EPMEM_BIGTREE_QUERIES ) + EPMEM_BIGTREE_NULL ) ] );
+					}
+					
+					// insert on no id
+					if ( child_id == -1 )
+					{
+						child_id = (my_agent->epmem_id_counter++);
+							
+						// insert
+						sqlite3_bind_int( (*my_agent->epmem_dyn_statements)[ ( ( parent_id * EPMEM_BIGTREE_QUERIES ) + EPMEM_BIGTREE_INSERT ) ], 1, child_id );
+						sqlite3_bind_text( (*my_agent->epmem_dyn_statements)[ ( ( parent_id * EPMEM_BIGTREE_QUERIES ) + EPMEM_BIGTREE_INSERT ) ], 2, (const char *) wmes[i]->attr->sc.name, -1, SQLITE_STATIC );				
+						switch ( wmes[i]->value->common.symbol_type )
+						{
+							case SYM_CONSTANT_SYMBOL_TYPE:
+								sqlite3_bind_text( (*my_agent->epmem_dyn_statements)[ ( ( parent_id * EPMEM_BIGTREE_QUERIES ) + EPMEM_BIGTREE_INSERT ) ], 3, (const char *) wmes[i]->value->sc.name, -1, SQLITE_STATIC );
+								break;
+								
+							case INT_CONSTANT_SYMBOL_TYPE:
+								sqlite3_bind_int( (*my_agent->epmem_dyn_statements)[ ( ( parent_id * EPMEM_BIGTREE_QUERIES ) + EPMEM_BIGTREE_INSERT ) ], 3, wmes[i]->value->ic.value );
+								break;
+								
+							case FLOAT_CONSTANT_SYMBOL_TYPE:
+								sqlite3_bind_double( (*my_agent->epmem_dyn_statements)[ ( ( parent_id * EPMEM_BIGTREE_QUERIES ) + EPMEM_BIGTREE_INSERT ) ], 3, wmes[i]->value->fc.value );
+								break;
+								
+							case IDENTIFIER_SYMBOL_TYPE:
+								sqlite3_bind_null( (*my_agent->epmem_dyn_statements)[ ( ( parent_id * EPMEM_BIGTREE_QUERIES ) + EPMEM_BIGTREE_INSERT ) ], 3 );
+								break;
+						}
+						sqlite3_step( (*my_agent->epmem_dyn_statements)[ ( ( parent_id * EPMEM_BIGTREE_QUERIES ) + EPMEM_BIGTREE_INSERT ) ] );
+						sqlite3_reset( (*my_agent->epmem_dyn_statements)[ ( ( parent_id * EPMEM_BIGTREE_QUERIES ) + EPMEM_BIGTREE_INSERT ) ] );
+						
+						// also create new id table
+						if ( wmes[i]->value->common.symbol_type == IDENTIFIER_SYMBOL_TYPE )
+						{
+							sqlite3_stmt *create;
+							const char *tail;
+							char temp_sql[256];				
+							
+							// id table
+							SNPRINTF( temp_sql, 254, "CREATE TABLE IF NOT EXISTS id_%d (id INT PRIMARY KEY,name TEXT,value NONE)", child_id );
+							sqlite3_prepare_v2( my_agent->epmem_db, temp_sql, -1, &create, &tail );
+							sqlite3_step( create );
+							sqlite3_finalize( create );
+							
+							// main index
+							SNPRINTF( temp_sql, 254, "CREATE INDEX IF NOT EXISTS name_value ON id_%d (name,value)", child_id );
+							sqlite3_prepare_v2( my_agent->epmem_db, temp_sql, -1, &create, &tail );
+							sqlite3_step( create );					
+							sqlite3_finalize( create );
+							
+							// create insert query for the id
+							SNPRINTF( temp_sql, 254, "INSERT INTO id_%d (id,name,value) VALUES (?,?,?)", child_id );
+							sqlite3_prepare_v2( my_agent->epmem_db, temp_sql, -1, &create, &tail );
+							(*my_agent->epmem_dyn_statements)[ ( ( child_id * EPMEM_BIGTREE_QUERIES ) + EPMEM_BIGTREE_INSERT ) ] = create;
+							create = NULL;
+							
+							// create select query for the id
+							SNPRINTF( temp_sql, 254, "SELECT id FROM id_%d WHERE name=? AND value=?", child_id );
+							sqlite3_prepare_v2( my_agent->epmem_db, temp_sql, -1, &create, &tail );
+							(*my_agent->epmem_dyn_statements)[ ( ( child_id * EPMEM_BIGTREE_QUERIES ) + EPMEM_BIGTREE_SELECT ) ] = create;
+							create = NULL;
+							
+							// create null query for the id
+							SNPRINTF( temp_sql, 254, "SELECT id FROM id_%d WHERE name=? AND value IS NULL", child_id );
+							sqlite3_prepare_v2( my_agent->epmem_db, temp_sql, -1, &create, &tail );
+							(*my_agent->epmem_dyn_statements)[ ( ( child_id * EPMEM_BIGTREE_QUERIES ) + EPMEM_BIGTREE_NULL ) ] = create;
+							create = NULL;
+						}
+					}
+					
+					// keep track of identifiers (for further study)
+					if ( wmes[i]->value->common.symbol_type == IDENTIFIER_SYMBOL_TYPE )
+					{
+						syms.push_back( wmes[i]->value );
+						ids.push_back( child_id );
+					}
+					else
+					{
+						// add leaf nodes to the episodic store
+						sqlite3_bind_int( my_agent->epmem_statements[ EPMEM_STMT_BIGTREE_ADD_EPISODE ], 1, child_id );
+						sqlite3_bind_int( my_agent->epmem_statements[ EPMEM_STMT_BIGTREE_ADD_EPISODE ], 2, my_agent->epmem_time_counter );
+						sqlite3_bind_int( my_agent->epmem_statements[ EPMEM_STMT_BIGTREE_ADD_EPISODE ], 3, 0 );
+						sqlite3_step( my_agent->epmem_statements[ EPMEM_STMT_BIGTREE_ADD_EPISODE ] );
+						sqlite3_reset( my_agent->epmem_statements[ EPMEM_STMT_BIGTREE_ADD_EPISODE ] );
+					}
+				}
+			}
 		}
-		else*/
-			wmes = NULL;
+		sqlite3_step( my_agent->epmem_statements[ EPMEM_STMT_COMMIT ] );
+		sqlite3_reset( my_agent->epmem_statements[ EPMEM_STMT_COMMIT ] );	
+		my_agent->epmem_time_counter++;
 	}
-	
-	/*
-	wme **wmes = NULL;
-	    wmetree *childnode;
-	    int len = 0;
-	    int i;
-	    Symbol *ss = NULL;
-	    arraylist *syms = make_arraylist(thisAgent, 32);
-	    int pos = 0;
-
-	    start_timer(thisAgent, &(thisAgent->epmem_updatewmetree_start_time));
-
-	    /*
-	     * The epmem arraylist is filled with wmetree equivalents of all
-	     * the WMEs that are found as children of the given Symbol (sym).
-	     * The pos pointer indicates the current place in the list.  If
-	     * pos reaches the end of the list we're done.
-	     *
-	    while(pos <= epmem->size)
-	    {
-	        start_timer(thisAgent, &(thisAgent->epmem_getaugs_start_time));
-	        wmes = epmem_get_augs_of_id(thisAgent,  sym, tc, &len );
-	        stop_timer(thisAgent, &(thisAgent->epmem_getaugs_start_time), &(thisAgent->epmem_getaugs_total_time));
-
-	        if (wmes != NULL)
-	        {
-	            for(i = 0; i < len; i++)
-	            {
-	                //Check for special case: relation specification
-	                if (handle_relation(thisAgent, node, wmes[i]))
-	                {
-	                    continue;
-	                }
-
-	                //Find the wmetree node that corresponds to this wme
-	                start_timer(thisAgent, &(thisAgent->epmem_findchild_start_time));
-	                childnode = find_child_node(node, wmes[i]);
-	                stop_timer(thisAgent, &(thisAgent->epmem_findchild_start_time), &(thisAgent->epmem_findchild_total_time));
-
-	                //If a corresponding node was not found, then create one
-	                if (childnode == NULL)
-	                {
-	                    childnode = make_wmetree_node(thisAgent, wmes[i]);
-	                    childnode->id = thisAgent->epmem_wmetree_size++;
-	                    childnode->parent = node;
-	                    childnode->depth = node->depth + 1;
-	                    add_to_hash_table(thisAgent, node->children, childnode);
-	                }
-
-	                //Check for special case: "superstate" (prevent other states
-	                //from being traversed).
-	                if (wme_has_value(wmes[i], "superstate", NULL))
-	                {
-	                    if ( (ss == NULL)
-	                         && (wmes[i]->value->common.symbol_type == IDENTIFIER_SYMBOL_TYPE) )
-	                    {
-	                        ss = wmes[i]->value;
-	                    }
-	                   continue;
-	                }
-
-	                //insert childnode into the arraylist
-	                start_timer(thisAgent, &(thisAgent->epmem_addnode_start_time));
-	                add_node_to_memory(thisAgent, epmem, childnode, decay_activation_level(thisAgent, wmes[i]));
-	                stop_timer(thisAgent, &(thisAgent->epmem_addnode_start_time), &(thisAgent->epmem_addnode_total_time));
-	                append_entry_to_arraylist(thisAgent, syms, (void *)wmes[i]->value);
-
-	            }//for
-	        }//if
-
-	        //Special Case:  no wmes found attached to the given symbol
-	        if (epmem->size == 0) break;
-
-	        //We've retrieved every WME in the query
-	        if (epmem->size == pos) break;
-	        
-	        node = ((actwme *)get_arraylist_entry(thisAgent, epmem,pos))->node;
-	        sym = (Symbol *)get_arraylist_entry(thisAgent, syms,pos);
-	        pos++;
-
-	        //Deallocate the last wmes list
-	        if (wmes != NULL)
-	        {
-	            free_memory(thisAgent, wmes, MISCELLANEOUS_MEM_USAGE);
-	        }
-	        
-	    }//while
-	    
-	    //Sort the memory's arraylist using the node pointers
-	    qsort( (void *)epmem->array,
-	           (size_t)epmem->size,
-	           sizeof( void * ),
-	           compare_actwme );
-
-	    //Deallocate the symbol list
-	    destroy_arraylist(thisAgent, syms);
-
-	    stop_timer(thisAgent, &(thisAgent->epmem_updatewmetree_start_time), &(thisAgent->epmem_updatewmetree_total_time));
-	    
-	    return ss;*/
-	
-	/*while ( sym != NULL )
-	{
-		
-	}*/
-	
-	/*
-	tc_number tc;
-    Symbol *sym;
-    arraylist *curr_state;
-    arraylist *next_state;
-    int i;
-    episodic_memory *new_epmem;
-
-    //Allocate and initialize the new memory
-    new_epmem = (episodic_memory *)allocate_memory(thisAgent,
-                                                   sizeof(episodic_memory),
-                                                   MISCELLANEOUS_MEM_USAGE);
-    new_epmem->last_usage = -1;
-    new_epmem->match_score = 0.0;
-    new_epmem->act_total = 0.0;
-    new_epmem->num_matches = 0;
-    new_epmem->last_ret = thisAgent->epmem_memories->size;
-
-    //Starting with bottom_goal and moving toward top_goal, add all
-    //the current states to the wmetree and record the full WM
-    //state as an arraylist of actwmes
-    sym = (thisAgent->bottom_goal);
-    
-    //Do only top-state for now
-    sym = (thisAgent->top_goal);  //%%%TODO: remove this later
-    
-    curr_state = NULL;
-    next_state = NULL;
-    while(sym != NULL)
-    {
-        next_state = make_arraylist(thisAgent, 128);
-        next_state->next = curr_state;
-        curr_state = next_state;
-
-        tc = sym->id.tc_num + 3;//how much is enough?? (see note above)
-        
-        sym = update_wmetree(thisAgent, thisAgent->epmem_wmetree, sym, curr_state, tc);
-
-        //Update the assoc_memories link on each wmetree node in curr_state
-        for(i = 0; i < curr_state->size; i++)
-        {
-            actwme *curr_actwme = (actwme *)get_arraylist_entry(thisAgent, curr_state,i);
-            wmetree *node = curr_actwme->node;
-            int activation = curr_actwme->activation;
-
-            //In order to be recorded, a WME must meet the following criteria:
-            //1.  It must be a leaf WME (i.e., it has no children)
-            //2.  It must be activated (i.e., it has a decay element)
-            //3.  It must not be marked as ubiquitous
-            if ( (node->children->count == 0)
-                 && (activation != -1)
-                 && (! node->ubiquitous) )
-            {
-                append_entry_to_arraylist(thisAgent, node->assoc_memories, (void *)new_epmem);
-
-                //Test to see if the new arraylist has too many entries.
-                //If so, this node has become too ubiquitous and will no
-                //longer be used in mat ching
-                if (thisAgent->epmem_memories->size > ubiquitous_max)
-                {
-                    float ubiquity =
-                        ((float)node->assoc_memories->size) / ((float)thisAgent->epmem_memories->size);
-                    if (ubiquity > ubiquitous_threshold)
-                    {
-                        node->ubiquitous = TRUE;
-                        destroy_arraylist(thisAgent, node->assoc_memories);
-                        node->assoc_memories = make_arraylist(thisAgent, 1);
-                    }
-                    
-                }
-            }//if
-        }//for
-    }//while
-    */
 }
