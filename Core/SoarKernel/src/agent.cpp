@@ -532,16 +532,7 @@ void destroy_soar_agent (Kernel * thisKernel, agent * delete_agent)
   	
     // perform cleanup as necessary
     const long indexing = epmem_get_parameter( delete_agent, EPMEM_PARAM_INDEXING, EPMEM_RETURN_LONG );
-    switch ( indexing )
-    {
-      case EPMEM_INDEXING_BIGTREE_INSTANCE:
-        sqlite3_bind_int( delete_agent->epmem_statements[ EPMEM_STMT_VAR_SET ], 1, EPMEM_VAR_BIGTREE_MAX_ID );
-        sqlite3_bind_int( delete_agent->epmem_statements[ EPMEM_STMT_VAR_SET ], 2, delete_agent->epmem_id_counter );
-    	sqlite3_step( delete_agent->epmem_statements[ EPMEM_STMT_VAR_SET ] );
-    	sqlite3_reset( delete_agent->epmem_statements[ EPMEM_STMT_VAR_SET ] );
-        break;
-    }
-    
+        
   	for ( i=0; i<EPMEM_MAX_STATEMENTS; i++ )
   	  if ( delete_agent->epmem_statements[ i ] != NULL )
   	    sqlite3_finalize( delete_agent->epmem_statements[ i ] );

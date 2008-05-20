@@ -54,6 +54,7 @@
 #define EPMEM_STMT_VAR_SET						4
 
 #define EPMEM_STMT_BIGTREE_ADD_EPISODE			10
+#define EPMEM_STMT_BIGTREE_ADD_PARENT			11
 
 #define EPMEM_MAX_STATEMENTS 					30 // must be at least 1+ largest of any STMT constant
 
