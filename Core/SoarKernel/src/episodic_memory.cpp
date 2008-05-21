@@ -35,6 +35,10 @@
 
 using namespace std;
 
+// defined in symtab.cpp but not in symtab.h
+extern unsigned long compress( unsigned long h, short num_bits );
+extern unsigned long hash_string( const char *s );
+
 /***************************************************************************
  * Function     : epmem_clean_parameters
  **************************************************************************/
@@ -832,6 +836,37 @@ wme **epmem_get_augs_of_id( agent* my_agent, Symbol * id, tc_number tc, int *num
 }
 
 /***************************************************************************
+ * Function     : epmem_hash_wme
+ * Author		: Andy Nuxoll
+ * Notes		: Creates a hash value for a WME.  This is used to find the
+ *				  corresponding wmetree node in a hash table.
+ **************************************************************************/
+unsigned long epmem_hash_wme( wme *w )
+{
+	unsigned long hash_value;
+	
+	// Generate a hash value for the WME's attr and value
+	hash_value = hash_string( w->attr->sc.name );
+	
+	switch( w->value->common.symbol_type )
+	{
+		case SYM_CONSTANT_SYMBOL_TYPE:
+			hash_value += hash_string( w->value->sc.name );
+			break;
+            
+		case INT_CONSTANT_SYMBOL_TYPE:
+			hash_value += w->value->ic.value;
+			break;
+		
+		case FLOAT_CONSTANT_SYMBOL_TYPE:
+			hash_value += ( unsigned long )w->value->fc.value;
+			break;
+	}
+	
+	return hash_value;
+}
+
+/***************************************************************************
  * Function     : epmem_init_db
  **************************************************************************/
 void epmem_init_db( agent *my_agent )
@@ -865,7 +900,7 @@ void epmem_init_db( agent *my_agent )
 		int rc;
 					
 		// create vars table (needed before var queries)
-		sqlite3_prepare_v2( my_agent->epmem_db, "CREATE TABLE IF NOT EXISTS vars (id INT PRIMARY KEY,value NONE)", -1, &create, &tail );
+		sqlite3_prepare_v2( my_agent->epmem_db, "CREATE TABLE IF NOT EXISTS vars (id INTEGER PRIMARY KEY,value NONE)", -1, &create, &tail );
 		sqlite3_step( create );
 		sqlite3_finalize( create );
 		
@@ -887,82 +922,42 @@ void epmem_init_db( agent *my_agent )
 		{
 			case EPMEM_INDEXING_BIGTREE_INSTANCE:					
 				// episodes table
-				sqlite3_prepare_v2( my_agent->epmem_db, "CREATE TABLE IF NOT EXISTS episodes (id INT,time INT,weight REAL)", -1, &create, &tail );
+				sqlite3_prepare_v2( my_agent->epmem_db, "CREATE TABLE IF NOT EXISTS episodes (id INTEGER,time INTEGER,weight REAL)", -1, &create, &tail );
 				sqlite3_step( create );					
-				sqlite3_finalize( create );
-				
-				// id index
-				sqlite3_prepare_v2( my_agent->epmem_db, "CREATE INDEX IF NOT EXISTS id ON episodes (id)", -1, &create, &tail );
-				sqlite3_step( create );					
-				sqlite3_finalize( create );
+				sqlite3_finalize( create );			
 				
 				// weight index (for sorting)
-				sqlite3_prepare_v2( my_agent->epmem_db, "CREATE INDEX IF NOT EXISTS weight ON episodes (weight)", -1, &create, &tail );
+				sqlite3_prepare_v2( my_agent->epmem_db, "CREATE INDEX IF NOT EXISTS episode_weight ON episodes (weight)", -1, &create, &tail );
 				sqlite3_step( create );					
 				sqlite3_finalize( create );
 				
 				// time index (for next)
-				sqlite3_prepare_v2( my_agent->epmem_db, "CREATE INDEX IF NOT EXISTS time ON episodes (time)", -1, &create, &tail );
+				sqlite3_prepare_v2( my_agent->epmem_db, "CREATE INDEX IF NOT EXISTS episode_time ON episodes (time)", -1, &create, &tail );
 				sqlite3_step( create );					
 				sqlite3_finalize( create );
 
 				// custom statement for inserting episodes
 				sqlite3_prepare_v2( my_agent->epmem_db, "INSERT INTO episodes (id,time,weight) VALUES (?,?,?)", -1, &( my_agent->epmem_statements[ EPMEM_STMT_BIGTREE_ADD_EPISODE ] ), &tail );
 				
-				// parents table
-				sqlite3_prepare_v2( my_agent->epmem_db, "CREATE TABLE IF NOT EXISTS parents (child_id INT PRIMARY KEY,parent_id INT)", -1, &create, &tail );
+				// ids table
+				sqlite3_prepare_v2( my_agent->epmem_db, "CREATE TABLE IF NOT EXISTS ids (child_id INTEGER PRIMARY KEY AUTOINCREMENT,parent_id INTEGER,name TEXT,value NONE,hash INTEGER)", -1, &create, &tail );
+				sqlite3_step( create );					
+				sqlite3_finalize( create );			
+
+				// hash index for searching
+				sqlite3_prepare_v2( my_agent->epmem_db, "CREATE INDEX IF NOT EXISTS id_hash_parent ON ids (hash,parent_id)", -1, &create, &tail );
 				sqlite3_step( create );					
 				sqlite3_finalize( create );
 
-				// custom statement for inserting parents
-				sqlite3_prepare_v2( my_agent->epmem_db, "INSERT INTO parents (child_id,parent_id) VALUES (?,?)", -1, &( my_agent->epmem_statements[ EPMEM_STMT_BIGTREE_ADD_PARENT ] ), &tail );
+				// custom statement for inserting ids
+				sqlite3_prepare_v2( my_agent->epmem_db, "INSERT INTO ids (parent_id,name,value,hash) VALUES (?,?,?,?)", -1, &( my_agent->epmem_statements[ EPMEM_STMT_BIGTREE_ADD_ID ] ), &tail );
 
-				// first id table
-				sqlite3_prepare_v2( my_agent->epmem_db, "CREATE TABLE IF NOT EXISTS id_0 (id INT PRIMARY KEY,name TEXT,value NONE)", -1, &create, &tail );
-				sqlite3_step( create );
-				sqlite3_finalize( create );
-				
-				// main index
-				sqlite3_prepare_v2( my_agent->epmem_db, "CREATE INDEX IF NOT EXISTS name_value ON id_0 (name,value)", -1, &create, &tail );
-				sqlite3_step( create );					
-				sqlite3_finalize( create );
-				
-				// create queries for any id tables
-				sqlite3_prepare_v2( my_agent->epmem_db, "SELECT DISTINCT ltrim(tbl_name, 'id_') AS my_id FROM sqlite_master WHERE tbl_name LIKE 'id_%' AND type='table' ORDER BY tbl_name ASC", -1, &create, &tail );
-				while ( sqlite3_step( create ) == SQLITE_ROW )
-				{
-					// get id
-					rc = sqlite3_column_int( create, 0 );						
-					
-					char temp_sql[256];
-					sqlite3_stmt *temp_stmt;
-					
-					// create insert query for the id
-					SNPRINTF( temp_sql, 254, "INSERT INTO id_%d (id,name,value) VALUES (?,?,?)", rc );
-					sqlite3_prepare_v2( my_agent->epmem_db, temp_sql, -1, &temp_stmt, &tail );
-					(*my_agent->epmem_dyn_statements)[ ( ( rc * EPMEM_BIGTREE_QUERIES ) + EPMEM_BIGTREE_INSERT ) ] = temp_stmt;
-					temp_stmt = NULL;
-					
-					// create select query for the id
-					SNPRINTF( temp_sql, 254, "SELECT id FROM id_%d WHERE name=? AND value=?", rc );
-					sqlite3_prepare_v2( my_agent->epmem_db, temp_sql, -1, &temp_stmt, &tail );
-					(*my_agent->epmem_dyn_statements)[ ( ( rc * EPMEM_BIGTREE_QUERIES ) + EPMEM_BIGTREE_SELECT ) ] = temp_stmt;
-					temp_stmt = NULL;
-					
-					// create null query for the id
-					SNPRINTF( temp_sql, 254, "SELECT id FROM id_%d WHERE name=? AND value IS NULL", rc );
-					sqlite3_prepare_v2( my_agent->epmem_db, temp_sql, -1, &temp_stmt, &tail );
-					(*my_agent->epmem_dyn_statements)[ ( ( rc * EPMEM_BIGTREE_QUERIES ) + EPMEM_BIGTREE_NULL ) ] = temp_stmt;
-					temp_stmt = NULL;
-				}
-				sqlite3_finalize( create );
-				
-				// get max id
-				sqlite3_prepare_v2( my_agent->epmem_db, "SELECT COUNT(*) FROM parents", -1, &create, &tail );
-				if ( sqlite3_step( create ) == SQLITE_ROW )						
-					my_agent->epmem_id_counter = ( sqlite3_column_int( create, 0 ) + 1 );
-				sqlite3_finalize( create );
-								
+				// custom statement for finding non-identifier id's
+				sqlite3_prepare_v2( my_agent->epmem_db, "SELECT child_id FROM ids WHERE hash=? AND parent_id=? AND name=? AND value=?", -1, &( my_agent->epmem_statements[ EPMEM_STMT_BIGTREE_FIND_ID ] ), &tail );
+
+				// custom statement for finding identifier id's
+				sqlite3_prepare_v2( my_agent->epmem_db, "SELECT child_id FROM ids WHERE hash=? AND parent_id=? AND name=? AND value IS NULL", -1, &( my_agent->epmem_statements[ EPMEM_STMT_BIGTREE_FIND_ID_NULL ] ), &tail );
+												
 				// get max time
 				sqlite3_prepare_v2( my_agent->epmem_db, "SELECT MAX(time) FROM episodes", -1, &create, &tail );
 				if ( sqlite3_step( create ) == SQLITE_ROW )						
@@ -1064,15 +1059,21 @@ void epmem_new_episode( agent *my_agent )
 	{
 		// for now we are only recording episodes at the top state
 		Symbol *parent_sym;
+
 		wme **wmes = NULL;
 		int len = 0;
-		unsigned int pos = 0;
-		int i;
-		int parent_id;
-		int child_id;
-		int tc = my_agent->top_goal->id.tc_num + 3;
+		
 		vector<Symbol *> syms;
 		vector<int> ids;
+		unsigned int pos = 0;
+
+		int parent_id;
+		int child_id;
+
+		unsigned long my_hash;
+		int tc = my_agent->top_goal->id.tc_num + 3;
+
+		int i;	
 
 		syms.push_back( my_agent->top_goal );
 		ids.push_back( 0 );	
@@ -1092,110 +1093,76 @@ void epmem_new_episode( agent *my_agent )
 				{
 					// find wme id
 					child_id = -1;
+					my_hash = epmem_hash_wme( wmes[i] );
 					if ( wmes[i]->value->common.symbol_type != IDENTIFIER_SYMBOL_TYPE )
-					{
-						sqlite3_bind_text( (*my_agent->epmem_dyn_statements)[ ( ( parent_id * EPMEM_BIGTREE_QUERIES ) + EPMEM_BIGTREE_SELECT ) ], 1, (const char *) wmes[i]->attr->sc.name, -1, SQLITE_STATIC );
+					{					
+						// hash=? AND parent_id=? AND name=? AND value=?
+						sqlite3_bind_int( my_agent->epmem_statements[ EPMEM_STMT_BIGTREE_FIND_ID ], 1, my_hash );
+						sqlite3_bind_int( my_agent->epmem_statements[ EPMEM_STMT_BIGTREE_FIND_ID ], 2, parent_id );
+						sqlite3_bind_text( my_agent->epmem_statements[ EPMEM_STMT_BIGTREE_FIND_ID ], 3, (const char *) wmes[i]->attr->sc.name, -1, SQLITE_STATIC );
 						switch( wmes[i]->value->common.symbol_type )
 						{
 							case SYM_CONSTANT_SYMBOL_TYPE:
-								sqlite3_bind_text( (*my_agent->epmem_dyn_statements)[ ( ( parent_id * EPMEM_BIGTREE_QUERIES ) + EPMEM_BIGTREE_SELECT ) ], 2, (const char *) wmes[i]->value->sc.name, -1, SQLITE_STATIC );
+								sqlite3_bind_text( my_agent->epmem_statements[ EPMEM_STMT_BIGTREE_FIND_ID ], 4, (const char *) wmes[i]->value->sc.name, -1, SQLITE_STATIC );
 								break;
 					            
 							case INT_CONSTANT_SYMBOL_TYPE:
-			        			sqlite3_bind_int( (*my_agent->epmem_dyn_statements)[ ( ( parent_id * EPMEM_BIGTREE_QUERIES ) + EPMEM_BIGTREE_SELECT ) ], 2, wmes[i]->value->ic.value );
+			        			sqlite3_bind_int( my_agent->epmem_statements[ EPMEM_STMT_BIGTREE_FIND_ID ], 4, wmes[i]->value->ic.value );
 								break;
 				
 							case FLOAT_CONSTANT_SYMBOL_TYPE:
-			        			sqlite3_bind_double( (*my_agent->epmem_dyn_statements)[ ( ( parent_id * EPMEM_BIGTREE_QUERIES ) + EPMEM_BIGTREE_SELECT ) ], 2, wmes[i]->value->fc.value );
+			        			sqlite3_bind_double( my_agent->epmem_statements[ EPMEM_STMT_BIGTREE_FIND_ID ], 4, wmes[i]->value->fc.value );
 								break;
 						}
 						
-						if ( sqlite3_step( (*my_agent->epmem_dyn_statements)[ ( ( parent_id * EPMEM_BIGTREE_QUERIES ) + EPMEM_BIGTREE_SELECT ) ] ) == SQLITE_ROW )
-							child_id = sqlite3_column_int( (*my_agent->epmem_dyn_statements)[ ( ( parent_id * EPMEM_BIGTREE_QUERIES ) + EPMEM_BIGTREE_SELECT ) ], 0 );
+						if ( sqlite3_step( my_agent->epmem_statements[ EPMEM_STMT_BIGTREE_FIND_ID ] ) == SQLITE_ROW )
+							child_id = sqlite3_column_int( my_agent->epmem_statements[ EPMEM_STMT_BIGTREE_FIND_ID ], 0 );
 						
-						sqlite3_reset( (*my_agent->epmem_dyn_statements)[ ( ( parent_id * EPMEM_BIGTREE_QUERIES ) + EPMEM_BIGTREE_SELECT ) ] );
+						sqlite3_reset( my_agent->epmem_statements[ EPMEM_STMT_BIGTREE_FIND_ID ] );
 					}
 					else
 					{
-						sqlite3_bind_text( (*my_agent->epmem_dyn_statements)[ ( ( parent_id * EPMEM_BIGTREE_QUERIES ) + EPMEM_BIGTREE_NULL ) ], 1, (const char *) wmes[i]->attr->sc.name, -1, SQLITE_STATIC );
-						if ( sqlite3_step( (*my_agent->epmem_dyn_statements)[ ( ( parent_id * EPMEM_BIGTREE_QUERIES ) + EPMEM_BIGTREE_NULL ) ] ) == SQLITE_ROW )
-							child_id = sqlite3_column_int( (*my_agent->epmem_dyn_statements)[ ( ( parent_id * EPMEM_BIGTREE_QUERIES ) + EPMEM_BIGTREE_NULL ) ], 0 );
+						// hash=? AND parent_id=? AND name=? AND value IS NULL
 						
-						sqlite3_reset( (*my_agent->epmem_dyn_statements)[ ( ( parent_id * EPMEM_BIGTREE_QUERIES ) + EPMEM_BIGTREE_NULL ) ] );
+						sqlite3_bind_int( my_agent->epmem_statements[ EPMEM_STMT_BIGTREE_FIND_ID_NULL ], 1, my_hash );
+						sqlite3_bind_int( my_agent->epmem_statements[ EPMEM_STMT_BIGTREE_FIND_ID_NULL ], 2, parent_id );
+						sqlite3_bind_text( my_agent->epmem_statements[ EPMEM_STMT_BIGTREE_FIND_ID_NULL ], 3, (const char *) wmes[i]->attr->sc.name, -1, SQLITE_STATIC );
+
+						if ( sqlite3_step( my_agent->epmem_statements[ EPMEM_STMT_BIGTREE_FIND_ID_NULL ] ) == SQLITE_ROW )
+							child_id = sqlite3_column_int( my_agent->epmem_statements[ EPMEM_STMT_BIGTREE_FIND_ID_NULL ], 0 );
+						
+						sqlite3_reset( my_agent->epmem_statements[ EPMEM_STMT_BIGTREE_FIND_ID_NULL ] );
 					}
 					
 					// insert on no id
 					if ( child_id == -1 )
-					{
-						child_id = (my_agent->epmem_id_counter++);
-							
-						// insert
-						sqlite3_bind_int( (*my_agent->epmem_dyn_statements)[ ( ( parent_id * EPMEM_BIGTREE_QUERIES ) + EPMEM_BIGTREE_INSERT ) ], 1, child_id );
-						sqlite3_bind_text( (*my_agent->epmem_dyn_statements)[ ( ( parent_id * EPMEM_BIGTREE_QUERIES ) + EPMEM_BIGTREE_INSERT ) ], 2, (const char *) wmes[i]->attr->sc.name, -1, SQLITE_STATIC );				
+					{						
+						// insert (parent_id,name,value,hash)						
+						sqlite3_bind_int( my_agent->epmem_statements[ EPMEM_STMT_BIGTREE_ADD_ID ], 1, parent_id );
+						sqlite3_bind_text( my_agent->epmem_statements[ EPMEM_STMT_BIGTREE_ADD_ID ], 2, (const char *) wmes[i]->attr->sc.name, -1, SQLITE_STATIC );				
 						switch ( wmes[i]->value->common.symbol_type )
 						{
 							case SYM_CONSTANT_SYMBOL_TYPE:
-								sqlite3_bind_text( (*my_agent->epmem_dyn_statements)[ ( ( parent_id * EPMEM_BIGTREE_QUERIES ) + EPMEM_BIGTREE_INSERT ) ], 3, (const char *) wmes[i]->value->sc.name, -1, SQLITE_STATIC );
+								sqlite3_bind_text( my_agent->epmem_statements[ EPMEM_STMT_BIGTREE_ADD_ID ], 3, (const char *) wmes[i]->value->sc.name, -1, SQLITE_STATIC );
 								break;
 								
 							case INT_CONSTANT_SYMBOL_TYPE:
-								sqlite3_bind_int( (*my_agent->epmem_dyn_statements)[ ( ( parent_id * EPMEM_BIGTREE_QUERIES ) + EPMEM_BIGTREE_INSERT ) ], 3, wmes[i]->value->ic.value );
+								sqlite3_bind_int( my_agent->epmem_statements[ EPMEM_STMT_BIGTREE_ADD_ID ], 3, wmes[i]->value->ic.value );
 								break;
 								
 							case FLOAT_CONSTANT_SYMBOL_TYPE:
-								sqlite3_bind_double( (*my_agent->epmem_dyn_statements)[ ( ( parent_id * EPMEM_BIGTREE_QUERIES ) + EPMEM_BIGTREE_INSERT ) ], 3, wmes[i]->value->fc.value );
+								sqlite3_bind_double( my_agent->epmem_statements[ EPMEM_STMT_BIGTREE_ADD_ID ], 3, wmes[i]->value->fc.value );
 								break;
 								
 							case IDENTIFIER_SYMBOL_TYPE:
-								sqlite3_bind_null( (*my_agent->epmem_dyn_statements)[ ( ( parent_id * EPMEM_BIGTREE_QUERIES ) + EPMEM_BIGTREE_INSERT ) ], 3 );
+								sqlite3_bind_null( my_agent->epmem_statements[ EPMEM_STMT_BIGTREE_ADD_ID ], 3 );
 								break;
 						}
-						sqlite3_step( (*my_agent->epmem_dyn_statements)[ ( ( parent_id * EPMEM_BIGTREE_QUERIES ) + EPMEM_BIGTREE_INSERT ) ] );
-						sqlite3_reset( (*my_agent->epmem_dyn_statements)[ ( ( parent_id * EPMEM_BIGTREE_QUERIES ) + EPMEM_BIGTREE_INSERT ) ] );
-						
-						// add parent association
-						sqlite3_bind_int( my_agent->epmem_statements[ EPMEM_STMT_BIGTREE_ADD_PARENT ], 1, child_id );
-						sqlite3_bind_int( my_agent->epmem_statements[ EPMEM_STMT_BIGTREE_ADD_PARENT ], 2, parent_id );						
-						sqlite3_step( my_agent->epmem_statements[ EPMEM_STMT_BIGTREE_ADD_PARENT ] );
-						sqlite3_reset( my_agent->epmem_statements[ EPMEM_STMT_BIGTREE_ADD_PARENT ] );
+						sqlite3_bind_int( my_agent->epmem_statements[ EPMEM_STMT_BIGTREE_ADD_ID ], 4, my_hash );
+						sqlite3_step( my_agent->epmem_statements[ EPMEM_STMT_BIGTREE_ADD_ID ] );
+						sqlite3_reset( my_agent->epmem_statements[ EPMEM_STMT_BIGTREE_ADD_ID ] );					
 
-						// also create new id table if id
-						if ( wmes[i]->value->common.symbol_type == IDENTIFIER_SYMBOL_TYPE )
-						{
-							sqlite3_stmt *create;
-							const char *tail;
-							char temp_sql[256];				
-							
-							// id table
-							SNPRINTF( temp_sql, 254, "CREATE TABLE IF NOT EXISTS id_%d (id INT PRIMARY KEY,name TEXT,value NONE)", child_id );
-							sqlite3_prepare_v2( my_agent->epmem_db, temp_sql, -1, &create, &tail );
-							sqlite3_step( create );
-							sqlite3_finalize( create );
-							
-							// main index
-							SNPRINTF( temp_sql, 254, "CREATE INDEX IF NOT EXISTS name_value ON id_%d (name,value)", child_id );
-							sqlite3_prepare_v2( my_agent->epmem_db, temp_sql, -1, &create, &tail );
-							sqlite3_step( create );					
-							sqlite3_finalize( create );
-							
-							// create insert query for the id
-							SNPRINTF( temp_sql, 254, "INSERT INTO id_%d (id,name,value) VALUES (?,?,?)", child_id );
-							sqlite3_prepare_v2( my_agent->epmem_db, temp_sql, -1, &create, &tail );
-							(*my_agent->epmem_dyn_statements)[ ( ( child_id * EPMEM_BIGTREE_QUERIES ) + EPMEM_BIGTREE_INSERT ) ] = create;
-							create = NULL;
-							
-							// create select query for the id
-							SNPRINTF( temp_sql, 254, "SELECT id FROM id_%d WHERE name=? AND value=?", child_id );
-							sqlite3_prepare_v2( my_agent->epmem_db, temp_sql, -1, &create, &tail );
-							(*my_agent->epmem_dyn_statements)[ ( ( child_id * EPMEM_BIGTREE_QUERIES ) + EPMEM_BIGTREE_SELECT ) ] = create;
-							create = NULL;
-							
-							// create null query for the id
-							SNPRINTF( temp_sql, 254, "SELECT id FROM id_%d WHERE name=? AND value IS NULL", child_id );
-							sqlite3_prepare_v2( my_agent->epmem_db, temp_sql, -1, &create, &tail );
-							(*my_agent->epmem_dyn_statements)[ ( ( child_id * EPMEM_BIGTREE_QUERIES ) + EPMEM_BIGTREE_NULL ) ] = create;
-							create = NULL;
-						}
+						child_id = sqlite3_last_insert_rowid( my_agent->epmem_db );
 					}
 					
 					// keep track of identifiers (for further study)

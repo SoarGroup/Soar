@@ -369,10 +369,8 @@ agent * create_soar_agent (Kernel * thisKernel, char * agent_name) {            
   newAgent->epmem_db = NULL;
   newAgent->epmem_db_status = -1;
   newAgent->epmem_time_counter = 1;
-  newAgent->epmem_id_counter = 1;
   for ( int i=0; i<EPMEM_MAX_STATEMENTS; i++ )
-  	newAgent->epmem_statements[ i ] = NULL;  
-  newAgent->epmem_dyn_statements = new std::map<int, sqlite3_stmt *>();
+  	newAgent->epmem_statements[ i ] = NULL;
 
   return newAgent;
 }
@@ -535,15 +533,7 @@ void destroy_soar_agent (Kernel * thisKernel, agent * delete_agent)
         
   	for ( i=0; i<EPMEM_MAX_STATEMENTS; i++ )
   	  if ( delete_agent->epmem_statements[ i ] != NULL )
-  	    sqlite3_finalize( delete_agent->epmem_statements[ i ] );
-  	
-  	std::map<int, sqlite3_stmt *>::iterator p = delete_agent->epmem_dyn_statements->begin(); 
-  	while ( p != delete_agent->epmem_dyn_statements->end() )
-  	{
-      sqlite3_finalize( p->second );
-      p++;
-  	}
-  	delete delete_agent->epmem_dyn_statements;
+  	    sqlite3_finalize( delete_agent->epmem_statements[ i ] ); 	
   	  
   	sqlite3_close( delete_agent->epmem_db );
   }

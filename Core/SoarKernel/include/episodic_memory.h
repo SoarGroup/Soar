@@ -37,12 +37,6 @@
 
 #define EPMEM_TRIGGER_OUTPUT 1
 
-// bigtree query types
-#define EPMEM_BIGTREE_INSERT					0
-#define EPMEM_BIGTREE_SELECT					1
-#define EPMEM_BIGTREE_NULL						2
-#define EPMEM_BIGTREE_QUERIES					3
-
 // statement storage
 // 0 - 9 => common
 // 10 - 19 => indexing
@@ -54,12 +48,11 @@
 #define EPMEM_STMT_VAR_SET						4
 
 #define EPMEM_STMT_BIGTREE_ADD_EPISODE			10
-#define EPMEM_STMT_BIGTREE_ADD_PARENT			11
+#define EPMEM_STMT_BIGTREE_ADD_ID				11
+#define EPMEM_STMT_BIGTREE_FIND_ID				12
+#define EPMEM_STMT_BIGTREE_FIND_ID_NULL			13
 
 #define EPMEM_MAX_STATEMENTS 					30 // must be at least 1+ largest of any STMT constant
-
-// epmem variable id's
-#define EPMEM_VAR_BIGTREE_MAX_ID				1
 
 // names of params
 #define EPMEM_PARAM_LEARNING					0
