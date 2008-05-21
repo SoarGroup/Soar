@@ -20,6 +20,7 @@
 #include <string>
 #include <map>
 #include <vector>
+#include <set>
 
 #include "symtab.h"
 #include "io_soar.h"
@@ -535,7 +536,7 @@ bool epmem_validate_path( const char *new_val )
  **************************************************************************/
 bool epmem_validate_indexing( const long new_val )
 {
-	return ( ( new_val > 0 ) && ( new_val <= EPMEM_INDEXING_BIGTREE_INSTANCE ) );
+	return ( ( new_val > 0 ) && ( new_val <= EPMEM_INDEXING_BIGTREE_RANGE ) );
 }
 
 /***************************************************************************
@@ -550,6 +551,10 @@ const char *epmem_convert_indexing( const long val )
 		case EPMEM_INDEXING_BIGTREE_INSTANCE:
 			return_val = "bigtree_instance";
 			break;
+
+		case EPMEM_INDEXING_BIGTREE_RANGE:
+			return_val = "bigtree_range";
+			break;
 	}
 	
 	return return_val;
@@ -561,6 +566,9 @@ const long epmem_convert_indexing( const char *val )
 	
 	if ( !strcmp( val, "bigtree_instance" ) )
 		return_val = EPMEM_INDEXING_BIGTREE_INSTANCE;
+
+	if ( !strcmp( val, "bigtree_range" ) )
+		return_val = EPMEM_INDEXING_BIGTREE_RANGE;
 	
 	return return_val;
 }
@@ -920,11 +928,11 @@ void epmem_init_db( agent *my_agent )
 		sqlite3_reset( my_agent->epmem_statements[ EPMEM_STMT_BEGIN ] );
 		switch ( indexing )
 		{
-			case EPMEM_INDEXING_BIGTREE_INSTANCE:					
+			case EPMEM_INDEXING_BIGTREE_INSTANCE:
 				// episodes table
 				sqlite3_prepare_v2( my_agent->epmem_db, "CREATE TABLE IF NOT EXISTS episodes (id INTEGER,time INTEGER,weight REAL)", -1, &create, &tail );
 				sqlite3_step( create );					
-				sqlite3_finalize( create );			
+				sqlite3_finalize( create );				
 				
 				// weight index (for sorting)
 				sqlite3_prepare_v2( my_agent->epmem_db, "CREATE INDEX IF NOT EXISTS episode_weight ON episodes (weight)", -1, &create, &tail );
@@ -937,7 +945,7 @@ void epmem_init_db( agent *my_agent )
 				sqlite3_finalize( create );
 
 				// custom statement for inserting episodes
-				sqlite3_prepare_v2( my_agent->epmem_db, "INSERT INTO episodes (id,time,weight) VALUES (?,?,?)", -1, &( my_agent->epmem_statements[ EPMEM_STMT_BIGTREE_ADD_EPISODE ] ), &tail );
+				sqlite3_prepare_v2( my_agent->epmem_db, "INSERT INTO episodes (id,time,weight) VALUES (?,?,?)", -1, &( my_agent->epmem_statements[ EPMEM_STMT_BIGTREE_I_ADD_EPISODE ] ), &tail );
 				
 				// ids table
 				sqlite3_prepare_v2( my_agent->epmem_db, "CREATE TABLE IF NOT EXISTS ids (child_id INTEGER PRIMARY KEY AUTOINCREMENT,parent_id INTEGER,name TEXT,value NONE,hash INTEGER)", -1, &create, &tail );
@@ -950,13 +958,13 @@ void epmem_init_db( agent *my_agent )
 				sqlite3_finalize( create );
 
 				// custom statement for inserting ids
-				sqlite3_prepare_v2( my_agent->epmem_db, "INSERT INTO ids (parent_id,name,value,hash) VALUES (?,?,?,?)", -1, &( my_agent->epmem_statements[ EPMEM_STMT_BIGTREE_ADD_ID ] ), &tail );
+				sqlite3_prepare_v2( my_agent->epmem_db, "INSERT INTO ids (parent_id,name,value,hash) VALUES (?,?,?,?)", -1, &( my_agent->epmem_statements[ EPMEM_STMT_BIGTREE_I_ADD_ID ] ), &tail );
 
 				// custom statement for finding non-identifier id's
-				sqlite3_prepare_v2( my_agent->epmem_db, "SELECT child_id FROM ids WHERE hash=? AND parent_id=? AND name=? AND value=?", -1, &( my_agent->epmem_statements[ EPMEM_STMT_BIGTREE_FIND_ID ] ), &tail );
+				sqlite3_prepare_v2( my_agent->epmem_db, "SELECT child_id FROM ids WHERE hash=? AND parent_id=? AND name=? AND value=?", -1, &( my_agent->epmem_statements[ EPMEM_STMT_BIGTREE_I_FIND_ID ] ), &tail );
 
 				// custom statement for finding identifier id's
-				sqlite3_prepare_v2( my_agent->epmem_db, "SELECT child_id FROM ids WHERE hash=? AND parent_id=? AND name=? AND value IS NULL", -1, &( my_agent->epmem_statements[ EPMEM_STMT_BIGTREE_FIND_ID_NULL ] ), &tail );
+				sqlite3_prepare_v2( my_agent->epmem_db, "SELECT child_id FROM ids WHERE hash=? AND parent_id=? AND name=? AND value IS NULL", -1, &( my_agent->epmem_statements[ EPMEM_STMT_BIGTREE_I_FIND_ID_NULL ] ), &tail );
 												
 				// get max time
 				sqlite3_prepare_v2( my_agent->epmem_db, "SELECT MAX(time) FROM episodes", -1, &create, &tail );
@@ -964,6 +972,55 @@ void epmem_init_db( agent *my_agent )
 					my_agent->epmem_time_counter = ( sqlite3_column_int( create, 0 ) + 1 );
 				sqlite3_finalize( create );
 				
+				break;
+
+			case EPMEM_INDEXING_BIGTREE_RANGE:
+				// episodes table
+				sqlite3_prepare_v2( my_agent->epmem_db, "CREATE TABLE IF NOT EXISTS episodes (id INTEGER,start INTEGER,end INTEGER)", -1, &create, &tail );
+				sqlite3_step( create );					
+				sqlite3_finalize( create );			
+				
+				// end_id index (for updates)
+				sqlite3_prepare_v2( my_agent->epmem_db, "CREATE UNIQUE INDEX IF NOT EXISTS episode_end_id ON episodes (end,id)", -1, &create, &tail );
+				sqlite3_step( create );					
+				sqlite3_finalize( create );
+
+				// start/end index (for retrieval)
+				sqlite3_prepare_v2( my_agent->epmem_db, "CREATE INDEX IF NOT EXISTS episode_start_end ON episodes (start,end)", -1, &create, &tail );
+				sqlite3_step( create );
+				sqlite3_finalize( create );			
+
+				// custom statement for updating episodes
+				sqlite3_prepare_v2( my_agent->epmem_db, "UPDATE episodes SET end=? WHERE id=? AND end=?", -1, &( my_agent->epmem_statements[ EPMEM_STMT_BIGTREE_R_UPDATE_EPISODE ] ), &tail );
+
+				// custom statement for inserting episodes
+				sqlite3_prepare_v2( my_agent->epmem_db, "INSERT INTO episodes (id,start,end) VALUES (?,?,?)", -1, &( my_agent->epmem_statements[ EPMEM_STMT_BIGTREE_R_ADD_EPISODE ] ), &tail );			
+				
+				// ids table
+				sqlite3_prepare_v2( my_agent->epmem_db, "CREATE TABLE IF NOT EXISTS ids (child_id INTEGER PRIMARY KEY AUTOINCREMENT,parent_id INTEGER,name TEXT,value NONE,hash INTEGER)", -1, &create, &tail );
+				sqlite3_step( create );					
+				sqlite3_finalize( create );			
+
+				// hash index for searching
+				sqlite3_prepare_v2( my_agent->epmem_db, "CREATE INDEX IF NOT EXISTS id_hash_parent ON ids (hash,parent_id)", -1, &create, &tail );
+				sqlite3_step( create );					
+				sqlite3_finalize( create );
+
+				// custom statement for inserting ids
+				sqlite3_prepare_v2( my_agent->epmem_db, "INSERT INTO ids (parent_id,name,value,hash) VALUES (?,?,?,?)", -1, &( my_agent->epmem_statements[ EPMEM_STMT_BIGTREE_R_ADD_ID ] ), &tail );
+
+				// custom statement for finding non-identifier id's
+				sqlite3_prepare_v2( my_agent->epmem_db, "SELECT child_id FROM ids WHERE hash=? AND parent_id=? AND name=? AND value=?", -1, &( my_agent->epmem_statements[ EPMEM_STMT_BIGTREE_R_FIND_ID ] ), &tail );
+
+				// custom statement for finding identifier id's
+				sqlite3_prepare_v2( my_agent->epmem_db, "SELECT child_id FROM ids WHERE hash=? AND parent_id=? AND name=? AND value IS NULL", -1, &( my_agent->epmem_statements[ EPMEM_STMT_BIGTREE_R_FIND_ID_NULL ] ), &tail );
+												
+				// get max time
+				sqlite3_prepare_v2( my_agent->epmem_db, "SELECT MAX(end) FROM episodes", -1, &create, &tail );
+				if ( sqlite3_step( create ) == SQLITE_ROW )						
+					my_agent->epmem_time_counter = ( sqlite3_column_int( create, 0 ) + 1 );
+				sqlite3_finalize( create );
+
 				break;
 		}
 		
@@ -1069,6 +1126,7 @@ void epmem_new_episode( agent *my_agent )
 
 		int parent_id;
 		int child_id;
+		map<int, double> epmem;
 
 		unsigned long my_hash;
 		int tc = my_agent->top_goal->id.tc_num + 3;
@@ -1097,70 +1155,70 @@ void epmem_new_episode( agent *my_agent )
 					if ( wmes[i]->value->common.symbol_type != IDENTIFIER_SYMBOL_TYPE )
 					{					
 						// hash=? AND parent_id=? AND name=? AND value=?
-						sqlite3_bind_int( my_agent->epmem_statements[ EPMEM_STMT_BIGTREE_FIND_ID ], 1, my_hash );
-						sqlite3_bind_int( my_agent->epmem_statements[ EPMEM_STMT_BIGTREE_FIND_ID ], 2, parent_id );
-						sqlite3_bind_text( my_agent->epmem_statements[ EPMEM_STMT_BIGTREE_FIND_ID ], 3, (const char *) wmes[i]->attr->sc.name, -1, SQLITE_STATIC );
+						sqlite3_bind_int( my_agent->epmem_statements[ EPMEM_STMT_BIGTREE_I_FIND_ID ], 1, my_hash );
+						sqlite3_bind_int( my_agent->epmem_statements[ EPMEM_STMT_BIGTREE_I_FIND_ID ], 2, parent_id );
+						sqlite3_bind_text( my_agent->epmem_statements[ EPMEM_STMT_BIGTREE_I_FIND_ID ], 3, (const char *) wmes[i]->attr->sc.name, -1, SQLITE_STATIC );
 						switch( wmes[i]->value->common.symbol_type )
 						{
 							case SYM_CONSTANT_SYMBOL_TYPE:
-								sqlite3_bind_text( my_agent->epmem_statements[ EPMEM_STMT_BIGTREE_FIND_ID ], 4, (const char *) wmes[i]->value->sc.name, -1, SQLITE_STATIC );
+								sqlite3_bind_text( my_agent->epmem_statements[ EPMEM_STMT_BIGTREE_I_FIND_ID ], 4, (const char *) wmes[i]->value->sc.name, -1, SQLITE_STATIC );
 								break;
 					            
 							case INT_CONSTANT_SYMBOL_TYPE:
-			        			sqlite3_bind_int( my_agent->epmem_statements[ EPMEM_STMT_BIGTREE_FIND_ID ], 4, wmes[i]->value->ic.value );
+			        			sqlite3_bind_int( my_agent->epmem_statements[ EPMEM_STMT_BIGTREE_I_FIND_ID ], 4, wmes[i]->value->ic.value );
 								break;
 				
 							case FLOAT_CONSTANT_SYMBOL_TYPE:
-			        			sqlite3_bind_double( my_agent->epmem_statements[ EPMEM_STMT_BIGTREE_FIND_ID ], 4, wmes[i]->value->fc.value );
+			        			sqlite3_bind_double( my_agent->epmem_statements[ EPMEM_STMT_BIGTREE_I_FIND_ID ], 4, wmes[i]->value->fc.value );
 								break;
 						}
 						
-						if ( sqlite3_step( my_agent->epmem_statements[ EPMEM_STMT_BIGTREE_FIND_ID ] ) == SQLITE_ROW )
-							child_id = sqlite3_column_int( my_agent->epmem_statements[ EPMEM_STMT_BIGTREE_FIND_ID ], 0 );
+						if ( sqlite3_step( my_agent->epmem_statements[ EPMEM_STMT_BIGTREE_I_FIND_ID ] ) == SQLITE_ROW )
+							child_id = sqlite3_column_int( my_agent->epmem_statements[ EPMEM_STMT_BIGTREE_I_FIND_ID ], 0 );
 						
-						sqlite3_reset( my_agent->epmem_statements[ EPMEM_STMT_BIGTREE_FIND_ID ] );
+						sqlite3_reset( my_agent->epmem_statements[ EPMEM_STMT_BIGTREE_I_FIND_ID ] );
 					}
 					else
 					{
 						// hash=? AND parent_id=? AND name=? AND value IS NULL
 						
-						sqlite3_bind_int( my_agent->epmem_statements[ EPMEM_STMT_BIGTREE_FIND_ID_NULL ], 1, my_hash );
-						sqlite3_bind_int( my_agent->epmem_statements[ EPMEM_STMT_BIGTREE_FIND_ID_NULL ], 2, parent_id );
-						sqlite3_bind_text( my_agent->epmem_statements[ EPMEM_STMT_BIGTREE_FIND_ID_NULL ], 3, (const char *) wmes[i]->attr->sc.name, -1, SQLITE_STATIC );
+						sqlite3_bind_int( my_agent->epmem_statements[ EPMEM_STMT_BIGTREE_I_FIND_ID_NULL ], 1, my_hash );
+						sqlite3_bind_int( my_agent->epmem_statements[ EPMEM_STMT_BIGTREE_I_FIND_ID_NULL ], 2, parent_id );
+						sqlite3_bind_text( my_agent->epmem_statements[ EPMEM_STMT_BIGTREE_I_FIND_ID_NULL ], 3, (const char *) wmes[i]->attr->sc.name, -1, SQLITE_STATIC );
 
-						if ( sqlite3_step( my_agent->epmem_statements[ EPMEM_STMT_BIGTREE_FIND_ID_NULL ] ) == SQLITE_ROW )
-							child_id = sqlite3_column_int( my_agent->epmem_statements[ EPMEM_STMT_BIGTREE_FIND_ID_NULL ], 0 );
+						if ( sqlite3_step( my_agent->epmem_statements[ EPMEM_STMT_BIGTREE_I_FIND_ID_NULL ] ) == SQLITE_ROW )
+							child_id = sqlite3_column_int( my_agent->epmem_statements[ EPMEM_STMT_BIGTREE_I_FIND_ID_NULL ], 0 );
 						
-						sqlite3_reset( my_agent->epmem_statements[ EPMEM_STMT_BIGTREE_FIND_ID_NULL ] );
+						sqlite3_reset( my_agent->epmem_statements[ EPMEM_STMT_BIGTREE_I_FIND_ID_NULL ] );
 					}
 					
 					// insert on no id
 					if ( child_id == -1 )
 					{						
 						// insert (parent_id,name,value,hash)						
-						sqlite3_bind_int( my_agent->epmem_statements[ EPMEM_STMT_BIGTREE_ADD_ID ], 1, parent_id );
-						sqlite3_bind_text( my_agent->epmem_statements[ EPMEM_STMT_BIGTREE_ADD_ID ], 2, (const char *) wmes[i]->attr->sc.name, -1, SQLITE_STATIC );				
+						sqlite3_bind_int( my_agent->epmem_statements[ EPMEM_STMT_BIGTREE_I_ADD_ID ], 1, parent_id );
+						sqlite3_bind_text( my_agent->epmem_statements[ EPMEM_STMT_BIGTREE_I_ADD_ID ], 2, (const char *) wmes[i]->attr->sc.name, -1, SQLITE_STATIC );				
 						switch ( wmes[i]->value->common.symbol_type )
 						{
 							case SYM_CONSTANT_SYMBOL_TYPE:
-								sqlite3_bind_text( my_agent->epmem_statements[ EPMEM_STMT_BIGTREE_ADD_ID ], 3, (const char *) wmes[i]->value->sc.name, -1, SQLITE_STATIC );
+								sqlite3_bind_text( my_agent->epmem_statements[ EPMEM_STMT_BIGTREE_I_ADD_ID ], 3, (const char *) wmes[i]->value->sc.name, -1, SQLITE_STATIC );
 								break;
 								
 							case INT_CONSTANT_SYMBOL_TYPE:
-								sqlite3_bind_int( my_agent->epmem_statements[ EPMEM_STMT_BIGTREE_ADD_ID ], 3, wmes[i]->value->ic.value );
+								sqlite3_bind_int( my_agent->epmem_statements[ EPMEM_STMT_BIGTREE_I_ADD_ID ], 3, wmes[i]->value->ic.value );
 								break;
 								
 							case FLOAT_CONSTANT_SYMBOL_TYPE:
-								sqlite3_bind_double( my_agent->epmem_statements[ EPMEM_STMT_BIGTREE_ADD_ID ], 3, wmes[i]->value->fc.value );
+								sqlite3_bind_double( my_agent->epmem_statements[ EPMEM_STMT_BIGTREE_I_ADD_ID ], 3, wmes[i]->value->fc.value );
 								break;
 								
 							case IDENTIFIER_SYMBOL_TYPE:
-								sqlite3_bind_null( my_agent->epmem_statements[ EPMEM_STMT_BIGTREE_ADD_ID ], 3 );
+								sqlite3_bind_null( my_agent->epmem_statements[ EPMEM_STMT_BIGTREE_I_ADD_ID ], 3 );
 								break;
 						}
-						sqlite3_bind_int( my_agent->epmem_statements[ EPMEM_STMT_BIGTREE_ADD_ID ], 4, my_hash );
-						sqlite3_step( my_agent->epmem_statements[ EPMEM_STMT_BIGTREE_ADD_ID ] );
-						sqlite3_reset( my_agent->epmem_statements[ EPMEM_STMT_BIGTREE_ADD_ID ] );					
+						sqlite3_bind_int( my_agent->epmem_statements[ EPMEM_STMT_BIGTREE_I_ADD_ID ], 4, my_hash );
+						sqlite3_step( my_agent->epmem_statements[ EPMEM_STMT_BIGTREE_I_ADD_ID ] );
+						sqlite3_reset( my_agent->epmem_statements[ EPMEM_STMT_BIGTREE_I_ADD_ID ] );					
 
 						child_id = sqlite3_last_insert_rowid( my_agent->epmem_db );
 					}
@@ -1173,12 +1231,9 @@ void epmem_new_episode( agent *my_agent )
 					}
 					else
 					{
-						// add leaf nodes to the episodic store
-						sqlite3_bind_int( my_agent->epmem_statements[ EPMEM_STMT_BIGTREE_ADD_EPISODE ], 1, child_id );
-						sqlite3_bind_int( my_agent->epmem_statements[ EPMEM_STMT_BIGTREE_ADD_EPISODE ], 2, my_agent->epmem_time_counter );
-						sqlite3_bind_int( my_agent->epmem_statements[ EPMEM_STMT_BIGTREE_ADD_EPISODE ], 3, 0 );
-						sqlite3_step( my_agent->epmem_statements[ EPMEM_STMT_BIGTREE_ADD_EPISODE ] );
-						sqlite3_reset( my_agent->epmem_statements[ EPMEM_STMT_BIGTREE_ADD_EPISODE ] );
+						// replace 1 here with actual weight
+						if ( 1 > epmem[ child_id ] )
+							epmem[ child_id ] = 1;					
 					}
 				}
 
@@ -1186,6 +1241,189 @@ void epmem_new_episode( agent *my_agent )
 				free_memory( my_agent, wmes, MISCELLANEOUS_MEM_USAGE );
 			}
 		}
+
+		// all inserts at once (provides unique)
+		map<int, double>::iterator e = epmem.begin();
+		while ( e != epmem.end() )
+		{
+			// add leaf nodes to the episodic store
+			sqlite3_bind_int( my_agent->epmem_statements[ EPMEM_STMT_BIGTREE_I_ADD_EPISODE ], 1, e->first );
+			sqlite3_bind_int( my_agent->epmem_statements[ EPMEM_STMT_BIGTREE_I_ADD_EPISODE ], 2, my_agent->epmem_time_counter );
+			sqlite3_bind_int( my_agent->epmem_statements[ EPMEM_STMT_BIGTREE_I_ADD_EPISODE ], 3, e->second );
+			sqlite3_step( my_agent->epmem_statements[ EPMEM_STMT_BIGTREE_I_ADD_EPISODE ] );
+			sqlite3_reset( my_agent->epmem_statements[ EPMEM_STMT_BIGTREE_I_ADD_EPISODE ] );
+
+			e++;
+		}
+
+		sqlite3_step( my_agent->epmem_statements[ EPMEM_STMT_COMMIT ] );
+		sqlite3_reset( my_agent->epmem_statements[ EPMEM_STMT_COMMIT ] );	
+		my_agent->epmem_time_counter++;
+	}
+	else if ( epmem_get_parameter( my_agent, EPMEM_PARAM_INDEXING, EPMEM_RETURN_LONG ) == EPMEM_INDEXING_BIGTREE_RANGE )
+	{
+		// for now we are only recording episodes at the top state
+		Symbol *parent_sym;
+
+		wme **wmes = NULL;
+		int len = 0;
+		
+		vector<Symbol *> syms;
+		vector<int> ids;
+		unsigned int pos = 0;
+
+		int parent_id;
+		int child_id;
+		bool newbie;
+		map<int, bool> epmem;
+
+		unsigned long my_hash;
+		int tc = my_agent->top_goal->id.tc_num + 3;
+
+		int i;	
+
+		syms.push_back( my_agent->top_goal );
+		ids.push_back( 0 );	
+		
+		sqlite3_step( my_agent->epmem_statements[ EPMEM_STMT_BEGIN ] );
+		sqlite3_reset( my_agent->epmem_statements[ EPMEM_STMT_BEGIN ] );
+		while ( pos != syms.size() )
+		{		
+			parent_sym = syms[ pos ];
+			parent_id = ids[ pos ];
+			pos++;				
+			wmes = epmem_get_augs_of_id( my_agent, parent_sym, tc, &len );
+
+			if ( wmes != NULL )
+			{
+				for ( i=0; i<len; i++ )
+				{
+					// find wme id
+					child_id = -1;
+					newbie = false;
+					my_hash = epmem_hash_wme( wmes[i] );
+					if ( wmes[i]->value->common.symbol_type != IDENTIFIER_SYMBOL_TYPE )
+					{					
+						// hash=? AND parent_id=? AND name=? AND value=?
+						sqlite3_bind_int( my_agent->epmem_statements[ EPMEM_STMT_BIGTREE_R_FIND_ID ], 1, my_hash );
+						sqlite3_bind_int( my_agent->epmem_statements[ EPMEM_STMT_BIGTREE_R_FIND_ID ], 2, parent_id );
+						sqlite3_bind_text( my_agent->epmem_statements[ EPMEM_STMT_BIGTREE_R_FIND_ID ], 3, (const char *) wmes[i]->attr->sc.name, -1, SQLITE_STATIC );
+						switch( wmes[i]->value->common.symbol_type )
+						{
+							case SYM_CONSTANT_SYMBOL_TYPE:
+								sqlite3_bind_text( my_agent->epmem_statements[ EPMEM_STMT_BIGTREE_R_FIND_ID ], 4, (const char *) wmes[i]->value->sc.name, -1, SQLITE_STATIC );
+								break;
+					            
+							case INT_CONSTANT_SYMBOL_TYPE:
+			        			sqlite3_bind_int( my_agent->epmem_statements[ EPMEM_STMT_BIGTREE_R_FIND_ID ], 4, wmes[i]->value->ic.value );
+								break;
+				
+							case FLOAT_CONSTANT_SYMBOL_TYPE:
+			        			sqlite3_bind_double( my_agent->epmem_statements[ EPMEM_STMT_BIGTREE_R_FIND_ID ], 4, wmes[i]->value->fc.value );
+								break;
+						}
+						
+						if ( sqlite3_step( my_agent->epmem_statements[ EPMEM_STMT_BIGTREE_R_FIND_ID ] ) == SQLITE_ROW )
+							child_id = sqlite3_column_int( my_agent->epmem_statements[ EPMEM_STMT_BIGTREE_R_FIND_ID ], 0 );
+						
+						sqlite3_reset( my_agent->epmem_statements[ EPMEM_STMT_BIGTREE_R_FIND_ID ] );
+					}
+					else
+					{
+						// hash=? AND parent_id=? AND name=? AND value IS NULL
+						
+						sqlite3_bind_int( my_agent->epmem_statements[ EPMEM_STMT_BIGTREE_R_FIND_ID_NULL ], 1, my_hash );
+						sqlite3_bind_int( my_agent->epmem_statements[ EPMEM_STMT_BIGTREE_R_FIND_ID_NULL ], 2, parent_id );
+						sqlite3_bind_text( my_agent->epmem_statements[ EPMEM_STMT_BIGTREE_R_FIND_ID_NULL ], 3, (const char *) wmes[i]->attr->sc.name, -1, SQLITE_STATIC );
+
+						if ( sqlite3_step( my_agent->epmem_statements[ EPMEM_STMT_BIGTREE_R_FIND_ID_NULL ] ) == SQLITE_ROW )
+							child_id = sqlite3_column_int( my_agent->epmem_statements[ EPMEM_STMT_BIGTREE_R_FIND_ID_NULL ], 0 );
+						
+						sqlite3_reset( my_agent->epmem_statements[ EPMEM_STMT_BIGTREE_R_FIND_ID_NULL ] );
+					}
+					
+					// insert on no id
+					if ( child_id == -1 )
+					{						
+						newbie = true;
+						
+						// insert (parent_id,name,value,hash)						
+						sqlite3_bind_int( my_agent->epmem_statements[ EPMEM_STMT_BIGTREE_R_ADD_ID ], 1, parent_id );
+						sqlite3_bind_text( my_agent->epmem_statements[ EPMEM_STMT_BIGTREE_R_ADD_ID ], 2, (const char *) wmes[i]->attr->sc.name, -1, SQLITE_STATIC );				
+						switch ( wmes[i]->value->common.symbol_type )
+						{
+							case SYM_CONSTANT_SYMBOL_TYPE:
+								sqlite3_bind_text( my_agent->epmem_statements[ EPMEM_STMT_BIGTREE_R_ADD_ID ], 3, (const char *) wmes[i]->value->sc.name, -1, SQLITE_STATIC );
+								break;
+								
+							case INT_CONSTANT_SYMBOL_TYPE:
+								sqlite3_bind_int( my_agent->epmem_statements[ EPMEM_STMT_BIGTREE_R_ADD_ID ], 3, wmes[i]->value->ic.value );
+								break;
+								
+							case FLOAT_CONSTANT_SYMBOL_TYPE:
+								sqlite3_bind_double( my_agent->epmem_statements[ EPMEM_STMT_BIGTREE_R_ADD_ID ], 3, wmes[i]->value->fc.value );
+								break;
+								
+							case IDENTIFIER_SYMBOL_TYPE:
+								sqlite3_bind_null( my_agent->epmem_statements[ EPMEM_STMT_BIGTREE_R_ADD_ID ], 3 );
+								break;
+						}
+						sqlite3_bind_int( my_agent->epmem_statements[ EPMEM_STMT_BIGTREE_R_ADD_ID ], 4, my_hash );
+						sqlite3_step( my_agent->epmem_statements[ EPMEM_STMT_BIGTREE_R_ADD_ID ] );
+						sqlite3_reset( my_agent->epmem_statements[ EPMEM_STMT_BIGTREE_R_ADD_ID ] );					
+
+						child_id = sqlite3_last_insert_rowid( my_agent->epmem_db );
+					}
+					
+					// keep track of identifiers (for further study)
+					if ( wmes[i]->value->common.symbol_type == IDENTIFIER_SYMBOL_TYPE )
+					{
+						syms.push_back( wmes[i]->value );
+						ids.push_back( child_id );
+					}
+					else
+					{
+						if ( !epmem[ child_id ] && newbie )
+							epmem[ child_id ] = true;										
+					}
+				}
+
+				// free space from aug list
+				free_memory( my_agent, wmes, MISCELLANEOUS_MEM_USAGE );
+			}
+		}
+
+		// all inserts at once (provides unique)
+		map<int, bool>::iterator e = epmem.begin();
+		int updated;
+		while ( e != epmem.end() )
+		{
+			// add leaf nodes to the episodic store
+			updated = 0;
+			if ( !e->second )
+			{
+				// SET end=? WHERE id=? AND end=?
+				sqlite3_bind_int( my_agent->epmem_statements[ EPMEM_STMT_BIGTREE_R_UPDATE_EPISODE ], 1, my_agent->epmem_time_counter );
+				sqlite3_bind_int( my_agent->epmem_statements[ EPMEM_STMT_BIGTREE_R_UPDATE_EPISODE ], 2, e->first );
+				sqlite3_bind_int( my_agent->epmem_statements[ EPMEM_STMT_BIGTREE_R_UPDATE_EPISODE ], 3, ( my_agent->epmem_time_counter - 1 ) );
+				sqlite3_step( my_agent->epmem_statements[ EPMEM_STMT_BIGTREE_R_UPDATE_EPISODE ] );
+				
+				updated = sqlite3_changes( my_agent->epmem_db );
+				
+				sqlite3_reset( my_agent->epmem_statements[ EPMEM_STMT_BIGTREE_R_UPDATE_EPISODE ] );
+			}
+			if ( !updated )
+			{
+				sqlite3_bind_int( my_agent->epmem_statements[ EPMEM_STMT_BIGTREE_R_ADD_EPISODE ], 1, e->first );
+				sqlite3_bind_int( my_agent->epmem_statements[ EPMEM_STMT_BIGTREE_R_ADD_EPISODE ], 2, my_agent->epmem_time_counter );
+				sqlite3_bind_int( my_agent->epmem_statements[ EPMEM_STMT_BIGTREE_R_ADD_EPISODE ], 3, my_agent->epmem_time_counter );
+				sqlite3_step( my_agent->epmem_statements[ EPMEM_STMT_BIGTREE_R_ADD_EPISODE ] );
+				sqlite3_reset( my_agent->epmem_statements[ EPMEM_STMT_BIGTREE_R_ADD_EPISODE ] );
+			}
+
+			e++;
+		}
+
 		sqlite3_step( my_agent->epmem_statements[ EPMEM_STMT_COMMIT ] );
 		sqlite3_reset( my_agent->epmem_statements[ EPMEM_STMT_COMMIT ] );	
 		my_agent->epmem_time_counter++;
