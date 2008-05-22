@@ -52,14 +52,18 @@
 #define EPMEM_STMT_BIGTREE_I_ADD_ID				11
 #define EPMEM_STMT_BIGTREE_I_FIND_ID			12
 #define EPMEM_STMT_BIGTREE_I_FIND_ID_NULL		13
+#define EPMEM_STMT_BIGTREE_I_GET_EPISODE		14
 
 #define EPMEM_STMT_BIGTREE_R_UPDATE_EPISODE		10
 #define EPMEM_STMT_BIGTREE_R_ADD_EPISODE		11
 #define EPMEM_STMT_BIGTREE_R_ADD_ID				12
 #define EPMEM_STMT_BIGTREE_R_FIND_ID			13
 #define EPMEM_STMT_BIGTREE_R_FIND_ID_NULL		14
+#define EPMEM_STMT_BIGTREE_R_GET_EPISODE		15
 
 #define EPMEM_MAX_STATEMENTS 					30 // must be at least 1+ largest of any STMT constant
+
+#define EPMEM_MEMID_NONE						-1
 
 // names of params
 #define EPMEM_PARAM_LEARNING					0
@@ -251,5 +255,8 @@ extern void epmem_new_episode( agent *my_agent );
 
 // Called to consider adding new episodes to the store
 extern void epmem_consider_new_episode( agent *my_agent );
+
+// Called to install a particular memory into WM
+extern void epmem_install_memory( agent *my_agent, Symbol *state, int memory_id );
 
 #endif

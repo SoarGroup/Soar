@@ -614,6 +614,20 @@ void create_predefined_symbols (agent* thisAgent) {
   thisAgent->epmem_symbol = make_sym_constant( thisAgent, "epmem" );
   thisAgent->epmem_cmd_symbol = make_sym_constant( thisAgent, "cmd" );
   thisAgent->epmem_result_symbol = make_sym_constant( thisAgent, "result" );
+
+  thisAgent->epmem_retrieved_symbol = make_sym_constant( thisAgent, "retrieved" );
+  thisAgent->epmem_status_symbol = make_sym_constant( thisAgent, "status" );
+  thisAgent->epmem_match_score_symbol = make_sym_constant( thisAgent, "match-score" );
+  thisAgent->epmem_cue_size_symbol = make_sym_constant( thisAgent, "cue-size" );
+  thisAgent->epmem_normalized_match_score_symbol = make_sym_constant( thisAgent, "normalized-match-score" );
+  thisAgent->epmem_match_cardinality_symbol = make_sym_constant( thisAgent, "match-cardinality" );
+  thisAgent->epmem_memory_id_symbol = make_sym_constant( thisAgent, "memory-id" );
+  thisAgent->epmem_present_id_symbol = make_sym_constant( thisAgent, "present-id" );
+  thisAgent->epmem_no_memory_symbol = make_sym_constant( thisAgent, "no-memory" );
+  thisAgent->epmem_success_symbol = make_sym_constant( thisAgent, "success" );
+  thisAgent->epmem_failure_symbol = make_sym_constant( thisAgent, "failure" );
+  thisAgent->epmem_multiple_queries_symbol = make_sym_constant( thisAgent, "multiple-queries" );
+  thisAgent->epmem_empty_query_symbol = make_sym_constant( thisAgent, "empty-query" );
 }
 
 void release_helper(agent* thisAgent, Symbol** sym) {
@@ -668,4 +682,18 @@ void release_predefined_symbols(agent* thisAgent) {
   release_helper( thisAgent, &( thisAgent->epmem_symbol ) );
   release_helper( thisAgent, &( thisAgent->epmem_cmd_symbol ) );
   release_helper( thisAgent, &( thisAgent->epmem_result_symbol ) );
+
+  release_helper( thisAgent, &( thisAgent->epmem_retrieved_symbol ) );
+  release_helper( thisAgent, &( thisAgent->epmem_status_symbol ) );
+  release_helper( thisAgent, &( thisAgent->epmem_match_score_symbol ) );
+  release_helper( thisAgent, &( thisAgent->epmem_cue_size_symbol ) );
+  release_helper( thisAgent, &( thisAgent->epmem_normalized_match_score_symbol ) );
+  release_helper( thisAgent, &( thisAgent->epmem_match_cardinality_symbol ) );
+  release_helper( thisAgent, &( thisAgent->epmem_memory_id_symbol ) );
+  release_helper( thisAgent, &( thisAgent->epmem_present_id_symbol ) );
+  release_helper( thisAgent, &( thisAgent->epmem_no_memory_symbol ) );
+  release_helper( thisAgent, &( thisAgent->epmem_success_symbol ) );
+  release_helper( thisAgent, &( thisAgent->epmem_failure_symbol ) );
+  release_helper( thisAgent, &( thisAgent->epmem_multiple_queries_symbol ) );
+  release_helper( thisAgent, &( thisAgent->epmem_empty_query_symbol ) );
 }

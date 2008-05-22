@@ -289,6 +289,20 @@ typedef struct agent_struct {
   Symbol            * epmem_symbol;
   Symbol            * epmem_cmd_symbol;
   Symbol            * epmem_result_symbol;
+
+  Symbol            * epmem_retrieved_symbol;
+  Symbol            * epmem_status_symbol;
+  Symbol            * epmem_match_score_symbol;
+  Symbol            * epmem_cue_size_symbol;
+  Symbol            * epmem_normalized_match_score_symbol;
+  Symbol            * epmem_match_cardinality_symbol;
+  Symbol            * epmem_memory_id_symbol;
+  Symbol            * epmem_present_id_symbol;
+  Symbol            * epmem_no_memory_symbol;
+  Symbol            * epmem_success_symbol;
+  Symbol            * epmem_failure_symbol;
+  Symbol            * epmem_multiple_queries_symbol;
+  Symbol            * epmem_empty_query_symbol;
   
   /* ----------------------- Symbol table stuff -------------------------- */
 

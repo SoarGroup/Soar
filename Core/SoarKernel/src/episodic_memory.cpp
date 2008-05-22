@@ -965,7 +965,10 @@ void epmem_init_db( agent *my_agent )
 
 				// custom statement for finding identifier id's
 				sqlite3_prepare_v2( my_agent->epmem_db, "SELECT child_id FROM ids WHERE hash=? AND parent_id=? AND name=? AND value IS NULL", -1, &( my_agent->epmem_statements[ EPMEM_STMT_BIGTREE_I_FIND_ID_NULL ] ), &tail );
-												
+							
+				// custom statement for retrieving an episode
+				sqlite3_prepare_v2( my_agent->epmem_db, "SELECT e.id, i.parent_id, i.name, i.value FROM episodes e INNER JOIN ids i ON e.id=i.child_id WHERE e.time=? ORDER BY e.id ASC", -1, &( my_agent->epmem_statements[ EPMEM_STMT_BIGTREE_I_GET_EPISODE ] ), &tail );
+
 				// get max time
 				sqlite3_prepare_v2( my_agent->epmem_db, "SELECT MAX(time) FROM episodes", -1, &create, &tail );
 				if ( sqlite3_step( create ) == SQLITE_ROW )						
@@ -1014,7 +1017,10 @@ void epmem_init_db( agent *my_agent )
 
 				// custom statement for finding identifier id's
 				sqlite3_prepare_v2( my_agent->epmem_db, "SELECT child_id FROM ids WHERE hash=? AND parent_id=? AND name=? AND value IS NULL", -1, &( my_agent->epmem_statements[ EPMEM_STMT_BIGTREE_R_FIND_ID_NULL ] ), &tail );
-												
+
+				// custom statement for retrieving an episode
+				sqlite3_prepare_v2( my_agent->epmem_db, "SELECT e.id, i.parent_id, i.name, i.value FROM episodes e INNER JOIN ids i ON e.id=i.child_id WHERE ? BETWEEN e.start AND e.end ORDER BY e.id ASC", -1, &( my_agent->epmem_statements[ EPMEM_STMT_BIGTREE_R_GET_EPISODE ] ), &tail );
+
 				// get max time
 				sqlite3_prepare_v2( my_agent->epmem_db, "SELECT MAX(end) FROM episodes", -1, &create, &tail );
 				if ( sqlite3_step( create ) == SQLITE_ROW )						
@@ -1443,5 +1449,146 @@ void epmem_new_episode( agent *my_agent )
 		sqlite3_step( my_agent->epmem_statements[ EPMEM_STMT_COMMIT ] );
 		sqlite3_reset( my_agent->epmem_statements[ EPMEM_STMT_COMMIT ] );	
 		my_agent->epmem_time_counter++;
+	}
+
+	if ( my_agent->epmem_time_counter == 2 )
+		epmem_install_memory( my_agent, my_agent->top_goal, 1 );
+}
+
+void epmem_install_memory( agent *my_agent, Symbol *state, int memory_id )
+{
+	// get the ^result header for this state
+	Symbol *result_header = state->id.epmem_result_header;
+
+	// if intentionally no memory, say so
+	if ( memory_id == EPMEM_MEMID_NONE )
+	{
+		add_input_wme( my_agent, result_header, my_agent->epmem_retrieved_symbol, my_agent->epmem_no_memory_symbol );
+		return;
+	}
+
+	// create a new ^retrieved header for this result
+	Symbol *retrieved_header = make_new_identifier( my_agent, 'R', result_header->id.level );
+	add_input_wme( my_agent, result_header, my_agent->epmem_retrieved_symbol, retrieved_header );
+
+	// add *-id wme's
+	add_input_wme( my_agent, result_header, my_agent->epmem_memory_id_symbol, make_int_constant( my_agent, memory_id ) );
+	add_input_wme( my_agent, result_header, my_agent->epmem_present_id_symbol, make_int_constant( my_agent, my_agent->epmem_time_counter ) );
+
+	if ( epmem_get_parameter( my_agent, EPMEM_PARAM_INDEXING, EPMEM_RETURN_LONG ) == EPMEM_INDEXING_BIGTREE_INSTANCE )
+	{
+		map<int, Symbol *> ids;
+		int child_id;
+		int parent_id;
+		const char *name;
+		int type_code;
+		Symbol *attr;
+		Symbol *value;
+		Symbol *parent;
+
+		ids[ 0 ] = retrieved_header;
+
+		sqlite3_bind_int( my_agent->epmem_statements[ EPMEM_STMT_BIGTREE_I_GET_EPISODE ], 1, memory_id );
+		while ( sqlite3_step( my_agent->epmem_statements[ EPMEM_STMT_BIGTREE_I_GET_EPISODE ] ) == SQLITE_ROW )
+		{
+			// e.id, i.parent_id, i.name, i.value
+			child_id = sqlite3_column_int( my_agent->epmem_statements[ EPMEM_STMT_BIGTREE_I_GET_EPISODE ], 0 );
+			parent_id = sqlite3_column_int( my_agent->epmem_statements[ EPMEM_STMT_BIGTREE_I_GET_EPISODE ], 1 );
+			name = (const char *) sqlite3_column_text( my_agent->epmem_statements[ EPMEM_STMT_BIGTREE_I_GET_EPISODE ], 2 );
+			type_code = sqlite3_column_type( my_agent->epmem_statements[ EPMEM_STMT_BIGTREE_I_GET_EPISODE ], 3 );
+			
+			// make a symbol to represent the attribute name		
+			attr = make_sym_constant( my_agent, const_cast<char *>( name ) );
+
+			// get a reference to the parent
+			parent = ids[ parent_id ];
+
+			// identifier = NULL, else attr->val
+			if ( type_code == SQLITE_NULL )
+			{
+				value = make_new_identifier( my_agent, name[0], parent->id.level );
+				add_input_wme( my_agent, parent, attr, value );
+
+				ids[ child_id ] = value;
+			}
+			else
+			{
+				switch ( type_code )
+				{
+					case SQLITE_INTEGER:
+						value = make_int_constant( my_agent, sqlite3_column_int( my_agent->epmem_statements[ EPMEM_STMT_BIGTREE_I_GET_EPISODE ], 3 ) );
+						break;
+
+					case SQLITE_FLOAT:
+						value = make_float_constant( my_agent, sqlite3_column_double( my_agent->epmem_statements[ EPMEM_STMT_BIGTREE_I_GET_EPISODE ], 3 ) );
+						break;
+
+					case SQLITE_TEXT:						
+						value = make_sym_constant( my_agent, const_cast<char *>( (const char *) sqlite3_column_text( my_agent->epmem_statements[ EPMEM_STMT_BIGTREE_I_GET_EPISODE ], 3 ) ) );
+						break;
+				}
+
+				add_input_wme( my_agent, parent, attr, value );
+			}
+		}
+		sqlite3_reset( my_agent->epmem_statements[ EPMEM_STMT_BIGTREE_I_GET_EPISODE ] );
+	}
+	else if ( epmem_get_parameter( my_agent, EPMEM_PARAM_INDEXING, EPMEM_RETURN_LONG ) == EPMEM_INDEXING_BIGTREE_RANGE )
+	{
+		map<int, Symbol *> ids;
+		int child_id;
+		int parent_id;
+		const char *name;
+		int type_code;
+		Symbol *attr;
+		Symbol *value;
+		Symbol *parent;
+
+		ids[ 0 ] = retrieved_header;
+
+		sqlite3_bind_int( my_agent->epmem_statements[ EPMEM_STMT_BIGTREE_R_GET_EPISODE ], 1, memory_id );
+		while ( sqlite3_step( my_agent->epmem_statements[ EPMEM_STMT_BIGTREE_R_GET_EPISODE ] ) == SQLITE_ROW )
+		{
+			// e.id, i.parent_id, i.name, i.value
+			child_id = sqlite3_column_int( my_agent->epmem_statements[ EPMEM_STMT_BIGTREE_R_GET_EPISODE ], 0 );
+			parent_id = sqlite3_column_int( my_agent->epmem_statements[ EPMEM_STMT_BIGTREE_R_GET_EPISODE ], 1 );
+			name = (const char *) sqlite3_column_text( my_agent->epmem_statements[ EPMEM_STMT_BIGTREE_R_GET_EPISODE ], 2 );
+			type_code = sqlite3_column_type( my_agent->epmem_statements[ EPMEM_STMT_BIGTREE_R_GET_EPISODE ], 3 );
+			
+			// make a symbol to represent the attribute name		
+			attr = make_sym_constant( my_agent, const_cast<char *>( name ) );
+
+			// get a reference to the parent
+			parent = ids[ parent_id ];
+
+			// identifier = NULL, else attr->val
+			if ( type_code == SQLITE_NULL )
+			{
+				value = make_new_identifier( my_agent, name[0], parent->id.level );
+				add_input_wme( my_agent, parent, attr, value );
+
+				ids[ child_id ] = value;
+			}
+			else
+			{
+				switch ( type_code )
+				{
+					case SQLITE_INTEGER:
+						value = make_int_constant( my_agent, sqlite3_column_int( my_agent->epmem_statements[ EPMEM_STMT_BIGTREE_R_GET_EPISODE ], 3 ) );
+						break;
+
+					case SQLITE_FLOAT:
+						value = make_float_constant( my_agent, sqlite3_column_double( my_agent->epmem_statements[ EPMEM_STMT_BIGTREE_R_GET_EPISODE ], 3 ) );
+						break;
+
+					case SQLITE_TEXT:						
+						value = make_sym_constant( my_agent, const_cast<char *>( (const char *) sqlite3_column_text( my_agent->epmem_statements[ EPMEM_STMT_BIGTREE_R_GET_EPISODE ], 3 ) ) );
+						break;
+				}
+
+				add_input_wme( my_agent, parent, attr, value );
+			}
+		}
+		sqlite3_reset( my_agent->epmem_statements[ EPMEM_STMT_BIGTREE_R_GET_EPISODE ] );
 	}
 }
