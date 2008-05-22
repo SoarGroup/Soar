@@ -1126,7 +1126,7 @@ void epmem_new_episode( agent *my_agent )
 
 		int parent_id;
 		int child_id;
-		map<int, double> epmem;
+		map<int, double *> epmem;
 
 		unsigned long my_hash;
 		int tc = my_agent->top_goal->id.tc_num + 3;
@@ -1228,12 +1228,21 @@ void epmem_new_episode( agent *my_agent )
 					{
 						syms.push_back( wmes[i]->value );
 						ids.push_back( child_id );
+
+						epmem[ child_id ] = NULL;
 					}
 					else
 					{
+						// for clarity:
+						// map initializes a new element.
+						// I want to point to that address and change it if necessary.
+						double **p =& epmem[ child_id ];
+						
 						// replace 1 here with actual weight
-						if ( 1 > epmem[ child_id ] )
-							epmem[ child_id ] = 1;					
+						if ( *p == NULL )
+							*p = new double(1);
+						else if ( 1 > **p )
+							**p = 1;					
 					}
 				}
 
@@ -1243,13 +1252,21 @@ void epmem_new_episode( agent *my_agent )
 		}
 
 		// all inserts at once (provides unique)
-		map<int, double>::iterator e = epmem.begin();
+		map<int, double *>::iterator e = epmem.begin();
 		while ( e != epmem.end() )
 		{
-			// add leaf nodes to the episodic store
+			// add nodes to the episodic store
 			sqlite3_bind_int( my_agent->epmem_statements[ EPMEM_STMT_BIGTREE_I_ADD_EPISODE ], 1, e->first );
 			sqlite3_bind_int( my_agent->epmem_statements[ EPMEM_STMT_BIGTREE_I_ADD_EPISODE ], 2, my_agent->epmem_time_counter );
-			sqlite3_bind_int( my_agent->epmem_statements[ EPMEM_STMT_BIGTREE_I_ADD_EPISODE ], 3, e->second );
+
+			if ( e->second == NULL )
+				sqlite3_bind_null( my_agent->epmem_statements[ EPMEM_STMT_BIGTREE_I_ADD_EPISODE ], 3 );
+			else
+			{
+				sqlite3_bind_int( my_agent->epmem_statements[ EPMEM_STMT_BIGTREE_I_ADD_EPISODE ], 3, (*e->second) );
+				delete e->second;
+			}
+
 			sqlite3_step( my_agent->epmem_statements[ EPMEM_STMT_BIGTREE_I_ADD_EPISODE ] );
 			sqlite3_reset( my_agent->epmem_statements[ EPMEM_STMT_BIGTREE_I_ADD_EPISODE ] );
 
@@ -1381,11 +1398,10 @@ void epmem_new_episode( agent *my_agent )
 						syms.push_back( wmes[i]->value );
 						ids.push_back( child_id );
 					}
-					else
-					{
-						if ( !epmem[ child_id ] && newbie )
-							epmem[ child_id ] = true;										
-					}
+					
+					// record for insertion
+					if ( !epmem[ child_id ] && newbie )
+						epmem[ child_id ] = true;					
 				}
 
 				// free space from aug list
@@ -1398,7 +1414,7 @@ void epmem_new_episode( agent *my_agent )
 		int updated;
 		while ( e != epmem.end() )
 		{
-			// add leaf nodes to the episodic store
+			// add nodes to the episodic store
 			updated = 0;
 			if ( !e->second )
 			{

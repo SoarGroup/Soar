@@ -71,8 +71,8 @@
 #define EPMEM_PARAMS							6 // must be 1+ last epmem param
 
 // names of stats
-#define EPMEM_STAT_DUMMY					0
-#define EPMEM_STATS							1 // must be 1+ last epmem stat
+#define EPMEM_STAT_DUMMY						0
+#define EPMEM_STATS								1 // must be 1+ last epmem stat
 
 //
 // These must go below constants
