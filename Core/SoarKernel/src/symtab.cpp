@@ -612,7 +612,7 @@ void create_predefined_symbols (agent* thisAgent) {
   thisAgent->reward_link_symbol = make_sym_constant( thisAgent, "reward-link" );
 
   thisAgent->epmem_symbol = make_sym_constant( thisAgent, "epmem" );
-  thisAgent->epmem_cmd_symbol = make_sym_constant( thisAgent, "cmd" );
+  thisAgent->epmem_cmd_symbol = make_sym_constant( thisAgent, "command" );
   thisAgent->epmem_result_symbol = make_sym_constant( thisAgent, "result" );
 
   thisAgent->epmem_retrieved_symbol = make_sym_constant( thisAgent, "retrieved" );
@@ -626,8 +626,7 @@ void create_predefined_symbols (agent* thisAgent) {
   thisAgent->epmem_no_memory_symbol = make_sym_constant( thisAgent, "no-memory" );
   thisAgent->epmem_success_symbol = make_sym_constant( thisAgent, "success" );
   thisAgent->epmem_failure_symbol = make_sym_constant( thisAgent, "failure" );
-  thisAgent->epmem_multiple_queries_symbol = make_sym_constant( thisAgent, "multiple-queries" );
-  thisAgent->epmem_empty_query_symbol = make_sym_constant( thisAgent, "empty-query" );
+  thisAgent->epmem_bad_cmd_symbol = make_sym_constant( thisAgent, "bad-cmd" );  
 }
 
 void release_helper(agent* thisAgent, Symbol** sym) {
@@ -694,6 +693,5 @@ void release_predefined_symbols(agent* thisAgent) {
   release_helper( thisAgent, &( thisAgent->epmem_no_memory_symbol ) );
   release_helper( thisAgent, &( thisAgent->epmem_success_symbol ) );
   release_helper( thisAgent, &( thisAgent->epmem_failure_symbol ) );
-  release_helper( thisAgent, &( thisAgent->epmem_multiple_queries_symbol ) );
-  release_helper( thisAgent, &( thisAgent->epmem_empty_query_symbol ) );
+  release_helper( thisAgent, &( thisAgent->epmem_bad_cmd_symbol ) );  
 }

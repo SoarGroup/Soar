@@ -301,8 +301,7 @@ typedef struct agent_struct {
   Symbol            * epmem_no_memory_symbol;
   Symbol            * epmem_success_symbol;
   Symbol            * epmem_failure_symbol;
-  Symbol            * epmem_multiple_queries_symbol;
-  Symbol            * epmem_empty_query_symbol;
+  Symbol            * epmem_bad_cmd_symbol;  
   
   /* ----------------------- Symbol table stuff -------------------------- */
 
@@ -795,7 +794,6 @@ kernel time and total_cpu_time greater than the derived total CPU time. REW */
   
   sqlite3 *epmem_db;
   int epmem_db_status;
-  int epmem_time_counter;
   sqlite3_stmt *epmem_statements[ EPMEM_MAX_STATEMENTS ];  
 
   // select

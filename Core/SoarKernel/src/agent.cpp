@@ -364,11 +364,11 @@ agent * create_soar_agent (Kernel * thisKernel, char * agent_name) {            
     
   newAgent->epmem_params[ EPMEM_PARAM_TRIGGER ] = epmem_add_parameter( "trigger", EPMEM_TRIGGER_OUTPUT, &epmem_validate_trigger, &epmem_convert_trigger, &epmem_convert_trigger );
     
-  newAgent->epmem_stats[ EPMEM_STAT_DUMMY ] = epmem_add_stat( "dummy" );
+  newAgent->epmem_stats[ EPMEM_STAT_TIME ] = epmem_add_stat( "time" );
+  epmem_set_stat( newAgent, (const long) EPMEM_STAT_TIME, 1 );
     
   newAgent->epmem_db = NULL;
   newAgent->epmem_db_status = -1;
-  newAgent->epmem_time_counter = 1;
   for ( int i=0; i<EPMEM_MAX_STATEMENTS; i++ )
   	newAgent->epmem_statements[ i ] = NULL;
 

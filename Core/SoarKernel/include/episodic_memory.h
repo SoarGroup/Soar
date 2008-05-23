@@ -53,13 +53,20 @@
 #define EPMEM_STMT_BIGTREE_I_FIND_ID			12
 #define EPMEM_STMT_BIGTREE_I_FIND_ID_NULL		13
 #define EPMEM_STMT_BIGTREE_I_GET_EPISODE		14
+#define EPMEM_STMT_BIGTREE_I_VALID_EPISODE		15
+#define EPMEM_STMT_BIGTREE_I_NEXT_EPISODE		16
+#define EPMEM_STMT_BIGTREE_I_PREV_EPISODE		17
 
 #define EPMEM_STMT_BIGTREE_R_UPDATE_EPISODE		10
 #define EPMEM_STMT_BIGTREE_R_ADD_EPISODE		11
-#define EPMEM_STMT_BIGTREE_R_ADD_ID				12
-#define EPMEM_STMT_BIGTREE_R_FIND_ID			13
-#define EPMEM_STMT_BIGTREE_R_FIND_ID_NULL		14
-#define EPMEM_STMT_BIGTREE_R_GET_EPISODE		15
+#define EPMEM_STMT_BIGTREE_R_ADD_TIME			12
+#define EPMEM_STMT_BIGTREE_R_ADD_ID				13
+#define EPMEM_STMT_BIGTREE_R_FIND_ID			14
+#define EPMEM_STMT_BIGTREE_R_FIND_ID_NULL		15
+#define EPMEM_STMT_BIGTREE_R_GET_EPISODE		16
+#define EPMEM_STMT_BIGTREE_R_VALID_EPISODE		17
+#define EPMEM_STMT_BIGTREE_R_NEXT_EPISODE		18
+#define EPMEM_STMT_BIGTREE_R_PREV_EPISODE		19
 
 #define EPMEM_MAX_STATEMENTS 					30 // must be at least 1+ largest of any STMT constant
 
@@ -75,7 +82,7 @@
 #define EPMEM_PARAMS							6 // must be 1+ last epmem param
 
 // names of stats
-#define EPMEM_STAT_DUMMY						0
+#define EPMEM_STAT_TIME							0
 #define EPMEM_STATS								1 // must be 1+ last epmem stat
 
 //
@@ -131,7 +138,13 @@ typedef struct epmem_stat_struct
 
 typedef struct epmem_data_struct 
 {
-	unsigned long last_tag;		// last update to output-link
+	unsigned long last_ol_time;		// last update to output-link
+	unsigned long last_ol_count;	// last count of output-link
+
+	unsigned long last_cmd_time;	// last update to epmem.command
+	unsigned long last_cmd_count;	// last update to epmem.command
+
+	int last_memory;				// last retrieved memory
 } epmem_data;
 
 //////////////////////////////////////////////////////////
@@ -250,11 +263,26 @@ extern bool epmem_set_stat( agent *my_agent, const long stat, double new_val );
 // init
 extern void epmem_reset( agent *my_agent );
 
+// Called to consider adding new episodes to the store
+extern void epmem_consider_new_episode( agent *my_agent );
+
 // Called to add a new episode to the store
 extern void epmem_new_episode( agent *my_agent );
 
-// Called to consider adding new episodes to the store
-extern void epmem_consider_new_episode( agent *my_agent );
+// Called to determine if a memory_id is valid
+extern bool epmem_episode_exists( agent *my_agent, int memory_id );
+
+// Called to determine the next episode id
+extern int epmem_next_episode( agent *my_agent, int memory_id );
+
+// Called to determine the previous episode id
+extern int epmem_previous_episode( agent *my_agent, int memory_id );
+
+// Called to react to commands
+extern void epmem_respond_to_cmd( agent *my_agent );
+
+// Called to clear the wme's from epmem.result
+extern void epmem_clear_result( agent *my_agent, Symbol *state );
 
 // Called to install a particular memory into WM
 extern void epmem_install_memory( agent *my_agent, Symbol *state, int memory_id );

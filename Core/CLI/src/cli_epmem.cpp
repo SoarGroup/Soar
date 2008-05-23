@@ -325,8 +325,8 @@ bool CommandLineInterface::DoEpMem( gSKI::Agent* pAgent, const char pOp, const s
 			std::string output;
 			std::string *temp_str;	
 			
-			output = "Dummy: ";
-			temp = epmem_get_stat( my_agent, (const long) EPMEM_STAT_DUMMY );
+			output = "Time: ";
+			temp = epmem_get_stat( my_agent, (const long) EPMEM_STAT_TIME );
 			temp_str = to_string( temp );
 			output += (*temp_str);
 			delete temp_str;

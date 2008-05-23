@@ -1101,7 +1101,10 @@ void do_one_top_level_phase (agent* thisAgent)
 	  do_output_cycle(thisAgent);
 	  
 	  if ( epmem_enabled( thisAgent ) )
+	  {
 		  epmem_consider_new_episode( thisAgent );
+		  epmem_respond_to_cmd( thisAgent );
+	  }
 
  	  soar_invoke_callbacks(thisAgent, thisAgent, 
 			 AFTER_OUTPUT_PHASE_CALLBACK,

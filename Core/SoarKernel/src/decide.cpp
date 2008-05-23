@@ -2031,7 +2031,13 @@ void create_new_context (agent* thisAgent, Symbol *attr_of_impasse, byte impasse
   id->id.rl_info->impasse_type = NONE_IMPASSE_TYPE;
 
   id->id.epmem_info = static_cast<epmem_data *>( allocate_memory( thisAgent, sizeof( epmem_data ), MISCELLANEOUS_MEM_USAGE ) );
-  id->id.epmem_info->last_tag = 0;  
+  id->id.epmem_info->last_ol_time = 0;
+  id->id.epmem_info->last_ol_count = 0;
+
+  id->id.epmem_info->last_cmd_time = 0;
+  id->id.epmem_info->last_cmd_count = 0;
+
+  id->id.epmem_info->last_memory = EPMEM_MEMID_NONE;
 
   /* --- invoke callback routine --- */
   soar_invoke_callbacks(thisAgent, thisAgent, 

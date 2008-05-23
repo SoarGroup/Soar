@@ -969,15 +969,32 @@ void epmem_init_db( agent *my_agent )
 				// custom statement for retrieving an episode
 				sqlite3_prepare_v2( my_agent->epmem_db, "SELECT e.id, i.parent_id, i.name, i.value FROM episodes e INNER JOIN ids i ON e.id=i.child_id WHERE e.time=? ORDER BY e.id ASC", -1, &( my_agent->epmem_statements[ EPMEM_STMT_BIGTREE_I_GET_EPISODE ] ), &tail );
 
+				// custom statement for validating an episode
+				sqlite3_prepare_v2( my_agent->epmem_db, "SELECT COUNT(*) AS ct FROM episodes WHERE time=?", -1, &( my_agent->epmem_statements[ EPMEM_STMT_BIGTREE_I_VALID_EPISODE ] ), &tail );
+
+				// custom statement for finding the next episode
+				sqlite3_prepare_v2( my_agent->epmem_db, "SELECT time FROM episodes WHERE time>? ORDER BY time ASC LIMIT 1", -1, &( my_agent->epmem_statements[ EPMEM_STMT_BIGTREE_I_NEXT_EPISODE ] ), &tail );
+
+				// custom statement for finding the previous episode
+				sqlite3_prepare_v2( my_agent->epmem_db, "SELECT time FROM episodes WHERE time<? ORDER BY time DESC LIMIT 1", -1, &( my_agent->epmem_statements[ EPMEM_STMT_BIGTREE_I_PREV_EPISODE ] ), &tail );
+
 				// get max time
 				sqlite3_prepare_v2( my_agent->epmem_db, "SELECT MAX(time) FROM episodes", -1, &create, &tail );
 				if ( sqlite3_step( create ) == SQLITE_ROW )						
-					my_agent->epmem_time_counter = ( sqlite3_column_int( create, 0 ) + 1 );
+					epmem_set_stat( my_agent, (const long) EPMEM_STAT_TIME, ( sqlite3_column_int( create, 0 ) + 1 ) );
 				sqlite3_finalize( create );
 				
 				break;
 
 			case EPMEM_INDEXING_BIGTREE_RANGE:
+				// times table
+				sqlite3_prepare_v2( my_agent->epmem_db, "CREATE TABLE IF NOT EXISTS times (id INTEGER PRIMARY KEY)", -1, &create, &tail );
+				sqlite3_step( create );					
+				sqlite3_finalize( create );
+
+				// custom statement for inserting times
+				sqlite3_prepare_v2( my_agent->epmem_db, "INSERT INTO times (id) VALUES (?)", -1, &( my_agent->epmem_statements[ EPMEM_STMT_BIGTREE_R_ADD_TIME ] ), &tail );
+				
 				// episodes table
 				sqlite3_prepare_v2( my_agent->epmem_db, "CREATE TABLE IF NOT EXISTS episodes (id INTEGER,start INTEGER,end INTEGER)", -1, &create, &tail );
 				sqlite3_step( create );					
@@ -997,7 +1014,7 @@ void epmem_init_db( agent *my_agent )
 				sqlite3_prepare_v2( my_agent->epmem_db, "UPDATE episodes SET end=? WHERE id=? AND end=?", -1, &( my_agent->epmem_statements[ EPMEM_STMT_BIGTREE_R_UPDATE_EPISODE ] ), &tail );
 
 				// custom statement for inserting episodes
-				sqlite3_prepare_v2( my_agent->epmem_db, "INSERT INTO episodes (id,start,end) VALUES (?,?,?)", -1, &( my_agent->epmem_statements[ EPMEM_STMT_BIGTREE_R_ADD_EPISODE ] ), &tail );			
+				sqlite3_prepare_v2( my_agent->epmem_db, "INSERT INTO episodes (id,start,end) VALUES (?,?,?)", -1, &( my_agent->epmem_statements[ EPMEM_STMT_BIGTREE_R_ADD_EPISODE ] ), &tail );
 				
 				// ids table
 				sqlite3_prepare_v2( my_agent->epmem_db, "CREATE TABLE IF NOT EXISTS ids (child_id INTEGER PRIMARY KEY AUTOINCREMENT,parent_id INTEGER,name TEXT,value NONE,hash INTEGER)", -1, &create, &tail );
@@ -1021,10 +1038,19 @@ void epmem_init_db( agent *my_agent )
 				// custom statement for retrieving an episode
 				sqlite3_prepare_v2( my_agent->epmem_db, "SELECT e.id, i.parent_id, i.name, i.value FROM episodes e INNER JOIN ids i ON e.id=i.child_id WHERE ? BETWEEN e.start AND e.end ORDER BY e.id ASC", -1, &( my_agent->epmem_statements[ EPMEM_STMT_BIGTREE_R_GET_EPISODE ] ), &tail );
 
+				// custom statement for validating an episode
+				sqlite3_prepare_v2( my_agent->epmem_db, "SELECT COUNT(*) AS ct FROM episodes WHERE ? BETWEEN start AND end", -1, &( my_agent->epmem_statements[ EPMEM_STMT_BIGTREE_R_VALID_EPISODE ] ), &tail );
+
+				// custom statement for finding the next episode
+				sqlite3_prepare_v2( my_agent->epmem_db, "SELECT id FROM times WHERE id>? ORDER BY id ASC LIMIT 1", -1, &( my_agent->epmem_statements[ EPMEM_STMT_BIGTREE_R_NEXT_EPISODE ] ), &tail );
+
+				// custom statement for finding the prev episode
+				sqlite3_prepare_v2( my_agent->epmem_db, "SELECT id FROM times WHERE id<? ORDER BY id DESC LIMIT 1", -1, &( my_agent->epmem_statements[ EPMEM_STMT_BIGTREE_R_PREV_EPISODE ] ), &tail );
+
 				// get max time
 				sqlite3_prepare_v2( my_agent->epmem_db, "SELECT MAX(end) FROM episodes", -1, &create, &tail );
 				if ( sqlite3_step( create ) == SQLITE_ROW )						
-					my_agent->epmem_time_counter = ( sqlite3_column_int( create, 0 ) + 1 );
+					epmem_set_stat( my_agent, (const long) EPMEM_STAT_TIME, ( sqlite3_column_int( create, 0 ) + 1 ) );
 				sqlite3_finalize( create );
 
 				break;
@@ -1053,7 +1079,13 @@ void epmem_reset( agent *my_agent )
 	{
 		epmem_data *data = goal->id.epmem_info;
 				
-		data->last_tag = 0;
+		data->last_ol_time = 0;
+		data->last_ol_count = 0;
+
+		data->last_cmd_time = 0;
+		data->last_cmd_count = 0;
+
+		data->last_memory = EPMEM_MEMID_NONE;
 		
 		goal = goal->id.lower_goal;
 	}
@@ -1071,7 +1103,8 @@ void epmem_consider_new_episode( agent *my_agent )
 	{
 		slot *s;
 		wme *w;
-		Symbol *ol = my_agent->io_header_output;		
+		Symbol *ol = my_agent->io_header_output;
+		int wme_count = 0;
 			
 		// examine all commands on the output-link for any
 		// that appeared since last memory was recorded
@@ -1079,12 +1112,20 @@ void epmem_consider_new_episode( agent *my_agent )
 		{
 			for ( w = s->wmes; w != NIL; w = w->next )
 			{
-				if ( w->timetag > my_agent->bottom_goal->id.epmem_info->last_tag )
+				wme_count++;
+				
+				if ( w->timetag > my_agent->bottom_goal->id.epmem_info->last_ol_time )
 				{
 					new_memory = true;
-					my_agent->bottom_goal->id.epmem_info->last_tag = w->timetag; 
+					my_agent->bottom_goal->id.epmem_info->last_ol_time = w->timetag; 
 				}
 			}
+		}
+
+		if ( my_agent->bottom_goal->id.epmem_info->last_ol_count != wme_count )
+		{
+			new_memory = true;
+			my_agent->bottom_goal->id.epmem_info->last_ol_count = wme_count;
 		}
 	}
 	
@@ -1117,6 +1158,8 @@ void epmem_new_episode( agent *my_agent )
 	// add the episode only if db is properly initialized
 	if ( my_agent->epmem_db_status != SQLITE_OK )
 		return;
+
+	const long time_counter = epmem_get_stat( my_agent, (const long) EPMEM_STAT_TIME );
 	
 	if ( epmem_get_parameter( my_agent, EPMEM_PARAM_INDEXING, EPMEM_RETURN_LONG ) == EPMEM_INDEXING_BIGTREE_INSTANCE )
 	{
@@ -1263,7 +1306,7 @@ void epmem_new_episode( agent *my_agent )
 		{
 			// add nodes to the episodic store
 			sqlite3_bind_int( my_agent->epmem_statements[ EPMEM_STMT_BIGTREE_I_ADD_EPISODE ], 1, e->first );
-			sqlite3_bind_int( my_agent->epmem_statements[ EPMEM_STMT_BIGTREE_I_ADD_EPISODE ], 2, my_agent->epmem_time_counter );
+			sqlite3_bind_int( my_agent->epmem_statements[ EPMEM_STMT_BIGTREE_I_ADD_EPISODE ], 2, time_counter );
 
 			if ( e->second == NULL )
 				sqlite3_bind_null( my_agent->epmem_statements[ EPMEM_STMT_BIGTREE_I_ADD_EPISODE ], 3 );
@@ -1280,8 +1323,8 @@ void epmem_new_episode( agent *my_agent )
 		}
 
 		sqlite3_step( my_agent->epmem_statements[ EPMEM_STMT_COMMIT ] );
-		sqlite3_reset( my_agent->epmem_statements[ EPMEM_STMT_COMMIT ] );	
-		my_agent->epmem_time_counter++;
+		sqlite3_reset( my_agent->epmem_statements[ EPMEM_STMT_COMMIT ] );
+		epmem_set_stat( my_agent, (const long) EPMEM_STAT_TIME, time_counter + 1 );
 	}
 	else if ( epmem_get_parameter( my_agent, EPMEM_PARAM_INDEXING, EPMEM_RETURN_LONG ) == EPMEM_INDEXING_BIGTREE_RANGE )
 	{
@@ -1425,9 +1468,9 @@ void epmem_new_episode( agent *my_agent )
 			if ( !e->second )
 			{
 				// SET end=? WHERE id=? AND end=?
-				sqlite3_bind_int( my_agent->epmem_statements[ EPMEM_STMT_BIGTREE_R_UPDATE_EPISODE ], 1, my_agent->epmem_time_counter );
+				sqlite3_bind_int( my_agent->epmem_statements[ EPMEM_STMT_BIGTREE_R_UPDATE_EPISODE ], 1, time_counter );
 				sqlite3_bind_int( my_agent->epmem_statements[ EPMEM_STMT_BIGTREE_R_UPDATE_EPISODE ], 2, e->first );
-				sqlite3_bind_int( my_agent->epmem_statements[ EPMEM_STMT_BIGTREE_R_UPDATE_EPISODE ], 3, ( my_agent->epmem_time_counter - 1 ) );
+				sqlite3_bind_int( my_agent->epmem_statements[ EPMEM_STMT_BIGTREE_R_UPDATE_EPISODE ], 3, ( time_counter - 1 ) );
 				sqlite3_step( my_agent->epmem_statements[ EPMEM_STMT_BIGTREE_R_UPDATE_EPISODE ] );
 				
 				updated = sqlite3_changes( my_agent->epmem_db );
@@ -1437,8 +1480,8 @@ void epmem_new_episode( agent *my_agent )
 			if ( !updated )
 			{
 				sqlite3_bind_int( my_agent->epmem_statements[ EPMEM_STMT_BIGTREE_R_ADD_EPISODE ], 1, e->first );
-				sqlite3_bind_int( my_agent->epmem_statements[ EPMEM_STMT_BIGTREE_R_ADD_EPISODE ], 2, my_agent->epmem_time_counter );
-				sqlite3_bind_int( my_agent->epmem_statements[ EPMEM_STMT_BIGTREE_R_ADD_EPISODE ], 3, my_agent->epmem_time_counter );
+				sqlite3_bind_int( my_agent->epmem_statements[ EPMEM_STMT_BIGTREE_R_ADD_EPISODE ], 2, time_counter );
+				sqlite3_bind_int( my_agent->epmem_statements[ EPMEM_STMT_BIGTREE_R_ADD_EPISODE ], 3, time_counter );
 				sqlite3_step( my_agent->epmem_statements[ EPMEM_STMT_BIGTREE_R_ADD_EPISODE ] );
 				sqlite3_reset( my_agent->epmem_statements[ EPMEM_STMT_BIGTREE_R_ADD_EPISODE ] );
 			}
@@ -1446,26 +1489,367 @@ void epmem_new_episode( agent *my_agent )
 			e++;
 		}
 
+		// add the time id to the times table
+		sqlite3_bind_int( my_agent->epmem_statements[ EPMEM_STMT_BIGTREE_R_ADD_TIME ], 1, time_counter );
+		sqlite3_step( my_agent->epmem_statements[ EPMEM_STMT_BIGTREE_R_ADD_TIME ] );
+		sqlite3_reset( my_agent->epmem_statements[ EPMEM_STMT_BIGTREE_R_ADD_TIME ] );
+
 		sqlite3_step( my_agent->epmem_statements[ EPMEM_STMT_COMMIT ] );
 		sqlite3_reset( my_agent->epmem_statements[ EPMEM_STMT_COMMIT ] );	
-		my_agent->epmem_time_counter++;
+		epmem_set_stat( my_agent, (const long) EPMEM_STAT_TIME, time_counter + 1 );
 	}
-
-	if ( my_agent->epmem_time_counter == 2 )
-		epmem_install_memory( my_agent, my_agent->top_goal, 1 );
 }
 
+/***************************************************************************
+ * Function     : epmem_valid_episode
+ **************************************************************************/
+bool epmem_valid_episode( agent *my_agent, int memory_id )
+{
+	const long indexing = epmem_get_parameter( my_agent, EPMEM_PARAM_INDEXING, EPMEM_RETURN_LONG );
+	bool return_val = false;
+
+	if ( indexing == EPMEM_INDEXING_BIGTREE_INSTANCE )
+	{
+		sqlite3_bind_int( my_agent->epmem_statements[ EPMEM_STMT_BIGTREE_I_VALID_EPISODE ], 1, memory_id );
+		sqlite3_step( my_agent->epmem_statements[ EPMEM_STMT_BIGTREE_I_VALID_EPISODE ] );
+		return_val = ( sqlite3_column_int( my_agent->epmem_statements[ EPMEM_STMT_BIGTREE_I_VALID_EPISODE ], 0 ) > 0 );
+
+		sqlite3_reset( my_agent->epmem_statements[ EPMEM_STMT_BIGTREE_I_VALID_EPISODE ] );
+	}
+	else if ( indexing == EPMEM_INDEXING_BIGTREE_RANGE )
+	{
+		sqlite3_bind_int( my_agent->epmem_statements[ EPMEM_STMT_BIGTREE_R_VALID_EPISODE ], 1, memory_id );
+		sqlite3_step( my_agent->epmem_statements[ EPMEM_STMT_BIGTREE_R_VALID_EPISODE ] );
+		return_val = ( sqlite3_column_int( my_agent->epmem_statements[ EPMEM_STMT_BIGTREE_R_VALID_EPISODE ], 0 ) > 0 );
+
+		sqlite3_reset( my_agent->epmem_statements[ EPMEM_STMT_BIGTREE_R_VALID_EPISODE ] );
+	}
+
+	return return_val;
+}
+
+/***************************************************************************
+ * Function     : epmem_next_episode
+ **************************************************************************/
+int epmem_next_episode( agent *my_agent, int memory_id )
+{
+	const long indexing = epmem_get_parameter( my_agent, EPMEM_PARAM_INDEXING, EPMEM_RETURN_LONG );
+	int return_val = EPMEM_MEMID_NONE;
+
+	if ( indexing == EPMEM_INDEXING_BIGTREE_INSTANCE )
+	{
+		sqlite3_bind_int( my_agent->epmem_statements[ EPMEM_STMT_BIGTREE_I_NEXT_EPISODE ], 1, memory_id );
+		if ( sqlite3_step( my_agent->epmem_statements[ EPMEM_STMT_BIGTREE_I_NEXT_EPISODE ] ) == SQLITE_ROW )
+			return_val = ( sqlite3_column_int( my_agent->epmem_statements[ EPMEM_STMT_BIGTREE_I_NEXT_EPISODE ], 0 ) );
+
+		sqlite3_reset( my_agent->epmem_statements[ EPMEM_STMT_BIGTREE_I_NEXT_EPISODE ] );
+	}
+	else if ( indexing == EPMEM_INDEXING_BIGTREE_RANGE )
+	{
+		sqlite3_bind_int( my_agent->epmem_statements[ EPMEM_STMT_BIGTREE_R_NEXT_EPISODE ], 1, memory_id );
+		if ( sqlite3_step( my_agent->epmem_statements[ EPMEM_STMT_BIGTREE_R_NEXT_EPISODE ] ) == SQLITE_ROW )
+			return_val = ( sqlite3_column_int( my_agent->epmem_statements[ EPMEM_STMT_BIGTREE_R_NEXT_EPISODE ], 0 ) );
+
+		sqlite3_reset( my_agent->epmem_statements[ EPMEM_STMT_BIGTREE_R_NEXT_EPISODE ] );
+	}
+
+	return return_val;
+}
+
+/***************************************************************************
+ * Function     : epmem_previous_episode
+ **************************************************************************/
+int epmem_previous_episode( agent *my_agent, int memory_id )
+{
+	const long indexing = epmem_get_parameter( my_agent, EPMEM_PARAM_INDEXING, EPMEM_RETURN_LONG );
+	int return_val = EPMEM_MEMID_NONE;
+
+	if ( indexing == EPMEM_INDEXING_BIGTREE_INSTANCE )
+	{
+		sqlite3_bind_int( my_agent->epmem_statements[ EPMEM_STMT_BIGTREE_I_PREV_EPISODE ], 1, memory_id );
+		if ( sqlite3_step( my_agent->epmem_statements[ EPMEM_STMT_BIGTREE_I_PREV_EPISODE ] ) == SQLITE_ROW )
+			return_val = ( sqlite3_column_int( my_agent->epmem_statements[ EPMEM_STMT_BIGTREE_I_PREV_EPISODE ], 0 ) );
+
+		sqlite3_reset( my_agent->epmem_statements[ EPMEM_STMT_BIGTREE_I_PREV_EPISODE ] );
+	}
+	else if ( indexing == EPMEM_INDEXING_BIGTREE_RANGE )
+	{
+		sqlite3_bind_int( my_agent->epmem_statements[ EPMEM_STMT_BIGTREE_R_PREV_EPISODE ], 1, memory_id );
+		if ( sqlite3_step( my_agent->epmem_statements[ EPMEM_STMT_BIGTREE_R_PREV_EPISODE ] ) == SQLITE_ROW )
+			return_val = ( sqlite3_column_int( my_agent->epmem_statements[ EPMEM_STMT_BIGTREE_R_PREV_EPISODE ], 0 ) );
+
+		sqlite3_reset( my_agent->epmem_statements[ EPMEM_STMT_BIGTREE_R_PREV_EPISODE ] );
+	}
+
+	return return_val;
+}
+
+/***************************************************************************
+ * Function     : epmem_respond_to_cmd
+ **************************************************************************/
+void epmem_respond_to_cmd( agent *my_agent )
+{
+	// start at the bottom and work our way up
+	// (could go in the opposite direction as well)
+	Symbol *state = my_agent->bottom_goal;
+
+	wme **wmes;	
+	const char *attr_name;
+	int len;
+	int i;
+
+	int retrieve;
+	bool next, previous;
+	Symbol *query;
+	Symbol *neg_query;
+	vector<int> prohibit;
+	int before, after;
+	bool good_cue;
+	int path;
+
+	slot *s;
+	wme *w;
+	Symbol *epmem_cmd;
+	int wme_count;
+	bool new_cue;
+
+	while ( state != NULL )
+	{
+		// make sure this state has had some sort of change to the cmd
+		new_cue = false;
+		wme_count = 0;
+		{
+			epmem_cmd = state->id.epmem_cmd_header;
+				
+			// examine all entries on the cmd header
+			// that appeared since last cue was encountered
+			for ( s = epmem_cmd->id.slots; s != NIL; s = s->next )
+			{
+				for ( w = s->wmes; w != NIL; w = w->next )
+				{
+					wme_count++;
+					
+					if ( w->timetag > state->id.epmem_info->last_cmd_time )
+					{
+						new_cue = true;
+						state->id.epmem_info->last_cmd_time = w->timetag; 
+					}
+				}
+			}
+
+			if ( state->id.epmem_info->last_cmd_count != wme_count )
+			{				
+				state->id.epmem_info->last_cmd_count = wme_count;
+
+				if ( wme_count != 0 )
+					new_cue = true;
+				else
+					epmem_clear_result( my_agent, state );
+			}
+		}
+		
+		if ( new_cue )
+		{		
+			// initialize command vars
+			retrieve = EPMEM_MEMID_NONE;
+			next = false;
+			previous = false;
+			query = NULL;
+			neg_query = NULL;
+			prohibit.clear();
+			before = EPMEM_MEMID_NONE;
+			after = EPMEM_MEMID_NONE;
+			good_cue = true;
+			path = 0;
+			
+			// get all top-level symbols
+			wmes = epmem_get_augs_of_id( my_agent, state->id.epmem_cmd_header, state->id.tc_num + 3, &len );
+
+			// process top-level symbols
+			for ( i=0; i<len; i++ )
+			{
+				if ( good_cue )
+				{
+					// get attribute name
+					attr_name = (const char *) wmes[ i ]->attr->sc.name;
+
+					if ( !strcmp( attr_name, "retrieve" ) )
+					{
+						if ( ( wmes[ i ]->value->ic.common_symbol_info.symbol_type == INT_CONSTANT_SYMBOL_TYPE ) &&
+							 ( path == 0 ) && 
+							 ( wmes[ i ]->value->ic.value > 0 ) )
+						{
+							retrieve = wmes[ i ]->value->ic.value;
+							path = 1;
+						}
+						else
+							good_cue = false;
+					}
+					else if ( !strcmp( attr_name, "next" ) )
+					{
+						if ( ( wmes[ i ]->value->id.common_symbol_info.symbol_type == IDENTIFIER_SYMBOL_TYPE ) &&						 
+							 ( path == 0 ) )
+						{
+							next = true;
+							path = 2;
+						}
+						else
+							good_cue = false;
+					}
+					else if ( !strcmp( attr_name, "previous" ) )
+					{
+						if ( ( wmes[ i ]->value->id.common_symbol_info.symbol_type == IDENTIFIER_SYMBOL_TYPE ) &&						 
+							 ( path == 0 ) )
+						{
+							previous = true;
+							path = 2;
+						}
+						else
+							good_cue = false;
+					}
+					else if ( !strcmp( attr_name, "query" ) )
+					{
+						if ( ( wmes[ i ]->value->id.common_symbol_info.symbol_type == IDENTIFIER_SYMBOL_TYPE ) &&						 
+							 ( ( path == 0 ) || ( path == 3 ) ) &&
+							 ( query == NULL ) )
+
+						{
+							query = wmes[ i ]->value;
+							path = 3;
+						}
+						else
+							good_cue = false;
+					}
+					else if ( !strcmp( attr_name, "neg-query" ) )
+					{
+						if ( ( wmes[ i ]->value->id.common_symbol_info.symbol_type == IDENTIFIER_SYMBOL_TYPE ) &&						 
+							 ( ( path == 0 ) || ( path == 3 ) ) &&
+							 ( neg_query == NULL ) )
+
+						{
+							neg_query = wmes[ i ]->value;
+							path = 3;
+						}
+						else
+							good_cue = false;
+					}
+					else if ( !strcmp( attr_name, "before" ) )
+					{
+						if ( ( wmes[ i ]->value->ic.common_symbol_info.symbol_type == INT_CONSTANT_SYMBOL_TYPE ) &&						 
+							 ( ( path == 0 ) || ( path == 3 ) ) &&
+							 ( ( before == EPMEM_MEMID_NONE ) && ( after == EPMEM_MEMID_NONE ) ) )
+
+						{
+							before = wmes[ i ]->value->ic.value;
+							path = 3;
+						}
+						else
+							good_cue = false;
+					}
+					else if ( !strcmp( attr_name, "after" ) )
+					{
+						if ( ( wmes[ i ]->value->ic.common_symbol_info.symbol_type == INT_CONSTANT_SYMBOL_TYPE ) &&						 
+							 ( ( path == 0 ) || ( path == 3 ) ) &&
+							 ( ( before == EPMEM_MEMID_NONE ) && ( after == EPMEM_MEMID_NONE ) ) )
+
+						{
+							after = wmes[ i ]->value->ic.value;
+							path = 3;
+						}
+						else
+							good_cue = false;
+					}
+					else if ( !strcmp( attr_name, "prohibit" ) )
+					{
+						if ( ( wmes[ i ]->value->ic.common_symbol_info.symbol_type == INT_CONSTANT_SYMBOL_TYPE ) &&						 
+							 ( ( path == 0 ) || ( path == 3 ) ) )
+						{
+							prohibit.push_back( wmes[ i ]->value->ic.value );
+							path = 3;
+						}
+						else
+							good_cue = false;
+					}
+					else
+						good_cue = false;
+				}
+			}
+
+			// if on path 3 must have query/neg-query
+			if ( ( path == 3 ) && ( query == NULL ) && ( neg_query == NULL ) )
+				good_cue = false;
+
+			// must be on a path
+			if ( path == 0 )
+				good_cue = false;
+
+			if ( good_cue )
+			{
+				// retrieve
+				if ( path == 1 )
+				{
+					if ( retrieve != state->id.epmem_info->last_memory )
+					{
+						epmem_clear_result( my_agent, state );
+						epmem_install_memory( my_agent, state, retrieve );
+					}
+				}
+				else if ( path == 2 )
+				{
+					epmem_clear_result( my_agent, state );
+					epmem_install_memory( my_agent, state, ( ( next )?( epmem_next_episode( my_agent, state->id.epmem_info->last_memory ) ):( epmem_previous_episode( my_agent, state->id.epmem_info->last_memory ) ) ) );
+				}
+				else if ( path == 3 )
+				{
+				}
+			}
+			else
+			{
+				epmem_clear_result( my_agent, state );
+				add_input_wme( my_agent, state->id.epmem_result_header, my_agent->epmem_status_symbol, my_agent->epmem_bad_cmd_symbol );
+			}
+
+			// free space from aug list
+			free_memory( my_agent, wmes, MISCELLANEOUS_MEM_USAGE );
+		}
+
+		state = state->id.higher_goal;
+	}
+}
+
+/***************************************************************************
+ * Function     : epmem_clear_result
+ **************************************************************************/
+void epmem_clear_result( agent *my_agent, Symbol *state )
+{	
+	int len;
+	wme **wmes = epmem_get_augs_of_id( my_agent, state->id.epmem_result_header, state->id.tc_num + 3, &len );
+
+	for ( int i=0; i<len; i++ )
+		remove_input_wme( my_agent, wmes[ i ] );
+	
+	free_memory( my_agent, wmes, MISCELLANEOUS_MEM_USAGE );
+}
+
+/***************************************************************************
+ * Function     : epmem_install_memory
+ **************************************************************************/
 void epmem_install_memory( agent *my_agent, Symbol *state, int memory_id )
 {
 	// get the ^result header for this state
 	Symbol *result_header = state->id.epmem_result_header;
 
-	// if intentionally no memory, say so
-	if ( memory_id == EPMEM_MEMID_NONE )
+	// if no memory, say so
+	if ( ( memory_id == EPMEM_MEMID_NONE ) ||
+		 !epmem_valid_episode( my_agent, memory_id ) )
 	{
 		add_input_wme( my_agent, result_header, my_agent->epmem_retrieved_symbol, my_agent->epmem_no_memory_symbol );
+		state->id.epmem_info->last_memory = EPMEM_MEMID_NONE;
 		return;
 	}
+
+	// remember this as the last memory installed
+	state->id.epmem_info->last_memory = memory_id;
 
 	// create a new ^retrieved header for this result
 	Symbol *retrieved_header = make_new_identifier( my_agent, 'R', result_header->id.level );
@@ -1473,7 +1857,7 @@ void epmem_install_memory( agent *my_agent, Symbol *state, int memory_id )
 
 	// add *-id wme's
 	add_input_wme( my_agent, result_header, my_agent->epmem_memory_id_symbol, make_int_constant( my_agent, memory_id ) );
-	add_input_wme( my_agent, result_header, my_agent->epmem_present_id_symbol, make_int_constant( my_agent, my_agent->epmem_time_counter ) );
+	add_input_wme( my_agent, result_header, my_agent->epmem_present_id_symbol, make_int_constant( my_agent, epmem_get_stat( my_agent, (const long) EPMEM_STAT_TIME ) ) );
 
 	if ( epmem_get_parameter( my_agent, EPMEM_PARAM_INDEXING, EPMEM_RETURN_LONG ) == EPMEM_INDEXING_BIGTREE_INSTANCE )
 	{
