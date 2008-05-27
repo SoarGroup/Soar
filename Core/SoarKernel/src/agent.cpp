@@ -333,7 +333,7 @@ agent * create_soar_agent (Kernel * thisKernel, char * agent_name) {            
   
   // rl initialization
   newAgent->rl_params[ RL_PARAM_LEARNING ] = add_rl_parameter( "learning", RL_LEARNING_ON, &validate_rl_learning, &convert_rl_learning, &convert_rl_learning );    
-  newAgent->rl_params[ RL_PARAM_DISCOUNT_RATE ] = add_rl_parameter( "discount-rate", 0.9, &validate_rl_discount );  
+  newAgent->rl_params[ RL_PARAM_DISCOUNT_RATE ] = add_rl_parameter( "discount-rate", 0.9, &validate_rl_discount );
   newAgent->rl_params[ RL_PARAM_LEARNING_RATE ] = add_rl_parameter( "learning-rate", 0.3, &validate_rl_learning_rate );
   newAgent->rl_params[ RL_PARAM_LEARNING_POLICY ] = add_rl_parameter( "learning-policy", RL_LEARNING_SARSA, &validate_rl_learning_policy, &convert_rl_learning_policy, &convert_rl_learning_policy );
   newAgent->rl_params[ RL_PARAM_ET_DECAY_RATE ] = add_rl_parameter( "eligibility-trace-decay-rate", 0, &validate_rl_decay_rate );
@@ -363,7 +363,8 @@ agent * create_soar_agent (Kernel * thisKernel, char * agent_name) {            
   newAgent->epmem_params[ EPMEM_PARAM_PROVENANCE ] = epmem_add_parameter( "provenance", EPMEM_PROVENANCE_OFF, &epmem_validate_provenance, &epmem_convert_provenance, &epmem_convert_provenance );
     
   newAgent->epmem_params[ EPMEM_PARAM_TRIGGER ] = epmem_add_parameter( "trigger", EPMEM_TRIGGER_OUTPUT, &epmem_validate_trigger, &epmem_convert_trigger, &epmem_convert_trigger );
-    
+  newAgent->epmem_params[ EPMEM_PARAM_BALANCE ] = epmem_add_parameter( "balance", 0.5, &epmem_validate_balance );
+
   newAgent->epmem_stats[ EPMEM_STAT_TIME ] = epmem_add_stat( "time" );
   epmem_set_stat( newAgent, (const long) EPMEM_STAT_TIME, 1 );
     

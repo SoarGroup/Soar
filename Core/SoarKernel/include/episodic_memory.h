@@ -13,6 +13,7 @@
 #ifndef EPISODIC_MEMORY_H
 #define EPISODIC_MEMORY_H
 
+#include <vector>
 #include <string>
 
 #include "symtab.h"
@@ -71,6 +72,7 @@
 #define EPMEM_MAX_STATEMENTS 					30 // must be at least 1+ largest of any STMT constant
 
 #define EPMEM_MEMID_NONE						-1
+#define EPMEM_MEMID_ROOT						0
 
 // names of params
 #define EPMEM_PARAM_LEARNING					0
@@ -79,7 +81,8 @@
 #define EPMEM_PARAM_INDEXING					3
 #define EPMEM_PARAM_PROVENANCE					4
 #define EPMEM_PARAM_TRIGGER						5
-#define EPMEM_PARAMS							6 // must be 1+ last epmem param
+#define EPMEM_PARAM_BALANCE						6
+#define EPMEM_PARAMS							7 // must be 1+ last epmem param
 
 // names of stats
 #define EPMEM_STAT_TIME							0
@@ -221,10 +224,13 @@ extern bool epmem_validate_provenance( const long new_val );
 extern const char *epmem_convert_provenance( const long val );
 extern const long epmem_convert_provenance( const char *val );
 
-// provenance
+// trigger
 extern bool epmem_validate_trigger( const long new_val );
 extern const char *epmem_convert_trigger( const long val );
 extern const long epmem_convert_trigger( const char *val );
+
+// balance
+extern bool epmem_validate_balance( const double new_val );
 
 // shortcut for determining if EpMem is enabled
 extern bool epmem_enabled( agent *my_agent );
@@ -280,6 +286,9 @@ extern int epmem_previous_episode( agent *my_agent, int memory_id );
 
 // Called to react to commands
 extern void epmem_respond_to_cmd( agent *my_agent );
+
+// Called to process a query
+extern void epmem_process_query( agent *my_agent, Symbol *state, Symbol *query, Symbol *neg_query, std::vector<int> *prohibit, int before, int after );
 
 // Called to clear the wme's from epmem.result
 extern void epmem_clear_result( agent *my_agent, Symbol *state );

@@ -31,6 +31,7 @@
 #include "print.h"
 
 #include "episodic_memory.h"
+#include "misc.h"
 
 #include "sqlite3.h"
 
@@ -666,6 +667,21 @@ const long epmem_convert_trigger( const char *val )
 /////////////////////////////////////////////////////////////////////////////////////////////////////////
 /////////////////////////////////////////////////////////////////////////////////////////////////////////
 
+/////////////////////////////////////////////////////////////////////////////////////////////////////////
+// balance
+/////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+/***************************************************************************
+ * Function     : epmem_validate_balance
+ **************************************************************************/
+bool epmem_validate_balance( const double new_val )
+{
+	return ( ( new_val >= 0 ) && ( new_val <= 1 ) );
+}
+
+/////////////////////////////////////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////////////////////////////////////
+
 /***************************************************************************
  * Function     : epmem_enabled
  **************************************************************************/
@@ -1183,7 +1199,7 @@ void epmem_new_episode( agent *my_agent )
 		int i;	
 
 		syms.push_back( my_agent->top_goal );
-		ids.push_back( 0 );	
+		ids.push_back( EPMEM_MEMID_ROOT );	
 		
 		sqlite3_step( my_agent->epmem_statements[ EPMEM_STMT_BEGIN ] );
 		sqlite3_reset( my_agent->epmem_statements[ EPMEM_STMT_BEGIN ] );
@@ -1349,7 +1365,7 @@ void epmem_new_episode( agent *my_agent )
 		int i;	
 
 		syms.push_back( my_agent->top_goal );
-		ids.push_back( 0 );	
+		ids.push_back( EPMEM_MEMID_ROOT );
 		
 		sqlite3_step( my_agent->epmem_statements[ EPMEM_STMT_BEGIN ] );
 		sqlite3_reset( my_agent->epmem_statements[ EPMEM_STMT_BEGIN ] );
@@ -1602,7 +1618,7 @@ void epmem_respond_to_cmd( agent *my_agent )
 	bool next, previous;
 	Symbol *query;
 	Symbol *neg_query;
-	vector<int> prohibit;
+	vector<int> *prohibit = new vector<int>();
 	int before, after;
 	bool good_cue;
 	int path;
@@ -1656,7 +1672,7 @@ void epmem_respond_to_cmd( agent *my_agent )
 			previous = false;
 			query = NULL;
 			neg_query = NULL;
-			prohibit.clear();
+			prohibit->clear();
 			before = EPMEM_MEMID_NONE;
 			after = EPMEM_MEMID_NONE;
 			good_cue = true;
@@ -1736,9 +1752,7 @@ void epmem_respond_to_cmd( agent *my_agent )
 					else if ( !strcmp( attr_name, "before" ) )
 					{
 						if ( ( wmes[ i ]->value->ic.common_symbol_info.symbol_type == INT_CONSTANT_SYMBOL_TYPE ) &&						 
-							 ( ( path == 0 ) || ( path == 3 ) ) &&
-							 ( ( before == EPMEM_MEMID_NONE ) && ( after == EPMEM_MEMID_NONE ) ) )
-
+							 ( ( path == 0 ) || ( path == 3 ) ) )
 						{
 							before = wmes[ i ]->value->ic.value;
 							path = 3;
@@ -1749,9 +1763,7 @@ void epmem_respond_to_cmd( agent *my_agent )
 					else if ( !strcmp( attr_name, "after" ) )
 					{
 						if ( ( wmes[ i ]->value->ic.common_symbol_info.symbol_type == INT_CONSTANT_SYMBOL_TYPE ) &&						 
-							 ( ( path == 0 ) || ( path == 3 ) ) &&
-							 ( ( before == EPMEM_MEMID_NONE ) && ( after == EPMEM_MEMID_NONE ) ) )
-
+							 ( ( path == 0 ) || ( path == 3 ) ) )
 						{
 							after = wmes[ i ]->value->ic.value;
 							path = 3;
@@ -1764,7 +1776,7 @@ void epmem_respond_to_cmd( agent *my_agent )
 						if ( ( wmes[ i ]->value->ic.common_symbol_info.symbol_type == INT_CONSTANT_SYMBOL_TYPE ) &&						 
 							 ( ( path == 0 ) || ( path == 3 ) ) )
 						{
-							prohibit.push_back( wmes[ i ]->value->ic.value );
+							prohibit->push_back( wmes[ i ]->value->ic.value );
 							path = 3;
 						}
 						else
@@ -1794,13 +1806,17 @@ void epmem_respond_to_cmd( agent *my_agent )
 						epmem_install_memory( my_agent, state, retrieve );
 					}
 				}
+				// previous or next
 				else if ( path == 2 )
 				{
 					epmem_clear_result( my_agent, state );
 					epmem_install_memory( my_agent, state, ( ( next )?( epmem_next_episode( my_agent, state->id.epmem_info->last_memory ) ):( epmem_previous_episode( my_agent, state->id.epmem_info->last_memory ) ) ) );
 				}
+				// query
 				else if ( path == 3 )
 				{
+					epmem_clear_result( my_agent, state );				
+					epmem_process_query( my_agent, state, query, neg_query, prohibit, before, after );
 				}
 			}
 			else
@@ -1829,6 +1845,373 @@ void epmem_clear_result( agent *my_agent, Symbol *state )
 		remove_input_wme( my_agent, wmes[ i ] );
 	
 	free_memory( my_agent, wmes, MISCELLANEOUS_MEM_USAGE );
+}
+
+/***************************************************************************
+ * Function     : epmem_process_query
+ **************************************************************************/
+void epmem_process_query( agent *my_agent, Symbol *state, Symbol *query, Symbol *neg_query, vector<int> *prohibit, int before, int after )
+{
+	int len_query = 0, len_neg_query = 0;
+	wme **wmes_query = NULL;
+	if ( query != NULL )
+		wmes_query = epmem_get_augs_of_id( my_agent, query, state->id.tc_num + 3, &len_query );
+
+	wme **wmes_neg_query = NULL;
+	if ( neg_query != NULL )
+		wmes_neg_query = epmem_get_augs_of_id( my_agent, neg_query, state->id.tc_num + 3, &len_neg_query );
+
+	if ( ( len_query != 0 ) || ( len_neg_query != 0 ) )
+	{
+		const long indexing = epmem_get_parameter( my_agent, EPMEM_PARAM_INDEXING, EPMEM_RETURN_LONG );
+
+		if ( indexing == EPMEM_INDEXING_BIGTREE_INSTANCE )
+		{
+			wme ***wmes;
+			int len;
+
+			vector<int> leaf_ids[2];
+			vector<Symbol *> parent_syms;
+			vector<int> parent_ids;
+			int pos = 0;
+			int tc = state->id.tc_num + 3;
+
+			Symbol *parent_sym;
+			int parent_id;
+			unsigned long my_hash;
+
+			int i, j, k;
+
+			// initialize pos/neg lists
+			for ( i=0; i<2; i++ )
+			{			
+				switch ( i )
+				{
+					case 0:
+						wmes = &wmes_query;
+						len = len_query;
+						parent_syms.clear();
+						parent_ids.clear();
+						parent_syms.push_back( query );
+						parent_ids.push_back( EPMEM_MEMID_ROOT );
+						pos = 0;
+						break;
+
+					case 1:
+						wmes = &wmes_neg_query;
+						len = len_neg_query;
+						parent_syms.clear();
+						parent_ids.clear();
+						parent_syms.push_back( neg_query );
+						parent_ids.push_back( EPMEM_MEMID_ROOT );
+						pos = 0;
+						break;
+				}
+				
+				while ( pos != parent_syms.size() )
+				{
+					parent_sym = parent_syms[ pos ];
+					parent_id = parent_ids[ pos ];
+					pos++;
+
+					if ( pos != 1 )
+						(*wmes) = epmem_get_augs_of_id( my_agent, parent_sym, tc, &len );
+
+					if ( (*wmes) != NULL )
+					{
+						for ( j=0; j<len; j++ )
+						{
+							// find wme id							
+							my_hash = epmem_hash_wme( (*wmes)[j] );
+							if ( (*wmes)[j]->value->common.symbol_type != IDENTIFIER_SYMBOL_TYPE )
+							{
+								// hash=? AND parent_id=? AND name=? AND value=?
+								sqlite3_bind_int( my_agent->epmem_statements[ EPMEM_STMT_BIGTREE_I_FIND_ID ], 1, my_hash );
+								sqlite3_bind_int( my_agent->epmem_statements[ EPMEM_STMT_BIGTREE_I_FIND_ID ], 2, parent_id );
+								sqlite3_bind_text( my_agent->epmem_statements[ EPMEM_STMT_BIGTREE_I_FIND_ID ], 3, (const char *) (*wmes)[j]->attr->sc.name, -1, SQLITE_STATIC );
+								switch( (*wmes)[j]->value->common.symbol_type )
+								{
+									case SYM_CONSTANT_SYMBOL_TYPE:
+										sqlite3_bind_text( my_agent->epmem_statements[ EPMEM_STMT_BIGTREE_I_FIND_ID ], 4, (const char *) (*wmes)[j]->value->sc.name, -1, SQLITE_STATIC );
+										break;
+							            
+									case INT_CONSTANT_SYMBOL_TYPE:
+			        					sqlite3_bind_int( my_agent->epmem_statements[ EPMEM_STMT_BIGTREE_I_FIND_ID ], 4, (*wmes)[j]->value->ic.value );
+										break;
+						
+									case FLOAT_CONSTANT_SYMBOL_TYPE:
+			        					sqlite3_bind_double( my_agent->epmem_statements[ EPMEM_STMT_BIGTREE_I_FIND_ID ], 4, (*wmes)[j]->value->fc.value );
+										break;
+								}
+								
+								if ( sqlite3_step( my_agent->epmem_statements[ EPMEM_STMT_BIGTREE_I_FIND_ID ] ) == SQLITE_ROW )
+									leaf_ids[i].push_back( sqlite3_column_int( my_agent->epmem_statements[ EPMEM_STMT_BIGTREE_I_FIND_ID ], 0 ) );
+								
+								sqlite3_reset( my_agent->epmem_statements[ EPMEM_STMT_BIGTREE_I_FIND_ID ] );
+							}
+							else
+							{
+								// hash=? AND parent_id=? AND name=? AND value IS NULL						
+								sqlite3_bind_int( my_agent->epmem_statements[ EPMEM_STMT_BIGTREE_I_FIND_ID_NULL ], 1, my_hash );
+								sqlite3_bind_int( my_agent->epmem_statements[ EPMEM_STMT_BIGTREE_I_FIND_ID_NULL ], 2, parent_id );
+								sqlite3_bind_text( my_agent->epmem_statements[ EPMEM_STMT_BIGTREE_I_FIND_ID_NULL ], 3, (const char *) (*wmes)[j]->attr->sc.name, -1, SQLITE_STATIC );
+
+								if ( sqlite3_step( my_agent->epmem_statements[ EPMEM_STMT_BIGTREE_I_FIND_ID_NULL ] ) == SQLITE_ROW )
+								{
+									parent_syms.push_back( (*wmes)[j]->value );
+									parent_ids.push_back( sqlite3_column_int( my_agent->epmem_statements[ EPMEM_STMT_BIGTREE_I_FIND_ID_NULL ], 0 ) );
+								}
+
+								sqlite3_reset( my_agent->epmem_statements[ EPMEM_STMT_BIGTREE_I_FIND_ID_NULL ] );
+							}
+						}
+
+						// free space from aug list
+						free_memory( my_agent, (*wmes), MISCELLANEOUS_MEM_USAGE );
+					}
+				}
+			}
+
+			// at this point leaf_ids has ids of interest for
+			// query and neg-query, now proceed
+			if ( leaf_ids[0].empty() && leaf_ids[1].empty() )
+			{
+				add_input_wme( my_agent, state->id.epmem_result_header, my_agent->epmem_status_symbol, my_agent->epmem_failure_symbol );
+			}
+			else
+			{				
+				sqlite3_stmt *search;
+				int cue_size;
+				int result_time;
+				int result_cardinality;
+				double result_features;
+				double result_match_score;
+				
+				if ( leaf_ids[0].empty() || leaf_ids[1].empty() )
+				{
+					int index = ( ( leaf_ids[0].empty() )?( 1 ):( 0 ) );
+					const char *sort_dir = ( ( leaf_ids[0].empty() )?( "ASC" ):( "DESC" ) );
+					double balance = epmem_get_parameter( my_agent, (const long) EPMEM_PARAM_BALANCE );
+				
+					// construct basic sql					
+					string search_sql = "SELECT a.time, a.cardinality, a.features, ((a.cardinality * ?) + (a.features * ?)) AS match_score FROM (SELECT time, COUNT(time) AS cardinality, SUM(weight) AS features FROM episodes WHERE weight IS NOT NULL AND id IN (";
+					for ( k=0; k<leaf_ids[ index ].size(); k++ )
+					{
+						search_sql += "?";
+						if ( k != ( leaf_ids[ index ].size() - 1 ) )
+							search_sql += ",";
+					}
+					search_sql += ") ";
+					
+					// prohibit
+					if ( !prohibit->empty() )
+					{
+						search_sql += "AND time NOT IN (";
+						for ( k=0; k<prohibit->size(); k++ )
+						{
+							search_sql += "?";
+							if ( k != ( prohibit->size() - 1 ) )
+								search_sql += ",";
+						}
+						search_sql += ") ";
+					}
+
+					// before/after
+					if ( before != EPMEM_MEMID_NONE )
+					{
+						search_sql += "AND time < ? ";
+					}
+					if ( after != EPMEM_MEMID_NONE )
+					{
+						search_sql += "AND time > ? ";
+					}
+
+					// finish up
+					search_sql += "GROUP BY time) a ORDER BY match_score ";
+					search_sql += sort_dir;
+					search_sql += ", a.time DESC LIMIT 1";
+
+					// prepare query
+					const char *tail;
+					sqlite3_prepare_v2( my_agent->epmem_db, search_sql.c_str(), -1, &search, &tail );
+
+					// bind variables
+					int var = 1;
+					sqlite3_bind_double( search, var++, balance );
+					sqlite3_bind_double( search, var++, 1 - balance );
+					for ( k=0; k<leaf_ids[ index ].size(); k++ )
+						sqlite3_bind_int( search, var++, leaf_ids[ index ][k] );
+					if ( !prohibit->empty() )
+						for ( k=0; k<prohibit->size(); k++ )
+							sqlite3_bind_int( search, var++, (*prohibit)[k] );
+					if ( before != EPMEM_MEMID_NONE )
+						sqlite3_bind_int( search, var++, before );
+					if ( after != EPMEM_MEMID_NONE )
+						sqlite3_bind_int( search, var++, after );
+
+					// meta data
+					cue_size = leaf_ids[ index ].size();
+				}
+				else
+				{
+					double balance = epmem_get_parameter( my_agent, (const long) EPMEM_PARAM_BALANCE );
+					
+					// start sql
+					string search_sql = "SELECT b.time, b.cardinality, b.features, ((b.cardinality * ?) + (b.features * ?)) AS match_score FROM (\
+						                 SELECT a.t AS time, SUM(a.c) AS cardinality, SUM(a.f) AS features FROM (\
+										 SELECT time AS t, COUNT(time) AS c, SUM(weight) AS f FROM episodes WHERE weight IS NOT NULL AND id IN (";
+
+					// add positives
+					for ( k=0; k<leaf_ids[0].size(); k++ )
+					{
+						search_sql += "?";
+						if ( k != ( leaf_ids[0].size() - 1 ) )
+							search_sql += ",";
+					}
+					search_sql += ") ";
+
+					// positive prohibit
+					if ( !prohibit->empty() )
+					{
+						search_sql += "AND time NOT IN (";
+						for ( k=0; k<prohibit->size(); k++ )
+						{
+							search_sql += "?";
+							if ( k != ( prohibit->size() - 1 ) )
+								search_sql += ",";
+						}
+						search_sql += ") ";
+					}
+
+					// positive before/after
+					if ( before != EPMEM_MEMID_NONE )
+					{
+						search_sql += "AND time < ? ";
+					}
+					if ( after != EPMEM_MEMID_NONE )
+					{
+						search_sql += "AND time > ? ";
+					}
+
+					// proceed to neg
+					search_sql += "GROUP BY time UNION ALL \
+								   SELECT time AS t, -COUNT(time) AS c, -SUM(weight) AS f FROM episodes WHERE weight IS NOT NULL AND id IN (";
+
+					// add negatives
+					for ( k=0; k<leaf_ids[1].size(); k++ )
+					{
+						search_sql += "?";
+						if ( k != ( leaf_ids[1].size() - 1 ) )
+							search_sql += ",";
+					}
+					search_sql += ") ";
+
+					// neg prohibit
+					if ( !prohibit->empty() )
+					{
+						search_sql += "AND time NOT IN (";
+						for ( k=0; k<prohibit->size(); k++ )
+						{
+							search_sql += "?";
+							if ( k != ( prohibit->size() - 1 ) )
+								search_sql += ",";
+						}
+						search_sql += ") ";
+					}
+
+					// neg before/after
+					if ( before != EPMEM_MEMID_NONE )
+					{
+						search_sql += "AND time < ? ";
+					}
+					if ( after != EPMEM_MEMID_NONE )
+					{
+						search_sql += "AND time > ? ";
+					}
+
+					// finish
+					search_sql += "GROUP BY time) a \
+								   GROUP BY a.t) b \
+								   ORDER BY match_score DESC, b.time DESC LIMIT 1";
+
+					// prepare query
+					const char *tail;
+					sqlite3_prepare_v2( my_agent->epmem_db, search_sql.c_str(), -1, &search, &tail );
+
+					// bind variables
+					int var = 1;
+					sqlite3_bind_double( search, var++, balance );
+					sqlite3_bind_double( search, var++, 1 - balance );
+					// positive
+					for ( k=0; k<leaf_ids[0].size(); k++ )
+						sqlite3_bind_int( search, var++, leaf_ids[0][k] );
+					if ( !prohibit->empty() )
+						for ( k=0; k<prohibit->size(); k++ )
+							sqlite3_bind_int( search, var++, (*prohibit)[k] );
+					if ( before != EPMEM_MEMID_NONE )
+						sqlite3_bind_int( search, var++, before );
+					if ( after != EPMEM_MEMID_NONE )
+						sqlite3_bind_int( search, var++, after );
+					// neg
+					for ( k=0; k<leaf_ids[1].size(); k++ )
+						sqlite3_bind_int( search, var++, leaf_ids[1][k] );
+					if ( !prohibit->empty() )
+						for ( k=0; k<prohibit->size(); k++ )
+							sqlite3_bind_int( search, var++, (*prohibit)[k] );
+					if ( before != EPMEM_MEMID_NONE )
+						sqlite3_bind_int( search, var++, before );
+					if ( after != EPMEM_MEMID_NONE )
+						sqlite3_bind_int( search, var++, after );
+
+					// meta data
+					cue_size = ( leaf_ids[0].size() + leaf_ids[1].size() );
+				}
+
+				// attempt to execute SQL
+				if ( sqlite3_step( search ) == SQLITE_ROW )
+				{
+					result_time = sqlite3_column_int( search, 0 );
+					result_cardinality = sqlite3_column_int( search, 1 );
+					result_features = sqlite3_column_double( search, 2 );
+					result_match_score = sqlite3_column_double( search, 3 );
+					
+					// status
+					add_input_wme( my_agent, state->id.epmem_result_header, my_agent->epmem_status_symbol, my_agent->epmem_success_symbol );
+
+					// match score
+					add_input_wme( my_agent, state->id.epmem_result_header, my_agent->epmem_match_score_symbol, make_float_constant( my_agent, result_match_score ) );
+
+					// cue-size
+					add_input_wme( my_agent, state->id.epmem_result_header, my_agent->epmem_cue_size_symbol, make_int_constant( my_agent, cue_size ) );
+
+					// normalized-match-score
+					add_input_wme( my_agent, state->id.epmem_result_header, my_agent->epmem_normalized_match_score_symbol, make_float_constant( my_agent, ( result_match_score / cue_size ) ) );
+
+					// match-cardinality
+					add_input_wme( my_agent, state->id.epmem_result_header, my_agent->epmem_match_cardinality_symbol, make_int_constant( my_agent, result_cardinality ) );
+
+					// actual memory
+					epmem_install_memory( my_agent, state, result_time );
+				}
+				else
+				{
+					add_input_wme( my_agent, state->id.epmem_result_header, my_agent->epmem_status_symbol, my_agent->epmem_failure_symbol );
+				}
+
+				// cleanup
+				sqlite3_finalize( search );
+			}
+		}
+		else if ( indexing == EPMEM_INDEXING_BIGTREE_RANGE )
+		{
+		}
+	}
+	else
+	{
+		add_input_wme( my_agent, state->id.epmem_result_header, my_agent->epmem_status_symbol, my_agent->epmem_bad_cmd_symbol );
+		free_memory( my_agent, wmes_query, MISCELLANEOUS_MEM_USAGE );
+		free_memory( my_agent, wmes_neg_query, MISCELLANEOUS_MEM_USAGE );
+	}
 }
 
 /***************************************************************************

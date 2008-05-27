@@ -252,6 +252,18 @@ bool CommandLineInterface::DoEpMem( gSKI::Agent* pAgent, const char pOp, const s
 		temp = "trigger: ";
 		temp += epmem_get_parameter( my_agent, (const long) EPMEM_PARAM_TRIGGER, EPMEM_RETURN_STRING );
 		if ( m_RawOutput )
+			m_Result << temp << "\n";
+		else
+		{
+			AppendArgTagFast( sml_Names::kParamValue, sml_Names::kTypeString, temp.c_str() );			
+		}
+
+		temp = "balance: ";
+		temp_val = epmem_get_parameter( my_agent, EPMEM_PARAM_BALANCE );
+		temp2 = to_string( temp_val );
+		temp += (*temp2);
+		delete temp2;
+		if ( m_RawOutput )
 			m_Result << temp << "\n\n";
 		else
 		{
