@@ -41,8 +41,7 @@
 
 // statement storage
 // 0 - 9 => common
-// 10 - 19 => indexing
-// 20 - 29 => storage
+// 10 - 29 => indexing
 #define EPMEM_STMT_BEGIN						0
 #define EPMEM_STMT_COMMIT						1
 #define EPMEM_STMT_ROLLBACK						2
@@ -68,6 +67,12 @@
 #define EPMEM_STMT_BIGTREE_R_VALID_EPISODE		17
 #define EPMEM_STMT_BIGTREE_R_NEXT_EPISODE		18
 #define EPMEM_STMT_BIGTREE_R_PREV_EPISODE		19
+#define EPMEM_STMT_BIGTREE_R_ADD_WEIGHT			20
+#define EPMEM_STMT_BIGTREE_R_TRUNCATE_WEIGHTS	21
+#define EPMEM_STMT_BIGTREE_R_DEL_PROHIB			22
+#define EPMEM_STMT_BIGTREE_R_GET_LOW_RANGES		23
+#define EPMEM_STMT_BIGTREE_R_GET_HIGH_RANGES	24
+#define EPMEM_STMT_BIGTREE_R_TRUNCATE_RANGES	25
 
 #define EPMEM_MAX_STATEMENTS 					30 // must be at least 1+ largest of any STMT constant
 
