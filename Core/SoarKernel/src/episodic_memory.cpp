@@ -20,7 +20,7 @@
 #include <string>
 #include <map>
 #include <vector>
-#include <set>
+#include <queue>
 
 #include "symtab.h"
 #include "io_soar.h"
@@ -1185,9 +1185,8 @@ void epmem_new_episode( agent *my_agent )
 		wme **wmes = NULL;
 		int len = 0;
 		
-		vector<Symbol *> syms;
-		vector<int> ids;
-		unsigned int pos = 0;
+		queue<Symbol *> syms;
+		queue<int> ids;		
 
 		int parent_id;
 		int child_id;
@@ -1198,16 +1197,19 @@ void epmem_new_episode( agent *my_agent )
 
 		int i;	
 
-		syms.push_back( my_agent->top_goal );
-		ids.push_back( EPMEM_MEMID_ROOT );	
+		syms.push( my_agent->top_goal );
+		ids.push( EPMEM_MEMID_ROOT );	
 		
 		sqlite3_step( my_agent->epmem_statements[ EPMEM_STMT_BEGIN ] );
 		sqlite3_reset( my_agent->epmem_statements[ EPMEM_STMT_BEGIN ] );
-		while ( pos != syms.size() )
+		while ( !syms.empty() )
 		{		
-			parent_sym = syms[ pos ];
-			parent_id = ids[ pos ];
-			pos++;				
+			parent_sym = syms.front();
+			syms.pop();
+
+			parent_id = ids.front();
+			ids.pop();
+
 			wmes = epmem_get_augs_of_id( my_agent, parent_sym, tc, &len );
 
 			if ( wmes != NULL )
@@ -1291,8 +1293,8 @@ void epmem_new_episode( agent *my_agent )
 					// keep track of identifiers (for further study)
 					if ( wmes[i]->value->common.symbol_type == IDENTIFIER_SYMBOL_TYPE )
 					{
-						syms.push_back( wmes[i]->value );
-						ids.push_back( child_id );
+						syms.push( wmes[i]->value );
+						ids.push( child_id );
 
 						epmem[ child_id ] = NULL;
 					}
@@ -1350,9 +1352,8 @@ void epmem_new_episode( agent *my_agent )
 		wme **wmes = NULL;
 		int len = 0;
 		
-		vector<Symbol *> syms;
-		vector<int> ids;
-		unsigned int pos = 0;
+		queue<Symbol *> syms;
+		queue<int> ids;		
 
 		int parent_id;
 		int child_id;
@@ -1364,16 +1365,19 @@ void epmem_new_episode( agent *my_agent )
 
 		int i;	
 
-		syms.push_back( my_agent->top_goal );
-		ids.push_back( EPMEM_MEMID_ROOT );
+		syms.push( my_agent->top_goal );
+		ids.push( EPMEM_MEMID_ROOT );
 		
 		sqlite3_step( my_agent->epmem_statements[ EPMEM_STMT_BEGIN ] );
 		sqlite3_reset( my_agent->epmem_statements[ EPMEM_STMT_BEGIN ] );
-		while ( pos != syms.size() )
+		while ( !syms.empty() )
 		{		
-			parent_sym = syms[ pos ];
-			parent_id = ids[ pos ];
-			pos++;				
+			parent_sym = syms.front();
+			syms.pop();
+
+			parent_id = ids.front();
+			ids.pop();
+
 			wmes = epmem_get_augs_of_id( my_agent, parent_sym, tc, &len );
 
 			if ( wmes != NULL )
@@ -1460,8 +1464,8 @@ void epmem_new_episode( agent *my_agent )
 					// keep track of identifiers (for further study)
 					if ( wmes[i]->value->common.symbol_type == IDENTIFIER_SYMBOL_TYPE )
 					{
-						syms.push_back( wmes[i]->value );
-						ids.push_back( child_id );
+						syms.push( wmes[i]->value );
+						ids.push( child_id );
 					}
 					
 					// record for insertion
@@ -1871,9 +1875,8 @@ void epmem_process_query( agent *my_agent, Symbol *state, Symbol *query, Symbol 
 			int len;
 
 			vector<int> leaf_ids[2];
-			vector<Symbol *> parent_syms;
-			vector<int> parent_ids;
-			int pos = 0;
+			queue<Symbol *> parent_syms;
+			queue<int> parent_ids;			
 			int tc = state->id.tc_num + 3;
 
 			Symbol *parent_sym;
@@ -1881,6 +1884,7 @@ void epmem_process_query( agent *my_agent, Symbol *state, Symbol *query, Symbol 
 			unsigned long my_hash;
 
 			int i, j, k;
+			bool just_started;
 
 			// initialize pos/neg lists
 			for ( i=0; i<2; i++ )
@@ -1889,33 +1893,33 @@ void epmem_process_query( agent *my_agent, Symbol *state, Symbol *query, Symbol 
 				{
 					case 0:
 						wmes = &wmes_query;
-						len = len_query;
-						parent_syms.clear();
-						parent_ids.clear();
-						parent_syms.push_back( query );
-						parent_ids.push_back( EPMEM_MEMID_ROOT );
-						pos = 0;
+						len = len_query;					
+						parent_syms.push( query );
+						parent_ids.push( EPMEM_MEMID_ROOT );
+						just_started = true;
 						break;
 
 					case 1:
 						wmes = &wmes_neg_query;
-						len = len_neg_query;
-						parent_syms.clear();
-						parent_ids.clear();
-						parent_syms.push_back( neg_query );
-						parent_ids.push_back( EPMEM_MEMID_ROOT );
-						pos = 0;
+						len = len_neg_query;						
+						parent_syms.push( neg_query );
+						parent_ids.push( EPMEM_MEMID_ROOT );
+						just_started = true;
 						break;
 				}
 				
-				while ( pos != parent_syms.size() )
+				while ( !parent_syms.empty() )
 				{
-					parent_sym = parent_syms[ pos ];
-					parent_id = parent_ids[ pos ];
-					pos++;
+					parent_sym = parent_syms.front();
+					parent_syms.pop();
 
-					if ( pos != 1 )
+					parent_id = parent_ids.front();					
+					parent_ids.pop();
+
+					if ( !just_started )
 						(*wmes) = epmem_get_augs_of_id( my_agent, parent_sym, tc, &len );
+					else
+						just_started = false;
 
 					if ( (*wmes) != NULL )
 					{
@@ -1958,8 +1962,8 @@ void epmem_process_query( agent *my_agent, Symbol *state, Symbol *query, Symbol 
 
 								if ( sqlite3_step( my_agent->epmem_statements[ EPMEM_STMT_BIGTREE_I_FIND_ID_NULL ] ) == SQLITE_ROW )
 								{
-									parent_syms.push_back( (*wmes)[j]->value );
-									parent_ids.push_back( sqlite3_column_int( my_agent->epmem_statements[ EPMEM_STMT_BIGTREE_I_FIND_ID_NULL ], 0 ) );
+									parent_syms.push( (*wmes)[j]->value );
+									parent_ids.push( sqlite3_column_int( my_agent->epmem_statements[ EPMEM_STMT_BIGTREE_I_FIND_ID_NULL ], 0 ) );
 								}
 
 								sqlite3_reset( my_agent->epmem_statements[ EPMEM_STMT_BIGTREE_I_FIND_ID_NULL ] );
