@@ -870,6 +870,7 @@ wme **epmem_get_augs_of_id( agent* my_agent, Symbol * id, tc_number tc, int *num
 unsigned long epmem_hash_wme( wme *w )
 {
 	unsigned long hash_value;
+	string *temp;
 	
 	// Generate a hash value for the WME's attr and value
 	hash_value = hash_string( w->attr->sc.name );
@@ -881,11 +882,15 @@ unsigned long epmem_hash_wme( wme *w )
 			break;
             
 		case INT_CONSTANT_SYMBOL_TYPE:
-			hash_value += w->value->ic.value;
+			temp = to_string( w->value->ic.value );
+			hash_value += hash_string( temp->c_str() );
+			delete temp;
 			break;
 		
 		case FLOAT_CONSTANT_SYMBOL_TYPE:
-			hash_value += ( unsigned long )w->value->fc.value;
+			temp = to_string( w->value->fc.value );
+			hash_value += hash_string( temp->c_str() );
+			delete temp;			
 			break;
 	}
 	
