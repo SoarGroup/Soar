@@ -313,10 +313,18 @@ bool epmem_valid_parameter_value( agent *my_agent, const long param, const long 
 /***************************************************************************
  * Function     : epmem_set_parameter
  **************************************************************************/
+bool epmem_parameter_protected( agent *my_agent, const long param )
+{
+	return ( ( my_agent->epmem_db_status != -1 ) && ( param >= EPMEM_PARAM_DB ) && ( param <= EPMEM_PARAM_PROVENANCE ) );
+}
+
 bool epmem_set_parameter( agent *my_agent, const char *name, double new_val )
 {
 	const long param = epmem_convert_parameter( my_agent, name );
 	if ( param == EPMEM_PARAMS )
+		return false;
+
+	if ( epmem_parameter_protected( my_agent, param ) )
 		return false;
 	
 	if ( !epmem_valid_parameter_value( my_agent, param, new_val ) )
@@ -331,6 +339,9 @@ bool epmem_set_parameter( agent *my_agent, const char *name, const char *new_val
 {	
 	const long param = epmem_convert_parameter( my_agent, name );
 	if ( param == EPMEM_PARAMS )
+		return false;
+
+	if ( epmem_parameter_protected( my_agent, param ) )
 		return false;
 	
 	if ( !epmem_valid_parameter_value( my_agent, param, new_val ) )
@@ -358,6 +369,9 @@ bool epmem_set_parameter( agent *my_agent, const char *name, const long new_val 
 	const long param = epmem_convert_parameter( my_agent, name );
 	if ( param == EPMEM_PARAMS )
 		return false;
+
+	if ( epmem_parameter_protected( my_agent, param ) )
+		return false;
 	
 	if ( !epmem_valid_parameter_value( my_agent, param, new_val ) )
 		return false;
@@ -375,6 +389,9 @@ bool epmem_set_parameter( agent *my_agent, const char *name, const long new_val 
 
 bool epmem_set_parameter( agent *my_agent, const long param, double new_val )
 {
+	if ( epmem_parameter_protected( my_agent, param ) )
+		return false;
+	
 	if ( !epmem_valid_parameter_value( my_agent, param, new_val ) )
 		return false;
 	
@@ -385,6 +402,9 @@ bool epmem_set_parameter( agent *my_agent, const long param, double new_val )
 
 bool epmem_set_parameter( agent *my_agent, const long param, const char *new_val )
 {
+	if ( epmem_parameter_protected( my_agent, param ) )
+		return false;
+	
 	if ( !epmem_valid_parameter_value( my_agent, param, new_val ) )
 		return false;
 
@@ -407,6 +427,9 @@ bool epmem_set_parameter( agent *my_agent, const long param, const char *new_val
 
 bool epmem_set_parameter( agent *my_agent, const long param, const long new_val )
 {	
+	if ( epmem_parameter_protected( my_agent, param ) )
+		return false;
+	
 	if ( !epmem_valid_parameter_value( my_agent, param, new_val ) )
 		return false;
 
