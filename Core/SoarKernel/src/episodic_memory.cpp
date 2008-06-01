@@ -1047,16 +1047,16 @@ void epmem_init_db( agent *my_agent )
 				sqlite3_step( create );					
 				sqlite3_finalize( create );			
 				
-				// id index
-				sqlite3_prepare_v2( my_agent->epmem_db, "CREATE INDEX IF NOT EXISTS episode_id ON episodes (id)", -1, &create, &tail );
+				// end_id index (for updates)
+				sqlite3_prepare_v2( my_agent->epmem_db, "CREATE UNIQUE INDEX IF NOT EXISTS episode_end_id ON episodes (end,id)", -1, &create, &tail );
 				sqlite3_step( create );					
 				sqlite3_finalize( create );
 
 				// start/end index (for retrieval)
 				sqlite3_prepare_v2( my_agent->epmem_db, "CREATE INDEX IF NOT EXISTS episode_start_end ON episodes (start,end)", -1, &create, &tail );
 				sqlite3_step( create );
-				sqlite3_finalize( create );			
-				
+				sqlite3_finalize( create );
+
 				// custom statement for updating episodes
 				sqlite3_prepare_v2( my_agent->epmem_db, "UPDATE episodes SET end=? WHERE id=? AND end=?", -1, &( my_agent->epmem_statements[ EPMEM_STMT_BIGTREE_R_UPDATE_EPISODE ] ), &tail );
 
@@ -1157,7 +1157,7 @@ void epmem_init_db( agent *my_agent )
 				if ( sqlite3_step( create ) == SQLITE_ROW )						
 					epmem_set_stat( my_agent, (const long) EPMEM_STAT_TIME, ( sqlite3_column_int( create, 0 ) + 1 ) );
 				sqlite3_finalize( create );
-
+				
 				// get id/end table				
 				sqlite3_prepare_v2( my_agent->epmem_db, "SELECT i.child_id, MAX(e.end) FROM ids i LEFT JOIN episodes e ON i.child_id=e.id GROUP BY id ORDER BY id DESC", -1, &create, &tail );
 				if ( sqlite3_step( create ) == SQLITE_ROW )
@@ -1567,7 +1567,7 @@ void epmem_new_episode( agent *my_agent )
 						sqlite3_reset( my_agent->epmem_statements[ EPMEM_STMT_BIGTREE_R_ADD_ID ] );					
 
 						child_id = sqlite3_last_insert_rowid( my_agent->epmem_db );
-
+						
 						// add to range list
 						my_agent->epmem_range_maxes->push_back( EPMEM_MEMID_NONE );
 					}
@@ -1591,7 +1591,6 @@ void epmem_new_episode( agent *my_agent )
 
 		// all inserts at once (provides unique)
 		map<int, bool>::iterator e = epmem.begin();
-		int updated;
 		while ( e != epmem.end() )
 		{
 			// add nodes to the episodic store			
@@ -1601,8 +1600,7 @@ void epmem_new_episode( agent *my_agent )
 				sqlite3_bind_int( my_agent->epmem_statements[ EPMEM_STMT_BIGTREE_R_UPDATE_EPISODE ], 1, time_counter );
 				sqlite3_bind_int( my_agent->epmem_statements[ EPMEM_STMT_BIGTREE_R_UPDATE_EPISODE ], 2, e->first );
 				sqlite3_bind_int( my_agent->epmem_statements[ EPMEM_STMT_BIGTREE_R_UPDATE_EPISODE ], 3, ( time_counter - 1 ) );
-				sqlite3_step( my_agent->epmem_statements[ EPMEM_STMT_BIGTREE_R_UPDATE_EPISODE ] );			
-				sqlite3_reset( my_agent->epmem_statements[ EPMEM_STMT_BIGTREE_R_UPDATE_EPISODE ] );
+				sqlite3_step( my_agent->epmem_statements[ EPMEM_STMT_BIGTREE_R_UPDATE_EPISODE ] );				
 			}
 			else
 			{
@@ -1612,7 +1610,7 @@ void epmem_new_episode( agent *my_agent )
 				sqlite3_step( my_agent->epmem_statements[ EPMEM_STMT_BIGTREE_R_ADD_EPISODE ] );
 				sqlite3_reset( my_agent->epmem_statements[ EPMEM_STMT_BIGTREE_R_ADD_EPISODE ] );
 			}
-
+			
 			(*my_agent->epmem_range_maxes)[ e->first - 1 ] = time_counter;
 
 			e++;
