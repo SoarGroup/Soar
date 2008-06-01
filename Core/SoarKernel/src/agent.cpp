@@ -531,6 +531,10 @@ void destroy_soar_agent (Kernel * thisKernel, agent * delete_agent)
   	
     // perform cleanup as necessary
     const long indexing = epmem_get_parameter( delete_agent, EPMEM_PARAM_INDEXING, EPMEM_RETURN_LONG );
+	if ( indexing == EPMEM_INDEXING_BIGTREE_RANGE )
+	{
+		delete delete_agent->epmem_range_maxes;
+	}
         
   	for ( i=0; i<EPMEM_MAX_STATEMENTS; i++ )
   	  if ( delete_agent->epmem_statements[ i ] != NULL )

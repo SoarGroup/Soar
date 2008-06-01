@@ -787,7 +787,14 @@ kernel time and total_cpu_time greater than the derived total CPU time. REW */
   rl_stat *rl_stats[ RL_STATS ];
 
   int rl_template_count;
-  
+
+  // select
+  select_info *select;
+
+  // predict
+  unsigned long predict_seed;
+  std::string *prediction;
+
   // epmem
   epmem_parameter *epmem_params[ EPMEM_PARAMS ];
   epmem_stat *epmem_stats[ EPMEM_STATS ];
@@ -796,12 +803,7 @@ kernel time and total_cpu_time greater than the derived total CPU time. REW */
   int epmem_db_status;
   sqlite3_stmt *epmem_statements[ EPMEM_MAX_STATEMENTS ];  
 
-  // select
-  select_info *select;
-
-  // predict
-  unsigned long predict_seed;
-  std::string *prediction;
+  std::vector<long> *epmem_range_maxes;
 
 } agent;
 /*************** end of agent struct *****/
