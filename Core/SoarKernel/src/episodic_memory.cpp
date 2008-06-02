@@ -1174,6 +1174,7 @@ void epmem_init_db( agent *my_agent )
 				else
 				{
 					my_agent->epmem_range_maxes = new vector<long>();
+					my_agent->epmem_range_maxes->reserve( 50000 );
 				}
 				sqlite3_finalize( create );
 
@@ -1600,7 +1601,8 @@ void epmem_new_episode( agent *my_agent )
 				sqlite3_bind_int( my_agent->epmem_statements[ EPMEM_STMT_BIGTREE_R_UPDATE_EPISODE ], 1, time_counter );
 				sqlite3_bind_int( my_agent->epmem_statements[ EPMEM_STMT_BIGTREE_R_UPDATE_EPISODE ], 2, e->first );
 				sqlite3_bind_int( my_agent->epmem_statements[ EPMEM_STMT_BIGTREE_R_UPDATE_EPISODE ], 3, ( time_counter - 1 ) );
-				sqlite3_step( my_agent->epmem_statements[ EPMEM_STMT_BIGTREE_R_UPDATE_EPISODE ] );				
+				sqlite3_step( my_agent->epmem_statements[ EPMEM_STMT_BIGTREE_R_UPDATE_EPISODE ] );
+				sqlite3_reset( my_agent->epmem_statements[ EPMEM_STMT_BIGTREE_R_UPDATE_EPISODE ] );				
 			}
 			else
 			{
