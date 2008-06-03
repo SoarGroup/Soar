@@ -1012,7 +1012,7 @@ void epmem_init_db( agent *my_agent )
 				sqlite3_prepare_v2( my_agent->epmem_db, "SELECT child_id FROM ids WHERE hash=? AND parent_id=? AND name=? AND value IS NULL", -1, &( my_agent->epmem_statements[ EPMEM_STMT_BIGTREE_I_FIND_ID_NULL ] ), &tail );
 							
 				// custom statement for retrieving an episode
-				sqlite3_prepare_v2( my_agent->epmem_db, "SELECT e.id, i.parent_id, i.name, i.value FROM episodes e INNER JOIN ids i ON e.id=i.child_id WHERE e.time=? ORDER BY e.id ASC", -1, &( my_agent->epmem_statements[ EPMEM_STMT_BIGTREE_I_GET_EPISODE ] ), &tail );
+				sqlite3_prepare_v2( my_agent->epmem_db, "SELECT i.child_id, i.parent_id, i.name, i.value FROM ids i INNER JOIN episodes e ON i.child_id=e.id WHERE e.time=? ORDER BY i.child_id ASC", -1, &( my_agent->epmem_statements[ EPMEM_STMT_BIGTREE_I_GET_EPISODE ] ), &tail );
 
 				// custom statement for validating an episode
 				sqlite3_prepare_v2( my_agent->epmem_db, "SELECT COUNT(*) AS ct FROM episodes WHERE time=?", -1, &( my_agent->epmem_statements[ EPMEM_STMT_BIGTREE_I_VALID_EPISODE ] ), &tail );
@@ -1048,7 +1048,7 @@ void epmem_init_db( agent *my_agent )
 				sqlite3_finalize( create );			
 				
 				// end_id index (for updates)
-				sqlite3_prepare_v2( my_agent->epmem_db, "CREATE UNIQUE INDEX IF NOT EXISTS episode_end_id ON episodes (end,id)", -1, &create, &tail );
+				sqlite3_prepare_v2( my_agent->epmem_db, "CREATE UNIQUE INDEX IF NOT EXISTS episode_id_end ON episodes (id,end)", -1, &create, &tail );
 				sqlite3_step( create );					
 				sqlite3_finalize( create );
 
@@ -1085,10 +1085,10 @@ void epmem_init_db( agent *my_agent )
 				sqlite3_prepare_v2( my_agent->epmem_db, "SELECT child_id FROM ids WHERE hash=? AND parent_id=? AND name=? AND value IS NULL", -1, &( my_agent->epmem_statements[ EPMEM_STMT_BIGTREE_R_FIND_ID_NULL ] ), &tail );
 
 				// custom statement for retrieving an episode
-				sqlite3_prepare_v2( my_agent->epmem_db, "SELECT e.id, i.parent_id, i.name, i.value FROM episodes e INNER JOIN ids i ON e.id=i.child_id WHERE ? BETWEEN e.start AND e.end ORDER BY e.id ASC", -1, &( my_agent->epmem_statements[ EPMEM_STMT_BIGTREE_R_GET_EPISODE ] ), &tail );
+				sqlite3_prepare_v2( my_agent->epmem_db, "SELECT i.child_id, i.parent_id, i.name, i.value FROM episodes e INNER JOIN ids i ON e.id=i.child_id WHERE ? BETWEEN e.start AND e.end ORDER BY i.child_id ASC", -1, &( my_agent->epmem_statements[ EPMEM_STMT_BIGTREE_R_GET_EPISODE ] ), &tail );
 
 				// custom statement for validating an episode
-				sqlite3_prepare_v2( my_agent->epmem_db, "SELECT COUNT(*) AS ct FROM episodes WHERE ? BETWEEN start AND end", -1, &( my_agent->epmem_statements[ EPMEM_STMT_BIGTREE_R_VALID_EPISODE ] ), &tail );
+				sqlite3_prepare_v2( my_agent->epmem_db, "SELECT COUNT(*) AS ct FROM times WHERE id=?", -1, &( my_agent->epmem_statements[ EPMEM_STMT_BIGTREE_R_VALID_EPISODE ] ), &tail );
 
 				// custom statement for finding the next episode
 				sqlite3_prepare_v2( my_agent->epmem_db, "SELECT id FROM times WHERE id>? ORDER BY id ASC LIMIT 1", -1, &( my_agent->epmem_statements[ EPMEM_STMT_BIGTREE_R_NEXT_EPISODE ] ), &tail );
@@ -1153,13 +1153,13 @@ void epmem_init_db( agent *my_agent )
 				sqlite3_prepare_v2( my_agent->epmem_db, "DELETE FROM ranges", -1, &( my_agent->epmem_statements[ EPMEM_STMT_BIGTREE_R_TRUNCATE_RANGES ] ), &tail );
 
 				// get max time
-				sqlite3_prepare_v2( my_agent->epmem_db, "SELECT MAX(end) FROM episodes", -1, &create, &tail );
+				sqlite3_prepare_v2( my_agent->epmem_db, "SELECT MAX(id) FROM times", -1, &create, &tail );
 				if ( sqlite3_step( create ) == SQLITE_ROW )						
 					epmem_set_stat( my_agent, (const long) EPMEM_STAT_TIME, ( sqlite3_column_int( create, 0 ) + 1 ) );
 				sqlite3_finalize( create );
 				
 				// get id/end table				
-				sqlite3_prepare_v2( my_agent->epmem_db, "SELECT i.child_id, MAX(e.end) FROM ids i LEFT JOIN episodes e ON i.child_id=e.id GROUP BY id ORDER BY id DESC", -1, &create, &tail );
+				sqlite3_prepare_v2( my_agent->epmem_db, "SELECT e.id, MAX(e.end) FROM ids i LEFT JOIN episodes e ON e.id=i.child_id GROUP BY e.id ORDER BY i.child_id DESC", -1, &create, &tail );
 				if ( sqlite3_step( create ) == SQLITE_ROW )
 				{
 					my_agent->epmem_range_maxes = new vector<long>( sqlite3_column_int( create, 0 ), 0 );
@@ -1324,7 +1324,7 @@ void epmem_new_episode( agent *my_agent )
 			if ( wmes != NULL )
 			{
 				for ( i=0; i<len; i++ )
-				{
+				{					
 					// find wme id
 					child_id = -1;
 					my_hash = epmem_hash_wme( wmes[i] );
@@ -1492,7 +1492,7 @@ void epmem_new_episode( agent *my_agent )
 			if ( wmes != NULL )
 			{
 				for ( i=0; i<len; i++ )
-				{
+				{					
 					// find wme id
 					child_id = -1;
 					newbie = false;
