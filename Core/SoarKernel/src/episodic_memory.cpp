@@ -951,6 +951,7 @@ void epmem_init_db( agent *my_agent )
 	{
 		const char *tail;
 		sqlite3_stmt *create;
+		long time_max;
 					
 		// create vars table (needed before var queries)
 		sqlite3_prepare_v2( my_agent->epmem_db, "CREATE TABLE IF NOT EXISTS vars (id INTEGER PRIMARY KEY,value NONE)", -1, &create, &tail );
@@ -1154,9 +1155,25 @@ void epmem_init_db( agent *my_agent )
 				sqlite3_prepare_v2( my_agent->epmem_db, "DELETE FROM ranges", -1, &( my_agent->epmem_statements[ EPMEM_STMT_BIGTREE_R_TRUNCATE_RANGES ] ), &tail );
 
 				// get max time
+				
 				sqlite3_prepare_v2( my_agent->epmem_db, "SELECT MAX(id) FROM times", -1, &create, &tail );
 				if ( sqlite3_step( create ) == SQLITE_ROW )						
 					epmem_set_stat( my_agent, (const long) EPMEM_STAT_TIME, ( sqlite3_column_int( create, 0 ) + 1 ) );
+				sqlite3_finalize( create );
+
+				// get max list
+				time_max = epmem_get_stat( my_agent, (const long) EPMEM_STAT_TIME );
+				sqlite3_prepare_v2( my_agent->epmem_db, "SELECT e.id, e.end FROM ids i LEFT JOIN episodes e ON e.id=i.child_id ORDER BY i.child_id DESC", -1, &create, &tail );
+				if ( sqlite3_step( create ) == SQLITE_ROW )
+				{
+					my_agent->epmem_range_maxes->resize( sqlite3_column_int( create, 0 ), time_max );
+
+					do
+					{
+						if ( sqlite3_column_type( create, 1 ) != SQLITE_NULL )
+							(*my_agent->epmem_range_maxes)[ sqlite3_column_int( create, 0 ) - 1 ] = sqlite3_column_int( create, 1 );
+					} while ( sqlite3_step( create ) == SQLITE_ROW );
+				}
 				sqlite3_finalize( create );
 								
 				break;
@@ -1243,20 +1260,7 @@ void epmem_consider_new_episode( agent *my_agent )
  * Function     : epmem_new_episode
  **************************************************************************/
 void epmem_new_episode( agent *my_agent )
-{	
-	// provide trace output
-	if ( my_agent->sysparams[ TRACE_EPMEM_SYSPARAM ] )
-	{
-		char buf[256];
-		SNPRINTF( buf, 254, "NEW EPISODE: (%c%d)", my_agent->bottom_goal->id.name_letter, my_agent->bottom_goal->id.name_number );
-		
-		print( my_agent, buf );
-		
-		gSKI_MakeAgentCallbackXML( my_agent, kFunctionBeginTag, kTagWarning );
-		gSKI_MakeAgentCallbackXML( my_agent, kFunctionAddAttribute, kTypeString, buf );
-		gSKI_MakeAgentCallbackXML( my_agent, kFunctionEndTag, kTagWarning );
-	}
-	
+{		
 	// if this is the first episode, initialize db components	
 	if ( my_agent->epmem_db_status == -1 )
 		epmem_init_db( my_agent );
@@ -1266,6 +1270,19 @@ void epmem_new_episode( agent *my_agent )
 		return;
 
 	const long time_counter = epmem_get_stat( my_agent, (const long) EPMEM_STAT_TIME );
+
+	// provide trace output
+	if ( my_agent->sysparams[ TRACE_EPMEM_SYSPARAM ] )
+	{
+		char buf[256];
+		SNPRINTF( buf, 254, "NEW EPISODE: (%c%d, %d)", my_agent->bottom_goal->id.name_letter, my_agent->bottom_goal->id.name_number, time_counter );
+		
+		print( my_agent, buf );
+		
+		gSKI_MakeAgentCallbackXML( my_agent, kFunctionBeginTag, kTagWarning );
+		gSKI_MakeAgentCallbackXML( my_agent, kFunctionAddAttribute, kTypeString, buf );
+		gSKI_MakeAgentCallbackXML( my_agent, kFunctionEndTag, kTagWarning );
+	}
 	
 	if ( epmem_get_parameter( my_agent, EPMEM_PARAM_INDEXING, EPMEM_RETURN_LONG ) == EPMEM_INDEXING_BIGTREE_INSTANCE )
 	{
