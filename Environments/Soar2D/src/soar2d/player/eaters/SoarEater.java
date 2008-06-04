@@ -671,7 +671,7 @@ public class SoarEater extends Eater {
 			Soar2D.control.stopSimulation();
 		}
 
-		//agent.InitSoar();
+		agent.InitSoar();
 	}
 
 	public void fragged() {

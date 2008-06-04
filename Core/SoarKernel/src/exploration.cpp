@@ -29,6 +29,8 @@
 #include "reinforcement_learning.h"
 #include "instantiations.h"
 
+#define DBG if(0)
+
 /***************************************************************************
  * Function     : valid_exploration_policy
  **************************************************************************/
@@ -562,7 +564,7 @@ double superior_q_prob(agent* my_agent, slot* s, preference* candidates, prefere
     return 0;
   }
   else {
-    print(my_agent, "[%f,%f] ", firing_qmin, firing_qmax);
+    DBG print(my_agent, "[%f,%f] ", firing_qmin, firing_qmax);
     bool separated = true;
     int n_cands = 0;
     for ( preference *cand=s->id->id.operator_slot->preferences[NUMERIC_INDIFFERENT_PREFERENCE_TYPE]; cand!=NIL; cand=cand->next ) {
@@ -571,7 +573,7 @@ double superior_q_prob(agent* my_agent, slot* s, preference* candidates, prefere
       if (p != selected_p) {
         if (my_agent->rl_qconf->find(p) != my_agent->rl_qconf->end()) {
           rl_qconf_data &conf_data = (*my_agent->rl_qconf)[p];
-          print(my_agent, "[%f,%f] ", conf_data.q_min, conf_data.q_max);
+          DBG print(my_agent, "[%f,%f] ", conf_data.q_min, conf_data.q_max);
           if (conf_data.q_min > conf_data.q_max) {
             // no data on this interval, so we can't claim separation
             return 0;
@@ -587,16 +589,16 @@ double superior_q_prob(agent* my_agent, slot* s, preference* candidates, prefere
         }
       }
     }
-    print(my_agent, "\n");
+    DBG print(my_agent, "\n");
 
     if (separated) {
       // 1 - probability that all true q values are within their confidence intervals
       double prob = pow(1.0 - get_rl_parameter(my_agent, RL_PARAM_BOUND_CONFIDENCE), n_cands);
-      print(my_agent, "Separated. Prob is %f\n", prob);
+      DBG print(my_agent, "Separated. Prob is %f\n", prob);
       return prob;
     }
     else {
-      print(my_agent, "Not separated.\n");
+      DBG print(my_agent, "Not separated.\n");
       return 0;
     }
   }
@@ -679,8 +681,8 @@ preference *choose_according_to_exploration_mode( agent *my_agent, slot *s, pref
       Vminb = (*my_agent->rl_qconf)[return_val->inst->prod].q_min;
       Vmaxb = (*my_agent->rl_qconf)[return_val->inst->prod].q_max;
     }
-    print(my_agent, "\nsarsa production choice is %s\n", return_val->inst->prod->name->sc.name);
-    print(my_agent, "\ncalling from sarsa Q: %f Qmin: %f Qmax: %f\n", return_val->numeric_value, Vminb, Vmaxb);
+    DBG print(my_agent, "\nsarsa production choice is %s\n", return_val->inst->prod->name->sc.name);
+    DBG print(my_agent, "\ncalling from sarsa Q: %f Qmin: %f Qmax: %f\n", return_val->numeric_value, Vminb, Vmaxb);
 		perform_rl_update( my_agent, return_val->numeric_value, Vminb, Vmaxb, s->id );
   }
 	else if ( soar_rl_enabled( my_agent ) && ( get_rl_parameter( my_agent, RL_PARAM_LEARNING_POLICY, RL_RETURN_LONG ) == RL_LEARNING_Q ) )
@@ -688,7 +690,7 @@ preference *choose_according_to_exploration_mode( agent *my_agent, slot *s, pref
 		if ( return_val->numeric_value != top_value )
 			watkins_clear( my_agent, s->id );
 
-    print(my_agent, "\ncalling from Q-learning: %f Qmin: %f Qmax: %f\n", top_value, Vminb, Vmaxb);
+    DBG print(my_agent, "\ncalling from Q-learning: %f Qmin: %f Qmax: %f\n", top_value, Vminb, Vmaxb);
 		perform_rl_update( my_agent, top_value, Vminb, Vmaxb, s->id );
 	}
 	

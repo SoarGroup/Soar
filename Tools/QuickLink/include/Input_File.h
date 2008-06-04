@@ -32,7 +32,7 @@ public:
 	virtual bool killable()
 	{ return true; }
 
-	~Input_File();
+	virtual ~Input_File();
 
 private:
 

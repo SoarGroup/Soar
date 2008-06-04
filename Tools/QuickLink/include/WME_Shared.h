@@ -23,7 +23,7 @@ public:
 private:
 	WME_Shared(const std::string& in_parent, const std::string& in_attribute, const std::string& in_value, sml::Agent* pAgent, sml::Identifier* id_start, sml::Identifier* id_end);
 	WME_Shared(const std::string& in_id_name, const std::string& in_attribute, sml::Identifier* in_object);
-	~WME_Shared();
+	virtual ~WME_Shared();
 
 	std::string m_value;
 	sml::Identifier* m_object;

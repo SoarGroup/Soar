@@ -130,6 +130,8 @@ bool CommandLineInterface::DoSource(gSKI::Agent* pAgent, std::string filename) {
 	std::string command;			// The command, sometimes spanning multiple lines
 	std::string::size_type pos;		// Used to find braces on a line (triggering multiple line spanning commands)
 	int braces = 0;					// Brace nest level (hopefully all braces are supposed to be closed)
+	bool quote = false;				// Quotes can be used instead of braces
+	bool pipe = false;
 	std::string::iterator iter;		// Iterator when parsing for braces and pounds
 	int lineCount = 0;				// Count the lines per file
 	int lineCountCache = 0;			// Used to save a line number
@@ -172,7 +174,7 @@ bool CommandLineInterface::DoSource(gSKI::Agent* pAgent, std::string filename) {
 		if (!line.length()) continue; // Nothing on line, skip it
 
 		// If there is a brace on the line, concatenate lines until the closing brace
-		pos = line.find('{');
+		pos = line.find_first_of("{\"");
 
 		if (pos != std::string::npos) {
 			
@@ -196,8 +198,29 @@ bool CommandLineInterface::DoSource(gSKI::Agent* pAgent, std::string filename) {
 				iter = line.begin();
 				while (iter != line.end()) {
 					// Go through each of the characters, counting brace nesting level
-					if (*iter == '{') ++braces;
-					else if (*iter == '}') --braces;
+					if (pipe) {	// bug 968 fix
+						if (*iter == '|') {
+							pipe = false;
+						}
+
+					} else {
+
+						if (*iter == '|') { // bug 968 fix
+							pipe = true;
+						} else if (*iter == '{') {
+							++braces;
+						} else if (*iter == '}') {
+							--braces;
+							
+							// bug 968 fix
+							if (braces < 0) {
+								break;
+							}
+
+						} else if (*iter == '\"') {
+							quote = !quote; // bug 967 fix
+						}
+					}
 
 					// Next character
 					++iter;
@@ -206,8 +229,11 @@ bool CommandLineInterface::DoSource(gSKI::Agent* pAgent, std::string filename) {
 				// We finished that line, add it to the command
 				command += line;
 
-				// Did we close all of the braces?
-				if (!braces) break; // Yes, break out of special parsing mode
+				// Are we still waiting for a pipe?
+				if (pipe == true) break; // Yes, break in error
+
+				// Did we close all of the braces? and quotes?
+				if (braces == 0 && quote == false) break; // Yes, break out of special parsing mode
 
 				// Did we go negative?
 				if (braces < 0) break; // Yes, break out on error
@@ -234,7 +260,20 @@ bool CommandLineInterface::DoSource(gSKI::Agent* pAgent, std::string filename) {
 				HandleSourceError(lineCountCache, filename, pProductionManager);
 				if (path.length()) DoPopD();
 				return false;
+
+			} else if (quote == true) { // bug 967 fix
+				SetError(CLIError::kUnmatchedBracketOrQuote);
+				HandleSourceError(lineCountCache, filename, pProductionManager);
+				if (path.length()) DoPopD();
+				return false;
+
+			} else if (pipe == true) { // bug 968 fix
+				SetError(CLIError::kNewlineBeforePipe);
+				HandleSourceError(lineCountCache, filename, pProductionManager);
+				if (path.length()) DoPopD();
+				return false;
 			}
+
 
 			// We're good to go
 

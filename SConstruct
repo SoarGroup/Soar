@@ -46,6 +46,8 @@ opts.AddOptions(
 	BoolOption('eclipse', 'Build everything except the java projects (prepare for eclipse)', 'no'),
 	BoolOption('preprocessor', 'Only run preprocessor', 'no'),
 	BoolOption('verbose', 'Verbose compiler output', 'no'),
+	
+	BoolOption('gcc42', 'Use GCC-4.2 (experimental, Darwin only)', 'no'),
 )
 
 # Create the environment using the options
@@ -67,8 +69,11 @@ conf.env.Append(CPPFLAGS = ' -DSCONS')
 # We need to know if we're on darwin because malloc.h doesn't exist, functions are in stdlib.h
 if sys.platform == "darwin":
 	conf.env.Append(CPPFLAGS = ' -DSCONS_DARWIN')
-	#conf.env.Append(CPPFLAGS = ' -DSCONS_DARWIN -isysroot /Developer/SDKs/MacOSX10.4u.sdk -arch ppc -arch ')
-	#conf.env.Append(LINKFLAGS = ' -isysroot /Developer/SDKs/MacOSX10.4u.sdk -arch ppc -arch i386')	
+	if conf.env['gcc42']:
+		env['CXX'] = '/usr/bin/g++-4.2'
+	#if conf.env['ppc']:
+		#conf.env.Append(CPPFLAGS = ' -isysroot /Developer/SDKs/MacOSX10.5.sdk -arch ppc ')
+		#conf.env.Append(LINKFLAGS = ' -isysroot /Developer/SDKs/MacOSX10.5.sdk -arch ppc ')		
 
 
 # All C/C++ modules rely or should rely on this include path (houses portability.h)
@@ -203,10 +208,8 @@ SConscript('#Tools/FilterC/SConscript')
 SConscript('#Tools/QuickLink/SConscript')
 SConscript('#Tools/SoarTextIO/SConscript')
 SConscript('#Tools/TOHSML/SConscript')
-SConscript('#Tools/TestClientSML/SConscript')
-SConscript('#Tools/TestConnectionSML/SConscript')
-SConscript('#Tools/TestMultiAgent/SConscript')
 SConscript('#Tools/TestSMLEvents/SConscript')
 SConscript('#Tools/TestSMLPerformance/SConscript')
 SConscript('#Tools/TestSoarPerformance/SConscript')
+SConscript('#Tests/SConscript')
 

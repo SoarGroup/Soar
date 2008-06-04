@@ -61,7 +61,7 @@ namespace gSKI {
       * 
       * Including adestructor for the usual C++ safety reasons.
       */     
-    ~OutputWorkingMemory();
+    virtual ~OutputWorkingMemory();
 
      /**
       * @brief Returns a pointer to the Agent that owns this OutputWorkingMemory
@@ -707,6 +707,8 @@ namespace gSKI {
        * @brief Handles updating working memory.  Not implemented for output link yet.
        */
 	  virtual void Update(bool forceAdds, bool forceRemoves) { }
+
+ 	  virtual int GetWMObjMapSize() const;
 
    private:
       /**

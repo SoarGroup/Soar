@@ -418,6 +418,10 @@ static void ProductionEventHandler(sml::smlProductionEventId id, void* pUserData
 
 	// Make the method call.
 	jenv->CallVoidMethod(jobj, mid, (int)id, pJavaData->m_CallbackData, pJavaData->m_AgentObject, prod, inst);
+
+	// Cleaning up the local references just in case
+	jenv->DeleteLocalRef(prod);
+	jenv->DeleteLocalRef(inst);
 }
 
 // This is the hand-written JNI method for registering a callback.
@@ -498,6 +502,9 @@ static void PrintEventHandler(sml::smlPrintEventId id, void* pUserData, sml::Age
 
 	// Make the method call.
 	jenv->CallVoidMethod(jobj, mid, (int)id, pJavaData->m_CallbackData, pJavaData->m_AgentObject, message);
+
+	// Cleaning up the local references just in case
+	jenv->DeleteLocalRef(message);
 }
 
 // This is the hand-written JNI method for registering a callback.
@@ -701,8 +708,13 @@ static void OutputEventHandler(void* pUserData, sml::Agent* pAgent, char const* 
 	char const* kClassName = "sml/WMElement" ;
 	jclass jsmlClass = jenv->FindClass(kClassName) ;
 
-	if (!jsmlClass)
+	if (!jsmlClass) 
+	{
+		// Cleaning up the local references just in case
+		jenv->DeleteLocalRef(agentName);
+		jenv->DeleteLocalRef(attributeName);
 		return ;
+	}
 
 	// We want to grab the SWIG constructor which in Java is:
 	//  protected WMElement(long cPtr, boolean cMemoryOwn) {
@@ -712,8 +724,13 @@ static void OutputEventHandler(void* pUserData, sml::Agent* pAgent, char const* 
 	// J == long, Z == boolean so looking for constructor (long, boolean)
 	jmethodID cons = jenv->GetMethodID(jsmlClass, "<init>", "(JZ)V") ;
 
-	if (!cons)
+	if (!cons) 
+	{
+		// Cleaning up the local references just in case
+		jenv->DeleteLocalRef(agentName);
+		jenv->DeleteLocalRef(attributeName);
 		return ;
+	}
 
 	// Call constructor with the address of the C++ object that is being wrapped
 	// by the SWIG sml/WMElement object.  To mimic the C++ semantics we'll create a new
@@ -731,11 +748,21 @@ static void OutputEventHandler(void* pUserData, sml::Agent* pAgent, char const* 
 
 	if (!jNewObject)
 	{
+		// Cleaning up the local references just in case
+		jenv->DeleteLocalRef(agentName);
+		jenv->DeleteLocalRef(attributeName);
+		jenv->DeleteLocalRef(jNewObject);
 		return ;
 	}
 
 	// Make the method call.
 	jenv->CallVoidMethod(jobj, mid, pJavaData->m_CallbackData, agentName, attributeName, jNewObject) ;
+
+	// Cleaning up the local references just in case
+	jenv->DeleteLocalRef(jNewObject);
+	jenv->DeleteLocalRef(agentName);
+	jenv->DeleteLocalRef(attributeName);
+	jenv->DeleteLocalRef(jNewObject);
 }
 
 JNIEXPORT jint JNICALL Java_sml_smlJNI_Agent_1AddOutputHandler(JNIEnv *jenv, jclass jcls, jlong jarg1, jstring jarg2, jobject jarg3, jobject jarg4, jobject jarg6)
@@ -988,6 +1015,9 @@ static std::string StringEventHandler(sml::smlStringEventId id, void* pUserData,
 		// Release the Java string
 		jenv->ReleaseStringUTFChars(result, pResult);
 	}
+	
+	// Cleaning up the local references just in case
+	jenv->DeleteLocalRef(data);
 
 	// Return the result
 	return resultStr ;
@@ -1092,6 +1122,10 @@ static std::string RhsEventHandler(sml::smlRhsEventId id, void* pUserData, sml::
 
 	// Make the method call.
 	jstring result = (jstring)jenv->CallObjectMethod(jobj, mid, (int)id, pJavaData->m_CallbackData, agentName, functionName, argument) ;
+	// Cleaning up the local references just in case
+	jenv->DeleteLocalRef(agentName);
+	jenv->DeleteLocalRef(functionName);
+	jenv->DeleteLocalRef(argument);
 
 	// Get the returned string
 	std::string resultStr = "" ;
@@ -1154,6 +1188,11 @@ static std::string ClientMessageHandler(sml::smlRhsEventId id, void* pUserData, 
 
 	// Make the method call.
 	jstring result = (jstring)jenv->CallObjectMethod(jobj, mid, (int)id, pJavaData->m_CallbackData, agentName, functionName, argument) ;
+
+	// Cleaning up the local references just in case
+	jenv->DeleteLocalRef(agentName);
+	jenv->DeleteLocalRef(functionName);
+	jenv->DeleteLocalRef(argument);
 
 	// Get the returned string
 	std::string resultStr = "" ;
@@ -1307,6 +1346,9 @@ static void AgentEventHandler(sml::smlAgentEventId id, void* pUserData, sml::Age
 
 	// Make the method call.
 	jenv->CallVoidMethod(jobj, mid, (int)id, pJavaData->m_CallbackData, agentName);
+
+	// Cleaning up the local references just in case
+	jenv->DeleteLocalRef(agentName);
 }
 
 // This is the hand-written JNI method for registering a callback.

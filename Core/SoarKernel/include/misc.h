@@ -53,6 +53,9 @@ template <class T> bool from_string( T &val, std::string str )
 // Determine if a string represents a natural number (i.e. all numbers)
 extern bool is_natural_number( std::string *str );
 
+// Create a string that is n copies of src
+extern std::string *string_multi_copy( const char *src, unsigned int n );
+
 //////////////////////////////////////////////////////////
 // Map functions
 //////////////////////////////////////////////////////////
@@ -78,10 +81,11 @@ template <class X, class Y> bool is_set( std::map<X,Y> *my_map, X *key )
 }
 
 //////////////////////////////////////////////////////////
-// Map functions
+// Symbol functions
 //////////////////////////////////////////////////////////
 
 // get a numeric value from a symbol
 extern double get_number_from_symbol( Symbol *sym );
+
 
 #endif /*MISC_H_*/

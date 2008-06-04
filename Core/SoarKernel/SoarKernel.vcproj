@@ -189,6 +189,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\src\episodic_memory.cpp"
+				>
+			</File>
+			<File
 				RelativePath=".\src\explain.cpp"
 				>
 			</File>
@@ -324,6 +328,10 @@
 			</File>
 			<File
 				RelativePath=".\include\decision_manipulation.h"
+				>
+			</File>
+			<File
+				RelativePath=".\include\episodic_memory.h"
 				>
 			</File>
 			<File

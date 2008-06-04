@@ -1,0 +1,38 @@
+#!/usr/bin/python
+import glob
+import sys
+
+Import('env')
+env = env.Copy()
+env.Prepend(CPPPATH = [	
+			'include',
+			'src',
+			'../Core/ClientSML/include',
+			'../Core/ElementXML/include',
+			'../Core/ConnectionSML/include'])
+
+if sys.platform == "darwin":
+	libadd = [ 'ClientSML', 
+		   'ConnectionSML',
+		   'ElementXML', 
+		   'cppunit-osx',
+		   ]
+else:
+	libadd = [ 'ClientSML', 
+		   'ConnectionSML',
+		   'ElementXML', 
+		   'cppunit-linux',
+		   ]
+
+if sys.platform == 'cygwin':
+	libadd.extend(['ws2_32',])
+
+libpath = [ '../Core/ClientSML',
+	    '../Core/ConnectionSML',
+	    '../Core/ElementXML', 
+	    '.',
+	    ]
+
+env.Append(LIBS = libadd, LIBPATH = libpath)
+Tests = env.Program('Tests', glob.glob('src/*.cpp'))
+env.Install('#SoarLibrary/bin', Tests)

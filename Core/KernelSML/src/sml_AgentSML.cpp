@@ -298,7 +298,10 @@ void AgentSML::RemoveID(char const* pKernelID)
 	IdentifierMapIter iter = m_ToClientIdentifierMap.find(pKernelID) ;
 
 	// This identifier should have been in the table
-	assert (iter != m_ToClientIdentifierMap.end()) ;
+	// Note: sometimes this is called by gSKI when it is removing wmes. gSKI doesn't know if
+	// we're a direct connection and therefore aren't using this map, so in that case we need to not
+	// update this. Therefore, we can't assert here.
+	//assert (iter != m_ToClientIdentifierMap.end()) ;
 	if (iter == m_ToClientIdentifierMap.end())
 		return ;
 
@@ -383,6 +386,23 @@ void AgentSML::RecordLongTimeTag(long timeTag, gSKI::IWme* pWME)
 void AgentSML::RemoveTimeTag(char const* pTimeTag)
 {
 	m_TimeTagMap.erase(pTimeTag) ;
+}
+
+void AgentSML::RemoveTimeTagByWmeSLOW(gSKI::IWme* pWme)
+{
+	// This is used by KernelSML::RemoveInputWMERecords to remove a timetag
+	// when gSKI is removing wmes from the kernel due to an identifier deletion.
+
+	// It's slow because it is linear with respect to the number of wmes.
+	// TODO: There should be a two-way mapping.
+	for ( TimeTagMapIter iter = m_TimeTagMap.begin(); iter != m_TimeTagMap.end(); ++iter )
+	{
+		if ( iter->second == pWme )
+		{
+			m_TimeTagMap.erase( iter );
+			return;
+		}
+	}
 }
 
 void AgentSML::RemoveLongTimeTag(long timeTag)

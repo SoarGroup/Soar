@@ -146,24 +146,10 @@ public class ConfigurationEditor extends Dialog {
 	Button createClientButton;
 	Button removeClientButton;
 
-	// layout presets
-	private static GridData kSpan3Beginning;
-	private static GridData kSpan3Fill;
-	private static GridData kSpan2Beginning;
-	
-	static {
-		kSpan3Beginning = new GridData();
-		kSpan3Beginning.horizontalAlignment = SWT.BEGINNING;
-		kSpan3Beginning.horizontalSpan = 3;
-
-		kSpan3Fill = new GridData();
-		kSpan3Fill.horizontalAlignment = SWT.FILL;
-		kSpan3Fill.horizontalSpan = 3;
-		
-		kSpan2Beginning = new GridData();
-		kSpan2Beginning.horizontalAlignment = SWT.BEGINNING;
-		kSpan2Beginning.horizontalSpan = 2;
-
+	private GridData spanFill(int span) {		
+		GridData gd = new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING | GridData.GRAB_HORIZONTAL | GridData.FILL_HORIZONTAL);
+		gd.horizontalSpan = span;
+		return gd;
 	}
 	
 	public ConfigurationEditor(Shell parent) {
@@ -198,7 +184,7 @@ public class ConfigurationEditor extends Dialog {
 		tree = new Tree(dialog, SWT.BORDER);
 		{
 			GridData gd = new GridData();
-			gd.heightHint = 400;
+			gd.heightHint = 430;
 			gd.widthHint = 100;
 			tree.setLayoutData(gd);
 		}
@@ -427,7 +413,7 @@ public class ConfigurationEditor extends Dialog {
 					generalUpdate();
 				}
 			});
-			tanksoarButton.setLayoutData(kSpan3Beginning);
+			tanksoarButton.setLayoutData(spanFill(3));
 
 			eatersButton = new Button(simGroup, SWT.RADIO);
 			eatersButton.setText("Eaters");
@@ -439,7 +425,7 @@ public class ConfigurationEditor extends Dialog {
 					generalUpdate();
 				}
 			});
-			eatersButton.setLayoutData(kSpan3Beginning);
+			eatersButton.setLayoutData(spanFill(3));
 			
 			bookButton = new Button(simGroup, SWT.RADIO);
 			bookButton.setText("Book");
@@ -451,7 +437,7 @@ public class ConfigurationEditor extends Dialog {
 					generalUpdate();
 				}
 			});
-			bookButton.setLayoutData(kSpan3Beginning);
+			bookButton.setLayoutData(spanFill(3));
 			
 			kitchenButton = new Button(simGroup, SWT.RADIO);
 			kitchenButton.setText("Kitchen");
@@ -463,7 +449,7 @@ public class ConfigurationEditor extends Dialog {
 					generalUpdate();
 				}
 			});
-			kitchenButton.setLayoutData(kSpan3Beginning);
+			kitchenButton.setLayoutData(spanFill(3));
 			
 			taxiButton = new Button(simGroup, SWT.RADIO);
 			taxiButton.setText("Taxi");
@@ -475,14 +461,14 @@ public class ConfigurationEditor extends Dialog {
 					generalUpdate();
 				}
 			});
-			taxiButton.setLayoutData(kSpan3Beginning);
+			taxiButton.setLayoutData(spanFill(3));
 		}
 		
 		// map
 		{
 			Label mapLabel = new Label(currentPage, SWT.NONE);
 			mapLabel.setText("Map:");
-			mapLabel.setLayoutData(kSpan3Beginning);
+			mapLabel.setLayoutData(spanFill(3));
 			
 			mapText = new Text(currentPage, SWT.SINGLE | SWT.BORDER);
 			mapText.addFocusListener(new FocusAdapter() {
@@ -534,12 +520,12 @@ public class ConfigurationEditor extends Dialog {
 				generalUpdate();
 			}
 		});
-		nogui.setLayoutData(kSpan3Beginning);
+		nogui.setLayoutData(spanFill(3));
 
 		// 
 		Label asyncLabel = new Label(currentPage, SWT.NONE);
 		asyncLabel.setText("Asynchronous time slice, milliseconds (0: run synchronously):");
-		asyncLabel.setLayoutData(kSpan3Beginning);
+		asyncLabel.setLayoutData(spanFill(3));
 		
 		async = new Text(currentPage, SWT.SINGLE | SWT.BORDER);
 		async.addFocusListener(new FocusAdapter() {
@@ -554,12 +540,12 @@ public class ConfigurationEditor extends Dialog {
 				generalUpdate();
 			}
 		});
-		async.setLayoutData(kSpan3Fill);
+		async.setLayoutData(spanFill(3));
 		
 		// 
 		Label portLabel = new Label(currentPage, SWT.NONE);
 		portLabel.setText("Port to listen on:");
-		portLabel.setLayoutData(kSpan3Beginning);
+		portLabel.setLayoutData(spanFill(3));
 		
 		port = new Text(currentPage, SWT.SINGLE | SWT.BORDER);
 		port.addFocusListener(new FocusAdapter() {
@@ -574,7 +560,7 @@ public class ConfigurationEditor extends Dialog {
 				generalUpdate();
 			}
 		});
-		port.setLayoutData(kSpan3Fill);
+		port.setLayoutData(spanFill(3));
 
 		// world display
 		hide = new Button(currentPage, SWT.CHECK);
@@ -585,7 +571,7 @@ public class ConfigurationEditor extends Dialog {
 				generalUpdate();
 			}
 		});
-		hide.setLayoutData(kSpan3Beginning);
+		hide.setLayoutData(spanFill(3));
 
 		// random seed
 		useSeed = new Button(currentPage, SWT.CHECK);
@@ -600,7 +586,7 @@ public class ConfigurationEditor extends Dialog {
 				generalUpdate();
 			}
 		});
-		useSeed.setLayoutData(kSpan3Beginning);
+		useSeed.setLayoutData(spanFill(3));
 			
 		Label seedLabel = new Label(currentPage, SWT.NONE);
 		seedLabel.setText("Random seed:");
@@ -641,7 +627,7 @@ public class ConfigurationEditor extends Dialog {
 				generalUpdate();
 			}
 		});
-		remote.setLayoutData(kSpan3Beginning);
+		remote.setLayoutData(spanFill(3));
 
 		silentagent = new Button(currentPage, SWT.CHECK);
 		silentagent.setText("Execute 'watch 0' after source");
@@ -651,7 +637,7 @@ public class ConfigurationEditor extends Dialog {
 				generalUpdate();
 			}
 		});
-		silentagent.setLayoutData(kSpan3Beginning);
+		silentagent.setLayoutData(spanFill(3));
 
 		// metadata
 		{
@@ -668,8 +654,10 @@ public class ConfigurationEditor extends Dialog {
 			metadataText.addFocusListener(new FocusAdapter() {
 				public void focusLost(FocusEvent e) {
 					String metadataFileString = metadataText.getText();
-					if (metadataFileString != null) {
+					if (metadataFileString != null && metadataFileString.length() != 0) {
 						config.setMetadata(new File(metadataFileString));
+					} else {
+						config.setMetadata(null);
 					}
 					generalUpdate();
 				}
@@ -1243,7 +1231,7 @@ public class ConfigurationEditor extends Dialog {
 				rulesBookUpdate();
 			}
 		});
-		bookColoredRoomsButton.setLayoutData(kSpan2Beginning);
+		bookColoredRoomsButton.setLayoutData(spanFill(2));
 
 		Label speedLabel = new Label(currentPage, SWT.NONE);
 		speedLabel.setText("Speed:");
@@ -1343,7 +1331,7 @@ public class ConfigurationEditor extends Dialog {
 				rulesBookUpdate();
 			}
 		});
-		bookBlocksBlockButton.setLayoutData(kSpan2Beginning);
+		bookBlocksBlockButton.setLayoutData(spanFill(2));
 
 		bookContinuousButton = new Button(currentPage, SWT.CHECK);
 		bookContinuousButton.setText("Continuous");
@@ -1353,7 +1341,7 @@ public class ConfigurationEditor extends Dialog {
 				rulesBookUpdate();
 			}
 		});
-		bookContinuousButton.setLayoutData(kSpan2Beginning);
+		bookContinuousButton.setLayoutData(spanFill(2));
 
 		bookZeroIsEastButton = new Button(currentPage, SWT.CHECK);
 		bookZeroIsEastButton.setText("Zero is east (as opposed to North)");
@@ -1363,7 +1351,7 @@ public class ConfigurationEditor extends Dialog {
 				rulesBookUpdate();
 			}
 		});
-		bookZeroIsEastButton.setLayoutData(kSpan2Beginning);
+		bookZeroIsEastButton.setLayoutData(spanFill(2));
 
 	}
 	private void rulesBookUpdate() {
@@ -1401,7 +1389,7 @@ public class ConfigurationEditor extends Dialog {
 				rulesBookUpdate();
 			}
 		});
-		taxiDisableFuelButton.setLayoutData(kSpan2Beginning);
+		taxiDisableFuelButton.setLayoutData(spanFill(2));
 
 		Label fuelStartingMinLabel = new Label(currentPage, SWT.NONE);
 		fuelStartingMinLabel.setText("Fuel starting minimum:");
@@ -1517,7 +1505,7 @@ public class ConfigurationEditor extends Dialog {
 					loggingUpdate();
 				}
 			});
-			loggingConsoleButton.setLayoutData(kSpan2Beginning);
+			loggingConsoleButton.setLayoutData(spanFill(2));
 
 			loggingFileButton = new Button(targetsGroup, SWT.CHECK);
 			loggingFileButton.setText("File");
@@ -1532,7 +1520,7 @@ public class ConfigurationEditor extends Dialog {
 					loggingUpdate();
 				}
 			});
-			loggingFileButton.setLayoutData(kSpan2Beginning);
+			loggingFileButton.setLayoutData(spanFill(2));
 			
 			Label loggingNameLabel = new Label(targetsGroup, SWT.NONE);
 			loggingNameLabel.setText("Log file:");
@@ -2499,16 +2487,6 @@ public class ConfigurationEditor extends Dialog {
 				try {
 					config.setTerminalMaxRuns(Integer.parseInt(maxRuns.getText()));
 				} catch (NumberFormatException exeption) {}
-				terminalsUpdate();
-			}
-		});
-		maxRuns.addKeyListener(new KeyAdapter() {
-			public void keyPressed(KeyEvent e) {
-				if (!Character.isDigit(e.character)) {
-					e.doit = false;
-				}
-			}
-			public void keyReleased(KeyEvent e) {
 				terminalsUpdate();
 			}
 		});

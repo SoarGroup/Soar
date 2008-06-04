@@ -29,6 +29,30 @@ bool is_natural_number( std::string *str )
 }
 
 /***************************************************************************
+ * Function     : string_multi_copy
+ **************************************************************************/
+std::string *string_multi_copy( const char *src, unsigned int n )
+{
+	int len = strlen( src );
+	int i, pos;
+	const char *runner;
+	
+	std::string *return_val = new std::string( len * n, ' '  );
+	pos = 0;
+	for ( i=0; i<n; i++ )
+	{
+		runner = src;
+		while ( (*runner) != '\0' )
+		{
+			(*return_val)[ pos++ ] = (*runner);
+			runner++;
+		}
+	}
+
+	return return_val;
+}
+
+/***************************************************************************
  * Function     : get_number_from_symbol
  **************************************************************************/
 double get_number_from_symbol( Symbol *sym )

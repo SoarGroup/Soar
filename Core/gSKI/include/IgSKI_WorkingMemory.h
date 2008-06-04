@@ -527,6 +527,8 @@ namespace gSKI {
        * @brief Handles updating working memory
        */
       virtual void Update(bool forceAdds, bool forceRemoves) = 0 ;
+
+	  virtual int GetWMObjMapSize() const = 0; // for unit tests, see bug 1034 and ClientSMLTest
    };
 }
 

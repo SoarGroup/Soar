@@ -146,6 +146,7 @@ typedef struct wme_struct {
   struct wme_struct *gds_next, *gds_prev; /* used for dll of wmes in gds */
   /* REW: end   09.15.96 */
 
+  unsigned long epmem_id;
 } wme;
 
 #ifdef USE_MACROS

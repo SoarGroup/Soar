@@ -22,7 +22,7 @@ public class EatersVisualWorld extends VisualWorld {
 	java.awt.Point agentLocation;
 	
 	public void setAgentLocation(java.awt.Point location) {
-		agentLocation = location;
+		agentLocation = new java.awt.Point(location);
 	}
 	
 	public int getMiniWidth() {

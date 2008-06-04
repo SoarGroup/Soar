@@ -36,6 +36,9 @@
 
 #include "stl_support.h"
 
+#include "episodic_memory.h"
+#include "sqlite3.h"
+
 #include <string>
 #include <map>
 
@@ -56,6 +59,10 @@ typedef struct rl_stat_struct rl_stat;
 template <class T> class SoarMemoryAllocator;
 typedef struct rl_qconf_data_struct rl_qconf_data;
 typedef map<production *, rl_qconf_data, std::less<production *>, SoarMemoryAllocator<pair<production* const, rl_qconf_data> > > rl_qconf_map;
+
+// EpMem types
+typedef struct epmem_parameter_struct epmem_parameter;
+typedef struct epmem_stat_struct epmem_stat;
 
 typedef struct select_info_struct select_info;
 
@@ -293,6 +300,23 @@ typedef struct agent_struct {
   Symbol* rl_entry_symbol;
   Symbol* qvalue_symbol;
   Symbol* action_symbol;
+
+  Symbol            * epmem_symbol;
+  Symbol            * epmem_cmd_symbol;
+  Symbol            * epmem_result_symbol;
+
+  Symbol            * epmem_retrieved_symbol;
+  Symbol            * epmem_status_symbol;
+  Symbol            * epmem_match_score_symbol;
+  Symbol            * epmem_cue_size_symbol;
+  Symbol            * epmem_normalized_match_score_symbol;
+  Symbol            * epmem_match_cardinality_symbol;
+  Symbol            * epmem_memory_id_symbol;
+  Symbol            * epmem_present_id_symbol;
+  Symbol            * epmem_no_memory_symbol;
+  Symbol            * epmem_success_symbol;
+  Symbol            * epmem_failure_symbol;
+  Symbol            * epmem_bad_cmd_symbol;  
   
   /* ----------------------- Symbol table stuff -------------------------- */
 
@@ -801,6 +825,17 @@ kernel time and total_cpu_time greater than the derived total CPU time. REW */
   // predict
   unsigned long predict_seed;
   std::string *prediction;
+
+  // epmem
+  epmem_parameter *epmem_params[ EPMEM_PARAMS ];
+  epmem_stat *epmem_stats[ EPMEM_STATS ];
+  
+  sqlite3 *epmem_db;
+  int epmem_db_status;
+  sqlite3_stmt *epmem_statements[ EPMEM_MAX_STATEMENTS ];  
+  
+  std::map<unsigned long, bool> *epmem_range_removals;
+  std::vector<long> *epmem_range_maxes;
 
 } agent;
 /*************** end of agent struct *****/

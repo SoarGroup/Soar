@@ -49,6 +49,7 @@
 #include "gski_event_system_functions.h"
 
 #include "reinforcement_learning.h"
+#include "episodic_memory.h"
 
 #define INIT_FILE       "init.soar"
 
@@ -478,6 +479,7 @@ void init_sysparams (agent* thisAgent) {
   thisAgent->sysparams[TRACE_OPERAND2_REMOVALS_SYSPARAM] = FALSE;
   thisAgent->sysparams[TIMERS_ENABLED] = TRUE;
   thisAgent->sysparams[CHUNK_CONFIDENCE] = 10;
+  thisAgent->sysparams[EPMEM_ENABLED] = TRUE;
 }
 
 /* ===================================================================
@@ -638,6 +640,9 @@ bool reinitialize_soar (agent* thisAgent) {
   reset_rl_data( thisAgent );
   clear_goal_stack (thisAgent);
   reset_rl_stats( thisAgent );
+
+  epmem_reset( thisAgent );
+  epmem_reset_stats( thisAgent );
 
   if (thisAgent->operand2_mode == TRUE) {
      thisAgent->active_level = 0; /* Signal that everything should be retracted */
@@ -1094,6 +1099,12 @@ void do_one_top_level_phase (agent* thisAgent)
 	  /** KJC June 05:  moved output function timers into do_output_cycle ***/
 
 	  do_output_cycle(thisAgent);
+	  
+	  if ( epmem_enabled( thisAgent ) )
+	  {
+		  epmem_consider_new_episode( thisAgent );
+		  epmem_respond_to_cmd( thisAgent );
+	  }
 
  	  soar_invoke_callbacks(thisAgent, thisAgent, 
 			 AFTER_OUTPUT_PHASE_CALLBACK,
@@ -1662,7 +1673,7 @@ void init_agent_memory(agent* thisAgent)
   add_input_wme (thisAgent, thisAgent->io_header,
                  thisAgent->output_link_symbol,
                  thisAgent->io_header_output);
-
+  
   // KJC & RPM 10/06
   // A lot of stuff isn't initialized properly until the input and output cycles are run the first time.
   // Because of this, SW had to put in a hack to work around changes made to the output-link in the first

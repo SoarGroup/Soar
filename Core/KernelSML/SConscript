@@ -24,6 +24,7 @@ libadd = [
 	   'CommandLineInterface',
 	   'gSKI',
 	   'SoarKernel',
+	   'sqlite3',
 	   ]
 
 if sys.platform == 'cygwin':

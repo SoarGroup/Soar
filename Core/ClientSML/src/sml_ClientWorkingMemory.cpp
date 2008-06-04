@@ -1253,3 +1253,18 @@ void WorkingMemory::Refresh()
 	}
 }
 
+int WorkingMemory::GetIWMObjMapSize()
+{
+	int result = -1;
+#ifdef SML_DIRECT
+	if (GetConnection()->IsDirectConnection())
+	{
+		Direct_WorkingMemory_Handle wm = ((EmbeddedConnection*)GetConnection())->DirectGetWorkingMemory(GetAgent()->GetAgentName(), true) ;
+		if (wm)
+		{
+			result = ((EmbeddedConnection*)GetConnection())->DirectGetIWMObjMapSize(wm);
+		}
+	}
+#endif
+	return result;
+}

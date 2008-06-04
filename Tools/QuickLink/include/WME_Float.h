@@ -36,7 +36,7 @@ public:
 	// output information to recreate object
 	void save_yourself(std::ofstream* outfile);
 
-	~WME_Float() {}
+	virtual ~WME_Float() {}
 
 private:
 

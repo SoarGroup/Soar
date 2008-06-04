@@ -13,6 +13,12 @@
 #define COMMAND_DATA_H
 
 namespace cli {
+	enum eEpMemOptions {
+		EPMEM_GET,
+		EPMEM_SET,
+		EPMEM_STAT,
+		EPMEM_NUM_OPTIONS,	// must be last
+	};
 
 	enum eExciseOptions {
 		EXCISE_ALL,
@@ -191,6 +197,7 @@ namespace cli {
 		WATCH_BACKTRACING,
 		WATCH_INDIFFERENT,
 		WATCH_RL,
+		WATCH_EPMEM,
 		WATCH_NUM_OPTIONS, // must be last
 	};
 

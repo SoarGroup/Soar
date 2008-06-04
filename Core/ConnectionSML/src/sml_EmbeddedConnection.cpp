@@ -118,9 +118,7 @@ ElementXML_Handle LocalProcessMessage(Connection_Receiver_Handle hReceiverConnec
 	if (action == SML_MESSAGE_ACTION_ASYNCH)
 	{
 		// Store the incoming message on a queue and execute it on the receiver's thread (our thread) at a later point.
-		ElementXML* pIncomingMsg = new ElementXML(hIncomingMsg) ;
-
-		((EmbeddedConnectionAsynch*)pConnection)->AddToIncomingMessageQueue(pIncomingMsg) ;
+		((EmbeddedConnectionAsynch*)pConnection)->AddToIncomingMessageQueue(hIncomingMsg) ;
 
 		// There is no immediate response to an asynch message.
 		// The response will be sent back to the caller as another asynch message later, once the command has been executed.
@@ -197,6 +195,8 @@ bool EmbeddedConnection::AttachConnection(char const* pLibraryName, bool optimiz
 	std::string newLibraryName = "lib" + libraryName + ".so";
 	void* hLibrary = 0;
 	hLibrary = dlopen(newLibraryName.c_str(), RTLD_LAZY);
+/* Calling dlopen again with the mac format shared object will obscure the dlerror message
+ * jzxu 06/02/2008
 	if (!hLibrary) {
 		//printf("dlopen failed for %s: %s\n", newLibraryName.c_str(), dlerror());
 		// Try again with mac extention
@@ -207,6 +207,7 @@ bool EmbeddedConnection::AttachConnection(char const* pLibraryName, bool optimiz
 			//printf("dlopen failed for %s: %s\n", newLibraryName.c_str(), dlerror());
 		}
 	}
+*/
 	// FIXME error details can be returned by a call to dlerror()
 #endif
 
@@ -214,6 +215,32 @@ bool EmbeddedConnection::AttachConnection(char const* pLibraryName, bool optimiz
 	if (!hLibrary)
 	{
 		SetError(Error::kLibraryNotFound) ;
+      
+      char* message;
+#ifdef WINDOWS_SHARED
+      int error = GetLastError() ;
+
+      FormatMessage(
+         FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM,
+         0,
+         error,
+         0,
+         (char*) &message,
+         0, 0 );
+
+      message = strerror(error);
+
+      PrintDebugFormat("****Error: %s", message);
+
+      LocalFree(message);
+
+#elif defined(LINUX_SHARED)
+      message = dlerror();
+      PrintDebugFormat("Error: %s", message);
+      //BUGBUG? does message need to be released?
+
+#endif
+      
 		return false ;
 	}
 
@@ -238,11 +265,14 @@ bool EmbeddedConnection::AttachConnection(char const* pLibraryName, bool optimiz
 	m_pDirectReleaseWMEFunction =		(DirectReleaseWMEFunction)GetProcAddress(hLibrary, "sml_DirectReleaseWME") ;
 	m_pDirectReleaseWMObjectFunction =	(DirectReleaseWMObjectFunction)GetProcAddress(hLibrary, "sml_DirectReleaseWMObject") ;
 
+	m_pDirectGetIWMObjMapSizeFunction = (DirectGetIWMObjMapSizeFunction)GetProcAddress(hLibrary, "sml_DirectGetIWMObjMapSize") ;
+
 	// Check that we got the list of functions and if so enable the direct connection
 	if (m_pDirectAddWMEStringFunction && m_pDirectAddWMEIntFunction && m_pDirectAddWMEDoubleFunction &&
 		m_pDirectRemoveWMEFunction    && m_pDirectAddIDFunction     && m_pDirectLinkIDFunction &&
 		m_pDirectGetThisWMObjectFunction && m_pDirectGetRootFunction && m_pDirectGetWorkingMemoryFunction &&
-		m_pDirectReleaseWMEFunction && m_pDirectReleaseWMObjectFunction && m_pDirectRunFunction)
+		m_pDirectReleaseWMEFunction && m_pDirectReleaseWMObjectFunction && m_pDirectRunFunction &&
+		m_pDirectGetIWMObjMapSizeFunction)
 	{
 		// We only enable direct connections if we found all of the methods, this is a synchronous connection (i.e. we execute
 		// on the client's thread) and the client says it's ok to use these optimizations.

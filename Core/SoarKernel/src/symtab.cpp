@@ -321,6 +321,10 @@ Symbol *make_new_identifier (agent* thisAgent, char name_letter, goal_stack_leve
   sym->id.rl_info = NIL;
   sym->id.reward_header = NIL;
 
+  sym->id.epmem_header = NIL;
+  sym->id.epmem_cmd_header = NIL;
+  sym->id.epmem_result_header = NIL;
+
   add_to_hash_table (thisAgent, thisAgent->identifier_hash_table, sym);
   return sym;
 }
@@ -611,6 +615,23 @@ void create_predefined_symbols (agent* thisAgent) {
   /* RPM 9/06 end */
 
   thisAgent->reward_link_symbol = make_sym_constant( thisAgent, "reward-link" );
+
+  thisAgent->epmem_symbol = make_sym_constant( thisAgent, "epmem" );
+  thisAgent->epmem_cmd_symbol = make_sym_constant( thisAgent, "command" );
+  thisAgent->epmem_result_symbol = make_sym_constant( thisAgent, "result" );
+
+  thisAgent->epmem_retrieved_symbol = make_sym_constant( thisAgent, "retrieved" );
+  thisAgent->epmem_status_symbol = make_sym_constant( thisAgent, "status" );
+  thisAgent->epmem_match_score_symbol = make_sym_constant( thisAgent, "match-score" );
+  thisAgent->epmem_cue_size_symbol = make_sym_constant( thisAgent, "cue-size" );
+  thisAgent->epmem_normalized_match_score_symbol = make_sym_constant( thisAgent, "normalized-match-score" );
+  thisAgent->epmem_match_cardinality_symbol = make_sym_constant( thisAgent, "match-cardinality" );
+  thisAgent->epmem_memory_id_symbol = make_sym_constant( thisAgent, "memory-id" );
+  thisAgent->epmem_present_id_symbol = make_sym_constant( thisAgent, "present-id" );
+  thisAgent->epmem_no_memory_symbol = make_sym_constant( thisAgent, "no-memory" );
+  thisAgent->epmem_success_symbol = make_sym_constant( thisAgent, "success" );
+  thisAgent->epmem_failure_symbol = make_sym_constant( thisAgent, "failure" );
+  thisAgent->epmem_bad_cmd_symbol = make_sym_constant( thisAgent, "bad-cmd" );  
 }
 
 void release_helper(agent* thisAgent, Symbol** sym) {
@@ -661,4 +682,21 @@ void release_predefined_symbols(agent* thisAgent) {
   /* RPM 9/06 end */
 
   release_helper( thisAgent, &( thisAgent->reward_link_symbol ) );
+
+  release_helper( thisAgent, &( thisAgent->epmem_symbol ) );
+  release_helper( thisAgent, &( thisAgent->epmem_cmd_symbol ) );
+  release_helper( thisAgent, &( thisAgent->epmem_result_symbol ) );
+
+  release_helper( thisAgent, &( thisAgent->epmem_retrieved_symbol ) );
+  release_helper( thisAgent, &( thisAgent->epmem_status_symbol ) );
+  release_helper( thisAgent, &( thisAgent->epmem_match_score_symbol ) );
+  release_helper( thisAgent, &( thisAgent->epmem_cue_size_symbol ) );
+  release_helper( thisAgent, &( thisAgent->epmem_normalized_match_score_symbol ) );
+  release_helper( thisAgent, &( thisAgent->epmem_match_cardinality_symbol ) );
+  release_helper( thisAgent, &( thisAgent->epmem_memory_id_symbol ) );
+  release_helper( thisAgent, &( thisAgent->epmem_present_id_symbol ) );
+  release_helper( thisAgent, &( thisAgent->epmem_no_memory_symbol ) );
+  release_helper( thisAgent, &( thisAgent->epmem_success_symbol ) );
+  release_helper( thisAgent, &( thisAgent->epmem_failure_symbol ) );
+  release_helper( thisAgent, &( thisAgent->epmem_bad_cmd_symbol ) );  
 }

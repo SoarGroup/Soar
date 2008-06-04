@@ -21,7 +21,6 @@
 
 #include <stdlib.h>
 #include <map>
-#include <vector>
 #include <utility>
 using std::map;
 using std::pair;
@@ -51,6 +50,8 @@ using std::pair;
 #include "exploration.h"
 #include "reinforcement_learning.h"
 #include "decision_manipulation.h"
+#include "episodic_memory.h"
+#include "sqlite3.h"
 
 /* JC ADDED: Need to initialize gski callbacks */
 #include "gski_event_system_functions.h"
@@ -335,7 +336,7 @@ agent * create_soar_agent (Kernel * thisKernel, char * agent_name) {            
   
   // rl initialization
   newAgent->rl_params[ RL_PARAM_LEARNING ] = add_rl_parameter( "learning", RL_LEARNING_ON, &validate_rl_learning, &convert_rl_learning, &convert_rl_learning );    
-  newAgent->rl_params[ RL_PARAM_DISCOUNT_RATE ] = add_rl_parameter( "discount-rate", 0.9, &validate_rl_discount );  
+  newAgent->rl_params[ RL_PARAM_DISCOUNT_RATE ] = add_rl_parameter( "discount-rate", 0.9, &validate_rl_discount );
   newAgent->rl_params[ RL_PARAM_LEARNING_RATE ] = add_rl_parameter( "learning-rate", 0.3, &validate_rl_learning_rate );
   newAgent->rl_params[ RL_PARAM_LEARNING_POLICY ] = add_rl_parameter( "learning-policy", RL_LEARNING_SARSA, &validate_rl_learning_policy, &convert_rl_learning_policy, &convert_rl_learning_policy );
   newAgent->rl_params[ RL_PARAM_ET_DECAY_RATE ] = add_rl_parameter( "eligibility-trace-decay-rate", 0, &validate_rl_decay_rate );
@@ -371,6 +372,28 @@ agent * create_soar_agent (Kernel * thisKernel, char * agent_name) {            
   // predict initialization
   newAgent->prediction = new std::string();
   init_predict( newAgent );
+  
+  // epmem initialization
+  newAgent->epmem_params[ EPMEM_PARAM_LEARNING ] = epmem_add_parameter( "learning", EPMEM_LEARNING_ON, &epmem_validate_learning, &epmem_convert_learning, &epmem_convert_learning );
+  newAgent->epmem_params[ EPMEM_PARAM_DB ] = epmem_add_parameter( "database", EPMEM_DB_FILE, &epmem_validate_database, &epmem_convert_database, &epmem_convert_database );
+  newAgent->epmem_params[ EPMEM_PARAM_PATH ] = epmem_add_parameter( "path", "", &epmem_validate_path );
+    
+  newAgent->epmem_params[ EPMEM_PARAM_INDEXING ] = epmem_add_parameter( "indexing", EPMEM_INDEXING_BIGTREE_RANGE, &epmem_validate_indexing, &epmem_convert_indexing, &epmem_convert_indexing );
+  newAgent->epmem_params[ EPMEM_PARAM_PROVENANCE ] = epmem_add_parameter( "provenance", EPMEM_PROVENANCE_OFF, &epmem_validate_provenance, &epmem_convert_provenance, &epmem_convert_provenance );
+    
+  newAgent->epmem_params[ EPMEM_PARAM_TRIGGER ] = epmem_add_parameter( "trigger", EPMEM_TRIGGER_OUTPUT, &epmem_validate_trigger, &epmem_convert_trigger, &epmem_convert_trigger );
+  newAgent->epmem_params[ EPMEM_PARAM_BALANCE ] = epmem_add_parameter( "balance", 0.5, &epmem_validate_balance );
+
+  newAgent->epmem_stats[ EPMEM_STAT_TIME ] = epmem_add_stat( "time" );
+  epmem_set_stat( newAgent, (const long) EPMEM_STAT_TIME, 1 );
+    
+  newAgent->epmem_db = NULL;
+  newAgent->epmem_db_status = -1;
+  for ( int i=0; i<EPMEM_MAX_STATEMENTS; i++ )
+  	newAgent->epmem_statements[ i ] = NULL;
+
+  newAgent->epmem_range_removals = new std::map<unsigned long, bool>();
+  newAgent->epmem_range_maxes = new std::vector<long>();
 
   return newAgent;
 }
@@ -515,13 +538,31 @@ void destroy_soar_agent (Kernel * thisKernel, agent * delete_agent)
   // cleanup Soar-RL
   clean_parameters( delete_agent );
   clean_stats( delete_agent );
-
+  
   // cleanup select
   init_select( delete_agent );
   delete delete_agent->select;
 
   // cleanup predict
   delete delete_agent->prediction;
+  
+  // cleanup EpMem
+  delete delete_agent->epmem_range_removals;
+  delete delete_agent->epmem_range_maxes;
+  if ( delete_agent->epmem_db_status != -1 )
+  {
+    int i;
+  	
+    // perform cleanup as necessary
+    const long indexing = epmem_get_parameter( delete_agent, EPMEM_PARAM_INDEXING, EPMEM_RETURN_LONG );	
+        
+  	for ( i=0; i<EPMEM_MAX_STATEMENTS; i++ )
+  	  if ( delete_agent->epmem_statements[ i ] != NULL )
+  	    sqlite3_finalize( delete_agent->epmem_statements[ i ] ); 	
+  	  
+  	sqlite3_close( delete_agent->epmem_db );
+  }
+  epmem_clean_parameters( delete_agent );
 
   /* Free soar agent structure */
   free((void *) delete_agent);

@@ -70,6 +70,8 @@ protected:
 
 	DirectReleaseWMEFunction			m_pDirectReleaseWMEFunction ;
 	DirectReleaseWMObjectFunction		m_pDirectReleaseWMObjectFunction ;
+
+	DirectGetIWMObjMapSizeFunction		m_pDirectGetIWMObjMapSizeFunction ;
 #endif
 
 	/** We need to cache the responses to calls **/
@@ -148,6 +150,11 @@ public:
 	void						DirectReleaseWMObject(Direct_WMObject_Handle parent)
 	{
 		return m_pDirectReleaseWMObjectFunction(parent) ;
+	}
+
+	int DirectGetIWMObjMapSize(Direct_WorkingMemory_Handle wm)
+	{
+		return m_pDirectGetIWMObjMapSizeFunction(wm);
 	}
 #endif
 } ;

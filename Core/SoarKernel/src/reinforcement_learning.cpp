@@ -14,6 +14,7 @@
  * Description  :  Various functions for Soar-RL
  * =======================================================================
  */
+#define DBG if(0)
 
 #include <stdlib.h>
 #include <math.h>
@@ -1185,8 +1186,8 @@ void initialize_qconf(agent* my_agent, production* p) {
 
 	//print(my_agent, "\n============ BOUNDS CREATE ============\n");
 	//print_production(my_agent, p, 0);
-	print(my_agent, "\nbound_create %s Qmin: %f Qmax: %f N: %d\n", p->name->sc.name, -qmax_0, qmax_0, 0);
-	//print(my_agent, "!!!!!!!!!!!! BOUNDS CREATE !!!!!!!!!!!!\n");
+	DBG print(my_agent, "\nbound_create %s Qmin: %f Qmax: %f N: %d\n", p->name->sc.name, -qmax_0, qmax_0, 0);
+	//DBG_PRINT(my_agent, "!!!!!!!!!!!! BOUNDS CREATE !!!!!!!!!!!!\n");
 #elif Q_CONFIDENCE_METHOD == INTERVAL_ESTIMATION
   // as a sentinel for not being able to determine bounds yet, set q_min >
   // q_max
@@ -1326,12 +1327,12 @@ void perform_rl_update( agent *my_agent, double op_value, double Vminb, double V
 
 			bounds.q_min = (1-alpha) * bounds.q_min + alpha * (data->reward + gamma * Vminb - beta);
 			bounds.q_max = (1-alpha) * bounds.q_max + alpha * (data->reward + gamma * Vmaxb + beta);
-			//print(my_agent, "update %s\n", prod->name);
-			//print(my_agent, "\n============ BOUNDS UPDATE ============\n");
-			//print_production(my_agent, prod, 0);
-			//print(my_agent, "sqrt_term1: %f sqrt_term2: %f\n", sqrt_term1, sqrt_term2);
-			print(my_agent, "\nbound_update %s Q: %f Qmin: %f Qmax: %f N: %d\n", prod->name->sc.name, temp, bounds.q_min, bounds.q_max, bounds.num_updates);
-			//print(my_agent, "!!!!!!!!!!!! BOUNDS UPDATE !!!!!!!!!!!!\n");
+			//DBG print(my_agent, "update %s\n", prod->name);
+			//DBG print(my_agent, "\n============ BOUNDS UPDATE ============\n");
+			//DBG print_production(my_agent, prod, 0);
+			//DBG print(my_agent, "sqrt_term1: %f sqrt_term2: %f\n", sqrt_term1, sqrt_term2);
+			DBG print(my_agent, "\nbound_update %s Q: %f Qmin: %f Qmax: %f N: %d\n", prod->name->sc.name, temp, bounds.q_min, bounds.q_max, bounds.num_updates);
+			//DBG print(my_agent, "!!!!!!!!!!!! BOUNDS UPDATE !!!!!!!!!!!!\n");
 		}
 #elif Q_CONFIDENCE_METHOD == INTERVAL_ESTIMATION
     // maybe int. est. can easily handle eligibility traces?
@@ -1372,7 +1373,7 @@ void perform_rl_update( agent *my_agent, double op_value, double Vminb, double V
           }
         }
       }
-      print(my_agent, "\nbound_update %s Q: %f Qmin: %f Qmax: %f N: %d\n", prod->name->sc.name, temp, conf_data.q_min, conf_data.q_max, conf_data.win_by_val.size());
+      DBG print(my_agent, "\nbound_update %s Q: %f Qmin: %f Qmax: %f N: %d\n", prod->name->sc.name, temp, conf_data.q_min, conf_data.q_max, conf_data.win_by_val.size());
     }
 #endif
 	}

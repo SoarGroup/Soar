@@ -50,7 +50,7 @@ namespace gSKI {
       * 
       * Including adestructor for the usual C++ safety reasons.
       */     
-    ~WorkingMemory();
+    virtual ~WorkingMemory();
 
      /**
       * @brief Returns a pointer to the Agent that owns this WorkingMemory
@@ -684,6 +684,8 @@ namespace gSKI {
 	  virtual void RemoveWorkingMemoryListener(egSKIWorkingMemoryEventId  eventId, 
 									IWorkingMemoryListener* listener, 
 									Error*                  err = 0) ;
+
+   	  virtual int GetWMObjMapSize() const;
 
    private:
       /**
