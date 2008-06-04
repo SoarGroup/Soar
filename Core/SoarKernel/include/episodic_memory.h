@@ -41,7 +41,7 @@
 
 // statement storage
 // 0 - 9 => common
-// 10 - 29 => indexing
+// 10 - 39 => indexing
 #define EPMEM_STMT_BEGIN						0
 #define EPMEM_STMT_COMMIT						1
 #define EPMEM_STMT_ROLLBACK						2
@@ -69,15 +69,20 @@
 #define EPMEM_STMT_BIGTREE_R_PREV_EPISODE		19
 #define EPMEM_STMT_BIGTREE_R_ADD_WEIGHT			20
 #define EPMEM_STMT_BIGTREE_R_TRUNCATE_WEIGHTS	21
-#define EPMEM_STMT_BIGTREE_R_DEL_PROHIB			22
-#define EPMEM_STMT_BIGTREE_R_DEL_PROHIB_LOW		23
-#define EPMEM_STMT_BIGTREE_R_DEL_PROHIB_HIGH	24
-#define EPMEM_STMT_BIGTREE_R_DEL_PROHIB_CONTAIN	25
-#define EPMEM_STMT_BIGTREE_R_GET_LOW_RANGES		26
-#define EPMEM_STMT_BIGTREE_R_GET_HIGH_RANGES	27
-#define EPMEM_STMT_BIGTREE_R_TRUNCATE_RANGES	28
+#define EPMEM_STMT_BIGTREE_R_NULL_RANGES		22
+#define EPMEM_STMT_BIGTREE_R_DEL_PROHIB			23
+#define EPMEM_STMT_BIGTREE_R_DEL_PROHIB_LOW		24
+#define EPMEM_STMT_BIGTREE_R_DEL_PROHIB_HIGH	25
+#define EPMEM_STMT_BIGTREE_R_DEL_PROHIB_CONTAIN	26
+#define EPMEM_STMT_BIGTREE_R_GET_LOW_RANGES		27
+#define EPMEM_STMT_BIGTREE_R_GET_HIGH_RANGES	28
+#define EPMEM_STMT_BIGTREE_R_TRUNCATE_RANGES	29
+#define EPMEM_STMT_BIGTREE_R_RANGE_INDEX_1		30
+#define EPMEM_STMT_BIGTREE_R_RANGE_INDEX_1R		31
+#define EPMEM_STMT_BIGTREE_R_RANGE_INDEX_2		32
+#define EPMEM_STMT_BIGTREE_R_RANGE_INDEX_2R		33
 
-#define EPMEM_MAX_STATEMENTS 					30 // must be at least 1+ largest of any STMT constant
+#define EPMEM_MAX_STATEMENTS 					40 // must be at least 1+ largest of any STMT constant
 
 #define EPMEM_MEMID_NONE						-1
 #define EPMEM_MEMID_ROOT						0
@@ -284,24 +289,24 @@ extern void epmem_consider_new_episode( agent *my_agent );
 extern void epmem_new_episode( agent *my_agent );
 
 // Called to determine if a memory_id is valid
-extern bool epmem_episode_exists( agent *my_agent, int memory_id );
+extern bool epmem_episode_exists( agent *my_agent, long memory_id );
 
 // Called to determine the next episode id
-extern int epmem_next_episode( agent *my_agent, int memory_id );
+extern long epmem_next_episode( agent *my_agent, long memory_id );
 
 // Called to determine the previous episode id
-extern int epmem_previous_episode( agent *my_agent, int memory_id );
+extern long epmem_previous_episode( agent *my_agent, long memory_id );
 
 // Called to react to commands
 extern void epmem_respond_to_cmd( agent *my_agent );
 
 // Called to process a query
-extern void epmem_process_query( agent *my_agent, Symbol *state, Symbol *query, Symbol *neg_query, std::vector<int> *prohibit, int before, int after );
+extern void epmem_process_query( agent *my_agent, Symbol *state, Symbol *query, Symbol *neg_query, std::vector<long> *prohibit, long before, long after );
 
 // Called to clear the wme's from epmem.result
 extern void epmem_clear_result( agent *my_agent, Symbol *state );
 
 // Called to install a particular memory into WM
-extern void epmem_install_memory( agent *my_agent, Symbol *state, int memory_id );
+extern void epmem_install_memory( agent *my_agent, Symbol *state, long memory_id );
 
 #endif

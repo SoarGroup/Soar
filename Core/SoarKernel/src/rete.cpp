@@ -104,6 +104,8 @@
 #include "lexer.h"
 #include "xml.h"
 
+#include "episodic_memory.h"
+
 /* JC ADDED: for gSKI events */
 #include "gski_event_system_functions.h"
 
@@ -1587,6 +1589,8 @@ void add_wme_to_rete (agent* thisAgent, wme *w) {
     add_wme_to_aht (thisAgent, thisAgent->alpha_hash_tables[6],  xor_op( 0,ha,hv), w);
     add_wme_to_aht (thisAgent, thisAgent->alpha_hash_tables[7],  xor_op(hi,ha,hv), w);
   }
+
+  w->epmem_id = NULL;
 }
 
 /* --- Removes a WME from the Rete. --- */
@@ -1595,6 +1599,10 @@ void remove_wme_from_rete (agent* thisAgent, wme *w) {
   alpha_mem *am;
   rete_node *node, *next, *child;
   token *tok, *left;
+
+  if ( ( w->epmem_id != NULL ) &&
+	   ( epmem_get_parameter( thisAgent, EPMEM_PARAM_INDEXING, EPMEM_RETURN_LONG ) == EPMEM_INDEXING_BIGTREE_RANGE ) )
+	  thisAgent->epmem_range_removals->push_back( w->epmem_id );
   
   /* --- remove w from all_wmes_in_rete --- */
   remove_from_dll (thisAgent->all_wmes_in_rete, w, rete_next, rete_prev);
