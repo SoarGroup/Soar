@@ -1589,6 +1589,7 @@ void epmem_new_episode( agent *my_agent )
 			
 			r++;
 		}
+		my_agent->epmem_range_removals->clear();
 
 		// add the time id to the times table
 		sqlite3_bind_int( my_agent->epmem_statements[ EPMEM_STMT_BIGTREE_R_ADD_TIME ], 1, time_counter );
