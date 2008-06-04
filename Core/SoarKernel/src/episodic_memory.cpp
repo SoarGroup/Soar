@@ -1323,6 +1323,9 @@ void epmem_new_episode( agent *my_agent )
 			{
 				for ( i=0; i<len; i++ )
 				{					
+					//if ( ( parent_id == 13 ) && ( !strcmp("random",wmes[i]->attr->sc.name) || !strcmp("clock",wmes[i]->attr->sc.name) ) )
+					//	continue;
+					
 					if ( wmes[i]->epmem_id == NULL )
 					{					
 						// find wme id					
@@ -1491,6 +1494,9 @@ void epmem_new_episode( agent *my_agent )
 			{
 				for ( i=0; i<len; i++ )
 				{
+					//if ( ( parent_id == 13 ) && ( !strcmp("random",wmes[i]->attr->sc.name) || !strcmp("clock",wmes[i]->attr->sc.name) ) )
+					//	continue;
+					
 					if ( wmes[i]->epmem_id == NULL )
 					{						
 						my_hash = epmem_hash_wme( wmes[i] );
@@ -2481,7 +2487,7 @@ void epmem_process_query( agent *my_agent, Symbol *state, Symbol *query, Symbol 
 					leaf_p = leaf_ids[i].begin();
 					while ( leaf_p != leaf_ids[i].end() )
 					{
-						sqlite3_bind_int( my_agent->epmem_statements[ EPMEM_STMT_BIGTREE_R_ADD_WEIGHT ], 1, (*leaf_p) );
+						sqlite3_bind_double( my_agent->epmem_statements[ EPMEM_STMT_BIGTREE_R_ADD_WEIGHT ], SoarRand(), (*leaf_p) );
 						sqlite3_step( my_agent->epmem_statements[ EPMEM_STMT_BIGTREE_R_ADD_WEIGHT ] );
 						sqlite3_reset( my_agent->epmem_statements[ EPMEM_STMT_BIGTREE_R_ADD_WEIGHT ] );
 						
