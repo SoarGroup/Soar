@@ -27,6 +27,7 @@
 #include "symtab.h"
 #include "io_soar.h"
 #include "wmem.h"
+#include "soar_rand.h"
 
 #include "xmlTraceNames.h"
 #include "gski_event_system_functions.h"
@@ -1412,11 +1413,12 @@ void epmem_new_episode( agent *my_agent )
 						// I want to point to that address and change it if necessary.
 						double **p =& epmem[ wmes[i]->epmem_id ];
 						
-						// replace 1 here with actual weight
+						// replace rand here with actual weight
+						double my_val = SoarRand();
 						if ( *p == NULL )
-							*p = new double(1);
-						else if ( 1 > **p )
-							**p = 1;					
+							*p = new double( my_val );
+						else if ( my_val > **p )
+							**p = my_val;					
 					}
 				}
 
