@@ -1446,7 +1446,6 @@ void epmem_new_episode( agent *my_agent )
 		queue<unsigned long> ids;		
 
 		unsigned long parent_id;
-		bool newbie;
 		map<unsigned long, bool> epmem;
 
 		unsigned long my_hash;
@@ -1472,10 +1471,9 @@ void epmem_new_episode( agent *my_agent )
 			if ( wmes != NULL )
 			{
 				for ( i=0; i<len; i++ )
-				{					
-					newbie = false;
+				{
 					if ( wmes[i]->epmem_id == NULL )
-					{
+					{						
 						my_hash = epmem_hash_wme( wmes[i] );
 						if ( wmes[i]->value->common.symbol_type != IDENTIFIER_SYMBOL_TYPE )
 						{					
@@ -1547,8 +1545,21 @@ void epmem_new_episode( agent *my_agent )
 
 						wmes[i]->epmem_id = sqlite3_last_insert_rowid( my_agent->epmem_db );
 
-						// note for episode start
+						// new nodes definitely start
 						epmem[ wmes[i]->epmem_id ] = true;
+						my_agent->epmem_range_maxes->push_back( time_counter );
+					}
+					else
+					{
+						// definitely don't update/delete
+						(*my_agent->epmem_range_removals)[ wmes[i]->epmem_id ] = false;
+
+						// we insert if current time is > 1+ max
+						if ( (*my_agent->epmem_range_maxes)[ wmes[i]->epmem_id - 1 ] < ( time_counter - 1 ) )
+							epmem[ wmes[i]->epmem_id ] = true;
+
+						// update max irrespectively
+						(*my_agent->epmem_range_maxes)[ wmes[i]->epmem_id - 1 ] = time_counter;
 					}
 					
 					// keep track of identifiers (for further study)
@@ -1556,7 +1567,7 @@ void epmem_new_episode( agent *my_agent )
 					{
 						syms.push( wmes[i]->value );
 						ids.push( wmes[i]->epmem_id );
-					}					
+					}				
 				}
 
 				// free space from aug list
@@ -1578,14 +1589,17 @@ void epmem_new_episode( agent *my_agent )
 		}
 
 		// all removals at once
-		std::list<unsigned long>::iterator r = my_agent->epmem_range_removals->begin();
+		std::map<unsigned long, bool>::iterator r = my_agent->epmem_range_removals->begin();
 		while ( r != my_agent->epmem_range_removals->end() )
 		{
-			// UPDATE set end=? WHERE id=? AND end IS NULL
-			sqlite3_bind_int( my_agent->epmem_statements[ EPMEM_STMT_BIGTREE_R_UPDATE_EPISODE ], 1, ( time_counter - 1 ) );
-			sqlite3_bind_int( my_agent->epmem_statements[ EPMEM_STMT_BIGTREE_R_UPDATE_EPISODE ], 2, (*r) );			
-			sqlite3_step( my_agent->epmem_statements[ EPMEM_STMT_BIGTREE_R_UPDATE_EPISODE ] );
-			sqlite3_reset( my_agent->epmem_statements[ EPMEM_STMT_BIGTREE_R_UPDATE_EPISODE ] );
+			if ( r->second )
+			{			
+				// UPDATE set end=? WHERE id=? AND end IS NULL
+				sqlite3_bind_int( my_agent->epmem_statements[ EPMEM_STMT_BIGTREE_R_UPDATE_EPISODE ], 1, ( time_counter - 1 ) );
+				sqlite3_bind_int( my_agent->epmem_statements[ EPMEM_STMT_BIGTREE_R_UPDATE_EPISODE ], 2, r->first );			
+				sqlite3_step( my_agent->epmem_statements[ EPMEM_STMT_BIGTREE_R_UPDATE_EPISODE ] );
+				sqlite3_reset( my_agent->epmem_statements[ EPMEM_STMT_BIGTREE_R_UPDATE_EPISODE ] );
+			}
 			
 			r++;
 		}

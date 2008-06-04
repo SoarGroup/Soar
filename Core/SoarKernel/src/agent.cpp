@@ -373,7 +373,8 @@ agent * create_soar_agent (Kernel * thisKernel, char * agent_name) {            
   for ( int i=0; i<EPMEM_MAX_STATEMENTS; i++ )
   	newAgent->epmem_statements[ i ] = NULL;
 
-  newAgent->epmem_range_removals = new std::list<unsigned long>();
+  newAgent->epmem_range_removals = new std::map<unsigned long, bool>();
+  newAgent->epmem_range_maxes = new std::vector<long>();
 
   return newAgent;
 }
@@ -528,6 +529,7 @@ void destroy_soar_agent (Kernel * thisKernel, agent * delete_agent)
   
   // cleanup EpMem
   delete delete_agent->epmem_range_removals;
+  delete delete_agent->epmem_range_maxes;
   if ( delete_agent->epmem_db_status != -1 )
   {
     int i;
