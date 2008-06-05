@@ -366,6 +366,8 @@ agent * create_soar_agent (Kernel * thisKernel, char * agent_name) {            
   newAgent->epmem_params[ EPMEM_PARAM_BALANCE ] = epmem_add_parameter( "balance", 0.5, &epmem_validate_balance );
 
   newAgent->epmem_stats[ EPMEM_STAT_TIME ] = epmem_add_stat( "time" );
+  newAgent->epmem_stats[ EPMEM_STAT_MEM_USAGE ] = epmem_add_stat( "mem_usage" );
+  newAgent->epmem_stats[ EPMEM_STAT_MEM_HIGH ] = epmem_add_stat( "mem_high" );
   epmem_set_stat( newAgent, (const long) EPMEM_STAT_TIME, 1 );
     
   newAgent->epmem_db = NULL;

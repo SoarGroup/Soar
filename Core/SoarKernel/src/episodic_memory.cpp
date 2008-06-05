@@ -28,6 +28,7 @@
 #include "io_soar.h"
 #include "wmem.h"
 #include "soar_rand.h"
+#include "production.h"
 
 #include "xmlTraceNames.h"
 #include "gski_event_system_functions.h"
@@ -788,6 +789,11 @@ double epmem_get_stat( agent *my_agent, const char *name )
 	const long stat = epmem_convert_stat( my_agent, name );
 	if ( stat == EPMEM_STATS )
 		return 0;
+	
+	if ( stat == EPMEM_STAT_MEM_USAGE )
+		return sqlite3_memory_used();
+	if ( stat == EPMEM_STAT_MEM_HIGH )
+		return sqlite3_memory_highwater( false );
 
 	return my_agent->epmem_stats[ stat ]->value;
 }
@@ -796,6 +802,11 @@ double epmem_get_stat( agent *my_agent, const long stat )
 {
 	if ( !epmem_valid_stat( my_agent, stat ) )
 		return 0;
+	
+	if ( stat == EPMEM_STAT_MEM_USAGE )
+		return sqlite3_memory_used();
+	if ( stat == EPMEM_STAT_MEM_HIGH )
+		return sqlite3_memory_highwater( false );
 
 	return my_agent->epmem_stats[ stat ]->value;
 }
@@ -806,7 +817,9 @@ double epmem_get_stat( agent *my_agent, const long stat )
 bool epmem_set_stat( agent *my_agent, const char *name, double new_val )
 {
 	const long stat = epmem_convert_stat( my_agent, name );
-	if ( stat == EPMEM_STATS )
+	if ( ( stat == EPMEM_STATS ) ||
+		 ( stat == EPMEM_STAT_MEM_USAGE ) ||
+		 ( stat == EPMEM_STAT_MEM_HIGH ) )
 		return false;
 	
 	my_agent->epmem_stats[ stat ]->value = new_val;
@@ -817,6 +830,10 @@ bool epmem_set_stat( agent *my_agent, const char *name, double new_val )
 bool epmem_set_stat( agent *my_agent, const long stat, double new_val )
 {
 	if ( !epmem_valid_stat( my_agent, stat ) )
+		return false;
+	
+	if ( ( stat == EPMEM_STAT_MEM_USAGE ) ||
+		 ( stat == EPMEM_STAT_MEM_HIGH ) )
 		return false;
 	
 	my_agent->epmem_stats[ stat ]->value = new_val;
@@ -1300,7 +1317,7 @@ void epmem_new_episode( agent *my_agent )
 		map<unsigned long, double *> epmem;
 
 		unsigned long my_hash;
-		int tc = my_agent->top_goal->id.tc_num + 3;
+		int tc = get_new_tc_number( my_agent );
 
 		int i;	
 
@@ -1471,7 +1488,7 @@ void epmem_new_episode( agent *my_agent )
 		map<unsigned long, bool> epmem;
 
 		unsigned long my_hash;
-		int tc = my_agent->top_goal->id.tc_num + 3;
+		int tc = get_new_tc_number( my_agent );
 
 		int i;	
 
@@ -1812,7 +1829,7 @@ void epmem_respond_to_cmd( agent *my_agent )
 			path = 0;
 			
 			// get all top-level symbols
-			wmes = epmem_get_augs_of_id( my_agent, state->id.epmem_cmd_header, state->id.tc_num + 3, &len );
+			wmes = epmem_get_augs_of_id( my_agent, state->id.epmem_cmd_header, get_new_tc_number( my_agent ), &len );
 
 			// process top-level symbols
 			for ( i=0; i<len; i++ )
@@ -1972,7 +1989,7 @@ void epmem_respond_to_cmd( agent *my_agent )
 void epmem_clear_result( agent *my_agent, Symbol *state )
 {	
 	int len;
-	wme **wmes = epmem_get_augs_of_id( my_agent, state->id.epmem_result_header, state->id.tc_num + 3, &len );
+	wme **wmes = epmem_get_augs_of_id( my_agent, state->id.epmem_result_header, get_new_tc_number( my_agent ), &len );
 
 	for ( int i=0; i<len; i++ )
 		remove_input_wme( my_agent, wmes[ i ] );
@@ -1988,11 +2005,11 @@ void epmem_process_query( agent *my_agent, Symbol *state, Symbol *query, Symbol 
 	int len_query = 0, len_neg_query = 0;
 	wme **wmes_query = NULL;
 	if ( query != NULL )
-		wmes_query = epmem_get_augs_of_id( my_agent, query, state->id.tc_num + 3, &len_query );
+		wmes_query = epmem_get_augs_of_id( my_agent, query, get_new_tc_number( my_agent ), &len_query );
 
 	wme **wmes_neg_query = NULL;
 	if ( neg_query != NULL )
-		wmes_neg_query = epmem_get_augs_of_id( my_agent, neg_query, state->id.tc_num + 3, &len_neg_query );
+		wmes_neg_query = epmem_get_augs_of_id( my_agent, neg_query, get_new_tc_number( my_agent ), &len_neg_query );
 
 	if ( ( len_query != 0 ) || ( len_neg_query != 0 ) )
 	{
@@ -2010,7 +2027,7 @@ void epmem_process_query( agent *my_agent, Symbol *state, Symbol *query, Symbol 
 				
 				queue<Symbol *> parent_syms;
 				queue<unsigned long> parent_ids;			
-				int tc = state->id.tc_num + 3;
+				int tc = get_new_tc_number( my_agent );
 
 				Symbol *parent_sym;
 				unsigned long parent_id;
@@ -2378,7 +2395,7 @@ void epmem_process_query( agent *my_agent, Symbol *state, Symbol *query, Symbol 
 				
 				queue<Symbol *> parent_syms;
 				queue<unsigned long> parent_ids;			
-				int tc = state->id.tc_num + 3;
+				int tc = get_new_tc_number( my_agent );
 
 				Symbol *parent_sym;
 				unsigned long parent_id;
