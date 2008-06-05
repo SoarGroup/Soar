@@ -1173,27 +1173,28 @@ void epmem_init_db( agent *my_agent )
 				sqlite3_prepare_v2( my_agent->epmem_db, "DELETE FROM ranges", -1, &( my_agent->epmem_statements[ EPMEM_STMT_BIGTREE_R_TRUNCATE_RANGES ] ), &tail );
 
 				// get max time
-				
 				sqlite3_prepare_v2( my_agent->epmem_db, "SELECT MAX(id) FROM times", -1, &create, &tail );
 				if ( sqlite3_step( create ) == SQLITE_ROW )						
 					epmem_set_stat( my_agent, (const long) EPMEM_STAT_TIME, ( sqlite3_column_int( create, 0 ) + 1 ) );
 				sqlite3_finalize( create );
 
-				// get max list
+				// get max id + max list
 				time_max = epmem_get_stat( my_agent, (const long) EPMEM_STAT_TIME );
-				sqlite3_prepare_v2( my_agent->epmem_db, "SELECT e.id, e.end FROM ids i LEFT JOIN episodes e ON e.id=i.child_id ORDER BY i.child_id DESC", -1, &create, &tail );
-				if ( sqlite3_step( create ) == SQLITE_ROW )
+				sqlite3_prepare_v2( my_agent->epmem_db, "SELECT MAX(child_id) FROM ids", -1, &create, &tail );
+				sqlite3_step( create );
+				if ( sqlite3_column_type( create, 0 ) != SQLITE_NULL )
 				{
-					my_agent->epmem_range_maxes->resize( sqlite3_column_int( create, 0 ), time_max );
+					my_agent->epmem_range_maxes->resize( sqlite3_column_int( create, 0 ), time_max - 1 );
 
-					do
-					{
-						if ( sqlite3_column_type( create, 1 ) != SQLITE_NULL )
-							(*my_agent->epmem_range_maxes)[ sqlite3_column_int( create, 0 ) - 1 ] = sqlite3_column_int( create, 1 );
-					} while ( sqlite3_step( create ) == SQLITE_ROW );
-				}
+					sqlite3_stmt *create2;
+					sqlite3_prepare_v2( my_agent->epmem_db, "SELECT e.id, MAX(e.end) FROM episodes e WHERE e.id NOT IN (SELECT id FROM episodes WHERE end IS NULL) GROUP BY e.id", -1, &create2, &tail );
+					while ( sqlite3_step( create2 ) == SQLITE_ROW )
+						(*my_agent->epmem_range_maxes)[ sqlite3_column_int( create2, 0 ) - 1 ] = sqlite3_column_int( create2, 1 );
+
+					sqlite3_finalize( create2 );
+				}				
 				sqlite3_finalize( create );
-								
+							
 				break;
 		}
 		
