@@ -2497,14 +2497,14 @@ void epmem_process_query( agent *my_agent, Symbol *state, Symbol *query, Symbol 
 			int cue_size = ( leaf_ids[0].size() + leaf_ids[1].size() );
 
 			// set weights for all leaf id's
-			{				
-				sqlite3_bind_int( my_agent->epmem_statements[ EPMEM_STMT_BIGTREE_R_ADD_WEIGHT ], 2, 1 );
+			{			
 				for ( int i=0; i<2; i++ )
 				{				
 					leaf_p = leaf_ids[i].begin();
 					while ( leaf_p != leaf_ids[i].end() )
-					{
-						sqlite3_bind_double( my_agent->epmem_statements[ EPMEM_STMT_BIGTREE_R_ADD_WEIGHT ], SoarRand(), (*leaf_p) );
+					{						
+						sqlite3_bind_int( my_agent->epmem_statements[ EPMEM_STMT_BIGTREE_R_ADD_WEIGHT ], 1, (*leaf_p) );
+						sqlite3_bind_double( my_agent->epmem_statements[ EPMEM_STMT_BIGTREE_R_ADD_WEIGHT ], 2, SoarRand() );
 						sqlite3_step( my_agent->epmem_statements[ EPMEM_STMT_BIGTREE_R_ADD_WEIGHT ] );
 						sqlite3_reset( my_agent->epmem_statements[ EPMEM_STMT_BIGTREE_R_ADD_WEIGHT ] );
 						
