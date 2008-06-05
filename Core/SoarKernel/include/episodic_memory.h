@@ -38,6 +38,7 @@
 #define EPMEM_PROVENANCE_OFF 2
 
 #define EPMEM_TRIGGER_OUTPUT 1
+#define EPMEM_TRIGGER_DC 2
 
 // statement storage
 // 0 - 9 => common

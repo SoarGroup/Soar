@@ -661,7 +661,7 @@ const long epmem_convert_provenance( const char *val )
  **************************************************************************/
 bool epmem_validate_trigger( const long new_val )
 {
-	return ( ( new_val > 0 ) && ( new_val <= EPMEM_TRIGGER_OUTPUT ) );
+	return ( ( new_val > 0 ) && ( new_val <= EPMEM_TRIGGER_DC ) );
 }
 
 /***************************************************************************
@@ -676,6 +676,10 @@ const char *epmem_convert_trigger( const long val )
 		case EPMEM_TRIGGER_OUTPUT:
 			return_val = "output";
 			break;
+			
+		case EPMEM_TRIGGER_DC:
+			return_val = "dc";
+			break;
 	}
 	
 	return return_val;
@@ -686,7 +690,10 @@ const long epmem_convert_trigger( const char *val )
 	long return_val = NULL;
 	
 	if ( !strcmp( val, "output" ) )
-		return_val = EPMEM_TRIGGER_OUTPUT;	
+		return_val = EPMEM_TRIGGER_OUTPUT;
+	
+	if ( !strcmp( val, "dc" ) )
+		return_val = EPMEM_TRIGGER_DC;
 	
 	return return_val;
 }
@@ -1269,6 +1276,10 @@ void epmem_consider_new_episode( agent *my_agent )
 			new_memory = true;
 			my_agent->bottom_goal->id.epmem_info->last_ol_count = wme_count;
 		}
+	}
+	else if ( trigger == EPMEM_TRIGGER_DC )
+	{
+		new_memory = true;
 	}
 	
 	if ( new_memory )
