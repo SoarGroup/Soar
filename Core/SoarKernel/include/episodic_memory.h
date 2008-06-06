@@ -38,6 +38,7 @@
 #define EPMEM_PROVENANCE_OFF 2
 
 #define EPMEM_TRIGGER_OUTPUT 1
+#define EPMEM_TRIGGER_DC 2
 
 // statement storage
 // 0 - 9 => common
@@ -99,7 +100,9 @@
 
 // names of stats
 #define EPMEM_STAT_TIME							0
-#define EPMEM_STATS								1 // must be 1+ last epmem stat
+#define EPMEM_STAT_MEM_USAGE					1
+#define EPMEM_STAT_MEM_HIGH						2
+#define EPMEM_STATS								3 // must be 1+ last epmem stat
 
 //
 // These must go below constants

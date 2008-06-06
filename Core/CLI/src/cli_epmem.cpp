@@ -346,6 +346,26 @@ bool CommandLineInterface::DoEpMem( gSKI::Agent* pAgent, const char pOp, const s
 				m_Result << output << "\n";
 			else
 				AppendArgTagFast( sml_Names::kParamValue, sml_Names::kTypeString, output.c_str() );
+			
+			output = "Memory Usage: ";
+			temp = epmem_get_stat( my_agent, (const long) EPMEM_STAT_MEM_USAGE );
+			temp_str = to_string( temp );
+			output += (*temp_str);
+			delete temp_str;
+			if ( m_RawOutput )
+				m_Result << output << "\n";
+			else
+				AppendArgTagFast( sml_Names::kParamValue, sml_Names::kTypeString, output.c_str() );
+			
+			output = "Memory Highwater: ";
+			temp = epmem_get_stat( my_agent, (const long) EPMEM_STAT_MEM_HIGH );
+			temp_str = to_string( temp );
+			output += (*temp_str);
+			delete temp_str;
+			if ( m_RawOutput )
+				m_Result << output << "\n";
+			else
+				AppendArgTagFast( sml_Names::kParamValue, sml_Names::kTypeString, output.c_str() );
 		}
 		else
 		{

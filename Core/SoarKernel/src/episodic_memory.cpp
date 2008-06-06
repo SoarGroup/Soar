@@ -28,6 +28,7 @@
 #include "io_soar.h"
 #include "wmem.h"
 #include "soar_rand.h"
+#include "production.h"
 
 #include "xmlTraceNames.h"
 #include "gski_event_system_functions.h"
@@ -660,7 +661,7 @@ const long epmem_convert_provenance( const char *val )
  **************************************************************************/
 bool epmem_validate_trigger( const long new_val )
 {
-	return ( ( new_val > 0 ) && ( new_val <= EPMEM_TRIGGER_OUTPUT ) );
+	return ( ( new_val > 0 ) && ( new_val <= EPMEM_TRIGGER_DC ) );
 }
 
 /***************************************************************************
@@ -675,6 +676,10 @@ const char *epmem_convert_trigger( const long val )
 		case EPMEM_TRIGGER_OUTPUT:
 			return_val = "output";
 			break;
+			
+		case EPMEM_TRIGGER_DC:
+			return_val = "dc";
+			break;
 	}
 	
 	return return_val;
@@ -685,7 +690,10 @@ const long epmem_convert_trigger( const char *val )
 	long return_val = NULL;
 	
 	if ( !strcmp( val, "output" ) )
-		return_val = EPMEM_TRIGGER_OUTPUT;	
+		return_val = EPMEM_TRIGGER_OUTPUT;
+	
+	if ( !strcmp( val, "dc" ) )
+		return_val = EPMEM_TRIGGER_DC;
 	
 	return return_val;
 }
@@ -731,7 +739,8 @@ void epmem_clean_stats( agent *my_agent )
 void epmem_reset_stats( agent *my_agent )
 {
 	for ( int i=0; i<EPMEM_STATS; i++ )
-		my_agent->epmem_stats[ i ]->value = 0;
+		if ( i != EPMEM_STAT_TIME )
+			my_agent->epmem_stats[ i ]->value = 0;
 }
 
 /***************************************************************************
@@ -788,6 +797,11 @@ double epmem_get_stat( agent *my_agent, const char *name )
 	const long stat = epmem_convert_stat( my_agent, name );
 	if ( stat == EPMEM_STATS )
 		return 0;
+	
+	if ( stat == EPMEM_STAT_MEM_USAGE )
+		return sqlite3_memory_used();
+	if ( stat == EPMEM_STAT_MEM_HIGH )
+		return sqlite3_memory_highwater( false );
 
 	return my_agent->epmem_stats[ stat ]->value;
 }
@@ -796,6 +810,11 @@ double epmem_get_stat( agent *my_agent, const long stat )
 {
 	if ( !epmem_valid_stat( my_agent, stat ) )
 		return 0;
+	
+	if ( stat == EPMEM_STAT_MEM_USAGE )
+		return sqlite3_memory_used();
+	if ( stat == EPMEM_STAT_MEM_HIGH )
+		return sqlite3_memory_highwater( false );
 
 	return my_agent->epmem_stats[ stat ]->value;
 }
@@ -806,7 +825,9 @@ double epmem_get_stat( agent *my_agent, const long stat )
 bool epmem_set_stat( agent *my_agent, const char *name, double new_val )
 {
 	const long stat = epmem_convert_stat( my_agent, name );
-	if ( stat == EPMEM_STATS )
+	if ( ( stat == EPMEM_STATS ) ||
+		 ( stat == EPMEM_STAT_MEM_USAGE ) ||
+		 ( stat == EPMEM_STAT_MEM_HIGH ) )
 		return false;
 	
 	my_agent->epmem_stats[ stat ]->value = new_val;
@@ -817,6 +838,10 @@ bool epmem_set_stat( agent *my_agent, const char *name, double new_val )
 bool epmem_set_stat( agent *my_agent, const long stat, double new_val )
 {
 	if ( !epmem_valid_stat( my_agent, stat ) )
+		return false;
+	
+	if ( ( stat == EPMEM_STAT_MEM_USAGE ) ||
+		 ( stat == EPMEM_STAT_MEM_HIGH ) )
 		return false;
 	
 	my_agent->epmem_stats[ stat ]->value = new_val;
@@ -1252,6 +1277,10 @@ void epmem_consider_new_episode( agent *my_agent )
 			my_agent->bottom_goal->id.epmem_info->last_ol_count = wme_count;
 		}
 	}
+	else if ( trigger == EPMEM_TRIGGER_DC )
+	{
+		new_memory = true;
+	}
 	
 	if ( new_memory )
 		epmem_new_episode( my_agent );
@@ -1300,7 +1329,7 @@ void epmem_new_episode( agent *my_agent )
 		map<unsigned long, double *> epmem;
 
 		unsigned long my_hash;
-		int tc = my_agent->top_goal->id.tc_num + 3;
+		int tc = get_new_tc_number( my_agent );
 
 		int i;	
 
@@ -1471,7 +1500,7 @@ void epmem_new_episode( agent *my_agent )
 		map<unsigned long, bool> epmem;
 
 		unsigned long my_hash;
-		int tc = my_agent->top_goal->id.tc_num + 3;
+		int tc = get_new_tc_number( my_agent );
 
 		int i;	
 
@@ -1812,7 +1841,7 @@ void epmem_respond_to_cmd( agent *my_agent )
 			path = 0;
 			
 			// get all top-level symbols
-			wmes = epmem_get_augs_of_id( my_agent, state->id.epmem_cmd_header, state->id.tc_num + 3, &len );
+			wmes = epmem_get_augs_of_id( my_agent, state->id.epmem_cmd_header, get_new_tc_number( my_agent ), &len );
 
 			// process top-level symbols
 			for ( i=0; i<len; i++ )
@@ -1972,7 +2001,7 @@ void epmem_respond_to_cmd( agent *my_agent )
 void epmem_clear_result( agent *my_agent, Symbol *state )
 {	
 	int len;
-	wme **wmes = epmem_get_augs_of_id( my_agent, state->id.epmem_result_header, state->id.tc_num + 3, &len );
+	wme **wmes = epmem_get_augs_of_id( my_agent, state->id.epmem_result_header, get_new_tc_number( my_agent ), &len );
 
 	for ( int i=0; i<len; i++ )
 		remove_input_wme( my_agent, wmes[ i ] );
@@ -1988,11 +2017,11 @@ void epmem_process_query( agent *my_agent, Symbol *state, Symbol *query, Symbol 
 	int len_query = 0, len_neg_query = 0;
 	wme **wmes_query = NULL;
 	if ( query != NULL )
-		wmes_query = epmem_get_augs_of_id( my_agent, query, state->id.tc_num + 3, &len_query );
+		wmes_query = epmem_get_augs_of_id( my_agent, query, get_new_tc_number( my_agent ), &len_query );
 
 	wme **wmes_neg_query = NULL;
 	if ( neg_query != NULL )
-		wmes_neg_query = epmem_get_augs_of_id( my_agent, neg_query, state->id.tc_num + 3, &len_neg_query );
+		wmes_neg_query = epmem_get_augs_of_id( my_agent, neg_query, get_new_tc_number( my_agent ), &len_neg_query );
 
 	if ( ( len_query != 0 ) || ( len_neg_query != 0 ) )
 	{
@@ -2010,7 +2039,7 @@ void epmem_process_query( agent *my_agent, Symbol *state, Symbol *query, Symbol 
 				
 				queue<Symbol *> parent_syms;
 				queue<unsigned long> parent_ids;			
-				int tc = state->id.tc_num + 3;
+				int tc = get_new_tc_number( my_agent );
 
 				Symbol *parent_sym;
 				unsigned long parent_id;
@@ -2378,7 +2407,7 @@ void epmem_process_query( agent *my_agent, Symbol *state, Symbol *query, Symbol 
 				
 				queue<Symbol *> parent_syms;
 				queue<unsigned long> parent_ids;			
-				int tc = state->id.tc_num + 3;
+				int tc = get_new_tc_number( my_agent );
 
 				Symbol *parent_sym;
 				unsigned long parent_id;
@@ -2480,14 +2509,14 @@ void epmem_process_query( agent *my_agent, Symbol *state, Symbol *query, Symbol 
 			int cue_size = ( leaf_ids[0].size() + leaf_ids[1].size() );
 
 			// set weights for all leaf id's
-			{				
-				sqlite3_bind_int( my_agent->epmem_statements[ EPMEM_STMT_BIGTREE_R_ADD_WEIGHT ], 2, 1 );
+			{			
 				for ( int i=0; i<2; i++ )
 				{				
 					leaf_p = leaf_ids[i].begin();
 					while ( leaf_p != leaf_ids[i].end() )
-					{
-						sqlite3_bind_double( my_agent->epmem_statements[ EPMEM_STMT_BIGTREE_R_ADD_WEIGHT ], SoarRand(), (*leaf_p) );
+					{						
+						sqlite3_bind_int( my_agent->epmem_statements[ EPMEM_STMT_BIGTREE_R_ADD_WEIGHT ], 1, (*leaf_p) );
+						sqlite3_bind_double( my_agent->epmem_statements[ EPMEM_STMT_BIGTREE_R_ADD_WEIGHT ], 2, SoarRand() );
 						sqlite3_step( my_agent->epmem_statements[ EPMEM_STMT_BIGTREE_R_ADD_WEIGHT ] );
 						sqlite3_reset( my_agent->epmem_statements[ EPMEM_STMT_BIGTREE_R_ADD_WEIGHT ] );
 						
