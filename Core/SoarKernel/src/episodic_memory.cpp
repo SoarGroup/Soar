@@ -739,7 +739,8 @@ void epmem_clean_stats( agent *my_agent )
 void epmem_reset_stats( agent *my_agent )
 {
 	for ( int i=0; i<EPMEM_STATS; i++ )
-		my_agent->epmem_stats[ i ]->value = 0;
+		if ( i != EPMEM_STAT_TIME )
+			my_agent->epmem_stats[ i ]->value = 0;
 }
 
 /***************************************************************************
