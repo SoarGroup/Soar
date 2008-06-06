@@ -2889,10 +2889,10 @@ void add_wme_to_gds(agent* agentPtr, goal_dependency_set* gds, wme* wme_to_add)
                 
    if (agentPtr->soar_verbose_flag || agentPtr->sysparams[TRACE_WM_CHANGES_SYSPARAM]) 
    {                    
-	   print(agentPtr, "Adding to GDS for S%d: ", wme_to_add->gds->goal->id.level);    
+	   print(agentPtr, "Adding to GDS for S%d: ", wme_to_add->gds->goal->id.name_number);    
 	   print(agentPtr, " WME: "); 
 	   char buf[256];
-	   SNPRINTF(buf, 254, "Adding to GDS for S%d: ", wme_to_add->gds->goal->id.level);
+	   SNPRINTF(buf, 254, "Adding to GDS for S%d: ", wme_to_add->gds->goal->id.name_number);
 	   gSKI_MakeAgentCallbackXML(agentPtr, kFunctionBeginTag, kTagVerbose);
 	   gSKI_MakeAgentCallbackXML(agentPtr, kFunctionAddAttribute, kTypeString, buf);
 	   print_wme(agentPtr, wme_to_add);
