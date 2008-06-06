@@ -15,6 +15,7 @@
 
 #include <vector>
 #include <string>
+#include <stack>
 
 #include "symtab.h"
 #include "wmem.h"
@@ -164,6 +165,8 @@ typedef struct epmem_data_struct
 	unsigned long last_cmd_count;	// last update to epmem.command
 
 	int last_memory;				// last retrieved memory
+
+	std::stack<wme *> *epmem_wmes;			// wmes in last epmem
 } epmem_data;
 
 //////////////////////////////////////////////////////////

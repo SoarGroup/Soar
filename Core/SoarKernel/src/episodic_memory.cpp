@@ -1236,6 +1236,9 @@ void epmem_reset( agent *my_agent )
 		data->last_cmd_count = 0;
 
 		data->last_memory = EPMEM_MEMID_NONE;
+
+		// clear off any result stuff (takes care of epmem_wmes)
+		epmem_clear_result( my_agent, goal );
 		
 		goal = goal->id.lower_goal;
 	}
@@ -1997,12 +2000,33 @@ void epmem_respond_to_cmd( agent *my_agent )
 }
 
 /***************************************************************************
+ * Function     : epmem_clear_result_wmes
+ **************************************************************************/
+void epmem_clear_result_wmes( agent *my_agent, Symbol *state )
+{
+	if ( state->id.epmem_info->epmem_wmes != NULL )
+	{
+		while ( !state->id.epmem_info->epmem_wmes->empty() )
+		{
+			remove_input_wme( my_agent, state->id.epmem_info->epmem_wmes->top() );
+			state->id.epmem_info->epmem_wmes->pop();
+		}
+			
+		delete state->id.epmem_info->epmem_wmes;
+		state->id.epmem_info->epmem_wmes = NULL;
+	}
+}
+
+/***************************************************************************
  * Function     : epmem_clear_result
  **************************************************************************/
 void epmem_clear_result( agent *my_agent, Symbol *state )
 {	
 	int len;
 	wme **wmes = epmem_get_augs_of_id( my_agent, state->id.epmem_result_header, get_new_tc_number( my_agent ), &len );
+
+	// clear the retrieval
+	epmem_clear_result_wmes( my_agent, state );
 
 	for ( int i=0; i<len; i++ )
 		remove_input_wme( my_agent, wmes[ i ] );
@@ -2955,10 +2979,12 @@ void epmem_install_memory( agent *my_agent, Symbol *state, long memory_id )
 
 	// remember this as the last memory installed
 	state->id.epmem_info->last_memory = memory_id;
+	state->id.epmem_info->epmem_wmes = new std::stack<wme *>();
 
 	// create a new ^retrieved header for this result
 	Symbol *retrieved_header = make_new_identifier( my_agent, 'R', result_header->id.level );
 	add_input_wme( my_agent, result_header, my_agent->epmem_retrieved_symbol, retrieved_header );
+	symbol_remove_ref( my_agent, retrieved_header );
 
 	// add *-id wme's
 	add_input_wme( my_agent, result_header, my_agent->epmem_memory_id_symbol, make_int_constant( my_agent, memory_id ) );
@@ -2996,7 +3022,8 @@ void epmem_install_memory( agent *my_agent, Symbol *state, long memory_id )
 			if ( type_code == SQLITE_NULL )
 			{
 				value = make_new_identifier( my_agent, name[0], parent->id.level );
-				add_input_wme( my_agent, parent, attr, value );
+				state->id.epmem_info->epmem_wmes->push( add_input_wme( my_agent, parent, attr, value ) );
+				symbol_remove_ref( my_agent, value );
 
 				ids[ child_id ] = value;
 			}
@@ -3017,7 +3044,7 @@ void epmem_install_memory( agent *my_agent, Symbol *state, long memory_id )
 						break;
 				}
 
-				add_input_wme( my_agent, parent, attr, value );
+				state->id.epmem_info->epmem_wmes->push( add_input_wme( my_agent, parent, attr, value ) );
 			}
 		}
 		sqlite3_reset( my_agent->epmem_statements[ EPMEM_STMT_BIGTREE_I_GET_EPISODE ] );
@@ -3054,8 +3081,9 @@ void epmem_install_memory( agent *my_agent, Symbol *state, long memory_id )
 			// identifier = NULL, else attr->val
 			if ( type_code == SQLITE_NULL )
 			{
-				value = make_new_identifier( my_agent, name[0], parent->id.level );
-				add_input_wme( my_agent, parent, attr, value );
+				value = make_new_identifier( my_agent, name[0], parent->id.level );				
+				state->id.epmem_info->epmem_wmes->push( add_input_wme( my_agent, parent, attr, value ) );
+				symbol_remove_ref( my_agent, value );
 
 				ids[ child_id ] = value;
 			}
@@ -3076,7 +3104,7 @@ void epmem_install_memory( agent *my_agent, Symbol *state, long memory_id )
 						break;
 				}
 
-				add_input_wme( my_agent, parent, attr, value );
+				state->id.epmem_info->epmem_wmes->push( add_input_wme( my_agent, parent, attr, value ) );
 			}
 		}
 		sqlite3_reset( my_agent->epmem_statements[ EPMEM_STMT_BIGTREE_R_GET_EPISODE ] );

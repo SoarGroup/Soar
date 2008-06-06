@@ -2038,6 +2038,7 @@ void create_new_context (agent* thisAgent, Symbol *attr_of_impasse, byte impasse
   id->id.epmem_info->last_cmd_count = 0;
 
   id->id.epmem_info->last_memory = EPMEM_MEMID_NONE;
+  id->id.epmem_info->epmem_wmes = NULL;
 
   /* --- invoke callback routine --- */
   soar_invoke_callbacks(thisAgent, thisAgent, 
