@@ -638,10 +638,9 @@ bool reinitialize_soar (agent* thisAgent) {
   /* kjh (CUSP-B4) end */
 
   reset_rl_data( thisAgent );
+  epmem_reset( thisAgent );
   clear_goal_stack (thisAgent);
   reset_rl_stats( thisAgent );
-
-  epmem_reset( thisAgent );
   epmem_reset_stats( thisAgent );
 
   if (thisAgent->operand2_mode == TRUE) {

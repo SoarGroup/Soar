@@ -30,6 +30,9 @@
 #include "soar_rand.h"
 #include "production.h"
 
+#include "prefmem.h"
+#include "instantiations.h"
+
 #include "xmlTraceNames.h"
 #include "gski_event_system_functions.h"
 #include "print.h"
@@ -44,6 +47,10 @@ using namespace std;
 // defined in symtab.cpp but not in symtab.h
 extern unsigned long compress( unsigned long h, short num_bits );
 extern unsigned long hash_string( const char *s );
+
+// I don't want to expose these functions
+void epmem_clear_result( agent *my_agent, Symbol *state );
+void epmem_process_query( agent *my_agent, Symbol *state, Symbol *query, Symbol *neg_query, vector<long> *prohibit, long before, long after );
 
 /***************************************************************************
  * Function     : epmem_clean_parameters
@@ -911,6 +918,74 @@ wme **epmem_get_augs_of_id( agent* my_agent, Symbol * id, tc_number tc, int *num
 }
 
 /***************************************************************************
+ * Function     : epmem_wme_has_value
+ * Author		: Andy Nuxoll
+ * Notes		: This routine returns TRUE if the given WMEs attribute 
+ *                and value are both symbols and have the names given.  
+ *                If either of the given names are NULL then they are 
+ *                assumed to be a match (i.e., a wildcard).  Thus passing 
+ *                NULL for both attr_name and value_name will always yield 
+ *                a TRUE result.
+ **************************************************************************/
+bool epmem_wme_has_value( wme *w, char *attr_name, char *value_name )
+{
+	if ( w == NULL )
+		return false;
+
+	if ( attr_name != NULL )
+	{
+		if ( w->attr->common.symbol_type != SYM_CONSTANT_SYMBOL_TYPE )
+			return false;
+
+		if ( strcmp( w->attr->sc.name, attr_name ) != 0 )
+			return false;
+	}
+
+    if ( value_name != NULL )
+	{
+		if ( w->value->common.symbol_type != SYM_CONSTANT_SYMBOL_TYPE )
+			return false;
+
+		if ( strcmp( w->attr->sc.name, value_name ) != 0 )
+			return false;
+	}
+
+	return true;
+}
+
+/***************************************************************************
+ * Function     : epmem_get_aug_of_id
+ * Author		: Andy Nuxoll
+ * Notes		: This routine examines a symbol for an augmentation that
+ *				  has the given attribute and value and returns it.  See
+ *                epmem_wme_has_value() for info on how the correct wme is 
+ *                matched to the given strings.
+ **************************************************************************/
+wme *epmem_get_aug_of_id( agent *my_agent, Symbol *sym, char *attr_name, char *value_name )
+{
+	wme **wmes;
+	int len = 0;
+	wme *return_val = NULL;
+
+	wmes = epmem_get_augs_of_id( my_agent, sym, get_new_tc_number( my_agent ), &len );
+	if ( wmes == NULL )
+		return return_val;
+
+	for ( int i=0; i<len; i++ )
+	{
+		if ( epmem_wme_has_value( wmes[ i ], attr_name, value_name ) )
+		{
+			return_val = wmes[ i ];
+			break;
+		}
+	}
+
+	free_memory( my_agent, wmes, MISCELLANEOUS_MEM_USAGE );
+
+	return return_val;
+}
+
+/***************************************************************************
  * Function     : epmem_hash_wme
  * Author		: Andy Nuxoll
  * Notes		: Creates a hash value for a WME.  This is used to find the
@@ -1039,7 +1114,7 @@ void epmem_init_db( agent *my_agent )
 				sqlite3_prepare_v2( my_agent->epmem_db, "SELECT child_id FROM ids WHERE hash=? AND parent_id=? AND name=? AND value IS NULL", -1, &( my_agent->epmem_statements[ EPMEM_STMT_BIGTREE_I_FIND_ID_NULL ] ), &tail );
 							
 				// custom statement for retrieving an episode
-				sqlite3_prepare_v2( my_agent->epmem_db, "SELECT i.child_id, i.parent_id, i.name, i.value FROM ids i INNER JOIN episodes e ON i.child_id=e.id WHERE e.time=? ORDER BY i.child_id ASC", -1, &( my_agent->epmem_statements[ EPMEM_STMT_BIGTREE_I_GET_EPISODE ] ), &tail );
+				sqlite3_prepare_v2( my_agent->epmem_db, "SELECT i.child_id, i.parent_id, i.name, i.value FROM ids i WHERE i.child_id IN (SELECT id FROM episodes WHERE time=?) ORDER BY i.child_id ASC", -1, &( my_agent->epmem_statements[ EPMEM_STMT_BIGTREE_I_GET_EPISODE ] ), &tail );
 
 				// custom statement for validating an episode
 				sqlite3_prepare_v2( my_agent->epmem_db, "SELECT COUNT(*) AS ct FROM episodes WHERE time=?", -1, &( my_agent->epmem_statements[ EPMEM_STMT_BIGTREE_I_VALID_EPISODE ] ), &tail );
@@ -1112,7 +1187,7 @@ void epmem_init_db( agent *my_agent )
 				sqlite3_prepare_v2( my_agent->epmem_db, "SELECT child_id FROM ids WHERE hash=? AND parent_id=? AND name=? AND value IS NULL", -1, &( my_agent->epmem_statements[ EPMEM_STMT_BIGTREE_R_FIND_ID_NULL ] ), &tail );
 
 				// custom statement for retrieving an episode
-				sqlite3_prepare_v2( my_agent->epmem_db, "SELECT i.child_id, i.parent_id, i.name, i.value FROM episodes e INNER JOIN ids i ON e.id=i.child_id WHERE e.start<=? AND (e.end>=? OR e.end IS NULL) ORDER BY i.child_id ASC", -1, &( my_agent->epmem_statements[ EPMEM_STMT_BIGTREE_R_GET_EPISODE ] ), &tail );
+				sqlite3_prepare_v2( my_agent->epmem_db, "SELECT i.child_id, i.parent_id, i.name, i.value FROM ids i WHERE i.child_id IN (SELECT id FROM episodes WHERE start<=1 AND (end>=1 OR end IS NULL)) ORDER BY i.child_id ASC", -1, &( my_agent->epmem_statements[ EPMEM_STMT_BIGTREE_R_GET_EPISODE ] ), &tail );
 
 				// custom statement for validating an episode
 				sqlite3_prepare_v2( my_agent->epmem_db, "SELECT COUNT(*) AS ct FROM times WHERE id=?", -1, &( my_agent->epmem_statements[ EPMEM_STMT_BIGTREE_R_VALID_EPISODE ] ), &tail );
@@ -1181,27 +1256,28 @@ void epmem_init_db( agent *my_agent )
 				sqlite3_prepare_v2( my_agent->epmem_db, "DELETE FROM ranges", -1, &( my_agent->epmem_statements[ EPMEM_STMT_BIGTREE_R_TRUNCATE_RANGES ] ), &tail );
 
 				// get max time
-				
 				sqlite3_prepare_v2( my_agent->epmem_db, "SELECT MAX(id) FROM times", -1, &create, &tail );
 				if ( sqlite3_step( create ) == SQLITE_ROW )						
 					epmem_set_stat( my_agent, (const long) EPMEM_STAT_TIME, ( sqlite3_column_int( create, 0 ) + 1 ) );
 				sqlite3_finalize( create );
 
-				// get max list
+				// get max id + max list
 				time_max = epmem_get_stat( my_agent, (const long) EPMEM_STAT_TIME );
-				sqlite3_prepare_v2( my_agent->epmem_db, "SELECT e.id, e.end FROM ids i LEFT JOIN episodes e ON e.id=i.child_id ORDER BY i.child_id DESC", -1, &create, &tail );
-				if ( sqlite3_step( create ) == SQLITE_ROW )
+				sqlite3_prepare_v2( my_agent->epmem_db, "SELECT MAX(child_id) FROM ids", -1, &create, &tail );
+				sqlite3_step( create );
+				if ( sqlite3_column_type( create, 0 ) != SQLITE_NULL )
 				{
-					my_agent->epmem_range_maxes->resize( sqlite3_column_int( create, 0 ), time_max );
+					my_agent->epmem_range_maxes->resize( sqlite3_column_int( create, 0 ), time_max - 1 );
 
-					do
-					{
-						if ( sqlite3_column_type( create, 1 ) != SQLITE_NULL )
-							(*my_agent->epmem_range_maxes)[ sqlite3_column_int( create, 0 ) - 1 ] = sqlite3_column_int( create, 1 );
-					} while ( sqlite3_step( create ) == SQLITE_ROW );
-				}
+					sqlite3_stmt *create2;
+					sqlite3_prepare_v2( my_agent->epmem_db, "SELECT e.id, MAX(e.end) FROM episodes e WHERE e.id NOT IN (SELECT id FROM episodes WHERE end IS NULL) GROUP BY e.id", -1, &create2, &tail );
+					while ( sqlite3_step( create2 ) == SQLITE_ROW )
+						(*my_agent->epmem_range_maxes)[ sqlite3_column_int( create2, 0 ) - 1 ] = sqlite3_column_int( create2, 1 );
+
+					sqlite3_finalize( create2 );
+				}				
 				sqlite3_finalize( create );
-								
+							
 				break;
 		}
 		
@@ -1235,6 +1311,11 @@ void epmem_reset( agent *my_agent )
 		data->last_cmd_count = 0;
 
 		data->last_memory = EPMEM_MEMID_NONE;
+
+		data->cue_wmes->clear();
+
+		// clear off any result stuff (takes care of epmem_wmes)
+		epmem_clear_result( my_agent, goal );
 		
 		goal = goal->id.lower_goal;
 	}
@@ -1754,6 +1835,112 @@ long epmem_previous_episode( agent *my_agent, long memory_id )
 	return return_val;
 }
 
+
+/***************************************************************************
+ * Function     : epmem_make_fake_preference
+ * Author		: Andy Nuxoll
+ * Notes		: This function adds a fake preference to a WME so that 
+ *                it will not be added to the goal dependency set of the 
+ *                state it is attached to.  This is used to prevents the 
+ *                GDS from removing a state whenever a epmem is retrieved 
+ *                that is attached to it.
+ *
+ *                (The bulk of the content of this function is taken from
+ *                 make_fake_preference_for_goal_item() in decide.c)
+ **************************************************************************/
+preference *epmem_make_fake_preference( agent *my_agent, Symbol *state, wme *w )
+{
+	// make fake preference
+	preference *pref = make_preference( my_agent, ACCEPTABLE_PREFERENCE_TYPE, w->id, w->attr, w->value, NIL );
+	pref->o_supported = TRUE;
+	symbol_add_ref( pref->id );
+	symbol_add_ref( pref->attr );
+	symbol_add_ref( pref->value );
+
+	// add preference to goal list
+	insert_at_head_of_dll( state->id.preferences_from_goal, pref, all_of_goal_next, all_of_goal_prev );
+	pref->on_goal_list = TRUE;
+
+	// add reference
+	preference_add_ref( pref );
+
+	// make fake instantiation
+	instantiation *inst;
+	allocate_with_pool( my_agent, &( my_agent->instantiation_pool ), &inst );
+	pref->inst = inst;
+	pref->inst_next = pref->inst_prev = NULL;
+	inst->preferences_generated = pref;
+	inst->prod = NULL;
+	inst->next = inst->prev = NULL;
+	inst->rete_token = NULL;
+	inst->rete_wme = NULL;
+	inst->match_goal = state;
+	inst->match_goal_level = state->id.level;
+	inst->okay_to_variablize = TRUE;
+	inst->backtrace_number = 0;
+	inst->in_ms = FALSE;
+
+	// create a condition for each cue WME (superstate if no cue)
+	bool no_cue = state->id.epmem_info->cue_wmes->empty();
+	condition *cond = NULL;
+	condition *prev_cond = NULL;
+	if ( no_cue )
+		state->id.epmem_info->cue_wmes->push_back( state->id.epmem_info->ss_wme );
+	{
+		std::list<wme *>::iterator p = state->id.epmem_info->cue_wmes->begin();
+
+		while ( p != state->id.epmem_info->cue_wmes->end() )
+		{
+			// construct the condition
+			allocate_with_pool( my_agent, &( my_agent->condition_pool ), &cond );
+			cond->type = POSITIVE_CONDITION;
+			cond->prev = prev_cond;
+			cond->next = NULL;
+			if ( prev_cond != NULL )
+			{
+				prev_cond->next = cond;
+			}
+			else
+			{
+				inst->top_of_instantiated_conditions = cond;
+				inst->bottom_of_instantiated_conditions = cond;
+				inst->nots = NULL;
+			}
+			cond->data.tests.id_test = make_equality_test( (*p)->id );
+			cond->data.tests.attr_test = make_equality_test( (*p)->attr );
+			cond->data.tests.value_test = make_equality_test( (*p)->value );
+			cond->test_for_acceptable_preference = TRUE;
+			cond->bt.wme_ = (*p);
+			wme_add_ref( (*p) );
+			cond->bt.level = (*p)->id->id.level;
+			cond->bt.trace = NULL;
+			cond->bt.prohibits = NULL;
+
+			prev_cond = cond;
+
+			p++;
+		}
+	}
+	if ( no_cue )
+		state->id.epmem_info->cue_wmes->clear();  
+    
+    return pref;
+}
+
+/***************************************************************************
+ * Function     : epmem_remove_fake_preference
+ * Author		: Andy Nuxoll
+ * Notes		: This function removes a fake preference on a WME 
+ *                created by epmem_make_fake_preference().  While it's
+ *                a one-line function I thought it was important to
+ *                create so it would be clear what's going on in this
+ *                case.
+ **************************************************************************/
+void epmem_remove_fake_preference( agent *my_agent, wme *w )
+{
+	preference_remove_ref( my_agent, w->preference );
+}
+
 /***************************************************************************
  * Function     : epmem_respond_to_cmd
  **************************************************************************/
@@ -1828,6 +2015,9 @@ void epmem_respond_to_cmd( agent *my_agent )
 		
 		if ( new_cue )
 		{		
+			// clear old cue
+			state->id.epmem_info->cue_wmes->clear();
+			
 			// initialize command vars
 			retrieve = EPMEM_MEMID_NONE;
 			next = false;
@@ -1961,12 +2151,9 @@ void epmem_respond_to_cmd( agent *my_agent )
 			{
 				// retrieve
 				if ( path == 1 )
-				{
-					if ( retrieve != state->id.epmem_info->last_memory )
-					{
-						epmem_clear_result( my_agent, state );
-						epmem_install_memory( my_agent, state, retrieve );
-					}
+				{				
+					epmem_clear_result( my_agent, state );
+					epmem_install_memory( my_agent, state, retrieve );					
 				}
 				// previous or next
 				else if ( path == 2 )
@@ -1984,7 +2171,10 @@ void epmem_respond_to_cmd( agent *my_agent )
 			else
 			{
 				epmem_clear_result( my_agent, state );
-				add_input_wme( my_agent, state->id.epmem_result_header, my_agent->epmem_status_symbol, my_agent->epmem_bad_cmd_symbol );
+				
+				wme *new_wme = add_input_wme( my_agent, state->id.epmem_result_header, my_agent->epmem_status_symbol, my_agent->epmem_bad_cmd_symbol );
+				new_wme->preference = epmem_make_fake_preference( my_agent, state, new_wme );				
+				state->id.epmem_info->epmem_wmes->push( new_wme );
 			}
 
 			// free space from aug list
@@ -2000,13 +2190,12 @@ void epmem_respond_to_cmd( agent *my_agent )
  **************************************************************************/
 void epmem_clear_result( agent *my_agent, Symbol *state )
 {	
-	int len;
-	wme **wmes = epmem_get_augs_of_id( my_agent, state->id.epmem_result_header, get_new_tc_number( my_agent ), &len );
-
-	for ( int i=0; i<len; i++ )
-		remove_input_wme( my_agent, wmes[ i ] );
-	
-	free_memory( my_agent, wmes, MISCELLANEOUS_MEM_USAGE );
+	while ( !state->id.epmem_info->epmem_wmes->empty() )
+	{		
+		remove_input_wme( my_agent, state->id.epmem_info->epmem_wmes->top() );
+		epmem_remove_fake_preference( my_agent, state->id.epmem_info->epmem_wmes->top() );
+		state->id.epmem_info->epmem_wmes->pop();
+	}	
 }
 
 /***************************************************************************
@@ -2029,6 +2218,8 @@ void epmem_process_query( agent *my_agent, Symbol *state, Symbol *query, Symbol 
 
 		if ( indexing == EPMEM_INDEXING_BIGTREE_INSTANCE )
 		{
+			wme *new_wme;
+			
 			// initialize pos/neg lists
 			std::list<unsigned long> leaf_ids[2];
 			std::list<unsigned long>::iterator leaf_p;
@@ -2086,6 +2277,9 @@ void epmem_process_query( agent *my_agent, Symbol *state, Symbol *query, Symbol 
 						{
 							for ( j=0; j<len; j++ )
 							{
+								// add to cue list
+								state->id.epmem_info->cue_wmes->push_back( (*wmes)[ j ] );
+								
 								// find wme id							
 								my_hash = epmem_hash_wme( (*wmes)[j] );
 								if ( (*wmes)[j]->value->common.symbol_type != IDENTIFIER_SYMBOL_TYPE )
@@ -2142,7 +2336,9 @@ void epmem_process_query( agent *my_agent, Symbol *state, Symbol *query, Symbol 
 			// query and neg-query, now proceed
 			if ( leaf_ids[0].empty() && leaf_ids[1].empty() )
 			{
-				add_input_wme( my_agent, state->id.epmem_result_header, my_agent->epmem_status_symbol, my_agent->epmem_failure_symbol );
+				new_wme = add_input_wme( my_agent, state->id.epmem_result_header, my_agent->epmem_status_symbol, my_agent->epmem_failure_symbol );
+				new_wme->preference = epmem_make_fake_preference( my_agent, state, new_wme );
+				state->id.epmem_info->epmem_wmes->push( new_wme );
 			}
 			else
 			{				
@@ -2365,26 +2561,38 @@ void epmem_process_query( agent *my_agent, Symbol *state, Symbol *query, Symbol 
 					result_match_score = sqlite3_column_double( search, 3 );
 					
 					// status
-					add_input_wme( my_agent, state->id.epmem_result_header, my_agent->epmem_status_symbol, my_agent->epmem_success_symbol );
+					new_wme = add_input_wme( my_agent, state->id.epmem_result_header, my_agent->epmem_status_symbol, my_agent->epmem_success_symbol );
+					new_wme->preference = epmem_make_fake_preference( my_agent, state, new_wme );
+					state->id.epmem_info->epmem_wmes->push( new_wme );
 
 					// match score
-					add_input_wme( my_agent, state->id.epmem_result_header, my_agent->epmem_match_score_symbol, make_float_constant( my_agent, result_match_score ) );
+					new_wme = add_input_wme( my_agent, state->id.epmem_result_header, my_agent->epmem_match_score_symbol, make_float_constant( my_agent, result_match_score ) );
+					new_wme->preference = epmem_make_fake_preference( my_agent, state, new_wme );
+					state->id.epmem_info->epmem_wmes->push( new_wme );
 
 					// cue-size
-					add_input_wme( my_agent, state->id.epmem_result_header, my_agent->epmem_cue_size_symbol, make_int_constant( my_agent, cue_size ) );
+					new_wme = add_input_wme( my_agent, state->id.epmem_result_header, my_agent->epmem_cue_size_symbol, make_int_constant( my_agent, cue_size ) );
+					new_wme->preference = epmem_make_fake_preference( my_agent, state, new_wme );
+					state->id.epmem_info->epmem_wmes->push( new_wme );
 
 					// normalized-match-score
-					add_input_wme( my_agent, state->id.epmem_result_header, my_agent->epmem_normalized_match_score_symbol, make_float_constant( my_agent, ( result_match_score / cue_size ) ) );
+					new_wme = add_input_wme( my_agent, state->id.epmem_result_header, my_agent->epmem_normalized_match_score_symbol, make_float_constant( my_agent, ( result_match_score / cue_size ) ) );
+					new_wme->preference = epmem_make_fake_preference( my_agent, state, new_wme );
+					state->id.epmem_info->epmem_wmes->push( new_wme );
 
 					// match-cardinality
-					add_input_wme( my_agent, state->id.epmem_result_header, my_agent->epmem_match_cardinality_symbol, make_int_constant( my_agent, result_cardinality ) );
+					new_wme = add_input_wme( my_agent, state->id.epmem_result_header, my_agent->epmem_match_cardinality_symbol, make_int_constant( my_agent, result_cardinality ) );
+					new_wme->preference = epmem_make_fake_preference( my_agent, state, new_wme );
+					state->id.epmem_info->epmem_wmes->push( new_wme );
 
 					// actual memory
 					epmem_install_memory( my_agent, state, result_time );
 				}
 				else
 				{
-					add_input_wme( my_agent, state->id.epmem_result_header, my_agent->epmem_status_symbol, my_agent->epmem_failure_symbol );
+					new_wme = add_input_wme( my_agent, state->id.epmem_result_header, my_agent->epmem_status_symbol, my_agent->epmem_failure_symbol );
+					new_wme->preference = epmem_make_fake_preference( my_agent, state, new_wme );
+					state->id.epmem_info->epmem_wmes->push( new_wme );
 				}
 
 				// cleanup
@@ -2393,6 +2601,8 @@ void epmem_process_query( agent *my_agent, Symbol *state, Symbol *query, Symbol 
 		}
 		else if ( indexing == EPMEM_INDEXING_BIGTREE_RANGE )
 		{
+			wme *new_wme;
+			
 			// start transaction: performance measure to keep weights/ranges non-permanent (i.e. in memory)
 			sqlite3_step( my_agent->epmem_statements[ EPMEM_STMT_BEGIN ] );
 			sqlite3_reset( my_agent->epmem_statements[ EPMEM_STMT_BEGIN ] );
@@ -2455,6 +2665,9 @@ void epmem_process_query( agent *my_agent, Symbol *state, Symbol *query, Symbol 
 						{
 							for ( j=0; j<len; j++ )
 							{
+								// add to cue list
+								state->id.epmem_info->cue_wmes->push_back( (*wmes)[ j ] );
+								
 								// find wme id							
 								my_hash = epmem_hash_wme( (*wmes)[j] );
 								if ( (*wmes)[j]->value->common.symbol_type != IDENTIFIER_SYMBOL_TYPE )
@@ -2887,26 +3100,38 @@ void epmem_process_query( agent *my_agent, Symbol *state, Symbol *query, Symbol 
 				if ( king_id != EPMEM_MEMID_NONE )
 				{
 					// status
-					add_input_wme( my_agent, state->id.epmem_result_header, my_agent->epmem_status_symbol, my_agent->epmem_success_symbol );
+					new_wme = add_input_wme( my_agent, state->id.epmem_result_header, my_agent->epmem_status_symbol, my_agent->epmem_success_symbol );
+					new_wme->preference = epmem_make_fake_preference( my_agent, state, new_wme );
+					state->id.epmem_info->epmem_wmes->push( new_wme );
 
 					// match score
-					add_input_wme( my_agent, state->id.epmem_result_header, my_agent->epmem_match_score_symbol, make_float_constant( my_agent, king_score ) );
+					new_wme = add_input_wme( my_agent, state->id.epmem_result_header, my_agent->epmem_match_score_symbol, make_float_constant( my_agent, king_score ) );
+					new_wme->preference = epmem_make_fake_preference( my_agent, state, new_wme );
+					state->id.epmem_info->epmem_wmes->push( new_wme );
 
 					// cue-size
-					add_input_wme( my_agent, state->id.epmem_result_header, my_agent->epmem_cue_size_symbol, make_int_constant( my_agent, cue_size ) );
+					new_wme = add_input_wme( my_agent, state->id.epmem_result_header, my_agent->epmem_cue_size_symbol, make_int_constant( my_agent, cue_size ) );
+					new_wme->preference = epmem_make_fake_preference( my_agent, state, new_wme );
+					state->id.epmem_info->epmem_wmes->push( new_wme );
 
 					// normalized-match-score
-					add_input_wme( my_agent, state->id.epmem_result_header, my_agent->epmem_normalized_match_score_symbol, make_float_constant( my_agent, ( king_score / cue_size ) ) );
+					new_wme = add_input_wme( my_agent, state->id.epmem_result_header, my_agent->epmem_normalized_match_score_symbol, make_float_constant( my_agent, ( king_score / cue_size ) ) );
+					new_wme->preference = epmem_make_fake_preference( my_agent, state, new_wme );
+					state->id.epmem_info->epmem_wmes->push( new_wme );
 
 					// match-cardinality
-					add_input_wme( my_agent, state->id.epmem_result_header, my_agent->epmem_match_cardinality_symbol, make_int_constant( my_agent, king_cardinality ) );
+					new_wme = add_input_wme( my_agent, state->id.epmem_result_header, my_agent->epmem_match_cardinality_symbol, make_int_constant( my_agent, king_cardinality ) );
+					new_wme->preference = epmem_make_fake_preference( my_agent, state, new_wme );
+					state->id.epmem_info->epmem_wmes->push( new_wme );
 
 					// actual memory
 					epmem_install_memory( my_agent, state, king_id );
 				}
 				else
 				{
-					add_input_wme( my_agent, state->id.epmem_result_header, my_agent->epmem_status_symbol, my_agent->epmem_failure_symbol );
+					new_wme = add_input_wme( my_agent, state->id.epmem_result_header, my_agent->epmem_status_symbol, my_agent->epmem_failure_symbol );
+					new_wme->preference = epmem_make_fake_preference( my_agent, state, new_wme );
+					state->id.epmem_info->epmem_wmes->push( new_wme );
 				}
 			}
 
@@ -2929,7 +3154,10 @@ void epmem_process_query( agent *my_agent, Symbol *state, Symbol *query, Symbol 
 	}
 	else
 	{
-		add_input_wme( my_agent, state->id.epmem_result_header, my_agent->epmem_status_symbol, my_agent->epmem_bad_cmd_symbol );
+		wme *new_wme = add_input_wme( my_agent, state->id.epmem_result_header, my_agent->epmem_status_symbol, my_agent->epmem_bad_cmd_symbol );
+		new_wme->preference = epmem_make_fake_preference( my_agent, state, new_wme );
+		state->id.epmem_info->epmem_wmes->push( new_wme );
+
 		free_memory( my_agent, wmes_query, MISCELLANEOUS_MEM_USAGE );
 		free_memory( my_agent, wmes_neg_query, MISCELLANEOUS_MEM_USAGE );
 	}
@@ -2940,6 +3168,8 @@ void epmem_process_query( agent *my_agent, Symbol *state, Symbol *query, Symbol 
  **************************************************************************/
 void epmem_install_memory( agent *my_agent, Symbol *state, long memory_id )
 {
+	wme *new_wme;
+	
 	// get the ^result header for this state
 	Symbol *result_header = state->id.epmem_result_header;
 
@@ -2947,21 +3177,32 @@ void epmem_install_memory( agent *my_agent, Symbol *state, long memory_id )
 	if ( ( memory_id == EPMEM_MEMID_NONE ) ||
 		 !epmem_valid_episode( my_agent, memory_id ) )
 	{
-		add_input_wme( my_agent, result_header, my_agent->epmem_retrieved_symbol, my_agent->epmem_no_memory_symbol );
+		new_wme = add_input_wme( my_agent, result_header, my_agent->epmem_retrieved_symbol, my_agent->epmem_no_memory_symbol );
+		new_wme->preference = epmem_make_fake_preference( my_agent, state, new_wme );
+		state->id.epmem_info->epmem_wmes->push( new_wme );
+
 		state->id.epmem_info->last_memory = EPMEM_MEMID_NONE;
+
 		return;
 	}
 
 	// remember this as the last memory installed
-	state->id.epmem_info->last_memory = memory_id;
+	state->id.epmem_info->last_memory = memory_id;	
 
 	// create a new ^retrieved header for this result
 	Symbol *retrieved_header = make_new_identifier( my_agent, 'R', result_header->id.level );
-	add_input_wme( my_agent, result_header, my_agent->epmem_retrieved_symbol, retrieved_header );
+	new_wme = add_input_wme( my_agent, result_header, my_agent->epmem_retrieved_symbol, retrieved_header );
+	new_wme->preference = epmem_make_fake_preference( my_agent, state, new_wme );
+	state->id.epmem_info->epmem_wmes->push( new_wme );
+	symbol_remove_ref( my_agent, retrieved_header );
 
 	// add *-id wme's
-	add_input_wme( my_agent, result_header, my_agent->epmem_memory_id_symbol, make_int_constant( my_agent, memory_id ) );
-	add_input_wme( my_agent, result_header, my_agent->epmem_present_id_symbol, make_int_constant( my_agent, epmem_get_stat( my_agent, (const long) EPMEM_STAT_TIME ) ) );
+	new_wme = add_input_wme( my_agent, result_header, my_agent->epmem_memory_id_symbol, make_int_constant( my_agent, memory_id ) );
+	new_wme->preference = epmem_make_fake_preference( my_agent, state, new_wme );
+	state->id.epmem_info->epmem_wmes->push( new_wme );
+	new_wme = add_input_wme( my_agent, result_header, my_agent->epmem_present_id_symbol, make_int_constant( my_agent, epmem_get_stat( my_agent, (const long) EPMEM_STAT_TIME ) ) );
+	new_wme->preference = epmem_make_fake_preference( my_agent, state, new_wme );
+	state->id.epmem_info->epmem_wmes->push( new_wme );
 
 	if ( epmem_get_parameter( my_agent, EPMEM_PARAM_INDEXING, EPMEM_RETURN_LONG ) == EPMEM_INDEXING_BIGTREE_INSTANCE )
 	{
@@ -2995,7 +3236,12 @@ void epmem_install_memory( agent *my_agent, Symbol *state, long memory_id )
 			if ( type_code == SQLITE_NULL )
 			{
 				value = make_new_identifier( my_agent, name[0], parent->id.level );
-				add_input_wme( my_agent, parent, attr, value );
+
+				new_wme = add_input_wme( my_agent, parent, attr, value );
+				new_wme->preference = epmem_make_fake_preference( my_agent, state, new_wme );
+				state->id.epmem_info->epmem_wmes->push( new_wme );
+
+				symbol_remove_ref( my_agent, value );
 
 				ids[ child_id ] = value;
 			}
@@ -3016,7 +3262,9 @@ void epmem_install_memory( agent *my_agent, Symbol *state, long memory_id )
 						break;
 				}
 
-				add_input_wme( my_agent, parent, attr, value );
+				new_wme = add_input_wme( my_agent, parent, attr, value );
+				new_wme->preference = epmem_make_fake_preference( my_agent, state, new_wme );
+				state->id.epmem_info->epmem_wmes->push( new_wme );
 			}
 		}
 		sqlite3_reset( my_agent->epmem_statements[ EPMEM_STMT_BIGTREE_I_GET_EPISODE ] );
@@ -3053,8 +3301,13 @@ void epmem_install_memory( agent *my_agent, Symbol *state, long memory_id )
 			// identifier = NULL, else attr->val
 			if ( type_code == SQLITE_NULL )
 			{
-				value = make_new_identifier( my_agent, name[0], parent->id.level );
-				add_input_wme( my_agent, parent, attr, value );
+				value = make_new_identifier( my_agent, name[0], parent->id.level );				
+				
+				new_wme = add_input_wme( my_agent, parent, attr, value );
+				new_wme->preference = epmem_make_fake_preference( my_agent, state, new_wme );
+				state->id.epmem_info->epmem_wmes->push( new_wme );
+
+				symbol_remove_ref( my_agent, value );
 
 				ids[ child_id ] = value;
 			}
@@ -3075,7 +3328,9 @@ void epmem_install_memory( agent *my_agent, Symbol *state, long memory_id )
 						break;
 				}
 
-				add_input_wme( my_agent, parent, attr, value );
+				new_wme = add_input_wme( my_agent, parent, attr, value );
+				new_wme->preference = epmem_make_fake_preference( my_agent, state, new_wme );
+				state->id.epmem_info->epmem_wmes->push( new_wme );
 			}
 		}
 		sqlite3_reset( my_agent->epmem_statements[ EPMEM_STMT_BIGTREE_R_GET_EPISODE ] );

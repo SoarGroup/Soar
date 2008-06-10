@@ -15,6 +15,7 @@
 
 #include <vector>
 #include <string>
+#include <stack>
 
 #include "symtab.h"
 #include "wmem.h"
@@ -164,6 +165,11 @@ typedef struct epmem_data_struct
 	unsigned long last_cmd_count;	// last update to epmem.command
 
 	int last_memory;				// last retrieved memory
+
+	wme *ss_wme;
+
+	std::list<wme *> *cue_wmes;		// wmes in last cue
+	std::stack<wme *> *epmem_wmes;	// wmes in last epmem
 } epmem_data;
 
 //////////////////////////////////////////////////////////
@@ -303,13 +309,14 @@ extern long epmem_previous_episode( agent *my_agent, long memory_id );
 // Called to react to commands
 extern void epmem_respond_to_cmd( agent *my_agent );
 
-// Called to process a query
-extern void epmem_process_query( agent *my_agent, Symbol *state, Symbol *query, Symbol *neg_query, std::vector<long> *prohibit, long before, long after );
-
-// Called to clear the wme's from epmem.result
-extern void epmem_clear_result( agent *my_agent, Symbol *state );
-
 // Called to install a particular memory into WM
 extern void epmem_install_memory( agent *my_agent, Symbol *state, long memory_id );
+
+// Called to get a particular wme augmentation
+extern wme *epmem_get_aug_of_id( agent *my_agent, Symbol *sym, char *attr_name, char *value_name );
+
+// Called to create/remove a fake preference for an epmem wme
+extern preference *epmem_make_fake_preference( agent *my_agent, Symbol *state, wme *w );
+extern void epmem_remove_fake_preference( agent *my_agent, wme *w );
 
 #endif
