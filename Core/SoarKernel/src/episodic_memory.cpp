@@ -1527,7 +1527,7 @@ void epmem_new_episode( agent *my_agent )
 						double **p =& epmem[ wmes[i]->epmem_id ];
 						
 						// replace rand here with actual weight
-						double my_val = SoarRand();
+						double my_val = 1;
 						if ( *p == NULL )
 							*p = new double( my_val );
 						else if ( my_val > **p )
@@ -2729,7 +2729,7 @@ void epmem_process_query( agent *my_agent, Symbol *state, Symbol *query, Symbol 
 					while ( leaf_p != leaf_ids[i].end() )
 					{						
 						sqlite3_bind_int( my_agent->epmem_statements[ EPMEM_STMT_BIGTREE_R_ADD_WEIGHT ], 1, (*leaf_p) );
-						sqlite3_bind_double( my_agent->epmem_statements[ EPMEM_STMT_BIGTREE_R_ADD_WEIGHT ], 2, SoarRand() );
+						sqlite3_bind_double( my_agent->epmem_statements[ EPMEM_STMT_BIGTREE_R_ADD_WEIGHT ], 2, 1 );
 						sqlite3_step( my_agent->epmem_statements[ EPMEM_STMT_BIGTREE_R_ADD_WEIGHT ] );
 						sqlite3_reset( my_agent->epmem_statements[ EPMEM_STMT_BIGTREE_R_ADD_WEIGHT ] );
 						
