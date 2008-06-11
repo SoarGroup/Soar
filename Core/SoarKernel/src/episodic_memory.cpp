@@ -1147,7 +1147,7 @@ void epmem_init_db( agent *my_agent )
 				// episodes table
 				sqlite3_prepare_v2( my_agent->epmem_db, "CREATE TABLE IF NOT EXISTS episodes (id INTEGER,start INTEGER,end INTEGER)", -1, &create, &tail );
 				sqlite3_step( create );					
-				sqlite3_finalize( create );			
+				sqlite3_finalize( create );				
 				
 				// end_id index (for updates)
 				sqlite3_prepare_v2( my_agent->epmem_db, "CREATE UNIQUE INDEX IF NOT EXISTS episode_id_end ON episodes (id,end)", -1, &create, &tail );
@@ -1260,9 +1260,15 @@ void epmem_init_db( agent *my_agent )
 				if ( sqlite3_step( create ) == SQLITE_ROW )						
 					epmem_set_stat( my_agent, (const long) EPMEM_STAT_TIME, ( sqlite3_column_int( create, 0 ) + 1 ) );
 				sqlite3_finalize( create );
-
-				// get max id + max list
 				time_max = epmem_get_stat( my_agent, (const long) EPMEM_STAT_TIME );
+
+				// remove nulls from the episodes table
+				sqlite3_prepare_v2( my_agent->epmem_db, "UPDATE episodes SET end=? WHERE end IS NULL", -1, &create, &tail );
+				sqlite3_bind_int( create, 1, ( time_max - 1 ) );
+				sqlite3_step( create );
+				sqlite3_finalize( create );
+
+				// get max id + max list				
 				sqlite3_prepare_v2( my_agent->epmem_db, "SELECT MAX(child_id) FROM ids", -1, &create, &tail );
 				sqlite3_step( create );
 				if ( sqlite3_column_type( create, 0 ) != SQLITE_NULL )
@@ -1294,18 +1300,11 @@ void epmem_end( agent *my_agent )
 	{
 		// perform cleanup as necessary
 		const long indexing = epmem_get_parameter( my_agent, EPMEM_PARAM_INDEXING, EPMEM_RETURN_LONG );	
-		if ( indexing == EPMEM_INDEXING_BIGTREE_RANGE )
+		if ( indexing == EPMEM_INDEXING_BIGTREE_INSTANCE )
 		{
-			const char *tail;
-			sqlite3_stmt *create;
-
-			const long time_counter = epmem_get_stat( my_agent, (const long) EPMEM_STAT_TIME );
-
-			// remove nulls from the episodes table
-			sqlite3_prepare_v2( my_agent->epmem_db, "UPDATE episodes SET end=? WHERE end IS NULL", -1, &create, &tail );
-			sqlite3_bind_int( create, 1, ( time_counter - 1 ) );
-			sqlite3_step( create );
-			sqlite3_finalize( create );
+		}
+		else if ( indexing == EPMEM_INDEXING_BIGTREE_RANGE )
+		{			
 		}
 
 		for ( int i=0; i<EPMEM_MAX_STATEMENTS; i++ )
