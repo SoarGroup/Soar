@@ -1266,16 +1266,7 @@ void epmem_init_db( agent *my_agent )
 				sqlite3_prepare_v2( my_agent->epmem_db, "SELECT MAX(child_id) FROM ids", -1, &create, &tail );
 				sqlite3_step( create );
 				if ( sqlite3_column_type( create, 0 ) != SQLITE_NULL )
-				{
-					my_agent->epmem_range_maxes->resize( sqlite3_column_int( create, 0 ), time_max - 1 );
-
-					sqlite3_stmt *create2;
-					sqlite3_prepare_v2( my_agent->epmem_db, "SELECT e.id, MAX(e.end) FROM episodes e WHERE e.id NOT IN (SELECT id FROM episodes WHERE end IS NULL) GROUP BY e.id", -1, &create2, &tail );
-					while ( sqlite3_step( create2 ) == SQLITE_ROW )
-						(*my_agent->epmem_range_maxes)[ sqlite3_column_int( create2, 0 ) - 1 ] = sqlite3_column_int( create2, 1 );
-
-					sqlite3_finalize( create2 );
-				}				
+					my_agent->epmem_range_maxes->resize( sqlite3_column_int( create, 0 ), EPMEM_MEMID_NONE );
 				sqlite3_finalize( create );
 							
 				break;
@@ -1291,6 +1282,37 @@ void epmem_init_db( agent *my_agent )
 		}
 		sqlite3_step( my_agent->epmem_statements[ EPMEM_STMT_COMMIT ] );
 		sqlite3_reset( my_agent->epmem_statements[ EPMEM_STMT_COMMIT ] );
+	}
+}
+
+/***************************************************************************
+ * Function     : epmem_end
+ **************************************************************************/
+void epmem_end( agent *my_agent )
+{
+	if ( my_agent->epmem_db_status != -1 )
+	{
+		// perform cleanup as necessary
+		const long indexing = epmem_get_parameter( my_agent, EPMEM_PARAM_INDEXING, EPMEM_RETURN_LONG );	
+		if ( indexing == EPMEM_INDEXING_BIGTREE_RANGE )
+		{
+			const char *tail;
+			sqlite3_stmt *create;
+
+			const long time_counter = epmem_get_stat( my_agent, (const long) EPMEM_STAT_TIME );
+
+			// remove nulls from the episodes table
+			sqlite3_prepare_v2( my_agent->epmem_db, "UPDATE episodes SET end=? WHERE end IS NULL", -1, &create, &tail );
+			sqlite3_bind_int( create, 1, ( time_counter - 1 ) );
+			sqlite3_step( create );
+			sqlite3_finalize( create );
+		}
+
+		for ( int i=0; i<EPMEM_MAX_STATEMENTS; i++ )
+			if ( my_agent->epmem_statements[ i ] != NULL )
+				sqlite3_finalize( my_agent->epmem_statements[ i ] ); 	
+
+		sqlite3_close( my_agent->epmem_db );
 	}
 }
 

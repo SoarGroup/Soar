@@ -288,8 +288,9 @@ extern bool epmem_set_stat( agent *my_agent, const long stat, double new_val );
 // Core Functions
 //////////////////////////////////////////////////////////
 
-// init
+// init, end
 extern void epmem_reset( agent *my_agent );
+extern void epmem_end( agent *my_agent );
 
 // Called to consider adding new episodes to the store
 extern void epmem_consider_new_episode( agent *my_agent );

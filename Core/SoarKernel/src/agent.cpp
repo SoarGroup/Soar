@@ -532,19 +532,7 @@ void destroy_soar_agent (Kernel * thisKernel, agent * delete_agent)
   // cleanup EpMem
   delete delete_agent->epmem_range_removals;
   delete delete_agent->epmem_range_maxes;
-  if ( delete_agent->epmem_db_status != -1 )
-  {
-    int i;
-  	
-    // perform cleanup as necessary
-    const long indexing = epmem_get_parameter( delete_agent, EPMEM_PARAM_INDEXING, EPMEM_RETURN_LONG );	
-        
-  	for ( i=0; i<EPMEM_MAX_STATEMENTS; i++ )
-  	  if ( delete_agent->epmem_statements[ i ] != NULL )
-  	    sqlite3_finalize( delete_agent->epmem_statements[ i ] ); 	
-  	  
-  	sqlite3_close( delete_agent->epmem_db );
-  }
+  epmem_end( delete_agent );
   epmem_clean_parameters( delete_agent );
 
   /* Free soar agent structure */
