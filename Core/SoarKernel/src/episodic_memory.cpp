@@ -49,7 +49,6 @@ extern unsigned long compress( unsigned long h, short num_bits );
 extern unsigned long hash_string( const char *s );
 
 // I don't want to expose these functions
-void epmem_clear_result( agent *my_agent, Symbol *state );
 void epmem_process_query( agent *my_agent, Symbol *state, Symbol *query, Symbol *neg_query, vector<long> *prohibit, long before, long after );
 
 /***************************************************************************
@@ -1337,6 +1336,11 @@ void epmem_reset( agent *my_agent )
 
 		// clear off any result stuff (takes care of epmem_wmes)
 		epmem_clear_result( my_agent, goal );
+
+		// remove fake preferences
+		epmem_remove_fake_preference( my_agent, goal->id.epmem_wme );
+		epmem_remove_fake_preference( my_agent, goal->id.epmem_cmd_wme );
+		epmem_remove_fake_preference( my_agent, goal->id.epmem_result_wme );
 		
 		goal = goal->id.lower_goal;
 	}
@@ -1871,6 +1875,10 @@ long epmem_previous_episode( agent *my_agent, long memory_id )
  **************************************************************************/
 preference *epmem_make_fake_preference( agent *my_agent, Symbol *state, wme *w )
 {
+	// if we are on the top state, don't make the preference
+	if ( state->id.epmem_info->ss_wme == NULL )
+		return NIL;
+	
 	// make fake preference
 	preference *pref = make_preference( my_agent, ACCEPTABLE_PREFERENCE_TYPE, w->id, w->attr, w->value, NIL );
 	pref->o_supported = TRUE;
@@ -1959,7 +1967,8 @@ preference *epmem_make_fake_preference( agent *my_agent, Symbol *state, wme *w )
  **************************************************************************/
 void epmem_remove_fake_preference( agent *my_agent, wme *w )
 {
-	preference_remove_ref( my_agent, w->preference );
+	if ( w->preference )
+		preference_remove_ref( my_agent, w->preference );
 }
 
 /***************************************************************************

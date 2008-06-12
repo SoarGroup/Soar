@@ -309,6 +309,7 @@ extern long epmem_previous_episode( agent *my_agent, long memory_id );
 
 // Called to react to commands
 extern void epmem_respond_to_cmd( agent *my_agent );
+extern void epmem_clear_result( agent *my_agent, Symbol *state );
 
 // Called to install a particular memory into WM
 extern void epmem_install_memory( agent *my_agent, Symbol *state, long memory_id );
