@@ -1893,6 +1893,8 @@ void remove_existing_context_and_descendents (agent* thisAgent, Symbol *goal) {
 	tabulate_reward_value_for_goal( thisAgent, goal );
 	perform_rl_update( thisAgent, 0, goal ); // this update only sees reward - there is no next state
   }
+
+  epmem_reset( thisAgent, goal );
   
   remove_wme_list_from_wm (thisAgent, goal->id.impasse_wmes);
   goal->id.impasse_wmes = NIL;

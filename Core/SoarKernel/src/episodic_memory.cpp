@@ -1317,12 +1317,14 @@ void epmem_end( agent *my_agent )
 /***************************************************************************
  * Function     : epmem_reset
  **************************************************************************/
-void epmem_reset( agent *my_agent )
+void epmem_reset( agent *my_agent, Symbol *state )
 {
-	Symbol *goal = my_agent->top_goal;
-	while( goal )
+	if ( state == NULL )
+		state = my_agent->top_goal;
+
+	while( state )
 	{
-		epmem_data *data = goal->id.epmem_info;
+		epmem_data *data = state->id.epmem_info;
 				
 		data->last_ol_time = 0;
 		data->last_ol_count = 0;
@@ -1335,14 +1337,14 @@ void epmem_reset( agent *my_agent )
 		data->cue_wmes->clear();
 
 		// clear off any result stuff (takes care of epmem_wmes)
-		epmem_clear_result( my_agent, goal );
+		epmem_clear_result( my_agent, state );
 
 		// remove fake preferences
-		epmem_remove_fake_preference( my_agent, goal->id.epmem_wme );
-		epmem_remove_fake_preference( my_agent, goal->id.epmem_cmd_wme );
-		epmem_remove_fake_preference( my_agent, goal->id.epmem_result_wme );
+		epmem_remove_fake_preference( my_agent, state->id.epmem_wme );
+		epmem_remove_fake_preference( my_agent, state->id.epmem_cmd_wme );
+		epmem_remove_fake_preference( my_agent, state->id.epmem_result_wme );
 		
-		goal = goal->id.lower_goal;
+		state = state->id.lower_goal;
 	}
 }
 
