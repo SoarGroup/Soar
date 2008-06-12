@@ -1311,6 +1311,9 @@ void epmem_end( agent *my_agent )
 				sqlite3_finalize( my_agent->epmem_statements[ i ] ); 	
 
 		sqlite3_close( my_agent->epmem_db );
+		
+		my_agent->epmem_db = NULL;
+		my_agent->epmem_db_status = -1;
 	}
 }
 
