@@ -1601,7 +1601,8 @@ void remove_wme_from_rete (agent* thisAgent, wme *w) {
   token *tok, *left;
 
   if ( ( w->epmem_id != NULL ) &&
-	   ( epmem_get_parameter( thisAgent, EPMEM_PARAM_INDEXING, EPMEM_RETURN_LONG ) == EPMEM_INDEXING_BIGTREE_RANGE ) )
+	   ( ( epmem_get_parameter( thisAgent, EPMEM_PARAM_INDEXING, EPMEM_RETURN_LONG ) == EPMEM_INDEXING_BIGTREE_RANGE ) ||
+         ( epmem_get_parameter( thisAgent, EPMEM_PARAM_INDEXING, EPMEM_RETURN_LONG ) == EPMEM_INDEXING_BIGTREE_RIT ) ) )
 	  (*thisAgent->epmem_range_removals)[ w->epmem_id ] = true;
   
   /* --- remove w from all_wmes_in_rete --- */

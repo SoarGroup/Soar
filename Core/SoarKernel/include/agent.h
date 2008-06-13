@@ -804,6 +804,7 @@ kernel time and total_cpu_time greater than the derived total CPU time. REW */
   sqlite3_stmt *epmem_statements[ EPMEM_MAX_STATEMENTS ];  
   
   std::map<unsigned long, bool> *epmem_range_removals;
+  std::vector<long> *epmem_range_mins;
   std::vector<long> *epmem_range_maxes;
 
 } agent;
