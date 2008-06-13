@@ -2171,6 +2171,9 @@ void epmem_new_episode( agent *my_agent )
 		{	
 			epmem_rit_insert_interval( my_agent, time_counter, EPMEM_MEMID_NOW, e->first, true );
 
+			// update min
+			(*my_agent->epmem_range_mins)[ e->first - 1 ] = time_counter;
+
 			e++;
 		}		
 
@@ -2189,9 +2192,6 @@ void epmem_new_episode( agent *my_agent )
 
 				// add new one
 				epmem_rit_insert_interval( my_agent, (*my_agent->epmem_range_mins)[ r->first - 1 ], ( time_counter - 1 ), r->first, true );
-
-				// update min
-				(*my_agent->epmem_range_mins)[ r->first - 1 ] = time_counter;
 			}
 			
 			r++;
