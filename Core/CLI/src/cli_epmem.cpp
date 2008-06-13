@@ -30,6 +30,7 @@ bool CommandLineInterface::ParseEpMem( gSKI::Agent* pAgent, std::vector<std::str
 	Options optionsData[] = 
 	{
 		{'g', "get",	0},
+		{'c', "close",0},
 		{'s', "set",	0},
 		{'S', "stats",	0},
 		{0, 0, 0} // null
@@ -45,9 +46,13 @@ bool CommandLineInterface::ParseEpMem( gSKI::Agent* pAgent, std::vector<std::str
 		
 		switch (m_Option) 
 		{
+			case 'c':
+				options.set( EPMEM_CLOSE );
+				break;
+		
 			case 'g':
 				options.set( EPMEM_GET );
-				break;
+				break;		
 			
 			case 's':
 				options.set( EPMEM_SET );
@@ -77,6 +82,15 @@ bool CommandLineInterface::ParseEpMem( gSKI::Agent* pAgent, std::vector<std::str
 	if ( argv.size() == 1 )
 		return DoEpMem( pAgent );
 	
+	// case: close gets no arguments
+	else if ( options.test( EPMEM_CLOSE ) )
+	{		
+		if ( m_NonOptionArguments > 0 )
+			return SetError( CLIError::kTooManyArgs );
+
+		return DoEpMem( pAgent, 'c' );
+	}
+	
 	// case: get requires one non-option argument
 	else if ( options.test( EPMEM_GET ) )
 	{
@@ -91,7 +105,7 @@ bool CommandLineInterface::ParseEpMem( gSKI::Agent* pAgent, std::vector<std::str
 		else
 			return SetError( CLIError::kInvalidAttribute );
 	}
-	
+		
 	// case: set requires two non-option arguments
 	else if ( options.test( EPMEM_SET ) )
 	{
@@ -273,6 +287,19 @@ bool CommandLineInterface::DoEpMem( gSKI::Agent* pAgent, const char pOp, const s
 					
 		return true;
 	}
+	else if ( pOp == 'c' )
+	{
+		const char *msg = "EpMem database closed.";
+		const char *tag_type = sml_Names::kTypeString;
+		
+		epmem_end( my_agent );
+		if ( m_RawOutput )
+			m_Result << msg;
+		else
+			AppendArgTagFast( sml_Names::kParamValue, tag_type, msg );
+
+		return true;
+	}
 	else if ( pOp == 'g' )
 	{
 		std::string output = "";
@@ -305,29 +332,48 @@ bool CommandLineInterface::DoEpMem( gSKI::Agent* pAgent, const char pOp, const s
 			AppendArgTagFast( sml_Names::kParamValue, tag_type, output.c_str() );
 		
 		return true;
-	}
+	}	
 	else if ( pOp == 's' )
 	{
+		bool result = false;
+		bool invalid = false;
+		
 		switch ( epmem_get_parameter_type( my_agent, pAttr->c_str() ) )
 		{
 			case epmem_param_constant:
-				return epmem_set_parameter( my_agent, pAttr->c_str(), pVal->c_str() );
+				result = epmem_set_parameter( my_agent, pAttr->c_str(), pVal->c_str() );
 				break;
 				
 			case epmem_param_number:
 				double temp;
 				from_string( temp, *pVal );
-				return epmem_set_parameter( my_agent, pAttr->c_str(), temp );				
+				result = epmem_set_parameter( my_agent, pAttr->c_str(), temp );				
 				break;
 				
 			case epmem_param_string:
-				return epmem_set_parameter( my_agent, pAttr->c_str(), pVal->c_str() );
+				result = epmem_set_parameter( my_agent, pAttr->c_str(), pVal->c_str() );
 				break;
 				
 			case epmem_param_invalid:
-				return false;
+				invalid = true;
 				break;
 		}
+
+		// since parameter name and value have been validated,
+		// this can only mean the parameter is protected
+		if ( !invalid && !result )
+		{
+			const char *msg = "ERROR: this parameter is protected while the EpMem database is open.";
+			const char *tag_type = sml_Names::kTypeString;
+			
+			epmem_end( my_agent );
+			if ( m_RawOutput )
+				m_Result << msg;
+			else
+				AppendArgTagFast( sml_Names::kParamValue, tag_type, msg );
+		}
+
+		return result;
 	}
 	else if ( pOp == 'S' )
 	{

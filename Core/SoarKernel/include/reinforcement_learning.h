@@ -28,6 +28,7 @@
 #define BAYESIAN_ESTIMATION 2
 
 #define Q_CONFIDENCE_METHOD INTERVAL_ESTIMATION
+//#define Q_CONFIDENCE_METHOD INTERVAL_ESTIMATION
 
 //////////////////////////////////////////////////////////
 // RL Constants

@@ -48,6 +48,7 @@
 
 #include <ctype.h>
 
+#define DBG if(0)
 using namespace xmlTraceNames;
 
 /* =====================================================================
@@ -1123,7 +1124,7 @@ void chunk_instantiation (agent* thisAgent,
   // jzxu: we had to wait until all backtracing was finished before having the
   // final value of this chunk's probability. Test it here
   
-  print(thisAgent, "Chunk confidence is %f", thisAgent->chunk_prob);
+  DBG print(thisAgent, "Chunk confidence is %f", thisAgent->chunk_prob);
   if (thisAgent->chunk_prob < thisAgent->sysparams[CHUNK_CONFIDENCE] / 100.0) {
     thisAgent->variablize_this_chunk = FALSE;
   }

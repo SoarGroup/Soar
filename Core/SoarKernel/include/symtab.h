@@ -230,7 +230,8 @@ typedef struct identifier_struct {
 
   union symbol_union *epmem_header;
   union symbol_union *epmem_cmd_header;
-  union symbol_union *epmem_result_header;
+  union symbol_union *epmem_result_header;  
+  struct wme_struct *epmem_wme;
   struct wme_struct *epmem_cmd_wme;
   struct wme_struct *epmem_result_wme;
   struct epmem_data_struct *epmem_info;		// various EpMem information

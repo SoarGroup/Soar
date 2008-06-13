@@ -1191,6 +1191,10 @@ byte run_preference_semantics (agent* thisAgent, slot *s, preference **result_ca
       }
       if (impasse_flag) {
 #if Q_CONFIDENCE_METHOD == HOEFFDING_BOUNDING || Q_CONFIDENCE_METHOD == INTERVAL_ESTIMATION
+        // temporary change
+        *result_candidates = candidates;
+        return TIE_IMPASSE_TYPE;
+        // temporary change
         if (!intervals_separated(thisAgent, s)) {
           *result_candidates = candidates;
           return TIE_IMPASSE_TYPE;
@@ -1311,8 +1315,7 @@ Symbol *create_new_impasse (agent* thisAgent, Bool isa_goal, Symbol *object, Sym
   add_impasse_wme( thisAgent, id, thisAgent->reward_link_symbol, id->id.reward_header, NIL );
 
 	id->id.epmem_header = make_new_identifier( thisAgent, 'E', level );	
-	add_impasse_wme( thisAgent, id, thisAgent->epmem_symbol, id->id.epmem_header, NIL );	
-
+	id->id.epmem_wme = add_input_wme( thisAgent, id, thisAgent->epmem_symbol, id->id.epmem_header );
 	id->id.epmem_cmd_header = make_new_identifier( thisAgent, 'C', level );
 	id->id.epmem_cmd_wme = add_input_wme( thisAgent, id->id.epmem_header, thisAgent->epmem_cmd_symbol, id->id.epmem_cmd_header );	
 	id->id.epmem_result_header = make_new_identifier( thisAgent, 'R', level );
@@ -1989,6 +1992,8 @@ void remove_existing_context_and_descendents (agent* thisAgent, Symbol *goal) {
     DBG print(thisAgent, "\ncalling from end of goal Q: %f Qmin: %f Qmax: %f\n", 0, 0, 0);
     perform_rl_update( thisAgent, 0, 0, 0, goal ); // this update only sees reward - there is no next state
   }
+
+  epmem_reset( thisAgent, goal );
   
   remove_wme_list_from_wm (thisAgent, goal->id.impasse_wmes);
   goal->id.impasse_wmes = NIL;
@@ -2041,8 +2046,7 @@ void remove_existing_context_and_descendents (agent* thisAgent, Symbol *goal) {
   delete goal->id.epmem_info->cue_wmes;
   delete goal->id.epmem_info->epmem_wmes;    
   symbol_remove_ref( thisAgent, goal->id.epmem_cmd_header );  
-  symbol_remove_ref( thisAgent, goal->id.epmem_result_header );
-  
+  symbol_remove_ref( thisAgent, goal->id.epmem_result_header );  
   symbol_remove_ref( thisAgent, goal->id.epmem_header );
   free_memory( thisAgent, goal->id.epmem_info, MISCELLANEOUS_MEM_USAGE );
 
@@ -2072,7 +2076,7 @@ void remove_existing_context_and_descendents (agent* thisAgent, Symbol *goal) {
 void create_new_context (agent* thisAgent, Symbol *attr_of_impasse, byte impasse_type) 
 {
   Symbol *id;
-  
+    
   if (thisAgent->bottom_goal) 
   {
      /* Creating a sub-goal (or substate) */
@@ -2133,9 +2137,22 @@ void create_new_context (agent* thisAgent, Symbol *attr_of_impasse, byte impasse
   id->id.epmem_info->last_cmd_time = 0;
   id->id.epmem_info->last_cmd_count = 0;
   id->id.epmem_info->cue_wmes = new std::list<wme *>();
-  id->id.epmem_info->ss_wme = epmem_get_aug_of_id( thisAgent, id, "superstate", NULL );
+  
+  // mark the top state
+  if ( thisAgent->top_goal != id )
+	id->id.epmem_info->ss_wme = epmem_get_aug_of_id( thisAgent, id, "superstate", NULL );
+  else
+	  id->id.epmem_info->ss_wme = NULL;
+  
   id->id.epmem_info->last_memory = EPMEM_MEMID_NONE;  
   id->id.epmem_info->epmem_wmes = new std::stack<wme *>(); 
+
+  if ( id->id.epmem_header != NIL )
+  {	  
+	  id->id.epmem_wme->preference = epmem_make_fake_preference( thisAgent, id, id->id.epmem_wme );	  
+	  id->id.epmem_cmd_wme->preference = epmem_make_fake_preference( thisAgent, id, id->id.epmem_cmd_wme );
+	  id->id.epmem_result_wme->preference = epmem_make_fake_preference( thisAgent, id, id->id.epmem_result_wme );
+  }
 
   /* --- invoke callback routine --- */
   soar_invoke_callbacks(thisAgent, thisAgent, 

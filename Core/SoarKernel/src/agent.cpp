@@ -387,7 +387,11 @@ agent * create_soar_agent (Kernel * thisKernel, char * agent_name) {            
   newAgent->epmem_stats[ EPMEM_STAT_TIME ] = epmem_add_stat( "time" );
   newAgent->epmem_stats[ EPMEM_STAT_MEM_USAGE ] = epmem_add_stat( "mem_usage" );
   newAgent->epmem_stats[ EPMEM_STAT_MEM_HIGH ] = epmem_add_stat( "mem_high" );
-  epmem_set_stat( newAgent, (const long) EPMEM_STAT_TIME, 1 );
+
+  newAgent->epmem_stats[ EPMEM_STAT_RIT_OFFSET ] = epmem_add_stat( "rit_offset" );
+  newAgent->epmem_stats[ EPMEM_STAT_RIT_LEFTROOT ] = epmem_add_stat( "rit_left_root" );
+  newAgent->epmem_stats[ EPMEM_STAT_RIT_RIGHTROOT ] = epmem_add_stat( "rit_right_root" );
+  newAgent->epmem_stats[ EPMEM_STAT_RIT_MINSTEP ] = epmem_add_stat( "rit_min_step" );
     
   newAgent->epmem_db = NULL;
   newAgent->epmem_db_status = -1;
@@ -395,6 +399,7 @@ agent * create_soar_agent (Kernel * thisKernel, char * agent_name) {            
   	newAgent->epmem_statements[ i ] = NULL;
 
   newAgent->epmem_range_removals = new std::map<unsigned long, bool>();
+  newAgent->epmem_range_mins = new std::vector<long>();
   newAgent->epmem_range_maxes = new std::vector<long>();
 
   return newAgent;
@@ -550,20 +555,9 @@ void destroy_soar_agent (Kernel * thisKernel, agent * delete_agent)
   
   // cleanup EpMem
   delete delete_agent->epmem_range_removals;
+  delete delete_agent->epmem_range_mins;
   delete delete_agent->epmem_range_maxes;
-  if ( delete_agent->epmem_db_status != -1 )
-  {
-    int i;
-  	
-    // perform cleanup as necessary
-    const long indexing = epmem_get_parameter( delete_agent, EPMEM_PARAM_INDEXING, EPMEM_RETURN_LONG );	
-        
-  	for ( i=0; i<EPMEM_MAX_STATEMENTS; i++ )
-  	  if ( delete_agent->epmem_statements[ i ] != NULL )
-  	    sqlite3_finalize( delete_agent->epmem_statements[ i ] ); 	
-  	  
-  	sqlite3_close( delete_agent->epmem_db );
-  }
+  epmem_end( delete_agent );
   epmem_clean_parameters( delete_agent );
 
   /* Free soar agent structure */
