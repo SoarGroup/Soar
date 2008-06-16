@@ -35,6 +35,7 @@
 #include <assert.h>
 
 using namespace sml ;
+using namespace soarxml;
 
 char const* const Kernel::kDefaultLibraryName = "SoarKernelSML" ;
 
@@ -619,9 +620,8 @@ void Kernel::ReceivedRhsEvent(smlRhsEventId id, AnalyzeXML* pIncoming, ElementXM
 	char const* pFunctionName = pIncoming->GetArgString(sml_Names::kParamFunction) ;
 	char const* pArgument     = pIncoming->GetArgString(sml_Names::kParamValue) ;
 	char const* pAgentName	  = pIncoming->GetArgString(sml_Names::kParamName) ;
-	int maxLength			  = pIncoming->GetArgInt(sml_Names::kParamLength, 0) ;
 
-	if (!pFunctionName || maxLength == 0)
+	if (!pFunctionName)
 	{
 		// Should always include a function name
 		SetError(Error::kInvalidArgument) ;
@@ -1244,7 +1244,7 @@ bool Kernel::IsCommitRequired()
 * @returns The result of executing the run command.
 *		   The output from during the run is sent to a different callback.
 *************************************************************/
-char const* Kernel::RunAllAgents(unsigned long numberSteps, smlRunStepSize stepSize, smlInterleaveStepSize interleaveStepSize)
+char const* Kernel::RunAllAgents(unsigned long numberSteps, smlRunStepSize stepSize, smlRunStepSize interleaveStepSize)
 {
 	if (IsCommitRequired())
 	{
@@ -1280,10 +1280,10 @@ char const* Kernel::RunAllAgents(unsigned long numberSteps, smlRunStepSize stepS
 
 	switch (interleaveStepSize)
 	{
-		case sml_INTERLEAVE_ELABORATION:	interleave = "-i e" ; break ;
-		case sml_INTERLEAVE_PHASE:			interleave = "-i p" ; break ;
-		case sml_INTERLEAVE_DECISION:		interleave = "-i d" ; break ;
-		case sml_INTERLEAVE_UNTIL_OUTPUT:	interleave = "-i o" ; break ;
+		case sml_ELABORATION:	interleave = "-i e" ; break ;
+		case sml_PHASE:			interleave = "-i p" ; break ;
+		case sml_DECISION:		interleave = "-i d" ; break ;
+		case sml_UNTIL_OUTPUT:	interleave = "-i o" ; break ;
 		default: return "Unrecognized interleave size parameter passed to RunAllAgents" ;
 	}
 
@@ -1301,7 +1301,7 @@ char const* Kernel::RunAllAgents(unsigned long numberSteps, smlRunStepSize stepS
 	return pResult ;
 }
 
-char const* Kernel::RunAllAgentsForever(smlInterleaveStepSize interleaveStepSize)
+char const* Kernel::RunAllAgentsForever(smlRunStepSize interleaveStepSize)
 {
 	if (IsCommitRequired())
 	{
@@ -1321,10 +1321,10 @@ char const* Kernel::RunAllAgentsForever(smlInterleaveStepSize interleaveStepSize
 
 	switch (interleaveStepSize)
 	{
-		case sml_INTERLEAVE_ELABORATION:	interleave = "-i e" ; break ;
-		case sml_INTERLEAVE_PHASE:			interleave = "-i p" ; break ;
-		case sml_INTERLEAVE_DECISION:		interleave = "-i d" ; break ;
-		case sml_INTERLEAVE_UNTIL_OUTPUT:	interleave = "-i o" ; break ;
+		case sml_ELABORATION:	interleave = "-i e" ; break ;
+		case sml_PHASE:			interleave = "-i p" ; break ;
+		case sml_DECISION:		interleave = "-i d" ; break ;
+		case sml_UNTIL_OUTPUT:	interleave = "-i o" ; break ;
 		default: return "Unrecognized interleave size parameter passed to RunAllAgents" ;
 	}
 
@@ -1359,7 +1359,7 @@ char const* Kernel::RunAllAgentsForever(smlInterleaveStepSize interleaveStepSize
 * before then that agent will stop running.  (This value can be changed with the
 * max-nil-output-cycles command).
 *************************************************************/
-char const* Kernel::RunAllTilOutput(smlInterleaveStepSize interleaveStepSize)
+char const* Kernel::RunAllTilOutput(smlRunStepSize interleaveStepSize)
 {
 	if (IsCommitRequired())
 	{
@@ -1379,10 +1379,10 @@ char const* Kernel::RunAllTilOutput(smlInterleaveStepSize interleaveStepSize)
 
 	switch (interleaveStepSize)
 	{
-		case sml_INTERLEAVE_ELABORATION:	interleave = "-i e" ; break ;
-		case sml_INTERLEAVE_PHASE:			interleave = "-i p" ; break ;
-		case sml_INTERLEAVE_DECISION:		interleave = "-i d" ; break ;
-		case sml_INTERLEAVE_UNTIL_OUTPUT:	interleave = "-i o" ; break ;
+		case sml_ELABORATION:	interleave = "-i e" ; break ;
+		case sml_PHASE:			interleave = "-i p" ; break ;
+		case sml_DECISION:		interleave = "-i d" ; break ;
+		case sml_UNTIL_OUTPUT:	interleave = "-i o" ; break ;
 		default: return "Unrecognized interleave size parameter passed to RunAllAgents" ;
 	}
 
@@ -2423,16 +2423,6 @@ std::string Kernel::GetSoarKernelVersion()
 	{
 		return "Error: Unable to retrieve the version from the kernel" ;
 	}
-}
-
-std::string Kernel::GetSoarClientVersion()
-{
-	return sml_Names::kSoarVersionValue ;
-}
-
-std::string Kernel::GetSMLVersion()
-{
-	return sml_Names::kSMLVersionValue ;
 }
 
 // The below stuff is to support LoadExternalLibrary

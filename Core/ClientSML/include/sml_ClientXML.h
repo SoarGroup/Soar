@@ -17,9 +17,13 @@
 
 #include <string>
 
+namespace soarxml
+{
+	class ElementXML ;
+}
+
 namespace sml {
 
-class ElementXML ;
 class Agent ;
 class ClientTraceXML ;
 
@@ -28,14 +32,14 @@ class ClientXML
 	friend class Agent ;
 
 private:
-	ElementXML* m_pElementXML ;
+	soarxml::ElementXML* m_pElementXML ;
 
 protected:
 	// This constructor is protected so that client doesn't try to build these objects.
 	// So far they're only built internally and then passed to the client.
 	// NOTE: We take ownership of the ElementXML object we are passed and
 	// delete it when this client object is deleted.
-	ClientXML(ElementXML* pXML) ;
+	ClientXML(soarxml::ElementXML* pXML) ;
 
 public:
 	ClientXML() ;

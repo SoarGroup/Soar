@@ -8,11 +8,6 @@
 #ifndef UTILITIES_H
 #define UTILITIES_H
 
-#ifdef __cplusplus
-extern "C"
-{
-#endif
-
 #include <list>
 #include "stl_support.h"
 
@@ -26,8 +21,33 @@ extern "C"
 ////////////////////////////////
 extern SoarSTLWMEPoolList* get_augs_of_id(agent* thisAgent, Symbol * id, tc_number tc);
 
-#ifdef __cplusplus
-}
-#endif
+/*
+*	This procedure parses a string to determine if it is a
+*      lexeme for an identifier or context variable.
+* 
+*      Many interface routines take identifiers as arguments.  
+*      These ids can be given as normal ids, or as special variables 
+*      such as <s> for the current state, etc.  This routine reads 
+*      (without consuming it) an identifier or context variable, 
+*      and returns a pointer (Symbol *) to the id.  (In the case of 
+*      context variables, the instantiated variable is returned.  If 
+*      any error occurs (e.g., no such id, no instantiation of the 
+*      variable), an error message is printed and NIL is returned.
+*
+* Results:
+*	Pointer to a symbol for the variable or NIL.
+*
+* Side effects:
+*	None.
+*
+===============================
+*/
+extern bool read_id_or_context_var_from_string (agent* agnt, const char * the_lexeme, Symbol * * result_id);
+
+extern void get_lexeme_from_string (agent* agnt, const char * the_lexeme);
+
+extern void get_context_var_info ( agent* agnt, Symbol **dest_goal, Symbol **dest_attr_of_slot, Symbol **dest_current_value);
+
+extern Symbol *read_identifier_or_context_variable (agent* agnt);
 
 #endif //UTILITIES_H

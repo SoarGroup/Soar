@@ -48,11 +48,12 @@
 #include "explain.h"
 #include "tempmem.h"
 #include "io_soar.h"
+#include "xml.h"
+#include "soar_TraceNames.h"
 
-/* JC ADDED: This is for event firing in gSKI */
-#include "gski_event_system_functions.h"
+#include "assert.h"
 
-using namespace xmlTraceNames;
+using namespace soar_TraceNames;
 
 #ifdef NUMERIC_INDIFFERENCE
 /* REW: 2003-01-02 Behavior Variability Kernel Experiments */
@@ -483,10 +484,6 @@ void garbage_collect_id (agent* thisAgent, Symbol *id)
    slot *s;
    preference *pref, *next_pref;
    
-   /* JC ADDED: Tell gSKI that an object is being removed from memory */
-   /* KJC:  Do we really want this here?  This is garbage collection, not WM operations */
-   gSKI_MakeAgentCallback(gSKI_K_EVENT_WMOBJECT_REMOVED, 0, thisAgent, static_cast<void*>(id));
-
 #ifdef DEBUG_LINKS  
    print_with_symbols (thisAgent, "\n*** Garbage collecting id: %y",id);
 #endif
@@ -495,7 +492,7 @@ void garbage_collect_id (agent* thisAgent, Symbol *id)
        This is handled by remove_existing_such-and-such... */
    
    /* --- remove any input wmes from the id --- */
-   remove_wme_list_from_wm (thisAgent, id->id.input_wmes);
+   remove_wme_list_from_wm (thisAgent, id->id.input_wmes, true);
    id->id.input_wmes = NIL;
    
    for (s = id->id.slots; s != NIL; s = s->next) 
@@ -1138,7 +1135,8 @@ byte run_preference_semantics (agent* thisAgent, slot *s, preference **result_ca
 /* AGR 615 begin */
       print(thisAgent, "Or choose one of the following to change the user-select mode\n");
       print(thisAgent, "to something else:  %d (first), %d (last), %d (random)\n",
-	     num_candidates+=1, num_candidates+=1, num_candidates+=1);
+	     num_candidates + 1, num_candidates + 2, num_candidates + 3);
+      num_candidates += 3;
 /* AGR 615 end */
       while (TRUE) {
         char ch;
@@ -1166,13 +1164,6 @@ byte run_preference_semantics (agent* thisAgent, slot *s, preference **result_ca
 //#endif
         if ((chosen_num>=1) && (chosen_num<=num_candidates)) break;
         print (thisAgent, "You must enter a number between 1 and %d\n", num_candidates);
-      }
-      if (thisAgent->logging_to_file) {
-        char temp[50];
-        SNPRINTF (temp,50, "%d\n", chosen_num);
-		temp[49] = 0; /* ensure null termination */
-
-        print_string_to_log_file_only (thisAgent, temp);
       }
 /* AGR 615 begin */
       switch (num_candidates - chosen_num) {
@@ -1724,7 +1715,7 @@ void create_new_attribute_impasse_for_slot (agent* thisAgent, slot *s, byte impa
   s->impasse_id = id;
   id->id.isa_impasse = TRUE;
 
-  soar_invoke_callbacks(thisAgent, thisAgent, 
+  soar_invoke_callbacks(thisAgent, 
                        CREATE_NEW_ATTRIBUTE_IMPASSE_CALLBACK, 
                        (soar_call_data) s);
 }
@@ -1732,7 +1723,7 @@ void create_new_attribute_impasse_for_slot (agent* thisAgent, slot *s, byte impa
 void remove_existing_attribute_impasse_for_slot (agent* thisAgent, slot *s) {
   Symbol *id;
 
-  soar_invoke_callbacks(thisAgent, thisAgent, 
+  soar_invoke_callbacks(thisAgent, 
                        REMOVE_ATTRIBUTE_IMPASSE_CALLBACK, 
                        (soar_call_data) s);
 
@@ -1962,10 +1953,10 @@ void decide_non_context_slot (agent* thisAgent, slot *s)
 
                        char buf[256];
                        SNPRINTF(buf, 254, "Removing state S%d because element in GDS changed.", w->gds->goal->id.level);
-                       gSKI_MakeAgentCallbackXML(thisAgent, kFunctionBeginTag, kTagVerbose);
-	                   gSKI_MakeAgentCallbackXML(thisAgent, kFunctionAddAttribute, kTypeString, buf);
+                       xml_begin_tag(thisAgent, kTagVerbose);
+	                   xml_att_val(thisAgent, kTypeString, buf);
                        print_wme(thisAgent, w);
-                       gSKI_MakeAgentCallbackXML(thisAgent, kFunctionEndTag, kTagVerbose);
+                       xml_end_tag(thisAgent, kTagVerbose);
                     }
                     gds_invalid_so_remove_goal(thisAgent, w);
                  }
@@ -2247,12 +2238,9 @@ void remove_existing_context_and_descendents (agent* thisAgent, Symbol *goal) {
     remove_existing_context_and_descendents (thisAgent, goal->id.lower_goal);
 
   /* --- invoke callback routine --- */
-  soar_invoke_callbacks(thisAgent, thisAgent, 
+  soar_invoke_callbacks(thisAgent, 
                        POP_CONTEXT_STACK_CALLBACK, 
                        (soar_call_data) goal);
-
-  /* JC ADDED: Tell gSKI that we have removed a subgoal */
-  gSKI_MakeAgentCallback(gSKI_K_EVENT_SUBSTATE_DESTROYED, 0, thisAgent, static_cast<void*>(goal));
 
   /* --- disconnect this goal from the goal stack --- */
   if (goal == thisAgent->top_goal) {
@@ -2385,8 +2373,8 @@ void create_new_context (agent* thisAgent, Symbol *attr_of_impasse, byte impasse
 		// then the interrupt is generated and system_halted is set to FALSE so the user can recover.
 		print(thisAgent, "\nGoal stack depth exceeded %d on a no-change impasse.\n",thisAgent->sysparams[MAX_GOAL_DEPTH]);
 		print(thisAgent, "Soar appears to be in an infinite loop.  \nContinuing to subgoal may cause Soar to \nexceed the program stack of your system.\n");
-		GenerateWarningXML(thisAgent, "\nGoal stack depth exceeded on a no-change impasse.\n");
-		GenerateWarningXML(thisAgent, "Soar appears to be in an infinite loop.  \nContinuing to subgoal may cause Soar to \nexceed the program stack of your system.\n");
+		xml_generate_warning(thisAgent, "\nGoal stack depth exceeded on a no-change impasse.\n");
+		xml_generate_warning(thisAgent, "Soar appears to be in an infinite loop.  \nContinuing to subgoal may cause Soar to \nexceed the program stack of your system.\n");
 		thisAgent->stop_soar = TRUE;
 		thisAgent->system_halted = TRUE;
 		thisAgent->reason_for_stopping = "Max Goal Depth exceeded.";
@@ -2410,15 +2398,9 @@ void create_new_context (agent* thisAgent, Symbol *attr_of_impasse, byte impasse
   id->id.allow_bottom_up_chunks = TRUE;
 
   /* --- invoke callback routine --- */
-  soar_invoke_callbacks(thisAgent, thisAgent, 
+  soar_invoke_callbacks(thisAgent, 
                        CREATE_NEW_CONTEXT_CALLBACK, 
                        (soar_call_data) id);
-
-   /* JC ADDED: Tell gSKI we have a new object in general (there are three places this can occur). */
-   gSKI_MakeAgentCallbackWMObjectAdded(thisAgent, NIL, NIL, id);
-
-   /* JC ADDED: Tell gSKI that a substate was created */
-   gSKI_MakeAgentCallback(gSKI_K_EVENT_SUBSTATE_CREATED, 1, thisAgent, static_cast<void*>(id));
 }
 
 /* ------------------------------------------------------------------
@@ -2570,10 +2552,6 @@ Bool decide_context_slot (agent* thisAgent, Symbol *goal, slot *s)
       for(temp = candidates; temp; temp = temp->next_candidate)
          preference_remove_ref(thisAgent, temp);
       
-      /* JC ADDED: Notify gSKI of an operator selection  */
-      gSKI_MakeAgentCallback(gSKI_K_EVENT_OPERATOR_SELECTED, 1, thisAgent, 
-                             static_cast<void*>(w));
-      
       return TRUE;
    } 
    
@@ -2708,19 +2686,19 @@ void do_working_memory_phase (agent* thisAgent) {
    if (thisAgent->sysparams[TRACE_PHASES_SYSPARAM]) {
       if (thisAgent->operand2_mode == TRUE) {		  
 		  if (thisAgent->current_phase == APPLY_PHASE) {  /* it's always IE for PROPOSE */
-			  gSKI_MakeAgentCallbackXML(thisAgent, kFunctionBeginTag, kTagSubphase);
-			  gSKI_MakeAgentCallbackXML(thisAgent, kFunctionAddAttribute, kPhase_Name, kSubphaseName_ChangingWorkingMemory);
+			  xml_begin_tag(thisAgent, kTagSubphase);
+			  xml_att_val(thisAgent, kPhase_Name, kSubphaseName_ChangingWorkingMemory);
 			  switch (thisAgent->FIRING_TYPE) {
                   case PE_PRODS:
 					  print (thisAgent, "\t--- Change Working Memory (PE) ---\n",0);
-					  gSKI_MakeAgentCallbackXML(thisAgent, kFunctionAddAttribute, kPhase_FiringType, kPhaseFiringType_PE);
+					  xml_att_val(thisAgent, kPhase_FiringType, kPhaseFiringType_PE);
 					  break;      
 				  case IE_PRODS:	
 					  print (thisAgent, "\t--- Change Working Memory (IE) ---\n",0);
-					  gSKI_MakeAgentCallbackXML(thisAgent, kFunctionAddAttribute, kPhase_FiringType, kPhaseFiringType_IE);
+					  xml_att_val(thisAgent, kPhase_FiringType, kPhaseFiringType_IE);
 					  break;
 			  }
-			  gSKI_MakeAgentCallbackXML(thisAgent, kFunctionEndTag, kTagSubphase);
+			  xml_end_tag(thisAgent, kTagSubphase);
 		  }
       }
       else
@@ -2889,19 +2867,16 @@ void add_wme_to_gds(agent* agentPtr, goal_dependency_set* gds, wme* wme_to_add)
                 
    if (agentPtr->soar_verbose_flag || agentPtr->sysparams[TRACE_WM_CHANGES_SYSPARAM]) 
    {                    
-	   print(agentPtr, "Adding to GDS for S%d: ", wme_to_add->gds->goal->id.name_number);    
+	   print(agentPtr, "Adding to GDS for S%ld: ", wme_to_add->gds->goal->id.name_number);    
 	   print(agentPtr, " WME: "); 
 	   char buf[256];
-	   SNPRINTF(buf, 254, "Adding to GDS for S%d: ", wme_to_add->gds->goal->id.name_number);
-	   gSKI_MakeAgentCallbackXML(agentPtr, kFunctionBeginTag, kTagVerbose);
-	   gSKI_MakeAgentCallbackXML(agentPtr, kFunctionAddAttribute, kTypeString, buf);
+	   SNPRINTF(buf, 254, "Adding to GDS for S%ld: ", wme_to_add->gds->goal->id.name_number);
+
+	   xml_begin_tag(agentPtr, kTagVerbose);
+	   xml_att_val(agentPtr, kTypeString, buf);
 	   print_wme(agentPtr, wme_to_add);
-	   gSKI_MakeAgentCallbackXML(agentPtr, kFunctionEndTag, kTagVerbose);               
+	   xml_end_tag(agentPtr, kTagVerbose);               
    }
- 
-   /* Callback gSKI (AFTER) */
-   gSKI_MakeAgentCallback(gSKI_K_EVENT_GDS_WME_ADDED, 1, 
-                          agentPtr, static_cast<void*>(wme_to_add));
 }
 
 /*
@@ -3364,9 +3339,6 @@ approaches may be better */
 
 void gds_invalid_so_remove_goal (agent* thisAgent, wme *w) {
 
-   /* JC ADDED: Tell gSKI that the goals stack is about to be blown away */
-   gSKI_MakeAgentCallback(gSKI_K_EVENT_GDS_VIOLATED, 0, thisAgent, static_cast<void*>(w));
-
   /* REW: begin 11.25.96 */ 
   #ifndef NO_TIMING_STUFF
   #ifdef DETAILED_TIMING_STATS
@@ -3620,11 +3592,11 @@ preference *probabilistically_select(agent* thisAgent, slot * s, preference * ca
             if (thisAgent->sysparams[TRACE_INDIFFERENT_SYSPARAM]){
 				print_with_symbols(thisAgent, "\n Candidate %y:  ", cand->value);
 		           print(thisAgent, "Value (Sum) = %f", exp(cand->sum_of_probability / TEMPERATURE));
-               gSKI_MakeAgentCallbackXML(thisAgent, kFunctionBeginTag, kTagCandidate);
-               gSKI_MakeAgentCallbackXML(thisAgent, kFunctionAddAttribute, kCandidateName, symbol_to_string (thisAgent, cand->value, true, 0, 0));
-               gSKI_MakeAgentCallbackXML(thisAgent, kFunctionAddAttribute, kCandidateType, kCandidateTypeSum);
-               gSKI_MakeAgentCallbackXML(thisAgent, kFunctionAddAttribute, kCandidateValue, exp(cand->sum_of_probability / TEMPERATURE));
-               gSKI_MakeAgentCallbackXML(thisAgent, kFunctionEndTag, kTagCandidate);
+               xml_begin_tag(thisAgent, kTagCandidate);
+               xml_att_val(thisAgent, kCandidateName, cand->value);
+               xml_att_val(thisAgent, kCandidateType, kCandidateTypeSum);
+               xml_att_val(thisAgent, kCandidateValue, exp(cand->sum_of_probability / TEMPERATURE));
+               xml_end_tag(thisAgent, kTagCandidate);
 			}     
             /*  Total Probability represents the range of values, we expect
              *  the use of negative valued preferences, so its possible the
@@ -3666,11 +3638,11 @@ preference *probabilistically_select(agent* thisAgent, slot * s, preference * ca
             if (thisAgent->sysparams[TRACE_INDIFFERENT_SYSPARAM]) {
 				print_with_symbols(thisAgent, "\n Candidate %y:  ", cand->value);  
 		           print(thisAgent, "Value (Avg) = %f", fabs(cand->sum_of_probability / cand->total_preferences_for_candidate));
-               gSKI_MakeAgentCallbackXML(thisAgent, kFunctionBeginTag, kTagCandidate);
-               gSKI_MakeAgentCallbackXML(thisAgent, kFunctionAddAttribute, kCandidateName, symbol_to_string (thisAgent, cand->value, true, 0, 0));
-               gSKI_MakeAgentCallbackXML(thisAgent, kFunctionAddAttribute, kCandidateType, kCandidateTypeAvg);
-               gSKI_MakeAgentCallbackXML(thisAgent, kFunctionAddAttribute, kCandidateValue, fabs(cand->sum_of_probability / cand->total_preferences_for_candidate));
-               gSKI_MakeAgentCallbackXML(thisAgent, kFunctionEndTag, kTagCandidate);
+               xml_begin_tag(thisAgent, kTagCandidate);
+               xml_att_val(thisAgent, kCandidateName, cand->value);
+               xml_att_val(thisAgent, kCandidateType, kCandidateTypeAvg);
+               xml_att_val(thisAgent, kCandidateValue, fabs(cand->sum_of_probability / cand->total_preferences_for_candidate));
+               xml_end_tag(thisAgent, kTagCandidate);
 			}    
             /* Total probability represents the range of values that
              * we'll map into for selection.  Here we don't expect the use
@@ -3687,7 +3659,7 @@ preference *probabilistically_select(agent* thisAgent, slot * s, preference * ca
 				add_to_growable_string(thisAgent, &gs, "WARNING: Candidate ");
 				add_to_growable_string(thisAgent, &gs, symbol_to_string(thisAgent, cand->value, true, 0, 0));
 				add_to_growable_string(thisAgent, &gs, " has a negative value, which is unexpected with 'numeric-indifferent-mode -avg'");
-				GenerateWarningXML(thisAgent, text_of_growable_string(gs));
+				xml_generate_warning(thisAgent, text_of_growable_string(gs));
 				free_growable_string(thisAgent, gs);
             }
             /* print("\n   Total (Avg) Probability = %f", total_probability ); */

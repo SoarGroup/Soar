@@ -12,14 +12,14 @@
 #ifndef SML_NODESMLH
 #define SML_NODESMLH
 
-#include "sml_ElementXML.h"
+#include "ElementXML.h"
 #include "sml_StringOps.h"
 #include "sml_Names.h"
 
 namespace sml
 {
 
-class MessageSML : public ElementXML
+class MessageSML : public soarxml::ElementXML
 {
 public:
 	enum DocType { kCall = 0, kResponse = 1, kNotify = 2 } ;

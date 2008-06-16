@@ -21,12 +21,16 @@
 #include <list>
 #include <utility>	// For std::pair
 
+namespace soarxml
+{
+	class ElementXML ;
+}
+
 namespace sml {
 
 class Kernel ;
 class Connection ;
 class AnalyzeXML ;
-class ElementXML ;
 class ClientXML ;
 class ClientAnalyzedXML ;
 
@@ -130,9 +134,6 @@ class Agent : public ClientErrors
 	friend class FloatElement ;
 	friend class Identifier ;
 
-public: // BUGBUG: make protected and ClientSMLTest a friend
-	int GetIWMObjMapSize();	// For unit test, see bug 1034 and ClientSMLTest
-
 protected:
 	// The mapping from event number to a list of handlers to call when that event fires
 	typedef sml::ListMap<smlRunEventId, RunEventHandlerPlusData>				RunEventMap ;
@@ -177,6 +178,9 @@ protected:
 	// Used to generate unique IDs for callbacks
 	int		m_CallbackIDCounter ;
 
+	// Used to generate unique IDs for visited values when walking graph
+	long	m_VisitedCounter ;
+
 	// Internally we register a print callback and store its id here.
 	int		m_XMLCallback ;
 
@@ -201,7 +205,7 @@ protected:
 	* @param pIncoming	The output command (list of wmes added/removed from output link)
 	* @param pResponse	The reply (no real need to fill anything in here currently)
 	*************************************************************/
-	void ReceivedOutput(AnalyzeXML* pIncoming, ElementXML* pResponse) ;
+	void ReceivedOutput(AnalyzeXML* pIncoming, soarxml::ElementXML* pResponse) ;
 
 	/*************************************************************
 	* @brief This function is called when an event is received
@@ -210,14 +214,14 @@ protected:
 	* @param pIncoming	The event command
 	* @param pResponse	The reply (no real need to fill anything in here currently)
 	*************************************************************/
-	void ReceivedEvent(AnalyzeXML* pIncoming, ElementXML* pResponse) ;
-	void ReceivedRunEvent(smlRunEventId id, AnalyzeXML* pIncoming, ElementXML* pResponse) ;
-	void ReceivedProductionEvent(smlProductionEventId id, AnalyzeXML* pIncoming, ElementXML* pResponse) ;
-	void ReceivedPrintEvent(smlPrintEventId id, AnalyzeXML* pIncoming, ElementXML* pResponse) ;
-	void ReceivedXMLEvent(smlXMLEventId id, AnalyzeXML* pIncoming, ElementXML* pResponse) ;
+	void ReceivedEvent(AnalyzeXML* pIncoming, soarxml::ElementXML* pResponse) ;
+	void ReceivedRunEvent(smlRunEventId id, AnalyzeXML* pIncoming, soarxml::ElementXML* pResponse) ;
+	void ReceivedProductionEvent(smlProductionEventId id, AnalyzeXML* pIncoming, soarxml::ElementXML* pResponse) ;
+	void ReceivedPrintEvent(smlPrintEventId id, AnalyzeXML* pIncoming, soarxml::ElementXML* pResponse) ;
+	void ReceivedXMLEvent(smlXMLEventId id, AnalyzeXML* pIncoming, soarxml::ElementXML* pResponse) ;
 
 	/** NOTE: Slightly different sig as this is called without analyzing the incoming msg so it's a bit faster */
-	void ReceivedXMLTraceEvent(smlXMLEventId id, ElementXML* pIncomingMsg, ElementXML* pResponse) ;
+	void ReceivedXMLTraceEvent(smlXMLEventId id, soarxml::ElementXML* pIncomingMsg, soarxml::ElementXML* pResponse) ;
 
 	/*************************************************************
 	* @brief This function is called after output has been received
@@ -250,6 +254,14 @@ public:
 	* @brief Returns a pointer to the kernel object that owns this Agent.
 	*************************************************************/
 	Kernel*		GetKernel() const		{ return m_Kernel ; }
+
+	/*************************************************************
+	* @brief Returns a new, unique visited value which can be used
+	* in conjunction with the SetVisited() and GetVisited() methods
+	* of the Identifier class to safely walk a graph that may contain
+	* loops.
+	*************************************************************/
+	long GenerateNewVisitedCounter()	{ return ++m_VisitedCounter ; }
 
 	/*************************************************************
 	* @brief Load a set of productions from a file.

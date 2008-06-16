@@ -19,12 +19,13 @@
 /////////////////////////////////////////////////////////////////
 
 #include "sml_AnalyzeXML.h"
-#include "sml_ElementXML.h"
+#include "ElementXML.h"
 #include "sml_Names.h"
 #include "sml_StringOps.h"
 #include "ElementXMLInterface.h"
 
 using namespace sml ;
+using namespace soarxml;
 
 AnalyzeXML::AnalyzeXML()
 {
@@ -40,7 +41,7 @@ AnalyzeXML::~AnalyzeXML(void)
 	// Release our reference to the original XML message
 	// so it can be reclaimed
 	if (m_hRootObject != NULL)
-		::sml_ReleaseRef(m_hRootObject) ;
+		::soarxml_ReleaseRef(m_hRootObject) ;
 
 	delete m_pCommand ;
 	delete m_pResult ;
@@ -50,12 +51,12 @@ AnalyzeXML::~AnalyzeXML(void)
 // Returns the string form of the XML.  Must be released with the static DeleteString method
 char* AnalyzeXML::GenerateXMLString(bool includeChildren, bool insertNewLines) const
 {
-	return ::sml_GenerateXMLString(m_hRootObject, includeChildren, insertNewLines) ;
+	return ::soarxml_GenerateXMLString(m_hRootObject, includeChildren, insertNewLines) ;
 }
 
 void AnalyzeXML::DeleteString(char* pString)
 {
-	return ::sml_DeleteString(pString) ;
+	return ::soarxml_DeleteString(pString) ;
 }
 
 char const* AnalyzeXML::GetCommandName() const
@@ -180,7 +181,7 @@ void AnalyzeXML::Analyze(ElementXML const* pRootXML)
 	// (this is not really recommended as creating an AnalyzeXML object is pretty quick and painless)
 	if (m_hRootObject)
 	{
-		::sml_ReleaseRef(m_hRootObject) ;
+		::soarxml_ReleaseRef(m_hRootObject) ;
 
 		delete m_pCommand ;
 		delete m_pResult ;
@@ -195,7 +196,7 @@ void AnalyzeXML::Analyze(ElementXML const* pRootXML)
 	// We need to keep this handle around for the life
 	// of the AnalyzeXML object.
 	m_hRootObject = pRootXML->GetXMLHandle() ;
-	::sml_AddRef(m_hRootObject) ;
+	::soarxml_AddRef(m_hRootObject) ;
 
 	ElementXML child(NULL) ;
 	ElementXML* pChild = &child ;

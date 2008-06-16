@@ -36,8 +36,7 @@
 #include "init_soar.h"
 #include "rete.h"
 #include "wmem.h"
-#include "xmlTraceNames.h" // for constants for XML function types, tags and attributes
-#include "gski_event_system_functions.h"
+#include "xml.h"
 
 void remove_operator_if_necessary(agent* thisAgent, slot *s, wme *w){
 
@@ -443,7 +442,7 @@ Symbol * highest_active_goal_propose(agent* thisAgent) {
 
 #ifdef DEBUG_DETERMINE_LEVEL_PHASE     
    print(thisAgent, "WARNING: Returning NIL active goal because only NIL goal retractions are active.");
-   GenerateWarningXML(thisAgent, "WARNING: Returning NIL active goal because only NIL goal retractions are active.");
+   xml_generate_warning(thisAgent, "WARNING: Returning NIL active goal because only NIL goal retractions are active.");
 #endif
    if (thisAgent->nil_goal_retractions) return NIL;
    {
@@ -482,7 +481,7 @@ Symbol * highest_active_goal_apply(agent* thisAgent) {
 
 #ifdef DEBUG_DETERMINE_LEVEL_PHASE     
    print(thisAgent, "WARNING: Returning NIL active goal because only NIL goal retractions are active.");
-   GenerateWarningXML(thisAgent, "WARNING: Returning NIL active goal because only NIL goal retractions are active.");
+   xml_generate_warning(thisAgent, "WARNING: Returning NIL active goal because only NIL goal retractions are active.");
 #endif
    if (thisAgent->nil_goal_retractions) return NIL;
    { char msg[BUFFER_MSG_SIZE];
@@ -634,7 +633,7 @@ void determine_highest_active_production_level_in_stack_apply(agent* thisAgent) 
    {
 	   if (thisAgent->sysparams[PRINT_WARNINGS_SYSPARAM]) {
            print(thisAgent, "\nWarning: reached max-elaborations; proceeding to output phase.");
-		   GenerateWarningXML(thisAgent, "Warning: reached max-elaborations; proceeding to output phase.");
+		   xml_generate_warning(thisAgent, "Warning: reached max-elaborations; proceeding to output phase.");
 	   }
       thisAgent->current_phase = OUTPUT_PHASE;
       return;
@@ -866,7 +865,7 @@ void determine_highest_active_production_level_in_stack_propose(agent* thisAgent
       (unsigned long) (thisAgent->sysparams[MAX_ELABORATIONS_SYSPARAM])) {
 		  if (thisAgent->sysparams[PRINT_WARNINGS_SYSPARAM]) {
               print(thisAgent, "\nWarning: reached max-elaborations; proceeding to decision phase.");
-			  GenerateWarningXML(thisAgent, "Warning: reached max-elaborations; proceeding to decision phase.");
+			  xml_generate_warning(thisAgent, "Warning: reached max-elaborations; proceeding to decision phase.");
 		  }
       thisAgent->current_phase = DECISION_PHASE;
       return;

@@ -16,20 +16,15 @@
 // It will support just the subset that is necessary for SML (Soar Markup Language) which is intended to be its primary customer.
 /////////////////////////////////////////////////////////////////
 
-#include "ElementXMLdll.h"
-
 #include <stdlib.h>
 
 #ifdef _WIN32
-bool __stdcall DllMain( void * hModule, 
+bool __stdcall DllMain( void * /*hModule*/, 
                        unsigned long  ul_reason_for_call, 
-                       void * lpReserved
+                       void * /*lpReserved*/
 					 )
 {
 	//_crtBreakAlloc = 243;
-	unused(hModule) ;
-	unused(ul_reason_for_call) ;
-	unused(lpReserved) ;
 
 #ifdef _DEBUG
 	// Define this ourselves to save bringing in the entire windows headers for this one value.

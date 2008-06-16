@@ -15,7 +15,7 @@
 
 #include "sml_Utils.h"
 #include "sml_EmbeddedConnectionSynch.h"
-#include "sml_ElementXML.h"
+#include "ElementXML.h"
 #include "sml_MessageSML.h"
 #include "thread_Thread.h"
 
@@ -24,6 +24,7 @@
 #include <assert.h>
 
 using namespace sml ;
+using namespace soarxml ;
 
 /*************************************************************
 * @brief Send the message over to the other side of the connection

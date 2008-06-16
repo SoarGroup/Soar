@@ -73,7 +73,7 @@ std::string Handlers::MyClientMessageHandler( sml::smlRhsEventId, void* pUserDat
 // This is a very dumb filter--it adds "--depth 2" to all commands passed to it.
 std::string Handlers::MyFilterHandler( sml::smlRhsEventId, void* pUserData, sml::Agent*, char const*, char const* pCommandLine)
 {
-	sml::ElementXML* pXML = sml::ElementXML::ParseXMLFromString( pCommandLine ) ;
+	soarxml::ElementXML* pXML = soarxml::ElementXML::ParseXMLFromString( pCommandLine ) ;
 	CPPUNIT_ASSERT( pXML );
 	CPPUNIT_ASSERT( pXML->GetAttribute( sml::sml_Names::kFilterCommand ) );
 
@@ -274,11 +274,6 @@ void Handlers::MyMemoryLeakUpdateHandlerInternal( bool destroyChildren, sml::sml
 	switch ( step % 3 )
 	{
 	case 0:
-		if ( pAgent->GetKernel()->IsDirectConnection() )
-		{
-			CPPUNIT_ASSERT( pAgent->GetIWMObjMapSize() == 1 ); // root
-		}
-
 		pRootID1 = pAgent->CreateIdWME( pAgent->GetInputLink(), "a" ) ;
 		pRootID2 = pAgent->CreateIdWME( pAgent->GetInputLink(), "b" ) ;
 		pRootString = pAgent->CreateStringWME( pAgent->GetInputLink(), "g", "gvalue" ) ;
@@ -296,19 +291,9 @@ void Handlers::MyMemoryLeakUpdateHandlerInternal( bool destroyChildren, sml::sml
 		pSharedID = pAgent->CreateSharedIdWME( pRootID1, "m", pChildID1 );
 
 		CPPUNIT_ASSERT( pAgent->Commit() );
-
-		if ( pAgent->GetKernel()->IsDirectConnection() )
-		{
-			CPPUNIT_ASSERT( pAgent->GetIWMObjMapSize() == 7 ); // root, pRootID x 2, pChildID x 4
-		}
 		break;
 
 	case 1:
-		if ( pAgent->GetKernel()->IsDirectConnection() )
-		{
-			CPPUNIT_ASSERT( pAgent->GetIWMObjMapSize() == 7 ); // root, pRootID x 2, pChildID x 4
-		}
-
 		if ( destroyChildren )
 		{
 			// Destroying the children should be unnecessary but should not be illegal
@@ -335,11 +320,6 @@ void Handlers::MyMemoryLeakUpdateHandlerInternal( bool destroyChildren, sml::sml
 
 		CPPUNIT_ASSERT( pAgent->Commit() );
 
-		if ( pAgent->GetKernel()->IsDirectConnection() )
-		{
-			CPPUNIT_ASSERT( pAgent->GetIWMObjMapSize() == 7 ); // root, pRootID x 2, pChildID x 4, removed after step
-		}
-
 		pRootID1 = 0;
 		pRootID2 = 0;
 		pRootString = 0;
@@ -358,10 +338,6 @@ void Handlers::MyMemoryLeakUpdateHandlerInternal( bool destroyChildren, sml::sml
 		break;
 
 	default:
-		if ( pAgent->GetKernel()->IsDirectConnection() )
-		{
-			CPPUNIT_ASSERT( pAgent->GetIWMObjMapSize() == 1 ); // root
-		}
 		break;
 	}
 

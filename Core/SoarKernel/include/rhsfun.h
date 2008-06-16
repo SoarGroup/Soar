@@ -207,7 +207,6 @@ typedef char Bool;
 typedef unsigned char byte;
 
 typedef struct agent_struct agent;
-typedef struct kernel_struct Kernel;
 
 typedef struct action_struct {
   struct action_struct *next;

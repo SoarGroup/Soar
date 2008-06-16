@@ -18,9 +18,7 @@
 using namespace cli;
 using namespace sml;
 
-bool CommandLineInterface::ParseDirs(gSKI::Agent* pAgent, std::vector<std::string>& argv) {
-	unused(pAgent);
-	unused(argv);
+bool CommandLineInterface::ParseDirs(std::vector<std::string>&) {
 
 	return DoDirs();
 }

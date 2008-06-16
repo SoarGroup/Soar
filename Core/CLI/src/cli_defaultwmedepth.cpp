@@ -9,17 +9,17 @@
 #include <portability.h>
 
 #include "cli_CommandLineInterface.h"
+#include "cli_CLIError.h"
 
 #include "cli_Commands.h"
 #include "sml_Names.h"
 #include "sml_StringOps.h"
-
-#include "gSKI_Agent.h"
+#include "agent.h"
 
 using namespace cli;
 using namespace sml;
 
-bool CommandLineInterface::ParseDefaultWMEDepth(gSKI::Agent* pAgent, std::vector<std::string>& argv) {
+bool CommandLineInterface::ParseDefaultWMEDepth(std::vector<std::string>& argv) {
 	// n defaults to 0 (query)
 	int n = 0;
 
@@ -31,23 +31,21 @@ bool CommandLineInterface::ParseDefaultWMEDepth(gSKI::Agent* pAgent, std::vector
 		if (n <= 0) return SetError(CLIError::kIntegerMustBePositive);
 	}
 
-	return DoDefaultWMEDepth(pAgent, n ? &n : 0);
+	return DoDefaultWMEDepth(n ? &n : 0);
 }
 
-bool CommandLineInterface::DoDefaultWMEDepth(gSKI::Agent* pAgent, const int* pDepth) {
-	if (!RequireAgent(pAgent)) return false;
-
+bool CommandLineInterface::DoDefaultWMEDepth(const int* pDepth) {
 	if (!pDepth) {
 		if (m_RawOutput) {
-			m_Result << pAgent->GetDefaultWMEDepth();
+			m_Result << m_pAgentSoar->default_wme_depth;
 		} else {
 			char buf[kMinBufferSize];
-			AppendArgTagFast(sml_Names::kParamValue, sml_Names::kTypeInt, Int2String(pAgent->GetDefaultWMEDepth(), buf, kMinBufferSize));
+			AppendArgTagFast(sml_Names::kParamValue, sml_Names::kTypeInt, Int2String(m_pAgentSoar->default_wme_depth, buf, kMinBufferSize));
 		}
 		return true;
 	}
 
-	pAgent->SetDefaultWMEDepth(*pDepth);
+	m_pAgentSoar->default_wme_depth = *pDepth;
 	return true;
 }
 

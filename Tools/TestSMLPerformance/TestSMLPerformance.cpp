@@ -20,6 +20,8 @@
 #include <time.h>
 #include "sml_Client.h"
 #include "sml_StringOps.h"
+#include "sml_Connection.h"
+#include "thread_OSspecific.h"
 
 using namespace sml;
 using namespace std;
@@ -69,6 +71,7 @@ public:
 		for(int i=0; i<numWmes; i++) {
 			agent->Update((*wmes)[i], (*input)[i]);
 		}
+
 		agent->Commit();
 	}
 
@@ -83,10 +86,19 @@ class Environment {
 	int numAgents;
 	int numWmes;
 
+	soar_thread::OSSpecificTimer* m_pTimer ;
+
+public:
+	double m_InputTime ;
+	double m_OutputTime ;
+
 public:
 	Environment(Kernel *kernel, int na, int nw) {
 		numAgents = na;
 		numWmes = nw;
+		m_pTimer = soar_thread::MakeTimer() ;
+		m_InputTime = 0.0 ;
+		m_OutputTime = 0.0 ;
 
 		// Create agents
 		pAgents = new vector<TestAgent*>();
@@ -124,10 +136,12 @@ public:
 	}
 
 	void UpdateAll() {
+		m_pTimer->Start() ;
 		UpdateEnvironment();
 		for(int i=0; i<numAgents; i++) {
 			UpdateAgent(i);
 		}
+		m_InputTime += m_pTimer->Elapsed() ;
 	}
 
 	~Environment() {
@@ -136,6 +150,8 @@ public:
 			delete inputs[i];
 		}
 		delete pAgents;
+
+		delete m_pTimer ;
 	}
 
 };
@@ -193,6 +209,13 @@ void RunTest1(int numAgents, int numWmes, int numCycles) {
 	cout << "Num Update Events: " << numUpdateEvents << endl;
 	cout << "Num Input Events : " << numInputEvents << endl;
 
+#ifdef PROFILE_CONNECTIONS  // from sml_Connection.h
+	double incoming = kernel->GetConnection()->GetIncomingTime() ;
+	cout << "Incoming time: " << incoming/1000.0 << endl ;
+#endif
+	cout << "Input time : " << pEnv->m_InputTime/1000.0 << endl ;
+
+
 	delete pEnv;
 
 	kernel->Shutdown();
@@ -221,7 +244,15 @@ void RunTest2(int numAgents, int numWmes, int numCycles) {
 	cout << "Num Update Events: " << numUpdateEvents << endl;
 	cout << "Num Input Events : " << numInputEvents << endl;
 
-	delete pEnv;
+#ifdef PROFILE_CONNECTIONS  // from sml_Connection.h
+	double incoming = kernel->GetConnection()->GetIncomingTime() ;
+	cout << "Incoming time: " << incoming/1000.0 << endl ;
+#endif
+
+   // Doesn't make sense to include this, since the time is only updated in Environment::UpdateAll, which isn't used in this test
+   //cout << "Input time : " << pEnv->m_InputTime/1000.0 << endl ;
+
+   delete pEnv;
 
 	kernel->Shutdown();
 	delete kernel;

@@ -53,9 +53,15 @@
 #include "decide.h"
 #include "production.h"
 #include "lexer.h"
-#include "gski_event_system_functions.h" // support for generating XML output
+#include "xml.h"
+#include "soar_TraceNames.h"
 
 #include <ctype.h>
+
+#include <assert.h>
+
+using namespace soar_TraceNames;
+
 
 extern void gds_invalid_so_remove_goal (agent* thisAgent, wme *w);
 
@@ -69,23 +75,24 @@ extern void gds_invalid_so_remove_goal (agent* thisAgent, wme *w);
    install each I/O function.
 ==================================================================== */
 
-void add_input_function (agent* thisAgent, agent * a, soar_callback_fn f, 
+void add_input_function (agent* thisAgent, soar_callback_fn f, 
 			 soar_callback_data cb_data, 
 			 soar_callback_free_fn free_fn, char * name) {
-  soar_add_callback(thisAgent, a, INPUT_PHASE_CALLBACK, f, cb_data, free_fn, name);
+  soar_add_callback(thisAgent, INPUT_PHASE_CALLBACK, f, INPUT_PHASE_CALLBACK, cb_data, free_fn, name);
 }
 
-void remove_input_function (agent* thisAgent, agent * a, char * name) {
-  soar_remove_callback(thisAgent, a, INPUT_PHASE_CALLBACK, name);
+void remove_input_function (agent* thisAgent, char * name) {
+  soar_remove_callback(thisAgent, INPUT_PHASE_CALLBACK, name);
 }
 
 void add_output_function (agent* thisAgent, 
-			  agent * a, soar_callback_fn f, 
+			  soar_callback_fn f, 
 			  soar_callback_data cb_data, 
 			  soar_callback_free_fn free_fn,
+			  int eventID,
 			  char * output_link_name)
 {
-  if (soar_exists_callback_id (a, OUTPUT_PHASE_CALLBACK, output_link_name)
+  if (soar_exists_callback_id (thisAgent, OUTPUT_PHASE_CALLBACK, output_link_name)
       != NULL)
     {
       print (thisAgent, "Error: tried to add_output_function with duplicate name %s\n",
@@ -96,34 +103,34 @@ void add_output_function (agent* thisAgent,
     }
   else
     {
-      soar_add_callback(thisAgent, a, OUTPUT_PHASE_CALLBACK, f, cb_data, free_fn, 
+      soar_add_callback(thisAgent, OUTPUT_PHASE_CALLBACK, f, eventID, cb_data, free_fn, 
 			output_link_name);
     }
 }
 
-void remove_output_function (agent* thisAgent, agent * a, char * name) {
-  soar_callback * cb;
-  output_link *ol;
+void remove_output_function (agent* thisAgent, char * name) {
+	soar_callback * cb;
+	output_link *ol;
 
-  /* Remove indexing structures ... */
+	/* Remove indexing structures ... */
 
-  cb = soar_exists_callback_id(a, OUTPUT_PHASE_CALLBACK, name);
-  if (!cb) return;
+	cb = soar_exists_callback_id(thisAgent, OUTPUT_PHASE_CALLBACK, name);
+	if (!cb) return;
 
-  for (ol=a->existing_output_links; ol!=NIL; ol=ol->next) 
-    {
-      if (ol->cb == cb)
+	for (ol=thisAgent->existing_output_links; ol!=NIL; ol=ol->next) 
 	{
-	  /* Remove ol entry */
-	  ol->link_wme->output_link = NULL;
-	  wme_remove_ref(thisAgent, ol->link_wme);
-	  remove_from_dll(a->existing_output_links, ol, next, prev);
-	  free_with_pool(&(a->output_link_pool), ol);
-	  break;
+		if (ol->cb == cb)
+		{
+			/* Remove ol entry */
+			ol->link_wme->output_link = NULL;
+			wme_remove_ref(thisAgent, ol->link_wme);
+			remove_from_dll(thisAgent->existing_output_links, ol, next, prev);
+			free_with_pool(&(thisAgent->output_link_pool), ol);
+			break;
+		}
 	}
-    }
 
-  soar_remove_callback(thisAgent, a, OUTPUT_PHASE_CALLBACK, name);
+	soar_remove_callback(thisAgent, OUTPUT_PHASE_CALLBACK, name);
 }
 
 /* ====================================================================
@@ -148,11 +155,29 @@ void remove_output_function (agent* thisAgent, agent * a, char * name) {
    do some error checking, but they're nowhere near bullet-proof.
 ==================================================================== */
 
-Symbol *get_new_io_identifier (agent* thisAgent, char first_letter) {
-  return make_new_identifier (thisAgent, first_letter, TOP_GOAL_LEVEL);
+Symbol *get_new_io_identifier(agent* thisAgent, char first_letter)
+{
+	return make_new_identifier (thisAgent, first_letter, TOP_GOAL_LEVEL);
 }
 
-Symbol *get_io_sym_constant (agent* thisAgent, char *name) {
+Symbol *get_io_identifier (agent* thisAgent, char first_letter, unsigned long number) {
+  Symbol* id = find_identifier(thisAgent, first_letter, number) ;
+
+  // DJP: The other "make_<type>" methods either make a new object or incremenent the refence
+  // on an existing object.  So I'm going to make this method function the same way for identifiers.
+  if (id)
+  {
+	symbol_add_ref(id);
+  }
+  else
+  {
+	  id = make_new_identifier (thisAgent, first_letter, TOP_GOAL_LEVEL);
+  }
+
+  return id ;
+}
+
+Symbol *get_io_sym_constant (agent* thisAgent, char const *name) {
   return make_sym_constant (thisAgent, name);
 }
 
@@ -164,8 +189,8 @@ Symbol *get_io_float_constant (agent* thisAgent, float value) {
   return make_float_constant (thisAgent, value);
 }
 
-void release_io_symbol (agent* thisAgent, Symbol *sym) {
-  symbol_remove_ref (thisAgent, sym);
+unsigned long release_io_symbol (agent* thisAgent, Symbol *sym) {
+  return symbol_remove_ref (thisAgent, sym);
 }
 
 wme *add_input_wme (agent* thisAgent, Symbol *id, Symbol *attr, Symbol *value) {
@@ -182,8 +207,36 @@ wme *add_input_wme (agent* thisAgent, Symbol *id, Symbol *attr, Symbol *value) {
   insert_at_head_of_dll (id->id.input_wmes, w, next, prev);
   add_wme_to_wm (thisAgent, w);
 
+  //PrintDebugFormat("Added wme with timetag %d to id %c%d ",w->timetag,id->id.name_letter,id->id.name_number) ;
 
   return w;
+}
+
+wme* find_input_wme_by_timetag_from_id (agent* thisAgent, Symbol* idSym, unsigned long timetag, tc_number tc) {
+   wme *pWME,*w;
+
+  //PrintDebugFormat("Scanning id %c%d", idSym->id.name_letter, idSym->id.name_number) ;
+
+  // Mark this id as having been visited (the key here is that tc numbers always increase so tc_num must be < tc until it's marked)
+  idSym->id.tc_num = tc ;
+
+   // This is inefficient.  Using a hash table could save a lot here.
+	for (pWME = idSym->id.input_wmes; pWME != NIL; pWME = pWME->next)
+	{
+		//PrintDebugFormat("Timetag %ld", pWME->timetag) ;
+		if (pWME->timetag == timetag)
+			return pWME ;
+
+		// NOTE: The test for the tc_num keeps us from getting stuck in loops within graphs
+		if (pWME->value->common.symbol_type == IDENTIFIER_SYMBOL_TYPE && pWME->value->id.tc_num != tc)
+		{
+			w = find_input_wme_by_timetag_from_id(thisAgent, pWME->value, timetag, tc) ;
+			if (w)
+				return w ;
+		}
+	}
+
+	return NIL ;
 }
 
 Bool remove_input_wme (agent* thisAgent, wme *w) {
@@ -212,15 +265,16 @@ Bool remove_input_wme (agent* thisAgent, wme *w) {
          if (w->gds->goal != NIL){
              if (thisAgent->soar_verbose_flag || thisAgent->sysparams[TRACE_WM_CHANGES_SYSPARAM]) 
 			 {
-              	 print(thisAgent, "\nremove_input_wme: Removing state S%d because element in GDS changed.", w->gds->goal->id.level);
-				 print(thisAgent, " WME: "); 
-
 				 char buf[256];
 				 SNPRINTF(buf, 254, "remove_input_wme: Removing state S%d because element in GDS changed.", w->gds->goal->id.level);
-				 gSKI_MakeAgentCallbackXML(thisAgent, kFunctionBeginTag, kTagVerbose);
-				 gSKI_MakeAgentCallbackXML(thisAgent, kFunctionAddAttribute, kTypeString, buf);
-				 print_wme(thisAgent, w);
-				 gSKI_MakeAgentCallbackXML(thisAgent, kFunctionEndTag, kTagVerbose);
+
+              	 print(thisAgent, buf );
+				 print(thisAgent, " WME: "); 
+
+                 xml_begin_tag( thisAgent, kTagVerbose );
+                 xml_att_val( thisAgent, kTypeString, buf );
+                 print_wme(thisAgent, w);
+                 xml_end_tag( thisAgent, kTagVerbose );
 			 }
 
 			 gds_invalid_so_remove_goal(thisAgent, w);
@@ -242,7 +296,7 @@ void do_input_cycle (agent* thisAgent) {
 
   if (thisAgent->prev_top_state && (!thisAgent->top_state)) {
     /* --- top state was just removed --- */
-    soar_invoke_callbacks(thisAgent, thisAgent, INPUT_PHASE_CALLBACK, 
+    soar_invoke_callbacks(thisAgent, INPUT_PHASE_CALLBACK, 
 			 (soar_call_data) TOP_STATE_JUST_REMOVED);
     release_io_symbol (thisAgent, thisAgent->io_header);
     release_io_symbol (thisAgent, thisAgent->io_header_input);
@@ -283,7 +337,7 @@ void do_input_cycle (agent* thisAgent) {
   /* --- if there is a top state, do the normal input cycle --- */
 
   if (thisAgent->top_state) {
-    soar_invoke_callbacks(thisAgent, thisAgent, INPUT_PHASE_CALLBACK, 
+    soar_invoke_callbacks(thisAgent, INPUT_PHASE_CALLBACK, 
 			 (soar_call_data) NORMAL_INPUT_CYCLE);
   }
 
@@ -577,6 +631,7 @@ void add_wme_to_collected_io_wmes (agent* thisAgent, wme *w) {
   New->id = w->id;
   New->attr = w->attr;
   New->value = w->value;
+  New->timetag = w->timetag ;
 }
 
 io_wme *get_io_wmes_for_output_link (agent* thisAgent, output_link *ol) {
@@ -643,7 +698,7 @@ void do_output_cycle (agent* thisAgent) {
       stop_timer (thisAgent, &thisAgent->start_kernel_tv, &thisAgent->total_kernel_time);
       start_timer (thisAgent, &thisAgent->start_kernel_tv);
       #endif
-	  (ol->cb->function)(thisAgent, ol->cb->data, &output_call_data);
+	  if (ol->cb) (ol->cb->function)(thisAgent, ol->cb->eventid, ol->cb->data, &output_call_data);
       #ifndef NO_TIMING_STUFF      
       stop_timer (thisAgent, &thisAgent->start_kernel_tv, &thisAgent->output_function_cpu_time);
       start_timer (thisAgent, &thisAgent->start_kernel_tv);
@@ -664,7 +719,7 @@ void do_output_cycle (agent* thisAgent) {
       stop_timer (thisAgent, &thisAgent->start_kernel_tv, &thisAgent->total_kernel_time);
       start_timer (thisAgent, &thisAgent->start_kernel_tv);
       #endif
-      (ol->cb->function)(thisAgent, ol->cb->data, &output_call_data);
+	  if (ol->cb) (ol->cb->function)(thisAgent, ol->cb->eventid, ol->cb->data, &output_call_data);
       #ifndef NO_TIMING_STUFF      
       stop_timer (thisAgent, &thisAgent->start_kernel_tv, &thisAgent->output_function_cpu_time);
       start_timer (thisAgent, &thisAgent->start_kernel_tv);
@@ -687,7 +742,7 @@ void do_output_cycle (agent* thisAgent) {
       stop_timer (thisAgent, &thisAgent->start_kernel_tv, &thisAgent->total_kernel_time);
       start_timer (thisAgent, &thisAgent->start_kernel_tv);
       #endif
-      (ol->cb->function)(thisAgent, ol->cb->data, &output_call_data);
+	  if (ol->cb) (ol->cb->function)(thisAgent, ol->cb->eventid, ol->cb->data, &output_call_data);
       #ifndef NO_TIMING_STUFF      
       stop_timer (thisAgent, &thisAgent->start_kernel_tv, &thisAgent->output_function_cpu_time);
       start_timer (thisAgent, &thisAgent->start_kernel_tv);
@@ -709,7 +764,7 @@ void do_output_cycle (agent* thisAgent) {
       stop_timer (thisAgent, &thisAgent->start_kernel_tv, &thisAgent->total_kernel_time);
       start_timer (thisAgent, &thisAgent->start_kernel_tv);
       #endif
-      (ol->cb->function)(thisAgent, ol->cb->data, &output_call_data);
+	  if (ol->cb) (ol->cb->function)(thisAgent, ol->cb->eventid, ol->cb->data, &output_call_data);
       #ifndef NO_TIMING_STUFF      
       stop_timer (thisAgent, &thisAgent->start_kernel_tv, &thisAgent->output_function_cpu_time);
       start_timer (thisAgent, &thisAgent->start_kernel_tv);

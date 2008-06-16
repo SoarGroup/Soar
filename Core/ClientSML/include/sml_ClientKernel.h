@@ -19,13 +19,18 @@
 #include "sml_ClientEvents.h"
 #include "sml_ListMap.h"
 
-// Forward declaratiokn for ElementXML_Handle.
-struct ElementXML_InterfaceStructTag ;
-typedef struct ElementXML_InterfaceStructTag *ElementXML_Handle ;
+// Forward declare so clients can use this
+struct ElementXML_InterfaceStruct;
+typedef ElementXML_InterfaceStruct* ElementXML_Handle ;
 
 namespace sock
 {
 	class SocketLib ;
+}
+
+namespace soarxml
+{
+	class ElementXML ;
 }
 
 namespace sml {
@@ -33,7 +38,6 @@ namespace sml {
 // Forward declarations
 class Agent ;
 class Connection ;
-class ElementXML ;
 class EventThread ;
 class Events ;
 class AnalyzeXML ;
@@ -238,13 +242,6 @@ protected:
 	*************************************************************/
 	Agent* MakeAgent(char const* pAgentName) ;
 
-	/*************************************************************
-	* @brief Returns the connection information for this kernel
-	*		 which is how we communicate with the kernel (e.g. embedded,
-	*		 remotely over a socket etc.)
-	*************************************************************/
-	Connection* GetConnection() const { return m_Connection ; }
-
 	void SetSocketLib(sock::SocketLib* pLibrary) { m_SocketLibrary = pLibrary ; }
 
 	long	GenerateNextID()		{ return ++m_IdCounter ; }
@@ -263,12 +260,12 @@ protected:
 	* @param pIncoming	The event command
 	* @param pResponse	The reply (no real need to fill anything in here currently)
 	*************************************************************/
-	void ReceivedEvent(AnalyzeXML* pIncoming, ElementXML* pResponse) ;
-	void ReceivedSystemEvent(smlSystemEventId id, AnalyzeXML* pIncoming, ElementXML* pResponse) ;
-	void ReceivedAgentEvent(smlAgentEventId id, AnalyzeXML* pIncoming, ElementXML* pResponse) ;
-	void ReceivedRhsEvent(smlRhsEventId id, AnalyzeXML* pIncoming, ElementXML* pResponse) ;
-	void ReceivedUpdateEvent(smlUpdateEventId id, AnalyzeXML* pIncoming, ElementXML* pResponse) ;
-	void ReceivedStringEvent(smlStringEventId id, AnalyzeXML* pIncoming, ElementXML* pResponse) ;
+	void ReceivedEvent(AnalyzeXML* pIncoming, soarxml::ElementXML* pResponse) ;
+	void ReceivedSystemEvent(smlSystemEventId id, AnalyzeXML* pIncoming, soarxml::ElementXML* pResponse) ;
+	void ReceivedAgentEvent(smlAgentEventId id, AnalyzeXML* pIncoming, soarxml::ElementXML* pResponse) ;
+	void ReceivedRhsEvent(smlRhsEventId id, AnalyzeXML* pIncoming, soarxml::ElementXML* pResponse) ;
+	void ReceivedUpdateEvent(smlUpdateEventId id, AnalyzeXML* pIncoming, soarxml::ElementXML* pResponse) ;
+	void ReceivedStringEvent(smlStringEventId id, AnalyzeXML* pIncoming, soarxml::ElementXML* pResponse) ;
 
 	/*************************************************************
 	* @brief If this message is an XML trace message returns
@@ -277,7 +274,7 @@ protected:
 	*		 This function is just to boost performance on trace messages
 	*		 which are really performance critical.
 	*************************************************************/
-	Agent* IsXMLTraceEvent(ElementXML* pIncomingMsg) ;
+	Agent* IsXMLTraceEvent(soarxml::ElementXML* pIncomingMsg) ;
 
 	void InitializeTimeTagCounter() ;
 
@@ -496,8 +493,8 @@ public:
 	* @returns The result of executing the run command.
 	*		   The output from during the run is sent to a different callback.
 	*************************************************************/
-	char const* RunAllAgents(unsigned long numberSteps, smlRunStepSize stepSize = sml_DECISION, smlInterleaveStepSize interleaveStepSize = sml_INTERLEAVE_PHASE) ;
-	char const* RunAllAgentsForever(smlInterleaveStepSize interleaveStepSize = sml_INTERLEAVE_PHASE) ;
+	char const* RunAllAgents(unsigned long numberSteps, smlRunStepSize stepSize = sml_DECISION, smlRunStepSize interleaveStepSize = sml_PHASE) ;
+	char const* RunAllAgentsForever(smlRunStepSize interleaveStepSize = sml_PHASE) ;
 
 	/*************************************************************
 	* @brief   Run Soar until either output is generated or
@@ -516,7 +513,7 @@ public:
 	* before then that agent will stop running.  (This value can be changed with the
 	* max-nil-output-cycles command).
 	*************************************************************/
-	char const* RunAllTilOutput(smlInterleaveStepSize interleaveStepSize = sml_INTERLEAVE_PHASE) ;
+	char const* RunAllTilOutput(smlRunStepSize interleaveStepSize = sml_PHASE) ;
 
 	/*************************************************************
 	* @brief Interrupt the currently running Soar agent.
@@ -933,8 +930,6 @@ public:
 	*		 E.g. 8.6.1
 	*************************************************************/
 	std::string GetSoarKernelVersion() ;
-	static std::string GetSoarClientVersion() ;
-	static std::string GetSMLVersion() ;
 
 	/*************************************************************
 	* @brief Calls Commit() for all agents -- sending any queued I/O operations
@@ -957,18 +952,29 @@ public:
 	*************************************************************/
 	std::string LoadExternalLibrary(char const* pLibraryCommand);
 
+	/*************************************************************
+	* @brief Returns the connection information for this kernel
+	*		 which is how we communicate with the kernel (e.g. embedded,
+	*		 remotely over a socket etc.)
+	*
+	*		 You should not generally need to call here.  If you are doing
+	*		 so for more than debugging information something is prob. wrong
+	*		 
+	*************************************************************/
+	Connection* GetConnection() const { return m_Connection ; }
+
 protected:
 	/*************************************************************
 	* @brief This function is called when we receive a "call" SML
 	*		 message from the kernel.
 	*************************************************************/
-	static ElementXML* ReceivedCall(Connection* pConnection, ElementXML* pIncoming, void* pUserData) ;
+	static soarxml::ElementXML* ReceivedCall(Connection* pConnection, soarxml::ElementXML* pIncoming, void* pUserData) ;
 
 	/*************************************************************
 	* @brief This function is called (indirectly) when we receive a "call" SML
 	*		 message from the kernel.
 	*************************************************************/
-	ElementXML* ProcessIncomingSML(Connection* pConnection, ElementXML* pIncoming) ;
+	soarxml::ElementXML* ProcessIncomingSML(Connection* pConnection, soarxml::ElementXML* pIncoming) ;
 
 	/*************************************************************
 	* @brief The workhorse function to create an embedded connection.

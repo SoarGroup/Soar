@@ -11,13 +11,11 @@
 //
 /////////////////////////////////////////////////////////////////
 
-#include "sml_Utils.h"
 #include "sml_UpdateListener.h"
+
+#include "sml_Utils.h"
 #include "sml_Connection.h"
 #include "sml_StringOps.h"
-#include "IgSKI_Production.h"
-#include "gSKI_ProductionManager.h"
-#include "gSKI_Kernel.h"
 #include "sml_KernelSML.h"
 #include "sml_AgentSML.h"
 
@@ -26,7 +24,7 @@
 using namespace sml ;
 
 // Returns true if this is the first connection listening for this event
-bool UpdateListener::AddListener(egSKIUpdateEventId eventID, Connection* pConnection)
+bool UpdateListener::AddListener(smlUpdateEventId eventID, Connection* pConnection)
 {
 	bool first = BaseAddListener(eventID, pConnection) ;
 
@@ -34,19 +32,27 @@ bool UpdateListener::AddListener(egSKIUpdateEventId eventID, Connection* pConnec
 }
 
 // Returns true if at least one connection remains listening for this event
-bool UpdateListener::RemoveListener(egSKIUpdateEventId eventID, Connection* pConnection)
+bool UpdateListener::RemoveListener(smlUpdateEventId eventID, Connection* pConnection)
 {
 	bool last = BaseRemoveListener(eventID, pConnection) ;
 
 	return last ;
 }
 
-// Called when a "RunEvent" occurs in the kernel
-void UpdateListener::HandleEvent(egSKIUpdateEventId eventID, int runFlags)
+// Called when an event occurs in the kernel
+void UpdateListener::OnKernelEvent(int eventIDIn, AgentSML* /*pAgentSML*/, void* pCallData)
 {
+	// There are currently no kernel events corresponding to this SML event.
+	// They are all directly generated from SML.  If we later add kernel callbacks
+	// for this class of events they would come here.
+
+	smlUpdateEventId eventID = static_cast<smlUpdateEventId>(eventIDIn);
+	int* pRunFlags = static_cast<int*>(pCallData);
+	assert(pRunFlags);
+
 	// Get the first listener for this event (or return if there are none)
 	ConnectionListIter connectionIter ;
-	if (!EventManager<egSKIUpdateEventId>::GetBegin(eventID, &connectionIter))
+	if (!EventManager<smlUpdateEventId>::GetBegin(eventID, &connectionIter))
 		return ;
 
 	// We need the first connection for when we're building the message.  Perhaps this is a sign that
@@ -58,10 +64,10 @@ void UpdateListener::HandleEvent(egSKIUpdateEventId eventID, int runFlags)
 
 	// Convert phase to a string
 	char runStr[kMinBufferSize] ;
-	Int2String(runFlags, runStr, sizeof(runStr)) ;
+	Int2String(*pRunFlags, runStr, sizeof(runStr)) ;
 
 	// Build the SML message we're doing to send.
-	ElementXML* pMsg = pConnection->CreateSMLCommand(sml_Names::kCommand_Event) ;
+	soarxml::ElementXML* pMsg = pConnection->CreateSMLCommand(sml_Names::kCommand_Event) ;
 	pConnection->AddParameterToSMLCommand(pMsg, sml_Names::kParamEventID, event) ;
 	pConnection->AddParameterToSMLCommand(pMsg, sml_Names::kParamValue, runStr) ;
 

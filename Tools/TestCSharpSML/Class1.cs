@@ -325,7 +325,7 @@ namespace TestCSharpSML
 			int noteCallbackID  = agent.RegisterForOutputNotification(noteCall, myTestData) ;
 			int xmlCallbackID   = agent.RegisterForXMLEvent(sml.smlXMLEventId.smlEVENT_XML_TRACE_OUTPUT, xmlCall, myTestData) ;
 			int agentCallbackID	= kernel.RegisterForAgentEvent(sml.smlAgentEventId.smlEVENT_BEFORE_AGENT_REINITIALIZED, agentCall, myTestData) ;
-			int systemCallbackID= kernel.RegisterForSystemEvent(sml.smlSystemEventId.smlEVENT_BEFORE_RHS_FUNCTION_EXECUTED, systemCall, myTestData) ;
+            int systemCallbackID = kernel.RegisterForSystemEvent(sml.smlSystemEventId.smlEVENT_SYSTEM_START, systemCall, myTestData);
 			int updateCallbackID= kernel.RegisterForUpdateEvent(sml.smlUpdateEventId.smlEVENT_AFTER_ALL_OUTPUT_PHASES, updateCall, myTestData) ;
 			int stringCallbackID= kernel.RegisterForStringEvent(sml.smlStringEventId.smlEVENT_EDIT_PRODUCTION, strCall, myTestData) ;
 			int rhsCallbackID	= kernel.AddRhsFunction("test-rhs", rhsCall, myTestData) ;

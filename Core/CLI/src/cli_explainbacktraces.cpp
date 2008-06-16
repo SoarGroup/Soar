@@ -8,22 +8,22 @@
 
 #include <portability.h>
 
+#include "sml_Utils.h"
 #include "cli_CommandLineInterface.h"
 
 #include "cli_Commands.h"
+#include "cli_CLIError.h"
 
 #include "sml_Names.h"
 #include "sml_StringOps.h"
 
-#include "gSKI_Kernel.h"
-#include "gSKI_ProductionManager.h"
-#include "IgSKI_Production.h"
-#include "gSKI_DoNotTouch.h"
+#include "sml_KernelSML.h"
+#include "sml_KernelHelpers.h"
 
 using namespace cli;
 using namespace sml;
 
-bool CommandLineInterface::ParseExplainBacktraces(gSKI::Agent* pAgent, std::vector<std::string>& argv) {
+bool CommandLineInterface::ParseExplainBacktraces(std::vector<std::string>& argv) {
 	Options optionsData[] = {
 		{'c', "condition",	1},
 		{'f', "full",		0},
@@ -61,32 +61,26 @@ bool CommandLineInterface::ParseExplainBacktraces(gSKI::Agent* pAgent, std::vect
 	}
 
 	// we have a production
-	if (m_NonOptionArguments == 1) return DoExplainBacktraces(pAgent, &argv[m_Argument - m_NonOptionArguments], condition);
+	if (m_NonOptionArguments == 1) return DoExplainBacktraces(&argv[m_Argument - m_NonOptionArguments], condition);
 	
 	// query
-	return DoExplainBacktraces(pAgent);
+	return DoExplainBacktraces();
 }
 
-bool CommandLineInterface::DoExplainBacktraces(gSKI::Agent* pAgent, const std::string* pProduction, const int condition) {
-	if (!RequireAgent(pAgent)) return false;
-
+bool CommandLineInterface::DoExplainBacktraces(const std::string* pProduction, const int condition) {
 	// quick sanity check
 	if (condition < -1) return SetError(CLIError::kInvalidConditionNumber);
 
 	// Attain the evil back door of doom, even though we aren't the TgD
-	gSKI::EvilBackDoor::TgDWorkArounds* pKernelHack = m_pKernel->getWorkaroundObject();
+	sml::KernelHelpers* pKernelHack = m_pKernelSML->GetKernelHelpers() ;
 
 	if (!pProduction) {
 		// no production means query, ignore other args
-		AddListenerAndDisableCallbacks(pAgent);
-		pKernelHack->ExplainListChunks(pAgent);
-		RemoveListenerAndEnableCallbacks(pAgent);
+		pKernelHack->ExplainListChunks(m_pAgentSML);
 		return true;
 	}
 
-	AddListenerAndDisableCallbacks(pAgent);
-	pKernelHack->ExplainChunks(pAgent, pProduction->c_str(), condition);
-	RemoveListenerAndEnableCallbacks(pAgent);
+	pKernelHack->ExplainChunks(m_pAgentSML, pProduction->c_str(), condition);
 	return true;
 }
 

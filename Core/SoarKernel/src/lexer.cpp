@@ -66,11 +66,12 @@
 #include "agent.h"
 #include "print.h"
 #include "init_soar.h"
-#include "xmlTraceNames.h" // for constants for XML function types, tags and attributes
-#include "gski_event_system_functions.h" // support for triggering XML events
+#include "xml.h"
 
 #include <math.h>
 #include <ctype.h>
+
+#include <assert.h>
 
 //
 // These three should be safe for re-entrancy.  --JNW--
@@ -137,148 +138,89 @@ void stop_lex_from_file (agent* thisAgent) {
 ====================================================================== */
 
 void get_next_char (agent* thisAgent) {
-  char *s;
+	char *s;
 
-//#ifdef USE_TCL
-  /* Soar-Bugs #54, TMH */
-  if ( thisAgent->alternate_input_exit &&
-      (thisAgent->alternate_input_string == NULL) &&
-      (thisAgent->alternate_input_suffix == NULL)   ) {
-    thisAgent->current_char = EOF_AS_CHAR;
-    /* Replaced deprecated control_c_handler with an appropriate assertion */
-	//control_c_handler(0);
-	assert(0 && "error in lexer.cpp (control_c_handler() used to be called here)");
-    return;
-  }
-//#endif
+	if ( thisAgent->alternate_input_exit &&
+		(thisAgent->alternate_input_string == NULL) &&
+		(thisAgent->alternate_input_suffix == NULL)   ) {
+			thisAgent->current_char = EOF_AS_CHAR;
+			assert(0 && "error in lexer.cpp (control_c_handler() used to be called here)");
+			return;
+	}
 
-  if (thisAgent->using_input_string) {
-    if (*(thisAgent->input_string)!='\0')
-      thisAgent->current_char = *(thisAgent->input_string++);
-    return;
-  }
+	if (thisAgent->alternate_input_string != NULL)
+	{
+		thisAgent->current_char = *thisAgent->alternate_input_string++;
 
-//#ifdef USE_X_DISPLAY
-//  if (x_input_buffer != NIL) {
-//    thisAgent->current_char = x_input_buffer[x_input_buffer_index++];
-//    if (thisAgent->current_char == '\n') {
-//      x_input_buffer = NIL;
-//    }
-//  } else {
-//    thisAgent->current_char = thisAgent->current_file->buffer 
-//                           [thisAgent->current_file->current_column++];
-//  }
-//#elif defined(USE_TCL)
-  if (thisAgent->alternate_input_string != NULL)
-    {
-      thisAgent->current_char = *thisAgent->alternate_input_string++;
+		if (thisAgent->current_char == '\0') 
+		{
+			thisAgent->alternate_input_string = NIL;
+			thisAgent->current_char = 
+				*thisAgent->alternate_input_suffix++;
+		}
+	}
+	else if (thisAgent->alternate_input_suffix != NULL)
+	{
+		thisAgent->current_char = *thisAgent->alternate_input_suffix++;
 
-      if (thisAgent->current_char == '\0') 
-        {
-          thisAgent->alternate_input_string = NIL;
-          thisAgent->current_char = 
-            *thisAgent->alternate_input_suffix++;
-        }
-    }
-  else if (thisAgent->alternate_input_suffix != NULL)
-    {
-      thisAgent->current_char = *thisAgent->alternate_input_suffix++;
+		if (thisAgent->current_char == '\0') 
+		{
+			thisAgent->alternate_input_suffix = NIL;
 
-      if (thisAgent->current_char == '\0') 
-      {
-          thisAgent->alternate_input_suffix = NIL;
+			if ( thisAgent->alternate_input_exit ) {
+				thisAgent->current_char = EOF_AS_CHAR;
+				assert(0 && "error in lexer.cpp (control_c_handler() used to be called here)");
+				return;
+			}
 
-          /* Soar-Bugs #54, TMH */
-          if ( thisAgent->alternate_input_exit ) {
-            thisAgent->current_char = EOF_AS_CHAR;
-          /* Replaced deprecated control_c_handler with an appropriate assertion */
-          //control_c_handler(0);
-          assert(0 && "error in lexer.cpp (control_c_handler() used to be called here)");
-          return;
-	  }
+			thisAgent->current_char = thisAgent->current_file->buffer 
+				[thisAgent->current_file->current_column++];
+		}
+	} 
+	else 
+	{
+		thisAgent->current_char = thisAgent->current_file->buffer 
+			[thisAgent->current_file->current_column++];
+	}
 
-          thisAgent->current_char = thisAgent->current_file->buffer 
-            [thisAgent->current_file->current_column++];
-        }
-    } 
-  else 
-    {
-      thisAgent->current_char = thisAgent->current_file->buffer 
-        [thisAgent->current_file->current_column++];
-    }
-//#elif _WINDOWS
-//  if (thisAgent->current_file->file==stdin) { 
-//    switch (thisAgent->current_line[thisAgent->current_line_index]) {
-//      case EOF_AS_CHAR:
-//      case 0:
-//			if (!AvailableWindowCommand()) {
-//	  			thisAgent->current_line[thisAgent->current_line_index=0]=thisAgent->current_char=EOF_AS_CHAR;
-//		 	    break;
-//			} else {
-//	  			s=GetWindowCommand();
-//	  			strncpy(thisAgent->current_line,s+1, AGENT_STRUCT_CURRENT_LINE_BUFFER_SIZE);
-//				thisAgent->current_line[AGENT_STRUCT_CURRENT_LINE_BUFFER_SIZE-1] = 0; /* ensure null termination */
-//	  			if (thisAgent->print_prompt_flag=(s[0]=='1')) 
-//			    print("%s",s+1);
-//	  			free(s);
-//	  			thisAgent->current_line_index=0;
-//			}
-//      default:
-//			thisAgent->current_char=thisAgent->current_line[thisAgent->current_line_index++];
-//			break;
-//    }
-//  } else 
-//    thisAgent->current_char = thisAgent->current_file->buffer 
-//			   [thisAgent->current_file->current_column++];
-//#else
-//  thisAgent->current_char = thisAgent->current_file->buffer 
-//                           [thisAgent->current_file->current_column++];
-//#endif
+	if (thisAgent->current_char) return;
 
-  if (thisAgent->current_char) return;
+	if ((thisAgent->current_file->current_column == BUFSIZE) &&
+		(thisAgent->current_file->buffer[BUFSIZE-2] != '\n') &&
+		(thisAgent->current_file->buffer[BUFSIZE-2] != EOF_AS_CHAR)) {
+			char msg[512];
+			SNPRINTF (msg, 512,
+				"lexer.c: Error:  line too long (max allowed is %d chars)\nFile %s, line %lu\n",
+				MAX_LEXER_LINE_LENGTH, thisAgent->current_file->filename,
+				thisAgent->current_file->current_line);
+			msg[511] = 0; /* ensure null termination */
 
-  if ((thisAgent->current_file->current_column == BUFSIZE) &&
-      (thisAgent->current_file->buffer[BUFSIZE-2] != '\n') &&
-      (thisAgent->current_file->buffer[BUFSIZE-2] != EOF_AS_CHAR)) {
-    char msg[512];
-    SNPRINTF (msg, 512,
-	     "lexer.c: Error:  line too long (max allowed is %d chars)\nFile %s, line %lu\n",
-	     MAX_LEXER_LINE_LENGTH, thisAgent->current_file->filename,
-	     thisAgent->current_file->current_line);
-	msg[511] = 0; /* ensure null termination */
+			abort_with_fatal_error(thisAgent, msg);
+	}
 
-    abort_with_fatal_error(thisAgent, msg);
-  }
+	s = fgets (thisAgent->current_file->buffer, BUFSIZE, thisAgent->current_file->file);
 
-  s = fgets (thisAgent->current_file->buffer, BUFSIZE, thisAgent->current_file->file);
-
-  if (s) {
-    thisAgent->current_file->current_line++;
-    if (reading_from_top_level(thisAgent)) {
-      tell_printer_that_output_column_has_been_reset (thisAgent);
-      if (thisAgent->logging_to_file)
-        print_string_to_log_file_only (thisAgent, thisAgent->current_file->buffer);
-    }
-  } else {
-    /* s==NIL means immediate eof encountered or read error occurred */
-    if (! feof(thisAgent->current_file->file)) {
-      if(reading_from_top_level(thisAgent)) {
-//#ifndef _WINDOWS
-        /* Replaced deprecated control_c_handler with an appropriate assertion */
-        //control_c_handler(0);
-        assert(0 && "error in lexer.cpp (control_c_handler() used to be called here)");
-//#endif
-        return;
-      } else {
-        print (thisAgent, "I/O error while reading file %s; ignoring the rest of it.\n",
-               thisAgent->current_file->filename);
-      }
-    }
-    thisAgent->current_file->buffer[0] = EOF_AS_CHAR;
-    thisAgent->current_file->buffer[1] = 0;
-  }
-  thisAgent->current_char = thisAgent->current_file->buffer[0];
-  thisAgent->current_file->current_column = 1;
+	if (s) {
+		thisAgent->current_file->current_line++;
+		if (reading_from_top_level(thisAgent)) {
+			tell_printer_that_output_column_has_been_reset (thisAgent);
+		}
+	} else {
+		/* s==NIL means immediate eof encountered or read error occurred */
+		if (! feof(thisAgent->current_file->file)) {
+			if(reading_from_top_level(thisAgent)) {
+				assert(0 && "error in lexer.cpp (control_c_handler() used to be called here)");
+				return;
+			} else {
+				print (thisAgent, "I/O error while reading file %s; ignoring the rest of it.\n",
+					thisAgent->current_file->filename);
+			}
+		}
+		thisAgent->current_file->buffer[0] = EOF_AS_CHAR;
+		thisAgent->current_file->buffer[1] = 0;
+	}
+	thisAgent->current_char = thisAgent->current_file->buffer[0];
+	thisAgent->current_file->current_column = 1;
 }
 
 /* ======================================================================
@@ -459,14 +401,14 @@ Bool determine_type_of_constituent_string (agent* thisAgent) {
            print (thisAgent, "         If a disjunctive was intended, add a space after <<\n");
            print (thisAgent, "         If a constant was intended, surround constant with vertical bars\n");
 
-		   GenerateWarningXML(thisAgent, "Warning: Possible disjunctive encountered in reading symbolic constant.\n         If a disjunctive was intended, add a space after &lt;&lt;\n         If a constant was intended, surround constant with vertical bars.");		   
+		   xml_generate_warning(thisAgent, "Warning: Possible disjunctive encountered in reading symbolic constant.\n         If a disjunctive was intended, add a space after &lt;&lt;\n         If a constant was intended, surround constant with vertical bars.");		   
 		   //TODO: should this be appended to previous XML message, or should it be a separate message?
            print_location_of_most_recent_lexeme(thisAgent);
 	 } else {
            print (thisAgent, "Warning: Possible variable encountered in reading symbolic constant\n");
            print (thisAgent, "         If a constant was intended, surround constant with vertical bars\n");
 
-		   GenerateWarningXML(thisAgent, "Warning: Possible variable encountered in reading symbolic constant.\n         If a constant was intended, surround constant with vertical bars.");
+		   xml_generate_warning(thisAgent, "Warning: Possible variable encountered in reading symbolic constant.\n         If a constant was intended, surround constant with vertical bars.");
 		   //TODO: should this be appended to previous XML message, or should it be a separate message?
            print_location_of_most_recent_lexeme(thisAgent);
          }
@@ -477,7 +419,7 @@ Bool determine_type_of_constituent_string (agent* thisAgent) {
            print (thisAgent, "         If a disjunctive was intended, add a space before >>\n");
            print (thisAgent, "         If a constant was intended, surround constant with vertical bars\n");
 
-		   GenerateWarningXML(thisAgent, "Warning: Possible disjunctive encountered in reading symbolic constant.\n         If a disjunctive was intended, add a space before &gt;&gt;\n         If a constant was intended, surround constant with vertical bars.");
+		   xml_generate_warning(thisAgent, "Warning: Possible disjunctive encountered in reading symbolic constant.\n         If a disjunctive was intended, add a space before &gt;&gt;\n         If a constant was intended, surround constant with vertical bars.");
 		   //TODO: should this be appended to previous XML message, or should it be a separate message?
            print_location_of_most_recent_lexeme(thisAgent);
 
@@ -485,7 +427,7 @@ Bool determine_type_of_constituent_string (agent* thisAgent) {
            print (thisAgent, "Warning: Possible variable encountered in reading symbolic constant\n");
            print (thisAgent, "         If a constant was intended, surround constant with vertical bars\n");
 		   
-		   GenerateWarningXML(thisAgent, "Warning: Possible variable encountered in reading symbolic constant.\n         If a constant was intended, surround constant with vertical bars.");
+		   xml_generate_warning(thisAgent, "Warning: Possible variable encountered in reading symbolic constant.\n         If a constant was intended, surround constant with vertical bars.");
 		   //TODO: should this be appended to previous XML message, or should it be a separate message?
            print_location_of_most_recent_lexeme(thisAgent);
 

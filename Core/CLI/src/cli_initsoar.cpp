@@ -12,26 +12,30 @@
 #include "cli_CommandLineInterface.h"
 
 #include "cli_Commands.h"
+#include "cli_CLIError.h"
 
-#include "gSKI_Agent.h"
+#include "sml_AgentSML.h"
+#include "xml.h"
 
 using namespace cli;
 
-bool CommandLineInterface::ParseInitSoar(gSKI::Agent* pAgent, std::vector<std::string>& argv) {
-	unused(argv);
-	return DoInitSoar(pAgent);
+bool CommandLineInterface::ParseInitSoar(std::vector<std::string>&) {
+	return DoInitSoar();
 }
 
-bool CommandLineInterface::DoInitSoar(gSKI::Agent* pAgent) {
-	// Need agent pointer for function calls
-	if (!RequireAgent(pAgent)) return false;
-
+bool CommandLineInterface::DoInitSoar() {
 	// Save the current result
 	std::string oldResult = m_Result.str();
 
-	AddListenerAndDisableCallbacks(pAgent);
-	bool ok = pAgent->Reinitialize();
-	RemoveListenerAndEnableCallbacks(pAgent);
+	SetTrapPrintCallbacks( false );
+
+	bool ok = m_pAgentSML->Reinitialize() ;
+
+	// S1 gets created during Reinitialize, clear its output from the trace buffers
+	xml_invoke_callback( m_pAgentSML->GetSoarAgent() );
+	m_pAgentSML->FlushPrintOutput();
+
+	SetTrapPrintCallbacks( true );
 
 	// restore the old result, ignoring output from init-soar
 	m_Result.str(oldResult); 

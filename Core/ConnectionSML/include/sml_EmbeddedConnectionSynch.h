@@ -37,8 +37,8 @@ public:
 	virtual ~EmbeddedConnectionSynch() { } 
 
 	virtual bool IsAsynchronous() { return false ; }
-	virtual void SendMsg(ElementXML* pMsg) ;
-	virtual ElementXML* GetResponseForID(char const* pID, bool wait) ;
+	virtual void SendMsg(soarxml::ElementXML* pMsg) ;
+	virtual soarxml::ElementXML* GetResponseForID(char const* pID, bool wait) ;
 	virtual bool ReceiveMessages(bool allMessages)		{ unused(allMessages) ; ClearError() ; return false ; } 
 };
 

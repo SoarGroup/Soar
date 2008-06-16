@@ -4,6 +4,6 @@
 <pydev_project>
 <pydev_property name="org.python.pydev.PYTHON_PROJECT_VERSION">python 2.4</pydev_property>
 <pydev_pathproperty name="org.python.pydev.PROJECT_SOURCE_PATH">
-<path>/SoarSuite/SoarLibrary/bin</path>
+<path>/SoarSuite-gSKI-removal/SoarLibrary/bin</path>
 </pydev_pathproperty>
 </pydev_project>

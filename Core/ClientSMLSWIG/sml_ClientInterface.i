@@ -8,11 +8,11 @@
 //
 // These functions need to be renamed because they only differ by a const type, which isn't enough to distinguish them
 //
-%rename(SetTagNameConst) sml::ElementXML::SetTagName(char const* tagName);
-%rename(AddAttributeConst) sml::ElementXML::AddAttribute(char const* attributeName, char* attributeValue);
-%rename(AddAttributeConstConst) sml::ElementXML::AddAttribute(char const* attributeName, char const* attributeValue);
-%rename(SetCharacterDataConst) sml::ElementXML::SetCharacterData(char const* characterData);
-%rename(SetBinaryCharacterDataConst) sml::ElementXML::SetBinaryCharacterData(char const* characterData, int length);
+%rename(SetTagNameConst) soarxml::ElementXML::SetTagName(char const* tagName);
+%rename(AddAttributeConst) soarxml::ElementXML::AddAttribute(char const* attributeName, char* attributeValue);
+%rename(AddAttributeConstConst) soarxml::ElementXML::AddAttribute(char const* attributeName, char const* attributeValue);
+%rename(SetCharacterDataConst) soarxml::ElementXML::SetCharacterData(char const* characterData);
+%rename(SetBinaryCharacterDataConst) soarxml::ElementXML::SetBinaryCharacterData(char const* characterData, int length);
 
 //
 // These static functions create a new Kernel object that should be destroyed later
@@ -26,12 +26,12 @@
 // We also need to tell SWIG how to delete the object (hence the typemaps)
 //
 %newobject sml::ClientXML::GenerateXMLString(bool) const ;
-%newobject sml::ElementXML::GenerateXMLString(bool) const ;
+%newobject soarxml::ElementXML::GenerateXMLString(bool) const ;
 %newobject sml::AnalyzeXML::GenerateXMLString(bool) const ;
 %newobject sml::ClientAnalyzedXML::GenerateXMLString(bool) const ;
 
 %newobject sml::ClientXML::GenerateXMLString(bool, bool) const ;
-%newobject sml::ElementXML::GenerateXMLString(bool, bool) const ;
+%newobject soarxml::ElementXML::GenerateXMLString(bool, bool) const ;
 %newobject sml::AnalyzeXML::GenerateXMLString(bool, bool) const ;
 %newobject sml::ClientAnalyzedXML::GenerateXMLString(bool, bool) const ;
 
@@ -39,7 +39,7 @@
     sml::ClientXML::DeleteString($1);
 }
 %typemap(newfree) char* GenerateXMLString {
-    sml::ElementXML::DeleteString($1);
+    soarxml::ElementXML::DeleteString($1);
 }
 %typemap(newfree) char* sml::AnalyzeXML::GenerateXMLString {
     sml::AnalyzeXML::DeleteString($1);
@@ -51,13 +51,13 @@
 //
 // This parsing method returns a new ElementXML object that should be destroyed later
 //
-%newobject sml::ElementXML::ParseXMLFromFile;
-%newobject sml::ElementXML::ParseXMLFromString;
+%newobject soarxml::ElementXML::ParseXMLFromFile;
+%newobject soarxml::ElementXML::ParseXMLFromString;
 
 //
 // This deletes the passed object so it is a destructor of sorts
 //
-%delobject sml::ElementXML::AddChild;
+%delobject soarxml::ElementXML::AddChild;
 
 //
 // Don't wrap the code for registering callbacks because we need to provide some custom code to make it work
@@ -93,7 +93,7 @@
 //
 %{
 #include "sml_Names.h"
-#include "sml_ElementXML.h"
+#include "ElementXML.h"
 #include "sml_AnalyzeXML.h"
 #include "sml_Events.h"
 #include "sml_ClientErrors.h"
@@ -111,10 +111,15 @@
 %}
 
 //
+// Override EXPORT macro
+//
+#define EXPORT
+
+//
 // Tell SWIG to wrap these files
 //
 %include "sml_Names.h"
-%include "sml_ElementXML.h"
+%include "ElementXML.h"
 %include "sml_AnalyzeXML.h"
 %include "sml_Events.h"
 %include "sml_ClientErrors.h"

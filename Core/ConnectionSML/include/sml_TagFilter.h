@@ -11,9 +11,9 @@
 #ifndef SML_TAG_FILTER_H
 #define SML_TAG_FILTER_H
 
-#include "sml_ElementXML.h"
+#include "ElementXML.h"
 
-class TagFilter : public sml::ElementXML
+class TagFilter : public soarxml::ElementXML
 {
 public:
 	TagFilter(void) ;

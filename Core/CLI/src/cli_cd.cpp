@@ -10,14 +10,13 @@
 
 #include "sml_Utils.h"
 #include "cli_CommandLineInterface.h"
+#include "cli_CLIError.h"
 
 #include "cli_Commands.h"
 
 using namespace cli;
 
-bool CommandLineInterface::ParseCD(gSKI::Agent* pAgent, std::vector<std::string>& argv) {
-	unused(pAgent);
-
+bool CommandLineInterface::ParseCD(std::vector<std::string>& argv) {
 	// Only takes one optional argument, the directory to change into
 	if (argv.size() > 2) return SetError(CLIError::kTooManyArgs);
 

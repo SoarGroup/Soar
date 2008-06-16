@@ -19,14 +19,13 @@ typedef char Bool;
 typedef signed short goal_stack_level;
 typedef union symbol_union Symbol;
 typedef struct agent_struct agent;
-typedef struct kernel_struct Kernel;
 
 /* added this prototype -ajc (5/3/02) */
 extern void set_sysparam (agent* thisAgent, int param_number, long new_value);
 
 extern void reset_statistics (agent* thisAgent);
 extern void setup_signal_handling (void);
-extern void load_init_file (Kernel* thisKernel, agent* thisAgent);
+//extern void load_init_file (Kernel* thisKernel, agent* thisAgent);
 
 /* --- signal handler that gets invoked on SIGINT --- */
 // (deprecated)
@@ -34,7 +33,6 @@ extern void load_init_file (Kernel* thisKernel, agent* thisAgent);
 
 /* Main pgm stuff -- moved here from soarkernel.h -ajc (5/7/02) */
 
-extern void init_soar (Kernel * thisKernel);
 extern int  terminate_soar (void);
 
 /* ---------------------------------------------------------------------
@@ -112,7 +110,6 @@ extern void remove_pwatch (agent* thisAgent, struct production_struct *prod);
    Reinitialize_soar() does all the work for an init-soar.
 --------------------------------------------------------------------- */
 
-extern void reinitialize_all_agents (Kernel* thisKernel);
 extern bool reinitialize_soar (agent* thisAgent);
 
 /* ---------------------------------------------------------------------

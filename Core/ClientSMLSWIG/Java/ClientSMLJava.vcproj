@@ -45,7 +45,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				AdditionalIncludeDirectories="&quot;$(JAVA_INCLUDE)&quot;;&quot;$(JAVA_INCLUDE)\win32&quot;;..\..\ClientSML\include;..\..\ElementXML\include;..\..\ConnectionSML\include"
+				AdditionalIncludeDirectories="&quot;$(JAVA_INCLUDE)&quot;;&quot;$(JAVA_INCLUDE)\win32&quot;;..\..\ClientSML\include;..\..\ElementXML\include;..\..\ConnectionSML\include;..\..\shared"
 				PreprocessorDefinitions="WIN32;_DEBUG;_CRT_SECURE_NO_DEPRECATE"
 				StringPooling="true"
 				MinimalRebuild="true"
@@ -137,7 +137,7 @@
 				Optimization="2"
 				InlineFunctionExpansion="2"
 				OmitFramePointers="true"
-				AdditionalIncludeDirectories="&quot;$(JAVA_INCLUDE)&quot;;&quot;$(JAVA_INCLUDE)\win32&quot;;..\..\ClientSML\include;..\..\ElementXML\include;..\..\ConnectionSML\include"
+				AdditionalIncludeDirectories="&quot;$(JAVA_INCLUDE)&quot;;&quot;$(JAVA_INCLUDE)\win32&quot;;..\..\ClientSML\include;..\..\ElementXML\include;..\..\ConnectionSML\include;..\..\shared"
 				PreprocessorDefinitions="WIN32;NDEBUG;_CRT_SECURE_NO_DEPRECATE"
 				StringPooling="true"
 				MinimalRebuild="false"
@@ -260,7 +260,7 @@
 				<Tool
 					Name="VCCustomBuildTool"
 					Description="Performing Custom Build Step on Java_sml_ClientInterface.i"
-					CommandLine="echo In order to function correctly, please ensure the following environment variables are correctly set:&#x0D;&#x0A;echo JAVA_INCLUDE: %JAVA_INCLUDE%&#x0D;&#x0A;echo JAVA_BIN: %JAVA_BIN%&#x0D;&#x0A;echo SWIG: %SWIG%&#x0D;&#x0A;echo Clean up old java files&#x0D;&#x0A;echo on&#x0D;&#x0A;cd build&#x0D;&#x0A;del *.java&#x0D;&#x0A;cd ..&#x0D;&#x0A;&quot;$(SWIG)\swig.exe&quot; -Wall -c++ -package sml -I../../ClientSML/include -I../../ElementXML/include -I../../ConnectionSML/include -java -outdir build &quot;$(InputPath)&quot;&#x0D;&#x0A;"
+					CommandLine="echo In order to function correctly, please ensure the following environment variables are correctly set:&#x0D;&#x0A;echo JAVA_INCLUDE: %JAVA_INCLUDE%&#x0D;&#x0A;echo JAVA_BIN: %JAVA_BIN%&#x0D;&#x0A;echo SWIG: %SWIG%&#x0D;&#x0A;echo Clean up old java files&#x0D;&#x0A;echo on&#x0D;&#x0A;cd build&#x0D;&#x0A;del *.java&#x0D;&#x0A;cd ..&#x0D;&#x0A;&quot;$(SWIG)\swig.exe&quot; -Wall -c++ -package sml -I../../shared -I../../ClientSML/include -I../../ElementXML/include -I../../ConnectionSML/include -java -outdir build &quot;$(InputPath)&quot;&#x0D;&#x0A;"
 					AdditionalDependencies="$(SolutionDir)\SoarLibrary\lib\ClientSML.lib;$(SolutionDir)\SoarLibrary\lib\ConnectionSML.lib;$(TargetDir)\ElementXML.dll"
 					Outputs="$(InputName)_wrap.cxx"
 				/>
@@ -271,7 +271,7 @@
 				<Tool
 					Name="VCCustomBuildTool"
 					Description="Performing Custom Build Step on Java_sml_ClientInterface.i"
-					CommandLine="echo In order to function correctly, please ensure the following environment variables are correctly set:&#x0D;&#x0A;echo JAVA_INCLUDE: %JAVA_INCLUDE%&#x0D;&#x0A;echo JAVA_BIN: %JAVA_BIN%&#x0D;&#x0A;echo SWIG: %SWIG%&#x0D;&#x0A;echo Clean up old java files&#x0D;&#x0A;echo on&#x0D;&#x0A;cd build&#x0D;&#x0A;del *.java&#x0D;&#x0A;cd ..&#x0D;&#x0A;&quot;$(SWIG)\swig.exe&quot; -Wall -c++ -package sml -I../../ClientSML/include -I../../ElementXML/include -I../../ConnectionSML/include -java -outdir build &quot;$(InputPath)&quot;&#x0D;&#x0A;"
+					CommandLine="echo In order to function correctly, please ensure the following environment variables are correctly set:&#x0D;&#x0A;echo JAVA_INCLUDE: %JAVA_INCLUDE%&#x0D;&#x0A;echo JAVA_BIN: %JAVA_BIN%&#x0D;&#x0A;echo SWIG: %SWIG%&#x0D;&#x0A;echo Clean up old java files&#x0D;&#x0A;echo on&#x0D;&#x0A;cd build&#x0D;&#x0A;del *.java&#x0D;&#x0A;cd ..&#x0D;&#x0A;&quot;$(SWIG)\swig.exe&quot; -Wall -c++ -package sml -I../../shared -I../../ClientSML/include -I../../ElementXML/include -I../../ConnectionSML/include -java -outdir build &quot;$(InputPath)&quot;&#x0D;&#x0A;"
 					AdditionalDependencies="$(SolutionDir)\SoarLibrary\lib\ClientSML.lib;$(SolutionDir)\SoarLibrary\lib\ConnectionSML.lib;$(TargetDir)\ElementXML.dll"
 					Outputs="$(InputName)_wrap.cxx"
 				/>

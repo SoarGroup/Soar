@@ -6,6 +6,8 @@
 //
 /////////////////////////////////////////////////////////////////
 
+// SEE INIT_SOAR.CPP:1531 for old soarnews
+
 #include <portability.h>
 
 #include "sml_Utils.h"
@@ -18,9 +20,7 @@
 using namespace cli;
 using namespace sml;
 
-bool CommandLineInterface::ParseSoarNews(gSKI::Agent* pAgent, std::vector<std::string>& argv) {
-	unused(pAgent);
-	unused(argv);
+bool CommandLineInterface::ParseSoarNews(std::vector<std::string>&) {
 	return DoSoarNews();
 }
 
@@ -38,7 +38,6 @@ bool CommandLineInterface::DoSoarNews() {
 	m_Result << "Please visit the Soar home page at\n\thttp://sitemaker.umich.edu/soar/\n";
 	m_Result << "Please see the announce.txt file included in the Documentation folder with this release for more information.";
 
-	if (!m_RawOutput) ResultToArgTag();
 	return true;
 }
 

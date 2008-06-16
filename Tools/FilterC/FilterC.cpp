@@ -29,6 +29,7 @@
 
 using namespace std ;
 using namespace sml ;
+using namespace soarxml;
 
 // This filter echos all of the user's commands and adds " --depth 2" to any print commands.
 // It also consumes all "print --stack" commands (just to show how to do that) -- effectively preventing them from executing.

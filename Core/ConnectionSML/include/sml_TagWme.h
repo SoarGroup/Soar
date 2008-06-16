@@ -17,14 +17,14 @@
 #ifndef SML_TAG_WME_H
 #define SML_TAG_WME_H
 
-#include "sml_ElementXML.h"
+#include "ElementXML.h"
 #include "sml_StringOps.h"
 #include "sml_Names.h"
 
 namespace sml
 {
 
-class TagWme : public ElementXML
+class TagWme : public soarxml::ElementXML
 {
 public:
 	TagWme() ;

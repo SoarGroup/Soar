@@ -11,15 +11,16 @@
 #include "cli_CommandLineInterface.h"
 
 #include "cli_Commands.h"
+#include "cli_CLIError.h"
 #include "sml_Names.h"
 #include "sml_StringOps.h"
 
-#include "gSKI_Agent.h"
+#include "agent.h"
 
 using namespace cli;
 using namespace sml;
 
-bool CommandLineInterface::ParseIndifferentSelection(gSKI::Agent* pAgent, std::vector<std::string>& argv) {
+bool CommandLineInterface::ParseIndifferentSelection(std::vector<std::string>& argv) {
 	Options optionsData[] = {
 		{'a', "ask",	0},
 		{'f', "first",	0},
@@ -56,46 +57,44 @@ bool CommandLineInterface::ParseIndifferentSelection(gSKI::Agent* pAgent, std::v
 	if (m_NonOptionArguments) return SetError(CLIError::kTooManyArgs);		
 
 
-	return DoIndifferentSelection(pAgent, mode);
+	return DoIndifferentSelection(mode);
 }
 
-bool CommandLineInterface::DoIndifferentSelection(gSKI::Agent* pAgent, eIndifferentMode mode) {
-	if (!RequireAgent(pAgent)) return false;
-
+bool CommandLineInterface::DoIndifferentSelection(eIndifferentMode mode) {
 	if (mode == INDIFFERENT_QUERY) {
 		// query
 		char buf[kMinBufferSize];
 
-		switch (pAgent->GetIndifferentSelection()) {
-			case gSKI_USER_SELECT_FIRST:
+		switch (m_pAgentSoar->sysparams[USER_SELECT_MODE_SYSPARAM]) {
+			case USER_SELECT_FIRST:
 				if (m_RawOutput) {
 					m_Result << "first";
 				} else {
-					AppendArgTagFast(sml_Names::kParamIndifferentSelectionMode, sml_Names::kTypeInt, Int2String((int)gSKI_USER_SELECT_FIRST, buf, kMinBufferSize));
+					AppendArgTagFast(sml_Names::kParamIndifferentSelectionMode, sml_Names::kTypeInt, Int2String((int)USER_SELECT_FIRST, buf, kMinBufferSize));
 				}
 				break;
 
-			case gSKI_USER_SELECT_LAST:
+			case USER_SELECT_LAST:
 				if (m_RawOutput) {
 					m_Result << "last";
 				} else {
-					AppendArgTagFast(sml_Names::kParamIndifferentSelectionMode, sml_Names::kTypeInt, Int2String((int)gSKI_USER_SELECT_LAST, buf, kMinBufferSize));
+					AppendArgTagFast(sml_Names::kParamIndifferentSelectionMode, sml_Names::kTypeInt, Int2String((int)USER_SELECT_LAST, buf, kMinBufferSize));
 				}
 				break;
 
-			case gSKI_USER_SELECT_ASK:
+			case USER_SELECT_ASK:
 				if (m_RawOutput) {
 					m_Result << "ask";
 				} else {
-					AppendArgTagFast(sml_Names::kParamIndifferentSelectionMode, sml_Names::kTypeInt, Int2String((int)gSKI_USER_SELECT_ASK, buf, kMinBufferSize));
+					AppendArgTagFast(sml_Names::kParamIndifferentSelectionMode, sml_Names::kTypeInt, Int2String((int)USER_SELECT_ASK, buf, kMinBufferSize));
 				}
 				break;
 
-			case gSKI_USER_SELECT_RANDOM:
+			case USER_SELECT_RANDOM:
 				if (m_RawOutput) {
 					m_Result << "random";
 				} else {
-					AppendArgTagFast(sml_Names::kParamIndifferentSelectionMode, sml_Names::kTypeInt, Int2String((int)gSKI_USER_SELECT_RANDOM, buf, kMinBufferSize));
+					AppendArgTagFast(sml_Names::kParamIndifferentSelectionMode, sml_Names::kTypeInt, Int2String((int)USER_SELECT_RANDOM, buf, kMinBufferSize));
 				}
 				break;
 
@@ -105,17 +104,17 @@ bool CommandLineInterface::DoIndifferentSelection(gSKI::Agent* pAgent, eIndiffer
 	} else {
 		switch (mode) {
 			case INDIFFERENT_FIRST:
-				pAgent->SetIndifferentSelection(gSKI_USER_SELECT_FIRST);
+				m_pAgentSoar->sysparams[USER_SELECT_MODE_SYSPARAM] = USER_SELECT_FIRST;
 				break;
 			case INDIFFERENT_LAST:
-				pAgent->SetIndifferentSelection(gSKI_USER_SELECT_LAST);
+				m_pAgentSoar->sysparams[USER_SELECT_MODE_SYSPARAM] = USER_SELECT_LAST;
 				break;
 			case INDIFFERENT_ASK:
 				return SetError(CLIError::kNotImplemented);
-				//pAgent->SetIndifferentSelection(gSKI_USER_SELECT_ASK);
+				//m_pAgentSoar->sysparams[USER_SELECT_MODE_SYSPARAM] = USER_SELECT_ASK;
 				//break;
 			case INDIFFERENT_RANDOM:
-				pAgent->SetIndifferentSelection(gSKI_USER_SELECT_RANDOM);
+				m_pAgentSoar->sysparams[USER_SELECT_MODE_SYSPARAM] = USER_SELECT_RANDOM;
 				break;
 			default:
 				return SetError(CLIError::kInvalidIndifferentSelectionMode);
