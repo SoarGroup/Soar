@@ -1342,7 +1342,12 @@ void epmem_init_db( agent *my_agent )
 				// upperindex
 				sqlite3_prepare_v2( my_agent->epmem_db, "CREATE INDEX IF NOT EXISTS episode_upper ON episodes (node,end)", -1, &create, &tail );
 				sqlite3_step( create );					
-				sqlite3_finalize( create );			
+				sqlite3_finalize( create );
+
+				// id_start index (for queries)
+				sqlite3_prepare_v2( my_agent->epmem_db, "CREATE UNIQUE INDEX IF NOT EXISTS episode_id_start ON episodes (id,start)", -1, &create, &tail );
+				sqlite3_step( create );					
+				sqlite3_finalize( create );
 
 				// custom statement for inserting episodes
 				sqlite3_prepare_v2( my_agent->epmem_db, "INSERT INTO episodes (node,start,end,id) VALUES (?,?,?,?)", -1, &( my_agent->epmem_statements[ EPMEM_STMT_BIGTREE_RIT_ADD_EPISODE ] ), &tail );
@@ -1413,6 +1418,9 @@ void epmem_init_db( agent *my_agent )
 				sqlite3_prepare_v2( my_agent->epmem_db, "CREATE INDEX IF NOT EXISTS ranges_start_end ON ranges (start,end)", -1, &( my_agent->epmem_statements[ EPMEM_STMT_BIGTREE_RIT_RANGE_INDEX_2 ] ), &tail );
 				sqlite3_prepare_v2( my_agent->epmem_db, "DROP INDEX ranges_start_end", -1, &( my_agent->epmem_statements[ EPMEM_STMT_BIGTREE_RIT_RANGE_INDEX_2R ] ), &tail );				
 
+				// custom statement for replacing null ends
+				sqlite3_prepare_v2( my_agent->epmem_db, "UPDATE ranges SET end=? WHERE end=?", -1, &( my_agent->epmem_statements[ EPMEM_STMT_BIGTREE_RIT_NOW_RANGES ] ), &tail );
+				
 				// custom statement for deleting contained prohibited ranges
 				sqlite3_prepare_v2( my_agent->epmem_db, "DELETE FROM ranges WHERE start<? AND end>?", -1, &( my_agent->epmem_statements[ EPMEM_STMT_BIGTREE_RIT_DEL_PROHIB ] ), &tail );
 
@@ -3554,7 +3562,7 @@ void epmem_process_query( agent *my_agent, Symbol *state, Symbol *query, Symbol 
 						// for possible new king
 						if ( ( current_valid_end > after ) && ( sum_ct > 0 ) )
 						{
-							current_score = ( balance * current_ct ) + ( balance_inv * current_v );
+							current_score = ( balance * sum_ct ) + ( balance_inv * sum_v );
 							
 							// we prefer more recent in case of tie
 							if ( current_score >= king_score )
@@ -3646,7 +3654,546 @@ void epmem_process_query( agent *my_agent, Symbol *state, Symbol *query, Symbol 
 			sqlite3_step( my_agent->epmem_statements[ EPMEM_STMT_BEGIN ] );
 			sqlite3_reset( my_agent->epmem_statements[ EPMEM_STMT_BEGIN ] );
 
+			// get the leaf id's
+			std::list<unsigned long> leaf_ids[2];
+			std::list<unsigned long>::iterator leaf_p;
+			vector<long>::iterator prohibit_p;
+			{
+				wme ***wmes;
+				int len;
+				
+				queue<Symbol *> parent_syms;
+				queue<unsigned long> parent_ids;			
+				int tc = get_new_tc_number( my_agent );
+
+				Symbol *parent_sym;
+				unsigned long parent_id;
+				unsigned long my_hash;
+
+				int i, j;
+				bool just_started;
+
+				// initialize pos/neg lists
+				for ( i=0; i<2; i++ )
+				{			
+					switch ( i )
+					{
+						case 0:
+							wmes = &wmes_query;
+							len = len_query;					
+							parent_syms.push( query );
+							parent_ids.push( EPMEM_PARENTID_ROOT );
+							just_started = true;
+							break;
+
+						case 1:
+							wmes = &wmes_neg_query;
+							len = len_neg_query;						
+							parent_syms.push( neg_query );
+							parent_ids.push( EPMEM_PARENTID_ROOT );
+							just_started = true;
+							break;
+					}
+					
+					while ( !parent_syms.empty() )
+					{
+						parent_sym = parent_syms.front();
+						parent_syms.pop();
+
+						parent_id = parent_ids.front();					
+						parent_ids.pop();
+
+						if ( !just_started )
+							(*wmes) = epmem_get_augs_of_id( my_agent, parent_sym, tc, &len );
+						else
+							just_started = false;
+
+						if ( (*wmes) != NULL )
+						{
+							for ( j=0; j<len; j++ )
+							{
+								// add to cue list
+								state->id.epmem_info->cue_wmes->push_back( (*wmes)[ j ] );
+								
+								// find wme id							
+								my_hash = epmem_hash_wme( (*wmes)[j] );
+								if ( (*wmes)[j]->value->common.symbol_type != IDENTIFIER_SYMBOL_TYPE )
+								{
+									// hash=? AND parent_id=? AND name=? AND value=?
+									sqlite3_bind_int64( my_agent->epmem_statements[ EPMEM_STMT_BIGTREE_RIT_FIND_ID ], 1, my_hash );
+									sqlite3_bind_int64( my_agent->epmem_statements[ EPMEM_STMT_BIGTREE_RIT_FIND_ID ], 2, parent_id );
+									sqlite3_bind_text( my_agent->epmem_statements[ EPMEM_STMT_BIGTREE_RIT_FIND_ID ], 3, (const char *) (*wmes)[j]->attr->sc.name, -1, SQLITE_STATIC );
+									switch( (*wmes)[j]->value->common.symbol_type )
+									{
+										case SYM_CONSTANT_SYMBOL_TYPE:
+											sqlite3_bind_text( my_agent->epmem_statements[ EPMEM_STMT_BIGTREE_RIT_FIND_ID ], 4, (const char *) (*wmes)[j]->value->sc.name, -1, SQLITE_STATIC );
+											break;
+								            
+										case INT_CONSTANT_SYMBOL_TYPE:
+			        						sqlite3_bind_int64( my_agent->epmem_statements[ EPMEM_STMT_BIGTREE_RIT_FIND_ID ], 4, (*wmes)[j]->value->ic.value );
+											break;
+							
+										case FLOAT_CONSTANT_SYMBOL_TYPE:
+			        						sqlite3_bind_double( my_agent->epmem_statements[ EPMEM_STMT_BIGTREE_RIT_FIND_ID ], 4, (*wmes)[j]->value->fc.value );
+											break;
+									}
+									
+									if ( sqlite3_step( my_agent->epmem_statements[ EPMEM_STMT_BIGTREE_RIT_FIND_ID ] ) == SQLITE_ROW )
+										leaf_ids[i].push_back( sqlite3_column_int64( my_agent->epmem_statements[ EPMEM_STMT_BIGTREE_RIT_FIND_ID ], 0 ) );
+									
+									sqlite3_reset( my_agent->epmem_statements[ EPMEM_STMT_BIGTREE_RIT_FIND_ID ] );
+								}
+								else
+								{
+									// hash=? AND parent_id=? AND name=? AND value IS NULL						
+									sqlite3_bind_int64( my_agent->epmem_statements[ EPMEM_STMT_BIGTREE_RIT_FIND_ID_NULL ], 1, my_hash );
+									sqlite3_bind_int64( my_agent->epmem_statements[ EPMEM_STMT_BIGTREE_RIT_FIND_ID_NULL ], 2, parent_id );
+									sqlite3_bind_text( my_agent->epmem_statements[ EPMEM_STMT_BIGTREE_RIT_FIND_ID_NULL ], 3, (const char *) (*wmes)[j]->attr->sc.name, -1, SQLITE_STATIC );
+
+									if ( sqlite3_step( my_agent->epmem_statements[ EPMEM_STMT_BIGTREE_RIT_FIND_ID_NULL ] ) == SQLITE_ROW )
+									{
+										parent_syms.push( (*wmes)[j]->value );
+										parent_ids.push( sqlite3_column_int64( my_agent->epmem_statements[ EPMEM_STMT_BIGTREE_RIT_FIND_ID_NULL ], 0 ) );
+									}
+
+									sqlite3_reset( my_agent->epmem_statements[ EPMEM_STMT_BIGTREE_RIT_FIND_ID_NULL ] );
+								}
+							}
+
+							// free space from aug list
+							free_memory( my_agent, (*wmes), MISCELLANEOUS_MEM_USAGE );
+						}
+					}
+				}
+			}
+			int cue_size = ( leaf_ids[0].size() + leaf_ids[1].size() );
+
+			// set weights for all leaf id's
+			{			
+				for ( int i=0; i<2; i++ )
+				{				
+					leaf_p = leaf_ids[i].begin();
+					while ( leaf_p != leaf_ids[i].end() )
+					{						
+						sqlite3_bind_int64( my_agent->epmem_statements[ EPMEM_STMT_BIGTREE_RIT_ADD_WEIGHT ], 1, (*leaf_p) );
+						sqlite3_bind_double( my_agent->epmem_statements[ EPMEM_STMT_BIGTREE_RIT_ADD_WEIGHT ], 2, 1 );
+						sqlite3_step( my_agent->epmem_statements[ EPMEM_STMT_BIGTREE_RIT_ADD_WEIGHT ] );
+						sqlite3_reset( my_agent->epmem_statements[ EPMEM_STMT_BIGTREE_RIT_ADD_WEIGHT ] );
+						
+						leaf_p++;
+					}					
+				}
+			}
+
+			// create initial set of ranges
+			// cross-reference episodes and weights, insert into ranges
+			{				
+				const char *tail;
+				
+				if ( !leaf_ids[0].empty() )
+				{
+					string insert_sql_pos = "INSERT INTO ranges (start,end,weight,ct) SELECT e.start, e.end, w.weight, ? FROM episodes e INNER JOIN weights w ON e.id=w.id WHERE e.id IN (";
+
+					// add positives
+					{
+						string *qs = string_multi_copy( "?,", leaf_ids[0].size() - 1 );					
+						insert_sql_pos.append( *qs );
+						delete qs;
+					}					
+					insert_sql_pos += "?)";
+
+					// optimize for set before
+					if ( before != EPMEM_MEMID_NONE )
+					{
+						insert_sql_pos += " AND e.start<?";
+					}
+
+					// prep statement
+					sqlite3_stmt *insert;
+					int pos = 1;
+					sqlite3_prepare_v2( my_agent->epmem_db, insert_sql_pos.c_str(), -1, &insert, &tail );
+
+					// static bindings
+					sqlite3_bind_int64( insert, pos++, 1 );
+
+					// positive bindings
+					leaf_p = leaf_ids[0].begin();
+					while ( leaf_p != leaf_ids[0].end() )
+					{
+						sqlite3_bind_int64( insert, pos++, (*leaf_p) );
+						leaf_p++;
+					}
+
+					// optimization binding
+					// optimize for set before
+					if ( before != EPMEM_MEMID_NONE )
+					{
+						sqlite3_bind_int64( insert, pos++, before );
+					}
+
+					// perform insertion
+					sqlite3_step( insert );
+					sqlite3_finalize( insert );
+				}
+				
+				if ( !leaf_ids[1].empty() )
+				{
+					string insert_sql_neg = "INSERT INTO ranges (start,end,weight,ct) SELECT e.start, e.end, ?*w.weight, ? FROM episodes e INNER JOIN weights w ON e.id=w.id WHERE e.id IN (";
+
+					// add negatives
+					{
+						string *qs = string_multi_copy( "?,", leaf_ids[1].size() - 1 );
+						insert_sql_neg.append( *qs );
+						delete qs;
+					}					
+					insert_sql_neg += "?)";
+
+					// optimize for set before
+					if ( before != EPMEM_MEMID_NONE )
+					{
+						insert_sql_neg += " AND e.start<?";
+					}
+
+					// prep statement
+					sqlite3_stmt *insert;
+					int pos = 1;
+					sqlite3_prepare_v2( my_agent->epmem_db, insert_sql_neg.c_str(), -1, &insert, &tail );
+
+					// static bindings
+					sqlite3_bind_int64( insert, pos++, -1 );
+					sqlite3_bind_int64( insert, pos++, -1 );
+
+					// negative bindings
+					leaf_p = leaf_ids[1].begin();
+					while ( leaf_p != leaf_ids[1].end() )
+					{
+						sqlite3_bind_int64( insert, pos++, (*leaf_p) );
+						leaf_p++;
+					}
+
+					// optimize bindings
+					if ( before != EPMEM_MEMID_NONE )
+					{
+						sqlite3_bind_int64( insert, pos++, before );
+					}
+
+					// perform insertion
+					sqlite3_step( insert );
+					sqlite3_finalize( insert );
+				}
+			}
+
+			// take care of NOW ends, add indexes
+			{
+				sqlite3_bind_int64( my_agent->epmem_statements[ EPMEM_STMT_BIGTREE_RIT_NOW_RANGES ], 1, epmem_get_stat( my_agent, (const long) EPMEM_STAT_TIME ) - 1 );
+				sqlite3_bind_int64( my_agent->epmem_statements[ EPMEM_STMT_BIGTREE_RIT_NOW_RANGES ], 2, EPMEM_MEMID_NOW );
+				sqlite3_step( my_agent->epmem_statements[ EPMEM_STMT_BIGTREE_RIT_NOW_RANGES ] );
+				sqlite3_reset( my_agent->epmem_statements[ EPMEM_STMT_BIGTREE_RIT_NOW_RANGES ] );
+
+				sqlite3_step( my_agent->epmem_statements[ EPMEM_STMT_BIGTREE_RIT_RANGE_INDEX_1 ] );
+				sqlite3_reset( my_agent->epmem_statements[ EPMEM_STMT_BIGTREE_RIT_RANGE_INDEX_1 ] );
+
+				sqlite3_step( my_agent->epmem_statements[ EPMEM_STMT_BIGTREE_RIT_RANGE_INDEX_2 ] );
+				sqlite3_reset( my_agent->epmem_statements[ EPMEM_STMT_BIGTREE_RIT_RANGE_INDEX_2 ] );
+			}
 			
+			// modify ranges to accomodate prohibition			
+			if ( !prohibit->empty() )
+			{			
+				vector<long *> prohibit_ranges;
+				vector<long *>::iterator pr_p;
+
+				long start = EPMEM_MEMID_NONE;
+				long prev = EPMEM_MEMID_NONE;
+
+				// sort
+				std::sort( prohibit->begin(), prohibit->end() );
+
+				// convert to ranges
+				prohibit_p = prohibit->begin();
+				while ( prohibit_p != prohibit->end() )
+				{
+					if ( ( prev + 1 ) == (*prohibit_p) )
+					{
+						prev = (*prohibit_p);
+					}
+					else
+					{
+						if ( start != EPMEM_MEMID_NONE )
+						{
+							long *range = new long[2];
+							range[0] = start;
+							range[1] = prev;
+
+							prohibit_ranges.push_back( range );
+						}
+
+						start = (*prohibit_p);
+						prev = start;
+					}
+					
+					prohibit_p++;
+				}
+				{
+					long *range = new long[2];
+					range[0] = start;
+					range[1] = prev;
+
+					prohibit_ranges.push_back( range );
+				}
+
+				// remove ranges that are entirely contained within prohibit ranges
+				{
+					// dynamic sql
+					string del_sql = "DELETE FROM ranges WHERE ";					
+					string *clauses = string_multi_copy( "(start>=? AND end<=?) OR ", prohibit_ranges.size() - 1 );
+					
+					del_sql.append( *clauses );
+					del_sql += "(start>=? AND end<=?)";
+					delete clauses;
+
+					// prep statement
+					sqlite3_stmt *del;
+					const char *tail;
+					sqlite3_prepare_v2( my_agent->epmem_db, del_sql.c_str(), -1, &del, &tail );
+
+					// dynamic bindings
+					int pos = 1;
+					pr_p = prohibit_ranges.begin();
+					while ( pr_p != prohibit_ranges.end() )
+					{
+						sqlite3_bind_int64( del, pos++, (*pr_p)[0] );
+						sqlite3_bind_int64( del, pos++, (*pr_p)[1] );
+						
+						pr_p++;
+					}
+
+					// execute
+					sqlite3_step( del );
+					sqlite3_finalize( del );
+				}
+
+				// update ranges that are on the fringes of prohibition
+				{
+					pr_p = prohibit_ranges.begin();
+					while ( pr_p != prohibit_ranges.end() )
+					{
+						// start=? WHERE start BETWEEN ? AND ?
+						sqlite3_bind_int64( my_agent->epmem_statements[ EPMEM_STMT_BIGTREE_RIT_DEL_PROHIB_LOW ], 1, (*pr_p)[1] + 1 );
+						sqlite3_bind_int64( my_agent->epmem_statements[ EPMEM_STMT_BIGTREE_RIT_DEL_PROHIB_LOW ], 2, (*pr_p)[0] );
+						sqlite3_bind_int64( my_agent->epmem_statements[ EPMEM_STMT_BIGTREE_RIT_DEL_PROHIB_LOW ], 3, (*pr_p)[1] );
+
+						// end=? WHERE end BETWEEN ? AND ?
+						sqlite3_bind_int64( my_agent->epmem_statements[ EPMEM_STMT_BIGTREE_RIT_DEL_PROHIB_HIGH ], 1, (*pr_p)[0] - 1 );
+						sqlite3_bind_int64( my_agent->epmem_statements[ EPMEM_STMT_BIGTREE_RIT_DEL_PROHIB_HIGH ], 2, (*pr_p)[0] );
+						sqlite3_bind_int64( my_agent->epmem_statements[ EPMEM_STMT_BIGTREE_RIT_DEL_PROHIB_HIGH ], 3, (*pr_p)[1] );					
+
+						// execute+reset
+						sqlite3_step( my_agent->epmem_statements[ EPMEM_STMT_BIGTREE_RIT_DEL_PROHIB_LOW ] );
+						sqlite3_step( my_agent->epmem_statements[ EPMEM_STMT_BIGTREE_RIT_DEL_PROHIB_HIGH ] );						
+						sqlite3_reset( my_agent->epmem_statements[ EPMEM_STMT_BIGTREE_RIT_DEL_PROHIB_LOW ] );
+						sqlite3_reset( my_agent->epmem_statements[ EPMEM_STMT_BIGTREE_RIT_DEL_PROHIB_HIGH ] );						
+						
+						pr_p++;
+					}
+				}
+
+				// update ranges that contain prohibition
+				{
+					pr_p = prohibit_ranges.begin();
+					while ( pr_p != prohibit_ranges.end() )
+					{						
+						// -1 start, start, end, +1 end, start, end
+						sqlite3_bind_int64( my_agent->epmem_statements[ EPMEM_STMT_BIGTREE_RIT_DEL_PROHIB_CONTAIN ], 1, (*pr_p)[0] - 1 );
+						sqlite3_bind_int64( my_agent->epmem_statements[ EPMEM_STMT_BIGTREE_RIT_DEL_PROHIB_CONTAIN ], 2, (*pr_p)[0] );
+						sqlite3_bind_int64( my_agent->epmem_statements[ EPMEM_STMT_BIGTREE_RIT_DEL_PROHIB_CONTAIN ], 3, (*pr_p)[1] );
+						sqlite3_bind_int64( my_agent->epmem_statements[ EPMEM_STMT_BIGTREE_RIT_DEL_PROHIB_CONTAIN ], 4, (*pr_p)[1] + 1 );
+						sqlite3_bind_int64( my_agent->epmem_statements[ EPMEM_STMT_BIGTREE_RIT_DEL_PROHIB_CONTAIN ], 5, (*pr_p)[0] );
+						sqlite3_bind_int64( my_agent->epmem_statements[ EPMEM_STMT_BIGTREE_RIT_DEL_PROHIB_CONTAIN ], 6, (*pr_p)[1] );
+
+						// start<? AND end>?
+						sqlite3_bind_int64( my_agent->epmem_statements[ EPMEM_STMT_BIGTREE_RIT_DEL_PROHIB ], 1, (*pr_p)[0] );
+						sqlite3_bind_int64( my_agent->epmem_statements[ EPMEM_STMT_BIGTREE_RIT_DEL_PROHIB ], 2, (*pr_p)[1] );
+
+						// execute+reset						
+						sqlite3_step( my_agent->epmem_statements[ EPMEM_STMT_BIGTREE_RIT_DEL_PROHIB_CONTAIN ] );
+						sqlite3_step( my_agent->epmem_statements[ EPMEM_STMT_BIGTREE_RIT_DEL_PROHIB ] );						
+						sqlite3_reset( my_agent->epmem_statements[ EPMEM_STMT_BIGTREE_RIT_DEL_PROHIB_CONTAIN ] );
+						sqlite3_reset( my_agent->epmem_statements[ EPMEM_STMT_BIGTREE_RIT_DEL_PROHIB ] );
+						
+						pr_p++;
+					}
+				}
+			}
+
+			// play king of the mountain
+			{
+				long king_id = EPMEM_MEMID_NONE;
+				double king_score = -1;
+				double king_cardinality = 0;
+
+				double balance = epmem_get_parameter( my_agent, (const long) EPMEM_PARAM_BALANCE );
+				double balance_inv = 1 - balance;
+				
+				// dynamic programming stuff
+				int sum_ct = 0;
+				double sum_v = 0;
+
+				// current pointer
+				int current_list = EPMEM_STMT_BIGTREE_RIT_GET_LOW_RANGES;
+				long current_id = EPMEM_MEMID_NONE;
+				int current_ct = 0;
+				double current_v = 0;
+				long current_end;
+				long current_valid_end;
+				double current_score;
+
+				// next pointers
+				long low_id = EPMEM_MEMID_NONE;
+				long high_id = EPMEM_MEMID_NONE;
+				long *next_id;
+				int next_list;				
+				
+				// completion (allows for smart cut-offs later
+				bool done = false;				
+
+				// initialize current as first low
+				sqlite3_step( my_agent->epmem_statements[ EPMEM_STMT_BIGTREE_RIT_GET_LOW_RANGES ] );				
+				current_id = sqlite3_column_int64( my_agent->epmem_statements[ EPMEM_STMT_BIGTREE_RIT_GET_LOW_RANGES ], 0 );
+				current_ct = sqlite3_column_int64( my_agent->epmem_statements[ EPMEM_STMT_BIGTREE_RIT_GET_LOW_RANGES ], 1 );
+				current_v = sqlite3_column_double( my_agent->epmem_statements[ EPMEM_STMT_BIGTREE_RIT_GET_LOW_RANGES ], 2 );				
+				
+				// initialize next low				
+				if ( sqlite3_step( my_agent->epmem_statements[ EPMEM_STMT_BIGTREE_RIT_GET_LOW_RANGES ] ) == SQLITE_ROW )
+					low_id = sqlite3_column_int64( my_agent->epmem_statements[ EPMEM_STMT_BIGTREE_RIT_GET_LOW_RANGES ], 0 );
+				else
+					low_id = EPMEM_MEMID_NONE;
+
+				// initialize next high
+				sqlite3_step( my_agent->epmem_statements[ EPMEM_STMT_BIGTREE_RIT_GET_HIGH_RANGES ] );
+				high_id = sqlite3_column_int64( my_agent->epmem_statements[ EPMEM_STMT_BIGTREE_RIT_GET_HIGH_RANGES ], 0 );			
+
+				do
+				{
+					// if both lists are finished, we are done
+					if ( ( low_id == EPMEM_MEMID_NONE ) && ( high_id == EPMEM_MEMID_NONE ) )
+					{
+						done = true;
+					}
+					// if we are beyond a specified before, we are done
+					else if ( ( before != EPMEM_MEMID_NONE ) && ( current_id >= before ) )
+					{
+						done = true;
+					}
+					// if one list is finished, we go to the other
+					else if ( ( low_id == EPMEM_MEMID_NONE ) || ( high_id == EPMEM_MEMID_NONE ) )
+					{
+						next_list = ( ( low_id == EPMEM_MEMID_NONE )?( EPMEM_STMT_BIGTREE_RIT_GET_HIGH_RANGES ):( EPMEM_STMT_BIGTREE_RIT_GET_LOW_RANGES ) );						
+					}
+					// if neither list is finished, we prefer the lower id (low in case of tie)
+					else
+					{
+						next_list = ( ( low_id <= high_id )?( EPMEM_STMT_BIGTREE_RIT_GET_LOW_RANGES ):( EPMEM_STMT_BIGTREE_RIT_GET_HIGH_RANGES ) );
+					}
+
+					// if we choose a list, update variables
+					if ( !done )
+					{
+						// update sums
+						sum_ct += current_ct;
+						sum_v += current_v;
+
+						// update end range
+						current_end = ( ( next_list == EPMEM_STMT_BIGTREE_RIT_GET_HIGH_RANGES )?( high_id ):( low_id - 1 ) );
+						if ( before == EPMEM_MEMID_NONE )
+							current_valid_end = current_end;
+						else
+							current_valid_end = ( ( current_end < before )?( current_end ):( before - 1 ) );
+						
+						// if we are beyond after AND
+						// we have cardinality, compute score
+						// for possible new king
+						if ( ( current_valid_end > after ) && ( sum_ct > 0 ) )
+						{
+							current_score = ( balance * sum_ct ) + ( balance_inv * sum_v );
+							
+							// we prefer more recent in case of tie
+							if ( current_score >= king_score )
+							{
+								king_id = current_valid_end;
+								king_score = current_score;
+								king_cardinality = sum_ct;
+							}
+						}
+
+						// based upon choice, update variables						
+						current_list = next_list;
+						current_id = current_end + 1;
+						current_ct = ( ( next_list == EPMEM_STMT_BIGTREE_RIT_GET_LOW_RANGES )?( 1 ):( -1 ) ) * sqlite3_column_int64( my_agent->epmem_statements[ next_list ], 1 );
+						current_v = ( ( next_list == EPMEM_STMT_BIGTREE_RIT_GET_LOW_RANGES )?( 1 ):( -1 ) ) * sqlite3_column_double( my_agent->epmem_statements[ next_list ], 2 );
+
+						next_id = ( ( next_list == EPMEM_STMT_BIGTREE_RIT_GET_LOW_RANGES )?( &low_id ):( &high_id ) );
+						if ( sqlite3_step( my_agent->epmem_statements[ next_list ] ) == SQLITE_ROW )
+							( *next_id ) = sqlite3_column_int64( my_agent->epmem_statements[ next_list ], 0 );
+						else
+							( *next_id ) = EPMEM_MEMID_NONE;
+					}
+				} while ( !done );
+				
+				// reset list queries
+				sqlite3_reset( my_agent->epmem_statements[ EPMEM_STMT_BIGTREE_RIT_GET_LOW_RANGES ] );
+				sqlite3_reset( my_agent->epmem_statements[ EPMEM_STMT_BIGTREE_RIT_GET_HIGH_RANGES ] );
+				
+				if ( king_id != EPMEM_MEMID_NONE )
+				{
+					// status
+					new_wme = add_input_wme( my_agent, state->id.epmem_result_header, my_agent->epmem_status_symbol, my_agent->epmem_success_symbol );
+					new_wme->preference = epmem_make_fake_preference( my_agent, state, new_wme );
+					state->id.epmem_info->epmem_wmes->push( new_wme );
+
+					// match score
+					new_wme = add_input_wme( my_agent, state->id.epmem_result_header, my_agent->epmem_match_score_symbol, make_float_constant( my_agent, king_score ) );
+					new_wme->preference = epmem_make_fake_preference( my_agent, state, new_wme );
+					state->id.epmem_info->epmem_wmes->push( new_wme );
+
+					// cue-size
+					new_wme = add_input_wme( my_agent, state->id.epmem_result_header, my_agent->epmem_cue_size_symbol, make_int_constant( my_agent, cue_size ) );
+					new_wme->preference = epmem_make_fake_preference( my_agent, state, new_wme );
+					state->id.epmem_info->epmem_wmes->push( new_wme );
+
+					// normalized-match-score
+					new_wme = add_input_wme( my_agent, state->id.epmem_result_header, my_agent->epmem_normalized_match_score_symbol, make_float_constant( my_agent, ( king_score / cue_size ) ) );
+					new_wme->preference = epmem_make_fake_preference( my_agent, state, new_wme );
+					state->id.epmem_info->epmem_wmes->push( new_wme );
+
+					// match-cardinality
+					new_wme = add_input_wme( my_agent, state->id.epmem_result_header, my_agent->epmem_match_cardinality_symbol, make_int_constant( my_agent, king_cardinality ) );
+					new_wme->preference = epmem_make_fake_preference( my_agent, state, new_wme );
+					state->id.epmem_info->epmem_wmes->push( new_wme );
+
+					// actual memory
+					epmem_install_memory( my_agent, state, king_id );
+				}
+				else
+				{
+					new_wme = add_input_wme( my_agent, state->id.epmem_result_header, my_agent->epmem_status_symbol, my_agent->epmem_failure_symbol );
+					new_wme->preference = epmem_make_fake_preference( my_agent, state, new_wme );
+					state->id.epmem_info->epmem_wmes->push( new_wme );
+				}
+			}
+
+			// remove indexes
+			sqlite3_step( my_agent->epmem_statements[ EPMEM_STMT_BIGTREE_RIT_RANGE_INDEX_1R ] );
+			sqlite3_reset( my_agent->epmem_statements[ EPMEM_STMT_BIGTREE_RIT_RANGE_INDEX_1R ] );
+			sqlite3_step( my_agent->epmem_statements[ EPMEM_STMT_BIGTREE_RIT_RANGE_INDEX_2R ] );
+			sqlite3_reset( my_agent->epmem_statements[ EPMEM_STMT_BIGTREE_RIT_RANGE_INDEX_2R ] );
+
+			// delete all ranges and weights
+			sqlite3_step( my_agent->epmem_statements[ EPMEM_STMT_BIGTREE_RIT_TRUNCATE_WEIGHTS ] );
+			sqlite3_step( my_agent->epmem_statements[ EPMEM_STMT_BIGTREE_RIT_TRUNCATE_RANGES ] );
+			sqlite3_reset( my_agent->epmem_statements[ EPMEM_STMT_BIGTREE_RIT_TRUNCATE_WEIGHTS ] );
+			sqlite3_reset( my_agent->epmem_statements[ EPMEM_STMT_BIGTREE_RIT_TRUNCATE_RANGES ] );
+
 
 			// finish transaction
 			sqlite3_step( my_agent->epmem_statements[ EPMEM_STMT_COMMIT ] );
