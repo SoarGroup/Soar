@@ -2119,4 +2119,28 @@ bool KernelHelpers::ExplainChunks(AgentSML* pAgent, const char* pProduction, int
 	return true;
 }
 
+void KernelHelpers::print_rl_rules( agent* thisAgent, char *arg,bool internal, bool print_filename, bool full_prod)
+{
+	assert (thisAgent);
+
+	for ( production *prod = thisAgent->all_productions_of_type[ DEFAULT_PRODUCTION_TYPE ]; prod != NIL; prod = prod->next )
+	{
+		if ( prod->rl_rule )
+			do_print_for_production( thisAgent, prod, internal, print_filename, full_prod );
+	}
+	
+	for ( production *prod = thisAgent->all_productions_of_type[ USER_PRODUCTION_TYPE ]; prod != NIL; prod = prod->next )
+	{
+		if ( prod->rl_rule )
+			do_print_for_production( thisAgent, prod, internal, print_filename, full_prod );
+	}
+	
+	for ( production *prod = thisAgent->all_productions_of_type[ CHUNK_PRODUCTION_TYPE ]; prod != NIL; prod = prod->next )
+	{
+		if ( prod->rl_rule )
+			do_print_for_production( thisAgent, prod, internal, print_filename, full_prod );
+	}
+}
+
+
 }// namespace

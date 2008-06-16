@@ -20,6 +20,8 @@
 #include "production.h"
 #include "symtab.h"
 
+#include "reinforcement_learning.h"
+
 using namespace cli;
 using namespace sml;
 
@@ -28,7 +30,9 @@ bool CommandLineInterface::ParseExcise(std::vector<std::string>& argv) {
 		{'a', "all",		0},
 		{'c', "chunks",		0},
 		{'d', "default",	0},
+		{'r', "rl",			0},
 		{'t', "task",		0},
+		{'T', "template",	0},
 		{'u', "user",		0},
 		{0, 0, 0}
 	};
@@ -49,8 +53,14 @@ bool CommandLineInterface::ParseExcise(std::vector<std::string>& argv) {
 			case 'd':
 				options.set(EXCISE_DEFAULT);
 				break;
+			case 'r':
+				options.set(EXCISE_RL);
+				break;
 			case 't':
 				options.set(EXCISE_TASK);
+				break;
+			case 'T':
+				options.set(EXCISE_TEMPLATE);
 				break;
 			case 'u':
 				options.set(EXCISE_USER);
@@ -106,6 +116,36 @@ bool CommandLineInterface::DoExcise(const ExciseBitset& options, const std::stri
 
       excise_all_productions_of_type(m_pAgentSoar, DEFAULT_PRODUCTION_TYPE, false);
 	}
+	if (options.test(EXCISE_RL)) {					    
+	   for ( production *prod = m_pAgentSoar->all_productions_of_type[DEFAULT_PRODUCTION_TYPE]; prod != NIL; prod = prod->next )
+	   {
+		   if ( prod->rl_rule )
+		   {
+			   exciseCount++;
+			   excise_production( m_pAgentSoar, prod, m_pAgentSoar->sysparams[TRACE_LOADING_SYSPARAM] );
+		   }
+	   }
+
+	   for ( production *prod = m_pAgentSoar->all_productions_of_type[USER_PRODUCTION_TYPE]; prod != NIL; prod = prod->next )
+	   {
+		   if ( prod->rl_rule )
+		   {
+			   exciseCount++;
+			   excise_production( m_pAgentSoar, prod, m_pAgentSoar->sysparams[TRACE_LOADING_SYSPARAM] );
+		   }
+	   }
+
+	   for ( production *prod = m_pAgentSoar->all_productions_of_type[CHUNK_PRODUCTION_TYPE]; prod != NIL; prod = prod->next )
+	   {
+		   if ( prod->rl_rule )
+		   {
+			   exciseCount++;
+			   excise_production( m_pAgentSoar, prod, m_pAgentSoar->sysparams[TRACE_LOADING_SYSPARAM] );
+		   }
+	   }
+	   
+	   rl_initialize_template_tracking( m_pAgentSoar );
+	}
 	if (options.test(EXCISE_TASK)) {
 		exciseCount += m_pAgentSoar->num_productions_of_type[USER_PRODUCTION_TYPE];
 		exciseCount += m_pAgentSoar->num_productions_of_type[DEFAULT_PRODUCTION_TYPE];
@@ -114,6 +154,11 @@ bool CommandLineInterface::DoExcise(const ExciseBitset& options, const std::stri
 		excise_all_productions_of_type(m_pAgentSoar, DEFAULT_PRODUCTION_TYPE, false);
 
 	    this->DoInitSoar();	// from the manual, init when --all or --task are executed
+	}
+	if (options.test(EXCISE_TEMPLATE)) {
+		exciseCount += m_pAgentSoar->num_productions_of_type[TEMPLATE_PRODUCTION_TYPE];
+
+		excise_all_productions_of_type(m_pAgentSoar, TEMPLATE_PRODUCTION_TYPE, false);
 	}
 	if (options.test(EXCISE_USER)) {
 		exciseCount += m_pAgentSoar->num_productions_of_type[USER_PRODUCTION_TYPE];
@@ -130,7 +175,7 @@ bool CommandLineInterface::DoExcise(const ExciseBitset& options, const std::stri
 		{
 			return SetError(CLIError::kProductionNotFound);
 		}
-
+		
 		if (!m_RawOutput) 
 		{
 			// Save the name for the structured response

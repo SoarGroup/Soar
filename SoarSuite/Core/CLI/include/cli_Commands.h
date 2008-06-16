@@ -47,6 +47,7 @@ namespace cli {
 		static char const* kCLINumericIndifferentMode;
 		static char const* kCLIOSupportMode;
 		static char const* kCLIPopD;
+		static char const* kCLIPredict;
 		static char const* kCLIPreferences;
 		static char const* kCLIPrint;
 		static char const* kCLIProductionFind;
@@ -56,8 +57,10 @@ namespace cli {
 		static char const* kCLIQuit;
 		static char const* kCLIRemoveWME;
 		static char const* kCLIReteNet;
+		static char const* kCLIRL;
 		static char const* kCLIRun;
 		static char const* kCLISaveBacktraces;
+		static char const* kCLISelect;
 		static char const* kCLISetLibraryLocation;
 		static char const* kCLISoar8;
 		static char const* kCLISoarNews;

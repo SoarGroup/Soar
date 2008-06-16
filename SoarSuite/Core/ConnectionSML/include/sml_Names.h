@@ -359,12 +359,14 @@ public:
 	static char const* const kParamWatchProductionUser;
 	static char const* const kParamWatchProductionChunks;
 	static char const* const kParamWatchProductionJustifications;
+	static char const* const kParamWatchProductionTemplates;
 	static char const* const kParamWatchWMEDetail;
 	static char const* const kParamWatchWorkingMemoryChanges;
 	static char const* const kParamWatchPreferences;
 	static char const* const kParamWatchLearning;
 	static char const* const kParamWatchBacktracing;
 	static char const* const kParamWatchIndifferentSelection;
+	static char const* const kParamWatchRL;
 
 	// Values (these are not case sensitive unlike the rest)
 	static char const* const kTrue ;

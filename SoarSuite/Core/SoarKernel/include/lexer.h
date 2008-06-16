@@ -101,7 +101,7 @@ struct lexeme_info {
   char string[MAX_LEXEME_LENGTH+1];   /* text of the lexeme */
   int length;                         /* length of the above string */
   long int_val;                       /* for INT_CONSTANT_LEXEME's */
-  float float_val;                    /* for FLOAT_CONSTANT_LEXEME's */
+  double float_val;                    /* for FLOAT_CONSTANT_LEXEME's */
   char id_letter;                     /* for IDENTIFIER_LEXEME's */
   unsigned long id_number;            /* for IDENTIFIER_LEXEME's */
 };

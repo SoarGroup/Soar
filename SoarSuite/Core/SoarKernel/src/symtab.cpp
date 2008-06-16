@@ -105,7 +105,7 @@ unsigned long hash_int_constant_raw_info (long value, short num_bits) {
   return compress ((unsigned long)value, num_bits);
 }
 
-unsigned long hash_float_constant_raw_info (float value, short num_bits) {
+unsigned long hash_float_constant_raw_info (double value, short num_bits) {
   return compress ((unsigned long)value, num_bits);
 }
 
@@ -244,7 +244,7 @@ Symbol *find_int_constant (agent* thisAgent, long value) {
   return NIL;
 }
 
-Symbol *find_float_constant (agent* thisAgent, float value) {
+Symbol *find_float_constant (agent* thisAgent, double value) {
   unsigned long hash_value;
   Symbol *sym;
 
@@ -317,6 +317,10 @@ Symbol *make_new_identifier (agent* thisAgent, char name_letter, goal_stack_leve
   sym->id.tc_num = 0;
   sym->id.associated_output_links = NIL;
   sym->id.input_wmes = NIL;
+	
+  sym->id.rl_info = NIL;
+  sym->id.reward_header = NIL;
+
   add_to_hash_table (thisAgent, thisAgent->identifier_hash_table, sym);
   return sym;
 }
@@ -356,7 +360,7 @@ Symbol *make_int_constant (agent* thisAgent, long value) {
   return sym;
 }
 
-Symbol *make_float_constant (agent* thisAgent, float value) {
+Symbol *make_float_constant (agent* thisAgent, double value) {
   Symbol *sym;
 
   sym = find_float_constant(thisAgent, value);
@@ -600,6 +604,8 @@ void create_predefined_symbols (agent* thisAgent) {
   thisAgent->input_link_symbol = make_sym_constant(thisAgent, "input-link");
   thisAgent->output_link_symbol = make_sym_constant(thisAgent, "output-link");
   /* RPM 9/06 end */
+
+  thisAgent->reward_link_symbol = make_sym_constant( thisAgent, "reward-link" );
 }
 
 void release_helper(agent* thisAgent, Symbol** sym) {
@@ -648,4 +654,6 @@ void release_predefined_symbols(agent* thisAgent) {
   release_helper(thisAgent,&(thisAgent->input_link_symbol));
   release_helper(thisAgent,&(thisAgent->output_link_symbol));
   /* RPM 9/06 end */
+
+  release_helper( thisAgent, &( thisAgent->reward_link_symbol ) );
 }

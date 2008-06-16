@@ -1,4 +1,4 @@
-                                     Excise
+                            Documentation/CLI/excise
 
                                       Name
 
@@ -28,6 +28,16 @@
    |---------------+--------------------------------------------------------|
    |production_name|Remove the specific production with this name.          |
    +------------------------------------------------------------------------+
+
+                             Reinforcement Learning
+
+   These are only available with 8.6.4-rl.
+
+   +----------------------------------------+
+   |-r, --rl       |Excise Soar-RL rules    |
+   |---------------+------------------------|
+   |-T, --templates|Excise Soar-RL templates|
+   +----------------------------------------+
 
                                   Description
 

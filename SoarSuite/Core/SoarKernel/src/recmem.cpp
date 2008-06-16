@@ -43,6 +43,7 @@
 #include "osupport.h"
 #include "recmem.h"
 #include "tempmem.h"
+#include "reinforcement_learning.h"
 #include "xml.h"
 #include "soar_TraceNames.h"
 
@@ -569,7 +570,6 @@ void create_instantiation (agent* thisAgent, production *prod,
    inst->okay_to_variablize = TRUE;
    inst->in_ms = TRUE;
 
-
    /* REW: begin   09.15.96 */
    /*  We want to initialize the GDS_evaluated_already flag
     *  when a new instantiation is created.
@@ -640,8 +640,18 @@ void create_instantiation (agent* thisAgent, production *prod,
    inst->preferences_generated = NIL;
    need_to_do_support_calculations = FALSE;
    for (a=prod->action_list; a!=NIL; a=a->next) {
-      pref = execute_action (thisAgent, a, tok, w);
-	  /* SoarTech changed from an IF stmt to a WHILE loop to support GlobalDeepCpy */
+      
+	   if ( prod->type != TEMPLATE_PRODUCTION_TYPE )
+	   {
+			pref = execute_action (thisAgent, a, tok, w);
+	   }
+	   else
+	   {
+		   pref = NIL;
+		   Symbol *result = rl_build_template_instantiation( thisAgent, inst, tok, w );
+	   }
+	  
+	   /* SoarTech changed from an IF stmt to a WHILE loop to support GlobalDeepCpy */
       while (pref) {   
          pref->inst = inst;
          insert_at_head_of_dll (inst->preferences_generated, pref,

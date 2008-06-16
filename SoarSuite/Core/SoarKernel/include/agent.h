@@ -32,12 +32,24 @@
 #include "callback.h"
 #include <map>
 
+#include "exploration.h"
+#include "reinforcement_learning.h"
+
+#include <string>
+#include <map>
+
 // JRV: Added to support XML management inside Soar
 // These handles should not be used directly, see xml.h
 typedef void* xml_handle;
 
 /* JC ADDED: Included so we can put the RHS functions in here */
 typedef struct rhs_function_struct rhs_function;
+
+// Soar-RL types
+typedef struct rl_parameter_struct rl_parameter;
+typedef struct rl_stat_struct rl_stat;
+
+typedef struct select_info_struct select_info;
 
 #ifdef __cplusplus
 extern "C"
@@ -265,6 +277,8 @@ typedef struct agent_struct {
   Symbol			* input_link_symbol;
   Symbol			* output_link_symbol;
   /* RPM 9/06 end */
+
+  Symbol            * reward_link_symbol;
   
   /* ----------------------- Symbol table stuff -------------------------- */
 
@@ -726,9 +740,25 @@ kernel time and total_cpu_time greater than the derived total CPU time. REW */
   /* JC ADDED: Need to store RHS functions here so that agent's don't step on each other */
   rhs_function* rhs_functions;
 
-#ifdef NUMERIC_INDIFFERENCE
+  //#ifdef NUMERIC_INDIFFERENCE
   enum ni_mode numeric_indifferent_mode;      /* SW 08.19.2003 */
-#endif
+  //#endif
+  
+  // exploration
+  exploration_parameter *exploration_params[ EXPLORATION_PARAMS ];
+  
+  // reinforcement learning
+  rl_parameter *rl_params[ RL_PARAMS ];
+  rl_stat *rl_stats[ RL_STATS ];
+
+  int rl_template_count;
+
+  // select
+  select_info *select;
+
+  // predict
+  unsigned long predict_seed;
+  std::string *prediction;
 
   // JRV: Added to support XML management inside Soar
   // These handles should not be used directly, see xml.h

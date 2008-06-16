@@ -102,6 +102,8 @@ namespace sml
 
 	 void ExplainListChunks(AgentSML* pIAgent);
 	 bool ExplainChunks(AgentSML* pIAgent, const char* pProduction, int mode);
+	 void print_rl_rules( agent* thisAgent, char *arg,bool internal, bool print_filename, bool full_prod);
+
   };
 }
 #endif

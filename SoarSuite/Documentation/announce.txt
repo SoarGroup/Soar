@@ -1,6 +1,30 @@
 Soar 8.6.4 Release Notes
 ========================
 
+This release of Soar includes reinforcement learning code (Soar-RL).
+
+Soar-RL is the architectural integration of reinforcement learning 
+(RL) with Soar.  The RL mechanism will automatically learn value 
+functions as a Soar agent executes.  These value functions represent, 
+for a given working memory state and proposed operator, the expected 
+sum of future rewards the agent will receive if it selects that 
+operator.  
+
+Note: in the final version of Soar-RL, all Soar impasses will be 
+treated identically.  In the case of an impasse other than 
+operator no-change, the time period at the superstate during 
+which no operator is selected will be treated as a “gap” in rule 
+coverage, and perceived reward will be discounted with respect to 
+decision cycles passed.
+
+This release also includes an important bug fix regarding shared ids,
+see bugzilla bug number 1027 for details.
+
+The 8.6.4 release notes follow.
+
+Soar 8.6.4 Release Notes
+========================
+
 Soar-8.6.4 includes all source code, many demo programs, and a 
 number of applications that serve as examples of how to interface 
 Soar to an external Environment.  There is support for integrating 
@@ -70,8 +94,6 @@ New in 8.6.4
   -- Modified StringEventCallback to return a string.
   -- Now generate proper Java enums for SML Java interface.
   -- Major refactoring of portability support (e.g. portability.h)
-  -- Same-machine remote connections are now more efficient (especially
-     on Linux).
   -- Other minor enhancements.
 
 * Bug fixes
@@ -89,6 +111,7 @@ New in 8.6.4
 Known issues:
 =============
 
+* Remote connections on Linux can be slow.
 * ^status complete appears on the ^output-link immediately instead 
   of during the next input phase.
 * The Soar 7 mode implementation currently relies on an ugly hack. If

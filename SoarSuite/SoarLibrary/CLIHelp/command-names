@@ -32,6 +32,7 @@ multi-attributes
 numeric-indifferent-mode
 o-support-mode
 popd
+predict
 preferences
 print
 production-find
@@ -41,8 +42,10 @@ pwd
 quit
 remove-wme
 rete-net
+rl
 run
 save-backtraces
+select
 set-library-location
 set-stop-phase
 soar8

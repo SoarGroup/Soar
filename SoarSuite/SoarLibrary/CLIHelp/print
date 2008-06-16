@@ -1,4 +1,4 @@
-                                     Print
+                            Documentation/CLI/print
 
                                       Name
 
@@ -80,6 +80,16 @@ Printing the current subgoal stack
    |---------------+--------------------------------------------------------|
    |-S, --states   |When printing the stack, print only states.             |
    +------------------------------------------------------------------------+
+
+Reinforcement Learning
+
+   These are only available with 8.6.4-rl.
+
+   +--------------------------------------+
+   |-r, --rl      |Print Soar-RL rules    |
+   |--------------+-----------------------|
+   |-T, --template|Print Soar-RL templates|
+   +--------------------------------------+
 
                                   Description
 

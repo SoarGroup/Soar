@@ -249,7 +249,7 @@ char *symbol_to_string (agent* thisAgent, Symbol *sym,
 	  dest=thisAgent->printed_output_string;
 	  dest_size = MAX_LEXEME_LENGTH*2+10; /* from agent.h */
 	}
-    SNPRINTF (dest, dest_size, "%#g", sym->fc.value);
+    SNPRINTF (dest, dest_size, "%#.16g", sym->fc.value);
 	dest[dest_size - 1] = 0; /* ensure null termination */
     { /* --- strip off trailing zeros --- */
       char *start_of_exponent;
@@ -808,6 +808,10 @@ void print_production (agent* thisAgent, production *p, Bool internal) {
     print_string (thisAgent, "    :justification ;# not reloadable\n");
     xml_att_val(thisAgent, kProductionType, kProductionTypeJustification);
     break;
+  case TEMPLATE_PRODUCTION_TYPE:
+	print_string (thisAgent, "   :template\n");
+    xml_att_val(thisAgent, kProductionType, kProductionTypeTemplate);
+	break;
   }
 
   if (p->declared_support==DECLARED_O_SUPPORT)
@@ -892,6 +896,7 @@ char preference_type_indicator (agent* thisAgent, byte type) {
   case REJECT_PREFERENCE_TYPE: return '-';
   case PROHIBIT_PREFERENCE_TYPE: return '~';
   case RECONSIDER_PREFERENCE_TYPE: return '@';
+  case NUMERIC_INDIFFERENT_PREFERENCE_TYPE: return '=';
   case UNARY_INDIFFERENT_PREFERENCE_TYPE: return '=';
   case BINARY_INDIFFERENT_PREFERENCE_TYPE: return '=';
   case UNARY_PARALLEL_PREFERENCE_TYPE: return '&';

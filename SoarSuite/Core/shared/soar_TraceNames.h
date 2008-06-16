@@ -120,6 +120,7 @@ namespace soar_TraceNames
 	static char const* const kProductionType                    = "type" ;
 	static char const* const kProductionTypeDefault             = ":default" ;
 	static char const* const kProductionTypeChunk               = ":chunk" ;
+	static char const* const kProductionTypeTemplate            = ":template" ;
 	static char const* const kProductionTypeJustification       = ":justification ;# not reloadable" ;
 	static char const* const kProductionDeclaredSupport         = "declared-support" ;
 	static char const* const kProductionDeclaredOSupport        = ":o-support" ;
@@ -161,6 +162,7 @@ namespace soar_TraceNames
 	static char const* const kCandidateTypeSum  = "sum";
 	static char const* const kCandidateTypeAvg  = "avg";
 	static char const* const kCandidateValue    = "value";
+	static char const* const kCandidateExpValue = "exp";
 
 	// output for the verbose command
 	static char const* const kTagVerbose    = "verbose";
