@@ -8,19 +8,21 @@
 
 #include <portability.h>
 
+#include "sml_Utils.h"
 #include "cli_CommandLineInterface.h"
 
 #include "cli_Commands.h"
 
 #include "sml_Names.h"
+#include "cli_CLIError.h"
 
-#include "gSKI_Kernel.h"
-#include "gSKI_DoNotTouch.h"
+#include "sml_KernelSML.h"
+#include "sml_KernelHelpers.h"
 
 using namespace cli;
 using namespace sml;
 
-bool CommandLineInterface::ParseVerbose(gSKI::Agent* pAgent, std::vector<std::string>& argv) {
+bool CommandLineInterface::ParseVerbose(std::vector<std::string>& argv) {
 	Options optionsData[] = {
 		{'d', "disable",	0},
 		{'e', "enable",		0},
@@ -52,26 +54,23 @@ bool CommandLineInterface::ParseVerbose(gSKI::Agent* pAgent, std::vector<std::st
 
 	if (m_NonOptionArguments) return SetError(CLIError::kTooManyArgs);
 
-	return DoVerbose(pAgent, query ? 0 : &setting);
+	return DoVerbose(query ? 0 : &setting);
 }
 
-bool CommandLineInterface::DoVerbose(gSKI::Agent* pAgent, bool* pSetting) {
-
-	if (!RequireAgent(pAgent)) return false;
-
+bool CommandLineInterface::DoVerbose(bool* pSetting) {
 	// Attain the evil back door of doom, even though we aren't the TgD
-	gSKI::EvilBackDoor::TgDWorkArounds* pKernelHack = m_pKernel->getWorkaroundObject();
+	sml::KernelHelpers* pKernelHack = m_pKernelSML->GetKernelHelpers() ;
 
 	if (!pSetting) {
 		if (m_RawOutput) {
-			m_Result << "Verbose is " << (pKernelHack->GetVerbosity(pAgent) ? "on." : "off.");
+			m_Result << "Verbose is " << (pKernelHack->GetVerbosity(m_pAgentSML) ? "on." : "off.");
 		} else {
-			AppendArgTagFast(sml_Names::kParamValue, sml_Names::kTypeBoolean, pKernelHack->GetVerbosity(pAgent) ? sml_Names::kTrue : sml_Names::kFalse);
+			AppendArgTagFast(sml_Names::kParamValue, sml_Names::kTypeBoolean, pKernelHack->GetVerbosity(m_pAgentSML) ? sml_Names::kTrue : sml_Names::kFalse);
 		}
 		return true;
 	}
 
-	pKernelHack->SetVerbosity(pAgent, *pSetting);
+	pKernelHack->SetVerbosity(m_pAgentSML, *pSetting);
 	return true;
 }
 

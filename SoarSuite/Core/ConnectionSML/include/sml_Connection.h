@@ -34,12 +34,14 @@
 #include <queue>
 #include <list>
 
+#define PROFILE_CONNECTIONS
+
 #include "sml_Errors.h"
 #include "thread_Lock.h"
 
 // These last ones are just for convenience, they could come out
 #include "ElementXMLHandle.h"
-#include "sml_ElementXML.h"
+#include "ElementXML.h"
 #include "sml_AnalyzeXML.h"
 #include "sml_Names.h"
 
@@ -49,13 +51,21 @@ namespace sock
 	class DataSender ;
 }
 
+namespace soar_thread {
+	class OSSpecificTimer ;
+} 
+
+namespace soarxml
+{
+	class ElementXML ;
+}
+
 namespace sml
 {
 
 // Forward declarations
 class ConnectionManager ;
 class Connection ;
-class ElementXML ;
 class AnalyzeXML ;
 
 // Define the ListenerCallback to pass the new connection and some user data.
@@ -63,7 +73,7 @@ typedef void (*ListenerCallback)(Connection*, void*);
 
 // Define the IncomingCallback to pass the existing connection, incoming message
 // and some user data.  The result can be NULL or a message that is sent back over the connection.
-typedef ElementXML* (*IncomingCallback)(Connection*, ElementXML*, void*) ;
+typedef soarxml::ElementXML* (*IncomingCallback)(Connection*, soarxml::ElementXML*, void*) ;
 
 /*************************************************************
 * @brief The Callback class is a simple wrapper around a callback.
@@ -99,9 +109,9 @@ public:
 	* 
 	* @returns NULL or a response to this message.
 	*************************************************************/
-	ElementXML* Invoke(ElementXML* pIncomingMessage)
+	soarxml::ElementXML* Invoke(soarxml::ElementXML* pIncomingMessage)
 	{
-		ElementXML* pResult = (*m_pCallback)(m_pConnection, pIncomingMessage, m_pUserData) ;
+		soarxml::ElementXML* pResult = (*m_pCallback)(m_pConnection, pIncomingMessage, m_pUserData) ;
 		return pResult ;
 	}
 } ;
@@ -117,7 +127,7 @@ typedef CallbackMap::iterator					CallbackMapIter ;
 // Used to store a queue of messages
 typedef std::queue< ElementXML_Handle >	MessageQueue ;
 
-typedef std::list< ElementXML* >	MessageList ;
+typedef std::list< soarxml::ElementXML* >	MessageList ;
 typedef MessageList::iterator		MessageListIter ;
 
 /*************************************************************
@@ -176,6 +186,11 @@ protected:
 
 	// The value to use for this connection's client side time tags (so each connection can have its own part of the id space)
 	long		m_InitialTimeTagCounter ;
+
+	// High resolution timer -- useful for profiling
+	soar_thread::OSSpecificTimer*	m_pTimer ;
+	double							m_IncomingTime ;
+	double							m_OutgoingTime ;
 
 public:
 	Connection() ;
@@ -281,7 +296,7 @@ public:
 	*				The caller should release this message object after making the send call
 	*               once it if finished using it.
 	*************************************************************/
-	virtual void SendMsg(ElementXML* pMsg) = 0 ;
+	virtual void SendMsg(soarxml::ElementXML* pMsg) = 0 ;
 
 	/*************************************************************
 	* @brief Retrieve any commands, notifications, responses etc. that are waiting.
@@ -324,7 +339,7 @@ public:
 	*
 	* @returns The message that is a response to pID or NULL if none is found.
 	*************************************************************/
-	virtual ElementXML* GetResponseForID(char const* pID, bool wait) = 0 ;
+	virtual soarxml::ElementXML* GetResponseForID(char const* pID, bool wait) = 0 ;
 
 	/*************************************************************
 	* @brief Retrieve the response to the last call message sent.
@@ -350,7 +365,7 @@ public:
 	*
 	* @returns The message that is a response to pMsg or NULL if none is found.
 	*************************************************************/
-	virtual ElementXML* GetResponse(ElementXML const* pMsg, bool wait = true) ;
+	virtual soarxml::ElementXML* GetResponse(soarxml::ElementXML const* pMsg, bool wait = true) ;
 
 	/*************************************************************
 	* @brief Register a callback for a particular type of incoming message.
@@ -392,7 +407,7 @@ public:
 	*
 	* @returns The response message (or NULL if there is no response from any calback).
 	*************************************************************/
-	virtual ElementXML* InvokeCallbacks(ElementXML *pIncomingMsg) ;
+	virtual soarxml::ElementXML* InvokeCallbacks(soarxml::ElementXML *pIncomingMsg) ;
 
 	/*************************************************************
 	* @brief Get and set the user data.
@@ -427,7 +442,7 @@ public:
 	* @param pMsg		The message to send
 	* @returns			True if got a reply
 	*************************************************************/
-	bool SendMessageGetResponse(AnalyzeXML* pAnalysis, ElementXML* pMsg) ;
+	bool SendMessageGetResponse(AnalyzeXML* pAnalysis, soarxml::ElementXML* pMsg) ;
 
 	/*************************************************************
 	* @brief Build an SML message and send it over the connection
@@ -529,7 +544,7 @@ public:
 	*
 	* @returns The new SML message
 	*************************************************************/
-	virtual ElementXML* CreateSMLMessage(char const* pType) ;
+	virtual soarxml::ElementXML* CreateSMLMessage(char const* pType) ;
 
 	/*************************************************************
 	* @brief Create a basic SML command message.  You should then add parameters to this command.
@@ -542,7 +557,7 @@ public:
 	* 
 	* @returns The new SML command message.
 	*************************************************************/
-	virtual ElementXML* CreateSMLCommand(char const* pCommandName, bool rawOutput = false) ;
+	virtual soarxml::ElementXML* CreateSMLCommand(char const* pCommandName, bool rawOutput = false) ;
 
 	/*************************************************************
 	* @brief Add a parameter to an SML command message.
@@ -557,7 +572,7 @@ public:
 	* @returns Pointer to the ElementXML_Handle for the <command> tag (not the full message, just the <command> part)
 	*		   This is rarely needed, but could be used to optimize the code.  DO NOT release this handle.
 	*************************************************************/
-	virtual ElementXML_Handle AddParameterToSMLCommand(ElementXML* pCommand, char const* pName, char const* pValue, char const* pValueType = NULL) ;
+	virtual ElementXML_Handle AddParameterToSMLCommand(soarxml::ElementXML* pCommand, char const* pName, char const* pValue, char const* pValueType = NULL) ;
 
 	/*************************************************************
 	* @brief Create a basic SML response message.  You should then add content to this response.
@@ -568,7 +583,7 @@ public:
 	* 
 	* @returns The new SML response message.
 	*************************************************************/
-	virtual ElementXML* CreateSMLResponse(ElementXML const* pIncomingMsg) ;
+	virtual soarxml::ElementXML* CreateSMLResponse(soarxml::ElementXML const* pIncomingMsg) ;
 
 	/*************************************************************
 	* @brief Adds an <error> tag and an error message to a response message.
@@ -577,7 +592,7 @@ public:
 	* @param pErrorMsg	A description of the error in a form presentable to the user
 	* @param errorCode	An optional numeric code for the error (to support programmatic responses to the error)
 	*************************************************************/
-	virtual void AddErrorToSMLResponse(ElementXML* pResponse, char const* pErrorMsg, int errorCode = -1) ;
+	virtual void AddErrorToSMLResponse(soarxml::ElementXML* pResponse, char const* pErrorMsg, int errorCode = -1) ;
 
 	/*************************************************************
 	* @brief Adds a <result> tag and fills in character data for that result.
@@ -585,10 +600,13 @@ public:
 	* @param pResponse	The response message we are adding an error to.
 	* @param pResult	The result (as a text string)
 	*************************************************************/
-	virtual void AddSimpleResultToSMLResponse(ElementXML* pResponse, char const* pResult) ;
+	virtual void AddSimpleResultToSMLResponse(soarxml::ElementXML* pResponse, char const* pResult) ;
 
 	void SetInitialTimeTagCounter(long value)	{ m_InitialTimeTagCounter = value ; }
 	long GetInitialTimeTagCounter()				{ return m_InitialTimeTagCounter ; } 
+
+	double GetIncomingTime() { return m_IncomingTime ; }
+	double GetOutgoingTime() { return m_OutgoingTime ; }
 
 protected:
 	/*************************************************************
@@ -611,7 +629,7 @@ protected:
 	*		 in a thread safe way.
 	*		 Returns NULL if there is no waiting message.
 	*************************************************************/
-	ElementXML* PopIncomingMessageQueue() ;
+	soarxml::ElementXML* PopIncomingMessageQueue() ;
 
 };
 

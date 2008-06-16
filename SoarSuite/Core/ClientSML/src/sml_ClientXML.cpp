@@ -11,11 +11,12 @@
 //
 /////////////////////////////////////////////////////////////////
 #include "sml_ClientXML.h"
-#include "sml_ElementXML.h"
+#include "ElementXML.h"
 
 #include <assert.h>
 
 using namespace sml ;
+using namespace soarxml;
 
 ClientXML::ClientXML()
 {

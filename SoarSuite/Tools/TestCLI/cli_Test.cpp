@@ -10,7 +10,7 @@
 #include "sml_Connection.h"
 #include "sml_Client.h"
 #include "sml_AnalyzeXML.h"
-#include "sml_ElementXML.h"
+#include "ElementXML.h"
 #include "sml_Events.h"
 
 #include "thread_Lock.h"
@@ -27,6 +27,7 @@ soar_thread::Mutex*	g_pInputQueueMutex = 0;
 soar_thread::Event*	g_pInputQueueWriteEvent = 0;
 soar_thread::Event*	g_pWaitForInput = 0;
 InputThread*		g_pInputThread = 0;
+int					g_TraceCallbackID = 0;
 
 InputThread::InputThread() {
 }
@@ -67,6 +68,12 @@ void InputThread::Run() {
 // callback functions
 void PrintCallbackHandler(sml::smlPrintEventId id, void* pUserData, sml::Agent* pAgent, char const* pMessage) {
 	cout << pMessage;	// simply display whatever comes back through the event
+}
+
+void XMLCallbackHandler(sml::smlXMLEventId id, void* pUserData, sml::Agent* pAgent, sml::ClientXML* pXML) {
+	char* message = pXML->GenerateXMLString(true, true);
+	cout << message;
+	pXML->DeleteString(message);
 }
 
 void RunCallbackHandler(sml::smlRunEventId id, void* pUserData, sml::Agent* pAgent, sml::smlPhase phase) {
@@ -249,14 +256,20 @@ bool CommandProcessor::ProcessLine(std::string& commandLine) {
 	temporaryHistoryIndex = historyIndex;
 
 	// Process meta-commands first, since they return
-	if (commandLine == "raw") {
+	if (!raw && commandLine == "raw") {
+		sml::Agent* pAgent = pKernel->GetAgent( AGENT_NAME );
+		pAgent->UnregisterForXMLEvent(g_TraceCallbackID);
+		g_TraceCallbackID = pAgent->RegisterForPrintEvent( sml::smlEVENT_PRINT, PrintCallbackHandler, 0 );
 		raw = true;
 		DisplayPrompt(true);
 		g_pWaitForInput->TriggerEvent();
 		return true;
 
 	}
-	if (commandLine == "structured") {
+	if (raw && commandLine == "structured") {
+		sml::Agent* pAgent = pKernel->GetAgent( AGENT_NAME );
+		pAgent->UnregisterForPrintEvent(g_TraceCallbackID);
+		g_TraceCallbackID = pAgent->RegisterForXMLEvent( sml::smlEVENT_XML_TRACE_OUTPUT, XMLCallbackHandler, 0 );
 		raw = false;
 		DisplayPrompt(true);
 		g_pWaitForInput->TriggerEvent();
@@ -284,19 +297,19 @@ bool CommandProcessor::ProcessLine(std::string& commandLine) {
 	} else {
 		sml::ClientAnalyzedXML* pStructuredResponse = new sml::ClientAnalyzedXML();
 		previousResult = pKernel->ExecuteCommandLineXML(commandLine.c_str(), AGENT_NAME, pStructuredResponse);
-		const sml::ElementXML* pResultTag = pStructuredResponse->GetResultTag();
+		const soarxml::ElementXML* pResultTag = pStructuredResponse->GetResultTag();
 
 		if (pResultTag) {
-			char* pOutput = pResultTag->GenerateXMLString(true);
+			char* pOutput = pResultTag->GenerateXMLString(true, true);
 			if (pOutput) {
 				output = pOutput;	// overwrite last command's output
 			}
 			pResultTag->DeleteString(pOutput);
 		}
 
-		const sml::ElementXML* pErrorTag = pStructuredResponse->GetErrorTag();
+		const soarxml::ElementXML* pErrorTag = pStructuredResponse->GetErrorTag();
 		if (pErrorTag) {
-			char* pOutput = pErrorTag->GenerateXMLString(true);
+			char* pOutput = pErrorTag->GenerateXMLString(true, true);
 			if (pOutput) {
 				output += pOutput;	// append to result tag output
 			}
@@ -332,7 +345,7 @@ bool CommandProcessor::ProcessLine(std::string& commandLine) {
 int main(int argc, char** argv)
 {
 #ifdef _DEBUG
-	//_crtBreakAlloc = 2263;
+	//_crtBreakAlloc = 2168;
 	_CrtSetDbgFlag ( _CRTDBG_ALLOC_MEM_DF | _CRTDBG_LEAK_CHECK_DF ); 
 #endif // _DEBUG
 
@@ -386,7 +399,7 @@ int main(int argc, char** argv)
 
 		// Register for necessary callbacks
 		int callbackID1 = pAgent->RegisterForRunEvent(sml::smlEVENT_BEFORE_DECISION_CYCLE, RunCallbackHandler, 0);
-		int callbackID2 = pAgent->RegisterForPrintEvent(sml::smlEVENT_PRINT, PrintCallbackHandler, 0);
+		g_TraceCallbackID = pAgent->RegisterForPrintEvent(sml::smlEVENT_PRINT, PrintCallbackHandler, 0);
 
 		// Do script if any
 		bool good = true;
@@ -410,7 +423,7 @@ int main(int argc, char** argv)
 			while (g_pCommandProcessor->ProcessCharacter(getKey(true))) {}
 		}
 
-		pAgent->UnregisterForPrintEvent(callbackID2);
+		pAgent->UnregisterForPrintEvent(g_TraceCallbackID);
 		pAgent->UnregisterForRunEvent(callbackID1);
 
 		// Don't delete agent, owned by kernel
@@ -429,3 +442,33 @@ int main(int argc, char** argv)
 	} // end local scope
 	return 0;
 }
+
+//int main(int argc, char** argv)
+//{
+//#ifdef _DEBUG
+//	//_crtBreakAlloc = 1441;
+//	_CrtSetDbgFlag ( _CRTDBG_ALLOC_MEM_DF | _CRTDBG_LEAK_CHECK_DF ); 
+//#endif // _DEBUG
+//
+//	{ // create local scope to prevent scriptFile from being reported as a memory leak (occurs when script passed in as arg)
+//		sml::Kernel* pKernel = sml::Kernel::CreateKernelInNewThread("SoarKernelSML") ;
+//		assert(pKernel);
+//		if(pKernel->HadError()) {
+//			cout << "Error: " << pKernel->GetLastErrorDescription() << endl;
+//			exit(1);
+//		}
+//
+//		sml::Agent* pAgent;
+//		pAgent = pKernel->CreateAgent(AGENT_NAME) ;
+//		assert(pAgent);
+//
+//		g_TraceCallbackID = pAgent->RegisterForPrintEvent( sml::smlEVENT_PRINT, PrintCallbackHandler, 0 );
+//		pAgent->UnregisterForPrintEvent(g_TraceCallbackID);
+//		g_TraceCallbackID = pAgent->RegisterForXMLEvent( sml::smlEVENT_XML_TRACE_OUTPUT, XMLCallbackHandler, 0 );
+//
+//		// Don't delete agent, owned by kernel
+//		delete pKernel ;
+//
+//	} // end local scope
+//	return 0;
+//}

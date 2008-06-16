@@ -43,11 +43,10 @@
 #include "osupport.h"
 #include "recmem.h"
 #include "tempmem.h"
+#include "xml.h"
+#include "soar_TraceNames.h"
 
-/* JC ADDED: for gSKI events */
-#include "gski_event_system_functions.h"
-
-using namespace xmlTraceNames;
+using namespace soar_TraceNames;
 
 /* Uncomment the following line to get instantiation printouts */
 /* #define DEBUG_INSTANTIATIONS */
@@ -338,7 +337,7 @@ preference *execute_action (agent* thisAgent, action *a, struct token_struct *to
 		add_to_growable_string(thisAgent, &gs, " ^");
 		add_to_growable_string(thisAgent, &gs, symbol_to_string(thisAgent, attr, true, 0, 0));
 		add_to_growable_string(thisAgent, &gs, ".");
-		GenerateWarningXML(thisAgent, text_of_growable_string(gs));
+		xml_generate_warning(thisAgent, text_of_growable_string(gs));
 		free_growable_string(thisAgent, gs);
 
      }  
@@ -584,7 +583,7 @@ void create_instantiation (agent* thisAgent, production *prod,
                inst->prod->name);
          char buf[256];
          SNPRINTF(buf, 254, "in create_instantiation: %s", symbol_to_string(thisAgent, inst->prod->name, true, 0, 0));
-         GenerateVerboseXML(thisAgent, buf);
+         xml_generate_verbose(thisAgent, buf);
        }
    }
    /* REW: end   09.15.96 */
@@ -634,8 +633,7 @@ void create_instantiation (agent* thisAgent, production *prod,
    /* --- phase has changed to output by printing the arrow --- */
    if (trace_it && thisAgent->sysparams[TRACE_FIRINGS_PREFERENCES_SYSPARAM]) {
       print (thisAgent, " -->\n");
-	  gSKI_MakeAgentCallbackXML(thisAgent, kFunctionBeginTag, kTagActionSideMarker);
-	  gSKI_MakeAgentCallbackXML(thisAgent, kFunctionEndTag, kTagActionSideMarker);
+	  xml_object( thisAgent, kTagActionSideMarker );
    }
 
    /* --- execute the RHS actions, collect the results --- */
@@ -669,7 +667,7 @@ void create_instantiation (agent* thisAgent, production *prod,
                   need_to_do_support_calculations = TRUE;
                   if (thisAgent->soar_verbose_flag == TRUE) {
                      printf("\n\nin create_instantiation():  need_to_do_support_calculations == TRUE!!!\n\n");
-                     GenerateVerboseXML(thisAgent, "in create_instantiation():  need_to_do_support_calculations == TRUE!!!");
+                     xml_generate_verbose(thisAgent, "in create_instantiation():  need_to_do_support_calculations == TRUE!!!");
                   }
                }
 
@@ -728,15 +726,11 @@ void create_instantiation (agent* thisAgent, production *prod,
     /* MVP 6-8-94 */
    if (!thisAgent->system_halted) {
       /* --- invoke callback function --- */
-      soar_invoke_callbacks(thisAgent, thisAgent, 
+      soar_invoke_callbacks(thisAgent, 
             FIRING_CALLBACK,
             (soar_call_data) inst);
 
    }
- 
-
-   /* JC ADDED: Need to tell gSKI that a production was fired */
-   gSKI_MakeAgentCallback(gSKI_K_EVENT_PRODUCTION_FIRED, 1, thisAgent, static_cast<void*>(inst));
 }
 
 /* -----------------------------------------------------------------------
@@ -809,14 +803,10 @@ void retract_instantiation (agent* thisAgent, instantiation *inst) {
   Bool trace_it;
 
   /* --- invoke callback function --- */
-  soar_invoke_callbacks(thisAgent, thisAgent, 
+  soar_invoke_callbacks(thisAgent, 
 			RETRACTION_CALLBACK,
 			(soar_call_data) inst);
    
-  /* JC ADDED: tell gSKI that we've retracted a production instantiation */
-  gSKI_MakeAgentCallback(gSKI_K_EVENT_PRODUCTION_RETRACTED, 0, thisAgent, static_cast<void*>(inst));
-
-
   retracted_a_preference = FALSE;
   
   trace_it = trace_firings_of_inst (thisAgent, inst);
@@ -836,8 +826,7 @@ void retract_instantiation (agent* thisAgent, instantiation *inst) {
 				(wme_trace_type)thisAgent->sysparams[TRACE_FIRINGS_WME_TRACE_TYPE_SYSPARAM],1);
 			if (thisAgent->sysparams[TRACE_FIRINGS_PREFERENCES_SYSPARAM]) {
 				print (thisAgent, " -->\n");
-				gSKI_MakeAgentCallbackXML(thisAgent, kFunctionBeginTag, kTagActionSideMarker);
-				gSKI_MakeAgentCallbackXML(thisAgent, kFunctionEndTag, kTagActionSideMarker);
+				xml_object( thisAgent, kTagActionSideMarker );
 			}
 		}
         if (thisAgent->sysparams[TRACE_FIRINGS_PREFERENCES_SYSPARAM]) {
@@ -898,7 +887,7 @@ void assert_new_preferences (agent* thisAgent)
    if ((thisAgent->operand2_mode == TRUE) &&
        (thisAgent->soar_verbose_flag == TRUE)) {
            printf("\n   in assert_new_preferences:");
-           GenerateVerboseXML(thisAgent, "in assert_new_preferences:");
+           xml_generate_verbose(thisAgent, "in assert_new_preferences:");
        }
    /* REW: end   09.15.96 */
    
@@ -962,7 +951,7 @@ void assert_new_preferences (agent* thisAgent)
             inst->prod->name);
             char buf[256];
             SNPRINTF(buf, 254, "asserting instantiation: %s", symbol_to_string(thisAgent, inst->prod->name, true, 0, 0));
-            GenerateVerboseXML(thisAgent, buf);
+            xml_generate_verbose(thisAgent, buf);
           }
       }
       /* REW: end   09.15.96 */
@@ -1046,19 +1035,19 @@ void do_preference_phase (agent* thisAgent) {
   if (thisAgent->sysparams[TRACE_PHASES_SYSPARAM]) {
 	  if (thisAgent->operand2_mode == TRUE) {
 		  if (thisAgent->current_phase == APPLY_PHASE) {  /* it's always IE for PROPOSE */
-			  gSKI_MakeAgentCallbackXML(thisAgent, kFunctionBeginTag, kTagSubphase);
-			  gSKI_MakeAgentCallbackXML(thisAgent, kFunctionAddAttribute, kPhase_Name, kSubphaseName_FiringProductions);
+			  xml_begin_tag( thisAgent, kTagSubphase );
+			  xml_att_val( thisAgent, kPhase_Name, kSubphaseName_FiringProductions );
 			  switch (thisAgent->FIRING_TYPE) {
 					case PE_PRODS:
 						print (thisAgent, "\t--- Firing Productions (PE) ---\n",0);
-						gSKI_MakeAgentCallbackXML(thisAgent, kFunctionAddAttribute, kPhase_FiringType, kPhaseFiringType_PE);
+						xml_att_val( thisAgent, kPhase_FiringType, kPhaseFiringType_PE );
 						break;
 					case IE_PRODS:
 						print (thisAgent, "\t--- Firing Productions (IE) ---\n",0);
-						gSKI_MakeAgentCallbackXML(thisAgent, kFunctionAddAttribute, kPhase_FiringType, kPhaseFiringType_IE);
+						xml_att_val( thisAgent, kPhase_FiringType, kPhaseFiringType_IE );
 						break;
 			  }
-			  gSKI_MakeAgentCallbackXML(thisAgent, kFunctionEndTag, kTagSubphase);
+			  xml_end_tag( thisAgent, kTagSubphase );
 		  }
 	  }
 	  else
@@ -1073,7 +1062,7 @@ void do_preference_phase (agent* thisAgent) {
   while (get_next_assertion (thisAgent, &prod, &tok, &w)) {
      if (thisAgent->max_chunks_reached) {
        thisAgent->system_halted = TRUE;
-	   	  soar_invoke_callbacks(thisAgent, thisAgent, 
+	   	  soar_invoke_callbacks(thisAgent, 
 		  AFTER_HALT_SOAR_CALLBACK,
 		  (soar_call_data) NULL);
        return;

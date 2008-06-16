@@ -13,13 +13,14 @@
 #include <algorithm>
 
 #include "cli_Commands.h"
+#include "cli_CLIError.h"
 
 #include "sml_Names.h"
 #include "sml_StringOps.h"
 
-#include "gSKI_Agent.h"
-#include "gSKI_ProductionManager.h"
-#include "IgSKI_Production.h"
+#include "agent.h"
+#include "production.h"
+#include "symtab.h"
 
 using namespace cli;
 using namespace sml;
@@ -30,7 +31,7 @@ struct FiringsSort {
 	}
 };
 
-bool CommandLineInterface::ParseFiringCounts(gSKI::Agent* pAgent, std::vector<std::string>& argv) {
+bool CommandLineInterface::ParseFiringCounts(std::vector<std::string>& argv) {
 
 	// The number to list defaults to -1 (list all)
 	int numberToList = -1;
@@ -53,68 +54,56 @@ bool CommandLineInterface::ParseFiringCounts(gSKI::Agent* pAgent, std::vector<st
 		}
 	}
 
-	return DoFiringCounts(pAgent, numberToList, pProduction);
+	return DoFiringCounts(numberToList, pProduction);
 }
 
-bool CommandLineInterface::DoFiringCounts(gSKI::Agent* pAgent, const int numberToList, const std::string* pProduction) {
-	if (!RequireAgent(pAgent)) return false;
-
-	// get the production stuff
-	gSKI::ProductionManager* pProductionManager = pAgent->GetProductionManager();
-	gSKI::tIProductionIterator* pIter = 0;
-	gSKI::IProduction* pProd = 0;
+bool CommandLineInterface::DoFiringCounts(const int numberToList, const std::string* pProduction) {
 	std::vector< std::pair< std::string, unsigned long > > firings;
 
-	bool foundProduction = false;
-
 	// if we have a production, just get that one, otherwise get them all
-	if (pProduction) {
-		pIter = pProductionManager->GetProduction(pProduction->c_str());
-		if (gSKI::isError(m_gSKIError)) {
-			SetErrorDetail("Unable to get production: " + *pProduction);
-			return SetError(CLIError::kgSKIError);
+	if (pProduction) 
+	{
+		Symbol* sym = find_sym_constant( m_pAgentSoar, pProduction->c_str() );
+
+		if (!sym || !(sym->sc.production))
+		{
+			return SetError(CLIError::kProductionNotFound);
 		}
-	} else {
-		pIter = pProductionManager->GetAllProductions(false, &m_gSKIError);
-		if (gSKI::isError(m_gSKIError)) {
-			SetErrorDetail("Unable to get all productions.");
-			return SetError(CLIError::kgSKIError);
-		}
-	}
-	if (!pIter) {
-		SetErrorDetail("Unable to get production(s).");
-		return SetError(CLIError::kgSKIError);
-	}
 
-	// walk with the iter and 
-	for(; pIter->IsValid(); pIter->Next()) {
+		std::pair< std::string, unsigned long > firing;
+		firing.first = *pProduction;
+		firing.second = sym->sc.production->firing_count;
+		firings.push_back(firing);
+	} 
+	else 
+	{
+		bool foundProduction = false;
 
-		pProd = pIter->GetVal();
+		for(unsigned int i = 0; i < NUM_PRODUCTION_TYPES; ++i)
+		{
+			for( production* pSoarProduction = m_pAgentSoar->all_productions_of_type[i]; 
+				pSoarProduction != 0; 
+				pSoarProduction = pSoarProduction->next )
+			{
+				if (!numberToList) {
+					if ( pSoarProduction->firing_count ) {
+						// this one has fired, skip it
+						continue;
+					}
+				}
 
-		// if numberToList is 0, only list those who haven't fired
-		if (!numberToList) {
-			if (pProd->GetFiringCount()) {
-				// this one has fired, skip it
-				pProd->Release();
-				continue;
+				foundProduction = true;
+
+				// store the name and count
+				std::pair< std::string, unsigned long > firing;
+				firing.first = pSoarProduction->name->sc.name;
+				firing.second = pSoarProduction->firing_count;
+				firings.push_back(firing);
 			}
 		}
-
-		foundProduction = true;
-
-		// store the name and count
-		std::pair< std::string, unsigned long > firing;
-		firing.first = pProd->GetName();
-		firing.second = pProd->GetFiringCount();
-		firings.push_back(firing);
-
-		pProd->Release();
+	
+		if (!foundProduction) return SetError(CLIError::kProductionNotFound);
 	}
-
-	pIter->Release();
-	pIter = 0;
-
-	if (!foundProduction) return SetError(CLIError::kProductionNotFound);
 
 	// Sort the list
 	FiringsSort s;

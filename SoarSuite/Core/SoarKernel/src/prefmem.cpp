@@ -35,9 +35,6 @@
 #include "prefmem.h"
 #include "print.h"
 
-/* JC ADDED: For telling gski about events */
-#include "gski_event_system_functions.h"
-
 char * preference_name[] =
 { "acceptable",
   "require",
@@ -257,13 +254,6 @@ void add_preference_to_tm (agent* thisAgent, preference *pref)
    if (pref->value->common.symbol_type == IDENTIFIER_SYMBOL_TYPE)
    {
       post_link_addition (thisAgent, pref->id, pref->value);
-
-      /* JC ADDED: Tell about a new object if we have an acceptable or required preference */
-      if((pref->value->id.link_count == 1) && 
-         ((pref->type == ACCEPTABLE_PREFERENCE_TYPE) || (pref->type == REQUIRE_PREFERENCE_TYPE)))
-      {
-         gSKI_MakeAgentCallbackWMObjectAdded(thisAgent, pref->value, pref->attr, pref->id);
-      }
    }
    
    if (preference_is_binary(pref->type))
@@ -279,17 +269,6 @@ void add_preference_to_tm (agent* thisAgent, preference *pref)
       (pref->type==REQUIRE_PREFERENCE_TYPE)))
    {
       mark_context_slot_as_acceptable_preference_changed (thisAgent, s);
-   }
-   
-   /* JC ADDED: notify gSKI of both preference additions and operator proposals */
-   if (s->isa_context_slot && (s->attr == thisAgent->operator_symbol))
-   {
-      /* Tell gSKI we have an operator preference */
-      gSKI_MakeAgentCallback(gSKI_K_EVENT_OPERATOR_PREF_ADDED, 1, thisAgent, static_cast<void*>(pref));
-
-      /* If it is acceptable, tell gSKI that we have an operator proposed */
-      if((pref->type == ACCEPTABLE_PREFERENCE_TYPE) || (pref->type == REQUIRE_PREFERENCE_TYPE))
-         gSKI_MakeAgentCallback(gSKI_K_EVENT_OPERATOR_PROPOSED, 1, thisAgent, static_cast<void*>(pref));
    }
 }
 

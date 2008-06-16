@@ -18,10 +18,14 @@
 
 #include <string>
 
+namespace soarxml
+{
+	class ElementXML ;
+}
+
 namespace sml {
 
 class AnalyzeXML ;
-class ElementXML ;
 class ClientKernel ;
 
 class ClientAnalyzedXML
@@ -41,9 +45,9 @@ public:
 	void Attach(AnalyzeXML* pAnalyzeXML) ;
 
 	// Each of these either returns a reference to the tag or NULL (if this document doesn't contain that tag)
-	ElementXML const* GetCommandTag() const	;
-	ElementXML const* GetResultTag() const ;
-	ElementXML const* GetErrorTag()	const ;
+	soarxml::ElementXML const* GetCommandTag() const	;
+	soarxml::ElementXML const* GetResultTag() const ;
+	soarxml::ElementXML const* GetErrorTag()	const ;
 
 	bool IsSML() const ;
 

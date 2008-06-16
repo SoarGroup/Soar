@@ -7,17 +7,15 @@
 // This class's HandleEvent method is called when
 // specific events occur within the kernel:
 /*
-*      gSKIEVENT_RHS_USER_FUNCTION
+*      smlEVENT_RHS_USER_FUNCTION
 */
 /////////////////////////////////////////////////////////////////
 
 #ifndef RHS_LISTENER_H
 #define RHS_LISTENER_H
 
-#include "gSKI_Events.h"
-#include "gSKI_Enumerations.h"
-#include "IgSKI_Iterator.h"
 #include "sml_EventManager.h"
+#include "sml_Events.h"
 
 #include <string>
 #include <map>
@@ -25,6 +23,7 @@
 namespace sml {
 
 class Connection ;
+class AgentSML ;
 
 // Mapping from a rhs function name to the list of connections implementing that function
 typedef std::map< std::string, ConnectionList* >	RhsMap ;
@@ -44,7 +43,7 @@ typedef RhsMap::iterator						RhsMapIter ;
 //  RhsListener doesn't have.  However, RhsListener has no need for these things right now. If that changes in
 //  the future, we may revisit this decision.
 //
-class RhsListener : public gSKI::IRhsListener
+class RhsListener
 {
 protected:
 	// Mapping from a rhs function name to the list of connections implementing that function
@@ -85,14 +84,15 @@ public:
 	ConnectionList* GetRhsListeners(char const* pFunctionName) ;
 
 	// Called for a filter event
-	bool HandleFilterEvent(egSKIRhsEventId eventID, gSKI::Agent* pAgent, char const* pArgument,
+	bool HandleFilterEvent(smlRhsEventId eventID, AgentSML* pAgent, char const* pArgument,
 						    int maxLengthReturnValue, char* pReturnValue) ;
 
 	// Called when a "RhsEvent" occurs in the kernel
-	virtual bool HandleEvent(egSKIRhsEventId eventId, gSKI::Agent* pAgent, bool commandLine, char const* pFunctionName, char const* pArgument,
+	virtual bool HandleEvent(smlRhsEventId eventId, AgentSML* pAgent, bool commandLine, char const* pFunctionName, char const* pArgument,
 						     int maxLengthReturnValue, char* pReturnValue) ;
 
-	virtual bool ExecuteCommandLine(gSKI::Agent* pAgent, char const* pFunctionName, char const* pArgument, int maxLengthReturnValue, char* pReturnValue) ;
+	virtual bool ExecuteRhsCommand(AgentSML* pAgentSML, smlRhsEventId eventID, std::string const& functionName, std::string const& arguments, std::string* pResult) ;
+	virtual bool ExecuteCommandLine(AgentSML* pAgentSML, char const* pFunctionName, char const* pArgument, int maxLengthReturnValue, char* pReturnValue) ;
 } ;
 
 }

@@ -25,11 +25,11 @@ public:
 	static char const* const kDocType_Call ;
 	static char const* const kDocType_Response ;
 	static char const* const kDocType_Notify ;
-	static char const* const kSoarVersion ;
 	static char const* const kSMLVersion ;
-	static char const* const kSMLVersionValue ;
-	static char const* const kSoarVersionValue ;
 	static char const* const kOutputLinkName ;
+
+	static const char* const kSoarVersionValue;
+	static const char* const kSMLVersionValue;
 
 	// <command> tag identifiers
 	static char const* const kTagCommand ;
@@ -374,7 +374,6 @@ public:
 	static char const* const kCommand_CreateAgent ;
 	static char const* const kCommand_DestroyAgent ;
 	static char const* const kCommand_GetAgentList ;
-	static char const* const kCommand_LoadProductions ;
 	static char const* const kCommand_GetInputLink ;
 	static char const* const kCommand_GetOutputLink ;
 	static char const* const kCommand_Run ;

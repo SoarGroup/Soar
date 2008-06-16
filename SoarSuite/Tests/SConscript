@@ -8,6 +8,9 @@ env.Prepend(CPPPATH = [
 			'include',
 			'src',
 			'../Core/ClientSML/include',
+			'../Core/KernelSML/include',
+			'../Core/CommandLineInterface/include',
+			'../Core/SoarKernel/include',
 			'../Core/ElementXML/include',
 			'../Core/ConnectionSML/include'])
 

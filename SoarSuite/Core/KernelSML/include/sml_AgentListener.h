@@ -8,23 +8,19 @@
 // specific events occur within the agent:
 //
 /*
-*     gSKIEVENT_AFTER_AGENT_CREATED,
-*     gSKIEVENT_BEFORE_AGENT_DESTROYED,
-*	  gSKIEVENT_BEFORE_AGENTS_RUN_STEP,
-*     gSKIEVENT_BEFORE_AGENT_REINITIALIZED,
-*     gSKIEVENT_AFTER_AGENT_REINITIALIZED,
+*     smlEVENT_AFTER_AGENT_CREATED,
+*     smlEVENT_BEFORE_AGENT_DESTROYED,
+*	  smlEVENT_BEFORE_AGENTS_RUN_STEP,
+*     smlEVENT_BEFORE_AGENT_REINITIALIZED,
+*     smlEVENT_AFTER_AGENT_REINITIALIZED,
 */
 /////////////////////////////////////////////////////////////////
 
 #ifndef AGENT_LISTENER_H
 #define AGENT_LISTENER_H
 
-#include "gSKI_Events.h"
-#include "gSKI_Enumerations.h"
-#include "IgSKI_Iterator.h"
-#include "gSKI_Agent.h"
-#include "gSKI_Kernel.h"
 #include "sml_EventManager.h"
+#include "sml_Events.h"
 
 #include <string>
 #include <map>
@@ -34,7 +30,7 @@ namespace sml {
 class KernelSML ;
 class Connection ;
 
-class AgentListener : gSKI::IAgentListener, public EventManager<egSKIAgentEventId>
+class AgentListener : public EventManager<smlAgentEventId>
 {
 protected:
 	KernelSML*		m_pKernelSML ;
@@ -50,14 +46,17 @@ public:
 	// Initialize this listener
 	void Init(KernelSML* pKernelSML) ;
 
+	// Called when an event occurs in the kernel
+	virtual void OnKernelEvent(int eventID, AgentSML* pAgentSML, void* pCallData) ;
+
 	// Returns true if this is the first connection listening for this event
-	virtual bool AddListener(egSKIAgentEventId eventID, Connection* pConnection) ;
+	virtual bool AddListener(smlAgentEventId eventID, Connection* pConnection) ;
 
 	// Returns true if at least one connection remains listening for this event
-	virtual bool RemoveListener(egSKIAgentEventId eventID, Connection* pConnection) ;
+	virtual bool RemoveListener(smlAgentEventId eventID, Connection* pConnection) ;
 
-	// Called when an "AgentEvent" occurs in the kernel
-	virtual void HandleEvent(egSKIAgentEventId eventId, gSKI::Agent* agentPtr) ;
+	virtual void OnEvent(smlAgentEventId eventID, AgentSML* pAgentSML) ;
+
 } ;
 
 }

@@ -58,10 +58,6 @@ protected:
 	// This is true if the wme was just added.  The client chooses when to clear these flags.
 	bool	m_JustAdded ;
 
-#ifdef SML_DIRECT
-	Direct_WME_Handle	m_WME ;
-#endif
-
 public:
 	// This is true if the wme was just added.  The client chooses when to clear these flags.
 	// This is only maintained for output wmes (the client controls input wmes).
@@ -94,6 +90,8 @@ public:
 	virtual FloatElement* ConvertToFloatElement() { return NULL; }
 	virtual StringElement* ConvertToStringElement() { return NULL; }
 
+	Agent*		GetAgent()	{ return m_Agent ; }
+
 protected:
 	// Keep these protected, so user can only create and destroy WMEs through
 	// the methods exposed in the agent class.  This makes it clear that the
@@ -105,8 +103,6 @@ protected:
 
 	void SetParent(Identifier* pParent) ;
 
-	Agent*		GetAgent()	{ return m_Agent ; }
-
 	// If we update the value we need to assign a new time tag to this WME.
 	// That's because we're really doing a delete followed by an add
 	// and the add would create a new time tag.
@@ -116,12 +112,7 @@ protected:
 	virtual void Refresh() ;
 
 #ifdef SML_DIRECT
-	void SetWMEHandle(Direct_WME_Handle wme)	{ m_WME = wme ; }
-	Direct_WME_Handle GetWMEHandle()			{ return m_WME ; }
-
-	void ClearAllWMObjectHandles()				{ m_WME = 0 ; }
-
-	virtual Direct_WME_Handle DirectAdd(Direct_WorkingMemory_Handle wm, Direct_WMObject_Handle wmobject, long timeTag) = 0 ;
+	virtual void DirectAdd(Direct_AgentSML_Handle pAgentSML, long timeTag) = 0 ;
 #endif
 
 private:

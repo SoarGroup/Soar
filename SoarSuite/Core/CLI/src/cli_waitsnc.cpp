@@ -9,16 +9,17 @@
 #include <portability.h>
 
 #include "cli_CommandLineInterface.h"
+#include "cli_CLIError.h"
 
 #include "cli_Commands.h"
 #include "sml_Names.h"
 
-#include "gSKI_Agent.h"
+#include "agent.h"
 
 using namespace cli;
 using namespace sml;
 
-bool CommandLineInterface::ParseWaitSNC(gSKI::Agent* pAgent, std::vector<std::string>& argv) {
+bool CommandLineInterface::ParseWaitSNC(std::vector<std::string>& argv) {
 	Options optionsData[] = {
 		{'d', "disable",	0},
 		{'e', "enable",		0},
@@ -51,21 +52,19 @@ bool CommandLineInterface::ParseWaitSNC(gSKI::Agent* pAgent, std::vector<std::st
 	// No additional arguments
 	if (m_NonOptionArguments) return SetError(CLIError::kTooManyArgs);		
 
-	return DoWaitSNC(pAgent, query ? 0 : &enable);
+	return DoWaitSNC(query ? 0 : &enable);
 }
 
-bool CommandLineInterface::DoWaitSNC(gSKI::Agent* pAgent, bool* pSetting) {
-	if (!RequireAgent(pAgent)) return false;
-
+bool CommandLineInterface::DoWaitSNC(bool* pSetting) {
 	if (!pSetting) {
 		if (m_RawOutput) {
-			m_Result << "Current waitsnc setting: " << (pAgent->IsWaitingOnStateNoChange() ? "enabled" : "disabled");
+			m_Result << "Current waitsnc setting: " << (m_pAgentSoar->waitsnc ? "enabled" : "disabled");
 		} else {
-			AppendArgTagFast(sml_Names::kParamWaitSNC, sml_Names::kTypeBoolean, pAgent->IsWaitingOnStateNoChange() ? sml_Names::kTrue : sml_Names::kFalse);
+			AppendArgTagFast(sml_Names::kParamWaitSNC, sml_Names::kTypeBoolean, m_pAgentSoar->waitsnc ? sml_Names::kTrue : sml_Names::kFalse);
 		}
 		return true;
 	}
 
-	pAgent->SetWaitOnStateNoChange(*pSetting);
+	m_pAgentSoar->waitsnc = *pSetting;
 	return true;
 }

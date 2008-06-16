@@ -41,4 +41,4 @@ private:
 	Handlers(const Handlers&) {}
 };
 
-#endif HANDLERS_H
+#endif // HANDLERS_H

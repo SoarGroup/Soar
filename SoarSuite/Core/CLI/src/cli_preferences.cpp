@@ -8,19 +8,21 @@
 
 #include <portability.h>
 
+#include "sml_Utils.h"
 #include "cli_CommandLineInterface.h"
 
 #include "cli_Commands.h"
+#include "cli_CLIError.h"
 
 #include "sml_Names.h"
 
-#include "gSKI_Kernel.h"
-#include "gSKI_DoNotTouch.h"
+#include "sml_KernelSML.h"
+#include "sml_KernelHelpers.h"
 
 using namespace cli;
 using namespace sml;
 
-bool CommandLineInterface::ParsePreferences(gSKI::Agent* pAgent, std::vector<std::string>& argv) {
+bool CommandLineInterface::ParsePreferences(std::vector<std::string>& argv) {
 	Options optionsData[] = {
 		{'0', "none",		0},
 		{'n', "names",		0},
@@ -74,29 +76,24 @@ bool CommandLineInterface::ParsePreferences(gSKI::Agent* pAgent, std::vector<std
 	int optind = m_Argument - m_NonOptionArguments;
 	if (m_NonOptionArguments == 2) {
 		// id & attribute
-		return DoPreferences(pAgent, detail, object, &argv[optind], &argv[optind + 1]);
+		return DoPreferences(detail, object, &argv[optind], &argv[optind + 1]);
 	}
 	if (m_NonOptionArguments == 1) {
 		// id
-		return DoPreferences(pAgent, detail, object, &argv[optind]);
+		return DoPreferences(detail, object, &argv[optind]);
 	}
 
-	return DoPreferences(pAgent, detail, object);
+	return DoPreferences(detail, object);
 }
 
-bool CommandLineInterface::DoPreferences(gSKI::Agent* pAgent, const ePreferencesDetail detail, bool object, const std::string* pId, const std::string* pAttribute) {
-	if (!RequireAgent(pAgent)) return false;
-
+bool CommandLineInterface::DoPreferences(const ePreferencesDetail detail, bool object, const std::string* pId, const std::string* pAttribute) {
 	// Attain the evil back door of doom, even though we aren't the TgD, because we'll need it
-	gSKI::EvilBackDoor::TgDWorkArounds* pKernelHack = m_pKernel->getWorkaroundObject();
+	sml::KernelHelpers* pKernelHack = m_pKernelSML->GetKernelHelpers() ;
 
 	//bool object = 1;
-	AddListenerAndDisableCallbacks(pAgent);
-	bool ret = pKernelHack->Preferences(pAgent, static_cast<int>(detail), object, pId ? pId->c_str() : 0, pAttribute ? pAttribute->c_str() : 0);
-	RemoveListenerAndEnableCallbacks(pAgent);
+	bool ret = pKernelHack->Preferences(m_pAgentSML, static_cast<int>(detail), object, pId ? pId->c_str() : 0, pAttribute ? pAttribute->c_str() : 0);
 
 	// put the result into a message(string) arg tag
-	if (!m_RawOutput) ResultToArgTag();
 	if (!ret) return SetError(CLIError::kPreferencesError);
 	return ret;
 }

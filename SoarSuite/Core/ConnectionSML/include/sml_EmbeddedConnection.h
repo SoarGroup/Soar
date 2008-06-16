@@ -61,21 +61,14 @@ protected:
 	DirectRemoveWMEFunction				m_pDirectRemoveWMEFunction ;
 
 	DirectAddIDFunction					m_pDirectAddIDFunction ;
-	DirectLinkIDFunction				m_pDirectLinkIDFunction ;
-	DirectGetThisWMObjectFunction		m_pDirectGetThisWMObjectFunction ;
 
-	DirectGetRootFunction				m_pDirectGetRootFunction ;
-	DirectGetWorkingMemoryFunction		m_pDirectGetWorkingMemoryFunction ;
+	DirectGetAgentSMLHandleFunction		m_pDirectGetAgentSMLHandleFunction;
+
 	DirectRunFunction					m_pDirectRunFunction ;
-
-	DirectReleaseWMEFunction			m_pDirectReleaseWMEFunction ;
-	DirectReleaseWMObjectFunction		m_pDirectReleaseWMObjectFunction ;
-
-	DirectGetIWMObjMapSizeFunction		m_pDirectGetIWMObjMapSizeFunction ;
 #endif
 
 	/** We need to cache the responses to calls **/
-	ElementXML* m_pLastResponse ;
+	soarxml::ElementXML* m_pLastResponse ;
 
 public:
 	virtual ~EmbeddedConnection() ;
@@ -93,69 +86,45 @@ public:
 
 	// Overridden in concrete subclasses
 	virtual bool IsAsynchronous() = 0 ;		// Returns true if messages are queued and executed on receiver's thread
-	virtual void SendMsg(ElementXML* pMsg) = 0 ;
-	virtual ElementXML* GetResponseForID(char const* pID, bool wait) = 0 ;
+	virtual void SendMsg(soarxml::ElementXML* pMsg) = 0 ;
+	virtual soarxml::ElementXML* GetResponseForID(char const* pID, bool wait) = 0 ;
 	virtual bool ReceiveMessages(bool allMessages) = 0 ;
 
 #ifdef KERNEL_SML_DIRECT
 	// Direct methods, only supported for embedded connections and only used to optimize
 	// the speed when doing I/O over an embedded connection (where speed is most critical)
-	Direct_WME_Handle			DirectAddWME_String(Direct_WorkingMemory_Handle wm, Direct_WMObject_Handle parent, long clientTimeTag, char const* pAttribute, char const* value)
+	void DirectAddWME_String(Direct_AgentSML_Handle pAgentSML, char const* pId, char const* pAttribute, char const* pValue, long clientTimetag)
 	{
-		return m_pDirectAddWMEStringFunction(wm, parent, clientTimeTag, pAttribute, value) ;
+		m_pDirectAddWMEStringFunction(pAgentSML, pId, pAttribute, pValue, clientTimetag) ;
 	}
-	Direct_WME_Handle			DirectAddWME_Int(Direct_WorkingMemory_Handle wm, Direct_WMObject_Handle parent, long clientTimeTag, char const* pAttribute, int value)
+	void DirectAddWME_Int(Direct_AgentSML_Handle pAgentSML, char const* pId, char const* pAttribute, int value, long clientTimetag)
 	{
-		return m_pDirectAddWMEIntFunction(wm, parent, clientTimeTag, pAttribute, value) ;
+		m_pDirectAddWMEIntFunction(pAgentSML, pId, pAttribute, value, clientTimetag) ;
 	}
-	Direct_WME_Handle			DirectAddWME_Double(Direct_WorkingMemory_Handle wm, Direct_WMObject_Handle parent, long clientTimeTag, char const* pAttribute, double value)
+	void DirectAddWME_Double(Direct_AgentSML_Handle pAgentSML, char const* pId, char const* pAttribute, double value, long clientTimetag)
 	{
-		return m_pDirectAddWMEDoubleFunction(wm, parent, clientTimeTag, pAttribute, value) ;
+		m_pDirectAddWMEDoubleFunction(pAgentSML, pId, pAttribute, value, clientTimetag) ;
 	}
-	void						DirectRemoveWME(Direct_WorkingMemory_Handle wm, Direct_WME_Handle wme, long clientTimeTag)
+	void DirectRemoveWME(Direct_AgentSML_Handle pAgentSML, long clientTimetag)
 	{
-		m_pDirectRemoveWMEFunction(wm, wme, clientTimeTag) ;
-	}
-
-	Direct_WME_Handle			DirectAddID(Direct_WorkingMemory_Handle wm, Direct_WMObject_Handle parent, long clientTimeTag, char const* pAttribute)
-	{
-		return m_pDirectAddIDFunction(wm, parent, clientTimeTag, pAttribute) ;
-	}
-	Direct_WME_Handle			DirectLinkID(Direct_WorkingMemory_Handle wm, Direct_WMObject_Handle parent, long clientTimeTag, char const* pAttribute, Direct_WMObject_Handle orig)
-	{
-		return m_pDirectLinkIDFunction(wm, parent, clientTimeTag, pAttribute, orig) ;
-	}
-	Direct_WMObject_Handle		DirectGetThisWMObject(Direct_WorkingMemory_Handle wm, Direct_WME_Handle wme)
-	{
-		return m_pDirectGetThisWMObjectFunction(wm, wme) ;
+		m_pDirectRemoveWMEFunction(pAgentSML, clientTimetag) ;
 	}
 
-	Direct_WorkingMemory_Handle DirectGetWorkingMemory(char const* pAgentName, bool input)
+	void DirectAddID(Direct_AgentSML_Handle pAgentSML, char const* pId, char const* pAttribute, char const* pValueId, long clientTimetag)
 	{
-		return m_pDirectGetWorkingMemoryFunction(pAgentName, input) ;
+		m_pDirectAddIDFunction(pAgentSML, pId, pAttribute, pValueId, clientTimetag) ;
 	}
-	Direct_WMObject_Handle		DirectGetRoot(char const* pAgentName, bool input)
+
+	Direct_AgentSML_Handle DirectGetAgentSMLHandle(char const* pAgentName)
 	{
-		return m_pDirectGetRootFunction(pAgentName, input) ;
+		return m_pDirectGetAgentSMLHandleFunction(pAgentName) ;
 	}
-	void						DirectRun(char const* pAgentName, bool forever, int stepSize, int interleaveSize, int count)
+
+	void DirectRun(char const* pAgentName, bool forever, int stepSize, int interleaveSize, int count)
 	{
 		m_pDirectRunFunction(pAgentName, forever, stepSize, interleaveSize, count) ;
 	}
 
-	void						DirectReleaseWME(Direct_WorkingMemory_Handle wm, Direct_WME_Handle wme, long clientTimeTag)
-	{
-		return m_pDirectReleaseWMEFunction(wm, wme, clientTimeTag) ;
-	}
-	void						DirectReleaseWMObject(Direct_WMObject_Handle parent)
-	{
-		return m_pDirectReleaseWMObjectFunction(parent) ;
-	}
-
-	int DirectGetIWMObjMapSize(Direct_WorkingMemory_Handle wm)
-	{
-		return m_pDirectGetIWMObjMapSizeFunction(wm);
-	}
 #endif
 } ;
 

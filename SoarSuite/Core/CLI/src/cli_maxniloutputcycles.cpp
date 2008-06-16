@@ -13,13 +13,14 @@
 #include "cli_Commands.h"
 #include "sml_Names.h"
 #include "sml_StringOps.h"
+#include "cli_CLIError.h"
 
-#include "gSKI_Agent.h"
+#include "agent.h"
 
 using namespace cli;
 using namespace sml;
 
-bool CommandLineInterface::ParseMaxNilOutputCycles(gSKI::Agent* pAgent, std::vector<std::string>& argv) {
+bool CommandLineInterface::ParseMaxNilOutputCycles(std::vector<std::string>& argv) {
 	// n defaults to 0 (print current value)
 	int n = 0;
 
@@ -31,24 +32,22 @@ bool CommandLineInterface::ParseMaxNilOutputCycles(gSKI::Agent* pAgent, std::vec
 		if (n <= 0) return SetError(CLIError::kIntegerMustBePositive);
 	}
 
-	return DoMaxNilOutputCycles(pAgent, n);
+	return DoMaxNilOutputCycles(n);
 }
 
-bool CommandLineInterface::DoMaxNilOutputCycles(gSKI::Agent* pAgent, const int n) {
-	if (!RequireAgent(pAgent)) return false;
-
+bool CommandLineInterface::DoMaxNilOutputCycles(const int n) {
 	if (!n) {
 		// query
 		if (m_RawOutput) {
-			m_Result << pAgent->GetMaxNilOutputCycles();
+			m_Result << m_pAgentSoar->sysparams[MAX_NIL_OUTPUT_CYCLES_SYSPARAM];
 		} else {
 			char buf[kMinBufferSize];
-			AppendArgTagFast(sml_Names::kParamValue, sml_Names::kTypeInt, Int2String(pAgent->GetMaxNilOutputCycles(), buf, kMinBufferSize));
+			AppendArgTagFast(sml_Names::kParamValue, sml_Names::kTypeInt, Int2String(m_pAgentSoar->sysparams[MAX_NIL_OUTPUT_CYCLES_SYSPARAM], buf, kMinBufferSize));
 		}
 		return true;
 	}
 
-	pAgent->SetMaxNilOutputCycles(n);
+	m_pAgentSoar->sysparams[MAX_NIL_OUTPUT_CYCLES_SYSPARAM] = n;
 	return true;
 }
 

@@ -16,6 +16,7 @@
 
 #include "sml_EmbeddedConnection.h"	// For direct methods
 #include "sml_ClientAgent.h"
+#include "sml_ClientIdentifier.h"
 
 using namespace sml ;
 
@@ -46,9 +47,9 @@ char const* IntElement::GetValueAsString() const
 }
 
 #ifdef SML_DIRECT
-Direct_WME_Handle IntElement::DirectAdd(Direct_WorkingMemory_Handle wm, Direct_WMObject_Handle wmobject, long timeTag)
+void IntElement::DirectAdd(Direct_AgentSML_Handle pAgentSML, long timeTag)
 {
-	Direct_WME_Handle wme = ((EmbeddedConnection*)GetAgent()->GetConnection())->DirectAddWME_Int(wm, wmobject, timeTag, GetAttribute(), GetValue()) ;
-	return wme ;
+	EmbeddedConnection* pConnection = static_cast<EmbeddedConnection*>(GetAgent()->GetConnection());
+	pConnection->DirectAddWME_Double( pAgentSML, m_ID->GetIdentifierSymbol(), GetAttribute(), GetValue(), timeTag);
 }
 #endif

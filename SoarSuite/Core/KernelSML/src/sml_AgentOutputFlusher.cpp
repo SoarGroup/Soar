@@ -8,46 +8,36 @@
 //
 /////////////////////////////////////////////////////////////////
 
-#include "sml_Utils.h"
 #include "sml_AgentOutputFlusher.h"
+
 #include "assert.h"
+
+#include "sml_Utils.h"
 #include "sml_PrintListener.h"
-#include "sml_XMLListener.h"
 
 using namespace sml ;
 
-AgentOutputFlusher::AgentOutputFlusher(PrintListener* pPrintListener, gSKI::Agent* pAgent, egSKIPrintEventId eventID) : m_pAgent(pAgent), m_pPrintListener(pPrintListener)
+AgentOutputFlusher::AgentOutputFlusher(PrintListener* pPrintListener, AgentSML* pAgent, smlPrintEventId eventID) : m_pPrintListener(pPrintListener)
 {
-	m_pXMLListener = NULL ;
 	m_EventID = eventID ;
-	m_pAgent->AddRunListener(gSKIEVENT_AFTER_DECISION_CYCLE, this);
-	m_pAgent->AddRunListener(gSKIEVENT_AFTER_RUNNING, this);
-}
-
-AgentOutputFlusher::AgentOutputFlusher(XMLListener* pXMLListener, gSKI::Agent* pAgent, egSKIXMLEventId eventID) : m_pAgent(pAgent), m_pXMLListener(pXMLListener)
-{
-	m_pPrintListener = NULL ;
-	m_EventID = eventID ;
-	m_pAgent->AddRunListener(gSKIEVENT_AFTER_DECISION_CYCLE, this);
-	m_pAgent->AddRunListener(gSKIEVENT_AFTER_RUNNING, this);
+	this->SetAgentSML(pAgent) ;
+	this->RegisterWithKernel(smlEVENT_AFTER_DECISION_CYCLE) ;
+	this->RegisterWithKernel(smlEVENT_AFTER_RUNNING) ;
 }
 
 AgentOutputFlusher::~AgentOutputFlusher()
 {
-	m_pAgent->RemoveRunListener(gSKIEVENT_AFTER_DECISION_CYCLE, this);
-	m_pAgent->RemoveRunListener(gSKIEVENT_AFTER_RUNNING, this);
+	this->UnregisterWithKernel(smlEVENT_AFTER_DECISION_CYCLE) ;
+	this->UnregisterWithKernel(smlEVENT_AFTER_RUNNING) ;
 }
 
-void AgentOutputFlusher::HandleEvent(egSKIRunEventId eventId, gSKI::Agent* agentPtr, egSKIPhaseType phase)
+void AgentOutputFlusher::OnKernelEvent(int eventID, AgentSML* pAgentSML, void* pCallData)
 {
-	assert(eventId == gSKIEVENT_AFTER_DECISION_CYCLE || eventId == gSKIEVENT_AFTER_RUNNING);
-	assert(agentPtr == m_pAgent);
-	unused(eventId);
-	unused(agentPtr);
-	unused(phase);
+	assert(eventID == smlEVENT_AFTER_DECISION_CYCLE || eventID == smlEVENT_AFTER_RUNNING);
+	unused(eventID);
+	unused(pAgentSML);
+	unused(pCallData);
 
 	if (m_pPrintListener)
-		m_pPrintListener->FlushOutput((egSKIPrintEventId)m_EventID);
-	if (m_pXMLListener)
-		m_pXMLListener->FlushOutput((egSKIXMLEventId)m_EventID) ;
+		m_pPrintListener->FlushOutput(static_cast<smlPrintEventId>(m_EventID));
 }

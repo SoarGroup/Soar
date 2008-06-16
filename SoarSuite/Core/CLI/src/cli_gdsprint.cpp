@@ -14,31 +14,22 @@
 #include "cli_Commands.h"
 #include "sml_Names.h"
 
-#include "gSKI_Kernel.h"
-#include "gSKI_DoNotTouch.h"
+#include "sml_KernelSML.h"
+#include "sml_KernelHelpers.h"
 
 using namespace cli;
 using namespace sml;
 
-bool CommandLineInterface::ParseGDSPrint(gSKI::Agent* pAgent, std::vector<std::string>& argv) {
-	unused(argv);
-	return DoGDSPrint(pAgent);
+bool CommandLineInterface::ParseGDSPrint(std::vector<std::string>&) {
+	return DoGDSPrint();
 }
 
-bool CommandLineInterface::DoGDSPrint(gSKI::Agent* pAgent) {
-
-	// Need agent pointer for function calls
-	if (!RequireAgent(pAgent)) return false;
-
+bool CommandLineInterface::DoGDSPrint() {
 	// Attain the evil back door of desolation, even though we aren't the TgD
-	gSKI::EvilBackDoor::TgDWorkArounds* pKernelHack = m_pKernel->getWorkaroundObject();
+	sml::KernelHelpers* pKernelHack = m_pKernelSML->GetKernelHelpers() ;
 
-	AddListenerAndDisableCallbacks(pAgent);
-	bool ret = pKernelHack->GDSPrint(pAgent);
-	RemoveListenerAndEnableCallbacks(pAgent);
+	bool ret = pKernelHack->GDSPrint(m_pAgentSML);
 
-	// put the result into a message(string) arg tag
-	if (!m_RawOutput) ResultToArgTag();
 	return ret;
 }
 

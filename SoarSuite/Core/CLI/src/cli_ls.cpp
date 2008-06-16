@@ -12,15 +12,14 @@
 #include "cli_CommandLineInterface.h"
 #include "cli_Commands.h"
 #include "sml_Names.h"
+#include "cli_CLIError.h"
 
 #include <errno.h>
 
 using namespace cli;
 using namespace sml;
 
-bool CommandLineInterface::ParseLS(gSKI::Agent* pAgent, std::vector<std::string>& argv) {
-	unused(pAgent);
-
+bool CommandLineInterface::ParseLS(std::vector<std::string>& argv) {
 	// No arguments
 	if (argv.size() != 1) {
 		return SetError(CLIError::kTooManyArgs);

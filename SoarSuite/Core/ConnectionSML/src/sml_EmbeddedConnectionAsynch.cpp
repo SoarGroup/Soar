@@ -19,7 +19,7 @@
 
 #include "sml_Utils.h"
 #include "sml_EmbeddedConnectionAsynch.h"
-#include "sml_ElementXML.h"
+#include "ElementXML.h"
 #include "sml_MessageSML.h"
 #include "thread_Thread.h"
 
@@ -28,6 +28,7 @@
 #include <assert.h>
 
 using namespace sml ;
+using namespace soarxml ;
 
 EmbeddedConnectionAsynch::~EmbeddedConnectionAsynch()
 {
@@ -253,6 +254,10 @@ ElementXML* EmbeddedConnectionAsynch::GetResponseForID(char const* pID, bool wai
 			return pResponse ;
 		}
 
+#ifdef PROFILE_CONNECTIONS
+		m_pTimer->Start() ;
+#endif
+
 		// Wait for a response for up to a second
 		// If one comes in it will trigger this event to wake us up immediately.
 		m_WaitEvent.WaitForEvent(maximumWaitTimeSeconds, maximumWaitTimeMilliseconds) ;
@@ -261,6 +266,10 @@ ElementXML* EmbeddedConnectionAsynch::GetResponseForID(char const* pID, bool wai
 		// (by calling with 0 for sleep time we don't give away cycles if
 		//  no other thread is waiting to execute).
 		sml::Sleep(sleepTimeSecs, sleepTimeMillisecs) ;
+
+#ifdef PROFILE_CONNECTIONS
+		m_IncomingTime += m_pTimer->Elapsed() ;
+#endif
 
 		// Check if the connection has been closed
 		if (IsClosed())

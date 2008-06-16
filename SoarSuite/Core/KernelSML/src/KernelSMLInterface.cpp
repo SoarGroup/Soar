@@ -17,19 +17,20 @@
 //
 /////////////////////////////////////////////////////////////////
 
-#include "sml_Utils.h"
 #include "EmbeddedSMLInterface.h"
+
+#include "sml_Utils.h"
 #include "sml_Connection.h"
 #include "sml_EmbeddedConnection.h"
 #include "sml_EmbeddedConnectionAsynch.h"
 #include "sml_EmbeddedConnectionSynch.h"
-#include "sml_ElementXML.h"
+#include "ElementXML.h"
 #include "sml_Names.h"
 #include "sml_KernelSML.h"
 
 using namespace sml ;
 
-ElementXML* ReceivedCall(Connection* pConnection, ElementXML* pIncoming, void* pUserData)
+soarxml::ElementXML* ReceivedCall(Connection* pConnection, soarxml::ElementXML* pIncoming, void* pUserData)
 {
 	unused(pUserData) ;
 
@@ -122,9 +123,9 @@ EXPORT ElementXML_Handle sml_ProcessMessage(Connection_Receiver_Handle hReceiver
 	{
 		// Create an object to wrap this message.
 		// When this object is deleted, it releases our reference to this handle.
-		ElementXML incomingMsg(hIncomingMsg) ;
+		soarxml::ElementXML incomingMsg(hIncomingMsg) ;
 
-		ElementXML* pResponse = pConnection->InvokeCallbacks(&incomingMsg) ;
+		soarxml::ElementXML* pResponse = pConnection->InvokeCallbacks(&incomingMsg) ;
 
 		if (!pResponse)
 			return NULL ;

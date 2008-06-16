@@ -15,7 +15,7 @@
 #include "sml_Utils.h"
 #include "sml_EmbeddedConnection.h"
 #include "sml_EmbeddedConnectionAsynch.h"
-#include "sml_ElementXML.h"
+#include "ElementXML.h"
 #include "sml_MessageSML.h"
 #include "thread_Thread.h"
 
@@ -24,6 +24,7 @@
 #include <assert.h>
 
 using namespace sml ;
+using namespace soarxml ;
 
 EmbeddedConnection::EmbeddedConnection()
 {
@@ -252,24 +253,14 @@ bool EmbeddedConnection::AttachConnection(char const* pLibraryName, bool optimiz
 	m_pDirectRemoveWMEFunction =		(DirectRemoveWMEFunction)GetProcAddress(hLibrary, "sml_DirectRemoveWME") ;
 
 	m_pDirectAddIDFunction =			(DirectAddIDFunction)GetProcAddress(hLibrary, "sml_DirectAddID") ;
-	m_pDirectLinkIDFunction =			(DirectLinkIDFunction)GetProcAddress(hLibrary, "sml_DirectLinkID") ;
-	m_pDirectGetThisWMObjectFunction =	(DirectGetThisWMObjectFunction)GetProcAddress(hLibrary, "sml_DirectGetThisWMObject") ;
 
-	m_pDirectGetRootFunction =			(DirectGetRootFunction)GetProcAddress(hLibrary, "sml_DirectGetRoot") ;
-	m_pDirectGetWorkingMemoryFunction = (DirectGetWorkingMemoryFunction)GetProcAddress(hLibrary, "sml_DirectGetWorkingMemory") ;
+	m_pDirectGetAgentSMLHandleFunction = (DirectGetAgentSMLHandleFunction)GetProcAddress(hLibrary, "sml_DirectGetAgentSMLHandle") ;
+
 	m_pDirectRunFunction =			    (DirectRunFunction)GetProcAddress(hLibrary, "sml_DirectRun") ;
 	
-	m_pDirectReleaseWMEFunction =		(DirectReleaseWMEFunction)GetProcAddress(hLibrary, "sml_DirectReleaseWME") ;
-	m_pDirectReleaseWMObjectFunction =	(DirectReleaseWMObjectFunction)GetProcAddress(hLibrary, "sml_DirectReleaseWMObject") ;
-
-	m_pDirectGetIWMObjMapSizeFunction = (DirectGetIWMObjMapSizeFunction)GetProcAddress(hLibrary, "sml_DirectGetIWMObjMapSize") ;
-
 	// Check that we got the list of functions and if so enable the direct connection
 	if (m_pDirectAddWMEStringFunction && m_pDirectAddWMEIntFunction && m_pDirectAddWMEDoubleFunction &&
-		m_pDirectRemoveWMEFunction    && m_pDirectAddIDFunction     && m_pDirectLinkIDFunction &&
-		m_pDirectGetThisWMObjectFunction && m_pDirectGetRootFunction && m_pDirectGetWorkingMemoryFunction &&
-		m_pDirectReleaseWMEFunction && m_pDirectReleaseWMObjectFunction && m_pDirectRunFunction &&
-		m_pDirectGetIWMObjMapSizeFunction)
+		m_pDirectRemoveWMEFunction    && m_pDirectAddIDFunction     && m_pDirectRunFunction)
 	{
 		// We only enable direct connections if we found all of the methods, this is a synchronous connection (i.e. we execute
 		// on the client's thread) and the client says it's ok to use these optimizations.

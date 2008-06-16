@@ -11,14 +11,15 @@
 #include "cli_CommandLineInterface.h"
 
 #include "cli_Commands.h"
+#include "cli_CLIError.h"
 
-#include "gSKI_Agent.h"
-#include "gSKI_ProductionManager.h"
-#include "IgSKI_Production.h"
+#include "sml_KernelSML.h"
+
+#include "rete.h"
 
 using namespace cli;
 
-bool CommandLineInterface::ParseReteNet(gSKI::Agent* pAgent, std::vector<std::string>& argv) {
+bool CommandLineInterface::ParseReteNet(std::vector<std::string>& argv) {
 	Options optionsData[] = {
 		{'l', "load",		1},
 		{'r', "restore",	1},
@@ -55,49 +56,48 @@ bool CommandLineInterface::ParseReteNet(gSKI::Agent* pAgent, std::vector<std::st
 	if (!save && !load) return SetError(CLIError::kMustSaveOrLoad);
 	if (m_NonOptionArguments) return SetError(CLIError::kTooManyArgs);
 
-	return DoReteNet(pAgent, save, filename);
+	return DoReteNet(save, filename);
 }
 
-bool CommandLineInterface::DoReteNet(gSKI::Agent* pAgent, bool save, std::string filename) {
-	if (!RequireAgent(pAgent)) return false;
-
+bool CommandLineInterface::DoReteNet(bool save, std::string filename) {
 	if (!filename.size()) return SetError(CLIError::kMissingFilenameArg);
-
-	gSKI::ProductionManager* pProductionManager = pAgent->GetProductionManager();
-	gSKI::tIProductionIterator* pIter = 0;
-
-	pIter = save ? pProductionManager->GetJustifications() : pProductionManager->GetAllProductions();
-
-	// Make sure there are no justifications (save) or productions (load)
-	if (pIter->GetNumElements()) {
-		// There are, clean up and return
-		while (pIter->IsValid()) {
-			pIter->GetVal()->Release();
-			pIter->Next();
-		}
-		pIter->Release();
-
-		return SetError(save ? CLIError::kCantSaveReteWithJustifications : CLIError::kCantLoadReteWithProductions);
-	}
-	pIter->Release();
 
 	StripQuotes(filename);
 
-	if (save) {
-		pProductionManager->SaveRete(filename.c_str(), &m_gSKIError);
-		if (gSKI::isError(m_gSKIError)) {
-			SetErrorDetail("Error saving rete: " + filename);
-			return SetError(CLIError::kgSKIError);
+	if ( save ) 
+	{
+		FILE* file = fopen( filename.c_str(), "wb" );
+
+		if( file == 0 )
+		{
+			return SetError( CLIError::kOpenFileFail );
 		}
+
+		if ( ! save_rete_net( m_pAgentSoar, file ) )
+		{
+			// TODO: additional error information
+			return SetError( CLIError::kReteSaveOperationFail );
+		}
+
+		fclose( file );
+
 	} else {
-		pProductionManager->LoadRete(filename.c_str(), &m_gSKIError);
-		if (gSKI::isError(m_gSKIError)) {
-			SetErrorDetail("Error loading rete: " + filename);
-			return SetError(CLIError::kgSKIError);
+		FILE* file = fopen( filename.c_str(), "rb" );
+
+		if(file == 0)
+		{
+			return SetError( CLIError::kOpenFileFail );
 		}
+
+		if ( ! load_rete_net( m_pAgentSoar, file ) )
+		{
+			// TODO: additional error information
+			return SetError( CLIError::kReteLoadOperationFail );
+		}
+
+		fclose( file );
 	}
 
-	if (gSKI::isError(m_gSKIError)) return SetError(save ? CLIError::kReteSaveOperationFail : CLIError::kReteLoadOperationFail);
 	return true;
 }
 

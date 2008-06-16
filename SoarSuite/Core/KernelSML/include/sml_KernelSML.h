@@ -14,17 +14,7 @@
 #ifndef SML_KERNEL_SML_H
 #define SML_KERNEL_SML_H
 
-// Forward declarations
-namespace gSKI {
-	class KernelFactory ;
-	class Kernel ;
-	class Agent ;
-	class IInputProducer ;
-	class IOutputProcessor ;
-	class OutputListener ;
-	class IWme ;
-	struct Error ;
-}
+typedef struct wme_struct wme;
 
 #include <map>
 #include <list>
@@ -34,17 +24,24 @@ namespace gSKI {
 #include "sml_RhsListener.h"
 #include "sml_AgentListener.h"
 #include "sml_UpdateListener.h"
-#include "sml_UntypedListener.h"
+#include "sml_StringListener.h"
+#include "sml_Utils.h" // required for release builds for unused macro
+#include "sml_Events.h"
+#include "init_soar.h"
 
 namespace soar_thread
 {
 	class Mutex ;
 }
 
+namespace soarxml
+{
+	class ElementXML ;
+}
+
 namespace sml {
 
 // Forward declarations
-class ElementXML ;
 class Connection ;
 class AnalyzeXML ;
 class KernelSML ;
@@ -53,41 +50,36 @@ class AgentSML;
 class ConnectionManager ;
 class Events ;
 class RunScheduler ;
+class KernelHelpers ;
 
 // Define the CommandFunction which we'll call to process commands
-typedef bool (KernelSML::*CommandFunction)(gSKI::Agent*, char const*, Connection*, AnalyzeXML*, ElementXML*, gSKI::Error*);
+typedef bool (KernelSML::*CommandFunction)(AgentSML*, char const*, Connection*, AnalyzeXML*, soarxml::ElementXML*);
 
 // Used to store a map from command name to function handler for that command
 typedef std::map< std::string, CommandFunction >	CommandMap ;
 typedef CommandMap::iterator					CommandMapIter ;
 typedef CommandMap::const_iterator				CommandMapConstIter ;
 
-// List of input producers that we need to delete
-typedef std::list< gSKI::IInputProducer* >	InputProducerList_t ;
-typedef InputProducerList_t::iterator		InputProducerListIter_t ;
-
-// List of output producers that we need to delete
-typedef std::list< gSKI::IOutputProcessor* >	OutputProcessorList_t ;
-typedef OutputProcessorList_t::iterator		OutputProcessorListIter_t ;
-
-// List of output listeners that we need to delete
-//typedef std::list< OutputListener* >			OutputListenerList_t ;
-//typedef OutputListenerList_t::iterator		OutputListenerListIter_t ;
-
-// Map from agent pointers to information we keep for SML about those agents.
-typedef std::map< gSKI::Agent*, AgentSML* >	AgentMap ;
+// Map from agent names to information we keep for SML about those agents.
+typedef std::map< std::string, AgentSML* >	AgentMap ;
 typedef AgentMap::iterator					AgentMapIter ;
 typedef AgentMap::const_iterator			AgentMapConstIter ;
+
+// Map from kernel agent pointers to information we keep for SML about those agents.
+typedef std::map< agent*, AgentSML* >			KernelAgentMap ;
+typedef KernelAgentMap::iterator				KernelAgentMapIter ;
+typedef KernelAgentMap::const_iterator			KernelAgentMapConstIter ;
 
 class KernelSML
 {
 	// Allow the kernel listener to execute command lines directly
-	//friend class KernelListener ;
 	friend class AgentListener;
 	friend class RhsListener;
 	friend class RunScheduler ;
+	friend class AgentSML ;
 
 protected:
+
 	// The singleton kernel object
 	static KernelSML*	s_pKernel ;
 
@@ -97,16 +89,13 @@ protected:
 	// Map from command name to function to handle it
 	CommandMap	m_CommandMap ;
 
-	// Map from gSKI agent pointers to AgentSML objects, where we keep additional information
+	// Map from agent names to AgentSML objects, where we keep additional information
 	// required for SML about each agent.
 	AgentMap		m_AgentMap ;
+	KernelAgentMap	m_KernelAgentMap ;
 
 	// Command line interface module
 	cli::CommandLineInterface m_CommandLineInterface ;
-
-	// The gSKI kernel objects
-	gSKI::KernelFactory*	m_pKernelFactory ;   
-	gSKI::Kernel*			m_pIKernel ;
 
 	// A listener socket and the list of connections to the kernel
 	ConnectionManager* m_pConnectionManager ;
@@ -139,17 +128,23 @@ protected:
 
 	RunScheduler*	m_pRunScheduler ;
 
-	// Used to shutdown a running system.  Not sure we really need to support this
-	// but this is an attempt.
-	class OnSystemStopDeleteAll ;
-	OnSystemStopDeleteAll*	m_pSystemStopListener ;
+	KernelHelpers*	m_pKernelHelpers ;
 
 	// If true, whenever a user issues a command that changes the state of the kernel in some manner
 	// the command and its results are echoed to anyone listening.  This is useful when two users
 	// are debugging the same kernel (and should be off at other times).
 	bool			m_EchoCommands ;
 
+	int				m_InterruptCheckRate;
+	smlPhase		m_StopPoint ;
+
 public:
+
+	void SetStopPoint(bool forever, smlRunStepSize runStepSize, smlPhase m_StopBeforePhase);
+	smlPhase GetStopPoint() { return m_StopPoint; }
+
+	int GetInterruptCheckRate() { return m_InterruptCheckRate; }
+
 	/*************************************************************
 	* @brief	Returns the singleton kernel object.
 	*************************************************************/
@@ -223,24 +218,35 @@ public:
 	* @brief	Add or remove a connection from the list listening
 	*			for a particular event in the kernel.
 	*************************************************************/
-	void AddSystemListener(egSKISystemEventId eventID, Connection* pConnection)	 { m_SystemListener.AddListener(eventID, pConnection) ; }
-	void AddAgentListener(egSKIAgentEventId eventID, Connection* pConnection)	 { m_AgentListener.AddListener(eventID, pConnection) ; }
-	void AddUpdateListener(egSKIUpdateEventId eventID, Connection* pConnection)	 { m_UpdateListener.AddListener(eventID, pConnection) ; }
-	void AddStringListener(egSKIStringEventId eventID, Connection* pConnection)  { m_StringListener.AddListener(eventID, pConnection) ; }
-	void RemoveSystemListener(egSKISystemEventId eventID, Connection* pConnection) { m_SystemListener.RemoveListener(eventID, pConnection) ; }
-	void RemoveAgentListener(egSKIAgentEventId eventID, Connection* pConnection)   { m_AgentListener.RemoveListener(eventID, pConnection) ; }
-	void RemoveUpdateListener(egSKIUpdateEventId eventID, Connection* pConnection) { m_UpdateListener.RemoveListener(eventID, pConnection) ; }
-	void RemoveStringListener(egSKIStringEventId eventID, Connection* pConnection) { m_StringListener.RemoveListener(eventID, pConnection) ; }
+	void AddSystemListener(smlSystemEventId eventID, Connection* pConnection)	 { m_SystemListener.AddListener(eventID, pConnection) ; }
+	void AddAgentListener(smlAgentEventId eventID, Connection* pConnection)	 { m_AgentListener.AddListener(eventID, pConnection) ; }
+	void AddUpdateListener(smlUpdateEventId eventID, Connection* pConnection)	 { m_UpdateListener.AddListener(eventID, pConnection) ; }
+	void AddStringListener(smlStringEventId eventID, Connection* pConnection)  { m_StringListener.AddListener(eventID, pConnection) ; }
+	void RemoveSystemListener(smlSystemEventId eventID, Connection* pConnection) { m_SystemListener.RemoveListener(eventID, pConnection) ; }
+	void RemoveAgentListener(smlAgentEventId eventID, Connection* pConnection)   { m_AgentListener.RemoveListener(eventID, pConnection) ; }
+	void RemoveUpdateListener(smlUpdateEventId eventID, Connection* pConnection) { m_UpdateListener.RemoveListener(eventID, pConnection) ; }
+	void RemoveStringListener(smlStringEventId eventID, Connection* pConnection) { m_StringListener.RemoveListener(eventID, pConnection) ; }
 
 	/*************************************************************
 	* @brief	Notify listeners that this event has occured.
 	*************************************************************/
-	void FireUpdateListenerEvent(egSKIUpdateEventId eventID, int runFlags)	{ m_UpdateListener.HandleEvent(eventID, runFlags) ; }
+	void FireUpdateListenerEvent(smlUpdateEventId eventID, int runFlags)	
+	{ 
+		m_UpdateListener.OnKernelEvent(eventID, 0, &runFlags) ; 
+	}
 
 	/*************************************************************
 	* @brief	Notify listeners that this event has occured.
 	*************************************************************/
-	void FireSystemEvent(egSKISystemEventId eventID)						{ m_SystemListener.HandleEvent(eventID, GetKernel()) ; }
+	void FireSystemEvent(smlSystemEventId eventID)						
+	{ 
+		m_SystemListener.OnKernelEvent(eventID, 0 , 0) ; 
+	}
+
+	/*************************************************************
+	* @brief	Notify listeners that this event has occured.
+	*************************************************************/
+	void FireAgentEvent(AgentSML* pAgentSML, smlAgentEventId eventID)		{ m_AgentListener.OnEvent(eventID, pAgentSML) ; }
 
 	/*************************************************************
 	* @brief	Notify listeners that this event has occured.
@@ -258,20 +264,22 @@ public:
 	*************************************************************/
 	void AddRhsListener(char const* pFunctionName, Connection* pConnection)	   { m_RhsListener.AddRhsListener(pFunctionName, pConnection) ; }
 	void RemoveRhsListener(char const* pFunctionName, Connection* pConnection) { m_RhsListener.RemoveRhsListener(pFunctionName, pConnection) ; }
+	bool FireRhsEvent(AgentSML* pAgentSML, smlRhsEventId eventID, std::string const& functionName, std::string const& arguments, std::string* pResult) {
+		 return m_RhsListener.ExecuteRhsCommand(pAgentSML, eventID, functionName, arguments, pResult) ; }
 
 	/*************************************************************
 	* @brief	Send this message out to any clients that are listening.
 	*			These messages are from one client to another--kernelSML is just
 	*			facilitating the message passing process without knowing/caring what is being passed.
 	*************************************************************/
-	std::string SendClientMessage(gSKI::Agent* pAgent, char const* pMessageType, char const* pMessage) ;
+	std::string SendClientMessage(AgentSML* pAgentSML, char const* pMessageType, char const* pMessage) ;
 
 	/*************************************************************
 	* @brief	Send this command line out to all clients that have
 	*			registered a filter.  The result is the processed
 	*			version of the command line.
 	*************************************************************/
-	bool SendFilterMessage(gSKI::Agent* pAgent, char const* pCommandLine, std::string* pResult) ;
+	bool SendFilterMessage(AgentSML* pAgent, char const* pCommandLine, std::string* pResult) ;
 
 	/*************************************************************
 	* @brief	Returns true if at least one filter is registered.
@@ -339,30 +347,17 @@ public:
 	* @param pConnection	The connection this message came in on.
 	* @param pIncoming		The incoming message
 	*************************************************************/
-	ElementXML* ProcessIncomingSML(Connection* pConnection, ElementXML* pIncoming) ;
+	soarxml::ElementXML* ProcessIncomingSML(Connection* pConnection, soarxml::ElementXML* pIncoming) ;
 
 	/*************************************************************
 	* @brief	Look up an agent from its name.
 	*************************************************************/
-	gSKI::Agent* GetAgent(char const* pAgentName) ;
+	AgentSML* GetAgentSML(char const* pAgentName) ;
 
 	/*************************************************************
-	* @brief	Get the kernel object.
-	*************************************************************/
-	gSKI::Kernel* GetKernel() { return m_pIKernel ; }
-
-	/*************************************************************
-	* @brief	Look up our additional SML information for a specific agent.
-	*
-	*			This will always return an AgentSML object.
-	*			If the Agent* is new, this call will record a new AgentSML
-	*			object in the m_AgentMap and return a pointer to it.
-	*			We do this, so we can easily support connecting up to
-	*			agents that were created before a connection is established
-	*			through SML to the kernel (e.g. when attaching a debugger).
-	*	
-	*************************************************************/
-	AgentSML*	GetAgentSML(gSKI::Agent* pAgent) ;
+	* @brief	A set of methods generally used to implement CLI methods.
+	*************************************************************/	
+	KernelHelpers* GetKernelHelpers() { return m_pKernelHelpers ; }
 
 	/*************************************************************
 	* @brief	Returns the number of agents.
@@ -374,22 +369,14 @@ public:
 	*			This object stores the data SML uses when working
 	*			with the underlying gSKI agent.
 	*************************************************************/	
-	bool DeleteAgentSML(gSKI::Agent* pAgent) ;
+	bool DeleteAgentSML( const char* agentName ) ;
+	//bool DeleteAgentSML(agent* pAgent) ;
 
 	/*************************************************************
 	* @brief	Stops and deletes all agents.  Generally called
 	*			just prior to shutdown.
 	*************************************************************/	
 	void DeleteAllAgents(bool waitTillDeleted) ;
-
-	/*************************************************************
-	* @brief	Enable/disable the print callback for a given agent.
-	*			This allows us to use the print callback within the
-	*			kernel without forwarding that output to clients
-	*			(useful for capturing the output from some commands).
-	*************************************************************/
-	void DisablePrintCallback(gSKI::Agent* pAgent) ;
-	void EnablePrintCallback(gSKI::Agent* pAgent)  ;
 
 	/*************************************************************
 	* @brief	The run scheduler is responsible for deciding which
@@ -403,8 +390,9 @@ public:
 	*			E.g. Pass input phase to stop just after generating output and before receiving input.
 	*			This is a setting which modifies the future behavior of "run <n> --decisions" commands.
 	*************************************************************/	
-	void SetStopBefore(egSKIPhaseType phase) ;
-	egSKIPhaseType GetStopBefore() ;
+	void SetStopBefore(smlPhase phase) ;
+	smlPhase GetStopBefore() ;
+	top_level_phase ConvertSMLToSoarPhase( smlPhase phase ) ;
 
 	/*************************************************************
 	* @brief	If true, whenever a user issues a command that changes the state of the kernel in some manner
@@ -414,48 +402,45 @@ public:
 	void SetEchoCommands(bool state) { m_EchoCommands = state ; }
 	bool GetEchoCommands()			 { return m_EchoCommands ; }
 
+	/*************************************************************
+	* @brief	Request that all agents stop soon
+	*************************************************************/	
+	bool InterruptAllAgents(smlStopLocationFlags stopLoc) ;
+	void ClearAllInterrupts() ;
+
+	// A set of helper functions for tracing kernel wmes
+	static void			Symbol2String(Symbol* pSymbol, 	bool refCounts, std::ostringstream& buffer);
+	static std::string	Wme2String(wme* pWME, bool refCounts);
+	static void			PrintDebugWme(char const* pMsg, wme* pWME, bool refCounts = false);
+	static void			PrintDebugSymbol(Symbol* pSymbol, bool refCounts = false);
+
 protected:
 	KernelSML(unsigned short portToListenOn);
 
 protected:
 	/*************************************************************
-	* @brief	Get the kernel factory object.
-	*************************************************************/
-	gSKI::KernelFactory* GetKernelFactory() { return m_pKernelFactory ; }
-
-	/*************************************************************
 	* @brief	Return an object* to the caller.
 	*************************************************************/
-	bool ReturnResult(Connection* pConnection, ElementXML* pResponse, char const* pResult) ;
+	bool ReturnResult(Connection* pConnection, soarxml::ElementXML* pResponse, char const* pResult) ;
 
 	/*************************************************************
 	* @brief	Return an integer result to the caller.
 	*************************************************************/
-	bool ReturnIntResult(Connection* pConnection, ElementXML* pResponse, int result) ;
+	bool ReturnIntResult(Connection* pConnection, soarxml::ElementXML* pResponse, int result) ;
 
 	/*************************************************************
 	* @brief	Return a boolean result to the caller.
 	*************************************************************/
-	bool ReturnBoolResult(Connection* pConnection, ElementXML* pResponse, bool result) ;
+	bool ReturnBoolResult(Connection* pConnection, soarxml::ElementXML* pResponse, bool result) ;
 
 	/*************************************************************
 	* @brief	Return an invalid argument error to the caller.
 	*************************************************************/
-	bool InvalidArg(Connection* pConnection, ElementXML* pResponse, char const* pCommandName, char const* pErrorDescription) ;
+	bool InvalidArg(Connection* pConnection, soarxml::ElementXML* pResponse, char const* pCommandName, char const* pErrorDescription) ;
 
 	void BuildCommandMap() ;
 
-	bool ProcessCommand(char const* pCommandName, Connection* pConnection, AnalyzeXML* pIncoming, ElementXML* pResponse) ;
-
-	// Add a value to working memory
-	bool AddInputWME(gSKI::Agent* pAgent, char const* pID, char const* pAttribute, char const* pValue, char const* pType, char const* pTimeTag, gSKI::Error* pError) ;
-
-	// Remove a value from working memory.  The time tag is the string form of an int.
-	bool RemoveInputWME(gSKI::Agent* pAgent, char const* pTimeTag, gSKI::Error* pError) ;
-
-	// Remove a value from our records that has been removed by the kernel from working memory.
-	static void RemoveInputWMERecordsCallback(gSKI::Agent* pAgent, gSKI::IWme* pWME);
-	void RemoveInputWMERecords(gSKI::Agent* pAgent, gSKI::IWme* pWME) ;
+	bool ProcessCommand(char const* pCommandName, Connection* pConnection, AnalyzeXML* pIncoming, soarxml::ElementXML* pResponse) ;
 
 	// There should always be exactly one local connection to the kernel (the process that loaded us).
 	Connection* GetEmbeddedConnection() ;
@@ -474,34 +459,33 @@ protected:
 	* @returns False if we had an error and wish to generate a generic error message (based on the incoming call + pError)
 	*          True if the call succeeded or we generated another more specific error already.
 	*************************************************************/
-	bool HandleCreateAgent(gSKI::Agent* pAgent, char const* pCommandName, Connection* pConnection, AnalyzeXML* pIncoming, ElementXML* pResponse, gSKI::Error* pError) ;
-	bool HandleLoadProductions(gSKI::Agent* pAgent, char const* pCommandName, Connection* pConnection, AnalyzeXML* pIncoming, ElementXML* pResponse, gSKI::Error* pError) ;
-	bool HandleGetInputLink(gSKI::Agent* pAgent, char const* pCommandName, Connection* pConnection, AnalyzeXML* pIncoming, ElementXML* pResponse, gSKI::Error* pError) ;
-	bool HandleInput(gSKI::Agent* pAgent, char const* pCommandName, Connection* pConnection, AnalyzeXML* pIncoming, ElementXML* pResponse, gSKI::Error* pError) ;
-	bool HandleCommandLine(gSKI::Agent* pAgent, char const* pCommandName, Connection* pConnection, AnalyzeXML* pIncoming, ElementXML* pResponse, gSKI::Error* pError) ;
-	bool HandleExpandCommandLine(gSKI::Agent* pAgent, char const* pCommandName, Connection* pConnection, AnalyzeXML* pIncoming, ElementXML* pResponse, gSKI::Error* pError) ;
-	bool HandleCheckForIncomingCommands(gSKI::Agent* pAgent, char const* pCommandName, Connection* pConnection, AnalyzeXML* pIncoming, ElementXML* pResponse, gSKI::Error* pError) ;
-	bool HandleDestroyAgent(gSKI::Agent* pAgent, char const* pCommandName, Connection* pConnection, AnalyzeXML* pIncoming, ElementXML* pResponse, gSKI::Error* pError) ;
-	bool HandleGetAgentList(gSKI::Agent* pAgent, char const* pCommandName, Connection* pConnection, AnalyzeXML* pIncoming, ElementXML* pResponse, gSKI::Error* pError) ;
-	bool HandleSetInterruptCheckRate(gSKI::Agent* pAgent, char const* pCommandName, Connection* pConnection, AnalyzeXML* pIncoming, ElementXML* pResponse, gSKI::Error* pError) ;
-	bool HandleFireEvent(gSKI::Agent* pAgent, char const* pCommandName, Connection* pConnection, AnalyzeXML* pIncoming, ElementXML* pResponse, gSKI::Error* pError) ;
-	bool HandleSuppressEvent(gSKI::Agent* pAgent, char const* pCommandName, Connection* pConnection, AnalyzeXML* pIncoming, ElementXML* pResponse, gSKI::Error* pError) ;
-	bool HandleGetVersion(gSKI::Agent* pAgent, char const* pCommandName, Connection* pConnection, AnalyzeXML* pIncoming, ElementXML* pResponse, gSKI::Error* pError) ;
-	bool HandleShutdown(gSKI::Agent* pAgent, char const* pCommandName, Connection* pConnection, AnalyzeXML* pIncoming, ElementXML* pResponse, gSKI::Error* pError) ;
-	bool HandleIsSoarRunning(gSKI::Agent* pAgent, char const* pCommandName, Connection* pConnection, AnalyzeXML* pIncoming, ElementXML* pResponse, gSKI::Error* pError) ;
-	bool HandleSetConnectionInfo(gSKI::Agent* pAgent, char const* pCommandName, Connection* pConnection, AnalyzeXML* pIncoming, ElementXML* pResponse, gSKI::Error* pError) ;
-	bool HandleGetConnections(gSKI::Agent* pAgent, char const* pCommandName, Connection* pConnection, AnalyzeXML* pIncoming, ElementXML* pResponse, gSKI::Error* pError) ;
-	bool HandleGetAllInput(gSKI::Agent* pAgent, char const* pCommandName, Connection* pConnection, AnalyzeXML* pIncoming, ElementXML* pResponse, gSKI::Error* pError) ;
-	bool HandleGetAllOutput(gSKI::Agent* pAgent, char const* pCommandName, Connection* pConnection, AnalyzeXML* pIncoming, ElementXML* pResponse, gSKI::Error* pError) ;
-	bool HandleGetRunState(gSKI::Agent* pAgent, char const* pCommandName, Connection* pConnection, AnalyzeXML* pIncoming, ElementXML* pResponse, gSKI::Error* pError) ;
-	bool HandleIsProductionLoaded(gSKI::Agent* pAgent, char const* pCommandName, Connection* pConnection, AnalyzeXML* pIncoming, ElementXML* pResponse, gSKI::Error* pError) ;
-	bool HandleSendClientMessage(gSKI::Agent* pAgent, char const* pCommandName, Connection* pConnection, AnalyzeXML* pIncoming, ElementXML* pResponse, gSKI::Error* pError) ;
-	bool HandleWasAgentOnRunList(gSKI::Agent* pAgent, char const* pCommandName, Connection* pConnection, AnalyzeXML* pIncoming, ElementXML* pResponse, gSKI::Error* pError) ;
-	bool HandleGetResultOfLastRun(gSKI::Agent* pAgent, char const* pCommandName, Connection* pConnection, AnalyzeXML* pIncoming, ElementXML* pResponse, gSKI::Error* pError) ;
-	bool HandleGetInitialTimeTag(gSKI::Agent* pAgent, char const* pCommandName, Connection* pConnection, AnalyzeXML* pIncoming, ElementXML* pResponse, gSKI::Error* pError) ;
+	bool HandleCreateAgent(AgentSML* pAgentSML, char const* pCommandName, Connection* pConnection, AnalyzeXML* pIncoming, soarxml::ElementXML* pResponse) ;
+	bool HandleGetInputLink(AgentSML* pAgentSML, char const* pCommandName, Connection* pConnection, AnalyzeXML* pIncoming, soarxml::ElementXML* pResponse) ;
+	bool HandleInput(AgentSML* pAgentSML, char const* pCommandName, Connection* pConnection, AnalyzeXML* pIncoming, soarxml::ElementXML* pResponse) ;
+	bool HandleCommandLine(AgentSML* pAgentSML, char const* pCommandName, Connection* pConnection, AnalyzeXML* pIncoming, soarxml::ElementXML* pResponse) ;
+	bool HandleExpandCommandLine(AgentSML* pAgentSML, char const* pCommandName, Connection* pConnection, AnalyzeXML* pIncoming, soarxml::ElementXML* pResponse) ;
+	bool HandleCheckForIncomingCommands(AgentSML* pAgentSML, char const* pCommandName, Connection* pConnection, AnalyzeXML* pIncoming, soarxml::ElementXML* pResponse) ;
+	bool HandleDestroyAgent(AgentSML* pAgentSML, char const* pCommandName, Connection* pConnection, AnalyzeXML* pIncoming, soarxml::ElementXML* pResponse) ;
+	bool HandleGetAgentList(AgentSML* pAgentSML, char const* pCommandName, Connection* pConnection, AnalyzeXML* pIncoming, soarxml::ElementXML* pResponse) ;
+	bool HandleSetInterruptCheckRate(AgentSML* pAgentSML, char const* pCommandName, Connection* pConnection, AnalyzeXML* pIncoming, soarxml::ElementXML* pResponse) ;
+	bool HandleFireEvent(AgentSML* pAgentSML, char const* pCommandName, Connection* pConnection, AnalyzeXML* pIncoming, soarxml::ElementXML* pResponse) ;
+	bool HandleSuppressEvent(AgentSML* pAgentSML, char const* pCommandName, Connection* pConnection, AnalyzeXML* pIncoming, soarxml::ElementXML* pResponse) ;
+	bool HandleGetVersion(AgentSML* pAgentSML, char const* pCommandName, Connection* pConnection, AnalyzeXML* pIncoming, soarxml::ElementXML* pResponse) ;
+	bool HandleShutdown(AgentSML* pAgentSML, char const* pCommandName, Connection* pConnection, AnalyzeXML* pIncoming, soarxml::ElementXML* pResponse) ;
+	bool HandleIsSoarRunning(AgentSML* pAgentSML, char const* pCommandName, Connection* pConnection, AnalyzeXML* pIncoming, soarxml::ElementXML* pResponse) ;
+	bool HandleSetConnectionInfo(AgentSML* pAgentSML, char const* pCommandName, Connection* pConnection, AnalyzeXML* pIncoming, soarxml::ElementXML* pResponse) ;
+	bool HandleGetConnections(AgentSML* pAgentSML, char const* pCommandName, Connection* pConnection, AnalyzeXML* pIncoming, soarxml::ElementXML* pResponse) ;
+	bool HandleGetAllInput(AgentSML* pAgentSML, char const* pCommandName, Connection* pConnection, AnalyzeXML* pIncoming, soarxml::ElementXML* pResponse) ;
+	bool HandleGetAllOutput(AgentSML* pAgentSML, char const* pCommandName, Connection* pConnection, AnalyzeXML* pIncoming, soarxml::ElementXML* pResponse) ;
+	bool HandleGetRunState(AgentSML* pAgentSML, char const* pCommandName, Connection* pConnection, AnalyzeXML* pIncoming, soarxml::ElementXML* pResponse) ;
+	bool HandleIsProductionLoaded(AgentSML* pAgentSML, char const* pCommandName, Connection* pConnection, AnalyzeXML* pIncoming, soarxml::ElementXML* pResponse) ;
+	bool HandleSendClientMessage(AgentSML* pAgentSML, char const* pCommandName, Connection* pConnection, AnalyzeXML* pIncoming, soarxml::ElementXML* pResponse) ;
+	bool HandleWasAgentOnRunList(AgentSML* pAgentSML, char const* pCommandName, Connection* pConnection, AnalyzeXML* pIncoming, soarxml::ElementXML* pResponse) ;
+	bool HandleGetResultOfLastRun(AgentSML* pAgentSML, char const* pCommandName, Connection* pConnection, AnalyzeXML* pIncoming, soarxml::ElementXML* pResponse) ;
+	bool HandleGetInitialTimeTag(AgentSML* pAgentSML, char const* pCommandName, Connection* pConnection, AnalyzeXML* pIncoming, soarxml::ElementXML* pResponse) ;
 
 	// Note: Register and unregister are both sent to this one handler
-	bool HandleRegisterForEvent(gSKI::Agent* pAgent, char const* pCommandName, Connection* pConnection, AnalyzeXML* pIncoming, ElementXML* pResponse, gSKI::Error* pError) ;
+	bool HandleRegisterForEvent(AgentSML* pAgentSML, char const* pCommandName, Connection* pConnection, AnalyzeXML* pIncoming, soarxml::ElementXML* pResponse) ;
 
 };
 

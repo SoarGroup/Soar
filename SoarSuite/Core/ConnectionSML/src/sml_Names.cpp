@@ -11,6 +11,9 @@
 /////////////////////////////////////////////////////////////////
 
 #include "sml_Names.h"
+#include "soarversion.h"
+
+#include <assert.h>
 
 using namespace sml ;
 
@@ -22,15 +25,12 @@ char const* const sml_Names::kDocType			= "doctype" ;
 char const* const sml_Names::kDocType_Call		= "call" ;
 char const* const sml_Names::kDocType_Response	= "response" ;
 char const* const sml_Names::kDocType_Notify	= "notify" ;
-char const* const sml_Names::kSoarVersion		= "soarversion" ;
 char const* const sml_Names::kSMLVersion		= "smlversion" ;
-char const* const sml_Names::kSMLVersionValue	= "8.6.4" ;
 char const* const sml_Names::kOutputLinkName	= "output-link" ;
 
-// Other places to change when increasing this value:
-// 1) Debugger file Doc/Document.java -- kVersion string
-// 2) Kernel's kernel.h -- MAJOR_VERSION_NUMBER, MINOR_VERSION_NUMBER, MICRO_VERSION_NUMBER
-char const* const sml_Names::kSoarVersionValue	= "8.6.4" ;			// Hard-coding this rather than asking kernel boosts performance
+// Version strings
+char const* const sml_Names::kSoarVersionValue = VERSION_STRING;
+char const* const sml_Names::kSMLVersionValue = SML_VERSION_STRING;
 
 // <command> tag identifiers
 char const* const sml_Names::kTagCommand		= "command" ;
@@ -385,7 +385,6 @@ char const* const sml_Names::kFalse	= "false" ;
 char const* const sml_Names::kCommand_CreateAgent			= "create_agent" ;
 char const* const sml_Names::kCommand_DestroyAgent			= "destroy_agent" ;
 char const* const sml_Names::kCommand_GetAgentList			= "get_agent_list" ;
-char const* const sml_Names::kCommand_LoadProductions		= "load_productions" ;
 char const* const sml_Names::kCommand_GetInputLink			= "get_input_link" ;
 char const* const sml_Names::kCommand_GetOutputLink			= "get_output_link" ;
 char const* const sml_Names::kCommand_Run					= "run" ;

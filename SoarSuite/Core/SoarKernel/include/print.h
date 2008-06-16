@@ -81,9 +81,6 @@ extern void print (agent* thisAgent, char *format, ... );
 extern void print_with_symbols (agent* thisAgent, char *format, ...);
 extern void print_spaces (agent* thisAgent, int n);
 
-extern void Soar_LogAndPrint (agent* thisAgent, agent * the_agent, char * str);
-extern void Soar_Print (agent* thisAgent, agent * the_agent, char * str);
-extern void Soar_Log (agent* thisAgent, agent * the_agent, char * str);
 extern void filtered_print_wme_remove(agent* thisAgent, wme *w);
 extern void filtered_print_wme_add(agent* thisAgent, wme *w);
 

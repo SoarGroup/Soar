@@ -10,64 +10,91 @@
 // specific events occur within the agent:
 //
 /*
-*      gSKIEVENT_AFTER_PRODUCTION_ADDED,
-*      gSKIEVENT_BEFORE_PRODUCTION_REMOVED,
-*     //gSKIEVENT_BEFORE_PRODUCTION_FIRED,
-*      gSKIEVENT_AFTER_PRODUCTION_FIRED,
-*      gSKIEVENT_BEFORE_PRODUCTION_RETRACTED,
+*      smlEVENT_AFTER_PRODUCTION_ADDED,
+*      smlEVENT_BEFORE_PRODUCTION_REMOVED,
+*     //smlEVENT_BEFORE_PRODUCTION_FIRED,
+*      smlEVENT_AFTER_PRODUCTION_FIRED,
+*      smlEVENT_BEFORE_PRODUCTION_RETRACTED,
 */
 /////////////////////////////////////////////////////////////////
 
-#include "sml_Utils.h"
 #include "sml_ProductionListener.h"
+
+#include "sml_Utils.h"
 #include "sml_Connection.h"
 #include "sml_StringOps.h"
-#include "IgSKI_Production.h"
-#include "gSKI_ProductionManager.h"
 #include "sml_KernelSML.h"
+#include "sml_AgentSML.h"
+#include "KernelHeaders.h"
 
 #include "assert.h"
 
 using namespace sml ;
 
+void ProductionListener::Init(KernelSML* pKernelSML, AgentSML* pAgentSML)
+{
+	m_pKernelSML = pKernelSML ;
+	SetAgentSML(pAgentSML) ;
+}
+
 // Uncomment this symbol to disable print output buffering.
 // #define DISABLE_PRINT_OUTPUT_BUFFERING
 
 // Returns true if this is the first connection listening for this event
-bool ProductionListener::AddListener(egSKIProductionEventId eventID, Connection* pConnection)
+bool ProductionListener::AddListener(smlProductionEventId eventID, Connection* pConnection)
 {
 	bool first = BaseAddListener(eventID, pConnection) ;
 
 	if (first)
 	{
-		m_pAgent->GetProductionManager()->AddProductionListener(eventID, this) ;
+		this->RegisterWithKernel(eventID) ;
 	}
 
 	return first ;
 }
 
 // Returns true if at least one connection remains listening for this event
-bool ProductionListener::RemoveListener(egSKIProductionEventId eventID, Connection* pConnection)
+bool ProductionListener::RemoveListener(smlProductionEventId eventID, Connection* pConnection)
 {
 	bool last = BaseRemoveListener(eventID, pConnection) ;
 
 	if (last)
 	{
-		m_pAgent->GetProductionManager()->RemoveProductionListener(eventID, this) ;
+		this->UnregisterWithKernel(eventID) ;
 	}
 
 	return last ;
 }
 
-// Called when a "ProductionEvent" occurs in the kernel
-void ProductionListener::HandleEvent(egSKIProductionEventId eventID, gSKI::Agent* agentPtr, gSKI::IProduction* prod, gSKI::IProductionInstance* match)
+void ProductionListener::OnKernelEvent(int eventID, AgentSML* pAgentSML, void* pCallData)
 {
-	// This class isn't implemented in gSKI yet.
-	unused(match) ;
+	// TODO: all event handlers should be doing this:
+	assert(IsProductionEventID(eventID)) ;
+
+	smlProductionEventId smlEventID = (smlProductionEventId)eventID ;	
+
+	std::string productionName ;
+
+	// We're either passed a production* or an instantiation* depending on the type of event
+	production* p = 0;
+	if (smlEventID == smlEVENT_AFTER_PRODUCTION_ADDED || smlEventID == smlEVENT_BEFORE_PRODUCTION_REMOVED)
+	{
+		p = (production*) pCallData ;
+	}
+	else
+	{
+		instantiation* inst = (instantiation*) pCallData ;
+		assert(inst) ;
+		p = inst->prod ;
+	}
+
+	assert(p) ;
+	assert(p->name->sc.name) ;
+	productionName = p->name->sc.name ;
 
 	// Get the first listener for this event (or return if there are none)
 	ConnectionListIter connectionIter ;
-	if (!EventManager<egSKIProductionEventId>::GetBegin(eventID, &connectionIter))
+	if (!EventManager<smlProductionEventId>::GetBegin((smlProductionEventId)eventID, &connectionIter))
 		return ;
 
 	// We need the first connection for when we're building the message.  Perhaps this is a sign that
@@ -78,15 +105,16 @@ void ProductionListener::HandleEvent(egSKIProductionEventId eventID, gSKI::Agent
 	char const* event = m_pKernelSML->ConvertEventToString(eventID) ;
 
 	// Build the SML message we're doing to send.
-	ElementXML* pMsg = pConnection->CreateSMLCommand(sml_Names::kCommand_Event) ;
-	pConnection->AddParameterToSMLCommand(pMsg, sml_Names::kParamAgent, agentPtr->GetName()) ;
+	soarxml::ElementXML* pMsg = pConnection->CreateSMLCommand(sml_Names::kCommand_Event) ;
+	pConnection->AddParameterToSMLCommand(pMsg, sml_Names::kParamAgent, pAgentSML->GetName()) ;
 	pConnection->AddParameterToSMLCommand(pMsg, sml_Names::kParamEventID, event) ;
-	pConnection->AddParameterToSMLCommand(pMsg, sml_Names::kParamName, prod->GetName()) ;
+	pConnection->AddParameterToSMLCommand(pMsg, sml_Names::kParamName, productionName.c_str()) ;
 
 	// Send the message out
 	AnalyzeXML response ;
-	SendEvent(pConnection, pMsg, &response, connectionIter, GetEnd(eventID)) ;
+	SendEvent(pConnection, pMsg, &response, connectionIter, GetEnd((smlProductionEventId)eventID)) ;
 
 	// Clean up
 	delete pMsg ;
 }
+

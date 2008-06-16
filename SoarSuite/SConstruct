@@ -12,7 +12,9 @@ import os
 import sys
 import SoarSCons
 
-print "Soar 8.6.4"
+# TODO: pull this version string out of shared/soarversion.h
+soarversionstring = "9.0.0"
+print "Soar", soarversionstring
 print "Detected OS:", os.name
 print "Detected platform:", sys.platform
 
@@ -174,7 +176,6 @@ Export('env')
 
 # Core
 SConscript('#Core/SoarKernel/SConscript')
-SConscript('#Core/gSKI/SConscript')
 SConscript('#Core/ConnectionSML/SConscript')
 SConscript('#Core/ElementXML/SConscript')
 SConscript('#Core/CLI/SConscript')

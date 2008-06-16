@@ -178,15 +178,10 @@ enum ni_mode {
 /* Current Soar version number */
 /* --------------------------- */
 
-#define MAJOR_VERSION_NUMBER 8
-#define MINOR_VERSION_NUMBER 6
-#define MICRO_VERSION_NUMBER 4
-#define GREEK_VERSION_NUMBER 0
-
 #define BUFFER_MSG_SIZE 128
 
-extern char * soar_version_string;
-extern char * soar_news_string;
+//extern char * soar_version_string;
+//extern char * soar_news_string;
 
 /* REW: begin 05.05.97 */
 #define OPERAND2_MODE_NAME "Operand2/Waterfall"

@@ -8,31 +8,26 @@
 #ifndef AGENT_OUTPUT_FLUSHER_H
 #define AGENT_OUTPUT_FLUSHER_H
 
-#include "gSKI_Events.h"
-#include "gSKI_Enumerations.h"
-#include "gSKI_Agent.h"
+#include "sml_KernelCallback.h"
+#include "sml_Events.h"
 
 namespace sml {
 
 class PrintListener;
-class XMLListener ;
 
-class AgentOutputFlusher : public gSKI::IRunListener
+class AgentOutputFlusher : public KernelCallback
 {
 protected:
-	gSKI::Agent* m_pAgent;
 	int m_EventID ;
 
 	// Only one listener will be filled in.
 	PrintListener* m_pPrintListener;
-	XMLListener*   m_pXMLListener;
 
 public:
-	AgentOutputFlusher(PrintListener* pPrintListener, gSKI::Agent* pAgent, egSKIPrintEventId eventID);
-	AgentOutputFlusher(XMLListener* pXMLListener, gSKI::Agent* pAgent, egSKIXMLEventId eventID);
+	AgentOutputFlusher(PrintListener* pPrintListener, AgentSML* pAgent, smlPrintEventId eventID);
 	virtual ~AgentOutputFlusher();
 
-	virtual void HandleEvent(egSKIRunEventId eventId, gSKI::Agent* agentPtr, egSKIPhaseType phase);
+	virtual void OnKernelEvent(int eventID, AgentSML* pAgentSML, void* pCallData) ;
 };
 
 }

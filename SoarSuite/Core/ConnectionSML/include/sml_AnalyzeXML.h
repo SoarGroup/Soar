@@ -23,18 +23,20 @@
 #include "sml_ArgMap.h"
 #include "ElementXMLHandle.h"
 
-namespace sml {
+namespace soarxml
+{
+	class ElementXML ;
+}
 
-// Forward declarations
-class ElementXML ; 
+namespace sml {
 
 class AnalyzeXML
 {
 protected:
 	ElementXML_Handle m_hRootObject ;// The message being analyzed
-	ElementXML* m_pCommand ;		// The Command tag (for calls)
-	ElementXML* m_pResult ;			// The Result tag (for responses)
-	ElementXML* m_pError ;			// The Error tag
+	soarxml::ElementXML* m_pCommand ;		// The Command tag (for calls)
+	soarxml::ElementXML* m_pResult ;			// The Result tag (for responses)
+	soarxml::ElementXML* m_pError ;			// The Error tag
 
 	bool		m_IsSML ;			// True if this is an <sml> XML object
 
@@ -45,16 +47,16 @@ public:
 	virtual ~AnalyzeXML(void);
 
 	// Call this on the message we want to analyze
-	void Analyze(ElementXML const* pRootXML) ;
+	void Analyze(soarxml::ElementXML const* pRootXML) ;
 
 	// Return the handle to the XML we're analyzing.  You can wrap then this into an ElementXML* object if you wish.
 	// Be sure to call AddRef on this handle if you keep it or wrap it in another ElementXML object.
 	ElementXML_Handle GetElementXMLHandle() { return m_hRootObject ; }
 
 	// Each of these either returns a reference to the tag or NULL (if this document doesn't contain that tag)
-	ElementXML const* GetCommandTag() const			{ return m_pCommand ; }
-	ElementXML const* GetResultTag() const			{ return m_pResult ; }
-	ElementXML const* GetErrorTag()	const			{ return m_pError ; }
+	soarxml::ElementXML const* GetCommandTag() const			{ return m_pCommand ; }
+	soarxml::ElementXML const* GetResultTag() const			{ return m_pResult ; }
+	soarxml::ElementXML const* GetErrorTag()	const			{ return m_pError ; }
 
 	bool	IsSML() const { return m_IsSML ; }
 
@@ -138,7 +140,7 @@ protected:
 	*************************************************************/
 	double GetArgFloat(char const* pArgName, int argPos, double defaultValue) const ;
 
-	void AnalyzeArgs(ElementXML const* pCommand) ;
+	void AnalyzeArgs(soarxml::ElementXML const* pCommand) ;
 };
 
 }

@@ -12,13 +12,13 @@
 #ifndef SML_TAG_ERROR_H
 #define SML_TAG_ERROR_H
 
-#include "sml_ElementXML.h"
+#include "ElementXML.h"
 #include "sml_StringOps.h"
 #include "sml_Names.h"
 
 namespace sml {
 
-class TagError : public ElementXML
+class TagError : public soarxml::ElementXML
 {
 public:
 	TagError(void);

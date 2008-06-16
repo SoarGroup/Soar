@@ -10,50 +10,55 @@
 // specific events occur within the kernel:
 /*
 *      // System events
-*      gSKIEVENT_BEFORE_SHUTDOWN            = 1,
-*      gSKIEVENT_AFTER_CONNECTION_LOST,
-*      gSKIEVENT_BEFORE_RESTART,
-*      gSKIEVENT_AFTER_RESTART,
-*      gSKIEVENT_BEFORE_RHS_FUNCTION_ADDED,
-*      gSKIEVENT_AFTER_RHS_FUNCTION_ADDED,
-*      gSKIEVENT_BEFORE_RHS_FUNCTION_REMOVED,
-*      gSKIEVENT_AFTER_RHS_FUNCTION_REMOVED,
-*      gSKIEVENT_BEFORE_RHS_FUNCTION_EXECUTED,
-*      gSKIEVENT_AFTER_RHS_FUNCTION_EXECUTED,
+*      smlEVENT_BEFORE_SHUTDOWN            = 1,
+*      smlEVENT_AFTER_CONNECTION_LOST,
+*      smlEVENT_BEFORE_RESTART,
+*      smlEVENT_AFTER_RESTART,
+*      smlEVENT_BEFORE_RHS_FUNCTION_ADDED,
+*      smlEVENT_AFTER_RHS_FUNCTION_ADDED,
+*      smlEVENT_BEFORE_RHS_FUNCTION_REMOVED,
+*      smlEVENT_AFTER_RHS_FUNCTION_REMOVED,
+*      smlEVENT_BEFORE_RHS_FUNCTION_EXECUTED,
+*      smlEVENT_AFTER_RHS_FUNCTION_EXECUTED,
 */////////////////////////////////////////////////////////////////
 
-#include "sml_Utils.h"
 #include "sml_SystemListener.h"
+
+#include "sml_Utils.h"
 #include "sml_Connection.h"
 #include "sml_StringOps.h"
-#include "gSKI_Kernel.h"
 #include "sml_KernelSML.h"
 #include "sml_Events.h"
+#include "sml_AgentSML.h"
 
 using namespace sml ;
 
 // Returns true if this is the first connection listening for this event
-bool SystemListener::AddListener(egSKISystemEventId eventID, Connection* pConnection)
+bool SystemListener::AddListener(smlSystemEventId eventID, Connection* pConnection)
 {
-    bool first = EventManager<egSKISystemEventId>::BaseAddListener(eventID, pConnection) ;
+    bool first = EventManager<smlSystemEventId>::BaseAddListener(eventID, pConnection) ;
 
+	/* DJP: System events can't be implemented below SML because the kernel itself is agent based (it has no concept of something larger than an agent)
 	if (first)
 	{
 		m_pKernelSML->GetKernel()->AddSystemListener(eventID, this) ;
 	}
+	*/
 
 	return first ;
 }
 
 // Returns true if at least one connection remains listening for this event
-bool SystemListener::RemoveListener(egSKISystemEventId eventID, Connection* pConnection)
+bool SystemListener::RemoveListener(smlSystemEventId eventID, Connection* pConnection)
 {
-	bool last = EventManager<egSKISystemEventId>::BaseRemoveListener(eventID, pConnection) ;
+	bool last = EventManager<smlSystemEventId>::BaseRemoveListener(eventID, pConnection) ;
 
+	/* DJP: System events can't be implemented below SML because the kernel itself is agent based (it has no concept of something larger than an agent)
 	if (last)
 	{
 		m_pKernelSML->GetKernel()->RemoveSystemListener(eventID, this) ;
 	}
+	*/
 
 	return last ;
 }
@@ -64,16 +69,22 @@ void SystemListener::Init(KernelSML* pKernel)
 	m_pKernelSML = pKernel ;
 }
 
-// Called when a "SystemEvent" occurs in the kernel
-void SystemListener::HandleEvent(egSKISystemEventId eventID, gSKI::Kernel* kernel)
+// Called when an event occurs in the kernel
+void SystemListener::OnKernelEvent(int eventIDIn, AgentSML* , void* )
 {
-	// We don't send the kernel over because we only support a single kernel object in SML
-	unused(kernel) ;
+	// All system events are currently implemented directly in kernel SML so there's
+	// no underlying kernel callbacks to connect to.
+	// If we ever change that, this is where the callbacks would come in.
+
+	smlSystemEventId eventID = static_cast<smlSystemEventId>(eventIDIn);
 
 	// The system start event can be suppressed by a client.
 	// This allows us to run a Soar agent without running the associated simulation
 	// (which should be listening for system-start/system-stop events).
-	if (eventID == gSKIEVENT_SYSTEM_START)
+
+	// DJP May 2007: This was an earlier idea about how we'd control systems through SML.  I'm
+	// not sure this model (and these events) are relevant anymore.
+	if (eventID == smlEVENT_SYSTEM_START)
 	{
 		bool suppress = m_pKernelSML->IsSystemStartSuppressed() ;
 
@@ -86,7 +97,7 @@ void SystemListener::HandleEvent(egSKISystemEventId eventID, gSKI::Kernel* kerne
 	}
 
 	// Similarly, system stop can be suppressed.
-	if (eventID == gSKIEVENT_SYSTEM_STOP)
+	if (eventID == smlEVENT_SYSTEM_STOP)
 	{
 		bool suppress = m_pKernelSML->IsSystemStopSuppressed() ;
 
@@ -100,7 +111,7 @@ void SystemListener::HandleEvent(egSKISystemEventId eventID, gSKI::Kernel* kerne
 
 	// Get the first listener for this event (or return if there are none)
 	ConnectionListIter connectionIter ;
-	if (!EventManager<egSKISystemEventId>::GetBegin(eventID, &connectionIter))
+	if (!EventManager<smlSystemEventId>::GetBegin(eventID, &connectionIter))
 		return ;
 
 	// We need the first connection for when we're building the message.  Perhaps this is a sign that
@@ -108,11 +119,11 @@ void SystemListener::HandleEvent(egSKISystemEventId eventID, gSKI::Kernel* kerne
 	Connection* pConnection = *connectionIter ;
 
 	// Convert eventID to a string
-	char const* event = m_pKernelSML->ConvertEventToString(eventID) ;
+	char const* eventString = m_pKernelSML->ConvertEventToString(eventID) ;
 
 	// Build the SML message we're doing to send.
-	ElementXML* pMsg = pConnection->CreateSMLCommand(sml_Names::kCommand_Event) ;
-	pConnection->AddParameterToSMLCommand(pMsg, sml_Names::kParamEventID, event) ;
+	soarxml::ElementXML* pMsg = pConnection->CreateSMLCommand(sml_Names::kCommand_Event) ;
+	pConnection->AddParameterToSMLCommand(pMsg, sml_Names::kParamEventID, eventString) ;
 
 	// Send the message out
 	AnalyzeXML response ;
