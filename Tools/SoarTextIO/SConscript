@@ -23,6 +23,10 @@ libpath = [ '../../Core/ClientSML',
 	    '../../Core/ConnectionSML',
 	    '../../Core/ElementXML', 
 	    ]
+if env['static']:
+	libadd.extend(['SoarKernelSML','CommandLineInterface', 'gSKI', 'SoarKernel'])
+	libpath.extend(['../../Core/KernelSML','../../Core/CLI','../../Core/gSKI','../../Core/SoarKernel',])
+	   
 
 env.Append(LIBS = libadd, LIBPATH = libpath)
 SoarTextIO = env.Program('SoarTextIO', glob.glob('src/*.cpp'))

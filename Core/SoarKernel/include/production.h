@@ -106,6 +106,10 @@ typedef struct production_struct {
   int OPERAND_which_assert_list;          /* RCHONG: 10.11 */
   byte interrupt;						  /* SW: 7.31.03 */
   bool already_fired;         /* RPM test workaround for bug #139 */
+  
+  bool rl_rule;					/* if true, is a Soar-RL rule */
+  double rl_update_count;		/* number of (potentially fractional) updates to this rule */
+  
 } production;
 
 /* ========================================================================

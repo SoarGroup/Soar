@@ -1,4 +1,4 @@
-                                     Watch
+                            Documentation/CLI/watch
 
                                       Name
 
@@ -170,6 +170,18 @@ Watching other Functions
    |                           |(optional) |random indifferent selection    |
    |                           |           |mode                            |
    +------------------------------------------------------------------------+
+
+Reinforcement Learning
+
+   These are only available with 8.6.4-rl.
+
+   +---------------------------------------------------------------+
+   |Option Flag   |Argument to Option|Description                  |
+   |--------------+------------------+-----------------------------|
+   |-R, --rl      |No argument.      |Soar-RL debugging trace      |
+   |--------------+------------------+-----------------------------|
+   |-T, --template|No argument.      |Soar-RL template firing trace|
+   +---------------------------------------------------------------+
 
                                   Description
 

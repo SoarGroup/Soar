@@ -370,12 +370,14 @@ char const* const sml_Names::kParamWatchProductionDefault			= "watchproductionde
 char const* const sml_Names::kParamWatchProductionUser				= "watchproductionuser";
 char const* const sml_Names::kParamWatchProductionChunks			= "watchproductionchunks";
 char const* const sml_Names::kParamWatchProductionJustifications	= "watchproductionjustifications";
+char const* const sml_Names::kParamWatchProductionTemplates         = "watchproductiontemplates";
 char const* const sml_Names::kParamWatchWMEDetail					= "watchwmedetail";
 char const* const sml_Names::kParamWatchWorkingMemoryChanges		= "watchworkingmemorychanges";
 char const* const sml_Names::kParamWatchPreferences					= "watchpreferences";
 char const* const sml_Names::kParamWatchLearning					= "watchlearning";
 char const* const sml_Names::kParamWatchBacktracing					= "watchbacktracing";
 char const* const sml_Names::kParamWatchIndifferentSelection		= "watchindifferentselection";
+char const* const sml_Names::kParamWatchRL							= "watchrl";
 
 // Values (these are not case sensitive unlike the rest)
 char const* const sml_Names::kTrue	= "true" ;

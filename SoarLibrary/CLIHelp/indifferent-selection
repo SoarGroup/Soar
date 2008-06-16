@@ -1,4 +1,4 @@
-                             Indifferent-selection
+                    Documentation/CLI/indifferent-selection
 
                                       Name
 
@@ -41,6 +41,52 @@
 
    If no argument is provided, indifferent-selection will display the current
    setting.
+
+                         Reinforcement Learning Options
+
+   The following options are valid only with with 8.6.4-rl. Note calling
+   indifferent-selection with no options outputs the current exploration
+   policy.
+
+   +------------------------------------------------------------------------+
+   |-s, --stats        |Summary of settings                                 |
+   |-------------------+----------------------------------------------------|
+   |<policy>           |Set exploration policy                              |
+   |-------------------+----------------------------------------------------|
+   |<parameter> <value>|Get/Set exploration policy parameters (if value not |
+   |                   |given, returns the current value)                   |
+   +------------------------------------------------------------------------+
+
+                        Reinforcement Learning Policies
+
+   The following policies are valid only with with 8.6.4-rl.
+
+   +------------------------------------------------------------------------+
+   |-b, --boltzmann     |Tempered softmax (uses temperature)                |
+   |--------------------+---------------------------------------------------|
+   |-g, --epsilon-greedy|Tempered greedy (uses epsilon), default            |
+   |--------------------+---------------------------------------------------|
+   |-x, --softmax       |Random, biased by numeric indifferent values       |
+   |                    |(ignores non-positive preferences)                 |
+   |--------------------+---------------------------------------------------|
+   |-f, --first         |Deterministic, first indifferent preference is     |
+   |                    |selected                                           |
+   |--------------------+---------------------------------------------------|
+   |-l, --last          |Deterministic, last indifferent preference is      |
+   |                    |selected                                           |
+   +------------------------------------------------------------------------+
+
+                        Reinforcement Learning Policies
+
+   The following parameters are valid only with with 8.6.4-rl.
+
+   +-------------------------------------------------+
+   |Parameter Name   |Acceptable Values|Default Value|
+   |-----------------+-----------------+-------------|
+   |-e, --epsilon    |[0, 1]           |0.1          |
+   |-----------------+-----------------+-------------|
+   |-t, --temperature|(0, inf)         |25           |
+   +-------------------------------------------------+
 
                                 Default Aliases
 

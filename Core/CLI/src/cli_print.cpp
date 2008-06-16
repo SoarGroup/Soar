@@ -36,12 +36,14 @@ bool CommandLineInterface::ParsePrint(std::vector<std::string>& argv) {
 		{'f', "full",			0},
 		{'F', "filename",		0},
 		{'i', "internal",		0},
-		{'t', "tree",			0},
 		{'j', "justifications",	0},
 		{'n', "name",			0},
 		{'o', "operators",		0},
+		{'r', "rl",				0},
 		{'s', "stack",			0},
 		{'S', "states",			0},
+		{'t', "tree",			0},
+		{'T', "template",		0},
 		{'u', "user",			0},
 		{'v', "varprint",		0},
 		{0, 0, 0}
@@ -83,9 +85,6 @@ bool CommandLineInterface::ParsePrint(std::vector<std::string>& argv) {
 			case 'i':
 				options.set(PRINT_INTERNAL);
 				break;
-			case 't':
-				options.set(PRINT_TREE);
-				break;
 			case 'j':
 				options.set(PRINT_JUSTIFICATIONS);
 				break;
@@ -95,11 +94,20 @@ bool CommandLineInterface::ParsePrint(std::vector<std::string>& argv) {
 			case 'o':
 				options.set(PRINT_OPERATORS);
 				break;
+			case 'r':
+				options.set(PRINT_RL);
+				break;
 			case 's':
 				options.set(PRINT_STACK);
 				break;
 			case 'S':
 				options.set(PRINT_STATES);
+				break;
+			case 't':
+				options.set(PRINT_TREE);
+				break;
+			case 'T':
+				options.set(PRINT_TEMPLATE);
 				break;
 			case 'u':
 				options.set(PRINT_USER);
@@ -127,11 +135,13 @@ bool CommandLineInterface::ParsePrint(std::vector<std::string>& argv) {
 			if (options.test(PRINT_ALL) 
 				|| options.test(PRINT_CHUNKS) 
 				|| options.test(PRINT_DEFAULTS) 
-				|| options.test(PRINT_JUSTIFICATIONS) 
+				|| options.test(PRINT_JUSTIFICATIONS)
+				|| options.test(PRINT_RL)
+				|| options.test(PRINT_TEMPLATE)
 				|| options.test(PRINT_USER) 
 				|| options.test(PRINT_STACK)) 
 			{
-				SetErrorDetail("No argument allowed when printing all/chunks/defaults/justifications/user/stack.");
+				SetErrorDetail("No argument allowed when printing all/chunks/defaults/justifications/rl/template/user/stack.");
 				return SetError(CLIError::kTooManyArgs);
 			}
 			return DoPrint(options, depth, &(argv[m_Argument - m_NonOptionArguments]));
@@ -184,6 +194,7 @@ bool CommandLineInterface::DoPrint(PrintBitset options, int depth, const std::st
         pKernelHack->PrintUser(m_pAgentSML, 0, internal, filename, full, USER_PRODUCTION_TYPE);
         pKernelHack->PrintUser(m_pAgentSML, 0, internal, filename, full, CHUNK_PRODUCTION_TYPE);
         pKernelHack->PrintUser(m_pAgentSML, 0, internal, filename, full, JUSTIFICATION_PRODUCTION_TYPE);
+        pKernelHack->PrintUser(m_pAgentSML, 0, internal, filename, full, TEMPLATE_PRODUCTION_TYPE);
 		return true;
 	}
 	if (options.test(PRINT_CHUNKS)) {
@@ -199,7 +210,15 @@ bool CommandLineInterface::DoPrint(PrintBitset options, int depth, const std::st
 		return true;
 	}
 	if (options.test(PRINT_USER)) {
-        pKernelHack->PrintUser(m_pAgentSML, 0, internal, filename, full, USER_PRODUCTION_TYPE);
+        pKernelHack->PrintUser( m_pAgentSML, 0, internal, filename, full, USER_PRODUCTION_TYPE);
+		return true;
+	}
+	if (options.test(PRINT_RL)) {
+		pKernelHack->print_rl_rules( m_pAgentSoar, 0, internal, filename, full );
+		return true;
+	}
+	if (options.test(PRINT_TEMPLATE)) {
+        pKernelHack->PrintUser( m_pAgentSML, 0, internal, filename, full, TEMPLATE_PRODUCTION_TYPE );
 		return true;
 	}
 
@@ -214,6 +233,7 @@ bool CommandLineInterface::DoPrint(PrintBitset options, int depth, const std::st
         pKernelHack->PrintUser(m_pAgentSML, 0, internal, filename, full, USER_PRODUCTION_TYPE);
         pKernelHack->PrintUser(m_pAgentSML, 0, internal, filename, full, CHUNK_PRODUCTION_TYPE);
         pKernelHack->PrintUser(m_pAgentSML, 0, internal, filename, full, JUSTIFICATION_PRODUCTION_TYPE);
+        pKernelHack->PrintUser(m_pAgentSML, 0, internal, filename, full, TEMPLATE_PRODUCTION_TYPE);
 	}
 	m_VarPrint = false;
 

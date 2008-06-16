@@ -41,7 +41,7 @@
 Symbol *plus_rhs_function_code (agent* thisAgent, list *args, void* user_data) {
   Bool float_found;
   long i;
-  float f = 0;
+  double f = 0;
   Symbol *arg;
   cons *c;
 
@@ -82,7 +82,7 @@ Symbol *plus_rhs_function_code (agent* thisAgent, list *args, void* user_data) {
 Symbol *times_rhs_function_code (agent* thisAgent, list *args, void* user_data) {
   Bool float_found;
   long i;
-  float f = 0;
+  double f = 0;
   Symbol *arg;
   cons *c;
   
@@ -124,7 +124,7 @@ Symbol *times_rhs_function_code (agent* thisAgent, list *args, void* user_data) 
 
 Symbol *minus_rhs_function_code (agent* thisAgent, list *args, void* user_data) {
   Symbol *arg;
-  float f = 0;  /* For gcc -Wall */
+  double f = 0;  /* For gcc -Wall */
   long i = 0;   /* For gcc -Wall */
   cons *c;
   Bool float_found;
@@ -183,7 +183,7 @@ Symbol *minus_rhs_function_code (agent* thisAgent, list *args, void* user_data) 
 
 Symbol *fp_divide_rhs_function_code (agent* thisAgent, list *args, void* user_data) {
   Symbol *arg;
-  float f;
+  double f;
   cons *c;
 
   if (!args) {
@@ -204,16 +204,16 @@ Symbol *fp_divide_rhs_function_code (agent* thisAgent, list *args, void* user_da
   if (! args->rest) {
     /* --- only one argument --- */
     arg = static_cast<symbol_union *>(args->first);
-    if (arg->common.symbol_type==INT_CONSTANT_SYMBOL_TYPE) f = (float)arg->ic.value;
+    if (arg->common.symbol_type==INT_CONSTANT_SYMBOL_TYPE) f = (double)arg->ic.value;
     else f = arg->fc.value;
-    if (f != 0.0) return make_float_constant (thisAgent, (float)(1.0 / f));
+    if (f != 0.0) return make_float_constant (thisAgent, (double)(1.0 / f));
     print (thisAgent, "Error: attempt to divide ('/') by zero.\n");
     return NIL;
   }
 
   /* --- two or more arguments --- */
   arg = static_cast<symbol_union *>(args->first);
-  if (arg->common.symbol_type==INT_CONSTANT_SYMBOL_TYPE) f = (float)arg->ic.value;
+  if (arg->common.symbol_type==INT_CONSTANT_SYMBOL_TYPE) f = (double)arg->ic.value;
   else f = arg->fc.value;
   for (c=args->rest; c!=NIL; c=c->rest) {
     arg = static_cast<symbol_union *>(c->first);
@@ -304,7 +304,7 @@ Symbol *mod_rhs_function_code (agent* thisAgent, list *args, void* user_data) {
 Symbol *sin_rhs_function_code(agent* thisAgent, list *args, void* user_data)
 {
     Symbol *arg;
-    float  arg_value;
+    double  arg_value;
 
     if (!args) {
 	print(thisAgent, "Error: 'sin' function called with no arguments\n");
@@ -315,13 +315,13 @@ Symbol *sin_rhs_function_code(agent* thisAgent, list *args, void* user_data)
     if (arg->common.symbol_type == FLOAT_CONSTANT_SYMBOL_TYPE)
 	arg_value = arg->fc.value;
     else if (arg->common.symbol_type == INT_CONSTANT_SYMBOL_TYPE)
-	arg_value = (float) arg->ic.value;
+	arg_value = (double) arg->ic.value;
     else {
 	print_with_symbols(thisAgent, "Error: 'sin' function called with non-numeric argument %y\n", arg);
 	return NIL;
     }
 
-    return make_float_constant(thisAgent, (float)sin(arg_value));
+    return make_float_constant(thisAgent, (double)sin(arg_value));
 }
 
 
@@ -333,7 +333,7 @@ Symbol *sin_rhs_function_code(agent* thisAgent, list *args, void* user_data)
 Symbol *cos_rhs_function_code(agent* thisAgent, list *args, void* user_data)
 {
     Symbol *arg;
-    float  arg_value;
+    double  arg_value;
 
     if (!args) {
 	print(thisAgent, "Error: 'cos' function called with no arguments\n");
@@ -344,12 +344,12 @@ Symbol *cos_rhs_function_code(agent* thisAgent, list *args, void* user_data)
     if (arg->common.symbol_type == FLOAT_CONSTANT_SYMBOL_TYPE)
 	arg_value = arg->fc.value;
     else if (arg->common.symbol_type == INT_CONSTANT_SYMBOL_TYPE)
-	arg_value = (float) arg->ic.value;
+	arg_value = (double) arg->ic.value;
     else {
 	print_with_symbols(thisAgent, "Error: 'cos' function called with non-numeric argument %y\n", arg);
 	return NIL;
     }
-    return make_float_constant(thisAgent, (float)cos(arg_value));
+    return make_float_constant(thisAgent, (double)cos(arg_value));
 }
 
 
@@ -361,7 +361,7 @@ Symbol *cos_rhs_function_code(agent* thisAgent, list *args, void* user_data)
 Symbol *sqrt_rhs_function_code(agent* thisAgent, list *args, void* user_data)
 {
     Symbol *arg;
-    float  arg_value;
+    double  arg_value;
 
     if (!args) {
 	print(thisAgent, "Error: 'sqrt' function called with no arguments\n");
@@ -372,12 +372,12 @@ Symbol *sqrt_rhs_function_code(agent* thisAgent, list *args, void* user_data)
     if (arg->common.symbol_type == FLOAT_CONSTANT_SYMBOL_TYPE)
 	arg_value = arg->fc.value;
     else if (arg->common.symbol_type == INT_CONSTANT_SYMBOL_TYPE)
-	arg_value = (float)arg->ic.value;
+	arg_value = (double)arg->ic.value;
     else {
 	print_with_symbols(thisAgent, "Error: 'sqrt' function called with non-numeric argument %y\n", arg);
 	return NIL;
     }
-    return make_float_constant(thisAgent, (float)sqrt(arg_value));
+    return make_float_constant(thisAgent, (double)sqrt(arg_value));
 }
 
 
@@ -391,7 +391,7 @@ Symbol *atan2_rhs_function_code(agent* thisAgent, list *args, void* user_data)
 {
     Symbol *arg;
     cons *c;
-    float  numer_value,
+    double  numer_value,
            denom_value;
 
     if (!args) {
@@ -418,7 +418,7 @@ Symbol *atan2_rhs_function_code(agent* thisAgent, list *args, void* user_data)
     if (arg->common.symbol_type == FLOAT_CONSTANT_SYMBOL_TYPE)
 	numer_value = arg->fc.value;
     else
-	numer_value = (float) arg->ic.value;
+	numer_value = (double) arg->ic.value;
 
     c = args->rest;
     if (c->rest) {
@@ -429,9 +429,9 @@ Symbol *atan2_rhs_function_code(agent* thisAgent, list *args, void* user_data)
     if (arg->common.symbol_type == FLOAT_CONSTANT_SYMBOL_TYPE)
 	denom_value = arg->fc.value;
     else
-	denom_value = (float) arg->ic.value;
+	denom_value = (double) arg->ic.value;
 
-    return make_float_constant(thisAgent, (float)atan2(numer_value, denom_value));
+    return make_float_constant(thisAgent, (double)atan2(numer_value, denom_value));
 }
 
 
@@ -452,7 +452,7 @@ Symbol *abs_rhs_function_code(agent* thisAgent, list *args, void* user_data)
 
     arg = static_cast<symbol_union *>(args->first);
     if (arg->common.symbol_type == FLOAT_CONSTANT_SYMBOL_TYPE)
-	return_value = make_float_constant(thisAgent, (float)fabs(arg->fc.value));
+	return_value = make_float_constant(thisAgent, (double)fabs(arg->fc.value));
     else if (arg->common.symbol_type == INT_CONSTANT_SYMBOL_TYPE)
 	return_value = make_int_constant(thisAgent, (arg->ic.value<0) ? -arg->ic.value : arg->ic.value);
     else {
@@ -559,12 +559,12 @@ Symbol *float_rhs_function_code (agent* thisAgent, list *args, void* user_data) 
 	     sym);
       return NIL;
     }
-    return make_float_constant (thisAgent, (float)float_val);
+    return make_float_constant (thisAgent, (double)float_val);
   } else if (sym->common.symbol_type == FLOAT_CONSTANT_SYMBOL_TYPE) {
     symbol_add_ref(sym) ;
     return sym;
   } else if (sym->common.symbol_type == INT_CONSTANT_SYMBOL_TYPE) {
-    return make_float_constant(thisAgent, (float) sym->ic.value);
+    return make_float_constant(thisAgent, (double) sym->ic.value);
   }
 
   print (thisAgent, "Error: unknown symbol type (%y) given to 'float' RHS function\n",
@@ -596,7 +596,7 @@ long normalize_heading_int(long n)
 }
 
 /* "Normalizes" a floating point heading to be between -180.0 and +180.0 */
-float normalize_heading_float(float n)
+double normalize_heading_float(double n)
 {
     /* we need to make sure that -180 < value <= 180 so we modify */
     /*  the original rounded value using the fact that for heading, */
@@ -623,39 +623,39 @@ long round_off_heading_int(long n, long m)
     return unbounded_rounded;
 }
 
-float round_off_heading_float(float n, float m)
+double round_off_heading_float(double n, double m)
 {
-    float n_10, m_10, unbounded_rounded;
+    double n_10, m_10, unbounded_rounded;
     double ip;
     double ip2;
 
     /* OK.  Both n and m can have tenths, so multiply by 10 and treat
        as integers */
     modf((n * 10.0), &ip);
-    n_10 = (float) ip;
+    n_10 = (double) ip;
     modf((m * 10.0), &ip);
-    m_10 = (float) ip;
+    m_10 = (double) ip;
 
     if (n_10 < 0.0) {
 
         modf((m_10 / 2.0), &ip2);
         modf(((n_10 - ip2) / m_10), &ip);
-        unbounded_rounded = (float) (m_10 * ip);
+        unbounded_rounded = (double) (m_10 * ip);
     } else {
 
         modf((m_10 / 2.0), &ip2);
         modf(((n_10 + ip2) / m_10), &ip);
-        unbounded_rounded = (float) (m_10 * ip);
+        unbounded_rounded = (double) (m_10 * ip);
     }
 
     /* Divide by 10 to get tenths back and return */
-    return (float) (unbounded_rounded / 10.0);
+    return (double) (unbounded_rounded / 10.0);
 }
 
 Symbol *round_off_heading_air_rhs_function_code(agent* thisAgent, list *args, void* user_data)
 {
     Symbol *arg;
-    float n = 0, f_m = 0;
+    double n = 0, f_m = 0;
     long i_m = 0;
     cons *c;
     bool float_found = FALSE;
@@ -674,7 +674,7 @@ Symbol *round_off_heading_air_rhs_function_code(agent* thisAgent, list *args, vo
     /* --- two or more arguments --- */
     arg = (Symbol *) args->first;
     if (arg->common.symbol_type == INT_CONSTANT_SYMBOL_TYPE)
-        n = (float) arg->ic.value;
+        n = (double) arg->ic.value;
     else if (arg->common.symbol_type == FLOAT_CONSTANT_SYMBOL_TYPE) {
         n = arg->fc.value;
     }
@@ -711,7 +711,7 @@ Symbol *round_off_heading_air_rhs_function_code(agent* thisAgent, list *args, vo
 Symbol *round_off_air_rhs_function_code(agent* thisAgent, list *args, void* user_data)
 {
     Symbol *arg;
-    float n = 0, f_m = 0;
+    double n = 0, f_m = 0;
     long i_m = 0;
     cons *c;
     bool float_found = FALSE;
@@ -730,7 +730,7 @@ Symbol *round_off_air_rhs_function_code(agent* thisAgent, list *args, void* user
     /* --- two or more arguments --- */
     arg = (Symbol *) args->first;
     if (arg->common.symbol_type == INT_CONSTANT_SYMBOL_TYPE)
-        n = (float) arg->ic.value;
+        n = (double) arg->ic.value;
     else if (arg->common.symbol_type == FLOAT_CONSTANT_SYMBOL_TYPE) {
         n = arg->fc.value;
     }

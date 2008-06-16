@@ -37,9 +37,10 @@ libpath = [
 	    '../pcre', 
 	    ]
 
-SoarKernelSML = env.SharedLibrary('SoarKernelSML', glob.glob('src/*.cpp'), LIBS = libadd, LIBPATH = libpath)
-env.Install('#SoarLibrary/lib', SoarKernelSML)
+if env['static']:
+	SoarKernelSMLStatic = env.StaticLibrary('SoarKernelSML', glob.glob('src/*.cpp'), LIBS = libadd, LIBPATH = libpath)
+	env.Install('#SoarLibrary/lib', SoarKernelSMLStatic)
+else:
+	SoarKernelSML = env.SharedLibrary('SoarKernelSML', glob.glob('src/*.cpp'), LIBS = libadd, LIBPATH = libpath)
+	env.Install('#SoarLibrary/lib', SoarKernelSML)
 
-#required for osx?
-#SoarKernelSMLStatic = env.StaticLibrary('SoarKernelSML', glob.glob('src/*.cpp'), LIBS = libadd, LIBPATH = libpath)
-#env.Install('#SoarLibrary/lib', SoarKernelSMLStatic)

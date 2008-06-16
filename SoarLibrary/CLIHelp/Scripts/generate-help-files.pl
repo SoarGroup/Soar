@@ -42,15 +42,15 @@ foreach my $command (@commands) {
 	my $commandFile = "../$command";
 	my $commandTex  = "../$command.tex";
 
-	`wget -q -O $commandWiki http://winter.eecs.umich.edu/soarwiki/$command`;
+	`wget -q -O $commandWiki http://winter.eecs.umich.edu/soarwiki/Documentation/CLI/$command`;
 
 	`$htmlProcess $commandWiki > $commandHtml`;
 	unlink $commandWiki or die "Could not remove $commandWiki: $!";
 
 	`elinks -dump -no-numbering -no-references $commandHtml > $commandFile`;
 	
-	`html2latex --nopar $commandHtml`;
-	`$latexProcess < $commandTex > $commandTex.new`;
-	rename ("$commandTex.new", "$commandTex") or die "Could not rename $commandTex.new: $!";
+#	`gnuhtml2latex --nopar $commandHtml`;
+#	`$latexProcess < $commandTex > $commandTex.new`;
+#	rename ("$commandTex.new", "$commandTex") or die "Could not rename $commandTex.new: $!";
 }
   #`pdflatex --interaction=nonstopmode @names[$i].tex`;

@@ -45,6 +45,8 @@
 
 #include "assert.h"
 
+#include "reinforcement_learning.h"
+
 #define INIT_FILE       "init.soar"
 
 /* REW: begin 08.20.97   these defined in consistency.c  */
@@ -448,7 +450,9 @@ void init_sysparams (agent* thisAgent) {
   thisAgent->sysparams[LEARNING_ONLY_SYSPARAM] = FALSE;  /* AGR MVL1 */
   thisAgent->sysparams[LEARNING_EXCEPT_SYSPARAM] = FALSE;  /* KJC 8/96 */
   thisAgent->sysparams[LEARNING_ALL_GOALS_SYSPARAM] = TRUE;
-  thisAgent->sysparams[USER_SELECT_MODE_SYSPARAM] = USER_SELECT_RANDOM;
+  thisAgent->sysparams[USER_SELECT_MODE_SYSPARAM] = USER_SELECT_E_GREEDY;
+  thisAgent->sysparams[RL_ENABLED] = RL_LEARNING_ON;
+  thisAgent->sysparams[USER_SELECT_REDUCE_SYSPARAM] = FALSE;
   thisAgent->sysparams[PRINT_WARNINGS_SYSPARAM] = TRUE;
   thisAgent->sysparams[PRINT_ALIAS_SYSPARAM] = TRUE;  /* AGR 627 */
   thisAgent->sysparams[EXPLAIN_SYSPARAM] = FALSE; /* KJC 7/96 */
@@ -602,7 +606,9 @@ bool reinitialize_soar (agent* thisAgent) {
   set_sysparam(thisAgent, TRACE_WM_CHANGES_SYSPARAM,               FALSE);
   /* kjh (CUSP-B4) end */
 
+  rl_reset_data( thisAgent );
   clear_goal_stack (thisAgent);
+  rl_reset_stats( thisAgent );
 
   if (thisAgent->operand2_mode == TRUE) {
      thisAgent->active_level = 0; /* Signal that everything should be retracted */
@@ -1284,6 +1290,16 @@ void do_one_top_level_phase (agent* thisAgent)
 	  soar_invoke_callbacks(thisAgent, 
 		  AFTER_HALT_SOAR_CALLBACK,
 		  (soar_call_data) thisAgent->current_phase);
+
+	  // To model episodic task, after halt, perform RL update with next-state value 0
+	  if ( rl_enabled( thisAgent ) )
+	  {
+		  for ( Symbol *g = thisAgent->bottom_goal; g; g = g->id.higher_goal)
+		  {
+			  rl_tabulate_reward_value_for_goal( thisAgent, g );
+			  rl_perform_update( thisAgent, 0, g );
+		  }
+	  }
   }
   
   if (thisAgent->stop_soar) {

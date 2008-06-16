@@ -122,7 +122,7 @@ extern Symbol *get_new_io_identifier(agent* thisAgent, char first_letter) ;
 extern Symbol *get_io_identifier (agent* thisAgent, char first_letter, unsigned long number);
 extern Symbol *get_io_sym_constant (agent* thisAgent, char const *name);
 extern Symbol *get_io_int_constant (agent* thisAgent, long value);
-extern Symbol *get_io_float_constant (agent* thisAgent, float value);
+extern Symbol *get_io_float_constant (agent* thisAgent, double value);
 extern unsigned long release_io_symbol (agent* thisAgent, Symbol *sym);
 
 extern wme *add_input_wme (agent* thisAgent, Symbol *id, Symbol *attr, Symbol *value);
