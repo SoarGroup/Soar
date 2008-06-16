@@ -12,14 +12,14 @@
 #ifndef SML_TAG_ARG_H
 #define SML_TAG_ARG_H
 
-#include "sml_ElementXML.h"
+#include "ElementXML.h"
 #include "sml_StringOps.h"
 #include "sml_Names.h"
 
 namespace sml
 {
 
-class TagArg : public ElementXML
+class TagArg : public soarxml::ElementXML
 {
 public:
 	TagArg() ;

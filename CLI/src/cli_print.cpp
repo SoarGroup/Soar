@@ -8,21 +8,26 @@
 
 #include <portability.h>
 
+#include "sml_Utils.h"
 #include "cli_CommandLineInterface.h"
 
 #include "cli_Commands.h"
+#include "cli_CLIError.h"
 
 #include "sml_Names.h"
 
-#include "gSKI_Agent.h"
-#include "gSKI_Kernel.h"
-#include "gSKI_DoNotTouch.h"
+#include "agent.h"
+
+#include "sml_KernelHelpers.h"
+#include "sml_KernelSML.h"
+#include "sml_AgentSML.h"
 #include "gsysparam.h"
+#include "xml.h"
 
 using namespace cli;
 using namespace sml;
 
-bool CommandLineInterface::ParsePrint(gSKI::Agent* pAgent, std::vector<std::string>& argv) {
+bool CommandLineInterface::ParsePrint(std::vector<std::string>& argv) {
 	Options optionsData[] = {
 		{'a', "all",			0},
 		{'c', "chunks",			0},
@@ -42,7 +47,7 @@ bool CommandLineInterface::ParsePrint(gSKI::Agent* pAgent, std::vector<std::stri
 		{0, 0, 0}
 	};
 
-	int depth = pAgent->GetDefaultWMEDepth();
+	int depth = m_pAgentSoar->default_wme_depth;
 	PrintBitset options(0);
 
 	for (;;) {
@@ -115,7 +120,7 @@ bool CommandLineInterface::ParsePrint(gSKI::Agent* pAgent, std::vector<std::stri
 		case 0:  // no argument
 			// the i and d options require an argument
 			if (options.test(PRINT_INTERNAL) || options.test(PRINT_TREE) || options.test(PRINT_DEPTH)) return SetError(CLIError::kTooFewArgs);
-			return DoPrint(pAgent, options, depth);
+			return DoPrint(options, depth);
 
 		case 1: 
 			// the acDjus options don't allow an argument
@@ -129,7 +134,7 @@ bool CommandLineInterface::ParsePrint(gSKI::Agent* pAgent, std::vector<std::stri
 				SetErrorDetail("No argument allowed when printing all/chunks/defaults/justifications/user/stack.");
 				return SetError(CLIError::kTooManyArgs);
 			}
-			return DoPrint(pAgent, options, depth, &(argv[m_Argument - m_NonOptionArguments]));
+			return DoPrint(options, depth, &(argv[m_Argument - m_NonOptionArguments]));
 
 		default: // more than 1 arg
 			break;
@@ -138,10 +143,7 @@ bool CommandLineInterface::ParsePrint(gSKI::Agent* pAgent, std::vector<std::stri
 	return SetError(CLIError::kTooManyArgs);
 }
 
-bool CommandLineInterface::DoPrint(gSKI::Agent* pAgent, PrintBitset options, int depth, const std::string* pArg) {
-	// Need agent pointer for function calls
-	if (!RequireAgent(pAgent)) return false;
-
+bool CommandLineInterface::DoPrint(PrintBitset options, int depth, const std::string* pArg) {
 	// Strip any surrounding "{"
 	/*
 	std::string local = *pArg ;
@@ -153,7 +155,7 @@ bool CommandLineInterface::DoPrint(gSKI::Agent* pAgent, PrintBitset options, int
 	*/
 
 	// Attain the evil back door of doom, even though we aren't the TgD
-	gSKI::EvilBackDoor::TgDWorkArounds* pKernelHack = m_pKernel->getWorkaroundObject();
+	sml::KernelHelpers* pKernelHack = m_pKernelSML->GetKernelHelpers() ;
 
 	// Check for stack print
 	if (options.test(PRINT_STACK)) {
@@ -165,9 +167,7 @@ bool CommandLineInterface::DoPrint(gSKI::Agent* pAgent, PrintBitset options, int
 		}
 
 		// Structured output through structured output callback
-		if (m_RawOutput) AddListenerAndDisableCallbacks(pAgent);
-		pKernelHack->PrintStackTrace(pAgent, (options.test(PRINT_STATES)) ? true : false, (options.test(PRINT_OPERATORS)) ? true : false);
-		if (m_RawOutput) RemoveListenerAndEnableCallbacks(pAgent);
+		pKernelHack->PrintStackTrace(m_pAgentSML, (options.test(PRINT_STATES)) ? true : false, (options.test(PRINT_OPERATORS)) ? true : false);
 		return true;
 	}
 
@@ -180,61 +180,43 @@ bool CommandLineInterface::DoPrint(gSKI::Agent* pAgent, PrintBitset options, int
 
 	// Check for the five general print options (all, chunks, defaults, justifications, user)
 	if (options.test(PRINT_ALL)) {
-		AddListenerAndDisableCallbacks(pAgent);
-        pKernelHack->PrintUser(pAgent, 0, internal, filename, full, DEFAULT_PRODUCTION_TYPE);
-        pKernelHack->PrintUser(pAgent, 0, internal, filename, full, USER_PRODUCTION_TYPE);
-        pKernelHack->PrintUser(pAgent, 0, internal, filename, full, CHUNK_PRODUCTION_TYPE);
-        pKernelHack->PrintUser(pAgent, 0, internal, filename, full, JUSTIFICATION_PRODUCTION_TYPE);
-		RemoveListenerAndEnableCallbacks(pAgent);
+        pKernelHack->PrintUser(m_pAgentSML, 0, internal, filename, full, DEFAULT_PRODUCTION_TYPE);
+        pKernelHack->PrintUser(m_pAgentSML, 0, internal, filename, full, USER_PRODUCTION_TYPE);
+        pKernelHack->PrintUser(m_pAgentSML, 0, internal, filename, full, CHUNK_PRODUCTION_TYPE);
+        pKernelHack->PrintUser(m_pAgentSML, 0, internal, filename, full, JUSTIFICATION_PRODUCTION_TYPE);
 		return true;
 	}
 	if (options.test(PRINT_CHUNKS)) {
-		AddListenerAndDisableCallbacks(pAgent);
-        pKernelHack->PrintUser(pAgent, 0, internal, filename, full, CHUNK_PRODUCTION_TYPE);
-		RemoveListenerAndEnableCallbacks(pAgent);
+        pKernelHack->PrintUser(m_pAgentSML, 0, internal, filename, full, CHUNK_PRODUCTION_TYPE);
 		return true;
 	}
 	if (options.test(PRINT_DEFAULTS)) {
-		AddListenerAndDisableCallbacks(pAgent);
-        pKernelHack->PrintUser(pAgent, 0, internal, filename, full, DEFAULT_PRODUCTION_TYPE);
-		RemoveListenerAndEnableCallbacks(pAgent);
+        pKernelHack->PrintUser(m_pAgentSML, 0, internal, filename, full, DEFAULT_PRODUCTION_TYPE);
 		return true;
 	}
 	if (options.test(PRINT_JUSTIFICATIONS)) {
-		AddListenerAndDisableCallbacks(pAgent);
-        pKernelHack->PrintUser(pAgent, 0, internal, filename, full, JUSTIFICATION_PRODUCTION_TYPE);
-		RemoveListenerAndEnableCallbacks(pAgent);
+        pKernelHack->PrintUser(m_pAgentSML, 0, internal, filename, full, JUSTIFICATION_PRODUCTION_TYPE);
 		return true;
 	}
 	if (options.test(PRINT_USER)) {
-		AddListenerAndDisableCallbacks(pAgent);
-        pKernelHack->PrintUser(pAgent, 0, internal, filename, full, USER_PRODUCTION_TYPE);
-		RemoveListenerAndEnableCallbacks(pAgent);
+        pKernelHack->PrintUser(m_pAgentSML, 0, internal, filename, full, USER_PRODUCTION_TYPE);
 		return true;
 	}
 
 	// Default to symbol print if there is an arg, otherwise print all
-	if (m_RawOutput) AddListenerAndDisableCallbacks(pAgent);
-	else			 AddXMLListenerAndDisableCallbacks(pAgent) ;
-
 	if (options.test(PRINT_VARPRINT)) {
 		m_VarPrint = true;
 	}
 	if (pArg) {
-		pKernelHack->PrintSymbol(pAgent, const_cast<char*>(pArg->c_str()), name, filename, internal, tree, full, depth);
+		pKernelHack->PrintSymbol(m_pAgentSML, const_cast<char*>(pArg->c_str()), name, filename, internal, tree, full, depth);
 	} else {
-        pKernelHack->PrintUser(pAgent, 0, internal, filename, full, DEFAULT_PRODUCTION_TYPE);
-        pKernelHack->PrintUser(pAgent, 0, internal, filename, full, USER_PRODUCTION_TYPE);
-        pKernelHack->PrintUser(pAgent, 0, internal, filename, full, CHUNK_PRODUCTION_TYPE);
-        pKernelHack->PrintUser(pAgent, 0, internal, filename, full, JUSTIFICATION_PRODUCTION_TYPE);
+        pKernelHack->PrintUser(m_pAgentSML, 0, internal, filename, full, DEFAULT_PRODUCTION_TYPE);
+        pKernelHack->PrintUser(m_pAgentSML, 0, internal, filename, full, USER_PRODUCTION_TYPE);
+        pKernelHack->PrintUser(m_pAgentSML, 0, internal, filename, full, CHUNK_PRODUCTION_TYPE);
+        pKernelHack->PrintUser(m_pAgentSML, 0, internal, filename, full, JUSTIFICATION_PRODUCTION_TYPE);
 	}
 	m_VarPrint = false;
 
-	if (m_RawOutput) RemoveListenerAndEnableCallbacks(pAgent);
-	else			 RemoveXMLListenerAndEnableCallbacks(pAgent) ;
-
-	// put the result into a message(string) arg tag
-	if (!m_RawOutput) ResultToArgTag();
 	return true;
 }
 

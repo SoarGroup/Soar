@@ -47,6 +47,8 @@ typedef typename KeyMap::const_iterator		KeyMapConstIter ;
 class ValueTest
 {
 public:
+	virtual ~ValueTest() {}	
+
 	virtual bool isEqual(ValueType value) = 0 ;
 } ;
 

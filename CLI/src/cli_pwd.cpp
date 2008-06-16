@@ -10,6 +10,7 @@
 
 #include "sml_Utils.h"
 #include "cli_CommandLineInterface.h"
+#include "cli_CLIError.h"
 
 #include "cli_Commands.h"
 #include "sml_Names.h"
@@ -17,9 +18,7 @@
 using namespace cli;
 using namespace sml;
 
-bool CommandLineInterface::ParsePWD(gSKI::Agent* pAgent, std::vector<std::string>& argv) {
-	unused(pAgent);
-
+bool CommandLineInterface::ParsePWD(std::vector<std::string>& argv) {
 	// No arguments to print working directory
 	if (argv.size() != 1) {
 		SetErrorDetail("pwd takes no arguments.");

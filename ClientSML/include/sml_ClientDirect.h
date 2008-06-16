@@ -24,17 +24,8 @@ extern "C" {
 
 // Forward declarations for these handles
 // (Actual declarations are in KernelSMLDirect.h)
-struct Direct_WME_StructTag ;
-typedef struct Direct_WME_StructTag *Direct_WME_Handle ;
-
-struct Direct_WMObject_StructTag ;
-typedef struct Direct_WMObject_StructTag *Direct_WMObject_Handle ;
-
-struct Direct_Agent_StructTag ;
-typedef struct Direct_Agent_StructTag *Direct_Agent_Handle ;
-
-struct Direct_WorkingMemory_StructTag ;
-typedef struct Direct_WorkingMemory_StructTag *Direct_WorkingMemory_Handle ;
+struct Direct_AgentSML_Struct ;
+typedef struct Direct_AgentSML_Struct *Direct_AgentSML_Handle ;
 
 #ifdef __cplusplus
 } // extern C

@@ -10,6 +10,7 @@
 
 #include "sml_Utils.h"
 #include "cli_CommandLineInterface.h"
+#include "cli_CLIError.h"
 
 #include "cli_Commands.h"
 
@@ -18,8 +19,7 @@
 using namespace cli;
 using namespace sml;
 
-bool CommandLineInterface::ParseEcho(gSKI::Agent* pAgent, std::vector<std::string>& argv) {
-	unused(pAgent);
+bool CommandLineInterface::ParseEcho(std::vector<std::string>& argv) {
 	Options optionsData[] = {
 		{'n', "no-newline", 0},
 		{0, 0, 0}

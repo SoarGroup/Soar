@@ -199,7 +199,7 @@ bool Socket::SendBuffer(char const* pSendBuffer, size_t bufferSize)
 
 	if (!hSock)
 	{
-		sml::PrintDebug("Error: Can't send because this socket is closed") ;
+		if (m_bTraceCommunications) sml::PrintDebug("Error: Can't send because this socket is closed") ;
 		return false; 
 	}
 
@@ -225,7 +225,7 @@ bool Socket::SendBuffer(char const* pSendBuffer, size_t bufferSize)
 				// so this would always be an error.
 				if (IsErrorWouldBlock())
 				{
-					sml::PrintDebug("Waiting for socket to unblock") ;
+					if (m_bTraceCommunications) sml::PrintDebug("Waiting for socket to unblock") ;
 					sml::Sleep(0, 0) ;
 				}
 				else
@@ -271,7 +271,7 @@ bool Socket::IsReadDataAvailable(long secondsWait, long millisecondsWait)
 
 	if (!hSock)
 	{
-		sml::PrintDebug("Error: Can't check for read data because this socket is closed") ;
+		if (m_bTraceCommunications) sml::PrintDebug("Error: Can't check for read data because this socket is closed") ;
 		return false;
 	}
 
@@ -303,8 +303,9 @@ bool Socket::IsReadDataAvailable(long secondsWait, long millisecondsWait)
 	// Did an error occur?
 	if (res == SOCKET_ERROR)
 	{
-		sml::PrintDebug("Error: Error checking if data is available to be read") ;
+		if (m_bTraceCommunications) sml::PrintDebug("Error: Error checking if data is available to be read") ;
 		sml::ReportSystemErrorMessage() ;
+		Close() ;	// If the socket has an error we'll shut it down
 		return false ;
 	}
 
@@ -338,7 +339,7 @@ bool Socket::ReceiveBuffer(char* pRecvBuffer, size_t bufferSize)
 
 	if (!hSock)
 	{
-		sml::PrintDebug("Error: Can't read because this socket is closed") ;
+		if (m_bTraceCommunications) sml::PrintDebug("Error: Can't read because this socket is closed") ;
 		return false;
 	}
 
@@ -377,14 +378,14 @@ bool Socket::ReceiveBuffer(char* pRecvBuffer, size_t bufferSize)
 				else
 #endif
 				{
-					sml::PrintDebug("Error: Error receiving message") ;
+					if (m_bTraceCommunications) sml::PrintDebug("Error: Error receiving message (socket)") ;
 
 					sml::ReportSystemErrorMessage() ;
 
 					// We treat these errors as all being fatal, which they all appear to be.
 					// If we later decide we can survive certain ones, we should test for them here
 					// and not always close the socket.
-					sml::PrintDebug("Closing our side of the socket because of error") ;
+					if (m_bTraceCommunications) sml::PrintDebug("Closing our side of the socket because of error") ;
 					Close() ;
 
 					return false ;
@@ -395,10 +396,10 @@ bool Socket::ReceiveBuffer(char* pRecvBuffer, size_t bufferSize)
 			// closed gracefully.
 			if (thisRead == 0)
 			{
-				sml::PrintDebug("Remote socket has closed gracefully") ;
+				if (m_bTraceCommunications) sml::PrintDebug("Remote socket has closed gracefully") ;
 
 				// Now close down our socket
-				sml::PrintDebug("Closing our side of the socket") ;
+				if (m_bTraceCommunications) sml::PrintDebug("Closing our side of the socket") ;
 
 				Close() ;
 

@@ -8,18 +8,13 @@
 // specific events occur within the agent:
 //
 /*
-*       gSKIEVENT_PRINT
+*       smlEVENT_PRINT
 */
 /////////////////////////////////////////////////////////////////
 
 #ifndef PRINT_LISTENER_H
 #define PRINT_LISTENER_H
 
-#include "gSKI_Events.h"
-#include "gSKI_Enumerations.h"
-#include "IgSKI_Iterator.h"
-#include "gSKI_Agent.h"
-#include "gSKI_Kernel.h"
 #include "sml_EventManager.h"
 #include "sml_AgentOutputFlusher.h"
 
@@ -31,12 +26,11 @@ namespace sml {
 class KernelSML ;
 class Connection ;
 
-class PrintListener : public gSKI::IPrintListener, public EventManager<egSKIPrintEventId>
+class PrintListener : public EventManager<smlPrintEventId>
 {
 protected:
-	const static int kNumberPrintEvents = gSKIEVENT_LAST_PRINT_EVENT - gSKIEVENT_FIRST_PRINT_EVENT + 1 ;
+	const static int kNumberPrintEvents = smlEVENT_LAST_PRINT_EVENT - smlEVENT_FIRST_PRINT_EVENT + 1 ;
 	KernelSML*		m_pKernelSML ;
-	gSKI::Agent*	m_pAgent ;
 	std::string		m_BufferedPrintOutput[kNumberPrintEvents];
 	AgentOutputFlusher* m_pAgentOutputFlusher[kNumberPrintEvents];
 
@@ -44,36 +38,33 @@ protected:
 	bool			m_EnablePrintCallback ;
 
 public:
-	PrintListener(KernelSML* pKernelSML, gSKI::Agent* pAgent)
-	{
-		m_pKernelSML = pKernelSML ;
-		m_pAgent	 = pAgent ;
-		m_EnablePrintCallback = true ;
-
-		for (int i = 0 ; i < kNumberPrintEvents ; i++)
-			m_pAgentOutputFlusher[i] = NULL ;
+	PrintListener() {
+		m_pKernelSML = 0 ;
 	}
 
 	virtual ~PrintListener()
 	{
 		Clear() ;
 	}
+	void Init(KernelSML* pKernelSML, AgentSML* pAgentSML) ;
+
+	// Called when an event occurs in the kernel
+	virtual void OnKernelEvent(int eventID, AgentSML* pAgentSML, void* pCallData) ;
 
 	// Returns true if this is the first connection listening for this event
-	virtual bool AddListener(egSKIPrintEventId eventID, Connection* pConnection) ;
+	virtual bool AddListener(smlPrintEventId eventID, Connection* pConnection) ;
 
 	// Returns true if at least one connection remains listening for this event
-	virtual bool RemoveListener(egSKIPrintEventId eventID, Connection* pConnection) ;
+	virtual bool RemoveListener(smlPrintEventId eventID, Connection* pConnection) ;
 
-	// Called when a "PrintEvent" occurs in the kernel
-	virtual void HandleEvent(egSKIPrintEventId, gSKI::Agent*, const char* msg);
+	void OnEvent(smlPrintEventId eventID, AgentSML* pAgentSML, const char* msg) ;
 
 	// Allows us to temporarily stop forwarding print callback output from the kernel to the SML listeners
 	void EnablePrintCallback(bool enable) { m_EnablePrintCallback = enable ; }
 
 	// Activate the print callback (flush output).  For echo events we want to specify which connection triggered the event.
-	void FlushOutput(egSKIPrintEventId eventID) { FlushOutput(NULL, eventID) ; }
-	void FlushOutput(Connection* pSourceConnection, egSKIPrintEventId eventID);
+	void FlushOutput(smlPrintEventId eventID) { FlushOutput(NULL, eventID) ; }
+	void FlushOutput(Connection* pSourceConnection, smlPrintEventId eventID);
 
 } ;
 

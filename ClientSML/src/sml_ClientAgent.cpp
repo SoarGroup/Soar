@@ -33,6 +33,7 @@
 #include <string>
 
 using namespace sml;
+using namespace soarxml;
 
 Agent::Agent(Kernel* pKernel, char const* pName)
 {
@@ -40,6 +41,7 @@ Agent::Agent(Kernel* pKernel, char const* pName)
 	m_Name	 = pName ;
 	m_WorkingMemory.SetAgent(this) ;
 	m_CallbackIDCounter = 0 ;
+	m_VisitedCounter = 0 ;
 	m_XMLCallback = -1 ;
 	m_BlinkIfNoChange = true ;
 
@@ -1313,7 +1315,7 @@ char const* Agent::RunSelf(unsigned long numberSteps, smlRunStepSize stepSize)
 #ifdef SML_DIRECT
 		if (GetConnection()->IsDirectConnection())
 		{
-			((EmbeddedConnection*)GetConnection())->DirectRun(this->GetAgentName(), false, stepSize, sml_INTERLEAVE_PHASE, (int)numberSteps) ;
+			((EmbeddedConnection*)GetConnection())->DirectRun(this->GetAgentName(), false, stepSize, sml_PHASE, (int)numberSteps) ;
 			return "DirectRun completed" ;
 		}
 #endif
@@ -1353,7 +1355,7 @@ char const* Agent::RunSelfForever()
 #ifdef SML_DIRECT
 		if (GetConnection()->IsDirectConnection())
 		{
-			((EmbeddedConnection*)GetConnection())->DirectRun(this->GetAgentName(), true, sml_DECISION, sml_INTERLEAVE_PHASE, 1) ;
+			((EmbeddedConnection*)GetConnection())->DirectRun(this->GetAgentName(), true, sml_DECISION, sml_PHASE, 1) ;
 			return "DirectRun completed" ;
 		}
 #endif
@@ -1448,7 +1450,7 @@ char const* Agent::RunSelfTilOutput()
 #ifdef SML_DIRECT
 		if (GetConnection()->IsDirectConnection())
 		{
-			((EmbeddedConnection*)GetConnection())->DirectRun(this->GetAgentName(), false, sml_UNTIL_OUTPUT, sml_INTERLEAVE_PHASE, 1) ;
+			((EmbeddedConnection*)GetConnection())->DirectRun(this->GetAgentName(), false, sml_UNTIL_OUTPUT, sml_PHASE, 1) ;
 			return "DirectRun completed" ;
 		}
 #endif
@@ -1620,9 +1622,4 @@ bool Agent::SynchronizeInputLink()
 bool Agent::SynchronizeOutputLink()
 {
 	return GetWM()->SynchronizeOutputLink() ;
-}
-
-int Agent::GetIWMObjMapSize()
-{
-	return GetWM()->GetIWMObjMapSize();
 }

@@ -8,6 +8,7 @@
 
 #include <portability.h>
 
+#include "sml_Utils.h"
 #include "cli_CommandLineInterface.h"
 
 #include "cli_Commands.h"
@@ -15,15 +16,18 @@
 #include <assert.h>
 
 #include "sml_Names.h"
+#include "cli_CLIError.h"
 
-#include "gSKI_Kernel.h"
-#include "gSKI_DoNotTouch.h"
+#include "sml_KernelHelpers.h"
+#include "sml_KernelSML.h"
 #include "gsysparam.h"
+#include "rete.h"
+#include "sml_AgentSML.h"
 
 using namespace cli;
 using namespace sml;
 
-bool CommandLineInterface::ParseMatches(gSKI::Agent* pAgent, std::vector<std::string>& argv) {
+bool CommandLineInterface::ParseMatches(std::vector<std::string>& argv) {
 	Options optionsData[] = {
 		{'a', "assertions",		0},
 		{'c', "count",			0},
@@ -71,16 +75,13 @@ bool CommandLineInterface::ParseMatches(gSKI::Agent* pAgent, std::vector<std::st
 
 	if (m_NonOptionArguments == 1) {
 		if (mode != MATCHES_ASSERTIONS_RETRACTIONS) return SetError(CLIError::kTooManyArgs);
-		return DoMatches(pAgent, MATCHES_PRODUCTION, detail, &argv[m_Argument - m_NonOptionArguments]);
+		return DoMatches(MATCHES_PRODUCTION, detail, &argv[m_Argument - m_NonOptionArguments]);
 	}
 
-	return DoMatches(pAgent, mode, detail);
+	return DoMatches(mode, detail);
 }
 
-bool CommandLineInterface::DoMatches(gSKI::Agent* pAgent, const eMatchesMode mode, const eWMEDetail detail, const std::string* pProduction) {
-
-	if (!RequireAgent(pAgent)) return false;
-
+bool CommandLineInterface::DoMatches(const eMatchesMode mode, const eWMEDetail detail, const std::string* pProduction) {
 	wme_trace_type wtt = 0;
 	switch (detail) {
 		case WME_DETAIL_NONE:
@@ -97,11 +98,11 @@ bool CommandLineInterface::DoMatches(gSKI::Agent* pAgent, const eMatchesMode mod
 	}
 
 	// Attain the evil back door of doom, even though we aren't the TgD
-	gSKI::EvilBackDoor::TgDWorkArounds* pKernelHack = m_pKernel->getWorkaroundObject();
+	sml::KernelHelpers* pKernelHack = m_pKernelSML->GetKernelHelpers() ;
 
 	if (mode == MATCHES_PRODUCTION) {
 		if (!pProduction) return SetError(CLIError::kProductionRequired);
-		rete_node* prod = pKernelHack->NameToProduction(pAgent, const_cast<char*>(pProduction->c_str()));
+		rete_node* prod = pKernelHack->NameToProduction(m_pAgentSML, const_cast<char*>(pProduction->c_str()));
 		if (!prod) {
 			SetErrorDetail("Production " + *pProduction);
 			return SetError(CLIError::kProductionNotFound);
@@ -109,13 +110,11 @@ bool CommandLineInterface::DoMatches(gSKI::Agent* pAgent, const eMatchesMode mod
 
 		if (m_RawOutput)
 		{
-			AddListenerAndDisableCallbacks(pAgent);		
-			pKernelHack->PrintPartialMatchInformation(pAgent, prod, wtt);
-			RemoveListenerAndEnableCallbacks(pAgent);
+			print_partial_match_information(m_pAgentSML->GetSoarAgent(), prod, wtt);
 		}
 		else
 		{
-			pKernelHack->XMLPartialMatchInformation(pAgent, prod, wtt) ;
+			xml_partial_match_information(m_pAgentSML->GetSoarAgent(), prod, wtt);
 		}
 
 	} else {
@@ -125,13 +124,11 @@ bool CommandLineInterface::DoMatches(gSKI::Agent* pAgent, const eMatchesMode mod
 
 		if (m_RawOutput)
 		{
-			AddListenerAndDisableCallbacks(pAgent);		
-			pKernelHack->PrintMatchSet(pAgent, wtt, mst);
-			RemoveListenerAndEnableCallbacks(pAgent);
+			print_match_set(m_pAgentSML->GetSoarAgent(), wtt, mst);
 		}
 		else
 		{
-			pKernelHack->XMLMatchSet(pAgent, wtt, mst) ;
+			xml_match_set(m_pAgentSML->GetSoarAgent(), wtt, mst);
 		}
 	}
 

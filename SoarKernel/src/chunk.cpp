@@ -43,12 +43,12 @@
 #include "backtrace.h"
 #include "recmem.h"
 #include "rete.h"
-#include "xmlTraceNames.h" // for constants for XML function types, tags and attributes
-#include "gski_event_system_functions.h" // support for triggering XML events
+#include "xml.h"
+#include "soar_TraceNames.h"
 
 #include <ctype.h>
 
-using namespace xmlTraceNames;
+using namespace soar_TraceNames;
 
 /* =====================================================================
 
@@ -782,7 +782,7 @@ Symbol *generate_chunk_name_sym_constant (agent* thisAgent, instantiation *inst)
       case NONE_IMPASSE_TYPE:
 	#ifdef DEBUG_CHUNK_NAMES
         print ("Warning: impasse_type is NONE_IMPASSE_TYPE during chunk creation.\n");
-		GenerateWarningXML(thisAgent, "Warning: impasse_type is NONE_IMPASSE_TYPE during chunk creation.");
+		xml_generate_warning(thisAgent, "Warning: impasse_type is NONE_IMPASSE_TYPE during chunk creation.");
 	#endif
         strncpy(impass_name,"unknownimpasse",BUFFER_IMPASS_NAME_SIZE);
         break;
@@ -814,7 +814,7 @@ Symbol *generate_chunk_name_sym_constant (agent* thisAgent, instantiation *inst)
           } else {
 	    #ifdef DEBUG_CHUNK_NAMES
             print ("Warning: ^attribute impasse wme has unexpected value.\n");
-			GenerateWarningXML(thisAgent, "Warning: ^attribute impasse wme has unexpected value.");
+			xml_generate_warning(thisAgent, "Warning: ^attribute impasse wme has unexpected value.");
             #endif
             strncpy(impass_name,"unknownimpasse",BUFFER_IMPASS_NAME_SIZE);
           }
@@ -833,7 +833,7 @@ Symbol *generate_chunk_name_sym_constant (agent* thisAgent, instantiation *inst)
   } else {
     #ifdef DEBUG_CHUNK_NAMES
     print ("Warning: Failed to determine impasse type.\n");
-	GenerateWarningXML(thisAgent, "Warning: Failed to determine impasse type.");
+	xml_generate_warning(thisAgent, "Warning: Failed to determine impasse type.");
     #endif
     strncpy(impass_name,"unknownimpasse",BUFFER_IMPASS_NAME_SIZE);
   }
@@ -855,7 +855,7 @@ Symbol *generate_chunk_name_sym_constant (agent* thisAgent, instantiation *inst)
     
     collision_count = 1;
     print (thisAgent, "Warning: generated chunk name already exists.  Will find unique name.\n");
-	GenerateWarningXML(thisAgent, "Warning: generated chunk name already exists.  Will find unique name.");
+	xml_generate_warning(thisAgent, "Warning: generated chunk name already exists.  Will find unique name.");
     do {
       SNPRINTF (name, BUFFER_GEN_CHUNK_NAME_SIZE, "%s-%lu*d%lu*%s*%lu*%lu", 
               thisAgent->chunk_name_prefix,
@@ -969,7 +969,7 @@ void chunk_instantiation (agent* thisAgent,
 			  
               if (thisAgent->soar_verbose_flag == TRUE) {
 				  printf("\n   in chunk_instantiation: making justification only");
-                  GenerateVerboseXML(thisAgent, "in chunk_instantiation: making justification only");
+                  xml_generate_verbose(thisAgent, "in chunk_instantiation: making justification only");
               }
 		  }
 		  
@@ -981,9 +981,9 @@ void chunk_instantiation (agent* thisAgent,
               if (thisAgent->soar_verbose_flag == TRUE) {
 				  printf("\n   in chunk_instantiation: resetting allow_variablization to %s", ((allow_variablization) ? "TRUE" : "FALSE"));
                   if(allow_variablization) {
-                      GenerateVerboseXML(thisAgent, "in chunk_instantiation: resetting allow_variablization to TRUE");
+                      xml_generate_verbose(thisAgent, "in chunk_instantiation: resetting allow_variablization to TRUE");
                   } else {
-                      GenerateVerboseXML(thisAgent, "in chunk_instantiation: resetting allow_variablization to FALSE");
+                      xml_generate_verbose(thisAgent, "in chunk_instantiation: resetting allow_variablization to FALSE");
                   }
               }
 		  }
@@ -1084,14 +1084,14 @@ void chunk_instantiation (agent* thisAgent,
   for (pref=results; pref!=NIL; pref=pref->next_result) {
 	  if (thisAgent->sysparams[TRACE_BACKTRACING_SYSPARAM]) {
 		  print_string (thisAgent, "\nFor result preference ");
-          gSKI_MakeAgentCallbackXML(thisAgent, kFunctionBeginTag, kTagBacktraceResult);
+          xml_begin_tag(thisAgent, kTagBacktraceResult);
 		  print_preference (thisAgent, pref);
 		  print_string (thisAgent, " ");
 	  }
 	  backtrace_through_instantiation (thisAgent, pref->inst, grounds_level, NULL, 0);
       
       if (thisAgent->sysparams[TRACE_BACKTRACING_SYSPARAM]) {
-          gSKI_MakeAgentCallbackXML(thisAgent, kFunctionEndTag, kTagBacktraceResult);
+          xml_end_tag(thisAgent, kTagBacktraceResult);
       }
   }
   
@@ -1142,11 +1142,11 @@ void chunk_instantiation (agent* thisAgent,
 	  if (get_printer_output_column(thisAgent)!=1) print (thisAgent, "\n");
 	  print_with_symbols (thisAgent, "Building %y", prod_name);
 
-	  gSKI_MakeAgentCallbackXML(thisAgent, kFunctionBeginTag, kTagLearning);
-      gSKI_MakeAgentCallbackXML(thisAgent, kFunctionBeginTag, kTagProduction);
-      gSKI_MakeAgentCallbackXML(thisAgent, kFunctionAddAttribute, kProduction_Name, symbol_to_string(thisAgent, prod_name, true, 0, 0));
-      gSKI_MakeAgentCallbackXML(thisAgent, kFunctionEndTag, kTagProduction);
-	  gSKI_MakeAgentCallbackXML(thisAgent, kFunctionEndTag, kTagLearning);
+	  xml_begin_tag(thisAgent, kTagLearning);
+      xml_begin_tag(thisAgent, kTagProduction);
+      xml_att_val(thisAgent, kProduction_Name, prod_name);
+      xml_end_tag(thisAgent, kTagProduction);
+	  xml_end_tag(thisAgent, kTagLearning);
   }
   /* AGR 617/634 end */
   
@@ -1154,7 +1154,7 @@ void chunk_instantiation (agent* thisAgent,
   if (! top_cc) {
 	  if (thisAgent->sysparams[PRINT_WARNINGS_SYSPARAM]) {
 		  print_string (thisAgent, " Warning: chunk has no grounds, ignoring it.");
-		  GenerateWarningXML(thisAgent, "Warning: chunk has no grounds, ignoring it.");
+		  xml_generate_warning(thisAgent, "Warning: chunk has no grounds, ignoring it.");
 	  }
 	  goto chunking_done;
   }
@@ -1164,7 +1164,7 @@ void chunk_instantiation (agent* thisAgent,
       (unsigned long) thisAgent->sysparams[MAX_CHUNKS_SYSPARAM]) {
 		  if (thisAgent->sysparams[PRINT_WARNINGS_SYSPARAM]) {
 		  print (thisAgent, "\nWarning: reached max-chunks! Halting system.");
-		  GenerateWarningXML(thisAgent, "Warning: reached max-chunks! Halting system.");
+		  xml_generate_warning(thisAgent, "Warning: reached max-chunks! Halting system.");
 		  }
 	  thisAgent->max_chunks_reached = TRUE;
 	  goto chunking_done;
@@ -1196,7 +1196,7 @@ void chunk_instantiation (agent* thisAgent,
 	  goto chunking_done; /* this leaks memory but who cares */
   }
   
-  { condition *inst_lhs_top, *inst_lhs_bottom;
+  { condition *inst_lhs_top = 0, *inst_lhs_bottom = 0;
   
   reorder_instantiated_conditions (top_cc, &inst_lhs_top, &inst_lhs_bottom);
   
@@ -1286,9 +1286,9 @@ void chunk_instantiation (agent* thisAgent,
 	  
 	  if (print_prod && (rete_addition_result!=DUPLICATE_PRODUCTION)) {
 		  print_string (thisAgent, "\n");
-          gSKI_MakeAgentCallbackXML(thisAgent, kFunctionBeginTag, kTagLearning);
+          xml_begin_tag(thisAgent, kTagLearning);
 		  print_production (thisAgent, prod, FALSE);
-          gSKI_MakeAgentCallbackXML(thisAgent, kFunctionEndTag, kTagLearning);
+          xml_end_tag(thisAgent, kTagLearning);
 	  }
 	  
 	  if (rete_addition_result==DUPLICATE_PRODUCTION) {

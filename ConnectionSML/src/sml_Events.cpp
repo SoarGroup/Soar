@@ -22,19 +22,10 @@ Events::Events()
 	// Kernel events
 	RegisterEvent(smlEVENT_BEFORE_SHUTDOWN, "before-shutdown") ;
 	RegisterEvent(smlEVENT_AFTER_CONNECTION, "after-connection");
-	RegisterEvent(smlEVENT_AFTER_CONNECTION_LOST, "after-connection-lost");
-	RegisterEvent(smlEVENT_BEFORE_RESTART, "before-restart") ;
-	RegisterEvent(smlEVENT_AFTER_RESTART, "after-restart") ;
 	RegisterEvent(smlEVENT_SYSTEM_START, "system-start") ;
 	RegisterEvent(smlEVENT_SYSTEM_STOP, "system-stop") ;
 	RegisterEvent(smlEVENT_INTERRUPT_CHECK, "interrupt-check") ;
 	RegisterEvent(smlEVENT_SYSTEM_PROPERTY_CHANGED, "system-property-changed") ;
-	RegisterEvent(smlEVENT_BEFORE_RHS_FUNCTION_ADDED, "before-rhs-function-added") ;
-	RegisterEvent(smlEVENT_AFTER_RHS_FUNCTION_ADDED, "after-rhs-function-added") ;
-	RegisterEvent(smlEVENT_BEFORE_RHS_FUNCTION_REMOVED, "before-rhs-function-removed") ;
-	RegisterEvent(smlEVENT_AFTER_RHS_FUNCTION_REMOVED, "after-rhs-function-removed") ;
-	RegisterEvent(smlEVENT_BEFORE_RHS_FUNCTION_EXECUTED, "before-rhs-function-executed") ;
-	RegisterEvent(smlEVENT_AFTER_RHS_FUNCTION_EXECUTED, "after-rhs-function-executed") ;
 
 	// Run events
 	RegisterEvent(smlEVENT_BEFORE_SMALLEST_STEP, "before-smallest-step") ;
@@ -92,10 +83,6 @@ Events::Events()
 	RegisterEvent(smlEVENT_AFTER_ALL_GENERATED_OUTPUT, "after-all-generated-output") ;
 
     // Error and print callbacks
-	RegisterEvent(smlEVENT_LOG_ERROR, "log-error") ;
-	RegisterEvent(smlEVENT_LOG_WARNING, "log-warning") ;
-	RegisterEvent(smlEVENT_LOG_INFO, "log-info") ;
-	RegisterEvent(smlEVENT_LOG_DEBUG, "log-debug") ;
 	RegisterEvent(smlEVENT_ECHO, "echo") ;
 	RegisterEvent(smlEVENT_PRINT, "print") ;
 

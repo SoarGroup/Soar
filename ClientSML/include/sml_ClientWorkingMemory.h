@@ -24,8 +24,14 @@
 #include "sml_ObjectMap.h"
 #include "sml_DeltaList.h"
 #include "sml_OutputDeltaList.h"
+#include "sml_ClientDirect.h" // SML_DIRECT defined here
 
 #include <list>
+
+namespace soarxml
+{
+	class ElementXML ;
+}
 
 namespace sml {
 
@@ -36,12 +42,16 @@ class StringElement ;
 class IntElement ;
 class FloatElement ;
 class Identifier ;
-class ElementXML ;
 class AnalyzeXML ;
 
 class WorkingMemory
 {
 protected:
+
+#ifdef SML_DIRECT
+	Direct_AgentSML_Handle m_AgentSMLHandle;
+#endif // SML_DIRECT
+
 	Agent*		m_Agent ;
 	Identifier*	m_InputLink ;
 	Identifier* m_OutputLink ; // this is initialized the first time an agent generates output; until then it is null
@@ -97,8 +107,6 @@ public:
 	Identifier*		CreateIdWME(Identifier* parent, char const* pAttribute) ;
 	Identifier*		CreateSharedIdWME(Identifier* parent, char const* pAttribute, Identifier* pSharedValue) ;
 
-	int GetIWMObjMapSize();	// For unit tests, see bug 1034 and ClientSMLTest
-
 	void			UpdateString(StringElement* pWME, char const* pValue) ;
 	void			UpdateInt(IntElement* pWME, int value) ;
 	void			UpdateFloat(FloatElement* pWME, double value) ;
@@ -106,9 +114,9 @@ public:
 	bool			DestroyWME(WMElement* pWME) ;
 
 	bool			TryToAttachOrphanedChildren(Identifier* pPossibleParent) ;
-	bool			ReceivedOutputRemoval(ElementXML* pWmeXML, bool tracing) ;
-	bool			ReceivedOutputAddition(ElementXML* pWmeXML, bool tracing) ;
-	bool			ReceivedOutput(AnalyzeXML* pIncoming, ElementXML* pResponse) ;
+	bool			ReceivedOutputRemoval(soarxml::ElementXML* pWmeXML, bool tracing) ;
+	bool			ReceivedOutputAddition(soarxml::ElementXML* pWmeXML, bool tracing) ;
+	bool			ReceivedOutput(AnalyzeXML* pIncoming, soarxml::ElementXML* pResponse) ;
 
 	bool			SynchronizeInputLink() ;
 	bool			SynchronizeOutputLink() ;

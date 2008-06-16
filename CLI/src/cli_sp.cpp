@@ -11,13 +11,17 @@
 #include "cli_CommandLineInterface.h"
 
 #include "cli_Commands.h"
+#include "cli_CLIError.h"
 
-#include "gSKI_Agent.h"
-#include "gSKI_ProductionManager.h"
+#include "agent.h"
+#include "production.h"
+#include "symtab.h"
+#include "rete.h"
+#include "parser.h"
 
 using namespace cli;
 
-bool CommandLineInterface::ParseSP(gSKI::Agent* pAgent, std::vector<std::string>& argv) {
+bool CommandLineInterface::ParseSP(std::vector<std::string>& argv) {
 	// One argument (in brackets)
 	if (argv.size() < 2) return SetError(CLIError::kTooFewArgs);
 	if (argv.size() > 2) {
@@ -32,29 +36,43 @@ bool CommandLineInterface::ParseSP(gSKI::Agent* pAgent, std::vector<std::string>
 	}
 	production = production.substr(1, production.length() - 2);
 
-	return DoSP(pAgent, production);
+	return DoSP(production);
 }
 
-bool CommandLineInterface::DoSP(gSKI::Agent* pAgent, const std::string& production) {
-	// Must have agent to give production to
-	if (!RequireAgent(pAgent)) return false;
+// FIXME: copied from gSKI
+void soarAlternateInput(agent *ai_agent, const char  *ai_string, char  *ai_suffix, Bool   ai_exit   )
+{
+	// Side effects:
+	//	The soar agents alternate input values are updated and its
+	//      current character is reset to a whitespace value.
+	ai_agent->alternate_input_string = const_cast<char*>(ai_string);
+	ai_agent->alternate_input_suffix = ai_suffix;
+	ai_agent->current_char = ' ';
+	ai_agent->alternate_input_exit = ai_exit;
+	return;
+}
 
-	// Acquire production manager
-	gSKI::ProductionManager *pProductionManager = pAgent->GetProductionManager();
-
+bool CommandLineInterface::DoSP(const std::string& productionString) {
 	// Load the production
-	this->AddListenerAndDisableCallbacks(pAgent);
-	pProductionManager->AddProduction(const_cast<char*>(production.c_str()), &m_gSKIError);
-	this->RemoveListenerAndEnableCallbacks(pAgent);
+	// voigtjr: note: this TODO from gSKI:
+	// TODO: This should not be needed, FIX!
+	// contents of gSKI ProductionManager::soarAlternateInput function:
+	soarAlternateInput( m_pAgentSoar, productionString.c_str(), ") ", true );
+	set_lexer_allow_ids( m_pAgentSoar, false );
+	get_lexeme( m_pAgentSoar );
 
-	if (gSKI::isError(m_gSKIError)) {
-		if (m_gSKIError.Id == gSKI::gSKIERR_IGNORED_DUPLICATE_PRODUCTION) {
-			// gSKI prints the error message.
-			return true;
-		} else {
-			SetErrorDetail("Error adding production.");
-			return SetError(CLIError::kgSKIError);
+	production* p;
+	unsigned char rete_addition_result = 0;
+	p = parse_production( m_pAgentSoar, &rete_addition_result );
+
+	set_lexer_allow_ids( m_pAgentSoar, true );
+	soarAlternateInput( m_pAgentSoar, 0, 0, true ); 
+
+	if (!p) { 
+		if (rete_addition_result == DUPLICATE_PRODUCTION) {
+			return SetError( CLIError::kDuplicateProduction );
 		}
+		return SetError( CLIError::kProductionAddFailed );
 	}
 
 	++m_NumProductionsSourced;

@@ -10,17 +10,17 @@
 
 #include "sml_Utils.h"
 #include "cli_CommandLineInterface.h"
+#include "cli_CLIError.h"
 
 #include "cli_Commands.h"
-#include "gSKI_Kernel.h"
-#include "gSKI_DoNotTouch.h"
+#include "sml_KernelSML.h"
+#include "soar_rand.h"
+
 
 using namespace cli;
 using namespace sml;
 
-bool CommandLineInterface::ParseSRand(gSKI::Agent* pAgent, std::vector<std::string>& argv) {
-
-	unused(pAgent);
+bool CommandLineInterface::ParseSRand(std::vector<std::string>& argv) {
 
 	if (argv.size() < 2) return DoSRand();
 
@@ -32,10 +32,15 @@ bool CommandLineInterface::ParseSRand(gSKI::Agent* pAgent, std::vector<std::stri
 }
 
 bool CommandLineInterface::DoSRand(unsigned long int* pSeed) {
+	if (pSeed) 
+	{
+		SoarSeedRNG( *pSeed );
+	}
+	else
+	{
+		SoarSeedRNG();
+	}
 
-	gSKI::EvilBackDoor::TgDWorkArounds* pKernelHack = m_pKernel->getWorkaroundObject();
-
-	pKernelHack->SeedRandomNumberGenerator(pSeed);
 	return true;
 }
 

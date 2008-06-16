@@ -8,20 +8,22 @@
 
 #include <portability.h>
 
+#include "sml_Utils.h"
 #include "cli_CommandLineInterface.h"
 
 #include "cli_Commands.h"
 
 #include "sml_Names.h"
 
-#include "gSKI_Kernel.h"
-#include "gSKI_DoNotTouch.h"
+#include "sml_KernelSML.h"
+#include "sml_KernelHelpers.h"
 #include "gsysparam.h"
+#include "cli_CLIError.h"
 
 using namespace cli;
 using namespace sml;
 
-bool CommandLineInterface::ParseWarnings(gSKI::Agent* pAgent, std::vector<std::string>& argv) {
+bool CommandLineInterface::ParseWarnings(std::vector<std::string>& argv) {
 	Options optionsData[] = {
 		{'e', "enable",		0},
 		{'d', "disable",	0},
@@ -53,24 +55,22 @@ bool CommandLineInterface::ParseWarnings(gSKI::Agent* pAgent, std::vector<std::s
 
 	if (m_NonOptionArguments) SetError(CLIError::kTooManyArgs);
 
-	return DoWarnings(pAgent, query ? 0 : &setting);
+	return DoWarnings(query ? 0 : &setting);
 }
 
-bool CommandLineInterface::DoWarnings(gSKI::Agent* pAgent, bool* pSetting) {
-	if (!RequireAgent(pAgent)) return false;
-
+bool CommandLineInterface::DoWarnings(bool* pSetting) {
 	// Attain the evil back door of doom, even though we aren't the TgD, because we'll probably need it
-	gSKI::EvilBackDoor::TgDWorkArounds* pKernelHack = m_pKernel->getWorkaroundObject();
+	sml::KernelHelpers* pKernelHack = m_pKernelSML->GetKernelHelpers() ;
 
 	if (pSetting) {
-		pKernelHack->SetSysparam(pAgent, PRINT_WARNINGS_SYSPARAM, *pSetting);
+		pKernelHack->SetSysparam(m_pAgentSML, PRINT_WARNINGS_SYSPARAM, *pSetting);
 		return true;
 	}
 
 	if (m_RawOutput) {
-		m_Result << "Printing of warnings is " << (pKernelHack->GetSysparam(pAgent, PRINT_WARNINGS_SYSPARAM) ? "enabled." : "disabled.");
+		m_Result << "Printing of warnings is " << (pKernelHack->GetSysparam(m_pAgentSML, PRINT_WARNINGS_SYSPARAM) ? "enabled." : "disabled.");
 	} else {
-		const char* setting = pKernelHack->GetSysparam(pAgent, PRINT_WARNINGS_SYSPARAM) ? sml_Names::kTrue : sml_Names::kFalse;
+		const char* setting = pKernelHack->GetSysparam(m_pAgentSML, PRINT_WARNINGS_SYSPARAM) ? sml_Names::kTrue : sml_Names::kFalse;
 		AppendArgTagFast(sml_Names::kParamWarningsSetting, sml_Names::kTypeBoolean, setting);
 	}
 	return true;

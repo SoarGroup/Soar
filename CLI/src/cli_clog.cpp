@@ -16,15 +16,15 @@
 
 #include "cli_Commands.h"
 #include "cli_CommandData.h"
+#include "cli_CLIError.h"
 
 #include "sml_Names.h"
-
-#include "gSKI_Agent.h"
+#include "sml_Events.h"
 
 using namespace cli;
 using namespace sml;
 
-bool CommandLineInterface::ParseCLog(gSKI::Agent* pAgent, std::vector<std::string>& argv) {
+bool CommandLineInterface::ParseCLog(std::vector<std::string>& argv) {
 	Options optionsData[] = {
 		{'a', "add",		0},
 		{'A', "append",		0},
@@ -83,7 +83,7 @@ bool CommandLineInterface::ParseCLog(gSKI::Agent* pAgent, std::vector<std::strin
 					toAdd += ' ';
 					++iter;
 				}
-				return DoCLog(pAgent, mode, 0, &toAdd);
+				return DoCLog(mode, 0, &toAdd);
 			}
 
 		case LOG_NEW:
@@ -92,7 +92,7 @@ bool CommandLineInterface::ParseCLog(gSKI::Agent* pAgent, std::vector<std::strin
 				SetErrorDetail("Filename or nothing expected, enclose filename in quotes if there are spaces in the path.");
 				return SetError(CLIError::kTooManyArgs);
 			}
-			if (m_NonOptionArguments == 1) return DoCLog(pAgent, mode, &argv[1]);
+			if (m_NonOptionArguments == 1) return DoCLog(mode, &argv[1]);
 			break; // no args case handled below
 
 		case LOG_NEWAPPEND:
@@ -106,7 +106,7 @@ bool CommandLineInterface::ParseCLog(gSKI::Agent* pAgent, std::vector<std::strin
 				SetErrorDetail("Please provide a filename.");
 				return SetError(CLIError::kTooFewArgs);
 			}
-			return DoCLog(pAgent, mode, &argv[1]);
+			return DoCLog(mode, &argv[1]);
 
 		case LOG_CLOSE:
 		case LOG_QUERY:
@@ -122,12 +122,10 @@ bool CommandLineInterface::ParseCLog(gSKI::Agent* pAgent, std::vector<std::strin
 	}
 
 	// the no args case
-	return DoCLog(pAgent, mode);
+	return DoCLog(mode);
 }
 
-bool CommandLineInterface::DoCLog(gSKI::Agent* pAgent, const eLogMode mode, const std::string* pFilename, const std::string* pToAdd, bool silent) {
-	if (!RequireAgent(pAgent)) return false;
-
+bool CommandLineInterface::DoCLog(const eLogMode mode, const std::string* pFilename, const std::string* pToAdd, bool silent) {
 	std::ios_base::openmode openmode = std::ios_base::out;
 
  	switch (mode) {
@@ -156,7 +154,7 @@ bool CommandLineInterface::DoCLog(gSKI::Agent* pAgent, const eLogMode mode, cons
 			    m_LogFilename = filename;
             }
 
-			if (pAgent) pAgent->AddPrintListener(gSKIEVENT_PRINT, this);
+			if (m_pAgentSML) RegisterWithKernel(smlEVENT_PRINT) ;
 			break;
 
 		case LOG_ADD:
@@ -167,7 +165,7 @@ bool CommandLineInterface::DoCLog(gSKI::Agent* pAgent, const eLogMode mode, cons
 		case LOG_CLOSE:
 			if (!m_pLogFile) return SetError(CLIError::kLogNotOpen);
 
-			if (pAgent) pAgent->RemovePrintListener(gSKIEVENT_PRINT, this);
+			if (m_pAgentSML) UnregisterWithKernel(smlEVENT_PRINT) ;
 			delete m_pLogFile;
 			m_pLogFile = 0;
 			m_LogFilename.clear();

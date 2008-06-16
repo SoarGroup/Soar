@@ -12,9 +12,10 @@
 #ifndef EVENT_MANAGER_H
 #define EVENT_MANAGER_H
 
-#include "gSKI_Enumerations.h"
+#include "sml_Events.h" // smlEVENT_LAST
 #include "sml_Connection.h"
-#include "sml_ElementXML.h"
+#include "ElementXML.h"
+#include "sml_KernelCallback.h"
 
 #include <list>
 #include <map>
@@ -29,8 +30,7 @@ class KernelSML ;
 typedef std::list< Connection* >		ConnectionList ;
 typedef ConnectionList::iterator	ConnectionListIter ;
 
-template<typename EventType>
-class EventManager
+template<typename EventType> class EventManager : public KernelCallback
 {
 protected:
 	ConnectionList*	GetListeners(EventType eventID)
@@ -45,11 +45,16 @@ protected:
 
 public:
     // Mapping from the event to the list of connections listening to that event
-    typedef std::map< EventType, ConnectionList* >	EventMap ;
-    typedef typename EventMap::iterator						EventMapIter ;
+    typedef std::map< EventType, ConnectionList* >		EventMap ;
+    typedef typename EventMap::iterator					EventMapIter ;
+
+    typedef std::map< EventType, KernelCallback* >		KernelEventMap ;
+    typedef typename KernelEventMap::iterator			KernelEventMapIter ;
+
 protected:
 	// Map from event id to list of connections listening to that event
 	EventMap		m_EventMap ;
+
 public:
 	virtual ~EventManager()
 	{
@@ -108,6 +113,13 @@ public:
 	}
 
 	// Returns true if this is the first connection listening for this event
+	virtual bool BaseAddKernelListener(EventType eventID, KernelCallback* pKernelCallback)
+	{
+		pKernelCallback->RegisterWithKernel(eventID) ;
+		return true ;
+	}
+
+	// Returns true if this is the first connection listening for this event
 	// (Generally calls BaseAddListener and then registers with the kernel for this event)
 	virtual bool AddListener(EventType eventID, Connection* pConnection) = 0 ;
 
@@ -140,7 +152,7 @@ public:
 		// be valid for this particular event manager.
 		// We could make this more efficient by defining the set for each handler
 		// but the cost of removing all should be minimal as this is a rare event.
-		for (int i = 1 ; i < gSKIEVENT_LAST ; i++)
+		for (int i = 1 ; i < smlEVENT_LAST ; i++)
 		{
 			EventType id = (EventType)i ;
 			RemoveListener(id, pConnection) ;
@@ -175,7 +187,7 @@ public:
 		return pList->end() ;
 	}
 
-	virtual void SendEvent(Connection* pConnection, ElementXML* pMsg, AnalyzeXML* pResponse, ConnectionListIter begin, ConnectionListIter end)
+	virtual void SendEvent(Connection* pConnection, soarxml::ElementXML* pMsg, AnalyzeXML* pResponse, ConnectionListIter begin, ConnectionListIter end)
 	{
 	#ifdef _DEBUG
 		// Generate a text form of the XML so we can look at it in the debugger.

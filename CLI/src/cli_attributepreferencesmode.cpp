@@ -13,41 +13,44 @@
 #include "cli_Commands.h"
 #include "sml_Names.h"
 #include "sml_StringOps.h"
+#include "agent.h"
+#include "cli_CLIError.h"
 
-#include "gSKI_Agent.h"
 
 using namespace cli;
 using namespace sml;
 
-bool CommandLineInterface::ParseAttributePreferencesMode(gSKI::Agent* pAgent, std::vector<std::string>& argv) {
+bool CommandLineInterface::ParseAttributePreferencesMode(std::vector<std::string>& argv) {
 	if (argv.size() > 2) return SetError(CLIError::kTooManyArgs);
 	
 	// Display current mode if no args
-	if (argv.size() < 2) return DoAttributePreferencesMode(pAgent);
+	if (argv.size() < 2) return DoAttributePreferencesMode();
 
 	// Set new mode
 	if (!IsInteger(argv[1])) return SetError(CLIError::kIntegerExpected);
 	int mode = atoi(argv[1].c_str());
 	if (mode < 0) return SetError(CLIError::kIntegerMustBeNonNegative);
 	if (mode > 2) return SetError(CLIError::kIntegerOutOfRange);
-	return DoAttributePreferencesMode(pAgent, &mode);
+	return DoAttributePreferencesMode(&mode);
 }
 
-bool CommandLineInterface::DoAttributePreferencesMode(gSKI::Agent* pAgent, int* pMode) {
-	if (pAgent->GetOperand2Mode()) return SetError(CLIError::kSoar7Command);
+bool CommandLineInterface::DoAttributePreferencesMode(int* pMode) {
+
+	if (m_pAgentSoar->operand2_mode) return SetError(CLIError::kSoar7Command);
 
 	if (!pMode) {
 		// query
 		if (m_RawOutput) {
-			m_Result << pAgent->GetAttributePreferencesMode();
+			m_Result << m_pAgentSoar->attribute_preferences_mode;
 		} else {
 			char buf[kMinBufferSize];
-			AppendArgTagFast(sml_Names::kParamValue, sml_Names::kTypeInt, Int2String(pAgent->GetAttributePreferencesMode(), buf, kMinBufferSize));
+			AppendArgTagFast(sml_Names::kParamValue, sml_Names::kTypeInt, Int2String(m_pAgentSoar->attribute_preferences_mode, buf, kMinBufferSize));
 		}
 		return true;
 	}
-	
-	pAgent->SetAttributePreferencesMode(*pMode);
+
+	m_pAgentSoar->attribute_preferences_mode = *pMode;
+
 	return true;
 }
 
