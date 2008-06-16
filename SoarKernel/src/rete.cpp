@@ -3517,7 +3517,7 @@ byte add_production_to_rete (agent* thisAgent,
                                                          production *p,
                              condition *lhs_top,
                              instantiation *refracted_inst,
-                             Bool warn_on_duplicates) 
+                             Bool warn_on_duplicates, Bool ignore_rhs) 
 {
   rete_node *bottom_node, *p_node;
   rete_node_level bottom_depth;
@@ -3558,7 +3558,7 @@ byte add_production_to_rete (agent* thisAgent,
   for (p_node=bottom_node->first_child; p_node!=NIL;
        p_node=p_node->next_sibling) {
     if (p_node->node_type != P_BNODE) continue;
-    if (! same_rhs (p_node->b.p.prod->action_list, p->action_list)) continue;
+    if ( !ignore_rhs && !same_rhs (p_node->b.p.prod->action_list, p->action_list)) continue;
     /* --- duplicate production found --- */
     if (warn_on_duplicates)
       print_with_symbols (thisAgent, "\nIgnoring %y because it is a duplicate of %y ",
@@ -6041,7 +6041,6 @@ void p_node_left_removal (agent* thisAgent, rete_node *node, token *tok, wme *w)
       }
 
   /* REW: end   09.15.96 */
-
 #ifdef BUG_139_WORKAROUND
     if (node->b.p.prod->type == JUSTIFICATION_PRODUCTION_TYPE) {
 #ifdef BUG_139_WORKAROUND_WARNING
@@ -6431,7 +6430,7 @@ void reteload_all_symbols (agent* thisAgent, FILE* f) {
   for (i=0; i<num_float_constants; i++) {
     reteload_string(f);
     *(current_place_in_symtab++) = 
-      make_float_constant (thisAgent, (float)my_strtod(reteload_string_buf,NULL,10));
+      make_float_constant (thisAgent, (double)my_strtod(reteload_string_buf,NULL,10));
   }
 }
 

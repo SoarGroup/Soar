@@ -40,7 +40,9 @@ bool CommandLineInterface::ParseWatch(std::vector<std::string>& argv) {
 		{'p',"phases",					2},
 		{'P',"productions",				2},
 		{'r',"preferences",				2},
+		{'R',"rl",						2},
 		{'t',"timetags",				0},
+		{'T',"template",				2},
 		{'u',"user-productions",		2},
 		{'w',"wmes",					2},
 		{0, 0, 0}
@@ -183,9 +185,29 @@ bool CommandLineInterface::ParseWatch(std::vector<std::string>& argv) {
 				}
 				break;
 
+			case 'R'://rl
+				options.set(WATCH_RL);
+				if (m_OptionArgument.size()) {
+					if (!CheckOptargRemoveOrZero()) return false; //error, code set in CheckOptargRemoveOrZero
+					settings.reset(WATCH_RL);
+				} else {
+					settings.set(WATCH_RL);
+				}
+				break;
+
 			case 't'://timetags
 				options.set(WATCH_WME_DETAIL);
 				wmeSetting = 1;
+				break;
+
+			case 'T'://templates
+				options.set(WATCH_TEMPLATES);
+				if (m_OptionArgument.size()) {
+					if (!CheckOptargRemoveOrZero()) return false; //error, code set in CheckOptargRemoveOrZero
+					settings.reset(WATCH_TEMPLATES);
+				} else {
+					settings.set(WATCH_TEMPLATES);
+				}
 				break;
 
 			case 'u'://user-productions
@@ -244,6 +266,7 @@ bool CommandLineInterface::ProcessWatchLevelSettings(const int level, WatchBitse
 	options.set(WATCH_USER);
 	options.set(WATCH_CHUNKS);
 	options.set(WATCH_JUSTIFICATIONS);
+	options.set(WATCH_TEMPLATES);
 	options.set(WATCH_PHASES);
 	options.set(WATCH_DECISIONS);
 
@@ -254,6 +277,7 @@ bool CommandLineInterface::ProcessWatchLevelSettings(const int level, WatchBitse
 	settings.reset(WATCH_USER);
 	settings.reset(WATCH_CHUNKS);
 	settings.reset(WATCH_JUSTIFICATIONS);
+	settings.reset(WATCH_TEMPLATES);
 	settings.reset(WATCH_PHASES);
 	settings.reset(WATCH_DECISIONS);
 
@@ -272,11 +296,12 @@ bool CommandLineInterface::ProcessWatchLevelSettings(const int level, WatchBitse
 		case 4:// wmes
 			settings.set(WATCH_WMES);
 			// falls through
-		case 3:// productions (default, user, chunks, justifications)
+		case 3:// productions (default, user, chunks, justifications, templates)
 			settings.set(WATCH_DEFAULT);
 			settings.set(WATCH_USER);
 			settings.set(WATCH_CHUNKS);
 			settings.set(WATCH_JUSTIFICATIONS);
+			settings.set(WATCH_TEMPLATES);
 			// falls through
 		case 2:// phases
 			settings.set(WATCH_PHASES);
@@ -344,6 +369,7 @@ bool CommandLineInterface::DoWatch(const WatchBitset& options, const WatchBitset
 			m_Result << "\n  User productions:  " << (pSysparams[TRACE_FIRINGS_OF_USER_PRODS_SYSPARAM] ? "on" : "off");
 			m_Result << "\n  Chunks:  " << (pSysparams[TRACE_FIRINGS_OF_CHUNKS_SYSPARAM] ? "on" : "off");
 			m_Result << "\n  Justifications:  " << (pSysparams[TRACE_FIRINGS_OF_JUSTIFICATIONS_SYSPARAM] ? "on" : "off");
+			m_Result << "\n  Templates:  " << (pSysparams[TRACE_FIRINGS_OF_TEMPLATES_SYSPARAM] ? "on" : "off");
 			m_Result << "\n    WME detail level:  ";
 			switch (pSysparams[TRACE_FIRINGS_WME_TRACE_TYPE_SYSPARAM]) {
 				default://falls through					
@@ -374,6 +400,7 @@ bool CommandLineInterface::DoWatch(const WatchBitset& options, const WatchBitset
 			}
 			m_Result << "\n  Backtracing:  " << (pSysparams[TRACE_BACKTRACING_SYSPARAM] ? "on" : "off");
 			m_Result << "\n  Indifferent selection:  " << (pSysparams[TRACE_INDIFFERENT_SYSPARAM] ? "on" : "off");
+			m_Result << "\n  Soar-RL:  " << (pSysparams[TRACE_RL_SYSPARAM] ? "on" : "off");
 
 		} else {
 			char buf[kMinBufferSize];
@@ -395,6 +422,9 @@ bool CommandLineInterface::DoWatch(const WatchBitset& options, const WatchBitset
 			AppendArgTag(sml_Names::kParamWatchProductionJustifications, sml_Names::kTypeBoolean, 
 				pSysparams[TRACE_FIRINGS_OF_JUSTIFICATIONS_SYSPARAM] ? sml_Names::kTrue : sml_Names::kFalse);
 
+			AppendArgTag(sml_Names::kParamWatchProductionTemplates, sml_Names::kTypeBoolean, 
+				pSysparams[TRACE_FIRINGS_OF_TEMPLATES_SYSPARAM] ? sml_Names::kTrue : sml_Names::kFalse);
+
 			// Subtract one here because the kernel constants (e.g. TIMETAG_WME_TRACE) are one plus the number we use
 			AppendArgTag(sml_Names::kParamWatchWMEDetail, sml_Names::kTypeInt, 
 				Int2String(pSysparams[TRACE_FIRINGS_WME_TRACE_TYPE_SYSPARAM]-1, buf, kMinBufferSize));
@@ -413,6 +443,9 @@ bool CommandLineInterface::DoWatch(const WatchBitset& options, const WatchBitset
 
 			AppendArgTag(sml_Names::kParamWatchIndifferentSelection, sml_Names::kTypeBoolean, 
 				pSysparams[TRACE_INDIFFERENT_SYSPARAM] ? sml_Names::kTrue : sml_Names::kFalse);
+
+			AppendArgTag(sml_Names::kParamWatchRL, sml_Names::kTypeBoolean, 
+				pSysparams[TRACE_RL_SYSPARAM] ? sml_Names::kTrue : sml_Names::kFalse);
 		}
 
 		return true;
@@ -439,8 +472,16 @@ bool CommandLineInterface::DoWatch(const WatchBitset& options, const WatchBitset
 		pKernelHack->SetSysparam(m_pAgentSML, TRACE_INDIFFERENT_SYSPARAM, settings.test(WATCH_INDIFFERENT));
 	}
 
+	if (options.test(WATCH_RL)) {
+		pKernelHack->SetSysparam(m_pAgentSML, TRACE_RL_SYSPARAM, settings.test(WATCH_RL));
+	}
+
 	if (options.test(WATCH_JUSTIFICATIONS)) {
 		pKernelHack->SetSysparam(m_pAgentSML, TRACE_FIRINGS_OF_JUSTIFICATIONS_SYSPARAM, settings.test(WATCH_JUSTIFICATIONS));
+	}
+
+	if (options.test(WATCH_TEMPLATES)) {
+		pKernelHack->SetSysparam(m_pAgentSML, TRACE_FIRINGS_OF_TEMPLATES_SYSPARAM, settings.test(WATCH_TEMPLATES));
 	}
 
 	if (options.test(WATCH_PHASES)) {

@@ -179,7 +179,7 @@ typedef struct int_constant_struct {
 
 typedef struct float_constant_struct {
   symbol_common_data common_symbol_info;
-  float value;
+  double value;
 } float_constant;
 
 typedef struct variable_struct {
@@ -224,6 +224,9 @@ typedef struct identifier_struct {
   union symbol_union *higher_goal, *lower_goal;
   struct slot_struct *operator_slot;
   struct preference_struct *preferences_from_goal;
+
+  union symbol_union *reward_header;		// pointer to reward_link
+  struct rl_data_struct *rl_info;			// various Soar-RL information
 
   /* REW: begin 09.15.96 */
   struct gds_struct *gds;    /* Pointer to a goal's dependency set */
@@ -320,12 +323,12 @@ extern Symbol *find_variable (agent* thisAgent, char *name);
 extern Symbol *find_identifier (agent* thisAgent, char name_letter, unsigned long name_number);
 extern Symbol *find_sym_constant (agent* thisAgent, const char *name);  /* AGR 600 */
 extern Symbol *find_int_constant (agent* thisAgent, long value);
-extern Symbol *find_float_constant (agent* thisAgent, float value);
+extern Symbol *find_float_constant (agent* thisAgent, double value);
 
 extern Symbol *make_variable (agent* thisAgent, char *name);
 extern Symbol *make_sym_constant (agent* thisAgent, char const *name);
 extern Symbol *make_int_constant (agent* thisAgent, long value);
-extern Symbol *make_float_constant (agent* thisAgent, float value);
+extern Symbol *make_float_constant (agent* thisAgent, double value);
 extern Symbol *make_new_identifier (agent* thisAgent, char name_letter, goal_stack_level level);
 
 extern void deallocate_symbol (agent* thisAgent, Symbol *sym);

@@ -88,7 +88,7 @@ extern void remove_wmes_for_context_slot (agent* thisAgent, slot *s); /* added t
 extern void init_decider (agent* thisAgent);
 extern void do_buffered_wm_and_ownership_changes (agent* thisAgent);
 extern void do_working_memory_phase (agent* thisAgent);
-extern void do_decision_phase (agent* thisAgent);
+extern void do_decision_phase (agent* thisAgent,bool predict = false);
 extern void create_top_goal (agent* thisAgent);
 extern void clear_goal_stack (agent* thisAgent);
 extern void print_lowest_slot_in_context_stack (agent* thisAgent);

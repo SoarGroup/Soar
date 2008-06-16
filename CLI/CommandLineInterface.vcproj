@@ -319,6 +319,10 @@
 					>
 				</File>
 				<File
+					RelativePath=".\src\cli_predict.cpp"
+					>
+				</File>
+				<File
 					RelativePath=".\src\cli_preferences.cpp"
 					>
 				</File>
@@ -369,11 +373,19 @@
 					</FileConfiguration>
 				</File>
 				<File
+					RelativePath=".\src\cli_rl.cpp"
+					>
+				</File>
+				<File
 					RelativePath=".\src\cli_run.cpp"
 					>
 				</File>
 				<File
 					RelativePath=".\src\cli_savebacktraces.cpp"
+					>
+				</File>
+				<File
+					RelativePath=".\src\cli_select.cpp"
 					>
 				</File>
 				<File

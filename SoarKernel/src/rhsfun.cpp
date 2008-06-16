@@ -153,40 +153,6 @@ void remove_rhs_function(agent* thisAgent, Symbol *name) {  /* code from Koss 8/
 
 ====================================================================  */
 
-/* MVP 6-8-94 */
-/* --------------------------------------------------------------------
-			       User-Select
--------------------------------------------------------------------- */
-Symbol *user_select_rhsfun (agent* thisAgent, list *args, void* user_data) {
-  Symbol *uselect;
-
-  uselect = static_cast<symbol_union *>(args->first);
-
-  if (!strcmp(uselect->sc.name,"first")) {
-    set_sysparam (thisAgent, USER_SELECT_MODE_SYSPARAM, USER_SELECT_FIRST);
-    return NIL;
-  }
-/* AGR 615 begin */
-  if (!strcmp(uselect->sc.name,"last")) {
-    set_sysparam (thisAgent, USER_SELECT_MODE_SYSPARAM, USER_SELECT_LAST);
-    return NIL;
-  }
-/* AGR 615 end */
-  if ((!strcmp(uselect->sc.name,"ask")) ||
-      (!strcmp(uselect->sc.name,"t"))) {
-    set_sysparam (thisAgent, USER_SELECT_MODE_SYSPARAM, USER_SELECT_ASK);
-    return NIL;
-  }
-  if ((!strcmp(uselect->sc.name,"random")) ||
-      (!strcmp(uselect->sc.name,"nil"))) {
-    set_sysparam (thisAgent, USER_SELECT_MODE_SYSPARAM, USER_SELECT_RANDOM);
-    return NIL;
-  }
-  print (thisAgent, "Expected first, ask, or random for new value of user-select.\n");
-
-  return NIL;
-}
-
 /* --------------------------------------------------------------------
                                 Write
 

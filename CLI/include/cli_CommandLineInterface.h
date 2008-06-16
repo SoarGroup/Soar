@@ -77,10 +77,12 @@ typedef ElementXMLList::iterator ElementXMLListIter;
 
 // Define bitsets for various commands
 typedef std::bitset<EXCISE_NUM_OPTIONS> ExciseBitset;
+typedef std::bitset<INDIFFERENT_NUM_OPTIONS> IndifferentBitset;
 typedef std::bitset<LEARN_NUM_OPTIONS> LearnBitset;
 typedef std::bitset<MEMORIES_NUM_OPTIONS> MemoriesBitset;
 typedef std::bitset<PRINT_NUM_OPTIONS> PrintBitset;
 typedef std::bitset<PRODUCTION_FIND_NUM_OPTIONS> ProductionFindBitset;
+typedef std::bitset<RL_NUM_OPTIONS> RLBitset;
 typedef std::bitset<RUN_NUM_OPTIONS> RunBitset;
 typedef std::bitset<STATS_NUM_OPTIONS> StatsBitset;
 typedef std::bitset<WATCH_NUM_OPTIONS> WatchBitset;
@@ -201,6 +203,7 @@ public:
 	bool ParseNumericIndifferentMode(std::vector<std::string>& argv);
 	bool ParseOSupportMode(std::vector<std::string>& argv);
 	bool ParsePopD(std::vector<std::string>& argv);
+	bool ParsePredict(std::vector<std::string>& argv);
 	bool ParsePreferences(std::vector<std::string>& argv);
 	bool ParsePrint(std::vector<std::string>& argv);
 	bool ParseProductionFind(std::vector<std::string>& argv);
@@ -210,8 +213,10 @@ public:
 	bool ParseQuit(std::vector<std::string>& argv);
 	bool ParseRemoveWME(std::vector<std::string>& argv);
 	bool ParseReteNet(std::vector<std::string>& argv);
+	bool ParseRL(std::vector<std::string>& argv);
 	bool ParseRun(std::vector<std::string>& argv);
 	bool ParseSaveBacktraces(std::vector<std::string>& argv);
+	bool ParseSelect(std::vector<std::string>& argv);
 	bool ParseSetLibraryLocation(std::vector<std::string>& argv);
 	bool ParseSoar8(std::vector<std::string>& argv);
 	bool ParseSoarNews(std::vector<std::string>& argv);
@@ -354,10 +359,12 @@ public:
 
 	/*************************************************************
 	* @brief indifferent-selection command
-	* @param mode What mode to set indifferent selection to, or query.  
-	*        See eIndifferentMode
+	* @param pOp The operation to perform, pass 0 if unnecssary
+	* @param p1 First parameter, pass 0 (null) if unnecessary
+	* @param p2 Second parameter, pass 0 (null) if unnecessary
+	* @param p3 Third parameter, pass 0 (null) if unnecessary
 	*************************************************************/
-	bool DoIndifferentSelection(eIndifferentMode mode);
+	bool DoIndifferentSelection( const char pOp = 0, const std::string* p1 = 0, const std::string* p2 = 0, const std::string* p3 = 0 );
 
 	/*************************************************************
 	* @brief init-soar command
@@ -462,6 +469,11 @@ public:
 	bool DoPopD();
 
 	/*************************************************************
+	* @brief predict command
+	*************************************************************/
+	bool DoPredict();
+
+	/*************************************************************
 	* @brief preferences command
 	* @param detail The preferences detail level, see cli_CommandData.h
 	* @param pId An existing soar identifier or 0 (null)
@@ -522,6 +534,14 @@ public:
 	* @param filename the rete-net file
 	*************************************************************/
 	bool DoReteNet(bool save, std::string filename);
+	
+	/*************************************************************
+	* @brief rl command
+	* @param pOp the rl switch to implement, pass 0 (null) for full parameter configuration
+	* @param pAttr the attribute to get/set/stats, pass 0 (null) only if no pOp (all config) or stats (full stats)
+	* @param pVal the value to set, pass 0 (null) only if no pOp (all config), get, or stats
+	*************************************************************/
+	bool DoRL( const char pOp = 0, const std::string *pAttr = 0, const std::string *pVal = 0 );
 
 	/*************************************************************
 	* @brief run command
@@ -537,6 +557,13 @@ public:
 	* @param setting The new setting, pass 0 (null) for query
 	*************************************************************/
 	bool DoSaveBacktraces(bool* pSetting = 0);
+	
+	/*************************************************************
+	* @brief select command
+	* @param pAgent The pointer to the gSKI agent interface
+	* @param setting The new setting, pass 0 (null) for query
+	*************************************************************/
+	bool DoSelect(const std::string* pOp = 0);
 
 	/*************************************************************
 	* @brief set-library-location command

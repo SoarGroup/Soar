@@ -51,13 +51,14 @@
 #include "xml.h"
 #include "soar_TraceNames.h"
 
+#include "exploration.h"
+#include "reinforcement_learning.h"
+#include "decision_manipulation.h"
+#include "misc.h"
+
 #include "assert.h"
 
 using namespace soar_TraceNames;
-
-#ifdef NUMERIC_INDIFFERENCE
-/* REW: 2003-01-02 Behavior Variability Kernel Experiments */
-preference *probabilistically_select(agent* thisAgent, slot * s, preference * candidates);
 
 /* REW: 2003-01-06 A temporary helper function */
 
@@ -77,7 +78,7 @@ void print_candidates(agent* thisAgent, preference * candidates)
 
 /* END: 2003-01-02 Behavior Variability Kernel Experiments */
 
-#endif
+//#endif
 
 /* ------------------------------------------------------------------------
                      Decider Global Variables
@@ -799,7 +800,7 @@ void do_buffered_link_changes (agent* thisAgent) {
    require preference for the slot.
 ************************************************************************** */
 
-byte require_preference_semantics (slot *s, preference **result_candidates) {
+byte require_preference_semantics (agent *thisAgent, slot *s, preference **result_candidates) {
   preference *p;
   preference *candidates;
   Symbol *value;
@@ -827,10 +828,16 @@ byte require_preference_semantics (slot *s, preference **result_candidates) {
     if (p->value == value) return CONSTRAINT_FAILURE_IMPASSE_TYPE;
   
   /* --- the lone require is the winner --- */
+  if ( candidates && rl_enabled( thisAgent ) )
+  {
+	  exploration_compute_value_of_candidate( thisAgent, candidates, s, 0 );
+	  rl_perform_update( thisAgent, candidates->numeric_value, s->id );
+  }
+
   return NONE_IMPASSE_TYPE;
 }
 
-byte run_preference_semantics (agent* thisAgent, slot *s, preference **result_candidates) 
+byte run_preference_semantics (agent* thisAgent, slot *s, preference **result_candidates, bool consistency = false, bool predict = false) 
 {
   preference *p, *p2, *cand, *prev_cand;
   Bool match_found, not_all_indifferent, not_all_parallel;
@@ -843,10 +850,37 @@ byte run_preference_semantics (agent* thisAgent, slot *s, preference **result_ca
     *result_candidates = NIL;
     return NONE_IMPASSE_TYPE;
   }
+
+  // if this is the true decision slot and selection has been made, attempt force selection
+  if ( !( ( ( thisAgent->attribute_preferences_mode == 2 ) || ( thisAgent->operand2_mode == TRUE ) ) && ( !s->isa_context_slot ) ) ) 
+  {
+	  if ( select_get_operator( thisAgent ) != NULL )
+	  {
+		  preference *force_result = select_force( thisAgent, s->all_preferences, !predict );
+
+		  if ( force_result )
+		  {
+			  *result_candidates = force_result;
+
+			  if ( !predict && rl_enabled( thisAgent ) )
+			  {
+				  exploration_compute_value_of_candidate( thisAgent, force_result, s, 0 );
+				  rl_perform_update( thisAgent, force_result->numeric_value, s->id );
+			  }
+
+			  return NONE_IMPASSE_TYPE;
+		  }
+		  else
+		  {
+			  print( thisAgent, "WARNING: Invalid forced selection operator id" );
+			  xml_generate_warning( thisAgent, "WARNING: Invalid forced selection operator id" );
+		  }
+	  }
+  }
   
   /* === Requires === */
   if (s->preferences[REQUIRE_PREFERENCE_TYPE]) {
-    return require_preference_semantics (s, result_candidates);
+    return require_preference_semantics (thisAgent, s, result_candidates);
   }
     
   /* === Acceptables, Prohibits, Rejects === */
@@ -882,6 +916,14 @@ byte run_preference_semantics (agent* thisAgent, slot *s, preference **result_ca
   /* === If there are only 0 or 1 candidates, we're done === */
   if ((!candidates) || (! candidates->next_candidate)) {
     *result_candidates = candidates;
+
+	if ( !consistency && rl_enabled( thisAgent ) && candidates )
+	{
+		// perform update here for just one candidate
+		exploration_compute_value_of_candidate( thisAgent, candidates, s, 0 );
+		rl_perform_update( thisAgent, candidates->numeric_value, s->id );
+	}
+
     return NONE_IMPASSE_TYPE;
   }
 
@@ -1041,9 +1083,18 @@ byte run_preference_semantics (agent* thisAgent, slot *s, preference **result_ca
   }
   
   /* === If there are only 0 or 1 candidates, we're done === */
-  if ((!candidates) || (! candidates->next_candidate)) {
-    *result_candidates = candidates;
-    return NONE_IMPASSE_TYPE;
+  if ( !candidates || !candidates->next_candidate ) 
+  {
+	  *result_candidates = candidates;
+	  
+	  if ( !consistency && rl_enabled( thisAgent ) && candidates )
+	  {
+		  // perform update here for just one candidate
+		  exploration_compute_value_of_candidate( thisAgent, candidates, s, 0 );
+		  rl_perform_update( thisAgent, candidates->numeric_value, s->id );
+	  }
+	  
+	  return NONE_IMPASSE_TYPE;
   }
 
   /* === Indifferents === */
@@ -1051,33 +1102,25 @@ byte run_preference_semantics (agent* thisAgent, slot *s, preference **result_ca
     cand->value->common.decider_flag = NOTHING_DECIDER_FLAG;
   for (p=s->preferences[UNARY_INDIFFERENT_PREFERENCE_TYPE]; p; p=p->next)
     p->value->common.decider_flag = UNARY_INDIFFERENT_DECIDER_FLAG;
-
-	 #ifdef NUMERIC_INDIFFERENCE
-    /* REW: 2003-01-02 Behavior Variability Kernel Experiments
-     We want to treat some binary indifferent prefs as unary indifferents,
-     the second pref is really an int representing a probability value.
-     So we identify these preferences here.
-  */
-	for (p=s->preferences[BINARY_INDIFFERENT_PREFERENCE_TYPE]; p; p=p->next)
-    if((p->referent->fc.common_symbol_info.symbol_type == INT_CONSTANT_SYMBOL_TYPE) || 
-	   (p->referent->fc.common_symbol_info.symbol_type == FLOAT_CONSTANT_SYMBOL_TYPE))
-     
+  
+  
+  for (p=s->preferences[NUMERIC_INDIFFERENT_PREFERENCE_TYPE]; p; p=p->next)
       p->value->common.decider_flag = UNARY_INDIFFERENT_CONSTANT_DECIDER_FLAG;
   
-  /* END: 2003-01-02 Behavior Variability Kernel Experiments  */
-
-	#endif
+  for (p=s->preferences[BINARY_INDIFFERENT_PREFERENCE_TYPE]; p; p=p->next)
+    if((p->referent->fc.common_symbol_info.symbol_type == INT_CONSTANT_SYMBOL_TYPE) || 
+	   (p->referent->fc.common_symbol_info.symbol_type == FLOAT_CONSTANT_SYMBOL_TYPE))
+	   p->value->common.decider_flag = UNARY_INDIFFERENT_CONSTANT_DECIDER_FLAG;
+  
+  
 
   not_all_indifferent = FALSE;
-  for (cand=candidates; cand!=NIL; cand=cand->next_candidate) {
-    /* --- if cand is unary indifferent, it's fine --- */
+  for (cand=candidates; cand!=NIL; cand=cand->next_candidate) 
+  {
     if (cand->value->common.decider_flag==UNARY_INDIFFERENT_DECIDER_FLAG)
       continue;
-    
-	#ifdef NUMERIC_INDIFFERENCE
 	else if ( cand->value->common.decider_flag==UNARY_INDIFFERENT_CONSTANT_DECIDER_FLAG )
 	  continue;
-	#endif
 
     /* --- check whether cand is binary indifferent to each other one --- */
     for (p=candidates; p!=NIL; p=p->next_candidate) {
@@ -1098,142 +1141,16 @@ byte run_preference_semantics (agent* thisAgent, slot *s, preference **result_ca
     if (not_all_indifferent) break;
   } /* end of for cand loop */
 
-  if (! not_all_indifferent) {
-    /* --- items all indifferent, so just pick one of them to return --- */
-    /* RBD 4/13/95 Removed code that looked for an existing value already in
-       working memory for this slot, and returned it if found.  This was
-       apparently an attempt to "stabilize" working memory if attribute
-       preferences kept changing, but it ended up getting in the way, esp.
-       with mutually indifferent operators were used with user-select
-       random. */
-    /* --- choose according to user-select --- */
-    switch (thisAgent->sysparams[USER_SELECT_MODE_SYSPARAM]) {
-    case USER_SELECT_FIRST:
-      *result_candidates = candidates;
-      break;
-/* AGR 615 begin */
-    case USER_SELECT_LAST:
-      /* The test to see if candidates is NIL is done just before the
-	 indifferent preferences processing begins.  The only place
-	 between there and here that candidates is changed is immediately
-	 followed by a return statement, so we can assume here that
-	 candidates is not NIL.  AGR 94.11.09 */
-      for (cand = candidates; cand->next_candidate != NIL; cand = cand->next_candidate);
-      *result_candidates = cand;
-      break;
-/* AGR 615 end */
-    case USER_SELECT_ASK: {
-      int num_candidates, chosen_num;
-      num_candidates = 0;
-      print (thisAgent, "\nPlease choose one of the following:\n");
-      for (cand=candidates; cand!=NIL; cand=cand->next_candidate) {
-        num_candidates++;
-        print (thisAgent, "  %d:  ", num_candidates);
-        print_object_trace (thisAgent, cand->value);
-        print (thisAgent, "\n");
-      }
-/* AGR 615 begin */
-      print(thisAgent, "Or choose one of the following to change the user-select mode\n");
-      print(thisAgent, "to something else:  %d (first), %d (last), %d (random)\n",
-	     num_candidates + 1, num_candidates + 2, num_candidates + 3);
-      num_candidates += 3;
-/* AGR 615 end */
-      while (TRUE) {
-        char ch;
-//#ifdef _WINDOWS
-//		char buff[256],msg[256];
-//		SNPRINTF(msg,256,"Enter selection 1-%d",num_candidates);
-//		msg[255] = 0; /* ensure null termination */
-//
-//		get_line_from_window(msg,buff,255);
-//		sscanf(msg,"%d",num_candidates);
-//#else
-	//  char buf[256]; /* kjh(CUSP-B10) */
-        print (thisAgent, "Enter selection (1-%d): ", num_candidates);
-        chosen_num = -1;
-        scanf (" %d", &chosen_num);
-        do { ch=getchar(); } while ((ch!='\n') && (ch!=EOF_AS_CHAR));
+  if ( !not_all_indifferent ) 
+  {
+    if ( !consistency )
+	{
+		(*result_candidates) = exploration_choose_according_to_policy( thisAgent, s, candidates ); 
+		(*result_candidates)->next_candidate = NIL;
+	}
+	else
+		*result_candidates = candidates;
 
-	if (ch==EOF_AS_CHAR) clearerr(stdin); /* Soar-Bugs #103, TMH */
-	
-     /* kjh(CUSP-B10) BEGIN*/
-     /* Soar_Read(thisAgent, buf, 256);
-	          sscanf(buf,"%d",&chosen_num); */
-     /* kjh(CUSP-B10) END*/
-
-//#endif
-        if ((chosen_num>=1) && (chosen_num<=num_candidates)) break;
-        print (thisAgent, "You must enter a number between 1 and %d\n", num_candidates);
-      }
-/* AGR 615 begin */
-      switch (num_candidates - chosen_num) {
-      case 2:
-	set_sysparam (thisAgent, USER_SELECT_MODE_SYSPARAM, USER_SELECT_FIRST);
-	print (thisAgent, "User-select mode changed to:  first\n");
-	*result_candidates = candidates;
-	break;
-      case 1:
-	set_sysparam (thisAgent, USER_SELECT_MODE_SYSPARAM, USER_SELECT_LAST);
-	print (thisAgent, "User-select mode changed to:  last\n");
-	for (cand = candidates; cand->next_candidate != NIL; cand = cand->next_candidate);
-	*result_candidates = cand;
-	break;
-      case 0:
-	set_sysparam (thisAgent, USER_SELECT_MODE_SYSPARAM, USER_SELECT_RANDOM);
-	print (thisAgent, "User-select mode changed to:  random\n");
-	
-	    /* RPM 12/05 replacing calls to rand() with calls to SoarRand; see bug 595 */
-        //chosen_num = rand() % (num_candidates-3); // generates an integer in [0,num_candidates-3)
-	    chosen_num = SoarRandInt(num_candidates-4); // generates an integer in [0,num_candidates-4]
-
-	cand = candidates;
-	while (chosen_num) { cand=cand->next_candidate; chosen_num--; }
-	*result_candidates = cand;
-	break;
-      default:
-	cand = candidates;
-	while (chosen_num>1) { cand=cand->next_candidate; chosen_num--; }
-	*result_candidates = cand;
-      }
-/* AGR 615 end */
-      break;
-    }
-    case USER_SELECT_RANDOM: {
-
-#ifdef NUMERIC_INDIFFERENCE
-                /* REW: 2003-01-02 Behavior Variability Kernel Experiments */
-                cand = probabilistically_select(thisAgent, s, candidates);
-                if (!cand) {
-                    *result_candidates = candidates;
-                    return TIE_IMPASSE_TYPE;
-                }
-                *result_candidates = cand;
-                break;
-#else
-      int num_candidates, chosen_num;
-      num_candidates = 0;
-      for (cand=candidates; cand!=NIL; cand=cand->next_candidate)
-        num_candidates++;
-
-	  /* RPM 12/05 replacing calls to rand() with calls to SoarRand; see bug 595 */
-      //chosen_num = rand() % num_candidates;
-	  chosen_num = SoarRand.randInt(num_candidates-1);
-
-      cand = candidates;
-      while (chosen_num) { cand=cand->next_candidate; chosen_num--; }
-      *result_candidates = cand;
-      break;
-#endif
-    }
-    default:
-      { char msg[BUFFER_MSG_SIZE];
-      SNPRINTF(msg, BUFFER_MSG_SIZE, "decide.c: Error: bad value of user_select_mode: %d\n",
-	      (int)thisAgent->sysparams[USER_SELECT_MODE_SYSPARAM]);
-      msg[BUFFER_MSG_SIZE - 1] = 0; /* ensure null termination */
-      abort_with_fatal_error(thisAgent, msg);
-      }
-    }
-    (*result_candidates)->next_candidate = NIL;
     return NONE_IMPASSE_TYPE;
   }
   
@@ -1284,347 +1201,9 @@ byte run_preference_semantics (agent* thisAgent, slot *s, preference **result_ca
 }
 
 
-byte run_preference_semantics_for_consistency_check (agent* thisAgent, slot *s, preference **result_candidates) {
-  preference *p, *p2, *cand, *prev_cand;
-  Bool match_found, not_all_indifferent, not_all_parallel;
-  preference *candidates;
-
-  /* printf("\n       Checking the preference semantics for inconsistencies....\n"); */
-  /* --- if the slot has no preferences at all, things are trivial --- */
-  if (! s->all_preferences) {
-    if (! s->isa_context_slot) mark_slot_for_possible_removal (thisAgent, s);
-    *result_candidates = NIL;
-    return NONE_IMPASSE_TYPE;
-  }
-  
-  /* === Requires === */
-  if (s->preferences[REQUIRE_PREFERENCE_TYPE]) {
-    return require_preference_semantics (s, result_candidates);
-  }
-    
-  /* === Acceptables, Prohibits, Rejects === */
-
-  /* --- mark everything that's acceptable, then unmark the prohibited
-         and rejected items --- */
-  for (p=s->preferences[ACCEPTABLE_PREFERENCE_TYPE]; p!=NIL; p=p->next)
-    p->value->common.decider_flag = CANDIDATE_DECIDER_FLAG;
-  for (p=s->preferences[PROHIBIT_PREFERENCE_TYPE]; p!=NIL; p=p->next)
-    p->value->common.decider_flag = NOTHING_DECIDER_FLAG;
-  for (p=s->preferences[REJECT_PREFERENCE_TYPE]; p!=NIL; p=p->next)
-    p->value->common.decider_flag = NOTHING_DECIDER_FLAG;
-
-  /* --- now scan through acceptables and build the list of candidates --- */
-  candidates = NIL;
-  for (p=s->preferences[ACCEPTABLE_PREFERENCE_TYPE]; p!=NIL; p=p->next) {
-    if (p->value->common.decider_flag == CANDIDATE_DECIDER_FLAG) {
-      p->next_candidate = candidates;
-      candidates = p;
-      /* --- unmark it, in order to prevent it from being added twice --- */
-      p->value->common.decider_flag = NOTHING_DECIDER_FLAG;
-    }
-  }
-
-  /* === Handling of attribute_preferences_mode 2 === */
-  if (( (thisAgent->attribute_preferences_mode==2) ||
-		  (thisAgent->operand2_mode == TRUE) ) &&
-      (! s->isa_context_slot)) {
-    *result_candidates = candidates;
-    return NONE_IMPASSE_TYPE;
-  }
-       
-  /* === If there are only 0 or 1 candidates, we're done === */
-  if ((!candidates) || (! candidates->next_candidate)) {
-    *result_candidates = candidates;
-    return NONE_IMPASSE_TYPE;
-  }
-
-  /* === Better/Worse === */
-  if (s->preferences[BETTER_PREFERENCE_TYPE] ||
-      s->preferences[WORSE_PREFERENCE_TYPE]) {
-    Symbol *j, *k;
-
-    /* -------------------- Algorithm to find conflicted set: 
-      conflicted = {}
-      for each (j > k):
-        if j is (candidate or conflicted)
-           and k is (candidate or conflicted)
-           and at least one of j,k is a candidate
-          then if (k > j) or (j < k) then
-            conflicted += j, if not already true
-            conflicted += k, if not already true
-            candidate -= j, if not already true
-            candidate -= k, if not already true
-      for each (j < k):
-        if j is (candidate or conflicted)
-           and k is (candidate or conflicted)
-           and at least one of j,k is a candidate
-           then if (k < j)
-             then
-                conflicted += j, if not already true
-                conflicted += k, if not already true
-                candidate -= j, if not already true
-                candidate -= k, if not already true
-      ----------------------- */
-    
-    for (p=s->preferences[BETTER_PREFERENCE_TYPE]; p!=NIL; p=p->next) {
-      p->value->common.decider_flag = NOTHING_DECIDER_FLAG;
-      p->referent->common.decider_flag = NOTHING_DECIDER_FLAG;
-    }
-    for (p=s->preferences[WORSE_PREFERENCE_TYPE]; p!=NIL; p=p->next) {
-      p->value->common.decider_flag = NOTHING_DECIDER_FLAG;
-      p->referent->common.decider_flag = NOTHING_DECIDER_FLAG;
-    }
-    for (cand=candidates; cand!=NIL; cand=cand->next_candidate) {
-      cand->value->common.decider_flag = CANDIDATE_DECIDER_FLAG;
-    }
-    for (p=s->preferences[BETTER_PREFERENCE_TYPE]; p!=NIL; p=p->next) {
-      j = p->value;
-      k = p->referent;
-      if (j==k) continue;
-      if (j->common.decider_flag && k->common.decider_flag) {
-        if(k->common.decider_flag != CONFLICTED_DECIDER_FLAG)
-          k->common.decider_flag = FORMER_CANDIDATE_DECIDER_FLAG;
-        if ((j->common.decider_flag!=CONFLICTED_DECIDER_FLAG) ||
-            (k->common.decider_flag!=CONFLICTED_DECIDER_FLAG)) {
-          for (p2=s->preferences[BETTER_PREFERENCE_TYPE]; p2; p2=p2->next)
-            if ((p2->value==k)&&(p2->referent==j)) {
-              j->common.decider_flag = CONFLICTED_DECIDER_FLAG;
-              k->common.decider_flag = CONFLICTED_DECIDER_FLAG;
-              break;
-            }
-          for (p2=s->preferences[WORSE_PREFERENCE_TYPE]; p2; p2=p2->next)
-            if ((p2->value==j)&&(p2->referent==k)) {
-              j->common.decider_flag = CONFLICTED_DECIDER_FLAG;
-              k->common.decider_flag = CONFLICTED_DECIDER_FLAG;
-              break;
-            }
-        }
-      }
-    }
-    for (p=s->preferences[WORSE_PREFERENCE_TYPE]; p!=NIL; p=p->next) {
-      j = p->value;
-      k = p->referent;
-      if (j==k) continue;
-      if (j->common.decider_flag && k->common.decider_flag) {
-        if(j->common.decider_flag != CONFLICTED_DECIDER_FLAG)
-          j->common.decider_flag = FORMER_CANDIDATE_DECIDER_FLAG;
-        if ((j->common.decider_flag!=CONFLICTED_DECIDER_FLAG) ||
-            (k->common.decider_flag!=CONFLICTED_DECIDER_FLAG)) {
-          for (p2=s->preferences[WORSE_PREFERENCE_TYPE]; p2; p2=p2->next)
-            if ((p2->value==k)&&(p2->referent==j)) {
-              j->common.decider_flag = CONFLICTED_DECIDER_FLAG;
-              k->common.decider_flag = CONFLICTED_DECIDER_FLAG;
-              break;
-            }
-        }
-      }
-    }
-    
-    /* --- now scan through candidates list, look for conflicted stuff --- */
-    for (cand=candidates; cand!=NIL; cand=cand->next_candidate)
-      if (cand->value->common.decider_flag==CONFLICTED_DECIDER_FLAG) break;
-    if (cand) {
-      /* --- collect conflicted candidates into new candidates list --- */
-      prev_cand = NIL;
-      cand = candidates;
-      while (cand) {
-        if (cand->value->common.decider_flag != CONFLICTED_DECIDER_FLAG) {
-          if (prev_cand)
-            prev_cand->next_candidate = cand->next_candidate;
-          else
-            candidates = cand->next_candidate;
-        } else {
-          prev_cand = cand;
-        }
-        cand = cand->next_candidate;
-      }
-      *result_candidates = candidates;
-      return CONFLICT_IMPASSE_TYPE;
-    }
-    /* --- no conflicts found, remove former_candidates from candidates --- */
-    prev_cand = NIL;
-    cand = candidates;
-    while (cand) {
-      if (cand->value->common.decider_flag == FORMER_CANDIDATE_DECIDER_FLAG) {
-        if (prev_cand)
-          prev_cand->next_candidate = cand->next_candidate;
-        else
-          candidates = cand->next_candidate;
-      } else {
-        prev_cand = cand;
-      }
-      cand = cand->next_candidate;
-    }
-  }
-  
-  /* === Bests === */
-  if (s->preferences[BEST_PREFERENCE_TYPE]) {
-    for (cand=candidates; cand!=NIL; cand=cand->next_candidate)
-      cand->value->common.decider_flag = NOTHING_DECIDER_FLAG;
-    for (p=s->preferences[BEST_PREFERENCE_TYPE]; p!=NIL; p=p->next)
-      p->value->common.decider_flag = BEST_DECIDER_FLAG;
-    prev_cand = NIL;
-    for (cand=candidates; cand!=NIL; cand=cand->next_candidate)
-      if (cand->value->common.decider_flag == BEST_DECIDER_FLAG) {
-        if (prev_cand)
-          prev_cand->next_candidate = cand;
-        else
-          candidates = cand;
-        prev_cand = cand;
-      }
-    if (prev_cand) prev_cand->next_candidate = NIL;
-  }
-  
-  /* === Worsts === */
-  if (s->preferences[WORST_PREFERENCE_TYPE]) {
-    for (cand=candidates; cand!=NIL; cand=cand->next_candidate)
-      cand->value->common.decider_flag = NOTHING_DECIDER_FLAG;
-    for (p=s->preferences[WORST_PREFERENCE_TYPE]; p!=NIL; p=p->next)
-      p->value->common.decider_flag = WORST_DECIDER_FLAG;
-    prev_cand = NIL;
-    for (cand=candidates; cand!=NIL; cand=cand->next_candidate)
-      if (cand->value->common.decider_flag != WORST_DECIDER_FLAG) {
-        if (prev_cand)
-          prev_cand->next_candidate = cand;
-        else
-          candidates = cand;
-        prev_cand = cand;
-      }
-    if (prev_cand) prev_cand->next_candidate = NIL;
-  }
-  
-  /* === If there are only 0 or 1 candidates, we're done === */
-  if ((!candidates) || (! candidates->next_candidate)) {
-    *result_candidates = candidates;
-    return NONE_IMPASSE_TYPE;
-  }
-
-  /* === Indifferents === */
-  for (cand=candidates; cand!=NIL; cand=cand->next_candidate)
-    cand->value->common.decider_flag = NOTHING_DECIDER_FLAG;
-  for (p=s->preferences[UNARY_INDIFFERENT_PREFERENCE_TYPE]; p; p=p->next)
-    p->value->common.decider_flag = UNARY_INDIFFERENT_DECIDER_FLAG;
-
-#ifdef NUMERIC_INDIFFERENCE
-  /* REW: 2003-01-26 Behavior Variability Kernel Experiments
-     We want to treat some binary indifferent prefs as unary indifferents,
-     the second pref is really an int representing a probability value.
-     So we identify these preferences here.
-	 -- want to guarantee decision is not interrupted by a new indiff pref
-  */
-  for (p=s->preferences[BINARY_INDIFFERENT_PREFERENCE_TYPE]; p; p=p->next)
-    if( (p->referent->fc.common_symbol_info.symbol_type == INT_CONSTANT_SYMBOL_TYPE) ||
-				(p->referent->fc.common_symbol_info.symbol_type == FLOAT_CONSTANT_SYMBOL_TYPE))
-       
-      p->value->common.decider_flag = UNARY_INDIFFERENT_CONSTANT_DECIDER_FLAG;
-  /* END: 2003-01-02 Behavior Variability Kernel Experiments  */
-#endif
-
-  not_all_indifferent = FALSE;
-  for (cand=candidates; cand!=NIL; cand=cand->next_candidate) {
-    /* --- if cand is unary indifferent, it's fine --- */
-    if (cand->value->common.decider_flag==UNARY_INDIFFERENT_DECIDER_FLAG)
-      continue;
-
-#ifdef NUMERIC_INDIFFERENCE
-		else if ( cand->value->common.decider_flag==UNARY_INDIFFERENT_CONSTANT_DECIDER_FLAG )  {
-      /* print("\n Ignoring this candidate because it has a constant value for the second pref"); */
-      continue;
-		}
-#endif
-
-	/* --- check whether cand is binary indifferent to each other one --- */
-    for (p=candidates; p!=NIL; p=p->next_candidate) {
-      if (p==cand) continue;
-      match_found = FALSE;
-      for (p2=s->preferences[BINARY_INDIFFERENT_PREFERENCE_TYPE]; p2!=NIL;
-           p2=p2->next)
-        if ( ((p2->value==cand->value)&&(p2->referent==p->value)) ||
-             ((p2->value==p->value)&&(p2->referent==cand->value)) ) {
-          match_found = TRUE;
-          break;
-        }
-      if (!match_found) {
-        not_all_indifferent = TRUE;
-        break;
-      }
-    } /* end of for p loop */
-    if (not_all_indifferent) break;
-  } /* end of for cand loop */
-
-  if (! not_all_indifferent) {
-    /* --- items all indifferent, so just pick one of them to return --- */
-    /* RBD 4/13/95 Removed code that looked for an existing value already in
-       working memory for this slot, and returned it if found.  This was
-       apparently an attempt to "stabilize" working memory if attribute
-       preferences kept changing, but it ended up getting in the way, esp.
-       with mutually indifferent operators were used with user-select
-       random. */
-    /* --- choose according to user-select ---  */
-
-    /* REW: begin 09.15.96 */
-    /* We don't care about the User Select mode in Operand2 for the
-     * consistency check.   All we need to do is return the impasse type
-     * (None because all preferences are indifferent) and return all the
-     * candidates (rather than just one) because we don;t want to commit
-     ourselves to single candidate at this point.
-     */
-
-    *result_candidates = candidates;
-
-
-    /* We want the whole list of candidates, not just the one that would
-     * be chosen FIRST (ie, the head of result_candidates is also first),
-     * so we comment the next line.  */
-    /* (*result_candidates)->next_candidate = NIL; */
-    return NONE_IMPASSE_TYPE;
-
-  }
-  
-  /* --- items not all indifferent; for context slots this gives a tie --- */
-  if (s->isa_context_slot) {
-    *result_candidates = candidates;
-    return TIE_IMPASSE_TYPE;
-  }
-
-  /* === Parallels === */
-  for (cand=candidates; cand!=NIL; cand=cand->next_candidate)
-    cand->value->common.decider_flag = NOTHING_DECIDER_FLAG;
-  for (p=s->preferences[UNARY_PARALLEL_PREFERENCE_TYPE]; p; p=p->next)
-    p->value->common.decider_flag = UNARY_PARALLEL_DECIDER_FLAG;
-  not_all_parallel = FALSE;
-  for (cand=candidates; cand!=NIL; cand=cand->next_candidate) {
-    /* --- if cand is unary parallel, it's fine --- */
-    if (cand->value->common.decider_flag==UNARY_PARALLEL_DECIDER_FLAG)
-      continue;
-    /* --- check whether cand is binary parallel to each other candidate --- */
-    for (p=candidates; p!=NIL; p=p->next_candidate) {
-      if (p==cand) continue;
-      match_found = FALSE;
-      for (p2=s->preferences[BINARY_PARALLEL_PREFERENCE_TYPE]; p2!=NIL;
-           p2=p2->next)
-        if ( ((p2->value==cand->value)&&(p2->referent==p->value)) ||
-             ((p2->value==p->value)&&(p2->referent==cand->value)) ) {
-          match_found = TRUE;
-          break;
-        }
-      if (!match_found) {
-        not_all_parallel = TRUE;
-        break;
-      }
-    } /* end of for p loop */
-    if (not_all_parallel) break;
-  } /* end of for cand loop */
-
-  *result_candidates = candidates;
-
-  if (! not_all_parallel) {
-    /* --- items are all parallel, so return them all --- */
-    return NONE_IMPASSE_TYPE;
-  }
-
-  /* --- otherwise we have a tie --- */
-  return TIE_IMPASSE_TYPE;
+byte run_preference_semantics_for_consistency_check (agent* thisAgent, slot *s, preference **result_candidates) 
+{
+	return run_preference_semantics( thisAgent, s, result_candidates, true );
 }
 
 /* **************************************************************************
@@ -1670,7 +1249,12 @@ Symbol *create_new_impasse (agent* thisAgent, Bool isa_goal, Symbol *object, Sym
                    NIL);
 
   if (isa_goal)
+  {
     add_impasse_wme (thisAgent, id, thisAgent->superstate_symbol, object, NIL);
+
+	id->id.reward_header = make_new_identifier( thisAgent, 'R', level );	
+	add_impasse_wme( thisAgent, id, thisAgent->reward_link_symbol, id->id.reward_header, NIL );
+  }
   else
     add_impasse_wme (thisAgent, id, thisAgent->object_symbol, object, NIL);
 
@@ -2283,6 +1867,13 @@ void remove_existing_context_and_descendents (agent* thisAgent, Symbol *goal) {
   /* --- remove wmes for this goal, and garbage collect --- */
   remove_wmes_for_context_slot (thisAgent, goal->id.operator_slot);
   update_impasse_items (thisAgent, goal, NIL); /* causes items & fake pref's to go away */
+  
+  if ( rl_enabled( thisAgent ) )
+  {
+	rl_tabulate_reward_value_for_goal( thisAgent, goal );
+	rl_perform_update( thisAgent, 0, goal ); // this update only sees reward - there is no next state
+  }
+  
   remove_wme_list_from_wm (thisAgent, goal->id.impasse_wmes);
   goal->id.impasse_wmes = NIL;
   /* REW: begin   09.15.96 */
@@ -2325,6 +1916,11 @@ void remove_existing_context_and_descendents (agent* thisAgent, Symbol *goal) {
       thisAgent->nil_goal_retractions = head;
     }
   }
+
+  delete goal->id.rl_info->eligibility_traces;
+  free_list( thisAgent, goal->id.rl_info->prev_op_rl_rules );
+  symbol_remove_ref( thisAgent, goal->id.reward_header );
+  free_memory( thisAgent, goal->id.rl_info, MISCELLANEOUS_MEM_USAGE );
 
   /* REW: BUG
    * Tentative assertions can exist for removed goals.  However, it looks
@@ -2397,6 +1993,16 @@ void create_new_context (agent* thisAgent, Symbol *attr_of_impasse, byte impasse
   id->id.operator_slot = make_slot (thisAgent, id, thisAgent->operator_symbol);
   id->id.allow_bottom_up_chunks = TRUE;
 
+  id->id.rl_info = static_cast<rl_data *>( allocate_memory( thisAgent, sizeof( rl_data ), MISCELLANEOUS_MEM_USAGE ) );
+  id->id.rl_info->eligibility_traces = new rl_et_map( std::less<production *>(), SoarMemoryAllocator<std::pair<production* const, double> >( thisAgent, MISCELLANEOUS_MEM_USAGE ) );
+  id->id.rl_info->prev_op_rl_rules = NIL;
+  id->id.rl_info->previous_q = 0;
+  id->id.rl_info->reward = 0;
+  id->id.rl_info->reward_age = 0;
+  id->id.rl_info->num_prev_op_rl_rules = 0;
+  id->id.rl_info->step = 0;  
+  id->id.rl_info->impasse_type = NONE_IMPASSE_TYPE;
+
   /* --- invoke callback routine --- */
   soar_invoke_callbacks(thisAgent, 
                        CREATE_NEW_CONTEXT_CALLBACK, 
@@ -2462,7 +2068,7 @@ Symbol *attribute_of_existing_impasse (agent* thisAgent, Symbol *goal) {
    the given slot.
 ------------------------------------------------------------------ */
 
-Bool decide_context_slot (agent* thisAgent, Symbol *goal, slot *s) 
+Bool decide_context_slot (agent* thisAgent, Symbol *goal, slot *s, bool predict = false) 
 {
    byte impasse_type;
    Symbol *attribute_of_impasse;
@@ -2477,11 +2083,61 @@ Bool decide_context_slot (agent* thisAgent, Symbol *goal, slot *s)
              no-change impasse there --- */
       impasse_type = NO_CHANGE_IMPASSE_TYPE;
       candidates = NIL; /* we don't want any impasse ^item's later */
+
+	  if ( predict )
+	  {
+		  predict_set( thisAgent, "none" );
+		  return TRUE;
+	  }
    } 
    else 
    {
       /* --- the slot is decidable, so run preference semantics on it --- */
       impasse_type = run_preference_semantics (thisAgent, s, &candidates);
+
+	  if ( predict )
+	  {
+		  switch ( impasse_type )
+		  {
+				case CONSTRAINT_FAILURE_IMPASSE_TYPE:
+					predict_set( thisAgent, "constraint" );
+					break;
+				
+				case CONFLICT_IMPASSE_TYPE:
+					predict_set( thisAgent, "conflict" );
+					break;
+
+				case TIE_IMPASSE_TYPE:
+					predict_set( thisAgent, "tie" );
+					break;
+
+				case NO_CHANGE_IMPASSE_TYPE:
+					predict_set( thisAgent, "none" );
+					break;
+
+				default:
+					if ( !candidates || ( candidates->value->common.symbol_type != IDENTIFIER_SYMBOL_TYPE ) )
+						predict_set( thisAgent, "none" );
+					else
+					{
+						std::string temp = "";
+
+						// get first letter of id
+						temp += candidates->value->id.name_letter;
+
+						// get number
+						std::string *temp2 = to_string( candidates->value->id.name_number );
+						temp += (*temp2);
+						delete temp2;
+
+						predict_set( thisAgent, temp.c_str() );
+					}
+					break;
+		  }
+
+		  return TRUE;
+	  }
+
       remove_wmes_for_context_slot (thisAgent, s); /* must remove old wme before adding
                                                       the new one (if any) */
       if (impasse_type == NONE_IMPASSE_TYPE) 
@@ -2552,9 +2208,19 @@ Bool decide_context_slot (agent* thisAgent, Symbol *goal, slot *s)
       for(temp = candidates; temp; temp = temp->next_candidate)
          preference_remove_ref(thisAgent, temp);
       
+      if ( rl_enabled( thisAgent ) )
+		rl_store_data( thisAgent, goal, candidates );
+	        
       return TRUE;
    } 
    
+   if ( impasse_type != NO_CHANGE_IMPASSE_TYPE ) 
+	   goal->id.rl_info->impasse_type = impasse_type;
+   else if ( s->wmes ) 
+	   goal->id.rl_info->impasse_type = OP_NO_CHANGE_IMPASSE_TYPE;
+   else 
+	   goal->id.rl_info->impasse_type = STATE_NO_CHANGE_IMPASSE_TYPE;
+
    /* --- no winner; if an impasse of the right type already existed, just
    update the ^item set on it --- */
    if ((impasse_type == type_of_existing_impasse(thisAgent, goal)) &&
@@ -2599,7 +2265,7 @@ Bool decide_context_slot (agent* thisAgent, Symbol *goal, slot *s)
    the appropriate context slots.
 ------------------------------------------------------------------ */
 
-void decide_context_slots (agent* thisAgent) 
+void decide_context_slots (agent* thisAgent, bool predict = false) 
 {
    Symbol *goal;
    slot *s;
@@ -2637,11 +2303,13 @@ void decide_context_slots (agent* thisAgent)
       } /* end of while (TRUE) find next slot to decide */
       
       /* --- now go and decide that slot --- */
-      if (decide_context_slot (thisAgent, goal, s)) 
+      if (decide_context_slot (thisAgent, goal, s, predict)) 
          break;
       
    } /* end of while (TRUE) loop down context stack */
-   thisAgent->highest_goal_whose_context_changed = NIL;
+   
+   if ( !predict )
+	   thisAgent->highest_goal_whose_context_changed = NIL;
 }
 
 /* **********************************************************************
@@ -2717,19 +2385,30 @@ void do_working_memory_phase (agent* thisAgent) {
 
 }
 
-void do_decision_phase (agent* thisAgent) 
+void do_decision_phase (agent* thisAgent, bool predict) 
 {
-   /* phase printing moved to init_soar: do_one_top_level_phase */
+	if ( !predict && rl_enabled( thisAgent ) )
+		rl_tabulate_reward_values( thisAgent );
 
-   decide_context_slots (thisAgent);
-   do_buffered_wm_and_ownership_changes(thisAgent);
+	predict_srand_restore_snapshot( thisAgent, !predict );
+	
+	/* phase printing moved to init_soar: do_one_top_level_phase */
 
-  /*
-   * Bob provided a solution to fix WME's hanging around unsupported
-   * for an elaboration cycle.
-   */
-   decide_non_context_slots(thisAgent);
-   do_buffered_wm_and_ownership_changes(thisAgent);
+   decide_context_slots (thisAgent, predict);
+
+   if ( !predict )
+   {
+	   do_buffered_wm_and_ownership_changes(thisAgent);
+
+	  /*
+	   * Bob provided a solution to fix WME's hanging around unsupported
+	   * for an elaboration cycle.
+	   */
+	   decide_non_context_slots(thisAgent);
+	   do_buffered_wm_and_ownership_changes(thisAgent);
+
+	   exploration_update_parameters( thisAgent );
+   }
 }  
 
 void create_top_goal (agent* thisAgent) 
@@ -3428,273 +3107,3 @@ void create_gds_for_goal( agent* thisAgent, Symbol *goal){
      print_with_symbols(thisAgent, "\nCreated GDS for goal [%y].\n", gds->goal);
    #endif
 }
-
-#ifdef NUMERIC_INDIFFERENCE
-
-/* REW: 2003-01-06 */
-/* This a helper function that sets the decider flag to candidate for
-   all the items on the candidate list and initializes the counters 
-   that will track the total probability distributions to zero.
-
-   It's okay to muck with the 
-   decider flags here because this will be called after the decision
-   has been determined to be a choice among indifferent candidates.
-
-   Note: the slot is only needed for debugging/data verification
-
-   Note: slot parameter removed by voigtjr to quell compiler warnings
-*/
-
-/* SAN: 2003-10-30 */
-/* Revised - this function also initializes candidate's value to default value for
-   appropriate numeric-indifferent-mode 
-*/
-
-/*void initialize_indifferent_candidates_for_probability_selection(slot *s, preference *candidates)*/
-void initialize_indifferent_candidates_for_probability_selection(preference * candidates)
-{
-    preference *cand = 0;
-
-    for (cand = candidates; cand != NIL; cand = cand->next_candidate) {
-        /* print_with_symbols("\nInitializing candidate %y",cand->value); 
-         */
-        cand->value->common.decider_flag = CANDIDATE_DECIDER_FLAG;
-        cand->total_preferences_for_candidate = 0;
-		cand->sum_of_probability = 0;
-         
-    }
-}
-
-/*unsigned int count_candidates(slot *s, preference *candidates)*/
-unsigned int count_candidates(preference * candidates)
-{
-    unsigned int numCandidates = 0;
-    preference *cand = 0;
-
-    /*
-       Count up the number of candidates
-       REW: 2003-01-06
-       I'm assuming that all of the candidates have unary or 
-       unary+value (binary) indifferent preferences at this point.
-       So we loop over the candidates list and count the number of
-       elements in the list.
-     */
-
-    for (cand = candidates; cand != NIL; cand = cand->next_candidate)
-        numCandidates++;
-
-    return numCandidates;
-}
-
-/* Below is the Temperature, used to keep summed indifferent
-   preferences within a reasonable range, since they will be used as
-	 an exponent to the number 10, and must be stored in a 64 bit double
-*/
-#define TEMPERATURE 25.0
-
-preference *probabilistically_select(agent* thisAgent, slot * s, preference * candidates)
-{
-    preference *cand = 0;
-    preference *pref = 0;
-    double total_probability = 0;
-    unsigned int numCandidates = 0;
-    double selectedProbability = 0;
-    double currentSumOfValues = 0;
-//    static int initialized_rand = 0;
-    //unsigned long rn = 0;
-	double rn = 0;
-	double default_ni;
-
-    /* initialized, but not referenced, so i commented them out:
-       preference*    selectedCandidate=0;
-       unsigned int   currentCandidate=0; */
-
-    assert(s != 0);
-    assert(candidates != 0);
-
-// RPM 12/05 The seed shouldn't be set here (see bug 593) and we aren't using srand and rand anymore (see bug 595)
-//    if (!initialized_rand) {
-//        srand((unsigned) time(NULL));
-//        initialized_rand = 1;
-//    }
-
-    /*
-       print("\nCandidates at top of probabilistically_select"); 
-       print_candidates(candidates);  
-     */
-
-    /* s param uneccesary, commented out to quell compiler warning.  see comment
-       block above the following function definitions
-       initialize_indifferent_candidates_for_probability_selection(s, candidates);
-       numCandidates = count_candidates(s,candidates); */
-
-    initialize_indifferent_candidates_for_probability_selection(candidates);
-    numCandidates = count_candidates(candidates);
-
-    /*
-       print("\n numCandidates = %d", numCandidates);
-       print("\nCandidates before unary indifferent loop");
-       print_candidates(candidates); 
-     */
-
-
-	switch (thisAgent->numeric_indifferent_mode) {
-	case NUMERIC_INDIFFERENT_MODE_AVG:
-		default_ni = 50;
-		break;
-
-	case NUMERIC_INDIFFERENT_MODE_SUM:
-	default:
-		default_ni = 0;
-		break;
-	}
-    /*
-       BUGBUGBUG 
-       Next some error checking here to ensure that the binary preference
-       is indeed really an indifferent+value preference....
-       someday.
-
-       also, precision loss (long to float conversion) here:
-       value = (float)pref->referent->ic.value;
-     */
-
-    for (pref = s->preferences[BINARY_INDIFFERENT_PREFERENCE_TYPE]; pref != NIL; pref = pref->next) {
-        /*print_with_symbols("\nPreference for %y", pref->value); */
-        float value;
-        if (pref->referent->common.symbol_type == FLOAT_CONSTANT_SYMBOL_TYPE) {
-            value = pref->referent->fc.value;
-        } else if (pref->referent->common.symbol_type == INT_CONSTANT_SYMBOL_TYPE) {
-            value = (float) pref->referent->ic.value;
-        } else
-            continue;
-        for (cand = candidates; cand != NIL; cand = cand->next_candidate) {
-            /*print_with_symbols("\nConsidering candidate %y", cand->value); */
-
-            if (cand->value == pref->value) {
-                cand->total_preferences_for_candidate += 1;
-                cand->sum_of_probability += value;
-            }
-        }
-    }
-
-	for (cand = candidates; cand != NIL; cand = cand->next_candidate) {
-		if (cand->total_preferences_for_candidate == 0) {
-			cand->sum_of_probability = default_ni;
-			cand->total_preferences_for_candidate = 1;
-		}
-	}
-
-    if (thisAgent->numeric_indifferent_mode == NUMERIC_INDIFFERENT_MODE_SUM) {
-
-        total_probability = 0.0;
-        for (cand = candidates; cand != NIL; cand = cand->next_candidate) {
-
-            if (thisAgent->sysparams[TRACE_INDIFFERENT_SYSPARAM]){
-				print_with_symbols(thisAgent, "\n Candidate %y:  ", cand->value);
-		           print(thisAgent, "Value (Sum) = %f", exp(cand->sum_of_probability / TEMPERATURE));
-               xml_begin_tag(thisAgent, kTagCandidate);
-               xml_att_val(thisAgent, kCandidateName, cand->value);
-               xml_att_val(thisAgent, kCandidateType, kCandidateTypeSum);
-               xml_att_val(thisAgent, kCandidateValue, exp(cand->sum_of_probability / TEMPERATURE));
-               xml_end_tag(thisAgent, kTagCandidate);
-			}     
-            /*  Total Probability represents the range of values, we expect
-             *  the use of negative valued preferences, so its possible the
-             *  sum is negative, here that means a fractional probability
-             */
-            total_probability += exp(cand->sum_of_probability / TEMPERATURE);
-            /* print("\n   Total (Sum) Probability = %f", total_probability ); */
-        }
-
-        /* Now select the candidate */
-
-        //print(thisAgent, "\n");
-
-		/* RPM 12/05 replacing calls to rand() with calls to SoarRand; see bug 595 */
-		//rn = rand();
-		rn = SoarRand(); // generates a number in [0,1]
-        //selectedProbability = ((double) rn / (double) RAND_MAX) * total_probability;
-		selectedProbability = rn * total_probability;
-        currentSumOfValues = 0;
-
-        for (cand = candidates; cand != NIL; cand = cand->next_candidate) {
-
-            currentSumOfValues += exp(cand->sum_of_probability / TEMPERATURE);
-
-            if (selectedProbability <= currentSumOfValues) {
-                /* 
-                   print_with_symbols("\n    Returning (Sum) candidate %y", cand->value); 
-                 */
-
-                return cand;
-            }
-        }
-
-    } else if (thisAgent->numeric_indifferent_mode == NUMERIC_INDIFFERENT_MODE_AVG) {
-
-        total_probability = 0.0;
-        for (cand = candidates; cand != NIL; cand = cand->next_candidate) {
-
-            if (thisAgent->sysparams[TRACE_INDIFFERENT_SYSPARAM]) {
-				print_with_symbols(thisAgent, "\n Candidate %y:  ", cand->value);  
-		           print(thisAgent, "Value (Avg) = %f", fabs(cand->sum_of_probability / cand->total_preferences_for_candidate));
-               xml_begin_tag(thisAgent, kTagCandidate);
-               xml_att_val(thisAgent, kCandidateName, cand->value);
-               xml_att_val(thisAgent, kCandidateType, kCandidateTypeAvg);
-               xml_att_val(thisAgent, kCandidateValue, fabs(cand->sum_of_probability / cand->total_preferences_for_candidate));
-               xml_end_tag(thisAgent, kTagCandidate);
-			}    
-            /* Total probability represents the range of values that
-             * we'll map into for selection.  Here we don't expect the use
-             * of negative values, so we'll warn when we see one.
-             */
-
-            total_probability += fabs(cand->sum_of_probability / cand->total_preferences_for_candidate);
-
-            if (cand->sum_of_probability < 0.0) {
-                print_with_symbols
-                    (thisAgent, "WARNING: Candidate %y has a negative value, which is unexpected with 'numeric-indifferent-mode -avg'",
-                     cand->value);
-				growable_string gs = make_blank_growable_string(thisAgent);
-				add_to_growable_string(thisAgent, &gs, "WARNING: Candidate ");
-				add_to_growable_string(thisAgent, &gs, symbol_to_string(thisAgent, cand->value, true, 0, 0));
-				add_to_growable_string(thisAgent, &gs, " has a negative value, which is unexpected with 'numeric-indifferent-mode -avg'");
-				xml_generate_warning(thisAgent, text_of_growable_string(gs));
-				free_growable_string(thisAgent, gs);
-            }
-            /* print("\n   Total (Avg) Probability = %f", total_probability ); */
-        }
-
-        /* Now select the candidate */
-
-		//print(thisAgent, "\n");
-
-		/* RPM 12/05 replacing calls to rand() with calls to SoarRand; see bug 595 */
-        //rn = rand();
-		rn = SoarRand(); 
-        selectedProbability = rn * total_probability;
-        currentSumOfValues = 0;
-
-        for (cand = candidates; cand != NIL; cand = cand->next_candidate) {
-
-            currentSumOfValues += fabs(cand->sum_of_probability / cand->total_preferences_for_candidate);
-
-            if (selectedProbability <= currentSumOfValues) {
-                /*
-                   print_with_symbols("\n    Returning (Avg) candidate %y", cand->value); 
-                 */
-
-                return cand;
-            }
-        }
-
-    } else {
-        print(thisAgent, "\nERROR: Invalid Numeric Indifferent Mode!\n");
-    }
-
-    print(thisAgent, "\nERROR: Probability Selection failed. This should never happen.\n");
-    return NIL;
-
-}
-
-#endif
