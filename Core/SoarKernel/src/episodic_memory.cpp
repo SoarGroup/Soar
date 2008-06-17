@@ -1114,6 +1114,11 @@ void epmem_init_db( agent *my_agent )
 				sqlite3_prepare_v2( my_agent->epmem_db, "CREATE INDEX IF NOT EXISTS episode_time ON episodes (time)", -1, &create, &tail );
 				sqlite3_step( create );					
 				sqlite3_finalize( create );
+				
+				// id index (for search)
+				sqlite3_prepare_v2( my_agent->epmem_db, "CREATE INDEX IF NOT EXISTS episode_id ON episodes (id)", -1, &create, &tail );
+				sqlite3_step( create );					
+				sqlite3_finalize( create );
 
 				// custom statement for inserting episodes
 				sqlite3_prepare_v2( my_agent->epmem_db, "INSERT INTO episodes (id,time,weight) VALUES (?,?,?)", -1, &( my_agent->epmem_statements[ EPMEM_STMT_BIGTREE_I_ADD_EPISODE ] ), &tail );
