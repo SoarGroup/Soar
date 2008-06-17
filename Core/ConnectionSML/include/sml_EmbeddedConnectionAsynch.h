@@ -44,10 +44,10 @@ protected:
 	soar_thread::Event  m_WaitEvent ;
 
 	/** Adds the message to the queue, taking ownership of it at the same time */
-	void AddResponseToList(ElementXML* pResponse) ;
-	ElementXML* IsResponseInList(char const* pID) ;
+	void AddResponseToList(soarxml::ElementXML* pResponse) ;
+	soarxml::ElementXML* IsResponseInList(char const* pID) ;
 
-	bool DoesResponseMatch(ElementXML* pResponse, char const* pID) ;
+	bool DoesResponseMatch(soarxml::ElementXML* pResponse, char const* pID) ;
 
 public:
 	virtual ~EmbeddedConnectionAsynch() ;
@@ -66,8 +66,8 @@ public:
 	}
 
 	virtual bool IsAsynchronous() { return true ; }
-	virtual void SendMsg(ElementXML* pMsg) ;
-	virtual ElementXML* GetResponseForID(char const* pID, bool wait) ;
+	virtual void SendMsg(soarxml::ElementXML* pMsg) ;
+	virtual soarxml::ElementXML* GetResponseForID(char const* pID, bool wait) ;
 	virtual bool ReceiveMessages(bool allMessages) ;
 } ;
 

@@ -33,8 +33,6 @@
 #include "prefmem.h"
 #include "instantiations.h"
 
-#include "xmlTraceNames.h"
-#include "gski_event_system_functions.h"
 #include "print.h"
 
 #include "episodic_memory.h"
@@ -42,7 +40,11 @@
 
 #include "sqlite3.h"
 
+#include "soar_TraceNames.h"
+#include "xml.h"
+
 using namespace std;
+using namespace soar_TraceNames;
 
 // defined in symtab.cpp but not in symtab.h
 extern unsigned long compress( unsigned long h, short num_bits );
@@ -1064,9 +1066,7 @@ void epmem_init_db( agent *my_agent )
 		
 		print( my_agent, buf );
 				
-		gSKI_MakeAgentCallbackXML( my_agent, kFunctionBeginTag, kTagWarning );
-		gSKI_MakeAgentCallbackXML( my_agent, kFunctionAddAttribute, kTypeString, buf );
-		gSKI_MakeAgentCallbackXML( my_agent, kFunctionEndTag, kTagWarning );
+		xml_generate_warning( my_agent, buf );
 	}
 	else
 	{
@@ -1668,9 +1668,7 @@ void epmem_new_episode( agent *my_agent )
 		
 		print( my_agent, buf );
 		
-		gSKI_MakeAgentCallbackXML( my_agent, kFunctionBeginTag, kTagWarning );
-		gSKI_MakeAgentCallbackXML( my_agent, kFunctionAddAttribute, kTypeString, buf );
-		gSKI_MakeAgentCallbackXML( my_agent, kFunctionEndTag, kTagWarning );
+		xml_generate_warning( my_agent, buf );
 	}
 	
 	if ( epmem_get_parameter( my_agent, EPMEM_PARAM_INDEXING, EPMEM_RETURN_LONG ) == EPMEM_INDEXING_BIGTREE_INSTANCE )

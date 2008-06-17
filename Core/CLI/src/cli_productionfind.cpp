@@ -8,18 +8,21 @@
 
 #include <portability.h>
 
+#include "sml_Utils.h"
 #include "cli_CommandLineInterface.h"
+#include "cli_CLIError.h"
 
 #include "cli_Commands.h"
 #include "sml_Names.h"
 
-#include "gSKI_Kernel.h"
-#include "gSKI_DoNotTouch.h"
+#include "sml_KernelSML.h"
+#include "sml_KernelHelpers.h"
+#include "sml_AgentSML.h"
 
 using namespace cli;
 using namespace sml;
 
-bool CommandLineInterface::ParseProductionFind(gSKI::Agent* pAgent, std::vector<std::string>& argv) {
+bool CommandLineInterface::ParseProductionFind(std::vector<std::string>& argv) {
 	Options optionsData[] = {
 		{'c', "chunks",			0},
 		{'l', "lhs",				0},
@@ -72,21 +75,14 @@ bool CommandLineInterface::ParseProductionFind(gSKI::Agent* pAgent, std::vector<
 	}
 	pattern = pattern.substr(0, pattern.length() - 1);
 
-	return DoProductionFind(pAgent, options, pattern);
+	return DoProductionFind(options, pattern);
 }
 
-bool CommandLineInterface::DoProductionFind(gSKI::Agent* pAgent, const ProductionFindBitset& options, const std::string& pattern) {
-	// Need agent pointer for function calls
-	if (!RequireAgent(pAgent)) return false;
-
+bool CommandLineInterface::DoProductionFind(const ProductionFindBitset& options, const std::string& pattern) {
 	// Attain the evil back door of damnation, even though we aren't the TgD
-	gSKI::EvilBackDoor::TgDWorkArounds* pKernelHack = m_pKernel->getWorkaroundObject();
+	sml::KernelHelpers* pKernelHack = m_pKernelSML->GetKernelHelpers() ;
 
-	AddListenerAndDisableCallbacks(pAgent);
-
-	bool ret = pKernelHack->ProductionFind(pAgent, 
-		0, 
-		m_pKernel, 
+	bool ret = pKernelHack->ProductionFind(m_pAgentSML->GetSoarAgent(), 
 		options.test(PRODUCTION_FIND_INCLUDE_LHS), 
 		options.test(PRODUCTION_FIND_INCLUDE_RHS), 
 		const_cast<char*>(pattern.c_str()), 
@@ -94,10 +90,6 @@ bool CommandLineInterface::DoProductionFind(gSKI::Agent* pAgent, const Productio
 		options.test(PRODUCTION_FIND_ONLY_CHUNKS),
 		options.test(PRODUCTION_FIND_NO_CHUNKS));
 	
-	RemoveListenerAndEnableCallbacks(pAgent);
-
-	// put the result into a message(string) arg tag
-	if (!m_RawOutput) ResultToArgTag();
 	return ret;
 }
 

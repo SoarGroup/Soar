@@ -12,8 +12,8 @@
 #include "cli_CommandLineInterface.h"
 
 #include "cli_Commands.h"
+#include "cli_CLIError.h"
 
-#include "gSKI_Agent.h"
 #include "sml_Names.h"
 
 #include "reinforcement_learning.h"
@@ -25,11 +25,8 @@
 using namespace cli;
 using namespace sml;
 
-bool CommandLineInterface::ParseRL( gSKI::Agent* pAgent, std::vector<std::string>& argv ) 
+bool CommandLineInterface::ParseRL( std::vector<std::string>& argv ) 
 {
-	// get soar kernel agent - bad gSKI!
-	agent *my_agent = pAgent->GetSoarAgent();
-	
 	Options optionsData[] = 
 	{
 		{'g', "get",	0},
@@ -78,7 +75,7 @@ bool CommandLineInterface::ParseRL( gSKI::Agent* pAgent, std::vector<std::string
 	
 	// case: nothing = full configuration information
 	if ( argv.size() == 1 )
-		return DoRL( pAgent );
+		return DoRL( );
 	
 	// case: get requires one non-option argument
 	else if ( options.test( RL_GET ) )
@@ -89,8 +86,8 @@ bool CommandLineInterface::ParseRL( gSKI::Agent* pAgent, std::vector<std::string
 			return SetError( CLIError::kTooManyArgs );
 		
 		// check attribute name here
-		if ( valid_rl_parameter( my_agent, argv[2].c_str() ) )
-			return DoRL( pAgent, 'g', &( argv[2] ) );
+		if ( rl_valid_parameter( m_pAgentSoar, argv[2].c_str() ) )
+			return DoRL( 'g', &( argv[2] ) );
 		else
 			return SetError( CLIError::kInvalidAttribute );
 	}
@@ -104,24 +101,24 @@ bool CommandLineInterface::ParseRL( gSKI::Agent* pAgent, std::vector<std::string
 			return SetError( CLIError::kTooManyArgs );
 		
 		// check attribute name/potential vals here
-		if ( valid_rl_parameter( my_agent, argv[2].c_str() ) )
+		if ( rl_valid_parameter( m_pAgentSoar, argv[2].c_str() ) )
 		{
-			switch ( get_rl_parameter_type( my_agent, argv[2].c_str() ) )
+			switch ( rl_get_parameter_type( m_pAgentSoar, argv[2].c_str() ) )
 			{
 				case rl_param_string:
-					if ( !valid_rl_parameter_value( my_agent, argv[2].c_str(), argv[3].c_str() ) )
+					if ( !rl_valid_parameter_value( m_pAgentSoar, argv[2].c_str(), argv[3].c_str() ) )
 						return SetError( CLIError::kInvalidValue );
 					else
-						return DoRL( pAgent, 's', &( argv[2] ), &( argv[3] ) );
+						return DoRL( 's', &( argv[2] ), &( argv[3] ) );
 					break;
 					
 				case rl_param_number:
 					double temp;
 					from_string( temp, argv[3] );
-					if ( !valid_rl_parameter_value( my_agent, argv[2].c_str(), temp ) )
+					if ( !rl_valid_parameter_value( m_pAgentSoar, argv[2].c_str(), temp ) )
 						return SetError( CLIError::kInvalidValue );
 					else
-						return DoRL( pAgent, 's', &( argv[2] ), &( argv[3] ) );
+						return DoRL( 's', &( argv[2] ), &( argv[3] ) );
 					break;
 					
 				case rl_param_invalid:
@@ -137,12 +134,12 @@ bool CommandLineInterface::ParseRL( gSKI::Agent* pAgent, std::vector<std::string
 	else if ( options.test( RL_STAT ) )
 	{
 		if ( m_NonOptionArguments == 0 )
-			return DoRL( pAgent, 'S' );
+			return DoRL( 'S' );
 		else if ( m_NonOptionArguments == 1 )
 		{
 			// check attribute name
-			if ( valid_rl_stat( my_agent, argv[2].c_str() ) )
-				return DoRL( pAgent, 'S', &( argv[2] ) );
+			if ( rl_valid_stat( m_pAgentSoar, argv[2].c_str() ) )
+				return DoRL( 'S', &( argv[2] ) );
 			else
 				return SetError( CLIError::kInvalidAttribute );
 		}
@@ -154,14 +151,8 @@ bool CommandLineInterface::ParseRL( gSKI::Agent* pAgent, std::vector<std::string
 	return false;
 }
 
-bool CommandLineInterface::DoRL( gSKI::Agent* pAgent, const char pOp, const std::string* pAttr, const std::string* pVal ) 
+bool CommandLineInterface::DoRL( const char pOp, const std::string* pAttr, const std::string* pVal ) 
 {
-	if ( !RequireAgent( pAgent ) ) 
-		return false;
-	
-	// get soar kernel agent - bad gSKI!
-	agent *my_agent = pAgent->GetSoarAgent();
-
 	if ( !pOp )
 	{
 		std::string temp;
@@ -169,14 +160,14 @@ bool CommandLineInterface::DoRL( gSKI::Agent* pAgent, const char pOp, const std:
 		double temp_val;
 		
 		temp = "Soar-RL learning: ";
-		temp += get_rl_parameter( my_agent, (const long) RL_PARAM_LEARNING, RL_RETURN_STRING );
+		temp += rl_get_parameter( m_pAgentSoar, (const long) RL_PARAM_LEARNING, RL_RETURN_STRING );
 		if ( m_RawOutput )
 			m_Result << temp << "\n";
 		else
 			AppendArgTagFast( sml_Names::kParamValue, sml_Names::kTypeString, temp.c_str() );
 		
 		temp = "temporal-extension: ";
-		temp += get_rl_parameter( my_agent, RL_PARAM_TEMPORAL_EXTENSION, RL_RETURN_STRING );
+		temp += rl_get_parameter( m_pAgentSoar, RL_PARAM_TEMPORAL_EXTENSION, RL_RETURN_STRING );
 		if ( m_RawOutput )
 			m_Result << temp << "\n\n";
 		else
@@ -197,7 +188,7 @@ bool CommandLineInterface::DoRL( gSKI::Agent* pAgent, const char pOp, const std:
 			AppendArgTagFast( sml_Names::kParamValue, sml_Names::kTypeString, temp.c_str() );
 						
 		temp = "discount-rate: ";
-		temp_val = get_rl_parameter( my_agent, RL_PARAM_DISCOUNT_RATE );
+		temp_val = rl_get_parameter( m_pAgentSoar, RL_PARAM_DISCOUNT_RATE );
 		temp2 = to_string( temp_val );
 		temp += (*temp2);
 		delete temp2;
@@ -222,14 +213,14 @@ bool CommandLineInterface::DoRL( gSKI::Agent* pAgent, const char pOp, const std:
 			AppendArgTagFast( sml_Names::kParamValue, sml_Names::kTypeString, temp.c_str() );
 		
 		temp = "learning-policy: ";
-		temp += get_rl_parameter( my_agent, RL_PARAM_LEARNING_POLICY, RL_RETURN_STRING );
+		temp += rl_get_parameter( m_pAgentSoar, RL_PARAM_LEARNING_POLICY, RL_RETURN_STRING );
 		if ( m_RawOutput )
 			m_Result << temp << "\n";
 		else
 			AppendArgTagFast( sml_Names::kParamValue, sml_Names::kTypeString, temp.c_str() );
 		
 		temp = "learning-rate: ";
-		temp_val = get_rl_parameter( my_agent, RL_PARAM_LEARNING_RATE );
+		temp_val = rl_get_parameter( m_pAgentSoar, RL_PARAM_LEARNING_RATE );
 		temp2 = to_string( temp_val );
 		temp += (*temp2);
 		delete temp2;
@@ -253,7 +244,7 @@ bool CommandLineInterface::DoRL( gSKI::Agent* pAgent, const char pOp, const std:
 			AppendArgTagFast( sml_Names::kParamValue, sml_Names::kTypeString, temp.c_str() );
 		
 		temp = "eligibility-trace-decay-rate: ";
-		temp_val = get_rl_parameter( my_agent, RL_PARAM_ET_DECAY_RATE );
+		temp_val = rl_get_parameter( m_pAgentSoar, RL_PARAM_ET_DECAY_RATE );
 		temp2 = to_string( temp_val );
 		temp += (*temp2);
 		delete temp2;
@@ -263,7 +254,7 @@ bool CommandLineInterface::DoRL( gSKI::Agent* pAgent, const char pOp, const std:
 			AppendArgTagFast( sml_Names::kParamValue, sml_Names::kTypeString, temp.c_str() );
 		
 		temp = "eligibility-trace-tolerance: ";
-		temp_val = get_rl_parameter( my_agent, RL_PARAM_ET_TOLERANCE );
+		temp_val = rl_get_parameter( m_pAgentSoar, RL_PARAM_ET_TOLERANCE );
 		temp2 = to_string( temp_val );
 		temp += (*temp2);
 		delete temp2;
@@ -283,14 +274,14 @@ bool CommandLineInterface::DoRL( gSKI::Agent* pAgent, const char pOp, const std:
 		std::string *temp2;
 		const char *tag_type = sml_Names::kTypeString;
 		
-		switch ( get_rl_parameter_type( my_agent, pAttr->c_str() ) )
+		switch ( rl_get_parameter_type( m_pAgentSoar, pAttr->c_str() ) )
 		{
 			case rl_param_string:
-				output += get_rl_parameter( my_agent, pAttr->c_str(), RL_RETURN_STRING );
+				output += rl_get_parameter( m_pAgentSoar, pAttr->c_str(), RL_RETURN_STRING );
 				break;
 				
 			case rl_param_number:
-				double temp = get_rl_parameter( my_agent, pAttr->c_str() );
+				double temp = rl_get_parameter( m_pAgentSoar, pAttr->c_str() );
 				temp2 = to_string( temp );
 				output += (*temp2);
 				delete temp2;
@@ -307,16 +298,16 @@ bool CommandLineInterface::DoRL( gSKI::Agent* pAgent, const char pOp, const std:
 	}
 	else if ( pOp == 's' )
 	{
-		switch ( get_rl_parameter_type( my_agent, pAttr->c_str() ) )
+		switch ( rl_get_parameter_type( m_pAgentSoar, pAttr->c_str() ) )
 		{
 			case rl_param_string:
-				return set_rl_parameter( my_agent, pAttr->c_str(), pVal->c_str() );
+				return rl_set_parameter( m_pAgentSoar, pAttr->c_str(), pVal->c_str() );
 				break;
 				
 			case rl_param_number:
 				double temp;
 				from_string( temp, *pVal );
-				return set_rl_parameter( my_agent, pAttr->c_str(), temp );
+				return rl_set_parameter( m_pAgentSoar, pAttr->c_str(), temp );
 				
 				break;
 				
@@ -334,7 +325,7 @@ bool CommandLineInterface::DoRL( gSKI::Agent* pAgent, const char pOp, const std:
 			std::string *temp_str;
 			
 			output = "Error from last update: ";
-			temp = get_rl_stat( my_agent, (const long) RL_STAT_UPDATE_ERROR );
+			temp = rl_get_stat( m_pAgentSoar, (const long) RL_STAT_UPDATE_ERROR );
 			temp_str = to_string( temp );
 			output += (*temp_str);
 			delete temp_str;
@@ -344,7 +335,7 @@ bool CommandLineInterface::DoRL( gSKI::Agent* pAgent, const char pOp, const std:
 				AppendArgTagFast( sml_Names::kParamValue, sml_Names::kTypeString, output.c_str() );
 			
 			output = "Total reward in last cycle: ";
-			temp = get_rl_stat( my_agent, RL_STAT_TOTAL_REWARD );
+			temp = rl_get_stat( m_pAgentSoar, RL_STAT_TOTAL_REWARD );
 			temp_str = to_string( temp );
 			output += (*temp_str);
 			delete temp_str;
@@ -354,7 +345,7 @@ bool CommandLineInterface::DoRL( gSKI::Agent* pAgent, const char pOp, const std:
 				AppendArgTagFast( sml_Names::kParamValue, sml_Names::kTypeString, output.c_str() );
 			
 			output = "Global reward since init: ";
-			temp = get_rl_stat( my_agent, RL_STAT_GLOBAL_REWARD );
+			temp = rl_get_stat( m_pAgentSoar, RL_STAT_GLOBAL_REWARD );
 			temp_str = to_string( temp );
 			output += (*temp_str);
 			delete temp_str;
@@ -365,7 +356,7 @@ bool CommandLineInterface::DoRL( gSKI::Agent* pAgent, const char pOp, const std:
 		}
 		else
 		{
-			double temp = get_rl_stat( my_agent, pAttr->c_str() );
+			double temp = rl_get_stat( m_pAgentSoar, pAttr->c_str() );
 			std::string *temp_str = to_string( temp );
 			std::string output = (*temp_str);
 			delete temp_str;

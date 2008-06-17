@@ -20,6 +20,7 @@ public:
 	~SoarAgent();
 
 	void MakeMove();
+	void InitSoar() { pAgent->InitSoar(); }
 
 private:
 

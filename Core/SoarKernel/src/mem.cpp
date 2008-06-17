@@ -139,7 +139,7 @@ void print_memory_statistics (agent* thisAgent) {
    (char *).
 ==================================================================== */
 
-char *make_memory_block_for_string (agent* thisAgent, char *s) {
+char *make_memory_block_for_string (agent* thisAgent, char const*s) {
   char *p;
   unsigned long size;
 

@@ -12,8 +12,8 @@
 #include "cli_CommandLineInterface.h"
 
 #include "cli_Commands.h"
+#include "cli_CLIError.h"
 
-#include "gSKI_Agent.h"
 #include "sml_Names.h"
 
 #include "episodic_memory.h"
@@ -22,11 +22,8 @@
 using namespace cli;
 using namespace sml;
 
-bool CommandLineInterface::ParseEpMem( gSKI::Agent* pAgent, std::vector<std::string>& argv ) 
-{
-	// get soar kernel agent - bad gSKI!
-	agent *my_agent = pAgent->GetSoarAgent();
-	
+bool CommandLineInterface::ParseEpMem( std::vector<std::string>& argv ) 
+{	
 	Options optionsData[] = 
 	{
 		{'g', "get",	0},
@@ -80,7 +77,7 @@ bool CommandLineInterface::ParseEpMem( gSKI::Agent* pAgent, std::vector<std::str
 	
 	// case: nothing = full configuration information
 	if ( argv.size() == 1 )
-		return DoEpMem( pAgent );
+		return DoEpMem();
 	
 	// case: close gets no arguments
 	else if ( options.test( EPMEM_CLOSE ) )
@@ -88,7 +85,7 @@ bool CommandLineInterface::ParseEpMem( gSKI::Agent* pAgent, std::vector<std::str
 		if ( m_NonOptionArguments > 0 )
 			return SetError( CLIError::kTooManyArgs );
 
-		return DoEpMem( pAgent, 'c' );
+		return DoEpMem( 'c' );
 	}
 	
 	// case: get requires one non-option argument
@@ -100,8 +97,8 @@ bool CommandLineInterface::ParseEpMem( gSKI::Agent* pAgent, std::vector<std::str
 			return SetError( CLIError::kTooManyArgs );
 		
 		// check attribute name here
-		if ( epmem_valid_parameter( my_agent, argv[2].c_str() ) )
-			return DoEpMem( pAgent, 'g', &( argv[2] ) );
+		if ( epmem_valid_parameter( m_pAgentSoar, argv[2].c_str() ) )
+			return DoEpMem( 'g', &( argv[2] ) );
 		else
 			return SetError( CLIError::kInvalidAttribute );
 	}
@@ -115,31 +112,31 @@ bool CommandLineInterface::ParseEpMem( gSKI::Agent* pAgent, std::vector<std::str
 			return SetError( CLIError::kTooManyArgs );
 		
 		// check attribute name/potential vals here
-		if ( epmem_valid_parameter( my_agent, argv[2].c_str() ) )
+		if ( epmem_valid_parameter( m_pAgentSoar, argv[2].c_str() ) )
 		{
-			switch ( epmem_get_parameter_type( my_agent, argv[2].c_str() ) )
+			switch ( epmem_get_parameter_type( m_pAgentSoar, argv[2].c_str() ) )
 			{
 				case epmem_param_constant:
-					if ( !epmem_valid_parameter_value( my_agent, argv[2].c_str(), argv[3].c_str() ) )
+					if ( !epmem_valid_parameter_value( m_pAgentSoar, argv[2].c_str(), argv[3].c_str() ) )
 						return SetError( CLIError::kInvalidValue );
 					else
-						return DoEpMem( pAgent, 's', &( argv[2] ), &( argv[3] ) );
+						return DoEpMem( 's', &( argv[2] ), &( argv[3] ) );
 					break;
 					
 				case epmem_param_number:
 					double temp;
 					from_string( temp, argv[3] );
-					if ( !epmem_valid_parameter_value( my_agent, argv[2].c_str(), temp ) )
+					if ( !epmem_valid_parameter_value( m_pAgentSoar, argv[2].c_str(), temp ) )
 						return SetError( CLIError::kInvalidValue );
 					else
-						return DoEpMem( pAgent, 's', &( argv[2] ), &( argv[3] ) );
+						return DoEpMem( 's', &( argv[2] ), &( argv[3] ) );
 					break;
 					
 				case epmem_param_string:
-					if ( !epmem_valid_parameter_value( my_agent, argv[2].c_str(), argv[3].c_str() ) )
+					if ( !epmem_valid_parameter_value( m_pAgentSoar, argv[2].c_str(), argv[3].c_str() ) )
 						return SetError( CLIError::kInvalidValue );
 					else
-						return DoEpMem( pAgent, 's', &( argv[2] ), &( argv[3] ) );
+						return DoEpMem( 's', &( argv[2] ), &( argv[3] ) );
 					break;
 					
 				case epmem_param_invalid:
@@ -155,12 +152,12 @@ bool CommandLineInterface::ParseEpMem( gSKI::Agent* pAgent, std::vector<std::str
 	else if ( options.test( EPMEM_STAT ) )
 	{
 		if ( m_NonOptionArguments == 0 )
-			return DoEpMem( pAgent, 'S' );
+			return DoEpMem( 'S' );
 		else if ( m_NonOptionArguments == 1 )
 		{
 			// check attribute name
-			if ( epmem_valid_stat( my_agent, argv[2].c_str() ) )
-				return DoEpMem( pAgent, 'S', &( argv[2] ) );
+			if ( epmem_valid_stat( m_pAgentSoar, argv[2].c_str() ) )
+				return DoEpMem( 'S', &( argv[2] ) );
 			else
 				return SetError( CLIError::kInvalidAttribute );
 		}
@@ -172,14 +169,8 @@ bool CommandLineInterface::ParseEpMem( gSKI::Agent* pAgent, std::vector<std::str
 	return false;
 }
 
-bool CommandLineInterface::DoEpMem( gSKI::Agent* pAgent, const char pOp, const std::string* pAttr, const std::string* pVal ) 
+bool CommandLineInterface::DoEpMem( const char pOp, const std::string* pAttr, const std::string* pVal ) 
 {
-	if ( !RequireAgent( pAgent ) ) 
-		return false;
-	
-	// get soar kernel agent - bad gSKI!
-	agent *my_agent = pAgent->GetSoarAgent();
-
 	if ( !pOp )
 	{
 		std::string temp;
@@ -187,7 +178,7 @@ bool CommandLineInterface::DoEpMem( gSKI::Agent* pAgent, const char pOp, const s
 		double temp_val;
 		
 		temp = "EpMem learning: ";
-		temp += epmem_get_parameter( my_agent, (const long) EPMEM_PARAM_LEARNING, EPMEM_RETURN_STRING );
+		temp += epmem_get_parameter( m_pAgentSoar, (const long) EPMEM_PARAM_LEARNING, EPMEM_RETURN_STRING );
 		if ( m_RawOutput )
 			m_Result << temp << "\n\n";
 		else
@@ -208,14 +199,14 @@ bool CommandLineInterface::DoEpMem( gSKI::Agent* pAgent, const char pOp, const s
 			AppendArgTagFast( sml_Names::kParamValue, sml_Names::kTypeString, temp.c_str() );
 		
 		temp = "database: ";
-		temp += epmem_get_parameter( my_agent, (const long) EPMEM_PARAM_DB, EPMEM_RETURN_STRING );
+		temp += epmem_get_parameter( m_pAgentSoar, (const long) EPMEM_PARAM_DB, EPMEM_RETURN_STRING );
 		if ( m_RawOutput )
 			m_Result << temp << "\n";
 		else
 			AppendArgTagFast( sml_Names::kParamValue, sml_Names::kTypeString, temp.c_str() );
 				
 		temp = "path: ";
-		temp += epmem_get_parameter( my_agent, (const long) EPMEM_PARAM_PATH, EPMEM_RETURN_STRING );
+		temp += epmem_get_parameter( m_pAgentSoar, (const long) EPMEM_PARAM_PATH, EPMEM_RETURN_STRING );
 		if ( m_RawOutput )
 			m_Result << temp << "\n\n";
 		else
@@ -236,14 +227,14 @@ bool CommandLineInterface::DoEpMem( gSKI::Agent* pAgent, const char pOp, const s
 			AppendArgTagFast( sml_Names::kParamValue, sml_Names::kTypeString, temp.c_str() );
 				
 		temp = "indexing: ";
-		temp += epmem_get_parameter( my_agent, (const long) EPMEM_PARAM_INDEXING, EPMEM_RETURN_STRING );
+		temp += epmem_get_parameter( m_pAgentSoar, (const long) EPMEM_PARAM_INDEXING, EPMEM_RETURN_STRING );
 		if ( m_RawOutput )
 			m_Result << temp << "\n";
 		else
 			AppendArgTagFast( sml_Names::kParamValue, sml_Names::kTypeString, temp.c_str() );
 		
 		temp = "provenance: ";
-		temp += epmem_get_parameter( my_agent, (const long) EPMEM_PARAM_PROVENANCE, EPMEM_RETURN_STRING );
+		temp += epmem_get_parameter( m_pAgentSoar, (const long) EPMEM_PARAM_PROVENANCE, EPMEM_RETURN_STRING );
 		if ( m_RawOutput )
 			m_Result << temp << "\n\n";
 		else
@@ -264,7 +255,7 @@ bool CommandLineInterface::DoEpMem( gSKI::Agent* pAgent, const char pOp, const s
 			AppendArgTagFast( sml_Names::kParamValue, sml_Names::kTypeString, temp.c_str() );
 		
 		temp = "trigger: ";
-		temp += epmem_get_parameter( my_agent, (const long) EPMEM_PARAM_TRIGGER, EPMEM_RETURN_STRING );
+		temp += epmem_get_parameter( m_pAgentSoar, (const long) EPMEM_PARAM_TRIGGER, EPMEM_RETURN_STRING );
 		if ( m_RawOutput )
 			m_Result << temp << "\n";
 		else
@@ -273,7 +264,7 @@ bool CommandLineInterface::DoEpMem( gSKI::Agent* pAgent, const char pOp, const s
 		}
 
 		temp = "balance: ";
-		temp_val = epmem_get_parameter( my_agent, EPMEM_PARAM_BALANCE );
+		temp_val = epmem_get_parameter( m_pAgentSoar, EPMEM_PARAM_BALANCE );
 		temp2 = to_string( temp_val );
 		temp += (*temp2);
 		delete temp2;
@@ -292,7 +283,7 @@ bool CommandLineInterface::DoEpMem( gSKI::Agent* pAgent, const char pOp, const s
 		const char *msg = "EpMem database closed.";
 		const char *tag_type = sml_Names::kTypeString;
 		
-		epmem_end( my_agent );
+		epmem_end( m_pAgentSoar );
 		if ( m_RawOutput )
 			m_Result << msg;
 		else
@@ -307,14 +298,14 @@ bool CommandLineInterface::DoEpMem( gSKI::Agent* pAgent, const char pOp, const s
 		std::string *temp2;
 		const char *tag_type = sml_Names::kTypeString;
 		
-		switch ( epmem_get_parameter_type( my_agent, pAttr->c_str() ) )
+		switch ( epmem_get_parameter_type( m_pAgentSoar, pAttr->c_str() ) )
 		{
 			case epmem_param_constant:
-				output += epmem_get_parameter( my_agent, pAttr->c_str(), EPMEM_RETURN_STRING );
+				output += epmem_get_parameter( m_pAgentSoar, pAttr->c_str(), EPMEM_RETURN_STRING );
 				break;
 				
 			case epmem_param_number:
-				temp = epmem_get_parameter( my_agent, pAttr->c_str() );
+				temp = epmem_get_parameter( m_pAgentSoar, pAttr->c_str() );
 				temp2 = to_string( temp );
 				output += (*temp2);
 				delete temp2;
@@ -322,7 +313,7 @@ bool CommandLineInterface::DoEpMem( gSKI::Agent* pAgent, const char pOp, const s
 				break;
 				
 			case epmem_param_string:
-				output += epmem_get_parameter( my_agent, pAttr->c_str(), EPMEM_RETURN_STRING );
+				output += epmem_get_parameter( m_pAgentSoar, pAttr->c_str(), EPMEM_RETURN_STRING );
 				break;
 		}
 					
@@ -338,20 +329,20 @@ bool CommandLineInterface::DoEpMem( gSKI::Agent* pAgent, const char pOp, const s
 		bool result = false;
 		bool invalid = false;
 		
-		switch ( epmem_get_parameter_type( my_agent, pAttr->c_str() ) )
+		switch ( epmem_get_parameter_type( m_pAgentSoar, pAttr->c_str() ) )
 		{
 			case epmem_param_constant:
-				result = epmem_set_parameter( my_agent, pAttr->c_str(), pVal->c_str() );
+				result = epmem_set_parameter( m_pAgentSoar, pAttr->c_str(), pVal->c_str() );
 				break;
 				
 			case epmem_param_number:
 				double temp;
 				from_string( temp, *pVal );
-				result = epmem_set_parameter( my_agent, pAttr->c_str(), temp );				
+				result = epmem_set_parameter( m_pAgentSoar, pAttr->c_str(), temp );				
 				break;
 				
 			case epmem_param_string:
-				result = epmem_set_parameter( my_agent, pAttr->c_str(), pVal->c_str() );
+				result = epmem_set_parameter( m_pAgentSoar, pAttr->c_str(), pVal->c_str() );
 				break;
 				
 			case epmem_param_invalid:
@@ -366,7 +357,7 @@ bool CommandLineInterface::DoEpMem( gSKI::Agent* pAgent, const char pOp, const s
 			const char *msg = "ERROR: this parameter is protected while the EpMem database is open.";
 			const char *tag_type = sml_Names::kTypeString;
 			
-			epmem_end( my_agent );
+			epmem_end( m_pAgentSoar );
 			if ( m_RawOutput )
 				m_Result << msg;
 			else
@@ -384,7 +375,7 @@ bool CommandLineInterface::DoEpMem( gSKI::Agent* pAgent, const char pOp, const s
 			std::string *temp_str;	
 			
 			output = "Time: ";
-			temp = epmem_get_stat( my_agent, (const long) EPMEM_STAT_TIME );
+			temp = epmem_get_stat( m_pAgentSoar, (const long) EPMEM_STAT_TIME );
 			temp_str = to_string( temp );
 			output += (*temp_str);
 			delete temp_str;
@@ -394,7 +385,7 @@ bool CommandLineInterface::DoEpMem( gSKI::Agent* pAgent, const char pOp, const s
 				AppendArgTagFast( sml_Names::kParamValue, sml_Names::kTypeString, output.c_str() );
 			
 			output = "Memory Usage: ";
-			temp = epmem_get_stat( my_agent, (const long) EPMEM_STAT_MEM_USAGE );
+			temp = epmem_get_stat( m_pAgentSoar, (const long) EPMEM_STAT_MEM_USAGE );
 			temp_str = to_string( temp );
 			output += (*temp_str);
 			delete temp_str;
@@ -404,7 +395,7 @@ bool CommandLineInterface::DoEpMem( gSKI::Agent* pAgent, const char pOp, const s
 				AppendArgTagFast( sml_Names::kParamValue, sml_Names::kTypeString, output.c_str() );
 			
 			output = "Memory Highwater: ";
-			temp = epmem_get_stat( my_agent, (const long) EPMEM_STAT_MEM_HIGH );
+			temp = epmem_get_stat( m_pAgentSoar, (const long) EPMEM_STAT_MEM_HIGH );
 			temp_str = to_string( temp );
 			output += (*temp_str);
 			delete temp_str;
@@ -415,7 +406,7 @@ bool CommandLineInterface::DoEpMem( gSKI::Agent* pAgent, const char pOp, const s
 		}
 		else
 		{
-			double temp = epmem_get_stat( my_agent, pAttr->c_str() );
+			double temp = epmem_get_stat( m_pAgentSoar, pAttr->c_str() );
 			std::string *temp_str = to_string( temp );
 			std::string output = (*temp_str);
 			delete temp_str;

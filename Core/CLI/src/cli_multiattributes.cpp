@@ -11,17 +11,20 @@
 #include "cli_CommandLineInterface.h"
 
 #include "cli_Commands.h"
+#include "cli_CLIError.h"
 
 #include "sml_Names.h"
 #include "sml_StringOps.h"
 
-#include "IgSKI_MultiAttribute.h"
-#include "gSKI_Agent.h"
+#include "agent.h"
+#include "production.h"
+#include "print.h"
+#include "symtab.h"
 
 using namespace cli;
 using namespace sml;
 
-bool CommandLineInterface::ParseMultiAttributes(gSKI::Agent* pAgent, std::vector<std::string>& argv) {
+bool CommandLineInterface::ParseMultiAttributes(std::vector<std::string>& argv) {
 	// No more than three arguments
 	if (argv.size() > 3) return SetError(CLIError::kTooManyArgs);
 
@@ -34,61 +37,87 @@ bool CommandLineInterface::ParseMultiAttributes(gSKI::Agent* pAgent, std::vector
 	}
 
 	// If we have two arguments, second arg is an attribute/identifer/whatever
-	if (argv.size() > 1) return DoMultiAttributes(pAgent, &argv[1], n);
+	if (argv.size() > 1) return DoMultiAttributes(&argv[1], n);
 
-	return DoMultiAttributes(pAgent);
+	return DoMultiAttributes();
 }
 
-bool CommandLineInterface::DoMultiAttributes(gSKI::Agent* pAgent, const std::string* pAttribute, int n) {
-	if (!RequireAgent(pAgent)) return false;
+bool CommandLineInterface::DoMultiAttributes(const std::string* pAttribute, int n) {
+	multi_attribute* maList = m_pAgentSoar->multi_attributes;
 
 	if (!pAttribute && !n) {
+
 		// No args, print current setting
 		int count = 0;
-		
-		// Arbitrary buffer size
-		char buf[kMinBufferSize];
 
-		gSKI::tIMultiAttributeIterator* pIt = pAgent->GetMultiAttributes();
-		if (!pIt->GetNumElements()) return SetError(CLIError::kMultiAttributeNotFound);
+		if ( !maList ) 
+		{
+			m_Result << "No multi-attributes found.";
+		}
 
-		if (m_RawOutput) m_Result << "Value\tSymbol";
+		std::stringstream buffer;
 
-		gSKI::IMultiAttribute* pMA;
+		if ( m_RawOutput ) m_Result << "Value\tSymbol";
 
-		for(; pIt->IsValid(); pIt->Next()) {
-			pMA = pIt->GetVal();
+		while( maList )
+		{
+			// Arbitrary buffer and size
+			char attributeName[1024];
+			symbol_to_string(m_pAgentSoar, maList->symbol, TRUE, attributeName, 1024);
 
 			if (m_RawOutput) {
-				m_Result << "\n" << pMA->GetMatchingPriority() << "\t" << pMA->GetAttributeName();
+				m_Result << "\n" << maList->value << "\t" << symbol_to_string(m_pAgentSoar, maList->symbol, TRUE, attributeName, 1024);
+
 			} else {
+				buffer << maList->value;
 				// Value
-				AppendArgTagFast(sml_Names::kParamValue, sml_Names::kTypeInt, Int2String(pMA->GetMatchingPriority(), buf, sizeof(buf)));
+
+				AppendArgTagFast( sml_Names::kParamValue, sml_Names::kTypeInt, buffer.str().c_str() );
+				buffer.clear();
+
 				// Symbol
-				AppendArgTagFast(sml_Names::kParamName, sml_Names::kTypeString, pMA->GetAttributeName());
+				AppendArgTagFast( sml_Names::kParamName, sml_Names::kTypeString, attributeName );
 			}
 
 			++count;
-			pMA->Release();
+
+			maList = maList->next;
 		}
 
-		pIt->Release();
-
-		if (!m_RawOutput) PrependArgTagFast(sml_Names::kParamCount, sml_Names::kTypeInt, Int2String(count, buf, kMinBufferSize));
+		buffer << count;
+		if (!m_RawOutput) {
+			PrependArgTagFast(sml_Names::kParamCount, sml_Names::kTypeInt, buffer.str().c_str() );
+		}
 		return true;
 	}
-
-	// This next comment straight out of the TgDI
-	// TODO: Check whether attribute is a valid symbolic constant. The way the old kernel
-	// does this is to call get_lexeme_from_string(m_agent, argv[1]) and check that
-	// the lex type is symbolic constant. At this point, that functionality isn't
-	// exposed by gSKI...
 
 	// Setting defaults to 10
 	if (!n) n = 10;
 
 	// Set it
-	pAgent->SetMultiAttribute(pAttribute->c_str(), n);
+	Symbol* s = make_sym_constant( m_pAgentSoar, pAttribute->c_str() );
+
+	while (maList) 
+	{
+		if (maList->symbol == s) 
+		{
+			maList->value = n;
+			symbol_remove_ref(m_pAgentSoar, s);
+			return true;
+		}
+
+		maList = maList->next;
+	}
+
+	/* sym wasn't in the table if we get here, so add it */
+	maList = (multi_attribute *) allocate_memory(m_pAgentSoar, sizeof(multi_attribute), MISCELLANEOUS_MEM_USAGE);
+	assert(maList);
+
+	maList->value = n;
+	maList->symbol = s;
+	maList->next = m_pAgentSoar->multi_attributes;
+	m_pAgentSoar->multi_attributes = maList;
+
  	return true;
 }
 

@@ -99,12 +99,6 @@ namespace cli {
 		MEMORIES_NUM_OPTIONS, // must be last
 	};
 
-	enum eNumericIndifferentMode {
-		NUMERIC_INDIFFERENT_QUERY,
-		NUMERIC_INDIFFERENT_AVERAGE,
-		NUMERIC_INDIFFERENT_SUM,
-	};
-
 	enum ePreferencesDetail {
 		PREFERENCES_ONLY,
 		PREFERENCES_NAMES,

@@ -13,11 +13,11 @@
 
 #include <assert.h>
 
-#include "cli_Commands.h"
-#include "cli_Aliases.h"
+#include <iostream>
+#include <fstream>
 
-#include "gSKI_Error.h"
-#include "gSKI_Agent.h"
+#include "cli_Commands.h"
+#include "cli_CLIError.h"
 
 // SML includes
 #include "sml_Connection.h"
@@ -26,13 +26,15 @@
 #include "sml_StringOps.h"
 #include "sml_KernelSML.h"
 #include "sml_AgentSML.h"
-#include "sml_XMLTrace.h"
+#include "XMLTrace.h"
+#include "sml_KernelHelpers.h"
+#include "KernelHeaders.h"
 
 #include "agent.h"
 
 using namespace cli;
 using namespace sml;
-using namespace std;
+using namespace soarxml;
 
 std::ostringstream CommandLineInterface::m_Result;	
 
@@ -154,20 +156,16 @@ EXPORT CommandLineInterface::CommandLineInterface() {
 	m_EchoMap[Commands::kCLIWatchWMEs]					= true ;
 
 	// Initialize other members
-	m_pKernel = 0;
 	m_SourceError = false;
 	m_SourceDepth = 0;
 	m_SourceDirDepth = 0;
 	m_pLogFile = 0;
-	m_KernelVersion.major = m_KernelVersion.minor = 0;
 	m_LastError = CLIError::kNoError;
-	gSKI::ClearError(&m_gSKIError);
 	m_Initialized = true;
 	m_PrintEventToResult = false;
-	m_XMLEventToResult = false;
-	m_XMLEventTag = 0 ;
 	m_EchoResult = false ;
 	m_pAgentSML = 0 ;
+	m_pAgentSoar = 0;
 	m_VarPrint = false;
 
 	m_XMLResult = new XMLTrace() ;
@@ -210,29 +208,46 @@ EXPORT bool CommandLineInterface::ShouldEchoCommand(char const* pCommandLine)
 
 /*************************************************************
 * @brief Process a command.  Give it a command line and it will parse
-*		 and execute the command using gSKI or system calls.
+*		 and execute the command using system calls.
 * @param pConnection The connection, for communication to the client
-* @param pAgent The pointer to the gSKI agent interface
+* @param pAgent The pointer to the agent interface
 * @param pCommandLine The command line string, arguments separated by spaces
 * @param echoResults If true send a copy of the result to the echo event
 * @param pResponse Pointer to XML response object
 *************************************************************/
-EXPORT bool CommandLineInterface::DoCommand(Connection* pConnection, gSKI::Agent* pAgent, const char* pCommandLine, bool echoResults, ElementXML* pResponse) {
+EXPORT bool CommandLineInterface::DoCommand(Connection* pConnection, sml::AgentSML* pAgent, const char* pCommandLine, bool echoResults, ElementXML* pResponse) {
+	if (!m_pKernelSML) return false;
+
 	// No way to return data
 	if (!pConnection) return false;
 	if (!pResponse) return false;
+	if (pAgent) 
+	{
+		m_pAgentSML = pAgent;
+		m_pAgentSoar = m_pAgentSML->GetSoarAgent();
+		assert( m_pAgentSoar );
+	} else {
+		m_pAgentSML = 0;
+		m_pAgentSoar = 0;
+	}
 
 	// Log input
 	if (m_pLogFile) {
 		if (pAgent) (*m_pLogFile) << pAgent->GetName() << "> ";
-		(*m_pLogFile) << pCommandLine << endl;
+		(*m_pLogFile) << pCommandLine << std::endl;
 	}
 
 	m_EchoResult = echoResults ;
-	m_pAgentSML = m_pKernelSML->GetAgentSML(pAgent) ;
+
+	// For kernel callback class we inherit
+	SetAgentSML(m_pAgentSML) ;
+
+	SetTrapPrintCallbacks( true );
 
 	// Process the command, ignoring its result (errors detected with m_LastError)
-	DoCommandInternal(pAgent, pCommandLine);
+	DoCommandInternal(pCommandLine);
+
+	SetTrapPrintCallbacks( false );
 
 	GetLastResultSML(pConnection, pResponse);
 
@@ -240,7 +255,66 @@ EXPORT bool CommandLineInterface::DoCommand(Connection* pConnection, gSKI::Agent
 	return true;
 }
 
-void CommandLineInterface::GetLastResultSML(sml::Connection* pConnection, sml::ElementXML* pResponse) {
+void CommandLineInterface::SetTrapPrintCallbacks(bool setting)
+{
+	if (!m_pAgentSML)
+	{
+		return;
+	}
+
+	if (setting)
+	{
+		// Trap print callbacks
+		m_pAgentSML->DisablePrintCallback();
+		m_PrintEventToResult = true;
+		if (!m_pLogFile) 
+		{
+			// If we're logging, we're already registered for this.
+			RegisterWithKernel(smlEVENT_PRINT);
+		}
+
+		// Tell kernel to collect result in command buffer as opposed to trace buffer
+		xml_begin_command_mode( m_pAgentSML->GetSoarAgent() );
+	}
+	else
+	{
+		// Retrieve command buffer, tell kernel to use trace buffer again
+		ElementXML* pXMLCommandResult = xml_end_command_mode( m_pAgentSML->GetSoarAgent() );
+
+		// The root object is just a <trace> tag.  The substance is in the children
+		// Add childrend of the command buffer to response tags
+		for ( int i = 0; i < pXMLCommandResult->GetNumberChildren(); ++i )
+		{
+			ElementXML* pChildXML = new ElementXML();
+			pXMLCommandResult->GetChild( pChildXML, i );
+
+			m_ResponseTags.push_back( pChildXML );
+		}
+
+		delete pXMLCommandResult;
+
+		if ( !m_RawOutput )
+		{
+			// Add text result to response tags
+			if ( m_Result.str().length() )
+			{
+				AppendArgTagFast( sml_Names::kParamMessage, sml_Names::kTypeString, m_Result.str().c_str() );
+				m_Result.str("");
+			}
+		}
+
+		// Re-enable print callbacks
+		if (!m_pLogFile) 
+		{
+			// If we're logging, we want to stay registered for this
+			UnregisterWithKernel(smlEVENT_PRINT);
+		}
+		m_PrintEventToResult = false;
+		m_pAgentSML->EnablePrintCallback();
+	}
+}
+
+void CommandLineInterface::GetLastResultSML(sml::Connection* pConnection, soarxml::ElementXML* pResponse) {
 	assert(pConnection);
 	assert(pResponse);
 
@@ -253,7 +327,7 @@ void CommandLineInterface::GetLastResultSML(sml::Connection* pConnection, sml::E
 
 	if (m_LastError == CLIError::kNoError) {
         // Log output
-        if (m_pLogFile) (*m_pLogFile) << m_Result.str() << endl;
+        if (m_pLogFile) (*m_pLogFile) << m_Result.str() << std::endl;
 
         // The command succeeded, so return the result if raw output
 		if (m_RawOutput) {
@@ -274,38 +348,38 @@ void CommandLineInterface::GetLastResultSML(sml::Connection* pConnection, sml::E
 				pResponse->AddChild(pTag);
 
 			} else {
-				// Otherwise, return result as simple result if there is one
-				if (m_Result.str().size()) {
-					pConnection->AddSimpleResultToSMLResponse(pResponse, m_Result.str().c_str());
-					EchoString(pConnection, m_Result.str().c_str()) ;
-				} else {
-					// Or, simply return true
-					pConnection->AddSimpleResultToSMLResponse(pResponse, sml_Names::kTrue);
-				}
+				// Or, simply return true
+				pConnection->AddSimpleResultToSMLResponse(pResponse, sml_Names::kTrue);
 			}
 		}
 	} else {
 		// The command failed, add the error message
-		string errorDescription = GenerateErrorString();
+		std::string errorDescription = GenerateErrorString();
 
 		pConnection->AddErrorToSMLResponse(pResponse, errorDescription.c_str(), m_LastError);
 		EchoString(pConnection, errorDescription.c_str()) ;
 
         // Log error
-        if (m_pLogFile) (*m_pLogFile) << errorDescription << endl;
+        if (m_pLogFile) (*m_pLogFile) << errorDescription << std::endl;
 	}
 
 	// reset state
 	m_Result.str("");
+
+	// Delete all remaining xml objects
+	for ( ElementXMLListIter cleanupIter = m_ResponseTags.begin(); cleanupIter != m_ResponseTags.end(); ++cleanupIter )
+	{
+		delete *cleanupIter;
+	}
 	m_ResponseTags.clear();	
+
 	m_LastError = CLIError::kNoError;	
 	m_LastErrorDetail.clear();			
-	gSKI::ClearError(&m_gSKIError);
 }
 
-string CommandLineInterface::GenerateErrorString()
+std::string CommandLineInterface::GenerateErrorString()
 {
-	string errorDescription = CLIError::GetErrorDescription(m_LastError);
+	std::string errorDescription = CLIError::GetErrorDescription(m_LastError);
 	if (m_LastErrorDetail.size()) {
 		errorDescription += "\nError detail: ";
 		errorDescription += m_LastErrorDetail;
@@ -314,22 +388,11 @@ string CommandLineInterface::GenerateErrorString()
 		errorDescription += "\nResult before error happened:\n";
 		errorDescription += m_Result.str();
 	}
-	if (gSKI::isError(m_gSKIError)) {
-		errorDescription += "\ngSKI Error code: ";
-		char buf[kMinBufferSize];
-		Int2String(m_gSKIError.Id, buf, kMinBufferSize);
-		errorDescription += buf;
-		errorDescription += "\ngSKI Error text: ";
-		errorDescription += m_gSKIError.Text;
-		errorDescription += "\ngSKI Error details: ";
-		errorDescription += m_gSKIError.ExtendedMsg;
-	}
-
 	return errorDescription;
 }
 
 /************************************************************* 	 
-* @brief Echo the given string through the smlEVENT_ECHO event
+* @brief Echo the given std::string through the smlEVENT_ECHO event
 *		 if the call requested that commands be echoed.
 *************************************************************/ 	 
 void CommandLineInterface::EchoString(sml::Connection* pConnection, char const* pString)
@@ -352,7 +415,7 @@ bool CommandLineInterface::ExpandCommandToString(const char* pCommandLine, std::
 {
 	SetError(CLIError::kNoError);
 
-	vector<string> argv;
+	std::vector<std::string> argv;
 
 	// 1) Parse command
 	if (CLITokenize(pCommandLine, argv) == -1)
@@ -381,7 +444,7 @@ bool CommandLineInterface::ExpandCommandToString(const char* pCommandLine, std::
 * @param pCommandLine The command line string, arguments separated by spaces
 * @param pResponse Pointer to XML response object
 *************************************************************/
-EXPORT bool CommandLineInterface::ExpandCommand(sml::Connection* pConnection, const char* pCommandLine, sml::ElementXML* pResponse)
+EXPORT bool CommandLineInterface::ExpandCommand(sml::Connection* pConnection, const char* pCommandLine, soarxml::ElementXML* pResponse)
 {
 	std::string result ;
 
@@ -393,16 +456,16 @@ EXPORT bool CommandLineInterface::ExpandCommand(sml::Connection* pConnection, co
 	return ok ;
 }
 
-bool CommandLineInterface::DoCommandInternal(gSKI::Agent* pAgent, const std::string& commandLine) {
-	vector<string> argv;
+bool CommandLineInterface::DoCommandInternal(const std::string& commandLine) {
+	std::vector<std::string> argv;
 	// Parse command:
 	if (CLITokenize(commandLine, argv) == -1)  return false;	// Parsing failed
 
 	// Execute the command
-	return DoCommandInternal(pAgent, argv);
+	return DoCommandInternal(argv);
 }
 
-bool CommandLineInterface::DoCommandInternal(gSKI::Agent* pAgent, vector<string>& argv) {
+bool CommandLineInterface::DoCommandInternal(std::vector<std::string>& argv) {
 	if (!argv.size()) return true;
 
 	// Check for help flags
@@ -502,7 +565,7 @@ bool CommandLineInterface::DoCommandInternal(gSKI::Agent* pAgent, vector<string>
 	ResetOptions();
 
 	// Make the Parse call
-	return (this->*pFunction)(pAgent, argv);
+	return (this->*pFunction)(argv);
 }
 
 bool CommandLineInterface::CheckForHelp(std::vector<std::string>& argv) {
@@ -517,9 +580,7 @@ bool CommandLineInterface::CheckForHelp(std::vector<std::string>& argv) {
 	return false;
 }
 
-EXPORT void CommandLineInterface::SetKernel(gSKI::Kernel* pKernel, gSKI::Version kernelVersion, sml::KernelSML* pKernelSML) {
-	m_pKernel = pKernel;
-	m_KernelVersion = kernelVersion;
+EXPORT void CommandLineInterface::SetKernel(sml::KernelSML* pKernelSML) {
 	m_pKernelSML = pKernelSML;
 
 	// Now that we have the kernel, set the home directory to the location of SoarKernelSML's parent directory,
@@ -547,7 +608,7 @@ EXPORT void CommandLineInterface::SetKernel(gSKI::Kernel* pKernel, gSKI::Version
 #endif // WIN32
 }
 
-bool CommandLineInterface::GetCurrentWorkingDirectory(string& directory) {
+bool CommandLineInterface::GetCurrentWorkingDirectory(std::string& directory) {
 	// Pull an arbitrary buffer size of 1024 out of a hat and use it
 	char buf[1024];
 	char* ret = getcwd(buf, 1024);
@@ -560,8 +621,8 @@ bool CommandLineInterface::GetCurrentWorkingDirectory(string& directory) {
 	return true;
 }
 
-bool CommandLineInterface::IsInteger(const string& s) {
-	string::const_iterator iter = s.begin();
+bool CommandLineInterface::IsInteger(const std::string& s) {
+	std::string::const_iterator iter = s.begin();
 	
 	// Allow negatives
 	if (s.length() > 1) {
@@ -576,25 +637,6 @@ bool CommandLineInterface::IsInteger(const string& s) {
 		}
 		++iter;
 	}
-	return true;
-}
-
-bool CommandLineInterface::RequireAgent(agent* pAgent) {
-	// Requiring an agent implies requiring a kernel
-	if (!RequireKernel()) return false;
-	if (!pAgent) return SetError(CLIError::kAgentRequired);
-	return true;
-}
-
-bool CommandLineInterface::RequireAgent(gSKI::Agent* pAgent) {
-	// Requiring an agent implies requiring a kernel
-	if (!RequireKernel()) return false;
-	if (!pAgent) return SetError(CLIError::kAgentRequired);
-	return true;
-}
-
-bool CommandLineInterface::RequireKernel() {
-	if (!m_pKernel) return SetError(CLIError::kKernelRequired);
 	return true;
 }
 
@@ -630,37 +672,6 @@ void CommandLineInterface::PrependArgTagFast(const char* pParam, const char* pTy
 	m_ResponseTags.push_front(pTag);
 }
 
-void CommandLineInterface::AddListenerAndDisableCallbacks(gSKI::Agent* pAgent) {
-	if (m_pKernelSML) m_pKernelSML->DisablePrintCallback(pAgent);
-	m_PrintEventToResult = true;
-	if (!m_pLogFile && pAgent) pAgent->AddPrintListener(gSKIEVENT_PRINT, this);
-}
-
-void CommandLineInterface::RemoveListenerAndEnableCallbacks(gSKI::Agent* pAgent) {
-	if (!m_pLogFile && pAgent) pAgent->RemovePrintListener(gSKIEVENT_PRINT, this);
-	m_PrintEventToResult = false;
-	if (m_pKernelSML) m_pKernelSML->EnablePrintCallback(pAgent);
-}
-
-void CommandLineInterface::AddXMLListenerAndDisableCallbacks(gSKI::Agent* pAgent) {
-	if (m_pKernelSML) m_pKernelSML->DisablePrintCallback(pAgent);
-	m_XMLEventToResult = true;
-	if (pAgent) pAgent->AddXMLListener(gSKIEVENT_XML_TRACE_OUTPUT, this);
-}
-
-void CommandLineInterface::RemoveXMLListenerAndEnableCallbacks(gSKI::Agent* pAgent) {
-	if (pAgent) pAgent->RemoveXMLListener(gSKIEVENT_XML_TRACE_OUTPUT, this);
-	m_XMLEventToResult = false;
-	if (m_pKernelSML) m_pKernelSML->EnablePrintCallback(pAgent);
-
-	if (m_XMLEventTag)
-	{
-		m_ResponseTags.push_back(m_XMLEventTag->DetatchObject()) ;
-		delete m_XMLEventTag ;
-		m_XMLEventTag = NULL ;
-	}
-}
-
 bool CommandLineInterface::SetError(cli::ErrorCode code) {
 	m_LastError = code;
 	return false;
@@ -668,11 +679,6 @@ bool CommandLineInterface::SetError(cli::ErrorCode code) {
 bool CommandLineInterface::SetErrorDetail(const std::string detail) {
 	m_LastErrorDetail = detail;
 	return false;
-}
-
-void CommandLineInterface::ResultToArgTag() {
-	AppendArgTagFast(sml_Names::kParamMessage, sml_Names::kTypeString, m_Result.str().c_str());
-	m_Result.str("");
 }
 
 bool CommandLineInterface::StripQuotes(std::string& str) {
@@ -864,88 +870,6 @@ bool CommandLineInterface::HandleOptionArgument(std::vector<std::string>& argv, 
 	return true;
 }
 
-/** 
-* @brief Event callback function
-*
-* This method recieves callbacks when the xml event occurs for an agent.
-*
-* @param eventId	  Id of the event that occured (can only be gSKIEVENT_XML_TRACE_OUTPUT)
-* @param agentPtr	  Pointer to the agent that fired the print event
-* @param funcType     Pointer to c-style string containing the function type (i.e. addTag, addAttributeValuePair, endTag)
-* @param attOrTag     Pointer to c-style string containing the tag to add or remove or the attribute to add
-* @param value		  Pointer to c-style string containing the value to add (may be NULL if just adding/ending a tag)
-*/
-void CommandLineInterface::HandleEvent(egSKIXMLEventId eventId, gSKI::Agent* agentPtr, const char* funcType, const char* attOrTag, const char* value) {
-	unused(eventId) ;
-	unused(agentPtr) ;
-
-	// Collect up the incoming XML events into an XML object
-	if (!m_XMLEventTag)
-		m_XMLEventTag = new XMLTrace() ;
-
-	// We need to decide what type of operation this is and we'd like to do that
-	// fairly efficiently so we'll switch based on the first character of the name.
-	char ch = funcType[0] ;
-
-	switch (ch)
-	{
-	case 'b' : 
-		if (strcmp(sml_Names::kFunctionBeginTag, funcType) == 0)
-		{
-			m_XMLEventTag->BeginTag(attOrTag) ;
-		}
-		break ;
-	case 'e':
-		if (strcmp(sml_Names::kFunctionEndTag, funcType) == 0)
-		{
-			m_XMLEventTag->EndTag(attOrTag) ;
-		}
-		break ;
-	case 'a':
-		if (strcmp(sml_Names::kFunctionAddAttribute, funcType) == 0)
-		{
-			m_XMLEventTag->AddAttribute(attOrTag, value) ;
-		}
-		break ;
-	default:
-		// This is an unknown function type
-		assert(ch == 'b' || ch == 'e' || ch == 'a') ;
-		break ;
-	}
-}
-
-void CommandLineInterface::HandleEvent(egSKIPrintEventId, gSKI::Agent*, const char* msg) {
-	if (m_PrintEventToResult || m_pLogFile) {
-		if (m_VarPrint) {
-			// Transform if varprint, see print command
-			std::string message(msg);
-
-			regex_t comp;
-			regcomp(&comp, "[A-Z][0-9]+", REG_EXTENDED);
-
-			regmatch_t match;
-			memset(&match, 0, sizeof(regmatch_t));
-
-			while (regexec(&comp, message.substr(match.rm_eo, message.size() - match.rm_eo).c_str(), 1, &match, 0) == 0) {
-				message.insert(match.rm_so, "<");
-				message.insert(match.rm_eo + 1, ">");
-				match.rm_eo += 2;
-			}  
-
-			regfree(&comp);
-
-			// Simply append to message result
-			if (m_PrintEventToResult) {
-				CommandLineInterface::m_Result << message;
-			}
-		} else {
-			if (m_PrintEventToResult) {
-				CommandLineInterface::m_Result << msg;
-			}
-		}
-	}
-}
-
 CommandLineInterface* cli::GetCLI()
 {
 	return sml::KernelSML::GetKernelSML()->GetCommandLineInterface() ;
@@ -1022,7 +946,7 @@ void CommandLineInterface::XMLResultToResponse(char const* pCommandName)
 	m_XMLResult->Reset() ;
 }
 
-int CommandLineInterface::CLITokenize(string cmdline, vector<string>& argumentVector) {
+int CommandLineInterface::CLITokenize(std::string cmdline, std::vector<std::string>& argumentVector) {
 
 	int ret = Tokenize(cmdline, argumentVector);
 	
@@ -1084,4 +1008,66 @@ int CommandLineInterface::CLITokenize(string cmdline, vector<string>& argumentVe
 
 	return ret;
 }
+
+void CommandLineInterface::OnKernelEvent(int eventID, AgentSML*, void* pCallData)
+{
+	// Registered for this event in source command
+	if (eventID == smlEVENT_BEFORE_PRODUCTION_REMOVED)
+	{
+		// Only called when source command is active
+		++m_NumProductionsExcised;
+
+		if (m_SourceVerbose) {
+			production* p = (production*) pCallData ;
+			assert(p) ;
+			assert(p->name->sc.name) ;
+
+			std::string name = p->name->sc.name ;
+
+			m_ExcisedDuringSource.push_back(name.c_str());
+		}
+	}
+	else if (eventID == smlEVENT_PRINT)
+	{
+		char const* msg = (char const*)pCallData ;
+
+		if (m_PrintEventToResult || m_pLogFile)
+		{
+			if (m_VarPrint)
+			{
+				// Transform if varprint, see print command
+				std::string message(msg);
+
+				regex_t comp;
+				regcomp(&comp, "[A-Z][0-9]+", REG_EXTENDED);
+
+				regmatch_t match;
+				memset(&match, 0, sizeof(regmatch_t));
+
+				while (regexec(&comp, message.substr(match.rm_eo, message.size() - match.rm_eo).c_str(), 1, &match, 0) == 0) {
+					message.insert(match.rm_so, "<");
+					message.insert(match.rm_eo + 1, ">");
+					match.rm_eo += 2;
+				}  
+
+				regfree(&comp);
+
+				// Simply append to message result
+				if (m_PrintEventToResult) {
+					CommandLineInterface::m_Result << message;
+				}
+			} else {
+				if (m_PrintEventToResult) {
+					CommandLineInterface::m_Result << msg;
+				}
+			}
+		}
+	}
+	else
+	{
+		assert(false);
+		// unknown event
+		// TODO: gracefully (?) deal with this error
+	}
+} // function
 

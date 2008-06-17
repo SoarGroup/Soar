@@ -21,31 +21,33 @@
 #include "soar_rand.h"
 #include "agent.h"
 #include "print.h"
-#include "gski_event_system_functions.h"
-#include "xmlTraceNames.h"
 
 #include "exploration.h"
 #include "misc.h"
+#include "xml.h"
+#include "soar_TraceNames.h"
 #include "reinforcement_learning.h"
 
+using namespace soar_TraceNames;
+
 /***************************************************************************
- * Function     : valid_exploration_policy
+ * Function     : exploration_valid_policy
  **************************************************************************/
 
-bool valid_exploration_policy( const char *policy_name )
+bool exploration_valid_policy( const char *policy_name )
 {
-	return ( convert_exploration_policy( policy_name ) != NULL );
+	return ( exploration_convert_policy( policy_name ) != NULL );
 }
 
-bool valid_exploration_policy( const long policy )
+bool exploration_valid_policy( const long policy )
 {
 	return ( ( policy > 0 ) && ( policy < USER_SELECT_INVALID ) );
 }
 
 /***************************************************************************
- * Function     : convert_exploration_policy
+ * Function     : exploration_convert_policy
  **************************************************************************/
-const long convert_exploration_policy( const char *policy_name )
+const long exploration_convert_policy( const char *policy_name )
 {
 	if ( !strcmp( policy_name, "boltzmann" ) )
 		return USER_SELECT_BOLTZMANN;
@@ -63,7 +65,7 @@ const long convert_exploration_policy( const char *policy_name )
 	return NULL;
 }
 
-const char *convert_exploration_policy( const long policy )
+const char *exploration_convert_policy( const long policy )
 {
 	if ( policy == USER_SELECT_BOLTZMANN )
 		return "boltzmann";
@@ -82,21 +84,21 @@ const char *convert_exploration_policy( const long policy )
 }
 
 /***************************************************************************
- * Function     : set_exploration_policy
+ * Function     : exploration_set_policy
  **************************************************************************/
-bool set_exploration_policy( agent *my_agent, const char *policy_name )
+bool exploration_set_policy( agent *my_agent, const char *policy_name )
 {	
-	const long policy = convert_exploration_policy( policy_name );
+	const long policy = exploration_convert_policy( policy_name );
 	
 	if ( policy != NULL )
-		return set_exploration_policy( my_agent, policy );
+		return exploration_set_policy( my_agent, policy );
 	
 	return false;
 }
 
-bool set_exploration_policy( agent *my_agent, const long policy )
+bool exploration_set_policy( agent *my_agent, const long policy )
 {	
-	if ( valid_exploration_policy( policy ) )
+	if ( exploration_valid_policy( policy ) )
 	{
 		set_sysparam( my_agent, USER_SELECT_MODE_SYSPARAM, policy );
 		return true;
@@ -106,17 +108,17 @@ bool set_exploration_policy( agent *my_agent, const long policy )
 }
 
 /***************************************************************************
- * Function     : get_exploration_policy
+ * Function     : exploration_get_policy
  **************************************************************************/
-const long get_exploration_policy( agent *my_agent )
+const long exploration_get_policy( agent *my_agent )
 {
 	return my_agent->sysparams[ USER_SELECT_MODE_SYSPARAM ];
 }
 
 /***************************************************************************
- * Function     : add_exploration_parameter
+ * Function     : exploration_add_parameter
  **************************************************************************/
-exploration_parameter *add_exploration_parameter( double value, bool (*val_func)( double ), const char *name )
+exploration_parameter *exploration_add_parameter( double value, bool (*val_func)( double ), const char *name )
 {
 	// new parameter entry
 	exploration_parameter *newbie = new exploration_parameter;
@@ -131,9 +133,9 @@ exploration_parameter *add_exploration_parameter( double value, bool (*val_func)
 }
 
 /***************************************************************************
- * Function     : convert_exploration_parameter
+ * Function     : exploration_convert_parameter
  **************************************************************************/
-const long convert_exploration_parameter( agent *my_agent, const char *name )
+const long exploration_convert_parameter( agent *my_agent, const char *name )
 {
 	for ( int i=0; i<EXPLORATION_PARAMS; i++ )
 		if ( !strcmp( name, my_agent->exploration_params[ i ]->name ) )
@@ -142,86 +144,86 @@ const long convert_exploration_parameter( agent *my_agent, const char *name )
 	return EXPLORATION_PARAMS;
 }
 
-const char *convert_exploration_parameter( agent *my_agent, const long parameter )
+const char *exploration_convert_parameter( agent *my_agent, const long parameter )
 {
 	return ( ( ( parameter >= 0 ) && ( parameter < EXPLORATION_PARAMS ) )?( my_agent->exploration_params[ parameter ]->name ):( NULL ) );
 }
 
 /***************************************************************************
- * Function     : valid_exploration_parameter
+ * Function     : exploration_valid_parameter
  **************************************************************************/
-const bool valid_exploration_parameter( agent *my_agent, const char *name )
+const bool exploration_valid_parameter( agent *my_agent, const char *name )
 {
-	return ( convert_exploration_parameter( my_agent, name ) != EXPLORATION_PARAMS );
+	return ( exploration_convert_parameter( my_agent, name ) != EXPLORATION_PARAMS );
 }
 
-const bool valid_exploration_parameter( agent *my_agent, const long parameter )
+const bool exploration_valid_parameter( agent *my_agent, const long parameter )
 {
-	return ( convert_exploration_parameter( my_agent, parameter ) != NULL );
+	return ( exploration_convert_parameter( my_agent, parameter ) != NULL );
 }
 
 /***************************************************************************
- * Function     : get_parameter_value
+ * Function     : exploration_get_parameter_value
  **************************************************************************/
-double get_parameter_value( agent *my_agent, const char *parameter )
+double exploration_get_parameter_value( agent *my_agent, const char *parameter )
 {	
-	const long param = convert_exploration_parameter( my_agent, parameter );
+	const long param = exploration_convert_parameter( my_agent, parameter );
 	if ( param == EXPLORATION_PARAMS )
 		return 0;
 	
 	return my_agent->exploration_params[ param ]->value;
 }
 
-double get_parameter_value( agent *my_agent, const long parameter )
+double exploration_get_parameter_value( agent *my_agent, const long parameter )
 {
-	if ( valid_exploration_parameter( my_agent, parameter ) )
+	if ( exploration_valid_parameter( my_agent, parameter ) )
 		return my_agent->exploration_params[ parameter ]->value;
 
 	return 0;
 }
 
 /***************************************************************************
- * Function     : validate_epsilon
+ * Function     : exploration_validate_epsilon
  **************************************************************************/
-bool validate_epsilon( double value )
+bool exploration_validate_epsilon( double value )
 {
 	return ( ( value >= 0 ) && ( value <= 1 ) );
 }
 
 /***************************************************************************
- * Function     : validate_temperature
+ * Function     : exploration_validate_temperature
  **************************************************************************/
-bool validate_temperature( double value )
+bool exploration_validate_temperature( double value )
 {
 	return ( value > 0 );
 }
 
 /***************************************************************************
- * Function     : valid_parameter_value
+ * Function     : exploration_valid_parameter_value
  **************************************************************************/
-bool valid_parameter_value( agent *my_agent, const char *name, double value )
+bool exploration_valid_parameter_value( agent *my_agent, const char *name, double value )
 {
-	const long param = convert_exploration_parameter( my_agent, name );
+	const long param = exploration_convert_parameter( my_agent, name );
 	if ( param == EXPLORATION_PARAMS )
 		return false;
 	
 	return my_agent->exploration_params[ param ]->val_func( value );
 }
 
-bool valid_parameter_value( agent *my_agent, const long parameter, double value )
+bool exploration_valid_parameter_value( agent *my_agent, const long parameter, double value )
 {
-	if ( valid_exploration_parameter( my_agent, parameter ) )
+	if ( exploration_valid_parameter( my_agent, parameter ) )
 		return my_agent->exploration_params[ parameter ]->val_func( value );
 
 	return false;
 }
 
 /***************************************************************************
- * Function     : set_parameter_value
+ * Function     : exploration_set_parameter_value
  **************************************************************************/
-bool set_parameter_value( agent *my_agent, const char *name, double value )
+bool exploration_set_parameter_value( agent *my_agent, const char *name, double value )
 {
-	const long param = convert_exploration_parameter( my_agent, name );
+	const long param = exploration_convert_parameter( my_agent, name );
 	if ( param == EXPLORATION_PARAMS )
 		return false;
 	
@@ -230,9 +232,9 @@ bool set_parameter_value( agent *my_agent, const char *name, double value )
 	return true;
 }
 
-bool set_parameter_value( agent *my_agent, const long parameter, double value )
+bool exploration_set_parameter_value( agent *my_agent, const long parameter, double value )
 {
-	if ( valid_exploration_parameter( my_agent, parameter ) )
+	if ( exploration_valid_parameter( my_agent, parameter ) )
 	{
 		my_agent->exploration_params[ parameter ]->value = value;
 		return true;
@@ -242,17 +244,17 @@ bool set_parameter_value( agent *my_agent, const long parameter, double value )
 }
 
 /***************************************************************************
- * Function     : get_auto_update_exploration
+ * Function     : exploration_get_auto_update
  **************************************************************************/
-bool get_auto_update_exploration( agent *my_agent )
+bool exploration_get_auto_update( agent *my_agent )
 {
 	return ( my_agent->sysparams[ USER_SELECT_REDUCE_SYSPARAM ] != FALSE );
 }
 
 /***************************************************************************
- * Function     : set_auto_update_exploration
+ * Function     : exploration_set_auto_update
  **************************************************************************/
-bool set_auto_update_exploration( agent *my_agent, bool setting )
+bool exploration_set_auto_update( agent *my_agent, bool setting )
 {
 	my_agent->sysparams[ USER_SELECT_REDUCE_SYSPARAM ] = ( ( setting )?( TRUE ):( FALSE ) );
 	
@@ -260,41 +262,41 @@ bool set_auto_update_exploration( agent *my_agent, bool setting )
 }
 
 /***************************************************************************
- * Function     : update_exploration_parameters
+ * Function     : exploration_update_parameters
  **************************************************************************/
-void update_exploration_parameters( agent *my_agent )
+void exploration_update_parameters( agent *my_agent )
 {	
-	if ( get_auto_update_exploration( my_agent ) )
+	if ( exploration_get_auto_update( my_agent ) )
 	{			
 		for ( int i=0; i<EXPLORATION_PARAMS; i++ )
 		{
-			const long reduction_policy = get_reduction_policy( my_agent, i );
-			double reduction_rate = get_reduction_rate( my_agent, i, reduction_policy );			
+			const long reduction_policy = exploration_get_reduction_policy( my_agent, i );
+			double reduction_rate = exploration_get_reduction_rate( my_agent, i, reduction_policy );			
 	
 			if ( reduction_policy == EXPLORATION_REDUCTION_EXPONENTIAL )
 			{
 				if ( reduction_rate != 1 )
 				{
-					double current_value = get_parameter_value( my_agent, i );
+					double current_value = exploration_get_parameter_value( my_agent, i );
 
-					set_parameter_value( my_agent, i, ( current_value * reduction_rate ) );
+					exploration_set_parameter_value( my_agent, i, ( current_value * reduction_rate ) );
 				}
 			}
 			else if ( reduction_policy == EXPLORATION_REDUCTION_LINEAR )
 			{
-				double current_value = get_parameter_value( my_agent, i );
+				double current_value = exploration_get_parameter_value( my_agent, i );
 				
 				if ( ( current_value > 0 ) && ( reduction_rate != 0 ) )
-					set_parameter_value( my_agent, i, ( ( ( current_value - reduction_rate ) > 0 )?( current_value - reduction_rate ):( 0 ) ) );
+					exploration_set_parameter_value( my_agent, i, ( ( ( current_value - reduction_rate ) > 0 )?( current_value - reduction_rate ):( 0 ) ) );
 			}
 		}
 	}
 }
 
 /***************************************************************************
- * Function     : convert_reduction_policy
+ * Function     : exploration_convert_reduction_policy
  **************************************************************************/
-const long convert_reduction_policy( const char *policy_name )
+const long exploration_convert_reduction_policy( const char *policy_name )
 {
 	if ( !strcmp( policy_name, "exponential" ) )
 		return EXPLORATION_REDUCTION_EXPONENTIAL;
@@ -304,7 +306,7 @@ const long convert_reduction_policy( const char *policy_name )
 	return EXPLORATION_REDUCTIONS;
 }
 
-const char *convert_reduction_policy( const long policy )
+const char *exploration_convert_reduction_policy( const long policy )
 {
 	if ( policy == EXPLORATION_REDUCTION_EXPONENTIAL )
 		return "exponential";
@@ -315,53 +317,53 @@ const char *convert_reduction_policy( const long policy )
 }
 
 /***************************************************************************
- * Function     : get_reduction_policy
+ * Function     : exploration_get_reduction_policy
  **************************************************************************/
-const long get_reduction_policy( agent *my_agent, const char *parameter )
+const long exploration_get_reduction_policy( agent *my_agent, const char *parameter )
 {
-	const long param = convert_exploration_parameter( my_agent, parameter );
+	const long param = exploration_convert_parameter( my_agent, parameter );
 	if ( param == EXPLORATION_PARAMS )
 		return EXPLORATION_REDUCTIONS;
 
 	return my_agent->exploration_params[ param ]->reduction_policy;
 }
 
-const long get_reduction_policy( agent *my_agent, const long parameter )
+const long exploration_get_reduction_policy( agent *my_agent, const long parameter )
 {
-	if ( valid_exploration_parameter( my_agent, parameter ) )
+	if ( exploration_valid_parameter( my_agent, parameter ) )
 		return my_agent->exploration_params[ parameter ]->reduction_policy;
 	else
 		return EXPLORATION_REDUCTIONS;
 }
 
 /***************************************************************************
- * Function     : valid_reduction_policy
+ * Function     : exploration_valid_reduction_policy
  **************************************************************************/
-bool valid_reduction_policy( agent *my_agent, const char *parameter, const char *policy_name )
+bool exploration_valid_reduction_policy( agent *my_agent, const char *parameter, const char *policy_name )
 {	
-	return ( convert_reduction_policy( policy_name ) != EXPLORATION_REDUCTIONS );
+	return ( exploration_convert_reduction_policy( policy_name ) != EXPLORATION_REDUCTIONS );
 }
 
-bool valid_reduction_policy( agent *my_agent, const char *parameter, const long policy )
+bool exploration_valid_reduction_policy( agent *my_agent, const char *parameter, const long policy )
 {	
-	return ( convert_reduction_policy( policy ) != NULL );
+	return ( exploration_convert_reduction_policy( policy ) != NULL );
 }
 
-bool valid_reduction_policy( agent *my_agent, const long parameter, const long policy )
+bool exploration_valid_reduction_policy( agent *my_agent, const long parameter, const long policy )
 {	
-	return ( convert_reduction_policy( policy ) != NULL );
+	return ( exploration_convert_reduction_policy( policy ) != NULL );
 }
 
 /***************************************************************************
- * Function     : set_reduction_policy
+ * Function     : exploration_set_reduction_policy
  **************************************************************************/
-bool set_reduction_policy( agent *my_agent, const char *parameter, const char *policy_name )
+bool exploration_set_reduction_policy( agent *my_agent, const char *parameter, const char *policy_name )
 {
-	const long param = convert_exploration_parameter( my_agent, parameter );
+	const long param = exploration_convert_parameter( my_agent, parameter );
 	if ( param == EXPLORATION_PARAMS )
 		return EXPLORATION_REDUCTIONS;
 	
-	const long policy = convert_reduction_policy( policy_name );
+	const long policy = exploration_convert_reduction_policy( policy_name );
 	if ( policy == EXPLORATION_REDUCTIONS )
 		return false;		
 	
@@ -370,10 +372,10 @@ bool set_reduction_policy( agent *my_agent, const char *parameter, const char *p
 	return true;
 }
 
-bool set_reduction_policy( agent *my_agent, const long parameter, const long policy )
+bool exploration_set_reduction_policy( agent *my_agent, const long parameter, const long policy )
 {
-	if ( valid_exploration_parameter( my_agent, parameter ) &&
-		 valid_reduction_policy( my_agent, parameter, policy ) )
+	if ( exploration_valid_parameter( my_agent, parameter ) &&
+		 exploration_valid_reduction_policy( my_agent, parameter, policy ) )
 	{
 		my_agent->exploration_params[ parameter ]->reduction_policy = policy;
 		return true;
@@ -383,34 +385,34 @@ bool set_reduction_policy( agent *my_agent, const long parameter, const long pol
 }
 
 /***************************************************************************
- * Function     : valid_reduction_rate
+ * Function     : exploration_valid_reduction_rate
  **************************************************************************/
-bool valid_reduction_rate( agent *my_agent, const char *parameter, const char *policy_name, double reduction_rate )
+bool exploration_valid_reduction_rate( agent *my_agent, const char *parameter, const char *policy_name, double reduction_rate )
 {
-	const long param = convert_exploration_parameter( my_agent, parameter );
+	const long param = exploration_convert_parameter( my_agent, parameter );
 	if ( param == EXPLORATION_PARAMS )
 		return EXPLORATION_REDUCTIONS;
 	
-	const long policy = convert_reduction_policy( policy_name );
+	const long policy = exploration_convert_reduction_policy( policy_name );
 	if ( policy == EXPLORATION_REDUCTIONS )
 		return false;
 	
-	return valid_reduction_rate( my_agent, param, policy, reduction_rate );
+	return exploration_valid_reduction_rate( my_agent, param, policy, reduction_rate );
 }
 
-bool valid_reduction_rate( agent *my_agent, const long parameter, const long policy, double reduction_rate )
+bool exploration_valid_reduction_rate( agent *my_agent, const long parameter, const long policy, double reduction_rate )
 {
-	if ( !valid_reduction_policy( my_agent, parameter, policy ) )
+	if ( !exploration_valid_reduction_policy( my_agent, parameter, policy ) )
 		return false;
 	
 	switch ( policy )
 	{
 		case EXPLORATION_REDUCTION_EXPONENTIAL:
-			return valid_exponential( reduction_rate );
+			return exploration_valid_exponential( reduction_rate );
 			break;
 			
 		case EXPLORATION_REDUCTION_LINEAR:
-			return valid_linear( reduction_rate );
+			return exploration_valid_linear( reduction_rate );
 			break;
 			
 		default:
@@ -420,67 +422,67 @@ bool valid_reduction_rate( agent *my_agent, const long parameter, const long pol
 }
 
 /***************************************************************************
- * Function     : valid_exponential
+ * Function     : exploration_valid_exponential
  **************************************************************************/
-bool valid_exponential( double reduction_rate )
+bool exploration_valid_exponential( double reduction_rate )
 {
 	return ( ( reduction_rate >= 0 ) && ( reduction_rate <= 1 ) );
 }
 
 /***************************************************************************
- * Function     : valid_linear
+ * Function     : exploration_valid_linear
  **************************************************************************/
-bool valid_linear( double reduction_rate )
+bool exploration_valid_linear( double reduction_rate )
 {
 	return ( reduction_rate >= 0 );
 }
 
 /***************************************************************************
- * Function     : get_reduction_rate
+ * Function     : exploration_get_reduction_rate
  **************************************************************************/
-double get_reduction_rate( agent *my_agent, const char *parameter, const char *policy_name )
+double exploration_get_reduction_rate( agent *my_agent, const char *parameter, const char *policy_name )
 {
-	const long param = convert_exploration_parameter( my_agent, parameter );
+	const long param = exploration_convert_parameter( my_agent, parameter );
 	if ( param == EXPLORATION_PARAMS )
 		return 0;
 	
-	const long policy = convert_reduction_policy( policy_name );
+	const long policy = exploration_convert_reduction_policy( policy_name );
 	if ( policy == EXPLORATION_REDUCTIONS )
 		return 0;
 	
-	return get_reduction_rate( my_agent, param, policy );
+	return exploration_get_reduction_rate( my_agent, param, policy );
 }
 
-double get_reduction_rate( agent *my_agent, const long parameter, const long policy )
+double exploration_get_reduction_rate( agent *my_agent, const long parameter, const long policy )
 {	
-	if ( valid_exploration_parameter( my_agent, parameter ) &&
-		 valid_reduction_policy( my_agent, parameter, policy ) )
+	if ( exploration_valid_parameter( my_agent, parameter ) &&
+		 exploration_valid_reduction_policy( my_agent, parameter, policy ) )
 		return my_agent->exploration_params[ parameter ]->rates[ policy ];
 	
 	return 0;
 }
 
 /***************************************************************************
- * Function     : set_reduction_rate
+ * Function     : exploration_set_reduction_rate
  **************************************************************************/
-bool set_reduction_rate( agent *my_agent, const char *parameter, const char *policy_name, double reduction_rate )
+bool exploration_set_reduction_rate( agent *my_agent, const char *parameter, const char *policy_name, double reduction_rate )
 {
-	const long param = convert_exploration_parameter( my_agent, parameter );
+	const long param = exploration_convert_parameter( my_agent, parameter );
 	if ( param == EXPLORATION_PARAMS )
 		return false;
 	
-	const long policy = convert_reduction_policy( policy_name );
+	const long policy = exploration_convert_reduction_policy( policy_name );
 	if ( policy == EXPLORATION_REDUCTIONS )
 		return false;
 	
-	return set_reduction_rate( my_agent, param, policy, reduction_rate );
+	return exploration_set_reduction_rate( my_agent, param, policy, reduction_rate );
 }
 
-bool set_reduction_rate( agent *my_agent, const long parameter, const long policy, double reduction_rate )
+bool exploration_set_reduction_rate( agent *my_agent, const long parameter, const long policy, double reduction_rate )
 {
-	if ( valid_exploration_parameter( my_agent, parameter ) &&
-		 valid_reduction_policy( my_agent, parameter, policy ) &&
-		 valid_reduction_rate( my_agent, parameter, policy, reduction_rate ) )
+	if ( exploration_valid_parameter( my_agent, parameter ) &&
+		 exploration_valid_reduction_policy( my_agent, parameter, policy ) &&
+		 exploration_valid_reduction_rate( my_agent, parameter, policy, reduction_rate ) )
 	{
 		my_agent->exploration_params[ parameter ]->rates[ policy ] = reduction_rate;
 		return true;
@@ -490,20 +492,20 @@ bool set_reduction_rate( agent *my_agent, const long parameter, const long polic
 }
 
 /***************************************************************************
- * Function     : choose_according_to_exploration_mode
+ * Function     : exploration_choose_according_to_policy
  **************************************************************************/
-preference *choose_according_to_exploration_mode( agent *my_agent, slot *s, preference *candidates )
+preference *exploration_choose_according_to_policy( agent *my_agent, slot *s, preference *candidates )
 {
 	double top_value = candidates->numeric_value;
-	const long exploration_policy = get_exploration_policy( my_agent );
+	const long exploration_policy = exploration_get_policy( my_agent );
 	preference *return_val;
 
 	// get preference values for each candidate
 	for ( preference *cand = candidates; cand != NIL; cand = cand->next_candidate )
-		compute_value_of_candidate( my_agent, cand, s );
+		exploration_compute_value_of_candidate( my_agent, cand, s );
 
 	// should find highest valued candidate in q-learning
-	if ( soar_rl_enabled( my_agent ) && ( get_rl_parameter( my_agent, RL_PARAM_LEARNING_POLICY, RL_RETURN_LONG ) == RL_LEARNING_Q ) )
+	if ( rl_enabled( my_agent ) && ( rl_get_parameter( my_agent, RL_PARAM_LEARNING_POLICY, RL_RETURN_LONG ) == RL_LEARNING_Q ) )
 		for ( preference *cand=candidates; cand!=NIL; cand=cand->next_candidate )
 			if ( cand->numeric_value > top_value )
 				top_value = cand->numeric_value;
@@ -519,40 +521,40 @@ preference *choose_according_to_exploration_mode( agent *my_agent, slot *s, pref
 			break;
 
 		case USER_SELECT_RANDOM:
-			return_val = randomly_select( candidates );
+			return_val = exploration_randomly_select( candidates );
 			break;
 
 		case USER_SELECT_SOFTMAX:
-			return_val = probabilistically_select( candidates );
+			return_val = exploration_probabilistically_select( candidates );
 			break;
 
 		case USER_SELECT_E_GREEDY:
-			return_val = epsilon_greedy_select( my_agent, candidates );
+			return_val = exploration_epsilon_greedy_select( my_agent, candidates );
 			break;
 
 		case USER_SELECT_BOLTZMANN:
-			return_val = boltzmann_select( my_agent, candidates );
+			return_val = exploration_boltzmann_select( my_agent, candidates );
 			break;
 	}
 
 	// should perform update here for chosen candidate in sarsa
-	if ( soar_rl_enabled( my_agent ) && ( get_rl_parameter( my_agent, RL_PARAM_LEARNING_POLICY, RL_RETURN_LONG ) == RL_LEARNING_SARSA ) )
-		perform_rl_update( my_agent, return_val->numeric_value, s->id );
-	else if ( soar_rl_enabled( my_agent ) && ( get_rl_parameter( my_agent, RL_PARAM_LEARNING_POLICY, RL_RETURN_LONG ) == RL_LEARNING_Q ) )
+	if ( rl_enabled( my_agent ) && ( rl_get_parameter( my_agent, RL_PARAM_LEARNING_POLICY, RL_RETURN_LONG ) == RL_LEARNING_SARSA ) )
+		rl_perform_update( my_agent, return_val->numeric_value, s->id );
+	else if ( rl_enabled( my_agent ) && ( rl_get_parameter( my_agent, RL_PARAM_LEARNING_POLICY, RL_RETURN_LONG ) == RL_LEARNING_Q ) )
 	{
 		if ( return_val->numeric_value != top_value )
-			watkins_clear( my_agent, s->id );
+			rl_watkins_clear( my_agent, s->id );
 
-		perform_rl_update( my_agent, top_value, s->id );
+		rl_perform_update( my_agent, top_value, s->id );
 	}
 	
 	return return_val;
 }
 
 /***************************************************************************
- * Function     : randomly_select
+ * Function     : exploration_randomly_select
  **************************************************************************/
-preference *randomly_select( preference *candidates )
+preference *exploration_randomly_select( preference *candidates )
 {
 	unsigned int cand_count = 0;
 	unsigned int chosen_num = 0;
@@ -575,9 +577,9 @@ preference *randomly_select( preference *candidates )
 }
 
 /***************************************************************************
- * Function     : probabilistically_select
+ * Function     : exploration_probabilistically_select
  **************************************************************************/
-preference *probabilistically_select( preference *candidates )
+preference *exploration_probabilistically_select( preference *candidates )
 {	
 	preference *cand = 0;
 	double total_probability = 0;
@@ -592,7 +594,7 @@ preference *probabilistically_select( preference *candidates )
 	
 	// if nothing positive, resort to random
 	if ( total_probability == 0 )
-		return randomly_select( candidates );
+		return exploration_randomly_select( candidates );
 	
 	// choose a random preference within the distribution
 	rn = SoarRand();
@@ -614,9 +616,9 @@ preference *probabilistically_select( preference *candidates )
 }
 
 /***************************************************************************
- * Function     : boltzmann_select
+ * Function     : exploration_boltzmann_select
  **************************************************************************/
-preference *boltzmann_select( agent *my_agent, preference *candidates )
+preference *exploration_boltzmann_select( agent *my_agent, preference *candidates )
 {
 	preference *cand = 0;
 	double total_probability = 0;
@@ -624,7 +626,7 @@ preference *boltzmann_select( agent *my_agent, preference *candidates )
 	double rn = 0;
 	double current_sum = 0;
 
-	double temp = get_parameter_value( my_agent, (const long) EXPLORATION_PARAM_TEMPERATURE );
+	double temp = exploration_get_parameter_value( my_agent, (const long) EXPLORATION_PARAM_TEMPERATURE );
 	
 	// output trace information
 	if ( my_agent->sysparams[ TRACE_INDIFFERENT_SYSPARAM ] )
@@ -633,12 +635,12 @@ preference *boltzmann_select( agent *my_agent, preference *candidates )
 		{
 			print_with_symbols( my_agent, "\n Candidate %y:  ", cand->value );
 			print( my_agent, "Value (Sum) = %f, (Exp) = %f", cand->numeric_value, exp( cand->numeric_value / temp ) );
-			gSKI_MakeAgentCallbackXML( my_agent, kFunctionBeginTag, kTagCandidate );
-			gSKI_MakeAgentCallbackXML( my_agent, kFunctionAddAttribute, kCandidateName, symbol_to_string( my_agent, cand->value, true, 0, 0 ) );
-			gSKI_MakeAgentCallbackXML( my_agent, kFunctionAddAttribute, kCandidateType, kCandidateTypeSum );
-			gSKI_MakeAgentCallbackXML( my_agent, kFunctionAddAttribute, kCandidateValue, cand->numeric_value );
-			gSKI_MakeAgentCallbackXML( my_agent, kFunctionAddAttribute, kCandidateExpValue, exp( cand->numeric_value / temp ) );
-			gSKI_MakeAgentCallbackXML( my_agent, kFunctionEndTag, kTagCandidate );
+			xml_begin_tag( my_agent, kTagCandidate );
+			xml_att_val( my_agent, kCandidateName, cand->value );
+			xml_att_val( my_agent, kCandidateType, kCandidateTypeSum );
+			xml_att_val( my_agent, kCandidateValue, cand->numeric_value );
+			xml_att_val( my_agent, kCandidateExpValue, exp( cand->numeric_value / temp ) );
+			xml_end_tag( my_agent, kTagCandidate );
 		}
 	}
 
@@ -697,9 +699,7 @@ preference *boltzmann_select( agent *my_agent, preference *candidates )
 			
 			char buf[256];
        		SNPRINTF( buf, 254, "WARNING: Boltzmann update overflow! %g > %g", q_val, q_max );
-       		gSKI_MakeAgentCallbackXML( my_agent, kFunctionBeginTag, kTagWarning );
-       		gSKI_MakeAgentCallbackXML( my_agent, kFunctionAddAttribute, kTypeString, buf );
-       		gSKI_MakeAgentCallbackXML( my_agent, kFunctionEndTag, kTagWarning );
+       		xml_generate_warning( my_agent, buf );
 		}
 	}
 
@@ -718,13 +718,13 @@ preference *boltzmann_select( agent *my_agent, preference *candidates )
 }
 
 /***************************************************************************
- * Function     : epsilon_greedy_select
+ * Function     : exploration_epsilon_greedy_select
  **************************************************************************/
-preference *epsilon_greedy_select( agent *my_agent, preference *candidates )
+preference *exploration_epsilon_greedy_select( agent *my_agent, preference *candidates )
 {
 	preference *cand = 0;
 
-	double epsilon = get_parameter_value( my_agent, (const long) EXPLORATION_PARAM_EPSILON );
+	double epsilon = exploration_get_parameter_value( my_agent, (const long) EXPLORATION_PARAM_EPSILON );
 
 	if ( my_agent->sysparams[ TRACE_INDIFFERENT_SYSPARAM ] )
 	{
@@ -732,26 +732,26 @@ preference *epsilon_greedy_select( agent *my_agent, preference *candidates )
 		{
 			print_with_symbols( my_agent, "\n Candidate %y:  ", cand->value );
 			print( my_agent, "Value (Sum) = %f", cand->numeric_value );
-			gSKI_MakeAgentCallbackXML( my_agent, kFunctionBeginTag, kTagCandidate );
-			gSKI_MakeAgentCallbackXML( my_agent, kFunctionAddAttribute, kCandidateName, symbol_to_string( my_agent, cand->value, true, 0, 0 ) );
-			gSKI_MakeAgentCallbackXML( my_agent, kFunctionAddAttribute, kCandidateType, kCandidateTypeSum );
-			gSKI_MakeAgentCallbackXML( my_agent, kFunctionAddAttribute, kCandidateValue, cand->numeric_value );
-			gSKI_MakeAgentCallbackXML( my_agent, kFunctionEndTag, kTagCandidate );
+			xml_begin_tag( my_agent, kTagCandidate );
+			xml_att_val( my_agent, kCandidateName, cand->value );
+			xml_att_val( my_agent, kCandidateType, kCandidateTypeSum );
+			xml_att_val( my_agent, kCandidateValue, cand->numeric_value );
+			xml_end_tag( my_agent, kTagCandidate );
 		}
 	}
 
 	if ( SoarRand() < epsilon )	
-		return randomly_select( candidates );
+		return exploration_randomly_select( candidates );
 	else
-		return get_highest_q_value_pref( candidates );
+		return exploration_get_highest_q_value_pref( candidates );
 	
 	return NIL;
 }
 
 /***************************************************************************
- * Function     : get_highest_q_value_pref
+ * Function     : exploration_get_highest_q_value_pref
  **************************************************************************/
-preference *get_highest_q_value_pref( preference *candidates )
+preference *exploration_get_highest_q_value_pref( preference *candidates )
 {
 	preference *cand;
 	preference *top_cand = candidates;
@@ -795,9 +795,9 @@ preference *get_highest_q_value_pref( preference *candidates )
 }
 
 /***************************************************************************
- * Function     : compute_value_of_candidate
+ * Function     : exploration_compute_value_of_candidate
  **************************************************************************/
-void compute_value_of_candidate( agent *my_agent, preference *cand, slot *s, double default_value )
+void exploration_compute_value_of_candidate( agent *my_agent, preference *cand, slot *s, double default_value )
 {
 	if ( !cand ) return;
 

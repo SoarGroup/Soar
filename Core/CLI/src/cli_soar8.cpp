@@ -12,14 +12,14 @@
 
 #include "cli_Commands.h"
 #include "sml_Names.h"
+#include "cli_CLIError.h"
 
-#include "gSKI_Agent.h"
-#include "gSKI_ProductionManager.h"
+#include "agent.h"
 
 using namespace cli;
 using namespace sml;
 
-bool CommandLineInterface::ParseSoar8(gSKI::Agent* pAgent, std::vector<std::string>& argv) {
+bool CommandLineInterface::ParseSoar8(std::vector<std::string>& argv) {
 	Options optionsData[] = {
 		{'e', "on",			0},
 		{'e', "enable",		0},
@@ -52,76 +52,54 @@ bool CommandLineInterface::ParseSoar8(gSKI::Agent* pAgent, std::vector<std::stri
 	// No non-option arguments
 	if (m_NonOptionArguments) return SetError(CLIError::kTooManyArgs);
 
-	return DoSoar8(pAgent, query ? 0 : &soar8);
+	return DoSoar8(query ? 0 : &soar8);
 }
 
-bool CommandLineInterface::DoSoar8(gSKI::Agent* pAgent, bool* pSoar8) {
-
-	if (!RequireAgent(pAgent)) return false;
-
+bool CommandLineInterface::DoSoar8(bool* pSoar8) {
 	if (!pSoar8) {
 		// query
 		if (m_RawOutput) {
-			m_Result << "Soar 8 mode is " << (pAgent->GetOperand2Mode() ? "on." : "off.");
-		} else {
-			AppendArgTagFast(sml_Names::kParamValue, sml_Names::kTypeBoolean, pAgent->GetOperand2Mode() ? sml_Names::kTrue : sml_Names::kFalse);
+			m_Result << "Soar 8 mode is " << (m_pAgentSoar->operand2_mode ? "on." : "off.");
+		}
+		else 
+		{
+			AppendArgTagFast(sml_Names::kParamValue, sml_Names::kTypeBoolean, m_pAgentSoar->operand2_mode ? sml_Names::kTrue : sml_Names::kFalse);
 		}
 		return true;
 	}
 
-	// FIXME: Check for empty system?
-	// voigtjr/kcoulter - can't do this check because of gSKI's pre-existing wmes
-	// maybe check for only those wmes to exist?  sounds problematic :)
-
-	// {int i;
-
-	// /* --- check for empty system --- */
-	// if (current_agent(all_wmes_in_rete)) {
-	//   sprintf(interp->result,
-	//       "Can't change modes unless working memory is empty.");
-	//   return TCL_ERROR;
-	// }
-
+	// Check that working memory is empty
+	if (m_pAgentSoar->all_wmes_in_rete) 
+	{
+		return SetError( CLIError::kWorkingMemoryNotEmpty );
+	}
 	// Check that production memory is empty
-	gSKI::ProductionManager* pProductionManager = pAgent->GetProductionManager(&m_gSKIError);
-	if (gSKI::isError(m_gSKIError)) {
-		SetErrorDetail("Unable to get production manager.");
-		return SetError(CLIError::kgSKIError);
-	}
-	gSKI::tIProductionIterator* pIter = pProductionManager->GetAllProductions(false, &m_gSKIError);
-	if (gSKI::isError(m_gSKIError) || !pIter) {
-		SetErrorDetail("Unable to get all productions.");
-		return SetError(CLIError::kgSKIError);
-	}
-	unsigned long numProductions = pIter->GetNumElements(&m_gSKIError);
-	if (gSKI::isError(m_gSKIError) || !pIter) {
-		SetErrorDetail("Unable to get number of elements (productions).");
-		return SetError(CLIError::kgSKIError);
-	}
-	if (numProductions) {
-		return SetError(CLIError::kProductionMemoryNotEmpty);
+	for ( unsigned i = 0 ; i < NUM_PRODUCTION_TYPES; ++i )
+	{
+		if ( m_pAgentSoar->num_productions_of_type[ i ] ) 
+		{
+			return SetError( CLIError::kProductionMemoryNotEmpty );
+		}
 	}
 
 	if (*pSoar8) {
 		// Turn Soar8 mode ON
-
-		pAgent->SetOperand2Mode(true);
+		m_pAgentSoar->operand2_mode = true;
 
 		// o-support-mode 4
-		if (!DoOSupportMode(pAgent, 4)) return false;
+		DoOSupportMode(4);
 		
 		// init-soar
-		if (!DoInitSoar(pAgent)) return false;
+		if (!DoInitSoar()) return false;
 	} else {
 		// Turn Soar8 mode OFF
-
-		pAgent->SetOperand2Mode(false);
+		m_pAgentSoar->operand2_mode = false;
 
 		// o-support-mode 0
-		if (!DoOSupportMode(pAgent, 0)) return false;
+		DoOSupportMode(0);
 
 		// init-soar
-		if (!DoInitSoar(pAgent)) return false;
+		if (!DoInitSoar()) return false;
 	}
 	return true;
 }

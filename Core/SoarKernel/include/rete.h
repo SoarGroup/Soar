@@ -74,7 +74,6 @@ typedef struct action_struct action;
 typedef struct wme_struct wme;
 typedef struct rete_node_struct rete_node;
 typedef struct agent_struct agent;
-typedef struct kernel_struct Kernel;
 typedef union symbol_union Symbol;
 
 extern void init_rete (agent* thisAgent);
@@ -129,7 +128,7 @@ extern int get_node_count_statistic (agent* thisAgent, char * node_type_name,
 				     unsigned long * result);
 
 extern Bool save_rete_net (agent* thisAgent, FILE *dest_file);
-extern Bool load_rete_net (Kernel* thisKernel, agent* thisAgent, FILE *source_file);
+extern Bool load_rete_net (agent* thisAgent, FILE *source_file);
 
 #ifdef __cplusplus
 }

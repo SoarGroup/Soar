@@ -16,17 +16,15 @@
 #include "cli_Commands.h"
 #include "sml_StringOps.h"
 #include "sml_Names.h"
-
-#include "gSKI_Agent.h"
-#include "gSKI_ProductionManager.h"
-#include "IgSKI_Production.h"
+#include "sml_Events.h"
+#include "cli_CLIError.h"
 
 #include <assert.h>
 
 using namespace cli;
 using namespace sml;
 
-bool CommandLineInterface::ParseSource(gSKI::Agent* pAgent, std::vector<std::string>& argv) {
+bool CommandLineInterface::ParseSource(std::vector<std::string>& argv) {
 	Options optionsData[] = {
 		{'a', "all",			0},
 		{'d', "disable",		0},
@@ -76,12 +74,10 @@ bool CommandLineInterface::ParseSource(gSKI::Agent* pAgent, std::vector<std::str
 		return SetError(CLIError::kSourceOnlyOneFile);
 	}
 
-	return DoSource(pAgent, argv[argv.size() - 1]);
+	return DoSource(argv[argv.size() - 1]);
 }
 
-bool CommandLineInterface::DoSource(gSKI::Agent* pAgent, std::string filename) {
-	if (!RequireAgent(pAgent)) return false;
-
+bool CommandLineInterface::DoSource(std::string filename) {
     StripQuotes(filename);
 
 	// Separate the path out of the filename if any
@@ -130,14 +126,14 @@ bool CommandLineInterface::DoSource(gSKI::Agent* pAgent, std::string filename) {
 	std::string command;			// The command, sometimes spanning multiple lines
 	std::string::size_type pos;		// Used to find braces on a line (triggering multiple line spanning commands)
 	int braces = 0;					// Brace nest level (hopefully all braces are supposed to be closed)
+	bool quote = false;				// Quotes can be used instead of braces
+	bool pipe = false;
 	std::string::iterator iter;		// Iterator when parsing for braces and pounds
 	int lineCount = 0;				// Count the lines per file
 	int lineCountCache = 0;			// Used to save a line number
 	
 	static int numTotalProductionsSourced;
 	static int numTotalProductionsExcised;
-
-	gSKI::ProductionManager* pProductionManager = pAgent->GetProductionManager();
 
 	if (m_SourceDepth == 0) {				// Check for top-level source call
 		m_SourceDirDepth = 0;				// Set directory depth to zero on first call to source, even though it should be zero anyway
@@ -148,7 +144,7 @@ bool CommandLineInterface::DoSource(gSKI::Agent* pAgent, std::string filename) {
 		numTotalProductionsExcised = 0;
 
 		// Register for production removed events so we can report the number of excised productions
-		pProductionManager->AddProductionListener(gSKIEVENT_BEFORE_PRODUCTION_REMOVED, this);
+		this->RegisterWithKernel(smlEVENT_BEFORE_PRODUCTION_REMOVED) ;
 	}
 	++m_SourceDepth;
 
@@ -164,7 +160,7 @@ bool CommandLineInterface::DoSource(gSKI::Agent* pAgent, std::string filename) {
 		// Trim whitespace and comments
 		if (!Trim(line)) {
 			SetError(CLIError::kNewlineBeforePipe);
-			HandleSourceError(lineCount, filename, pProductionManager);
+			HandleSourceError(lineCount, filename);
 			if (path.length()) DoPopD();
 			return false;
 		}
@@ -172,7 +168,7 @@ bool CommandLineInterface::DoSource(gSKI::Agent* pAgent, std::string filename) {
 		if (!line.length()) continue; // Nothing on line, skip it
 
 		// If there is a brace on the line, concatenate lines until the closing brace
-		pos = line.find('{');
+		pos = line.find_first_of("{\"");
 
 		if (pos != std::string::npos) {
 			
@@ -183,7 +179,7 @@ bool CommandLineInterface::DoSource(gSKI::Agent* pAgent, std::string filename) {
 			do {
 				if (lineCountCache != lineCount) {
 					if (!Trim(line)) { // Trim whitespace and comments on additional lines
-						HandleSourceError(lineCount, filename, pProductionManager);
+						HandleSourceError(lineCount, filename);
 						if (path.length()) DoPopD();
 						return false; 
 					}
@@ -196,8 +192,29 @@ bool CommandLineInterface::DoSource(gSKI::Agent* pAgent, std::string filename) {
 				iter = line.begin();
 				while (iter != line.end()) {
 					// Go through each of the characters, counting brace nesting level
-					if (*iter == '{') ++braces;
-					else if (*iter == '}') --braces;
+					if (pipe) {	// bug 968 fix
+						if (*iter == '|') {
+							pipe = false;
+						}
+
+					} else {
+
+						if (*iter == '|') { // bug 968 fix
+							pipe = true;
+						} else if (*iter == '{') {
+							++braces;
+						} else if (*iter == '}') {
+							--braces;
+							
+							// bug 968 fix
+							if (braces < 0) {
+								break;
+							}
+
+						} else if (*iter == '\"') {
+							quote = !quote; // bug 967 fix
+						}
+					}
 
 					// Next character
 					++iter;
@@ -206,8 +223,11 @@ bool CommandLineInterface::DoSource(gSKI::Agent* pAgent, std::string filename) {
 				// We finished that line, add it to the command
 				command += line;
 
-				// Did we close all of the braces?
-				if (!braces) break; // Yes, break out of special parsing mode
+				// Are we still waiting for a pipe?
+				if (pipe == true) break; // Yes, break in error
+
+				// Did we close all of the braces? and quotes?
+				if (braces == 0 && quote == false) break; // Yes, break out of special parsing mode
 
 				// Did we go negative?
 				if (braces < 0) break; // Yes, break out on error
@@ -225,16 +245,29 @@ bool CommandLineInterface::DoSource(gSKI::Agent* pAgent, std::string filename) {
 			if (braces > 0) {
 				// EOF while still nested
 				SetError(CLIError::kUnmatchedBrace);
-				HandleSourceError(lineCountCache, filename, pProductionManager);
+				HandleSourceError(lineCountCache, filename);
 				if (path.length()) DoPopD();
 				return false;
 
 			} else if (braces < 0) {
 				SetError(CLIError::kExtraClosingBrace);
-				HandleSourceError(lineCountCache, filename, pProductionManager);
+				HandleSourceError(lineCountCache, filename);
+				if (path.length()) DoPopD();
+				return false;
+
+			} else if (quote == true) { // bug 967 fix
+				SetError(CLIError::kUnmatchedBracketOrQuote);
+				HandleSourceError(lineCountCache, filename);
+				if (path.length()) DoPopD();
+				return false;
+
+			} else if (pipe == true) { // bug 968 fix
+				SetError(CLIError::kNewlineBeforePipe);
+				HandleSourceError(lineCountCache, filename);
 				if (path.length()) DoPopD();
 				return false;
 			}
+
 
 			// We're good to go
 
@@ -248,7 +281,7 @@ bool CommandLineInterface::DoSource(gSKI::Agent* pAgent, std::string filename) {
 
 		// Fire off the command
 		unsigned oldResultSize = m_Result.str().size();
-		if (DoCommandInternal(pAgent, command)) {
+		if (DoCommandInternal(command)) {
 			// Add trailing newline if result changed size
 			unsigned newResultSize = m_Result.str().size();
 			if (newResultSize > 0 && (oldResultSize != newResultSize)) {
@@ -260,7 +293,7 @@ bool CommandLineInterface::DoSource(gSKI::Agent* pAgent, std::string filename) {
 
 		} else {
 			// Command failed, error in result
-			HandleSourceError(lineCountCache, filename, pProductionManager);
+			HandleSourceError(lineCountCache, filename);
 			if (path.length()) DoPopD();
 			return false;
 		}	
@@ -313,7 +346,7 @@ bool CommandLineInterface::DoSource(gSKI::Agent* pAgent, std::string filename) {
 	if (!m_SourceDepth) {
 		
 		// Remove production listener
-		pProductionManager->RemoveProductionListener(gSKIEVENT_BEFORE_PRODUCTION_REMOVED, this);
+		this->UnregisterWithKernel(smlEVENT_BEFORE_PRODUCTION_REMOVED) ;
 
 		if (m_RawOutput) {
 			if (m_SourceMode != SOURCE_DISABLE) {
@@ -370,11 +403,11 @@ bool CommandLineInterface::DoSource(gSKI::Agent* pAgent, std::string filename) {
 	return true;
 }
 
-void CommandLineInterface::HandleSourceError(int errorLine, const std::string& filename, gSKI::ProductionManager* pProductionManager) {
+void CommandLineInterface::HandleSourceError(int errorLine, const std::string& filename) {
 	if (!m_SourceError) {
 
 		// Remove listener
-		pProductionManager->RemoveProductionListener(gSKIEVENT_BEFORE_PRODUCTION_REMOVED, this);
+		this->UnregisterWithKernel(smlEVENT_BEFORE_PRODUCTION_REMOVED) ;
 
 		// Flush excised production list
 		if (m_ExcisedDuringSource.size()) m_ExcisedDuringSource.clear();
@@ -409,19 +442,3 @@ void CommandLineInterface::HandleSourceError(int errorLine, const std::string& f
 		m_SourceErrorDetail += "\n\t--> Sourced by: " + filename + " (line " + Int2String(errorLine, buf, kMinBufferSize) + ")";
 	}
 }
-
-// Production callback events go here
-void CommandLineInterface::HandleEvent(egSKIProductionEventId eventId, gSKI::Agent* agentPtr, gSKI::IProduction* prod, gSKI::IProductionInstance* match) {
-	unused(eventId);
-	unused(match);
-	unused(agentPtr);
-
-	// Only called when source command is active
-	assert(eventId == gSKIEVENT_BEFORE_PRODUCTION_REMOVED);
-	++m_NumProductionsExcised;
-
-	if (m_SourceVerbose) {
-		m_ExcisedDuringSource.push_back(prod->GetName());
-	}
-}
-

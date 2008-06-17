@@ -131,6 +131,11 @@
 #include <stdio.h>	// Needed for FILE token below
 #include <string.h> 	// Needed for strlen, etc. below
 
+#ifndef _WIN32
+#include <strings.h>
+#include <stdlib.h> // malloc
+#endif // !_WIN32
+
 #ifdef __cplusplus
 extern "C"
 {
@@ -177,7 +182,7 @@ extern void print_memory_statistics (agent* thisAgent);
 /* string utilities */
 /* ---------------- */
 
-extern char *make_memory_block_for_string (agent* thisAgent, char *s);
+extern char *make_memory_block_for_string (agent* thisAgent, char const*s);
 extern void free_memory_block_for_string (agent* thisAgent, char *p);
 
 typedef char Bool;

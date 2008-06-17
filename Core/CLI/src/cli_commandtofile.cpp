@@ -16,13 +16,14 @@
 
 #include "cli_Commands.h"
 #include "cli_CommandData.h"
+#include "cli_CLIError.h"
 
 #include "sml_Names.h"
 
 using namespace cli;
 using namespace sml;
 
-bool CommandLineInterface::ParseCommandToFile(gSKI::Agent* pAgent, std::vector<std::string>& argv) {
+bool CommandLineInterface::ParseCommandToFile(std::vector<std::string>& argv) {
 	// Not going to use normal option parsing in this case because I do not want to disturb the other command on the line
 	if (argv.size() < 3) {
 		return SetError(CLIError::kTooFewArgs);
@@ -86,7 +87,7 @@ bool CommandLineInterface::ParseCommandToFile(gSKI::Agent* pAgent, std::vector<s
 	std::string wtf(m_Result.str());
 
 	// Fire off command
-	bool ret = DoCommandInternal(pAgent, newArgv);
+	bool ret = DoCommandInternal(newArgv);
 
 	std::string ctfOutput;
 	if (ret)
@@ -99,17 +100,17 @@ bool CommandLineInterface::ParseCommandToFile(gSKI::Agent* pAgent, std::vector<s
 		ctfOutput = GenerateErrorString();
 	}
 
-	if (!DoCLog(pAgent, LOG_NEW, &filename, 0, true))
+	if (!DoCLog(LOG_NEW, &filename, 0, true))
 	{
 		return false;
 	}
 
-	if (!DoCLog(pAgent, LOG_ADD, 0, &ctfOutput, true))
+	if (!DoCLog(LOG_ADD, 0, &ctfOutput, true))
 	{
 		return false;
 	}
 
-	if (!DoCLog(pAgent, LOG_CLOSE, 0, 0, true))
+	if (!DoCLog(LOG_CLOSE, 0, 0, true))
 	{
 		return false;
 	}

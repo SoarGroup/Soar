@@ -12,8 +12,8 @@
 #include "cli_CommandLineInterface.h"
 
 #include "cli_Commands.h"
+#include "cli_CLIError.h"
 
-#include "gSKI_Agent.h"
 #include "sml_Names.h"
 
 #include "decision_manipulation.h"
@@ -21,29 +21,23 @@
 using namespace cli;
 using namespace sml;
 
-bool CommandLineInterface::ParseSelect( gSKI::Agent* pAgent, std::vector<std::string>& argv ) 
+bool CommandLineInterface::ParseSelect( std::vector<std::string>& argv ) 
 {
 	// At most one argument to select the next operator
 	if ( argv.size() > 2 ) 
 		return SetError( CLIError::kTooManyArgs );
 	
 	if ( argv.size() == 2 )
-		return DoSelect( pAgent, &( argv[1] ) );
+		return DoSelect( &( argv[1] ) );
 	
-	return DoSelect( pAgent );
+	return DoSelect( );
 }
 
-bool CommandLineInterface::DoSelect( gSKI::Agent* pAgent, const std::string* pOp ) 
+bool CommandLineInterface::DoSelect( const std::string* pOp ) 
 {
-	if ( !RequireAgent( pAgent ) ) 
-		return false;
-
-	// get soar kernel agent - bad gSKI!
-	agent *my_agent = pAgent->GetSoarAgent();
-
 	if ( !pOp )
 	{
-		const char *my_selection = get_selected_operator( my_agent );
+		const char *my_selection = select_get_operator( m_pAgentSoar );
 		
 		if ( my_selection != NULL )
 		{
@@ -61,7 +55,7 @@ bool CommandLineInterface::DoSelect( gSKI::Agent* pAgent, const std::string* pOp
 		}
 	}
 	else
-		select_next_operator( my_agent, pOp->c_str() );
+		select_next_operator( m_pAgentSoar, pOp->c_str() );
 	
 	return false;
 }

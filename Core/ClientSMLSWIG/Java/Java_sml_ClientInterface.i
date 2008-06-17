@@ -14,7 +14,7 @@
 %javaconstvalue("smlXMLEventId.smlEVENT_LAST_XML_EVENT.swigValue() + 1") smlEVENT_AFTER_ALL_OUTPUT_PHASES;
 %javaconstvalue("smlUpdateEventId.smlEVENT_LAST_UPDATE_EVENT.swigValue() + 1") smlEVENT_EDIT_PRODUCTION;
 %javaconstvalue("smlStringEventId.smlEVENT_LAST_STRING_EVENT.swigValue() + 1") smlEVENT_LAST;
-%javaconstvalue("smlWorkingMemoryEventId.smlEVENT_LAST_WM_EVENT.swigValue() + 1") smlEVENT_LOG_ERROR;
+%javaconstvalue("smlWorkingMemoryEventId.smlEVENT_LAST_WM_EVENT.swigValue() + 1") smlEVENT_ECHO;
 %javaconstvalue("smlRunEventId.smlEVENT_LAST_RUN_EVENT.swigValue() + 1") smlEVENT_AFTER_PRODUCTION_ADDED;
 %javaconstvalue("smlAgentEventId.smlEVENT_LAST_AGENT_EVENT.swigValue() + 1") smlEVENT_OUTPUT_PHASE_CALLBACK;
 
@@ -37,7 +37,7 @@
 %rename(ShutdownInternal) sml::Kernel::Shutdown();
 
 // Workaround since SWIG doesn't support %delobj in Java (definition of GetCPtrAndDisown is below)
-%typemap(javain) sml::ElementXML* pChild "GetCPtrAndDisown($javainput)"
+%typemap(javain) soarxml::ElementXML* pChild "GetCPtrAndDisown($javainput)"
 
 %pragma(java) jniclasscode=%{
   static {
@@ -220,7 +220,7 @@
 // Some handy alternative method names and additional wrappers to help support some legacy code and may be
 // useful for future Java apps.  We don't want to add these to the underlying C++ code because the Exception logic etc.
 // would be a real pain to support cross-language.
-%typemap(javacode) sml::ElementXML %{
+%typemap(javacode) soarxml::ElementXML %{
    public static final String kClassAttribute   = "Class" ;
    public static final String kVersionAttribute = "Version" ;
 

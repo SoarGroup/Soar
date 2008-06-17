@@ -11,7 +11,7 @@
 %csconstvalue("smlXMLEventId.smlEVENT_LAST_XML_EVENT + 1") smlEVENT_AFTER_ALL_OUTPUT_PHASES;
 %csconstvalue("smlUpdateEventId.smlEVENT_LAST_UPDATE_EVENT + 1") smlEVENT_EDIT_PRODUCTION;
 %csconstvalue("smlStringEventId.smlEVENT_LAST_STRING_EVENT + 1") smlEVENT_LAST;
-%csconstvalue("smlWorkingMemoryEventId.smlEVENT_LAST_WM_EVENT + 1") smlEVENT_LOG_ERROR;
+%csconstvalue("smlWorkingMemoryEventId.smlEVENT_LAST_WM_EVENT + 1") smlEVENT_ECHO;
 %csconstvalue("smlRunEventId.smlEVENT_LAST_RUN_EVENT + 1") smlEVENT_AFTER_PRODUCTION_ADDED;
 %csconstvalue("smlAgentEventId.smlEVENT_LAST_AGENT_EVENT + 1") smlEVENT_OUTPUT_PHASE_CALLBACK;
 

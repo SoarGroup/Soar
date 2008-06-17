@@ -12,6 +12,7 @@
 #include "cli_CommandLineInterface.h"
 
 #include "cli_Commands.h"
+#include "cli_CLIError.h"
 
 #include "sml_Names.h"
 #include "sml_KernelSML.h"
@@ -19,9 +20,7 @@
 using namespace cli;
 using namespace sml;
 
-bool CommandLineInterface::ParseLoadLibrary(gSKI::Agent* pAgent, std::vector<std::string>& argv) {
-	unused(pAgent);
-
+bool CommandLineInterface::ParseLoadLibrary(std::vector<std::string>& argv) {
 	// command-name library-name [library-args ...]
 
 	if (argv.size() < 2) {

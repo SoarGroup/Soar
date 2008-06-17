@@ -4,7 +4,7 @@
 
 #include <string>
 
-namespace sml
+namespace soarxml
 {
 	class ElementXML;
 }
@@ -31,11 +31,11 @@ protected:
 	void testBinaryData();
 
 private:
-	sml::ElementXML* createXML1();
-	sml::ElementXML* createXML2();
-	sml::ElementXML* createXML3();
-	sml::ElementXML* createXML4();
-	sml::ElementXML* createXML5();
+	soarxml::ElementXML* createXML1();
+	soarxml::ElementXML* createXML2();
+	soarxml::ElementXML* createXML3();
+	soarxml::ElementXML* createXML4();
+	soarxml::ElementXML* createXML5();
 
 	bool verifyBuffer( const char* buffer ) const;
 
@@ -47,7 +47,7 @@ CPPUNIT_TEST_SUITE_REGISTRATION( ElementXMLTest );
 
 #include <string>
 
-#include <sml_ElementXML.h>
+#include <ElementXML.h>
 
 const std::string tag1( "tag1" );
 const std::string att11( "att11" );
@@ -98,9 +98,9 @@ void ElementXMLTest::tearDown()
 	}
 }
 
-sml::ElementXML* ElementXMLTest::createXML1()
+soarxml::ElementXML* ElementXMLTest::createXML1()
 {
-	sml::ElementXML* pXML1 = new sml::ElementXML();
+	soarxml::ElementXML* pXML1 = new soarxml::ElementXML();
 	pXML1->SetTagName( tag1.c_str() );
 	pXML1->AddAttribute( att11.c_str(), val11.c_str() );
 	pXML1->AddAttribute( att12.c_str(), val12.c_str() );
@@ -109,34 +109,34 @@ sml::ElementXML* ElementXMLTest::createXML1()
 	return pXML1;
 }
 
-sml::ElementXML* ElementXMLTest::createXML2()
+soarxml::ElementXML* ElementXMLTest::createXML2()
 {
-	sml::ElementXML* pXML2 = new sml::ElementXML();
+	soarxml::ElementXML* pXML2 = new soarxml::ElementXML();
 	pXML2->SetTagName( tag2.c_str() );
 	pXML2->AddAttribute( att21.c_str(), val21.c_str() );
 	pXML2->SetCharacterData( data2.c_str() );
 	return pXML2;
 }
 
-sml::ElementXML* ElementXMLTest::createXML3()
+soarxml::ElementXML* ElementXMLTest::createXML3()
 {
-	sml::ElementXML* pXML3 = new sml::ElementXML();
+	soarxml::ElementXML* pXML3 = new soarxml::ElementXML();
 	pXML3->SetTagName( tag3.c_str() );
 	return pXML3;
 }
 
-sml::ElementXML* ElementXMLTest::createXML4()
+soarxml::ElementXML* ElementXMLTest::createXML4()
 {
-	sml::ElementXML* pXML4 = new sml::ElementXML();
+	soarxml::ElementXML* pXML4 = new soarxml::ElementXML();
 	pXML4->SetTagName( tag4.c_str() );
 	pXML4->AddAttribute( att41.c_str(), val41.c_str() );
 	pXML4->SetCharacterData( data4.c_str() );
 	return pXML4;
 }
 
-sml::ElementXML* ElementXMLTest::createXML5()
+soarxml::ElementXML* ElementXMLTest::createXML5()
 {
-	sml::ElementXML* pXML5 = new sml::ElementXML() ;
+	soarxml::ElementXML* pXML5 = new soarxml::ElementXML() ;
 	pXML5->SetTagName( tag5.c_str() ) ;
 	pXML5->SetBinaryCharacterData( buffer, BUFFER_LENGTH ) ;
 	return pXML5;
@@ -144,7 +144,7 @@ sml::ElementXML* ElementXMLTest::createXML5()
 
 void ElementXMLTest::testSimple()
 {
-	sml::ElementXML* pXML1 = createXML1();
+	soarxml::ElementXML* pXML1 = createXML1();
 
 	CPPUNIT_ASSERT( pXML1->GetNumberAttributes() == 2 );
 	CPPUNIT_ASSERT( pXML1->GetAttribute( att11.c_str() ) != NULL );
@@ -165,10 +165,10 @@ void ElementXMLTest::testSimple()
 
 void ElementXMLTest::testChildren()
 {
-	sml::ElementXML* pXML1 = createXML1();
-	sml::ElementXML* pXML2 = createXML2();
-	sml::ElementXML* pXML3 = createXML3();
-	sml::ElementXML* pXML4 = createXML4();
+	soarxml::ElementXML* pXML1 = createXML1();
+	soarxml::ElementXML* pXML2 = createXML2();
+	soarxml::ElementXML* pXML3 = createXML3();
+	soarxml::ElementXML* pXML4 = createXML4();
 
 	pXML4->AddChild( pXML1 );
 	pXML4->AddChild( pXML2 );
@@ -176,8 +176,8 @@ void ElementXMLTest::testChildren()
 
 	CPPUNIT_ASSERT( pXML4->GetNumberChildren() == 3 );
 
-	sml::ElementXML child0( NULL ) ;
-	sml::ElementXML const* pChild0 = &child0 ;
+	soarxml::ElementXML child0( NULL ) ;
+	soarxml::ElementXML const* pChild0 = &child0 ;
 
 	CPPUNIT_ASSERT( pXML4->GetChild( &child0, 0 ) );
 	CPPUNIT_ASSERT( pChild0->GetTagName() != NULL );
@@ -189,8 +189,8 @@ void ElementXMLTest::testChildren()
 	CPPUNIT_ASSERT( pChild0->GetNumberChildren() == 0 );
 
 	// Let's put this one on the heap so we can control when we delete it.
-	sml::ElementXML* pChild1Object = new sml::ElementXML( NULL );
-	sml::ElementXML const* pChild1 = pChild1Object;
+	soarxml::ElementXML* pChild1Object = new soarxml::ElementXML( NULL );
+	soarxml::ElementXML const* pChild1 = pChild1Object;
 
 	CPPUNIT_ASSERT( pXML4->GetChild( pChild1Object, 1 ) );
 	CPPUNIT_ASSERT( pChild1->GetTagName() != NULL );
@@ -204,14 +204,14 @@ void ElementXMLTest::testChildren()
 	//// This test is because I read online about looking up an element in an empty
 	//// map causing an exception.  Need to make sure that doesn't happen in our
 	//// attribute map implementation.
-	sml::ElementXML child2(NULL);
-	sml::ElementXML const* pChild2 = &child2;
+	soarxml::ElementXML child2(NULL);
+	soarxml::ElementXML const* pChild2 = &child2;
 	CPPUNIT_ASSERT ( pXML4->GetChild( &child2, 2 ) );
 	CPPUNIT_ASSERT( pChild2->GetTagName() != NULL );
 	CPPUNIT_ASSERT( std::string( pChild2->GetTagName() ) == tag3 );
 	CPPUNIT_ASSERT( pChild2->GetAttribute( "missing" ) == NULL );
 
-	sml::ElementXML test;
+	soarxml::ElementXML test;
 	CPPUNIT_ASSERT( pXML4->GetChild( &test, 3 ) == 0 );
 	CPPUNIT_ASSERT( pXML4->GetChild( &test, -3 ) == 0 );
 
@@ -223,7 +223,7 @@ void ElementXMLTest::testChildren()
 
 	// Let's play a game.
 	// Create another object pointing at the same internal handle
-	sml::ElementXML* pChild1Alt = new sml::ElementXML( pChild1->GetXMLHandle() );
+	soarxml::ElementXML* pChild1Alt = new soarxml::ElementXML( pChild1->GetXMLHandle() );
 	pChild1Alt->AddRefOnHandle();
 
 	// Delete the entire tree, releasing refs on the children
@@ -244,11 +244,11 @@ void ElementXMLTest::testChildren()
 
 void ElementXMLTest::testParse()
 {
-	sml::ElementXML* pXML1 = createXML1();
+	soarxml::ElementXML* pXML1 = createXML1();
 
 	char* pStr = pXML1->GenerateXMLString( true );
 
-	sml::ElementXML* pXML2 = sml::ElementXML::ParseXMLFromString( pStr );
+	soarxml::ElementXML* pXML2 = soarxml::ElementXML::ParseXMLFromString( pStr );
 
 	CPPUNIT_ASSERT( pXML2 != NULL ) ;
 	CPPUNIT_ASSERT( pXML2->GetNumberAttributes() == 2 ) ;
@@ -265,7 +265,7 @@ void ElementXMLTest::testParse()
 	CPPUNIT_ASSERT( pXML2->GetComment() != NULL );
 	CPPUNIT_ASSERT( std::string( pXML2->GetComment() ) == comment1 ) ;
 
-	sml::ElementXML::DeleteString(pStr) ;
+	soarxml::ElementXML::DeleteString(pStr) ;
 
 	delete pXML2;
 	delete pXML1;
@@ -273,23 +273,23 @@ void ElementXMLTest::testParse()
 
 void ElementXMLTest::testBinaryData()
 {
-	sml::ElementXML* pXML1 = createXML1();
-	sml::ElementXML* pXML2 = createXML2();
-	sml::ElementXML* pXML4 = createXML4();
-	sml::ElementXML* pXML5 = createXML5();
+	soarxml::ElementXML* pXML1 = createXML1();
+	soarxml::ElementXML* pXML2 = createXML2();
+	soarxml::ElementXML* pXML4 = createXML4();
+	soarxml::ElementXML* pXML5 = createXML5();
 
 	pXML4->AddChild( pXML1 ) ;
 	pXML4->AddChild( pXML2 ) ;
 	pXML4->AddChild( pXML5 ) ;
 
 	char* pStr = pXML4->GenerateXMLString( true ) ;
-	sml::ElementXML* pParsedXML = sml::ElementXML::ParseXMLFromString( pStr ) ;
+	soarxml::ElementXML* pParsedXML = soarxml::ElementXML::ParseXMLFromString( pStr ) ;
 
 	CPPUNIT_ASSERT( pParsedXML != NULL ) ;
 	CPPUNIT_ASSERT( pParsedXML->GetNumberChildren() == 3 ) ;
 
-	sml::ElementXML child0(NULL) ;
-	sml::ElementXML const* pChild0 = &child0 ;
+	soarxml::ElementXML child0(NULL) ;
+	soarxml::ElementXML const* pChild0 = &child0 ;
 	CPPUNIT_ASSERT( pParsedXML->GetChild(&child0, 0) );
 	CPPUNIT_ASSERT( pChild0->GetTagName() != NULL );
 	CPPUNIT_ASSERT( std::string( pChild0->GetTagName() ) == tag1 ) ;
@@ -298,8 +298,8 @@ void ElementXMLTest::testBinaryData()
 	CPPUNIT_ASSERT( pChild0->GetNumberAttributes() == 2 ) ;
 	CPPUNIT_ASSERT( pChild0->GetNumberChildren() == 0 ) ;
 
-	sml::ElementXML child1(NULL) ;
-	sml::ElementXML const* pChild1 = &child1 ;
+	soarxml::ElementXML child1(NULL) ;
+	soarxml::ElementXML const* pChild1 = &child1 ;
 	CPPUNIT_ASSERT( pParsedXML->GetChild(&child1, 1) ) ;
 	CPPUNIT_ASSERT( pChild1->GetTagName() != NULL );
 	CPPUNIT_ASSERT( std::string( pChild1->GetTagName() ) == tag2 ) ;
@@ -309,8 +309,8 @@ void ElementXMLTest::testBinaryData()
 	CPPUNIT_ASSERT( pChild1->GetAttribute( att21.c_str() ) != NULL );
 	CPPUNIT_ASSERT( std::string( pChild1->GetAttribute( att21.c_str() ) ) == val21 ) ;
 
-	sml::ElementXML child2(NULL) ;
-	sml::ElementXML const* pChild2 = &child2 ;
+	soarxml::ElementXML child2(NULL) ;
+	soarxml::ElementXML const* pChild2 = &child2 ;
 	CPPUNIT_ASSERT( pParsedXML->GetChild(&child2, 2) );
 	CPPUNIT_ASSERT( pChild2->IsCharacterDataBinary() ) ;
 
@@ -320,7 +320,7 @@ void ElementXMLTest::testBinaryData()
 	CPPUNIT_ASSERT( bufferLen == BUFFER_LENGTH ) ;
 	CPPUNIT_ASSERT( verifyBuffer( pBuffer ) ) ;
 
-	sml::ElementXML::DeleteString(pStr) ;
+	soarxml::ElementXML::DeleteString(pStr) ;
 
 	delete pXML4 ;
 	delete pParsedXML ;

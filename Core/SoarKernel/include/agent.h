@@ -30,6 +30,7 @@
 #include "lexer.h"
 #include "chunk.h"
 #include "callback.h"
+#include <map>
 
 #include "exploration.h"
 #include "reinforcement_learning.h"
@@ -40,8 +41,9 @@
 #include <string>
 #include <map>
 
-/* JC ADDED: Included to allow gski callbacks */
-#include "gski_event_system_data.h"
+// JRV: Added to support XML management inside Soar
+// These handles should not be used directly, see xml.h
+typedef void* xml_handle;
 
 /* JC ADDED: Included so we can put the RHS functions in here */
 typedef struct rhs_function_struct rhs_function;
@@ -82,7 +84,6 @@ typedef struct explain_chunk_struct explain_chunk_str;
 typedef struct io_wme_struct io_wme;
 typedef struct multi_attributes_struct multi_attribute;
 typedef struct replay_struct replay;
-typedef struct kernel_struct Kernel;
 
 // following def's moved here from old interface.h file  KJC nov 05
 /* AGR 568 begin */
@@ -388,6 +389,12 @@ typedef struct agent_struct {
   unsigned long       decision_phases_count;  /* can differ from d_cycle_count.  want for stats */
   //?? unsigned long       out_cycle_count;       /* # of output phases have gen'd output */
   //?? unsigned long       phase_count;       /* # of phases run so far */
+  /* DJP 2/22/07: These counts are based around the counts that the run command understands and are intended to capture the same semantics as run expects.
+     That may differ from some of the other counters above which historically may track slightly different values */
+  unsigned long		  run_phase_count ;				/* # of phases run since last init-soar */
+  unsigned long		  run_elaboration_count ;		/* # of elaboration cycles run since last init-soar.  A phase where nothing happens counts as an elaboration cycle */
+  unsigned long		  run_last_output_count ;		/* # of output phases since this agent last generated output */
+  unsigned long		  run_generated_output_count ;	/* # of output phases when this agent either generated output or reached "max-nil-output" cycles since last init-soar */
 
   /* REW: begin 09.15.96 */
 /* in Soar 8, PE's are done only during the APPLY phase */
@@ -630,13 +637,8 @@ kernel time and total_cpu_time greater than the derived total CPU time. REW */
 
   /* ------------------ Printing utilities stuff --------------------- */
 
-  FILE              * log_file;
-  char              * log_file_name;
-  Bool                logging_to_file;
   char                printed_output_string[MAX_LEXEME_LENGTH*2+10];
   int                 printer_output_column;
-  Bool                redirecting_to_file;
-  FILE              * redirection_file;
   int                 saved_printer_output_column;
   
   /* kjh(CUSP-B10) begin */
@@ -715,25 +717,15 @@ kernel time and total_cpu_time greater than the derived total CPU time. REW */
   char		    current_line[1024];
   int	        current_line_index;
  
-  /* String redirection */
-  Bool		    using_input_string;
-  char		  * input_string;
-  Bool		    using_output_string;
-  char		  * output_string;
-  
   /*mvp 5-17-94 */
   list              * variables_set;
   
   multi_attribute   * multi_attributes;
   /* char                path[MAXPATHLEN];    AGR 568 */
   
-  /* JC ADDED: Array of callbacks for gSKI objects */
-  gSKI_K_CallbackData  gskiCallbacks[gSKI_K_MAX_AGENT_EVENTS];
-
   //soar_callback_array soar_callbacks;
   list			      * soar_callbacks[NUMBER_OF_CALLBACKS];
   
-  alias_struct      * alias_list;   /* AGR 568 */
   char              * alternate_input_string; 
   char              * alternate_input_suffix; 
   Bool                alternate_input_exit; /* Soar-Bugs #54, TMH */
@@ -768,9 +760,6 @@ kernel time and total_cpu_time greater than the derived total CPU time. REW */
   Bool       waitsnc;
   Bool       waitsnc_detect; 
   /* REW: end   10.24.97 */
-
-   /* JC ADDED: link to owning kernel (for convenience and less param passing) */
-  Kernel*    kernel;
 
   /* JC ADDED: Need to store RHS functions here so that agent's don't step on each other */
   rhs_function* rhs_functions;
@@ -807,8 +796,16 @@ kernel time and total_cpu_time greater than the derived total CPU time. REW */
   std::vector<long> *epmem_range_mins;
   std::vector<long> *epmem_range_maxes;
 
+  // JRV: Added to support XML management inside Soar
+  // These handles should not be used directly, see xml.h
+  xml_handle xml_destination;		// The current destination for all XML generation, essentially either == to xml_trace or xml_commands
+  xml_handle xml_trace;				// During a run, xml_destination will be set to this pointer.
+  xml_handle xml_commands;			// During commands, xml_destination will be set to this pointer.
+
 } agent;
 /*************** end of agent struct *****/
+
+void init_soar_agent(agent* thisAgent);
 
 #ifdef USE_MACROS
 
@@ -859,15 +856,15 @@ extern "C"
 
 #endif /* USE_MACROS */
 
-extern char * soar_version_string;
+//extern char * soar_version_string;
 
 //extern agent * soar_agent;
 
-extern agent * create_soar_agent (Kernel* thisKernel, char * name);
-extern void    destroy_soar_agent (Kernel* thisKernel, agent* soar_agent);
+extern agent * create_soar_agent (char * name);
+extern void    destroy_soar_agent (agent* soar_agent);
 
-void initialize_soar_agent(Kernel *thisKernel, agent* thisAgent);
-
+//void initialize_soar_agent(Kernel *thisKernel, agent* thisAgent);
+//
 /* Ideally, this should be in "lexer.h", but to avoid circular dependencies
    among header files, I am forced to put it here. */
 #ifdef USE_MACROS

@@ -222,7 +222,6 @@ public class Application
 		int jRunCallback    = pAgent.RegisterForRunEvent(smlRunEventId.smlEVENT_AFTER_DECISION_CYCLE, listener, this) ;		
 		int jProdCallback   = pAgent.RegisterForProductionEvent(smlProductionEventId.smlEVENT_AFTER_PRODUCTION_FIRED, listener, this) ;		
 		int jPrintCallback  = pAgent.RegisterForPrintEvent(smlPrintEventId.smlEVENT_PRINT, listener, this) ;		
-		int jSystemCallback = pKernel.RegisterForSystemEvent(smlSystemEventId.smlEVENT_AFTER_RESTART, listener, this) ;		
 		int jSystemCallback2 = pKernel.RegisterForSystemEvent(smlSystemEventId.smlEVENT_SYSTEM_START, listener, this) ;		
 		int jAgentCallback  = pKernel.RegisterForAgentEvent(smlAgentEventId.smlEVENT_BEFORE_AGENT_REINITIALIZED, listener, this) ;		
 		int jRhsCallback    = pKernel.AddRhsFunction("test-rhs", listener, this) ;
@@ -278,7 +277,6 @@ public class Application
 		pAgent.UnregisterForPrintEvent(jPrintCallback) ;
 		pAgent.UnregisterForOutputNotification(jOutputNotification) ;
 		pAgent.RemoveOutputHandler(jOutputCallback) ;
-		pKernel.UnregisterForSystemEvent(jSystemCallback) ;
 		pKernel.UnregisterForSystemEvent(jSystemCallback2) ;
 		pKernel.UnregisterForAgentEvent(jAgentCallback) ;
 		pKernel.RemoveRhsFunction(jRhsCallback) ;

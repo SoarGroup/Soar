@@ -48,17 +48,16 @@
 #include "production.h"
 #include "rhsfun_math.h"
 #include "io_soar.h"
-#include "kernel_struct.h"
 #include "recmem.h"
 #include "wmem.h"
 #include "gdatastructs.h"
-#include "xmlTraceNames.h" // for constants for XML function types, tags and attributes
-#include "gski_event_system_functions.h" // support for triggering XML events
+#include "xml.h"
+#include "soar_TraceNames.h"
 
 #include <map>
 #include <time.h>
 
-using namespace xmlTraceNames;
+using namespace soar_TraceNames;
 
 void add_rhs_function (agent* thisAgent, 
                        Symbol *name,
@@ -174,9 +173,7 @@ Symbol *write_rhs_function_code (agent* thisAgent, list *args, void* user_data) 
     print_string (thisAgent, string);
   }
 
-  gSKI_MakeAgentCallbackXML(thisAgent, kFunctionBeginTag, kTagRHS_write);
-  gSKI_MakeAgentCallbackXML(thisAgent, kFunctionAddAttribute, kRHS_String, text_of_growable_string(gs));
-  gSKI_MakeAgentCallbackXML(thisAgent, kFunctionEndTag, kTagRHS_write);
+  xml_object( thisAgent, kTagRHS_write, kRHS_String, text_of_growable_string(gs) );
 
   free_growable_string(thisAgent, gs);
   
@@ -201,7 +198,7 @@ Symbol *crlf_rhs_function_code (agent* thisAgent, list *args, void* user_data) {
 
 Symbol *halt_rhs_function_code (agent* thisAgent, list *args, void* user_data) {
   thisAgent->system_halted = TRUE;
-  	  soar_invoke_callbacks(thisAgent, thisAgent, 
+  	  soar_invoke_callbacks(thisAgent,
 		  AFTER_HALT_SOAR_CALLBACK,
 		  (soar_call_data) NULL);
 

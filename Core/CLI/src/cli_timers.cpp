@@ -8,20 +8,22 @@
 
 #include <portability.h>
 
+#include "sml_Utils.h"
 #include "cli_CommandLineInterface.h"
 
 #include "cli_Commands.h"
+#include "cli_CLIError.h"
 
 #include "sml_Names.h"
 
-#include "gSKI_Kernel.h"
-#include "gSKI_DoNotTouch.h"
+#include "sml_KernelSML.h"
+#include "sml_KernelHelpers.h"
 #include "gsysparam.h"
 
 using namespace cli;
 using namespace sml;
 
-bool CommandLineInterface::ParseTimers(gSKI::Agent* pAgent, std::vector<std::string>& argv) {
+bool CommandLineInterface::ParseTimers(std::vector<std::string>& argv) {
 	Options optionsData[] = {
 		{'e', "enable",		0},
 		{'d', "disable",	0},
@@ -54,23 +56,21 @@ bool CommandLineInterface::ParseTimers(gSKI::Agent* pAgent, std::vector<std::str
 	// No non-option arguments
 	if (m_NonOptionArguments) return SetError(CLIError::kTooManyArgs);
 
-	return DoTimers(pAgent, print ? 0 : &setting);
+	return DoTimers(print ? 0 : &setting);
 }
 
-bool CommandLineInterface::DoTimers(gSKI::Agent* pAgent, bool* pSetting) {
-	// Need agent pointer and kernel pointer for sysparam
-	if (!RequireAgent(pAgent)) return false;
-
+bool CommandLineInterface::DoTimers(bool* pSetting) {
 	// Attain the evil back door of doom, even though we aren't the TgD, because we'll probably need it
-	gSKI::EvilBackDoor::TgDWorkArounds* pKernelHack = m_pKernel->getWorkaroundObject();
+	sml::KernelHelpers* pKernelHack = m_pKernelSML->GetKernelHelpers() ;
 
 	if (pSetting) {
 		// set, don't print
-		pKernelHack->SetSysparam(pAgent, TIMERS_ENABLED, *pSetting);
+		pKernelHack->SetSysparam(m_pAgentSML, TIMERS_ENABLED, *pSetting);
 
 	} else {
 		// print current setting
-		const long* pSysparams = pKernelHack->GetSysparams(pAgent);
+		// BUGBUG: Use Get/SetSysparam because it fires an event!
+		const long* pSysparams = pKernelHack->GetSysparams(m_pAgentSML);
 
 		if (m_RawOutput) {
 			m_Result << (pSysparams[TIMERS_ENABLED] ? "Timers are enabled." : "Timers are disabled.");

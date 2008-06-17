@@ -1568,9 +1568,9 @@ production *make_production (agent* thisAgent,
   p->rl_update_count = 0;
   p->rl_rule = false;
   if ( ( type != JUSTIFICATION_PRODUCTION_TYPE ) && ( type != TEMPLATE_PRODUCTION_TYPE ) )  
-	  p->rl_rule = valid_rl_rule( p );  
+	  p->rl_rule = rl_valid_rule( p );  
   
-  update_template_tracking( thisAgent, name->sc.name );
+  rl_update_template_tracking( thisAgent, name->sc.name );
   
   return p;
 }
@@ -1598,7 +1598,7 @@ void excise_production (agent* thisAgent, production *prod, Bool print_sharp_sig
 
   // Remove RL-related pointers to this production (unnecessary if rule never fired).
   if ( prod->rl_rule && prod->firing_count ) 
-	  remove_rl_refs_for_prod( thisAgent, prod ); 
+	  rl_remove_refs_for_prod( thisAgent, prod ); 
 
   thisAgent->num_productions_of_type[prod->type]--;
   if (print_sharp_sign) print (thisAgent, "#");

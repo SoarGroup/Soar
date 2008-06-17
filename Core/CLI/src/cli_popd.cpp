@@ -12,12 +12,11 @@
 #include "cli_CommandLineInterface.h"
 
 #include "cli_Commands.h"
+#include "cli_CLIError.h"
 
 using namespace cli;
 
-bool CommandLineInterface::ParsePopD(gSKI::Agent* pAgent, std::vector<std::string>& argv) {
-	unused(pAgent);
-
+bool CommandLineInterface::ParsePopD(std::vector<std::string>& argv) {
 	// No arguments
 	if (argv.size() != 1) {
 		return SetError(CLIError::kTooManyArgs);

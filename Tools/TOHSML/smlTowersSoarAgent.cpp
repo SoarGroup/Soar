@@ -88,7 +88,8 @@ void SoarAgent::MakeMove()
 
 	if (!pAgent->Commands())
 	{
-		cout << "Failed to receive command from Soar when one was expected." << endl ;
+		cout << "Failed to receive command from Soar when one was expected." << endl
+			 << "Check working directory!" << endl;
 		return ;
 	}
 

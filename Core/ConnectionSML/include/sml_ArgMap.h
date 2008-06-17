@@ -15,10 +15,12 @@
 #include <vector>
 #include "ElementXMLHandle.h"
 
-namespace sml {
+namespace soarxml
+{
+	class ElementXML ;
+}
 
-// Forward declarations
-class ElementXML ; 
+namespace sml {
 
 // We need a comparator to make the map we're about to define work with char*
 struct strCompareAnalysisXML

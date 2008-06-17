@@ -11,20 +11,21 @@
 #include "cli_CommandLineInterface.h"
 
 #include "cli_Commands.h"
+#include "cli_CLIError.h"
 
 #include "sml_StringOps.h"
 #include "sml_Names.h"
 
-#include "gSKI_Agent.h"
-#include "gSKI_ProductionManager.h"
-#include "IgSKI_Production.h"
+#include "agent.h"
+#include "production.h"
+#include "symtab.h"
 
 #include "reinforcement_learning.h"
 
 using namespace cli;
 using namespace sml;
 
-bool CommandLineInterface::ParseExcise(gSKI::Agent* pAgent, std::vector<std::string>& argv) {
+bool CommandLineInterface::ParseExcise(std::vector<std::string>& argv) {
 	Options optionsData[] = {
 		{'a', "all",		0},
 		{'c', "chunks",		0},
@@ -72,7 +73,7 @@ bool CommandLineInterface::ParseExcise(gSKI::Agent* pAgent, std::vector<std::str
 	// If there are options, no additional argument.
 	if (options.any()) {
 		if (m_NonOptionArguments) return SetError(CLIError::kTooManyArgs);
-		return DoExcise(pAgent, options);
+		return DoExcise(options);
 	}
 
 	// If there are no options, there must be only one production name argument
@@ -86,72 +87,105 @@ bool CommandLineInterface::ParseExcise(gSKI::Agent* pAgent, std::vector<std::str
 	}
 
 	// Pass the production to the DoExcise function
-	return DoExcise(pAgent, options, &(argv[m_Argument - m_NonOptionArguments]));
+	return DoExcise(options, &(argv[m_Argument - m_NonOptionArguments]));
 }
 
-bool CommandLineInterface::DoExcise(gSKI::Agent* pAgent, const ExciseBitset& options, const std::string* pProduction) {
-	if (!RequireAgent(pAgent)) return false;
-	
-	// get soar kernel agent - bad gSKI!
-	agent *my_agent = pAgent->GetSoarAgent();
-
-	// Acquire production manager
-	gSKI::ProductionManager *pProductionManager = pAgent->GetProductionManager();
-	if (!pProductionManager) {
-		SetErrorDetail("Failed to get production manager.");
-		return SetError(CLIError::kgSKIError);
-	}
-
+bool CommandLineInterface::DoExcise(const ExciseBitset& options, const std::string* pProduction) {
 	int exciseCount = 0;
 
 	// Process the general options
 	if (options.test(EXCISE_ALL)) {
-		pProductionManager->RemoveAllProductions(exciseCount);
-		this->DoInitSoar(pAgent);	// from the manual, init when --all or --task are executed
+		exciseCount += m_pAgentSoar->num_productions_of_type[USER_PRODUCTION_TYPE];
+		exciseCount += m_pAgentSoar->num_productions_of_type[CHUNK_PRODUCTION_TYPE];
+		exciseCount += m_pAgentSoar->num_productions_of_type[JUSTIFICATION_PRODUCTION_TYPE];
+		exciseCount += m_pAgentSoar->num_productions_of_type[DEFAULT_PRODUCTION_TYPE];
 
-		//GetAllProductions leaks ref counts, do not use.
-		//ExciseInternal(pProductionManager->GetAllProductions(), exciseCount);
-		//if (exciseCount) this->DoInitSoar(pAgent);	// from the manual, init when --all or --task are executed
+		excise_all_productions( m_pAgentSoar, false );
+
+		this->DoInitSoar();	// from the manual, init when --all or --task are executed
 	}
 	if (options.test(EXCISE_CHUNKS)) {
-		pProductionManager->RemoveAllChunks(exciseCount);
-		//ExciseInternal(pProductionManager->GetChunks(), exciseCount);
-		//ExciseInternal(pProductionManager->GetJustifications(), exciseCount);
+		exciseCount += m_pAgentSoar->num_productions_of_type[CHUNK_PRODUCTION_TYPE];
+		exciseCount += m_pAgentSoar->num_productions_of_type[JUSTIFICATION_PRODUCTION_TYPE];
+
+		excise_all_productions_of_type(m_pAgentSoar, CHUNK_PRODUCTION_TYPE, false);
+		excise_all_productions_of_type(m_pAgentSoar, JUSTIFICATION_PRODUCTION_TYPE, false);
 	}
 	if (options.test(EXCISE_DEFAULT)) {
-        pProductionManager->RemoveAllDefaultProductions(exciseCount);
-		//ExciseInternal(pProductionManager->GetDefaultProductions(), exciseCount);
+	  exciseCount += m_pAgentSoar->num_productions_of_type[DEFAULT_PRODUCTION_TYPE];
+
+      excise_all_productions_of_type(m_pAgentSoar, DEFAULT_PRODUCTION_TYPE, false);
 	}
-	if (options.test(EXCISE_RL)) {					// NUMERIC_INDIFFERENCE
-		pProductionManager->remove_all_rl_productions(exciseCount);
+	if (options.test(EXCISE_RL)) {					    
+	   for ( production *prod = m_pAgentSoar->all_productions_of_type[DEFAULT_PRODUCTION_TYPE]; prod != NIL; prod = prod->next )
+	   {
+		   if ( prod->rl_rule )
+		   {
+			   exciseCount++;
+			   excise_production( m_pAgentSoar, prod, m_pAgentSoar->sysparams[TRACE_LOADING_SYSPARAM] );
+		   }
+	   }
+
+	   for ( production *prod = m_pAgentSoar->all_productions_of_type[USER_PRODUCTION_TYPE]; prod != NIL; prod = prod->next )
+	   {
+		   if ( prod->rl_rule )
+		   {
+			   exciseCount++;
+			   excise_production( m_pAgentSoar, prod, m_pAgentSoar->sysparams[TRACE_LOADING_SYSPARAM] );
+		   }
+	   }
+
+	   for ( production *prod = m_pAgentSoar->all_productions_of_type[CHUNK_PRODUCTION_TYPE]; prod != NIL; prod = prod->next )
+	   {
+		   if ( prod->rl_rule )
+		   {
+			   exciseCount++;
+			   excise_production( m_pAgentSoar, prod, m_pAgentSoar->sysparams[TRACE_LOADING_SYSPARAM] );
+		   }
+	   }
+	   
+	   rl_initialize_template_tracking( m_pAgentSoar );
 	}
 	if (options.test(EXCISE_TASK)) {
-		pProductionManager->RemoveAllUserProductions(exciseCount);
-		pProductionManager->RemoveAllChunks(exciseCount);
-		this->DoInitSoar(pAgent);	// from the manual, init when --all or --task are executed
-		//ExciseInternal(pProductionManager->GetChunks(), exciseCount);
-		//ExciseInternal(pProductionManager->GetJustifications(), exciseCount);
-		//ExciseInternal(pProductionManager->GetUserProductions(), exciseCount);
-		//if (exciseCount) this->DoInitSoar(pAgent);	// from the manual, init when --all or --task are executed
+		exciseCount += m_pAgentSoar->num_productions_of_type[USER_PRODUCTION_TYPE];
+		exciseCount += m_pAgentSoar->num_productions_of_type[DEFAULT_PRODUCTION_TYPE];
+
+		excise_all_productions_of_type(m_pAgentSoar, USER_PRODUCTION_TYPE, false);
+		excise_all_productions_of_type(m_pAgentSoar, DEFAULT_PRODUCTION_TYPE, false);
+
+	    this->DoInitSoar();	// from the manual, init when --all or --task are executed
 	}
-	if (options.test(EXCISE_TEMPLATE)) {			// NUMERIC_INDIFFERENCE
-		pProductionManager->remove_all_template_productions(exciseCount);
+	if (options.test(EXCISE_TEMPLATE)) {
+		exciseCount += m_pAgentSoar->num_productions_of_type[TEMPLATE_PRODUCTION_TYPE];
+
+		excise_all_productions_of_type(m_pAgentSoar, TEMPLATE_PRODUCTION_TYPE, false);
 	}
 	if (options.test(EXCISE_USER)) {
-		pProductionManager->RemoveAllUserProductions(exciseCount);
-		//ExciseInternal(pProductionManager->GetUserProductions(), exciseCount);
+		exciseCount += m_pAgentSoar->num_productions_of_type[USER_PRODUCTION_TYPE];
+
+		excise_all_productions_of_type(m_pAgentSoar, USER_PRODUCTION_TYPE, false);
 	}
 
 	// Excise specific production
-	if (pProduction) {
-		// Check for the production
-		gSKI::tIProductionIterator* pProdIter = pProductionManager->GetProduction((*pProduction).c_str());
-		if (!pProdIter->GetNumElements()) {
-			SetErrorDetail("Production: " + *pProduction);
+	if (pProduction) 
+	{
+		Symbol* sym = find_sym_constant( m_pAgentSoar, pProduction->c_str() );
+
+		if (!sym || !(sym->sc.production))
+		{
 			return SetError(CLIError::kProductionNotFound);
 		}
 		
-		ExciseInternal(pProdIter, exciseCount);
+		if (!m_RawOutput) 
+		{
+			// Save the name for the structured response
+			AppendArgTagFast( sml_Names::kParamName, sml_Names::kTypeString, pProduction->c_str() );
+		}
+
+		// Increment the count for the structured response
+		++exciseCount;	
+
+		excise_production(m_pAgentSoar, sym->sc.production, false);
 	}
 
 	if (m_RawOutput) {
@@ -164,26 +198,3 @@ bool CommandLineInterface::DoExcise(gSKI::Agent* pAgent, const ExciseBitset& opt
 
 	return true;
 }
-
-void CommandLineInterface::ExciseInternal(gSKI::tIProductionIterator *pProdIter, int& exciseCount) {
-	// Iterate through the productions using the production iterator and
-	// excise and release.
-	while(pProdIter->IsValid()) {
-		gSKI::IProduction* ip = pProdIter->GetVal();
-
-		if (!m_RawOutput) {
-			// Save the name for the structured response
-			AppendArgTagFast(sml_Names::kParamName, sml_Names::kTypeString, ip->GetName());
-		}
-
-		// Increment the count for the structured response
-		++exciseCount;	// Don't *need* to outside of if above but why not.
-
-		ip->Excise();
-		ip->Release();
-		pProdIter->Next();
-	}
-	pProdIter->Release();
-
-}
-

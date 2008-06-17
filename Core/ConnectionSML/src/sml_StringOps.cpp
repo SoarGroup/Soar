@@ -154,7 +154,7 @@ int sml::Tokenize(std::string cmdline, std::vector<std::string>& argumentVector)
 				// Flip the pipes flag
 				pipes = !pipes;
 
-			} else {
+			} else if (!pipes) {
 				if (*iter == '{') {
 					++brackets;
 				} else if (*iter == '}') {

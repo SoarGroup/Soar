@@ -8,21 +8,21 @@
 
 #include <portability.h>
 
+#include "sml_Utils.h"
 #include "cli_CommandLineInterface.h"
+#include "cli_CLIError.h"
 
 #include "sml_Names.h"
 #include "sml_StringOps.h"
 
-#include "gSKI_Kernel.h"
-#include "gSKI_DoNotTouch.h"
-#include "gSKI_ProductionManager.h"
-#include "IgSKI_Production.h"
+#include "sml_KernelSML.h"
+#include "sml_KernelHelpers.h"
 #include "gsysparam.h"
 
 using namespace cli;
 using namespace sml;
 
-bool CommandLineInterface::ParseSaveBacktraces(gSKI::Agent* pAgent, std::vector<std::string>& argv) {
+bool CommandLineInterface::ParseSaveBacktraces(std::vector<std::string>& argv) {
 	Options optionsData[] = {
 		{'d', "disable",	0},
 		{'e', "enable",		0},
@@ -52,26 +52,23 @@ bool CommandLineInterface::ParseSaveBacktraces(gSKI::Agent* pAgent, std::vector<
 		}
 	}
 	if (m_NonOptionArguments) return SetError(CLIError::kTooManyArgs);
-	return DoSaveBacktraces(pAgent, query ? 0 : &setting);
+	return DoSaveBacktraces(query ? 0 : &setting);
 }
 
-bool CommandLineInterface::DoSaveBacktraces(gSKI::Agent* pAgent, bool* pSetting) {
-
-	if (!RequireAgent(pAgent)) return false;
-
+bool CommandLineInterface::DoSaveBacktraces(bool* pSetting) {
 	// Attain the evil back door of doom, even though we aren't the TgD
-	gSKI::EvilBackDoor::TgDWorkArounds* pKernelHack = m_pKernel->getWorkaroundObject();
+	sml::KernelHelpers* pKernelHack = m_pKernelSML->GetKernelHelpers() ;
 
 	if (!pSetting) {
 		if (m_RawOutput) {
-			m_Result << "Save bactraces is " << (pKernelHack->GetSysparam(pAgent, EXPLAIN_SYSPARAM) ? "enabled." : "disabled.");
+			m_Result << "Save bactraces is " << (pKernelHack->GetSysparam(m_pAgentSML, EXPLAIN_SYSPARAM) ? "enabled." : "disabled.");
 		} else {
-			AppendArgTagFast(sml_Names::kParamValue, sml_Names::kTypeBoolean, pKernelHack->GetSysparam(pAgent, EXPLAIN_SYSPARAM) ? sml_Names::kTrue : sml_Names::kFalse);
+			AppendArgTagFast(sml_Names::kParamValue, sml_Names::kTypeBoolean, pKernelHack->GetSysparam(m_pAgentSML, EXPLAIN_SYSPARAM) ? sml_Names::kTrue : sml_Names::kFalse);
 		}
 		return true;
 	}
 
-	pKernelHack->SetSysparam(pAgent, EXPLAIN_SYSPARAM, *pSetting);
+	pKernelHack->SetSysparam(m_pAgentSML, EXPLAIN_SYSPARAM, *pSetting);
 	return true;
 }
 

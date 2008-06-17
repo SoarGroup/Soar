@@ -13,6 +13,7 @@
 #include <time.h>
 
 #include "cli_Commands.h"
+#include "cli_CLIError.h"
 
 #include "sml_Names.h"
 #include "sml_StringOps.h"
@@ -20,7 +21,7 @@
 using namespace cli;
 using namespace sml;
 
-bool CommandLineInterface::ParseTime(gSKI::Agent* pAgent, std::vector<std::string>& argv) {
+bool CommandLineInterface::ParseTime(std::vector<std::string>& argv) {
 	// There must at least be a command
 	if (argv.size() < 2) {
 		SetErrorDetail("Please supply a command to time.");
@@ -30,10 +31,10 @@ bool CommandLineInterface::ParseTime(gSKI::Agent* pAgent, std::vector<std::strin
 	std::vector<std::string>::iterator iter = argv.begin();
 	argv.erase(iter);
 
-	return DoTime(pAgent, argv);
+	return DoTime(argv);
 }
 
-bool CommandLineInterface::DoTime(gSKI::Agent* pAgent, std::vector<std::string>& argv) {
+bool CommandLineInterface::DoTime(std::vector<std::string>& argv) {
 
 	// Look at clock
 #ifdef WIN32
@@ -50,7 +51,7 @@ bool CommandLineInterface::DoTime(gSKI::Agent* pAgent, std::vector<std::string>&
 	procStart = clock();
 
 	// Execute command
-	bool ret = DoCommandInternal(pAgent, argv);
+	bool ret = DoCommandInternal(argv);
 
 	// Look at clock for process time
 	clock_t procFinish;

@@ -26,8 +26,9 @@ std::string SimpleListener::MyClientMessageHandler( sml::smlRhsEventId, void* pU
 	{
 		//std::cout << "SimpleListener got shutdown message." << std::endl;
 		shutdownMessageReceived = true;
+		return "ok";
 	}
-	return "ok";
+	return "unknown command";
 }
 
 // Create a process that listens for remote commands and lives

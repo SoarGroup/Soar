@@ -6,6 +6,7 @@ import org.eclipse.swt.layout.*;
 import org.eclipse.swt.widgets.*;
 
 import soar2d.*;
+import soar2d.map.GridMap;
 import soar2d.player.*;
 import soar2d.world.PlayersManager;
 
@@ -212,4 +213,8 @@ public class EatersAgentDisplay extends AgentDisplay {
 		m_DestroyAgentButton.setEnabled(!running && hasPlayers && selectedEater);
 		m_ReloadProductionsButton.setEnabled(!running && hasPlayers && selectedEater);
  	}
+	
+	public void setMap(GridMap map) {
+		m_AgentWorld.setMap(map);
+	}
 }

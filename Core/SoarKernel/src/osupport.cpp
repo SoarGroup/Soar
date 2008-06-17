@@ -37,7 +37,7 @@
 #include "print.h"
 #include "reorder.h"
 #include "rete.h"
-#include "gski_event_system_functions.h" // for XML trace output
+#include "xml.h"
 
 /* -----------------------------------------------------------------------
                   O-Support Transitive Closure Routines
@@ -299,7 +299,7 @@ void calculate_support_for_instantiation_preferences (agent* thisAgent, instanti
 
       if (thisAgent->soar_verbose_flag == TRUE) {
         printf("\n      in calculate_support_for_instantiation_preferences:");
-        GenerateVerboseXML(thisAgent, "in calculate_support_for_instantiation_preferences:");
+        xml_generate_verbose(thisAgent, "in calculate_support_for_instantiation_preferences:");
       }
      o_support = FALSE;
 	 op_elab = FALSE;
@@ -434,7 +434,7 @@ void calculate_support_for_instantiation_preferences (agent* thisAgent, instanti
 				growable_string gs = make_blank_growable_string(thisAgent);
 				add_to_growable_string(thisAgent, &gs, "WARNING:  operator elaborations mixed with operator applications\nget o_support in prod ");
 				add_to_growable_string(thisAgent, &gs, symbol_to_string(thisAgent, inst->prod->name, true, 0, 0));
-				GenerateWarningXML(thisAgent, text_of_growable_string(gs));
+				xml_generate_warning(thisAgent, text_of_growable_string(gs));
 				free_growable_string(thisAgent, gs);
 
 				o_support = TRUE;
@@ -444,7 +444,7 @@ void calculate_support_for_instantiation_preferences (agent* thisAgent, instanti
 				growable_string gs = make_blank_growable_string(thisAgent);
 				add_to_growable_string(thisAgent, &gs, "WARNING:  operator elaborations mixed with operator applications\nget i_support in prod ");
 				add_to_growable_string(thisAgent, &gs, symbol_to_string(thisAgent, inst->prod->name, true, 0, 0));
-				GenerateWarningXML(thisAgent, text_of_growable_string(gs));
+				xml_generate_warning(thisAgent, text_of_growable_string(gs));
 				free_growable_string(thisAgent, gs);
 
 				o_support = FALSE;
@@ -742,7 +742,7 @@ void dougs_calculate_support_for_instantiation_preferences (agent* thisAgent, in
    the test may contain variables.
 ------------------------------------------------------------------ */
 
-typedef enum yes_no_maybe_enum { YES, NO, MAYBE } yes_no_maybe;
+enum yes_no_maybe { YES, NO, MAYBE } ;
 
 yes_no_maybe test_is_for_symbol (test t, Symbol *sym) {
   cons *c;
@@ -1228,7 +1228,7 @@ void calculate_compile_time_o_support (agent* thisAgent, condition *lhs,
        if (thisAgent->operand2_mode == TRUE) {
            if (thisAgent->soar_verbose_flag == TRUE) {
                printf("\n         operator creation: setting a->support to I_SUPPORT");
-               GenerateVerboseXML(thisAgent, "operator creation: setting a->support to I_SUPPORT");
+               xml_generate_verbose(thisAgent, "operator creation: setting a->support to I_SUPPORT");
            }
 
 	  a->support = I_SUPPORT;

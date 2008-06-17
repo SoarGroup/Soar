@@ -21,9 +21,9 @@
 #include "misc.h"
 
 /***************************************************************************
- * Function     : init_select
+ * Function     : select_init
  **************************************************************************/
-void init_select( agent *my_agent )
+void select_init( agent *my_agent )
 {
 	my_agent->select->select_enabled = false;
 	my_agent->select->select_operator.clear();
@@ -34,16 +34,16 @@ void init_select( agent *my_agent )
  **************************************************************************/
 void select_next_operator( agent *my_agent, const char *operator_id )
 {
-	init_select( my_agent );
+	select_init( my_agent );
 	
 	my_agent->select->select_enabled = true;
 	my_agent->select->select_operator = operator_id;
 }
 
 /***************************************************************************
- * Function     : get_selected_operator
+ * Function     : select_get_operator
  **************************************************************************/
-const char *get_selected_operator( agent *my_agent )
+const char *select_get_operator( agent *my_agent )
 {
 	if ( !my_agent->select->select_enabled )
 		return NULL;
@@ -52,9 +52,9 @@ const char *get_selected_operator( agent *my_agent )
 }
 
 /***************************************************************************
- * Function     : force_selection
+ * Function     : select_force
  **************************************************************************/
-preference *force_selection( agent *my_agent, preference *candidates, bool reinit )
+preference *select_force( agent *my_agent, preference *candidates, bool reinit )
 {
 	preference *return_val = NULL;
 	preference *cand = candidates;
@@ -87,25 +87,25 @@ preference *force_selection( agent *my_agent, preference *candidates, bool reini
 		}
 
 		if ( reinit )
-			init_select( my_agent );
+			select_init( my_agent );
 	}
 
 	return return_val;
 }
 
 /***************************************************************************
- * Function     : init_predict
+ * Function     : predict_init
  **************************************************************************/
-void init_predict( agent *my_agent )
+void predict_init( agent *my_agent )
 {
 	my_agent->predict_seed = 0;
 	(*my_agent->prediction) = "";
 }
 
 /***************************************************************************
- * Function     : srand_store_snapshot
+ * Function     : predict_srand_store_snapshot
  **************************************************************************/
-void srand_store_snapshot( agent *my_agent )
+void predict_srand_store_snapshot( agent *my_agent )
 {
 	unsigned long storage_val = 0;
 
@@ -116,31 +116,31 @@ void srand_store_snapshot( agent *my_agent )
 }
 
 /***************************************************************************
- * Function     : srand_restore_snapshot
+ * Function     : predict_srand_restore_snapshot
  **************************************************************************/
-void srand_restore_snapshot( agent *my_agent, bool clear_snapshot )
+void predict_srand_restore_snapshot( agent *my_agent, bool clear_snapshot )
 {
 	if ( my_agent->predict_seed )
 		SoarSeedRNG( my_agent->predict_seed );
 
 	if ( clear_snapshot )
-		init_predict( my_agent );
+		predict_init( my_agent );
 }
 
 /***************************************************************************
- * Function     : set_prediction
+ * Function     : predict_set
  **************************************************************************/
-void set_prediction( agent *my_agent, const char *prediction)
+void predict_set( agent *my_agent, const char *prediction)
 {
 	(*my_agent->prediction) = prediction;
 }
 
 /***************************************************************************
- * Function     : get_prediction
+ * Function     : predict_get
  **************************************************************************/
-const char *get_prediction( agent *my_agent )
+const char *predict_get( agent *my_agent )
 {
-	srand_store_snapshot( my_agent );
+	predict_srand_store_snapshot( my_agent );
 	do_decision_phase( my_agent, true );
 
 	return my_agent->prediction->c_str();

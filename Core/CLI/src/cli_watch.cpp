@@ -8,21 +8,23 @@
 
 #include <portability.h>
 
+#include "sml_Utils.h"
 #include "cli_CommandLineInterface.h"
 
 #include "cli_Commands.h"
+#include "cli_CLIError.h"
 
 #include "sml_StringOps.h"
 #include "sml_Names.h"
 
-#include "gSKI_Kernel.h"
-#include "gSKI_DoNotTouch.h"
+#include "sml_KernelSML.h"
+#include "sml_KernelHelpers.h"
 #include "gsysparam.h"
 
 using namespace cli;
 using namespace sml;
 
-bool CommandLineInterface::ParseWatch(gSKI::Agent* pAgent, std::vector<std::string>& argv) {
+bool CommandLineInterface::ParseWatch(std::vector<std::string>& argv) {
 	Options optionsData[] = {
 		{'b',"backtracing",				2},
 		{'c',"chunks",					2},
@@ -254,7 +256,7 @@ bool CommandLineInterface::ParseWatch(gSKI::Agent* pAgent, std::vector<std::stri
 		if (!ProcessWatchLevelSettings(atoi(argv[optind].c_str()), options, settings, wmeSetting, learnSetting)) return false; //error, code set in ProcessWatchLevel
 	}
 
-	return DoWatch(pAgent, options, settings, wmeSetting, learnSetting);
+	return DoWatch(options, settings, wmeSetting, learnSetting);
 }
 
 bool CommandLineInterface::ProcessWatchLevelSettings(const int level, WatchBitset& options, WatchBitset& settings, int& wmeSetting, int& learnSetting) {
@@ -345,16 +347,14 @@ bool CommandLineInterface::CheckOptargRemoveOrZero() {
 	return SetError(CLIError::kRemoveOrZeroExpected);
 }
 
-bool CommandLineInterface::DoWatch(gSKI::Agent* pAgent, const WatchBitset& options, const WatchBitset& settings, const int wmeSetting, const int learnSetting) {
-	// Need agent pointer for function calls
-	if (!RequireAgent(pAgent)) return false;
-
+bool CommandLineInterface::DoWatch(const WatchBitset& options, const WatchBitset& settings, const int wmeSetting, const int learnSetting) {
 	// Attain the evil back door of doom, even though we aren't the TgD, because we'll probably need it
-	gSKI::EvilBackDoor::TgDWorkArounds* pKernelHack = m_pKernel->getWorkaroundObject();
+	sml::KernelHelpers* pKernelHack = m_pKernelSML->GetKernelHelpers() ;
 
 	if (options.none()) {
 		// Print watch settings.
-		const long* pSysparams = pKernelHack->GetSysparams(pAgent);
+		// BUGBUG: Use Get/SetSysparam because it fires an event!
+		const long* pSysparams = pKernelHack->GetSysparams(m_pAgentSML);
 		int learning;
 		if (!pSysparams[TRACE_CHUNK_NAMES_SYSPARAM] 
 			&& !pSysparams[TRACE_CHUNKS_SYSPARAM] 
@@ -468,55 +468,55 @@ bool CommandLineInterface::DoWatch(gSKI::Agent* pAgent, const WatchBitset& optio
 
 	// No watch level and no none flags, that means we have to do the rest
 	if (options.test(WATCH_BACKTRACING)) {
-		pKernelHack->SetSysparam(pAgent, TRACE_BACKTRACING_SYSPARAM, settings.test(WATCH_BACKTRACING));
+		pKernelHack->SetSysparam(m_pAgentSML, TRACE_BACKTRACING_SYSPARAM, settings.test(WATCH_BACKTRACING));
 	}
 
 	if (options.test(WATCH_CHUNKS)) {
-		pKernelHack->SetSysparam(pAgent, TRACE_FIRINGS_OF_CHUNKS_SYSPARAM, settings.test(WATCH_CHUNKS));
+		pKernelHack->SetSysparam(m_pAgentSML, TRACE_FIRINGS_OF_CHUNKS_SYSPARAM, settings.test(WATCH_CHUNKS));
 	}
 
 	if (options.test(WATCH_DECISIONS)) {
-		pKernelHack->SetSysparam(pAgent, TRACE_CONTEXT_DECISIONS_SYSPARAM, settings.test(WATCH_DECISIONS));
+		pKernelHack->SetSysparam(m_pAgentSML, TRACE_CONTEXT_DECISIONS_SYSPARAM, settings.test(WATCH_DECISIONS));
 	}
 
 	if (options.test(WATCH_DEFAULT)) {
-		pKernelHack->SetSysparam(pAgent, TRACE_FIRINGS_OF_DEFAULT_PRODS_SYSPARAM, settings.test(WATCH_DEFAULT));
+		pKernelHack->SetSysparam(m_pAgentSML, TRACE_FIRINGS_OF_DEFAULT_PRODS_SYSPARAM, settings.test(WATCH_DEFAULT));
 	}
 
 	if (options.test(WATCH_INDIFFERENT)) {
-		pKernelHack->SetSysparam(pAgent, TRACE_INDIFFERENT_SYSPARAM, settings.test(WATCH_INDIFFERENT));
+		pKernelHack->SetSysparam(m_pAgentSML, TRACE_INDIFFERENT_SYSPARAM, settings.test(WATCH_INDIFFERENT));
 	}
 
 	if (options.test(WATCH_RL)) {
-		pKernelHack->SetSysparam(pAgent, TRACE_RL_SYSPARAM, settings.test(WATCH_RL));
+		pKernelHack->SetSysparam(m_pAgentSML, TRACE_RL_SYSPARAM, settings.test(WATCH_RL));
 	}
 	
 	if (options.test(WATCH_EPMEM)) {
-		pKernelHack->SetSysparam(pAgent, TRACE_EPMEM_SYSPARAM, settings.test(WATCH_EPMEM));
+		pKernelHack->SetSysparam(m_pAgentSML, TRACE_EPMEM_SYSPARAM, settings.test(WATCH_EPMEM));
 	}
 
 	if (options.test(WATCH_JUSTIFICATIONS)) {
-		pKernelHack->SetSysparam(pAgent, TRACE_FIRINGS_OF_JUSTIFICATIONS_SYSPARAM, settings.test(WATCH_JUSTIFICATIONS));
+		pKernelHack->SetSysparam(m_pAgentSML, TRACE_FIRINGS_OF_JUSTIFICATIONS_SYSPARAM, settings.test(WATCH_JUSTIFICATIONS));
 	}
 
 	if (options.test(WATCH_TEMPLATES)) {
-		pKernelHack->SetSysparam(pAgent, TRACE_FIRINGS_OF_TEMPLATES_SYSPARAM, settings.test(WATCH_TEMPLATES));
+		pKernelHack->SetSysparam(m_pAgentSML, TRACE_FIRINGS_OF_TEMPLATES_SYSPARAM, settings.test(WATCH_TEMPLATES));
 	}
 
 	if (options.test(WATCH_PHASES)) {
-		pKernelHack->SetSysparam(pAgent, TRACE_PHASES_SYSPARAM, settings.test(WATCH_PHASES));
+		pKernelHack->SetSysparam(m_pAgentSML, TRACE_PHASES_SYSPARAM, settings.test(WATCH_PHASES));
 	}
 
 	if (options.test(WATCH_PREFERENCES)) {
-		pKernelHack->SetSysparam(pAgent, TRACE_FIRINGS_PREFERENCES_SYSPARAM, settings.test(WATCH_PREFERENCES));
+		pKernelHack->SetSysparam(m_pAgentSML, TRACE_FIRINGS_PREFERENCES_SYSPARAM, settings.test(WATCH_PREFERENCES));
 	}
 
 	if (options.test(WATCH_USER)) {
-		pKernelHack->SetSysparam(pAgent, TRACE_FIRINGS_OF_USER_PRODS_SYSPARAM, settings.test(WATCH_USER));
+		pKernelHack->SetSysparam(m_pAgentSML, TRACE_FIRINGS_OF_USER_PRODS_SYSPARAM, settings.test(WATCH_USER));
 	}
 
 	if (options.test(WATCH_WMES)) {
-		pKernelHack->SetSysparam(pAgent, TRACE_WM_CHANGES_SYSPARAM, settings.test(WATCH_WMES));
+		pKernelHack->SetSysparam(m_pAgentSML, TRACE_WM_CHANGES_SYSPARAM, settings.test(WATCH_WMES));
 	}
 
 	if (options.test(WATCH_LEARNING)) {
@@ -524,22 +524,22 @@ bool CommandLineInterface::DoWatch(gSKI::Agent* pAgent, const WatchBitset& optio
 			default:
 				// falls through
 			case 0:
-				pKernelHack->SetSysparam(pAgent, TRACE_CHUNK_NAMES_SYSPARAM, false);
-				pKernelHack->SetSysparam(pAgent, TRACE_CHUNKS_SYSPARAM, false);
-				pKernelHack->SetSysparam(pAgent, TRACE_JUSTIFICATION_NAMES_SYSPARAM, false);
-				pKernelHack->SetSysparam(pAgent, TRACE_JUSTIFICATIONS_SYSPARAM, false);
+				pKernelHack->SetSysparam(m_pAgentSML, TRACE_CHUNK_NAMES_SYSPARAM, false);
+				pKernelHack->SetSysparam(m_pAgentSML, TRACE_CHUNKS_SYSPARAM, false);
+				pKernelHack->SetSysparam(m_pAgentSML, TRACE_JUSTIFICATION_NAMES_SYSPARAM, false);
+				pKernelHack->SetSysparam(m_pAgentSML, TRACE_JUSTIFICATIONS_SYSPARAM, false);
 				break;
 			case 1:
-				pKernelHack->SetSysparam(pAgent, TRACE_CHUNK_NAMES_SYSPARAM, true);
-				pKernelHack->SetSysparam(pAgent, TRACE_CHUNKS_SYSPARAM, false);
-				pKernelHack->SetSysparam(pAgent, TRACE_JUSTIFICATION_NAMES_SYSPARAM, true);
-				pKernelHack->SetSysparam(pAgent, TRACE_JUSTIFICATIONS_SYSPARAM, false);
+				pKernelHack->SetSysparam(m_pAgentSML, TRACE_CHUNK_NAMES_SYSPARAM, true);
+				pKernelHack->SetSysparam(m_pAgentSML, TRACE_CHUNKS_SYSPARAM, false);
+				pKernelHack->SetSysparam(m_pAgentSML, TRACE_JUSTIFICATION_NAMES_SYSPARAM, true);
+				pKernelHack->SetSysparam(m_pAgentSML, TRACE_JUSTIFICATIONS_SYSPARAM, false);
 				break;
 			case 2:
-				pKernelHack->SetSysparam(pAgent, TRACE_CHUNK_NAMES_SYSPARAM, true);
-				pKernelHack->SetSysparam(pAgent, TRACE_CHUNKS_SYSPARAM, true);
-				pKernelHack->SetSysparam(pAgent, TRACE_JUSTIFICATION_NAMES_SYSPARAM, true);
-				pKernelHack->SetSysparam(pAgent, TRACE_JUSTIFICATIONS_SYSPARAM, true);
+				pKernelHack->SetSysparam(m_pAgentSML, TRACE_CHUNK_NAMES_SYSPARAM, true);
+				pKernelHack->SetSysparam(m_pAgentSML, TRACE_CHUNKS_SYSPARAM, true);
+				pKernelHack->SetSysparam(m_pAgentSML, TRACE_JUSTIFICATION_NAMES_SYSPARAM, true);
+				pKernelHack->SetSysparam(m_pAgentSML, TRACE_JUSTIFICATIONS_SYSPARAM, true);
 				break;
 		}
 	}
@@ -549,13 +549,13 @@ bool CommandLineInterface::DoWatch(gSKI::Agent* pAgent, const WatchBitset& optio
 			default:
 				// falls through
 			case 0:
-				pKernelHack->SetSysparam(pAgent, TRACE_FIRINGS_WME_TRACE_TYPE_SYSPARAM, NONE_WME_TRACE);
+				pKernelHack->SetSysparam(m_pAgentSML, TRACE_FIRINGS_WME_TRACE_TYPE_SYSPARAM, NONE_WME_TRACE);
 				break;
 			case 1:
-				pKernelHack->SetSysparam(pAgent, TRACE_FIRINGS_WME_TRACE_TYPE_SYSPARAM, TIMETAG_WME_TRACE);
+				pKernelHack->SetSysparam(m_pAgentSML, TRACE_FIRINGS_WME_TRACE_TYPE_SYSPARAM, TIMETAG_WME_TRACE);
 				break;
 			case 2:
-				pKernelHack->SetSysparam(pAgent, TRACE_FIRINGS_WME_TRACE_TYPE_SYSPARAM, FULL_WME_TRACE);
+				pKernelHack->SetSysparam(m_pAgentSML, TRACE_FIRINGS_WME_TRACE_TYPE_SYSPARAM, FULL_WME_TRACE);
 				break;
 		}
 	}

@@ -43,20 +43,16 @@
 #include "trace.h"
 #include "callback.h"
 #include "io_soar.h"
-#include "kernel_struct.h"
+#include "xml.h"
 #include "exploration.h"
 #include "reinforcement_learning.h"
 #include "decision_manipulation.h"
 #include "episodic_memory.h"
 #include "sqlite3.h"
 
-/* JC ADDED: Need to initialize gski callbacks */
-#include "gski_event_system_functions.h"
-
-
 /* ================================================================== */
 
-char * soar_version_string;
+//char * soar_version_string;
 
 /* ===================================================================
    
@@ -64,17 +60,7 @@ char * soar_version_string;
 
 =================================================================== */
 
-void init_soar_agent(Kernel* thisKernel, agent* thisAgent) {
-
-  /* Updated this from soar_agent to thisAgent. -AJC (8/8/02) */
-  /* JC ADDED: Initialize the gski callbacks. 
-     This is mildly frightening.  I hope soar_agent is set correctly
-      by this point
-  */
-  gSKI_InitializeAgentCallbacks(thisAgent);
-
-  /* JC ADDED: link the agent to its kernel */
-  thisAgent->kernel = thisKernel;
+void init_soar_agent(agent* thisAgent) {
 
   /* JC ADDED: initialize the rhs function linked list */
   thisAgent->rhs_functions = NIL;
@@ -92,8 +78,8 @@ void init_soar_agent(Kernel* thisKernel, agent* thisAgent) {
   init_chunker (thisAgent);
   init_tracing (thisAgent);
   init_explain(thisAgent);  /* AGR 564 */
-  init_select(thisAgent);
-  init_predict(thisAgent);
+  select_init(thisAgent);
+  predict_init(thisAgent);
 
 #ifdef REAL_TIME_BEHAVIOR
   /* RMJ */
@@ -132,15 +118,12 @@ void init_soar_agent(Kernel* thisKernel, agent* thisAgent) {
 
 ===============================
 */
-agent * create_soar_agent (Kernel * thisKernel, char * agent_name) {                                          /* loop index */
+agent * create_soar_agent (char * agent_name) {                                          /* loop index */
   char cur_path[MAXPATHLEN];   /* AGR 536 */
 
   agent* newAgent = (agent *) malloc(sizeof(agent));
 
   newAgent->current_tc_number = 0;
-
-  thisKernel->agent_counter++;
-  thisKernel->agent_count++;
 
   newAgent->name                               = savestring(agent_name);
 
@@ -151,13 +134,7 @@ agent * create_soar_agent (Kernel * thisKernel, char * agent_name) {            
 //  newAgent->current_line[0]                    = 0;
 //  newAgent->current_line_index                 = 0;
 //#endif /* _WINDOWS */
-  /* String redirection */
-  newAgent->using_output_string                = FALSE;
-  newAgent->using_input_string                 = FALSE;
-  newAgent->output_string                      = NIL;
-  newAgent->input_string                       = NIL;
 
-  newAgent->alias_list                         = NIL;  /* AGR 568 */
   newAgent->all_wmes_in_rete                   = NIL;
   newAgent->alpha_mem_id_counter               = 0;
   newAgent->alternate_input_string             = NIL;
@@ -194,7 +171,6 @@ agent * create_soar_agent (Kernel * thisKernel, char * agent_name) {            
   newAgent->lex_alias                          = NIL;  /* AGR 568 */
   newAgent->link_update_mode                   = UPDATE_LINKS_NORMALLY;
   newAgent->locals_tc                          = 0;
-  newAgent->logging_to_file                    = FALSE;
   newAgent->max_chunks_reached                 = FALSE; /* MVP 6-24-94 */
   newAgent->mcs_counter                        = 1;
   newAgent->memory_pools_in_use                = NIL;
@@ -210,7 +186,6 @@ agent * create_soar_agent (Kernel * thisKernel, char * agent_name) {            
   newAgent->productions_being_traced           = NIL; 
   newAgent->promoted_ids                       = NIL;
   newAgent->reason_for_stopping                = "Startup";
-  newAgent->redirecting_to_file                = FALSE;
   newAgent->replay_input_data                  = FALSE;
   newAgent->slots_for_possible_removal         = NIL;
   newAgent->stop_soar                          = TRUE;           
@@ -291,7 +266,6 @@ agent * create_soar_agent (Kernel * thisKernel, char * agent_name) {            
   newAgent->real_time_tracker = 0;
   newAgent->attention_lapse_tracker = 0;
 
-
   if(!getcwd(cur_path, MAXPATHLEN))
     print(newAgent, "Unable to set current directory while initializing agent.\n");
   newAgent->top_dir_stack = (dir_stack_struct *) malloc(sizeof(dir_stack_struct));   /* AGR 568 */
@@ -312,10 +286,13 @@ agent * create_soar_agent (Kernel * thisKernel, char * agent_name) {            
 //#endif
   newAgent->attribute_preferences_mode = 0; /* RBD 4/17/95 */
 
-   /* JC ADDED: Make sure that the RHS functions get initialized correctly */
-   newAgent->rhs_functions = NIL;
+  /* JC ADDED: Make sure that the RHS functions get initialized correctly */
+  newAgent->rhs_functions = NIL;
 
-  soar_init_callbacks((soar_callback_agent) newAgent);
+  // JRV: Allocates data for XML generation
+  xml_create( newAgent );
+
+  soar_init_callbacks( newAgent );
 
   //
   // This call is needed to set up callbacks.
@@ -328,31 +305,31 @@ agent * create_soar_agent (Kernel * thisKernel, char * agent_name) {            
 
   
   // exploration initialization
-  newAgent->exploration_params[ EXPLORATION_PARAM_EPSILON ] = add_exploration_parameter( 0.1, &validate_epsilon, "epsilon" );
-  newAgent->exploration_params[ EXPLORATION_PARAM_TEMPERATURE ] = add_exploration_parameter( 25, &validate_temperature, "temperature" );
+  newAgent->exploration_params[ EXPLORATION_PARAM_EPSILON ] = exploration_add_parameter( 0.1, &exploration_validate_epsilon, "epsilon" );
+  newAgent->exploration_params[ EXPLORATION_PARAM_TEMPERATURE ] = exploration_add_parameter( 25, &exploration_validate_temperature, "temperature" );
   
   // rl initialization
-  newAgent->rl_params[ RL_PARAM_LEARNING ] = add_rl_parameter( "learning", RL_LEARNING_ON, &validate_rl_learning, &convert_rl_learning, &convert_rl_learning );    
-  newAgent->rl_params[ RL_PARAM_DISCOUNT_RATE ] = add_rl_parameter( "discount-rate", 0.9, &validate_rl_discount );
-  newAgent->rl_params[ RL_PARAM_LEARNING_RATE ] = add_rl_parameter( "learning-rate", 0.3, &validate_rl_learning_rate );
-  newAgent->rl_params[ RL_PARAM_LEARNING_POLICY ] = add_rl_parameter( "learning-policy", RL_LEARNING_SARSA, &validate_rl_learning_policy, &convert_rl_learning_policy, &convert_rl_learning_policy );
-  newAgent->rl_params[ RL_PARAM_ET_DECAY_RATE ] = add_rl_parameter( "eligibility-trace-decay-rate", 0, &validate_rl_decay_rate );
-  newAgent->rl_params[ RL_PARAM_ET_TOLERANCE ] = add_rl_parameter( "eligibility-trace-tolerance", 0.001, &validate_rl_trace_tolerance );
-  newAgent->rl_params[ RL_PARAM_TEMPORAL_EXTENSION ] = add_rl_parameter( "temporal-extension", RL_TE_ON, &validate_te_enabled, &convert_te_enabled, &convert_te_enabled );
+  newAgent->rl_params[ RL_PARAM_LEARNING ] = rl_add_parameter( "learning", RL_LEARNING_OFF, &rl_validate_learning, &rl_convert_learning, &rl_convert_learning );    
+  newAgent->rl_params[ RL_PARAM_DISCOUNT_RATE ] = rl_add_parameter( "discount-rate", 0.9, &rl_validate_discount );  
+  newAgent->rl_params[ RL_PARAM_LEARNING_RATE ] = rl_add_parameter( "learning-rate", 0.3, &rl_validate_learning_rate );
+  newAgent->rl_params[ RL_PARAM_LEARNING_POLICY ] = rl_add_parameter( "learning-policy", RL_LEARNING_SARSA, &rl_validate_learning_policy, &rl_convert_learning_policy, &rl_convert_learning_policy );
+  newAgent->rl_params[ RL_PARAM_ET_DECAY_RATE ] = rl_add_parameter( "eligibility-trace-decay-rate", 0, &rl_validate_decay_rate );
+  newAgent->rl_params[ RL_PARAM_ET_TOLERANCE ] = rl_add_parameter( "eligibility-trace-tolerance", 0.001, &rl_validate_trace_tolerance );
+  newAgent->rl_params[ RL_PARAM_TEMPORAL_EXTENSION ] = rl_add_parameter( "temporal-extension", RL_TE_ON, &rl_validate_te_enabled, &rl_convert_te_enabled, &rl_convert_te_enabled );
 
-  newAgent->rl_stats[ RL_STAT_UPDATE_ERROR ] = add_rl_stat( "update-error" );
-  newAgent->rl_stats[ RL_STAT_TOTAL_REWARD ] = add_rl_stat( "total-reward" );
-  newAgent->rl_stats[ RL_STAT_GLOBAL_REWARD ] = add_rl_stat( "global-reward" );
+  newAgent->rl_stats[ RL_STAT_UPDATE_ERROR ] = rl_add_stat( "update-error" );
+  newAgent->rl_stats[ RL_STAT_TOTAL_REWARD ] = rl_add_stat( "total-reward" );
+  newAgent->rl_stats[ RL_STAT_GLOBAL_REWARD ] = rl_add_stat( "global-reward" );
 
-  initialize_template_tracking( newAgent );
+  rl_initialize_template_tracking( newAgent );
   
   // select initialization
   newAgent->select = new select_info;
-  init_select( newAgent );
+  select_init( newAgent );
 
   // predict initialization
   newAgent->prediction = new std::string();
-  init_predict( newAgent );
+  predict_init( newAgent );
   
   // epmem initialization
   newAgent->epmem_params[ EPMEM_PARAM_LEARNING ] = epmem_add_parameter( "learning", EPMEM_LEARNING_ON, &epmem_validate_learning, &epmem_convert_learning, &epmem_convert_learning );
@@ -391,29 +368,8 @@ agent * create_soar_agent (Kernel * thisKernel, char * agent_name) {            
 
 ===============================
 */
-void initialize_soar_agent(Kernel *thisKernel, agent* thisAgent) {
-
-  init_soar_agent(thisKernel, thisAgent);
-                                         /* Add agent to global list   */
-                                         /* of all agents.             */
-  push(thisAgent, thisAgent, thisKernel->all_soar_agents);
-
-  soar_invoke_callbacks(thisAgent, thisAgent, 
-			AFTER_INIT_AGENT_CALLBACK,
-			(soar_call_data) NULL);
-}
-
-/*
-===============================
-
-===============================
-*/
-void destroy_soar_agent (Kernel * thisKernel, agent * delete_agent)
+void destroy_soar_agent (agent * delete_agent)
 {
-  cons  * c;
-  cons  * prev = NULL;   /* Initialized to placate gcc -Wall */
-  agent * the_agent;
- 
   //print(delete_agent, "\nDestroying agent %s.\n", delete_agent->name);  /* AGR 532 */
 
 //#ifdef USE_X_DISPLAY
@@ -423,21 +379,6 @@ void destroy_soar_agent (Kernel * thisKernel, agent * delete_agent)
 //#endif /* USE_X_DISPLAY */
 
   remove_built_in_rhs_functions(delete_agent);
-
-  /* Splice agent structure out of global list of agents. */
-  for (c = thisKernel->all_soar_agents; c != NIL; c = c->rest) {  
-	  the_agent = (agent *) c->first;
-	  if (the_agent == delete_agent) {
-		  if (c == thisKernel->all_soar_agents) {
-			  thisKernel->all_soar_agents = c->rest;
-		  } else {
-			  prev->rest = c->rest;
-		  }
-		  free_cons(the_agent, c);  // RPM 11/06
-		  break;
-	  }
-	  prev = c;
-  }
 
   /* Free structures stored in agent structure */
   free(delete_agent->name);
@@ -470,7 +411,7 @@ void destroy_soar_agent (Kernel * thisKernel, agent * delete_agent)
   /* Cleaning up the various callbacks 
      TODO: Not clear why callbacks need to take the agent pointer essentially twice.
   */
-  soar_remove_all_monitorable_callbacks(delete_agent, (void*) delete_agent);
+  soar_remove_all_monitorable_callbacks(delete_agent);
 
   /* RPM 9/06 begin */
 
@@ -524,11 +465,11 @@ void destroy_soar_agent (Kernel * thisKernel, agent * delete_agent)
 	  delete delete_agent->exploration_params[ i ];
 
   // cleanup Soar-RL
-  clean_parameters( delete_agent );
-  clean_stats( delete_agent );
+  rl_clean_parameters( delete_agent );
+  rl_clean_stats( delete_agent );
   
   // cleanup select
-  init_select( delete_agent );
+  select_init( delete_agent );
   delete delete_agent->select;
 
   // cleanup predict
@@ -541,8 +482,9 @@ void destroy_soar_agent (Kernel * thisKernel, agent * delete_agent)
   epmem_end( delete_agent );
   epmem_clean_parameters( delete_agent );
 
+  // JRV: Frees data used by XML generation
+  xml_destroy( delete_agent );
+
   /* Free soar agent structure */
   free((void *) delete_agent);
- 
-  thisKernel->agent_count--;
 }
