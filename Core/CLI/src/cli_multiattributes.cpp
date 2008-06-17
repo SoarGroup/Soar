@@ -63,7 +63,7 @@ bool CommandLineInterface::DoMultiAttributes(gSKI::Agent* pAgent, const std::str
 				m_Result << "\n" << pMA->GetMatchingPriority() << "\t" << pMA->GetAttributeName();
 			} else {
 				// Value
-				AppendArgTagFast(sml_Names::kParamValue, sml_Names::kTypeInt, Int2String(count, buf, sizeof(buf)));
+				AppendArgTagFast(sml_Names::kParamValue, sml_Names::kTypeInt, Int2String(pMA->GetMatchingPriority(), buf, sizeof(buf)));
 				// Symbol
 				AppendArgTagFast(sml_Names::kParamName, sml_Names::kTypeString, pMA->GetAttributeName());
 			}
