@@ -811,7 +811,7 @@ protected:
 	int					m_SourceDirDepth;		// Depth of directory stack since source command, used to return to the dir that source was issued in.
 	cli::ErrorCode		m_LastError;			// Last error code (see cli_CLIError.h)
 	std::string			m_LastErrorDetail;		// Additional detail concerning the last error
-	bool				m_PrintEventToResult;	// True when print events should append message to result
+	bool				m_TrapPrintEvents;		// True when print events should be trapped
 	bool				m_EchoResult;			// If true, copy result of command to echo event stream
 	EchoMap				m_EchoMap;				// If command appears in this map, always echo it.
 	bool				m_VarPrint;				// Used in print command to put <>'s around identifiers.
