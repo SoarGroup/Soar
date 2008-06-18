@@ -378,7 +378,7 @@ agent * create_soar_agent (Kernel * thisKernel, char * agent_name) {            
   newAgent->epmem_params[ EPMEM_PARAM_DB ] = epmem_add_parameter( "database", EPMEM_DB_FILE, &epmem_validate_database, &epmem_convert_database, &epmem_convert_database );
   newAgent->epmem_params[ EPMEM_PARAM_PATH ] = epmem_add_parameter( "path", "", &epmem_validate_path );
     
-  newAgent->epmem_params[ EPMEM_PARAM_INDEXING ] = epmem_add_parameter( "indexing", EPMEM_INDEXING_BIGTREE_RANGE, &epmem_validate_indexing, &epmem_convert_indexing, &epmem_convert_indexing );
+  newAgent->epmem_params[ EPMEM_PARAM_INDEXING ] = epmem_add_parameter( "indexing", EPMEM_INDEXING_BIGTREE_RIT, &epmem_validate_indexing, &epmem_convert_indexing, &epmem_convert_indexing );
   newAgent->epmem_params[ EPMEM_PARAM_PROVENANCE ] = epmem_add_parameter( "provenance", EPMEM_PROVENANCE_OFF, &epmem_validate_provenance, &epmem_convert_provenance, &epmem_convert_provenance );
     
   newAgent->epmem_params[ EPMEM_PARAM_TRIGGER ] = epmem_add_parameter( "trigger", EPMEM_TRIGGER_OUTPUT, &epmem_validate_trigger, &epmem_convert_trigger, &epmem_convert_trigger );
