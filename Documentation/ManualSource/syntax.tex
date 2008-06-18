@@ -2238,14 +2238,15 @@ on the top-level state.
 
 \begin{verbatim}
 sp {default*top-goal*halt*operator*failure
-   "Halt if no operator can be selected for the top goal."
-   :default
-   (state <s> ^superstate nil)
-   (state <ss> ^impasse constraint-failure ^superstate <s>)
-   -->
-   (write (crlf) |No operator can be selected for top goal.| )
-   (write (crlf) |Soar must halt.| )
-   (halt) }
+    "Halt if no operator can be selected for the top goal."
+    :default
+    (state <ss> ^impasse constraint-failure ^superstate <s>)
+    (<s> ^superstate nil)
+-->
+    (write (crlf) |No operator can be selected for top goal.| )
+    (write (crlf) |Soar must halt.| )
+    (halt)
+}
 \end{verbatim}
 
 % ----------------------------------------------------------------------------

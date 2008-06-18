@@ -49,7 +49,10 @@ extern void variablize_condition_list (agent* thisAgent, condition *cond);
 void rl_clean_parameters( agent *my_agent )
 {
 	for ( int i=0; i<RL_PARAMS; i++ )
-	  delete my_agent->rl_params[ i ];
+	{
+		delete my_agent->rl_params[ i ]->param;
+		delete my_agent->rl_params[ i ];
+	}
 }
 
 /***************************************************************************

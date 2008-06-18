@@ -483,6 +483,7 @@ void destroy_soar_agent (agent * delete_agent)
   delete delete_agent->epmem_range_maxes;
   epmem_end( delete_agent );
   epmem_clean_parameters( delete_agent );
+  epmem_clean_stats( delete_agent );
 
   // JRV: Frees data used by XML generation
   xml_destroy( delete_agent );

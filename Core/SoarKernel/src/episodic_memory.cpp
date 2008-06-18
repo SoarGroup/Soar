@@ -69,7 +69,8 @@ void epmem_clean_parameters( agent *my_agent )
 	{
 		if ( my_agent->epmem_params[ i ]->type == epmem_param_string )
 			delete my_agent->epmem_params[ i ]->param->string_param.value;
-			
+		
+		delete my_agent->epmem_params[ i ]->param;
 		delete my_agent->epmem_params[ i ];
 	}
 }
