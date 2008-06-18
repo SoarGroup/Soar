@@ -138,6 +138,7 @@ public class SWTApplication
 		boolean quitOnFinish = hasOption(args, "-quitonfinish") ;
 		String listen = getOptionValue(args, "-listen") ;
 		boolean cascade = hasOption(args, "-cascade") ;
+		String layout = getOptionValue(args, "-source") ;
 		
 		// quitOnFinish is only valid if sourcing a file
 		if (source == null)
@@ -220,7 +221,7 @@ public class SWTApplication
 		//clearClipboard() ;
 
 		final MainFrame frame = new MainFrame(shell, m_Document) ;
-		frame.initComponents();
+		frame.initComponents( layout );
 				
 		// We wait until we have a frame up before starting the kernel
 		// so it's just as if the user chose to do this manually
