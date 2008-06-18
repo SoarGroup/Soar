@@ -235,7 +235,7 @@ public class MainFrame
 		Shell shell = new Shell(display);
 
 		MainFrame frame = new MainFrame(shell, doc);
-		frame.initComponents();
+		frame.initComponents( m_WindowLayoutFile );
 
 		shell.open();
 
@@ -637,8 +637,12 @@ public class MainFrame
 	
 	public boolean loadUserLayoutFile()
 	{
-		// Look up the name of the default window layout
-		m_WindowLayoutFile = getUserLayoutFilename(Document.kVersion) ;
+		// The command line may set m_WindowLayoutFile
+		if ( m_WindowLayoutFile == null )
+		{
+			// Look up the name of the default window layout
+			m_WindowLayoutFile = getUserLayoutFilename(Document.kVersion) ;
+		}
 		File layoutFile = AppProperties.GetSettingsFilePath(m_WindowLayoutFile);
 
 		boolean loaded = false;
@@ -666,7 +670,7 @@ public class MainFrame
 	 * Called by Application after the frame is constructed.
 	 *  
 	 **************************************************************************/
-	public void initComponents()
+	public void initComponents( String layoutFileFromCommandLine )
 	{
 		// Add the menus
 		m_FileMenu = FileMenu.createMenu(this, getDocument(), "&File");
@@ -681,6 +685,11 @@ public class MainFrame
 		m_HelpMenu   = HelpMenu.createMenu(this, getDocument(), "&Help") ;
 		
 		getShell().setMenuBar(m_MenuBar);
+		
+		if ( layoutFileFromCommandLine != null )
+		{
+			m_WindowLayoutFile = new String( layoutFileFromCommandLine );
+		}
 
 		boolean loaded = loadUserLayoutFile() ;
 
@@ -1050,4 +1059,8 @@ public class MainFrame
 	 * java.awt.print.PageFormat.LANDSCAPE) ;
 	 * this.setAppProperty("Printing.Landscape", landscape) ; }
 	 */
+	
+	public String getWindowLayoutFile() {
+		return m_WindowLayoutFile;
+	}
 }
