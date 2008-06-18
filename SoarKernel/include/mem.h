@@ -308,10 +308,13 @@ extern "C"
 
 }
 
+#define MEM_POOLS_ENABLED 1
+
 template <typename T>
 inline void allocate_with_pool(agent* thisAgent, memory_pool* p, T** dest_item_pointer)
 {
-  
+
+#if MEM_POOLS_ENABLED
   // if there's no memory blocks left in the pool, then allocate a new one
   if (! (p)->free_list) add_block_to_memory_pool(thisAgent, p);
   // take the beginning of the next free block and give it to the T pointer
@@ -327,25 +330,29 @@ inline void allocate_with_pool(agent* thisAgent, memory_pool* p, T** dest_item_p
   fill_with_garbage (*(dest_item_pointer), (p)->item_size);
   increment_used_count(p);
 
+#else // !MEM_POOLS_ENABLED
    // this is for debugging -- it disables the memory pool usage and just allocates
    //  new memory every time.  If you want to use it, be sure to make the corresponding
    //  change to free_with_pool below
-   //*dest_item_pointer = static_cast< T * > (malloc(sizeof(T)));
+   *dest_item_pointer = static_cast< T * > (malloc(sizeof(T)));
+#endif // !MEM_POOLS_ENABLED
 }
 
 template <typename T>
 inline void free_with_pool(memory_pool* p, T * item)
 {
-
+#if MEM_POOLS_ENABLED
   fill_with_garbage ((item), (p)->item_size);
   *(void * *)(item) = (p)->free_list;
   (p)->free_list = (void *)(item);
   decrement_used_count(p); 
 
+#else // !MEM_POOLS_ENABLED
    // this is for debugging -- it disables the memory pool usage and just deallocates
    //  the memory every time.  If you want to use it, be sure to make the corresponding
    //  change to allocate_with_pool above
-   //free(item);
+   free(item);
+#endif // !MEM_POOLS_ENABLED
 }
 
 extern "C"
