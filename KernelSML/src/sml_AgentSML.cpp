@@ -371,7 +371,7 @@ unsigned long AgentSML::GetRunCounter(smlRunStepSize runStepSize)
 //=============================
 // Request that the agent stop soon.
 //=============================
-bool AgentSML::Interrupt(smlStopLocationFlags stopLoc)
+void AgentSML::Interrupt(smlStopLocationFlags stopLoc)
 {
   // Tell the agent where to stop
   m_interruptFlags = stopLoc;
@@ -393,8 +393,6 @@ bool AgentSML::Interrupt(smlStopLocationFlags stopLoc)
 	  // Because we set m_agent->stop_soar == TRUE above, any running agents should return to
 	  // gSKI at the end of the current phase, even if interleaving by larger steps.  KJC
   }
-
-  return true;
 }
 
 //=============================

@@ -353,7 +353,7 @@ public:
 	unsigned long GetRunCounter(smlRunStepSize runStepSize) ;
 
 	// Request that the agent stop soon.
-	bool Interrupt(smlStopLocationFlags stopLoc) ;
+	void Interrupt(smlStopLocationFlags stopLoc) ;
 	void ClearInterrupts() ;
 	smlRunResult StepInClientThread(smlRunStepSize  stepSize) ;
 	smlRunResult Step(smlRunStepSize stepSize) ;
