@@ -556,17 +556,13 @@ top_level_phase KernelSML::ConvertSMLToSoarPhase( smlPhase phase )
 /*************************************************************
 * @brief	Request that all agents stop soon
 *************************************************************/	
-bool KernelSML::InterruptAllAgents(smlStopLocationFlags stopLoc)
+void KernelSML::InterruptAllAgents(smlStopLocationFlags stopLoc)
 {
-	bool result = true ;
-
 	for (AgentMapIter iter = m_AgentMap.begin() ; iter != m_AgentMap.end() ; iter++)
 	{
 		AgentSML* pAgentSML = iter->second ;
-		result = pAgentSML->Interrupt(stopLoc) && result ;
+		pAgentSML->Interrupt(stopLoc) ;
 	}
-
-	return result ;
 }
 
 void KernelSML::ClearAllInterrupts()

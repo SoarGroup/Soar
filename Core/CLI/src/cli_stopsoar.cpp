@@ -51,16 +51,10 @@ bool CommandLineInterface::ParseStopSoar(std::vector<std::string>& argv) {
 	return DoStopSoar(self);
 }
 
-bool CommandLineInterface::DoStopSoar(bool self, const std::string* reasonForStopping) {
-
-	unused(reasonForStopping);
+bool CommandLineInterface::DoStopSoar(bool self, const std::string* /*reasonForStopping*/) {
 
 	if (self) {
-		if (!m_pAgentSML->Interrupt(sml::sml_STOP_AFTER_DECISION_CYCLE)) {
-			SetErrorDetail("Error interrupting agent.");
-			return SetError(CLIError::kRunFailed); // FIXME: should be stopfailed
-		}
-		return true;
+		m_pAgentSML->Interrupt(sml::sml_STOP_AFTER_SMALLEST_STEP);
 	} else {
 		// Make sure the system stop event will be fired at the end of the run.
 		// We used to call FireSystemStop() in this function, but that's no good because
@@ -68,12 +62,8 @@ bool CommandLineInterface::DoStopSoar(bool self, const std::string* reasonForSto
 		// phase or similar boundary (so could be a long time off).
 		// So instead we set a flag and allow system stop to fire at the end of the run.
 		m_pKernelSML->RequireSystemStop(true) ;
-
-		if (!m_pKernelSML->InterruptAllAgents(sml::sml_STOP_AFTER_DECISION_CYCLE)) {
-			SetErrorDetail("Error interrupting all agents.");
-			return SetError(CLIError::kRunFailed); // FIXME: should be stopfailed
-		}
-		return true;
+		m_pKernelSML->InterruptAllAgents(sml::sml_STOP_AFTER_SMALLEST_STEP);
 	}
+	return true;
 }
 
