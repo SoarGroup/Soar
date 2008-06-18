@@ -861,6 +861,11 @@ bool KernelSML::HandleCommandLine(AgentSML* pAgentSML, char const* pCommandName,
 				if (pFilteredOutput == NULL)
 					pFilteredOutput = "" ;
 
+				if(filteredError)
+				{
+					pConnection->AddErrorToSMLResponse(pResponse, pFilteredOutput, -1) ;
+				}
+
 				bool res = this->ReturnResult(pConnection, pResponse, pFilteredOutput) ;
 
 				// Can only clean this up after we're finished using it or pFilteredLine will become invalid
