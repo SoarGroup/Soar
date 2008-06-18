@@ -42,8 +42,10 @@
 #include "rete.h"
 #include "gdatastructs.h"
 #include "xml.h"
+#include "utilities.h"
 
-#include "assert.h"
+#include <assert.h>
+#include <time.h>
 
 #include "reinforcement_learning.h"
 
@@ -171,235 +173,6 @@ void abort_with_fatal_error (agent* thisAgent, char *msg) {
 //#endif /* _WINDOWS */
 
 /* ===================================================================
-
-                       Timer Utility Routines
-
-   These are utility routines for using timers.  We use (struct timeval)'s
-   (defined in a system include file) for keeping track of the cumulative
-   time spent in one part of the system or another.  Reset_timer()
-   clears a timer to 0.  Start_timer() and stop_timer() are used for
-   timing an interval of code--the usage is:
-   
-     start_timer (&timeval_to_record_the_start_time_in); 
-     ... other code here ...
-     stop_timer (&timeval_to_record_the_start_time_in,
-                 &timeval_holding_accumulated_time_for_this_code);
-
-   Finally, timer_value() returns the accumulated value of a timer
-   (in seconds).
-=================================================================== */
-#define ONE_MILLION (1000000)
-
-double timer_value (struct timeval *tv) {
-  return (double)(tv->tv_sec) + (double)(tv->tv_usec)/(double)ONE_MILLION;
-}
-
-void reset_timer (struct timeval *tv_to_reset) {
-  tv_to_reset->tv_sec = 0;
-  tv_to_reset->tv_usec = 0;
-}
-
-#ifndef NO_TIMING_STUFF
-
-#ifdef WIN32
-
-/* A fake implementation of rusage for WIN32. Taken from cygwin. */
-#define RUSAGE_SELF 0
-struct rusage {
-   struct timeval ru_utime;
-   struct timeval ru_stime;
-};
-#define NSPERSEC 10000000LL
-#define FACTOR (0x19db1ded53e8000LL)
-
-static unsigned long long
-__to_clock_t (FILETIME * src, int flag)
-{
-  unsigned long long total = ((unsigned long long) src->dwHighDateTime << 32) + ((unsigned)src->dwLowDateTime);
-
-  /* Convert into clock ticks - the total is in 10ths of a usec.  */
-  if (flag)
-    total -= FACTOR;
-  
-  total /= (unsigned long long) (NSPERSEC / CLOCKS_PER_SEC);
-  return total;
-}
-static void totimeval (struct timeval *dst, FILETIME *src, int sub, int flag)
-{
-  long long x = __to_clock_t (src, flag);
-
-  x *= (int) (1e6) / CLOCKS_PER_SEC; /* Turn x into usecs */
-  x -= (long long) sub * (int) (1e6);
-  
-  dst->tv_usec = (long)(x % (long long) (1e6)); /* And split */
-  dst->tv_sec = (long)(x / (long long) (1e6));
-}
-
-int getrusage(int who, struct rusage* r)
-{
-   FILETIME creation_time = {0,0};
-   FILETIME exit_time = {0,0};
-   FILETIME kernel_time = {0,0};
-   FILETIME user_time = {0,0};
-
-   memset (r, 0, sizeof (*r));
-   GetProcessTimes (GetCurrentProcess(), &creation_time, &exit_time, &kernel_time, &user_time);
-   totimeval (&r->ru_stime, &kernel_time, 0, 0);
-   totimeval (&r->ru_utime, &user_time, 0, 0);
-   return 0;
-}
-#endif // WIN32
-
-void get_cputime_from_rusage (struct rusage *r, struct timeval *dest_tv) {
-  dest_tv->tv_sec = r->ru_utime.tv_sec + r->ru_stime.tv_sec;
-  dest_tv->tv_usec = r->ru_utime.tv_usec + r->ru_stime.tv_usec;
-  if (dest_tv->tv_usec >= ONE_MILLION) {
-    dest_tv->tv_usec -= ONE_MILLION;
-    dest_tv->tv_sec++;
-  }
-}
-
-void start_timer (agent* thisAgent, struct timeval *tv_for_recording_start_time) {
-
-    if(thisAgent && !thisAgent->sysparams[TIMERS_ENABLED]) {
-        return;
-    }
-    struct rusage temp_rusage;
- 
-    getrusage (RUSAGE_SELF, &temp_rusage);
-    get_cputime_from_rusage (&temp_rusage, tv_for_recording_start_time);
-}
-
-void stop_timer (agent* thisAgent,
-struct timeval *tv_with_recorded_start_time,
-struct timeval *tv_with_accumulated_time) {
-
-    if(thisAgent && !thisAgent->sysparams[TIMERS_ENABLED]) {
-        return;
-    }
-
-    struct rusage end_rusage;
-    struct timeval end_tv;
-    long delta_sec, delta_usec;
- 
-    getrusage (RUSAGE_SELF, &end_rusage);
-    get_cputime_from_rusage (&end_rusage, &end_tv);
-
-    delta_sec = end_tv.tv_sec - tv_with_recorded_start_time->tv_sec;
-    delta_usec = end_tv.tv_usec - tv_with_recorded_start_time->tv_usec;
-    if (delta_usec < 0) {
-        delta_usec += ONE_MILLION;
-        delta_sec--;
-    }
-
-    tv_with_accumulated_time->tv_sec += delta_sec;
-    tv_with_accumulated_time->tv_usec += delta_usec;
-    if (tv_with_accumulated_time->tv_usec >= ONE_MILLION) {
-        tv_with_accumulated_time->tv_usec -= ONE_MILLION;
-        tv_with_accumulated_time->tv_sec++;
-    }
-}
-#endif
-
-#ifdef REAL_TIME_BEHAVIOR
-/* RMJ */
-void init_real_time (agent* thisAgent) {
-   thisAgent->real_time_tracker =
-         (struct timeval *) malloc(sizeof(struct timeval));
-   timerclear(thisAgent->real_time_tracker);
-   thisAgent->real_time_idling = FALSE;
-   current_real_time =
-         (struct timeval *) malloc(sizeof(struct timeval));
-}
-void test_for_input_delay (agent* thisAgent) {
-  /* RMJ; For real-time behavior, don't start any new decision phase
-   * until the specified "artificial" time step has passed 
-   */
-   start_timer (thisAgent, current_real_time);
-   if (timercmp(current_real_time, thisAgent->real_time_tracker, <)) {
-      if (!(thisAgent->real_time_idling)) {
-         thisAgent->real_time_idling = TRUE;
-         if (thisAgent->sysparams[TRACE_PHASES_SYSPARAM]) {
-            print_phase (thisAgent, "\n--- Real-time Idle Phase ---\n");
-         }
-      }
-      break;
-   }
-   /* Artificial time delay has passed.  
-    * Reset new delay and start the decision phase with input 
-	*/
-   thisAgent->real_time_tracker->tv_sec = current_real_time->tv_sec;
-   thisAgent->real_time_tracker->tv_usec =
-         current_real_time->tv_usec +
-         1000 * thisAgent->sysparams[REAL_TIME_SYSPARAM];
-   if (thisAgent->real_time_tracker->tv_usec >= 1000000) {
-      thisAgent->real_time_tracker->tv_sec +=
-            thisAgent->real_time_tracker->tv_usec / 1000000;
-      thisAgent->real_time_tracker->tv_usec %= 1000000;
-   }
-   thisAgent->real_time_idling = FALSE;
-}
-#endif
-
-#ifdef ATTENTION_LAPSE
-/* RMJ */
-
-void init_attention_lapse (void) {
-   thisAgent->attention_lapse_tracker =
-         (struct timeval *) malloc(sizeof(struct timeval));
-   wake_from_attention_lapse();
-#ifndef REAL_TIME_BEHAVIOR
-   current_real_time =
-         (struct timeval *) malloc(sizeof(struct timeval));
-#endif
-}
-void start_attention_lapse (long duration) {
-   /* Set tracker to time we should wake up */
-   start_timer (thisAgent->attention_lapse_tracker);
-   thisAgent->attention_lapse_tracker->tv_usec += 1000 * duration;
-   if (thisAgent->attention_lapse_tracker->tv_usec >= 1000000) {
-      thisAgent->attention_lapse_tracker->tv_sec +=
-            thisAgent->attention_lapse_tracker->tv_usec / 1000000;
-      thisAgent->attention_lapse_tracker->tv_usec %= 1000000;
-   }
-   thisAgent->attention_lapsing = TRUE;
-}
-void wake_from_attention_lapse (void) {
-   /* Set tracker to last time we woke up */
-   start_timer (thisAgent->attention_lapse_tracker);
-   thisAgent->attention_lapsing = FALSE;
-}
-void determine_lapsing (agent* thisAgent) {
-   /* RMJ; decide whether to start or finish an attentional lapse */
-   if (thisAgent->sysparams[ATTENTION_LAPSE_ON_SYSPARAM]) {
-      if (thisAgent->attention_lapsing) {
-         /* If lapsing, is it time to stop? */
-         start_timer (thisAgent, current_real_time);
-         if (timercmp(current_real_time,
-                      thisAgent->attention_lapse_tracker, >)) {
-            wake_from_attention_lapse();
-         }
-      } else {
-         /* If not lapsing, should we start? */
-         lapse_duration = init_lapse_duration(thisAgent->attention_lapse_tracker);
-         if (lapse_duration > 0) {
-            start_attention_lapse(lapse_duration);
-         }
-      }
-   }
-}
-/* RMJ;
-   When doing attentional lapsing, we need a function that determines
-   when (and for how long) attentional lapses should occur.  This
-   will normally be provided as a user-defined TCL procedure.  But
-   we need to put a placeholder function here just to be safe.
-*/
-long init_lapse_duration(struct timeval *tv) {
-   return 0;
-}
-#endif
-
-/* ===================================================================
    
                             Sysparams
 
@@ -482,7 +255,7 @@ void add_pwatch (agent* thisAgent, production *prod)
   push (thisAgent, prod, thisAgent->productions_being_traced);
 }
 
-Bool remove_pwatch_test_fn (agent* thisAgent, cons *c,
+Bool remove_pwatch_test_fn (agent* /*thisAgent*/, cons *c,
 							       void *prod_to_remove_pwatch_of) 
 {
   return (c->first == static_cast<production *>(prod_to_remove_pwatch_of));

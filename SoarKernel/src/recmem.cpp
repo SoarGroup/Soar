@@ -45,6 +45,7 @@
 #include "tempmem.h"
 #include "reinforcement_learning.h"
 #include "xml.h"
+#include "utilities.h"
 #include "soar_TraceNames.h"
 
 using namespace soar_TraceNames;

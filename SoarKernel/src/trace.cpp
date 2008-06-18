@@ -801,7 +801,7 @@ void print_tracing_rule_tcl (agent* thisAgent, int type_restriction, Symbol *nam
 //#endif /* USE_TCL */
 
 
-Bool print_trace_callback_fn (agent* thisAgent, void *item, FILE* f) {
+Bool print_trace_callback_fn (agent* thisAgent, void *item, FILE* /*f*/) {
   tracing_rule *tr;
 
   tr = static_cast<tracing_rule_struct *>(item);
@@ -810,7 +810,7 @@ Bool print_trace_callback_fn (agent* thisAgent, void *item, FILE* f) {
 }
 
 //#ifdef USE_TCL
-Bool print_trace_callback_fn_tcl (agent* thisAgent, void *item, FILE* f) {
+Bool print_trace_callback_fn_tcl (agent* thisAgent, void *item, FILE* /*f*/) {
   tracing_rule *tr;
 
   tr = static_cast<tracing_rule_struct *>(item);
@@ -1383,7 +1383,7 @@ void print_object_trace (agent* thisAgent, Symbol *object) {
   free_growable_string (thisAgent, gs);
 }
 
-void print_stack_trace_xml(agent* thisAgent, Symbol *object, Symbol *state, int slot_type, Bool allow_cycle_counts) {
+void print_stack_trace_xml(agent* thisAgent, Symbol *object, Symbol *state, int slot_type, Bool /*allow_cycle_counts*/) {
 
 	Symbol* current_o = 0;
 

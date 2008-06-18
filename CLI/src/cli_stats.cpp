@@ -8,7 +8,7 @@
 
 #include <portability.h>
 
-#include "time.h"
+#include <time.h>
 
 #include "cli_CommandLineInterface.h"
 #include "cli_CLIError.h"
@@ -19,7 +19,7 @@
 #include "sml_KernelSML.h"
 
 #include "agent.h"
-#include "init_soar.h" // for timer_value
+#include "utilities.h" // for timer_value
 #include "print.h"
 #include "rete.h" // for get_node_count_statistics
 
