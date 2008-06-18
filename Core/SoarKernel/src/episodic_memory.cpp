@@ -1073,6 +1073,9 @@ void epmem_init_db( agent *my_agent )
 		const char *tail;
 		sqlite3_stmt *create;
 		long time_max;
+
+		// update validation count
+		my_agent->epmem_validation++;
 					
 		// create vars table (needed before var queries)
 		sqlite3_prepare_v2( my_agent->epmem_db, "CREATE TABLE IF NOT EXISTS vars (id INTEGER PRIMARY KEY,value NONE)", -1, &create, &tail );
@@ -1617,7 +1620,7 @@ void epmem_consider_new_episode( agent *my_agent )
 		slot *s;
 		wme *w;
 		Symbol *ol = my_agent->io_header_output;
-		int wme_count = 0;
+		unsigned long wme_count = 0;
 			
 		// examine all commands on the output-link for any
 		// that appeared since last memory was recorded
@@ -1713,12 +1716,12 @@ void epmem_new_episode( agent *my_agent )
 			if ( wmes != NULL )
 			{
 				for ( i=0; i<len; i++ )
-				{					
-					//if ( ( parent_id == 13 ) && ( !strcmp("random",wmes[i]->attr->sc.name) || !strcmp("clock",wmes[i]->attr->sc.name) ) )
-					//	continue;
-					
-					if ( wmes[i]->epmem_id == NULL )
+				{				
+					if ( ( wmes[i]->epmem_id == NULL ) || ( wmes[i]->epmem_valid != my_agent->epmem_validation ) )
 					{					
+						wmes[i]->epmem_id = NULL;
+						wmes[i]->epmem_valid = my_agent->epmem_validation;
+						
 						// find wme id					
 						my_hash = epmem_hash_wme( wmes[i] );
 						if ( wmes[i]->value->common.symbol_type != IDENTIFIER_SYMBOL_TYPE )
@@ -1884,12 +1887,12 @@ void epmem_new_episode( agent *my_agent )
 			if ( wmes != NULL )
 			{
 				for ( i=0; i<len; i++ )
-				{
-					//if ( ( parent_id == 13 ) && ( !strcmp("random",wmes[i]->attr->sc.name) || !strcmp("clock",wmes[i]->attr->sc.name) ) )
-					//	continue;
-					
-					if ( wmes[i]->epmem_id == NULL )
-					{						
+				{				
+					if ( ( wmes[i]->epmem_id == NULL ) || ( wmes[i]->epmem_valid != my_agent->epmem_validation ) )
+					{					
+						wmes[i]->epmem_id = NULL;
+						wmes[i]->epmem_valid = my_agent->epmem_validation;
+
 						my_hash = epmem_hash_wme( wmes[i] );
 						if ( wmes[i]->value->common.symbol_type != IDENTIFIER_SYMBOL_TYPE )
 						{					
@@ -2068,11 +2071,11 @@ void epmem_new_episode( agent *my_agent )
 			{
 				for ( i=0; i<len; i++ )
 				{
-					//if ( ( parent_id == 13 ) && ( !strcmp("random",wmes[i]->attr->sc.name) || !strcmp("clock",wmes[i]->attr->sc.name) ) )
-					//	continue;
-					
-					if ( wmes[i]->epmem_id == NULL )
-					{						
+					if ( ( wmes[i]->epmem_id == NULL ) || ( wmes[i]->epmem_valid != my_agent->epmem_validation ) )
+					{					
+						wmes[i]->epmem_id = NULL;
+						wmes[i]->epmem_valid = my_agent->epmem_validation;
+
 						my_hash = epmem_hash_wme( wmes[i] );
 						if ( wmes[i]->value->common.symbol_type != IDENTIFIER_SYMBOL_TYPE )
 						{					
@@ -2473,7 +2476,7 @@ void epmem_respond_to_cmd( agent *my_agent )
 	slot *s;
 	wme *w;
 	Symbol *epmem_cmd;
-	int wme_count;
+	unsigned long wme_count;
 	bool new_cue;
 
 	while ( state != NULL )
@@ -2842,8 +2845,8 @@ void epmem_process_query( agent *my_agent, Symbol *state, Symbol *query, Symbol 
 			{				
 				sqlite3_stmt *search;
 				int cue_size;
-				int result_time;
-				int result_cardinality;
+				long result_time;
+				unsigned long result_cardinality;
 				double result_features;
 				double result_match_score;
 				
@@ -3492,7 +3495,7 @@ void epmem_process_query( agent *my_agent, Symbol *state, Symbol *query, Symbol 
 				// current pointer
 				int current_list = EPMEM_STMT_BIGTREE_R_GET_LOW_RANGES;
 				long current_id = EPMEM_MEMID_NONE;
-				int current_ct = 0;
+				unsigned long current_ct = 0;
 				double current_v = 0;
 				long current_end;
 				long current_valid_end;
@@ -4045,7 +4048,7 @@ void epmem_process_query( agent *my_agent, Symbol *state, Symbol *query, Symbol 
 				// current pointer
 				int current_list = EPMEM_STMT_BIGTREE_RIT_GET_LOW_RANGES;
 				long current_id = EPMEM_MEMID_NONE;
-				int current_ct = 0;
+				unsigned long current_ct = 0;
 				double current_v = 0;
 				long current_end;
 				long current_valid_end;

@@ -360,6 +360,8 @@ agent * create_soar_agent (char * agent_name) {                                 
   newAgent->epmem_range_mins = new std::vector<long>();
   newAgent->epmem_range_maxes = new std::vector<long>();
 
+  newAgent->epmem_validation = 0;
+
   return newAgent;
 }
 

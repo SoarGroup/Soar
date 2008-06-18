@@ -52,11 +52,11 @@ typedef struct rhs_function_struct rhs_function;
 typedef struct rl_parameter_struct rl_parameter;
 typedef struct rl_stat_struct rl_stat;
 
+typedef struct select_info_struct select_info;
+
 // EpMem types
 typedef struct epmem_parameter_struct epmem_parameter;
 typedef struct epmem_stat_struct epmem_stat;
-
-typedef struct select_info_struct select_info;
 
 #ifdef __cplusplus
 extern "C"
@@ -795,6 +795,8 @@ kernel time and total_cpu_time greater than the derived total CPU time. REW */
   std::map<unsigned long, bool> *epmem_range_removals;
   std::vector<long> *epmem_range_mins;
   std::vector<long> *epmem_range_maxes;
+
+  unsigned long epmem_validation;
 
   // JRV: Added to support XML management inside Soar
   // These handles should not be used directly, see xml.h

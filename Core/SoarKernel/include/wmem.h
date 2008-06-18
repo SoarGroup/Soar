@@ -147,6 +147,7 @@ typedef struct wme_struct {
   /* REW: end   09.15.96 */
 
   unsigned long epmem_id;
+  unsigned long epmem_valid;
 } wme;
 
 #ifdef USE_MACROS

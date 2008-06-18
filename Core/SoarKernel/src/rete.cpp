@@ -1587,6 +1587,7 @@ void add_wme_to_rete (agent* thisAgent, wme *w) {
   }
 
   w->epmem_id = NULL;
+  w->epmem_valid = NULL;
 }
 
 /* --- Removes a WME from the Rete. --- */
