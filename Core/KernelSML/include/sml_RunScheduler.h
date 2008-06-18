@@ -25,7 +25,6 @@ protected:
 	KernelSML*	m_pKernelSML ;
 	smlRunFlags	m_RunFlags ;
 	bool		m_IsRunning ;
-	bool		m_AllGeneratedOutputEventFired ;
 
 	// When running by decision stop before this phase runs.
 	smlPhase m_StopBeforePhase ;
