@@ -37,6 +37,7 @@ bool CommandLineInterface::ParseMemories(std::vector<std::string>& argv) {
 		{'c', "chunks",			0},
 		{'d', "default",		0},
 		{'j', "justifications",	0},
+		{'T', "template",		0},
 		{'u', "user",			0},
 		{0, 0, 0}
 	};
@@ -56,6 +57,9 @@ bool CommandLineInterface::ParseMemories(std::vector<std::string>& argv) {
 				break;
 			case 'j':
 				options.set(MEMORIES_JUSTIFICATIONS);
+				break;
+			case 'T':
+				options.set(MEMORIES_TEMPLATES);
 				break;
 			case 'u':
 				options.set(MEMORIES_USER);
@@ -147,6 +151,13 @@ bool CommandLineInterface::DoMemories(const MemoriesBitset options, int n, const
 
 				case JUSTIFICATION_PRODUCTION_TYPE:
 					if ( !options.test(MEMORIES_JUSTIFICATIONS) ) 
+					{
+						continue;
+					}
+					break;
+
+				case TEMPLATE_PRODUCTION_TYPE:
+					if ( !options.test(MEMORIES_TEMPLATES) ) 
 					{
 						continue;
 					}
