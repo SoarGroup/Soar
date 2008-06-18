@@ -45,9 +45,9 @@ extern int  terminate_soar (void);
    for interfaces that do their own exiting.
 --------------------------------------------------------------------- */
 
-extern void exit_soar (agent* thisAgent);
+//extern void exit_soar (agent* thisAgent);
 extern void abort_with_fatal_error (agent* thisAgent, char *);
-extern void just_before_exit_soar (agent* thisAgent);
+//extern void just_before_exit_soar (agent* thisAgent);
 
 /* ---------------------------------------------------------------------
                        Timer Utility Routines

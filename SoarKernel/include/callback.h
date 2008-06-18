@@ -48,7 +48,7 @@ extern "C"
 enum SOAR_CALLBACK_TYPE
 {
   NO_CALLBACK,                      /* Used for missing callback */
-  SYSTEM_TERMINATION_CALLBACK,
+  //SYSTEM_TERMINATION_CALLBACK,
   AFTER_INIT_AGENT_CALLBACK,
   BEFORE_INIT_SOAR_CALLBACK,
   AFTER_INIT_SOAR_CALLBACK,
@@ -130,7 +130,8 @@ enum SOAR_CALLBACK_TYPE
     initialized, but before any agent initialization file is loaded. 
     The "call_data" argument is given as NULL.
   
-  SYSTEM_TERMINATION_CALLBACK
+ 
+  Unused: SYSTEM_TERMINATION_CALLBACK
 
     This function is called only once, just before the system exits back
     to the shell.  The "call_data" parameter is of type "Bool" which is 
