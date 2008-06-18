@@ -151,13 +151,23 @@ extern void init_memory_utilities (agent* thisAgent);
 
 #ifdef USE_MACROS
 #define fill_with_garbage(block,size) memset((void *)(block), 0xBB, (size))
-#else
+#else // !USE_MACROS
+#ifdef __cplusplus
+}
+#endif // __cplusplus
+
 template <typename T>
 inline void fill_with_garbage(T * block, size_t size)
 {
   memset(static_cast<void *>(block), 0xBB, (size));
 }
-#endif /* USE_MACROS */
+
+#ifdef __cplusplus
+extern "C"
+{
+#endif // __cplusplus
+
+#endif // !USE_MACROS
 
 #else
 
