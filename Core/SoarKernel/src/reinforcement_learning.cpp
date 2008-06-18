@@ -201,7 +201,7 @@ rl_param_type rl_get_parameter_type( agent *my_agent, const long param )
 /***************************************************************************
  * Function     : rl_get_parameter
  **************************************************************************/
-const long rl_get_parameter( agent *my_agent, const char *name, const double test )
+const long rl_get_parameter( agent *my_agent, const char *name, const double /*test*/ )
 {
 	const long param = rl_convert_parameter( my_agent, name );
 	if ( param == RL_PARAMS )
@@ -213,7 +213,7 @@ const long rl_get_parameter( agent *my_agent, const char *name, const double tes
 	return my_agent->rl_params[ param ]->param->string_param.value;
 }
 
-const char *rl_get_parameter( agent *my_agent, const char *name, const char *test )
+const char *rl_get_parameter( agent *my_agent, const char *name, const char * /*test*/ )
 {
 	const long param = rl_convert_parameter( my_agent, name );
 	if ( param == RL_PARAMS )
@@ -239,7 +239,7 @@ double rl_get_parameter( agent *my_agent, const char *name )
 
 //
 
-const long rl_get_parameter( agent *my_agent, const long param, const double test )
+const long rl_get_parameter( agent *my_agent, const long param, const double /*test*/ )
 {
 	if ( !rl_valid_parameter( my_agent, param ) )
 		return NULL;
@@ -250,7 +250,7 @@ const long rl_get_parameter( agent *my_agent, const long param, const double tes
 	return my_agent->rl_params[ param ]->param->string_param.value;
 }
 
-const char *rl_get_parameter( agent *my_agent, const long param, const char *test )
+const char *rl_get_parameter( agent *my_agent, const long param, const char * /*test*/ )
 {
 	if ( !rl_valid_parameter( my_agent, param ) )
 		return NULL;
@@ -1245,7 +1245,7 @@ void rl_perform_update( agent *my_agent, double op_value, Symbol *goal )
 /***************************************************************************
  * Function     : rl_watkins_clear
  **************************************************************************/
-void rl_watkins_clear( agent *my_agent, Symbol *goal )
+void rl_watkins_clear( agent * /*my_agent*/, Symbol *goal )
 {
 	rl_data *data = goal->id.rl_info;
 	rl_et_map::iterator iter;
