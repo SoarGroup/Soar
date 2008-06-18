@@ -35,6 +35,7 @@
 #include "agent.h"
 #include "init_soar.h"
 #include "print.h"
+#include "utilities.h"
 
 char * soar_callback_names[] = {    /* Must match order of       */
   "none",                           /* SOAR_CALLBACK_TYPE        */
