@@ -77,7 +77,7 @@ public class Game implements Runnable, Kernel.UpdateEventInterface {
         // Register for the event we'll use to update the world
         // We update the environment when this event fires.  This allows us to either run the environment directly or from a debugger and get correct behavior
         //int updateCallback = 
-        kernel.RegisterForUpdateEvent(smlUpdateEventId.smlEVENT_AFTER_ALL_OUTPUT_PHASES, this, null) ;
+        kernel.RegisterForUpdateEvent(smlUpdateEventId.smlEVENT_AFTER_ALL_GENERATED_OUTPUT, this, null) ;
 
         this.diskCount = diskCount;
         
