@@ -45,6 +45,7 @@
 #include "callback.h"
 #include "io_soar.h"
 #include "xml.h"
+#include "utilities.h"
 #include "exploration.h"
 #include "reinforcement_learning.h"
 #include "decision_manipulation.h"
