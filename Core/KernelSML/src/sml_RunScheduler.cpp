@@ -559,9 +559,6 @@ void RunScheduler::TestForFiringUpdateWorldEvents()
 			// the GeneratedOutput can only be true if output phases completed was true
 			if (HaveAllGeneratedOutput())
 			{
-				// If all agents have generated output fire the event and reset the counters 
-				m_AllGeneratedOutputEventFired = true ;
-
 				// If so fire the after_all_generated_output event
 				m_pKernelSML->FireUpdateListenerEvent(smlEVENT_AFTER_ALL_GENERATED_OUTPUT, m_RunFlags) ;
 
@@ -704,7 +701,6 @@ smlRunResult RunScheduler::RunScheduledAgents(bool forever, smlRunStepSize runSt
 
 	// IF we did a StopBeforeUpdate, this is where we need to test and generate update events...
 	TestForFiringUpdateWorldEvents();
-	m_AllGeneratedOutputEventFired = false ;
 
 	// Initialize state required for update world events
 	// Should we do this even if previous Run was interrupted?  Probably not.

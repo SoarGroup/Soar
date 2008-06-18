@@ -405,7 +405,7 @@ public:
 	/*************************************************************
 	* @brief	Request that all agents stop soon
 	*************************************************************/	
-	bool InterruptAllAgents(smlStopLocationFlags stopLoc) ;
+	void InterruptAllAgents(smlStopLocationFlags stopLoc) ;
 	void ClearAllInterrupts() ;
 
 	// A set of helper functions for tracing kernel wmes

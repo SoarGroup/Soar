@@ -725,6 +725,7 @@ bool CommandLineInterface::ProcessOptions(std::vector<std::string>& argv, Option
 					// check for partial match
 					std::list<Options> possibilities;
 					std::list<Options>::iterator liter;
+					std::set< std::string > addedLongOptions;
 
 					for(unsigned index = 0; index < longOption.size(); ++index) {
 
@@ -732,7 +733,11 @@ bool CommandLineInterface::ProcessOptions(std::vector<std::string>& argv, Option
 							// Bootstrap the list of possibilities
 							for (int i = 0; options[i].shortOpt != 0; ++i) {
 								if (options[i].longOpt[index] == longOption[index]) {
-									possibilities.push_back(options[i]);
+									// don't add duplicates (bug 976)
+									if ( addedLongOptions.insert( options[i].longOpt ).second )
+									{
+										possibilities.push_back(options[i]);
+									}
 								}
 							}
 
