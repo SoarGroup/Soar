@@ -77,20 +77,21 @@ long lapse_duration;
    an error message and tries to write a file before exiting.
 =================================================================== */
 
-void just_before_exit_soar (agent* thisAgent) {
-  soar_invoke_callbacks(thisAgent, 
-			SYSTEM_TERMINATION_CALLBACK,
-			(soar_call_data) TRUE);
-}
+// JRV: these functions are no longer used with SML
+//void just_before_exit_soar (agent* thisAgent) {
+//  soar_invoke_callbacks(thisAgent, 
+//			SYSTEM_TERMINATION_CALLBACK,
+//			(soar_call_data) TRUE);
+//}
 
-void exit_soar (agent* thisAgent) {
-//#ifdef _WINDOWS
-//  print(thisAgent, "Cannot exit from Soar via the command line.\n");
-//#else
-  just_before_exit_soar(thisAgent);
-  exit (0);
-//#endif
-}
+//void exit_soar (agent* thisAgent) {
+////#ifdef _WINDOWS
+////  print(thisAgent, "Cannot exit from Soar via the command line.\n");
+////#else
+//  just_before_exit_soar(thisAgent);
+//  exit (0);
+////#endif
+//}
 
 void abort_with_fatal_error (agent* thisAgent, char *msg) {
   FILE *f;
@@ -110,11 +111,13 @@ void abort_with_fatal_error (agent* thisAgent, char *msg) {
   fprintf (f,warning);
   fclose(f);
 
+  assert(false);
+
   // Since we're no longer terminating, should we be invoking this event?
   // Note that this is a soar callback, not a gSKI callback, so it isn't being used for now anyway
-  soar_invoke_callbacks(thisAgent, 
-			SYSTEM_TERMINATION_CALLBACK,
-			(soar_call_data) FALSE);     
+  //soar_invoke_callbacks(thisAgent, 
+		//	SYSTEM_TERMINATION_CALLBACK,
+		//	(soar_call_data) FALSE);     
 }
 
 /* ===================================================================
@@ -1586,14 +1589,14 @@ Bool old_print_prompt_flag;
 //  }
 //}
 //
-int terminate_soar (agent* thisAgent)
-{
-  /* Shouldn't we free *all* agents here? */
-  free((void *) thisAgent);
-
-  exit_soar(thisAgent);  
-  return 0; /* unreachable, but without it, gcc -Wall warns here */
-}
+//int terminate_soar (agent* thisAgent)
+//{
+//  /* Shouldn't we free *all* agents here? */
+//  free((void *) thisAgent);
+//
+//  exit_soar(thisAgent);  
+//  return 0; /* unreachable, but without it, gcc -Wall warns here */
+//}
 
 /*
   RDF: 20020706 Added this for the gSKI project. This makes it so that

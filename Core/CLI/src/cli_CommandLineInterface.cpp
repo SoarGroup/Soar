@@ -162,7 +162,7 @@ EXPORT CommandLineInterface::CommandLineInterface() {
 	m_pLogFile = 0;
 	m_LastError = CLIError::kNoError;
 	m_Initialized = true;
-	m_PrintEventToResult = false;
+	m_TrapPrintEvents = false;
 	m_EchoResult = false ;
 	m_pAgentSML = 0 ;
 	m_pAgentSoar = 0;
@@ -262,11 +262,17 @@ void CommandLineInterface::SetTrapPrintCallbacks(bool setting)
 		return;
 	}
 
+	// If we've already set it, don't re-set it
+	if ( m_TrapPrintEvents == setting )
+	{
+		return;
+	}
+
 	if (setting)
 	{
 		// Trap print callbacks
 		m_pAgentSML->DisablePrintCallback();
-		m_PrintEventToResult = true;
+		m_TrapPrintEvents = true;
 		if (!m_pLogFile) 
 		{
 			// If we're logging, we're already registered for this.
@@ -309,7 +315,7 @@ void CommandLineInterface::SetTrapPrintCallbacks(bool setting)
 			// If we're logging, we want to stay registered for this
 			UnregisterWithKernel(smlEVENT_PRINT);
 		}
-		m_PrintEventToResult = false;
+		m_TrapPrintEvents = false;
 		m_pAgentSML->EnablePrintCallback();
 	}
 }
@@ -1031,7 +1037,7 @@ void CommandLineInterface::OnKernelEvent(int eventID, AgentSML*, void* pCallData
 	{
 		char const* msg = (char const*)pCallData ;
 
-		if (m_PrintEventToResult || m_pLogFile)
+		if (m_TrapPrintEvents || m_pLogFile)
 		{
 			if (m_VarPrint)
 			{
@@ -1053,11 +1059,11 @@ void CommandLineInterface::OnKernelEvent(int eventID, AgentSML*, void* pCallData
 				regfree(&comp);
 
 				// Simply append to message result
-				if (m_PrintEventToResult) {
+				if (m_TrapPrintEvents) {
 					CommandLineInterface::m_Result << message;
 				}
 			} else {
-				if (m_PrintEventToResult) {
+				if (m_TrapPrintEvents) {
 					CommandLineInterface::m_Result << msg;
 				}
 			}

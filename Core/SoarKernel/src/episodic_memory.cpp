@@ -175,7 +175,7 @@ epmem_param_type epmem_get_parameter_type( agent *my_agent, const long param )
 /***************************************************************************
  * Function     : epmem_get_parameter
  **************************************************************************/
-const long epmem_get_parameter( agent *my_agent, const char *name, const double test )
+const long epmem_get_parameter( agent *my_agent, const char *name, const double /*test*/ )
 {
 	const long param = epmem_convert_parameter( my_agent, name );
 	if ( param == EPMEM_PARAMS )
@@ -187,7 +187,7 @@ const long epmem_get_parameter( agent *my_agent, const char *name, const double 
 	return my_agent->epmem_params[ param ]->param->constant_param.value;
 }
 
-const char *epmem_get_parameter( agent *my_agent, const char *name, const char *test )
+const char *epmem_get_parameter( agent *my_agent, const char *name, const char * /*test*/ )
 {
 	const long param = epmem_convert_parameter( my_agent, name );
 	if ( param == EPMEM_PARAMS )
@@ -215,7 +215,7 @@ double epmem_get_parameter( agent *my_agent, const char *name )
 
 //
 
-const long epmem_get_parameter( agent *my_agent, const long param, const double test )
+const long epmem_get_parameter( agent *my_agent, const long param, const double /*test*/ )
 {
 	if ( !epmem_valid_parameter( my_agent, param ) )
 		return NULL;
@@ -226,7 +226,7 @@ const long epmem_get_parameter( agent *my_agent, const long param, const double 
 	return my_agent->epmem_params[ param ]->param->constant_param.value;
 }
 
-const char *epmem_get_parameter( agent *my_agent, const long param, const char *test )
+const char *epmem_get_parameter( agent *my_agent, const long param, const char * /*test*/ )
 {
 	if ( !epmem_valid_parameter( my_agent, param ) )
 		return NULL;
@@ -563,7 +563,7 @@ const long epmem_convert_database( const char *val )
 /***************************************************************************
  * Function     : epmem_validate_path
  **************************************************************************/
-bool epmem_validate_path( const char *new_val )
+bool epmem_validate_path( const char * /*new_val*/ )
 {
 	return true;
 }
@@ -2469,7 +2469,7 @@ void epmem_respond_to_cmd( agent *my_agent )
 	bool next, previous;
 	Symbol *query;
 	Symbol *neg_query;
-	vector<long> *prohibit = new vector<long>();
+	vector<long> *prohibit;
 	long before, after;
 	bool good_cue;
 	int path;
@@ -2526,7 +2526,7 @@ void epmem_respond_to_cmd( agent *my_agent )
 			previous = false;
 			query = NULL;
 			neg_query = NULL;
-			prohibit->clear();
+			prohibit = new vector<long>();
 			before = EPMEM_MEMID_NONE;
 			after = EPMEM_MEMID_NONE;
 			good_cue = true;
@@ -2679,9 +2679,12 @@ void epmem_respond_to_cmd( agent *my_agent )
 				state->id.epmem_info->epmem_wmes->push( new_wme );
 			}
 
+			// free prohibit list
+			delete prohibit;
+
 			// free space from aug list
 			free_memory( my_agent, wmes, MISCELLANEOUS_MEM_USAGE );
-		}
+		}	
 
 		state = state->id.higher_goal;
 	}

@@ -339,17 +339,17 @@ const long exploration_get_reduction_policy( agent *my_agent, const long paramet
 /***************************************************************************
  * Function     : exploration_valid_reduction_policy
  **************************************************************************/
-bool exploration_valid_reduction_policy( agent *my_agent, const char *parameter, const char *policy_name )
+bool exploration_valid_reduction_policy( agent * /*my_agent*/, const char * /*parameter*/, const char *policy_name )
 {	
 	return ( exploration_convert_reduction_policy( policy_name ) != EXPLORATION_REDUCTIONS );
 }
 
-bool exploration_valid_reduction_policy( agent *my_agent, const char *parameter, const long policy )
+bool exploration_valid_reduction_policy( agent * /*my_agent*/, const char * /*parameter*/, const long policy )
 {	
 	return ( exploration_convert_reduction_policy( policy ) != NULL );
 }
 
-bool exploration_valid_reduction_policy( agent *my_agent, const long parameter, const long policy )
+bool exploration_valid_reduction_policy( agent * /*my_agent*/, const long /*parameter*/, const long policy )
 {	
 	return ( exploration_convert_reduction_policy( policy ) != NULL );
 }
@@ -361,7 +361,7 @@ bool exploration_set_reduction_policy( agent *my_agent, const char *parameter, c
 {
 	const long param = exploration_convert_parameter( my_agent, parameter );
 	if ( param == EXPLORATION_PARAMS )
-		return EXPLORATION_REDUCTIONS;
+		return false;
 	
 	const long policy = exploration_convert_reduction_policy( policy_name );
 	if ( policy == EXPLORATION_REDUCTIONS )
@@ -391,7 +391,7 @@ bool exploration_valid_reduction_rate( agent *my_agent, const char *parameter, c
 {
 	const long param = exploration_convert_parameter( my_agent, parameter );
 	if ( param == EXPLORATION_PARAMS )
-		return EXPLORATION_REDUCTIONS;
+		return false;
 	
 	const long policy = exploration_convert_reduction_policy( policy_name );
 	if ( policy == EXPLORATION_REDUCTIONS )
@@ -744,8 +744,6 @@ preference *exploration_epsilon_greedy_select( agent *my_agent, preference *cand
 		return exploration_randomly_select( candidates );
 	else
 		return exploration_get_highest_q_value_pref( candidates );
-	
-	return NIL;
 }
 
 /***************************************************************************
