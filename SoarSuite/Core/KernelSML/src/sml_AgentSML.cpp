@@ -490,12 +490,20 @@ smlRunResult AgentSML::Step(smlRunStepSize stepSize)
    // If not at the right phase, but interrupt was requested, then the SML scheduler
    // method IsAgentFinished will return true and MoveTo_StopBeforePhase will
    // step the agent by phases until this test is satisfied.
-   if ((m_interruptFlags & sml_STOP_AFTER_DECISION_CYCLE) && 
-	   ( m_agent->current_phase == m_pKernelSML->ConvertSMLToSoarPhase( m_pKernelSML->GetStopBefore() ) ) )
+   if ( m_interruptFlags & sml_STOP_AFTER_DECISION_CYCLE )
    {
-	   interrupted = true;
+	   // JRV: Bug 782: I changed the second half of the interrupt test to be true if:
+	   //  * The agent is in the correct phase for stopping (this was only what was here before)
+	   //  * OR stepSize == run-til-output because this current_phase will always be input here if running until output
+	   //       and we do want to stop in this case, even though the stop-before phase isn't technically honored.
+	   // I've noted that the stop-before phase isn't honored in this case in the bug report.
+	   bool inCorrectStopBeforePhase = m_agent->current_phase == m_pKernelSML->ConvertSMLToSoarPhase( m_pKernelSML->GetStopBefore() );
+	   bool runningUntilOutput = stepSize == sml_UNTIL_OUTPUT;
+	   if ( inCorrectStopBeforePhase || runningUntilOutput )
+	   {
+		   interrupted = true;
+	   }
    }
-
    		   
    if (interrupted) 
    {
