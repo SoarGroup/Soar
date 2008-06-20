@@ -1,1 +1,0 @@
-int fooAdd(int, int);
