@@ -490,12 +490,20 @@ smlRunResult AgentSML::Step(smlRunStepSize stepSize)
    // If not at the right phase, but interrupt was requested, then the SML scheduler
    // method IsAgentFinished will return true and MoveTo_StopBeforePhase will
    // step the agent by phases until this test is satisfied.
-   if ((m_interruptFlags & sml_STOP_AFTER_DECISION_CYCLE) && 
-	   ( m_agent->current_phase == m_pKernelSML->ConvertSMLToSoarPhase( m_pKernelSML->GetStopBefore() ) ) )
+   if ( m_interruptFlags & sml_STOP_AFTER_DECISION_CYCLE )
    {
-	   interrupted = true;
+	   // JRV: Bug 782: I changed the second half of the interrupt test to be true if:
+	   //  * The agent is in the correct phase for stopping (this was only what was here before)
+	   //  * OR stepSize == run-til-output because this current_phase will always be input here if running until output
+	   //       and we do want to stop in this case, even though the stop-before phase isn't technically honored.
+	   // I've noted that the stop-before phase isn't honored in this case in the bug report.
+	   bool inCorrectStopBeforePhase = m_agent->current_phase == m_pKernelSML->ConvertSMLToSoarPhase( m_pKernelSML->GetStopBefore() );
+	   bool runningUntilOutput = stepSize == sml_UNTIL_OUTPUT;
+	   if ( inCorrectStopBeforePhase || runningUntilOutput )
+	   {
+		   interrupted = true;
+	   }
    }
-
    		   
    if (interrupted) 
    {
@@ -792,40 +800,6 @@ void AgentSML::RemoveRHSFunction(RhsFunction* rhsFunction)
 	symbol_remove_ref (m_agent, tmp);
 }
 
-std::string AgentSML::SymbolToString(Symbol* sym)
-{
-	if ( sym == 0 ) return "";
-
-	// No buffer overrun problems but resulting string may be 
-	// truncated.
-	char temp[128];
-
-	switch (sym->common.symbol_type) {
-	case VARIABLE_SYMBOL_TYPE:
-	 return (char*) (sym->var.name);
-	 break;
-	case IDENTIFIER_SYMBOL_TYPE:
-	 SNPRINTF(temp,128,"%c%lu",sym->id.name_letter,sym->id.name_number);
-	 return std::string(temp);
-	 break;
-	case SYM_CONSTANT_SYMBOL_TYPE:
-	 return (char *) (sym->sc.name);
-	 break;
-	case INT_CONSTANT_SYMBOL_TYPE:
-	 SNPRINTF(temp,128, "%ld",sym->ic.value);
-	 return std::string(temp);
-	 break;
-	case FLOAT_CONSTANT_SYMBOL_TYPE:
-	 SNPRINTF(temp, 128, "%g",sym->fc.value);
-	 return std::string(temp);
-	 break;
-	default:
-	 assert( false ) ; // "This symbol type not supported";
-	 return "";
-	 break;
-	}
-}
-
 char const* AgentSML::GetValueType(int type)
 {
 	switch (type)
@@ -1110,7 +1084,7 @@ bool AgentSML::RemoveInputWME(long clientTimeTag)
 	CHECK_RET_FALSE(pWME) ;  //BADBAD: above check means this will never be triggered; one of the checks should go, but not sure which (can this function be legitimately called with a timetag for a wme that's already been removed?)
 
 	if ( pWME->value->common.symbol_type == IDENTIFIER_SYMBOL_TYPE ) {
-		this->RemoveID( SymbolToString( pWME->value ).c_str() ) ;
+		this->RemoveID( symbol_to_string( GetSoarAgent(), pWME->value, true, 0, 0 ) ) ;
 	}
 
 	RemoveWmeFromWmeMap( pWME );

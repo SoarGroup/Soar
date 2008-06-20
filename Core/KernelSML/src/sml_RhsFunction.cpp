@@ -107,13 +107,11 @@ Symbol* sml::ConcatRhsFunction::Execute(std::vector<Symbol*>* pArguments)
 				   << "Ignoring it..."
 				   << std::endl;
 		} else {
-			std::string str = AgentSML::SymbolToString(pSymbol);
-			ostr << str ;
+			ostr << symbol_to_string( m_pAgentSML->GetSoarAgent(), pSymbol, true, 0, 0 );
 		}
 	  }
 
-	  std::string res = ostr.str() ;
-	  char const* pResultStr = res.c_str() ;
+	  char const* pResultStr = ostr.str().c_str() ;
 	  Symbol* pResult = make_sym_constant(m_pAgentSML->GetSoarAgent(), pResultStr) ;
 	  return pResult ;
 }
@@ -147,8 +145,7 @@ Symbol* sml::CmdRhsFunction::Execute(std::vector<Symbol*>* pArguments)
 					   << "Ignoring it..."
 					   << std::endl;
 			} else {
-				std::string str = AgentSML::SymbolToString(pSymbol);
-				ostr << str ;
+				ostr << symbol_to_string( m_pAgentSML->GetSoarAgent(), pSymbol, true, 0, 0 );
 			}
 	  }
 
@@ -173,7 +170,7 @@ Symbol* sml::ExecRhsFunction::Execute(std::vector<Symbol*>* pArguments)
 	  return NULL ;
 	}
 
-	std::string function = AgentSML::SymbolToString(pArguments->front()) ;
+	std::string function = symbol_to_string( m_pAgentSML->GetSoarAgent(), pArguments->front(), true, 0, 0 );
 
 	// Get the command line string.
 	// We've decided for "exec" to just concatenate all arguments together without inserting
@@ -187,8 +184,7 @@ Symbol* sml::ExecRhsFunction::Execute(std::vector<Symbol*>* pArguments)
 					   << "Ignoring it..."
 					   << std::endl;
 			} else {
-				std::string str = AgentSML::SymbolToString(pSymbol);
-				ostr << str ;
+				ostr << symbol_to_string( m_pAgentSML->GetSoarAgent(), pSymbol, true, 0, 0 );
 			}
 	  }
 

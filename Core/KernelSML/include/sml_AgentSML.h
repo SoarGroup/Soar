@@ -302,7 +302,6 @@ public:
 	void RemoveRHSFunction(RhsFunction* pFunction) ;
 
 	// Utility function (note it's static) for converting a symbol to a string
-	static std::string SymbolToString(Symbol* pSymbol) ;
 	static char const* GetValueType(int type);
 
 	// Execute a command line function (through the CLI processor)

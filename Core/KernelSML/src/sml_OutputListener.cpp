@@ -29,22 +29,47 @@
 
 using namespace sml ;
 
+TagWme* OutputListener::CreateTagIOWme( AgentSML* pAgent, io_wme* wme ) 
+{
+	// Create the wme tag
+	TagWme* pTag = new TagWme() ;
+
+	// Look up the type of value this is
+	char const* pValueType = AgentSML::GetValueType( wme->value->sc.common_symbol_info.symbol_type ) ;
+
+	// For additions we send everything
+	pTag->SetIdentifier( symbol_to_string( pAgent->GetSoarAgent(), wme->id, true, 0, 0 ) ) ;
+	pTag->SetAttribute( symbol_to_string( pAgent->GetSoarAgent(), wme->attr, true, 0, 0 ) ) ;
+	pTag->SetValue( symbol_to_string( pAgent->GetSoarAgent(), wme->value, true, 0, 0 ), pValueType ) ;
+
+	long clientTimetag = pAgent->GetClientTimetag( wme->timetag );
+	if ( clientTimetag < 0 )
+	{
+		// valid client timetag
+		pTag->SetTimeTag( clientTimetag ) ;
+	}
+	else
+	{
+		pTag->SetTimeTag( wme->timetag ) ;
+	}
+
+	pTag->SetActionAdd() ;
+
+	return pTag ;
+}
+
 TagWme* OutputListener::CreateTagWme( AgentSML* pAgent, wme* wme )
 {
 	// Create the wme tag
 	TagWme* pTag = new TagWme() ;
 
 	// Look up the type of value this is
-	int type = wme->value->sc.common_symbol_info.symbol_type ;
-	char const* pValueType = AgentSML::GetValueType(type) ;
+	char const* pValueType = AgentSML::GetValueType( wme->value->sc.common_symbol_info.symbol_type ) ;
 
 	// For additions we send everything
-	std::string id = AgentSML::SymbolToString(wme->id) ;
-	pTag->SetIdentifier(id.c_str()) ;
-	std::string att = AgentSML::SymbolToString(wme->attr) ;
-	pTag->SetAttribute(att.c_str()) ;
-	std::string val = AgentSML::SymbolToString(wme->value) ;
-	pTag->SetValue(val.c_str(), pValueType) ;
+	pTag->SetIdentifier( symbol_to_string( pAgent->GetSoarAgent(), wme->id, true, 0, 0 ) ) ;
+	pTag->SetAttribute( symbol_to_string( pAgent->GetSoarAgent(), wme->attr, true, 0, 0 ) ) ;
+	pTag->SetValue( symbol_to_string( pAgent->GetSoarAgent(), wme->value, true, 0, 0 ), pValueType ) ;
 
 	long clientTimetag = pAgent->GetClientTimetag( wme->timetag );
 	if ( clientTimetag < 0 )
@@ -61,40 +86,6 @@ TagWme* OutputListener::CreateTagWme( AgentSML* pAgent, wme* wme )
 
 	return pTag ;
 }
-
-TagWme* OutputListener::CreateTagIOWme( AgentSML* pAgent, io_wme* wme )
-{
-	// Create the wme tag
-	TagWme* pTag = new TagWme() ;
-
-	// Look up the type of value this is
-	int type = wme->value->sc.common_symbol_info.symbol_type ;
-	char const* pValueType = AgentSML::GetValueType(type) ;
-
-	// For additions we send everything
-	std::string id = AgentSML::SymbolToString(wme->id) ;
-	pTag->SetIdentifier(id.c_str()) ;
-	std::string att = AgentSML::SymbolToString(wme->attr) ;
-	pTag->SetAttribute(att.c_str()) ;
-	std::string val = AgentSML::SymbolToString(wme->value) ;
-	pTag->SetValue(val.c_str(), pValueType) ;
-
-	long clientTimetag = pAgent->GetClientTimetag( wme->timetag );
-	if ( clientTimetag < 0 )
-	{
-		// valid client timetag
-		pTag->SetTimeTag( clientTimetag ) ;
-	}
-	else
-	{
-		pTag->SetTimeTag( wme->timetag ) ;
-	}
-
-	pTag->SetActionAdd() ;
-
-	return pTag ;
-}
-
 
 void OutputListener::Init(KernelSML* pKernelSML, AgentSML* pAgentSML)
 {
@@ -178,7 +169,7 @@ void OutputListener::SendOutput(smlWorkingMemoryEventId eventId, AgentSML* pAgen
 		m_TimeTags[timeTag] = true ;
 
 		// Create the wme tag
-		TagWme* pTag = CreateTagIOWme( pAgentSML, wme) ;
+		TagWme* pTag = CreateTagIOWme( pAgentSML, wme ) ;
 
 		// Add it as a child of the command tag
 		command.AddChild(pTag) ;
