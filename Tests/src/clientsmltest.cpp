@@ -54,6 +54,9 @@ class ClientSMLTest : public CPPUNIT_NS::TestCase
 	CPPUNIT_TEST( testWMEMemoryLeakNoAutoCommit );		// see bugzilla bug 1035
 	CPPUNIT_TEST( testWMEMemoryLeakRemote );			// see bugzilla bug 1035
 	CPPUNIT_TEST( testNonAlphaAttrs );
+	CPPUNIT_TEST( testOSupportCopyDestroy );			// see bugzilla bug 515
+	CPPUNIT_TEST( testOSupportCopyDestroyCircular );	// see bugzilla bug 515
+	CPPUNIT_TEST( testOSupportCopyDestroyCircularParent );	// see bugzilla bug 515
 
 	CPPUNIT_TEST_SUITE_END();
 
@@ -80,6 +83,9 @@ protected:
 	void testSimpleStopUpdate();
 	void testSimpleSNCBreak();
 	void testNonAlphaAttrs();
+	void testOSupportCopyDestroy();
+	void testOSupportCopyDestroyCircularParent();
+	void testOSupportCopyDestroyCircular();
 
 private:
 	void createKernelAndAgents( const KernelBitset& options, int port = 12121 );
@@ -1365,5 +1371,126 @@ void ClientSMLTest::doSimpleReteNetLoader()
 	//cout << "Input link id is " << pID->GetValueAsString() << endl ;
 
 	CPPUNIT_ASSERT( pID );
+}
+
+void ClientSMLTest::testOSupportCopyDestroy()
+{
+	numberAgents = 1;
+	KernelBitset options(0);
+	options.set( EMBEDDED );
+	options.set( USE_CLIENT_THREAD );
+	options.set( FULLY_OPTIMIZED );
+	options.set( AUTO_COMMIT_ENABLED );
+	createKernelAndAgents( options );
+
+	sml::Agent* pAgent = pKernel->GetAgent( getAgentName( 0 ).c_str() ) ;
+	CPPUNIT_ASSERT( pAgent != NULL );
+
+	pAgent->LoadProductions( "/Tests/testOSupportCopyDestroy.soar" );
+
+	sml::Identifier* pInputLink = pAgent->GetInputLink();
+	CPPUNIT_ASSERT( pInputLink );
+
+	sml::Identifier* pFoo = pAgent->CreateIdWME( pInputLink, "foo" );
+	CPPUNIT_ASSERT( pFoo );
+
+	sml::Identifier* pBar = pAgent->CreateIdWME( pFoo, "bar" );
+	CPPUNIT_ASSERT( pBar );
+
+	sml::StringElement* pToy = pAgent->CreateStringWME( pBar, "toy", "jig" );
+	CPPUNIT_ASSERT( pToy );
+
+	bool badCopyExists( false );
+	pKernel->AddRhsFunction( "bad-copy-exists", Handlers::MyRhsFunctionHandler, &badCopyExists ) ; 
+
+	pAgent->RunSelf(1);
+
+	pAgent->DestroyWME( pToy );
+	pAgent->DestroyWME( pBar );
+	pAgent->DestroyWME( pFoo );
+
+	pAgent->RunSelf(1);
+
+	CPPUNIT_ASSERT( !badCopyExists );
+}
+
+void ClientSMLTest::testOSupportCopyDestroyCircularParent()
+{
+	numberAgents = 1;
+	KernelBitset options(0);
+	options.set( EMBEDDED );
+	options.set( USE_CLIENT_THREAD );
+	options.set( FULLY_OPTIMIZED );
+	options.set( AUTO_COMMIT_ENABLED );
+	createKernelAndAgents( options );
+
+	sml::Agent* pAgent = pKernel->GetAgent( getAgentName( 0 ).c_str() ) ;
+	CPPUNIT_ASSERT( pAgent != NULL );
+
+	pAgent->LoadProductions( "/Tests/testOSupportCopyDestroy.soar" );
+
+	sml::Identifier* pInputLink = pAgent->GetInputLink();
+	CPPUNIT_ASSERT( pInputLink );
+
+	sml::Identifier* pFoo = pAgent->CreateIdWME( pInputLink, "foo" );
+	CPPUNIT_ASSERT( pFoo );
+
+	sml::Identifier* pBar = pAgent->CreateIdWME( pFoo, "bar" );
+	CPPUNIT_ASSERT( pBar );
+
+	sml::Identifier* pToy = pAgent->CreateSharedIdWME( pBar, "toy", pFoo );
+	CPPUNIT_ASSERT( pToy );
+
+	bool badCopyExists( false );
+	pKernel->AddRhsFunction( "bad-copy-exists", Handlers::MyRhsFunctionHandler, &badCopyExists ) ; 
+
+	pAgent->RunSelf(1);
+
+	pAgent->DestroyWME( pFoo );
+
+	pAgent->RunSelf(1);
+
+	CPPUNIT_ASSERT( !badCopyExists );
+}
+
+void ClientSMLTest::testOSupportCopyDestroyCircular()
+{
+	numberAgents = 1;
+	KernelBitset options(0);
+	options.set( EMBEDDED );
+	options.set( USE_CLIENT_THREAD );
+	options.set( FULLY_OPTIMIZED );
+	options.set( AUTO_COMMIT_ENABLED );
+	createKernelAndAgents( options );
+
+	sml::Agent* pAgent = pKernel->GetAgent( getAgentName( 0 ).c_str() ) ;
+	CPPUNIT_ASSERT( pAgent != NULL );
+
+	pAgent->LoadProductions( "/Tests/testOSupportCopyDestroy.soar" );
+
+	sml::Identifier* pInputLink = pAgent->GetInputLink();
+	CPPUNIT_ASSERT( pInputLink );
+
+	sml::Identifier* pFoo = pAgent->CreateIdWME( pInputLink, "foo" );
+	CPPUNIT_ASSERT( pFoo );
+
+	sml::Identifier* pBar = pAgent->CreateIdWME( pFoo, "bar" );
+	CPPUNIT_ASSERT( pBar );
+
+	sml::Identifier* pToy = pAgent->CreateSharedIdWME( pBar, "toy", pFoo );
+	CPPUNIT_ASSERT( pToy );
+
+	bool badCopyExists( false );
+	pKernel->AddRhsFunction( "bad-copy-exists", Handlers::MyRhsFunctionHandler, &badCopyExists ) ; 
+
+	pAgent->RunSelf(1);
+
+	pAgent->DestroyWME( pToy );
+	pAgent->DestroyWME( pBar );
+	pAgent->DestroyWME( pFoo );
+
+	pAgent->RunSelf(1);
+
+	CPPUNIT_ASSERT( !badCopyExists );
 }
 
