@@ -134,7 +134,17 @@ WMElement* WorkingMemory::CreateWME(Identifier* pParent, char const* pID, char c
 {
 	// Value is an identifier
 	if (strcmp(pType, sml_Names::kTypeID) == 0)
-		return new Identifier(GetAgent(), pParent, pID, pAttribute, pValue, timeTag) ;
+	{
+		Identifier* pSharedIdentifier = this->FindIdentifier( pValue, false, true );
+		if ( pSharedIdentifier != NULL )
+		{
+			return new Identifier(GetAgent(), pParent, pID, pAttribute, pSharedIdentifier, timeTag) ;
+		}
+		else
+		{
+			return new Identifier(GetAgent(), pParent, pID, pAttribute, pValue, timeTag) ;
+		}
+	}
 
 	// Value is a string
 	if (strcmp(pType, sml_Names::kTypeString) == 0)
