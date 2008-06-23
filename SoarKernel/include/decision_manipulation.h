@@ -15,8 +15,9 @@
 
 #include <string>
 
-#include "agent.h"
 #include "gdatastructs.h"
+
+typedef struct agent_struct agent;
 
 //////////////////////////////////////////////////////////
 // select types
