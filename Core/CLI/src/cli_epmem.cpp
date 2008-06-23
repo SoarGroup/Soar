@@ -355,9 +355,8 @@ bool CommandLineInterface::DoEpMem( const char pOp, const std::string* pAttr, co
 		if ( !invalid && !result )
 		{
 			const char *msg = "ERROR: this parameter is protected while the EpMem database is open.";
-			const char *tag_type = sml_Names::kTypeString;
+			const char *tag_type = sml_Names::kTypeString;			
 			
-			epmem_end( m_pAgentSoar );
 			if ( m_RawOutput )
 				m_Result << msg;
 			else
