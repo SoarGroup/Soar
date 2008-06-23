@@ -357,20 +357,6 @@
 				<File
 					RelativePath=".\src\cli_retenet.cpp"
 					>
-					<FileConfiguration
-						Name="Debug|Win32"
-						>
-						<Tool
-							Name="VCCLCompilerTool"
-						/>
-					</FileConfiguration>
-					<FileConfiguration
-						Name="Release|Win32"
-						>
-						<Tool
-							Name="VCCLCompilerTool"
-						/>
-					</FileConfiguration>
 				</File>
 				<File
 					RelativePath=".\src\cli_rl.cpp"
@@ -458,6 +444,10 @@
 				</File>
 				<File
 					RelativePath=".\src\cli_watchwmes.cpp"
+					>
+				</File>
+				<File
+					RelativePath=".\src\cli_wma.cpp"
 					>
 				</File>
 			</Filter>

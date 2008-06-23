@@ -281,6 +281,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\src\wma.cpp"
+				>
+			</File>
+			<File
 				RelativePath=".\src\wmem.cpp"
 				>
 			</File>
@@ -460,6 +464,10 @@
 			</File>
 			<File
 				RelativePath=".\include\utilities.h"
+				>
+			</File>
+			<File
+				RelativePath=".\include\wma.h"
 				>
 			</File>
 			<File

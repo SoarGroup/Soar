@@ -34,6 +34,7 @@
 
 #include "exploration.h"
 #include "reinforcement_learning.h"
+#include "wma.h"
 
 #include <string>
 #include <map>
@@ -49,7 +50,13 @@ typedef struct rhs_function_struct rhs_function;
 typedef struct rl_parameter_struct rl_parameter;
 typedef struct rl_stat_struct rl_stat;
 
+// select types
 typedef struct select_info_struct select_info;
+
+// WMA types
+typedef struct wma_parameter_struct wma_parameter;
+typedef struct wma_stat_struct wma_stat;
+typedef struct wma_timelist_element_struct wma_timelist_element;
 
 #ifdef __cplusplus
 extern "C"
@@ -759,6 +766,16 @@ kernel time and total_cpu_time greater than the derived total CPU time. REW */
   // predict
   unsigned long predict_seed;
   std::string *prediction;
+
+  // wma
+  wma_parameter *wma_params[ WMA_PARAMS ];
+  wma_stat *wma_stats[ WMA_STATS ];
+
+  wma_timelist_element wma_timelist[ WMA_MAX_TIMELIST + 1 ];
+  wma_timelist_element *wma_timelist_current;
+  
+  float wma_power_array[ WMA_POWER_SIZE ];
+  int wma_quick_boost[ WMA_DECAY_HISTORY ];
 
   // JRV: Added to support XML management inside Soar
   // These handles should not be used directly, see xml.h

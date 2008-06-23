@@ -48,6 +48,7 @@
 #include <time.h>
 
 #include "reinforcement_learning.h"
+#include "wma.h"
 
 #define INIT_FILE       "init.soar"
 
@@ -235,6 +236,8 @@ void init_sysparams (agent* thisAgent) {
   thisAgent->sysparams[USE_LONG_CHUNK_NAMES] = TRUE;  /* kjh(B14) */
   thisAgent->sysparams[TRACE_OPERAND2_REMOVALS_SYSPARAM] = FALSE;
   thisAgent->sysparams[TIMERS_ENABLED] = TRUE;
+
+  thisAgent->sysparams[WMA_ENABLED] = WMA_ACTIVATION_ON;
 }
 
 /* ===================================================================
@@ -385,6 +388,7 @@ bool reinitialize_soar (agent* thisAgent) {
   rl_reset_data( thisAgent );
   clear_goal_stack (thisAgent);
   rl_reset_stats( thisAgent );
+  wma_reset_stats( thisAgent );
 
   if (thisAgent->operand2_mode == TRUE) {
      thisAgent->active_level = 0; /* Signal that everything should be retracted */

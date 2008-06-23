@@ -202,6 +202,13 @@ namespace cli {
 		WATCH_WMES_TYPE_NUM_OPTIONS, // must be last
 	};
 
+	enum eWMAOptions {
+		WMA_GET,
+		WMA_SET,
+		WMA_STAT,
+		WMA_NUM_OPTIONS,	// must be last
+	};
+
 } // namespace cli
 
 #endif // COMMAND_DATA_H
