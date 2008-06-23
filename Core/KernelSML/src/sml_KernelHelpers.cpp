@@ -123,6 +123,12 @@ void do_print_for_production (agent* agnt,
 	if (!full_prod) 
 	{
 		print_with_symbols(agnt, "%y  ",prod->name);
+
+		if ( prod->rl_rule )
+		{
+			print_with_symbols( agnt, "%y  ", make_float_constant( agnt, prod->rl_update_count ) );
+			print_with_symbols( agnt, "%y", rhs_value_to_symbol( prod->action_list->referent ) );
+		}
 	}
 	if (print_filename) 
 	{
@@ -2119,7 +2125,7 @@ bool KernelHelpers::ExplainChunks(AgentSML* pAgent, const char* pProduction, int
 	return true;
 }
 
-void KernelHelpers::print_rl_rules( agent* thisAgent, char *arg,bool internal, bool print_filename, bool full_prod)
+void KernelHelpers::print_rl_rules( agent* thisAgent, char * /*arg*/,bool internal, bool print_filename, bool full_prod)
 {
 	assert (thisAgent);
 

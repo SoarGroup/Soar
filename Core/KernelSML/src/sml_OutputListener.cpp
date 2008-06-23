@@ -31,7 +31,31 @@ using namespace sml ;
 
 TagWme* OutputListener::CreateTagIOWme( AgentSML* pAgent, io_wme* wme ) 
 {
-	return CreateTagWme( pAgent, reinterpret_cast< wme_struct* >( wme ) );
+	// Create the wme tag
+	TagWme* pTag = new TagWme() ;
+
+	// Look up the type of value this is
+	char const* pValueType = AgentSML::GetValueType( wme->value->sc.common_symbol_info.symbol_type ) ;
+
+	// For additions we send everything
+	pTag->SetIdentifier( symbol_to_string( pAgent->GetSoarAgent(), wme->id, true, 0, 0 ) ) ;
+	pTag->SetAttribute( symbol_to_string( pAgent->GetSoarAgent(), wme->attr, true, 0, 0 ) ) ;
+	pTag->SetValue( symbol_to_string( pAgent->GetSoarAgent(), wme->value, true, 0, 0 ), pValueType ) ;
+
+	long clientTimetag = pAgent->GetClientTimetag( wme->timetag );
+	if ( clientTimetag < 0 )
+	{
+		// valid client timetag
+		pTag->SetTimeTag( clientTimetag ) ;
+	}
+	else
+	{
+		pTag->SetTimeTag( wme->timetag ) ;
+	}
+
+	pTag->SetActionAdd() ;
+
+	return pTag ;
 }
 
 TagWme* OutputListener::CreateTagWme( AgentSML* pAgent, wme* wme )
