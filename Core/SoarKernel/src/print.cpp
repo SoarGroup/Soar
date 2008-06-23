@@ -1063,16 +1063,15 @@ void print_instantiation_with_wmes (agent* thisAgent, instantiation *inst,
 
         break;
       case FULL_WME_TRACE:	
-		  if (action != RETRACTING) {
-			  print (thisAgent, " ");
-			  print_wme (thisAgent, cond->bt.wme_);
+         // Not all conds and wme_'s available when retracting, depending on DO_TOP_LEVEL_REF_CTS
+         #ifdef DO_TOP_LEVEL_REF_CTS
+         print (thisAgent, " ");
+         print_wme (thisAgent, cond->bt.wme_);
+         #else
+         if (action != RETRACTING && cond->bt.level > TOP_GOAL_LEVEL) {
+              print (thisAgent, " ");
+              print_wme (thisAgent, cond->bt.wme_);
 		  } else {
-			  // Not all conds available when retracting, depending on DO_TOP_LEVEL_REF_CTS
-			  #ifdef DO_TOP_LEVEL_REF_CTS
-			  print (thisAgent, " ");
-			  print_wme (thisAgent, cond->bt.wme_);
-              #else
-
 			  // Wmes that matched the LHS of a retraction may already be free'd; just print tt.
 			  print (thisAgent, " %lu", cond->bt.wme_->timetag);
 
@@ -1080,7 +1079,7 @@ void print_instantiation_with_wmes (agent* thisAgent, instantiation *inst,
 			  xml_att_val(thisAgent, kWME_TimeTag, cond->bt.wme_->timetag);
 			  xml_end_tag(thisAgent, kTagWME);
  
-              #endif
+          #endif
 		  }
         break;
       }

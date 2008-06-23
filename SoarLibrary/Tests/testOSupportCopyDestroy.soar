@@ -1,0 +1,21 @@
+sp {propose*test
+   (state <s> ^superstate nil)
+-->
+   (<s> ^operator <o> +)
+   (<o> ^name test)
+}
+
+sp {apply*test
+   (state <s> ^operator.name test
+              ^io.input-link <il>)
+   (<il> ^foo <f>)
+-->
+   (<s> ^copy <f>)
+}
+
+sp {succcess
+   (state <s> ^copy.foo.bar
+             -^io.input-link.foo)
+-->
+   (exec bad-copy-exists)
+}

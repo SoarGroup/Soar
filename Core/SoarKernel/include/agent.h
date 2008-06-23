@@ -52,6 +52,7 @@ typedef struct rhs_function_struct rhs_function;
 typedef struct rl_parameter_struct rl_parameter;
 typedef struct rl_stat_struct rl_stat;
 
+// select types
 typedef struct select_info_struct select_info;
 
 // EpMem types

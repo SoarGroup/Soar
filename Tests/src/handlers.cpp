@@ -309,14 +309,14 @@ void Handlers::MyMemoryLeakUpdateHandlerInternal( bool destroyChildren, sml::sml
 			CPPUNIT_ASSERT( pAgent->DestroyWME( pChildInt ) );		
 		}
 
+		// Destroying the original apparently destroys this.
+		CPPUNIT_ASSERT( pAgent->DestroyWME( pSharedID ) );
+
 		CPPUNIT_ASSERT( pAgent->DestroyWME( pRootID1 ) );		
 		CPPUNIT_ASSERT( pAgent->DestroyWME( pRootID2 ) );		
 		CPPUNIT_ASSERT( pAgent->DestroyWME( pRootString ) );
 		CPPUNIT_ASSERT( pAgent->DestroyWME( pRootFloat ) );
 		CPPUNIT_ASSERT( pAgent->DestroyWME( pRootInt ) );
-
-		// Destroying the original apparently destroys this.
-		//CPPUNIT_ASSERT( pAgent->DestroyWME( pSharedID ) );	// BUGBUG destroying this too should probably not be an error
 
 		CPPUNIT_ASSERT( pAgent->Commit() );
 

@@ -2125,7 +2125,7 @@ bool KernelHelpers::ExplainChunks(AgentSML* pAgent, const char* pProduction, int
 	return true;
 }
 
-void KernelHelpers::print_rl_rules( agent* thisAgent, char *arg,bool internal, bool print_filename, bool full_prod)
+void KernelHelpers::print_rl_rules( agent* thisAgent, char * /*arg*/,bool internal, bool print_filename, bool full_prod)
 {
 	assert (thisAgent);
 
