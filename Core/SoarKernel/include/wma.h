@@ -23,23 +23,59 @@ typedef struct wme_struct wme;
 #define WMA_RETURN_LONG 0.1
 #define WMA_RETURN_STRING ""
 
+/**
+ * WMA on/off
+ */
 #define WMA_ACTIVATION_ON 1
 #define WMA_ACTIVATION_OFF 2
 
+/**
+ * Specifies what WMEs will have decay values.
+ * O_AGENT - Only o-supported WMEs created by the agent 
+ *           (i.e., they have a supporting preference)
+ * O_AGENT_ARCH - All o-supported WMEs including 
+ *                architecture created WMEs
+ * ALL - All wmes are activated
+ */
 #define WMA_CRITERIA_O_AGENT 1
 #define WMA_CRITERIA_O_AGENT_ARCH 2
 #define WMA_CRITERIA_ALL 3
 
+/**
+ * Are WMEs removed from WM when activation gets too low?
+ */
 #define WMA_FORGETTING_ON 1
 #define WMA_FORGETTING_OFF 2
 
+/**
+ * Specifies the mode in which i-supported WMEs 
+ * affect activation levels.
+ * NONE - i-supported WMEs do not affect activation levels
+ * NO_CREATE - i-supported WMEs boost the activation levels 
+ *             of all o-supported WMEs in the instantiations 
+ *             that test them.  Each WME receives and equal 
+ *             boost regardless of "distance" (in the backtrace) 
+ *             from the tested WME.
+ * UNIFORM - i-supported WMEs boost the activation levels of 
+ *           all o-supported WMEs in the instantiations that 
+ *           created or test them.  Each WME receives an equal 
+ *           boost regardless of "distance" (in the backtrace) 
+ *           from the tested WME.
+ */
 #define WMA_I_NONE 1
 #define WMA_I_NO_CREATE 2
 #define WMA_I_UNIFORM 3
 
+/**
+ * Whether or not an instantiation activates WMEs just once, 
+ * or every cycle until it is retracted.
+ */
 #define WMA_PERSISTENCE_ON 1
 #define WMA_PERSISTENCE_OFF 2
 
+/**
+ * Level of precision with which activation levels are calculated.
+ */
 #define WMA_PRECISION_LOW 1
 #define WMA_PRECISION_HIGH 2
 
@@ -190,7 +226,7 @@ struct wma_decay_element_struct
 
 	// how many times this wme has been referenced so far
 	// this cycle
-	int num_references;
+	long num_references;
 
 	// when and how often this wme has been referenced in recent
 	// history.  For example, if a WME has been referenced twice
@@ -201,7 +237,7 @@ struct wma_decay_element_struct
 
 	// how many references were matching on this wme at the end of
 	// last cycle.
-	int history_count;
+	long history_count;
 
 	wma_decay_log *log;
 };
@@ -213,10 +249,10 @@ struct wma_decay_element_struct
 struct wma_timelist_element_struct
 {
 	// the cycle when the associated decay element was created
-	long int time;
+	long time;
 
 	// index of this element in the decay timelist array
-	int position;
+	long position;
 
 	// pointer to the associated decay element
 	wma_decay_element *first_decay_element;
@@ -373,10 +409,23 @@ extern bool wma_set_stat( agent *my_agent, const long stat, double new_val );
    See wma.cpp for more information.
    ======================================================================= */
 
+/**
+ * Must be called before execution to init wma
+ */
+extern void wma_init( agent *my_agent );
+
+/**
+ * Prevents hanging pointers
+ */
+extern void wma_deinit( agent *my_agent );
+
+/**
+ * Adds a decay element to an existing WME so that it
+ * becomes an activated WME
+ */
+extern void wma_update_new_wme( agent *my_agent, wme *w, int num_refs );
+
 /*
-extern void decay_init(agent *thisAgent);
-extern void decay_deinit(agent *thisAgent);
-extern void decay_update_new_wme(agent *thisAgent, wme *w, int num_refs);
 extern void activate_wmes_in_pref(agent *thisAgent, preference *pref);
 extern void activate_wmes_in_inst(agent *thisAgent, instantiation *inst);
 extern void decay_update_wmes_tested_in_prods(agent *thisAgent);
@@ -388,6 +437,5 @@ extern void decay_deactivate_element(agent *thisAgent, wme *w);
 extern void decay_remove_element(agent *thisAgent, wme *w);
 extern void decay_print_most_activated_wmes(agent *thisAgent, int n);
 */
-  
 
 #endif

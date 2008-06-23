@@ -309,7 +309,20 @@ bool CommandLineInterface::DoWMA( const char pOp, const std::string* pAttr, cons
 			case wma_param_invalid:
 				invalid = true;
 				break;
-		}	
+		}
+
+		// since parameter name and value have been validated,
+		// this can only mean the parameter is protected
+		if ( !invalid && !result )
+		{
+			const char *msg = "ERROR: this parameter is protected while WMA is on.";
+			const char *tag_type = sml_Names::kTypeString;			
+			
+			if ( m_RawOutput )
+				m_Result << msg;
+			else
+				AppendArgTagFast( sml_Names::kParamValue, tag_type, msg );
+		}
 
 		return result;
 	}

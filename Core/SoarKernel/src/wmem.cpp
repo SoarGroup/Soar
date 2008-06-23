@@ -38,6 +38,8 @@
 #include "xml.h"
 #include "soar_TraceNames.h"
 
+#include "wma.h"
+
 using namespace soar_TraceNames;
 
 /* ======================================================================
@@ -113,6 +115,10 @@ wme *make_wme (agent* thisAgent, Symbol *id, Symbol *attr, Symbol *value, Bool a
   w->gds_prev = NIL;
   w->gds_next = NIL;
 /* REW: end 09.15.96 */
+
+  w->wma_decay_element = NIL;
+  w->wma_has_decay_element = false;
+  w->wma_tc_value = -1;
 
   return w;
 }

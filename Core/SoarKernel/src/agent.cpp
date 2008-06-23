@@ -106,6 +106,9 @@ void init_soar_agent(agent* thisAgent) {
                     "%right[6,%dc]: %rsd[   ]   O: %co");
 
   reset_statistics (thisAgent);
+
+  // should come after reset_statistics
+  wma_init(thisAgent);
    
   /* RDF: For gSKI */
   init_agent_memory(thisAgent);
@@ -342,6 +345,9 @@ agent * create_soar_agent (char * agent_name) {                                 
   newAgent->wma_params[ WMA_PARAM_PRECISION ] = wma_add_parameter( "precision", WMA_PRECISION_HIGH, &wma_validate_precision, &wma_convert_precision, &wma_convert_precision );
 
   newAgent->wma_stats[ WMA_STAT_DUMMY ] = wma_add_stat( "dummy" );
+
+  newAgent->wma_initialized = false;
+  newAgent->wma_first = true;
 
   return newAgent;
 }

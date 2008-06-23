@@ -386,6 +386,7 @@ bool reinitialize_soar (agent* thisAgent) {
   /* kjh (CUSP-B4) end */
 
   rl_reset_data( thisAgent );
+  wma_deinit( thisAgent );
   clear_goal_stack (thisAgent);
   rl_reset_stats( thisAgent );
   wma_reset_stats( thisAgent );
@@ -403,6 +404,9 @@ bool reinitialize_soar (agent* thisAgent) {
   bool ok = reset_id_counters (thisAgent);
   reset_wme_timetags (thisAgent);
   reset_statistics (thisAgent);
+
+  // should come after reset statistics
+  wma_init( thisAgent );
 
   // JRV: For XML generation
   xml_reset( thisAgent );

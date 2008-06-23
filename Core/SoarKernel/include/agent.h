@@ -214,6 +214,8 @@ typedef struct agent_struct {
   memory_pool         alpha_mem_pool;
   memory_pool         ms_change_pool;
   memory_pool         node_varnames_pool;
+
+  memory_pool		  wma_decay_element_pool;
   
   /* Dummy nodes and tokens */
   struct rete_node_struct * dummy_top_node;
@@ -774,8 +776,12 @@ kernel time and total_cpu_time greater than the derived total CPU time. REW */
   wma_timelist_element wma_timelist[ WMA_MAX_TIMELIST + 1 ];
   wma_timelist_element *wma_timelist_current;
   
-  float wma_power_array[ WMA_POWER_SIZE ];
+  double wma_power_array[ WMA_POWER_SIZE ];
   int wma_quick_boost[ WMA_DECAY_HISTORY ];
+  bool wma_initialized;
+  bool wma_first;
+  tc_number wma_tc_counter;
+
 
   // JRV: Added to support XML management inside Soar
   // These handles should not be used directly, see xml.h
