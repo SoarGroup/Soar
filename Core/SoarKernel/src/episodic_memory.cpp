@@ -14,34 +14,27 @@
  * =======================================================================
  */
 
-#include <stdlib.h>
+#include "episodic_memory.h"
 
+#include <stdlib.h>
 #include <iostream>
-#include <string>
 #include <map>
-#include <vector>
 #include <queue>
-#include <list>
 #include <algorithm>
 
 #include "symtab.h"
-#include "io_soar.h"
 #include "wmem.h"
-#include "soar_rand.h"
-#include "production.h"
-
+#include "print.h"
 #include "prefmem.h"
 #include "instantiations.h"
-
-#include "print.h"
-
-#include "episodic_memory.h"
-#include "misc.h"
-
-#include "sqlite3.h"
+#include "io_soar.h"
+#include "soar_rand.h"
 
 #include "soar_TraceNames.h"
 #include "xml.h"
+
+#include "misc.h"
+#include "sqlite3.h"
 
 using namespace std;
 using namespace soar_TraceNames;

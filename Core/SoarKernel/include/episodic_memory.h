@@ -16,9 +16,9 @@
 #include <vector>
 #include <string>
 #include <stack>
+#include <list>
 
-#include "symtab.h"
-#include "wmem.h"
+typedef struct wme_struct wme;
 
 //////////////////////////////////////////////////////////
 // EpMem Constants
@@ -141,12 +141,6 @@
 #define EPMEM_STAT_RIT_MINSTEP						6
 #define EPMEM_STATS									7 // must be 1+ last epmem stat
 
-//
-// These must go below constants
-//
-
-#include "stl_support.h"
-
 //////////////////////////////////////////////////////////
 // EpMem Types
 //////////////////////////////////////////////////////////
@@ -207,6 +201,12 @@ typedef struct epmem_data_struct
 	std::list<wme *> *cue_wmes;		// wmes in last cue
 	std::stack<wme *> *epmem_wmes;	// wmes in last epmem
 } epmem_data;
+
+//
+// These must go below types
+//
+
+#include "stl_support.h"
 
 //////////////////////////////////////////////////////////
 // Parameter Functions
