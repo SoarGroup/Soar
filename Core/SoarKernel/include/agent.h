@@ -281,6 +281,10 @@ typedef struct agent_struct {
 
   Symbol            * reward_link_symbol;
   
+  Symbol            * emotion_symbol;
+  Symbol            * appraisal_link_symbol;
+  Symbol            * feeling_link_symbol;
+  
   /* ----------------------- Symbol table stuff -------------------------- */
 
   unsigned long       current_symbol_hash_id;
@@ -671,6 +675,12 @@ kernel time and total_cpu_time greater than the derived total CPU time. REW */
   
   Symbol            * io_header_input;
   Symbol            * io_header_output;
+
+  Symbol            * emotion_header;
+  wme               * emotion_header_link;
+  
+  Symbol            * emotion_header_appraisal;
+  Symbol            * emotion_header_feeling;
 
   memory_pool         io_wme_pool;
   Symbol            * prev_top_state;

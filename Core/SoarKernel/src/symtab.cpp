@@ -606,6 +606,10 @@ void create_predefined_symbols (agent* thisAgent) {
   /* RPM 9/06 end */
 
   thisAgent->reward_link_symbol = make_sym_constant( thisAgent, "reward-link" );
+
+  thisAgent->emotion_symbol = make_sym_constant (thisAgent, "emotion");
+  thisAgent->appraisal_link_symbol = make_sym_constant( thisAgent, "appraisal-link" );
+  thisAgent->feeling_link_symbol = make_sym_constant( thisAgent, "feeling-link" );
 }
 
 void release_helper(agent* thisAgent, Symbol** sym) {
@@ -656,4 +660,7 @@ void release_predefined_symbols(agent* thisAgent) {
   /* RPM 9/06 end */
 
   release_helper( thisAgent, &( thisAgent->reward_link_symbol ) );
+
+  release_helper( thisAgent, &( thisAgent->appraisal_link_symbol ) );
+  release_helper( thisAgent, &( thisAgent->feeling_link_symbol ) );
 }

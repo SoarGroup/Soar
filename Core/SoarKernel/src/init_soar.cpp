@@ -1382,6 +1382,10 @@ void init_agent_memory(agent* thisAgent)
   thisAgent->io_header_input = get_new_io_identifier (thisAgent, 'I');
   thisAgent->io_header_output = get_new_io_identifier (thisAgent, 'I');
 
+  thisAgent->emotion_header = get_new_io_identifier (thisAgent, 'E');
+  thisAgent->emotion_header_appraisal = get_new_io_identifier (thisAgent, 'A');
+  thisAgent->emotion_header_feeling = get_new_io_identifier (thisAgent, 'F');
+
   create_top_goal(thisAgent);
   if (thisAgent->sysparams[TRACE_CONTEXT_DECISIONS_SYSPARAM]) 
     {
@@ -1408,6 +1412,17 @@ void init_agent_memory(agent* thisAgent)
   add_input_wme (thisAgent, thisAgent->io_header,
                  thisAgent->output_link_symbol,
                  thisAgent->io_header_output);
+
+  thisAgent->emotion_header_link = add_input_wme (thisAgent, 
+                                             thisAgent->top_state,
+                                             thisAgent->emotion_symbol,
+                                             thisAgent->emotion_header);
+  add_input_wme (thisAgent, thisAgent->emotion_header,
+                 thisAgent->appraisal_link_symbol,
+                 thisAgent->emotion_header_appraisal);
+  add_input_wme (thisAgent, thisAgent->emotion_header,
+                 thisAgent->feeling_link_symbol,
+                 thisAgent->emotion_header_feeling);
 
   // KJC & RPM 10/06
   // A lot of stuff isn't initialized properly until the input and output cycles are run the first time.
