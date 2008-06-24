@@ -1376,13 +1376,12 @@ void wma_deactivate_element( agent * /*my_agent*/, wme *w )
  **************************************************************************/
 void wma_remove_decay_element( agent *my_agent, wme *w )
 {
-	// Make sure this wme has an element and that element has not already been
-	// deactivated
-	if ( !w->wma_has_decay_element || w->wma_decay_element->just_removed )
+	if ( !w->wma_has_decay_element )
 		return;
 
 	// Deactivate the wme first
-	wma_deactivate_element( my_agent, w );
+	if ( !w->wma_decay_element->just_removed )
+		wma_deactivate_element( my_agent, w );
 
 	free_with_pool( &( my_agent->wma_decay_element_pool ), w->wma_decay_element );
 

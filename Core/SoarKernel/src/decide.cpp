@@ -1704,6 +1704,9 @@ void decide_non_context_slot (agent* thisAgent, slot *s)
             }  /* end if thisAgent->OPERAND2_MODE ... */
                /* REW: end   09.15.96 */
    
+			if ( wma_enabled( thisAgent ) )
+				wma_update_new_wme( thisAgent, w, s->wma_num_changes );
+
             add_wme_to_wm (thisAgent, w);
          }
       }
@@ -2202,9 +2205,6 @@ Bool decide_context_slot (agent* thisAgent, Symbol *goal, slot *s, bool predict 
       insert_at_head_of_dll (s->wmes, w, next, prev);
       w->preference = candidates;
       preference_add_ref (w->preference);
-
-      if ( wma_enabled( thisAgent ) )
-		  wma_update_new_wme( thisAgent, w, s->wma_num_changes );
 	  
 	  /* JC Adding an operator to working memory in the current state */
       add_wme_to_wm (thisAgent, w);
