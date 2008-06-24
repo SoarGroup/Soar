@@ -105,6 +105,8 @@
 #include "xml.h"
 #include "soar_TraceNames.h"
 
+#include "reinforcement_learning.h"
+
 /* ----------- basic functionality switches ----------- */
 
 /* Set to FALSE to preserve variable names in chunks (takes extra space) */
@@ -7174,6 +7176,12 @@ void reteload_node_and_children (agent* thisAgent, rete_node *parent, FILE* f) {
     insert_at_head_of_dll (thisAgent->all_productions_of_type[prod->type],
                            prod, next, prev);
     thisAgent->num_productions_of_type[prod->type]++;
+
+	// Soar-RL stuff
+	prod->rl_update_count = 0;
+	prod->rl_rule = false;
+	if ( ( prod->type != JUSTIFICATION_PRODUCTION_TYPE ) && ( prod->type != TEMPLATE_PRODUCTION_TYPE ) )
+	  prod->rl_rule = rl_valid_rule( prod );  
 
     New = make_new_production_node (thisAgent, parent, prod);
     adjust_sharing_factors_from_here_to_top (New, 1);
