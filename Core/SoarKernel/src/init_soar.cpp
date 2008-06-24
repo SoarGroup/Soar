@@ -1382,10 +1382,6 @@ void init_agent_memory(agent* thisAgent)
   thisAgent->io_header_input = get_new_io_identifier (thisAgent, 'I');
   thisAgent->io_header_output = get_new_io_identifier (thisAgent, 'I');
 
-  thisAgent->emotion_header = get_new_io_identifier (thisAgent, 'E');
-  thisAgent->emotion_header_appraisal = get_new_io_identifier (thisAgent, 'A');
-  thisAgent->emotion_header_feeling = get_new_io_identifier (thisAgent, 'F');
-
   create_top_goal(thisAgent);
   if (thisAgent->sysparams[TRACE_CONTEXT_DECISIONS_SYSPARAM]) 
     {
@@ -1413,6 +1409,10 @@ void init_agent_memory(agent* thisAgent)
                  thisAgent->output_link_symbol,
                  thisAgent->io_header_output);
 
+  thisAgent->emotion_header = get_new_io_identifier (thisAgent, 'E');
+  thisAgent->emotion_header_appraisal = get_new_io_identifier (thisAgent, 'A');
+  thisAgent->emotion_header_feeling = get_new_io_identifier (thisAgent, 'F');
+
   thisAgent->emotion_header_link = add_input_wme (thisAgent, 
                                              thisAgent->top_state,
                                              thisAgent->emotion_symbol,
@@ -1436,7 +1436,7 @@ void init_agent_memory(agent* thisAgent)
   //   of the item.
   // All of these problems come back to things not being initialized properly, so we run the input and output
   //   phases here to force proper initialization (and have commented out SW's changes to
-  //   update_for_top_state_wme_addition).  This will cause somecallbacks to be triggered, but we don't think
+  //   update_for_top_state_wme_addition).  This will cause some callbacks to be triggered, but we don't think
   //   this is a problem for two reasons:
   //   1) these events are currently not exposed through SML, so no clients will see them
   //   2) even if these events were exposed, they are being fired during agent creation.  Since the agent

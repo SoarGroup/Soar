@@ -306,6 +306,14 @@ void do_input_cycle (agent* thisAgent) {
     thisAgent->io_header_input = NIL;       /* RBD added 3/25/95 */
     thisAgent->io_header_output = NIL;       /* KJC added 3/3/99 */
     thisAgent->io_header_link = NIL;  /* KJC added 3/3/99 */
+
+    release_io_symbol (thisAgent, thisAgent->emotion_header);
+    release_io_symbol (thisAgent, thisAgent->emotion_header_appraisal);
+    release_io_symbol (thisAgent, thisAgent->emotion_header_feeling);
+    thisAgent->emotion_header = NIL;
+    thisAgent->emotion_header_appraisal = NIL;
+    thisAgent->emotion_header_feeling = NIL;
+    thisAgent->emotion_header_link = NIL;
   } else if ((!thisAgent->prev_top_state) && thisAgent->top_state) {
     /* --- top state was just created --- */
     /* Create io structure on top state. */

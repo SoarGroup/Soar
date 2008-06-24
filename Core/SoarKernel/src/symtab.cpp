@@ -661,6 +661,7 @@ void release_predefined_symbols(agent* thisAgent) {
 
   release_helper( thisAgent, &( thisAgent->reward_link_symbol ) );
 
+  release_helper( thisAgent, &( thisAgent->emotion_symbol ) );
   release_helper( thisAgent, &( thisAgent->appraisal_link_symbol ) );
   release_helper( thisAgent, &( thisAgent->feeling_link_symbol ) );
 }
