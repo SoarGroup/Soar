@@ -264,6 +264,7 @@ void do_buffered_wm_changes (agent* thisAgent)
        */
       filtered_print_wme_add(thisAgent, w); /* kjh(CUSP-B2) begin */
     }
+
     wme_add_ref (w);
     free_cons (thisAgent, c);
     thisAgent->wme_addition_count++;
@@ -278,6 +279,9 @@ void do_buffered_wm_changes (agent* thisAgent)
       filtered_print_wme_remove (thisAgent, w);  /* kjh(CUSP-B2) begin */
     }
 
+	if ( wma_enabled( thisAgent ) )
+	  wma_deactivate_element( thisAgent, w );
+
     wme_remove_ref (thisAgent, w);
     free_cons (thisAgent, c);
     thisAgent->wme_removal_count++;
@@ -291,6 +295,10 @@ void deallocate_wme (agent* thisAgent, wme *w) {
   print_with_symbols (thisAgent, "\nDeallocate wme: ");
   print_wme (thisAgent, w);
 #endif
+
+  if ( wma_enabled( thisAgent ) )
+    wma_remove_decay_element( thisAgent, w );
+
   symbol_remove_ref (thisAgent, w->id);
   symbol_remove_ref (thisAgent, w->attr);
   symbol_remove_ref (thisAgent, w->value);

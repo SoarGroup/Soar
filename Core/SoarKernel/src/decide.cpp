@@ -54,6 +54,7 @@
 #include "exploration.h"
 #include "reinforcement_learning.h"
 #include "decision_manipulation.h"
+#include "wma.h"
 #include "misc.h"
 
 #include "assert.h"
@@ -2202,7 +2203,10 @@ Bool decide_context_slot (agent* thisAgent, Symbol *goal, slot *s, bool predict 
       w->preference = candidates;
       preference_add_ref (w->preference);
 
-      /* JC Adding an operator to working memory in the current state */
+      if ( wma_enabled( thisAgent ) )
+		  wma_update_new_wme( thisAgent, w, s->wma_num_changes );
+	  
+	  /* JC Adding an operator to working memory in the current state */
       add_wme_to_wm (thisAgent, w);
       
       for(temp = candidates; temp; temp = temp->next_candidate)

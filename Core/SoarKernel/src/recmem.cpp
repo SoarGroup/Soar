@@ -44,6 +44,7 @@
 #include "recmem.h"
 #include "tempmem.h"
 #include "reinforcement_learning.h"
+#include "wma.h"
 #include "xml.h"
 #include "utilities.h"
 #include "soar_TraceNames.h"
@@ -822,6 +823,9 @@ void retract_instantiation (agent* thisAgent, instantiation *inst) {
   
   trace_it = trace_firings_of_inst (thisAgent, inst);
 
+  if ( wma_enabled( thisAgent ) )
+    wma_update_wmes_in_retracted_inst( thisAgent, inst );
+
   /* --- retract any preferences that are in TM and aren't o-supported --- */
   pref = inst->preferences_generated;
 
@@ -1014,6 +1018,9 @@ void assert_new_preferences (agent* thisAgent)
             preference_add_ref (pref);
             preference_remove_ref (thisAgent, pref);
          }
+
+		 if ( wma_enabled( thisAgent ) )
+		    wma_activate_wmes_in_pref( thisAgent, pref );
       }
    }
    
@@ -1066,6 +1073,8 @@ void do_preference_phase (agent* thisAgent) {
 		  print_phase (thisAgent, "\n--- Preference Phase ---\n",0);
   }
 
+  if ( wma_enabled( thisAgent ) )
+	  wma_update_wmes_tested_in_prods( thisAgent );
 
   thisAgent->newly_created_instantiations = NIL;
 

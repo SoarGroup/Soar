@@ -349,6 +349,9 @@ extern bool wma_validate_precision( const long new_val );
 extern const char *wma_convert_precision( const long val );
 extern const long wma_convert_precision( const char *val );
 
+// shortcut for determining if WMA is enabled
+extern bool wma_enabled( agent *my_agent );
+
 //////////////////////////////////////////////////////////
 // Stat Functions
 //////////////////////////////////////////////////////////
@@ -425,17 +428,43 @@ extern void wma_deinit( agent *my_agent );
  */
 extern void wma_update_new_wme( agent *my_agent, wme *w, int num_refs );
 
-/*
-extern void activate_wmes_in_pref(agent *thisAgent, preference *pref);
-extern void activate_wmes_in_inst(agent *thisAgent, instantiation *inst);
-extern void decay_update_wmes_tested_in_prods(agent *thisAgent);
-extern void decay_update_wmes_in_retracted_inst(agent *thisAgent, instantiation *inst);
-extern int decay_activation_level(agent *thisAgent, wme *w);
-extern float decay_activation(agent *thisAgent, wme *w);
-extern void decay_move_and_remove_wmes(agent *thisAgent);
-extern void decay_deactivate_element(agent *thisAgent, wme *w);
-extern void decay_remove_element(agent *thisAgent, wme *w);
-extern void decay_print_most_activated_wmes(agent *thisAgent, int n);
-*/
+/**
+ * Removes a decay element from an existing WME so that 
+ * it is no longer activated.
+ */
+extern void wma_remove_decay_element( agent *my_agent, wme *w );
+
+/**
+ * Marks a decay element as being attached to a 
+ * wme struct that has been removed from working memory.
+ */
+extern void wma_deactivate_element( agent * my_agent, wme *w );
+
+/**
+ * Given a preference, this routine increments the
+ * reference count of all its WMEs (as necessary).
+ */
+extern void wma_activate_wmes_in_pref( agent *my_agent, preference *pref );
+
+/**
+ * Given a production instantiation, this routine
+ * increments the reference count of all the WMEs
+ * in its condition list.
+ */
+extern void wma_activate_wmes_in_inst( agent *my_agent, instantiation *inst );
+
+/**
+ * Given a production instantiation, 
+ * decrements the reference count of all
+ * the WMEs in its condition list.
+ */
+extern void wma_update_wmes_in_retracted_inst( agent *my_agent, instantiation *inst );
+
+/**
+ * Increments the reference count of all
+ * WMEs that have been referenced this
+ * cycle.
+ */
+extern void wma_update_wmes_tested_in_prods( agent *my_agent );
 
 #endif

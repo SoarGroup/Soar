@@ -21,6 +21,8 @@
 
 #include "wmem.h"
 #include "instantiations.h"
+#include "explain.h"
+#include "rete.h"
 #include "soar_rand.h"
 
 #include "misc.h"
@@ -300,7 +302,7 @@ bool wma_valid_parameter_value( agent *my_agent, const long param, const long ne
  **************************************************************************/
 bool wma_parameter_protected( agent *my_agent, const long param )
 {
-	return ( ( my_agent->wma_initialized ) && ( param >= WMA_PARAM_DECAY_RATE ) && ( param <= WMA_PARAM_PRECISION ) );
+	return ( ( my_agent->wma_initialized ) && ( param > WMA_PARAM_ACTIVATION ) && ( param < WMA_PARAMS ) );
 }
 
 bool wma_set_parameter( agent *my_agent, const char *name, double new_val )
@@ -914,13 +916,10 @@ void wma_init( agent *my_agent )
 	int i;
 
 	// initialize memory pool
-	if ( !my_agent->wma_first )
-		free_memory_pool( my_agent, &( my_agent->wma_decay_element_pool ) );
-	else
+	if ( my_agent->wma_first )	
 	{
 		my_agent->wma_first = false;
-
-		init_memory_pool( my_agent, &( my_agent->wma_decay_element_pool ), sizeof( wma_timelist_element ), "wma_decay" );
+		init_memory_pool( my_agent, &( my_agent->wma_decay_element_pool ), sizeof( wma_decay_element ), "wma_decay" );
 	}
 
 	// set up the timelist
@@ -1329,4 +1328,218 @@ void wma_update_new_wme( agent *my_agent, wme *w, int num_refs )
 	//Attach it to the wme
 	w->wma_decay_element = temp_el;
 	w->wma_has_decay_element = true;
+}
+
+/***************************************************************************
+ * Function     : wma_deactivate_element
+ * Author		: Andy Nuxoll?
+ * Notes		: This routine marks a decay element as being attached to a 
+ *                wme struct that has been removed from working memory.  
+ *                When the wme struct is actually deallocated then the 
+ *                wma_remove_decay_element() routine is called.
+ **************************************************************************/
+void wma_deactivate_element( agent * /*my_agent*/, wme *w )
+{
+	// Make sure this wme has an element and that element has not already been
+	// deactivated
+	if ( !w->wma_has_decay_element || w->wma_decay_element->just_removed )
+		return;	
+
+	// Remove the decay element from the decay timelist
+	if ( w->wma_decay_element->previous == NIL )
+	{
+		// if it is the first in a list, set that to the next
+		w->wma_decay_element->time_spot->first_decay_element = w->wma_decay_element->next;
+	}
+	else
+	{
+		// otherwise remove the decay_element from the list
+		w->wma_decay_element->previous->next = w->wma_decay_element->next;
+	}
+
+	if ( w->wma_decay_element->next != NIL )
+	{
+		// if the element has a next update prev -> next
+		w->wma_decay_element->next->previous = w->wma_decay_element->previous;		
+	}
+
+	w->wma_decay_element->next = NIL;
+	w->wma_decay_element->previous = NIL;
+	w->wma_decay_element->just_removed = true;
+}
+
+/***************************************************************************
+ * Function     : wma_remove_decay_element
+ * Author		: Andy Nuxoll?
+ * Notes		: This routine deallocates the decay element attached to a 
+ *                given WME.
+ **************************************************************************/
+void wma_remove_decay_element( agent *my_agent, wme *w )
+{
+	// Make sure this wme has an element and that element has not already been
+	// deactivated
+	if ( !w->wma_has_decay_element || w->wma_decay_element->just_removed )
+		return;
+
+	// Deactivate the wme first
+	wma_deactivate_element( my_agent, w );
+
+	free_with_pool( &( my_agent->wma_decay_element_pool ), w->wma_decay_element );
+
+	w->wma_has_decay_element = false;
+	w->wma_decay_element = NIL;
+}
+
+/***************************************************************************
+ * Function     : wma_activate_wmes_in_pref
+ * Author		: Andy Nuxoll?
+ * Notes		: This routine boosts the activation of all WMEs in a given 
+ *                preference
+ **************************************************************************/
+void wma_activate_wmes_in_pref( agent *my_agent, preference *pref )
+{
+	wme *w;
+
+	// I have the recreated code here instead of a seperate function so that
+	// all newly_created_insts are picked up.
+	if ( ( pref->type != REJECT_PREFERENCE_TYPE ) && 
+		 ( pref->type != PROHIBIT_PREFERENCE_TYPE ) &&
+		 ( pref->slot != NIL ) )
+	{
+		w = pref->slot->wmes;
+		while ( w )
+		{
+			// id and attr should already match so just compare the value
+			if ( w->value == pref->value )			
+				wma_decay_reference_wme( my_agent, w );
+			
+			w = w->next;
+		}
+	}
+}
+
+/***************************************************************************
+ * Function     : wma_activate_wmes_in_inst
+ * Author		: Andy Nuxoll?
+ * Notes		: This routine boosts the activation of all WMEs in a given 
+ *                production instantiation.
+ **************************************************************************/
+void wma_activate_wmes_in_inst( agent *my_agent, instantiation *inst )
+{
+	for ( condition *cond=inst->top_of_instantiated_conditions; cond!=NIL; cond=cond->next )
+		if ( cond->type==POSITIVE_CONDITION )
+			wma_decay_reference_wme( my_agent, cond->bt.wme_ ); 
+}
+
+/***************************************************************************
+ * Function     : wma_update_wmes_in_retracted_inst
+ * Author		: Andy Nuxoll?
+ * Notes		: This code is detecting production retractions that affect 
+ *                activated WMEs and decrementing their reference counts.
+ **************************************************************************/
+void wma_update_wmes_in_retracted_inst( agent *my_agent, instantiation *inst )
+{
+	wme *w;
+	preference *pref, *next;
+
+	if ( wma_get_parameter( my_agent, WMA_PARAM_PERSISTENCE, WMA_RETURN_LONG ) == WMA_PERSISTENCE_ON )
+	{
+		for ( pref=inst->preferences_generated; pref!=NIL; pref=next )
+		{
+			next = pref->inst_next;
+
+			if ( ( pref->type != REJECT_PREFERENCE_TYPE ) && 
+				 ( pref->type != PROHIBIT_PREFERENCE_TYPE ) &&
+				 ( pref->o_supported ) &&
+				 ( pref->slot != NIL ) )
+			{
+				// found an o-supported pref
+				w = pref->slot->wmes;
+
+				while ( w )
+				{
+					// id and attr should already match...
+					if( w->value == pref->value )
+					{
+						// we got a match with an existing wme
+						if ( w->wma_decay_element != NIL )
+						{							
+							w->wma_decay_element->num_references--;
+						}
+					}
+
+					w = w->next;
+				} 
+			}
+		}
+	}
+}
+
+/***************************************************************************
+ * Function     : wma_update_wmes_in_prods
+ * Author		: Andy Nuxoll?
+ * Notes		: This function scans all the match set changes and updates 
+ *                the reference count for affected WMEs.
+ **************************************************************************/
+void wma_update_wmes_tested_in_prods( agent *my_agent )
+{
+	ms_change *msc;
+	token temp_token, *t;
+	instantiation *inst;
+	condition *cond;
+
+	for ( msc=my_agent->ms_o_assertions; msc!=NIL; msc=msc->next )
+	{
+		temp_token.parent = msc->tok;
+		temp_token.w = msc->w;
+		t = &temp_token;
+
+		while ( t != my_agent->dummy_top_token )
+		{
+			if (t->w != NIL)
+				wma_decay_reference_wme( my_agent, t->w );
+
+			t = t->parent;
+		}
+	}
+
+	for ( msc=my_agent->ms_i_assertions; msc!=NIL; msc=msc->next )
+	{
+		temp_token.parent = msc->tok;
+		temp_token.w = msc->w;
+		t = &temp_token;
+
+		while ( t != my_agent->dummy_top_token )
+		{
+			if ( t->w != NIL )		
+				wma_decay_reference_wme( my_agent, t->w );
+
+			t = t->parent;
+		}
+	}
+
+	// If instantiations do not persistently activate WMEs then there is no need
+	// to decrement the reference count for retractions. :AMN: 12 Aug 2003
+	if ( wma_get_parameter( my_agent, WMA_PARAM_PERSISTENCE, WMA_RETURN_LONG ) == WMA_PERSISTENCE_ON )
+	{
+		for ( msc=my_agent->ms_retractions; msc!=NIL; msc=msc->next )
+		{
+			inst = msc->inst;
+			temp_token.w = msc->w;
+			t = &temp_token;
+
+			for ( cond=inst->top_of_instantiated_conditions; cond!=NIL; cond=cond->next )
+			{
+				// If a wme's existence caused an instance to cease to match (due to
+				// a negative condition in that instance) then we don't want to
+				// decrement the reference count on the WME because the WME's
+				// reference count was never incremented.
+				if ( cond->type==POSITIVE_CONDITION )
+				{
+					if ( cond->bt.wme_->wma_decay_element != NIL )
+						cond->bt.wme_->wma_decay_element->num_references--;
+				}
+			}
+		}
+	}
 }
