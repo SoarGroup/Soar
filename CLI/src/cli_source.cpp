@@ -19,10 +19,13 @@
 #include "sml_Events.h"
 #include "cli_CLIError.h"
 
+#include <algorithm>
+
 #include <assert.h>
 
 using namespace cli;
 using namespace sml;
+using namespace std;
 
 bool CommandLineInterface::ParseSource(std::vector<std::string>& argv) {
 	Options optionsData[] = {
