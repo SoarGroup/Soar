@@ -41,7 +41,6 @@ opts.AddOptions(
 	BoolOption('python', 'Build the Soar Python interface', pythonDefault), 
 	BoolOption('csharp', 'Build the Soar CSharp interface', 'no'), 
 	BoolOption('tcl', 'Build the Soar Tcl interface', 'no'), 
-	BoolOption('static', 'Use static linking when possible', 'no'), 
 	BoolOption('debug', 'Build with debugging symbols', 'yes'),
 	BoolOption('warnings', 'Build with warnings', 'yes'),
 	EnumOption('optimization', 'Build with optimization (May cause run-time errors!)', 'full', ['no','partial','full'], {}, 1),
@@ -106,13 +105,7 @@ if conf.env['java']:
 
 # check SWIG version if necessary
 # SWIG is necessary if one of the swig projects is going to be built
-if conf.env['static']:
-	conf.env['java'] = False
-	conf.env['python'] = False
-	conf.env['csharp'] = False
-	conf.env['tcl'] = False	
-	conf.env.Append(CPPFLAGS = ' -DSTATIC_LINKED')
-elif conf.env['java'] or conf.env['python'] or conf.env['csharp'] or conf.env['tcl']:
+if conf.env['java'] or conf.env['python'] or conf.env['csharp'] or conf.env['tcl']:
 	if not SoarSCons.CheckSWIG(conf.env):
 		explainSWIG = ""
 		if conf.env['java']:
