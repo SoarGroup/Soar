@@ -640,8 +640,8 @@ bool WorkingMemory::SynchronizeInputLink()
 bool WorkingMemory::SynchronizeOutputLink()
 {
 	// Not supported for direct connections
-	if (GetConnection()->IsDirectConnection())
-		return false ;
+	//if (GetConnection()->IsDirectConnection())
+	//	return false ;
 
 	AnalyzeXML incoming ;
 	ElementXML response ;
