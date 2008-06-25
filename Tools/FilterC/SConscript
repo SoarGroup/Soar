@@ -21,10 +21,6 @@ libpath = [ '../../Core/ClientSML',
 	    '../../Core/ElementXML', 
 	    ]
 
-if env['static']:
-	libadd.extend(['SoarKernelSML','CommandLineInterface', 'gSKI', 'SoarKernel'])
-	libpath.extend(['../../Core/KernelSML','../../Core/CLI','../../Core/gSKI','../../Core/SoarKernel',])
-	   
 env.Append(LIBS = libadd, LIBPATH = libpath)
 FilterC = env.Program('FilterC', glob.glob('*.cpp'))
 env.Install('#SoarLibrary/bin', FilterC)

@@ -36,7 +36,7 @@ int main( int argc, char** argv )
 	{
 		if ( std::string( argv[1] ) == "--listener" ) 
 		{
-			SimpleListener simpleListener( 3000, 12121 );
+			SimpleListener simpleListener( 600, 12121 );
 			return simpleListener.run();
 		}
 		if ( std::string( argv[1] ) == "--nopause" ) pause = false;

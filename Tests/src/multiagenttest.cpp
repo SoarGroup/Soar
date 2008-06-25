@@ -12,6 +12,7 @@ class MultiAgentTest : public CPPUNIT_NS::TestCase
 {
 	CPPUNIT_TEST_SUITE( MultiAgentTest );	
 
+	CPPUNIT_TEST( testOneAgentForSanity );
 	CPPUNIT_TEST( testTwoAgents );
 	CPPUNIT_TEST( testTenAgents );
 
@@ -25,6 +26,7 @@ public:
 	static void MyUpdateEventHandler( sml::smlUpdateEventId id, void* pUserData, sml::Kernel* pKernel, sml::smlRunFlags runFlags );
 
 protected:
+	void testOneAgentForSanity();
 	void testTwoAgents();
 	void testTenAgents();
 
@@ -171,6 +173,12 @@ void MultiAgentTest::initAll( sml::Kernel* pKernel )
 		//std::string initRes = pAgent->InitSoar() ;
 		//cout << initRes << endl ;
 	}
+}
+
+void MultiAgentTest::testOneAgentForSanity()
+{
+	numberAgents = 1;
+	doTest();
 }
 
 void MultiAgentTest::testTwoAgents()
