@@ -155,7 +155,7 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="c:\temp\sqlite\sqlite3.lib"
+				AdditionalDependencies="..\..\SoarLibrary\lib\sqlite3.lib"
 				OutputFile="..\..\SoarLibrary\bin\Soar$(ProjectName).dll"
 				LinkIncremental="1"
 				AdditionalLibraryDirectories=""
