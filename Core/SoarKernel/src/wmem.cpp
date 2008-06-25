@@ -38,6 +38,8 @@
 #include "xml.h"
 #include "soar_TraceNames.h"
 
+#include "wma.h"
+
 using namespace soar_TraceNames;
 
 /* ======================================================================
@@ -113,6 +115,10 @@ wme *make_wme (agent* thisAgent, Symbol *id, Symbol *attr, Symbol *value, Bool a
   w->gds_prev = NIL;
   w->gds_next = NIL;
 /* REW: end 09.15.96 */
+
+  w->wma_decay_element = NIL;
+  w->wma_has_decay_element = false;
+  w->wma_tc_value = -1;
 
   return w;
 }
@@ -258,6 +264,7 @@ void do_buffered_wm_changes (agent* thisAgent)
        */
       filtered_print_wme_add(thisAgent, w); /* kjh(CUSP-B2) begin */
     }
+
     wme_add_ref (w);
     free_cons (thisAgent, c);
     thisAgent->wme_addition_count++;
@@ -272,6 +279,9 @@ void do_buffered_wm_changes (agent* thisAgent)
       filtered_print_wme_remove (thisAgent, w);  /* kjh(CUSP-B2) begin */
     }
 
+	if ( wma_enabled( thisAgent ) )
+	  wma_deactivate_element( thisAgent, w );
+
     wme_remove_ref (thisAgent, w);
     free_cons (thisAgent, c);
     thisAgent->wme_removal_count++;
@@ -285,6 +295,10 @@ void deallocate_wme (agent* thisAgent, wme *w) {
   print_with_symbols (thisAgent, "\nDeallocate wme: ");
   print_wme (thisAgent, w);
 #endif
+
+  if ( wma_enabled( thisAgent ) )
+    wma_remove_decay_element( thisAgent, w );
+
   symbol_remove_ref (thisAgent, w->id);
   symbol_remove_ref (thisAgent, w->attr);
   symbol_remove_ref (thisAgent, w->value);

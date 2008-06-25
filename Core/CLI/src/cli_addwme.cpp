@@ -25,6 +25,8 @@
 #include "symtab.h"
 #include "decide.h"
 
+#include "wma.h"
+
 using namespace cli;
 using namespace sml;
 
@@ -139,6 +141,10 @@ bool CommandLineInterface::DoAddWME(const std::string& id, std::string attribute
 	symbol_remove_ref( m_pAgentSoar, pWme->attr );
 	symbol_remove_ref( m_pAgentSoar, pWme->value );
 	insert_at_head_of_dll( pWme->id->id.input_wmes, pWme, next, prev );
+
+	if ( wma_enabled( m_pAgentSoar ) )
+		wma_update_new_wme( m_pAgentSoar, pWme, 1 );
+
 	add_wme_to_wm( m_pAgentSoar, pWme );
 
 #ifndef NO_TOP_LEVEL_REFS

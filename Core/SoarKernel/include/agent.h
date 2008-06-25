@@ -34,6 +34,7 @@
 
 #include "exploration.h"
 #include "reinforcement_learning.h"
+#include "wma.h"
 
 #include "episodic_memory.h"
 #include "sqlite3.h"
@@ -55,9 +56,17 @@ typedef struct rl_stat_struct rl_stat;
 // select types
 typedef struct select_info_struct select_info;
 
+
 // EpMem types
 typedef struct epmem_parameter_struct epmem_parameter;
 typedef struct epmem_stat_struct epmem_stat;
+
+
+// WMA types
+typedef struct wma_parameter_struct wma_parameter;
+typedef struct wma_stat_struct wma_stat;
+typedef struct wma_timelist_element_struct wma_timelist_element;
+
 
 #ifdef __cplusplus
 extern "C"
@@ -215,6 +224,8 @@ typedef struct agent_struct {
   memory_pool         alpha_mem_pool;
   memory_pool         ms_change_pool;
   memory_pool         node_varnames_pool;
+
+  memory_pool		  wma_decay_element_pool;
   
   /* Dummy nodes and tokens */
   struct rete_node_struct * dummy_top_node;
@@ -785,6 +796,7 @@ kernel time and total_cpu_time greater than the derived total CPU time. REW */
   unsigned long predict_seed;
   std::string *prediction;
 
+
   // epmem
   epmem_parameter *epmem_params[ EPMEM_PARAMS ];
   epmem_stat *epmem_stats[ EPMEM_STATS ];
@@ -798,6 +810,22 @@ kernel time and total_cpu_time greater than the derived total CPU time. REW */
   std::vector<long> *epmem_range_maxes;
 
   unsigned long epmem_validation;
+
+
+  // wma
+  wma_parameter *wma_params[ WMA_PARAMS ];
+  wma_stat *wma_stats[ WMA_STATS ];
+
+  wma_timelist_element wma_timelist[ WMA_MAX_TIMELIST + 1 ];
+  wma_timelist_element *wma_timelist_current;
+  
+  double wma_power_array[ WMA_POWER_SIZE ];
+  int wma_quick_boost[ WMA_DECAY_HISTORY + 1 ];
+  bool wma_initialized;
+  bool wma_first;
+  tc_number wma_tc_counter;
+
+
 
   // JRV: Added to support XML management inside Soar
   // These handles should not be used directly, see xml.h

@@ -175,14 +175,23 @@ typedef byte wme_trace_type;   /* must be one of the above constants */
 /* NLD: Soar-RL trace information */
 #define TRACE_RL_SYSPARAM						 39
 
+
 /* NLD: EpMem enabled parameter */
 #define EPMEM_ENABLED							 40
 
 /* NLD: EpMem trace information */
 #define TRACE_EPMEM_SYSPARAM					 41
 
+
+/* NLD: WMA enabled parameter */
+#define WMA_ENABLED								 42
+
+/* NLD: WMA trace information */
+#define TRACE_WMA_SYSPARAM						 43
+
+
 /* --- Warning: if you add sysparams, be sure to update the next line! --- */
-#define HIGHEST_SYSPARAM_NUMBER                  41
+#define HIGHEST_SYSPARAM_NUMBER                  43
 
 /* -----------------------------------------
    Sysparams[] stores the parameters; set_sysparam()

@@ -88,6 +88,7 @@ typedef std::bitset<RUN_NUM_OPTIONS> RunBitset;
 typedef std::bitset<STATS_NUM_OPTIONS> StatsBitset;
 typedef std::bitset<WATCH_NUM_OPTIONS> WatchBitset;
 typedef std::bitset<WATCH_WMES_TYPE_NUM_OPTIONS> WatchWMEsTypeBitset;
+typedef std::bitset<WMA_NUM_OPTIONS> WMABitset;
 
 // For option parsing
 struct Options {
@@ -237,6 +238,7 @@ public:
 	bool ParseWarnings(std::vector<std::string>& argv);
 	bool ParseWatch(std::vector<std::string>& argv);
 	bool ParseWatchWMEs(std::vector<std::string>& argv);
+	bool ParseWMA(std::vector<std::string>& argv);
 
 	/*************************************************************
 	* @brief add-wme command
@@ -685,6 +687,14 @@ public:
 	* @brief watch-wmes command
 	*************************************************************/
 	bool DoWatchWMEs(const eWatchWMEsMode mode, WatchWMEsTypeBitset type, const std::string* pIdString = 0, const std::string* pAttributeString = 0, const std::string* pValueString = 0);
+
+	/*************************************************************
+	* @brief wma command
+	* @param pOp the wma switch to implement, pass 0 (null) for full parameter configuration
+	* @param pAttr the attribute to get/set/stats, pass 0 (null) only if no pOp (all config) or stats (full stats)
+	* @param pVal the value to set, pass 0 (null) only if no pOp (all config), get, or stats
+	*************************************************************/
+	bool DoWMA( const char pOp = 0, const std::string *pAttr = 0, const std::string *pVal = 0 );
 
 protected:
 

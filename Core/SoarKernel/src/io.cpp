@@ -57,6 +57,8 @@
 #include "soar_TraceNames.h"
 #include "utilities.h"
 
+#include "wma.h"
+
 #include <ctype.h>
 
 #include <assert.h>
@@ -206,6 +208,10 @@ wme *add_input_wme (agent* thisAgent, Symbol *id, Symbol *attr, Symbol *value) {
   /* --- go ahead and add the wme --- */
   w = make_wme (thisAgent, id, attr, value, FALSE);
   insert_at_head_of_dll (id->id.input_wmes, w, next, prev);
+
+  if ( wma_enabled( thisAgent ) )
+    wma_update_new_wme( thisAgent, w, 1 );
+
   add_wme_to_wm (thisAgent, w);
 
   //PrintDebugFormat("Added wme with timetag %d to id %c%d ",w->timetag,id->id.name_letter,id->id.name_number) ;

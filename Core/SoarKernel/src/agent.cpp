@@ -48,8 +48,12 @@
 #include "exploration.h"
 #include "reinforcement_learning.h"
 #include "decision_manipulation.h"
+
 #include "episodic_memory.h"
 #include "sqlite3.h"
+
+#include "wma.h"
+
 
 /* ================================================================== */
 
@@ -106,6 +110,9 @@ void init_soar_agent(agent* thisAgent) {
                     "%right[6,%dc]: %rsd[   ]   O: %co");
 
   reset_statistics (thisAgent);
+
+  // should come after reset_statistics
+  wma_init(thisAgent);
    
   /* RDF: For gSKI */
   init_agent_memory(thisAgent);
@@ -343,6 +350,7 @@ agent * create_soar_agent (char * agent_name) {                                 
   newAgent->epmem_params[ EPMEM_PARAM_TRIGGER ] = epmem_add_parameter( "trigger", EPMEM_TRIGGER_OUTPUT, &epmem_validate_trigger, &epmem_convert_trigger, &epmem_convert_trigger );
   newAgent->epmem_params[ EPMEM_PARAM_BALANCE ] = epmem_add_parameter( "balance", 0.5, &epmem_validate_balance );
 
+
   newAgent->epmem_stats[ EPMEM_STAT_TIME ] = epmem_add_stat( "time" );
   newAgent->epmem_stats[ EPMEM_STAT_MEM_USAGE ] = epmem_add_stat( "mem_usage" );
   newAgent->epmem_stats[ EPMEM_STAT_MEM_HIGH ] = epmem_add_stat( "mem_high" );
@@ -362,6 +370,22 @@ agent * create_soar_agent (char * agent_name) {                                 
   newAgent->epmem_range_maxes = new std::vector<long>();
 
   newAgent->epmem_validation = 0;
+
+
+  // wma initialization
+  newAgent->wma_params[ WMA_PARAM_ACTIVATION ] = wma_add_parameter( "activation", WMA_ACTIVATION_ON, &wma_validate_activation, &wma_convert_activation, &wma_convert_activation );
+  newAgent->wma_params[ WMA_PARAM_DECAY_RATE ] = wma_add_parameter( "decay-rate", -0.8, &wma_validate_decay );
+  newAgent->wma_params[ WMA_PARAM_CRITERIA ] = wma_add_parameter( "criteria", WMA_CRITERIA_O_AGENT_ARCH, &wma_validate_criteria, &wma_convert_criteria, &wma_convert_criteria );
+  newAgent->wma_params[ WMA_PARAM_FORGETTING ] = wma_add_parameter( "forgetting", WMA_FORGETTING_OFF, &wma_validate_forgetting, &wma_convert_forgetting, &wma_convert_forgetting );
+  newAgent->wma_params[ WMA_PARAM_I_SUPPORT ] = wma_add_parameter( "i-support", WMA_I_NONE, &wma_validate_i_support, &wma_convert_i_support, &wma_convert_i_support );
+  newAgent->wma_params[ WMA_PARAM_PERSISTENCE ] = wma_add_parameter( "persistence", WMA_PERSISTENCE_OFF, &wma_validate_persistence, &wma_convert_persistence, &wma_convert_persistence );
+  newAgent->wma_params[ WMA_PARAM_PRECISION ] = wma_add_parameter( "precision", WMA_PRECISION_LOW, &wma_validate_precision, &wma_convert_precision, &wma_convert_precision );
+
+  newAgent->wma_stats[ WMA_STAT_DUMMY ] = wma_add_stat( "dummy" );
+
+  newAgent->wma_initialized = false;
+  newAgent->wma_first = true;
+
 
   return newAgent;
 }
@@ -485,6 +509,10 @@ void destroy_soar_agent (agent * delete_agent)
   epmem_end( delete_agent );
   epmem_clean_parameters( delete_agent );
   epmem_clean_stats( delete_agent );
+
+  // cleanup wma
+  wma_clean_parameters( delete_agent );
+  wma_clean_stats( delete_agent );
 
   // JRV: Frees data used by XML generation
   xml_destroy( delete_agent );

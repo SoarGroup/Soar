@@ -81,3 +81,4 @@ char const* Commands::kCLIWaitSNC					= "waitsnc";
 char const* Commands::kCLIWarnings					= "warnings";
 char const* Commands::kCLIWatch						= "watch";
 char const* Commands::kCLIWatchWMEs					= "watch-wmes";
+char const* Commands::kCLIWMA						= "wma";

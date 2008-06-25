@@ -54,6 +54,7 @@
 #include "exploration.h"
 #include "reinforcement_learning.h"
 #include "decision_manipulation.h"
+#include "wma.h"
 #include "misc.h"
 
 #include "episodic_memory.h"
@@ -1256,6 +1257,7 @@ Symbol *create_new_impasse (agent* thisAgent, Bool isa_goal, Symbol *object, Sym
     add_impasse_wme (thisAgent, id, thisAgent->superstate_symbol, object, NIL);
 
 	id->id.reward_header = make_new_identifier( thisAgent, 'R', level );	
+
 	add_input_wme( thisAgent, id, thisAgent->reward_link_symbol, id->id.reward_header );	
 
 	id->id.epmem_header = make_new_identifier( thisAgent, 'E', level );	
@@ -1264,6 +1266,7 @@ Symbol *create_new_impasse (agent* thisAgent, Bool isa_goal, Symbol *object, Sym
 	id->id.epmem_cmd_wme = add_input_wme( thisAgent, id->id.epmem_header, thisAgent->epmem_cmd_symbol, id->id.epmem_cmd_header );	
 	id->id.epmem_result_header = make_new_identifier( thisAgent, 'R', level );
 	id->id.epmem_result_wme = add_input_wme( thisAgent, id->id.epmem_header, thisAgent->epmem_result_symbol, id->id.epmem_result_header );
+
   }
   else
     add_impasse_wme (thisAgent, id, thisAgent->object_symbol, object, NIL);
@@ -1713,6 +1716,9 @@ void decide_non_context_slot (agent* thisAgent, slot *s)
             }  /* end if thisAgent->OPERAND2_MODE ... */
                /* REW: end   09.15.96 */
    
+			if ( wma_enabled( thisAgent ) )
+				wma_update_new_wme( thisAgent, w, s->wma_num_changes );
+
             add_wme_to_wm (thisAgent, w);
          }
       }
@@ -2243,8 +2249,8 @@ Bool decide_context_slot (agent* thisAgent, Symbol *goal, slot *s, bool predict 
       insert_at_head_of_dll (s->wmes, w, next, prev);
       w->preference = candidates;
       preference_add_ref (w->preference);
-
-      /* JC Adding an operator to working memory in the current state */
+	  
+	  /* JC Adding an operator to working memory in the current state */
       add_wme_to_wm (thisAgent, w);
       
       for(temp = candidates; temp; temp = temp->next_candidate)

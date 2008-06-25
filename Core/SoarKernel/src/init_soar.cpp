@@ -48,7 +48,11 @@
 #include <time.h>
 
 #include "reinforcement_learning.h"
+
 #include "episodic_memory.h"
+
+#include "wma.h"
+
 
 #define INIT_FILE       "init.soar"
 
@@ -236,8 +240,13 @@ void init_sysparams (agent* thisAgent) {
   thisAgent->sysparams[USE_LONG_CHUNK_NAMES] = TRUE;  /* kjh(B14) */
   thisAgent->sysparams[TRACE_OPERAND2_REMOVALS_SYSPARAM] = FALSE;
   thisAgent->sysparams[TIMERS_ENABLED] = TRUE;
+
   
   thisAgent->sysparams[EPMEM_ENABLED] = EPMEM_LEARNING_ON;
+
+
+  thisAgent->sysparams[WMA_ENABLED] = WMA_ACTIVATION_ON;
+
 }
 
 /* ===================================================================
@@ -386,9 +395,12 @@ bool reinitialize_soar (agent* thisAgent) {
   /* kjh (CUSP-B4) end */
 
   rl_reset_data( thisAgent );
+  wma_deinit( thisAgent );
   clear_goal_stack (thisAgent);
   rl_reset_stats( thisAgent );
   epmem_reset_stats( thisAgent );
+  wma_reset_stats( thisAgent );
+
 
   if (thisAgent->operand2_mode == TRUE) {
      thisAgent->active_level = 0; /* Signal that everything should be retracted */
@@ -403,6 +415,9 @@ bool reinitialize_soar (agent* thisAgent) {
   bool ok = reset_id_counters (thisAgent);
   reset_wme_timetags (thisAgent);
   reset_statistics (thisAgent);
+
+  // should come after reset statistics
+  wma_init( thisAgent );
 
   // JRV: For XML generation
   xml_reset( thisAgent );
@@ -865,6 +880,9 @@ void do_one_top_level_phase (agent* thisAgent)
 		  epmem_consider_new_episode( thisAgent );
 		  epmem_respond_to_cmd( thisAgent );
 	  }
+
+	  if ( wma_enabled( thisAgent ) )
+		  wma_move_and_remove_wmes( thisAgent );
 
 	  // Count the outputs the agent generates (or times reaching max-nil-outputs without sending output)
 	  if (thisAgent->output_link_changed || ((++(thisAgent->run_last_output_count)) >= (unsigned long)thisAgent->sysparams[MAX_NIL_OUTPUT_CYCLES_SYSPARAM]))

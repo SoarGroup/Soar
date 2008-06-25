@@ -46,6 +46,8 @@
 #include "xml.h"
 #include "soar_TraceNames.h"
 
+#include "wma.h"
+
 #include <ctype.h>
 
 using namespace soar_TraceNames;
@@ -1320,6 +1322,9 @@ void chunk_instantiation (agent* thisAgent,
 	  stop_timer(thisAgent, &saved_start_tv, &thisAgent->chunking_cpu_time[thisAgent->current_phase]);
 #endif
 #endif
+
+	  if ( wma_enabled( thisAgent ) )
+		  wma_activate_wmes_in_inst( thisAgent, chunk_inst );
 	  
 	  return;
 	  
