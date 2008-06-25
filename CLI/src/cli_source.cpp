@@ -96,7 +96,20 @@ bool CommandLineInterface::DoSource(std::string filename) {
 
 	std::string::size_type separator1 = filename.rfind('/');
 	std::string::size_type separator2 = filename.rfind('\\');
-	std::string::size_type separator3 = max( separator1, separator2 );
+	std::string::size_type separator3 = std::string::npos;
+
+	if ( separator1 != std::string::npos && separator2 != std::string::npos )
+	{
+		separator3 = max( separator1, separator2 );
+	} 
+	else if ( separator1 == std::string::npos )
+	{
+		separator3 = separator2;
+	}
+	else if ( separator2 == std::string::npos )
+	{
+		separator3 = separator1;
+	}
 
 	if (separator3 != std::string::npos) {
 		++separator3;
