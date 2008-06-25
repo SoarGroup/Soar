@@ -966,7 +966,7 @@ void wma_init( agent *my_agent )
 		unsigned long avg;
 
 		// Loop over all possible history counts
-		for( el.history_count=1; el.history_count<WMA_DECAY_HISTORY; el.history_count++ )
+		for( el.history_count=1; el.history_count<=WMA_DECAY_HISTORY; el.history_count++ )
 		{
 			avg = 0;
 
@@ -1631,7 +1631,7 @@ void wma_add_refs_to_history( agent *my_agent, wma_decay_element_t *el, long num
 		move_by = ( el->history_count + num_refs - WMA_DECAY_HISTORY );
 
 		for ( i=0; i<( WMA_DECAY_HISTORY - num_refs ); i++ )
-			el->boost_history[i] = el->boost_history[ i + move_by ];
+			el->boost_history[ i ] = el->boost_history[ i + move_by ];
 
 		for( i=( WMA_DECAY_HISTORY - num_refs ); i<WMA_DECAY_HISTORY; i++)
 			el->boost_history[ i ] = ( my_agent->d_cycle_count - 1 );
@@ -1767,7 +1767,7 @@ void wma_reposition_wme( agent *my_agent, wma_decay_element_t *cur_decay_el, lon
 	// Insert the current decay element in its new location
 	cur_decay_el->next = my_agent->wma_timelist[ decay_spot ].first_decay_element;
 	cur_decay_el->previous = NIL;
-	cur_decay_el->time_spot = &( my_agent->wma_timelist[decay_spot] );
+	cur_decay_el->time_spot = &( my_agent->wma_timelist[ decay_spot ] );
 
 	// set up next element's previous pointer
 	if( cur_decay_el->next != NIL )

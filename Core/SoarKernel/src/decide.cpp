@@ -57,7 +57,10 @@
 #include "wma.h"
 #include "misc.h"
 
+#include "episodic_memory.h"
+
 #include "assert.h"
+
 
 using namespace soar_TraceNames;
 
@@ -1254,7 +1257,16 @@ Symbol *create_new_impasse (agent* thisAgent, Bool isa_goal, Symbol *object, Sym
     add_impasse_wme (thisAgent, id, thisAgent->superstate_symbol, object, NIL);
 
 	id->id.reward_header = make_new_identifier( thisAgent, 'R', level );	
+
 	add_input_wme( thisAgent, id, thisAgent->reward_link_symbol, id->id.reward_header );	
+
+	id->id.epmem_header = make_new_identifier( thisAgent, 'E', level );	
+	id->id.epmem_wme = add_input_wme( thisAgent, id, thisAgent->epmem_symbol, id->id.epmem_header );
+	id->id.epmem_cmd_header = make_new_identifier( thisAgent, 'C', level );
+	id->id.epmem_cmd_wme = add_input_wme( thisAgent, id->id.epmem_header, thisAgent->epmem_cmd_symbol, id->id.epmem_cmd_header );	
+	id->id.epmem_result_header = make_new_identifier( thisAgent, 'R', level );
+	id->id.epmem_result_wme = add_input_wme( thisAgent, id->id.epmem_header, thisAgent->epmem_result_symbol, id->id.epmem_result_header );
+
   }
   else
     add_impasse_wme (thisAgent, id, thisAgent->object_symbol, object, NIL);
@@ -1877,6 +1889,8 @@ void remove_existing_context_and_descendents (agent* thisAgent, Symbol *goal) {
 	rl_tabulate_reward_value_for_goal( thisAgent, goal );
 	rl_perform_update( thisAgent, 0, goal ); // this update only sees reward - there is no next state
   }
+
+  epmem_reset( thisAgent, goal );
   
   remove_wme_list_from_wm (thisAgent, goal->id.impasse_wmes);
   goal->id.impasse_wmes = NIL;
@@ -1926,6 +1940,13 @@ void remove_existing_context_and_descendents (agent* thisAgent, Symbol *goal) {
   symbol_remove_ref( thisAgent, goal->id.reward_header );
   free_memory( thisAgent, goal->id.rl_info, MISCELLANEOUS_MEM_USAGE );
 
+  delete goal->id.epmem_info->cue_wmes;
+  delete goal->id.epmem_info->epmem_wmes;    
+  symbol_remove_ref( thisAgent, goal->id.epmem_cmd_header );  
+  symbol_remove_ref( thisAgent, goal->id.epmem_result_header );  
+  symbol_remove_ref( thisAgent, goal->id.epmem_header );
+  free_memory( thisAgent, goal->id.epmem_info, MISCELLANEOUS_MEM_USAGE );
+
   /* REW: BUG
    * Tentative assertions can exist for removed goals.  However, it looks
    * like the removal forces a tentative retraction, which then leads to
@@ -1952,7 +1973,7 @@ void remove_existing_context_and_descendents (agent* thisAgent, Symbol *goal) {
 void create_new_context (agent* thisAgent, Symbol *attr_of_impasse, byte impasse_type) 
 {
   Symbol *id;
-  
+    
   if (thisAgent->bottom_goal) 
   {
      /* Creating a sub-goal (or substate) */
@@ -2006,6 +2027,29 @@ void create_new_context (agent* thisAgent, Symbol *attr_of_impasse, byte impasse
   id->id.rl_info->num_prev_op_rl_rules = 0;
   id->id.rl_info->step = 0;  
   id->id.rl_info->impasse_type = NONE_IMPASSE_TYPE;
+
+  id->id.epmem_info = static_cast<epmem_data *>( allocate_memory( thisAgent, sizeof( epmem_data ), MISCELLANEOUS_MEM_USAGE ) );
+  id->id.epmem_info->last_ol_time = 0;
+  id->id.epmem_info->last_ol_count = 0;
+  id->id.epmem_info->last_cmd_time = 0;
+  id->id.epmem_info->last_cmd_count = 0;
+  id->id.epmem_info->cue_wmes = new std::list<wme *>();
+  
+  // mark the top state
+  if ( thisAgent->top_goal != id )
+	id->id.epmem_info->ss_wme = epmem_get_aug_of_id( thisAgent, id, "superstate", NULL );
+  else
+	  id->id.epmem_info->ss_wme = NULL;
+  
+  id->id.epmem_info->last_memory = EPMEM_MEMID_NONE;  
+  id->id.epmem_info->epmem_wmes = new std::stack<wme *>(); 
+
+  if ( id->id.epmem_header != NIL )
+  {	  
+	  id->id.epmem_wme->preference = epmem_make_fake_preference( thisAgent, id, id->id.epmem_wme );	  
+	  id->id.epmem_cmd_wme->preference = epmem_make_fake_preference( thisAgent, id, id->id.epmem_cmd_wme );
+	  id->id.epmem_result_wme->preference = epmem_make_fake_preference( thisAgent, id, id->id.epmem_result_wme );
+  }
 
   /* --- invoke callback routine --- */
   soar_invoke_callbacks(thisAgent, 
@@ -2549,14 +2593,16 @@ void add_wme_to_gds(agent* agentPtr, goal_dependency_set* gds, wme* wme_to_add)
    insert_at_head_of_dll(gds->wmes_in_gds, wme_to_add, gds_next, gds_prev);
                 
    if (agentPtr->soar_verbose_flag || agentPtr->sysparams[TRACE_WM_CHANGES_SYSPARAM]) 
-   {                    
+   {
 	   print(agentPtr, "Adding to GDS for S%ld: ", wme_to_add->gds->goal->id.name_number);    
 	   print(agentPtr, " WME: "); 
 	   char buf[256];
+
 	   SNPRINTF(buf, 254, "Adding to GDS for S%ld: ", wme_to_add->gds->goal->id.name_number);
 
 	   xml_begin_tag(agentPtr, kTagVerbose);
 	   xml_att_val(agentPtr, kTypeString, buf);
+
 	   print_wme(agentPtr, wme_to_add);
 	   xml_end_tag(agentPtr, kTagVerbose);               
    }

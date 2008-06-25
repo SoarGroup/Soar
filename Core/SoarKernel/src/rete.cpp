@@ -105,7 +105,10 @@
 #include "xml.h"
 #include "soar_TraceNames.h"
 
+
+#include "episodic_memory.h"
 #include "reinforcement_learning.h"
+
 
 /* ----------- basic functionality switches ----------- */
 
@@ -1559,6 +1562,9 @@ void add_wme_to_rete (agent* thisAgent, wme *w) {
     add_wme_to_aht (thisAgent, thisAgent->alpha_hash_tables[6],  xor_op( 0,ha,hv), w);
     add_wme_to_aht (thisAgent, thisAgent->alpha_hash_tables[7],  xor_op(hi,ha,hv), w);
   }
+
+  w->epmem_id = NULL;
+  w->epmem_valid = NULL;
 }
 
 /* --- Removes a WME from the Rete. --- */
@@ -1567,6 +1573,11 @@ void remove_wme_from_rete (agent* thisAgent, wme *w) {
   alpha_mem *am;
   rete_node *node, *next, *child;
   token *tok, *left;
+
+  if ( ( w->epmem_id != NULL ) &&
+	   ( ( epmem_get_parameter( thisAgent, EPMEM_PARAM_INDEXING, EPMEM_RETURN_LONG ) == EPMEM_INDEXING_BIGTREE_RANGE ) ||
+         ( epmem_get_parameter( thisAgent, EPMEM_PARAM_INDEXING, EPMEM_RETURN_LONG ) == EPMEM_INDEXING_BIGTREE_RIT ) ) )
+	  (*thisAgent->epmem_range_removals)[ w->epmem_id ] = true;
   
   /* --- remove w from all_wmes_in_rete --- */
   remove_from_dll (thisAgent->all_wmes_in_rete, w, rete_next, rete_prev);

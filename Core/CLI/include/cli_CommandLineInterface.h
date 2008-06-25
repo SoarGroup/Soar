@@ -76,6 +76,7 @@ typedef std::list<soarxml::ElementXML*> ElementXMLList;
 typedef ElementXMLList::iterator ElementXMLListIter;
 
 // Define bitsets for various commands
+typedef std::bitset<EPMEM_NUM_OPTIONS> EpMemBitset;
 typedef std::bitset<EXCISE_NUM_OPTIONS> ExciseBitset;
 typedef std::bitset<INDIFFERENT_NUM_OPTIONS> IndifferentBitset;
 typedef std::bitset<LEARN_NUM_OPTIONS> LearnBitset;
@@ -182,6 +183,7 @@ public:
 	bool ParseEcho(std::vector<std::string>& argv);
 	bool ParseEchoCommands(std::vector<std::string>& argv) ;
 	bool ParseEditProduction(std::vector<std::string>& argv);
+	bool ParseEpMem(std::vector<std::string>& argv);
 	bool ParseExcise(std::vector<std::string>& argv);
 	bool ParseExplainBacktraces(std::vector<std::string>& argv);
 	bool ParseFiringCounts(std::vector<std::string>& argv);
@@ -320,6 +322,14 @@ public:
 	* @param productionName Production to edit
 	*************************************************************/
 	bool DoEditProduction(std::string productionName);
+	
+	/*************************************************************
+	* @brief epmem command
+	* @param pOp the epmem switch to implement, pass 0 (null) for full parameter configuration
+	* @param pAttr the attribute to get/set/stats, pass 0 (null) only if no pOp (all config) or stats (full stats)
+	* @param pVal the value to set, pass 0 (null) only if no pOp (all config), get, or stats
+	*************************************************************/
+	bool DoEpMem(const char pOp = 0, const std::string *pAttr = 0, const std::string *pVal = 0);
 
 	/*************************************************************
 	* @brief excise command

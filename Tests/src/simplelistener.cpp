@@ -68,7 +68,11 @@ int SimpleListener::run()
 	long pauseMsecsTotal = pauseSecs*1000+pauseMsecs;
 
 	// If we're running in this thread we need to wake up more rapidly.
-	if (useCurrentThread) { life *= 10 ; pauseMsecsTotal /= 10 ; }
+	if (useCurrentThread) 
+	{ 
+		life *= 10 ; 
+		pauseMsecsTotal /= 10 ; 
+	}
 
 	// How often we check to see if the list of connections has changed.
 	int checkConnections = 500 / pauseMsecsTotal ;

@@ -21,7 +21,6 @@
 
 #include <stdlib.h>
 #include <map>
-#include <vector>
 
 #include "agent.h"
 #include "kernel.h"
@@ -49,7 +48,12 @@
 #include "exploration.h"
 #include "reinforcement_learning.h"
 #include "decision_manipulation.h"
+
+#include "episodic_memory.h"
+#include "sqlite3.h"
+
 #include "wma.h"
+
 
 /* ================================================================== */
 
@@ -334,6 +338,39 @@ agent * create_soar_agent (char * agent_name) {                                 
   // predict initialization
   newAgent->prediction = new std::string();
   predict_init( newAgent );
+  
+  // epmem initialization
+  newAgent->epmem_params[ EPMEM_PARAM_LEARNING ] = epmem_add_parameter( "learning", EPMEM_LEARNING_ON, &epmem_validate_learning, &epmem_convert_learning, &epmem_convert_learning );
+  newAgent->epmem_params[ EPMEM_PARAM_DB ] = epmem_add_parameter( "database", EPMEM_DB_FILE, &epmem_validate_database, &epmem_convert_database, &epmem_convert_database );
+  newAgent->epmem_params[ EPMEM_PARAM_PATH ] = epmem_add_parameter( "path", "", &epmem_validate_path );
+    
+  newAgent->epmem_params[ EPMEM_PARAM_INDEXING ] = epmem_add_parameter( "indexing", EPMEM_INDEXING_BIGTREE_RIT, &epmem_validate_indexing, &epmem_convert_indexing, &epmem_convert_indexing );
+  newAgent->epmem_params[ EPMEM_PARAM_PROVENANCE ] = epmem_add_parameter( "provenance", EPMEM_PROVENANCE_OFF, &epmem_validate_provenance, &epmem_convert_provenance, &epmem_convert_provenance );
+    
+  newAgent->epmem_params[ EPMEM_PARAM_TRIGGER ] = epmem_add_parameter( "trigger", EPMEM_TRIGGER_OUTPUT, &epmem_validate_trigger, &epmem_convert_trigger, &epmem_convert_trigger );
+  newAgent->epmem_params[ EPMEM_PARAM_BALANCE ] = epmem_add_parameter( "balance", 0.5, &epmem_validate_balance );
+
+
+  newAgent->epmem_stats[ EPMEM_STAT_TIME ] = epmem_add_stat( "time" );
+  newAgent->epmem_stats[ EPMEM_STAT_MEM_USAGE ] = epmem_add_stat( "mem_usage" );
+  newAgent->epmem_stats[ EPMEM_STAT_MEM_HIGH ] = epmem_add_stat( "mem_high" );
+
+  newAgent->epmem_stats[ EPMEM_STAT_RIT_OFFSET ] = epmem_add_stat( "rit_offset" );
+  newAgent->epmem_stats[ EPMEM_STAT_RIT_LEFTROOT ] = epmem_add_stat( "rit_left_root" );
+  newAgent->epmem_stats[ EPMEM_STAT_RIT_RIGHTROOT ] = epmem_add_stat( "rit_right_root" );
+  newAgent->epmem_stats[ EPMEM_STAT_RIT_MINSTEP ] = epmem_add_stat( "rit_min_step" );
+    
+  newAgent->epmem_db = NULL;
+  newAgent->epmem_db_status = -1;
+  for ( int i=0; i<EPMEM_MAX_STATEMENTS; i++ )
+  	newAgent->epmem_statements[ i ] = NULL;
+
+  newAgent->epmem_range_removals = new std::map<unsigned long, bool>();
+  newAgent->epmem_range_mins = new std::vector<long>();
+  newAgent->epmem_range_maxes = new std::vector<long>();
+
+  newAgent->epmem_validation = 0;
+
 
   // wma initialization
   newAgent->wma_params[ WMA_PARAM_ACTIVATION ] = wma_add_parameter( "activation", WMA_ACTIVATION_ON, &wma_validate_activation, &wma_convert_activation, &wma_convert_activation );
@@ -348,6 +385,7 @@ agent * create_soar_agent (char * agent_name) {                                 
 
   newAgent->wma_initialized = false;
   newAgent->wma_first = true;
+
 
   return newAgent;
 }
@@ -456,13 +494,21 @@ void destroy_soar_agent (agent * delete_agent)
   // cleanup Soar-RL
   rl_clean_parameters( delete_agent );
   rl_clean_stats( delete_agent );
-
+  
   // cleanup select
   select_init( delete_agent );
   delete delete_agent->select;
 
   // cleanup predict
   delete delete_agent->prediction;
+  
+  // cleanup EpMem
+  delete delete_agent->epmem_range_removals;
+  delete delete_agent->epmem_range_mins;
+  delete delete_agent->epmem_range_maxes;
+  epmem_end( delete_agent );
+  epmem_clean_parameters( delete_agent );
+  epmem_clean_stats( delete_agent );
 
   // cleanup wma
   wma_clean_parameters( delete_agent );

@@ -378,6 +378,7 @@ char const* const sml_Names::kParamWatchLearning					= "watchlearning";
 char const* const sml_Names::kParamWatchBacktracing					= "watchbacktracing";
 char const* const sml_Names::kParamWatchIndifferentSelection		= "watchindifferentselection";
 char const* const sml_Names::kParamWatchRL							= "watchrl";
+char const* const sml_Names::kParamWatchEpMem						= "watchepmem";
 
 // Values (these are not case sensitive unlike the rest)
 char const* const sml_Names::kTrue	= "true" ;

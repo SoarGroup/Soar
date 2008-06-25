@@ -57,6 +57,8 @@ class ClientSMLTest : public CPPUNIT_NS::TestCase
 	CPPUNIT_TEST( testOSupportCopyDestroy );			// see bugzilla bug 515
 	CPPUNIT_TEST( testOSupportCopyDestroyCircular );	// see bugzilla bug 515
 	CPPUNIT_TEST( testOSupportCopyDestroyCircularParent );	// see bugzilla bug 515
+	CPPUNIT_TEST( testEmbeddedDirectOutputLinkExists );	// see bugzilla bug 1025
+	CPPUNIT_TEST( testEmbeddedOutputLinkExists );		// see bugzilla bug 1025
 
 	CPPUNIT_TEST_SUITE_END();
 
@@ -86,6 +88,8 @@ protected:
 	void testOSupportCopyDestroy();
 	void testOSupportCopyDestroyCircularParent();
 	void testOSupportCopyDestroyCircular();
+	void testEmbeddedDirectOutputLinkExists();
+	void testEmbeddedOutputLinkExists();
 
 private:
 	void createKernelAndAgents( const KernelBitset& options, int port = 12121 );
@@ -287,6 +291,45 @@ void ClientSMLTest::testEmbedded()
 	createKernelAndAgents( options );
 
 	doFullTest();
+}
+
+void ClientSMLTest::testEmbeddedDirectOutputLinkExists()
+{
+	numberAgents = 1;
+	KernelBitset options(0);
+	options.set( EMBEDDED );
+	options.set( USE_CLIENT_THREAD );
+	options.set( FULLY_OPTIMIZED );
+	options.set( AUTO_COMMIT_ENABLED );
+	createKernelAndAgents( options );
+
+	for ( int agentCounter = 0 ; agentCounter < numberAgents ; ++agentCounter )
+	{
+		sml::Agent* pAgent = pKernel->GetAgent( getAgentName( agentCounter ).c_str() ) ;
+		CPPUNIT_ASSERT( pAgent != NULL );
+
+		CPPUNIT_ASSERT( pAgent->SynchronizeOutputLink() );
+		CPPUNIT_ASSERT( pAgent->GetOutputLink() );
+	}	
+}
+
+void ClientSMLTest::testEmbeddedOutputLinkExists()
+{
+	numberAgents = 1;
+	KernelBitset options(0);
+	options.set( EMBEDDED );
+	options.set( USE_CLIENT_THREAD );
+	options.set( AUTO_COMMIT_ENABLED );
+	createKernelAndAgents( options );
+
+	for ( int agentCounter = 0 ; agentCounter < numberAgents ; ++agentCounter )
+	{
+		sml::Agent* pAgent = pKernel->GetAgent( getAgentName( agentCounter ).c_str() ) ;
+		CPPUNIT_ASSERT( pAgent != NULL );
+
+		CPPUNIT_ASSERT( pAgent->SynchronizeOutputLink() );
+		CPPUNIT_ASSERT( pAgent->GetOutputLink() );
+	}	
 }
 
 void ClientSMLTest::testNewThread()

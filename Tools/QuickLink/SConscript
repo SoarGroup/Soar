@@ -24,10 +24,6 @@ libpath = [ '../../Core/ClientSML',
 	    '../../Core/ElementXML', 
 	    ]
 
-if env['static']:
-	libadd.extend(['SoarKernelSML','CommandLineInterface', 'gSKI', 'SoarKernel'])
-	libpath.extend(['../../Core/KernelSML','../../Core/CLI','../../Core/gSKI','../../Core/SoarKernel',])
-
 env.Append(LIBS = libadd, LIBPATH = libpath)
 QuickLink = env.Program('QuickLink', glob.glob('src/*.cpp'))
 env.Install('#SoarLibrary/bin', QuickLink)

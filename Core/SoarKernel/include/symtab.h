@@ -228,6 +228,14 @@ typedef struct identifier_struct {
   union symbol_union *reward_header;		// pointer to reward_link
   struct rl_data_struct *rl_info;			// various Soar-RL information
 
+  union symbol_union *epmem_header;
+  union symbol_union *epmem_cmd_header;
+  union symbol_union *epmem_result_header;  
+  struct wme_struct *epmem_wme;
+  struct wme_struct *epmem_cmd_wme;
+  struct wme_struct *epmem_result_wme;
+  struct epmem_data_struct *epmem_info;		// various EpMem information
+
   /* REW: begin 09.15.96 */
   struct gds_struct *gds;    /* Pointer to a goal's dependency set */
   /* REW: begin 09.15.96 */

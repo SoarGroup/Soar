@@ -25,6 +25,7 @@ namespace cli {
 		static char const* kCLIEcho;
 		static char const* kCLIEchoCommands;
 		static char const* kCLIEditProduction;
+		static char const* kCLIEpMem;
 		static char const* kCLIExcise;
 		static char const* kCLIExplainBacktraces;
 		static char const* kCLIFiringCounts;

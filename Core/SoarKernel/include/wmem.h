@@ -148,9 +148,14 @@ typedef struct wme_struct {
   struct wme_struct *gds_next, *gds_prev; /* used for dll of wmes in gds */
   /* REW: end   09.15.96 */
 
+
+  unsigned long epmem_id;
+  unsigned long epmem_valid;
+
   wma_decay_element_t *wma_decay_element;
   bool wma_has_decay_element;
   tc_number wma_tc_value;
+
 } wme;
 
 #ifdef USE_MACROS

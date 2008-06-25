@@ -36,6 +36,9 @@
 #include "reinforcement_learning.h"
 #include "wma.h"
 
+#include "episodic_memory.h"
+#include "sqlite3.h"
+
 #include <string>
 #include <map>
 
@@ -53,10 +56,17 @@ typedef struct rl_stat_struct rl_stat;
 // select types
 typedef struct select_info_struct select_info;
 
+
+// EpMem types
+typedef struct epmem_parameter_struct epmem_parameter;
+typedef struct epmem_stat_struct epmem_stat;
+
+
 // WMA types
 typedef struct wma_parameter_struct wma_parameter;
 typedef struct wma_stat_struct wma_stat;
 typedef struct wma_timelist_element_struct wma_timelist_element;
+
 
 #ifdef __cplusplus
 extern "C"
@@ -288,6 +298,23 @@ typedef struct agent_struct {
   /* RPM 9/06 end */
 
   Symbol            * reward_link_symbol;
+
+  Symbol            * epmem_symbol;
+  Symbol            * epmem_cmd_symbol;
+  Symbol            * epmem_result_symbol;
+
+  Symbol            * epmem_retrieved_symbol;
+  Symbol            * epmem_status_symbol;
+  Symbol            * epmem_match_score_symbol;
+  Symbol            * epmem_cue_size_symbol;
+  Symbol            * epmem_normalized_match_score_symbol;
+  Symbol            * epmem_match_cardinality_symbol;
+  Symbol            * epmem_memory_id_symbol;
+  Symbol            * epmem_present_id_symbol;
+  Symbol            * epmem_no_memory_symbol;
+  Symbol            * epmem_success_symbol;
+  Symbol            * epmem_failure_symbol;
+  Symbol            * epmem_bad_cmd_symbol;  
   
   /* ----------------------- Symbol table stuff -------------------------- */
 
@@ -769,6 +796,22 @@ kernel time and total_cpu_time greater than the derived total CPU time. REW */
   unsigned long predict_seed;
   std::string *prediction;
 
+
+  // epmem
+  epmem_parameter *epmem_params[ EPMEM_PARAMS ];
+  epmem_stat *epmem_stats[ EPMEM_STATS ];
+  
+  sqlite3 *epmem_db;
+  int epmem_db_status;
+  sqlite3_stmt *epmem_statements[ EPMEM_MAX_STATEMENTS ];  
+  
+  std::map<unsigned long, bool> *epmem_range_removals;
+  std::vector<long> *epmem_range_mins;
+  std::vector<long> *epmem_range_maxes;
+
+  unsigned long epmem_validation;
+
+
   // wma
   wma_parameter *wma_params[ WMA_PARAMS ];
   wma_stat *wma_stats[ WMA_STATS ];
@@ -777,10 +820,11 @@ kernel time and total_cpu_time greater than the derived total CPU time. REW */
   wma_timelist_element *wma_timelist_current;
   
   double wma_power_array[ WMA_POWER_SIZE ];
-  int wma_quick_boost[ WMA_DECAY_HISTORY ];
+  int wma_quick_boost[ WMA_DECAY_HISTORY + 1 ];
   bool wma_initialized;
   bool wma_first;
   tc_number wma_tc_counter;
+
 
 
   // JRV: Added to support XML management inside Soar
