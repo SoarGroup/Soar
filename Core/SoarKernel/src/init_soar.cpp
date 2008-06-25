@@ -864,6 +864,9 @@ void do_one_top_level_phase (agent* thisAgent)
 
 	  do_output_cycle(thisAgent);
 
+	  if ( wma_enabled( thisAgent ) )
+		  wma_move_and_remove_wmes( thisAgent );
+
 	  // Count the outputs the agent generates (or times reaching max-nil-outputs without sending output)
 	  if (thisAgent->output_link_changed || ((++(thisAgent->run_last_output_count)) >= (unsigned long)thisAgent->sysparams[MAX_NIL_OUTPUT_CYCLES_SYSPARAM]))
 	  {

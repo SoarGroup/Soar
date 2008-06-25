@@ -27,8 +27,9 @@ bool CommandLineInterface::ParseWMA( std::vector<std::string>& argv )
 	Options optionsData[] = 
 	{
 		{'g', "get",	0},
+		{'p', "print",  0},
 		{'s', "set",	0},
-		{'S', "stats",	0},
+		{'S', "stats",	0},		
 		{0, 0, 0} // null
 	};
 	WMABitset options(0);
@@ -44,7 +45,11 @@ bool CommandLineInterface::ParseWMA( std::vector<std::string>& argv )
 		{		
 			case 'g':
 				options.set( WMA_GET );
-				break;		
+				break;
+
+			case 'p':				
+				wma_print_activated_wmes( m_pAgentSoar, WMA_MAX_TIMELIST );
+				return true;
 			
 			case 's':
 				options.set( WMA_SET );

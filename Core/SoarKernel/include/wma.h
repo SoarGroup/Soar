@@ -130,7 +130,7 @@ typedef struct wme_struct wme;
  * is returned.
  */
 #define WMA_ACTIVATION_NONE_INT -1
-#define WMA_ACTIVATION_NONE_FLOAT 99999999.9999
+#define WMA_ACTIVATION_NONE_DOUBLE 99999999.9999
 
 /**
  * If a WME's activation falls below this level it will be 
@@ -466,5 +466,20 @@ extern void wma_update_wmes_in_retracted_inst( agent *my_agent, instantiation *i
  * cycle.
  */
 extern void wma_update_wmes_tested_in_prods( agent *my_agent );
+
+/**
+ * Retrieve wme activation exact/approximate
+ */
+extern double wma_get_wme_activation( agent *my_agent, wme *w );
+extern long wma_get_wme_activation_level( agent *my_agent, wme *w );
+
+/**
+ * This routine performs WME activation
+ * and forgetting at the end of each cycle.
+ */
+extern void wma_move_and_remove_wmes( agent *my_agent );
+
+// quicky printer
+extern void wma_print_activated_wmes( agent *my_agent, long n );
 
 #endif
