@@ -923,7 +923,7 @@ void wma_init( agent *my_agent )
 	if ( my_agent->wma_first )	
 	{
 		my_agent->wma_first = false;
-		init_memory_pool( my_agent, &( my_agent->wma_decay_element_pool ), sizeof( wma_decay_element ), "wma_decay" );
+		init_memory_pool( my_agent, &( my_agent->wma_decay_element_pool ), sizeof( wma_decay_element_t ), "wma_decay" );
 	}
 
 	// set up the timelist
@@ -954,7 +954,7 @@ void wma_init( agent *my_agent )
 		// number of times to simulate
 		const unsigned long num_iterations = 1000;		
 		
-		wma_decay_element el;
+		wma_decay_element_t el;
 		double activation_level;
 		double sum;		
 		long i;
@@ -1044,7 +1044,7 @@ void wma_deinit( agent *my_agent )
 	
 	{
 		long first_spot, last_spot, i;
-		wma_decay_element *remove_this;
+		wma_decay_element_t *remove_this;
 
 		first_spot = my_agent->wma_timelist_current->position;
 		last_spot = ( first_spot - 1 + ( WMA_MAX_TIMELIST + 1 ) ) % ( WMA_MAX_TIMELIST + 1 );
@@ -1075,7 +1075,7 @@ void wma_deinit( agent *my_agent )
  *                This function returns the number of supporting WMEs 
  *                found.
  **************************************************************************/
-unsigned long wma_decay_helper( wme *w, wma_decay_element *el, unsigned long tc_value )
+unsigned long wma_decay_helper( wme *w, wma_decay_element_t *el, unsigned long tc_value )
 {
 	unsigned long num_cond_wmes = 0;
 	preference *pref = w->preference;
@@ -1136,7 +1136,7 @@ unsigned long wma_decay_helper( wme *w, wma_decay_element *el, unsigned long tc_
  *                that meet the criteria (positive conditions on wmes that 
  *                have a decay history) then an empty history is assigned.
  **************************************************************************/
-void wma_calculate_average_history( agent* my_agent, wme *w, wma_decay_element *el )
+void wma_calculate_average_history( agent* my_agent, wme *w, wma_decay_element_t *el )
 {
 	preference *pref = w->preference;
 	int i;
@@ -1259,7 +1259,7 @@ void wma_decay_reference_wme( agent *my_agent, wme *w, int depth = 0 )
  **************************************************************************/
 void wma_update_new_wme( agent *my_agent, wme *w, int num_refs )
 {
-	wma_decay_element *temp_el;
+	wma_decay_element_t *temp_el;
 	
 	// should this be an activated wme?
 	bool good_wme = true;
@@ -1617,7 +1617,7 @@ double wma_get_wme_activation( agent *my_agent, wme *w )
  *                which is called at the end of the cycle but after the 
  *                cycle count has been incremented.  So I compensate here.
  **************************************************************************/
-void wma_add_refs_to_history( agent *my_agent, wma_decay_element *el, long num_refs )
+void wma_add_refs_to_history( agent *my_agent, wma_decay_element_t *el, long num_refs )
 {
 	long i;
 	long move_by;
@@ -1654,7 +1654,7 @@ void wma_add_refs_to_history( agent *my_agent, wma_decay_element *el, long num_r
  *                timelist for a decay element when its associated WME is 
  *                referenced.
  **************************************************************************/
-long wma_boost_wme( agent *my_agent, wma_decay_element *cur_decay_el )
+long wma_boost_wme( agent *my_agent, wma_decay_element_t *cur_decay_el )
 {
 	long decay_spot;
 	long time_iter;
@@ -1740,7 +1740,7 @@ long wma_boost_wme( agent *my_agent, wma_decay_element *cur_decay_el )
  * Notes		: This function repositions a decay element in the decay 
  *                timelist.
  **************************************************************************/
-void wma_reposition_wme( agent *my_agent, wma_decay_element *cur_decay_el, long decay_spot )
+void wma_reposition_wme( agent *my_agent, wma_decay_element_t *cur_decay_el, long decay_spot )
 {
 	// remove the current decay element whose decay spot we've just
 	// calculated from the decay timelist in preparation for moving
@@ -1861,7 +1861,7 @@ void wma_forget_wme( agent *my_agent, wme *w )
  **************************************************************************/
 void wma_move_and_remove_wmes( agent *my_agent )
 {
-	wma_decay_element *cur_decay_el, *next;
+	wma_decay_element_t *cur_decay_el, *next;
 	long array_iter, array_position, start_position;
 	
 	// New position for the wme in the decay timelist
@@ -1947,7 +1947,7 @@ void wma_move_and_remove_wmes( agent *my_agent )
 void wma_print_activated_wmes( agent *my_agent, long n )
 {
 	wma_timelist_element *decay_list;
-	wma_decay_element *decay_element;
+	wma_decay_element_t *decay_element;
 	long decay_pos, power_pos;   
 	double sum = 0;
 	int history_iter;

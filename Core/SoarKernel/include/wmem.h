@@ -47,7 +47,7 @@ typedef struct wme_struct wme;
 typedef struct agent_struct agent;
 typedef union symbol_union Symbol;
 
-typedef struct wma_decay_element_struct wma_decay_element;
+typedef struct wma_decay_element_struct wma_decay_element_t;
 
 extern void reset_wme_timetags (agent* thisAgent);
 extern wme *make_wme (agent* thisAgent, Symbol *id, Symbol *attr, Symbol *value,Bool acceptable);
@@ -148,7 +148,7 @@ typedef struct wme_struct {
   struct wme_struct *gds_next, *gds_prev; /* used for dll of wmes in gds */
   /* REW: end   09.15.96 */
 
-  wma_decay_element *wma_decay_element;
+  wma_decay_element_t *wma_decay_element;
   bool wma_has_decay_element;
   tc_number wma_tc_value;
 } wme;

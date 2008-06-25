@@ -187,7 +187,7 @@ typedef struct wma_stat_struct
 //
 
 typedef struct wma_decay_log_struct wma_decay_log;
-typedef struct wma_decay_element_struct wma_decay_element;
+typedef struct wma_decay_element_struct wma_decay_element_t;
 typedef struct wma_timelist_element_struct wma_timelist_element;
 
 struct wma_decay_log_struct
@@ -205,8 +205,8 @@ struct wma_decay_element_struct
 	// each entry in the decay timelist contains a
 	// linked list of these elements.  So these pointers
 	// are needed for that list.
-	wma_decay_element *next;
-	wma_decay_element *previous;
+	wma_decay_element_t *next;
+	wma_decay_element_t *previous;
 	
 	// the wme that this element goes with
 	wme *this_wme;
@@ -255,7 +255,7 @@ struct wma_timelist_element_struct
 	long position;
 
 	// pointer to the associated decay element
-	wma_decay_element *first_decay_element;
+	wma_decay_element_t *first_decay_element;
 };
 
 
