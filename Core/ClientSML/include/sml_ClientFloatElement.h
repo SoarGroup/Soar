@@ -46,6 +46,7 @@ public:
 
 protected:
 	FloatElement(Agent* pAgent, Identifier* pParent, char const* pID, char const* pAttributeName, double value, long timeTag) ;
+	FloatElement(Agent* pAgent, IdentifierSymbol* pParentSymbol, char const* pID, char const* pAttributeName, double value, long timeTag) ;
 	virtual ~FloatElement(void);
 
 	void SetValue(double value)

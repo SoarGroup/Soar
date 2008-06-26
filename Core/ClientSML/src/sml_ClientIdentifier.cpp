@@ -65,27 +65,51 @@ void IdentifierSymbol::RemoveChild(WMElement* pWME)
 }
 
 // This version is only needed at the top of the tree (e.g. the input link)
-Identifier::Identifier(Agent* pAgent, char const* pIdentifier, long timeTag) : WMElement(pAgent, NULL, pIdentifier, NULL, timeTag)
+Identifier::Identifier(Agent* pAgent, char const* pIdentifier, long timeTag) 
+: WMElement(pAgent, NULL, pIdentifier, NULL, timeTag)
 {
 	m_pSymbol = new IdentifierSymbol(this) ;
 	m_pSymbol->SetIdentifierSymbol(pIdentifier) ;
-	m_Visited = 0 ;
+	RecordSymbolInMap();
 }
 
 // The normal case (where there is a parent id)
-Identifier::Identifier(Agent* pAgent, Identifier* pParent, char const* pID, char const* pAttributeName, char const* pIdentifier, long timeTag) : WMElement(pAgent, pParent, pID, pAttributeName, timeTag)
+Identifier::Identifier(Agent* pAgent, Identifier* pParent, char const* pID, char const* pAttributeName, char const* pIdentifier, long timeTag) 
+: WMElement(pAgent, pParent->GetSymbol(), pID, pAttributeName, timeTag)
 {
 	m_pSymbol = new IdentifierSymbol(this) ;
 	m_pSymbol->SetIdentifierSymbol(pIdentifier) ;
-	m_Visited = 0 ;
+	RecordSymbolInMap();
+}
+
+Identifier::Identifier(Agent* pAgent, IdentifierSymbol* pParentSymbol, char const* pID, char const* pAttributeName, char const* pIdentifier, long timeTag) 
+: WMElement(pAgent, pParentSymbol, pID, pAttributeName, timeTag)
+{
+	m_pSymbol = new IdentifierSymbol(this) ;
+	m_pSymbol->SetIdentifierSymbol(pIdentifier) ;
+	RecordSymbolInMap();
 }
 
 // Creating one identifier to have the same value as another
-Identifier::Identifier(Agent* pAgent, Identifier* pParent, char const* pID, char const* pAttributeName, Identifier* pLinkedIdentifier, long timeTag) : WMElement(pAgent, pParent, pID, pAttributeName, timeTag)
+Identifier::Identifier(Agent* pAgent, Identifier* pParent, char const* pID, char const* pAttributeName, Identifier* pLinkedIdentifier, long timeTag) 
+: WMElement(pAgent, pParent->GetSymbol(), pID, pAttributeName, timeTag)
 {
 	m_pSymbol = pLinkedIdentifier->m_pSymbol ;
 	m_pSymbol->UsedBy(this) ;
-	m_Visited = 0 ;
+	RecordSymbolInMap();
+}
+
+Identifier::Identifier(Agent* pAgent, IdentifierSymbol* pParentSymbol, char const* pID, char const* pAttributeName, IdentifierSymbol* pLinkedIdentifierSymbol, long timeTag) 
+: WMElement(pAgent, pParentSymbol, pID, pAttributeName, timeTag)
+{
+	m_pSymbol = pLinkedIdentifierSymbol;
+	m_pSymbol->UsedBy(this) ;
+	RecordSymbolInMap();
+}
+
+void Identifier::RecordSymbolInMap()
+{
+	GetAgent()->GetWM()->RecordSymbolInMap( m_pSymbol );
 }
 
 Identifier::~Identifier(void)
@@ -96,6 +120,7 @@ Identifier::~Identifier(void)
 	// Decide if we need to delete the identifier symbol (or is someone else still using it)
 	if (m_pSymbol->GetNumberUsing() == 0)
 	{
+		this->GetAgent()->GetWM()->RemoveSymbolFromMap( m_pSymbol );
 		delete m_pSymbol ;
 	}
 
@@ -126,43 +151,6 @@ WMElement* Identifier::FindByAttribute(char const* pAttribute, int index) const
 			if (index == 0)
 				return pWME ;
 			index-- ;
-		}
-	}
-
-	return NULL ;
-}
-
-/*************************************************************
-* @brief Searches for a child of this identifier that has pID as
-*		 its value (and is itself an identifier).
-*		 (The search is recursive over all children).
-*
-*		 There can be multiple WMEs that share the same identifier value.
-*
-* @param pIncoming	The id to look for (e.g. "O4" -- kernel side or "p3" -- client side)
-* @param index	If non-zero, finds the n-th match
-*************************************************************/
-Identifier* Identifier::FindIdentifier(char const* pID, int index) const
-{
-	if (strcmp(this->GetValueAsString(), pID) == 0)
-	{
-		if (index == 0)
-			return (Identifier*)this ;
-		index-- ;
-	}
-
-	// Go through each child in turn and if it's an identifier search its children for a matching id.
-	for (ChildrenConstIter iter = m_pSymbol->m_Children.begin() ; iter != m_pSymbol->m_Children.end() ; iter++)
-	{
-		WMElement* pWME = *iter ;
-
-		// If this is an identifer, we search deeper for the match
-		if (pWME->IsIdentifier())
-		{
-			Identifier* pMatch = ((Identifier*)pWME)->FindIdentifier(pID) ;
-
-			if (pMatch)
-				return pMatch ;
 		}
 	}
 

@@ -21,14 +21,12 @@
 
 using namespace sml ;
 
-WMElement::WMElement(Agent* pAgent, Identifier* pParent, char const* pID, char const* pAttributeName, long timeTag)
+WMElement::WMElement(Agent* pAgent, IdentifierSymbol* pParentSymbol, char const* pID, char const* pAttributeName, long timeTag)
+: m_TimeTag( timeTag )
+, m_Agent( pAgent )
+, m_ID( NULL )
 {
-	m_TimeTag = timeTag ;
-
-	// Record the agent that owns this wme.
-	m_Agent			= pAgent ;
-
-	m_ID = NULL ;
+	// BADBAD: duplicated code in both ctors
 
 	// parent and attribute name can both be NULL if this is at the top of the tree.
 	if (pAttributeName)
@@ -37,8 +35,8 @@ WMElement::WMElement(Agent* pAgent, Identifier* pParent, char const* pID, char c
 	if (pID)
 		m_IDName = pID ;
 
-	if (pParent)
-		m_ID = pParent->GetSymbol() ;
+	if (pParentSymbol)
+		m_ID = pParentSymbol ;
 }
 
 WMElement::~WMElement(void)
