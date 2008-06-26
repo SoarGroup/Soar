@@ -968,6 +968,8 @@ void ClientSMLTest::doXMLTest( sml::Agent* pAgent )
 
 void ClientSMLTest::doAgentTest( sml::Agent* pAgent )
 {
+	//pKernel->SetTraceCommunications( true );
+
 	// Test that we get a callback after the decision cycle runs
 	// We'll pass in an "int" and use it to count decisions (just as an example of passing user data around)
 	int count( 0 );
