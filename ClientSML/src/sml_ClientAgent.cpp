@@ -1195,21 +1195,6 @@ void Agent::Update(IntElement* pWME, int value)				{ GetWM()->UpdateInt(pWME, va
 void Agent::Update(FloatElement* pWME, double value)		{ GetWM()->UpdateFloat(pWME, value) ; }
 
 /*************************************************************
-* @brief Searches for a WME that has the given identifier value.
-*		 There can be multiple WMEs that share the same identifier value.
-*		 (You can use the index to find a specific one).
-*
-* @param pId			The id to look for (e.g. "O4" -- kernel side or "p3" -- client side)
-* @param searchInput	If true, searches from input-link down
-* @param searchOutput	If true, searches from output-link down
-* @param index			If non-zero, finds the n-th match
-*************************************************************/
-Identifier*	Agent::FindIdentifier(char const* pID, bool searchInput, bool searchOutput, int index)
-{
-	return GetWM()->FindIdentifier(pID, searchInput, searchOutput, index) ;
-}
-
-/*************************************************************
 * @brief Schedules a WME from deletion from the input link and removes
 *		 it from the client's model of working memory.
 *
