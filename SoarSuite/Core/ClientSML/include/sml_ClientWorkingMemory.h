@@ -27,6 +27,7 @@
 #include "sml_ClientDirect.h" // SML_DIRECT defined here
 
 #include <list>
+#include <map>
 
 namespace soarxml
 {
@@ -42,10 +43,13 @@ class StringElement ;
 class IntElement ;
 class FloatElement ;
 class Identifier ;
+class IdentifierSymbol ;
 class AnalyzeXML ;
 
 class WorkingMemory
 {
+	friend class Identifier;
+
 protected:
 
 #ifdef SML_DIRECT
@@ -73,7 +77,20 @@ protected:
 	void RecordDeletion(WMElement* pWME) ;
 
 	WMElement* SearchWmeListForID(WmeList* pWmeList, char const* pID, bool deleteFromList) ;
-	Identifier* FindIdentifierInWmeList(WmeList* pWmeList, char const* pID) ;
+
+	typedef std::map<std::string, IdentifierSymbol*> IdSymbolMap ;
+	typedef IdSymbolMap::iterator IdSymbolMapIter ;
+
+	IdSymbolMap		m_IdSymbolMap;
+
+	// Searches for an identifier object that matches this id.
+	IdentifierSymbol*	FindIdentifierSymbol(char const* pID);
+	void				RecordSymbolInMap( IdentifierSymbol* pSymbol );
+	void				RemoveSymbolFromMap( IdentifierSymbol* pSymbol );
+	bool				m_Deleting; // used when we're being deleted and the maps shouldn't be updated
+
+	// Create a new WME of the appropriate type based on this information.
+	WMElement*			CreateWME(IdentifierSymbol* pParentSymbol, char const* pID, char const* pAttribute, char const* pValue, char const* pType, long timeTag) ;
 
 public:
 	WorkingMemory() ;
@@ -90,12 +107,6 @@ public:
 	OutputDeltaList* GetOutputLinkChanges() { return &m_OutputDeltaList ; }
 
 	DeltaList*		GetInputDeltaList()		{ return &m_DeltaList ; }
-
-	// Searches for an identifier object that matches this id.
-	Identifier*		FindIdentifier(char const* pID, bool searchInput, bool searchOutput, int index = 0) ;
-
-	// Create a new WME of the appropriate type based on this information.
-	WMElement*		CreateWME(Identifier* pParent, char const* pID, char const* pAttribute, char const* pValue, char const* pType, long timeTag) ;
 
 	// These functions are documented in the agent and handled here.
 	Identifier*		GetInputLink() ;

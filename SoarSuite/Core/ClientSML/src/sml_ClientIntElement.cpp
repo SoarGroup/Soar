@@ -20,7 +20,14 @@
 
 using namespace sml ;
 
-IntElement::IntElement(Agent* pAgent, Identifier* pParent, char const* pID, char const* pAttributeName, int value, long timeTag) : WMElement(pAgent, pParent, pID, pAttributeName, timeTag)
+IntElement::IntElement(Agent* pAgent, Identifier* pParent, char const* pID, char const* pAttributeName, int value, long timeTag) 
+: WMElement(pAgent, pParent->GetSymbol(), pID, pAttributeName, timeTag)
+{
+	m_Value = value ;
+}
+
+IntElement::IntElement(Agent* pAgent, IdentifierSymbol* pParentSymbol, char const* pID, char const* pAttributeName, int value, long timeTag) 
+: WMElement(pAgent, pParentSymbol, pID, pAttributeName, timeTag)
 {
 	m_Value = value ;
 }
