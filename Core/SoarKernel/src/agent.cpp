@@ -365,9 +365,9 @@ agent * create_soar_agent (char * agent_name) {                                 
   for ( int i=0; i<EPMEM_MAX_STATEMENTS; i++ )
   	newAgent->epmem_statements[ i ] = NULL;
 
-  newAgent->epmem_range_removals = new std::map<unsigned long, bool>();
-  newAgent->epmem_range_mins = new std::vector<long>();
-  newAgent->epmem_range_maxes = new std::vector<long>();
+  newAgent->epmem_range_removals = new std::map<epmem_node_id, bool>();
+  newAgent->epmem_range_mins = new std::vector<epmem_time_id>();
+  newAgent->epmem_range_maxes = new std::vector<epmem_time_id>();
 
   newAgent->epmem_validation = 0;
 
@@ -375,9 +375,9 @@ agent * create_soar_agent (char * agent_name) {                                 
   // wma initialization
   newAgent->wma_params[ WMA_PARAM_ACTIVATION ] = wma_add_parameter( "activation", WMA_ACTIVATION_ON, &wma_validate_activation, &wma_convert_activation, &wma_convert_activation );
   newAgent->wma_params[ WMA_PARAM_DECAY_RATE ] = wma_add_parameter( "decay-rate", -0.8, &wma_validate_decay );
-  newAgent->wma_params[ WMA_PARAM_CRITERIA ] = wma_add_parameter( "criteria", WMA_CRITERIA_O_AGENT_ARCH, &wma_validate_criteria, &wma_convert_criteria, &wma_convert_criteria );
+  newAgent->wma_params[ WMA_PARAM_CRITERIA ] = wma_add_parameter( "criteria", WMA_CRITERIA_ALL, &wma_validate_criteria, &wma_convert_criteria, &wma_convert_criteria );
   newAgent->wma_params[ WMA_PARAM_FORGETTING ] = wma_add_parameter( "forgetting", WMA_FORGETTING_OFF, &wma_validate_forgetting, &wma_convert_forgetting, &wma_convert_forgetting );
-  newAgent->wma_params[ WMA_PARAM_I_SUPPORT ] = wma_add_parameter( "i-support", WMA_I_NONE, &wma_validate_i_support, &wma_convert_i_support, &wma_convert_i_support );
+  newAgent->wma_params[ WMA_PARAM_I_SUPPORT ] = wma_add_parameter( "i-support", WMA_I_UNIFORM, &wma_validate_i_support, &wma_convert_i_support, &wma_convert_i_support );
   newAgent->wma_params[ WMA_PARAM_PERSISTENCE ] = wma_add_parameter( "persistence", WMA_PERSISTENCE_OFF, &wma_validate_persistence, &wma_convert_persistence, &wma_convert_persistence );
   newAgent->wma_params[ WMA_PARAM_PRECISION ] = wma_add_parameter( "precision", WMA_PRECISION_LOW, &wma_validate_precision, &wma_convert_precision, &wma_convert_precision );
 

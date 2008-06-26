@@ -129,8 +129,7 @@ typedef struct wme_struct wme;
  * of a WME that is not activated, then this is the value that
  * is returned.
  */
-#define WMA_ACTIVATION_NONE_INT -1
-#define WMA_ACTIVATION_NONE_DOUBLE 99999999.9999
+#define WMA_ACTIVATION_NONE 99999999.9999
 
 /**
  * If a WME's activation falls below this level it will be 
@@ -470,8 +469,9 @@ extern void wma_update_wmes_tested_in_prods( agent *my_agent );
 /**
  * Retrieve wme activation exact/approximate
  */
+extern double wma_get_wme_activation_high( agent *my_agent, wme *w );
+extern double wma_get_wme_activation_low( agent *my_agent, wme *w );
 extern double wma_get_wme_activation( agent *my_agent, wme *w );
-extern long wma_get_wme_activation_level( agent *my_agent, wme *w );
 
 /**
  * This routine performs WME activation

@@ -46,14 +46,17 @@ extern unsigned long compress( unsigned long h, short num_bits );
 extern unsigned long hash_string( const char *s );
 
 // I don't want to expose these functions
-void epmem_process_query( agent *my_agent, Symbol *state, Symbol *query, Symbol *neg_query, vector<long> *prohibit, long before, long after );
+void epmem_process_query( agent *my_agent, Symbol *state, Symbol *query, Symbol *neg_query, vector<epmem_time_id> *prohibit, epmem_time_id before, epmem_time_id after );
+void epmem_clear_result( agent *my_agent, Symbol *state );
+void epmem_new_episode( agent *my_agent );
+void epmem_install_memory( agent *my_agent, Symbol *state, epmem_time_id memory_id );
 
-void epmem_rit_insert_interval( agent *my_agent, long lower, long upper, unsigned long id, bool in_transaction );
-long epmem_rit_fork_node( agent *my_agent, long lower, long upper, bool bounds_offset, long *step = NULL );
-void epmem_rit_prep_left_right( agent *my_agent, long lower, long upper );
+void epmem_rit_insert_interval( agent *my_agent, epmem_time_id lower, epmem_time_id upper, epmem_node_id id, bool in_transaction );
+long long epmem_rit_fork_node( agent *my_agent, epmem_time_id lower, epmem_time_id upper, bool bounds_offset, long long *step = NULL );
+void epmem_rit_prep_left_right( agent *my_agent, epmem_time_id lower, epmem_time_id upper );
 void epmem_rit_clear_left_right( agent *my_agent );
-void epmem_rit_add_left( agent *my_agent, long min, long max );
-void epmem_rit_add_right( agent *my_agent, long id );
+void epmem_rit_add_left( agent *my_agent, epmem_time_id min, epmem_time_id max );
+void epmem_rit_add_right( agent *my_agent, epmem_time_id id );
 
 /***************************************************************************
  * Function     : epmem_clean_parameters
@@ -817,7 +820,7 @@ bool epmem_valid_stat( agent *my_agent, const long stat )
 /***************************************************************************
  * Function     : epmem_get_stat
  **************************************************************************/
-double epmem_get_stat( agent *my_agent, const char *name )
+long long epmem_get_stat( agent *my_agent, const char *name )
 {
 	const long stat = epmem_convert_stat( my_agent, name );
 	if ( stat == EPMEM_STATS )
@@ -831,7 +834,7 @@ double epmem_get_stat( agent *my_agent, const char *name )
 	return my_agent->epmem_stats[ stat ]->value;
 }
 
-double epmem_get_stat( agent *my_agent, const long stat )
+long long epmem_get_stat( agent *my_agent, const long stat )
 {
 	if ( !epmem_valid_stat( my_agent, stat ) )
 		return 0;
@@ -847,7 +850,7 @@ double epmem_get_stat( agent *my_agent, const long stat )
 /***************************************************************************
  * Function     : epmem_set_stat
  **************************************************************************/
-bool epmem_set_stat( agent *my_agent, const char *name, double new_val )
+bool epmem_set_stat( agent *my_agent, const char *name, long long new_val )
 {
 	const long stat = epmem_convert_stat( my_agent, name );
 	if ( ( stat == EPMEM_STATS ) ||
@@ -860,7 +863,7 @@ bool epmem_set_stat( agent *my_agent, const char *name, double new_val )
 	return true;
 }
 
-bool epmem_set_stat( agent *my_agent, const long stat, double new_val )
+bool epmem_set_stat( agent *my_agent, const long stat, long long new_val )
 {
 	if ( !epmem_valid_stat( my_agent, stat ) )
 		return false;
@@ -1068,7 +1071,7 @@ void epmem_init_db( agent *my_agent )
 	{
 		const char *tail;
 		sqlite3_stmt *create;
-		long time_max;
+		epmem_time_id time_max;
 
 		// update validation count
 		my_agent->epmem_validation++;
@@ -1672,7 +1675,7 @@ void epmem_new_episode( agent *my_agent )
 	if ( my_agent->epmem_db_status != SQLITE_OK )
 		return;
 
-	const long time_counter = epmem_get_stat( my_agent, (const long) EPMEM_STAT_TIME );
+	epmem_time_id time_counter = epmem_get_stat( my_agent, (const long) EPMEM_STAT_TIME );
 
 	// provide trace output
 	if ( my_agent->sysparams[ TRACE_EPMEM_SYSPARAM ] )
@@ -1694,10 +1697,10 @@ void epmem_new_episode( agent *my_agent )
 		int len = 0;
 		
 		queue<Symbol *> syms;
-		queue<unsigned long> ids;		
+		queue<epmem_node_id> ids;		
 
-		unsigned long parent_id;		
-		map<unsigned long, double *> epmem;
+		epmem_node_id parent_id;		
+		map<epmem_node_id, double *> epmem;
 
 		unsigned long my_hash;
 		int tc = get_new_tc_number( my_agent );
@@ -1831,7 +1834,7 @@ void epmem_new_episode( agent *my_agent )
 		}
 
 		// all inserts at once (provides unique)
-		map<unsigned long, double *>::iterator e = epmem.begin();
+		map<epmem_node_id, double *>::iterator e = epmem.begin();
 		while ( e != epmem.end() )
 		{
 			// add nodes to the episodic store
@@ -1865,10 +1868,10 @@ void epmem_new_episode( agent *my_agent )
 		int len = 0;
 		
 		queue<Symbol *> syms;
-		queue<unsigned long> ids;		
+		queue<epmem_node_id> ids;		
 
-		unsigned long parent_id;
-		map<unsigned long, bool> epmem;
+		epmem_node_id parent_id;
+		map<epmem_node_id, bool> epmem;
 
 		unsigned long my_hash;
 		int tc = get_new_tc_number( my_agent );
@@ -2001,7 +2004,7 @@ void epmem_new_episode( agent *my_agent )
 		}
 
 		// all inserts at once (provides unique)
-		map<unsigned long, bool>::iterator e = epmem.begin();
+		map<epmem_node_id, bool>::iterator e = epmem.begin();
 		while ( e != epmem.end() )
 		{	
 			// INSERT (id, start, NULL)
@@ -2014,7 +2017,7 @@ void epmem_new_episode( agent *my_agent )
 		}
 
 		// all removals at once
-		std::map<unsigned long, bool>::iterator r = my_agent->epmem_range_removals->begin();
+		std::map<epmem_node_id, bool>::iterator r = my_agent->epmem_range_removals->begin();
 		while ( r != my_agent->epmem_range_removals->end() )
 		{
 			if ( r->second )
@@ -2048,10 +2051,10 @@ void epmem_new_episode( agent *my_agent )
 		int len = 0;
 		
 		queue<Symbol *> syms;
-		queue<unsigned long> ids;		
+		queue<epmem_node_id> ids;		
 
-		unsigned long parent_id;
-		map<unsigned long, bool> epmem;
+		epmem_node_id parent_id;
+		map<epmem_node_id, bool> epmem;
 
 		unsigned long my_hash;
 		int tc = get_new_tc_number( my_agent );
@@ -2186,7 +2189,7 @@ void epmem_new_episode( agent *my_agent )
 
 		
 		// all inserts at once (provides unique)
-		map<unsigned long, bool>::iterator e = epmem.begin();
+		map<epmem_node_id, bool>::iterator e = epmem.begin();
 		while ( e != epmem.end() )
 		{
 			// add NOW entry
@@ -2203,7 +2206,7 @@ void epmem_new_episode( agent *my_agent )
 		}		
 
 		// all removals at once
-		std::map<unsigned long, bool>::iterator r = my_agent->epmem_range_removals->begin();
+		std::map<epmem_node_id, bool>::iterator r = my_agent->epmem_range_removals->begin();
 		while ( r != my_agent->epmem_range_removals->end() )
 		{
 			if ( r->second )
@@ -2236,7 +2239,7 @@ void epmem_new_episode( agent *my_agent )
 /***************************************************************************
  * Function     : epmem_valid_episode
  **************************************************************************/
-bool epmem_valid_episode( agent *my_agent, long memory_id )
+bool epmem_valid_episode( agent *my_agent, epmem_time_id memory_id )
 {
 	const long indexing = epmem_get_parameter( my_agent, EPMEM_PARAM_INDEXING, EPMEM_RETURN_LONG );
 	bool return_val = false;
@@ -2272,10 +2275,10 @@ bool epmem_valid_episode( agent *my_agent, long memory_id )
 /***************************************************************************
  * Function     : epmem_next_episode
  **************************************************************************/
-long epmem_next_episode( agent *my_agent, long memory_id )
+epmem_time_id epmem_next_episode( agent *my_agent, epmem_time_id memory_id )
 {
 	const long indexing = epmem_get_parameter( my_agent, EPMEM_PARAM_INDEXING, EPMEM_RETURN_LONG );
-	long return_val = EPMEM_MEMID_NONE;
+	epmem_time_id return_val = EPMEM_MEMID_NONE;
 
 	if ( indexing == EPMEM_INDEXING_BIGTREE_INSTANCE )
 	{
@@ -2308,10 +2311,10 @@ long epmem_next_episode( agent *my_agent, long memory_id )
 /***************************************************************************
  * Function     : epmem_previous_episode
  **************************************************************************/
-long epmem_previous_episode( agent *my_agent, long memory_id )
+epmem_time_id epmem_previous_episode( agent *my_agent, epmem_time_id memory_id )
 {
 	const long indexing = epmem_get_parameter( my_agent, EPMEM_PARAM_INDEXING, EPMEM_RETURN_LONG );
-	long return_val = EPMEM_MEMID_NONE;
+	epmem_time_id return_val = EPMEM_MEMID_NONE;
 
 	if ( indexing == EPMEM_INDEXING_BIGTREE_INSTANCE )
 	{
@@ -2474,12 +2477,12 @@ void epmem_respond_to_cmd( agent *my_agent )
 	int len;
 	int i;
 
-	long retrieve;
+	epmem_time_id retrieve;
 	bool next, previous;
 	Symbol *query;
 	Symbol *neg_query;
-	vector<long> *prohibit;
-	long before, after;
+	vector<epmem_time_id> *prohibit;
+	epmem_time_id before, after;
 	bool good_cue;
 	int path;
 
@@ -2535,7 +2538,7 @@ void epmem_respond_to_cmd( agent *my_agent )
 			previous = false;
 			query = NULL;
 			neg_query = NULL;
-			prohibit = new vector<long>();
+			prohibit = new vector<epmem_time_id>();
 			before = EPMEM_MEMID_NONE;
 			after = EPMEM_MEMID_NONE;
 			good_cue = true;
@@ -2713,9 +2716,22 @@ void epmem_clear_result( agent *my_agent, Symbol *state )
 }
 
 /***************************************************************************
+ * Function     : epmem_create_leaf_node
+ **************************************************************************/
+epmem_leaf_node *epmem_create_leaf_node( epmem_node_id leaf_id, double leaf_weight )
+{
+	epmem_leaf_node *newbie = new epmem_leaf_node();
+
+	newbie->leaf_id = leaf_id;
+	newbie->leaf_weight = leaf_weight;
+
+	return newbie;
+}
+
+/***************************************************************************
  * Function     : epmem_process_query
  **************************************************************************/
-void epmem_process_query( agent *my_agent, Symbol *state, Symbol *query, Symbol *neg_query, vector<long> *prohibit, long before, long after )
+void epmem_process_query( agent *my_agent, Symbol *state, Symbol *query, Symbol *neg_query, vector<epmem_time_id> *prohibit, epmem_time_id before, epmem_time_id after )
 {
 	int len_query = 0, len_neg_query = 0;
 	wme **wmes_query = NULL;
@@ -2735,19 +2751,19 @@ void epmem_process_query( agent *my_agent, Symbol *state, Symbol *query, Symbol 
 			wme *new_wme;
 			
 			// initialize pos/neg lists
-			std::list<unsigned long> leaf_ids[2];
-			std::list<unsigned long>::iterator leaf_p;
-			vector<long>::iterator prohibit_p;
+			std::list<epmem_node_id> leaf_ids[2];
+			std::list<epmem_node_id>::iterator leaf_p;
+			vector<epmem_time_id>::iterator prohibit_p;
 			{
 				wme ***wmes;
 				int len;				
 				
 				queue<Symbol *> parent_syms;
-				queue<unsigned long> parent_ids;			
+				queue<epmem_node_id> parent_ids;			
 				int tc = get_new_tc_number( my_agent );
 
 				Symbol *parent_sym;
-				unsigned long parent_id;
+				epmem_node_id parent_id;
 				unsigned long my_hash;
 
 				int i, j;
@@ -2857,9 +2873,9 @@ void epmem_process_query( agent *my_agent, Symbol *state, Symbol *query, Symbol 
 			else
 			{				
 				sqlite3_stmt *search;
-				int cue_size;
-				long result_time;
-				unsigned long result_cardinality;
+				unsigned long long cue_size;
+				epmem_time_id result_time;
+				unsigned long long result_cardinality;
 				double result_features;
 				double result_match_score;
 				
@@ -3122,20 +3138,20 @@ void epmem_process_query( agent *my_agent, Symbol *state, Symbol *query, Symbol 
 			sqlite3_reset( my_agent->epmem_statements[ EPMEM_STMT_BEGIN ] );
 
 			// get the leaf id's
-			std::list<unsigned long> leaf_ids[2];
-			std::list<unsigned long>::iterator leaf_p;
-			vector<long>::iterator prohibit_p;
+			std::list<epmem_leaf_node *> leaf_ids[2];
+			std::list<epmem_leaf_node *>::iterator leaf_p;			
+			vector<epmem_time_id>::iterator prohibit_p;
 			{
 				wme ***wmes;
 				int len;
 				
 				queue<Symbol *> parent_syms;
-				queue<unsigned long> parent_ids;			
+				queue<epmem_node_id> parent_ids;			
 				int tc = get_new_tc_number( my_agent );
 
 				Symbol *parent_sym;
-				unsigned long parent_id;
-				unsigned long my_hash;
+				epmem_node_id parent_id;
+				epmem_node_id my_hash;
 
 				int i, j;
 				bool just_started;
@@ -3206,7 +3222,7 @@ void epmem_process_query( agent *my_agent, Symbol *state, Symbol *query, Symbol 
 									}
 									
 									if ( sqlite3_step( my_agent->epmem_statements[ EPMEM_STMT_BIGTREE_R_FIND_ID ] ) == SQLITE_ROW )
-										leaf_ids[i].push_back( sqlite3_column_int64( my_agent->epmem_statements[ EPMEM_STMT_BIGTREE_R_FIND_ID ], 0 ) );
+										leaf_ids[i].push_back( epmem_create_leaf_node( sqlite3_column_int64( my_agent->epmem_statements[ EPMEM_STMT_BIGTREE_R_FIND_ID ], 0 ), wma_get_wme_activation( my_agent, (*wmes)[j] ) ) );
 									
 									sqlite3_reset( my_agent->epmem_statements[ EPMEM_STMT_BIGTREE_R_FIND_ID ] );
 								}
@@ -3242,10 +3258,10 @@ void epmem_process_query( agent *my_agent, Symbol *state, Symbol *query, Symbol 
 					leaf_p = leaf_ids[i].begin();
 					while ( leaf_p != leaf_ids[i].end() )
 					{						
-						sqlite3_bind_int64( my_agent->epmem_statements[ EPMEM_STMT_BIGTREE_R_ADD_WEIGHT ], 1, (*leaf_p) );
-						sqlite3_bind_double( my_agent->epmem_statements[ EPMEM_STMT_BIGTREE_R_ADD_WEIGHT ], 2, 1 );
+						sqlite3_bind_int64( my_agent->epmem_statements[ EPMEM_STMT_BIGTREE_R_ADD_WEIGHT ], 1, (*leaf_p)->leaf_id );
+						sqlite3_bind_double( my_agent->epmem_statements[ EPMEM_STMT_BIGTREE_R_ADD_WEIGHT ], 2, (*leaf_p)->leaf_weight );
 						sqlite3_step( my_agent->epmem_statements[ EPMEM_STMT_BIGTREE_R_ADD_WEIGHT ] );
-						sqlite3_reset( my_agent->epmem_statements[ EPMEM_STMT_BIGTREE_R_ADD_WEIGHT ] );
+						sqlite3_reset( my_agent->epmem_statements[ EPMEM_STMT_BIGTREE_R_ADD_WEIGHT ] );						
 						
 						leaf_p++;
 					}					
@@ -3287,7 +3303,7 @@ void epmem_process_query( agent *my_agent, Symbol *state, Symbol *query, Symbol 
 					leaf_p = leaf_ids[0].begin();
 					while ( leaf_p != leaf_ids[0].end() )
 					{
-						sqlite3_bind_int64( insert, pos++, (*leaf_p) );
+						sqlite3_bind_int64( insert, pos++, (*leaf_p)->leaf_id );
 						leaf_p++;
 					}
 
@@ -3301,6 +3317,17 @@ void epmem_process_query( agent *my_agent, Symbol *state, Symbol *query, Symbol 
 					// perform insertion
 					sqlite3_step( insert );
 					sqlite3_finalize( insert );
+
+					// clean up list
+					epmem_leaf_node *temp_leaf;
+					do
+					{
+						temp_leaf = leaf_ids[0].front();
+						leaf_ids[0].pop_front();
+
+						delete temp_leaf;
+
+					} while ( !leaf_ids[0].empty() );
 				}
 				
 				if ( !leaf_ids[1].empty() )
@@ -3334,7 +3361,7 @@ void epmem_process_query( agent *my_agent, Symbol *state, Symbol *query, Symbol 
 					leaf_p = leaf_ids[1].begin();
 					while ( leaf_p != leaf_ids[1].end() )
 					{
-						sqlite3_bind_int64( insert, pos++, (*leaf_p) );
+						sqlite3_bind_int64( insert, pos++, (*leaf_p)->leaf_id );
 						leaf_p++;
 					}
 
@@ -3347,6 +3374,17 @@ void epmem_process_query( agent *my_agent, Symbol *state, Symbol *query, Symbol 
 					// perform insertion
 					sqlite3_step( insert );
 					sqlite3_finalize( insert );
+
+					// clean up list
+					epmem_leaf_node *temp_leaf;
+					do
+					{
+						temp_leaf = leaf_ids[1].front();
+						leaf_ids[1].pop_front();
+
+						delete temp_leaf;
+
+					} while ( !leaf_ids[1].empty() );
 				}
 			}
 
@@ -3366,11 +3404,11 @@ void epmem_process_query( agent *my_agent, Symbol *state, Symbol *query, Symbol 
 			// modify ranges to accomodate prohibition			
 			if ( !prohibit->empty() )
 			{			
-				vector<long *> prohibit_ranges;
-				vector<long *>::iterator pr_p;
+				vector<epmem_time_id *> prohibit_ranges;
+				vector<epmem_time_id *>::iterator pr_p;
 
-				long start = EPMEM_MEMID_NONE;
-				long prev = EPMEM_MEMID_NONE;
+				epmem_time_id start = EPMEM_MEMID_NONE;
+				epmem_time_id prev = EPMEM_MEMID_NONE;
 
 				// sort
 				std::sort( prohibit->begin(), prohibit->end() );
@@ -3387,7 +3425,7 @@ void epmem_process_query( agent *my_agent, Symbol *state, Symbol *query, Symbol 
 					{
 						if ( start != EPMEM_MEMID_NONE )
 						{
-							long *range = new long[2];
+							epmem_time_id *range = new epmem_time_id[2];
 							range[0] = start;
 							range[1] = prev;
 
@@ -3401,7 +3439,7 @@ void epmem_process_query( agent *my_agent, Symbol *state, Symbol *query, Symbol 
 					prohibit_p++;
 				}
 				{
-					long *range = new long[2];
+					epmem_time_id *range = new epmem_time_id[2];
 					range[0] = start;
 					range[1] = prev;
 
@@ -3494,31 +3532,31 @@ void epmem_process_query( agent *my_agent, Symbol *state, Symbol *query, Symbol 
 
 			// play king of the mountain
 			{
-				long king_id = EPMEM_MEMID_NONE;
+				epmem_time_id king_id = EPMEM_MEMID_NONE;
 				double king_score = -1;
-				double king_cardinality = 0;
+				unsigned long long king_cardinality = 0;
 
 				double balance = epmem_get_parameter( my_agent, (const long) EPMEM_PARAM_BALANCE );
 				double balance_inv = 1 - balance;
 				
 				// dynamic programming stuff
-				int sum_ct = 0;
+				unsigned long long sum_ct = 0;
 				double sum_v = 0;
 
 				// current pointer
-				int current_list = EPMEM_STMT_BIGTREE_R_GET_LOW_RANGES;
-				long current_id = EPMEM_MEMID_NONE;
-				unsigned long current_ct = 0;
+				unsigned long current_list = EPMEM_STMT_BIGTREE_R_GET_LOW_RANGES;
+				epmem_time_id current_id = EPMEM_MEMID_NONE;
+				unsigned long long current_ct = 0;
 				double current_v = 0;
-				long current_end;
-				long current_valid_end;
+				epmem_time_id current_end;
+				epmem_time_id current_valid_end;
 				double current_score;
 
 				// next pointers
-				long low_id = EPMEM_MEMID_NONE;
-				long high_id = EPMEM_MEMID_NONE;
-				long *next_id;
-				int next_list;				
+				epmem_time_id low_id = EPMEM_MEMID_NONE;
+				epmem_time_id high_id = EPMEM_MEMID_NONE;
+				epmem_time_id *next_id;
+				unsigned long next_list;				
 				
 				// completion (allows for smart cut-offs later
 				bool done = false;				
@@ -3674,19 +3712,19 @@ void epmem_process_query( agent *my_agent, Symbol *state, Symbol *query, Symbol 
 			sqlite3_reset( my_agent->epmem_statements[ EPMEM_STMT_BEGIN ] );
 
 			// get the leaf id's
-			std::list<unsigned long> leaf_ids[2];
-			std::list<unsigned long>::iterator leaf_p;
-			vector<long>::iterator prohibit_p;
+			std::list<epmem_leaf_node *> leaf_ids[2];
+			std::list<epmem_leaf_node *>::iterator leaf_p;			
+			vector<epmem_time_id>::iterator prohibit_p;
 			{
 				wme ***wmes;
 				int len;
 				
 				queue<Symbol *> parent_syms;
-				queue<unsigned long> parent_ids;		
+				queue<epmem_node_id> parent_ids;		
 				int tc = get_new_tc_number( my_agent );
 
 				Symbol *parent_sym;
-				unsigned long parent_id;
+				epmem_node_id parent_id;
 				unsigned long my_hash;
 
 				int i, j;
@@ -3758,7 +3796,7 @@ void epmem_process_query( agent *my_agent, Symbol *state, Symbol *query, Symbol 
 									}
 									
 									if ( sqlite3_step( my_agent->epmem_statements[ EPMEM_STMT_BIGTREE_RIT_FIND_ID ] ) == SQLITE_ROW )
-										leaf_ids[i].push_back( sqlite3_column_int64( my_agent->epmem_statements[ EPMEM_STMT_BIGTREE_RIT_FIND_ID ], 0 ) );
+										leaf_ids[i].push_back( epmem_create_leaf_node( sqlite3_column_int64( my_agent->epmem_statements[ EPMEM_STMT_BIGTREE_RIT_FIND_ID ], 0 ), wma_get_wme_activation( my_agent, (*wmes)[j] ) ) );
 									
 									sqlite3_reset( my_agent->epmem_statements[ EPMEM_STMT_BIGTREE_RIT_FIND_ID ] );
 								}
@@ -3794,11 +3832,11 @@ void epmem_process_query( agent *my_agent, Symbol *state, Symbol *query, Symbol 
 					leaf_p = leaf_ids[i].begin();
 					while ( leaf_p != leaf_ids[i].end() )
 					{						
-						sqlite3_bind_int64( my_agent->epmem_statements[ EPMEM_STMT_BIGTREE_RIT_ADD_WEIGHT ], 1, (*leaf_p) );
-						sqlite3_bind_double( my_agent->epmem_statements[ EPMEM_STMT_BIGTREE_RIT_ADD_WEIGHT ], 2, 1 );
+						sqlite3_bind_int64( my_agent->epmem_statements[ EPMEM_STMT_BIGTREE_RIT_ADD_WEIGHT ], 1, (*leaf_p)->leaf_id );
+						sqlite3_bind_double( my_agent->epmem_statements[ EPMEM_STMT_BIGTREE_RIT_ADD_WEIGHT ], 2, (*leaf_p)->leaf_weight );
 						sqlite3_step( my_agent->epmem_statements[ EPMEM_STMT_BIGTREE_RIT_ADD_WEIGHT ] );
 						sqlite3_reset( my_agent->epmem_statements[ EPMEM_STMT_BIGTREE_RIT_ADD_WEIGHT ] );
-						
+
 						leaf_p++;
 					}					
 				}
@@ -3852,7 +3890,7 @@ void epmem_process_query( agent *my_agent, Symbol *state, Symbol *query, Symbol 
 					leaf_p = leaf_ids[0].begin();
 					while ( leaf_p != leaf_ids[0].end() )
 					{
-						sqlite3_bind_int64( insert, pos++, (*leaf_p) );
+						sqlite3_bind_int64( insert, pos++, (*leaf_p)->leaf_id );
 						leaf_p++;
 					}
 
@@ -3870,7 +3908,7 @@ void epmem_process_query( agent *my_agent, Symbol *state, Symbol *query, Symbol 
 					leaf_p = leaf_ids[0].begin();
 					while ( leaf_p != leaf_ids[0].end() )
 					{
-						sqlite3_bind_int64( insert, pos++, (*leaf_p) );
+						sqlite3_bind_int64( insert, pos++, (*leaf_p)->leaf_id );
 						leaf_p++;
 					}
 
@@ -3884,6 +3922,17 @@ void epmem_process_query( agent *my_agent, Symbol *state, Symbol *query, Symbol 
 					// perform insertion
 					sqlite3_step( insert );
 					sqlite3_finalize( insert );
+
+					// clean up list
+					epmem_leaf_node *temp_leaf;
+					do
+					{
+						temp_leaf = leaf_ids[0].front();
+						leaf_ids[0].pop_front();
+
+						delete temp_leaf;
+
+					} while ( !leaf_ids[0].empty() );
 				}
 				
 				if ( !leaf_ids[1].empty() )
@@ -3930,7 +3979,7 @@ void epmem_process_query( agent *my_agent, Symbol *state, Symbol *query, Symbol 
 					leaf_p = leaf_ids[1].begin();
 					while ( leaf_p != leaf_ids[1].end() )
 					{
-						sqlite3_bind_int64( insert, pos++, (*leaf_p) );
+						sqlite3_bind_int64( insert, pos++, (*leaf_p)->leaf_id );
 						leaf_p++;
 					}
 
@@ -3947,7 +3996,7 @@ void epmem_process_query( agent *my_agent, Symbol *state, Symbol *query, Symbol 
 					leaf_p = leaf_ids[1].begin();
 					while ( leaf_p != leaf_ids[1].end() )
 					{
-						sqlite3_bind_int64( insert, pos++, (*leaf_p) );
+						sqlite3_bind_int64( insert, pos++, (*leaf_p)->leaf_id );
 						leaf_p++;
 					}
 
@@ -3960,17 +4009,28 @@ void epmem_process_query( agent *my_agent, Symbol *state, Symbol *query, Symbol 
 					// perform insertion
 					sqlite3_step( insert );
 					sqlite3_finalize( insert );
+
+					// clean up list
+					epmem_leaf_node *temp_leaf;
+					do
+					{
+						temp_leaf = leaf_ids[1].front();
+						leaf_ids[1].pop_front();
+
+						delete temp_leaf;
+
+					} while ( !leaf_ids[1].empty() );
 				}
 			}			
 			
 			// modify ranges to accomodate prohibition			
 			if ( !prohibit->empty() )
 			{			
-				vector<long *> prohibit_ranges;
-				vector<long *>::iterator pr_p;
+				vector<epmem_time_id *> prohibit_ranges;
+				vector<epmem_time_id *>::iterator pr_p;
 
-				long start = EPMEM_MEMID_NONE;
-				long prev = EPMEM_MEMID_NONE;
+				epmem_time_id start = EPMEM_MEMID_NONE;
+				epmem_time_id prev = EPMEM_MEMID_NONE;
 
 				// sort
 				std::sort( prohibit->begin(), prohibit->end() );
@@ -3987,7 +4047,7 @@ void epmem_process_query( agent *my_agent, Symbol *state, Symbol *query, Symbol 
 					{
 						if ( start != EPMEM_MEMID_NONE )
 						{
-							long *range = new long[2];
+							epmem_time_id *range = new epmem_time_id[2];
 							range[0] = start;
 							range[1] = prev;
 
@@ -4001,7 +4061,7 @@ void epmem_process_query( agent *my_agent, Symbol *state, Symbol *query, Symbol 
 					prohibit_p++;
 				}
 				{
-					long *range = new long[2];
+					epmem_time_id *range = new epmem_time_id[2];
 					range[0] = start;
 					range[1] = prev;
 
@@ -4094,31 +4154,31 @@ void epmem_process_query( agent *my_agent, Symbol *state, Symbol *query, Symbol 
 
 			// play king of the mountain
 			{
-				long king_id = EPMEM_MEMID_NONE;
+				epmem_time_id king_id = EPMEM_MEMID_NONE;
 				double king_score = -1;
-				double king_cardinality = 0;
+				unsigned long long king_cardinality = 0;
 
 				double balance = epmem_get_parameter( my_agent, (const long) EPMEM_PARAM_BALANCE );
 				double balance_inv = 1 - balance;
 				
 				// dynamic programming stuff
-				int sum_ct = 0;
+				unsigned long long sum_ct = 0;
 				double sum_v = 0;
 
 				// current pointer
-				int current_list = EPMEM_STMT_BIGTREE_RIT_GET_LOW_RANGES;
-				long current_id = EPMEM_MEMID_NONE;
-				unsigned long current_ct = 0;
+				unsigned long current_list = EPMEM_STMT_BIGTREE_RIT_GET_LOW_RANGES;
+				epmem_time_id current_id = EPMEM_MEMID_NONE;
+				unsigned long long current_ct = 0;
 				double current_v = 0;
-				long current_end;
-				long current_valid_end;
+				epmem_time_id current_end;
+				epmem_time_id current_valid_end;
 				double current_score;
 
 				// next pointers
-				long low_id = EPMEM_MEMID_NONE;
-				long high_id = EPMEM_MEMID_NONE;
-				long *next_id;
-				int next_list;				
+				epmem_time_id low_id = EPMEM_MEMID_NONE;
+				epmem_time_id high_id = EPMEM_MEMID_NONE;
+				epmem_time_id *next_id;
+				unsigned long next_list;				
 				
 				// completion (allows for smart cut-offs later
 				bool done = false;				
@@ -4274,7 +4334,7 @@ void epmem_process_query( agent *my_agent, Symbol *state, Symbol *query, Symbol 
 /***************************************************************************
  * Function     : epmem_install_memory
  **************************************************************************/
-void epmem_install_memory( agent *my_agent, Symbol *state, long memory_id )
+void epmem_install_memory( agent *my_agent, Symbol *state, epmem_time_id memory_id )
 {
 	wme *new_wme;
 	
@@ -4314,9 +4374,9 @@ void epmem_install_memory( agent *my_agent, Symbol *state, long memory_id )
 
 	if ( epmem_get_parameter( my_agent, EPMEM_PARAM_INDEXING, EPMEM_RETURN_LONG ) == EPMEM_INDEXING_BIGTREE_INSTANCE )
 	{
-		map<unsigned long, Symbol *> ids;
-		unsigned long child_id;
-		unsigned long parent_id;
+		map<epmem_node_id, Symbol *> ids;
+		epmem_node_id child_id;
+		epmem_node_id parent_id;
 		const char *name;
 		int type_code;
 		Symbol *attr = NULL;
@@ -4379,9 +4439,9 @@ void epmem_install_memory( agent *my_agent, Symbol *state, long memory_id )
 	}
 	else if ( epmem_get_parameter( my_agent, EPMEM_PARAM_INDEXING, EPMEM_RETURN_LONG ) == EPMEM_INDEXING_BIGTREE_RANGE )
 	{
-		map<unsigned long, Symbol *> ids;
-		unsigned long child_id;
-		unsigned long parent_id;
+		map<epmem_node_id, Symbol *> ids;
+		epmem_node_id child_id;
+		epmem_node_id parent_id;
 		const char *name;
 		int type_code;
 		Symbol *attr = NULL;
@@ -4445,9 +4505,9 @@ void epmem_install_memory( agent *my_agent, Symbol *state, long memory_id )
 	}
 	else if ( epmem_get_parameter( my_agent, EPMEM_PARAM_INDEXING, EPMEM_RETURN_LONG ) == EPMEM_INDEXING_BIGTREE_RIT )
 	{
-		map<unsigned long, Symbol *> ids;
-		unsigned long child_id;
-		unsigned long parent_id;
+		map<epmem_node_id, Symbol *> ids;
+		epmem_node_id child_id;
+		epmem_node_id parent_id;
 		const char *name;
 		int type_code;
 		Symbol *attr = NULL;
@@ -4525,7 +4585,7 @@ void epmem_install_memory( agent *my_agent, Symbol *state, long memory_id )
 /***************************************************************************
  * Function     : epmem_rit_insert_interval
  **************************************************************************/
-void epmem_rit_insert_interval( agent *my_agent, long lower, long upper, unsigned long id, bool in_transaction )
+void epmem_rit_insert_interval( agent *my_agent, epmem_time_id lower, epmem_time_id upper, epmem_node_id id, bool in_transaction )
 {
 	if ( !in_transaction )
 	{
@@ -4534,7 +4594,7 @@ void epmem_rit_insert_interval( agent *my_agent, long lower, long upper, unsigne
 	}
 
 	// initialize offset
-	long offset = epmem_get_stat( my_agent, EPMEM_STAT_RIT_OFFSET );
+	long long offset = epmem_get_stat( my_agent, EPMEM_STAT_RIT_OFFSET );
 	if ( offset == -1 )
 	{
 		offset = lower;
@@ -4550,20 +4610,20 @@ void epmem_rit_insert_interval( agent *my_agent, long lower, long upper, unsigne
 	}
 
 	// get node
-	long node;
+	long long node;
 	if ( upper == EPMEM_MEMID_NOW )
 	{
 		node = epmem_rit_fork_node( my_agent, lower, upper, false );
 	}
 	else
 	{
-		long left_root = epmem_get_stat( my_agent, EPMEM_STAT_RIT_LEFTROOT );
-		long right_root = epmem_get_stat( my_agent, EPMEM_STAT_RIT_RIGHTROOT );
-		long min_step = epmem_get_stat( my_agent, EPMEM_STAT_RIT_MINSTEP );		
+		long long left_root = epmem_get_stat( my_agent, EPMEM_STAT_RIT_LEFTROOT );
+		long long right_root = epmem_get_stat( my_agent, EPMEM_STAT_RIT_RIGHTROOT );
+		long long min_step = epmem_get_stat( my_agent, EPMEM_STAT_RIT_MINSTEP );		
 
 		// shift interval
-		long l = ( lower - offset );
-		long u = ( upper - offset );
+		epmem_time_id l = ( lower - offset );
+		epmem_time_id u = ( upper - offset );
 
 		// update left_root
 		if ( ( u < EPMEM_RIT_ROOT ) && ( l <= ( 2 * left_root ) ) )
@@ -4596,7 +4656,7 @@ void epmem_rit_insert_interval( agent *my_agent, long lower, long upper, unsigne
 		}
 
 		// update min_step				
-		long step;
+		long long step;
 		node = epmem_rit_fork_node( my_agent, l, u, true, &step );
 
 		if ( ( node != EPMEM_RIT_ROOT ) && ( step < min_step ) )
@@ -4633,28 +4693,28 @@ void epmem_rit_insert_interval( agent *my_agent, long lower, long upper, unsigne
 /***************************************************************************
  * Function     : epmem_rit_fork_node
  **************************************************************************/
-long epmem_rit_fork_node( agent *my_agent, long lower, long upper, bool bounds_offset, long *step_return )
+long long epmem_rit_fork_node( agent *my_agent, epmem_time_id lower, epmem_time_id upper, bool bounds_offset, long long *step_return )
 {
 	if ( upper == EPMEM_MEMID_NOW )
 		return EPMEM_MEMID_NOW;
 	
 	if ( !bounds_offset )
 	{
-		long offset = epmem_get_stat( my_agent, EPMEM_STAT_RIT_OFFSET );
+		long long offset = epmem_get_stat( my_agent, EPMEM_STAT_RIT_OFFSET );
 
 		lower = ( lower - offset );
 		upper = ( upper - offset );
 	}
 	
 	// descend the tree down to the fork node
-	long node = EPMEM_RIT_ROOT;
+	long long node = EPMEM_RIT_ROOT;
 	if ( upper < EPMEM_RIT_ROOT )
 		node = epmem_get_stat( my_agent, EPMEM_STAT_RIT_LEFTROOT );
 	else if ( lower > EPMEM_RIT_ROOT )
 		node = epmem_get_stat( my_agent, EPMEM_STAT_RIT_RIGHTROOT );
 
-	long step;	
-	for ( step = abs( node / 2 ); step >= 1; step /= 2 )
+	long long step;	
+	for ( step = ( ( ( node >= 0 )?( node ):( -1 * node ) ) / 2 ); step >= 1; step /= 2 )
 	{
 		if ( upper < node )
 			node -= step;
@@ -4673,12 +4733,12 @@ long epmem_rit_fork_node( agent *my_agent, long lower, long upper, bool bounds_o
 /***************************************************************************
  * Function     : epmem_rit_prep_left_right
  **************************************************************************/
-void epmem_rit_prep_left_right( agent *my_agent, long lower, long upper )
+void epmem_rit_prep_left_right( agent *my_agent, epmem_time_id lower, epmem_time_id upper )
 {
-	long offset = epmem_get_stat( my_agent, EPMEM_STAT_RIT_OFFSET );
-	long node, step;
-	long left_node, left_step;
-	long right_node, right_step;
+	long long offset = epmem_get_stat( my_agent, EPMEM_STAT_RIT_OFFSET );
+	long long node, step;
+	long long left_node, left_step;
+	long long right_node, right_step;
 
 	lower = ( lower - offset );
 	upper = ( upper - offset );
@@ -4702,7 +4762,7 @@ void epmem_rit_prep_left_right( agent *my_agent, long lower, long upper )
 			epmem_rit_add_right( my_agent, EPMEM_RIT_ROOT );
 		}
 
-		for ( step = ( abs( node ) / 2 ); step >= 1; step /= 2 )
+		for ( step = ( ( ( node >= 0 )?( node ):( -1 * node ) ) / 2 ); step >= 1; step /= 2 )
 		{
 			if ( lower > node )
 			{
@@ -4765,7 +4825,7 @@ void epmem_rit_clear_left_right( agent *my_agent )
 /***************************************************************************
  * Function     : epmem_rit_add_left
  **************************************************************************/
-void epmem_rit_add_left( agent *my_agent, long min, long max )
+void epmem_rit_add_left( agent *my_agent, epmem_time_id min, epmem_time_id max )
 {
 	sqlite3_bind_int64( my_agent->epmem_statements[ EPMEM_STMT_BIGTREE_RIT_ADD_LEFT ], 1, min );
 	sqlite3_bind_int64( my_agent->epmem_statements[ EPMEM_STMT_BIGTREE_RIT_ADD_LEFT ], 2, max );
@@ -4777,7 +4837,7 @@ void epmem_rit_add_left( agent *my_agent, long min, long max )
 /***************************************************************************
  * Function     : epmem_rit_add_right
  **************************************************************************/
-void epmem_rit_add_right( agent *my_agent, long id )
+void epmem_rit_add_right( agent *my_agent, epmem_time_id id )
 {
 	sqlite3_bind_int64( my_agent->epmem_statements[ EPMEM_STMT_BIGTREE_RIT_ADD_RIGHT ], 1, id );	
 

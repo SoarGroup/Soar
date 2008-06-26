@@ -960,10 +960,10 @@ void wma_init( agent *my_agent )
 		long i;
 		long n;
 
-		unsigned long history_iter;
-		unsigned long test_iter;
-		unsigned long time_iter;
-		unsigned long avg;
+		long history_iter;
+		long test_iter;
+		long time_iter;
+		long avg;
 
 		// Loop over all possible history counts
 		for( el.history_count=1; el.history_count<=WMA_DECAY_HISTORY; el.history_count++ )
@@ -1043,7 +1043,7 @@ void wma_deinit( agent *my_agent )
 		return;
 	
 	{
-		long first_spot, last_spot, i;
+		long first_spot, last_spot;
 		wma_decay_element_t *remove_this;
 
 		first_spot = my_agent->wma_timelist_current->position;
@@ -1548,34 +1548,34 @@ void wma_update_wmes_tested_in_prods( agent *my_agent )
 }
 
 /***************************************************************************
- * Function     : wma_get_wme_activation_level
+ * Function     : wma_get_wme_activation_low
  * Author		: Andy Nuxoll?
  * Notes		: This function is provided for external use.  Given a WME, 
  *                this it calculates an approximate activation level of that 
- *                WME as an integer between 0 and WMA_MAX_TIMELIST.  The 
+ *                WME as a floating point number between 0 and 1.  The 
  *                higher the number the more activated the WME is.
  *                Calculating a real valued activation level is expensive
  *                and usually unnecessary.  This function provides a nice
  *                compromise.
  *
  *                If the given WME does not have a decay element, this 
- *                function returns WMA_ACTIVATION_NONE_INT.
+ *                function returns WMA_ACTIVATION_NONE.
  **************************************************************************/
-long wma_get_wme_activation_level( agent *my_agent, wme *w )
+double wma_get_wme_activation_low( agent *my_agent, wme *w )
 {
 	if ( !w->wma_has_decay_element )
-		return (long) WMA_ACTIVATION_NONE_INT;
+		return (double) WMA_ACTIVATION_NONE;
 	
 	{
 		long wme_pos = w->wma_decay_element->time_spot->position;
 		long curr_pos = my_agent->wma_timelist_current->position;
 
-		return ( ( wme_pos >= curr_pos )?( wme_pos - curr_pos ):( ( WMA_MAX_TIMELIST + 1 ) - curr_pos + wme_pos ) );
+		return ( ( ( wme_pos >= curr_pos )?( wme_pos - curr_pos ):( ( WMA_MAX_TIMELIST + 1 ) - curr_pos + wme_pos ) ) / WMA_MAX_TIMELIST );
 	}
 }
 
 /***************************************************************************
- * Function     : wma_get_wme_activation
+ * Function     : wma_get_wme_activation_high
  * Author		: Andy Nuxoll?
  * Notes		: This function is provided for external use.  Given a WME, 
  *                this it calculates an EXACT activation level of that WME 
@@ -1583,12 +1583,12 @@ long wma_get_wme_activation_level( agent *my_agent, wme *w )
  *                more activated the WME is.
  *
  *                If the given WME does not have a decay element, this 
- *                function returns WMA_ACTIVATION_NONE_DOUBLE
+ *                function returns WMA_ACTIVATION_NONE
  **************************************************************************/
-double wma_get_wme_activation( agent *my_agent, wme *w )
+double wma_get_wme_activation_high( agent *my_agent, wme *w )
 {
 	if ( !w->wma_has_decay_element )
-		return (double) WMA_ACTIVATION_NONE_DOUBLE;
+		return (double) WMA_ACTIVATION_NONE;
 
 	double sum = 0.0;
 	{
@@ -1604,6 +1604,20 @@ double wma_get_wme_activation( agent *my_agent, wme *w )
 	}
 
 	return sum;
+}
+
+/***************************************************************************
+ * Function     : wma_get_wme_activation
+ * Author		: Nate Derbinsky
+ * Notes		: This function is provided for external use.  Given a WME, 
+ *                this it calculates activation based upon current
+ *                precision parameter.
+ **************************************************************************/
+double wma_get_wme_activation( agent *my_agent, wme *w )
+{	
+	return ( ( wma_get_parameter( my_agent, WMA_PARAM_PRECISION, WMA_RETURN_LONG ) == WMA_PRECISION_HIGH )?
+		     ( wma_get_wme_activation_high( my_agent, w ) ):
+			 ( wma_get_wme_activation_low( my_agent, w ) ) );
 }
 
 /***************************************************************************

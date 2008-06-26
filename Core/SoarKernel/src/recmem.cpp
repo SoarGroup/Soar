@@ -650,7 +650,7 @@ void create_instantiation (agent* thisAgent, production *prod,
 	   else
 	   {
 		   pref = NIL;
-		   Symbol *result = rl_build_template_instantiation( thisAgent, inst, tok, w );
+		   rl_build_template_instantiation( thisAgent, inst, tok, w );
 	   }
 	  
 	   /* SoarTech changed from an IF stmt to a WHILE loop to support GlobalDeepCpy */

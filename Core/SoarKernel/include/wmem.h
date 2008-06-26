@@ -49,6 +49,9 @@ typedef union symbol_union Symbol;
 
 typedef struct wma_decay_element_struct wma_decay_element_t;
 
+typedef unsigned long long int epmem_node_id;
+typedef long long int epmem_time_id;
+
 extern void reset_wme_timetags (agent* thisAgent);
 extern wme *make_wme (agent* thisAgent, Symbol *id, Symbol *attr, Symbol *value,Bool acceptable);
 extern void add_wme_to_wm (agent* thisAgent, wme *w);
@@ -149,8 +152,8 @@ typedef struct wme_struct {
   /* REW: end   09.15.96 */
 
 
-  unsigned long epmem_id;
-  unsigned long epmem_valid;
+  epmem_node_id epmem_id;
+  epmem_time_id epmem_valid;
 
   wma_decay_element_t *wma_decay_element;
   bool wma_has_decay_element;

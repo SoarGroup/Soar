@@ -182,9 +182,14 @@ typedef struct epmem_parameter_struct
 
 typedef struct epmem_stat_struct
 {
-	double value;
+	long long value;
 	const char *name;
 } epmem_stat;
+
+//
+
+typedef unsigned long long int epmem_node_id;
+typedef long long int epmem_time_id;
 
 typedef struct epmem_data_struct 
 {
@@ -194,13 +199,19 @@ typedef struct epmem_data_struct
 	unsigned long last_cmd_time;	// last update to epmem.command
 	unsigned long last_cmd_count;	// last update to epmem.command
 
-	int last_memory;				// last retrieved memory
+	epmem_time_id last_memory;		// last retrieved memory
 
 	wme *ss_wme;
 
 	std::list<wme *> *cue_wmes;		// wmes in last cue
 	std::stack<wme *> *epmem_wmes;	// wmes in last epmem
 } epmem_data;
+
+typedef struct epmem_leaf_node_struct
+{
+	epmem_node_id leaf_id;
+	double leaf_weight;
+} epmem_leaf_node;
 
 //
 // These must go below types
@@ -313,12 +324,12 @@ extern bool epmem_valid_stat( agent *my_agent, const char *name );
 extern bool epmem_valid_stat( agent *my_agent, const long stat );
 
 // get stat
-extern double epmem_get_stat( agent *my_agent, const char *name );
-extern double epmem_get_stat( agent *my_agent, const long stat );
+extern long long epmem_get_stat( agent *my_agent, const char *name );
+extern long long epmem_get_stat( agent *my_agent, const long stat );
 
 // set stat
-extern bool epmem_set_stat( agent *my_agent, const char *name, double new_val );
-extern bool epmem_set_stat( agent *my_agent, const long stat, double new_val );
+extern bool epmem_set_stat( agent *my_agent, const char *name, long long new_val );
+extern bool epmem_set_stat( agent *my_agent, const long stat, long long new_val );
 
 //////////////////////////////////////////////////////////
 // Core Functions
@@ -331,30 +342,14 @@ extern void epmem_end( agent *my_agent );
 // Called to consider adding new episodes to the store
 extern void epmem_consider_new_episode( agent *my_agent );
 
-// Called to add a new episode to the store
-extern void epmem_new_episode( agent *my_agent );
-
-// Called to determine if a memory_id is valid
-extern bool epmem_episode_exists( agent *my_agent, long memory_id );
-
-// Called to determine the next episode id
-extern long epmem_next_episode( agent *my_agent, long memory_id );
-
-// Called to determine the previous episode id
-extern long epmem_previous_episode( agent *my_agent, long memory_id );
-
 // Called to react to commands
 extern void epmem_respond_to_cmd( agent *my_agent );
-extern void epmem_clear_result( agent *my_agent, Symbol *state );
-
-// Called to install a particular memory into WM
-extern void epmem_install_memory( agent *my_agent, Symbol *state, long memory_id );
-
-// Called to get a particular wme augmentation
-extern wme *epmem_get_aug_of_id( agent *my_agent, Symbol *sym, char *attr_name, char *value_name );
 
 // Called to create/remove a fake preference for an epmem wme
 extern preference *epmem_make_fake_preference( agent *my_agent, Symbol *state, wme *w );
 extern void epmem_remove_fake_preference( agent *my_agent, wme *w );
+
+// Called to get a specific symbol augmentation
+extern wme *epmem_get_aug_of_id( agent *my_agent, Symbol *sym, char *attr_name, char *value_name );
 
 #endif
