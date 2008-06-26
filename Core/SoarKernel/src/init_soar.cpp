@@ -874,15 +874,15 @@ void do_one_top_level_phase (agent* thisAgent)
 	  /** KJC June 05:  moved output function timers into do_output_cycle ***/
 
 	  do_output_cycle(thisAgent);
-	  
+
+	  if ( wma_enabled( thisAgent ) )
+		  wma_move_and_remove_wmes( thisAgent );
+
 	  if ( epmem_enabled( thisAgent ) )
 	  {
 		  epmem_consider_new_episode( thisAgent );
 		  epmem_respond_to_cmd( thisAgent );
 	  }
-
-	  if ( wma_enabled( thisAgent ) )
-		  wma_move_and_remove_wmes( thisAgent );
 
 	  // Count the outputs the agent generates (or times reaching max-nil-outputs without sending output)
 	  if (thisAgent->output_link_changed || ((++(thisAgent->run_last_output_count)) >= (unsigned long)thisAgent->sysparams[MAX_NIL_OUTPUT_CYCLES_SYSPARAM]))
