@@ -30,6 +30,8 @@
 #include "io_soar.h"
 #include "soar_rand.h"
 
+#include "wma.h"
+
 #include "soar_TraceNames.h"
 #include "xml.h"
 
@@ -1815,7 +1817,7 @@ void epmem_new_episode( agent *my_agent )
 						double **p =& epmem[ wmes[i]->epmem_id ];
 						
 						// replace rand here with actual weight
-						double my_val = 1;
+						double my_val = wma_get_wme_activation( my_agent, wmes[i] );
 						if ( *p == NULL )
 							*p = new double( my_val );
 						else if ( my_val > **p )
@@ -1840,7 +1842,7 @@ void epmem_new_episode( agent *my_agent )
 				sqlite3_bind_null( my_agent->epmem_statements[ EPMEM_STMT_BIGTREE_I_ADD_EPISODE ], 3 );
 			else
 			{
-				sqlite3_bind_int64( my_agent->epmem_statements[ EPMEM_STMT_BIGTREE_I_ADD_EPISODE ], 3, (*e->second) );
+				sqlite3_bind_double( my_agent->epmem_statements[ EPMEM_STMT_BIGTREE_I_ADD_EPISODE ], 3, *(e->second) );
 				delete e->second;
 			}
 
