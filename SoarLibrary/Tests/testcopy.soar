@@ -9,7 +9,7 @@ sp {copy-test*propose*copy
               ^io <io>)
    (<io> ^input-link.sentence <sc>
         -^output-link <sc>)
-   (<sc> ^newest yes)
+   (<sc> ^newest |ye s|)
 -->
    (<s> ^operator <op> +)
    (<op> ^name copy
