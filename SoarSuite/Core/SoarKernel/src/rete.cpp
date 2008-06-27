@@ -7434,49 +7434,6 @@ void get_all_node_count_stats (agent* thisAgent) {
   thisAgent->if_no_sharing[UNHASHED_MP_BNODE] = 0;
 }
 
-void print_node_count_statistics (agent* thisAgent) {
-  int i;
-  unsigned long tot;
-
-  get_all_node_count_stats(thisAgent);
-
-  /* --- print table headers --- */
-#ifdef SHARING_FACTORS
-  print (thisAgent, "      Node Type           Actual  If no merging  If no sharing\n");
-  print (thisAgent, "---------------------  ---------  -------------  -------------\n");
-#else
-  print (thisAgent, "      Node Type           Actual  If no merging\n");
-  print (thisAgent, "---------------------  ---------  -------------\n");
-#endif
-
-  /* --- print main table --- */
-  for (i=0; i<256; i++) if (*bnode_type_names[i]) {
-    print (thisAgent, "%21s  %9lu  %13lu", bnode_type_names[i],
-           thisAgent->actual[i], thisAgent->if_no_merging[i]);
-#ifdef SHARING_FACTORS
-    print (thisAgent, "  %13lu", thisAgent->if_no_sharing[i]);
-#endif
-    print (thisAgent, "\n");
-  }
-
-  /* --- print table end (totals) --- */
-#ifdef SHARING_FACTORS
-  print (thisAgent, "---------------------  ---------  -------------  -------------\n");
-#else
-  print (thisAgent, "---------------------  ---------  -------------\n");
-#endif
-  print (thisAgent, "                Total");
-  for (tot=0, i=0; i<256; i++) tot+=thisAgent->actual[i];
-  print (thisAgent, "  %9lu", tot);
-  for (tot=0, i=0; i<256; i++) tot+=thisAgent->if_no_merging[i];
-  print (thisAgent, "  %13lu", tot);
-#ifdef SHARING_FACTORS
-  for (tot=0, i=0; i<256; i++) tot+=thisAgent->if_no_sharing[i];
-  print (thisAgent, "  %13lu", tot);
-#endif
-  print (thisAgent, "\n");
-}
-
 /* Returns 0 if result invalid, 1 if result valid */
 int get_node_count_statistic (agent* thisAgent, 
                                   char * node_type_name, 
@@ -7541,18 +7498,6 @@ int get_node_count_statistic (agent* thisAgent,
     }
 
   return 1;
-}
-
-void print_rete_statistics (agent* thisAgent) {
-
-#ifdef TOKEN_SHARING_STATS
-  print ("Token additions: %lu   If no sharing: %lu\n",
-         thisAgent->token_additions,
-         thisAgent->token_additions_without_sharing);
-#endif
-
-  print_node_count_statistics(thisAgent);
-  print_null_activation_stats();
 }
 
 /* ----------------------------------------------------------------------
