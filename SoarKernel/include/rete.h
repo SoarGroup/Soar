@@ -120,9 +120,7 @@ extern void xml_partial_match_information (agent* thisAgent, rete_node *p_node, 
 
 extern void print_match_set (agent* thisAgent, wme_trace_type wtt, ms_trace_type  mst);
 extern void xml_match_set (agent* thisAgent, wme_trace_type wtt, ms_trace_type  mst);
-extern void print_rete_statistics (agent* thisAgent);
 extern void get_all_node_count_stats (agent* thisAgent);
-extern void print_node_count_statistics (agent* thisAgent);
 extern int get_node_count_statistic (agent* thisAgent, char * node_type_name, 
 				     char * column_name, 
 				     unsigned long * result);

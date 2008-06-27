@@ -101,15 +101,15 @@ public:
 	typedef std::list<WMElement*>::iterator ChildrenIter ;
 	typedef std::list<WMElement*>::const_iterator ChildrenConstIter ;
 
+	ChildrenIter GetChildrenBegin() { return m_pSymbol->m_Children.begin() ; }
+	ChildrenIter GetChildrenEnd()   { return m_pSymbol->m_Children.end() ; }
+
 protected:
 	// Two identifiers (i.e. two wmes) can share the same identifier value
 	// So each identifier has a pointer to a symbol object, but two could share the same object.
 	IdentifierSymbol* m_pSymbol ;
 
 	IdentifierSymbol* GetSymbol() { return m_pSymbol ; }
-
-	ChildrenIter GetChildrenBegin() { return m_pSymbol->m_Children.begin() ; }
-	ChildrenIter GetChildrenEnd()   { return m_pSymbol->m_Children.end() ; }
 
 	void SetParent(Identifier* pParent) ;
 

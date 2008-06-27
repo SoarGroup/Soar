@@ -515,8 +515,8 @@ Identifier* WorkingMemory::GetInputLink()
 bool WorkingMemory::SynchronizeInputLink()
 {
 	// Not supported for direct connections
-	if (GetConnection()->IsDirectConnection())
-		return false ;
+	//if (GetConnection()->IsDirectConnection())
+	//	return false ;
 
 	AnalyzeXML response ;
 

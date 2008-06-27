@@ -780,6 +780,8 @@ protected:
 	std::string GenerateErrorString();
 
 	void GetSystemStats(); // for stats
+	void GetMemoryStats(); // for stats
+	void GetReteStats(); // for stats
 
 ////////////////////////////////////////////
 	// New options code

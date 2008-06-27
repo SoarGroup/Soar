@@ -307,32 +307,6 @@ void init_memory_pool (agent* thisAgent, memory_pool *p, long item_size, char *n
   p->name[MAX_POOL_NAME_LENGTH - 1] = 0; /* ensure null termination */
 }
 
-void print_memory_pool_statistics (agent* thisAgent) {
-  memory_pool *p;
-
-  print(thisAgent, "Memory pool statistics:\n\n");
-#ifdef MEMORY_POOL_STATS
-  print(thisAgent, "Pool Name        Used Items  Free Items  Item Size  Total Bytes\n");
-  print(thisAgent, "---------------  ----------  ----------  ---------  -----------\n");
-#else
-  print(thisAgent, "Pool Name        Item Size  Total Bytes\n");
-  print(thisAgent, "---------------  ---------  -----------\n");
-#endif
-
-  for (p=thisAgent->memory_pools_in_use; p!=NIL; p=p->next) {
-    print_string (thisAgent, p->name);
-    print_spaces (thisAgent, MAX_POOL_NAME_LENGTH - strlen(p->name));
-#ifdef MEMORY_POOL_STATS
-	long total_items;
-    print(thisAgent, "  %10lu", p->used_count);
-    total_items = p->num_blocks * p->items_per_block;
-    print(thisAgent, "  %10lu", total_items - p->used_count);
-#endif
-    print(thisAgent, "  %9lu", p->item_size);
-    print(thisAgent, "  %11lu\n", p->num_blocks * p->items_per_block * p->item_size);
-  }
-}
-
 /* ====================================================================
 
                     Cons Cell and List Utilities
