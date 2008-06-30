@@ -990,7 +990,7 @@ TEST_DEFINITION( testSimpleCopy )
 	CPPUNIT_ASSERT( pNewestWME );
 	sml::StringElement* pNewest = pNewestWME->ConvertToStringElement();
 	CPPUNIT_ASSERT( pNewest );
-	CPPUNIT_ASSERT( std::string( pNewest->GetValue() ) == "|ye s|" );
+	CPPUNIT_ASSERT( std::string( pNewest->GetValue() ) == "ye s" );
 	
 	int changes = m_pAgent->GetNumberOutputLinkChanges() ;
 
