@@ -349,3 +349,19 @@ void Handlers::MyCallStopOnUpdateEventHandler( sml::smlUpdateEventId, void*, sml
 	pKernel->StopAllAgents();
 }
 
+void Handlers::MyAgentCreationUpdateEventHandler( sml::smlUpdateEventId, void* pUserData, sml::Kernel* pKernel, sml::smlRunFlags )
+{
+	CPPUNIT_ASSERT( pUserData );
+	sml::Agent** ppAgent = static_cast< sml::Agent** >( pUserData );
+	if ( *ppAgent != 0 )
+	{
+		return;
+	}
+
+	sml::Agent* pAgent = pKernel->CreateAgent( "onthefly" );
+	CPPUNIT_ASSERT_MESSAGE( pKernel->GetLastErrorDescription(), !pKernel->HadError() );
+
+	*ppAgent = pAgent;
+	CPPUNIT_ASSERT( *ppAgent != 0 );
+}
+
