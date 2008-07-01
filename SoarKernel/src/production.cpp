@@ -1465,7 +1465,7 @@ Symbol *generate_new_variable (agent* thisAgent, char *prefix) {
 
   first_letter = *prefix;
   if (isalpha(first_letter)) {
-    if (isupper(first_letter)) first_letter = tolower(first_letter);
+    if (isupper(first_letter)) first_letter = static_cast<char>(tolower(first_letter));
   } else {
     first_letter = 'v';
   }
@@ -1625,7 +1625,7 @@ void excise_all_productions(agent* thisAgent,
   // Excise all the productions of the four different types
   for (int i=0; i < NUM_PRODUCTION_TYPES; i++) {
     excise_all_productions_of_type(thisAgent, 
-                                   i, 
+                                   static_cast<byte>(i), 
                                    (bool)(print_sharp_sign&&thisAgent->sysparams[TRACE_LOADING_SYSPARAM]));
   }
 }

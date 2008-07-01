@@ -196,7 +196,7 @@ void variablize_symbol (agent* thisAgent, Symbol **sym) {
 
   /* --- need to create a new variable --- */
   (*sym)->id.tc_num = thisAgent->variablization_tc;
-  prefix[0] = tolower((*sym)->id.name_letter);
+  prefix[0] = static_cast<char>(tolower((*sym)->id.name_letter));
   prefix[1] = 0;
   var = generate_new_variable (thisAgent, prefix);
   (*sym)->id.variablization = var;
@@ -627,7 +627,7 @@ void add_goal_or_impasse_tests (agent* thisAgent, chunk_cond *all_ccs) {
     if ( (id->id.isa_goal || id->id.isa_impasse) &&
          (id->id.tc_num != tc) ) {
       allocate_with_pool (thisAgent, &thisAgent->complex_test_pool, &ct);
-      ct->type = (id->id.isa_goal) ? GOAL_ID_TEST : IMPASSE_ID_TEST;
+      ct->type = static_cast<byte>((id->id.isa_goal) ? GOAL_ID_TEST : IMPASSE_ID_TEST);
       t = make_test_from_complex_test(ct);
       add_new_test_to_test (thisAgent, &(cc->variablized_cond->data.tests.id_test), t);
       id->id.tc_num = tc;

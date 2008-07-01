@@ -195,7 +195,7 @@ char *string_to_escaped_string (agent* thisAgent, char *s,
 }
 
 
-char const* symbol_to_typeString(agent* thisAgent, Symbol* sym)
+char const* symbol_to_typeString(agent* /*thisAgent*/, Symbol* sym)
 {
   switch(sym->common.symbol_type) {
   case VARIABLE_SYMBOL_TYPE:
@@ -1175,7 +1175,7 @@ void print_phase (agent* thisAgent, char * s, bool end_of_phase)
 
 ===========================
 */
-Bool wme_filter_component_match(Symbol *filterComponent, Symbol *wmeComponent) {
+Bool wme_filter_component_match(Symbol * /*filterComponent*/, Symbol * /*wmeComponent*/) {
 //  if ((filterComponent->common.symbol_type == SYM_CONSTANT_SYMBOL_TYPE) &&
 //      (!strcmp(filterComponent->sc.name,"*"))) 
 //    return TRUE;
@@ -1189,7 +1189,7 @@ Bool wme_filter_component_match(Symbol *filterComponent, Symbol *wmeComponent) {
 
 ===========================
 */
-Bool passes_wme_filtering(agent* thisAgent, wme *w, Bool isAdd) {
+Bool passes_wme_filtering(agent* /*thisAgent*/, wme * /*w*/, Bool /*isAdd*/) {
 //  cons *c;
 //  wme_filter *wf;
 //
