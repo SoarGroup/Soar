@@ -23,6 +23,8 @@
 #include "print.h"
 #include "rete.h" // for get_node_count_statistics
 
+extern char *bnode_type_names[256];
+
 #include <iomanip>
 
 using namespace cli;
@@ -68,85 +70,89 @@ bool CommandLineInterface::ParseStats(std::vector<std::string>& argv) {
 
 
 bool CommandLineInterface::DoStats(const StatsBitset& options) {
+
+	// Set precision now, RESET BEFORE RETURN
+	size_t oldPrecision = m_Result.precision(3);
+	m_Result << std::setiosflags( std::ios_base::fixed );
+
 	if ( options.test(STATS_MEMORY) )
 	{
 		GetMemoryStats();
 	}
 	if ( options.test(STATS_RETE) )
 	{
-		//GetReteStats();
-		return false;
+		GetReteStats();
 	}
 	if ( (!options.test(STATS_MEMORY) && !options.test(STATS_RETE)) || options.test(STATS_SYSTEM) )
 	{
 		GetSystemStats();
 	}
-	return true;
+	m_Result << std::resetiosflags( std::ios_base::fixed );
+	m_Result.precision( oldPrecision );
 
-	//AppendArgTagFast(sml_Names::kParamStatsProductionCountDefault,				sml_Names::kTypeInt,	Int2String(stats.productionCountDefault, buf, kMinBufferSize));
-	//AppendArgTagFast(sml_Names::kParamStatsProductionCountUser,					sml_Names::kTypeInt,	Int2String(stats.productionCountUser, buf, kMinBufferSize));
-	//AppendArgTagFast(sml_Names::kParamStatsProductionCountChunk,				sml_Names::kTypeInt,	Int2String(stats.productionCountChunk, buf, kMinBufferSize));
-	//AppendArgTagFast(sml_Names::kParamStatsProductionCountJustification,		sml_Names::kTypeInt,	Int2String(stats.productionCountJustification, buf, kMinBufferSize));
-	//AppendArgTagFast(sml_Names::kParamStatsCycleCountDecision,					sml_Names::kTypeInt,	Int2String(stats.cycleCountDecision, buf, kMinBufferSize));
-	//AppendArgTagFast(sml_Names::kParamStatsCycleCountElaboration,				sml_Names::kTypeInt,	Int2String(stats.cycleCountElaboration, buf, kMinBufferSize));
-	//AppendArgTagFast(sml_Names::kParamStatsProductionFiringCount,				sml_Names::kTypeInt,	Int2String(stats.productionFiringCount, buf, kMinBufferSize));
-	//AppendArgTagFast(sml_Names::kParamStatsWmeCountAddition,					sml_Names::kTypeInt,	Int2String(stats.wmeCountAddition, buf, kMinBufferSize));
-	//AppendArgTagFast(sml_Names::kParamStatsWmeCountRemoval,						sml_Names::kTypeInt,	Int2String(stats.wmeCountRemoval, buf, kMinBufferSize));
-	//AppendArgTagFast(sml_Names::kParamStatsWmeCount,							sml_Names::kTypeInt,	Int2String(stats.wmeCount, buf, kMinBufferSize));
-	//AppendArgTagFast(sml_Names::kParamStatsWmeCountAverage,						sml_Names::kTypeDouble, Double2String(stats.wmeCountAverage, buf, kMinBufferSize));
-	//AppendArgTagFast(sml_Names::kParamStatsWmeCountMax,							sml_Names::kTypeInt,	Int2String(stats.wmeCountMax, buf, kMinBufferSize));
-	//AppendArgTagFast(sml_Names::kParamStatsKernelCPUTime,						sml_Names::kTypeDouble, Double2String(stats.kernelCPUTime, buf, kMinBufferSize));
-	//AppendArgTagFast(sml_Names::kParamStatsTotalCPUTime,						sml_Names::kTypeDouble, Double2String(stats.totalCPUTime, buf, kMinBufferSize));
-	//AppendArgTagFast(sml_Names::kParamStatsPhaseTimeInputPhase,					sml_Names::kTypeDouble, Double2String(stats.phaseTimeInputPhase, buf, kMinBufferSize)); 
-	//AppendArgTagFast(sml_Names::kParamStatsPhaseTimeProposePhase,				sml_Names::kTypeDouble, Double2String(stats.phaseTimeProposePhase, buf, kMinBufferSize)); 
-	//AppendArgTagFast(sml_Names::kParamStatsPhaseTimeDecisionPhase,				sml_Names::kTypeDouble, Double2String(stats.phaseTimeDecisionPhase, buf, kMinBufferSize));
-	//AppendArgTagFast(sml_Names::kParamStatsPhaseTimeApplyPhase,					sml_Names::kTypeDouble, Double2String(stats.phaseTimeApplyPhase, buf, kMinBufferSize));  
-	//AppendArgTagFast(sml_Names::kParamStatsPhaseTimeOutputPhase,				sml_Names::kTypeDouble, Double2String(stats.phaseTimeOutputPhase, buf, kMinBufferSize)); 
-	//AppendArgTagFast(sml_Names::kParamStatsPhaseTimePreferencePhase,			sml_Names::kTypeDouble, Double2String(stats.phaseTimePreferencePhase, buf, kMinBufferSize)); 
-	//AppendArgTagFast(sml_Names::kParamStatsPhaseTimeWorkingMemoryPhase,			sml_Names::kTypeDouble, Double2String(stats.phaseTimeWorkingMemoryPhase, buf, kMinBufferSize)); 
-	//AppendArgTagFast(sml_Names::kParamStatsMonitorTimeInputPhase,				sml_Names::kTypeDouble, Double2String(stats.monitorTimeInputPhase, buf, kMinBufferSize));
-	//AppendArgTagFast(sml_Names::kParamStatsMonitorTimeProposePhase,				sml_Names::kTypeDouble, Double2String(stats.monitorTimeProposePhase, buf, kMinBufferSize));
-	//AppendArgTagFast(sml_Names::kParamStatsMonitorTimeDecisionPhase,			sml_Names::kTypeDouble, Double2String(stats.monitorTimeDecisionPhase, buf, kMinBufferSize));
-	//AppendArgTagFast(sml_Names::kParamStatsMonitorTimeApplyPhase,				sml_Names::kTypeDouble, Double2String(stats.monitorTimeApplyPhase, buf, kMinBufferSize));
-	//AppendArgTagFast(sml_Names::kParamStatsMonitorTimeOutputPhase,				sml_Names::kTypeDouble, Double2String(stats.monitorTimeOutputPhase, buf, kMinBufferSize));
-	//AppendArgTagFast(sml_Names::kParamStatsMonitorTimePreferencePhase,			sml_Names::kTypeDouble, Double2String(stats.monitorTimePreferencePhase, buf, kMinBufferSize));
-	//AppendArgTagFast(sml_Names::kParamStatsMonitorTimeWorkingMemoryPhase,		sml_Names::kTypeDouble, Double2String(stats.monitorTimeWorkingMemoryPhase, buf, kMinBufferSize));
-	//AppendArgTagFast(sml_Names::kParamStatsInputFunctionTime,					sml_Names::kTypeDouble, Double2String(stats.inputFunctionTime, buf, kMinBufferSize));
-	//AppendArgTagFast(sml_Names::kParamStatsOutputFunctionTime,					sml_Names::kTypeDouble, Double2String(stats.outputFunctionTime, buf, kMinBufferSize));	
-	//AppendArgTagFast(sml_Names::kParamStatsMatchTimeInputPhase,					sml_Names::kTypeDouble, Double2String(stats.matchTimeInputPhase, buf, kMinBufferSize));
-	//AppendArgTagFast(sml_Names::kParamStatsMatchTimePreferencePhase,			sml_Names::kTypeDouble, Double2String(stats.matchTimePreferencePhase, buf, kMinBufferSize));
-	//AppendArgTagFast(sml_Names::kParamStatsMatchTimeWorkingMemoryPhase,			sml_Names::kTypeDouble, Double2String(stats.matchTimeWorkingMemoryPhase, buf, kMinBufferSize));
-	//AppendArgTagFast(sml_Names::kParamStatsMatchTimeOutputPhase,				sml_Names::kTypeDouble, Double2String(stats.matchTimeOutputPhase, buf, kMinBufferSize));
-	//AppendArgTagFast(sml_Names::kParamStatsMatchTimeDecisionPhase,				sml_Names::kTypeDouble, Double2String(stats.matchTimeDecisionPhase, buf, kMinBufferSize));
-	//AppendArgTagFast(sml_Names::kParamStatsMatchTimeProposePhase,				sml_Names::kTypeDouble, Double2String(stats.matchTimeProposePhase, buf, kMinBufferSize));
-	//AppendArgTagFast(sml_Names::kParamStatsMatchTimeApplyPhase,					sml_Names::kTypeDouble, Double2String(stats.matchTimeApplyPhase, buf, kMinBufferSize));
-	//AppendArgTagFast(sml_Names::kParamStatsOwnershipTimeInputPhase,				sml_Names::kTypeDouble, Double2String(stats.ownershipTimeInputPhase, buf, kMinBufferSize));
-	//AppendArgTagFast(sml_Names::kParamStatsOwnershipTimePreferencePhase,		sml_Names::kTypeDouble, Double2String(stats.ownershipTimePreferencePhase, buf, kMinBufferSize));
-	//AppendArgTagFast(sml_Names::kParamStatsOwnershipTimeWorkingMemoryPhase,		sml_Names::kTypeDouble, Double2String(stats.ownershipTimeWorkingMemoryPhase, buf, kMinBufferSize));
-	//AppendArgTagFast(sml_Names::kParamStatsOwnershipTimeOutputPhase,			sml_Names::kTypeDouble, Double2String(stats.ownershipTimeOutputPhase, buf, kMinBufferSize));
-	//AppendArgTagFast(sml_Names::kParamStatsOwnershipTimeDecisionPhase,			sml_Names::kTypeDouble, Double2String(stats.ownershipTimeDecisionPhase, buf, kMinBufferSize));
-	//AppendArgTagFast(sml_Names::kParamStatsOwnershipTimeProposePhase,			sml_Names::kTypeDouble, Double2String(stats.ownershipTimeProposePhase, buf, kMinBufferSize));
-	//AppendArgTagFast(sml_Names::kParamStatsOwnershipTimeApplyPhase,				sml_Names::kTypeDouble, Double2String(stats.ownershipTimeApplyPhase, buf, kMinBufferSize));
-	//AppendArgTagFast(sml_Names::kParamStatsChunkingTimeInputPhase,				sml_Names::kTypeDouble, Double2String(stats.chunkingTimeInputPhase, buf, kMinBufferSize));
-	//AppendArgTagFast(sml_Names::kParamStatsChunkingTimePreferencePhase,			sml_Names::kTypeDouble, Double2String(stats.chunkingTimePreferencePhase, buf, kMinBufferSize));
-	//AppendArgTagFast(sml_Names::kParamStatsChunkingTimeWorkingMemoryPhase,		sml_Names::kTypeDouble, Double2String(stats.chunkingTimeWorkingMemoryPhase, buf, kMinBufferSize));
-	//AppendArgTagFast(sml_Names::kParamStatsChunkingTimeOutputPhase,				sml_Names::kTypeDouble, Double2String(stats.chunkingTimeOutputPhase, buf, kMinBufferSize));
-	//AppendArgTagFast(sml_Names::kParamStatsChunkingTimeDecisionPhase,			sml_Names::kTypeDouble, Double2String(stats.chunkingTimeDecisionPhase, buf, kMinBufferSize));
-	//AppendArgTagFast(sml_Names::kParamStatsChunkingTimeProposePhase,			sml_Names::kTypeDouble, Double2String(stats.chunkingTimeProposePhase, buf, kMinBufferSize));
-	//AppendArgTagFast(sml_Names::kParamStatsChunkingTimeApplyPhase,				sml_Names::kTypeDouble, Double2String(stats.chunkingTimeApplyPhase, buf, kMinBufferSize));
-	//AppendArgTagFast(sml_Names::kParamStatsMemoryUsageMiscellaneous,			sml_Names::kTypeInt,	Int2String(stats.memoryUsageMiscellaneous, buf, kMinBufferSize));
-	//AppendArgTagFast(sml_Names::kParamStatsMemoryUsageHash,						sml_Names::kTypeInt,	Int2String(stats.memoryUsageHash, buf, kMinBufferSize));
-	//AppendArgTagFast(sml_Names::kParamStatsMemoryUsageString,					sml_Names::kTypeInt,	Int2String(stats.memoryUsageString, buf, kMinBufferSize));
-	//AppendArgTagFast(sml_Names::kParamStatsMemoryUsagePool,						sml_Names::kTypeInt,	Int2String(stats.memoryUsagePool, buf, kMinBufferSize));
-	//AppendArgTagFast(sml_Names::kParamStatsMemoryUsageStatsOverhead,			sml_Names::kTypeInt,	Int2String(stats.memoryUsageStatsOverhead, buf, kMinBufferSize));
+	char buf[kMinBufferSize];
+	AppendArgTagFast(sml_Names::kParamStatsProductionCountDefault,				sml_Names::kTypeInt,	Int2String(m_pAgentSoar->num_productions_of_type[DEFAULT_PRODUCTION_TYPE], buf, kMinBufferSize));
+	AppendArgTagFast(sml_Names::kParamStatsProductionCountUser,					sml_Names::kTypeInt,	Int2String(m_pAgentSoar->num_productions_of_type[USER_PRODUCTION_TYPE], buf, kMinBufferSize));
+	AppendArgTagFast(sml_Names::kParamStatsProductionCountChunk,				sml_Names::kTypeInt,	Int2String(m_pAgentSoar->num_productions_of_type[CHUNK_PRODUCTION_TYPE], buf, kMinBufferSize));
+	AppendArgTagFast(sml_Names::kParamStatsProductionCountJustification,		sml_Names::kTypeInt,	Int2String(m_pAgentSoar->num_productions_of_type[JUSTIFICATION_PRODUCTION_TYPE], buf, kMinBufferSize));
+	AppendArgTagFast(sml_Names::kParamStatsCycleCountDecision,					sml_Names::kTypeInt,	Int2String(m_pAgentSoar->decision_phases_count, buf, kMinBufferSize));
+	AppendArgTagFast(sml_Names::kParamStatsCycleCountElaboration,				sml_Names::kTypeInt,	Int2String(m_pAgentSoar->e_cycle_count, buf, kMinBufferSize));
+	AppendArgTagFast(sml_Names::kParamStatsProductionFiringCount,				sml_Names::kTypeInt,	Int2String(m_pAgentSoar->production_firing_count, buf, kMinBufferSize));
+	AppendArgTagFast(sml_Names::kParamStatsWmeCountAddition,					sml_Names::kTypeInt,	Int2String(m_pAgentSoar->wme_addition_count, buf, kMinBufferSize));
+	AppendArgTagFast(sml_Names::kParamStatsWmeCountRemoval,						sml_Names::kTypeInt,	Int2String(m_pAgentSoar->wme_removal_count, buf, kMinBufferSize));
+	AppendArgTagFast(sml_Names::kParamStatsWmeCount,							sml_Names::kTypeInt,	Int2String(m_pAgentSoar->num_wmes_in_rete, buf, kMinBufferSize));
+	AppendArgTagFast(sml_Names::kParamStatsWmeCountAverage,						sml_Names::kTypeDouble, Double2String((m_pAgentSoar->num_wm_sizes_accumulated ? (m_pAgentSoar->cumulative_wm_size / m_pAgentSoar->num_wm_sizes_accumulated) : 0.0), buf, kMinBufferSize));
+	AppendArgTagFast(sml_Names::kParamStatsWmeCountMax,							sml_Names::kTypeInt,	Int2String(m_pAgentSoar->max_wm_size, buf, kMinBufferSize));
+	AppendArgTagFast(sml_Names::kParamStatsKernelCPUTime,						sml_Names::kTypeDouble, Double2String(timer_value(&m_pAgentSoar->total_kernel_time), buf, kMinBufferSize));
+	AppendArgTagFast(sml_Names::kParamStatsTotalCPUTime,						sml_Names::kTypeDouble, Double2String(timer_value(&m_pAgentSoar->total_cpu_time), buf, kMinBufferSize));
+	AppendArgTagFast(sml_Names::kParamStatsPhaseTimeInputPhase,					sml_Names::kTypeDouble, Double2String(timer_value(&m_pAgentSoar->decision_cycle_phase_timers[INPUT_PHASE]), buf, kMinBufferSize)); 
+	AppendArgTagFast(sml_Names::kParamStatsPhaseTimeProposePhase,				sml_Names::kTypeDouble, Double2String(timer_value(&m_pAgentSoar->decision_cycle_phase_timers[PROPOSE_PHASE]), buf, kMinBufferSize)); 
+	AppendArgTagFast(sml_Names::kParamStatsPhaseTimeDecisionPhase,				sml_Names::kTypeDouble, Double2String(timer_value(&m_pAgentSoar->decision_cycle_phase_timers[DECISION_PHASE]), buf, kMinBufferSize));
+	AppendArgTagFast(sml_Names::kParamStatsPhaseTimeApplyPhase,					sml_Names::kTypeDouble, Double2String(timer_value(&m_pAgentSoar->decision_cycle_phase_timers[APPLY_PHASE]), buf, kMinBufferSize));  
+	AppendArgTagFast(sml_Names::kParamStatsPhaseTimeOutputPhase,				sml_Names::kTypeDouble, Double2String(timer_value(&m_pAgentSoar->decision_cycle_phase_timers[OUTPUT_PHASE]), buf, kMinBufferSize)); 
+	AppendArgTagFast(sml_Names::kParamStatsPhaseTimePreferencePhase,			sml_Names::kTypeDouble, Double2String(timer_value(&m_pAgentSoar->decision_cycle_phase_timers[PREFERENCE_PHASE]), buf, kMinBufferSize)); 
+	AppendArgTagFast(sml_Names::kParamStatsPhaseTimeWorkingMemoryPhase,			sml_Names::kTypeDouble, Double2String(timer_value(&m_pAgentSoar->decision_cycle_phase_timers[WM_PHASE]), buf, kMinBufferSize)); 
+	AppendArgTagFast(sml_Names::kParamStatsMonitorTimeInputPhase,				sml_Names::kTypeDouble, Double2String(timer_value(&m_pAgentSoar->monitors_cpu_time[INPUT_PHASE]), buf, kMinBufferSize));
+	AppendArgTagFast(sml_Names::kParamStatsMonitorTimeProposePhase,				sml_Names::kTypeDouble, Double2String(timer_value(&m_pAgentSoar->monitors_cpu_time[PROPOSE_PHASE]), buf, kMinBufferSize));
+	AppendArgTagFast(sml_Names::kParamStatsMonitorTimeDecisionPhase,			sml_Names::kTypeDouble, Double2String(timer_value(&m_pAgentSoar->monitors_cpu_time[DECISION_PHASE]), buf, kMinBufferSize));
+	AppendArgTagFast(sml_Names::kParamStatsMonitorTimeApplyPhase,				sml_Names::kTypeDouble, Double2String(timer_value(&m_pAgentSoar->monitors_cpu_time[APPLY_PHASE]), buf, kMinBufferSize));
+	AppendArgTagFast(sml_Names::kParamStatsMonitorTimeOutputPhase,				sml_Names::kTypeDouble, Double2String(timer_value(&m_pAgentSoar->monitors_cpu_time[OUTPUT_PHASE]), buf, kMinBufferSize));
+	AppendArgTagFast(sml_Names::kParamStatsMonitorTimePreferencePhase,			sml_Names::kTypeDouble, Double2String(timer_value(&m_pAgentSoar->monitors_cpu_time[PREFERENCE_PHASE]), buf, kMinBufferSize));
+	AppendArgTagFast(sml_Names::kParamStatsMonitorTimeWorkingMemoryPhase,		sml_Names::kTypeDouble, Double2String(timer_value(&m_pAgentSoar->monitors_cpu_time[WM_PHASE]), buf, kMinBufferSize));
+	AppendArgTagFast(sml_Names::kParamStatsInputFunctionTime,					sml_Names::kTypeDouble, Double2String(timer_value(&m_pAgentSoar->input_function_cpu_time), buf, kMinBufferSize));
+	AppendArgTagFast(sml_Names::kParamStatsOutputFunctionTime,					sml_Names::kTypeDouble, Double2String(timer_value(&m_pAgentSoar->output_function_cpu_time), buf, kMinBufferSize));	
+	AppendArgTagFast(sml_Names::kParamStatsMatchTimeInputPhase,					sml_Names::kTypeDouble, Double2String(timer_value(&m_pAgentSoar->match_cpu_time[INPUT_PHASE]), buf, kMinBufferSize));
+	AppendArgTagFast(sml_Names::kParamStatsMatchTimePreferencePhase,			sml_Names::kTypeDouble, Double2String(timer_value(&m_pAgentSoar->match_cpu_time[PREFERENCE_PHASE]), buf, kMinBufferSize));
+	AppendArgTagFast(sml_Names::kParamStatsMatchTimeWorkingMemoryPhase,			sml_Names::kTypeDouble, Double2String(timer_value(&m_pAgentSoar->match_cpu_time[WM_PHASE]), buf, kMinBufferSize));
+	AppendArgTagFast(sml_Names::kParamStatsMatchTimeOutputPhase,				sml_Names::kTypeDouble, Double2String(timer_value(&m_pAgentSoar->match_cpu_time[OUTPUT_PHASE]), buf, kMinBufferSize));
+	AppendArgTagFast(sml_Names::kParamStatsMatchTimeDecisionPhase,				sml_Names::kTypeDouble, Double2String(timer_value(&m_pAgentSoar->match_cpu_time[DECISION_PHASE]), buf, kMinBufferSize));
+	AppendArgTagFast(sml_Names::kParamStatsMatchTimeProposePhase,				sml_Names::kTypeDouble, Double2String(timer_value(&m_pAgentSoar->match_cpu_time[PROPOSE_PHASE]), buf, kMinBufferSize));
+	AppendArgTagFast(sml_Names::kParamStatsMatchTimeApplyPhase,					sml_Names::kTypeDouble, Double2String(timer_value(&m_pAgentSoar->match_cpu_time[APPLY_PHASE]), buf, kMinBufferSize));
+	AppendArgTagFast(sml_Names::kParamStatsOwnershipTimeInputPhase,				sml_Names::kTypeDouble, Double2String(timer_value(&m_pAgentSoar->ownership_cpu_time[INPUT_PHASE]), buf, kMinBufferSize));
+	AppendArgTagFast(sml_Names::kParamStatsOwnershipTimePreferencePhase,		sml_Names::kTypeDouble, Double2String(timer_value(&m_pAgentSoar->ownership_cpu_time[PREFERENCE_PHASE]), buf, kMinBufferSize));
+	AppendArgTagFast(sml_Names::kParamStatsOwnershipTimeWorkingMemoryPhase,		sml_Names::kTypeDouble, Double2String(timer_value(&m_pAgentSoar->ownership_cpu_time[WM_PHASE]), buf, kMinBufferSize));
+	AppendArgTagFast(sml_Names::kParamStatsOwnershipTimeOutputPhase,			sml_Names::kTypeDouble, Double2String(timer_value(&m_pAgentSoar->ownership_cpu_time[OUTPUT_PHASE]), buf, kMinBufferSize));
+	AppendArgTagFast(sml_Names::kParamStatsOwnershipTimeDecisionPhase,			sml_Names::kTypeDouble, Double2String(timer_value(&m_pAgentSoar->ownership_cpu_time[DECISION_PHASE]), buf, kMinBufferSize));
+	AppendArgTagFast(sml_Names::kParamStatsOwnershipTimeProposePhase,			sml_Names::kTypeDouble, Double2String(timer_value(&m_pAgentSoar->ownership_cpu_time[PROPOSE_PHASE]), buf, kMinBufferSize));
+	AppendArgTagFast(sml_Names::kParamStatsOwnershipTimeApplyPhase,				sml_Names::kTypeDouble, Double2String(timer_value(&m_pAgentSoar->ownership_cpu_time[APPLY_PHASE]), buf, kMinBufferSize));
+	AppendArgTagFast(sml_Names::kParamStatsChunkingTimeInputPhase,				sml_Names::kTypeDouble, Double2String(timer_value(&m_pAgentSoar->chunking_cpu_time[INPUT_PHASE]), buf, kMinBufferSize));
+	AppendArgTagFast(sml_Names::kParamStatsChunkingTimePreferencePhase,			sml_Names::kTypeDouble, Double2String(timer_value(&m_pAgentSoar->chunking_cpu_time[PREFERENCE_PHASE]), buf, kMinBufferSize));
+	AppendArgTagFast(sml_Names::kParamStatsChunkingTimeWorkingMemoryPhase,		sml_Names::kTypeDouble, Double2String(timer_value(&m_pAgentSoar->chunking_cpu_time[WM_PHASE]), buf, kMinBufferSize));
+	AppendArgTagFast(sml_Names::kParamStatsChunkingTimeOutputPhase,				sml_Names::kTypeDouble, Double2String(timer_value(&m_pAgentSoar->chunking_cpu_time[OUTPUT_PHASE]), buf, kMinBufferSize));
+	AppendArgTagFast(sml_Names::kParamStatsChunkingTimeDecisionPhase,			sml_Names::kTypeDouble, Double2String(timer_value(&m_pAgentSoar->chunking_cpu_time[DECISION_PHASE]), buf, kMinBufferSize));
+	AppendArgTagFast(sml_Names::kParamStatsChunkingTimeProposePhase,			sml_Names::kTypeDouble, Double2String(timer_value(&m_pAgentSoar->chunking_cpu_time[PROPOSE_PHASE]), buf, kMinBufferSize));
+	AppendArgTagFast(sml_Names::kParamStatsChunkingTimeApplyPhase,				sml_Names::kTypeDouble, Double2String(timer_value(&m_pAgentSoar->chunking_cpu_time[APPLY_PHASE]), buf, kMinBufferSize));
+	AppendArgTagFast(sml_Names::kParamStatsMemoryUsageMiscellaneous,			sml_Names::kTypeInt,	Int2String(m_pAgentSoar->memory_for_usage[MISCELLANEOUS_MEM_USAGE], buf, kMinBufferSize));
+	AppendArgTagFast(sml_Names::kParamStatsMemoryUsageHash,						sml_Names::kTypeInt,	Int2String(m_pAgentSoar->memory_for_usage[HASH_TABLE_MEM_USAGE], buf, kMinBufferSize));
+	AppendArgTagFast(sml_Names::kParamStatsMemoryUsageString,					sml_Names::kTypeInt,	Int2String(m_pAgentSoar->memory_for_usage[STRING_MEM_USAGE], buf, kMinBufferSize));
+	AppendArgTagFast(sml_Names::kParamStatsMemoryUsagePool,						sml_Names::kTypeInt,	Int2String(m_pAgentSoar->memory_for_usage[POOL_MEM_USAGE], buf, kMinBufferSize));
+	AppendArgTagFast(sml_Names::kParamStatsMemoryUsageStatsOverhead,			sml_Names::kTypeInt,	Int2String(m_pAgentSoar->memory_for_usage[STATS_OVERHEAD_MEM_USAGE], buf, kMinBufferSize));
+
+	return true;
 }
 
 void CommandLineInterface::GetSystemStats()
 {
-	// Set precision now, RESET BEFORE RETURN
-	size_t oldPrecision = m_Result.precision(3);
-	m_Result << std::setiosflags( std::ios_base::fixed );
-
 	// Hostname
 	char hostname[256];
 	memset( hostname, 0, 256 );
@@ -336,15 +342,6 @@ void CommandLineInterface::GetSystemStats()
 		<< (m_pAgentSoar->num_wm_sizes_accumulated ? (m_pAgentSoar->cumulative_wm_size / m_pAgentSoar->num_wm_sizes_accumulated) : 0.0) 
 		<< " mean, "
 		<< m_pAgentSoar->max_wm_size << " maximum\n";
-
-	m_Result << "\n";
-	m_Result << "    *** Time/<x> statistics use the total kernel time from a    ***\n";
-	m_Result << "    *** single kernel timer.  Differences between this value    ***\n";
-	m_Result << "    *** and the computed total kernel time  are expected. See   ***\n";
-	m_Result << "    *** help  for the  stats command  for more  information.    ***\n";
-
-	m_Result << std::resetiosflags( std::ios_base::fixed );
-	m_Result.precision( oldPrecision );
 }
 
 void CommandLineInterface::GetMemoryStats()
@@ -383,60 +380,73 @@ void CommandLineInterface::GetMemoryStats()
 		m_Result << "  " << std::setw(11) << p->num_blocks * p->items_per_block * p->item_size << "\n";
 	}
 }
-//
-//void CommandLineInterface::GetReteStats()
-//{
-//#ifdef TOKEN_SHARING_STATS
-//	m_Result << "Token additions: " << m_pAgentSoar->token_additions << "   If no sharing: " << m_pAgentSoar->token_additions_without_sharing << "\n";
-//#endif
-//
-//	int i;
-//	unsigned long tot;
-//
-//	get_all_node_count_stats(thisAgent);
-//
-//	/* --- print table headers --- */
-//#ifdef SHARING_FACTORS
-//	print (thisAgent, "      Node Type           Actual  If no merging  If no sharing\n");
-//	print (thisAgent, "---------------------  ---------  -------------  -------------\n");
-//#else
-//	print (thisAgent, "      Node Type           Actual  If no merging\n");
-//	print (thisAgent, "---------------------  ---------  -------------\n");
-//#endif
-//
-//	/* --- print main table --- */
-//	for (i=0; i<256; i++) if (*bnode_type_names[i]) {
-//		print (thisAgent, "%21s  %9lu  %13lu", bnode_type_names[i],
-//			thisAgent->actual[i], thisAgent->if_no_merging[i]);
-//#ifdef SHARING_FACTORS
-//		print (thisAgent, "  %13lu", thisAgent->if_no_sharing[i]);
-//#endif
-//		print (thisAgent, "\n");
-//	}
-//
-//	/* --- print table end (totals) --- */
-//#ifdef SHARING_FACTORS
-//	print (thisAgent, "---------------------  ---------  -------------  -------------\n");
-//#else
-//	print (thisAgent, "---------------------  ---------  -------------\n");
-//#endif
-//	print (thisAgent, "                Total");
-//	for (tot=0, i=0; i<256; i++) tot+=thisAgent->actual[i];
-//	print (thisAgent, "  %9lu", tot);
-//	for (tot=0, i=0; i<256; i++) tot+=thisAgent->if_no_merging[i];
-//	print (thisAgent, "  %13lu", tot);
-//#ifdef SHARING_FACTORS
-//	for (tot=0, i=0; i<256; i++) tot+=thisAgent->if_no_sharing[i];
-//	print (thisAgent, "  %13lu", tot);
-//#endif
-//	print (thisAgent, "\n");
-//
-//	////////////////////////////
-//
-//	agent* a = m_pAgent->GetSoarAgent();
-//	print(a, "\nActivations: %lu right (%lu null), %lu left (%lu null)\n",
-//		current_agent(num_right_activations),
-//		current_agent(num_null_right_activations),
-//		current_agent(num_left_activations), current_agent(num_null_left_activations));
-//}
-//
+
+void CommandLineInterface::GetReteStats()
+{
+#ifdef TOKEN_SHARING_STATS
+	m_Result << "Token additions: " << m_pAgentSoar->token_additions << "   If no sharing: " << m_pAgentSoar->token_additions_without_sharing << "\n";
+#endif
+
+	int i;
+	unsigned long tot;
+
+	get_all_node_count_stats( m_pAgentSoar );
+
+	/* --- print table headers --- */
+#ifdef SHARING_FACTORS
+	m_Result << "      Node Type            Actual  If no merging  If no sharing\n";
+	m_Result << "---------------------  ----------  -------------  -------------\n";
+#else
+	m_Result << "      Node Type            Actual  If no merging\n";
+	m_Result << "---------------------  ----------  -------------\n";
+#endif
+
+	/* --- print main table --- */
+	for (i=0; i<256; i++) 
+		if (*bnode_type_names[i]) 
+		{
+			m_Result << std::setw(21) << bnode_type_names[i] << "  " 
+				<< std::setw(10) << m_pAgentSoar->actual[i] << "  " 
+				<< std::setw(13) << m_pAgentSoar->if_no_merging[i];
+#ifdef SHARING_FACTORS
+			m_Result << "  " << std::setw(13) << m_pAgentSoar->if_no_sharing[i];
+#endif
+			m_Result << "\n";
+		}
+
+	/* --- print table end (totals) --- */
+#ifdef SHARING_FACTORS
+	m_Result << "---------------------  ----------  -------------  -------------\n";
+#else
+	m_Result << "---------------------  ----------  -------------\n";
+#endif
+	m_Result << "                Total";
+	for (tot=0, i=0; i<256; i++) 
+	{
+		tot+=m_pAgentSoar->actual[i];
+	}
+	m_Result << "  " << std::setw(10) << tot;
+
+	for (tot=0, i=0; i<256; i++) 
+	{
+		tot+=m_pAgentSoar->if_no_merging[i];
+	}
+	m_Result << "  " << std::setw(13) << tot;
+
+#ifdef SHARING_FACTORS
+	for (tot=0, i=0; i<256; i++) 
+	{
+		tot+=m_pAgentSoar->if_no_sharing[i];
+	}
+	m_Result << "  " << std::setw(13) << tot;
+#endif
+	m_Result << "\n";
+
+	m_Result << "\nActivations: " 
+		<< m_pAgentSoar->num_right_activations << " right (" 
+		<< m_pAgentSoar->num_null_right_activations << " null), "
+		<< m_pAgentSoar->num_left_activations << " left ("
+		<< m_pAgentSoar->num_null_left_activations << " null)\n";
+}
+
+
