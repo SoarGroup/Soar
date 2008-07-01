@@ -57,6 +57,7 @@ class FullTests : public CPPUNIT_NS::TestCase
 	CPPUNIT_TEST( testOSupportCopyDestroyCircularParent );
 	CPPUNIT_TEST( testOSupportCopyDestroyCircular );
 	CPPUNIT_TEST( testSynchronize );
+	CPPUNIT_TEST( testRunningAgentCreation );
 
 	CPPUNIT_TEST_SUITE_END();
 
@@ -76,6 +77,7 @@ public:
 	TEST_DECLARATION( testOSupportCopyDestroyCircularParent );
 	TEST_DECLARATION( testOSupportCopyDestroyCircular );
 	TEST_DECLARATION( testSynchronize );
+	TEST_DECLARATION( testRunningAgentCreation );
 
 public:
 	void setUp();
@@ -196,7 +198,7 @@ void FullTests::createSoar()
 	CPPUNIT_ASSERT( std::string( m_pKernel->GetSoarKernelVersion() ) == std::string( sml::sml_Names::kSoarVersionValue ) );
 
 	bool creationHandlerReceived( false );
-	m_pKernel->RegisterForAgentEvent( sml::smlEVENT_AFTER_AGENT_CREATED, Handlers::MyCreationHandler, &creationHandlerReceived ) ;
+	int agentCreationCallback = m_pKernel->RegisterForAgentEvent( sml::smlEVENT_AFTER_AGENT_CREATED, Handlers::MyCreationHandler, &creationHandlerReceived ) ;
 	
 	// Report the number of agents (always 0 unless this is a remote connection to a CLI or some such)
 	CPPUNIT_ASSERT( m_pKernel->GetNumberAgents() == 0 );
@@ -206,6 +208,8 @@ void FullTests::createSoar()
 	CPPUNIT_ASSERT_MESSAGE( m_pKernel->GetLastErrorDescription(), !m_pKernel->HadError() );
 	CPPUNIT_ASSERT( m_pAgent != NULL );
 	CPPUNIT_ASSERT( creationHandlerReceived );
+
+	CPPUNIT_ASSERT( m_pKernel->UnregisterForAgentEvent( agentCreationCallback ) );
 
 	// a number of tests below depend on running full decision cycles.
 	m_pAgent->ExecuteCommandLine( "set-stop-phase --before --input" ) ;
@@ -1168,4 +1172,29 @@ TEST_DEFINITION( testSynchronize )
 	std::string olNewName = pOutputLink->GetIdentifierName();
 
 	CPPUNIT_ASSERT( olName == olNewName );
+}
+
+TEST_DEFINITION( testRunningAgentCreation )
+{
+	sml::Agent* pOnTheFlyAgent = 0;
+	int callback = -1;
+	
+	callback = m_pKernel->RegisterForUpdateEvent( sml::smlEVENT_AFTER_ALL_OUTPUT_PHASES, Handlers::MyAgentCreationUpdateEventHandler, &pOnTheFlyAgent );
+
+	m_pKernel->RunAllAgents( 1 );
+
+	CPPUNIT_ASSERT( pOnTheFlyAgent );
+	
+	CPPUNIT_ASSERT( m_pKernel->UnregisterForUpdateEvent( callback ) );
+	callback = 0;
+
+	int outputPhases1( 0 );
+	m_pAgent->RegisterForRunEvent( sml::smlEVENT_AFTER_OUTPUT_PHASE, Handlers::MyRunEventHandler, &outputPhases1 );
+
+	int outputPhases2( 0 );
+	pOnTheFlyAgent->RegisterForRunEvent( sml::smlEVENT_AFTER_OUTPUT_PHASE, Handlers::MyRunEventHandler, &outputPhases2 );
+
+	m_pKernel->RunAllAgents( 5 );
+
+	CPPUNIT_ASSERT( outputPhases1 == outputPhases2 );
 }
