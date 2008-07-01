@@ -295,7 +295,7 @@ static void totimeval (struct timeval *dst, FILETIME *src, int sub, int flag)
   dst->tv_sec = (long)(x / (long long) (1e6));
 }
 
-int getrusage(int who, struct rusage* r)
+int getrusage(int /*who*/, struct rusage* r)
 {
    FILETIME creation_time = {0,0};
    FILETIME exit_time = {0,0};

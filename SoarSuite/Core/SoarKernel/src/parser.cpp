@@ -72,7 +72,7 @@ test make_placeholder_test (agent* thisAgent, char first_letter) {
 
   if (isalpha(first_letter)) 
   {
-    if (isupper(first_letter)) first_letter = tolower(first_letter);
+    if (isupper(first_letter)) first_letter = static_cast<char>(tolower(first_letter));
   } 
   else 
   {
