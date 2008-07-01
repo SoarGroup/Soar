@@ -1038,7 +1038,7 @@ Bool test_tests_for_root(test t, list *roots) {
 }
 
 void remove_isa_state_tests_for_non_roots(agent* thisAgent, condition **lhs_top, 
-										  condition **lhs_bottom, list *roots)
+										  condition ** /*lhs_bottom*/, list *roots)
 {
   condition *cond;
   Bool a,b;

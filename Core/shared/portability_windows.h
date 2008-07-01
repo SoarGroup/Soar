@@ -1,6 +1,12 @@
 #ifndef PORTABILITY_WINDOWS_H
 #define PORTABILITY_WINDOWS_H
 
+#ifdef _MSC_VER
+// The kernel uses while(TRUE) a lot
+#pragma warning (disable : 4127) // conditional expression is constant
+#endif
+
+
 /* This file contains code specific to the windows platforms */
 
 #define WIN32_LEAN_AND_MEAN		// Exclude rarely-used stuff from Windows headers

@@ -312,7 +312,7 @@ void read_rest_of_floating_point_number (agent* thisAgent) {
 extern double atof();
 #endif /* #ifndef __NeXT__ */
 
-double my_strtod (char *ch, char **p, int base) {
+double my_strtod (char *ch, char ** /*p*/, int /*base*/) {
   /* BUGBUG without ANSI's strtod(), there's no way to check for floating
      point overflow here.  If someone types "1.5E2000" weird things could
      happen. */
@@ -379,7 +379,7 @@ Bool determine_type_of_constituent_string (agent* thisAgent) {
   
   /* --- check if it's an identifier --- */
   if (thisAgent->current_file->allow_ids && possible_id) {
-    thisAgent->lexeme.id_letter = toupper(thisAgent->lexeme.string[0]);
+    thisAgent->lexeme.id_letter = static_cast<char>(toupper(thisAgent->lexeme.string[0]));
     errno = 0;
     thisAgent->lexeme.type = IDENTIFIER_LEXEME;
     thisAgent->lexeme.id_number = my_strtoul (&(thisAgent->lexeme.string[1]),NULL,10);
