@@ -139,7 +139,7 @@ int main() {
 		commands.push_back("source ../Tests/TestSoarPerformance.soar");
 		commands.push_back("watch 0");
 		
-		int numTrials = 1;
+		int numTrials = 3;
 
 		//cout << endl << "The test suite will be run in two phases, using " << numTrials << " trials each time." << endl;
 		//cout << "The first phase will be with learning off. The second will be with learning on." << endl;
