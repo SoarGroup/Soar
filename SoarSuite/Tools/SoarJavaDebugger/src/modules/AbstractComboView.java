@@ -375,6 +375,11 @@ public abstract class AbstractComboView extends AbstractUpdateView implements Ag
 			this.m_CommandCombo.setText("") ;
 			m_CurrentCommand = "" ;
 		}
+    else 
+    {
+      // SBW 7/1/08: prevent cursor from jumping left if there is still text in the box
+      moveComboCursorToEnd();
+    }
 		
 		// clear command history scrolling state (SBW 7/1/08)
 		m_UnexecutedNewCommand = "";
