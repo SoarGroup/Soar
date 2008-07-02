@@ -11,7 +11,7 @@
 #ifndef SML_ERRORS_H
 #define SML_ERRORS_H
 
-typedef int ErrorCode ;
+typedef int ErrorCode;
 
 #include <string>
 
@@ -46,7 +46,7 @@ public:
 	} ;
 
 	/** Returns a description of the error which can be shown to a user */
-	static char const* GetErrorDescription(ErrorCode code)
+	static char const* GetErrorDescription(::ErrorCode code)
 	{
 		switch (code)
 		{
