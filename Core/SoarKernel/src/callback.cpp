@@ -35,6 +35,7 @@
 #include "agent.h"
 #include "init_soar.h"
 #include "print.h"
+#include "utilities.h"
 
 char * soar_callback_names[] = {    /* Must match order of       */
   "none",                           /* SOAR_CALLBACK_TYPE        */
@@ -44,6 +45,8 @@ char * soar_callback_names[] = {    /* Must match order of       */
   "before-init-soar",
   "after-init-soar",
   "after-halt-soar",
+  "before-elaboration",
+  "after-elaboration",
   "before-schedule-cycle",
   "after-schedule-cycle",
   "before-decision-cycle",
@@ -71,6 +74,12 @@ char * soar_callback_names[] = {    /* Must match order of       */
   "remove-attribute-impasse",
   "production-just-added",
   "production-just-about-to-be-excised",
+  "after-interrupt",
+  "after-halted",
+  "before-run-starts",
+  "after-run-ends",
+  "before-running",
+  "after-running",
   "firing",
   "retraction",
   "system-parameter-changed",
@@ -84,20 +93,20 @@ char * soar_callback_names[] = {    /* Must match order of       */
 };
 
 
-void soar_init_callbacks (soar_callback_agent the_agent)
+void soar_init_callbacks (agent* the_agent)
 {
   int ct; // ct was originally of type SOAR_CALLBACK_TYPE, changed for c++ compatibility (5/1/02)
 
   for (ct = 1; ct < NUMBER_OF_CALLBACKS; ct++)
     {
-      ((agent *)the_agent)->soar_callbacks[ct] = (list *) NIL;
+      the_agent->soar_callbacks[ct] = (list *) NIL;
     }
 }
 
 void soar_add_callback (agent* thisAgent, 
-			soar_callback_agent the_agent, 
 			SOAR_CALLBACK_TYPE callback_type, 
 			soar_callback_fn fn, 
+			soar_callback_event_id eventid,
 			soar_callback_data data,
 			soar_callback_free_fn free_fn,
 			soar_callback_id id)
@@ -107,10 +116,11 @@ void soar_add_callback (agent* thisAgent,
   cb = (soar_callback *) malloc (sizeof(soar_callback));
   cb->function      = fn;
   cb->data          = data;
+  cb->eventid		= eventid ;
   cb->free_function = free_fn;
   cb->id            = savestring(id);
   
-  push(thisAgent, cb, ((agent *) the_agent)->soar_callbacks[callback_type]);
+  push(thisAgent, cb, thisAgent->soar_callbacks[callback_type]);
 }
 
 void soar_callback_data_free_string (soar_callback_data data)
@@ -165,12 +175,12 @@ SOAR_CALLBACK_TYPE soar_callback_name_to_enum (char * name,
   return NO_CALLBACK;
 }
 
-Bool soar_exists_callback(soar_callback_agent the_agent,
+Bool soar_exists_callback(agent* the_agent,
 			  SOAR_CALLBACK_TYPE callback_type)
 {
   list * cb_cons;
 
-  cb_cons = ((agent *)the_agent)->soar_callbacks[callback_type];
+  cb_cons = the_agent->soar_callbacks[callback_type];
 
   if (cb_cons == NULL)
     {
@@ -180,13 +190,13 @@ Bool soar_exists_callback(soar_callback_agent the_agent,
   return TRUE;
 }
 
-soar_callback * soar_exists_callback_id (soar_callback_agent the_agent,
+soar_callback * soar_exists_callback_id (agent* the_agent,
 					 SOAR_CALLBACK_TYPE callback_type,
 					 soar_callback_id id)
 {
   cons * c;
 
-  for (c = ((agent *)the_agent)->soar_callbacks[callback_type];
+  for (c = the_agent->soar_callbacks[callback_type];
        c != NIL;
        c = c->rest)
     {
@@ -219,14 +229,13 @@ void soar_destroy_callback(soar_callback * cb)
 // voigtjr: removed inline in an attempt to quell linker error
 //inline void soar_invoke_callbacks (agent* thisAgent, 
 void soar_invoke_callbacks (agent* thisAgent, 
-				soar_callback_agent the_agent, 
 			    SOAR_CALLBACK_TYPE callback_type, 
 			    soar_call_data call_data)
 {
   cons * c;  /* we need this if we loop over multiple callback functions */
 
 /* if no callback is registered, just return */
- if (!((agent *)the_agent)->soar_callbacks[callback_type]) return;
+ if (!thisAgent->soar_callbacks[callback_type]) return;
 
 /* REW: begin 28.07.96 */
   /* We want to stop the Soar kernel timers whenever a callback is initiated and
@@ -291,20 +300,22 @@ void soar_invoke_callbacks (agent* thisAgent,
 /* REW: end 28.07.96 */
 
 
-  for (c = ((agent *)the_agent)->soar_callbacks[callback_type];
+  for (c = thisAgent->soar_callbacks[callback_type];
        c != NIL;
        c = c->rest)
     {
       soar_callback * cb;
 
       cb = (soar_callback *) c->first;
-      cb->function(the_agent, cb->data, call_data);
+	  cb->function(thisAgent, cb->eventid, cb->data, call_data);
     }
 
 /* REW: begin 28.07.96 */
 
 #ifndef NO_TIMING_STUFF
   switch (callback_type) {
+  case BEFORE_ELABORATION_CALLBACK:
+  case AFTER_ELABORATION_CALLBACK:
   case BEFORE_DECISION_CYCLE_CALLBACK:
   case BEFORE_INPUT_PHASE_CALLBACK:
   case AFTER_INPUT_PHASE_CALLBACK:
@@ -344,14 +355,13 @@ void soar_invoke_callbacks (agent* thisAgent,
 }
 
 void soar_invoke_first_callback (agent* thisAgent, 
-				 soar_callback_agent the_agent, 
 				 SOAR_CALLBACK_TYPE callback_type, 
 				 soar_call_data call_data)
 {
   list * head;
 
   /* if no callback is registered, just return */
-  head = ((agent *)the_agent)->soar_callbacks[callback_type];
+  head = thisAgent->soar_callbacks[callback_type];
   if (head == NULL) return;
 
 /* REW: begin 28.07.96 */
@@ -404,7 +414,7 @@ void soar_invoke_first_callback (agent* thisAgent,
       soar_callback * cb;
 
       cb = (soar_callback *) head->first;
-      cb->function(the_agent, cb->data, call_data);
+	  cb->function(thisAgent, cb->eventid, cb->data, call_data);
     
 
 /* REW: begin 28.07.96 */
@@ -449,7 +459,6 @@ void soar_invoke_first_callback (agent* thisAgent,
 }
 
 void soar_list_all_callbacks (agent* thisAgent,
-				  soar_callback_agent the_agent,
 			      Bool monitorable_only)
 {
   int limit;
@@ -467,17 +476,17 @@ void soar_list_all_callbacks (agent* thisAgent,
   for (ct = 1; ct < limit; ct++)
     {
       print(thisAgent, "%s: ", soar_callback_enum_to_name(static_cast<SOAR_CALLBACK_TYPE>(ct), FALSE));
-      soar_list_all_callbacks_for_event (thisAgent, the_agent, static_cast<SOAR_CALLBACK_TYPE>(ct));
+      soar_list_all_callbacks_for_event (thisAgent, static_cast<SOAR_CALLBACK_TYPE>(ct));
       print(thisAgent, "\n");
     }
 }
 
-void soar_list_all_callbacks_for_event (agent* thisAgent, soar_callback_agent the_agent,
+void soar_list_all_callbacks_for_event (agent* thisAgent, 
 					SOAR_CALLBACK_TYPE ct)
 {
   cons * c;
 
-  for (c = ((agent *)the_agent)->soar_callbacks[ct]; 
+  for (c = thisAgent->soar_callbacks[ct]; 
        c != NIL; 
        c = c->rest)
     {
@@ -490,13 +499,12 @@ void soar_list_all_callbacks_for_event (agent* thisAgent, soar_callback_agent th
 }
 
 void soar_pop_callback (agent* thisAgent, 
-			soar_callback_agent the_agent, 
-			SOAR_CALLBACK_TYPE callback_type)
+		SOAR_CALLBACK_TYPE callback_type)
 {
   list * head;
   soar_callback * cb;
 
-  head = ((agent *)the_agent)->soar_callbacks[callback_type];
+  head = thisAgent->soar_callbacks[callback_type];
   
   if (head == NULL)
     {
@@ -513,15 +521,15 @@ void soar_pop_callback (agent* thisAgent,
 
   cb = (soar_callback *) head->first;
 
-  ((agent *)the_agent)->soar_callbacks[callback_type] = head->rest;
+  thisAgent->soar_callbacks[callback_type] = head->rest;
   soar_destroy_callback(cb);
   free_cons(thisAgent, head);
 }
 
 void soar_push_callback (agent* thisAgent, 
-			soar_callback_agent the_agent, 
 			SOAR_CALLBACK_TYPE callback_type, 
-			soar_callback_fn fn, 
+			soar_callback_fn fn,
+			soar_callback_event_id eventid,
 			soar_callback_data data,
 			soar_callback_free_fn free_fn)
 {
@@ -530,30 +538,30 @@ void soar_push_callback (agent* thisAgent,
   cb = (soar_callback *) malloc (sizeof(soar_callback));
   cb->function      = fn;
   cb->data          = data;
+  cb->eventid		= eventid ;
   cb->free_function = free_fn;
   cb->id            = NULL;
   
-  push(thisAgent, cb, ((agent *) the_agent)->soar_callbacks[callback_type]);
+  push(thisAgent, cb, thisAgent->soar_callbacks[callback_type]);
 }
 
-void soar_remove_all_monitorable_callbacks (agent* thisAgent, soar_callback_agent the_agent)
+void soar_remove_all_monitorable_callbacks (agent* thisAgent)
 {
   int ct; // ct was originally of type SOAR_CALLBACK_TYPE, changed for c++ compatibility (5/1/02)
 
   for (ct = 1; ct < NUMBER_OF_MONITORABLE_CALLBACKS; ct++)
     {
-      soar_remove_all_callbacks_for_event (thisAgent, the_agent, static_cast<SOAR_CALLBACK_TYPE>(ct));
+      soar_remove_all_callbacks_for_event (thisAgent, static_cast<SOAR_CALLBACK_TYPE>(ct));
     }
 }
 
 void soar_remove_all_callbacks_for_event (agent* thisAgent, 
-					  soar_callback_agent the_agent,
 					  SOAR_CALLBACK_TYPE ct)
 {
   cons * c;
   list * next;
 
-  next = ((agent *)the_agent)->soar_callbacks[ct];
+  next = thisAgent->soar_callbacks[ct];
 
   for (c = next; c != NIL; c = next)
     {
@@ -566,11 +574,10 @@ void soar_remove_all_callbacks_for_event (agent* thisAgent,
       free_cons(thisAgent, c);
     }
 
-  ((agent *)the_agent)->soar_callbacks[ct] = NIL;
+  thisAgent->soar_callbacks[ct] = NIL;
 }
 
 void soar_remove_callback (agent* thisAgent, 
-			   soar_callback_agent the_agent, 
 			   SOAR_CALLBACK_TYPE callback_type, 
 			   soar_callback_id id)
 {
@@ -578,7 +585,7 @@ void soar_remove_callback (agent* thisAgent,
   cons * prev_c = NULL;     /* Initialized to placate gcc -Wall */
   list * head;
 
-  head = ((agent *)the_agent)->soar_callbacks[callback_type];
+  head = thisAgent->soar_callbacks[callback_type];
 
   for (c = head; c != NIL; c = c->rest)
     {
@@ -597,7 +604,7 @@ void soar_remove_callback (agent* thisAgent,
 	    }
 	  else
 	    {
-	      ((agent *)the_agent)->soar_callbacks[callback_type] = head->rest;
+	      thisAgent->soar_callbacks[callback_type] = head->rest;
 	      soar_destroy_callback(cb);
 	      free_cons(thisAgent, c);
 	      return;
@@ -607,7 +614,7 @@ void soar_remove_callback (agent* thisAgent,
     }
 }
 
-void soar_callback_test_callback (soar_callback_agent the_agent,
+void soar_callback_test_callback (agent* the_agent,
 				  soar_callback_data data,
 				  soar_call_data call_data)
 {
@@ -615,15 +622,15 @@ void soar_callback_test_callback (soar_callback_agent the_agent,
 }
 
 
-void soar_test_all_monitorable_callbacks(agent* thisAgent, soar_callback_agent the_agent)
+void soar_test_all_monitorable_callbacks(agent* thisAgent)
 {
   int i; // i was originally of type SOAR_CALLBACK_TYPE, changed for c++ compatibility (5/1/02)
   static char * test_callback_name = "test";
 
   for(i = 1; i < NUMBER_OF_MONITORABLE_CALLBACKS; i++)
     {
-      soar_add_callback(thisAgent, the_agent, static_cast<SOAR_CALLBACK_TYPE>(i), 
-			(soar_callback_fn) soar_callback_test_callback,
+      soar_add_callback(thisAgent, static_cast<SOAR_CALLBACK_TYPE>(i), 
+			(soar_callback_fn) soar_callback_test_callback, i,
 			soar_callback_enum_to_name(static_cast<SOAR_CALLBACK_TYPE>(i), TRUE), 
 			NULL, test_callback_name);
     }

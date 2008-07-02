@@ -19,6 +19,8 @@
 #include "sml_Connection.h"
 #include "sml_Client.h"
 
+#include "thread_OSspecific.h"	// For timer
+
 //#include "../../Profiler/include/simple_timer.h"
 
 #include <stdlib.h>
@@ -36,7 +38,7 @@ using std::string;
 
 int global_callback = -1 ;
 
-void printWMEs(WMElement const* pRoot)
+void printWMEsInternal(WMElement const* pRoot, long visitedCounter)
 {
 	if (pRoot->GetParent() == NULL)
 		cout << "Top Identifier " << pRoot->GetValueAsString() << endl ;
@@ -48,15 +50,28 @@ void printWMEs(WMElement const* pRoot)
 	if (pRoot->IsIdentifier())
 	{
 		Identifier* pID = (Identifier*)pRoot ;
-		int size = pID->GetNumberChildren() ;
 
-		for (int i = 0 ; i < size ; i++)
+		// If we've not already printed this id, print its children.
+		if (pID->GetVisited() != visitedCounter)
 		{
-			WMElement const* pWME = pID->GetChild(i) ;
+			pID->SetVisited(visitedCounter) ;
+			int size = pID->GetNumberChildren() ;
 
-			printWMEs(pWME) ;
+			for (int i = 0 ; i < size ; i++)
+			{
+				WMElement const* pWME = pID->GetChild(i) ;
+
+				printWMEsInternal(pWME, visitedCounter) ;
+			}
 		}
 	}
+}
+
+void printWMEs(WMElement* pRoot)
+{
+	Agent* pAgent = pRoot->GetAgent() ;
+	long visitedCounter = pAgent->GenerateNewVisitedCounter() ;
+	printWMEsInternal(pRoot, visitedCounter) ;
 }
 
 void SimpleRemoteConnection()
@@ -482,15 +497,23 @@ bool SimpleCommand()
 	std::string trace ;	// We'll pass this into the handler and build up the output in it
 	int callbackp = pAgent->RegisterForPrintEvent(smlEVENT_PRINT, MyPrintEventHandler, &trace) ;
 
-	std::string path = std::string(pKernel->GetLibraryLocation()) + "/Tests/testmatches.soar" ;
+	//std::string path = std::string(pKernel->GetLibraryLocation()) + "/Tests/testmatches.soar" ;
+	std::string path = std::string(pKernel->GetLibraryLocation()) + "/Demos/towers-of-hanoi/towers-of-hanoi.soar" ;
 	bool ok = pAgent->LoadProductions(path.c_str()) ;
 
-	pAgent->ExecuteCommandLine("run 4") ;
+	pAgent->ExecuteCommandLine("run") ;
 	cout << trace << endl ;
 
 	// This is the command being tested
 	//std::string command = "matches apply*init-count" ;
-	std::string command = "matches apply*matches -w" ;
+	//std::string command = "matches apply*matches -w" ;
+
+	std::string command = "init-soar" ;
+	pAgent->ExecuteCommandLine(command.c_str()) ;
+
+	trace = "" ;
+	pAgent->ExecuteCommandLine("run 20") ;
+	cout << trace << endl ;
 
 	// XML version
 	ClientAnalyzedXML response ;
@@ -943,6 +966,8 @@ bool TestAgent(Kernel* pKernel, Agent* pAgent, bool doInitSoars)
 	// This is to test a bug where an identifier isn't fully removed from working memory (you can still print it) after it is destroyed.
 	Identifier* pIDRemoveTest = pAgent->CreateIdWME(pInputLink, "foo") ;
 	pAgent->CreateFloatWME(pIDRemoveTest, "bar", 1.23) ;
+	pAgent->CreateFloatWME(pIDRemoveTest, "bar2", 4.56) ;
+	pAgent->CreateFloatWME(pIDRemoveTest, "bar3", 8.57) ;
 
 	std::string idValue = pIDRemoveTest->GetValueAsString() ;
 
@@ -953,15 +978,31 @@ bool TestAgent(Kernel* pKernel, Agent* pAgent, bool doInitSoars)
 	StringElement* pWMEtest = pAgent->CreateStringWME(pID, "typeTest", "Boeing747") ;
 	unused(pWMEtest) ;
 
+	// Create a new WME that creates a loop in the input graph
+	//Identifier* pID2 = pAgent->CreateSharedIdWME(pID, "all-planes", pID) ;
+	//unused(pID2) ;
+
 	bool ok = pAgent->Commit() ;
 	pAgent->RunSelf(1) ;
+	std::string wmes0 = pAgent->ExecuteCommandLine("print i2 --depth 3") ;
+
+	cout << wmes0 << endl ;
+
+	if (!InitSoarAgent(pAgent, doInitSoars))
+		return false ;
+
+	if (!InitSoarAgent(pAgent, doInitSoars))
+		return false ;
 
 	pAgent->DestroyWME(pIDRemoveTest) ;
 	pAgent->Commit() ;
 
-	//pAgent->RunSelf(1) ;
+	pAgent->RunSelf(1) ;
 	std::string wmes1 = pAgent->ExecuteCommandLine("print i2 --depth 3") ;
 	std::string wmes2 = pAgent->ExecuteCommandLine("print F1") ;	// BUGBUG: This wme remains in memory even after we add the "RunSelf" at which point it should be gone.
+
+	if (!InitSoarAgent(pAgent, doInitSoars))
+		return false ;
 
 	if (!InitSoarAgent(pAgent, doInitSoars))
 		return false ;
@@ -999,21 +1040,14 @@ bool TestAgent(Kernel* pKernel, Agent* pAgent, bool doInitSoars)
 	// Change the speed to 300
 	pAgent->Update(pWME2, 300) ;
 
-	// Create a new WME that shares the same id as plane
-	// BUGBUG: This is triggering an assert and memory leak now after the changes
-	// to InputWME not calling Update() immediately.  For now I've removed the test until
-	// we have time to figure out what's going wrong.
-	//Identifier* pID2 = pAgent->CreateSharedIdWME(pInputLink, "all-planes", pID) ;
-	//unused(pID2);
-
 	ok = pAgent->Commit() ;
 
-	/*
+	pAgent->RunSelf(1) ;
+
 	printWMEs(pAgent->GetInputLink()) ;
 	std::string printInput1 = pAgent->ExecuteCommandLine("print --depth 2 I2") ;
 	cout << printInput1 << endl ;
 	cout << endl << "Now work with the input link" << endl ;
-	*/
 
 	// Delete one of the shared WMEs to make sure that's ok
 	//pAgent->DestroyWME(pID) ;
@@ -1177,21 +1211,28 @@ bool TestAgent(Kernel* pKernel, Agent* pAgent, bool doInitSoars)
 	}
 
 	// Should be 5 phases per decision
-	/* Not true now we support stopping before/after phases when running by decision.
 	if (phaseCount != 20)
 	{
 		cout << "Error receiving phase events" << endl ;
 		return false ;
 	}
-	*/
 
 	if (beforeCount != 1 || afterCount != 1)
 	{
-		cout << "Error receiving BFORE_RUN_STARTS/AFTER_RUN_ENDS events" << endl ;
+		cout << "Error receiving BEFORE_RUN_STARTS/AFTER_RUN_ENDS events" << endl ;
 		return false ;
 	}
 
+	int originalPhaseCount = phaseCount ;
 	pAgent->UnregisterForRunEvent(callbackPhase) ;
+
+	result = pAgent->RunSelf(1) ;
+
+	if (originalPhaseCount != phaseCount)
+	{
+		cout << "Error unregistering from phase event" << endl ;
+		return false ;
+	}
 
 	// By this point the static variable ClientXMLStorage should have been filled in 
 	// and it should be valid, even though the event handler for MyXMLEventHandler has completed.
@@ -1227,6 +1268,7 @@ bool TestAgent(Kernel* pKernel, Agent* pAgent, bool doInitSoars)
 	cout << printInput << endl ;
 	*/
 
+#if 0
 	// Synchronizing the input link means we make our client copy match
 	// the current state of the agent.  We would generally only do this from
 	// a different client, but we can test here to see if it does nothing
@@ -1248,6 +1290,7 @@ bool TestAgent(Kernel* pKernel, Agent* pAgent, bool doInitSoars)
 			return false ;
 		}
 	}
+#endif
 
 	// Then add some tic tac toe stuff which should trigger output
 	Identifier* pSquare = pAgent->CreateIdWME(pAgent->GetInputLink(), "square") ;
@@ -1358,6 +1401,7 @@ bool TestAgent(Kernel* pKernel, Agent* pAgent, bool doInitSoars)
 		}
 		else
 		{
+			cout << "Failed to find alternative" << endl ;
 			return false ;
 		}
 
@@ -1560,6 +1604,12 @@ void MyEchoEventHandler(smlPrintEventId id, void* pUserData, Agent* pAgent, char
 		cout << " ----> Received an echo event with contents: " << pMsg << endl ;    
 }
 
+void MyProductionLoaded(smlProductionEventId id, void* pUserData, Agent* pAgent, const char* pProdName, const char* pInst)
+{
+	if (pProdName)
+		cout << "Event " << id << " for production " << pProdName << endl ;
+}
+
 bool TestSML(bool embedded, bool useClientThread, bool fullyOptimized, bool simpleInitSoar, bool autoCommit, int port = 12121)
 {
 	cout << "TestClientSML app starting..." << endl << endl;
@@ -1601,11 +1651,6 @@ bool TestSML(bool embedded, bool useClientThread, bool fullyOptimized, bool simp
 			cout << "Client and kernel versions don't match - which they should during development" << endl ;
 			return false ;
 		}
-
-		// Register a kernel event handler...unfortunately I can't seem to find an event
-		// that gSKI actually fires, so this handler won't get called.  Still, the code is there
-		// on the SML side should anyone ever hook up this type of event inside the kernel/gSKI...
-		pKernel->RegisterForSystemEvent(smlEVENT_AFTER_RESTART, MySystemEventHandler, NULL) ;
 
 		int callback5 = pKernel->RegisterForAgentEvent(smlEVENT_AFTER_AGENT_CREATED, &MyCreationHandler, 0) ;
 		unused(callback5);
@@ -1665,12 +1710,14 @@ bool TestSML(bool embedded, bool useClientThread, bool fullyOptimized, bool simp
 
 			// Listen to the echo of the load
 			int echoCallback = pAgent->RegisterForPrintEvent(smlEVENT_ECHO, &MyEchoEventHandler, NULL) ;
+			int prodListener = pAgent->RegisterForProductionEvent(smlEVENT_AFTER_PRODUCTION_ADDED, &MyProductionLoaded, NULL) ;
 
 			bool echo = true ;
 			bool load = pAgent->LoadProductions(path.c_str(), echo) ;
 
 			unused(load);
 			pAgent->UnregisterForPrintEvent(echoCallback) ;
+			pAgent->UnregisterForProductionEvent(prodListener) ;
 
 			if (pAgent->HadError())
 			{
@@ -1871,11 +1918,13 @@ bool FullEmbeddedTest()
 {
 	bool ok = true ;
 
+#if 0
 	// Simple embedded, direct init-soar
 	ok = ok && TestSML(true, true, true, true, true) ;
 
 	// Embeddded using direct calls
 	ok = ok && TestSML(true, true, true, false, true) ;
+#endif
 
 	// Embedded not using direct calls
 	ok = ok && TestSML(true, true, false, false, true) ;
@@ -1951,7 +2000,7 @@ int main(int argc, char* argv[])
 	// When we have a memory leak, set this variable to
 	// the allocation number (e.g. 122) and then we'll break
 	// when that allocation occurs.
-	//_crtBreakAlloc = 1265 ;
+	//_crtBreakAlloc = 1591 ;
 	_CrtSetDbgFlag ( _CRTDBG_ALLOC_MEM_DF | _CRTDBG_LEAK_CHECK_DF );
 #endif // _DEBUG
 
@@ -2048,6 +2097,9 @@ int main(int argc, char* argv[])
 		}
 	}
 
+	soar_thread::OSSpecificTimer* pTimer = soar_thread::MakeTimer() ;
+	pTimer->Start() ;
+
 	// Running a listener isn't really a test.  It just provides the other side for a remote test
 	// (so run one instance as a listener and then a second as a -remote test).
 	if (listener)
@@ -2086,6 +2138,10 @@ int main(int argc, char* argv[])
 		//double time = timer.Elapsed() ;
 		//cout << "Total run time: " << time << endl ;
 	}
+
+	double time = pTimer->Elapsed() ;
+	cout << "Elapsed time is " << time << endl ;
+	delete pTimer ;
 
 	printf("\nNow checking memory.  Any leaks will appear below.\nNothing indicates no leaks detected.\n") ;
 	printf("\nIf no leaks appear here, but some appear in the output\nwindow in the debugger, they have been leaked from a DLL.\nWhich is reporting when it's unloaded.\n\n") ;

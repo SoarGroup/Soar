@@ -1390,3 +1390,4 @@ JNIEXPORT bool JNICALL Java_sml_smlJNI_Kernel_1UnregisterForAgentEvent(JNIEnv *j
 
 	return result ;
 }
+

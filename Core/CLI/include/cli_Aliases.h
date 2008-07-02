@@ -11,7 +11,7 @@
 #ifndef CLI_ALIASES_H
 #define CLI_ALIASES_H
 
-#include <fstream>
+#include <string>
 #include <map>
 #include <vector>
 

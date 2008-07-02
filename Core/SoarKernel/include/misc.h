@@ -81,11 +81,18 @@ template <class X, class Y> bool is_set( std::map<X,Y> *my_map, X *key )
 }
 
 //////////////////////////////////////////////////////////
-// Symbol functions
+// Number functions
 //////////////////////////////////////////////////////////
 
 // get a numeric value from a symbol
 extern double get_number_from_symbol( Symbol *sym );
 
+// compares two numbers stored as void pointers
+// used for qsort calls
+template <class T>
+T compare_num( const void *arg1, const void *arg2 )
+{
+    return *( (T *) arg1 ) - *( (T *) arg2 );
+}
 
 #endif /*MISC_H_*/

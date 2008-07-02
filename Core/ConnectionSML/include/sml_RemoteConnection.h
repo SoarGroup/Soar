@@ -45,7 +45,7 @@ protected:
 	bool m_SharedFileSystem ;
 
 	/** We need to cache the responses to calls **/
-	ElementXML* m_pLastResponse ;
+	soarxml::ElementXML* m_pLastResponse ;
 
 	/** A list of messages we've received that have "ack" fields but have yet to match up to the commands which triggered them */
 	MessageList		m_ReceivedMessageList ;
@@ -56,10 +56,10 @@ protected:
 	soar_thread::Mutex	m_ListMutex ;
 
 	/** Adds the message to the queue, taking ownership of it at the same time */
-	void AddResponseToList(ElementXML* pResponse) ;
-	ElementXML* IsResponseInList(char const* pID) ;
+	void AddResponseToList(soarxml::ElementXML* pResponse) ;
+	soarxml::ElementXML* IsResponseInList(char const* pID) ;
 
-	bool DoesResponseMatch(ElementXML* pResponse, char const* pID) ;
+	bool DoesResponseMatch(soarxml::ElementXML* pResponse, char const* pID) ;
 
 	/** The timeout for receiving messages is secondsWait + millisecondsWait, where millisecondsWait < 1000 */
 	bool ReceiveMessages(bool allMessages, long secondsWait, long millisecondsWait) ;
@@ -67,8 +67,8 @@ protected:
 public:
 	virtual ~RemoteConnection();
 
-	virtual void SendMsg(ElementXML* pMsg) ;
-	virtual ElementXML* GetResponseForID(char const* pID, bool wait) ;
+	virtual void SendMsg(soarxml::ElementXML* pMsg) ;
+	virtual soarxml::ElementXML* GetResponseForID(char const* pID, bool wait) ;
 	virtual bool ReceiveMessages(bool allMessages) ;
 	virtual void CloseConnection() ;
 	virtual bool IsClosed() ;

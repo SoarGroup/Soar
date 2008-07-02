@@ -543,6 +543,8 @@ bool HanoiWorld::AtGoalState()
 
 void  HanoiWorld::EndGameAction()
 {
+
+	m_agent->InitSoar();
 	//Run();
 //#ifdef GSKI_DAG_TOWERS_USE_TIMER
 //	cout.precision(6);

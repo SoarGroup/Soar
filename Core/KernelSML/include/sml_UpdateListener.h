@@ -12,11 +12,8 @@
 #ifndef UPDATE_LISTENER_H
 #define UPDATE_LISTENER_H
 
-#include "gSKI_Events.h"
-#include "gSKI_Enumerations.h"
-#include "IgSKI_Iterator.h"
-#include "gSKI_Agent.h"
 #include "sml_EventManager.h"
+#include "sml_Events.h"
 
 #include <string>
 #include <map>
@@ -26,7 +23,7 @@ namespace sml {
 class KernelSML ;
 class Connection ;
 
-class UpdateListener : public EventManager<egSKIUpdateEventId>
+class UpdateListener : public EventManager<smlUpdateEventId>
 {
 protected:
 	KernelSML*		m_pKernelSML ;
@@ -45,14 +42,14 @@ public:
 	// Initialize this listener
 	void Init(KernelSML* pKernelSML) { m_pKernelSML = pKernelSML ; }
 
+	// Called when an event occurs in the kernel
+	virtual void OnKernelEvent(int eventID, AgentSML* pAgentSML, void* pCallData) ;
+
 	// Returns true if this is the first connection listening for this event
-	virtual bool AddListener(egSKIUpdateEventId eventID, Connection* pConnection) ;
+	virtual bool AddListener(smlUpdateEventId eventID, Connection* pConnection) ;
 
 	// Returns true if at least one connection remains listening for this event
-	virtual bool RemoveListener(egSKIUpdateEventId eventID, Connection* pConnection) ;
-
-	// Called when an "UpdateEvent" occurs in the kernel
-	virtual void HandleEvent(egSKIUpdateEventId eventId, int runFlags) ;
+	virtual bool RemoveListener(smlUpdateEventId eventID, Connection* pConnection) ;
 } ;
 
 }

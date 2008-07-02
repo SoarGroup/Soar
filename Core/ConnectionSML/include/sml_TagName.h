@@ -12,13 +12,13 @@
 #ifndef SML_TAG_NAME_H
 #define SML_TAG_NAME_H
 
-#include "sml_ElementXML.h"
+#include "ElementXML.h"
 #include "sml_Names.h"
 
 namespace sml
 {
 
-class TagName : public ElementXML
+class TagName : public soarxml::ElementXML
 {
 public:
 	TagName() ;

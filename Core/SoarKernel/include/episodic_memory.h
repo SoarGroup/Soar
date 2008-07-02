@@ -16,9 +16,9 @@
 #include <vector>
 #include <string>
 #include <stack>
+#include <list>
 
-#include "symtab.h"
-#include "wmem.h"
+typedef struct wme_struct wme;
 
 //////////////////////////////////////////////////////////
 // EpMem Constants
@@ -96,24 +96,20 @@
 #define EPMEM_STMT_BIGTREE_RIT_PREV_EPISODE			18
 #define EPMEM_STMT_BIGTREE_RIT_ADD_WEIGHT			19
 #define EPMEM_STMT_BIGTREE_RIT_TRUNCATE_WEIGHTS		20
-#define EPMEM_STMT_BIGTREE_RIT_NOW_RANGES			21
-#define EPMEM_STMT_BIGTREE_RIT_RANGE_INDEX_1		22
-#define EPMEM_STMT_BIGTREE_RIT_RANGE_INDEX_1R		23
-#define EPMEM_STMT_BIGTREE_RIT_RANGE_INDEX_2		24
-#define EPMEM_STMT_BIGTREE_RIT_RANGE_INDEX_2R		25
-#define EPMEM_STMT_BIGTREE_RIT_DEL_PROHIB			26
-#define EPMEM_STMT_BIGTREE_RIT_DEL_PROHIB_LOW		27
-#define EPMEM_STMT_BIGTREE_RIT_DEL_PROHIB_HIGH		28
-#define EPMEM_STMT_BIGTREE_RIT_DEL_PROHIB_CONTAIN	29
-#define EPMEM_STMT_BIGTREE_RIT_GET_LOW_RANGES		30
-#define EPMEM_STMT_BIGTREE_RIT_GET_HIGH_RANGES		31
-#define EPMEM_STMT_BIGTREE_RIT_TRUNCATE_RANGES		32
-#define EPMEM_STMT_BIGTREE_RIT_ADD_LEFT				33
-#define EPMEM_STMT_BIGTREE_RIT_TRUNCATE_LEFT		34
-#define EPMEM_STMT_BIGTREE_RIT_ADD_RIGHT			35
-#define EPMEM_STMT_BIGTREE_RIT_TRUNCATE_RIGHT		36
-#define EPMEM_STMT_BIGTREE_RIT_GET_EPISODE			37
-
+#define EPMEM_STMT_BIGTREE_RIT_DEL_PROHIB			21
+#define EPMEM_STMT_BIGTREE_RIT_DEL_PROHIB_LOW		22
+#define EPMEM_STMT_BIGTREE_RIT_DEL_PROHIB_HIGH		23
+#define EPMEM_STMT_BIGTREE_RIT_DEL_PROHIB_CONTAIN	24
+#define EPMEM_STMT_BIGTREE_RIT_GET_LOW_RANGES		25
+#define EPMEM_STMT_BIGTREE_RIT_GET_HIGH_RANGES		26
+#define EPMEM_STMT_BIGTREE_RIT_TRUNCATE_RANGES		27
+#define EPMEM_STMT_BIGTREE_RIT_ADD_LEFT				28
+#define EPMEM_STMT_BIGTREE_RIT_TRUNCATE_LEFT		29
+#define EPMEM_STMT_BIGTREE_RIT_ADD_RIGHT			30
+#define EPMEM_STMT_BIGTREE_RIT_TRUNCATE_RIGHT		31
+#define EPMEM_STMT_BIGTREE_RIT_GET_EPISODE			32
+#define EPMEM_STMT_BIGTREE_RIT_ADD_NOW				33
+#define EPMEM_STMT_BIGTREE_RIT_DELETE_NOW			34
 
 #define EPMEM_MAX_STATEMENTS 						40 // must be at least 1+ largest of any STMT constant
 
@@ -144,12 +140,6 @@
 #define EPMEM_STAT_RIT_RIGHTROOT					5
 #define EPMEM_STAT_RIT_MINSTEP						6
 #define EPMEM_STATS									7 // must be 1+ last epmem stat
-
-//
-// These must go below constants
-//
-
-#include "stl_support.h"
 
 //////////////////////////////////////////////////////////
 // EpMem Types
@@ -211,6 +201,12 @@ typedef struct epmem_data_struct
 	std::list<wme *> *cue_wmes;		// wmes in last cue
 	std::stack<wme *> *epmem_wmes;	// wmes in last epmem
 } epmem_data;
+
+//
+// These must go below types
+//
+
+#include "stl_support.h"
 
 //////////////////////////////////////////////////////////
 // Parameter Functions

@@ -38,7 +38,7 @@
 #include "production.h"
 #include "init_soar.h"
 #include "print.h"
-#include "gski_event_system_functions.h" // for XML trace output
+#include "xml.h"
 
 #include <ctype.h>
 
@@ -332,7 +332,7 @@ Symbol *make_new_identifier (agent* thisAgent, char name_letter, goal_stack_leve
   return sym;
 }
 
-Symbol *make_sym_constant (agent* thisAgent, char *name) {
+Symbol *make_sym_constant (agent* thisAgent, char const*name) {
   Symbol *sym;
 
   sym = find_sym_constant(thisAgent, name);
@@ -466,7 +466,7 @@ Bool print_identifier_ref_info(agent* thisAgent, void* item, FILE* f) {
                   sym->common.reference_count);
 		 msg[255] = 0; /* ensure null termination */
          print (thisAgent, msg);
-		 GenerateWarningXML(thisAgent, msg);
+		 xml_generate_warning(thisAgent, msg);
 
 		 if (f)
 			 fprintf(f, msg) ;
@@ -485,7 +485,7 @@ bool reset_id_counters (agent* thisAgent) {
     print (thisAgent, "Internal warning:  wanted to reset identifier generator numbers, but\n");
     print (thisAgent, "there are still some identifiers allocated.  (Probably a memory leak.)\n");
     print (thisAgent, "(Leaving identifier numbers alone.)\n");
-	GenerateWarningXML(thisAgent, "Internal warning:  wanted to reset identifier generator numbers, but\nthere are still some identifiers allocated.  (Probably a memory leak.)\n(Leaving identifier numbers alone.)");
+	xml_generate_warning(thisAgent, "Internal warning:  wanted to reset identifier generator numbers, but\nthere are still some identifiers allocated.  (Probably a memory leak.)\n(Leaving identifier numbers alone.)");
 
     /* RDF 01272003: Added this to improve the output from this error message */
 	//TODO: append this to previous XML string or generate separate output?

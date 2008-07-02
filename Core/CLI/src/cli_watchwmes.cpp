@@ -8,20 +8,22 @@
 
 #include <portability.h>
 
+#include "sml_Utils.h"
 #include "cli_CommandLineInterface.h"
 
 #include "cli_Commands.h"
 
 #include "sml_StringOps.h"
 #include "sml_Names.h"
+#include "cli_CLIError.h"
 
-#include "gSKI_Kernel.h"
-#include "gSKI_DoNotTouch.h"
+#include "sml_KernelSML.h"
+#include "sml_KernelHelpers.h"
 
 using namespace cli;
 using namespace sml;
 
-bool CommandLineInterface::ParseWatchWMEs(gSKI::Agent* pAgent, std::vector<std::string>& argv) {
+bool CommandLineInterface::ParseWatchWMEs(std::vector<std::string>& argv) {
 	Options optionsData[] = {
 		{'a', "add-filter",		0},
 		{'r', "remove-filter",	0},
@@ -81,28 +83,25 @@ bool CommandLineInterface::ParseWatchWMEs(gSKI::Agent* pAgent, std::vector<std::
 		if (m_NonOptionArguments < 3) return SetError(CLIError::kTooFewArgs);
 
 		int optind = m_Argument - m_NonOptionArguments;
-		return DoWatchWMEs(pAgent, mode, type, &argv[optind], &argv[optind + 1], &argv[optind + 2]);
+		return DoWatchWMEs(mode, type, &argv[optind], &argv[optind + 1], &argv[optind + 2]);
 	}
 
 	// no additional arguments
 	if (m_NonOptionArguments) return SetError(CLIError::kTooManyArgs);
 
-	return DoWatchWMEs(pAgent, mode, type);
+	return DoWatchWMEs(mode, type);
 }
 
-bool CommandLineInterface::DoWatchWMEs(gSKI::Agent* pAgent, const eWatchWMEsMode mode, WatchWMEsTypeBitset type, const std::string* pIdString, const std::string* pAttributeString, const std::string* pValueString) {
-
-	if (!RequireAgent(pAgent)) return false;
-
+bool CommandLineInterface::DoWatchWMEs(const eWatchWMEsMode mode, WatchWMEsTypeBitset type, const std::string* pIdString, const std::string* pAttributeString, const std::string* pValueString) {
 	// Attain the evil back door of doom, even though we aren't the TgD
-	gSKI::EvilBackDoor::TgDWorkArounds* pKernelHack = m_pKernel->getWorkaroundObject();
+	sml::KernelHelpers* pKernelHack = m_pKernelSML->GetKernelHelpers() ;
 
 	int ret = 0;
 	bool retb = false;
 	switch (mode) {
 		case WATCH_WMES_ADD:
 			if (!pIdString || !pAttributeString || !pValueString) return SetError(CLIError::kFilterExpected);
-			ret = pKernelHack->AddWMEFilter(pAgent, pIdString->c_str(), pAttributeString->c_str(), pValueString->c_str(), type.test(WATCH_WMES_TYPE_ADDS), type.test(WATCH_WMES_TYPE_REMOVES));
+			ret = pKernelHack->AddWMEFilter(m_pAgentSML, pIdString->c_str(), pAttributeString->c_str(), pValueString->c_str(), type.test(WATCH_WMES_TYPE_ADDS), type.test(WATCH_WMES_TYPE_REMOVES));
 			if (ret == -1) {
 				SetErrorDetail("Got: " + *pIdString);
 				return SetError(CLIError::kInvalidID);
@@ -120,7 +119,7 @@ bool CommandLineInterface::DoWatchWMEs(gSKI::Agent* pAgent, const eWatchWMEsMode
 
 		case WATCH_WMES_REMOVE:
 			if (!pIdString || !pAttributeString || !pValueString) return SetError(CLIError::kFilterExpected);
-			ret = pKernelHack->RemoveWMEFilter(pAgent, pIdString->c_str(), pAttributeString->c_str(), pValueString->c_str(), type.test(WATCH_WMES_TYPE_ADDS), type.test(WATCH_WMES_TYPE_REMOVES));
+			ret = pKernelHack->RemoveWMEFilter(m_pAgentSML, pIdString->c_str(), pAttributeString->c_str(), pValueString->c_str(), type.test(WATCH_WMES_TYPE_ADDS), type.test(WATCH_WMES_TYPE_REMOVES));
 			if (ret == -1) {
 				SetErrorDetail("Got: " + *pIdString);
 				return SetError(CLIError::kInvalidID);
@@ -139,17 +138,13 @@ bool CommandLineInterface::DoWatchWMEs(gSKI::Agent* pAgent, const eWatchWMEsMode
 		case WATCH_WMES_LIST:
 			if (type.none()) type.flip();
 
-			this->AddListenerAndDisableCallbacks(pAgent);
-			pKernelHack->ListWMEFilters(pAgent, type.test(WATCH_WMES_TYPE_ADDS), type.test(WATCH_WMES_TYPE_REMOVES));
-			this->RemoveListenerAndEnableCallbacks(pAgent);
+			pKernelHack->ListWMEFilters(m_pAgentSML, type.test(WATCH_WMES_TYPE_ADDS), type.test(WATCH_WMES_TYPE_REMOVES));
 			break;
 
 		case WATCH_WMES_RESET:
 			if (type.none()) type.flip();
 
-			this->AddListenerAndDisableCallbacks(pAgent);
-			retb = pKernelHack->ResetWMEFilters(pAgent, type.test(WATCH_WMES_TYPE_ADDS), type.test(WATCH_WMES_TYPE_REMOVES));
-			this->RemoveListenerAndEnableCallbacks(pAgent);
+			retb = pKernelHack->ResetWMEFilters(m_pAgentSML, type.test(WATCH_WMES_TYPE_ADDS), type.test(WATCH_WMES_TYPE_REMOVES));
 
 			if (!retb) return SetError(CLIError::kWMEFilterNotFound);
 			break;

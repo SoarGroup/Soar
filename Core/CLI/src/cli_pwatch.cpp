@@ -8,23 +8,26 @@
 
 #include <portability.h>
 
+#include "sml_Utils.h"
 #include "cli_CommandLineInterface.h"
 
 #include "cli_Commands.h"
+#include "cli_CLIError.h"
 
 #include "sml_Names.h"
 #include "sml_StringOps.h"
 
-#include "gSKI_Agent.h"
-#include "gSKI_Kernel.h"
-#include "gSKI_DoNotTouch.h"
-#include "gSKI_ProductionManager.h"
-#include "IgSKI_Production.h"
+#include "sml_KernelSML.h"
+#include "sml_AgentSML.h"
+
+#include "agent.h"
+#include "production.h"
+#include "symtab.h"
 
 using namespace cli;
 using namespace sml;
 
-bool CommandLineInterface::ParsePWatch(gSKI::Agent* pAgent, std::vector<std::string>& argv) {
+bool CommandLineInterface::ParsePWatch(std::vector<std::string>& argv) {
 	Options optionsData[] = {
 		{'d', "disable",	0},
 		{'e', "enable",		0},
@@ -54,94 +57,74 @@ bool CommandLineInterface::ParsePWatch(gSKI::Agent* pAgent, std::vector<std::str
 	}
 	if (m_NonOptionArguments > 1) return SetError(CLIError::kTooManyArgs);
 
-	if (m_NonOptionArguments == 1) return DoPWatch(pAgent, false, &argv[m_Argument - m_NonOptionArguments], setting);
-	return DoPWatch(pAgent, query, 0);
+	if (m_NonOptionArguments == 1) return DoPWatch(false, &argv[m_Argument - m_NonOptionArguments], setting);
+	return DoPWatch(query, 0);
 }
 
-bool CommandLineInterface::DoPWatch(gSKI::Agent* pAgent, bool query, const std::string* pProduction, bool setting) {
-
-	if (!RequireAgent(pAgent)) return false;
-
-	// Attain the evil back door of doom, even though we aren't the TgD
-	gSKI::EvilBackDoor::TgDWorkArounds* pKernelHack = m_pKernel->getWorkaroundObject();
-
-	gSKI::ProductionManager* pProductionManager = pAgent->GetProductionManager();
-	gSKI::tIProductionIterator* pIter = 0;
-	gSKI::IProduction* pProd = 0;
-
-	// check for query
-	if (query) {
+bool CommandLineInterface::DoPWatch(bool query, const std::string* pProduction, bool setting) {
+	// check for query or not production 
+	if (query || !pProduction) {
 		// list all productions currently being traced
-		pIter = pProductionManager->GetAllProductions(false, &m_gSKIError);
-		if (gSKI::isError(m_gSKIError)) {
-			SetErrorDetail("Error getting all productions.");
-			return SetError(CLIError::kgSKIError);
-		}
-		if (!pIter) return SetError(CLIError::kgSKIError);
-
+		production* pSoarProduction = 0;
 		int productionCount = 0;
+		for(unsigned int i = 0; i < NUM_PRODUCTION_TYPES; ++i)
+		{
+			for( pSoarProduction = m_pAgentSoar->all_productions_of_type[i]; 
+				pSoarProduction != 0; 
+				pSoarProduction = pSoarProduction->next )
+			{
+				// is it being watched
+				if ( pSoarProduction->trace_firings ) {
 
-		for(; pIter->IsValid(); pIter->Next()) {
-
-			pProd = pIter->GetVal();
-
-			// is it being watched
-			if (pProd->IsWatched()) {
-				++productionCount;
-				if (m_RawOutput) {
-					m_Result << '\n' << pProd->GetName();
-				} else {
-					AppendArgTagFast(sml_Names::kParamName, sml_Names::kTypeString, pProd->GetName());
+					if (query) 
+					{
+						++productionCount;
+						if (m_RawOutput) 
+						{
+							m_Result << '\n' << pSoarProduction->name->sc.name;
+						} else {
+							AppendArgTagFast(sml_Names::kParamName, sml_Names::kTypeString, pSoarProduction->name->sc.name);
+						}
+					}
+					else
+					{
+						// not querying, shut it off
+						remove_pwatch( m_pAgentSoar, pSoarProduction );
+					}
 				}
-			}
-			pProd->Release();
-		}
-		pIter->Release();
 
-		if (m_RawOutput) {
-			if (!productionCount) {
-				m_Result << "No watched productions found.";
 			}
-		} else if (!m_RawOutput) {
-			char buf[kMinBufferSize];
-			PrependArgTag(sml_Names::kParamCount, sml_Names::kTypeInt, Int2String(productionCount, buf, kMinBufferSize));
 		}
+
+		if ( query )
+		{
+			// we're querying, summarize
+			if (m_RawOutput) {
+				if (!productionCount) {
+					m_Result << "No watched productions found.";
+				}
+			} else if (!m_RawOutput) {
+				std::stringstream buffer;
+				buffer << productionCount;
+				PrependArgTagFast( sml_Names::kParamCount, sml_Names::kTypeInt, buffer.str().c_str() );
+			}
+		}
+
 		return true;
 	}
 
-	// we are not querying
-	if (!pProduction) {
-		// disable tracing of all productions
-		pIter = pProductionManager->GetAllProductions(false, &m_gSKIError);
-		if (gSKI::isError(m_gSKIError)) {
-			SetErrorDetail("Error getting all productions.");
-			return SetError(CLIError::kgSKIError);
-		}
-		if (!pIter) return SetError(CLIError::kgSKIError);
+	Symbol* sym = find_sym_constant( m_pAgentSoar, pProduction->c_str() );
 
-		for(; pIter->IsValid(); pIter->Next()) {
-
-			pProd = pIter->GetVal();
-
-			// is it being watched
-			if (pProd->IsWatched()) {
-				// shut it off
-				if (!pKernelHack->StopTracingProduction(pAgent, pProd->GetName())) {
-					// really shouldn't happen
-					return SetError(CLIError::kgSKIError);
-				}
-			}
-			pProd->Release();
-		}
-		pIter->Release();		
-		return true;
+	if (!sym || !(sym->sc.production))
+	{
+		return SetError(CLIError::kProductionNotFound);
 	}
 
 	// we have a production
 	if (setting) {
-		if (!pKernelHack->BeginTracingProduction(pAgent, pProduction->c_str())) return SetError(CLIError::kProductionNotFound);
+		add_pwatch( m_pAgentSoar, sym->sc.production );
 	} else {
-		if (!pKernelHack->StopTracingProduction(pAgent, pProduction->c_str())) return SetError(CLIError::kProductionNotFound);
+		remove_pwatch( m_pAgentSoar, sym->sc.production );
 	}
 	return true;
 }

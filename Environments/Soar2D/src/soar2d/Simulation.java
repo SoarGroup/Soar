@@ -671,7 +671,7 @@ public class Simulation {
 	 */
 	public void runForever() {
 		if (runTilOutput) {
-			kernel.RunAllAgentsForever(smlInterleaveStepSize.sml_INTERLEAVE_UNTIL_OUTPUT);
+			kernel.RunAllAgentsForever(smlRunStepSize.sml_UNTIL_OUTPUT);
 		} else {
 			kernel.RunAllAgentsForever();
 		}
@@ -683,7 +683,7 @@ public class Simulation {
 	 */
 	public void runStep() {
 		if (runTilOutput) {
-			kernel.RunAllTilOutput(smlInterleaveStepSize.sml_INTERLEAVE_UNTIL_OUTPUT);
+			kernel.RunAllTilOutput(smlRunStepSize.sml_UNTIL_OUTPUT);
 		} else {
 			kernel.RunAllAgents(1);
 		}

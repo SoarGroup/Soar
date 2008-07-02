@@ -9,16 +9,17 @@
 // This class's HandleEvent method is called when
 // specific events occur within the kernel:
 /*
-*      gSKIEVENT_RHS_USER_FUNCTION
+*      smlEVENT_RHS_USER_FUNCTION
 */
 /////////////////////////////////////////////////////////////////
 
-#include "sml_Utils.h"
 #include "sml_RhsListener.h"
+
+#include "sml_Utils.h"
 #include "sml_Connection.h"
 #include "sml_StringOps.h"
 #include "sml_KernelSML.h"
-#include "gSKI_Agent.h"
+#include "sml_AgentSML.h"
 
 using namespace sml ;
 
@@ -73,17 +74,6 @@ void RhsListener::RemoveRhsListener(char const* pFunctionName, Connection* pConn
 void RhsListener::Init(KernelSML* pKernel)
 {
 	m_pKernelSML = pKernel ;
-
-	// We always listen for RHS functions because we use the same callback to implement
-	// both "cmd" and "exec" and "cmd" is valid even if no clients are registered with us
-	// as it's handled internally by KernelSML.
-	// (Note -- this callback is only fired if we hit one of our RHS functions, not all RHS functions so
-	// registering for it all of the time doesn't incur extra overhead).
-	if (!m_bListeningRHS)
-	{
-		m_pKernelSML->GetKernel()->AddRhsListener(gSKIEVENT_RHS_USER_FUNCTION, this) ;	
-		m_bListeningRHS = true ;
-	}
 }
 
 // Release memory
@@ -98,13 +88,6 @@ void RhsListener::Clear()
 
 	// Release the RHS function lists
 	m_RhsMap.clear() ;
-
-	// Stop listening for RHS functions
-	if (m_bListeningRHS)
-	{
-		m_pKernelSML->GetKernel()->RemoveRhsListener(gSKIEVENT_RHS_USER_FUNCTION, this) ;
-		m_bListeningRHS = false ;
-	}
 }
 
 void RhsListener::RemoveAllListeners(Connection* pConnection)
@@ -119,11 +102,11 @@ void RhsListener::RemoveAllListeners(Connection* pConnection)
 	}
 }
 
-bool RhsListener::HandleFilterEvent(egSKIRhsEventId eventID, gSKI::Agent* pAgent, char const* pArgument,
+bool RhsListener::HandleFilterEvent(smlRhsEventId eventID, AgentSML* pAgent, char const* pArgument,
 						    int maxLengthReturnValue, char* pReturnValue)
 {
 	// Currently only supporting one event here, but that could change in time.
-	assert(eventID == gSKIEVENT_FILTER) ;
+	assert(eventID == smlEVENT_FILTER) ;
 
 	// Filters are handled as a RHS function call internally, using a special reserved name.
 	char const* pFunctionName = sml_Names::kFilterName ;
@@ -167,12 +150,11 @@ bool RhsListener::HandleFilterEvent(egSKIRhsEventId eventID, gSKI::Agent* pAgent
 		// Build the SML message we're doing to send.
 		// Pass the agent in the "name" parameter not the "agent" parameter as this is a kernel
 		// level event, not an agent level one (because you need to register with the kernel to get "agent created").
-		ElementXML* pMsg = pConnection->CreateSMLCommand(sml_Names::kCommand_Event) ;
+		soarxml::ElementXML* pMsg = pConnection->CreateSMLCommand(sml_Names::kCommand_Event) ;
 		pConnection->AddParameterToSMLCommand(pMsg, sml_Names::kParamName, pAgent ? pAgent->GetName() : "") ;
 		pConnection->AddParameterToSMLCommand(pMsg, sml_Names::kParamEventID, event) ;
 		pConnection->AddParameterToSMLCommand(pMsg, sml_Names::kParamFunction, sml_Names::kFilterName) ;
 		pConnection->AddParameterToSMLCommand(pMsg, sml_Names::kParamValue, pReturnValue) ;	// We send the current command line over
-		pConnection->AddParameterToSMLCommand(pMsg, sml_Names::kParamLength, length) ;
 
 #ifdef _DEBUG
 		// Generate a text form of the XML so we can look at it in the debugger.
@@ -227,7 +209,7 @@ bool RhsListener::HandleFilterEvent(egSKIRhsEventId eventID, gSKI::Agent* pAgent
 // pFunctionName and pArgument define the RHS function being called (the client may parse pArgument to extract other values)
 // pResultValue is a string allocated by the caller than is of size maxLengthReturnValue that should be filled in with the return value.
 // The bool return value should be "true" if a return value is filled in, otherwise return false.
-bool RhsListener::HandleEvent(egSKIRhsEventId eventID, gSKI::Agent* pAgent, bool commandLine, char const* pFunctionName, char const* pArgument,
+bool RhsListener::HandleEvent(smlRhsEventId eventID, AgentSML* pAgent, bool commandLine, char const* pFunctionName, char const* pArgument,
 						    int maxLengthReturnValue, char* pReturnValue)
 {
 	// If this should be handled by the command line processor do so now without going
@@ -262,12 +244,11 @@ bool RhsListener::HandleEvent(egSKIRhsEventId eventID, gSKI::Agent* pAgent, bool
 	// Build the SML message we're doing to send.
 	// Pass the agent in the "name" parameter not the "agent" parameter as this is a kernel
 	// level event, not an agent level one (because you need to register with the kernel to get "agent created").
-	ElementXML* pMsg = pConnection->CreateSMLCommand(sml_Names::kCommand_Event) ;
+	soarxml::ElementXML* pMsg = pConnection->CreateSMLCommand(sml_Names::kCommand_Event) ;
 	if (pAgent) pConnection->AddParameterToSMLCommand(pMsg, sml_Names::kParamName, pAgent->GetName()) ;
 	pConnection->AddParameterToSMLCommand(pMsg, sml_Names::kParamEventID, event) ;
 	pConnection->AddParameterToSMLCommand(pMsg, sml_Names::kParamFunction, pFunctionName) ;
 	pConnection->AddParameterToSMLCommand(pMsg, sml_Names::kParamValue, pArgument) ;
-	pConnection->AddParameterToSMLCommand(pMsg, sml_Names::kParamLength, length) ;
 
 #ifdef _DEBUG
 	// Generate a text form of the XML so we can look at it in the debugger.
@@ -337,8 +318,100 @@ bool RhsListener::HandleEvent(egSKIRhsEventId eventID, gSKI::Agent* pAgent, bool
 	return result ;
 }
 
+bool RhsListener::ExecuteRhsCommand(AgentSML* pAgentSML, smlRhsEventId eventID, std::string const& functionName, std::string const& arguments, std::string* pResultStr)
+{
+	bool result = false ;
+
+	// Get the list of connections (clients) who have registered to implement this right hand side (RHS) function.
+	ConnectionList* pList = GetRhsListeners(functionName.c_str()) ;
+
+	// If nobody is listening we're done (not a bug as we register for all rhs functions and only forward specific ones that the client has registered)
+	if (!pList || pList->size() == 0)
+		return result ;
+
+	ConnectionListIter connectionIter = pList->begin() ;
+
+	// We need the first connection for when we're building the message.  Perhaps this is a sign that
+	// we shouldn't have rolled these methods into Connection.
+	Connection* pConnection = *connectionIter ;
+
+	// Convert eventID to a string
+	char const* event = m_pKernelSML->ConvertEventToString(eventID) ;
+
+	// Build the SML message we're doing to send.
+	// Pass the agent in the "name" parameter not the "agent" parameter as this is a kernel
+	// level event, not an agent level one (because you need to register with the kernel to get "agent created").
+	soarxml::ElementXML* pMsg = pConnection->CreateSMLCommand(sml_Names::kCommand_Event) ;
+	if (pAgentSML) pConnection->AddParameterToSMLCommand(pMsg, sml_Names::kParamName, pAgentSML->GetName()) ;
+	pConnection->AddParameterToSMLCommand(pMsg, sml_Names::kParamEventID, event) ;
+	pConnection->AddParameterToSMLCommand(pMsg, sml_Names::kParamFunction, functionName.c_str()) ;
+	pConnection->AddParameterToSMLCommand(pMsg, sml_Names::kParamValue, arguments.c_str()) ;
+
+#ifdef _DEBUG
+	// Generate a text form of the XML so we can look at it in the debugger.
+	char* pStr = pMsg->GenerateXMLString(true) ;
+#endif
+
+	AnalyzeXML response ;
+
+	// We want to call embedded connections first, so that we get the best performance
+	// for these functions.  I don't want to sort the list or otherwise change it so
+	// instead we'll just use a rather clumsy outer loop to do this.
+	for (int phase = 0 ; phase < 2 && !result ; phase++)
+	{
+		// Only call to embedded connections
+		bool embeddedPhase = (phase == 0) ;
+
+		// Reset the iterator to the beginning of the list
+		connectionIter = pList->begin();
+
+		// Keep looping until we get a result
+		while (connectionIter != pList->end() && !result)
+		{
+			pConnection = *connectionIter ;
+
+			// We call all embedded connections (same process) first before
+			// trying any remote methods.  This ensures that if multiple folks register
+			// for the same function we execute the fastest one (w/o going over a socket for the result).
+			if (pConnection->IsRemoteConnection() && embeddedPhase)
+			{
+				connectionIter++ ;
+				continue ;
+			}
+
+			// It would be faster to just send a message here without waiting for a response
+			// but that could produce incorrect behavior if the client expects to act *during*
+			// the event that we're notifying them about (e.g. notification that we're in the input phase).
+			bool ok = pConnection->SendMessageGetResponse(&response, pMsg) ;
+
+			if (ok)
+			{
+				char const* pResult = response.GetResultString() ;
+
+				if (pResult != NULL)
+				{
+					(*pResultStr) = pResult ;
+					result = true ;
+				}
+			}
+
+			connectionIter++ ;
+		}
+	}
+
+#ifdef _DEBUG
+	// Release the string form we generated for the debugger
+	pMsg->DeleteString(pStr) ;
+#endif
+
+	// Clean up
+	delete pMsg ;
+
+	return result ;
+}
+
 // Execute the command line by building up an XML message and submitting it to our regular command processor.
-bool RhsListener::ExecuteCommandLine(gSKI::Agent* pAgent, char const* pFunctionName, char const* pArgument, int maxLengthReturnValue, char* pReturnValue)
+bool RhsListener::ExecuteCommandLine(AgentSML* pAgent, char const* pFunctionName, char const* pArgument, int maxLengthReturnValue, char* pReturnValue)
 {
 	KernelSML* pKernel = m_pKernelSML ;
 
@@ -356,7 +429,7 @@ bool RhsListener::ExecuteCommandLine(gSKI::Agent* pAgent, char const* pFunctionN
 
 	// Build up a message to execute the command line
 	bool rawOutput = true ;
-	ElementXML* pMsg = pConnection->CreateSMLCommand(sml_Names::kCommand_CommandLine, rawOutput) ;
+	soarxml::ElementXML* pMsg = pConnection->CreateSMLCommand(sml_Names::kCommand_CommandLine, rawOutput) ;
 	pConnection->AddParameterToSMLCommand(pMsg, sml_Names::kParamAgent, pAgent->GetName());
 	pConnection->AddParameterToSMLCommand(pMsg, sml_Names::kParamLine, commandLine.c_str()) ;
 
@@ -364,7 +437,7 @@ bool RhsListener::ExecuteCommandLine(gSKI::Agent* pAgent, char const* pFunctionN
 	incoming.Analyze(pMsg) ;
 
 	// Create a response object which the command line can fill in
-	ElementXML* pResponse = pConnection->CreateSMLResponse(pMsg) ;
+	soarxml::ElementXML* pResponse = pConnection->CreateSMLResponse(pMsg) ;
 
 	// Execute the command line
 	bool ok = pKernel->ProcessCommand(sml_Names::kCommand_CommandLine, pConnection, &incoming, pResponse) ;

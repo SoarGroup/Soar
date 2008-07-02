@@ -39,10 +39,6 @@ WMElement::WMElement(Agent* pAgent, Identifier* pParent, char const* pID, char c
 
 	if (pParent)
 		m_ID = pParent->GetSymbol() ;
-
-#ifdef SML_DIRECT
-	m_WME = 0 ;
-#endif
 }
 
 WMElement::~WMElement(void)
@@ -71,14 +67,14 @@ void WMElement::GenerateNewTimeTag()
 void WMElement::Refresh()
 {
 #ifdef SML_DIRECT
-	IdentifierSymbol* parent = GetIdentifier() ;
-	Direct_WorkingMemory_Handle wm = parent->GetWorkingMemoryHandle() ;
 
 	if (GetAgent()->GetConnection()->IsDirectConnection())
 	{
+		EmbeddedConnection* pConnection = static_cast<EmbeddedConnection*>( GetAgent()->GetConnection() );
+		Direct_AgentSML_Handle agentSMLHandle = pConnection->DirectGetAgentSMLHandle( GetAgent()->GetAgentName() );
+
 		// Add the new value immediately
-		Direct_WME_Handle wme = DirectAdd(wm, parent->GetWMObjectHandle(), GetTimeTag()) ;
-		SetWMEHandle(wme) ;
+		DirectAdd( agentSMLHandle, GetTimeTag() ) ;
 
 		// Return immediately, without adding it to the commit list.
 		return ;

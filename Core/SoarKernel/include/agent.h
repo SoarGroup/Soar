@@ -30,9 +30,11 @@
 #include "lexer.h"
 #include "chunk.h"
 #include "callback.h"
+#include <map>
 
 #include "exploration.h"
 #include "reinforcement_learning.h"
+#include "wma.h"
 
 #include "stl_support.h"
 
@@ -42,8 +44,9 @@
 #include <string>
 #include <map>
 
-/* JC ADDED: Included to allow gski callbacks */
-#include "gski_event_system_data.h"
+// JRV: Added to support XML management inside Soar
+// These handles should not be used directly, see xml.h
+typedef void* xml_handle;
 
 using std::map;
 using std::pair;
@@ -60,11 +63,19 @@ template <class T> class SoarMemoryAllocator;
 typedef struct rl_qconf_data_struct rl_qconf_data;
 typedef map<production *, rl_qconf_data, std::less<production *>, SoarMemoryAllocator<pair<production* const, rl_qconf_data> > > rl_qconf_map;
 
+// select types
+typedef struct select_info_struct select_info;
+
 // EpMem types
 typedef struct epmem_parameter_struct epmem_parameter;
 typedef struct epmem_stat_struct epmem_stat;
 
-typedef struct select_info_struct select_info;
+
+// WMA types
+typedef struct wma_parameter_struct wma_parameter;
+typedef struct wma_stat_struct wma_stat;
+typedef struct wma_timelist_element_struct wma_timelist_element;
+
 
 #ifdef __cplusplus
 extern "C"
@@ -92,7 +103,6 @@ typedef struct explain_chunk_struct explain_chunk_str;
 typedef struct io_wme_struct io_wme;
 typedef struct multi_attributes_struct multi_attribute;
 typedef struct replay_struct replay;
-typedef struct kernel_struct Kernel;
 
 // following def's moved here from old interface.h file  KJC nov 05
 /* AGR 568 begin */
@@ -223,6 +233,8 @@ typedef struct agent_struct {
   memory_pool         alpha_mem_pool;
   memory_pool         ms_change_pool;
   memory_pool         node_varnames_pool;
+
+  memory_pool		  wma_decay_element_pool;
   
   /* Dummy nodes and tokens */
   struct rete_node_struct * dummy_top_node;
@@ -403,6 +415,12 @@ typedef struct agent_struct {
   unsigned long       decision_phases_count;  /* can differ from d_cycle_count.  want for stats */
   //?? unsigned long       out_cycle_count;       /* # of output phases have gen'd output */
   //?? unsigned long       phase_count;       /* # of phases run so far */
+  /* DJP 2/22/07: These counts are based around the counts that the run command understands and are intended to capture the same semantics as run expects.
+     That may differ from some of the other counters above which historically may track slightly different values */
+  unsigned long		  run_phase_count ;				/* # of phases run since last init-soar */
+  unsigned long		  run_elaboration_count ;		/* # of elaboration cycles run since last init-soar.  A phase where nothing happens counts as an elaboration cycle */
+  unsigned long		  run_last_output_count ;		/* # of output phases since this agent last generated output */
+  unsigned long		  run_generated_output_count ;	/* # of output phases when this agent either generated output or reached "max-nil-output" cycles since last init-soar */
 
   /* REW: begin 09.15.96 */
 /* in Soar 8, PE's are done only during the APPLY phase */
@@ -649,13 +667,8 @@ kernel time and total_cpu_time greater than the derived total CPU time. REW */
 
   /* ------------------ Printing utilities stuff --------------------- */
 
-  FILE              * log_file;
-  char              * log_file_name;
-  Bool                logging_to_file;
   char                printed_output_string[MAX_LEXEME_LENGTH*2+10];
   int                 printer_output_column;
-  Bool                redirecting_to_file;
-  FILE              * redirection_file;
   int                 saved_printer_output_column;
   
   /* kjh(CUSP-B10) begin */
@@ -734,25 +747,15 @@ kernel time and total_cpu_time greater than the derived total CPU time. REW */
   char		    current_line[1024];
   int	        current_line_index;
  
-  /* String redirection */
-  Bool		    using_input_string;
-  char		  * input_string;
-  Bool		    using_output_string;
-  char		  * output_string;
-  
   /*mvp 5-17-94 */
   list              * variables_set;
   
   multi_attribute   * multi_attributes;
   /* char                path[MAXPATHLEN];    AGR 568 */
   
-  /* JC ADDED: Array of callbacks for gSKI objects */
-  gSKI_K_CallbackData  gskiCallbacks[gSKI_K_MAX_AGENT_EVENTS];
-
   //soar_callback_array soar_callbacks;
   list			      * soar_callbacks[NUMBER_OF_CALLBACKS];
   
-  alias_struct      * alias_list;   /* AGR 568 */
   char              * alternate_input_string; 
   char              * alternate_input_suffix; 
   Bool                alternate_input_exit; /* Soar-Bugs #54, TMH */
@@ -787,9 +790,6 @@ kernel time and total_cpu_time greater than the derived total CPU time. REW */
   Bool       waitsnc;
   Bool       waitsnc_detect; 
   /* REW: end   10.24.97 */
-
-   /* JC ADDED: link to owning kernel (for convenience and less param passing) */
-  Kernel*    kernel;
 
   /* JC ADDED: Need to store RHS functions here so that agent's don't step on each other */
   rhs_function* rhs_functions;
@@ -826,6 +826,7 @@ kernel time and total_cpu_time greater than the derived total CPU time. REW */
   unsigned long predict_seed;
   std::string *prediction;
 
+
   // epmem
   epmem_parameter *epmem_params[ EPMEM_PARAMS ];
   epmem_stat *epmem_stats[ EPMEM_STATS ];
@@ -838,8 +839,34 @@ kernel time and total_cpu_time greater than the derived total CPU time. REW */
   std::vector<long> *epmem_range_mins;
   std::vector<long> *epmem_range_maxes;
 
+  unsigned long epmem_validation;
+
+
+  // wma
+  wma_parameter *wma_params[ WMA_PARAMS ];
+  wma_stat *wma_stats[ WMA_STATS ];
+
+  wma_timelist_element wma_timelist[ WMA_MAX_TIMELIST + 1 ];
+  wma_timelist_element *wma_timelist_current;
+  
+  double wma_power_array[ WMA_POWER_SIZE ];
+  int wma_quick_boost[ WMA_DECAY_HISTORY + 1 ];
+  bool wma_initialized;
+  bool wma_first;
+  tc_number wma_tc_counter;
+
+
+
+  // JRV: Added to support XML management inside Soar
+  // These handles should not be used directly, see xml.h
+  xml_handle xml_destination;		// The current destination for all XML generation, essentially either == to xml_trace or xml_commands
+  xml_handle xml_trace;				// During a run, xml_destination will be set to this pointer.
+  xml_handle xml_commands;			// During commands, xml_destination will be set to this pointer.
+
 } agent;
 /*************** end of agent struct *****/
+
+void init_soar_agent(agent* thisAgent);
 
 #ifdef USE_MACROS
 
@@ -890,15 +917,15 @@ extern "C"
 
 #endif /* USE_MACROS */
 
-extern char * soar_version_string;
+//extern char * soar_version_string;
 
 //extern agent * soar_agent;
 
-extern agent * create_soar_agent (Kernel* thisKernel, char * name);
-extern void    destroy_soar_agent (Kernel* thisKernel, agent* soar_agent);
+extern agent * create_soar_agent (char * name);
+extern void    destroy_soar_agent (agent* soar_agent);
 
-void initialize_soar_agent(Kernel *thisKernel, agent* thisAgent);
-
+//void initialize_soar_agent(Kernel *thisKernel, agent* thisAgent);
+//
 /* Ideally, this should be in "lexer.h", but to avoid circular dependencies
    among header files, I am forced to put it here. */
 #ifdef USE_MACROS

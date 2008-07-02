@@ -17,11 +17,12 @@
 #include "sml_KernelSML.h"
 #include "sml_Events.h"
 #include "sml_RunScheduler.h"
+#include "cli_CLIError.h"
 
 using namespace cli;
 using namespace sml;
 
-bool CommandLineInterface::ParseRun(gSKI::Agent* pAgent, std::vector<std::string>& argv) {
+bool CommandLineInterface::ParseRun(std::vector<std::string>& argv) {
 	Options optionsData[] = {
 		{'d', "decision",		0},
 		{'e', "elaboration",	0},
@@ -95,7 +96,7 @@ bool CommandLineInterface::ParseRun(gSKI::Agent* pAgent, std::vector<std::string
 		if (count < 0 || (count == 0 && specifiedType && !options.test(RUN_DECISION))) return SetError(CLIError::kIntegerMustBePositive);
 	} 
 
-	return DoRun(pAgent, options, count, interleaveMode);
+	return DoRun(options, count, interleaveMode);
 }
 
 eRunInterleaveMode CommandLineInterface::ParseRunInterleaveOptarg() {
@@ -114,29 +115,29 @@ eRunInterleaveMode CommandLineInterface::ParseRunInterleaveOptarg() {
 	return RUN_INTERLEAVE_DEFAULT;
 }
 
-bool CommandLineInterface::DoRun(gSKI::Agent* pAgent, const RunBitset& options, int count, eRunInterleaveMode interleaveIn) {
-	if (!RequireAgent(pAgent)) return false;
+bool CommandLineInterface::DoRun(const RunBitset& options, int count, eRunInterleaveMode interleaveIn) {
+	// Default run type is sml_DECISION
+	smlRunStepSize runType = sml_DECISION;
+	//// ... unless there is a count, then the default is a decision cycle:
+	//if (count >= 0) runType = sml_DECISION;
 
-	// Default run type is forever
-	egSKIRunType runType = gSKI_RUN_FOREVER;
-	// ... unless there is a count, then the default is a decision cycle:
-	if (count >= 0) runType = gSKI_RUN_DECISION_CYCLE;
+	bool forever = false;
 
 	// Override run type with option flag:
 	if (options.test(RUN_ELABORATION)) {
-		runType = gSKI_RUN_ELABORATION_CYCLE;
+		runType = sml_ELABORATION;
 
 	} else if (options.test(RUN_PHASE)) {
-		runType = gSKI_RUN_PHASE;
+		runType = sml_PHASE;
 
 	} else if (options.test(RUN_DECISION)) {
-		runType = gSKI_RUN_DECISION_CYCLE;
+		runType = sml_DECISION;
 
 	} else if (options.test(RUN_OUTPUT)) {
-		runType = gSKI_RUN_UNTIL_OUTPUT;
-
-	} else if (options.test(RUN_FOREVER)) {
-		runType = gSKI_RUN_FOREVER;	
+		runType = sml_UNTIL_OUTPUT;
+	} else {
+		// if there is no step size given and no count, we're going forever
+		forever = (count < 0);
 	}
 
 	if (count == -1)
@@ -144,7 +145,7 @@ bool CommandLineInterface::DoRun(gSKI::Agent* pAgent, const RunBitset& options, 
 		count = 1 ;
 	}
 
-	egSKIRunResult runResult ;
+	smlRunResult runResult ;
 
 	// NOTE: We use a scheduler implemented in kernelSML rather than
 	// the gSKI scheduler implemented by AgentManager.  This gives us
@@ -160,12 +161,11 @@ bool CommandLineInterface::DoRun(gSKI::Agent* pAgent, const RunBitset& options, 
 
 	if (options.test(RUN_SELF))
 	{
-		AgentSML* pAgentSML = m_pKernelSML->GetAgentSML(pAgent) ;
 		runFlags = (smlRunFlags)(runFlags | sml_RUN_SELF) ;
 
 		// Schedule just this one agent to run
 		pScheduler->ScheduleAllAgentsToRun(false) ;
-		pScheduler->ScheduleAgentToRun(pAgentSML, true) ;
+		pScheduler->ScheduleAgentToRun(m_pAgentSML, true) ;
 	}
 	else
 	{
@@ -175,80 +175,57 @@ bool CommandLineInterface::DoRun(gSKI::Agent* pAgent, const RunBitset& options, 
 		pScheduler->ScheduleAllAgentsToRun(true) ;
 	}
 
-	// Decide how large of a step to run each agent before switching to the next agent
-	// By default, we run one phase per agent but this isn't always appropriate.
-	egSKIRunType interleaveStepSize = gSKI_RUN_PHASE ;
-#ifdef USE_NEW_SCHEDULER
-	egSKIInterleaveType interleave;
+	smlRunStepSize interleave;
 
 	switch(interleaveIn) {
 		case RUN_INTERLEAVE_DEFAULT:
 		default:
-			interleave  = pScheduler->DefaultInterleaveStepSize(runType) ;
+			interleave  = pScheduler->DefaultInterleaveStepSize(forever, runType) ;
 			break;
 		case RUN_INTERLEAVE_ELABORATION:
-			interleave = gSKI_INTERLEAVE_ELABORATION_PHASE;
+			interleave = sml_ELABORATION;
 			break;
 		case RUN_INTERLEAVE_DECISION:
-			interleave = gSKI_INTERLEAVE_DECISION_CYCLE;
+			interleave = sml_DECISION;
 			break;
 		case RUN_INTERLEAVE_PHASE:
-			interleave = gSKI_INTERLEAVE_PHASE;
+			interleave = sml_PHASE;
 			break;
 		case RUN_INTERLEAVE_OUTPUT:
-			interleave = gSKI_INTERLEAVE_OUTPUT;
+			interleave = sml_UNTIL_OUTPUT;
 			break;
 	}
 
-#endif
-
-	switch (runType)
-	{
-		// If the entire system is running by elaboration cycles, then we need to run each agent by elaboration cycles (they're usually
-		// smaller than a phase).
-		case gSKI_RUN_ELABORATION_CYCLE: interleaveStepSize = gSKI_RUN_ELABORATION_CYCLE ; break ;
-
-		// If we're running the system to output we want to run each agent until it generates output.  This can be many decisions.
-		// The reason is actually to do with stopping the agent after n decisions (default 15) if no output occurs.
-		// DJP -- We need to rethink this design so using phase interleaving until we do.
-		// case gSKI_RUN_UNTIL_OUTPUT: interleaveStepSize = gSKI_RUN_UNTIL_OUTPUT ; break ;
-
-		default: interleaveStepSize = gSKI_RUN_PHASE ; break ;
-	}
-
-#ifdef USE_NEW_SCHEDULER
-	if (!pScheduler->VerifyStepSizeForRunType( runType, interleave) ) {
+	if (!pScheduler->VerifyStepSizeForRunType(forever, runType, interleave) ) {
 		SetError(CLIError::kInvalidRunInterleaveSetting);
 		SetErrorDetail("Run type and interleave setting incompatible.");
 		return false;
 	}
-#endif
 
 	// If we're running by decision cycle synchronize up the agents to the same phase before we start
-	bool synchronizeAtStart = ((runType == gSKI_RUN_DECISION_CYCLE) || (runType == gSKI_RUN_FOREVER)) ; 
+	bool synchronizeAtStart = (runType == sml_DECISION) ; 
+
+	SetTrapPrintCallbacks( false );
 
 	// Do the run
-#ifdef USE_OLD_SCHEDULER
-	runResult = pScheduler->RunScheduledAgents(runType, count, runFlags, interleaveStepSize, synchronizeAtStart, &m_gSKIError) ;
-#endif
-#ifdef USE_NEW_SCHEDULER
-	runResult = pScheduler->RunScheduledAgents(runType, count, runFlags, interleave, synchronizeAtStart, &m_gSKIError) ;
-#endif
+	runResult = pScheduler->RunScheduledAgents(forever, runType, count, runFlags, interleave, synchronizeAtStart) ;
+
+	SetTrapPrintCallbacks( true );
 
 	// Check for error
-	if (runResult == gSKI_RUN_ERROR) {
-        if (m_gSKIError.Id == gSKI::gSKIERR_AGENT_RUNNING) {
-            return SetError(CLIError::kAlreadyRunning);
-        } else if (gSKI::isError(m_gSKIError)) {
-		    return SetError(CLIError::kgSKIError);
-	    }
+	if (runResult == sml_RUN_ERROR) {
+		// FIXME: report extended run error
         return SetError(CLIError::kRunFailed);
 	}
 
 
 	char buf[kMinBufferSize];
 	switch (runResult) {
-		case gSKI_RUN_EXECUTING:
+		case sml_RUN_ERROR:
+			return SetError(CLIError::kRunFailed);
+			break;
+
+		case sml_RUN_EXECUTING:
 			if (m_RawOutput) {
 				// NOTE: I don't think this is currently possible
 				m_Result << "\nRun stopped (still executing).";
@@ -257,9 +234,9 @@ bool CommandLineInterface::DoRun(gSKI::Agent* pAgent, const RunBitset& options, 
 			}
 			break;
 
-		case gSKI_RUN_COMPLETED_AND_INTERRUPTED:					// an interrupt was requested, but the run completed first
+		case sml_RUN_COMPLETED_AND_INTERRUPTED:					// an interrupt was requested, but the run completed first
 			// falls through
-		case gSKI_RUN_INTERRUPTED:
+		case sml_RUN_INTERRUPTED:
 			if (m_RawOutput) {
 				m_Result << "\nRun stopped (interrupted).";
 			} else {
@@ -275,11 +252,11 @@ bool CommandLineInterface::DoRun(gSKI::Agent* pAgent, const RunBitset& options, 
 			}
 			break;
 
-		case gSKI_RUN_COMPLETED:
+		case sml_RUN_COMPLETED:
             // Do not print anything
 			// might be helpful if we checked agents to see if any halted...
-			// retval is gSKI_RUN_COMPLETED, but agent m_RunState == gSKI_RUNSTATE_HALTED
-			// should only check the agents pAgentSML->WasOnRunList()
+			// retval is sml_RUN_COMPLETED, but agent m_RunState == gSKI_RUNSTATE_HALTED
+			// should only check the agents m_pAgentSML->WasOnRunList()
 			if (pScheduler->AnAgentHaltedDuringRun())
 			{
 				if (m_RawOutput) {
@@ -291,7 +268,8 @@ bool CommandLineInterface::DoRun(gSKI::Agent* pAgent, const RunBitset& options, 
 			break;
 
 		default:
-			return SetError(CLIError::kgSKIError);
+			assert(false);
+			return SetError(CLIError::kRunFailed);
 	}
 	return true;
 }

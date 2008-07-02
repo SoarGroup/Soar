@@ -11,7 +11,7 @@
 /////////////////////////////////////////////////////////////////
 
 #include "sml_ArgMap.h"
-#include "sml_ElementXML.h"
+#include "ElementXML.h"
 #include "sml_Names.h"
 #include "ElementXMLInterface.h"
 
@@ -35,7 +35,7 @@ void ArgMap::RecordArg(ElementXML_Handle hArg)
 	m_ArgList.push_back(hArg) ;
 
 	// Look up the argument's name (if it has one)
-	char const* pName = ::sml_GetAttribute(hArg, sml_Names::kArgParam) ;
+	char const* pName = ::soarxml_GetAttribute(hArg, sml_Names::kArgParam) ;
 
 	if (pName)
 	{
@@ -50,7 +50,7 @@ char const* ArgMap::GetArgValue(char const* pName, int position) const
 	if (!hArg)
 		return NULL ;
 
-	return ::sml_GetCharacterData(hArg) ;
+	return ::soarxml_GetCharacterData(hArg) ;
 }
 
 ElementXML_Handle ArgMap::GetArgHandle(char const* pName, int position) const

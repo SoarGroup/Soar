@@ -8,6 +8,9 @@
 
 #include <portability.h>
 
+#include <iostream>
+#include <fstream>
+
 #include "sml_Utils.h"
 #include "cli_CommandLineInterface.h"
 
@@ -16,17 +19,14 @@
 using namespace cli;
 using namespace sml;
 
-bool CommandLineInterface::ParseQuit(gSKI::Agent* pAgent, std::vector<std::string>& argv) {
-	unused(pAgent);
-	unused(argv);
-
+bool CommandLineInterface::ParseQuit(std::vector<std::string>&) {
 	// Quit needs no help
 	return DoQuit();
 }
 
 bool CommandLineInterface::DoQuit() {
 	// Stop soar
-	DoStopSoar(0, false, 0);
+	DoStopSoar(false, 0);
 
 	// Stop log
 	if (m_pLogFile) {

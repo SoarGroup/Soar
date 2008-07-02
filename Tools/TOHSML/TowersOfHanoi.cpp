@@ -4,6 +4,7 @@
 #include <fstream>
 #include <string>
 #include <time.h>
+#include <cstdlib>
 
 //#include <crtdbg.h>
 
@@ -84,96 +85,107 @@ int getIntArg(int def, int next, int argc, char* argv[])
 
 int main(int argc, char* argv[])
 {
-	bool doPrinting = false;
-	bool stopAtEnd = true ;
-	bool remoteConnection = false ;
-	int port = 12121;
+#ifdef _DEBUG
+	//_crtBreakAlloc = 2263;
+	_CrtSetDbgFlag ( _CRTDBG_ALLOC_MEM_DF | _CRTDBG_LEAK_CHECK_DF ); 
+#endif // _DEBUG
 
-	int numTowers = defaultNumTowers;
-	//int numdisks = defaultNumdisks;
-
-	cout << "Start" << endl ;
-
-	// Read the command line options:
-	// -nostop : don't ask user to hit return at the end
-	// -remote : run the test over a remote connection -- needs a listening client (usually TestCommandLineInterface) to already be running.
-	if (argc > 1)
 	{
-		for (int i = 1 ; i < argc ; i++)
-		{
-			if (!strcasecmp(argv[i], "-nostop"))
-				stopAtEnd = false ;
-			if (!strcasecmp(argv[i], "-remote")) {
-				remoteConnection = true ;
+		bool doPrinting = false;
+		bool stopAtEnd = true ;
+		bool remoteConnection = false ;
+		int port = 12121;
 
-				port = getIntArg(port, i+1, argc, argv);
-			} 
-			
-			if (!strcasecmp(argv[1], "true"))
-				doPrinting = true;
+		int numTowers = defaultNumTowers;
+		//int numdisks = defaultNumdisks;
+
+		cout << "Start" << endl ;
+
+		// Read the command line options:
+		// -nostop : don't ask user to hit return at the end
+		// -remote : run the test over a remote connection -- needs a listening client (usually TestCommandLineInterface) to already be running.
+		if (argc > 1)
+		{
+			for (int i = 1 ; i < argc ; i++)
+			{
+				if (!strcasecmp(argv[i], "-nostop"))
+					stopAtEnd = false ;
+				if (!strcasecmp(argv[i], "-remote")) {
+					remoteConnection = true ;
+
+					port = getIntArg(port, i+1, argc, argv);
+				} 
+				
+				if (!strcasecmp(argv[1], "true"))
+					doPrinting = true;
+			}
 		}
-	}
 
-	//if(argc > 2)
-	//{
-	//	numTowers = atoi(argv[3]);
-	//	if(numTowers < 3)
-	//		numTowers = 3;
-	//}
+		//if(argc > 2)
+		//{
+		//	numTowers = atoi(argv[3]);
+		//	if(numTowers < 3)
+		//		numTowers = 3;
+		//}
 
-	//It would be flexible to read in the number of disks, but the productions are hard-coded to 11
-	//if(argc > 3)
-	//{
-	//	numdisks = atoi(argv[3]);
-	//	if(numdisks < 5)
-	//		numdisks = 5;
+		//It would be flexible to read in the number of disks, but the productions are hard-coded to 11
+		//if(argc > 3)
+		//{
+		//	numdisks = atoi(argv[3]);
+		//	if(numdisks < 5)
+		//		numdisks = 5;
 
-	//}
+		//}
 
-	//=============================================================================
-	//=============================================================================
-	{
-		//SimpleTimer timer ;
-		//SimpleTimer total ;
-
-		if(doPrinting)
-			cout << "***Welcome to Towers of Hanoi***" << endl << endl;
-
-		HanoiWorld hanoi(remoteConnection, port, doPrinting, numTowers);
-
-		//double time = timer.Elapsed() ;
-		//cout << "Time to initialize: " << time << endl ;
-		//timer.Start() ;
-
-		if(doPrinting)
-			hanoi.Print();
-
-		clock_t start_time, end_time;
-
-		start_time = clock();
-		while(!hanoi.AtGoalState())
+		//=============================================================================
+		//=============================================================================
 		{
-			hanoi.Run();
+			//SimpleTimer timer ;
+			//SimpleTimer total ;
+
+			if(doPrinting)
+				cout << "***Welcome to Towers of Hanoi***" << endl << endl;
+
+			HanoiWorld hanoi(remoteConnection, port, doPrinting, numTowers);
+
+			//double time = timer.Elapsed() ;
+			//cout << "Time to initialize: " << time << endl ;
+			//timer.Start() ;
 
 			if(doPrinting)
 				hanoi.Print();
+
+			clock_t start_time, end_time;
+
+			start_time = clock();
+			while(!hanoi.AtGoalState())
+			{
+				hanoi.Run();
+
+				if(doPrinting)
+					hanoi.Print();
+			}
+
+			hanoi.EndGameAction();
+
+			end_time = clock();
+			double time = (double)(end_time - start_time) / CLOCKS_PER_SEC;
+
+			// DJP: Not sure how we can tell if this has really worked or not.
+			// It looks like we'll be stuck in an infinite loop looking for the goal state
+			// if something goes wrong, so I think if we get here it's a success.
+			ReportResult(remoteConnection ? "towers-sml-remote" : "towers-sml", true) ;
+
+			//time = timer.Elapsed() ;
+			cout << "Time after initialization to complete (seconds): " << time << endl ;
+			//time = total.Elapsed() ;
+			//cout << "Total run time: " << time << endl ;
 		}
-
-		hanoi.EndGameAction();
-
-		end_time = clock();
-		double time = (double)(end_time - start_time) / CLOCKS_PER_SEC;
-
-		// DJP: Not sure how we can tell if this has really worked or not.
-		// It looks like we'll be stuck in an infinite loop looking for the goal state
-		// if something goes wrong, so I think if we get here it's a success.
-		ReportResult(remoteConnection ? "towers-sml-remote" : "towers-sml", true) ;
-
-		//time = timer.Elapsed() ;
-		cout << "Time after initialization to complete (seconds): " << time << endl ;
-		//time = total.Elapsed() ;
-		//cout << "Total run time: " << time << endl ;
 	}
+
+#ifdef _DEBUG
+	_CrtDumpMemoryLeaks();
+#endif // _DEBUG
 
 	return 0;
 }

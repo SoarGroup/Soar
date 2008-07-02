@@ -4,7 +4,7 @@
  *************************************************************************/
 
 /* =======================================================================
-                                 io.h
+                                 io_soar.h
 
                   General Soar I/O System Routines
 
@@ -42,17 +42,8 @@ typedef struct callback_struct soar_callback;
 typedef cons list;
 typedef union symbol_union Symbol;
 
-typedef void * soar_callback_agent;
 typedef void * soar_callback_data;
 typedef void * soar_call_data;
-  /*
-    RDF 20020709: These are now defined in callback .h
-
-    typedef void (*soar_callback_free_fn)(soar_callback_data);
-    typedef void (*soar_callback_fn)(soar_callback_agent, 
-    soar_callback_data, 
-    soar_call_data);
-  */
 
 extern void init_soar_io (agent* thisAgent);
 extern void do_input_cycle (agent* thisAgent);
@@ -127,11 +118,12 @@ extern Symbol *get_next_io_symbol_from_text_input_line (agent* thisAgent,
 #define NORMAL_INPUT_CYCLE 2
 #define TOP_STATE_JUST_REMOVED 3
 
-extern Symbol *get_new_io_identifier (agent* thisAgent, char first_letter);
-extern Symbol *get_io_sym_constant (agent* thisAgent, char *name);
+extern Symbol *get_new_io_identifier(agent* thisAgent, char first_letter) ;
+extern Symbol *get_io_identifier (agent* thisAgent, char first_letter, unsigned long number);
+extern Symbol *get_io_sym_constant (agent* thisAgent, char const *name);
 extern Symbol *get_io_int_constant (agent* thisAgent, long value);
-extern Symbol *get_io_float_constant (agent* thisAgent, float value);
-extern void release_io_symbol (agent* thisAgent, Symbol *sym);
+extern Symbol *get_io_float_constant (agent* thisAgent, double value);
+extern unsigned long release_io_symbol (agent* thisAgent, Symbol *sym);
 
 extern wme *add_input_wme (agent* thisAgent, Symbol *id, Symbol *attr, Symbol *value);
 extern Bool remove_input_wme (agent* thisAgent, wme *w);
@@ -180,6 +172,7 @@ typedef struct io_wme_struct {
   Symbol *id;                  /* id, attribute, and value of the wme */
   Symbol *attr;
   Symbol *value;
+  unsigned long timetag ;		/* DJP: Added.  Only guaranteed valid for an output wme. */
 } io_wme;
 
 typedef struct replay_struct {
@@ -207,17 +200,20 @@ typedef struct output_call_info_struct {
 } output_call_info;
 
 extern Symbol *get_output_value (io_wme *outputs, Symbol *id, Symbol *attr);
+extern io_wme *get_io_wmes_for_output_link (agent* thisAgent, output_link *ol) ;
+extern void deallocate_io_wme_list (agent* thisAgent, io_wme *iw) ;
 
 extern void add_input_function (agent * a, soar_callback_fn f, 
 				soar_callback_data cb_data, 
 				soar_callback_free_fn free_fn,
 				char * name);
 extern void remove_input_function (agent * a, char * name);
-extern void add_output_function (agent * a, soar_callback_fn f, 
+extern void add_output_function (agent* thisAgent, soar_callback_fn f, 
 				 soar_callback_data cb_data, 
 				 soar_callback_free_fn free_fn,
+				 int eventID,
 				 char * output_link_name);
-extern void remove_output_function (agent * a, char * name);
+extern void remove_output_function (agent* thisAgent, char * name);
 
 #ifdef __cplusplus
 }

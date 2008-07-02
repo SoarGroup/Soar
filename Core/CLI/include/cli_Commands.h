@@ -80,6 +80,7 @@ namespace cli {
 		static char const* kCLIWarnings;
 		static char const* kCLIWatch;
 		static char const* kCLIWatchWMEs;
+		static char const* kCLIWMA;
 	}; // struct
 } // namespace cli
 

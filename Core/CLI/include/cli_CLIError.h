@@ -20,11 +20,11 @@ namespace cli {
 	public:
 		enum {
 			kNoError							= 0,
-			kgSKIError							= 2,
+			//kgSKIError							= 2,
 			kGetOptError						= 3,
 			kCommandNotImplemented				= 4,
 			kProductionNotFound					= 5,
-			kMultiAttributeNotFound				= 6,
+			//kMultiAttributeNotFound				= 6,
 			kNotImplemented						= 8,
 			kExtraClosingParen					= 10,
 			kUnmatchedBracketOrQuote			= 11,
@@ -37,8 +37,8 @@ namespace cli {
 			kgetcwdFail 						= 18,
 			kgettimeofdayFail 					= 19,
 			kchdirFail							= 20,
-			kAgentRequired						= 21,
-			kKernelRequired						= 22,
+			//kAgentRequired						= 21,
+			//kKernelRequired						= 22,
 			kAliasNotFound						= 23,
 			//kAliasExists						= 24,
 			kNoHelpFile							= 27,
@@ -60,8 +60,8 @@ namespace cli {
 			kDirectoryStackEmpty				= 44,
 			kMissingFilenameArg					= 45,
 			kOpenFileFail						= 46,
-			kCantSaveReteWithJustifications		= 47,
-			kCantLoadReteWithProductions		= 48,
+			//kCantSaveReteWithJustifications		= 47,
+			//kCantLoadReteWithProductions		= 48,
 			kReteSaveOperationFail				= 49,
 			kReteLoadOperationFail				= 50,
 			kInvalidProduction					= 51,
@@ -70,8 +70,8 @@ namespace cli {
 			kInvalidID							= 54,
 			kInvalidAttribute					= 55,
 			kInvalidValue						= 56,
-			kRemoveWMEFailed					= 57,
-			kInvalidOSupportMode				= 58,
+			//kRemoveWMEFailed					= 57,
+			//kInvalidOSupportMode				= 58,
 			kInvalidWMEFilterType				= 59,
 			kFilterExpected						= 60,
 			kDuplicateWMEFilter					= 61, 
@@ -100,16 +100,19 @@ namespace cli {
 			kPreferencesError					= 85, // FIXME: document in wiki
 			kInvalidRunInterleaveSetting		= 86,
 			kLoadLibraryError					= 87, // FIXME: document in wiki
+			kWorkingMemoryNotEmpty				= 88, 
+			kDuplicateProduction				= 89, 
+			kProductionAddFailed				= 90, 
 		};
 
 		static char const* GetErrorDescription(ErrorCode code) {
 			switch (code) {
 				case kNoError:							return "No Error.";
-				case kgSKIError:						return "gSKI error.";
+				//case kgSKIError:						return "gSKI error.";
 				case kGetOptError:						return "GetOpt returned with an error.";
 				case kCommandNotImplemented:			return "Command not implemented.";
 				case kProductionNotFound:				return "Production not found.";
-				case kMultiAttributeNotFound:			return "Multi-attribute not found.";
+				//case kMultiAttributeNotFound:			return "Multi-attribute not found.";
 				case kNotImplemented:					return "Not implemented.";
 				case kExtraClosingParen:				return "Closing bracket found without opening counterpart.";
 				case kUnmatchedBracketOrQuote:			return "No closing quotes/brackets/parens found.";
@@ -122,11 +125,11 @@ namespace cli {
 				case kgetcwdFail:						return "Error getting current working directory.";
 				case kgettimeofdayFail:					return "gettimeofday() failed.";
 				case kchdirFail:						return "Error changing to directory.";
-				case kAgentRequired:					return "An agent is required for this command.";
-				case kKernelRequired:					return "A kernel is required for this command.";
+				//case kAgentRequired:					return "An agent is required for this command.";
+				//case kKernelRequired:					return "A kernel is required for this command.";
 				case kAliasNotFound:					return "Alias not found.";
 				//case kAliasExists:						return "Alias exists, remove to overwrite.";
-				case kNoHelpFile:						return "Could not find help files.  Check the library location using the 'set-library-location' command.  The library location should be set to SoarLibrary.";
+				case kNoHelpFile:						return "Help file not found.";
 				case kIntegerExpected:					return "Integer argument expected.";
 				case kIntegerMustBePositive:			return "Integer argument must be positive.";
 				case kIntegerMustBeNonNegative:			return "Integer argument must be non-negative.";
@@ -145,8 +148,8 @@ namespace cli {
 				case kDirectoryStackEmpty:				return "Directory stack empty, no directory to change to.";
 				case kMissingFilenameArg:				return "Missing filename argument.";
 				case kOpenFileFail:						return "Failed to open file for reading.";
-				case kCantSaveReteWithJustifications:	return "Can't save rete while justifications are present.";
-				case kCantLoadReteWithProductions:		return "Can't load rete unless production memory is empty.";
+				//case kCantSaveReteWithJustifications:	return "Can't save rete while justifications are present.";
+				//case kCantLoadReteWithProductions:		return "Can't load rete unless production memory is empty.";
 				case kReteSaveOperationFail:			return "Rete save operation failed.";
 				case kReteLoadOperationFail:			return "Rete load operation failed.";
 				case kInvalidProduction:				return "Invalid production.";
@@ -155,8 +158,8 @@ namespace cli {
 				case kInvalidID:						return "Unknown or invalid ID.";
 				case kInvalidAttribute:					return "Unknown or invalid attribute.";
 				case kInvalidValue:						return "Unknown or invalid value.";
-				case kRemoveWMEFailed:					return "Remove WME failed.";
-				case kInvalidOSupportMode:				return "Invalid O-Support mode, use 0-4.";
+				//case kRemoveWMEFailed:					return "Remove WME failed.";
+				//case kInvalidOSupportMode:				return "Invalid O-Support mode, use 0-4.";
 				case kInvalidWMEFilterType:				return "Invalid WME filter type, expected 'adds' 'removes' or 'both'.";
 				case kFilterExpected:					return "ID/Attribute/Value filter expected, one or more missing.";
 				case kDuplicateWMEFilter:				return "That WME filter already exists.";
@@ -185,6 +188,9 @@ namespace cli {
 				case kPreferencesError:					return "Preferences command failed." ;
 				case kInvalidRunInterleaveSetting:		return "Invalid setting for run interleave option." ;
 				case kLoadLibraryError:					return "Error occurred while loading library";
+				case kWorkingMemoryNotEmpty:			return "Working memory not empty.";
+				case kDuplicateProduction:				return "Duplicate production exists.";
+				case kProductionAddFailed:				return "Production addition failed.";
 				default:								return "Unknown error code.";
 			}
 		}

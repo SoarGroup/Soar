@@ -10,17 +10,17 @@
 
 #include "sml_Utils.h"
 #include "cli_CommandLineInterface.h"
+#include "cli_CLIError.h"
 
 #include "cli_Commands.h"
 
-#include "gSKI_Agent.h"
-#include "gSKI_AgentManager.h"
-#include "gSKI_Kernel.h"
 #include "sml_KernelSML.h"
+#include "sml_AgentSML.h"
+#include "sml_Events.h"
 
 using namespace cli;
 
-bool CommandLineInterface::ParseStopSoar(gSKI::Agent* pAgent, std::vector<std::string>& argv) {
+bool CommandLineInterface::ParseStopSoar(std::vector<std::string>& argv) {
 	Options optionsData[] = {
 		{'s', "self",		0},
 		{0, 0, 0}
@@ -46,39 +46,24 @@ bool CommandLineInterface::ParseStopSoar(gSKI::Agent* pAgent, std::vector<std::s
 		std::string reasonForStopping;
 		unsigned int optind = m_Argument - m_NonOptionArguments;
 		while (optind < argv.size()) reasonForStopping += argv[optind++] + ' ';
-		return DoStopSoar(pAgent, self, &reasonForStopping);
+		return DoStopSoar(self, &reasonForStopping);
 	}
-	return DoStopSoar(pAgent, self);
+	return DoStopSoar(self);
 }
 
-bool CommandLineInterface::DoStopSoar(gSKI::Agent* pAgent, bool self, const std::string* reasonForStopping) {
-
-	unused(reasonForStopping);
+bool CommandLineInterface::DoStopSoar(bool self, const std::string* /*reasonForStopping*/) {
 
 	if (self) {
-		if (!RequireAgent(pAgent)) return false;
-		if (!pAgent->Interrupt(gSKI_STOP_AFTER_DECISION_CYCLE, gSKI_STOP_BY_RETURNING, &m_gSKIError)) {
-			SetErrorDetail("Error interrupting agent.");
-			return SetError(CLIError::kgSKIError);
-		}
-		if (gSKI::isError(m_gSKIError)) return SetError(CLIError::kgSKIError);
-		return true;
+		m_pAgentSML->Interrupt(sml::sml_STOP_AFTER_DECISION_CYCLE);
 	} else {
-		if (!RequireKernel()) return false;
-
 		// Make sure the system stop event will be fired at the end of the run.
 		// We used to call FireSystemStop() in this function, but that's no good because
 		// it comes before the agent has stopped because interrupt only stops at the next
 		// phase or similar boundary (so could be a long time off).
 		// So instead we set a flag and allow system stop to fire at the end of the run.
 		m_pKernelSML->RequireSystemStop(true) ;
-
-		if (!m_pKernel->GetAgentManager()->InterruptAll(gSKI_STOP_AFTER_DECISION_CYCLE, &m_gSKIError)) {
-			SetErrorDetail("Error interrupting all agents.");
-			return SetError(CLIError::kgSKIError);
-		}
-		if (gSKI::isError(m_gSKIError)) return SetError(CLIError::kgSKIError);
-		return true;
+		m_pKernelSML->InterruptAllAgents(sml::sml_STOP_AFTER_DECISION_CYCLE);
 	}
+	return true;
 }
 

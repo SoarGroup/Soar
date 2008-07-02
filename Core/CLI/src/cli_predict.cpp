@@ -12,8 +12,8 @@
 #include "cli_CommandLineInterface.h"
 
 #include "cli_Commands.h"
+#include "cli_CLIError.h"
 
-#include "gSKI_Agent.h"
 #include "sml_Names.h"
 
 #include "decision_manipulation.h"
@@ -21,7 +21,7 @@
 using namespace cli;
 using namespace sml;
 
-bool CommandLineInterface::ParsePredict( gSKI::Agent* pAgent, std::vector<std::string>& argv ) 
+bool CommandLineInterface::ParsePredict( std::vector<std::string>& argv ) 
 {
 	// No arguments to predict next operator
 	if ( argv.size() != 1 ) 
@@ -30,18 +30,12 @@ bool CommandLineInterface::ParsePredict( gSKI::Agent* pAgent, std::vector<std::s
 		return SetError( CLIError::kTooManyArgs );
 	}
 	
-	return DoPredict( pAgent );
+	return DoPredict( );
 }
 
-bool CommandLineInterface::DoPredict( gSKI::Agent* pAgent ) 
+bool CommandLineInterface::DoPredict() 
 {
-	if ( !RequireAgent( pAgent ) ) 
-		return false;
-
-	// get soar kernel agent - bad gSKI!
-	agent *my_agent = pAgent->GetSoarAgent();
-
-	const char *prediction_result = get_prediction( my_agent );
+	const char *prediction_result = predict_get( m_pAgentSoar );
 
 	if ( m_RawOutput )
 		m_Result << prediction_result;

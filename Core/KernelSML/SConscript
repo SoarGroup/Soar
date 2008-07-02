@@ -8,8 +8,6 @@ env = env.Copy()
 env.Prepend(CPPPATH = ['src', 
 		       'include', 
 		       '../SoarKernel/include',
-		       '../gSKI/src',
-		       '../gSKI/include',
 		       '../CLI/include',
 		       '../ElementXML/include',
 		       '../ConnectionSML/include'])
@@ -22,7 +20,6 @@ libadd = [
 	   'ElementXML',
 	   'ConnectionSML',
 	   'CommandLineInterface',
-	   'gSKI',
 	   'SoarKernel',
 	   'sqlite3',
 	   ]
@@ -35,17 +32,12 @@ if sys.platform == 'cygwin':
 	 
 libpath = [ 
 	    '../SoarKernel',
-	    '../gSKI',
 	    '../CLI',
 	    '../ConnectionSML',
 	    '../ElementXML', 
 	    '../pcre', 
 	    ]
 
-if env['static']:
-	SoarKernelSMLStatic = env.StaticLibrary('SoarKernelSML', glob.glob('src/*.cpp'), LIBS = libadd, LIBPATH = libpath)
-	env.Install('#SoarLibrary/lib', SoarKernelSMLStatic)
-else:
-	SoarKernelSML = env.SharedLibrary('SoarKernelSML', glob.glob('src/*.cpp'), LIBS = libadd, LIBPATH = libpath)
-	env.Install('#SoarLibrary/lib', SoarKernelSML)
+SoarKernelSML = env.SharedLibrary('SoarKernelSML', glob.glob('src/*.cpp'), LIBS = libadd, LIBPATH = libpath)
+env.Install('#SoarLibrary/lib', SoarKernelSML)
 

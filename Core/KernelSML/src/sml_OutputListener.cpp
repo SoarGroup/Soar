@@ -11,18 +11,14 @@
 //
 /////////////////////////////////////////////////////////////////
 
-#include "sml_Utils.h"
 #include "sml_OutputListener.h"
+
+#include "sml_Utils.h"
 #include "sml_Connection.h"
 #include "sml_TagWme.h"
 #include "sml_AgentSML.h"
 #include "sml_KernelSML.h"
-#include "IgSKI_Wme.h"
-#include "IgSKI_Symbol.h"
-#include "IgSKI_WMObject.h"
-#include "IgSKI_OutputLink.h"
-#include "gSKI_AgentManager.h"
-#include "IgSKI_WorkingMemory.h"
+#include "KernelHeaders.h"
 
 #ifdef _DEBUG
 // Comment this in to debug init-soar and inputwme::update calls
@@ -33,71 +29,95 @@
 
 using namespace sml ;
 
-static char const* GetValueType(egSKISymbolType type)
+TagWme* OutputListener::CreateTagIOWme( AgentSML* pAgent, io_wme* wme ) 
 {
-	switch (type)
+	// Create the wme tag
+	TagWme* pTag = new TagWme() ;
+
+	// Look up the type of value this is
+	char const* pValueType = AgentSML::GetValueType( wme->value->sc.common_symbol_info.symbol_type ) ;
+
+	// For additions we send everything
+	pTag->SetIdentifier( symbol_to_string( pAgent->GetSoarAgent(), wme->id, true, 0, 0 ) ) ;
+	pTag->SetAttribute( symbol_to_string( pAgent->GetSoarAgent(), wme->attr, true, 0, 0 ) ) ;
+	pTag->SetValue( symbol_to_string( pAgent->GetSoarAgent(), wme->value, true, 0, 0 ), pValueType ) ;
+
+	long clientTimetag = pAgent->GetClientTimetag( wme->timetag );
+	if ( clientTimetag < 0 )
 	{
-	case gSKI_DOUBLE: return sml_Names::kTypeDouble ;
-	case gSKI_INT:	  return sml_Names::kTypeInt ;
-	case gSKI_STRING: return sml_Names::kTypeString ;
-	case gSKI_OBJECT: return sml_Names::kTypeID ;
-	default: return NULL ;
+		// valid client timetag
+		pTag->SetTimeTag( clientTimetag ) ;
 	}
+	else
+	{
+		pTag->SetTimeTag( wme->timetag ) ;
+	}
+
+	pTag->SetActionAdd() ;
+
+	return pTag ;
 }
 
-// Register for the events that KernelSML itself needs to know about in order to work correctly.
-void OutputListener::RegisterForKernelSMLEvents()
+TagWme* OutputListener::CreateTagWme( AgentSML* pAgent, wme* wme )
 {
-	// Listen for output callback events so we can send this output over to the clients
-	m_Agent->GetOutputLink()->GetOutputMemory()->AddWorkingMemoryListener(gSKIEVENT_OUTPUT_PHASE_CALLBACK, this) ;
+	// Create the wme tag
+	TagWme* pTag = new TagWme() ;
+
+	// Look up the type of value this is
+	char const* pValueType = AgentSML::GetValueType( wme->value->sc.common_symbol_info.symbol_type ) ;
+
+	// For additions we send everything
+	pTag->SetIdentifier( symbol_to_string( pAgent->GetSoarAgent(), wme->id, true, 0, 0 ) ) ;
+	pTag->SetAttribute( symbol_to_string( pAgent->GetSoarAgent(), wme->attr, true, 0, 0 ) ) ;
+	pTag->SetValue( symbol_to_string( pAgent->GetSoarAgent(), wme->value, true, 0, 0 ), pValueType ) ;
+
+	long clientTimetag = pAgent->GetClientTimetag( wme->timetag );
+	if ( clientTimetag < 0 )
+	{
+		// valid client timetag
+		pTag->SetTimeTag( clientTimetag ) ;
+	}
+	else
+	{
+		pTag->SetTimeTag( wme->timetag ) ;
+	}
+
+	pTag->SetActionAdd() ;
+
+	return pTag ;
 }
 
-void OutputListener::UnRegisterForKernelSMLEvents()
+void OutputListener::Init(KernelSML* pKernelSML, AgentSML* pAgentSML)
 {
-	m_Agent->GetOutputLink()->GetOutputMemory()->RemoveWorkingMemoryListener(gSKIEVENT_OUTPUT_PHASE_CALLBACK, this) ;
+	m_KernelSML = pKernelSML ;
+	SetAgentSML(pAgentSML) ;
 }
 
-// Returns true if this is the first connection listening for this event
-bool OutputListener::AddListener(egSKIWorkingMemoryEventId eventID, Connection* pConnection)
+// Called when an event occurs in the kernel
+void OutputListener::OnKernelEvent(int eventID, AgentSML* pAgentSML, void* pCallData)
 {
-	bool first = BaseAddListener(eventID, pConnection) ;
+	output_call_info* oinfo = static_cast<output_call_info*>(pCallData);
+	int outputMode = oinfo->mode;
 
-	// For other listeners (AgentListener, KernelListener) we register with the kernel at this point if this is the first
-	// listener being added.
-	// However, for output we also use this listener to listen on the kernel side for events (to make KernelSML function correctly)
-	// so the kernel listener is always in place.  We don't need to add the kernel listener or remove it if all connections stop listening
-	// for it (because even if no clients are interested in this event, KernelSML remains interested).
-
-	return first ;
+	io_wme* pWmes = oinfo->outputs ;
+	SendOutput((smlWorkingMemoryEventId)eventID, pAgentSML, outputMode, pWmes) ;
 }
 
-// Returns true if at least one connection remains listening for this event
-bool OutputListener::RemoveListener(egSKIWorkingMemoryEventId eventID, Connection* pConnection)
+// OutputMode is one of:
+// #define ADDED_OUTPUT_COMMAND 1
+// #define MODIFIED_OUTPUT_COMMAND 2
+// #define REMOVED_OUTPUT_COMMAND 3
+
+void OutputListener::SendOutput(smlWorkingMemoryEventId eventId, AgentSML* pAgentSML, int outputMode, io_wme* io_wmelist)
 {
-	bool last = BaseRemoveListener(eventID, pConnection) ;
+	unused(outputMode) ;
 
-	// For other listeners (AgentListener, KernelListener) we register with the kernel at this point if this is the first
-	// listener being added.
-	// However, for output we also use this listener to listen on the kernel side for events (to make KernelSML function correctly)
-	// so the kernel listener is always in place.  We don't need to add the kernel listener or remove it if all connections stop listening
-	// for it (because even if no clients are interested in this event, KernelSML remains interested).
-
-	return last ;
-}
-
-void OutputListener::HandleEvent(egSKIWorkingMemoryEventId eventId, gSKI::Agent* agentPtr, egSKIWorkingMemoryChange change, gSKI::tIWmeIterator* wmelist)
-{
-	unused(change) ;
-
-	if (eventId != gSKIEVENT_OUTPUT_PHASE_CALLBACK)
-		return ;
-
-	if (wmelist->GetNumElements() == 0)
+	if (eventId != smlEVENT_OUTPUT_PHASE_CALLBACK)
 		return ;
 
 	// Get the first listener for this event (or return if there are none)
 	ConnectionListIter connectionIter ;
-	if (!EventManager<egSKIWorkingMemoryEventId>::GetBegin(eventId, &connectionIter))
+	if (!EventManager<smlWorkingMemoryEventId>::GetBegin(eventId, &connectionIter))
 		return ;
 
 	// We need the first connection for when we're building the message.  Perhaps this is a sign that
@@ -105,11 +125,11 @@ void OutputListener::HandleEvent(egSKIWorkingMemoryEventId eventId, gSKI::Agent*
 	Connection* pConnection = *connectionIter ;
 
 	// Build the SML message we're doing to send.
-	ElementXML* pMsg = pConnection->CreateSMLCommand(sml_Names::kCommand_Output) ;
+	soarxml::ElementXML* pMsg = pConnection->CreateSMLCommand(sml_Names::kCommand_Output) ;
 
 	// Add the agent parameter and as a side-effect, get a pointer to the <command> tag.  This is an optimization.
-	ElementXML_Handle hCommand = pConnection->AddParameterToSMLCommand(pMsg, sml_Names::kParamAgent, agentPtr->GetName()) ;
-	ElementXML command(hCommand) ;
+	ElementXML_Handle hCommand = pConnection->AddParameterToSMLCommand(pMsg, sml_Names::kParamAgent, pAgentSML->GetName()) ;
+	soarxml::ElementXML command(hCommand) ;
 
 	// We are passed a list of all wmes in the transitive closure (TC) of the output link.
 	// We need to decide which of these we've already seen before, so we can just send the
@@ -122,13 +142,17 @@ void OutputListener::HandleEvent(egSKIWorkingMemoryEventId eventId, gSKI::Agent*
 		iter->second = false ;
 	}
 
-	// Build the list of WME changes
-	for(; wmelist->IsValid(); wmelist->Next())
-	{
-		// Get the next wme
-		gSKI::IWme* pWME = wmelist->GetVal();
+	// Start with the output link itself
+	// The kernel seems to only output this itself during link initialization
+	// and we might be connecting up after that.  Including it twice will not hurt on the client side.
+	output_link *ol = pAgentSML->GetSoarAgent()->existing_output_links ;	// This is technically a list but we only support one output link
+	TagWme* pOutputLinkWme = OutputListener::CreateTagWme( pAgentSML, ol->link_wme) ;
+	command.AddChild(pOutputLinkWme) ;
 
-		long timeTag = pWME->GetTimeTag() ;
+	for (io_wme* wme = io_wmelist ; wme != NIL ; wme = wme->next)
+	{
+		// Build the list of WME changes
+		long timeTag = wme->timetag ;
 
 		// See if we've already sent this wme to the client
 		OutputTimeTagIter iter = m_TimeTags.find(timeTag) ;
@@ -145,26 +169,10 @@ void OutputListener::HandleEvent(egSKIWorkingMemoryEventId eventId, gSKI::Agent*
 		m_TimeTags[timeTag] = true ;
 
 		// Create the wme tag
-		TagWme* pTag = new TagWme() ;
-
-		// Look up the type of value this is
-		egSKISymbolType type = pWME->GetValue()->GetType() ;
-		char const* pValueType = GetValueType(type) ;
-
-		// For additions we send everything
-		pTag->SetIdentifier(pWME->GetOwningObject()->GetId()->GetString()) ;
-		pTag->SetAttribute(pWME->GetAttribute()->GetString()) ;
-		pTag->SetValue(pWME->GetValue()->GetString(), pValueType) ;
-		pTag->SetTimeTag(pWME->GetTimeTag()) ;
-		pTag->SetActionAdd() ;
+		TagWme* pTag = CreateTagIOWme( pAgentSML, wme ) ;
 
 		// Add it as a child of the command tag
 		command.AddChild(pTag) ;
-
-		// Values retrieved via "GetVal" have to be released.
-		// Ah, but not if they come from an Iterator rather than an IteratorWithRelease.
-		// At least, it seems like if I call Release here it causes a crash on exit, while if I don't all seems well.
-		//pWME->Release();
 	}
 
 	// At this point we check the list of time tags and any which are not marked as "in use" must
@@ -201,7 +209,7 @@ void OutputListener::HandleEvent(egSKIWorkingMemoryEventId eventId, gSKI::Agent*
 	// it will release the handle...deleting part of our message.
 	command.Detach() ;
 
-	egSKIWorkingMemoryEventId eventID = gSKIEVENT_OUTPUT_PHASE_CALLBACK ;
+	smlWorkingMemoryEventId eventID = smlEVENT_OUTPUT_PHASE_CALLBACK ;
 
 #ifdef _DEBUG
 	// Convert the XML to a string so we can look at it in the debugger
@@ -220,34 +228,74 @@ void OutputListener::HandleEvent(egSKIWorkingMemoryEventId eventId, gSKI::Agent*
 	delete pMsg ;
 }
 
+// Register for the events that KernelSML itself needs to know about in order to work correctly.
+void OutputListener::RegisterForKernelSMLEvents()
+{
+	// Listen for output callback events so we can send this output over to the clients
+	this->RegisterWithKernel(smlEVENT_OUTPUT_PHASE_CALLBACK) ;
+	//m_Agent->GetOutputLink()->GetOutputMemory()->AddWorkingMemoryListener(smlEVENT_OUTPUT_PHASE_CALLBACK, this) ;
+}
+
+void OutputListener::UnRegisterForKernelSMLEvents()
+{
+	this->UnregisterWithKernel(smlEVENT_OUTPUT_PHASE_CALLBACK) ;
+	//m_Agent->GetOutputLink()->GetOutputMemory()->RemoveWorkingMemoryListener(smlEVENT_OUTPUT_PHASE_CALLBACK, this) ;
+}
+
+// Returns true if this is the first connection listening for this event
+bool OutputListener::AddListener(smlWorkingMemoryEventId eventID, Connection* pConnection)
+{
+	bool first = BaseAddListener(eventID, pConnection) ;
+
+	// For other listeners (AgentListener, KernelListener) we register with the kernel at this point if this is the first
+	// listener being added.
+	// However, for output we also use this listener to listen on the kernel side for events (to make KernelSML function correctly)
+	// so the kernel listener is always in place.  We don't need to add the kernel listener or remove it if all connections stop listening
+	// for it (because even if no clients are interested in this event, KernelSML remains interested).
+
+	return first ;
+}
+
+// Returns true if at least one connection remains listening for this event
+bool OutputListener::RemoveListener(smlWorkingMemoryEventId eventID, Connection* pConnection)
+{
+	bool last = BaseRemoveListener(eventID, pConnection) ;
+
+	// For other listeners (AgentListener, KernelListener) we register with the kernel at this point if this is the first
+	// listener being added.
+	// However, for output we also use this listener to listen on the kernel side for events (to make KernelSML function correctly)
+	// so the kernel listener is always in place.  We don't need to add the kernel listener or remove it if all connections stop listening
+	// for it (because even if no clients are interested in this event, KernelSML remains interested).
+
+	return last ;
+}
+
 // Agent event listener (called when soar has been or is about to be re-initialized)
 // BADBAD: This shouldn't really be handled in a class called OutputListener.
-void OutputListener::HandleEvent(egSKIAgentEventId eventId, gSKI::Agent* agentPtr)
+void OutputListener::ReinitializeEvent(smlAgentEventId eventId) 
 {
 	// Before the kernel is re-initialized we have to release all input WMEs.
 	// If we don't do this, gSKI will fail to re-initialize the kernel correctly as it
 	// assumes that all WMEs are deleted prior to reinitializing the kernel and if we have
 	// outstanding references to the objects it has no way to make the deletion happen.
-	if (eventId == gSKIEVENT_BEFORE_AGENT_REINITIALIZED)
+	if (eventId == smlEVENT_BEFORE_AGENT_REINITIALIZED)
 	{
-		AgentSML* pAgent = this->m_KernelSML->GetAgentSML(agentPtr) ;
-
 #ifdef DEBUG_UPDATE
-	sml::PrintDebugFormat("AgentSML before agent reinitialized received - start.") ;
+	sml::PrintDebugFormat("OutputListener before agent reinitialized received - start.") ;
 #endif
-		if (pAgent)
+		if (m_pCallbackAgentSML)
 		{
-			pAgent->ReleaseAllWmes() ;
+			m_pCallbackAgentSML->ReleaseAllWmes() ;
 		}
 
 #ifdef DEBUG_UPDATE
-	sml::PrintDebugFormat("AgentSML before agent reinitialized received - end.") ;
+	sml::PrintDebugFormat("OutputListener before agent reinitialized received - end.") ;
 #endif
 	}
 
 	// After the kernel has been re-initialized we need to send everything on the output link over again
 	// when Soar is next run.
-	if (eventId == gSKIEVENT_AFTER_AGENT_REINITIALIZED)
+	if (eventId == smlEVENT_AFTER_AGENT_REINITIALIZED)
 	{
 		// When the user types init-soar, we need to reset everything, so when the agent is next run
 		// we will send over output link information again.  The client also needs to register for this event

@@ -12,7 +12,9 @@ import os
 import sys
 import SoarSCons
 
-print "Soar 8.6.4"
+# TODO: pull this version string out of shared/soarversion.h
+soarversionstring = "9.0.0"
+print "Soar", soarversionstring
 print "Detected OS:", os.name
 print "Detected platform:", sys.platform
 
@@ -39,7 +41,6 @@ opts.AddOptions(
 	BoolOption('python', 'Build the Soar Python interface', pythonDefault), 
 	BoolOption('csharp', 'Build the Soar CSharp interface', 'no'), 
 	BoolOption('tcl', 'Build the Soar Tcl interface', 'no'), 
-	BoolOption('static', 'Use static linking when possible', 'no'), 
 	BoolOption('debug', 'Build with debugging symbols', 'yes'),
 	BoolOption('warnings', 'Build with warnings', 'yes'),
 	EnumOption('optimization', 'Build with optimization (May cause run-time errors!)', 'no', ['no','partial','full'], {}, 1),
@@ -104,13 +105,7 @@ if conf.env['java']:
 
 # check SWIG version if necessary
 # SWIG is necessary if one of the swig projects is going to be built
-if conf.env['static']:
-	conf.env['java'] = False
-	conf.env['python'] = False
-	conf.env['csharp'] = False
-	conf.env['tcl'] = False	
-	conf.env.Append(CPPFLAGS = ' -DSTATIC_LINKED')
-elif conf.env['java'] or conf.env['python'] or conf.env['csharp'] or conf.env['tcl']:
+if conf.env['java'] or conf.env['python'] or conf.env['csharp'] or conf.env['tcl']:
 	if not SoarSCons.CheckSWIG(conf.env):
 		explainSWIG = ""
 		if conf.env['java']:
@@ -125,6 +120,7 @@ elif conf.env['java'] or conf.env['python'] or conf.env['csharp'] or conf.env['t
 		print "SWIG is required because", explainSWIG[:-2]
 		Exit(1)
 	
+
 # check if the compiler supports -fvisibility=hidden (GCC >= 4)
 if conf.CheckVisibilityFlag():
 	conf.env.Append(CPPFLAGS = ' -fvisibility=hidden')
@@ -166,6 +162,10 @@ if sys.platform != 'cygwin':
 	if not conf.CheckLib('pthread'):
 		Exit(1)
 		
+# if this flag is not included, the linker will complain about not being able
+# to find the symbol __sync_sub_and_fetch_4 when using g++ 4.3
+conf.env.Append(CPPFLAGS = ' -march=i686')
+
 env = conf.Finish()
 Export('env')
 
@@ -174,7 +174,6 @@ Export('env')
 
 # Core
 SConscript('#Core/SoarKernel/SConscript')
-SConscript('#Core/gSKI/SConscript')
 SConscript('#Core/ConnectionSML/SConscript')
 SConscript('#Core/ElementXML/SConscript')
 SConscript('#Core/CLI/SConscript')

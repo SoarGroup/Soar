@@ -9,7 +9,8 @@
 	#include <string>
 	#include <list>
 	#include <algorithm>
-	
+	#include <iostream>
+
 	namespace sml {
 	class Agent;
 	}
@@ -36,9 +37,11 @@
 		
 		PythonUserData* pud = static_cast<PythonUserData*>(pUserData);
 		
-		PyObject* args = Py_BuildValue("(iOOss)", id, pud->userdata, SWIG_NewInstanceObj((void *) pAgent, SWIGTYPE_p_sml__Agent,0), pProdName, pInstantiation);
+		PyObject* agent = SWIG_NewInstanceObj((void *) pAgent, SWIGTYPE_p_sml__Agent,0);
+		PyObject* args = Py_BuildValue("(iOOss)", id, pud->userdata, agent, pProdName, pInstantiation);
 		PyObject* result = PyEval_CallObject(pud->func, args);
 		
+		Py_DECREF(agent);
 		Py_DECREF(args);
 		if(result!=0) Py_DECREF(result);
 		
@@ -52,9 +55,11 @@
 		
 		PythonUserData* pud = static_cast<PythonUserData*>(pUserData);
 		
-		PyObject* args = Py_BuildValue("(iOOi)", id, pud->userdata, SWIG_NewInstanceObj((void *) pAgent, SWIGTYPE_p_sml__Agent,0), phase);
+		PyObject* agent = SWIG_NewInstanceObj((void *) pAgent, SWIGTYPE_p_sml__Agent,0);
+		PyObject* args = Py_BuildValue("(iOOi)", id, pud->userdata, agent, phase);
 		PyObject* result = PyEval_CallObject(pud->func, args);
 		
+		Py_DECREF(agent);
 		Py_DECREF(args);
 		if(result!=0) Py_DECREF(result);
 		
@@ -68,9 +73,11 @@
 		
 		PythonUserData* pud = static_cast<PythonUserData*>(pUserData);
 		
-		PyObject* args = Py_BuildValue("(iOOs)", id, pud->userdata, SWIG_NewInstanceObj((void *) pAgent, SWIGTYPE_p_sml__Agent,0), pMessage);
+		PyObject* agent = SWIG_NewInstanceObj((void *) pAgent, SWIGTYPE_p_sml__Agent,0);
+		PyObject* args = Py_BuildValue("(iOOs)", id, pud->userdata, agent, pMessage);
 		PyObject* result = PyEval_CallObject(pud->func, args);
 		
+		Py_DECREF(agent);
 		Py_DECREF(args);
 		if(result!=0) Py_DECREF(result);
 		
@@ -84,9 +91,13 @@
 		
 		PythonUserData* pud = static_cast<PythonUserData*>(pUserData);
 		
-		PyObject* args = Py_BuildValue("(iOOO)", id, pud->userdata, SWIG_NewInstanceObj((void *) pAgent, SWIGTYPE_p_sml__Agent,0), SWIG_NewInstanceObj((void *) pXML, SWIGTYPE_p_sml__ClientXML,0));
+		PyObject* agent = SWIG_NewInstanceObj((void *) pAgent, SWIGTYPE_p_sml__Agent,0);
+		PyObject* xml = SWIG_NewInstanceObj((void *) pXML, SWIGTYPE_p_sml__ClientXML,0);
+		PyObject* args = Py_BuildValue("(iOOO)", id, pud->userdata, agent, xml);
 		PyObject* result = PyEval_CallObject(pud->func, args);
 		
+		Py_DECREF(agent);
+		Py_DECREF(xml);
 		Py_DECREF(args);
 		if(result!=0) Py_DECREF(result);
 		
@@ -100,9 +111,13 @@
 		
 		PythonUserData* pud = static_cast<PythonUserData*>(pUserData);
 		
-		PyObject* args = Py_BuildValue("(OsO)", pud->userdata, SWIG_NewInstanceObj((void *) pAgent, SWIGTYPE_p_sml__Agent,0), commandName, SWIG_NewInstanceObj((void *) pOutputWme, SWIGTYPE_p_sml__WMElement,0));
+		PyObject* agent = SWIG_NewInstanceObj((void *) pAgent, SWIGTYPE_p_sml__Agent,0);
+		PyObject* wme = SWIG_NewInstanceObj((void *) pOutputWme, SWIGTYPE_p_sml__WMElement,0);
+		PyObject* args = Py_BuildValue("(OsO)", pud->userdata, agent, commandName, wme);
 		PyObject* result = PyEval_CallObject(pud->func, args);
 		
+		Py_DECREF(agent);
+		Py_DECREF(wme);
 		Py_DECREF(args);
 		if(result!=0) Py_DECREF(result);
 		
@@ -116,9 +131,11 @@
 		
 		PythonUserData* pud = static_cast<PythonUserData*>(pUserData);
 		
-		PyObject* args = Py_BuildValue("(OO)", pud->userdata, SWIG_NewInstanceObj((void *) pAgent, SWIGTYPE_p_sml__Agent,0));
+		PyObject* agent = SWIG_NewInstanceObj((void *) pAgent, SWIGTYPE_p_sml__Agent,0);
+		PyObject* args = Py_BuildValue("(OO)", pud->userdata, agent);
 		PyObject* result = PyEval_CallObject(pud->func, args);
 		
+		Py_DECREF(agent);
 		Py_DECREF(args);
 		if(result!=0) Py_DECREF(result);
 		
@@ -132,9 +149,11 @@
 		
 		PythonUserData* pud = static_cast<PythonUserData*>(pUserData);
 		
-		PyObject* args = Py_BuildValue("(iOO)", id, pud->userdata, SWIG_NewInstanceObj((void *) pKernel, SWIGTYPE_p_sml__Kernel,0));
+		PyObject* kernel = SWIG_NewInstanceObj((void *) pKernel, SWIGTYPE_p_sml__Kernel,0);
+		PyObject* args = Py_BuildValue("(iOO)", id, pud->userdata, kernel);
 		PyObject* result = PyEval_CallObject(pud->func, args);
 		
+		Py_DECREF(kernel);
 		Py_DECREF(args);
 		if(result!=0) Py_DECREF(result);
 		
@@ -148,9 +167,11 @@
 		
 		PythonUserData* pud = static_cast<PythonUserData*>(pUserData);
 		
-		PyObject* args = Py_BuildValue("(iOOi)", id, pud->userdata, SWIG_NewInstanceObj((void *) pKernel, SWIGTYPE_p_sml__Kernel,0), runFlags);
+		PyObject* kernel = SWIG_NewInstanceObj((void*) pKernel, SWIGTYPE_p_sml__Kernel, 0);
+		PyObject* args = Py_BuildValue("(iOOi)", id, pud->userdata, kernel, runFlags);
 		PyObject* result = PyEval_CallObject(pud->func, args);
 		
+		Py_DECREF(kernel);
 		Py_DECREF(args);
 		if(result!=0) Py_DECREF(result);
 		
@@ -164,9 +185,11 @@
 		
 		PythonUserData* pud = static_cast<PythonUserData*>(pUserData);
 		
-		PyObject* args = Py_BuildValue("(iOOs)", id, pud->userdata, SWIG_NewInstanceObj((void *) pKernel, SWIGTYPE_p_sml__Kernel,0), pData);
+		PyObject* kernel = SWIG_NewInstanceObj((void *) pKernel, SWIGTYPE_p_sml__Kernel,0);
+		PyObject* args = Py_BuildValue("(iOOs)", id, pud->userdata, kernel, pData);
 		PyObject* result = PyEval_CallObject(pud->func, args);
 		
+		Py_DECREF(kernel);
 		Py_DECREF(args);
 		if(result==0 || !PyString_Check(result))
 			return "";
@@ -186,9 +209,11 @@
 		
 		PythonUserData* pud = static_cast<PythonUserData*>(pUserData);
 		
-		PyObject* args = Py_BuildValue("(iOO)", id, pud->userdata, SWIG_NewInstanceObj((void *) pAgent, SWIGTYPE_p_sml__Agent,0));
+		PyObject* agent = SWIG_NewInstanceObj((void *) pAgent, SWIGTYPE_p_sml__Agent,0);
+		PyObject* args = Py_BuildValue("(iOO)", id, pud->userdata, agent);
 		PyObject* result = PyEval_CallObject(pud->func, args);
 		
+		Py_DECREF(agent);
 		Py_DECREF(args);
 		if(result!=0) Py_DECREF(result);
 		
@@ -202,10 +227,12 @@
 		
 		PythonUserData* pud = static_cast<PythonUserData*>(pUserData);
 		
-		PyObject* args = Py_BuildValue("(iOOss)", id, pud->userdata, SWIG_NewInstanceObj((void *) pAgent, SWIGTYPE_p_sml__Agent,0), pFunctionName, pArgument);
+		PyObject* agent = SWIG_NewInstanceObj((void *) pAgent, SWIGTYPE_p_sml__Agent,0);
+		PyObject* args = Py_BuildValue("(iOOss)", id, pud->userdata, agent, pFunctionName, pArgument);
 		
 		PyObject* result = PyEval_CallObject(pud->func, args);
 		
+		Py_DECREF(agent);
 		Py_DECREF(args);
 		if(result==0 || !PyString_Check(result))
 			return "";
@@ -225,9 +252,11 @@
 		
 		PythonUserData* pud = static_cast<PythonUserData*>(pUserData);
 		
-		PyObject* args = Py_BuildValue("(iOOss)", id, pud->userdata, SWIG_NewInstanceObj((void *) pAgent, SWIGTYPE_p_sml__Agent,0), pClientName, pMessage);
+		PyObject* agent = SWIG_NewInstanceObj((void *) pAgent, SWIGTYPE_p_sml__Agent,0);
+		PyObject* args = Py_BuildValue("(iOOss)", id, pud->userdata, agent, pClientName, pMessage);
 		PyObject* result = PyEval_CallObject(pud->func, args);
 		
+		Py_DECREF(agent);
 		Py_DECREF(args);
 		if(result==0 || !PyString_Check(result))
 			return "";
@@ -242,6 +271,10 @@
 	
 	PythonUserData* CreatePythonUserData(PyObject* func, PyObject* userData) {
 		PythonUserData* pud = new PythonUserData();
+		PyGILState_STATE gstate;
+		gstate = PyGILState_Ensure(); /* Get the thread.  No Python API allowed before this point. */
+		Py_INCREF(userData);
+		PyGILState_Release(gstate); /* Release the thread. No Python API allowed beyond this point. */
 	    
 	    pud->func = func;
 	    pud->userdata = userData;

@@ -12,14 +12,14 @@
 #ifndef SML_TAG_COMMANDH
 #define SML_TAG_COMMANDH
 
-#include "sml_ElementXML.h"
+#include "ElementXML.h"
 #include "sml_StringOps.h"
 #include "sml_Names.h"
 
 namespace sml
 {
 
-class TagCommand : public ElementXML
+class TagCommand : public soarxml::ElementXML
 {
 public:
 	TagCommand() ;

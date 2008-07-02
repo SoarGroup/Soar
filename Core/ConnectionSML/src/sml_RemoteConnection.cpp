@@ -23,6 +23,7 @@
 #include <assert.h>
 
 using namespace sml ;
+using namespace soarxml ;
 
 RemoteConnection::RemoteConnection(bool sharedFileSystem, sock::DataSender* pDataSender)
 {

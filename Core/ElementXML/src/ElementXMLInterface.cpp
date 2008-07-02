@@ -21,18 +21,18 @@
 /////////////////////////////////////////////////////////////////
 
 #include "ElementXMLInterface.h"
-#include "sml_ElementXMLImpl.h"
-#include "sml_ParseXMLFile.h"
-#include "sml_ParseXMLString.h"
+#include "ElementXMLImpl.h"
+#include "ParseXMLFile.h"
+#include "ParseXMLString.h"
 
 #include <string>
+
+using namespace soarxml;
 
 // We store the last parsing error message here.
 // This is a bit inelegant, but makes it easier for the client to use this
 // interface from any language.
 static std::string s_LastParseErrorMessage ;
-
-using namespace sml ;
 
 inline static ElementXMLImpl* GetElementFromHandle(ElementXML_Handle hXML)
 {
@@ -48,7 +48,7 @@ inline static ElementXMLImpl* GetElementFromHandle(ElementXML_Handle hXML)
 /*************************************************************
 * @brief Default constructor.
 *************************************************************/
-ElementXML_Handle sml_NewElementXML()
+ElementXML_Handle soarxml_NewElementXML()
 {
 	return (ElementXML_Handle)new ElementXMLImpl() ;
 }
@@ -59,7 +59,7 @@ ElementXML_Handle sml_NewElementXML()
 *
 * @returns The new reference count (0 implies the object was deleted)
 *************************************************************/
-int sml_ReleaseRef(ElementXML_Handle hXML)
+int soarxml_ReleaseRef(ElementXML_Handle hXML)
 {
 	return GetElementFromHandle(hXML)->ReleaseRef() ;
 }
@@ -67,7 +67,7 @@ int sml_ReleaseRef(ElementXML_Handle hXML)
 /*************************************************************
 * @returns Reports the current reference count (must be > 0)
 *************************************************************/
-int sml_GetRefCount(ElementXML_Handle hXML)
+int soarxml_GetRefCount(ElementXML_Handle hXML)
 {
 	return GetElementFromHandle(hXML)->GetRefCount() ;
 }
@@ -81,7 +81,7 @@ int sml_GetRefCount(ElementXML_Handle hXML)
 *
 * @returns The new reference count (will be at least 2).
 *************************************************************/
-int sml_AddRef(ElementXML_Handle hXML)
+int soarxml_AddRef(ElementXML_Handle hXML)
 {
 	return GetElementFromHandle(hXML)->AddRef() ;
 }
@@ -99,7 +99,7 @@ int sml_AddRef(ElementXML_Handle hXML)
 * @param  copyName	If true, tagName will be copied.  If false, we take ownership of tagName.
 * @returns	true if the tag name is valid.
 *************************************************************/
-bool sml_SetTagName(ElementXML_Handle hXML, char* tagName, bool copyName)
+bool soarxml_SetTagName(ElementXML_Handle hXML, char* tagName, bool copyName)
 {
 	return GetElementFromHandle(hXML)->SetTagName(tagName, copyName) ;
 }
@@ -109,7 +109,7 @@ bool sml_SetTagName(ElementXML_Handle hXML, char* tagName, bool copyName)
 *
 * @returns The tag name.
 *************************************************************/
-char const* sml_GetTagName(ElementXML_Handle hXML)
+char const* soarxml_GetTagName(ElementXML_Handle hXML)
 {
 	return GetElementFromHandle(hXML)->GetTagName() ;
 }
@@ -132,7 +132,7 @@ char const* sml_GetTagName(ElementXML_Handle hXML)
 *
 * @param Comment	The comment string.
 *************************************************************/
-bool sml_SetComment(ElementXML_Handle hXML, char const* pComment)
+bool soarxml_SetComment(ElementXML_Handle hXML, char const* pComment)
 {
 	return GetElementFromHandle(hXML)->SetComment(pComment) ;
 }
@@ -142,7 +142,7 @@ bool sml_SetComment(ElementXML_Handle hXML, char const* pComment)
 *
 * @returns The comment string for this element (or zero-length string if there is none)
 *************************************************************/
-char const* sml_GetComment(ElementXML_Handle hXML)
+char const* soarxml_GetComment(ElementXML_Handle hXML)
 {
 	return GetElementFromHandle(hXML)->GetComment() ;
 }
@@ -161,7 +161,7 @@ char const* sml_GetComment(ElementXML_Handle hXML)
 *
 * @param  pChild	The child to add.  Will be released when the parent is destroyed.
 *************************************************************/
-void sml_AddChild(ElementXML_Handle hXML, ElementXML_Handle hChild)
+void soarxml_AddChild(ElementXML_Handle hXML, ElementXML_Handle hChild)
 {
 	return GetElementFromHandle(hXML)->AddChild(GetElementFromHandle(hChild)) ;
 }
@@ -169,7 +169,7 @@ void sml_AddChild(ElementXML_Handle hXML, ElementXML_Handle hChild)
 /*************************************************************
 * @brief Returns the number of children of this element.
 *************************************************************/
-int sml_GetNumberChildren(ElementXML_Handle const hXML)
+int soarxml_GetNumberChildren(ElementXML_Handle const hXML)
 {
 	return GetElementFromHandle(hXML)->GetNumberChildren() ;
 }
@@ -184,7 +184,7 @@ int sml_GetNumberChildren(ElementXML_Handle const hXML)
 *
 * @param index	The 0-based index of the child to return.
 *************************************************************/
-ElementXML_Handle const sml_GetChild(ElementXML_Handle const hXML, int index)
+ElementXML_Handle const soarxml_GetChild(ElementXML_Handle const hXML, int index)
 {
 	return (ElementXML_Handle)GetElementFromHandle(hXML)->GetChild(index) ;
 }
@@ -197,7 +197,7 @@ ElementXML_Handle const sml_GetChild(ElementXML_Handle const hXML, int index)
 *
 * @returns NULL if has no parent.
 *************************************************************/
-ElementXML_Handle const sml_GetParent(ElementXML_Handle const hXML)
+ElementXML_Handle const soarxml_GetParent(ElementXML_Handle const hXML)
 {
 	return (ElementXML_Handle)GetElementFromHandle(hXML)->GetParent() ;
 }
@@ -209,7 +209,7 @@ ElementXML_Handle const sml_GetParent(ElementXML_Handle const hXML)
 *
 *		 Call ReleaseRef() on the returned object when you are done with it.
 *************************************************************/
-ElementXML_Handle const sml_MakeCopy(ElementXML_Handle const hXML)
+ElementXML_Handle const soarxml_MakeCopy(ElementXML_Handle const hXML)
 {
 	return (ElementXML_Handle)GetElementFromHandle(hXML)->MakeCopy() ;
 }
@@ -229,7 +229,7 @@ ElementXML_Handle const sml_MakeCopy(ElementXML_Handle const hXML)
 * @param  copyValue		If true, atttributeName will be copied.  If false, we take ownership of attributeValue
 * @returns true if attribute name is valid (debug mode only)
 *************************************************************/
-bool sml_AddAttribute(ElementXML_Handle hXML, char* attributeName, char* attributeValue, bool copyName, bool copyValue)
+bool soarxml_AddAttribute(ElementXML_Handle hXML, char* attributeName, char* attributeValue, bool copyName, bool copyValue)
 {
 	return GetElementFromHandle(hXML)->AddAttribute(attributeName, attributeValue, copyName, copyValue) ;
 }
@@ -237,7 +237,7 @@ bool sml_AddAttribute(ElementXML_Handle hXML, char* attributeName, char* attribu
 /*************************************************************
 * @brief Get the number of attributes attached to this element.  
 *************************************************************/
-int sml_GetNumberAttributes(ElementXML_Handle hXML) 
+int soarxml_GetNumberAttributes(ElementXML_Handle hXML) 
 {
 	return GetElementFromHandle(hXML)->GetNumberAttributes() ;
 }
@@ -248,7 +248,7 @@ int sml_GetNumberAttributes(ElementXML_Handle hXML)
 *
 * @param index	The 0-based index of the attribute to return.
 *************************************************************/
-const char* sml_GetAttributeName(ElementXML_Handle hXML, int index)
+const char* soarxml_GetAttributeName(ElementXML_Handle hXML, int index)
 {
 	return GetElementFromHandle(hXML)->GetAttributeName(index) ;
 }
@@ -258,7 +258,7 @@ const char* sml_GetAttributeName(ElementXML_Handle hXML, int index)
 *
 * @param index	The 0-based index of the attribute to return.
 *************************************************************/
-const char* sml_GetAttributeValue(ElementXML_Handle hXML, int index)
+const char* soarxml_GetAttributeValue(ElementXML_Handle hXML, int index)
 {
 	return GetElementFromHandle(hXML)->GetAttributeValue(index) ;
 }
@@ -269,7 +269,7 @@ const char* sml_GetAttributeValue(ElementXML_Handle hXML, int index)
 * @param attName	The name of the attribute to look up.
 * @returns The value of the named attribute (or null if this attribute doesn't exist).
 *************************************************************/
-const char* sml_GetAttribute(ElementXML_Handle hXML, const char* attName)
+const char* soarxml_GetAttribute(ElementXML_Handle hXML, const char* attName)
 {
 	return GetElementFromHandle(hXML)->GetAttribute(attName) ;
 }
@@ -291,7 +291,7 @@ const char* sml_GetAttribute(ElementXML_Handle hXML, const char* attName)
 *						These values will be converted when the XML stream is created.
 * @param  copyData		If true, characterData will be copied.  If false, we take ownership of characterData
 *************************************************************/
-void sml_SetCharacterData(ElementXML_Handle hXML, char* characterData, bool copyData)
+void soarxml_SetCharacterData(ElementXML_Handle hXML, char* characterData, bool copyData)
 {
 	return GetElementFromHandle(hXML)->SetCharacterData(characterData, copyData) ;
 }
@@ -309,7 +309,7 @@ void sml_SetCharacterData(ElementXML_Handle hXML, char* characterData, bool copy
 * @param length			The length of the buffer
 * @param copyData		If true, characterData will be copied.  If false, we take ownership of characterData
 *************************************************************/
-void sml_SetBinaryCharacterData(ElementXML_Handle hXML, char* characterData, int length, bool copyData)
+void soarxml_SetBinaryCharacterData(ElementXML_Handle hXML, char* characterData, int length, bool copyData)
 {
 	return GetElementFromHandle(hXML)->SetBinaryCharacterData(characterData, length, copyData) ;
 }
@@ -321,7 +321,7 @@ void sml_SetBinaryCharacterData(ElementXML_Handle hXML, char* characterData, int
 *			The character data returned will not include any XML escape sequences (e.g. &lt;). 
 *			It will include the original special characters (e.g. "<").
 *************************************************************/
-char const* sml_GetCharacterData(ElementXML_Handle hXML)
+char const* soarxml_GetCharacterData(ElementXML_Handle hXML)
 {
 	return GetElementFromHandle(hXML)->GetCharacterData() ;
 }
@@ -330,7 +330,7 @@ char const* sml_GetCharacterData(ElementXML_Handle hXML)
 * @brief Returns true if the character data should be treated as a binary buffer
 *		 rather than a null-terminated character string.
 *************************************************************/
-bool sml_IsCharacterDataBinary(ElementXML_Handle hXML)
+bool soarxml_IsCharacterDataBinary(ElementXML_Handle hXML)
 {
 	return GetElementFromHandle(hXML)->IsCharacterDataBinary() ;
 }
@@ -352,7 +352,7 @@ bool sml_IsCharacterDataBinary(ElementXML_Handle hXML)
 *
 * @returns True if buffer is binary after conversion.
 *************************************************************/
-bool sml_ConvertCharacterDataToBinary(ElementXML_Handle hXML)
+bool soarxml_ConvertCharacterDataToBinary(ElementXML_Handle hXML)
 {
 	return GetElementFromHandle(hXML)->ConvertCharacterDataToBinary() ;
 }
@@ -364,7 +364,7 @@ bool sml_ConvertCharacterDataToBinary(ElementXML_Handle hXML)
 * If the data is a binary buffer this is the size of that buffer.
 * If the data is a null terminated string this is the length of the string + 1 (for the null).
 *************************************************************/
-int	 sml_GetCharacterDataLength(ElementXML_Handle hXML)
+int	 soarxml_GetCharacterDataLength(ElementXML_Handle hXML)
 {
 	return GetElementFromHandle(hXML)->GetCharacterDataLength() ;
 }
@@ -377,7 +377,7 @@ int	 sml_GetCharacterDataLength(ElementXML_Handle hXML)
 *
 * @param useCData	true if this element’s character data should be stored in a CDATA section.
 *************************************************************/
-void sml_SetUseCData(ElementXML_Handle hXML, bool useCData)
+void soarxml_SetUseCData(ElementXML_Handle hXML, bool useCData)
 {
 	return GetElementFromHandle(hXML)->SetUseCData(useCData) ;
 }
@@ -385,7 +385,7 @@ void sml_SetUseCData(ElementXML_Handle hXML, bool useCData)
 /*************************************************************
 * @brief Returns true if this element's character data should be stored in a CDATA section when streamed to XML.
 *************************************************************/
-bool sml_GetUseCData(ElementXML_Handle hXML)
+bool soarxml_GetUseCData(ElementXML_Handle hXML)
 {
 	return GetElementFromHandle(hXML)->GetUseCData() ;
 }
@@ -404,7 +404,7 @@ bool sml_GetUseCData(ElementXML_Handle hXML)
 *
 * @returns The string form of the object.  Caller must delete with DeleteString().
 *************************************************************/
-char* sml_GenerateXMLString(ElementXML_Handle const hXML, bool includeChildren, bool insertNewLines)
+char* soarxml_GenerateXMLString(ElementXML_Handle const hXML, bool includeChildren, bool insertNewLines)
 {
 	return GetElementFromHandle(hXML)->GenerateXMLString(includeChildren, insertNewLines) ;
 }
@@ -415,7 +415,7 @@ char* sml_GenerateXMLString(ElementXML_Handle const hXML, bool includeChildren, 
 * @param includeChildren	Includes all children in the XML output.
 * @param insertNewlines		Add newlines to space out the tags to be more human-readable
 *************************************************************/
-int sml_DetermineXMLStringLength(ElementXML_Handle const hXML, bool includeChildren, bool insertNewLines)
+int soarxml_DetermineXMLStringLength(ElementXML_Handle const hXML, bool includeChildren, bool insertNewLines)
 {
 	return GetElementFromHandle(hXML)->DetermineXMLStringLength(0, includeChildren, insertNewLines);
 }
@@ -438,7 +438,7 @@ int sml_DetermineXMLStringLength(ElementXML_Handle const hXML, bool includeChild
 * @param length		The length is the number of characters in the string, so length+1 bytes will be allocated
 *					(so that a trailing null is always included).  Thus passing length 0 is valid and will allocate a single byte.
 *************************************************************/
-char* sml_AllocateString(int length)
+char* soarxml_AllocateString(int length)
 {
 	return ElementXMLImpl::AllocateString(length) ;
 }
@@ -448,7 +448,7 @@ char* sml_AllocateString(int length)
 *
 * @param string		The string to release.  Passing NULL is valid and does nothing.
 *************************************************************/
-void sml_DeleteString(char* pString)
+void soarxml_DeleteString(char* pString)
 {
 	ElementXMLImpl::DeleteString(pString) ;
 }
@@ -458,7 +458,7 @@ void sml_DeleteString(char* pString)
 *
 * @param string		The string to copy.  Passing NULL is valid and returns NULL.
 *************************************************************/
-char* sml_CopyString(char const* original)
+char* soarxml_CopyString(char const* original)
 {
 	return ElementXMLImpl::CopyString(original) ;
 }
@@ -470,7 +470,7 @@ char* sml_CopyString(char const* original)
 * @param string		The buffer to copy.  Passing NULL is valid and returns NULL.
 * @param length		The length of the buffer to copy (this exact length will be allocated--no trailing NULL is added).
 *************************************************************/
-char* sml_CopyBuffer(char const* original, int length)
+char* soarxml_CopyBuffer(char const* original, int length)
 {
 	return ElementXMLImpl::CopyBuffer(original, length) ;
 }
@@ -486,7 +486,7 @@ char* sml_CopyBuffer(char const* original, int length)
 * @param  copyValue		If true, atttributeName will be copied.  If false, we take ownership of attributeValue
 * @returns true if attribute name is valid (debug mode only)
 *************************************************************/
-bool sml_AddAttributeFast(ElementXML_Handle hXML, char const* attributeName, char* attributeValue, bool copyValue)
+bool soarxml_AddAttributeFast(ElementXML_Handle hXML, char const* attributeName, char* attributeValue, bool copyValue)
 {
 	return GetElementFromHandle(hXML)->AddAttributeFast(attributeName, attributeValue, copyValue) ;
 }
@@ -501,7 +501,7 @@ bool sml_AddAttributeFast(ElementXML_Handle hXML, char const* attributeName, cha
 * @param attributeValue Can be any string.
 * @returns true if attribute name is valid (debug mode only)
 *************************************************************/
-bool sml_AddAttributeFastFast(ElementXML_Handle hXML, char const* attributeName, char const* attributeValue)
+bool soarxml_AddAttributeFastFast(ElementXML_Handle hXML, char const* attributeName, char const* attributeValue)
 {
 	return GetElementFromHandle(hXML)->AddAttributeFastFast(attributeName, attributeValue) ;
 }
@@ -516,7 +516,7 @@ bool sml_AddAttributeFastFast(ElementXML_Handle hXML, char const* attributeName,
 * @param  tagName	Tag name can only contain letters, numbers, “.” “-“ and “_”.
 * @returns	true if the tag name is valid.
 *************************************************************/
-bool sml_SetTagNameFast(ElementXML_Handle hXML, char const* tagName)
+bool soarxml_SetTagNameFast(ElementXML_Handle hXML, char const* tagName)
 {
 	return GetElementFromHandle(hXML)->SetTagNameFast(tagName) ;
 }
@@ -526,12 +526,12 @@ bool sml_SetTagNameFast(ElementXML_Handle hXML, char const* tagName)
 // Error reporting functions.
 //
 ////////////////////////////////////////////////////////////////
-int sml_GetLastError(ElementXML_Handle hXML)
+int soarxml_GetLastError(ElementXML_Handle hXML)
 {
 	return GetElementFromHandle(hXML)->GetLastError() ;
 }
 
-char const* sml_GetLastErrorDescription(ElementXML_Handle hXML)
+char const* soarxml_GetLastErrorDescription(ElementXML_Handle hXML)
 {
 	return GetElementFromHandle(hXML)->GetLastErrorDescription() ;
 }
@@ -543,7 +543,7 @@ char const* sml_GetLastErrorDescription(ElementXML_Handle hXML)
 * @param  pString	The XML document stored in a string.
 * @returns NULL if parsing failed, otherwise the ElementXML representing XML doc
 *************************************************************/
-ElementXML_Handle sml_ParseXMLFromString(char const* pString)
+ElementXML_Handle soarxml_ParseXMLFromString(char const* pString)
 {
 	if (!pString)
 		return NULL ;
@@ -567,7 +567,7 @@ ElementXML_Handle sml_ParseXMLFromString(char const* pString)
 * @param  endPos    This value is filled in at the end of the parse and indicates where the parse ended. (if endPos == strlen(pString) we're done)
 * @returns NULL if parsing failed, otherwise the ElementXML representing XML doc
 *************************************************************/
-ElementXML_Handle sml_ParseXMLFromStringSequence(char const* pString, size_t startPos, size_t* endPos)
+ElementXML_Handle soarxml_ParseXMLFromStringSequence(char const* pString, size_t startPos, size_t* endPos)
 {
 	if (!pString || !endPos)
 		return NULL ;
@@ -591,7 +591,7 @@ ElementXML_Handle sml_ParseXMLFromStringSequence(char const* pString, size_t sta
 * @param  pFilename	The file to load
 * @returns NULL if parsing failed, otherwise the ElementXML representing XML doc
 *************************************************************/
-ElementXML_Handle sml_ParseXMLFromFile(char const* pFilename)
+ElementXML_Handle soarxml_ParseXMLFromFile(char const* pFilename)
 {
 	if (!pFilename)
 		return NULL ;
@@ -620,8 +620,7 @@ ElementXML_Handle sml_ParseXMLFromFile(char const* pFilename)
 *
 * Call here if the parsing functions return NULL to find out what went wrong.
 *************************************************************/
-char const* sml_GetLastParseErrorDescription()
+char const* soarxml_GetLastParseErrorDescription()
 {
 	return s_LastParseErrorMessage.c_str() ;
 }
-

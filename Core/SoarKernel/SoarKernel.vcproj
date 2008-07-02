@@ -39,7 +39,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				AdditionalIncludeDirectories="include;../CLI/include/;../gSKI/src;../gSKI/include;../shared"
+				AdditionalIncludeDirectories="include;../shared;../ElementXML/include"
 				PreprocessorDefinitions="WIN32;_DEBUG;_LIB;_CRT_SECURE_NO_DEPRECATE"
 				StringPooling="true"
 				MinimalRebuild="false"
@@ -111,7 +111,7 @@
 				FavorSizeOrSpeed="0"
 				OmitFramePointers="true"
 				EnableFiberSafeOptimizations="false"
-				AdditionalIncludeDirectories="include;../CLI/include/;../gSKI/src;../gSKI/include;../shared"
+				AdditionalIncludeDirectories="include;../shared;../ElementXML/include"
 				PreprocessorDefinitions="WIN32;NDEBUG;_LIB;_CRT_SECURE_NO_DEPRECATE"
 				StringPooling="true"
 				MinimalRebuild="false"
@@ -209,10 +209,6 @@
 				>
 			</File>
 			<File
-				RelativePath=".\src\kernel_struct.cpp"
-				>
-			</File>
-			<File
 				RelativePath=".\src\lexer.cpp"
 				>
 			</File>
@@ -289,6 +285,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\src\wma.cpp"
+				>
+			</File>
+			<File
 				RelativePath=".\src\wmem.cpp"
 				>
 			</File>
@@ -347,14 +347,6 @@
 				>
 			</File>
 			<File
-				RelativePath=".\include\gski_event_system_data.h"
-				>
-			</File>
-			<File
-				RelativePath=".\include\gski_event_system_functions.h"
-				>
-			</File>
-			<File
 				RelativePath=".\include\gsysparam.h"
 				>
 			</File>
@@ -367,15 +359,11 @@
 				>
 			</File>
 			<File
-				RelativePath=".\include\io.h"
+				RelativePath=".\include\io_soar.h"
 				>
 			</File>
 			<File
 				RelativePath=".\include\kernel.h"
-				>
-			</File>
-			<File
-				RelativePath=".\include\kernel_struct.h"
 				>
 			</File>
 			<File
@@ -451,7 +439,15 @@
 				>
 			</File>
 			<File
+				RelativePath="..\shared\soar_TraceNames.h"
+				>
+			</File>
+			<File
 				RelativePath=".\include\soarkernel.h"
+				>
+			</File>
+			<File
+				RelativePath="..\shared\soarversion.h"
 				>
 			</File>
 			<File
@@ -479,15 +475,15 @@
 				>
 			</File>
 			<File
+				RelativePath=".\include\wma.h"
+				>
+			</File>
+			<File
 				RelativePath=".\include\wmem.h"
 				>
 			</File>
 			<File
 				RelativePath=".\include\xml.h"
-				>
-			</File>
-			<File
-				RelativePath=".\include\xmlTraceNames.h"
 				>
 			</File>
 		</Filter>

@@ -35,11 +35,12 @@
 #include "rete.h"
 #include "print.h"
 #include "tempmem.h"
+#include "xml.h"
+#include "soar_TraceNames.h"
 
-/* JC ADDED */
-#include "gski_event_system_functions.h"
+#include "wma.h"
 
-using namespace xmlTraceNames;
+using namespace soar_TraceNames;
 
 /* ======================================================================
 
@@ -74,7 +75,7 @@ void reset_wme_timetags (agent* thisAgent) {
     print (thisAgent, "Internal warning:  wanted to reset wme timetag generator, but\n");
     print (thisAgent, "there are still some wmes allocated. (Probably a memory leak.)\n");
     print (thisAgent, "(Leaving timetag numbers alone.)\n");
-	GenerateWarningXML(thisAgent, "Internal warning:  wanted to reset wme timetag generator, but\nthere are still some wmes allocated. (Probably a memory leak.)\n(Leaving timetag numbers alone.)");
+	xml_generate_warning(thisAgent, "Internal warning:  wanted to reset wme timetag generator, but\nthere are still some wmes allocated. (Probably a memory leak.)\n(Leaving timetag numbers alone.)");
     return;
   }
   thisAgent->current_wme_timetag = 1;
@@ -115,6 +116,10 @@ wme *make_wme (agent* thisAgent, Symbol *id, Symbol *attr, Symbol *value, Bool a
   w->gds_next = NIL;
 /* REW: end 09.15.96 */
 
+  w->wma_decay_element = NIL;
+  w->wma_has_decay_element = false;
+  w->wma_tc_value = -1;
+
   return w;
 }
 
@@ -130,12 +135,6 @@ void add_wme_to_wm (agent* thisAgent, wme *w)
       {
          w->value->id.isa_operator++;
       }
-
-      /* JC ADDED: Tell about a new object if we have an acceptable or required preference.
-          This takes care of object created through I/O (others are taken care of at the
-          preference phase) */
-      if((w->value->id.link_count == 1) && !(w->value->id.isa_goal))
-         gSKI_MakeAgentCallbackWMObjectAdded(thisAgent, w->value, w->attr, w->id);
    }
 }
 
@@ -148,10 +147,6 @@ void remove_wme_from_wm (agent* thisAgent, wme *w)
       post_link_removal (thisAgent, w->id, w->value);
       if (w->attr==thisAgent->operator_symbol) 
       {
-         /* JC ADDED: Tell gski that an operator has been retracted */
-         if(w->value->id.isa_operator == 1)
-            gSKI_MakeAgentCallback(gSKI_K_EVENT_OPERATOR_RETRACTED, 1, thisAgent, static_cast<void*>(w));
-
          /* Do this afterward so that gSKI can know that this is an operator */
          w->value->id.isa_operator--;
       }
@@ -175,21 +170,26 @@ void remove_wme_from_wm (agent* thisAgent, wme *w)
    /* REW: end   09.15.96 */
 }
 
-void remove_wme_list_from_wm (agent* thisAgent, wme *w) 
+void remove_wme_list_from_wm (agent* thisAgent, wme *w, bool updateWmeMap) 
 {
-   wme *next_w;
-   
-   while (w) 
-   {
-      next_w = w->next;
-      // jzxu 4/28/2008
-      if (strcmp(w->attr->sc.name, "rl_entry") == 0) {
-        symbol_remove_ref(thisAgent, w->value);
-      }
-      remove_wme_from_wm (thisAgent, w);
-      
-      w = next_w;
-   }
+	wme *next_w;
+
+	while (w) 
+	{
+		next_w = w->next;
+
+    if (strcmp(w->attr->sc.name, "rl_entry") == 0) {
+      symbol_remove_ref(thisAgent, w->value);
+    }
+		if (updateWmeMap) 
+		{
+			soar_invoke_callbacks( thisAgent, INPUT_WME_GARBAGE_COLLECTED_CALLBACK, reinterpret_cast< soar_call_data >( w ) ); 
+			//remove_wme_from_wmeMap (thisAgent, w);
+		}
+		remove_wme_from_wm (thisAgent, w);
+
+		w = next_w;
+	}
 }
 
 void do_buffered_wm_changes (agent* thisAgent) 
@@ -215,7 +215,7 @@ void do_buffered_wm_changes (agent* thisAgent)
 
   /* --- invoke callback routine.  wmes_to_add and wmes_to_remove can   --- */
   /* --- be fetched from the agent structure.                           --- */
-  soar_invoke_callbacks(thisAgent, thisAgent, WM_CHANGES_CALLBACK, 
+  soar_invoke_callbacks(thisAgent, WM_CHANGES_CALLBACK, 
 			               (soar_call_data) NULL); 
 
   /* --- stuff wme changes through the rete net --- */
@@ -224,18 +224,13 @@ void do_buffered_wm_changes (agent* thisAgent)
   start_timer (thisAgent,  &start_tv);
 #endif
 #endif
-  /* JC MODIFIED: Added callbacks before and after each wme addition */
   for (c=thisAgent->wmes_to_add; c!=NIL; c=c->rest) 
   {
-     gSKI_MakeAgentCallback(gSKI_K_EVENT_WME_ADDED, 0, thisAgent, static_cast<void*>(c->first));
      add_wme_to_rete (thisAgent, static_cast<wme_struct *>(c->first));
-     gSKI_MakeAgentCallback(gSKI_K_EVENT_WME_ADDED, 1, thisAgent, static_cast<void*>(c->first));
   }
   for (c=thisAgent->wmes_to_remove; c!=NIL; c=c->rest)
   {
-     gSKI_MakeAgentCallback(gSKI_K_EVENT_WME_REMOVED, 0, thisAgent, static_cast<void*>(c->first));
      remove_wme_from_rete (thisAgent, static_cast<wme_struct *>(c->first));
-     gSKI_MakeAgentCallback(gSKI_K_EVENT_WME_REMOVED, 1, thisAgent, static_cast<void*>(c->first));
   }
 #ifndef NO_TIMING_STUFF
 #ifdef DETAILED_TIMING_STATS
@@ -250,11 +245,12 @@ void do_buffered_wm_changes (agent* thisAgent)
         for (cr=thisAgent->wmes_to_remove; cr!=NIL; cr=next_c) {
            next_c = cr->rest;
            if (w == cr->first) {
-              print (thisAgent, "WARNING: WME added and removed in same phase : ");
-			  gSKI_MakeAgentCallbackXML(thisAgent, kFunctionBeginTag, kTagWarning);
-			  gSKI_MakeAgentCallbackXML(thisAgent, kFunctionAddAttribute, kTypeString, "WARNING: WME added and removed in same phase :");
+			  const char * const kWarningMessage = "WARNING: WME added and removed in same phase : ";
+              print (thisAgent, const_cast< char* >( kWarningMessage) );
+			  xml_begin_tag( thisAgent, kTagWarning );
+			  xml_att_val( thisAgent, kTypeString, kWarningMessage );
               print_wme(thisAgent, w);
-			  gSKI_MakeAgentCallbackXML(thisAgent, kFunctionEndTag, kTagWarning);
+  			  xml_end_tag( thisAgent, kTagWarning );
            } 
         } 
      } 
@@ -271,6 +267,7 @@ void do_buffered_wm_changes (agent* thisAgent)
        */
       filtered_print_wme_add(thisAgent, w); /* kjh(CUSP-B2) begin */
     }
+
     wme_add_ref (w);
     free_cons (thisAgent, c);
     thisAgent->wme_addition_count++;
@@ -285,6 +282,9 @@ void do_buffered_wm_changes (agent* thisAgent)
       filtered_print_wme_remove (thisAgent, w);  /* kjh(CUSP-B2) begin */
     }
 
+	if ( wma_enabled( thisAgent ) )
+	  wma_deactivate_element( thisAgent, w );
+
     wme_remove_ref (thisAgent, w);
     free_cons (thisAgent, c);
     thisAgent->wme_removal_count++;
@@ -298,6 +298,10 @@ void deallocate_wme (agent* thisAgent, wme *w) {
   print_with_symbols (thisAgent, "\nDeallocate wme: ");
   print_wme (thisAgent, w);
 #endif
+
+  if ( wma_enabled( thisAgent ) )
+    wma_remove_decay_element( thisAgent, w );
+
   symbol_remove_ref (thisAgent, w->id);
   symbol_remove_ref (thisAgent, w->attr);
   symbol_remove_ref (thisAgent, w->value);

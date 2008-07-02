@@ -16,17 +16,18 @@
 #include "cli_Commands.h"
 #include "sml_StringOps.h"
 #include "sml_Names.h"
+#include "sml_Events.h"
+#include "cli_CLIError.h"
 
-#include "gSKI_Agent.h"
-#include "gSKI_ProductionManager.h"
-#include "IgSKI_Production.h"
+#include <algorithm>
 
 #include <assert.h>
 
 using namespace cli;
 using namespace sml;
+using namespace std;
 
-bool CommandLineInterface::ParseSource(gSKI::Agent* pAgent, std::vector<std::string>& argv) {
+bool CommandLineInterface::ParseSource(std::vector<std::string>& argv) {
 	Options optionsData[] = {
 		{'a', "all",			0},
 		{'d', "disable",		0},
@@ -76,12 +77,10 @@ bool CommandLineInterface::ParseSource(gSKI::Agent* pAgent, std::vector<std::str
 		return SetError(CLIError::kSourceOnlyOneFile);
 	}
 
-	return DoSource(pAgent, argv[argv.size() - 1]);
+	return DoSource(argv[argv.size() - 1]);
 }
 
-bool CommandLineInterface::DoSource(gSKI::Agent* pAgent, std::string filename) {
-	if (!RequireAgent(pAgent)) return false;
-
+bool CommandLineInterface::DoSource(std::string filename) {
     StripQuotes(filename);
 
 	// Separate the path out of the filename if any
@@ -97,20 +96,26 @@ bool CommandLineInterface::DoSource(gSKI::Agent* pAgent, std::string filename) {
 
 	std::string::size_type separator1 = filename.rfind('/');
 	std::string::size_type separator2 = filename.rfind('\\');
+	std::string::size_type separator3 = std::string::npos;
 
-	if (separator1 != std::string::npos) {
-		++separator1;
-		if (separator1 < filename.length()) {
-			path = filename.substr(0, separator1);
-			filename = filename.substr(separator1, filename.length() - separator1);
-		}
+	if ( separator1 != std::string::npos && separator2 != std::string::npos )
+	{
+		separator3 = max( separator1, separator2 );
+	} 
+	else if ( separator1 == std::string::npos )
+	{
+		separator3 = separator2;
+	}
+	else if ( separator2 == std::string::npos )
+	{
+		separator3 = separator1;
 	}
 
-	if (separator2 != std::string::npos) {
-		++separator2;
-		if (separator2 < filename.length()) {
-			path = filename.substr(0, separator2);
-			filename = filename.substr(separator2, filename.length() - separator2);
+	if (separator3 != std::string::npos) {
+		++separator3;
+		if (separator3 < filename.length()) {
+			path = filename.substr(0, separator3);
+			filename = filename.substr(separator3, filename.length() - separator3);
 		}
 	}
 
@@ -139,8 +144,6 @@ bool CommandLineInterface::DoSource(gSKI::Agent* pAgent, std::string filename) {
 	static int numTotalProductionsSourced;
 	static int numTotalProductionsExcised;
 
-	gSKI::ProductionManager* pProductionManager = pAgent->GetProductionManager();
-
 	if (m_SourceDepth == 0) {				// Check for top-level source call
 		m_SourceDirDepth = 0;				// Set directory depth to zero on first call to source, even though it should be zero anyway
 
@@ -150,7 +153,7 @@ bool CommandLineInterface::DoSource(gSKI::Agent* pAgent, std::string filename) {
 		numTotalProductionsExcised = 0;
 
 		// Register for production removed events so we can report the number of excised productions
-		pProductionManager->AddProductionListener(gSKIEVENT_BEFORE_PRODUCTION_REMOVED, this);
+		this->RegisterWithKernel(smlEVENT_BEFORE_PRODUCTION_REMOVED) ;
 	}
 	++m_SourceDepth;
 
@@ -166,7 +169,7 @@ bool CommandLineInterface::DoSource(gSKI::Agent* pAgent, std::string filename) {
 		// Trim whitespace and comments
 		if (!Trim(line)) {
 			SetError(CLIError::kNewlineBeforePipe);
-			HandleSourceError(lineCount, filename, pProductionManager);
+			HandleSourceError(lineCount, filename);
 			if (path.length()) DoPopD();
 			return false;
 		}
@@ -185,7 +188,7 @@ bool CommandLineInterface::DoSource(gSKI::Agent* pAgent, std::string filename) {
 			do {
 				if (lineCountCache != lineCount) {
 					if (!Trim(line)) { // Trim whitespace and comments on additional lines
-						HandleSourceError(lineCount, filename, pProductionManager);
+						HandleSourceError(lineCount, filename);
 						if (path.length()) DoPopD();
 						return false; 
 					}
@@ -251,25 +254,25 @@ bool CommandLineInterface::DoSource(gSKI::Agent* pAgent, std::string filename) {
 			if (braces > 0) {
 				// EOF while still nested
 				SetError(CLIError::kUnmatchedBrace);
-				HandleSourceError(lineCountCache, filename, pProductionManager);
+				HandleSourceError(lineCountCache, filename);
 				if (path.length()) DoPopD();
 				return false;
 
 			} else if (braces < 0) {
 				SetError(CLIError::kExtraClosingBrace);
-				HandleSourceError(lineCountCache, filename, pProductionManager);
+				HandleSourceError(lineCountCache, filename);
 				if (path.length()) DoPopD();
 				return false;
 
 			} else if (quote == true) { // bug 967 fix
 				SetError(CLIError::kUnmatchedBracketOrQuote);
-				HandleSourceError(lineCountCache, filename, pProductionManager);
+				HandleSourceError(lineCountCache, filename);
 				if (path.length()) DoPopD();
 				return false;
 
 			} else if (pipe == true) { // bug 968 fix
 				SetError(CLIError::kNewlineBeforePipe);
-				HandleSourceError(lineCountCache, filename, pProductionManager);
+				HandleSourceError(lineCountCache, filename);
 				if (path.length()) DoPopD();
 				return false;
 			}
@@ -287,7 +290,7 @@ bool CommandLineInterface::DoSource(gSKI::Agent* pAgent, std::string filename) {
 
 		// Fire off the command
 		unsigned oldResultSize = m_Result.str().size();
-		if (DoCommandInternal(pAgent, command)) {
+		if (DoCommandInternal(command)) {
 			// Add trailing newline if result changed size
 			unsigned newResultSize = m_Result.str().size();
 			if (newResultSize > 0 && (oldResultSize != newResultSize)) {
@@ -299,7 +302,7 @@ bool CommandLineInterface::DoSource(gSKI::Agent* pAgent, std::string filename) {
 
 		} else {
 			// Command failed, error in result
-			HandleSourceError(lineCountCache, filename, pProductionManager);
+			HandleSourceError(lineCountCache, filename);
 			if (path.length()) DoPopD();
 			return false;
 		}	
@@ -352,7 +355,7 @@ bool CommandLineInterface::DoSource(gSKI::Agent* pAgent, std::string filename) {
 	if (!m_SourceDepth) {
 		
 		// Remove production listener
-		pProductionManager->RemoveProductionListener(gSKIEVENT_BEFORE_PRODUCTION_REMOVED, this);
+		this->UnregisterWithKernel(smlEVENT_BEFORE_PRODUCTION_REMOVED) ;
 
 		if (m_RawOutput) {
 			if (m_SourceMode != SOURCE_DISABLE) {
@@ -409,11 +412,11 @@ bool CommandLineInterface::DoSource(gSKI::Agent* pAgent, std::string filename) {
 	return true;
 }
 
-void CommandLineInterface::HandleSourceError(int errorLine, const std::string& filename, gSKI::ProductionManager* pProductionManager) {
+void CommandLineInterface::HandleSourceError(int errorLine, const std::string& filename) {
 	if (!m_SourceError) {
 
 		// Remove listener
-		pProductionManager->RemoveProductionListener(gSKIEVENT_BEFORE_PRODUCTION_REMOVED, this);
+		this->UnregisterWithKernel(smlEVENT_BEFORE_PRODUCTION_REMOVED) ;
 
 		// Flush excised production list
 		if (m_ExcisedDuringSource.size()) m_ExcisedDuringSource.clear();
@@ -448,19 +451,3 @@ void CommandLineInterface::HandleSourceError(int errorLine, const std::string& f
 		m_SourceErrorDetail += "\n\t--> Sourced by: " + filename + " (line " + Int2String(errorLine, buf, kMinBufferSize) + ")";
 	}
 }
-
-// Production callback events go here
-void CommandLineInterface::HandleEvent(egSKIProductionEventId eventId, gSKI::Agent* agentPtr, gSKI::IProduction* prod, gSKI::IProductionInstance* match) {
-	unused(eventId);
-	unused(match);
-	unused(agentPtr);
-
-	// Only called when source command is active
-	assert(eventId == gSKIEVENT_BEFORE_PRODUCTION_REMOVED);
-	++m_NumProductionsExcised;
-
-	if (m_SourceVerbose) {
-		m_ExcisedDuringSource.push_back(prod->GetName());
-	}
-}
-

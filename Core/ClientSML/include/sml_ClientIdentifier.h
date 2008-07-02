@@ -51,17 +51,6 @@ protected:
 	// This is true if the list of children of this identifier was changed.  The client chooses when to clear these flags.
 	bool m_AreChildrenModified ;
 
-// The gSKI objects for this wme.  This allows us to optimize the embedded connection.
-#ifdef SML_DIRECT
-protected:
-	Direct_WorkingMemory_Handle	m_WM ;
-	Direct_WMObject_Handle		m_WMObject ;
-
-public:
-	Direct_WorkingMemory_Handle GetWorkingMemoryHandle()		{ return m_WM ; }
-	Direct_WMObject_Handle		GetWMObjectHandle()				{ return m_WMObject ; }
-#endif
-
 public:
 	IdentifierSymbol(Identifier* pIdentifier) ;
 	~IdentifierSymbol() ;
@@ -92,6 +81,7 @@ public:
 	// Have this identifier take ownership of this WME.  So when the identifier is deleted
 	// it will delete the WME.
 	void AddChild(WMElement* pWME) ;
+	void DeleteAllChildren() ;
 
 	void RemoveChild(WMElement* pWME) ;
 } ;
@@ -113,6 +103,10 @@ protected:
 	// So each identifier has a pointer to a symbol object, but two could share the same object.
 	IdentifierSymbol* m_pSymbol ;
 
+	// When walking graph structures it's helpful to have a way to indicate when we've visited
+	// a particular node in the graph (to avoid looping).  This is that value.
+	long m_Visited ;
+
 	IdentifierSymbol* GetSymbol() { return m_pSymbol ; }
 
 	ChildrenIter GetChildrenBegin() { return m_pSymbol->m_Children.begin() ; }
@@ -130,6 +124,9 @@ public:
 	virtual bool IsIdentifier() const { return true ; }
 	
 	virtual Identifier* ConvertToIdentifier() { return this; }
+
+	virtual void SetVisited(long visitValue) { m_Visited = visitValue ; }
+	virtual long GetVisited()				 { return m_Visited ; }
 
 	/*************************************************************
 	* @brief Searches for a child of this identifier that has pID as
@@ -239,16 +236,7 @@ protected:
 	void RemoveChild(WMElement* pWME) { m_pSymbol->RemoveChild(pWME) ; }
 
 #ifdef SML_DIRECT
-	void SetWorkingMemoryHandle(Direct_WorkingMemory_Handle wm) { m_pSymbol->m_WM = wm ; }
-	void SetWMObjectHandle(Direct_WMObject_Handle wmobject)		{ m_pSymbol->m_WMObject = wmobject ; }
-
-	Direct_WorkingMemory_Handle GetWorkingMemoryHandle()		{ return m_pSymbol->m_WM ; }
-	Direct_WMObject_Handle		GetWMObjectHandle()				{ return m_pSymbol->m_WMObject ; }
-
-	// Reset all handles to 0
-	void ClearAllWMObjectHandles() ;
-
-	virtual Direct_WME_Handle DirectAdd(Direct_WorkingMemory_Handle wm, Direct_WMObject_Handle wmobject, long timeTag) ;
+	virtual void DirectAdd(Direct_AgentSML_Handle pAgentSML, long timeTag) ;
 #endif
 
 	// Send over to the kernel again

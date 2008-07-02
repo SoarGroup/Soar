@@ -20,6 +20,7 @@
 #include <assert.h>
 
 using namespace sml ;
+using namespace soarxml;
 
 ClientAnalyzedXML::ClientAnalyzedXML()
 {

@@ -29,7 +29,6 @@ extern "C"
    typedef struct condition_struct condition;
    typedef struct action_struct action;
    typedef struct agent_struct agent;
-   typedef struct kernel_struct Kernel;
    typedef union symbol_union Symbol;
 
    extern void init_parser (void);

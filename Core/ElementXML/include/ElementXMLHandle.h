@@ -17,10 +17,11 @@ extern "C" {
 /* a typesafe way to pass ElementXML_Handle's in and out.  In fact it's a pointer */
 /* to a class, but that's not the client's business--to the client this is an */
 /* arbitrary handle.  If this is ever a problem, it can be typedef'd to a long. */
-typedef struct ElementXML_InterfaceStructTag
+struct ElementXML_InterfaceStruct
 {
 	unsigned int n;	/* So that we compiles under 'C' */
-} ElementXML_InterfaceStruct, *ElementXML_Handle ;
+};
+typedef ElementXML_InterfaceStruct* ElementXML_Handle ;
 
 #ifdef __cplusplus
 } // extern C

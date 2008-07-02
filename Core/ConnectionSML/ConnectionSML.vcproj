@@ -249,10 +249,6 @@
 				>
 			</File>
 			<File
-				RelativePath=".\src\sml_ElementXML.cpp"
-				>
-			</File>
-			<File
 				RelativePath=".\src\sml_EmbeddedConnection.cpp"
 				>
 			</File>
@@ -318,10 +314,6 @@
 			</File>
 			<File
 				RelativePath=".\src\sml_Utils.cpp"
-				>
-			</File>
-			<File
-				RelativePath=".\src\sml_XMLTrace.cpp"
 				>
 			</File>
 			<File
@@ -399,10 +391,6 @@
 				>
 			</File>
 			<File
-				RelativePath=".\include\sml_ElementXML.h"
-				>
-			</File>
-			<File
 				RelativePath=".\include\sml_EmbeddedConnection.h"
 				>
 			</File>
@@ -476,10 +464,6 @@
 			</File>
 			<File
 				RelativePath=".\include\sml_Utils.h"
-				>
-			</File>
-			<File
-				RelativePath=".\include\sml_XMLTrace.h"
 				>
 			</File>
 			<File

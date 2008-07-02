@@ -13,14 +13,15 @@
 #include "cli_Commands.h"
 #include "sml_Names.h"
 #include "sml_StringOps.h"
+#include "cli_CLIError.h"
 
-#include "gSKI_Agent.h"
 #include "agent.h"
+#include "sml_AgentSML.h"
 
 using namespace cli;
 using namespace sml;
 
-bool CommandLineInterface::ParseMaxMemoryUsage(gSKI::Agent* pAgent, std::vector<std::string>& argv) {
+bool CommandLineInterface::ParseMaxMemoryUsage(std::vector<std::string>& argv) {
 
 	// n defaults to 0 (print current value)
 	int n = 0;
@@ -33,25 +34,22 @@ bool CommandLineInterface::ParseMaxMemoryUsage(gSKI::Agent* pAgent, std::vector<
 		if (n <= 0) return SetError(CLIError::kIntegerMustBePositive);
 	}
 
-	return DoMaxMemoryUsage(pAgent->GetSoarAgent(), n);
+	return DoMaxMemoryUsage(n);
 }
 
-bool CommandLineInterface::DoMaxMemoryUsage(agent* pAgent, const int n) {
-
-	if (!RequireAgent(pAgent)) return false;
-
+bool CommandLineInterface::DoMaxMemoryUsage(const int n) {
 	if (!n) {
 		// query
 		if (m_RawOutput) {
-			m_Result << pAgent->sysparams[MAX_MEMORY_USAGE_SYSPARAM] << " bytes";
+			m_Result << m_pAgentSoar->sysparams[MAX_MEMORY_USAGE_SYSPARAM] << " bytes";
 		} else {
 			char buf[kMinBufferSize];
-			AppendArgTagFast(sml_Names::kParamValue, sml_Names::kTypeInt, Int2String(pAgent->sysparams[MAX_CHUNKS_SYSPARAM], buf, kMinBufferSize));
+			AppendArgTagFast(sml_Names::kParamValue, sml_Names::kTypeInt, Int2String(m_pAgentSoar->sysparams[MAX_CHUNKS_SYSPARAM], buf, kMinBufferSize));
 		}
 		return true;
 	}
 
-	pAgent->sysparams[MAX_MEMORY_USAGE_SYSPARAM] = n;
+	m_pAgentSoar->sysparams[MAX_MEMORY_USAGE_SYSPARAM] = n;
 	return true;
 }
 

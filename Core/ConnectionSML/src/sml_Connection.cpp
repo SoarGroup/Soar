@@ -21,7 +21,7 @@
 
 #include "sml_Utils.h"
 #include "sml_Connection.h"
-#include "sml_ElementXML.h"
+#include "ElementXML.h"
 #include "sml_MessageSML.h"
 #include "sml_EmbeddedConnection.h"
 #include "sml_EmbeddedConnectionAsynch.h"
@@ -33,6 +33,7 @@
 #include "sml_TagError.h"
 #include "sml_TagResult.h"
 #include "sock_ClientSocket.h"
+#include "thread_OSspecific.h"
 
 #ifdef ENABLE_NAMED_PIPES
 #include "sock_ClientNamedPipe.h"
@@ -42,6 +43,7 @@
 #include <sstream>
 
 using namespace sml ;
+using namespace soarxml;
 
 /*************************************************************
 * @brief Constructor
@@ -62,6 +64,10 @@ Connection::Connection()
 	m_bIsDirectConnection = false ;
 	m_bTraceCommunications = false ;
 	m_bIsKernelSide = false ;
+
+	m_pTimer = soar_thread::MakeTimer() ;
+	m_IncomingTime = 0.0 ;
+	m_OutgoingTime = 0.0 ;
 }
 
 /*************************************************************
@@ -101,6 +107,8 @@ Connection::~Connection()
 
 		m_IncomingMessageQueue.pop() ;
 	}
+
+	delete m_pTimer ;
 }
 
 

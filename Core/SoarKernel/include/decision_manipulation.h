@@ -15,8 +15,9 @@
 
 #include <string>
 
-#include "agent.h"
 #include "gdatastructs.h"
+
+typedef struct agent_struct agent;
 
 //////////////////////////////////////////////////////////
 // select types
@@ -33,35 +34,35 @@ typedef struct select_info_struct
 //////////////////////////////////////////////////////////
 
 // initialization of select per agent
-extern void init_select( agent *my_agent );
+extern void select_init( agent *my_agent );
 
 // make selection, does not validate operator
 extern void select_next_operator( agent *my_agent, const char *operator_id );
 
 // get current select, NULL on none
-extern const char *get_selected_operator( agent *my_agent );
+extern const char *select_get_operator( agent *my_agent );
 
 // force selection, NULL on invalid selection choice
-extern preference *force_selection( agent *my_agent, preference *candidates, bool reinit = true );
+extern preference *select_force( agent *my_agent, preference *candidates, bool reinit = true );
 
 //////////////////////////////////////////////////////////
 // predict functions
 //////////////////////////////////////////////////////////
 
 // initialization of predict per agent
-extern void init_predict( agent *my_agent );
+extern void predict_init( agent *my_agent );
 
 // establishes and stores a known srand state
-extern void srand_store_snapshot( agent *my_agent );
+extern void predict_srand_store_snapshot( agent *my_agent );
 
 // restores a previously stored srand state, optionally clearing the old state
-extern void srand_restore_snapshot( agent *my_agent, bool clear_snapshot = true );
+extern void predict_srand_restore_snapshot( agent *my_agent, bool clear_snapshot = true );
 
 // sets the prediction
-extern void set_prediction( agent *my_agent, const char *prediction);
+extern void predict_set( agent *my_agent, const char *prediction);
 
 // gets a new prediction
-extern const char *get_prediction( agent *my_agent );
+extern const char *predict_get( agent *my_agent );
 
 #endif
 

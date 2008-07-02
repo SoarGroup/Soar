@@ -15,10 +15,12 @@
 #include "cli_Commands.h"
 #include "sml_Names.h"
 #include "sml_StringOps.h"
+#include "cli_CLIError.h"
 
-#include "gSKI_Agent.h"
-#include "gSKI_ProductionManager.h"
-#include "IgSKI_Production.h"
+#include "agent.h"
+#include "production.h"
+#include "symtab.h"
+#include "rete.h"
 
 using namespace cli;
 using namespace sml;
@@ -29,12 +31,13 @@ struct MemoriesSort {
 	}
 };
 
-bool CommandLineInterface::ParseMemories(gSKI::Agent* pAgent, std::vector<std::string>& argv) {
+bool CommandLineInterface::ParseMemories(std::vector<std::string>& argv) {
 
 	Options optionsData[] = {
 		{'c', "chunks",			0},
 		{'d', "default",		0},
 		{'j', "justifications",	0},
+		{'T', "template",		0},
 		{'u', "user",			0},
 		{0, 0, 0}
 	};
@@ -54,6 +57,9 @@ bool CommandLineInterface::ParseMemories(gSKI::Agent* pAgent, std::vector<std::s
 				break;
 			case 'j':
 				options.set(MEMORIES_JUSTIFICATIONS);
+				break;
+			case 'T':
+				options.set(MEMORIES_TEMPLATES);
 				break;
 			case 'u':
 				options.set(MEMORIES_USER);
@@ -76,7 +82,7 @@ bool CommandLineInterface::ParseMemories(gSKI::Agent* pAgent, std::vector<std::s
 		if (!IsInteger(argv[optind])) {
 			// production
 			if (options.any()) return SetError(CLIError::kNoProdTypeWhenProdName);
-			return DoMemories(pAgent, options, 0, &argv[optind]);
+			return DoMemories(options, 0, &argv[optind]);
 		}
 		// number
 		n = atoi(argv[optind].c_str());
@@ -87,76 +93,98 @@ bool CommandLineInterface::ParseMemories(gSKI::Agent* pAgent, std::vector<std::s
 	if (options.none()) options.flip();
 
 	// handle production/number cases
-	return DoMemories(pAgent, options, n);
+	return DoMemories(options, n);
 }
 
-bool CommandLineInterface::DoMemories(gSKI::Agent* pAgent, const MemoriesBitset options, int n, const std::string* pProduction) {
-	if (!RequireAgent(pAgent)) return false;
-
-	gSKI::ProductionManager* pProductionManager = pAgent->GetProductionManager();
-	gSKI::tIProductionIterator* pIter = 0;
-	gSKI::IProduction* pProd = 0;
+bool CommandLineInterface::DoMemories(const MemoriesBitset options, int n, const std::string* pProduction) {
 	std::vector< std::pair< std::string, unsigned long > > memories;
-
-	bool foundProduction = false;
 
 	// get either one production or all of them
 	if (options.none()) {
-		if (!pProduction) return SetError(CLIError::kProductionRequired);
-		pIter = pProductionManager->GetProduction(pProduction->c_str());
-	} else {
-		pIter = pProductionManager->GetAllProductions(false, &m_gSKIError);
-		if (gSKI::isError(m_gSKIError)) {
-			SetErrorDetail("Unable to get all productions.");
-			return SetError(CLIError::kgSKIError);
+		if (!pProduction)
+		{
+			return SetError(CLIError::kProductionRequired);
 		}
-	}
-	if (!pIter) return SetError(CLIError::kgSKIError);
 
-	// walk the iter, looking for productions
-	for(; pIter->IsValid(); pIter->Next()) {
+		Symbol* sym = find_sym_constant( m_pAgentSoar, pProduction->c_str() );
 
-		pProd = pIter->GetVal();
+		if (!sym || !(sym->sc.production))
+		{
+			return SetError(CLIError::kProductionNotFound);
+		}
 
-		// voigtjr: bug 998: only check flags if any were given.
-		// previously, these flags were checked with the memories <prod_name> invocation
-		// where none were set therefore it always failed to find the production
-		if (!options.none()) {
-			switch (pProd->GetType()) {
-				case gSKI_CHUNK:
-					if (!options.test(MEMORIES_CHUNKS)) continue;
+		// save the tokens/name pair
+		std::pair< std::string, unsigned long > memory;
+		memory.first = *pProduction;
+		memory.second = count_rete_tokens_for_production(m_pAgentSoar, sym->sc.production);
+		memories.push_back(memory);
+
+	} else {
+		bool foundProduction = false;
+
+		for(unsigned int i = 0; i < NUM_PRODUCTION_TYPES; ++i)
+		{
+			// if filter is set, skip types that are not specified
+			if (!options.none()) {
+				switch ( i )
+				{
+				case USER_PRODUCTION_TYPE:
+					if ( !options.test(MEMORIES_USER) ) 
+					{
+						continue;
+					}
 					break;
-				case gSKI_DEFAULT:
-					if (!options.test(MEMORIES_DEFAULT)) continue;
+
+				case DEFAULT_PRODUCTION_TYPE:
+					if ( !options.test(MEMORIES_DEFAULT) ) 
+					{
+						continue;
+					}
 					break;
-				case gSKI_JUSTIFICATION:
-					if (!options.test(MEMORIES_JUSTIFICATIONS)) continue;
+
+				case CHUNK_PRODUCTION_TYPE:
+					if ( !options.test(MEMORIES_CHUNKS) ) 
+					{
+						continue;
+					}
 					break;
-				case gSKI_USER:
-					if (!options.test(MEMORIES_USER)) continue;
+
+				case JUSTIFICATION_PRODUCTION_TYPE:
+					if ( !options.test(MEMORIES_JUSTIFICATIONS) ) 
+					{
+						continue;
+					}
+					break;
+
+				case TEMPLATE_PRODUCTION_TYPE:
+					if ( !options.test(MEMORIES_TEMPLATES) ) 
+					{
+						continue;
+					}
 					break;
 
 				default:
-					pProd->Release();
-					pIter->Release();
-					return SetError(CLIError::kInvalidProductionType);
+					assert(false);
+					break;
+				}
+			}
+
+			for( production* pSoarProduction = m_pAgentSoar->all_productions_of_type[i]; 
+				pSoarProduction != 0; 
+				pSoarProduction = pSoarProduction->next )
+			{
+				foundProduction = true;
+				
+				// save the tokens/name pair
+				std::pair< std::string, unsigned long > memory;
+				memory.first = pSoarProduction->name->sc.name;
+				memory.second = count_rete_tokens_for_production(m_pAgentSoar, pSoarProduction);
+				memories.push_back(memory);
 			}
 		}
-
-		foundProduction = true;
-		
-		// save the tokens/name pair
-		std::pair< std::string, unsigned long > memory;
-		memory.first = pProd->GetName();
-		memory.second = pProd->CountReteTokens();
-		memories.push_back(memory);
-		pProd->Release();
+	
+		if (!foundProduction) return SetError(CLIError::kProductionNotFound);
 	}
-
-	pIter->Release();
-	pIter = 0;
-
-	if (!foundProduction) return SetError(CLIError::kProductionNotFound);
 
 	// sort them
 	MemoriesSort s;
@@ -180,4 +208,3 @@ bool CommandLineInterface::DoMemories(gSKI::Agent* pAgent, const MemoriesBitset 
 	}
 	return true;
 }
-

@@ -43,121 +43,121 @@ typedef struct exploration_parameter_struct
 //////////////////////////////////////////////////////////
 
 // validity
-extern bool valid_exploration_policy( const char *policy_name );
-extern bool valid_exploration_policy( const long policy );
+extern bool exploration_valid_policy( const char *policy_name );
+extern bool exploration_valid_policy( const long policy );
 
 // policy <=> name conversion
-extern const long convert_exploration_policy( const char *policy_name );
-extern const char *convert_exploration_policy( const long policy );
+extern const long exploration_convert_policy( const char *policy_name );
+extern const char *exploration_convert_policy( const long policy );
 
 // sets exploration policy name
-extern bool set_exploration_policy( agent *my_agent, const char *policy_name );
-extern bool set_exploration_policy( agent *my_agent, const long policy );
+extern bool exploration_set_policy( agent *my_agent, const char *policy_name );
+extern bool exploration_set_policy( agent *my_agent, const long policy );
 
 // get exploration policy
-extern const long get_exploration_policy( agent *my_agent );
+extern const long exploration_get_policy( agent *my_agent );
 
 //////////////////////////////////////////////////////////
 // Exploration Policy Parameters
 //////////////////////////////////////////////////////////
 
 // add parameter
-extern exploration_parameter *add_exploration_parameter( double value, bool (*val_func)( double ), const char *name );
+extern exploration_parameter *exploration_add_parameter( double value, bool (*val_func)( double ), const char *name );
 
 // convert parameter name
-extern const long convert_exploration_parameter( agent *my_agent, const char *name );
-extern const char *convert_exploration_parameter( agent *my_agent, const long parameter );
+extern const long exploration_convert_parameter( agent *my_agent, const char *name );
+extern const char *exploration_convert_parameter( agent *my_agent, const long parameter );
 
 // validate parameter name
-extern const bool valid_exploration_parameter( agent *my_agent, const char *name );
-extern const bool valid_exploration_parameter( agent *my_agent, const long parameter );
+extern const bool exploration_valid_parameter( agent *my_agent, const char *name );
+extern const bool exploration_valid_parameter( agent *my_agent, const long parameter );
 
 // get parameter value
-extern double get_parameter_value( agent *my_agent, const char *parameter );
-extern double get_parameter_value( agent *my_agent, const long parameter );
+extern double exploration_get_parameter_value( agent *my_agent, const char *parameter );
+extern double exploration_get_parameter_value( agent *my_agent, const long parameter );
 
 // validate parameter value
-extern bool validate_epsilon( double value );
-extern bool validate_temperature( double value );
+extern bool exploration_validate_epsilon( double value );
+extern bool exploration_validate_temperature( double value );
 
 // validate parameter value
-extern bool valid_parameter_value( agent *my_agent, const char *name, double value );
-extern bool valid_parameter_value( agent *my_agent, const long parameter, double value );
+extern bool exploration_valid_parameter_value( agent *my_agent, const char *name, double value );
+extern bool exploration_valid_parameter_value( agent *my_agent, const long parameter, double value );
 
 // set parameter value
-extern bool set_parameter_value( agent *my_agent, const char *name, double value );
-extern bool set_parameter_value( agent *my_agent, const long parameter, double value );
+extern bool exploration_set_parameter_value( agent *my_agent, const char *name, double value );
+extern bool exploration_set_parameter_value( agent *my_agent, const long parameter, double value );
 
 // control of auto-updates
-extern bool get_auto_update_exploration( agent *my_agent );
-extern bool set_auto_update_exploration( agent *my_agent, bool setting );
+extern bool exploration_get_auto_update( agent *my_agent );
+extern bool exploration_set_auto_update( agent *my_agent, bool setting );
 
 // update parameters according to their reduction policies/rates
-extern void update_exploration_parameters( agent *my_agent );
+extern void exploration_update_parameters( agent *my_agent );
 
 //////////////////////////////////////////////////////////
 // Reduction Policies
 //////////////////////////////////////////////////////////
 
 // policy <=> name conversion
-extern const long convert_reduction_policy( const char *policy_name );
-extern const char *convert_reduction_policy( const long policy );
+extern const long exploration_convert_reduction_policy( const char *policy_name );
+extern const char *exploration_convert_reduction_policy( const long policy );
 
 // get parameter reduction policy
-extern const long get_reduction_policy( agent *my_agent, const char *parameter );
-extern const long get_reduction_policy( agent *my_agent, const long parameter );
+extern const long exploration_get_reduction_policy( agent *my_agent, const char *parameter );
+extern const long exploration_get_reduction_policy( agent *my_agent, const long parameter );
 
 // validate reduction policy per parameter
-extern bool valid_reduction_policy( agent *my_agent, const char *parameter, const char *policy_name );
-extern bool valid_reduction_policy( agent *my_agent, const char *parameter, const long policy );
-extern bool valid_reduction_policy( agent *my_agent, const long parameter, const long policy );
+extern bool exploration_valid_reduction_policy( agent *my_agent, const char *parameter, const char *policy_name );
+extern bool exploration_valid_reduction_policy( agent *my_agent, const char *parameter, const long policy );
+extern bool exploration_valid_reduction_policy( agent *my_agent, const long parameter, const long policy );
 
 // set parameter reduction policy
-extern bool set_reduction_policy( agent *my_agent, const char *parameter, const char *policy_name );
-extern bool set_reduction_policy( agent *my_agent, const long parameter, const long policy );
+extern bool exploration_set_reduction_policy( agent *my_agent, const char *parameter, const char *policy_name );
+extern bool exploration_set_reduction_policy( agent *my_agent, const long parameter, const long policy );
 
 //////////////////////////////////////////////////////////
 // Reduction Rates
 //////////////////////////////////////////////////////////
 
 // validate reduction rate
-extern bool valid_reduction_rate( agent *my_agent, const char *parameter, const char *policy_name, double reduction_rate );
-extern bool valid_reduction_rate( agent *my_agent, const long parameter, const long policy, double reduction_rate );
-extern bool valid_exponential( double reduction_rate );
-extern bool valid_linear( double reduction_rate );
+extern bool exploration_valid_reduction_rate( agent *my_agent, const char *parameter, const char *policy_name, double reduction_rate );
+extern bool exploration_valid_reduction_rate( agent *my_agent, const long parameter, const long policy, double reduction_rate );
+extern bool exploration_valid_exponential( double reduction_rate );
+extern bool exploration_valid_linear( double reduction_rate );
 
 // get reduction rate
-extern double get_reduction_rate( agent *my_agent, const char *parameter, const char *policy_name );
-extern double get_reduction_rate( agent *my_agent, const long parameter, const long policy );
+extern double exploration_get_reduction_rate( agent *my_agent, const char *parameter, const char *policy_name );
+extern double exploration_get_reduction_rate( agent *my_agent, const long parameter, const long policy );
 
 // set reduction rate
-extern bool set_reduction_rate( agent *my_agent, const char *parameter, const char *policy_name, double reduction_rate );
-extern bool set_reduction_rate( agent *my_agent, const long parameter, const long policy, double reduction_rate );
+extern bool exploration_set_reduction_rate( agent *my_agent, const char *parameter, const char *policy_name, double reduction_rate );
+extern bool exploration_set_reduction_rate( agent *my_agent, const long parameter, const long policy, double reduction_rate );
 
 //////////////////////////////////////////////////////////
 // Decision Procedures
 //////////////////////////////////////////////////////////
 
 // selects a candidate based upon the current exploration mode
-extern preference *choose_according_to_exploration_mode( agent *my_agent, slot *s, preference *candidates );
+extern preference *exploration_choose_according_to_policy( agent *my_agent, slot *s, preference *candidates );
 
 // selects a candidate in a random fashion
-extern preference *randomly_select( preference *candidates );
+extern preference *exploration_randomly_select( preference *candidates );
 
 // selects a candidate in a softmax fashion
-extern preference *probabilistically_select( preference *candidates );
+extern preference *exploration_probabilistically_select( preference *candidates );
 
 // selects a candidate based on a boltzmann distribution
-extern preference *boltzmann_select( agent *my_agent, preference *candidates );
+extern preference *exploration_boltzmann_select( agent *my_agent, preference *candidates );
 
 // selects a candidate based upon an epsilon-greedy distribution
-extern preference *epsilon_greedy_select( agent *my_agent, preference *candidates );
+extern preference *exploration_epsilon_greedy_select( agent *my_agent, preference *candidates );
 
 // returns candidate with highest q-value (random amongst ties), assumes computed values
-extern preference *get_highest_q_value_pref( preference *candidates );
+extern preference *exploration_get_highest_q_value_pref( preference *candidates );
 
 // computes total contribution for a candidate from each preference, as well as number of contributions
-extern void compute_value_of_candidate( agent *my_agent, preference *cand, slot *s, double default_value = 0 );
+extern void exploration_compute_value_of_candidate( agent *my_agent, preference *cand, slot *s, double default_value = 0 );
 
 // jzxu 04/24/2008
 #if Q_CONFIDENCE_METHOD == INTERVAL_ESTIMATION || Q_CONFIDENCE_METHOD == HOEFFDING_BOUNDING

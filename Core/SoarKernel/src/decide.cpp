@@ -52,18 +52,21 @@
 #include "explain.h"
 #include "tempmem.h"
 #include "io_soar.h"
+#include "xml.h"
+#include "soar_TraceNames.h"
 
 #include "exploration.h"
 #include "reinforcement_learning.h"
 #include "decision_manipulation.h"
+#include "wma.h"
 #include "misc.h"
 
 #include "episodic_memory.h"
 
-/* JC ADDED: This is for event firing in gSKI */
-#include "gski_event_system_functions.h"
+#include "assert.h"
 
-using namespace xmlTraceNames;
+
+using namespace soar_TraceNames;
 
 /* REW: 2003-01-06 A temporary helper function */
 
@@ -490,10 +493,6 @@ void garbage_collect_id (agent* thisAgent, Symbol *id)
    slot *s;
    preference *pref, *next_pref;
    
-   /* JC ADDED: Tell gSKI that an object is being removed from memory */
-   /* KJC:  Do we really want this here?  This is garbage collection, not WM operations */
-   gSKI_MakeAgentCallback(gSKI_K_EVENT_WMOBJECT_REMOVED, 0, thisAgent, static_cast<void*>(id));
-
 #ifdef DEBUG_LINKS  
    print_with_symbols (thisAgent, "\n*** Garbage collecting id: %y",id);
 #endif
@@ -502,7 +501,7 @@ void garbage_collect_id (agent* thisAgent, Symbol *id)
        This is handled by remove_existing_such-and-such... */
    
    /* --- remove any input wmes from the id --- */
-   remove_wme_list_from_wm (thisAgent, id->id.input_wmes);
+   remove_wme_list_from_wm (thisAgent, id->id.input_wmes, true);
    id->id.input_wmes = NIL;
    
    for (s = id->id.slots; s != NIL; s = s->next) 
@@ -837,13 +836,13 @@ byte require_preference_semantics (agent *thisAgent, slot *s, preference **resul
     if (p->value == value) return CONSTRAINT_FAILURE_IMPASSE_TYPE;
   
   /* --- the lone require is the winner --- */
-  if ( candidates && soar_rl_enabled( thisAgent ) )
+  if ( candidates && rl_enabled( thisAgent ) )
   {
-    compute_value_of_candidate( thisAgent, candidates, s, 0 );
+	  exploration_compute_value_of_candidate( thisAgent, candidates, s, 0 );
     double Vminb = (*thisAgent->rl_qconf)[candidates->inst->prod].q_min;
     double Vmaxb = (*thisAgent->rl_qconf)[candidates->inst->prod].q_max;
     DBG print(thisAgent, "\ncalling with lone require Q: %f Qmin: %f Qmax: %f\n", candidates->numeric_value, Vminb, Vmaxb);
-    perform_rl_update( thisAgent, candidates->numeric_value, Vminb, Vmaxb, s->id );
+    rl_perform_update( thisAgent, candidates->numeric_value, Vminb, Vmaxb, s->id );
   }
 
   return NONE_IMPASSE_TYPE;
@@ -866,36 +865,31 @@ byte run_preference_semantics (agent* thisAgent, slot *s, preference **result_ca
   // if this is the true decision slot and selection has been made, attempt force selection
   if ( !( ( ( thisAgent->attribute_preferences_mode == 2 ) || ( thisAgent->operand2_mode == TRUE ) ) && ( !s->isa_context_slot ) ) ) 
   {
-    if ( get_selected_operator( thisAgent ) != NULL )
-    {
-      preference *force_result = force_selection( thisAgent, s->all_preferences, !predict );
+	  if ( select_get_operator( thisAgent ) != NULL )
+	  {
+		  preference *force_result = select_force( thisAgent, s->all_preferences, !predict );
 
       if ( force_result )
       {
         *result_candidates = force_result;
 
-        if ( !predict && soar_rl_enabled( thisAgent ) )
+        if ( !predict && rl_enabled( thisAgent ) )
         {
-          compute_value_of_candidate( thisAgent, force_result, s, 0 );
+				  exploration_compute_value_of_candidate( thisAgent, force_result, s, 0 );
           double Vminb = (*thisAgent->rl_qconf)[force_result->inst->prod].q_min;
           double Vmaxb = (*thisAgent->rl_qconf)[force_result->inst->prod].q_max;
           DBG print(thisAgent, "\ncalling with force result Q: %f Qmin: %f Qmax: %f\n", force_result->numeric_value, Vminb, Vmaxb);
-          perform_rl_update( thisAgent, force_result->numeric_value, Vminb, Vmaxb, s->id );
+          rl_perform_update( thisAgent, force_result->numeric_value, Vminb, Vmaxb, s->id );
         }
 
-        return NONE_IMPASSE_TYPE;
-      }
-      else
-      {
-        print( thisAgent, "WARNING: Invalid forced selection operator id" );
-      
-        char buf[256];
-        SNPRINTF( buf, 254, "WARNING: Invalid forced selection operator id" );
-        gSKI_MakeAgentCallbackXML( thisAgent, kFunctionBeginTag, kTagWarning );
-        gSKI_MakeAgentCallbackXML( thisAgent, kFunctionAddAttribute, kTypeString, buf );
-        gSKI_MakeAgentCallbackXML( thisAgent, kFunctionEndTag, kTagWarning );
-      }
-    }
+			  return NONE_IMPASSE_TYPE;
+		  }
+		  else
+		  {
+			  print( thisAgent, "WARNING: Invalid forced selection operator id" );
+			  xml_generate_warning( thisAgent, "WARNING: Invalid forced selection operator id" );
+		  }
+	  }
   }
   
   /* === Requires === */
@@ -937,14 +931,14 @@ byte run_preference_semantics (agent* thisAgent, slot *s, preference **result_ca
   if ((!candidates) || (! candidates->next_candidate)) {
     *result_candidates = candidates;
 
-  if ( !consistency && soar_rl_enabled( thisAgent ) && candidates )
+  if ( !consistency && rl_enabled( thisAgent ) && candidates )
   {
     // perform update here for just one candidate
-    compute_value_of_candidate( thisAgent, candidates, s, 0 );
+		exploration_compute_value_of_candidate( thisAgent, candidates, s, 0 );
     double Vminb = (*thisAgent->rl_qconf)[candidates->inst->prod].q_min;
     double Vmaxb = (*thisAgent->rl_qconf)[candidates->inst->prod].q_max;
     DBG print(thisAgent, "\ncalling with just one candidate Q: %f Qmin: %f Qmax: %f\n", candidates->numeric_value, Vminb, Vmaxb);
-    perform_rl_update( thisAgent, candidates->numeric_value, Vminb, Vmaxb, s->id );
+    rl_perform_update( thisAgent, candidates->numeric_value, Vminb, Vmaxb, s->id );
   }
 
     return NONE_IMPASSE_TYPE;
@@ -1110,14 +1104,14 @@ byte run_preference_semantics (agent* thisAgent, slot *s, preference **result_ca
   {
     *result_candidates = candidates;
     
-    if ( !consistency && soar_rl_enabled( thisAgent ) && candidates )
+    if ( !consistency && rl_enabled( thisAgent ) && candidates )
     {
       // perform update here for just one candidate
-      compute_value_of_candidate( thisAgent, candidates, s, 0 );
+		  exploration_compute_value_of_candidate( thisAgent, candidates, s, 0 );
       double Vminb = (*thisAgent->rl_qconf)[candidates->inst->prod].q_min;
       double Vmaxb = (*thisAgent->rl_qconf)[candidates->inst->prod].q_max;
       DBG print(thisAgent, "\ncalling with just one candidate Q: %f Qmin: %f Qmax: %f\n", candidates->numeric_value, Vminb, Vmaxb);
-      perform_rl_update( thisAgent, candidates->numeric_value, Vminb, Vmaxb, s->id );
+      rl_perform_update( thisAgent, candidates->numeric_value, Vminb, Vmaxb, s->id );
     }
     
     return NONE_IMPASSE_TYPE;
@@ -1204,7 +1198,7 @@ byte run_preference_semantics (agent* thisAgent, slot *s, preference **result_ca
         return TIE_IMPASSE_TYPE;
 #endif
       }
-      (*result_candidates) = choose_according_to_exploration_mode( thisAgent, s, candidates ); 
+      (*result_candidates) = exploration_choose_according_to_policy( thisAgent, s, candidates ); 
       (*result_candidates)->next_candidate = NIL;
     }
     else
@@ -1311,8 +1305,9 @@ Symbol *create_new_impasse (agent* thisAgent, Bool isa_goal, Symbol *object, Sym
   {
     add_impasse_wme (thisAgent, id, thisAgent->superstate_symbol, object, NIL);
 
-  id->id.reward_header = make_new_identifier( thisAgent, 'R', level );  
-  add_impasse_wme( thisAgent, id, thisAgent->reward_link_symbol, id->id.reward_header, NIL );
+	id->id.reward_header = make_new_identifier( thisAgent, 'R', level );	
+
+	add_input_wme( thisAgent, id, thisAgent->reward_link_symbol, id->id.reward_header );	
 
 	id->id.epmem_header = make_new_identifier( thisAgent, 'E', level );	
 	id->id.epmem_wme = add_input_wme( thisAgent, id, thisAgent->epmem_symbol, id->id.epmem_header );
@@ -1320,6 +1315,7 @@ Symbol *create_new_impasse (agent* thisAgent, Bool isa_goal, Symbol *object, Sym
 	id->id.epmem_cmd_wme = add_input_wme( thisAgent, id->id.epmem_header, thisAgent->epmem_cmd_symbol, id->id.epmem_cmd_header );	
 	id->id.epmem_result_header = make_new_identifier( thisAgent, 'R', level );
 	id->id.epmem_result_wme = add_input_wme( thisAgent, id->id.epmem_header, thisAgent->epmem_result_symbol, id->id.epmem_result_header );
+
   }
   else
     add_impasse_wme (thisAgent, id, thisAgent->object_symbol, object, NIL);
@@ -1365,7 +1361,7 @@ void create_new_attribute_impasse_for_slot (agent* thisAgent, slot *s, byte impa
   s->impasse_id = id;
   id->id.isa_impasse = TRUE;
 
-  soar_invoke_callbacks(thisAgent, thisAgent, 
+  soar_invoke_callbacks(thisAgent, 
                        CREATE_NEW_ATTRIBUTE_IMPASSE_CALLBACK, 
                        (soar_call_data) s);
 }
@@ -1373,7 +1369,7 @@ void create_new_attribute_impasse_for_slot (agent* thisAgent, slot *s, byte impa
 void remove_existing_attribute_impasse_for_slot (agent* thisAgent, slot *s) {
   Symbol *id;
 
-  soar_invoke_callbacks(thisAgent, thisAgent, 
+  soar_invoke_callbacks(thisAgent, 
                        REMOVE_ATTRIBUTE_IMPASSE_CALLBACK, 
                        (soar_call_data) s);
 
@@ -1548,7 +1544,7 @@ void update_impasse_items (agent* thisAgent, Symbol *id, preference *items) {
     /* for rl rules, expose the q-values to the impasse jzxu 04/26/2008 */
     for (preference* p = items; p != NIL; p = p->next_candidate) {
       Symbol* op = p->value;
-      compute_value_of_candidate(thisAgent, p, id->id.higher_goal->id.operator_slot, DBL_MAX);
+      exploration_compute_value_of_candidate(thisAgent, p, id->id.higher_goal->id.operator_slot, DBL_MAX);
       if (p->numeric_value == DBL_MAX) {
         print_with_symbols(thisAgent, "No preferences for %y", p->value);
         continue;
@@ -1652,10 +1648,10 @@ void decide_non_context_slot (agent* thisAgent, slot *s)
 
                        char buf[256];
                        SNPRINTF(buf, 254, "Removing state S%d because element in GDS changed.", w->gds->goal->id.level);
-                       gSKI_MakeAgentCallbackXML(thisAgent, kFunctionBeginTag, kTagVerbose);
-                     gSKI_MakeAgentCallbackXML(thisAgent, kFunctionAddAttribute, kTypeString, buf);
+                       xml_begin_tag(thisAgent, kTagVerbose);
+	                     xml_att_val(thisAgent, kTypeString, buf);
                        print_wme(thisAgent, w);
-                       gSKI_MakeAgentCallbackXML(thisAgent, kFunctionEndTag, kTagVerbose);
+                       xml_end_tag(thisAgent, kTagVerbose);
                     }
                     gds_invalid_so_remove_goal(thisAgent, w);
                  }
@@ -1818,6 +1814,9 @@ void decide_non_context_slot (agent* thisAgent, slot *s)
             }  /* end if thisAgent->OPERAND2_MODE ... */
                /* REW: end   09.15.96 */
    
+			if ( wma_enabled( thisAgent ) )
+				wma_update_new_wme( thisAgent, w, s->wma_num_changes );
+
             add_wme_to_wm (thisAgent, w);
          }
       }
@@ -1937,12 +1936,9 @@ void remove_existing_context_and_descendents (agent* thisAgent, Symbol *goal) {
     remove_existing_context_and_descendents (thisAgent, goal->id.lower_goal);
 
   /* --- invoke callback routine --- */
-  soar_invoke_callbacks(thisAgent, thisAgent, 
+  soar_invoke_callbacks(thisAgent, 
                        POP_CONTEXT_STACK_CALLBACK, 
                        (soar_call_data) goal);
-
-  /* JC ADDED: Tell gSKI that we have removed a subgoal */
-  gSKI_MakeAgentCallback(gSKI_K_EVENT_SUBSTATE_DESTROYED, 0, thisAgent, static_cast<void*>(goal));
 
   /* --- disconnect this goal from the goal stack --- */
   if (goal == thisAgent->top_goal) {
@@ -1986,11 +1982,11 @@ void remove_existing_context_and_descendents (agent* thisAgent, Symbol *goal) {
   remove_wmes_for_context_slot (thisAgent, goal->id.operator_slot);
   update_impasse_items (thisAgent, goal, NIL); /* causes items & fake pref's to go away */
   
-  if ( soar_rl_enabled( thisAgent ) )
+  if ( rl_enabled( thisAgent ) )
   {
-    tabulate_reward_value_for_goal( thisAgent, goal );
+    rl_tabulate_reward_value_for_goal( thisAgent, goal );
     DBG print(thisAgent, "\ncalling from end of goal Q: %f Qmin: %f Qmax: %f\n", 0, 0, 0);
-    perform_rl_update( thisAgent, 0, 0, 0, goal ); // this update only sees reward - there is no next state
+    rl_perform_update( thisAgent, 0, 0, 0, goal ); // this update only sees reward - there is no next state
   }
 
   epmem_reset( thisAgent, goal );
@@ -2087,22 +2083,22 @@ void create_new_context (agent* thisAgent, Symbol *attr_of_impasse, byte impasse
     thisAgent->bottom_goal->id.lower_goal = id;
     thisAgent->bottom_goal = id;
     add_impasse_wme (thisAgent, id, thisAgent->quiescence_symbol,
-                 thisAgent->t_symbol, NIL);
-  if ((NO_CHANGE_IMPASSE_TYPE == impasse_type) && 
-    (thisAgent->sysparams[MAX_GOAL_DEPTH] < thisAgent->bottom_goal->id.level )) 
-  {
-    // appear to be SNC'ing deep in goalstack, so interrupt and warn user
-    // KJC note: we actually halt, because there is no interrupt function in SoarKernel
-    // in the gSKI Agent code, if system_halted, MAX_GOAL_DEPTH is checked and if exceeded
-    // then the interrupt is generated and system_halted is set to FALSE so the user can recover.
-    print(thisAgent, "\nGoal stack depth exceeded %d on a no-change impasse.\n",thisAgent->sysparams[MAX_GOAL_DEPTH]);
-    print(thisAgent, "Soar appears to be in an infinite loop.  \nContinuing to subgoal may cause Soar to \nexceed the program stack of your system.\n");
-    GenerateWarningXML(thisAgent, "\nGoal stack depth exceeded on a no-change impasse.\n");
-    GenerateWarningXML(thisAgent, "Soar appears to be in an infinite loop.  \nContinuing to subgoal may cause Soar to \nexceed the program stack of your system.\n");
-    thisAgent->stop_soar = TRUE;
-    thisAgent->system_halted = TRUE;
-    thisAgent->reason_for_stopping = "Max Goal Depth exceeded.";
-  }
+		             thisAgent->t_symbol, NIL);
+	if ((NO_CHANGE_IMPASSE_TYPE == impasse_type) && 
+		(thisAgent->sysparams[MAX_GOAL_DEPTH] < thisAgent->bottom_goal->id.level )) 
+	{
+ 		// appear to be SNC'ing deep in goalstack, so interrupt and warn user
+		// KJC note: we actually halt, because there is no interrupt function in SoarKernel
+		// in the gSKI Agent code, if system_halted, MAX_GOAL_DEPTH is checked and if exceeded
+		// then the interrupt is generated and system_halted is set to FALSE so the user can recover.
+		print(thisAgent, "\nGoal stack depth exceeded %d on a no-change impasse.\n",thisAgent->sysparams[MAX_GOAL_DEPTH]);
+		print(thisAgent, "Soar appears to be in an infinite loop.  \nContinuing to subgoal may cause Soar to \nexceed the program stack of your system.\n");
+		xml_generate_warning(thisAgent, "\nGoal stack depth exceeded on a no-change impasse.\n");
+		xml_generate_warning(thisAgent, "Soar appears to be in an infinite loop.  \nContinuing to subgoal may cause Soar to \nexceed the program stack of your system.\n");
+		thisAgent->stop_soar = TRUE;
+		thisAgent->system_halted = TRUE;
+		thisAgent->reason_for_stopping = "Max Goal Depth exceeded.";
+	}
   } 
   else 
   {
@@ -2122,7 +2118,7 @@ void create_new_context (agent* thisAgent, Symbol *attr_of_impasse, byte impasse
   id->id.allow_bottom_up_chunks = TRUE;
 
   id->id.rl_info = static_cast<rl_data *>( allocate_memory( thisAgent, sizeof( rl_data ), MISCELLANEOUS_MEM_USAGE ) );
-  id->id.rl_info->eligibility_traces = new soar_rl_et_map( std::less<production *>(), SoarMemoryAllocator<std::pair<production* const, double> >( thisAgent, MISCELLANEOUS_MEM_USAGE ) );
+  id->id.rl_info->eligibility_traces = new rl_et_map( std::less<production *>(), SoarMemoryAllocator<std::pair<production* const, double> >( thisAgent, MISCELLANEOUS_MEM_USAGE ) );
   id->id.rl_info->prev_op_rl_rules = NIL;
   id->id.rl_info->previous_q = 0;
   id->id.rl_info->reward = 0;
@@ -2155,15 +2151,9 @@ void create_new_context (agent* thisAgent, Symbol *attr_of_impasse, byte impasse
   }
 
   /* --- invoke callback routine --- */
-  soar_invoke_callbacks(thisAgent, thisAgent, 
+  soar_invoke_callbacks(thisAgent, 
                        CREATE_NEW_CONTEXT_CALLBACK, 
                        (soar_call_data) id);
-
-   /* JC ADDED: Tell gSKI we have a new object in general (there are three places this can occur). */
-   gSKI_MakeAgentCallbackWMObjectAdded(thisAgent, NIL, NIL, id);
-
-   /* JC ADDED: Tell gSKI that a substate was created */
-   gSKI_MakeAgentCallback(gSKI_K_EVENT_SUBSTATE_CREATED, 1, thisAgent, static_cast<void*>(id));
 }
 
 /* ------------------------------------------------------------------
@@ -2241,43 +2231,40 @@ Bool decide_context_slot (agent* thisAgent, Symbol *goal, slot *s, bool predict 
       impasse_type = NO_CHANGE_IMPASSE_TYPE;
       candidates = NIL; /* we don't want any impasse ^item's later */
 
-    if ( predict )
-    {
-      set_prediction( thisAgent, "none" );
-      return TRUE;
-    }
+	  if ( predict )
+	  {
+		  predict_set( thisAgent, "none" );
+		  return TRUE;
+	  }
    } 
    else 
    {
       /* --- the slot is decidable, so run preference semantics on it --- */
       impasse_type = run_preference_semantics (thisAgent, s, &candidates);
 
-      if ( predict )
-      {
-        switch ( impasse_type )
-        {
-          case CONSTRAINT_FAILURE_IMPASSE_TYPE:
-            set_prediction( thisAgent, "constraint" );
-            break;
-
-          case CONFLICT_IMPASSE_TYPE:
-            set_prediction( thisAgent, "conflict" );
-            break;
-
-          case TIE_IMPASSE_TYPE:
-            set_prediction( thisAgent, "tie" );
-            break;
-
-          case NO_CHANGE_IMPASSE_TYPE:
-            set_prediction( thisAgent, "none" );
-            break;
-
-          default:
-            if ( !candidates || ( candidates->value->common.symbol_type != IDENTIFIER_SYMBOL_TYPE ) )
-              set_prediction( thisAgent, "none" );
-            else
-            {
-              std::string temp = "";
+	  if ( predict )
+	  {
+		  switch ( impasse_type )
+		  {
+				case CONSTRAINT_FAILURE_IMPASSE_TYPE:
+					predict_set( thisAgent, "constraint" );
+					break;
+				
+				case CONFLICT_IMPASSE_TYPE:
+					predict_set( thisAgent, "conflict" );
+					break;
+				case TIE_IMPASSE_TYPE:
+					predict_set( thisAgent, "tie" );
+					break;
+				case NO_CHANGE_IMPASSE_TYPE:
+					predict_set( thisAgent, "none" );
+					break;
+				default:
+					if ( !candidates || ( candidates->value->common.symbol_type != IDENTIFIER_SYMBOL_TYPE ) )
+						predict_set( thisAgent, "none" );
+					else
+					{
+						std::string temp = "";
 
               // get first letter of id
               temp += candidates->value->id.name_letter;
@@ -2286,11 +2273,10 @@ Bool decide_context_slot (agent* thisAgent, Symbol *goal, slot *s, bool predict 
               std::string *temp2 = to_string( candidates->value->id.name_number );
               temp += (*temp2);
               delete temp2;
-
-              set_prediction( thisAgent, temp.c_str() );
-            }
-            break;
-        }
+						predict_set( thisAgent, temp.c_str() );
+					}
+					break;
+		    }
 
         return TRUE;
       }
@@ -2365,12 +2351,8 @@ Bool decide_context_slot (agent* thisAgent, Symbol *goal, slot *s, bool predict 
      for(temp = candidates; temp; temp = temp->next_candidate)
        preference_remove_ref(thisAgent, temp);
 
-     if ( soar_rl_enabled( thisAgent ) )
-       store_rl_data( thisAgent, goal, candidates );
-
-     /* JC ADDED: Notify gSKI of an operator selection  */
-     gSKI_MakeAgentCallback(gSKI_K_EVENT_OPERATOR_SELECTED, 1, thisAgent, 
-         static_cast<void*>(w));
+     if ( rl_enabled( thisAgent ) )
+       rl_store_data( thisAgent, goal, candidates );
 
      return TRUE;
    } 
@@ -2513,22 +2495,22 @@ void do_buffered_wm_and_ownership_changes (agent* thisAgent)
 void do_working_memory_phase (agent* thisAgent) {
  
    if (thisAgent->sysparams[TRACE_PHASES_SYSPARAM]) {
-      if (thisAgent->operand2_mode == TRUE) {     
-      if (thisAgent->current_phase == APPLY_PHASE) {  /* it's always IE for PROPOSE */
-        gSKI_MakeAgentCallbackXML(thisAgent, kFunctionBeginTag, kTagSubphase);
-        gSKI_MakeAgentCallbackXML(thisAgent, kFunctionAddAttribute, kPhase_Name, kSubphaseName_ChangingWorkingMemory);
-        switch (thisAgent->FIRING_TYPE) {
+      if (thisAgent->operand2_mode == TRUE) {		  
+		  if (thisAgent->current_phase == APPLY_PHASE) {  /* it's always IE for PROPOSE */
+			  xml_begin_tag(thisAgent, kTagSubphase);
+			  xml_att_val(thisAgent, kPhase_Name, kSubphaseName_ChangingWorkingMemory);
+			  switch (thisAgent->FIRING_TYPE) {
                   case PE_PRODS:
-            print (thisAgent, "\t--- Change Working Memory (PE) ---\n",0);
-            gSKI_MakeAgentCallbackXML(thisAgent, kFunctionAddAttribute, kPhase_FiringType, kPhaseFiringType_PE);
-            break;      
-          case IE_PRODS:  
-            print (thisAgent, "\t--- Change Working Memory (IE) ---\n",0);
-            gSKI_MakeAgentCallbackXML(thisAgent, kFunctionAddAttribute, kPhase_FiringType, kPhaseFiringType_IE);
-            break;
-        }
-        gSKI_MakeAgentCallbackXML(thisAgent, kFunctionEndTag, kTagSubphase);
-      }
+					  print (thisAgent, "\t--- Change Working Memory (PE) ---\n",0);
+					  xml_att_val(thisAgent, kPhase_FiringType, kPhaseFiringType_PE);
+					  break;      
+				  case IE_PRODS:	
+					  print (thisAgent, "\t--- Change Working Memory (IE) ---\n",0);
+					  xml_att_val(thisAgent, kPhase_FiringType, kPhaseFiringType_IE);
+					  break;
+			  }
+			  xml_end_tag(thisAgent, kTagSubphase);
+		  }
       }
       else
       // the XML for this is generated in this function
@@ -2548,12 +2530,12 @@ void do_working_memory_phase (agent* thisAgent) {
 
 void do_decision_phase (agent* thisAgent, bool predict) 
 {
-  if ( !predict && soar_rl_enabled( thisAgent ) )
-    tabulate_reward_values( thisAgent );
+	if ( !predict && rl_enabled( thisAgent ) )
+		rl_tabulate_reward_values( thisAgent );
 
-  srand_restore_snapshot( thisAgent, !predict );
-  
-  /* phase printing moved to init_soar: do_one_top_level_phase */
+	predict_srand_restore_snapshot( thisAgent, !predict );
+	
+	/* phase printing moved to init_soar: do_one_top_level_phase */
 
    decide_context_slots (thisAgent, predict);
 
@@ -2568,7 +2550,7 @@ void do_decision_phase (agent* thisAgent, bool predict)
      decide_non_context_slots(thisAgent);
      do_buffered_wm_and_ownership_changes(thisAgent);
 
-     update_exploration_parameters( thisAgent );
+	   exploration_update_parameters( thisAgent );
    }
 }  
 
@@ -2707,21 +2689,18 @@ void add_wme_to_gds(agent* agentPtr, goal_dependency_set* gds, wme* wme_to_add)
                 
    if (agentPtr->soar_verbose_flag || agentPtr->sysparams[TRACE_WM_CHANGES_SYSPARAM]) 
    {
-     // for some reason we get segfault of we use %s%d for letter and
-     // number
-     print(agentPtr, "Adding to GDS for S%d: ", wme_to_add->gds->goal->id.name_number);    
-     print(agentPtr, " WME: "); 
-     char buf[256];
-     SNPRINTF(buf, 254, "Adding to GDS for S%d: ", wme_to_add->gds->goal->id.name_number);
-     gSKI_MakeAgentCallbackXML(agentPtr, kFunctionBeginTag, kTagVerbose);
-     gSKI_MakeAgentCallbackXML(agentPtr, kFunctionAddAttribute, kTypeString, buf);
-     print_wme(agentPtr, wme_to_add);
-     gSKI_MakeAgentCallbackXML(agentPtr, kFunctionEndTag, kTagVerbose);               
+	   print(agentPtr, "Adding to GDS for S%ld: ", wme_to_add->gds->goal->id.name_number);    
+	   print(agentPtr, " WME: "); 
+	   char buf[256];
+
+	   SNPRINTF(buf, 254, "Adding to GDS for S%ld: ", wme_to_add->gds->goal->id.name_number);
+
+	   xml_begin_tag(agentPtr, kTagVerbose);
+	   xml_att_val(agentPtr, kTypeString, buf);
+
+	   print_wme(agentPtr, wme_to_add);
+	   xml_end_tag(agentPtr, kTagVerbose);               
    }
- 
-   /* Callback gSKI (AFTER) */
-   gSKI_MakeAgentCallback(gSKI_K_EVENT_GDS_WME_ADDED, 1, 
-                          agentPtr, static_cast<void*>(wme_to_add));
 }
 
 /*
@@ -3183,9 +3162,6 @@ a "twitchy" version of OPERAND2, and leave open the possibility that other
 approaches may be better */
 
 void gds_invalid_so_remove_goal (agent* thisAgent, wme *w) {
-
-   /* JC ADDED: Tell gSKI that the goals stack is about to be blown away */
-   gSKI_MakeAgentCallback(gSKI_K_EVENT_GDS_VIOLATED, 0, thisAgent, static_cast<void*>(w));
 
   /* REW: begin 11.25.96 */ 
   #ifndef NO_TIMING_STUFF
