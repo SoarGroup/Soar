@@ -2,10 +2,8 @@
 <VisualStudioProject
 	ProjectType="Visual C++"
 	Version="8.00"
-	Name="TestSMLPerformance"
-	ProjectGUID="{12397B1B-154F-4148-B7C3-1C839967B689}"
-	RootNamespace="TestSMLPerformance"
-	Keyword="ManagedCProj"
+	Name="TOHSML"
+	ProjectGUID="{3B7AC15A-ECCD-49CF-86D9-D813D2ABE979}"
 	>
 	<Platforms>
 		<Platform
@@ -17,12 +15,13 @@
 	<Configurations>
 		<Configuration
 			Name="Debug|Win32"
-			OutputDirectory="build"
-			IntermediateDirectory="$(OutDir)\Debug"
+			OutputDirectory="towersSML_build"
+			IntermediateDirectory="$(OutDir)\$(ConfigurationName)"
 			ConfigurationType="1"
 			InheritedPropertySheets="$(VCInstallDir)VCProjectDefaults\UpgradeFromVC71.vsprops"
+			UseOfMFC="0"
+			ATLMinimizesCRunTimeLibraryUsage="false"
 			CharacterSet="2"
-			ManagedExtensions="0"
 			>
 			<Tool
 				Name="VCPreBuildEventTool"
@@ -38,23 +37,35 @@
 			/>
 			<Tool
 				Name="VCMIDLTool"
+				TypeLibraryName=".\Debug/towersSGIO.tlb"
+				HeaderFileName=""
 			/>
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				AdditionalIncludeDirectories="..\..\Core\ClientSML\include;..\..\Core\ConnectionSML\include;..\..\Core\ElementXML\include;..\..\Core\shared"
-				PreprocessorDefinitions="WIN32;_DEBUG"
-				MinimalRebuild="false"
-				BasicRuntimeChecks="0"
+				AdditionalIncludeDirectories="..\..\Core\ClientSML\include;..\..\Core\ConnectionSML\include;..\..\Core\shared"
+				PreprocessorDefinitions="WIN32;_DEBUG;_CONSOLE;_CRT_SECURE_NO_DEPRECATE"
+				BasicRuntimeChecks="3"
 				RuntimeLibrary="3"
+				UsePrecompiledHeader="0"
+				PrecompiledHeaderFile=""
+				AssemblerListingLocation="$(IntDir)/"
+				ObjectFile="$(IntDir)/"
+				ProgramDataBaseFileName="$(IntDir)/"
+				BrowseInformation="0"
 				WarningLevel="3"
-				DebugInformationFormat="3"
+				SuppressStartupBanner="true"
+				Detect64BitPortabilityProblems="true"
+				DebugInformationFormat="4"
+				CompileAs="0"
 			/>
 			<Tool
 				Name="VCManagedResourceCompilerTool"
 			/>
 			<Tool
 				Name="VCResourceCompilerTool"
+				PreprocessorDefinitions="_DEBUG"
+				Culture="1033"
 			/>
 			<Tool
 				Name="VCPreLinkEventTool"
@@ -63,8 +74,12 @@
 				Name="VCLinkerTool"
 				OutputFile="..\..\SoarLibrary\bin\$(ProjectName).exe"
 				LinkIncremental="2"
+				SuppressStartupBanner="true"
+				AdditionalLibraryDirectories=""
 				GenerateDebugInformation="true"
-				AssemblyDebug="1"
+				ProgramDatabaseFile="$(OutDir)/$(ProjectName).pdb"
+				SubSystem="1"
+				TargetMachine="1"
 			/>
 			<Tool
 				Name="VCALinkTool"
@@ -93,12 +108,13 @@
 		</Configuration>
 		<Configuration
 			Name="Release|Win32"
-			OutputDirectory="build"
-			IntermediateDirectory="$(OutDir)\Release"
+			OutputDirectory="towersSML_build"
+			IntermediateDirectory="$(OutDir)\$(ConfigurationName)"
 			ConfigurationType="1"
 			InheritedPropertySheets="$(VCInstallDir)VCProjectDefaults\UpgradeFromVC71.vsprops"
+			UseOfMFC="0"
+			ATLMinimizesCRunTimeLibraryUsage="false"
 			CharacterSet="2"
-			ManagedExtensions="0"
 			WholeProgramOptimization="1"
 			>
 			<Tool
@@ -115,21 +131,35 @@
 			/>
 			<Tool
 				Name="VCMIDLTool"
+				TypeLibraryName=".\Release/towersSGIO.tlb"
+				HeaderFileName=""
 			/>
 			<Tool
 				Name="VCCLCompilerTool"
-				AdditionalIncludeDirectories="..\..\Core\ClientSML\include;..\..\Core\ConnectionSML\include;..\..\Core\ElementXML\include;..\..\Core\shared"
-				PreprocessorDefinitions="WIN32;NDEBUG"
-				MinimalRebuild="false"
+				Optimization="2"
+				InlineFunctionExpansion="1"
+				AdditionalIncludeDirectories="..\..\Core\ClientSML\include;..\..\Core\ConnectionSML\include;..\..\Core\shared"
+				PreprocessorDefinitions="WIN32;NDEBUG;_CONSOLE;_CRT_SECURE_NO_DEPRECATE"
+				StringPooling="true"
 				RuntimeLibrary="2"
+				EnableFunctionLevelLinking="true"
+				UsePrecompiledHeader="0"
+				PrecompiledHeaderFile=""
+				AssemblerListingLocation="$(IntDir)/"
+				ObjectFile="$(IntDir)/"
+				ProgramDataBaseFileName="$(IntDir)/"
 				WarningLevel="3"
+				SuppressStartupBanner="true"
 				DebugInformationFormat="3"
+				CompileAs="0"
 			/>
 			<Tool
 				Name="VCManagedResourceCompilerTool"
 			/>
 			<Tool
 				Name="VCResourceCompilerTool"
+				PreprocessorDefinitions="NDEBUG"
+				Culture="1033"
 			/>
 			<Tool
 				Name="VCPreLinkEventTool"
@@ -138,7 +168,15 @@
 				Name="VCLinkerTool"
 				OutputFile="..\..\SoarLibrary\bin\$(ProjectName).exe"
 				LinkIncremental="1"
+				SuppressStartupBanner="true"
+				AdditionalLibraryDirectories=""
+				IgnoreDefaultLibraryNames="LIBCMTD"
 				GenerateDebugInformation="true"
+				ProgramDatabaseFile="$(OutDir)/$(ProjectName).pdb"
+				SubSystem="1"
+				OptimizeReferences="2"
+				EnableCOMDATFolding="2"
+				TargetMachine="1"
 			/>
 			<Tool
 				Name="VCALinkTool"
@@ -169,38 +207,71 @@
 	<References>
 		<ProjectReference
 			ReferencedProjectIdentifier="{3EDBED11-A1B3-4E00-8B6E-652523D482F0}"
-			RelativePathToProject=".\Core\ClientSML\ClientSML.vcproj"
+			RelativePathToProject="..\..\Core\ClientSML\ClientSML.vcproj"
 		/>
 		<ProjectReference
 			ReferencedProjectIdentifier="{161DC1AD-FB4B-4370-9FD5-B02E2A0D8A36}"
-			RelativePathToProject=".\Core\ConnectionSML\ConnectionSML.vcproj"
+			RelativePathToProject="..\..\Core\ConnectionSML\ConnectionSML.vcproj"
 		/>
 		<ProjectReference
 			ReferencedProjectIdentifier="{E9AB0B6E-F1CA-4A63-817B-AB47F7E5417E}"
-			RelativePathToProject=".\Core\ElementXML\ElementXML.vcproj"
+			RelativePathToProject="..\..\Core\ElementXML\ElementXML.vcproj"
 		/>
 	</References>
 	<Files>
 		<Filter
 			Name="Source Files"
-			Filter="cpp;c;cxx;def;odl;idl;hpj;bat;asm;asmx"
-			UniqueIdentifier="{4FC737F1-C7A5-4376-A066-2A32D752A2FF}"
+			Filter="cpp;c;cxx;rc;def;r;odl;idl;hpj;bat"
 			>
 			<File
-				RelativePath=".\TestSMLPerformance.cpp"
+				RelativePath="..\..\Tools\TOHSML\TOH.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\Tools\TOHSML\TOH_Game.cpp"
 				>
 			</File>
 		</Filter>
 		<Filter
 			Name="Header Files"
-			Filter="h;hpp;hxx;hm;inl;inc;xsd"
-			UniqueIdentifier="{93995380-89BD-4b04-88EB-625FBE52EBFB}"
+			Filter="h;hpp;hxx;hm;inl"
 			>
+			<File
+				RelativePath="..\..\Tools\TOHSML\Soar_Agent.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\Tools\TOHSML\Soar_Kernel.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\Tools\TOHSML\TOH_Disk.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\Tools\TOHSML\TOH_Disk.inl"
+				>
+			</File>
+			<File
+				RelativePath="..\..\Tools\TOHSML\TOH_Game.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\Tools\TOHSML\TOH_Game.inl"
+				>
+			</File>
+			<File
+				RelativePath="..\..\Tools\TOHSML\TOH_Tower.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\Tools\TOHSML\TOH_Tower.inl"
+				>
+			</File>
 		</Filter>
 		<Filter
 			Name="Resource Files"
-			Filter="rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx"
-			UniqueIdentifier="{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}"
+			Filter="ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe"
 			>
 		</Filter>
 	</Files>
