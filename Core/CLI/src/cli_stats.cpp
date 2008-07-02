@@ -289,7 +289,6 @@ void CommandLineInterface::GetSystemStats()
 
 	m_Result << "========================================================|===========\n";
 	m_Result << "Computed------------------------------------------------+-----------\n";
-	m_Result << "Totals:   %8.3f %8.3f %8.3f %8.3f %8.3f  | %10.3f\n\n",
 	m_Result << "Totals:   "
 		<< std::setw(8) << input_phase_total_time << " "
 		<< std::setw(8) << propose_phase_total_time << " "
