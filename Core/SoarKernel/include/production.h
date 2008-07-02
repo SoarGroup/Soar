@@ -101,7 +101,7 @@ typedef struct production_struct {
   Bool trace_firings;                     /* used by pwatch */
   struct rete_node_struct *p_node;        /* NIL if it's not in the rete */
   action *action_list;                    /* RHS actions */
-  list *rhs_unbound_variables;            /* RHS vars not bound on LHS */
+  ::list *rhs_unbound_variables;            /* RHS vars not bound on LHS */
   struct instantiation_struct *instantiations; /* dll of inst's in MS */
   int OPERAND_which_assert_list;          /* RCHONG: 10.11 */
   byte interrupt;						  /* SW: 7.31.03 */
@@ -139,22 +139,22 @@ extern char first_letter_from_symbol (Symbol *sym);
 
 /* --- Takes a list of symbols and returns a copy of the same list,
    incrementing the reference count on each symbol in the list. --- */
-extern list *copy_symbol_list_adding_references (agent* thisAgent, list *sym_list);
+extern ::list *copy_symbol_list_adding_references (agent* thisAgent, ::list *sym_list);
 
 /* --- Frees a list of symbols, decrementing their reference counts. --- */
-extern void deallocate_symbol_list_removing_references (agent* thisAgent, list *sym_list);
+extern void deallocate_symbol_list_removing_references (agent* thisAgent, ::list *sym_list);
 
 /* ------------------- */
 /* Utilities for tests */
 /* ------------------- */
 
 extern void add_all_variables_in_action (agent* thisAgent, action *a, tc_number tc, 
-					 list **var_list);
+					 ::list **var_list);
 extern void add_bound_variables_in_test (agent* thisAgent, test t, tc_number tc, 
-					 list **var_list);
+					 ::list **var_list);
 extern void add_bound_variables_in_condition (agent* thisAgent, condition *c, tc_number tc, 
-					      list **var_list);
-extern void unmark_variables_and_free_list (agent* thisAgent, list *var_list);
+					      ::list **var_list);
+extern void unmark_variables_and_free_list (agent* thisAgent, ::list *var_list);
 
 /* --- Takes a test and returns a new copy of it. --- */
 extern test copy_test (agent* thisAgent, test t);
@@ -291,11 +291,11 @@ extern void deallocate_list_of_nots (agent* thisAgent, not_struct *nots);
 tc_number get_new_tc_number (agent* thisAgent);
 
 extern void add_symbol_to_tc (agent* thisAgent, Symbol *sym, tc_number tc,
-                              list **id_list, list **var_list);
+                              ::list **id_list, ::list **var_list);
 extern void add_cond_to_tc (agent* thisAgent, condition *c, tc_number tc,
-                            list **id_list, list **var_list);
+                            ::list **id_list, ::list **var_list);
 extern void add_action_to_tc (agent* thisAgent, action *a, tc_number tc,
-                              list **id_list, list **var_list);
+                              ::list **id_list, ::list **var_list);
 extern Bool cond_is_in_tc (agent* thisAgent, condition *cond, tc_number tc);
 extern Bool action_is_in_tc (action *a, tc_number tc);
 
