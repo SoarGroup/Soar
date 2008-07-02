@@ -220,7 +220,7 @@ void CommandLineInterface::GetSystemStats()
 	* derived_total_cpu_time
 	*/
 
-	m_Result << "Soar " << sml_Names::kSoarVersionValue << " on " << hostname << " at" << ctime(&current_time) << "\n";
+	m_Result << "Soar " << sml_Names::kSoarVersionValue << " on " << hostname << " at " << ctime(&current_time) << "\n";
 
 	unsigned long totalProductions = m_pAgentSoar->num_productions_of_type[DEFAULT_PRODUCTION_TYPE];
 	totalProductions += m_pAgentSoar->num_productions_of_type[USER_PRODUCTION_TYPE];
