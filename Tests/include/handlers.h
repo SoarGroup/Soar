@@ -13,6 +13,7 @@ public:
 	// callbacks
 	static void MyBoolShutdownHandler( sml::smlSystemEventId id, void* pUserData, sml::Kernel* pKernel );
 	static void MyEventShutdownHandler( sml::smlSystemEventId id, void* pUserData, sml::Kernel* pKernel );
+	static void MyShutdownTestShutdownHandler( sml::smlSystemEventId id, void* pUserData, sml::Kernel* pKernel );
 	static void MyDeletionHandler( sml::smlAgentEventId id, void* pUserData, sml::Agent* pAgent );
 	static void MySystemEventHandler( sml::smlSystemEventId id, void* pUserData, sml::Kernel* pKernel );
 	static void MyCreationHandler( sml::smlAgentEventId id, void* pUserData, sml::Agent* pAgent );
