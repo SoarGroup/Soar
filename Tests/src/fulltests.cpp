@@ -58,6 +58,7 @@ class FullTests : public CPPUNIT_NS::TestCase
 	CPPUNIT_TEST( testOSupportCopyDestroyCircular );
 	CPPUNIT_TEST( testSynchronize );
 	CPPUNIT_TEST( testRunningAgentCreation );
+	//CPPUNIT_TEST( testShutdownHandlerShutdown );
 
 	CPPUNIT_TEST_SUITE_END();
 
@@ -78,6 +79,8 @@ public:
 	TEST_DECLARATION( testOSupportCopyDestroyCircular );
 	TEST_DECLARATION( testSynchronize );
 	TEST_DECLARATION( testRunningAgentCreation );
+
+	void testShutdownHandlerShutdown();
 
 public:
 	void setUp();
@@ -120,8 +123,11 @@ void FullTests::setUp()
 	assert( GREEK_VERSION_NUMBER == SML_GREEK_VERSION_NUMBER );
 	assert( strcmp( VERSION_STRING, SML_VERSION_STRING ) == 0 );
 
-	m_pKernel = NULL;
-	m_pAgent = NULL;
+	m_pKernel = 0;
+	m_pAgent = 0;
+	m_pTestBody = 0;
+
+	m_Options.reset();
 }
 
 void FullTests::runAllTestTypes()
@@ -1197,4 +1203,28 @@ TEST_DEFINITION( testRunningAgentCreation )
 	m_pKernel->RunAllAgents( 5 );
 
 	CPPUNIT_ASSERT( outputPhases1 == outputPhases2 );
+}
+
+void FullTests::testShutdownHandlerShutdown()
+{
+	m_Options.reset();
+	m_Options.set( REMOTE );
+
+	// create kernel and agent
+	createSoar();
+
+	// most of the following taken from destroySoar(), simplified
+	CPPUNIT_ASSERT( m_pKernel->DestroyAgent( m_pAgent ) );
+
+	CPPUNIT_ASSERT( m_Options.test( REMOTE ) );
+
+	soar_thread::Event shutdownEvent;
+	m_pKernel->RegisterForSystemEvent( sml::smlEVENT_BEFORE_SHUTDOWN, Handlers::MyShutdownTestShutdownHandler, &shutdownEvent ) ;
+
+	std::string shutdownResponse = m_pKernel->SendClientMessage(0, "test-listener", "shutdown") ;
+	CPPUNIT_ASSERT( shutdownResponse == "ok" );	
+
+	CPPUNIT_ASSERT_MESSAGE( "Listener side kernel shutdown failed to fire smlEVENT_BEFORE_SHUTDOWN", shutdownEvent.WaitForEvent(5, 0) );
+
+	cleanUpListener();
 }
