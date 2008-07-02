@@ -188,7 +188,7 @@ typedef struct variable_struct {
   tc_number tc_num;
   union symbol_union *current_binding_value;
   unsigned long gensym_number;
-  list *rete_binding_locations;
+  ::list *rete_binding_locations;
 } variable;
 
 /* Note: I arranged the fields below to try to minimize space */
@@ -242,7 +242,7 @@ typedef struct identifier_struct {
   /* REW: end   08.2097 */
 
   /* --- fields used for Soar I/O stuff --- */
-  list *associated_output_links;
+  ::list *associated_output_links;
   struct wme_struct *input_wmes;
 
   int depth; /* used to track depth of print (bug 988) RPM 4/07 */

@@ -120,7 +120,7 @@ inline rhs_value symbol_to_rhs_value(Symbol * sym)
   return ((rhs_value) (sym)); 
 }
 
-inline rhs_value funcall_list_to_rhs_value(list * fl) 
+inline rhs_value funcall_list_to_rhs_value(::list * fl) 
 {
   return ((rhs_value) (((char *)(fl))+1));
 }
@@ -140,9 +140,9 @@ inline Symbol * rhs_value_to_symbol(rhs_value rv)
   return ((Symbol *)(rv));
 }
 
-inline list * rhs_value_to_funcall_list(rhs_value rv)
+inline ::list * rhs_value_to_funcall_list(rhs_value rv)
 {
-  return ((list *) (((char *)(rv))-1));
+  return ((::list *) (((char *)(rv))-1));
 }
 
 inline unsigned long rhs_value_to_reteloc_field_num(rhs_value rv)
@@ -220,7 +220,7 @@ typedef struct action_struct {
   rhs_value referent;
 } action;
 
-typedef Symbol * ((*rhs_function_routine)(agent* thisAgent, list *args, void* user_data));
+typedef Symbol * ((*rhs_function_routine)(agent* thisAgent, ::list *args, void* user_data));
 
 typedef struct rhs_function_struct {
   struct rhs_function_struct *next;

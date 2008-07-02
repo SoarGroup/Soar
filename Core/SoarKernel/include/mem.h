@@ -453,10 +453,10 @@ typedef struct dl_cons_struct {
 
 typedef dl_cons dl_list;
 
-extern list *destructively_reverse_list (list *c);
-extern Bool member_of_list (void *item, list *the_list);
-extern list *add_if_not_member (agent* thisAgent, void *item, list *old_list);
-extern void free_list (agent* thisAgent, list *the_list);
+extern ::list *destructively_reverse_list (::list *c);
+extern Bool member_of_list (void *item, ::list *the_list);
+extern ::list *add_if_not_member (agent* thisAgent, void *item, ::list *old_list);
+extern void free_list (agent* thisAgent, ::list *the_list);
 
 /* Added a void* parameter to cons_test_fn, because remove_pwatch_test_fn(), 
    one of the callback functions, requires a third parameter that points to a
@@ -473,7 +473,7 @@ typedef Bool (*dl_cons_test_fn)(dl_cons *dc, agent* thisAgent);
    one of the callback functions, requires a third parameter that points to a
    production. In the future, other callback functions of type cons_test_fn may
    need parameters of different types, so a void pointer is best. -AJC (8/7/02) */
-extern list *extract_list_elements (agent* thisAgent, list **header, cons_test_fn f, void* data = 0);
+extern ::list *extract_list_elements (agent* thisAgent, ::list **header, cons_test_fn f, void* data = 0);
 
 extern dl_list *extract_dl_list_elements (agent* thisAgent, dl_list **header, dl_cons_test_fn f);
 
