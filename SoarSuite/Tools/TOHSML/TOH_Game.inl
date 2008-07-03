@@ -6,16 +6,53 @@
 #include "TOH_Disk.inl"
 #include "TOH_Tower.inl"
 
+std::vector<std::vector<int> > TOH_Game::get_tower_stacks() const {
+  std::vector<std::vector<int> > tower_stacks;
+  tower_stacks.reserve(m_towers.size());
+  for(std::vector<TOH_Tower *>::const_iterator it = m_towers.begin(); it != m_towers.end(); ++it)
+    tower_stacks.push_back((*it)->get_stack());
+  return tower_stacks;
+}
+
+void TOH_Game::run() {
+#ifdef TOH_COUNT_STEPS
+  if(is_finished())
+    return;
+#endif
+
+//#ifdef _DEBUG
+//  {
+//    std::string rubbish;
+//    std::getline(std::cin, rubbish);
+//  }
+//#endif
+
+  //const std::string result = m_agent.RunSelfForever();
+  const std::string result = m_agent->ExecuteCommandLine("time run");
+  std::cout << result << std::endl;
+}
+
+void TOH_Game::step() {
+#ifdef TOH_COUNT_STEPS
+  if(is_finished())
+    return;
+#endif
+
+  m_agent->RunSelf(1u);
+}
+
 void TOH_Game::update(sml::Kernel &/*kernel*/) {
   // Go through all the commands we've received (if any) since we last ran Soar.
   const int num_commands = m_agent->GetNumberCommands();
 
+#ifdef TOH_COUNT_STEPS
+  m_command_count += num_commands;
+#endif
+
   for(int i = 0; i < num_commands; ++i) {
     sml::Identifier * const command_ptr = m_agent->GetCommand(i);
 
-    const std::string cmd_name = command_ptr->GetCommandName();
-
-    if(cmd_name == "move-disk") {
+    if(!strcmp("move-disk", command_ptr->GetCommandName())) {
       const char * source_peg_name = command_ptr->GetParameterValue("source-peg");
       const char * destination_peg_name = command_ptr->GetParameterValue("destination-peg");
 
@@ -33,7 +70,7 @@ void TOH_Game::update(sml::Kernel &/*kernel*/) {
     // Then mark the command as completed
     command_ptr->AddStatusComplete();
   }
-    
+
   if(!m_agent->Commit())
     abort();
 

@@ -17,6 +17,8 @@ m_supporting_disk(0),
 m_null_supporting_disk(0)
 {
   m_holds = agent.CreateIdWME(agent.GetInputLink(), "holds");
+  // Redundant information sending to follow
+  // Both versions seem to be required by the current Soar rules
   m_disk_size_1 = agent.CreateIntWME(agent.GetInputLink(), "disk", m_size);
   m_disk_size_2 = agent.CreateIntWME(m_holds, "disk", m_size);
 }
@@ -43,7 +45,7 @@ void TOH_Disk::send_disk_WME_to(const TOH_Tower &receiver) {
     m_null_supporting_disk = m_agent_ptr->CreateStringWME(m_holds, "above", "none");
 }
 
-void TOH_Disk::retract_disk_WME_from(const TOH_Tower &sender) {
+void TOH_Disk::retract_disk_WME() {
   assert(m_peg_name);
   assert(!m_supporting_disk ^ !m_null_supporting_disk);
 

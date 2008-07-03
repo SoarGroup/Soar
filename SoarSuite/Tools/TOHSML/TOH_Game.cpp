@@ -2,19 +2,23 @@
 
 #include <iostream>
 
-static TOH_Game * toh_update_event_handlee = 0;
-static void toh_update_event_handler(sml::smlUpdateEventId /*id*/, void * /*user_data_ptr*/, sml::Kernel* kernel_ptr, sml::smlRunFlags /*run_flags*/) {
-  assert(toh_update_event_handlee);
-  toh_update_event_handlee->update(*kernel_ptr);
+static void toh_update_event_handler(sml::smlUpdateEventId /*id*/, void *user_data_ptr, sml::Kernel* kernel_ptr, sml::smlRunFlags /*run_flags*/) {
+  assert(user_data_ptr);
+  reinterpret_cast<TOH_Game *>(user_data_ptr)->update(*kernel_ptr);
 }
 
-TOH_Game::TOH_Game()
+TOH_Game::TOH_Game(const std::string &agent_productions)
 : m_agent(m_kernel, "TOH")
+#ifdef TOH_COUNT_STEPS
+, m_command_count(0)
+#endif
 {
-  const int &num_towers = 3;
-  const int &num_disks = 11;
+  const int num_towers = 3;
+  const int num_disks = 11;
 
-  m_kernel->RegisterForUpdateEvent(sml::smlEVENT_AFTER_ALL_OUTPUT_PHASES, toh_update_event_handler, 0);
+  m_agent.LoadProductions(agent_productions);
+
+  m_kernel->RegisterForUpdateEvent(sml::smlEVENT_AFTER_ALL_OUTPUT_PHASES, toh_update_event_handler, this);
   m_agent->ExecuteCommandLine("watch 0");
 
   m_towers.reserve(num_towers);
@@ -32,25 +36,4 @@ TOH_Game::TOH_Game()
 TOH_Game::~TOH_Game() {
   for(std::vector<TOH_Tower *>::iterator it = m_towers.begin(); it != m_towers.end(); ++it)
     delete *it;
-}
-
-int TOH_Game::run() {
-//#ifdef _DEBUG
-//  {
-//    std::string rubbish;
-//    std::getline(std::cin, rubbish);
-//  }
-//#endif
-
-  assert(!toh_update_event_handlee);
-  toh_update_event_handlee = this;
-
-  //const std::string result = m_agent.RunSelfForever();
-  const std::string result = m_agent->ExecuteCommandLine("time run");
-  std::cout << result << std::endl;
-
-  assert(toh_update_event_handlee == this);
-  toh_update_event_handlee = 0;
-
-  return 0;
 }
