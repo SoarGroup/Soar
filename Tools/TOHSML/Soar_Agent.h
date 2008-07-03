@@ -9,13 +9,13 @@
   * goes out of scope.
   */
 class Soar_Agent {
+  /// Disabled (No Implementation)
   Soar_Agent(const Soar_Agent &);
   Soar_Agent & operator=(const Soar_Agent &);
 
 public:
   inline Soar_Agent(sml::Kernel &kernel,
-                   const std::string &name = "TOH",
-                   const std::string &productions = "../../Environments/JavaTOH/towers-of-hanoi-SML.soar");
+                    const std::string &name);
   inline ~Soar_Agent();
   
   const sml::Agent & operator*() const          {return *m_agent_ptr;}
@@ -42,7 +42,7 @@ private:
 /// For inlines
 #include "TOH_Game.h"
 
-Soar_Agent::Soar_Agent(sml::Kernel &kernel, const std::string &name, const std::string &productions)
+Soar_Agent::Soar_Agent(sml::Kernel &kernel, const std::string &name)
   // Create an arbitrarily named Soar agent
   : m_agent_ptr(kernel.CreateAgent(name.c_str())),
   m_kernel_ptr(&kernel)
@@ -54,8 +54,6 @@ Soar_Agent::Soar_Agent(sml::Kernel &kernel, const std::string &name, const std::
     std::cerr << kernel.GetLastErrorDescription() << std::endl;
     abort();
   }
-
-  LoadProductions(productions);
 }
 
 Soar_Agent::~Soar_Agent() {

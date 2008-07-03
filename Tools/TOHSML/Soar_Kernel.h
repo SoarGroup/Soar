@@ -9,6 +9,10 @@
   * goes out of scope.
   */
 class Soar_Kernel {
+  /// Disabled (No Implementation)
+  Soar_Kernel(const Soar_Kernel &);
+  Soar_Kernel & operator=(const Soar_Kernel &);
+
 public:
   /// Create a kernel; sml::Kernel::CreateRemoteConnection() can be useful for debugging
   inline Soar_Kernel(sml::Kernel * const &new_kernel = sml::Kernel::CreateKernelInCurrentThread(sml::Kernel::kDefaultLibraryName, true));

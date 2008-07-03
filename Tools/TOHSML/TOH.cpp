@@ -9,7 +9,7 @@
  * taken from SML Quick Start Guide.doc and JavaTOHTutorial.doc
  */
 
-#include "TOH_Game.h"
+#include "TOH_Game.inl"
 
 int main(int /*argc*/, char * /*argv*/ []) {
 #ifdef WIN32
@@ -22,10 +22,7 @@ int main(int /*argc*/, char * /*argv*/ []) {
   for(int i = 0; i < 3; ++i) {
     TOH_Game game;
 
-    const int retval = game.run();
-
-    if(retval)
-      abort();
+    game.run();
   }
 
   return 0;
