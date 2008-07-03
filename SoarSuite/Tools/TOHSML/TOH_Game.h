@@ -23,7 +23,7 @@ class TOH_Game {
   TOH_Game(const TOH_Game &);
   TOH_Game & operator=(const TOH_Game &);
 
-  friend void toh_update_event_handler(sml::smlUpdateEventId, void *user_data_ptr, sml::Kernel* kernel_ptr, sml::smlRunFlags);
+  friend inline void toh_update_event_handler(sml::smlUpdateEventId, void *user_data_ptr, sml::Kernel* kernel_ptr, sml::smlRunFlags);
 
 public:
   TOH_Game(const std::string &agent_productions = "../../Environments/JavaTOH/towers-of-hanoi-SML.soar");
