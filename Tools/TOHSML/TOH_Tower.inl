@@ -21,6 +21,14 @@ TOH_Tower::~TOH_Tower() {
   m_agent_ptr->DestroyWME(m_peg_wme);
 }
 
+std::vector<int> TOH_Tower::get_stack() const {
+  std::vector<int> disk_sizes;
+  disk_sizes.reserve(m_impl.size());
+  for(std::vector<TOH_Disk *>::const_iterator it = m_impl.begin(); it != m_impl.end(); ++it)
+    disk_sizes.push_back((*it)->get_size());
+  return disk_sizes;
+}
+
 void TOH_Tower::push_TOH_Disk(TOH_Disk * const &disk) {
   disk->send_disk_WME_to(*this);
   m_impl.push_back(disk);
@@ -35,7 +43,7 @@ TOH_Disk * TOH_Tower::top_TOH_Disk() const {
 void TOH_Tower::pop_TOH_Disk() {
   assert(!m_impl.empty());
 
-  (*m_impl.rbegin())->retract_disk_WME_from(*this);
+  (*m_impl.rbegin())->retract_disk_WME();
 
   m_impl.pop_back();
 }
