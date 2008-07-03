@@ -6,6 +6,11 @@
 #include "TOH_Disk.inl"
 #include "TOH_Tower.inl"
 
+void toh_update_event_handler(sml::smlUpdateEventId /*id*/, void *user_data_ptr, sml::Kernel* kernel_ptr, sml::smlRunFlags /*run_flags*/) {
+  assert(user_data_ptr);
+  reinterpret_cast<TOH_Game *>(user_data_ptr)->update(*kernel_ptr);
+}
+
 std::vector<std::vector<int> > TOH_Game::get_tower_stacks() const {
   std::vector<std::vector<int> > tower_stacks;
   tower_stacks.reserve(m_towers.size());
