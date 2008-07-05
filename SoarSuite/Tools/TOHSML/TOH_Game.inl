@@ -14,7 +14,11 @@
 #include "TOH_Disk.inl"
 #include "TOH_Tower.inl"
 #include "Stats_Tracker.inl"
-#include <sml_Names.h>
+
+void toh_update_event_handler(sml::smlUpdateEventId /*id*/, void *user_data_ptr, sml::Kernel* kernel_ptr, sml::smlRunFlags /*run_flags*/) {
+  assert(user_data_ptr);
+  reinterpret_cast<TOH_Game *>(user_data_ptr)->update(*kernel_ptr);
+}
 
 TOH_Game::TOH_Game(const std::string &agent_productions)
 : m_agent(m_kernel, "TOH")
@@ -47,11 +51,6 @@ TOH_Game::~TOH_Game() {
     delete *it;
 }
 
-void toh_update_event_handler(sml::smlUpdateEventId /*id*/, void *user_data_ptr, sml::Kernel* kernel_ptr, sml::smlRunFlags /*run_flags*/) {
-  assert(user_data_ptr);
-  reinterpret_cast<TOH_Game *>(user_data_ptr)->update(*kernel_ptr);
-}
-
 std::vector<std::vector<int> > TOH_Game::get_tower_stacks() const {
   std::vector<std::vector<int> > tower_stacks;
   tower_stacks.reserve(m_towers.size());
@@ -64,20 +63,10 @@ void TOH_Game::run_trials(const int &num_trials) {
   std::cout << "Running the C++ Towers of Hanoi SML Demo" << std::endl;
 
   Stats_Tracker stats_tracker;
-
   for(int i = 0; i < num_trials; ++i) {
-    std::cout << std::endl << "***** Trial " << (i+1) << " of " << num_trials << " Begin *****"; /*<< std::endl;*/
-
-    {
-      TOH_Game().run(stats_tracker);
-    }
-    
-		std::cout /*<< std::endl << "***** Trial " << (i+1) << " of " << num_trials*/ << " Complete *****" << std::endl;
+    TOH_Game game;
+    stats_tracker.time_run(game.m_agent, i, num_trials);
   }
-
-  std::cout << std::endl;
-
-  stats_tracker.print_results();
 }
 
 void TOH_Game::run(Stats_Tracker &stats_tracker) {
@@ -87,23 +76,15 @@ void TOH_Game::run(Stats_Tracker &stats_tracker) {
 #endif
 
   //// Version 1
-  //const std::string result = m_agent.RunSelfForever();
-  //std::cout << result << std::endl;
+  const std::string result = m_agent->RunSelfForever();
+  std::cout << result << std::endl;
 
   //// Version 2
   //const std::string result = m_agent->ExecuteCommandLine("time run");
   //std::cout << result << std::endl;
 
-  // Version 3
-  sml::ClientAnalyzedXML response0;
-  sml::ClientAnalyzedXML response1;
-  m_agent->ExecuteCommandLineXML("time run", &response0);
-  m_agent->ExecuteCommandLineXML("stats", &response1);
-  const double real_time = response0.GetArgFloat(sml::sml_Names::kParamRealSeconds, 0.0);
-  const double proc_time = response0.GetArgFloat(sml::sml_Names::kParamProcSeconds, 0.0);
-	const double kernel_time = response1.GetArgFloat(sml::sml_Names::kParamStatsKernelCPUTime, 0.0);
-	const double total_time = response1.GetArgFloat(sml::sml_Names::kParamStatsTotalCPUTime, 0.0);
-  stats_tracker.add_times(real_time, proc_time, kernel_time, total_time);
+  //// Version 3
+  //stats_tracker.time_run(m_agent);
 }
 
 void TOH_Game::step() {

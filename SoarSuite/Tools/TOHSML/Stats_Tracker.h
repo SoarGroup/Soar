@@ -10,6 +10,7 @@
 #ifndef STATS_TRACKER_H
 #define STATS_TRACKER_H
 
+#include "sml_Client.h"
 #include <vector>
 #include <string>
 
@@ -17,16 +18,22 @@ class Stats_Tracker {
 public:
   inline Stats_Tracker();
 
+  inline void time_run(sml::Agent &agent, const int &trial_number, const int &num_trials);
+
+  inline void clear();
+
+private:
+
   inline void add_times(const double &real_time, const double &proc_time,
                         const double &kernel_time, const double &total_time);
 
 	inline void print_results() const;
 
-private:
   struct Time_Stats {
     inline Time_Stats(const std::string &label);
 
     inline void add_time(const double &time);
+    inline void clear();
     inline void print_results() const;
 
     std::string m_label;
