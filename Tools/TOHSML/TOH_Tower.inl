@@ -1,3 +1,11 @@
+/* TOH_Disk.inl
+ *
+ * Author : Mitchell Keith Bloch, Soar Group at U-M
+ * Date   : June/July 2008
+ *
+ * Implementation of TOH_Disk.h
+ */
+
 #ifndef TOH_TOWER_INL
 #define TOH_TOWER_INL
 

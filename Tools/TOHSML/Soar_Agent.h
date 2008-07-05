@@ -1,3 +1,11 @@
+/* Soar_Agent.h
+ *
+ * Author : Mitchell Keith Bloch, Soar Group at U-M
+ * Date   : June/July 2008
+ *
+ * Simple RAII-pattern 'sml::Agent *' wrapper
+ */
+
 #ifndef SOAR_AGENT_H
 #define SOAR_AGENT_H
 

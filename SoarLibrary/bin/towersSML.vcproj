@@ -227,10 +227,6 @@
 				RelativePath="..\..\Tools\TOHSML\TOH.cpp"
 				>
 			</File>
-			<File
-				RelativePath="..\..\Tools\TOHSML\TOH_Game.cpp"
-				>
-			</File>
 		</Filter>
 		<Filter
 			Name="Header Files"
@@ -242,6 +238,14 @@
 			</File>
 			<File
 				RelativePath="..\..\Tools\TOHSML\Soar_Kernel.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\Tools\TOHSML\Stats_Tracker.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\Tools\TOHSML\Stats_Tracker.inl"
 				>
 			</File>
 			<File
