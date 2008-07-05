@@ -1,8 +1,8 @@
 /*
- * CppTOH
+ * C++ Towers of Hanoi
  *
  * Author : Mitchell Keith Bloch, Soar Group at U-M
- * Date   : June 2008
+ * Date   : June/July 2008
  *
  * Hopefully a "good" C++ version of the TOH_Towers of Hanoi example, 
  * taken primarily from the JavaTOH code, but some information
@@ -19,11 +19,7 @@ int main(int /*argc*/, char * /*argv*/ []) {
 #endif
 #endif
 
-  for(int i = 0; i < 3; ++i) {
-    TOH_Game game;
-
-    game.run();
-  }
+  TOH_Game::run_trials(3);
 
   return 0;
 }

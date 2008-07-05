@@ -223,9 +223,6 @@
 			<File
 				RelativePath=".\TOH.cpp">
 			</File>
-			<File
-				RelativePath=".\TOH_Game.cpp">
-			</File>
 		</Filter>
 		<Filter
 			Name="Header Files"
@@ -235,6 +232,12 @@
 			</File>
 			<File
 				RelativePath=".\Soar_Kernel.h"
+			</File>
+			<File
+				RelativePath=".\Stats_Tracker.h"
+			</File>
+			<File
+				RelativePath=".\Stats_Tracker.inl"
 			</File>
 			<File
 				RelativePath=".\TOH_Disk.h"
