@@ -1,3 +1,11 @@
+/* TOH_Game.h
+ *
+ * Author : Mitchell Keith Bloch, Soar Group at U-M
+ * Date   : June/July 2008
+ *
+ * The actual Towers of Hanoi game object that runs the show.
+ */
+
 #ifndef TOH_GAME_H
 #define TOH_GAME_H
 
@@ -7,6 +15,7 @@
 #include <string>
 
 class TOH_Tower;
+class Stats_Tracker;
 
 //#define TOH_COUNT_STEPS
 
@@ -26,15 +35,14 @@ class TOH_Game {
   friend inline void toh_update_event_handler(sml::smlUpdateEventId, void *user_data_ptr, sml::Kernel* kernel_ptr, sml::smlRunFlags);
 
 public:
-  TOH_Game(const std::string &agent_productions = "../../Environments/JavaTOH/towers-of-hanoi-SML.soar");
-  ~TOH_Game();
+  inline TOH_Game(const std::string &agent_productions = "../../Environments/JavaTOH/towers-of-hanoi-SML.soar");
+  inline ~TOH_Game();
 
   // Returns the "disk size" stacks for all towers
   inline std::vector<std::vector<int> > get_tower_stacks() const;
 
-  /// returns false if already finished; otherwise true
-  inline void run();
-  /// returns false if already finished; otherwise true
+  static inline void run_trials(const int &num_trials);
+  inline void run(Stats_Tracker &stats_tracker);
   inline void step();
 #ifdef TOH_COUNT_STEPS
   bool is_finished() const {return m_command_count == 2047; /* 2^11 - 1 (for 11 disks) */}

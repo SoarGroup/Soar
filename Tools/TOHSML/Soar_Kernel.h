@@ -1,3 +1,11 @@
+/* Soar_Kernel.h
+ *
+ * Author : Mitchell Keith Bloch, Soar Group at U-M
+ * Date   : June/July 2008
+ *
+ * Simple RAII-pattern 'sml::Kernel *' wrapper
+ */
+
 #ifndef SOAR_KERNEL_H
 #define SOAR_KERNEL_H
 

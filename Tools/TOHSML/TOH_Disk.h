@@ -1,3 +1,11 @@
+/* TOH_Disk.h
+ *
+ * Author : Mitchell Keith Bloch, Soar Group at U-M
+ * Date   : June/July 2008
+ *
+ * The Disk class for C++ Towers of Hanoi SML.
+ */
+
 #ifndef TOH_DISK_H
 #define TOH_DISK_H
 

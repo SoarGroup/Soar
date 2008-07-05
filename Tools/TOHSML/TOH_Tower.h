@@ -1,3 +1,11 @@
+/* TOH_Tower.h
+ *
+ * Author : Mitchell Keith Bloch, Soar Group at U-M
+ * Date   : June/July 2008
+ *
+ * The Tower class for C++ Towers of Hanoi SML.
+ */
+
 #ifndef TOH_TOWER_H
 #define TOH_TOWER_H
 

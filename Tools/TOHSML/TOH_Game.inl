@@ -1,3 +1,11 @@
+/* TOH_Game.inl
+ *
+ * Author : Mitchell Keith Bloch, Soar Group at U-M
+ * Date   : June/July 2008
+ *
+ * Implementation of TOH_Game.h
+ */
+
 #ifndef TOH_GAME_INL
 #define TOH_GAME_INL
 
@@ -5,6 +13,39 @@
 
 #include "TOH_Disk.inl"
 #include "TOH_Tower.inl"
+#include "Stats_Tracker.inl"
+#include <sml_Names.h>
+
+TOH_Game::TOH_Game(const std::string &agent_productions)
+: m_agent(m_kernel, "TOH")
+#ifdef TOH_COUNT_STEPS
+, m_command_count(0)
+#endif
+{
+  const int num_towers = 3;
+  const int num_disks = 11;
+
+  m_agent.LoadProductions(agent_productions);
+
+  m_kernel->RegisterForUpdateEvent(sml::smlEVENT_AFTER_ALL_OUTPUT_PHASES, toh_update_event_handler, this);
+  m_agent->ExecuteCommandLine("watch 0");
+
+  m_towers.reserve(num_towers);
+  for(char c = 'A', end = char(c + num_towers); c != end; ++c)
+    m_towers.push_back(new TOH_Tower(m_agent, c));
+
+  TOH_Tower &t = *m_towers[0];
+  for(int i = num_disks; i > 0; --i)
+    t.push_TOH_Disk(new TOH_Disk(m_agent, i));
+
+  if(!m_agent->Commit())
+    abort();
+}
+
+TOH_Game::~TOH_Game() {
+  for(std::vector<TOH_Tower *>::iterator it = m_towers.begin(); it != m_towers.end(); ++it)
+    delete *it;
+}
 
 void toh_update_event_handler(sml::smlUpdateEventId /*id*/, void *user_data_ptr, sml::Kernel* kernel_ptr, sml::smlRunFlags /*run_flags*/) {
   assert(user_data_ptr);
@@ -19,22 +60,50 @@ std::vector<std::vector<int> > TOH_Game::get_tower_stacks() const {
   return tower_stacks;
 }
 
-void TOH_Game::run() {
+void TOH_Game::run_trials(const int &num_trials) {
+  std::cout << "Running the C++ Towers of Hanoi SML Demo" << std::endl;
+
+  Stats_Tracker stats_tracker;
+
+  for(int i = 0; i < num_trials; ++i) {
+    std::cout << std::endl << "***** Trial " << (i+1) << " of " << num_trials << " Begin *****"; /*<< std::endl;*/
+
+    {
+      TOH_Game().run(stats_tracker);
+    }
+    
+		std::cout /*<< std::endl << "***** Trial " << (i+1) << " of " << num_trials*/ << " Complete *****" << std::endl;
+  }
+
+  std::cout << std::endl;
+
+  stats_tracker.print_results();
+}
+
+void TOH_Game::run(Stats_Tracker &stats_tracker) {
 #ifdef TOH_COUNT_STEPS
   if(is_finished())
     return;
 #endif
 
-//#ifdef _DEBUG
-//  {
-//    std::string rubbish;
-//    std::getline(std::cin, rubbish);
-//  }
-//#endif
-
+  //// Version 1
   //const std::string result = m_agent.RunSelfForever();
-  const std::string result = m_agent->ExecuteCommandLine("time run");
-  std::cout << result << std::endl;
+  //std::cout << result << std::endl;
+
+  //// Version 2
+  //const std::string result = m_agent->ExecuteCommandLine("time run");
+  //std::cout << result << std::endl;
+
+  // Version 3
+  sml::ClientAnalyzedXML response0;
+  sml::ClientAnalyzedXML response1;
+  m_agent->ExecuteCommandLineXML("time run", &response0);
+  m_agent->ExecuteCommandLineXML("stats", &response1);
+  const double real_time = response0.GetArgFloat(sml::sml_Names::kParamRealSeconds, 0.0);
+  const double proc_time = response0.GetArgFloat(sml::sml_Names::kParamProcSeconds, 0.0);
+	const double kernel_time = response1.GetArgFloat(sml::sml_Names::kParamStatsKernelCPUTime, 0.0);
+	const double total_time = response1.GetArgFloat(sml::sml_Names::kParamStatsTotalCPUTime, 0.0);
+  stats_tracker.add_times(real_time, proc_time, kernel_time, total_time);
 }
 
 void TOH_Game::step() {
