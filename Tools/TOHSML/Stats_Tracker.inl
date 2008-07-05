@@ -11,6 +11,7 @@
 
 #include "Stats_Tracker.h"
 
+#include <sml_Names.h>
 #include <iostream>
 #include <iomanip>
 
@@ -22,6 +23,32 @@ m_total_times("Soar Total")
 {
 }
 
+void Stats_Tracker::time_run(sml::Agent &agent, const int &trial_number, const int &num_trials) {
+  std::cout << std::endl << "***** Trial " << (trial_number + 1) << " of " << num_trials << " Begin *****" << std::endl;
+
+  sml::ClientAnalyzedXML response0;
+  sml::ClientAnalyzedXML response1;
+  agent.ExecuteCommandLineXML("time run", &response0);
+  agent.ExecuteCommandLineXML("stats", &response1);
+  const double real_time = response0.GetArgFloat(sml::sml_Names::kParamRealSeconds, 0.0);
+  const double proc_time = response0.GetArgFloat(sml::sml_Names::kParamProcSeconds, 0.0);
+	const double kernel_time = response1.GetArgFloat(sml::sml_Names::kParamStatsKernelCPUTime, 0.0);
+	const double total_time = response1.GetArgFloat(sml::sml_Names::kParamStatsTotalCPUTime, 0.0);
+  add_times(real_time, proc_time, kernel_time, total_time);
+  
+  std::cout << std::endl << "***** Trial " << (trial_number + 1) << " of " << num_trials << " Complete *****" << std::endl;
+
+  if(trial_number + 1 == num_trials)
+    print_results();
+}
+
+void Stats_Tracker::clear() {
+  m_real_times.clear();
+  m_proc_times.clear();
+  m_kernel_times.clear();
+  m_total_times.clear();
+}
+
 void Stats_Tracker::add_times(const double &real_time, const double &proc_time,
                               const double &kernel_time, const double &total_time) {
   m_real_times.add_time(real_time);
@@ -31,6 +58,7 @@ void Stats_Tracker::add_times(const double &real_time, const double &proc_time,
 }
 
 void Stats_Tracker::print_results() const {
+  std::cout << std::endl;
   std::cout << std::resetiosflags(std::ios::right) << std::setiosflags(std::ios::left);
 	std::cout << std::setw(12) << " ";
 	std::cout << " ";
@@ -46,7 +74,10 @@ void Stats_Tracker::print_results() const {
 
 Stats_Tracker::Time_Stats::Time_Stats(const std::string &label)
 : m_label(label),
-time_count(0u)
+time_count(0u),
+low(-1.0),
+high(-1.0),
+average(-1.0)
 {
 }
 
@@ -68,6 +99,13 @@ void Stats_Tracker::Time_Stats::add_time(const double &time) {
     high = time;
     average = time;
   }
+}
+
+void Stats_Tracker::Time_Stats::clear() {
+  time_count = 0u;
+  low = -1.0;
+  high = -1.0;
+  average = -1.0;
 }
 
 void Stats_Tracker::Time_Stats::print_results() const {
