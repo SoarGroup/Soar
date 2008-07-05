@@ -38,10 +38,11 @@ public:
   inline TOH_Game(const std::string &agent_productions = "../../Environments/JavaTOH/towers-of-hanoi-SML.soar");
   inline ~TOH_Game();
 
+  static inline void run_trials(const int &num_trials);
+
   // Returns the "disk size" stacks for all towers
   inline std::vector<std::vector<int> > get_tower_stacks() const;
 
-  static inline void run_trials(const int &num_trials);
   inline void run(Stats_Tracker &stats_tracker);
   inline void step();
 #ifdef TOH_COUNT_STEPS
