@@ -84,7 +84,7 @@
               </view>
             </pane>
             <pane view="phaseview1" tabAtTop="false" singleView="true" horiz="false">
-              <view Class="modules.PhaseView" Name="phaseview1"></view>
+              <view Class="modules.PhaseView" HourglassCursors="true" Name="phaseview1" BetweenPhases="true"></view>
             </pane>
           </composite>
         </composite>
