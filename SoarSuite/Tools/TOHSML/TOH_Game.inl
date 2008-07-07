@@ -69,7 +69,7 @@ void TOH_Game::run_trials(const int &num_trials) {
   }
 }
 
-void TOH_Game::run(Stats_Tracker &stats_tracker) {
+void TOH_Game::run() {
 #ifdef TOH_COUNT_STEPS
   if(is_finished())
     return;

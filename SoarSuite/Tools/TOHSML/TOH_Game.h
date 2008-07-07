@@ -43,7 +43,7 @@ public:
   // Returns the "disk size" stacks for all towers
   inline std::vector<std::vector<int> > get_tower_stacks() const;
 
-  inline void run(Stats_Tracker &stats_tracker);
+  inline void run();
   inline void step();
 #ifdef TOH_COUNT_STEPS
   bool is_finished() const {return m_command_count == 2047; /* 2^11 - 1 (for 11 disks) */}
