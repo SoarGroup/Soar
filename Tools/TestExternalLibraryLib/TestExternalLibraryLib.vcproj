@@ -121,6 +121,7 @@
 			<Tool
 				Name="VCLinkerTool"
 				OutputFile="..\..\SoarLibrary\bin\$(ProjectName).dll"
+				LinkTimeCodeGeneration="1"
 			/>
 			<Tool
 				Name="VCALinkTool"
