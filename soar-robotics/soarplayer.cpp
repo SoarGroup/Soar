@@ -19,7 +19,7 @@ struct RobotData
   Position2dProxy pp;
 };
 
-void updateHandler( smlUpdateEventId, void* pUserData, Kernel*, smlRunFlags )
+void updateHandler( smlUpdateEventId, void* pUserData, Kernel* pKernel, smlRunFlags )
 {
   RobotData* pRobotData = static_cast< RobotData* >( pUserData );
   PlayerClient&    robot = pRobotData->robot;
@@ -43,10 +43,15 @@ void updateHandler( smlUpdateEventId, void* pUserData, Kernel*, smlRunFlags )
   if(sp[3] < 0.500)
     speed = 0;
   else
-    speed = 1.000;
+    speed = 0.100;
 
   // command the motors
   pp.SetSpeed(speed, turnrate);
+
+  // BUGBUG
+  // The debugger hangs everything unless this line is here... 
+  // That should not happen.
+  pKernel->CheckForIncomingEvents();
 }
 
 int main(int argc, char *argv[])
