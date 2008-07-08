@@ -96,6 +96,18 @@ void TOH_Game::step() {
   m_agent->RunSelf(1u);
 }
 
+#ifdef TOH_COUNT_STEPS
+bool TOH_Game::is_finished() const {
+  int other_towers = 0;
+  int goal_tower = 0;
+  for(std::vector<TOH_Tower *>::const_iterator it = m_towers.begin(); it != m_towers.end(); ++it) {
+    other_towers += goal_tower;
+    goal_tower += (*it)->get_height();
+  }
+  return !other_towers;
+}
+#endif
+
 void TOH_Game::update(sml::Kernel &/*kernel*/) {
   // Go through all the commands we've received (if any) since we last ran Soar.
   const int num_commands = m_agent->GetNumberCommands();

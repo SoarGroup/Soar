@@ -46,7 +46,7 @@ public:
   inline void run();
   inline void step();
 #ifdef TOH_COUNT_STEPS
-  bool is_finished() const {return m_command_count == 2047; /* 2^11 - 1 (for 11 disks) */}
+  inline bool is_finished() const;
 #endif
 
 private:
