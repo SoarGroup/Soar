@@ -295,18 +295,6 @@ public:
 	Identifier* GetOutputLink() ;
 
 	/*************************************************************
-	* @brief Searches for a WME that has the given identifier value.
-	*		 There can be multiple WMEs that share the same identifier value.
-	*		 (You can use the index to find a specific one).
-	*
-	* @param pId			The id to look for (e.g. "O4" -- kernel side or "p3" -- client side)
-	* @param searchInput	If true, searches from input-link down
-	* @param searchOutput	If true, searches from output-link down
-	* @param index			If non-zero, finds the n-th match
-	*************************************************************/
-	Identifier*		FindIdentifier(char const* pID, bool searchInput, bool searchOutput, int index = 0) ;
-
-	/*************************************************************
 	* @brief Builds a new WME that has a string value and schedules
 	*		 it for addition to Soar's input link.
 	*

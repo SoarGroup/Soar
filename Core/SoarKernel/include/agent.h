@@ -310,8 +310,8 @@ typedef struct agent_struct {
   unsigned long       num_productions_of_type[NUM_PRODUCTION_TYPES];
   
   /* --- lists of symbols (PS names) declared chunk-free and chunky --- */
-  list              * chunk_free_problem_spaces;
-  list              * chunky_problem_spaces;   /* AGR MVL1 */
+  ::list            * chunk_free_problem_spaces;
+  ::list            * chunky_problem_spaces;   /* AGR MVL1 */
   
   /* --- default depth for "print" command --- */
   int                 default_wme_depth;      /* AGR 646 */
@@ -337,7 +337,7 @@ typedef struct agent_struct {
   Bool		    max_chunks_reached;
   
   /* --- list of productions whose firings are being traced --- */
-  list              * productions_being_traced; 
+  ::list            * productions_being_traced; 
   
   /* --- various user-settable system parameters --- */
   long                sysparams[HIGHEST_SYSPARAM_NUMBER+1];
@@ -518,12 +518,12 @@ kernel time and total_cpu_time greater than the derived total CPU time. REW */
   unsigned long       justification_count;
   Bool                chunk_free_flag;
   Bool                chunky_flag;     /* AGR MVL1 */
-  list              * grounds;
+  ::list            * grounds;
   tc_number           grounds_tc;
-  list              * instantiations_with_nots;
-  list              * locals;
+  ::list            * instantiations_with_nots;
+  ::list            * locals;
   tc_number           locals_tc;
-  list              * positive_potentials;
+  ::list            * positive_potentials;
   tc_number           potentials_tc;
   chunk_cond_set      negated_set; 
   preference        * results;
@@ -585,8 +585,8 @@ kernel time and total_cpu_time greater than the derived total CPU time. REW */
   
   unsigned long       current_wme_timetag;
   memory_pool         wme_pool;
-  list              * wmes_to_add;
-  list              * wmes_to_remove;
+  ::list            * wmes_to_add;
+  ::list            * wmes_to_remove;
   
   /* ---------------------------------------------------------------------
      Top_goal and bottom_goal point to the top and bottom goal identifiers,
@@ -603,7 +603,7 @@ kernel time and total_cpu_time greater than the derived total CPU time. REW */
   dl_list           * changed_slots;
   dl_list           * context_slots_with_changed_acceptable_preferences;
   memory_pool         slot_pool;
-  list              * slots_for_possible_removal;
+  ::list            * slots_for_possible_removal;
 
   dl_list           * disconnected_ids;
   goal_stack_level    highest_level_anything_could_fall_from;
@@ -613,7 +613,7 @@ kernel time and total_cpu_time greater than the derived total CPU time. REW */
   goal_stack_level    level_at_which_marking_started;
   goal_stack_level    walk_level;
   tc_number           walk_tc_number;
-  list              * promoted_ids;
+  ::list            * promoted_ids;
   int                 link_update_mode;
 
   /* ------------------ Printing utilities stuff --------------------- */
@@ -644,7 +644,7 @@ kernel time and total_cpu_time greater than the derived total CPU time. REW */
   struct hash_table_struct *(stack_tr_ht[3]);
   tc_number           tf_printing_tc;   
   
-  list               * wme_filter_list; /* kjh(CUSP-B2) */
+  ::list            * wme_filter_list; /* kjh(CUSP-B2) */
 
   /* ----------------------- RHS Function Stuff -------------------------- */
   
@@ -705,13 +705,13 @@ kernel time and total_cpu_time greater than the derived total CPU time. REW */
   int	        current_line_index;
  
   /*mvp 5-17-94 */
-  list              * variables_set;
+  ::list            * variables_set;
   
   multi_attribute   * multi_attributes;
   /* char                path[MAXPATHLEN];    AGR 568 */
   
   //soar_callback_array soar_callbacks;
-  list			      * soar_callbacks[NUMBER_OF_CALLBACKS];
+  ::list			      * soar_callbacks[NUMBER_OF_CALLBACKS];
   
   char              * alternate_input_string; 
   char              * alternate_input_suffix; 

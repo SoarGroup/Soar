@@ -14,28 +14,22 @@
  * =======================================================================
  */
 
+#include "reinforcement_learning.h"
+
 #include <stdlib.h>
 #include <math.h>
-
-#include <iostream>
-#include <map>
 #include <vector>
-#include <string>
 
-#include "agent.h"
 #include "production.h"
-#include "gdatastructs.h"
 #include "rhsfun.h"
-#include "recmem.h"
-#include "chunk.h"
+#include "instantiations.h"
 #include "rete.h"
 #include "wmem.h"
 
 #include "print.h"
-
-#include "reinforcement_learning.h"
-#include "misc.h"
 #include "xml.h"
+
+#include "misc.h"
 
 extern Symbol *instantiate_rhs_value (agent* thisAgent, rhs_value rv, goal_stack_level new_id_level, char new_id_letter, struct token_struct *tok, wme *w);
 extern void variablize_symbol (agent* thisAgent, Symbol **sym);
@@ -900,7 +894,7 @@ void rl_revert_template_id( agent *my_agent )
 	// make new action list
 	// small hack on variablization: the artificial tc gets dealt with later, just needs to be explicit non-zero
 	my_agent->variablize_this_chunk = TRUE;
-	my_agent->variablization_tc = -1;
+	my_agent->variablization_tc = (0u - 1);
 	action *new_action = rl_make_simple_action( my_agent, id, attr, value, referent );
 	new_action->preference_type = NUMERIC_INDIFFERENT_PREFERENCE_TYPE;
 

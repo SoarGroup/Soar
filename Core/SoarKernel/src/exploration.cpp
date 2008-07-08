@@ -14,19 +14,19 @@
  * =======================================================================
  */
 
+#include "exploration.h"
+
 #include <stdlib.h>
 #include <math.h>
 #include <float.h>
 
 #include "soar_rand.h"
-#include "agent.h"
-#include "print.h"
-
-#include "exploration.h"
-#include "misc.h"
 #include "xml.h"
+#include "print.h"
 #include "soar_TraceNames.h"
+
 #include "reinforcement_learning.h"
+#include "misc.h"
 
 using namespace soar_TraceNames;
 

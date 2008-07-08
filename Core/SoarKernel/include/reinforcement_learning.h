@@ -18,8 +18,6 @@
 #include <list>
 
 #include "production.h"
-#include "gdatastructs.h"
-#include "chunk.h"
 
 //////////////////////////////////////////////////////////
 // RL Constants
@@ -56,13 +54,6 @@
 // made negative to never conflict with impasse constants
 #define STATE_NO_CHANGE_IMPASSE_TYPE -1
 #define OP_NO_CHANGE_IMPASSE_TYPE -2
-
-
-//
-// These must go below constants
-//
-
-#include "stl_support.h"
 
 //////////////////////////////////////////////////////////
 // RL Types
@@ -107,7 +98,7 @@ typedef std::map<production *, double, std::less<production *>, SoarMemoryAlloca
 
 typedef struct rl_data_struct {
  	rl_et_map *eligibility_traces;
-	list *prev_op_rl_rules;
+	::list *prev_op_rl_rules;
 	double previous_q;
 	double reward;
 	unsigned int reward_age;	// the number of steps since a cycle containing rl rules
@@ -115,6 +106,12 @@ typedef struct rl_data_struct {
 	unsigned int step;			// the number of steps the current operator has been installed at the goal
 	signed int impasse_type;	// if this goal is an impasse, what type
 } rl_data;
+
+//
+// These must go below types
+//
+
+#include "stl_support.h"
 
 //////////////////////////////////////////////////////////
 // Parameter Maintenance

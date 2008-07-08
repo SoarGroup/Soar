@@ -221,52 +221,41 @@
 			Name="Source Files"
 			Filter="cpp;c;cxx;rc;def;r;odl;idl;hpj;bat">
 			<File
-				RelativePath=".\smlTowers.cpp">
-			</File>
-			<File
-				RelativePath=".\smlTowersSoarAgent.cpp">
-			</File>
-			<File
-				RelativePath="TowersOfHanoi.cpp">
-				<FileConfiguration
-					Name="Distribution|Win32">
-					<Tool
-						Name="VCCLCompilerTool"
-						Optimization="2"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions=""/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Debug|Win32">
-					<Tool
-						Name="VCCLCompilerTool"
-						Optimization="0"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions=""
-						BasicRuntimeChecks="3"
-						BrowseInformation="1"/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Release|Win32">
-					<Tool
-						Name="VCCLCompilerTool"
-						Optimization="2"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions=""/>
-				</FileConfiguration>
+				RelativePath=".\TOH.cpp">
 			</File>
 		</Filter>
 		<Filter
 			Name="Header Files"
 			Filter="h;hpp;hxx;hm;inl">
 			<File
-				RelativePath=".\smlTowers.h">
+				RelativePath=".\Soar_Agent.h"
 			</File>
 			<File
-				RelativePath=".\smlTowersSoarAgent.h">
+				RelativePath=".\Soar_Kernel.h"
 			</File>
 			<File
-				RelativePath=".\Towers.h">
+				RelativePath=".\Stats_Tracker.h"
+			</File>
+			<File
+				RelativePath=".\Stats_Tracker.inl"
+			</File>
+			<File
+				RelativePath=".\TOH_Disk.h"
+			</File>
+			<File
+				RelativePath=".\TOH_Disk.inl"
+			</File>
+			<File
+				RelativePath=".\TOH_Game.h"
+			</File>
+			<File
+				RelativePath=".\TOH_Game.inl"
+			</File>
+			<File
+				RelativePath=".\TOH_Tower.h"
+			</File>
+			<File
+				RelativePath=".\TOH_Tower.inl"
 			</File>
 		</Filter>
 		<Filter

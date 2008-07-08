@@ -281,7 +281,7 @@ Symbol *make_new_identifier (agent* thisAgent, char name_letter, goal_stack_leve
   Symbol *sym;
 
   if (isalpha(name_letter)) {
-    if (islower(name_letter)) name_letter = toupper(name_letter);
+    if (islower(name_letter)) name_letter = static_cast<char>(toupper(name_letter));
   } else {
     name_letter = 'I';
   }
@@ -498,7 +498,7 @@ bool reset_id_counters (agent* thisAgent) {
   return true ;
 }
 
-Bool reset_tc_num (agent* thisAgent, void *item, FILE* f) {
+Bool reset_tc_num (agent* /*thisAgent*/, void *item, FILE* /*f*/) {
   Symbol *sym;
 
   sym = static_cast<symbol_union *>(item);
@@ -512,7 +512,7 @@ void reset_id_and_variable_tc_numbers (agent* thisAgent) {
   do_for_all_items_in_hash_table (thisAgent, thisAgent->variable_hash_table, reset_tc_num,0);
 }
 
-Bool reset_gensym_number (agent* thisAgent, void *item, FILE* f) {
+Bool reset_gensym_number (agent* /*thisAgent*/, void *item, FILE* /*f*/) {
   Symbol *sym;
 
   sym = static_cast<symbol_union *>(item);
@@ -524,7 +524,7 @@ void reset_variable_gensym_numbers (agent* thisAgent) {
   do_for_all_items_in_hash_table (thisAgent, thisAgent->variable_hash_table, reset_gensym_number,0);
 }
 
-Bool print_sym (agent* thisAgent, void *item, FILE* f) {
+Bool print_sym (agent* thisAgent, void *item, FILE* /*f*/) {
   print_string (thisAgent, symbol_to_string (thisAgent, static_cast<symbol_union *>(item), TRUE, NIL, 0));
   print_string (thisAgent, "\n");
   return FALSE;

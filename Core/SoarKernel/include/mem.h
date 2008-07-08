@@ -243,9 +243,7 @@ extern void free_growable_string (agent* thisAgent, growable_string gs);
 
 typedef struct memory_pool_struct {
   void *free_list;             /* header of chain of free items */
-  /// #ifdef MEMORY_POOL_STATS /* only one long per pool, so always include */
   long used_count;             /* used for statistics only when #def'd MEMORY_POOL_STATS */
-  /// #endif
   long item_size;               /* bytes per item */
   long items_per_block;        /* number of items in each big block */
   long num_blocks;             /* number of big blocks in use by this pool */
@@ -256,7 +254,6 @@ typedef struct memory_pool_struct {
 
 extern void add_block_to_memory_pool (agent* thisAgent, memory_pool *p);
 extern void init_memory_pool (agent* thisAgent, memory_pool *p, long item_size, char *name);
-extern void print_memory_pool_statistics (agent* thisAgent);
 extern void free_memory_pool (agent*, memory_pool *p); /* RPM 6/09, with help from AMN */
 
 #ifdef MEMORY_POOL_STATS
@@ -456,10 +453,10 @@ typedef struct dl_cons_struct {
 
 typedef dl_cons dl_list;
 
-extern list *destructively_reverse_list (list *c);
-extern Bool member_of_list (void *item, list *the_list);
-extern list *add_if_not_member (agent* thisAgent, void *item, list *old_list);
-extern void free_list (agent* thisAgent, list *the_list);
+extern ::list *destructively_reverse_list (::list *c);
+extern Bool member_of_list (void *item, ::list *the_list);
+extern ::list *add_if_not_member (agent* thisAgent, void *item, ::list *old_list);
+extern void free_list (agent* thisAgent, ::list *the_list);
 
 /* Added a void* parameter to cons_test_fn, because remove_pwatch_test_fn(), 
    one of the callback functions, requires a third parameter that points to a
@@ -476,7 +473,7 @@ typedef Bool (*dl_cons_test_fn)(dl_cons *dc, agent* thisAgent);
    one of the callback functions, requires a third parameter that points to a
    production. In the future, other callback functions of type cons_test_fn may
    need parameters of different types, so a void pointer is best. -AJC (8/7/02) */
-extern list *extract_list_elements (agent* thisAgent, list **header, cons_test_fn f, void* data = 0);
+extern ::list *extract_list_elements (agent* thisAgent, ::list **header, cons_test_fn f, void* data = 0);
 
 extern dl_list *extract_dl_list_elements (agent* thisAgent, dl_list **header, dl_cons_test_fn f);
 

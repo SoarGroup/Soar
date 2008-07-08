@@ -96,7 +96,7 @@ protected:
 	// Keep these protected, so user can only create and destroy WMEs through
 	// the methods exposed in the agent class.  This makes it clear that the
 	// agent owns all objects.
-	WMElement(Agent* pAgent, Identifier* pParent, char const* pID, char const* pAttributeName, long timeTag);
+	WMElement(Agent* pAgent, IdentifierSymbol* pParentSymbol, char const* pID, char const* pAttributeName, long timeTag);
 	virtual ~WMElement(void);
 
 	void	SetJustAdded(bool state) { m_JustAdded = state ; }

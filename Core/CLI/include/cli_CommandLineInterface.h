@@ -55,7 +55,10 @@ namespace cli {
 // Forward declarations
 class CommandLineInterface;
 class GetOpt;
+}
 typedef int ErrorCode;
+namespace cli {
+  using ::ErrorCode;
 
 // Define the CommandFunction which we'll call to process commands
 typedef bool (CommandLineInterface::*CommandFunction)(std::vector<std::string>& argv);
@@ -780,6 +783,8 @@ protected:
 	std::string GenerateErrorString();
 
 	void GetSystemStats(); // for stats
+	void GetMemoryStats(); // for stats
+	void GetReteStats(); // for stats
 
 ////////////////////////////////////////////
 	// New options code

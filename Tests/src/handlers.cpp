@@ -28,6 +28,18 @@ void Handlers::MyEventShutdownHandler(sml::smlSystemEventId, void* pUserData, sm
 	pEvent->TriggerEvent();
 }
 
+void Handlers::MyShutdownTestShutdownHandler(sml::smlSystemEventId, void* pUserData, sml::Kernel* pKernel)
+{
+	CPPUNIT_ASSERT( pUserData );
+	CPPUNIT_ASSERT( pKernel );
+
+	pKernel->Shutdown();
+	delete pKernel;
+
+	soar_thread::Event* pEvent = static_cast< soar_thread::Event* >( pUserData );
+	pEvent->TriggerEvent();
+}
+
 void Handlers::MyDeletionHandler(sml::smlAgentEventId, void* pUserData, sml::Agent*)
 {
 	CPPUNIT_ASSERT( pUserData );
@@ -347,5 +359,21 @@ void Handlers::MyMemoryLeakUpdateHandlerInternal( bool destroyChildren, sml::sml
 void Handlers::MyCallStopOnUpdateEventHandler( sml::smlUpdateEventId, void*, sml::Kernel* pKernel, sml::smlRunFlags )
 {
 	pKernel->StopAllAgents();
+}
+
+void Handlers::MyAgentCreationUpdateEventHandler( sml::smlUpdateEventId, void* pUserData, sml::Kernel* pKernel, sml::smlRunFlags )
+{
+	CPPUNIT_ASSERT( pUserData );
+	sml::Agent** ppAgent = static_cast< sml::Agent** >( pUserData );
+	if ( *ppAgent != 0 )
+	{
+		return;
+	}
+
+	sml::Agent* pAgent = pKernel->CreateAgent( "onthefly" );
+	CPPUNIT_ASSERT_MESSAGE( pKernel->GetLastErrorDescription(), !pKernel->HadError() );
+
+	*ppAgent = pAgent;
+	CPPUNIT_ASSERT( *ppAgent != 0 );
 }
 

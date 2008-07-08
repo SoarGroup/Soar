@@ -43,6 +43,7 @@ public:
 
 protected:
 	StringElement(Agent* pAgent, Identifier* pParent, char const* pID, char const* pAttributeName, char const* pValue, long timeTag) ;
+	StringElement(Agent* pAgent, IdentifierSymbol* pParentSymbol, char const* pID, char const* pAttributeName, char const* pValue, long timeTag) ;
 	virtual ~StringElement(void);
 
 	void SetValue(char const* pValue)

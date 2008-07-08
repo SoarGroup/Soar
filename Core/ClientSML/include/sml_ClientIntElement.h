@@ -45,6 +45,7 @@ public:
 
 protected:
 	IntElement(Agent* pAgent, Identifier* pParent, char const* pID, char const* pAttributeName, int value, long timeTag) ;
+	IntElement(Agent* pAgent, IdentifierSymbol* pParentSymbol, char const* pID, char const* pAttributeName, int value, long timeTag) ;
 	virtual ~IntElement(void);
 
 	void SetValue(int value)

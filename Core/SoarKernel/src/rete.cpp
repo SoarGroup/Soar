@@ -105,6 +105,8 @@
 #include "xml.h"
 #include "soar_TraceNames.h"
 
+#include "reinforcement_learning.h"
+
 /* ----------- basic functionality switches ----------- */
 
 /* Set to FALSE to preserve variable names in chunks (takes extra space) */
@@ -924,8 +926,9 @@ inline void token_added(rete_node * node)
 /* NOT invoked on removals unless DO_ACTIVATION_STATS_ON_REMOVALS is set */
 /*#define right_node_activation(node,add) { \
   null_activation_stats_for_right_activation(node); }*/
-inline void right_node_activation(rete_node * node, Bool add)
+inline void right_node_activation(rete_node * node, Bool /*add*/)
 {
+  (void)node;
   null_activation_stats_for_right_activation(node);
 }
 
@@ -933,8 +936,9 @@ inline void right_node_activation(rete_node * node, Bool add)
 /* NOT invoked on removals unless DO_ACTIVATION_STATS_ON_REMOVALS is set */
 /*#define left_node_activation(node,add) { \
   null_activation_stats_for_left_activation(node); }*/
-inline void left_node_activation(rete_node * node, Bool add)
+inline void left_node_activation(rete_node * node, Bool /*add*/)
 {
+  (void)node;
   null_activation_stats_for_left_activation(node);
 }
 
@@ -4457,7 +4461,7 @@ inline Bool match_left_and_right(agent* thisAgent, rete_test * _rete_test,
 /* Note:  "=" and "<>" tests always return FALSE when one argument is
    an integer and the other is a floating point number */
 
-Bool error_rete_test_routine (agent* thisAgent, rete_test *rt, token *left, wme *w) {
+Bool error_rete_test_routine (agent* thisAgent, rete_test * /*rt*/, token * /*left*/, wme * /*w*/) {
   char msg[BUFFER_MSG_SIZE];
   strncpy (msg, "Internal error: bad rete test type, hit error_rete_test_routine\n", BUFFER_MSG_SIZE);
   msg[BUFFER_MSG_SIZE - 1] = 0; /* ensure null termination */
@@ -4465,15 +4469,15 @@ Bool error_rete_test_routine (agent* thisAgent, rete_test *rt, token *left, wme 
   return FALSE; /* unreachable, but without it, gcc -Wall warns here */
 }
 
-Bool id_is_goal_rete_test_routine (agent* thisAgent, rete_test *rt, token *left, wme *w) {
+Bool id_is_goal_rete_test_routine (agent* /*thisAgent*/, rete_test * /*rt*/, token * /*left*/, wme *w) {
   return w->id->id.isa_goal;
 }
 
-Bool id_is_impasse_rete_test_routine (agent* thisAgent, rete_test *rt, token *left, wme *w) {
+Bool id_is_impasse_rete_test_routine (agent* /*thisAgent*/, rete_test * /*rt*/, token * /*left*/, wme *w) {
   return w->id->id.isa_impasse;
 }
 
-Bool disjunction_rete_test_routine (agent* thisAgent, rete_test *rt, token *left, wme *w) {
+Bool disjunction_rete_test_routine (agent* /*thisAgent*/, rete_test *rt, token * /*left*/, wme *w) {
   Symbol *sym;
   cons *c;
 
@@ -4483,7 +4487,7 @@ Bool disjunction_rete_test_routine (agent* thisAgent, rete_test *rt, token *left
   return FALSE;
 }
 
-Bool constant_equal_rete_test_routine (agent* thisAgent, rete_test *rt, token *left, wme *w) {
+Bool constant_equal_rete_test_routine (agent* /*thisAgent*/, rete_test *rt, token * /*left*/, wme *w) {
   Symbol *s1, *s2;
  
   s1 = field_from_wme (w,rt->right_field_num);
@@ -4491,7 +4495,7 @@ Bool constant_equal_rete_test_routine (agent* thisAgent, rete_test *rt, token *l
   return (s1 == s2);
 }
 
-Bool constant_not_equal_rete_test_routine (agent* thisAgent, rete_test *rt, token *left,
+Bool constant_not_equal_rete_test_routine (agent* /*thisAgent*/, rete_test *rt, token * /*left*/,
                                            wme *w) {
   Symbol *s1, *s2;
  
@@ -4500,50 +4504,50 @@ Bool constant_not_equal_rete_test_routine (agent* thisAgent, rete_test *rt, toke
   return (s1 != s2);
 }
 
-Bool constant_less_rete_test_routine (agent* thisAgent, rete_test *rt, token *left, wme *w) {
+Bool constant_less_rete_test_routine (agent* /*thisAgent*/, rete_test *rt, token * /*left*/, wme *w) {
   Symbol *s1, *s2;
  
   s1 = field_from_wme (w,rt->right_field_num);
   s2 = rt->data.constant_referent;
-  return numeric_comparison_between_symbols (s1, s2, < );
+  return static_cast<Bool>(numeric_comparison_between_symbols (s1, s2, < ));
 }
 
-Bool constant_greater_rete_test_routine (agent* thisAgent, rete_test *rt, token *left, wme *w) {
+Bool constant_greater_rete_test_routine (agent* /*thisAgent*/, rete_test *rt, token * /*left*/, wme *w) {
   Symbol *s1, *s2;
  
   s1 = field_from_wme (w,rt->right_field_num);
   s2 = rt->data.constant_referent;
-  return numeric_comparison_between_symbols (s1, s2, > );
+  return static_cast<Bool>(numeric_comparison_between_symbols (s1, s2, > ));
 }
 
-Bool constant_less_or_equal_rete_test_routine (agent* thisAgent, rete_test *rt, token *left,
+Bool constant_less_or_equal_rete_test_routine (agent* /*thisAgent*/, rete_test *rt, token * /*left*/,
                                                wme *w) {
   Symbol *s1, *s2;
  
   s1 = field_from_wme (w,rt->right_field_num);
   s2 = rt->data.constant_referent;
-  return numeric_comparison_between_symbols (s1, s2, <= );
+  return static_cast<Bool>(numeric_comparison_between_symbols (s1, s2, <= ));
 }
 
-Bool constant_greater_or_equal_rete_test_routine (agent* thisAgent, rete_test *rt, token *left,
+Bool constant_greater_or_equal_rete_test_routine (agent* /*thisAgent*/, rete_test *rt, token * /*left*/,
                                                   wme *w) {
   Symbol *s1, *s2;
  
   s1 = field_from_wme (w,rt->right_field_num);
   s2 = rt->data.constant_referent;
-  return numeric_comparison_between_symbols (s1, s2, >= );
+  return static_cast<Bool>(numeric_comparison_between_symbols (s1, s2, >= ));
 }
 
-Bool constant_same_type_rete_test_routine (agent* thisAgent, rete_test *rt, token *left,
+Bool constant_same_type_rete_test_routine (agent* /*thisAgent*/, rete_test *rt, token * /*left*/,
                                            wme *w) {
   Symbol *s1, *s2;
  
   s1 = field_from_wme (w,rt->right_field_num);
   s2 = rt->data.constant_referent;
-  return (s1->common.symbol_type == s2->common.symbol_type);
+  return static_cast<Bool>(s1->common.symbol_type == s2->common.symbol_type);
 }
 
-Bool variable_equal_rete_test_routine (agent* thisAgent, rete_test *rt, token *left, wme *w) {
+Bool variable_equal_rete_test_routine (agent* /*thisAgent*/, rete_test *rt, token *left, wme *w) {
   Symbol *s1, *s2;
   int i;
  
@@ -4562,7 +4566,7 @@ Bool variable_equal_rete_test_routine (agent* thisAgent, rete_test *rt, token *l
   return (s1 == s2);
 }
 
-Bool variable_not_equal_rete_test_routine (agent* thisAgent, rete_test *rt, token *left,
+Bool variable_not_equal_rete_test_routine (agent* /*thisAgent*/, rete_test *rt, token *left,
                                            wme *w) {
   Symbol *s1, *s2;
   int i;
@@ -4582,7 +4586,7 @@ Bool variable_not_equal_rete_test_routine (agent* thisAgent, rete_test *rt, toke
   return (s1 != s2);
 }
 
-Bool variable_less_rete_test_routine (agent* thisAgent, rete_test *rt, token *left, wme *w) {
+Bool variable_less_rete_test_routine (agent* /*thisAgent*/, rete_test *rt, token *left, wme *w) {
   Symbol *s1, *s2;
   int i;
  
@@ -4598,10 +4602,10 @@ Bool variable_less_rete_test_routine (agent* thisAgent, rete_test *rt, token *le
   }
   s2 = field_from_wme (w, rt->data.variable_referent.field_num);
 
-  return numeric_comparison_between_symbols (s1, s2, < );
+  return static_cast<Bool>(numeric_comparison_between_symbols (s1, s2, < ));
 }
 
-Bool variable_greater_rete_test_routine (agent* thisAgent, rete_test *rt, token *left, wme *w) {
+Bool variable_greater_rete_test_routine (agent* /*thisAgent*/, rete_test *rt, token *left, wme *w) {
   Symbol *s1, *s2;
   int i;
  
@@ -4617,10 +4621,10 @@ Bool variable_greater_rete_test_routine (agent* thisAgent, rete_test *rt, token 
   }
   s2 = field_from_wme (w, rt->data.variable_referent.field_num);
 
-  return numeric_comparison_between_symbols (s1, s2, > );
+  return static_cast<Bool>(numeric_comparison_between_symbols (s1, s2, > ));
 }
 
-Bool variable_less_or_equal_rete_test_routine (agent* thisAgent, rete_test *rt, token *left,
+Bool variable_less_or_equal_rete_test_routine (agent* /*thisAgent*/, rete_test *rt, token *left,
                                                wme *w) {
   Symbol *s1, *s2;
   int i;
@@ -4637,10 +4641,10 @@ Bool variable_less_or_equal_rete_test_routine (agent* thisAgent, rete_test *rt, 
   }
   s2 = field_from_wme (w, rt->data.variable_referent.field_num);
 
-  return numeric_comparison_between_symbols (s1, s2, <= );
+  return static_cast<Bool>(numeric_comparison_between_symbols (s1, s2, <= ));
 }
 
-Bool variable_greater_or_equal_rete_test_routine (agent* thisAgent, rete_test *rt, token *left,
+Bool variable_greater_or_equal_rete_test_routine (agent* /*thisAgent*/, rete_test *rt, token *left,
                                                   wme *w) {
   Symbol *s1, *s2;
   int i;
@@ -4657,10 +4661,10 @@ Bool variable_greater_or_equal_rete_test_routine (agent* thisAgent, rete_test *r
   }
   s2 = field_from_wme (w, rt->data.variable_referent.field_num);
 
-  return numeric_comparison_between_symbols (s1, s2, >= );
+  return static_cast<Bool>(numeric_comparison_between_symbols (s1, s2, >= ));
 }
 
-Bool variable_same_type_rete_test_routine (agent* thisAgent, rete_test *rt, token *left,
+Bool variable_same_type_rete_test_routine (agent* /*thisAgent*/, rete_test *rt, token *left,
                                            wme *w) {
   Symbol *s1, *s2;
   int i;
@@ -4691,7 +4695,7 @@ void positive_node_left_addition (agent* thisAgent, rete_node *node, token *New,
                                   Symbol *hash_referent);
 void unhashed_positive_node_left_addition (agent* thisAgent, rete_node *node, token *New);
 
-void rete_error_left (agent* thisAgent, rete_node *node, token *t, wme *w) {
+void rete_error_left (agent* thisAgent, rete_node *node, token * /*t*/, wme * /*w*/) {
   char msg[BUFFER_MSG_SIZE];
   SNPRINTF (msg, BUFFER_MSG_SIZE, "Rete net error:  tried to left-activate node of type %d\n",
          node->node_type);
@@ -4699,7 +4703,7 @@ void rete_error_left (agent* thisAgent, rete_node *node, token *t, wme *w) {
   abort_with_fatal_error(thisAgent, msg);
 }
 
-void rete_error_right (agent* thisAgent, rete_node *node, wme *w) {
+void rete_error_right (agent* thisAgent, rete_node *node, wme * /*w*/) {
   char msg[BUFFER_MSG_SIZE];
   SNPRINTF (msg, BUFFER_MSG_SIZE, "Rete net error:  tried to right-activate node of type %d\n",
          node->node_type);
@@ -6275,12 +6279,12 @@ FILE *rete_fs_file;  /* File handle we're using -- "fs" for "fast-save" */
    types (big-endian vs. little-endian).
 ---------------------------------------------------------------------- */
 
-void retesave_one_byte (byte b, FILE* f) {
+void retesave_one_byte (byte b, FILE* /*f*/) {
   fputc (b, rete_fs_file); 
 }
 
 byte reteload_one_byte (FILE* f) {
-  return fgetc (f);
+  return static_cast<byte>(fgetc (f));
 }
 
 void retesave_two_bytes (unsigned long w, FILE* f) {
@@ -6334,7 +6338,7 @@ void reteload_string (FILE* f) {
   i = 0;
   do {
     ch = reteload_one_byte(f);
-    reteload_string_buf[i++] = ch;
+    reteload_string_buf[i++] = static_cast<char>(ch);
   } while (ch);
 }
 
@@ -6726,7 +6730,7 @@ rhs_value reteload_rhs_value (agent* thisAgent, FILE* f) {
   case 2:
     field_num = reteload_one_byte(f);
     levels_up = reteload_two_bytes(f);
-    rv = reteloc_to_rhs_value (field_num,levels_up);
+    rv = reteloc_to_rhs_value (field_num, static_cast<rete_node_level>(levels_up));
     break;
   case 3:
     i = reteload_four_bytes(f);
@@ -7175,6 +7179,12 @@ void reteload_node_and_children (agent* thisAgent, rete_node *parent, FILE* f) {
                            prod, next, prev);
     thisAgent->num_productions_of_type[prod->type]++;
 
+	// Soar-RL stuff
+	prod->rl_update_count = 0;
+	prod->rl_rule = false;
+	if ( ( prod->type != JUSTIFICATION_PRODUCTION_TYPE ) && ( prod->type != TEMPLATE_PRODUCTION_TYPE ) )
+	  prod->rl_rule = rl_valid_rule( prod );  
+
     New = make_new_production_node (thisAgent, parent, prod);
     adjust_sharing_factors_from_here_to_top (New, 1);
     if (reteload_one_byte(f)) {
@@ -7356,7 +7366,7 @@ unsigned long count_rete_tokens_for_production (agent* thisAgent,
    Get_node_count_statistic() is the main routine for TclSoar.  
    Print_rete_statistics() is the main routine for non-TclSoar.
 -------------------------------------------------------------------- */
-void init_bnode_type_names(agent* thisAgent)
+void init_bnode_type_names(agent* /*thisAgent*/)
 {
    static bool bnode_initialzied = false;
 
@@ -7426,49 +7436,6 @@ void get_all_node_count_stats (agent* thisAgent) {
   thisAgent->if_no_sharing[UNHASHED_MP_BNODE] = 0;
 }
 
-void print_node_count_statistics (agent* thisAgent) {
-  int i;
-  unsigned long tot;
-
-  get_all_node_count_stats(thisAgent);
-
-  /* --- print table headers --- */
-#ifdef SHARING_FACTORS
-  print (thisAgent, "      Node Type           Actual  If no merging  If no sharing\n");
-  print (thisAgent, "---------------------  ---------  -------------  -------------\n");
-#else
-  print (thisAgent, "      Node Type           Actual  If no merging\n");
-  print (thisAgent, "---------------------  ---------  -------------\n");
-#endif
-
-  /* --- print main table --- */
-  for (i=0; i<256; i++) if (*bnode_type_names[i]) {
-    print (thisAgent, "%21s  %9lu  %13lu", bnode_type_names[i],
-           thisAgent->actual[i], thisAgent->if_no_merging[i]);
-#ifdef SHARING_FACTORS
-    print (thisAgent, "  %13lu", thisAgent->if_no_sharing[i]);
-#endif
-    print (thisAgent, "\n");
-  }
-
-  /* --- print table end (totals) --- */
-#ifdef SHARING_FACTORS
-  print (thisAgent, "---------------------  ---------  -------------  -------------\n");
-#else
-  print (thisAgent, "---------------------  ---------  -------------\n");
-#endif
-  print (thisAgent, "                Total");
-  for (tot=0, i=0; i<256; i++) tot+=thisAgent->actual[i];
-  print (thisAgent, "  %9lu", tot);
-  for (tot=0, i=0; i<256; i++) tot+=thisAgent->if_no_merging[i];
-  print (thisAgent, "  %13lu", tot);
-#ifdef SHARING_FACTORS
-  for (tot=0, i=0; i<256; i++) tot+=thisAgent->if_no_sharing[i];
-  print (thisAgent, "  %13lu", tot);
-#endif
-  print (thisAgent, "\n");
-}
-
 /* Returns 0 if result invalid, 1 if result valid */
 int get_node_count_statistic (agent* thisAgent, 
                                   char * node_type_name, 
@@ -7535,18 +7502,6 @@ int get_node_count_statistic (agent* thisAgent,
   return 1;
 }
 
-void print_rete_statistics (agent* thisAgent) {
-
-#ifdef TOKEN_SHARING_STATS
-  print ("Token additions: %lu   If no sharing: %lu\n",
-         thisAgent->token_additions,
-         thisAgent->token_additions_without_sharing);
-#endif
-
-  print_node_count_statistics(thisAgent);
-  print_null_activation_stats();
-}
-
 /* ----------------------------------------------------------------------
 
                 Partial Match Information:  Utilities
@@ -7569,7 +7524,7 @@ void print_rete_statistics (agent* thisAgent) {
    WMEs, or no printout at all.
 ---------------------------------------------------------------------- */
 
-void dummy_matches_node_left_addition (agent* thisAgent, rete_node *node, token *tok, wme *w) 
+void dummy_matches_node_left_addition (agent* thisAgent, rete_node * /*node*/, token *tok, wme *w) 
 {
   token *New;
   

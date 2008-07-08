@@ -60,7 +60,7 @@ public:
   agent*		getAgent() const { return m_agent; }
   memory_pool*	getPool() const { return m_pool; }
 
-  pointer   allocate(size_type n, const void * = 0) {
+  pointer   allocate(size_type /*n*/, const void * = 0) {
 			  T* t;
 			  allocate_with_pool(m_agent, m_pool, &t);
               return t;
