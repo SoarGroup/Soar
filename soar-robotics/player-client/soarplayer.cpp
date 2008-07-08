@@ -1,82 +1,28 @@
-#include <iostream>
-#include <libplayerc++/playerc++.h>
-#include <sml_Client.h>
-#include <assert.h>
+#include "Console.inl"
+#include "SoarPlayerClient.inl"
 
-using namespace PlayerCc;
-using namespace sml;
-
-struct RobotData
+void updateHandler( sml::smlUpdateEventId, void* pUserData, sml::Kernel*, sml::smlRunFlags )
 {
-  RobotData()
-  : robot( "localhost" )
-  , sp( &robot,0 )
-  , pp( &robot,0 ) 
-  {}
-
-  PlayerClient    robot;
-  SonarProxy      sp;
-  Position2dProxy pp;
-};
-
-void updateHandler( smlUpdateEventId, void* pUserData, Kernel* pKernel, smlRunFlags )
-{
-  RobotData* pRobotData = static_cast< RobotData* >( pUserData );
-  PlayerClient&    robot = pRobotData->robot;
-  SonarProxy&      sp = pRobotData->sp;
-  Position2dProxy& pp = pRobotData->pp;
-
-  double turnrate, speed;
-
-  // read from the proxies
-  robot.Read();
-
-  // print out sonars for fun
-  std::cout << sp << std::endl;
-
-  // do simple collision avoidance
-  if((sp[0] + sp[1]) < (sp[6] + sp[7]))
-    turnrate = dtor(-20); // turn 20 degrees per second
-  else
-    turnrate = dtor(20);
-
-  if(sp[3] < 0.500)
-    speed = 0;
-  else
-    speed = 0.100;
-
-  // command the motors
-  pp.SetSpeed(speed, turnrate);
-
-  // BUGBUG
-  // The debugger hangs everything unless this line is here... 
-  // That should not happen.
-  pKernel->CheckForIncomingEvents();
+    SoarPlayerClient* pPlayerClient = static_cast< SoarPlayerClient* >( pUserData );
+    pPlayerClient->update();
 }
 
-int main(int argc, char *argv[])
+int main( int argc, char** argv )
 {
-  RobotData robotData;
+    sml::Kernel* kernel = sml::Kernel::CreateKernelInNewThread();
+    sml::Agent* agent = kernel->CreateAgent( "player" );
+    agent->ExecuteCommandLine( "waitsnc --enable" );
 
-  Kernel* pKernel = Kernel::CreateKernelInNewThread();
-  assert( pKernel );
-  if ( pKernel->HadError() )
-  {
-    std::cerr << pKernel->GetLastErrorDescription() << std::endl;
-    return 1;
-  }
+    SoarPlayerClient client( kernel, agent );
+    kernel->RegisterForUpdateEvent( sml::smlEVENT_AFTER_ALL_OUTPUT_PHASES, updateHandler, &client );
+    
+    Console console( client );
 
-  Agent* pAgent = pKernel->CreateAgent( "robotics" );
-  if ( !pAgent )
-  {
-    std::cerr << pKernel->GetLastErrorDescription() << std::endl;
-    return 1;
-  }
-
-  pAgent->ExecuteCommandLine( "waitsnc --enable" );
-  pKernel->RegisterForUpdateEvent( smlEVENT_AFTER_ALL_OUTPUT_PHASES, updateHandler, &robotData );
-
-  pKernel->RunAllAgentsForever();
-
-  return 0;
+    int result = console.run();
+    
+    kernel->Shutdown();
+    delete kernel;
+    
+    return result;
 }
+
