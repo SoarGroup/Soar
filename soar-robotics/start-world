@@ -1,0 +1,3 @@
+#!/bin/bash
+
+player /home/voigtjr/sandbox/share/stage/worlds/simple.cfg
