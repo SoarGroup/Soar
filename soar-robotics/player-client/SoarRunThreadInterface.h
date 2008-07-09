@@ -13,6 +13,7 @@ public:
     virtual std::string command_step() = 0;
     virtual std::string command_debug() = 0;
     virtual std::string command_reset() = 0;
+    virtual std::string command_reload() = 0;
 };
 
 #endif // SOAR_RUN_THREAD_INTERFACE_H

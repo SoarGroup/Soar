@@ -3,6 +3,9 @@
 
 #include "SoarPlayerClient.h"
 
+#include <sstream>
+#include <unistd.h>
+
 bool SoarPlayerClient::update_and_check_running()
 {
     if ( m_run_thread )
@@ -59,7 +62,22 @@ std::string SoarPlayerClient::command_step()
 
 std::string SoarPlayerClient::command_debug()
 {
-    return std::string( "not implemented yet" );
+    pid_t pid = fork();
+
+    if ( pid < 0 )
+    {
+        return std::string( "fork error" );
+    }
+    
+    if ( pid == 0 )
+    {
+        // child
+        execlp( "java", "java", "-jar", "SoarJavaDebugger.jar", "-remote", static_cast< char* >( 0 ) );
+        std::cerr << "execlp failed" << std::endl;
+        exit(1);
+    }
+    
+    return std::string();
 }
 
 std::string SoarPlayerClient::command_reset()
@@ -72,6 +90,28 @@ std::string SoarPlayerClient::command_reset()
     m_agent->InitSoar();
 
     return std::string();
+}
+
+std::string SoarPlayerClient::command_reload()
+{
+    if ( update_and_check_running() )
+    {
+        return std::string( "running, stop first" );
+    }
+
+    if ( !reload_productions() )
+    {
+        std::stringstream error;
+        error << "error loading productions: " << m_agent->GetLastErrorDescription();
+        return error.str();
+    }
+
+    return std::string();
+}
+
+bool SoarPlayerClient::reload_productions()
+{
+    return m_agent->LoadProductions( m_productions.c_str() );
 }
 
 void SoarPlayerClient::update()

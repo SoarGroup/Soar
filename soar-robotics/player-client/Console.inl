@@ -5,6 +5,7 @@
 
 #include <iostream>
 #include <string>
+#include <sstream>
 
 int Console::run()
 {
@@ -35,9 +36,21 @@ int Console::run()
             // init-soar
             result = m_client.command_reset();
         }
+        else if ( command == "reload" )
+        {
+            // reload productions
+            result = m_client.command_reload();
+        }
         else if ( command == "quit" )
         {
             break;
+        }
+        else 
+        {
+            std::stringstream help;
+            help << "Available commands are:\n";
+            help << "\tdebug quit reload reset run step stop";
+            result = help.str();
         }
 
         if ( result.length() )
