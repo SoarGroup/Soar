@@ -4,6 +4,7 @@
 #include "sml_Client.h"
 #include "RunThread.h"
 #include "SoarRunThreadInterface.h"
+#include "InputLinkManager.h"
 
 #include <libplayerc++/playerc++.h>
 #include <string>
@@ -22,6 +23,7 @@ public:
     virtual std::string command_reload();
     
     void update();
+    void agent_event( sml::smlAgentEventId id );
     
 private:
     bool update_and_check_running();
@@ -30,6 +32,8 @@ private:
     std::string m_productions;
     sml::Kernel* m_kernel;
     sml::Agent* m_agent;
+    
+    InputLinkManager* m_input_link;
     
     PlayerCc::PlayerClient    m_robot;
     PlayerCc::SonarProxy      m_sp;

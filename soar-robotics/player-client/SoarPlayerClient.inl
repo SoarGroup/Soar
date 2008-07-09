@@ -6,6 +6,8 @@
 #include <sstream>
 #include <unistd.h>
 
+using namespace sml;
+
 bool SoarPlayerClient::update_and_check_running()
 {
     if ( m_run_thread )
@@ -88,7 +90,6 @@ std::string SoarPlayerClient::command_reset()
     }
     
     m_agent->InitSoar();
-
     return std::string();
 }
 
@@ -112,6 +113,31 @@ std::string SoarPlayerClient::command_reload()
 bool SoarPlayerClient::reload_productions()
 {
     return m_agent->LoadProductions( m_productions.c_str() );
+}
+
+void SoarPlayerClient::agent_event( smlAgentEventId id )
+{
+	switch ( id )
+	{
+	case smlEVENT_BEFORE_AGENT_REINITIALIZED:
+		{
+			if ( m_input_link )
+			{
+				delete m_input_link;
+				m_input_link = 0;
+			}
+		}
+		break;
+	
+	case smlEVENT_AFTER_AGENT_REINITIALIZED:
+		{
+			m_input_link = new InputLinkManager( *m_agent );
+		}
+		break;
+		
+	default:
+		break;
+	}
 }
 
 void SoarPlayerClient::update()
