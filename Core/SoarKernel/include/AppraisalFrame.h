@@ -6,7 +6,11 @@
 #include <math.h>
 #include <boost/lexical_cast.hpp>
 
-using namespace std;
+#include "symtab.h"
+
+using std::string;
+using std::vector;
+using std::ostringstream;
 using boost::lexical_cast;
 
 const double fInvalidValue = -123.0;
@@ -24,7 +28,7 @@ const double fFullHigh = 0.5;
 const double fFullVeryHigh = 1.0;
 
 struct AppraisalFrame {
-	string id;
+	Symbol* id_sym;
 	double suddenness;
 	double unpredictability;
 	double intrinsic_pleasantness;
@@ -41,25 +45,10 @@ struct AppraisalFrame {
 	double control;
 	double power;
 
-	AppraisalFrame() { Reset("None", fInvalidValue); }
+	AppraisalFrame() { Reset(0, fInvalidValue); }
 
-	string SetAppraisalValues(vector<string> appraisals) {
-
-		for(unsigned int i=0; i<appraisals.size(); i+=2) {
-			if((i+1) == appraisals.size()) { return "+++Wrong number of args; Expected an even number"; }
-
-			string name = appraisals[i];
-			string value = appraisals[i+1];
-
-			string result = SetAppraisalValue(name, value);
-			if(result[0] == '+') return result; // errors begin with +++
-		}
-
-		return "success";
-	}
-
-	void Reset(string newid, double op) {
-		id = newid;
+	void Reset(Symbol* newid, double op) {
+		id_sym = newid;
 		suddenness = fInvalidValue;
 		unpredictability = fInvalidValue;
 		intrinsic_pleasantness = fInvalidValue;
@@ -77,51 +66,61 @@ struct AppraisalFrame {
 		power = fInvalidValue;
 	}
 
-	string SetAppraisalValue(string appraisal, string value) {
+	string SetAppraisalValue(string appraisal, Symbol* value) {
 		string result = "";
-		double numericValue = atof(value.c_str());
+		double numericValue = fInvalidValue;
+		string strValue = "";
 		bool categorical = false;
 
-		if(appraisal == "suddenness") { suddenness = numericValue; }
-		else if(appraisal == "unpredictability") { unpredictability = numericValue; }
-		else if(appraisal == "intrinsic-pleasantness") { intrinsic_pleasantness = numericValue; }
-		else if(appraisal == "goal-relevance") { goal_relevance = numericValue; }
-		else if(appraisal == "outcome-probability") { outcome_probability = numericValue; }
-		else if(appraisal == "discrepancy") { discrepancy = numericValue; }
-		else if(appraisal == "conduciveness") { conduciveness = numericValue; }
-		else if(appraisal == "control") { control = numericValue; }
-		else if(appraisal == "power") { power = numericValue; }
-		else if(appraisal == "causal-agent") {
+		switch(value->fc.common_symbol_info.symbol_type)
+		{
+		case FLOAT_CONSTANT_SYMBOL_TYPE:
+			numericValue = value->fc.value;
+			break;
+		case INT_CONSTANT_SYMBOL_TYPE:
+			numericValue = value->ic.value;
+			break;
+		case SYM_CONSTANT_SYMBOL_TYPE:
 			categorical = true;
-			if(value == "nature") { causal_agent_nature = 1.0; }
-			else if(value == "other") { causal_agent_other = 1.0; }
-			else if(value == "self") { causal_agent_self = 1.0; }
-			else {
-				result = "+++Invalid value '" + value + "' for appraisal 'causal-agent'";
-				return result;
-			}
-		}
-		else if(appraisal == "causal-motive") {
-			categorical = true;
-			if(value == "intentional") { causal_motive_intentional = 1.0; }
-			else if(value == "chance") { causal_motive_chance = 1.0; }
-			else if(value == "negligence") { causal_motive_negligence = 1.0; }
-			else {
-				result = "+++Invalid value '" + value + "' for appraisal 'causal-motive'";
-				return result;
-			}
-		} else {
-			result = "+++Invalid appraisal '" + appraisal + "'";
-			return result;
+			strValue = value->sc.name;
+		default:
+			assert(false && "Bad symbol type");
 		}
 
-		// BADBAD: can no longer detect invalid numeric values (atof just returns 0)
-		// This is not a good check -- sometimes we want to reset a value to fInvalidValue (maybe that should be a different method)
-		//if(!categorical && numericValue == fInvalidValue) {
-		//	result = "+++Invalid value '" + value + "' for appraisal '" + appraisal + "'";
-		//} else {
-			result = "Registered " + id + ": " + appraisal + " = " + value;
-		//}
+		// BADBAD: all of the constants below should be Symbols in common symbols
+		if(!categorical)
+		{
+			if(appraisal == "suddenness") { suddenness = numericValue; }
+			else if(appraisal == "unpredictability") { unpredictability = numericValue; }
+			else if(appraisal == "intrinsic-pleasantness") { intrinsic_pleasantness = numericValue; }
+			else if(appraisal == "goal-relevance") { goal_relevance = numericValue; }
+			else if(appraisal == "outcome-probability") { outcome_probability = numericValue; }
+			else if(appraisal == "discrepancy") { discrepancy = numericValue; }
+			else if(appraisal == "conduciveness") { conduciveness = numericValue; }
+			else if(appraisal == "control") { control = numericValue; }
+			else if(appraisal == "power") { power = numericValue; }
+			else { result = "+++Invalid appraisal '" + appraisal + "'"; }
+		} else {
+			if(appraisal == "causal-agent") {
+				if(strValue == "nature") { causal_agent_nature = 1.0; }
+				else if(strValue == "other") { causal_agent_other = 1.0; }
+				else if(strValue == "self") { causal_agent_self = 1.0; }
+				else { result = "+++Invalid value '" + strValue + "' for appraisal 'causal-agent'"; }
+			}
+			else if(appraisal == "causal-motive") {
+				if(strValue == "intentional") { causal_motive_intentional = 1.0; }
+				else if(strValue == "chance") { causal_motive_chance = 1.0; }
+				else if(strValue == "negligence") { causal_motive_negligence = 1.0; }
+				else { result = "+++Invalid value '" + strValue + "' for appraisal 'causal-motive'"; }
+			}
+			else { result = "+++Invalid appraisal '" + appraisal + "'"; }
+		}
+
+		ostringstream oss;
+		oss << "Registered " << id_sym->id.name_letter << id_sym->id.name_number << ": " << appraisal << " = ";
+		if(categorical) oss << strValue;
+		else oss << numericValue;
+		result = oss.str();
 
 		return result;
 	}

@@ -21,8 +21,6 @@
 #include "Feeling.h"
 #include "AppraisalStatus.h"
 
-using namespace std;
-
 AppraisalStatus appraisalStatus;
 
 AppraisalFrame currentEmotion;

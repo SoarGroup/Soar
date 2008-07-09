@@ -56,6 +56,7 @@
 #include "xml.h"
 #include "soar_TraceNames.h"
 #include "utilities.h"
+#include "emotion.h"
 
 #include <ctype.h>
 
@@ -349,6 +350,8 @@ void do_input_cycle (agent* thisAgent) {
     soar_invoke_callbacks(thisAgent, INPUT_PHASE_CALLBACK, 
 			 (soar_call_data) NORMAL_INPUT_CYCLE);
   }
+
+  get_appraisals(thisAgent);
 
   /* --- do any WM resulting changes --- */
   do_buffered_wm_and_ownership_changes(thisAgent);

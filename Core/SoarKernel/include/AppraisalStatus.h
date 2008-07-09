@@ -3,8 +3,6 @@
 
 #include <string>
 
-using namespace std;
-
 struct AppraisalStatus {
 	bool suddenness;
 	bool unpredictability;

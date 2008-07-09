@@ -5,8 +5,6 @@
 #include <math.h>
 #include "AppraisalFrame.h"
 
-using namespace std;
-
 struct Mood {
 	AppraisalFrame af;
 

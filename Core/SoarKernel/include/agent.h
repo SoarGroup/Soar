@@ -34,6 +34,7 @@
 
 #include "exploration.h"
 #include "reinforcement_learning.h"
+#include "AppraisalFrame.h"
 
 #include <string>
 #include <map>
@@ -776,6 +777,9 @@ kernel time and total_cpu_time greater than the derived total CPU time. REW */
   xml_handle xml_destination;		// The current destination for all XML generation, essentially either == to xml_trace or xml_commands
   xml_handle xml_trace;				// During a run, xml_destination will be set to this pointer.
   xml_handle xml_commands;			// During commands, xml_destination will be set to this pointer.
+
+  // emotion stuff
+  AppraisalFrame currentEmotion;
 
 } agent;
 /*************** end of agent struct *****/
