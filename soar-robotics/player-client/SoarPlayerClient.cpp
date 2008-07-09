@@ -1,6 +1,9 @@
 #include "SoarPlayerClient.h"
 
-#include <assert.h>
+#include "InputLinkManager.h"
+#include "OutputLinkManager.h"
+
+#include <cassert>
 
 using namespace PlayerCc;
 using namespace sml;
@@ -30,6 +33,7 @@ SoarPlayerClient::SoarPlayerClient( const std::string& productions )
     assert( m_agent );
     
     m_input_link = new InputLinkManager( *m_agent );
+    m_output_link = new OutputLinkManager( *m_agent );
     
     if ( reload_productions() )
     {
@@ -54,6 +58,11 @@ SoarPlayerClient::~SoarPlayerClient()
 	if ( m_input_link )
 	{
 		delete m_input_link;
+	}
+	
+	if ( m_output_link )
+	{
+		delete m_output_link;
 	}
 	
     if ( m_kernel )

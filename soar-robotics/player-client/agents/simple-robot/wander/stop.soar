@@ -1,0 +1,9 @@
+sp {wander*propose*stop
+   (state <s> ^name wander
+              ^next-action-time <nat>
+              ^io.input-link.time >= <nat>)
+-->
+   (<s> ^operator <o> + =)
+   (<o> ^name stop
+        ^actions.stop <dummy>)
+}

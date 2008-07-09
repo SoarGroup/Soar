@@ -1,1 +1,1 @@
-echo "test.soar loaded"
+waitsnc -e

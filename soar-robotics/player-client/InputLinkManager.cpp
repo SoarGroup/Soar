@@ -1,8 +1,16 @@
 #include "InputLinkManager.h"
 
-#include <assert.h>
+#include <iostream>
+#include <cassert>
+#include <cmath>
+#include <sys/time.h>
 
 using namespace sml;
+
+const double PI = 3.14159265;
+// FIXME dead zones should be configurable
+const double ROTATION_DEAD_ZONE_DEGREES = 0.5;
+const double MOVEMENT_DEAD_ZONE = 0.001;
 
 InputLinkManager::InputLinkManager( Agent& agent )
 : m_agent( agent )
@@ -41,6 +49,8 @@ InputLinkManager::InputLinkManager( Agent& agent )
 			m_motion_rotation = m_agent.CreateStringWME( abstract, "rotation", "stop" );
 		}
 	}
+	
+	commit();
 }
 
 InputLinkManager::~InputLinkManager()
@@ -56,5 +66,74 @@ InputLinkManager::~InputLinkManager()
 		m_agent.DestroyWME( m_self );
 		m_self = 0;
 	}
+	
+	commit();
+}
+
+void InputLinkManager::time_update( const timeval& time )
+{
+	double seconds = time.tv_sec;
+	//TODO: seconds += time.tv_usec / 1000000;
+	
+	m_agent.Update( m_time, seconds );	
+	//std::cout << "t(" << seconds << ")\n";
+}
+
+void InputLinkManager::position_update( double x, double y, double yaw )
+{
+	double yaw_degrees = yaw * 180 / PI;
+	double i = 1;
+	double j = 0;
+
+	m_agent.Update( m_x, x );
+	m_agent.Update( m_y, y );
+	m_agent.Update( m_i, i );
+	m_agent.Update( m_j, j );
+	m_agent.Update( m_yaw, yaw_degrees );
+
+	//std::cout << "p(" << x << "," << y << "," << i << "," << j << "," << yaw_degrees << ")\n";
+}
+
+void InputLinkManager::motion_update( double motion_x, double motion_y, double motion_yaw )
+{
+	double motion_yaw_degrees = motion_yaw * 180 / PI;
+
+	double speed = pow( motion_x, 2 );
+	speed += pow( motion_y, 2 );
+	speed = sqrt( speed );
+
+	const char* movement = 0;
+	if ( speed < MOVEMENT_DEAD_ZONE )
+	{
+		movement = "stop";
+	} 
+	else 
+	{
+		movement = ( motion_x > 0 ) ? "forward" : "backward";
+	}
+	
+	const char* rotation = 0;
+	if ( fabs( motion_yaw_degrees ) < ROTATION_DEAD_ZONE_DEGREES )
+	{
+		rotation = "stop";
+	} 
+	else 
+	{
+		rotation = ( motion_yaw_degrees > 0 ) ? "left" : "right";
+	}
+	
+	m_agent.Update( m_motion_x, motion_x );
+	m_agent.Update( m_motion_y, motion_y );
+	m_agent.Update( m_motion_speed, speed );
+	m_agent.Update( m_motion_yaw, motion_yaw_degrees );
+	m_agent.Update( m_motion_movement, movement );
+	m_agent.Update( m_motion_rotation, rotation );
+	
+	//std::cout << "m(" << motion_x << "," << motion_y << "," << speed << "," << motion_yaw_degrees << "," << movement << "," << rotation << ")\n";
+}
+
+void InputLinkManager::commit()
+{
+	m_agent.Commit();
 }
 

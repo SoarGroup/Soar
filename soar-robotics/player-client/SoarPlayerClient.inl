@@ -3,8 +3,12 @@
 
 #include "SoarPlayerClient.h"
 
+#include "InputLinkManager.h"
+#include "OutputLinkManager.h"
+
 #include <sstream>
 #include <unistd.h>
+#include <sys/time.h>
 
 using namespace sml;
 
@@ -126,12 +130,18 @@ void SoarPlayerClient::agent_event( smlAgentEventId id )
 				delete m_input_link;
 				m_input_link = 0;
 			}
+			if ( m_output_link )
+			{
+				delete m_output_link;
+				m_output_link = 0;
+			}
 		}
 		break;
 	
 	case smlEVENT_AFTER_AGENT_REINITIALIZED:
 		{
 			m_input_link = new InputLinkManager( *m_agent );
+			m_output_link = new OutputLinkManager( *m_agent );
 		}
 		break;
 		
@@ -142,13 +152,82 @@ void SoarPlayerClient::agent_event( smlAgentEventId id )
 
 void SoarPlayerClient::update()
 {
-    double turnrate, speed;
-
     // read from the proxies
     m_robot.Read();
+    
+   	double x = m_pp.GetXPos();
+   	double y = m_pp.GetYPos();
+   	double yaw = m_pp.GetYaw();
+   	double motion_x = m_pp.GetXSpeed();
+   	double motion_y = m_pp.GetYSpeed();
+   	double motion_yaw = m_pp.GetYawSpeed();
+
+	// update input link
+	timeval time;
+	gettimeofday( &time, 0 );
+	m_input_link->time_update( time );
+	m_input_link->position_update( x, y, yaw );
+	m_input_link->motion_update( motion_x, motion_y, motion_yaw );
+	m_input_link->commit();
+	
+	// read output link
+	m_output_link->read();
+	bool command_received = false;
+	for ( Command* command = m_output_link->get_next_command(); command != 0; command = m_output_link->get_next_command() )
+	{
+		command_received = true;
+		switch ( command->get_type() )
+		{
+		case Command::MOVE:
+			switch ( command->get_move_direction() )
+			{
+			case Command::MOVE_STOP:
+				motion_x = 0;
+				break;
+			case Command::MOVE_FORWARD:
+				motion_x = command->get_throttle() * 0.100;
+				break;
+			case Command::MOVE_BACKWARD:
+				motion_x = command->get_throttle() * -0.100;
+				break;
+			}
+			break;
+			
+		case Command::ROTATE:
+			switch ( command->get_rotate_direction() )
+			{
+			case Command::ROTATE_STOP:
+				motion_yaw = 0;
+				break;
+			case Command::ROTATE_RIGHT:
+				motion_yaw = command->get_throttle() * -20;
+				break;
+			case Command::ROTATE_LEFT:
+				motion_yaw = command->get_throttle() * 20;
+				break;
+			}
+			break;
+			
+		case Command::STOP:
+			motion_x = 0;
+			motion_yaw = 0;
+			break;
+		}
+		std::cout << "status complete\n";
+		command->set_status( Command::STATUS_COMPLETE );
+	}
+	
+	if ( command_received )
+	{
+		m_pp.SetSpeed( motion_x, motion_yaw );
+		m_output_link->commit();
+	}
+
+/*
+    double turnrate, speed;
 
     // print out sonars for fun
-    std::cout << m_sp << std::endl;
+    //std::cout << m_sp << std::endl;
 
     // do simple collision avoidance
     if((m_sp[0] + m_sp[1]) < (m_sp[6] + m_sp[7]))
@@ -163,11 +242,7 @@ void SoarPlayerClient::update()
 
     // command the motors
     m_pp.SetSpeed(speed, turnrate);
-
-    // BUGBUG
-    // The debugger hangs everything unless this line is here... 
-    // That should not happen.
-    m_kernel->CheckForIncomingEvents();
+*/
     
     if ( m_stop_issued ) 
     {

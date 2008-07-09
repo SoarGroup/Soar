@@ -3,11 +3,19 @@
 
 #include "sml_Client.h"
 
+struct timeval;
+
 class InputLinkManager
 {
 public:
 	InputLinkManager( sml::Agent& agent );
 	~InputLinkManager();
+	
+	void time_update( const timeval& time );
+	void position_update( double x, double y, double yaw );
+	void motion_update( double motion_x, double motion_y, double motion_yaw );
+
+	void commit();
 
 private:
 	sml::Agent& m_agent;

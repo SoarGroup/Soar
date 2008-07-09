@@ -4,10 +4,12 @@
 #include "sml_Client.h"
 #include "RunThread.h"
 #include "SoarRunThreadInterface.h"
-#include "InputLinkManager.h"
 
 #include <libplayerc++/playerc++.h>
 #include <string>
+
+class InputLinkManager;
+class OutputLinkManager;
 
 class SoarPlayerClient: public SoarRunThreadInterface
 {
@@ -34,6 +36,7 @@ private:
     sml::Agent* m_agent;
     
     InputLinkManager* m_input_link;
+    OutputLinkManager* m_output_link;
     
     PlayerCc::PlayerClient    m_robot;
     PlayerCc::SonarProxy      m_sp;
