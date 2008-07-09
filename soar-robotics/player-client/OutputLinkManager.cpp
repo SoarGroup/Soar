@@ -134,7 +134,6 @@ void OutputLinkManager::read()
 			Command command( data.second );
 			data.first = command;
 			
-			std::cout << "c(" << command.get_type() << ")\n";
 			m_command_list.push_back( data );
 		}
 		catch ( ... )
@@ -143,7 +142,6 @@ void OutputLinkManager::read()
 			std::cerr << "bad command" << std::endl;
 		}
 	}
-	//m_agent.ClearOutputLinkChanges();
 	
 	m_command_iter = m_command_list.begin();
 }

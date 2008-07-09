@@ -21,9 +21,13 @@ InputLinkManager::InputLinkManager( Agent& agent )
 	Identifier* il = m_agent.GetInputLink();
 	assert( il );
 	
-	m_time = m_agent.CreateFloatWME( il, "time", 0 );
+	m_time = m_agent.CreateIdWME( il, "time" );
+	{
+		m_seconds = m_agent.CreateIntWME( m_time, "seconds", 0 );
+		m_microseconds = m_agent.CreateIntWME( m_time, "microseconds", 0 );
+	}
+	
 	m_self = m_agent.CreateIdWME( il, "self" );
-
 	{
 		Identifier* current_location = m_agent.CreateIdWME( m_self, "current-location" );
 		m_x = m_agent.CreateFloatWME( current_location, "x", 0 );
@@ -72,11 +76,9 @@ InputLinkManager::~InputLinkManager()
 
 void InputLinkManager::time_update( const timeval& time )
 {
-	double seconds = time.tv_sec;
-	//TODO: seconds += time.tv_usec / 1000000;
-	
-	m_agent.Update( m_time, seconds );	
-	//std::cout << "t(" << seconds << ")\n";
+	m_agent.Update( m_seconds, time.tv_sec );	
+	m_agent.Update( m_microseconds, time.tv_usec );	
+	//std::cout << "t(" << time.tv_sec << "." << time.tv_usec / 1000000.0 << ")\n";
 }
 
 void InputLinkManager::position_update( double x, double y, double yaw )

@@ -20,7 +20,9 @@ public:
 private:
 	sml::Agent& m_agent;
 	
-	sml::FloatElement* m_time;
+	sml::Identifier* m_time;
+	sml::IntElement* m_seconds;
+	sml::IntElement* m_microseconds;
 	
 	sml::Identifier* m_self;
 	sml::FloatElement* m_x;

@@ -185,10 +185,10 @@ void SoarPlayerClient::update()
 				motion_x = 0;
 				break;
 			case Command::MOVE_FORWARD:
-				motion_x = command->get_throttle() * 0.100;
+				motion_x = command->get_throttle() * 0.300;
 				break;
 			case Command::MOVE_BACKWARD:
-				motion_x = command->get_throttle() * -0.100;
+				motion_x = command->get_throttle() * -0.300;
 				break;
 			}
 			break;
@@ -200,10 +200,10 @@ void SoarPlayerClient::update()
 				motion_yaw = 0;
 				break;
 			case Command::ROTATE_RIGHT:
-				motion_yaw = command->get_throttle() * -20;
+				motion_yaw = command->get_throttle() * -10 * ( 3.14159265 / 180 );
 				break;
 			case Command::ROTATE_LEFT:
-				motion_yaw = command->get_throttle() * 20;
+				motion_yaw = command->get_throttle() * 10 * ( 3.14159265 / 180 );
 				break;
 			}
 			break;
@@ -213,7 +213,6 @@ void SoarPlayerClient::update()
 			motion_yaw = 0;
 			break;
 		}
-		std::cout << "status complete\n";
 		command->set_status( Command::STATUS_COMPLETE );
 	}
 	
