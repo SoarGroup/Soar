@@ -34,7 +34,7 @@ sp {apply*operator*create-action-command*two-parameters
              ^<att22> <value22>)}
 
 sp {apply*operator*remove-command
-   (state <s> ^operator.actions
+   (state <s> ^operator
               ^io.output-link <ol>)
    (<ol> ^<att> <value>)
    (<value> ^status complete)

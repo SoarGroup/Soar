@@ -2,7 +2,7 @@
 # will save this number to mark when the next action should be taken
 sp {wander*elaborate*state*future-time
    (state <s> ^name wander
-              ^io.input-link.time <t>
+              ^io.input-link.time.seconds <t>
               ^top-state.action-interval-time <ait>)
 -->
    (<s> ^future-time (+ <t> <ait>))
@@ -11,7 +11,7 @@ sp {wander*elaborate*state*future-time
 sp {wander*elaborate*superoperator*next-action-time-init
    :o-support
    (state <s> ^name wander
-              ^io.input-link.time <t>
+              ^io.input-link.time.seconds <t>
               ^superoperator <so>
              -^superoperator.next-action-time)
 -->
