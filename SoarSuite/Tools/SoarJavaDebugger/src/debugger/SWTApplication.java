@@ -138,7 +138,7 @@ public class SWTApplication
 		boolean quitOnFinish = hasOption(args, "-quitonfinish") ;
 		String listen = getOptionValue(args, "-listen") ;
 		boolean cascade = hasOption(args, "-cascade") ;
-		String layout = getOptionValue(args, "-source") ;
+		String layout = getOptionValue(args, "-layout") ;
 		
 		// quitOnFinish is only valid if sourcing a file
 		if (source == null)
