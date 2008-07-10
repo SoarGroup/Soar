@@ -1,0 +1,52 @@
+
+# Desc: 1 pioneer robot with laser	
+# CVS: $Id: simple.world,v 1.67 2006-10-05 22:27:29 gerkey Exp $
+
+# defines Pioneer-like robots
+include "pioneer.inc"
+
+
+# defines 'map' object used for floorplans
+include "map.inc"
+
+
+# defines sick laser scanner
+include "sick.inc"
+
+
+# size of the world in meters
+size [16 16]
+
+# set the resolution of the underlying raytrace model in meters
+resolution 0.02
+
+interval_sim 100
+interval_real 100
+
+# configure the GUI window
+window
+( 
+  size [ 695.000 693.000 ] 
+  center [-0.010 -0.040] 
+  scale 0.028 
+)
+
+# load an environment bitmap
+map
+( 
+  bitmap "bitmaps/cave.png"
+  size [16 16]
+  name "cave"
+)
+
+
+# create a robot
+pioneer2dx
+(
+  name "robot1"
+  color "red"
+  pose [-7 -7 45]
+  sick_laser()
+  watchdog_timeout -1.0
+)
+
