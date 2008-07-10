@@ -98,8 +98,8 @@ void TOH_Game::step() {
 
 #ifdef TOH_COUNT_STEPS
 bool TOH_Game::is_finished() const {
-  int other_towers = 0;
-  int goal_tower = 0;
+  size_t other_towers = 0;
+  size_t goal_tower = 0;
   for(std::vector<TOH_Tower *>::const_iterator it = m_towers.begin(); it != m_towers.end(); ++it) {
     other_towers += goal_tower;
     goal_tower += (*it)->get_height();
