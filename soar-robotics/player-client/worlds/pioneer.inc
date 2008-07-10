@@ -65,6 +65,9 @@ define pioneer2dx position
   # differential steering model
   drive "diff"
 
+  localization "gps"
+  localization_origin [0 0 0]
+
   # uncomment this line if you want to model real pioneers with SICK
   # lasers, where the laser is taller than the robot
   # laser_return 0
