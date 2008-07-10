@@ -2,6 +2,10 @@
 #define APPRAISAL_STATUS_H
 
 #include <string>
+#include <boost/lexical_cast.hpp>
+
+using std::string;
+using boost::lexical_cast;
 
 struct AppraisalStatus {
 	bool suddenness;
@@ -20,7 +24,7 @@ struct AppraisalStatus {
 	bool control;
 	bool power;
 
-   AppraisalStatus() {
+   void Init() {
       suddenness = true;
 		unpredictability = true;
 		intrinsic_pleasantness = true;

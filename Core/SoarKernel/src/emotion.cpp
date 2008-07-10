@@ -8,22 +8,22 @@
 // -- Should some dimensions (e.g. discrepancy & outcome_probability) not boost and decay? (e.g. something shouldn't seem more likely just because something else was likely recently)
 
 
-#include <iostream>
-#include <iomanip>
-#include <string>
-#include <algorithm>
-#include <time.h>
+//#include <iostream>
+//#include <iomanip>
+//#include <string>
+//#include <algorithm>
+//#include <time.h>
 
 
-#include "AppraisalFrame.h"
-#include "Mood.h"
-#include "ModalEmotion.h"
-#include "Feeling.h"
-#include "AppraisalStatus.h"
-
-AppraisalStatus appraisalStatus;
-
-AppraisalFrame currentEmotion;
+//#include "AppraisalFrame.h"
+//#include "Mood.h"
+//#include "ModalEmotion.h"
+//#include "Feeling.h"
+//#include "AppraisalStatus.h"
+//
+//AppraisalStatus appraisalStatus;
+//
+//AppraisalFrame currentEmotion;
 
 /*
 string RHSSetParameters(smlRhsEventId id, void* pUserData, Agent* pAgent, char const* pFunctionName, char const* pArgument) {

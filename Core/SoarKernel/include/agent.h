@@ -34,7 +34,10 @@
 
 #include "exploration.h"
 #include "reinforcement_learning.h"
+#include "AppraisalStatus.h"
 #include "AppraisalFrame.h"
+#include "Mood.h"
+#include "Feeling.h"
 
 #include <string>
 #include <map>
@@ -779,7 +782,11 @@ kernel time and total_cpu_time greater than the derived total CPU time. REW */
   xml_handle xml_commands;			// During commands, xml_destination will be set to this pointer.
 
   // emotion stuff
+  AppraisalStatus appraisalStatus;
   AppraisalFrame currentEmotion;
+  Mood currentMood;
+  Feeling currentFeeling;
+  wme* feeling_frame;
 
 } agent;
 /*************** end of agent struct *****/

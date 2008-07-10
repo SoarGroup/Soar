@@ -347,11 +347,13 @@ void do_input_cycle (agent* thisAgent) {
   /* --- if there is a top state, do the normal input cycle --- */
 
   if (thisAgent->top_state) {
-    soar_invoke_callbacks(thisAgent, INPUT_PHASE_CALLBACK, 
-			 (soar_call_data) NORMAL_INPUT_CYCLE);
-  }
+	  soar_invoke_callbacks(thisAgent, INPUT_PHASE_CALLBACK, 
+		  (soar_call_data) NORMAL_INPUT_CYCLE);
 
-  get_appraisals(thisAgent);
+	  get_appraisals(thisAgent);
+	  update_mood(thisAgent);
+	  generate_feeling_frame(thisAgent);
+  }
 
   /* --- do any WM resulting changes --- */
   do_buffered_wm_and_ownership_changes(thisAgent);

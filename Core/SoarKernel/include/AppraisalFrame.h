@@ -13,6 +13,7 @@ using std::vector;
 using std::ostringstream;
 using boost::lexical_cast;
 
+const double fErrorValue = -246.0;
 const double fInvalidValue = -123.0;
 const string sInvalidValue = "no value";
 const double fVeryLow = 0.0;
@@ -45,7 +46,7 @@ struct AppraisalFrame {
 	double control;
 	double power;
 
-	AppraisalFrame() { Reset(0, fInvalidValue); }
+	void Init() { Reset(0, fInvalidValue); }
 
 	void Reset(Symbol* newid, double op) {
 		id_sym = newid;

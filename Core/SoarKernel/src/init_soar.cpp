@@ -48,6 +48,7 @@
 #include <time.h>
 
 #include "reinforcement_learning.h"
+#include "ModalEmotion.h"
 
 #define INIT_FILE       "init.soar"
 
@@ -1377,6 +1378,12 @@ void init_agent_memory(agent* thisAgent)
   assert( thisAgent->top_goal == 0 && 
           "There should be no top goal when init_agent_memory is called!");
   if ( thisAgent->top_goal) return;
+
+  thisAgent->feeling_frame = 0;
+  InitModalEmotions();
+  thisAgent->appraisalStatus.Init();
+  thisAgent->currentEmotion.Init();
+  thisAgent->currentMood.Init();
 
   thisAgent->io_header = get_new_io_identifier (thisAgent, 'I');
   thisAgent->io_header_input = get_new_io_identifier (thisAgent, 'I');

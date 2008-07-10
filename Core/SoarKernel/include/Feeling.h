@@ -5,19 +5,19 @@
 #include "Mood.h"
 #include "AppraisalStatus.h"
 
-// helper functions
-double logbase(double a, double base)
-{
-   return log(a) / log(base);
-}
-
-double MySign(double v) {
-	if(v>=0) return 1.0;
-	else return -1.0;
-}
-
 struct Feeling {
 	AppraisalFrame af;
+
+	// helper functions
+	double logbase(double a, double base)
+	{
+		return log(a) / log(base);
+	}
+
+	double MySign(double v) {
+		if(v>=0) return 1.0;
+		else return -1.0;
+	}
 
 	double LogComb(double v1, double v2, double base) {
 		double s1 = MySign(v1) * ( pow(base, 10.0*abs(v1)) - 1.0);
@@ -75,7 +75,52 @@ struct Feeling {
 		return "";
 	}
 
-	string GetDimension(string dim, AppraisalFrame emotion, AppraisalFrame mood, bool status) {
+	double GetNumericDimension(string dim, AppraisalFrame emotion, AppraisalFrame mood, bool status) {
+		SetDimension(dim, emotion, mood, status);
+
+		if(dim == "suddenness") { return af.suddenness; }
+		else if(dim == "unpredictability") { return af.unpredictability; }
+		else if(dim == "intrinsic-pleasantness") { return af.intrinsic_pleasantness; }
+		else if(dim == "goal-relevance") { return af.goal_relevance; }
+		else if(dim == "outcome-probability") { return af.outcome_probability; }
+		else if(dim == "discrepancy") { return af.discrepancy; }
+		else if(dim == "conduciveness") { return af.conduciveness; }
+		else if(dim == "control") { return af.control; }
+		else if(dim == "power") { return af.power; }		
+		else { return fErrorValue;
+		}
+	}
+
+	string GetCategoricalDimension(string dim, AppraisalFrame emotion, AppraisalFrame mood, bool status) {
+		SetDimension(dim, emotion, mood, status);
+
+		if(dim == "causal-agent") {
+			double canVal = af.causal_agent_nature;
+			double casVal = af.causal_agent_self;
+			double caoVal = af.causal_agent_other;
+			// BUGBUG: for a tie, the more recent value should be used
+			if(canVal >= casVal && canVal >= caoVal) {
+				return "nature"; }
+			else if(casVal >= canVal && casVal >= caoVal) {
+				return "self"; }
+			else { return "other"; }
+		}
+		else if(dim == "causal-motive") {
+			double cmcVal = af.causal_motive_chance;
+			double cmiVal = af.causal_motive_intentional;
+			double cmnVal = af.causal_motive_negligence;
+			// BUGBUG: for a tie, the more recent value should be used
+			if(cmcVal >= cmiVal && cmcVal >= cmnVal) {
+				return "chance"; }
+			else if(cmiVal >= cmcVal && cmiVal >= cmnVal) {
+				return "intentional"; }
+			else { return "negligence"; }			
+		} else {
+			return "+++Invalid categorical dimension '" + dim + "'";
+		}
+	}
+
+	string GetDimensionAsString(string dim, AppraisalFrame emotion, AppraisalFrame mood, bool status) {
 		SetDimension(dim, emotion, mood, status);
 
 		if(dim == "suddenness") { return lexical_cast<string>(af.suddenness); }
@@ -134,7 +179,5 @@ struct Feeling {
 		return af;
 	}
 };
-
-Feeling currentFeeling;
 
 #endif // FEELING_H

@@ -11,7 +11,11 @@ struct Mood {
 	double decay_rate;
 	double move_rate;
 
-	Mood() : decay_rate(0.0), move_rate(0.0) { // mood is disabled by default
+	void Init() {
+		// mood is disabled by default
+		decay_rate = 0.0;
+		move_rate = 0.0;
+
 		af.suddenness = 0;
 		af.unpredictability = 0;
 		af.intrinsic_pleasantness = 0;
@@ -157,7 +161,5 @@ struct Mood {
 		}
 	}
 };
-
-Mood currentMood;
 
 #endif // MOOD_H
