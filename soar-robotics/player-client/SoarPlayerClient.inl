@@ -161,6 +161,7 @@ void SoarPlayerClient::update()
    	double motion_x = m_pp.GetXSpeed();
    	double motion_y = m_pp.GetYSpeed();
    	double motion_yaw = m_pp.GetYawSpeed();
+   	
 
 	// update input link
 	timeval time;
@@ -168,6 +169,13 @@ void SoarPlayerClient::update()
 	m_input_link->time_update( time );
 	m_input_link->position_update( x, y, yaw );
 	m_input_link->motion_update( motion_x, motion_y, motion_yaw );
+	
+	for ( unsigned count = 0; count < m_fp.GetCount(); ++count )
+	{
+		player_fiducial_item item = m_fp.GetFiducialItem( count );
+		m_input_link->feducial_update( item.id, item.pose.px, item.pose.py );
+	}
+	
 	m_input_link->commit();
 	
 	// read output link

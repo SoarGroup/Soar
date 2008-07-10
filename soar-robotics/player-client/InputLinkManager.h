@@ -14,6 +14,7 @@ public:
 	void time_update( const timeval& time );
 	void position_update( double x, double y, double yaw );
 	void motion_update( double motion_x, double motion_y, double motion_yaw );
+	void feducial_update( int id, double x, double y );
 
 	void commit();
 

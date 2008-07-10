@@ -39,6 +39,18 @@ map
   name "cave"
 )
 
+# a block for gripping
+define puck model(
+  size [ 0.08 0.08 ]
+  gripper_return 1
+  gui_movemask 3
+  gui_nose 0
+  fiducial_return 10
+)
+
+puck( pose [-6 -6 0] color "red" )
+puck( pose [-6 -5 0] color "blue" )
+puck( pose [-5 -6 0] color "green" )
 
 # create a robot
 pioneer2dx
@@ -46,7 +58,23 @@ pioneer2dx
   name "robot1"
   color "red"
   pose [-7 -7 45]
-  sick_laser()
+  gripper( 
+    pose [0.200 0.000 0.000] color "gray" 
+  )
+  sick_laser(
+    pose [0.030 0.000 0.000 ]
+    fiducialfinder( 
+      range_max 8 
+      range_max_id 5 
+    ) 
+
+    ptz(
+      blobfinder( 
+        channel_count 6 
+        channels [ "red" "blue" "green" "cyan" "yellow" "magenta" ]  
+      )
+    )
+  )
   watchdog_timeout -1.0
 )
 

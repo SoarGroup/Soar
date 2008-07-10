@@ -39,8 +39,9 @@ private:
     OutputLinkManager* m_output_link;
     
     PlayerCc::PlayerClient    m_robot;
-    PlayerCc::SonarProxy      m_sp;
     PlayerCc::Position2dProxy m_pp;    
+    PlayerCc::FiducialProxy   m_fp;    
+    PlayerCc::LaserProxy      m_lp;    
 
     RunThread* m_run_thread;
     

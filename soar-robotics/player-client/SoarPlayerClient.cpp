@@ -23,8 +23,9 @@ void agentHandler( smlAgentEventId id, void* pUserData, Agent* )
 SoarPlayerClient::SoarPlayerClient( const std::string& productions )
 : m_productions( productions )
 , m_robot( "localhost" )
-, m_sp( &m_robot, 0 )
 , m_pp( &m_robot, 0 )
+, m_fp( &m_robot, 0 )
+, m_lp( &m_robot, 0 )
 {
     m_kernel = sml::Kernel::CreateKernelInNewThread();
     assert( m_kernel );

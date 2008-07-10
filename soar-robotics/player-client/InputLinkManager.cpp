@@ -134,6 +134,11 @@ void InputLinkManager::motion_update( double motion_x, double motion_y, double m
 	//std::cout << "m(" << motion_x << "," << motion_y << "," << speed << "," << motion_yaw_degrees << "," << movement << "," << rotation << ")\n";
 }
 
+void InputLinkManager::feducial_update( int id, double x, double y )
+{
+	//std::cout << "f(" << id << "," << x << "," << y << ")\n";
+}
+
 void InputLinkManager::commit()
 {
 	m_agent.Commit();
