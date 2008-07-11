@@ -5,8 +5,6 @@
 
 #include <map>
 
-typedef
-
 class Console
 {
 public:

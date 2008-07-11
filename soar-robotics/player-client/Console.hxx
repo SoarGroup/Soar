@@ -1,5 +1,5 @@
-#ifndef CONSOLE_INL
-#define CONSOLE_INL
+#ifndef CONSOLE_HXX
+#define CONSOLE_HXX
 
 #include "Console.h"
 
@@ -62,6 +62,5 @@ int Console::run()
     return 0;
 }
 
-
-#endif // CONSOLE_INL
+#endif // CONSOLE_HXX
 

@@ -46,6 +46,9 @@ private:
 	sml::StringElement* m_gripper_moving;
 	sml::StringElement* m_gripper_error;
 
+	static const double PI;
+	static const double ROTATION_DEAD_ZONE_DEGREES;
+	static const double MOVEMENT_DEAD_ZONE;
 };
 
 #endif // INPUT_LINK_MANAGER_H
