@@ -1,4 +1,4 @@
-#include "SoarPlayerClient.h"
+#include "SoarPlayerClient.cxx"
 
 #include "InputLinkManager.h"
 #include "OutputLinkManager.h"

@@ -1,5 +1,5 @@
-#include "Console.inl"
-#include "SoarPlayerClient.inl"
+#include "Console.h"
+#include "SoarPlayerClient.h"
 
 int main( int argc, char** argv )
 {

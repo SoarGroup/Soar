@@ -1,4 +1,4 @@
-#include "RunThread.h"
+#include "RunThread.cxx"
 
 void RunThread::Run()
 {
