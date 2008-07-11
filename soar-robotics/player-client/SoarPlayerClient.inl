@@ -162,13 +162,40 @@ void SoarPlayerClient::update()
    	double motion_y = m_pp.GetYSpeed();
    	double motion_yaw = m_pp.GetYawSpeed();
    	
-
+   	bool outer = m_gp.GetBeams() & 0x1;
+   	bool inner = m_gp.GetBeams() & 0x2;
+   	std::cout.setf(std::ios_base::hex);
+   	std::cout << m_gp.GetBeams() << std::endl;
+   	std::cout.setf(std::ios_base::dec);
+   	bool gripper_open = false;
+   	bool gripper_closed = false;
+   	bool gripper_moving = false;
+   	bool gripper_error = false;
+   	switch ( m_gp.GetState() )
+   	{
+   	case PLAYER_GRIPPER_STATE_OPEN:
+   		gripper_open = true;
+	   	break;
+   	case PLAYER_GRIPPER_STATE_CLOSED:
+   		gripper_closed = true;
+	   	break;
+   	case PLAYER_GRIPPER_STATE_MOVING:
+   		gripper_moving = true;
+	   	break;
+	default:
+   	case PLAYER_GRIPPER_STATE_ERROR:
+   		gripper_error = true;
+	   	break;
+	}
+   	
 	// update input link
 	timeval time;
 	gettimeofday( &time, 0 );
 	m_input_link->time_update( time );
 	m_input_link->position_update( x, y, yaw );
 	m_input_link->motion_update( motion_x, motion_y, motion_yaw );
+	m_input_link->beam_update( outer, inner );
+	m_input_link->gripper_update( gripper_open, gripper_closed, gripper_moving, gripper_error );
 	
 	for ( unsigned count = 0; count < m_fp.GetCount(); ++count )
 	{
@@ -180,13 +207,14 @@ void SoarPlayerClient::update()
 	
 	// read output link
 	m_output_link->read();
-	bool command_received = false;
+	bool motion_command_received = false;
+	bool gripper_command_received = false;
 	for ( Command* command = m_output_link->get_next_command(); command != 0; command = m_output_link->get_next_command() )
 	{
-		command_received = true;
 		switch ( command->get_type() )
 		{
 		case Command::MOVE:
+			motion_command_received = true;
 			switch ( command->get_move_direction() )
 			{
 			case Command::MOVE_STOP:
@@ -202,6 +230,7 @@ void SoarPlayerClient::update()
 			break;
 			
 		case Command::ROTATE:
+			motion_command_received = true;
 			switch ( command->get_rotate_direction() )
 			{
 			case Command::ROTATE_STOP:
@@ -217,17 +246,39 @@ void SoarPlayerClient::update()
 			break;
 			
 		case Command::STOP:
+			motion_command_received = true;
 			motion_x = 0;
 			motion_yaw = 0;
+			break;
+			
+		case Command::GRIPPER:
+			gripper_command_received = true;
+			switch ( command->get_gripper_command() )
+			{
+			case Command::GRIPPER_OPEN:
+				m_gp.Open();
+				break;
+			case Command::GRIPPER_CLOSE:
+				m_gp.Close();
+				break;
+			case Command::GRIPPER_STOP:
+				m_gp.Stop();
+				break;
+			}
 			break;
 		}
 		command->set_status( Command::STATUS_COMPLETE );
 	}
 	
-	if ( command_received )
+	if ( motion_command_received )
 	{
 		m_pp.SetSpeed( motion_x, motion_yaw );
-		m_output_link->commit();
+		m_output_link->commit();  // status wme update
+	}
+
+	if ( gripper_command_received )
+	{
+		m_output_link->commit(); // status wme update
 	}
 
 /*

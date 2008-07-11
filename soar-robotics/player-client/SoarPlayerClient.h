@@ -42,6 +42,7 @@ private:
     PlayerCc::Position2dProxy m_pp;    
     PlayerCc::FiducialProxy   m_fp;    
     PlayerCc::LaserProxy      m_lp;    
+    PlayerCc::GripperProxy    m_gp;    
 
     RunThread* m_run_thread;
     

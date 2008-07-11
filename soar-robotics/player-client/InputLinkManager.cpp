@@ -30,6 +30,7 @@ InputLinkManager::InputLinkManager( Agent& agent )
 	m_self = m_agent.CreateIdWME( il, "self" );
 	{
 		Identifier* current_location = m_agent.CreateIdWME( m_self, "current-location" );
+		
 		m_x = m_agent.CreateFloatWME( current_location, "x", 0 );
 		m_y = m_agent.CreateFloatWME( current_location, "y", 0 );
 		m_i = m_agent.CreateFloatWME( current_location, "i", 0 );
@@ -52,6 +53,20 @@ InputLinkManager::InputLinkManager( Agent& agent )
 			m_motion_movement = m_agent.CreateStringWME( abstract, "movement", "stop" );
 			m_motion_rotation = m_agent.CreateStringWME( abstract, "rotation", "stop" );
 		}
+	}
+	{
+		Identifier* gripper = m_agent.CreateIdWME( m_self, "gripper" );
+		{
+			Identifier* beams = m_agent.CreateIdWME( gripper, "beams" );
+			
+			m_beams_outer = m_agent.CreateStringWME( beams, "outer", "unblocked" );
+			m_beams_inner = m_agent.CreateStringWME( beams, "inner", "unblocked" );
+		}
+		
+		m_gripper_open = m_agent.CreateStringWME( gripper, "open", "false" );
+		m_gripper_closed = m_agent.CreateStringWME( gripper, "closed", "false" );
+		m_gripper_moving = m_agent.CreateStringWME( gripper, "moving", "false" );
+		m_gripper_error = m_agent.CreateStringWME( gripper, "error", "false" );
 	}
 	
 	commit();
@@ -137,6 +152,24 @@ void InputLinkManager::motion_update( double motion_x, double motion_y, double m
 void InputLinkManager::feducial_update( int id, double x, double y )
 {
 	//std::cout << "f(" << id << "," << x << "," << y << ")\n";
+}
+
+void InputLinkManager::beam_update( bool outer, bool inner )
+{
+	m_agent.Update( m_beams_outer, outer ? "blocked" : "unblocked" );
+	m_agent.Update( m_beams_inner, inner ? "blocked" : "unblocked" );
+
+	//std::cout << "gb(" << outer << "," << inner << ")\n";
+}
+
+void InputLinkManager::gripper_update( bool open, bool closed, bool moving, bool error )
+{
+	m_agent.Update( m_gripper_open, open ? "true" : "false" );
+	m_agent.Update( m_gripper_closed, closed ? "true" : "false" );
+	m_agent.Update( m_gripper_moving, moving ? "true" : "false" );
+	m_agent.Update( m_gripper_error, error ? "true" : "false" );
+
+	std::cout << "gg(" << open << "," << closed << "," << moving << "," << error << ")\n";
 }
 
 void InputLinkManager::commit()

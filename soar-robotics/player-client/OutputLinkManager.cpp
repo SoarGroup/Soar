@@ -23,6 +23,14 @@ void has_throttle( Identifier* id )
 	}
 }
 
+void has_command( Identifier* id )
+{
+	if ( !id->GetParameterValue( "command" ) )
+	{
+		throw new std::exception();
+	}
+}
+
 template < class T >
 bool from_string( T& t, const std::string& s, std::ios_base& (*f)(std::ios_base&) )
 {
@@ -105,6 +113,29 @@ Command::Command( Identifier* command_id )
 		m_move = MOVE_STOP;
 		m_rotate = ROTATE_STOP;
 		m_throttle = 0;
+	}
+	else if ( command_string == "gripper" )
+	{
+		m_type = GRIPPER;
+		has_command( command_id );
+		
+		std::string command( command_id->GetParameterValue( "command" ) );
+		if ( command == "open" )
+		{
+			m_gripper = GRIPPER_OPEN;
+		}
+		else if ( command == "close" )
+		{
+			m_gripper = GRIPPER_CLOSE;
+		}
+		else if ( command == "stop" )
+		{
+			m_gripper = GRIPPER_STOP;
+		}
+		else
+		{
+			throw new std::exception();
+		}
 	}
 	else
 	{

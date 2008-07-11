@@ -26,6 +26,7 @@ SoarPlayerClient::SoarPlayerClient( const std::string& productions )
 , m_pp( &m_robot, 0 )
 , m_fp( &m_robot, 0 )
 , m_lp( &m_robot, 0 )
+, m_gp( &m_robot, 0 )
 {
     m_kernel = sml::Kernel::CreateKernelInNewThread();
     assert( m_kernel );
