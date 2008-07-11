@@ -14,7 +14,6 @@
  * consider replacing if/elseif blocks with map lookup? (probably requires Symbols since types aren't uniform otherwise)
  * can drop lexical_cast and other functions?
  * prefix all functions with "emotion"?
- * SCU build
  * emotion_reset should clean up stuff currently handled in do_input_phase, and be called from there
  * consider generating feeling frame all at once, instead of one dimension at a time. Also, have feeling generation directly access emotion/mood from agent, instead of being passed in.
  */

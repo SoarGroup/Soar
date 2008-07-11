@@ -30,3 +30,4 @@
 #include "src/utilities.cpp"
 #include "src/wmem.cpp"
 #include "src/xml.cpp"
+#include "src/emotion.cpp"

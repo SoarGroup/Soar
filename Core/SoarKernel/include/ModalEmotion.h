@@ -5,7 +5,9 @@
 #include <map>
 #include <algorithm>
 
-using namespace std;
+using std::string;
+using std::multimap;
+using std::pair;
 
 struct Bounds {
 	double lower_bound;
@@ -114,7 +116,7 @@ pair<string, double> Min(pair<string, double> one, pair<string, double> two) {
 	}
 }
 
-string GenerateLabel(AppraisalFrame af) {
+string GenerateLabel(AppraisalFrame& af) {
 
 	typedef pair<double, ModalEmotion*> Dist_ModalEmotion;
 
