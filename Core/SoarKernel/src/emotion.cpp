@@ -2,11 +2,11 @@
 
 /*
  * TODO:
- * generate intensity/valence
  * create commands
  *   enable/disable various appraisals
  *   set mood parameters
  *   turn entire system on/off
+ * print current emotion/mood/feeling table
  * refactor headers so CLI and KernelSML aren't dependent on boost
  * fix BADBADs
  * use strings for invalid/none/error values in wm
@@ -16,6 +16,7 @@
  * prefix all functions with "emotion"?
  * SCU build
  * emotion_reset should clean up stuff currently handled in do_input_phase, and be called from there
+ * consider generating feeling frame all at once, instead of one dimension at a time. Also, have feeling generation directly access emotion/mood from agent, instead of being passed in.
  */
 
 // TODO:
@@ -178,6 +179,17 @@ void generate_feeling_frame(agent* thisAgent)
 	symbol_remove_ref(thisAgent, tempVal);
 
 	// create feeling intensity, valence
+	tempAtt = make_sym_constant(thisAgent, "intensity");
+	tempVal = make_float_constant(thisAgent, thisAgent->currentFeeling.af.CalculateIntensity());
+	add_input_wme(thisAgent, thisAgent->feeling_frame->value, tempAtt, tempVal);
+	symbol_remove_ref(thisAgent, tempAtt);
+	symbol_remove_ref(thisAgent, tempVal);
+
+	tempAtt = make_sym_constant(thisAgent, "valence");
+	tempVal = make_float_constant(thisAgent, thisAgent->currentFeeling.af.CalculateValence());
+	add_input_wme(thisAgent, thisAgent->feeling_frame->value, tempAtt, tempVal);
+	symbol_remove_ref(thisAgent, tempAtt);
+	symbol_remove_ref(thisAgent, tempVal);
 }
 
 void emotion_reset(agent* thisAgent)
