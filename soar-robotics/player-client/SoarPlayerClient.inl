@@ -281,27 +281,6 @@ void SoarPlayerClient::update()
 		m_output_link->commit(); // status wme update
 	}
 
-/*
-    double turnrate, speed;
-
-    // print out sonars for fun
-    //std::cout << m_sp << std::endl;
-
-    // do simple collision avoidance
-    if((m_sp[0] + m_sp[1]) < (m_sp[6] + m_sp[7]))
-        turnrate = PlayerCc::dtor(-20); // turn 20 degrees per second
-    else
-        turnrate = PlayerCc::dtor(20);
-
-    if(m_sp[3] < 0.500)
-        speed = 0;
-    else
-        speed = 0.100;
-
-    // command the motors
-    m_pp.SetSpeed(speed, turnrate);
-*/
-    
     if ( m_stop_issued ) 
     {
         m_kernel->StopAllAgents();
