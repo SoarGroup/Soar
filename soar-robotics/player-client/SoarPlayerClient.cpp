@@ -4,6 +4,7 @@
 #include "OutputLinkManager.h"
 
 #include <cassert>
+#include <exception>
 
 using namespace sml;
 
@@ -22,7 +23,7 @@ void agentHandler( smlAgentEventId id, void* pUserData, Agent* )
 SoarPlayerClient::SoarPlayerClient( const std::string& productions )
 : m_productions( productions )
 , m_robot( "localhost" )
-, m_pp( &m_robot, 0 )
+, m_pp( &m_robot, 1 )
 , m_fp( &m_robot, 0 )
 , m_lp( &m_robot, 0 )
 , m_gp( &m_robot, 0 )
@@ -43,6 +44,7 @@ SoarPlayerClient::SoarPlayerClient( const std::string& productions )
     else
     {
         std::cerr << "error loading productions: " << m_productions << std::endl;
+        throw new std::exception();
     }
     
     //m_agent->ExecuteCommandLine( "waitsnc --enable" );
@@ -87,9 +89,6 @@ void SoarPlayerClient::update()
    	
    	bool outer = m_gp.GetBeams() & 0x1;
    	bool inner = m_gp.GetBeams() & 0x2;
-   	std::cout.setf(std::ios_base::hex);
-   	std::cout << m_gp.GetBeams() << std::endl;
-   	std::cout.setf(std::ios_base::dec);
    	bool gripper_open = false;
    	bool gripper_closed = false;
    	bool gripper_moving = false;
