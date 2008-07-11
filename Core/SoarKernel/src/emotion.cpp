@@ -1,5 +1,23 @@
 #include <portability.h>
 
+/*
+ * TODO:
+ * generate intensity/valence
+ * create commands
+ *   enable/disable various appraisals
+ *   set mood parameters
+ *   turn entire system on/off
+ * refactor headers so CLI and KernelSML aren't dependent on boost
+ * fix BADBADs
+ * use strings for invalid/none/error values in wm
+ * use Symbols internally instead of raw types?  May allow appraisals to be treated more uniformly
+ * consider replacing if/elseif blocks with map lookup? (probably requires Symbols since types aren't uniform otherwise)
+ * can drop lexical_cast and other functions?
+ * prefix all functions with "emotion"?
+ * SCU build
+ * emotion_reset should clean up stuff currently handled in do_input_phase, and be called from there
+ */
+
 // TODO:
 // -- change appraisal registration to detect when appraisal has already been registered for that frame (and print a warning)
 // -- Figure out how to get highest ela/joy when one step away from goal (must involve changing appraisals)
@@ -7,263 +25,164 @@
 // ---- currently reporting no value
 // -- Should some dimensions (e.g. discrepancy & outcome_probability) not boost and decay? (e.g. something shouldn't seem more likely just because something else was likely recently)
 
+#include "emotion.h"
+#include "agent.h"
+#include "symtab.h"
+#include "wmem.h"
+#include "io_soar.h"
+#include "boost/foreach.hpp"
+#include <list>
 
-//#include <iostream>
-//#include <iomanip>
-//#include <string>
-//#include <algorithm>
-//#include <time.h>
-
-
-//#include "AppraisalFrame.h"
-//#include "Mood.h"
-//#include "ModalEmotion.h"
-//#include "Feeling.h"
-//#include "AppraisalStatus.h"
-//
-//AppraisalStatus appraisalStatus;
-//
-//AppraisalFrame currentEmotion;
-
-/*
-string RHSSetParameters(smlRhsEventId id, void* pUserData, Agent* pAgent, char const* pFunctionName, char const* pArgument) {
-   vector<string> tokens;
-	Tokenize(pArgument, &tokens);
-
-	string result = currentMood.SetParameters(tokens);
-
-	PrintMessage("\n" + result);
-	return result;
+void emotion_clear_feeling_frame(agent* thisAgent)
+{
+	for(wme* w = thisAgent->feeling_frame->value->id.input_wmes; w!=NIL; w=w->next)
+	{
+		release_io_symbol(thisAgent, w->id);  // Not sure why I have to do this explicitly
+//		remove_input_wme(thisAgent, w);
+	}
+	remove_input_wme(thisAgent, thisAgent->feeling_frame);
 }
 
-string RHSSetAppraisalStatus(smlRhsEventId id, void* pUserData, Agent* pAgent, char const* pFunctionName, char const* pArgument) {
-   vector<string> tokens;
-	Tokenize(pArgument, &tokens);
+void register_appraisal(agent* thisAgent, wme* appraisal)
+{
+	if(appraisal->attr->sc.common_symbol_info.symbol_type == SYM_CONSTANT_SYMBOL_TYPE)
+	{
+		if(appraisal->id != thisAgent->currentEmotion.id_sym) {
+			thisAgent->currentEmotion.Reset(appraisal->id, thisAgent->currentEmotion.outcome_probability);
+		}
 
-   bool status = atoi(tokens[1].c_str())!=0; // !=0 silences a warning
-   string result = appraisalStatus.SetStatus(tokens[0], status);
-   if(!status) currentMood.DisableAppraisal(tokens[0]);
-
-	PrintMessage("\n" + result);
-	return result;
-}
-
-string RHSRegisterAppraisal(smlRhsEventId id, void* pUserData, Agent* pAgent, char const* pFunctionName, char const* pArgument) {
-   vector<string> tokens;
-	Tokenize(pArgument, &tokens);
-
-	if(tokens.size() != 3) {
-		string error = "+++Expected 3 arguments, got " + tokens.size();
-		cerr << "\n" + error;
-		return error;
+		string result = thisAgent->currentEmotion.SetAppraisalValue(appraisal->attr->sc.name, appraisal->value);
 	}
 
-	if(tokens[0] != currentEmotion.id) {
-		currentEmotion.Reset(tokens[0], currentEmotion.outcome_probability);
+}
+
+void get_appraisals(agent* thisAgent)
+{
+	if(!thisAgent->emotion_header_appraisal) return;
+
+	slot* frame_slot = thisAgent->emotion_header_appraisal->id.slots;
+	slot* appraisal_slot;
+	wme *frame, *appraisal;
+
+	if ( frame_slot )
+	{
+		for ( ; frame_slot; frame_slot = frame_slot->next )
+		{
+			if(    frame_slot->attr->sc.common_symbol_info.symbol_type == SYM_CONSTANT_SYMBOL_TYPE
+				&& !strcmp(frame_slot->attr->sc.name, "frame")) /* BADBAD: should store "frame" symbol in common symbols so can do direct comparison */
+			{
+				for ( frame = frame_slot->wmes ; frame; frame = frame->next)
+				{
+					if (frame->value->common.symbol_type == IDENTIFIER_SYMBOL_TYPE)
+					{
+						for ( appraisal_slot = frame->value->id.slots; appraisal_slot; appraisal_slot = appraisal_slot->next )
+						{
+							for ( appraisal = appraisal_slot->wmes; appraisal; appraisal = appraisal->next )
+							{
+								register_appraisal(thisAgent, appraisal);
+							}
+						}
+					}
+				}
+			}
+		}
 	}
-
-	string result = currentEmotion.SetAppraisalValue(tokens[1], tokens[2]);
-
-	PrintMessage("\n" + result);
-	return result;
 }
 
-string RHSResetAppraisal(smlRhsEventId id, void* pUserData, Agent* pAgent, char const* pFunctionName, char const* pArgument) {
-   vector<string> tokens;
-	Tokenize(pArgument, &tokens);
-
-	if(tokens.size() != 1) {
-		string error = "+++Expected 1 argument, got " + tokens.size();
-		cerr << "\n" + error;
-		return error;
-	}
-
-	string result = currentEmotion.ResetAppraisalValue(tokens[0]);
-
-	PrintMessage("\n" + result);
-	return result;
+void update_mood(agent* thisAgent)
+{
+	thisAgent->currentMood.Decay();
+	thisAgent->currentMood.MoveTowardEmotion(thisAgent->currentEmotion);
 }
 
-string RHSGenerateFeelingLabel(smlRhsEventId id, void* pUserData, Agent* pAgent, char const* pFunctionName, char const* pArgument) {
-	return GenerateLabel(currentFeeling.af);
+// BADBAD: should have pre-made Symbols for all of these attributes
+// Shouldn't have to pass in status, mood, and emotion -- those should be directly available to the called function
+void generate_feeling_frame(agent* thisAgent)
+{
+	// clear previous feeling frame (stored on agent structure)
+	if(thisAgent->feeling_frame) { emotion_clear_feeling_frame(thisAgent); }
+
+	// generate new frame
+	Symbol* frame_att = make_sym_constant(thisAgent, "frame");
+	thisAgent->feeling_frame = add_input_wme(thisAgent, thisAgent->emotion_header_feeling, frame_att, make_new_identifier(thisAgent, 'F', TOP_GOAL_LEVEL));
+	symbol_remove_ref(thisAgent, frame_att);
+
+	// generate new values for each appraisal
+	Symbol* tempAtt;
+	Symbol* tempVal;
+
+	tempAtt = make_sym_constant(thisAgent, "suddenness");
+	tempVal = make_float_constant(thisAgent, thisAgent->currentFeeling.GetNumericDimension("suddenness", thisAgent->currentEmotion, thisAgent->currentMood.af, thisAgent->appraisalStatus.GetStatus("suddenness")));
+	add_input_wme(thisAgent, thisAgent->feeling_frame->value, tempAtt, tempVal);
+	symbol_remove_ref(thisAgent, tempAtt);
+	symbol_remove_ref(thisAgent, tempVal);
+
+	tempAtt = make_sym_constant(thisAgent, "unpredictability");
+	tempVal = make_float_constant(thisAgent, thisAgent->currentFeeling.GetNumericDimension("unpredictability", thisAgent->currentEmotion, thisAgent->currentMood.af, thisAgent->appraisalStatus.GetStatus("unpredictability")));
+	add_input_wme(thisAgent, thisAgent->feeling_frame->value, tempAtt, tempVal);
+	symbol_remove_ref(thisAgent, tempAtt);
+	symbol_remove_ref(thisAgent, tempVal);
+
+	tempAtt = make_sym_constant(thisAgent, "intrinsic-pleasantness");
+	tempVal = make_float_constant(thisAgent, thisAgent->currentFeeling.GetNumericDimension("intrinsic-pleasantness", thisAgent->currentEmotion, thisAgent->currentMood.af, thisAgent->appraisalStatus.GetStatus("unpredictability")));
+	add_input_wme(thisAgent, thisAgent->feeling_frame->value, tempAtt, tempVal);
+	symbol_remove_ref(thisAgent, tempAtt);
+	symbol_remove_ref(thisAgent, tempVal);
+
+	tempAtt = make_sym_constant(thisAgent, "goal-relevance");
+	tempVal = make_float_constant(thisAgent, thisAgent->currentFeeling.GetNumericDimension("goal-relevance", thisAgent->currentEmotion, thisAgent->currentMood.af, thisAgent->appraisalStatus.GetStatus("unpredictability")));
+	add_input_wme(thisAgent, thisAgent->feeling_frame->value, tempAtt, tempVal);
+	symbol_remove_ref(thisAgent, tempAtt);
+	symbol_remove_ref(thisAgent, tempVal);
+
+	tempAtt = make_sym_constant(thisAgent, "outcome-probability");
+	tempVal = make_float_constant(thisAgent, thisAgent->currentFeeling.GetNumericDimension("outcome-probability", thisAgent->currentEmotion, thisAgent->currentMood.af, thisAgent->appraisalStatus.GetStatus("unpredictability")));
+	add_input_wme(thisAgent, thisAgent->feeling_frame->value, tempAtt, tempVal);
+	symbol_remove_ref(thisAgent, tempAtt);
+	symbol_remove_ref(thisAgent, tempVal);
+
+	tempAtt = make_sym_constant(thisAgent, "discrepancy");
+	tempVal = make_float_constant(thisAgent, thisAgent->currentFeeling.GetNumericDimension("discrepancy", thisAgent->currentEmotion, thisAgent->currentMood.af, thisAgent->appraisalStatus.GetStatus("unpredictability")));
+	add_input_wme(thisAgent, thisAgent->feeling_frame->value, tempAtt, tempVal);
+	symbol_remove_ref(thisAgent, tempAtt);
+	symbol_remove_ref(thisAgent, tempVal);
+
+	tempAtt = make_sym_constant(thisAgent, "conduciveness");
+	tempVal = make_float_constant(thisAgent, thisAgent->currentFeeling.GetNumericDimension("conduciveness", thisAgent->currentEmotion, thisAgent->currentMood.af, thisAgent->appraisalStatus.GetStatus("unpredictability")));
+	add_input_wme(thisAgent, thisAgent->feeling_frame->value, tempAtt, tempVal);
+	symbol_remove_ref(thisAgent, tempAtt);
+	symbol_remove_ref(thisAgent, tempVal);
+
+	tempAtt = make_sym_constant(thisAgent, "control");
+	tempVal = make_float_constant(thisAgent, thisAgent->currentFeeling.GetNumericDimension("control", thisAgent->currentEmotion, thisAgent->currentMood.af, thisAgent->appraisalStatus.GetStatus("unpredictability")));
+	add_input_wme(thisAgent, thisAgent->feeling_frame->value, tempAtt, tempVal);
+	symbol_remove_ref(thisAgent, tempAtt);
+	symbol_remove_ref(thisAgent, tempVal);
+
+	tempAtt = make_sym_constant(thisAgent, "power");
+	tempVal = make_float_constant(thisAgent, thisAgent->currentFeeling.GetNumericDimension("power", thisAgent->currentEmotion, thisAgent->currentMood.af, thisAgent->appraisalStatus.GetStatus("unpredictability")));
+	add_input_wme(thisAgent, thisAgent->feeling_frame->value, tempAtt, tempVal);
+	symbol_remove_ref(thisAgent, tempAtt);
+	symbol_remove_ref(thisAgent, tempVal);
+
+	tempAtt = make_sym_constant(thisAgent, "causal-agent");
+	tempVal = make_sym_constant(thisAgent, thisAgent->currentFeeling.GetCategoricalDimension("causal-agent", thisAgent->currentEmotion, thisAgent->currentMood.af, thisAgent->appraisalStatus.GetStatus("unpredictability")).c_str());
+	add_input_wme(thisAgent, thisAgent->feeling_frame->value, tempAtt, tempVal);
+	symbol_remove_ref(thisAgent, tempAtt);
+	symbol_remove_ref(thisAgent, tempVal);
+
+	tempAtt = make_sym_constant(thisAgent, "causal-motive");
+	tempVal = make_sym_constant(thisAgent, thisAgent->currentFeeling.GetCategoricalDimension("causal-motive", thisAgent->currentEmotion, thisAgent->currentMood.af, thisAgent->appraisalStatus.GetStatus("unpredictability")).c_str());
+	add_input_wme(thisAgent, thisAgent->feeling_frame->value, tempAtt, tempVal);
+	symbol_remove_ref(thisAgent, tempAtt);
+	symbol_remove_ref(thisAgent, tempVal);
+
+	// create feeling intensity, valence
 }
 
-string RHSGenerateFeelingIntensity(smlRhsEventId id, void* pUserData, Agent* pAgent, char const* pFunctionName, char const* pArgument) {
-	double intensity = currentFeeling.af.CalculateIntensity();
-	string s = ToString(intensity);
-	PrintMessage("\nIntensity" + s);
-	return s;
+void emotion_reset(agent* thisAgent)
+{
+	// clear feeling frame (stored on agent structure)
+	emotion_clear_feeling_frame(thisAgent);
+	thisAgent->feeling_frame = 0;
 }
-
-string RHSGenerateFeelingValence(smlRhsEventId id, void* pUserData, Agent* pAgent, char const* pFunctionName, char const* pArgument) {
-	double valence = currentFeeling.af.CalculateValence();
-	string s = ToString(valence);
-	PrintMessage("\nValence" + s);
-	return s;
-}
-
-string RHSUpdateMood(smlRhsEventId id, void* pUserData, Agent* pAgent, char const* pFunctionName, char const* pArgument) {
-	currentMood.Decay();
-	currentMood.MoveTowardEmotion(currentEmotion);
-
-	string result = "Mood updated";
-
-	PrintMessage("\n" + result);
-
-	return result;
-}
-
-string RHSGenerateFeelingDimension(smlRhsEventId id, void* pUserData, Agent* pAgent, char const* pFunctionName, char const* pArgument) {
-	vector<string> tokens;
-	Tokenize(pArgument, &tokens);
-
-	if(tokens.size() != 2) {
-		string error = "+++Expected 2 arguments, got " + tokens.size();
-		cerr << "\n" + error;
-		return error;
-	}
-   
-   return currentFeeling.GetDimension(tokens[1], currentEmotion, currentMood.af, appraisalStatus.GetStatus(tokens[1]));
-}
-
-string RHSGenerateMoodDimension(smlRhsEventId id, void* pUserData, Agent* pAgent, char const* pFunctionName, char const* pArgument) {
-	vector<string> tokens;
-	Tokenize(pArgument, &tokens);
-
-	if(tokens.size() != 1) {
-		string error = "+++Expected 1 argument, got " + tokens.size();
-		cerr << "\n" + error;
-		return error;
-	}
-   
-   return currentMood.GetDimension(tokens[0]);
-}
-
-string RHSGenerateEmotionLabel(smlRhsEventId id, void* pUserData, Agent* pAgent, char const* pFunctionName, char const* pArgument) {
-	string s = GenerateLabel(currentEmotion);
-	PrintMessage("\nEmotion Label" + s);
-	return s;
-}
-
-string RHSGenerateEmotionIntensity(smlRhsEventId id, void* pUserData, Agent* pAgent, char const* pFunctionName, char const* pArgument) {
-	double intensity = currentEmotion.CalculateIntensity();
-	string s = ToString(intensity);
-	PrintMessage("\nEmotion Intensity" + s);
-	return s;
-}
-
-string RHSGenerateEmotionValence(smlRhsEventId id, void* pUserData, Agent* pAgent, char const* pFunctionName, char const* pArgument) {
-	double valence = currentEmotion.CalculateValence();
-	string s = ToString(valence);
-	PrintMessage("\nEmotion Valence" + s);
-	return s;
-}
-
-string RHSGenerateMoodLabel(smlRhsEventId id, void* pUserData, Agent* pAgent, char const* pFunctionName, char const* pArgument) {
-	string s = GenerateLabel(currentMood.af);
-	PrintMessage("\nMood Label" + s);
-	return s;
-}
-
-string RHSGenerateMoodIntensity(smlRhsEventId id, void* pUserData, Agent* pAgent, char const* pFunctionName, char const* pArgument) {
-	double intensity = currentMood.af.CalculateIntensity();
-	string s = ToString(intensity);
-	PrintMessage("\nMood Intensity" + s);
-	return s;
-}
-
-string RHSGenerateMoodValence(smlRhsEventId id, void* pUserData, Agent* pAgent, char const* pFunctionName, char const* pArgument) {
-	double valence = currentMood.af.CalculateValence();
-	string s = ToString(valence);
-	PrintMessage("\nMood Valence" + s);
-	return s;
-}
-
-string GenerateFrameLine(string col1, string col2, string col3, string col4) {
-	ostringstream temp;
-	temp << setw(34) << col1 << setw(18) << col2 << setw(18) << col3 << setw(18) << col4;
-	return temp.str();
-}
-
-string GenerateFrameLine(string col1, double col2, double col3, double col4) {
-	return GenerateFrameLine(col1, ToString(col2), ToString(col3), ToString(col4));
-}
-
-string RHSGenerateFrames1(smlRhsEventId id, void* pUserData, Agent* pAgent, char const* pFunctionName, char const* pArgument) {
-	// this generates a table whose rows are the various appraisals and whose columns are the mood, emotion and feeling, respectively
-	// the last two rows will display the label and intensity for each column
-
-	AppraisalFrame maf = currentMood.af;
-	AppraisalFrame eaf = currentEmotion;
-	AppraisalFrame faf = currentFeeling.GenerateAppraisalFrame(eaf, maf, appraisalStatus);
-
-	string table = "";
-	table += GenerateFrameLine("", "Mood", "Emotion", "Feeling") + "\n";
-	table += GenerateFrameLine("Suddenness [0,1]", maf.suddenness, eaf.suddenness, faf.suddenness) + "\n";
-	table += GenerateFrameLine("Unpredictability [0,1]", maf.unpredictability, eaf.unpredictability, faf.unpredictability) + "\n";
-	table += GenerateFrameLine("Intrinsic-pleasantness [-1,1]", maf.intrinsic_pleasantness, eaf.intrinsic_pleasantness, faf.intrinsic_pleasantness) + "\n";
-	table += GenerateFrameLine("Goal-relevance [0,1]", maf.goal_relevance, eaf.goal_relevance, faf.goal_relevance) + "\n";
-	table += GenerateFrameLine("Causal-agent (self) [0,1]", maf.causal_agent_self, eaf.causal_agent_self, faf.causal_agent_self) + "\n";
-	table += GenerateFrameLine("Causal-agent (other) [0,1]", maf.causal_agent_other, eaf.causal_agent_other, faf.causal_agent_other) + "\n";
-	table += GenerateFrameLine("Causal-agent (nature) [0,1]", maf.causal_agent_nature, eaf.causal_agent_nature, faf.causal_agent_nature);
-
-	return table;
-}
-
-string RHSGenerateFrames2(smlRhsEventId id, void* pUserData, Agent* pAgent, char const* pFunctionName, char const* pArgument) {
-	// this generates a table whose rows are the various appraisals and whose columns are the mood, emotion and feeling, respectively
-	// the last two rows will display the label and intensity for each column
-
-	AppraisalFrame maf = currentMood.af;
-	AppraisalFrame eaf = currentEmotion;
-	AppraisalFrame faf = currentFeeling.GenerateAppraisalFrame(eaf, maf, appraisalStatus);
-
-	string table = "";
-	table += GenerateFrameLine("Causal-motive (intentional) [0,1]", maf.causal_motive_intentional, eaf.causal_motive_intentional, faf.causal_motive_intentional) + "\n";
-	table += GenerateFrameLine("Causal-motive (chance) [0,1]", maf.causal_motive_chance, eaf.causal_motive_chance, faf.causal_motive_chance) + "\n";
-	table += GenerateFrameLine("Causal-motive (negligence) [0,1]", maf.causal_motive_negligence, eaf.causal_motive_negligence, faf.causal_motive_negligence) + "\n";
-	table += GenerateFrameLine("Outcome-probability [0,1]", maf.outcome_probability, eaf.outcome_probability, faf.outcome_probability) + "\n";
-	table += GenerateFrameLine("Discrepancy [0,1]", maf.discrepancy, eaf.discrepancy, faf.discrepancy) + "\n";
-	table += GenerateFrameLine("Conduciveness [-1,1]", maf.conduciveness, eaf.conduciveness, faf.conduciveness) + "\n";
-	table += GenerateFrameLine("Control [-1,1]", maf.control, eaf.control, faf.control) + "\n";
-	table += GenerateFrameLine("Power [-1,1]", maf.power, eaf.power, faf.power) + "\n";
-	table += GenerateFrameLine("Label", GenerateLabel(maf), GenerateLabel(eaf), GenerateLabel(faf)) + "\n";
-	table += GenerateFrameLine("Intensity", maf.CalculateIntensity(), eaf.CalculateIntensity(), faf.CalculateIntensity()) + "\n";
-   table += GenerateFrameLine("Valence", maf.CalculateValence(), eaf.CalculateValence(), faf.CalculateValence());
-
-	return table;
-}
-
-string RHSGenerateIndiff(smlRhsEventId id, void* pUserData, Agent* pAgent, char const* pFunctionName, char const* pArgument) {
-	double intensity = atof(pArgument);
-	//double result = 3.0*pow(2, 10.0*intensity);
-	double result = exp(2.0*10.0*intensity);
-
-	return ToString(result);
-}
-
-string RHSGenerateRawData(smlRhsEventId id, void* pUserData, Agent* pAgent, char const* pFunctionName, char const* pArgument) {
-	
-	vector<string> tokens;
-	Tokenize(pArgument, &tokens);
-
-	if(tokens.size() != 2) {
-		string error = "+++Expected 2 arguments, got " + tokens.size();
-		cerr << "\n" + error;
-		return error;
-	}
-	
-   AppraisalFrame af;
-	if(tokens[0] == "emotion") {
-		af = currentEmotion;
-	} else if(tokens[0] == "mood") {
-		af = currentMood.af;
-	} else if(tokens[0] == "feeling") {
-		af = currentFeeling.GenerateAppraisalFrame(currentEmotion, currentMood.af, appraisalStatus);
-	} else {
-		return "Expected one of 'emotion','mood','feeling', got " + tokens[0];
-	}
-
-	return af.GetAppraisalValue(tokens[1]);
-}
-*/

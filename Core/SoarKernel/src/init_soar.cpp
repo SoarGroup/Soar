@@ -49,6 +49,7 @@
 
 #include "reinforcement_learning.h"
 #include "ModalEmotion.h"
+#include "emotion.h"
 
 #define INIT_FILE       "init.soar"
 
@@ -382,6 +383,8 @@ bool reinitialize_soar (agent* thisAgent) {
   set_sysparam(thisAgent, TRACE_FIRINGS_PREFERENCES_SYSPARAM,      FALSE);
   set_sysparam(thisAgent, TRACE_WM_CHANGES_SYSPARAM,               FALSE);
   /* kjh (CUSP-B4) end */
+
+  emotion_reset(thisAgent);
 
   rl_reset_data( thisAgent );
   clear_goal_stack (thisAgent);

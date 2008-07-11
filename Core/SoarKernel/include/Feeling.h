@@ -50,7 +50,7 @@ struct Feeling {
 		return lexical_cast<string>(val);
 	}
 
-	string SetDimension(string dim, AppraisalFrame emotion, AppraisalFrame mood, bool status) {
+	string SetDimension(const string& dim, const AppraisalFrame& emotion, const AppraisalFrame& mood, bool status) {
       if(dim == "suddenness") { af.suddenness = GetValue(emotion.suddenness, mood.suddenness, status); }
 		else if(dim == "unpredictability") { af.unpredictability = GetValue(emotion.unpredictability, mood.unpredictability, status); }
 		else if(dim == "intrinsic-pleasantness") { af.intrinsic_pleasantness = GetValue(emotion.intrinsic_pleasantness, mood.intrinsic_pleasantness, status); }
@@ -75,7 +75,7 @@ struct Feeling {
 		return "";
 	}
 
-	double GetNumericDimension(string dim, AppraisalFrame emotion, AppraisalFrame mood, bool status) {
+	double GetNumericDimension(const string& dim, const AppraisalFrame& emotion, const AppraisalFrame& mood, bool status) {
 		SetDimension(dim, emotion, mood, status);
 
 		if(dim == "suddenness") { return af.suddenness; }
@@ -91,7 +91,7 @@ struct Feeling {
 		}
 	}
 
-	string GetCategoricalDimension(string dim, AppraisalFrame emotion, AppraisalFrame mood, bool status) {
+	string GetCategoricalDimension(const string& dim, const AppraisalFrame& emotion, const AppraisalFrame& mood, bool status) {
 		SetDimension(dim, emotion, mood, status);
 
 		if(dim == "causal-agent") {
@@ -120,7 +120,7 @@ struct Feeling {
 		}
 	}
 
-	string GetDimensionAsString(string dim, AppraisalFrame emotion, AppraisalFrame mood, bool status) {
+	string GetDimensionAsString(const string& dim, const AppraisalFrame& emotion, const AppraisalFrame& mood, bool status) {
 		SetDimension(dim, emotion, mood, status);
 
 		if(dim == "suddenness") { return lexical_cast<string>(af.suddenness); }

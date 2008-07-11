@@ -33,7 +33,7 @@ struct Mood {
 		af.power = 0;
 	}
 
-	string SetParameters(vector<string> params) {
+	string SetParameters(vector<string>& params) {
 
 		string result = "";
 
@@ -85,7 +85,7 @@ struct Mood {
 		return val + delta;
 	}
 
-	void MoveTowardEmotion(AppraisalFrame emotion) {
+	void MoveTowardEmotion(AppraisalFrame& emotion) {
 		af.suddenness = MoveTowardEmotion(af.suddenness, emotion.suddenness);
 		af.unpredictability = MoveTowardEmotion(af.unpredictability, emotion.unpredictability);
 		af.intrinsic_pleasantness = MoveTowardEmotion(af.intrinsic_pleasantness, emotion.intrinsic_pleasantness);
@@ -103,7 +103,7 @@ struct Mood {
 		af.power = MoveTowardEmotion(af.power, emotion.power);
 	}
 
-   void DisableAppraisal(string appraisal) {
+   void DisableAppraisal(string& appraisal) {
 		if(appraisal == "suddenness") { af.suddenness = fInvalidValue; }
 		else if(appraisal == "unpredictability") { af.unpredictability = fInvalidValue; }
 		else if(appraisal == "intrinsic-pleasantness") { af.intrinsic_pleasantness = fInvalidValue; }
@@ -125,7 +125,7 @@ struct Mood {
 		}
    }
 
-   string GetDimension(string dim) {
+   string GetDimension(string& dim) {
 		if(dim == "suddenness") { return lexical_cast<string>(af.suddenness); }
 		else if(dim == "unpredictability") { return lexical_cast<string>(af.unpredictability); }
 		else if(dim == "intrinsic-pleasantness") { return lexical_cast<string>(af.intrinsic_pleasantness); }
