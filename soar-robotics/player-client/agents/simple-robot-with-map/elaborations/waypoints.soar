@@ -1,0 +1,43 @@
+sp {apply*waypoints
+   (state <s> ^operator <op>)
+   (<op> ^name initialize-simple-robot)
+-->
+   (<s> ^waypoints <w>)
+   (<w> ^waypoint <w1> <w2> <w3> <w4> <w5> <w6> <w7> <w8> <w9> <w10> <w11> <w12> <w13>)
+   (<w1> ^x -7 ^y -7 ^next <w2> <w3>)
+   (<w2> ^x -3 ^y -5 ^next <w4> <w6>)
+   (<w3> ^x -6 ^y 1 ^next <w4> <w6>)
+   (<w4> ^x -2 ^y -1 ^next <w4> <w6>)
+
+   (<w5> ^x 3 ^y -2 ^next <w4> <w6>)
+   (<w6> ^x 3 ^y -5 ^next <w4> <w6>)
+   (<w7> ^x 6 ^y -3 ^next <w4> <w6>)
+   (<w8> ^x -2 ^y 3 ^next <w4> <w6>)
+   (<w9> ^x -2 ^y 6 ^next <w4> <w6>)
+   (<w10> ^x -6 ^y 5.5 ^next <w4> <w6>)
+   (<w11> ^x -1 ^y 7 ^next <w4> <w6>)
+   (<w12> ^x 6 ^y 7 ^next <w4> <w6>)
+   (<w13> ^x 2 ^y 3 ^next <w4> <w6>)
+}
+
+# calculate the distance to each waypoint
+sp {elaborate*waypoint*distance
+   (state <s> ^io.input-link.self.current-location <cl>
+              ^waypoints.waypoint <w>)
+   (<w> ^x <wx>
+        ^y <wy>)
+   (<cl> ^x <cx>
+         ^y <cy>)
+-->
+   (<w> ^distance (sqrt (+ (*(- <cx> <wx>) (- <cx> <wx>)) (*(- <cy> <wy>) (- <cy> <wy>)) ) ))
+}
+
+# if we're close enough to a waypoint, then mark that we are "at" the waypoint
+sp {elaborate*waypoints*at-waypoint
+   (state <s> ^io.input-link.self.current-location <cl>
+              ^waypoints <ws>)
+   (<ws> ^waypoint <w>)
+   (<w> ^distance < 0.25)
+-->
+   (<ws> ^at <w>)
+}

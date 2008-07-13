@@ -1,0 +1,19 @@
+# when we arrive at the destination, remove it so we can choose a new one
+sp {wander*propose*clean-up-destination
+   (state <s> ^name wander
+              ^waypoints.at <w>
+              ^superoperator.destination <w>)
+-->
+   (<s> ^operator <op> + >)
+   (<op> ^name clean-up-destination)
+}
+
+sp {apply*clean-up-destination
+   (state <s> ^operator <op>
+              ^superoperator <so>)
+   (<so> ^destination <w>)
+   (<op> ^name clean-up-destination)
+-->
+   (<so> ^destination <w> -)
+}
+
