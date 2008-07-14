@@ -694,6 +694,10 @@ const char *epmem_convert_trigger( const long val )
 	
 	switch ( val )
 	{
+		case EPMEM_TRIGGER_NONE:
+			return_val = "none";
+			break;
+
 		case EPMEM_TRIGGER_OUTPUT:
 			return_val = "output";
 			break;
@@ -710,11 +714,62 @@ const long epmem_convert_trigger( const char *val )
 {
 	long return_val = NULL;
 	
+	if ( !strcmp( val, "none" ) )
+		return_val = EPMEM_TRIGGER_NONE;
+
 	if ( !strcmp( val, "output" ) )
 		return_val = EPMEM_TRIGGER_OUTPUT;
 	
 	if ( !strcmp( val, "dc" ) )
 		return_val = EPMEM_TRIGGER_DC;
+	
+	return return_val;
+}
+
+/////////////////////////////////////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+/////////////////////////////////////////////////////////////////////////////////////////////////////////
+// force
+/////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+/***************************************************************************
+ * Function     : epmem_validate_force
+ **************************************************************************/
+bool epmem_validate_force( const long new_val )
+{
+	return ( ( new_val == EPMEM_FORCE_ON ) || ( new_val == EPMEM_FORCE_OFF ) );
+}
+
+/***************************************************************************
+ * Function     : epmem_convert_force
+ **************************************************************************/
+const char *epmem_convert_force( const long val )
+{
+	const char *return_val = NULL;
+	
+	switch ( val )
+	{
+		case EPMEM_FORCE_ON:
+			return_val = "on";
+			break;
+			
+		case EPMEM_FORCE_OFF:
+			return_val = "off";
+			break;
+	}
+	
+	return return_val;
+}
+
+const long epmem_convert_force( const char *val )
+{
+	long return_val = NULL;
+	
+	if ( !strcmp( val, "on" ) )
+		return_val = EPMEM_FORCE_ON;
+	else if ( !strcmp( val, "off" ) )
+		return_val = EPMEM_FORCE_OFF;
 	
 	return return_val;
 }
@@ -1622,40 +1677,52 @@ void epmem_reset( agent *my_agent, Symbol *state )
 void epmem_consider_new_episode( agent *my_agent )
 {
 	const long trigger = epmem_get_parameter( my_agent, EPMEM_PARAM_TRIGGER, EPMEM_RETURN_LONG );
-	bool new_memory = false;
+	const long force = epmem_get_parameter( my_agent, EPMEM_PARAM_FORCE, EPMEM_RETURN_LONG );
+	bool new_memory = ( force == EPMEM_FORCE_ON );
 	
-	if ( trigger == EPMEM_TRIGGER_OUTPUT )
+	if ( !new_memory )
 	{
-		slot *s;
-		wme *w;
-		Symbol *ol = my_agent->io_header_output;
-		unsigned long wme_count = 0;
-			
-		// examine all commands on the output-link for any
-		// that appeared since last memory was recorded
-		for ( s = ol->id.slots; s != NIL; s = s->next )
+		if ( trigger == EPMEM_TRIGGER_OUTPUT )
 		{
-			for ( w = s->wmes; w != NIL; w = w->next )
-			{
-				wme_count++;
+			slot *s;
+			wme *w;
+			Symbol *ol = my_agent->io_header_output;
+			unsigned long wme_count = 0;
 				
-				if ( w->timetag > my_agent->bottom_goal->id.epmem_info->last_ol_time )
+			// examine all commands on the output-link for any
+			// that appeared since last memory was recorded
+			for ( s = ol->id.slots; s != NIL; s = s->next )
+			{
+				for ( w = s->wmes; w != NIL; w = w->next )
 				{
-					new_memory = true;
-					my_agent->bottom_goal->id.epmem_info->last_ol_time = w->timetag; 
+					wme_count++;
+					
+					if ( w->timetag > my_agent->bottom_goal->id.epmem_info->last_ol_time )
+					{
+						new_memory = true;
+						my_agent->bottom_goal->id.epmem_info->last_ol_time = w->timetag; 
+					}
 				}
 			}
-		}
 
-		if ( my_agent->bottom_goal->id.epmem_info->last_ol_count != wme_count )
+			if ( my_agent->bottom_goal->id.epmem_info->last_ol_count != wme_count )
+			{
+				new_memory = true;
+				my_agent->bottom_goal->id.epmem_info->last_ol_count = wme_count;
+			}
+		}
+		else if ( trigger == EPMEM_TRIGGER_DC )
 		{
 			new_memory = true;
-			my_agent->bottom_goal->id.epmem_info->last_ol_count = wme_count;
+		}
+		else if ( trigger == EPMEM_TRIGGER_NONE )
+		{
+			new_memory = false;
 		}
 	}
-	else if ( trigger == EPMEM_TRIGGER_DC )
+	else
 	{
-		new_memory = true;
+		epmem_set_parameter( my_agent, (const long) EPMEM_PARAM_FORCE, (const long) EPMEM_FORCE_OFF );		
 	}
 	
 	if ( new_memory )

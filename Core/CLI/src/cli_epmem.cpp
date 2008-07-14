@@ -263,6 +263,15 @@ bool CommandLineInterface::DoEpMem( const char pOp, const std::string* pAttr, co
 			AppendArgTagFast( sml_Names::kParamValue, sml_Names::kTypeString, temp.c_str() );			
 		}
 
+		temp = "force: ";
+		temp += epmem_get_parameter( m_pAgentSoar, (const long) EPMEM_PARAM_FORCE, EPMEM_RETURN_STRING );
+		if ( m_RawOutput )
+			m_Result << temp << "\n";
+		else
+		{
+			AppendArgTagFast( sml_Names::kParamValue, sml_Names::kTypeString, temp.c_str() );			
+		}
+
 		temp = "balance: ";
 		temp_val = epmem_get_parameter( m_pAgentSoar, EPMEM_PARAM_BALANCE );
 		temp2 = to_string( temp_val );

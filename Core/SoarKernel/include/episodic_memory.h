@@ -39,8 +39,12 @@ typedef struct wme_struct wme;
 #define EPMEM_PROVENANCE_ON 1
 #define EPMEM_PROVENANCE_OFF 2
 
-#define EPMEM_TRIGGER_OUTPUT 1
-#define EPMEM_TRIGGER_DC 2
+#define EPMEM_TRIGGER_NONE 1
+#define EPMEM_TRIGGER_OUTPUT 2
+#define EPMEM_TRIGGER_DC 3
+
+#define EPMEM_FORCE_ON 1
+#define EPMEM_FORCE_OFF 2
 
 // statement storage
 // 0 - 9 => common
@@ -128,8 +132,9 @@ typedef struct wme_struct wme;
 #define EPMEM_PARAM_INDEXING						3
 #define EPMEM_PARAM_PROVENANCE						4
 #define EPMEM_PARAM_TRIGGER							5
-#define EPMEM_PARAM_BALANCE							6
-#define EPMEM_PARAMS								7 // must be 1+ last epmem param
+#define EPMEM_PARAM_FORCE							6
+#define EPMEM_PARAM_BALANCE							7
+#define EPMEM_PARAMS								8 // must be 1+ last epmem param
 
 // names of stats
 #define EPMEM_STAT_TIME								0
@@ -297,6 +302,11 @@ extern const long epmem_convert_provenance( const char *val );
 extern bool epmem_validate_trigger( const long new_val );
 extern const char *epmem_convert_trigger( const long val );
 extern const long epmem_convert_trigger( const char *val );
+
+// force
+extern bool epmem_validate_force( const long new_val );
+extern const char *epmem_convert_force( const long val );
+extern const long epmem_convert_force( const char *val );
 
 // balance
 extern bool epmem_validate_balance( const double new_val );

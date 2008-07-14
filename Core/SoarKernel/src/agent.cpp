@@ -348,6 +348,7 @@ agent * create_soar_agent (char * agent_name) {                                 
   newAgent->epmem_params[ EPMEM_PARAM_PROVENANCE ] = epmem_add_parameter( "provenance", EPMEM_PROVENANCE_OFF, &epmem_validate_provenance, &epmem_convert_provenance, &epmem_convert_provenance );
     
   newAgent->epmem_params[ EPMEM_PARAM_TRIGGER ] = epmem_add_parameter( "trigger", EPMEM_TRIGGER_OUTPUT, &epmem_validate_trigger, &epmem_convert_trigger, &epmem_convert_trigger );
+  newAgent->epmem_params[ EPMEM_PARAM_FORCE ] = epmem_add_parameter( "force", EPMEM_FORCE_OFF, &epmem_validate_force, &epmem_convert_force, &epmem_convert_force );
   newAgent->epmem_params[ EPMEM_PARAM_BALANCE ] = epmem_add_parameter( "balance", 0.5, &epmem_validate_balance );
 
 
