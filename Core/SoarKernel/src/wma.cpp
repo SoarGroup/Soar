@@ -31,8 +31,6 @@
 
 #include "print.h"
 
-using namespace std;
-
 /***************************************************************************
  * Function     : wma_clean_parameters
  **************************************************************************/
@@ -84,7 +82,7 @@ wma_parameter *wma_add_parameter( const char *name, const char *value, bool (*va
 	// new parameter entry
 	wma_parameter *newbie = new wma_parameter;
 	newbie->param = new wma_parameter_union;
-	newbie->param->string_param.value = new string( value );
+	newbie->param->string_param.value = new std::string( value );
 	newbie->param->string_param.val_func = val_func;
 	newbie->type = wma_param_string;
 	newbie->name = name;
