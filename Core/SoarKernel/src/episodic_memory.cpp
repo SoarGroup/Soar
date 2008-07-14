@@ -3607,13 +3607,13 @@ void epmem_process_query( agent *my_agent, Symbol *state, Symbol *query, Symbol 
 				double balance_inv = 1 - balance;
 				
 				// dynamic programming stuff
-				unsigned long long sum_ct = 0;
+				long long sum_ct = 0;
 				double sum_v = 0;
 
 				// current pointer
 				unsigned long current_list = EPMEM_STMT_BIGTREE_R_GET_LOW_RANGES;
 				epmem_time_id current_id = EPMEM_MEMID_NONE;
-				unsigned long long current_ct = 0;
+				long long current_ct = 0;
 				double current_v = 0;
 				epmem_time_id current_end;
 				epmem_time_id current_valid_end;
@@ -4229,13 +4229,13 @@ void epmem_process_query( agent *my_agent, Symbol *state, Symbol *query, Symbol 
 				double balance_inv = 1 - balance;
 				
 				// dynamic programming stuff
-				unsigned long long sum_ct = 0;
+				long long sum_ct = 0;
 				double sum_v = 0;
 
 				// current pointer
 				unsigned long current_list = EPMEM_STMT_BIGTREE_RIT_GET_LOW_RANGES;
 				epmem_time_id current_id = EPMEM_MEMID_NONE;
-				unsigned long long current_ct = 0;
+				long long current_ct = 0;
 				double current_v = 0;
 				epmem_time_id current_end;
 				epmem_time_id current_valid_end;

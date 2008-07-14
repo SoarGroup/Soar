@@ -1570,7 +1570,7 @@ double wma_get_wme_activation_low( agent *my_agent, wme *w )
 		long wme_pos = w->wma_decay_element->time_spot->position;
 		long curr_pos = my_agent->wma_timelist_current->position;
 
-		return ( ( ( wme_pos >= curr_pos )?( wme_pos - curr_pos ):( ( WMA_MAX_TIMELIST + 1 ) - curr_pos + wme_pos ) ) / WMA_MAX_TIMELIST );
+		return ( (double) ( ( wme_pos >= curr_pos )?( wme_pos - curr_pos ):( ( WMA_MAX_TIMELIST + 1 ) - curr_pos + wme_pos ) ) / (double) WMA_MAX_TIMELIST );
 	}
 }
 
