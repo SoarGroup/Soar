@@ -38,7 +38,6 @@
 #include "misc.h"
 #include "sqlite3.h"
 
-using namespace std;
 using namespace soar_TraceNames;
 
 // defined in symtab.cpp but not in symtab.h
@@ -46,7 +45,7 @@ extern unsigned long compress( unsigned long h, short num_bits );
 extern unsigned long hash_string( const char *s );
 
 // I don't want to expose these functions
-void epmem_process_query( agent *my_agent, Symbol *state, Symbol *query, Symbol *neg_query, vector<epmem_time_id> *prohibit, epmem_time_id before, epmem_time_id after );
+void epmem_process_query( agent *my_agent, Symbol *state, Symbol *query, Symbol *neg_query, std::vector<epmem_time_id> *prohibit, epmem_time_id before, epmem_time_id after );
 void epmem_clear_result( agent *my_agent, Symbol *state );
 void epmem_new_episode( agent *my_agent );
 void epmem_install_memory( agent *my_agent, Symbol *state, epmem_time_id memory_id );
@@ -109,7 +108,7 @@ epmem_parameter *epmem_add_parameter( const char *name, const char *value, bool 
 	// new parameter entry
 	epmem_parameter *newbie = new epmem_parameter;
 	newbie->param = new epmem_parameter_union;
-	newbie->param->string_param.value = new string( value );
+	newbie->param->string_param.value = new std::string( value );
 	newbie->param->string_param.val_func = val_func;
 	newbie->type = epmem_param_string;
 	newbie->name = name;
@@ -1070,7 +1069,7 @@ wme *epmem_get_aug_of_id( agent *my_agent, Symbol *sym, char *attr_name, char *v
 unsigned long epmem_hash_wme( wme *w )
 {
 	unsigned long hash_value;
-	string *temp;
+	std::string *temp;
 	
 	// Generate a hash value for the WME's attr and value
 	hash_value = hash_string( w->attr->sc.name );
@@ -1763,11 +1762,11 @@ void epmem_new_episode( agent *my_agent )
 		wme **wmes = NULL;
 		int len = 0;
 		
-		queue<Symbol *> syms;
-		queue<epmem_node_id> ids;		
+		std::queue<Symbol *> syms;
+		std::queue<epmem_node_id> ids;		
 
 		epmem_node_id parent_id;		
-		map<epmem_node_id, double *> epmem;
+		std::map<epmem_node_id, double *> epmem;
 
 		unsigned long my_hash;
 		int tc = get_new_tc_number( my_agent );
@@ -1901,7 +1900,7 @@ void epmem_new_episode( agent *my_agent )
 		}
 
 		// all inserts at once (provides unique)
-		map<epmem_node_id, double *>::iterator e = epmem.begin();
+		std::map<epmem_node_id, double *>::iterator e = epmem.begin();
 		while ( e != epmem.end() )
 		{
 			// add nodes to the episodic store
@@ -1934,11 +1933,11 @@ void epmem_new_episode( agent *my_agent )
 		wme **wmes = NULL;
 		int len = 0;
 		
-		queue<Symbol *> syms;
-		queue<epmem_node_id> ids;		
+		std::queue<Symbol *> syms;
+		std::queue<epmem_node_id> ids;		
 
 		epmem_node_id parent_id;
-		map<epmem_node_id, bool> epmem;
+		std::map<epmem_node_id, bool> epmem;
 
 		unsigned long my_hash;
 		int tc = get_new_tc_number( my_agent );
@@ -2071,7 +2070,7 @@ void epmem_new_episode( agent *my_agent )
 		}
 
 		// all inserts at once (provides unique)
-		map<epmem_node_id, bool>::iterator e = epmem.begin();
+		std::map<epmem_node_id, bool>::iterator e = epmem.begin();
 		while ( e != epmem.end() )
 		{	
 			// INSERT (id, start, NULL)
@@ -2117,11 +2116,11 @@ void epmem_new_episode( agent *my_agent )
 		wme **wmes = NULL;
 		int len = 0;
 		
-		queue<Symbol *> syms;
-		queue<epmem_node_id> ids;		
+		std::queue<Symbol *> syms;
+		std::queue<epmem_node_id> ids;		
 
 		epmem_node_id parent_id;
-		map<epmem_node_id, bool> epmem;
+		std::map<epmem_node_id, bool> epmem;
 
 		unsigned long my_hash;
 		int tc = get_new_tc_number( my_agent );
@@ -2256,7 +2255,7 @@ void epmem_new_episode( agent *my_agent )
 
 		
 		// all inserts at once (provides unique)
-		map<epmem_node_id, bool>::iterator e = epmem.begin();
+		std::map<epmem_node_id, bool>::iterator e = epmem.begin();
 		while ( e != epmem.end() )
 		{
 			// add NOW entry
@@ -2548,7 +2547,7 @@ void epmem_respond_to_cmd( agent *my_agent )
 	bool next, previous;
 	Symbol *query;
 	Symbol *neg_query;
-	vector<epmem_time_id> *prohibit;
+	std::vector<epmem_time_id> *prohibit;
 	epmem_time_id before, after;
 	bool good_cue;
 	int path;
@@ -2605,7 +2604,7 @@ void epmem_respond_to_cmd( agent *my_agent )
 			previous = false;
 			query = NULL;
 			neg_query = NULL;
-			prohibit = new vector<epmem_time_id>();
+			prohibit = new std::vector<epmem_time_id>();
 			before = EPMEM_MEMID_NONE;
 			after = EPMEM_MEMID_NONE;
 			good_cue = true;
@@ -2798,7 +2797,7 @@ epmem_leaf_node *epmem_create_leaf_node( epmem_node_id leaf_id, double leaf_weig
 /***************************************************************************
  * Function     : epmem_process_query
  **************************************************************************/
-void epmem_process_query( agent *my_agent, Symbol *state, Symbol *query, Symbol *neg_query, vector<epmem_time_id> *prohibit, epmem_time_id before, epmem_time_id after )
+void epmem_process_query( agent *my_agent, Symbol *state, Symbol *query, Symbol *neg_query, std::vector<epmem_time_id> *prohibit, epmem_time_id before, epmem_time_id after )
 {
 	int len_query = 0, len_neg_query = 0;
 	wme **wmes_query = NULL;
@@ -2820,13 +2819,13 @@ void epmem_process_query( agent *my_agent, Symbol *state, Symbol *query, Symbol 
 			// initialize pos/neg lists
 			std::list<epmem_node_id> leaf_ids[2];
 			std::list<epmem_node_id>::iterator leaf_p;
-			vector<epmem_time_id>::iterator prohibit_p;
+			std::vector<epmem_time_id>::iterator prohibit_p;
 			{
 				wme ***wmes;
 				int len;				
 				
-				queue<Symbol *> parent_syms;
-				queue<epmem_node_id> parent_ids;			
+				std::queue<Symbol *> parent_syms;
+				std::queue<epmem_node_id> parent_ids;			
 				int tc = get_new_tc_number( my_agent );
 
 				Symbol *parent_sym;
@@ -2953,9 +2952,9 @@ void epmem_process_query( agent *my_agent, Symbol *state, Symbol *query, Symbol 
 					double balance = epmem_get_parameter( my_agent, (const long) EPMEM_PARAM_BALANCE );
 				
 					// construct basic sql					
-					string search_sql = "SELECT a.time, a.cardinality, a.features, ((a.cardinality * ?) + (a.features * ?)) AS match_score FROM (SELECT time, COUNT(time) AS cardinality, SUM(weight) AS features FROM episodes WHERE weight IS NOT NULL AND id IN (";
+					std::string search_sql = "SELECT a.time, a.cardinality, a.features, ((a.cardinality * ?) + (a.features * ?)) AS match_score FROM (SELECT time, COUNT(time) AS cardinality, SUM(weight) AS features FROM episodes WHERE weight IS NOT NULL AND id IN (";
 					{
-						string *qs = string_multi_copy( "?,", leaf_ids[ index ].size() - 1 );												
+						std::string *qs = string_multi_copy( "?,", leaf_ids[ index ].size() - 1 );												
 						search_sql.append( *qs );
 						delete qs;
 					}
@@ -2964,7 +2963,7 @@ void epmem_process_query( agent *my_agent, Symbol *state, Symbol *query, Symbol 
 					// prohibit
 					if ( !prohibit->empty() )
 					{
-						string *qs = string_multi_copy( "?,", prohibit->size() - 1 );					
+						std::string *qs = string_multi_copy( "?,", prohibit->size() - 1 );					
 
 						search_sql += "AND time NOT IN (";
 						search_sql.append( *qs );
@@ -3024,11 +3023,11 @@ void epmem_process_query( agent *my_agent, Symbol *state, Symbol *query, Symbol 
 					double balance = epmem_get_parameter( my_agent, (const long) EPMEM_PARAM_BALANCE );
 					
 					// start sql
-					string search_sql = "SELECT b.time, b.cardinality, b.features, ((b.cardinality * ?) + (b.features * ?)) AS match_score FROM (SELECT a.t AS time, SUM(a.c) AS cardinality, SUM(a.f) AS features FROM (SELECT time AS t, COUNT(time) AS c, SUM(weight) AS f FROM episodes WHERE weight IS NOT NULL AND id IN (";
+					std::string search_sql = "SELECT b.time, b.cardinality, b.features, ((b.cardinality * ?) + (b.features * ?)) AS match_score FROM (SELECT a.t AS time, SUM(a.c) AS cardinality, SUM(a.f) AS features FROM (SELECT time AS t, COUNT(time) AS c, SUM(weight) AS f FROM episodes WHERE weight IS NOT NULL AND id IN (";
 
 					// add positives
 					{
-						string *qs = string_multi_copy( "?,", leaf_ids[0].size() - 1 );
+						std::string *qs = string_multi_copy( "?,", leaf_ids[0].size() - 1 );
 						search_sql.append( *qs );
 						delete qs;
 					}
@@ -3037,7 +3036,7 @@ void epmem_process_query( agent *my_agent, Symbol *state, Symbol *query, Symbol 
 					// positive prohibit
 					if ( !prohibit->empty() )
 					{
-						string *qs = string_multi_copy( "?,", prohibit->size() - 1 );					
+						std::string *qs = string_multi_copy( "?,", prohibit->size() - 1 );					
 						
 						search_sql += "AND time NOT IN (";
 						search_sql.append( *qs );
@@ -3062,7 +3061,7 @@ void epmem_process_query( agent *my_agent, Symbol *state, Symbol *query, Symbol 
 
 					// add negatives
 					{
-						string *qs = string_multi_copy( "?,", leaf_ids[1].size() - 1 );					
+						std::string *qs = string_multi_copy( "?,", leaf_ids[1].size() - 1 );					
 						search_sql.append( *qs );
 						delete qs;
 					}					
@@ -3071,7 +3070,7 @@ void epmem_process_query( agent *my_agent, Symbol *state, Symbol *query, Symbol 
 					// neg prohibit
 					if ( !prohibit->empty() )
 					{
-						string *qs = string_multi_copy( "?,", prohibit->size() - 1 );						
+						std::string *qs = string_multi_copy( "?,", prohibit->size() - 1 );						
 						
 						search_sql += "AND time NOT IN (";
 						search_sql.append( *qs );
@@ -3207,13 +3206,13 @@ void epmem_process_query( agent *my_agent, Symbol *state, Symbol *query, Symbol 
 			// get the leaf id's
 			std::list<epmem_leaf_node *> leaf_ids[2];
 			std::list<epmem_leaf_node *>::iterator leaf_p;			
-			vector<epmem_time_id>::iterator prohibit_p;
+			std::vector<epmem_time_id>::iterator prohibit_p;
 			{
 				wme ***wmes;
 				int len;
 				
-				queue<Symbol *> parent_syms;
-				queue<epmem_node_id> parent_ids;			
+				std::queue<Symbol *> parent_syms;
+				std::queue<epmem_node_id> parent_ids;			
 				int tc = get_new_tc_number( my_agent );
 
 				Symbol *parent_sym;
@@ -3342,11 +3341,11 @@ void epmem_process_query( agent *my_agent, Symbol *state, Symbol *query, Symbol 
 				
 				if ( !leaf_ids[0].empty() )
 				{
-					string insert_sql_pos = "INSERT INTO ranges (start,end,weight,ct) SELECT e.start, e.end, w.weight, ? FROM episodes e INNER JOIN weights w ON e.id=w.id WHERE e.id IN (";
+					std::string insert_sql_pos = "INSERT INTO ranges (start,end,weight,ct) SELECT e.start, e.end, w.weight, ? FROM episodes e INNER JOIN weights w ON e.id=w.id WHERE e.id IN (";
 
 					// add positives
 					{
-						string *qs = string_multi_copy( "?,", leaf_ids[0].size() - 1 );					
+						std::string *qs = string_multi_copy( "?,", leaf_ids[0].size() - 1 );					
 						insert_sql_pos.append( *qs );
 						delete qs;
 					}					
@@ -3399,11 +3398,11 @@ void epmem_process_query( agent *my_agent, Symbol *state, Symbol *query, Symbol 
 				
 				if ( !leaf_ids[1].empty() )
 				{
-					string insert_sql_neg = "INSERT INTO ranges (start,end,weight,ct) SELECT e.start, e.end, ?*w.weight, ? FROM episodes e INNER JOIN weights w ON e.id=w.id WHERE e.id IN (";
+					std::string insert_sql_neg = "INSERT INTO ranges (start,end,weight,ct) SELECT e.start, e.end, ?*w.weight, ? FROM episodes e INNER JOIN weights w ON e.id=w.id WHERE e.id IN (";
 
 					// add negatives
 					{
-						string *qs = string_multi_copy( "?,", leaf_ids[1].size() - 1 );
+						std::string *qs = string_multi_copy( "?,", leaf_ids[1].size() - 1 );
 						insert_sql_neg.append( *qs );
 						delete qs;
 					}					
@@ -3471,8 +3470,8 @@ void epmem_process_query( agent *my_agent, Symbol *state, Symbol *query, Symbol 
 			// modify ranges to accomodate prohibition			
 			if ( !prohibit->empty() )
 			{			
-				vector<epmem_time_id *> prohibit_ranges;
-				vector<epmem_time_id *>::iterator pr_p;
+				std::vector<epmem_time_id *> prohibit_ranges;
+				std::vector<epmem_time_id *>::iterator pr_p;
 
 				epmem_time_id start = EPMEM_MEMID_NONE;
 				epmem_time_id prev = EPMEM_MEMID_NONE;
@@ -3516,8 +3515,8 @@ void epmem_process_query( agent *my_agent, Symbol *state, Symbol *query, Symbol 
 				// remove ranges that are entirely contained within prohibit ranges
 				{
 					// dynamic sql
-					string del_sql = "DELETE FROM ranges WHERE ";					
-					string *clauses = string_multi_copy( "(start>=? AND end<=?) OR ", prohibit_ranges.size() - 1 );
+					std::string del_sql = "DELETE FROM ranges WHERE ";					
+					std::string *clauses = string_multi_copy( "(start>=? AND end<=?) OR ", prohibit_ranges.size() - 1 );
 					
 					del_sql.append( *clauses );
 					del_sql += "(start>=? AND end<=?)";
@@ -3781,13 +3780,13 @@ void epmem_process_query( agent *my_agent, Symbol *state, Symbol *query, Symbol 
 			// get the leaf id's
 			std::list<epmem_leaf_node *> leaf_ids[2];
 			std::list<epmem_leaf_node *>::iterator leaf_p;			
-			vector<epmem_time_id>::iterator prohibit_p;
+			std::vector<epmem_time_id>::iterator prohibit_p;
 			{
 				wme ***wmes;
 				int len;
 				
-				queue<Symbol *> parent_syms;
-				queue<epmem_node_id> parent_ids;		
+				std::queue<Symbol *> parent_syms;
+				std::queue<epmem_node_id> parent_ids;		
 				int tc = get_new_tc_number( my_agent );
 
 				Symbol *parent_sym;
@@ -3916,11 +3915,11 @@ void epmem_process_query( agent *my_agent, Symbol *state, Symbol *query, Symbol 
 				
 				if ( !leaf_ids[0].empty() )
 				{					
-					string insert_sql_pos = "INSERT INTO ranges (start,end,weight,ct) SELECT u.start, u.end, w.weight, ? FROM weights w INNER JOIN (SELECT e.id AS id, e.start AS start, e.end AS end FROM episodes e WHERE e.id IN (";
+					std::string insert_sql_pos = "INSERT INTO ranges (start,end,weight,ct) SELECT u.start, u.end, w.weight, ? FROM weights w INNER JOIN (SELECT e.id AS id, e.start AS start, e.end AS end FROM episodes e WHERE e.id IN (";
 
 					// add positives
 					{
-						string *qs = string_multi_copy( "?,", leaf_ids[0].size() - 1 );
+						std::string *qs = string_multi_copy( "?,", leaf_ids[0].size() - 1 );
 
 						insert_sql_pos.append( *qs );
 						insert_sql_pos += "?)";
@@ -4004,11 +4003,11 @@ void epmem_process_query( agent *my_agent, Symbol *state, Symbol *query, Symbol 
 				
 				if ( !leaf_ids[1].empty() )
 				{
-					string insert_sql_neg = "INSERT INTO ranges (start,end,weight,ct) SELECT u.start, u.end, ?*w.weight, ? FROM weights w INNER JOIN (SELECT e.id AS id, e.start AS start, e.end AS end FROM episodes e WHERE e.id IN (";					
+					std::string insert_sql_neg = "INSERT INTO ranges (start,end,weight,ct) SELECT u.start, u.end, ?*w.weight, ? FROM weights w INNER JOIN (SELECT e.id AS id, e.start AS start, e.end AS end FROM episodes e WHERE e.id IN (";					
 
 					// add negatives
 					{
-						string *qs = string_multi_copy( "?,", leaf_ids[1].size() - 1 );
+						std::string *qs = string_multi_copy( "?,", leaf_ids[1].size() - 1 );
 						
 						insert_sql_neg.append( *qs );
 						insert_sql_neg += "?)";
@@ -4093,8 +4092,8 @@ void epmem_process_query( agent *my_agent, Symbol *state, Symbol *query, Symbol 
 			// modify ranges to accomodate prohibition			
 			if ( !prohibit->empty() )
 			{			
-				vector<epmem_time_id *> prohibit_ranges;
-				vector<epmem_time_id *>::iterator pr_p;
+				std::vector<epmem_time_id *> prohibit_ranges;
+				std::vector<epmem_time_id *>::iterator pr_p;
 
 				epmem_time_id start = EPMEM_MEMID_NONE;
 				epmem_time_id prev = EPMEM_MEMID_NONE;
@@ -4138,8 +4137,8 @@ void epmem_process_query( agent *my_agent, Symbol *state, Symbol *query, Symbol 
 				// remove ranges that are entirely contained within prohibit ranges
 				{
 					// dynamic sql
-					string del_sql = "DELETE FROM ranges WHERE ";					
-					string *clauses = string_multi_copy( "(start>=? AND end<=?) OR ", prohibit_ranges.size() - 1 );
+					std::string del_sql = "DELETE FROM ranges WHERE ";					
+					std::string *clauses = string_multi_copy( "(start>=? AND end<=?) OR ", prohibit_ranges.size() - 1 );
 					
 					del_sql.append( *clauses );
 					del_sql += "(start>=? AND end<=?)";
@@ -4441,7 +4440,7 @@ void epmem_install_memory( agent *my_agent, Symbol *state, epmem_time_id memory_
 
 	if ( epmem_get_parameter( my_agent, EPMEM_PARAM_INDEXING, EPMEM_RETURN_LONG ) == EPMEM_INDEXING_BIGTREE_INSTANCE )
 	{
-		map<epmem_node_id, Symbol *> ids;
+		std::map<epmem_node_id, Symbol *> ids;
 		epmem_node_id child_id;
 		epmem_node_id parent_id;
 		const char *name;
@@ -4506,7 +4505,7 @@ void epmem_install_memory( agent *my_agent, Symbol *state, epmem_time_id memory_
 	}
 	else if ( epmem_get_parameter( my_agent, EPMEM_PARAM_INDEXING, EPMEM_RETURN_LONG ) == EPMEM_INDEXING_BIGTREE_RANGE )
 	{
-		map<epmem_node_id, Symbol *> ids;
+		std::map<epmem_node_id, Symbol *> ids;
 		epmem_node_id child_id;
 		epmem_node_id parent_id;
 		const char *name;
@@ -4572,7 +4571,7 @@ void epmem_install_memory( agent *my_agent, Symbol *state, epmem_time_id memory_
 	}
 	else if ( epmem_get_parameter( my_agent, EPMEM_PARAM_INDEXING, EPMEM_RETURN_LONG ) == EPMEM_INDEXING_BIGTREE_RIT )
 	{
-		map<epmem_node_id, Symbol *> ids;
+		std::map<epmem_node_id, Symbol *> ids;
 		epmem_node_id child_id;
 		epmem_node_id parent_id;
 		const char *name;

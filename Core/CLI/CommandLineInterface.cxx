@@ -12,6 +12,7 @@
 #include "src/cli_echo.cpp"
 #include "src/cli_echocommands.cpp"
 #include "src/cli_editproduction.cpp"
+#include "src/cli_epmem.cpp"
 #include "src/cli_excise.cpp"
 #include "src/cli_explainbacktraces.cpp"
 #include "src/cli_firingcounts.cpp"
@@ -66,6 +67,7 @@
 #include "src/cli_warnings.cpp"
 #include "src/cli_watch.cpp"
 #include "src/cli_watchwmes.cpp"
+#include "src/cli_wma.cpp"
 
 /** End Commands Subdirectory **/
 

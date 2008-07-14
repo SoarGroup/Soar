@@ -616,6 +616,22 @@
 				<File
 					RelativePath=".\src\cli_epmem.cpp"
 					>
+					<FileConfiguration
+						Name="Debug SCU|Win32"
+						ExcludedFromBuild="true"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="Release SCU|Win32"
+						ExcludedFromBuild="true"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+						/>
+					</FileConfiguration>
 				</File>
 				<File
 					RelativePath=".\src\cli_excise.cpp"
@@ -1700,6 +1716,22 @@
 				<File
 					RelativePath=".\src\cli_wma.cpp"
 					>
+					<FileConfiguration
+						Name="Debug SCU|Win32"
+						ExcludedFromBuild="true"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="Release SCU|Win32"
+						ExcludedFromBuild="true"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+						/>
+					</FileConfiguration>
 				</File>
 			</Filter>
 		</Filter>
