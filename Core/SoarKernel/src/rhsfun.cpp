@@ -159,7 +159,7 @@ void remove_rhs_function(agent* thisAgent, Symbol *name) {  /* code from Koss 8/
    Takes any number of arguments, and prints each one.
 -------------------------------------------------------------------- */
 
-Symbol *write_rhs_function_code (agent* thisAgent, list *args, void* user_data) {
+Symbol *write_rhs_function_code (agent* thisAgent, list *args, void* /*user_data*/) {
   Symbol *arg;
   char *string;
   growable_string gs = make_blank_growable_string(thisAgent); // for XML generation
@@ -186,7 +186,7 @@ Symbol *write_rhs_function_code (agent* thisAgent, list *args, void* user_data) 
    Just returns a sym_constant whose print name is a line feed.
 -------------------------------------------------------------------- */
 
-Symbol *crlf_rhs_function_code (agent* thisAgent, list *args, void* user_data) {
+Symbol *crlf_rhs_function_code (agent* thisAgent, list * /*args*/, void* /*user_data*/) {
   return make_sym_constant (thisAgent, "\n");
 }
 
@@ -196,7 +196,7 @@ Symbol *crlf_rhs_function_code (agent* thisAgent, list *args, void* user_data) {
    Just sets a flag indicating that the system has halted.
 -------------------------------------------------------------------- */
 
-Symbol *halt_rhs_function_code (agent* thisAgent, list *args, void* user_data) {
+Symbol *halt_rhs_function_code (agent* thisAgent, list * /*args*/, void* /*user_data*/) {
   thisAgent->system_halted = TRUE;
   	  soar_invoke_callbacks(thisAgent,
 		  AFTER_HALT_SOAR_CALLBACK,
@@ -252,7 +252,7 @@ return NIL;
    concatenation of those arguments.
 -------------------------------------------------------------------- */
 
-Symbol *make_constant_symbol_rhs_function_code (agent* thisAgent, list *args, void* user_data) {
+Symbol *make_constant_symbol_rhs_function_code (agent* thisAgent, list *args, void* /*user_data*/) {
 #define MAKE_CONSTANT_SYMBOL_RHS_BUFFER_SIZE 1000 /* that ought to be long enough */ /* sigh -voigtjr */
   char buf[MAKE_CONSTANT_SYMBOL_RHS_BUFFER_SIZE];
   char *string;
@@ -280,7 +280,7 @@ Symbol *make_constant_symbol_rhs_function_code (agent* thisAgent, list *args, vo
    of the current local time.
 -------------------------------------------------------------------- */
 
-Symbol *timestamp_rhs_function_code (agent* thisAgent, list *args, void* user_data) {
+Symbol *timestamp_rhs_function_code (agent* thisAgent, list * /*args*/, void* /*user_data*/) {
   time_t now;
   struct tm *temp;
 #define TIMESTAMP_BUFFER_SIZE 100
@@ -318,7 +318,7 @@ Symbol *timestamp_rhs_function_code (agent* thisAgent, list *args, void* user_da
    symbol from that line.
 -------------------------------------------------------------------- */
 
-Symbol *accept_rhs_function_code (agent* thisAgent, list *args, void* user_data) {
+Symbol *accept_rhs_function_code (agent* thisAgent, list * /*args*/, void* /*user_data*/) {
   char buf[2000], *s;
   Symbol *sym;
 
@@ -344,7 +344,7 @@ Symbol *accept_rhs_function_code (agent* thisAgent, list *args, void* user_data)
 ------------------------------------------------------------------------ */
 
 Symbol * 
-capitalize_symbol_rhs_function_code (agent* thisAgent, list *args, void* user_data) 
+capitalize_symbol_rhs_function_code (agent* thisAgent, list *args, void* /*user_data*/) 
 {
   char * symbol_to_capitalize;
   Symbol * sym;
@@ -367,7 +367,7 @@ capitalize_symbol_rhs_function_code (agent* thisAgent, list *args, void* user_da
 
   symbol_to_capitalize = symbol_to_string(thisAgent, sym, FALSE, NIL, 0);
   symbol_to_capitalize = savestring(symbol_to_capitalize);
-  *symbol_to_capitalize = toupper(*symbol_to_capitalize);
+  *symbol_to_capitalize = static_cast<char>(toupper(*symbol_to_capitalize));
   return make_sym_constant(thisAgent, symbol_to_capitalize);
 }
 
@@ -438,7 +438,7 @@ strlen <val> - returns the string length of the output string so that
 
 ------------------------------------------------------------ */
 
-Symbol *ifeq_rhs_function_code (agent* thisAgent, list *args, void* user_data) {
+Symbol *ifeq_rhs_function_code (agent* thisAgent, list *args, void* /*user_data*/) {
   Symbol *arg1, *arg2;
   cons *c;
 
@@ -467,7 +467,7 @@ Symbol *ifeq_rhs_function_code (agent* thisAgent, list *args, void* user_data) {
 }
 
 
-Symbol *strlen_rhs_function_code (agent* thisAgent, list *args, void* user_data) {
+Symbol *strlen_rhs_function_code (agent* thisAgent, list *args, void* /*user_data*/) {
   Symbol *arg;
   char *string;
 
@@ -488,7 +488,7 @@ Hack for learning.  Allow user to denote states in which learning
 shouldn't occur when "learning" is set to "except".
 -------------------------------------------------------------------- */
 
-Symbol *dont_learn_rhs_function_code (agent* thisAgent, list *args, void* user_data) {
+Symbol *dont_learn_rhs_function_code (agent* thisAgent, list *args, void* /*user_data*/) {
   Symbol *state;
 
   if (!args) {
@@ -524,7 +524,7 @@ Hack for learning.  Allow user to denote states in which learning
 should occur when "learning" is set to "only".
 -------------------------------------------------------------------- */
 
-Symbol *force_learn_rhs_function_code (agent* thisAgent, list *args, void* user_data) {
+Symbol *force_learn_rhs_function_code (agent* thisAgent, list *args, void* /*user_data*/) {
   Symbol *state;
 
   if (!args) {
@@ -678,7 +678,7 @@ void recursive_deep_copy_helper(agent* thisAgent,
 /* ====================================================================
                   RHS Deep copy function
 ====================================================================  */
-Symbol* deep_copy_rhs_function_code(agent* thisAgent, list *args, void* user_data) {
+Symbol* deep_copy_rhs_function_code(agent* thisAgent, list *args, void* /*user_data*/) {
 
    /* Getting the argument symbol */
    Symbol* baseid = (Symbol*) args->first;

@@ -410,8 +410,8 @@ typedef struct complex_test_struct {
   byte type;                  /* see definitions below */
   union test_info_union {
     Symbol *referent;         /* for relational tests */
-    list *disjunction_list;   /* for disjunction tests */
-    list *conjunct_list;      /* for conjunctive tests */
+    ::list *disjunction_list;   /* for disjunction tests */
+    ::list *conjunct_list;      /* for conjunctive tests */
   } data;
 } complex_test;
 
@@ -500,12 +500,12 @@ typedef struct bt_info_struct {
   preference *trace;        /* preference for BT, or NIL */
 
   /* mvp 5-17-94 */
-  list *prohibits;          /* list of prohibit prefs to backtrace through */
+  ::list *prohibits;          /* list of prohibit prefs to backtrace through */
 } bt_info;
 
 /* --- info on conditions used only by the reorderer --- */
 typedef struct reorder_info_struct {
-  list *vars_requiring_bindings;           /* used only during reordering */
+  ::list *vars_requiring_bindings;           /* used only during reordering */
   struct condition_struct *next_min_cost;  /* used only during reordering */
 } reorder_info;
 

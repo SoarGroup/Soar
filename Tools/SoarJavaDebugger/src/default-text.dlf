@@ -66,7 +66,7 @@
           </view>
         </pane>
         <composite Class="class org.eclipse.swt.widgets.Composite" style="0" attach="Top">
-          <pane view="edit_production" tabAtTop="false" singleView="false" horiz="true">
+          <pane view="scratch_pad" tabAtTop="false" singleView="false" horiz="true">
             <view UpdateEveryNthDecision="0" ComboAtTop="true" ClearComboEachCommand="true" Class="modules.KeepCommandView" ShowTraceOutput="false" Name="scratch_pad" ClearEachCommand="false" UpdateOnStop="false">
               <History Size="0" Class="helpers.CommandHistory"></History>
             </view>

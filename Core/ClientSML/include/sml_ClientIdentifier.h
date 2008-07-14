@@ -93,26 +93,27 @@ class Identifier : public WMElement
 	friend class WorkingMemory ;
 	friend class WMElement ;
 	friend class Agent ;
+	friend class StringElement ;
+	friend class IntElement ;
+	friend class FloatElement ;
 
 public:
 	typedef std::list<WMElement*>::iterator ChildrenIter ;
 	typedef std::list<WMElement*>::const_iterator ChildrenConstIter ;
+
+	ChildrenIter GetChildrenBegin() { return m_pSymbol->m_Children.begin() ; }
+	ChildrenIter GetChildrenEnd()   { return m_pSymbol->m_Children.end() ; }
 
 protected:
 	// Two identifiers (i.e. two wmes) can share the same identifier value
 	// So each identifier has a pointer to a symbol object, but two could share the same object.
 	IdentifierSymbol* m_pSymbol ;
 
-	// When walking graph structures it's helpful to have a way to indicate when we've visited
-	// a particular node in the graph (to avoid looping).  This is that value.
-	long m_Visited ;
-
 	IdentifierSymbol* GetSymbol() { return m_pSymbol ; }
 
-	ChildrenIter GetChildrenBegin() { return m_pSymbol->m_Children.begin() ; }
-	ChildrenIter GetChildrenEnd()   { return m_pSymbol->m_Children.end() ; }
-
 	void SetParent(Identifier* pParent) ;
+
+	void RecordSymbolInMap();
 
 public:
 	virtual char const* GetValueType() const ;
@@ -124,21 +125,6 @@ public:
 	virtual bool IsIdentifier() const { return true ; }
 	
 	virtual Identifier* ConvertToIdentifier() { return this; }
-
-	virtual void SetVisited(long visitValue) { m_Visited = visitValue ; }
-	virtual long GetVisited()				 { return m_Visited ; }
-
-	/*************************************************************
-	* @brief Searches for a child of this identifier that has pID as
-	*		 its value (and is itself an identifier).
-	*		 (The search is recursive over all children).
-	*
-	*		 There can be multiple WMEs that share the same identifier value.
-	*
-	* @param pId	The id to look for (e.g. "O4" -- kernel side or "p3" -- client side)
-	* @param index	If non-zero, finds the n-th match
-	*************************************************************/
-	Identifier* FindIdentifier(char const* pID, int index = 0) const ;
 
 	/*************************************************************
 	* @brief Searches for a child of this identifier that has the given
@@ -225,9 +211,11 @@ protected:
 
 	// The normal case (where there is a parent id)
 	Identifier(Agent* pAgent, Identifier* pParent, char const* pID, char const* pAttributeName, char const* pIdentifier, long timeTag) ;
+	Identifier(Agent* pAgent, IdentifierSymbol* pParentSymbol, char const* pID, char const* pAttributeName, char const* pIdentifier, long timeTag) ;
 
 	// The shared id case (where there is a parent id and value is an identifier that already exists)
 	Identifier(Agent* pAgent, Identifier* pParent, char const* pID, char const* pAttributeName, Identifier* pLinkedIdentifier, long timeTag) ;
+	Identifier(Agent* pAgent, IdentifierSymbol* pParentSymbol, char const* pID, char const* pAttributeName, IdentifierSymbol* pLinkedIdentifierSymbol, long timeTag) ;
 
 	virtual ~Identifier(void);
 

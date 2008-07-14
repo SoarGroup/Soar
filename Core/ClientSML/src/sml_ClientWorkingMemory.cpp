@@ -50,10 +50,13 @@ WorkingMemory::WorkingMemory()
 #ifdef SML_DIRECT
 	m_AgentSMLHandle = 0;
 #endif // SML_DIRECT
+
+	m_Deleting = false;
 }
 
 WorkingMemory::~WorkingMemory()
 {
+	m_Deleting = true;
 	delete m_OutputLink ;
 	delete m_InputLink ;
 }
@@ -69,27 +72,29 @@ char const* WorkingMemory::GetAgentName() const
 }
 
 // Searches for an identifier object that matches this id.
-Identifier*	WorkingMemory::FindIdentifier(char const* pID, bool searchInput, bool searchOutput, int index)
+IdentifierSymbol* WorkingMemory::FindIdentifierSymbol(char const* pID)
 {
-	// BADBAD: For better speed we could keep a map of identifiers in use and just look this up.
-	Identifier* pMatch = NULL ;
-
-	if (searchInput)
+	IdSymbolMapIter match = m_IdSymbolMap.find( std::string(pID) ) ;
+	if ( match == m_IdSymbolMap.end() )
 	{
-		if (m_InputLink)
-			pMatch = m_InputLink->FindIdentifier(pID, index) ;
+		return 0;
 	}
 
-	if (searchOutput && !pMatch)
+	return match->second;
+}
+
+void WorkingMemory::RecordSymbolInMap( IdentifierSymbol* pSymbol )
+{
+	m_IdSymbolMap[ pSymbol->GetIdentifierSymbol() ] = pSymbol;
+}
+
+void WorkingMemory::RemoveSymbolFromMap( IdentifierSymbol* pSymbol )
+{
+	if ( m_Deleting )
 	{
-		if (m_OutputLink)
-			pMatch = m_OutputLink->FindIdentifier(pID, index) ;
-
-		if (!pMatch && !m_OutputOrphans.empty())
-			pMatch = FindIdentifierInWmeList(&m_OutputOrphans, pID) ;
+		return;
 	}
-
-	return pMatch ;
+	m_IdSymbolMap.erase( std::string( pSymbol->GetIdentifierSymbol() ) );
 }
 
 // Finds the first WME in the list that has the given string as its identifier
@@ -109,59 +114,41 @@ WMElement* WorkingMemory::SearchWmeListForID(WmeList* pWmeList, char const* pID,
 	return NULL ;
 }
 
-// Finds the first WME that has the identifier as its value
-Identifier* WorkingMemory::FindIdentifierInWmeList(WmeList* pWmeList, char const* pID)
-{
-	for (WmeListIter iter = pWmeList->begin() ; iter != pWmeList->end() ; iter++)
-	{
-		WMElement* pWME = *iter ;
-
-		if (pWME->IsIdentifier())
-		{
-			Identifier* pIdentifier = (Identifier*)pWME ;
-
-			// This test includes checking for "this" being a match
-			Identifier* pMatch = pIdentifier->FindIdentifier(pID) ;
-			return pMatch ;
-		}
-	}
-
-	return NULL ;
-}
-
 // Create a new WME of the appropriate type based on this information.
-WMElement* WorkingMemory::CreateWME(Identifier* pParent, char const* pID, char const* pAttribute, char const* pValue, char const* pType, long timeTag)
+WMElement* WorkingMemory::CreateWME(IdentifierSymbol* pParentSymbol, char const* pID, char const* pAttribute, char const* pValue, char const* pType, long timeTag)
 {
 	// Value is an identifier
 	if (strcmp(pType, sml_Names::kTypeID) == 0)
 	{
-		Identifier* pSharedIdentifier = this->FindIdentifier( pValue, false, true );
-		if ( pSharedIdentifier != NULL )
+		IdentifierSymbol* pSharedIdentifierSymbol = this->FindIdentifierSymbol( pValue );
+		Identifier* pNewIdentifier = 0;
+		if ( pSharedIdentifierSymbol != NULL )
 		{
-			return new Identifier(GetAgent(), pParent, pID, pAttribute, pSharedIdentifier, timeTag) ;
+			pNewIdentifier = new Identifier(GetAgent(), pParentSymbol, pID, pAttribute, pSharedIdentifierSymbol, timeTag);
 		}
 		else
 		{
-			return new Identifier(GetAgent(), pParent, pID, pAttribute, pValue, timeTag) ;
+			pNewIdentifier = new Identifier(GetAgent(), pParentSymbol, pID, pAttribute, pValue, timeTag) ;
 		}
+		return pNewIdentifier;
 	}
 
 	// Value is a string
 	if (strcmp(pType, sml_Names::kTypeString) == 0)
-		return new StringElement(GetAgent(), pParent, pID, pAttribute, pValue, timeTag) ;
+		return new StringElement(GetAgent(), pParentSymbol, pID, pAttribute, pValue, timeTag) ;
 
 	// Value is an int
 	if (strcmp(pType, sml_Names::kTypeInt) == 0)
 	{
 		int value = atoi(pValue) ;
-		return new IntElement(GetAgent(), pParent, pID, pAttribute, value, timeTag) ;
+		return new IntElement(GetAgent(), pParentSymbol, pID, pAttribute, value, timeTag) ;
 	}
 
 	// Value is a float
 	if (strcmp(pType, sml_Names::kTypeDouble) == 0)
 	{
 		double value = atof(pValue) ;
-		return new FloatElement(GetAgent(), pParent, pID, pAttribute, value, timeTag) ;
+		return new FloatElement(GetAgent(), pParentSymbol, pID, pAttribute, value, timeTag) ;
 	}
 
 	return NULL ;
@@ -236,17 +223,17 @@ bool WorkingMemory::ReceivedOutputAddition(ElementXML* pWmeXML, bool tracing)
 	// (Actually, there can be multiple WMEs that have this identifier
 	//  as its value, but any one will do because the true parent is the
 	//  identifier symbol which is the same for any identifiers).
-	Identifier* pParent = FindIdentifier(pID, false, true) ;
+	IdentifierSymbol* pParentSymbol = FindIdentifierSymbol(pID) ;
 	WMElement* pAddWme = NULL ;
 
-	if (pParent)
+	if (pParentSymbol)
 	{
 		// Create a client side wme object to match the output wme and add it to
 		// our tree of objects.
-		pAddWme = CreateWME(pParent, pID, pAttribute, pValue, pType, timeTag) ;
+		pAddWme = CreateWME(pParentSymbol, pID, pAttribute, pValue, pType, timeTag) ;
 		if (pAddWme)
 		{
-			pParent->AddChild(pAddWme) ;
+			pParentSymbol->AddChild(pAddWme) ;
 
 			// Make a record that this wme was added so we can alert the client to this change.
 			RecordAddition(pAddWme) ;
@@ -263,6 +250,7 @@ bool WorkingMemory::ReceivedOutputAddition(ElementXML* pWmeXML, bool tracing)
 		if (!m_OutputLink && IsStringEqualIgnoreCase(pAttribute, sml_Names::kOutputLinkName))
 		{
 			m_OutputLink = new Identifier(GetAgent(), pValue, timeTag) ;
+
 		} else if (m_OutputLink && (IsStringEqual(m_OutputLink->GetValueAsString(), pValue) && IsStringEqualIgnoreCase(pAttribute, sml_Names::kOutputLinkName)))
 		{
 			// Adding output link again but we already have it so ignored
@@ -387,7 +375,7 @@ bool WorkingMemory::ReceivedOutput(AnalyzeXML* pIncoming, ElementXML* pResponse)
 	unused(pResponse) ;	// No need to reply
 
 #ifdef _DEBUG
-	char * pMsgText = pIncoming->GetCommandTag()->GenerateXMLString(true) ;
+	char * pMsgText = pIncoming->GetCommandTag()->GenerateXMLString(true, true) ;
 #endif
 
 	// Get the command tag which contains the list of wmes
@@ -527,8 +515,8 @@ Identifier* WorkingMemory::GetInputLink()
 bool WorkingMemory::SynchronizeInputLink()
 {
 	// Not supported for direct connections
-	if (GetConnection()->IsDirectConnection())
-		return false ;
+	//if (GetConnection()->IsDirectConnection())
+	//	return false ;
 
 	AnalyzeXML response ;
 
@@ -592,17 +580,17 @@ bool WorkingMemory::SynchronizeInputLink()
 		// (Actually, there can be multiple WMEs that have this identifier
 		//  as its value, but any one will do because the true parent is the
 		//  identifier symbol which is the same for any identifiers).
-		Identifier* pParent = FindIdentifier(pID, true, false) ;
+		IdentifierSymbol* pParentSymbol = FindIdentifierSymbol(pID) ;
 		WMElement* pAddWme = NULL ;
 
-		if (pParent)
+		if (pParentSymbol)
 		{
 			// Create a client side wme object to match the input wme and add it to
 			// our tree of objects.
-			pAddWme = CreateWME(pParent, pID, pAttribute, pValue, pType, timeTag) ;
+			pAddWme = CreateWME(pParentSymbol, pID, pAttribute, pValue, pType, timeTag) ;
 			if (pAddWme)
 			{
-				pParent->AddChild(pAddWme) ;
+				pParentSymbol->AddChild(pAddWme) ;
 			}
 			else
 			{

@@ -69,6 +69,15 @@ public abstract class AbstractComboView extends AbstractUpdateView implements Ag
 	
 	protected int m_PrintCallback ;
 	protected int m_EchoCallback ;
+	
+	/** the position in the history list the up/down scrolling is at (SBW, 7/1/08) **/
+	protected int m_PositionInHistory = -1 ;
+	/** for history scrolling: save the command in progress before we replace it with the most recent history:
+	 * so user can hit up to see last command, but restore what was there if down is hit again
+	 * (this is essentially history[-1])
+	 * SBW 7/1/08 
+	 */
+	protected String m_UnexecutedNewCommand = "";	
 			
 	// The constructor must take no arguments so it can be called
 	// from the loading code and the new window dialog
@@ -185,8 +194,8 @@ public abstract class AbstractComboView extends AbstractUpdateView implements Ag
 		
 		// Decide how many rows to show in the combo list
 		m_CommandCombo.setVisibleItemCount(CommandHistory.kMaxHistorySize > 10 ? 10 : CommandHistory.kMaxHistorySize) ;
-
-		// Listen for when this window is disposed and unregister for anything we registered for
+		
+    // Listen for when this window is disposed and unregister for anything we registered for
 		m_Container.addDisposeListener(new DisposeListener() { public void widgetDisposed(DisposeEvent e) { removeListeners() ; } } ) ;
 				
 		m_Updating = false ;
@@ -251,6 +260,57 @@ public abstract class AbstractComboView extends AbstractUpdateView implements Ag
 			String command = combo.getText() ;
 			commandEntered(command, true) ;	
 		}
+		// override ComboBox's default up/down behavior (which is platform specific)
+		// to make it behave like a command prompt: up goes back in history, down forward
+		// SBW, 7/1/08
+		else if (e.keyCode == SWT.ARROW_UP) {
+      String[] history = m_CommandHistory.getHistory() ;
+
+		  if (m_PositionInHistory == -1) { // can't be below -1
+        // currently not viewing history,
+        // save away the command here so it can be restored
+        m_UnexecutedNewCommand = combo.getText();
+      }
+		   
+      if (m_PositionInHistory < (history.length - 1)) {
+        m_PositionInHistory++ ; // can't increment past the end (minus 1 above)
+        m_CommandCombo.setItems(history) ;
+        m_CommandCombo.setText(history[m_PositionInHistory]);
+        moveComboCursorToEnd();
+        m_CurrentCommand = m_CommandCombo.getText();
+      }
+      // otherwise (not enough history), up is ignored
+      
+      e.doit = false; // don't apply the default combobox behavior
+    }
+		else if (e.keyCode == SWT.ARROW_DOWN) {
+      String[] history = m_CommandHistory.getHistory() ;
+      if (m_PositionInHistory > 0) {      
+        m_PositionInHistory-- ; // can't decrement below 0
+        m_CommandCombo.setItems(history) ;
+        m_CommandCombo.setText(history[m_PositionInHistory]);
+        moveComboCursorToEnd();
+        m_CurrentCommand = m_CommandCombo.getText();
+      }
+      else if (m_PositionInHistory == 0) {
+        m_PositionInHistory--; // -1 is legal, it means a new command
+        m_CommandCombo.setItems(history) ;
+        m_CommandCombo.setText(m_UnexecutedNewCommand);
+        moveComboCursorToEnd();
+        m_CurrentCommand = m_CommandCombo.getText();
+      }
+      // otherwise down is ignored
+
+      e.doit = false; // don't apply the default combobox behavior
+    }
+		
+	}
+	
+	private void moveComboCursorToEnd() {
+	  // set the cursor at the far right of the text in the box
+	  // SBW, 7/1/08
+	  int position = m_CommandCombo.getText().length();
+	  m_CommandCombo.setSelection(new Point(position, position));
 	}
 	
 	private void comboTextModified(ModifyEvent e)
@@ -315,6 +375,15 @@ public abstract class AbstractComboView extends AbstractUpdateView implements Ag
 			this.m_CommandCombo.setText("") ;
 			m_CurrentCommand = "" ;
 		}
+    else 
+    {
+      // SBW 7/1/08: prevent cursor from jumping left if there is still text in the box
+      moveComboCursorToEnd();
+    }
+		
+		// clear command history scrolling state (SBW 7/1/08)
+		m_UnexecutedNewCommand = "";
+		m_PositionInHistory = -1;
 		
 		// Send the command to Soar and echo into the trace
 		if (command.length() > 0)

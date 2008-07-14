@@ -894,7 +894,7 @@ void rl_revert_template_id( agent *my_agent )
 	// make new action list
 	// small hack on variablization: the artificial tc gets dealt with later, just needs to be explicit non-zero
 	my_agent->variablize_this_chunk = TRUE;
-	my_agent->variablization_tc = -1;
+	my_agent->variablization_tc = (0u - 1);
 	action *new_action = rl_make_simple_action( my_agent, id, attr, value, referent );
 	new_action->preference_type = NUMERIC_INDIFFERENT_PREFERENCE_TYPE;
 

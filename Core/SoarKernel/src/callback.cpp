@@ -614,9 +614,9 @@ void soar_remove_callback (agent* thisAgent,
     }
 }
 
-void soar_callback_test_callback (agent* the_agent,
+void soar_callback_test_callback (agent* /*the_agent*/,
 				  soar_callback_data data,
-				  soar_call_data call_data)
+				  soar_call_data /*call_data*/)
 {
   printf("%s test callback executed.\n", (char *) data);
 }

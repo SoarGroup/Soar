@@ -2,10 +2,9 @@
 <VisualStudioProject
 	ProjectType="Visual C++"
 	Version="8.00"
-	Name="TestSMLPerformance"
-	ProjectGUID="{12397B1B-154F-4148-B7C3-1C839967B689}"
-	RootNamespace="TestSMLPerformance"
-	Keyword="ManagedCProj"
+	Name="LoggerWinC"
+	ProjectGUID="{A22DCC2B-A308-4AA4-A8B0-62491A0781DF}"
+	Keyword="Win32Proj"
 	>
 	<Platforms>
 		<Platform
@@ -17,12 +16,11 @@
 	<Configurations>
 		<Configuration
 			Name="Debug|Win32"
-			OutputDirectory="build"
-			IntermediateDirectory="$(OutDir)\Debug"
+			OutputDirectory="LoggerWinC_build"
+			IntermediateDirectory="$(OutDir)\$(ConfigurationName)"
 			ConfigurationType="1"
 			InheritedPropertySheets="$(VCInstallDir)VCProjectDefaults\UpgradeFromVC71.vsprops"
 			CharacterSet="2"
-			ManagedExtensions="0"
 			>
 			<Tool
 				Name="VCPreBuildEventTool"
@@ -42,13 +40,15 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				AdditionalIncludeDirectories="..\..\Core\ClientSML\include;..\..\Core\ConnectionSML\include;..\..\Core\ElementXML\include;..\..\Core\shared"
-				PreprocessorDefinitions="WIN32;_DEBUG"
-				MinimalRebuild="false"
-				BasicRuntimeChecks="0"
+				AdditionalIncludeDirectories="..\..\Core\shared;..\..\Core\ClientSML\include;..\..\Core\ConnectionSML\include"
+				PreprocessorDefinitions="WIN32;_DEBUG;_WINDOWS;_CRT_SECURE_NO_DEPRECATE"
+				MinimalRebuild="true"
+				BasicRuntimeChecks="3"
 				RuntimeLibrary="3"
+				UsePrecompiledHeader="0"
 				WarningLevel="3"
-				DebugInformationFormat="3"
+				Detect64BitPortabilityProblems="true"
+				DebugInformationFormat="4"
 			/>
 			<Tool
 				Name="VCManagedResourceCompilerTool"
@@ -64,7 +64,9 @@
 				OutputFile="..\..\SoarLibrary\bin\$(ProjectName).exe"
 				LinkIncremental="2"
 				GenerateDebugInformation="true"
-				AssemblyDebug="1"
+				ProgramDatabaseFile="$(OutDir)/LoggerWinC.pdb"
+				SubSystem="2"
+				TargetMachine="1"
 			/>
 			<Tool
 				Name="VCALinkTool"
@@ -93,12 +95,11 @@
 		</Configuration>
 		<Configuration
 			Name="Release|Win32"
-			OutputDirectory="build"
-			IntermediateDirectory="$(OutDir)\Release"
+			OutputDirectory="LoggerWinC_build"
+			IntermediateDirectory="$(OutDir)\$(ConfigurationName)"
 			ConfigurationType="1"
 			InheritedPropertySheets="$(VCInstallDir)VCProjectDefaults\UpgradeFromVC71.vsprops"
 			CharacterSet="2"
-			ManagedExtensions="0"
 			WholeProgramOptimization="1"
 			>
 			<Tool
@@ -118,11 +119,12 @@
 			/>
 			<Tool
 				Name="VCCLCompilerTool"
-				AdditionalIncludeDirectories="..\..\Core\ClientSML\include;..\..\Core\ConnectionSML\include;..\..\Core\ElementXML\include;..\..\Core\shared"
-				PreprocessorDefinitions="WIN32;NDEBUG"
-				MinimalRebuild="false"
+				AdditionalIncludeDirectories="..\..\Core\shared;..\..\Core\ClientSML\include;..\..\Core\ConnectionSML\include"
+				PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;_CRT_SECURE_NO_DEPRECATE"
 				RuntimeLibrary="2"
+				UsePrecompiledHeader="0"
 				WarningLevel="3"
+				Detect64BitPortabilityProblems="true"
 				DebugInformationFormat="3"
 			/>
 			<Tool
@@ -139,6 +141,10 @@
 				OutputFile="..\..\SoarLibrary\bin\$(ProjectName).exe"
 				LinkIncremental="1"
 				GenerateDebugInformation="true"
+				SubSystem="2"
+				OptimizeReferences="2"
+				EnableCOMDATFolding="2"
+				TargetMachine="1"
 			/>
 			<Tool
 				Name="VCALinkTool"
@@ -169,15 +175,15 @@
 	<References>
 		<ProjectReference
 			ReferencedProjectIdentifier="{3EDBED11-A1B3-4E00-8B6E-652523D482F0}"
-			RelativePathToProject=".\Core\ClientSML\ClientSML.vcproj"
+			RelativePathToProject="..\..\Core\ClientSML\ClientSML.vcproj"
 		/>
 		<ProjectReference
 			ReferencedProjectIdentifier="{161DC1AD-FB4B-4370-9FD5-B02E2A0D8A36}"
-			RelativePathToProject=".\Core\ConnectionSML\ConnectionSML.vcproj"
+			RelativePathToProject="..\..\Core\ConnectionSML\ConnectionSML.vcproj"
 		/>
 		<ProjectReference
 			ReferencedProjectIdentifier="{E9AB0B6E-F1CA-4A63-817B-AB47F7E5417E}"
-			RelativePathToProject=".\Core\ElementXML\ElementXML.vcproj"
+			RelativePathToProject="..\..\Core\ElementXML\ElementXML.vcproj"
 		/>
 	</References>
 	<Files>
@@ -187,7 +193,11 @@
 			UniqueIdentifier="{4FC737F1-C7A5-4376-A066-2A32D752A2FF}"
 			>
 			<File
-				RelativePath=".\TestSMLPerformance.cpp"
+				RelativePath="..\..\Tools\LoggerWinC\Logger.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\Tools\LoggerWinC\LoggerWinC.cpp"
 				>
 			</File>
 		</Filter>
@@ -196,12 +206,36 @@
 			Filter="h;hpp;hxx;hm;inl;inc;xsd"
 			UniqueIdentifier="{93995380-89BD-4b04-88EB-625FBE52EBFB}"
 			>
+			<File
+				RelativePath="..\..\Tools\LoggerWinC\Logger.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\Tools\LoggerWinC\LoggerWinC.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\Tools\LoggerWinC\Resource.h"
+				>
+			</File>
 		</Filter>
 		<Filter
 			Name="Resource Files"
 			Filter="rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx"
 			UniqueIdentifier="{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}"
 			>
+			<File
+				RelativePath="..\..\Tools\LoggerWinC\LoggerWinC.ico"
+				>
+			</File>
+			<File
+				RelativePath="..\..\Tools\LoggerWinC\LoggerWinC.rc"
+				>
+			</File>
+			<File
+				RelativePath="..\..\Tools\LoggerWinC\small.ico"
+				>
+			</File>
 		</Filter>
 	</Files>
 	<Globals>

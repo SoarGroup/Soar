@@ -13,6 +13,7 @@ public:
 	// callbacks
 	static void MyBoolShutdownHandler( sml::smlSystemEventId id, void* pUserData, sml::Kernel* pKernel );
 	static void MyEventShutdownHandler( sml::smlSystemEventId id, void* pUserData, sml::Kernel* pKernel );
+	static void MyShutdownTestShutdownHandler( sml::smlSystemEventId id, void* pUserData, sml::Kernel* pKernel );
 	static void MyDeletionHandler( sml::smlAgentEventId id, void* pUserData, sml::Agent* pAgent );
 	static void MySystemEventHandler( sml::smlSystemEventId id, void* pUserData, sml::Kernel* pKernel );
 	static void MyCreationHandler( sml::smlAgentEventId id, void* pUserData, sml::Agent* pAgent );
@@ -32,6 +33,7 @@ public:
 	static void MyMemoryLeakUpdateHandlerDestroyChildren( sml::smlUpdateEventId id, void* pUserData, sml::Kernel* pKernel, sml::smlRunFlags runFlags );
 	static void MyMemoryLeakUpdateHandler( sml::smlUpdateEventId id, void* pUserData, sml::Kernel* pKernel, sml::smlRunFlags runFlags );
 	static void MyCallStopOnUpdateEventHandler( sml::smlUpdateEventId id, void* pUserData, sml::Kernel* pKernel, sml::smlRunFlags runFlags );
+	static void MyAgentCreationUpdateEventHandler( sml::smlUpdateEventId id, void* pUserData, sml::Kernel* pKernel, sml::smlRunFlags runFlags );
 
 private:
 	static void MyMemoryLeakUpdateHandlerInternal( bool destroyAll, sml::smlUpdateEventId id, void* pUserData, sml::Kernel* pKernel, sml::smlRunFlags runFlags );

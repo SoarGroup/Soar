@@ -47,7 +47,7 @@ template<class T> std::string *to_string( T &x )
 template <class T> bool from_string( T &val, std::string str )
 {
 	std::stringstream i( str );
-	return ( i >> val );
+	return static_cast<bool>( i >> val );
 }
 
 // Determine if a string represents a natural number (i.e. all numbers)

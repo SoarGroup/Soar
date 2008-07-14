@@ -19,7 +19,14 @@
 
 using namespace sml ;
 
-StringElement::StringElement(Agent* pAgent, Identifier* pParent, char const* pID, char const* pAttributeName, char const* pValue, long timeTag) : WMElement(pAgent, pParent, pID, pAttributeName, timeTag)
+StringElement::StringElement(Agent* pAgent, Identifier* pParent, char const* pID, char const* pAttributeName, char const* pValue, long timeTag) 
+: WMElement(pAgent, pParent->GetSymbol(), pID, pAttributeName, timeTag)
+{
+	m_Value = pValue ;
+}
+
+StringElement::StringElement(Agent* pAgent, IdentifierSymbol* pParentSymbol, char const* pID, char const* pAttributeName, char const* pValue, long timeTag) 
+: WMElement(pAgent, pParentSymbol, pID, pAttributeName, timeTag)
 {
 	m_Value = pValue ;
 }
