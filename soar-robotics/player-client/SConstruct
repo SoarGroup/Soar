@@ -29,8 +29,8 @@ env = conf.Finish()
 
 import glob
 
-prefix = '/home/voigtjr/sandbox'
-soar_home = '/home/voigtjr/soar/SoarSuite'
+prefix = '/usr/local'
+soar_home = '~/soar/SoarSuite'
 
 env.Prepend(CPPPATH = [	
 	prefix + '/include/player-2.1',
