@@ -8,13 +8,14 @@ sp {wander*propose*go-to-waypoint
 }
 
 sp {apply*go-to-waypoint
-   (state <s> ^operator <op>)
+   (state <s> ^operator <op>
+              ^io.output-link <ol>)
    (<op> ^name go-to-waypoint
          ^destination <w>)
    (<w> ^x <x>
         ^y <y>)
 -->
-   (<s> ^io.output-link.move-to <mt>)
+   (<ol> ^move-to <mt>)
    (<mt> ^x <x>
          ^y <y>
          ^throttle 1.0)
