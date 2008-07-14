@@ -1676,12 +1676,12 @@ void epmem_reset( agent *my_agent, Symbol *state )
  **************************************************************************/
 void epmem_consider_new_episode( agent *my_agent )
 {
-	const long trigger = epmem_get_parameter( my_agent, EPMEM_PARAM_TRIGGER, EPMEM_RETURN_LONG );
-	const long force = epmem_get_parameter( my_agent, EPMEM_PARAM_FORCE, EPMEM_RETURN_LONG );
-	bool new_memory = ( force == EPMEM_FORCE_ON );
+	bool new_memory = ( epmem_get_parameter( my_agent, EPMEM_PARAM_FORCE, EPMEM_RETURN_LONG ) == EPMEM_FORCE_ON );
 	
 	if ( !new_memory )
 	{
+		const long trigger = epmem_get_parameter( my_agent, EPMEM_PARAM_TRIGGER, EPMEM_RETURN_LONG );
+		
 		if ( trigger == EPMEM_TRIGGER_OUTPUT )
 		{
 			slot *s;
