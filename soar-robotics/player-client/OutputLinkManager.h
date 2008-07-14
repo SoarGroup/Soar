@@ -9,23 +9,26 @@ public:
 	Command() {}
 	Command( sml::Identifier* commandId );
 
-	enum CommandType { MOVE, ROTATE, STOP, GRIPPER };
-	CommandType 	get_type() { return m_type; }
+	enum CommandType { MOVE, ROTATE, STOP, GRIPPER, MOVE_TO };
+	CommandType 	get_type();
 
 	enum MoveDirection { MOVE_STOP, MOVE_FORWARD, MOVE_BACKWARD };
-	MoveDirection 	get_move_direction() { return m_move; }
+	MoveDirection 	get_move_direction();
 
 	enum RotateDirection { ROTATE_STOP, ROTATE_LEFT, ROTATE_RIGHT };
-	RotateDirection get_rotate_direction() { return m_rotate; }
+	RotateDirection get_rotate_direction();
 
-	double 			get_throttle() { return m_throttle; }
+	double 			get_throttle();
 
 	enum GripperCommand { GRIPPER_OPEN, GRIPPER_CLOSE, GRIPPER_STOP };
-	GripperCommand get_gripper_command() { return m_gripper; }
+	GripperCommand get_gripper_command();
+	
+	double get_x();
+	double get_y();
 	
 	enum Status { STATUS_NONE, STATUS_COMPLETE, STATUS_EXECUTING, STATUS_ERROR };
-	Status 			get_status() { return m_status; }
-	void 			set_status( Status status ) { m_status = status; }
+	Status 			get_status();
+	void 			set_status( Status status );
 	
 private:
 	CommandType m_type;
@@ -34,6 +37,8 @@ private:
 	double m_throttle;
 	GripperCommand m_gripper;
 	Status m_status;
+	double m_x;
+	double m_y;
 };
 
 class OutputLinkManager

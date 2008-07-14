@@ -8,6 +8,51 @@
 #include <sstream>
 #include <iostream>
 
+Command::CommandType Command::get_type() 
+{ 
+	return m_type; 
+}
+
+Command::MoveDirection Command::get_move_direction() 
+{ 
+	return m_move; 
+}
+
+Command::RotateDirection Command::get_rotate_direction() 
+{ 
+	return m_rotate; 
+}
+
+double Command::get_throttle() 
+{ 
+	return m_throttle; 
+}
+
+Command::GripperCommand Command::get_gripper_command() 
+{ 
+	return m_gripper; 
+}
+
+double Command::get_x()
+{
+	return m_x;
+}
+
+double Command::get_y()
+{
+	return m_y;
+}
+
+Command::Status Command::get_status() 
+{ 
+	return m_status; 
+}
+
+void Command::set_status( Status status ) 
+{ 
+	m_status = status; 
+}
+
 void OutputLinkManager::read()
 {
 	for ( int index = 0; index < m_agent.GetNumberCommands(); ++index )

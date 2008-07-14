@@ -23,7 +23,7 @@ void agentHandler( smlAgentEventId id, void* pUserData, Agent* )
 SoarPlayerClient::SoarPlayerClient( const std::string& productions )
 : m_productions( productions )
 , m_robot( "localhost" )
-, m_pp( &m_robot, 1 )
+, m_pp( &m_robot, 0 )
 , m_fp( &m_robot, 0 )
 , m_lp( &m_robot, 0 )
 , m_gp( &m_robot, 0 )
@@ -130,7 +130,6 @@ void SoarPlayerClient::update()
 	// read output link
 	m_output_link->read();
 	bool motion_command_received = false;
-	bool gripper_command_received = false;
 	for ( Command* command = m_output_link->get_next_command(); command != 0; command = m_output_link->get_next_command() )
 	{
 		switch ( command->get_type() )
@@ -174,7 +173,6 @@ void SoarPlayerClient::update()
 			break;
 			
 		case Command::GRIPPER:
-			gripper_command_received = true;
 			switch ( command->get_gripper_command() )
 			{
 			case Command::GRIPPER_OPEN:
@@ -188,20 +186,21 @@ void SoarPlayerClient::update()
 				break;
 			}
 			break;
+			
+		case Command::MOVE_TO:
+			m_pp.GoTo( command->get_x(), command->get_y(), motion_yaw );
+			break;
 		}
+		
 		command->set_status( Command::STATUS_COMPLETE );
 	}
 	
 	if ( motion_command_received )
 	{
 		m_pp.SetSpeed( motion_x, motion_yaw );
-		m_output_link->commit();  // status wme update
 	}
 
-	if ( gripper_command_received )
-	{
-		m_output_link->commit(); // status wme update
-	}
+	m_output_link->commit();
 
     if ( m_stop_issued ) 
     {

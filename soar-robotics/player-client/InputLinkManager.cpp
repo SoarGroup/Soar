@@ -31,20 +31,13 @@ InputLinkManager::InputLinkManager( Agent& agent )
 	}
 	{
 		Identifier* current_motion = m_agent.CreateIdWME( m_self, "current-motion" );
-		{
-			Identifier* concrete = m_agent.CreateIdWME( current_motion, "concrete" );
-	
-			m_motion_x = m_agent.CreateFloatWME( concrete, "x", 0 );
-			m_motion_y = m_agent.CreateFloatWME( concrete, "y", 0 );
-			m_motion_speed = m_agent.CreateFloatWME( concrete, "speed", 0 );
-			m_motion_yaw = m_agent.CreateFloatWME( concrete, "yaw", 0 );
-		}
-		{
-			Identifier* abstract = m_agent.CreateIdWME( current_motion, "abstract" );
-		
-			m_motion_movement = m_agent.CreateStringWME( abstract, "movement", "stop" );
-			m_motion_rotation = m_agent.CreateStringWME( abstract, "rotation", "stop" );
-		}
+
+		m_motion_x = m_agent.CreateFloatWME( current_motion, "x", 0 );
+		m_motion_y = m_agent.CreateFloatWME( current_motion, "y", 0 );
+		m_motion_speed = m_agent.CreateFloatWME( current_motion, "speed", 0 );
+		m_motion_yaw = m_agent.CreateFloatWME( current_motion, "yaw", 0 );
+		m_motion_movement = m_agent.CreateStringWME( current_motion, "movement", "stop" );
+		m_motion_rotation = m_agent.CreateStringWME( current_motion, "rotation", "stop" );
 	}
 	{
 		Identifier* gripper = m_agent.CreateIdWME( m_self, "gripper" );
