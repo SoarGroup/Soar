@@ -77,6 +77,7 @@ SoarPlayerClient::~SoarPlayerClient()
 
 void SoarPlayerClient::update()
 {
+	//std::cout << "update()" << std::endl;
     // read from the proxies
     m_robot.Read();
     
@@ -135,6 +136,7 @@ void SoarPlayerClient::update()
 		switch ( command->get_type() )
 		{
 		case Command::MOVE:
+			//std::cout << "MOVE" << std::endl;
 			motion_command_received = true;
 			switch ( command->get_move_direction() )
 			{
@@ -151,6 +153,7 @@ void SoarPlayerClient::update()
 			break;
 			
 		case Command::ROTATE:
+			//std::cout << "ROTATE" << std::endl;
 			motion_command_received = true;
 			switch ( command->get_rotate_direction() )
 			{
@@ -167,6 +170,7 @@ void SoarPlayerClient::update()
 			break;
 			
 		case Command::STOP:
+			//std::cout << "STOP" << std::endl;
 			motion_command_received = true;
 			motion_x = 0;
 			motion_yaw = 0;
@@ -188,6 +192,7 @@ void SoarPlayerClient::update()
 			break;
 			
 		case Command::MOVE_TO:
+			//std::cout << "MOVE_TO(" << command->get_x() << "," << command->get_y() << "," << motion_yaw << ")" << std::endl;
 			m_pp.GoTo( command->get_x(), command->get_y(), motion_yaw );
 			break;
 		}

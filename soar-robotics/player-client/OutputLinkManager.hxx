@@ -55,6 +55,7 @@ void Command::set_status( Status status )
 
 void OutputLinkManager::read()
 {
+	std::cout << "read" << std::endl;
 	for ( int index = 0; index < m_agent.GetNumberCommands(); ++index )
 	{
 		try
@@ -66,6 +67,8 @@ void OutputLinkManager::read()
 			data.first = command;
 			
 			m_command_list.push_back( data );
+			
+			std::cout << "got command type " << command.get_type() << std::endl;
 		}
 		catch ( ... )
 		{
@@ -74,17 +77,22 @@ void OutputLinkManager::read()
 		}
 	}
 	
+	m_agent.ClearOutputLinkChanges();
+	
 	m_command_iter = m_command_list.begin();
 }
 
 Command* OutputLinkManager::get_next_command()
 {
-	++m_command_iter;
 	if ( m_command_iter == m_command_list.end() )
 	{
 		return 0;
 	}
-	return &( m_command_iter->first );
+
+	Command* current_command = &( m_command_iter->first );
+	++m_command_iter;
+	
+	return current_command;
 }
 
 void OutputLinkManager::commit()
