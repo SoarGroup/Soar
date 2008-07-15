@@ -8,6 +8,16 @@ sp {wander*propose*clean-up-destination
    (<op> ^name clean-up-destination)
 }
 
+sp {wander*compare*clean-up-destination
+   (state <s> ^name wander
+              ^operator <op1> +
+                        <op2> +)
+   (<op1> ^name clean-up-destination)
+   (<op2> ^name go-to-waypoint)
+-->
+   (<s> ^operator <op1> > <op2>)
+}
+
 sp {apply*clean-up-destination
    (state <s> ^operator <op>
               ^superoperator <so>)
