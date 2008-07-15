@@ -14,6 +14,8 @@
 #define SML_OUTPUT_DELTA_LIST_H
 
 #include <vector>
+#include "sml_ClientIdentifier.h"
+#include "sml_ClientWMElement.h"
 
 namespace sml {
 
@@ -57,8 +59,29 @@ public:
 		Clear(true) ;
 	}
 
-	void Clear(bool deleteContents)
+	void Clear(bool deleteContents, bool clearJustAdded = false, bool clearChildrenModified = false)
 	{
+		if ( clearJustAdded || clearChildrenModified )
+		{
+			for ( std::vector<WMDelta*>::iterator iter = m_DeltaList.begin(); iter != m_DeltaList.end(); ++iter )
+			{
+				WMElement* pWME = (*iter)->getWME();
+
+				if ( clearJustAdded )
+				{
+					pWME->SetJustAdded( false );
+				}
+				if ( clearChildrenModified )
+				{
+					if ( pWME->IsIdentifier() )
+					{
+						Identifier* pID = dynamic_cast< Identifier* >( pWME );
+						pID->m_pSymbol->SetAreChildrenModified( false );
+					}
+				}
+			}
+		}
+
 		if (deleteContents)
 		{
 			int size = (int)m_DeltaList.size() ;

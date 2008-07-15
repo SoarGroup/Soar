@@ -83,6 +83,11 @@ protected:
 
 	IdSymbolMap		m_IdSymbolMap;
 
+	typedef std::map< long, WMElement*> TimeTagWMEMap ;
+	typedef TimeTagWMEMap::iterator TimeTagWMEMapIter ;
+
+	TimeTagWMEMap		m_TimeTagWMEMap;
+
 	// Searches for an identifier object that matches this id.
 	IdentifierSymbol*	FindIdentifierSymbol(char const* pID);
 	void				RecordSymbolInMap( IdentifierSymbol* pSymbol );
