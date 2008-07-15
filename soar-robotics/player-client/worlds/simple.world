@@ -48,9 +48,9 @@ define puck model(
   fiducial_return 10
 )
 
-puck( pose [-6 -6 0] color "red" )
-puck( pose [-6 -5 0] color "blue" )
-puck( pose [-5 -6 0] color "green" )
+#puck( pose [-6 -6 0] color "red" )
+#puck( pose [-6 -5 0] color "blue" )
+#puck( pose [-5 -6 0] color "green" )
 
 # create a robot
 pioneer2dx

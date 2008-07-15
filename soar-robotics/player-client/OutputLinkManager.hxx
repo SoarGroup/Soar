@@ -55,7 +55,7 @@ void Command::set_status( Status status )
 
 void OutputLinkManager::read()
 {
-	std::cout << "read" << std::endl;
+	//std::cout << "read" << std::endl;
 	for ( int index = 0; index < m_agent.GetNumberCommands(); ++index )
 	{
 		try
@@ -68,7 +68,7 @@ void OutputLinkManager::read()
 			
 			m_command_list.push_back( data );
 			
-			std::cout << "got command type " << command.get_type() << std::endl;
+			//std::cout << "got command type " << command.get_type() << std::endl;
 		}
 		catch ( ... )
 		{

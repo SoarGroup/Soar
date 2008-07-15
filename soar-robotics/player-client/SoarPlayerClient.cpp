@@ -7,6 +7,7 @@
 #include <exception>
 
 using namespace sml;
+using namespace PlayerCc;
 
 void updateHandler( smlUpdateEventId, void* pUserData, Kernel*, smlRunFlags )
 {
@@ -23,7 +24,7 @@ void agentHandler( smlAgentEventId id, void* pUserData, Agent* )
 SoarPlayerClient::SoarPlayerClient( const std::string& productions )
 : m_productions( productions )
 , m_robot( "localhost" )
-, m_pp( &m_robot, 0 )
+, m_pp( &m_robot, 1 )
 , m_fp( &m_robot, 0 )
 , m_lp( &m_robot, 0 )
 , m_gp( &m_robot, 0 )
@@ -136,7 +137,7 @@ void SoarPlayerClient::update()
 		switch ( command->get_type() )
 		{
 		case Command::MOVE:
-			//std::cout << "MOVE" << std::endl;
+			std::cout << "MOVE" << std::endl;
 			motion_command_received = true;
 			switch ( command->get_move_direction() )
 			{
@@ -153,7 +154,7 @@ void SoarPlayerClient::update()
 			break;
 			
 		case Command::ROTATE:
-			//std::cout << "ROTATE" << std::endl;
+			std::cout << "ROTATE" << std::endl;
 			motion_command_received = true;
 			switch ( command->get_rotate_direction() )
 			{
@@ -170,7 +171,7 @@ void SoarPlayerClient::update()
 			break;
 			
 		case Command::STOP:
-			//std::cout << "STOP" << std::endl;
+			std::cout << "STOP" << std::endl;
 			motion_command_received = true;
 			motion_x = 0;
 			motion_yaw = 0;
@@ -193,7 +194,21 @@ void SoarPlayerClient::update()
 			
 		case Command::MOVE_TO:
 			//std::cout << "MOVE_TO(" << command->get_x() << "," << command->get_y() << "," << motion_yaw << ")" << std::endl;
-			m_pp.GoTo( command->get_x(), command->get_y(), motion_yaw );
+			//m_pp.GoTo( command->get_x(), command->get_y(), motion_yaw );
+			player_pose2d_t position;
+			player_pose2d_t velocity;
+			
+			position.px = command->get_x();
+			position.py = command->get_y();
+			position.pa = motion_yaw;
+			
+			velocity.px = 5;
+			velocity.py = 5;
+			velocity.pa = 5;
+			
+			std::cout << "MOVE_TO p(" << position.px << "," << position.py << "," << position.pa << ")"
+				<< " v(" << velocity.px << "," << velocity.py << "," << velocity.pa << ")" << std::endl;
+			m_pp.GoTo( position, velocity );
 			break;
 		}
 		
