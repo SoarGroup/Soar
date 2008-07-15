@@ -32,7 +32,7 @@ class Identifier ;
 // so we need to represent that separately.
 class IdentifierSymbol
 {
-	friend class Identifier ;	// Provide direct access to children.
+	friend class Identifier ;			// Provide direct access to children.
 
 protected:
 	// The value for this id, which is a string identifier (e.g. I3)
@@ -96,6 +96,7 @@ class Identifier : public WMElement
 	friend class StringElement ;
 	friend class IntElement ;
 	friend class FloatElement ;
+	friend class OutputDeltaList ;		// Allow it to clear are children modified
 
 public:
 	typedef std::list<WMElement*>::iterator ChildrenIter ;
@@ -196,16 +197,6 @@ public:
 	bool AreChildrenModified() { return m_pSymbol->AreChildrenModified() ; }
 
 protected:
-	/*************************************************************
-	* @brief Clear the "just added" flag for this identifier and all children (recursively)
-	*************************************************************/
-	void ClearJustAdded() ;
-
-	/*************************************************************
-	* @brief Clear the "children modified" flag for this identifier and all children (recursively)
-	*************************************************************/
-	void ClearChildrenModified() ;
-
 	// This version is only needed at the top of the tree (e.g. the input link)
 	Identifier(Agent* pAgent, char const* pIdentifier, long timeTag);
 
