@@ -79,28 +79,28 @@ pioneer2dx
 )
 
 # create a robot
-pioneer2dx
-(
-  name "robot2"
-  color "blue"
-  pose [7 7 225]
-  gripper( 
-    pose [0.200 0.000 0.000] color "gray" 
-  )
-  sick_laser(
-    pose [0.030 0.000 0.000 ]
-    fiducialfinder( 
-      range_max 8 
-      range_max_id 5 
-    ) 
-
-    ptz(
-      blobfinder( 
-        channel_count 6 
-        channels [ "red" "blue" "green" "cyan" "yellow" "magenta" ]  
-      )
-    )
-  )
-  watchdog_timeout -1.0
-)
+#pioneer2dx
+#(
+#  name "robot2"
+#  color "blue"
+#  pose [7 7 225]
+#  gripper( 
+#    pose [0.200 0.000 0.000] color "gray" 
+#  )
+#  sick_laser(
+#    pose [0.030 0.000 0.000 ]
+#    fiducialfinder( 
+#      range_max 8 
+#      range_max_id 5 
+#    ) 
+#
+#    ptz(
+#      blobfinder( 
+#        channel_count 6 
+#        channels [ "red" "blue" "green" "cyan" "yellow" "magenta" ]  
+#      )
+#    )
+#  )
+#  watchdog_timeout -1.0
+#)
 
