@@ -1,0 +1,22 @@
+sp {wander*propose*rotate*right
+   (state <s> ^name wander
+              ^next-action-time <nat>
+              ^io.input-link.time.seconds >= <nat>)
+  
+-->
+   (<s> ^operator <o> + =)
+   (<o> ^name rotate
+        ^actions.rotate <r>)
+   (<r> ^direction right
+        ^throttle 1.0)}
+
+sp {wander*propose*rotate*left
+   (state <s> ^name wander
+              ^next-action-time <nat>
+              ^io.input-link.time.seconds >= <nat>)
+-->
+   (<s> ^operator <o> + =)
+   (<o> ^name rotate
+        ^actions.rotate <r>)
+   (<r> ^direction left
+        ^throttle 1.0)}

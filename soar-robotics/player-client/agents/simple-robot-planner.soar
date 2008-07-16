@@ -1,0 +1,3 @@
+pushd simple-robot-planner
+source simple-robot-planner_source.soar
+popd
