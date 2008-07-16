@@ -21,3 +21,11 @@ sp {elaborate*initialize-simple-robot*set-desired
    (<s> ^desired <w>)
 }
 
+sp {at-goal
+   (state <s> ^superstate nil
+              ^desired <w>
+              ^waypoints.at <w>)
+-->
+   (write (crlf) |At goal|)
+   (halt)
+}

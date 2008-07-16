@@ -48,3 +48,11 @@ sp {monitor*waypoints*at-waypoint
 -->
    (write (crlf) |At (| <x> |,| <y> |)|)
 }
+
+sp {monitor*multiple-ats
+   (state <s> ^waypoints <ws>)
+   (<ws> ^at <a1> {<a2> <> <a1>})
+-->
+   (write (crlf) |Multiple ats in waypoints: | <a1> | | <a2>)
+   (interrupt)
+}

@@ -1,7 +1,9 @@
-add-wme i2 ^self *
-add-wme i4 ^current-location *
-add-wme i5 ^x -7
-add-wme i5 ^y -7
+#srand 0
+
+#add-wme i2 ^self *
+#add-wme i4 ^current-location *
+#add-wme i5 ^x -7
+#add-wme i5 ^y -7
 
 pushd ../default
 source selection.soar

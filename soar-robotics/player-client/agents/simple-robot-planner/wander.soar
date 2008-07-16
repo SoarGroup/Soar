@@ -1,7 +1,7 @@
-sp {propose*wander
-   (state <s> ^name simple-robot
-              ^io.input-link <io>)
--->
-   (<s> ^operator <o> + <)
-   (<o> ^name wander +)
-}
+#sp {propose*wander
+#   (state <s> ^name simple-robot
+#              ^io.input-link <io>)
+#-->
+#   (<s> ^operator <o> + <)
+#   (<o> ^name wander +)
+#}
