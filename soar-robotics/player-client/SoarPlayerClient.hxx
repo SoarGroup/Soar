@@ -5,6 +5,7 @@
 
 #include "InputLinkManager.h"
 #include "OutputLinkManager.h"
+#include "SoarPlayerBot.h"
 
 #include <sstream>
 #include <unistd.h>
@@ -91,7 +92,11 @@ std::string SoarPlayerClient::command_reset()
         return std::string( "running, stop first" );
     }
     
-    m_agent->InitSoar();
+	for ( std::vector< SoarPlayerBot* >::iterator iter = m_bot_list.begin(); iter != m_bot_list.end(); ++iter )
+	{
+		(*iter)->reset();
+	}
+
     return std::string();
 }
 
@@ -102,49 +107,32 @@ std::string SoarPlayerClient::command_reload()
         return std::string( "running, stop first" );
     }
 
-    if ( !reload_productions() )
-    {
-        std::stringstream error;
-        error << "error loading productions: " << m_agent->GetLastErrorDescription();
-        return error.str();
-    }
+	for ( std::vector< SoarPlayerBot* >::iterator iter = m_bot_list.begin(); iter != m_bot_list.end(); ++iter )
+	{
+		(*iter)->reload_productions();
+	}
 
     return std::string();
 }
 
-bool SoarPlayerClient::reload_productions()
-{
-    return m_agent->LoadProductions( m_productions.c_str() );
-}
-
 void SoarPlayerClient::agent_event( sml::smlAgentEventId id )
 {
-	switch ( id )
+	for ( std::vector< SoarPlayerBot* >::iterator iter = m_bot_list.begin(); iter != m_bot_list.end(); ++iter )
 	{
-	case sml::smlEVENT_BEFORE_AGENT_REINITIALIZED:
+		switch ( id )
 		{
-			if ( m_input_link )
-			{
-				delete m_input_link;
-				m_input_link = 0;
-			}
-			if ( m_output_link )
-			{
-				delete m_output_link;
-				m_output_link = 0;
-			}
-		}
-		break;
+		case sml::smlEVENT_BEFORE_AGENT_REINITIALIZED:
+			(*iter)->clear_io_links();
+			break;
 	
-	case sml::smlEVENT_AFTER_AGENT_REINITIALIZED:
-		{
-			m_input_link = new InputLinkManager( *m_agent );
-			m_output_link = new OutputLinkManager( *m_agent );
-		}
-		break;
+		case sml::smlEVENT_AFTER_AGENT_REINITIALIZED:
+			(*iter)->create_io_links();
+			break;
 		
-	default:
-		break;
+		default:
+			assert( false );
+			break;
+		}
 	}
 }
 

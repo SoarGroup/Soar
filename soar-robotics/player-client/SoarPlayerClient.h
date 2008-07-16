@@ -10,11 +10,12 @@
 
 class InputLinkManager;
 class OutputLinkManager;
+class SoarPlayerBot;
 
 class SoarPlayerClient: public SoarRunThreadInterface
 {
 public:
-    SoarPlayerClient( const std::string& productions );
+    SoarPlayerClient( const std::string& productions, int number_of_bots );
     virtual ~SoarPlayerClient();
     
     virtual std::string command_run();
@@ -29,21 +30,12 @@ public:
     
 private:
     bool update_and_check_running();
-    bool reload_productions();
 
-    std::string m_productions;
     sml::Kernel* m_kernel;
-    sml::Agent* m_agent;
     
-    InputLinkManager* m_input_link;
-    OutputLinkManager* m_output_link;
+	int m_bot_count;	
+	std::vector< SoarPlayerBot* > m_bot_list;
     
-    PlayerCc::PlayerClient    m_robot;
-    PlayerCc::Position2dProxy m_pp;    
-    PlayerCc::FiducialProxy   m_fp;    
-    PlayerCc::LaserProxy      m_lp;    
-    PlayerCc::GripperProxy    m_gp;    
-
     RunThread* m_run_thread;
     
     bool m_stop_issued;

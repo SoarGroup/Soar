@@ -11,7 +11,7 @@ int main( int argc, char** argv )
     
     try
     {
-        SoarPlayerClient client( argv[1] );
+        SoarPlayerClient client( argv[1], 2 );
         Console console( client );
 
         return console.run();
