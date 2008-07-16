@@ -1,0 +1,20 @@
+sp {selection*propose*decrement-remaining-operators
+   (state <s> ^name selection
+              ^current-evaluation-depth <ced>
+              ^remaining-operators <ro>
+              ^evaluation <e>)
+   (<e> ^current-evaluation-depth <ced>
+        ^remaining-operators <ro>
+        ^value true)
+-->
+   (<s> ^operator <op> + =, >)
+   (<op> ^name decrement-remaining-operators)
+}
+sp {apply*decrement-remaining-operators
+   (state <s> ^operator <op>
+              ^remaining-operators <ro>)
+   (<op> ^name decrement-remaining-operators)
+-->
+   (<s> ^remaining-operators (- <ro> 1)
+                             <ro> -)
+}
