@@ -11,7 +11,8 @@ sp {elaborate*state*top-state
 }
 
 sp {elaborate*state*io
-   (state <s> ^superstate.io <io>)
+   (state <s> ^superstate.io <io>
+             -^name selection)
 -->
    (<s> ^io <io>)}
 
@@ -22,6 +23,7 @@ sp {elaborate*state*super-operator
 }
 
 sp {elaborate*state*waypoints
-   (state <s> ^superstate.waypoints <ws>)
+   (state <s> ^superstate.waypoints <ws>
+             -^name selection)
 -->
    (<s> ^waypoints <ws>)}

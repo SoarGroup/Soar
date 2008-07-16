@@ -1,4 +1,4 @@
-83
+85
 SOAR_ID 0
 SOAR_ID 1
 SOAR_ID 2
@@ -82,7 +82,9 @@ SOAR_ID 79
 FLOAT_RANGE 80 -Infinity Infinity
 FLOAT_RANGE 81 -Infinity Infinity
 FLOAT_RANGE 82 0.0 1.0
-90
+SOAR_ID 83
+ENUMERATION 84 1 go-to-waypoint
+92
 0 action-interval-time 54
 0 attribute 32
 0 choices 33
@@ -95,6 +97,7 @@ FLOAT_RANGE 82 0.0 1.0
 0 operator 30
 0 operator 63
 0 operator 65
+0 operator 83
 0 superstate 6
 0 top-state 0
 0 type 5
@@ -173,3 +176,4 @@ FLOAT_RANGE 82 0.0 1.0
 79 throttle 82
 79 x 80
 79 y 81
+83 name 84

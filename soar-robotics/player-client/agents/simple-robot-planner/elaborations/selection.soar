@@ -1,0 +1,31 @@
+sp {simple-robot*elaborate*problem-space
+   (state <s> ^name simple-robot)
+-->
+   (<s> ^problem-space <p>)
+   (<p> ^name simple-robot
+        ^default-state-copy no
+        #^two-level-attributes waypoints
+        #^one-level-attributes waypoints
+        #^dontcopy at
+   )}
+
+sp {evaluate-operator*elaborate*new-waypoints
+   (state <s> ^name evaluate-operator)
+-->
+   (<s> ^waypoints <wsn>)
+}
+
+sp {evaluate-operator*elaborate*copy-waypoint
+   (state <s> ^name evaluate-operator
+              ^waypoints <wsn>
+              ^top-state.waypoints.waypoint <w>)
+-->
+   (<wsn> ^waypoint <w>)
+}
+
+sp {simple-robot*evaluate*state*success
+   (state <s> ^desired <d>
+              ^problem-space.name simple-robot
+              ^waypoints.at <d>)
+   --> 
+   (<s> ^success <d>)}

@@ -34,9 +34,17 @@ sp {elaborate*waypoint*distance
 # if we're close enough to a waypoint, then mark that we are "at" the waypoint
 sp {elaborate*waypoints*at-waypoint
    (state <s> ^io.input-link.self.current-location <cl>
-              ^waypoints <ws>)
+              ^waypoints <ws>
+             -^name selection)
    (<ws> ^waypoint <w>)
    (<w> ^distance < 0.5)
 -->
    (<ws> ^at <w>)
+}
+
+sp {monitor*waypoints*at-waypoint
+   (state <s> ^waypoints.at <a>)
+   (<a> ^x <x> ^y <y>)
+-->
+   (write (crlf) |At (| <x> |,| <y> |)|)
 }

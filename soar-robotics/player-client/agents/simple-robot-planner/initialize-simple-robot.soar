@@ -14,3 +14,10 @@ sp {apply*initialize-simple-robot
         ^action-interval-time 3) # how much time the agent should wait (as reported on the input-link) between actions
 }
 
+sp {elaborate*initialize-simple-robot*set-desired
+   (state <s> ^waypoints.waypoint <w>)
+   (<w> ^x -2 ^y -1)
+-->
+   (<s> ^desired <w>)
+}
+

@@ -8,13 +8,13 @@
 #   (interrupt)
 #}
 #
-sp {all*monitor*operator*tie*impasse
-   (state <s> ^attribute operator
-              ^impasse tie
-              ^item <i1> ^item {<i2> <> <i1> })
-   (<i1> ^name <name1>)
-   (<i2> ^name <name2>)
--->
-   (write (crlf) | Operator tie between | <name1> | & | <name2>)
-   (interrupt)
-}
+#sp {all*monitor*operator*tie*impasse
+#   (state <s> ^attribute operator
+#              ^impasse tie
+#              ^item <i1> ^item {<i2> <> <i1> })
+#   (<i1> ^name <name1>)
+#   (<i2> ^name <name2>)
+#-->
+#   (write (crlf) | Operator tie between | <name1> | & | <name2>)
+#   (interrupt)
+#}

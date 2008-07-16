@@ -5,6 +5,7 @@ popd
 pushd elaborations
 source elaborations_source.soar
 popd
+source go-to-waypoint.soar
 source initialize-simple-robot.soar
 source wander.soar
 pushd wander
