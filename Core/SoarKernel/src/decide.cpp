@@ -1433,6 +1433,7 @@ void update_impasse_items (agent* thisAgent, Symbol *id, preference *items) {
   wme *w, *next_w;
   preference *cand;
   preference *bt_pref;
+  unsigned int item_count = count_candidates(items); // SBW 5/07
 
   /* --- reset flags on existing items to "NOTHING" --- */
   for (w=id->id.impasse_wmes; w!=NIL; w=w->next)
@@ -1459,6 +1460,15 @@ void update_impasse_items (agent* thisAgent, Symbol *id, preference *items) {
         remove_wme_from_wm (thisAgent, w);
       }
     }
+
+    // SBW 5/07
+    // remove item-count WME if it exists
+    else if (w->attr==thisAgent->item_count_symbol) {
+      remove_from_dll (id->id.impasse_wmes, w, next, prev);
+      symbol_remove_ref (thisAgent, w->value); // remove the reference to the integer constant
+      remove_wme_from_wm (thisAgent, w);
+    }
+
     w = next_w;
   }
 
@@ -1476,6 +1486,17 @@ void update_impasse_items (agent* thisAgent, Symbol *id, preference *items) {
       add_impasse_wme (thisAgent, id, thisAgent->item_symbol, cand->value, bt_pref);
     }
   }
+
+  // SBW 5/07
+  // update the item-count WME
+  // detect relevant impasses by having more than one item
+  if (item_count > 0) {
+    add_impasse_wme (thisAgent, id, thisAgent->item_count_symbol, 
+                     make_int_constant(thisAgent, item_count), NIL);
+  }
+  // TODO does the int constant get its reference removed when the impasse goes
+  // away?
+
 }
 
 /* ------------------------------------------------------------------
@@ -3106,4 +3127,24 @@ void create_gds_for_goal( agent* thisAgent, Symbol *goal){
    #ifdef DEBUG_GDS
      print_with_symbols(thisAgent, "\nCreated GDS for goal [%y].\n", gds->goal);
    #endif
+}
+
+unsigned int count_candidates(preference * candidates)
+{
+    unsigned int numCandidates = 0;
+    preference *cand = 0;
+
+    /*
+       Count up the number of candidates
+       REW: 2003-01-06
+       I'm assuming that all of the candidates have unary or 
+       unary+value (binary) indifferent preferences at this point.
+       So we loop over the candidates list and count the number of
+       elements in the list.
+     */
+
+    for (cand = candidates; cand != NIL; cand = cand->next_candidate)
+        numCandidates++;
+
+    return numCandidates;
 }
