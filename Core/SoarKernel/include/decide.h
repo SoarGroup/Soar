@@ -103,6 +103,9 @@ extern byte run_preference_semantics_for_consistency_check (agent* thisAgent,
 /* These prototypes moved here from chunk.cpp -ajc (5/3/02) */
 extern byte type_of_existing_impasse (agent* thisAgent, Symbol *goal);
 
+// SBW 5/07 added prototype
+unsigned int count_candidates(preference * candidates);
+
 #ifdef __cplusplus
 }
 #endif
