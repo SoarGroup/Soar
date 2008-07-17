@@ -8,9 +8,12 @@
 #include <sstream>
 #include <unistd.h>
 #include <sys/time.h>
+#include <cmath>
 
 using namespace sml;
 using namespace PlayerCc;
+
+const double SoarPlayerBot::MOVE_TO_TOLERANCE = 0.349065556; // twenty degrees
 
 SoarPlayerBot::SoarPlayerBot( int port, Agent& agent, const std::string& productions )
 : m_robot( "localhost", port )
@@ -18,6 +21,7 @@ SoarPlayerBot::SoarPlayerBot( int port, Agent& agent, const std::string& product
 , m_fp( &m_robot, 0 )
 , m_lp( &m_robot, 0 )
 , m_gp( &m_robot, 0 )
+, m_move_to( false )
 , m_productions( productions )
 , m_agent( agent )
 {
@@ -121,6 +125,11 @@ void SoarPlayerBot::update()
 			
 		case Command::ROTATE:
 			//std::cout << "ROTATE" << std::endl;
+			if ( m_move_to )
+			{
+				m_move_to = false;
+				m_pp.SetSpeed( motion_x, 0 );
+			}
 			motion_command_received = true;
 			switch ( command->get_rotate_direction() )
 			{
@@ -138,6 +147,7 @@ void SoarPlayerBot::update()
 			
 		case Command::STOP:
 			//std::cout << "STOP" << std::endl;
+			m_move_to = false;
 			motion_command_received = true;
 			motion_x = 0;
 			motion_yaw = 0;
@@ -159,9 +169,18 @@ void SoarPlayerBot::update()
 			break;
 			
 		case Command::MOVE_TO:
-			//std::cout << "MOVE_TO(" << command->get_x() << "," << command->get_y() << "," << motion_yaw << ")" << std::endl;
-			m_pp.SetSpeed( 0, motion_yaw );
-			m_pp.GoTo( command->get_x(), command->get_y(), motion_yaw );
+			std::cout << "MOVE_TO(" << command->get_x() << "," << command->get_y() << ")" << std::endl;
+			if ( m_move_to )
+			{
+				m_pp.SetSpeed( motion_x, 0 );
+			}
+			m_move_to = true;
+			m_move_to_destination.px = command->get_x();
+			m_move_to_destination.py = command->get_y();
+			m_move_to_destination.pa = atan2( command->get_y() - y, command->get_x() - x );
+			
+			m_pp.GoTo( x, y, m_move_to_destination.pa );
+
 			break;
 		}
 		
@@ -171,6 +190,15 @@ void SoarPlayerBot::update()
 	if ( motion_command_received )
 	{
 		m_pp.SetSpeed( motion_x, motion_yaw );
+	}
+	
+	if ( m_move_to )
+	{
+		if ( fabs( yaw - m_move_to_destination.pa ) < MOVE_TO_TOLERANCE )
+		{
+			m_move_to = false;
+			m_pp.GoTo( m_move_to_destination );
+		}
 	}
 
 	m_output_link->commit();

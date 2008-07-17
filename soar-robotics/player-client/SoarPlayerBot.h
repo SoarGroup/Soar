@@ -33,8 +33,13 @@ private:
     InputLinkManager* m_input_link;
     OutputLinkManager* m_output_link;
     
+    bool m_move_to;
+    player_pose2d m_move_to_destination;
+    
     std::string m_productions;
     sml::Agent& m_agent;
+    
+    static const double MOVE_TO_TOLERANCE;
 };
 
 #endif // SOAR_PLAYER_BOT_H
