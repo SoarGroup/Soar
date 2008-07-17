@@ -274,6 +274,9 @@ typedef struct agent_struct {
   Symbol            * type_symbol;
   Symbol            * wait_symbol;   /* REW:  10.24.97 */
 
+  Symbol            * item_count_symbol; // SBW 5/07
+
+
   /* RPM 9/06 begin */
   Symbol			* input_link_symbol;
   Symbol			* output_link_symbol;
