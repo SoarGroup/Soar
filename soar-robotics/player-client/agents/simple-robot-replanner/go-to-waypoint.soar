@@ -1,0 +1,29 @@
+sp {simple-robot*propose*go-to-waypoint
+   (state <s> ^name simple-robot
+              ^desired
+              ^waypoints.at.next <w>)
+-->
+   (<s> ^operator <op> +)
+   (<op> ^name go-to-waypoint
+         ^destination <w>)
+}
+
+sp {evaluate-operator*apply*go-to-waypoint
+   (state <s> ^name evaluate-operator
+              ^operator <op>
+              ^waypoints <ws>)
+   (<ws> ^at <a>)
+   (<op> ^name go-to-waypoint
+         ^destination <d>)
+-->
+   (<ws> ^at <a> - <d>)
+}
+
+sp {monitor*go-to-waypoint
+   (state <s> ^operator <o>)
+   (<o> ^name go-to-waypoint
+        ^destination <d>)
+   (<d> ^x <x> ^y <y>)
+-->
+   (write (crlf) |Going to (| <x> |,| <y> |)|)
+}

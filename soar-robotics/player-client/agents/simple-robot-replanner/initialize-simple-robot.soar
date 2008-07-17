@@ -1,0 +1,31 @@
+sp {propose*initialize-simple-robot
+   (state <s> ^superstate nil
+             -^name)
+-->
+   (<s> ^operator <o> +)
+   (<o> ^name initialize-simple-robot)
+}
+
+sp {apply*initialize-simple-robot
+   (state <s> ^operator <op>)
+   (<op> ^name initialize-simple-robot)
+-->
+   (<s> ^name simple-robot
+        ^action-interval-time 3) # how much time the agent should wait (as reported on the input-link) between actions
+}
+
+#sp {elaborate*initialize-simple-robot*set-desired
+#   (state <s> ^waypoints.waypoint <w>)
+#   (<w> ^x -2 ^y -1)
+#-->
+#   (<s> ^desired <w>)
+#}
+#
+#sp {at-goal
+#   (state <s> ^superstate nil
+#              ^desired <w>
+#              ^waypoints.at <w>)
+#-->
+#   (write (crlf) |At goal|)
+#   (halt)
+#}
