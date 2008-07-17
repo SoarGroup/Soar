@@ -52,6 +52,18 @@ define puck model(
 #puck( pose [-6 -5 0] color "blue" )
 #puck( pose [-5 -6 0] color "green" )
 
+# a block for, well, blocking
+define barrier model(
+  size [ 3 0.2 ]
+  gui_movemask 3
+  gui_nose 0
+)
+
+barrier(
+  pose [3 0.5 0] 
+  color "black"
+)
+
 # create a robot
 pioneer2dx
 (
