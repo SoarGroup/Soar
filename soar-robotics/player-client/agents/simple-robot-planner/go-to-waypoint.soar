@@ -1,5 +1,6 @@
 sp {simple-robot*propose*go-to-waypoint
    (state <s> ^name simple-robot
+              ^desired
               ^waypoints.at.next <w>)
 -->
    (<s> ^operator <op> +)
@@ -7,7 +8,7 @@ sp {simple-robot*propose*go-to-waypoint
          ^destination <w>)
 }
 
-sp {evaluate-operator*apply*go-to-waypoint2
+sp {evaluate-operator*apply*go-to-waypoint
    (state <s> ^name evaluate-operator
               ^operator <op>
               ^waypoints <ws>)

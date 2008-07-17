@@ -7,6 +7,7 @@ source elaborations_source.soar
 popd
 source go-to-waypoint.soar
 source initialize-simple-robot.soar
+source choose-destination.soar
 source wander.soar
 pushd wander
 source wander_source.soar

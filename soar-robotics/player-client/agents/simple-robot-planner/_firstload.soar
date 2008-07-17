@@ -1,5 +1,5 @@
 #srand 0
-
+#
 #add-wme i2 ^self *
 #add-wme i4 ^current-location *
 #add-wme i5 ^x -7
@@ -7,4 +7,6 @@
 
 pushd ../default
 source selection.soar
+source selection-iterative-deepening.soar
+excise top-goal*halt*success
 popd
