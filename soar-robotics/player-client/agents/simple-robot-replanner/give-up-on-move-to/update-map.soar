@@ -1,0 +1,24 @@
+sp {give-up-on-move-to*propose*update-map
+   (state <s> ^name give-up-on-move-to
+              ^top-state.move-to <mt>)
+   (<mt> ^source <source>
+         ^destination <dest>)
+   (<source> ^next <dest>)
+-->
+   (<s> ^operator <op> + >)
+   (<op> ^name update-map
+         ^source <source>
+         ^destination <dest>)
+}
+
+sp {apply*update-map
+   (state <s> ^operator <op>
+              ^superoperator <so>)
+   (<op> ^name update-map
+         ^source <source>
+         ^destination <dest>)
+   (<source> ^next <dest>)
+-->
+   (<source> ^next <dest> -)
+   (<so> ^map-updated true)
+}

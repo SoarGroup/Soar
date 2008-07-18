@@ -1,0 +1,3 @@
+source elaborations.soar
+source go-to-waypoint.soar
+source update-map.soar

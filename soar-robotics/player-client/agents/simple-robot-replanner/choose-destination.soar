@@ -24,6 +24,17 @@ sp {simple-robot-planner*propose*choose-next-destination
          ^destination <w>)
 }
 
+sp {simple-robot*compare*choose-destination-better-than-go-to-waypoint
+   (state <s> ^name simple-robot
+              ^operator <op1> +
+                        <op2> +)
+   (<op1> ^name choose-destination)
+   (<op2> ^name go-to-waypoint)
+-->
+   (<s> ^operator <op1> > <op2>)
+}
+
+
 sp {apply*choose-destination*first
    (state <s> ^operator <op>
              -^desired)
@@ -41,4 +52,5 @@ sp {apply*choose-destination*next
 -->
    (<s> ^desired <d> - <w>)
 }
+
 

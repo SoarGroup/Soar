@@ -11,7 +11,7 @@ sp {apply*initialize-simple-robot
    (<op> ^name initialize-simple-robot)
 -->
    (<s> ^name simple-robot
-        ^action-interval-time 3) # how much time the agent should wait (as reported on the input-link) between actions
+        ^replan-time 3) # how many seconds (as reported on the input-link) the agent should let the collision avoidance algorithm try to make progress towards the waypoint before replanning
 }
 
 #sp {elaborate*initialize-simple-robot*set-desired

@@ -1,11 +1,54 @@
 sp {simple-robot*propose*go-to-waypoint
    (state <s> ^name simple-robot
               ^desired
-              ^waypoints.at.next <w>)
+              ^waypoints.at.next <w>
+             -^move-to) # not already executing a move-to command
 -->
    (<s> ^operator <op> +)
    (<op> ^name go-to-waypoint
+         ^destination <w>
+         ^track-progress true) #create a move-to structure on state
+}
+
+sp {apply*go-to-waypoint
+   (state <s> ^operator <op>
+              ^io.output-link <ol>)
+   (<op> ^name go-to-waypoint
          ^destination <w>)
+   (<w> ^x <x>
+        ^y <y>)
+-->
+   (<ol> ^move-to <mt>)
+   (<mt> ^x <x>
+         ^y <y>
+         ^throttle 1.0)
+}
+
+sp {apply*go-to-waypoint*create-move-to
+   (state <s> ^operator <op>
+              ^io.input-link.time.seconds <time>
+              ^waypoints.at <at>
+             -^move-to)
+   (<op> ^name go-to-waypoint
+         ^destination <w>
+         ^track-progress true)
+   (<w> ^distance <dist>)
+-->
+   (<s> ^move-to <mt>)
+   (<mt> ^destination <w>
+         ^source <at>
+          ^closest <dist>
+          ^time <time>)
+}
+
+sp {apply*go-to-waypoint*remove-move-to
+   (state <s> ^operator <op>
+              ^move-to <mt>)
+   (<mt> ^destination <> <w>)
+   (<op> ^name go-to-waypoint
+         ^destination <w>)
+-->
+   (<s> ^move-to <mt> -)
 }
 
 sp {evaluate-operator*apply*go-to-waypoint
