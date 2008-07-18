@@ -35,6 +35,7 @@ typedef struct wme_struct wme;
 #define EPMEM_INDEXING_BIGTREE_INSTANCE 1
 #define EPMEM_INDEXING_BIGTREE_RANGE	2
 #define EPMEM_INDEXING_BIGTREE_RIT		3
+#define EPMEM_INDEXING_BIGTREE_HYBRID	4
 
 #define EPMEM_PROVENANCE_ON 1
 #define EPMEM_PROVENANCE_OFF 2
@@ -115,6 +116,15 @@ typedef struct wme_struct wme;
 #define EPMEM_STMT_BIGTREE_RIT_ADD_NOW				33
 #define EPMEM_STMT_BIGTREE_RIT_DELETE_NOW			34
 
+#define EPMEM_STMT_BIGTREE_H_ADD_EPISODE			10
+#define EPMEM_STMT_BIGTREE_H_ADD_ID					11
+#define EPMEM_STMT_BIGTREE_H_FIND_ID				12
+#define EPMEM_STMT_BIGTREE_H_FIND_ID_NULL			13
+#define EPMEM_STMT_BIGTREE_H_GET_EPISODE			14
+#define EPMEM_STMT_BIGTREE_H_VALID_EPISODE			15
+#define EPMEM_STMT_BIGTREE_H_NEXT_EPISODE			16
+#define EPMEM_STMT_BIGTREE_H_PREV_EPISODE			17
+
 #define EPMEM_MAX_STATEMENTS 						40 // must be at least 1+ largest of any STMT constant
 
 #define EPMEM_MEMID_NONE							-1
@@ -124,6 +134,10 @@ typedef struct wme_struct wme;
 
 #define EPMEM_RIT_ROOT								0
 #define EPMEM_LN_2									0.693147180559945
+
+#define EPMEM_HYBRID_BYTE_INT						8
+#define EPMEM_HYBRID_BYTE_DBL						8.0
+#define EPMEM_HYBRID_BYTE_POW						129 // 2 ^ (byte) + 1
 
 // names of params
 #define EPMEM_PARAM_LEARNING						0
