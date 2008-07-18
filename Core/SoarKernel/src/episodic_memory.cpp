@@ -1613,7 +1613,7 @@ void epmem_init_db( agent *my_agent )
 						epmem_logs[ (int) pow( (double) 2, (double) i ) ] = ( i + 1 );
 				
 				// episodes table
-				sqlite3_prepare_v2( my_agent->epmem_db, "CREATE TABLE IF NOT EXISTS episodes (time INTEGER PRIMARY KEY, ids TEXT)", -1, &create, &tail );
+				sqlite3_prepare_v2( my_agent->epmem_db, "CREATE TABLE IF NOT EXISTS episodes (time INTEGER PRIMARY KEY, ids BLOB)", -1, &create, &tail );
 				sqlite3_step( create );					
 				sqlite3_finalize( create );
 
@@ -2518,9 +2518,9 @@ void epmem_new_episode( agent *my_agent )
 		for ( i=0; i<epmem_id_cell; i++ )
 			epmem_string[ i ] = epmem[ i ];	
 		sqlite3_bind_int64( my_agent->epmem_statements[ EPMEM_STMT_BIGTREE_H_ADD_EPISODE ], 1, time_counter );
-		sqlite3_bind_blob( my_agent->epmem_statements[ EPMEM_STMT_BIGTREE_H_ADD_EPISODE ], 2, epmem_string, epmem_id_cell, SQLITE_STATIC );
+		sqlite3_bind_blob( my_agent->epmem_statements[ EPMEM_STMT_BIGTREE_H_ADD_EPISODE ], 2, epmem_string, epmem_id_cell, SQLITE_TRANSIENT );
 		sqlite3_step( my_agent->epmem_statements[ EPMEM_STMT_BIGTREE_H_ADD_EPISODE ] );
-		sqlite3_reset( my_agent->epmem_statements[ EPMEM_STMT_BIGTREE_H_ADD_EPISODE ] );	
+		sqlite3_reset( my_agent->epmem_statements[ EPMEM_STMT_BIGTREE_H_ADD_EPISODE ] );
 		delete epmem_string;
 
 		sqlite3_step( my_agent->epmem_statements[ EPMEM_STMT_COMMIT ] );
@@ -4906,8 +4906,7 @@ void epmem_install_memory( agent *my_agent, Symbol *state, epmem_time_id memory_
 		sqlite3_bind_int64( my_agent->epmem_statements[ EPMEM_STMT_BIGTREE_H_GET_EPISODE ], 1, memory_id );
 		sqlite3_step( my_agent->epmem_statements[ EPMEM_STMT_BIGTREE_H_GET_EPISODE ] );
 		epmem = (unsigned const char *) sqlite3_column_blob( my_agent->epmem_statements[ EPMEM_STMT_BIGTREE_H_GET_EPISODE ], 0 );
-		epmem_bytes = sqlite3_column_bytes( my_agent->epmem_statements[ EPMEM_STMT_BIGTREE_H_GET_EPISODE ], 0 );
-		sqlite3_reset( my_agent->epmem_statements[ EPMEM_STMT_BIGTREE_H_GET_EPISODE ] );
+		epmem_bytes = sqlite3_column_bytes( my_agent->epmem_statements[ EPMEM_STMT_BIGTREE_H_GET_EPISODE ], 0 );		
 
 		// extract database ids
 		std::vector<epmem_node_id> epmem_ids;
@@ -4928,6 +4927,7 @@ void epmem_install_memory( agent *my_agent, Symbol *state, epmem_time_id memory_
 				}
 			}
 		}
+		sqlite3_reset( my_agent->epmem_statements[ EPMEM_STMT_BIGTREE_H_GET_EPISODE ] );
 
 		if ( !epmem_ids.empty() )
 		{
