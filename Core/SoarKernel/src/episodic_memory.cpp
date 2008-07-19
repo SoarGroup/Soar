@@ -1722,14 +1722,33 @@ void epmem_init_db( agent *my_agent )
 							
 				break;
 
-			case EPMEM_INDEXING_BIGTREE_HYBRID:
+			case EPMEM_INDEXING_BIGTREE_HYBRID:			
 
 				// variable initialization
-				epmem_set_stat( my_agent, (const long) EPMEM_STAT_TIME, 1 );
+				epmem_set_stat( my_agent, (const long) EPMEM_STAT_TIME, 1 );				
+				my_agent->epmem_range_mins->clear();
+				my_agent->epmem_range_maxes->clear();
+				my_agent->epmem_range_removals->clear();
 
 				if ( epmem_logs[1] != 1 )
 					for ( int i=0; i<EPMEM_HYBRID_BYTE_INT; i++ )
 						epmem_logs[ (int) pow( (double) 2, (double) i ) ] = ( i + 1 );
+	
+				//
+
+
+				// now table
+				sqlite3_prepare_v2( my_agent->epmem_db, "CREATE TABLE IF NOT EXISTS now (id INTEGER PRIMARY KEY,start INTEGER)", -1, &create, &tail );
+				sqlite3_step( create );					
+				sqlite3_finalize( create );			
+
+				// custom statement for inserting now
+				sqlite3_prepare_v2( my_agent->epmem_db, "INSERT INTO now (id,start) VALUES (?,?)", -1, &( my_agent->epmem_statements[ EPMEM_STMT_BIGTREE_H_ADD_NOW ] ), &tail );
+
+				// custom statement for deleting now
+				sqlite3_prepare_v2( my_agent->epmem_db, "DELETE FROM now WHERE id=?", -1, &( my_agent->epmem_statements[ EPMEM_STMT_BIGTREE_H_DELETE_NOW ] ), &tail );
+
+				//
 				
 				// episodes table
 				sqlite3_prepare_v2( my_agent->epmem_db, "CREATE TABLE IF NOT EXISTS episodes (time INTEGER PRIMARY KEY, ids BLOB)", -1, &create, &tail );
@@ -1738,6 +1757,8 @@ void epmem_init_db( agent *my_agent )
 
 				// custom statement for inserting episodes
 				sqlite3_prepare_v2( my_agent->epmem_db, "INSERT INTO episodes (time,ids) VALUES (?,?)", -1, &( my_agent->epmem_statements[ EPMEM_STMT_BIGTREE_H_ADD_EPISODE ] ), &tail );
+
+				//
 
 				// ids table
 				sqlite3_prepare_v2( my_agent->epmem_db, "CREATE TABLE IF NOT EXISTS ids (child_id INTEGER PRIMARY KEY AUTOINCREMENT,parent_id INTEGER,name TEXT,value NONE,hash INTEGER)", -1, &create, &tail );
@@ -1758,8 +1779,78 @@ void epmem_init_db( agent *my_agent )
 				// custom statement for finding identifier id's
 				sqlite3_prepare_v2( my_agent->epmem_db, "SELECT child_id FROM ids WHERE hash=? AND parent_id=? AND name=? AND value IS NULL", -1, &( my_agent->epmem_statements[ EPMEM_STMT_BIGTREE_H_FIND_ID_NULL ] ), &tail );
 
+				//
+
+				// nodes table
+				sqlite3_prepare_v2( my_agent->epmem_db, "CREATE TABLE IF NOT EXISTS nodes (id INTEGER,start INTEGER,end INTEGER)", -1, &create, &tail );
+				sqlite3_step( create );					
+				sqlite3_finalize( create );			
+
+				// id_start index (for queries)
+				sqlite3_prepare_v2( my_agent->epmem_db, "CREATE UNIQUE INDEX IF NOT EXISTS nodes_id_start ON nodes (id,start)", -1, &create, &tail );
+				sqlite3_step( create );
+				sqlite3_finalize( create );
+
+				// custom statement for inserting nodes
+				sqlite3_prepare_v2( my_agent->epmem_db, "INSERT INTO nodes (id,start,end) VALUES (?,?,?)", -1, &( my_agent->epmem_statements[ EPMEM_STMT_BIGTREE_H_ADD_NODE ] ), &tail );
+
+				////
+
+				// weights table
+				sqlite3_prepare_v2( my_agent->epmem_db, "CREATE TABLE IF NOT EXISTS weights (id INTEGER PRIMARY KEY, weight REAL)", -1, &create, &tail );
+				sqlite3_step( create );	
+				sqlite3_finalize( create );
+
+				// custom statement for adding a weight
+				sqlite3_prepare_v2( my_agent->epmem_db, "INSERT INTO weights (id,weight) VALUES (?,?)", -1, &( my_agent->epmem_statements[ EPMEM_STMT_BIGTREE_H_ADD_WEIGHT ] ), &tail );
+
+				// custom statement for removing all weights
+				sqlite3_prepare_v2( my_agent->epmem_db, "DELETE FROM weights", -1, &( my_agent->epmem_statements[ EPMEM_STMT_BIGTREE_H_TRUNCATE_WEIGHTS ] ), &tail );
+
+				//
+
+				// ranges table
+				sqlite3_prepare_v2( my_agent->epmem_db, "CREATE TABLE IF NOT EXISTS ranges (start INTEGER, end INTEGER, weight REAL, ct INTEGER)", -1, &create, &tail );
+				sqlite3_step( create );					
+				sqlite3_finalize( create );
+
+				// end index
+				sqlite3_prepare_v2( my_agent->epmem_db, "CREATE INDEX IF NOT EXISTS ranges_end ON ranges (end)", -1, &create, &tail );
+				sqlite3_step( create );
+				sqlite3_finalize( create );			
+
+				// start/end index
+				sqlite3_prepare_v2( my_agent->epmem_db, "CREATE INDEX IF NOT EXISTS ranges_start_end ON ranges (start,end)", -1, &create, &tail );
+				sqlite3_step( create );
+				sqlite3_finalize( create );				
+				
+				// custom statement for deleting contained prohibited ranges
+				sqlite3_prepare_v2( my_agent->epmem_db, "DELETE FROM ranges WHERE start<? AND end>?", -1, &( my_agent->epmem_statements[ EPMEM_STMT_BIGTREE_H_DEL_PROHIB ] ), &tail );
+
+				// custom statement for updating lower boundary
+				sqlite3_prepare_v2( my_agent->epmem_db, "UPDATE ranges SET start=? WHERE start BETWEEN ? AND ?", -1, &( my_agent->epmem_statements[ EPMEM_STMT_BIGTREE_H_DEL_PROHIB_LOW ] ), &tail );
+
+				// custom statement for updating upper boundary
+				sqlite3_prepare_v2( my_agent->epmem_db, "UPDATE ranges SET end=? WHERE end BETWEEN ? AND ?", -1, &( my_agent->epmem_statements[ EPMEM_STMT_BIGTREE_H_DEL_PROHIB_HIGH ] ), &tail );
+
+				// custom statement for inserting non-containing
+				sqlite3_prepare_v2( my_agent->epmem_db, "INSERT INTO ranges (start,end,weight,ct) SELECT start,?,weight,ct FROM ranges WHERE start<? AND end>? UNION ALL SELECT ?,end,weight,ct FROM ranges WHERE start<? AND end>?", -1, &( my_agent->epmem_statements[ EPMEM_STMT_BIGTREE_H_DEL_PROHIB_CONTAIN ] ), &tail );
+
+				// custom statement for getting the low list
+				sqlite3_prepare_v2( my_agent->epmem_db, "SELECT start, SUM(ct) AS cnt, SUM(weight) AS v FROM ranges GROUP BY start ORDER BY start", -1, &( my_agent->epmem_statements[ EPMEM_STMT_BIGTREE_H_GET_LOW_RANGES ] ), &tail );
+
+				// custom statement for getting the high list
+				sqlite3_prepare_v2( my_agent->epmem_db, "SELECT end, SUM(ct) AS cnt, SUM(weight) AS v FROM ranges GROUP BY end ORDER BY end", -1, &( my_agent->epmem_statements[ EPMEM_STMT_BIGTREE_H_GET_HIGH_RANGES ] ), &tail );
+
+				// custom statement for removing all ranges
+				sqlite3_prepare_v2( my_agent->epmem_db, "DELETE FROM ranges", -1, &( my_agent->epmem_statements[ EPMEM_STMT_BIGTREE_H_TRUNCATE_RANGES ] ), &tail );
+
+				//
+
 				// custom statements for retrieving an episode
 				sqlite3_prepare_v2( my_agent->epmem_db, "SELECT ids FROM episodes WHERE time=?", -1, &( my_agent->epmem_statements[ EPMEM_STMT_BIGTREE_H_GET_EPISODE ] ), &tail );
+
+				//
 
 				// custom statement for validating an episode
 				sqlite3_prepare_v2( my_agent->epmem_db, "SELECT COUNT(*) AS ct FROM episodes WHERE time=?", -1, &( my_agent->epmem_statements[ EPMEM_STMT_BIGTREE_H_VALID_EPISODE ] ), &tail );
@@ -1770,10 +1861,40 @@ void epmem_init_db( agent *my_agent )
 				// custom statement for finding the previous episode
 				sqlite3_prepare_v2( my_agent->epmem_db, "SELECT time FROM episodes WHERE time<? ORDER BY time DESC LIMIT 1", -1, &( my_agent->epmem_statements[ EPMEM_STMT_BIGTREE_H_PREV_EPISODE ] ), &tail );
 
+				//
+
 				// get max time
 				sqlite3_prepare_v2( my_agent->epmem_db, "SELECT MAX(time) FROM episodes", -1, &create, &tail );
 				if ( sqlite3_step( create ) == SQLITE_ROW )
 					epmem_set_stat( my_agent, (const long) EPMEM_STAT_TIME, ( sqlite3_column_int64( create, 0 ) + 1 ) );
+				sqlite3_finalize( create );
+				time_max = epmem_get_stat( my_agent, (const long) EPMEM_STAT_TIME );
+
+				// insert non-NOW nodes (id,start,end) for all current NOW's				
+				sqlite3_prepare_v2( my_agent->epmem_db, "SELECT id,start FROM now", -1, &create, &tail );
+				sqlite3_bind_int64( my_agent->epmem_statements[ EPMEM_STMT_BIGTREE_H_ADD_NODE ], 3, ( time_max - 1 ) );
+				while ( sqlite3_step( create ) == SQLITE_ROW )
+				{
+					sqlite3_bind_int64( my_agent->epmem_statements[ EPMEM_STMT_BIGTREE_H_ADD_NODE ], 1, sqlite3_column_int64( create, 0 ) );
+					sqlite3_bind_int64( my_agent->epmem_statements[ EPMEM_STMT_BIGTREE_H_ADD_NODE ], 2, sqlite3_column_int64( create, 1 ) );
+					sqlite3_step( my_agent->epmem_statements[ EPMEM_STMT_BIGTREE_H_ADD_NODE ] );
+					sqlite3_reset( my_agent->epmem_statements[ EPMEM_STMT_BIGTREE_H_ADD_NODE ] );
+				}
+				sqlite3_finalize( create );
+
+				// remove all NOW intervals
+				sqlite3_prepare_v2( my_agent->epmem_db, "DELETE FROM now", -1, &create, &tail );				
+				sqlite3_step( create );
+				sqlite3_finalize( create );
+				
+				// get max id + max list			
+				sqlite3_prepare_v2( my_agent->epmem_db, "SELECT MAX(child_id) FROM ids", -1, &create, &tail );
+				sqlite3_step( create );
+				if ( sqlite3_column_type( create, 0 ) != SQLITE_NULL )
+				{
+					my_agent->epmem_range_maxes->resize( sqlite3_column_int64( create, 0 ), EPMEM_MEMID_NONE );
+					my_agent->epmem_range_mins->resize( sqlite3_column_int64( create, 0 ), time_max );
+				}
 				sqlite3_finalize( create );
 
 				break;
@@ -2547,6 +2668,8 @@ void epmem_new_episode( agent *my_agent )
 		std::vector<unsigned char> epmem;
 		unsigned long long epmem_id_cell;
 
+		std::map<epmem_node_id, bool> nodes;
+
 		unsigned long my_hash;
 		int tc = get_new_tc_number( my_agent );
 
@@ -2661,6 +2784,26 @@ void epmem_new_episode( agent *my_agent )
 						sqlite3_reset( my_agent->epmem_statements[ EPMEM_STMT_BIGTREE_H_ADD_ID ] );					
 
 						wmes[i]->epmem_id = sqlite3_last_insert_rowid( my_agent->epmem_db );
+
+						// new nodes definitely start
+						if ( wmes[i]->value->common.symbol_type != IDENTIFIER_SYMBOL_TYPE )
+							nodes[ wmes[i]->epmem_id ] = true;
+
+						my_agent->epmem_range_mins->push_back( time_counter );
+						my_agent->epmem_range_maxes->push_back( time_counter );
+					}
+					else
+					{
+						// definitely don't update/delete
+						(*my_agent->epmem_range_removals)[ wmes[i]->epmem_id ] = false;
+
+						// we insert if current time is > 1+ max
+						if ( ( wmes[i]->value->common.symbol_type != IDENTIFIER_SYMBOL_TYPE ) &&
+							 ( (*my_agent->epmem_range_maxes)[ wmes[i]->epmem_id - 1 ] < ( time_counter - 1 ) ) )
+							nodes[ wmes[i]->epmem_id ] = true;
+
+						// update max irrespectively
+						(*my_agent->epmem_range_maxes)[ wmes[i]->epmem_id - 1 ] = time_counter;
 					}
 					
 					// keep track of identifiers (for further study)
@@ -2682,7 +2825,7 @@ void epmem_new_episode( agent *my_agent )
 			}
 		}
 
-		// easy insert
+		// episode insert
 		epmem_id_cell = epmem.size();
 		unsigned char *epmem_string = new unsigned char[ epmem_id_cell ];
 		for ( i=0; i<epmem_id_cell; i++ )
@@ -2692,6 +2835,50 @@ void epmem_new_episode( agent *my_agent )
 		sqlite3_step( my_agent->epmem_statements[ EPMEM_STMT_BIGTREE_H_ADD_EPISODE ] );
 		sqlite3_reset( my_agent->epmem_statements[ EPMEM_STMT_BIGTREE_H_ADD_EPISODE ] );
 		delete epmem_string;
+
+		// nodes insert
+		std::map<epmem_node_id, bool>::iterator e = nodes.begin();
+		while ( e != nodes.end() )
+		{
+			// add NOW entry
+			// id = ?, start = ?	
+			sqlite3_bind_int64( my_agent->epmem_statements[ EPMEM_STMT_BIGTREE_H_ADD_NOW ], 1, e->first );
+			sqlite3_bind_int64( my_agent->epmem_statements[ EPMEM_STMT_BIGTREE_H_ADD_NOW ], 2, time_counter );
+			sqlite3_step( my_agent->epmem_statements[ EPMEM_STMT_BIGTREE_H_ADD_NOW ] );
+			sqlite3_reset( my_agent->epmem_statements[ EPMEM_STMT_BIGTREE_H_ADD_NOW ] );
+
+			// update min
+			(*my_agent->epmem_range_mins)[ e->first - 1 ] = time_counter;
+
+			e++;
+		}
+
+		// nodes removal
+		std::map<epmem_node_id, bool>::iterator r = my_agent->epmem_range_removals->begin();
+		while ( r != my_agent->epmem_range_removals->end() )
+		{
+			if ( r->second )
+			{			
+				// remove NOW entry
+				// id = ?
+				sqlite3_bind_int64( my_agent->epmem_statements[ EPMEM_STMT_BIGTREE_H_DELETE_NOW ], 1, r->first );				
+				sqlite3_step( my_agent->epmem_statements[ EPMEM_STMT_BIGTREE_H_DELETE_NOW ] );
+				sqlite3_reset( my_agent->epmem_statements[ EPMEM_STMT_BIGTREE_H_DELETE_NOW ] );
+
+				// add new node	
+				// id, start, end
+				sqlite3_bind_int64( my_agent->epmem_statements[ EPMEM_STMT_BIGTREE_H_ADD_NODE ], 1, r->first );
+				sqlite3_bind_int64( my_agent->epmem_statements[ EPMEM_STMT_BIGTREE_H_ADD_NODE ], 2, (*my_agent->epmem_range_mins)[ r->first - 1 ] );
+				sqlite3_bind_int64( my_agent->epmem_statements[ EPMEM_STMT_BIGTREE_H_ADD_NODE ], 3, ( time_counter - 1 ) );
+				sqlite3_step( my_agent->epmem_statements[ EPMEM_STMT_BIGTREE_H_ADD_NODE ] );
+				sqlite3_reset( my_agent->epmem_statements[ EPMEM_STMT_BIGTREE_H_ADD_NODE ] );
+			}
+			
+			r++;
+		}
+		my_agent->epmem_range_removals->clear();
+
+		//
 
 		sqlite3_step( my_agent->epmem_statements[ EPMEM_STMT_COMMIT ] );
 		sqlite3_reset( my_agent->epmem_statements[ EPMEM_STMT_COMMIT ] );
