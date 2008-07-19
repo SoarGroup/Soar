@@ -25,11 +25,11 @@ using namespace sml;
 bool CommandLineInterface::ParseEpMem( std::vector<std::string>& argv ) 
 {	
 	Options optionsData[] = 
-	{
-		{'g', "get",	0},
-		{'c', "close",0},
-		{'s', "set",	0},
-		{'S', "stats",	0},
+	{		
+		{'c', "close",		0},		
+		{'g', "get",		0},		
+		{'s', "set",		0},
+		{'S', "stats",		0},
 		{0, 0, 0} // null
 	};
 	EpMemBitset options(0);
@@ -45,11 +45,11 @@ bool CommandLineInterface::ParseEpMem( std::vector<std::string>& argv )
 		{
 			case 'c':
 				options.set( EPMEM_CLOSE );
-				break;
+				break;			
 		
 			case 'g':
 				options.set( EPMEM_GET );
-				break;		
+				break;			
 			
 			case 's':
 				options.set( EPMEM_SET );
@@ -102,7 +102,7 @@ bool CommandLineInterface::ParseEpMem( std::vector<std::string>& argv )
 		else
 			return SetError( CLIError::kInvalidAttribute );
 	}
-		
+			
 	// case: set requires two non-option arguments
 	else if ( options.test( EPMEM_SET ) )
 	{
@@ -277,6 +277,15 @@ bool CommandLineInterface::DoEpMem( const char pOp, const std::string* pAttr, co
 		temp2 = to_string( temp_val );
 		temp += (*temp2);
 		delete temp2;
+		if ( m_RawOutput )
+			m_Result << temp << "\n";
+		else
+		{
+			AppendArgTagFast( sml_Names::kParamValue, sml_Names::kTypeString, temp.c_str() );			
+		}
+
+		temp = "exclusions: ";
+		temp += epmem_get_parameter( m_pAgentSoar, (const long) EPMEM_PARAM_EXCLUSIONS, EPMEM_RETURN_STRING );
 		if ( m_RawOutput )
 			m_Result << temp << "\n\n";
 		else

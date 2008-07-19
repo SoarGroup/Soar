@@ -803,7 +803,9 @@ kernel time and total_cpu_time greater than the derived total CPU time. REW */
   
   sqlite3 *epmem_db;
   int epmem_db_status;
-  sqlite3_stmt *epmem_statements[ EPMEM_MAX_STATEMENTS ];  
+  sqlite3_stmt *epmem_statements[ EPMEM_MAX_STATEMENTS ];
+
+  std::list<const char *> *epmem_exclusions;
   
   std::map<epmem_node_id, bool> *epmem_range_removals;
   std::vector<epmem_time_id> *epmem_range_mins;

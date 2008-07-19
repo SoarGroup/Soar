@@ -350,7 +350,7 @@ agent * create_soar_agent (char * agent_name) {                                 
   newAgent->epmem_params[ EPMEM_PARAM_TRIGGER ] = epmem_add_parameter( "trigger", EPMEM_TRIGGER_OUTPUT, &epmem_validate_trigger, &epmem_convert_trigger, &epmem_convert_trigger );
   newAgent->epmem_params[ EPMEM_PARAM_FORCE ] = epmem_add_parameter( "force", EPMEM_FORCE_OFF, &epmem_validate_force, &epmem_convert_force, &epmem_convert_force );
   newAgent->epmem_params[ EPMEM_PARAM_BALANCE ] = epmem_add_parameter( "balance", 0.5, &epmem_validate_balance );
-
+  newAgent->epmem_params[ EPMEM_PARAM_EXCLUSIONS ] = epmem_add_parameter( "exclusions", "", &epmem_validate_exclusions );
 
   newAgent->epmem_stats[ EPMEM_STAT_TIME ] = epmem_add_stat( "time" );
   newAgent->epmem_stats[ EPMEM_STAT_MEM_USAGE ] = epmem_add_stat( "mem_usage" );
@@ -365,6 +365,8 @@ agent * create_soar_agent (char * agent_name) {                                 
   newAgent->epmem_db_status = -1;
   for ( int i=0; i<EPMEM_MAX_STATEMENTS; i++ )
   	newAgent->epmem_statements[ i ] = NULL;
+
+  newAgent->epmem_exclusions = new std::list<const char *>();
 
   newAgent->epmem_range_removals = new std::map<epmem_node_id, bool>();
   newAgent->epmem_range_mins = new std::vector<epmem_time_id>();
@@ -504,6 +506,14 @@ void destroy_soar_agent (agent * delete_agent)
   delete delete_agent->prediction;
   
   // cleanup EpMem
+  std::list<const char *>::iterator e_p = delete_agent->epmem_exclusions->begin();
+  while ( e_p != delete_agent->epmem_exclusions->end() )
+  {
+	  delete (*e_p);
+	  e_p++;
+  }
+  delete delete_agent->epmem_exclusions;
+
   delete delete_agent->epmem_range_removals;
   delete delete_agent->epmem_range_mins;
   delete delete_agent->epmem_range_maxes;

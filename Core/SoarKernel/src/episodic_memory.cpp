@@ -366,6 +366,58 @@ bool epmem_set_parameter( agent *my_agent, const char *name, const char *new_val
 	if ( !epmem_valid_parameter_value( my_agent, param, new_val ) )
 		return false;
 
+	// exclusions special case
+	if ( param == EPMEM_PARAM_EXCLUSIONS )
+	{
+		std::string new_implode;
+		
+		// search through exclusions
+		std::list<const char *>::iterator e_p = my_agent->epmem_exclusions->begin();
+		while ( e_p != my_agent->epmem_exclusions->end() )
+		{
+			if ( strcmp( new_val, (*e_p) ) == 0 )
+				break;			
+
+			e_p++;
+		}
+
+		// remove if found
+		if ( e_p != my_agent->epmem_exclusions->end() )
+		{
+			delete (*e_p);
+			my_agent->epmem_exclusions->erase( e_p );
+
+			// get new list
+			e_p = my_agent->epmem_exclusions->begin();
+			while ( e_p != my_agent->epmem_exclusions->end() )
+			{
+				new_implode.append( (*e_p) );
+				
+				e_p++;
+
+				if ( e_p != my_agent->epmem_exclusions->end() )
+					new_implode.append( ", " );
+			}
+		}
+		// otherwise it's new
+		else
+		{			
+			char *newbie = new char[ strlen( new_val ) + 1 ];
+			strcpy( newbie, new_val );
+			my_agent->epmem_exclusions->push_back( newbie );
+
+			new_implode = (*my_agent->epmem_params[ param ]->param->string_param.value);
+			if ( !new_implode.empty() )
+				new_implode.append( ", " );
+
+			new_implode.append( new_val );
+		}
+		
+		// keep comma-separated list around
+		(*my_agent->epmem_params[ param ]->param->string_param.value) = new_implode;
+		return true;
+	}
+
 	if ( epmem_get_parameter_type( my_agent, param ) == epmem_param_string )
 	{
 		(*my_agent->epmem_params[ param ]->param->string_param.value) = new_val;
@@ -426,6 +478,58 @@ bool epmem_set_parameter( agent *my_agent, const long param, const char *new_val
 	
 	if ( !epmem_valid_parameter_value( my_agent, param, new_val ) )
 		return false;
+
+	// exclusions special case
+	if ( param == EPMEM_PARAM_EXCLUSIONS )
+	{
+		std::string new_implode;
+		
+		// search through exclusions
+		std::list<const char *>::iterator e_p = my_agent->epmem_exclusions->begin();
+		while ( e_p != my_agent->epmem_exclusions->end() )
+		{
+			if ( strcmp( new_val, (*e_p) ) == 0 )
+				break;			
+
+			e_p++;
+		}
+
+		// remove if found
+		if ( e_p != my_agent->epmem_exclusions->end() )
+		{
+			delete (*e_p);
+			my_agent->epmem_exclusions->erase( e_p );
+
+			// get new list
+			e_p = my_agent->epmem_exclusions->begin();
+			while ( e_p != my_agent->epmem_exclusions->end() )
+			{
+				new_implode.append( (*e_p) );
+				
+				e_p++;
+
+				if ( e_p != my_agent->epmem_exclusions->end() )
+					new_implode.append( ", " );
+			}
+		}
+		// otherwise it's new
+		else
+		{			
+			char *newbie = new char[ strlen( new_val ) + 1 ];
+			strcpy( newbie, new_val );
+			my_agent->epmem_exclusions->push_back( newbie );
+
+			new_implode = (*my_agent->epmem_params[ param ]->param->string_param.value);
+			if ( !new_implode.empty() )
+				new_implode.append( ", " );
+
+			new_implode.append( new_val );
+		}
+		
+		// keep comma-separated list around
+		(*my_agent->epmem_params[ param ]->param->string_param.value) = new_implode;
+		return true;
+	}
 
 	if ( epmem_get_parameter_type( my_agent, param ) == epmem_param_string )
 	{
@@ -797,6 +901,21 @@ const long epmem_convert_force( const char *val )
 bool epmem_validate_balance( const double new_val )
 {
 	return ( ( new_val >= 0 ) && ( new_val <= 1 ) );
+}
+
+/////////////////////////////////////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+/////////////////////////////////////////////////////////////////////////////////////////////////////////
+// exclusions
+/////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+/***************************************************************************
+ * Function     : epmem_validate_exclusions
+ **************************************************************************/
+bool epmem_validate_exclusions( const char *new_val )
+{
+	return true;
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -1842,7 +1961,11 @@ void epmem_new_episode( agent *my_agent )
 		unsigned long my_hash;
 		int tc = get_new_tc_number( my_agent );
 
-		int i;	
+		int i;
+
+		// prevent recording exclusions
+		std::list<const char *>::iterator exclusion;
+		bool should_exclude;
 
 		syms.push( my_agent->top_goal );
 		ids.push( EPMEM_PARENTID_ROOT );	
@@ -1863,6 +1986,16 @@ void epmem_new_episode( agent *my_agent )
 			{
 				for ( i=0; i<len; i++ )
 				{				
+					// prevent exclusions from being recorded
+					should_exclude = false;
+					for ( exclusion=my_agent->epmem_exclusions->begin(); 
+						  ( ( !should_exclude ) && ( exclusion!=my_agent->epmem_exclusions->end() ) ); 
+						  exclusion++ )
+						if ( strcmp( (const char *) wmes[i]->attr->sc.name, (*exclusion) ) == 0 )
+							should_exclude = true;
+					if ( should_exclude )
+						continue;
+					
 					if ( ( wmes[i]->epmem_id == NULL ) || ( wmes[i]->epmem_valid != my_agent->epmem_validation ) )
 					{					
 						wmes[i]->epmem_id = NULL;
@@ -2013,7 +2146,11 @@ void epmem_new_episode( agent *my_agent )
 		unsigned long my_hash;
 		int tc = get_new_tc_number( my_agent );
 
-		int i;	
+		int i;
+
+		// prevent recording exclusions
+		std::list<const char *>::iterator exclusion;
+		bool should_exclude;
 
 		syms.push( my_agent->top_goal );
 		ids.push( EPMEM_PARENTID_ROOT );
@@ -2034,6 +2171,16 @@ void epmem_new_episode( agent *my_agent )
 			{
 				for ( i=0; i<len; i++ )
 				{				
+					// prevent exclusions from being recorded
+					should_exclude = false;
+					for ( exclusion=my_agent->epmem_exclusions->begin(); 
+						  ( ( !should_exclude ) && ( exclusion!=my_agent->epmem_exclusions->end() ) ); 
+						  exclusion++ )
+						if ( strcmp( (const char *) wmes[i]->attr->sc.name, (*exclusion) ) == 0 )
+							should_exclude = true;
+					if ( should_exclude )
+						continue;
+					
 					if ( ( wmes[i]->epmem_id == NULL ) || ( wmes[i]->epmem_valid != my_agent->epmem_validation ) )
 					{					
 						wmes[i]->epmem_id = NULL;
@@ -2196,7 +2343,11 @@ void epmem_new_episode( agent *my_agent )
 		unsigned long my_hash;
 		int tc = get_new_tc_number( my_agent );
 
-		int i;	
+		int i;
+
+		// prevent recording exclusions
+		std::list<const char *>::iterator exclusion;
+		bool should_exclude;
 
 		syms.push( my_agent->top_goal );
 		ids.push( EPMEM_PARENTID_ROOT );
@@ -2217,6 +2368,16 @@ void epmem_new_episode( agent *my_agent )
 			{
 				for ( i=0; i<len; i++ )
 				{
+					// prevent exclusions from being recorded
+					should_exclude = false;
+					for ( exclusion=my_agent->epmem_exclusions->begin(); 
+						  ( ( !should_exclude ) && ( exclusion!=my_agent->epmem_exclusions->end() ) ); 
+						  exclusion++ )
+						if ( strcmp( (const char *) wmes[i]->attr->sc.name, (*exclusion) ) == 0 )
+							should_exclude = true;
+					if ( should_exclude )
+						continue;
+					
 					if ( ( wmes[i]->epmem_id == NULL ) || ( wmes[i]->epmem_valid != my_agent->epmem_validation ) )
 					{					
 						wmes[i]->epmem_id = NULL;
@@ -2389,7 +2550,11 @@ void epmem_new_episode( agent *my_agent )
 		unsigned long my_hash;
 		int tc = get_new_tc_number( my_agent );
 
-		int i;	
+		int i;
+
+		// prevent recording exclusions
+		std::list<const char *>::iterator exclusion;
+		bool should_exclude;
 
 		syms.push( my_agent->top_goal );
 		ids.push( EPMEM_PARENTID_ROOT );	
@@ -2409,10 +2574,15 @@ void epmem_new_episode( agent *my_agent )
 			if ( wmes != NULL )
 			{
 				for ( i=0; i<len; i++ )
-				{				
-					if ( ( strcmp( (const char *) wmes[i]->attr->sc.name, "random" ) == 0 ) || 
-						 ( strcmp( (const char *) wmes[i]->attr->sc.name, "clock" ) == 0 ) ||
-						 ( strcmp( (const char *) wmes[i]->attr->sc.name, "energy" ) == 0 ) )
+				{					
+					// prevent exclusions from being recorded
+					should_exclude = false;
+					for ( exclusion=my_agent->epmem_exclusions->begin(); 
+						  ( ( !should_exclude ) && ( exclusion!=my_agent->epmem_exclusions->end() ) ); 
+						  exclusion++ )
+						if ( strcmp( (const char *) wmes[i]->attr->sc.name, (*exclusion) ) == 0 )
+							should_exclude = true;
+					if ( should_exclude )
 						continue;
 					
 					if ( ( wmes[i]->epmem_id == NULL ) || ( wmes[i]->epmem_valid != my_agent->epmem_validation ) )
