@@ -1,4 +1,4 @@
-#watch 0
+watch 0
 timers --off
 
 srand 0
@@ -14,7 +14,7 @@ sp {simple-robot*compare*choose-destination*force
    (<s> ^operator <op1> >)
 }
 
-#
+
 #add-wme i2 ^self *
 #add-wme i4 ^current-location *
 #add-wme i5 ^x -7
