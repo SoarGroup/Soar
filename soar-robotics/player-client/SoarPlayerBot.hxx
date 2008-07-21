@@ -12,7 +12,7 @@ void SoarPlayerBot::reload_productions()
 {
 	if ( !m_agent.LoadProductions( m_productions.c_str() ) )
 	{
-		std::cerr << "error loading productions" << std::endl;
+		std::cerr << "error loading productions: " << m_agent.GetLastErrorDescription() << std::endl;
 		throw new std::exception();
 	}
 }
