@@ -50,7 +50,8 @@ void SoarPlayerBot::update()
 {
 	//std::cout << "update()" << std::endl;
     // read from the proxies
-    m_robot.Read();
+    
+    m_robot.ReadIfWaiting();
     
    	double x = m_pp.GetXPos();
    	double y = m_pp.GetYPos();
