@@ -3560,7 +3560,7 @@ void epmem_process_query( agent *my_agent, Symbol *state, Symbol *query, Symbol 
 					double balance = epmem_get_parameter( my_agent, (const long) EPMEM_PARAM_BALANCE );
 				
 					// construct basic sql					
-					std::string search_sql = "SELECT a.time, a.cardinality, a.features, ((a.cardinality * ?) + (a.features * ?)) AS match_score FROM (SELECT time, COUNT(time) AS cardinality, SUM(weight) AS features FROM episodes WHERE weight IS NOT NULL AND id IN (";
+					std::string search_sql = "SELECT a.time, ?*a.cardinality, a.features, ?*((a.cardinality * ?) + (a.features * ?)) AS match_score FROM (SELECT time, COUNT(time) AS cardinality, SUM(weight) AS features FROM episodes WHERE weight IS NOT NULL AND id IN (";
 					{
 						std::string *qs = string_multi_copy( "?,", leaf_ids[ index ].size() - 1 );												
 						search_sql.append( *qs );
@@ -3601,6 +3601,9 @@ void epmem_process_query( agent *my_agent, Symbol *state, Symbol *query, Symbol 
 
 					// bind variables
 					int var = 1;
+					sqlite3_bind_int64( search, var++, ( ( leaf_ids[0].empty() )?( -1 ):( 1 ) ) );
+					sqlite3_bind_int64( search, var++, ( ( leaf_ids[0].empty() )?( -1 ):( 1 ) ) );
+					
 					sqlite3_bind_double( search, var++, balance );
 					sqlite3_bind_double( search, var++, 1 - balance );
 					leaf_p = leaf_ids[ index ].begin();
