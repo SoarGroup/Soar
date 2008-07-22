@@ -1,4 +1,4 @@
-100
+103
 SOAR_ID 0
 SOAR_ID 1
 SOAR_ID 2
@@ -94,12 +94,15 @@ ENUMERATION 91 1 yes
 ENUMERATION 92 1 waypoints
 SOAR_ID 93
 ENUMERATION 94 1 state
-ENUMERATION 95 1 Impasse__Operator_Tie
+ENUMERATION 95 1 selection
 SOAR_ID 96
 ENUMERATION 97 1 state
 ENUMERATION 98 1 Impasse__Operator_Tie
 SOAR_ID 99
-122
+FLOAT_RANGE 100 0.0 Infinity
+SOAR_ID 101
+ENUMERATION 102 1 evaluate-operator
+128
 0 attribute 23
 0 choices 24
 0 desired 45
@@ -166,6 +169,8 @@ SOAR_ID 99
 50 throttle 53
 50 x 51
 50 y 52
+54 destination 45
+54 distance 100
 54 name 55
 54 track-progress 76
 56 destination 45
@@ -211,7 +216,9 @@ SOAR_ID 99
 89 default-state-copy 91
 89 name 90
 89 two-level-attributes 92
+93 item 54
 93 name 95
+93 operator 101
 93 superstate 0
 93 superstate-set 0
 93 top-state 0
@@ -222,3 +229,5 @@ SOAR_ID 99
 96 superstate-set 0
 96 top-state 0
 96 type 97
+101 name 102
+101 superoperator 54
