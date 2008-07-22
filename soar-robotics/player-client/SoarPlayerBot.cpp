@@ -21,7 +21,7 @@ SoarPlayerBot::SoarPlayerBot( int port, Agent& agent, const std::string& product
 , m_fp( &m_robot, 0 )
 , m_lp( &m_robot, 0 )
 , m_gp( &m_robot, 0 )
-, m_move_to( false )
+//, m_move_to( false )
 , m_productions( productions )
 , m_agent( agent )
 {
@@ -107,7 +107,7 @@ void SoarPlayerBot::update()
 		switch ( command->get_type() )
 		{
 		case Command::MOVE:
-			//std::cout << "MOVE" << std::endl;
+			//std::cout << m_agent.GetAgentName() << ": MOVE" << std::endl;
 			motion_command_received = true;
 			switch ( command->get_move_direction() )
 			{
@@ -124,12 +124,12 @@ void SoarPlayerBot::update()
 			break;
 			
 		case Command::ROTATE:
-			//std::cout << "ROTATE" << std::endl;
-			if ( m_move_to )
-			{
-				m_move_to = false;
-				m_pp.SetSpeed( motion_x, 0 );
-			}
+			//std::cout << m_agent.GetAgentName() << ": ROTATE" << std::endl;
+			//if ( m_move_to )
+			//{
+			//	m_move_to = false;
+			//	m_pp.SetSpeed( motion_x, 0 );
+			//}
 			motion_command_received = true;
 			switch ( command->get_rotate_direction() )
 			{
@@ -146,8 +146,8 @@ void SoarPlayerBot::update()
 			break;
 			
 		case Command::STOP:
-			//std::cout << "STOP" << std::endl;
-			m_move_to = false;
+			//std::cout << m_agent.GetAgentName() << ": STOP" << std::endl;
+			//m_move_to = false;
 			motion_command_received = true;
 			motion_x = 0;
 			motion_yaw = 0;
@@ -169,17 +169,18 @@ void SoarPlayerBot::update()
 			break;
 			
 		case Command::MOVE_TO:
-			std::cout << "MOVE_TO(" << command->get_x() << "," << command->get_y() << ")" << std::endl;
-			if ( m_move_to )
-			{
-				m_pp.SetSpeed( motion_x, 0 );
-			}
-			m_move_to = true;
+			std::cout << m_agent.GetAgentName() << ": MOVE_TO(" << command->get_x() << "," << command->get_y() << ")" << std::endl;
+			//if ( m_move_to )
+			//{
+			//	m_pp.SetSpeed( motion_x, 0 );
+			//}
+			//m_move_to = true;
 			m_move_to_destination.px = command->get_x();
 			m_move_to_destination.py = command->get_y();
 			m_move_to_destination.pa = atan2( command->get_y() - y, command->get_x() - x );
 			
-			m_pp.GoTo( x, y, m_move_to_destination.pa );
+			//m_pp.GoTo( x, y, m_move_to_destination.pa );
+			m_pp.GoTo( m_move_to_destination );
 
 			break;
 		}
@@ -192,14 +193,14 @@ void SoarPlayerBot::update()
 		m_pp.SetSpeed( motion_x, motion_yaw );
 	}
 	
-	if ( m_move_to )
-	{
-		if ( fabs( yaw - m_move_to_destination.pa ) < MOVE_TO_TOLERANCE )
-		{
-			m_move_to = false;
-			m_pp.GoTo( m_move_to_destination );
-		}
-	}
+	//if ( m_move_to )
+	//{
+	//	if ( fabs( yaw - m_move_to_destination.pa ) < MOVE_TO_TOLERANCE )
+	//	{
+	//		m_move_to = false;
+	//		m_pp.GoTo( m_move_to_destination );
+	//	}
+	//}
 
 	m_output_link->commit();
 }

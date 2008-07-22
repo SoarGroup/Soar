@@ -33,7 +33,7 @@ private:
     InputLinkManager* m_input_link;
     OutputLinkManager* m_output_link;
     
-    bool m_move_to;
+    //bool m_move_to;
     player_pose2d m_move_to_destination;
     
     std::string m_productions;

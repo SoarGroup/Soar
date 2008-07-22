@@ -17,9 +17,14 @@ void updateHandler( smlUpdateEventId, void* pUserData, Kernel*, smlRunFlags )
 
 void agentHandler( smlAgentEventId id, void* pUserData, Agent* )
 {
-	std::cout << "agentHandler" << std::endl;
-    //SoarPlayerClient* pPlayerClient = static_cast< SoarPlayerClient* >( pUserData );
-    //pPlayerClient->agent_event( id );
+    SoarPlayerClient* pPlayerClient = static_cast< SoarPlayerClient* >( pUserData );
+    pPlayerClient->agent_event( id );
+}
+
+std::string rhsPrintHandler( smlRhsEventId, void*, Agent* pAgent, char const*, char const* pArgument )
+{
+	std::cout << pAgent->GetAgentName() << ": " << pArgument << std::endl;
+	return pArgument;
 }
 
 SoarPlayerClient::SoarPlayerClient( const std::string& productions, int number_of_bots )
@@ -46,6 +51,7 @@ SoarPlayerClient::SoarPlayerClient( const std::string& productions, int number_o
     m_kernel->RegisterForUpdateEvent( smlEVENT_AFTER_ALL_OUTPUT_PHASES, updateHandler, this );
     m_kernel->RegisterForAgentEvent( smlEVENT_BEFORE_AGENT_REINITIALIZED, agentHandler, this );
     m_kernel->RegisterForAgentEvent( smlEVENT_AFTER_AGENT_REINITIALIZED, agentHandler, this );
+    m_kernel->AddRhsFunction( "player-print", rhsPrintHandler, 0 );
 }
 
 SoarPlayerClient::~SoarPlayerClient()
