@@ -1,7 +1,7 @@
 watch 0
 timers --off
 
-srand 0
+#srand 0
 
 sp {simple-robot*compare*choose-destination*force
    (state <s> ^name simple-robot
