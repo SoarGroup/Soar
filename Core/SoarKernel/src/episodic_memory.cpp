@@ -1468,10 +1468,10 @@ void epmem_init_db( agent *my_agent )
 				sqlite3_prepare_v2( my_agent->epmem_db, "INSERT INTO ranges (start,end,weight,ct) SELECT start,?,weight,ct FROM ranges WHERE start<? AND end>? UNION ALL SELECT ?,end,weight,ct FROM ranges WHERE start<? AND end>?", -1, &( my_agent->epmem_statements[ EPMEM_STMT_BIGTREE_R_DEL_PROHIB_CONTAIN ] ), &tail );
 
 				// custom statement for getting the low list
-				sqlite3_prepare_v2( my_agent->epmem_db, "SELECT start, SUM(ct) AS cnt, SUM(weight) AS v FROM ranges GROUP BY start ORDER BY start", -1, &( my_agent->epmem_statements[ EPMEM_STMT_BIGTREE_R_GET_LOW_RANGES ] ), &tail );
+				sqlite3_prepare_v2( my_agent->epmem_db, "SELECT start, SUM(ct) AS cnt, SUM(weight) AS v, COUNT(*) AS starts FROM ranges GROUP BY start ORDER BY start", -1, &( my_agent->epmem_statements[ EPMEM_STMT_BIGTREE_R_GET_LOW_RANGES ] ), &tail );
 
 				// custom statement for getting the high list
-				sqlite3_prepare_v2( my_agent->epmem_db, "SELECT end, SUM(ct) AS cnt, SUM(weight) AS v FROM ranges GROUP BY end ORDER BY end", -1, &( my_agent->epmem_statements[ EPMEM_STMT_BIGTREE_R_GET_HIGH_RANGES ] ), &tail );
+				sqlite3_prepare_v2( my_agent->epmem_db, "SELECT end, SUM(ct) AS cnt, SUM(weight) AS v, -COUNT(*) AS ends FROM ranges GROUP BY end ORDER BY end", -1, &( my_agent->epmem_statements[ EPMEM_STMT_BIGTREE_R_GET_HIGH_RANGES ] ), &tail );
 
 				// custom statement for removing all ranges
 				sqlite3_prepare_v2( my_agent->epmem_db, "DELETE FROM ranges", -1, &( my_agent->epmem_statements[ EPMEM_STMT_BIGTREE_R_TRUNCATE_RANGES ] ), &tail );
@@ -1637,10 +1637,10 @@ void epmem_init_db( agent *my_agent )
 				sqlite3_prepare_v2( my_agent->epmem_db, "INSERT INTO ranges (start,end,weight,ct) SELECT start,?,weight,ct FROM ranges WHERE start<? AND end>? UNION ALL SELECT ?,end,weight,ct FROM ranges WHERE start<? AND end>?", -1, &( my_agent->epmem_statements[ EPMEM_STMT_BIGTREE_RIT_DEL_PROHIB_CONTAIN ] ), &tail );
 
 				// custom statement for getting the low list
-				sqlite3_prepare_v2( my_agent->epmem_db, "SELECT start, SUM(ct) AS cnt, SUM(weight) AS v FROM ranges GROUP BY start ORDER BY start", -1, &( my_agent->epmem_statements[ EPMEM_STMT_BIGTREE_RIT_GET_LOW_RANGES ] ), &tail );
+				sqlite3_prepare_v2( my_agent->epmem_db, "SELECT start, SUM(ct) AS cnt, SUM(weight) AS v, COUNT(*) AS starts FROM ranges GROUP BY start ORDER BY start", -1, &( my_agent->epmem_statements[ EPMEM_STMT_BIGTREE_RIT_GET_LOW_RANGES ] ), &tail );
 
 				// custom statement for getting the high list
-				sqlite3_prepare_v2( my_agent->epmem_db, "SELECT end, SUM(ct) AS cnt, SUM(weight) AS v FROM ranges GROUP BY end ORDER BY end", -1, &( my_agent->epmem_statements[ EPMEM_STMT_BIGTREE_RIT_GET_HIGH_RANGES ] ), &tail );
+				sqlite3_prepare_v2( my_agent->epmem_db, "SELECT end, SUM(ct) AS cnt, SUM(weight) AS v, -COUNT(*) AS ends FROM ranges GROUP BY end ORDER BY end", -1, &( my_agent->epmem_statements[ EPMEM_STMT_BIGTREE_RIT_GET_HIGH_RANGES ] ), &tail );
 
 				// custom statement for removing all ranges
 				sqlite3_prepare_v2( my_agent->epmem_db, "DELETE FROM ranges", -1, &( my_agent->epmem_statements[ EPMEM_STMT_BIGTREE_RIT_TRUNCATE_RANGES ] ), &tail );
@@ -1837,10 +1837,10 @@ void epmem_init_db( agent *my_agent )
 				sqlite3_prepare_v2( my_agent->epmem_db, "INSERT INTO ranges (start,end,weight,ct) SELECT start,?,weight,ct FROM ranges WHERE start<? AND end>? UNION ALL SELECT ?,end,weight,ct FROM ranges WHERE start<? AND end>?", -1, &( my_agent->epmem_statements[ EPMEM_STMT_BIGTREE_H_DEL_PROHIB_CONTAIN ] ), &tail );
 
 				// custom statement for getting the low list
-				sqlite3_prepare_v2( my_agent->epmem_db, "SELECT start, SUM(ct) AS cnt, SUM(weight) AS v FROM ranges GROUP BY start ORDER BY start", -1, &( my_agent->epmem_statements[ EPMEM_STMT_BIGTREE_H_GET_LOW_RANGES ] ), &tail );
+				sqlite3_prepare_v2( my_agent->epmem_db, "SELECT start, SUM(ct) AS cnt, SUM(weight) AS v, COUNT(*) AS starts FROM ranges GROUP BY start ORDER BY start", -1, &( my_agent->epmem_statements[ EPMEM_STMT_BIGTREE_H_GET_LOW_RANGES ] ), &tail );
 
 				// custom statement for getting the high list
-				sqlite3_prepare_v2( my_agent->epmem_db, "SELECT end, SUM(ct) AS cnt, SUM(weight) AS v FROM ranges GROUP BY end ORDER BY end", -1, &( my_agent->epmem_statements[ EPMEM_STMT_BIGTREE_H_GET_HIGH_RANGES ] ), &tail );
+				sqlite3_prepare_v2( my_agent->epmem_db, "SELECT end, SUM(ct) AS cnt, SUM(weight) AS v, -COUNT(*) AS ends FROM ranges GROUP BY end ORDER BY end", -1, &( my_agent->epmem_statements[ EPMEM_STMT_BIGTREE_H_GET_HIGH_RANGES ] ), &tail );
 
 				// custom statement for removing all ranges
 				sqlite3_prepare_v2( my_agent->epmem_db, "DELETE FROM ranges", -1, &( my_agent->epmem_statements[ EPMEM_STMT_BIGTREE_H_TRUNCATE_RANGES ] ), &tail );
@@ -4216,12 +4216,14 @@ void epmem_process_query( agent *my_agent, Symbol *state, Symbol *query, Symbol 
 				// dynamic programming stuff
 				long long sum_ct = 0;
 				double sum_v = 0;
+				long long sum_updown = 0;
 
 				// current pointer
 				unsigned long current_list = EPMEM_STMT_BIGTREE_R_GET_LOW_RANGES;
 				epmem_time_id current_id = EPMEM_MEMID_NONE;
 				long long current_ct = 0;
 				double current_v = 0;
+				long long current_updown = 0;
 				epmem_time_id current_end;
 				epmem_time_id current_valid_end;
 				double current_score;
@@ -4239,7 +4241,8 @@ void epmem_process_query( agent *my_agent, Symbol *state, Symbol *query, Symbol 
 				sqlite3_step( my_agent->epmem_statements[ EPMEM_STMT_BIGTREE_R_GET_LOW_RANGES ] );				
 				current_id = sqlite3_column_int64( my_agent->epmem_statements[ EPMEM_STMT_BIGTREE_R_GET_LOW_RANGES ], 0 );
 				current_ct = sqlite3_column_int64( my_agent->epmem_statements[ EPMEM_STMT_BIGTREE_R_GET_LOW_RANGES ], 1 );
-				current_v = sqlite3_column_double( my_agent->epmem_statements[ EPMEM_STMT_BIGTREE_R_GET_LOW_RANGES ], 2 );				
+				current_v = sqlite3_column_double( my_agent->epmem_statements[ EPMEM_STMT_BIGTREE_R_GET_LOW_RANGES ], 2 );
+				current_updown = sqlite3_column_int64( my_agent->epmem_statements[ EPMEM_STMT_BIGTREE_R_GET_LOW_RANGES ], 3 );
 				
 				// initialize next low				
 				if ( sqlite3_step( my_agent->epmem_statements[ EPMEM_STMT_BIGTREE_R_GET_LOW_RANGES ] ) == SQLITE_ROW )
@@ -4280,6 +4283,7 @@ void epmem_process_query( agent *my_agent, Symbol *state, Symbol *query, Symbol 
 						// update sums
 						sum_ct += current_ct;
 						sum_v += current_v;
+						sum_updown += current_updown;
 
 						// update end range
 						current_end = ( ( next_list == EPMEM_STMT_BIGTREE_R_GET_HIGH_RANGES )?( high_id ):( low_id - 1 ) );
@@ -4291,7 +4295,7 @@ void epmem_process_query( agent *my_agent, Symbol *state, Symbol *query, Symbol 
 						// if we are beyond after AND
 						// we have cardinality, compute score
 						// for possible new king
-						if ( ( current_valid_end > after ) && ( sum_ct != 0 ) )
+						if ( ( current_valid_end > after ) && ( sum_updown != 0 ) )
 						{
 							current_score = ( balance * sum_ct ) + ( balance_inv * sum_v );
 							
@@ -4309,6 +4313,7 @@ void epmem_process_query( agent *my_agent, Symbol *state, Symbol *query, Symbol 
 						current_id = current_end + 1;
 						current_ct = ( ( next_list == EPMEM_STMT_BIGTREE_R_GET_LOW_RANGES )?( 1 ):( -1 ) ) * sqlite3_column_int64( my_agent->epmem_statements[ next_list ], 1 );
 						current_v = ( ( next_list == EPMEM_STMT_BIGTREE_R_GET_LOW_RANGES )?( 1 ):( -1 ) ) * sqlite3_column_double( my_agent->epmem_statements[ next_list ], 2 );
+						current_updown = sqlite3_column_int64( my_agent->epmem_statements[ next_list ], 3 );
 
 						next_id = ( ( next_list == EPMEM_STMT_BIGTREE_R_GET_LOW_RANGES )?( &low_id ):( &high_id ) );
 						if ( sqlite3_step( my_agent->epmem_statements[ next_list ] ) == SQLITE_ROW )
@@ -4838,12 +4843,14 @@ void epmem_process_query( agent *my_agent, Symbol *state, Symbol *query, Symbol 
 				// dynamic programming stuff
 				long long sum_ct = 0;
 				double sum_v = 0;
+				long long sum_updown = 0;
 
 				// current pointer
 				unsigned long current_list = EPMEM_STMT_BIGTREE_RIT_GET_LOW_RANGES;
 				epmem_time_id current_id = EPMEM_MEMID_NONE;
 				long long current_ct = 0;
 				double current_v = 0;
+				long long current_updown = 0;
 				epmem_time_id current_end;
 				epmem_time_id current_valid_end;
 				double current_score;
@@ -4861,7 +4868,8 @@ void epmem_process_query( agent *my_agent, Symbol *state, Symbol *query, Symbol 
 				sqlite3_step( my_agent->epmem_statements[ EPMEM_STMT_BIGTREE_RIT_GET_LOW_RANGES ] );				
 				current_id = sqlite3_column_int64( my_agent->epmem_statements[ EPMEM_STMT_BIGTREE_RIT_GET_LOW_RANGES ], 0 );
 				current_ct = sqlite3_column_int64( my_agent->epmem_statements[ EPMEM_STMT_BIGTREE_RIT_GET_LOW_RANGES ], 1 );
-				current_v = sqlite3_column_double( my_agent->epmem_statements[ EPMEM_STMT_BIGTREE_RIT_GET_LOW_RANGES ], 2 );				
+				current_v = sqlite3_column_double( my_agent->epmem_statements[ EPMEM_STMT_BIGTREE_RIT_GET_LOW_RANGES ], 2 );
+				current_updown = sqlite3_column_int64( my_agent->epmem_statements[ EPMEM_STMT_BIGTREE_RIT_GET_LOW_RANGES ], 3 );
 				
 				// initialize next low				
 				if ( sqlite3_step( my_agent->epmem_statements[ EPMEM_STMT_BIGTREE_RIT_GET_LOW_RANGES ] ) == SQLITE_ROW )
@@ -4902,6 +4910,7 @@ void epmem_process_query( agent *my_agent, Symbol *state, Symbol *query, Symbol 
 						// update sums
 						sum_ct += current_ct;
 						sum_v += current_v;
+						sum_updown += current_updown;
 
 						// update end range
 						current_end = ( ( next_list == EPMEM_STMT_BIGTREE_RIT_GET_HIGH_RANGES )?( high_id ):( low_id - 1 ) );
@@ -4913,7 +4922,7 @@ void epmem_process_query( agent *my_agent, Symbol *state, Symbol *query, Symbol 
 						// if we are beyond after AND
 						// we have cardinality, compute score
 						// for possible new king
-						if ( ( current_valid_end > after ) && ( sum_ct != 0 ) )
+						if ( ( current_valid_end > after ) && ( sum_updown != 0 ) )
 						{
 							current_score = ( balance * sum_ct ) + ( balance_inv * sum_v );
 							
@@ -4931,6 +4940,7 @@ void epmem_process_query( agent *my_agent, Symbol *state, Symbol *query, Symbol 
 						current_id = current_end + 1;
 						current_ct = ( ( next_list == EPMEM_STMT_BIGTREE_RIT_GET_LOW_RANGES )?( 1 ):( -1 ) ) * sqlite3_column_int64( my_agent->epmem_statements[ next_list ], 1 );
 						current_v = ( ( next_list == EPMEM_STMT_BIGTREE_RIT_GET_LOW_RANGES )?( 1 ):( -1 ) ) * sqlite3_column_double( my_agent->epmem_statements[ next_list ], 2 );
+						current_updown = sqlite3_column_int64( my_agent->epmem_statements[ next_list ], 3 );
 
 						next_id = ( ( next_list == EPMEM_STMT_BIGTREE_RIT_GET_LOW_RANGES )?( &low_id ):( &high_id ) );
 						if ( sqlite3_step( my_agent->epmem_statements[ next_list ] ) == SQLITE_ROW )
@@ -5454,12 +5464,14 @@ void epmem_process_query( agent *my_agent, Symbol *state, Symbol *query, Symbol 
 				// dynamic programming stuff
 				long long sum_ct = 0;
 				double sum_v = 0;
+				long long sum_updown = 0;
 
 				// current pointer
 				unsigned long current_list = EPMEM_STMT_BIGTREE_H_GET_LOW_RANGES;
 				epmem_time_id current_id = EPMEM_MEMID_NONE;
 				long long current_ct = 0;
 				double current_v = 0;
+				long long current_updown = 0;
 				epmem_time_id current_end;
 				epmem_time_id current_valid_end;
 				double current_score;
@@ -5477,7 +5489,8 @@ void epmem_process_query( agent *my_agent, Symbol *state, Symbol *query, Symbol 
 				sqlite3_step( my_agent->epmem_statements[ EPMEM_STMT_BIGTREE_H_GET_LOW_RANGES ] );				
 				current_id = sqlite3_column_int64( my_agent->epmem_statements[ EPMEM_STMT_BIGTREE_H_GET_LOW_RANGES ], 0 );
 				current_ct = sqlite3_column_int64( my_agent->epmem_statements[ EPMEM_STMT_BIGTREE_H_GET_LOW_RANGES ], 1 );
-				current_v = sqlite3_column_double( my_agent->epmem_statements[ EPMEM_STMT_BIGTREE_H_GET_LOW_RANGES ], 2 );				
+				current_v = sqlite3_column_double( my_agent->epmem_statements[ EPMEM_STMT_BIGTREE_H_GET_LOW_RANGES ], 2 );
+				current_updown = sqlite3_column_int64( my_agent->epmem_statements[ EPMEM_STMT_BIGTREE_H_GET_LOW_RANGES ], 3 );
 				
 				// initialize next low				
 				if ( sqlite3_step( my_agent->epmem_statements[ EPMEM_STMT_BIGTREE_H_GET_LOW_RANGES ] ) == SQLITE_ROW )
@@ -5518,6 +5531,7 @@ void epmem_process_query( agent *my_agent, Symbol *state, Symbol *query, Symbol 
 						// update sums
 						sum_ct += current_ct;
 						sum_v += current_v;
+						sum_updown += current_updown;
 
 						// update end range
 						current_end = ( ( next_list == EPMEM_STMT_BIGTREE_H_GET_HIGH_RANGES )?( high_id ):( low_id - 1 ) );
@@ -5529,7 +5543,7 @@ void epmem_process_query( agent *my_agent, Symbol *state, Symbol *query, Symbol 
 						// if we are beyond after AND
 						// we have cardinality, compute score
 						// for possible new king
-						if ( ( current_valid_end > after ) && ( sum_ct != 0 ) )
+						if ( ( current_valid_end > after ) && ( sum_updown != 0 ) )
 						{
 							current_score = ( balance * sum_ct ) + ( balance_inv * sum_v );
 							
@@ -5547,6 +5561,7 @@ void epmem_process_query( agent *my_agent, Symbol *state, Symbol *query, Symbol 
 						current_id = current_end + 1;
 						current_ct = ( ( next_list == EPMEM_STMT_BIGTREE_H_GET_LOW_RANGES )?( 1 ):( -1 ) ) * sqlite3_column_int64( my_agent->epmem_statements[ next_list ], 1 );
 						current_v = ( ( next_list == EPMEM_STMT_BIGTREE_H_GET_LOW_RANGES )?( 1 ):( -1 ) ) * sqlite3_column_double( my_agent->epmem_statements[ next_list ], 2 );
+						current_updown = sqlite3_column_int64( my_agent->epmem_statements[ next_list ], 3 );
 
 						next_id = ( ( next_list == EPMEM_STMT_BIGTREE_H_GET_LOW_RANGES )?( &low_id ):( &high_id ) );
 						if ( sqlite3_step( my_agent->epmem_statements[ next_list ] ) == SQLITE_ROW )
