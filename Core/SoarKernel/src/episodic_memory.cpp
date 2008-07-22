@@ -4207,7 +4207,7 @@ void epmem_process_query( agent *my_agent, Symbol *state, Symbol *query, Symbol 
 			// play king of the mountain
 			{
 				epmem_time_id king_id = EPMEM_MEMID_NONE;
-				double king_score = -1;
+				double king_score = -1000;
 				unsigned long long king_cardinality = 0;
 
 				double balance = epmem_get_parameter( my_agent, (const long) EPMEM_PARAM_BALANCE );
@@ -4291,12 +4291,12 @@ void epmem_process_query( agent *my_agent, Symbol *state, Symbol *query, Symbol 
 						// if we are beyond after AND
 						// we have cardinality, compute score
 						// for possible new king
-						if ( ( current_valid_end > after ) && ( sum_ct > 0 ) )
+						if ( ( current_valid_end > after ) && ( sum_ct != 0 ) )
 						{
 							current_score = ( balance * sum_ct ) + ( balance_inv * sum_v );
 							
 							// we prefer more recent in case of tie
-							if ( current_score >= king_score )
+							if ( ( king_id == EPMEM_MEMID_NONE ) || ( current_score >= king_score ) )
 							{
 								king_id = current_valid_end;
 								king_score = current_score;
@@ -4829,7 +4829,7 @@ void epmem_process_query( agent *my_agent, Symbol *state, Symbol *query, Symbol 
 			// play king of the mountain
 			{
 				epmem_time_id king_id = EPMEM_MEMID_NONE;
-				double king_score = -1;
+				double king_score = -1000;
 				unsigned long long king_cardinality = 0;
 
 				double balance = epmem_get_parameter( my_agent, (const long) EPMEM_PARAM_BALANCE );
@@ -4913,12 +4913,12 @@ void epmem_process_query( agent *my_agent, Symbol *state, Symbol *query, Symbol 
 						// if we are beyond after AND
 						// we have cardinality, compute score
 						// for possible new king
-						if ( ( current_valid_end > after ) && ( sum_ct > 0 ) )
+						if ( ( current_valid_end > after ) && ( sum_ct != 0 ) )
 						{
 							current_score = ( balance * sum_ct ) + ( balance_inv * sum_v );
 							
 							// we prefer more recent in case of tie
-							if ( current_score >= king_score )
+							if ( ( king_id == EPMEM_MEMID_NONE ) || ( current_score >= king_score ) )
 							{
 								king_id = current_valid_end;
 								king_score = current_score;
@@ -5445,7 +5445,7 @@ void epmem_process_query( agent *my_agent, Symbol *state, Symbol *query, Symbol 
 			// play king of the mountain
 			{
 				epmem_time_id king_id = EPMEM_MEMID_NONE;
-				double king_score = -1;
+				double king_score = -1000;
 				unsigned long long king_cardinality = 0;
 
 				double balance = epmem_get_parameter( my_agent, (const long) EPMEM_PARAM_BALANCE );
@@ -5529,12 +5529,12 @@ void epmem_process_query( agent *my_agent, Symbol *state, Symbol *query, Symbol 
 						// if we are beyond after AND
 						// we have cardinality, compute score
 						// for possible new king
-						if ( ( current_valid_end > after ) && ( sum_ct > 0 ) )
+						if ( ( current_valid_end > after ) && ( sum_ct != 0 ) )
 						{
 							current_score = ( balance * sum_ct ) + ( balance_inv * sum_v );
 							
 							// we prefer more recent in case of tie
-							if ( current_score >= king_score )
+							if ( ( king_id == EPMEM_MEMID_NONE ) || ( current_score >= king_score ) )
 							{
 								king_id = current_valid_end;
 								king_score = current_score;
