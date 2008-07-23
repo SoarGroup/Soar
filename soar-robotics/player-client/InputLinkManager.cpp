@@ -21,6 +21,8 @@ InputLinkManager::InputLinkManager( Agent& agent )
 	
 	m_self = m_agent.CreateIdWME( il, "self" );
 	{
+		m_agent.CreateStringWME( m_self, "name", m_agent.GetAgentName() );
+		
 		Identifier* current_location = m_agent.CreateIdWME( m_self, "current-location" );
 		
 		m_x = m_agent.CreateFloatWME( current_location, "x", 0 );
