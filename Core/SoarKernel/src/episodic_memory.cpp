@@ -1552,6 +1552,11 @@ void epmem_init_db( agent *my_agent )
 				sqlite3_step( create );
 				sqlite3_finalize( create );
 
+				// start index (for retrievals)
+				sqlite3_prepare_v2( my_agent->epmem_db, "CREATE INDEX IF NOT EXISTS points_start ON points (start)", -1, &create, &tail );
+				sqlite3_step( create );
+				sqlite3_finalize( create );
+
 				// custom statement for inserting nodes
 				sqlite3_prepare_v2( my_agent->epmem_db, "INSERT INTO points (id,start) VALUES (?,?)", -1, &( my_agent->epmem_statements[ EPMEM_STMT_BIGTREE_RIT_ADD_POINT ] ), &tail );
 
