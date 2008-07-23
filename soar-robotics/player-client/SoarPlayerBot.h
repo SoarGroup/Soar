@@ -6,10 +6,11 @@
 #include "SoarRunThreadInterface.h"
 
 #include <libplayerc++/playerc++.h>
-#include <string>
+#include <deque>
 
 class InputLinkManager;
 class OutputLinkManager;
+class Message;
 
 class SoarPlayerBot
 {
@@ -19,9 +20,11 @@ public:
     
     void reload_productions();
     void reset();
-    void update();
+    void update( std::deque< Message* >& outgoing_message_deque );
     void clear_io_links();
     void create_io_links();
+    
+    void add_incoming_messages( const std::deque< Message* >& incoming_messages_deque );
     
 private:
     PlayerCc::PlayerClient    m_robot;
@@ -33,13 +36,8 @@ private:
     InputLinkManager* m_input_link;
     OutputLinkManager* m_output_link;
     
-    //bool m_move_to;
-    player_pose2d m_move_to_destination;
-    
     std::string m_productions;
     sml::Agent& m_agent;
-    
-    static const double MOVE_TO_TOLERANCE;
 };
 
 #endif // SOAR_PLAYER_BOT_H

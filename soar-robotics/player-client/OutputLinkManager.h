@@ -3,13 +3,16 @@
 
 #include "sml_Client.h"
 
+#include <list>
+#include <string>
+
 class Command
 {
 public:
 	Command() {}
 	Command( sml::Identifier* commandId );
 
-	enum CommandType { MOVE, ROTATE, STOP, GRIPPER, MOVE_TO };
+	enum CommandType { MOVE, ROTATE, STOP, GRIPPER, MOVE_TO, BROADCAST_MESSAGE, REMOVE_MESSAGE };
 	CommandType 	get_type();
 
 	enum MoveDirection { MOVE_STOP, MOVE_FORWARD, MOVE_BACKWARD };
@@ -26,6 +29,10 @@ public:
 	double get_x();
 	double get_y();
 	
+	const std::list< std::string > get_sentence() const;
+	
+	int get_remove_message_id() const;
+
 	enum Status { STATUS_NONE, STATUS_COMPLETE, STATUS_EXECUTING, STATUS_ERROR };
 	Status 			get_status();
 	void 			set_status( Status status );
@@ -39,6 +46,8 @@ private:
 	Status m_status;
 	double m_x;
 	double m_y;
+	std::list< std::string > m_sentence;
+	int m_remove_message_id;
 };
 
 class OutputLinkManager

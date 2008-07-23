@@ -43,6 +43,16 @@ double Command::get_y()
 	return m_y;
 }
 
+const std::list< std::string > Command::get_sentence() const
+{
+	return m_sentence;
+}
+
+int Command::get_remove_message_id() const
+{
+	return m_remove_message_id;
+}
+
 Command::Status Command::get_status() 
 { 
 	return m_status; 

@@ -3,9 +3,12 @@
 
 #include "InputLinkManager.h"
 
+#include "Message.h"
+
 #include <iostream>
 #include <cmath>
 #include <sys/time.h>
+#include <exception>
 
 const double InputLinkManager::PI = 3.14159265;
 const double InputLinkManager::ROTATION_DEAD_ZONE_DEGREES = 0.5;	// FIXME dead zones should be configurable
@@ -92,6 +95,49 @@ void InputLinkManager::gripper_update( bool open, bool closed, bool moving, bool
 	m_agent.Update( m_gripper_error, error ? "true" : "false" );
 
 	//std::cout << "gg(" << open << "," << closed << "," << moving << "," << error << ")\n";
+}
+
+void InputLinkManager::add_message( const Message& message )
+{
+	sml::Identifier* message_identifier = m_agent.CreateIdWME( m_received_messages, "message" );
+	
+	m_agent.CreateStringWME( message_identifier, "from", message.from().c_str() );
+	m_agent.CreateIntWME( message_identifier, "id", message.id() );
+	
+	sml::Identifier* time = m_agent.CreateIdWME( message_identifier, "time" );
+	m_agent.CreateIntWME( time, "seconds", m_seconds->GetValue() );
+	m_agent.CreateIntWME( time, "microseconds", m_microseconds->GetValue() );
+	
+	sml::Identifier* parent_id_wme = message_identifier;
+	bool first = true;
+	
+	for ( std::list< std::string >::const_iterator iter = message.begin(); iter != message.end(); ++iter )
+	{
+		parent_id_wme = m_agent.CreateIdWME( parent_id_wme, first ? "first" : "next" );
+		first = false;
+		m_agent.CreateStringWME( parent_id_wme, "word", (*iter).c_str() );
+	}
+	
+	if ( first )
+	{
+		throw std::exception();
+	}
+	
+	m_agent.CreateStringWME( parent_id_wme, "next", "nil" );
+	
+	m_message_map[ message.id() ] = message_identifier;
+}
+
+void InputLinkManager::remove_message( int id )
+{
+	std::map< int, sml::Identifier* >::iterator iter = m_message_map.find( id );
+	if ( iter == m_message_map.end() )
+	{
+		// TODO: report error
+		return;
+	}
+	m_agent.DestroyWME( iter->second );
+	m_message_map.erase( iter );
 }
 
 void InputLinkManager::commit()

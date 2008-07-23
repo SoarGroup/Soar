@@ -4,6 +4,7 @@
 #include "sml_Client.h"
 
 struct timeval;
+class Message;
 
 class InputLinkManager
 {
@@ -17,6 +18,8 @@ public:
 	void feducial_update( int id, double x, double y );
 	void beam_update( bool outer, bool inner );
 	void gripper_update( bool open, bool closed, bool moving, bool error );
+	void add_message( const Message& message );
+	void remove_message( int id );
 
 	void commit();
 
@@ -45,6 +48,9 @@ private:
 	sml::StringElement* m_gripper_closed;
 	sml::StringElement* m_gripper_moving;
 	sml::StringElement* m_gripper_error;
+	sml::Identifier* m_received_messages;
+	
+	std::map< int, sml::Identifier* > m_message_map;
 
 	static const double PI;
 	static const double ROTATION_DEAD_ZONE_DEGREES;

@@ -3,10 +3,12 @@
 #include "InputLinkManager.h"
 #include "OutputLinkManager.h"
 #include "RunThread.h"
+#include "Message.h"
 
 #include <cassert>
 #include <iostream>
 #include <sstream>
+#include <deque>
 
 using namespace sml;
 using namespace PlayerCc;
@@ -15,6 +17,7 @@ using std::endl;
 using std::string;
 using std::vector;
 using std::ostringstream;
+using std::deque;
 
 template < class T >
 inline string to_string( const T& t ) 
@@ -105,10 +108,23 @@ SoarPlayerClient::~SoarPlayerClient()
 }
 
 void SoarPlayerClient::update()
-{
+{	
+	deque< Message* > outgoing_message_deque;
+	
 	for ( vector< SoarPlayerBot* >::iterator iter = m_bot_list.begin(); iter != m_bot_list.end(); ++iter )
 	{
-		(*iter)->update();
+		(*iter)->update( outgoing_message_deque );
+	}
+	
+	for ( vector< SoarPlayerBot* >::iterator iter = m_bot_list.begin(); iter != m_bot_list.end(); ++iter )
+	{
+		(*iter)->add_incoming_messages( outgoing_message_deque );
+	}
+	
+	while ( !outgoing_message_deque.empty() )
+	{
+		delete outgoing_message_deque.front();
+		outgoing_message_deque.pop_front();
 	}
 
     if ( m_stop_issued ) 

@@ -55,7 +55,9 @@ InputLinkManager::InputLinkManager( Agent& agent )
 		m_gripper_moving = m_agent.CreateStringWME( gripper, "moving", "false" );
 		m_gripper_error = m_agent.CreateStringWME( gripper, "error", "false" );
 	}
-	
+	{
+		m_received_messages = m_agent.CreateIdWME( m_self, "received-messages" );
+	}	
 	commit();
 }
 
