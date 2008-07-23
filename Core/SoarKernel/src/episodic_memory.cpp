@@ -1542,6 +1542,21 @@ void epmem_init_db( agent *my_agent )
 
 				////
 
+				// point table
+				sqlite3_prepare_v2( my_agent->epmem_db, "CREATE TABLE IF NOT EXISTS points (id INTEGER,start INTEGER)", -1, &create, &tail );
+				sqlite3_step( create );					
+				sqlite3_finalize( create );
+
+				// id_start index (for queries)
+				sqlite3_prepare_v2( my_agent->epmem_db, "CREATE UNIQUE INDEX IF NOT EXISTS points_id_start ON points (id,start)", -1, &create, &tail );
+				sqlite3_step( create );
+				sqlite3_finalize( create );
+
+				// custom statement for inserting nodes
+				sqlite3_prepare_v2( my_agent->epmem_db, "INSERT INTO points (id,start) VALUES (?,?)", -1, &( my_agent->epmem_statements[ EPMEM_STMT_BIGTREE_RIT_ADD_POINT ] ), &tail );
+
+				////
+
 				// episodes table
 				sqlite3_prepare_v2( my_agent->epmem_db, "CREATE TABLE IF NOT EXISTS episodes (node INTEGER,start INTEGER,end INTEGER,id INTEGER)", -1, &create, &tail );
 				sqlite3_step( create );					
@@ -1674,7 +1689,7 @@ void epmem_init_db( agent *my_agent )
 				sqlite3_prepare_v2( my_agent->epmem_db, "DELETE FROM right_nodes", -1, &( my_agent->epmem_statements[ EPMEM_STMT_BIGTREE_RIT_TRUNCATE_RIGHT ] ), &tail );
 
 				// custom statement for range intersection query
-				sqlite3_prepare_v2( my_agent->epmem_db, "SELECT i.child_id, i.parent_id, i.name, i.value FROM ids i WHERE i.child_id IN (SELECT n.id FROM now n WHERE n.start<= ? UNION ALL SELECT e1.id FROM episodes e1, left_nodes lt WHERE e1.node BETWEEN lt.min AND lt.max AND e1.end >= ? UNION ALL SELECT e2.id FROM episodes e2, right_nodes rt WHERE e2.node = rt.node AND e2.start <= ?) ORDER BY i.child_id ASC", -1, &( my_agent->epmem_statements[ EPMEM_STMT_BIGTREE_RIT_GET_EPISODE ] ), &tail );
+				sqlite3_prepare_v2( my_agent->epmem_db, "SELECT i.child_id, i.parent_id, i.name, i.value FROM ids i WHERE i.child_id IN (SELECT n.id FROM now n WHERE n.start<= ? UNION ALL SELECT p.id FROM points p WHERE p.start<= ? UNION ALL SELECT e1.id FROM episodes e1, left_nodes lt WHERE e1.node BETWEEN lt.min AND lt.max AND e1.end >= ? UNION ALL SELECT e2.id FROM episodes e2, right_nodes rt WHERE e2.node = rt.node AND e2.start <= ?) ORDER BY i.child_id ASC", -1, &( my_agent->epmem_statements[ EPMEM_STMT_BIGTREE_RIT_GET_EPISODE ] ), &tail );
 
 				////
 
@@ -1704,9 +1719,23 @@ void epmem_init_db( agent *my_agent )
 				time_max = epmem_get_stat( my_agent, (const long) EPMEM_STAT_TIME );
 
 				// insert non-NOW intervals for all current NOW's
+				time_last = ( time_max - 1 );
 				sqlite3_prepare_v2( my_agent->epmem_db, "SELECT start,id FROM now", -1, &create, &tail );				
+				sqlite3_bind_int64( my_agent->epmem_statements[ EPMEM_STMT_BIGTREE_RIT_ADD_POINT ], 2, time_last );
 				while ( sqlite3_step( create ) == SQLITE_ROW )
-					epmem_rit_insert_interval( my_agent, sqlite3_column_int64( create, 0 ), ( time_max - 1 ), sqlite3_column_int64( create, 1 ), true );
+				{
+					range_start = sqlite3_column_int64( create, 1 );
+
+					// point
+					if ( range_start == time_last )
+					{
+						sqlite3_bind_int64( my_agent->epmem_statements[ EPMEM_STMT_BIGTREE_RIT_ADD_POINT ], 1, sqlite3_column_int64( create, 0 ) );						
+						sqlite3_step( my_agent->epmem_statements[ EPMEM_STMT_BIGTREE_RIT_ADD_POINT ] );
+						sqlite3_reset( my_agent->epmem_statements[ EPMEM_STMT_BIGTREE_RIT_ADD_POINT ] );
+					}
+					else					
+						epmem_rit_insert_interval( my_agent, sqlite3_column_int64( create, 0 ), time_last, range_start, true );
+				}
 				sqlite3_finalize( create );
 
 				// remove all NOW intervals
@@ -4606,6 +4635,16 @@ void epmem_process_query( agent *my_agent, Symbol *state, Symbol *query, Symbol 
 							insert_sql_pos += " AND n.start<?";
 						}
 
+						insert_sql_pos += " UNION ALL SELECT p.id AS id, p.start AS start, p.start AS end FROM points p WHERE p.id IN (";
+						insert_sql_pos.append( *qs );
+						insert_sql_pos += "?)";
+
+						// optimize for set before
+						if ( before != EPMEM_MEMID_NONE )
+						{
+							insert_sql_pos += " AND p.start<?";
+						}
+
 						delete qs;
 					}
 					insert_sql_pos += ") u ON w.id=u.id";
@@ -4615,10 +4654,10 @@ void epmem_process_query( agent *my_agent, Symbol *state, Symbol *query, Symbol 
 					int pos = 1;
 					sqlite3_prepare_v2( my_agent->epmem_db, insert_sql_pos.c_str(), -1, &insert, &tail );
 
-					// static bindings
+					// static bindings: count
 					sqlite3_bind_int64( insert, pos++, 1 );
 
-					// positive bindings
+					// positive bindings: nodes
 					leaf_p = leaf_ids[0].begin();
 					while ( leaf_p != leaf_ids[0].end() )
 					{
@@ -4626,7 +4665,7 @@ void epmem_process_query( agent *my_agent, Symbol *state, Symbol *query, Symbol 
 						leaf_p++;
 					}
 
-					// optimization binding
+					// optimization binding: nodes
 					// optimize for set before
 					if ( before != EPMEM_MEMID_NONE )
 					{
@@ -4636,7 +4675,7 @@ void epmem_process_query( agent *my_agent, Symbol *state, Symbol *query, Symbol 
 					// last time stamp for NOW
 					sqlite3_bind_int64( insert, pos++, epmem_get_stat( my_agent, (const long) EPMEM_STAT_TIME ) - 1 );
 
-					// positive bindings
+					// positive bindings: now
 					leaf_p = leaf_ids[0].begin();
 					while ( leaf_p != leaf_ids[0].end() )
 					{
@@ -4644,7 +4683,22 @@ void epmem_process_query( agent *my_agent, Symbol *state, Symbol *query, Symbol 
 						leaf_p++;
 					}
 
-					// optimization binding
+					// optimization binding: now
+					// optimize for set before
+					if ( before != EPMEM_MEMID_NONE )
+					{
+						sqlite3_bind_int64( insert, pos++, before );
+					}
+
+					// positive bindings: points
+					leaf_p = leaf_ids[0].begin();
+					while ( leaf_p != leaf_ids[0].end() )
+					{
+						sqlite3_bind_int64( insert, pos++, (*leaf_p)->leaf_id );
+						leaf_p++;
+					}
+
+					// optimization binding: points
 					// optimize for set before
 					if ( before != EPMEM_MEMID_NONE )
 					{
@@ -4694,6 +4748,16 @@ void epmem_process_query( agent *my_agent, Symbol *state, Symbol *query, Symbol 
 							insert_sql_neg += " AND n.start<?";
 						}
 
+						insert_sql_neg += " UNION ALL SELECT p.id AS id, p.start AS start, p.start AS end FROM points p WHERE p.id IN (";
+						insert_sql_neg.append( *qs );
+						insert_sql_neg += "?)";
+
+						// optimize for set before
+						if ( before != EPMEM_MEMID_NONE )
+						{
+							insert_sql_neg += " AND p.start<?";
+						}
+
 						delete qs;
 					}
 					insert_sql_neg += ") u ON w.id=u.id";
@@ -4703,11 +4767,11 @@ void epmem_process_query( agent *my_agent, Symbol *state, Symbol *query, Symbol 
 					int pos = 1;
 					sqlite3_prepare_v2( my_agent->epmem_db, insert_sql_neg.c_str(), -1, &insert, &tail );
 
-					// static bindings
+					// static bindings: neg weight, neg count
 					sqlite3_bind_int64( insert, pos++, -1 );
 					sqlite3_bind_int64( insert, pos++, -1 );
 
-					// negative bindings
+					// negative bindings: nodes
 					leaf_p = leaf_ids[1].begin();
 					while ( leaf_p != leaf_ids[1].end() )
 					{
@@ -4715,7 +4779,7 @@ void epmem_process_query( agent *my_agent, Symbol *state, Symbol *query, Symbol 
 						leaf_p++;
 					}
 
-					// optimize bindings
+					// optimize bindings: nodes
 					if ( before != EPMEM_MEMID_NONE )
 					{
 						sqlite3_bind_int64( insert, pos++, before );
@@ -4724,7 +4788,7 @@ void epmem_process_query( agent *my_agent, Symbol *state, Symbol *query, Symbol 
 					// last time stamp for NOW
 					sqlite3_bind_int64( insert, pos++, epmem_get_stat( my_agent, (const long) EPMEM_STAT_TIME ) - 1 );
 
-					// negative bindings
+					// negative bindings: now
 					leaf_p = leaf_ids[1].begin();
 					while ( leaf_p != leaf_ids[1].end() )
 					{
@@ -4732,7 +4796,21 @@ void epmem_process_query( agent *my_agent, Symbol *state, Symbol *query, Symbol 
 						leaf_p++;
 					}
 
-					// optimize bindings
+					// optimize bindings: now
+					if ( before != EPMEM_MEMID_NONE )
+					{
+						sqlite3_bind_int64( insert, pos++, before );
+					}
+
+					// negative bindings: points
+					leaf_p = leaf_ids[1].begin();
+					while ( leaf_p != leaf_ids[1].end() )
+					{
+						sqlite3_bind_int64( insert, pos++, (*leaf_p)->leaf_id );
+						leaf_p++;
+					}
+
+					// optimize bindings: points
 					if ( before != EPMEM_MEMID_NONE )
 					{
 						sqlite3_bind_int64( insert, pos++, before );
