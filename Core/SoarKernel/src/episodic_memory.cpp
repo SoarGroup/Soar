@@ -1689,7 +1689,7 @@ void epmem_init_db( agent *my_agent )
 				sqlite3_prepare_v2( my_agent->epmem_db, "DELETE FROM right_nodes", -1, &( my_agent->epmem_statements[ EPMEM_STMT_BIGTREE_RIT_TRUNCATE_RIGHT ] ), &tail );
 
 				// custom statement for range intersection query
-				sqlite3_prepare_v2( my_agent->epmem_db, "SELECT i.child_id, i.parent_id, i.name, i.value FROM ids i WHERE i.child_id IN (SELECT n.id FROM now n WHERE n.start<= ? UNION ALL SELECT p.id FROM points p WHERE p.start<= ? UNION ALL SELECT e1.id FROM episodes e1, left_nodes lt WHERE e1.node BETWEEN lt.min AND lt.max AND e1.end >= ? UNION ALL SELECT e2.id FROM episodes e2, right_nodes rt WHERE e2.node = rt.node AND e2.start <= ?) ORDER BY i.child_id ASC", -1, &( my_agent->epmem_statements[ EPMEM_STMT_BIGTREE_RIT_GET_EPISODE ] ), &tail );
+				sqlite3_prepare_v2( my_agent->epmem_db, "SELECT i.child_id, i.parent_id, i.name, i.value FROM ids i WHERE i.child_id IN (SELECT n.id FROM now n WHERE n.start<= ? UNION ALL SELECT p.id FROM points p WHERE p.start=? UNION ALL SELECT e1.id FROM episodes e1, left_nodes lt WHERE e1.node BETWEEN lt.min AND lt.max AND e1.end >= ? UNION ALL SELECT e2.id FROM episodes e2, right_nodes rt WHERE e2.node = rt.node AND e2.start <= ?) ORDER BY i.child_id ASC", -1, &( my_agent->epmem_statements[ EPMEM_STMT_BIGTREE_RIT_GET_EPISODE ] ), &tail );
 
 				////
 
@@ -2690,6 +2690,8 @@ void epmem_new_episode( agent *my_agent )
 
 		// all removals at once
 		std::map<epmem_node_id, bool>::iterator r = my_agent->epmem_range_removals->begin();
+		epmem_time_id range_start;
+		epmem_time_id range_end;
 		while ( r != my_agent->epmem_range_removals->end() )
 		{
 			if ( r->second )
@@ -2700,8 +2702,20 @@ void epmem_new_episode( agent *my_agent )
 				sqlite3_step( my_agent->epmem_statements[ EPMEM_STMT_BIGTREE_RIT_DELETE_NOW ] );
 				sqlite3_reset( my_agent->epmem_statements[ EPMEM_STMT_BIGTREE_RIT_DELETE_NOW ] );
 
-				// add new one
-				epmem_rit_insert_interval( my_agent, (*my_agent->epmem_range_mins)[ r->first - 1 ], ( time_counter - 1 ), r->first, true );
+				range_start = (*my_agent->epmem_range_mins)[ r->first - 1 ];
+				range_end = ( time_counter - 1 );
+
+				// point (id, start)
+				if ( range_start == range_end )
+				{
+					sqlite3_bind_int64( my_agent->epmem_statements[ EPMEM_STMT_BIGTREE_RIT_ADD_POINT ], 1, r->first );
+					sqlite3_bind_int64( my_agent->epmem_statements[ EPMEM_STMT_BIGTREE_RIT_ADD_POINT ], 2, range_start );					
+					sqlite3_step( my_agent->epmem_statements[ EPMEM_STMT_BIGTREE_RIT_ADD_POINT ] );
+					sqlite3_reset( my_agent->epmem_statements[ EPMEM_STMT_BIGTREE_RIT_ADD_POINT ] );
+				}
+				// node
+				else				
+					epmem_rit_insert_interval( my_agent, range_start, range_end, r->first, true );
 			}
 			
 			r++;
