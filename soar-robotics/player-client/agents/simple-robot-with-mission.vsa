@@ -1,0 +1,33 @@
+VERSION 4
+\simple-robot-with-mission\simple-robot-with-mission.dm
+0	ROOT simple-robot-with-mission simple-robot-with-mission 1
+1	0	FOPERATOR _firstload _firstload.soar 2
+2	0	FOLDER all all 3
+3	2	OPERATOR wait wait.soar 5
+4	0	FOLDER elaborations elaborations 6
+5	4	FOPERATOR _all _all.soar 7
+6	4	FOPERATOR monitor monitor.soar 8
+7	4	FOPERATOR output output.soar 9
+8	4	FOPERATOR top-state top-state.soar 11
+9	4	FOPERATOR waypoints waypoints.soar 12
+10	0	HLOPERATOR execute-mission execute-mission.soar execute-mission 105 27
+11	10	FOPERATOR elaborations elaborations.soar 28
+12	10	HLOPERATOR go-to-location go-to-location.soar go-to-location 112 30
+13	12	FOPERATOR elaborations elaborations.soar 31
+14	12	FOPERATOR selection selection.soar 10
+15	12	HLOPERATOR give-up-on-move-to give-up-on-move-to.soar give-up-on-move-to 64 14
+16	15	FOPERATOR elaborations elaborations.soar 15
+17	15	OPERATOR go-to-waypoint go-to-waypoint.soar 16
+18	15	OPERATOR update-map update-map.soar 17
+19	12	OPERATOR go-to-waypoint go-to-waypoint.soar 4
+20	12	OPERATOR update-progress update-progress.soar 26
+21	10	OPERATOR start start.soar 29
+22	0	HLIOPERATOR Impasse__Operator_Tie Impasse__Operator_Tie.soar Impasse__Operator_Tie 93 18
+23	22	FOPERATOR elaborations elaborations.soar 19
+24	22	HLOPERATOR evaluate-operator evaluate-operator.soar evaluate-operator 84 20
+25	24	FOPERATOR elaborations elaborations.soar 21
+26	24	OPERATOR go-to-waypoint go-to-waypoint.soar 22
+27	24	HLIOPERATOR Impasse__Operator_Tie Impasse__Operator_Tie.soar Impasse__Operator_Tie 96 23
+28	27	FOPERATOR elaborations elaborations.soar 24
+29	0	OPERATOR initialize-simple-robot initialize-simple-robot.soar 25
+END

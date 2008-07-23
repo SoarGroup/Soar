@@ -1,0 +1,20 @@
+sp {elaborate*operator*go-to-location*desired
+   (state <s> ^operator <op>
+              ^waypoints.waypoint <w>)
+   (<w> ^x <x> ^y <y>)
+   (<op> ^name go-to-location
+         ^x <x> ^y <y>)
+-->
+   (<op> ^desired <w>)
+}
+
+   
+sp {apply*go-to-location*complete
+   (state <s> ^operator <op>
+              ^waypoints.at <w>
+              ^mission.current <c>)
+   (<op> ^name go-to-location
+         ^desired <w>)
+-->
+   (<c> ^status complete)
+}

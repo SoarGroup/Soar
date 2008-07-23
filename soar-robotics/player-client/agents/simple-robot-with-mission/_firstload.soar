@@ -1,0 +1,29 @@
+watch 0
+timers --off
+
+#srand 0
+
+#sp {simple-robot*compare*choose-destination*force
+#   (state <s> ^name simple-robot
+#              ^operator <op1> +
+#                        <op2> +)
+#   (<op1> ^name choose-destination
+#          ^destination <d>)
+#   (<d> ^x -6 ^y 1)
+#-->
+#   (<s> ^operator <op1> >)
+#}
+
+
+add-wme i2 ^self *
+add-wme i4 ^current-location *
+add-wme i5 ^x -7
+add-wme i5 ^y -7
+add-wme i2 ^time *
+add-wme i6 ^seconds 1
+
+pushd ../default
+source selection.soar
+source selection-iterative-deepening.soar
+excise top-goal*halt*success
+popd

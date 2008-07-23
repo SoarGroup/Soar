@@ -1,0 +1,33 @@
+sp {go-to-location*elaborate*substate*desired
+   (state <s> ^name go-to-location
+              ^superstate.operator <so>)
+   (<so> ^name go-to-location
+         ^desired <d>)
+-->
+   (<s> ^desired <d>)
+}
+
+#sp {apply*go-to-location
+#   (state <s> ^operator <op>
+#              ^waypoints.waypoint <w>)
+#   (<w> ^x <x> ^y <y>)
+#   (<op> ^name go-to-location
+#         ^x <x> ^y <y>)
+#-->
+#   (<s> ^desired <w>)
+#}
+
+sp {go-to-location*elaborate*problem-space
+   (state <s> ^name go-to-location)
+-->
+   (<s> ^problem-space <p>)
+   (<p> ^name go-to-location
+        ^default-state-copy yes
+        ^two-level-attributes waypoints)}
+
+sp {go-to-location*evaluate*state*success
+   (state <s> ^desired <d>
+              ^problem-space.name go-to-location
+              ^waypoints.at <d>)
+-->
+   (<s> ^success <d>)}
