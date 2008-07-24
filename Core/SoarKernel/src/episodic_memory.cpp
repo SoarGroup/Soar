@@ -5072,18 +5072,21 @@ void epmem_process_query( agent *my_agent, Symbol *state, Symbol *query, Symbol 
 							}
 						}
 
-						// based upon choice, update variables						
-						current_list = next_list;
-						current_id = current_end - 1;
-						current_ct = ( ( next_list == EPMEM_STMT_BIGTREE_RIT_GET_LOW_RANGES )?( -1 ):( 1 ) ) * sqlite3_column_int64( my_agent->epmem_statements[ next_list ], 1 );
-						current_v = ( ( next_list == EPMEM_STMT_BIGTREE_RIT_GET_LOW_RANGES )?( -1 ):( 1 ) ) * sqlite3_column_double( my_agent->epmem_statements[ next_list ], 2 );
-						current_updown = sqlite3_column_int64( my_agent->epmem_statements[ next_list ], 3 );
-						
-						next_id = ( ( next_list == EPMEM_STMT_BIGTREE_RIT_GET_LOW_RANGES )?( &low_id ):( &high_id ) );
-						if ( sqlite3_step( my_agent->epmem_statements[ next_list ] ) == SQLITE_ROW )
-							( *next_id ) = sqlite3_column_int64( my_agent->epmem_statements[ next_list ], 0 );
-						else
-							( *next_id ) = EPMEM_MEMID_NONE;
+						if ( !done )
+						{
+							// based upon choice, update variables						
+							current_list = next_list;
+							current_id = current_end - 1;
+							current_ct = ( ( next_list == EPMEM_STMT_BIGTREE_RIT_GET_LOW_RANGES )?( -1 ):( 1 ) ) * sqlite3_column_int64( my_agent->epmem_statements[ next_list ], 1 );
+							current_v = ( ( next_list == EPMEM_STMT_BIGTREE_RIT_GET_LOW_RANGES )?( -1 ):( 1 ) ) * sqlite3_column_double( my_agent->epmem_statements[ next_list ], 2 );
+							current_updown = sqlite3_column_int64( my_agent->epmem_statements[ next_list ], 3 );
+							
+							next_id = ( ( next_list == EPMEM_STMT_BIGTREE_RIT_GET_LOW_RANGES )?( &low_id ):( &high_id ) );
+							if ( sqlite3_step( my_agent->epmem_statements[ next_list ] ) == SQLITE_ROW )
+								( *next_id ) = sqlite3_column_int64( my_agent->epmem_statements[ next_list ], 0 );
+							else
+								( *next_id ) = EPMEM_MEMID_NONE;
+						}
 					}
 				} while ( !done );
 				
