@@ -6019,6 +6019,7 @@ void epmem_install_memory( agent *my_agent, Symbol *state, epmem_time_id memory_
 		sqlite3_bind_int64( my_agent->epmem_statements[ EPMEM_STMT_BIGTREE_RIT_GET_EPISODE ], 1, memory_id );
 		sqlite3_bind_int64( my_agent->epmem_statements[ EPMEM_STMT_BIGTREE_RIT_GET_EPISODE ], 2, memory_id );
 		sqlite3_bind_int64( my_agent->epmem_statements[ EPMEM_STMT_BIGTREE_RIT_GET_EPISODE ], 3, memory_id );
+		sqlite3_bind_int64( my_agent->epmem_statements[ EPMEM_STMT_BIGTREE_RIT_GET_EPISODE ], 4, memory_id );
 		while ( sqlite3_step( my_agent->epmem_statements[ EPMEM_STMT_BIGTREE_RIT_GET_EPISODE ] ) == SQLITE_ROW )
 		{
 			// e.id, i.parent_id, i.name, i.value
