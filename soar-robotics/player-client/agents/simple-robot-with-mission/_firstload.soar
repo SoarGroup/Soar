@@ -1,4 +1,4 @@
-watch 0
+#watch 0
 timers --off
 
 #srand 0
@@ -15,12 +15,12 @@ timers --off
 #}
 
 
-add-wme i2 ^self *
-add-wme i4 ^current-location *
-add-wme i5 ^x -7
-add-wme i5 ^y -7
-add-wme i2 ^time *
-add-wme i6 ^seconds 1
+#add-wme i2 ^self *
+#add-wme i4 ^current-location *
+#add-wme i5 ^x -7
+#add-wme i5 ^y -7
+#add-wme i2 ^time *
+#add-wme i6 ^seconds 1
 
 pushd ../default
 source selection.soar

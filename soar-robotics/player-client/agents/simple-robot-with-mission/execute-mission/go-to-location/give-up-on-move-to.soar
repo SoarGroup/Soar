@@ -1,7 +1,8 @@
 sp {simple-robot*elaborate*move-to-cutoff-time
    (state <s> ^name go-to-location
-              ^superoperator.move-to <mt>
-              ^top-state.replan-time <rpt>)
+              ^top-state <ts>)
+   (<ts> ^move-to <mt>
+         ^replan-time <rpt>)
    (<mt> ^time <t>)
 -->
    (<mt> ^cutoff (+ <t> <rpt>))
@@ -9,7 +10,7 @@ sp {simple-robot*elaborate*move-to-cutoff-time
 
 sp {simple-robot*elaborate*move-to-give-up
    (state <s> ^name go-to-location
-              ^superoperator.move-to <mt>
+              ^top-state.move-to <mt>
               ^io.input-link.time.seconds > <ct>)
    (<mt> ^cutoff <ct>)
 -->
@@ -18,7 +19,7 @@ sp {simple-robot*elaborate*move-to-give-up
 
 sp {simple-robot*propose*give-up-on-move-to
    (state <s> ^name go-to-location
-              ^superoperator.move-to <mt>)
+              ^top-state.move-to <mt>)
    (<mt> ^give-up true)
 -->
    (<s> ^operator <op> +)
@@ -31,12 +32,12 @@ sp {simple-robot*propose*give-up-on-move-to
 sp {apply*give-up-on-move-to
    (state <s> ^operator <op>
               ^waypoints.at <w>
-              ^superoperator <so>)
+              ^top-state <ts>)
    (<op> ^name give-up-on-move-to
          ^map-updated true
          ^move-to <mt>)
-   (<so> ^move-to <mt>)
+   (<ts> ^move-to <mt>)
    (<mt> ^source <w>)
 -->
-   (<so> ^move-to <mt> -)
+   (<ts> ^move-to <mt> -)
 }
