@@ -30,11 +30,13 @@ sp {simple-robot*propose*give-up-on-move-to
 
 sp {apply*give-up-on-move-to
    (state <s> ^operator <op>
-              ^waypoints.at <w>)
+              ^waypoints.at <w>
+              ^superoperator <so>)
    (<op> ^name give-up-on-move-to
          ^map-updated true
          ^move-to <mt>)
+   (<so> ^move-to <mt>)
    (<mt> ^source <w>)
 -->
-   (<s> ^move-to <mt> -)
+   (<so> ^move-to <mt> -)
 }
