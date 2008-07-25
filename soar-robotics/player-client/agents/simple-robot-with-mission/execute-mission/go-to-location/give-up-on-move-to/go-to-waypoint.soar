@@ -1,7 +1,7 @@
 # return to the source
 sp {give-up-on-move-to*propose*go-to-waypoint
    (state <s> ^name give-up-on-move-to
-              ^top-state.move-to.source <w>)
+              ^superoperator.move-to.source <w>)
 -->
    (<s> ^operator <op> +)
    (<op> ^name go-to-waypoint

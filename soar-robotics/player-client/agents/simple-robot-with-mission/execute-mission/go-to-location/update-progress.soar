@@ -1,7 +1,7 @@
 sp {simple-robot*propose*update-progress
    (state <s> ^name go-to-location
               ^io.input-link.time.seconds <t>
-              ^move-to <mt>)
+              ^superoperator.move-to <mt>)
    (<mt> ^destination.distance {<d> < <closest>}
          ^closest <closest>)
 -->
@@ -24,7 +24,7 @@ sp {simple-robot*compare*update-progress
 
 sp {apply*update-progress
    (state <s> ^operator <op>
-              ^move-to <mt>
+              ^superoperator.move-to <mt>
              -^waypoints.at <dest>)
    (<op> ^name update-progress
          ^time <time>
@@ -38,9 +38,10 @@ sp {apply*update-progress
 
 sp {apply*update-progress*at-destination
    (state <s> ^operator <op>
-              ^move-to <mt>
+              ^superoperator <so>
               ^waypoints.at <dest>)
    (<op> ^name update-progress)
+   (<so> ^move-to <mt>)
    (<mt> ^destination <dest>)
 -->
    (<s> ^move-to <mt> -)

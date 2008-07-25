@@ -28,13 +28,14 @@ sp {apply*go-to-waypoint*create-move-to
    (state <s> ^operator <op>
               ^io.input-link.time.seconds <time>
               ^waypoints.at <at>
-             -^move-to)
+              ^superoperator <so>)
+  -(<so> ^move-to)
    (<op> ^name go-to-waypoint
          ^destination <w>
          ^track-progress true)
    (<w> ^distance <dist>)
 -->
-   (<s> ^move-to <mt>)
+   (<so> ^move-to <mt>)
    (<mt> ^destination <w>
          ^source <at>
           ^closest <dist>
@@ -43,12 +44,13 @@ sp {apply*go-to-waypoint*create-move-to
 
 sp {apply*go-to-waypoint*remove-move-to
    (state <s> ^operator <op>
-              ^move-to <mt>)
+              ^superoperator <so>)
+   (<so> ^move-to <mt>)
    (<mt> ^destination <> <w>)
    (<op> ^name go-to-waypoint
          ^destination <w>)
 -->
-   (<s> ^move-to <mt> -)
+   (<so> ^move-to <mt> -)
 }
 
 sp {monitor*go-to-waypoint

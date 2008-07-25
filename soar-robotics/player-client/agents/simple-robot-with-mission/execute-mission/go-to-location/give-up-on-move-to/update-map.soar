@@ -1,6 +1,6 @@
 sp {give-up-on-move-to*propose*update-map
    (state <s> ^name give-up-on-move-to
-              ^top-state.move-to <mt>)
+              ^superoperator.move-to <mt>)
    (<mt> ^source <source>
          ^destination <dest>)
    (<source> ^next <dest>)
