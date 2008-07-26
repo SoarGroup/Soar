@@ -1,4 +1,4 @@
-119
+141
 SOAR_ID 0
 SOAR_ID 1
 SOAR_ID 2
@@ -118,7 +118,29 @@ FLOAT_RANGE 115 0.0 Infinity
 ENUMERATION 116 3 go-to-location selection simple-robot
 ENUMERATION 117 1 none
 ENUMERATION 118 1 state
-153
+SOAR_ID 119
+SOAR_ID 120
+STRING 121
+INTEGER_RANGE 122 -2147483648 2147483647
+SOAR_ID 123
+INTEGER_RANGE 124 0 2147483647
+INTEGER_RANGE 125 0 2147483647
+SOAR_ID 126
+SOAR_ID 127
+STRING 128
+STRING 129
+SOAR_ID 130
+STRING 131
+SOAR_ID 132
+STRING 133
+SOAR_ID 134
+STRING 135
+SOAR_ID 136
+STRING 137
+SOAR_ID 138
+INTEGER_RANGE 139 -2147483648 2147483647
+STRING 140
+177
 0 attribute 118
 0 choices 117
 0 desired 31
@@ -139,8 +161,10 @@ ENUMERATION 118 1 state
 1 output-link 3
 2 self 26
 2 time 24
+3 broadcast-message 132
 3 move 8
 3 move-to 36
+3 remove-message 138
 3 rotate 9
 3 stop 10
 4 name 7
@@ -156,6 +180,8 @@ ENUMERATION 118 1 state
 21 name 22
 24 seconds 25
 26 current-location 27
+26 name 140
+26 received-messages 119
 27 x 28
 27 y 29
 30 at 31
@@ -272,3 +298,23 @@ ENUMERATION 118 1 state
 112 distance 115
 112 name 113
 112 time 114
+119 message 120
+120 first 126
+120 from 121
+120 id 122
+120 time 123
+123 microseconds 125
+123 seconds 124
+126 next 127
+126 word 128
+127 next 130
+127 word 129
+130 next 127
+130 word 131
+132 next 134
+132 word 133
+134 next 136
+134 word 135
+136 next 134
+136 word 137
+138 id 139
