@@ -9,8 +9,4 @@ source execute-mission.soar
 pushd execute-mission
 source execute-mission_source.soar
 popd
-source Impasse__Operator_Tie.soar
-pushd Impasse__Operator_Tie
-source Impasse__Operator_Tie_source.soar
-popd
 source initialize-simple-robot.soar

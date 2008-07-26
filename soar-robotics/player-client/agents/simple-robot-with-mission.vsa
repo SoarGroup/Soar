@@ -6,28 +6,28 @@ VERSION 4
 3	2	OPERATOR wait wait.soar 4
 4	0	FOLDER elaborations elaborations 5
 5	4	FOPERATOR _all _all.soar 6
-6	4	FOPERATOR monitor monitor.soar 7
-7	4	FOPERATOR output output.soar 8
+6	4	FOPERATOR give-up-on-move-to give-up-on-move-to.soar 31
+7	4	FOPERATOR monitor monitor.soar 7
 8	4	FOPERATOR top-state top-state.soar 9
 9	4	FOPERATOR waypoints waypoints.soar 10
-10	0	HLOPERATOR execute-mission execute-mission.soar execute-mission 105 11
+10	0	HLOPERATOR execute-mission execute-mission.soar execute-mission 79 11
 11	10	FOPERATOR elaborations elaborations.soar 12
-12	10	HLOPERATOR go-to-location go-to-location.soar go-to-location 112 13
+12	10	HLOPERATOR go-to-location go-to-location.soar go-to-location 86 13
 13	12	FOPERATOR elaborations elaborations.soar 14
-14	12	FOPERATOR selection selection.soar 15
-15	12	HLOPERATOR give-up-on-move-to give-up-on-move-to.soar give-up-on-move-to 64 16
-16	15	FOPERATOR elaborations elaborations.soar 17
-17	15	OPERATOR go-to-waypoint go-to-waypoint.soar 18
-18	15	OPERATOR update-map update-map.soar 19
-19	12	OPERATOR go-to-waypoint go-to-waypoint.soar 20
-20	12	OPERATOR update-progress update-progress.soar 21
-21	10	OPERATOR start start.soar 22
-22	0	HLIOPERATOR Impasse__Operator_Tie Impasse__Operator_Tie.soar Impasse__Operator_Tie 93 23
-23	22	FOPERATOR elaborations elaborations.soar 24
-24	22	HLOPERATOR evaluate-operator evaluate-operator.soar evaluate-operator 84 25
-25	24	FOPERATOR elaborations elaborations.soar 26
-26	24	OPERATOR go-to-waypoint go-to-waypoint.soar 27
-27	24	HLIOPERATOR Impasse__Operator_Tie Impasse__Operator_Tie.soar Impasse__Operator_Tie 96 28
-28	27	FOPERATOR elaborations elaborations.soar 29
+14	12	HLIOPERATOR Impasse__Operator_Tie Impasse__Operator_Tie.soar Impasse__Operator_Tie 67 23
+15	14	FOPERATOR elaborations elaborations.soar 24
+16	14	HLOPERATOR evaluate-operator evaluate-operator.soar evaluate-operator 58 25
+17	16	FOPERATOR elaborations elaborations.soar 26
+18	16	OPERATOR go-to-waypoint go-to-waypoint.soar 27
+19	16	HLIOPERATOR Impasse__Operator_Tie Impasse__Operator_Tie.soar Impasse__Operator_Tie 70 28
+20	19	FOPERATOR elaborations elaborations.soar 29
+21	12	FOPERATOR selection selection.soar 15
+22	12	HLOPERATOR give-up-on-move-to give-up-on-move-to.soar give-up-on-move-to 44 16
+23	22	FOPERATOR elaborations elaborations.soar 17
+24	22	OPERATOR go-to-waypoint go-to-waypoint.soar 18
+25	22	OPERATOR update-map update-map.soar 19
+26	12	OPERATOR go-to-waypoint go-to-waypoint.soar 20
+27	12	OPERATOR update-progress update-progress.soar 21
+28	10	OPERATOR start start.soar 22
 29	0	OPERATOR initialize-simple-robot initialize-simple-robot.soar 30
 END

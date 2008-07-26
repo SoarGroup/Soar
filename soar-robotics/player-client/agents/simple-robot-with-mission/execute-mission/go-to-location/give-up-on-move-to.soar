@@ -1,20 +1,3 @@
-# these elaboration rules fire in the top-state, but I'm putting them here because they are used by this code
-sp {simple-robot*elaborate*move-to-cutoff-time
-   (state <s> ^move-to <mt>
-              ^replan-time <rpt>)
-   (<mt> ^time <t>)
--->
-   (<mt> ^cutoff (+ <t> <rpt>))
-}
-
-sp {simple-robot*elaborate*move-to-give-up
-   (state <s> ^move-to <mt>
-              ^io.input-link.time.seconds > <ct>)
-   (<mt> ^cutoff <ct>)
--->
-   (<mt> ^give-up true)
-}
-
 sp {go-to-location*propose*give-up-on-move-to
    (state <s> ^name go-to-location
               ^top-state.move-to <mt>)

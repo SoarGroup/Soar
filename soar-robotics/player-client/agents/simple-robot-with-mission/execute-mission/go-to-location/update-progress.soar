@@ -1,4 +1,4 @@
-sp {simple-robot*propose*update-progress
+sp {go-to-location*propose*update-progress
    (state <s> ^name go-to-location
               ^io.input-link.time.seconds <t>
               ^top-state.move-to <mt>)
@@ -11,7 +11,7 @@ sp {simple-robot*propose*update-progress
          ^distance <d>)
 }
 
-sp {simple-robot*compare*update-progress
+sp {go-to-location*compare*update-progress
    (state <s> ^name go-to-location
               ^operator <op1> +
                         <op2> +)

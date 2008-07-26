@@ -1,4 +1,4 @@
-115
+119
 SOAR_ID 0
 SOAR_ID 1
 SOAR_ID 2
@@ -6,254 +6,269 @@ SOAR_ID 3
 SOAR_ID 4
 ENUMERATION 5 1 state
 ENUMERATION 6 1 nil
-ENUMERATION 7 2 selection simple-robot
-ENUMERATION 8 1 initialize-simple-robot
+ENUMERATION 7 1 initialize-simple-robot
+SOAR_ID 8
 SOAR_ID 9
-ENUMERATION 10 1 wander
-SOAR_ID 11
-SOAR_ID 12
-SOAR_ID 13
-ENUMERATION 14 3 backward forward stop
+SOAR_ID 10
+ENUMERATION 11 3 backward forward stop
+FLOAT_RANGE 12 0.0 1.0
+ENUMERATION 13 2 complete error
+ENUMERATION 14 3 left right stop
 FLOAT_RANGE 15 0.0 1.0
 ENUMERATION 16 2 complete error
-ENUMERATION 17 3 left right stop
-FLOAT_RANGE 18 0.0 1.0
-ENUMERATION 19 2 complete error
-ENUMERATION 20 2 complete error
+ENUMERATION 17 2 complete error
+SOAR_ID 18
+ENUMERATION 19 1 wait
+ENUMERATION 20 1 elaboration
 SOAR_ID 21
-ENUMERATION 22 1 wait
-ENUMERATION 23 2 operator state
-ENUMERATION 24 2 multiple none
-ENUMERATION 25 1 elaboration
-ENUMERATION 26 2 no-change tie
+STRING 22
+FLOAT_RANGE 23 -Infinity Infinity
+SOAR_ID 24
+INTEGER_RANGE 25 -2147483648 2147483647
+SOAR_ID 26
 SOAR_ID 27
-STRING 28
-SOAR_ID 29
+FLOAT_RANGE 28 -Infinity Infinity
+FLOAT_RANGE 29 -Infinity Infinity
 SOAR_ID 30
-STRING 31
+SOAR_ID 31
 FLOAT_RANGE 32 -Infinity Infinity
-FLOAT_RANGE 33 0.0 1.0
+FLOAT_RANGE 33 -Infinity Infinity
 SOAR_ID 34
-INTEGER_RANGE 35 -2147483648 2147483647
+FLOAT_RANGE 35 -Infinity Infinity
 SOAR_ID 36
-SOAR_ID 37
+FLOAT_RANGE 37 -Infinity Infinity
 FLOAT_RANGE 38 -Infinity Infinity
-FLOAT_RANGE 39 -Infinity Infinity
+FLOAT_RANGE 39 0.0 1.0
 SOAR_ID 40
-ENUMERATION 41 1 wander-waypoint
+ENUMERATION 41 1 go-to-waypoint
 SOAR_ID 42
-ENUMERATION 43 1 choose-next-waypoint
+ENUMERATION 43 1 give-up-on-move-to
 SOAR_ID 44
-SOAR_ID 45
-FLOAT_RANGE 46 -Infinity Infinity
-FLOAT_RANGE 47 -Infinity Infinity
+ENUMERATION 45 1 state
+ENUMERATION 46 1 give-up-on-move-to
+ENUMERATION 47 1 update-map
 SOAR_ID 48
-FLOAT_RANGE 49 -Infinity Infinity
+ENUMERATION 49 1 go-to-waypoint
 SOAR_ID 50
-FLOAT_RANGE 51 -Infinity Infinity
-FLOAT_RANGE 52 -Infinity Infinity
-FLOAT_RANGE 53 0.0 1.0
-SOAR_ID 54
-ENUMERATION 55 1 go-to-waypoint
-SOAR_ID 56
-ENUMERATION 57 1 choose-destination
+SOAR_ID 51
+INTEGER_RANGE 52 0 2147483647
+INTEGER_RANGE 53 0 2147483647
+ENUMERATION 54 1 true
+ENUMERATION 55 1 true
+ENUMERATION 56 1 true
+FLOAT_RANGE 57 0.0 Infinity
 SOAR_ID 58
-ENUMERATION 59 1 update-progress
-SOAR_ID 60
-ENUMERATION 61 1 update-map
+ENUMERATION 59 1 state
+ENUMERATION 60 2 evaluate-operator go-to-location
+ENUMERATION 61 1 go-to-waypoint
 SOAR_ID 62
-ENUMERATION 63 1 give-up-on-move-to
-SOAR_ID 64
-ENUMERATION 65 1 state
-ENUMERATION 66 1 give-up-on-move-to
-ENUMERATION 67 1 update-map
-SOAR_ID 68
-ENUMERATION 69 1 go-to-waypoint
+SOAR_ID 63
+ENUMERATION 64 1 go-to-location
+ENUMERATION 65 1 yes
+ENUMERATION 66 1 waypoints
+SOAR_ID 67
+ENUMERATION 68 1 state
+ENUMERATION 69 1 selection
 SOAR_ID 70
-SOAR_ID 71
-INTEGER_RANGE 72 0 2147483647
-INTEGER_RANGE 73 0 2147483647
-ENUMERATION 74 1 true
-ENUMERATION 75 1 true
-ENUMERATION 76 1 true
-FLOAT_RANGE 77 0.0 Infinity
-SOAR_ID 78
-ENUMERATION 79 1 evaluate-operator
-INTEGER_RANGE 80 0 2147483647
-FLOAT_RANGE 81 0.0 Infinity
-SOAR_ID 82
-ENUMERATION 83 1 evaluate-operator
-SOAR_ID 84
-ENUMERATION 85 1 state
-ENUMERATION 86 2 evaluate-operator simple-robot
-ENUMERATION 87 1 go-to-waypoint
-SOAR_ID 88
+ENUMERATION 71 1 state
+ENUMERATION 72 1 Impasse__Operator_Tie
+SOAR_ID 73
+FLOAT_RANGE 74 0.0 Infinity
+SOAR_ID 75
+ENUMERATION 76 1 evaluate-operator
+SOAR_ID 77
+ENUMERATION 78 1 execute-mission
+SOAR_ID 79
+ENUMERATION 80 1 state
+ENUMERATION 81 1 execute-mission
+ENUMERATION 82 1 start
+SOAR_ID 83
+ENUMERATION 84 1 go-to-location
+SOAR_ID 85
+SOAR_ID 86
+ENUMERATION 87 1 state
+ENUMERATION 88 1 go-to-location
 SOAR_ID 89
-ENUMERATION 90 1 simple-robot
-ENUMERATION 91 1 yes
-ENUMERATION 92 1 waypoints
-SOAR_ID 93
-ENUMERATION 94 1 state
-ENUMERATION 95 1 selection
-SOAR_ID 96
-ENUMERATION 97 1 state
-ENUMERATION 98 1 Impasse__Operator_Tie
-SOAR_ID 99
-FLOAT_RANGE 100 0.0 Infinity
-SOAR_ID 101
-ENUMERATION 102 1 evaluate-operator
-SOAR_ID 103
-ENUMERATION 104 1 execute-mission
-SOAR_ID 105
-ENUMERATION 106 1 state
-ENUMERATION 107 1 execute-mission
-ENUMERATION 108 1 start
+SOAR_ID 90
+SOAR_ID 91
+ENUMERATION 92 1 complete
+ENUMERATION 93 1 start
+INTEGER_RANGE 94 0 2147483647
+ENUMERATION 95 1 go-to-location
+FLOAT_RANGE 96 -Infinity Infinity
+FLOAT_RANGE 97 -Infinity Infinity
+SOAR_ID 98
+ENUMERATION 99 1 scout
+ENUMERATION 100 1 nil
+ENUMERATION 101 1 mission-operator
+FLOAT_RANGE 102 -Infinity Infinity
+FLOAT_RANGE 103 -Infinity Infinity
+INTEGER_RANGE 104 0 2147483647
+INTEGER_RANGE 105 -2147483648 2147483647
+SOAR_ID 106
+ENUMERATION 107 1 give-up-on-move-to
+ENUMERATION 108 1 true
 SOAR_ID 109
-ENUMERATION 110 1 go-to-location
-SOAR_ID 111
+ENUMERATION 110 1 go-to-waypoint
+ENUMERATION 111 1 true
 SOAR_ID 112
-ENUMERATION 113 1 state
-ENUMERATION 114 1 go-to-location
-142
-0 attribute 23
-0 choices 24
-0 desired 45
-0 impasse 26
+ENUMERATION 113 1 update-progress
+INTEGER_RANGE 114 0 2147483647
+FLOAT_RANGE 115 0.0 Infinity
+ENUMERATION 116 3 go-to-location selection simple-robot
+ENUMERATION 117 1 none
+ENUMERATION 118 1 state
+153
+0 attribute 118
+0 choices 117
+0 desired 31
 0 io 1
-0 item 27
-0 move-to 71
-0 name 7
+0 item 21
+0 mission 89
+0 move-to 51
+0 name 116
 0 operator 4
-0 operator 9
-0 operator 21
-0 operator 40
-0 operator 42
-0 operator 54
-0 operator 56
-0 operator 58
-0 operator 60
-0 operator 62
-0 operator 78
-0 operator 82
-0 operator 103
-0 problem-space 89
-0 replan-time 32
-0 success 45
+0 operator 18
+0 operator 77
+0 replan-time 23
 0 superstate 6
 0 top-state 0
 0 type 5
-0 waypoints 44
+0 waypoints 30
 1 input-link 2
 1 output-link 3
-2 self 36
-2 time 34
-3 move 11
-3 move-to 50
-3 rotate 12
-3 stop 13
-4 name 8
-9 actions 29
-9 name 10
-11 direction 14
-11 status 16
-11 throttle 15
-12 direction 17
-12 status 19
-12 throttle 18
-13 status 20
+2 self 26
+2 time 24
+3 move 8
+3 move-to 36
+3 rotate 9
+3 stop 10
+4 name 7
+8 direction 11
+8 status 13
+8 throttle 12
+9 direction 14
+9 status 16
+9 throttle 15
+10 status 17
+18 name 19
+18 random 20
 21 name 22
-21 random 25
-27 name 28
-29 dummy 30
-30 dummy 31
-30 throttle 33
-34 seconds 35
-36 current-location 37
-37 x 38
-37 y 39
+24 seconds 25
+26 current-location 27
+27 x 28
+27 y 29
+30 at 31
+30 waypoint 31
+31 distance 35
+31 next 34
+31 x 32
+31 y 33
+36 throttle 39
+36 x 37
+36 y 38
+40 destination 31
+40 distance 74
 40 name 41
+40 track-progress 56
+42 map-updated 55
+42 move-to 51
 42 name 43
-44 at 45
-44 waypoint 45
-45 distance 49
-45 next 48
-45 x 46
-45 y 47
-50 throttle 53
-50 x 51
-50 y 52
-54 destination 45
-54 distance 100
-54 name 55
-54 track-progress 76
-56 destination 45
-56 name 57
-58 distance 81
-58 name 59
-58 time 80
-60 name 61
-62 map-updated 75
-62 move-to 71
-62 name 63
-64 name 66
-64 operator 68
-64 operator 70
-64 superoperator 62
-64 superstate 112
-64 top-state 0
-64 type 65
-68 destination 45
-68 name 67
-68 source 45
-70 destination 45
-70 name 69
-71 closest 77
-71 cutoff 73
-71 destination 45
-71 give-up 74
-71 source 45
-71 time 72
-78 name 79
-82 name 83
-84 failure 45
-84 name 86
-84 operator 88
-84 superstate 93
-84 superstate-set 0
-84 top-state 0
-84 tried-tied-operator 99
-84 type 85
-84 waypoints 44
-88 destination 45
-88 name 87
-89 default-state-copy 91
-89 name 90
-89 two-level-attributes 92
-93 item 54
-93 name 95
-93 operator 101
-93 superstate 0
-93 superstate-set 0
-93 top-state 0
-93 type 94
-96 name 98
-96 superstate 84
-96 superstate 84
-96 superstate-set 0
-96 top-state 0
-96 type 97
-101 name 102
-101 superoperator 54
-103 name 104
-105 name 107
-105 operator 109
-105 operator 111
-105 superstate 0
-105 top-state 0
-105 type 106
-109 name 108
-111 name 110
-112 name 114
-112 superstate 105
-112 top-state 0
-112 type 113
+44 name 46
+44 operator 48
+44 operator 50
+44 superoperator 42
+44 superstate 86
+44 top-state 0
+44 type 45
+48 destination 31
+48 name 47
+48 source 31
+50 destination 31
+50 name 49
+51 closest 57
+51 cutoff 53
+51 destination 31
+51 give-up 54
+51 source 31
+51 time 52
+58 failure 31
+58 name 60
+58 operator 62
+58 superstate 67
+58 superstate-set 0
+58 top-state 0
+58 tried-tied-operator 73
+58 type 59
+58 waypoints 30
+62 destination 31
+62 name 61
+63 default-state-copy 65
+63 name 64
+63 two-level-attributes 66
+67 item 40
+67 name 69
+67 operator 75
+67 superstate 86
+67 superstate-set 0
+67 top-state 0
+67 type 68
+70 name 72
+70 superstate 58
+70 superstate-set 0
+70 top-state 0
+70 type 71
+75 name 76
+75 superoperator 40
+77 mission 89
+77 name 78
+79 io 1
+79 mission 89
+79 name 81
+79 operator 83
+79 operator 85
+79 superstate 0
+79 top-state 0
+79 type 80
+79 waypoints 30
+83 name 82
+83 type 101
+85 desired 31
+85 name 84
+85 x 102
+85 y 103
+86 desired 31
+86 io 1
+86 name 88
+86 operator 106
+86 operator 109
+86 operator 112
+86 problem-space 63
+86 success 31
+86 superstate 79
+86 top-state 0
+86 type 87
+86 waypoints 30
+89 current 90
+89 first 90
+90 delay-time 94
+90 end-time 105
+90 name 93
+90 next 91
+90 start-time 104
+90 status 92
+91 name 95
+91 next 98
+91 x 96
+91 y 97
+98 name 99
+98 next 100
+106 map-updated 108
+106 move-to 51
+106 name 107
+109 destination 31
+109 name 110
+109 track-progress 111
+112 distance 115
+112 name 113
+112 time 114

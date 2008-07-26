@@ -9,10 +9,10 @@ sp {apply*initialize-simple-robot*create-mission
    (<s> ^mission <m>)
    (<m> ^first <s1>)
    (<s1> ^name start
-         ^delay-time 0
+         ^delay-time 5
          ^next <s2>)
    (<s2> ^name go-to-location
-         ^x -7 ^y -7
+         ^x 6 ^y 7
          ^next <s3>)
    (<s3> ^name scout
          ^next nil)
