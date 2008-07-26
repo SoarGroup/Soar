@@ -126,13 +126,6 @@ typedef struct wme_struct wme;
 #define EPMEM_STMT_BIGTREE_H_ADD_NODE				21
 #define EPMEM_STMT_BIGTREE_H_ADD_WEIGHT				22
 #define EPMEM_STMT_BIGTREE_H_TRUNCATE_WEIGHTS		23
-#define EPMEM_STMT_BIGTREE_H_DEL_PROHIB				24
-#define EPMEM_STMT_BIGTREE_H_DEL_PROHIB_LOW			25
-#define EPMEM_STMT_BIGTREE_H_DEL_PROHIB_HIGH		26
-#define EPMEM_STMT_BIGTREE_H_DEL_PROHIB_CONTAIN		27
-#define EPMEM_STMT_BIGTREE_H_GET_LOW_RANGES			28
-#define EPMEM_STMT_BIGTREE_H_GET_HIGH_RANGES		29
-#define EPMEM_STMT_BIGTREE_H_TRUNCATE_RANGES		30
 
 #define EPMEM_MAX_STATEMENTS 						40 // must be at least 1+ largest of any STMT constant
 
@@ -141,10 +134,10 @@ typedef struct wme_struct wme;
 
 #define EPMEM_PARENTID_ROOT							0
 
+#define EPMEM_NODE_POS								0
+#define EPMEM_NODE_NEG								1
 #define EPMEM_RANGE_START							0
 #define EPMEM_RANGE_END								1
-#define EPMEM_RANGE_POS								0
-#define EPMEM_RANGE_NEG								1
 
 #define EPMEM_RIT_ROOT								0
 #define EPMEM_LN_2									0.693147180559945
