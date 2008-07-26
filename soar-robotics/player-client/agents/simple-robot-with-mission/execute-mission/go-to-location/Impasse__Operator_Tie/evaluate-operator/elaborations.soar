@@ -1,0 +1,10 @@
+sp {evaluate-operator*evaluate*state*failure*duplicate
+   (state <s2> ^name go-to-location
+               ^superstate-set <s1>
+               ^waypoints.at <a>
+               ^tried-tied-operator)
+   (<s1> ^name go-to-location
+               ^desired <d>
+               ^waypoints.at <a>)
+-->
+   (<s2> ^failure <d>)}
