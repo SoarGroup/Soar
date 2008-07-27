@@ -10,3 +10,7 @@ pushd execute-mission
 source execute-mission_source.soar
 popd
 source initialize-simple-robot.soar
+source process-message.soar
+pushd process-message
+source process-message_source.soar
+popd

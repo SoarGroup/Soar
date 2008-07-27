@@ -13,10 +13,10 @@ sp {apply*give-up-on-move-to
               ^waypoints.at <w>
               ^top-state <ts>)
    (<op> ^name give-up-on-move-to
-         ^map-updated true
          ^move-to <mt>)
    (<ts> ^move-to <mt>)
-   (<mt> ^source <w>)
+   (<mt> ^map-updated true
+         ^source <w>)
 -->
    (<ts> ^move-to <mt> -)
 }

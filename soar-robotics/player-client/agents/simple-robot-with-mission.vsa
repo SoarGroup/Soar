@@ -30,4 +30,7 @@ VERSION 4
 27	12	OPERATOR update-progress update-progress.soar 28
 28	10	OPERATOR start start.soar 29
 29	0	OPERATOR initialize-simple-robot initialize-simple-robot.soar 30
+30	0	HLOPERATOR process-message process-message.soar process-message 141 31
+31	30	FOPERATOR elaborations elaborations.soar 32
+32	30	OPERATOR ignore-unknown-message ignore-unknown-message.soar 33
 END

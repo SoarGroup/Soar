@@ -21,6 +21,8 @@ timers --off
 #add-wme i5 ^y -7
 #add-wme i2 ^time *
 #add-wme i6 ^seconds 1
+#add-wme i4 ^name me
+#add-wme i4 ^received-messages *
 
 pushd ../default
 source selection.soar

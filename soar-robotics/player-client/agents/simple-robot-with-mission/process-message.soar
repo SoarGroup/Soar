@@ -1,0 +1,51 @@
+sp {simple-robot*propose*process-message
+   (state <s> ^name simple-robot
+              ^io.input-link.self <self>)
+   (<self> ^name <name>
+           ^received-messages.message <m>)
+-->
+   (<s> ^operator <op> + >)
+   (<op> ^name process-message
+         ^message <m>)
+}
+
+sp {apply*process-message*ignore-self
+   (state <s> ^operator <op>
+              ^io <io>)
+   (<op> ^name process-message
+         ^message <m>)
+   (<io> ^input-link.self.name <name>
+         ^output-link <ol>)
+   (<m> ^from <name>
+        ^id <id>)
+-->
+   (<ol> ^remove-message.id <id>)
+   (exec print |Ignoring message|)
+}
+
+# message: update-map remove-link <id1> <id2>
+sp {apply*process-message*update-map-remove-link
+   (state <s> ^operator <op>
+              ^io <io>
+              ^waypoints.waypoint <wp1>)
+   (<wp1> ^id <id1>
+          ^next <wp2>)
+   (<wp2> ^id <id2>)
+   (<io> ^input-link.name <name>
+         ^output-link <ol>)
+   (<op> ^name process-message
+         ^message <m>)
+   (<m> ^id <id>
+        ^from <> <name>
+        ^first <w1>)
+   (<w1> ^word update-map
+         ^next <w2>)
+   (<w2> ^word remove-link
+         ^next <w3>)
+   (<w3> ^word <id1>
+         ^next <w4>)
+   (<w4> ^word <id2>)
+-->
+   (<wp1> ^next <wp2> -)
+   (<ol> ^remove-message.id <id>)
+}

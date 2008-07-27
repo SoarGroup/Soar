@@ -1,4 +1,4 @@
-141
+146
 SOAR_ID 0
 SOAR_ID 1
 SOAR_ID 2
@@ -140,7 +140,12 @@ STRING 137
 SOAR_ID 138
 INTEGER_RANGE 139 -2147483648 2147483647
 STRING 140
-177
+SOAR_ID 141
+ENUMERATION 142 1 state
+ENUMERATION 143 1 process-message
+ENUMERATION 144 1 ignore-unknown-message
+SOAR_ID 145
+183
 0 attribute 118
 0 choices 117
 0 desired 31
@@ -318,3 +323,9 @@ STRING 140
 136 next 134
 136 word 137
 138 id 139
+141 name 143
+141 operator 145
+141 superstate 0
+141 top-state 0
+141 type 142
+145 name 144

@@ -13,12 +13,24 @@ sp {give-up-on-move-to*propose*update-map
 
 sp {apply*update-map
    (state <s> ^operator <op>
-              ^superoperator <so>)
+              ^superoperator.move-to <mt>
+              ^io.output-link <ol>)
    (<op> ^name update-map
          ^source <source>
          ^destination <dest>)
-   (<source> ^next <dest>)
+   (<source> ^next <dest>
+             ^id <id1>)
+   (<dest> ^id <id2>)
 -->
    (<source> ^next <dest> -)
-   (<so> ^map-updated true)
+   (<mt> ^map-updated true)
+   (<ol> ^broadcast-message <w1>)
+   (<w1> ^word update-map
+         ^next <w2>)
+   (<w2> ^word remove-link
+         ^next <w3>)
+   (<w3> ^word <id1>
+         ^next <w4>)
+   (<w4> ^word <id2>
+         ^next nil)
 }
