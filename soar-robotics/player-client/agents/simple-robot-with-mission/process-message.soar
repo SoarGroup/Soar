@@ -31,7 +31,7 @@ sp {apply*process-message*update-map-remove-link
    (<wp1> ^id <id1>
           ^next <wp2>)
    (<wp2> ^id <id2>)
-   (<io> ^input-link.name <name>
+   (<io> ^input-link.self.name <name>
          ^output-link <ol>)
    (<op> ^name process-message
          ^message <m>)

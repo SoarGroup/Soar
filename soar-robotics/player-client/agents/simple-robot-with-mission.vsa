@@ -10,19 +10,19 @@ VERSION 4
 7	4	FOPERATOR monitor monitor.soar 8
 8	4	FOPERATOR top-state top-state.soar 9
 9	4	FOPERATOR waypoints waypoints.soar 10
-10	0	HLOPERATOR execute-mission execute-mission.soar execute-mission 79 11
+10	0	HLOPERATOR execute-mission execute-mission.soar execute-mission 78 11
 11	10	FOPERATOR elaborations elaborations.soar 12
-12	10	HLOPERATOR go-to-location go-to-location.soar go-to-location 86 13
+12	10	HLOPERATOR go-to-location go-to-location.soar go-to-location 85 13
 13	12	FOPERATOR elaborations elaborations.soar 14
-14	12	HLIOPERATOR Impasse__Operator_Tie Impasse__Operator_Tie.soar Impasse__Operator_Tie 67 15
+14	12	HLIOPERATOR Impasse__Operator_Tie Impasse__Operator_Tie.soar Impasse__Operator_Tie 66 15
 15	14	FOPERATOR elaborations elaborations.soar 16
-16	14	HLOPERATOR evaluate-operator evaluate-operator.soar evaluate-operator 58 17
+16	14	HLOPERATOR evaluate-operator evaluate-operator.soar evaluate-operator 57 17
 17	16	FOPERATOR elaborations elaborations.soar 18
 18	16	OPERATOR go-to-waypoint go-to-waypoint.soar 19
-19	16	HLIOPERATOR Impasse__Operator_Tie Impasse__Operator_Tie.soar Impasse__Operator_Tie 70 20
+19	16	HLIOPERATOR Impasse__Operator_Tie Impasse__Operator_Tie.soar Impasse__Operator_Tie 69 20
 20	19	FOPERATOR elaborations elaborations.soar 21
 21	12	FOPERATOR selection selection.soar 22
-22	12	HLOPERATOR give-up-on-move-to give-up-on-move-to.soar give-up-on-move-to 44 23
+22	12	HLOPERATOR give-up-on-move-to give-up-on-move-to.soar give-up-on-move-to 43 23
 23	22	FOPERATOR elaborations elaborations.soar 24
 24	22	OPERATOR go-to-waypoint go-to-waypoint.soar 25
 25	22	OPERATOR update-map update-map.soar 26
@@ -30,7 +30,7 @@ VERSION 4
 27	12	OPERATOR update-progress update-progress.soar 28
 28	10	OPERATOR start start.soar 29
 29	0	OPERATOR initialize-simple-robot initialize-simple-robot.soar 30
-30	0	HLOPERATOR process-message process-message.soar process-message 141 31
+30	0	HLOPERATOR process-message process-message.soar process-message 140 31
 31	30	FOPERATOR elaborations elaborations.soar 32
 32	30	OPERATOR ignore-unknown-message ignore-unknown-message.soar 33
 END
