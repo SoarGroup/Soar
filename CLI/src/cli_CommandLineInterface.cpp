@@ -1031,9 +1031,9 @@ void CommandLineInterface::OnKernelEvent(int eventID, AgentSML*, void* pCallData
 			assert(p) ;
 			assert(p->name->sc.name) ;
 
-			std::string name = p->name->sc.name ;
+			std::string name( p->name->sc.name );
 
-			m_ExcisedDuringSource.push_back(name.c_str());
+			m_ExcisedDuringSource.push_back( name );
 		}
 	}
 	else if (eventID == smlEVENT_PRINT)

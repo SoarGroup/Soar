@@ -322,7 +322,7 @@ bool CommandLineInterface::DoSource(std::string filename) {
 					// print excised production names
 					m_Result << "\nExcised productions:";
 
-					std::list<const char*>::iterator iter = m_ExcisedDuringSource.begin();
+					std::list< std::string >::iterator iter = m_ExcisedDuringSource.begin();
 					while (iter != m_ExcisedDuringSource.end()) {
 						m_Result << "\n\t" << (*iter);
 						++iter;
@@ -336,9 +336,9 @@ bool CommandLineInterface::DoSource(std::string filename) {
 			AppendArgTag(sml_Names::kParamSourcedProductionCount, sml_Names::kTypeInt, Int2String(m_NumProductionsSourced, buf, kMinBufferSize));
 			AppendArgTag(sml_Names::kParamExcisedProductionCount, sml_Names::kTypeInt, Int2String(m_NumProductionsExcised, buf, kMinBufferSize));
 
-			std::list<const char*>::iterator iter = m_ExcisedDuringSource.begin();
+			std::list< std::string >::iterator iter = m_ExcisedDuringSource.begin();
 			while (iter != m_ExcisedDuringSource.end()) {
-				AppendArgTagFast(sml_Names::kParamName, sml_Names::kTypeString, (*iter));
+				AppendArgTagFast( sml_Names::kParamName, sml_Names::kTypeString, (*iter).c_str() );
 				++iter;
 			}
 		}
@@ -369,7 +369,7 @@ bool CommandLineInterface::DoSource(std::string filename) {
 						// print excised production names
 						m_Result << "\nExcised productions:";
 
-						std::list<const char*>::iterator iter = m_ExcisedDuringSource.begin();
+						std::list< std::string >::iterator iter = m_ExcisedDuringSource.begin();
 						while (iter != m_ExcisedDuringSource.end()) {
 							m_Result << "\n\t" << (*iter);
 							++iter;
@@ -385,9 +385,9 @@ bool CommandLineInterface::DoSource(std::string filename) {
 				AppendArgTag(sml_Names::kParamExcisedProductionCount, sml_Names::kTypeInt, Int2String(numTotalProductionsExcised, buf, kMinBufferSize));
 				
 				if (m_SourceVerbose) {
-					std::list<const char*>::iterator iter = m_ExcisedDuringSource.begin();
+					std::list< std::string >::iterator iter = m_ExcisedDuringSource.begin();
 					while (iter != m_ExcisedDuringSource.end()) {
-						AppendArgTagFast(sml_Names::kParamName, sml_Names::kTypeString, (*iter));
+						AppendArgTagFast(sml_Names::kParamName, sml_Names::kTypeString, (*iter).c_str() );
 						++iter;
 					}
 				}
