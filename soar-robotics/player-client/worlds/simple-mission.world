@@ -6,16 +6,22 @@
 include "pioneer.inc"
 
 
+
+
 # defines 'map' object used for floorplans
 include "map.inc"
+
+
 
 
 # defines sick laser scanner
 include "sick.inc"
 
 
+
+
 # size of the world in meters
-size [16 16]
+size [32 32]
 
 # set the resolution of the underlying raytrace model in meters
 resolution 0.02
@@ -28,14 +34,14 @@ window
 ( 
   size [ 695.000 693.000 ] 
   center [-0.010 -0.040] 
-  scale 0.028 
+  scale 0.050 
 )
 
 # load an environment bitmap
 map
 ( 
-  bitmap "bitmaps/cave.png"
-  size [16 16]
+  bitmap "bitmaps/cave2.png"
+  size [32 32]
   name "cave"
 )
 
@@ -60,7 +66,7 @@ define barrier model(
 )
 
 barrier(
-  pose [3 0.5 0] 
+  pose [3.000 0.500 0.000] 
   color "black"
 )
 
@@ -69,7 +75,7 @@ pioneer2dx
 (
   name "robot1"
   color "red"
-  pose [-6.8 -6.8 45]
+  pose [-6.800 -6.800 45.000]
   gripper( 
     pose [0.200 0.000 0.000] color "gray" 
   )
@@ -95,7 +101,7 @@ pioneer2dx
 (
   name "robot2"
   color "blue"
-  pose [-7.2 -7.2 45]
+  pose [-7.200 -7.200 45.000]
   gripper( 
     pose [0.200 0.000 0.000] color "gray" 
   )
