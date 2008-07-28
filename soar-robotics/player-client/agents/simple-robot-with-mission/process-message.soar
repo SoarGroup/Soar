@@ -4,7 +4,7 @@ sp {simple-robot*propose*process-message
    (<self> ^name <name>
            ^received-messages.message <m>)
 -->
-   (<s> ^operator <op> + >)
+   (<s> ^operator <op> + > =)
    (<op> ^name process-message
          ^message <m>)
 }
