@@ -127,35 +127,69 @@ Command::Command( Identifier* command_id )
 	}
 	else if ( command_string == "broadcast-message" )
 	{
+		std::cout << "broadcast-message" << std::endl;
+
 		m_type = BROADCAST_MESSAGE;
 		Identifier* current_identifier = command_id;
+
 		do
-		{
-			char const* word = command_id->GetParameterValue( "word" );
-			WMElement* next_wme = command_id->FindByAttribute( "next", 0 );
+		{		
+			char const* word = 0;
+			Identifier* next = 0;
 			
-			if ( word == 0 || next_wme == 0 )
+			for ( std::list<WMElement*>::const_iterator children_iter = current_identifier->GetChildrenBegin();
+				children_iter != current_identifier->GetChildrenEnd();
+				++children_iter )
 			{
+				char const* attribute = (*children_iter)->GetAttribute();
+				assert( attribute );
+				
+				if ( attribute == string( "word" ) )
+				{
+					word = (*children_iter)->GetValueAsString();
+					std::cout << "word: " << word << std::endl;
+				}
+				else if ( attribute == string( "next" ) )
+				{
+					if ( (*children_iter)->IsIdentifier() )
+					{
+						next = (*children_iter)->ConvertToIdentifier();
+					}
+					else if ( (*children_iter)->GetValueType() == string( "string" ) )
+					{
+						if ( (*children_iter)->GetValueAsString() != string( "nil" ) )
+						{
+							std::cout << "next string not nil: " << (*children_iter)->GetValueAsString() << std::endl;
+							throw std::exception();
+						}
+						// next is 0
+					}
+					else
+					{
+						std::cout << "next type not string or id: " << (*children_iter)->GetValueType() << std::endl;
+						throw std::exception();
+					}
+					std::cout << "next: " << (*children_iter)->GetValueAsString() << std::endl;
+				}
+				else
+				{
+					std::cout << "unknown attribute: " << attribute << std::endl;
+					throw std::exception();
+				}
+			}
+			
+			if ( word == 0 )
+			{
+				std::cout << "missing word in message" << std::endl;
 				throw std::exception();
 			}
 			
 			m_sentence.push_back( string( word ) );
-			
-			if ( string( next_wme->GetValueAsString() ) == string( "nil" ) )
-			{
-				current_identifier = 0;
-			}
-			else
-			{
-				if ( !next_wme->IsIdentifier() )
-				{
-					throw std::exception();
-				}
-			
-				current_identifier = next_wme->ConvertToIdentifier();
-				assert( current_identifier );
-			}
-		} while( current_identifier );
+			current_identifier = next;
+
+		} while ( current_identifier );
+
+		std::cout << "broadcast-message done" << std::endl;
 	}
 	else if ( command_string == "remove-message" )
 	{

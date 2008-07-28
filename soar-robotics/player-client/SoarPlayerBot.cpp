@@ -176,13 +176,13 @@ void SoarPlayerBot::update( std::deque< Message* >& outgoing_message_deque )
 		case Command::BROADCAST_MESSAGE:
 			{
 				Message* message = new Message( m_agent.GetAgentName(), command->get_sentence() );
-				std::cout << m_agent.GetAgentName() << ": SEND_MESSAGE: " << *message << std::endl;
+				std::cout << m_agent.GetAgentName() << ": SEND_MESSAGE" << *message << std::endl;
 				outgoing_message_deque.push_back( message );
 			}
 			break;
 		
 		case Command::REMOVE_MESSAGE:
-			std::cout << m_agent.GetAgentName() << ": REMOVE_MESSAGE: " << command->get_remove_message_id() << std::endl;
+			std::cout << m_agent.GetAgentName() << ": REMOVE_MESSAGE(" << command->get_remove_message_id() << ")" << std::endl;
 			m_input_link->remove_message( command->get_remove_message_id() );
 			m_input_link->commit();
 			break;

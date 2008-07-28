@@ -18,7 +18,7 @@ public:
 	
 	friend std::ostream& operator<<( std::ostream& os, const Message& message )
 	{
-		os << "(" << message.m_from << "," << message.m_id << ":";
+		os << "(" << message.m_from << ", " << message.m_id << ":";
 		for ( std::list< std::string >::const_iterator iter = message.begin(); iter != message.end(); ++iter )
 		{
 			os << " " << *iter;
