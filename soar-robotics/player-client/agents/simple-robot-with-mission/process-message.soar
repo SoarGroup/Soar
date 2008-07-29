@@ -9,19 +9,20 @@ sp {simple-robot*propose*process-message
          ^message <m>)
 }
 
-sp {apply*process-message*ignore-self
-   (state <s> ^operator <op>
-              ^io <io>)
-   (<op> ^name process-message
-         ^message <m>)
-   (<io> ^input-link.self.name <name>
-         ^output-link <ol>)
-   (<m> ^from <name>
-        ^id <id>)
--->
-   (<ol> ^remove-message.id <id>)
-   (exec print |Ignoring message|)
-}
+#sp {apply*process-message*ignore-self
+#   (state <s> ^operator <op>
+#              ^io <io>)
+#   (<op> ^name process-message
+#         ^message <m>)
+#   (<io> ^input-link.self.name <name>
+#         ^output-link <ol>)
+#   (<m> ^from <name>
+#        ^id <id>)
+#-->
+#   (<ol> ^remove-message.id <id>)
+#   (write (crlf) |Ignoring own message|)
+#   (exec player-print |Ignoring own message|)
+#}
 
 # message: update-map remove-link <id1> <id2>
 sp {apply*process-message*update-map-remove-link
@@ -36,7 +37,7 @@ sp {apply*process-message*update-map-remove-link
    (<op> ^name process-message
          ^message <m>)
    (<m> ^id <id>
-        ^from <> <name>
+        #^from <> <name>
         ^first <w1>)
    (<w1> ^word update-map
          ^next <w2>)
@@ -48,4 +49,33 @@ sp {apply*process-message*update-map-remove-link
 -->
    (<wp1> ^next <wp2> -)
    (<ol> ^remove-message.id <id>)
+   (write (crlf) |Updated map, removed link from | <id1> | to | <id2>)
+   (exec player-print |Updated map, removed link from | <id1> | to | <id2>)
+}
+
+sp {apply*process-message*update-map-inapplicable
+   (state <s> ^operator <op>
+              ^io <io>
+              ^waypoints.waypoint <wp1> <wp2>)
+   (<wp1> ^id <id1>
+         -^next <wp2>)
+   (<wp2> ^id <id2>)
+   (<io> ^input-link.self.name <name>
+         ^output-link <ol>)
+   (<op> ^name process-message
+         ^message <m>)
+   (<m> ^id <id>
+        #^from <> <name>
+        ^first <w1>)
+   (<w1> ^word update-map
+         ^next <w2>)
+   (<w2> ^word remove-link
+         ^next <w3>)
+   (<w3> ^word <id1>
+         ^next <w4>)
+   (<w4> ^word <id2>)
+-->
+   (<ol> ^remove-message.id <id>)
+   (write (crlf) |Ignoring message to update map, remove-link from | <id1> | to | <id2> | (map already updated)|)
+   (exec player-print |Ignoring message to update map, remove-link from | <id1> | to | <id2> | (map already updated)|)
 }

@@ -12,4 +12,6 @@ sp {apply*ignore-unknown-message
    (<op> ^name ignore-unknown-message)
 -->
    (<ol> ^remove-message.id <id>)
+   (write (crlf) |Ignoring unknown message|)
+   (exec player-print |Ignoring unknown message|)
 }

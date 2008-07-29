@@ -33,4 +33,5 @@ sp {apply*update-map
          ^next <w4>)
    (<w4> ^word <id2>
          ^next nil)
+   #(interrupt)
 }
