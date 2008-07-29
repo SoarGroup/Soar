@@ -31,7 +31,7 @@ FeatureMap::FeatureMap() {
   set<PerceptualGroup*> tempSector;
   for (int i=0; i<9; i++) {
     fmSectors.push_back(tempSector);
-    fmSectorIterators.push_back(NULL);
+    fmSectorIterators.push_back((set<PerceptualGroup*>::iterator)NULL);
     fmCounts.push_back(0);
   }
   

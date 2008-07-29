@@ -21,6 +21,7 @@
 
 #ifndef NO_CANVAS_COMPILED
 
+#include <assert.h>
 #include <SDL/SDL.h>
 #include <SDL/SDL_gfxPrimitives.h>
 
