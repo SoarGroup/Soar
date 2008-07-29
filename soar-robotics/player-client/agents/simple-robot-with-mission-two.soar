@@ -2,6 +2,26 @@ pushd simple-robot-with-mission
 source simple-robot-with-mission_source.soar
 popd
 
+sp {apply*waypoints
+   (state <s> ^operator <op>)
+   (<op> ^name initialize-simple-robot)
+-->
+   (<s> ^waypoints <w>)
+   (<w> ^waypoint <w1> <w2> <w3> <w4> <w5> <w6> <w7> <w8> <w9> <w10> <w11> <w12>)
+   (<w1> ^x -7 ^y -7 ^id |1| ^next <w2> <w6> <w8> <w10>)
+   (<w2> ^x -6.5 ^y 0 ^id |2| ^next <w1> <w3> <w4>)
+   (<w3> ^x -7 ^y 9 ^id |3| ^next <w2> <w7> <w12>)
+   (<w4> ^x 0 ^y 2 ^id |4| ^next <w2> <w5> <w9>)
+   (<w5> ^x 4 ^y 5 ^id |5| ^next <w4>)
+   (<w6> ^x -10 ^y -3 ^id |6| ^next <w1> <w7>)
+   (<w7> ^x -10 ^y 0 ^id |7| ^next <w3> <w6>)
+   (<w8> ^x -3 ^y -3 ^id |8| ^next <w1> <w9>)
+   (<w9> ^x -3 ^y 1.5 ^id |9| ^next <w4> <w8>)
+   (<w10> ^x 3 ^y -4 ^id |10| ^next <w1> <w11>)
+   (<w11> ^x 8 ^y -2 ^id |11| ^next <w10>)
+   (<w12> ^x -4.5 ^y 10 ^id |12| ^next <w3>)
+}
+
 sp {apply*initialize-simple-robot*create-mission
    (state <s> ^operator <op>)
    (<op> ^name initialize-simple-robot)
@@ -9,10 +29,10 @@ sp {apply*initialize-simple-robot*create-mission
    (<s> ^mission <m>)
    (<m> ^first <s1>)
    (<s1> ^name start
-         ^delay-time 10
+         ^delay-time 0
          ^next <s2>)
    (<s2> ^name go-to-location
-         ^x -6 ^y 1
+         ^x -7 ^y 9
          ^next <s3>)
    (<s3> ^name scout
          ^next nil)
