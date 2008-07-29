@@ -3,6 +3,7 @@ sp {simple-robot*propose*process-message
               ^io.input-link.self <self>)
    (<self> ^name <name>
            ^received-messages.message <m>)
+  -(<m> ^status processed)
 -->
    (<s> ^operator <op> + > =)
    (<op> ^name process-message
@@ -36,7 +37,7 @@ sp {apply*process-message*update-map-remove-link
          ^output-link <ol>)
    (<op> ^name process-message
          ^message <m>)
-   (<m> ^id <id>
+   (<m>  ^id <id>
         #^from <> <name>
         ^first <w1>)
    (<w1> ^word update-map
@@ -49,6 +50,7 @@ sp {apply*process-message*update-map-remove-link
 -->
    (<wp1> ^next <wp2> -)
    (<ol> ^remove-message.id <id>)
+   (<m> ^status processed)
    (write (crlf) |Updated map, removed link from | <id1> | to | <id2>)
    (exec player-print |Updated map, removed link from | <id1> | to | <id2>)
 }
@@ -64,7 +66,7 @@ sp {apply*process-message*update-map-inapplicable
          ^output-link <ol>)
    (<op> ^name process-message
          ^message <m>)
-   (<m> ^id <id>
+   (<m>  ^id <id>
         #^from <> <name>
         ^first <w1>)
    (<w1> ^word update-map
@@ -76,6 +78,7 @@ sp {apply*process-message*update-map-inapplicable
    (<w4> ^word <id2>)
 -->
    (<ol> ^remove-message.id <id>)
+   (<m> ^status processed)
    (write (crlf) |Ignoring message to update map, remove-link from | <id1> | to | <id2> | (map already updated)|)
    (exec player-print |Ignoring message to update map, remove-link from | <id1> | to | <id2> | (map already updated)|)
 }

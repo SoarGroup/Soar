@@ -25,5 +25,6 @@ sp {simple-robot*elaborate*move-to-give-up*destination-unreachable
          ^destination <dest>)
   -(<src> ^next <dest>)
 -->
-   (<mt> ^give-up true)
+   (<mt> ^give-up true
+         ^give-up immediate)
 }

@@ -17,6 +17,8 @@ sp {go-to-location*compare*update-progress
                         <op2> +)
    (<op1> ^name update-progress)
   -(<op2> ^name update-progress)
+  -{(<op2> ^name give-up-on-move-to
+           ^move-to.give-up immediate)}
 -->
    (<s> ^operator <op1> > <op2>)
 }
