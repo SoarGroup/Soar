@@ -32,7 +32,7 @@ sp {apply*initialize-simple-robot*create-mission
          ^delay-time 0
          ^next <s2>)
    (<s2> ^name go-to-location
-         ^x 0 ^y 2
+         ^x 4 ^y 5
          ^next <s3>)
    (<s3> ^name scout
          ^next nil)

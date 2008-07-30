@@ -15,5 +15,6 @@ timers --off
 pushd ../default
 source selection.soar
 source selection-iterative-deepening.soar
+source temp-failure-fix.soar
 excise top-goal*halt*success
 popd
