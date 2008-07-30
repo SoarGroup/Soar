@@ -1,4 +1,4 @@
-173
+177
 SOAR_ID 0
 SOAR_ID 1
 SOAR_ID 2
@@ -133,58 +133,64 @@ STRING 130
 SOAR_ID 131
 STRING 132
 SOAR_ID 133
-STRING 134
-SOAR_ID 135
-STRING 136
-SOAR_ID 137
-INTEGER_RANGE 138 -2147483648 2147483647
-STRING 139
+INTEGER_RANGE 134 -2147483648 2147483647
+STRING 135
+SOAR_ID 136
+ENUMERATION 137 1 state
+ENUMERATION 138 1 process-message
+ENUMERATION 139 1 ignore-unknown-message
 SOAR_ID 140
-ENUMERATION 141 1 state
+SOAR_ID 141
 ENUMERATION 142 1 process-message
-ENUMERATION 143 1 ignore-unknown-message
-SOAR_ID 144
-SOAR_ID 145
-ENUMERATION 146 1 process-message
-INTEGER_RANGE 147 -2147483648 2147483647
-ENUMERATION 148 1 true
-ENUMERATION 149 1 nil
-ENUMERATION 150 1 nil
-STRING 151
-ENUMERATION 152 1 processed
+INTEGER_RANGE 143 -2147483648 2147483647
+ENUMERATION 144 1 true
+ENUMERATION 145 1 nil
+STRING 146
+ENUMERATION 147 1 processed
+SOAR_ID 148
+SOAR_ID 149
+INTEGER_RANGE 150 -2147483648 2147483647
+ENUMERATION 151 2 false true
+FLOAT_RANGE 152 0.0 Infinity
 SOAR_ID 153
-SOAR_ID 154
-INTEGER_RANGE 155 -2147483648 2147483647
-ENUMERATION 156 2 false true
-FLOAT_RANGE 157 0.0 Infinity
+FLOAT_RANGE 154 -Infinity Infinity
+FLOAT_RANGE 155 -Infinity Infinity
+ENUMERATION 156 1 scout
+SOAR_ID 157
 SOAR_ID 158
-FLOAT_RANGE 159 -Infinity Infinity
-FLOAT_RANGE 160 -Infinity Infinity
-ENUMERATION 161 1 scout
+ENUMERATION 159 1 state
+ENUMERATION 160 1 scout
+ENUMERATION 161 1 process-unfriendly-entity
 SOAR_ID 162
 SOAR_ID 163
 ENUMERATION 164 1 state
-ENUMERATION 165 1 scout
-ENUMERATION 166 1 process-unfriendly-entity
+ENUMERATION 165 1 process-unfriendly-entity
+ENUMERATION 166 1 send-position-message
 SOAR_ID 167
-SOAR_ID 168
-ENUMERATION 169 1 state
-ENUMERATION 170 1 process-unfriendly-entity
-ENUMERATION 171 1 send-position-message
-SOAR_ID 172
-218
+INTEGER_RANGE 168 0 2147483647
+SOAR_ID 169
+INTEGER_RANGE 170 -2147483648 2147483647
+INTEGER_RANGE 171 0 2147483647
+INTEGER_RANGE 172 -2147483648 2147483647
+INTEGER_RANGE 173 -2147483648 2147483647
+FLOAT_RANGE 174 -Infinity Infinity
+FLOAT_RANGE 175 -Infinity Infinity
+INTEGER_RANGE 176 0 2147483647
+225
 0 attribute 117
 0 choices 116
 0 desired 31
+0 entity 169
 0 io 1
 0 item 21
+0 message-update-time 168
 0 mission 88
 0 move-to 50
 0 name 115
 0 operator 4
 0 operator 18
 0 operator 76
-0 operator 145
+0 operator 141
 0 replan-time 23
 0 superstate 6
 0 top-state 0
@@ -192,13 +198,14 @@ SOAR_ID 172
 0 waypoints 30
 1 input-link 2
 1 output-link 3
-2 entities 153
+2 entities 148
 2 self 26
 2 time 24
 3 broadcast-message 131
+3 broadcast-message 131
 3 move 8
 3 move-to 35
-3 remove-message 137
+3 remove-message 133
 3 rotate 9
 3 stop 10
 4 name 7
@@ -214,15 +221,15 @@ SOAR_ID 172
 21 name 22
 24 seconds 25
 26 current-location 27
-26 name 139
+26 name 135
 26 received-messages 118
 27 x 28
 27 y 29
 30 at 31
 30 waypoint 31
 31 distance 34
-31 id 147
-31 id 151
+31 id 143
+31 id 146
 31 next 31
 31 x 32
 31 y 33
@@ -253,7 +260,7 @@ SOAR_ID 172
 50 cutoff 52
 50 destination 31
 50 give-up 53
-50 map-updated 148
+50 map-updated 144
 50 source 31
 50 time 51
 57 failure 31
@@ -291,7 +298,7 @@ SOAR_ID 172
 78 name 80
 78 operator 82
 78 operator 84
-78 operator 162
+78 operator 157
 78 superstate 0
 78 top-state 0
 78 type 79
@@ -341,7 +348,7 @@ SOAR_ID 172
 119 first 125
 119 from 120
 119 id 121
-119 status 152
+119 status 147
 119 time 122
 122 microseconds 124
 122 seconds 123
@@ -351,43 +358,47 @@ SOAR_ID 172
 126 word 128
 129 next 126
 129 word 130
-131 next 133
-131 next 149
+131 next 145
+131 next 131
 131 word 132
-133 next 135
-133 next 150
-133 word 134
-135 next 133
-135 word 136
-137 id 138
-140 io 1
-140 name 142
-140 operator 144
-140 superstate 0
-140 top-state 0
-140 type 141
-144 name 143
-145 message 119
-145 name 146
-153 entity 154
-154 current-absolute-location 158
-154 friendly 156
-154 id 155
-154 range 157
-158 x 159
-158 y 160
+133 id 134
+136 io 1
+136 name 138
+136 operator 140
+136 superstate 0
+136 top-state 0
+136 type 137
+140 name 139
+141 message 119
+141 name 142
+148 entity 149
+149 current-absolute-location 153
+149 friendly 151
+149 id 150
+149 range 152
+153 x 154
+153 y 155
+157 name 156
+158 io 1
+158 name 160
+158 operator 162
+158 superstate 78
+158 top-state 0
+158 type 159
+162 entity 149
 162 name 161
+163 entity 149
 163 io 1
 163 name 165
 163 operator 167
-163 superstate 78
+163 superstate 158
 163 top-state 0
 163 type 164
+167 id 173
 167 name 166
-168 io 1
-168 name 170
-168 operator 172
-168 superstate 163
-168 top-state 0
-168 type 169
-172 name 171
+167 time 176
+167 x 174
+167 y 175
+169 id 172
+169 last-message-update-time 170
+169 next-message-update-time 171

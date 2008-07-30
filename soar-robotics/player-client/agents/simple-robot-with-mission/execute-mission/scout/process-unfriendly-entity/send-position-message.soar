@@ -29,9 +29,9 @@ sp {apply*send-position-message
          ^y <y>
          ^time <time>)
    (<e> ^id <id>
-        ^last-update-message-time <lmut>)
+        ^last-message-update-time <lmut>)
 -->
-   (<e> ^last-update-message-time <lmut> - <time>)
+   (<e> ^last-message-update-time <lmut> - <time>)
    (<ol> ^broadcast-message <w1>)
    (<w1> ^word entity-report
          ^next <w2>)

@@ -32,5 +32,5 @@ sp {apply*process-unfriendly-entity
 -->
    (<ts> ^entity <e-ts>)
    (<e-ts> ^id <id>
-           ^last-update-message-time -1000) # init to negative time to force first message out right away
+           ^last-message-update-time -1000) # init to negative time to force first message out right away
 }
