@@ -1,0 +1,63 @@
+sp {go-to-location*propose*go-to-waypoint
+   (state <s> ^name go-to-location
+              ^desired
+              ^waypoints.at.next <w>
+             -^top-state.move-to) # not already executing a move-to command
+-->
+   (<s> ^operator <op> +)
+   (<op> ^name go-to-waypoint
+         ^destination <w>
+         ^track-progress true) #create a move-to structure on state
+}
+
+sp {apply*go-to-waypoint
+   (state <s> ^operator <op>
+              ^io.output-link <ol>)
+   (<op> ^name go-to-waypoint
+         ^destination <w>)
+   (<w> ^x <x>
+        ^y <y>)
+-->
+   (<ol> ^move-to <mt>)
+   (<mt> ^x <x>
+         ^y <y>
+         ^throttle 1.0)
+}
+
+sp {apply*go-to-waypoint*create-move-to
+   (state <s> ^operator <op>
+              ^io.input-link.time.seconds <time>
+              ^waypoints.at <at>
+              ^top-state <ts>)
+  -(<ts> ^move-to)
+   (<op> ^name go-to-waypoint
+         ^destination <w>
+         ^track-progress true)
+   (<w> ^distance <dist>)
+-->
+   (<ts> ^move-to <mt>)
+   (<mt> ^destination <w>
+         ^source <at>
+          ^closest <dist>
+          ^time <time>)
+}
+
+sp {apply*go-to-waypoint*remove-move-to
+   (state <s> ^operator <op>
+              ^top-state <ts>)
+   (<ts> ^move-to <mt>)
+   (<mt> ^destination <> <w>)
+   (<op> ^name go-to-waypoint
+         ^destination <w>)
+-->
+   (<ts> ^move-to <mt> -)
+}
+
+sp {monitor*go-to-waypoint
+   (state <s> ^operator <o>)
+   (<o> ^name go-to-waypoint
+        ^destination <d>)
+   (<d> ^x <x> ^y <y>)
+-->
+   (write (crlf) |Going to (| <x> |,| <y> |)|)
+}

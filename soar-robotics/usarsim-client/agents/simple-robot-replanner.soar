@@ -1,0 +1,3 @@
+pushd simple-robot-replanner
+source simple-robot-replanner_source.soar
+popd

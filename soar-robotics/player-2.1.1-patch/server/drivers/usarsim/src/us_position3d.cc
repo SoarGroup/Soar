@@ -62,7 +62,7 @@ int UsPosition3d::Setup()
     bot->robotDimensions = (player_bbox3d_t*)calloc(1, sizeof(player_bbox3d_t));
   if(bot->steeringType == NULL)
     bot->steeringType = new char[128];
-  bot->devices |= US_DATA_POSITION3D|US_DATA_INU;
+  bot->devices |= US_DATA_POSITION3D|US_DATA_INS;
   // Start the device thread
   StartThread();
   return 0;
@@ -159,7 +159,7 @@ int UsPosition3d::Shutdown()
 {
   fprintf(stderr,"UsPosition3d - Shutdown\n");
   // free data for bot
-  //bot->devices &= ~(US_DATA_POSITION3D)&~(US_DATA_INU);
+  //bot->devices &= ~(US_DATA_POSITION3D)&~(US_DATA_INS);
   //free(bot->position3d);
   return 0;
 }

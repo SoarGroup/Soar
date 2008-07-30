@@ -152,5 +152,6 @@ private:
   pthread_mutex_t posMutex;
   /// avoid sending of drive speed 0 cmds
   float old_trans;
+  float old_rotate;
 };
 #endif //US_POSITION3D_H

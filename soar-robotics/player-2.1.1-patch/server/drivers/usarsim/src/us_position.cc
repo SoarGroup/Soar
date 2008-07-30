@@ -62,12 +62,14 @@ UsPosition::UsPosition(ConfigFile* cf, int section) : Driver(cf, section)
   // make this position driver known for the bot
   bot->RegisterDriver("Position", odo_name, this);
   old_trans = 0.0;
+  old_rotate = 0.0;
   return;
 }
 
 // Set up the device (called by server thread).
 int UsPosition::Setup()
 {
+  PLAYER_MSG0(3,"UsPosition::Setup");
   bot->SubscribeDriver("Position", odo_name);
   bot->SubscribeDriver("Encoder", odo_name);
   
@@ -89,7 +91,7 @@ int UsPosition::Setup()
   sprintf(cmd2,"GETGEO {Type Robot}\r\n");
   bot->AddCommand(cmd2);
   int count =0;
-  while (!bot->bConfRobot == true && !bot->bGeoRobot == true && count < USBOT_STARTUP_CONN_LIMIT)
+  while ((bot->bConfRobot == false || bot->bGeoRobot == false) && count < USBOT_STARTUP_CONN_LIMIT)
   {
       usleep(USBOT_DELAY_USEC);
       count++;
@@ -108,6 +110,7 @@ UsPosition::~UsPosition()
 
 // Main
 void UsPosition::Main() { 
+  fprintf(stderr,"UsPosition::Main\n");
   while(true) {
     pthread_testcancel();
     ProcessMessages();
@@ -176,11 +179,17 @@ int UsPosition::ProcessMessage(QueuePointer &resp_queue, player_msghdr *hdr, voi
     player_position2d_cmd_vel_t position_cmd = *reinterpret_cast<player_position2d_cmd_vel_t *> (data);
     float trans = position_cmd.vel.px;
     float rotate = position_cmd.vel.pa;
+    //PLAYER_MSG2(6,"trans: %f, rotate: %f", trans, rotate);
     char* cmd = new char[USBOT_MAX_CMD_LEN];
     //don't send
     //DRIVE {Speed 0.000000} {FrontSteer 0.000000} {RearSteer 0.000000}
     //more than ones
-    if(trans == 0.0 && old_trans == 0.0) return 0;
+    if(trans == 0.0 && rotate == 0.0 && old_trans == 0.0 && old_rotate == 0.0)
+    {
+      printf( "%f %f %f %f", trans, rotate, old_trans, old_rotate );
+      return 0;
+    }
+    //PLAYER_MSG1(6,"steer_type: %d", steer_type);
     if(steer_type == SKIDSTEERED)
     {
       if ((bot->maxWheelSeparation == -1) || (bot->wheelRadius == -1)) {
@@ -189,8 +198,8 @@ int UsPosition::ProcessMessage(QueuePointer &resp_queue, player_msghdr *hdr, voi
       else
       {//will only work if robot is stopped while turning
         sprintf(cmd,"DRIVE {Left %f} {Right %f}\r\n",
-          (trans - 100.0 * bot->maxWheelSeparation * rotate) / bot->wheelRadius,
-          (trans + 100.0 * bot->maxWheelSeparation * rotate) / bot->wheelRadius);
+          (trans - 1.0 * bot->maxWheelSeparation * rotate) / bot->wheelRadius,
+          (trans + 1.0 * bot->maxWheelSeparation * rotate) / bot->wheelRadius);
       }
     }
     else if(steer_type == ACKERMANNSTEERED)
@@ -203,8 +212,9 @@ int UsPosition::ProcessMessage(QueuePointer &resp_queue, player_msghdr *hdr, voi
       }
     }
 
-    PLAYER_MSG1(4,"position vel cmd: %s", cmd);
+    //PLAYER_MSG1(4,"position vel cmd: %s", cmd);
     old_trans = trans;
+    old_rotate = rotate;
     bot->AddCommand(cmd);	 //publishusarsim
     set_trans = position_cmd.vel.px;
     set_rot = position_cmd.vel.pa;

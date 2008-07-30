@@ -46,7 +46,8 @@ int UsFakeLocalize::Setup()
   //now I can access the fields in driver directly
   bot = ((UsBot*)bot_device->driver);
   bot->location = (player_localize_data_t *)calloc(1, sizeof(player_localize_data_t));
-  bot->devices |= US_STATUS;
+  bot->location->hypoths = (player_localize_hypoth_t *)calloc(1, sizeof(player_localize_hypoth_t));
+  bot->devices |= US_DATA_INS;
   this->StartThread();
   return 0;
 }
@@ -54,9 +55,11 @@ int UsFakeLocalize::Setup()
 // 
 int UsFakeLocalize::ProcessMessage(QueuePointer& resp_queue, player_msghdr *hdr, void *data)
 {
+  printf("us_fakeLocalization ProcessMessage\n");
   if(Message::MatchMessage(hdr, PLAYER_MSGTYPE_REQ, 
 					  PLAYER_POSITION2D_REQ_GET_GEOM, 
                            this->device_addr)) {
+    printf("us_fakeLocalization ProcessMessage match\n");
     player_position2d_geom_t geom;
     geom.pose.px = 0.0;
     geom.pose.py = 0.0;
@@ -89,6 +92,7 @@ void UsFakeLocalize::PublishNewData() {
     myPosition.pos.px = bot->location->hypoths[0].mean.px + origin.px;
     myPosition.pos.py = bot->location->hypoths[0].mean.py + origin.py;
     myPosition.pos.pa = bot->location->hypoths[0].mean.pa;
+    PLAYER_MSG3(6, "us_fakelocalize: %f %f %f", myPosition.pos.px, myPosition.pos.py, myPosition.pos.pa);
     Publish(device_addr, 
 		  PLAYER_MSGTYPE_DATA,
 		  PLAYER_LOCALIZE_DATA_HYPOTHS,
@@ -112,6 +116,12 @@ void UsFakeLocalize::Main() {
 // Shutdown the device (called by server thread).
 int UsFakeLocalize::Shutdown()
 {
+  free( bot->location->hypoths );
+  bot->location->hypoths = 0;
+
+  free( bot->location );
+  bot->location = 0;
+
   // Unsubscribe from devices.
   return 0;
 }

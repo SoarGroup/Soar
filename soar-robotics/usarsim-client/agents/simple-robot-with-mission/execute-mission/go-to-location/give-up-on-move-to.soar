@@ -1,0 +1,35 @@
+sp {go-to-location*propose*give-up-on-move-to
+   (state <s> ^name go-to-location
+              ^top-state.move-to <mt>)
+   (<mt> ^give-up true)
+-->
+   (<s> ^operator <op> +)
+   (<op> ^name give-up-on-move-to
+         ^move-to <mt>)
+}
+
+# if the give-up is marked as immediate, then make this better
+sp {go-to-location*compare*give-up-on-move-to-better-than-update-progress
+   (state <s> ^name go-to-location
+              ^operator <op1> +
+                        <op2> +)
+   (<op1> ^name give-up-on-move-to
+          ^move-to.give-up immediate)
+   (<op2> ^name update-progress)
+-->
+   (<s> ^operator <op1> > <op2>)
+}
+
+
+sp {apply*give-up-on-move-to
+   (state <s> ^operator <op>
+              ^waypoints.at <w>
+              ^top-state <ts>)
+   (<op> ^name give-up-on-move-to
+         ^move-to <mt>)
+   (<ts> ^move-to <mt>)
+   (<mt> ^map-updated true
+         ^source <w>)
+-->
+   (<ts> ^move-to <mt> -)
+}

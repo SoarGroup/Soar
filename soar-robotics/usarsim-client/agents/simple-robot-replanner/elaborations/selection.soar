@@ -1,0 +1,16 @@
+sp {simple-robot*elaborate*problem-space
+   (state <s> ^name simple-robot)
+-->
+   (<s> ^problem-space <p>)
+   (<p> ^name simple-robot
+        ^default-state-copy yes
+        ^two-level-attributes waypoints)}
+
+sp {simple-robot*evaluate*state*success
+   (state <s> ^desired <d>
+              ^problem-space.name simple-robot
+              ^waypoints.at <d>)
+-->
+   (<s> ^success <d>)}
+
+

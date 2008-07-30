@@ -69,7 +69,7 @@ int us_get_type(char* data, char** ppBody)
     else if (strstr(*ppBody,"{Type RangeScanner3D}")!=NULL || strstr(*ppBody,"{Type 3DRangeScanner}")!=NULL) res |= US_DATA_LASER3D;
     else if (strstr(*ppBody,"{Type IR}")!=NULL) res |= RH_DATA_IR;
     else if (strstr(*ppBody,"{Type RhPyro}")!=NULL) res |= RH_DATA_PYRO;
-    else if (strstr(*ppBody,"{Type INU}")!=NULL) res |= US_DATA_INU;
+    else if (strstr(*ppBody,"{Type INS}")!=NULL) res |= US_DATA_INS;
     else if (strstr(*ppBody,"{Type Odometry}")!=NULL) res |= US_DATA_ODOM | US_DATA_POSITION | US_DATA_POSITION3D;
     else if (strstr(*ppBody,"{Type Encoder}")!=NULL) res |= US_DATA_ODOM | US_DATA_ENCODER;
     else if (strstr(*ppBody,"{Type RFID}")!=NULL) res |= US_DATA_FIDUCIAL;
@@ -311,6 +311,8 @@ int us_get_position3d(char* data, player_position3d_data_t *position3d)
  */
 int us_get_groundTruth(char* data, player_localize_data_t *location)
 {
+  //printf( "us_get_groundTruth: %s", data );
+
   char tmp[128];
   char *p1, *p2;
   struct timeval time;

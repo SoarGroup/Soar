@@ -1,0 +1,6 @@
+bots = 1
+
+name0 = one
+productions0 = agents/simple-robot-with-mission-one.soar
+port0 = 6665
+

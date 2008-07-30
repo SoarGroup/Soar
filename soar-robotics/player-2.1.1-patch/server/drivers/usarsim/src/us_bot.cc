@@ -324,7 +324,7 @@ void UsBot::Main()
     //If we exit from here, we'll have read exactly one line into the buffer
     //or encountered a timeout/read error.
     if (timeout){
-      PLAYER_MSG0(6,"Read Timeout while trying to read from server");
+      //PLAYER_MSG0(6,"Read Timeout while trying to read from server");
     }else{
       ParseData(buf);
     }
@@ -360,7 +360,7 @@ void UsBot::ParseData(char* data)
   int type = us_get_type(data,&pBody);
   if (type==-1) return;
   // fakelocalization pose
-  if((type & devices & US_STATUS) && (location!=NULL)) {
+  if((type & devices & US_DATA_INS) && (location!=NULL)) {
     if (!bLockLocation || WaitUnlock(&bLockLocation)) {
       us_get_groundTruth(pBody,location);
       bNewLocation = true;
@@ -415,10 +415,10 @@ void UsBot::ParseData(char* data)
 	 }
     }
   }
-  else if ((type & devices & US_DATA_INU) && (position3d!=NULL)){
+  else if ((type & devices & US_DATA_INS) && (position3d!=NULL)){
       bNewINU = false;
       if (!bLockINU || WaitUnlock(&bLockINU))
-	  us_get_inu(pBody,position3d);
+  	  us_get_inu(pBody,position3d);
       bNewINU = true;
   }
   else if ((type & devices & US_DATA_FIDUCIAL) && (fiducial!=NULL))
@@ -512,6 +512,12 @@ void UsBot::ParseData(char* data)
   {
     char* name = new char[128];
     player_laser_data_t* data = new player_laser_data_t;
+
+    // FIXME these should be driven by laser configuration
+    // 401 is old max samples value
+    data->intensity = new uint8_t[401];
+    data->ranges = new float[401];
+
     if(us_get_laser(pBody, name, data) == 0)
     {
       string s(name);
@@ -519,6 +525,8 @@ void UsBot::ParseData(char* data)
         mLaser[s]->SetData(data);
       }
       else {
+        delete data->intensity;
+        delete data->ranges;
         delete data;
       }
     }

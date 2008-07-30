@@ -1,0 +1,20 @@
+# we have to make depth-exceeded and failure resolve to the same preference,
+# so that the operator tie impasse state that executes the selection code
+# doesn't get blown away before the remaining-operator count is decremented
+# to 0 (which is important for propogating certain signals up the stack)
+sp {selection*select*failure-evaluation-becomes-reject-preference
+   :default
+   (state <s> ^name selection
+             -^unevaluated-operator
+             # testing unevaluated-operator is more "robust" than testing
+             # not-all-operators-evaluated, the latter blinks between then
+             # end of one look-ahead operator and the beginning of another
+              ^superstate <ss>
+              ^evaluation <e1>)
+   (<ss> ^desired <e>)
+   (<e1> ^symbolic-value << lose failure depth-exceeded >>
+         ^desired <e>
+         ^superoperator <o1>)
+-->
+   (<ss> ^operator <o1> <)}
+

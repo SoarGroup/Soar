@@ -1,0 +1,3 @@
+pushd simple-robot-with-mission
+source simple-robot-with-mission_source.soar
+popd

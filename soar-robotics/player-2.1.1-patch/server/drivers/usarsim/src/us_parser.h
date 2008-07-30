@@ -47,7 +47,7 @@ extern "C" {
 #define US_DATA_PTZ        0x01<<4
 #define RH_DATA_IR         0x01<<5
 #define RH_DATA_PYRO       0x01<<6
-#define US_DATA_INU        0x01<<7
+#define US_DATA_INS        0x01<<7
 #define US_DATA_ODOM       0x01<<8
 #define US_DATA_FIDUCIAL   0x01<<9
 #define US_DATA_VICTIM_FIDUCIAL 0x01<<10

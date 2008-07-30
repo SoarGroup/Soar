@@ -1,0 +1,124 @@
+
+# Desc: 1 pioneer robot with laser	
+# CVS: $Id: simple.world,v 1.67 2006-10-05 22:27:29 gerkey Exp $
+
+# defines Pioneer-like robots
+include "pioneer.inc"
+
+
+
+
+# defines 'map' object used for floorplans
+include "map.inc"
+
+
+
+
+# defines sick laser scanner
+include "sick.inc"
+
+
+
+
+# size of the world in meters
+size [32 32]
+
+# set the resolution of the underlying raytrace model in meters
+resolution 0.02
+
+interval_sim 100
+interval_real 100
+
+# configure the GUI window
+window
+( 
+  size [ 695.000 693.000 ] 
+  center [-0.010 -0.040] 
+  scale 0.050 
+)
+
+# load an environment bitmap
+map
+( 
+  bitmap "bitmaps/cave2.png"
+  size [32 32]
+  name "cave"
+)
+
+# a block for gripping
+define puck model(
+  size [ 0.08 0.08 ]
+  gripper_return 1
+  gui_movemask 3
+  gui_nose 0
+  fiducial_return 10
+)
+
+#puck( pose [-6 -6 0] color "red" )
+#puck( pose [-6 -5 0] color "blue" )
+#puck( pose [-5 -6 0] color "green" )
+
+# a block for, well, blocking
+define barrier model(
+  size [ 3 0.2 ]
+  gui_movemask 3
+  gui_nose 0
+)
+
+barrier(
+  pose [3.000 0.500 0.000] 
+  color "black"
+)
+
+# create a robot
+pioneer2dx
+(
+  name "robot1"
+  color "red"
+  pose [-6.800 -6.800 45.000]
+  gripper( 
+    pose [0.200 0.000 0.000] color "gray" 
+  )
+  sick_laser(
+    pose [0.030 0.000 0.000 ]
+    fiducialfinder( 
+      range_max 8 
+      range_max_id 5 
+    ) 
+
+    ptz(
+      blobfinder( 
+        channel_count 6 
+        channels [ "red" "blue" "green" "cyan" "yellow" "magenta" ]  
+      )
+    )
+  )
+  watchdog_timeout -1.0
+)
+
+# create a robot
+pioneer2dx
+(
+  name "robot2"
+  color "blue"
+  pose [-7.200 -7.200 45.000]
+  gripper( 
+    pose [0.200 0.000 0.000] color "gray" 
+  )
+  sick_laser(
+    pose [0.030 0.000 0.000 ]
+    fiducialfinder( 
+      range_max 8 
+      range_max_id 5 
+    ) 
+
+    ptz(
+      blobfinder( 
+        channel_count 6 
+        channels [ "red" "blue" "green" "cyan" "yellow" "magenta" ]  
+      )
+    )
+  )
+  watchdog_timeout -1.0
+)
+
