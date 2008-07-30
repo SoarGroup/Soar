@@ -1,3 +1,5 @@
+# proposed by generic operator proposal in propose-mission-operator
+
 sp {elaborate*operator*go-to-location*desired
    (state <s> ^operator <op>
               ^waypoints.waypoint <w>)

@@ -1,3 +1,5 @@
+# proposed by generic operator proposal in propose-mission-operator
+
 #sp {execute-mission*propose*start
 #   (state <s> ^name execute-mission
 #              ^mission.current <c>)

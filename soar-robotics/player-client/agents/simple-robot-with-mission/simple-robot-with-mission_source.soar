@@ -5,6 +5,7 @@ popd
 pushd elaborations
 source elaborations_source.soar
 popd
+source _readme.soar
 source execute-mission.soar
 pushd execute-mission
 source execute-mission_source.soar

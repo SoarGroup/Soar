@@ -11,6 +11,7 @@ sp {give-up-on-move-to*propose*update-map
          ^destination <dest>)
 }
 
+# message: update-map remove-link <id1> <id2>
 sp {apply*update-map
    (state <s> ^operator <op>
               ^superoperator.move-to <mt>

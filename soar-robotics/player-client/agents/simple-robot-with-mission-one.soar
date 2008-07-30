@@ -35,5 +35,6 @@ sp {apply*initialize-simple-robot*create-mission
          ^x 4 ^y 5
          ^next <s3>)
    (<s3> ^name scout
+         ^yaw 45
          ^next nil)
 }

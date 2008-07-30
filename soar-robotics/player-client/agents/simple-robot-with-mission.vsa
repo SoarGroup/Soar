@@ -9,29 +9,37 @@ VERSION 4
 6	4	FOPERATOR give-up-on-move-to give-up-on-move-to.soar 7
 7	4	FOPERATOR monitor monitor.soar 8
 8	4	FOPERATOR output output.soar 9
-9	4	FOPERATOR top-state top-state.soar 10
-10	4	FOPERATOR waypoints waypoints.soar 11
-11	0	HLOPERATOR execute-mission execute-mission.soar execute-mission 78 12
-12	11	FOPERATOR elaborations elaborations.soar 13
-13	11	HLOPERATOR go-to-location go-to-location.soar go-to-location 85 14
-14	13	FOPERATOR elaborations elaborations.soar 15
-15	13	HLIOPERATOR Impasse__Operator_Tie Impasse__Operator_Tie.soar Impasse__Operator_Tie 66 16
-16	15	FOPERATOR elaborations elaborations.soar 17
-17	15	HLOPERATOR evaluate-operator evaluate-operator.soar evaluate-operator 57 18
-18	17	FOPERATOR elaborations elaborations.soar 19
-19	17	OPERATOR go-to-waypoint go-to-waypoint.soar 20
-20	17	HLIOPERATOR Impasse__Operator_Tie Impasse__Operator_Tie.soar Impasse__Operator_Tie 69 21
-21	20	FOPERATOR elaborations elaborations.soar 22
-22	13	FOPERATOR selection selection.soar 23
-23	13	HLOPERATOR give-up-on-move-to give-up-on-move-to.soar give-up-on-move-to 43 24
-24	23	FOPERATOR elaborations elaborations.soar 25
-25	23	OPERATOR go-to-waypoint go-to-waypoint.soar 26
-26	23	OPERATOR update-map update-map.soar 27
-27	13	OPERATOR go-to-waypoint go-to-waypoint.soar 28
-28	13	OPERATOR update-progress update-progress.soar 29
-29	11	OPERATOR start start.soar 30
-30	0	OPERATOR initialize-simple-robot initialize-simple-robot.soar 31
-31	0	HLOPERATOR process-message process-message.soar process-message 140 32
-32	31	FOPERATOR elaborations elaborations.soar 33
-33	31	OPERATOR ignore-unknown-message ignore-unknown-message.soar 34
+9	4	FOPERATOR process-unfriendly-entity process-unfriendly-entity.soar 42
+10	4	FOPERATOR top-state top-state.soar 10
+11	4	FOPERATOR waypoints waypoints.soar 11
+12	0	FOPERATOR _readme _readme.soar 41
+13	0	HLOPERATOR execute-mission execute-mission.soar execute-mission 78 12
+14	13	FOPERATOR elaborations elaborations.soar 13
+15	13	FOPERATOR propose-mission-operator propose-mission-operator.soar 38
+16	13	HLOPERATOR go-to-location go-to-location.soar go-to-location 85 14
+17	16	FOPERATOR elaborations elaborations.soar 15
+18	16	HLIOPERATOR Impasse__Operator_Tie Impasse__Operator_Tie.soar Impasse__Operator_Tie 66 16
+19	18	FOPERATOR elaborations elaborations.soar 17
+20	18	HLOPERATOR evaluate-operator evaluate-operator.soar evaluate-operator 57 18
+21	20	FOPERATOR elaborations elaborations.soar 19
+22	20	OPERATOR go-to-waypoint go-to-waypoint.soar 20
+23	20	HLIOPERATOR Impasse__Operator_Tie Impasse__Operator_Tie.soar Impasse__Operator_Tie 69 21
+24	23	FOPERATOR elaborations elaborations.soar 22
+25	16	FOPERATOR selection selection.soar 23
+26	16	HLOPERATOR give-up-on-move-to give-up-on-move-to.soar give-up-on-move-to 43 24
+27	26	FOPERATOR elaborations elaborations.soar 25
+28	26	OPERATOR go-to-waypoint go-to-waypoint.soar 26
+29	26	OPERATOR update-map update-map.soar 27
+30	16	OPERATOR go-to-waypoint go-to-waypoint.soar 28
+31	16	OPERATOR update-progress update-progress.soar 29
+32	13	HLOPERATOR scout scout.soar scout 163 35
+33	32	FOPERATOR elaborations elaborations.soar 36
+34	32	HLOPERATOR process-unfriendly-entity process-unfriendly-entity.soar process-unfriendly-entity 168 37
+35	34	FOPERATOR elaborations elaborations.soar 39
+36	34	OPERATOR send-position-message send-position-message.soar 40
+37	13	OPERATOR start start.soar 30
+38	0	OPERATOR initialize-simple-robot initialize-simple-robot.soar 31
+39	0	HLOPERATOR process-message process-message.soar process-message 140 32
+40	39	FOPERATOR elaborations elaborations.soar 33
+41	39	OPERATOR ignore-unknown-message ignore-unknown-message.soar 34
 END

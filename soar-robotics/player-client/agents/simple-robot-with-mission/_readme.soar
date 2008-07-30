@@ -1,0 +1,19 @@
+# things I don't like about the code
+
+# I have to put structures on the top-state for the GDS, which is fine, 
+#  but then code associated with those structures has to go in a file
+#  associated with the top-state (or else Visual Soar's datamap complains).
+#  This forces code that belongs together to be split across different locations,
+#  which can make it hard to follow.
+# Note: this is really an issue with Visual Soar, not Soar
+# Example: elaborations/give-up-on-move-to has rules that are only relevant to
+#  execute-mission/go-to-location/give-up-on-move-to
+# Example: elaborations/process-unfriendly-entity has rules that are only relevant to
+#  execute-mission/scout/process-unfriendly-entity
+
+# Similar to the above, messages are processed on the top-state, even if they
+# are relevant to what's going on in a substate.
+# Example: agent is "scouting" (execute-mission/scout) and gets a message about
+# an entity. The scout subgoal already has rules for processing an entity that
+# could be generalized to handle entities in messages as opposed to those in input,
+# but separate rules are needed for processing the message instead

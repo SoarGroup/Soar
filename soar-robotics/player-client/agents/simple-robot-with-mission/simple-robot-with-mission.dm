@@ -1,4 +1,4 @@
-153
+173
 SOAR_ID 0
 SOAR_ID 1
 SOAR_ID 2
@@ -152,7 +152,27 @@ ENUMERATION 149 1 nil
 ENUMERATION 150 1 nil
 STRING 151
 ENUMERATION 152 1 processed
-194
+SOAR_ID 153
+SOAR_ID 154
+INTEGER_RANGE 155 -2147483648 2147483647
+ENUMERATION 156 2 false true
+FLOAT_RANGE 157 0.0 Infinity
+SOAR_ID 158
+FLOAT_RANGE 159 -Infinity Infinity
+FLOAT_RANGE 160 -Infinity Infinity
+ENUMERATION 161 1 scout
+SOAR_ID 162
+SOAR_ID 163
+ENUMERATION 164 1 state
+ENUMERATION 165 1 scout
+ENUMERATION 166 1 process-unfriendly-entity
+SOAR_ID 167
+SOAR_ID 168
+ENUMERATION 169 1 state
+ENUMERATION 170 1 process-unfriendly-entity
+ENUMERATION 171 1 send-position-message
+SOAR_ID 172
+218
 0 attribute 117
 0 choices 116
 0 desired 31
@@ -172,6 +192,7 @@ ENUMERATION 152 1 processed
 0 waypoints 30
 1 input-link 2
 1 output-link 3
+2 entities 153
 2 self 26
 2 time 24
 3 broadcast-message 131
@@ -270,6 +291,7 @@ ENUMERATION 152 1 processed
 78 name 80
 78 operator 82
 78 operator 84
+78 operator 162
 78 superstate 0
 78 top-state 0
 78 type 79
@@ -347,3 +369,25 @@ ENUMERATION 152 1 processed
 144 name 143
 145 message 119
 145 name 146
+153 entity 154
+154 current-absolute-location 158
+154 friendly 156
+154 id 155
+154 range 157
+158 x 159
+158 y 160
+162 name 161
+163 io 1
+163 name 165
+163 operator 167
+163 superstate 78
+163 top-state 0
+163 type 164
+167 name 166
+168 io 1
+168 name 170
+168 operator 172
+168 superstate 163
+168 top-state 0
+168 type 169
+172 name 171
