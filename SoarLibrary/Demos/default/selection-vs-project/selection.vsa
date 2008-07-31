@@ -1,5 +1,5 @@
 VERSION 4
-\selection\selection.dm
+/selection/selection.dm
 0	ROOT selection selection 1
 1	0	FOPERATOR _firstload _firstload.soar 2
 2	0	FOLDER all all 3
@@ -18,5 +18,4 @@ VERSION 4
 15	13	HLIOPERATOR Impasse__State_No-Change Impasse__State_No-Change.soar Impasse__State_No-Change 42 16
 16	15	FOPERATOR elaborations elaborations.soar 17
 17	7	OPERATOR task-operator task-operator.soar 18
-18	0	OPERATOR initialize-selection initialize-selection.soar 19
 END
