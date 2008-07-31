@@ -5,10 +5,11 @@
 ## give that second operator a success evaluation also
 
 ## Dangerous rule - for success test can lead to non-optimal path being learned
+## this is the conservative version
 sp {selection*pass-back-success    
    :default
    (state <s> ^superstate.superstate.operator <sso>
-              ^evaluation.symbolic-value << required-success success partial-success >>)
+              ^evaluation.symbolic-value << required-success >>) # partial-success success >>)
    (<sso> ^name evaluate-operator 
           ^evaluation <e2> 
           ^superoperator.name)
