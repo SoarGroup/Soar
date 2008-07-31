@@ -1,0 +1,212 @@
+--- downloads/player-2.1.1/libplayercore/interfaces/010_fiducial.def	2008-04-12 18:16:44.000000000 -0400
++++ player-2.1.1/libplayercore/interfaces/010_fiducial.def	2008-07-31 10:34:30.000000000 -0400
+@@ -15,6 +15,9 @@
+ message { REQ, SET_ID, 8, player_fiducial_id_t };
+ 
+ 
++/** The maximum number of fiducials that can be detected at one time. */
++#define PLAYER_FIDUCIAL_MAX_SAMPLES 32
++
+ /** @brief Info on a single detected fiducial
+ 
+ The fiducial data packet contains a list of these.
+@@ -95,3 +98,36 @@
+   uint32_t id;
+ } player_fiducial_id_t;
+ 
++#define PLAYER_FIDUCIAL_MAX_ID_LENGTH 128
++#define PLAYER_FIDUCIAL_MAX_STATUS_LENGTH 128
++
++/** @brief Info on a single detected fiducial 
++
++The fiducial data packet contains a list of these. */
++typedef struct player_victim_fiducial_item
++{
++  /** The fiducial id.  Fiducials that cannot be identified get id
++       -1. */
++  char id[PLAYER_FIDUCIAL_MAX_ID_LENGTH];
++  char status[PLAYER_FIDUCIAL_MAX_STATUS_LENGTH];
++  int32_t timestamp;
++  /** Fiducial position relative to the detector (x, y, z) in mm. */
++  player_pose3d_t pose;
++  /** Uncertainty in the measured pose (x, y, z) in mm. */
++  player_pose3d_t upose;    
++} player_victim_fiducial_item_t;
++
++/** @brief Data
++
++The fiducial data packet (all fiducials). */
++typedef struct player_victim_fiducial_data
++{
++  /** The number of detected fiducials */
++  uint16_t fiducials_count;
++  /** List of detected fiducials */
++  player_victim_fiducial_item_t fiducials[PLAYER_FIDUCIAL_MAX_SAMPLES];
++  
++} player_victim_fiducial_data_t;
++
++
++
+--- downloads/player-2.1.1/acinclude.m4	2008-04-15 22:40:20.000000000 -0400
++++ player-2.1.1/acinclude.m4	2008-07-28 16:11:58.000000000 -0400
+@@ -457,6 +457,8 @@
+ 
+ PLAYER_ADD_DRIVER([xsensmt],[yes],[],[],[])
+ 
++PLAYER_ADD_DRIVER([usarsim],[yes],[],[],[])
++
+ save_ac_ext=$ac_ext
+ ac_ext=cc # otherwise only C (and not C++) header files will work
+ PLAYER_ADD_DRIVER([yarpimage],[yes],["yarp/os/all.h yarp/sig/all.h"],[],["-lYARP_sig -lYARP_OS -lACE"])
+--- downloads/player-2.1.1/configure.ac	2008-06-15 19:38:40.000000000 -0400
++++ player-2.1.1/configure.ac	2008-07-28 16:12:37.000000000 -0400
+@@ -637,6 +637,8 @@
+           server/drivers/vectormap/Makefile
+           server/drivers/blackboard/Makefile
+           server/drivers/blackboard/localbb/Makefile
++          server/drivers/usarsim/Makefile
++          server/drivers/usarsim/lib/Makefile
+           client_libs/Makefile
+           client_libs/libplayerc++/Makefile
+           client_libs/libplayerc++/playerc++.pc
+diff -Nur player-2.0.2-old/libplayerxdr/playerxdr.c player-2.0.2-new/libplayerxdr/playerxdr.c
+--- player-2.0.2-old/libplayerxdr/playerxdr.c	2006-06-09 02:42:21.000000000 +0200
++++ player-2.0.2-new/libplayerxdr/playerxdr.c	2006-09-13 17:26:59.651732499 +0200
+@@ -1917,6 +1917,78 @@
+ }
+ 
+ int
++xdr_player_victim_fiducial_item_t(XDR* xdrs, player_victim_fiducial_item_t* msg)
++{
++  if(xdr_opaque(xdrs, (char*)&msg->id, PLAYER_FIDUCIAL_MAX_ID_LENGTH) != 1)
++    return(0);
++  if(xdr_opaque(xdrs, (char*)&msg->status, PLAYER_FIDUCIAL_MAX_STATUS_LENGTH) != 1)
++    return(0);
++  if(xdr_int(xdrs,&msg->timestamp) != 1)
++    return(0);
++  if(xdr_player_pose_t(xdrs,&msg->pose) != 1)
++    return(0);
++  if(xdr_player_pose_t(xdrs,&msg->upose) != 1)
++    return(0);
++  return(1);
++}
++
++int
++player_victim_fiducial_item_pack(void* buf, size_t buflen, player_victim_fiducial_item_t* msg, int op)
++{
++  XDR xdrs;
++  int len;
++  if(!buflen)
++    return(0);
++  xdrmem_create(&xdrs, buf, buflen, op);
++  if(xdr_opaque(&xdrs, (char*)&msg->id, PLAYER_FIDUCIAL_MAX_ID_LENGTH) != 1)
++    return(-1);
++  if(xdr_opaque(&xdrs, (char*)&msg->status, PLAYER_FIDUCIAL_MAX_STATUS_LENGTH) != 1)
++    return(-1);
++  if(xdr_int(&xdrs,&msg->timestamp) != 1)
++    return(-1);
++  if(xdr_player_pose_t(&xdrs,&msg->pose) != 1)
++    return(-1);
++  if(xdr_player_pose_t(&xdrs,&msg->upose) != 1)
++    return(-1);
++  if(op == PLAYERXDR_ENCODE)
++    len = xdr_getpos(&xdrs);
++  else
++    len = sizeof(player_victim_fiducial_item_t);
++  xdr_destroy(&xdrs);
++  return(len);
++}
++
++int
++xdr_player_victim_fiducial_data_t(XDR* xdrs, player_victim_fiducial_data_t* msg)
++{
++  if(xdr_u_short(xdrs,&msg->fiducials_count) != 1)
++    return(0);
++  if(xdr_vector(xdrs, (char*)&msg->fiducials, PLAYER_FIDUCIAL_MAX_SAMPLES, sizeof(player_victim_fiducial_item_t), (xdrproc_t)xdr_player_victim_fiducial_item_t) != 1)
++    return(0);
++  return(1);
++}
++
++int
++player_victim_fiducial_data_pack(void* buf, size_t buflen, player_victim_fiducial_data_t* msg, int op)
++{
++  XDR xdrs;
++  int len;
++  if(!buflen)
++    return(0);
++  xdrmem_create(&xdrs, buf, buflen, op);
++  if(xdr_u_short(&xdrs,&msg->fiducials_count) != 1)
++    return(-1);
++  if(xdr_vector(&xdrs, (char*)&msg->fiducials, PLAYER_FIDUCIAL_MAX_SAMPLES, sizeof(player_victim_fiducial_item_t), (xdrproc_t)xdr_player_victim_fiducial_item_t) != 1)
++    return(-1);
++  if(op == PLAYERXDR_ENCODE)
++    len = xdr_getpos(&xdrs);
++  else
++    len = sizeof(player_victim_fiducial_data_t);
++  xdr_destroy(&xdrs);
++  return(len);
++}
++
++int
+ xdr_player_gps_data_t(XDR* xdrs, player_gps_data_t* msg)
+ {
+   if(xdr_u_int(xdrs,&msg->time_sec) != 1)
+diff -Nur player-2.0.2-old/libplayerxdr/playerxdr.h player-2.0.2-new/libplayerxdr/playerxdr.h
+--- player-2.0.2-old/libplayerxdr/playerxdr.h	2006-06-09 02:42:21.000000000 +0200
++++ player-2.0.2-new/libplayerxdr/playerxdr.h	2006-09-13 17:26:57.617079041 +0200
+@@ -134,6 +134,10 @@
+ int player_fiducial_fov_pack(void* buf, size_t buflen, player_fiducial_fov_t* msg, int op);
+ int xdr_player_fiducial_id_t(XDR* xdrs, player_fiducial_id_t* msg);
+ int player_fiducial_id_pack(void* buf, size_t buflen, player_fiducial_id_t* msg, int op);
++int xdr_player_victim_fiducial_item_t(XDR* xdrs, player_victim_fiducial_item_t* msg);
++int player_victim_fiducial_item_pack(void* buf, size_t buflen, player_victim_fiducial_item_t* msg, int op);
++int xdr_player_victim_fiducial_data_t(XDR* xdrs, player_victim_fiducial_data_t* msg);
++int player_victim_fiducial_data_pack(void* buf, size_t buflen, player_victim_fiducial_data_t* msg, int op);
+ int xdr_player_gps_data_t(XDR* xdrs, player_gps_data_t* msg);
+ int player_gps_data_pack(void* buf, size_t buflen, player_gps_data_t* msg, int op);
+ int xdr_player_graphics2d_cmd_points_t(XDR* xdrs, player_graphics2d_cmd_points_t* msg);
+
+--- downloads/player-2.1.1/server/libplayerdrivers/driverregistry.cc	2008-04-15 22:40:20.000000000 -0400
++++ player-2.1.1/server/libplayerdrivers/driverregistry.cc	2008-07-28 16:20:40.000000000 -0400
+@@ -510,6 +510,21 @@
+ void UrgDriver_Register(DriverTable* table);
+ #endif
+ 
++#ifdef INCLUDE_USARSIM
++void UsBot_Register(DriverTable *driverTable);
++void UsPosition_Register(DriverTable *driverTable);
++void UsPosition3d_Register(DriverTable *driverTable);
++void UsFakeLocalize_Register(DriverTable* table);
++void UsLaser_Register(DriverTable *driverTable);
++void UsLaser3d_Register(DriverTable *driverTable);
++void UsSonar_Register(DriverTable *driverTable);
++void RhIr_Register(DriverTable *driverTable);
++void RhPyro_Register(DriverTable *driverTable);
++void UsFiducial_Register(DriverTable *driverTable);
++void UsVictFiducial_Register(DriverTable *driverTable);
++void UsPtz_Register(DriverTable *driverTable);
++#endif
++
+ /*
+  * this function will be called at startup.  all available devices should
+  * be added to the driverTable here.  they will be instantiated later as
+@@ -979,4 +994,19 @@
+ #ifdef INCLUDE_URG_NZ
+   UrgDriver_Register(driverTable);
+ #endif
++
++#ifdef INCLUDE_USARSIM
++  UsBot_Register(driverTable);
++  UsPosition_Register(driverTable);
++  UsPosition3d_Register(driverTable);
++  UsFakeLocalize_Register(driverTable); 
++  UsLaser_Register(driverTable);
++  UsLaser3d_Register(driverTable);
++  UsSonar_Register(driverTable);
++  RhIr_Register(driverTable);
++  RhPyro_Register(driverTable);
++  UsFiducial_Register(driverTable);
++  UsVictFiducial_Register(driverTable);
++  UsPtz_Register(driverTable);
++#endif
+ }
