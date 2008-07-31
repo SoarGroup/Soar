@@ -1,37 +1,31 @@
 sp {process-unfriendly-entity*propose*send-position-message
    (state <s> ^name process-unfriendly-entity
               ^io.input-link.time.seconds <time>
-              ^entity <e-io>
-              ^top-state.entities.entity <e-ts>)
-   (<e-ts> ^id <id>
-           ^next-message-update-time <= <time>)
-   (<e-io> ^id <id>
-           ^current-absolute-location  <ap>)
-   (<ap> ^x <x>
-         ^y <y>)
+              ^entity <e>)
+   (<e> ^id <id>
+        ^next-update-message-time <= <time>)
 -->
    (<s> ^operator <op> +)
    (<op> ^name send-position-message
-         ^id <id>
-         ^x <x>
-         ^y <y>
+         ^entity <e>
          ^time <time>)
 }
 
-# message: entity-report position-update <id> <x> <y>
+# message: entity-report position-update <id> <x> <y> <friendly>
 sp {apply*send-position-message
    (state <s> ^operator <op>
-              ^io.output-link <ol>
-              ^top-state.entities.entity <e>)
+              ^io.output-link <ol>)
    (<op> ^name send-position-message
-         ^id <id>
-         ^x <x>
-         ^y <y>
+         ^entity <e>
          ^time <time>)
    (<e> ^id <id>
-        ^last-message-update-time <lmut>)
+        ^last-update-message-time <lmut>
+        ^data <d>)
+   (<d> ^friendly <friendly>
+        ^current-absolute-location <al>)
+   (<al> ^x <x> ^y <y>)
 -->
-   (<e> ^last-message-update-time <lmut> - <time>)
+   (<e> ^last-update-message-time <lmut> - <time>)
    (<ol> ^broadcast-message <w1>)
    (<w1> ^word entity-report
          ^next <w2>)
@@ -42,5 +36,7 @@ sp {apply*send-position-message
    (<w4> ^word <x>
          ^next <w5>)
    (<w5> ^word <y>
+         ^next <w6>)
+   (<w6> ^word <friendly>
          ^next nil)
 }

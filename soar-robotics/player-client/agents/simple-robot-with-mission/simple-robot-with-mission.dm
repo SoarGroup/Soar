@@ -1,4 +1,4 @@
-187
+180
 SOAR_ID 0
 SOAR_ID 1
 SOAR_ID 2
@@ -125,84 +125,76 @@ SOAR_ID 122
 INTEGER_RANGE 123 0 2147483647
 INTEGER_RANGE 124 0 2147483647
 SOAR_ID 125
-SOAR_ID 126
-STRING 127
+STRING 126
+SOAR_ID 127
 STRING 128
 SOAR_ID 129
-STRING 130
-SOAR_ID 131
-STRING 132
-SOAR_ID 133
-INTEGER_RANGE 134 -2147483648 2147483647
-STRING 135
+INTEGER_RANGE 130 -2147483648 2147483647
+STRING 131
+SOAR_ID 132
+ENUMERATION 133 1 state
+ENUMERATION 134 1 process-message
+ENUMERATION 135 1 ignore-unknown-message
 SOAR_ID 136
-ENUMERATION 137 1 state
+SOAR_ID 137
 ENUMERATION 138 1 process-message
-ENUMERATION 139 1 ignore-unknown-message
-SOAR_ID 140
-SOAR_ID 141
-ENUMERATION 142 1 process-message
-INTEGER_RANGE 143 -2147483648 2147483647
-ENUMERATION 144 1 true
-ENUMERATION 145 1 nil
-STRING 146
-ENUMERATION 147 1 processed
-SOAR_ID 148
+INTEGER_RANGE 139 -2147483648 2147483647
+ENUMERATION 140 1 true
+ENUMERATION 141 1 nil
+STRING 142
+ENUMERATION 143 1 processed
+SOAR_ID 144
+SOAR_ID 145
+INTEGER_RANGE 146 -2147483648 2147483647
+ENUMERATION 147 2 false true
+FLOAT_RANGE 148 0.0 Infinity
 SOAR_ID 149
-INTEGER_RANGE 150 -2147483648 2147483647
-ENUMERATION 151 2 false true
-FLOAT_RANGE 152 0.0 Infinity
+FLOAT_RANGE 150 -Infinity Infinity
+FLOAT_RANGE 151 -Infinity Infinity
+ENUMERATION 152 1 scout
 SOAR_ID 153
-FLOAT_RANGE 154 -Infinity Infinity
-FLOAT_RANGE 155 -Infinity Infinity
+SOAR_ID 154
+ENUMERATION 155 1 state
 ENUMERATION 156 1 scout
-SOAR_ID 157
+ENUMERATION 157 1 process-unfriendly-entity
 SOAR_ID 158
-ENUMERATION 159 1 state
-ENUMERATION 160 1 scout
+SOAR_ID 159
+ENUMERATION 160 1 state
 ENUMERATION 161 1 process-unfriendly-entity
-SOAR_ID 162
+ENUMERATION 162 1 send-position-message
 SOAR_ID 163
-ENUMERATION 164 1 state
-ENUMERATION 165 1 process-unfriendly-entity
-ENUMERATION 166 1 send-position-message
+INTEGER_RANGE 164 0 2147483647
+INTEGER_RANGE 165 0 2147483647
+SOAR_ID 166
 SOAR_ID 167
-INTEGER_RANGE 168 0 2147483647
+INTEGER_RANGE 168 -2147483648 2147483647
 INTEGER_RANGE 169 -2147483648 2147483647
-FLOAT_RANGE 170 -Infinity Infinity
-FLOAT_RANGE 171 -Infinity Infinity
-INTEGER_RANGE 172 0 2147483647
-SOAR_ID 173
-SOAR_ID 174
+SOAR_ID 170
+ENUMERATION 171 1 maintain-entity
+ENUMERATION 172 2 false true
+INTEGER_RANGE 173 0 2147483647
+INTEGER_RANGE 174 0 2147483647
 INTEGER_RANGE 175 -2147483648 2147483647
-INTEGER_RANGE 176 -2147483648 2147483647
-SOAR_ID 177
-ENUMERATION 178 1 maintain-entity
-ENUMERATION 179 2 false true
-INTEGER_RANGE 180 0 2147483647
-INTEGER_RANGE 181 0 2147483647
-INTEGER_RANGE 182 -2147483648 2147483647
-SOAR_ID 183
-ENUMERATION 184 1 maintain-entity-create-entry
-ENUMERATION 185 1 true
-ENUMERATION 186 1 true
-239
+ENUMERATION 176 1 true
+ENUMERATION 177 1 true
+INTEGER_RANGE 178 -2147483648 2147483647
+ENUMERATION 179 1 nil
+234
 0 attribute 117
 0 choices 116
 0 desired 31
-0 entities 173
+0 entities 166
 0 io 1
 0 item 21
-0 message-update-time 168
+0 message-update-time 164
 0 mission 88
 0 move-to 50
 0 name 115
 0 operator 4
 0 operator 18
 0 operator 76
-0 operator 141
-0 operator 177
-0 operator 183
+0 operator 137
+0 operator 170
 0 replan-time 23
 0 superstate 6
 0 top-state 0
@@ -210,14 +202,14 @@ ENUMERATION 186 1 true
 0 waypoints 30
 1 input-link 2
 1 output-link 3
-2 entities 148
+2 entities 144
 2 self 26
 2 time 24
-3 broadcast-message 131
-3 broadcast-message 131
+3 broadcast-message 127
+3 broadcast-message 127
 3 move 8
 3 move-to 35
-3 remove-message 133
+3 remove-message 129
 3 rotate 9
 3 stop 10
 4 name 7
@@ -233,15 +225,15 @@ ENUMERATION 186 1 true
 21 name 22
 24 seconds 25
 26 current-location 27
-26 name 135
+26 name 131
 26 received-messages 118
 27 x 28
 27 y 29
 30 at 31
 30 waypoint 31
 31 distance 34
-31 id 143
-31 id 146
+31 id 139
+31 id 142
 31 next 31
 31 x 32
 31 y 33
@@ -272,7 +264,7 @@ ENUMERATION 186 1 true
 50 cutoff 52
 50 destination 31
 50 give-up 53
-50 map-updated 144
+50 map-updated 140
 50 source 31
 50 time 51
 57 failure 31
@@ -310,7 +302,7 @@ ENUMERATION 186 1 true
 78 name 80
 78 operator 82
 78 operator 84
-78 operator 157
+78 operator 153
 78 superstate 0
 78 top-state 0
 78 type 79
@@ -357,72 +349,68 @@ ENUMERATION 186 1 true
 111 name 112
 111 time 113
 118 message 119
+119 entity 145
 119 first 125
 119 from 120
 119 id 121
-119 status 147
+119 status 143
 119 time 122
 122 microseconds 124
 122 seconds 123
-125 next 126
-125 word 127
-126 next 129
-126 word 128
-129 next 126
-129 word 130
-131 next 145
-131 next 131
-131 word 132
-133 id 134
-136 io 1
-136 name 138
-136 operator 140
-136 superstate 0
-136 top-state 0
-136 type 137
-140 name 139
-141 message 119
-141 name 142
-148 entity 149
-149 current-absolute-location 153
-149 friendly 151
-149 id 150
-149 range 152
-149 visible 179
-153 x 154
-153 y 155
-157 name 156
-158 io 1
-158 name 160
-158 operator 162
-158 superstate 78
-158 top-state 0
-158 type 159
-162 entity 149
-162 name 161
-163 entity 149
-163 io 1
-163 name 165
-163 operator 167
-163 superstate 158
-163 top-state 0
-163 type 164
-167 id 169
-167 name 166
-167 time 172
-167 x 170
-167 y 171
-173 entity 174
-174 data 149
-174 id 182
-174 last-update-message-time 175
-174 lost-contact-time 181
-174 next-update-message-time 176
-174 persistent-copy 149
-177 create-entry 185
-177 input-entity 149
-177 lost-contact-time 180
-177 name 178
-177 remove-persistent-copy 186
-177 state-entity 174
-183 name 184
+125 next 179
+125 next 125
+125 word 126
+127 next 141
+127 next 127
+127 word 128
+129 id 130
+132 io 1
+132 name 134
+132 operator 136
+132 superstate 0
+132 top-state 0
+132 type 133
+136 name 135
+137 message 119
+137 name 138
+144 entity 145
+145 current-absolute-location 149
+145 friendly 147
+145 id 146
+145 range 148
+145 visible 172
+149 x 150
+149 y 151
+153 name 152
+154 io 1
+154 name 156
+154 operator 158
+154 superstate 78
+154 top-state 0
+154 type 155
+158 entity 167
+158 name 157
+159 entity 167
+159 io 1
+159 name 161
+159 operator 163
+159 superstate 154
+159 top-state 0
+159 type 160
+163 entity 167
+163 name 162
+163 time 165
+166 entity 167
+167 data 145
+167 id 175
+167 last-contact-time 174
+167 last-update-message-time 168
+167 next-update-message-time 169
+167 persistent-copy 145
+170 create-entry 176
+170 id 178
+170 input-entity 145
+170 last-contact-time 173
+170 name 171
+170 remove-persistent-copy 177
+170 state-entity 167
