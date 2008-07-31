@@ -6,13 +6,26 @@
 ### These productions which fire once an evaluation subgoal has been created
 ### have also been generalized.
 
+
 sp {evaluate-operator*elaborate*state*desired
    :default
    (state <s> ^impasse no-change
               ^attribute operator
+             -^problem-space.no-local-negations <nln>
               ^superstate.operator <so>)
-   (<so> -^default-desired-copy yes
+   (<so>  -^default-desired-copy yes
           ^name evaluate-operator
+          ^evaluation.desired <d>)
+-->
+   (<s> ^desired <d>)}
+
+sp {evaluate-operator*elaborate*state*desired*nln
+   :default
+   (state <s> ^impasse no-change
+              ^attribute operator
+              ^problem-space.no-local-negations <nln>
+              ^superstate.operator <so>)
+   (<so>   ^name evaluate-operator # ddc is assumed no with nln
           ^evaluation.desired <d>)
 -->
    (<s> ^desired <d>)}
@@ -23,7 +36,7 @@ sp {evaluate-operator*elaborate*state*name
               ^attribute operator
               ^superstate.operator <so>)
    (<so> ^name evaluate-operator
-         ^superstate.name <name>)
+         ^superstate.name {<> evaluate-operator <name> })
 -->
    (<s> ^name <name>)}
 
@@ -52,6 +65,7 @@ sp {evaluate-operator*elaborate*state*look-ahead-operator*copy
          ^superproblem-space.name <n>)
 -->
    (<s> ^look-ahead-operator <copy-o>)
+   (<s> ^untried-tied-operator <copy-o>) # SBW 5/7/07-- -^tried-tied-operator -> ^untried-tied-operator
    (<copy-o> ^duplicate-of <o>)}
 
 
@@ -205,9 +219,9 @@ sp {evaluate-operator*elaborate*state*add-one-level-attributes
 sp {evaluate-operator*elaborate*state*add-all-attributes-at-level-one
    :default
    (state <s> ^problem-space <p>
-              ^default-state-copy yes
-              ^all-attributes-at-level one
-              ^duplicate-of <ss>)
+                             ^default-state-copy yes
+                             ^all-attributes-at-level one
+                             ^duplicate-of <ss>)
    (<p> -^dont-copy-anything
         -^dont-copy <att>)
    (<ss> ^{ <> duplicate-of <> tried-tied-operator <> problem-space
@@ -236,10 +250,10 @@ sp {evaluate-operator*elaborate*state*change-one-level-attribute-to-duplicate
 sp {evaluate-operator*elaborate*state*change-all-attributes-at-level-one-to-duplicate
    :default
    (state <s> -^problem-space.dont-copy <att>
-               ^default-state-copy yes
-               ^all-attributes-at-level one
-               ^duplicates.<id> <new-id>
-               ^duplicate-of.{ <> tried-tied-operator <att> } <id>)
+        ^default-state-copy yes
+        ^all-attributes-at-level one
+        ^duplicates.<id> <new-id>
+        ^duplicate-of.{ <> tried-tied-operator <att> } <id>)
 -->
    (<s> ^<att> <id> -
         ^<att> <new-id>)}
@@ -265,8 +279,8 @@ sp {evaluate-operator*elaborate*state*duplicate-id-for-all-attributes
               ^duplicate-of <ss>)
    (<p> -^dont-copy-anything
         -^dont-copy <att>
-         ^all-attributes-at-level two
-        -^one-level-attributes <att>)
+              ^all-attributes-at-level two
+             -^one-level-attributes <att>)
    (<ss> ^{ <> duplicate-of <> tried-tied-operator <> problem-space
             <> impasse <> attribute <> choices <> quiescence
             <> operator <> superstate
@@ -278,11 +292,11 @@ sp {evaluate-operator*elaborate*state*duplicate-id-for-all-attributes
 ### augmentations that don't point to objects that have been
 ### duplicated.
 
-#set warnings off
               warnings --off
 sp {evaluate-operator*elaborate*add-attribute-to-duplicate
    :default
    (state <s> ^duplicates <d>
+             -^problem-space.no-local-negations <nln>
              -^problem-space.dont-copy <sub-att>
               ^default-state-copy yes)
    (<d> ^<id> <new-id>
@@ -290,10 +304,22 @@ sp {evaluate-operator*elaborate*add-attribute-to-duplicate
    (<id> ^ { <> tried-tied-operator <sub-att> } <sub-val>)
 -->
    (<new-id> ^<sub-att> <sub-val>)}
-#set warnings on
                         warnings --on
+
+              warnings --off
+sp {evaluate-operator*elaborate*add-attribute-to-duplicate*nln
+   :default
+   (state <s> ^duplicates <d>
+              ^problem-space.no-local-negations <nln>
+              ^default-state-copy yes)
+   (<d> ^<id> <new-id>)
+   (<id> ^ { <> tried-tied-operator <sub-att> } <sub-val>)
+-->
+   (<new-id> ^<sub-att> <sub-val>)}
+                        warnings --on
+
+
 ### Next copy augmentations that point to duplicated objects:
-#set warnings off
                         warnings --off
 sp {evaluate-operator*elaborate*add-duplicated-attribute-to-duplicate
    :default
@@ -304,7 +330,6 @@ sp {evaluate-operator*elaborate*add-duplicated-attribute-to-duplicate
    (<id> ^ { <> tried-tied-operator <sub-att> } <sub-val>)
 -->
    (<new-id> ^<sub-att> <new-val>)}
-# commented out by voigtjr
                         warnings --on
 ### Added ^two-level-attributes <att>.  Previously, it
 ### would copy any attribute that happened to point to the same value as
@@ -328,10 +353,10 @@ sp {evaluate-operator*elaborate*state*add-duplicates-for-all-attributes
               ^default-state-copy yes
               ^duplicate-of.{ <> tried-tied-operator <att> } <id>)
    (<p> ^all-attributes-at-level two
-                                - ^dont-copy-anything
-      - ^dont-copy <att>
-      - ^one-level-attributes <att>)
-   -->
+     - ^dont-copy-anything
+     - ^dont-copy <att>
+     - ^one-level-attributes <att>)
+-->
    (<s> ^<att> <new-id>)}
 
 ## -------------------------------
@@ -341,34 +366,34 @@ sp {evaluate-operator*elaborate*state*add-duplicates-for-all-attributes
 ## Copy attributes to the duplicate desired state.  We
 ## do this after the state is installed so that the duplicates table
 ## will already have been filled in.  We just copy all attributes over
-## from the original operator, except that attributes that pointed to 
+## from the original operator, except that attributes that pointed to
 ## objects that have been duplicated (on the state) are modified to point
 ## to the duplicate objects.
 
-sp {evaluate-operator*elaborate*state*eval*desired 
+sp {evaluate-operator*elaborate*state*eval*desired
    :default
    (state <s> ^superstate <ss>)
    (<ss> ^operator <so>)
    (<so> ^name evaluate-operator
          ^evaluation.desired <d>
          ^default-desired-copy yes)
-   -->
+-->
    (<s> ^desired <d-copy>)
-   (<d-copy> ^duplicate-of <d>)}   
+   (<d-copy> ^duplicate-of <d>)}
 
 
 ## Copy attributes whose values haven't been duplicated.
 
 ### SBH/mvp 9-2-94
 ### Also, added the condition that the desired be attached to
-### an evaluation superoperator.  This is because if we use the same 
-### desired in a lower lookahead context, this production re-firing 
-### can cause stupid chunks. 
+### an evaluation superoperator.  This is because if we use the same
+### desired in a lower lookahead context, this production re-firing
+### can cause stupid chunks.
 
 sp {duplicate-desired*copy-old-value
    :default
    (state <s> ^superstate.operator <so>
-          ^problem-space <p>
+              ^problem-space <p>
               ^duplicates <d>
               ^desired <o-copy>)
    (<so> ^name evaluate-operator
@@ -377,7 +402,7 @@ sp {duplicate-desired*copy-old-value
    (<o> ^{ <> duplicate-of <att> } <val>)
  - (<p> ^dont-copy <att>)
  - (<d> ^<val>)
-   -->
+-->
    (<o-copy> ^<att> <val>)}
 
 ## Copy attributes whose values have been duplicated.
@@ -385,81 +410,93 @@ sp {duplicate-desired*copy-old-value
 sp {duplicate-desired*replace-old-value
    :default
    (state <s> ^duplicates.<id> <copy-id>
-          ^problem-space <p>
+              ^problem-space <p> 
               ^desired <o-copy>)
    (<o-copy> ^duplicate-of <o>)
    (<o> ^ { <> duplicate-of <att> } <id>)
    (<p> - ^dont-copy <att>)
-   -->
+-->
    (<o-copy> ^<att> <copy-id>)}
 
 
 
-###      7.3.2.3 Operator copying   
+###      7.3.2.3 Operator copying
 ###
 ### Copy attributes to the duplicate operator.  We
 ### do this after the state is installed so that the duplicates table
 ### will already have been filled in.  We just copy all attributes over
-### from the original operator, except that attributes that pointed to 
+### from the original operator, except that attributes that pointed to
 ### objects that have been duplicated (on the state) are modified to point
 ### to the duplicate objects.
 
-
-sp {evaluate-operator*elaborate*operator*default-operator-copy-is-yes 
+sp {evaluate-operator*elaborate*operator*default-operator-copy-is-yes
    :default
    (state <s> ^superstate.operator.name evaluate-operator
-          ^problem-space <p>)
-  -(<p> ^default-operator-copy no)
-   -->
+              ^problem-space <ps>)
+   (<ps> -^default-operator-copy no)
+-->
    (<s> ^default-operator-copy yes)}
 
 
-sp {evaluate-operator*elaborate*operator*copy-default-operator-copy-from-problem-space 
+sp {evaluate-operator*elaborate*operator*copy-default-operator-copy-from-problem-space
    :default
-   (state <s> ^superstate.operator.name evaluate-operator 
-          ^problem-space.default-operator-copy <yes-or-no>)
-   -->
+   (state <s> ^superstate.operator.name evaluate-operator
+              ^problem-space.default-operator-copy <yes-or-no>)
+-->
    (<s> ^default-operator-copy <yes-or-no>)}
 
 ### Set up identifier mapping table for operator
 
-sp {evaluate-operator*elaborate*state*create-duplicates-table-for-operator-only 
+sp {evaluate-operator*elaborate*state*create-duplicates-table-for-operator-only
    :default
    (state <s> ^impasse no-change
               ^attribute operator
-          ^default-operator-copy yes 
-        - ^default-state-copy yes)
-   -->
+              ^default-operator-copy yes
+                                    - ^default-state-copy yes)
+-->
    (<s> ^duplicates <d>)}
 
 ### Copy attributes whose values haven't been duplicated.
 ###
 
-sp {evaluate-operator*elaborate*operator*add-attribute-to-duplicate-operator 
+sp {evaluate-operator*elaborate*operator*add-attribute-to-duplicate-operator
    :default
    (state <s> ^duplicates <d>
           ^problem-space <p>
-              ^look-ahead-operator <o-copy>)
+        ^look-ahead-operator <o-copy>)
    (<o-copy> ^duplicate-of <o>)
    (<o> ^ { <> duplicate-of <att> } <val>)
-  (<p> - ^ dont-copy <att>)
+   (<p> -^dont-copy <att>
+        -^no-local-negations <nln>)
    (<d> - ^<val>)
-   -->
+-->
    (<o-copy> ^<att> <val>)}
 
 ### Copy attributes whose values have been duplicated.
 
-sp {evaluate-operator*elaborate*operator*add-duplicated-attribute-to-duplicate-operator 
+sp {evaluate-operator*elaborate*operator*add-duplicated-attribute-to-duplicate-operator
    :default
    (state <s> ^duplicates <d>
           ^problem-space <p>
               ^look-ahead-operator <o-copy>)
    (<o-copy> ^duplicate-of <o>)
    (<o> ^ { <> duplicate-of <att> } <id>)
-  (<p> - ^ dont-copy <att>)
+  (<p> -^dont-copy <att>
+       -^no-local-negations <nln>)
    (<d> ^<id> <copy-id>)
-   -->
+-->
    (<o-copy> ^<att> <copy-id>)}
+
+
+sp {evaluate-operator*elaborate*operator*add-attribute-to-duplicate-operator*nln
+   :default
+   (state <s> ^problem-space <p>
+              ^look-ahead-operator <o-copy>)
+   (<o-copy> ^duplicate-of <o>)
+   (<o> ^ { <> duplicate-of <att> } <val>)
+   (<p> ^no-local-negations <nln>)
+-->
+   (<o-copy> ^<att> <val>)}
 
 ###
 ###      7.5     Execution monitoring

@@ -1,13 +1,10 @@
 ## A visual-soar project for the selection and evaluation substates
-
-## Created on February 20, 2006 by John E. Laird
-
 ############################# -*- Mode: Soar -*- #############################
 ## 
 ## File            : default/selection.soar
 ## Author          : John Laird
 ## Created on      : Mon Feb 27 16:15:34 1989  
-## Last Modified On: 26 October, 2003
+## Last Modified On: 9 May, 2007
 ## 
 ## Contents:     Default productions for selection problem space for Soar 8.6
 ##
@@ -44,4 +41,15 @@
 ###         ^superproblem-space
 ###         ^superstate 
 
-
+### Changes May 2007 (SBW):
+### Added a 'no local negations' mode. If the problem space has a ^no-local-negations flag, rules will be used 
+### that avoid local negations, supporting versions of Soar that refuse to chunk over local negations.
+### There are a number of assumptions that must hold for this mode to work, though:
+###
+###  ^default-operator-copy yes must be on the problem-space
+###  ^default-state-copy yes must be on the problem-space
+###  ^default-desired-copy yes is not supported
+###  ^dont-copy and ^dont-copy-anything are not supported
+###  all-attributes-at-level mode are not supported
+###  attributes on task operators cannot refer to attributes attached to the state
+###  the state must be a tree-- no value can be referred to by multiple attributes

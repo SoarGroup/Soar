@@ -23,8 +23,8 @@ sp {selection*propose*evaluate-operator
 sp {selection*select*evaluate-operator*indifferent
    :default
    (state <s> ^name selection
-                   - ^operator-selection not-indifferent
-                     ^operator <o> +)
+             -^operator-selection not-indifferent
+              ^operator <o> +)
    (<o> ^name evaluate-operator)
 -->
    (<s> ^operator <o> =)}
