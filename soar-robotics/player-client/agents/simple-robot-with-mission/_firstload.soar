@@ -12,9 +12,11 @@ timers --off
 #add-wme i4 ^name me
 #add-wme i4 ^received-messages *
 
-pushd ../default
+pushd ../../default
 source selection.soar
-source selection-iterative-deepening.soar
-source temp-failure-fix.soar
 excise top-goal*halt*success
+pushd selection-iterative-deepening
+source selection-iterative-deepening.soar
+#source temp-failure-fix.soar
+popd
 popd
