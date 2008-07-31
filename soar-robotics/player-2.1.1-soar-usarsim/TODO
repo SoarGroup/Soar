@@ -1,0 +1,29 @@
+$Id: TODO 2668 2005-01-25 02:04:51Z gerkey $
+
+writelog:
++ Add support for logging to multiple files during one execution of Player.
+  I.e., client-side control of logfile name.  Add textbox to playervcr to
+  allow the user to change it.
+
+playernav:
++ Need emergency STOP buttons: one per bot, plus an ALL STOP.
+  Probably should send it directly to the underlying position device,
+  but passing through the planner might be sufficient.
+
+wavefront:
++ Add dynamic replanning; use sensor inputs (generalized somehow, or
+  laser-specific?) to modify a local overlay on the given map, and
+  periodically (but quickly) replan the best path to goal.
+
++ Speed up C-cspace generation.  Or at least support caching it to a file.
+  Ideally this would happen automagically, making use of a hash function to
+  determine when the C-space should be regenerated.
+
+- Stop the robot if only alwayson is subscribed.
+
+sicklms200:
+- Figure out why I'm having so much trouble talking to the SICKs in the
+  obots.  Is it the USB-serial widgets?  Can the retry mechanism be made
+  more persistent/robust somehow?
+
+

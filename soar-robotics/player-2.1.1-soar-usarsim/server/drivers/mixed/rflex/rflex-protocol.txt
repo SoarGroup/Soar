@@ -1,0 +1,241 @@
+****** this file thanks to the CARMEN source code from CMU *********
+
+Before you begin, understand 
+
+Packet Header:
+==============================================================================
+PKT_STX     | 2 bytes | 0x1b 0x02
+PORT        | 1 byte  | 0x01 - System Module
+                        0x02 - Motion 
+                        0x03 - Joystick
+                        0x04 - Sonar
+                        0x05 - Digital I/O (Bump panels)
+                        0x06 - IR
+PACKET_ID   | 1 byte  | Not used, but packets returned from base
+		        have increasing ID's
+OPCODE      | 1 byte  | Depends on module and command
+DATA_LENGTH | 1 byte  | Length of following data
+DATA        | n bytes | Actual data
+CHECKSUM    | 1 byte  | xor of all bytes from PORT to end of DATA 
+PKT_ETX     | 2 bytes | 0x1b 0x03
+
+Opcodes and Packet Descriptions
+==============================================================================
+
+SYS_LCD_DUMP            0
+=======================================
+Timestamp             | 4 bytes
+Row		      | 1 byte
+Number of bytes	      | 1 byte
+LCD Screen contents   | Variable
+
+SYS_STATUS              1
+=======================================
+Timestamp	      | 4 bytes
+Volts		      | 4 bytes
+Brake Status	      | 1 byte
+
+
+Motion Opcodes
+==============================================================================
+Motion Axis:
+0 - translation
+1 - rotation
+2 & 3 - not used
+
+MOT_AXIS_GET_SYSTEM      0
+=======================================
+Axis		      | 1 byte
+
+MOT_AXIS_GET_MODEL       1
+=======================================
+Axis		      | 1 byte
+
+MOT_AXIS_GET_TARGET      2
+=======================================
+Axis		      | 1 byte
+
+MOT_AXIS_SET_DIR         7
+=======================================
+Axis		      | 1 byte
+Velocity	      | 4 bytes
+Acceleration	      | 4 byte
+Torque		      | 4 bytes
+Direction	      | 1 byte
+
+MOT_AXIS_SET_POS         8
+=======================================
+Axis		      | 1 byte
+Velocity	      | 4 bytes
+Acceleration	      | 4 byte
+Torque		      | 4 bytes
+Position	      | 4 bytes
+
+MOT_AXIS_GET_MODE        9
+=======================================
+Axis		      | 1 byte
+
+MOT_SET_DEFAULTS        10
+=======================================
+No Data Segment
+
+MOT_BRAKE_SET           11
+=======================================
+No Data Segment
+
+MOT_BRAKE_RELEASE       12
+=======================================
+No Data Segment
+
+MOT_SYSTEM_REPORT       33
+=======================================
+rv		      | 4 bytes  | Unknown data
+Timestamp	      | 4 bytes  
+Axis		      | 1 byte
+Position	      | 4 bytes
+Velocity	      | 4 bytes
+Acceleration	      | 4 byte
+Torque		      | 4 bytes
+
+MOT_SYSTEM_REPORT_REQ   34
+=======================================
+Period		      | 4 bytes  | Time between published system reports
+Mask		      | 4 bytes  | Which axes to publish for. 
+		                 | Mask |= 1 << axis
+
+Unused Opcodes:
+========================================
+MOT_AXIS_SET_LIMITS      3
+MOT_AXIS_GET_LIMITS      4
+MOT_AXIS_SET_POS_LIMITS  5
+MOT_AXIS_GET_POS_LIMITS  6
+MOT_GET_NAXES           65
+MOT_SET_GEARING         66
+MOT_GET_GEARING         67
+MOT_MOTOR_SET_MODE      68
+MOT_MOTOR_GET_MODE      69
+MOT_MOTOR_SET_PARMS     70
+MOT_MOTOR_GET_PARMS     71
+MOT_MOTOR_SET_LIMITS    72
+MOT_MOTOR_GET_LIMITS    73
+MOT_MOTOR_GET_DATA      74
+MOT_AXIS_SET_PARMS      75
+MOT_AXIS_GET_PARMS      76
+MOT_AXIS_SET_PWM_LIMIT  77
+MOT_AXIS_GET_PWM_LIMIT  78
+MOT_AXIS_SET_PWM        79
+MOT_AXIS_GET_PWM        80
+
+Motion Opcodes
+==============================================================================
+
+From client to base:
+JSTK_GET_STATE           0
+========================================
+No Data Segment
+
+From base to client:
+JSTK_GET_STATE           0
+========================================
+Timestamp	      | 4 bytes  
+X		      | 4 bytes  
+Y		      | 4 bytes  
+Buttons		      | 1 byte
+
+Sonar Opcodes
+==============================================================================
+
+SONAR_RUN          0
+======================================== (delays in microseconds)
+Echo Delay	      | 4 bytes  | Default is 30000 (time to wait for echo)
+Ping Delay	      | 4 bytes  | Default is 0 (after echo recieved, time till ping next sonar)
+Set Delay	      | 4 bytes  | Default is 0 (time between full sweep)
+Mode		      | 1 byte   | 0 off
+				   2 on  
+
+SONAR_GET_UPDATE   1
+========================================
+Timestamp	      | 4 bytes	 
+
+SONAR_REPORT       2
+========================================
+Retval		      | 4 bytes  | Unknown data
+Timestamp	      | 4 bytes	 
+Sonar ID	      | 1 byte   | There are a variable number of these, given
+Range		      | 2 bytes  | by (DATA_LENGTH - 8)/2
+
+Digital I/O Opcodes
+==============================================================================
+DIO_REPORTS_REQ  0
+========================================
+Period		      | 4 bytes	 
+
+From base to client:
+DIO_REPORTS_REQ  0
+========================================
+Retval		      | 4 bytes  | Unknown data
+Timestamp	      | 4 bytes	 
+
+DIO_REPORT       1
+========================================
+Timestamp	      | 4 bytes
+Net ID		      | 1 byte
+Offset 		      | 1 byte
+State		      | 1 byte
+
+From client to base:
+DIO_GET_UPDATE   2
+========================================
+Timestamp	      | 4 bytes	 
+
+From base to client:
+DIO_GET_UPDATE   2
+========================================
+Retval		      | 4 bytes  | Unknown data
+Timestamp	      | 4 bytes	 
+Count		      | 4 bytes	 | Unknown data
+
+DIO_UPDATE       3
+========================================
+Timestamp	      | 4 bytes
+Net ID		      | 1 byte
+Offset 		      | 1 byte
+State		      | 1 byte
+
+From client to base:
+DIO_SET          4
+========================================
+Net ID		      | 1 byte
+Offset 		      | 1 byte
+State		      | 1 byte
+Mask		      | 1 byte
+
+From base to client:
+DIO_SET          4
+========================================
+Retval		      | 4 bytes  | Unknown data
+Timestamp	      | 4 bytes	 
+
+I/R Opcodes
+==============================================================================
+
+IR_RUN          0
+======================================== (delays in microseconds)
+I figure the next 5 values are delays of some sort, but not sure what they do
+========================================
+0	      | 4 bytes  | 
+70 	      | 4 bytes  | delay while reading (> 70 ms?)
+10	      | 4 bytes  | ? time for data reading
+20	      | 4 bytes  | ? time after data reading
+150	      | 4 bytes  | ? repeat delay
+Run	      | 1 byte   | 0 off, 2 on  
+
+IR_REPORT       1
+========================================
+BankCount		  | 1 byte   | Number of ir banks in packet
+Then BankCount copies of the following structure
+----------------------------------------
+Timestamp?        | 4 Bytes  |
+IR value 		  | 8 bytes  | 1 bytes for each sensor
+Reserved          | 1 byte   | seems to always be 0x80
+----------------------------------------

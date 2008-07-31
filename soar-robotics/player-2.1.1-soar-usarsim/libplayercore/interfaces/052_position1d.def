@@ -1,0 +1,220 @@
+description {
+ * @brief A 1-D linear actuator
+
+The @p position1d interface is used to control linear actuators
+}
+
+/** Request/reply subtype: get geometry */
+message { REQ, GET_GEOM, 1, player_position1d_geom_t };
+/** Request/reply subtype: motor power */
+message { REQ, MOTOR_POWER, 2, player_position1d_power_config_t };
+/** Request/reply subtype: velocity mode */
+message { REQ, VELOCITY_MODE, 3, player_position1d_velocity_mode_config_t };
+/** Request/reply subtype: position mode */
+message { REQ, POSITION_MODE, 4, player_position1d_position_mode_req_t };
+/** Request/reply subtype: set odometry */
+message { REQ, SET_ODOM, 5, player_position1d_set_odom_req_t };
+/** Request/reply subtype: reset odometry */
+message { REQ, RESET_ODOM, 6, player_position1d_reset_odom_config_t };
+/** Request/reply subtype: set speed PID params */
+message { REQ, SPEED_PID, 7, player_position1d_speed_pid_req_t };
+/** Request/reply subtype: set position PID params */
+message { REQ, POSITION_PID, 8, player_position1d_position_pid_req_t };
+/** Request/reply subtype: set speed profile params */
+message { REQ, SPEED_PROF, 9, player_position1d_speed_prof_req_t };
+
+/** Data subtype: state */
+message { DATA, STATE, 1, player_position1d_data_t };
+/** Data subtype: geometry */
+message { DATA, GEOM, 2, player_position1d_geom_t };
+
+/** Command subtype: velocity command */
+message { CMD, VEL, 1, player_position1d_cmd_vel_t };
+/** Command subtype: position command */
+message { CMD, POS, 2, player_position1d_cmd_pos_t };
+
+/** Status byte: limit min */
+#define PLAYER_POSITION1D_STATUS_LIMIT_MIN 0
+/** Status byte: limit center */
+#define PLAYER_POSITION1D_STATUS_LIMIT_CEN 1
+/** Status byte: limit max */
+#define PLAYER_POSITION1D_STATUS_LIMIT_MAX 2
+/** Status byte: limit over current */
+#define PLAYER_POSITION1D_STATUS_OC 3
+/** Status byte: limit trajectory complete */
+#define PLAYER_POSITION1D_STATUS_TRAJ_COMPLETE 4
+/** Status byte: enabled */
+#define PLAYER_POSITION1D_STATUS_ENABLED 5
+
+/** @brief Data: state (@ref PLAYER_POSITION1D_DATA_STATE)
+
+The @p position interface returns data regarding the odometric pose and
+velocity of the robot, as well as motor stall information. */
+typedef struct player_position1d_data
+{
+  /** position [m] or [rad] depending on actuator type*/
+  float pos;
+  /** translational velocities [m/s] or [rad/s] depending on actuator type*/
+  float vel;
+  /** Is the motor stalled? */
+  uint8_t stall;
+  /** bitfield of extra data in the following order:
+      - status (unsigned byte)
+        - bit 0: limit min
+        - bit 1: limit center
+        - bit 2: limit max
+        - bit 3: over current
+        - bit 4: trajectory complete
+        - bit 5: is enabled
+        - bit 6:
+        - bit 7:
+    */
+  uint8_t status;
+
+} player_position1d_data_t;
+
+/** @brief Command: state (@ref PLAYER_POSITION1D_CMD_VEL)
+
+The @p position1d interface accepts new velocities for
+the robot's motors (drivers may support position control, speed control,
+or both). */
+typedef struct player_position1d_cmd_vel
+{
+  /** velocity [m/s] or [rad/s] */
+  float vel;
+  /** Motor state (FALSE is either off or locked, depending on the driver). */
+  uint8_t state;
+} player_position1d_cmd_vel_t;
+
+/** @brief Command: state (@ref PLAYER_POSITION1D_CMD_POS)
+
+The @p position1d interface accepts new positions for
+the robot's motors (drivers may support position control, speed control,
+or both). */
+typedef struct player_position1d_cmd_pos
+{
+  /** position [m] or [rad] */
+  float pos;
+  /** velocity at which to move to the position [m/s] or [rad/s] */
+  float vel;
+  /** Motor state (FALSE is either off or locked, depending on the driver). */
+  uint8_t state;
+} player_position1d_cmd_pos_t;
+
+/** @brief Request/reply: Query geometry.
+
+To request robot geometry, send a null
+@ref PLAYER_POSITION1D_REQ_GET_GEOM. */
+typedef struct player_position1d_geom
+{
+  /** Pose of the robot base, in the robot cs (m, m, m, rad, rad, rad). */
+  player_pose3d_t pose;
+  /** Dimensions of the base (m, m, m). */
+  player_bbox3d_t size;
+} player_position1d_geom_t;
+
+/** @brief Request/reply: Motor power.
+
+On some robots, the motor power can be turned on and off from software.
+To do so, send a @ref PLAYER_POSITION1D_REQ_MOTOR_POWER request with the format
+given below, and with the appropriate @p state (zero for motors off and
+non-zero for motors on).  Null response.
+
+Be VERY careful with this command!  You are very likely to start the
+robot running across the room at high speed with the battery charger
+still attached.
+*/
+typedef struct player_position1d_power_config
+{
+  /** FALSE for off, TRUE for on */
+  uint8_t state;
+} player_position1d_power_config_t;
+
+/** @brief Request/reply: Change velocity control.
+
+Some robots offer different velocity control modes.  It can be changed by
+sending a @ref PLAYER_POSITION1D_REQ_VELOCITY_MODE request with the format given
+below, including the appropriate mode.  No matter which mode is used, the
+external client interface to the @p position1d device remains the same.
+Null response.
+*/
+typedef struct player_position1d_velocity_mode_config
+{
+  /** driver-specific */
+  uint32_t value;
+} player_position1d_velocity_mode_config_t;
+
+/** @brief Request/reply: Reset odometry.
+
+To reset the robot's odometry to x = 0, send a @ref PLAYER_POSITION1D_REQ_RESET_ODOM
+request.  Null response. */
+typedef struct player_position1d_reset_odom_config
+{
+  /** driver-specific */
+  uint32_t value;
+} player_position1d_reset_odom_config_t;
+
+/** @brief Request/reply: Change control mode.
+
+To change the control mode, send a @ref PLAYER_POSITION1D_REQ_POSITION_MODE reqeust.
+Null response.
+*/
+typedef struct player_position1d_position_mode_req
+{
+  /** 0 for velocity mode, 1 for position mode */
+  uint32_t state;
+} player_position1d_position_mode_req_t;
+
+/** @brief Request/reply: Set odometry.
+
+To set the robot's odometry
+to a particular state, send a @ref PLAYER_POSITION1D_REQ_SET_ODOM request.
+Null response. */
+typedef struct player_position1d_set_odom_req
+{
+  /** (x) [m] or [rad] */
+  float pos;
+} player_position1d_set_odom_req_t;
+
+/** @brief Request/reply: Set velocity PID parameters.
+
+To set velocity PID parameters, send a @ref PLAYER_POSITION1D_REQ_SPEED_PID request.
+Null response.
+*/
+typedef struct player_position1d_speed_pid_req
+{
+  /** PID parameters */
+  float kp;
+  /** PID parameters */
+  float ki;
+  /** PID parameters */
+  float kd;
+} player_position1d_speed_pid_req_t;
+
+/** @brief Request/reply: Set position PID parameters.
+
+To set position PID parameters, send a @ref PLAYER_POSITION1D_REQ_POSITION_PID request.
+Null response.
+*/
+typedef struct player_position1d_position_pid_req
+{
+  /** PID parameters */
+  float kp;
+  /** PID parameters */
+  float ki;
+  /** PID parameters */
+  float kd;
+} player_position1d_position_pid_req_t;
+
+/** @brief Request/reply: Set linear speed profile parameters.
+
+To set linear speed profile parameters, send a
+@ref PLAYER_POSITION1D_REQ_SPEED_PROF requst.  Null response.
+*/
+typedef struct player_position1d_speed_prof_req
+{
+  /** max speed [m/s] or [rad/s] */
+  float speed;
+  /** max acceleration [m/s^2] or [rad/s^2] */
+  float acc;
+} player_position1d_speed_prof_req_t;

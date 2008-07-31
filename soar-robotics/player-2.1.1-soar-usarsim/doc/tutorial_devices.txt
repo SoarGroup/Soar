@@ -1,0 +1,71 @@
+/** @ingroup tutorials
+@defgroup tutorial_devices Interfaces, drivers, and devices
+@brief Fundamental concepts in Player
+
+<p>
+There are 3 key concepts in Player:
+<p>
+- <b>interface</b> : A specification of how to interact with a certain
+  class of robotic sensor, actuator, or algorithm.  The interface defines
+  the syntax and semantics of all messages that can be exchanged with
+  entities in the same class.
+<p>
+- <b>driver</b> : A piece of software (usually written in C++) that talks
+  to a robotic sensor, actuator, or algorithm, and translates its inputs
+  and outputs to conform to one or more interfaces.  The driver's job is
+  hide the specifics of any given entity by making it appear to be the same
+  as any other entity in its class.
+<p>
+- <b>device</b> : A driver bound to an interface, and given a
+  fully-qualified address.  All messaging in Player occurs among devices,
+  via interfaces.  The drivers, while doing most of the work, are never
+  accessed directly.
+
+\section laserexample An example
+
+<p>
+Consider the @ref interface_laser interface.  This interface
+defines a format in which a planar range-sensor can return range readings
+(basically a list of ranges, with some meta-data).  The @ref
+interface_laser interface is just that: an interface.  You can't do
+anything with it.
+
+<p>
+Now consider the @ref driver_sicklms200 driver.  This driver controls a
+SICK LMS200, which is particular planar range sensor that is popular in
+mobile robot applications.  The @ref driver_sicklms200 driver knows how to
+communicate with the SICK LMS200 over a serial line and retrieve range data
+from it.  But you don't want to access the range data in some SICK-specific
+format.  So the driver also knows how to translate the retrieved data to
+make it conform to the format defined by the @ref interface_laser
+interface.
+
+<p>
+The @ref driver_sicklms200 driver can be bound to the @ref interface_laser
+interface (see @ref tutorial_config for how to do this in a configuration
+file) to create a device, which might have the following address:
+<p><tt>localhost:6665:laser:0</tt>
+<p>
+The fields in this address correspond to the entries in the @ref
+player_devaddr_t structure: host, robot, interface, and index.  The
+host and robot fields (localhost and 6665) indicate where the device is
+located.  The interface field indicates which interface the device
+supports, and thus how it can be used.  Because you might have more than
+one laser, the index field allows you to pick among the devices that
+support the given interface and are located on the given host:robot
+Other lasers on the same host:robot would be assigned different indexes.
+
+\section interfaceportability Writing portable robot code
+
+<p>
+Other drivers also support the @ref interface_laser interface, including
+@ref driver_urglaser and <a href="http://playerstage.sourceforge.net/doc/stage-2.0.0a/group__player.html">stage</a>.
+From the point of view of programs that use these drivers, they're all the
+same: they supply planar range data.  It doesn't matter exactly which model
+of laser is being used, or even whether the laser is physical or simulated.
+It is possible to write programs that are portable across different kinds
+of lasers, both physical and simulated.  For example @ref util_playerv can
+visualize range data from any laser.  Such portability is major benefit of
+defining standard interfaces.
+
+*/

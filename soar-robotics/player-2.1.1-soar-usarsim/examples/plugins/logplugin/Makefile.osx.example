@@ -1,0 +1,13 @@
+# Desc: Example plugin makefile
+# CVS: $Id: Makefile.osx.example 4226 2007-10-24 19:01:14Z thjc $
+
+all: liblogplugin.dylib
+
+%.o: %.cc
+	$(CXX) `pkg-config --cflags playercore` -Wall -g3 -dynamiclib -c $<
+
+liblogplugin.dylib: logplugin.o
+	$(CXX) -bundle -flat_namespace -undefined suppress -o $@ $^
+
+clean:
+	rm -f *.o *.dylib

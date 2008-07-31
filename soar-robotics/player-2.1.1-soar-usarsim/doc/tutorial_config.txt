@@ -1,0 +1,315 @@
+/** @ingroup tutorials
+@defgroup tutorial_config Writing configuration files
+@brief Config files
+
+Table of contents:
+
+- @ref overview
+- @ref syntax
+- @ref driver_options
+  - @ref provides
+  - @ref requires
+  - @ref device_addresses
+  - @ref device_key
+- @ref types
+- @ref units
+- @ref includes
+- @ref keywords
+- @ref examples
+
+@section overview Overview
+
+Player needs to know which drivers to instantiate and to which device
+addresses each should be bound.  This information is usually specified in a
+Player configuration file (it can also be done directly from code by
+calling into @ref libplayercore).
+
+A Player configuration file is a text file that, by convention, has the
+extension <b>.cfg</b>.  The file is composed of one or more <b>driver</b>
+sections, each of which instantiates and configures a single driver.
+Consider an example:
+
+@code
+driver
+(
+  name "sicklms200"
+  provides ["laser:0"]
+)
+@endcode
+
+This block instantiates the @ref driver_sicklms200 driver.  The
+<b>provides</b> keyword is used to specify the device address to which the
+driver will be bound.  Using this configuration, an instance of the @ref
+driver_sicklms200 driver will be available as @ref interface_laser :0.
+
+@section syntax Basic syntax
+
+A driver section is declared by the keyword <b>driver( )</b>.  Option-value
+pairs for the driver go inside the parentheses.  An option and its value
+are whitespace-separated, as are consecutive option-value pairs.  All
+standard whitespace characters are treated equally, so that the following
+section is equivalent to the one given above:
+
+@code
+driver (name "sicklms200" provides ["laser:0"])
+@endcode
+
+Comments are signified by the <b>#</b>character.  Any characters following
+the <b>#</b> up to the next newline are ignored.  E.g.:
+
+@code
+# A laser
+driver
+(
+  name "sicklms200" # The driver's name
+  provides ["laser:0"] # The device address
+)
+@endcode
+
+@section driver_options Driver-independent options
+
+There are five driver-independent options:
+- @b name (string) : The name of the driver to instantiate, as it was provided to
+  DriverTable::AddDriver().  This option is mandatory.
+- @b plugin (string) : The name of a shared library (i.e., a "plugin") that
+  contains the driver.  This shared library will be loaded before
+  attempting to instantiate the driver.  See @ref tutorial_plugins for more
+  information on writing and using driver plugins.
+- @b provides (tuple of strings): The device address(es) through which the driver can be
+  accessed.  This option is mandatory.
+- @b requires (tuple of strings): The device address(es) to which the driver will subscribe.
+- @b alwayson (int): If 1, then the driver will be setup when the @ref
+  util_player starts, without waiting for any client connection.  This
+  option is useful for front-loading startup delays, verifying upfront that
+  hardware is connected and functioning, and for using drivers that don't
+  normally have a client connected (e.g., @ref driver_linuxjoystick, @ref
+  driver_writelog).
+
+@subsection provides provides
+
+Most drivers (e.g., @ref driver_sicklms200) support a single interface.
+Thus their @b provides value is a tuple containing a single string.
+
+Some drivers support multiple interfaces.  For example, the @ref
+driver_amcl driver supports the @ref interface_localize and the @ref
+interface_position2d interfaces, so its @b provides line might look
+like this:
+
+@code
+provides ["localize:0" "position2d:0"]
+@endcode
+
+For most (though not all) multi-interface drivers, you can request just
+the subset of the supported interfaces that you need.  So in the @ref
+driver_amcl example above, you could leave out either @b "localize:0"
+or @b "position2d:0", as the situation warrants.  Every driver must
+provide at least one device (otherwise there's no way to access it).
+
+@subsection requires requires
+
+Most drivers (e.g., @ref driver_sicklms200) don't need any other devices
+to do their work.  Thus no @b requires option is given.
+
+Some drivers require other devices.  For example, the @ref driver_vfh
+driver, a local navigation / obstacle-avoidance algorithm, needs two
+devices: a @ref interface_position2d device to command and a @ref
+interface_laser device from which to read laser scans.  This driver in turn
+provides a @ref interface_position2d device to which target poses can be
+sent.  So the @ref driver_vfh driver might be configured like so:
+
+@code
+driver
+(
+  name "vfh"
+  provides ["position2d:1"]
+  requires ["position2d:0" "laser:0"]
+)
+@endcode
+
+Drivers providing @b "position2d:0" and @b "laser:0" must have already been
+declared.  In general, a driver's required devices must be instantiated prior
+to the driver itself being instantiated.  Circular dependencies are not
+allowed.
+
+@subsection device_addresses Device addresses
+
+%Device addresses for the @b provides and @b requires options are given
+as strings in a 5-part colon-separated format:
+
+@code
+key:host:robot:interface:index
+@endcode
+
+Only the @b interface and @b index fields are required.  Default values
+will be taken for any fields left blank.  The default values for @b
+host and @b robot can vary depending on the context, but are usually @b
+"localhost" and @b 6665, respectively.  The default value for the @b
+key field is NULL (i.e., no key).  Leading fields can be omitted, but
+intermediate fields must be explicitly left blank.  For example, to specify
+a @b key but leave @b host and @b robot blank:
+
+@code
+odometry:::position2d:0
+@endcode
+
+@subsection device_key The key field in a device address
+
+The purpose of the @b key field is to allow a driver that supports
+multiple interfaces of the same type to map those interfaces onto
+different devices.   For example, consider the @ref driver_p2os driver,
+which supports three @ref interface_position2d interfaces:
+
+@code
+driver
+(
+  name "p2os"
+  provides ["odometry:::position2d:0"
+            "compass:::position2d:1"
+            "gyro:::position2d:2"]
+) 
+@endcode
+
+This declaration says, provide the robot's odometry as @b position2d:0, the
+compass as @b position2d:1, and the gyro as @b position2d:2.  The mapping of a
+driver's interfaces to devices is up to you.  For example, instead of
+the example above, you could do this:
+
+@code
+driver
+(
+  name "p2os"
+  provides ["odometry:::position2d:14"
+            "compass:::position2d:0"
+            "gyro:::position2d:25"]
+)
+@endcode
+
+That is, provide the robot's odometry as @b position2d:14, the compass as
+@b position2d:0, and the gyro as @b position2d:25.
+
+The same goes for devices that are required by a driver.  For example,
+the @ref driver_amcl driver can take as input different kinds of @ref
+interface_position2d devices and it treats them each differently; e.g.,
+a different action model would be used for odometry data vs. IMU data.
+Likewise, the @ref driver_amcl driver can take as input different
+kinds of @ref interface_map devices; e.g., a laser-based map vs. a wifi
+signal-strength map.  (Ignore for the moment that the features I've just
+mentioned aren't currently implemented in amcl).  Consider:
+
+@code
+driver
+(
+  name "amcl"
+  provides ["localize:0"]
+  requires ["odometry:::position2d:0" "laser:0" "laser:::map:0"]
+)
+@endcode
+
+That is, take input from @b position2d:0 and treat it as odometry, and
+take input from @b map:0 and treat is a laser map.  No key necessary
+for @b laser:0, because @ref driver_amcl only supports one @ref
+interface_laser interface.
+
+
+@section types Types
+
+The following types are supported for option values:
+ - integer : typed literally
+   - Example:
+     @code
+       foo  42
+     @endcode
+ - floating point : typed literally
+   - Example:
+     @code
+       bar  3.14159
+     @endcode
+ - string : enclosed in double quotes
+   - Example:
+     @code
+       bat  "hello world"
+     @endcode
+ - length : typed literally (see discussion of Units below)
+   - Example:
+     @code
+       baz  8.0
+     @endcode
+ - angle : typed literally (see discussion of Units below)
+   - Example:
+     @code
+       bang  180.0
+     @endcode
+ - tuple : enclosed in brackets (types can be mixed)
+   - Example:
+     @code
+       widget [42 3.14159 "hello world" 8.0 180.0]  
+     @endcode
+
+@section units Units
+
+In order to aid the use of standard units, explicit types are provided for
+lengths and angles.  When a driver reads a length from the configuration
+file, the value is always returned in meters.  When an angle is read, the
+value is always returned in radians.
+
+For convenience, the user may specify lengths and angles in the
+configuration using different units.  By default, lengths are assumed to be
+given in meters, with angles in degrees.  The units can be changed using
+the global (i.e., not inside a <b>driver</b> section) options
+<b>unit_length</b> and <b>unit_angle</b>; e.g.:
+
+@code
+unit_length "cm" # Change length units to centimeters
+unit_angle  "radians" # Change angle units to radians
+@endcode
+
+Valid values for <b>unit_length</b> are:
+  - "m" : meters (default)
+  - "cm" : centimeters
+  - "mm" : millimeters
+
+Valid values for <b>unit_angle</b> are:
+  - "degrees" : degrees (default)
+  - "radians" : radians
+
+These options are order-sensitive and sticky.  A length (angle) is parsed
+in the context of the most recently-parsed <b>unit_length</b>
+(<b>unit_angle</b>) option.  So you can change units multiple times as is
+convenient throughout the file.
+
+Note that unit context extends into included files, so special care is
+needed when mixing units with file inclusion.
+
+@section includes Including other files
+
+Another file may be included via the global (i.e., not inside a @b driver
+section) @b include option:
+
+@code
+include "another_file.cfg"
+@endcode
+
+The contents of the included file are parsed as if they had appeared
+literally, in place of the @b include statement.  Any number of files may
+be included, and file inclusion may be nested.
+
+Take care if mixing file inclusion with unit changes.
+
+
+@section keywords Reserved words
+
+The following keywords are reserved and may not be used for option names:
+
+- @b driver
+- @b name
+- @b plugin
+- @b provides
+- @b requires
+- @b unit_length
+- @b unit_angle
+
+@section examples Examples
+
+@todo Put some useful examples here
+
+*/

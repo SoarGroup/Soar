@@ -1,0 +1,34 @@
+/* document dgps_server here, because Doxygen can't read Python (at least
+ * not without running an input filter, and I don't feel like messing with
+ * that right now).
+ */
+
+/** @ingroup utils */
+
+/** @{ */
+
+/** @defgroup util_dgps_server dgps_server
+@brief Differential GPS correction server
+
+@par Synopsis
+
+dgps_server collects DGPS (RTCM) corrections from a base station.
+Raw packets from the base station are re-transmitted over a multicast
+UDP socket.
+
+The main use of this program is to feed DGPS corrections to @ref
+interface_gps drivers, such as @ref driver_garminnmea.
+
+@par Usage
+
+TODO.
+
+@par Supported base stations
+
+TODO.
+
+@author Andrew Howard
+
+*/
+
+/** @} */

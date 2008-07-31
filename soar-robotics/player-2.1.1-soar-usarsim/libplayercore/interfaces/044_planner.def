@@ -1,0 +1,76 @@
+description {
+ * @brief A planar path-planner
+
+The @p planner interface provides control of a 2-D motion planner.
+}
+
+
+/** Data subtype: state */
+message { DATA, STATE, 1, player_planner_data_t };
+
+/** Command subtype: state */
+message { CMD, GOAL, 1, player_planner_cmd_t };
+
+/** Request subtype: get waypoints */
+message { REQ, GET_WAYPOINTS, 1, player_planner_waypoints_req_t };
+/** Request subtype: enable / disable planner */
+message { REQ, ENABLE, 2, player_planner_enable_req_t };
+
+
+/** @brief Data: state (@ref PLAYER_PLANNER_DATA_STATE)
+
+The @p planner interface reports the current execution state of the
+planner. */
+typedef struct player_planner_data
+{
+  /** Did the planner find a valid path? */
+  uint8_t valid;
+  /** Have we arrived at the goal? */
+  uint8_t done;
+  /** Current location (m,m,rad) */
+  player_pose2d_t pos;
+  /** Goal location (m,m,rad) */
+  player_pose2d_t goal;
+  /** Current waypoint location (m,m,rad) */
+  player_pose2d_t waypoint;
+  /** Current waypoint index (handy if you already have the list
+      of waypoints). May be negative if there's no plan, or if
+      the plan is done */
+  int32_t waypoint_idx;
+  /** Number of waypoints in the plan */
+  uint32_t waypoints_count;
+} player_planner_data_t;
+
+/** @brief Command: state (@ref PLAYER_PLANNER_CMD_GOAL)
+
+The @p planner interface accepts a new goal. */
+typedef struct player_planner_cmd
+{
+  /** Goal location (m,m,rad) */
+  player_pose2d_t goal;
+} player_planner_cmd_t;
+
+/** @brief Request/reply: Get waypoints
+
+To retrieve the list of waypoints, send a null
+@ref PLAYER_PLANNER_REQ_GET_WAYPOINTS request.
+*/
+typedef struct player_planner_waypoints_req
+{
+  /** Number of waypoints to follow */
+  uint32_t waypoints_count;
+  /** The waypoints */
+  player_pose2d_t *waypoints;
+} player_planner_waypoints_req_t;
+
+/** @brief Request/reply: Enable/disable robot motion
+
+To enable or disable the planner, send a @ref PLAYER_PLANNER_REQ_ENABLE
+request.  When disabled, the planner will stop the robot.  When enabled, the planner should resume plan execution.  Null response.
+*/
+typedef struct player_planner_enable_req
+{
+  /** state: TRUE to enable, FALSE to disable */
+  uint8_t state;
+} player_planner_enable_req_t;
+

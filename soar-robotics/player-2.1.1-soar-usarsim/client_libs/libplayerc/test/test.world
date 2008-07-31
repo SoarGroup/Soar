@@ -1,0 +1,46 @@
+
+# Desc: Test world file with a fully loaded robot.
+# Author: Andrew Howard, Richard Vaughan
+# Date: 4 Jun 2002
+# CVS: $Id: test.world 1384 2003-05-10 00:42:15Z gerkey $
+
+resolution 0.03
+
+bitmap
+(
+  file "cave.pnm.gz"
+  resolution 0.03
+)
+
+position
+(
+  port 0
+  name "robot 0"  
+  pose [4.990 2.090 90.000]
+
+  broadcast ()
+  gps () truth ()
+  sonar ()
+  laser (lbd()) 
+  ptz (vision())
+)
+
+
+position
+(
+  port 1
+  name "robot 1"  
+  pose [5.990 2.090 90.000]
+
+  broadcast ()
+  gps () truth ()
+  sonar ()
+  laser (lbd()) 
+  ptz (vision())
+)
+
+define visionbeacon box (color "red" shape "circle" size [0.2 0.2])
+
+visionbeacon (color "red" pose [4.490 3.030 0.000])
+visionbeacon (color "green" pose [5.060 2.990 0.000])
+visionbeacon (color "blue" pose [5.630 2.980 0.000])

@@ -1,0 +1,26 @@
+description {
+ * @brief Joystick control
+
+The joystick interface provides access to the state of a joystick.
+It allows another driver or a (possibly off-board) client to read and
+use the state of a joystick.
+}
+
+
+/** Data subtype: state */
+message { DATA, STATE, 1, player_joystick_data_t };
+
+/** @brief Data: state (@ref PLAYER_JOYSTICK_DATA_STATE)
+
+The joystick data packet, which contains the current state of the
+joystick */
+typedef struct player_joystick_data
+{
+  /** Current joystick position X, Y and Yaw (unscaled) */
+  int32_t pos[3];
+  /** Scaling factors for X, Y and Yaw */
+  int32_t scale[3];
+  /** Button states (bitmask) */
+  uint32_t buttons;
+} player_joystick_data_t;
+

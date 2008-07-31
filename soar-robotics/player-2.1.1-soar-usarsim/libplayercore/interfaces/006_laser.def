@@ -1,0 +1,166 @@
+description { 
+* @brief Laser range-finder
+
+The laser interface provides access to a single-origin scanning
+range sensor, such as a SICK laser range-finder (e.g., @ref
+driver_sicklms200).
+
+Devices supporting the laser interface can be configured to scan at
+different angles and resolutions.  As such, the data returned by the
+laser interface can take different forms.  To make interpretation of the
+data simple, the laser data packet contains some extra fields before
+the actual range data.  These fields tell the client the starting and
+ending angles of the scan, the angular resolution of the scan, and the
+number of range readings included.  Scans proceed counterclockwise about
+the laser (0 degrees is forward).  The laser can return a maximum of
+@ref PLAYER_LASER_MAX_SAMPLES readings; this limits the valid combinations
+of scan width and angular resolution.
+}
+
+/** Data subtype: scan */
+message { DATA, SCAN, 1, player_laser_data_t };
+/** Data subtype: pose-stamped scan */
+message { DATA, SCANPOSE, 2, player_laser_data_scanpose_t };
+
+/** Request/reply subtype: get geometry */
+message { REQ, GET_GEOM, 1, player_laser_geom_t };
+/** Request/reply subtype: set configuration */
+message { REQ, SET_CONFIG, 2, player_laser_config_t };
+/** Request/reply subtype: get configuration */
+message { REQ, GET_CONFIG, 3, player_laser_config_t };
+/** Request/reply subtype: set power */
+message { REQ, POWER, 4, player_laser_power_config_t };
+/** Request/reply subtype: get IDentification information */
+message { REQ, GET_ID, 5, player_laser_get_id_config_t };
+/** Request/reply subtype: set filter settings */
+message { REQ, SET_FILTER, 6, player_laser_set_filter_config_t };
+
+/** Filter setings */
+#define PLAYER_LASER_MAX_FILTER_PARAMS 8
+#define PLAYER_LASER_FILTER_MEDIAN 1
+#define PLAYER_LASER_FILTER_EDGE   2
+#define PLAYER_LASER_FILTER_RANGE  3
+#define PLAYER_LASER_FILTER_MEAN   4
+
+/** @brief Data: scan (@ref PLAYER_LASER_DATA_SCAN)
+
+The basic laser data packet.  */
+typedef struct player_laser_data
+{
+  /** Start and end angles for the laser scan [rad].  */
+  float min_angle;
+  /** Start and end angles for the laser scan [rad].  */
+  float max_angle;
+  /** Angular resolution [rad].  */
+  float resolution;
+  /** Maximum range [m]. */
+  float max_range;
+  /** Number of range readings.  */
+  uint32_t ranges_count;
+  /** Range readings [m]. */
+  float *ranges;
+  /** Number of intensity readings */
+  uint32_t intensity_count;
+  /** Intensity readings. */
+  uint8_t *intensity;
+  /** A unique, increasing, ID for the scan */
+  uint32_t id;
+} player_laser_data_t;
+
+/** @brief Data: pose-stamped scan (@ref PLAYER_LASER_DATA_SCANPOSE)
+
+A laser scan with a pose that indicates the (possibly esimated) pose of the
+laser when the scan was taken. */
+typedef struct player_laser_data_scanpose
+{
+  /** The scan data */
+  player_laser_data_t scan;
+  /** The global pose of the laser at the time the scan was acquired */
+  player_pose2d_t pose;
+} player_laser_data_scanpose_t;
+
+/** @brief Request/reply: Get geometry.
+
+The laser geometry (position and size) can be queried by sending a
+null @ref PLAYER_LASER_REQ_GET_GEOM request. */
+typedef struct player_laser_geom
+{
+  /** Laser pose, in robot cs (m, m, m, rad, rad, rad). */
+  player_pose3d_t pose;
+  /** Laser dimensions (m, m, m). */
+  player_bbox3d_t size;
+} player_laser_geom_t;
+
+/** @brief Request/reply: Get/set scan properties.
+
+The scan configuration (resolution, aperture, etc) can be queried by
+sending a null @ref PLAYER_LASER_REQ_GET_CONFIG request and modified by
+sending a @ref PLAYER_LASER_REQ_SET_CONFIG request.  In either case, the
+current configuration (after attempting any requested modification) will
+be returned in the response.  Read the documentation for your driver to
+determine what configuration values are permissible. */
+typedef struct player_laser_config
+{
+  /** Start and end angles for the laser scan [rad].*/
+  float min_angle;
+  /** Start and end angles for the laser scan [rad].*/
+  float max_angle;
+  /** Scan resolution [rad].  */
+  float resolution;
+  /** Maximum range [m] */
+  float max_range;
+  /** Range Resolution [m] */
+  float range_res;
+  /** Enable reflection intensity data. */
+  uint8_t  intensity;
+  /** Scanning frequency [Hz] */
+  float scanning_frequency;
+} player_laser_config_t;
+
+/** @brief Request/reply: Turn power on/off.
+
+Send a @ref PLAYER_LASER_REQ_POWER request to turn laser power on or off
+(assuming your hardware supports it). */
+typedef struct player_laser_power_config
+{
+  /** FALSE to turn laser off, TRUE to turn laser on */
+  uint8_t state;
+} player_laser_power_config_t;
+
+/** @brief Request/reply: Get IDentification information.
+
+Send a @ref PLAYER_LASER_REQ_GET_ID request to receive the laser's serial number
+or any other relevant identification information (assuming your hardware supports it). */
+typedef struct player_laser_get_id_config
+{
+  /** Laser device serial number. */
+  uint32_t serial_number;
+} player_laser_get_id_config_t;
+
+/** @brief Request/reply: Set filter settings.
+
+Send a @ref PLAYER_LASER_REQ_SET_FILTER request to set the laser's internal
+filter parameters (assuming your hardware supports it). Currently the
+finally settings can be applied to the SICK LMS400:
+ a) median filter - PLAYER_LASER_FILTER_MEDIAN, no parameters
+ b) edge filter   - PLAYER_LASER_FILTER_EDGE, no parameters
+ c) range filter  - PLAYER_LASER_FILTER_RANGE
+    p1 = BottomLimit (700-3000 in mm), p2 = TopLimit (700-3000 in mm)
+ d) mean filter   - PLAYER_LASER_FILTER_MEAN
+    p1 = number of means (2-200)
+
+Note: You can combine the filters as required. If several filters are
+active, then the filters act one after the other on the result of the
+previous filter. The processing in this case follows the following sequence:
+edge filter, median filter, range filter, mean filter.
+*/
+typedef struct player_laser_set_filter_config
+{
+  /** Filter type. */
+  uint8_t filter_type;
+  /** The number of filter parameters */
+  uint32_t parameters_count;
+  /** Filter parameters */
+  float parameters[PLAYER_LASER_MAX_FILTER_PARAMS];
+} player_laser_set_filter_config_t;
+

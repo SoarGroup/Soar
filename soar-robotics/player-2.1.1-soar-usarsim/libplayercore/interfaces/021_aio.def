@@ -1,0 +1,31 @@
+description {
+@brief Analog I/O
+
+The @p aio interface provides access to an analog I/O device.
+}
+
+message { CMD, STATE, 1, player_aio_cmd_t };
+message { DATA, STATE, 1, player_aio_data_t };
+
+/** @brief Data: state (@ref PLAYER_AIO_DATA_STATE)
+
+The @p aio interface returns data regarding the current state of the
+analog inputs. */
+typedef struct player_aio_data
+{
+  /** number of valid samples */
+  uint32_t voltages_count;
+  /** the samples [V] */
+  float *voltages;
+} player_aio_data_t;
+
+/** @brief Command: state (@ref PLAYER_AIO_CMD_STATE)
+
+The @p aio interface allows for the voltage level on one output to be set */
+typedef struct player_aio_cmd
+{
+  /** Which I/O output to command */
+  uint32_t id;
+  /** Voltage level to set */
+  float voltage;
+} player_aio_cmd_t;

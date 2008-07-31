@@ -1,0 +1,18 @@
+description {
+ * @brief Access properties stored in a central repository. EXPERIMENTAL
+
+}
+
+/** Request/reply subtype: subscribe to key. */
+message { REQ, SUBSCRIBE_TO_KEY, 1, player_blackboard_entry_t };
+/** Request/reply subtype: unsubscribe from key. */
+message { REQ, UNSUBSCRIBE_FROM_KEY, 2, player_blackboard_entry_t };
+/** Request/reply subtype: set entry. */
+message { REQ, SET_ENTRY, 3, player_blackboard_entry_t };
+/** Request/reply subtype: subscribe to group. */
+message { REQ, SUBSCRIBE_TO_GROUP, 4, player_blackboard_entry_t };
+/** Request/reply subtype: unsubscribe from group. */
+message { REQ, UNSUBSCRIBE_FROM_GROUP, 5, player_blackboard_entry_t };
+/** Data update reply */
+message { DATA, UPDATE, 1, player_blackboard_entry_t };
+

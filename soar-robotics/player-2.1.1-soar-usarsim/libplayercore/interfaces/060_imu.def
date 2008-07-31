@@ -1,0 +1,110 @@
+description { 
+* @brief Inertial Measurement Unit
+
+The @p imu interface provides access to an Inertial Measurement Unit sensor
+(such as the XSens MTx/MTi).
+}
+
+
+/** Data subtype: IMU position/orientation data */
+message { DATA, STATE, 1, player_imu_data_state_t };
+/** Data subtype: Calibrated IMU data           */
+message { DATA, CALIB, 2, player_imu_data_calib_t };
+/** Data subtype: Quaternions orientation data  */
+message { DATA, QUAT, 3, player_imu_data_quat_t };
+/** Data subtype: Euler orientation data        */
+message { DATA, EULER, 4, player_imu_data_euler_t };
+
+/** Request/reply subtype: set data type */
+message { REQ, SET_DATATYPE, 1, player_imu_datatype_config_t };
+/** Request/reply subtype: reset orientation */
+message { REQ, RESET_ORIENTATION, 2, player_imu_reset_orientation_config_t };
+
+/** @brief Data: calibrated IMU data (@ref PLAYER_IMU_DATA_STATE)
+
+The @p imu interface returns the complete 3D coordinates + angles position in
+space, of the IMU sensor. */
+typedef struct player_imu_data_state
+{
+    /** The complete pose of the IMU in 3D coordinates + angles */
+    player_pose3d_t pose;
+} player_imu_data_state_t;
+
+/** @brief Data: calibrated IMU data (@ref PLAYER_IMU_DATA_CALIB)
+
+The @p imu interface returns calibrated acceleration, gyro and magnetic values
+from the IMU sensor. */
+typedef struct player_imu_data_calib
+{
+    /** The IMU's calibrated acceleration value on X-axis. */
+    float accel_x;
+    /** The IMU's calibrated acceleration value on Y-axis. */
+    float accel_y;
+    /** The IMU's calibrated acceleration value on Z-axis. */
+    float accel_z;
+    /** The IMU's calibrated gyro value on X-axis.         */
+    float gyro_x;
+    /** The IMU's calibrated gyro value on Y-axis.         */
+    float gyro_y;
+    /** The IMU's calibrated gyro value on Z-axis.         */
+    float gyro_z;
+    /** The IMU's calibrated magnetic value on X-axis.     */
+    float magn_x;
+    /** The IMU's calibrated magnetic value on Y-axis.     */
+    float magn_y;
+    /** The IMU's calibrated magnetic value on Z-axis.     */
+    float magn_z;
+} player_imu_data_calib_t;
+
+/** @brief Data: Quaternions orientation data (@ref PLAYER_IMU_DATA_QUAT)
+
+The @p imu interface returns calibrated IMU values as well as orientation data
+as quaternions. */
+typedef struct player_imu_data_quat
+{
+    /** Calibrated IMU data (accel, gyro, magnetometer) */
+    player_imu_data_calib_t calib_data;
+
+    /** Orientation data as quaternions */
+    float q0;
+    float q1;
+    float q2;
+    float q3;
+} player_imu_data_quat_t;
+
+ /** @brief Data: Euler orientation data (@ref PLAYER_IMU_DATA_EULER)
+
+The @p imu interface returns calibrated IMU values as well as orientation data
+as Euler angles. */
+typedef struct player_imu_data_euler
+{
+    /** Calibrated IMU data (accel, gyro, magnetometer) */
+    player_imu_data_calib_t calib_data;
+
+    /** Orientation data as Euler angles */
+    player_orientation_3d_t orientation;
+} player_imu_data_euler_t;
+
+/** @brief Request/reply: change the data type to one of the predefined data
+structures.
+
+Send a @ref PLAYER_IMU_REQ_SET_DATATYPE request to switch between calibrated
+data, 3D pose and orientation, Euler orientation or Quaternions orientation
+in the data packet. Null response.                     */
+typedef struct player_imu_datatype_config
+{
+    /** Data type setting: 1 for pose/orientation, 2 for calibrated (raw) data,
+      3 for quaternions, 4 for Euler.
+    */
+    uint8_t value;
+} player_imu_datatype_config_t;
+
+/** @brief Request/reply: Reset orientation.
+
+To reset the IMU's orientation, send a @ref PLAYER_IMU_REQ_RESET_ORIENTATION
+request.  Null response. */
+typedef struct player_imu_reset_orientation_config
+{
+  /** driver-specific */
+  uint32_t value;
+} player_imu_reset_orientation_config_t;

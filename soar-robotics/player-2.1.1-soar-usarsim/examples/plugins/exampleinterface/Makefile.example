@@ -1,0 +1,30 @@
+CFLAGS=`pkg-config --cflags playercore playerc` -Wall -fpic
+CXXFLAGS=`pkg-config --cflags playercore` -Wall -fpic
+
+
+BUILT_SOURCES = example_interface.h example_functiontable.c example_xdr.c example_xdr.h
+all: $(BUILT_SOURCES) libeginterf.so libeginterfdriver.so example_client
+
+example_interface.h: 128_example.def
+	playerinterfacegen.py --plugin $< > $@
+	
+example_functiontable.c: 128_example.def
+	playerinterfacegen.py --plugin --functiontable $< > $@
+
+example_xdr.c: example_interface.h 
+	playerxdrgen.py example_interface.h example_xdr.c example_xdr.h
+
+example_xdr.h: example_interface.h
+	playerxdrgen.py example_interface.h example_xdr.c example_xdr.h
+
+libeginterf.so: eginterf_client.o example_functiontable.o example_xdr.o
+	$(CC) -shared -nostartfiles -o $@ $^
+
+libeginterfdriver.so: eginterf_driver.o
+	$(CXX) -shared -nostartfiles -o $@ $^
+
+example_client: example_client.o
+	$(CC) $< -L. -leginterf `pkg-config --libs playercore playerc`
+
+clean:
+	rm -f *.o *.so example_client $(BUILT_SOURCES)

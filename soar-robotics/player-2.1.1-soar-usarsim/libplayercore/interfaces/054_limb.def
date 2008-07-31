@@ -1,0 +1,140 @@
+description { 
+* @brief A multi-jointed limb
+
+The limb interface provides access to a multi-jointed limb
+
+@todo Use pre-defined types, like player_pose3d_t, wherever possible
+}
+
+/** Idle */
+#define PLAYER_LIMB_STATE_IDLE        1
+/** Brakes are on */
+#define PLAYER_LIMB_STATE_BRAKED      2
+/** Moving to target */
+#define PLAYER_LIMB_STATE_MOVING      3
+/** Target was out of reach */
+#define PLAYER_LIMB_STATE_OOR         4
+/** Target was blocked by collision */
+#define PLAYER_LIMB_STATE_COLL        5
+
+/** Data subtype: state */
+message { DATA, STATE, 1, player_limb_data_t };
+
+/** @brief Command: home (@ref PLAYER_LIMB_HOME_CMD)
+
+Tells the end effector to return to its home position. */
+message { CMD, HOME, 1, player_null_t };
+/** @brief Command: stop (@ref PLAYER_LIMB_STOP_CMD)
+
+Tells the limb to stop moving immediatly. */
+message { CMD, STOP, 2, player_null_t };
+/** Command subtype: set pose */
+message { CMD, SETPOSE, 3, player_limb_setpose_cmd_t };
+/** Command subtype: set position */
+message { CMD, SETPOSITION, 4, player_limb_setposition_cmd_t };
+/** Command subtype: vector move */
+message { CMD, VECMOVE, 5, player_limb_vecmove_cmd_t };
+
+/** Request/reply: power */
+message { REQ, POWER, 1, player_limb_power_req_t };
+/** Request/reply: brakes */
+message { REQ, BRAKES, 2, player_limb_brakes_req_t };
+/** Request/reply: geometry */
+message { REQ, GEOM, 3, player_limb_geom_req_t };
+/** Request/reply: speed */
+message { REQ, SPEED, 4, player_limb_speed_req_t };
+
+/** @brief Data: state (@ref PLAYER_LIMB_DATA)
+
+  The limb data packet. */
+typedef struct player_limb_data
+{
+  /** The position of the end effector (in robot coordiantes). */
+  player_point_3d_t position;
+  /** The approach vector of the end effector. */
+  player_point_3d_t approach;
+  /** The orientation vector of the end effector (a vector in a
+  predefined direction on the end effector, generally from fingertip to
+  fingertip). */
+  player_point_3d_t orientation;
+  /** The state of the limb. */
+  uint8_t state;
+} player_limb_data_t;
+
+
+/** @brief Command: Set end effector pose (@ref PLAYER_LIMB_CMD_SETPOSE)
+
+Provides a fully-described pose (position, normal vector and
+orientation vector) for the end effector to move to. */
+typedef struct player_limb_setpose_cmd
+{
+  /** Position of the end effector. */
+  player_point_3d_t position;
+  /** Approach vector. */
+  player_point_3d_t approach;
+  /** Orientation vector. */
+  player_point_3d_t orientation;
+} player_limb_setpose_cmd_t;
+
+/** @brief Command: Set end effector position (@ref PLAYER_LIMB_CMD_SETPOSITION)
+
+Set the position of the end effector without worrying about a
+specific orientation. */
+typedef struct player_limb_setposition_cmd
+{
+  /** Position of the end effector. */
+  player_point_3d_t position;
+} player_limb_setposition_cmd_t;
+
+/** @brief Command: Vector move the end effector (@ref PLAYER_LIMB_CMD_VECMOVE)
+
+Move the end effector along the provided vector from its current
+position for the provided distance. */
+typedef struct player_limb_vecmove_cmd
+{
+  /** Direction vector to move in. */
+  player_point_3d_t direction;
+  /** Distance to move. */
+  float length;
+} player_limb_vecmove_cmd_t;
+
+/** @brief Request/reply: Power.
+
+Turn the power to the limb by sending a @ref PLAYER_LIMB_REQ_POWER request. Be
+careful when turning power on that the limb is not obstructed from its
+home position in case it moves to it (common behaviour). Null reponse*/
+typedef struct player_limb_power_req
+{
+  /** Power setting; 0 for off, 1 for on. */
+  uint8_t value;
+} player_limb_power_req_t;
+
+/** @brief Request/reply: Brakes.
+
+Turn the brakes of the limb on or off by sending a @ref PLAYER_LIMB_REQ_BRAKES
+request. Null response*/
+typedef struct player_limb_brakes_req
+{
+  /** Brakes setting; 0 for off, 1 for on. */
+  uint8_t value;
+} player_limb_brakes_req_t;
+
+/** @brief Request/reply: get geometry
+
+Query geometry by sending a null @ref PLAYER_LIMB_REQ_GEOM reqest.*/
+typedef struct player_limb_geom_req
+{
+  /** The base position of the end-effector in robot coordinates. */
+  player_point_3d_t basePos;
+} player_limb_geom_req_t;
+
+/** @brief Request/reply: Speed.
+
+Set the speed of the end effector for all subsequent movements by sending
+a @ref PLAYER_LIMB_REQ_SPEED request. Null response. */
+typedef struct player_limb_speed_req
+{
+  /** Speed setting in m/s. */
+  float speed;
+} player_limb_speed_req_t;
+

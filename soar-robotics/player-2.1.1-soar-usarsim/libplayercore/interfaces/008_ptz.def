@@ -1,0 +1,114 @@
+description {
+ * @brief Pan-tilt-zoom unit
+
+The ptz interface is used to control a pan-tilt-zoom unit, such as a camera.
+}
+
+/** Request/reply subtype: generic */
+message { REQ, GENERIC, 1, player_ptz_req_generic_t };
+/** Request/reply subtype: control mode */
+message { REQ, CONTROL_MODE, 2, player_ptz_req_control_mode_t };
+/** Request/reply subtype: geometry */
+message { REQ, GEOM, 4, player_ptz_geom_t };
+/** Request/reply subtype: status */
+message { REQ, STATUS, 5, player_ptz_req_status_t };
+
+/** Data subtype: state */
+message { DATA, STATE, 1, player_power_data_t };
+/** Data subtype: geometry */
+message { DATA, GEOM, 2, player_ptz_geom_t };
+
+/** Command subtype: state */
+message { CMD, STATE, 1, player_ptz_cmd_t };
+
+
+
+/** Control mode, for use with @ref PLAYER_PTZ_REQ_CONTROL_MODE */
+#define PLAYER_PTZ_VELOCITY_CONTROL 0
+/** Control mode, for use with @ref PLAYER_PTZ_REQ_CONTROL_MODE */
+#define PLAYER_PTZ_POSITION_CONTROL 1
+
+
+/** @brief Data: state (@ref PLAYER_PTZ_DATA_STATE)
+
+The ptz interface returns data reflecting the current state of the
+Pan-Tilt-Zoom unit. */
+typedef struct player_ptz_data
+{
+  /** Pan [rad] */
+  float pan;
+  /** Tilt [rad] */
+  float tilt;
+  /** Field of view [rad] */
+  float zoom;
+  /** Current pan velocity [rad/s] */
+  float panspeed;
+  /** Current tilt velocity [rad/s] */
+  float tiltspeed;
+  /** Current pan / tilt status */
+  uint32_t status;
+} player_ptz_data_t;
+
+/** @brief Command: state (@ref PLAYER_PTZ_CMD_STATE)
+
+The ptz interface accepts commands that set change the state of the unit.
+Note that the commands are absolute, not relative. */
+typedef struct player_ptz_cmd
+{
+  /** Desired pan angle [rad] */
+  float pan;
+  /** Desired tilt angle [rad] */
+  float tilt;
+  /** Desired field of view [rad]. */
+  float zoom;
+  /** Desired pan velocity [rad/s] */
+  float panspeed;
+  /** Desired tilt velocity [rad/s] */
+  float tiltspeed;
+} player_ptz_cmd_t;
+
+/** @brief Request/reply: Query pan/tilt status.
+
+To request pan/tilt status of the unit, send a null @ref PLAYER_PTZ_REQ_STATUS request. */
+typedef struct player_ptz_req_status
+{
+  uint32_t status;
+} player_ptz_req_status_t;
+
+/** @brief Request/reply: Query geometry.
+
+To request ptz geometry, send a null @ref PLAYER_PTZ_REQ_GEOM request. */
+typedef struct player_ptz_geom
+{
+  /** Pose of the ptz base*/
+  player_pose3d_t pos;
+  /** Dimensions of the base [m, m, m]. */
+  player_bbox3d_t size;
+} player_ptz_geom_t;
+
+/** @brief Request/reply: Generic request
+
+To send a unit-specific command to the unit, use the
+@ref PLAYER_PTZ_REQ_GENERIC request.  Whether data is returned depends on the
+command that was sent.  The device may fill in "config" with a reply if
+applicable. */
+typedef struct player_ptz_req_generic
+{
+  /** Length of data in config buffer */
+  uint32_t  config_count;
+  /** Buffer for command/reply */
+  uint32_t  *config;
+} player_ptz_req_generic_t;
+
+/** @brief Request/reply: Control mode.
+
+To switch between position and velocity control (for those drivers that
+support it), send a @ref PLAYER_PTZ_REQ_CONTROL_MODE request.  Note that this
+request changes how the driver interprets forthcoming commands from all
+clients.  Null response. */
+typedef struct player_ptz_req_control_mode
+{
+  /** Mode to use: must be either @ref PLAYER_PTZ_VELOCITY_CONTROL or
+      @ref PLAYER_PTZ_POSITION_CONTROL. */
+  uint32_t mode;
+} player_ptz_req_control_mode_t;

@@ -1,0 +1,30 @@
+SUBDIRS = \
+actarray \
+base \
+audio \
+blobfinder \
+camera \
+fiducial \
+gps \
+health \
+joystick \
+laser \
+opaque \
+localization \
+map \
+mcom \
+mixed \
+planner \
+position \
+ptz \
+service_adv \
+shell \
+speech \
+wifi \
+rfid \
+wsn \
+imu \
+pointcloud3d \
+ranger \
+vectormap \
+blackboard 

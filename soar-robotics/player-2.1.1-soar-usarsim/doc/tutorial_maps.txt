@@ -1,0 +1,6 @@
+/** @ingroup tutorials
+@defgroup tutorial_maps Manipulating maps
+@brief Map-handling
+
+@todo Write this
+*/

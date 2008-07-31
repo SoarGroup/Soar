@@ -1,0 +1,298 @@
+
+/**
+@page plugin_driver HOWTO: Creating a Plugin Driver
+
+
+The are two distinct type of drivers in Player:
+
+- <i>Static</i> drivers have their code in the main Player
+distribution, and are statically linked into the server.  Generally
+speaking, such drivers will be added by the lead developers.
+
+- <i>Plugin</i> drivers are shared objects that are loaded at runtime
+(like loadable modules in the Linux kernel). They are the recommended
+method for all new, experimental or third party drivers.
+
+Plugin drivers have serveral advantanges over their static
+counterparts:
+
+- They are easier to build (no mucking about with autotools, or
+digging about in the server internals).
+
+- They permit rapid development and a much faster code/compile/test
+cycle (the server does not need to be recompiled/relinked when the
+driver changes).
+
+- Code can be maintained in a separate source repository.  This is
+particularly useful for users with funky one-off drivers that belong
+with the rest of their code, data, papers, etc (and not in the Player
+source tree).
+
+This document describes the process for creating new plugin drivers.
+It assumes you are familiar with C++, class inheritance, and thread
+programming.
+
+
+@section plugin_drivers_example A plugin driver example
+
+Sample code for a very basic plugin driver is provided in the
+<tt>examples</tt> directory; for a default install, this will be:
+
+@verbatim
+/usr/local/src/player/examples/plugins/exampledriver/
+@endverbatim
+
+Copy the files from this directory and rename
+<tt>Makefile.example</tt> to <tt>Makefile</tt>.  Try building the
+example:
+
+@verbatim
+$ make 
+@endverbatim
+
+This produces a plugin driver named <tt>exampledriver.so</tt>.
+You can test the model using the included configuration file:
+
+@verbatim
+$ player ./example.cfg
+@endverbatim
+
+The driver block in the config file has an additional field @c plugin
+specifying the path to the plugin, i.e.,:
+
+@verbatim
+driver
+(
+  name "exampledriver"
+  plugin "exampledriver.so"
+  provides ["position:0"] 
+  ...
+)
+@endverbatim
+
+
+@section plugin_drivers_simple Writing a simple driver
+
+The first step in creating a new driver is to decide which interface
+it will support.  The existing interfaces are described in the <a
+href="modules.html">reference</a> section, and their various message
+structures and constants are defined in player.h.  Although you can
+create a new interface, you should try to fit your driver to an
+existing interface, of which there are many.  By deciding to support
+an existing interface, you'll have less work to do in the server, and
+will likely have instant client support for your driver in several
+languages.
+
+To create a new driver, you should create a new class for the driver,
+which should inherit from the Driver class.  This base class defines a
+standard API, part of which the new driver must implement (other parts
+it may choose to override).  We now describe the salient aspects of
+the Driver class.
+
+
+@subsection plugin_drivers_simple_c The constructor
+
+Simple drivers will use the following Driver constructor:
+
+@verbatim
+Driver::Driver(ConfigFile *cf, int section, int interface, uint8_t access,
+               size_t datasize, size_t commandsize, 
+               size_t reqqueuelen, size_t repqueuelen);
+@endverbatim
+
+This constructor will establish the buffers and queues that allow the
+Player server to interface with the driver.  The preamble for the
+example driver, for example, looks like this:
+
+@verbatim 
+ExampleDriver::ExampleDriver(ConfigFile* cf, int section)
+    : Driver(cf, section, PLAYER_POSITION_CODE, PLAYER_ALL_MODE,
+             sizeof(player_position_data_t), sizeof(player_position_cmd_t), 10, 10)
+{
+ ...
+}
+@endverbatim
+
+The preamble indicates that this driver:
+
+- Supports the position interface (indicated by @c
+  PLAYER_POSITION_CODE);
+- Allows read/write access from clients (@c PLAYER_ALL_MODE);
+- Has a data buffer large enough to accomodate a
+  standard position interface data packet (@c sizeof(player_position_data_t));
+- Has a command buffer large enough to accomodate a
+  standard position interface command packet (@c sizeof(player_position_cmd_t));
+- Can queue up to 10 incoming configuration requests and 10 outgoing
+  configuration replies.
+
+The @c cf and @c section parameters are passed in by the server; these
+values to access driver-specific options stored in the Player
+configuration file.  Thus, for example, the driver constructor can
+read the value of some setting "foo":
+
+@verbatim
+this->foop = cf->ReadInt(section, "foo", 0);
+@endverbatim
+
+This might be the serial port from which to read data, for example.
+See the ConfigFile documentation for the various kinds of options that
+can be read from the configuration file.
+
+
+@subsection plugin_drivers_simple_set Setup()
+
+When the first client subscribes to a driver, the driver's Setup()
+method is called; every driver @b must implement this method.  The
+Setup() method generally does two things:
+
+- Do some device-specific initialization (e.g., open a serial port).
+- Start the driver thread using Driver::StartThread().
+
+Player is a multi-threaded application, with most drivers running in
+their own thread; this makes it particularly easy to write drivers
+that read/write data from serial ports, network sockets, disk files
+and so on.
+
+After initialization, Setup() should return either zero to indicate
+that the device was successfully setup, or non-zero to indicate that
+setup failed (the latter will cause Player to terminate).
+
+
+@subsection plugin_drivers_simple_shut Shutdown()
+
+When the last client unsubscribes from a device, the driver's
+Shutdown() method is called; every driver @b must implement this
+method.  The Shutdown() method generally does two things:
+
+- Stop the driver thread using Driver::StopThread().
+- Do some device-specific finalization (e.g., close a serial port).
+
+Note that the ordering is important here: we must shut down the driver
+thread @b before we release the resources it is using; to this end,
+Driver::StopThread() will tell the driver thread to quit, and wait
+until it exits before returning.
+
+Shutdown() should return either zero to indicate that device was
+successfully shutdown, or non-zero to indicate that shutdown failed.
+
+
+@subsection plugin_drivers_simple_main Main()
+
+The Driver::Startup() method will result in the creation of a new
+thread of control, which will immediately call Driver::Main().  Every
+driver must this overload this method.  The overloaded Main() method
+is generally responsible for translating between some device-specific
+API and the standard Player interfaces.  The basic steps are as
+follows:
+
+- For incoming data:
+  - Read data from some external device (over a serial port, for example).
+  - Massage the data into one of the Player interface data structures.
+  - Write the data to the Player server using Driver::PutData().
+
+- For outgoing data (commands):
+  - Read commands from the Player server using Driver::GetCommand().
+  - Massage the command into a device specific format.
+  - Write the command to the external device.
+
+The Driver::PutData() and Driver::GetCommand() methods manage all of
+the buffering and locking required to synchronize the driver and
+server threads.
+
+The overloaded Main() method is also responsible for handling
+any configuration request sent to the driver; the basic steps are as
+follows:
+
+- Check for a new request using Driver::GetConfig().
+- Do whatever needs to be done for this request.
+- Send a response using Driver::PutReply().
+
+Note that your driver must respond, one way or another, to each and
+every request.  Failing to respond to requests will cause client
+programs to "hang" when talking to the driver.
+
+The overloaded Main() must also be capable of graceful termination
+(i.e., the function should exit cleanly when the user kills the
+server).  This can be achieved by calling @c pthread_testcancel() from
+within the main loop.  This function checks to see if the driver
+thread should terminate, and if so, immediately exits Main().  If
+additional cleanup is required, drivers can also overload
+Driver::MainQuit(), which is guaranteed to be called on thread
+termination.
+
+
+@subsection plugin_drivers_simple_instant Instantiation
+
+In order to instantiate a driver, the Player server needs to know two
+things:
+
+- The driver's name (as it will appear in the configuration file).  
+- The driver's @b factory function (used to create a new instance of
+  the driver).  The factory function will generally look something
+  like this:
+
+@verbatim
+Driver* ExampleDriver_Init(ConfigFile* cf, int section)
+{
+  return ((Driver*) (new ExampleDriver(cf, section)));
+}
+@endverbatim
+
+Note that this function may be called multiple times: once for each
+occurance of the driver name in the configuration file.
+
+Each driver must register itself with the server using the
+DriverTable::AddDriver(), providing the driver name and factory
+function.  Drivers must therefore define a registration function
+as follows:
+
+@verbatim
+void ExampleDriver_Register(DriverTable* table)
+{
+  table->AddDriver("exampledriver", ExampleDriver_Init);
+}
+@endverbatim
+
+This function must be called exactly once, on program startup.  For
+plugin drivers, this can be achieved by defining an initialization
+function for the shared object:
+
+@verbatim
+extern "C" 
+{
+  int player_driver_init(DriverTable* table)
+  {
+    ExampleDriver_Register(table);
+    return 0;
+  }
+}
+@endverbatim
+
+This function will be called when the shared object is loaded, before
+any drivers are instantiated.  The @c extern @c "C" block is used to
+prevent C++ name mangling of the intialization function.
+
+
+@section plugin_drivers_building Building the shared library
+
+The example driver includes a Makefile for building shared objects.
+To manually build a shared object, try:
+
+@verbatim
+$ g++ -Wall -g3 -c exampledriver.cc
+$ g++ -shared -nostartfiles -o exampledriver.so exampledriver.o
+@endverbatim
+
+While the above method will probably work, it is recommended that you
+use pkg-config to get the compile flags; i.e.,
+
+@verbatim
+$ g++ -Wall -g3 `pkg-config --cflags player` -c exampledriver.cc
+$ g++ -shared -nostartfiles -o exampledriver.so exampledriver.o
+@endverbatim
+
+@todo
+- Add example of building plugin using libtool.
+- Add "theory" from Architecture Chapter of the old manual.
+
+*/

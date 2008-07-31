@@ -1,0 +1,89 @@
+description {
+ * @brief Multi-hypothesis planar localization system
+
+The @p localize interface provides pose information for the robot.
+Generally speaking, localization drivers will estimate the pose of the
+robot by comparing observed sensor readings against a pre-defined map
+of the environment.  See, for the example, the @ref driver_amcl
+driver, which implements a probabilistic Monte-Carlo localization
+algorithm.
+
+}
+
+/** Data subtype: pose hypotheses */
+message { DATA, HYPOTHS, 1, player_localize_data_t };
+
+/** Request/reply subtype: set pose hypothesis */
+message { REQ, SET_POSE, 1, player_localize_set_pose_t };
+/** Request/reply subtype: get particle set */
+message { REQ, GET_PARTICLES, 2, player_localize_get_particles_t };
+
+/** @brief Hypothesis format.
+
+Since the robot pose may be ambiguous (i.e., the robot may at any
+of a number of widely spaced locations), the @p localize interface is
+capable of returning more that one hypothesis. */
+typedef struct player_localize_hypoth
+{
+  /** The mean value of the pose estimate (m, m, rad). */
+  player_pose2d_t mean;
+  /** The covariance matrix pose estimate (m$^2$, rad$^2$). */
+  double cov[3];
+  /** The weight coefficient for linear combination (alpha) */
+  double alpha;
+} player_localize_hypoth_t;
+
+/** @brief Data: hypotheses (@ref PLAYER_LOCALIZE_DATA_HYPOTHS)
+
+The @p localize interface returns a data packet containing an an array
+of hypotheses. */
+typedef struct player_localize_data
+{
+  /** The number of pending (unprocessed observations) */
+  uint32_t pending_count;
+  /** The time stamp of the last observation processed. */
+  double pending_time;
+  /** The number of pose hypotheses. */
+  uint32_t hypoths_count;
+  /** The array of the hypotheses. */
+  player_localize_hypoth_t *hypoths;
+} player_localize_data_t;
+
+/** @brief Request/reply: Set the robot pose estimate.
+
+Set the current robot pose hypothesis by sending a
+@ref PLAYER_LOCALIZE_REQ_SET_POSE request.  Null response. */
+typedef struct player_localize_set_pose
+{
+  /** The mean value of the pose estimate (m, m, rad). */
+  player_pose2d_t mean;
+  /** The diagonal elements of the covariance matrix pose estimate
+      (m$^2$, rad$^2$). */
+  double cov[3];
+} player_localize_set_pose_t;
+
+/** @brief A particle */
+typedef struct player_localize_particle
+{
+  /** The particle's pose (m,m,rad) */
+  player_pose2d_t pose;
+  /** The weight coefficient for linear combination (alpha) */
+  double alpha;
+} player_localize_particle_t;
+
+/** @brief Request/reply: Get particles.
+
+To get (usually a subset of) the current particle set (assuming
+the underlying driver uses a particle filter), send a null
+@ref PLAYER_LOCALIZE_REQ_GET_PARTICLES request. */
+typedef struct player_localize_get_particles
+{
+  /** The best (?) pose (mm, mm, arc-seconds). */
+  player_pose2d_t mean;
+  /** The variance of the best (?) pose (mm^2) */
+  double variance;
+  /** The number of particles included */
+  uint32_t particles_count;
+  /** The particles */
+  player_localize_particle_t *particles;
+} player_localize_get_particles_t;

@@ -1,0 +1,51 @@
+description { 
+* @brief Global positioning system
+
+The @p gps interface provides access to an absolute position system,
+such as GPS.
+}
+
+
+message { DATA, STATE, 1, player_gps_data_t };
+
+/** @brief Data: state (@ref PLAYER_GPS_DATA_STATE)
+
+The @p gps interface gives current global position and heading information.
+
+@todo: Review the units used here
+*/
+typedef struct player_gps_data
+{
+  /** GPS (UTC) time, in seconds and microseconds since the epoch. */
+  uint32_t time_sec;
+  /** GPS (UTC) time, in seconds and microseconds since the epoch. */
+  uint32_t time_usec;
+  /** Latitude in degrees / 1e7 (units are scaled such that the
+      effective resolution is roughly 1cm).  Positive is north of
+      equator, negative is south of equator. */
+  int32_t latitude;
+  /** Longitude in degrees / 1e7 (units are scaled such that the
+      effective resolution is roughly 1cm).  Positive is east of prime
+      meridian, negative is west of prime meridian. */
+  int32_t longitude;
+  /** Altitude, in millimeters.  Positive is above reference (e.g.,
+      sea-level), and negative is below. */
+  int32_t altitude;
+  /** UTM WGS84 coordinates, easting [m] */
+  double utm_e;
+  /** UTM WGS84 coordinates, northing [m] */
+  double utm_n;
+  /** Quality of fix 0 = invalid, 1 = GPS fix, 2 = DGPS fix */
+  uint32_t quality;
+  /** Number of satellites in view. */
+  uint32_t num_sats;
+  /** Horizontal dilution of position (HDOP), times 10 */
+  uint32_t hdop;
+  /** Vertical dilution of position (VDOP), times 10 */
+  uint32_t vdop;
+  /** Horizonal error [m] */
+  double err_horz;
+  /** Vertical error [m] */
+  double err_vert;
+} player_gps_data_t;
+

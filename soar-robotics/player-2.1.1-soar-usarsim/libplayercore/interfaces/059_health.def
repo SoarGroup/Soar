@@ -1,0 +1,41 @@
+description {
+ * @brief Statgrab - System Infos
+
+The HEALTH driver allows for a user to get general systems data concerning a
+specific robot. Allows a user to look at cpu and memory usage of the robot.
+}
+message { DATA, STATE, 1, player_health_data_t };
+
+/** @brief Structure describing the cpu */
+typedef struct player_health_cpu
+{
+    /** The idle cpu load                                                   */
+    float idle;
+    /** The system cpu load                                                 */
+    float system;
+    /** The user's cpu load               */
+    float user;
+} player_health_cpu_t;
+
+/** @brief Structure describing the memory */
+typedef struct player_health_memory
+{
+    /** Total memory                */
+    int64_t total;
+    /** Used memory                 */
+    int64_t used;
+    /** Free memory                 */
+    int64_t free;
+} player_health_memory_t;
+/** @brief Structure describing the HEALTH's data packet.                       */
+
+typedef struct player_health_data
+{
+    /** The current cpu usage             */
+    player_health_cpu_t cpu_usage;
+    /** The memory stats              */
+    player_health_memory_t mem;
+    /** The swap stats                */
+    player_health_memory_t swap;
+
+} player_health_data_t;

@@ -1,0 +1,113 @@
+description {
+ * @brief WiFi signal information
+
+The @p wifi interface provides access to the state of a wireless network
+interface.
+}
+
+/** Request/reply subtype: */
+message { REQ, MAC, 1, player_wifi_mac_req_t };
+/** Request/reply subtype: */
+message { REQ, IWSPY_ADD, 2, player_wifi_iwspy_addr_req_t };
+/** Request/reply subtype: */
+message { REQ, IWSPY_DEL, 3, player_wifi_iwspy_addr_req_t };
+/** Request/reply subtype: */
+message { REQ, IWSPY_PING, 4, player_wifi_iwspy_addr_req_t };
+
+/** Data subtype: state */
+message { DATA, STATE, 1, player_wifi_data_t };
+
+/** link quality is in dBm */
+#define PLAYER_WIFI_QUAL_DBM     1
+/** link quality is relative */
+#define PLAYER_WIFI_QUAL_REL     2
+/** link quality is unknown */
+#define PLAYER_WIFI_QUAL_UNKNOWN 3
+
+/** unknown operating mode */
+#define PLAYER_WIFI_MODE_UNKNOWN 0
+/** driver decides the mode */
+#define PLAYER_WIFI_MODE_AUTO    1
+/** ad hoc mode */
+#define PLAYER_WIFI_MODE_ADHOC   2
+/** infrastructure mode (multi cell network, roaming) */
+#define PLAYER_WIFI_MODE_INFRA   3
+/** access point, master mode */
+#define PLAYER_WIFI_MODE_MASTER  4
+/** repeater mode */
+#define PLAYER_WIFI_MODE_REPEAT  5
+/** secondary/backup repeater */
+#define PLAYER_WIFI_MODE_SECOND  6
+
+/** @brief Link information for one host.
+
+The @p wifi interface returns data regarding the signal characteristics
+of remote hosts as perceived through a wireless network interface; this
+is the format of the data for each host. */
+typedef struct player_wifi_link
+{
+  /** MAC address. */
+  uint32_t mac_count;
+  uint8_t mac[32];
+  /** IP address. */
+  uint32_t ip_count;
+  uint8_t ip[32];
+  /** ESSID. */
+  uint32_t essid_count;
+  uint8_t essid[32];
+  /** Mode (master, adhoc, etc). */
+  uint32_t mode;
+  /** Frequency [MHz]. */
+  uint32_t freq;
+  /** Encryted?. */
+  uint32_t encrypt;
+  /** Link quality */
+  uint32_t qual;
+  /** Link level */
+  uint32_t level;
+  /** Link noise */
+  uint32_t noise;
+} player_wifi_link_t;
+
+/** @brief Data: state (@ref PLAYER_WIFI_DATA_STATE)
+
+The complete data packet format. */
+typedef struct player_wifi_data
+{
+  /** length of said list */
+  uint32_t links_count;
+  /** A list of links */
+  player_wifi_link_t *links;
+  /** mysterious throughput calculated by driver */
+  uint32_t throughput;
+  /** current bitrate of device */
+  uint32_t bitrate;
+  /** operating mode of device */
+  uint32_t mode;
+  /** Indicates type of link quality info we have */
+  uint32_t qual_type;
+  /** Maximum value for quality */
+  uint32_t maxqual;
+  /** Maximum value for level */
+  uint32_t maxlevel;
+  /** Maximum value for noise. */
+  uint32_t maxnoise;
+  /** MAC address of current access point/cell */
+  char ap[32];
+} player_wifi_data_t;
+
+/** @brief Request/reply: */
+typedef struct player_wifi_mac_req
+{
+  /** MAC address. */
+  uint32_t mac_count;
+  uint8_t mac[32];
+} player_wifi_mac_req_t;
+
+/** @brief Request/reply: */
+typedef struct player_wifi_iwspy_addr_req
+{
+  /** Address ?? */
+  char      address[32];
+} player_wifi_iwspy_addr_req_t;
+

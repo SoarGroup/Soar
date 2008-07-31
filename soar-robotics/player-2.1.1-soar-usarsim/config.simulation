@@ -1,0 +1,9 @@
+# Build only the simulation drivers (stage and gazebo) and those drivers that 
+# can be used in simulation.  Useful if you're not planning to work with 
+# real hardware.
+
+# Note that this script may be out of date, in that new drivers have been
+# added and will be built by default.  Try ./configure --help to get a list
+# of what --disable options are available.
+
+./configure --disable-sicklms200 --disable-acts --disable-cmvision --disable-festival --disable-sonyevid30 --disable-linuxwifi --disable-fixedtones --disable-acoustics --disable-mixer --disable-rwi --disable-isense --disable-rflex --disable-garminnmea --disable-laserbar --disable-laserbarcode --disable-laservisualbarcode --disable-waveaudio --disable-reb --disable-microstrain --disable-iwspy --disable-aodv --disable-segwayrmp --enable-vfh

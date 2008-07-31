@@ -1,0 +1,87 @@
+description {
+ * @brief Access maps
+
+The @p map interface provides access to maps.  Depending on the underlying
+driver, the map may be provided as an occupancy grid, or as a set of
+segments (or both).  In either case, the map is retrieved by request only.
+Segment (aka vector) maps are delivered in one message, whereas grid
+maps are delivered in tiles, via a sequence of requests.
+}
+
+
+/** Data subtype: grid map metadata */
+#define PLAYER_MAP_DATA_INFO               1
+message { DATA, INFO, 1, player_map_info_t };
+
+/** Request/reply subtype: get grid map metadata  */
+message { REQ, GET_INFO, 1, player_map_info_t };
+/** Request/reply subtype: get grid map tile  */
+message { REQ, GET_DATA, 2, player_map_data_t };
+/** Request/reply subtype: get vector map */
+message { REQ, GET_VECTOR, 3, player_map_data_vector_t };
+
+
+
+/** @brief Data AND Request/reply: Map information.
+
+To retrieve the size and scale information of a map, send a null
+@ref PLAYER_MAP_REQ_GET_INFO request. This message can also be sent as data,
+with the subtype @ref PLAYER_MAP_DATA_INFO, depending on the underlying
+driver. */
+typedef struct player_map_info
+{
+  /** The scale of the map [m/pixel]. */
+  float scale;
+  /** The size of the map [pixels]. */
+  uint32_t width;
+  /** The size of the map [pixels]. */
+  uint32_t height;
+  /** The origin of the map [m, m, rad]. That is, the real-world pose of
+   * cell (0,0) in the map */
+  player_pose2d_t origin;
+} player_map_info_t;
+
+/** @brief Request/reply: get grid map tile
+
+To request a grid map tile, send a @ref PLAYER_MAP_REQ_GET_DATA request with
+the tile origin and size you want.  Set data_count to 0 and leave the
+data field empty.  The response will contain origin, size, and occupancy
+data for a tile.  Note that the response tile may not be exactly the
+same as the tile you requested (e.g., your requested tile is too large
+or runs off the map). */
+typedef struct player_map_data
+{
+  /** The tile origin [pixels]. */
+  uint32_t col;
+  /** The tile origin [pixels]. */
+  uint32_t row;
+  /** The size of the tile [pixels]. */
+  uint32_t width;
+  /** The size of the tile [pixels]. */
+  uint32_t height;
+  /** The number of cells */
+  uint32_t data_count;
+  /** Cell occupancy value (empty = -1, unknown = 0, occupied = +1). */
+  int8_t *data;
+} player_map_data_t;
+
+/** @brief Request/reply: get vector map
+
+A vector map is represented as line segments.  To retrieve the vector map,
+send a null @ref PLAYER_MAP_REQ_GET_VECTOR request. */
+typedef struct player_map_data_vector
+{
+  /** The minimum and maximum coordinates of all the line segments [meters] */
+  float minx;
+  /** The minimum and maximum coordinates of all the line segments [meters] */
+  float maxx;
+  /** The minimum and maximum coordinates of all the line segments [meters] */
+  float miny;
+  /** The minimum and maximum coordinates of all the line segments [meters] */
+  float maxy;
+  /** The number of line segments  */
+  uint32_t segments_count;
+  /** Line segments */
+  player_segment_t *segments;
+} player_map_data_vector_t;
+

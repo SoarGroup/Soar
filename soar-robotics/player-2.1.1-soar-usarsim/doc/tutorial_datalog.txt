@@ -1,0 +1,37 @@
+/** @ingroup tutorials
+@defgroup tutorial_datalog Data logging
+@brief Logging sensor data to files and playing it back
+
+Two player drivers support data logging and playback: @ref driver_readlog
+and @ref driver_writelog.  See the docs for those drivers for details on
+usage.
+
+Player log files have a simple text format.  Messages are new-line
+separated, and any line beginning with a '#' is ignored.  Every message
+line starts with common meta-data:
+@code
+time host robot interface index type subtype
+@endcode
+
+The fields are:
+- time (double): Timestamp, in seconds, associated with the message
+- host (uint): The 'host' part of the device's Player address
+- robot (uint): The 'robot' part of the device's Player address
+- interface (string): The 'interf' part of the device's Player address
+  (written as a string)
+- index (string): The 'index' part of the device's Player address
+- type (uint): The type of the message
+- subtype (uint): The subtype of the message
+
+Following this common meta-data is the message payload, the format of which
+will depend on the interface, type, and subtype.  See the "Modules" section
+below for links to interface-specific message formats.
+
+By convention, configuration response messages such as geometry
+information are put at the beginning of the logfile.  The @ref
+driver_writelog driver will try to get geometry and log it at the
+beginning of the file, and the @ref driver_readlog driver will read
+in configuration response messages from the file until a data message
+is encountered.
+
+*/

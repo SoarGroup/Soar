@@ -1,0 +1,51 @@
+description { 
+@brief Camera imagery
+
+The camera interface is used to see what the camera sees.  It is
+intended primarily for server-side (i.e., driver-to-driver) data
+transfers, rather than server-to-client transfers.  Image data can be
+in may formats (see below), but is always packed (i.e., pixel rows are
+byte-aligned).
+}
+
+message { DATA, STATE, 1, player_camera_data_t };
+
+/** Image format : 8-bit monochrome. */
+#define PLAYER_CAMERA_FORMAT_MONO8  1
+/** Image format : 16-bit monochrome (network byte order). */
+#define PLAYER_CAMERA_FORMAT_MONO16 2
+/** Image format : 16-bit color (5 bits R, 6 bits G, 5 bits B). */
+#define PLAYER_CAMERA_FORMAT_RGB565 4
+/** Image format : 24-bit color (8 bits R, 8 bits G, 8 bits B). */
+#define PLAYER_CAMERA_FORMAT_RGB888 5
+
+/** Compression method: raw */
+#define PLAYER_CAMERA_COMPRESS_RAW  0
+/** Compression method: jpeg */
+#define PLAYER_CAMERA_COMPRESS_JPEG 1
+
+/** @brief Data: state (@ref PLAYER_CAMERA_DATA_STATE) */
+typedef struct player_camera_data
+{
+  /** Image dimensions [pixels]. */
+  uint32_t width;
+  /** Image dimensions [pixels]. */
+  uint32_t height;
+  /** Image bits-per-pixel (8, 16, 24, 32). */
+  uint32_t bpp;
+  /** Image format (must be compatible with depth). */
+  uint32_t format;
+  /** Some images (such as disparity maps) use scaled pixel values;
+      for these images, fdiv specifies the scale divisor (i.e., divide
+      the integer pixel value by fdiv to recover the real pixel value). */
+  uint32_t fdiv;
+  /** Image compression; @ref PLAYER_CAMERA_COMPRESS_RAW indicates no
+      compression. */
+  uint32_t compression;
+  /** Size of image data as stored in image buffer (bytes) */
+  uint32_t image_count;
+  /** Compressed image data (byte-aligned, row major order).
+      Multi-byte image formats (such as MONO16) must be converted
+      to network byte ordering. */
+  uint8_t *image;
+} player_camera_data_t;

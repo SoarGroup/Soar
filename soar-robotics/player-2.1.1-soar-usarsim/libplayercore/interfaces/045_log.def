@@ -1,0 +1,81 @@
+description {
+ * @brief Log read / write control
+
+The @p log interface provides start/stop control of data logging/playback.
+A log device either writes data from one or more devices to a file, or
+it reads logged data from a file and plays it back as if it were being
+produced live by one or more devices.
+}
+
+/** Request/reply subtype: set write state */
+message { REQ, SET_WRITE_STATE, 1, player_log_set_write_state_t };
+/** Request/reply subtype: set read state */
+message { REQ, SET_READ_STATE, 2, player_log_set_read_state_t };
+/** Request/reply subtype: get state */
+message { REQ, GET_STATE, 3, player_log_get_state_t };
+/** Request/reply subtype: rewind */
+message { REQ, SET_READ_REWIND, 4, player_log_set_read_rewind_t };
+/** Request/reply subtype: set filename to write */
+message { REQ, SET_FILENAME, 5, player_log_set_filename_t };
+
+
+/** Types of log device: read */
+#define  PLAYER_LOG_TYPE_READ       1
+/** Types of log device: write */
+#define  PLAYER_LOG_TYPE_WRITE      2
+
+
+/** @brief Request/reply: Set write state
+
+To start or stop data logging, send a @ref PLAYER_LOG_REQ_SET_WRITE_STATE request.
+ Null response. */
+typedef struct player_log_set_write_state
+{
+  /** State: FALSE=disabled, TRUE=enabled */
+  uint8_t state;
+} player_log_set_write_state_t;
+
+/** @brief Request/reply: Set playback state
+
+To start or stop data playback, send a @ref PLAYER_LOG_REQ_SET_READ_STATE
+request. Null response.*/
+typedef struct player_log_set_read_state
+{
+  /** State: FALSE=disabled, TRUE=enabled */
+  uint8_t state;
+} player_log_set_read_state_t;
+
+/** @brief Request/reply: Rewind playback
+
+To rewind log playback to beginning of logfile, send a
+@ref PLAYER_LOG_REQ_SET_READ_REWIND request.  Does not affect playback state
+(i.e., whether it is started or stopped.  Null response. */
+typedef struct player_log_set_read_rewind
+{
+} player_log_set_read_rewind_t;
+
+/** @brief Request/reply: Get state.
+
+To find out whether logging/playback is enabled or disabled, send a null
+@ref PLAYER_LOG_REQ_GET_STATE request. */
+typedef struct player_log_get_state
+{
+  /** The type of log device, either @ref PLAYER_LOG_TYPE_READ or
+      @ref PLAYER_LOG_TYPE_WRITE */
+  uint8_t type;
+  /** Logging/playback state: FALSE=disabled, TRUE=enabled */
+  uint8_t state;
+} player_log_get_state_t;
+
+/** @brief Request/reply: Set filename
+
+To set the name of the file to write to when logging, send a
+@ref PLAYER_LOG_REQ_SET_FILENAME request.  Null response. */
+typedef struct player_log_set_filename
+{
+  /** Length of filename */
+  uint32_t filename_count;
+  /** Filename; max 255 chars + terminating NULL */
+  char filename[256];
+} player_log_set_filename_t;
+

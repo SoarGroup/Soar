@@ -1,0 +1,171 @@
+/**
+@page start Quick start
+
+The most common way to use Player is to run the @ref util_player on your
+robot, then access your robot's devices with a <i>client</i> program.
+Here we give two example configurations: one for a physical robot and
+one for a simulated robot.
+- @ref realrobot
+- @ref simulatedrobot
+- @ref clientexamples
+- @ref writingclient
+
+@section realrobot Physical robot
+
+You need to write a Player configuration file, usually with the extension
+<b>.cfg</b>, that instantiates the driver(s) needed to control your robot
+and tell the driver(s) how to access relevant hardware.  The job of the
+configuration file is to map your physical devices to Player devices.
+
+Several example configuration files are installed (by default) in
+/usr/local/share/player/config.  It's best to start with one of these as a
+template.
+
+For example, if you have a Pioneer mobile robot with a SICK LMS200 laser
+range-finder attached, your .cfg file might look like this (if you have
+different hardware, check the @ref supported_hardware page to see what
+driver(s) you should use instead):
+@code
+driver
+(
+  name "p2os"
+  provides ["odometry:::position2d:0"]
+  port "/dev/ttyS0"
+)
+driver
+(
+  name "sicklms200"
+  provides ["laser:0"]
+  port "/dev/ttyS1"
+)
+@endcode
+
+This file instantiates the @ref driver_p2os driver to access the
+robot's motors.  This driver will talk to the robot over the serial
+port "/dev/ttyS0" and map its motors and encoders to the Player device
+"position2d:0".  This file also instantiates the @ref driver_sicklms200
+driver to access the SICK laser over the serial port "/dev/ttyS1" and
+present it as the Player device "laser:0".
+
+Assuming you named this file @b pioneer.cfg, you would run player like so
+(do this on the computer that is connected to the robot and laser; for the
+Pioneer this is probably the computer that is installed inside the robot):
+@code
+$ player pioneer.cfg
+
+* Part of the Player/Stage/Gazebo Project
+* [http://playerstage.sourceforge.net].
+* Copyright (C) 2000 - 2005 Brian Gerkey, Richard Vaughan, Andrew Howard,
+* Nate Koenig, and contributors. Released under the GNU General Public
+* License.
+* Player comes with ABSOLUTELY NO WARRANTY.  This is free software, and you
+* are welcome to redistribute it under certain conditions; see COPYING
+* for details.
+
+Listening on ports: 6665
+@endcode
+Now player is waiting to service client connections on port 6665.  Jump
+down to @ref clientexamples.
+
+@section simulatedrobot Simulated robot (in Stage)
+
+Using Player with Stage requires two configuration files: a Stage .world
+file and a Player .cfg file.  The .world file defines the simulated world,
+telling Stage what kind of sensors and actuators are to be simulated, which
+background image to load, etc.  The .cfg file then maps these simulated
+devices onto Player devices.
+
+Stage comes with a number of example .world and .cfg files.  They are
+installed (by default) in /usr/local/share/stage/worlds.  Try a simple one
+first:
+@code
+$ player /usr/local/share/stage/worlds/simple.cfg
+
+* Part of the Player/Stage/Gazebo Project
+* [http://playerstage.sourceforge.net].
+* Copyright (C) 2000 - 2005 Brian Gerkey, Richard Vaughan, Andrew Howard,
+* Nate Koenig, and contributors. Released under the GNU General Public
+* License.
+* Player comes with ABSOLUTELY NO WARRANTY.  This is free software, and you
+* are welcome to redistribute it under certain conditions; see COPYING
+* for details.
+
+trying to load /usr/local/lib/libstageplugin...
+success
+invoking player_driver_init()...
+ Stage driver plugin init
+
+ ** Stage plugin v2.0.0 **
+ * Part of the Player/Stage Project [http://playerstage.sourceforge.net]
+ * Copyright 2000-2005 Richard Vaughan, Andrew Howard, Brian Gerkey
+ * and contributors.
+ * Released under the GNU GPL.
+success
+  Stage driver creating 1 device
+    mapping 6665.31.0 => Simulated world [./simple.world][Include
+pioneer.inc][Include map.inc][Include sick.inc]name velocityvector state 0
+default 0
+name positionlines state 0 default 0
+name positiontext state 0 default 0
+name ranger_data state 1 default 1
+name ranger_cfg state 0 default 0
+name laserdata state 1 default 1
+name lasercfg state 0 default 0
+
+  Stage driver creating 2 devices
+    mapping 6665.4.0 => "robot1"
+    mapping 6665.6.0 => "robot1.laser:0"
+Listening on ports: 6665
+
+@endcode
+You should get the Stage window, with a single red robot.  Now player is
+awaiting a client connection.  Go on to @ref clientexamples.
+
+@section clientexamples Controlling your robot
+
+To visualize the robot's sensor data, try the graphical tool @ref
+util_playerv.  Just like any client program, you can run it either on
+the same machine where you're running the player server, or on any other
+machine that has network connectivity to it.
+
+Let's assume that the hostname of the computer running player (for
+the physical robot, it's the computer attached to the robot; for the
+simulated robot, it's the computer where you're running the simulation)
+is @b marvin, and that you want to run @ref util_playerv on your desktop
+machine.  Then you would do something like this:
+@code
+$ playerv -h marvin --position2d --laser
+@endcode
+You should get a window that shows you the robot (it's the box in the
+middle) with laser data (blue polyline).  The robot's front end points
+to the right in this window.
+
+To drive the robot around, choose the menu option
+Devices->position2d:0->Command.  A little crosshair will appear on the
+robot; click and drag it right and left to move the robot forward and
+backward (drag it up and down to turn left and right).
+
+Ok, so you can teleoperate the robot; how about autonomous control?
+De-select the Devices->position2d:0->Command option in the menu, so that
+@ref util_playerv will stop sending commands to the robot.  Then try
+the @b laserobstacleavoid program (it doesn't get installed; you can
+find it compiled where you built player, in examples/libplayerc++):
+@code
+$ laserobstacleavoid
+@endcode
+The robot should start wandering around, using the laser to avoid
+obstacles.  You should see the laser data changing in @ref
+util_playerv.  Ctrl-C to exit randomwalk, which will stop the robot.  
+Ctrl-C to exit player.
+
+@section writingclient Writing your own control program
+
+To do anything interesting with your robot, you need to write your
+client program.  Doing so is pretty straightforward, especially if you
+use of the existing @ref clientlibs.  These libraries handle all the socket
+and data-packing details and present you with an API that lets you easily
+get at the sensor data and send actuator commands.  Read through the
+documentation for the library that you choose, and start with example
+program as a template.
+
+*/

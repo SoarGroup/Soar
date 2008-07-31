@@ -1,0 +1,139 @@
+/****************************************************************************\
+ *  CameraUVC version 0.1a                                                  *
+ *  A Camera Plugin Driver for the Player/Stage robot server                *
+ *                                                                          *
+ *  Copyright (C) 2006 Raymond Sheh                                         *
+ *  rsheh at cse dot unsw dot edu dot au     http://rsheh.cse.unsw.edu.au/  *
+ *                                                                          *
+ *  A Player/Stage plugin driver for cameras compatible with the Linux      *
+ *  UVC camera driver (see http://linux-uvc.berlios.de/), such as the       *
+ *  Logitech QuickCam Pro 5000.                                             *
+ *                                                                          *
+ *                                                                          *
+ *  This program is free software; you can redistribute it and/or modify    *
+ *  it under the terms of the GNU General Public License as published by    *
+ *  the Free Software Foundation; either version 2 of the License, or       *
+ *  (at your option) any later version.                                     *
+ *                                                                          *
+ *  This program is distributed in the hope that it will be useful,         *
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of          *
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the           *
+ *  GNU General Public License for more details.                            *
+ *                                                                          *
+ *  You should have received a copy of the GNU General Public License       *
+ *  along with this program; if not, write to the Free Software             *
+ *  Foundation, Inc., 59 Temple Place, Suite 330, Boston,                   *
+ *  MA  02111-1307  USA                                                     *
+ *                                                                          *
+ *                                                                          *
+ *  Portions based on the Player/Stage Sample Plugin Driver                 *
+ *  Portions based on luvcview by Laurent Pinchart and Michel Xhaard        *
+\****************************************************************************/
+
+
+
+INTRODUCTION:
+-------------
+This is a camera plugin driver for the Player/Stage server, part of the 
+Player/Stage robot middleware suite (http://playerstage.sourceforge.net). 
+It has been tested with Player 1.6.5, it probably won't work with Player 2.x 
+without some modifications. 
+
+It should be compatible with any webcam that uses the Linux UVC (USB Video 
+Class) driver, available from http://linux-uvc.berlios.de/ but has only been 
+tested on a Logitech QuickCam Pro 5000 webcam using Subversion revision 24 of 
+the linux-uvc driver. 
+
+This driver provides a single compressed camera interface. Note that there 
+is no need to pass this through cameracompress - it's already in jpeg 
+format (and is flagged accordingly). 
+
+Note that this driver is VERY alpha - it seems to work reasonably well for 
+me although I haven't had the chance to stress test it yet. It will probably 
+do a reasonable job for you as well but there are NO GUARANTEES as to its 
+quality or functionality. USE AT YOUR OWN RISK!
+
+
+
+FILES:
+------
+This driver is distributed as the following 8 files: 
+cameraUVC.cc      The main driver source file
+LICENSE           A copy of the GNU GPL version 2
+Makefile          A makefile to build the driver
+README            This file
+utils.[c|h]       A set of utility functions by Laurent Pinchart 
+                  and Michel Xhaard
+v4l2uvc.[c|h]     Video grabbing functions by Laurent Pinchart and 
+                  Michel Xhaard
+
+
+INSTALLATION:
+-------------
+1: Visit http://linux-uvc.berlios.de/ and see if your device is compatible 
+   with the linux-uvc driver
+2: Download, compile and install the linux-uvc driver from the above webpage. 
+   Note that you'll need a recent kernel (tested on 2.6.15). 
+3: Download, configure, compile and install Player from 
+   http://playerstage.sourceforge.net with at least plugin driver support. 
+	 Note that this driver has only been tested with Player 1.6.5. It probably 
+	 won't work on anything earlier than 1.6.x and almost certainly won't work 
+	 with 2.x but you never know ... 
+4: Run make in this directory to generate the cameraUVC.so file. I've tested 
+   it with gcc 4.0 but there shouldn't be any major reason why it won't work 
+	 with a 2.x or 3.x compiler. 
+5: Add something like the following to your robot's cfg file:
+   	driver
+	 	(
+			name "cameraUVC"
+			plugin "./cameraUVC.so"
+			provides ["camera:0"]
+			port "/dev/video0"
+			size [320 240]
+			alwayson 1
+		)
+	- Replace "./cameraUVC.so" with the path to the .so file if your robot's 
+	  cfg file is somewhere else
+	- Replace "camera:0" with the Player camera number you want it to provide
+	- Replace "/dev/video0" with the video device of your camera
+	- Replace size with the size you want. Note that only [320 240] and 
+	  [640 480] have been tested and there is NO error checking yet if this 
+		is invalid
+	- Do NOT remove "alwayson 1", it holds the driver open (it doesn't like 
+	  being shut down and restarted each time a client connects) 
+6: Start playing with your camera!
+
+
+
+NOTES: 
+------
+- No error checking is performed if the sized you provide is invalid! Make sure 
+  it's something standard such as [320 240] or [640 480]
+- All Player config requests get ignored at the moment
+- For some reason the driver doesn't like being stopped and restarted without 
+  the Player server restarting so if you leave out the "alwayson 1" in the 
+	config file, if a client disconnects then reconnects the capture driver 
+	crashes with a "Device or resource busy" message ... not sure why 
+	(but the old camerav4l also used to do that so I'm not sure if it's 
+	something to do with how v4l/v4l2 works ...). Note that if you don't 
+	have "alwayson 1" and the driver dies, restarting the Player server 
+	also fixes the problem. 
+
+
+
+TODO:
+-----
+- Add error checking to trap cases where the specified size is incorrect.
+- The camera provides JPEG images down the USB port, the driver decodes them 
+  to raw frames but then doesn't use them (because we use the JPEGs directly). 
+	Disabling the decode (might just be as simple as changing a driver mode?) 
+	should save a few CPU cycles. 
+- Do something intelligent with Player config requests? 
+- Make error messages more meaningful.
+- Figure out why restarting the driver doesn't work. 
+
+
+
+HISTORY:
+--------
+2006-03-22: Version 0.1a, first release

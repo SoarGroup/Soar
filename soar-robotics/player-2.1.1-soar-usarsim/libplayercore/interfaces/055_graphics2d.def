@@ -1,0 +1,64 @@
+description { 
+* @brief Two-dimensional graphics interface
+
+The @p graphics2d interface provides an interface to graphics
+devices. Drivers can implement this interface to provide clients and
+other drivers with graphics output. For example, Stage models present
+this interface to allow clients to draw in the Stage window.
+}
+
+/** Command subtype: clear the drawing area (send an empty message) */
+message { CMD, CLEAR, 1, player_null_t };
+/** Command subtype: draw points */
+message { CMD, POINTS, 2, player_graphics2d_cmd_points_t };
+/** Command subtype: draw a polyline */
+message { CMD, POLYLINE, 3, player_graphics2d_cmd_polyline_t };
+/** Command subtype: draw a polygon */
+message { CMD, POLYGON, 4, player_graphics2d_cmd_polygon_t };
+
+/** @brief Data: This interface produces no data. */
+
+/** @brief Requests: This interface accepts no requests. */
+
+/** @brief Command: Draw points (@ref PLAYER_GRAPHICS2D_CMD_POINTS)
+Draw some points.
+*/
+typedef struct player_graphics2d_cmd_points
+{
+  /** Number of points in this packet. */
+  uint32_t points_count;
+  /** Array of points. */
+  player_point_2d_t *points;
+  /** Color in which the points should be drawn. */
+  player_color_t color;
+} player_graphics2d_cmd_points_t;
+
+/** @brief Command: Draw polyline (@ref PLAYER_GRAPHICS2D_CMD_POLYLINE)
+Draw a series of straight line segments between a set of points.
+*/
+typedef struct player_graphics2d_cmd_polyline
+{
+  /** Number of points in this packet. */
+  uint32_t points_count;
+  /** Array of points to be joined by lines. */
+  player_point_2d_t *points;
+  /** Color in which the line should be drawn. */
+  player_color_t color;
+} player_graphics2d_cmd_polyline_t;
+
+/** @brief Command: Draw polygon (@ref PLAYER_GRAPHICS2D_CMD_POLYGON)
+Draw a polygon.
+*/
+typedef struct player_graphics2d_cmd_polygon
+{
+  /** Number of points in this packet. */
+  uint32_t points_count;
+  /** array of points defining the polygon. */
+  player_point_2d_t *points;
+  /** Color in which the outline should be drawn. */
+  player_color_t color;
+  /** Color in which the polygon should be filled. */
+  player_color_t fill_color;
+  /** If non-zero, the polygon should be drawn filled, else empty. */
+  uint8_t filled;
+} player_graphics2d_cmd_polygon_t;

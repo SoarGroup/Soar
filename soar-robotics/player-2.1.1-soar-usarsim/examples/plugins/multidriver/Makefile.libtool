@@ -1,0 +1,20 @@
+#
+# An example of how to build a Player plugin with libtool
+#
+
+CXX = g++
+CXXLD = g++
+LIBTOOL = libtool
+PLAYER_CFLAGS = `pkg-config --cflags playercore`
+INSTALL_DIR = /tmp
+
+all: libmultidriver.la
+
+libmultidriver.la: multidriver.lo
+	$(LIBTOOL) --mode=link $(CXXLD) -rpath $(INSTALL_DIR) -module -export-dynamic -version-info 0:0:0 $< -o $@
+
+%.lo: %.cc
+	$(LIBTOOL) --mode=compile $(CXX) -c $(PLAYER_CFLAGS) $^
+
+clean:
+	rm -rf *.o *.lo *.la .libs  

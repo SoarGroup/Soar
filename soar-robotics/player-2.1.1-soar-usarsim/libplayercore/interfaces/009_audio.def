@@ -1,0 +1,297 @@
+description{
+@brief Interface to an audio system
+
+The @p audio interface is used to control sound hardware.
+
+The inteface provides four sets of functionality:
+ - raw wav playback and recording
+ - sample playback (and loading)
+ - sequencer support (tone playback and recording)
+ - mixer interface (control of sound levels)
+
+}
+
+/** Data subtype:    wav_rec_data, recorded data block
+
+data is a @ref player_audio_wav_t structure*/
+message { DATA, WAV_REC, 1, player_audio_wav_t };
+
+/** Data subtype:    seq_data, recorded sequence of notes
+
+data is a @ref player_audio_seq_t structure*/
+message { DATA, SEQ, 2, player_audio_seq_t };
+
+/** Data subtype:    mixer_channel_data, audio channel levels
+
+data is a @ref player_audio_mixer_channel_list_t structure*/
+message { DATA, MIXER_CHANNEL, 3, player_audio_mixer_channel_list_t };
+
+/** Data subtype:    state_data, driver state data (eg playing, stopped, ...)
+
+data is a @ref player_audio_state_t structure*/
+message { DATA, STATE, 4, player_audio_state_t };
+
+/** Command subtype: wav_play_cmd, play a raw data block, in structure player_audio_wav_t
+
+data is a @ref player_audio_wav_t structure*/
+message { CMD, WAV_PLAY, 1, player_audio_wav_t };
+/** Command subtype: wav_stream_rec_cmd, start/stop recording, data will be returned as data blocks
+
+data is a @ref player_bool_t */
+message { CMD, WAV_STREAM_REC, 2, player_bool_t };
+
+/** Command subtype: sample_play_cmd, play a pre stored audio sample
+
+data is a @ref player_audio_sample_item_t structure*/
+message { CMD, SAMPLE_PLAY, 3, player_audio_sample_item_t };
+
+/** Command subtype: seq_play_cmd, play a sequence of tones
+
+data is a @ref player_audio_seq_t structure*/
+message { CMD, SEQ_PLAY, 4, player_audio_seq_t };
+/** Command subtype: mixer_channel_cmd, audio channel levels
+
+data is a @ref player_audio_mixer_channel_list_t structure*/
+message { CMD, MIXER_CHANNEL, 5, player_audio_mixer_channel_list_t };
+
+/** Request subtype: wav_rec_req, record a fixed size data block, in structure player_audio_wav_t
+
+data is a @ref player_audio_wav_t structure*/
+message { REQ, WAV_REC, 1, player_audio_wav_t };
+
+/** Request subtype: sample_load_req, store a sample
+
+data is a @ref player_audio_sample_t structure*/
+message { REQ, SAMPLE_LOAD, 2, player_audio_sample_t };
+/** Request subtype: sample_retrieve_req, retrieve a stored sample
+
+data is a @ref player_audio_sample_t structure*/
+message { REQ, SAMPLE_RETRIEVE, 3, player_audio_sample_t };
+/** Request subtype: sample_rec_req, record a new sample
+
+data is a @ref player_audio_sample_item_t structure*/
+message { REQ, SAMPLE_REC, 4, player_audio_sample_item_t };
+/** Request subtype: mixer_channel_list_req, request the list of channels
+
+data is a @ref player_audio_mixer_channel_list_detail_t structure*/
+message { REQ, MIXER_CHANNEL_LIST, 5, player_audio_mixer_channel_list_detail_t };
+/** Request subtype: mixer_channel_level_req, request the channel levels
+
+data is a @ref player_audio_mixer_channel_list_t structure*/
+message { REQ, MIXER_CHANNEL_LEVEL, 6, player_audio_mixer_channel_list_t };
+
+/** Driver states */
+
+#define PLAYER_AUDIO_STATE_STOPPED            0x00
+#define PLAYER_AUDIO_STATE_PLAYING            0x01
+#define PLAYER_AUDIO_STATE_RECORDING          0x02
+
+/** Audio formats */
+
+/** Raw Audio bit flags */
+#define PLAYER_AUDIO_DESCRIPTION_BITS         0xFF
+#define PLAYER_AUDIO_BITS                     0x03
+/** 8 bit */
+#define PLAYER_AUDIO_8BIT                     0
+/** 16 bit */
+#define PLAYER_AUDIO_16BIT                    1
+/** 24 bit */
+#define PLAYER_AUDIO_24BIT                    2
+/** Mono */
+#define PLAYER_AUDIO_MONO                     0
+/** Stereo */
+#define PLAYER_AUDIO_STEREO                   4
+/** Frequency */
+#define PLAYER_AUDIO_FREQ                     0x18
+#define PLAYER_AUDIO_FREQ_44k                 0
+#define PLAYER_AUDIO_FREQ_11k                 8
+#define PLAYER_AUDIO_FREQ_22k                 16
+#define PLAYER_AUDIO_FREQ_48k                 24
+
+/** AUDIO format */
+#define PLAYER_AUDIO_FORMAT_BITS              0xFF00
+
+#define PLAYER_AUDIO_FORMAT_NULL              0x0000
+#define PLAYER_AUDIO_FORMAT_RAW               0x0100
+#define PLAYER_AUDIO_FORMAT_MP3               0x0200
+#define PLAYER_AUDIO_FORMAT_OGG               0x0300
+#define PLAYER_AUDIO_FORMAT_FLAC              0x0400
+#define PLAYER_AUDIO_FORMAT_AAC               0x0500
+
+
+
+/** @brief Data: Raw audio data
+
+This data is used in the PLAYER_AUDIO_CMD_WAV_PLAY, and returned as
+PLAYER_AUDIO_DATA_WAV_REC when stream recording is enabled
+*/
+typedef struct player_audio_wav
+{
+  /** length of raw data */
+  uint32_t data_count;
+  /** raw data */
+  uint8_t *data;
+  /** Raw data format */
+  uint32_t format;
+} player_audio_wav_t;
+
+
+/** @brief Player audio sequence item
+
+This describes a single sequence element, the link field is used for chord type
+playback when a series of notes are to be played together. Set link to true
+for all but the last notes to be player together.
+
+*/
+typedef struct player_audio_seq_item
+{
+  /** Frequency of the note [Hz]*/
+  float freq;
+  /** duration [s]*/
+  float duration;
+  /** amplitude */
+  float amplitude;
+  /** link to next note, true to play both ntoes together (or if both were recieved together) */
+  player_bool_t link;
+} player_audio_seq_item_t;
+
+
+/** @brief Player audio sequence
+
+Describes a sequence of notes to be played or which have been recieved
+
+*/
+typedef struct player_audio_seq
+{
+  /** number of tones in list */
+  uint32_t tones_count;
+  /** the tones*/
+  player_audio_seq_item_t *tones;
+} player_audio_seq_t;
+
+
+/** @brief Player mixer channel
+
+Describes the state of a mixer channel
+
+*/
+typedef struct player_audio_mixer_channel
+{
+  /** level (normalised 0 to 1) */
+  float amplitude;
+  /** active (set to false to mute channel) */
+  player_bool_t active;
+  /** channel index */
+  uint32_t index;
+} player_audio_mixer_channel_t;
+
+
+
+/** @brief Player mixer channels
+
+Describes the state of a set of mixer channels
+
+*/
+typedef struct player_audio_mixer_channel_list
+{
+  /** number of channels in list */
+  uint32_t channels_count;
+  /** the channels*/
+  player_audio_mixer_channel_t *channels;
+} player_audio_mixer_channel_list_t;
+
+
+
+/** Input audio channel */
+#define PLAYER_AUDIO_MIXER_CHANNEL_TYPE_INPUT 1
+/** Output audio channel */
+#define PLAYER_AUDIO_MIXER_CHANNEL_TYPE_OUTPUT 2
+/** Special audio channel */
+#define PLAYER_AUDIO_MIXER_CHANNEL_TYPE_SPECIAL 4
+
+/** @brief Player mixer channel detail
+
+Describes the state of a mixer channel
+
+*/
+typedef struct player_audio_mixer_channel_detail
+{
+  /** name length */
+  uint32_t name_count;
+  /** Descriptive channel name */
+  char *name;
+  /** Channel type (input, output or special)*/
+  uint8_t caps;
+} player_audio_mixer_channel_detail_t;
+
+
+
+/** @brief Player mixer channels
+
+Describes the state of a set of mixer channels details
+
+*/
+typedef struct player_audio_mixer_channel_list_detail
+{
+  /** number of tones in list */
+  uint32_t details_count;
+  /** the tones*/
+  player_audio_mixer_channel_detail_t *details;
+  /** default output channel (-1 for none) */
+  int32_t default_output;
+  /** default input channel (-1 for none) */
+  int32_t default_input;
+} player_audio_mixer_channel_list_detail_t;
+
+
+
+/** @brief Player audio sample
+
+Describes an audio sample, if the index is set to -1 the next available slot is used
+and the index is returned in the response.
+
+*/
+typedef struct player_audio_sample
+{
+  /** the audio sample data */
+  player_audio_wav_t sample;
+  /** index to store it at or retrieve from (-1 for next available where valid) */
+  int32_t index;
+} player_audio_sample_t;
+
+/** @brief Player audio sample selection
+
+Describes a pre-stored audio sample index
+
+*/
+typedef struct player_audio_sample_item
+{
+  /** index of the sample */
+  int32_t index;
+} player_audio_sample_item_t;
+
+/** @brief Player audio sample record request
+
+Request to record a sample and store it locally.
+
+*/
+typedef struct player_audio_sample_rec_req
+{
+  /** Index to store at (-1 for next available). Ack will contain actual index
+  stored at. */
+  int32_t index;
+  /** Length of sample to record in ms. */
+  uint32_t length;
+} player_audio_sample_rec_req_t;
+
+/** @brief Player audio driver state
+
+Describes the current state of the audio driver. Usually only sent when state
+changes.
+
+*/
+typedef struct player_audio_state
+{
+  /** The state of the driver: will be a bitmask of PLAYER_AUDIO_STATE_* values */
+  uint32_t state;
+} player_audio_state_t;

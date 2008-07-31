@@ -1,0 +1,188 @@
+/** @page configfile Configuration files
+
+Whenever you run Player, you supply a configuration file as the last
+argument.  This file, which usually has a @p .cfg
+extension, instantiates drivers and attaches them to indexed interfaces,
+through which client programs can access them.  The purpose of the
+configuration file is to map physical or simulated devices to logical 
+Player devices.  
+
+For example, the following configuration file maps a physical SICK
+laser range-finder, connected to @p /dev/ttyS0 , to the Player device
+@p laser:0
+@verbatim
+driver
+(
+  name "sicklms200"
+  provides ["laser:0"]
+  port "/dev/ttyS0"
+)
+@endverbatim
+Client programs can subscribe to @p laser:0 and receive scans from the
+SICK.  For example, if you run player with this configuration file and 
+then start @ref player_util_playerv like so:
+@verbatim
+$ playerv --laser
+@endverbatim
+then you will see the laser scan visualized in a GUI.
+
+You can do the same thing with simulated devices in Gazebo:
+@verbatim
+driver
+(
+  name "gz_laser"
+  provides ["laser:0"]
+  gz_id "mylaser"
+)
+@endverbatim
+In this case, the simulated laser identified within Gazebo as "mylaser" is
+mapped to @p laser:0 , and can be accessed by client programs in the same
+way as the physical laser referenced above.
+
+@par Syntax
+
+Configuration files are composed of sections, each of which instantiates
+one driver.  Within each section, a set of keyword-value options
+determines which interface(s) the driver supports and supplies
+driver-specific configuration.
+
+The following keywords are special, in that they can be applied to any
+driver (see the documentation for each driver to find out what other
+options are supported):
+  - name (string)
+    - Default: none
+    - The name of the driver to instantiate; you must supply this option.
+  - provides (string tuple)
+    - Default: none
+    - The device(s) to be supported; you must supply this option.
+  - requires (string tuple)
+    - Default: [] (i.e., no required devices)
+    - The device(s) on which this driver depends (i.e., those devices
+      that the driver will read from or write to).
+  - plugin (string)
+    - Default none
+    - Use this option to specify the filename of a plugin driver (see @ref
+      plugin_driver) to load.  This file should be a shared object (aka
+      dynamic library) that implements the driver.
+  - alwayson (integer)
+    - Default: 0
+    - If nonzero, then the driver is started when Player starts, rather
+      than waiting for a client to connect.  This option is useful in
+      several settings:
+        - Testing a driver; debugging is faster when you don't have to
+          run a client program to start your driver
+        - When a driver takes a long to time to start, you may want to
+          incur this delay when Player starts, rather than when the first
+          client connects.
+        - When using the @ref player_driver_readlog or @ref
+          player_driver_writelog drivers, you may want to start logging or
+          playback when Player starts.
+
+Each string in the @p provides and @p requires tuples is a fully-qualified
+device id, with the following form
+
+  - @p key:port:interface:index (string:integer:string:integer)
+
+The @p interface and @p index fields are mandatory.
+
+The @p key and @p port fields are optional; if omitted, the @p key is
+taken to be NULL and the @p port is taken to be the primary port on
+which Player is listening (by default 6665, unless overridden by the -p
+argument on the command line).  
+
+For example, the following file instantiates two drivers.   The @ref
+player_driver_rflex driver, which controls a mobile robot, is
+mapped to two interfaces, one corresponding to the robot's wheels
+and the other corresponding to the robot's bumper array.  The @ref
+player_driver_sicklms200 driver, which provides access to a SICK laser
+range-finder, is mapped to a single interface.
+
+@verbatim
+driver
+(
+  name "rflex"
+  provides ["position:0" "bumper:0"]
+)
+driver
+(
+  name "sicklms200"
+  provides ["laser:0"]
+)
+@endverbatim
+
+A driver may support more than one interface of the same type.  In this
+case, the @p key field is used to distinguish among them.  For example,
+the @ref player_driver_p2os driver supports three different @ref
+player_interface_position2d interfaces: odometry, compass, and gyro.
+The following file instantiates this drivers and maps all three of its
+@ref player_interface_position2d interfaces, as well some others:
+
+@verbatim
+driver
+(
+  name "p2os"
+  provides ["odometry::position2d:0" 
+            "compass::position2d:1" 
+            "gyro::position2d:2"
+            "bumper:0"
+            "sonar:0"]
+)
+@endverbatim
+
+The @p requires keyword is used when one driver depends on another.  For
+example, the following file instantiates the @ref player_driver_camera1394
+driver, which reads images from a firewire camera, and the @ref
+player_driver_cameracompress driver, which takes such images and compresses
+them:
+
+@verbatim
+driver
+(
+  name "camera1394"
+  provides ["camera:0"]
+)
+driver
+(
+  name "cameracompress"
+  provides ["camera:1"]
+  requires ["camera:0"]
+)
+@endverbatim
+Raw images are available via @p camera:0 and compressed images are
+available via @p camera:1.
+
+@par Types
+
+The value of each keyword-value option has one of the following types:
+  - integer : an integer
+  - float : a floating point number
+  - string : a string enclosed in double-quotes
+  - length : a unit-sensitive floating point value
+  - angle : a unit-sensitive floating point value
+  - filename : a filename enclosed in double-quotes, which is considered
+               to be a path relative to the location of the configuration
+               file
+  - color : a color specification
+
+There can also be tuples of each of these types, enclosed in brackets.
+Tuples can be heterogeneous; i.e., not all elements in a single tuple
+need be the same type.
+
+The interpretation of length and angle values depends on the units in use.
+By default, lengths are specified in meters and angles in degrees.
+
+The length unit can be changed to centimeters (or millimeters) like so:
+@verbatim
+unit_length "cm"
+@endverbatim
+
+The angle unit can be changed to radians like so:
+@verbatim
+unit_angle "radians"
+@endverbatim
+
+These statements are made outside of any driver section, and are sticky.
+
+*/
+
+

@@ -1,0 +1,133 @@
+/**
+@page install Installation
+
+\section stdinstall Standard install procedure
+
+<p>To install Player in the default location (/usr/local), follow these steps:
+
+<ol>
+
+<li>Download the latest Player source tarball (player-\<version\>.tgz)
+from <a href="http://sourceforge.net/project/showfiles.php?group_id=42445">SourceForge</a>.
+
+<li>Uncompress and expand the tarball: <br>
+    <tt>$ tar xzvf player-\<version\>.tgz</tt>
+
+<li>`cd' into Player's source directory:<br>
+     <tt>$ cd player-\<version\></tt>
+
+<li>To configure Player with default settings:<br>
+<tt>$ ./configure</tt><br>
+
+<li>Compile Player:<br>
+<tt>$ make</tt>
+
+<li>Install Player. By default, Player will be installed in
+/usr/local so you need to become root for this step. Remember
+to return to your normal user ID afterwards. <br>
+<tt>$ make install</tt><br>
+Executables (e.g., the @ref utils) are in /usr/local/bin,
+libraries (e.g., @ref libplayercore, @ref libplayerdrivers) are in
+/usr/local/lib, and so on.
+</ol>
+
+\subsection pkgconfiginstall pkg-config paths
+
+<p>
+The <b>pkg-config</b> meta-data files (they have the extension <b>.pc</b>)
+are installed by default to /usr/local/lib/pkgconfig.  On some systems
+(notably RedHat), this directory is not in the default search path for
+pkg-config.  You can check like so:
+</p>
+<p><tt>$ pkg-config --libs playercore</tt></p>
+<p>You should get something like (exact results vary by system):</p>
+<p><tt>-lplayercore -lltdl -lpthread -lplayererror</tt></p>
+<p>If instead you get this:</p>
+<p><tt>Package playercore was not found in the pkg-config search path.<br>
+Perhaps you should add the directory containing `playercore.pc'<br>
+to the PKG_CONFIG_PATH environment variable<br>
+No package 'playercore' found<br></tt></p>
+<p>then you need to add /usr/local/lib/pkgconfig to your PKG_CONFIG_PATH.
+E.g., in bash:</p>
+<p><tt>$ export PKG_CONFIG_PATH=/usr/local/lib/pkgconfig:$PKG_CONFIG_PATH</tt></p>
+<p>Otherwise you will <b>not</b> be able to compile programs that use any
+of Player's libraries.</p>
+
+\section custominstall Customized installations
+
+<p>Player follows the standard GNU autotools conventions for build and
+install options. To see a list of all the available configuration
+options, do this:
+
+<p><tt>./configure --help</tt>
+
+\subsection prefix The --prefix option
+<p>The most important option is <tt>--prefix</tt>, used
+to change the installation directory from the default (which varies
+from system to system, but is usually /usr/local).
+Prefixes must be absolute paths, i.e. a complete path starting with a '/'.
+
+<p>For example, you might want to install Player in your home directory
+because you don't have root access:
+<p><tt>$ ./configure --prefix=/home/gerkey/ps</tt><br>
+   <tt>$ make</tt><br>
+   <tt>$ make install</tt></p>
+<p>
+Now the executables are in /home/gerkey/ps/bin, the libraries are in
+/home/gerkey/ps/lib, and so on.
+</p>
+<p>
+@note You may have to change various environment variables if you
+install Player somewhere other than the default location.  Variables that
+may need modification include: PATH, LD_LIBRARY_PATH (or DYLD_LIBRARY_PATH
+on Mac OS X), and PKG_CONFIG_PATH.  More information on local installations
+can be found <a href="http://playerstage.sourceforge.net/index.php?src=faq#local">here</a>.
+</p>
+
+\subsection driveroptions Selecting which drivers to build
+
+<p>
+By default, all drivers that can be built on your system will be compiled
+and linked into @ref libplayerdrivers.  The <b>configure</b> script
+determines which drivers will be built by running tests against your system
+to see which prerequisites are satisfied.  You'll see output during these
+tests telling you what's going on.  A summary is printed by
+<b>configure</b> when it's done, telling you which drivers will not be
+built, and why.  You can check the file <b>config.log</b> for detailed
+information about which tests failed and why.
+</p>
+
+<p>
+You can override this default behavior by passing options to <b>configure</b>
+to disable the compilation of certain drivers.  For every driver
+<tt>foo</tt>, you can pass <tt>--disable-foo</tt> to <b>configure</b>.  For
+example, to prevent compilation of the @ref driver_sicklms200 driver:
+</p>
+<p><tt>$ ./configure --disable-sicklms200</tt></p>
+<p>
+You can also pass <tt>--enable-foo</tt> to enable a driver <tt>foo</tt>
+that has been disabled by default.  But keep in mind that such a driver is
+probably disabled for a reason; don't be surprised if it does not compile.
+And note that <tt>--enable-foo</tt> will <b>not</b> force compilation of a
+driver whose prerequisites have not been met.
+</p>
+<p>
+A special option is provided to disable <b>all</b> drivers:
+<tt>--disable-alldrivers</tt>.  This option is useful, for example, when
+building a small-footprint Player binary to run on an embedded system.  You
+can combine this option with any number of <tt>--enable-foo</tt> options to
+get just the drivers you want without having to enumerate the ones that you
+don't want.  For example, to build just the @ref driver_p2os and @ref
+driver_sicklms200 drivers:
+</p>
+<p><tt>$ ./configure --disable-alldrivers --enable-p2os
+--enable-sicklms200</tt></p>
+<p>
+The order of these options on the command line does not matter.  The
+<tt>--disable-alldrivers</tt> option, if present anywhere on the command
+line, is processed first.  Then any <tt>--enable-foo</tt> options are
+processed.
+</p>
+
+*/
+

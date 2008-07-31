@@ -1,0 +1,49 @@
+description {
+@brief An array of bumpers
+
+The @p bumper interface returns data from a bumper array.  This interface
+accepts no commands.
+}
+
+message { DATA, STATE, 1, player_bumper_data_t };
+message { DATA, GEOM, 2, player_bumper_geom_t };
+
+message { REQ, GET_GEOM, 1, player_bumper_geom_t };
+
+/** @brief Data: state (@ref PLAYER_BUMPER_DATA_GEOM)
+
+The @p bumper interface gives current bumper state*/
+typedef struct player_bumper_data
+{
+  /** the number of valid bumper readings */
+  uint32_t bumpers_count;
+  /** array of bumper values */
+  uint8_t *bumpers;
+} player_bumper_data_t;
+
+/** @brief The geometry of a single bumper */
+typedef struct player_bumper_define
+{
+  /** the local pose of a single bumper */
+  player_pose3d_t pose;
+  /** length of the sensor [m] */
+  float length;
+  /** radius of curvature [m] - zero for straight lines */
+  float radius;
+} player_bumper_define_t;
+
+/** @brief Data AND Request/reply: bumper geometry
+
+To query the geometry of a bumper array, send a null
+@ref PLAYER_BUMPER_GET_GEOM request.  The response will be in this form.  This
+message may also be sent as data with the subtype @ref PLAYER_BUMPER_DATA_GEOM
+(e.g., from a robot whose bumper can move with respect to its body)
+*/
+typedef struct player_bumper_geom
+{
+  /** The number of valid bumper definitions. */
+  uint32_t bumper_def_count;
+  /** geometry of each bumper */
+  player_bumper_define_t *bumper_def;
+} player_bumper_geom_t;
+

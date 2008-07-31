@@ -1,0 +1,42 @@
+/** @ingroup tutorials
+@defgroup tutorial_args Command line arguments
+@brief Parsing command-line arguments
+
+If you would like to pass command line arguments to your Player client
+programs you can use the getopt feature provided by unistd.h.
+
+\dontinclude args.h
+\skipline unistd
+
+You must supply a series of characters in optflags, which are the legitimate
+options to you program.  If the characher is followed by a colon (:) then
+that option requires an additional parameter.  These parameters are returned
+as const char* so you must use functions like atoi() or atof() if you would
+like numerical results.
+
+\skip parse_args
+\until end parse_args
+
+It is also often helpfull to include a short output function that explains
+the option parameters to your program.
+
+@verbatim
+USAGE:  myprogram [options]
+
+Where [options] can be:
+  -h <hostname>  : hostname to connect to (default: localhost)
+  -p <port>      : port where Player will listen (default: 6665)
+  -i <index>     : device index (default: 0)
+  -d <level>     : debug message level (0 = none -- 9 = all)
+  -u <rate>      : set server update rate to <rate> in Hz
+  -m <datamode>  : set server data delivery mode
+                      PLAYER_DATAMODE_PUSH = 1
+                      PLAYER_DATAMODE_PULL = 2
+@endverbatim
+
+\skip print_usage
+\until end print_usage
+
+For the complete code see examples/libplayerc++/args.h
+
+*/

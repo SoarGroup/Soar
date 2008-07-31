@@ -1,0 +1,20 @@
+To add a new interface create a new file in this directory.
+The file name should be <interface number>_<interface name>.def
+The interface number should be padded to three digits to aid sorting.
+New interfaces should use the next free interface code rather than 
+filling in gaps. This is to avoid confusion with old removed interfaces.
+
+In the file you should have:
+ * a description block that contains a description of the interface 
+   for the documentation
+ * a set of message blocks that define the interfaces messages
+   these are structured as 
+     message { TYPE, SUBTYPE, SUBTYPE_CODE, DATA_TYPE };
+ * the data types for your interface in standard C code
+
+The best bet is to have a look at some of the other interfaces and
+copy what they have done
+
+When modifying an interface try to avoid renumbering the subtype codes.
+If you remove a subtype just leave a gap, this will aid in version 
+compatibility.

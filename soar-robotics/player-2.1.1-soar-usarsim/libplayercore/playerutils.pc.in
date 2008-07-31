@@ -1,0 +1,12 @@
+# DO NOT edit playerutils.pc; edit playerutils.pc.in instead
+
+prefix=@prefix@
+
+# this gives access to the player header files for compiling plugins
+
+Name: playerutils
+Description: Player utilities library - part of the Player Project
+Version: @VERSION@
+Requires: 
+Libs: -L${prefix}/lib -lplayerutils
+Cflags: -I${prefix}/include/player-@PLAYER_MAJOR_VERSION@.@PLAYER_MINOR_VERSION@

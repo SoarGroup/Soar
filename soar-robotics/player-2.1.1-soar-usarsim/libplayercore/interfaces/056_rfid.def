@@ -1,0 +1,42 @@
+description {
+ * @brief RFID reader
+
+The RFID interface provides access to a RFID reader (driver implementations
+include RFID readers such as Skyetek M1 and Inside M300).
+}
+
+
+/** Data subtype */
+message { DATA, TAGS, 1, player_rfid_data_t };
+
+/** Request/reply: put the reader in sleep mode (0) or wake it up (1). */
+message { REQ, POWER, 1, player_null_t };
+/** Request/reply: read data from the RFID tag - to be implemented.    */
+message { REQ, READTAG, 2, player_null_t };
+/** Request/reply: write data to the RFID tag - to be implemented.     */
+message { REQ, WRITETAG, 3, player_null_t };
+/** Request/reply: lock data blocks of a RFID tag - to be implemented. */
+message { REQ, LOCKTAG, 4, player_null_t };
+
+
+/** @brief Structure describing a single RFID tag. */
+typedef struct player_rfid_tag
+{
+  /** Tag type. */
+  uint32_t type;
+  /** GUID count. */
+  uint32_t guid_count;
+  /** The Globally Unique IDentifier (GUID) of the tag. */
+  char *guid;
+} player_rfid_tag_t;
+
+/** @brief Data
+
+The RFID data packet.  */
+typedef struct player_rfid_data
+{
+  /** The number of RFID tags found. */
+  uint32_t tags_count;
+  /** The list of RFID tags. */
+  player_rfid_tag_t *tags;
+} player_rfid_data_t;

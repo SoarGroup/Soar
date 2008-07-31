@@ -1,0 +1,451 @@
+/**
+@page supported_hardware Supported devices
+
+<p>
+The following tables list the hardware and software systems that are
+supported by Player.
+</p>
+<p>
+These tables should generally be up to date with respect to the current
+code in CVS, and thus may be newer than the latest official release.  Also
+check the @ref drivers list.
+</p>
+<p>
+Please post additions and corrections to these tables to our 
+<a href="http://lists.sourceforge.net/lists/listinfo/playerstage-developers">
+developers' mailing list</a>.
+</p>
+<ul>
+<li><a href="#player_hardware_robots">Robots</a>
+<li><a href="#player_hardware_mischw">Miscellaneous hardware</a>
+<li><a href="#player_hardware_miscsw">Miscellaneous software</a>
+<li><a href="#player_hardware_alg">Algorithms</a>
+<li><a href="#player_hardware_sim">Simulators</a>
+</ul>
+<h4><a name="player_hardware_robots">Robots</a></h4>
+<table border=2>
+<tr>
+<td><b>Manufacturer</b></td>
+<td><b>Device(s)</b></td>
+<td><b>%Driver</b></td>
+</tr>
+
+<tr>
+<td><a href="http://www.acroname.com">Acroname</a></td>
+<td>Garcia</td>
+<td>@ref driver_garcia</td>
+</tr>
+
+<tr>
+<td><a href="http://www.botrics.com">Botrics</a></td>
+<td>Obot d100</td>
+<td>@ref driver_obot</td>
+</tr>
+
+<tr>
+<td><a href="http://www.evolution.com">Evolution Robotics</a></td>
+<td>ER1 and ERSDK robots</td>
+<td>@ref driver_er1</td>
+</tr>
+
+<tr>
+<td><a href="http://www.irobot.com">iRobot</a></td>
+<td><a href="http://www.irobot.com/sp.cfm?pageid=122">Roomba vaccuming 
+robot</a></td>
+<td>@ref driver_roomba</td>
+</tr>
+
+<tr>
+<td><a href="http://www.k-team.com">K-Team</a></td>
+<td>Robotics Extension Board (REB)</a> attached to Kameleon 376BC</a></td>
+<td>@ref driver_reb</td>
+</tr>
+
+<tr>
+<td><a href="http://www.k-team.com">K-Team</a></td>
+<td>Khephera</td>
+<td>@ref driver_khepera</td>
+</tr>
+
+<tr>
+<td><a href="http://www.mobilerobots.com">MobileRobots</a> (formerly
+ActivMedia)</td>
+<td>PSOS/P2OS/AROS-based robots (e.g., 
+<a href="http://www.activrobots.com/ROBOTS/p2dx.html">Pioneer</a>,
+<a href="http://www.activrobots.com/ROBOTS/amigobot.html">AmigoBot</a>) and 
+integrated accessories, including a 
+<a href="http://www-2.cs.cmu.edu/~cmucam">CMUcam</a> connected to the AUX
+port.</td>
+<td>@ref driver_p2os</td>
+</tr>
+
+<tr>
+<td>Nomadics</tr>
+<td>NOMAD200 (and possibly related) mobile robots</td>
+<td>@ref driver_nomad</td>
+</tr>
+
+<tr>
+<td><a href="http://www.irobot.com/rwi/default.asp">RWI/iRobot</a></td>
+<td>RFLEX-based robots (e.g., B21r, ATRV Jr) and 
+integrated accessories.</td>
+<td>@ref driver_rflex</td>
+</tr>
+
+<tr>
+<td><a href="http://www.segway.com">Segway</a></td>
+<td><a href="http://www.segway.com/products/rmp/">Robotic Mobility Platform 
+(RMP)</a>, a custom-modified version of the
+<a href="http://www.segway.com/segway/component_details.html"> Human
+Transport (HT)</a></td>
+<td>@ref driver_segwayrmp</td>
+</tr>
+
+<tr>
+<td><a href="http://www.grasp.upenn.edu">UPenn GRASP</a></td>
+<td>Clodbuster</td>
+<td>@ref driver_clodbuster</td>
+</tr>
+
+<tr>
+<td><a href="http://www.videredesign.com/robotics">Videre Design</a></td>
+<td>ERRATIC mobile robot platform</td>
+<td>@ref driver_erratic</td>
+</tr>
+
+<tr>
+<td><a href="http://www.whiteboxrobotics.com">White Box Robotics</a></td>
+<td><a href="http://www.whiteboxrobotics.com/2006/PCBOTs/914PC_BOT.htm">914 
+PC-BOT</a></td>
+<td>@ref driver_wbr914</td>
+</tr>
+
+</table>
+
+<h4><a name="player_hardware_mischw">Miscellaneous hardware</a></h4>
+<table border=2>
+<tr>
+<td><b>Manufacturer</b></td>
+<td><b>Device(s)</b></td>
+<td><b>%Driver</b></td>
+</tr>
+
+<tr>
+<td><a href="http://www.amtec-robotics.com/">Amtec</a></td>
+<td><a href="http://www.amtec-robotics.com/1275.html">PowerCube</a>
+pan-tilt unit</td>
+<td>@ref driver_amtecpowercube <br> @ref driver_amtecM5 </td>
+</tr>
+
+<tr>
+<td><a href="http://www.ascension-tech.com/">Ascension</a></td>
+<td><a href="http://www.ascension-tech.com/products/flockofbirds.php">Flock
+of Birds</a> position tracker</td>
+<td>@ref driver_flockofbirds</td>
+</tr>
+
+<tr>
+<td><a href="http://www.canon.com/">Canon</a></td>
+<td><a href="http://www.usa.canon.com/consumer/controller?act=ModelDetailAct&fcategoryid=158&modelid=7402">
+VC-C4</a> pan-tilt-zoom camera</td>
+<td>@ref driver_canonvcc4</td>
+</tr>
+
+<tr>
+<td><a href="http://www.xbow.com/">Crossbow</a></td>
+<td><a href="http://www.xbow.com/Products/productsdetails.aspx?sid=62">Mica2 / 
+Mica2DOT</a> mote sensor nodes</td>
+<td>@ref driver_mica2</td>
+</tr>
+
+<tr>
+<td><a href="http://www.dperception.com">DirectedPerception</a></td>
+<td><a href="http://www.dperception.com/products.html">
+PTU-D46</a> pan-tilt unit</td>
+<td>@ref driver_ptu46</td>
+</tr>
+
+<tr>
+<td><a href="http://www.garmin.com/">Garmin</a></td>
+<td><a href="http://www.garmin.com/products/geko201/">
+Geko 201</a> handheld GPS receiver (and most other NMEA-compliant GPS
+units)</td>
+<td>@ref driver_garminnmea</td>
+</tr>
+
+<tr>
+<td><a href="http://www.hokuyo-aut.jp/">Hokuyo</a></td>
+<td><a href="http://www.hokuyo-aut.jp/products/urg/urg.htm">URG</a> laser 
+range finder</td>
+<td>@ref driver_urglaser</td>
+</tr>
+
+<tr>
+<td><a href="http://www.insidecontactless.com/">Inside Contactless</a></td>
+<td><a href="http://www.insidecontactless.com/products/readers_couplers.php">M300/R300 2G</a> RFID reader (13.56MHz)</td>
+<td>@ref driver_insideM300</td>
+</tr>
+
+<tr>
+<td><a href="http://www.isense.com/">InterSense</a></td>
+<td><a href="http://www.isense.com/products/prec/ic2/index.htm">
+InertiaCube2</a> IMU</td>
+<td>@ref driver_inertiacube2</td>
+</tr>
+
+<tr>
+<td><a href="http://www.microstrain.com/">MicroStrain</a></td>
+<td><a href="http://www.microstrain.com/3DM-G.htm">
+3DM-G</a> IMU</td>
+<td>@ref driver_microstrain3dmg</td>
+</tr>
+
+<tr>
+<td><a href="http://www.logitech.com">Logitech</a></td>
+<td>QuickCam Sphere pan-tilt-zoom camera</td>
+<td>@ref driver_sphere</td>
+</tr>
+
+<tr>
+<td><a href="http://www.sickoptic.com">SICK</a></td>
+<td><a href="http://www.sickoptic.com/live/master/datasheet.asp?PN=1015850&FAM=Measurement">
+LMS 200</a> laser range-finder (and possibly other SICK lasers)</td>
+<td>@ref driver_sicklms200, @ref driver_sickpls, @ref driver_sicks3000,
+@ref driver_sicknav200</td>
+</tr>
+
+<tr>
+<td><a href="http://www.skyetek.com/">SkyeTek</a></td>
+<td><a href="http://www.skyetek.com/ProductsServices/Modules/SkyeModuleM1/tabid/82/Default.aspx">M1/M1-mini</a> RFID readers (13.56MHz)</td>
+<td>@ref driver_skyetekM1</td>
+</tr>
+
+<tr>
+<td><a href="http://www.sony.com">Sony</a></td>
+<td><a href="http://bssc.sel.sony.com/Professional/webapp/ModelInfo?m=10005&sm=0&p=2&sp=22&id=22716">
+EVID30</a> and 
+<a href="http://bssc.sel.sony.com/BroadcastandBusiness/DisplayModel?id=63134">EVID100</a>
+pan-tilt-zoom cameras</td>
+<td>@ref driver_sonyevid30</td>
+</tr>
+
+<tr>
+<td><a href="http://particle.teco.edu">TeCo</a></td>
+<td><a href="http://particle.teco.edu/software/bridge/index.html">Particle
+Router Core (XBridge)</a> sensor node</td>
+<td>@ref driver_rcore_xbridge</td>
+</tr>
+
+<tr>
+<td><a href="http://www.xsens.com">XSens</a></td>
+<td><a href="http://www.xsens.com/index.php?mainmenu=products&submenu=main">Mtx / Mti</a> inertial measurement unit</td>
+<td>@ref driver_xsensmt</td>
+</tr>
+
+<tr>
+<td>Various (licensed by <a href="http://www.cmu.edu">CMU</a>)</td>
+<td><a href="http://www.cs.cmu.edu/~cmucam2/">CMUcam2</a>
+pan-tilt blob-tracking camera</td>
+<td>@ref driver_cmucam2</td>
+</tr>
+
+
+<tr>
+<td>Various</td>
+<td>Generic Linux sound hardware. Performs Fast Fourier Transform on incoming 
+audio data and emits various tones.</td>
+<td>@ref driver_acoustics</td>
+</tr>
+
+<tr>
+<td>Various</td>
+<td>Generic Linux sound hardware. Provides access to mixer controls 
+(e.g., volume).</td>
+<td>@ref driver_mixer</td>
+</tr>
+
+<tr>
+<td>Various</td>
+<td>Generic Linux sound hardware.  Provides the ability to transmit and 
+receive raw audio signals.</td>
+<td>@ref driver_waveaudio</td>
+</tr>
+
+<tr>
+<td>Various</td>
+<td>Generic Linux wireless hardware. Provides access, via /proc, to info about 
+the wireless hardware (e.g., signal quality).</td>
+<td>@ref driver_linuxwifi</td>
+</tr>
+
+<tr>
+<td>Various</td>
+<td>Generic Linux wireless hardware.  Provides access, via iwspy, to info 
+about the wireless hardware (e.g., signal quality).</td>
+<td>@ref driver_iwspy</td>
+</tr>
+
+<tr>
+<td>Various</td>
+<td>IEEE1394 (aka Firewire) cameras</td>
+<td>@ref driver_camera1394</td>
+</tr>
+
+<tr>
+<td>Various</td>
+<td>Cameras supported by Video4Linux</td>
+<td>@ref driver_camerav4l</td>
+</tr>
+
+<tr>
+<td>Various</td>
+<td>Generic Linux joystick. Allows access to axis and button state.
+<td>@ref driver_linuxjoystick</td>
+</tr>
+
+</table>
+
+<h4><a name="player_hardware_miscsw">Miscellaneous software</a></h4>
+<table border=2>
+<tr>
+<td>Manufacturer</td>
+<td>Device(s)</td>
+<td>%Driver</td>
+</tr>
+
+<tr>
+<td><a href="http://www-2.cs.cmu.edu/~jbruce/">Jim Bruce</a></td>
+<td><a href="http://www-2.cs.cmu.edu/~jbruce/cmvision/">
+Color Machine Vision (CMVision)</a> blob-tracking software</td>
+<td>@ref driver_cmvision</td>
+</tr>
+
+<tr>
+<td><a href="http://www.mobilerobots.com">MobileRobots</a> (formerly
+ActivMedia); written by 
+<a href="http://www-users.cs.umn.edu/~rybski/">Paul Rybski</a></td>
+<td><a href="http://www.activrobots.com/SOFTWARE/index.html#acts">
+ActivMedia Color Tracking System (ACTS)</a> blob-tracking software</td>
+<td>@ref driver_acts</td>
+</tr>
+
+<tr>
+<td>MIT / LIRA-Lab</td>
+<td><a href="http://yarp0.sourceforge.net/">YARP</a>
+image capture</td>
+<td>@ref driver_yarp_image</td>
+</tr>
+
+<tr>
+<td><a href="http://www.cstr.ed.ac.uk/">The Centre for Speech 
+Technology Research, University of Edinburgh</a></td>
+<td><a href="http://www.cstr.ed.ac.uk/projects/festival/">
+Festival</a> speech-synthesis software</td>
+<td>@ref driver_festival</td>
+</tr>
+
+<tr>
+<td><a href="http://www.speech.cs.cmu.edu/">Speech at CMU</a></td>
+<td><a href="http://cmusphinx.sourceforge.net/html/cmusphinx.php">
+Sphinx2</a> speech-recognition software</td>
+<td>@ref driver_sphinx2</td>
+</tr>
+
+<tr>
+<td><a href="http://www.porchdogsoft.com">Porchdog Software</a></td>
+<td><a href="http://www.porchdogsoft.com/products/howl/">Howl</a> 
+Zeroconf networking library</td>
+<td>@ref driver_service_adv_mdns</td>
+</tr>
+</table>
+
+<h4><a name="player_hardware_alg">Algorithms</a></h4>
+<table border=2>
+<tr>
+<td>Algorithm(s)</td>
+<td>Description</td>
+<td>References</td>
+<td>%Driver</td>
+</tr>
+
+<tr>
+<td>Nearness Diagram (ND) Navigation</td>
+<td>goal-seeking obstacle-avoidance, especially suited for non-holonomic,
+non-circular robots in tight spaces</td>
+<td>Minguez & Montano (2004),
+<a href="http://webdiis.unizar.es/~jminguez/TRAND.pdf">Nearness Diagram
+Navigation (ND): Collision Avoidance in Troublesome Scenarios</a><br>
+Minguez, Osuna, & Montano (2004), 
+<a href="http://webdiis.unizar.es/~jminguez/810.pdf">A Divide and Conquer
+Strategy based on Situations to Achieve Reactive Collision Avoidance in
+Troublesome Scenarios</a>.</td>
+<td>@ref driver_nd</td>
+</tr>
+
+<tr>
+<td>configuration space</td>
+<td>Modulates raw laser data according to the robot's dimensions in order
+to represent the empty area in the robot's configuration space.</td>
+<td></td>
+<td>@ref driver_lasercspace</td>
+</tr>
+
+<tr>
+<td><a href="http://www-personal.engin.umich.edu/~johannb/vff&vfh.htm">
+Vector Field Histogram (VFH+)</a></td>
+<td>goal-seeking obstacle avoidance algorithm</td>
+<td>Ulrich & Borenstein (1998), 
+<a href="http://www-personal.engin.umich.edu/~johannb/Papers/paper73.pdf">"VFH+: Reliable Obstacle Avoidance for Fast Mobile Robots"</a></td>
+<td>@ref driver_vfh</td>
+</tr>
+
+<tr>
+<td>
+Adaptive Monte Carlo Localization (AMCL)</a></td>
+<td>Performs probabilistic localization for a planar mobile robot equipped
+with a map and appropriate sensors</td>
+<td>
+Fox (2001), <a href="http://www.cs.washington.edu/ai/Mobile_Robotics/abstracts/adaptive-sampling-nips-01.abstract.html">KLD-Sampling: Adaptive Particle Filters</a></td>
+<td>@ref driver_amcl</td>
+</tr>
+
+<tr>
+<td>Wavefront propagation planner</td>
+<td>
+Performs configuration-space path-planning for a planar robot via cell
+decomposition and wavefront propagation.
+</td>
+<td>
+Latombe (1991), 
+<a href="http://search.barnesandnoble.com/booksearch/isbnInquiry.asp?userid=2WIJN3PX4U&isbn=0792391292&itm=1">Robot Motion Planning</a></td>
+<td>@ref driver_wavefront</td>
+</tr>
+</table>
+
+<h4><a name="player_hardware_sim">Simulators</a></h4>
+<table border=2>
+<tr>
+<td>Manufacturer</td>
+<td>Name</td>
+<td>Description</td>
+<td>%Driver(s)</td>
+</tr>
+
+<tr>
+<td><a href="http://playerstage.sf.net">The Player/Stage/Gazebo project</a></td>
+<td><a href="http://playerstage.sf.net/index.php?src=gazebo">Gazebo</a></td>
+<td>A 3-dimensional multi-robot simulator</td>
+<td>gazebo</td>
+</tr>
+
+<tr>
+<td><a href="http://playerstage.sf.net">The Player/Stage/Gazebo project</a></td>
+<td><a href="http://playerstage.sf.net/index.php?src=stage">Stage</a></td>
+<td>A 2-dimensional multi-robot simulator</td>
+<td><a href="http://playerstage.sourceforge.net/doc/stage-2.0.0a/group__player.html">stage</a></td>
+</tr>
+
+
+</table>
+
+*/

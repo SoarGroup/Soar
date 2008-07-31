@@ -1,0 +1,10 @@
+Here's a very simple example of how to write a plugin that replaces\
+players built in log mechanisms
+
+To build this example, edit the Makefile according to where you've got
+Player installed and then type 'make'.
+
+To try it, run:
+
+  $ player log.cfg
+

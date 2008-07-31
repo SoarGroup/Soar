@@ -1,0 +1,12 @@
+# DO NOT edit playerdrivers.pc; edit playerdrivers.pc.in instead
+
+prefix=@prefix@
+
+# this gives access to the player header files for compiling plugins
+
+Name: playerdrivers
+Description: Player driver library - part of the Player/Stage Project
+Version: @VERSION@
+Requires: playercore
+Libs: -L${prefix}/lib -lplayerdrivers -lpthread
+Cflags: -I${prefix}/include/player-@PLAYER_MAJOR_VERSION@.@PLAYER_MINOR_VERSION@

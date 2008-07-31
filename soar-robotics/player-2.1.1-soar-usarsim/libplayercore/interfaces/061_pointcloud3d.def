@@ -1,0 +1,37 @@
+description {
+ * @brief A 3-D point cloud
+
+The @p pointcloud3d interface is used to transmit 3-D point cloud data
+(e.g., from a 3-D range sensor).
+}
+
+/** Data subtype: state */
+message { DATA, STATE, 1, player_pointcloud3d_data_t };
+
+/** @brief 3D Pointcloud element structure
+ * An element as stored in a 3D pointcloud, containing a 3D position
+ * plus other corresponding information. */
+typedef struct player_pointcloud3d_element
+{
+  player_point_3d_t point;
+  player_color_t color;
+  /** Add other data here as necessary */
+  /** Storage area for generic user data (temperature,
+   *  intensity, polygon association, flags, etc.)
+   *  Probably best left until when variable sized
+   *  structures are fully implemented so we
+   *  don't unnecessarily allocate huge
+   *  amounts of data per point */
+  //uint32_t data_count;
+  //uchar data;
+} player_pointcloud3d_element_t;
+
+/** @brief Data: Get cloud (@ref
+  PLAYER_POINTCLOUD3D_DATA_STATE)
+  The basic 3dcloudpoint data packet.  */
+typedef struct player_pointcloud3d_data
+{
+  uint32_t points_count;
+  player_pointcloud3d_element_t *points;
+} player_pointcloud3d_data_t;
+

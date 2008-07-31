@@ -1,0 +1,241 @@
+description {
+@brief An array of actuators
+
+The actuator array interface provides access to an array of actuators.
+}
+
+message { REQ, POWER, 1, player_actarray_power_config_t };
+message { REQ, BRAKES, 2, player_actarray_brakes_config_t };
+message { REQ, GET_GEOM, 3, player_actarray_geom_t };
+message { REQ, SPEED, 4, player_actarray_speed_config_t };
+message { REQ, ACCEL, 5, player_actarray_accel_config_t };
+
+message { CMD, POS, 1, player_actarray_position_cmd_t };
+message { CMD, MULTI_POS, 2, player_actarray_multi_position_cmd_t };
+message { CMD, SPEED, 3, player_actarray_speed_cmd_t };
+message { CMD, MULTI_SPEED, 4, player_actarray_multi_speed_cmd_t };
+message { CMD, HOME, 5, player_actarray_home_cmd_t };
+message { CMD, CURRENT, 6, player_actarray_current_cmd_t };
+message { CMD, MULTI_CURRENT, 7, player_actarray_multi_current_cmd_t };
+
+message { DATA, STATE, 1, player_actarray_data_t };
+
+
+/** Idle state code */
+#define PLAYER_ACTARRAY_ACTSTATE_IDLE     1
+/** Moving state code */
+#define PLAYER_ACTARRAY_ACTSTATE_MOVING   2
+/** Braked state code */
+#define PLAYER_ACTARRAY_ACTSTATE_BRAKED   4
+/** Stalled state code */
+#define PLAYER_ACTARRAY_ACTSTATE_STALLED  8
+
+/** Linear type code */
+#define PLAYER_ACTARRAY_TYPE_LINEAR       1
+/** Rotary type code */
+#define PLAYER_ACTARRAY_TYPE_ROTARY       2
+
+
+/** @brief Structure containing a single actuator's information */
+typedef struct player_actarray_actuator
+{
+  /** The position of the actuator in m or rad depending on the type. */
+  float position;
+  /** The speed of the actuator in m/s or rad/s depending on the type. */
+  float speed;
+  /** The acceleration of the actuator in m/s^2 or rad/s^2 depending on the type. */
+  float acceleration;
+  /** The current of the actuator in A. */
+  float current;
+  /** The current state of the actuator. */
+  uint8_t state;
+} player_actarray_actuator_t;
+
+/** @brief Data: state (@ref PLAYER_ACTARRAY_DATA_STATE)
+
+The actuator array data packet. */
+typedef struct player_actarray_data
+{
+  /** The number of actuators in the array. */
+  uint32_t actuators_count;
+  /** The actuator data. */
+  player_actarray_actuator_t *actuators;
+  /** power state */
+  uint8_t motor_state;
+} player_actarray_data_t;
+
+/** @brief Actuator geometry */
+typedef struct player_actarray_actuatorgeom
+{
+  /** The type of the actuator - linear or rotary. */
+  uint8_t type;
+  /** The length of this actuator's link to the next actuator. For linear
+  actuators, this should be its length when at 0 position. */
+  float length;
+  /** The orientation of this actuator when it is in its rest position. When
+  combined with the length of the actuator's link, this will give the position
+  in space of the next actuator in the array in the coordinate space of this
+  actuator (i.e., it is the direction to the next actuator). */
+  player_orientation_3d_t orientation;
+  /** The axis of rotation for this actuator if it is rotary, or axis along
+  which it moves if it is linear. In both cases, it is a vector. */
+  player_point_3d_t axis;
+  /** The range of motion of the actuator, in m or rad depending on the type. */
+  float min;
+  /** The range of motion of the actuator, in m or rad depending on the type. */
+  float centre;
+  /** The range of motion of the actuator, in m or rad depending on the type. */
+  float max;
+  /** The range of motion of the actuator, in m or rad depending on the type. */
+  float home;
+  /** The configured speed setting of the actuator - different from current speed. */
+  float config_speed;
+  /** If the actuator has brakes or not. */
+  uint8_t hasbrakes;
+} player_actarray_actuatorgeom_t;
+
+/** @brief Request/reply: get geometry
+
+Send a null @ref PLAYER_ACTARRAY_REQ_GET_GEOM request to receive the geometry in
+this form. */
+typedef struct player_actarray_geom
+{
+  /** The number of actuators in the array. */
+  uint32_t actuators_count;
+  /** The geometry information for each actuator in the array. */
+  player_actarray_actuatorgeom_t *actuators;
+  /** The position of the base of the actarray. This should always be the
+  position of the first actuator in the array. */
+  player_point_3d_t base_pos;
+  /** The orientation of the base of the actarray. This is distinct from the
+  orientation of the first actuator in the array. */
+  player_orientation_3d_t base_orientation;
+} player_actarray_geom_t;
+
+
+/** @brief Command: Joint position control (@ref PLAYER_ACTARRAY_CMD_POS)
+
+Tells a joint/actuator to attempt to move to a requested position. */
+typedef struct player_actarray_position_cmd
+{
+  /** The joint/actuator to command. */
+  int32_t joint;
+  /** The position to move to. */
+  float position;
+} player_actarray_position_cmd_t;
+
+/** @brief Command: Multiple Joint position control (@ref PLAYER_ACTARRAY_CMD_MULTI_POS)
+
+Tells all joints/actuators to attempt to move to the given positions. */
+typedef struct player_actarray_multi_position_cmd
+{
+  /** The number of actuators in the array. */
+  uint32_t positions_count;
+  /** The positions for each joint/actuator. */
+  float *positions;
+} player_actarray_multi_position_cmd_t;
+
+/** @brief Command: Joint speed control (@ref PLAYER_ACTARRAY_CMD_SPEED)
+
+Tells a joint/actuator to attempt to move with the given speed. */
+typedef struct player_actarray_speed_cmd
+{
+  /** The joint/actuator to command. */
+  int32_t joint;
+  /** The speed to move with. */
+  float speed;
+} player_actarray_speed_cmd_t;
+
+/** @brief Command: Multiple Joint speed control (@ref PLAYER_ACTARRAY_CMD_MULTI_SPEED)
+
+Tells all joints/actuators to attempt to move with the given velocities. */
+typedef struct player_actarray_multi_speed_cmd
+{
+  /** The number of actuators in the array. */
+  uint32_t speeds_count;
+  /** The speed to move with. */
+  float *speeds;
+} player_actarray_multi_speed_cmd_t;
+
+/** @brief Command: Joint home (@ref PLAYER_CMD_ACTARRAY_HOME)
+
+Tells a joint/actuator (or the whole array) to go to home position. */
+typedef struct player_actarray_home_cmd
+{
+  /** The joint/actuator to command - set to -1 to command all. */
+  int32_t joint;
+} player_actarray_home_cmd_t;
+
+/** @brief Command: Joint current control (@ref PLAYER_ACTARRAY_CMD_CURRENT)
+
+Tells a joint/actuator to attempt to move with the given current. */
+typedef struct player_actarray_current_cmd
+{
+  /** The joint/actuator to command - set to -1 to command all. */
+  int32_t joint;
+  /** The current to move with. */
+  float current;
+} player_actarray_current_cmd_t;
+
+/** @brief Command: Multiple Joint current control (@ref PLAYER_ACTARRAY_CMD_MULTI_CURRENT)
+
+Tells all joints/actuators to attempt to move with the given current. */
+typedef struct player_actarray_multi_current_cmd
+{
+  /** The number of actuators in the array. */
+  uint32_t currents_count;
+  /** The current for the motors of the whole array */
+  float *currents;
+} player_actarray_multi_current_cmd_t;
+
+
+
+
+/** @brief Request/reply: Power.
+
+Send a @ref PLAYER_ACTARRAY_REQ_POWER request to turn the power to all actuators
+in the array on or off. Be careful when turning power on that the array is
+not obstructed from its home position in case it moves to it (common
+behaviour). Null response. */
+typedef struct player_actarray_power_config
+{
+  /** Power setting; 0 for off, 1 for on. */
+  uint8_t value;
+} player_actarray_power_config_t;
+
+/** @brief Request/reply: Brakes.
+
+Send a @ref PLAYER_ACTARRAY_REQ_BRAKES request to turn the brakes of all
+actuators in the array (that have them) on or off. Null response.*/
+typedef struct player_actarray_brakes_config
+{
+  /** Brake setting; 0 for off, 1 for on. */
+  uint8_t value;
+} player_actarray_brakes_config_t;
+
+/** @brief Request/reply: Speed.
+
+Send a @ref PLAYER_ACTARRAY_REQ_SPEED request to set the speed of a joint for
+all subsequent movements. Null response. */
+typedef struct player_actarray_speed_config
+{
+  /** Joint to set speed for. */
+  int32_t joint;
+  /** Speed setting in m/s or rad/s. */
+  float speed;
+} player_actarray_speed_config_t;
+
+
+/** @brief Request/reply: Acceleration.
+
+Send a @ref PLAYER_ACTARRAY_REQ_ACCEL request to set the acceleration of a joint for
+all subsequent movements. Null response. */
+typedef struct player_actarray_accel_config
+{
+  /** Joint to set acceleration for. */
+  int32_t joint;
+  /** Acceleration setting in m/s^2 or rad/s^2. */
+  float accel;
+} player_actarray_accel_config_t;
+
+

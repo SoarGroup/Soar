@@ -1,0 +1,50 @@
+description { 
+* @brief Array of infrared rangers
+
+The @p ir interface provides access to an array of infrared (IR) range
+sensors.
+}
+
+/** Request/reply subtype: get pose */
+message { REQ, POSE, 1, player_ir_pose_t };
+/** Request/reply subtype: set power */
+message { REQ, POWER, 2, player_ir_power_req_t };
+
+/** Data subtype: ranges */
+message { DATA, RANGES, 1, player_ir_data_t };
+
+/** @brief Data: ranges (@ref PLAYER_IR_DATA_RANGES)
+
+The @p ir interface returns range readings from the IR array. */
+typedef struct player_ir_data
+{
+  /** number of samples */
+  uint32_t voltages_count;
+  /** voltages [V] */
+  float *voltages;
+  /** number of samples */
+  uint32_t ranges_count;
+  /** ranges [m] */
+  float *ranges;
+} player_ir_data_t;
+
+/** @brief Request/reply: get pose
+
+To query the pose of the IRs, send a null @ref PLAYER_IR_POSE request.*/
+typedef struct player_ir_pose
+{
+  /** the number of ir samples returned by this robot */
+  uint32_t poses_count;
+  /** the pose of each IR detector on this robot */
+  player_pose3d_t *poses;
+} player_ir_pose_t;
+
+/** @brief Request/reply: set power
+
+To turn IR power on and off, send a @ref PLAYER_IR_POWER request.
+Null response. */
+typedef struct player_ir_power_req
+{
+  /** FALSE for power off, TRUE for power on */
+  uint8_t state;
+} player_ir_power_req_t;

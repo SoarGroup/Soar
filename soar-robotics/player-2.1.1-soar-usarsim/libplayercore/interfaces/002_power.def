@@ -1,0 +1,62 @@
+description {
+ * @brief Power system
+
+The @p power interface provides access to a robot's power
+subsystem.
+}
+
+/** Data subtype: voltage */
+message { DATA, STATE, 1, player_power_data_t };
+
+/** Request subtype: set charging policy */
+message { REQ, SET_CHARGING_POLICY_REQ, 1, player_power_chargepolicy_config_t };
+
+/** bit masks for the  player_power_data_t mask field */
+#define PLAYER_POWER_MASK_VOLTS 1
+#define PLAYER_POWER_MASK_WATTS 2
+#define PLAYER_POWER_MASK_JOULES 4
+#define PLAYER_POWER_MASK_PERCENT 8
+#define PLAYER_POWER_MASK_CHARGING 16
+
+/** @brief Data: voltage (@ref PLAYER_POWER_DATA_STATE)
+
+The @p power interface returns data in this format. */
+typedef struct player_power_data
+{
+  /** Status bits. The driver will set the bits to indicate which fields
+      it is using. Bitwise-and with PLAYER_POWER_MASK_X values to see
+      which fields are being set.*/
+  uint32_t valid;
+
+  /** Battery voltage [V] */
+  float  volts;
+  /** Percent of full charge [%] */
+  float percent;
+  /** energy stored [J]. */
+  float joules;
+  /** estimated current energy consumption (negative values) or
+      aquisition (positive values) [W]. */
+  float watts;
+  /** charge exchange status: if 1, the device is currently receiving
+      charge from another energy device. If -1 the device is currently
+      providing charge to another energy device. If 0, the device is
+      not exchanging charge with an another device. */
+  int32_t charging;
+
+} player_power_data_t;
+
+
+/** @brief Request/reply: set charging policy
+ *
+ * Send a @ref PLAYER_ENERGY_SET_CHARGING_POLICY_REQ request to change the
+ * charging policy. */
+typedef struct player_power_chargepolicy_config
+{
+  /** uint8_tean controlling recharging. If FALSE, recharging is
+      disabled. Defaults to TRUE */
+  uint8_t enable_input;
+  /** uint8_tean controlling whether others can recharge from this
+      device. If FALSE, charging others is disabled. Defaults to TRUE.*/
+  uint8_t enable_output;
+} player_power_chargepolicy_config_t;
+

@@ -1,0 +1,199 @@
+/** @defgroup libplayerxdr libplayerxdr
+@{
+
+@section overview Overview
+
+When a player message is sent over a network, the message is formatted
+according to XDR (eXternal Data Representation), a standard for the
+description and encoding of data that is independent of the wordsize,
+byte-order or other details of any particular architecture.  XDR specifies
+a set of types (e.g., int, float, char) and encodings for them.  See
+the XDR RFC (http://www.faqs.org/rfcs/rfc1014.html) for details.
+
+libplayerxdr is a C library that provides functions for translating
+between player C message structs and their XDR representations.  Using
+other terminology, libplayerxdr is a marshalling/demarshalling library.
+By using libplayerxdr, application writers can avoid the inevitable bugs
+and annoyances of writing their own (de)marshalling code.  Furthermore,
+because libplayerxdr is automatically generated from player.h,
+the (de)marshalling code in libplayerxdr is less likely to get out of
+sync with respect to the message structures than is manually-maintained
+code.  The program that parses player.h can also be used to parse
+other header files, for example to generate XDR (de)marshalling code for
+user-defined messages.  See below for usage.
+
+@section libplayerxdr libplayerxdr
+
+Each player message is defined as a C @c struct in @ref player.h.
+For each @c struct @c player_foo, libplayerxdr defines a single
+function of the following name and form:
+@code
+   int player_foo_pack(void* buf, size_t buflen, player_foo_t* msg, int op);
+@endcode
+
+@param buf The XDR-encoded buffer that is being encoded / decoded.
+@param buflen Size of buf, in bytes.
+@param msg Pointer to the C struct that is being encoded / decoded.
+@param op Either PLAYERXDR_ENCODE or PLAYERXDR_DECODE
+
+@returns On success, the length of the XDR-encoded buffer, and -1
+         otherwise (e.g., the buffer was not large enough).
+
+This function will either pack (encode to XDR) or unpack (decode from
+XDR), depending on the last argument.  
+
+@subsection encoding Encoding a message
+
+When encoding a message, the caller is responsible for allocating enough
+space to @p buf to hold the XDR-encoded format of the message.  The
+XDR-encoded message will be, at most, 4 times larger than the original
+struct, so it is sufficient to allocate a buffer that is 4 times the @c
+sizeof of the struct.
+
+For example, if you have a message @p msg of type @c struct @c player_foo
+that you want to encode, you might do something like this:
+@code
+char* xdrbuf;
+int buflen;
+
+// Allocate space for the encoded message.  XDR will inflate a structure
+// by at most 4 times.
+buflen = sizeof(struct player_foo) * 4;
+xdrbuf = (char*)calloc(1, buflen);
+assert(xdrbuf);
+
+// Encode the message
+if((buflen = player_foo_pack(xdrbuf, buflen, &msg, PLAYERXDR_ENCODE)) < 0)
+{
+  // Packing failed, probably because you didn't allocate
+  // enough space to xdrbuf.
+}
+else
+{
+  // Packing succeeded; you might now, for example, write() xdrbuf onto a
+  // socket.  The actual length of the encoded buffer is buflen.
+}
+@endcode
+
+@subsection decoding Decoding a message
+
+If you have received from the network a message @p xdrbuf, of length @p buflen,
+and you know it to be of type @c player_foo, you can decode it like so:
+@code
+struct player_foo msg;
+
+// Decode the message
+if((buflen = player_foo_pack(xdrbuf, buflen, &msg, PLAYERXDR_DECODE)) < 0)
+{
+  // Unpacking failed, probably because the message wasn't long enough
+}
+else
+{
+  // Unpacking succeeded; you can now read the data from msg.
+}
+@endcode
+
+
+@subsection types Types
+
+The following primitive types are defined by XDR, and can be used in player
+messages.  For each XDR type, some corresponding C types are given, along
+with the size of the type when XDR-encoded.
+ - boolean; @c unsigned @c int; 4 bytes each
+ - character; @c char; 4 bytes each
+ - unsigned character; @c unsigned @c char; 4 bytes each
+ - 16-bit integer; @c short, @c int16_t; 4 bytes each
+ - 16-bit unsigned integer; @c unsigned @c short, @c uint16_t; 4 bytes each
+ - 32-bit integer; @c int, @c int32_t; 4 bytes each
+ - 32-bit unsigned integer; @c unsigned @c int, @c uint32_t; 4 bytes each
+ - 64-bit hyper integer; @c long, @c int64_t; 8 bytes each
+ - 64-bit unsigned hyper integer; @c unsigned @c long, @c uint64_t; 8 bytes each
+ - 32-bit floating point number; @c float; 4 bytes each
+ - 64-bit floating point number; @c double; 8 bytes each
+
+Nested structures are supported.  Each field, whether it is a structure or
+a primitive type, is encoded in the order that it is declared in the
+structure definition.
+
+Pointers are NOT supported.  To be XDR-encoded, a message structure must
+contain all its data.  An exception (of sorts) is the encoding of arrays,
+described next.
+
+@subsubsection arrays Arrays
+
+One-dimensional arrays are supported.  An array may contain either
+a primitive type, or a structure.  Multi-dimensional arrays are not
+supported.
+
+An array may either be fixed-length or variable-length.  To declare a
+variable-length array named @c bar, the message structure must also contain
+an unsigned integer (@c uint32_t) field named @c bar_count.  This field
+will contain the actual element count of the array when encoding and
+decoding.  If there is no @c bar_count field, then the array @c bar will be
+encoded fixed-length.  
+
+Before encoding a structure with a variable-length array, you @b must
+fill in the corresponding _count field; that's the only way for the
+packing function to know how much of the array you're actually using.
+
+In either case, the array must be declared in the message structure to
+occupy its maximum length.   For example, the @c player_bumper_data
+structure contains a variable-length array of bumper values that can hold
+at most 32 such values:
+@code
+#define PLAYER_BUMPER_MAX_SAMPLES ((uint8_t)32)
+typedef struct player_bumper_data
+{
+  uint32_t bumpers_count;
+  uint8_t bumpers[PLAYER_BUMPER_MAX_SAMPLES];
+} player_bumper_data_t;
+@endcode
+Three examples of fixed-length arrays can be seen in the @c
+player_fiducial_geom structure:
+@code
+typedef struct player_fiducial_geom
+{
+  float pose[3];
+  float size[2];  
+  float fiducial_size[2];
+} player_fiducial_geom_t;
+@endcode
+In this structure, each array will always be its maximum length, so there is
+nothing to be gained by allowing for them to vary.
+
+@subsection bytearrays Character arrays (strings)
+
+According to the XDR specification, arrays of characters (e.g., char
+foo[8]) should be encoded as a sequence of XDR-encoded characters, each
+occupying 4 bytes.  We use a small optimization here: arrays of the
+following types:
+- int8_t
+- uint8_t
+- char
+- unsigned char
+
+are encoded as opaque XDR "byte arrays", using xdr_bytes().  The encoding
+uses just one byte per character.
+
+@section parser Parsing user-defined messages
+
+The functions in libplayerxdr are automatically generated by a Python script
+that parses @ref player.h.  This script can also be used to parse a
+header containing user-defined messages.   The script, @c
+playerxdrgen.py, can be used like so:
+@code
+  parse.py foo.h foopack.c foopack.h
+@endcode
+This command will parse the header foo.h and define in foopack.c functions
+that (de)marshall all the structures found in foo.h.  Prototypes for these
+functions will be written into foopack.h.  You could then compile foopack.c
+into libfoopack.a; any application needing to encode or decode the messages
+defined in foo.h would include <foopack.h> and link to libfoopack.a.
+
+This usage of playerxdrgen.py is currently experimental.
+
+@todo Make the interface code/string table dynamic, so that new interfaces
+can be added at runtime
+@}
+*/
+

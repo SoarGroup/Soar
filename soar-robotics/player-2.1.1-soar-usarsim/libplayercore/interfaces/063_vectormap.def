@@ -1,0 +1,76 @@
+description {
+ * @brief Access and update geometric features in a map. EXPERIMENTAL
+
+Vectormap is an interface which provides access to geometric features in a map.
+A vectormap contains a set of layers, each of which can hold a set of features.
+
+This interface attempts to adhere to the OGC standard, an open standard for representing
+maps.
+
+///TODO: Add more documentation describing OGC standard.
+
+For more information about OGC see http://opengeospatial.org/
+For more information about GEOS see http://geos.refractions.net/ro/doxygen_docs/html/
+}
+
+/** Request/reply subtype: get vectormap meta-data. */
+message { REQ, GET_MAP_INFO, 1, player_vectormap_info_t };
+/** Request/reply subtype: get layer data. */
+message { REQ, GET_LAYER_DATA, 3, player_vectormap_layer_data_t };
+/** Request/reply subtype: write layer data. */
+message { REQ, WRITE_LAYER, 4, player_vectormap_layer_data_t };
+
+/** @brief Vectormap feature data. */
+typedef struct player_vectormap_feature_data
+{
+  /** Length of name in bytes. */
+  uint32_t name_count;
+  /** Identifier for the geometric shape. */
+  char* name;
+  /** Length of data in bytes. */
+  uint32_t wkb_count;
+  /** Well known binary describing the geometric shape. */
+  uint8_t* wkb;
+
+  /** Length of data in bytes. */
+  uint32_t attrib_count;
+  /** Attrib data for the feature. */
+  char* attrib;
+} player_vectormap_feature_data_t;
+
+typedef struct player_vectormap_layer_info
+{
+  /** Length of name in bytes */
+  uint32_t name_count;
+  /** Identifier for the layer */
+  char* name;
+  /** Boundary area. */
+  player_extent2d_t extent;
+} player_vectormap_layer_info_t;
+
+/** @brief Vectormap data. */
+typedef struct player_vectormap_layer_data
+{
+  /** Length of name in bytes */
+  uint32_t name_count;
+  /** Identifier for the layer */
+  char* name;
+  /** The number of map features. */
+  uint32_t features_count;
+  /** Array of map features. */
+  player_vectormap_feature_data_t* features;
+} player_vectormap_layer_data_t;
+
+/** @brief Vectormap info. */
+typedef struct player_vectormap_info
+{
+  /** Spatial reference identifier. Use '0' if you are not using spatial references. */
+  uint32_t srid;
+  /** The number of layers. */
+  uint32_t layers_count;
+  /** Array of layers. */
+  player_vectormap_layer_info_t* layers;
+  /** Boundary area. */
+  player_extent2d_t extent;
+} player_vectormap_info_t;
+

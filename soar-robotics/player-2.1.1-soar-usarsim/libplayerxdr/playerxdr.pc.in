@@ -1,0 +1,10 @@
+# DO NOT edit playerxdr.pc; edit playerxdr.pc.in instead
+
+prefix=@prefix@
+
+Name: playerxdr
+Description: Player XDR messaging library - part of the Player/Stage Project
+Version: @VERSION@
+Requires:
+Libs: -L${prefix}/lib -lplayerxdr
+Cflags: -I${prefix}/include/player-@PLAYER_MAJOR_VERSION@.@PLAYER_MINOR_VERSION@

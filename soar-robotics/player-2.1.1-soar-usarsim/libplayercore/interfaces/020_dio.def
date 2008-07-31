@@ -1,0 +1,34 @@
+description {
+ * @brief Digital I/O
+
+The @p dio interface provides access to a digital I/O device.
+}
+
+message { DATA, VALUES, 1, player_dio_data_t };
+message { CMD, VALUES, 1, player_dio_cmd_t };
+
+/** @brief Data: input values (@ref PLAYER_DIO_DATA_VALUES)
+
+The @p dio interface returns data regarding the current state of the
+digital inputs. */
+typedef struct player_dio_data
+{
+  /** number of samples */
+  uint32_t count;
+  /** bitfield of samples */
+  uint32_t bits;
+} player_dio_data_t;
+
+/** @brief Command: output values (@ref PLAYER_DIO_CMD_VALUES)
+
+The @p dio interface accepts 4-byte commands which consist of the ouput
+bitfield */
+typedef struct player_dio_cmd
+{
+  /** the command */
+  uint32_t count;
+  /** output bitfield */
+  uint32_t digout;
+} player_dio_cmd_t;
+
+/** @} */

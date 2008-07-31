@@ -1,0 +1,230 @@
+/** @ingroup tutorials
+@defgroup tutorial_automake Using Player and Automake
+@brief A brief overview of how Automake works
+
+@note Parts of this document have been adapted from Vishal Patil's c, c++
+programming tips document.  If you would like a more thorough treatment, I
+suggest you see the original document.
+
+Table of contents:
+
+- @ref directory
+- @ref configuration
+- @ref example
+    - @ref configure
+    - @ref makefile
+    - @ref doc
+- @ref bootstrap
+- @ref build
+
+
+@p Automake and @p Autoconf are tools designed to help developers get rid of
+challenges associated with writing @p Makefiles in projects.  These tools help
+you during the development of software along with the deployment on various
+systems.  We will be giving a cursory overview of the tools and explain
+how they pertains to writing your own client applications.
+
+@section directory Directory structure
+
+A project directory typically contains the following subdirectories:
+
+- @b src : Contains the source code that gets compiled.  Often times, the
+          @p src folder contains information for only one executable or
+          libarary, but it is possible to have multiple executables per
+          directory.
+
+- @b doc : Contains the project documentation.  If you use doxygen or any other
+          program for autogenerating your documentation, it is a good idea
+          to build a @p Makefile so you can run @p make @p doc in this folder
+          to automatically generate the documentation.
+
+Player has a slightly different (and larger directory structure), which works
+with generally the same principles.
+
+@section configuration Configuration files
+
+There are two main configuration files used by these tools
+
+- @b configure.ac : Used by @p autoconf to generate a platform specific
+                    configuration script.  Only one is needed per project.
+- @b Makefile.am : Used by @p automake to generate the @p Makefile in each
+                   of the source folders.  Typically a project will contain
+                   a @b Makefile.am in each folder.
+
+@section example A brief example
+
+Sometimes the best way to explain a topic is by showing an example.  Here, we
+will be building a project that uses @p automake and @p autoconf to build a c++
+client application.  All of the code for this example is include in
+examples/tutorial_automake.
+
+@subsection configure configure.ac
+
+This file is used by @p autoconf to generate the platform configure script, and
+as such contains different macros for examining the system.
+
+@include /tutorial_automake/configure.ac
+
+In the above sample @p configure.ac the parameters passed to the
+AM_INIT_AUTOMAKE function represent the package name and version number
+respectively.
+
+The PKG_CHECK_MODULES macro is then used to search for a file called
+@p playerc++.pc.  Most projects that use the @p autotools provide users with
+a package config file.  These files contain information about where the
+program has been installed on the system and information about any libraries
+or compiler flags that need to be used.
+
+@note If you are installing Player on a machine, you need to make sure that
+the PKG_CONFIG_PATH that the code installed to is included in your search
+path.  If you are using a bash shell, you can enter the following (or something
+similar) in your ~/.bashrc.
+@verbatim
+# for .pc in /usr/local
+export PKG_CONFIG_PATH=$PKG_CONFIG_PATH:/usr/local/lib/pkgconfig/
+@endverbatim
+
+AC_SUBST is then used to make the CFLAGS and LIBS variables usable to the
+@p Makefile.am files, which we will explain in a moment.
+
+The AC_CONFIG_FILES function needs to be given the paths of the @p Makefiles
+that need to be generated based on the @p Makefile.am in that folder.
+
+@subsection makefile Makefile.am
+
+A Makefile.am is a set of specific rules as to how variables are assigned and
+used in the @p Makefile.am files.  We will discuss some of the most common
+ones, but the rest are beyond the scope of the document. The following
+assigments are general to all targets built in the current @p Makefile.
+
+@verbatim
+AM_CPPFLAGS = SOME_FLAGS -g
+INCLUDES = -I/some_include_directory
+LDFLAGS  = -L/some_lib_directory
+LDADD    = -llibname
+@endverbatim
+
+- The AM_CPPFLAGS assignment is where you insert any c/cpp flags that you'd
+like the precompiler to use such as DEBUG or something similar.  You can also
+specify compiler options here
+
+- The INCLUDES assignment is where you insert the -I flags that you need
+to pass to your compiler. If the stuff in this directory is dependent on
+a library in another directory of the same package, then the -I flag
+must point to that directory.
+
+- The LDFLAGS assignment is where you insert the -L flags that are
+needed by the compiler when it links all the object files to an executable.
+
+- The LDADD assignment is where you list a long set of installed libraries
+that you want to link in with all of your executables. Use the -l flag
+only for installed libraries. You can list libraries that have been built
+but not installed yet as well, but do this only be providing the full
+path to these libraries.
+
+
+If your package contains subdirectories with libraries and you want to link
+these libraries in another subdirectory you need to put '-I' and '-L' flags in
+the two variables above. To express the path to these other subdirectories,
+use the $(top srcdir) variable. For example if you want to access a library
+under 'src/libfoo' you can put something like:
+
+@verbatim
+INCLUDES = ... -I$(top_srcdir)/src/libfoo ...
+LDFLAGS = ... -L$(top_srcdir)/src/libfoo ...
+@endverbatim
+
+on the 'Makefile.am' of every directory level that wants access to these
+libraries.
+
+Also, you must make sure that the libraries are built before the
+directory level is built. To guarantee that, list the library directories in
+SUBDIRS before the directory levels that depend on it. One way to do
+this is to put all the library directories under a @p lib directory and all the
+executable directories under a @p bin directory and on the @p Makefile.am for
+the directory level that contains @p lib and @p bin.
+
+@verbatim
+SUBDIRS = lib bin
+@endverbatim
+
+@subsection targets Build targets
+
+For each target you can also specify specific INCLUDES, LDFLAG, and/or LDADD
+parameters.  These are associated with how you define the build targets.  In
+our case, we have an executable called @p example.
+
+@include /tutorial_automake/src/Makefile.am
+
+- The bin_PROGRAMS macro indicates which targets we would like to build.  There
+are a variety of different ways to specify targets.  The @p bin_ tag indicates
+that we would like to install the program when @p make @p install is run.  We
+could also specify @p noinst_ which says not to install the program (usefull
+for testing tools).  You can also indicate that you are building a library
+by lib_LTLIBRARIES, but we'll reserve talking about that until we discuss
+building plugin drivers.
+
+For each target you can now specify SOURCES, CPPFLAGS, LDFLAGS, and/or LDADD.
+
+@subsection doc Generating documentation
+
+To demonstrate another aspect of the @p Makefile.am files we will setup
+code to allow you to run the command @p make @p doc in the doc folder and
+build doxygen comments.  To use Doxygen to automatically generate documentation
+you typically type the command:
+
+@verbatim
+> doxygen example.dox
+@endverbatim
+
+where example.dox is a doxygen configuration file typically generated by a tool
+such as @p doxywizard.  To accomplish the same thing with your @p makefile, you
+can utilize the fact that you can still insert traditional @p Makefile syntax
+into a @p Makefile.am.  For instance:
+
+@include /tutorial_automake/doc/Makefile.am
+
+The EXTRA_DIST is needed to indicate that the @p example.dox file is part of
+your project and should be distributed.  This is usefull when you package your
+code for distribution with the @p make @p dist command.  Note that the line
+with the doxygen command is typical @p Makefile syntax and thus, you need
+to make sure to have a TAB right instead of spaces before the @p doxygen.
+
+@section bootstrap Generating the build scripts
+
+You need to run the following commands in order to generate the build scripts.
+Typically, they are just grouped together into a single script called
+@p bootstrap.  We also supply some options to force certain tasks to be performed
+these aren't strictly necessary, but often usefull.
+
+@include /tutorial_automake/bootstrap
+
+After generating the scripts, you can run the typical @p configure to finish
+setting up the application.
+
+@section build Build options
+
+You need to run the configure script before building the project using
+make. After successfully running the configure script the following options
+as avaliable for make
+
+- @p make :  Builds the project and creates the executables and libraries.
+- @p make @p clean : Cleans the project i.e removes all the executables.
+- @p make @p install  : Builds and installs the project i.e the executable is
+                     copied in the /prefix/bin,headers in /prefix/include and
+                     libraries in /prefix/lib where prefix is usually /usr/local.
+- @p make @p uninstall : Uninstalls the project i.e removes the files added to
+                       /prefix/bin, /prefix/include and /prefix/lib directories.
+- @p make @p dist : Creates a distribution of the project
+(\<package-name\>- \<version\>.tar.gz file) of the project.
+
+@section references References
+
+- <a href="http://autotoolset.sourceforge.net/tutorial.html">
+    Learning the GNU development tools</a>
+- <a href="http://sources.redhat.com/automake/">GNU Automake</a>
+- <a href="http://www.geocities.com/foetsch/mfgraph/automake.htm">GNU Automake By Example</a>
+- <a href="http://autoconf-archive.cryp.to/">Autoconf Macro Archive</a>
+- <a href="http://ac-archive.sourceforge.net/">AC-Archive</a>
+
+*/

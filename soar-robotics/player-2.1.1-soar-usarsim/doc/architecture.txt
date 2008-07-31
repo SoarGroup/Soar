@@ -1,0 +1,38 @@
+/** @page architecture Software architecture
+
+\section Overview
+
+<p>
+Player is composed primarily of 5 libraries :
+- @ref libplayererror (C): Error reporting facilities
+- @ref libplayercore (C++): Basic messaging and queueing functionality,
+  support for loading plugins, parsing configuration files
+- @ref libplayerdrivers (C++): The drivers that are included with the
+  Player distribution (and which were compiled)
+- @ref libplayertcp (C++): Support for TCP client/server transport
+- @ref libplayerxdr (C++): Support for XDR data marshaling
+</p>
+
+<p>
+These libraries constitute the fundamental functionality of Player.  In a
+way, the commonly-used @ref util_player is just a short (< 300 lines)
+example of how to use these libraries.  Other uses are possible, and the
+libraries have designed with reuse in mind.
+</p>
+
+\section pkgconfigusage Compiling and linking
+
+<p>
+All Player libraries are installed with <b>pkg-config</b> meta-data files
+that detail how to compile and link against them.  You should <b>always</b>
+use pkg-config to build applications that use these libraries, in
+order to correctly handle compiler/linker paths and dependencies.  The
+pkg-config name for each library is the library's name without the
+<b>lib</b> prefix.  For example, to build against @ref libplayercore, you
+would do something like:</p>
+<p><tt>$ g++ `pkg-config --cflags playercore` -o myprogram myprogram.cc `pkg-config --libs playercore`</tt></p>
+<p>
+If pkg-config can't find Player libraries, read @ref pkgconfiginstall.
+</p>
+
+*/

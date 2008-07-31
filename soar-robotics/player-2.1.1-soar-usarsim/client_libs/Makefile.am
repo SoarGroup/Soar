@@ -1,0 +1,2 @@
+
+SUBDIRS = libplayerc libplayerc++

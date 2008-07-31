@@ -1,0 +1,211 @@
+description {
+ * @brief Player: the meta-device
+
+The @p player device represents the server itself, and is used in
+configuring the behavior of the server.  There is only one such device
+(with index 0) and it is always open.
+
+@todo Determine what, if any, data delivery modes and requests are needed.
+}
+
+/** Request/reply subtype: get device list */
+message { REQ, DEVLIST, 1, player_device_devlist_t };
+/** Request/reply subtype: get driver info */
+message { REQ, DRIVERINFO, 2, player_device_driverinfo_t };
+/** Request/reply subtype: (un)subscribe to device */
+message { REQ, DEV, 3, player_device_req_t };
+
+/** @brief Configuration request: Get data.
+
+When the server is in a PLAYER_DATAMODE_PULL data delivery mode, the
+client can request a single round of data by sending a zero-argument
+request with type code @p PLAYER_PLAYER_REQ_DATA.  The response will
+be a zero-length acknowledgement. */
+message { REQ, DATA, 4, player_null_t };
+
+message { REQ, DATAMODE, 5, player_device_datamode_req_t };
+message { REQ, AUTH, 7, player_device_auth_req_t };
+message { REQ, NAMESERVICE, 8, player_device_nameservice_req_t };
+message { REQ, ADD_REPLACE_RULE, 10, player_add_replace_rule_req_t };
+
+message { SYNCH, OK, 1, player_null_t };
+message { SYNCH, OVERFLOW, 2, player_uint32_t };
+
+
+/** Device access mode: open */
+#define PLAYER_OPEN_MODE   1
+/** Device access mode: close */
+#define PLAYER_CLOSE_MODE  2
+/** Device access mode: error */
+#define PLAYER_ERROR_MODE  3
+
+
+/** Data delivery mode: Send data from all subscribed devices
+all the time (i.e. when it's ready on the server). */
+#define PLAYER_DATAMODE_PUSH  1
+/** Data delivery mode: Only on request, send data from all
+subscribed devices. A PLAYER_MSGTYPE_SYNCH packet follows each
+set of data. Request should be made automatically by client
+libraries when they begin reading. */
+#define PLAYER_DATAMODE_PULL   2
+
+
+
+/** A replace rule can either accept, replace or ignore
+a message.*/
+#define PLAYER_PLAYER_MSG_REPLACE_RULE_ACCEPT  0
+#define PLAYER_PLAYER_MSG_REPLACE_RULE_REPLACE 1
+#define PLAYER_PLAYER_MSG_REPLACE_RULE_IGNORE  2
+
+/** @brief Request/reply: Get the list of available devices.
+
+    It's useful for applications such as viewer programs
+    and test suites that tailor behave differently depending on which
+    devices are available.  To request the list, send a null
+    @ref PLAYER_PLAYER_REQ_DEVLIST. */
+typedef struct player_device_devlist
+{
+  /** The number of devices */
+  uint32_t devices_count;
+  /** The list of available devices. */
+  player_devaddr_t devices[PLAYER_MAX_DEVICES];
+} player_device_devlist_t;
+
+/** @brief Request/reply: Get the driver name for a particular device.
+
+To get a name, send a @ref PLAYER_PLAYER_REQ_DRIVERINFO request that
+specifies the address of the desired device in the addr field.
+Set driver_name_count to 0 and leave driver_name empty. The response
+will contain the driver name. */
+typedef struct player_device_driverinfo
+{
+  /** The device identifier. */
+  player_devaddr_t addr;
+  /** Length of the driver name */
+  uint32_t driver_name_count;
+  /** The driver name (returned) */
+  char driver_name[PLAYER_MAX_DRIVER_STRING_LEN];
+} player_device_driverinfo_t;
+
+/** @brief Request/reply: (un)subscribe to a device
+
+This is the most important request!  Before interacting with a device,
+the client must request appropriate access.    Valid access modes are:
+- @ref PLAYER_OPEN_MODE : subscribe to the device.  You will receive any data
+published by the device and you may send it commands and/or requests.
+- @ref PLAYER_CLOSE_MODE : unsubscribe from the device.
+- @ref PLAYER_ERROR_MODE : the requested access was not granted (only appears
+in responses)
+
+To request access, send a @ref PLAYER_PLAYER_REQ_DEV request that specifies
+the desired device address in the addr field and the desired access mode
+in access.  Set driver_name_count to 0 and leave driver_name empty.
+The response will indicate the granted access in the access field and
+the name of the underyling driver in the driver_name field.  Note that
+the granted access may not be the same as the requested access (e.g.,
+if initialization of the driver failed).   */
+typedef struct player_device_req
+{
+  /** Address of the device */
+  player_devaddr_t addr;
+  /** The requested / granted access */
+  uint8_t access;
+  /** Length of driver name */
+  uint32_t driver_name_count;
+  /** The name of the underlying driver */
+  char driver_name[PLAYER_MAX_DRIVER_STRING_LEN];
+} player_device_req_t;
+
+
+/** @brief Configuration request: Change data delivery mode.
+
+The Player server supports two data modes, described above.
+By default, the server operates in @p PLAYER_DATAMODE_PUSH mode. To
+switch to a different mode send a request with the format given
+below. The server's reply will be a zero-length acknowledgement. */
+typedef struct player_device_datamode_req
+{
+  /** The requested mode */
+  uint8_t mode;
+
+} player_device_datamode_req_t;
+
+
+/** @brief Configuration request: Authentication.
+
+@todo Add support for this mechanism to libplayertcp.  Right now, it's disabled.
+
+If server authentication has been enabled (by providing '-key &lt;key&gt;'
+on the command-line); then each client must
+authenticate itself before otherwise interacting with the server.
+To authenticate, send a request with this format.
+
+If the key matches the server's key then the client is authenticated,
+the server will reply with a zero-length acknowledgement, and the client
+can continue with other operations.  If the key does not match, or if
+the client attempts any other server interactions before authenticating,
+then the connection will be closed immediately.  It is only necessary
+to authenticate each client once.
+
+Note that this support for authentication is @b NOT a security mechanism.
+The keys are always in plain text, both in memory and when transmitted
+over the network; further, since the key is given on the command-line,
+there is a very good chance that you can find it in plain text in the
+process table (in Linux try 'ps -ax | grep player').  Thus you should
+not use an important password as your key, nor should you rely on
+Player authentication to prevent bad guys from driving your robots (use
+a firewall instead).  Rather, authentication was introduced into Player
+to prevent accidentally connecting one's client program to someone else's
+robot.  This kind of accident occurs primarily when Stage is running in
+a multi-user environment.  In this case it is very likely that there
+is a Player server listening on port 6665, and clients will generally
+connect to that port by default, unless a specific option is given.
+
+This mechanism was never really used, and may be removed. */
+typedef struct player_device_auth_req
+{
+  /** Length of key */
+  uint32_t auth_key_count;
+  /** The authentication key */
+  uint8_t auth_key[PLAYER_KEYLEN];
+
+} player_device_auth_req_t;
+
+
+/** @brief Nameservice request.
+
+@todo Update this structure and add support for it to libplayertcp.  Right now it's disabled.
+*/
+typedef struct player_device_nameservice_req
+{
+  /** Length of robot name */
+  uint32_t name_count;
+  /** The robot name */
+  uint8_t name[PLAYER_MAX_DRIVER_STRING_LEN];
+  /** The corresponding port */
+  uint16_t port;
+} player_device_nameservice_req_t;
+
+/** @brief Configuration request: Add client queue replace rule.
+
+Allows the client to add a replace rule to their server queue. Replace
+rules define which messages will be replaced when new data arrives.
+If you are not updating frequently from ther server then the use of
+replace rules for data packets will stop any queue overflow messages
+
+Each field in the request type corresponds to the equivalent field in
+the message header use -1 for a dont care value.
+ */
+typedef struct player_add_replace_rule_req
+{
+  /** Interface to set replace rule for (-1 for wildcard) */
+  int32_t interf;
+  /** index to set replace rule for (-1 for wildcard) */
+  int32_t index;
+  /** message type to set replace rule for (-1 for wildcard), i.e. PLAYER_MSGTYPE_DATA */
+  int32_t type;
+  /** message subtype to set replace rule for (-1 for wildcard) */
+  int32_t subtype;
+  /** Should we replace these messages */
+  int32_t replace ;
+} player_add_replace_rule_req_t;

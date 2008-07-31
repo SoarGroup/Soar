@@ -1,0 +1,3 @@
+to install the plugin, install player and then
+ln -s /usr/local/lib/libplayxmms.so* ~/.xmms/Plugins/
+and restart xmms

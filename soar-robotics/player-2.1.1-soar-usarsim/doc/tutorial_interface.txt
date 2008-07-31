@@ -1,0 +1,7 @@
+/** @ingroup tutorials
+@defgroup tutorial_interface Adding a new interface
+@brief How to add an interface for a new kind of device
+
+@todo Write this
+
+*/

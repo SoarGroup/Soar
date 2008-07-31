@@ -1,0 +1,10 @@
+Usage:
+  ./parse.py ../../player.h pack.c pack.h
+
+This Python script will parse <player.h>, and produce two files:
+  pack.h
+  pack.c
+Together, these files prototype and implement a pair of XDR serialization
+and deserialization functions for each struct declared in the header.
+
+        brian gerkey (gerkey@users.sourceforge.net)

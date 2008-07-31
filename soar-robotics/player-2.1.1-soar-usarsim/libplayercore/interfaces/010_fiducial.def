@@ -1,0 +1,97 @@
+description { 
+* @brief Fiducial (marker) detection
+
+The fiducial interface provides access to devices that detect coded
+fiducials (markers) placed in the environment.  It can also be used
+for devices the detect natural landmarks.
+}
+
+message { DATA, SCAN, 1, player_fiducial_data_t };
+
+message { REQ, GET_GEOM, 1, player_fiducial_geom_t };
+message { REQ, GET_FOV, 2, player_fiducial_fov_t };
+message { REQ, SET_FOV, 3, player_fiducial_fov_t };
+message { REQ, GET_ID, 7, player_fiducial_id_t };
+message { REQ, SET_ID, 8, player_fiducial_id_t };
+
+
+/** @brief Info on a single detected fiducial
+
+The fiducial data packet contains a list of these.
+*/
+typedef struct player_fiducial_item
+{
+  /** The fiducial id.  Fiducials that cannot be identified get id
+      -1. */
+  int32_t id;
+  /** Fiducial pose relative to the detector. */
+  player_pose3d_t pose;
+  /** Uncertainty in the measured pose . */
+  player_pose3d_t upose;
+} player_fiducial_item_t;
+
+
+/** @brief Data: detected fiducials (@ref PLAYER_FIDUCIAL_DATA_SCAN)
+
+The fiducial data packet (all fiducials). */
+typedef struct player_fiducial_data
+{
+  /** The number of detected fiducials */
+  uint32_t fiducials_count;
+  /** List of detected fiducials */
+  player_fiducial_item_t *fiducials;
+
+} player_fiducial_data_t;
+
+/** @brief Request/reply: Get geometry.
+
+The geometry (pose and size) of the fiducial device can be queried by
+sending a null @ref PLAYER_FIDUCIAL_REQ_GET_GEOM request.
+*/
+typedef struct player_fiducial_geom
+{
+  /** Pose of the detector in the robot cs */
+  player_pose3d_t pose;
+  /** Size of the detector */
+  player_bbox3d_t size;
+  /** Dimensions of the fiducials in units of (m). */
+  player_bbox2d_t fiducial_size;
+} player_fiducial_geom_t;
+
+/** @brief Request/reply: Get/set sensor field of view.
+
+The field of view of the fiducial device can be set using the
+@ref PLAYER_FIDUCIAL_REQ_SET_FOV request (response will be null), and queried
+using a null @ref PLAYER_FIDUCIAL_REQ_GET_FOV request.
+*/
+typedef struct player_fiducial_fov
+{
+  /** The minimum range of the sensor [m] */
+  float min_range;
+  /** The maximum range of the sensor [m] */
+  float max_range;
+  /** The receptive angle of the sensor [rad]. */
+  float view_angle;
+} player_fiducial_fov_t;
+
+/** @brief Request/reply: Get/set fiducial ID.
+
+Some fiducial finder devices display their own fiducial. Send a null
+@ref PLAYER_FIDUCIAL_REQ_GET_ID request to get the identifier displayed by the
+fiducial.
+
+Some devices can dynamically change the identifier they display. Send
+a @ref PLAYER_FIDUCIAL_REQ_SET_ID request to set the currently displayed
+value. Make the request with the player_fiducial_id_t structure. The
+device replies with the same structure with the id field set to the value
+it actually used. You should check this value, as the device may not be
+able to display the value you requested.
+
+Currently supported by the stg_fiducial driver.
+*/
+typedef struct player_fiducial_id
+{
+  /** The value displayed */
+  uint32_t id;
+} player_fiducial_id_t;
+

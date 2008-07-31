@@ -1,0 +1,84 @@
+description {
+* @brief Three-dimensional graphics interface
+
+The @p graphics3d interface provides an interface to graphics
+devices. Drivers can implement this interface to provide clients and
+other drivers with graphics output.
+
+The interface uses an openGL style of command where a type is specified along
+with a series of verticies. The interpretation depends on the command type
+
+Graphics items should be accumulated until an explicit clear command is issued
+}
+
+/** Command subtype: clear the drawing area (send an empty message) */
+message { CMD, CLEAR, 1, player_null_t };
+/** Command subtype: draw items */
+message { CMD, DRAW, 2, player_graphics3d_cmd_draw_t };
+/** Command subtype: translate coordinate system */
+message { CMD, TRANSLATE, 3, player_graphics3d_cmd_translate_t };
+/** Command subtype: rotate coordinate system */
+message { CMD, ROTATE, 4, player_graphics3d_cmd_rotate_t };
+/** Command subtype: push current coordinate system onto stack */
+message { CMD, PUSH, 5, player_null_t };
+/** Command subtype: pop coordinate system from stack to become current */
+message { CMD, POP, 6, player_null_t };
+
+
+/** Drawmode: enumeration that defines the drawing mode */
+typedef enum player_graphics3d_draw_mode
+{
+  PLAYER_DRAW_POINTS,
+  PLAYER_DRAW_LINES,
+  PLAYER_DRAW_LINE_STRIP,
+  PLAYER_DRAW_LINE_LOOP,
+  PLAYER_DRAW_TRIANGLES,
+  PLAYER_DRAW_TRIANGLE_STRIP,
+  PLAYER_DRAW_TRIANGLE_FAN,
+  PLAYER_DRAW_QUADS,
+  PLAYER_DRAW_QUAD_STRIP,
+  PLAYER_DRAW_POLYGON
+} player_graphics3d_draw_mode_t;
+
+
+/** @brief Data: This interface produces no data. */
+
+/** @brief Requests: This interface accepts no requests. */
+
+/** @brief Command: Draw points (@ref PLAYER_GRAPHICS3D_CMD_POINTS)
+Draw some points.
+*/
+typedef struct player_graphics3d_cmd_draw
+{
+  /** The drawing mode defining how teh verticies should be interpreted */
+  uint32_t draw_mode;
+  /** Number of points in this packet. */
+  uint32_t points_count;
+  /** Array of points. */
+  player_point_3d_t *points;
+  /** Color in which the points should be drawn. */
+  player_color_t color;
+
+} player_graphics3d_cmd_draw_t;
+
+/** @brief Command: Translate coordinate system (@ref PLAYER_GRAPHICS3D_CMD_TRANSLATE)
+Translate the current coordinate system.
+*/
+typedef struct player_graphics3d_cmd_translate
+{
+  double x; /** translate distance along x axis */
+  double y; /** translate distance along y axis */
+  double z; /** translate distance along z axis */
+} player_graphics3d_cmd_translate_t;
+
+/** @brief Command: Rotate coordinate system (@ref PLAYER_GRAPHICS3D_CMD_ROTATE)
+Rotate the current coordinate system by a given angle around the given vector.
+*/
+typedef struct player_graphics3d_cmd_rotate
+{
+  double a; /** angle to rotate in radians */
+  double x; /** x component of the vector around which we rotate */
+  double y; /** y component of the vector around which we rotate */
+  double z; /** z component of the vector around which we rotate */
+} player_graphics3d_cmd_rotate_t;
+

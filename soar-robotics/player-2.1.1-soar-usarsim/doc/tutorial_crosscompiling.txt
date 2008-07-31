@@ -1,0 +1,105 @@
+/** @ingroup tutorials
+@defgroup tutorial_crosscompiling Cross-compiling
+@brief How to build Player for embedded systems
+
+@section Introduction
+
+While Player is most often used on laptop- or workstation-class machines,
+it is also intended to run on less powerful embedded systems.  Over the
+years, Player has been used on a variety of such systems, including the
+iPaq, Intel Stayton, nanoEngine, and Gumstix.  These systems are
+not powerful enough to run a compiler, and they generally have a different
+architecture from your desktop machine (e.g., ARM instead of x86), which
+means that you need to <i>cross-compile</i> programs to run on them.
+
+This document gives some guidance to help in cross-compiling Player.
+Beware that cross-compiling is fairly complicated, and that the information
+given here is by no means a complete treatment of the subject.
+
+@section anexample An example to work with
+
+When cross-compiling, the <i>build</i> system is the one where the
+compiling is happening, and the <i>host</i> system is the one where the
+compiled program will eventually run.  Throughout this document, we'll
+assume that you your build system is <b>x86-linux</b> (e.g., a Linux
+workstation or laptop) and that your host system is <b>arm-linux</b> (e.g.,
+a Gumstix).  This is probably the most common setup.  If your situation is
+different, then just mentally translate the system-specific names used
+below.
+
+@section Prerequisites
+
+First, you need an x86-linux to arm-linux <i>toolchain</i>.  There are
+a variety of ways to get a toolchain, including building it yourself
+from scratch.  Unless you're looking to grow hair on your chest, I
+suggest getting a pre-built toolchain.  
+
+The toolchain <b>must include C++ support</b>, since much of Player is
+written in C++.
+
+@note (Gumstix): In <tt>gumstix-buildroot/Makefile</tt>, set
+<tt>INSTALL_LIBSTDCPP:=true</tt>.
+
+Player uses XDR for data marshaling, so the toolchain also must have
+a full RPC implementation that includes all the xdr_*() functions,
+in particular xdr_float() and xdr_double().
+
+@note (uClibc): Set <tt>UCLIBC_HAS_FULL_RPC=y</tt> in the uClibc .config file.
+
+@note (Gumstix): To effect the above change, set
+<tt>UCLIBC_HAS_FULL_RPC=y</tt> in <tt>gumstix-buildroot/uClibc.config</tt>.
+
+Your toolchain will have a <tt>bin</tt> directory where the
+cross-compiling executable tools, such as <b>arm-linux-gcc</b> and
+<b>arm-linux-ld</b> reside.  Add this directory to your PATH.
+
+@note (Gumstix) : These tools are in
+<tt>gumstix-buildroot/build_arm_nofpu/staging_dir/bin</tt>.
+
+@section Configuration
+
+We'll use the builtin autotools support for cross-compilation.
+Basic configuration of Player goes like this:
+@code
+$ ./configure --build=x86-linux --host=arm-linux
+@endcode
+The configure script will automatically look for the <b>arm-linux-</b>
+tools, which should already be in your PATH.   
+
+The above configuration will build the default configuration of Player,
+which means that all drivers that can be built will be included.
+If you're looking to minimize the footprint of Player for your embedded
+system, you can enable just the drivers you'll need.  For example, when I
+build Player to control a Roomba that is equipped with a Hokuyo URG laser,
+I configure it like so:
+@code
+$ ./configure --build=x86-linux --host=arm-linux --disable-alldrivers --enable-roomba --enable-urglaser
+@endcode
+Then only the @ref driver_roomba and @ref driver_urglaser drivers will
+be included.  If you're only using your own plugin drivers, then you
+wouldn't need to --enable any drivers at all.
+
+The default configuration also uses shared libraries if possible.  This can
+complicate transferring Player to the embedded system because you have to copy a
+bunch of supporting files.  I usually disable shared library support:
+@code
+$ ./configure --build=x86-linux --host=arm-linux --disable-shared --disable-alldrivers --enable-roomba --enable-urglaser
+@endcode
+Then I get a <b>player</b> binary that is statically linked and
+self-contained.
+
+@section Compilation
+Assuming configuration went well, all you need to do is:
+@code
+$ make
+@endcode
+One final step to save space is to strip the symbol/debug information out
+of the binary:
+@code
+$ arm-linux-strip server/player
+@endcode
+Then you're done: scp the binary to the embedded system and start playing
+with it.
+
+*/
+

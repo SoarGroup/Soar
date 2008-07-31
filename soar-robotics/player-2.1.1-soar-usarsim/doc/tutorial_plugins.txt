@@ -1,0 +1,7 @@
+/** @ingroup tutorials
+@defgroup tutorial_plugins Writing a Player driver
+@brief How to write, compile, and load plugin driver
+
+@todo Write this
+
+*/

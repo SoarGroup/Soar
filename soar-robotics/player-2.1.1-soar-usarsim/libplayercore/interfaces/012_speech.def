@@ -1,0 +1,21 @@
+description {
+ * @brief Speech synthesis
+
+The @p speech interface provides access to a speech synthesis system.
+}
+
+/** Command subtype: say a string */
+message { CMD, SAY, 1, player_speech_cmd_t };
+
+/** @brief Command: say a string (@ref PLAYER_SPEECH_CMD_SAY)
+
+The @p speech interface accepts a command that is a string to
+be given to the speech synthesizer.*/
+typedef struct player_speech_cmd
+{
+  /** Length of string */
+  uint32_t string_count;
+  /** The string to say */
+  char *string;
+} player_speech_cmd_t;
+

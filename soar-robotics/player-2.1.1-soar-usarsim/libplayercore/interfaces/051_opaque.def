@@ -1,0 +1,31 @@
+description {
+ * @brief A generic interface for user-defined messages
+
+The @p opaque interface allows you to send user-specified messages.  With this
+interface a user can send custom commands to their drivers/plugins.  See
+examples/plugins/opaquedriver for an example of using this interface in
+a plugin.
+}
+
+/** Data subtype: generic state */
+message { DATA, STATE, 1, player_opaque_data_t };
+
+/** Cmd subtype: generic command */
+message { CMD, DATA, 1, player_opaque_data_t };
+
+/** Req subtype: generic request */
+message { REQ, DATA, 1, player_opaque_data_t };
+
+/* for backwards compatibility */
+#define PLAYER_OPAQUE_REQ PLAYER_OPAQUE_REQ_DATA
+#define PLAYER_OPAQUE_CMD PLAYER_OPAQUE_CMD_DATA
+
+/** @brief data */
+typedef struct player_opaque_data
+{
+  /** Size of data as stored in buffer (bytes) */
+  uint32_t data_count;
+  /** The data we will be sending */
+  uint8_t *data;
+} player_opaque_data_t;
+

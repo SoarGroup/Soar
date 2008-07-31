@@ -1,0 +1,8 @@
+prefix=@prefix@
+
+Name: playerc
+Description: Andrew Howard's Player C client library - part of the Player/Stage Project
+Version: @VERSION@
+Requires: playerxdr playererror
+Libs: -L${prefix}/lib -lplayerc -lm
+Cflags: -I${prefix}/include/player-@PLAYER_MAJOR_VERSION@.@PLAYER_MINOR_VERSION@

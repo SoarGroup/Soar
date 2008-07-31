@@ -1,0 +1,10 @@
+The Player documentation is built by Doxygen.  If you have Doxygen
+installed and want to build the documentation yourself:
+  $ make doc
+To install the docs in $prefix/share/doc/player:
+  $ make doc-install
+To uninstall:
+  $ make doc-uninstall
+
+Alternatively, you can consult the online version:
+  http://playerstage.sf.net

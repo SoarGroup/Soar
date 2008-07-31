@@ -1,0 +1,100 @@
+description { 
+* @brief Gripper interface
+
+The @p gripper interface provides access to a robotic gripper. A gripper is a
+device capable of closing around and carrying an object of suitable size and
+shape. On a mobile robot, a gripper is typically mounted near the floor on the
+front, or on the end of a robotic limb. Grippers typically have two "fingers"
+that close around an object. Some grippers can detect whether an objcet is
+within the gripper (using, for example, light beams). Some grippers also have
+the ability to move the a carried object into a storage system, freeing the
+gripper to pick up a new object, and move objects from the storage system back
+into the gripper.  }
+
+/** Data subtype: state */
+message { DATA, STATE, 1, player_gripper_data_t };
+
+/** Request subtype: get geometry */
+message { REQ, GET_GEOM, 1, player_gripper_geom_t };
+
+/** @brief Command: Open (@ref PLAYER_GRIPPER_CMD_OPEN)
+
+Tells the gripper to open. */
+message { CMD, OPEN, 1, player_null_t };
+
+/** @brief Command: Close (@ref PLAYER_GRIPPER_CMD_CLOSE)
+
+Tells the gripper to close. */
+message { CMD, CLOSE, 2, player_null_t };
+
+/** @brief Command: Stop (@ref PLAYER_GRIPPER_CMD_STOP)
+
+Tells the gripper to stop. */
+message { CMD, STOP, 3, player_null_t };
+
+/** @brief Command: Store (@ref PLAYER_GRIPPER_CMD_STORE)
+
+Tells the gripper to store whatever it is holding. */
+message { CMD, STORE, 4, player_null_t };
+
+/** @brief Command: Retrieve (@ref PLAYER_GRIPPER_CMD_RETRIEVE)
+
+Tells the gripper to retrieve a stored object (so that it can
+be put back into the world). The opposite of store. */
+message { CMD, RETRIEVE, 5, player_null_t };
+
+
+/** Gripper state: open */
+#define PLAYER_GRIPPER_STATE_OPEN 1
+/** Gripper state: closed */
+#define PLAYER_GRIPPER_STATE_CLOSED 2
+/** Gripper state: moving */
+#define PLAYER_GRIPPER_STATE_MOVING 3
+/** Gripper state: error */
+#define PLAYER_GRIPPER_STATE_ERROR 4
+
+
+/** @brief Data: state (@ref PLAYER_GRIPPER_DATA_STATE)
+
+The @p gripper interface returns the current state of the gripper
+and information on a potential object in the gripper.
+state may be @ref PLAYER_GRIPPER_STATE_OPEN, @ref PLAYER_GRIPPER_STATE_CLOSED,
+@ref PLAYER_GRIPPER_STAGE_MOVING or @ref PLAYER_GRIPPER_STATE_ERROR.
+beams provides information on how far into the gripper an object is. For most
+grippers, this will be a bit mask, with each bit representing whether a beam
+has been interrupted or not.
+*/
+typedef struct player_gripper_data
+{
+  /** The gripper's state */
+  uint8_t state;
+  /** The position of the object in the gripper */
+  uint32_t beams;
+  /** Number of currently stored objects */
+  uint8_t stored;
+} player_gripper_data_t;
+
+/** @brief Request/reply: get geometry
+
+The geometry (pose, outer size and inner size) of the gripper device can be
+queried by sending a null @ref PLAYER_GRIPPER_REQ_GET_GEOM request.
+  */
+typedef struct player_gripper_geom
+{
+  /** Gripper pose, in robot cs (m, m, m, rad, rad, rad). */
+  player_pose3d_t pose;
+  /** Outside dimensions of gripper (m, m, m). */
+  player_bbox3d_t outer_size;
+  /** Inside dimensions of gripper, i.e. the size of the space between the
+    fingers when they are fully open (m, m, m) */
+  player_bbox3d_t inner_size;
+  /** Number of breakbeams the gripper has */
+  uint8_t num_beams;
+  /** Capacity for storing objects - if 0, then the gripper can't store */
+  uint8_t capacity;
+} player_gripper_geom_t;
+
+
+
+
+
