@@ -15,6 +15,9 @@ message { REQ, GET_ID, 7, player_fiducial_id_t };
 message { REQ, SET_ID, 8, player_fiducial_id_t };
 
 
+/** The maximum number of fiducials that can be detected at one time. */
+#define PLAYER_FIDUCIAL_MAX_SAMPLES 32
+
 /** @brief Info on a single detected fiducial
 
 The fiducial data packet contains a list of these.
@@ -94,4 +97,35 @@ typedef struct player_fiducial_id
   /** The value displayed */
   uint32_t id;
 } player_fiducial_id_t;
+
+#define PLAYER_FIDUCIAL_MAX_ID_LENGTH 128
+#define PLAYER_FIDUCIAL_MAX_STATUS_LENGTH 128
+
+/** @brief Info on a single detected fiducial 
+
+The fiducial data packet contains a list of these. */
+typedef struct player_victim_fiducial_item
+{
+  /** The fiducial id.  Fiducials that cannot be identified get id
+       -1. */
+  char id[PLAYER_FIDUCIAL_MAX_ID_LENGTH];
+  char status[PLAYER_FIDUCIAL_MAX_STATUS_LENGTH];
+  int32_t timestamp;
+  /** Fiducial position relative to the detector (x, y, z) in mm. */
+  player_pose3d_t pose;
+  /** Uncertainty in the measured pose (x, y, z) in mm. */
+  player_pose3d_t upose;    
+} player_victim_fiducial_item_t;
+
+/** @brief Data
+
+The fiducial data packet (all fiducials). */
+typedef struct player_victim_fiducial_data
+{
+  /** The number of detected fiducials */
+  uint16_t fiducials_count;
+  /** List of detected fiducials */
+  player_victim_fiducial_item_t fiducials[PLAYER_FIDUCIAL_MAX_SAMPLES];
+  
+} player_victim_fiducial_data_t;
 

@@ -1521,6 +1521,10 @@ void player_bumper_geom_t_cleanup(const player_bumper_geom_t *msg);
 player_bumper_geom_t * player_bumper_geom_t_clone(const player_bumper_geom_t *msg);
 void player_bumper_geom_t_free(player_bumper_geom_t *msg);
 unsigned int player_bumper_geom_t_sizeof(player_bumper_geom_t *msg);
+int xdr_player_victim_fiducial_item_t(XDR* xdrs, player_victim_fiducial_item_t* msg);
+int player_victim_fiducial_item_pack(void* buf, size_t buflen, player_victim_fiducial_item_t* msg, int op);
+int xdr_player_victim_fiducial_data_t(XDR* xdrs, player_victim_fiducial_data_t* msg);
+int player_victim_fiducial_data_pack(void* buf, size_t buflen, player_victim_fiducial_data_t* msg, int op);
 
 #ifdef __cplusplus
 }

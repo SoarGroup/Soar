@@ -457,6 +457,8 @@ PLAYER_ADD_DRIVER([wbr914],[yes],[linux/serial.h],[],[])
 
 PLAYER_ADD_DRIVER([xsensmt],[yes],[],[],[])
 
+PLAYER_ADD_DRIVER([usarsim],[yes],[],[],[])
+
 save_ac_ext=$ac_ext
 ac_ext=cc # otherwise only C (and not C++) header files will work
 PLAYER_ADD_DRIVER([yarpimage],[yes],["yarp/os/all.h yarp/sig/all.h"],[],["-lYARP_sig -lYARP_OS -lACE"])

@@ -637,6 +637,8 @@ AC_OUTPUT(Makefile
           server/drivers/vectormap/Makefile
           server/drivers/blackboard/Makefile
           server/drivers/blackboard/localbb/Makefile
+          server/drivers/usarsim/Makefile
+          server/drivers/usarsim/lib/Makefile
           client_libs/Makefile
           client_libs/libplayerc++/Makefile
           client_libs/libplayerc++/playerc++.pc

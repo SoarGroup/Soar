@@ -510,6 +510,22 @@ void GbxSickAcfr_Register(DriverTable* table);
 void UrgDriver_Register(DriverTable* table);
 #endif
 
+#ifdef INCLUDE_USARSIM
+void UsBot_Register(DriverTable *driverTable);
+void UsPosition_Register(DriverTable *driverTable);
+void UsPosition3d_Register(DriverTable *driverTable);
+void UsFakeLocalize_Register(DriverTable* table);
+void UsLaser_Register(DriverTable *driverTable);
+void UsLaser3d_Register(DriverTable *driverTable);
+void UsSonar_Register(DriverTable *driverTable);
+void RhIr_Register(DriverTable *driverTable);
+void RhPyro_Register(DriverTable *driverTable);
+void UsFiducial_Register(DriverTable *driverTable);
+void UsVictFiducial_Register(DriverTable *driverTable);
+void UsPtz_Register(DriverTable *driverTable);
+#endif
+
+
 /*
  * this function will be called at startup.  all available devices should
  * be added to the driverTable here.  they will be instantiated later as
@@ -979,4 +995,20 @@ player_register_drivers()
 #ifdef INCLUDE_URG_NZ
   UrgDriver_Register(driverTable);
 #endif
+
+#ifdef INCLUDE_USARSIM
+  UsBot_Register(driverTable);
+  UsPosition_Register(driverTable);
+  UsPosition3d_Register(driverTable);
+  UsFakeLocalize_Register(driverTable); 
+  UsLaser_Register(driverTable);
+  UsLaser3d_Register(driverTable);
+  UsSonar_Register(driverTable);
+  RhIr_Register(driverTable);
+  RhPyro_Register(driverTable);
+  UsFiducial_Register(driverTable);
+  UsVictFiducial_Register(driverTable);
+  UsPtz_Register(driverTable);
+#endif
+
 }

@@ -13532,3 +13532,77 @@ unsigned int player_bumper_geom_t_sizeof(player_bumper_geom_t *msg)
   size += sizeof(player_bumper_define_t)*msg->bumper_def_count; 
   return(size);
 }
+
+int
+xdr_player_victim_fiducial_item_t(XDR* xdrs, player_victim_fiducial_item_t* msg)
+{
+  if(xdr_opaque(xdrs, (char*)&msg->id, PLAYER_FIDUCIAL_MAX_ID_LENGTH) != 1)
+    return(0);
+  if(xdr_opaque(xdrs, (char*)&msg->status, PLAYER_FIDUCIAL_MAX_STATUS_LENGTH) != 1)
+    return(0);
+  if(xdr_int(xdrs,&msg->timestamp) != 1)
+    return(0);
+  if(xdr_player_pose_t(xdrs,&msg->pose) != 1)
+    return(0);
+  if(xdr_player_pose_t(xdrs,&msg->upose) != 1)
+    return(0);
+  return(1);
+}
+
+int
+player_victim_fiducial_item_pack(void* buf, size_t buflen, player_victim_fiducial_item_t* msg, int op)
+{
+  XDR xdrs;
+  int len;
+  if(!buflen)
+    return(0);
+  xdrmem_create(&xdrs, buf, buflen, op);
+  if(xdr_opaque(&xdrs, (char*)&msg->id, PLAYER_FIDUCIAL_MAX_ID_LENGTH) != 1)
+    return(-1);
+  if(xdr_opaque(&xdrs, (char*)&msg->status, PLAYER_FIDUCIAL_MAX_STATUS_LENGTH) != 1)
+    return(-1);
+  if(xdr_int(&xdrs,&msg->timestamp) != 1)
+    return(-1);
+  if(xdr_player_pose_t(&xdrs,&msg->pose) != 1)
+    return(-1);
+  if(xdr_player_pose_t(&xdrs,&msg->upose) != 1)
+    return(-1);
+  if(op == PLAYERXDR_ENCODE)
+    len = xdr_getpos(&xdrs);
+  else
+    len = sizeof(player_victim_fiducial_item_t);
+  xdr_destroy(&xdrs);
+  return(len);
+}
+
+int
+xdr_player_victim_fiducial_data_t(XDR* xdrs, player_victim_fiducial_data_t* msg)
+{
+  if(xdr_u_short(xdrs,&msg->fiducials_count) != 1)
+    return(0);
+  if(xdr_vector(xdrs, (char*)&msg->fiducials, PLAYER_FIDUCIAL_MAX_SAMPLES, sizeof(player_victim_fiducial_item_t), (xdrproc_t)xdr_player_victim_fiducial_item_t) != 1)
+    return(0);
+  return(1);
+}
+
+int
+player_victim_fiducial_data_pack(void* buf, size_t buflen, player_victim_fiducial_data_t* msg, int op)
+{
+  XDR xdrs;
+  int len;
+  if(!buflen)
+    return(0);
+  xdrmem_create(&xdrs, buf, buflen, op);
+  if(xdr_u_short(&xdrs,&msg->fiducials_count) != 1)
+    return(-1);
+  if(xdr_vector(&xdrs, (char*)&msg->fiducials, PLAYER_FIDUCIAL_MAX_SAMPLES, sizeof(player_victim_fiducial_item_t), (xdrproc_t)xdr_player_victim_fiducial_item_t) != 1)
+    return(-1);
+  if(op == PLAYERXDR_ENCODE)
+    len = xdr_getpos(&xdrs);
+  else
+    len = sizeof(player_victim_fiducial_data_t);
+  xdr_destroy(&xdrs);
+  return(len);
+}
+
+
