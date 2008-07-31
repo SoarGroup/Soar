@@ -444,6 +444,9 @@
 /* include the urg_nz driver */
 #undef INCLUDE_URG_NZ
 
+/* include the usarsim driver */
+#undef INCLUDE_USARSIM
+
 /* include the vec2map driver */
 #undef INCLUDE_VEC2MAP
 
