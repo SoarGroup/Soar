@@ -42,4 +42,5 @@ VERSION 4
 39	0	HLOPERATOR process-message process-message.soar process-message 136 40
 40	39	FOPERATOR elaborations elaborations.soar 41
 41	39	OPERATOR ignore-unknown-message ignore-unknown-message.soar 42
+42	0	OPERATOR maintain-entity maintain-entity.soar 44
 END

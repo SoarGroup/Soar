@@ -1,0 +1,147 @@
+
+#
+# if we've never seen the entity before, then make an "entry" for it in the entities structure
+#
+sp {simple-robot*propose*maintain-entity*create-entry
+   (state <s> ^name simple-robot
+              ^io.input-link.entities.entity <e>
+              ^entities <es>)
+   (<e> ^id <id>)
+  -(<es> ^entity.id <id>) 
+-->
+   (<s> ^operator <op> +)
+   (<op> ^name maintain-entity
+         ^create-entry true
+         ^input-entity <e>)
+}
+
+sp {apply*maintain-entity*create-entry
+   (state <s> ^operator <op>
+              ^entities <es>)
+   (<op> ^name maintain-entity
+         ^create-entry true
+         ^input-entity.id <id>)
+-->
+   (<es> ^entity.id <id>)
+   (write (crlf) |Creating new entry for entity | <id>)
+}
+
+#
+# if we have a visible entity it has an entry, just link to the input-link version
+#
+sp {simple-robot*elaborate*visible-entity
+   (state <s> ^name simple-robot
+              ^entities.entity <es>
+              ^io.input-link.entities.entity <e>)
+   (<e> ^visible true
+        ^id <id>)
+   (<es> ^id <id>)
+-->
+   (<es> ^data <e>)
+}
+
+#
+# if we have a non-visible entity (but still on the input-link) then make a persisent copy
+#
+sp {simple-robot*propose*maintain-entity*make-persistent-copy
+   (state <s> ^name simple-robot
+              ^io.input-link <il>
+              ^entities.entity <es>)
+   (<il> ^entities.entity <e>
+         ^time.seconds <time>)
+   (<e> ^visible false
+        ^id <id>)
+   (<es> ^id <id>
+        -^data)
+-->
+   (<s> ^operator <op> +)
+   (<op> ^name maintain-entity
+         ^input-entity <e>
+         ^state-entity <es>
+         ^lost-contact-time <time>)
+}
+
+sp {apply*maintain-entity*make-persistent-copy
+   (state <s> ^operator <op>
+              ^io.output-link <ol>)
+   (<op> ^name maintain-entity
+         ^input-entity <e>
+         ^state-entity <es>
+         ^lost-contact-time <time>)
+   (<e> ^id <id>
+        ^current-absolute-location <cal>
+        ^friendly <friendly>
+        ^range <range>)
+   (<cal> ^x <x> ^y <y>)
+-->
+   (<es> ^data <d>
+         ^lost-contact-time <time>
+         ^persistent-copy <d>)
+   (<d> ^visible false
+        ^id <id>
+        ^current-absolute-location <calc>
+        ^friendly <friendly>
+        ^range <range>)
+   (<calc> ^x <x> ^y <y>)
+   (write (crlf) |Made persistent copy of entity | <id>)
+   (<ol> ^broadcast-message <w1>)
+   # message: entity-report lost-contact <id> <time> <x> <y>
+   (<w1> ^word entity-report
+         ^next <w2>)
+   (<w2> ^word lost-contact
+         ^next <w3>)
+   (<w3> ^word <id>
+         ^next <w4>)
+   (<w4> ^word <time>
+         ^next <w5>)
+   (<w5> ^word <x>
+         ^next <w6>)
+   (<w6> ^word <y>
+         ^next nil)
+}
+
+#
+# if we have an entry and it's visible and we have a persistent copy, remove the persistent copy
+#
+
+sp {simple-robot*propose*maintain-entity*remove-persistent-copy
+   (state <s> ^name simple-robot
+              ^io.input-link <il>
+              ^entities.entity <es>)
+   (<il> ^entities.entity <e>)
+   (<e> ^visible true
+        ^id <id>)
+   (<es> ^id <id>
+         ^persistent-copy <d>)
+-->
+   (<s> ^operator <op> +)
+   (<op> ^name maintain-entity
+         ^state-entity <es>
+         ^remove-persistent-copy true)
+}
+
+sp {apply*maintain-entity*remove-persistent-copy
+   (state <s> ^operator <op>)
+   (<op> ^name maintain-entity
+         ^state-entity <e>)
+   (<e> ^persistent-copy <d>
+        ^data <d>
+        ^lost-contact-time <time>
+        ^id <id>)
+-->
+   (<e> ^data <d> -
+        ^persistent-copy <d> -
+        ^lost-contact-time <time> -
+        ^last-update-message-time -1000) #force message to be sent immediately
+   (write (crlf) |Removed persisent copy of entity | <id>)
+}
+
+sp {simple-robot*compare*maintain-entity
+   (state <s> ^name simple-robot
+              ^operator <op1> +
+                        <op2> +)
+   (<op1> ^name maintain-entity)
+   (<op2> ^name << execute-mission process-message >>)
+-->
+   (<s> ^operator <op1> > <op2>)
+}

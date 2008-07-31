@@ -2,7 +2,7 @@ sp {process-unfriendly-entity*propose*send-position-message
    (state <s> ^name process-unfriendly-entity
               ^io.input-link.time.seconds <time>
               ^entity <e-io>
-              ^top-state.entity <e-ts>)
+              ^top-state.entities.entity <e-ts>)
    (<e-ts> ^id <id>
            ^next-message-update-time <= <time>)
    (<e-io> ^id <id>
@@ -22,7 +22,7 @@ sp {process-unfriendly-entity*propose*send-position-message
 sp {apply*send-position-message
    (state <s> ^operator <op>
               ^io.output-link <ol>
-              ^top-state.entity <e>)
+              ^top-state.entities.entity <e>)
    (<op> ^name send-position-message
          ^id <id>
          ^x <x>

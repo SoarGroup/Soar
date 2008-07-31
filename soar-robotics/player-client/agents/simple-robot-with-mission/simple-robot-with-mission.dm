@@ -1,4 +1,4 @@
-177
+187
 SOAR_ID 0
 SOAR_ID 1
 SOAR_ID 2
@@ -168,19 +168,29 @@ ENUMERATION 165 1 process-unfriendly-entity
 ENUMERATION 166 1 send-position-message
 SOAR_ID 167
 INTEGER_RANGE 168 0 2147483647
-SOAR_ID 169
-INTEGER_RANGE 170 -2147483648 2147483647
-INTEGER_RANGE 171 0 2147483647
-INTEGER_RANGE 172 -2147483648 2147483647
-INTEGER_RANGE 173 -2147483648 2147483647
-FLOAT_RANGE 174 -Infinity Infinity
-FLOAT_RANGE 175 -Infinity Infinity
-INTEGER_RANGE 176 0 2147483647
-225
+INTEGER_RANGE 169 -2147483648 2147483647
+FLOAT_RANGE 170 -Infinity Infinity
+FLOAT_RANGE 171 -Infinity Infinity
+INTEGER_RANGE 172 0 2147483647
+SOAR_ID 173
+SOAR_ID 174
+INTEGER_RANGE 175 -2147483648 2147483647
+INTEGER_RANGE 176 -2147483648 2147483647
+SOAR_ID 177
+ENUMERATION 178 1 maintain-entity
+ENUMERATION 179 2 false true
+INTEGER_RANGE 180 0 2147483647
+INTEGER_RANGE 181 0 2147483647
+INTEGER_RANGE 182 -2147483648 2147483647
+SOAR_ID 183
+ENUMERATION 184 1 maintain-entity-create-entry
+ENUMERATION 185 1 true
+ENUMERATION 186 1 true
+239
 0 attribute 117
 0 choices 116
 0 desired 31
-0 entity 169
+0 entities 173
 0 io 1
 0 item 21
 0 message-update-time 168
@@ -191,6 +201,8 @@ INTEGER_RANGE 176 0 2147483647
 0 operator 18
 0 operator 76
 0 operator 141
+0 operator 177
+0 operator 183
 0 replan-time 23
 0 superstate 6
 0 top-state 0
@@ -376,6 +388,7 @@ INTEGER_RANGE 176 0 2147483647
 149 friendly 151
 149 id 150
 149 range 152
+149 visible 179
 153 x 154
 153 y 155
 157 name 156
@@ -394,11 +407,22 @@ INTEGER_RANGE 176 0 2147483647
 163 superstate 158
 163 top-state 0
 163 type 164
-167 id 173
+167 id 169
 167 name 166
-167 time 176
-167 x 174
-167 y 175
-169 id 172
-169 last-message-update-time 170
-169 next-message-update-time 171
+167 time 172
+167 x 170
+167 y 171
+173 entity 174
+174 data 149
+174 id 182
+174 last-update-message-time 175
+174 lost-contact-time 181
+174 next-update-message-time 176
+174 persistent-copy 149
+177 create-entry 185
+177 input-entity 149
+177 lost-contact-time 180
+177 name 178
+177 remove-persistent-copy 186
+177 state-entity 174
+183 name 184

@@ -3,15 +3,15 @@
 #      PRO: less complex agent code CON: less flexible (environment code needs to be changed to alter timing, timing can't be based on knowledge)
 #      can do both (so agent can continue to track it if it wants to)
 
-sp {scout*propose*process-unfriendly-entity
-   (state <s> ^name scout
-              ^io.input-link.entities.entity <e>)
-   (<e> ^friendly false)
--->
-   (<s> ^operator <op> +)
-   (<op> ^name process-unfriendly-entity
-         ^entity <e>)
-}
+#sp {scout*propose*process-unfriendly-entity
+#   (state <s> ^name scout
+#              ^io.input-link.entities.entity <e>)
+#   (<e> ^friendly false)
+#-->
+#   (<s> ^operator <op> +)
+#   (<op> ^name process-unfriendly-entity
+#         ^entity <e>)
+#}
 
 sp {scout*compare*process-unfriendly-entity
    (state <s> ^name scout
@@ -28,9 +28,10 @@ sp {apply*process-unfriendly-entity
               ^top-state <ts>)
    (<op> ^name process-unfriendly-entity
          ^entity.id <id>)
-  -(<ts> ^entity.id <id>)
+   (<ts> ^entities <es>)
+  -(<es> ^entity.id <id>)
 -->
-   (<ts> ^entity <e-ts>)
+   (<es> ^entity <e-ts>)
    (<e-ts> ^id <id>
            ^last-message-update-time -1000) # init to negative time to force first message out right away
 }

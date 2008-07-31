@@ -15,3 +15,4 @@ source process-message.soar
 pushd process-message
 source process-message_source.soar
 popd
+source maintain-entity.soar

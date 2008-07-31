@@ -17,6 +17,5 @@ source selection.soar
 excise top-goal*halt*success
 pushd selection-iterative-deepening
 source selection-iterative-deepening.soar
-#source temp-failure-fix.soar
 popd
 popd
