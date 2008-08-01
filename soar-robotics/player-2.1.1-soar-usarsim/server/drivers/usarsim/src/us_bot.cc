@@ -436,8 +436,9 @@ void UsBot::ParseData(char* data)
   else if ((type & devices & US_DATA_FIDUCIAL) && (fiducial!=NULL))
   {
       bNewFiducial = false;
-      if (!bLockFiducial || WaitUnlock(&bLockFiducial))
+      if (!bLockFiducial || WaitUnlock(&bLockFiducial)) {
 	  us_get_fiducial(pBody,fiducial);
+      }
       bNewFiducial = true;
   } 
   else if ((type & devices & US_DATA_VICTIM_FIDUCIAL) && (victim_fiducial!=NULL))

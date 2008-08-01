@@ -137,6 +137,7 @@ int UsFiducial::Setup()
   bot = ((UsBot*)bot_device->driver);
   // Prepare data for bot
   bot->fiducial = (player_fiducial_data_t *)calloc(1, sizeof(player_fiducial_data_t));
+  bot->fiducial->fiducials = (player_fiducial_item_t *)calloc( PLAYER_FIDUCIAL_MAX_SAMPLES, sizeof(player_fiducial_item_t) );
   bot->devices |= US_DATA_FIDUCIAL;
   // Start the device thread
   StartThread();
@@ -151,7 +152,10 @@ int UsFiducial::Shutdown()
   fprintf(stderr,"UsFiducial - Shutdown\n");
   // free data for bot
   //bot->devices &= ~(US_DATA_FIDUCIAL);
-  //free(bot->fiducial);
+  player_fiducial_data_t* fid = bot->fiducial;
+  bot->fiducial = 0;
+  free(fid->fiducials);
+  free(fid);
   return 0;
 }
 ////////////////////////////////////////////////////////////////////////////////

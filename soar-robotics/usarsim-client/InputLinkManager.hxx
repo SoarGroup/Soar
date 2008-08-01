@@ -76,7 +76,7 @@ void InputLinkManager::motion_update( double motion_x, double motion_y, double m
 
 void InputLinkManager::feducial_update( int id, double x, double y )
 {
-	//std::cout << "f(" << id << "," << x << "," << y << ")\n";
+	std::cout << "f(" << id << "," << x << "," << y << ")" << std::endl;
 }
 
 void InputLinkManager::beam_update( bool outer, bool inner )

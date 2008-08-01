@@ -952,10 +952,13 @@ int us_get_fiducial(char* origdata, player_fiducial_data_t *fid)
 	int pos = 0;
 	data = origdata;
 	if (fid==NULL) return -1;
-	memset(fid, 0, sizeof(player_fiducial_data_t));
-	count = fid->fiducials_count;
+	//memset(fid, 0, sizeof(player_fiducial_data_t));
+	fid->fiducials_count = 0;
 
+	printf( "origdata: %s\n", origdata );
 	while (1){
+		fflush( stdout );
+		
 		count = fid->fiducials_count;
 		if ( (pos=us_get_value2(data, "ID", tmp)) == -1) {
 		  return 0;
@@ -974,6 +977,8 @@ int us_get_fiducial(char* origdata, player_fiducial_data_t *fid)
 		p1 = p2+1;
 		fid->fiducials[count].pose.pz = (-1.0) * atof(p1);
 		fid->fiducials_count = (count + 1)%PLAYER_FIDUCIAL_MAX_SAMPLES;
+		
+		printf( "id: %d\n", fid->fiducials[count].id );
 	}
 	return 0;
 }

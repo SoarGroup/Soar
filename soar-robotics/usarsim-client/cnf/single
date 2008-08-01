@@ -1,6 +1,6 @@
 bots = 1
 
 name0 = zero
-productions0 = agents/simple-robot-with-mission-one.soar
+productions0 = agents/simple-robot.soar
 port0 = 6665
 
