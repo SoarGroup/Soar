@@ -1,4 +1,4 @@
-sp {scout*propose*send-position-message
+sp {scout*propose*send-entity-report
    (state <s> ^name scout
               ^top-state.entities.entity <e>
               ^io.input-link.time.seconds <time>)
@@ -9,27 +9,27 @@ sp {scout*propose*send-position-message
         ^friendly false)
 -->
    (<s> ^operator <op> +)
-   (<op> ^name send-position-message
+   (<op> ^name send-entity-report
          ^entity <e>
          ^time <time>)
 }
 
-sp {scout*compare*send-position-message
+sp {scout*compare*send-entity-report
    (state <s> ^name scout
               ^operator <op1> +
                         <op2> +)
-   (<op1> ^name send-position-message)
-   (<op2> ^name send-position-message)
+   (<op1> ^name send-entity-report)
+   (<op2> ^name send-entity-report)
 -->
    (<s> ^operator <op1> = <op2>)
 }
 
 
 # message: entity-report position-update <id> <x> <y> <friendly>
-sp {apply*send-position-message
+sp {apply*send-entity-report
    (state <s> ^operator <op>
               ^io.output-link <ol>)
-   (<op> ^name send-position-message
+   (<op> ^name send-entity-report
          ^entity <e>
          ^time <time>)
    (<e> ^id <id>

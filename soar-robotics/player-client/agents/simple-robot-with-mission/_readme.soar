@@ -10,6 +10,14 @@
 #  execute-mission/go-to-location/give-up-on-move-to
 # Example: elaborations/process-unfriendly-entity has rules that are only relevant to
 #  execute-mission/scout/process-unfriendly-entity
+# Unworkable solution: It might seem that a good approach is to create a link to the 
+#  top-state structure in the subgoal, and then elaborate it there. The problem with
+#  this approach is that it generates results which will almost certainly be o-supported
+#  instead of i-supported (which is what we want). The only way to avoid this is to
+#  elaborate the structure onto every substate (thus avoiding testing anything to do
+#  with operators, like the state name), but then this creates clutter for those
+#  other states.  It's also delicate in the sense that it can easily be broken if someone
+#  modifies it without understanding what's going on.
 
 # Similar to the above, messages are processed on the top-state, even if they
 # are relevant to what's going on in a substate.

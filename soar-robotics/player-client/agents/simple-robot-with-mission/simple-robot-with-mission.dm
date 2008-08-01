@@ -1,4 +1,4 @@
-177
+196
 SOAR_ID 0
 SOAR_ID 1
 SOAR_ID 2
@@ -156,7 +156,7 @@ SOAR_ID 153
 SOAR_ID 154
 ENUMERATION 155 1 state
 ENUMERATION 156 1 scout
-ENUMERATION 157 1 send-position-message
+ENUMERATION 157 1 send-entity-report
 SOAR_ID 158
 INTEGER_RANGE 159 0 2147483647
 SOAR_ID 160
@@ -176,7 +176,26 @@ SOAR_ID 173
 ENUMERATION 174 1 maintain-entity-remove-persistent-copy
 INTEGER_RANGE 175 -2147483648 2147483647
 INTEGER_RANGE 176 -2147483648 2147483647
-228
+FLOAT_RANGE 177 0.0 360.0
+INTEGER_RANGE 178 -2147483648 2147483647
+ENUMERATION 179 1 hide
+SOAR_ID 180
+ENUMERATION 181 1 unhide
+SOAR_ID 182
+ENUMERATION 183 1 rotate
+SOAR_ID 184
+FLOAT_RANGE 185 -Infinity Infinity
+INTEGER_RANGE 186 -2147483648 2147483647
+FLOAT_RANGE 187 -Infinity Infinity
+SOAR_ID 188
+FLOAT_RANGE 189 -Infinity Infinity
+FLOAT_RANGE 190 0.0 1.0
+FLOAT_RANGE 191 0.0 360.0
+FLOAT_RANGE 192 -Infinity Infinity
+FLOAT_RANGE 193 -Infinity Infinity
+ENUMERATION 194 1 true
+FLOAT_RANGE 195 -Infinity Infinity
+251
 0 attribute 117
 0 choices 116
 0 desired 31
@@ -195,6 +214,7 @@ INTEGER_RANGE 176 -2147483648 2147483647
 0 operator 171
 0 operator 173
 0 replan-time 23
+0 rotation-tolerance 192
 0 superstate 6
 0 top-state 0
 0 type 5
@@ -205,11 +225,11 @@ INTEGER_RANGE 176 -2147483648 2147483647
 2 self 26
 2 time 24
 3 broadcast-message 127
-3 broadcast-message 127
 3 move 8
 3 move-to 35
 3 remove-message 129
 3 rotate 9
+3 rotate-to 188
 3 stop 10
 4 name 7
 8 direction 11
@@ -228,14 +248,19 @@ INTEGER_RANGE 176 -2147483648 2147483647
 26 received-messages 118
 27 x 28
 27 y 29
+27 yaw 191
 30 at 31
 30 waypoint 31
+31 area 178
 31 distance 34
+31 hide 31
+31 hiding 31
 31 id 139
 31 id 142
 31 next 31
 31 x 32
 31 y 33
+31 yaw 177
 35 throttle 38
 35 x 36
 35 y 37
@@ -381,16 +406,26 @@ INTEGER_RANGE 176 -2147483648 2147483647
 149 x 150
 149 y 151
 153 name 152
+153 yaw 185
+154 desired-yaw 187
 154 io 1
 154 name 156
 154 operator 158
+154 operator 180
+154 operator 182
+154 operator 184
+154 rotate 194
 154 superstate 78
 154 top-state 0
 154 type 155
+154 waypoints 30
+154 yaw-diff 193
+154 yaw-prediff 195
 158 entity 161
 158 name 157
 158 time 168
 160 entity 161
+161 area 186
 161 data 145
 161 id 166
 161 last-contact-time 165
@@ -405,3 +440,10 @@ INTEGER_RANGE 176 -2147483648 2147483647
 171 state-entity 161
 173 name 174
 173 state-entity 161
+180 name 179
+180 waypoint 31
+182 name 181
+184 name 183
+184 yaw 187
+188 throttle 190
+188 yaw 189

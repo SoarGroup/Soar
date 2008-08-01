@@ -1,2 +1,5 @@
 source elaborations.soar
-source send-position-message.soar
+source hide.soar
+source rotate.soar
+source send-entity-report.soar
+source unhide.soar

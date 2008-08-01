@@ -1,0 +1,25 @@
+sp {scout*propose*unhide
+   (state <s> ^name scout
+              ^top-state.entities.entity.area <a>
+              ^waypoints.at <wh>)
+   (<wh> ^hiding <w>)
+  -(<w> ^hide.area <a>)
+-->
+   (<s> ^operator <op> +)
+   (<op> ^name unhide
+         ^waypoint <w>)
+}
+
+sp {apply*unhide
+   (state <s> ^operator <op>
+              ^io.output-link <ol>)
+   (<op> ^name unhide
+         ^waypoint <h>)
+   (<h> ^x <x>
+        ^y <y>)
+-->
+   (<ol> ^move-to <mt>)
+   (<mt> ^x <x>
+         ^y <y>
+         ^throttle 1)
+}
