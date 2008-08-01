@@ -20,8 +20,10 @@ sp {simple-robot*compare*choose-destination*force
 #add-wme i5 ^x -7
 #add-wme i5 ^y -7
 
-pushd ../default
+pushd ../../default
 source selection.soar
-source selection-iterative-deepening.soar
 excise top-goal*halt*success
+pushd selection-iterative-deepening
+source selection-iterative-deepening.soar
+popd
 popd
