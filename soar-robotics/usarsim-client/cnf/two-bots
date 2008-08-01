@@ -1,10 +1,10 @@
 bots = 2
 
 name0 = zero
-productions0 = agents/simple-robot-with-mission-one.soar
+productions0 = agents/simple-robot.soar
 port0 = 6665
 
 name1 = one
-productions1 = agents/simple-robot-with-mission-one.soar
+productions1 = agents/simple-robot.soar
 port1 = 6666
 

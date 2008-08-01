@@ -45,8 +45,6 @@ int UsFakeLocalize::Setup()
   }
   //now I can access the fields in driver directly
   bot = ((UsBot*)bot_device->driver);
-  bot->location = (player_localize_data_t *)calloc(1, sizeof(player_localize_data_t));
-  bot->location->hypoths = (player_localize_hypoth_t *)calloc(1, sizeof(player_localize_hypoth_t));
   bot->devices |= US_DATA_INS;
   this->StartThread();
   return 0;
@@ -116,12 +114,6 @@ void UsFakeLocalize::Main() {
 // Shutdown the device (called by server thread).
 int UsFakeLocalize::Shutdown()
 {
-  free( bot->location->hypoths );
-  bot->location->hypoths = 0;
-
-  free( bot->location );
-  bot->location = 0;
-
   // Unsubscribe from devices.
   return 0;
 }

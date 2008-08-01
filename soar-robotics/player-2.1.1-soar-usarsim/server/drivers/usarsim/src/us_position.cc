@@ -17,6 +17,8 @@ void UsPosition_Register(DriverTable* table)
 // Constructor
 UsPosition::UsPosition(ConfigFile* cf, int section) : Driver(cf, section)
 {
+  this->pos = 0;
+  
   fprintf(stderr,"UsPosition - Constructor\n");
   if (cf->ReadDeviceAddr(&this->bot_id, section, "requires",
                          PLAYER_SIMULATION_CODE, -1,NULL) != 0)

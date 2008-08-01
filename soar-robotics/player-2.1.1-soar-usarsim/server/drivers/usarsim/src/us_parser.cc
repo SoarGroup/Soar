@@ -342,7 +342,9 @@ int us_get_groundTruth(char* data, player_localize_data_t *location)
   location->hypoths[0].mean.py = ypos;
   location->hypoths[0].mean.pa = (-1.0) * yaw;
    // zero covariance and max weight
-  memset(location->hypoths[0].cov,0,sizeof(int64_t)*9);
+  location->hypoths[0].cov[0] = 0;
+  location->hypoths[0].cov[1] = 0;
+  location->hypoths[0].cov[2] = 0;
   location->hypoths[0].alpha = 1e6;
   return 0;
 }

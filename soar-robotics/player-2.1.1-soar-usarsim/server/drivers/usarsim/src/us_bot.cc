@@ -153,6 +153,7 @@ UsBot::UsBot(ConfigFile* cf, int section) :
   bLockINU = false;
 
   bConfRobot = false;
+  bGeoRobot = false;
   steeringType = NULL;
   robotDimensions = NULL;
   maxWheelSeparation = -1;
@@ -161,7 +162,12 @@ UsBot::UsBot(ConfigFile* cf, int section) :
   COG[1] = 0.0;
   COG[2] = 0.0;
   wheelBase = 0.0;
-
+  
+  bNewLocation = false;
+  location = (player_localize_data_t *)calloc(1, sizeof(player_localize_data_t));
+  location->hypoths = (player_localize_hypoth_t *)calloc(1, sizeof(player_localize_hypoth_t));
+  bLockLocation = false;
+  
   Setup();
   bot_index++;
   return;
@@ -171,6 +177,12 @@ UsBot::UsBot(ConfigFile* cf, int section) :
  */
 UsBot::~UsBot()
 {
+  free( location->hypoths );
+  location->hypoths = 0;
+
+  free( location );
+  location = 0;
+
   // TODO: delete all maps
   fprintf(stderr,"UsBot -- Destructor\n");
   Shutdown();
@@ -510,7 +522,7 @@ void UsBot::ParseData(char* data)
   // parse and publish scan data of 2D lasers
   else if (type & devices & US_DATA_LASER)
   {
-    char* name = new char[128];
+    char name[128];
     player_laser_data_t* data = new player_laser_data_t;
 
     // FIXME these should be driven by laser configuration
@@ -521,16 +533,17 @@ void UsBot::ParseData(char* data)
     if(us_get_laser(pBody, name, data) == 0)
     {
       string s(name);
-      if (mLaserSubscribed[s]) {
+      if (mLaserSubscribed[s]) 
+      {
         mLaser[s]->SetData(data);
       }
-      else {
+      else 
+      {
         delete data->intensity;
         delete data->ranges;
         delete data;
       }
     }
-    delete name;
   }
   // Get the scan data from laser 3d.
   // The pointcloud3d data structure is not yet included in the standard

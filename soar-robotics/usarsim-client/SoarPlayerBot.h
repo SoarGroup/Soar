@@ -30,7 +30,7 @@ public:
 private:
     PlayerCc::PlayerClient    m_robot;
     PlayerCc::Position2dProxy m_pp;    
-    PlayerCc::FiducialProxy   m_fp;    
+    //PlayerCc::FiducialProxy   m_fp;    
     PlayerCc::LaserProxy      m_lp;    
     //PlayerCc::GripperProxy    m_gp;    
 

@@ -19,7 +19,7 @@ using std::list;
 SoarPlayerBot::SoarPlayerBot( int port, Agent& agent, const std::string& productions )
 : m_robot( "localhost", port )
 , m_pp( &m_robot, 2 )
-, m_fp( &m_robot, 0 )
+//, m_fp( &m_robot, 0 )
 , m_lp( &m_robot, 0 )
 //, m_gp( &m_robot, 0 )
 , m_productions( productions )
@@ -95,11 +95,11 @@ void SoarPlayerBot::update( std::deque< Message* >& outgoing_message_deque )
 	//m_input_link->beam_update( outer, inner );
 	//m_input_link->gripper_update( gripper_open, gripper_closed, gripper_moving, gripper_error );
 	
-	for ( unsigned count = 0; count < m_fp.GetCount(); ++count )
-	{
-		player_fiducial_item item = m_fp.GetFiducialItem( count );
-		m_input_link->feducial_update( item.id, item.pose.px, item.pose.py );
-	}
+	//for ( unsigned count = 0; count < m_fp.GetCount(); ++count )
+	//{
+	//	player_fiducial_item item = m_fp.GetFiducialItem( count );
+	//	m_input_link->feducial_update( item.id, item.pose.px, item.pose.py );
+	//}
 		
 	// read output link
 	m_output_link->read();
