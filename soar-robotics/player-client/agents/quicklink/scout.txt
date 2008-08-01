@@ -2,6 +2,7 @@ set-stop-phase --before --input
 excise -a
 source -v "C:\Bob\soar-robotics-share\agents\simple-robot-with-mission-one.soar"
 w 5
+clear
 add il ^self /S1
 add S1 ^name me
 add S1 ^received-messages /R1

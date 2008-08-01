@@ -1,5 +1,5 @@
 add R1 ^message /M1
-add M1 ^from me
+add M1 ^from you
 add M1 ^id 1
 add M1 ^first /W1
 add W1 ^word entity-report

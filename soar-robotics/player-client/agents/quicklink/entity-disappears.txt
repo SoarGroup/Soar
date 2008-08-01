@@ -1,0 +1,2 @@
+change E2 ^visible true false
+change T1 ^seconds 2 3

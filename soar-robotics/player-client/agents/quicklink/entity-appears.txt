@@ -6,3 +6,5 @@ add E2 ^range 5
 add E2 ^current-absolute-location /C2
 add C2 ^x 10
 add C2 ^y 2
+change T1 ^seconds 1 2
+run 10

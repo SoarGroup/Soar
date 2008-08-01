@@ -6,12 +6,15 @@ pushd elaborations
 source elaborations_source.soar
 popd
 source _readme.soar
+source maintain-entity-from-input.soar
 source execute-mission.soar
 pushd execute-mission
 source execute-mission_source.soar
 popd
 source initialize-simple-robot.soar
-source maintain-entity.soar
+source maintain-entity-make-persistent-copy.soar
+source maintain-entity-new.soar
+source maintain-entity-remove-persistent-copy.soar
 source process-message.soar
 pushd process-message
 source process-message_source.soar

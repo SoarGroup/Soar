@@ -1,4 +1,4 @@
-180
+177
 SOAR_ID 0
 SOAR_ID 1
 SOAR_ID 2
@@ -156,37 +156,34 @@ SOAR_ID 153
 SOAR_ID 154
 ENUMERATION 155 1 state
 ENUMERATION 156 1 scout
-ENUMERATION 157 1 process-unfriendly-entity
+ENUMERATION 157 1 send-position-message
 SOAR_ID 158
-SOAR_ID 159
-ENUMERATION 160 1 state
-ENUMERATION 161 1 process-unfriendly-entity
-ENUMERATION 162 1 send-position-message
-SOAR_ID 163
-INTEGER_RANGE 164 0 2147483647
+INTEGER_RANGE 159 0 2147483647
+SOAR_ID 160
+SOAR_ID 161
+INTEGER_RANGE 162 -2147483648 2147483647
+INTEGER_RANGE 163 -2147483648 2147483647
+ENUMERATION 164 2 false true
 INTEGER_RANGE 165 0 2147483647
-SOAR_ID 166
-SOAR_ID 167
+INTEGER_RANGE 166 -2147483648 2147483647
+ENUMERATION 167 1 nil
 INTEGER_RANGE 168 -2147483648 2147483647
-INTEGER_RANGE 169 -2147483648 2147483647
-SOAR_ID 170
-ENUMERATION 171 1 maintain-entity
-ENUMERATION 172 2 false true
-INTEGER_RANGE 173 0 2147483647
-INTEGER_RANGE 174 0 2147483647
+SOAR_ID 169
+ENUMERATION 170 1 maintain-entity-new
+SOAR_ID 171
+ENUMERATION 172 1 maintain-entity-make-persistent-copy
+SOAR_ID 173
+ENUMERATION 174 1 maintain-entity-remove-persistent-copy
 INTEGER_RANGE 175 -2147483648 2147483647
-ENUMERATION 176 1 true
-ENUMERATION 177 1 true
-INTEGER_RANGE 178 -2147483648 2147483647
-ENUMERATION 179 1 nil
-234
+INTEGER_RANGE 176 -2147483648 2147483647
+228
 0 attribute 117
 0 choices 116
 0 desired 31
-0 entities 166
+0 entities 160
 0 io 1
 0 item 21
-0 message-update-time 164
+0 message-update-time 159
 0 mission 88
 0 move-to 50
 0 name 115
@@ -194,7 +191,9 @@ ENUMERATION 179 1 nil
 0 operator 18
 0 operator 76
 0 operator 137
-0 operator 170
+0 operator 169
+0 operator 171
+0 operator 173
 0 replan-time 23
 0 superstate 6
 0 top-state 0
@@ -357,7 +356,7 @@ ENUMERATION 179 1 nil
 119 time 122
 122 microseconds 124
 122 seconds 123
-125 next 179
+125 next 167
 125 next 125
 125 word 126
 127 next 141
@@ -378,7 +377,7 @@ ENUMERATION 179 1 nil
 145 friendly 147
 145 id 146
 145 range 148
-145 visible 172
+145 visible 164
 149 x 150
 149 y 151
 153 name 152
@@ -388,29 +387,21 @@ ENUMERATION 179 1 nil
 154 superstate 78
 154 top-state 0
 154 type 155
-158 entity 167
+158 entity 161
 158 name 157
-159 entity 167
-159 io 1
-159 name 161
-159 operator 163
-159 superstate 154
-159 top-state 0
-159 type 160
-163 entity 167
-163 name 162
-163 time 165
-166 entity 167
-167 data 145
-167 id 175
-167 last-contact-time 174
-167 last-update-message-time 168
-167 next-update-message-time 169
-167 persistent-copy 145
-170 create-entry 176
-170 id 178
-170 input-entity 145
-170 last-contact-time 173
-170 name 171
-170 remove-persistent-copy 177
-170 state-entity 167
+158 time 168
+160 entity 161
+161 data 145
+161 id 166
+161 last-contact-time 165
+161 last-update-message-time 162
+161 next-update-message-time 163
+161 persistent-copy 145
+169 id 176
+169 name 170
+171 input-entity 145
+171 last-contact-time 175
+171 name 172
+171 state-entity 161
+173 name 174
+173 state-entity 161

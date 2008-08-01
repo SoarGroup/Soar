@@ -1,5 +1,2 @@
 source elaborations.soar
-source process-unfriendly-entity.soar
-pushd process-unfriendly-entity
-source process-unfriendly-entity_source.soar
-popd
+source send-position-message.soar
