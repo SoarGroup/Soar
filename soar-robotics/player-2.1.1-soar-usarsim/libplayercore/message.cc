@@ -167,7 +167,6 @@ Message::DecRef()
     RefCount = NULL;
     pthread_mutex_unlock(Lock);
     pthread_mutex_destroy(Lock);
-    printf("delete Lock\n");
     delete Lock;
     Lock = NULL;
   }
