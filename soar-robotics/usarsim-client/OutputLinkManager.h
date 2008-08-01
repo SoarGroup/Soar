@@ -12,7 +12,7 @@ public:
 	Command() {}
 	Command( sml::Identifier* commandId );
 
-	enum CommandType { MOVE, ROTATE, STOP, GRIPPER, MOVE_TO, BROADCAST_MESSAGE, REMOVE_MESSAGE };
+	enum CommandType { MOVE, ROTATE, STOP, GRIPPER, MOVE_TO, ROTATE_TO, BROADCAST_MESSAGE, REMOVE_MESSAGE };
 	CommandType 	get_type();
 
 	enum MoveDirection { MOVE_STOP, MOVE_FORWARD, MOVE_BACKWARD };
@@ -28,6 +28,8 @@ public:
 	
 	double get_x();
 	double get_y();
+	
+	double get_a();
 	
 	const std::list< std::string > get_sentence() const;
 	
@@ -46,6 +48,7 @@ private:
 	Status m_status;
 	double m_x;
 	double m_y;
+	double m_a;
 	std::list< std::string > m_sentence;
 	int m_remove_message_id;
 };

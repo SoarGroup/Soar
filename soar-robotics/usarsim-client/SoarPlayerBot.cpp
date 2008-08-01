@@ -176,6 +176,17 @@ void SoarPlayerBot::update( std::deque< Message* >& outgoing_message_deque )
 
 			break;
 			
+		case Command::ROTATE_TO:
+			player_pose2d rotate_to_destination;
+			rotate_to_destination.px = x;
+			rotate_to_destination.py = y;
+			rotate_to_destination.pa = command->get_a();
+			std::cout << m_agent.GetAgentName() << ": ROTATE_TO(" << x << "," << y << "," << command->get_a() << ")" << std::endl;
+			
+			m_pp.GoTo( rotate_to_destination );
+
+			break;
+			
 		case Command::BROADCAST_MESSAGE:
 			{
 				Message* message = new Message( m_agent.GetAgentName(), command->get_sentence() );

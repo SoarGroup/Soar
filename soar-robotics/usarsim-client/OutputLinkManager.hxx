@@ -43,6 +43,11 @@ double Command::get_y()
 	return m_y;
 }
 
+double Command::get_a()
+{
+	return m_a;
+}
+
 const std::list< std::string > Command::get_sentence() const
 {
 	return m_sentence;

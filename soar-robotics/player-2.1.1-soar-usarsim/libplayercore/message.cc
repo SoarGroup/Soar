@@ -167,6 +167,7 @@ Message::DecRef()
     RefCount = NULL;
     pthread_mutex_unlock(Lock);
     pthread_mutex_destroy(Lock);
+    printf("delete Lock\n");
     delete Lock;
     Lock = NULL;
   }
@@ -552,6 +553,7 @@ MessageQueue::Pop()
   {
     for(el = this->tail; el; el = el->prev)
     {
+      assert(el->msg);
       if((el->msg->GetHeader()->type == PLAYER_MSGTYPE_RESP_NACK) ||
          (el->msg->GetHeader()->type == PLAYER_MSGTYPE_RESP_ACK))
       {

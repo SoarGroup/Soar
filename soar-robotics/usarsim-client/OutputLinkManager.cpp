@@ -83,6 +83,13 @@ Command::Command( Identifier* command_id )
 			throw std::exception();
 		}
 	}
+	else if ( command_string == "rotate-to" )
+	{
+		m_type = ROTATE_TO;
+
+		m_a = ::get_param< double >( "yaw", command_id );
+		m_throttle = ::get_param< double >( "throttle", command_id );
+	}
 	else if ( command_string == "stop" )
 	{
 		m_type = STOP;

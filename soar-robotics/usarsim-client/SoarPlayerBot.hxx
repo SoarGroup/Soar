@@ -91,6 +91,28 @@ std::string SoarPlayerBot::command_output( const std::string& command )
     	
     	m_pp.SetSpeed( 0, yaw );
     }
+    else if ( cmd == "rotate-to" )
+    {
+    	if ( split1 == std::string::npos )
+    	{
+    		return "rotate-to <absolute yaw>";
+    	}
+    	std::string yaw_string = command.substr( split1 + 1 );
+    	float yaw = 0;
+    	if ( !from_string( yaw, yaw_string, std::dec ) )
+    	{
+    		return "need float argument";
+    	}
+
+		player_pose2d rotate_to_destination;
+		rotate_to_destination.px = m_pp.GetXPos();
+		rotate_to_destination.py = m_pp.GetYPos();
+		rotate_to_destination.pa = yaw;
+		
+		std::cout << "(" << rotate_to_destination.px << "," << rotate_to_destination.py << "," << rotate_to_destination.pa << ")" << std::endl;
+		
+		m_pp.GoTo( rotate_to_destination );
+    }
     else if ( cmd == "move-to" )
     {
     	if ( split1 == std::string::npos )
@@ -125,6 +147,7 @@ std::string SoarPlayerBot::command_output( const std::string& command )
 		player_pose2d move_to_destination;
 		move_to_destination.px = x;
 		move_to_destination.py = y;
+		move_to_destination.pa = m_pp.GetYaw();		
 		
 		m_pp.GoTo( move_to_destination );
     }
