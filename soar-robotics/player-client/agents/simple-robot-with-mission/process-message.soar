@@ -46,7 +46,8 @@ sp {apply*process-message*update-map-remove-link
               ^waypoints.waypoint <wp1>)
    (<wp1> ^id <id1>
           ^next <wp2>)
-   (<wp2> ^id <id2>)
+   (<wp2> ^id <id2>
+          ^next <wp1>)
    (<op> ^name process-message
          ^message <m>)
    (<m>  ^id <id>
@@ -61,6 +62,7 @@ sp {apply*process-message*update-map-remove-link
    (<w4> ^word <id2>)
 -->
    (<wp1> ^next <wp2> -)
+   (<wp2> ^next <wp1> -)
    (<m> ^status processed)
    (write (crlf) |Updated map, removed link from | <id1> | to | <id2>)
    (exec player-print |Updated map, removed link from | <id1> | to | <id2>)

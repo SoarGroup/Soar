@@ -1,4 +1,4 @@
-197
+199
 SOAR_ID 0
 SOAR_ID 1
 SOAR_ID 2
@@ -196,7 +196,9 @@ FLOAT_RANGE 193 -Infinity Infinity
 ENUMERATION 194 1 true
 FLOAT_RANGE 195 -Infinity Infinity
 FLOAT_RANGE 196 0.0 Infinity
-252
+INTEGER_RANGE 197 0 2147483647
+INTEGER_RANGE 198 0 2147483647
+254
 0 attribute 117
 0 choices 116
 0 desired 31
@@ -357,6 +359,7 @@ FLOAT_RANGE 196 0.0 Infinity
 89 end-time 104
 89 name 92
 89 next 90
+89 return-time 198
 89 start-time 103
 89 status 91
 90 name 94
@@ -365,6 +368,7 @@ FLOAT_RANGE 196 0.0 Infinity
 90 y 96
 97 name 98
 97 next 99
+97 return-time 197
 105 map-updated 107
 105 move-to 50
 105 name 106

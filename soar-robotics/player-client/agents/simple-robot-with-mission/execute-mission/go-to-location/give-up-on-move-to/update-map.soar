@@ -12,6 +12,7 @@ sp {give-up-on-move-to*propose*update-map
 }
 
 # message: update-map remove-link <id1> <id2>
+# (assumings links are two-way)
 sp {apply*update-map
    (state <s> ^operator <op>
               ^superoperator.move-to <mt>
@@ -21,9 +22,11 @@ sp {apply*update-map
          ^destination <dest>)
    (<source> ^next <dest>
              ^id <id1>)
-   (<dest> ^id <id2>)
+   (<dest> ^next <source>
+           ^id <id2>)
 -->
    (<source> ^next <dest> -)
+   (<dest> ^next <source> -)
    (<mt> ^map-updated true)
    (<ol> ^broadcast-message <w1>)
    (<w1> ^word update-map

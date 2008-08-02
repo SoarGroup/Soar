@@ -21,7 +21,7 @@ sp {apply*start*mark-start
    (<c> ^start-time <time>)
 }
 
-sp {elaborate*start*end-time
+sp {apply*start*end-time
    (state <s> ^operator <op>
               ^mission.current <c>)
    (<op> ^name start)
