@@ -14,7 +14,7 @@ sp {scout*propose*send-entity-report
          ^time <time>)
 }
 
-sp {scout*compare*send-entity-report
+sp {scout*compare*send-entity-report*all-reports-indifferent
    (state <s> ^name scout
               ^operator <op1> +
                         <op2> +)
@@ -23,6 +23,17 @@ sp {scout*compare*send-entity-report
 -->
    (<s> ^operator <op1> = <op2>)
 }
+
+sp {scout*compare*send-entity-report*better-than-hide
+   (state <s> ^name scout
+              ^operator <op1> +
+                        <op2> +)
+   (<op1> ^name send-entity-report)
+   (<op2> ^name hide)
+-->
+   (<s> ^operator <op1> > <op2>)
+}
+
 
 
 # message: entity-report position-update <id> <x> <y> <friendly>

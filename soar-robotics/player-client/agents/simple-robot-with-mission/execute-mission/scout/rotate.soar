@@ -1,6 +1,6 @@
 sp {scout*elaborate*state*desired-yaw
    (state <s> ^name scout
-              ^superstate.operator.yaw <yaw>)
+              ^waypoints.at.yaw <yaw>)
 -->
    (<s> ^desired-yaw <yaw>)
 }
