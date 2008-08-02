@@ -12,6 +12,7 @@ sp {apply*initialize-simple-robot
 -->
    (<s> ^name simple-robot
         ^entities <e>
+        ^waypoint-tolerance 0.7 # how close (in meters) the agent needs to be to a waypoint to be considered "at" it
         ^replan-time 3 # how many seconds (as reported on the input-link) the agent should let the collision avoidance algorithm try to make progress towards the waypoint before replanning
         ^message-update-time 3 # after how many seconds (as reported on the input-link) the agent should send another positition update of an unfriendly entity)
         ^rotation-tolerance 10 # how many degrees the agent's yaw can be off when it has a desired yaw
@@ -28,7 +29,7 @@ sp {apply*initialize-simple-robot*create-mission
          ^delay-time 0
          ^next <s2>)
    (<s2> ^name go-to-location
-         ^x -6 ^y 1
+         ^x -6.5 ^y 0
          ^next <s3>)
    (<s3> ^name scout
          ^next nil)

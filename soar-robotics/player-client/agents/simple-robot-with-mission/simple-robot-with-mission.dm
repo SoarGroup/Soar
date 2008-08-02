@@ -1,4 +1,4 @@
-196
+197
 SOAR_ID 0
 SOAR_ID 1
 SOAR_ID 2
@@ -195,7 +195,8 @@ FLOAT_RANGE 192 -Infinity Infinity
 FLOAT_RANGE 193 -Infinity Infinity
 ENUMERATION 194 1 true
 FLOAT_RANGE 195 -Infinity Infinity
-251
+FLOAT_RANGE 196 0.0 Infinity
+252
 0 attribute 117
 0 choices 116
 0 desired 31
@@ -218,6 +219,7 @@ FLOAT_RANGE 195 -Infinity Infinity
 0 superstate 6
 0 top-state 0
 0 type 5
+0 waypoint-tolerance 196
 0 waypoints 30
 1 input-link 2
 1 output-link 3
