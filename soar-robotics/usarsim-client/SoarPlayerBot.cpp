@@ -86,7 +86,7 @@ void SoarPlayerBot::update( std::deque< Message* >& outgoing_message_deque )
 		switch ( command->get_type() )
 		{
 		case Command::MOVE:
-			//std::cout << m_agent.GetAgentName() << ": MOVE" << std::endl;
+			std::cout << m_agent.GetAgentName() << ": MOVE" << std::endl;
 			motion_command_received = true;
 			switch ( command->get_move_direction() )
 			{
@@ -103,7 +103,7 @@ void SoarPlayerBot::update( std::deque< Message* >& outgoing_message_deque )
 			break;
 			
 		case Command::ROTATE:
-			//std::cout << m_agent.GetAgentName() << ": ROTATE" << std::endl;
+			std::cout << m_agent.GetAgentName() << ": ROTATE" << std::endl;
 			motion_command_received = true;
 			switch ( command->get_rotate_direction() )
 			{
@@ -120,7 +120,7 @@ void SoarPlayerBot::update( std::deque< Message* >& outgoing_message_deque )
 			break;
 			
 		case Command::STOP:
-			//std::cout << m_agent.GetAgentName() << ": STOP" << std::endl;
+			std::cout << m_agent.GetAgentName() << ": STOP" << std::endl;
 			motion_command_received = true;
 			motion_x = 0;
 			motion_yaw = 0;

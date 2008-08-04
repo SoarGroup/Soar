@@ -21,9 +21,21 @@ void InputLinkManager::time_update( const timeval& time )
 	//std::cout << "t(" << time.tv_sec << "." << time.tv_usec / 1000000.0 << ")\n";
 }
 
-void InputLinkManager::position_update( double x, double y, double yaw )
+void InputLinkManager::position_update( double x, double y, double yaw_radians )
 {
-	double yaw_degrees = yaw * 180 / PI;
+	double yaw_degrees = yaw_radians * 180 / PI;
+	if ( yaw_degrees < 0 )
+	{
+		do
+		{
+			yaw_degrees += 360;
+		} while ( yaw_degrees < 0 );
+	}
+	else
+	{
+		yaw_degrees = fmod( yaw_degrees, 360 );
+	}
+	
 	double i = 1;
 	double j = 0;
 
