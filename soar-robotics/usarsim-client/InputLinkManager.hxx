@@ -88,7 +88,7 @@ void InputLinkManager::motion_update( double motion_x, double motion_y, double m
 
 void InputLinkManager::feducial_update( int id, double x, double y )
 {
-	std::cout << "f(" << id << "," << x << "," << y << ")" << std::endl;
+	
 }
 
 void InputLinkManager::add_message( const Message& message )

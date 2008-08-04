@@ -23,7 +23,7 @@ InputLinkManager::InputLinkManager( Agent& agent )
 	{
 		m_agent.CreateStringWME( m_self, "name", m_agent.GetAgentName() );
 		
-		Identifier* current_location = m_agent.CreateIdWME( m_self, "current-location" );
+		Identifier* current_location = m_agent.CreateIdWME( m_self, "location" );
 		
 		m_x = m_agent.CreateFloatWME( current_location, "x", 0 );
 		m_y = m_agent.CreateFloatWME( current_location, "y", 0 );
@@ -32,7 +32,7 @@ InputLinkManager::InputLinkManager( Agent& agent )
 		m_yaw = m_agent.CreateFloatWME( current_location, "yaw", 0 );
 	}
 	{
-		Identifier* current_motion = m_agent.CreateIdWME( m_self, "current-motion" );
+		Identifier* current_motion = m_agent.CreateIdWME( m_self, "motion" );
 
 		m_motion_x = m_agent.CreateFloatWME( current_motion, "x", 0 );
 		m_motion_y = m_agent.CreateFloatWME( current_motion, "y", 0 );
