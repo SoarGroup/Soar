@@ -45,6 +45,7 @@ bool ClientTraceXML::IsTagPhase() const						{ return IsTag(sml_Names::kTagPhase
 char const* ClientTraceXML::GetPhaseName() const			{ return GetAttribute(sml_Names::kPhase_Name) ; }
 char const* ClientTraceXML::GetPhaseStatus() const			{ return GetAttribute(sml_Names::kPhase_Status) ; }
 char const* ClientTraceXML::GetFiringType() const			{ return GetAttribute(sml_Names::kPhase_FiringType) ; }
+char const* ClientTraceXML::GetLevelNum() const			{ return GetAttribute(sml_Names::kPhase_LevelNum) ; } // SBW 8/4/08
 
 // Subphase (firing productions/changing wm) tag
 bool ClientTraceXML::IsTagSubphase() const							{ return IsTag(sml_Names::kTagSubphase) ; }

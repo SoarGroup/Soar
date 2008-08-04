@@ -195,13 +195,19 @@ public class XmlOutput
 			subphase = "Firing Productions" ;
 		if (xmlTrace.IsSubphaseNameChangingWorkingMemory())
 			subphase = "Change Working Memory" ;
+    
+    String levelNum = xmlTrace.GetLevelNum() ;
 		
 		text.append("--- ") ;
 		text.append(subphase) ;
 		text.append(" (") ;
 		text.append(xmlTrace.GetFiringType()) ;
-		text.append(") ") ;
-		text.append("---") ;
+		text.append(")") ;
+    if (levelNum != null) { // SBW 8/4/08
+      text.append(" For State At Depth ");
+      text.append(levelNum);
+    }
+		text.append(" ---") ;
 		
 		return text.toString() ;
 	}

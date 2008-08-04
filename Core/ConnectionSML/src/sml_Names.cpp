@@ -97,6 +97,7 @@ char const* const sml_Names::kTagPhase  	= "phase" ;
 char const* const sml_Names::kPhase_Name  	= "name" ;
 char const* const sml_Names::kPhase_Status  	= "status" ;
 char const* const sml_Names::kPhase_FiringType 	= "firing_type" ;
+char const* const sml_Names::kPhase_LevelNum 	= "level_num" ;
 char const* const sml_Names::kPhaseName_Input  	= "input" ;
 char const* const sml_Names::kPhaseName_Pref  	= "preference" ;
 char const* const sml_Names::kPhaseName_WM  	= "workingmemory" ;
