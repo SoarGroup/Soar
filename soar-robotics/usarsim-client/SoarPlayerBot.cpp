@@ -25,10 +25,12 @@ SoarPlayerBot::SoarPlayerBot( int port, Agent& agent, const std::string& product
 , m_productions( productions )
 , m_agent( agent )
 {
-    m_input_link = new InputLinkManager( m_agent );
-    m_output_link = new OutputLinkManager( m_agent );
-    
-    reload_productions();
+	m_input_link = new InputLinkManager( m_agent );
+	m_output_link = new OutputLinkManager( m_agent );
+	
+	reload_productions();
+	
+	m_robot.Read();
 }
 
 SoarPlayerBot::~SoarPlayerBot()
@@ -49,58 +51,33 @@ SoarPlayerBot::~SoarPlayerBot()
 void SoarPlayerBot::update( std::deque< Message* >& outgoing_message_deque )
 {
 	//std::cout << "update()" << std::endl;
-    // read from the proxies
-    
-    m_robot.ReadIfWaiting();
-    
-   	double x = m_pp.GetXPos();
-   	double y = m_pp.GetYPos();
-   	double yaw = m_pp.GetYaw();
-   	double motion_x = m_pp.GetXSpeed();
-   	double motion_y = m_pp.GetYSpeed();
-   	double motion_yaw = m_pp.GetYawSpeed();
-   	
-   	//std::cout << "pos(x,y,yaw), motion(x,y,yaw): ";
-   	//std::cout << "(" << x << "," << y << "," << yaw << ") (" << motion_x << "," << motion_y << "," << motion_yaw << ")" << std::endl;
-   	
-   	//bool outer = m_gp.GetBeams() & 0x1;
-   	//bool inner = m_gp.GetBeams() & 0x2;
-   	//bool gripper_open = false;
-   	//bool gripper_closed = false;
-   	//bool gripper_moving = false;
-   	//bool gripper_error = false;
-   	//switch ( m_gp.GetState() )
-   	//{
-   	//case PLAYER_GRIPPER_STATE_OPEN:
-   	//	gripper_open = true;
-	//   	break;
-   	//case PLAYER_GRIPPER_STATE_CLOSED:
-   	//	gripper_closed = true;
-	//   	break;
-   	//case PLAYER_GRIPPER_STATE_MOVING:
-   	//	gripper_moving = true;
-	//   	break;
-	//default:
-   	//case PLAYER_GRIPPER_STATE_ERROR:
-   	//	gripper_error = true;
-	//   	break;
-	//}
-   	
+	// read from the proxies
+	
+	m_robot.ReadIfWaiting();
+	
+	double x = m_pp.GetXPos();
+	double y = m_pp.GetYPos();
+	double yaw = m_pp.GetYaw();
+	double motion_x = m_pp.GetXSpeed();
+	double motion_y = m_pp.GetYSpeed();
+	double motion_yaw = m_pp.GetYawSpeed();
+	
+	//std::cout << "pos(x,y,yaw), motion(x,y,yaw): ";
+	//std::cout << "(" << x << "," << y << "," << yaw << ") (" << motion_x << "," << motion_y << "," << motion_yaw << ")" << std::endl;
+	
 	// update input link
 	timeval time;
 	gettimeofday( &time, 0 );
 	m_input_link->time_update( time );
 	m_input_link->position_update( x, y, yaw );
 	m_input_link->motion_update( motion_x, motion_y, motion_yaw );
-	//m_input_link->beam_update( outer, inner );
-	//m_input_link->gripper_update( gripper_open, gripper_closed, gripper_moving, gripper_error );
 	
 	for ( unsigned count = 0; count < m_fp.GetCount(); ++count )
 	{
 		player_fiducial_item item = m_fp.GetFiducialItem( count );
 		m_input_link->feducial_update( item.id, item.pose.px, item.pose.py );
 	}
-		
+	
 	// read output link
 	m_output_link->read();
 	bool motion_command_received = false;
@@ -147,22 +124,6 @@ void SoarPlayerBot::update( std::deque< Message* >& outgoing_message_deque )
 			motion_command_received = true;
 			motion_x = 0;
 			motion_yaw = 0;
-			break;
-			
-		case Command::GRIPPER:
-			//std::cout << m_agent.GetAgentName() << ": GRIPPER" << std::endl;
-		//	switch ( command->get_gripper_command() )
-		//	{
-		//	case Command::GRIPPER_OPEN:
-		//		m_gp.Open();
-		//		break;
-		//	case Command::GRIPPER_CLOSE:
-		//		m_gp.Close();
-		//		break;
-		//	case Command::GRIPPER_STOP:
-		//		m_gp.Stop();
-		//		break;
-		//	}
 			break;
 			
 		case Command::MOVE_TO:

@@ -42,20 +42,6 @@ InputLinkManager::InputLinkManager( Agent& agent )
 		m_motion_rotation = m_agent.CreateStringWME( current_motion, "rotation", "stop" );
 	}
 	{
-		Identifier* gripper = m_agent.CreateIdWME( m_self, "gripper" );
-		{
-			Identifier* beams = m_agent.CreateIdWME( gripper, "beams" );
-			
-			m_beams_outer = m_agent.CreateStringWME( beams, "outer", "unblocked" );
-			m_beams_inner = m_agent.CreateStringWME( beams, "inner", "unblocked" );
-		}
-		
-		m_gripper_open = m_agent.CreateStringWME( gripper, "open", "false" );
-		m_gripper_closed = m_agent.CreateStringWME( gripper, "closed", "false" );
-		m_gripper_moving = m_agent.CreateStringWME( gripper, "moving", "false" );
-		m_gripper_error = m_agent.CreateStringWME( gripper, "error", "false" );
-	}
-	{
 		m_received_messages = m_agent.CreateIdWME( m_self, "received-messages" );
 	}	
 	commit();

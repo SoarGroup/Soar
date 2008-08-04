@@ -55,54 +55,56 @@ void SoarPlayerBot::add_incoming_messages( const std::deque< Message* >& incomin
 
 std::string SoarPlayerBot::command_output( const std::string& command )
 {
+	m_robot.Read();
+
 	size_t split1 = command.find( " " );
-    std::string cmd = command.substr( 0, split1 );
-    if ( cmd == "stop" )
-    {
-    	m_pp.SetSpeed( 0, 0 );
-    }
-    else if ( cmd == "move" )
-    {
-    	if ( split1 == std::string::npos )
-    	{
-    		return "move <x>";
-    	}
-    	std::string x_string = command.substr( split1 + 1 );
-    	float x = 0;
-    	if ( !from_string( x, x_string, std::dec ) )
-    	{
-    		return "need float argument";
-    	}
-    	
-    	m_pp.SetSpeed( x, 0 );
-    }
-    else if ( cmd == "rotate" )
-    {
-    	if ( split1 == std::string::npos )
-    	{
-    		return "rotate <yaw>";
-    	}
-    	std::string yaw_string = command.substr( split1 + 1 );
-    	float yaw = 0;
-    	if ( !from_string( yaw, yaw_string, std::dec ) )
-    	{
-    		return "need float argument";
-    	}
-    	
-    	m_pp.SetSpeed( 0, yaw );
-    }
-    else if ( cmd == "rotate-to" )
-    {
-    	if ( split1 == std::string::npos )
-    	{
-    		return "rotate-to <absolute yaw>";
-    	}
-    	std::string yaw_string = command.substr( split1 + 1 );
-    	float yaw = 0;
-    	if ( !from_string( yaw, yaw_string, std::dec ) )
-    	{
-    		return "need float argument";
-    	}
+	std::string cmd = command.substr( 0, split1 );
+	if ( cmd == "stop" )
+	{
+		m_pp.SetSpeed( 0, 0 );
+	}
+	else if ( cmd == "move" )
+	{
+		if ( split1 == std::string::npos )
+		{
+			return "move <x>";
+		}
+		std::string x_string = command.substr( split1 + 1 );
+		float x = 0;
+		if ( !from_string( x, x_string, std::dec ) )
+		{
+			return "need float argument";
+		}
+		
+		m_pp.SetSpeed( x, 0 );
+	}
+	else if ( cmd == "rotate" )
+	{
+		if ( split1 == std::string::npos )
+		{
+			return "rotate <yaw>";
+		}
+		std::string yaw_string = command.substr( split1 + 1 );
+		float yaw = 0;
+		if ( !from_string( yaw, yaw_string, std::dec ) )
+		{
+			return "need float argument";
+		}
+		
+		m_pp.SetSpeed( 0, yaw );
+	}
+	else if ( cmd == "rotate-to" )
+	{
+	if ( split1 == std::string::npos )
+	{
+			return "rotate-to <absolute yaw>";
+		}
+		std::string yaw_string = command.substr( split1 + 1 );
+		float yaw = 0;
+		if ( !from_string( yaw, yaw_string, std::dec ) )
+		{
+			return "need float argument";
+		}
 
 		player_pose2d rotate_to_destination;
 		rotate_to_destination.px = m_pp.GetXPos();
@@ -112,51 +114,51 @@ std::string SoarPlayerBot::command_output( const std::string& command )
 		std::cout << "(" << rotate_to_destination.px << "," << rotate_to_destination.py << "," << rotate_to_destination.pa << ")" << std::endl;
 		
 		m_pp.GoTo( rotate_to_destination );
-    }
-    else if ( cmd == "move-to" )
-    {
-    	if ( split1 == std::string::npos )
-    	{
-    		return "move-to x y";
-    	}
-    	size_t split2 = command.find( " ", split1 + 1 );
-    	if ( split2 == std::string::npos )
-    	{
-    		return "need y float argument";
-    	}
+	}
+	else if ( cmd == "move-to" )
+	{
+		if ( split1 == std::string::npos )
+		{
+			return "move-to x y";
+		}
+		size_t split2 = command.find( " ", split1 + 1 );
+		if ( split2 == std::string::npos )
+		{
+			return "need y float argument";
+		}
 
-    	std::string x_string = command.substr( split1 + 1, split2 - (split1 + 1) );
-    	float x = 0;
-    	if ( !from_string( x, x_string, std::dec ) )
-    	{
-    		return "need float x argument";
-    	}
+		std::string x_string = command.substr( split1 + 1, split2 - (split1 + 1) );
+		float x = 0;
+		if ( !from_string( x, x_string, std::dec ) )
+		{
+			return "need float x argument";
+		}
 
-    	std::string y_string = command.substr( split2 + 1 );
-    	float y = 0;
-    	if ( !from_string( y, y_string, std::dec ) )
-    	{
-    		return "need float y argument";
-    	}
+		std::string y_string = command.substr( split2 + 1 );
+		float y = 0;
+		if ( !from_string( y, y_string, std::dec ) )
+		{
+			return "need float y argument";
+		}
 	
 		//std::cout << "1:" << split1 << ":" << std::endl;
 		//std::cout << "2:" << split2 << ":" << std::endl;
 		//std::cout << "x:" << x_string << ":" << std::endl;
 		//std::cout << "y:" << y_string << ":" << std::endl;
-    	
+		
 		player_pose2d move_to_destination;
 		move_to_destination.px = x;
 		move_to_destination.py = y;
 		move_to_destination.pa = m_pp.GetYaw();		
 		
 		m_pp.GoTo( move_to_destination );
-    }
-    else
-    {
-    	return "unknown output command: " + cmd;
-    }
+	}
+	else
+	{
+		return "unknown output command: " + cmd;
+	}
 
-    return std::string();
+	return std::string();
 }
 
 #endif // SOAR_PLAYER_BOT_HXX

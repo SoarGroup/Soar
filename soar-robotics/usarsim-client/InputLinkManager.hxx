@@ -79,24 +79,6 @@ void InputLinkManager::feducial_update( int id, double x, double y )
 	std::cout << "f(" << id << "," << x << "," << y << ")" << std::endl;
 }
 
-void InputLinkManager::beam_update( bool outer, bool inner )
-{
-	m_agent.Update( m_beams_outer, outer ? "blocked" : "unblocked" );
-	m_agent.Update( m_beams_inner, inner ? "blocked" : "unblocked" );
-
-	//std::cout << "gb(" << outer << "," << inner << ")\n";
-}
-
-void InputLinkManager::gripper_update( bool open, bool closed, bool moving, bool error )
-{
-	m_agent.Update( m_gripper_open, open ? "true" : "false" );
-	m_agent.Update( m_gripper_closed, closed ? "true" : "false" );
-	m_agent.Update( m_gripper_moving, moving ? "true" : "false" );
-	m_agent.Update( m_gripper_error, error ? "true" : "false" );
-
-	//std::cout << "gg(" << open << "," << closed << "," << moving << "," << error << ")\n";
-}
-
 void InputLinkManager::add_message( const Message& message )
 {
 	sml::Identifier* message_identifier = m_agent.CreateIdWME( m_received_messages, "message" );

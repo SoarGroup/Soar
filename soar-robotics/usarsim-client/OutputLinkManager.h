@@ -12,7 +12,7 @@ public:
 	Command() {}
 	Command( sml::Identifier* commandId );
 
-	enum CommandType { MOVE, ROTATE, STOP, GRIPPER, MOVE_TO, ROTATE_TO, BROADCAST_MESSAGE, REMOVE_MESSAGE };
+	enum CommandType { MOVE, ROTATE, STOP, MOVE_TO, ROTATE_TO, BROADCAST_MESSAGE, REMOVE_MESSAGE };
 	CommandType 	get_type();
 
 	enum MoveDirection { MOVE_STOP, MOVE_FORWARD, MOVE_BACKWARD };
@@ -23,9 +23,6 @@ public:
 
 	double 			get_throttle();
 
-	enum GripperCommand { GRIPPER_OPEN, GRIPPER_CLOSE, GRIPPER_STOP };
-	GripperCommand get_gripper_command();
-	
 	double get_x();
 	double get_y();
 	
@@ -44,7 +41,6 @@ private:
 	MoveDirection m_move;
 	RotateDirection m_rotate;
 	double m_throttle;
-	GripperCommand m_gripper;
 	Status m_status;
 	double m_x;
 	double m_y;

@@ -97,29 +97,6 @@ Command::Command( Identifier* command_id )
 		m_rotate = ROTATE_STOP;
 		m_throttle = 0;
 	}
-	else if ( command_string == "gripper" )
-	{
-		m_type = GRIPPER;
-		has_param( "command", command_id );
-		
-		std::string command( command_id->GetParameterValue( "command" ) );
-		if ( command == "open" )
-		{
-			m_gripper = GRIPPER_OPEN;
-		}
-		else if ( command == "close" )
-		{
-			m_gripper = GRIPPER_CLOSE;
-		}
-		else if ( command == "stop" )
-		{
-			m_gripper = GRIPPER_STOP;
-		}
-		else
-		{
-			throw std::exception();
-		}
-	}
 	else if ( command_string == "move-to" )
 	{
 		m_type = MOVE_TO;

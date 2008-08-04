@@ -16,8 +16,6 @@ public:
 	void position_update( double x, double y, double yaw );
 	void motion_update( double motion_x, double motion_y, double motion_yaw );
 	void feducial_update( int id, double x, double y );
-	void beam_update( bool outer, bool inner );
-	void gripper_update( bool open, bool closed, bool moving, bool error );
 	void add_message( const Message& message );
 	void remove_message( int id );
 
@@ -42,12 +40,6 @@ private:
 	sml::FloatElement* m_motion_yaw;
 	sml::StringElement* m_motion_movement;
 	sml::StringElement* m_motion_rotation;
-	sml::StringElement* m_beams_outer;
-	sml::StringElement* m_beams_inner;
-	sml::StringElement* m_gripper_open;
-	sml::StringElement* m_gripper_closed;
-	sml::StringElement* m_gripper_moving;
-	sml::StringElement* m_gripper_error;
 	sml::Identifier* m_received_messages;
 	
 	std::map< int, sml::Identifier* > m_message_map;

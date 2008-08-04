@@ -28,11 +28,6 @@ double Command::get_throttle()
 	return m_throttle; 
 }
 
-Command::GripperCommand Command::get_gripper_command() 
-{ 
-	return m_gripper; 
-}
-
 double Command::get_x()
 {
 	return m_x;
