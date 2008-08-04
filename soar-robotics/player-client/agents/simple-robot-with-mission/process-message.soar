@@ -121,8 +121,8 @@ sp {simple-robot*elaborate*message-with-entity-structure
    (<m> ^entity <e>)
    (<e> ^id <id>
         ^friendly <friendly>
-        ^current-absolute-location <cal>)
-   (<cal> ^x <x>
+        ^absolute-location <al>)
+   (<al> ^x <x>
           ^y <y>)
 }
 

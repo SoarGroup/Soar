@@ -15,7 +15,7 @@ sp {scout*elaborate*state*desired-yaw
 sp {scout*elaborate*state*prediff*desired-greater
    (state <s> ^name scout
               ^desired-yaw {<dyaw> > <cyaw>}
-              ^io.input-link.self.current-location.yaw <cyaw>)
+              ^io.input-link.self.location.yaw <cyaw>)
 -->
    (<s> ^yaw-prediff (- <dyaw> <cyaw>))
 }
@@ -23,7 +23,7 @@ sp {scout*elaborate*state*prediff*desired-greater
 sp {scout*elaborate*state*prediff*current-greater
    (state <s> ^name scout
               ^desired-yaw {<dyaw> <= <cyaw>}
-              ^io.input-link.self.current-location.yaw <cyaw>)
+              ^io.input-link.self.location.yaw <cyaw>)
 -->
    (<s> ^yaw-prediff (- <cyaw> <dyaw>))
 }

@@ -47,7 +47,7 @@ sp {apply*send-entity-report
         ^last-update-message-time <lmut>
         ^data <d>)
    (<d> ^friendly <friendly>
-        ^current-absolute-location <al>)
+        ^absolute-location <al>)
    (<al> ^x <x> ^y <y>)
 -->
    (<e> ^last-update-message-time <lmut> - <time>)

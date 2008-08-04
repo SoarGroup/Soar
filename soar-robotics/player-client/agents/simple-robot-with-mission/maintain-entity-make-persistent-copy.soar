@@ -28,9 +28,9 @@ sp {apply*maintain-entity-make-persistent-copy
          ^state-entity <es>
          ^last-contact-time <time>)
    (<e> ^id <id>
-        ^current-absolute-location <cal>
+        ^absolute-location <al>
         ^friendly <friendly>)
-   (<cal> ^x <x> ^y <y>)
+   (<al> ^x <x> ^y <y>)
   -(<es> ^last-contact-time >= <time>)
 -->
    (<es> ^data <d>
@@ -38,9 +38,9 @@ sp {apply*maintain-entity-make-persistent-copy
          ^persistent-copy <d>)
    (<d> ^visible false
         ^id <id>
-        ^current-absolute-location <calc>
+        ^absolute-location <alc>
         ^friendly <friendly>)
-   (<calc> ^x <x> ^y <y>)
+   (<alc> ^x <x> ^y <y>)
    (write (crlf) |Made persistent copy of entity | <id>)
 }
 

@@ -32,7 +32,8 @@ sp {apply*update-progress
          ^time <time>
          ^distance <d>)
    (<mt> ^time <oldtime>
-         ^closest <olddist>)
+         ^closest <olddist>
+         ^destination <dest>)
 -->
    (<mt> ^time <oldtime> - <time>
          ^closest <olddist> - <d>)

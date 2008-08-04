@@ -247,7 +247,7 @@ INTEGER_RANGE 198 0 2147483647
 18 random 20
 21 name 22
 24 seconds 25
-26 current-location 27
+26 location 27
 26 name 131
 26 received-messages 118
 27 x 28
@@ -404,7 +404,7 @@ INTEGER_RANGE 198 0 2147483647
 137 message 119
 137 name 138
 144 entity 145
-145 current-absolute-location 149
+145 absolute-location 149
 145 friendly 147
 145 id 146
 145 range 148
