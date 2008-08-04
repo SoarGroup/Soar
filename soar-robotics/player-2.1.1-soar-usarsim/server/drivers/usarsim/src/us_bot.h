@@ -302,7 +302,7 @@ public:
   ///
   bool bLockFiducial;
   ///
-  player_victim_fiducial_data_t *victim_fiducial;
+  player_fiducial_data_t *victim_fiducial;
   /// 
   bool bNewVictimFiducial;
   ///

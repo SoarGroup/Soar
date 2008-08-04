@@ -139,6 +139,7 @@ int UsFiducial::Setup()
   bot->fiducial = (player_fiducial_data_t *)calloc(1, sizeof(player_fiducial_data_t));
   bot->fiducial->fiducials = (player_fiducial_item_t *)calloc( PLAYER_FIDUCIAL_MAX_SAMPLES, sizeof(player_fiducial_item_t) );
   bot->devices |= US_DATA_FIDUCIAL;
+  bot->devices |= US_DATA_VICTIM_FIDUCIAL;
   // Start the device thread
   StartThread();
   return 0;
@@ -173,8 +174,8 @@ void UsFiducial::Main() {
 void UsFiducial::PublishNewData(){
   if (bot->bNewFiducial ) {
     //DBG("Got New Position");
-    printf("us_fiducial new data\n");
-    fflush(stdout);
+    //printf("us_fiducial new data\n");
+    //fflush(stdout);
     bot->bLockFiducial = true;
     this->Publish(this->device_addr,
 			   PLAYER_MSGTYPE_DATA,

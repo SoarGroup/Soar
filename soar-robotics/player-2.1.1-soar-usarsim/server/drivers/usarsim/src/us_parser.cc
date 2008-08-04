@@ -24,7 +24,6 @@
 // for nicer handling later on.
 #define HORIZ 1
 #define VERT 0
-
 int us_get_word(char* data, int pos, char* word)
 {
   char *p, *pNext;
@@ -32,7 +31,7 @@ int us_get_word(char* data, int pos, char* word)
 
   if (data == NULL || pos < 0 || pos >= strlen(data)) return -1;
   for (p = data + pos;*p == ' ';p++);
-  if ((pNext = strchr(p,' '))==NULL) next = strlen(data);
+  if ((pNext = strchr(p,' '))==NULL) next = strlen(p);
   else next = pNext - p;
   if (word!=NULL)
   {
@@ -73,7 +72,7 @@ int us_get_type(char* data, char** ppBody)
     else if (strstr(*ppBody,"{Type Odometry}")!=NULL) res |= US_DATA_ODOM | US_DATA_POSITION | US_DATA_POSITION3D;
     else if (strstr(*ppBody,"{Type Encoder}")!=NULL) res |= US_DATA_ODOM | US_DATA_ENCODER;
     else if (strstr(*ppBody,"{Type RFID}")!=NULL) res |= US_DATA_FIDUCIAL;
-    else if (strstr(*ppBody,"{Type VictRFID}")!=NULL) res |= US_DATA_VICTIM_FIDUCIAL;
+    else if (strstr(*ppBody,"{Type VictSensor}")!=NULL) res |= US_DATA_VICTIM_FIDUCIAL;
   }
   else if (!strcmp(head,"GEO"))
   {
@@ -901,48 +900,172 @@ int us_get_laser_config(char* data, char* name, player_laser_config_t *laser_con
 /*
  *
  */
-int us_get_victim_fiducial(char* origdata, player_victim_fiducial_data_t *fid)
+// int us_get_victim_fiducial(char* origdata, player_victim_fiducial_data_t *fid)
+// {
+// 	char tmp[128];
+// 	char *p1, *p2;
+// 	char *data;
+// 	uint16_t count;
+// 	int pos = 0;
+// 	int32_t timestamp = 0;
+// 	
+// 	data=origdata;
+// 	
+// 	if (fid == NULL) return -1;
+// 	memset(fid, 0, sizeof(player_victim_fiducial_data_t));
+// 	count = fid->fiducials_count;
+// 
+// 	// time must be present
+// 	if (us_get_value2(data, "Time", tmp)==-1) return -1;
+// 	timestamp = atof(tmp)*1000;
+// 	
+// 	// if status is present
+// 	if (us_get_value2(data, "Status", tmp) == 0)
+// 	{
+// 		// it must be this
+// 		if (strcmp( tmp, "NoVictims" ) != 0) return -1;
+// 		
+// 		// it is, so no data
+// 		return 0;
+// 	}
+// 	
+// 	// we have data, name must be present
+// 	if (us_get_value2(data, "Name", tmp) == -1) return -1;
+// 	
+// 	// and it must equal this
+// 	if (strcmp( tmp, "VictSensor" ) != -1) return -1;
+// 
+// 	// loop through data
+// 	while (1){
+// 		count = fid->fiducials_count;
+// 		
+// 		if ( (pos = us_get_value2(data, "PartName", tmp)) == -1) return 0;
+// 		fid->fiducials[count].timestamp = timestamp;
+// 		data += pos;
+// 		strncpy(fid->fiducials[count].status,tmp, PLAYER_FIDUCIAL_MAX_STATUS_LENGTH - 1);
+// 		
+// 		if ((pos = us_get_value2(data, "Location", tmp))==-1) return -1;
+// 		data += pos;
+// 		if ((p2 = strchr(tmp,','))==NULL) return -1;
+// 		*p2 = 0;
+// 		fid->fiducials[count].pose.px = atof(tmp);
+// 		p1 = p2+1;
+// 		if ((p2 = strchr(p1,','))==NULL) return -1;
+// 		*p2 = 0;
+// 		fid->fiducials[count].pose.py =  (-1.0) * atof(p1);
+// 		p1 = p2+1;
+// 		fid->fiducials[count].pose.pyaw =  (-1.0) * atof(p1);
+// 		fid->fiducials_count = (count + 1)%PLAYER_FIDUCIAL_MAX_SAMPLES;
+// 		
+// 		//if ( (pos = us_get_value2(data, "ID", tmp))==-1) return 0;
+// 		//strncpy(fid->fiducials[count].id,tmp, PLAYER_FIDUCIAL_MAX_ID_LENGTH - 1);
+// 		///if ((pos = us_get_value2(data, "Status", tmp))==-1) return 0;
+// 		//data += pos;
+// 		//strncpy(fid->fiducials[count].status,tmp, PLAYER_FIDUCIAL_MAX_STATUS_LENGTH - 1);
+// 	}
+// 	return 0;
+// }
+/**
+ *
+ */
+int us_get_victim_fiducial(char* origdata, player_fiducial_data_t *fid)
 {
+	//fflush(stdout);
+	//printf( "us_get_victim_fiducial..." );
 	char tmp[128];
 	char *p1, *p2;
 	char *data;
 	uint16_t count;
 	int pos = 0;
-	int32_t timestamp = 0;
-	data=origdata;
-	if (fid == NULL) return -1;
-	memset(fid, 0, sizeof(player_victim_fiducial_data_t));
-	count = fid->fiducials_count;
-	if (us_get_value2(data, "Time", tmp)==-1) return 0;
-	timestamp = atof(tmp)*1000;
+	data = origdata;
+	if (fid==NULL) 
+	{
+		//printf("fid null\n");
+		return -1;
+	}
+	//memset(fid, 0, sizeof(player_fiducial_data_t));
+	fid->fiducials_count = 0;
 
+	// time must be present
+	if (us_get_value2(data, "Time", tmp)==-1) 
+	{
+		//printf("no time\n");
+		return -1;
+	}
+	
+	// if status is present
+	if (us_get_value2(data, "Status", tmp) != -1)
+	{
+		// it must be this
+		if (strcmp( tmp, "NoVictims" ) != 0)
+		{
+			//printf("no NoVictims: '%s'\n", tmp);
+			return -1;
+		}
+		
+		// it is, so no data
+		printf("OK: no data\n");
+		return 0;
+	}
+	
+	// we have data, name must be present
+	if (us_get_value2(data, "Name", tmp) == -1)
+	{
+		//printf("no Name\n");
+		return -1;
+	}
+	
+	// and it must equal this
+	if (strcmp( tmp, "VictSensor" ) != 0) 
+	{
+		//printf("Name not VictSensor\n");
+		return -1;
+	}
+
+	//printf( "origdata: %s\n", origdata );
 	while (1){
+		//fflush( stdout );
+		
 		count = fid->fiducials_count;
-		if ( (pos = us_get_value2(data, "ID", tmp))==-1) return 0;
-		fid->fiducials[count].timestamp = timestamp;
+
+		if ( (pos = us_get_value2(data, "PartName", tmp)) == -1) 
+		{
+			//printf("OK: count: %d\n", count );
+			return 0;
+		}
+		// part name currently ignored
 		data += pos;
-		strncpy(fid->fiducials[count].id,tmp, PLAYER_FIDUCIAL_MAX_ID_LENGTH - 1);
-		if ((pos = us_get_value2(data, "Status", tmp))==-1) return 0;
+		fid->fiducials[count].id = 0;
+		
+		if ((pos=us_get_value2(data, "Location", tmp)) == -1)
+		{
+			//printf("no Location\n" );
+			return -1;
+		}
+		
 		data += pos;
-		strncpy(fid->fiducials[count].status,tmp, PLAYER_FIDUCIAL_MAX_STATUS_LENGTH - 1);
-		if ((pos = us_get_value2(data, "Location", tmp))==-1) return -1;
-		data += pos;
-		if ((p2 = strchr(tmp,','))==NULL) return -1;
+		if ((p2 = strchr(tmp,',')) == NULL)
+		{
+			//printf("x error\n" );
+			return -1;
+		}
 		*p2 = 0;
 		fid->fiducials[count].pose.px = atof(tmp);
 		p1 = p2+1;
-		if ((p2 = strchr(p1,','))==NULL) return -1;
+		if ((p2 = strchr(p1,',')) == NULL)
+		{
+			//printf("y error\n" );
+			return -1;
+		}
 		*p2 = 0;
-		fid->fiducials[count].pose.py =  (-1.0) * atof(p1);
+		fid->fiducials[count].pose.py = (-1.0) * atof(p1);
 		p1 = p2+1;
-		fid->fiducials[count].pose.pyaw =  (-1.0) * atof(p1);
+		fid->fiducials[count].pose.pz = (-1.0) * atof(p1);
 		fid->fiducials_count = (count + 1)%PLAYER_FIDUCIAL_MAX_SAMPLES;
 	}
+	//printf("strange: count: %d\n", count );
 	return 0;
 }
-/**
- *
- */
 int us_get_fiducial(char* origdata, player_fiducial_data_t *fid)
 {
 	char tmp[128];
@@ -955,9 +1078,9 @@ int us_get_fiducial(char* origdata, player_fiducial_data_t *fid)
 	//memset(fid, 0, sizeof(player_fiducial_data_t));
 	fid->fiducials_count = 0;
 
-	printf( "origdata: %s\n", origdata );
+	//printf( "origdata: %s\n", origdata );
 	while (1){
-		fflush( stdout );
+		//fflush( stdout );
 		
 		count = fid->fiducials_count;
 		if ( (pos=us_get_value2(data, "ID", tmp)) == -1) {
@@ -978,7 +1101,7 @@ int us_get_fiducial(char* origdata, player_fiducial_data_t *fid)
 		fid->fiducials[count].pose.pz = (-1.0) * atof(p1);
 		fid->fiducials_count = (count + 1)%PLAYER_FIDUCIAL_MAX_SAMPLES;
 		
-		printf( "id: %d\n", fid->fiducials[count].id );
+		//printf( "id: %d\n", fid->fiducials[count].id );
 	}
 	return 0;
 }

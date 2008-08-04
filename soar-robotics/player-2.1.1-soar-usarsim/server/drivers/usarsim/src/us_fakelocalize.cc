@@ -90,7 +90,7 @@ void UsFakeLocalize::PublishNewData() {
     myPosition.pos.px = bot->location->hypoths[0].mean.px + origin.px;
     myPosition.pos.py = bot->location->hypoths[0].mean.py + origin.py;
     myPosition.pos.pa = bot->location->hypoths[0].mean.pa;
-    PLAYER_MSG3(6, "us_fakelocalize: %f %f %f", myPosition.pos.px, myPosition.pos.py, myPosition.pos.pa);
+    //PLAYER_MSG3(6, "us_fakelocalize: %f %f %f", myPosition.pos.px, myPosition.pos.py, myPosition.pos.pa);
     Publish(device_addr, 
 		  PLAYER_MSGTYPE_DATA,
 		  PLAYER_LOCALIZE_DATA_HYPOTHS,

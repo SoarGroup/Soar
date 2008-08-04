@@ -53,8 +53,8 @@ int UsVictFiducial::Setup()
   //now I can access the fields in driver directly
   bot = ((UsBot*)bot_device->driver);
   // Prepare data for bot
-  bot->victim_fiducial = (player_victim_fiducial_data_t *)calloc(1, sizeof(player_victim_fiducial_data_t));
-  bot->devices |= US_DATA_VICTIM_FIDUCIAL;
+  //bot->victim_fiducial = (player_victim_fiducial_data_t *)calloc(1, sizeof(player_victim_fiducial_data_t));
+  //bot->devices |= US_DATA_VICTIM_FIDUCIAL;
   // Start the device thread
   StartThread();
   return 0;
@@ -127,8 +127,6 @@ int UsVictFiducial::Shutdown()
 void UsVictFiducial::PublishNewData(){
   if (bot->bNewVictimFiducial ) {
     //DBG("Got New Position");
-    printf("us_vict_fiducial new data\n");
-    fflush(stdout);
     bot->bLockVictimFiducial = true;
     this->Publish(this->device_addr,
 			   PLAYER_MSGTYPE_DATA,

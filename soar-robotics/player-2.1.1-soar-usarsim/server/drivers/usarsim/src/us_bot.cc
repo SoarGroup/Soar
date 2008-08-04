@@ -368,9 +368,18 @@ int UsBot::AddCommand(char* command)
  */
 void UsBot::ParseData(char* data)
 {
+  int len = strlen( data );
+  while ( len && isspace( data[ len - 1 ] ) )
+  {
+    data[ len - 1 ] = 0;
+    len -= 1;
+  }
+
   char *pBody;
   int type = us_get_type(data,&pBody);
+
   if (type==-1) return;
+  
   // fakelocalization pose
   if((type & devices & US_DATA_INS) && (location!=NULL)) {
     if (!bLockLocation || WaitUnlock(&bLockLocation)) {
@@ -441,12 +450,18 @@ void UsBot::ParseData(char* data)
       }
       bNewFiducial = true;
   } 
-  else if ((type & devices & US_DATA_VICTIM_FIDUCIAL) && (victim_fiducial!=NULL))
+  //else if ((type & devices & US_DATA_VICTIM_FIDUCIAL) && (victim_fiducial!=NULL))
+  else if ((type & devices & US_DATA_VICTIM_FIDUCIAL) && (fiducial!=NULL))
   {
-      bNewVictimFiducial = false;
-      if (!bLockVictimFiducial || WaitUnlock(&bLockVictimFiducial))
-	  us_get_victim_fiducial(pBody,victim_fiducial);
-      bNewVictimFiducial = true;
+//       bNewVictimFiducial = false;
+//       if (!bLockVictimFiducial || WaitUnlock(&bLockVictimFiducial))
+// 	  us_get_victim_fiducial(pBody,victim_fiducial);
+//       bNewVictimFiducial = true;
+      bNewFiducial = false;
+      if (!bLockFiducial || WaitUnlock(&bLockFiducial)) {
+	  us_get_victim_fiducial(pBody,fiducial);
+      }
+      bNewFiducial = true;
   }
   else if (type & devices & US_DATA_SONAR)
   {

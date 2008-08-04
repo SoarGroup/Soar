@@ -139,7 +139,7 @@ int us_get_robot_geom(char* data, player_bbox3d_t *dimensions, double* COG, doub
                       double &maxWheelSeparation, double &wheelBase);
 int us_get_inu(char* data, player_position3d_data_t *inu);
 int us_get_fiducial(char* data,player_fiducial_data_t *fid);
-int us_get_victim_fiducial(char* data, player_victim_fiducial_data_t *fid);
+int us_get_victim_fiducial(char* data, player_fiducial_data_t *fid);
 
 /**
  * Transforms the given sensory input into a list of 3D point data. 
