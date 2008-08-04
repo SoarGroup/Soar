@@ -54,6 +54,7 @@ namespace soar_TraceNames
 	static char const* const kPhase_Name  	= "name" ;
 	static char const* const kPhase_Status  	= "status" ;
 	static char const* const kPhase_FiringType 	= "firing_type" ;
+  static char const* const kPhase_LevelNum 	= "level_num" ; // SBW 8/4/2008
 	static char const* const kPhaseName_Input  	= "input" ;
 	static char const* const kPhaseName_Pref  	= "preference" ;
 	static char const* const kPhaseName_WM  	= "workingmemory" ;
