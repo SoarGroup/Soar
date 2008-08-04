@@ -50,6 +50,7 @@ public:
 	char const* GetPhaseName() const ;
 	char const* GetPhaseStatus() const ;
 	char const* GetFiringType() const ;
+  char const* GetLevelNum() const ; // SBW 8/4/08
 
 	// Subphase (firing productions/changing wm) tag
 	bool IsTagSubphase() const ;

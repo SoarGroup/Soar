@@ -48,6 +48,9 @@
 #include "utilities.h"
 #include "soar_TraceNames.h"
 
+#include <string> // SBW 8/4/08
+#include "misc.h"
+
 using namespace soar_TraceNames;
 
 /* Uncomment the following line to get instantiation printouts */
@@ -1050,15 +1053,18 @@ void do_preference_phase (agent* thisAgent) {
 			  xml_att_val( thisAgent, kPhase_Name, kSubphaseName_FiringProductions );
 			  switch (thisAgent->FIRING_TYPE) {
 					case PE_PRODS:
-						print (thisAgent, "\t--- Firing Productions (PE) ---\n",0);
+						print (thisAgent, "\t--- Firing Productions (PE) For State At Depth %d ---\n", thisAgent->active_level); // SBW 8/4/2008: added active_level
 						xml_att_val( thisAgent, kPhase_FiringType, kPhaseFiringType_PE );
 						break;
 					case IE_PRODS:
-						print (thisAgent, "\t--- Firing Productions (IE) ---\n",0);
+            print (thisAgent, "\t--- Firing Productions (IE) For State At Depth %d ---\n", thisAgent->active_level); // SBW 8/4/2008: added active_level
 						xml_att_val( thisAgent, kPhase_FiringType, kPhaseFiringType_IE );
 						break;
 			  }
-			  xml_end_tag( thisAgent, kTagSubphase );
+        std::string* levelString = to_string(thisAgent->active_level);
+        xml_att_val( thisAgent, kPhase_LevelNum, levelString->c_str()); // SBW 8/4/2008: active_level for XML output mode
+        xml_end_tag( thisAgent, kTagSubphase );
+        delete levelString;
 		  }
 	  }
 	  else
