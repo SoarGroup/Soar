@@ -1,0 +1,6 @@
+bots = 1
+
+name0 = zero
+productions0 = agents/wait.soar
+port0 = 6665
+

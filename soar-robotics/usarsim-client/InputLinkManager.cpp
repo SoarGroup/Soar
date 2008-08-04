@@ -4,6 +4,27 @@
 
 using namespace sml;
 
+Entity::Entity( Agent* agent, Identifier* m_entities_parent, int id, double x, double y )
+{
+	m_agent = agent;
+	
+	m_entity_wme = m_agent->CreateIdWME( m_entities_parent, "entity" );
+	assert( m_entity_wme );
+	
+	m_agent->CreateIntWME( m_entity_wme, "id", id );
+	m_visible_wme = m_agent->CreateStringWME( m_entity_wme, "visible", "true" );
+	m_agent->CreateStringWME( m_entity_wme, "friendly", "false" );
+	
+	Identifier* absolute_location = m_agent->CreateIdWME( m_entity_wme, "relative-location" );
+	m_absolute_x = m_agent->CreateFloatWME( absolute_location, "x", x );
+	m_absolute_y = m_agent->CreateFloatWME( absolute_location, "y", y );
+}
+
+Entity::~Entity()
+{
+	m_agent->DestroyWME( m_entity_wme );
+}
+
 InputLinkManager::InputLinkManager( Agent& agent )
 : m_agent( agent )
 {
@@ -44,11 +65,17 @@ InputLinkManager::InputLinkManager( Agent& agent )
 	{
 		m_received_messages = m_agent.CreateIdWME( m_self, "received-messages" );
 	}	
+	m_entities = m_agent.CreateIdWME( il, "entities" );
 	commit();
 }
 
 InputLinkManager::~InputLinkManager()
 {
+	for ( std::map< int, Entity* >::iterator iter = m_entities_map.begin(); iter != m_entities_map.end(); ++iter )
+	{
+		delete iter->second;
+	}
+
 	if ( m_time )
 	{
 		m_agent.DestroyWME( m_time );
@@ -59,6 +86,12 @@ InputLinkManager::~InputLinkManager()
 	{
 		m_agent.DestroyWME( m_self );
 		m_self = 0;
+	}
+	
+	if ( m_entities )
+	{
+		m_agent.DestroyWME( m_entities );
+		m_entities = 0;
 	}
 	
 	commit();

@@ -72,11 +72,13 @@ void SoarPlayerBot::update( std::deque< Message* >& outgoing_message_deque )
 	m_input_link->position_update( x, y, yaw );
 	m_input_link->motion_update( motion_x, motion_y, motion_yaw );
 	
+	m_input_link->clear_expired_fiducials();
 	for ( unsigned count = 0; count < m_fp.GetCount(); ++count )
 	{
 		player_fiducial_item item = m_fp.GetFiducialItem( count );
 		m_input_link->feducial_update( item.id, item.pose.px, item.pose.py );
 	}
+	m_input_link->update_expired_fiducials();
 	
 	// read output link
 	m_output_link->read();

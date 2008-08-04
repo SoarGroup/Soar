@@ -14,6 +14,26 @@ const double InputLinkManager::PI = 3.14159265;
 const double InputLinkManager::ROTATION_DEAD_ZONE_DEGREES = 0.5;	// FIXME dead zones should be configurable
 const double InputLinkManager::MOVEMENT_DEAD_ZONE = 0.001;			// FIXME dead zones should be configurable
 
+void Entity::position_update( double x, double y )
+{
+	if ( m_visible_wme->GetValue() == std::string( "false" ) )
+	{
+		m_agent->Update( m_visible_wme, "true" );
+	}
+
+	m_agent->Update( m_absolute_x, x );
+	m_agent->Update( m_absolute_y, y );
+}
+
+void Entity::lost_contact()
+{
+	if ( m_visible_wme->GetValue() == std::string( "true" ) )
+	{
+		m_agent->Update( m_visible_wme, "false" );
+	}
+	// FIXME: remove after 2 sec
+}
+
 void InputLinkManager::time_update( const timeval& time )
 {
 	m_agent.Update( m_seconds, time.tv_sec );	
@@ -86,9 +106,35 @@ void InputLinkManager::motion_update( double motion_x, double motion_y, double m
 	//std::cout << "m(" << motion_x << "," << motion_y << "," << speed << "," << motion_yaw_degrees << "," << movement << "," << rotation << ")\n";
 }
 
+void InputLinkManager::clear_expired_fiducials()
+{
+	// clear untouched feducials
+	m_unseen_entities_map = m_entities_map;	
+}
+
 void InputLinkManager::feducial_update( int id, double x, double y )
 {
-	
+	// have we seen this id?
+	std::map< int, Entity* >::iterator iter = m_entities_map.find( id );
+	if ( iter != m_entities_map.end() )
+	{
+		iter->second->position_update( x, y );
+		m_unseen_entities_map.erase( iter->first );
+	}
+	else
+	{
+		m_entities_map[ id ] = new Entity( &m_agent, m_entities, id, x, y );
+	}
+}
+
+void InputLinkManager::update_expired_fiducials()
+{
+	// call lost_contact on all untouched feducials
+	for ( std::map< int, Entity* >::iterator iter = m_unseen_entities_map.begin(); iter != m_unseen_entities_map.end(); ++iter )
+	{
+		iter->second->lost_contact();
+	}
+		
 }
 
 void InputLinkManager::add_message( const Message& message )

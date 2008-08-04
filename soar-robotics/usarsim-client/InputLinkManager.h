@@ -6,6 +6,24 @@
 struct timeval;
 class Message;
 
+class Entity
+{
+public:
+	Entity( sml::Agent* agent, sml::Identifier* m_entities_parent, int id, double x, double y );
+	~Entity();
+	
+	void position_update( double x, double y );
+	void lost_contact();
+	
+private:
+	sml::Agent* m_agent;
+
+	sml::Identifier* m_entity_wme;
+	sml::StringElement* m_visible_wme;
+	sml::FloatElement* m_absolute_x;
+	sml::FloatElement* m_absolute_y;
+};
+
 class InputLinkManager
 {
 public:
@@ -15,7 +33,9 @@ public:
 	void time_update( const timeval& time );
 	void position_update( double x, double y, double yaw );
 	void motion_update( double motion_x, double motion_y, double motion_yaw );
+	void clear_expired_fiducials();
 	void feducial_update( int id, double x, double y );
+	void update_expired_fiducials();
 	void add_message( const Message& message );
 	void remove_message( int id );
 
@@ -41,8 +61,11 @@ private:
 	sml::StringElement* m_motion_movement;
 	sml::StringElement* m_motion_rotation;
 	sml::Identifier* m_received_messages;
+	sml::Identifier* m_entities;
 	
 	std::map< int, sml::Identifier* > m_message_map;
+	std::map< int, Entity* > m_entities_map;
+	std::map< int, Entity* > m_unseen_entities_map;
 
 	static const double PI;
 	static const double ROTATION_DEAD_ZONE_DEGREES;
