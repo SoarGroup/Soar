@@ -11,19 +11,19 @@ using std::endl;
 
 int main( int argc, char** argv )
 {
-    if ( argc < 2 )
-    {
-    	cerr << "Please specify configuration file name on command line." << endl;
-    	return 1;
-    }
-    
-    try
-    {
-	  	ConfigFile config( argv[1] );
-        SoarPlayerClient client( config );
-        Console console( client );
-        return console.run();
-    }
+	if ( argc < 2 )
+	{
+		cerr << "Please specify configuration file name on command line." << endl;
+		return 1;
+	}
+	
+	try
+	{
+		ConfigFile config( argv[1] );
+		SoarPlayerClient client( config );
+		Console console( client, config.read( "sedan_port", 6664 ) );
+		return console.run();
+	}
 	catch ( ConfigFile::file_not_found e )
 	{
 		cerr << "Could not find configuration file: " << e.filename << endl;
@@ -38,10 +38,10 @@ int main( int argc, char** argv )
 	{
 		cerr << "Soar error: " << e.what() << endl;
 	}
-    catch ( ... )
-    {
-        cerr << "Terminating on failure." << endl;
-    }
-    return 1;
+	catch ( ... )
+	{
+		cerr << "Terminating on failure." << endl;
+	}
+	return 1;
 }
 

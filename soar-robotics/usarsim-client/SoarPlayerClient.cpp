@@ -31,16 +31,16 @@ void updateHandler( smlUpdateEventId, void* pUserData, Kernel*, smlRunFlags )
 {
 	assert( pUserData );
 	
-    SoarPlayerClient* pPlayerClient = static_cast< SoarPlayerClient* >( pUserData );
-    pPlayerClient->update();
+	SoarPlayerClient* pPlayerClient = static_cast< SoarPlayerClient* >( pUserData );
+	pPlayerClient->update();
 }
 
 void agentHandler( smlAgentEventId id, void* pUserData, Agent* )
 {
 	assert( pUserData );
 	
-    SoarPlayerClient* pPlayerClient = static_cast< SoarPlayerClient* >( pUserData );
-    pPlayerClient->agent_event( id );
+	SoarPlayerClient* pPlayerClient = static_cast< SoarPlayerClient* >( pUserData );
+	pPlayerClient->agent_event( id );
 }
 
 string rhsPrintHandler( smlRhsEventId, void*, Agent* pAgent, char const*, char const* pArgument )
@@ -61,34 +61,34 @@ SoarPlayerClient::SoarPlayerClient( ConfigFile& config )
 {
 	int number_of_bots = config.read<int>( "bots" );
 
-    m_kernel = sml::Kernel::CreateKernelInNewThread();
-    if ( m_kernel->HadError() )
-    {
-    	throw soar_error( m_kernel->GetLastErrorDescription() );
-    }
-    
-    while ( m_bot_count < number_of_bots )
-    {
-	    string suffix( to_string< int >( m_bot_count ) );
-	    string agent_name = config.read( "name" + suffix, "robot" + suffix );
-    
-	    Agent* agent = m_kernel->CreateAgent( agent_name.c_str() );
-	    if ( m_kernel->HadError() )
-	    {
-	    	throw soar_error( m_kernel->GetLastErrorDescription() );
-	    }
-	    assert( agent );
-	    
-	    int port = config.read( "port" + suffix, 6666 + m_bot_count );
-	    
-	    m_bot_list.push_back( new SoarPlayerBot( port, *agent, config.read< string >( "productions" + suffix ) ) );
-	    m_bot_count += 1;
-    }
-    
-    m_kernel->RegisterForUpdateEvent( smlEVENT_AFTER_ALL_OUTPUT_PHASES, updateHandler, this );
-    m_kernel->RegisterForAgentEvent( smlEVENT_BEFORE_AGENT_REINITIALIZED, agentHandler, this );
-    m_kernel->RegisterForAgentEvent( smlEVENT_AFTER_AGENT_REINITIALIZED, agentHandler, this );
-    m_kernel->AddRhsFunction( "player-print", rhsPrintHandler, 0 );
+	m_kernel = sml::Kernel::CreateKernelInNewThread();
+	if ( m_kernel->HadError() )
+	{
+		throw soar_error( m_kernel->GetLastErrorDescription() );
+	}
+	
+	while ( m_bot_count < number_of_bots )
+	{
+		string suffix( to_string< int >( m_bot_count ) );
+		string agent_name = config.read( "name" + suffix, "robot" + suffix );
+	
+		Agent* agent = m_kernel->CreateAgent( agent_name.c_str() );
+		if ( m_kernel->HadError() )
+		{
+			throw soar_error( m_kernel->GetLastErrorDescription() );
+		}
+		assert( agent );
+		
+		int port = config.read( "port" + suffix, 6666 + m_bot_count );
+		
+		m_bot_list.push_back( new SoarPlayerBot( port, *agent, config.read< string >( "productions" + suffix ) ) );
+		m_bot_count += 1;
+	}
+	
+	m_kernel->RegisterForUpdateEvent( smlEVENT_AFTER_ALL_OUTPUT_PHASES, updateHandler, this );
+	m_kernel->RegisterForAgentEvent( smlEVENT_BEFORE_AGENT_REINITIALIZED, agentHandler, this );
+	m_kernel->RegisterForAgentEvent( smlEVENT_AFTER_AGENT_REINITIALIZED, agentHandler, this );
+	m_kernel->AddRhsFunction( "player-print", rhsPrintHandler, 0 );
 }
 
 SoarPlayerClient::~SoarPlayerClient()
@@ -127,10 +127,10 @@ void SoarPlayerClient::update()
 		outgoing_message_deque.pop_front();
 	}
 
-    if ( m_stop_issued ) 
-    {
-        m_kernel->StopAllAgents();
-    }
+	if ( m_stop_issued ) 
+	{
+		m_kernel->StopAllAgents();
+	}
 }
 
 

@@ -8,12 +8,15 @@
 class Console
 {
 public:
-    Console( SoarRunThreadInterface& client );
+	Console( SoarRunThreadInterface& client, int sedan_port );
+	~Console();
 
-    int run();
+	int run();
 
 private:
-    SoarRunThreadInterface& m_client;
+	SoarRunThreadInterface& m_client;
+	int m_sedan_port;
+	bool m_sedan_connected;
 };
 
 #endif // CONSOLE_H
