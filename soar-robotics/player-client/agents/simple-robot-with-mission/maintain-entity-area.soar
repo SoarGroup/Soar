@@ -12,7 +12,7 @@ sp {simple-robot*elaborate*state*area-2
    (state <s> ^name simple-robot
               ^entities.entity <e>)
    (<e> ^data.absolute-location <al>)
-   (<al> ^x >= 4
+   (<al> ^x >= 5
          ^y > -3)
 -->
    (<e> ^area 2)
@@ -22,8 +22,8 @@ sp {simple-robot*elaborate*state*area-3
    (state <s> ^name simple-robot
               ^entities.entity <e>)
    (<e> ^data.absolute-location <al>)
-   (<al> ^x {> -4.5 < 4}
-         ^y >= 5)
+   (<al> ^x {> -4 < 5}
+         ^y >= 4)
 -->
    (<e> ^area 3)
 }
@@ -32,8 +32,8 @@ sp {simple-robot*elaborate*state*area-4
    (state <s> ^name simple-robot
               ^entities.entity <e>)
    (<e> ^data.absolute-location <al>)
-   (<al> ^x <= 4.5
-         ^y >= 5)
+   (<al> ^x <= -4
+         ^y >= 4)
 -->
    (<e> ^area 4)
 }

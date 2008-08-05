@@ -15,7 +15,7 @@ sp {apply*initialize-simple-robot
         ^waypoint-tolerance 0.5 # how close (in meters) the agent needs to be to a waypoint to be considered "at" it
         ^replan-time 3 # how many seconds (as reported on the input-link) the agent should let the collision avoidance algorithm try to make progress towards the waypoint before replanning
         ^message-update-time 3 # after how many seconds (as reported on the input-link) the agent should send another positition update of an unfriendly entity)
-        ^rotation-tolerance 10 # how many degrees the agent's yaw can be off when it has a desired yaw
+        ^rotation-tolerance 30 # how many degrees the agent's yaw can be off when it has a desired yaw
    )
 }
 

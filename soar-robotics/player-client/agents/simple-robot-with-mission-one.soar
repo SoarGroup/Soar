@@ -15,7 +15,7 @@ sp {apply*initialize-simple-robot*create-mission
          ^x 5 ^y 4
          ^next <s3>)
    (<s3> ^name scout
-         ^return-time 95
+         ^return-time 90
          ^next <s4>)
    (<s4> ^name go-to-location
          ^x -6.5 ^y -7
