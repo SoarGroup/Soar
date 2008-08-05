@@ -136,7 +136,7 @@ function String GetData()
 	            
 	            if ( ! AlarmInArray( RecordedSedans, ActorHit.Name ) )
 	            {
-		        Log("recording sedan detection");
+		        //Log("recording sedan detection");
 
                         RecordedSedans.Insert( RecordedSedans.Length, 1 );
                         RecordedSedans[ RecordedSedans.Length - 1 ] = ActorHit.Name;
@@ -235,7 +235,7 @@ function String GetData()
         if(Outstring == "")
             Outstring = "{Status NoVictims}";
         
-	Log("Vict outstring: " $ Outstring);
+	//Log("Vict outstring: " $ Outstring);
     }
     
     // Clean up the array of unrecorded alarms
@@ -320,7 +320,7 @@ function PopulateVictPartInfo(Actor ActorHit, int VictIndex)
         // Here when this is the first trace that hits this part
         VictsInfo[VictIndex].VictPartsInfo.Insert(VictsInfo[VictIndex].VictPartsInfo.Length, 1); // Add an entry to the dynamic array
         VictsInfo[VictIndex].VictPartsInfo[VictsInfo[VictIndex].VictPartsInfo.Length-1].partName = "Head";
-        VictsInfo[VictIndex].VictPartsInfo[VictsInfo[VictIndex].VictPartsInfo.Length-1].hitLocation = AddError(utils.getRelativePosition(ActorHit.Location, Location, Rotation));
+        VictsInfo[VictIndex].VictPartsInfo[VictsInfo[VictIndex].VictPartsInfo.Length-1].hitLocation = utils.getRelativePosition(ActorHit.Location, Location, Rotation);
     }
 
     return;
