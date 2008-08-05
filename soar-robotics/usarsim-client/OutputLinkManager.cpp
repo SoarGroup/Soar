@@ -114,6 +114,7 @@ Command::Command( Identifier* command_id )
 
 		do
 		{		
+			char const* type = 0;
 			char const* word = 0;
 			Identifier* next = 0;
 			
@@ -126,6 +127,7 @@ Command::Command( Identifier* command_id )
 				
 				if ( attribute == string( "word" ) )
 				{
+					type = (*children_iter)->GetValueType();
 					word = (*children_iter)->GetValueAsString();
 					std::cout << "word: " << word << std::endl;
 				}
@@ -164,7 +166,7 @@ Command::Command( Identifier* command_id )
 				throw std::exception();
 			}
 			
-			m_sentence.push_back( string( word ) );
+			m_sentence.push_back( std::pair< std::string, std::string >( type, word ) );
 			current_identifier = next;
 
 		} while ( current_identifier );

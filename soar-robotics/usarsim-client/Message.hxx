@@ -14,12 +14,12 @@ int Message::id() const
 	return m_id;
 }
 
-std::list< std::string >::const_iterator Message::begin() const
+std::list< std::pair< std::string, std::string > >::const_iterator Message::begin() const
 {
 	return m_message.begin();
 }
 
-std::list< std::string >::const_iterator Message::end() const
+std::list< std::pair< std::string, std::string > >::const_iterator Message::end() const
 {
 	return m_message.end();
 }

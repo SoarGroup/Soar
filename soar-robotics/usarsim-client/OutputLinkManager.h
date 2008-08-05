@@ -28,7 +28,7 @@ public:
 	
 	double get_a();
 	
-	const std::list< std::string > get_sentence() const;
+	const std::list< std::pair< std::string, std::string > > get_sentence() const;
 	
 	int get_remove_message_id() const;
 
@@ -45,7 +45,7 @@ private:
 	double m_x;
 	double m_y;
 	double m_a;
-	std::list< std::string > m_sentence;
+	std::list< std::pair< std::string, std::string > > m_sentence;
 	int m_remove_message_id;
 };
 

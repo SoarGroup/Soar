@@ -159,11 +159,35 @@ void InputLinkManager::add_message( const Message& message )
 	sml::Identifier* parent_id_wme = message_identifier;
 	bool first = true;
 	
-	for ( std::list< std::string >::const_iterator iter = message.begin(); iter != message.end(); ++iter )
+	for ( std::list< std::pair< std::string, std::string > >::const_iterator iter = message.begin(); iter != message.end(); ++iter )
 	{
 		parent_id_wme = m_agent.CreateIdWME( parent_id_wme, first ? "first" : "next" );
 		first = false;
-		m_agent.CreateStringWME( parent_id_wme, "word", (*iter).c_str() );
+		if ( iter->first == "int" )
+		{
+			int value = 0;
+			if ( !from_string( value, iter->second, std::dec ) )
+			{
+				throw std::exception();
+			}
+					
+			m_agent.CreateIntWME( parent_id_wme, "word", value );
+		}
+		else if ( iter->first == "double" )
+		{
+			double value = 0;
+			if ( !from_string( value, iter->second, std::dec ) )
+			{
+				throw std::exception();
+			}
+
+			m_agent.CreateFloatWME( parent_id_wme, "word", value );
+		}
+		else
+		{
+			assert( iter->first == "string" );
+			m_agent.CreateStringWME( parent_id_wme, "word", iter->second.c_str() );
+		}
 	}
 	
 	if ( first )
