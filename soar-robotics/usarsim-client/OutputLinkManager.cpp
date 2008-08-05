@@ -88,6 +88,7 @@ Command::Command( Identifier* command_id )
 		m_type = ROTATE_TO;
 
 		m_a = ::get_param< double >( "yaw", command_id );
+		m_a = to_absolute_yaw_player( m_a );
 		m_throttle = ::get_param< double >( "throttle", command_id );
 	}
 	else if ( command_string == "stop" )

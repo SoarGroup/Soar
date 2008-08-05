@@ -61,6 +61,7 @@ std::string SoarPlayerBot::command_output( const std::string& command )
 	std::string cmd = command.substr( 0, split1 );
 	if ( cmd == "stop" )
 	{
+		std::cout << "(0,0)" << std::endl;
 		m_pp.SetSpeed( 0, 0 );
 	}
 	else if ( cmd == "move" )
@@ -70,41 +71,47 @@ std::string SoarPlayerBot::command_output( const std::string& command )
 			return "move <x>";
 		}
 		std::string x_string = command.substr( split1 + 1 );
-		float x = 0;
+		double x = 0;
 		if ( !from_string( x, x_string, std::dec ) )
 		{
 			return "need float argument";
 		}
 		
+		std::cout << "(" << x << ")" << std::endl;
 		m_pp.SetSpeed( x, 0 );
 	}
 	else if ( cmd == "rotate" )
 	{
 		if ( split1 == std::string::npos )
 		{
-			return "rotate <yaw>";
+			return "rotate <yaw degrees rate>";
 		}
 		std::string yaw_string = command.substr( split1 + 1 );
-		float yaw = 0;
+		double yaw = 0;
 		if ( !from_string( yaw, yaw_string, std::dec ) )
 		{
 			return "need float argument";
 		}
 		
+		yaw = to_relative_yaw_player( yaw );
+		
+		std::cout << "(" << yaw << ")" << std::endl;
 		m_pp.SetSpeed( 0, yaw );
 	}
 	else if ( cmd == "rotate-to" )
 	{
-	if ( split1 == std::string::npos )
-	{
-			return "rotate-to <absolute yaw>";
+		if ( split1 == std::string::npos )
+		{
+			return "rotate-to <absolute yaw degrees>";
 		}
 		std::string yaw_string = command.substr( split1 + 1 );
-		float yaw = 0;
+		double yaw = 0;
 		if ( !from_string( yaw, yaw_string, std::dec ) )
 		{
 			return "need float argument";
 		}
+		
+		yaw = to_absolute_yaw_player( yaw );
 
 		player_pose2d rotate_to_destination;
 		rotate_to_destination.px = m_pp.GetXPos();
@@ -112,7 +119,6 @@ std::string SoarPlayerBot::command_output( const std::string& command )
 		rotate_to_destination.pa = yaw;
 		
 		std::cout << "(" << rotate_to_destination.px << "," << rotate_to_destination.py << "," << rotate_to_destination.pa << ")" << std::endl;
-		
 		m_pp.GoTo( rotate_to_destination );
 	}
 	else if ( cmd == "move-to" )
@@ -128,29 +134,25 @@ std::string SoarPlayerBot::command_output( const std::string& command )
 		}
 
 		std::string x_string = command.substr( split1 + 1, split2 - (split1 + 1) );
-		float x = 0;
+		double x = 0;
 		if ( !from_string( x, x_string, std::dec ) )
 		{
 			return "need float x argument";
 		}
 
 		std::string y_string = command.substr( split2 + 1 );
-		float y = 0;
+		double y = 0;
 		if ( !from_string( y, y_string, std::dec ) )
 		{
 			return "need float y argument";
 		}
 	
-		//std::cout << "1:" << split1 << ":" << std::endl;
-		//std::cout << "2:" << split2 << ":" << std::endl;
-		//std::cout << "x:" << x_string << ":" << std::endl;
-		//std::cout << "y:" << y_string << ":" << std::endl;
-		
 		player_pose2d move_to_destination;
 		move_to_destination.px = x;
 		move_to_destination.py = y;
-		move_to_destination.pa = m_pp.GetYaw();		
+		move_to_destination.pa = atan2( y - m_pp.GetYPos(), x - m_pp.GetXPos() );
 		
+		std::cout << "(" << move_to_destination.px << "," << move_to_destination.py << "," << move_to_destination.pa << ")" << std::endl;
 		m_pp.GoTo( move_to_destination );
 	}
 	else

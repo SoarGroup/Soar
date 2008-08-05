@@ -9,10 +9,11 @@ class Message;
 class Entity
 {
 public:
-	Entity( sml::Agent* agent, sml::Identifier* m_entities_parent, int id, double x, double y );
+	Entity( sml::Agent* agent, sml::Identifier* m_entities_parent, int id, 
+		double relative_x, double relative_y, double absolute_x, double absolute_y );
 	~Entity();
 	
-	void position_update( double x, double y );
+	void position_update( double relative_x, double relative_y, double absolute_x, double absolute_y );
 	void lost_contact();
 	
 private:
@@ -22,6 +23,8 @@ private:
 	sml::StringElement* m_visible_wme;
 	sml::FloatElement* m_absolute_x;
 	sml::FloatElement* m_absolute_y;
+	sml::FloatElement* m_relative_x;
+	sml::FloatElement* m_relative_y;
 };
 
 class InputLinkManager
@@ -31,8 +34,8 @@ public:
 	~InputLinkManager();
 	
 	void time_update( const timeval& time );
-	void position_update( double x, double y, double yaw );
-	void motion_update( double motion_x, double motion_y, double motion_yaw );
+	void position_update( double x, double y, double yaw_player );
+	void motion_update( double motion_x, double motion_y, double motion_yaw_player );
 	void clear_expired_fiducials();
 	void feducial_update( int id, double x, double y );
 	void update_expired_fiducials();
@@ -67,7 +70,6 @@ private:
 	std::map< int, Entity* > m_entities_map;
 	std::map< int, Entity* > m_unseen_entities_map;
 
-	static const double PI;
 	static const double ROTATION_DEAD_ZONE_DEGREES;
 	static const double MOVEMENT_DEAD_ZONE;
 };

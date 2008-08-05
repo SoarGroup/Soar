@@ -368,6 +368,8 @@ int UsBot::AddCommand(char* command)
  */
 void UsBot::ParseData(char* data)
 {
+  //printf("%s", data);
+  
   int len = strlen( data );
   while ( len && isspace( data[ len - 1 ] ) )
   {
@@ -381,7 +383,7 @@ void UsBot::ParseData(char* data)
   if (type==-1) return;
   
   // fakelocalization pose
-  if((type & devices & US_DATA_INS) && (location!=NULL)) {
+  if((type & devices & US_DATA_GROUND_TRUTH) && (location!=NULL)) {
     if (!bLockLocation || WaitUnlock(&bLockLocation)) {
       us_get_groundTruth(pBody,location);
       bNewLocation = true;

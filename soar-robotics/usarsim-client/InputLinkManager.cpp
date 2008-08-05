@@ -4,7 +4,8 @@
 
 using namespace sml;
 
-Entity::Entity( Agent* agent, Identifier* m_entities_parent, int id, double x, double y )
+Entity::Entity( sml::Agent* agent, sml::Identifier* m_entities_parent, int id, 
+	double relative_x, double relative_y, double absolute_x, double absolute_y )
 {
 	m_agent = agent;
 	
@@ -15,9 +16,16 @@ Entity::Entity( Agent* agent, Identifier* m_entities_parent, int id, double x, d
 	m_visible_wme = m_agent->CreateStringWME( m_entity_wme, "visible", "true" );
 	m_agent->CreateStringWME( m_entity_wme, "friendly", "false" );
 	
-	Identifier* absolute_location = m_agent->CreateIdWME( m_entity_wme, "relative-location" );
-	m_absolute_x = m_agent->CreateFloatWME( absolute_location, "x", x );
-	m_absolute_y = m_agent->CreateFloatWME( absolute_location, "y", y );
+	{
+		Identifier* relative_location = m_agent->CreateIdWME( m_entity_wme, "relative-location" );
+		m_relative_x = m_agent->CreateFloatWME( relative_location, "x", relative_x );
+		m_relative_y = m_agent->CreateFloatWME( relative_location, "y", relative_y );
+	}
+	{
+		Identifier* absolute_location = m_agent->CreateIdWME( m_entity_wme, "absolute-location" );
+		m_absolute_x = m_agent->CreateFloatWME( absolute_location, "x", absolute_x );
+		m_absolute_y = m_agent->CreateFloatWME( absolute_location, "y", absolute_y );
+	}
 }
 
 Entity::~Entity()

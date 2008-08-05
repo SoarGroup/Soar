@@ -21,7 +21,6 @@ SoarPlayerBot::SoarPlayerBot( int port, Agent& agent, const std::string& product
 , m_pp( &m_robot, 2 )
 , m_fp( &m_robot, 0 )
 , m_lp( &m_robot, 0 )
-//, m_gp( &m_robot, 0 )
 , m_productions( productions )
 , m_agent( agent )
 {
@@ -58,6 +57,7 @@ void SoarPlayerBot::update( std::deque< Message* >& outgoing_message_deque )
 	double x = m_pp.GetXPos();
 	double y = m_pp.GetYPos();
 	double yaw = m_pp.GetYaw();
+	
 	double motion_x = m_pp.GetXSpeed();
 	double motion_y = m_pp.GetYSpeed();
 	double motion_yaw = m_pp.GetYawSpeed();
@@ -96,10 +96,10 @@ void SoarPlayerBot::update( std::deque< Message* >& outgoing_message_deque )
 				motion_x = 0;
 				break;
 			case Command::MOVE_FORWARD:
-				motion_x = command->get_throttle() * 0.300;
+				motion_x = command->get_throttle();
 				break;
 			case Command::MOVE_BACKWARD:
-				motion_x = command->get_throttle() * -0.300;
+				motion_x = command->get_throttle();
 				break;
 			}
 			break;
@@ -113,10 +113,10 @@ void SoarPlayerBot::update( std::deque< Message* >& outgoing_message_deque )
 				motion_yaw = 0;
 				break;
 			case Command::ROTATE_RIGHT:
-				motion_yaw = command->get_throttle() * -10 * ( 3.14159265 / 180 );
+				motion_yaw = command->get_throttle() * -1;
 				break;
 			case Command::ROTATE_LEFT:
-				motion_yaw = command->get_throttle() * 10 * ( 3.14159265 / 180 );
+				motion_yaw = command->get_throttle();
 				break;
 			}
 			break;

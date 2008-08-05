@@ -73,6 +73,7 @@ int us_get_type(char* data, char** ppBody)
     else if (strstr(*ppBody,"{Type Encoder}")!=NULL) res |= US_DATA_ODOM | US_DATA_ENCODER;
     else if (strstr(*ppBody,"{Type RFID}")!=NULL) res |= US_DATA_FIDUCIAL;
     else if (strstr(*ppBody,"{Type VictSensor}")!=NULL) res |= US_DATA_VICTIM_FIDUCIAL;
+    else if (strstr(*ppBody,"{Type GroundTruth}")!=NULL) res |= US_DATA_GROUND_TRUTH;
   }
   else if (!strcmp(head,"GEO"))
   {
@@ -1004,7 +1005,7 @@ int us_get_victim_fiducial(char* origdata, player_fiducial_data_t *fid)
 		}
 		
 		// it is, so no data
-		printf("OK: no data\n");
+		//printf("OK: no data\n");
 		return 0;
 	}
 	

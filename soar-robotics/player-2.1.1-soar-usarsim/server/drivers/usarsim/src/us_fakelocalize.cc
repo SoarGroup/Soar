@@ -45,7 +45,7 @@ int UsFakeLocalize::Setup()
   }
   //now I can access the fields in driver directly
   bot = ((UsBot*)bot_device->driver);
-  bot->devices |= US_DATA_INS;
+  bot->devices |= US_DATA_GROUND_TRUTH;
   this->StartThread();
   return 0;
 }

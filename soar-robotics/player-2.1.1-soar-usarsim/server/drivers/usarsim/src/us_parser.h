@@ -53,24 +53,25 @@ extern "C" {
 #define US_DATA_VICTIM_FIDUCIAL 0x01<<10
 #define US_DATA_ENCODER    0x01<<11
 #define US_DATA_LASER3D    0x01<<12
+#define US_DATA_GROUND_TRUTH 0x01<<13
 
-#define US_GEOM_LASER      0x01<<13
-#define US_GEOM_SONAR      0x01<<14
-#define RH_GEOM_IR         0x01<<15
-#define RH_GEOM_PYRO       0x01<<16
-#define US_GEOM_PTZ        0x01<<17
-#define US_GEOM_LASER3D    0x01<<18
-#define US_GEOM_ROBOT      0x01<<19
+#define US_GEOM_LASER      0x01<<14
+#define US_GEOM_SONAR      0x01<<15
+#define RH_GEOM_IR         0x01<<16
+#define RH_GEOM_PYRO       0x01<<17
+#define US_GEOM_PTZ        0x01<<18
+#define US_GEOM_LASER3D    0x01<<19
+#define US_GEOM_ROBOT      0x01<<20
 
-#define US_CONF_LASER      0x01<<20
-#define US_CONF_SONAR      0x01<<21
-#define RH_CONF_IR         0x01<<22
-#define RH_CONF_PYRO       0x01<<23
-#define US_CONF_CAMERA     0x01<<24
-#define US_CONF_ROBOT      0x01<<25
-#define US_CONF_LASER3D    0x01<<26
+#define US_CONF_LASER      0x01<<21
+#define US_CONF_SONAR      0x01<<22
+#define RH_CONF_IR         0x01<<23
+#define RH_CONF_PYRO       0x01<<24
+#define US_CONF_CAMERA     0x01<<25
+#define US_CONF_ROBOT      0x01<<26
+#define US_CONF_LASER3D    0x01<<27
 
-#define US_STATUS          0x01<<27
+#define US_STATUS          0x01<<28
 
 // basic parse functions
 int us_get_word(char* data, int pos, char* word);

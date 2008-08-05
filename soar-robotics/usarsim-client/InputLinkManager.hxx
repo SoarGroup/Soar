@@ -4,25 +4,27 @@
 #include "InputLinkManager.h"
 
 #include "Message.h"
+#include "utility.h"
 
 #include <iostream>
-#include <cmath>
 #include <sys/time.h>
 #include <exception>
 
-const double InputLinkManager::PI = 3.14159265;
 const double InputLinkManager::ROTATION_DEAD_ZONE_DEGREES = 0.5;	// FIXME dead zones should be configurable
 const double InputLinkManager::MOVEMENT_DEAD_ZONE = 0.001;			// FIXME dead zones should be configurable
 
-void Entity::position_update( double x, double y )
+void Entity::position_update( double relative_x, double relative_y, double absolute_x, double absolute_y )
 {
 	if ( m_visible_wme->GetValue() == std::string( "false" ) )
 	{
 		m_agent->Update( m_visible_wme, "true" );
 	}
 
-	m_agent->Update( m_absolute_x, x );
-	m_agent->Update( m_absolute_y, y );
+	m_agent->Update( m_relative_x, relative_x );
+	m_agent->Update( m_relative_y, relative_y );
+
+	m_agent->Update( m_absolute_x, absolute_x );
+	m_agent->Update( m_absolute_y, absolute_y );
 }
 
 void Entity::lost_contact()
@@ -41,20 +43,10 @@ void InputLinkManager::time_update( const timeval& time )
 	//std::cout << "t(" << time.tv_sec << "." << time.tv_usec / 1000000.0 << ")\n";
 }
 
-void InputLinkManager::position_update( double x, double y, double yaw_radians )
+void InputLinkManager::position_update( double x, double y, double yaw )
 {
-	double yaw_degrees = yaw_radians * 180 / PI;
-	if ( yaw_degrees < 0 )
-	{
-		do
-		{
-			yaw_degrees += 360;
-		} while ( yaw_degrees < 0 );
-	}
-	else
-	{
-		yaw_degrees = fmod( yaw_degrees, 360 );
-	}
+	// convert to soar yaw
+	yaw = to_absolute_yaw_soar( yaw );
 	
 	double i = 1;
 	double j = 0;
@@ -63,15 +55,16 @@ void InputLinkManager::position_update( double x, double y, double yaw_radians )
 	m_agent.Update( m_y, y );
 	m_agent.Update( m_i, i );
 	m_agent.Update( m_j, j );
-	m_agent.Update( m_yaw, yaw_degrees );
+	m_agent.Update( m_yaw, yaw );
 
-	//std::cout << "p(" << x << "," << y << "," << i << "," << j << "," << yaw_degrees << ")\n";
+	//std::cout << "p(" << x << "," << y << "," << i << "," << j << "," << yaw << ")\n";
 }
 
 void InputLinkManager::motion_update( double motion_x, double motion_y, double motion_yaw )
 {
-	double motion_yaw_degrees = motion_yaw * 180 / PI;
-
+	// convert to degrees
+	motion_yaw = to_relative_yaw_soar( motion_yaw );
+	
 	double speed = pow( motion_x, 2 );
 	speed += pow( motion_y, 2 );
 	speed = sqrt( speed );
@@ -87,23 +80,23 @@ void InputLinkManager::motion_update( double motion_x, double motion_y, double m
 	}
 	
 	const char* rotation = 0;
-	if ( fabs( motion_yaw_degrees ) < ROTATION_DEAD_ZONE_DEGREES )
+	if ( fabs( motion_yaw ) < ROTATION_DEAD_ZONE_DEGREES )
 	{
 		rotation = "stop";
 	} 
 	else 
 	{
-		rotation = ( motion_yaw_degrees > 0 ) ? "left" : "right";
+		rotation = ( motion_yaw > 0 ) ? "right" : "left";
 	}
 	
 	m_agent.Update( m_motion_x, motion_x );
 	m_agent.Update( m_motion_y, motion_y );
 	m_agent.Update( m_motion_speed, speed );
-	m_agent.Update( m_motion_yaw, motion_yaw_degrees );
+	m_agent.Update( m_motion_yaw, motion_yaw );
 	m_agent.Update( m_motion_movement, movement );
 	m_agent.Update( m_motion_rotation, rotation );
 	
-	//std::cout << "m(" << motion_x << "," << motion_y << "," << speed << "," << motion_yaw_degrees << "," << movement << "," << rotation << ")\n";
+	//std::cout << "m(" << motion_x << "," << motion_y << "," << speed << "," << motion_yaw << "," << movement << "," << rotation << ")\n";
 }
 
 void InputLinkManager::clear_expired_fiducials()
@@ -114,16 +107,31 @@ void InputLinkManager::clear_expired_fiducials()
 
 void InputLinkManager::feducial_update( int id, double x, double y )
 {
+	// calculate absolute position
+	// rotate relative on to absolute system:
+	// x' = x * cos(a) - y * sin(a)
+	// y' = x * sin(a) + y * cos(a)
+	// then translate by robot position
+	// FIXME: this may be off a bit because the relative location is relative to the sensor position on the bot
+	
+	const double yaw = to_absolute_yaw_player( m_yaw->GetValue() );
+	
+	double absolute_x = ( x * cos( yaw ) ) - ( y * sin( yaw ) );
+	absolute_x += m_x->GetValue();
+
+	double absolute_y = ( x * sin( yaw ) ) + ( y * cos( yaw ) );
+	absolute_y += m_y->GetValue();
+	
 	// have we seen this id?
 	std::map< int, Entity* >::iterator iter = m_entities_map.find( id );
 	if ( iter != m_entities_map.end() )
 	{
-		iter->second->position_update( x, y );
+		iter->second->position_update( x, y, absolute_x, absolute_y );
 		m_unseen_entities_map.erase( iter->first );
 	}
 	else
 	{
-		m_entities_map[ id ] = new Entity( &m_agent, m_entities, id, x, y );
+		m_entities_map[ id ] = new Entity( &m_agent, m_entities, id, x, y, absolute_x, absolute_y );
 	}
 }
 
