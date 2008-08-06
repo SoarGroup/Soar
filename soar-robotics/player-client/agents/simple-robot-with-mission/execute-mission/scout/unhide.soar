@@ -3,12 +3,24 @@ sp {scout*propose*unhide
              -^top-state.entities.entity.area <a>
               ^waypoints.at <wh>)
    (<wh> ^hiding <w>)
-   (<w> ^hide.area <a>)
+   (<w> ^hide <wh>)
+   (<wh> ^area <a>)
 -->
    (<s> ^operator <op> +)
    (<op> ^name unhide
          ^waypoint <w>)
 }
+
+sp {scout*compare*unhide
+   (state <s> ^name scout
+              ^operator <op1> +
+                        <op2> +)
+   (<op1> ^name unhide)
+   (<op2> ^name rotate)
+-->
+   (<s> ^operator <op1> > <op2>)
+}
+
 
 sp {apply*unhide
    (state <s> ^operator <op>

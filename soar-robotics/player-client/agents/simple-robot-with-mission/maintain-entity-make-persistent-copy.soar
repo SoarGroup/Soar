@@ -2,6 +2,8 @@
 # if we have a non-visible entity (but still on the input-link) then make a persisent copy
 #
 
+# NOTE: process-message will propose an operator with the same name
+
 sp {simple-robot*propose*maintain-entity-make-persistent-copy
    (state <s> ^name simple-robot
               ^io.input-link <il>
@@ -11,7 +13,8 @@ sp {simple-robot*propose*maintain-entity-make-persistent-copy
    (<e> ^visible false
         ^id <id>)
    (<es> ^id <id>
-        -^data)
+        -^data
+)
 -->
    (<s> ^operator <op> +)
    (<op> ^name maintain-entity-make-persistent-copy
@@ -50,10 +53,13 @@ sp {apply*maintain-entity-make-persistent-copy*remove-old-persistent-copy
    (<op> ^name maintain-entity-make-persistent-copy
          ^state-entity <es>
          ^last-contact-time <time>)
-   (<es> ^last-contact-time < <time>
+   (<es> ^last-contact-time {<oldtime> < <time>}
          ^id <id>
-         ^data <d>)
+         ^data <d>
+         ^persistent-copy <d>)
 -->
-   (<es> ^data <d> -)
+   (<es> ^data <d> -
+         ^persistent-copy <d> -
+         ^last-contact-time <oldtime> -)
    (write (crlf) |Removed old persistent copy of entity | <id>)
 }

@@ -15,6 +15,7 @@ sp {simple-robot*propose*maintain-entity-remove-persistent-copy
    (<s> ^operator <op> +)
    (<op> ^name maintain-entity-remove-persistent-copy
          ^state-entity <es>)
+   #(interrupt)
 }
 
 sp {apply*maintain-entity-remove-persistent-copy
@@ -30,6 +31,6 @@ sp {apply*maintain-entity-remove-persistent-copy
    (<e> ^data <d> -
         ^persistent-copy <d> -
         ^last-contact-time <time> -
-        ^last-update-message-time <lumt> -1000) #force message to be sent immediately (if agent decides to send at all)
+        ^last-update-message-time <lumt> - -1000) #force message to be sent immediately (if agent decides to send at all)
    (write (crlf) |Removed persisent copy of entity | <id>)
 }
