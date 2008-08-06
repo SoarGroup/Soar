@@ -1,4 +1,4 @@
-bots = 2                         # required
+bots = 3                         # required
 
 name0 = one                      # optional, defaults to robotN where n is array index
 productions0 = share/agents/simple-robot-with-mission-one.soar # required
@@ -7,3 +7,7 @@ port0 = 6665                     # optional, defaults to (6666 + N) where n is a
 name1 = two
 productions1 = share/agents/simple-robot-with-mission-two.soar
 port1 = 6666
+
+name2 = three
+productions2 = share/agents/simple-robot-with-mission-three.soar
+port2 = 6667
