@@ -20,7 +20,16 @@ sp {go-to-location*compare*give-up-on-move-to-better-than-update-progress
    (<s> ^operator <op1> > <op2>)
 }
 
+# don't let low-level movement continue once we've decided to quit
+sp {apply*give-up-on-move-to*stop
+   (state <s> ^operator <op>
+              ^io.output-link <ol>)
+   (<op> ^name give-up-on-move-to)
+-->
+   (<ol> ^stop <x>)
+}
 
+# this fires when subgoal is finished
 sp {apply*give-up-on-move-to
    (state <s> ^operator <op>
               ^waypoints.at <w>
