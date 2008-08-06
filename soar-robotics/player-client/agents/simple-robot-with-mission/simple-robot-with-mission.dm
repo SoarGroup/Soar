@@ -1,4 +1,4 @@
-199
+201
 SOAR_ID 0
 SOAR_ID 1
 SOAR_ID 2
@@ -198,7 +198,9 @@ FLOAT_RANGE 195 -Infinity Infinity
 FLOAT_RANGE 196 0.0 Infinity
 INTEGER_RANGE 197 0 2147483647
 INTEGER_RANGE 198 0 2147483647
-254
+FLOAT_RANGE 199 0.0 Infinity
+FLOAT_RANGE 200 -Infinity Infinity
+256
 0 attribute 117
 0 choices 116
 0 desired 31
@@ -206,6 +208,7 @@ INTEGER_RANGE 198 0 2147483647
 0 io 1
 0 item 21
 0 message-update-time 159
+0 min-progress-distance 199
 0 mission 88
 0 move-to 50
 0 name 115
@@ -295,6 +298,7 @@ INTEGER_RANGE 198 0 2147483647
 50 map-updated 140
 50 source 31
 50 time 51
+50 update-dist 200
 57 failure 31
 57 name 59
 57 operator 61

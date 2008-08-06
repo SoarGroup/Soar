@@ -1,4 +1,14 @@
 # these elaboration rules fire in the top-state, but are used by the give-up-on-move-to operator in the go-to-location substate
+
+sp {simple-robot*elaborate*min-progress-distance
+   (state <s> ^name simple-robot
+              ^move-to <mt>
+              ^min-progress-distance <mpd>)
+   (<mt> ^closest <c>)
+-->
+   (<mt> ^update-dist (- <c> <mpd>))
+}
+
 sp {simple-robot*elaborate*move-to-cutoff-time
    (state <s> ^name simple-robot
               ^move-to <mt>

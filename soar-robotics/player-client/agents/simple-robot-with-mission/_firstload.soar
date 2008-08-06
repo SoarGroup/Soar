@@ -1,4 +1,4 @@
-#watch 0
+watch 0
 timers --off
 
 #srand 0

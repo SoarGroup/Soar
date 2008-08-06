@@ -4,10 +4,10 @@ sp {apply*waypoints
 -->
    (<s> ^waypoints <w>)
    (<w> ^waypoint <w1> <w2> <w3> <w4> <w5> <w6> <w7> <w8> <w9> <w10> <w11> <w12> <w13> <w14> <w15> <w16> <hl8> <hr8> <hl13> <hr13> <hl15> <hr15>)
-   (<w1> ^x -7.5 ^y -7 ^id |1| ^next <w4> <w5>)
+   (<w1> ^x -8 ^y -7 ^id |1| ^next <w4> <w5>)
    (<w2> ^x -6.5 ^y -7 ^id |2| ^next <w5>)
-   (<w3> ^x -5.5 ^y -7 ^id |3| ^next <w5> <w7>)
-   (<w4> ^x -10.5 ^y -4.5 ^id |4| ^next <w1> <w2> <w5> <w9>)
+   (<w3> ^x -5 ^y -7 ^id |3| ^next <w5> <w7>)
+   (<w4> ^x -10.5 ^y -5 ^id |4| ^next <w1> <w2> <w5> <w9>)
    (<w5> ^x -6.5 ^y -5 ^id |5| ^next <w1> <w2> <w3> <w4> <w6> <w10>)
    (<w6> ^x -2.5 ^y -4.5 ^id |6| ^next <w5> <w11>)
    (<w7> ^x 3 ^y -5 ^id |7| ^next <w3> <w8>)
