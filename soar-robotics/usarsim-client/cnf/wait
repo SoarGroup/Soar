@@ -1,4 +1,5 @@
 bots = 1
+host = winter.eecs.umich.edu
 
 name0 = zero
 productions0 = wait.soar

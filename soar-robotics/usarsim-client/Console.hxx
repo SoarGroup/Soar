@@ -82,7 +82,7 @@ int Console::run()
 				pthread_attr_t attr;
 				
 				pthread_attr_init( &attr );
-				pthread_create( &thread, &attr, sedan_thread, reinterpret_cast< void *>( new Sedan( m_sedan_port ) ) );
+				pthread_create( &thread, &attr, sedan_thread, reinterpret_cast< void *>( new Sedan( m_sedan_host, m_sedan_port ) ) );
 			}
 			catch ( Sedan::sedan_exception e )
 			{

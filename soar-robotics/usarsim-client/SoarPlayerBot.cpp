@@ -16,8 +16,8 @@ using namespace PlayerCc;
 using std::string;
 using std::list;
 
-SoarPlayerBot::SoarPlayerBot( int port, Agent& agent, const std::string& productions )
-: m_robot( "localhost", port )
+SoarPlayerBot::SoarPlayerBot( const std::string& host, int port, Agent& agent, const std::string& productions )
+: m_robot( host.c_str(), port )
 , m_pp( &m_robot, 2 )
 , m_fp( &m_robot, 0 )
 , m_lp( &m_robot, 0 )

@@ -6,7 +6,7 @@
 class Sedan
 {
 public:
-	Sedan( int port );
+	Sedan( const std::string& sedan_host, int port );
 	void run();
 
 	struct sedan_exception : public std::exception

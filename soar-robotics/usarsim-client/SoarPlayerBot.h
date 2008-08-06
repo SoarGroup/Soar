@@ -15,7 +15,7 @@ class Message;
 class SoarPlayerBot
 {
 public:
-	SoarPlayerBot( int port, sml::Agent& agent, const std::string& productions );
+	SoarPlayerBot( const std::string& host, int port, sml::Agent& agent, const std::string& productions );
 	~SoarPlayerBot();
 	
 	void reload_productions();

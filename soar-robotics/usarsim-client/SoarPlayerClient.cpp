@@ -81,7 +81,7 @@ SoarPlayerClient::SoarPlayerClient( ConfigFile& config )
 		
 		int port = config.read( "port" + suffix, 6666 + m_bot_count );
 		
-		m_bot_list.push_back( new SoarPlayerBot( port, *agent, config.read< string >( "productions" + suffix ) ) );
+		m_bot_list.push_back( new SoarPlayerBot( config.read( "host", std::string( "localhost" ) ), port, *agent, config.read< string >( "productions" + suffix ) ) );
 		m_bot_count += 1;
 	}
 	

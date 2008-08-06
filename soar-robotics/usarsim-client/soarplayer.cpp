@@ -21,7 +21,7 @@ int main( int argc, char** argv )
 	{
 		ConfigFile config( argv[1] );
 		SoarPlayerClient client( config );
-		Console console( client, config.read( "sedan_port", 6664 ) );
+		Console console( client, config.read( "host", std::string ("localhost" ) ), config.read( "sedan_port", 6664 ) );
 		return console.run();
 	}
 	catch ( ConfigFile::file_not_found e )
