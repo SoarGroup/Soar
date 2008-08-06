@@ -68,13 +68,13 @@ void SoarPlayerBot::update( std::deque< Message* >& outgoing_message_deque )
 	{
 		++count;
 	}
+#endif
 	
 	// read from the proxies
 	if ( ! m_robot.Peek() )
 	{
 		return;
 	}
-#endif
 		
 	double x = m_pp.GetXPos();
 	double y = m_pp.GetYPos();
