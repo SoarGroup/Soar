@@ -49,11 +49,33 @@ SoarPlayerBot::~SoarPlayerBot()
 
 void SoarPlayerBot::update( std::deque< Message* >& outgoing_message_deque )
 {
-	//std::cout << "update()" << std::endl;
+	timeval time;
+	gettimeofday( &time, 0 );
+
+#if 0	// make true to check performance
+	static int last_time = -1;
+	static int count = -1;
+	if ( time.tv_sec > last_time )
+	{
+		if ( count >= 0 ) 
+		{
+			std::cout << count << " updates/sec\n";
+		}
+		count = 0;
+		last_time = time.tv_sec;
+	} 
+	else 
+	{
+		++count;
+	}
+	
 	// read from the proxies
-	
-	m_robot.ReadIfWaiting();
-	
+	if ( ! m_robot.Peek() )
+	{
+		return;
+	}
+#endif
+		
 	double x = m_pp.GetXPos();
 	double y = m_pp.GetYPos();
 	double yaw = m_pp.GetYaw();
@@ -66,8 +88,6 @@ void SoarPlayerBot::update( std::deque< Message* >& outgoing_message_deque )
 	//std::cout << "(" << x << "," << y << "," << yaw << ") (" << motion_x << "," << motion_y << "," << motion_yaw << ")" << std::endl;
 	
 	// update input link
-	timeval time;
-	gettimeofday( &time, 0 );
 	m_input_link->time_update( time );
 	m_input_link->position_update( x, y, yaw );
 	m_input_link->motion_update( motion_x, motion_y, motion_yaw );
