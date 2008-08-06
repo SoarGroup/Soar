@@ -1,8 +1,0 @@
-sp {process-unfriendly-entity*elaborate*substate
-   (state <s> ^name process-unfriendly-entity
-              ^superstate.operator <so>)
-   (<so> ^name process-unfriendly-entity
-         ^entity <e>)
--->
-   (<s> ^entity <e>)
-}

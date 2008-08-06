@@ -1,3 +1,0 @@
-pushd simple-robot-with-map
-source simple-robot-with-map_source.soar
-popd
