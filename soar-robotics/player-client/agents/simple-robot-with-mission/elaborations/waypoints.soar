@@ -85,6 +85,14 @@ sp {monitor*waypoints*at-waypoint
    (write (crlf) |At (| <x> |,| <y> |)|)
 }
 
+sp {monitor*waypoints*at-waypoint*top
+   (state <s> ^superstate nil
+              ^waypoints.at <a>)
+   (<a> ^x <x> ^y <y>)
+-->
+   (exec player-print |At (| <x> |,| <y> |)|)
+}
+
 sp {monitor*multiple-ats
    (state <s> ^waypoints <ws>)
    (<ws> ^at <a1> {<a2> <> <a1>})

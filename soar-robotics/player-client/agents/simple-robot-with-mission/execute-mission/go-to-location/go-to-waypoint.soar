@@ -10,10 +10,14 @@ sp {go-to-location*propose*go-to-waypoint
          ^track-progress true) #create a move-to structure on state
 }
 
-sp {apply*go-to-waypoint
+# first rotate-to to the desired heading (in subgoal)
+# then move-to the desired location
+
+sp {apply*go-to-waypoint*move-to
    (state <s> ^operator <op>
               ^io.output-link <ol>)
    (<op> ^name go-to-waypoint
+         ^move-now true
          ^destination <w>)
    (<w> ^x <x>
         ^y <y>)
@@ -31,6 +35,7 @@ sp {apply*go-to-waypoint*create-move-to
               ^top-state <ts>)
   -(<ts> ^move-to)
    (<op> ^name go-to-waypoint
+         ^move-now true
          ^destination <w>
          ^track-progress true)
    (<w> ^distance <dist>)
@@ -48,6 +53,7 @@ sp {apply*go-to-waypoint*remove-move-to
    (<ts> ^move-to <mt>)
    (<mt> ^destination <> <w>)
    (<op> ^name go-to-waypoint
+         ^move-now true
          ^destination <w>)
 -->
    (<ts> ^move-to <mt> -)

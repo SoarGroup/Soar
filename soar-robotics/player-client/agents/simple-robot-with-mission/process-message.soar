@@ -25,14 +25,16 @@ sp {apply*process-message*ignore-self
 
 # this will fire when the next message comes in
 sp {apply*process-message*status-processed
-   (state <s> ^operator <op>
-              ^io.output-link <ol>)
-   (<op> ^name process-message
-         ^message <m>)
+   (state <s> ^io <io>)
+   (<io> ^input-link <il>
+         ^output-link <ol>)
+   (<il> ^self.received-messages.message <m>)
    (<m> ^status processed
         ^id <id>)
 -->
    (<ol> ^remove-message.id <id>)
+   #(write (crlf) |Removing message | <id>)
+   #(exec player-print |Removing message | <id>)
 }
 
 #

@@ -9,4 +9,7 @@ pushd give-up-on-move-to
 source give-up-on-move-to_source.soar
 popd
 source go-to-waypoint.soar
+pushd go-to-waypoint
+source go-to-waypoint_source.soar
+popd
 source update-progress.soar

@@ -16,7 +16,7 @@ sp {scout*compare*unhide
               ^operator <op1> +
                         <op2> +)
    (<op1> ^name unhide)
-   (<op2> ^name rotate)
+   (<op2> ^name rotate-to)
 -->
    (<s> ^operator <op1> > <op2>)
 }

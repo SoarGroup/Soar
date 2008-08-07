@@ -23,12 +23,12 @@ sp {scout*propose*hide*switch-hiding-location
          ^waypoint <wh-o>)
 }
 
-sp {scout*compare*hide*better-than-rotate
+sp {scout*compare*hide*better-than-rotate-to
    (state <s> ^name scout
               ^operator <op1> +
                         <op2> +)
    (<op1> ^name hide)
-   (<op2> ^name rotate)
+   (<op2> ^name rotate-to)
 -->
    (<s> ^operator <op1> > <op2>)
 }
