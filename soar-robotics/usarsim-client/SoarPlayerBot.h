@@ -38,6 +38,15 @@ private:
 	
 	std::string m_productions;
 	sml::Agent& m_agent;
+
+	void update_cache();
+	
+	double m_current_x;
+	double m_current_y;
+	double m_current_yaw;
+	double m_motion_x;
+	double m_motion_y;
+	double m_motion_yaw;
 };
 
 #endif // SOAR_PLAYER_BOT_H
