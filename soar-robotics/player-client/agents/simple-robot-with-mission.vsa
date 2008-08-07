@@ -1,5 +1,5 @@
 VERSION 4
-\simple-robot-with-mission\simple-robot-with-mission.dm
+/simple-robot-with-mission/simple-robot-with-mission.dm
 0	ROOT simple-robot-with-mission simple-robot-with-mission 1
 1	0	FOPERATOR _firstload _firstload.soar 2
 2	0	FOLDER all all 3
@@ -39,19 +39,19 @@ VERSION 4
 36	15	HLOPERATOR scout scout.soar scout 154 37
 37	36	FOPERATOR elaborations elaborations.soar 38
 38	36	HLOPERATOR hide hide.soar hide 216 39
-39	38	FOPERATOR elaborations elaborations.soar 51
-40	38	OPERATOR rotate-to rotate-to.soar 52
-41	36	OPERATOR rotate rotate.soar 40
-42	36	OPERATOR send-entity-report send-entity-report.soar 41
-43	36	HLOPERATOR unhide unhide.soar unhide 221 42
-44	43	FOPERATOR elaborations elaborations.soar 53
-45	43	OPERATOR rotate-to rotate-to.soar 54
-46	15	OPERATOR start start.soar 43
-47	0	OPERATOR initialize-simple-robot initialize-simple-robot.soar 44
-48	0	OPERATOR maintain-entity-make-persistent-copy maintain-entity-make-persistent-copy.soar 45
-49	0	OPERATOR maintain-entity-new maintain-entity-new.soar 46
-50	0	OPERATOR maintain-entity-remove-persistent-copy maintain-entity-remove-persistent-copy.soar 47
-51	0	HLOPERATOR process-message process-message.soar process-message 132 48
-52	51	FOPERATOR elaborations elaborations.soar 49
-53	51	OPERATOR ignore-unknown-message ignore-unknown-message.soar 50
+39	38	FOPERATOR elaborations elaborations.soar 40
+40	38	OPERATOR rotate-to rotate-to.soar 41
+41	36	OPERATOR rotate rotate.soar 42
+42	36	OPERATOR send-entity-report send-entity-report.soar 43
+43	36	HLOPERATOR unhide unhide.soar unhide 221 44
+44	43	FOPERATOR elaborations elaborations.soar 45
+45	43	OPERATOR rotate-to rotate-to.soar 46
+46	15	OPERATOR start start.soar 47
+47	0	OPERATOR initialize-simple-robot initialize-simple-robot.soar 48
+48	0	OPERATOR maintain-entity-make-persistent-copy maintain-entity-make-persistent-copy.soar 49
+49	0	OPERATOR maintain-entity-new maintain-entity-new.soar 50
+50	0	OPERATOR maintain-entity-remove-persistent-copy maintain-entity-remove-persistent-copy.soar 51
+51	0	HLOPERATOR process-message process-message.soar process-message 132 52
+52	51	FOPERATOR elaborations elaborations.soar 53
+53	51	OPERATOR ignore-unknown-message ignore-unknown-message.soar 54
 END

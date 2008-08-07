@@ -24,7 +24,7 @@ sp {apply*waypoints
    (<w14> ^x -6.5 ^y 4 ^id |14| ^next <w9> <w10> <w15> <w16>)
    (<w15> ^x -4 ^y 6 ^yaw 0 ^id |15| ^next <w14> ^hide <hl15> <hr15>)
    (<hl15> ^hiding <w15> ^x -5.5 ^y 6 ^yaw 315 ^area 4)
-   (<hr15> ^hiding <w15> ^x 2.5 ^y 6 ^yaw 45 ^area 3)
+   (<hr15> ^hiding <w15> ^x -2.5 ^y 6 ^yaw 45 ^area 3)
    (<w16> ^x -8.5 ^y 2.5 ^id |16| ^next <w9> <w14>)
 }
 
