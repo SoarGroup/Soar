@@ -39,6 +39,8 @@ sp {apply*hide*note-hiding
    (<op> ^name hide)
 -->
    (<ts> ^hiding true)
+   (write (crlf) |Hiding|)
+   (exec player-print |Hiding|)
 }
 
 sp {apply*hide*move-to

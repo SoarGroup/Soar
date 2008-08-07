@@ -28,6 +28,8 @@ sp {apply*unhide*note-not-hiding
    (<ts> ^hiding true)
 -->
    (<ts> ^hiding true -)
+   (write (crlf) |Unhiding|)
+   (exec player-print |Unhiding|)
 }
 
 
