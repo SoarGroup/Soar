@@ -15,7 +15,7 @@ public:
 
 private:
 	SoarRunThreadInterface& m_client;
-	const std::string& m_sedan_host;
+	const std::string m_sedan_host;
 	int m_sedan_port;
 	bool m_sedan_connected;
 };
