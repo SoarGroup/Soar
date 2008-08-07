@@ -33,8 +33,15 @@ sp {scout*compare*hide*better-than-rotate-to
    (<s> ^operator <op1> > <op2>)
 }
 
+sp {apply*hide*note-hiding
+   (state <s> ^operator <op>
+              ^top-state <ts>)
+   (<op> ^name hide)
+-->
+   (<ts> ^hiding true)
+}
 
-sp {apply*hide
+sp {apply*hide*move-to
    (state <s> ^operator <op>
               ^io.output-link <ol>)
    (<op> ^name hide

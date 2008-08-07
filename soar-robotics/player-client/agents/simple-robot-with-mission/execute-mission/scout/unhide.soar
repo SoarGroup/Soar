@@ -21,8 +21,17 @@ sp {scout*compare*unhide
    (<s> ^operator <op1> > <op2>)
 }
 
+sp {apply*unhide*note-not-hiding
+   (state <s> ^operator <op>
+              ^top-state <ts>)
+   (<op> ^name unhide)
+   (<ts> ^hiding true)
+-->
+   (<ts> ^hiding true -)
+}
 
-sp {apply*unhide
+
+sp {apply*unhide*move-to
    (state <s> ^operator <op>
               ^io.output-link <ol>)
    (<op> ^name unhide
