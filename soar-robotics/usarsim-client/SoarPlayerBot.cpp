@@ -29,7 +29,7 @@ SoarPlayerBot::SoarPlayerBot( const std::string& host, int port, Agent& agent, c
 	
 	reload_productions();
 	
-	m_robot.Read();
+	update_cache();
 }
 
 SoarPlayerBot::~SoarPlayerBot()
@@ -47,59 +47,44 @@ SoarPlayerBot::~SoarPlayerBot()
 	}
 }
 
+void SoarPlayerBot::update_cache()
+{
+	m_robot.Read();
+	m_current_x = m_pp.GetXPos();
+	m_current_y = m_pp.GetYPos();
+	m_current_yaw = m_pp.GetYaw();
+	
+	m_motion_x = m_pp.GetXSpeed();
+	m_motion_y = m_pp.GetYSpeed();
+	m_motion_yaw = m_pp.GetYawSpeed();
+}
+
 void SoarPlayerBot::update( std::deque< Message* >& outgoing_message_deque )
 {
 	timeval time;
 	gettimeofday( &time, 0 );
+	m_input_link->time_update( time );
 
-#if 0	// make true to check performance
-	static int last_time = -1;
-	static int count = -1;
-	if ( time.tv_sec > last_time )
-	{
-		if ( count >= 0 ) 
-		{
-			std::cout << count << " updates/sec\n";
-		}
-		count = 0;
-		last_time = time.tv_sec;
-	} 
-	else 
-	{
-		++count;
-	}
-#endif
-	
 	// read from the proxies
-	//if ( ! m_robot.Peek() )
-	//{
-	//	return;
-	//}
-	m_robot.ReadIfWaiting();
-		
-	double x = m_pp.GetXPos();
-	double y = m_pp.GetYPos();
-	double yaw = m_pp.GetYaw();
+	if ( m_robot.Peek() )
+	{
+		update_cache();	
 	
-	double motion_x = m_pp.GetXSpeed();
-	double motion_y = m_pp.GetYSpeed();
-	double motion_yaw = m_pp.GetYawSpeed();
+		// update input link
+		m_input_link->position_update( m_current_x, m_current_y, m_current_yaw );
+		m_input_link->motion_update( m_motion_x, m_motion_y, m_motion_yaw );
+		
+		m_input_link->clear_expired_fiducials();
+		for ( unsigned index = 0; index < m_fp.GetCount(); ++index )
+		{
+			player_fiducial_item item = m_fp.GetFiducialItem( index );
+			m_input_link->feducial_update( item.id, item.pose.px, item.pose.py );
+		}
+		m_input_link->update_expired_fiducials();
+	}
 	
 	//std::cout << "pos(x,y,yaw), motion(x,y,yaw): ";
 	//std::cout << "(" << x << "," << y << "," << yaw << ") (" << motion_x << "," << motion_y << "," << motion_yaw << ")" << std::endl;
-	
-	// update input link
-	m_input_link->time_update( time );
-	m_input_link->position_update( x, y, yaw );
-	m_input_link->motion_update( motion_x, motion_y, motion_yaw );
-	
-	m_input_link->clear_expired_fiducials();
-	for ( unsigned count = 0; count < m_fp.GetCount(); ++count )
-	{
-		player_fiducial_item item = m_fp.GetFiducialItem( count );
-		m_input_link->feducial_update( item.id, item.pose.px, item.pose.py );
-	}
-	m_input_link->update_expired_fiducials();
 	
 	// read output link
 	m_output_link->read();
@@ -114,13 +99,13 @@ void SoarPlayerBot::update( std::deque< Message* >& outgoing_message_deque )
 			switch ( command->get_move_direction() )
 			{
 			case Command::MOVE_STOP:
-				motion_x = 0;
+				m_motion_x = 0;
 				break;
 			case Command::MOVE_FORWARD:
-				motion_x = command->get_throttle();
+				m_motion_x = command->get_throttle();
 				break;
 			case Command::MOVE_BACKWARD:
-				motion_x = command->get_throttle();
+				m_motion_x = command->get_throttle();
 				break;
 			}
 			break;
@@ -131,13 +116,13 @@ void SoarPlayerBot::update( std::deque< Message* >& outgoing_message_deque )
 			switch ( command->get_rotate_direction() )
 			{
 			case Command::ROTATE_STOP:
-				motion_yaw = 0;
+				m_motion_yaw = 0;
 				break;
 			case Command::ROTATE_RIGHT:
-				motion_yaw = command->get_throttle() * -1;
+				m_motion_yaw = command->get_throttle() * -1;
 				break;
 			case Command::ROTATE_LEFT:
-				motion_yaw = command->get_throttle();
+				m_motion_yaw = command->get_throttle();
 				break;
 			}
 			break;
@@ -145,8 +130,8 @@ void SoarPlayerBot::update( std::deque< Message* >& outgoing_message_deque )
 		case Command::STOP:
 			std::cout << m_agent.GetAgentName() << ": STOP" << std::endl;
 			motion_command_received = true;
-			motion_x = 0;
-			motion_yaw = 0;
+			m_motion_x = 0;
+			m_motion_yaw = 0;
 			break;
 			
 		case Command::MOVE_TO:
@@ -154,7 +139,7 @@ void SoarPlayerBot::update( std::deque< Message* >& outgoing_message_deque )
 			player_pose2d move_to_destination;
 			move_to_destination.px = command->get_x();
 			move_to_destination.py = command->get_y();
-			move_to_destination.pa = atan2( command->get_y() - y, command->get_x() - x );
+			move_to_destination.pa = atan2( command->get_y() - m_current_y, command->get_x() - m_current_x );
 			
 			m_pp.GoTo( move_to_destination );
 
@@ -162,10 +147,11 @@ void SoarPlayerBot::update( std::deque< Message* >& outgoing_message_deque )
 			
 		case Command::ROTATE_TO:
 			player_pose2d rotate_to_destination;
-			rotate_to_destination.px = x;
-			rotate_to_destination.py = y;
+			rotate_to_destination.px = m_current_x;
+			rotate_to_destination.py = m_current_y;
 			rotate_to_destination.pa = command->get_a();
-			std::cout << m_agent.GetAgentName() << ": ROTATE_TO(" << x << "," << y << "," << command->get_a() << ")" << std::endl;
+			std::cout << m_agent.GetAgentName() << ": ROTATE_TO(" << rotate_to_destination.px 
+					<< "," << rotate_to_destination.py << "," << rotate_to_destination.pa << ")" << std::endl;
 			
 			m_pp.GoTo( rotate_to_destination );
 
@@ -191,10 +177,28 @@ void SoarPlayerBot::update( std::deque< Message* >& outgoing_message_deque )
 	
 	if ( motion_command_received )
 	{
-		m_pp.SetSpeed( motion_x, motion_yaw );
+		m_pp.SetSpeed( m_motion_x, m_motion_yaw );
 	}
 	
 	m_output_link->commit();
+	
+#if 1	// make true to check performance
+	static int last_time = -1;
+	static int count = -1;
+	if ( time.tv_sec > last_time )
+	{
+		if ( count >= 0 ) 
+		{
+			std::cout << count << " updates/sec\n";
+		}
+		count = 0;
+		last_time = time.tv_sec;
+	} 
+	else 
+	{
+		++count;
+	}
+#endif
 }
 
 
