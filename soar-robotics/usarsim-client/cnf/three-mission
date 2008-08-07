@@ -1,4 +1,5 @@
 bots = 3                         # required
+host = winter.eecs.umich.edu
 
 name0 = one                      # optional, defaults to robotN where n is array index
 productions0 = share/agents/simple-robot-with-mission-one.soar # required

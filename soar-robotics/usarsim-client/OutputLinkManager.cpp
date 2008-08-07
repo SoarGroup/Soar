@@ -107,7 +107,7 @@ Command::Command( Identifier* command_id )
 	}
 	else if ( command_string == "broadcast-message" )
 	{
-		std::cout << "broadcast-message" << std::endl;
+		//std::cout << "broadcast-message" << std::endl;
 
 		m_type = BROADCAST_MESSAGE;
 		Identifier* current_identifier = command_id;
@@ -129,7 +129,7 @@ Command::Command( Identifier* command_id )
 				{
 					type = (*children_iter)->GetValueType();
 					word = (*children_iter)->GetValueAsString();
-					std::cout << "word: " << word << std::endl;
+					//std::cout << "word: " << word << std::endl;
 				}
 				else if ( attribute == string( "next" ) )
 				{
@@ -141,28 +141,28 @@ Command::Command( Identifier* command_id )
 					{
 						if ( (*children_iter)->GetValueAsString() != string( "nil" ) )
 						{
-							std::cout << "next string not nil: " << (*children_iter)->GetValueAsString() << std::endl;
+							//std::cout << "next string not nil: " << (*children_iter)->GetValueAsString() << std::endl;
 							throw std::exception();
 						}
 						// next is 0
 					}
 					else
 					{
-						std::cout << "next type not string or id: " << (*children_iter)->GetValueType() << std::endl;
+						//std::cout << "next type not string or id: " << (*children_iter)->GetValueType() << std::endl;
 						throw std::exception();
 					}
-					std::cout << "next: " << (*children_iter)->GetValueAsString() << std::endl;
+					//std::cout << "next: " << (*children_iter)->GetValueAsString() << std::endl;
 				}
 				else
 				{
-					std::cout << "unknown attribute: " << attribute << std::endl;
+					//std::cout << "unknown attribute: " << attribute << std::endl;
 					throw std::exception();
 				}
 			}
 			
 			if ( word == 0 )
 			{
-				std::cout << "missing word in message" << std::endl;
+				//std::cout << "missing word in message" << std::endl;
 				throw std::exception();
 			}
 			
@@ -171,7 +171,7 @@ Command::Command( Identifier* command_id )
 
 		} while ( current_identifier );
 
-		std::cout << "broadcast-message done" << std::endl;
+		//std::cout << "broadcast-message done" << std::endl;
 	}
 	else if ( command_string == "remove-message" )
 	{

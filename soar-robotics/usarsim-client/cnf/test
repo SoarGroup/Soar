@@ -1,9 +1,6 @@
-bots = 2                         # required
+bots = 1                         # required
+host = winter.eecs.umich.edu
 
-name0 = one                      # optional, defaults to robotN where n is array index
-productions0 = agents/simple-robot-replanner.soar # required
-port0 = 6666                     # optional, defaults to (6666 + N) where n is array index
-
-name1 = two
-productions1 = agents/simple-robot-replanner.soar
-port1 = 6667
+name0 = zero                      # optional, defaults to robotN where n is array index
+productions0 = ../player-client/agents/simple-robot-replanner.soar # required
+port0 = 6665                     # optional, defaults to (6666 + N) where n is array index
