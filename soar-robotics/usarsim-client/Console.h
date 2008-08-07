@@ -8,7 +8,7 @@
 class Console
 {
 public:
-	Console( SoarRunThreadInterface& client, const std::string& sedan_host, int sedan_port );
+	Console( SoarRunThreadInterface& client, std::string sedan_host, int sedan_port );
 	~Console();
 
 	int run();
