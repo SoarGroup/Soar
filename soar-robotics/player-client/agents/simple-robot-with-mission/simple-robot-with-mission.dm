@@ -1,4 +1,4 @@
-216
+230
 SOAR_ID 0
 SOAR_ID 1
 SOAR_ID 2
@@ -215,7 +215,21 @@ FLOAT_RANGE 212 -Infinity Infinity
 ENUMERATION 213 1 true
 FLOAT_RANGE 214 -Infinity Infinity
 FLOAT_RANGE 215 -Infinity Infinity
-274
+SOAR_ID 216
+ENUMERATION 217 1 state
+ENUMERATION 218 1 hide
+ENUMERATION 219 1 rotate-to
+SOAR_ID 220
+SOAR_ID 221
+ENUMERATION 222 1 state
+ENUMERATION 223 1 unhide
+ENUMERATION 224 1 rotate-to
+SOAR_ID 225
+ENUMERATION 226 1 true
+ENUMERATION 227 1 true
+FLOAT_RANGE 228 -Infinity Infinity
+FLOAT_RANGE 229 -Infinity Infinity
+293
 0 attribute 117
 0 choices 116
 0 desired 31
@@ -471,9 +485,12 @@ FLOAT_RANGE 215 -Infinity Infinity
 171 state-entity 161
 173 name 174
 173 state-entity 161
+180 move-now 226
 180 name 179
 180 waypoint 31
+182 move-now 227
 182 name 181
+182 waypoint 31
 184 name 183
 184 yaw 187
 188 throttle 190
@@ -490,3 +507,19 @@ FLOAT_RANGE 215 -Infinity Infinity
 205 name 204
 210 name 211
 210 yaw 212
+216 desired-yaw 228
+216 io 1
+216 name 218
+216 operator 220
+216 superoperator 180
+216 superstate 154
+216 top-state 0
+216 type 217
+216 yaw-diff 229
+220 name 219
+221 name 223
+221 operator 225
+221 superstate 154
+221 top-state 0
+221 type 222
+225 name 224

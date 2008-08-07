@@ -26,6 +26,7 @@ sp {apply*unhide
    (state <s> ^operator <op>
               ^io.output-link <ol>)
    (<op> ^name unhide
+         ^move-now true
          ^waypoint <h>)
    (<h> ^x <x>
         ^y <y>)
