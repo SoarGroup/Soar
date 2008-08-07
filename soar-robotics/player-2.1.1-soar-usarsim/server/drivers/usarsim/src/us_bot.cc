@@ -270,6 +270,8 @@ void UsBot::Main()
 {
   // use this to hold temp data
   char buf[USBOT_MAX_MSG_LEN+1];
+  bzero( buf, USBOT_MAX_MSG_LEN+1 );
+  
   char* tmpstr;
    /* make sure we kill Festival on exiting */
   pthread_cleanup_push(QuitUsBot,this);  
@@ -295,7 +297,8 @@ void UsBot::Main()
     //- This would allow to read lines continuously after each other.
     // read a line   
     unsigned int numread = 0;
-    buf[numread] = 0;
+    // bzero handles this: buf[numread] = 0;
+    
     // space: number of bytes left in buffer - one less than the size to be 
     // able to null-terminate string
     int space = sizeof(buf) - numread;
@@ -501,7 +504,7 @@ void UsBot::ParseData(char* data)
         } else {
           delete (*iter).second;
         }
-        delete (*iter).first;
+        delete [] (*iter).first;
       }
     } else {
       PLAYER_ERROR1("us_bot: laser geom parsing error %d", rc);
@@ -604,7 +607,7 @@ void UsBot::ParseData(char* data)
         } else {
           delete (*iter).second;
         }
-        delete (*iter).first;
+        delete [] (*iter).first;
       }
     } else {
       PLAYER_ERROR1("us_bot: laser config parsing error %d", rc);
