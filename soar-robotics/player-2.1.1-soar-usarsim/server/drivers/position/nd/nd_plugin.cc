@@ -293,6 +293,9 @@ void ND_Register(DriverTable* table)
 ND::ND( ConfigFile* cf, int section)
   : Driver(cf, section, false, PLAYER_MSGQUEUE_DEFAULT_MAXLEN, PLAYER_POSITION2D_CODE)
 {
+  this->num_sonar_scans = 0;
+  this->dir = 0;
+
   this->dist_eps = cf->ReadTupleLength(section, "goal_tol", 0, 0.5);
   this->ang_eps = cf->ReadTupleAngle(section, "goal_tol", 1, DTOR(10.0));
 
@@ -638,24 +641,24 @@ ND::ProcessInputOdom(player_msghdr_t* hdr, player_position2d_data_t* data)
 
   newdata.pos = data->pos;
   newdata.vel = this->odom_vel;
-  if(data->stall)
-  {
-    if(this->wait_on_stall)
-    {
-      // We'll stop the robot and wait for the stall flag to clear itself,
-      // but not report the stall
-      this->PutPositionCmd(0.0,0.0);
-      this->waiting = true;
-      newdata.stall = 0;
-    }
-    else
-      newdata.stall = 1;
-  }
-  else
-  {
+//   if(data->stall)
+//   {
+//     if(this->wait_on_stall)
+//     {
+//       // We'll stop the robot and wait for the stall flag to clear itself,
+//       // but not report the stall
+//       this->PutPositionCmd(0.0,0.0);
+//       this->waiting = true;
+//       newdata.stall = 0;
+//     }
+//     else
+//       newdata.stall = 1;
+//   }
+//   else
+//   {
     newdata.stall = 0;
     this->waiting = false;
-  }
+//  }
 
   // this->stall indicates that we're stuck (either ND threw an emergency 
   // stop or it was failing to make progress).  Set the stall flag to let

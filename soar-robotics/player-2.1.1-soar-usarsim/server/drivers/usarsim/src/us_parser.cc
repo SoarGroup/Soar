@@ -735,6 +735,11 @@ int rh_get_pyro_config(char* data, player_fiducial_fov_t *pyro_conf)
 int us_get_laser_geom_all(char* data, map<char*, player_laser_geom_t*> *mGeom)
 {
   char val[128], dummyName[128], seg[256];
+  
+  bzero( val, 128 );
+  bzero( dummyName, 128 );
+  bzero( seg, 256 );
+  
   char *p = data, *name, *p1, *p2;
   int pos, ppos;
   float tmp;
