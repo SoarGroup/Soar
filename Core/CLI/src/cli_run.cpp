@@ -216,6 +216,9 @@ bool CommandLineInterface::DoRun(const RunBitset& options, int count, eRunInterl
 	if (runResult == sml_RUN_ERROR) {
 		// FIXME: report extended run error
         return SetError(CLIError::kRunFailed);
+	} else if (runResult == sml_RUN_ERROR_ALREADY_RUNNING) {
+		SetErrorDetail( "Soar is already running" );
+        return SetError(CLIError::kRunFailed);
 	}
 
 
