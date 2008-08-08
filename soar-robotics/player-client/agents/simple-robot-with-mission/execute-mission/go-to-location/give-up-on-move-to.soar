@@ -9,6 +9,8 @@ sp {go-to-location*propose*give-up-on-move-to
 }
 
 # if the give-up is marked as immediate, then make this better
+# (giving up will be marked as immediate if the agent receives a message
+#  that says its destination is unreachable from its source)
 sp {go-to-location*compare*give-up-on-move-to-better-than-update-progress
    (state <s> ^name go-to-location
               ^operator <op1> +

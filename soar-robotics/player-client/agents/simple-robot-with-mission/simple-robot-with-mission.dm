@@ -1,4 +1,4 @@
-230
+233
 SOAR_ID 0
 SOAR_ID 1
 SOAR_ID 2
@@ -229,12 +229,16 @@ ENUMERATION 226 1 true
 ENUMERATION 227 1 true
 FLOAT_RANGE 228 -Infinity Infinity
 FLOAT_RANGE 229 -Infinity Infinity
-293
+ENUMERATION 230 1 true
+FLOAT_RANGE 231 -Infinity Infinity
+FLOAT_RANGE 232 -Infinity Infinity
+298
 0 attribute 117
 0 choices 116
 0 desired 31
 0 desired-yaw 206
 0 entities 160
+0 hiding 230
 0 io 1
 0 item 21
 0 message-update-time 159
@@ -517,9 +521,13 @@ FLOAT_RANGE 229 -Infinity Infinity
 216 type 217
 216 yaw-diff 229
 220 name 219
+221 desired-yaw 231
+221 io 1
 221 name 223
 221 operator 225
+221 superoperator 182
 221 superstate 154
 221 top-state 0
 221 type 222
+221 yaw-diff 232
 225 name 224
