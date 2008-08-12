@@ -116,6 +116,7 @@ int sml::Tokenize(std::string cmdline, std::vector<std::string>& argumentVector)
 	std::string arg;
 	bool quotes = false;
 	bool pipes = false;
+	bool escaped = false;
 	int brackets = 0;
 	int parens = 0;
 
@@ -130,12 +131,9 @@ int sml::Tokenize(std::string cmdline, std::vector<std::string>& argumentVector)
 		// Remove leading whitespace
 		iter = cmdline.begin();
 		while (isspace(*iter)) {
-			cmdline.erase(iter);
+			iter = cmdline.erase(iter);
 
-			if (!cmdline.length()) break; //Nothing but space left
-			
-			// Next character
-			iter = cmdline.begin();
+			if ( iter == cmdline.end() ) break; //Nothing but space left
 		}
 
 		// Was it actually trailing whitespace?
@@ -144,31 +142,40 @@ int sml::Tokenize(std::string cmdline, std::vector<std::string>& argumentVector)
 		// We have an argument
 		++argc;
 		arg.clear();
-		// Use space as a delimiter unless inside quotes or brackets (nestable)
+		// Use space as a delimiter unless inside quotes or brackets (nestable) or escaped with backslash
 		while (!isspace(*iter) || quotes || pipes || brackets || parens) {
-			if (*iter == '"') {
-				// Flip the quotes flag
-				quotes = !quotes;
+			if (escaped) {
+				// Skip this one, return to unescaped mode
+				escaped = false;
+			} else {
+				if (*iter == '\\') {
+					// Flip the escaped flag
+					escaped = true;
 
-			} else if (*iter == '|') {
-				// Flip the pipes flag
-				pipes = !pipes;
+				} else if (*iter == '"') {
+					// Flip the quotes flag
+					quotes = !quotes;
 
-			} else if (!pipes) {
-				if (*iter == '{') {
-					++brackets;
-				} else if (*iter == '}') {
-					--brackets;
-					if (brackets < 0) {
-						return -2;
+				} else if (*iter == '|') {
+					// Flip the pipes flag
+					pipes = !pipes;
+
+				} else if (!pipes) {
+					if (*iter == '{') {
+						++brackets;
+					} else if (*iter == '}') {
+						--brackets;
+						if (brackets < 0) {
+							return -2;
+						}
 					}
-				}
-				if (*iter == '(') {
-					++parens;
-				} else if (*iter == ')') {
-					--parens;
-					if (parens < 0) {
-						return -3;
+					if (*iter == '(') {
+						++parens;
+					} else if (*iter == ')') {
+						--parens;
+						if (parens < 0) {
+							return -3;
+						}
 					}
 				}
 			}
