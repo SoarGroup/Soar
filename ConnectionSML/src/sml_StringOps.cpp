@@ -226,16 +226,18 @@ bool sml::Trim(std::string& line) {
 	if (pos != std::string::npos) line = line.substr(pos);
 
 	bool pipe = false;
+	bool quote = false;
 	std::string::size_type searchpos = 0;
 
-	for (pos = line.find_first_of("\\#|", searchpos); pos != std::string::npos; pos = line.find_first_of("\\#|", searchpos)) {
+	const char* targets = "\\#|\"";
+	for (pos = line.find_first_of(targets, searchpos); pos != std::string::npos; pos = line.find_first_of(targets, searchpos)) {
 		switch (line[pos]) {
 			case '\\': // skip backslashes
 				searchpos = pos + 2;
 				break;
 
-			case '#': // if not inside pipe, erase from pound to end or newline encountered
-				if (pipe) {
+			case '#': // if not inside pipes or quotes, erase from pound to end or newline encountered
+				if (pipe || quote) {
 					searchpos = pos + 1;
 				} else {
 					{
@@ -255,10 +257,15 @@ bool sml::Trim(std::string& line) {
 				pipe = !pipe;
 				searchpos = pos + 1;
 				break;
+
+			case '"': // note quote
+				quote = !quote;
+				searchpos = pos + 1;
+				break;
 		}
 	}
 
-	if (pipe) {
+	if (pipe || quote) {
 		return false;
 	}
 	return true;
