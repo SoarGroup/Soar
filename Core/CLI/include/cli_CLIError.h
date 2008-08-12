@@ -103,6 +103,7 @@ namespace cli {
 			kWorkingMemoryNotEmpty				= 88, 
 			kDuplicateProduction				= 89, 
 			kProductionAddFailed				= 90, 
+			kEscapedNewline						= 91, 
 		};
 
 		static char const* GetErrorDescription(ErrorCode code) {
@@ -191,6 +192,7 @@ namespace cli {
 				case kWorkingMemoryNotEmpty:			return "Working memory not empty.";
 				case kDuplicateProduction:				return "Duplicate production exists.";
 				case kProductionAddFailed:				return "Production addition failed.";
+				case kEscapedNewline:					return "Escaped newlines not suppored (line ends with single backslash).";
 				default:								return "Unknown error code.";
 			}
 		}
