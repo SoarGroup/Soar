@@ -201,28 +201,43 @@ bool CommandLineInterface::DoSource(std::string filename) {
 				// Enter special parsing mode
 				iter = line.begin();
 				while (iter != line.end()) {
-					// Go through each of the characters, counting brace nesting level
-					if (pipe) {	// bug 968 fix
-						if (*iter == '|') {
-							pipe = false;
+					// skip escaped characters
+					if (*iter == '\\') {
+						// skip escape character
+						++iter;
+
+						if (iter == line.end()) {
+							// can't escape newlines
+							SetError(CLIError::kEscapedNewline);
+							HandleSourceError(lineCount, filename);
+							if (path.length()) DoPopD();
+							return false; 
 						}
 
 					} else {
-
-						if (*iter == '|') { // bug 968 fix
-							pipe = true;
-						} else if (*iter == '{') {
-							++braces;
-						} else if (*iter == '}') {
-							--braces;
-							
-							// bug 968 fix
-							if (braces < 0) {
-								break;
+						// Go through each of the characters, counting brace nesting level
+						if (pipe) {	// bug 968 fix
+							if (*iter == '|') {
+								pipe = false;
 							}
 
-						} else if (*iter == '\"') {
-							quote = !quote; // bug 967 fix
+						} else {
+
+							if (*iter == '|') { // bug 968 fix
+								pipe = true;
+							} else if (*iter == '{') {
+								++braces;
+							} else if (*iter == '}') {
+								--braces;
+								
+								// bug 968 fix
+								if (braces < 0) {
+									break;
+								}
+
+							} else if (*iter == '\"') {
+								quote = !quote; // bug 967 fix
+							}
 						}
 					}
 
