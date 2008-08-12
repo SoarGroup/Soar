@@ -176,7 +176,7 @@ namespace cli {
 				case kMustSaveOrLoad:					return "Must save or load, check command syntax.";
 				case kPrintSubOptionsOfStack:			return "Options --operators (-o) and --states (-S) are only valid when printing the stack.";
 				case kHelpFileError:					return "Error reading help file, check the library location (see the set-library-location command).";
-				case kNewlineBeforePipe:				return "Newline reached before closing pipe ('|') character.";
+				case kNewlineBeforePipe:				return "Newline reached before closing pipe or quote.";
                 case kAlreadyRunning:                   return "Agent is already running.";
                 case kRunFailed:                        return "Run failed.";
                 case kNoPreferences:                    return "No preferences found.";
