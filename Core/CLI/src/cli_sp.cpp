@@ -23,7 +23,9 @@ using namespace cli;
 
 bool CommandLineInterface::ParseSP(std::vector<std::string>& argv) {
 	// One argument (in brackets)
-	if (argv.size() < 2) return SetError(CLIError::kTooFewArgs);
+	if (argv.size() < 2) {
+		return SetError(CLIError::kTooFewArgs);
+	}
 	if (argv.size() > 2) {
 		SetErrorDetail("Expected one argument (the production) enclosed in braces.");
 		return SetError(CLIError::kTooManyArgs);
