@@ -188,6 +188,7 @@ bool CommandLineInterface::DoSource(std::string filename) {
 			do {
 				if (lineCountCache != lineCount) {
 					if (!Trim(line)) { // Trim whitespace and comments on additional lines
+						SetError(CLIError::kNewlineBeforePipe);
 						HandleSourceError(lineCount, filename);
 						if (path.length()) DoPopD();
 						return false; 
@@ -232,8 +233,7 @@ bool CommandLineInterface::DoSource(std::string filename) {
 				// We finished that line, add it to the command
 				command += line;
 
-				// Are we still waiting for a pipe?
-				if (pipe == true) break; // Yes, break in error
+				assert( pipe == false ); // shouldn't be possible because it is handled in Trim()
 
 				// Did we close all of the braces? and quotes?
 				if (braces == 0 && quote == false) break; // Yes, break out of special parsing mode
