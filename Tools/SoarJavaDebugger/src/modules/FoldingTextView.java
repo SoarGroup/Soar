@@ -96,7 +96,7 @@ public class FoldingTextView extends AbstractComboView implements Agent.xmlEvent
 		m_ComboAtTop = false ;
 		m_ShowTraceOutput = false ;
 		m_ShowEchoOutput = true ;
-		m_PromptForCommands = "<Type commands here>" ;	
+		m_PromptForCommands = null; // formerly, "<Type commands here>" SBW 8/13/08
 	}
 
 	/** This window can be the main display window */
@@ -859,6 +859,14 @@ public class FoldingTextView extends AbstractComboView implements Agent.xmlEvent
 					 xmlTrace.IsTagGroundedPotentials() || xmlTrace.IsTagUngroundedPotentials())
 			{
 				String output = XmlOutput.getBacktraceText(agent, xmlTrace, xmlTrace.GetTagName()) ;
+				
+				if (output.length() != 0)
+					this.appendSubText(output, TraceType.kFullLearning) ;
+			}
+      // SBW 5/07
+			else if (xmlTrace.IsTagLocalNegation())
+			{
+				String output = XmlOutput.getLocalNegationText(agent, xmlTrace, xmlTrace.GetTagName()) ;
 				
 				if (output.length() != 0)
 					this.appendSubText(output, TraceType.kFullLearning) ;
