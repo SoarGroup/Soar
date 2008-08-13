@@ -84,7 +84,8 @@ sp {evaluate-operator*elaborate*state*look-ahead-operator*no-copy
          ^superoperator <o>
          ^superproblem-space.name <p>)
 -->
-   (<s> ^look-ahead-operator <o>)}
+   (<s> ^look-ahead-operator <o>)
+   (<s> ^untried-tied-operator <o>)}
 
 ### install copy of operator in lookahead context.
 
