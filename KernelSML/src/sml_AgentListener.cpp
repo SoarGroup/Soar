@@ -117,7 +117,7 @@ void AgentListener::OnEvent(smlAgentEventId eventID, AgentSML* pAgentSML)
 
 	// Send the message out
 	AnalyzeXML response ;
-	SendEvent(pConnection, pMsg, &response, connectionIter, GetEnd(eventID)) ;
+	SendEvent(pAgentSML, pConnection, pMsg, &response, connectionIter, GetEnd(eventID)) ;
 
 	// Clean up
 	delete pMsg ;

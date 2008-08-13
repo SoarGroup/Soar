@@ -112,7 +112,7 @@ void ProductionListener::OnKernelEvent(int eventID, AgentSML* pAgentSML, void* p
 
 	// Send the message out
 	AnalyzeXML response ;
-	SendEvent(pConnection, pMsg, &response, connectionIter, GetEnd((smlProductionEventId)eventID)) ;
+	SendEvent(pAgentSML, pConnection, pMsg, &response, connectionIter, GetEnd((smlProductionEventId)eventID)) ;
 
 	// Clean up
 	delete pMsg ;
