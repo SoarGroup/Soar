@@ -3565,8 +3565,18 @@ byte add_production_to_rete (agent* thisAgent,
     if ( !ignore_rhs && !same_rhs (p_node->b.p.prod->action_list, p->action_list)) continue;
     /* --- duplicate production found --- */
     if (warn_on_duplicates)
+	{
+	  std::stringstream output;
+	  output << "\nIgnoring " 
+		  << symbol_to_string( thisAgent, p->name, TRUE, 0, 0 )
+	      << " because it is a duplicate of " 
+  		  << symbol_to_string( thisAgent, p_node->b.p.prod->name, TRUE, 0, 0 )
+	      << " "; 
+	  xml_generate_warning( thisAgent, output.str().c_str() );
+
       print_with_symbols (thisAgent, "\nIgnoring %y because it is a duplicate of %y ",
-                          p->name, p_node->b.p.prod->name);
+                          p->name, p_node->b.p.prod->name);	  
+	}
     deallocate_symbol_list_removing_references (thisAgent, rhs_unbound_vars_for_new_prod);
     return DUPLICATE_PRODUCTION;
   }
