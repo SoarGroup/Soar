@@ -62,7 +62,7 @@ bool XMLListener::RemoveListener(smlXMLEventId eventID, Connection* pConnection)
 	return last ;
 }
 
-void XMLListener::OnKernelEvent(int eventIDIn, AgentSML*, void* pCallDataIn)
+void XMLListener::OnKernelEvent(int eventIDIn, AgentSML* pAgentSML, void* pCallDataIn)
 {
 	// If the print callbacks have been disabled, then don't forward this message
 	// on to the clients.  This allows us to use the print callback within the kernel to
@@ -104,7 +104,7 @@ void XMLListener::OnKernelEvent(int eventIDIn, AgentSML*, void* pCallDataIn)
 
 	// Send the message out
 	AnalyzeXML response ;
-	SendEvent(pConnection, pMsg, &response, connectionIter, GetEnd(eventID)) ;
+	SendEvent(pAgentSML, pConnection, pMsg, &response, connectionIter, GetEnd(eventID)) ;
 
 	// Clean up
 	delete pMsg ;
@@ -158,7 +158,7 @@ void XMLListener::FireInputReceivedEvent(soarxml::ElementXML const* pCommands)
 
 	// Send the message out
 	AnalyzeXML response ;
-	SendEvent(pConnection, pMsg, &response, connectionIter, GetEnd(eventID)) ;
+	SendEvent(m_pCallbackAgentSML, pConnection, pMsg, &response, connectionIter, GetEnd(eventID)) ;
 
 	// Clean up
 	delete pMsg ;

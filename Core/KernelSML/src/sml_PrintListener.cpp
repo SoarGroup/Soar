@@ -137,7 +137,7 @@ void PrintListener::FlushOutput(Connection* pSourceConnection, smlPrintEventId e
 
 		// Send the message out
 		AnalyzeXML response ;
-		SendEvent(pConnection, pMsg, &response, connectionIter, GetEnd(eventID)) ;
+		SendEvent(0, pConnection, pMsg, &response, connectionIter, GetEnd(eventID)) ;
 
 		// Clean up
 		delete pMsg ;
