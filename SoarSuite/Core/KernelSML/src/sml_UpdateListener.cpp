@@ -40,7 +40,7 @@ bool UpdateListener::RemoveListener(smlUpdateEventId eventID, Connection* pConne
 }
 
 // Called when an event occurs in the kernel
-void UpdateListener::OnKernelEvent(int eventIDIn, AgentSML* /*pAgentSML*/, void* pCallData)
+void UpdateListener::OnKernelEvent(int eventIDIn, AgentSML* pAgentSML, void* pCallData)
 {
 	// There are currently no kernel events corresponding to this SML event.
 	// They are all directly generated from SML.  If we later add kernel callbacks
@@ -73,7 +73,7 @@ void UpdateListener::OnKernelEvent(int eventIDIn, AgentSML* /*pAgentSML*/, void*
 
 	// Send the message out
 	AnalyzeXML response ;
-	SendEvent(pConnection, pMsg, &response, connectionIter, GetEnd(eventID)) ;
+	SendEvent(pAgentSML, pConnection, pMsg, &response, connectionIter, GetEnd(eventID)) ;
 
 	// Clean up
 	delete pMsg ;
