@@ -59,6 +59,7 @@ class FullTests : public CPPUNIT_NS::TestCase
 	CPPUNIT_TEST( testSynchronize );
 	CPPUNIT_TEST( testRunningAgentCreation );
 	//CPPUNIT_TEST( testShutdownHandlerShutdown );
+	CPPUNIT_TEST( testEventOrdering ); // bug 1100
 
 	CPPUNIT_TEST_SUITE_END();
 
@@ -79,6 +80,7 @@ public:
 	TEST_DECLARATION( testOSupportCopyDestroyCircular );
 	TEST_DECLARATION( testSynchronize );
 	TEST_DECLARATION( testRunningAgentCreation );
+	TEST_DECLARATION( testEventOrdering );
 
 	void testShutdownHandlerShutdown();
 
@@ -1228,3 +1230,14 @@ void FullTests::testShutdownHandlerShutdown()
 
 	cleanUpListener();
 }
+
+TEST_DEFINITION( testEventOrdering )
+{
+	int count = 0;
+
+	m_pAgent->RegisterForPrintEvent( sml::smlEVENT_PRINT, Handlers::MyOrderingPrintHandler, &count ) ;
+	m_pAgent->RegisterForRunEvent( sml::smlEVENT_AFTER_OUTPUT_PHASE, Handlers::MyOrderingRunHandler, &count ) ;
+
+	m_pAgent->RunSelf(2);
+}
+
