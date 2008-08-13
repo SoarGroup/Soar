@@ -71,15 +71,17 @@ bool CommandLineInterface::DoSP(const std::string& productionString) {
 	soarAlternateInput( m_pAgentSoar, 0, 0, true ); 
 
 	if (!p) { 
-		if (rete_addition_result == DUPLICATE_PRODUCTION) {
-			return SetError( CLIError::kDuplicateProduction );
+		// There was an error, but duplicate production is just a warning
+		if (rete_addition_result != DUPLICATE_PRODUCTION) {
+		  return SetError( CLIError::kProductionAddFailed );
 		}
-		return SetError( CLIError::kProductionAddFailed );
-	}
-
-	++m_NumProductionsSourced;
-	if (m_RawOutput) {
-		m_Result << '*';
+		// production sourced but ignored
+	} else {
+		// production was sourced
+		++m_NumProductionsSourced;
+		if (m_RawOutput) {
+			m_Result << '*';
+		}
 	}
 	return true;
 }
