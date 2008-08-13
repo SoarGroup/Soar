@@ -802,6 +802,7 @@ protected:
 	eSourceMode m_SourceMode;
 	int			m_NumProductionsSourced;
 	int			m_NumProductionsExcised;
+	int			m_NumProductionsIgnored;
 	std::list< std::string > m_ExcisedDuringSource;
 	bool		m_SourceVerbose;
 

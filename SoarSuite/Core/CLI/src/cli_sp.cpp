@@ -75,7 +75,8 @@ bool CommandLineInterface::DoSP(const std::string& productionString) {
 		if (rete_addition_result != DUPLICATE_PRODUCTION) {
 		  return SetError( CLIError::kProductionAddFailed );
 		}
-		// production sourced but ignored
+		// production ignored
+		++m_NumProductionsIgnored;
 	} else {
 		// production was sourced
 		++m_NumProductionsSourced;

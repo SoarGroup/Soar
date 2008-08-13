@@ -143,14 +143,17 @@ bool CommandLineInterface::DoSource(std::string filename) {
 	
 	static int numTotalProductionsSourced;
 	static int numTotalProductionsExcised;
+	static int numTotalProductionsIgnored;
 
 	if (m_SourceDepth == 0) {				// Check for top-level source call
 		m_SourceDirDepth = 0;				// Set directory depth to zero on first call to source, even though it should be zero anyway
 
 		m_NumProductionsSourced = 0;		// set production number caches to zero on top level
 		m_NumProductionsExcised = 0;
+		m_NumProductionsIgnored = 0;
 		numTotalProductionsSourced = 0;
 		numTotalProductionsExcised = 0;
+		numTotalProductionsIgnored = 0;
 
 		// Register for production removed events so we can report the number of excised productions
 		this->RegisterWithKernel(smlEVENT_BEFORE_PRODUCTION_REMOVED) ;
@@ -344,12 +347,16 @@ bool CommandLineInterface::DoSource(std::string filename) {
 					}
 				}
 			}
+			if (m_NumProductionsIgnored) {
+				m_Result << " " << m_NumProductionsIgnored << " production" << ((m_NumProductionsIgnored == 1) ? " " : "s ") << "ignored.";
+			}
 
 		} else {
 			char buf[kMinBufferSize];
 			AppendArgTagFast(sml_Names::kParamFilename, sml_Names::kTypeString, filename.c_str());
 			AppendArgTag(sml_Names::kParamSourcedProductionCount, sml_Names::kTypeInt, Int2String(m_NumProductionsSourced, buf, kMinBufferSize));
 			AppendArgTag(sml_Names::kParamExcisedProductionCount, sml_Names::kTypeInt, Int2String(m_NumProductionsExcised, buf, kMinBufferSize));
+			AppendArgTag(sml_Names::kParamExcisedProductionCount, sml_Names::kTypeInt, Int2String(m_NumProductionsIgnored, buf, kMinBufferSize));
 
 			std::list< std::string >::iterator iter = m_ExcisedDuringSource.begin();
 			while (iter != m_ExcisedDuringSource.end()) {
@@ -363,8 +370,10 @@ bool CommandLineInterface::DoSource(std::string filename) {
 
 	numTotalProductionsSourced += m_NumProductionsSourced;
 	numTotalProductionsExcised += m_NumProductionsExcised;
+	numTotalProductionsIgnored += m_NumProductionsIgnored;
 	m_NumProductionsSourced = 0;	// set production number cache to zero after each summary
 	m_NumProductionsExcised = 0;	// set production number cache to zero after each summary
+	m_NumProductionsIgnored = 0;	// set production number cache to zero after each summary
 
 	// if we're returning to the user
 	if (!m_SourceDepth) {
@@ -391,6 +400,9 @@ bool CommandLineInterface::DoSource(std::string filename) {
 						}
 					}
 				}
+				if (numTotalProductionsIgnored) {
+					m_Result << " " << numTotalProductionsIgnored << " production" << ((numTotalProductionsIgnored == 1) ? " " : "s ") << "ignored.";
+				}
 			}
 
 		} else {
@@ -398,6 +410,7 @@ bool CommandLineInterface::DoSource(std::string filename) {
 				char buf[kMinBufferSize];
 				AppendArgTag(sml_Names::kParamSourcedProductionCount, sml_Names::kTypeInt, Int2String(numTotalProductionsSourced, buf, kMinBufferSize));
 				AppendArgTag(sml_Names::kParamExcisedProductionCount, sml_Names::kTypeInt, Int2String(numTotalProductionsExcised, buf, kMinBufferSize));
+				AppendArgTag(sml_Names::kParamExcisedProductionCount, sml_Names::kTypeInt, Int2String(numTotalProductionsIgnored, buf, kMinBufferSize));
 				
 				if (m_SourceVerbose) {
 					std::list< std::string >::iterator iter = m_ExcisedDuringSource.begin();

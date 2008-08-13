@@ -295,6 +295,7 @@ public:
 	// Parameter names for source command
 	static char const* const kParamSourcedProductionCount;
 	static char const* const kParamExcisedProductionCount;
+	static char const* const kParamIgnoredProductionCount;
 
 	// Parameter names for stats command
 	static char const* const kParamStatsProductionCountDefault;
