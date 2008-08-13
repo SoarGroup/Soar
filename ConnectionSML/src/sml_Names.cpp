@@ -299,6 +299,7 @@ char const* const sml_Names::kParamChunkLongFormat	= "chunklongformat" ;
 // Source command parameters
 char const* const sml_Names::kParamSourcedProductionCount	= "sourced-production-count";
 char const* const sml_Names::kParamExcisedProductionCount	= "excised-production-count";
+char const* const sml_Names::kParamIgnoredProductionCount	= "ignored-production-count";
 
 // Parameter names for stats command
 char const* const sml_Names::kParamStatsProductionCountDefault				= "statsproductioncountdefault" ;
