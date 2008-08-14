@@ -481,12 +481,10 @@ bool WorkingMemory::ReceivedOutput(AnalyzeXML* pIncoming, ElementXML* pResponse)
 	return ok ;
 }
 
-/*************************************************************
-* @brief Returns the id object for the input link.
-*		 The agent retains ownership of this object.
-*************************************************************/
-Identifier* WorkingMemory::GetInputLink()
+void WorkingMemory::SetAgent( Agent* agent )
 {
+	m_Agent = agent;
+
 #ifdef SML_DIRECT
 	if ( GetConnection()->IsDirectConnection() )
 	{
@@ -494,7 +492,15 @@ Identifier* WorkingMemory::GetInputLink()
 		m_AgentSMLHandle = pConnection->DirectGetAgentSMLHandle( GetAgentName() );
 	}
 #endif // SML_DIRECT
+}
 
+
+/*************************************************************
+* @brief Returns the id object for the input link.
+*		 The agent retains ownership of this object.
+*************************************************************/
+Identifier* WorkingMemory::GetInputLink()
+{
 	if (!m_InputLink)
 	{
 		AnalyzeXML response ;

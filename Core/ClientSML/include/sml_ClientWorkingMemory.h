@@ -102,7 +102,7 @@ public:
 
 	virtual ~WorkingMemory();
 
-	void			SetAgent(Agent* pAgent)	{ m_Agent = pAgent ; }
+	void			SetAgent(Agent* pAgent);
 	Agent*			GetAgent() const		{ return m_Agent ; }
 	char const*		GetAgentName() const ;
 	Connection*		GetConnection()	const ;

@@ -60,6 +60,7 @@ class FullTests : public CPPUNIT_NS::TestCase
 	CPPUNIT_TEST( testRunningAgentCreation );
 	//CPPUNIT_TEST( testShutdownHandlerShutdown );
 	CPPUNIT_TEST( testEventOrdering ); // bug 1100
+	CPPUNIT_TEST( testStatusCompleteDuplication ); // bug 1042
 
 	CPPUNIT_TEST_SUITE_END();
 
@@ -81,6 +82,7 @@ public:
 	TEST_DECLARATION( testSynchronize );
 	TEST_DECLARATION( testRunningAgentCreation );
 	TEST_DECLARATION( testEventOrdering );
+	TEST_DECLARATION( testStatusCompleteDuplication );
 
 	void testShutdownHandlerShutdown();
 
@@ -1241,3 +1243,47 @@ TEST_DEFINITION( testEventOrdering )
 	m_pAgent->RunSelf(2);
 }
 
+TEST_DEFINITION( testStatusCompleteDuplication )
+{
+	// Load and test productions
+	loadProductions( "/Tests/teststatuscomplete.soar" );
+
+	// step
+	m_pAgent->RunSelf(1);
+
+	// add status complete
+	int numberCommands = m_pAgent->GetNumberCommands() ;
+	CPPUNIT_ASSERT( numberCommands == 1);
+
+	// Get the first two commands (move and alternate)
+	{
+		sml::Identifier* pCommandBefore = m_pAgent->GetCommand(0) ;
+		pCommandBefore->AddStatusComplete();
+	}
+
+	// commit status complete
+	CPPUNIT_ASSERT( m_pAgent->Commit() );
+
+	// step
+	m_pAgent->RunSelf(1);
+
+	// count status complete instances
+	{
+		sml::Identifier* pCommandAfter = m_pAgent->GetCommand(0);
+		sml::Identifier::ChildrenIter child = pCommandAfter->GetChildrenBegin();
+		sml::Identifier::ChildrenIter end = pCommandAfter->GetChildrenEnd();
+
+		int count = 0;
+		while ( child != end )
+		{
+			if ( (*child)->GetAttribute() == std::string("status") )
+			{
+				++count;
+			}
+			++child;
+		}
+
+		// there should only be one
+		CPPUNIT_ASSERT( count == 1 );
+	}
+}
