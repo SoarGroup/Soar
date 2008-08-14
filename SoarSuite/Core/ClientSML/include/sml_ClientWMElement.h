@@ -60,6 +60,15 @@ protected:
 	bool	m_JustAdded ;
 
 public:
+	// Used to compare wmes for std::set classes. 
+	struct WMELessThan
+	{
+		bool operator()(WMElement* wme1, WMElement* wme2) const
+		{
+			return wme1->GetTimeTag() < wme2->GetTimeTag();
+		}
+	};
+
 	// This is true if the wme was just added.  The client chooses when to clear these flags.
 	// This is only maintained for output wmes (the client controls input wmes).
 	bool	IsJustAdded() { return m_JustAdded ; }
