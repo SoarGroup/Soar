@@ -39,11 +39,12 @@ Agent::Agent(Kernel* pKernel, char const* pName)
 {
 	m_Kernel = pKernel ;
 	m_Name	 = pName ;
-	m_WorkingMemory.SetAgent(this) ;
 	m_CallbackIDCounter = 0 ;
 	m_VisitedCounter = 0 ;
 	m_XMLCallback = -1 ;
 	m_BlinkIfNoChange = true ;
+
+	m_WorkingMemory.SetAgent(this) ;
 
 	ClearError() ;
 }
