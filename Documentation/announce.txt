@@ -72,21 +72,26 @@ New in 9.0.0
 ============
 
 * Components and Capabilities added
-  -- Updated selection space, added iterative deepening support
-  -- The item count is generated architecturally for tie impasses.
-  -- Depth at which a production fires is reported at watch 5.
-  -- New "single compilation unit" build configurations (greatly speeds
-     build time).
+  -- Updated selection space to remove local negations (prevents some
+     chunking problems), added iterative deepening support.
+  -- The item count is generated architecturally in a tie impasse.
+  -- Depth at which productions are firing is reported at watch 5.
+  -- New "single compilation unit" build configurations on Windows 
+     (greatly speeds build time).
   -- Unit test suite added.
   -- Other minor enhancements.
 
 * Bug fixes
   -- Output link supports circular structures.
+  -- Duplicate productions no longer cause sourcing to stop.
   -- Various memory leaks fixed.
-  -- Several other minor fixes
+  -- Several other minor fixes.
 
 * Other updates
   -- Removed gSKI (~20% speed increase in many cases).
+  -- The Soar Java Debugger now uses its default layout the first time
+     it is run with a new version of Soar. Old layouts are preserved
+     and can be loaded if desired (which makes them the default).
 
 
 Known issues:
