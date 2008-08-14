@@ -468,10 +468,10 @@ public class Simulation {
 		String commandLine;
 		if (os.matches(".+indows.*") || os.matches("INDOWS")) {
 			commandLine = "javaw -jar \"" + getBasePath() 
-			+ "..\\..\\SoarLibrary\\bin\\SoarJavaDebugger.jar\" -cascade -remote -agent " + agentName;
+			+ "..\\..\\SoarLibrary\\bin\\SoarJavaDebugger.jar\" -cascade -remote -agent " + agentName + " -port " + Soar2D.config.getPort();
 		} else {
 			commandLine = System.getProperty("java.home") + "/bin/java -jar " + getBasePath()
-			+ "../../SoarLibrary/bin/SoarJavaDebugger.jar -XstartOnFirstThread -cascade -remote -agent " + agentName;
+			+ "../../SoarLibrary/bin/SoarJavaDebugger.jar -XstartOnFirstThread -cascade -remote -agent " + agentName + " -port " + Soar2D.config.getPort();
 		}
 		
 		return commandLine;
