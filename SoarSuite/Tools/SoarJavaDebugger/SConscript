@@ -15,8 +15,8 @@ else:
 javacStep = env.Java(target = 'classes', source = 'src')
 
 copySources = [
-	       'src/default-text.dlf',
-	       'src/default-layout.dlf',
+	       'src/default-text-9_0_0.dlf',
+	       'src/default-layout-9_0_0.dlf',
 	      ]
 copySources.extend(glob.glob('src/images/*'))
 copySources.extend(glob.glob('src/altimages/*'))
