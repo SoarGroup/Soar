@@ -30,19 +30,27 @@ bool CommandLineInterface::ParseGP(std::vector<std::string>& argv) {
 	return DoGP(argv[1]);
 }
 
+typedef std::list< std::string > valueCollection;
+struct iterTriple
+{
+	valueCollection::iterator current;
+	valueCollection::iterator begin;
+	valueCollection::iterator end;
+};
+
 bool CommandLineInterface::DoGP(const std::string& productionString) {
 
 	// productionString comments are trimmed off at this point.
 
 	// set up collection of collections of strings segments:
-	std::list< std::list< std::string > > topLevel;
+	std::list< valueCollection > topLevel;
 
 	bool pipe = false;
 	bool inValues = false;
 	std::string::size_type pos = 0;			// result of current search
 	std::string::size_type searchpos = 0;	// result of previous search
 	const char* targets = "\\|[] \n\r\t";
-	std::list< std::string > currentValueCollection;
+	valueCollection currentValueCollection;
 	std::string currentValueToken;
 
 	for ( pos = productionString.find_first_of(targets, searchpos); pos != std::string::npos; pos = productionString.find_first_of(targets, searchpos) ) {
@@ -161,6 +169,15 @@ bool CommandLineInterface::DoGP(const std::string& productionString) {
 		}
 	}
 
+	// grab end of production
+	if ( currentValueToken.size() )
+	{
+		// tokenize
+		currentValueCollection.push_back( currentValueToken );
+		currentValueToken.clear();
+	}
+	topLevel.push_back( currentValueCollection );
+
 	if (pipe || inValues) {
 		// TODO: error code
 		return SetError( CLIError::kNotImplemented );;
@@ -168,16 +185,58 @@ bool CommandLineInterface::DoGP(const std::string& productionString) {
 
 	// final output
 	std::cout << "****DoGP collections:" << std::endl;
-	for ( std::list< std::list< std::string > >::iterator topIter = topLevel.begin(), endIter = topLevel.end(); topIter != endIter; ++topIter )
+	for ( std::list< valueCollection >::iterator topIter = topLevel.begin(), endIter = topLevel.end(); topIter != endIter; ++topIter )
 	{
 		std::cout << "~~~" << std::endl;
-		for ( std::list< std::string >::iterator valueIter = topIter->begin(); valueIter != topIter->end(); ++valueIter )
+		for ( valueCollection::iterator valueIter = topIter->begin(); valueIter != topIter->end(); ++valueIter )
 		{
 			std::cout << "%" << *valueIter << "% ";
 		}
 		std::cout << std::endl;
 	}
 
+	// create a collection of iterators
+	// two for each value collection in the topLevel collection
+	// one that points to the current value, and one that represents the end of the value collection
+	std::list< iterTriple > valueIters;
+	for ( std::list< valueCollection >::iterator topIter = topLevel.begin(), endIter = topLevel.end(); topIter != endIter; ++topIter )
+	{
+		iterTriple it;
+		it.begin = topIter->begin(); it.current = topIter->begin(); it.end = topIter->end();
+		valueIters.push_back( it );
+	}
+
+	bool finished = false;
+	while(!finished)
+	{
+		// generate production corresponding to current values
+		std::string generatedProduction = "";
+		for ( std::list< iterTriple >::iterator valueItersIter = valueIters.begin(), endIter = valueIters.end(); valueItersIter != endIter; ++valueItersIter )
+		{
+			generatedProduction += *(valueItersIter->current);
+		}
+
+		std::cout << std::endl << "++++++" << std::endl << generatedProduction <<  std::endl << "++++++" << std::endl;
+
+		// update value iterators
+		finished = true;
+		for ( std::list< iterTriple >::iterator valueItersIter = valueIters.begin(), endIter = valueIters.end(); valueItersIter != endIter; ++valueItersIter )
+		{
+			// increment the value iterator
+			++(valueItersIter->current);
+			// if it is at the end, set it back to the beginning.  Otherwise we're at a new value, so break out and generate a new production.
+			if(valueItersIter->current == valueItersIter->end)
+			{
+				valueItersIter->current = valueItersIter->begin;
+			}
+			else
+			{
+				finished = false;
+				break;
+			}
+		}
+	}
+	
 	return true;
 }
 
