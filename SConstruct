@@ -161,6 +161,10 @@ if sys.platform != 'cygwin':
 	if not conf.CheckLib('pthread'):
 		Exit(1)
 		
+# if this flag is not included, the linker will complain about not being able
+# to find the symbol __sync_sub_and_fetch_4 when using g++ 4.3
+conf.env.Append(CPPFLAGS = ' -march=i686')
+
 env = conf.Finish()
 Export('env')
 

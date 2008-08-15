@@ -14,6 +14,7 @@
 #include "TOH_Disk.inl"
 #include "TOH_Tower.inl"
 #include "Stats_Tracker.inl"
+#include <cstring>
 
 void toh_update_event_handler(sml::smlUpdateEventId /*id*/, void *user_data_ptr, sml::Kernel* kernel_ptr, sml::smlRunFlags /*run_flags*/) {
   assert(user_data_ptr);

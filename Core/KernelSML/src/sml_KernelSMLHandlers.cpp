@@ -35,6 +35,7 @@
 #include <map>
 #include <stdlib.h>
 #include <assert.h>
+#include <algorithm>
 
 using namespace sml ;
 

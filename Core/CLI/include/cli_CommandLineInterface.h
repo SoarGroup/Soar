@@ -19,6 +19,7 @@
 #include <map>
 #include <list>
 #include <sstream>
+#include <cstdlib>
 
 // Local includes
 #include "sml_KernelCallback.h"

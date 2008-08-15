@@ -1,6 +1,8 @@
 #ifndef SOARXML_ELEMENTXML_H
 #define SOARXML_ELEMENTXML_H
 
+#include <cstring>
+
 /////////////////////////////////////////////////////////////////
 // ElementXML class
 //
