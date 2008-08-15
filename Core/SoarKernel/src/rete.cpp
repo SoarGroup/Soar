@@ -107,6 +107,8 @@
 
 #include "reinforcement_learning.h"
 
+#include <sstream>
+
 /* ----------- basic functionality switches ----------- */
 
 /* Set to FALSE to preserve variable names in chunks (takes extra space) */
