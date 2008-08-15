@@ -170,6 +170,7 @@ bool CommandLineInterface::DoGP(const std::string& productionString) {
 	}
 
 	// grab end of production
+	currentValueToken += productionString.substr( searchpos, std::string::npos );
 	if ( currentValueToken.size() )
 	{
 		// tokenize
@@ -184,16 +185,16 @@ bool CommandLineInterface::DoGP(const std::string& productionString) {
 	}
 
 	// final output
-	std::cout << "****DoGP collections:" << std::endl;
-	for ( std::list< valueCollection >::iterator topIter = topLevel.begin(), endIter = topLevel.end(); topIter != endIter; ++topIter )
-	{
-		std::cout << "~~~" << std::endl;
-		for ( valueCollection::iterator valueIter = topIter->begin(); valueIter != topIter->end(); ++valueIter )
-		{
-			std::cout << "%" << *valueIter << "% ";
-		}
-		std::cout << std::endl;
-	}
+	//std::cout << "****DoGP collections:" << std::endl;
+	//for ( std::list< valueCollection >::iterator topIter = topLevel.begin(), endIter = topLevel.end(); topIter != endIter; ++topIter )
+	//{
+	//	std::cout << "~~~" << std::endl;
+	//	for ( valueCollection::iterator valueIter = topIter->begin(); valueIter != topIter->end(); ++valueIter )
+	//	{
+	//		std::cout << "%" << *valueIter << "% ";
+	//	}
+	//	std::cout << std::endl;
+	//}
 
 	// create a collection of iterators
 	// two for each value collection in the topLevel collection
@@ -207,6 +208,7 @@ bool CommandLineInterface::DoGP(const std::string& productionString) {
 	}
 
 	bool finished = false;
+	unsigned long prodnum = 1;
 	while(!finished)
 	{
 		// generate production corresponding to current values
@@ -214,9 +216,27 @@ bool CommandLineInterface::DoGP(const std::string& productionString) {
 		for ( std::list< iterTriple >::iterator valueItersIter = valueIters.begin(), endIter = valueIters.end(); valueItersIter != endIter; ++valueItersIter )
 		{
 			generatedProduction += *(valueItersIter->current);
+			// if this is the first part of the production, 
+			// find the end of the production name and add a number to differentiate it
+			if(valueItersIter == valueIters.begin())
+			{
+				pos = generatedProduction.find_first_of("\n");
+				std::stringstream numsstr; numsstr << "*" << prodnum;
+				generatedProduction.insert(pos, numsstr.str());
+				++prodnum;
+			}
 		}
 
-		std::cout << std::endl << "++++++" << std::endl << generatedProduction <<  std::endl << "++++++" << std::endl;
+		//std::cout << std::endl << "++++++" << std::endl << generatedProduction <<  std::endl << "++++++" << std::endl;
+		// Remove first and last characters (the braces)
+		generatedProduction = generatedProduction.substr(1, generatedProduction.length() - 2);
+		if(!DoSP(generatedProduction))
+		{
+			// FIXME: this error message doesn't appear
+			std::string error = "The following production failed to load: \nsp {" + generatedProduction + "}";
+			SetErrorDetail(error);
+			return false;
+		}
 
 		// update value iterators
 		finished = true;
@@ -224,7 +244,8 @@ bool CommandLineInterface::DoGP(const std::string& productionString) {
 		{
 			// increment the value iterator
 			++(valueItersIter->current);
-			// if it is at the end, set it back to the beginning.  Otherwise we're at a new value, so break out and generate a new production.
+			// If it is at the end, set it back to the beginning.  
+			// Otherwise we're at a new value, so break out and generate a new production.
 			if(valueItersIter->current == valueItersIter->end)
 			{
 				valueItersIter->current = valueItersIter->begin;
