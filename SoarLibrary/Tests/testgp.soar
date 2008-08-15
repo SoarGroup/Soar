@@ -46,7 +46,7 @@ gp {gp*test5
 
 gp {gp*test6
 (state <s> ^operator <o> +
-           ^someflag [ true false ])
+           ^someflag [ true false null ])
 (<o> ^name foo
      ^att [ val1 1.3 |another val| |\|another val\|| ])
 -->
