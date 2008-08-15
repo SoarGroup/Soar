@@ -101,12 +101,17 @@ bool CommandLineInterface::DoGP(const std::string& productionString) {
 					}
 
 					// end of values list
+					currentValueToken += productionString.substr( searchpos, pos - searchpos );
+					if ( currentValueToken.size() )
+					{
+						// tokenize
+						currentValueCollection.push_back( currentValueToken );
+						currentValueToken.clear();
+					}
 					topLevel.push_back( currentValueCollection );
 
 					inValues = false;
 					currentValueCollection.clear();
-					currentValueToken.clear();
-
 				}
 				else
 				{
@@ -126,7 +131,7 @@ bool CommandLineInterface::DoGP(const std::string& productionString) {
 				{
 					if ( pipe )
 					{
-						currentValueToken += productionString[ pos ];
+						currentValueToken += productionString.substr( searchpos, pos - searchpos + 1 );
 					} 
 					else 
 					{
@@ -136,6 +141,7 @@ bool CommandLineInterface::DoGP(const std::string& productionString) {
 						{
 							// tokenize
 							currentValueCollection.push_back( currentValueToken );
+							currentValueToken.clear();
 						}
 					}
 				}
@@ -162,13 +168,14 @@ bool CommandLineInterface::DoGP(const std::string& productionString) {
 
 	// final output
 	std::cout << "****DoGP collections:" << std::endl;
-	for ( std::list< std::list< std::string > >::iterator topIter = topLevel.begin(); topIter != topLevel.end(); ++topIter )
+	for ( std::list< std::list< std::string > >::iterator topIter = topLevel.begin(), endIter = topLevel.end(); topIter != endIter; ++topIter )
 	{
+		std::cout << "~~~" << std::endl;
 		for ( std::list< std::string >::iterator valueIter = topIter->begin(); valueIter != topIter->end(); ++valueIter )
 		{
 			std::cout << "%" << *valueIter << "% ";
 		}
-		std::cout << "~~~" << std::endl;
+		std::cout << std::endl;
 	}
 
 	return true;
