@@ -13,6 +13,8 @@
 
 #include <map>
 #include <vector>
+#include <cstdlib>
+#include <cstring>
 #include "ElementXMLHandle.h"
 
 namespace soarxml

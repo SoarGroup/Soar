@@ -18,6 +18,8 @@
 // This class represents those references into the document.
 /////////////////////////////////////////////////////////////////
 
+#include <cstdlib>
+
 #include "sml_AnalyzeXML.h"
 #include "ElementXML.h"
 #include "sml_Names.h"
