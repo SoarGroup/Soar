@@ -26,6 +26,7 @@
 #include "sml_Utils.h"
 #include "sock_Socket.h"
 
+#include <cstdlib>
 #include <assert.h>
 
 #ifdef NON_BLOCKING
