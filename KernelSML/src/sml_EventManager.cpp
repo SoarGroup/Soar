@@ -22,10 +22,11 @@ using namespace sml ;
 						 static_cast <void*> (eventInfo), 0, 
 						 soar_callback_enum_to_name(static_cast<SOAR_CALLBACK_TYPE>(EnumRemappings::KernelRunEventType(eventId)), 1));
 */
-//void flushPrintOnAgent( AgentSML* pFlushPrintOnThisAgent )
-//{
-//	if ( pFlushPrintOnThisAgent ) { 
-//		// we are NOT the print event
-//		pFlushPrintOnThisAgent->FlushPrintOutput();
-//	}
-//}
+
+void sml::flushPrintOnAgent( AgentSML* pFlushPrintOnThisAgent )
+{
+	if ( pFlushPrintOnThisAgent ) { 
+		// we are NOT the print event
+		pFlushPrintOnThisAgent->FlushPrintOutput();
+	}
+}
