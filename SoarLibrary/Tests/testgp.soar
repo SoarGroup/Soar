@@ -1,0 +1,8 @@
+gp {template*my-prod
+(state <s> ^operator <o> +
+           ^someflag [true false])
+(<o> ^name foo
+     ^att [val1 1.3 |another val|])
+-->
+(<s> ^operator <o> = 5)
+}

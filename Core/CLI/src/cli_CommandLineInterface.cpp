@@ -57,6 +57,7 @@ EXPORT CommandLineInterface::CommandLineInterface() {
 	m_CommandMap[Commands::kCLIExplainBacktraces]			= &cli::CommandLineInterface::ParseExplainBacktraces;
 	m_CommandMap[Commands::kCLIFiringCounts]				= &cli::CommandLineInterface::ParseFiringCounts;
 	m_CommandMap[Commands::kCLIGDSPrint]					= &cli::CommandLineInterface::ParseGDSPrint;
+	m_CommandMap[Commands::kCLIGP]							= &cli::CommandLineInterface::ParseGP;
 	m_CommandMap[Commands::kCLIHelp]						= &cli::CommandLineInterface::ParseHelp;
 	m_CommandMap[Commands::kCLIIndifferentSelection]		= &cli::CommandLineInterface::ParseIndifferentSelection;
 	m_CommandMap[Commands::kCLIInitSoar]					= &cli::CommandLineInterface::ParseInitSoar;
@@ -109,6 +110,7 @@ EXPORT CommandLineInterface::CommandLineInterface() {
 	m_CommandMap[Commands::kCLIWatchWMEs]					= &cli::CommandLineInterface::ParseWatchWMEs;
 
 	// Indicate which commands should be echoed so that all users can see them when doing a shared debugging session
+	// FIXME: missing stuff like GDSPRINT?
 	m_EchoMap[Commands::kCLIAddWME]						= true ;
 	m_EchoMap[Commands::kCLIAlias]						= true ;
 	m_EchoMap[Commands::kCLIAttributePreferencesMode]	= true ;
@@ -120,6 +122,7 @@ EXPORT CommandLineInterface::CommandLineInterface() {
 	m_EchoMap[Commands::kCLIEcho]						= true ;
 	m_EchoMap[Commands::kCLIEchoCommands]				= true ;
 	m_EchoMap[Commands::kCLIExcise]						= true ;
+	m_EchoMap[Commands::kCLIGP]							= true ;
 	m_EchoMap[Commands::kCLIIndifferentSelection]		= true ;
 	m_EchoMap[Commands::kCLIInitSoar]					= true ;
 	m_EchoMap[Commands::kCLIInputPeriod]				= true ;
