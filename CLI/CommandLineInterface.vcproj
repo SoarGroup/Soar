@@ -694,6 +694,10 @@
 					</FileConfiguration>
 				</File>
 				<File
+					RelativePath=".\src\cli_gp.cpp"
+					>
+				</File>
+				<File
 					RelativePath=".\src\cli_help.cpp"
 					>
 					<FileConfiguration

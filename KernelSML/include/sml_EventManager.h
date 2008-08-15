@@ -30,6 +30,10 @@ class KernelSML ;
 typedef std::list< Connection* >		ConnectionList ;
 typedef ConnectionList::iterator	ConnectionListIter ;
 
+// This avoids having to use AgentSML in this file, which is a necessary hack because including
+// sml_AgentSML.h currently breaks things.
+void flushPrintOnAgent( AgentSML* pFlushPrintOnThisAgent );
+
 template<typename EventType> class EventManager : public KernelCallback
 {
 protected:
@@ -198,6 +202,8 @@ public:
 		// unless we ARE the print event:
 		// must flush all print callbacks before pasing control to client in case 
 		// handlers are expecting their text to be up to date (See bug 1100)
+		// this avoids using AgentSML in this file
+		//flushPrintOnAgent( pFlushPrintOnThisAgent );
 		if ( pFlushPrintOnThisAgent ) { 
 			// we are NOT the print event
 			pFlushPrintOnThisAgent->FlushPrintOutput();

@@ -29,7 +29,7 @@ namespace sml {
 class KernelSML ;
 class Connection ;
 
-class ProductionListener : public EventManager<smlProductionEventId>
+class ProductionListener : public EventManager < smlProductionEventId >
 {
 protected:
 	KernelSML*		m_pKernelSML ;

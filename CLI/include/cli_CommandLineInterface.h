@@ -188,6 +188,7 @@ public:
 	bool ParseExplainBacktraces(std::vector<std::string>& argv);
 	bool ParseFiringCounts(std::vector<std::string>& argv);
 	bool ParseGDSPrint(std::vector<std::string>& argv);
+	bool ParseGP(std::vector<std::string>& argv);
 	bool ParseHelp(std::vector<std::string>& argv);
 	bool ParseIndifferentSelection(std::vector<std::string>& argv);
 	bool ParseInitSoar(std::vector<std::string>& argv);
@@ -353,6 +354,12 @@ public:
 	* @brief gds-print command
 	*************************************************************/
 	bool DoGDSPrint();
+
+	/*************************************************************
+	* @brief gp command
+	* @param productionString The general soar production to generate more productions to load to memory
+	*************************************************************/
+	bool DoGP(const std::string& productionString);
 
 	/*************************************************************
 	* @brief help command
