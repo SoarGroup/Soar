@@ -203,11 +203,7 @@ public:
 		// must flush all print callbacks before pasing control to client in case 
 		// handlers are expecting their text to be up to date (See bug 1100)
 		// this avoids using AgentSML in this file
-		//flushPrintOnAgent( pFlushPrintOnThisAgent );
-		if ( pFlushPrintOnThisAgent ) { 
-			// we are NOT the print event
-			pFlushPrintOnThisAgent->FlushPrintOutput();
-		}
+		flushPrintOnAgent( pFlushPrintOnThisAgent );
 
 		ConnectionListIter connectionIter = begin ;
 
