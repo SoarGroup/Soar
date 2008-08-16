@@ -73,7 +73,8 @@ bool CommandLineInterface::DoGP(const std::string& productionString) {
 			case '[': // start of value list
 				if ( !pipe ) 
 				{
-					// we've started a values list, save the previous segment
+					// we've started a values list, finish and save the previous segment
+					currentValueToken += productionString.substr( searchpos, pos - searchpos );
 					currentValueCollection.push_back( currentValueToken );
 					topLevel.push_back( currentValueCollection );
 
