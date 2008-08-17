@@ -68,11 +68,36 @@ bool CommandLineInterface::DoGP(const std::string& productionString) {
 				// consume it
 				currentValueToken += productionString.substr( searchpos, (pos - searchpos) + 1 );
 				searchpos = pos + 1;
+
+				if(!pipe)
+				{
+
+					if ( currentValueToken.size() ) // I don't think this is necessary since it should always contain at least the pipes
+					{
+						// tokenize
+						currentValueCollection.push_back( currentValueToken );
+						currentValueToken.clear();
+					}
+				}
 				break;
 
 			case '[': // start of value list
 				if ( !pipe ) 
 				{
+					// make sure there is not a square bracket immediately following this one
+					if ( productionString.size() < pos + 2 )
+					{
+						// productionString ends on [, bad
+						// TODO: error code
+						return SetError( CLIError::kNotImplemented );
+					}
+					if ( productionString[ pos + 1 ] == ']' )
+					{
+						// can't have empty value collections
+						// TODO: error code
+						return SetError( CLIError::kNotImplemented );;
+					}
+
 					// we've started a values list, finish and save the previous segment
 					currentValueToken += productionString.substr( searchpos, pos - searchpos );
 					currentValueCollection.push_back( currentValueToken );
@@ -117,7 +142,10 @@ bool CommandLineInterface::DoGP(const std::string& productionString) {
 						currentValueCollection.push_back( currentValueToken );
 						currentValueToken.clear();
 					}
-					topLevel.push_back( currentValueCollection );
+					if ( currentValueCollection.size() )
+					{
+						topLevel.push_back( currentValueCollection );
+					}
 
 					inValues = false;
 					currentValueCollection.clear();

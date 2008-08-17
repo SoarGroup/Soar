@@ -26,10 +26,7 @@ gp {gp*test3
 }
 
 gp {gp*test4
-(state <s> ^operator <o> +
-           ^someflag [ true false ])
-(<o> ^name foo
-     ^att [ val1 1.3 |another val||another val2| ])  # BUG: combines last two values into single value.  This should be legal because it works in sp with << >>.
+(state <s> ^att [ |another val||another val2| ])
 -->
 (<s> ^operator <o> = 20)
 }
@@ -58,3 +55,21 @@ gp {gp*test7
 }
 
 
+### Failure cases ###
+
+#gp {gp*fail1
+#(state <s> ^att []) # need at least one value in list
+#-->
+#(<s> ^operator <o> = 5)
+#}
+
+#gp {gp*fail2
+#(state <s> ^[att1 att2][val1 val2]) # need space between value lists
+#-->
+#(<s> ^operator <o> = 5)
+#}
+
+#gp {gp*fail3
+#(state <s> ^foo bar[) # unmatched [
+#-->
+#(<s> ^foo bar)}
