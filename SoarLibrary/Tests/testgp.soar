@@ -26,7 +26,7 @@ gp {gp*test3
 }
 
 gp {gp*test4
-(state <s> ^att [ |another val||another val2| ])
+(state <s> ^|att 1||val1| [ |another val||another val2| ])
 -->
 (<s> ^operator <o> = 20)
 }

@@ -69,7 +69,7 @@ bool CommandLineInterface::DoGP(const std::string& productionString) {
 				currentValueToken += productionString.substr( searchpos, (pos - searchpos) + 1 );
 				searchpos = pos + 1;
 
-				if(!pipe)
+				if(!pipe && inValues)
 				{
 
 					if ( currentValueToken.size() ) // I don't think this is necessary since it should always contain at least the pipes
