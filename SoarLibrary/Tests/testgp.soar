@@ -54,6 +54,18 @@ gp {gp*test7
 (<s> ^[<var> att] <var>)
 }
 
+# this rule works in that the end result is what we want,
+# but Soar's parser generates tons of "error" messages about
+# the \'s (which it just ignores, so it works anyway)
+# we could update gp to "fix" this, but it seems like an
+# abuse we don't want to encourage.  Still, it's pretty cool.
+gp {gp*test8
+(state <s> ^foo <f1> ^bar <b1>)
+[(<f1>\ ^value\ <b1>) (<b1>\ ^value\ <f1>)]
+-->
+[(<f1>\ ^bar\ <b1>) (<b1>\ ^foo\ <f1>)]
+}
+
 
 ### Failure cases ###
 
