@@ -5,44 +5,49 @@ public interface SoarParserConstants {
 
   int EOF = 0;
   int SP = 7;
-  int SOARCMD = 8;
-  int RARROW = 15;
-  int SAME_TYPE = 16;
-  int GEQUAL = 17;
-  int LDISJUNCT = 18;
-  int LEQUAL = 19;
-  int NEQUAL = 20;
-  int RDISJUNCT = 21;
-  int AMPERSAND = 22;
-  int ATSIGN = 23;
-  int CARET = 24;
-  int COMMA = 25;
-  int EMARK = 26;
-  int EQUAL = 27;
-  int GREATER = 28;
-  int HYPHEN = 29;
-  int LBRACE = 30;
-  int LESS = 31;
-  int LPAREN = 32;
-  int PERIOD = 33;
-  int PLUS = 34;
-  int QMARK = 35;
-  int RBRACE = 36;
-  int RPAREN = 37;
-  int TILDE = 38;
-  int LSQBRACET = 39;
-  int RSQBRACET = 40;
-  int QUOTE = 41;
-  int PRODTYPE = 42;
-  int VARIABLE = 43;
-  int INTEGER_CONST = 44;
-  int SYMBOLIC_CONST = 45;
-  int FLOATING_POINT_CONST = 46;
-  int EXPONENT = 47;
-  int TCL_PREPROCESS = 48;
+  int GP = 8;
+  int SOARCMD = 9;
+  int G_LBRACE = 11;
+  int G_RBRACE = 12;
+  int G_QUOTE = 13;
+  int RARROW = 20;
+  int SAME_TYPE = 21;
+  int GEQUAL = 22;
+  int LDISJUNCT = 23;
+  int LEQUAL = 24;
+  int NEQUAL = 25;
+  int RDISJUNCT = 26;
+  int AMPERSAND = 27;
+  int ATSIGN = 28;
+  int CARET = 29;
+  int COMMA = 30;
+  int EMARK = 31;
+  int EQUAL = 32;
+  int GREATER = 33;
+  int HYPHEN = 34;
+  int LBRACE = 35;
+  int LESS = 36;
+  int LPAREN = 37;
+  int PERIOD = 38;
+  int PLUS = 39;
+  int QMARK = 40;
+  int RBRACE = 41;
+  int RPAREN = 42;
+  int TILDE = 43;
+  int LSQBRACET = 44;
+  int RSQBRACET = 45;
+  int QUOTE = 46;
+  int PRODTYPE = 47;
+  int VARIABLE = 48;
+  int INTEGER_CONST = 49;
+  int SYMBOLIC_CONST = 50;
+  int FLOATING_POINT_CONST = 51;
+  int EXPONENT = 52;
+  int TCL_PREPROCESS = 53;
 
   int DEFAULT = 0;
-  int IN_SOAR_PRODUCTION = 1;
+  int IN_GP = 1;
+  int IN_SOAR_PRODUCTION = 2;
 
   String[] tokenImage = {
     "<EOF>",
@@ -53,9 +58,14 @@ public interface SoarParserConstants {
     "\"\\n\"",
     "\"\\r\"",
     "\"sp\"",
+    "\"gp\"",
     "<SOARCMD>",
-    "<token of kind 9>",
     "<token of kind 10>",
+    "\"{\"",
+    "\"}\"",
+    "\"\\\"\"",
+    "<token of kind 14>",
+    "<token of kind 15>",
     "\" \"",
     "\"\\t\"",
     "\"\\n\"",

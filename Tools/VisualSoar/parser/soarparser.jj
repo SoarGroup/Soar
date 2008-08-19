@@ -44,7 +44,61 @@ SKIP:
 TOKEN:
 {
     <SP:        "sp"> : IN_SOAR_PRODUCTION
-    |<SOARCMD:  ("global"|"set"|"puts"|"alias"|"attention-lapse"|"attribute_preferences_mode"|"capture-input"|"chunk-name-format"|"command-to-file"|"default_wme_depth"|"dirs"|"echo"|"excise"|"explain-backtraces"|"firing-counts"|"format-watch"|"gds_print"|"help"|"indifferent-selection"|"init-soar"|"input-period"|"internal-symbols"|"io"|"learn"|"log"|"matches"|"max-chunks"|"max-elaborations"|"max-nil-output-cycles"|"max_chunks"|"max_elaborations"|"memories"|"monitor"|"multi-attributes"|"o-support-mode"|"output-strings-destination"|"o_support_mode"|"popd"|"predefined-aliases"|"preferences"|"print"|"production-find"|"pushd"|"pwatch"|"quit"|"remove-wme"|"replay-input"|"rete-net"|"rhsfun"|"run"|"save_backtraces"|"send"|"soar"|"soar8"|"soarnews"|"soartk"|"start-attention-lapse"|"stats"|"stop-soar"|"topd"|"tsi"|"unalias"|"variables"|"version"|"viSTEAM"|"vt"|"vtutor"|"wake-from-attention-lapse"|"wake"|"warnings"|"watch")(~["\n","\r"])*>
+    |<GP:       "gp"> : IN_GP 
+    |<SOARCMD:  ("global"|"set"|"puts"|"alias"|"attention-lapse"|"attribute_preferences_mode"|"capture-input"|"chunk-name-format"|"command-to-file"|"default_wme_depth"|"dirs"|"echo"|"epmem"|"excise"|"explain-backtraces"|"firing-counts"|"format-watch"|"gds_print"|"help"|"indifferent-selection"|"init-soar"|"input-period"|"internal-symbols"|"io"|"learn"|"log"|"matches"|"max-chunks"|"max-elaborations"|"max-nil-output-cycles"|"max_chunks"|"max_elaborations"|"memories"|"monitor"|"multi-attributes"|"o-support-mode"|"output-strings-destination"|"o_support_mode"|"popd"|"predefined-aliases"|"predict"|"preferences"|"print"|"production-find"|"pushd"|"pwatch"|"quit"|"remove-wme"|"replay-input"|"rete-net"|"rhsfun"|"rl"|"run"|"save_backtraces"|"select"|"send"|"soar"|"soar8"|"soarnews"|"soartk"|"start-attention-lapse"|"stats"|"stop-soar"|"topd"|"tsi"|"unalias"|"variables"|"version"|"viSTEAM"|"vt"|"vtutor"|"wake-from-attention-lapse"|"wake"|"warnings"|"watch")(~["\n","\r"])*>
+}
+
+< IN_GP > SKIP: 
+{
+    < ~["{","}","\""] >
+}
+
+< IN_GP > TOKEN:
+{
+   <G_LBRACE:		"{">
+   |<G_RBRACE:	"}">
+   |<G_QUOTE:		"\"">
+}
+
+void gp():
+{
+}
+{
+   <GP>
+   {
+      handleGpBody();
+   }
+   {
+      token_source.SwitchTo(DEFAULT); // leave "IN_GP"
+   }
+}
+
+JAVACODE
+void handleGpBody()
+{
+    // Recursively loop over tokens matching braces but
+    // throwing everything away
+    
+    Token tok = getToken(1);
+	if(tok.kind == G_QUOTE) {
+		getNextToken();
+		while(getToken(1).kind != G_QUOTE && getToken(1).kind != EOF) {
+			getNextToken();
+		}
+		getNextToken();
+	}
+	else if(tok.kind == G_LBRACE) {
+		getNextToken();
+		int nesting = 1;
+		while(nesting > 0 && getToken(1).kind != EOF) {
+			if(getToken(1).kind == G_LBRACE) {
+		    	nesting++;
+		    } else if(getToken(1).kind == G_RBRACE) {
+		    	nesting--;
+		    }
+			getNextToken();
+		}
+	}
 }
 
 
@@ -116,6 +170,7 @@ Vector VisualSoarFile() :
       }
       )
       | <SOARCMD>
+      | gp()
 	)*
 	<EOF>
 	{
