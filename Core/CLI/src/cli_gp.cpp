@@ -57,8 +57,16 @@ bool CommandLineInterface::DoGP(const std::string& productionString) {
 		switch ( productionString[ pos ] ) {
 			case '\\': // skip backslashes
 
-				// consume it and the escaped char
-				currentValueToken += productionString.substr( searchpos, (pos - searchpos) + 2 );
+				// if the escaped char is a space, consume the space and drop the backslash
+				if(productionString[ pos+1 ] == ' ')
+				{
+					currentValueToken += productionString.substr( searchpos, (pos - searchpos) );
+					currentValueToken += productionString.substr( pos + 1, 1 ); // we could just append a space here, but this form lets us easily add other characters we might want to append like this
+				}
+				else  // otherwise consume it and the escaped char
+				{
+					currentValueToken += productionString.substr( searchpos, (pos - searchpos) + 2 );
+				}
 				searchpos = pos + 2;
 				break;
 
