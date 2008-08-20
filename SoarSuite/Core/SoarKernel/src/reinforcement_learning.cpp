@@ -370,7 +370,19 @@ bool rl_set_parameter( agent *my_agent, const char *name, const char *new_val )
 
 	// learning special case
 	if ( param == RL_PARAM_LEARNING )
+	{
 		set_sysparam( my_agent, RL_ENABLED, converted_val );
+		
+		if ( ( converted_val == RL_LEARNING_ON ) && my_agent->rl_first_switch )
+		{
+			my_agent->rl_first_switch = false;
+			exploration_set_policy( my_agent, USER_SELECT_E_GREEDY );
+			
+			const char *msg = "Exploration Mode changed to epsilon-greedy";
+			print( my_agent, const_cast<char *>( msg ) );
+       		xml_generate_message( my_agent, const_cast<char *>( msg ) );
+		}
+	}
 	
 	my_agent->rl_params[ param ]->param->string_param.value = converted_val;
 
@@ -388,7 +400,19 @@ bool rl_set_parameter( agent *my_agent, const char *name, const long new_val )
 
 	// learning special case
 	if ( param == RL_PARAM_LEARNING )
+	{
 		set_sysparam( my_agent, RL_ENABLED, new_val );
+		
+		if ( ( new_val == RL_LEARNING_ON ) && my_agent->rl_first_switch )
+		{
+			my_agent->rl_first_switch = false;
+			exploration_set_policy( my_agent, USER_SELECT_E_GREEDY );
+			
+			const char *msg = "Exploration Mode changed to epsilon-greedy";
+			print( my_agent, const_cast<char *>( msg ) );
+       		xml_generate_message( my_agent, const_cast<char *>( msg ) );
+		}
+	}
 	
 	my_agent->rl_params[ param ]->param->string_param.value = new_val;
 
@@ -416,7 +440,19 @@ bool rl_set_parameter( agent *my_agent, const long param, const char *new_val )
 
 	// learning special case
 	if ( param == RL_PARAM_LEARNING )
+	{
 		set_sysparam( my_agent, RL_ENABLED, converted_val );
+		
+		if ( ( converted_val == RL_LEARNING_ON ) && my_agent->rl_first_switch )
+		{
+			my_agent->rl_first_switch = false;
+			exploration_set_policy( my_agent, USER_SELECT_E_GREEDY );
+			
+			const char *msg = "Exploration Mode changed to epsilon-greedy";
+			print( my_agent, const_cast<char *>( msg ) );
+       		xml_generate_message( my_agent, const_cast<char *>( msg ) );
+		}
+	}
 	
 	my_agent->rl_params[ param ]->param->string_param.value = converted_val;
 
@@ -430,7 +466,19 @@ bool rl_set_parameter( agent *my_agent, const long param, const long new_val )
 
 	// learning special case
 	if ( param == RL_PARAM_LEARNING )
+	{
 		set_sysparam( my_agent, RL_ENABLED, new_val );
+		
+		if ( ( new_val == RL_LEARNING_ON ) && my_agent->rl_first_switch )
+		{
+			my_agent->rl_first_switch = false;
+			exploration_set_policy( my_agent, USER_SELECT_E_GREEDY );
+			
+			const char *msg = "Exploration Mode changed to epsilon-greedy";
+			print( my_agent, const_cast<char *>( msg ) );
+       		xml_generate_message( my_agent, const_cast<char *>( msg ) );
+		}
+	}
 	
 	my_agent->rl_params[ param ]->param->string_param.value = new_val;
 

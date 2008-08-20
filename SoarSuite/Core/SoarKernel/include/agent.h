@@ -756,6 +756,7 @@ kernel time and total_cpu_time greater than the derived total CPU time. REW */
   rl_stat *rl_stats[ RL_STATS ];
 
   int rl_template_count;
+  bool rl_first_switch;
 
   // select
   select_info *select;
