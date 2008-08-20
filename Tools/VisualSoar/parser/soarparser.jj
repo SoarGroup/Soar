@@ -65,11 +65,11 @@ void gp():
 }
 {
    <GP>
+   (<G_LBRACE> | <G_QUOTE>)
+   handleGpBody()
+   (<G_RBRACE> | <G_QUOTE>)
    {
-      handleGpBody();
-   }
-   {
-      token_source.SwitchTo(DEFAULT); // leave "IN_GP"
+      token_source.SwitchTo(DEFAULT); // No longer "IN_GP"
    }
 }
 
@@ -80,17 +80,12 @@ void handleGpBody()
     // throwing everything away
     
     Token tok = getToken(1);
-	if(tok.kind == G_QUOTE) {
-		getNextToken();
-		while(getToken(1).kind != G_QUOTE && getToken(1).kind != EOF) {
-			getNextToken();
-		}
-		getNextToken();
-	}
-	else if(tok.kind == G_LBRACE) {
+	System.out.println("here" + tok.kind);
+	if(tok.kind == G_LBRACE) {
 		getNextToken();
 		int nesting = 1;
 		while(nesting > 0 && getToken(1).kind != EOF) {
+		    System.out.println("there" + getToken(1).kind);
 			if(getToken(1).kind == G_LBRACE) {
 		    	nesting++;
 		    } else if(getToken(1).kind == G_RBRACE) {
