@@ -1046,7 +1046,7 @@ TEST_DEFINITION( testSimpleCopy )
 TEST_DEFINITION( testSimpleReteNetLoader )
 {
 	std::string path = std::string(m_pKernel->GetLibraryLocation()) + "/Tests/test.soarx" ;
-	std::string command = std::string("rete-net -l ") + path ;
+	std::string command = std::string("rete-net -l \"") + path + "\"";  // RPM: wrap path in quotes in case it contains a space
 	std::string result = m_pAgent->ExecuteCommandLine(command.c_str()) ;
 	CPPUNIT_ASSERT( m_pAgent->GetLastCommandLineResult() );
 
