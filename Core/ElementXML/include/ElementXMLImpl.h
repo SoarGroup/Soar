@@ -37,6 +37,8 @@
 #define NUL 0
 #endif
 
+#include <cstdlib>
+#include <cstring>
 #include <string>
 #include <list>
 #include <vector>

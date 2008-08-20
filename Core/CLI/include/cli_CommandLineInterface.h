@@ -19,6 +19,7 @@
 #include <map>
 #include <list>
 #include <sstream>
+#include <cstdlib>
 
 // Local includes
 #include "sml_KernelCallback.h"
@@ -191,6 +192,7 @@ public:
 	bool ParseExplainBacktraces(std::vector<std::string>& argv);
 	bool ParseFiringCounts(std::vector<std::string>& argv);
 	bool ParseGDSPrint(std::vector<std::string>& argv);
+	bool ParseGP(std::vector<std::string>& argv);
 	bool ParseHelp(std::vector<std::string>& argv);
 	bool ParseIndifferentSelection(std::vector<std::string>& argv);
 	bool ParseInitSoar(std::vector<std::string>& argv);
@@ -365,6 +367,12 @@ public:
 	* @brief gds-print command
 	*************************************************************/
 	bool DoGDSPrint();
+
+	/*************************************************************
+	* @brief gp command
+	* @param productionString The general soar production to generate more productions to load to memory
+	*************************************************************/
+	bool DoGP(const std::string& productionString);
 
 	/*************************************************************
 	* @brief help command
@@ -822,7 +830,8 @@ protected:
 	eSourceMode m_SourceMode;
 	int			m_NumProductionsSourced;
 	int			m_NumProductionsExcised;
-	std::list<const char*> m_ExcisedDuringSource;
+	int			m_NumProductionsIgnored;
+	std::list< std::string > m_ExcisedDuringSource;
 	bool		m_SourceVerbose;
 
 ////////////////////////////////////////////

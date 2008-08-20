@@ -570,7 +570,7 @@ const long wma_convert_criteria( const char *val )
 	
 	if ( !strcmp( val, "o-agent" ) )
 		return_val = WMA_CRITERIA_O_AGENT;
-	else if ( !strcmp( val, "0-agent-arch" ) )
+	else if ( !strcmp( val, "o-agent-arch" ) )
 		return_val = WMA_CRITERIA_O_AGENT_ARCH;
 	else if ( !strcmp( val, "all" ) )
 		return_val = WMA_CRITERIA_ALL;

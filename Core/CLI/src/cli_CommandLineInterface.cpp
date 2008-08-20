@@ -58,6 +58,7 @@ EXPORT CommandLineInterface::CommandLineInterface() {
 	m_CommandMap[Commands::kCLIExplainBacktraces]			= &cli::CommandLineInterface::ParseExplainBacktraces;
 	m_CommandMap[Commands::kCLIFiringCounts]				= &cli::CommandLineInterface::ParseFiringCounts;
 	m_CommandMap[Commands::kCLIGDSPrint]					= &cli::CommandLineInterface::ParseGDSPrint;
+	m_CommandMap[Commands::kCLIGP]							= &cli::CommandLineInterface::ParseGP;
 	m_CommandMap[Commands::kCLIHelp]						= &cli::CommandLineInterface::ParseHelp;
 	m_CommandMap[Commands::kCLIIndifferentSelection]		= &cli::CommandLineInterface::ParseIndifferentSelection;
 	m_CommandMap[Commands::kCLIInitSoar]					= &cli::CommandLineInterface::ParseInitSoar;
@@ -111,6 +112,7 @@ EXPORT CommandLineInterface::CommandLineInterface() {
 	m_CommandMap[Commands::kCLIWMA]							= &cli::CommandLineInterface::ParseWMA;
 
 	// Indicate which commands should be echoed so that all users can see them when doing a shared debugging session
+	// FIXME: missing stuff like GDSPRINT?
 	m_EchoMap[Commands::kCLIAddWME]						= true ;
 	m_EchoMap[Commands::kCLIAlias]						= true ;
 	m_EchoMap[Commands::kCLIAttributePreferencesMode]	= true ;
@@ -123,6 +125,7 @@ EXPORT CommandLineInterface::CommandLineInterface() {
 	m_EchoMap[Commands::kCLIEchoCommands]				= true ;
 	m_EchoMap[Commands::kCLIEpMem]						= true ;
 	m_EchoMap[Commands::kCLIExcise]						= true ;
+	m_EchoMap[Commands::kCLIGP]							= true ;
 	m_EchoMap[Commands::kCLIIndifferentSelection]		= true ;
 	m_EchoMap[Commands::kCLIInitSoar]					= true ;
 	m_EchoMap[Commands::kCLIInputPeriod]				= true ;
@@ -1034,9 +1037,9 @@ void CommandLineInterface::OnKernelEvent(int eventID, AgentSML*, void* pCallData
 			assert(p) ;
 			assert(p->name->sc.name) ;
 
-			std::string name = p->name->sc.name ;
+			std::string name( p->name->sc.name );
 
-			m_ExcisedDuringSource.push_back(name.c_str());
+			m_ExcisedDuringSource.push_back( name );
 		}
 	}
 	else if (eventID == smlEVENT_PRINT)

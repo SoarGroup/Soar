@@ -59,6 +59,8 @@ class FullTests : public CPPUNIT_NS::TestCase
 	CPPUNIT_TEST( testSynchronize );
 	CPPUNIT_TEST( testRunningAgentCreation );
 	//CPPUNIT_TEST( testShutdownHandlerShutdown );
+	CPPUNIT_TEST( testEventOrdering ); // bug 1100
+	CPPUNIT_TEST( testStatusCompleteDuplication ); // bug 1042
 
 	CPPUNIT_TEST_SUITE_END();
 
@@ -79,6 +81,8 @@ public:
 	TEST_DECLARATION( testOSupportCopyDestroyCircular );
 	TEST_DECLARATION( testSynchronize );
 	TEST_DECLARATION( testRunningAgentCreation );
+	TEST_DECLARATION( testEventOrdering );
+	TEST_DECLARATION( testStatusCompleteDuplication );
 
 	void testShutdownHandlerShutdown();
 
@@ -1227,4 +1231,59 @@ void FullTests::testShutdownHandlerShutdown()
 	CPPUNIT_ASSERT_MESSAGE( "Listener side kernel shutdown failed to fire smlEVENT_BEFORE_SHUTDOWN", shutdownEvent.WaitForEvent(5, 0) );
 
 	cleanUpListener();
+}
+
+TEST_DEFINITION( testEventOrdering )
+{
+	int count = 0;
+
+	m_pAgent->RegisterForPrintEvent( sml::smlEVENT_PRINT, Handlers::MyOrderingPrintHandler, &count ) ;
+	m_pAgent->RegisterForRunEvent( sml::smlEVENT_AFTER_OUTPUT_PHASE, Handlers::MyOrderingRunHandler, &count ) ;
+
+	m_pAgent->RunSelf(2);
+}
+
+TEST_DEFINITION( testStatusCompleteDuplication )
+{
+	// Load and test productions
+	loadProductions( "/Tests/teststatuscomplete.soar" );
+
+	// step
+	m_pAgent->RunSelf(1);
+
+	// add status complete
+	int numberCommands = m_pAgent->GetNumberCommands() ;
+	CPPUNIT_ASSERT( numberCommands == 1);
+
+	// Get the first two commands (move and alternate)
+	{
+		sml::Identifier* pCommandBefore = m_pAgent->GetCommand(0) ;
+		pCommandBefore->AddStatusComplete();
+	}
+
+	// commit status complete
+	CPPUNIT_ASSERT( m_pAgent->Commit() );
+
+	// step
+	m_pAgent->RunSelf(1);
+
+	// count status complete instances
+	{
+		sml::Identifier* pCommandAfter = m_pAgent->GetCommand(0);
+		sml::Identifier::ChildrenIter child = pCommandAfter->GetChildrenBegin();
+		sml::Identifier::ChildrenIter end = pCommandAfter->GetChildrenEnd();
+
+		int count = 0;
+		while ( child != end )
+		{
+			if ( (*child)->GetAttribute() == std::string("status") )
+			{
+				++count;
+			}
+			++child;
+		}
+
+		// there should only be one
+		CPPUNIT_ASSERT( count == 1 );
+	}
 }

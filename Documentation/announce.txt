@@ -1,7 +1,11 @@
-Soar 8.6.4 Release Notes
+Soar 9.0.0 Release Notes
 ========================
 
-This release of Soar includes reinforcement learning code (Soar-RL).
+This release of Soar begins the 9.x series of releases during which we 
+expect to introduce several new mechanisms. 9.0.0 includes reinforcement
+learning code (Soar-RL), which was first released alongside the 8.6.4
+beta. 9.0.0 is also the first release to include the SML interface 
+without gSKI.
 
 Soar-RL is the architectural integration of reinforcement learning 
 (RL) with Soar.  The RL mechanism will automatically learn value 
@@ -10,22 +14,7 @@ for a given working memory state and proposed operator, the expected
 sum of future rewards the agent will receive if it selects that 
 operator.  
 
-Note: in the final version of Soar-RL, all Soar impasses will be 
-treated identically.  In the case of an impasse other than 
-operator no-change, the time period at the superstate during 
-which no operator is selected will be treated as a “gap” in rule 
-coverage, and perceived reward will be discounted with respect to 
-decision cycles passed.
-
-This release also includes an important bug fix regarding shared ids,
-see bugzilla bug number 1027 for details.
-
-The 8.6.4 release notes follow.
-
-Soar 8.6.4 Release Notes
-========================
-
-Soar-8.6.4 includes all source code, many demo programs, and a 
+Soar-9.0.0 includes all source code, many demo programs, and a 
 number of applications that serve as examples of how to interface 
 Soar to an external Environment.  There is support for integrating 
 Soar with C++, Java, Tcl, Python and C# applications.  Many Tools
@@ -38,7 +27,7 @@ http://winter.eecs.umich.edu/soarwiki
 This release was generated for Windows, Linux, and OSX systems.  
 Windows XP and Vista are supported.
 
-Soar 8.6.4 can be downloaded from the Soar homepage at:
+Soar 9.0.0 can be downloaded from the Soar homepage at:
 
         http://sitemaker.umich.edu/soar
 
@@ -63,13 +52,14 @@ Installation Requirements
 
 Build Requirements
 ==================
-
-* On all platforms, SWIG 1.3.31 is required for cross-language support
-  (e.g. to use the Java debugger).
+Binaries are released for Windows/Linux/OS X, so building is not required.
+For those on other platforms or developers:
+* On all platforms, SWIG 1.3.31 or later is required to build with 
+  cross-language support (e.g. to use the Java debugger).
 * On Windows, Visual Studio 2005 SP1 is required.
 * On Linux/Unix/OS X, Python, SCons, gcc 3.3 or later required.
 
-Components of Soar 8.6.4
+Components of Soar 9.0.0
 ========================
 * Pre-built libraries and executables for Windows (SoarLibrary/bin)
 * all source code, config files, and OS tools for automated Soar builds
@@ -79,45 +69,41 @@ Components of Soar 8.6.4
 * Test and Demo programs
 * Documentation
 
-New in 8.6.4
+New in 9.0.0
 ============
 
 * Components and Capabilities added
-  -- Eaters and TankSoar have been rewritten and are now part of the
-     Soar2D framework. This includes many enhancements.
-  -- New command: load-library. See manual for details.
-  -- Extended preferences command to print wme support (see the Soar
-     wiki for details).
-  -- Extended print command to support printing tree structures (see
-     manual for details).
-  -- Added IsRemoteConnection() to client Kernel interface.
-  -- Modified StringEventCallback to return a string.
-  -- Now generate proper Java enums for SML Java interface.
-  -- Major refactoring of portability support (e.g. portability.h)
+  -- New "gp" command added. Generates rules based on simple patterns
+     (intended for use with RL).
+  -- Updated selection space to remove local negations (prevents some
+     chunking problems), added iterative deepening support.
+  -- The item count is generated architecturally in a tie impasse.
+  -- Depth at which productions are firing is reported at watch 5.
+  -- New "single compilation unit" build configurations on Windows 
+     (greatly speeds build time).
+  -- Unit test suite added.
   -- Other minor enhancements.
 
 * Bug fixes
-  -- Lots of TankSoar and Eaters bugfixes
-  -- Fixed command-to-file command
-  -- Fixed more memory leaks.
-  -- Fixed stats bug.
-  -- Fixed print depth/indentation bug.
-  -- Several other minor fixes
+  -- Output link supports circular structures.
+  -- Duplicate productions no longer cause sourcing to stop.
+  -- Various memory leaks fixed.
+  -- Several other minor fixes.
 
 * Other updates
-  -- Updated to SWT 3.3
+  -- Removed gSKI (~20% speed increase in many cases).
+  -- The Soar Java Debugger now uses its default layout the first time
+     it is run with a new version of Soar. Old layouts are preserved
+     and can be loaded if desired (which makes them the default).
 
 
 Known issues:
 =============
 
-* Remote connections on Linux can be slow.
 * ^status complete appears on the ^output-link immediately instead 
   of during the next input phase.
 * The Soar 7 mode implementation currently relies on an ugly hack. If
   you experience problems in this mode, please let us know.
-* In TankSoar, the obscure-bot sometimes generates a scary-looking
-  kernel error message.  It appears to be safe to ignore.
 * Many other minor issues (see bugzilla for details).
 
 If any other issues or bugs are found, please send mail to:

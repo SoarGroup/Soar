@@ -97,7 +97,7 @@ void RunListener::OnKernelEvent(int eventID, AgentSML* pAgentSML, void* pCallDat
 
 	// Send the message out
 	AnalyzeXML response ;
-	SendEvent(pConnection, pMsg, &response, connectionIter, GetEnd((smlRunEventId)eventID)) ;
+	SendEvent(pAgentSML, pConnection, pMsg, &response, connectionIter, GetEnd((smlRunEventId)eventID)) ;
 
 	// Clean up
 	delete pMsg ;

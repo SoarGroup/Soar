@@ -162,6 +162,9 @@ void WorkingMemory::RecordAddition(WMElement* pWME)
 	// Mark this wme as having just been added (in case the client would prefer
 	// to walk the tree).
 	pWME->SetJustAdded(true) ;
+
+	// record timetag -> WME mapping for deletion lookup
+	m_TimeTagWMEMap[ pWME->GetTimeTag() ] = pWME;
 }
 
 void WorkingMemory::RecordDeletion(WMElement* pWME)
@@ -169,24 +172,27 @@ void WorkingMemory::RecordDeletion(WMElement* pWME)
 	// This list takes ownership of the deleted wme.
 	// When the item is removed from the delta list it will be deleted.
 	m_OutputDeltaList.RemoveWME(pWME) ;
+
+	// remove timetag -> WME mapping
+	m_TimeTagWMEMap.erase( pWME->GetTimeTag() );
 }
 
 // Clear the delta list and also reset all state flags.
 void WorkingMemory::ClearOutputLinkChanges()
 {
 	// Clear the list, deleting any WMEs that it owns
-	m_OutputDeltaList.Clear(true) ;
+	m_OutputDeltaList.Clear(true, true, true) ;
 
-	// We only maintain this information for values on the output link
-	// as the client knows what's happening on the input link (presumably)
-	// as it is controlling the creation of those objects.
-	if (m_OutputLink)
-	{
-		// Reset the information about how the output link just changed.
-		// This is definitely being maintained.
-		m_OutputLink->ClearJustAdded() ;
-		m_OutputLink->ClearChildrenModified() ;
-	}
+	//// We only maintain this information for values on the output link
+	//// as the client knows what's happening on the input link (presumably)
+	//// as it is controlling the creation of those objects.
+	//if (m_OutputLink)
+	//{
+	//	// Reset the information about how the output link just changed.
+	//	// This is definitely being maintained.
+	//	m_OutputLink->ClearJustAdded() ;
+	//	m_OutputLink->ClearChildrenModified() ;
+	//}
 }
 
 /*************************************************************
@@ -339,19 +345,20 @@ bool WorkingMemory::ReceivedOutputRemoval(ElementXML* pWmeXML, bool tracing)
 
 	// Find the WME which matches this tag.
 	// This may fail as we may have removed the parent of this WME already in the series of remove commands.
-	WMElement* pWME = m_OutputLink->FindFromTimeTag(timeTag) ;
+	//WMElement* pWME = m_OutputLink->FindFromTimeTag(timeTag) ;
+	TimeTagWMEMapIter pWMEIter = m_TimeTagWMEMap.find( timeTag );
 
 	// Delete the WME
-	if (pWME && pWME->GetParent())
+	if (pWMEIter != m_TimeTagWMEMap.end() && pWMEIter->second && pWMEIter->second->GetParent())
 	{
 		if (tracing)
 			sml::PrintDebugFormat("Removing output wme: time tag %s", pTimeTag) ;
 
-		pWME->GetParent()->RemoveChild(pWME) ;
+		pWMEIter->second->GetParent()->RemoveChild(pWMEIter->second) ;
 
 		// Make a record that this wme was removed, so we can tell the client about it.
 		// This recording will also involve deleting the wme.
-		RecordDeletion(pWME) ;
+		RecordDeletion(pWMEIter->second) ;
 	}
 	else
 	{
@@ -474,12 +481,10 @@ bool WorkingMemory::ReceivedOutput(AnalyzeXML* pIncoming, ElementXML* pResponse)
 	return ok ;
 }
 
-/*************************************************************
-* @brief Returns the id object for the input link.
-*		 The agent retains ownership of this object.
-*************************************************************/
-Identifier* WorkingMemory::GetInputLink()
+void WorkingMemory::SetAgent( Agent* agent )
 {
+	m_Agent = agent;
+
 #ifdef SML_DIRECT
 	if ( GetConnection()->IsDirectConnection() )
 	{
@@ -487,7 +492,15 @@ Identifier* WorkingMemory::GetInputLink()
 		m_AgentSMLHandle = pConnection->DirectGetAgentSMLHandle( GetAgentName() );
 	}
 #endif // SML_DIRECT
+}
 
+
+/*************************************************************
+* @brief Returns the id object for the input link.
+*		 The agent retains ownership of this object.
+*************************************************************/
+Identifier* WorkingMemory::GetInputLink()
+{
 	if (!m_InputLink)
 	{
 		AnalyzeXML response ;
@@ -1217,5 +1230,16 @@ void WorkingMemory::Refresh()
 		// If not, we may be looking at a memory leak.
 		//assert(outputs == 0) ;
 		m_OutputLink->GetSymbol()->DeleteAllChildren() ;
+
+    // clean up the IdSymbolMap table. See Bug #1094
+    IdSymbolMapIter i = m_IdSymbolMap.find(m_OutputLink->GetValueAsString());
+    if (i != m_IdSymbolMap.end()) {
+      IdentifierSymbol* out_sym = i->second;
+      m_IdSymbolMap.clear();
+      m_IdSymbolMap[m_OutputLink->GetValueAsString()] = out_sym;
+    }
+    else {
+      m_IdSymbolMap.clear();
+    }
 	}
 }

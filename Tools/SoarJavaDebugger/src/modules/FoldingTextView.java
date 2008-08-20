@@ -96,7 +96,7 @@ public class FoldingTextView extends AbstractComboView implements Agent.xmlEvent
 		m_ComboAtTop = false ;
 		m_ShowTraceOutput = false ;
 		m_ShowEchoOutput = true ;
-		m_PromptForCommands = "<Type commands here>" ;	
+		m_PromptForCommands = null; // formerly, "<Type commands here>" SBW 8/13/08
 	}
 
 	/** This window can be the main display window */

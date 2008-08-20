@@ -21,6 +21,7 @@
 
 #include <string>
 #include <list>
+#include <set>
 
 namespace sml {
 
@@ -32,7 +33,7 @@ class Identifier ;
 // so we need to represent that separately.
 class IdentifierSymbol
 {
-	friend class Identifier ;	// Provide direct access to children.
+	friend class Identifier ;			// Provide direct access to children.
 
 protected:
 	// The value for this id, which is a string identifier (e.g. I3)
@@ -42,7 +43,7 @@ protected:
 
 	// The list of WMEs owned by this identifier.
 	// (When we delete this identifier we'll delete all these automatically)
-	std::list<WMElement*>		m_Children ;
+	std::set<WMElement*, WMElement::WMELessThan>		m_Children ;
 
 	// The list of WMEs that are using this symbol as their identifier
 	// (Usually just one value in this list)
@@ -96,10 +97,11 @@ class Identifier : public WMElement
 	friend class StringElement ;
 	friend class IntElement ;
 	friend class FloatElement ;
+	friend class OutputDeltaList ;		// Allow it to clear are children modified
 
 public:
-	typedef std::list<WMElement*>::iterator ChildrenIter ;
-	typedef std::list<WMElement*>::const_iterator ChildrenConstIter ;
+	typedef std::set<WMElement*, WMElement::WMELessThan>::iterator ChildrenIter ;
+	typedef std::set<WMElement*, WMElement::WMELessThan>::const_iterator ChildrenConstIter ;
 
 	ChildrenIter GetChildrenBegin() { return m_pSymbol->m_Children.begin() ; }
 	ChildrenIter GetChildrenEnd()   { return m_pSymbol->m_Children.end() ; }
@@ -196,16 +198,6 @@ public:
 	bool AreChildrenModified() { return m_pSymbol->AreChildrenModified() ; }
 
 protected:
-	/*************************************************************
-	* @brief Clear the "just added" flag for this identifier and all children (recursively)
-	*************************************************************/
-	void ClearJustAdded() ;
-
-	/*************************************************************
-	* @brief Clear the "children modified" flag for this identifier and all children (recursively)
-	*************************************************************/
-	void ClearChildrenModified() ;
-
 	// This version is only needed at the top of the tree (e.g. the input link)
 	Identifier(Agent* pAgent, char const* pIdentifier, long timeTag);
 

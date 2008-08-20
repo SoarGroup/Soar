@@ -377,3 +377,26 @@ void Handlers::MyAgentCreationUpdateEventHandler( sml::smlUpdateEventId, void* p
 	CPPUNIT_ASSERT( *ppAgent != 0 );
 }
 
+void Handlers::MyOrderingPrintHandler( sml::smlPrintEventId /*id*/, void* pUserData, sml::Agent* /*pAgent*/, char const* pMessage )
+{
+	CPPUNIT_ASSERT( pMessage );
+
+	CPPUNIT_ASSERT( pUserData );
+	int* pInt = static_cast< int* >( pUserData );
+	std::stringstream value;
+	value << "pInt == " << *pInt;
+	//std::cout << value.str() << std::endl;
+	CPPUNIT_ASSERT_MESSAGE( value.str().c_str(), *pInt == 0 || *pInt == 2 );
+	++(*pInt);
+}
+
+void Handlers::MyOrderingRunHandler( sml::smlRunEventId /*id*/, void* pUserData, sml::Agent* /*pAgent*/, sml::smlPhase /*phase*/ )
+{
+	CPPUNIT_ASSERT( pUserData );
+	int* pInt = static_cast< int* >( pUserData );
+	std::stringstream value;
+	value << "pInt == " << *pInt;
+	//std::cout << value.str() << std::endl;
+	CPPUNIT_ASSERT_MESSAGE( value.str().c_str(), *pInt == 1 || *pInt == 3 );
+	++(*pInt);
+}

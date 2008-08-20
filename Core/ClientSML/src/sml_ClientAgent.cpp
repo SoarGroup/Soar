@@ -39,11 +39,12 @@ Agent::Agent(Kernel* pKernel, char const* pName)
 {
 	m_Kernel = pKernel ;
 	m_Name	 = pName ;
-	m_WorkingMemory.SetAgent(this) ;
 	m_CallbackIDCounter = 0 ;
 	m_VisitedCounter = 0 ;
 	m_XMLCallback = -1 ;
 	m_BlinkIfNoChange = true ;
+
+	m_WorkingMemory.SetAgent(this) ;
 
 	ClearError() ;
 }
@@ -1300,7 +1301,7 @@ char const* Agent::RunSelf(unsigned long numberSteps, smlRunStepSize stepSize)
 #ifdef SML_DIRECT
 		if (GetConnection()->IsDirectConnection())
 		{
-			((EmbeddedConnection*)GetConnection())->DirectRun(this->GetAgentName(), false, stepSize, sml_PHASE, (int)numberSteps) ;
+			((EmbeddedConnection*)GetConnection())->DirectRun(this->GetAgentName(), false, stepSize, sml_DECISION, (int)numberSteps) ;
 			return "DirectRun completed" ;
 		}
 #endif

@@ -95,6 +95,7 @@ public:
 	static char const* const kPhase_Name ;
 	static char const* const kPhase_Status ;
 	static char const* const kPhase_FiringType ;
+  static char const* const kPhase_LevelNum ; // SBW 8/4/08
 	static char const* const kPhaseName_Input ;
 	static char const* const kPhaseName_Pref ;
 	static char const* const kPhaseName_WM ;
@@ -294,6 +295,7 @@ public:
 	// Parameter names for source command
 	static char const* const kParamSourcedProductionCount;
 	static char const* const kParamExcisedProductionCount;
+	static char const* const kParamIgnoredProductionCount;
 
 	// Parameter names for stats command
 	static char const* const kParamStatsProductionCountDefault;

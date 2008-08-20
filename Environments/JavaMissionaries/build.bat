@@ -22,7 +22,7 @@ xcopy /q /y src\mac\* tmp\mac
 %2javac -source 1.5 -d tmp -classpath .;%SOARBIN%\swt.jar;%SOARBIN%\sml.jar -sourcepath src src\edu\umich\mac\MissionariesAndCannibals.java
 
 @echo ----------==========Jarring==========----------
-%2jar cfm mac.jar JarManifest -C tmp .
+%2jar cfm JavaMissionaries.jar JarManifest -C tmp .
 
 GOTO success
 

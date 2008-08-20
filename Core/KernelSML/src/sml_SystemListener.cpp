@@ -70,7 +70,7 @@ void SystemListener::Init(KernelSML* pKernel)
 }
 
 // Called when an event occurs in the kernel
-void SystemListener::OnKernelEvent(int eventIDIn, AgentSML* , void* )
+void SystemListener::OnKernelEvent(int eventIDIn, AgentSML* pAgentSML, void* /*pCallData*/)
 {
 	// All system events are currently implemented directly in kernel SML so there's
 	// no underlying kernel callbacks to connect to.
@@ -127,7 +127,7 @@ void SystemListener::OnKernelEvent(int eventIDIn, AgentSML* , void* )
 
 	// Send the message out
 	AnalyzeXML response ;
-	SendEvent(pConnection, pMsg, &response, connectionIter, GetEnd(eventID)) ;
+	SendEvent(pAgentSML, pConnection, pMsg, &response, connectionIter, GetEnd(eventID)) ;
 
 	// Clean up
 	delete pMsg ;

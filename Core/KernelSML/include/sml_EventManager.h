@@ -30,6 +30,10 @@ class KernelSML ;
 typedef std::list< Connection* >		ConnectionList ;
 typedef ConnectionList::iterator	ConnectionListIter ;
 
+// This avoids having to use AgentSML in this file, which is a necessary hack because including
+// sml_AgentSML.h currently breaks things.
+void flushPrintOnAgent( AgentSML* pFlushPrintOnThisAgent );
+
 template<typename EventType> class EventManager : public KernelCallback
 {
 protected:
@@ -187,12 +191,19 @@ public:
 		return pList->end() ;
 	}
 
-	virtual void SendEvent(Connection* pConnection, soarxml::ElementXML* pMsg, AnalyzeXML* pResponse, ConnectionListIter begin, ConnectionListIter end)
+	// pCallbackAgent == 0 means that the event calling this does not want the print event to be flushed
+	virtual void SendEvent(AgentSML* pFlushPrintOnThisAgent, Connection* pConnection, soarxml::ElementXML* pMsg, AnalyzeXML* pResponse, ConnectionListIter begin, ConnectionListIter end)
 	{
 	#ifdef _DEBUG
 		// Generate a text form of the XML so we can look at it in the debugger.
 		char* pStr = pMsg->GenerateXMLString(true) ;
 	#endif
+
+		// unless we ARE the print event:
+		// must flush all print callbacks before pasing control to client in case 
+		// handlers are expecting their text to be up to date (See bug 1100)
+		// this avoids using AgentSML in this file
+		flushPrintOnAgent( pFlushPrintOnThisAgent );
 
 		ConnectionListIter connectionIter = begin ;
 
