@@ -122,7 +122,7 @@ protected:
 CPPUNIT_TEST_SUITE_REGISTRATION( FullTests ); // Registers the test so it will be used
 
 const std::string FullTests::kAgentName( "full-tests-agent" );
-const int FullTests::kPortBase = 12000;
+const int FullTests::kPortBase = 12122;
 const int FullTests::kPortRange = 1000;
 
 void FullTests::setUp()
