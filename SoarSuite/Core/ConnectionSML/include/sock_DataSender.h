@@ -24,6 +24,7 @@
 #define DATA_SENDER_H
 
 #include <string>
+#include "thread_lock.h"
 
 namespace sock {
 
