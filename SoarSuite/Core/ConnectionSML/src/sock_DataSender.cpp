@@ -80,3 +80,10 @@ bool DataSender::ReceiveString(std::string* pString)
 
 	return ok ;
 }
+
+void DataSender::Close()
+{
+   soar_thread::Lock lock( &m_CloseMutex );
+
+   CloseInternal();
+}
