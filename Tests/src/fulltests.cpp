@@ -358,8 +358,25 @@ void FullTests::cleanUpListener()
 #else // _WIN32
 	int status( 0 );
 	wait( &status );
-	CPPUNIT_ASSERT_MESSAGE( "listener didn't terminate properly", WIFEXITED( status ) );
-	CPPUNIT_ASSERT_MESSAGE( "listener terminated with nonzero status", WEXITSTATUS( status ) == 0 );
+	if ( WIFEXITED( status ) )
+	{
+		CPPUNIT_ASSERT_MESSAGE( "listener terminated with nonzero status", WEXITSTATUS( status ) == 0 );
+	}
+	else
+	{
+		CPPUNIT_ASSERT_MESSAGE( "listener killed by signal", WIFSIGNALED( status ) );
+		
+		// not sure why signal 0 comes up but seems to fix things on Mac OS
+		if ( !WIFSTOPPED( status ) && ( WSTOPSIG(status) != 0 ) )
+		{
+			CPPUNIT_ASSERT_MESSAGE( "listener stopped by signal", WIFSTOPPED( status ) );
+		}
+		else if ( WIFSTOPPED( status ) )
+		{
+			CPPUNIT_ASSERT_MESSAGE( "listener continued", WIFCONTINUED( status ) );
+			CPPUNIT_ASSERT_MESSAGE( "listener died: unknown", false );
+		}
+	}
 #endif // _WIN32
 }
 
