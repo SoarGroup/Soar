@@ -7,6 +7,7 @@
 #include <cppunit/BriefTestProgressListener.h>
 #include <cppunit/extensions/TestFactoryRegistry.h>
 #include <cppunit/CompilerOutputter.h>
+#include <ctime>
 
 #include "simplelistener.h"
 
@@ -36,13 +37,20 @@ int main( int argc, char** argv )
 	{
 		if ( std::string( argv[1] ) == "--listener" ) 
 		{
-			SimpleListener simpleListener( 600, 12121 );
+         int port = 12121;
+      	if ( argc >= 3 )
+	      {
+            port = atoi( argv[2] );
+         }
+			SimpleListener simpleListener( 600, port );
 			return simpleListener.run();
 		}
 		if ( std::string( argv[1] ) == "--nopause" ) pause = false;
 	}
 
-	//--- Create the event manager and test controller
+   srand( (unsigned)time( NULL ) );
+
+   //--- Create the event manager and test controller
 	CPPUNIT_NS::TestResult controller;
 
 	//--- Add a listener that colllects test result

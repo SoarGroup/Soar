@@ -36,6 +36,7 @@ std::string SimpleListener::MyClientMessageHandler( sml::smlRhsEventId, void* pU
 SimpleListener::SimpleListener( int life, int port )
 : life( life ), port( port ), useCurrentThread( false )
 {
+   //std::cout << "Starting listener on " << port << std::endl;
 }
 
 int SimpleListener::run()
