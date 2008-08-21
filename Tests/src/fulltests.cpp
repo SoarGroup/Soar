@@ -107,6 +107,10 @@ protected:
 
 	static const std::string kAgentName;
 
+   int m_Port;
+   static const int kPortBase;
+   static const int kPortRange;
+
 #ifdef _WIN32
     STARTUPINFO si;
     PROCESS_INFORMATION pi;
@@ -118,6 +122,8 @@ protected:
 CPPUNIT_TEST_SUITE_REGISTRATION( FullTests ); // Registers the test so it will be used
 
 const std::string FullTests::kAgentName( "full-tests-agent" );
+const int FullTests::kPortBase = 12000;
+const int FullTests::kPortRange = 1000;
 
 void FullTests::setUp()
 {
@@ -158,6 +164,10 @@ void FullTests::runAllTestTypes()
 	std::cout.flush();
 
 	// test 4
+   // generate port
+   m_Port = rand() % kPortRange;
+   m_Port += kPortBase;
+
 	m_Options.reset();
 	m_Options.set( REMOTE );
 	runTest();
@@ -184,7 +194,7 @@ void FullTests::createSoar()
 	if ( m_Options.test( REMOTE ) )
 	{
 		spawnListener();
-		m_pKernel = sml::Kernel::CreateRemoteConnection();
+		m_pKernel = sml::Kernel::CreateRemoteConnection( true, 0, m_Port );
 	}
 	else
 	{
@@ -297,21 +307,24 @@ void FullTests::spawnListener()
 	// specific code here.
 
 #ifdef _WIN32
-    ZeroMemory( &si, sizeof(si) );
-    si.cb = sizeof(si);
-    ZeroMemory( &pi, sizeof(pi) );
+   ZeroMemory( &si, sizeof(si) );
+   si.cb = sizeof(si);
+   ZeroMemory( &pi, sizeof(pi) );
 
-    // Start the child process. 
-	BOOL success = CreateProcess( L"Tests.exe",
-        L"Tests.exe --listener",        // Command line
-        NULL,           // Process handle not inheritable
-        NULL,           // Thread handle not inheritable
-        FALSE,          // Set handle inheritance to FALSE
-        0,              // No creation flags
-        NULL,           // Use parent's environment block
-        NULL,           // Use parent's starting directory 
-        &si,            // Pointer to STARTUPINFO structure
-        &pi );          // Pointer to PROCESS_INFORMATION structure
+   // Start the child process. 
+   std::wstringstream commandLine;
+   commandLine << L"Tests.exe --listener " << m_Port;
+   BOOL success = CreateProcess( 
+      L"Tests.exe",
+      const_cast< LPWSTR >( commandLine.str().c_str() ),        // Command line
+      NULL,           // Process handle not inheritable
+      NULL,           // Thread handle not inheritable
+      FALSE,          // Set handle inheritance to FALSE
+      0,              // No creation flags
+      NULL,           // Use parent's environment block
+      NULL,           // Use parent's starting directory 
+      &si,            // Pointer to STARTUPINFO structure
+      &pi );          // Pointer to PROCESS_INFORMATION structure
 
 	std::stringstream errorMessage;
 	errorMessage << "CreateProcess error code: " << GetLastError();
@@ -322,7 +335,9 @@ void FullTests::spawnListener()
 	if ( pid == 0 )
 	{
 		// child
-		execl("Tests", "Tests", "--listener", static_cast< char* >( 0 ));
+      std::stringstream portString;
+      portString << m_Port;
+		execl("Tests", "Tests", "--listener", portString.str().c_str(), static_cast< char* >( 0 ));
 		// does not return on success
 		CPPUNIT_ASSERT_MESSAGE( "execl failed", false );
 	}
