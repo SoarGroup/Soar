@@ -90,8 +90,10 @@ int SimpleListener::run()
 	pKernel->Shutdown();	// this is technically redundant
 	delete pKernel ;		// since this calls it
 
-	//std::cout << "SimpleListener done." << std::endl;
+	//std::cout << std::endl << "SimpleListener done." << std::endl;
 
+	//sml::Sleep(1, 0) ;
+	
 	return 0;
 }
 
