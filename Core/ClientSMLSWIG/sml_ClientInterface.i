@@ -148,7 +148,7 @@ bool __stdcall DllMain( void * hModule,
                        void * lpReserved
 					 )
 {
-	//_crtBreakAlloc = 2801;
+	_crtBreakAlloc = 13542;
 	_CrtSetDbgFlag ( _CRTDBG_ALLOC_MEM_DF | _CRTDBG_LEAK_CHECK_DF ); 
 	unused(hModule) ;
 	unused(ul_reason_for_call) ;
