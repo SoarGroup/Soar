@@ -852,7 +852,8 @@ bool CommandLineInterface::ProcessOptions(std::vector<std::string>& argv, Option
 					return true;
 				}
 			}
-			SetErrorDetail("No such option: " + argv[m_Argument][1]);
+			char theOption = argv.at( m_Argument ).at( 1 );
+			SetErrorDetail( std::string("No such option: ") + theOption );
 			return SetError(CLIError::kUnrecognizedOption);
 		}
 		++m_NonOptionArguments;

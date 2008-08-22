@@ -440,6 +440,16 @@ declared-support="[:i-support|:o-support]">
 		
 		return text.toString() ;
 	}
+
+	// SBW 5/07
+	public static String getLocalNegationText(Agent agent, ClientTraceXML xml, String parentTagName) {
+		StringBuffer text = new StringBuffer() ;
+		text.append("*** Chunk won't be formed due to local negation in backtrace ***") ;
+		String output = getConditionsText(agent, xml) ;
+		text.append(output) ;
+		text.append(kLineSeparator) ;
+		return text.toString() ;
+	}
 	
 	public static String getActionText(Agent agent, ClientTraceXML action)
 	{

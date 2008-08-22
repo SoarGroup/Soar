@@ -202,6 +202,8 @@ char const* const sml_Names::kBacktracedAlready         = "already-backtraced";
 char const* const sml_Names::kBacktraceSymbol1          = "symbol1";
 char const* const sml_Names::kBacktraceSymbol2          = "symbol2";
 
+char const* const sml_Names::kTagLocalNegation          = "local-negation"; // SBW 5/07
+
 // numeric indifference stuff
 char const* const sml_Names::kTagCandidate      = "candidate";
 char const* const sml_Names::kCandidateName     = "name";

@@ -53,6 +53,9 @@ extern void backtrace_through_instantiation (agent* thisAgent,
                                              condition *trace_cond,
                                              int indent);
 
+// To print out the message similar to: a chunk was not created because...
+void report_local_negation (agent* thisAgent, condition* c);
+
 #ifdef __cplusplus
 }
 #endif
