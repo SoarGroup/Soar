@@ -33,6 +33,7 @@ class IOTest : public CPPUNIT_NS::TestCase
 	//CPPUNIT_TEST( testInputLeak2 );
 	//CPPUNIT_TEST( testInputLeak3 );
 	//CPPUNIT_TEST( testInputLeak4 );
+	//CPPUNIT_TEST( testOutputLeak1 ); // bug 1062
 
 	CPPUNIT_TEST_SUITE_END();
 
@@ -45,11 +46,14 @@ protected:
 	void testInputLeak2(); // explicitly delete both
 	void testInputLeak3(); // only delete identifier
 	void testInputLeak4(); // do something with shared ids
+	void testOutputLeak1(); // output input wme created but not destroyed
 
 	void createKernelAndAgents( const KernelBitset& options, int port = 12121 );
 
 	sml::Kernel* pKernel;
 	bool remote;
+
+	bool alreadyDestroyed;
 };
 
 CPPUNIT_TEST_SUITE_REGISTRATION( IOTest ); // Registers the test so it will be used
@@ -58,12 +62,18 @@ void IOTest::setUp()
 {
 	pKernel = NULL;
 	remote = false;
+	alreadyDestroyed = false;
 
 	// kernel initialized in test
 }
 
 void IOTest::tearDown()
 {
+	if ( alreadyDestroyed )
+	{
+		return;
+	}
+
 	if ( !pKernel )
 	{
 		return;
@@ -364,4 +374,52 @@ void IOTest::testInputLeak4()
 			//_CrtMemDumpAllObjectsSince( &memState );
 		}
 	}
+}
+
+void IOTest::testOutputLeak1()
+{
+	KernelBitset options(0);
+	options.set( EMBEDDED );
+	options.set( USE_CLIENT_THREAD );
+	options.set( FULLY_OPTIMIZED );
+	options.set( AUTO_COMMIT_ENABLED );
+	createKernelAndAgents( options );
+
+	sml::Agent* pAgent = pKernel->GetAgent( "IOTest" ) ;
+	CPPUNIT_ASSERT( pAgent != 0 );
+
+	std::stringstream productionsPath;
+	productionsPath << pKernel->GetLibraryLocation() << "/Tests/testoutputleak.soar";
+
+	pAgent->LoadProductions( productionsPath.str().c_str() ) ;
+	CPPUNIT_ASSERT_MESSAGE( "loadProductions", pAgent->GetLastCommandLineResult() );
+
+	sml::Identifier* pOutputLink = pAgent->GetOutputLink();
+
+	pKernel->RunAllAgents( 1 );
+
+#ifdef _WIN32
+	_CrtMemState memState;
+
+	_CrtMemCheckpoint( &memState );
+	//_CrtSetBreakAlloc( 3020 );
+#endif
+
+	CPPUNIT_ASSERT( pAgent->GetNumberCommands() == 1 );
+	sml::Identifier* pCommand = pAgent->GetCommand(0) ;
+	pCommand->AddStatusComplete();
+
+	// need to pass input phase
+	pKernel->RunAllAgents( 2 );
+
+	CPPUNIT_ASSERT( pKernel->DestroyAgent( pAgent ) );
+	pKernel->Shutdown() ;
+	delete pKernel ;
+	pKernel = 0;
+	alreadyDestroyed = true;
+
+#ifdef _WIN32
+	_CrtMemDumpAllObjectsSince( &memState );
+#endif
+
 }
