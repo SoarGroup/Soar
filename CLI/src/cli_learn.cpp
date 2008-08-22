@@ -34,6 +34,8 @@ bool CommandLineInterface::ParseLearn(std::vector<std::string>& argv) {
 		{'E', "except",		0},
 		{'l', "list",		0},
 		{'o', "only",		0},
+		{'n', "enable-through-local-negations", 0},
+		{'N', "disable-through-local-negations", 0},
 		{0, 0, 0}
 	};
 
@@ -65,6 +67,12 @@ bool CommandLineInterface::ParseLearn(std::vector<std::string>& argv) {
 			case 'o':
 				options.set(LEARN_ONLY);
 				break;
+			case 'n':
+				options.set(LEARN_ENABLE_THROUGH_LOCAL_NEGATIONS);
+				break;
+			case 'N':
+				options.set(LEARN_DISABLE_THROUGH_LOCAL_NEGATIONS);
+				break;
 			default:
 				return SetError(CLIError::kGetOptError);
 		}
@@ -91,6 +99,12 @@ bool CommandLineInterface::DoLearn(const LearnBitset& options) {
 				if (pSysparams[LEARNING_ONLY_SYSPARAM]) m_Result << " (only)";
 				if (pSysparams[LEARNING_EXCEPT_SYSPARAM]) m_Result << " (except)";
 				if (pSysparams[LEARNING_ALL_GOALS_SYSPARAM]) m_Result << " (all-levels)";
+				if (pSysparams[CHUNK_THROUGH_LOCAL_NEGATIONS_SYSPARAM]) {
+					m_Result << " (through-local-negations)";
+				} else {
+					m_Result << " (not through-local-negations)";
+				}
+
 			} else {
 				m_Result << "Learning is disabled.";
 			}
@@ -152,6 +166,14 @@ bool CommandLineInterface::DoLearn(const LearnBitset& options) {
 
 	if (options.test(LEARN_BOTTOM_UP)) {
 		pKernelHack->SetSysparam(m_pAgentSML, LEARNING_ALL_GOALS_SYSPARAM, false);
+	}
+
+	if (options.test(LEARN_ENABLE_THROUGH_LOCAL_NEGATIONS)) {
+		pKernelHack->SetSysparam(m_pAgentSML, CHUNK_THROUGH_LOCAL_NEGATIONS_SYSPARAM, true);
+	}
+
+	if (options.test(LEARN_DISABLE_THROUGH_LOCAL_NEGATIONS)) {
+		pKernelHack->SetSysparam(m_pAgentSML, CHUNK_THROUGH_LOCAL_NEGATIONS_SYSPARAM, false);
 	}
 
 	return true;
