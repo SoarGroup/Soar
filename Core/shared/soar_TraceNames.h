@@ -156,6 +156,8 @@ namespace soar_TraceNames
 	static char const* const kBacktraceSymbol1          = "symbol1";
 	static char const* const kBacktraceSymbol2          = "symbol2";
 
+	static char const* const kTagLocalNegation          = "local-negation" ; // SBW 5/07
+
 	// numeric indifference stuff
 	static char const* const kTagCandidate      = "candidate";
 	static char const* const kCandidateName     = "name";

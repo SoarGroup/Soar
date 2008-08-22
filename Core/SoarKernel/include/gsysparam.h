@@ -175,8 +175,11 @@ typedef byte wme_trace_type;   /* must be one of the above constants */
 /* NLD: Soar-RL trace information */
 #define TRACE_RL_SYSPARAM						 39
 
+/* JRV: Bug 1087: Chunk through local negations */
+#define CHUNK_THROUGH_LOCAL_NEGATIONS_SYSPARAM	 40
+
 /* --- Warning: if you add sysparams, be sure to update the next line! --- */
-#define HIGHEST_SYSPARAM_NUMBER                  39
+#define HIGHEST_SYSPARAM_NUMBER                  40
 
 /* -----------------------------------------
    Sysparams[] stores the parameters; set_sysparam()

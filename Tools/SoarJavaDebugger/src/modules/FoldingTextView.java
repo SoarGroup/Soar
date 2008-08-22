@@ -863,6 +863,14 @@ public class FoldingTextView extends AbstractComboView implements Agent.xmlEvent
 				if (output.length() != 0)
 					this.appendSubText(output, TraceType.kFullLearning) ;
 			}
+			// SBW 5/07
+			else if (xmlTrace.IsTagLocalNegation())
+			{
+				String output = XmlOutput.getLocalNegationText(agent, xmlTrace, xmlTrace.GetTagName()) ;
+				
+				if (output.length() != 0)
+					this.appendSubText(output, TraceType.kFullLearning) ;
+			}
 			else if (xmlTrace.IsTagMessage() || xmlTrace.IsTagWarning() || xmlTrace.IsTagError() || xmlTrace.IsTagVerbose())
 			{
 				StringBuffer text = new StringBuffer() ;
