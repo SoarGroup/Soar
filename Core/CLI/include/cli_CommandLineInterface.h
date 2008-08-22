@@ -741,7 +741,7 @@ protected:
 	/*************************************************************
 	* @brief 
 	*************************************************************/
-	void HandleSourceError(int errorLine, const std::string& filename);
+	void HandleSourceError(int errorLine, const std::string* pFilename);
 
 	/*************************************************************
 	* @brief 
@@ -794,6 +794,12 @@ protected:
 	void GetMemoryStats(); // for stats
 	void GetReteStats(); // for stats
 
+	bool StreamSource( std::istream& soarStream, const std::string* pFilename );
+
+	// These help manage nested CLI calls
+	void PushAgent( sml::AgentSML* pAgent );
+	void PopAgent();
+
 ////////////////////////////////////////////
 	// New options code
 
@@ -837,6 +843,7 @@ protected:
 	CommandMap			m_CommandMap;			// Mapping of command names to function pointers
 	sml::KernelSML*		m_pKernelSML;
 	sml::AgentSML*		m_pAgentSML;			// Agent we're currently working with
+	std::stack< sml::AgentSML* > m_pAgentSMLStack;	// Agent we're currently working with
 	agent*				m_pAgentSoar;			// Agent we're currently working with (soar kernel)
 	std::string			m_LibraryDirectory;		// The library directory, server side, see help command
 	StringStack			m_DirectoryStack;		// Directory stack for pushd/popd

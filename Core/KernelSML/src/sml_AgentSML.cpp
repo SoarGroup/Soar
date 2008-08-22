@@ -36,10 +36,11 @@ AgentSML::AgentSML(KernelSML* pKernelSML, agent* pAgent)
 	m_pKernelSML = pKernelSML ;
 	m_SuppressRunEndsEvent = false ;
 
+	m_agent = pAgent ;
+
 	m_pAgentRunCallback = new AgentRunCallback() ;
 	m_pAgentRunCallback->SetAgentSML(this) ;
 
-	m_agent = pAgent ;
 }
 
 void AgentSML::InitListeners()
