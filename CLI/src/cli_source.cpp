@@ -444,7 +444,7 @@ bool CommandLineInterface::StreamSource( std::istream& soarStream, const std::st
 
 		// Add finished message
 		if (m_RawOutput) {
-			if (m_Result.str()[m_Result.str().size()-1] != '\n') m_Result << '\n';	// add a newline if none present
+			if (m_Result.str().size() && m_Result.str()[m_Result.str().size()-1] != '\n') m_Result << '\n';	// add a newline if none present
 			m_Result << "Source finished.";
 		}
 	}
