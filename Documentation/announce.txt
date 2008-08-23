@@ -83,6 +83,10 @@ New in 9.0.0
      (intended for use with RL).
   -- Updated selection space to remove local negations (prevents some
      chunking problems), added iterative deepening support.
+  -- Added options to learn command to turn chunking through local negations
+     on or off (on by default for backwards compatibility). If off, a message
+	 will be generated if watching chunks that says a chunk was not created
+	 because of local negations.
   -- The item count is generated architecturally in a tie impasse.
   -- Depth at which productions are firing is reported at watch 5.
   -- New "single compilation unit" build configurations in Visual Studio 
