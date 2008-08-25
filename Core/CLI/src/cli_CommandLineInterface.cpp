@@ -583,13 +583,14 @@ bool CommandLineInterface::DoCommandInternal(std::vector<std::string>& argv) {
 		if (!exactMatch) {
 			if (possibilities.size() != 1) {
 				// Ambiguous
-				std::string detail = "Ambiguous command, possibilities: ";
+				std::stringstream detail;
+				detail << "Ambiguous command, possibilities: ";
 				liter = possibilities.begin();
 				while (liter != possibilities.end()) {
-					detail += (*liter) + ' ';
+					detail << "'" << (*liter) << "' ";
 					++liter;
 				}
-				SetErrorDetail(detail);
+				SetErrorDetail(detail.str());
 				return SetError(CLIError::kAmbiguousCommand);
 
 			} else {
@@ -814,13 +815,14 @@ bool CommandLineInterface::ProcessOptions(std::vector<std::string>& argv, Option
 
 					if (possibilities.size() != 1) {
 						// Ambiguous
-						std::string detail = "Ambiguous option, possibilities: ";
+						std::stringstream detail;
+						detail << "Ambiguous option, possibilities: ";
 						liter = possibilities.begin();
 						while (liter != possibilities.end()) {
-							detail += (*liter).longOpt + ' ';
+							detail << "'--" << (*liter).longOpt << "' ";
 							++liter;
 						}
-						SetErrorDetail(detail);
+						SetErrorDetail(detail.str());
 						return SetError(CLIError::kAmbiguousOption);
 
 					}
