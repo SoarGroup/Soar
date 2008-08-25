@@ -10,6 +10,10 @@ if sys.platform == 'cygwin':
 	env.Append(CPPFLAGS = ' -D_USRDLL')
 	env['no_import_lib'] = 1
 
-ElementXML = env.SharedLibrary('ElementXML', glob.glob('src/*.cpp'))
+if env['scu']:
+	ElementXML = env.SharedLibrary('ElementXML', 'ElementXML.cxx')
+else:
+	ElementXML = env.SharedLibrary('ElementXML', glob.glob('src/*.cpp'))
+
 env.Install('#SoarLibrary/lib', ElementXML)
 

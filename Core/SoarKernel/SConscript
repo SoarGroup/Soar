@@ -8,5 +8,8 @@ env.Prepend(CPPPATH = [ 'src',
 			'include', 
 			'../ElementXML/include'])
 
-SoarKernel = env.StaticLibrary('SoarKernel', glob.glob('src/*.cpp'))
+if env['scu']:
+	SoarKernel = env.StaticLibrary('SoarKernel', 'SoarKernel.cxx')
+else:
+	SoarKernel = env.StaticLibrary('SoarKernel', glob.glob('src/*.cpp'))
 env.Install('#SoarLibrary/lib', SoarKernel)
