@@ -691,12 +691,12 @@ Bool trace_ungrounded_potentials (agent* thisAgent, goal_stack_level grounds_lev
 }
 
 void report_local_negation (agent* thisAgent, condition* c) {
-    if (thisAgent->sysparams[TRACE_CHUNKS_SYSPARAM]) {
+    if (thisAgent->sysparams[TRACE_CHUNK_NAMES_SYSPARAM]) {
 		// use the same code as the backtracing above
 		list* negated_to_print = NIL;
 		push (thisAgent, c, negated_to_print);
 
-		print_string (thisAgent, "\nLocal negation found:\n");
+		print_string (thisAgent, "\n*** Chunk won't be formed due to local negation in backtrace ***\n");
 		xml_begin_tag(thisAgent, kTagLocalNegation);
 		print_consed_list_of_conditions (thisAgent, negated_to_print, 2);
 		xml_end_tag(thisAgent, kTagLocalNegation);
