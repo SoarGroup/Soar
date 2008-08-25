@@ -89,6 +89,11 @@ New in 9.0.0
 	 because of local negations.
   -- The item count is generated architecturally in a tie impasse.
   -- Depth at which productions are firing is reported at watch 5.
+  -- Multiple rules can be loaded via the Java debugger's Edit Production
+     widget, scratch pad, and by pasting into the trace window. This is the
+	 result of an underlying change to SML in which arguments to
+	 ExecuteCommandLine are passed through logic associated with the source
+	 command, and thus multiple commands can be given at once.
   -- New "single compilation unit" build configurations in Visual Studio 
      (greatly speeds build time).
   -- Unit test suite added.
