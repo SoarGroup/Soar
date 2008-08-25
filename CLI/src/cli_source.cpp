@@ -388,7 +388,7 @@ bool CommandLineInterface::StreamSource( std::istream& soarStream, const std::st
 
 	// if we're returning to the user
 	if ( m_SourceDepth == 1 ) {
-		
+
 		// Remove production listener
 		if ( m_pAgentSML ) // only do this if we have an agent
 		{
@@ -425,7 +425,7 @@ bool CommandLineInterface::StreamSource( std::istream& soarStream, const std::st
 				AppendArgTag(sml_Names::kParamSourcedProductionCount, sml_Names::kTypeInt, Int2String(numTotalProductionsSourced, buf, kMinBufferSize));
 				AppendArgTag(sml_Names::kParamExcisedProductionCount, sml_Names::kTypeInt, Int2String(numTotalProductionsExcised, buf, kMinBufferSize));
 				AppendArgTag(sml_Names::kParamExcisedProductionCount, sml_Names::kTypeInt, Int2String(numTotalProductionsIgnored, buf, kMinBufferSize));
-				
+
 				if (m_SourceVerbose) {
 					std::list< std::string >::iterator iter = m_ExcisedDuringSource.begin();
 					while (iter != m_ExcisedDuringSource.end()) {
@@ -474,7 +474,7 @@ void CommandLineInterface::HandleSourceError( int errorLine, const std::string* 
 		if ( pFilename )
 		{
 			m_SourceErrorDetail += " of ";
-			
+
 			std::string directory;
 			GetCurrentWorkingDirectory(directory); // Again, ignore error here
 
