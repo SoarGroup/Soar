@@ -37,6 +37,9 @@ libpath = [
 	    '../pcre', 
 	    ]
 
-SoarKernelSML = env.SharedLibrary('SoarKernelSML', glob.glob('src/*.cpp'), LIBS = libadd, LIBPATH = libpath)
+if env['scu']:
+	SoarKernelSML = env.SharedLibrary('SoarKernelSML', 'KernelSML.cxx', LIBS = libadd, LIBPATH = libpath)
+else:
+	SoarKernelSML = env.SharedLibrary('SoarKernelSML', glob.glob('src/*.cpp'), LIBS = libadd, LIBPATH = libpath)
 env.Install('#SoarLibrary/lib', SoarKernelSML)
 

@@ -25,5 +25,9 @@ libpath = [ '../../Core/ClientSML',
 	    ]
 
 env.Append(LIBS = libadd, LIBPATH = libpath)
-QuickLink = env.Program('QuickLink', glob.glob('src/*.cpp'))
+
+if env['scu']:
+	QuickLink = env.Program('QuickLink', 'QuickLink.cxx')
+else:
+	QuickLink = env.Program('QuickLink', glob.glob('src/*.cpp'))
 env.Install('#SoarLibrary/bin', QuickLink)
