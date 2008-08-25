@@ -234,6 +234,9 @@ EXPORT bool CommandLineInterface::DoCommand(Connection* pConnection, sml::AgentS
 
 	SetTrapPrintCallbacks( true );
 
+	m_SourceMode = SOURCE_DEFAULT;
+	m_SourceVerbose = false; 
+
 	// Process the command, ignoring its result (errors detected with m_LastError)
 	//DoCommandInternal(pCommandLine);
 	std::stringstream soarStream;
