@@ -24,6 +24,8 @@
 #define PARSE_XML_H
 
 #include <string>
+#include <iostream>
+#include <sstream>
 
 namespace soarxml {
 
@@ -245,11 +247,9 @@ protected:
 	{
 		if (m_TokenValue.size() != 1 || m_TokenValue[0] != value)
 		{
-			std::string msg = "Looking for " ;
-			msg += value ;
-			msg += " instead found " ;
-			msg += GetTokenValue() ;
-			RecordError(msg) ;
+			std::stringstream msg;
+			msg << "Looking for " << value << " instead found " << GetTokenValue();
+			RecordError(msg.str()) ;
 		}
 		
 		GetNextToken() ;

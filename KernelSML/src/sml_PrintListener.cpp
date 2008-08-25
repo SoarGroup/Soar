@@ -100,7 +100,7 @@ void PrintListener::OnEvent(smlPrintEventId eventID, AgentSML* pAgentSML, const 
 	assert(nBuffer >= 0 && nBuffer < kNumberPrintEvents) ;
 
 	// Buffer print output to be flushed later
-	m_BufferedPrintOutput[nBuffer] += msg;
+	m_BufferedPrintOutput[nBuffer] << msg;
 }
 
 void PrintListener::FlushOutput(Connection* pSourceConnection, smlPrintEventId eventID) 
@@ -108,7 +108,7 @@ void PrintListener::FlushOutput(Connection* pSourceConnection, smlPrintEventId e
 	int buffer = eventID - smlEVENT_FIRST_PRINT_EVENT ;
 
 	// Nothing waiting to be sent, so we're done.
-	if (!m_BufferedPrintOutput[buffer].size())
+	if (!m_BufferedPrintOutput[buffer].str().size())
 		return ;
 
 	// Get the first listener for this event (or return if there are none)
@@ -133,7 +133,7 @@ void PrintListener::FlushOutput(Connection* pSourceConnection, smlPrintEventId e
 		soarxml::ElementXML* pMsg = pConnection->CreateSMLCommand(sml_Names::kCommand_Event);
 		pConnection->AddParameterToSMLCommand(pMsg, sml_Names::kParamAgent, m_pCallbackAgentSML->GetName());
 		pConnection->AddParameterToSMLCommand(pMsg, sml_Names::kParamEventID, event);
-		pConnection->AddParameterToSMLCommand(pMsg, sml_Names::kParamMessage, m_BufferedPrintOutput[buffer].c_str());
+		pConnection->AddParameterToSMLCommand(pMsg, sml_Names::kParamMessage, m_BufferedPrintOutput[buffer].str().c_str());
 
 		// Send the message out
 		AnalyzeXML response ;
@@ -156,7 +156,7 @@ void PrintListener::FlushOutput(Connection* pSourceConnection, smlPrintEventId e
 			soarxml::ElementXML* pMsg = pConnection->CreateSMLCommand(sml_Names::kCommand_Event);
 			pConnection->AddParameterToSMLCommand(pMsg, sml_Names::kParamAgent, m_pCallbackAgentSML->GetName());
 			pConnection->AddParameterToSMLCommand(pMsg, sml_Names::kParamEventID, event);
-			pConnection->AddParameterToSMLCommand(pMsg, sml_Names::kParamMessage, m_BufferedPrintOutput[buffer].c_str());
+			pConnection->AddParameterToSMLCommand(pMsg, sml_Names::kParamMessage, m_BufferedPrintOutput[buffer].str().c_str());
 			pConnection->AddParameterToSMLCommand(pMsg, sml_Names::kParamSelf, (pSourceConnection == pConnection) ? sml_Names::kTrue : sml_Names::kFalse) ;
 
 			#ifdef _DEBUG
@@ -180,5 +180,5 @@ void PrintListener::FlushOutput(Connection* pSourceConnection, smlPrintEventId e
 	}
 
 	// Clear the buffer now that it's been sent
-	m_BufferedPrintOutput[buffer].clear();
+	m_BufferedPrintOutput[buffer].str( std::string() );
 }
