@@ -419,19 +419,20 @@ bool RhsListener::ExecuteCommandLine(AgentSML* pAgent, char const* pFunctionName
 	Connection* pConnection = pKernel->GetEmbeddedConnection() ;
 
 	// Build up a single command line from our functionName + argument combination
-	std::string commandLine = pFunctionName ;
+	std::stringstream commandLine;
+	commandLine << pFunctionName;
 
 	if (pArgument)
 	{
-		commandLine += " " ;
-		commandLine += pArgument ;
+		commandLine << " " ;
+		commandLine << pArgument ;
 	}
 
 	// Build up a message to execute the command line
 	bool rawOutput = true ;
 	soarxml::ElementXML* pMsg = pConnection->CreateSMLCommand(sml_Names::kCommand_CommandLine, rawOutput) ;
 	pConnection->AddParameterToSMLCommand(pMsg, sml_Names::kParamAgent, pAgent->GetName());
-	pConnection->AddParameterToSMLCommand(pMsg, sml_Names::kParamLine, commandLine.c_str()) ;
+	pConnection->AddParameterToSMLCommand(pMsg, sml_Names::kParamLine, commandLine.str().c_str()) ;
 
 	AnalyzeXML incoming ;
 	incoming.Analyze(pMsg) ;
