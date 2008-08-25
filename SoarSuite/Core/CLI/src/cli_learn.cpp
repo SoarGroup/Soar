@@ -116,21 +116,21 @@ bool CommandLineInterface::DoLearn(const LearnBitset& options) {
 		}
 
 		if (options.test(LEARN_LIST)) {
-			std::string output;
+			std::stringstream output;
 			if (m_RawOutput) {
 				m_Result << "\nforce-learn states (when learn 'only'):";
 				pKernelHack->GetForceLearnStates(m_pAgentSML, output);
-				if (output.size()) m_Result << '\n' + output;
+				if (output.str().size()) m_Result << '\n' << output.str();
 
 				m_Result << "\ndont-learn states (when learn 'except'):";
 				pKernelHack->GetDontLearnStates(m_pAgentSML, output);
-				if (output.size()) m_Result << '\n' + output;
+				if (output.str().size()) m_Result << '\n' << output.str();
 
 			} else {
 				pKernelHack->GetForceLearnStates(m_pAgentSML, output);
-				AppendArgTagFast(sml_Names::kParamLearnForceLearnStates, sml_Names::kTypeString, output.c_str());
+				AppendArgTagFast(sml_Names::kParamLearnForceLearnStates, sml_Names::kTypeString, output.str().c_str());
 				pKernelHack->GetDontLearnStates(m_pAgentSML, output);
-				AppendArgTagFast(sml_Names::kParamLearnDontLearnStates, sml_Names::kTypeString, output.c_str());
+				AppendArgTagFast(sml_Names::kParamLearnDontLearnStates, sml_Names::kTypeString, output.str().c_str());
 			}
 		}
 		return true;
