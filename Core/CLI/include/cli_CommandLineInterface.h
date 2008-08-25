@@ -173,6 +173,7 @@ public:
 	bool XMLMoveCurrentToLastChild() ;
 
 	// The internal Parse functions follow
+	// do not call these directly, these should only be called in DoCommandInternal
 	bool ParseAddWME(std::vector<std::string>& argv);
 	bool ParseAlias(std::vector<std::string>& argv);
 	bool ParseAttributePreferencesMode(std::vector<std::string>& argv);

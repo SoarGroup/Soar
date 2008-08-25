@@ -234,6 +234,7 @@ EXPORT bool CommandLineInterface::DoCommand(Connection* pConnection, sml::AgentS
 
 	SetTrapPrintCallbacks( true );
 
+	m_SourceDepth = 0;
 	m_SourceMode = SOURCE_DEFAULT;
 	m_SourceVerbose = false; 
 
