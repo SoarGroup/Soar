@@ -85,15 +85,18 @@ New in 9.0.0
      chunking problems), added iterative deepening support.
   -- Added options to learn command to turn chunking through local negations
      on or off (on by default for backwards compatibility). If off, a message
-	 will be generated if watching chunks that says a chunk was not created
-	 because of local negations.
-  -- The item count is generated architecturally in a tie impasse.
+	 will be generated if "watch --learning print" is enabled that says a chunk was not created
+	 because of local negations, and what those negations were.
+  -- In a tie impasse, an item-count WME containing the number of tied operators is now
+     architecturally generated.
   -- Depth at which productions are firing is reported at watch 5.
   -- Multiple rules can be loaded via the Java debugger's Edit Production
      widget, scratch pad, and by pasting into the trace window. This is the
 	 result of an underlying change to SML in which arguments to
 	 ExecuteCommandLine are passed through logic associated with the source
 	 command, and thus multiple commands can be given at once.
+  -- Command boxes in the Java debugger have been enhanced so that history
+     browsing with the up/down arrows works on all platforms.
   -- New "single compilation unit" build configurations in Visual Studio 
      (greatly speeds build time).
   -- Unit test suite added.
