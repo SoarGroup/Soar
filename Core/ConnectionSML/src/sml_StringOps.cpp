@@ -113,7 +113,7 @@ void sml::StringDelete(char* pStr)
 int sml::Tokenize(std::string cmdline, std::vector<std::string>& argumentVector) {
 	int argc = 0;
 	std::string::iterator iter;
-	std::string arg;
+	std::stringstream arg;
 	bool quotes = false;
 	bool pipes = false;
 	bool escaped = false;
@@ -141,7 +141,7 @@ int sml::Tokenize(std::string cmdline, std::vector<std::string>& argumentVector)
 
 		// We have an argument
 		++argc;
-		arg.clear();
+		arg.str( std::string() );
 		// Use space as a delimiter unless inside quotes or brackets (nestable) or escaped with backslash
 		while (!isspace(*iter) || quotes || pipes || brackets || parens) {
 			if (escaped) {
@@ -181,7 +181,7 @@ int sml::Tokenize(std::string cmdline, std::vector<std::string>& argumentVector)
 			}
 
 			// Add to argument (if we eat quotes, this has to be moved into the else above
-			arg += (*iter);
+			arg << (*iter);
 
 			// Delete the character and move on on
 			cmdline.erase(iter);
@@ -206,7 +206,7 @@ int sml::Tokenize(std::string cmdline, std::vector<std::string>& argumentVector)
 		}
 
 		// Store the arg
-		argumentVector.push_back(arg);
+		argumentVector.push_back( arg.str() );
 	}
 
 	// Return the number of args found

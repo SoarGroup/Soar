@@ -495,11 +495,10 @@ bool KernelSML::ReturnBoolResult(Connection* pConnection, soarxml::ElementXML* p
 *************************************************************/
 bool KernelSML::InvalidArg(Connection* pConnection, soarxml::ElementXML* pResponse, char const* pCommandName, char const* pErrorDescription)
 {
-	std::string msg = "Invalid arguments for command : " ;
-	msg += pCommandName ;
-	msg += pErrorDescription ;
+	std::stringstream msg;
+	msg << "Invalid arguments for command : " << pCommandName << pErrorDescription ;
 
-	AddErrorMsg(pConnection, pResponse, msg.c_str()) ;
+	AddErrorMsg(pConnection, pResponse, msg.str().c_str()) ;
 	
 	// Return true because we've already added the error message.
 	return true ;
@@ -586,11 +585,10 @@ bool KernelSML::ProcessCommand(char const* pCommandName, Connection* pConnection
 	if (!pFunction)
 	{
 		// There is no handler for this command
-		std::string msg = "Command " ;
-		msg += pCommandName ;
-		msg += " is not recognized by the kernel" ;
+		std::stringstream msg;
+		msg << "Command " << pCommandName << " is not recognized by the kernel" ;
 
-		AddErrorMsg(pConnection, pResponse, msg.c_str()) ;
+		AddErrorMsg(pConnection, pResponse, msg.str().c_str()) ;
 		return false ;
 	}
 
@@ -606,9 +604,9 @@ bool KernelSML::ProcessCommand(char const* pCommandName, Connection* pConnection
 		if (!pAgentSML)
 		{
 			// Failed to find this agent
-			std::string msg = "Could not find an agent with name: " ;
-			msg += pAgentName ;
-			AddErrorMsg(pConnection, pResponse, msg.c_str()) ;
+			std::stringstream msg;
+			msg << "Could not find an agent with name: " << pAgentName ;
+			AddErrorMsg(pConnection, pResponse, msg.str().c_str()) ;
 			return false ;
 		}
 	}
@@ -619,10 +617,9 @@ bool KernelSML::ProcessCommand(char const* pCommandName, Connection* pConnection
 	// If we return false, we report a generic error about the call.
 	if (!result)
 	{
-		std::string msg = "The call " ;
-		msg += pCommandName ;
-		msg += " failed to execute correctly." ;
-		AddErrorMsg(pConnection, pResponse, msg.c_str()) ;
+		std::stringstream msg;
+		msg << "The call " << pCommandName << " failed to execute correctly." ;
+		AddErrorMsg(pConnection, pResponse, msg.str().c_str()) ;
 		return false ;
 	}
 

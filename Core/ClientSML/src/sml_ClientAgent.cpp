@@ -246,18 +246,19 @@ bool Agent::LoadProductions(char const* pFilename, bool echoResults)
 {
 	// gSKI's LoadProductions command doesn't support all of the command line commands we need,
 	// so we'll send this through the command line processor instead by creating a "source" command.
-	std::string cmd = "source ";
+	std::stringstream cmd;
+	cmd << "source ";
 	if (strlen(pFilename) && (pFilename[0] == '\"') && (pFilename[strlen(pFilename) - 1] == '\"'))
 	{
-		cmd += pFilename ;
+		cmd << pFilename ;
 	} else {
-		cmd += '\"';
-		cmd += pFilename ;
-		cmd += '\"';
+		cmd << '\"';
+		cmd << pFilename ;
+		cmd << '\"';
 	}
 
 	// Execute the source command
-	char const* pResult = ExecuteCommandLine(cmd.c_str(), echoResults) ;
+	char const* pResult = ExecuteCommandLine(cmd.str().c_str(), echoResults) ;
 
 	bool ok = GetLastCommandLineResult() ;
 
