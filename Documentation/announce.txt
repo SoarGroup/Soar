@@ -7,12 +7,13 @@ learning code (Soar-RL), which was first released alongside the 8.6.4
 beta. 9.0.0 is also the first release to include the SML interface 
 without gSKI.
 
-Soar-RL is the architectural integration of reinforcement learning 
-(RL) with Soar.  The RL mechanism will automatically learn value 
-functions as a Soar agent executes.  These value functions represent, 
-for a given working memory state and proposed operator, the expected 
-sum of future rewards the agent will receive if it selects that 
-operator.  See the RL manual and tutorial in Documentation.
+Soar-RL is the architectural integration of reinforcement learning (RL) with
+Soar.  The RL mechanism will automatically tune the values of
+numeric-indifferent preference rules based on reward generated while a Soar
+agent executes.  These values represent the expected discounted sum of
+future rewards the agent will receive if it selects that operator for states
+matched by the condition of the rule.  See the RL manual and tutorial in
+Documentation.
 
 Soar-9.0.0 includes all source code, many demo programs, and a 
 number of applications that serve as examples of how to interface 
@@ -97,8 +98,7 @@ New in 9.0.0
 	 command, and thus multiple commands can be given at once.
   -- Command boxes in the Java debugger have been enhanced so that history
      browsing with the up/down arrows works on all platforms.
-  -- New "single compilation unit" build configurations in Visual Studio 
-     (greatly speeds build time).
+  -- New "single compilation unit" build configurations (greatly speeds build time).
   -- Unit test suite added.
   -- Other minor enhancements.
 
