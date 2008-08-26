@@ -5,7 +5,7 @@
 call "%VS80COMNTOOLS%\vsvars32.bat"
 
 @rem Step 2: Build C++
-devenv /rebuild "Distribution SCU" SML.sln
+devenv /build "Distribution SCU" SML.sln
 if not errorlevel 0 goto fail
 devenv /build Release Tools\TestCSharpSML\TestCSharpSML.sln
 if not errorlevel 0 goto fail
@@ -13,7 +13,7 @@ if not errorlevel 0 goto fail
 @rem Step 3: Build Java
 call buildJavaApps.bat
 if not errorlevel 0 goto fail
-exit /b 0
+exit 0
 
 :fail
-exit /b 1
+exit 1
