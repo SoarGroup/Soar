@@ -33,7 +33,7 @@ call build.bat --nopause %1
 if errorlevel 1 goto fail
 
 cd ..\..
-exit /b 0
+exit 0
 
 :fail
-exit /b 1
+exit 1
