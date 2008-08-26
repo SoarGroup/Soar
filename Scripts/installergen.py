@@ -101,9 +101,12 @@ class Generator:
         self.config[ 'target-url' ] = "%s%s" % ( self.config[ 'baseurl' ], self.config[ 'version' ], )
 
         if os.name != 'posix':
-            self.config[ 'target-file' ] = "%s.zip" % ( self.config[ 'target-basename' ], )
+            self.config[ 'target-file' ] = "%s-windows.zip" % ( self.config[ 'target-basename' ], )
         else:
-            self.config[ 'target-file' ] = "%s.tar.gz" % ( self.config[ 'target-basename' ], )
+            if sys.platform == 'darwin':
+                self.config[ 'target-file' ] = "%s-osx.tar.gz" % ( self.config[ 'target-basename' ], )
+            else:
+                self.config[ 'target-file' ] = "%s-linux.tar.gz" % ( self.config[ 'target-basename' ], )
             
         for x in self.config:
             logging.debug( 'config: %s: %s' % ( x, repr( self.config[x] ), ) )
