@@ -17,8 +17,8 @@
 	<Configurations>
 		<Configuration
 			Name="Debug|Win32"
-			OutputDirectory="Tests_build"
-			IntermediateDirectory="$(OutDir)/$(ConfigurationName)"
+			OutputDirectory="build\$(ProjectName)_build\$(ConfigurationName)"
+			IntermediateDirectory="$(OutDir)"
 			ConfigurationType="1"
 			CharacterSet="1"
 			>
@@ -62,7 +62,7 @@
 			<Tool
 				Name="VCLinkerTool"
 				AdditionalDependencies="..\..\Tests\lib\cppunitd_dll.lib"
-				OutputFile="..\..\SoarLibrary\bin\$(ProjectName).exe"
+				OutputFile="$(SolutionDir)\SoarLibrary\bin\$(ProjectName).exe"
 				LinkIncremental="2"
 				GenerateDebugInformation="true"
 				SubSystem="1"
@@ -91,13 +91,13 @@
 			/>
 			<Tool
 				Name="VCPostBuildEventTool"
-				CommandLine="xcopy Tests_build\Tests.exe ..\..\SoarLibrary\bin /y&#x0D;&#x0A;rem cd ..\SoarLibrary\bin&#x0D;&#x0A;rem Tests.exe -nopause&#x0D;&#x0A;"
+				CommandLine="rem Tests.exe -nopause&#x0D;&#x0A;"
 			/>
 		</Configuration>
 		<Configuration
 			Name="Release|Win32"
-			OutputDirectory="Tests_build"
-			IntermediateDirectory="$(OutDir)/$(ConfigurationName)"
+			OutputDirectory="build\$(ProjectName)_build\$(ConfigurationName)"
+			IntermediateDirectory="$(OutDir)"
 			ConfigurationType="1"
 			CharacterSet="1"
 			WholeProgramOptimization="1"
@@ -139,7 +139,7 @@
 			<Tool
 				Name="VCLinkerTool"
 				AdditionalDependencies="..\..\Tests\lib\cppunit_dll.lib"
-				OutputFile="..\..\SoarLibrary\bin\$(ProjectName).exe"
+				OutputFile="$(SolutionDir)\SoarLibrary\bin\$(ProjectName).exe"
 				LinkIncremental="1"
 				GenerateDebugInformation="true"
 				SubSystem="1"
@@ -170,7 +170,7 @@
 			/>
 			<Tool
 				Name="VCPostBuildEventTool"
-				CommandLine="xcopy Tests_build\Tests.exe ..\..\SoarLibrary\bin /y&#x0D;&#x0A;rem cd ..\SoarLibrary\bin&#x0D;&#x0A;rem Tests.exe -nopause&#x0D;&#x0A;"
+				CommandLine="rem Tests.exe -nopause&#x0D;&#x0A;"
 			/>
 		</Configuration>
 	</Configurations>
