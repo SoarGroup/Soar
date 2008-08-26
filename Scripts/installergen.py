@@ -3,36 +3,6 @@
 # Author: Jonathan Voigt, University of Michigan
 # Date: September 2008
 
-# swt.jar 3.3 digests
-OSX_DIGEST = '63e66248fed82dcf4bc2639b487ec111'
-WIN_DIGEST = '33ac049c1f70126f5fe190da2bd9ff77'
-GTK_DIGEST = '3f5abcc5769c413fc731585b36fe61c2'
-
-####
-# Configuration
-generatorConfig = {}
-generatorConfig[ 'version' ] = '9.0.0'
-generatorConfig[ 'release-candidate' ] = True
-generatorConfig[ 'rc-number' ] = 1
-
-# Specific directories to remove from source tree
-generatorConfig[ 'remove' ] = [ ]
-generatorConfig[ 'removedirs' ] = [ ]
-generatorConfig[ 'copyglobs' ] = [ '*.pdf', '*.dll', '*.lib', '*.exe', '*.jar', 
-                                  'Python_sml_ClientInterface.py', '*.pyd', 'Tcl_sml_ClientInterface', 
-                                  'Tcl_sml_ClientInterface_wrap.cxx', 'Java_sml_ClientInterface_wrap.cxx', 
-                                  'CSharp_sml_ClientInterface_wrap.cxx', 'Python_sml_ClientInterface_wrap.cxx', ]
-
-generatorConfig[ 'top-level-files' ] =[ 'Visual Soar.bat', 'Eaters.bat', 'Missionaries and Cannibals.bat', 'SoarJavaDebugger.bat',
-                                       'TankSoar.bat', 'Towers of Hanoi.bat', 'announce.txt', 'readme.txt', 'license.txt', ] 
-
-# File globs to completely remove from the tree
-generatorConfig['remove'] = [ '.project', '.classpath', '.settings', '.pydevproject', '.svn', '*.so', '*.so.1', '*.so.2', '*.a', 
-               '*.jnilib', 'java_swt', '*.sh', '*.plist', '*.doc', '*.docx', '*.ppt', '*.pptx', '*.pl', 'crossmingw.py', 'SoarSCons.py',
-               'ManualSource', '*.tex', 'Scripts', 'installergen.py', 'obj', 'Doxyfile', 'SConstruct', 'SConscript', 'Resources', ]
-
-generatorConfig[ 'baseurl' ] = 'https://winter.eecs.umich.edu/svn/soar/tags/Soar-Suite-'
-
 import logging
 import getopt
 import sys
@@ -50,6 +20,68 @@ import urllib
 import md5
 import zipfile
 import zlib
+import sys
+
+# swt.jar 3.3 digests
+WIN_DIGEST = '33ac049c1f70126f5fe190da2bd9ff77'
+
+####
+# Configuration
+generatorConfig = {}
+generatorConfig[ 'version' ] = '9.0.0'
+generatorConfig[ 'release-candidate' ] = True
+generatorConfig[ 'rc-number' ] = 1
+
+# Specific directories to remove from source tree
+if os.name != 'posix':
+    generatorConfig[ 'remove' ] = [ ]
+    generatorConfig[ 'removedirs' ] = [ ]
+    generatorConfig[ 'copyglobs' ] = [ '*.pdf', '*.dll', '*.lib', '*.exe', '*.jar', 
+                                      'Python_sml_ClientInterface.py', '*.pyd', 'Tcl_sml_ClientInterface', 
+                                      'Tcl_sml_ClientInterface_wrap.cxx', 'Java_sml_ClientInterface_wrap.cxx', 
+                                      'CSharp_sml_ClientInterface_wrap.cxx', 'Python_sml_ClientInterface_wrap.cxx', ]
+
+    generatorConfig[ 'top-level-files' ] =[ 'Visual Soar.bat', 'Eaters.bat', 'Missionaries and Cannibals.bat', 'SoarJavaDebugger.bat',
+                                       'TankSoar.bat', 'Towers of Hanoi.bat', 'announce.txt', 'readme.txt', 'license.txt', ] 
+
+    # File globs to completely remove from the tree
+    generatorConfig['remove'] = [ '.project', '.classpath', '.settings', '.pydevproject', '.svn', '*.so', '*.so.1', '*.so.2', '*.a', 
+                   '*.jnilib', 'java_swt', '*.sh', '*.doc', '*.docx', '*.ppt', '*.pptx', '*.pl', 'crossmingw.py', 'SoarSCons.py',
+                   'ManualSource', '*.tex', 'Scripts', 'installergen.py', 'obj', 'Doxyfile', 'SConstruct', 'SConscript', 'Resources', ]
+elif sys.platform == 'darwin':
+    generatorConfig[ 'remove' ] = [ ]
+    generatorConfig[ 'removedirs' ] = [ ]
+    generatorConfig[ 'copyglobs' ] = [ '*.pdf', '*.dylib', '*.jar', '*.a', '*.jnilib', 
+                                       'TestSoarPerformance',  'TestConnectionSML', 'FilterC', 'SoarTextIO', 'TestMultiAgent', 'TOHSML', 'Tests', 'QuickLink', 'TestCLI', 'TestSMLEvents', 'TestClientSML', 'TestSMLPerformance', 
+                                      'Python_sml_ClientInterface.py', '*.pyd', 'Tcl_sml_ClientInterface', 
+                                      'Tcl_sml_ClientInterface_wrap.cxx', 'Java_sml_ClientInterface_wrap.cxx', 
+                                      'CSharp_sml_ClientInterface_wrap.cxx', 'Python_sml_ClientInterface_wrap.cxx', ]
+
+    generatorConfig[ 'top-level-files' ] =[ 'run-CommandLineInterface.sh', 'run-Debugger.sh', 'run-Eaters.sh', 'run-Soar2D.sh', 'run-TankSoar.sh', 'run-VisualSoar.sh', 
+                                           'announce.txt', 'readme.txt', 'license.txt', ] 
+
+    # File globs to completely remove from the tree
+    generatorConfig['remove'] = [ '.project', '.classpath', '.settings', '.pydevproject', '.svn', '*.so', '*.so.1', '*.so.2', 
+                   'java_swt', '*.plist', '*.doc', '*.docx', '*.ppt', '*.pptx', '*.pl', 'crossmingw.py',
+                   'ManualSource', '*.tex', 'Scripts', 'installergen.py', 'obj', 'Doxyfile', 'Resources', ]
+else:
+    generatorConfig[ 'remove' ] = [ ]
+    generatorConfig[ 'removedirs' ] = [ ]
+    generatorConfig[ 'copyglobs' ] = [ '*.pdf', '*.so', '*.jar', '*.a',
+                                       'TestSoarPerformance',  'TestConnectionSML', 'FilterC', 'SoarTextIO', 'TestMultiAgent', 'TOHSML', 'Tests', 'QuickLink', 'TestCLI', 'TestSMLEvents', 'TestClientSML', 'TestSMLPerformance', 
+                                      'Python_sml_ClientInterface.py', '*.pyd', 'Tcl_sml_ClientInterface', 
+                                      'Tcl_sml_ClientInterface_wrap.cxx', 'Java_sml_ClientInterface_wrap.cxx', 
+                                      'CSharp_sml_ClientInterface_wrap.cxx', 'Python_sml_ClientInterface_wrap.cxx', ]
+
+    generatorConfig[ 'top-level-files' ] =[ 'run-CommandLineInterface.sh', 'run-Debugger.sh', 'run-Eaters.sh', 'run-Soar2D.sh', 'run-TankSoar.sh', 'run-VisualSoar.sh', 
+                                           'announce.txt', 'readme.txt', 'license.txt', ] 
+
+    # File globs to completely remove from the tree
+    generatorConfig['remove'] = [ '.project', '.classpath', '.settings', '.pydevproject', '.svn', '*.dylib', '*.so.1', '*.so.2', 
+                   'java_swt', '*.plist', '*.doc', '*.docx', '*.ppt', '*.pptx', '*.pl', 'crossmingw.py',
+                   'ManualSource', '*.tex', 'Scripts', 'installergen.py', 'obj', 'Doxyfile', 'Resources', ]
+
+generatorConfig[ 'baseurl' ] = 'https://winter.eecs.umich.edu/svn/soar/tags/Soar-Suite-'
 
 ####
 class Generator:
@@ -68,7 +100,10 @@ class Generator:
             
         self.config[ 'target-url' ] = "%s%s" % ( self.config[ 'baseurl' ], self.config[ 'version' ], )
 
-        self.config[ 'target-file' ] = "%s.zip" % ( self.config[ 'target-basename' ], )
+        if os.name != 'posix':
+            self.config[ 'target-file' ] = "%s.zip" % ( self.config[ 'target-basename' ], )
+        else:
+            self.config[ 'target-file' ] = "%s.tar.gz" % ( self.config[ 'target-basename' ], )
             
         for x in self.config:
             logging.debug( 'config: %s: %s' % ( x, repr( self.config[x] ), ) )
@@ -87,9 +122,9 @@ class Generator:
             if not d:
                 break
             m.update(d)
-            
-        return WIN_DIGEST == m.hexdigest()
         
+        return WIN_DIGEST == m.hexdigest()
+                       
     def checkForSWTJar( self ):
         jarPath = os.path.join('SoarLibrary', 'bin', 'swt.jar')
         if os.path.exists( jarPath ):
@@ -116,13 +151,27 @@ class Generator:
         return True
 
     def build( self ):
-        if not self.checkForSWTJar():
-            sys.exit(1)
+        if os.name != 'posix':
+            if not self.checkForSWTJar():
+                sys.exit(1)
             
         logging.info( 'Building everything' )
-        retcode = subprocess.call( ["rebuild-all.bat", ] )
-        if retcode == 1:
-            logging.critical( "rebuild-all failed" )
+        if os.name != 'posix':
+            retcode = subprocess.call( ["rebuild-all.bat", ] )
+        else:
+            retcode = subprocess.call( ["scons", "-c", "Core/ClientSMLSWIG" ] )
+            
+            if retcode == 0:
+                retcode = subprocess.call( ["scons", "debug=no", "Core/ClientSMLSWIG/Java" ] )
+                
+                if retcode == 0:
+                    retcode = subprocess.call( ["scons", "debug=no", "Core/ClientSMLSWIG/Python" ] )
+                    
+                    if retcode == 0:
+                        retcode = subprocess.call( ["scons", "debug=no" ] )
+        
+        if retcode != 0:
+            logging.critical( "build failed" )
             sys.exit(1)
     
     def source( self ):
@@ -172,20 +221,20 @@ class Generator:
         logging.info( 'Copying globs from working tree' )
         for root, dirs, files in os.walk('.'):
             for glob in self.config[ 'copyglobs' ]:
-                matched = [ n for n in dirs if fnmatch.fnmatchcase( n, glob ) ]
-                for x in matched:
-                    dirs.remove( x )
-                    src = os.path.join( root, x )
-                    dst = os.path.join( self.config['target-path'], src )
-                    
-                    # Make sure parent directory exists
-                    dstdir = os.path.join( self.config['target-path'], root )
-                    if not os.path.exists( dstdir ):
-                        logging.debug( 'Making dir %s' % ( dstdir, ) )
-                        os.makedirs( dstdir )
+                #matched = [ n for n in dirs if fnmatch.fnmatchcase( n, glob ) ]
+                #for x in matched:
+                #    dirs.remove( x )
+                #    src = os.path.join( root, x )
+                #    dst = os.path.join( self.config['target-path'], src )
+                #    
+                #    # Make sure parent directory exists
+                #    dstdir = os.path.join( self.config['target-path'], root )
+                #    if not os.path.exists( dstdir ):
+                #        logging.debug( 'Making dir %s' % ( dstdir, ) )
+                #        os.makedirs( dstdir )
 
-                    logging.debug( '%s -dir-> %s' % ( src, dst ) )
-                    shutil.copytree( src, dst )
+                #   logging.debug( '%s -dir-> %s' % ( src, dst ) )
+                #    shutil.copytree( src, dst )
 
                 matched = [ n for n in files if fnmatch.fnmatchcase( n, glob ) ]
                 for x in matched:
@@ -200,6 +249,7 @@ class Generator:
 
                     logging.debug( '%s -file-> %s' % ( src, dst ) )
                     shutil.copyfile( src, dst )
+                    shutil.copymode( src, dst )
 
         logging.info( 'Copying SWIG java files' )
         for f in fnmatch.filter( os.listdir( os.path.join( 'Core', 'ClientSMLSWIG', 'Java', 'build' ) ), "*.java" ):
@@ -213,6 +263,7 @@ class Generator:
             dst = os.path.join( dstdir, f )
             logging.debug( '%s -file-> %s' % ( src, dst, ) )
             shutil.copyfile( src, dst )
+            shutil.copymode( src, dst )
         
         logging.info( 'Copying top-level files' )
         for root, dirs, files in os.walk('.'):
@@ -224,16 +275,21 @@ class Generator:
 
                     logging.debug( '%s -file-> %s' % ( src, dst ) )
                     shutil.copyfile( src, dst )
+                    shutil.copymode( src, dst )
 
-        logging.info( 'Creating zip' )
-        zip = zipfile.ZipFile( os.path.join( "..", self.config[ 'target-file' ] ), "w" )
-        for root, dirs, files in os.walk( self.config['target-parent'] ):
-            ( dontcare1, dontcare2, zipTargetRoot ) = root.partition( os.sep )
-            for name in files:
-                zipTarget = os.path.join( zipTargetRoot, name )
-                logging.debug( 'Adding %s' % ( zipTarget, ) )
-                zip.write( os.path.join( root, name ), zipTarget, zipfile.ZIP_DEFLATED )
-        zip.close()
+        logging.info( 'Creating archive' )
+        if os.name != 'posix':
+            zip = zipfile.ZipFile( os.path.join( "..", self.config[ 'target-file' ] ), "w" )
+            for root, dirs, files in os.walk( self.config['target-parent'] ):
+                ( dontcare1, dontcare2, zipTargetRoot ) = root.partition( os.sep )
+                for name in files:
+                    zipTarget = os.path.join( zipTargetRoot, name )
+                    logging.debug( 'Adding %s' % ( zipTarget, ) )
+                    zip.write( os.path.join( root, name ), zipTarget, zipfile.ZIP_DEFLATED )
+            zip.close()
+        else:
+            retcode = subprocess.call( ["tar", "cfzp", os.path.join( "..", self.config[ 'target-file' ] ), self.config['target-parent'] ] )
+            
 
 def usage():
     print sys.argv[0], "usage:"
