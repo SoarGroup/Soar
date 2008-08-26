@@ -70,7 +70,7 @@
 				LinkIncremental="2"
 				GenerateDebugInformation="true"
 				AssemblyDebug="1"
-				ImportLibrary="..\..\SoarLibrary\lib\CSharp_sml_ClientInterface.lib"
+				ImportLibrary="$(SolutionDir)\SoarLibrary\lib\CSharp_sml_ClientInterface.lib"
 				FixedBaseAddress="0"
 			/>
 			<Tool
@@ -152,7 +152,7 @@
 				GenerateDebugInformation="true"
 				OptimizeReferences="2"
 				EnableCOMDATFolding="2"
-				ImportLibrary="..\..\SoarLibrary\lib\CSharp_sml_ClientInterface.lib"
+				ImportLibrary="$(SolutionDir)\SoarLibrary\lib\CSharp_sml_ClientInterface.lib"
 			/>
 			<Tool
 				Name="VCALinkTool"
