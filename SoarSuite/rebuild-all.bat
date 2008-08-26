@@ -5,7 +5,7 @@
 call "%VS80COMNTOOLS%\vsvars32.bat"
 
 @rem Step 2: Build C++
-devenv /build "Distribution SCU" SML.sln
+devenv /rebuild "Distribution SCU" SML.sln
 if not errorlevel 0 goto fail
 devenv /build Release Tools\TestCSharpSML\TestCSharpSML.sln
 if not errorlevel 0 goto fail
