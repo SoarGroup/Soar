@@ -52,14 +52,17 @@ void IdentifierSymbol::AddChild(WMElement* pWME)
 	// client would like to know that this identifier was changed in some fashion.
 	SetAreChildrenModified(true) ;
 
-	//std::cout << "AddChild: " << pWME->GetIdentifierName() << ", " << pWME->GetAttribute() << ", " << pWME->GetValueAsString() << " (" << pWME->GetTimeTag() << ")" << std::endl;
-	//m_Children.push_back(pWME) ;
-	std::pair<Identifier::ChildrenIter, bool> result = m_Children.insert(pWME);
-	
-	//if ( result.second == false )
-	//{
-	//	std::cout << "\nDid not insert wme in to children: " << pWME->GetIdentifierName() << ", " << pWME->GetAttribute() << ", " << pWME->GetValueAsString() << " (" << pWME->GetTimeTag() << ")" << std::endl;
-	//}
+
+	Identifier::ChildrenIter iter = std::find_if( m_Children.begin(), m_Children.end(), WMEFinder( pWME ) );
+	if ( iter == m_Children.end() )
+	{
+		//std::cout << "AddChild: " << pWME->GetIdentifierName() << ", " << pWME->GetAttribute() << ", " << pWME->GetValueAsString() << " (" << pWME->GetTimeTag() << ")" << " (" << pWME << ")" << std::endl;
+		m_Children.push_back(pWME) ;
+	} 
+	else
+	{
+		//std::cout << "Did not AddChild: " << pWME->GetIdentifierName() << ", " << pWME->GetAttribute() << ", " << pWME->GetValueAsString() << " (" << pWME->GetTimeTag() << ")" << " (" << pWME << ")" << std::endl;
+	}
 }
 
 void IdentifierSymbol::RemoveChild(WMElement* pWME)
@@ -68,8 +71,17 @@ void IdentifierSymbol::RemoveChild(WMElement* pWME)
 	// client would like to know that this identifier was changed in some fashion.
 	SetAreChildrenModified(true) ;
 
-	//m_Children.remove(pWME) ;
-	m_Children.erase(pWME);
+
+	Identifier::ChildrenIter iter = std::find_if( m_Children.begin(), m_Children.end(), WMEFinder( pWME ) );
+	if ( iter != m_Children.end() )
+	{
+		//std::cout << "RemoveChild: " << pWME->GetIdentifierName() << ", " << pWME->GetAttribute() << ", " << pWME->GetValueAsString() << " (" << pWME->GetTimeTag() << ")" << " (" << pWME << ")" << std::endl;
+		m_Children.erase( iter ) ;
+	} 
+	else
+	{
+		//std::cout << "Did not RemoveChild: " << pWME->GetIdentifierName() << ", " << pWME->GetAttribute() << ", " << pWME->GetValueAsString() << " (" << pWME->GetTimeTag() << ")" << " (" << pWME << ")" << std::endl;
+	}
 }
 
 // This version is only needed at the top of the tree (e.g. the input link)
