@@ -23,7 +23,7 @@ sp {apply*cue
 -->
    (<cmd> ^query.last-food <food-name>)
    (<s> ^phase response)
-   (write | trying to remember: | <food>)
+   (write | trying to remember: | <food-name>)
 }
 
 ##
