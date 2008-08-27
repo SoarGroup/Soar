@@ -18,7 +18,9 @@
 #include "sml_EventManager.h"
 #include "sml_AgentOutputFlusher.h"
 
+#include <iostream>
 #include <string>
+#include <sstream>
 #include <map>
 
 namespace sml {
