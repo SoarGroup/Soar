@@ -1,0 +1,109 @@
+##
+# Propose all valid movement
+# directions
+##
+sp {eater*propose*go
+   (state <s> ^name move
+              ^top-state <ts>)
+   (<ts> ^direction <dir>
+         ^io.input-link.my-location.<dir-name>.content <food-name> {<> wall <> eater}
+        -^last-direction <opp-dir-name>)
+   (<dir> ^value <dir-name>
+            ^opposite <opp-dir-name>)
+   
+-->
+   (<s> ^operator <op> +)
+   (<op> ^name go
+         ^direction <dir-name>
+         ^food <food-name>)
+}
+
+##
+# Provide value of known foods
+##
+sp {eater*augment*go*food
+   (state <s> ^name move
+              ^top-state <ts>
+              ^operator <op> +)
+   (<op> ^food <food-name>)
+   (<ts> ^food <food>)
+   (<food> ^name <food-name>
+           ^value <food-value>)
+-->
+   (<s> ^operator <op> = <food-value>)
+}
+
+##
+# Encourage exploration of unknown foods
+##
+sp {eater*augment*go*unknown
+   (state <s> ^name move
+              ^top-state <ts>
+              ^operator <op> +)
+   (<op> ^food <food-name>)
+   (<ts> ^unknown <food-name>)
+-->
+   (<s> ^operator <op> = 1000)
+}
+
+##
+# When a movement is chosen,
+# perform the action
+##
+sp {apply*go
+   (state <s> ^operator <op>
+              ^top-state <ts>)
+   (<op> ^name go
+         ^direction <dir-name>
+         ^food <food-name>)
+   (<ts> ^io.output-link <ol>
+         ^operator <t-op>)
+-->
+   (<ts> ^last-food <food-name>
+         ^last-direction <dir-name>)
+   (<ol> ^move.direction <dir-name>)
+   (write | go | <dir-name> | towards | <food-name>)
+}
+
+##
+# Keeps current the record of the
+# last direction
+##
+sp {apply*go*remove*dir
+   (state <s> ^operator <op>
+              ^top-state <ts>)
+   (<op> ^name go
+         ^direction <op-dir-name>)
+   (<ts> ^operator <t-op>
+         ^last-direction <l-dir-name> {<> <op-dir-name>})
+-->
+   (<ts> ^last-direction <l-dir-name> -)
+}
+
+##
+# Keeps current the record of the
+# last food
+##
+sp {apply*go*remove*food
+   (state <s> ^operator <op>
+              ^top-state <ts>)
+   (<op> ^name go
+         ^food <op-food-name>)
+   (<ts> ^operator <t-op>
+         ^last-food <l-food-name> {<> <op-food-name>})
+-->
+   (<ts> ^last-food <l-food-name> -)
+}
+
+##
+# Remove all unknowns
+##
+sp {apply*go*remove*unknowns
+   (state <s> ^operator <op>
+              ^top-state <ts>)
+   (<op> ^name go)
+   (<ts> ^operator <t-op>
+         ^unknown <u>)
+-->
+   (<ts> ^unknown <u> -)
+}

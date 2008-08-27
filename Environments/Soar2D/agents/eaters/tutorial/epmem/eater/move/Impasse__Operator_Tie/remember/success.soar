@@ -1,0 +1,49 @@
+##
+# If we get CB success, then
+# there is an episode to consider
+##
+sp {remember*propose*success
+   (state <s> ^name remember
+              ^phase response
+              ^epmem.result.status success)
+-->
+   (<s> ^operator <op> + =)
+   (<op> ^name success)
+}
+
+##
+# We now look at the next episode
+# and keep around the score info
+# in order to calculate the difference
+# in scores (= value of food)
+##
+sp {apply*success
+   (state <s> ^operator <op>
+              ^epmem <epmem>)
+   (<op> ^name success)
+   (<epmem> ^command <cmd>
+            ^result <result>)
+   (<result> ^retrieved.io.input-link.eater.score <score>
+             ^memory-id <mem-id>)
+   (<cmd> ^query <q>)
+-->
+   (<s> ^old-score <score>
+        ^old-id <mem-id>
+        ^phase response -
+        ^phase next)
+   (<cmd> ^query <q> -
+          ^next <n>)
+}
+
+##
+# Prohibits are not valid during
+# next commands
+##
+sp {apply*success*prohibit
+   (state <s> ^operator <op>
+              ^epmem.command <cmd>)
+   (<op> ^name success)
+   (<cmd> ^prohibit <p>)
+-->
+   (<cmd> ^prohibit <p> -)
+}

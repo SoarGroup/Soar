@@ -1,0 +1,30 @@
+##
+# Getting the "next" episode means
+# we can calculate the food value
+##
+sp {remember*propose*next
+   (state <s> ^name remember
+              ^phase next
+             -^epmem.result.retrieved no-memory)
+-->
+   (<s> ^operator <op> + =)
+   (<op> ^name next)
+}
+
+##
+# Calculate the food value
+# and send to kb (top-state)
+##
+sp {apply*next
+   (state <s> ^operator <op>
+              ^old-score <old-score>
+              ^epmem.result.retrieved.io.input-link.eater.score <new-score>
+              ^top-state <ts>
+              ^food <food-name>)
+   (<op> ^name next)
+   (<ts> ^operator <t-op>)
+-->
+   (<ts> ^food <new-food>)
+   (<new-food> ^name <food-name>
+               ^value (- <new-score> <old-score>))
+}

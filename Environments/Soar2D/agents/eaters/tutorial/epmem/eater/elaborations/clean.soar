@@ -1,0 +1,8 @@
+sp {apply*clean*move
+   (state <s> ^io.output-link <ol>
+              ^operator <op>)
+   (<ol> ^move <move>)
+   (<move> ^status complete)
+-->
+   (<ol> ^move <move> -)
+}

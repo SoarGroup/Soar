@@ -1,0 +1,17 @@
+##
+# Now we try to remember foods
+##
+sp {go-tie*propose*remember
+   (state <s> ^name go-tie
+              ^top-state <ts>
+              ^item <item>)
+   (<item> ^direction <dir-name>)
+   (<ts> ^io.input-link.my-location.<dir-name>.content <food-name>
+        -^food.name <food-name>
+        -^unknown <food-name>)
+-->
+   (<s> ^operator <op> + =)
+   (<op> ^name remember
+         ^food <food-name>)
+}
+

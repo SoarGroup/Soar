@@ -1,0 +1,42 @@
+##
+# First step to remembering is
+# to initially cue
+##
+sp {remember*propose*cue
+   (state <s> ^name remember
+             -^phase)
+-->
+   (<s> ^operator <op> + =)
+   (<op> ^name cue)
+}
+
+##
+# The cue tries to find a time
+# when the last food eaten is
+# our subject food
+##
+sp {apply*cue
+   (state <s> ^operator <op>
+              ^epmem.command <cmd>
+              ^food <food-name>)
+   (<op> ^name cue)
+-->
+   (<cmd> ^query.last-food <food-name>)
+   (<s> ^phase response)
+   (write | trying to remember: | <food>)
+}
+
+##
+# If we have failed on a particular
+# episode during this "remember" then
+# prohibit episodes we've tried previously
+##
+sp {apply*cue*prohibit
+   (state <s> ^operator <op>
+              ^epmem.command <cmd>
+              ^prohibit <p>)
+   (<op> ^name cue)
+-->
+   (<cmd> ^prohibit <p>)
+   (write | prohibit: | <p>)
+}

@@ -1,0 +1,9 @@
+##
+# Easy access to the food name we are trying to remember
+##
+sp {elaborate*remember*food
+   (state <s> ^name remember
+              ^superstate.operator.food <food-name>)
+-->
+   (<s> ^food <food-name>)
+}

@@ -1,0 +1,34 @@
+##
+# If we are expecting a "next" episode
+# and instead get no memory, there was no
+# next (i.e. this was the last episode)
+##
+sp {remember*propose*next-none
+   (state <s> ^name remember
+              ^phase next
+              ^epmem.result.retrieved no-memory)
+-->
+   (<s> ^operator <op> + =)
+   (<op> ^name next-none)
+}
+
+##
+# Just because there was no next does not
+# mean to give up hope: let's clean up
+# the score info, prohibit this episode
+# and try CB retrieval again
+##
+sp {apply*next-none
+   (state <s> ^operator <op>
+              ^old-id <mem-id>
+              ^old-score <score>
+              ^epmem.command <cmd>)
+   (<op> ^name next-none)
+   (<cmd> ^next <n>)
+-->
+   (<s> ^phase next -
+        ^prohibit <mem-id>
+        ^old-id <mem-id> -
+        ^old-score <score> -)
+   (<cmd> ^next <n> -)
+}

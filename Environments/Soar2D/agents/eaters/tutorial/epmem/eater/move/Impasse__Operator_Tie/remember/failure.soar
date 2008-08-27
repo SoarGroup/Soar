@@ -1,0 +1,27 @@
+##
+# Propose failure if CB
+# retrieval failure
+##
+sp {remember*propose*failure
+   (state <s> ^name remember
+              ^phase response
+              ^epmem.result.status failure)
+-->
+   (<s> ^operator <op> + =)
+   (<op> ^name failure)
+}
+
+##
+# Getting a failure means there
+# are no more relevant episodes
+# about this food
+##
+sp {apply*failure
+   (state <s> ^operator <op>
+              ^food <food-name>
+              ^top-state <ts>)
+   (<op> ^name failure)
+   (<ts> ^operator <t-op>)
+-->
+   (<ts> ^unknown <food-name>)
+}

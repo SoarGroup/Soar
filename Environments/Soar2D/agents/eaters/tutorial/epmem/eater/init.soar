@@ -1,0 +1,19 @@
+sp {eater*propose*init
+   (state <s> ^superstate nil
+             -^name)
+-->
+   (<s> ^operator <op> +)
+   (<op> ^name init)
+}
+
+sp {apply*init
+   (state <s> ^operator <op>)
+   (<op> ^name init)
+-->
+   (<s> ^name eater
+        ^direction <no> <so> <ea> <we>)
+   (<no> ^value north ^opposite south)
+   (<so> ^value south ^opposite north)
+   (<ea> ^value east ^opposite west)
+   (<we> ^value west ^opposite east)
+}

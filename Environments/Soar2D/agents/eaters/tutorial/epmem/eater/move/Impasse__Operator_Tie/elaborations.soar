@@ -1,0 +1,13 @@
+##
+# Provides a state name for
+# the go operator-tie impasse
+##
+sp {elaborate*go*tie
+   (state <s> ^impasse tie
+              ^choices multiple
+              ^attribute operator
+              ^superstate.name move)
+-->
+   (<s> ^name go-tie)
+}
+
