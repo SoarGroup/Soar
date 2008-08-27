@@ -123,13 +123,20 @@ private:
 
 };
 
-// Used to compare wmes for std::set classes. 
-struct WMELessThan
+
+struct WMEFinder
 {
-	bool operator()(WMElement* wme1, WMElement* wme2) const
+	WMEFinder( const WMElement* wme )
+	: wme( wme )
 	{
-		return wme1->GetTimeTag() < wme2->GetTimeTag();
 	}
+
+	bool operator()( const WMElement* wme2 ) const
+	{
+		return wme->GetTimeTag() == wme2->GetTimeTag();
+	}
+
+	const WMElement* wme;
 };
 
 }	// namespace
