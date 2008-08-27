@@ -1,4 +1,4 @@
-80
+81
 SOAR_ID 0
 SOAR_ID 1
 SOAR_ID 2
@@ -79,7 +79,8 @@ ENUMERATION 76 1 true
 ENUMERATION 77 1 false
 ENUMERATION 78 2 false true
 SOAR_ID 79
-117
+SOAR_ID 80
+120
 0 attribute 61
 0 choices 62
 0 desired 21
@@ -139,6 +140,7 @@ SOAR_ID 79
 24 dont-copy 55
 24 dont-copy-anything 56
 24 name 38
+24 no-local-negations 80
 24 one-level-attributes 53
 24 two-level-attributes 54
 29 all-attributes-at-level 57
@@ -167,6 +169,7 @@ SOAR_ID 79
 29 top-state 0
 29 tried-tied-operator 20
 29 type 30
+29 untried-tied-operator 20
 29 verbose 77
 33 name 32
 40 attribute 44
@@ -190,6 +193,7 @@ SOAR_ID 79
 58 random-identifier 65
 65 copied-structure 66
 70 choices 75
+70 evaluation 12
 70 found-value 74
 70 not-all-operators-evaluated 76
 70 operator 79
