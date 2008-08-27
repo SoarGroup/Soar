@@ -160,3 +160,4 @@ extern preference *exploration_get_highest_q_value_pref( preference *candidates 
 extern void exploration_compute_value_of_candidate( agent *my_agent, preference *cand, slot *s, double default_value = 0 );
 
 #endif
+
