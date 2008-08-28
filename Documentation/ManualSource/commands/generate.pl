@@ -1,9 +1,9 @@
 #!/usr/bin/perl
 
 # Pulls pages for all Soar interface commands off the wiki and turns them into
-# tex files to be included in the manual. You need to get the html2latex perl
-# package from cpan to run the html2latex script
-
+# tex files to be included in the manual. You need to get the HTML::Latex perl
+# package from cpan to run the html2latex script.
+#
 # Jonathan Voigt
 # 2006
 # Modified Joseph Xu Aug 2008

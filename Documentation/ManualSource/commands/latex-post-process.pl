@@ -117,7 +117,7 @@ while (<>) {
 
   if ($state eq "body") {
 
-    if (/\\section\*\{ Name \}/) {
+    if (/\\section\*\{\s*Name\s*\}/) {
       next;
     }
     
@@ -149,10 +149,6 @@ while (<>) {
       next;
     }
     
-    if (/\\section\*\{\s*Name\s*\}/) {
-      next;
-    }
-    
     # This is a little fragile, but the standard for the wiki pages seems to
     # include a line that has the command name in bold followed by a - and then
     # a short summary of the command. In the manual we don't want the bolded
@@ -178,7 +174,8 @@ while (<>) {
   
   # make clickable hyperrefs to all the see also entries
   if ($state eq "seealso") {
-    if (/[A-Za-z]+/) {
+    if (not /^\s*$/) {
+      $state = "body";
       my @seealsos = split /[\, ]/, $_;
       foreach (@seealsos) {
         my $element = $_;
@@ -190,7 +187,6 @@ while (<>) {
         }
       }
     }
-    $state = "body";
     next;
   }
 
