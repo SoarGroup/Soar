@@ -1,0 +1,5 @@
+watch 0
+
+epmem --set balance 1
+epmem --set trigger none
+watch --epmem
