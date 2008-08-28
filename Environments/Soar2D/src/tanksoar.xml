@@ -2,7 +2,6 @@
   <general>
     <game>tanksoar</game>
     <map>maps/tanksoar/default.tmap</map>
-    <seed>0</seed>
     <rules>
       <tanksoar>
         <default-missiles>15</default-missiles>

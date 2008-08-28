@@ -2,7 +2,6 @@
   <general>
     <game>eaters</game>
     <map>maps/eaters/random-walls.emap</map>
-    <seed>0</seed>
     <no-gui />
     <rules>
       <eaters>
