@@ -5,7 +5,7 @@ popd
 pushd elaborations
 source elaborations_source.soar
 popd
-source Impasse__Operator_Tie.soar
-pushd Impasse__Operator_Tie
-source Impasse__Operator_Tie_source.soar
+source Operator_Tie.soar
+pushd Operator_Tie
+source Operator_Tie_source.soar
 popd
