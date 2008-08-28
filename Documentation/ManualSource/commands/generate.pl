@@ -47,7 +47,7 @@ foreach my $c (@commands) {
   `wget -q -O $c.wiki.html http://winter.eecs.umich.edu/soarwiki/Documentation/CLI/$c`;
 
   `$htmlProcess $c.wiki.html | ./strip_verbatim.py > $c.html`;
-  `unlink $c.wiki.html` or die $!;
+  unlink "$c.wiki.html" or die $!;
 
   `$html2latex $c.html`;
   rename ("$c.tex", "$c.tex.orig") or die $!;
