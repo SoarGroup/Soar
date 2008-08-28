@@ -92,14 +92,19 @@ New in 9.0.0
      (essentially replaces defunct indifferent-selection --ask functionality).
   -- New "gp" command added. Generates rules based on simple patterns
      (intended for use with RL).
-  -- Updated selection space to remove local negations (prevents some
-     chunking problems), added iterative deepening support.
+  -- Added iterative deepening support to selection space. To see this
+     in action, load the Water Jug Look-Ahead demo, then source
+     selection-iterative-deepening.soar (in SoarLibrary/Demos/default)
+     and run. Init-soar and run again. Iterative deepening is guaranteed
+     to find the path with the fewest steps.
   -- Added options to learn command to turn chunking through local negations
      on or off (on by default for backwards compatibility). If off, a message
-	 will be generated if "watch --learning print" is enabled that says a chunk was not created
-	 because of local negations, and what those negations were.
-  -- In a tie impasse, an item-count WME containing the number of tied operators is now
-     architecturally generated.
+	 will be generated if "watch --learning print" is enabled that says a chunk
+	 was not created because of local negations, and what those negations were.
+  -- Updated selection space to remove local negations (for compatibility with 
+     new --disable-through-local-negations chunking mode). 
+  -- In a tie impasse, an item-count WME containing the number of tied operators 
+     is now architecturally generated.
   -- Depth at which productions are firing is reported at watch 5.
   -- Multiple rules can be loaded via the Java debugger's Edit Production
      widget, scratch pad, and by pasting into the trace window. This is the
