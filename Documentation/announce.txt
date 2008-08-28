@@ -99,8 +99,8 @@ New in 9.0.0
      to find the path with the fewest steps.
   -- Added options to learn command to turn chunking through local negations
      on or off (on by default for backwards compatibility). If off, a message
-	 will be generated if "watch --learning print" is enabled that says a chunk
-	 was not created because of local negations, and what those negations were.
+     will be generated if "watch --learning print" is enabled that says a chunk
+     was not created because of local negations, and what those negations were.
   -- Updated selection space to remove local negations (for compatibility with 
      new --disable-through-local-negations chunking mode). 
   -- In a tie impasse, an item-count WME containing the number of tied operators 
@@ -108,9 +108,9 @@ New in 9.0.0
   -- Depth at which productions are firing is reported at watch 5.
   -- Multiple rules can be loaded via the Java debugger's Edit Production
      widget, scratch pad, and by pasting into the trace window. This is the
-	 result of an underlying change to SML in which arguments to
-	 ExecuteCommandLine are passed through logic associated with the source
-	 command, and thus multiple commands can be given at once.
+     result of an underlying change to SML in which arguments to
+     ExecuteCommandLine are passed through logic associated with the source
+     command, and thus multiple commands can be given at once.
   -- Command boxes in the Java debugger have been enhanced so that history
      browsing with the up/down arrows works on all platforms.
   -- New "single compilation unit" build configurations (greatly speeds build time).
