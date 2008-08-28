@@ -76,16 +76,19 @@ knowledge:\vspace{-10pt}
   \end{enumerate}
 \item \textbf{Knowledge to apply an operator} \\  \vspace{-20pt}
   \begin{enumerate} \setcounter{enumi}{3}
-  \item \textit{Operator Application:}
-Knowledge of how a specific operator modifies the state.
-  \end{enumerate}
+  \item \textit{Operator Application:} Knowledge of how a specific operator modifies the state.
+\end{enumerate}
 \end{description}
-
 In addition, there is a fifth type of knowledge in Soar that is
-indirectly connected to both operator selection and operator application:\vspace{-10pt}
+indirectly connected to both operator selection and operator application:
+
 \begin{description}
-\begin{enumerate}
-\setcounter{enumi}{4}
+% a hack to make the next bullet line up with the previous ones
+\makeatletter
+\@newlistfalse
+\makeatother
+% /hack
+\begin{enumerate} \setcounter{enumi}{4}
 \item Knowledge of monotonic inferences that can be made about the state
 (\textit{state elaboration}). 
 \end{enumerate}

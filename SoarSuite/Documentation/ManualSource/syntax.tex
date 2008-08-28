@@ -1930,11 +1930,10 @@ sp {
 
 
 \index{capitalize-symbol}
-\item [\soarb{capitalize-symbol} --- ] Given a symbol, this function returns a 
-new
-        symbol with the first character capitalized. This function is provided
-        primarily for text output, for example, to allow the first word in a
-        sentence to be capitalized.
+\item [\soarb{capitalize-symbol} --- ] Given a symbol, this function returns a
+	new symbol with the first character capitalized. This function is
+	provided primarily for text output, for example, to allow the first
+        word in a sentence to be capitalized.
 
         \nocomment{This command is possibly obsolete, since Soar7 is case 
 sensitive?}
@@ -1942,6 +1941,19 @@ sensitive?}
 \begin{verbatim}
 (capitalize-symbol foo)
 \end{verbatim}    
+
+\index{concat}
+\item [\soarb{concat} --- ] Given an arbitrary number of symbols, this function
+        concatenates them together into a single constant symbol. For example,
+
+\begin{verbatim}
+sp {example
+    (state <s> ^type state)
+    -->
+    (<s> ^name (concat foo bar (+ 2 4))) }
+\end{verbatim}
+
+       After this rule fires, the WME \verb=(S1 ^name foobar6)= will be added.
 
 \end{description}
 
