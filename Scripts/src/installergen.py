@@ -28,9 +28,6 @@ WIN_DIGEST = '33ac049c1f70126f5fe190da2bd9ff77'
 ####
 # Configuration
 generatorConfig = {}
-generatorConfig[ 'version' ] = '9.0.0'
-generatorConfig[ 'release-candidate' ] = True
-generatorConfig[ 'rc-number' ] = 1
 
 # Specific directories to remove from source tree
 if os.name != 'posix':
@@ -81,7 +78,7 @@ else:
                    'java_swt', '*.plist', '*.doc', '*.docx', '*.ppt', '*.pptx', '*.pl', 'crossmingw.py',
                    'ManualSource', '*.tex', 'Scripts', 'installergen.py', 'obj', 'Doxyfile', 'Resources', ]
 
-generatorConfig[ 'baseurl' ] = 'https://winter.eecs.umich.edu/svn/soar/tags/Soar-Suite-'
+generatorConfig[ 'baseurl' ] = 'https://winter.eecs.umich.edu/svn/soar/tags/'
 
 ####
 class Generator:
@@ -92,13 +89,11 @@ class Generator:
         self.config = generatorConfig
         
         self.config[ 'target-basename' ] = "Soar-Suite-%s" % ( self.config[ 'version' ], )
-        if self.config[ 'release-candidate' ]:
-            self.config[ 'target-basename' ] = "%s-rc%d" % ( self.config[ 'target-basename' ], self.config[ 'rc-number' ], )
 
         self.config[ 'target-parent' ] = os.path.join( "..", self.config[ 'target-basename' ] )
         self.config[ 'target-path' ] = os.path.join( self.config[ 'target-parent' ], 'SoarSuite', )
             
-        self.config[ 'target-url' ] = "%s%s" % ( self.config[ 'baseurl' ], self.config[ 'version' ], )
+        self.config[ 'target-url' ] = "%s%s" % ( self.config[ 'baseurl' ], self.config[ 'target-basename' ], )
 
         if os.name != 'posix':
             self.config[ 'target-file' ] = "%s-windows.zip" % ( self.config[ 'target-basename' ], )
@@ -296,6 +291,7 @@ class Generator:
 
 def usage():
     print sys.argv[0], "usage:"
+    print "\t-t, --tag: Target base version (required)"
     print "\t-h, --help: This message."
     print "\t-q, --quiet: Decrease logger verbosity, use multiple times for greater effect."
     print "\t-v, --verbose: Increase logger verbosity, use multiple times for greater effect."
@@ -306,13 +302,14 @@ def main():
     loglevel = logging.INFO
     
     try:
-        opts, args = getopt.getopt( sys.argv[1:], "hqvb", [ "help", "quiet", "verbose", "build", ] )
+        opts, args = getopt.getopt( sys.argv[1:], "hqvbt:", [ "help", "quiet", "verbose", "build", "tag=", ] )
     except getopt.GetoptError:
         logging.critical( "Unrecognized option." )
         usage()
         sys.exit(1)
 
     build = False
+    tag = None
     
     for o, a in opts:
         if o in ( "-h", "--help" ):
@@ -324,6 +321,13 @@ def main():
             loglevel -= 10
         if o in ( "-b", "--build" ):
             build = True
+        if o in ( "-t", "--tag" ):
+            tag = a
+    
+    if tag == None:
+        logging.critical( 'Version tag required (option: -t|--tag)' )
+        sys.exit(1)
+    generatorConfig[ 'version' ] = tag
     
     if loglevel < logging.DEBUG:
         loglevel = logging.DEBUG
