@@ -4,7 +4,7 @@ These steps were tested with Visual Studio.NET 2005.  Attempt other versions at 
 
 Java 1.5/5.0 and 1.6/6.0
 ========================
-0) You need the Java SDK installed. This may work with earlier versions of Java, but we haven't tested it.
+0) You need the Java JDK installed.
 
 1) You need to have SWIG installed. This release was tested with SWIG-1.3.31, but later versions will probably work.  SWIG can be downloaded from www.swig.org.  Be sure to get the swigwin download.
 
