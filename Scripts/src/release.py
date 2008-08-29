@@ -43,7 +43,7 @@ if os.name != 'posix':
                                       'CSharp_sml_ClientInterface_wrap.cxx', 'Python_sml_ClientInterface_wrap.cxx', ]
 
     generatorConfig[ 'top-level-files' ] =[ 'Visual Soar.bat', 'Eaters.bat', 'Missionaries and Cannibals.bat', 'SoarJavaDebugger.bat',
-                                       'TankSoar.bat', 'Towers of Hanoi.bat', 'announce.txt', 'readme.txt', 'license.txt', ] 
+                                       'TankSoar.bat', 'Towers of Hanoi.bat', 'announce.txt', 'readme-soar.txt', 'license.txt', ] 
 
     # File globs to completely remove from the tree
     generatorConfig['remove'] = [ '.project', '.classpath', '.settings', '.pydevproject', '.svn', '*.so', '*.so.1', '*.so.2', '*.a', 
@@ -59,7 +59,7 @@ elif sys.platform == 'darwin':
                                       'CSharp_sml_ClientInterface_wrap.cxx', 'Python_sml_ClientInterface_wrap.cxx', ]
 
     generatorConfig[ 'top-level-files' ] =[ 'run-CommandLineInterface.sh', 'run-Debugger.sh', 'run-Eaters.sh', 'run-Soar2D.sh', 'run-TankSoar.sh', 'run-VisualSoar.sh', 
-                                           'announce.txt', 'readme.txt', 'license.txt', ] 
+                                           'announce.txt', 'readme-soar.txt', 'license.txt', ] 
 
     # File globs to completely remove from the tree
     generatorConfig['remove'] = [ '.project', '.classpath', '.settings', '.pydevproject', '.svn', '*.so', '*.so.1', '*.so.2', 
@@ -75,7 +75,7 @@ else:
                                       'CSharp_sml_ClientInterface_wrap.cxx', 'Python_sml_ClientInterface_wrap.cxx', ]
 
     generatorConfig[ 'top-level-files' ] =[ 'run-CommandLineInterface.sh', 'run-Debugger.sh', 'run-Eaters.sh', 'run-Soar2D.sh', 'run-TankSoar.sh', 'run-VisualSoar.sh', 
-                                           'announce.txt', 'readme.txt', 'license.txt', ] 
+                                           'announce.txt', 'readme-soar.txt', 'license.txt', ] 
 
     # File globs to completely remove from the tree
     generatorConfig['remove'] = [ '.project', '.classpath', '.settings', '.pydevproject', '.svn', '*.dylib', '*.so.1', '*.so.2', 
