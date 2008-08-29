@@ -2,6 +2,7 @@
 
 import glob
 import sys
+import os
 
 Import('env')
 env = env.Copy()
@@ -16,13 +17,33 @@ if sys.platform == 'cygwin':
 	env.Append(CPPFLAGS = ' -D_USRDLL')
 	env['no_import_lib'] = 1
 
-libadd = [
-	   'ElementXML',
-	   'ConnectionSML',
-	   'CommandLineInterface',
-	   'SoarKernel',
-	   'sqlite3',
-	   ]
+if env[ 'processor' ] != 'powerpc':
+	libadd = [
+		   'ElementXML',
+		   'ConnectionSML',
+		   'CommandLineInterface',
+		   'SoarKernel',
+		   'sqlite3',
+		   ]
+	if sys.platform == "darwin":
+		os.system( "ln -s SoarLibrary/lib/libsqlite.dylib.osx-intel ../../SoarLibrary/lib/libsqlite3.dylib" )
+		os.system( "ln -s SoarLibrary/lib/libsqlite.dylib.osx-intel ../../SoarLibrary/lib/libsqlite3.0.dylib" )
+		os.system( "ln -s SoarLibrary/lib/libsqlite.dylib.osx-intel ../../SoarLibrary/lib/libsqlite3.0.8.6.dylib" )
+	else:
+		os.system( "ln -s SoarLibrary/lib/libsqlite.so.linux ../../SoarLibrary/lib/libsqlite3.so" )
+		os.system( "ln -s SoarLibrary/lib/libsqlite.so.linux ../../SoarLibrary/lib/libsqlite3.so.0" )
+		os.system( "ln -s SoarLibrary/lib/libsqlite.so.linux ../../SoarLibrary/lib/libsqlite3.so.0.8.6" )
+else:
+	libadd = [
+		   'ElementXML',
+		   'ConnectionSML',
+		   'CommandLineInterface',
+		   'SoarKernel',
+		   'sqlite3',
+		   ]
+	os.system( "ln -s libsqlite.dylib.osx-ppc ../../SoarLibrary/lib/libsqlite3.dylib" )
+	os.system( "ln -s libsqlite.dylib.osx-ppc ../../SoarLibrary/lib/libsqlite3.0.dylib" )
+	os.system( "ln -s libsqlite.dylib.osx-ppc ../../SoarLibrary/lib/libsqlite3.0.8.6.dylib" )
 
 if sys.platform == 'cygwin':
 	   libadd.extend(['pcre',])
