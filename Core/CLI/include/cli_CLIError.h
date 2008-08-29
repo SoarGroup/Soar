@@ -94,6 +94,7 @@ namespace cli {
 			kWorkingMemoryNotEmpty				= 88, 
 			kProductionAddFailed				= 90, 
 			kEscapedNewline						= 91, 
+			kSourceDepthExceeded				= 92,
 		};
 
 		static char const* GetErrorDescription(ErrorCode code) {
@@ -175,6 +176,7 @@ namespace cli {
 				case kWorkingMemoryNotEmpty:			return "Working memory not empty.";
 				case kProductionAddFailed:				return "Production addition failed.";
 				case kEscapedNewline:					return "Escaped newlines not suppored (line ends with single backslash).";
+				case kSourceDepthExceeded:				return "Source depth (100) exceeded, possible recursive source.";
 				default:								return "Unknown error code.";
 			}
 		}

@@ -17,8 +17,8 @@
 	<Configurations>
 		<Configuration
 			Name="Debug|Win32"
-			OutputDirectory="build"
-			IntermediateDirectory="$(OutDir)\Debug"
+			OutputDirectory="build\$(ConfigurationName)"
+			IntermediateDirectory="$(OutDir)"
 			ConfigurationType="2"
 			InheritedPropertySheets="$(VCInstallDir)VCProjectDefaults\UpgradeFromVC71.vsprops"
 			CharacterSet="2"
@@ -67,14 +67,15 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="..\..\SoarLibrary\bin\sqlite3.lib"
-				OutputFile="..\..\SoarLibrary\bin\Soar$(ProjectName).dll"
+
+				AdditionalDependencies="$(SolutionDir)\SoarLibrary\bin\sqlite3.lib"				
+				OutputFile="$(SolutionDir)\SoarLibrary\bin\Soar$(ProjectName).dll"
 				LinkIncremental="2"
 				AdditionalLibraryDirectories=""
 				GenerateDebugInformation="true"
 				ProgramDatabaseFile="$(OutDir)/$(ProjectName).pdb"
 				SubSystem="2"
-				ImportLibrary="$(OutDir)\$(ProjectName).lib"
+				ImportLibrary="$(SolutionDir)\SoarLibrary\lib\$(ProjectName).lib"
 				TargetMachine="1"
 			/>
 			<Tool
@@ -104,8 +105,8 @@
 		</Configuration>
 		<Configuration
 			Name="Release|Win32"
-			OutputDirectory="build"
-			IntermediateDirectory="$(OutDir)\Release"
+			OutputDirectory="build\$(ConfigurationName)"
+			IntermediateDirectory="$(OutDir)"
 			ConfigurationType="2"
 			InheritedPropertySheets="$(VCInstallDir)VCProjectDefaults\UpgradeFromVC71.vsprops"
 			CharacterSet="2"
@@ -155,8 +156,8 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="..\..\SoarLibrary\bin\sqlite3.lib"
-				OutputFile="..\..\SoarLibrary\bin\Soar$(ProjectName).dll"
+				AdditionalDependencies="$(SolutionDir)\SoarLibrary\bin\sqlite3.lib"
+				OutputFile="$(SolutionDir)\SoarLibrary\bin\Soar$(ProjectName).dll"
 				LinkIncremental="1"
 				AdditionalLibraryDirectories=""
 				IgnoreAllDefaultLibraries="false"
@@ -165,7 +166,7 @@
 				SubSystem="2"
 				OptimizeReferences="2"
 				EnableCOMDATFolding="2"
-				ImportLibrary="$(OutDir)\$(ProjectName).lib"
+				ImportLibrary="$(SolutionDir)\SoarLibrary\lib\$(ProjectName).lib"
 				TargetMachine="1"
 			/>
 			<Tool
@@ -195,8 +196,8 @@
 		</Configuration>
 		<Configuration
 			Name="Debug SCU|Win32"
-			OutputDirectory="$(ConfigurationName)"
-			IntermediateDirectory="$(ConfigurationName)"
+			OutputDirectory="build\$(ConfigurationName)"
+			IntermediateDirectory="$(OutDir)"
 			ConfigurationType="2"
 			InheritedPropertySheets="$(VCInstallDir)VCProjectDefaults\UpgradeFromVC71.vsprops"
 			CharacterSet="2"
@@ -245,14 +246,14 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="..\..\SoarLibrary\bin\sqlite3.lib"
-				OutputFile="..\..\SoarLibrary\bin\Soar$(ProjectName).dll"
+				AdditionalDependencies="$(SolutionDir)\SoarLibrary\bin\sqlite3.lib"
+				OutputFile="$(SolutionDir)\SoarLibrary\bin\Soar$(ProjectName).dll"
 				LinkIncremental="2"
 				AdditionalLibraryDirectories=""
 				GenerateDebugInformation="true"
 				ProgramDatabaseFile="$(OutDir)/$(ProjectName).pdb"
 				SubSystem="2"
-				ImportLibrary="$(OutDir)\$(ProjectName).lib"
+				ImportLibrary="$(SolutionDir)\SoarLibrary\lib\$(ProjectName).lib"
 				TargetMachine="1"
 			/>
 			<Tool
@@ -282,8 +283,8 @@
 		</Configuration>
 		<Configuration
 			Name="Release SCU|Win32"
-			OutputDirectory="$(ConfigurationName)"
-			IntermediateDirectory="$(ConfigurationName)"
+			OutputDirectory="build\$(ConfigurationName)"
+			IntermediateDirectory="$(OutDir)"
 			ConfigurationType="2"
 			InheritedPropertySheets="$(VCInstallDir)VCProjectDefaults\UpgradeFromVC71.vsprops"
 			CharacterSet="2"
@@ -333,8 +334,8 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="..\..\SoarLibrary\bin\sqlite3.lib"
-				OutputFile="..\..\SoarLibrary\bin\Soar$(ProjectName).dll"
+				AdditionalDependencies="$(SolutionDir)\SoarLibrary\bin\sqlite3.lib"
+				OutputFile="$(SolutionDir)\SoarLibrary\bin\Soar$(ProjectName).dll"
 				LinkIncremental="1"
 				AdditionalLibraryDirectories=""
 				IgnoreAllDefaultLibraries="false"
@@ -343,7 +344,7 @@
 				SubSystem="2"
 				OptimizeReferences="2"
 				EnableCOMDATFolding="2"
-				ImportLibrary="$(OutDir)\$(ProjectName).lib"
+				ImportLibrary="$(SolutionDir)\SoarLibrary\lib\$(ProjectName).lib"
 				TargetMachine="1"
 			/>
 			<Tool

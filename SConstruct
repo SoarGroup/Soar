@@ -36,6 +36,7 @@ if sys.platform == 'cygwin':
 
 opts = Options()
 opts.AddOptions(
+	BoolOption('scu', 'Build using single compilation units (faster)', 'yes'), 
 	BoolOption('java', 'Build the Soar Java interface (required for debugger)', 'yes'), 
 	BoolOption('swt', 'Build Java SWT projects (required for debugger)', 'yes'), 
 	BoolOption('python', 'Build the Soar Python interface', pythonDefault), 

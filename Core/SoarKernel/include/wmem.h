@@ -1,5 +1,5 @@
 /*************************************************************************
- * PLEASE SEE THE FILE "COPYING" (INCLUDED WITH THIS SOFTWARE PACKAGE)
+ * PLEASE SEE THE FILE "license.txt" (INCLUDED WITH THIS SOFTWARE PACKAGE)
  * FOR LICENSE AND COPYRIGHT INFORMATION. 
  *************************************************************************/
 
@@ -150,15 +150,15 @@ typedef struct wme_struct {
   struct gds_struct *gds;
   struct wme_struct *gds_next, *gds_prev; /* used for dll of wmes in gds */
   /* REW: end   09.15.96 */
-
-
+  
+  
   epmem_node_id epmem_id;
   epmem_time_id epmem_valid;
 
   wma_decay_element_t *wma_decay_element;
   bool wma_has_decay_element;
   tc_number wma_tc_value;
-
+  
 } wme;
 
 #ifdef USE_MACROS

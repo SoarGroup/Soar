@@ -203,6 +203,8 @@ public:
     static char const* const kBacktraceSymbol1;
     static char const* const kBacktraceSymbol2;
 
+	static char const* const kTagLocalNegation; // SBW 5/07
+
     // numeric indifference stuff
     static char const* const kTagCandidate;
     static char const* const kCandidateName;

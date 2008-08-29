@@ -1,5 +1,5 @@
 /*************************************************************************
- * PLEASE SEE THE FILE "COPYING" (INCLUDED WITH THIS SOFTWARE PACKAGE)
+ * PLEASE SEE THE FILE "license.txt" (INCLUDED WITH THIS SOFTWARE PACKAGE)
  * FOR LICENSE AND COPYRIGHT INFORMATION. 
  *************************************************************************/
 
@@ -160,3 +160,4 @@ extern preference *exploration_get_highest_q_value_pref( preference *candidates 
 extern void exploration_compute_value_of_candidate( agent *my_agent, preference *cand, slot *s, double default_value = 0 );
 
 #endif
+

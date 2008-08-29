@@ -31,7 +31,7 @@ void KernelCallback::KernelCallbackStatic(agent* pAgent, int eventID, void* pDat
 	// Make sure everything matches up correctly.
 	assert(pThis->m_pCallbackAgentSML->GetSoarAgent() == pAgent) ;
 
-	// Make the callback to the non-static method
+	// Make the callback to the non-static method 
 	pThis->OnKernelEvent(eventID, pThis->m_pCallbackAgentSML, pCallData) ;
 }
 

@@ -78,9 +78,6 @@ public:
 	// The timeout for waiting for data is secondsWait + millisecondsWait, where millisecondsWait < 1000
 	bool		IsReadDataAvailable(long secondsWait = 0, long millisecondsWait = 0) ;
 
-	// Close down our side of the pipe
-	void		Close() ;
-		
 public:
 	// Print out debug information about the messages we are sending and receiving.
 	// NOTE: We still print out information about start up/shut down, errors etc. without this flag being true.
@@ -97,6 +94,8 @@ protected:
 	bool		SendBuffer(char const* pSendBuffer, size_t bufferSize) ;
 	bool		ReceiveBuffer(char* pRecvBuffer, size_t bufferSize) ;
 
+	// Close down our side of the pipe
+	virtual void		CloseInternal() ;
 };
 
 } // Namespace

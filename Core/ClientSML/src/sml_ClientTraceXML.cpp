@@ -216,6 +216,7 @@ bool ClientTraceXML::IsTagBacktrace() const				{ return IsTag(sml_Names::kTagBac
 bool ClientTraceXML::IsTagAddToPotentials() const		{ return IsTag(sml_Names::kTagAddToPotentials) ; }
 bool ClientTraceXML::IsTagProhibitPreference() const	{ return IsTag(sml_Names::kTagProhibitPreference) ; }
 bool ClientTraceXML::IsTagBacktraceResult() const		{ return IsTag(sml_Names::kTagBacktraceResult) ; }
+bool ClientTraceXML::IsTagLocalNegation() const			{ return IsTag(sml_Names::kTagLocalNegation) ; }
 
 char const* ClientTraceXML::GetBacktraceAlreadyBacktraced() const { return GetAttribute(sml_Names::kBacktracedAlready) ; }
 char const* ClientTraceXML::GetBacktraceSymbol1() const			  { return GetAttribute(sml_Names::kBacktraceSymbol1) ; }

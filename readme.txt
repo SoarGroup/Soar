@@ -1,9 +1,8 @@
-Soar Suite version 8.6.4-RL
+Soar Suite version 9.0.0
 
-Soar is no longer installed to Program Files in this release, simply
-extract and run.
+Soar is no longer installed to Program Files. Simply extract and run.
 
 To run the common Soar applications, double click the files in this folder.
-The Soar tutorial is located inside the SoarSuite\Documentation folder.
+The Soar tutorial is located inside the Documentation folder.
 
 See announce.txt for more information.

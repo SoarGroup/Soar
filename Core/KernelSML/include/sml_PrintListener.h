@@ -18,7 +18,9 @@
 #include "sml_EventManager.h"
 #include "sml_AgentOutputFlusher.h"
 
+#include <iostream>
 #include <string>
+#include <sstream>
 #include <map>
 
 namespace sml {
@@ -31,7 +33,7 @@ class PrintListener : public EventManager<smlPrintEventId>
 protected:
 	const static int kNumberPrintEvents = smlEVENT_LAST_PRINT_EVENT - smlEVENT_FIRST_PRINT_EVENT + 1 ;
 	KernelSML*		m_pKernelSML ;
-	std::string		m_BufferedPrintOutput[kNumberPrintEvents];
+	std::stringstream m_BufferedPrintOutput[kNumberPrintEvents];
 	AgentOutputFlusher* m_pAgentOutputFlusher[kNumberPrintEvents];
 
 	// When false we don't forward print callback events to the listeners.  (Useful when we're backdooring into the kernel)

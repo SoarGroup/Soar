@@ -1,7 +1,7 @@
 #include <portability.h>
 
 /*************************************************************************
-* PLEASE SEE THE FILE "COPYING" (INCLUDED WITH THIS SOFTWARE PACKAGE)
+* PLEASE SEE THE FILE "license.txt" (INCLUDED WITH THIS SOFTWARE PACKAGE)
 * FOR LICENSE AND COPYRIGHT INFORMATION. 
 *************************************************************************/
 
@@ -1686,7 +1686,7 @@ bool KernelHelpers::GDSPrint(AgentSML* thisAgent)
 	return true;
 }////
 
-void KernelHelpers::GetForceLearnStates(AgentSML* pAgent, std::string& res) {
+void KernelHelpers::GetForceLearnStates(AgentSML* pAgent, std::stringstream& res) {
 	agent* pSoarAgent = pAgent->GetSoarAgent();
 
 	cons *c;
@@ -1694,11 +1694,11 @@ void KernelHelpers::GetForceLearnStates(AgentSML* pAgent, std::string& res) {
 
 	for (c = pSoarAgent->chunky_problem_spaces; c != NIL; c = c->rest) {
 		symbol_to_string(pSoarAgent, (Symbol *) (c->first), TRUE, buff, 1024);
-		res += buff;
+		res << buff;
 	}
 }
 
-void KernelHelpers::GetDontLearnStates(AgentSML* pAgent, std::string& res) {
+void KernelHelpers::GetDontLearnStates(AgentSML* pAgent, std::stringstream& res) {
 	agent* pSoarAgent = pAgent->GetSoarAgent();
 
 	cons *c;
@@ -1706,7 +1706,7 @@ void KernelHelpers::GetDontLearnStates(AgentSML* pAgent, std::string& res) {
 
 	for (c = pSoarAgent->chunk_free_problem_spaces; c != NIL; c = c->rest) {
 		symbol_to_string(pSoarAgent, (Symbol *) (c->first), TRUE, buff, 1024);
-		res += buff;
+		res << buff;
 	}
 }
 

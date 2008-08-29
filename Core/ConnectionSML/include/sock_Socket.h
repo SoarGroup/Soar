@@ -84,9 +84,6 @@ public:
 	// The timeout for waiting for data is secondsWait + millisecondsWait, where millisecondsWait < 1000
 	bool		IsReadDataAvailable(long secondsWait = 0, long millisecondsWait = 0) ;
 
-	// Close down our side of the socket
-	void		Close() ;
-
 public:
 	// Print out debug information about the messages we are sending and receiving.
 	// NOTE: We still print out information about start up/shut down, errors etc. without this flag being true.
@@ -102,6 +99,9 @@ protected:
 	// Lower level buffer send and receive calls.
 	bool		SendBuffer(char const* pSendBuffer, size_t bufferSize) ;
 	bool		ReceiveBuffer(char* pRecvBuffer, size_t bufferSize) ;
+
+	// Close down our side of the socket
+	virtual void		CloseInternal() ;
 
 };
 

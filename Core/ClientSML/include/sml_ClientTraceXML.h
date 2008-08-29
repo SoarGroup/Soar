@@ -125,6 +125,7 @@ public:
 	bool IsTagAddToPotentials() const ;
 	bool IsTagProhibitPreference() const ;
 	bool IsTagBacktraceResult() const ;
+	bool IsTagLocalNegation() const ;
 
 	char const* GetBacktraceAlreadyBacktraced() const ;
 	char const* GetBacktraceSymbol1() const	;

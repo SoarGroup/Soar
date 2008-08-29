@@ -1,7 +1,7 @@
 #include <portability.h>
 
 /*************************************************************************
- * PLEASE SEE THE FILE "COPYING" (INCLUDED WITH THIS SOFTWARE PACKAGE)
+ * PLEASE SEE THE FILE "license.txt" (INCLUDED WITH THIS SOFTWARE PACKAGE)
  * FOR LICENSE AND COPYRIGHT INFORMATION. 
  *************************************************************************/
 
@@ -688,4 +688,19 @@ Bool trace_ungrounded_potentials (agent* thisAgent, goal_stack_level grounds_lev
   }
 
   return TRUE;
+}
+
+void report_local_negation (agent* thisAgent, condition* c) {
+    if (thisAgent->sysparams[TRACE_CHUNK_NAMES_SYSPARAM]) {
+		// use the same code as the backtracing above
+		list* negated_to_print = NIL;
+		push (thisAgent, c, negated_to_print);
+
+		print_string (thisAgent, "\n*** Chunk won't be formed due to local negation in backtrace ***\n");
+		xml_begin_tag(thisAgent, kTagLocalNegation);
+		print_consed_list_of_conditions (thisAgent, negated_to_print, 2);
+		xml_end_tag(thisAgent, kTagLocalNegation);
+
+		free_list (thisAgent, negated_to_print);
+	}
 }
