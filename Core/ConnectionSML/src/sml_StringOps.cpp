@@ -14,6 +14,9 @@
 
 #include "sml_StringOps.h"
 
+#include <iostream>
+#include <sstream>
+
 /*************************************************************
 * @brief Returns true if strings are equal (case sensitive).
 *************************************************************/

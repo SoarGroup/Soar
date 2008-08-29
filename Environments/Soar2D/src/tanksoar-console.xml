@@ -2,7 +2,6 @@
   <general>
     <game>tanksoar</game>
     <map>maps/tanksoar/default.tmap</map>
-    <seed>0</seed>
     <no-gui />
     <rules>
       <tanksoar>

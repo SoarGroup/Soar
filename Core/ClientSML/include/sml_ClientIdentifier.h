@@ -22,6 +22,7 @@
 #include <string>
 #include <list>
 #include <set>
+#include <iostream>
 
 namespace sml {
 
@@ -43,7 +44,7 @@ protected:
 
 	// The list of WMEs owned by this identifier.
 	// (When we delete this identifier we'll delete all these automatically)
-	std::set<WMElement*, WMELessThan>		m_Children ;
+	std::list<WMElement*>		m_Children ;
 
 	// The list of WMEs that are using this symbol as their identifier
 	// (Usually just one value in this list)
@@ -100,8 +101,8 @@ class Identifier : public WMElement
 	friend class OutputDeltaList ;		// Allow it to clear are children modified
 
 public:
-	typedef std::set<WMElement*, WMELessThan>::iterator ChildrenIter ;
-	typedef std::set<WMElement*, WMELessThan>::const_iterator ChildrenConstIter ;
+	typedef std::list<WMElement*>::iterator ChildrenIter ;
+	typedef std::list<WMElement*>::const_iterator ChildrenConstIter ;
 
 	ChildrenIter GetChildrenBegin() { return m_pSymbol->m_Children.begin() ; }
 	ChildrenIter GetChildrenEnd()   { return m_pSymbol->m_Children.end() ; }

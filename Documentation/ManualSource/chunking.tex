@@ -90,6 +90,12 @@ subgoal, \emph{unless} one of the following conditions is true:
 		don't believe it's explained anywhere. 
 		}
 
+\item The learning flag \soar{through-local-negations} is disabled, and the
+  result is dependent on a test for the negation of a subgoal WME. Testing a
+  local negation can result in an overgeneral chunk (see Section
+  \ref{CHUNKING-problems} on page \pageref{CHUNKING-problems}). In this mode,
+  such chunks are not created.
+
 \item The chunk duplicates a production or chunk already in production memory.
 	In some rare cases, a duplicate production will not be detected because the
 	order of the conditions or actions is not the same as an existing production.  
@@ -384,11 +390,14 @@ that are present and firing with those values.
 	and/or John for an explanation
 	}
 
+\nocomment{SBW 8/08: updating this section to cover the additional cases in the
+talk referenced above (16 years later!) }
+
 One of the weaknesses of Soar is that chunking can create overgeneral productions
 that apply in inappropriate situations, or overspecific productions that will
 never fire. These problems arise when chunking cannot accurately summarize the
 processing that led to the creation of a result. Below is a description of
-three known problems in chunking.
+five known problems in chunking.
 
 \subsection{Using search control to determine correctness}
 \index{desirability preference}
@@ -448,6 +457,14 @@ they test for the absence of superstate working memory elements.
 data can be made a result by attaching it to the superstate. This increases
 the number of chunks learned, but a negated condition for the superstate can
 be used that leads to correct chunks.
+
+Alternatively, Soar's learning mode can be set to reject chunks when the
+backtrace encounters a local negation, by setting \soar{learn
+--through-local-negations disable}. There are many cases where local negations
+are safe to ignore (and hence this mode reduces performance), but it can
+substantially reduce the number of overgeneral chunks in big agents (and aid in
+debugging).
+
 \index{negated!conditions}
 \index{chunking!negated conditions}
 
@@ -479,7 +496,37 @@ because the original result is not included in the backtrace.  If the
 \soar{\carat quiescence t} being tested is connected to a superstate, it will
 not inhibit chunking and it will be included in the conditions of the chunk.
 
+\subsection{Mapping multiple superstate WMEs to one local WME}
 
+An agent may have several rule instantiations that match on different
+structures in a superstate but create WMEs with the same attribute-value pairs
+in a substate. For example, there may be a rule that matches several WMEs in a
+superstate with the same multi-valued attribute and elaborates the local state
+with a WME indicating that at least one WME with that attribute exists.  In
+these cases, the total effect of those rule firings will be collapsed into
+creating a single WME in the substate, because working memory is represented as
+a set.  If this WME is then tested to create a result on the superstate, the
+chunk that is subsequently created will be overgeneral: While the original
+subgoal processing created only one result, the chunk will create a distinct
+result for each superstate structure originally tested. This is because the
+desired behavior cannot be reduced to a single rule.
+
+\textbf{Solution:} If this type of behavior is needed, the single WME should go
+in the top state, so that the chunks built can similarly map multiple
+structures to one.
+
+\subsection{Revising the substructure of a previous result}
+
+This occurs when a subgoal creates a local structure, which it then links to a
+superstate as a result. Things added to this structure are also results, as
+they are linked to the superstate. However, if that substructure is created
+with rules that match the local state only, Soar cannot build a chunk for the
+result, as it is unable to determine how the new WME is linked to the
+superstate.
+
+\textbf{Solution:} If the substructure of a result must be revised, the rules
+that modify it should match the result through the superstate, not through the
+local state.
 
 \nocomment{
 	\subsection{Overuse of predicates}

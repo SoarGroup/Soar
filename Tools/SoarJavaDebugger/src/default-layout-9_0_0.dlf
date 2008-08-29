@@ -26,7 +26,7 @@
             <Button InternalCommand="askcd" Command="" Name="cd"></Button>
             <Button InternalCommand="" Command="excise --all" Name="Excise all"></Button>
             <Button InternalCommand="demo towers-of-hanoi towers-of-hanoi.soar" Command="" Name="Towers of Hanoi"></Button>
-            <Button InternalCommand="demo water-jug water-jug-look-ahead.soar" Command="" Name="Water Jug Look-Ahead"></Button>
+            <Button InternalCommand="demo water-jug water-jug-rl.soar" Command="" Name="Water Jug RL"></Button>
             <Button InternalCommand="remote" Command="" Name="Remote"></Button>
           </view>
         </pane>

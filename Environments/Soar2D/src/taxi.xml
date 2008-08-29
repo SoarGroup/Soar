@@ -2,7 +2,6 @@
   <general>
     <game>taxi</game>
     <map>maps/taxi/default.xml</map>
-    <seed>0</seed>
     <rules>
       <taxi />
     </rules>

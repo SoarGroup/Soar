@@ -63,11 +63,22 @@ bool sock::MakeSocketNonBlocking(SOCKET hSock)
 // Linux Versions
 //////////////////////////////////////////////////////////////////////
 #include "sock_OSspecific.h"
+#include <signal.h>
 
 // Nothing needs to be initialized on Linux
 bool sock::InitializeOperatingSystemSocketLibrary()
 {
-	return true ;
+	// Ignore broken pipe signal
+	struct sigaction action;
+	bzero( &action, sizeof( struct sigaction ) );
+	action.sa_handler = SIG_IGN;
+
+	if ( sigaction( SIGPIPE, &action, 0 ) < 0 )
+	{
+		assert( false );
+		return false;
+	}
+	return true;
 }
 
 // Nothing needs to be initialized on Linux

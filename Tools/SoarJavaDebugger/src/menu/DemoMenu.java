@@ -38,7 +38,7 @@ public class DemoMenu
 
 	private AbstractAction m_Waterjug_RL = new AbstractAction("Water Jug RL")	
 				{ public void actionPerformed(ActionEvent e) { loadDemo(new File("water-jug","water-jug-rl.soar")) ; } } ;
-	private AbstractAction m_Waterjug_Lookahead = new AbstractAction("Water Jug Lookahead")	
+	private AbstractAction m_Waterjug_Lookahead = new AbstractAction("Water Jug Look-Ahead")	
 				{ public void actionPerformed(ActionEvent e) { loadDemo(new File("water-jug","water-jug-look-ahead.soar")) ; } } ;
 	private AbstractAction m_Waterjug = new AbstractAction("Water Jug")	
 				{ public void actionPerformed(ActionEvent e) { loadDemo(new File("water-jug","water-jug.soar")) ; } } ;

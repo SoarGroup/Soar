@@ -143,6 +143,10 @@ void FullTests::setUp()
 void FullTests::runAllTestTypes()
 {
 	// test 1
+	// generate port
+	m_Port = rand() % kPortRange;
+	m_Port += kPortBase;
+
 	m_Options.reset();
 	m_Options.set( USE_CLIENT_THREAD );
 	m_Options.set( FULLY_OPTIMIZED );
@@ -151,6 +155,10 @@ void FullTests::runAllTestTypes()
 	std::cout.flush();
 
 	// test 2
+	// generate port
+	m_Port = rand() % kPortRange;
+	m_Port += kPortBase;
+
 	m_Options.reset();
 	m_Options.set( USE_CLIENT_THREAD );
 	runTest();
@@ -158,15 +166,19 @@ void FullTests::runAllTestTypes()
 	std::cout.flush();
 
 	// test 3
+	// generate port
+	m_Port = rand() % kPortRange;
+	m_Port += kPortBase;
+
 	m_Options.reset();
 	runTest();
 	std::cout << "3";
 	std::cout.flush();
 
 	// test 4
-   // generate port
-   m_Port = rand() % kPortRange;
-   m_Port += kPortBase;
+	// generate port
+	m_Port = rand() % kPortRange;
+	m_Port += kPortBase;
 
 	m_Options.reset();
 	m_Options.set( REMOTE );
@@ -201,11 +213,11 @@ void FullTests::createSoar()
 		if ( m_Options.test( USE_CLIENT_THREAD ) )
 		{
 			bool optimized = m_Options.test( FULLY_OPTIMIZED );
-			m_pKernel = sml::Kernel::CreateKernelInCurrentThread( sml::Kernel::GetDefaultLibraryName(), optimized );
+			m_pKernel = sml::Kernel::CreateKernelInCurrentThread( sml::Kernel::GetDefaultLibraryName(), optimized, m_Port );
 		}
 		else
 		{
-			m_pKernel = sml::Kernel::CreateKernelInNewThread();
+			m_pKernel = sml::Kernel::CreateKernelInNewThread( sml::Kernel::GetDefaultLibraryName(), m_Port );
 		}
 	}
 
