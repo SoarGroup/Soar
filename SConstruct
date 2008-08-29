@@ -17,6 +17,8 @@ soarversionstring = "9.0.0"
 print "Soar", soarversionstring
 print "Detected OS:", os.name
 print "Detected platform:", sys.platform
+processor = os.popen( 'uname -p', 'r' ).read().strip()
+print "Detected processor:", processor
 
 if os.name != "posix":
 	print "Unsupported OS."
