@@ -26,13 +26,13 @@ if env[ 'processor' ] != 'powerpc':
 		   'sqlite3',
 		   ]
 	if sys.platform == "darwin":
-		os.system( "ln -s SoarLibrary/lib/libsqlite.dylib.osx-intel ../../SoarLibrary/lib/libsqlite3.dylib" )
-		os.system( "ln -s SoarLibrary/lib/libsqlite.dylib.osx-intel ../../SoarLibrary/lib/libsqlite3.0.dylib" )
-		os.system( "ln -s SoarLibrary/lib/libsqlite.dylib.osx-intel ../../SoarLibrary/lib/libsqlite3.0.8.6.dylib" )
+		os.system( "ln -sf libsqlite.dylib.osx-intel ../../SoarLibrary/lib/libsqlite3.dylib" )
+		os.system( "ln -sf libsqlite.dylib.osx-intel ../../SoarLibrary/lib/libsqlite3.0.dylib" )
+		os.system( "ln -sf libsqlite.dylib.osx-intel ../../SoarLibrary/lib/libsqlite3.0.8.6.dylib" )
 	else:
-		os.system( "ln -s SoarLibrary/lib/libsqlite.so.linux ../../SoarLibrary/lib/libsqlite3.so" )
-		os.system( "ln -s SoarLibrary/lib/libsqlite.so.linux ../../SoarLibrary/lib/libsqlite3.so.0" )
-		os.system( "ln -s SoarLibrary/lib/libsqlite.so.linux ../../SoarLibrary/lib/libsqlite3.so.0.8.6" )
+		os.system( "ln -sf libsqlite.so.linux ../../SoarLibrary/lib/libsqlite3.so" )
+		os.system( "ln -sf libsqlite.so.linux ../../SoarLibrary/lib/libsqlite3.so.0" )
+		os.system( "ln -sf libsqlite.so.linux ../../SoarLibrary/lib/libsqlite3.so.0.8.6" )
 else:
 	libadd = [
 		   'ElementXML',
@@ -41,9 +41,9 @@ else:
 		   'SoarKernel',
 		   'sqlite3',
 		   ]
-	os.system( "ln -s libsqlite.dylib.osx-ppc ../../SoarLibrary/lib/libsqlite3.dylib" )
-	os.system( "ln -s libsqlite.dylib.osx-ppc ../../SoarLibrary/lib/libsqlite3.0.dylib" )
-	os.system( "ln -s libsqlite.dylib.osx-ppc ../../SoarLibrary/lib/libsqlite3.0.8.6.dylib" )
+	os.system( "ln -sf libsqlite.dylib.osx-ppc ../../SoarLibrary/lib/libsqlite3.dylib" )
+	os.system( "ln -sf libsqlite.dylib.osx-ppc ../../SoarLibrary/lib/libsqlite3.0.dylib" )
+	os.system( "ln -sf libsqlite.dylib.osx-ppc ../../SoarLibrary/lib/libsqlite3.0.8.6.dylib" )
 
 if sys.platform == 'cygwin':
 	   libadd.extend(['pcre',])
