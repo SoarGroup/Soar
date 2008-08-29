@@ -1,4 +1,4 @@
-Soar Suite version 9.0.0
+Soar Suite version 9.1.0-beta
 
 Soar is no longer installed to Program Files. Simply extract and run.
 

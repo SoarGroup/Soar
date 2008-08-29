@@ -1,28 +1,25 @@
-Soar 9.0.0 Release Notes
-========================
+Soar 9.1.0-beta Release Notes
+=============================
 
-This release of Soar begins the 9.x series of releases during which we 
-expect to introduce several new mechanisms. 9.0.0 includes reinforcement
+This release of Soar continues the 9.x series of releases during which we 
+expect to introduce several new mechanisms. 9.0.0 included reinforcement
 learning code (Soar-RL), which was first released alongside the 8.6.4
-beta. 9.0.0 is also the first release to include the SML interface 
-without gSKI.
+beta. 9.0.0 was also the first release to include the SML interface 
+without gSKI.  9.1.0-beta includes episodic memory (Soar-EpMem) and Working
+Memory Activation (WMA).
 
-Soar-RL is the architectural integration of reinforcement learning (RL) with
-Soar.  The RL mechanism will automatically tune the values of
-numeric-indifferent preference rules based on reward generated while a Soar
-agent executes.  These values represent the expected discounted sum of
-future rewards the agent will receive if it selects that operator for states
-matched by the condition of the rule.  See the RL manual and tutorial in
-Documentation.
+Soar-EpMem is a task-independent, architectural integration of an artificial 
+episodic memory (EpMem) with Soar.  The EpMem mechanism will automatically 
+record episodes as a Soar agent executes.  These episodes can later be queried 
+and retrieved in order to improve performance on future tasks.  See the EpMem 
+manual in Documentation.
 
-To see Soar-RL in action right away, try the Water Jug RL demo (it can be
-loaded from the Demos->Water Jug menu in the Java Debugger). To see the effects
-of RL, run it to completion, then init-soar and run it again. Repeat 4-5 times
-to see it reach optimal behavior. (Note: the agent may occasionally perform
-non-optimal behavior even after it has converged because of its exploration 
-policy. See the RL manual and tutorial for details).
+This release of Soar-EpMem does not include a tutorial.  To see examples
+of using Soar-EpMem with a Soar agent, see the "kb" agent in the Demos
+directory.  This agent will run a series of EpMem "unit tests," exploring
+all forms of the Soar-EpMem agent API.
 
-Soar-9.0.0 includes all source code, many demo programs, and a 
+Soar 9.1.0-beta includes all source code, many demo programs, and a 
 number of applications that serve as examples of how to interface 
 Soar to an external Environment.  There is support for integrating 
 Soar with C++, Java, Tcl, Python and C# applications.  Many Tools
@@ -35,7 +32,7 @@ http://winter.eecs.umich.edu/soarwiki
 This release was generated for Windows, Linux, and OSX systems.  
 Windows XP and Vista are supported.
 
-Soar 9.0.0 can be downloaded from the Soar homepage at:
+Soar 9.1.0-beta can be downloaded from the Soar homepage at:
 
         http://sitemaker.umich.edu/soar
 
@@ -70,9 +67,34 @@ For those on other platforms or developers:
 * On Windows, Visual Studio 2005 SP1 is required.
 * On Linux/Unix/OS X, Python, SCons, gcc 3.3 or later required.
 
-Components of Soar 9.0.0
-========================
-* Pre-built libraries and executables for Windows (SoarLibrary/bin)
+Soar-EpMem & SQLite
+===================
+Soar-EpMem requires both statically and dynamically linked SQLite components. 
+The former is provided in source. The latter, at this time, is a manual process 
+(SQLite uses make scripts for their compile). EpMem includes pre-built binaries 
+for Windows, Linux (tested on Ubuntu) and OS X Leopard. If your install works with 
+these components, you can skip this section. Otherwise, the following process 
+documents how to build the required components.
+
+First, download the source tarball from the SQLite homepage (http://www.sqlite.org/download.html). 
+To be clear, you want the non-amalgamated source code tarball 
+(probably named sqlite-A.B.C.tar.gz, for version A.B.C).  Next, extract the contents, 
+change to the directory, and run ./configure followed by make at the command line. 
+These commands will create the required libraries for your system.  The final step 
+is to copy the required components from the SQLite directory to your EpMem 
+directory. The only file of interest is named libsqliteA.B.C.D.ext 
+(ext is dylib on Mac, so for Linux; A.B.C.D will vary on the version) and is 
+located in the .libs folder of your SQLite directory. You will want to copy this 
+file out of .libs and into the SoarLibrary/lib folder of your EpMem install. 
+Furthermore, SQLite requires that this file exist under two additional names: 
+libqsliteA.ext and libsqliteA.B.ext. To accommodate, you can either create a symbolic 
+link under these two names or duplicate the file (it makes no difference, except 
+for added/saved disk space).  Once you have these components in the appropriate directory, 
+your EpMem build (and subsequent runs) should work fine.
+
+Components of Soar 9.1.0-beta
+=============================
+* Pre-built libraries and executables (SoarLibrary/bin)
 * all source code, config files, and OS tools for automated Soar builds
 * SoarJavaDebugger 
 * VisualSoar
@@ -80,59 +102,24 @@ Components of Soar 9.0.0
 * Test and Demo programs
 * Documentation
 
-New in 9.0.0
-============
+New in 9.1.0-beta
+=================
 
 * Components and Capabilities added
-  -- RL commands and documentation added (see RL manual and tutorial
-     in Documentation directory).
-  -- indifferent-selection command updated to support options primarily
-     intended for (but not limited to) RL.
-  -- select and predict commands added to control operator selection
-     (essentially replaces defunct indifferent-selection --ask functionality).
-  -- New "gp" command added. Generates rules based on simple patterns
-     (intended for use with RL).
-  -- Added iterative deepening support to selection space. To see this
-     in action, load the Water Jug Look-Ahead demo, then source
-     selection-iterative-deepening.soar (in SoarLibrary/Demos/default)
-     and run. Init-soar and run again. Iterative deepening is guaranteed
-     to find the path with the fewest steps.
-  -- Added options to learn command to turn chunking through local negations
-     on or off (on by default for backwards compatibility). If off, a message
-     will be generated if "watch --learning print" is enabled that says a chunk
-     was not created because of local negations, and what those negations were.
-  -- Updated selection space to remove local negations (for compatibility with 
-     new --disable-through-local-negations chunking mode). 
-  -- In a tie impasse, an item-count WME containing the number of tied operators 
-     is now architecturally generated.
-  -- Depth at which productions are firing is reported at watch 5.
-  -- Multiple rules can be loaded via the Java debugger's Edit Production
-     widget, scratch pad, and by pasting into the trace window. This is the
-     result of an underlying change to SML in which arguments to
-     ExecuteCommandLine are passed through logic associated with the source
-     command, and thus multiple commands can be given at once.
-  -- Command boxes in the Java debugger have been enhanced so that history
-     browsing with the up/down arrows works on all platforms.
-  -- New "single compilation unit" build configurations (greatly speeds build time).
-  -- Unit test suite added.
+  -- EpMem commands and documentation added (see EpMem manual in
+     Documentation directory).
+  -- WMA commands and documentation added (see EpMem manual in
+     Documentation directory).
   -- Other minor enhancements.
 
 * Bug fixes
-  -- Output link supports circular structures.
-  -- Duplicate productions no longer cause sourcing to stop.
-  -- Various memory leaks fixed.
   -- Several other minor fixes.
-
-* Other updates
-  -- Removed gSKI (10-30% speed increase in simple benchmarking).
-  -- The Soar Java Debugger now uses its default layout the first time
-     it is run with a new version of Soar. Old layouts are preserved
-     and can be loaded if desired (which makes them the default).
-
 
 Known issues:
 =============
 
+* No EpMem tutorial
+* EpMem "provenance" parameter is unimplemented
 * ^status complete appears on the ^output-link immediately instead 
   of during the next input phase.
 * The Soar 7 mode implementation currently relies on an ugly hack. If
