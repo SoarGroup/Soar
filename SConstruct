@@ -169,6 +169,7 @@ if sys.platform != 'cygwin':
 # only do not include it if we're on powerpc
 if processor != 'powerpc':
 	conf.env.Append(CPPFLAGS = ' -march=i686')
+conf.env[ 'processor' ] = processor
 
 env = conf.Finish()
 Export('env')
