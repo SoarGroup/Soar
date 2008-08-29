@@ -1,6 +1,6 @@
 #!/usr/bin/python
 #
-# Author: Jonathan Voigt, University of Michigan
+# Author: Jonathan Voigt, Nate Derbinsky, University of Michigan
 # Date: September 2008
 
 import logging
@@ -17,6 +17,10 @@ import distutils.dir_util
 import re
 import subprocess
 import urllib
+import urllib2
+import xml.dom.minidom
+import xml.sax.saxutils
+import htmlentitydefs
 import md5
 import zipfile
 import zlib
@@ -79,6 +83,8 @@ else:
                    'ManualSource', '*.tex', 'Scripts', 'installergen.py', 'obj', 'Doxyfile', 'Resources', ]
 
 generatorConfig[ 'baseurl' ] = 'https://winter.eecs.umich.edu/svn/soar/tags/'
+generatorConfig[ 'binarybaseurl' ] = 'http://winter.eecs.umich.edu/soar/release-binaries/'
+generatorConfig[ 'windowsjava' ] = 'C:\\Program Files\\Java\\jdk1.5.0_16\\'
 
 ####
 class Generator:
@@ -94,6 +100,7 @@ class Generator:
         self.config[ 'target-path' ] = os.path.join( self.config[ 'target-parent' ], 'SoarSuite', )
             
         self.config[ 'target-url' ] = "%s%s" % ( self.config[ 'baseurl' ], self.config[ 'target-basename' ], )
+        self.config[ 'target-binaryurl' ] = "%s%s" % ( self.config[ 'binarybaseurl' ], self.config[ 'target-basename' ], )
 
         if os.name != 'posix':
             self.config[ 'target-file' ] = "%s-windows.zip" % ( self.config[ 'target-basename' ], )
@@ -155,7 +162,11 @@ class Generator:
             
         logging.info( 'Building everything' )
         if os.name != 'posix':
-            retcode = subprocess.call( ["rebuild-all.bat", ] )
+            environment = os.environ.copy()
+            environment['JAVA_BIN'] = '%sbin' % ( self.config[ 'windowsjava' ], ) 
+            environment['JAVA_INCLUDE'] = '%sinclude' % ( self.config[ 'windowsjava' ], )
+
+            retcode = subprocess.call( ["rebuild-all.bat", "%sbin\\" % self.config[ 'windowsjava' ] ], env = environment )
         else:
             retcode = subprocess.call( ["scons", "-c", "Core/ClientSMLSWIG" ] )
             
@@ -172,6 +183,17 @@ class Generator:
             logging.critical( "build failed" )
             sys.exit(1)
     
+    def getText( self, nodelist ):
+        rc = ""
+        for node in nodelist:
+            if node.nodeType == node.TEXT_NODE:
+                rc = rc + node.data
+        return rc
+    
+    def percentTwentificate( self, url ):
+        url = url.replace( ' ', '%20' )
+        return url
+        
     def source( self ):
             
         # remove old stuff
@@ -274,6 +296,24 @@ class Generator:
                     logging.debug( '%s -file-> %s' % ( src, dst ) )
                     shutil.copyfile( src, dst )
                     shutil.copymode( src, dst )
+        
+        logging.info( 'Copying binaries from winter' )
+        index = urllib2.urlopen( self.config[ 'target-binaryurl' ] )
+        dom = xml.dom.minidom.parseString( index.read() )
+        
+        for li in dom.getElementsByTagName("li"):
+            href = xml.sax.saxutils.unescape( li.getElementsByTagName("a")[0].getAttribute("href") )
+            linktext = self.getText( li.getElementsByTagName("a")[0].childNodes )
+            dst = os.path.join( self.config[ 'target-parent' ], href )
+            srcurl = "%s/%s" % ( self.config[ 'target-binaryurl' ], href, )
+            logging.debug( '%s -> %s' % ( srcurl, dst, ) )
+            urllib.urlretrieve( self.percentTwentificate( srcurl ), dst )
+        
+        logging.info( 'Remove java build directory' )
+        shutil.rmtree( os.path.join( self.config[ 'target-path' ], 'Core', 'ClientSMLSWIG', 'Java', 'build' ) )
+
+        logging.info( 'Remove ManualSource' )
+        shutil.rmtree( os.path.join( self.config[ 'target-path' ], 'Documentation', 'ManualSource' ) )
 
         logging.info( 'Creating archive' )
         if os.name != 'posix':
