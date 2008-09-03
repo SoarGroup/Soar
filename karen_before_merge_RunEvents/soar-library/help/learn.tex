@@ -1,0 +1,72 @@
+\subsection{\soarb{learn}}
+\label{learn}
+\index{learn}
+Set the parameters for chunking, Soar\^a€™s learning mechanism. 
+\subsubsection*{Synopsis}
+\begin{verbatim}
+learn [-l]
+learn -[d|E|o]
+learn -e [ab]
+\end{verbatim}
+\subsubsection*{Options}
+\begin{tabular}{|l|l|}
+\hline 
+ -e, --enable, --on  & Turn chunking on. Can be modified by -a or -b.  \\
+ \hline 
+ -d, --disable, --off  & Turn all chunking off. (default)  \\
+ \hline 
+ -E, --except  & Learning is on, except as specified by RHS \textbf{dont-learn}
+ actions.  \\
+ \hline 
+ -o, --only  & Chunking is on only as specified by RHS \textbf{force-learn}
+ actions.  \\
+ \hline 
+ -l, --list  & Prints listings of dont-learn and force-learn states.  \\
+ \hline 
+ -a, --all-levels  & Build chunks whenever a subgoal returns a result. Learning must be --enabled.  \\
+ \hline 
+ -b, --bottom-up  & Build chunks only for subgoals that have not yet had any subgoals with chunks built. Learning must be --enabled.  \\
+ \hline 
+\end{tabular}
+\subsubsection*{Description}
+ The learn command controls the parameters for chunking (Soar's learning mechanism). With no arguments, this command prints out the current learning environment status. If arguments are provided, they will alter the learning environment as described in the options and arguments table. The watch command can be used to provide various levels of detail when productions are learned. Learning is \textbf{disabled}
+ by default. 
+ With the \textbf{--on}
+ flag, chunking is on all the time. With the \textbf{--except}
+ flag, chunking is on, but Soar will not create chunks for states that have had RHS \textbf{dont-learn}
+ actions executed in them. With the \textbf{--only}
+ flag, chunking is off, but Soar will create chunks for only those states that have had RHS \textbf{force-learn}
+ actions executed in them. With the \textbf{--off}
+ flag, chunking is off all the time. 
+ The \textbf{--only}
+ flag and its companion \textbf{force-learn}
+ RHS action allow Soar developers to turn learning on in a particular problem space, so that they can focus on debugging the learning problems in that particular problem space without having to address the problems elsewhere in their programs at the same time. Similarly, the \textbf{--except}
+ flag and its companion \textbf{dont-learn}
+ RHS action allow developers to temporarily turn learning off for debugging purposes. These facilities are provided as debugging tools, and do not correspond to any theory of learning in Soar. 
+ The \textbf{--all-levels}
+ and \textbf{--bottom-up}
+ flags are orthogonal to the \textbf{--on}
+, \textbf{--except}
+, \textbf{--only}
+, and \textbf{--off}
+ flags, and so, may be used in combination with them. With bottom-up learning, chunks are learned only in states in which no subgoal has yet generated a chunk. In this mode, chunks are learned only for the ``bottom'' of the subgoal hierarchy and not the intermediate levels. With experience, the subgoals at the bottom will be replaced by the chunks, allowing higher level subgoals to be chunked. 
+ Learning can be turned on or off at any point during a run. 
+\subsubsection*{Examples}
+ To enable learning only at the lowest subgoal level: \begin{verbatim}
+learn -e b 
+\end{verbatim}
+ To see all the \textbf{force-learn}
+ and \textbf{dont-learn}
+ states registered by RHS actions \begin{verbatim}
+learn -l
+\end{verbatim}
+\subsubsection*{Default Aliases}
+\begin{tabular}{|l|l|}
+\hline 
+ Alias  & Maps to  \\
+ \hline 
+ l  & learn  \\
+ \hline 
+\end{tabular}
+\subsubsection*{See Also}
+\hyperref[watch]{watch} \hyperref[explain-backtraces]{explain-backtraces} \hyperref[save-backtraces]{save-backtraces} 

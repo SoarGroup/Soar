@@ -1,0 +1,88 @@
+                                  Preferences
+
+                                      Name
+
+   preferences - Examine details about the preferences that support the
+   specified id and attribute.
+
+                                    Synopsis
+
+ preferences [-0123nNtw] [id] [[^]attribute]
+
+                                    Options
+
+   +------------------------------------------------------------------------+
+   |-0, -n, --none    |Print just the preferences themselves                |
+   |------------------+-----------------------------------------------------|
+   |-1, -N, --names   |Print the preferences and the names of the           |
+   |                  |productions that generated them                      |
+   |------------------+-----------------------------------------------------|
+   |                  |Print the information for the --names option above   |
+   |-2, -t, --timetags|plus the timetags of the wmes matched by the         |
+   |                  |indicated productions                                |
+   |------------------+-----------------------------------------------------|
+   |-3, -w, --wmes    |Print the information for the --timetags option above|
+   |                  |plus the entire wme.                                 |
+   |------------------+-----------------------------------------------------|
+   |id                |Must be an existing Soar object identifier.          |
+   |------------------+-----------------------------------------------------|
+   |attribute         |Must be an existing ^attribute of the specified      |
+   |                  |identifier.                                          |
+   +------------------------------------------------------------------------+
+
+                                  Description
+
+   The preferences command prints all the preferences for the given object id
+   and attribute. If id and attribute are not specified, they default to the
+   current state and the current operator. The '^' is optional when
+   specifying the attribute. The optional arguments indicates the level of
+   detail to print about each preference.
+
+   This command is useful for examining which candidate operators have been
+   proposed and what relationships, if any, exist among them. If a preference
+   has O-support, the string, ":O" will also be printed.
+
+Note
+
+   For the time being, numeric-indifferent preferences are listed under the
+   heading "binary indifferents:".
+
+                                    Examples
+
+   This example prints the preferences on (S1 ^operator) and the production
+   names which created the preferences:
+
+ soar> preferences S1 operator --names
+ Preferences for S1 ^operator:
+ acceptables:
+  O2 (fill) +
+    From waterjug*propose*fill
+  O3 (fill) +
+    From waterjug*propose*fill
+ unary indifferents:
+  O2 (fill) =
+    From waterjug*propose*fill
+  O3 (fill) =
+    From waterjug*propose*fill
+
+   If the current state is S1, then the above syntax is equivalent to:
+
+  preferences -n
+
+   This example shows the support for the WMEs with the ^jug attribute:
+
+ soar> preferences s1 jug
+ Preferences for S1 ^jug:
+ acceptables:
+  I5  + :O
+  J1  + :O
+
+                                Default Aliases
+
+   +-----------------+
+   |Alias|Maps to    |
+   |-----+-----------|
+   |pr   |preferences|
+   +-----------------+
+
+                                    See Also

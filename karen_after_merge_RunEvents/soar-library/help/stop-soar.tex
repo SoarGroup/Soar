@@ -1,0 +1,34 @@
+\subsection{\soarb{stop-soar}}
+\label{stop-soar}
+\index{stop-soar}
+Pause Soar. 
+\subsubsection*{Synopsis}
+\begin{verbatim}
+stop-soar [-s] [reason string]
+\end{verbatim}
+\subsubsection*{Options}
+\begin{tabular}{|l|l|}
+\hline 
+ -s, --self  & Stop only the soar agent where the command is issued. All other agents continue running as previously specified.  \\
+ \hline 
+ reason\_string  & An optional string which will be printed when Soar is stopped, to indicate why it was stopped. If left blank, no message will be printed when Soar is stopped.  \\
+ \hline 
+\end{tabular}
+\subsubsection*{Description}
+ The \textbf{stop-soar}
+ command stops any running Soar agents. It sets a flag in the Soar kernel so that Soar will stop running at a ``safe'' point and return control to the user. This command is usually not issued at the command line prompt - a more common use of this command would be, for instance, as a side-effect of pressing a button on a Graphical User Interface (GUI). 
+\subsubsection*{Default Aliases}
+\begin{tabular}{|l|l|}
+\hline 
+ Alias  & Maps to  \\
+ \hline 
+ interrupt  & stop-soar  \\
+ \hline 
+ ss  & stop-soar  \\
+ \hline 
+ stop  & stop-soar  \\
+ \hline 
+\end{tabular}
+\subsubsection*{See Also}
+\hyperref[run]{run} \subsubsection*{Warnings}
+ If the graphical interface doesn't periodically do an ``update'' of flush the pending I/O, then it may not be possible to interrupt a Soar agent from the command line. 

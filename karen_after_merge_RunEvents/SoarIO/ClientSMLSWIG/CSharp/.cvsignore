@@ -1,0 +1,11 @@
+.deps
+.libs
+*.cs
+*.lo
+Makefile.in
+Makefile
+CSharp_sml_ClientInterface_wrap.cpp
+libCSharp_sml_ClientInterface.la
+CSharp_sml_ClientInterface_wrap.cxx
+*.o
+build

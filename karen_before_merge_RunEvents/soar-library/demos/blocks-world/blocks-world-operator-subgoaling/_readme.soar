@@ -1,0 +1,29 @@
+# Classic 3 block blocks world with operator subgoaling
+# John E. Laird
+# University of Michigan
+# May 23, 2004
+# Soar version 8.5.1
+
+# This is a simple version of blocks world
+# Three blocks and the table.
+# Uses operator subgoaling where an operator can be selected even if
+#  it can't apply.
+# The whole process works recursively.
+
+
+# In this formulation, clear is computed as an elaboration
+# (in elaborations/clear). The table is always clear.
+
+# Changes made to blocks-world-look-ahead to enable operator subgoaling
+# 1. move-block: Change the proposal to move-block so all possible moves are proposed.
+# 2. Add search control to prefer selecting operator that achieves desired.
+#    One for ^ontop relations and one for ^clear relations
+# 3. Add some monitoring rules and remove old applied one that is now incorrect.
+# 5. Add move-block as suboperator to move-block 
+# 6. Add rules to initialize substate in move-block/elaborations
+# 7. Add tests in move-block application to ensure blocks are clear
+# 8. Remove last-move rules (application and search control) - not appropriate 
+
+
+
+

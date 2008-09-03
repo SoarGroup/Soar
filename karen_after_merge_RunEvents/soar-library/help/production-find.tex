@@ -1,0 +1,48 @@
+\subsection{\soarb{production-find}}
+\label{production-find}
+\index{production-find}
+\subsubsection*{Synopsis}
+\begin{verbatim}
+production-find [-lrs[n|c]] \emph{pattern}
+\end{verbatim}
+\subsubsection*{Options}
+\begin{tabular}{|l|l|}
+\hline 
+ -c, --chunks  & Look \emph{only}
+ for chunks that match the pattern.  \\
+ \hline 
+ -l, --lhs  & Match pattern only against the conditions (left-hand side) of productions (default).  \\
+ \hline 
+ -n, --nochunks  &\emph{Disregard}
+ chunks when looking for the pattern.  \\
+ \hline 
+ -r, --rhs  & Match pattern against the actions (right-hand side) of productions.  \\
+ \hline 
+ -s, --show-bindings  & Show the bindings associated with a wildcard pattern.  \\
+ \hline 
+ pattern  & Any pattern that can appear in productions.  \\
+ \hline 
+\end{tabular}
+\subsubsection*{Description}
+ The production-find command is used to find productions in production memory that include conditions or actions that match a given \emph{pattern}
+. The pattern given specifies one or more condition elements on the left hand side of productions (or negated conditions), or one or more actions on the right-hand side of productions. Any pattern that can appear in productions can be used in this command. In addition, the asterisk symbol, *, can be used as a wildcard for an attribute or value. It is important to note that the whole pattern, including the parenthesis, must be enclosed in curly braces for it to be parsed properly. 
+ The variable names used in a call to production-find do not have to match the variable names used in the productions being retrieved. 
+ The production-find command can also be restricted to apply to only certain types of productions, or to look only at the conditions or only at the actions of productions by using the flags. 
+\subsubsection*{Examples}
+ Find productions that test that some object \emph{gumby}
+ has an attribute \emph{alive}
+ with value \emph{t}
+. In addition, limit the rules to only those that test an operator named \emph{foo}
+: \begin{verbatim}
+production-find {(<state> ^gumby <gv> ^operator.name foo)(<gv> ^alive t)} 
+\end{verbatim}
+ Note that in the above command, $<$state$>$ does not have to match the exact variable name used in the production. \\ 
+ Find productions that propose the operator \emph{foo}
+: \begin{verbatim}
+production-find -rhs {(<x> ^operator <op> +)(<op> ^name foo)}
+\end{verbatim}
+ Find chunks that test the attribute \^{}pokey: \begin{verbatim}
+production-find -chunks {(<x> ^pokey *)}
+\end{verbatim}
+\subsubsection*{See Also}
+\hyperref[sp]{sp} 

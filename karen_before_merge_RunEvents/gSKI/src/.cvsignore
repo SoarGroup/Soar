@@ -1,0 +1,7 @@
+*.lo
+*.o
+.deps
+.libs
+Makefile
+Makefile.in
+libgSKI.la

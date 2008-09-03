@@ -1,0 +1,33 @@
+\subsection{\soarb{max-elaborations}}
+\label{max-elaborations}
+\index{max-elaborations}
+Limit the maximum number of elaboration cycles in a given phase. Print a warning message if the limit is reached during a run. 
+\subsubsection*{Synopsis}
+\begin{verbatim}
+max-elaborations [n]
+\end{verbatim}
+\subsubsection*{Options}
+\begin{tabular}{|l|l|}
+\hline 
+\emph{n}
+ & Maximum allowed elaboration cycles, must be a positive integer.  \\
+ \hline 
+\end{tabular}
+\subsubsection*{Description}
+ This command sets and prints the maximum number of elaboration cycles allowed. If \emph{n}
+ is given, it must be a positive integer and is used to reset the number of allowed elaboration cycles. The default value is 100. \textbf{max-elaborations}
+ with no arguments prints the current value. 
+ \textbf{max-elaborations}
+ controls the maximum number of elaborations allowed in a single decision cycle. The elaboration phase will end after \emph{max-elaboration}
+ cycles have completed, even if there are more productions eligible to fire or retract; and Soar will proceed to the next phase after a warning message is printed to notify the user. This limits the total number of cycles of parallel production firing but does not limit the total number of productions that can fire during elaboration. 
+ This limit is included in Soar to prevent getting stuck in infinite loops (such as a production that repeatedly fires in one elaboration cycle and retracts in the next); if you see the warning message, it may be a signal that you have a bug your code. However some Soar programs are designed to require a large number of elaboration cycles, so rather than a bug, you may need to increase the value of \emph{max-elaborations}
+. 
+ In Soar8, \emph{max-elaborations}
+ is checked during both the Propose Phase and the Apply Phase. If Soar8 runs more than the max-elaborations limit in either of these phases, Soar8 proceeds to the next phase (either Decision or Output) even if quiescence has not been reached. 
+\subsubsection*{Examples}
+ The command issued with no arguments, returns the max elaborations allowed: \begin{verbatim}
+max-elaborations 
+\end{verbatim}
+ to set the maximum number of elaborations in one phase to 50: \begin{verbatim}
+max-elaborations 50
+\end{verbatim}

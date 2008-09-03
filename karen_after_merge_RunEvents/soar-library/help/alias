@@ -1,0 +1,72 @@
+                                     Alias
+
+                                      Name
+
+   alias - Define a new alias, or command, using existing commands and
+   arguments.
+
+                                    Synopsis
+
+ alias name [cmd <args>]
+ alias -d name
+ alias
+
+                                    Options
+
+   +------------------------------------------------------------------------+
+   |-d, --disable, --off|Remove the named alias.                            |
+   |--------------------+---------------------------------------------------|
+   |name                |The name of the alias, i.e. the new command.       |
+   |--------------------+---------------------------------------------------|
+   |cmd                 |An existing command that will be invoked when the  |
+   |                    |alias is entered on the commandline.               |
+   |--------------------+---------------------------------------------------|
+   |args                |Valid arguments to the cmd (optional & optional    |
+   |                    |number).                                           |
+   +------------------------------------------------------------------------+
+
+                                  Description
+
+   This command defines new aliases by creating Soar procedures with the
+   given name. The new procedure can then take an arbitrary number of
+   arguments which are post-pended to the given definition and then that
+   entire string is executed as a command. The definition must be a single
+   command, multiple commands are not allowed. The alias procedure checks to
+   see if the name already exists, and does not destroy existing procedures
+   or aliases by the same name. Existing aliases can be removed by using the
+   -d flag. With no arguments, alias returns the list of defined aliases.
+   With only the name given, alias returns the current definition.
+
+                                    Examples
+
+   The alias wmes is defined as:
+
+ alias wmes print -i
+
+   If the user executes a command such as:
+
+ wmes {(* ^superstate nil)}
+
+   it is as if the user had typed this command:
+
+ print -i {(* ^superstate nil)}
+
+   To check what a specific alias is defined as, you would type
+
+ alias wmes
+
+                                Default Aliases
+
+   +----------------+
+   |Alias  |Maps to |
+   |-------+--------|
+   |a      |alias   |
+   |-------+--------|
+   |un     |alias -d|
+   |-------+--------|
+   |unalias|alias -d|
+   +----------------+
+
+                                    See Also
+
+   unalias

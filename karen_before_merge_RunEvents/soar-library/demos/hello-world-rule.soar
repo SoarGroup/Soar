@@ -1,0 +1,20 @@
+###########################################################################
+
+# From Chapter 2 of Soar 8 Tutorial
+
+### This rule writes "Hello World" and halts.
+
+
+
+sp {hello-world
+
+   (state <s> ^type state)
+
+-->
+
+   (write |Hello World|)
+
+   (halt)
+
+}
+

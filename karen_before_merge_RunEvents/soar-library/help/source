@@ -1,0 +1,26 @@
+                                     Source
+
+                                      Name
+
+   source - Load and evaluate the contents of a file.
+
+                                    Synopsis
+
+ source filename
+
+                                    Options
+
+   +-----------------------------------------------------------+
+   |filename|The file of Soar productions and commands to load.|
+   +-----------------------------------------------------------+
+
+                                  Description
+
+   Load and evaluate the contents of a file. The filename can be a relative
+   path or a fully qualified path. source will generate an implicit push to
+   the new directory, execute the command, and then pop back to the current
+   working directory from which the command was issued.
+
+                                    See Also
+
+   cd dirs home ls pushd popd topd
