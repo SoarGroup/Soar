@@ -1,0 +1,246 @@
+### Table of contents, ht.s7
+### 
+###	i.	Some simple things to help beginners
+###	I.	Propose the top space
+###	II.	Propose the main operators
+###	II.	Propose the main operators
+###	III.	Implement the main operators
+###	IV.	Noticing when full
+###	V.	Operator Set-up
+###	VI.	Better object traces
+###
+### Copyright 1994.  F. E. Ritter & R. M. Young.
+###
+### Last substantially modified: 3-Nov-96 -FER
+### With useful bug fixes from Kate Cook.
+###
+### 3-Nov-96 Frank Ritter - moved to soar 7.0.4
+### 27/7/95  Gary Jones - Altered references to <g> to be <s>.
+###                       For example, state <g> is now state <s>.
+###                       Just to make it easier to understand.
+###                       Also put in learn -off (because it should be).
+###
+### 5/7/95   Gary Jones - NNPSCM conversion.
+###
+### 
+### Saved as Text Only so that it can be loaded into Soar.
+### 
+### A simple hungry-thirsty problem space and operators
+### 
+### The code supplied has these characteristics:
+###   - The operators Eat & Drink are proposed iff they're 
+###     applicable. that is, Eat if (^hungry yes), Drink if (^thirsty yes)
+###   - There is an explicit ^desired on the goal
+###   - which is tested by the goal attainment rule
+###   - There are hand-written control chunks giving Eat best
+### 
+### Example command within Soar to get to this code and load it:
+### 
+### Macintosh: cd "joe:EuroSoar7:tutorial"
+### Unix:      cd "/aigr/staff/ritter/res/soar/euro-soar93/tutorial/"
+### 
+### Then:   source "ht.s7"
+### 
+
+
+###
+### 	i.	Some simple things to help beginners
+###
+
+## For safety, excise -all
+excise -all
+
+## Resets the watch level to the base level in case you changed it:
+watch 1
+puts "watch 1"
+
+learn -off
+puts "learn -off "
+
+## Default is not to print chunks as learned!
+watch learning -print
+## This makes chunk firings print
+watch -chunks -print
+
+## What to do with sets of indifferent context elements: take the
+## first one.
+indifferent-selection -first
+
+## Upon reload, resetting the goal stack to be empty is usually
+## required and is a good idea:
+
+init-soar
+puts "init-soar"
+
+
+### 
+###	I.	Propose the top space
+###
+### The code in this section proposes a simple space to work in, and a
+
+### simple state to start working in.
+
+sp {ht*propose-space*ht
+  (state <s> -^impasse ^superstate nil)
+  -->
+  (<s> ^name ht-state)
+  (<s> ^problem-space <p> ^desired <d>)
+  (<p> ^name hungry-thirsty)
+  (<d> ^hungry no)
+  (<s> ^thirsty yes ^hungry yes)
+}
+
+## Propose the top state
+## simple way to set up the top-state with a separate production
+##sp {ht*propose-state*ht
+##  (state <s> ^problem-space.name hungry-thirsty)
+##  -->
+##  (<s> ^name ht-state)
+##  (<s> ^thirsty yes ^hungry yes)}
+
+## You can put the closing parenthesis on its own line (e.g., in the 
+## first production) to show that it is closed, but I generally don't
+## to save space. 
+
+
+###
+###	II.	Propose the main operators
+###
+### The code in this section proposes the two operators eat and drink.
+
+### The third production creates a preference for choosing between
+### them.
+
+
+## Propose eat.
+sp {ht*propose-op*eat
+  (state <s> ^problem-space.name hungry-thirsty )
+  (<s> ^hungry yes)
+  -->
+  (<s> ^operator <o>)
+  (<o> ^name eat)}
+
+## Propose drink.
+sp {ht*propose-op*drink
+  (state <s> ^problem-space.name hungry-thirsty )
+  (<s> ^thirsty yes)
+  -->
+  (<s> ^operator <o>)
+  (<o> ^name drink)}
+
+## Eat is better if you are hungry.
+sp {ht*compare*eat*better*drink
+  (state <s> ^desired <d> ^problem-space.name hungry-thirsty)
+  (<d> ^hungry no)
+  (<s> ^operator <op-eat> +)
+  (<op-eat> ^name eat)
+  (<s> ^operator <op-drink> +)
+  (<op-drink> ^name drink)
+  -->
+  (<s> ^operator <op-eat> > <op-drink>)}
+
+
+###
+###	III.	Implement the main operators
+###
+
+## Implement the operators with productions that modify the state once
+## the operators have been selected, and then terminate them after
+## they have done
+
+## what they need to do
+##
+## Note: We make the new value acceptable and reject the previous
+## value.
+
+##
+## The reconsider preference effectively terminates the operator on 
+## the next decision cycle after it has done what its supposed to do.
+
+sp {ht*apply-op*eat
+  (state <s>  ^operator <o>)
+  (<o> ^name eat)
+  (<s> ^hungry yes)
+  -->
+  (write (crlf) |          chomp chomp... |)
+  (<s> ^hungry yes - no +)}
+
+sp {ht*terminate*eat
+  (state <s> ^operator <o>)
+  (<o> ^name eat)
+  (<s> ^hungry no)
+  -->
+  (<s> ^operator <o> @)}
+
+
+## Implement drink
+## Note: just making the new value acceptable and best, to
+## overwrite any value (or no value) on the state, is not a wise 
+## idea (if the another operator applies and makes another attribute
+## best you will get ties and lose.  
+
+sp {ht*apply-op*drink
+  (state <s>   ^operator <o>)
+  (<o> ^name drink)
+  (<s> ^thirsty yes)
+  -->
+  (write (crlf) |          glug glug... |)
+  (<s> ^thirsty no + yes -)}
+
+sp {ht*terminate*drink
+  (state <s>  ^operator <o>)
+  (<o> ^name drink)
+  (<s> ^thirsty no)
+  -->
+  (<s> ^operator <o> @)}
+
+
+
+###
+###	IV.	Noticing when full
+###
+### This code terminates the problem solving when the goal is reached.
+
+
+## How to tell if you can stop
+sp {ht*evaluate*state*success
+  (state <s> ^desired <d> )
+  (<d> ^hungry <val>)
+  (<s> ^hungry <val>)
+  -->
+  (<s> ^success <d>)}
+
+
+## One of the default rules is brought in to notice that we are 
+## finished.  (Slightly modified to be more compact and less general.)
+
+sp {default*top-goal*halt*state*success
+    :default
+  (state <s>  ^desired <eb>) 
+  (<s> ^success <eb>)
+  -->
+  (write (crlf)  |  goal for  | <s>  | achieved | )
+  (halt)}
+
+
+###
+###	V.	Better object traces
+###
+
+## Soar6 supports the idea of setting up context element traces.  We 
+## include here some better object traces to make the stack trace 
+## clearer.
+## format-watch -stack -add * {%id (name: %v[name])}
+## format-watch -object -add * {%id (name: %v[name])}
+
+## This traces the values of hungry and thirsty on states.
+## Be careful not to get a CR in the middle of the string.
+## format-watch -stack -add s ht-state {%id (name: %v[name] hungry: %v[hungry] thirsty: %v[thirsty])}
+
+## need to do this to get a new line in soar7.0.0 beta
+puts ""
+
+###---------------------------------------------------------------
+###                       END OF FILE
+###---------------------------------------------------------------
+

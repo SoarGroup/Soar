@@ -1,0 +1,24 @@
+                                Max-memory-usage
+
+                                      Name
+
+   max-memory-usage - Set the amount of bytes necessary to trigger the memory
+   usage exceeded event.
+
+                                    Synopsis
+
+ max-memory-usage [n]
+
+                                    Options
+
+   +-------------------------+
+   |n|Size of limit in bytes.|
+   +-------------------------+
+
+                                  Description
+
+   The max-memory-usage command is used to trigger the memory usage exceeded
+   event. The initial value of this is 100MB (100,000,000); allowable
+   settings are any integer greater than 0.
+
+   Using the command with no arguments displays the current limit.

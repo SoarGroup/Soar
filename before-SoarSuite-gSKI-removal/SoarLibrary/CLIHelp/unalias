@@ -1,0 +1,35 @@
+                                    Unalias
+
+                                      Name
+
+   unalias - Undefine an existing alias
+
+                                    Synopsis
+
+ unalias name
+
+                                    Options
+
+   No options.
+
+                                  Description
+
+   This command undefines a previously created alias. This command takes
+   exactly one argument: the name of the alias to remove. Use the alias
+   command by itself to list all defined aliases.
+
+                                    Examples
+
+ unalias varprint
+
+                                Default Aliases
+
+   +-------------+
+   |Alias|Maps to|
+   |-----+-------|
+   |un   |unalias|
+   +-------------+
+
+                                    See Also
+
+   alias

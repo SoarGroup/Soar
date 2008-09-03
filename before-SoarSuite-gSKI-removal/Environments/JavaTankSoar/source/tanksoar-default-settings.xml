@@ -1,0 +1,5 @@
+<tanksoar>
+  <simulation debuggers="true" default-map="default.tmap" runs="0" winning-score="50"></simulation>
+  <agents>
+  </agents>
+</tanksoar>

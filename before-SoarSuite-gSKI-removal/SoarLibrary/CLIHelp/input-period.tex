@@ -1,0 +1,28 @@
+\subsection{\soarb{input-period}}
+\label{input-period}
+\index{input-period}
+For Soar7-mode, controls the rate of input to the Soar agent. 
+\subsubsection*{Synopsis}
+\begin{verbatim}
+input-period [\emph{period}
+]
+\end{verbatim}
+\subsubsection*{Options}
+\begin{tabular}{|l|l|}
+\hline
+\soar{ period } & A non-negative integer.  \\
+\hline
+\end{tabular}
+\subsubsection*{Description}
+ This command is obsolete for Soar8. In Soar8, input is done at the start of every decision cycle. 
+ For Soar7-mode, the \textbf{input-period}
+ command controls the rate of input to the Soar agent. If \emph{period}
+ is not specified, this command prints the current input period. If \emph{period}
+ is specified, it must be a non-negative integer and is used to reset the input period. A period of 0 sets input to occur every elaboration cycle. A positive value for period sets Soar to accept input only every \emph{nth}
+ period decision cycles. The default initial setting of the \textbf{input-period}
+ parameter is 0. 
+\subsubsection*{Example}
+\begin{verbatim}
+input-period 5
+\end{verbatim}
+ Input is accepted only every 5th decision cycle by the Soar agent. Soar 7 ONLY. 

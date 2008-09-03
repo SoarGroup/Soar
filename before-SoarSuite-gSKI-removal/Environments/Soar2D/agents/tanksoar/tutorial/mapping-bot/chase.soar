@@ -1,0 +1,10 @@
+################################
+### Propose chase operator
+################################
+sp {propose*chase
+   (state <s> ^name tanksoar
+              ^sound
+             -^io.input-link.radar.tank
+             -^missiles-energy low)
+   -->
+   (<s> ^operator.name chase)}

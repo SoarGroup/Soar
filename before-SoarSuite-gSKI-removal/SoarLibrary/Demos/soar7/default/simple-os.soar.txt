@@ -1,0 +1,361 @@
+### 
+### FILE               : blocks-world.soar
+###
+
+###
+### AUTHOR(1)          : John.E.Laird [ Soar 8.1 ]
+###
+
+###
+### CREATED(1)         : December 12, 1998
+
+###
+
+source simple.soar
+
+###
+
+sp {top-ps*elaborate*initial-state
+    (state <s> ^name top-goal)
+    -->
+    (<s> ^world-state <s>
+         ^ontop <ontop1> <ontop2> <ontop3> 
+         ^clear <clear1> <clear2> <clear3>
+         ^objects <blockA> <blockB> <blockC> <table>)
+    (<ontop1> ^top-block <blockA> 
+              ^bottom-block <blockB>)
+    (<ontop2> ^top-block <blockB> 
+              ^bottom-block <table>)
+    (<ontop3> ^top-block <blockC> 
+              ^bottom-block <table>)
+    (<clear1> ^object <blockA>)
+    (<clear2> ^object <blockB>)
+    (<clear3> ^object <table>)
+    (<blockA> ^name A ^type block)
+    (<blockB> ^name B ^type block)
+    (<blockC> ^name C ^type block)
+    (<table> ^name table ^type table)
+    (write (crlf) |Initial state has A on B and B and C on the table.|)}
+
+###
+### TOP PROBLEM SPACE OPERATOR:
+### BUILD-TOWER
+###
+
+sp {top-ps*propose*operator*build-tower
+    (state <s> ^problem-space.name top-ps
+               ^objects <blockA> <blockB> <blockC> <table>)
+    (<blockA> ^name A ^type block)
+    (<blockB> ^name B ^type block)
+    (<blockC> ^name C ^type block)
+    (<table> ^name table ^type table)
+  -{(<s> ^ontop <ontopa1> <ontopa2> <ontopa3>)
+    (<ontopa1> ^top-block <blockA> 
+              ^bottom-block <blockB>)
+    (<ontopa2> ^top-block <blockB> 
+              ^bottom-block <blockC>)
+    (<ontopa3> ^top-block <blockC> 
+              ^bottom-block <table>)}
+    -->
+    (<s> ^operator <o>)
+    (<o> ^name build-tower 
+         ^desired <ds>)
+    (<ds> ^ontop <ontop1> <ontop2> <ontop3>)
+    (<ontop1> ^top-block <blockA> 
+              ^bottom-block <blockB>)
+    (<ontop2> ^top-block <blockB> 
+              ^bottom-block <blockC>)
+    (<ontop3> ^top-block <blockC> 
+              ^bottom-block <table>)
+    (write (crlf) |The goal is to get A on B on C on the table.|)}
+
+###
+### SUBGOAL BUILD-TOWER:
+### DESIRED STATE
+###
+
+sp {build-tower*elaborate*state*desired-state
+    (state <s> ^worldstate <ts>
+               ^impasse no-change
+               ^attribute operator)  
+    (<ts> ^operator.desired <ds>)
+    -->
+    (<s> ^desired <ds> 
+         ^world-state <ts>)}
+
+###
+### SUBGOAL BUILD-TOWER:
+### PROBLEM SPACE
+###
+ 
+sp {build-tower*propose*space*blocks-world
+    (state <s> ^name build-tower)
+    -->
+    (<s> ^problem-space.name blocks-world)}
+
+###
+### BLOCKS-WORLD PROBLEM SPACE OPERATOR:
+### MOVE-BLOCK
+###
+  
+sp {blocks-world*propose*operator*move-block
+    (state <s> ^problem-space.name blocks-world
+               ^world-state <ws>)
+    (<ws> ^object <blockA> { <> <blockA> <blockB> })
+    (<blockA> ^type block)
+    -->
+    (<s> ^operator <o> + )
+    (<o> ^name move-block
+         ^moving-block <blockA>
+         ^destination <blockB>
+         ^conditions <c>
+         ^actions <a>)
+    (<c> ^clear <blockA> <blockB>)
+    (<a> ^add <add1> <add2>
+         ^remove <rem1> <rem2>) }
+
+###
+### BLOCKS-WORLD PROBLEM SPACE:
+### OPERATOR IMPLEMENTATION
+###
+  
+sp {blocks-world*apply*operator*move-block*remove-ontop
+    (state <s>  ^operator <o>
+                ^world-state <ws>)
+    (<ws> ^ontop <ontop>)
+    (<ontop> ^top-block <mblock>
+            -^bottom-block <tblock>)
+    (<o> ^moving-block <mblock> 
+         ^destination <tblock>)
+    -->
+    (<ws> ^ontop <ontop> -)}
+
+sp {blocks-world*apply*operator*move-block*create-ontop
+    (state <s> ^operator <o>
+                ^world-state <ws>)
+    (<o> ^moving-block <mblock>
+         ^destination <tblock>)
+    -->
+    (<ws> ^ontop <ontop>)
+    (<ontop> ^top-block <mblock>
+             ^bottom-block <tblock>)}
+
+sp {blocks-world*apply*operator*move-block*remove-clear
+    (state <s>  ^operator.destination <tblock>
+                ^world-state <ws>)
+    (<ws> ^clear <clear>)
+    (<clear> ^object <tblock>)
+    -->
+    (<ws> ^clear <clear> -)}
+
+sp {blocks-world*apply*operator*move-block*create-clear
+    (state <s>  ^operator <o>
+                ^world-state <ws>)
+    (<ws> ^ontop <ontop>)
+    (<ontop> ^top-block <mblock>
+             ^bottom-block { <> <tblock> <bblock>})
+   -(<bblock> ^type table)
+    (<o> ^moving-block <mblock>
+         ^destination <tblock>)
+    -->
+    (<ws> ^clear.object <bblock>)}
+
+sp {blocks-world*apply*operator*remember*moved-block*a
+    (state <s> ^operator.moving-block <mb>
+               ^world-state <ws>)
+    (<ws> -^last-moved-block)
+    -->
+    (<ws> ^last-moved-block <mb>)}
+
+sp {blocks-world*apply*operator*forget*last-moved-block
+    (state <s>  ^operator.moving-block <> <lmb>
+                ^world-state <ws>)
+    (<ws> ^last-moved-block <lmb>)
+    -->
+    (<ws> ^last-moved-block <lmb> - )}
+
+###
+### BLOCKS-WORLD PROBLEM SPACE: 
+### SEARCH CONTROL
+###
+
+sp {blocks-world*reject*move-block*twice
+    (state <s> ^problem-space.name blocks-world
+               ^operator <o> + 
+               ^world-state.last-moved-block <mb>)
+    (<o> ^moving-block <mb>)
+    -->
+    (<s> ^operator <o> - )}
+
+###
+### BLOCKS-WORLD PROBLEM SPACE:
+### STATE EVALUATION/GOAL TEST
+###
+
+sp {blocks-world*elaborate*state*success
+    (state <s> ^desired <ds>
+               ^world-state <ws>)
+    (<s> ^ontop <ontopa1> 
+                { <> <ontopa1> <ontopa2> }
+                { <> <ontopa1> <> <ontopa2> <ontopa3> })
+    (<ontopa1> ^top-block <blockA> 
+               ^bottom-block <blockB>)
+    (<ontopa2> ^top-block <blockB> 
+               ^bottom-block <blockC>)
+    (<ontopa3> ^top-block <blockC> 
+               ^bottom-block <table>)
+    (<ds> ^ontop <ontop1> 
+                { <> <ontop1> <ontop2> }
+                { <> <ontop1> <> <ontop2> <ontop3> })
+    (<ontop1> ^top-block <blockA> 
+              ^bottom-block <blockB>)
+    (<ontop2> ^top-block <blockB> 
+              ^bottom-block <blockC>)
+    (<ontop3> ^top-block <blockC> 
+              ^bottom-block <table>)
+    -->
+    (<s> ^success <d>)}
+
+###
+### BLOCKS-WORLD PROBLEM SPACE: 
+### MONITOR STATE AND OPERATORS
+###
+
+sp {blocks-world*monitor*world-state
+    (state <s> ^world-state.ontop <ontop>)
+    (<ontop> ^top-block.name <top-name>
+             ^bottom-block <bottom-name>)
+    -->
+    (write (crlf)
+           |  ontop(| <top-name>
+           |,| <bottom-name> |)|)}
+
+sp {blocks-world*monitor*tied-operators*move-block
+    (state <s> ^impasse tie 
+              ^attribute operator 
+              ^item <item>)
+    (<item> ^name move-block
+    	    ^moving-block <mob>
+    	    ^destination <dob>)
+    (<mob> ^name <mob-name>)
+    (<dob> ^name <dob-name>)
+    -->
+    (write (crlf) 
+    	   |  | <item> 
+    	   |: move-block(| <mob-name> 
+    	   |,| <dob-name> 
+    	   |)|)}
+
+sp {blocks-world*monitor*operator-application*move-block
+    (state <s> ^operator <o>)
+    (<o> ^name move-block
+    	 ^moving-block <mob>
+    	 ^destination <dob>)
+    (<mob> ^name <mob-name>)
+    (<dob> ^name <dob-name>)
+    -->
+    (write (crlf) 
+           |  APPLIED | <o> 
+    	   |: move-block(| <mob-name> 
+    	   |,| <dob-name> 
+    	   |)|)}
+
+
+
+sp {top-ps*select*operator*impasse*tie*break
+   (state <s> ^attribute operator
+              ^impasse tie
+              ^item <o> 
+              ^superstate <ss>)
+-->
+   (write (crlf) | Make tied operator indifferent.|)
+   (<ss> ^operator <o> =)}
+
+sp {default*opsub*propose*space*name
+   :default
+   (state <s> ^impasse no-change 
+              ^attribute operator 
+	        ^superstate <ss>)
+   (<ss> ^operator <so>
+         ^problem-space <sp>)
+   (<so> ^conditions-unachieved *yes*
+         ^conditions <c>)
+   -->
+   (<s> ^problem-space <sp>
+        ^name operator-subgoal
+        ^desired <c>)}
+
+sp {default*generic*opsub*copy*superstate
+   :default
+   (state <s> ^name operator-subgoal 
+              ^superstate <ss>)
+   (<ss> ^ { <att> <> problem-space 
+                   <> choices
+                   <> impasse 
+                   <> object 
+                   <> name 
+                   <> quiescence
+                   <> superstate 
+                   <> attribute 
+                   <> operator 
+                   <> desired }
+	   <value>)
+   -->
+   (<s> ^<att> <value>)}
+
+sp {default*condition*achieved*property
+   :default
+   (state <s> ^operator.conditions <c>
+              ^condition-relations.property <p>
+              ^<p-name>.<p-object> <p-value>)
+   (<p> ^name <p-name> 
+        ^object <p-object>)
+   (<c> ^<p-name> <p-id>)
+   (<p-id> ^<p-object> <p-value>)
+   -->
+   (<p-id> ^achieved *yes*)}
+
+sp {default*condition*achieved*relation
+   :default
+   (state <s> ^operator.conditions <c>
+              ^condition-relations.relation <r>
+              ^<r-name> (^<r-object1> <r-value1>
+                         ^<r-object2> <r-value2>))
+   (<r> ^name <r-name> 
+        ^object1 <r-object1>
+        ^object2 <r-object2>)
+   (<c> ^<r-name> <r-id>)
+   (<r-id> ^<r-object1> <r-value1>
+           ^<r-object2> <r-value2>)
+   -->
+   (<r-id> ^achieved *yes*)}
+
+sp (default*select*operator*mea
+   (state <s> ^operator <o1> +
+              ^desired <d>
+              ^condition-relations.relation.name <r-att>)
+   (<d> ^<att> 
+
+
+
+### The following is commented out; it would provide for keeping track
+###  of all levels of operator subgoaling, not just the most recent. 
+### Pass down all super operator desireds as well.
+#
+# sp {default*generic*opsub*goal*elaborate*all-desireds
+#   :default
+#   (state <s> ^problem-space <p> 
+#	         ^impasse no-change 
+#              ^attribute operator 
+#              ^superstate <ss>)
+#   (state <ss> ^problem-space <p> 
+#               ^desired <o>)
+#   -->
+#   (state <s> ^desired <o>)}
+#
+#
+
+ 
+
+
+

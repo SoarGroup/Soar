@@ -1,0 +1,139 @@
+<map>
+  <cell-object name="bonusfood">
+    <property name="edible" value="true" />
+    <property name="color" value="red" />
+    <property name="shape" value="square" />
+    <property name="points" value="10" />
+    <property name="id" value="bonusfood" />
+    <apply>
+      <points />
+      <remove />
+    </apply>
+  </cell-object>
+  <cell-object name="box2">
+    <property name="color" value="orange" />
+    <property name="shape" value="square" />
+    <property name="box" value="true" />
+    <property name="id" value="box" />
+    <apply>
+      <property name="status" value="open" />
+      <property name="points" value="10" />
+      <points />
+    </apply>
+  </cell-object>
+  <cell-object name="box1">
+    <property name="color" value="green" />
+    <property name="shape" value="square" />
+    <property name="box" value="true" />
+    <property name="id" value="box" />
+    <apply>
+      <property name="status" value="open" />
+      <property name="points" value="20" />
+      <points />
+    </apply>
+  </cell-object>
+  <cell-object name="normalfood">
+    <property name="edible" value="true" />
+    <property name="color" value="blue" />
+    <property name="shape" value="round" />
+    <property name="points" value="5" />
+    <property name="id" value="normalfood" />
+    <apply>
+      <points />
+      <remove />
+    </apply>
+  </cell-object>
+  <cell-object name="wall">
+    <property name="block" value="true" />
+    <property name="id" value="wall" />
+  </cell-object>
+  <cell-object name="permafood">
+    <property name="color" value="purple" />
+    <property name="shape" value="round" />
+    <property name="move-apply" value="true" />
+    <property name="points" value="1" />
+    <apply>
+      <points />
+    </apply>
+  </cell-object>
+  <cells world-size="5" random-walls="false" random-food="false">
+    <row>
+      <cell>
+        <object>wall</object>
+      </cell>
+      <cell>
+        <object>wall</object>
+      </cell>
+      <cell>
+        <object>wall</object>
+      </cell>
+      <cell>
+        <object>wall</object>
+      </cell>
+      <cell>
+        <object>wall</object>
+      </cell>
+    </row>
+    <row>
+      <cell>
+        <object>wall</object>
+      </cell>
+      <cell>
+        <object>box2</object>
+      </cell>
+      <cell />
+      <cell>
+        <object>permafood</object>
+      </cell>
+      <cell>
+        <object>wall</object>
+      </cell>
+    </row>
+    <row>
+      <cell>
+        <object>wall</object>
+      </cell>
+      <cell />
+      <cell>
+        <object>box1</object>
+        <object>permafood</object>
+      </cell>
+      <cell />
+      <cell>
+        <object>wall</object>
+      </cell>
+    </row>
+    <row>
+      <cell>
+        <object>wall</object>
+      </cell>
+      <cell>
+        <object>permafood</object>
+      </cell>
+      <cell />
+      <cell>
+        <object>box2</object>
+      </cell>
+      <cell>
+        <object>wall</object>
+      </cell>
+    </row>
+    <row>
+      <cell>
+        <object>wall</object>
+      </cell>
+      <cell>
+        <object>wall</object>
+      </cell>
+      <cell>
+        <object>wall</object>
+      </cell>
+      <cell>
+        <object>wall</object>
+      </cell>
+      <cell>
+        <object>wall</object>
+      </cell>
+    </row>
+  </cells>
+</map>

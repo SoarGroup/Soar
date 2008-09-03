@@ -1,0 +1,17 @@
+This is an interpreter for SPL (Stupid Programming Language). It builds
+jjtree's for a given SPL program and interprets it. It shows how you can
+implement simple loop and conditional constructs.
+
+Note how easy it is to annotate a grammar file to build useful tree nodes
+and then extend these nodes for purposes of interpreting, etc.
+
+This example will be improved as JJTree evolves.
+
+To run it :
+
+     jjtree SPL.jjt
+     javacc SPL.jj
+     javac *.java
+     java SPL fact.spl
+     java SPL sqrt.spl
+     java SPL odd.spl

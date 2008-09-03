@@ -1,0 +1,128 @@
+############################################################################
+# From Chapter 9 of Soar 8 Tutorial
+# 
+# These are the final versions of the rules for the generalized advanced move
+# operator.
+
+sp {initialize*state*directions
+   (state <ss> ^type state)
+   -->
+   (<ss> ^directions <n> <e> <s> <w>)  
+   (<n> ^value north ^opposite south)
+   (<e> ^value east  ^opposite west)
+   (<s> ^value south ^opposite north)
+   (<w> ^value west  ^opposite east)}
+
+# Propose*move*no-backward:
+# If there is normalfood, bonusfood, eater, or empty in an adjacent cell, 
+#    and there is no last direction equal to the opposite direction for that #    cell,
+#    propose move in the direction of that cell, with the cell's content,
+#    and indicate that this operator can be selected randomly.
+
+sp {propose*move*no-backward
+   (state <s> ^io.input-link.my-location.<dir>.content { <co> <> wall }
+              ^directions <d>
+             -^last-direction <o-dir>)
+   (<d> ^value <dir>
+        ^opposite <o-dir>)
+-->
+   (<s> ^operator <o> +, =)
+   (<o> ^name move
+        ^direction <dir>
+        ^content <co>)} 
+
+# Apply*move
+# If the move operator for a direction is selected,
+#    generate an output command to move in that direction.
+
+sp {apply*move
+   (state <s> ^io.output-link <ol>
+              ^operator <o>)
+   (<o> ^name move
+        ^direction <dir>)
+-->
+   (write | | <dir>)
+   (<ol> ^move.direction <dir>)}
+
+# Apply*move*remove-move:
+# If the move operator is selected,
+#    and there is a completed move command on the output link,
+#    then remove that command.
+
+sp {apply*move*remove-move
+   (state <s> ^io.output-link <ol>
+              ^operator.name move)
+   (<ol> ^move <direction>)
+   (<direction> ^status complete)
+-->
+   (<ol> ^move <direction> -)}
+
+# Apply*move*create*last-direction
+# If the move operator for a direction is selected,
+#    create an augmentation called last-direction with that direction.
+
+sp {apply*move*create*last-direction
+   (state <s> ^operator <o>)
+   (<o> ^name move
+        ^direction <direction>)
+-->
+   (<s> ^last-direction <direction>)}
+
+# Apply*move*remove*last-direction
+# If the move operator for a direction is selected,
+#    and the last-direction is not equal to that direction,
+#    then remove the last-direction.
+
+sp {apply*move*remove*last-direction
+   (state <s> ^operator <o>
+              ^last-direction <direction>)
+   (<o> ^direction <> <direction>
+  	 ^name move)
+-->
+   (<s> ^last-direction <direction> -)}
+
+# Select*move*bonusfood-better-than-normalfood
+# If there is a proposed operator to move to a cell with bonusfood and 
+#    there is a second proposed operator to move to a cell that is empty or
+#    has normalfood
+#    prefer the first operator.
+
+sp {select*move*bonusfood-better-than-normalfood-empty
+   (state <s> ^operator <o1> +
+              ^operator <o2> +)
+   (<o1> ^name move 
+         ^content bonusfood)
+   (<o2> ^name move 
+         ^content << normalfood empty >>)
+-->
+   (<s> ^operator <o1> > <o2>)}
+
+# Select*move*avoid-empty-eater
+# If there is a proposed operator to move to an empty cell or a cell with 
+#    another eater,  
+#    then avoid that operator.
+
+sp {select*move*avoid-empty-eater
+   (state <s> ^operator <o1> +)
+   (<o1> ^name move 
+         ^content << empty eater >>)
+-->
+   (<s> ^operator <o1> <)}
+
+# Select*move*reject*backward
+# If there is a proposed operator to move in the direction 
+#    opposite the last move,  
+#    reject that operator.
+
+
+sp {select*move*reject*backward
+   (state <s> ^operator <o> +
+              ^directions <d>
+              ^last-direction <dir>)
+   (<d> ^value <dir>
+        ^opposite <o-dir>)
+   (<o> ^name move
+        ^direction <o-dir>)
+-->
+   (write | Reject | <o-dir>)
+   (<s> ^operator <o> -)} 
