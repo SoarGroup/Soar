@@ -1,0 +1,3 @@
+pushd mapping-bot
+source mapping-bot_source.soar
+popd

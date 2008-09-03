@@ -1,0 +1,69 @@
+
+
+
+############ Sub-task proposals ###############
+
+sp {propose*navigate*get
+  (state <s> ^superoperator <o> ^info-link <i>)
+  (<o> ^name get ^passenger.location <loc>)
+  (<i> -^location <loc>)
+ -->
+   (<s> ^operator <o2> + =)
+   (<o2> ^name navigate ^to <loc>)}
+   
+############### Primitive ops ###################
+
+sp {propose*pickup
+  (state <s> ^superoperator <o> ^info-link <i>)
+  (<o> ^name get ^passenger <p>)
+  (<p> ^location <loc>)
+  (<i> ^location <loc>)
+  -->
+  (<s> ^operator <o2> + =)
+  (<o2> ^name pickup ^passenger <p>)}
+  
+sp {apply*pickup*success
+  (state <s> ^operator <o> ^info-link <i>)
+  (<o> ^name pickup ^passenger <p>)
+  (<i> ^location <x> ^num-occupants <n>)
+  (<p> ^location <x>)
+ -->
+  (<i> ^num-occupants <n> -)
+  (<i> ^num-occupants (+ <n> 1))
+  (<p> ^location <x> -)
+  (<p> ^location taxi)}
+  
+  
+sp {apply*pickup*failure*no*location
+  (state <s> ^operator <o> ^info-link <i>)
+  (<i> -^location)
+  (<o> ^name pickup)
+ -->
+  (<o> ^result failure)}
+  
+sp {apply*pickup*failure*wrong*location
+  (state <s> ^operator <o> ^info-link <i>)
+  (<i> ^location <x>)
+  (<o> ^name pickup ^passenger <p>)
+  (<p> ^location <> <x>)
+  -->
+  (<o> ^result failure)}
+
+
+################### RL template ######################
+
+#sp {RL*pickup
+#  :template
+#(state <s> ^superoperator.name get ^info-link <i> ^operator <o> +)
+#(<i> ^passenger <pass> ^x-coor <x> ^y-coor <y>)
+#(<o> ^name pickup)
+#-->
+#(<s> ^operator <o> = 0)}
+
+#sp {RL*get*navigate
+#:template
+#(state <s> ^superoperator.name get ^info-link <i> ^operator <o> +)
+#(<o> ^name navigate)
+#(<i> ^x-coor <x> ^y-coor <y> ^passenger <pass>)
+#-->
+#(<s> ^operator <o> = 0)}

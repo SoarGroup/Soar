@@ -1,0 +1,232 @@
+<map>
+  <cell-object name="butter">
+  	<property name="smell" value="none"></property>
+  	<property name="color" value="yellow"></property>
+  	<property name="texture" value="liquid"></property>
+  	<property name="id" value="butter"></property>
+  	<property name="shape" value="square"></property>
+  	<apply>
+  		<property name="points" value="0"></property>
+  		<points></points>
+  		<remove></remove>
+  		</apply></cell-object>
+  <cell-object name="sugar">
+  	<property name="smell" value="none"></property>
+  	<property name="color" value="white"></property>
+  	<property name="texture" value="powder"></property><property name="id" value="sugar"></property><property name="shape" value="square"></property><apply>
+  		<property name="points" value="0"></property>
+  		<points></points>
+  		<remove></remove>
+  		</apply></cell-object>
+  <cell-object name="eggs">
+  	<property name="smell" value="none"></property>
+  	<property name="color" value="white"></property>
+  	<property name="texture" value="liquid"></property><property name="id" value="eggs"></property><property name="shape" value="square"></property><apply>
+  		<property name="points" value="0"></property>
+  		<points></points>
+  		<remove></remove>
+  		</apply></cell-object>
+  <cell-object name="flour">
+  	<property name="smell" value="none"></property>
+  	<property name="color" value="white"></property>
+  	<property name="texture" value="powder"></property><property name="id" value="flour"></property><property name="shape" value="square"></property><apply>
+  		<property name="points" value="0"></property>
+  		<points></points>
+  		<remove></remove>
+  		</apply></cell-object>
+  <cell-object name="cinnamon">
+  	<property name="smell" value="strong"></property>
+  	<property name="color" value="brown"></property>
+  	<property name="texture" value="powder"></property><property name="id" value="cinnamon"></property><property name="shape" value="square"></property><apply>
+  		<property name="points" value="0"></property>
+  		<points></points>
+  		<remove></remove>
+  		</apply></cell-object>
+  <cell-object name="molasses">
+  	<property name="smell" value="strong"></property>
+  	<property name="color" value="brown"></property>
+  	<property name="texture" value="liquid"></property><property name="id" value="molasses"></property><property name="shape" value="square"></property><apply>
+  		<property name="points" value="0"></property>
+  		<points></points>
+  		<remove></remove>
+  		</apply></cell-object>
+  <cell-object name="mixture"><property name="id" value="mixture"></property>
+  	<property name="shape" value="triangle"></property>
+  	<apply>
+  		<remove></remove>
+  		</apply>
+  	</cell-object><cell-object name="toffee">
+  	<property name="smell" value="none"></property>
+  	<property name="color" value="brown"></property>
+  	<property name="texture" value="solid"></property><property name="id" value="toffee"></property><property name="shape" value="round"></property><apply>
+  		<property name="points" value="1"></property>
+  		<points></points>
+  		<remove></remove>
+  		</apply>
+  	<property name="product" value="true"></property></cell-object>
+  <cell-object name="custard">
+  	<property name="smell" value="none"></property>
+  	<property name="color" value="yellow"></property>
+  	<property name="texture" value="solid"></property><property name="id" value="custard"></property><property name="shape" value="round"></property><apply>
+  		<property name="points" value="1"></property>
+  		<points></points>
+  		<remove></remove>
+  		</apply><property name="product" value="true"></property></cell-object>
+  <cell-object name="sugarcookies">
+  	<property name="smell" value="mild"></property>
+  	<property name="color" value="white"></property>
+  	<property name="texture" value="solid"></property><property name="id" value="sugarcookies"></property><property name="shape" value="round"></property><apply>
+  		<property name="points" value="2"></property>
+  		<points></points>
+  		<remove></remove>
+  		</apply><property name="product" value="true"></property></cell-object>
+  <cell-object name="snickerdoodles">
+  	<property name="smell" value="mild"></property>
+  	<property name="color" value="white"></property>
+  	<property name="texture" value="solid"></property><property name="id" value="snickerdoodles"></property><property name="shape" value="round"></property><apply>
+  		<property name="points" value="3"></property>
+  		<points></points>
+  		<remove></remove>
+  		</apply><property name="product" value="true"></property></cell-object>
+  <cell-object name="molassescookies">
+  	<property name="smell" value="mild"></property>
+  	<property name="color" value="brown"></property>
+  	<property name="texture" value="solid"></property><property name="id" value="molassescookies"></property><property name="shape" value="round"></property><apply>
+  		<property name="points" value="4"></property>
+  		<points></points>
+  		<remove></remove>
+  		</apply><property name="product" value="true"></property></cell-object>
+  <cell-object name="burned">
+  	<property name="smell" value="strong"></property>
+  	<property name="color" value="black"></property>
+  	<property name="texture" value="solid"></property><property name="id" value="burned"></property><property name="shape" value="round"></property><apply>
+  		<property name="points" value="-1"></property>
+  		<points></points>
+  		<remove></remove>
+  		</apply><property name="product" value="true"></property></cell-object>
+  <cell-object name="countertop">
+  	<property name="id" value="countertop"></property>
+  	<property name="color" value="lightGray"></property></cell-object>
+  <cell-object name="oven"><property name="id" value="oven"></property><property name="color" value="darkGray"></property></cell-object>
+  <cell-object name="wall">
+    <property name="block" value="true" />
+    <property name="id" value="wall" />
+  </cell-object>
+  <cells world-size="9" random-walls="false">
+  	<row>
+  		<cell>
+  			<object>wall</object></cell>
+  		<cell>
+  			<object>wall</object></cell>
+  		<cell>
+  			<object>wall</object></cell>
+  		<cell>
+  			<object>wall</object></cell>
+  		<cell>
+  			<object>wall</object></cell>
+  		<cell>
+  			<object>wall</object></cell>
+  		<cell>
+  			<object>wall</object></cell>
+  		<cell>
+  			<object>wall</object></cell>
+  		<cell>
+  			<object>wall</object></cell></row> 	<row>
+  		<cell>
+  			<object>wall</object></cell>
+  		<cell><object>butter</object></cell>
+  		<cell></cell>
+  		<cell></cell>
+  		<cell></cell>
+  		<cell></cell>
+  		<cell></cell>
+  		<cell><object>flour</object></cell>
+  		<cell>
+  			<object>wall</object></cell></row> 	<row>
+  		<cell>
+  			<object>wall</object></cell>
+  		<cell></cell>
+  		<cell></cell>
+  		<cell></cell>
+  		<cell></cell>
+  		<cell></cell>
+  		<cell></cell>
+  		<cell></cell>
+  		<cell>
+  			<object>wall</object></cell></row> 	<row>
+  		<cell>
+  			<object>wall</object></cell>
+  		<cell></cell>
+  		<cell></cell>
+  		<cell><object>countertop</object></cell>
+  		<cell><object>countertop</object></cell>
+  		<cell><object>countertop</object></cell>
+  		<cell></cell>
+  		<cell></cell>
+  		<cell>
+  			<object>wall</object></cell></row> 	<row>
+  		<cell>
+  			<object>wall</object></cell>
+  		<cell><object>sugar</object></cell>
+  		<cell></cell>
+  		<cell>
+  			<object>countertop</object></cell>
+  		<cell>
+  			<object>oven</object></cell>
+  		<cell><object>countertop</object></cell>
+  		<cell></cell>
+  		<cell><object>cinnamon</object></cell>
+  		<cell>
+  			<object>wall</object></cell></row> 	<row>
+  		<cell>
+  			<object>wall</object></cell>
+  		<cell></cell>
+  		<cell></cell>
+  		<cell><object>countertop</object></cell>
+  		<cell><object>countertop</object></cell>
+  		<cell><object>countertop</object></cell>
+  		<cell></cell>
+  		<cell></cell>
+  		<cell>
+  			<object>wall</object></cell></row> 	<row>
+  		<cell>
+  			<object>wall</object></cell>
+  		<cell></cell>
+  		<cell></cell>
+  		<cell></cell>
+  		<cell></cell>
+  		<cell></cell>
+  		<cell></cell>
+  		<cell></cell>
+  		<cell>
+  			<object>wall</object></cell></row> 	<row>
+  		<cell>
+  			<object>wall</object></cell>
+  		<cell><object>eggs</object></cell>
+  		<cell></cell>
+  		<cell></cell>
+  		<cell></cell>
+  		<cell></cell>
+  		<cell></cell>
+  		<cell><object>molasses</object></cell>
+  		<cell>
+  			<object>wall</object></cell></row> 	<row>
+  		<cell>
+  			<object>wall</object></cell>
+  		<cell>
+  			<object>wall</object></cell>
+  		<cell>
+  			<object>wall</object></cell>
+  		<cell>
+  			<object>wall</object></cell>
+  		<cell>
+  			<object>wall</object></cell>
+  		<cell>
+  			<object>wall</object></cell>
+  		<cell>
+  			<object>wall</object></cell>
+  		<cell>
+  			<object>wall</object></cell>
+  		<cell>
+  			<object>wall</object></cell></row></cells>
+</map>

@@ -1,0 +1,25 @@
+<soar2d version="2">
+  <general>
+    <game>book</game>
+    <map>maps/book/default.bmap</map>
+    <seed>0</seed>
+    <rules>
+      <book />
+    </rules>
+  </general>
+  <logging>
+    <level>INFO</level>
+    <file>soar2d.log</file>
+    <console />
+  </logging>
+  <players>
+  <debuggers></debuggers>
+  <!-- 
+  <player>
+  	<name>dog</name></player>
+  <player>
+  	<name>mouse</name></player></players>
+  	 -->
+  <terminals />
+  <clients />
+</soar2d>

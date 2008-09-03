@@ -1,0 +1,18 @@
+\subsection{\soarb{max-chunks}}
+\label{max-chunks}
+\index{max-chunks}
+Limit the number of chunks created during a decision cycle. 
+ Priority: 3 ; Status: Complete
+\subsubsection*{Synopsis}
+\begin{verbatim}
+max-chunks [n]
+\end{verbatim}
+\subsubsection*{Options}
+\begin{tabular}{|l|l|}
+\hline 
+ n  & Maximum number of chunks allowed during a decision cycle.  \\
+ \hline 
+\end{tabular}
+\subsubsection*{Description}
+, and Soar will proceed to the next phase. A warning message is printed to notify the user that the limit has been reached. 
+ This limit is included in Soar to prevent getting stuck in an infinite loop during the chunking process. This could conceivably happen because newly-built chunks may match immediately and are fired immediately when this happens; this can in turn lead to additional chunks being formed, etc. If you see this warning, something is seriously wrong; Soar is unable to guarantee consistency of its internal structures. You should not continue execution of the Soar program in this situation; stop and determine whether your program needs to build more chunks or whether you've discovered a bug (in your program or in Soar itself). 

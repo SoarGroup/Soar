@@ -1,0 +1,6 @@
+<?xml version="1.0"?>
+<eaters>
+  <simulation debuggers="true" default-map="random-walls.emap" runs="0"></simulation>
+  <agents>
+  </agents>
+</eaters>

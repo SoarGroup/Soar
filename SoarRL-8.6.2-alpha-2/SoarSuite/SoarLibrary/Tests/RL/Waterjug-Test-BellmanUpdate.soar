@@ -1,0 +1,56 @@
+RL --alpha 1
+RL --gamma 0.9
+RL --lambda 0
+
+set-stop-phase --before --decision
+
+pushd Waterjug-Test
+source _firstload.soar
+pushd elaborations
+source elaborations_source.soar
+popd
+source empty.soar
+source fill.soar
+source initialize-water-jug.soar
+source pour.soar
+source RL-short-path-states.soar
+source control-short-path.soar
+popd
+
+#######################################
+# Run, print RL rules (p --RL), init-soar, and repeat
+# Correct RL values:
+#
+# After first run:
+# |RL-3351|  1.
+# |RL-3033|  0.
+# |RL-0330|  0.
+# |RL-0003|  0.
+#
+# After second run:
+# |RL-3351|  1.
+# |RL-3033|  0.9
+# |RL-0330|  0.
+# |RL-0003|  0.
+#
+# After third run:
+# 
+# |RL-3351|  1.
+# |RL-3033|  0.9
+# |RL-0330|  0.81
+# |RL-0003|  0.
+# 
+# After fourth run and all subsequent runs:
+#
+# |RL-3351|  1.
+# |RL-3033|  0.9
+# |RL-0330|  0.81
+# |RL-0003|  0.729
+#
+#
+#################################
+# This is a test of the basic RL algorithm.
+# There are no template rules.
+# There is no use of eligibility traces.
+# There is no subgoaling/hierarchy.
+# There is no exploration - agent policy is guided by symbolic preferences.

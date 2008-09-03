@@ -1,0 +1,27 @@
+                                     Srand
+
+                                      Name
+
+   srand - Seed the random number generator.
+
+                                    Synopsis
+
+ srand [seed]
+
+                                    Options
+
+   +----------------------------------+
+   |seed|Random number generator seed.|
+   +----------------------------------+
+
+                                  Description
+
+   Seeds the random number generator with the passed seed. Calling srand
+   without providing a seed will seed the generator based on the contents of
+   /dev/urandom (if available) or else based on time() and clock() values.
+
+                                    Examples
+
+ srand 0
+
+                                    See Also

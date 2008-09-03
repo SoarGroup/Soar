@@ -1,0 +1,619 @@
+%---------------------------------------------------------------------------
+% Description       : LaTeX source for Soar 8 User's Manual
+% Author(s)         : J. Laird, C. Congdon
+% Organization      : University of Michigan
+%---------------------------------------------------------------------------
+%---------------------------------------------------------------------------
+% converted to LaTeX2e by Clare Bates Congdon -- Tue Feb 21 14:45:22 1995
+%  * also removing latexinfo stuff; new manual will be in latex and html only
+% 
+% THIS VERSION:
+%  * updates manual to Soar 8
+% 
+%
+% TO PRINT A `FINAL' VERSION OF THIS MANUAL, here's the drill:
+%   (not necessarily `final', but to be handed out to folks)
+%
+% 1. comment out any `includeonly's in this file.
+% 2. change 'include' to 'input' for appendices -- may fix TOC problem (see
+% 	NOTES below).
+% 3. run latex repeatedly and fix source files until you don't get any more
+% 	errors. (a few font errors seem to be unavoidable).
+%       watch for ``overfull'' messages, which mean that your lines are too
+%       long. ``underfull'' can often be ignored.
+% 3b. run makeindex
+% 3c. edit manual.ind for special characters, such as & 
+%	I think the best approach here is probably to put \verb+ + around the
+%	special chars.
+%	Note that if we put the '\verb+ +' in the index command, the chars
+%       might be indexed under \verb...which would maybe be okay, now that I
+%       think about it. (should still be alphabetically at the front of the
+%       manual.) 
+% 3d. run latex yet again
+% 4. run dvips and use ghostview to have a peek.
+% 5. fix errors.
+%     (note that the easiest way to remove all the comments, if that's really
+%     what you want to do, is to redefine `comment' and 'betacomment' in this
+%     file to be the same as 'nocomment')
+% 6. pay particular attention to the toc (table of contents) and the function
+% 	summary and index.
+%    * the appendices often get screwed up, requiring a hand-edit of the toc
+%       file 
+%    * the commands in the toc look better if you remove the args to
+%       user-interface commands (again, by hand)
+%    * if any of the commands in the user-interface has changed, chances are
+%    	good that the function summary is no longer current. You can edit
+%       manual.glo, as described functions.tex, or just make individual
+%       changes.
+%    NOTE: there is no point in editing the TOC unless you've got everything
+%    else perfect. You have to edit it one run before the last one because
+%    latex will overwrite it. (It's sometimes a good idea to save an edited
+%    toc if you have to make minor changes that will not change page
+%    numbering.)
+% 7. If everything looks fine, and you've just re-edited the manual.toc file
+%    for the last time, run latex and dvips for the last time.
+%
+% TIPS ON DEBUGGING LATEX (random problems I'm having as I try to wrap this up)
+% * DO NOT edit and save a file (including this one) while you are running
+%   latex on said file. Latex seems to have a pointer into the file, and
+%   saving can cause huge hunks of text to get skipped or duplicated. And
+%   you'll get bizarre errors.
+% * If you get an ``undefined reference'' error for a label you know you've
+%   defined, the most likely cause is that you've forgotten an \end{verbatim}
+%   line in the previous section. The next possibility is that you opened a
+ls
+%   comment environment and closed it way later than you thought.
+% * If the page count seems to suddenly shoot up, its a good bet that you
+%   forgot an \end{verbatim} somewhere. If it suddenly drops, you probably
+%   forgot to close a comment environment.
+%
+% OTHER CHANGES MADE IN THIS VERSION OF THE MANUAL:
+%  * set odd and even margins differently for twosided printing and binding
+%  * created \soar mode, which is just \texttt, but will allow us to change
+%    this at whim by editing this file only, rather than search and replaces
+%    all over creation.
+%  * other playing around with typestyles, trying to get bold typewriter font.
+%    I think I've finally found one; sansserif font is redefined to the new
+%    typewriter font (probably available only at UofM?), which has italic and
+%    bold styles.
+%  * created \carat, which puts the ^ character into a non-verbose environment
+%    (e.g. soar mode). Might as well note here that you can't easily use
+%    verbose mode in the middle of text because it won't add line endings in
+%    the appropriate places (you'll just get overfulls). That's why soar mode
+%    is needed.
+%  * also created \tild for adding tildes in
+%  * the function summary and index is now tied to the user-interface chapter.
+%    It doesn't have to be in the future, but while the command set is in
+%    flux, this seems the best way to keep things consistent. I'm using
+%    glossary commands (in the user interface chapter) to write to the
+%    manual.glo file, which I then edit into the function summary. See the
+%    function summary file for instructions.
+%
+% NOTES:
+%  * to print manual without the .ps files for figures, edit this file only.
+%    comment out the definition of \insertfigures and uncomment the other
+%    version of \insertfigures, which will just leave whitespace
+%  * likewise, all ``comments'' in the text can be removed by redefining the
+%    \comment environment to be the same as the \nocomment environment below,
+%    rather than searching through all files
+%  * to print only some of the chapters, use the \includeonly command; see
+%    below 
+%  * for final version of manual, have to edit the TOC by hand:
+%    1. word ``APPENDIX'' appears the line *after* the listing of the first
+%       appendix 
+%    2. looks a heck of a lot better if we remove the command arguments from
+%       the TOC listing for chapter 6. (This can be done in emacs with a
+%       replace-rexexp.) (Replace-regexp ``.\texttt.{.*}}'' with ``}'')
+%---------------------------------------------------------------------------
+\documentclass[12pt,twoside,named]{book}
+%\documentclass[12pt,twoside,final]{book}
+% final restricts line overruns, but might be default
+\usepackage{named}		% for bibliography (named.sty is in this dir)
+\usepackage{makeidx}		% for index
+\usepackage{epsfig}		% for figures (was 'psfig')
+\usepackage[colorlinks]{hyperref}     % for hyperlinks
+\usepackage[figure,figure*]{hypcap}   % to correct anchor placement for figures
+%\usepackage{amstext}
+%\usepackage{verbatim}
+%\usepackage{subfigure}
+%\usepackage{rotating}
+%\usepackage{epic}
+%\usepackage{lscape}
+
+
+%---------------------------------------------------------------------------
+% setup the environment
+%---------------------------------------------------------------------------
+\setlength{\topmargin}{-0.5in}		
+\setlength{\oddsidemargin}{.5in}	% for binding, odd and even have
+\setlength{\evensidemargin}{0in}	% different margins
+\setlength{\textwidth}{6in}             % Gives 1 in. side margins; 1.5in on inside edge 
+\setlength{\textheight}{9.2in}		% Gives 1 inch on top and bottom.
+
+\setlength{\parskip}{8pt}
+\setlength{\parindent}{0pt}
+
+% try these for fixing spacing in itemize
+%  --> none of these seem to work
+\setlength{\itemsep}{0pt}	% space between items
+\setlength{\parsep}{0pt}	% space between paragraphs w/in an item
+\setlength{\topsep}{0pt}	% between prec. text and first item
+\setlength{\partopsep}{0pt}	% extra space, if list env is preceeded by blank line
+
+%changing those last two had bad side effects; also changed spacing after
+%verbatim environments (but didn't always fix list environments; maybe because
+%it is a rubber space)
+
+%\setlength{\topskip}{-20pt}	% have no idea what this will change -->
+				%didn't work
+
+% write an .idx file; this may need to be edited to be incorporated
+\makeindex
+\renewcommand{\seealso}[1]{\textit{see also} #1}
+
+% write an .glo file; this will need to be edited to be incorporated
+% --> used for the function summary, NOT for the glossary
+\makeglossary
+
+% to play with the numbering depth (defaults for both are 2 in book.cls)
+\setcounter{secnumdepth}{3}
+\setcounter{tocdepth}{2}
+
+%---------------------------------------------------------------------------
+% specify an alternate directory for the ps figures
+%---------------------------------------------------------------------------
+%\psfigsearchpath{Figures}   
+\graphicspath{{Figures/}}   % at Bowdoin
+
+%---------------------------------------------------------------------------
+% define new commands
+%---------------------------------------------------------------------------
+
+% to add functions to .glo file:
+\newcommand{\funsum}[2]{\glossary{#1 & #2 & \textit{#1}}}
+
+% to change spacing 
+\newcommand{\dou}{\renewcommand{\baselinestretch}{1.6}\small\normalsize}
+\newcommand{\singl}{\renewcommand{\baselinestretch}{1.0}\small\normalsize}
+\newcommand{\halfs}{\renewcommand{\baselinestretch}{0.5}\small\normalsize}
+
+
+% to insert figures (first option allows blank space in lieu of actual .ps file)
+% insertcaption inserts a rule after the caption, which is handy in separating
+% caption from text
+
+%\newcommand{\insertfigure}[2]{\vspace{2in}}
+\newcommand{\insertfigure}[2]{		%\protect\rule[0.0in]{6in}{.01in}
+			   %   \capstart   % works with hypcap package, figures must have captions
+			      \begin{center}
+                              \ \epsfig{file=#1,height=#2}
+                              \end{center}}
+\newcommand{\inserttwofigs}[3]{\begin{center}
+                              \ \psfig{figure=#1.ps,height=#3} \psfig{figure=#2.ps,height=#3}
+                              \end{center}}
+\newcommand{\insertthreefigs}[4]{\begin{center}
+                              \ \psfig{figure=#1.ps,height=#4} \psfig{figure=#2.ps,height=#4}  \psfig{figure=#3.ps,height=#4}
+                              \end{center}}
+
+\newcommand{\insertcaption}[1]{\singl\caption{\small#1}
+                                        \protect\rule[0.0in]{6in}{.01in}   }
+
+% to include in-text comments (for drafts)
+%\newcommand{\comment}[1]{\begin{quote}{\small {\em comment:} \ #1} \end{quote}}
+\newcommand{\nocomment}[1]{}
+\newcommand{\betacomment}[1]{\begin{quote}{\small {\em Version 7.0.3 comment:} \ #1} \end{quote}}
+
+% To take all comments out, just redefine `comment' and `betacomment' like 'nocomment':
+ \newcommand{\comment}[1]{}
+% \newcommand{\betacomment}[1]{}
+
+%\newcommand{\nocomment}[1]{\begin{quote}{\small {\em Old comment:} \ #1} \end{quote}}
+%\newcommand{\cbc}[1]{\begin{quote}{\small {\em CBC comment:} \ #1} \end{quote}}
+%\newcommand{\umcomment}[1]{\begin{quote}{\small {\em UMich comment: \\} \ #1} \end{quote}}
+
+\renewcommand{\cite}[1]{}
+%---------------------------------------------------------------------------
+% aesthetics: typefaces and special characters
+%---------------------------------------------------------------------------
+
+% Change sanserif font to a typewriter font (this is different from the
+% default typewriter font, which is a bit narrower, but doesn't have a bold
+% weight -- with this command, \textsf will now be a typewriter font.
+\renewcommand{\sfdefault}{pcr}    % new typewriter font
+%\renewcommand{\sfdefault}{phv}   % helvetica
+%\renewcommand{\sfdefault}{ppl}   % palatino, which I rather like
+
+%\renewcommand{\sfdefault}{pcr}  % new typewriter font
+%\renewcommand{\ttdefault}{pcr}  % new typewriter font
+
+% to write soar code into text -- soar bold is now a bold tt font.
+\newcommand{\soar}[1]{\texttt{#1}}
+%\newcommand{\soarb}[1]{\texttt{\textbf{#1}}}   % can't get bold typewriter?
+\newcommand{\soarb}[1]{\textsf{\textbf{#1}}}
+\newcommand{\soarit}[1]{\textsf{\textit{#1}}}	% italic typewriter
+\newcommand{\soarbit}[1]{\textsf{\textit{\textbf{#1}}}}	% bold italic typewriter
+
+%try to get just bold to be the new typewriter font, while leaving regular tt alone
+%....not sure how to do this, since it involves two commands.
+
+\def\btt{\fontfamily{cmttss}\fontseries{b}\fontshape{n}\fontsize{12}{13.6}\selectfont}
+
+%carat and tilde symbols
+\newcommand{\carat}{\ensuremath{^\wedge}}  %This is how to get a carat symbol
+					   %  (^) in the text
+\newcommand{\tild}{\ensuremath{\sim}}      %This is how to get a tilde (~) in
+					   %  the text 
+\newcommand{\cmark}{\ensuremath{\surd}}    %This is how to get a checkmark
+
+
+%---------------------------------------------------------------------------
+% aesthetics: fill the page better with illustrations
+% I believe the top \def's are redundant with the \renewcommands
+%---------------------------------------------------------------------------
+% to fill pages better when there's figures or tables (aka 'floats')
+%\def\topfraction{1.0}        %maximum fraction of floats at the top of the page
+%\def\bottomfraction{1.0}     %ditto, for the bottom of the page
+%\def\textfraction{0}         %minimum fraction of text (--> 100% floats is okay)
+%\def\floatpagefraction{0.8}  % if a page is full of floats, it'd better be FULL
+
+
+% I don't like it when a figure floats on a page with no text, so fiddle with
+% these parameters to change this. A trial and error sort of thing; the first
+% command didn't seem to do anything. The percentages may be excessive; I
+% don't know what the defaults are
+\renewcommand{\topfraction}{1.0}          %up to 1.0 of a page can be a figure
+\renewcommand{\bottomfraction}{1.0}       %up to 1.0 of a page can be a figure
+\renewcommand{\textfraction}{0.0}         %up to 1.0 of a page can be text
+\renewcommand{\floatpagefraction}{0.9}    %minimum of .9 of a page for floats only
+
+
+\setcounter{topnumber}{4}		% up to 4 floats on a page
+\setcounter{bottomnumber}{4}		% up to 4 floats on a page
+
+
+%the distance between a figure and the text on the page (probably in addition
+%  to parsep)
+\renewcommand{\textfloatsep}{10pt}
+
+
+%---------------------------------------------------------------------------
+% aesthetics: don't use white space to fill to bottom of page
+%---------------------------------------------------------------------------
+\raggedbottom
+
+%---------------------------------------------------------------------------
+% aesthetics: set second level of itemize to be something other than dashes
+%  (just playing around for now)
+%---------------------------------------------------------------------------
+%\renewcommand{\labelitemii}{$\triangleright$}
+%\renewcommand{\labelitemii}{$\diamond$}
+\renewcommand{\labelitemii}{$\star$}
+
+%---------------------------------------------------------------------------
+% I may need to use this to solve the headers problem
+%   e.g. preface has header ``list of figures'' and function summary has
+%   header ``bibliography''. I suspect that what needs to be redefined in
+%   those situations is 'leftmark' and 'rightmark' and not the head itself.
+%   Try to change these with renewcommands...
+%     \def\@evenhead{\thepage\hfil\slshape\leftmark}%
+%     \def\@oddhead{{\slshape\rightmark}\hfil\thepage}%
+% Neither of the following (three) approaches work -- first two led to
+% 'preface' being the header throughout the manual; third did nothing
+%     \renewcommand\leftmark{\textit{PREFACE}}
+%     \renewcommand\rightmark{\textit{PREFACE}}
+%     \def\leftmark{\textit{PREFACE}}
+%     \def\rightmark{\textit{PREFACE}}
+%     \def\@evenhead{\thepage\hfil\slshape{PREFACE}}
+%     \def\@oddhead{{\slshape{PREFACE}}\hfil\thepage}
+%	[renewcommand didn't work with evenhead and oddhead]
+%---------------------------------------------------------------------------
+
+
+%---------------------------------------------------------------------------
+% includeonly's, for drafts
+%---------------------------------------------------------------------------
+
+%\includeonly{m-preface8,m-intro8,m-architecture8}
+
+%\includeonly{m-multiple,m-advanced}
+%\includeonly{m-intro8}
+
+%\includeonly{interface-8.6}
+%\includeonly{m-preface8}
+
+%\includeonly{m-preface8,m-architecture8}
+%\includeonly{m-functions}
+
+%\includeonly{a-grammars}
+
+%---------------------------------------------------------------------------
+% uncomment the next line if you manually edit the toc and index files.
+%\nofiles          % don't overwrite the toc and ind files
+%---------------------------------------------------------------------------
+% BEGIN
+%---------------------------------------------------------------------------
+\begin{document}
+
+\bibliographystyle{named}
+%\pagestyle{empty}			% looks to be overwritten below
+
+%----------------------------------------------------------------------------
+% Title page
+%----------------------------------------------------------------------------
+
+
+\begin{titlepage}
+\vspace{1.5in}
+
+\begin{center}
+\begin{huge}
+	The Soar User's Manual \vspace{10pt} \\
+	Version 8.6.3 \vspace{20pt} \\
+\end{huge}
+\begin{large}
+	\nocomment{Edition 1}
+\end{large} \vspace{36pt}
+
+
+\begin{large}
+	John E. Laird and Clare Bates Congdon  \\
+        User interface sections by Karen J. Coulter \\
+	Electrical Engineering and Computer Science Department\\
+	University of Michigan \vspace{.3in} \\
+
+\end{large}
+	Draft of:
+	\today
+
+\end{center}
+
+
+\vspace*{0pt plus 1filll}
+	{\em
+	Errors may be reported to John E. Laird (laird@umich.edu)\\
+        \\
+	}
+	Copyright \copyright\ 1998 - 2006, The Regents of the University of Michigan
+\vspace{.1in}
+
+Development of earlier versions of this manual were supported under
+contract N00014-92-K-2015 from the Advanced Systems Technology Office of
+the Advanced Research Projects Agency and the Naval Research Laboratory,
+and contract N66001-95-C-6013 from the Advanced Systems Technology
+Office of the Advanced Research Projects Agency and the Naval Command
+and Ocean Surveillance Center, RDT\&E division.
+
+	%\vspace*{0pt plus 1filll}
+\comment{
+\newpage
+\setlength{\parskip}{3pt}
+
+\nocomment
+	{\em This is a draft version of the manual; there are lots of little
+	changes and a few big changes still to be completed....Some of the
+	undone things:
+	\begin{enumerate}
+	\item all indexing needs to be redone
+	\item compare index against glossary to see if I left anything out.
+	\item change format for user-interface syntax -- use italics to
+		specify args that are variable.
+	\item have to regenerate a lot of the examples for the user-interface
+		chapter. 
+	\item the commands in the user-interface chapter may or may not
+		correspond to the final release
+	\item appendices are still on the sketchy side... getting better \\
+		grammars and o-support definitely still need attention
+	\item Needs a few more figures
+	\item remember to check for consistency, such as upper/lowercase in
+		section headings. (and i-support vs. I-support.) Looking over
+		TOC and List of Figures would be a good idea.
+	\item impasses are resolved; preferences are evaluated -- check for
+		consistency 
+	\item watch the difference between productions/operators making
+		changes to the state and suggesting changes
+	\item it would be nice to add a brief troubleshooting guide \\
+		for example, to note what happens when someone is running
+		``soar'' (rather than ``soartk''), but tries to load Tk code.
+	\end{enumerate}
+
+
+	Fri Jun 20 16:22:27 1997, Major undone things:
+
+	\begin{enumerate}
+	\item Haven't updated learning chapter
+	\item Not sure how much ``advanced'' chapter has changed in the source
+		since the last printing (leaving this chapter for next pass)
+
+	\item Haven't incorporated comments from Frank and Aladin
+	\item should, perhaps, include them in acknowledgements?
+
+	\item indexing
+
+	\item appendices
+
+	\end{enumerate}
+
+\nocomment{
+	Things that I think are done:
+	\begin{enumerate}
+	\item Too much of the Tcl stuff got removed (moved into the ``advanced
+		manual''). Added ``advanced'' chapter, but haven't written Tcl
+		section yet.
+	\item blocks-world task has become a big mess -- too many versions
+		have been used for different things: \begin{enumerate}
+		\item create THE version of the blocks-world to be used with
+			this manual (or possibly two versions, one with
+			subgoaling?) 
+		\item redo figures
+		\item include as an appendix
+		\item add to distribution
+		\end{enumerate}
+	\item subgoal stack illustration is from old blocks-world task and
+		should be updated
+	\item need a brief description of SDE and pointer to docs
+	\item also need pointers to tutorial and advanced manual
+
+	\item check double and single quotes -- not always in latex format.
+	\item ``evaluate preferences'', not ``resolve'' (impasses are
+		resolved; preferences are evaluated). Exception: I left
+		``resolved'' for preferences in just a couple of places, to
+		mean that the preferences were evaluated and were not
+		contradictory. Similarly, they cannot be resolved if they are
+		contradictory.
+ 	\item change 'object' attribute to 'block' in all examples and
+		illustrations -- no, change it to `thing'
+	\item make sure that command names shown in examples in early chapters
+		are consistent with actual command names -- go/run,
+		load/source, etc.
+	\item operators are not distinguished objects -- the operator
+		augmentation of the state is distinguished (not entirely true
+		-- operators ARE distinguished, for example, because their
+		preferences are not evaluated until the decision phase)
+	\item ``everything retracts'', is the impression we give early on and
+		then later, we amend this. Not a great idea. From the
+		beginning, make it clear that some retract and some don't
+	\item use ``substate'' more often, as in ``soar creates a new
+		substate''
+	\item don't call them databases; call them memories
+	\item we've changed the language for talking about preferences, and
+	this has not been consistently incorporated. For example, we're trying
+	to say that a preference has i-support or o-support, not that a
+	production has i-support or o-support. Also a preference may be an
+	operator proposal, operator application, operator termination, or
+	elaboration, but productions aren't those four types because
+	productions can create multiple preferences that fulfill different
+	roles.
+	
+	\end{enumerate}
+	}	 
+	}
+        }
+\normalsize
+\setlength{\parskip}{8pt}
+
+\end{titlepage}
+
+% ----------------------------------------------------------------------------
+% Table of contents and preface
+% ----------------------------------------------------------------------------
+\cleardoublepage
+\pagestyle{headings}
+\pagenumbering{roman}
+\setlength{\parskip}{0pt}	% try this for condensing TOC
+\tableofcontents
+
+\cleardoublepage
+
+\addcontentsline{toc}{chapter}{Contents}
+
+\listoffigures            	
+\cleardoublepage
+\setlength{\parskip}{8pt}
+
+%\cleardoublepage
+%\addcontentsline{toc}{chapter}{Preface}
+
+%\markboth{PREFACE}{PREFACE}
+%\chaptermark{WORKING?}
+%\include{m-preface8}
+
+% ----------------------------------------------------------------------------
+% Body of document
+%
+% This version of the manual is primarily the intro and chapters 4, 5, and 8
+%   of the old manual (SLCM syntax, chunking, encoding a task)
+% leave out appendices for now
+% ----------------------------------------------------------------------------
+\cleardoublepage
+\pagenumbering{arabic}
+
+\include{intro}
+%\include{m-overview}
+\include{architecture}
+\include{syntax}
+\include{chunking}
+\include{interface-8.6}
+
+%\cleardoublepage
+\appendix
+\addcontentsline{toc}{chapter}{Appendices}
+
+% change 'include's to 'input' for final version
+%  (use 'include' instead if you're only printing part of the manual)
+%\include{a-glossary}
+\input{a-blockscode}
+\input{a-grammars}
+\input{a-support}
+\input{a-preferences}
+%\include{a-using}
+%\include{a-default}
+%\include{a-support}
+%\include{SAN-preferences}
+%\include{SAN-tcl-io}
+\input{a-gds}
+% ----------------------------------------------------------------------------
+% References
+% ----------------------------------------------------------------------------
+%\addcontentsline{toc}{chapter}{Bibliography}
+%\bibliography{soarmanual} 
+
+%---------------------------------------------------------------------------
+%\vspace{\fill}
+%\subsection*{Colophon}
+%\addcontentsline{toc}{chapter}{Colophon}
+%
+%This document was produced on a Sun workstation using \LaTeX 2$_\epsilon$.
+%Illustrations were created using idraw.
+%
+% ----------------------------------------------------------------------------
+% Index
+%   the file manual.idx is generated by latex; run 'makeindex manual' to
+%     create the file manual.ind. However, this has a number of special
+%     characters in it which will have to be put in verbose mode to be readable.
+%   The characters that have to be changed are mostly at the top of the file;
+%     you'll also have to look for all the underscores and change _ to \_ so
+%     that latex won't choke.
+%   Another option might be to do the whole index in typewriter font, but I
+%     haven't tried this yet (maybe for draft versions, at least?). The carat
+%     symbol still won't work (replace with \carat), but everything else
+%     probably will.
+%   In case it isn't obvious, generating the index is one of the last things
+%     to do.
+% ----------------------------------------------------------------------------
+%\cleardoublepage
+%\label{INDEX}
+
+\addcontentsline{toc}{chapter}{Index}
+\small
+\twocolumn
+\label(INDEX)
+\printindex
+\nocomment{Yes, I know this index is lousy. I didn't have time to finish the
+	indexing process, and figured that it was better than nothing. If you
+	disagree, just rip these pages out of your manual. :-)}
+\onecolumn
+
+% ----------------------------------------------------------------------------
+% Function Summary
+% ----------------------------------------------------------------------------
+%\cleardoublepage
+\addcontentsline{toc}{chapter}{Summary of Soar Aliases, Variables, and Functions}
+%\markboth{SUMMARY OF SOAR FUNCTIONS}{SUMMARY OF SOAR FUNCTIONS} ADD BACK IN
+%\def\leftmark{\textit{SUMMARY OF SOAR FUNCTIONS}}
+%\def\rightmark{\textit{SUMMARY OF SOAR FUNCTIONS}}
+
+\include{functions}
+
+
+\typeout{  }
+\typeout{  }
+\typeout{          MAKE SURE TO UPDATE FUNCTION SUMMARY AND INDEX }
+\typeout{          BY EDITING manual.glo FILE INTO functions.glo }
+\typeout{          AND RUN LATEX AGAIN.}
+\typeout{  }
+\typeout{  	   ALSO, OFTEN HAVE TO EDIT THE .toc FILE BY HAND TO }
+\typeout{          FIX PROBLEMS WITH THE APPENDICES, AND TO TAKE OUT THE }
+\typeout{          ARGUMENTS TO USER-INTERFACE COMMANDS.}
+\typeout{  }
+
+\end{document}

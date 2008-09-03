@@ -1,0 +1,4 @@
+There are two subdirectories under this directory that contain the C and C++
+grammars (C and CPLUSPLUS).  The C grammar was developed by Doug South
+(dsouth@squirrel.com.au) and the C++ grammar was developed by Sreenivasa
+Viswanadha.

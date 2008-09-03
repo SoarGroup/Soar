@@ -1,0 +1,27 @@
+                                      Pwd
+
+                                      Name
+
+   pwd - Print the current working directory.
+
+   Status: Complete
+
+                                    Synopsis
+
+ pwd
+
+                                    Options
+
+   No options.
+
+                                  Description
+
+   Prints the current working directory of Soar.
+
+                                Default Aliases
+
+   +-------------+
+   |Alias|Maps to|
+   |-----+-------|
+   |topd |pwd    |
+   +-------------+

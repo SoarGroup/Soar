@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<jardesc>
+<jar path="E:/SoarMich/soar-library/SoarJavaDebugger.jar"/>
+<options buildIfNeeded="true" compress="true" descriptionLocation="/SoarJavaDebugger/JarDescription.jardesc" exportErrors="true" exportWarnings="true" overwrite="true" saveDescription="true" useSourceFolders="false"/>
+<manifest generateManifest="false" mainClassHandleIdentifier="=SoarJavaDebugger/&lt;debugger{Application.java[Application" manifestLocation="/SoarJavaDebugger/JarManifest" manifestVersion="1.0" reuseManifest="false" saveManifest="true" usesManifest="true">
+<sealing sealJar="false">
+<packagesToSeal/>
+<packagesToUnSeal/>
+</sealing>
+</manifest>
+<selectedElements exportClassFiles="true" exportJavaFiles="false" exportOutputFolder="false">
+<javaElement handleIdentifier="=SoarJavaDebugger/&lt;menu"/>
+<javaElement handleIdentifier="=SoarJavaDebugger/&lt;dialogs"/>
+<file path="/SoarJavaDebugger/default-layout.dlf"/>
+<file path="/SoarJavaDebugger/javaw.exe.manifest"/>
+<javaElement handleIdentifier="=SoarJavaDebugger/&lt;general"/>
+<file path="/SoarJavaDebugger/JarDescription.jardesc"/>
+<javaElement handleIdentifier="=SoarJavaDebugger/&lt;manager"/>
+<javaElement handleIdentifier="=SoarJavaDebugger/&lt;doc"/>
+<javaElement handleIdentifier="=SoarJavaDebugger/&lt;modules"/>
+<file path="/SoarJavaDebugger/.classpath"/>
+<file path="/SoarJavaDebugger/.project"/>
+<file path="/SoarJavaDebugger/How to build debugger.txt"/>
+<file path="/SoarJavaDebugger/debugger.html"/>
+<javaElement handleIdentifier="=SoarJavaDebugger/&lt;debugger"/>
+<javaElement handleIdentifier="=SoarJavaDebugger/&lt;doc.events"/>
+<javaElement handleIdentifier="=SoarJavaDebugger/&lt;helpers"/>
+<file path="/SoarJavaDebugger/default-text.dlf"/>
+</selectedElements>
+</jardesc>

@@ -1,0 +1,228 @@
+###
+### Table of Contents, ht2.s7
+###
+###	i.	Initializations and loads
+###	I.	New evaluation criterion
+###	II.	Selection space setup
+###	III.	Evaluation operators
+###
+### Copyright 1994.  F. E. Ritter & R. M. Young.
+
+### 
+### Last substantially modified: 10-Feb-96 -FER
+###
+### 3-Nov-96 Frank Ritter - converted to Soar 7.0.4.
+### 16/4/96  Richard Young - Minor mods to avoid need for default rules
+### 10/2/96  Frank Ritter - convert to Soar7
+### 5/7/95   Gary Jones - NNPSCM conversion.
+### 
+### 27/7/95  Gary Jones - Altered references to <g> to be <s>.
+###                       For example, state <g> is now state <s>.
+###                       Just to make it easier to understand.
+###                       Also commented out two of the default rules,
+###                       one which is now a duplicate, the other
+###                       no longer need apply (and gives an error).
+### 
+### 10/8/95  Gary Jones - Commented out duplicate default rule 
+###                       default*selection*propose*evaluate-object.
+### 
+### ht2 loads ht.s7 but:
+### 	- There is also a selection space for assessing Eat best etc.
+### 	- There are hand-written application rules, i.e., chomp chomp
+###       occurs initially in a sub-space.
+###
+
+
+###
+###	i.	Initializations and loads
+###
+
+## For safety, excise -all
+excise -all
+
+## Build upon the previous version of hungry-thirsty:
+source "ht.s7"
+
+## This is done in file ht.s7
+## learn -off
+## puts "learn -off "
+
+## Remove a production so that we get forced into an impasse
+excise ht*compare*eat*better*drink
+
+
+###
+###	I.	New evaluation criterion
+###
+###
+### Redo the evaluation criterion, this time, in the default selection
+### space (created below in a simplified form in Sections II and III).
+
+sp {selection*evaluate*eat
+  (state <s> ^problem-space.name selection ^operator <eval>
+             ^superstate <ss>)
+  (<eval> ^name evaluate-object ^object <o>)
+  (<o> ^name eat)
+  (<ss> ^desired <d>)
+  (<d> ^hungry no)
+  -->
+  (<s> ^evaluation <e> + &)
+  (<e> ^value t ^object <o> ^quality excellent)}
+
+sp {selection*evaluate*drink*not*thirsty
+  (state <s> ^problem-space.name selection)
+  (<s> ^operator <eval> ^superstate <ss>)
+  (<eval> ^name evaluate-object ^object <o>)
+  (<o> ^name drink)
+  (<ss> ^desired <d>)
+  (<d> -^thirsty yes)
+  -->
+  (<s> ^evaluation <e> + &)
+  (<e> ^object <o> ^value t ^quality indifferent)}
+
+sp {selection*evaluate*drink*thirsty
+  (state <s> ^problem-space.name selection)
+  (<s> ^operator <eval> ^superstate <ss>)
+  (<eval> ^name evaluate-object ^object <o>)
+  (<o> ^name drink)
+  (<ss> ^desired <d>)
+  (<d> ^thirsty yes)
+  -->
+  (<s> ^evaluation <e> + &)
+  (<e> ^object <o> ^value t ^quality good)}
+
+sp {selection*propose*pass-up-excellent
+  (state <s> ^problem-space.name selection)
+  (<s> ^evaluation <e>)
+  (<e> ^value t ^quality excellent ^object <obj>)
+  -->
+  (<s> ^operator <o> + <)
+  (<o> ^name pass-up ^type pass-up-excellent ^object <obj>)}
+
+## pass-up-good operator will be tied for worst
+sp {selection*propose*pass-up-good
+  (state <s> ^problem-space.name selection)
+  (<s> ^evaluation <e>)
+  (<e> ^value t ^quality good ^object <obj>)
+  -->
+  (<s> ^operator <o> + <)
+  (<o> ^name pass-up ^type pass-up-good ^object <obj>)}
+
+
+## prefer to pass-up excellent things.
+sp {selection*compare*excellent*better*good
+  (state <s> ^problem-space.name selection)
+  (<s> ^operator <op-excellent> +)
+  (<op-excellent> ^type pass-up-excellent)
+  (<s> ^operator <op-good> +)
+  (<op-good> ^type pass-up-good)
+  -->
+  (<s> ^operator <op-excellent> > <op-good>)}
+
+## Note how this production references a higher goal and passes
+## information up.
+
+sp {selection*apply*pass-up
+  (state <s> ^superstate <ss> ^problem-space.name selection 
+             ^operator <o>)
+  (<o> ^name pass-up ^object <o1>)
+  (<s> ^evaluation <e1>)
+  (<e1> ^object <o1>)
+  -->
+  (<ss> ^operator <o1> >)}
+
+
+
+###
+###	II.	Selection space setup
+###
+### We use several rules taken from default rules and slightly
+### simplified them to set up this selection space. 
+###
+### **********************************************************
+### Like most bodies of knowledge, there are places that are difficult
+### for novices, and in Soar, this is such an area.  We don't 
+### particularly expect you in your first day to understand all that
+### is here.  You may wish to ignore this part of the model and continue
+### on.
+### **********************************************************
+###
+### The slightly different formating between rules comes from the
+### default productions file's various formats.
+
+
+###	A.	default*selection*propose*space*selection
+### Use the selection problem space for all multiple choice impasses.
+
+### make it acceptable (+) but worst (<) so that nearly any other
+### space will dominate.
+
+
+sp {default*selection*propose*space*selection
+    :default
+    (state <s> ^choices multiple)
+    -->
+    (<s> ^problem-space <p> + <p> < )
+    (<p> ^name selection)}
+
+
+
+###
+###	III.	Evaluation operators
+###
+
+##
+##		7.3.1	The evaluate-object operator
+##
+
+### 	A.	default*selection*propose*operator*evaluate-object
+### Create evaluate operator in selection problem space.
+
+## the squirrelly bracket indicates a set of grouped clauses, the not
+## sign indicates that the set of clauses mustn't be matched for the 
+## production to fire.
+
+### Create evaluate operator in selection problem space.
+
+sp { default*selection*propose*evaluate-object
+  :default
+  (state <s> ^problem-space.name selection ^item <x>)
+ -{(<s> ^evaluation <e>)
+   (<e> ^object <x> ^value t)}
+   -->
+  (<o> ^state <s> ^name evaluate-object ^object <x>)
+  (<s> ^operator <o> +)}
+
+
+### B. default*selection*select*operator*evaluate-object*indifferent
+
+### Make them indifferent if not ^operator-selection not-indifferent.
+### The '=' indicates an indifferent preference.
+
+## used to be: default*selection*select*operator*evaluate-object*indifferent
+sp { default*selection*select*evaluate-object*indifferent
+  :default
+  (state <s> ^problem-space <p> ^operator <o> +)
+  (<p> ^name selection - ^operator-selection not-indifferent)
+  (<o> ^name evaluate-object)
+  -->
+  (<s> ^operator <o> =)}
+
+###
+### Reconsider evaluation operator after it finishes to allow next one
+### in.
+###
+
+sp {default*terminate*evaluate-object
+    :default
+   (state <s>  ^operator <o>)
+   (<s> ^evaluation <e>)
+   (<o> ^object <x>)
+   (<e> ^object <x> ^value <val>)
+   -->
+   (<s> ^operator <o> @)}
+
+###---------------------------------------------------------------
+###                       END OF FILE
+###---------------------------------------------------------------
+

@@ -1,0 +1,78 @@
+                                Production-find
+
+                                      Name
+
+   production-find -
+
+                                    Synopsis
+
+ production-find [-lrs[n|c]] pattern
+
+
+                                    Options
+
+   +------------------------------------------------------------------------+
+   |-c, --chunks       |Look only for chunks that match the pattern.        |
+   |-------------------+----------------------------------------------------|
+   |-l, --lhs          |Match pattern only against the conditions (left-hand|
+   |                   |side) of productions (default).                     |
+   |-------------------+----------------------------------------------------|
+   |-n, --nochunks     |Disregard chunks when looking for the pattern.      |
+   |-------------------+----------------------------------------------------|
+   |-r, --rhs          |Match pattern against the actions (right-hand side) |
+   |                   |of productions.                                     |
+   |-------------------+----------------------------------------------------|
+   |-s, --show-bindings|Show the bindings associated with a wildcard        |
+   |                   |pattern.                                            |
+   |-------------------+----------------------------------------------------|
+   |pattern            |Any pattern that can appear in productions.         |
+   +------------------------------------------------------------------------+
+
+                                  Description
+
+   The production-find command is used to find productions in production
+   memory that include conditions or actions that match a given pattern. The
+   pattern given specifies one or more condition elements on the left hand
+   side of productions (or negated conditions), or one or more actions on the
+   right-hand side of productions. Any pattern that can appear in productions
+   can be used in this command. In addition, the asterisk symbol, *, can be
+   used as a wildcard for an attribute or value. It is important to note that
+   the whole pattern, including the parenthesis, must be enclosed in curly
+   braces for it to be parsed properly.
+
+   The variable names used in a call to production-find do not have to match
+   the variable names used in the productions being retrieved.
+
+   The production-find command can also be restricted to apply to only
+   certain types of productions, or to look only at the conditions or only at
+   the actions of productions by using the flags.
+
+                                    Examples
+
+   Find productions that test that some object gumby has an attribute alive
+   with value t. In addition, limit the rules to only those that test an
+   operator named foo:
+
+ production-find (<state> ^gumby <gv> ^operator.name foo)(<gv> ^alive t)
+
+   Note that in the above command, <state> does not have to match the exact
+   variable name used in the production.
+
+   Find productions that propose the operator foo:
+
+ production-find --rhs (<x> ^operator <op> +)(<op> ^name foo)
+
+   Find chunks that test the attribute ^pokey:
+
+ production-find --chunks (<x> ^pokey *)
+
+   Examples using the water-jugs demo:
+
+ source demos/water-jug/water-jug.soar
+ production-find (<s> ^name *)(<j> ^volume *)
+ production-find (<s> ^name *)(<j> ^volume 3)
+ production-find --rhs (<j> ^* <volume>)
+
+                                    See Also
+
+   sp

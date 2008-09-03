@@ -1,0 +1,1140 @@
+<map>
+  <cell-object name="gateway">
+    <property name="gateway" value="true" />
+    <property name="gateway-render" value="true" />
+    <property name="id" value="gateway" />
+  </cell-object>
+  <cell-object name="room">
+    <property name="room" value="true" />
+    <property name="id" value="room" />
+  </cell-object>
+  <cell-object name="mblock">
+    <property name="height" value="1" />
+    <property name="mblock" value="true" />
+    <property name="id" value="block" />
+  </cell-object>
+  <cell-object name="wall">
+    <property name="wall" value="true" />
+    <property name="block" value="true" />
+    <property name="id" value="wall" />
+  </cell-object>
+  <cells world-size="25" random-walls="false" random-food="false">
+    <row>
+      <cell>
+        <object>wall</object>
+      </cell>
+      <cell>
+        <object>wall</object>
+      </cell>
+      <cell>
+        <object>wall</object>
+      </cell>
+      <cell>
+        <object>wall</object>
+      </cell>
+      <cell>
+        <object>wall</object>
+      </cell>
+      <cell>
+        <object>wall</object>
+      </cell>
+      <cell>
+        <object>wall</object>
+      </cell>
+      <cell>
+        <object>wall</object>
+      </cell>
+      <cell>
+        <object>wall</object>
+      </cell>
+      <cell>
+        <object>wall</object>
+      </cell>
+      <cell>
+        <object>wall</object>
+      </cell>
+      <cell>
+        <object>wall</object>
+      </cell>
+      <cell>
+        <object>wall</object>
+      </cell>
+      <cell>
+        <object>wall</object>
+      </cell>
+      <cell>
+        <object>wall</object>
+      </cell>
+      <cell>
+        <object>wall</object>
+      </cell>
+      <cell>
+        <object>wall</object>
+      </cell>
+      <cell>
+        <object>wall</object>
+      </cell>
+      <cell>
+        <object>wall</object>
+      </cell>
+      <cell>
+        <object>wall</object>
+      </cell>
+      <cell>
+        <object>wall</object>
+      </cell>
+      <cell>
+        <object>wall</object>
+      </cell>
+      <cell>
+        <object>wall</object>
+      </cell>
+      <cell>
+        <object>wall</object>
+      </cell>
+      <cell>
+        <object>wall</object>
+      </cell>
+    </row>
+    <row>
+      <cell>
+        <object>wall</object>
+      </cell>
+      <cell />
+      <cell />
+      <cell />
+      <cell />
+      <cell />
+      <cell />
+      <cell />
+      <cell />
+      <cell />
+      <cell />
+      <cell />
+      <cell />
+      <cell />
+      <cell />
+      <cell />
+      <cell />
+      <cell />
+      <cell />
+      <cell />
+      <cell />
+      <cell />
+      <cell />
+      <cell />
+      <cell>
+        <object>wall</object>
+      </cell>
+    </row>
+    <row>
+      <cell>
+        <object>wall</object>
+      </cell>
+      <cell />
+      <cell />
+      <cell />
+      <cell />
+      <cell />
+      <cell />
+      <cell />
+      <cell />
+      <cell />
+      <cell />
+      <cell />
+      <cell />
+      <cell />
+      <cell />
+      <cell>
+        <object>mblock</object>
+      </cell>
+      <cell />
+      <cell />
+      <cell />
+      <cell />
+      <cell />
+      <cell />
+      <cell />
+      <cell />
+      <cell>
+        <object>wall</object>
+      </cell>
+    </row>
+    <row>
+      <cell>
+        <object>wall</object>
+      </cell>
+      <cell />
+      <cell />
+      <cell />
+      <cell />
+      <cell />
+      <cell />
+      <cell />
+      <cell />
+      <cell />
+      <cell />
+      <cell />
+      <cell />
+      <cell />
+      <cell />
+      <cell />
+      <cell />
+      <cell />
+      <cell />
+      <cell />
+      <cell />
+      <cell />
+      <cell />
+      <cell />
+      <cell>
+        <object>wall</object>
+      </cell>
+    </row>
+    <row>
+      <cell>
+        <object>wall</object>
+      </cell>
+      <cell>
+        <object>wall</object>
+      </cell>
+      <cell>
+        <object>wall</object>
+      </cell>
+      <cell>
+        <object>wall</object>
+      </cell>
+      <cell>
+        <object>wall</object>
+      </cell>
+      <cell>
+        <object>wall</object>
+      </cell>
+      <cell>
+        <object>wall</object>
+      </cell>
+      <cell>
+        <object>wall</object>
+      </cell>
+      <cell>
+        <object>wall</object>
+      </cell>
+      <cell>
+        <object>gateway</object>
+      </cell>
+      <cell>
+        <object>gateway</object>
+      </cell>
+      <cell>
+        <object>gateway</object>
+      </cell>
+      <cell>
+        <object>wall</object>
+      </cell>
+      <cell>
+        <object>wall</object>
+      </cell>
+      <cell>
+        <object>wall</object>
+      </cell>
+      <cell>
+        <object>wall</object>
+      </cell>
+      <cell>
+        <object>wall</object>
+      </cell>
+      <cell>
+        <object>wall</object>
+      </cell>
+      <cell>
+        <object>wall</object>
+      </cell>
+      <cell>
+        <object>wall</object>
+      </cell>
+      <cell>
+        <object>wall</object>
+      </cell>
+      <cell>
+        <object>wall</object>
+      </cell>
+      <cell>
+        <object>wall</object>
+      </cell>
+      <cell>
+        <object>wall</object>
+      </cell>
+      <cell>
+        <object>wall</object>
+      </cell>
+    </row>
+    <row>
+      <cell>
+        <object>wall</object>
+      </cell>
+      <cell />
+      <cell />
+      <cell />
+      <cell>
+        <object>gateway</object>
+      </cell>
+      <cell />
+      <cell />
+      <cell />
+      <cell />
+      <cell />
+      <cell />
+      <cell />
+      <cell />
+      <cell />
+      <cell />
+      <cell />
+      <cell />
+      <cell />
+      <cell />
+      <cell />
+      <cell>
+        <object>wall</object>
+      </cell>
+      <cell />
+      <cell />
+      <cell />
+      <cell>
+        <object>wall</object>
+      </cell>
+    </row>
+    <row>
+      <cell>
+        <object>wall</object>
+      </cell>
+      <cell />
+      <cell />
+      <cell />
+      <cell>
+        <object>gateway</object>
+      </cell>
+      <cell />
+      <cell />
+      <cell />
+      <cell />
+      <cell />
+      <cell />
+      <cell />
+      <cell />
+      <cell />
+      <cell />
+      <cell />
+      <cell />
+      <cell />
+      <cell />
+      <cell />
+      <cell>
+        <object>wall</object>
+      </cell>
+      <cell />
+      <cell />
+      <cell />
+      <cell>
+        <object>wall</object>
+      </cell>
+    </row>
+    <row>
+      <cell>
+        <object>wall</object>
+      </cell>
+      <cell />
+      <cell />
+      <cell />
+      <cell>
+        <object>gateway</object>
+      </cell>
+      <cell />
+      <cell />
+      <cell />
+      <cell />
+      <cell />
+      <cell />
+      <cell />
+      <cell />
+      <cell />
+      <cell />
+      <cell />
+      <cell />
+      <cell />
+      <cell />
+      <cell />
+      <cell>
+        <object>gateway</object>
+      </cell>
+      <cell />
+      <cell />
+      <cell />
+      <cell>
+        <object>wall</object>
+      </cell>
+    </row>
+    <row>
+      <cell>
+        <object>wall</object>
+      </cell>
+      <cell />
+      <cell />
+      <cell />
+      <cell>
+        <object>wall</object>
+      </cell>
+      <cell />
+      <cell />
+      <cell />
+      <cell />
+      <cell />
+      <cell />
+      <cell />
+      <cell />
+      <cell />
+      <cell />
+      <cell />
+      <cell />
+      <cell />
+      <cell />
+      <cell />
+      <cell>
+        <object>gateway</object>
+      </cell>
+      <cell />
+      <cell />
+      <cell />
+      <cell>
+        <object>wall</object>
+      </cell>
+    </row>
+    <row>
+      <cell>
+        <object>wall</object>
+      </cell>
+      <cell />
+      <cell />
+      <cell />
+      <cell>
+        <object>wall</object>
+      </cell>
+      <cell />
+      <cell />
+      <cell />
+      <cell />
+      <cell />
+      <cell />
+      <cell>
+        <object>mblock</object>
+      </cell>
+      <cell />
+      <cell />
+      <cell />
+      <cell />
+      <cell />
+      <cell />
+      <cell />
+      <cell />
+      <cell>
+        <object>gateway</object>
+      </cell>
+      <cell />
+      <cell />
+      <cell />
+      <cell>
+        <object>wall</object>
+      </cell>
+    </row>
+    <row>
+      <cell>
+        <object>wall</object>
+      </cell>
+      <cell>
+        <object>mblock</object>
+      </cell>
+      <cell />
+      <cell />
+      <cell>
+        <object>wall</object>
+      </cell>
+      <cell>
+        <object>wall</object>
+      </cell>
+      <cell>
+        <object>wall</object>
+      </cell>
+      <cell>
+        <object>wall</object>
+      </cell>
+      <cell>
+        <object>wall</object>
+      </cell>
+      <cell>
+        <object>wall</object>
+      </cell>
+      <cell>
+        <object>wall</object>
+      </cell>
+      <cell>
+        <object>wall</object>
+      </cell>
+      <cell>
+        <object>wall</object>
+      </cell>
+      <cell>
+        <object>wall</object>
+      </cell>
+      <cell>
+        <object>wall</object>
+      </cell>
+      <cell>
+        <object>wall</object>
+      </cell>
+      <cell>
+        <object>wall</object>
+      </cell>
+      <cell>
+        <object>wall</object>
+      </cell>
+      <cell>
+        <object>wall</object>
+      </cell>
+      <cell>
+        <object>wall</object>
+      </cell>
+      <cell>
+        <object>wall</object>
+      </cell>
+      <cell />
+      <cell />
+      <cell>
+        <object>mblock</object>
+      </cell>
+      <cell>
+        <object>wall</object>
+      </cell>
+    </row>
+    <row>
+      <cell>
+        <object>wall</object>
+      </cell>
+      <cell />
+      <cell />
+      <cell />
+      <cell>
+        <object>gateway</object>
+      </cell>
+      <cell />
+      <cell />
+      <cell />
+      <cell />
+      <cell />
+      <cell />
+      <cell />
+      <cell>
+        <object>wall</object>
+      </cell>
+      <cell />
+      <cell />
+      <cell />
+      <cell />
+      <cell />
+      <cell />
+      <cell />
+      <cell>
+        <object>gateway</object>
+      </cell>
+      <cell />
+      <cell />
+      <cell />
+      <cell>
+        <object>wall</object>
+      </cell>
+    </row>
+    <row>
+      <cell>
+        <object>wall</object>
+      </cell>
+      <cell />
+      <cell />
+      <cell />
+      <cell>
+        <object>gateway</object>
+      </cell>
+      <cell />
+      <cell />
+      <cell />
+      <cell />
+      <cell />
+      <cell />
+      <cell />
+      <cell>
+        <object>wall</object>
+      </cell>
+      <cell />
+      <cell />
+      <cell />
+      <cell />
+      <cell />
+      <cell />
+      <cell />
+      <cell>
+        <object>gateway</object>
+      </cell>
+      <cell />
+      <cell />
+      <cell />
+      <cell>
+        <object>wall</object>
+      </cell>
+    </row>
+    <row>
+      <cell>
+        <object>wall</object>
+      </cell>
+      <cell />
+      <cell />
+      <cell />
+      <cell>
+        <object>gateway</object>
+      </cell>
+      <cell />
+      <cell />
+      <cell />
+      <cell />
+      <cell />
+      <cell />
+      <cell />
+      <cell>
+        <object>wall</object>
+      </cell>
+      <cell />
+      <cell />
+      <cell />
+      <cell />
+      <cell />
+      <cell />
+      <cell />
+      <cell>
+        <object>gateway</object>
+      </cell>
+      <cell />
+      <cell />
+      <cell />
+      <cell>
+        <object>wall</object>
+      </cell>
+    </row>
+    <row>
+      <cell>
+        <object>wall</object>
+      </cell>
+      <cell />
+      <cell />
+      <cell />
+      <cell>
+        <object>wall</object>
+      </cell>
+      <cell />
+      <cell />
+      <cell />
+      <cell>
+        <object>mblock</object>
+      </cell>
+      <cell />
+      <cell />
+      <cell />
+      <cell>
+        <object>wall</object>
+      </cell>
+      <cell />
+      <cell>
+        <object>mblock</object>
+      </cell>
+      <cell />
+      <cell>
+        <object>mblock</object>
+      </cell>
+      <cell />
+      <cell />
+      <cell />
+      <cell>
+        <object>wall</object>
+      </cell>
+      <cell />
+      <cell />
+      <cell />
+      <cell>
+        <object>wall</object>
+      </cell>
+    </row>
+    <row>
+      <cell>
+        <object>wall</object>
+      </cell>
+      <cell />
+      <cell />
+      <cell />
+      <cell>
+        <object>wall</object>
+      </cell>
+      <cell />
+      <cell />
+      <cell>
+        <object>mblock</object>
+      </cell>
+      <cell>
+        <object>mblock</object>
+      </cell>
+      <cell>
+        <object>mblock</object>
+      </cell>
+      <cell />
+      <cell />
+      <cell>
+        <object>wall</object>
+      </cell>
+      <cell />
+      <cell />
+      <cell />
+      <cell />
+      <cell />
+      <cell />
+      <cell />
+      <cell>
+        <object>wall</object>
+      </cell>
+      <cell>
+        <object>wall</object>
+      </cell>
+      <cell>
+        <object>wall</object>
+      </cell>
+      <cell>
+        <object>wall</object>
+      </cell>
+      <cell>
+        <object>wall</object>
+      </cell>
+    </row>
+    <row>
+      <cell>
+        <object>wall</object>
+      </cell>
+      <cell />
+      <cell />
+      <cell />
+      <cell>
+        <object>wall</object>
+      </cell>
+      <cell />
+      <cell />
+      <cell />
+      <cell>
+        <object>mblock</object>
+      </cell>
+      <cell />
+      <cell />
+      <cell />
+      <cell>
+        <object>wall</object>
+      </cell>
+      <cell>
+        <object>mblock</object>
+      </cell>
+      <cell>
+        <object>mblock</object>
+      </cell>
+      <cell>
+        <object>mblock</object>
+      </cell>
+      <cell>
+        <object>mblock</object>
+      </cell>
+      <cell>
+        <object>mblock</object>
+      </cell>
+      <cell>
+        <object>mblock</object>
+      </cell>
+      <cell>
+        <object>mblock</object>
+      </cell>
+      <cell>
+        <object>wall</object>
+      </cell>
+      <cell />
+      <cell />
+      <cell />
+      <cell>
+        <object>wall</object>
+      </cell>
+    </row>
+    <row>
+      <cell>
+        <object>wall</object>
+      </cell>
+      <cell />
+      <cell />
+      <cell />
+      <cell>
+        <object>wall</object>
+      </cell>
+      <cell />
+      <cell />
+      <cell />
+      <cell />
+      <cell />
+      <cell />
+      <cell />
+      <cell>
+        <object>wall</object>
+      </cell>
+      <cell />
+      <cell />
+      <cell />
+      <cell />
+      <cell />
+      <cell />
+      <cell />
+      <cell>
+        <object>wall</object>
+      </cell>
+      <cell />
+      <cell />
+      <cell />
+      <cell>
+        <object>wall</object>
+      </cell>
+    </row>
+    <row>
+      <cell>
+        <object>wall</object>
+      </cell>
+      <cell />
+      <cell />
+      <cell />
+      <cell>
+        <object>wall</object>
+      </cell>
+      <cell />
+      <cell />
+      <cell />
+      <cell />
+      <cell />
+      <cell />
+      <cell />
+      <cell>
+        <object>wall</object>
+      </cell>
+      <cell />
+      <cell />
+      <cell />
+      <cell />
+      <cell />
+      <cell />
+      <cell />
+      <cell>
+        <object>wall</object>
+      </cell>
+      <cell />
+      <cell />
+      <cell />
+      <cell>
+        <object>wall</object>
+      </cell>
+    </row>
+    <row>
+      <cell>
+        <object>wall</object>
+      </cell>
+      <cell />
+      <cell />
+      <cell />
+      <cell>
+        <object>wall</object>
+      </cell>
+      <cell />
+      <cell />
+      <cell />
+      <cell />
+      <cell />
+      <cell />
+      <cell />
+      <cell>
+        <object>wall</object>
+      </cell>
+      <cell />
+      <cell />
+      <cell />
+      <cell />
+      <cell />
+      <cell />
+      <cell />
+      <cell>
+        <object>wall</object>
+      </cell>
+      <cell />
+      <cell />
+      <cell />
+      <cell>
+        <object>wall</object>
+      </cell>
+    </row>
+    <row>
+      <cell>
+        <object>wall</object>
+      </cell>
+      <cell>
+        <object>gateway</object>
+      </cell>
+      <cell>
+        <object>gateway</object>
+      </cell>
+      <cell>
+        <object>gateway</object>
+      </cell>
+      <cell>
+        <object>wall</object>
+      </cell>
+      <cell>
+        <object>wall</object>
+      </cell>
+      <cell>
+        <object>wall</object>
+      </cell>
+      <cell>
+        <object>wall</object>
+      </cell>
+      <cell>
+        <object>wall</object>
+      </cell>
+      <cell>
+        <object>wall</object>
+      </cell>
+      <cell>
+        <object>wall</object>
+      </cell>
+      <cell>
+        <object>wall</object>
+      </cell>
+      <cell>
+        <object>wall</object>
+      </cell>
+      <cell>
+        <object>gateway</object>
+      </cell>
+      <cell>
+        <object>gateway</object>
+      </cell>
+      <cell>
+        <object>gateway</object>
+      </cell>
+      <cell>
+        <object>wall</object>
+      </cell>
+      <cell>
+        <object>wall</object>
+      </cell>
+      <cell>
+        <object>wall</object>
+      </cell>
+      <cell>
+        <object>wall</object>
+      </cell>
+      <cell>
+        <object>wall</object>
+      </cell>
+      <cell />
+      <cell />
+      <cell />
+      <cell>
+        <object>wall</object>
+      </cell>
+    </row>
+    <row>
+      <cell>
+        <object>wall</object>
+      </cell>
+      <cell />
+      <cell />
+      <cell />
+      <cell />
+      <cell />
+      <cell />
+      <cell />
+      <cell />
+      <cell>
+        <object>wall</object>
+      </cell>
+      <cell />
+      <cell />
+      <cell />
+      <cell />
+      <cell />
+      <cell />
+      <cell />
+      <cell />
+      <cell />
+      <cell />
+      <cell>
+        <object>wall</object>
+      </cell>
+      <cell />
+      <cell />
+      <cell />
+      <cell>
+        <object>wall</object>
+      </cell>
+    </row>
+    <row>
+      <cell>
+        <object>wall</object>
+      </cell>
+      <cell />
+      <cell />
+      <cell />
+      <cell />
+      <cell />
+      <cell />
+      <cell />
+      <cell />
+      <cell>
+        <object>wall</object>
+      </cell>
+      <cell />
+      <cell />
+      <cell />
+      <cell />
+      <cell />
+      <cell />
+      <cell />
+      <cell />
+      <cell />
+      <cell />
+      <cell>
+        <object>wall</object>
+      </cell>
+      <cell />
+      <cell />
+      <cell />
+      <cell>
+        <object>wall</object>
+      </cell>
+    </row>
+    <row>
+      <cell>
+        <object>wall</object>
+      </cell>
+      <cell />
+      <cell />
+      <cell />
+      <cell />
+      <cell />
+      <cell />
+      <cell />
+      <cell />
+      <cell>
+        <object>wall</object>
+      </cell>
+      <cell>
+        <object>mblock</object>
+      </cell>
+      <cell />
+      <cell />
+      <cell />
+      <cell />
+      <cell />
+      <cell />
+      <cell />
+      <cell />
+      <cell />
+      <cell>
+        <object>wall</object>
+      </cell>
+      <cell />
+      <cell />
+      <cell />
+      <cell>
+        <object>wall</object>
+      </cell>
+    </row>
+    <row>
+      <cell>
+        <object>wall</object>
+      </cell>
+      <cell>
+        <object>wall</object>
+      </cell>
+      <cell>
+        <object>wall</object>
+      </cell>
+      <cell>
+        <object>wall</object>
+      </cell>
+      <cell>
+        <object>wall</object>
+      </cell>
+      <cell>
+        <object>wall</object>
+      </cell>
+      <cell>
+        <object>wall</object>
+      </cell>
+      <cell>
+        <object>wall</object>
+      </cell>
+      <cell>
+        <object>wall</object>
+      </cell>
+      <cell>
+        <object>wall</object>
+      </cell>
+      <cell>
+        <object>wall</object>
+      </cell>
+      <cell>
+        <object>wall</object>
+      </cell>
+      <cell>
+        <object>wall</object>
+      </cell>
+      <cell>
+        <object>wall</object>
+      </cell>
+      <cell>
+        <object>wall</object>
+      </cell>
+      <cell>
+        <object>wall</object>
+      </cell>
+      <cell>
+        <object>wall</object>
+      </cell>
+      <cell>
+        <object>wall</object>
+      </cell>
+      <cell>
+        <object>wall</object>
+      </cell>
+      <cell>
+        <object>wall</object>
+      </cell>
+      <cell>
+        <object>wall</object>
+      </cell>
+      <cell>
+        <object>wall</object>
+      </cell>
+      <cell>
+        <object>wall</object>
+      </cell>
+      <cell>
+        <object>wall</object>
+      </cell>
+      <cell>
+        <object>wall</object>
+      </cell>
+    </row>
+  </cells>
+</map>

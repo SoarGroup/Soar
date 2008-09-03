@@ -1,0 +1,29 @@
+                                       Ls
+
+                                      Name
+
+   ls - List the contents of the current working directory.
+
+                                    Synopsis
+
+ ls
+
+                                    Options
+
+   No options.
+
+                                  Description
+
+   List the contents of the working directory.
+
+                                Default Aliases
+
+   +-------------+
+   |Alias|Maps to|
+   |-----+-------|
+   |dir  |ls     |
+   +-------------+
+
+                                    See Also
+
+   cd dirs home pushd popd source topd

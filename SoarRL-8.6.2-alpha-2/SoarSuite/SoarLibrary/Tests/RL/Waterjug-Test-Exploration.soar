@@ -1,0 +1,34 @@
+RL --alpha 0.4
+RL --gamma 0.9
+
+set-stop-phase --before --decision
+watch -i
+
+pushd Waterjug-Test
+source _firstload.soar
+pushd elaborations
+source elaborations_source.soar
+popd
+source empty.soar
+source fill.soar
+source initialize-water-jug.soar
+source pour.soar
+source RL-states.soar
+popd
+
+###########################################
+# This test is probabilistic.
+# It attempts to solve water-jug, with
+# a reward of +1 upon reaching 5:5 3:1,
+# and a discount factor of 0.9.
+#
+# Use watch -i to observe the estimated
+# values of the operators.
+#
+# Experiment with settings for:
+# exploration
+# on-policy/off-policy
+#
+# Look for convergence after multiple runs.
+#
+##############################################

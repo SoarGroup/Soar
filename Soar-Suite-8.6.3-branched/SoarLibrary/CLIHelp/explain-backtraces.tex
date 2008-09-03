@@ -1,0 +1,95 @@
+\subsection{\soarb{explain-backtraces}}
+\label{explain-backtraces}
+\index{explain-backtraces}
+Print information about chunk and justification backtraces. 
+\subsubsection*{Synopsis}
+\begin{verbatim}
+explain-backtraces -f prod_name
+explain-backtraces [-c <n>] prod_name
+\end{verbatim}
+\subsubsection*{Options}
+\begin{tabular}{|l|l|}
+\hline
+\soar{ (no args) } & List all productions that can be ``explained''  \\
+\hline
+\soar{ prod\_name } & List all conditions and grounds for the chunk or justification.  \\
+\hline
+\soar{ -c, --condition } & Explain why condition number \emph{n}
+ is in the chunk or justification.  \\
+\hline
+\soar{ -f, --full } & Print the full backtrace for the named production  \\
+\hline
+\end{tabular}
+\subsubsection*{Description}
+ This command provides some interpretation of backtraces generated during chunking. 
+ The two most useful variants are: \begin{verbatim}
+explain-backtraces prodname 
+explain-backtraces -c n prodname
+\end{verbatim}
+ The first variant prints a numbered list of all the conditions for the named chunk or justification, and the ground which resulted in inclusion in the chunk/justification. A \emph{ground}
+ is a working memory element (WME) which was tested in the supergoal. Just knowing which WME was tested may be enough to explain why the chunk/justification exists. If not, the second variant, \textbf{explain-backtraces -c n prodname}
+, where \emph{n}
+ is the condition of interest, can be used to obtain a list of the productions which fired to obtain this condition in the chunk/justification (and the crucial WMEs tested along the way). 
+ \textbf{save-backtraces}
+ mode must be on when a chunk or justification is created or no explanation will be available. Calling \textbf{explain-backtraces}
+ with no argument prints a list of all chunks and justifications for which backtracing information is available. 
+\subsubsection*{Examples}
+ Examining the chunk \textbf{chunk-65*d13*tie*2}
+ generated in a water-jug task: \begin{verbatim}
+soar> explain-backtraces chunk-65*d13*tie*2
+ (sp chunk-65*d13*tie*2
+  (state <s2> ^name water-jug ^jug <n4> ^jug <n3>)
+  (state <s1> ^name water-jug ^desired <d1> ^operator <o1> + ^jug <n1>
+        ^jug <n2>)
+  (<s2> ^desired <d1>)
+  (<o1> ^name pour ^into <n1> ^jug <n2>)
+  (<n1> ^volume 3 ^contents 0)
+  (<s1> ^problem-space <p1>)
+  (<p1> ^name water-jug)
+  (<n4> ^volume 3 ^contents 3)
+  (<n3> ^volume 5 ^contents 0)
+  (<n2> ^volume 5 ^contents 3)
+-->
+  (<s3> ^operator <o1> -))
+ 1 :  (state <s2> ^name water-jug)     Ground : (S3 ^name water-jug)
+ 2 :  (state <s1> ^name water-jug)     Ground : (S5 ^name water-jug)
+ 3 :  (<s1> ^desired <d1>)             Ground : (S5 ^desired D1)
+ 4 :  (<s2> ^desired <d1>)             Ground : (S3 ^desired D1)
+ 5 :  (<s1> ^operator <o1> +)          Ground : (S5 ^operator O18 +)
+ 6 :  (<o1> ^name pour)                Ground : (O18 ^name pour)
+ 7 :  (<o1> ^into <n1>)                Ground : (O18 ^into N3)
+ 8 :  (<n1> ^volume 3)                 Ground : (N3 ^volume 3)
+ 9 :  (<n1> ^contents 0)               Ground : (N3 ^contents 0)
+10 :  (<s1> ^jug <n1>)                 Ground : (S5 ^jug N3)
+11 :  (<s1> ^problem-space <p1>)       Ground : (S5 ^problem-space P3)
+12 :  (<p1> ^name water-jug)           Ground : (P3 ^name water-jug)
+13 :  (<s2> ^jug <n4>)                 Ground : (S3 ^jug N1)
+14 :  (<n4> ^volume 3)                 Ground : (N1 ^volume 3)
+15 :  (<n4> ^contents 3)               Ground : (N1 ^contents 3)
+16 :  (<s2> ^jug <n3>)                 Ground : (S3 ^jug N2)
+17 :  (<n3> ^volume 5)                 Ground : (N2 ^volume 5)
+18 :  (<n3> ^contents 0)               Ground : (N2 ^contents 0)
+19 :  (<s1> ^jug <n2>)                 Ground : (S5 ^jug N4)
+20 :  (<n2> ^volume 5)                 Ground : (N4 ^volume 5)
+21 :  (<n2> ^contents 3)               Ground : (N4 ^contents 3)
+22 :  (<o1> ^jug <n2>)                 Ground : (O18 ^jug N4)
+\end{verbatim}
+ Further examining condition 21: \begin{verbatim}
+soar> explain-backtraces -c 21 chunk-65*d13*tie*2
+Explanation of why condition  (N4 ^contents 3) was included in chunk-65*d13*tie*2
+Production chunk-64*d13*opnochange*1 matched
+    (N4 ^contents 3) which caused
+production selection*select*failure-evaluation-becomes-reject-preference to match
+    (E3 ^symbolic-value failure) which caused
+A result to be generated.
+\end{verbatim}
+\subsubsection*{Default Aliases}
+\begin{tabular}{|l|l|}
+\hline
+\soar{ Alias } & Maps to  \\
+\hline
+\soar{ eb } & explain-backtraces  \\
+\hline
+\end{tabular}
+\subsubsection*{See Also}
+\hyperref[save-backtraces]{save-backtraces} 

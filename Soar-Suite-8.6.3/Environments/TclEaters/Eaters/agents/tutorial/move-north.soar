@@ -1,0 +1,32 @@
+############################ Move-north operator ############################
+# From Chapter 4 of Soar 8 Tutorial
+#
+# Propose*move-north:
+# If I exist, then propose the move-north operator.
+
+sp {propose*move-north
+   (state <s> ^type state)
+-->
+   (<s> ^operator <o> +)
+   (<o> ^name move-north)}
+
+# Apply*move-north:
+# If the move-north operator is selected, then generate an output command to 
+# move north.
+
+sp {apply*move-north
+   (state <s> ^operator <o>
+              ^io <io>)
+   (<io> ^output-link <ol>)
+   (<o> ^name move-north)
+-->
+   (<ol> ^move <move>)
+   (<move> ^direction north)}
+
+
+## short cut version
+#sp {move-north*apply
+#   (state <s> ^operator.name move-north
+#              ^io.output-link <ol>)
+#-->
+#   (<ol> ^move.direction north)}

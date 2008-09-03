@@ -1,0 +1,63 @@
+sp {Best*1
+(state <s> ^superoperator <so> ^info-link <i> ^operator <o> +)
+(<i> ^x-coor 0 ^y-coor 0)
+(<o> ^name move-north)
+(<so> ^name navigate ^to airport)
+-->
+(<s> ^operator <o> >)}
+
+sp {Best*2
+(state <s> ^superoperator <so> ^info-link <i> ^operator <o> +)
+(<i> ^x-coor 0 ^y-coor 1)
+(<o> ^name move-north)
+(<so> ^name navigate ^to airport)
+-->
+(<s> ^operator <o> >)}
+
+sp {Best*3
+(state <s> ^superoperator <so> ^info-link <i> ^operator <o> +)
+(<i> ^x-coor 0 ^y-coor 2)
+(<o> ^name move-north)
+(<so> ^name navigate ^to airport)
+-->
+(<s> ^operator <o> >)}
+
+sp {Best*4
+(state <s> ^superoperator <so> ^info-link <i> ^operator <o> +)
+(<i> ^x-coor 0 ^y-coor 3)
+(<o> ^name move-north)
+(<so> ^name navigate ^to airport)
+-->
+(<s> ^operator <o> >)}
+
+sp {Best*5
+(state <s> ^superoperator <so> ^info-link <i> ^operator <o> +)
+(<i> ^x-coor 0 ^y-coor 4)
+(<o> ^name move-south)
+(<so> ^name navigate ^to hospital)
+-->
+(<s> ^operator <o> >)}
+
+sp {Best*6
+(state <s> ^superoperator <so> ^info-link <i> ^operator <o> +)
+(<i> ^x-coor 0 ^y-coor 3)
+(<o> ^name move-south)
+(<so> ^name navigate ^to hospital)
+-->
+(<s> ^operator <o> >)}
+
+sp {Best*7
+(state <s> ^superoperator <so> ^info-link <i> ^operator <o> +)
+(<i> ^x-coor 0 ^y-coor 2)
+(<o> ^name move-south)
+(<so> ^name navigate ^to hospital)
+-->
+(<s> ^operator <o> >)}
+
+sp {Best*8
+(state <s> ^superoperator <so> ^info-link <i> ^operator <o> +)
+(<i> ^x-coor 0 ^y-coor 1)
+(<o> ^name move-south)
+(<so> ^name navigate ^to hospital)
+-->
+(<s> ^operator <o> >)}

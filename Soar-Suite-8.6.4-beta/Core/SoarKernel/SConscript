@@ -1,0 +1,10 @@
+#!/usr/bin/python
+import glob
+
+Import('env')
+env = env.Copy()
+env.Append(CPPFLAGS = ' -fno-strict-aliasing')
+env.Prepend(CPPPATH = ['src', 'include', '../gSKI/include', '../CLI/include'])
+
+SoarKernel = env.StaticLibrary('SoarKernel', glob.glob('src/*.cpp'))
+env.Install('#SoarLibrary/lib', SoarKernel)

@@ -1,0 +1,16 @@
+################################
+### Propose radar operator if sound is forward
+### and forward is blocked, also fire a missile
+################################
+
+sp {chase*propose*radar
+   (state <s> ^name chase
+              ^sound-direction forward
+              ^io.input-link.blocked.forward yes)
+-->
+   (<s> ^operator <o> +)
+   (<o> ^name radar
+        ^actions <a>)
+   (<a> ^radar.switch on
+        ^radar-power.setting 1
+        ^fire.weapon missile)}

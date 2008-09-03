@@ -1,0 +1,9 @@
+*.d
+debug
+*.lo
+Makefile
+Makefile.in
+.deps
+.libs
+libSoarKernel.la
+release

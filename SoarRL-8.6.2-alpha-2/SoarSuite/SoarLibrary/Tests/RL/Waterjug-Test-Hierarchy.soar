@@ -1,0 +1,76 @@
+RL --gamma 0.9
+RL --alpha 1
+RL --on-policy
+RL --lambda 0.7
+learn --off
+
+set-stop-phase --before --decision
+
+pushd Taxi-Test
+source miscellaneous.soar
+source taxi-task.soar
+source get-task.soar
+source navigate-task.soar
+source put-task.soar
+source rewards.soar
+source control.soar
+popd
+
+#######################################
+# Run, print RL rules (p --RL), init-soar, and repeat
+# Correct RL values:
+#
+# After first run:
+# |RL-10|  1.
+# |RL-9|  0.63
+# |RL-8|  0.3969
+# |RL-7|  0.250047
+# |RL-6|  8.60934
+# |RL-5|  1.
+# |RL-4|  0.63
+# |RL-3|  0.3969
+# |RL-2|  0.250047
+# |RL-1|  2.3348
+#
+# After second run:
+# |RL-10|  1.
+# |RL-9|  0.9
+# |RL-8|  0.7371
+# |RL-7|  0.571536
+# |RL-6|  8.60934
+# |RL-5|  1.
+# |RL-4|  0.9
+# |RL-3|  0.7371
+# |RL-2|  0.571536
+# |RL-1|  3.33543
+#
+# After third run:
+# |RL-10|  1.
+# |RL-9|  0.9
+# |RL-8|  0.81
+# |RL-7|  0.709317
+# |RL-6|  8.60934
+# |RL-5|  1.
+# |RL-4|  0.9
+# |RL-3|  0.81
+# |RL-2|  0.709317
+# |RL-1|  3.33543
+#
+# After fourth and subsequent runs:
+# |RL-10|  1.
+# |RL-9|  0.9
+# |RL-8|  0.81
+# |RL-7|  0.729
+# |RL-6|  8.60934
+# |RL-5|  1.
+# |RL-4|  0.9
+# |RL-3|  0.81
+# |RL-2|  0.729
+# |RL-1|  3.33543
+#
+########################
+# This is a test of hierarchical RL
+# It uses template rules.
+# It uses eligibility traces, lambda = 0.7.
+# Its uses subgoaling/hierarchy.
+# There is no exploration - agent policy is guided by symbolic preferences.

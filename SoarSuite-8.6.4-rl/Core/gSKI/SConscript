@@ -1,0 +1,26 @@
+#!/usr/bin/python
+import glob
+import os
+
+Import('env')
+env = env.Copy()
+env.Prepend(CPPPATH = ['src', 'include', '../SoarKernel/include',])
+env.Append(CPPFLAGS = ' -DNO_MEGA_UNIT_TESTS -DVALIDATE')
+
+if os.name == 'posix':
+	env.Append(CPPFLAGS = ' -DUNIX')
+
+sources = glob.glob('src/*.cpp')
+if os.name == 'nt':
+	pcreSources = [
+		'../pcre-4.5/chartables.c',
+		'../pcre-4.5/get.c',
+		'../pcre-4.5/maketables.c',
+		'../pcre-4.5/pcre.c',
+		'../pcre-4.5/pcreposix.c',
+		'../pcre-4.5/study.c',
+	]
+	sources.append(pcreSources)
+
+gSKI = env.Library('gSKI', sources)
+env.Install('#SoarLibrary/lib', gSKI)

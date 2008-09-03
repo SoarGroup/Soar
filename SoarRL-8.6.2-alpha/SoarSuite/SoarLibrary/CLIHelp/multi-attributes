@@ -1,0 +1,41 @@
+                                Multi-attributes
+
+                                      Name
+
+   multi-attributes - Declare a symbol to be multi-attributed.
+
+                                    Synopsis
+
+ multi-attributes [symbol [n]]
+
+                                    Options
+
+   +------------------------------------------------------------------------+
+   |symbol|Any Soar attribute.                                              |
+   |------+-----------------------------------------------------------------|
+   |n     |Integer > 1, estimate of degree of simultaneous values for       |
+   |      |attribute.                                                       |
+   +------------------------------------------------------------------------+
+
+                                  Description
+
+   This command declares the given symbol to be an attribute which can take
+   on multiple values. The optional n is an integer (>1) indicating an upper
+   limit on the number of expected values that will appear for an attribute.
+   If n is not specified, the value 10 is used for each declared
+   multi-attribute. More informed values will tend to result in greater
+   efficiency. This command is used only to provide hints to the production
+   condition reorderer so it can produce better condition orderings. Better
+   orderings enable the rete network to run faster. This command has no
+   effect on the actual contents of working memory and most users needn't use
+   this at all.
+
+   Note that multi-attributes declarations must be made before productions
+   are loaded into soar or this command will have no effect.
+
+                                    Examples
+
+   Declare the symbol "thing" to be an attribute likely to take more than 1
+   but no more than 4 values:
+
+ multi-attributes thing 4

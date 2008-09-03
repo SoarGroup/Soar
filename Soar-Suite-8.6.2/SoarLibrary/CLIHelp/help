@@ -1,0 +1,41 @@
+                                      Help
+
+                                      Name
+
+   help - Provide formatted usage information about Soar commands.
+
+                                    Synopsis
+
+ help [command_name]
+
+                                    Options
+
+   +------------------------------------------------+
+   |command_name|Print usage syntax for the command.|
+   +------------------------------------------------+
+
+                                  Description
+
+   This command prints formatted help for the given command name.
+
+                                    Examples
+
+   To see the syntax for the excise command:
+
+ help excise
+
+   To see what commands help is available for:
+
+ help
+
+                                Default Aliases
+
+   +-------------+
+   |Alias|Maps to|
+   |-----+-------|
+   | ?   |help   |
+   |-----+-------|
+   |h    |help   |
+   |-----+-------|
+   |man  |help   |
+   +-------------+

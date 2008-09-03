@@ -1,0 +1,91 @@
+sp {Best-0050
+##  :rl
+  (state <s> ^jug <j1> ^jug <j2> ^operator <o> +)
+  (<j1> ^volume 5 ^contents 0)
+  (<j2> ^volume 3 ^contents 0)
+  (<o> ^name fill ^fill-jug <j1>)
+-->
+  (<s> ^operator <o> >)}
+  
+  
+sp {Best-5023
+ #  :rl
+   (state <s> ^jug <j1> ^jug <j2> ^operator <o> +)
+   (<j1> ^volume 5 ^contents 5)
+   (<j2> ^volume 3 ^contents 0)
+   (<o> ^name pour ^empty-jug <j1> ^fill-jug <j2>)
+ -->
+   (<s> ^operator <o> >)}
+   
+sp {Best-2320
+#  :rl
+  (state <s> ^jug <j1> ^jug <j2> ^operator <o> +)
+  (<j1> ^volume 5 ^contents 2)
+  (<j2> ^volume 3 ^contents 3)
+  (<o> ^name empty ^empty-jug <j2>)
+  -->
+  (<s> ^operator <o> >)}
+  
+sp {Best-2002
+#  :rl
+  (state <s> ^jug <j1> ^jug <j2> ^operator <o> +)
+  (<j1> ^volume 5 ^contents 2)
+  (<j2> ^volume 3 ^contents 0)
+  (<o> ^name pour ^empty-jug <j1> ^fill-jug <j2>)
+-->
+  (<s> ^operator <o> >)}
+  
+sp {Best-0252
+#  :rl
+  (state <s> ^jug <j1> ^jug <j2> ^operator <o> +)
+  (<j1> ^volume 5 ^contents 0)
+  (<j2> ^volume 3 ^contents 2)
+  (<o> ^name fill ^fill-jug <j1>)
+-->
+  (<s> ^operator <o> >)}
+  
+sp {Best-5243
+#  :rl
+  (state <s> ^jug <j1> ^jug <j2> ^operator <o> +)
+  (<j1> ^volume 5 ^contents 5)
+  (<j2> ^volume 3 ^contents 2)
+  (<o> ^name pour ^empty-jug <j1> ^fill-jug <j2>)
+  -->
+  (<s> ^operator <o> >)}
+  
+sp {Best-4340
+#  :rl
+  (state <s> ^jug <j1> ^jug <j2> ^operator <o> +)
+  (<j1> ^volume 5 ^contents 4)
+  (<j2> ^volume 3 ^contents 3)
+  (<o> ^name empty ^empty-jug <j2>)
+  -->
+  (<s> ^operator <o> >)}
+  
+sp {Best-4013
+#  :rl
+  (state <s> ^jug <j1> ^jug <j2> ^operator <o> +)
+  (<j1> ^volume 5 ^contents 4)
+  (<j2> ^volume 3 ^contents 0)
+  (<o> ^name pour ^empty-jug <j1> ^fill-jug <j2>)
+  -->
+  (<s> ^operator <o> >)}
+  
+sp {Best-1310
+#  :rl
+  (state <s> ^jug <j1> ^jug <j2> ^operator <o> +)
+  (<j1> ^volume 5 ^contents 1)
+  (<j2> ^volume 3 ^contents 3)
+  (<o> ^name empty ^empty-jug <j2>)
+  -->
+  (<s> ^operator <o> >)}
+  
+sp {Best-1001
+#  :rl
+  (state <s> ^jug <j1> ^jug <j2> ^operator <o> +)
+  (<j1> ^volume 5 ^contents 1)
+  (<j2> ^volume 3 ^contents 0)
+  (<o> ^name pour ^empty-jug <j1> ^fill-jug <j2>)
+  -->
+  (<s> ^operator <o> >)}
+  

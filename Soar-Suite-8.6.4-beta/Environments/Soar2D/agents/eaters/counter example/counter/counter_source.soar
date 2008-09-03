@@ -1,0 +1,6 @@
+source _firstload.soar
+source count.soar
+pushd elaborations
+source elaborations_source.soar
+popd
+source init-count.soar

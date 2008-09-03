@@ -1,0 +1,39 @@
+                                   Init-soar
+
+                                      Name
+
+   init-soar - empties working memory and resets run-time statistics.
+
+                                    Synopsis
+
+ init-soar
+
+                                    Options
+
+   No options.
+
+                                  Description
+
+   The init-soar command initializes Soar. It removes all elements from
+   working memory, wiping out the goal stack, and resets all runtime
+   statistics. The firing counts for all productions are reset to zero. The
+   init-soar command allows a Soar program that has been halted to be reset
+   and start its execution from the beginning.
+
+   init-soar does not remove any productions from production memory; to do
+   this, use the excise command. Note however, that all justifications will
+   be removed because they will no longer be supported.
+
+                                Default Aliases
+
+   +---------------+
+   |Alias|Maps to  |
+   |-----+---------|
+   |init |init-soar|
+   |-----+---------|
+   |is   |init-soar|
+   +---------------+
+
+                                    See Also
+
+   excise

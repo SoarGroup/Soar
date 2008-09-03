@@ -1,0 +1,6 @@
+<?xml version="1.0"?>
+<tanksoar>
+  <simulation debuggers="true" default-map="default.tmap" runs="0"></simulation>
+  <agents>
+  </agents>
+</tanksoar>

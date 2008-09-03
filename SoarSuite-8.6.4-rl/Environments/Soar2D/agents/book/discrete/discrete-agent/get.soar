@@ -1,0 +1,16 @@
+sp {discrete-agent*propose*get
+   (state <s> ^name book
+              ^io.input-link <il>)
+   (<il> ^object <obj>
+         ^self <self>)
+   (<self> ^position.col <col>
+           ^position.row <row>)
+   (<obj> ^position.col <col>
+          ^position.row <row>
+          ^id <id>)
+-->
+   (<s> ^operator <op> + =)
+   (<op> ^name get
+         ^actions.get.id <id>)
+}
+

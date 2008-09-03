@@ -1,0 +1,18 @@
+\subsection{\soarb{edit-production}}
+\label{edit-production}
+\index{edit-production}
+Move focus in an editor to this production. 
+\subsubsection*{Synopsis}
+\begin{verbatim}
+edit-production production_name
+\end{verbatim}
+\subsubsection*{Options}
+ production\_name The name of the production to edit. 
+\subsubsection*{Description}
+ If an editor (currently limited to Visual Soar) is open and connected to Soar, this command causes the editor to open the file containing this production and move the cursor to the start of the production. If there is no editor connected to Soar, the command does nothing. In order to connect Visual Soar to Soar, launch Visual Soar and choose Connect from the Soar Runtime menu. Then open the Visual Soar project that you're working on. At that point, you're set up and edit-production will start to work. 
+\subsubsection*{Examples}
+\begin{verbatim}
+edit-production my*production*name
+\end{verbatim}
+\subsubsection*{See Also}
+\hyperref[sp]{sp} 

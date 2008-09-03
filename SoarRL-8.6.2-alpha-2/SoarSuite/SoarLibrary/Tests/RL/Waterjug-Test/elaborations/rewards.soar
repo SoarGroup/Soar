@@ -1,0 +1,56 @@
+#sp {Reward*for*full*jar
+#(state <s> ^name water-jug
+#	   ^reward-link <r>
+#	   ^jug <j>)
+#(<j> ^empty 0)
+#-->
+#(<r> ^reward.value 1)}
+
+########## Not rewards ##########
+
+#sp {not*reward*for*full*jar
+#  (state <s> ^name water-jug
+#  	   ^reward-link <r>
+#  	   ^jug <j>)
+#	(<j> ^empty 0)
+#-->
+#   (<r> ^reward 0)}
+   
+#sp {also*not*reward*for*full*jar
+#(state <s> ^name water-jug
+#	   ^reward-link <r>
+#	   ^jug <j>)
+#(<j> ^empty 0)
+#-->
+# (<r> ^reward.value noreward)}
+
+##### Variant 1 ########
+
+#sp {water-jug*cost*for*move
+#   (state <s> ^name water-jug
+#              ^operator <o>
+#              ^reward-link <r>)
+#   (<o> ^name <> initialize-water-jug)
+#   (<r> -^reward.value)
+# -->
+#   (<r> ^reward.value -1)}
+
+################# Variant 3 ##############
+
+sp {water-jug*reward*short*goal*achieved
+   (state <s> ^name water-jug
+              ^jug <j> <i>
+              ^reward-link <r>)
+   (<j> ^volume 3 ^contents 1)
+   (<i> ^volume 5 ^contents 5)
+-->
+   (<r> ^reward.value 1)}
+   
+sp {water-jug*reward*long*goal*achieved
+   (state <s> ^name water-jug
+              ^jug <j> <i>
+              ^reward-link <r>)
+   (<j> ^volume 3 ^contents 1)
+   (<i> ^volume 5 ^contents 0)
+-->
+   (<r> ^reward.value 10)}

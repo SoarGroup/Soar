@@ -1,0 +1,5 @@
+# learning is irrelevant for this formulation
+l --off
+
+# this helps Soar reorder conditions so matching is more efficient 
+multi-attributes jug 3

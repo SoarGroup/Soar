@@ -1,0 +1,34 @@
+                                Save-backtraces
+
+                                      Name
+
+   save-backtraces - Save trace information to explain chunks and
+   justifications.
+
+                                    Synopsis
+
+ save-backtraces [-ed]
+
+                                    Options
+
+   +-----------------------------------------------+
+   |-e, --enable, --on  |Turn explain sysparam on. |
+   |--------------------+--------------------------|
+   |-d, --disable, --off|Turn explain sysparam off.|
+   +-----------------------------------------------+
+
+                                  Description
+
+   The save-backtraces variable is a toggle that controls whether or not
+   backtracing information (from chunks and justifications) is saved.
+
+   When save-backtraces is set to off, backtracing information is not saved
+   and explanations of the chunks and justifications that are formed can not
+   be retrieved. When save-backtraces is set to on, backtracing information
+   can be retrieved by using the explain-backtraces command. Saving
+   backtracing information may slow down the execution of your Soar program,
+   but it can be a very useful tool in understanding how chunks are formed.
+
+                                    See Also
+
+   explain-backtraces

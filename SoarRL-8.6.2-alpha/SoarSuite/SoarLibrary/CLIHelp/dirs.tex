@@ -1,0 +1,18 @@
+\subsection{\soarb{dirs}}
+\label{dirs}
+\index{dirs}
+List the directory stack 
+\subsubsection*{Synopsis}
+\begin{verbatim}
+dirs
+\end{verbatim}
+\subsubsection*{Options}
+ No options. 
+\subsubsection*{Description}
+ This command lists the directory stack. Agents can move through a directory structure by pushing and popping directory names. The \textbf{dirs}
+ command returns the stack. 
+ The command \textbf{pushd}
+ places a new ``agent current directory'' on top of the directory stack and cd's to it. The command \textbf{popd}
+ removes the directory at the top of the directory stack and cd's to the previous directory which now appears at the top of the stack. 
+\subsubsection*{See Also}
+\hyperref[cd]{cd} \hyperref[home]{home} \hyperref[ls]{ls} \hyperref[pushd]{pushd} \hyperref[popd]{popd} \hyperref[source]{source} \hyperref[topd]{topd} 

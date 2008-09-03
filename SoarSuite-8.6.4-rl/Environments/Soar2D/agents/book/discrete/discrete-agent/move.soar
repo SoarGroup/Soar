@@ -1,0 +1,29 @@
+sp {discrete-agent*propose*move*forward
+   (state <s> ^name book
+              ^io.input-link.self.position <p>
+             -^io.input-link.self.blocked.forward true)
+   (<p> ^col <c>
+        ^row <r>)
+-->
+   (<s> ^operator <op> + =)
+   (<op> ^name move-forward
+         ^actions.move.direction forward)
+}
+
+sp {discrete-agent*propose*rotate*left
+   (state <s> ^name book
+              ^io.input-link.self.angle.direction <d>)
+-->
+   (<s> ^operator <op> + =)
+   (<op> ^name rotate-left
+         ^actions.rotate.direction left)
+}
+
+sp {discrete-agent*propose*rotate*right
+   (state <s> ^name book
+              ^io.input-link.self.angle.direction <d>)
+-->
+   (<s> ^operator <op> + =)
+   (<op> ^name rotate-right
+         ^actions.rotate.direction right)
+}

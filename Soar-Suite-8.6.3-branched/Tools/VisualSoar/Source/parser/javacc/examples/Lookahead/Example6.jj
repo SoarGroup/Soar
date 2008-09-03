@@ -1,0 +1,41 @@
+PARSER_BEGIN(Example)
+
+public class Example {
+
+  public static void main(String args[]) throws ParseException {
+    Example parser = new Example(System.in);
+    parser.basic_expr();
+  }
+
+}
+
+PARSER_END(Example)
+
+SKIP :
+{
+  " "
+| "\t"
+| "\n"
+| "\r"
+}
+
+void basic_expr() :
+{}
+{
+  <ID> ( "(" expr() ")" | "." <ID> )
+|
+  "(" expr() ")"
+|
+  "new" <ID>
+}
+
+void expr() :
+{}
+{
+  "TBD"
+}
+
+TOKEN [IGNORE_CASE] :
+{
+  <ID: (["a"-"z"])+>
+}

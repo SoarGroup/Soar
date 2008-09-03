@@ -1,0 +1,66 @@
+RL --alpha 1
+RL --gamma 0.9
+RL --lambda 0
+
+set-stop-phase --before --decision
+
+pushd Waterjug-Test
+source _firstload.soar
+pushd elaborations
+source elaborations_source.soar
+popd
+source empty.soar
+source fill.soar
+source initialize-water-jug.soar
+source pour.soar
+source RL-template.soar
+source control-short-path.soar
+popd
+
+
+###################################
+# Print RL rules (p --RL), run, init-soar, repeat
+# Correct RL rules:
+#
+# Before first run:
+# No RL rules
+# 
+# Before second run:
+# |RL-4|  1.
+# |RL-3|  0.
+# |RL-2|  0.
+# |RL-1|  0.
+#
+# Before third run:
+# |RL-4|  1.
+# |RL-3|  0.9
+# |RL-2|  0.
+# |RL-1|  0.
+# 
+# Before fourth run:
+# |RL-4|  1.
+# |RL-3|  0.9
+# |RL-2|  0.81
+# |RL-1|  0.
+#
+# Before fifth and subsequent runs:
+# |RL-4|  1.
+# |RL-3|  0.9
+# |RL-2|  0.81
+# |RL-1|  0.729
+#
+# RL-4 should be the rule:
+# sp {|RL-4|
+#    (state <s1> ^jug <i1> ^operator <o1> + ^jug <j1>)
+#    (<i1> ^volume 3 ^contents 3)
+#    (<o1> ^empty-jug <i1> ^name pour ^fill-jug { <> <i1> <j1> })
+#    (<j1> ^volume 5 ^contents 3)
+#    -->
+#    (<s1> ^operator <o1> = 1.)
+# }
+######################################
+# This is a test of the use of template rules.
+# Templates are used to generate rules RL-4, RL-3, RL-2, and RL-1.
+# There is no use of eligibility traces.
+# There is no subgoaling/hierarchy.
+# There is no exploration - agent policy is guided by symbolic preferences.

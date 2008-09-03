@@ -1,0 +1,7 @@
+sp {remove*seen*rewards
+  :o-support
+  (state <s> ^reward-link <rl>)
+  (<rl> ^reward <r>)
+  (<r> ^status read)
+ -->
+  (<rl> ^reward <r> -)}

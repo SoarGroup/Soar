@@ -1,0 +1,3 @@
+pushd simple-sound-bot
+source simple-sound-bot_source.soar
+popd

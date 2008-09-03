@@ -1,0 +1,59 @@
+#!/usr/bin/python
+import glob
+import distutils.sysconfig
+import sys
+import os
+import SCons.Script
+
+Import('env')
+env = env.Copy()
+env.Prepend(CPPPATH = [
+			'#Core/ClientSML/include',
+			'#Core/ElementXML/include',
+			'#Core/ConnectionSML/include',
+			distutils.sysconfig.get_python_inc()
+			])
+
+SWIGScanner = SCons.Scanner.ClassicCPP(
+	"SWIGScan",
+	".i",
+	"CPPPATH",
+	'^[ \t]*[%,#][ \t]*(?:include|import)[ \t]*(<|")([^>"]+)(>|")'
+)
+
+env.Append(SCANNERS=[SWIGScanner])
+
+if os.name == 'posix':
+	env.Append(CXXFLAGS = ' -Wno-unused -fno-strict-aliasing')
+
+libadd = [
+	   'ClientSML',
+	   'ConnectionSML',
+	   'ElementXML',
+	   ]
+
+libpath = [ 
+	    '#Core/ClientSML',
+	    '#Core/ConnectionSML',
+	    '#Core/ElementXML', 
+	    ]
+
+swigflags = '-c++ -python -Wall -ICore/ClientSML/include -ICore/ElementXML/include -ICore/ConnectionSML/include '
+
+if sys.platform == 'darwin':
+	env['SHLINKFLAGS'] = '$LINKFLAGS -bundle -flat_namespace -undefined suppress'
+	env['SHLIBSUFFIX'] = '.so'
+
+env.SharedLibrary('Python_sml_ClientInterface', 
+	       glob.glob('*.i'), 
+	       LIBS = libadd, 
+	       LIBPATH = libpath, 
+	       SWIGFLAGS = swigflags, 
+	       SWIGCXXFILESUFFIX = "_wrap.cpp")
+
+#libPython_sml_ClientInterface.so is not the correct naming convention for python dynamic code
+#it must be named, in this case, _Python_sml_ClientInterface.so
+env.InstallAs('#SoarLibrary/lib/_Python_sml_ClientInterface.so', 'libPython_sml_ClientInterface.so')
+
+env.Install('#SoarLibrary/lib', 'Python_sml_ClientInterface.py')
+

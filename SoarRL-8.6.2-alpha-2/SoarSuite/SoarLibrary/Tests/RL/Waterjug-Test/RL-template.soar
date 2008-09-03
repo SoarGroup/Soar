@@ -1,0 +1,27 @@
+sp {RL-fill
+   :template
+   (state <s> ^jug <j1> {<> <j1> <j2>} ^operator <o> +)
+   (<j1> ^volume <vol1> ^contents <con1>)
+   (<j2> ^volume <vol2> ^contents <con2>)
+   (<o> ^name fill ^fill-jug <j1>)
+   -->
+   (<s> ^operator <o> = 0)}
+   
+sp {RL-empty
+  :template
+  (state <s> ^jug <j1> {<> <j1> <j2>} ^operator <o> +)
+  (<j1> ^volume <vol1> ^contents <con1>)
+  (<j2> ^volume <vol2> ^contents <con2>)
+  (<o> ^name empty ^empty-jug <j1>)
+  -->
+  (<s> ^operator <o> = 0)}
+  
+ sp {RL-pour
+    :template
+    (state <s> ^jug <j1> {<> <j1> <j2>} ^operator <o> +)
+    (<j1> ^volume <vol1> ^contents <con1>)
+    (<j2> ^volume <vol2> ^contents <con2>)
+    (<o> ^name pour ^empty-jug <j1> ^fill-jug <j2>)
+    -->
+    (<s> ^operator <o> = 0)}
+    

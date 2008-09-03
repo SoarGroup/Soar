@@ -1,0 +1,38 @@
+\subsection{\soarb{help}}
+\label{help}
+\index{help}
+Provide formatted usage information about Soar commands. 
+ Status: Incomplete\\ 
+Currently uses working directory to find command-names and help/ subdir.--Jonathan 14:02, 25 Mar 2005 (EST) 
+\subsubsection*{Synopsis}
+\begin{verbatim}
+help [command_name]
+\end{verbatim}
+\subsubsection*{Options}
+\begin{tabular}{|l|l|}
+\hline 
+ command\_name  & Print usage syntax for the command.  \\
+ \hline 
+\end{tabular}
+\subsubsection*{Description}
+ This command prints formatted help for the given command name. 
+\subsubsection*{Examples}
+ To see the syntax for the \emph{excise}
+ command: \begin{verbatim}
+help excise
+\end{verbatim}
+ To see what commands help is available for: \begin{verbatim}
+help
+\end{verbatim}
+\subsubsection*{Default Aliases}
+\begin{tabular}{|l|l|}
+\hline 
+ Alias  & Maps to  \\
+ \hline 
+ ?  & help  \\
+ \hline 
+ man  & help  \\
+ \hline 
+\end{tabular}
+\subsubsection*{See Also}
+ helpex

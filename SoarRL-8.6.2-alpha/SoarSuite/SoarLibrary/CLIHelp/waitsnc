@@ -1,0 +1,29 @@
+                                    Waitsnc
+
+                                      Name
+
+   waitsnc -- Generate a wait state rather than a state-no-change impasse.
+
+                                    Synopsis
+
+ wait -[e|d]
+
+                                    Options
+
+   +---------------------------------------------------------------------+
+   |-e, --enable, --on  |Turns a state-no-change into a wait state.      |
+   |--------------------+------------------------------------------------|
+   |-d, --disable, --off|Default. A state-no-change generates an impasse.|
+   +---------------------------------------------------------------------+
+
+                                  Description
+
+   In some systems, espcially those that model expert (fully chunked)
+   knowledge, a state-no-change may represent a wait state rather than an
+   impasse. The waitsnc command allows the user to switch to a mode where a
+   state-no-change that would normally generate an impasse (and subgoaling),
+   instead generates a wait state. At a wait state, the decision cycle will
+   repeat (and the decision cycle count is incremented) but no
+   state-no-change impasse (and therefore no substate) will be generated.
+
+   When issued with no arguments, waitsnc returns its current setting.

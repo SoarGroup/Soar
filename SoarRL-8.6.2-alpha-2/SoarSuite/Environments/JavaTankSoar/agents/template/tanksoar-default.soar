@@ -1,0 +1,3 @@
+pushd tanksoar-default
+source tanksoar-default_source.soar
+popd

@@ -1,0 +1,8 @@
+echo "\nLoading retreat/wait.soar"
+
+sp {retreat*propose*wait
+   (state <s> ^name retreat
+             -^operator.name wait)
+   -->
+   (<s> ^operator <o> + <)
+   (<o> ^name wait)}

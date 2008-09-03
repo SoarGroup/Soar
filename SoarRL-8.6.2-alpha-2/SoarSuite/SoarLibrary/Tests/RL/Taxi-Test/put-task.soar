@@ -1,0 +1,102 @@
+############# Sub-task proposals ###################
+
+sp {propose*navigate*put
+  (state <s> ^superoperator <o> ^info-link <i>)
+  (<o> ^name put ^passenger.destination <dest>)
+  (<i> -^location <dest>)
+  -->
+  (<s> ^operator <o2> + =)
+  (<o2> ^name navigate ^to <dest>)}
+  
+############## Primitive Ops ###########################
+
+sp {propose*putdown
+  (state <s> ^superoperator <o> ^info-link <i>)
+  (<o> ^name put ^passenger <p>)
+  (<p> ^destination <dest>)
+  (<i> ^location <dest>)
+  -->
+  (<s> ^operator <o2> + =)
+  (<o2> ^name putdown ^passenger <p>)}
+  
+sp {apply*putdown*remove-passenger
+  (state <s> ^operator <o> ^info-link <i>)
+  (<o> ^name putdown ^passenger <p>)
+  (<p> ^destination <x>)
+  (<i> ^location <x> ^num-occupants <n> ^num-passengers <np>)
+  -->
+   (<i> ^num-occupants <n> -)
+   (<i> ^num-occupants (- <n> 1))
+   (<i> ^num-passengers <np> -)
+   (<i> ^num-passengers (- <np> 1))
+   (<i> ^passenger <p> -)}
+    
+#sp {apply*putdown*failure*no*location
+#  (state <s> ^operator <o> ^info-link <i>)
+#  (<i> -^location)
+#  (<o> ^name putdown)
+# -->
+#  (<o> ^result failure)}
+  
+#sp {apply*putdown*failure*wrong*location
+#  (state <s> ^operator <o> ^info-link <i>)
+#  (<i> ^location <x>)
+#  (<o> ^name putdown ^passenger.destination <> <x>)
+# -->
+#  (<o> ^result failure)}
+ 
+ 
+############# Convoluted reward ##############33
+
+#sp {propose*put*success
+#  (state <s> ^superoperator <o> ^info-link <i>)
+#  (<o> ^name put ^passenger <p>)
+#  (<p> ^location taxi ^destination <x> -^delivered yes)
+#  (<i> ^location <x>)
+#  -->
+#  (<s> ^operator <o1> + =)
+#  (<o1> ^name put-success ^passenger <p>)}
+  
+#sp {apply*put*success
+#  (state <s> ^operator <o>)
+#  (<o> ^name put-success ^passenger <p>)
+#  -->
+#  (<p> ^delivered yes)}
+  
+#  sp {propose*remove*passenger
+#    (state <s> ^superoperator <o>)
+#    (<o> ^name put ^passenger <p>)
+#    (<p> ^delivered yes)
+#    -->
+#    (<s> ^operator <o1> + =)
+#    (<o1> ^name remove-passenger ^passenger <p>)}
+
+#sp {apply*remove*passenger
+#  (state <s> ^operator <o> ^info-link <i>)
+#  (<i> ^num-occupants <no> ^num-passengers <np> ^passenger <p>)
+#  (<o> ^name remove-passenger ^passenger <p>)
+#  -->
+#  (<i> ^passenger <p> -)
+#  (<i> ^num-occupants <no> -)
+#  (<i> ^num-occupants (- <no> 1))
+#  (<i> ^num-passengers <np> -)
+#  (<i> ^num-passengers (- <np> 1))}
+    
+  
+############ RL template #################
+
+#sp {RL*putdown
+#  :template
+#(state <s> ^superoperator.name put ^info-link <i> ^operator <o> +)
+#(<i> ^destination <dest> ^x-coor <x> ^y-coor <y>)
+#(<o> ^name putdown)
+#-->
+#(<s> ^operator <o> = 0)}
+
+#sp {RL*put*navigate
+#:template
+#(state <s> ^superoperator.name put ^info-link <i> ^operator <o> +)
+#(<o> ^name navigate)
+#(<i> ^x-coor <x> ^y-coor <y> ^destination <dest>)
+#-->
+#(<s> ^operator <o> = 0)}

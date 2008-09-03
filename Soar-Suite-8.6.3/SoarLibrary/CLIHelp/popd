@@ -1,0 +1,24 @@
+                                      Popd
+
+                                      Name
+
+   popd - Pop the current working directory off the stack and change to the
+   next directory on the stack. Can be relative pathname or fully specified
+   path.
+
+                                    Synopsis
+
+ popd
+
+                                    Options
+
+   No options.
+
+                                  Description
+
+   This command pops a directory off of the directory stack and cd's to it.
+   See the dirs command for an explanation of the directory stack.
+
+                                    See Also
+
+   cd dirs home ls pushd source topd

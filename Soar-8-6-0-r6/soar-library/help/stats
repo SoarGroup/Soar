@@ -1,0 +1,13 @@
+                                     Stats
+
+                                      Name
+
+   stats - Print information on SoaraEUR(TM)s runtime statistics.
+
+   Priority: 1; Status: Incomplete
+   Memory pool and rete stats not implemented with structured
+   output.--Jonathan 16:04, 8 Mar 2005 (EST)
+   stats -r (raw output) looks like trash output.--Jonathan 16:01, 8 Mar 2005
+   (EST)
+
+                                    Synopsis

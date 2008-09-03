@@ -1,0 +1,28 @@
+sp {mac*propose*initialize
+   (state <s> ^superstate nil
+             -^name)
+-->
+   (<s> ^operator <o> + =)
+   (<o> ^name initialize-mac-planning)
+}
+
+sp {mac*apply*initialize
+   (state <s> ^operator.name initialize-mac-planning)
+-->
+   (<s> ^name mac
+        ^left-bank <l>
+        ^right-bank <r>
+        ^desired <d>)
+   (<l> ^missionaries 3
+        ^cannibals 3
+        ^boat 1
+        ^other-bank <r>)
+   (<r> ^missionaries 0
+        ^cannibals 0
+        ^boat 0
+        ^other-bank <l>)
+   (<d> ^right-bank <dl>)
+   (<dl> ^missionaries 3
+         ^cannibals 3
+         ^boat 1)
+}

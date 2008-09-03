@@ -1,0 +1,99 @@
+\subsection{\soarb{preferences}}
+\label{preferences}
+\index{preferences}
+Examine details about the preferences that support the specified \emph{id}
+ and \emph{attribute}
+. 
+\subsubsection*{Synopsis}
+\begin{verbatim}
+preferences [-0123nNtw] [[id] [[^]attribute]]
+\end{verbatim}
+\subsubsection*{Options}
+\begin{tabular}{|l|l|}
+\hline
+\soar{ -0, -n, --none } & Print just the preferences themselves  \\
+\hline
+\soar{ -1, -N, --names } & Print the preferences and the names of the productions that generated them  \\
+\hline
+\soar{ -2, -t, --timetags } & Print the information for the --names option above plus the timetags of the wmes matched by the LHS of the indicated productions  \\
+\hline
+\soar{ -3, -w, --wmes } & Print the information for the --timetags option above plus the entire wme matched on the LHS.  \\
+\hline
+\soar{ -o, --object } & Print the support for all the wmes that comprise the object (the specified ID).  \\
+\hline
+\soar{id} & Must be an existing Soar object identifier.  \\
+\hline
+\soar{attribute} & Must be an existing \emph{\^{}attribute}
+ of the specified identifier.  \\
+\hline
+\end{tabular}
+\subsubsection*{Description}
+ The \textbf{preferences}
+ command prints all the preferences for the given object id and attribute. If \emph{id}
+ and \emph{attribute}
+ are not specified, they default to the current state and the current operator. The '\^{}' is optional when specifying the attribute. The optional arguments indicates the level of detail to print about each preference. 
+ This command is useful for examining which candidate operators have been proposed and what relationships, if any, exist among them. If a preference has O-support, the string, ``:O'' will also be printed. 
+ When only the ID is specified on the commandline, if the ID is a state, Soar uses the default attribute \^{}operator. If the ID is not a state, Soar prints the support information for all WMEs whose $<$value$>$ is the ID. 
+ When an ID and the --object flag are specified, Soar prints the preferences / wme support for all WMEs comprising the specified ID. 
+\subsection*{Note}
+ For the time being, \textbf{numeric-indifferent}
+ preferences are listed under the heading ``binary indifferents:''. 
+\subsubsection*{Examples}
+ This example prints the preferences on (S1 \^{}operator) and the production names which created the preferences: \begin{verbatim}
+soar> preferences S1 operator --names
+Preferences for S1 ^operator:
+acceptables:
+ O2 (fill) +
+   From waterjug*propose*fill
+ O3 (fill) +
+   From waterjug*propose*fill
+unary indifferents:
+ O2 (fill) =
+   From waterjug*propose*fill
+ O3 (fill) =
+   From waterjug*propose*fill
+\end{verbatim}
+ If the current state is S1, then the above syntax is equivalent to: \begin{verbatim}
+ preferences -n
+\end{verbatim}
+ This example shows the support for the WMEs with the \^{}jug attribute: \begin{verbatim}
+soar> preferences s1 jug
+Preferences for S1 ^jug:
+  
+acceptables:
+  (S1 ^jug I4)  :O 
+  (S1 ^jug J1)  :O 
+\end{verbatim}
+ This example shows the support for the WMEs with $<$value$>$ = J1, and the productions that generated them \begin{verbatim}
+soar> pref J1 -1
+ Support for (31: O3 ^jug J1)
+   (O3 ^jug J1) 
+     From water-jug*propose*fill
+ Support for (11: S1 ^jug J1)
+   (S1 ^jug J1)  :O 
+     From water-jug*apply*initialize-water-jug-look-ahead
+\end{verbatim}
+ This example shows the support for all WMEs that make up the object S1: \begin{verbatim}
+ soar> pref -o s1
+ Support for S1 ^problem-space:
+   (S1 ^problem-space P1) 
+ Support for S1 ^name:
+   (S1 ^name water-jug)  :O 
+ Support for S1 ^jug:
+   (S1 ^jug I4)  :O 
+   (S1 ^jug J1)  :O 
+ Support for S1 ^desired:
+   (S1 ^desired D1)  :O 
+ Support for S1 ^superstate-set:
+   (S1 ^superstate-set nil) 
+ Preferences for S1 ^operator:
+ acceptables:
+   O2 (fill) +
+   O3 (fill) +
+ Arch-created wmes for S1 :
+ (2: S1 ^superstate nil)
+ (1: S1 ^type state)
+ Input (IO) wmes for S1 :
+ (3: S1 ^io I1)
+\end{verbatim}
+\subsubsection*{See Also}

@@ -1,0 +1,33 @@
+#!/usr/bin/python
+import glob
+import sys
+
+Import('env')
+env = env.Copy()
+env.Prepend(CPPPATH = [	
+			'include',
+			'src',
+			'../../Core/ClientSML/include',
+			'../../Core/ElementXML/include',
+			'../../Core/ConnectionSML/include'])
+
+libadd = [ 'ClientSML', 
+	   'ConnectionSML',
+	   'ElementXML', 
+	   ]
+
+if sys.platform == 'cygwin':
+	libadd.extend(['ws2_32',])
+
+libpath = [ '../../Core/ClientSML',
+	    '../../Core/ConnectionSML',
+	    '../../Core/ElementXML', 
+	    ]
+
+if env['static']:
+	libadd.extend(['SoarKernelSML','CommandLineInterface', 'gSKI', 'SoarKernel'])
+	libpath.extend(['../../Core/KernelSML','../../Core/CLI','../../Core/gSKI','../../Core/SoarKernel',])
+
+env.Append(LIBS = libadd, LIBPATH = libpath)
+QuickLink = env.Program('QuickLink', glob.glob('src/*.cpp'))
+env.Install('#SoarLibrary/bin', QuickLink)

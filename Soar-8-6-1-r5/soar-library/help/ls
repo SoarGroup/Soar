@@ -1,0 +1,32 @@
+                                       Ls
+
+                                      Name
+
+   ls - List the contents of the current working directory.
+
+   Complete I'm saying complete here but the ls command does not support
+   search refinement (globs) like ls *.cpp --Jonathan 16:01, 3 Feb 2005 (EST)
+
+                                    Synopsis
+
+ ls
+
+                                    Options
+
+   No options.
+
+                                  Description
+
+   List the contents of the working directory.
+
+                                Default Aliases
+
+   +-------------+
+   |Alias|Maps to|
+   |-----+-------|
+   |dir  |ls     |
+   +-------------+
+
+                                    See Also
+
+   cd dirs home pushd popd source topd

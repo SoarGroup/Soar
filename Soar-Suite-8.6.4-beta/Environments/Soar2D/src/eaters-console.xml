@@ -1,0 +1,31 @@
+<soar2d version="2">
+  <general>
+    <game>eaters</game>
+    <map>maps/eaters/random-walls.emap</map>
+    <seed>0</seed>
+    <no-gui />
+    <rules>
+      <eaters>
+        <vision>2</vision>
+        <wall-penalty>-5</wall-penalty>
+        <jump-penalty>-5</jump-penalty>
+        <low-probability>0.15</low-probability>
+        <high-probability>0.65</high-probability>
+      </eaters>
+    </rules>
+  </general>
+  <logging>
+    <level>INFO</level>
+    <file>/soar2d.log</file>
+    <console />
+  </logging>
+  <players>
+    <player>
+      <productions>agents/eaters/tutorial/advanced-move.soar</productions>
+    </player>
+  </players>
+  <terminals>
+    <food-remaining />
+  </terminals>
+  <clients />
+</soar2d>

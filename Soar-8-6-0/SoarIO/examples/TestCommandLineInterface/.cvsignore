@@ -1,0 +1,7 @@
+Makefile
+Makefile.in
+.deps
+.libs
+testcli
+gski_unreleased.txt
+Debug

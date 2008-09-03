@@ -1,0 +1,31 @@
+sp {RL-0003
+    (state <s> ^jug <j1> ^jug <j2> ^operator <o> +)
+    (<j1> ^volume 5 ^contents 0)
+    (<j2> ^volume 3 ^contents 0)
+    (<o> ^name fill ^fill-jug <j2>)
+    -->
+    (<s> ^operator <o> = 0)}
+    
+sp {RL-0330
+  (state <s> ^jug <j1> ^jug <j2> ^operator <o> +)
+  (<j1> ^volume 5 ^contents 0)
+  (<j2> ^volume 3 ^contents 3)
+  (<o> ^name pour ^empty-jug <j2> ^fill-jug <j1>)
+-->
+  (<s> ^operator <o> = 0)}
+  
+sp {RL-3033
+  (state <s> ^jug <j1> ^jug <j2> ^operator <o> +)
+  (<j1> ^volume 5 ^contents 3)
+  (<j2> ^volume 3 ^contents 0)
+  (<o> ^name fill ^fill-jug <j2>)
+  -->
+  (<s> ^operator <o> = 0)}
+  
+sp {RL-3351
+  (state <s> ^jug <j1> ^jug <j2> ^operator <o> +)
+  (<j1> ^volume 5 ^contents 3)
+  (<j2> ^volume 3 ^contents 3)
+  (<o> ^name pour ^empty-jug <j2> ^fill-jug <j1>)
+  -->
+  (<s> ^operator <o> = 0)}

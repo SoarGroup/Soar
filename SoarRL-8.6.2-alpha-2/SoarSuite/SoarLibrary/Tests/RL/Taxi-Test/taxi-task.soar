@@ -1,0 +1,80 @@
+#################  Subtask proposals ###################
+  
+sp {propose*get
+  (state <s> ^task taxi ^info-link <i>)
+  (<i> ^num-occupants < 2 ^passenger <p>)
+  (<p> ^destination <d> ^location { <> taxi <> <d> } )
+ -->
+  (<s> ^operator <o> + =)
+  (<o> ^name get
+       ^passenger <p>)}
+
+
+sp {propose*put
+   (state <s> ^task taxi ^info-link <i>)
+   (<i> ^passenger <p>)
+   (<p> ^location taxi)
+   -->
+   (<s> ^operator <o> + =)
+   (<o> ^name put
+        ^passenger <p>)}
+        
+#sp {apply*remove*passenger
+#  (state <s> ^task taxi ^operator.name << get put >> ^info-link <i>)
+#  (<i> ^passenger <p> ^num-passengers <n>)
+#  (<p> ^destination <d> ^location <d>)
+#  -->
+#  (<i> ^passenger <p> -)
+#  (<i> ^num-passengers <n> -)
+#  (<i> ^num-passengers (- <n> 1))}
+  
+#sp {apply*remove*passenger
+#  (state <s> ^task taxi ^info-link <i> ^operator.name remove-passengers)
+#  (<i> ^passenger <p> ^num-passengers <n>)
+#  (<p> ^destination <d> ^location <d>)
+#  -->
+#  (<i> ^passenger <p> -)
+#  (<i> ^num-passengers <n> -)
+#  (<i> ^num-passengers (- <n> 1))}
+  
+#################### RL templates #######################
+
+#sp {RL*taxi*put
+#  :template
+#(state <s> ^task taxi ^info-link <i> ^operator <o> +)
+#(<o> ^name put ^passenger <p>)
+#(<p>  ^destination <dest>)
+#(<i> ^x-coor <x> ^y-coor <y>)
+#-->
+#(<s> ^operator <o> = 0)}
+
+##################### Get 1 passenger ######################
+
+sp {RL*taxi*get*1
+  :template
+(state <s> ^task taxi ^info-link <i> ^operator <o> +)
+(<i> ^x-coor <x> ^y-coor <y> ^num-passengers 1
+     ^passenger <p1>)
+(<p1> ^location <pass> ^destination <dest>)
+(<o> ^name get ^passenger <p1>)
+-->
+(<s> ^operator <o> = 0)}
+
+ 
+
+
+############### PUT ##########################
+
+######### Put 1 passenger #####################333
+
+sp {RL*taxi*put*1
+  :template
+(state <s> ^task taxi ^info-link <i> ^operator <o> +)
+(<i> ^x-coor <x> ^y-coor <y> ^num-passengers 1
+     ^passenger <p1>)
+(<p1> ^location <loc> ^destination <dest>)
+(<o> ^name put ^passenger <p1>)
+-->
+(<s> ^operator <o> = 0)}
+
+ 

@@ -1,0 +1,23 @@
+<map version="2">
+	*<cell-object name="string">
+		*<property name="string" value="string">
+			?<apply>
+				*<property name="string" value="string">
+				?<points>
+				?<energy ?shields="boolean">
+				?<health ?shields-down="boolean">
+				?<missiles>
+				?<remove>
+				?<reward-info>
+					?<use-open-code>
+				?<reward quantity="int">
+				?<reset>
+			?<update>
+				?<decay>
+				?<fly-missile>
+				?<linger>
+	<cells world-size="int" ?random-walls="boolean" ?random-food="boolean">
+		*<row>
+			+<cell>
+				*<object>
+					string name

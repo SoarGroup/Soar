@@ -1,0 +1,39 @@
+                                       Cd
+
+                                      Name
+
+   cd - Change directory.
+
+                                    Synopsis
+
+ cd [directory]
+
+                                    Options
+
+   +-------------------------------------------------------------------+
+   |directory|The directory to change to, can be relative or full path.|
+   +-------------------------------------------------------------------+
+
+                                  Description
+
+   Change the current working directory. If run with no arguments, returns to
+   the directory that the command line interface was started in, often
+   referred to as the home directory.
+
+                                    Examples
+
+   To move to the relative directory named ../home/soar/agents
+
+ cd ../home/soar/agents
+
+                                Default Aliases
+
+   +-------------+
+   |Alias|Maps to|
+   |-----+-------|
+   |chdir|cd     |
+   +-------------+
+
+                                    See Also
+
+   dirs home ls pushd popd source topd

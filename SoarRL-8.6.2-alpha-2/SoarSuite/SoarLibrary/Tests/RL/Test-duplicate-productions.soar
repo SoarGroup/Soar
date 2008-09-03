@@ -1,0 +1,101 @@
+ ##########################################
+ # None of the following rules should be marked
+ # as duplicates when sourced by Soar.
+ ##########################################
+ 
+ sp {other-rule
+     (state <s> ^operator <o1> + ^operator <o2> +)
+     (<o1> ^name joe)
+     (<o2> ^name fred)
+     -->
+    (<s> ^operator <o1> >)}
+
+
+    
+ sp {other-rule3
+     (state <s> ^operator <o1> + ^operator <o2> +)
+     (<o1> ^name joe)
+     (<o2> ^name fred)
+     -->
+    (<s> ^operator <o1> >)
+    (<s> ^operator <o2> = 1)}
+    
+    
+sp {RL-1
+ (state <s> ^operator <o1> + ^operator <o2> +)
+ (<o1> ^name joe)
+ (<o2> ^name fred)
+ -->
+ (<s> ^operator <o1> = 0)}
+ 
+sp {temp
+  :template
+    (state <s> ^operator <o1> + ^operator <o2> +)
+    (<o1> ^name joe)
+    (<o2> ^name fred)
+    -->
+ (<s> ^operator <o1> = 0)}
+ 
+  
+ sp {RL-3
+  (state <s> ^operator <o1> + ^operator <o2> +)
+  (<o1> ^name joe)
+  (<o2> ^name fred)
+  -->
+ (<s> ^operator <o2> = 0)}
+ 
+ 
+
+ 
+ sp {temp4
+   :template
+     (state <s> ^operator <o1> + ^operator <o2> +)
+     (<o1> ^name joe)
+     (<o2> ^name fred)
+     -->
+ (<s> ^operator <o2> = 0)}
+ 
+######################################################
+# The following rules should be rejected as duplicates if
+# sourced with the above rules.
+######################################################
+ 
+ sp {other-rule2
+      (state <s> ^operator <o1> + ^operator <o2> +)
+      (<o1> ^name joe)
+      (<o2> ^name fred)
+      -->
+    (<s> ^operator <o1> >)}
+    
+  sp {RL-2
+   (state <s> ^operator <o1> + ^operator <o2> +)
+   (<o1> ^name joe)
+   (<o2> ^name fred)
+   -->
+ (<s> ^operator <o1> = 3)}
+ 
+ sp {temp2
+   :template
+     (state <s> ^operator <o1> + ^operator <o2> +)
+     (<o1> ^name joe)
+     (<o2> ^name fred)
+     -->
+ (<s> ^operator <o1> = 0)}
+ 
+ 
+ 
+ ###################################################
+ # The following rule should be rejected as a template.
+ # It should be turned into a non-template, after which
+ # it is a duplicate of RL-1.
+ ##################################################
+ 
+  sp {temp3
+    :template
+      (state <s> ^operator <o1> + ^operator <o2> +)
+      (<o1> ^name joe)
+      (<o2> ^name fred)
+      -->
+ (<s> ^operator <o1> = 3)}
+ 
+ 

@@ -1,0 +1,16 @@
+sp {fill*propose*pick-up
+   (state <s> ^name fill
+              ^jug <j>)
+   (<j> -^picked-up yes)
+-->
+   (<s> ^operator <op> + =)
+   (<op> ^name pick-up)
+}
+
+sp {apply*pick-up
+   (state <s> ^operator <op>
+              ^jug <j1>)
+   (<op> ^name pick-up)
+-->
+   (<j1> ^picked-up yes)
+}

@@ -1,0 +1,50 @@
+\subsection{\soarb{alias}}
+\label{alias}
+\index{alias}
+Define a new alias, or command, using existing commands and arguments.\\ 
+ Status: Incomplete\\ 
+Structured output.--Jonathan 15:37, 25 Mar 2005 (EST) 
+\subsubsection*{Synopsis}
+  \begin{verbatim}
+alias name [cmd <args>]
+alias -d name
+alias
+\end{verbatim}
+\subsubsection*{Options}
+\begin{tabular}{|l|l|}
+\hline 
+ -d, --disable, --off  & Remove the named alias.  \\
+ \hline 
+ name  & The name of the alias, i.e. the new command.  \\
+ \hline 
+ cmd  & An existing command that will be invoked when the alias is entered on the commandline.  \\
+ \hline 
+ args  & Valid arguments to the cmd (optional \& optional number).  \\
+ \hline 
+\end{tabular}
+\subsubsection*{Description}
+ returns the current definition. 
+\subsubsection*{Examples}
+ The alias \emph{wmes}
+ is defined as: \begin{verbatim}
+alias wmes print -i
+\end{verbatim}
+ If the user executes a command such as: \begin{verbatim}
+wmes {(* ^superstate nil)}
+\end{verbatim}
+ it is as if the user had typed this command: \begin{verbatim}
+print -i {(* ^superstate nil)}
+\end{verbatim}
+ To check what a specific alias is defined as, you would type \begin{verbatim}
+alias wmes
+\end{verbatim}
+\subsubsection*{Default Aliases}
+\begin{tabular}{|l|l|}
+\hline 
+ Alias  & Maps to  \\
+ \hline 
+ unalias  & alias -d  \\
+ \hline 
+\end{tabular}
+\subsubsection*{See Also}
+ unalias

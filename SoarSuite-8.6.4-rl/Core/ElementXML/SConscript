@@ -1,0 +1,20 @@
+#!/usr/bin/python
+import glob
+import sys
+
+Import('env')
+env = env.Copy()
+env.Prepend(CPPPATH = ['src', 'include',])
+
+if sys.platform == 'cygwin':
+	env.Append(CPPFLAGS = ' -D_USRDLL')
+	env['no_import_lib'] = 1
+
+if env['static']:
+	ElementXMLStatic = env.StaticLibrary('ElementXML', glob.glob('src/*.cpp'))
+	env.Install('#SoarLibrary/lib', ElementXMLStatic)
+else:
+	ElementXML = env.SharedLibrary('ElementXML', glob.glob('src/*.cpp'))
+	env.Install('#SoarLibrary/lib', ElementXML)
+
+

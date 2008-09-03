@@ -1,0 +1,56 @@
+# If the task is water-jug and there is a jug that is not full and the other jug is not empty, 
+# then propose pouring water from the second jug into the first jug.
+
+sp {water-jug*propose*pour
+   (state <s> ^name water-jug
+              ^jug <i> { <> <i> <j> })
+   (<i> ^contents > 0 )
+   (<j> ^empty > 0)
+-->
+   (<s> ^operator <o> + =)
+   (<o> ^name pour
+        ^empty-jug <i>
+        ^fill-jug <j>)}
+
+# If the task is water-jug and the pour operator is selected, 
+#    and the contents of the jug being emptied are less than or equal to 
+#    the empty amount of the jug being filled, 
+# then set the contents of the jug being emptied to 0;
+#      set the contents of the jug being filled to the sum of the two jugs.
+
+sp {water-jug*apply*pour*not-empty-source
+   (state <s> ^name water-jug
+              ^operator <o>)
+   (<o> ^name pour
+        ^empty-jug <i>
+        ^fill-jug <j>)
+   (<j> ^volume <jvol>
+        ^contents <jcon>
+        ^empty <jempty>)
+   (<i> ^volume <ivol>
+        ^contents { <icon> <= <jempty> })
+-->
+   (<i> ^contents 0 <icon> -)
+   (<j> ^contents (+ <jcon> <icon>) <jcon> - )}
+
+# If the task is water-jug and the pour operator is selected, and 
+#    the contents of the jug being emptied are greater than the empty amount 
+#    of the jug being filled, 
+# then set the contents of the jug being emptied to its contents minus the   
+#      empty of the jug being filled;
+#      set the contents of the jug filled to its volume.
+
+sp {water-jug*apply*pour*empty-source
+   (state <s> ^name water-jug
+              ^operator <o>)
+   (<o> ^name pour
+        ^empty-jug <i>
+        ^fill-jug <j>)
+   (<i> ^volume <ivol>
+        ^contents { <icon> > <jempty> })
+   (<j> ^volume <jvol>
+        ^contents <jcon>
+        ^empty <jempty>)
+-->
+   (<i> ^contents (- <icon> <jempty>) <icon> - )
+   (<j> ^contents <jvol> <jcon> -)}

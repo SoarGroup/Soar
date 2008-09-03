@@ -1,0 +1,237 @@
+
+
+################ Primitive ops ##########################
+
+################# East #########################
+
+sp {propose*east
+  (state <s> ^superoperator.name navigate ^info-link.x-coor <x>)
+  -->
+  (<s> ^operator <o> + =)
+  (<o> ^name move-east)}
+
+
+sp {apply*east*row*zero
+   (state <s> ^operator <o> ^info-link <i>)
+   (<i> ^x-coor 0 ^y-coor << 2 3 4 >>)
+   (<o> ^name move-east)
+ -->
+   (<i> ^x-coor 0 -)
+   (<i> ^x-coor 1)}
+   
+ sp {apply*east*row*one
+    (state <s> ^operator <o> ^info-link <i>)
+    (<i> ^x-coor 1 ^y-coor << 0 1 2 >>)
+    (<o> ^name move-east)
+  -->
+    (<i> ^x-coor 1 -)
+   (<i> ^x-coor 2)}
+   
+  sp {apply*east*row*two
+     (state <s> ^operator <o> ^info-link <i>)
+     (<i> ^x-coor 2 ^y-coor << 2 3 4 >>)
+     (<o> ^name move-east)
+   -->
+     (<i> ^x-coor 2 -)
+   (<i> ^x-coor 3)}
+   
+ sp {apply*east*row*three
+    (state <s> ^operator <o> ^info-link <i>)
+    (<i> ^x-coor 3)
+    (<o> ^name move-east)
+  -->
+    (<i> ^x-coor 3 -)
+   (<i> ^x-coor 4)}
+
+sp {apply*east*row*zero*wall
+   (state <s> ^operator <o> ^info-link <i>)
+   (<i> ^x-coor 0 ^y-coor << 0 1 >>)
+   (<o> ^name move-east)
+ -->
+   (<o> ^result failure)}
+
+ sp {apply*east*row*one*wall
+    (state <s> ^operator <o> ^info-link <i>)
+    (<i> ^x-coor 1 ^y-coor << 3 4 >>)
+    (<o> ^name move-east)
+  -->
+    (<o> ^result failure)}
+    
+sp {apply*east*row*two*wall
+    (state <s> ^operator <o> ^info-link <i>)
+    (<i> ^x-coor 2 ^y-coor << 0 1 >>)
+    (<o> ^name move-east)
+  -->
+    (<o> ^result failure)}
+    
+  sp {apply*east*row*four*wall
+     (state <s> ^operator <o> ^info-link <i>)
+     (<i> ^x-coor 4)
+     (<o> ^name move-east)
+   -->
+    (<o> ^result failure)}
+    
+############################# West #######################
+   
+sp {propose*west
+  (state <s> ^superoperator.name navigate ^info-link <i>)
+  (<i> ^x-coor <x>)
+  -->
+  (<s> ^operator <o> + =)
+  (<o> ^name move-west)}
+  
+  
+sp {apply*west*row*four
+   (state <s> ^operator <o> ^info-link <i>)
+   (<i> ^x-coor 4)
+   (<o> ^name move-west)
+ -->
+   (<i> ^x-coor 4 -)
+   (<i> ^x-coor 3)}
+   
+  sp {apply*west*row*three
+     (state <s> ^operator <o> ^info-link <i>)
+     (<i> ^x-coor 3 ^y-coor << 2 3 4 >>)
+     (<o> ^name move-west)
+   -->
+     (<i> ^x-coor 3 -)
+   (<i> ^x-coor 2)}
+   
+ sp {apply*west*row*two
+    (state <s> ^operator <o> ^info-link <i>)
+    (<i> ^x-coor 2 ^y-coor << 0 1 2 >>)
+    (<o> ^name move-west)
+  -->
+    (<i> ^x-coor 2 -)
+   (<i> ^x-coor 1)}
+  
+sp {apply*west*row*one
+   (state <s> ^operator <o> ^info-link <i>)
+   (<i> ^x-coor 1 ^y-coor << 2 3 4 >>)
+   (<o> ^name move-west)
+ -->
+   (<i> ^x-coor 1 -)
+   (<i> ^x-coor 0)}
+   
+      
+  sp {apply*west*row*three*wall
+      (state <s> ^operator <o> ^info-link <i>)
+      (<i> ^x-coor 3 ^y-coor << 0 1 >>)
+      (<o> ^name move-west)
+    -->
+     (<o> ^result failure)}
+     
+   sp {apply*west*row*two*wall
+    (state <s> ^operator <o> ^info-link <i>)
+    (<i> ^x-coor 2 ^y-coor << 3 4 >>)
+    (<o> ^name move-west)
+  -->
+    (<o> ^result failure)} 
+    
+ sp {apply*west*row*one*wall
+    (state <s> ^operator <o> ^info-link <i>)
+    (<i> ^x-coor 1 ^y-coor << 0 1 >>)
+    (<o> ^name move-west)
+  -->
+   (<o> ^result failure)}
+   
+ sp {apply*west*row*zero*wall
+   (state <s> ^operator <o> ^info-link <i>)
+   (<i> ^x-coor 0)
+   (<o> ^name move-west)
+  -->
+   (<o> ^result failure)}
+   
+############################# South ############################  
+
+sp {propose*south
+   (state <s> ^superoperator.name navigate ^info-link <i>)
+   (<i> ^y-coor <y>)
+   -->
+   (<s> ^operator <o> + =)
+   (<o> ^name move-south)}
+   
+   
+sp {apply*south
+   (state <s> ^info-link <i> ^operator <o>)
+   (<i>  ^y-coor { <> 0 <y> })
+   (<o> ^name move-south)
+   -->
+   (<i> ^y-coor <y> -)
+   (<i> ^y-coor (- <y> 1))}
+   
+   
+sp {apply*south*wall
+   (state <s> ^info-link <i> ^operator <o>)
+   (<i> ^y-coor 0)
+   (<o> ^name move-south)
+  -->
+   (<o> ^result failure)}
+   
+ 
+ 
+
+############################### North ##############################   
+
+sp {propose*north
+   (state <s> ^superoperator.name navigate ^info-link <i>)
+   (<i> ^y-coor <y>)
+   -->
+   (<s> ^operator <o> + =)
+   (<o> ^name move-north)}
+
+   
+sp {apply*north
+   (state <s> ^info-link <i> ^operator <o>)
+   (<i> ^y-coor { <> 4 <y> })
+   (<o> ^name move-north)
+ -->
+   (<i> ^y-coor <y> -)
+   (<i> ^y-coor (+ <y> 1))}
+
+
+sp {apply*north*wall
+   (state <s> ^info-link <i> ^operator <o>)
+   (<i> ^y-coor 4)
+   (<o> ^name move-north)
+ -->
+   (<o> ^result failure)}
+   
+   
+#################### RL templates ############################
+
+sp {RL*Nav*west
+:template
+(state <s> ^superoperator <so> ^info-link <i> ^operator <o> +)
+(<i> ^x-coor <x> ^y-coor <y>)
+(<o> ^name move-west)
+(<so> ^name navigate ^to <to>)
+-->
+(<s> ^operator <o> = 0)}
+
+sp {RL*Nav*east
+:template
+(state <s> ^superoperator <so> ^info-link <i> ^operator <o> +)
+(<i> ^x-coor <x> ^y-coor <y>)
+(<o> ^name move-east)
+(<so> ^name navigate ^to <to>)
+-->
+(<s> ^operator <o> = 0)}
+
+sp {RL*Nav*north
+:template
+(state <s> ^superoperator <so> ^info-link <i> ^operator <o> +)
+(<i> ^x-coor <x> ^y-coor <y>)
+(<o> ^name move-north)
+(<so> ^name navigate ^to <to>)
+-->
+(<s> ^operator <o> = 0)}
+
+sp {RL*Nav*south
+:template
+(state <s> ^superoperator <so> ^info-link <i> ^operator <o> +)
+(<i> ^x-coor <x> ^y-coor <y>)
+(<o> ^name move-south)
+(<so> ^name navigate ^to <to>)
+-->
+(<s> ^operator <o> = 0)}

@@ -1,0 +1,111 @@
+#sp {reward*for*action
+#  (state <s> ^task taxi ^info-link.num-occupants > 0 ^reward-link <r>)
+#-->
+#  (<r> ^reward.value -0.5)}
+ 
+#sp {apply*putdown*reward
+#  (state <s> ^operator <o> ^superstate.reward-link <r> ^info-link <i>)
+#  (<o> ^name putdown ^passenger <p>)
+#  (<p> ^destination <x>)
+#  (<i> ^location <x> ^num-occupants <n> ^num-passengers <np>)
+#  -->
+#  (<r> ^reward.value 20)}
+  
+sp {reward*task*completion
+  (state <s> ^task taxi ^info-link <i> ^reward-link <r>)
+  (<i> ^num-passengers 0)
+  -->
+  (<r> ^reward.value 20)}
+  
+#sp {reward*success
+#  (state <s> ^task taxi ^reward-link <r> ^info-link.passenger.delivered yes)
+#-->
+#  (<r> ^reward.value 20)}
+  
+#sp {navigate*reward
+#  (state <s> ^superoperator.name navigate ^reward-link <r>)
+# -->
+#  (<r> ^reward.value -1)}
+  
+
+############ Navigate reward hacks ##########33
+
+sp {navigate*zoo*east*reward   
+    (state <s> ^superoperator <so> ^operator <o> ^info-link <i> ^reward-link <r>)
+    (<so> ^name navigate ^to zoo)
+    (<i> ^x-coor 3 ^y-coor 4)
+    (<o> ^name move-east)
+  -->
+    (<r> ^reward.value 1)}
+    
+sp {navigate*zoo*north*reward   
+    (state <s> ^superoperator <so> ^operator <o> ^info-link <i> ^reward-link <r>)
+    (<so> ^name navigate ^to zoo)
+    (<i> ^x-coor 4 ^y-coor 3)
+    (<o> ^name move-north)
+  -->
+    (<r> ^reward.value 1)}
+    
+sp {navigate*library*west*reward   
+    (state <s> ^superoperator <so> ^operator <o> ^info-link <i> ^reward-link <r>)
+    (<so> ^name navigate ^to library)
+    (<i> ^x-coor 4 ^y-coor 0)
+    (<o> ^name move-west)
+  -->
+    (<r> ^reward.value 1)}
+    
+sp {navigate*library*south*reward   
+    (state <s> ^superoperator <so> ^operator <o> ^info-link <i> ^reward-link <r>)
+    (<so> ^name navigate ^to library)
+    (<i> ^x-coor 3 ^y-coor 1)
+    (<o> ^name move-south)
+  -->
+    (<r> ^reward.value 1)}
+    
+sp {navigate*airport*north*reward   
+    (state <s> ^superoperator <so> ^operator <o> ^info-link <i> ^reward-link <r>)
+    (<so> ^name navigate ^to airport)
+    (<i> ^x-coor 0 ^y-coor 3)
+    (<o> ^name move-north)
+  -->
+    (<r> ^reward.value 1)}
+    
+sp {navigate*airport*west*reward   
+    (state <s> ^superoperator <so> ^operator <o> ^info-link <i> ^reward-link <r>)
+    (<so> ^name navigate ^to airport)
+    (<i> ^x-coor 1 ^y-coor 4)
+    (<o> ^name move-west)
+  -->
+    (<r> ^reward.value 1)}
+    
+sp {navigate*hospital*south*reward   
+    (state <s> ^superoperator <so> ^operator <o> ^info-link <i> ^reward-link <r>)
+    (<so> ^name navigate ^to hospital)
+    (<i> ^x-coor 0 ^y-coor 1)
+    (<o> ^name move-south)
+  -->
+    (<r> ^reward.value 1)}
+  
+  
+  
+  
+  
+  
+  
+  
+#sp {navigate*reward
+#  (state <s> ^superoperator <o> ^reward-link <r> ^info-link <i>)
+#  (<o> ^name navigate ^to <loc>)
+#  (<i> ^location <loc>)
+#  
+# -->
+#  (<r> ^reward.value 1)}
+  
+#sp {navigate*reward*superstate
+#  (state <s1> ^superstate <s> ^reward-link <r>)
+#  (state <s> ^operator <o> ^info-link <i>)
+#  (<o> ^name navigate ^to <loc>)
+#  (<i> ^location <loc>)
+#  -->
+#  (<r> ^reward.value 1)}
+  

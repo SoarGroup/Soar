@@ -1,0 +1,102 @@
+sp {elaborate*taxi
+  (state <s> ^superstate nil)
+  -->
+  (<s> ^task taxi)}
+  
+sp {elaborate*at*zoo
+  (state <s> ^info-link <i>)
+  (<i> ^x-coor 4 ^y-coor 4)
+  -->
+  (<i> ^location zoo)}
+  
+sp {elaborate*at*library
+  (state <s> ^info-link <i>)
+  (<i> ^x-coor 3 ^y-coor 0)
+  -->
+  (<i> ^location library)}
+  
+sp {elaborate*at*hospital
+  (state <s> ^info-link <i>)
+  (<i> ^x-coor 0 ^y-coor 0)
+-->
+  (<i> ^location hospital)}
+  
+sp {elaborate*at*airport
+  (state <s> ^info-link <i>)
+  (<i> ^x-coor 0 ^y-coor 4)
+-->
+  (<i> ^location airport)}
+  
+sp {state*copy
+  (state <s> ^superstate <s1>)
+  (<s1> ^info-link <i>)
+  -->
+  (<s> ^info-link <i>)}
+  
+ sp {elaborate*state
+   (state <s> ^impasse no-change ^attribute operator ^superstate <s1>)
+   (<s1> ^operator <o>)
+   -->
+   (<s> ^superoperator <o>)}
+   
+sp {reject
+  (state <s> ^operator <o> +)
+  (<o> ^result failure)
+  -->
+  (<s> ^operator <o> -)}
+  
+#sp {halt*success
+#  (state <s> ^task taxi ^info-link <i>)
+#  (<i> ^passenger <p> ^destination <p>)
+# -->
+#  (halt)}
+
+sp {halt
+  (state <s> ^task taxi ^info-link <i>)
+  (<i> ^num-passengers 0)
+  -->
+  (halt)}
+
+sp {propose*initialize
+  (state <s> ^task taxi -^info-link)
+  -->
+  (<s> ^operator <o> +)
+  (<o> ^name initialize)}
+  
+sp {apply*initialize
+  (state <s> ^operator <o>)
+  (<o> ^name initialize)
+-->
+  (<s> ^info-link <i>)
+  (<i> ^x-coor 0 ^y-coor 0
+       ^passenger <p1>
+       ^num-occupants 0
+       ^num-passengers 1)
+  (<p1> ^location airport ^destination hospital)}
+
+
+
+
+
+
+#sp {apply*initialize
+#  (state <s> ^operator <o>)
+#  (<o> ^name initialize)
+# -->
+#  (<s> ^info-link <i>)
+#  (<i> ^x-coor 0 ^y-coor 0
+#       ^passenger <p1> <p2> <p3> <p4> <p5> 
+#       ^num-occupants 0
+#       ^num-passengers 5)
+#  (<p1> ^location zoo ^destination library ^name Jack)
+#  (<p2> ^location airport ^destination hospital ^name Jill)
+#  (<p3> ^location airport ^destination zoo ^name Franklin)
+#  (<p4> ^location hospital ^destination airport ^name Rose)
+#  (<p5> ^location library ^destination hospital ^name Muriel)}
+  
+sp {monitor*action*taken
+  (state <s> ^task taxi ^operator <o>)
+  (<o> ^name <action> ^passenger <p>)
+  (<p> ^name <name>)
+  -->
+  (write <action> | | <name>)}

@@ -1,0 +1,22 @@
+\subsection{\soarb{echo}}
+\label{echo}
+\index{echo}
+Print a string to the current output device. 
+\subsubsection*{Synopsis}
+\begin{verbatim}
+echo string
+\end{verbatim}
+\subsubsection*{Options}
+\begin{tabular}{|l|l|}
+\hline
+\soar{ string } & The string to print.  \\
+\hline
+\end{tabular}
+\subsubsection*{Description}
+ This command echos the args to the current output stream. This is normally stdout but can be set to a variety of channels. If an arg is -nonewline then no newline is printed at the end of the printed strings. Otherwise a newline is printed after printing all the given args. Echo is the easiest way to add user comments or identification strings in a log file. 
+\subsubsection*{Examples}
+ This example will add these comments to the screen and any open log file. \begin{verbatim}
+echo This is the first run with disks = 12
+\end{verbatim}
+\subsubsection*{See Also}
+\hyperref[log]{log} 

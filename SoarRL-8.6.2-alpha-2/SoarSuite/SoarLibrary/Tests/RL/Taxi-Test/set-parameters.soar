@@ -1,0 +1,7 @@
+RL --gamma 0.95
+exploration --mode epsilon-greedy
+exploration --epsilon 0.9
+RL --alpha 1
+RL --on-policy
+RL --lambda 0.7
+learn --off
