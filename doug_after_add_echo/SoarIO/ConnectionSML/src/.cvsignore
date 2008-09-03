@@ -1,0 +1,9 @@
+Debug
+Makefile
+Makefile.in
+.deps
+.libs
+*.lo
+libConnectionSML.la
+Release
+*.o

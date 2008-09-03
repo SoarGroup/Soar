@@ -1,0 +1,128 @@
+   Link: Creative Commons (meta)
+   Link: copyright
+
+                                    Verbose
+
+  From Soar Wiki
+
+   This is part of the Soar Command Line Interface.
+
+    Table of contents
+   1 Name
+   2 Synopsis
+   3 Options
+   4 Description
+   5 Structured Output
+
+   5.1 On Query
+   5.2 On success
+
+   6 Error Values
+
+   6.1 During Parsing
+   6.2 During Execution
+
+   [edit]
+
+                                      Name
+
+   verbose - Control detailed information printed as Soar runs.
+
+   Priority: 3; Status: Complete, EvilBackDoor
+
+   [edit]
+
+                                    Synopsis
+
+ verbose [-ed]
+
+   [edit]
+
+                                    Options
+
+   +----------------------------------------+
+   |-d, --disable, --off|Turn verbosity off.|
+   |--------------------+-------------------|
+   |-e, --enable, --on  |Turn verbosity on. |
+   +----------------------------------------+
+
+   [edit]
+
+                                  Description
+
+   Invoke with no arguments to query.
+
+   [edit]
+
+                               Structured Output
+
+   [edit]
+
+On Query
+
+ <result>
+   <arg param="value" type="boolean">true_or_false</arg>
+ </result>
+
+   [edit]
+
+On success
+
+   Returns true.
+
+   [edit]
+
+                                  Error Values
+
+   [edit]
+
+During Parsing
+
+   kUnrecognizedOption, kGetOptError, kTooManyArgs
+
+   [edit]
+
+During Execution
+
+   kAgentRequired, kKernelRequired
+
+   Retrieved from "http://winter.eecs.umich.edu/soarwiki/Verbose"
+
+      Views
+
+     * Article
+     * Discussion
+     * Edit
+     * History
+
+      Personal tools
+
+     * Create an account or log in
+
+      Navigation
+
+     * Main Page
+     * Community portal
+     * Current events
+     * Recent changes
+     * Random page
+     * Help
+
+      Search
+
+   _____________________ [ Go ]   [ Search ]
+
+      Toolbox
+
+     * What links here
+     * Related changes
+     * Special pages
+
+   MediaWiki
+   GNU Free Documentation License 1.2
+
+     * This page was last modified 23:22, 18 Feb 2005.
+     * This page has been accessed 21 times.
+     * Content is available under GNU Free Documentation License 1.2.
+     * About Soar Wiki
+     * Disclaimers

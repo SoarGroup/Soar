@@ -1,0 +1,9 @@
+sp {elaborate*state*desired
+    (state <s> ^superstate <ss>)
+    (<ss> ^operator <o>)
+    (<o> ^disk <disk>
+         ^to <peg>)
+    -->
+    (<s> ^desired.move-disk <md>)
+    (<md> ^disk <disk>
+          ^peg <peg>)}

@@ -1,0 +1,53 @@
+                                     Source
+
+  From Soar Wiki
+
+   This is part of the Soar Command Line Interface.
+
+                                      Name
+
+   source - Load and evaluate the contents of a file.
+
+   Status: Complete
+
+                                    Synopsis
+
+ source filename
+
+                                    Options
+
+   +-----------------------------------------------------------+
+   |filename|The file of Soar productions and commands to load.|
+   +-----------------------------------------------------------+
+
+                                  Description
+
+   Load and evaluate the contents of a file. The filename can be a relative
+   path or a fully qualified path. source will generate an implicit push to
+   the new directory, execute the command, and then pop back to the current
+   working directory from which the command was issued.
+
+                                    See Also
+
+           cd dirs home ls pushd popd source topd
+
+                               Structured Output
+
+On Success
+
+  <result output="raw">true</result>
+
+Notes
+
+     * source executes the 'pwd' command if the pushd's and popd's don't
+       match up after parsing the file. Type 'helpex pwd' for details.
+
+                                  Error Values
+
+During Parsing
+
+   kTooFewArgs, kSourceOnlyOneFile
+
+During Execution
+
+   kAgentRequired, kOpenFileFail, kUnmatchedBrace, kExtraClosingBrace

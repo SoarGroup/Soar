@@ -1,0 +1,143 @@
+   Link: Creative Commons (meta)
+   Link: copyright
+
+                                   Remove-wme
+
+  From Soar Wiki
+
+   This is part of the Soar Command Line Interface.
+
+    Table of contents
+   1 Name
+   2 Synopsis
+   3 Options
+   4 Description
+   5 Examples
+   6 See Also
+   7 Warnings
+   8 Structured Output
+   9 Error Values
+
+   9.1 During Parsing
+   9.2 During Execution
+
+   [edit]
+
+                                      Name
+
+   remove-wme - Manually remove an element from working memory.
+
+   Status: Complete
+
+   [edit]
+
+                                    Synopsis
+
+ remove-wme timetag
+
+   [edit]
+
+                                    Options
+
+   +------------------------------------------------------------------------+
+   |timetag|A positive integer matching the timetag of an existing working  |
+   |       |memory element.                                                 |
+   +------------------------------------------------------------------------+
+
+   [edit]
+
+                                  Description
+
+   The remove-wme command removes the working memory element with the given
+   timetag. This command is provided primarily for use in Soar input
+   functions; although there is no programming enforcement, add-wme should
+   only be called from registered input functions to create working memory
+   elements on Soar's input link.
+
+   Beware of weird side effects, including system crashes.
+
+   [edit]
+
+                                    Examples
+
+   [edit]
+
+                                    See Also
+
+   add-wme io
+
+   [edit]
+
+                                    Warnings
+
+   remove-wme should never be called from the RHS: if you try to match a wme
+   on the LHS of a production, and then remove the matched wme on the RHS,
+   Soar will crash.
+
+   If used other than by input and output functions interfaced with Soar,
+   this command may have weird side effects (possibly even including system
+   crashes). Removing input wmes or context/impasse wmes may have unexpected
+   side effects. You've been warned.
+
+   [edit]
+
+                               Structured Output
+
+   Returns true on success
+
+   [edit]
+
+                                  Error Values
+
+   [edit]
+
+During Parsing
+
+   kTooFewArgs, kTooManyArgs, kIntegerMustBePositive
+
+   [edit]
+
+During Execution
+
+   kAgentRequired, kKernelRequired, kRemoveWMEFailed
+
+   Retrieved from "http://winter.eecs.umich.edu/soarwiki/Remove-wme"
+
+      Views
+
+     * Article
+     * Discussion
+     * Edit
+     * History
+
+      Personal tools
+
+     * Create an account or log in
+
+      Navigation
+
+     * Main Page
+     * Community portal
+     * Current events
+     * Recent changes
+     * Random page
+     * Help
+
+      Search
+
+   _____________________ [ Go ]   [ Search ]
+
+      Toolbox
+
+     * What links here
+     * Related changes
+     * Special pages
+
+   MediaWiki
+   GNU Free Documentation License 1.2
+
+     * This page was last modified 19:57, 22 Feb 2005.
+     * This page has been accessed 29 times.
+     * Content is available under GNU Free Documentation License 1.2.
+     * About Soar Wiki
+     * Disclaimers

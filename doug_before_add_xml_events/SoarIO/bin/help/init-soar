@@ -1,0 +1,135 @@
+   Link: Creative Commons (meta)
+   Link: copyright
+
+                                   Init-soar
+
+  From Soar Wiki
+
+   This is part of the Soar Command Line Interface.
+
+    Table of contents
+   1 Name
+   2 Synopsis
+   3 Options
+   4 Description
+   5 Examples
+   6 See Also
+   7 Structured Output
+
+   7.1 On Success
+
+   8 Error Values
+
+   8.1 During Parsing
+   8.2 During Execution
+
+   [edit]
+
+                                      Name
+
+   init-soar - empties working memory and resets run-time statistics.
+
+   Status: Complete
+
+   [edit]
+
+                                    Synopsis
+
+ init-soar
+
+   [edit]
+
+                                    Options
+
+   No options.
+
+   [edit]
+
+                                  Description
+
+   The init-soar command initializes Soar. It removes all elements from
+   working memory, wiping out the goal stack, and resets all runtime
+   statistics. The firing counts for all productions is reset to zero. The
+   init-soar command allows a Soar program that has been halted to be reset
+   and start its execution from the beginning.
+
+   init-soar does not remove any productions from production memory; to do
+   this, use the excise command. Note however, that all justifications will
+   be removed because they will no longer be supported.
+
+   [edit]
+
+                                    Examples
+
+   [edit]
+
+                                    See Also
+
+           excise
+
+   [edit]
+
+                               Structured Output
+
+   [edit]
+
+On Success
+
+ <result output="raw">true</result>
+
+   [edit]
+
+                                  Error Values
+
+   [edit]
+
+During Parsing
+
+   No errors, all arguments ignored.
+
+   [edit]
+
+During Execution
+
+   kAgentRequired
+
+   Retrieved from "http://winter.eecs.umich.edu/soarwiki/Init-soar"
+
+      Views
+
+     * Article
+     * Discussion
+     * Edit
+     * History
+
+      Personal tools
+
+     * Create an account or log in
+
+      Navigation
+
+     * Main Page
+     * Community portal
+     * Current events
+     * Recent changes
+     * Random page
+     * Help
+
+      Search
+
+   _____________________ [ Go ]   [ Search ]
+
+      Toolbox
+
+     * What links here
+     * Related changes
+     * Special pages
+
+   MediaWiki
+   GNU Free Documentation License 1.2
+
+     * This page was last modified 19:09, 17 Feb 2005.
+     * This page has been accessed 21 times.
+     * Content is available under GNU Free Documentation License 1.2.
+     * About Soar Wiki
+     * Disclaimers

@@ -1,0 +1,86 @@
+                                    Memories
+
+  From Soar Wiki
+
+   This is part of the Soar Command Line Interface.
+
+                                      Name
+
+   memories - Print memory usage for partial matches.
+
+   Status: Complete
+
+                                    Synopsis
+
+ memories [-cdju] [n]
+ memories production_name
+
+                                    Options
+
+   +------------------------------------------------------------------------+
+   |-c, --chunks        |Print memory usage of chunks.                      |
+   |--------------------+---------------------------------------------------|
+   |-d, --default       |Print memory usage of default productions.         |
+   |--------------------+---------------------------------------------------|
+   |-j, --justifications|Print memory usage of justifications.              |
+   |--------------------+---------------------------------------------------|
+   |-u, --user          |Print memory usage of user-defined productions.    |
+   |--------------------+---------------------------------------------------|
+   |production_name     |Print memory usage for a specific production.      |
+   |--------------------+---------------------------------------------------|
+   |n                   |Number of productions to print, sorted by those    |
+   |                    |that use the most memory.                          |
+   +------------------------------------------------------------------------+
+
+                                  Description
+
+   The memories command prints out the internal memory usage for full and
+   partial matches of production instantiations, with the productions using
+   the most memory printed first.
+
+   Memory usage is recorded according to the tokens that are allocated in the
+   rete network for the given production(s).
+
+   With no arguments, the memories command prints memory usage for all
+   productions. If a production_name is specified, memory usage will be
+   printed only for that production. If a positive integer n is given, only n
+   productions will be printed: the n productions that use the most memory.
+
+   Output may be restricted to print memory usage for particular types of
+   productions using the command options.
+
+                                    Examples
+
+   To show how to use the command in context, do this:
+
+ command --option arg
+
+   and possibly explain the results.
+
+                                    See Also
+
+           matches
+
+                               Structured Output
+
+On Success
+
+ <result>
+   <arg param="name" type="string">production_name</arg>
+   <arg param="count" type="int">rete_tokens</arg>
+ </result>
+
+Notes
+
+     * Each production listed will have a name/count arg pair.
+
+                                  Error Values
+
+During Parsing
+
+   kUnrecognizedOption, kGetOptError, kTooManyArgs, kIntegerMustBePositive,
+   kNoProdTypeWhenProdName
+
+During Execution
+
+   kAgentRequired, kgSKIError, kInvalidProductionType, kProductionNotFound

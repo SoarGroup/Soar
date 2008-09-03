@@ -1,0 +1,8 @@
+Debug
+*.lo
+Makefile
+Makefile.in
+.deps
+.libs
+libKernelSML.la
+Release

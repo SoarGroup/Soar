@@ -1,0 +1,58 @@
+\documentclass[10pt]{article}
+\usepackage{fullpage, graphicx, url}
+\title{Waitsnc - Soar Wiki}
+\begin{document}
+\section*{Waitsnc}
+\subsubsection*{From Soar Wiki}
+
+
+ This is part of the Soar Command Line Interface. 
+\section*{ Name }
+
+
+ \textbf{waitsnc}
+ -- Generate a wait state rather than a state-no-change impasse. 
+
+
+ Priority: 3 ; Status: Complete
+\section*{ Synopsis }
+\begin{verbatim}
+wait -[e|d]
+
+\end{verbatim}
+\section*{ Options }
+
+
+\begin{tabular}{|p{1in}|p{5in}|}
+\hline 
+ -e, --enable, --on  & Turns a state-no-change into a \emph{wait}
+ state.  \\
+ \hline 
+ -d, --disable, --off  & Default. A state-no-change generates an impasse.  \\
+ \hline 
+
+\end{tabular}
+
+
+
+ \\ 
+
+\section*{ Description }
+
+
+ \textbf{waitsnc}
+ allows the user to switch to a mode where a state-no-change that would normally generate an impasse (and subgoaling), instead generates a \emph{wait}
+ state. When issued with no arguments, \textbf{waitsnc}
+ returns its current setting. 
+\section*{ Structured Output }
+\section*{ Error Values }
+\subsection*{ During Parsing }
+
+
+ kUnrecognizedOption, kGetOptError, kTooManyArgs
+\subsection*{ During Execution }
+
+
+ kAgentRequired
+
+\end{document}

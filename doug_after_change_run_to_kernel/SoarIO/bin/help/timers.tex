@@ -1,0 +1,82 @@
+\documentclass[10pt]{article}
+\usepackage{fullpage, graphicx, url}
+\title{Timers - Soar Wiki}
+\begin{document}
+\section*{Timers}
+\subsubsection*{From Soar Wiki}
+
+
+ This is part of the Soar Command Line Interface. 
+\section*{ Name }
+
+
+ \textbf{timers}
+ - Toggle on or off the internal timers used to profile Soar. 
+
+
+ Status: Complete, EvilBackDoor
+\section*{ Synopsis }
+\begin{verbatim}
+timers [-ed]
+
+\end{verbatim}
+\section*{ Options }
+
+
+\begin{tabular}{|p{1in}|p{5in}|}
+\hline 
+ -d, --disable, --off  & Disable all timers.  \\
+ \hline 
+ -e, --enable, --on  & Enable timers as compiled.  \\
+ \hline 
+
+\end{tabular}
+
+
+
+ \\ 
+
+\section*{ Description }
+
+
+ This command is used to control the timers that collect internal profiling information while Soar is running. With no arguments, this command prints out the current timer status. Timers are ENABLED by default. The default compilation flags for soar enable the basic timers and disable the detailed timers. The timers command can only enable or disable timers that have already been enabled with compiler directives. See the stats command for more info on the Soar timing system. 
+\section*{ Examples }
+
+
+ To show how to use the command in context, do this: \begin{verbatim}
+command --option arg
+
+\end{verbatim}
+
+
+
+ and possibly explain the results. 
+\section*{ See Also }
+\begin{verbatim}
+stats
+
+\end{verbatim}
+\section*{ Structured Output }
+\subsection*{ On Query }
+\begin{verbatim}
+<result>
+  <arg name="timers" type="boolean">setting</arg>
+</result>
+
+\end{verbatim}
+\subsection*{ Otherwise }
+\begin{verbatim}
+<result output="raw">true</result>
+
+\end{verbatim}
+\section*{ Error Values }
+\subsection*{ During Parsing }
+
+
+ kUnrecognizedOption, kGetOptError, kTooManyArgs
+\subsection*{ During Execution }
+
+
+ kAgentRequired, kKernelRequired
+
+\end{document}

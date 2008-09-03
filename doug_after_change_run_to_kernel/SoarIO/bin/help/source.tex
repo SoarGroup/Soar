@@ -1,0 +1,70 @@
+\documentclass[10pt]{article}
+\usepackage{fullpage, graphicx, url}
+\title{Source - Soar Wiki}
+\begin{document}
+\section*{Source}
+\subsubsection*{From Soar Wiki}
+
+
+ This is part of the Soar Command Line Interface. 
+\section*{ Name }
+
+
+ \textbf{source}
+ - Load and evaluate the contents of a file. 
+
+
+ Status: Complete
+\section*{ Synopsis }
+\begin{verbatim}
+source filename
+
+\end{verbatim}
+\section*{ Options }
+
+
+\begin{tabular}{|p{1in}|p{5in}|}
+\hline 
+filename & The file of Soar productions and commands to load.  \\
+ \hline 
+
+\end{tabular}
+
+
+
+ \\ 
+
+\section*{ Description }
+
+
+ Load and evaluate the contents of a file. The \emph{filename}
+ can be a relative path or a fully qualified path. \textbf{source}
+ will generate an implicit push to the new directory, execute the command, and then pop back to the current working directory from which the command was issued. 
+\section*{ See Also }
+\begin{description}
+cd dirs home ls pushd popd \textbf{source}
+ topd
+
+\end{description}
+\section*{ Structured Output }
+\subsection*{ On Success }
+\begin{verbatim}
+ <result output="raw">true</result>
+
+\end{verbatim}
+\subsection*{ Notes }
+\begin{itemize}
+\item  source executes the 'pwd' command if the pushd's and popd's don't match up after parsing the file. Type 'helpex pwd' for details. 
+
+\end{itemize}
+\section*{ Error Values }
+\subsection*{ During Parsing }
+
+
+ kTooFewArgs, kSourceOnlyOneFile
+\subsection*{ During Execution }
+
+
+ kAgentRequired, kOpenFileFail, kUnmatchedBrace, kExtraClosingBrace
+
+\end{document}

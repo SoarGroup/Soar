@@ -1,0 +1,10 @@
+Files in this directory are meant to be placed in a
+top level directory that contains all of the other
+Soar modules.
+
+Soar-8.6.1/
+  SoarKernel/
+  gSKI/
+  SoarIO/
+  soar-library/
+  etc.

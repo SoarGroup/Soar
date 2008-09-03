@@ -1,0 +1,49 @@
+                                   Max-chunks
+
+  From Soar Wiki
+
+   This is part of the Soar Command Line Interface.
+
+                                      Name
+
+   max-chunks - Limit the number of chunks created during a decision cycle.
+
+   Priority: 3 ; Status: Complete
+
+                                    Synopsis
+
+ max-chunks [n]
+
+                                    Options
+
+   +-----------------------------------------------------------+
+   |n|Maximum number of chunks allowed during a decision cycle.|
+   +-----------------------------------------------------------+
+
+                                  Description
+
+   The max-chunks command is used to limit the maximum number of chunks that
+   may be created during a decision cycle. The initial value of this variable
+   is 50; allowable settings are any integer greater than 0.
+
+                               Structured Output
+
+On Query
+
+ <result>
+   <arg name="value" type="int">max_chunks</arg>
+ </result>
+
+Otherwise
+
+ <result output="raw">true</result>
+
+                                  Error Values
+
+During Parsing
+
+   kTooManyArgs, kIntegerMustBePositive
+
+During Execution
+
+   kAgentRequired

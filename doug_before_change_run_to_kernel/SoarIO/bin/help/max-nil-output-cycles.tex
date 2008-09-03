@@ -1,0 +1,81 @@
+\documentclass[10pt]{article}
+\usepackage{fullpage, graphicx, url}
+\title{Max-nil-output-cycles - Soar Wiki}
+\begin{document}
+\section*{Max-nil-output-cycles}
+\subsubsection*{From Soar Wiki}
+
+
+ This is part of the Soar Command Line Interface. 
+\section*{ Name }
+
+
+ \textbf{max-nil-output-cycles}
+ - Limit the maximum number of decision cycles that are executed without producing output when run is invoked with run-til-output args. 
+
+
+ Status: Complete
+\section*{ Synopsis }
+\begin{verbatim}
+max-nil-output-cycles [n]
+
+\end{verbatim}
+\section*{ Options }
+
+
+\begin{tabular}{|p{1in}|p{5in}|}
+\hline 
+\emph{n}
+ & Maximum number of consecutive output cycles allowed without producing output. Must be a positive integer.  \\
+ \hline 
+
+\end{tabular}
+
+
+
+ \\ 
+
+\section*{ Description }
+
+
+ This command sets and prints the maximum number of nil output cycles (output cycles that put nothing on the output link) allowed when running using run-til-output (run --output). If \emph{n}
+ is not given, this command prints the current number of nil-output-cycles allowed. If \emph{n}
+ is given, it must be a positive integer and is used to reset the maximum number of allowed nil output cycles. \\ 
+\\ 
+max-nil-output-cycles controls the maximum number of output cycles that generate no output allowed when a run --out command is issued. After this limit has been reached, Soar stops. The default initial setting of \emph{n}
+ is 15. 
+\section*{ Examples }
+
+
+ The command issued with no arguments, returns the max empty output cycles allowed: \begin{verbatim}
+max-nil-output-cycles 
+
+\end{verbatim}
+
+
+
+ to set the maximum number of empty output cycles in one phase to 25: \begin{verbatim}
+max-nil-output-cycles 25 
+
+\end{verbatim}
+
+
+
+ \\ 
+
+\section*{ See Also }
+
+
+ run
+\section*{ Structured Output }
+\section*{ Error Values }
+\subsection*{ During Parsing }
+
+
+ kTooManyArgs, kIntegerMustBePositive
+\subsection*{ During Execution }
+
+
+ kAgentRequired, kKernelRequired
+
+\end{document}

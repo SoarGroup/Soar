@@ -1,0 +1,143 @@
+   Link: Creative Commons (meta)
+   Link: copyright
+
+                                 O-support-mode
+
+  From Soar Wiki
+
+   This is part of the Soar Command Line Interface.
+
+    Table of contents
+   1 Name
+   2 Synopsis
+   3 Options
+   4 Description
+   5 Structured Output
+
+   5.1 On Query
+   5.2 Otherwise
+
+   6 Error Values
+
+   6.1 During Parsing
+   6.2 During Execution
+
+   [edit]
+
+                                      Name
+
+   o-support-mode - Choose experimental variations of o-support.
+
+   Priority: 3; Status: Complete
+
+   [edit]
+
+                                    Synopsis
+
+ o-support-mode [0|1|2|3|4]
+
+   [edit]
+
+                                    Options
+
+   +------------------------------------------------------------------------+
+   | |Mode 0 is the base mode. O-support is calculated based on the         |
+   | |structure of working memory that is tested and modified. Testing an   |
+   |0|operator or operator acceptable preference results in state or        |
+   | |operator augmentations being o-supported. The support computation is  |
+   | |very complex (see soar manual).                                       |
+   |-+----------------------------------------------------------------------|
+   |1|Not available through gSKI.                                           |
+   |-+----------------------------------------------------------------------|
+   | |Mode 2 is the same as mode 0 except that all support is calculated the|
+   |2|production structure, not from working memory structure. Augmentations|
+   | |of operators are still o-supported.                                   |
+   |-+----------------------------------------------------------------------|
+   | |Mode 3 is the same as mode 2 except that operator elaborations (adding|
+   |3|attributes to operators) now get i-support even though you have to    |
+   | |test the operator to elaborate an operator.                           |
+   |-+----------------------------------------------------------------------|
+   |4|Mode 4 is the default.                                                |
+   +------------------------------------------------------------------------+
+
+   [edit]
+
+                                  Description
+
+   Running o-support-mode with no arguments prints out the current
+   o-support-mode.
+
+   [edit]
+
+                               Structured Output
+
+   [edit]
+
+On Query
+
+ <result>
+   <arg param="value" type="int">mode</arg>
+ </result>
+
+   [edit]
+
+Otherwise
+
+   When setting o-support, if successful, true is returned.
+
+   [edit]
+
+                                  Error Values
+
+   [edit]
+
+During Parsing
+
+   kTooManyArgs, kIntegerOutOfRange
+
+   [edit]
+
+During Execution
+
+   kAgentRequired, kInvalidOSupportMode
+
+   Retrieved from "http://winter.eecs.umich.edu/soarwiki/O-support-mode"
+
+      Views
+
+     * Article
+     * Discussion
+     * Edit
+     * History
+
+      Personal tools
+
+     * Create an account or log in
+
+      Navigation
+
+     * Main Page
+     * Community portal
+     * Current events
+     * Recent changes
+     * Random page
+     * Help
+
+      Search
+
+   _____________________ [ Go ]   [ Search ]
+
+      Toolbox
+
+     * What links here
+     * Related changes
+     * Special pages
+
+   MediaWiki
+   GNU Free Documentation License 1.2
+
+     * This page was last modified 19:57, 23 Feb 2005.
+     * This page has been accessed 21 times.
+     * Content is available under GNU Free Documentation License 1.2.
+     * About Soar Wiki
+     * Disclaimers

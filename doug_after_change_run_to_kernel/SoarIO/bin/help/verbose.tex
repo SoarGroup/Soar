@@ -1,0 +1,65 @@
+\documentclass[10pt]{article}
+\usepackage{fullpage, graphicx, url}
+\title{Verbose - Soar Wiki}
+\begin{document}
+\section*{Verbose}
+\subsubsection*{From Soar Wiki}
+
+
+ This is part of the Soar Command Line Interface. 
+\section*{ Name }
+
+
+ \textbf{verbose}
+ - Control detailed information printed as Soar runs. 
+
+
+ Priority: 3; Status: Complete, EvilBackDoor
+\section*{ Synopsis }
+\begin{verbatim}
+verbose [-ed]
+
+\end{verbatim}
+\section*{ Options }
+
+
+\begin{tabular}{|p{1in}|p{5in}|}
+\hline 
+ -d, --disable, --off  & Turn verbosity off.  \\
+ \hline 
+ -e, --enable, --on  & Turn verbosity on.  \\
+ \hline 
+
+\end{tabular}
+
+
+
+ \\ 
+
+\section*{ Description }
+
+
+ Invoke with no arguments to query. 
+\section*{ Structured Output }
+\subsection*{ On Query }
+\begin{verbatim}
+<result>
+  <arg param="value" type="boolean">true_or_false</arg>
+</result>
+
+\end{verbatim}
+\subsection*{ On success }
+
+
+ Returns true. 
+\section*{ Error Values }
+\subsection*{ During Parsing }
+
+
+ kUnrecognizedOption, kGetOptError, kTooManyArgs
+\subsection*{ During Execution }
+
+
+ kAgentRequired, kKernelRequired
+
+\end{document}

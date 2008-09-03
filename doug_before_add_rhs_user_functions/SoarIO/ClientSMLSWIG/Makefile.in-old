@@ -1,0 +1,99 @@
+TARGET     =
+CC         = @CC@
+CXX        = @CXX@
+#CFLAGS     = @PLATFLAGS@
+prefix     = @prefix@
+exec_prefix= @exec_prefix@
+SRCS       =
+INCLUDES   =
+LIBS       =
+INTERFACE  =
+SWIGOPT    =
+SWIG       = swig@swig_suffix@
+
+LIBPREFIX  =
+
+# X11 options
+
+IWRAP      = $(INTERFACE:.i=_wrap.i)
+ISRCS      = $(IWRAP:.i=.c)
+ICXXSRCS   = $(IWRAP:.i=.cxx)
+IOBJS      = $(IWRAP:.i=.@OBJEXT@)
+
+# Targets
+all: java
+
+clean: java_clean
+
+##################################################################
+# Dynamic loading for C++
+# If you are going to be building dynamic loadable modules in C++,
+# you may need to edit this line appropriately.
+#
+# This line works for g++, but I'm not sure what it might be
+# for other C++ compilers
+##################################################################
+
+CPP_DLLIBS = #-L/usr/local/lib/gcc-lib/sparc-sun-solaris2.5.1/2.7.2 \
+             -L/usr/local/lib -lg++ -lstdc++ -lgcc
+
+# Solaris workshop 5.0 
+# CPP_DLLIBS = -L/opt/SUNWspro/lib -lCrun
+
+# Symbols used for using shared libraries
+SO=		@SO@
+LDSHARED=	@LDSHARED@
+CCSHARED=	@CCSHARED@
+CXXSHARED=      @CXXSHARED@
+
+# This is used for building shared libraries with a number of C++
+# compilers.   If it doesn't work,  comment it out.
+@TRYLINKINGWITHCXX@
+
+OBJS      = $(SRCS:.c=.@OBJEXT@) $(CXXSRCS:.cxx=.@OBJEXT@)
+
+
+##################################################################
+#####                       JAVA                            ######
+##################################################################
+
+# You need to set this variable to the java directories containing the
+# files "jni.h" and "md.h"
+# usually something like /usr/java/include and /usr/java/include/<arch-osname>.
+JAVA_INCLUDE= @JAVAINC@
+
+# Extra Java specific dynamic linking options
+JAVA_DLNK  = @JAVADYNAMICLINKING@
+JAVA_LIBPREFIX = @JAVALIBRARYPREFIX@
+JAVASO =@JAVASO@
+JAVALDSHARED = @JAVALDSHARED@
+JAVACXXSHARED = @JAVACXXSHARED@
+JAVACFLAGS = @JAVACFLAGS@
+
+# For ClientSMLSWIG/Java
+JAVA_SUBDIR = Java/
+CXXSRCS    = Java_sml_ClientInterface.cxx
+TARGET     = Java_sml_ClientInterface
+INTERFACE  = Java_sml_ClientInterface.i
+INCLUDES   = -I../ClientSML/include -I../ElementXML/include -I../ConnectionSML/include 
+SWIGOPT    = -Wall -package sml
+## end ClientSMLSWIG/Java
+
+java: java_cpp
+
+# ----------------------------------------------------------------
+# Build a java dynamically loadable module (C++)
+# ----------------------------------------------------------------
+
+java_cpp: $(SRCS)
+	$(SWIG) -java -c++ $(SWIGOPT) $(JAVA_SUBDIR)$(INTERFACE)
+	$(CXX) -c $(CCSHARED) $(CFLAGS) $(JAVACFLAGS) $(SRCS) $(JAVA_SUBDIR)$(ICXXSRCS) $(INCLUDES) $(JAVA_INCLUDE) -o $(JAVA_SUBDIR)$(IOBJS)
+	$(JAVACXXSHARED) $(JAVA_SUBDIR)$(IOBJS) $(JAVA_DLNK) $(LIBS) $(CPP_DLLIBS) -o $(JAVA_SUBDIR)$(JAVA_LIBPREFIX)$(TARGET)$(JAVASO)
+	$(JAVAC) $(JAVA_SUBDIR)*.java
+
+# -----------------------------------------------------------------
+# Cleaning the java examples
+# -----------------------------------------------------------------
+
+java_clean:
+	rm -f *.@OBJEXT@ *@JAVASO@ *_wrap* *~ .~* core @EXTRA_CLEAN@ *.class `find . -name \*.java | grep -v main.java`

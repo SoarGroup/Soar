@@ -1,0 +1,21 @@
+cd
+help
+helpex ls
+home
+init-soar
+learn
+log
+ls
+pushd demos/towers-of-hanoi
+source towers-of-hanoi.soar
+multi-attributes
+excise towers-of-hanoi*monitor*operator-execution*move-disk
+popd
+watch 0
+run 2048
+print
+excise -a
+pwd
+timers
+warnings
+quit

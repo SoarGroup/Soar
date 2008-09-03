@@ -1,0 +1,8 @@
+TestClientSML
+Debug
+.deps
+.libs
+Makefile
+Makefile.in
+Release
+*.o

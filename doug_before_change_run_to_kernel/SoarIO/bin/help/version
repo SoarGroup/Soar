@@ -1,0 +1,45 @@
+                                    Version
+
+  From Soar Wiki
+
+   This is part of the Soar Command Line Interface.
+
+                                      Name
+
+   version -- Returns the version number of the Soar kernel.
+
+   Status: Complete
+
+                                    Synopsis
+
+  version
+
+                                    Options
+
+   No options
+
+                                  Description
+
+   This command gives version information about the current Soar kernel. It
+   returns the version number itself, which can then be stored by the agent
+   or the application.
+
+                               Structured Output
+
+On Success
+
+ <result>
+   <arg name="versionmajor" type="int">major</arg>
+   <arg name="versionminor" type="int">minor</arg>
+   <arg name="versionmicro" type="int">micro</arg>
+ </result>
+
+                                  Error Values
+
+During Parsing
+
+   No errors, arguments ignored.
+
+During Execution
+
+   No errors.

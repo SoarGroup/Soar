@@ -1,0 +1,7 @@
+Debug
+.deps
+.libs
+Makefile
+Makefile.in
+Makefile.am
+Release

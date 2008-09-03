@@ -1,0 +1,8 @@
+Debug
+Makefile
+Makefile.in
+.deps
+.libs
+*.lo
+libElementXML.la
+Release

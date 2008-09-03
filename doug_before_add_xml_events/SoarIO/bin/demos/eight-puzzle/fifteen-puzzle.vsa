@@ -1,0 +1,18 @@
+VERSION 4
+\fifteen-puzzle\fifteen-puzzle.dm
+0	ROOT fifteen-puzzle fifteen-puzzle 1
+1	0	FOPERATOR _firstload _firstload.soar 2
+2	0	FOLDER all all 3
+3	0	FOLDER elaborations elaborations 4
+4	3	FOPERATOR goal-test goal-test.soar 5
+5	3	FOPERATOR monitor monitor.soar 6
+6	3	FOPERATOR search-control search-control.soar 7
+7	3	FOPERATOR top-state top-state.soar 8
+8	0	FOPERATOR _readme _readme.soar 9
+9	0	HLIOPERATOR Impasse__Operator_Tie Impasse__Operator_Tie.soar Impasse__Operator_Tie 8 10
+10	9	HLOPERATOR evaluate-operator evaluate-operator.soar evaluate-operator 13 11
+11	10	FOPERATOR elaborations elaborations.soar 12
+12	10	OPERATOR move-tile move-tile.soar 13
+13	0	OPERATOR initialize-fifteen-puzzle initialize-fifteen-puzzle.soar 14
+14	0	OPERATOR move-tile move-tile.soar 15
+END

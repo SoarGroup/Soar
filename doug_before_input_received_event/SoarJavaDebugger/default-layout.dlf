@@ -1,0 +1,94 @@
+<?xml version="1.0"?>
+<Debugger Version="1.0">
+  <sash weight0="482" Class="class org.eclipse.swt.custom.SashForm" weight1="517" weights="2" style="256">
+    <sash weight0="1000" Class="class org.eclipse.swt.custom.SashForm" weights="1" style="512">
+      <composite Class="class org.eclipse.swt.widgets.Composite" style="0" attach="Bottom">
+        <pane view="trace" tabAtTop="false" singleView="true" horiz="true">
+          <view filter="0" UpdateEveryNthDecision="0" ComboAtTop="false" ClearComboEachCommand="true" Class="modules.FoldingTextView" filtering="true" auto-expand="false" ShowTraceOutput="false" indent="3" Name="trace" ClearEachCommand="false" UpdateOnStop="false">
+            <History Item2="run 10 --noupdate" Item0="&lt;Type commands here&gt;" Item7="time run 100" Item5="run 3" Size="9" Class="helpers.CommandHistory" Item1="run 10 --self --noupdate" Item4="run --self" Item8="init-soar" Item3="run 10 --update" Item6="run 20"></History>
+          </view>
+        </pane>
+        <pane view="buttons3" tabAtTop="false" singleView="true" horiz="true">
+          <view ButtonCount="18" Class="modules.ButtonView" Name="buttons3">
+            <Button Command="step" Name="Step"></Button>
+            <Button Command="run" Name="Run"></Button>
+            <Button InternalCommand="" Command="run 1 --phase" Name="Run 1 -p"></Button>
+            <Button Command="stop-soar" Name="Stop"></Button>
+            <Button Command="matches" Name="Matches"></Button>
+            <Button Command="print &lt;s&gt;" Name="Print &lt;s&gt;"></Button>
+            <Button Command="print &lt;ts&gt;" Name="Print &lt;ts&gt;"></Button>
+            <Button Command="clear" Name="Clear"></Button>
+            <Button InternalCommand="" Command="watch 1" Name="Watch 1"></Button>
+            <Button InternalCommand="" Command="watch 3" Name="Watch 3"></Button>
+            <Button InternalCommand="" Command="watch 5" Name="Watch 5"></Button>
+            <Button InternalCommand="" Command="init-soar" Name="Init-soar"></Button>
+            <Button InternalCommand="loadsource" Command="" Name="Source"></Button>
+            <Button InternalCommand="askcd" Command="" Name="cd"></Button>
+            <Button InternalCommand="" Command="excise --all" Name="Excise all"></Button>
+            <Button InternalCommand="demo towers-of-hanoi towers-of-hanoi.soar" Command="" Name="Towers of Hanoi"></Button>
+            <Button InternalCommand="demo water-jug water-jug-look-ahead.soar" Command="" Name="Water Jug Look-Ahead"></Button>
+            <Button InternalCommand="remote" Command="" Name="Remote"></Button>
+          </view>
+        </pane>
+      </composite>
+    </sash>
+    <sash weight0="300" Class="class org.eclipse.swt.custom.SashForm" weight1="699" weights="2" style="512">
+      <pane view="state" tabAtTop="false" singleView="false" horiz="true">
+        <view UpdateEveryNthDecision="0" ComboAtTop="true" ClearComboEachCommand="false" Class="modules.UpdateCommandView" ShowTraceOutput="false" Name="state" ClearEachCommand="true" UpdateOnStop="true">
+          <History Item0="print &lt;s&gt;" Size="1" Class="helpers.CommandHistory"></History>
+        </view>
+        <view UpdateEveryNthDecision="0" ComboAtTop="true" ClearComboEachCommand="false" Class="modules.UpdateCommandView" ShowTraceOutput="false" Name="operator" ClearEachCommand="true" UpdateOnStop="true">
+          <History Item0="print &lt;o&gt;" Size="1" Class="helpers.CommandHistory"></History>
+        </view>
+        <view UpdateEveryNthDecision="0" ComboAtTop="true" ClearComboEachCommand="false" Class="modules.UpdateCommandView" ShowTraceOutput="false" Name="stack" ClearEachCommand="true" UpdateOnStop="true">
+          <History Item0="print --stack" Size="1" Class="helpers.CommandHistory"></History>
+        </view>
+        <view UpdateEveryNthDecision="0" ComboAtTop="true" ClearComboEachCommand="false" Class="modules.UpdateCommandView" ShowTraceOutput="false" Name="matches" ClearEachCommand="true" UpdateOnStop="true">
+          <History Item0="matches" Size="1" Class="helpers.CommandHistory"></History>
+        </view>
+        <view UpdateEveryNthDecision="0" ComboAtTop="true" ClearComboEachCommand="false" Class="modules.UpdateCommandView" ShowTraceOutput="false" Name="op_pref" ClearEachCommand="true" UpdateOnStop="true">
+          <History Item0="preferences &lt;s&gt; operator --names" Size="1" Class="helpers.CommandHistory"></History>
+        </view>
+        <view UpdateEveryNthDecision="0" ComboAtTop="true" ClearComboEachCommand="false" Class="modules.UpdateCommandView" ShowTraceOutput="false" Name="stats" ClearEachCommand="true" UpdateOnStop="true">
+          <History Item0="stats" Size="1" Class="helpers.CommandHistory"></History>
+        </view>
+        <view UpdateEveryNthDecision="0" ComboAtTop="true" ClearComboEachCommand="false" Class="modules.UpdateCommandView" ShowTraceOutput="false" Name="input" ClearEachCommand="true" UpdateOnStop="true">
+          <History Item0="print --depth 2 i2" Size="2" Class="helpers.CommandHistory" Item1="print -depth 2 i2"></History>
+        </view>
+        <view UpdateEveryNthDecision="0" ComboAtTop="true" ClearComboEachCommand="false" Class="modules.UpdateCommandView" ShowTraceOutput="false" Name="output" ClearEachCommand="true" UpdateOnStop="true">
+          <History Item0="print --depth 2 i3" Size="1" Class="helpers.CommandHistory"></History>
+        </view>
+      </pane>
+      <sash weight0="392" Class="class org.eclipse.swt.custom.SashForm" weight1="607" weights="2" style="512">
+        <pane view="update" tabAtTop="true" singleView="true" horiz="true">
+          <view UpdateEveryNthDecision="0" ComboAtTop="true" ClearComboEachCommand="false" Class="modules.UpdateCommandView" ShowTraceOutput="false" Name="update" ClearEachCommand="true" UpdateOnStop="true">
+            <History Item0="p --stack" Size="2" Class="helpers.CommandHistory" Item1="p &lt;s&gt;"></History>
+          </view>
+        </pane>
+        <composite Class="class org.eclipse.swt.widgets.Composite" style="0" attach="Top">
+          <pane view="scratch_pad" tabAtTop="false" singleView="false" horiz="true">
+            <view UpdateEveryNthDecision="0" ComboAtTop="true" ClearComboEachCommand="true" Class="modules.KeepCommandView" ShowTraceOutput="false" Name="scratch_pad" ClearEachCommand="false" UpdateOnStop="false">
+              <History Size="0" Class="helpers.CommandHistory"></History>
+            </view>
+            <view ComboAtTop="true" Class="modules.EditorView" Name="edit_production">
+              <History Item0="enter*production*name*here" Size="2" Class="helpers.CommandHistory" Item1="apply*move-disk*remove*last-disk1-peg"></History>
+            </view>
+          </pane>
+          <composite Class="class org.eclipse.swt.widgets.Composite" style="0" attach="Left">
+            <pane view="buttons2" tabAtTop="false" singleView="true" horiz="true">
+              <view ButtonCount="4" Class="modules.ButtonView" Name="buttons2" LinkedView="scratch_pad">
+                <Button Command="matches" Name="Matches"></Button>
+                <Button Command="print &lt;s&gt;" Name="Print state"></Button>
+                <Button Command="print &lt;o&gt;" Name="Print op"></Button>
+                <Button Command="print --stack" Name="Print stack"></Button>
+              </view>
+            </pane>
+            <pane view="phaseview1" tabAtTop="false" singleView="true" horiz="false">
+              <view Class="modules.PhaseView" Name="phaseview1"></view>
+            </pane>
+          </composite>
+        </composite>
+      </sash>
+    </sash>
+  </sash>
+</Debugger>

@@ -1,0 +1,17 @@
+configure.scan
+gski_unreleased.txt
+SML.ncb
+SML.suo
+Makefile
+Makefile.in
+aclocal.m4
+autom4te.cache
+autoscan-2.59.log
+config.h
+config.h.in
+config.log
+config.status
+configure
+libtool
+stamp-h1
+ltmain.sh

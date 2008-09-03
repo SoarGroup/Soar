@@ -1,0 +1,93 @@
+\documentclass[10pt]{article}
+\usepackage{fullpage, graphicx, url}
+\title{Max-elaborations - Soar Wiki}
+\begin{document}
+\section*{Max-elaborations}
+\subsubsection*{From Soar Wiki}
+
+
+ This is part of the Soar Command Line Interface. 
+\section*{ Name }
+
+
+ \textbf{max-elaborations}
+ - Limit the maximum number of elaboration cycles in a given phase. Print a warning message if the limit is reached during a run. 
+
+
+ Status: Complete
+\section*{ Synopsis }
+\begin{verbatim}
+max-elaborations [n]
+
+\end{verbatim}
+\section*{ Options }
+
+
+\begin{tabular}{|p{1in}|p{5in}|}
+\hline 
+\emph{n}
+ & Maximum allowed elaboration cycles, must be a positive integer.  \\
+ \hline 
+
+\end{tabular}
+
+
+
+ \\ 
+
+\section*{ Description }
+
+
+ This command sets and prints the maximum number of elaboration cycles allowed. If \emph{n}
+ is given, it must be a positive integer and is used to reset the number of allowed elaboration cycles. The default value is 100. max-elaborations with no arguments prints the current value. 
+
+
+ max-elaborations controls the maximum number of elaborations allowed in a single decision cycle. The elaboration phase will end after \emph{max-elaboration}
+ cycles have completed, even if there are more productions eligible to fire or retract; and Soar will proceed to the next phase after a warning message is printed to notify the user. 
+
+
+ In Soar8, max-elaborations is checked during both the Propose Phase and the Apply Phase. If Soar8 runs more than the max-elaborations limit in either of these phases, Soar8 proceeds to the next phase (either Decision or Output) even if quiescence has not been reached. 
+\section*{ Examples }
+
+
+ The command issued with no arguments, returns the max elaborations allowed: \begin{verbatim}
+max-elaborations 
+
+\end{verbatim}
+
+
+
+ to set the maximum number of elaborations in one phase to 50: \begin{verbatim}
+max-elaborations 50
+
+\end{verbatim}
+
+\section*{ See Also }
+
+
+ Use the Ab button above the editing window to make local links to other commands. \\ 
+
+\section*{ Structured Output }
+\subsection*{ On Query }
+\begin{verbatim}
+<result>
+  <arg name="value" type="int">max_elaborations</arg>
+</result>
+
+\end{verbatim}
+\subsection*{ Otherwise }
+\begin{verbatim}
+<result output="raw">true</result>
+
+\end{verbatim}
+\section*{ Error Values }
+\subsection*{ During Parsing }
+
+
+ kTooManyArgs, kIntegerMustBePositive
+\subsection*{ During Execution }
+
+
+ kAgentRequired
+
+\end{document}

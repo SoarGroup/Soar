@@ -1,0 +1,2 @@
+pushd "c:\program files\soar\soar-suite-8.5.2\soar-8.5.2\demos\water-jug"
+source water-jug-look-ahead.soar

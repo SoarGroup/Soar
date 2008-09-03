@@ -1,0 +1,80 @@
+\documentclass[10pt]{article}
+\usepackage{fullpage, graphicx, url}
+\title{Rete-net - Soar Wiki}
+\begin{document}
+\section*{Rete-net}
+\subsubsection*{From Soar Wiki}
+
+
+ This is part of the Soar Command Line Interface. 
+\section*{ Name }
+
+
+ \textbf{rete-net}
+ - Save the current Rete net, or restore a previous one. 
+
+
+ Status: Complete
+\section*{ Synopsis }
+\begin{verbatim}
+rete-net -s|l filename
+ 
+
+\end{verbatim}
+\section*{ Options }
+
+
+\begin{tabular}{|p{1in}|p{5in}|}
+\hline 
+ -s, --save  & Save the Rete net in the named file. Cannot be saved when there are justifications present. Use excise -j \\
+ \hline 
+ -l, -r, --load, --restore  & Load the named file into the Rete network. working memory and production memory must both be empty. Use excise -a \\
+ \hline 
+filename & The name of the file to save or load.  \\
+ \hline 
+
+\end{tabular}
+
+
+
+ \\ 
+
+\section*{ Description }
+
+
+ The rete-net command saves the current Rete net to a file or restores a Rete net previously saved. The Rete net is Soar's internal representation of production and working memory; the conditions of productions are reordered and common substructures are shared across different productions. This command provides a fast method of saving and loading productions since a special format is used and no parsing is necessary. Rete-net files are portable across platforms that support Soar. 
+
+
+  Normally users wish to save only production memory. Note that \emph{justifications}
+ cannot be present when saving the Rete net. Issuing an init-soar before saving a Rete net will remove all justifications and working memory elements. \\ 
+ If the filename contains a suffix of ``.Z'', then the file is compressed automatically when it is saved and uncompressed when it is loaded. Compressed files may not be portable to another platform if that platform does not support the same uncompress utility. 
+\section*{ Examples }
+
+
+ To show how to use the command in context, do this: \begin{verbatim}
+command --option arg
+
+\end{verbatim}
+
+
+
+ and possibly explain the results. 
+\section*{ See Also }
+\begin{verbatim}
+excise init-soar 
+
+\end{verbatim}
+\section*{ Structured Output }
+\subsection*{ On Success }
+\begin{verbatim}
+<result output="raw">true</result>
+
+\end{verbatim}
+\section*{ Error Values }
+\subsection*{ During Parsing }
+
+
+ kMissingOptionArg, kUnrecognizedOption, kGetOptError, kTooFewArgs, kTooManyArgs
+\subsection*{ During Execution }
+kAgentRequired, kCantSaveReteWithJustifications, kCantLoadReteWithProductions, kReteSaveOperationFail, kReteLoadOperationFail
+\end{document}

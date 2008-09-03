@@ -1,0 +1,26 @@
+### Detect Goal Achievement
+###
+
+sp {blocks-world*elaborate*state*success
+   (state <s> ^desired <ds>
+              ^ontop <ontopa1>
+                { <> <ontopa1> <ontopa2> }
+                { <> <ontopa1> <> <ontopa2> <ontopa3> })
+   (<ontopa1> ^top-block <blockA>
+              ^bottom-block <blockB>)
+   (<ontopa2> ^top-block <blockB>
+              ^bottom-block <blockC>)
+   (<ontopa3> ^top-block <blockC>
+              ^bottom-block <table>)
+   (<ds> ^ontop <ontop1>
+                { <> <ontop1> <ontop2> }
+                { <> <ontop1> <> <ontop2> <ontop3> })
+   (<ontop1> ^top-block <blockA>
+             ^bottom-block <blockB>)
+   (<ontop2> ^top-block <blockB>
+             ^bottom-block <blockC>)
+   (<ontop3> ^top-block <blockC>
+             ^bottom-block <table>)
+-->
+   (write (crlf) |Finished Stacking the Blocks.|)
+   (halt)}

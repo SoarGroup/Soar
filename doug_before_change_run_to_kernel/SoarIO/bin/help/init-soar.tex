@@ -1,0 +1,64 @@
+\documentclass[10pt]{article}
+\usepackage{fullpage, graphicx, url}
+\title{Init-soar - Soar Wiki}
+\begin{document}
+\section*{Init-soar}
+\subsubsection*{From Soar Wiki}
+
+
+ This is part of the Soar Command Line Interface. 
+\section*{ Name }
+
+
+ \textbf{init-soar}
+ - empties working memory and resets run-time statistics. 
+
+
+ Status: Complete
+\section*{ Synopsis }
+\begin{verbatim}
+init-soar
+
+\end{verbatim}
+\section*{ Options }
+
+
+ No options. 
+\section*{ Description }
+
+
+ The init-soar command initializes Soar. It removes all elements from working memory, wiping out the goal stack, and resets all runtime statistics. The firing counts for all productions is reset to zero. The init-soar command allows a Soar program that has been halted to be reset and start its execution from the beginning. 
+
+
+ init-soar does not remove any productions from production memory; to do this, use the excise command. Note however, that all justifications will be removed because they will no longer be supported. 
+
+
+ \\ 
+
+\section*{ Examples }
+\section*{ See Also }
+\begin{description}
+excise
+
+\end{description}
+
+
+ \\ 
+
+\section*{ Structured Output }
+\subsection*{ On Success }
+\begin{verbatim}
+<result output="raw">true</result>
+
+\end{verbatim}
+\section*{ Error Values }
+\subsection*{ During Parsing }
+
+
+ No errors, all arguments ignored. 
+\subsection*{ During Execution }
+
+
+ kAgentRequired
+
+\end{document}

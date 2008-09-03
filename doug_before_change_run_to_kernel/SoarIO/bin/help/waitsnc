@@ -1,0 +1,42 @@
+                                    Waitsnc
+
+  From Soar Wiki
+
+   This is part of the Soar Command Line Interface.
+
+                                      Name
+
+   waitsnc -- Generate a wait state rather than a state-no-change impasse.
+
+   Priority: 3 ; Status: Complete
+
+                                    Synopsis
+
+ wait -[e|d]
+
+                                    Options
+
+   +---------------------------------------------------------------------+
+   |-e, --enable, --on  |Turns a state-no-change into a wait state.      |
+   |--------------------+------------------------------------------------|
+   |-d, --disable, --off|Default. A state-no-change generates an impasse.|
+   +---------------------------------------------------------------------+
+
+                                  Description
+
+   waitsnc allows the user to switch to a mode where a state-no-change that
+   would normally generate an impasse (and subgoaling), instead generates a
+   wait state. When issued with no arguments, waitsnc returns its current
+   setting.
+
+                               Structured Output
+
+                                  Error Values
+
+During Parsing
+
+   kUnrecognizedOption, kGetOptError, kTooManyArgs
+
+During Execution
+
+   kAgentRequired

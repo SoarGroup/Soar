@@ -1,0 +1,160 @@
+   Link: Creative Commons (meta)
+   Link: copyright
+
+                                    Rete-net
+
+  From Soar Wiki
+
+   This is part of the Soar Command Line Interface.
+
+    Table of contents
+   1 Name
+   2 Synopsis
+   3 Options
+   4 Description
+   5 Examples
+   6 See Also
+   7 Structured Output
+
+   7.1 On Success
+
+   8 Error Values
+
+   8.1 During Parsing
+   8.2 During Execution
+
+   [edit]
+
+                                      Name
+
+   rete-net - Save the current Rete net, or restore a previous one.
+
+   Status: Complete
+
+   [edit]
+
+                                    Synopsis
+
+ rete-net -s|l filename
+
+
+   [edit]
+
+                                    Options
+
+   +------------------------------------------------------------------------+
+   |                         |Save the Rete net in the named file. Cannot be|
+   |-s, --save               |saved when there are justifications present.  |
+   |                         |Use excise -j                                 |
+   |-------------------------+----------------------------------------------|
+   |                         |Load the named file into the Rete network.    |
+   |-l, -r, --load, --restore|working memory and production memory must both|
+   |                         |be empty. Use excise -a                       |
+   |-------------------------+----------------------------------------------|
+   |filename                 |The name of the file to save or load.         |
+   +------------------------------------------------------------------------+
+
+   [edit]
+
+                                  Description
+
+   The rete-net command saves the current Rete net to a file or restores a
+   Rete net previously saved. The Rete net is Soar's internal representation
+   of production and working memory; the conditions of productions are
+   reordered and common substructures are shared across different
+   productions. This command provides a fast method of saving and loading
+   productions since a special format is used and no parsing is necessary.
+   Rete-net files are portable across platforms that support Soar.
+
+   Normally users wish to save only production memory. Note that
+   justifications cannot be present when saving the Rete net. Issuing an
+   init-soar before saving a Rete net will remove all justifications and
+   working memory elements.
+   If the filename contains a suffix of ".Z", then the file is compressed
+   automatically when it is saved and uncompressed when it is loaded.
+   Compressed files may not be portable to another platform if that platform
+   does not support the same uncompress utility.
+   [edit]
+
+                                    Examples
+
+   To show how to use the command in context, do this:
+
+ command --option arg
+
+   and possibly explain the results.
+
+   [edit]
+
+                                    See Also
+
+ excise init-soar
+
+   [edit]
+
+                               Structured Output
+
+   [edit]
+
+On Success
+
+ <result output="raw">true</result>
+
+   [edit]
+
+                                  Error Values
+
+   [edit]
+
+During Parsing
+
+   kMissingOptionArg, kUnrecognizedOption, kGetOptError, kTooFewArgs,
+   kTooManyArgs
+
+   [edit]
+
+During Execution
+
+   kAgentRequired, kCantSaveReteWithJustifications,
+   kCantLoadReteWithProductions, kReteSaveOperationFail,
+   kReteLoadOperationFail
+   Retrieved from "http://winter.eecs.umich.edu/soarwiki/Rete-net"
+
+      Views
+
+     * Article
+     * Discussion
+     * Edit
+     * History
+
+      Personal tools
+
+     * Create an account or log in
+
+      Navigation
+
+     * Main Page
+     * Community portal
+     * Current events
+     * Recent changes
+     * Random page
+     * Help
+
+      Search
+
+   _____________________ [ Go ]   [ Search ]
+
+      Toolbox
+
+     * What links here
+     * Related changes
+     * Special pages
+
+   MediaWiki
+   GNU Free Documentation License 1.2
+
+     * This page was last modified 19:11, 17 Feb 2005.
+     * This page has been accessed 19 times.
+     * Content is available under GNU Free Documentation License 1.2.
+     * About Soar Wiki
+     * Disclaimers

@@ -1,0 +1,2 @@
+#!/bin/sh
+make && cd SoarIO/examples/TestJavaSML && echo "TestJavaSML..." && ./buildJava.sh && cd ../../../SoarJavaDebugger && echo "SoarJavaDebugger..." && ./buildDebugger.sh && cd ../JavaMissionaries && echo "JavaMissionaries..." && ./buildmac.sh && cd ../JavaTOH && echo "JavaTOH..." && ./buildtoh.sh && cd ../visualsoar && echo "VisualSoar..." && chmod 755 ./buildVisualSoar.sh && ./buildVisualSoar.sh

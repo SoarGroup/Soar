@@ -1,0 +1,36 @@
+sp {propose*move
+	(state <s> ^io.input-link <il>)
+	(<il> ^square <sp>)
+	(<sp> ^content EMPTY)
+-->
+	(<s> ^operator <o> + =)
+	(<o> ^name move	^space <sp>)}
+
+sp {apply*move
+	(state <s> ^operator <o> ^io.output-link <ol>)
+	(<o> ^name move ^space <sp>)
+	(<sp> ^row <row> ^col <col>)
+-->
+	(<ol> ^move <m> ^alternative <m>)
+	(<m> ^row <row> ^col <col>)}
+
+sp {apply*user*exec
+	(state <s> ^operator <o> ^io.output-link <ol>)
+	(<o> ^name move ^space <sp>)
+	(<sp> ^row <row> ^col <col>)
+-->
+	(<ol> ^test (exec test-rhs | hello | <row> | "ABC DEF" world |))}
+
+sp {apply*user*cmd
+	(state <s> ^operator <o> ^io.output-link <ol>)
+	(<o> ^name move ^space <sp>)
+	(<sp> ^row <row> ^col <col>)
+-->
+	(cmd print <s>)}
+
+sp {remove*complete*commands
+	(state <s> ^operator <o> ^io.output-link <ol>)
+    	(<ol> ^<attr> <val>)
+	(<val> ^status complete)
+-->	
+	(<ol> ^<attr> <val> -)}

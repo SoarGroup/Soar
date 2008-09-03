@@ -1,0 +1,69 @@
+\documentclass[10pt]{article}
+\usepackage{fullpage, graphicx, url}
+\title{Chunk-name-format - Soar Wiki}
+\begin{document}
+\section*{Chunk-name-format}
+\subsubsection*{From Soar Wiki}
+
+
+ This is part of the Soar Command Line Interface. 
+\section*{ Name }
+
+
+ \textbf{chunk-name-format}
+ - Specify format of the name to use for new chunks. 
+
+
+ Priority: 4; Status: Complete, EvilBackDoor
+\section*{ Synopsis }
+\begin{verbatim}
+chunk-name-format [-sl] -p [<prefix>]
+chunk-name-format [-sl] -c [<count>]
+
+\end{verbatim}
+\section*{ Options }
+
+
+\begin{tabular}{|p{1in}|p{5in}|}
+\hline 
+ -c, --count  & \\
+ \hline 
+ count  & \\
+ \hline 
+ -l, --long  & \\
+ \hline 
+ -p, --prefix  & \\
+ \hline 
+ prefix  & \\
+ \hline 
+ -s, --short  & \\
+ \hline 
+
+\end{tabular}
+
+
+
+ \\ 
+
+\section*{ Description }
+\section*{ Structured Output }
+\subsection*{ On Query }
+\begin{itemize}
+\item  kParamChunkLongFormat, kTypeBoolean, true if using long format, false for short format. 
+\item  kParamChunkCount, kTypeInt, integer representing current chunk count. 
+\item  kParamChunkNamePrefix, kTypeString, the current chunk prefix. 
+
+\end{itemize}
+\subsection*{ On Success }
+\subsection*{ Notes }
+\section*{ Error Values }
+\subsection*{ During Parsing }
+
+
+ kIntegerExpected, kIntegerMustBeNonNegative, kMissingOptionArg, kUnrecognizedOption, kGetOptError, kTooManyArgs
+\subsection*{ During Execution }
+
+
+ kCountGreaterThanMaxChunks, kCountLessThanChunks, kInvalidPrefix
+
+\end{document}

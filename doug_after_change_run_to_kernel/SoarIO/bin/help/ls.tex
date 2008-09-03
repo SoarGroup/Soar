@@ -1,0 +1,57 @@
+\documentclass[10pt]{article}
+\usepackage{fullpage, graphicx, url}
+\title{Ls - Soar Wiki}
+\begin{document}
+\section*{Ls}
+\subsubsection*{From Soar Wiki}
+
+
+ This is part of the Soar Command Line Interface. 
+\section*{ Name }
+
+
+ \textbf{ls}
+ - List the contents of the current working directory. 
+
+
+ Status: Complete\\ 
+I'm saying complete here but the ls command does not support search refinement, etc. (e.g. ls *.cpp)--Jonathan 16:01, 3 Feb 2005 (EST) 
+\section*{ Synopsis }
+\begin{verbatim}
+ls
+
+\end{verbatim}
+\section*{ Options }
+
+
+ No options. 
+\section*{ Description }
+
+
+ List the contents of the working directory. 
+\section*{ See Also }
+\begin{description}
+cd dirs home \textbf{ls}
+ pushd popd source topd
+
+\end{description}
+\section*{ Structured Output }
+\subsection*{ Files or Directories Found }
+\begin{verbatim}
+<result>
+  <arg name="filename" type="string">filename</arg>
+  <arg name="directory" type="string">directory</arg>
+</result>
+
+\end{verbatim}
+\section*{ Error Values }
+\subsection*{ During Parsing }
+
+
+ kTooManyArgs
+\subsection*{ During Execution }
+
+
+ kDirectoryOpenFailure, kDirectoryEntryReadFailure
+
+\end{document}

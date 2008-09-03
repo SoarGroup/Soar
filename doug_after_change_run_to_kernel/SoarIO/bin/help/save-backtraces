@@ -1,0 +1,47 @@
+                                Save-backtraces
+
+  From Soar Wiki
+
+   This is part of the Soar Command Line Interface.
+
+                                      Name
+
+   save-backtraces - Save trace information to explain chunks and
+   justifications.
+
+   Priority: 3; Status: Complete, EvilBackDoor
+
+                                    Synopsis
+
+ save-backtraces [-ed]
+
+                                    Options
+
+   +-----------------------------------------------+
+   |-e, --enable, --on  |Turn explain sysparam on. |
+   |--------------------+--------------------------|
+   |-d, --disable, --off|Turn explain sysparam off.|
+   +-----------------------------------------------+
+
+                                  Description
+
+                               Structured Output
+
+On Query
+
+   Value parameter is returned of type boolean, true if sysparam is on, false
+   if off.
+
+Otherwise
+
+   True on success.
+
+                                  Error Values
+
+During Parsing
+
+   kUnrecognizedOption, kGetOptError, kTooManyArgs
+
+During Execution
+
+   No errors.

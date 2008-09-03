@@ -1,0 +1,163 @@
+   Link: Creative Commons (meta)
+   Link: copyright
+
+                                Max-elaborations
+
+  From Soar Wiki
+
+   This is part of the Soar Command Line Interface.
+
+    Table of contents
+   1 Name
+   2 Synopsis
+   3 Options
+   4 Description
+   5 Examples
+   6 See Also
+   7 Structured Output
+
+   7.1 On Query
+   7.2 Otherwise
+
+   8 Error Values
+
+   8.1 During Parsing
+   8.2 During Execution
+
+   [edit]
+
+                                      Name
+
+   max-elaborations - Limit the maximum number of elaboration cycles in a
+   given phase. Print a warning message if the limit is reached during a run.
+
+   Status: Complete
+
+   [edit]
+
+                                    Synopsis
+
+ max-elaborations [n]
+
+   [edit]
+
+                                    Options
+
+   +-----------------------------------------------------------------+
+   |n|Maximum allowed elaboration cycles, must be a positive integer.|
+   +-----------------------------------------------------------------+
+
+   [edit]
+
+                                  Description
+
+   This command sets and prints the maximum number of elaboration cycles
+   allowed. If n is given, it must be a positive integer and is used to reset
+   the number of allowed elaboration cycles. The default value is 100.
+   max-elaborations with no arguments prints the current value.
+
+   max-elaborations controls the maximum number of elaborations allowed in a
+   single decision cycle. The elaboration phase will end after
+   max-elaboration cycles have completed, even if there are more productions
+   eligible to fire or retract; and Soar will proceed to the next phase after
+   a warning message is printed to notify the user.
+
+   In Soar8, max-elaborations is checked during both the Propose Phase and
+   the Apply Phase. If Soar8 runs more than the max-elaborations limit in
+   either of these phases, Soar8 proceeds to the next phase (either Decision
+   or Output) even if quiescence has not been reached.
+
+   [edit]
+
+                                    Examples
+
+   The command issued with no arguments, returns the max elaborations
+   allowed:
+
+ max-elaborations
+
+   to set the maximum number of elaborations in one phase to 50:
+
+ max-elaborations 50
+
+   [edit]
+
+                                    See Also
+
+   Use the Ab button above the editing window to make local links to other
+   commands.
+
+   [edit]
+
+                               Structured Output
+
+   [edit]
+
+On Query
+
+ <result>
+   <arg name="value" type="int">max_elaborations</arg>
+ </result>
+
+   [edit]
+
+Otherwise
+
+ <result output="raw">true</result>
+
+   [edit]
+
+                                  Error Values
+
+   [edit]
+
+During Parsing
+
+   kTooManyArgs, kIntegerMustBePositive
+
+   [edit]
+
+During Execution
+
+   kAgentRequired
+
+   Retrieved from "http://winter.eecs.umich.edu/soarwiki/Max-elaborations"
+
+      Views
+
+     * Article
+     * Discussion
+     * Edit
+     * History
+
+      Personal tools
+
+     * Create an account or log in
+
+      Navigation
+
+     * Main Page
+     * Community portal
+     * Current events
+     * Recent changes
+     * Random page
+     * Help
+
+      Search
+
+   _____________________ [ Go ]   [ Search ]
+
+      Toolbox
+
+     * What links here
+     * Related changes
+     * Special pages
+
+   MediaWiki
+   GNU Free Documentation License 1.2
+
+     * This page was last modified 19:12, 17 Feb 2005.
+     * This page has been accessed 17 times.
+     * Content is available under GNU Free Documentation License 1.2.
+     * About Soar Wiki
+     * Disclaimers

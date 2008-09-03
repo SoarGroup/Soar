@@ -1,0 +1,18 @@
+VERSION 4
+\mac-planning\mac-planning.dm
+0	ROOT mac-planning mac-planning 1
+1	0	FOPERATOR _firstload _firstload.soar 2
+2	0	FOLDER all all 3
+3	0	FOLDER elaborations elaborations 4
+4	3	FOPERATOR goal-test goal-test.soar 5
+5	3	FOPERATOR monitor monitor.soar 6
+6	3	FOPERATOR problem-space problem-space.soar 7
+7	0	FOPERATOR _readme _readme.soar 9
+8	0	HLIOPERATOR Impasse__Operator_Tie Impasse__Operator_Tie.soar Impasse__Operator_Tie 21 10
+9	8	FOPERATOR elaborations elaborations.soar 11
+10	8	HLOPERATOR evaluate-operator evaluate-operator.soar evaluate-operator 26 12
+11	10	FOPERATOR elaborations elaborations.soar 13
+12	10	OPERATOR move-boat move-boat.soar 14
+13	0	OPERATOR initialize-mac initialize-mac.soar 15
+14	0	OPERATOR move-boat move-boat.soar 16
+END

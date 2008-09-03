@@ -1,0 +1,106 @@
+\documentclass[10pt]{article}
+\usepackage{fullpage, graphicx, url}
+\title{Excise - Soar Wiki}
+\begin{document}
+\section*{Excise}
+\subsubsection*{From Soar Wiki}
+
+
+ This is part of the Soar Command Line Interface. 
+\section*{ Name }
+
+
+ \textbf{excise}
+ - Delete Soar productions from production memory. 
+
+
+ Status: Complete
+\section*{ Synopsis }
+
+
+  \begin{verbatim}
+excise production_name [production_name ...]
+excise -[acdtu]
+
+\end{verbatim}
+
+
+
+ 
+\section*{ Options }
+
+
+\begin{tabular}{|p{1in}|p{5in}|}
+\hline 
+ -a, --all  & Remove all productions from memory and perform an init-soar command  \\
+ \hline 
+ -c, --chunks  & Remove all chunks (learned productions) and justifications from memory  \\
+ \hline 
+ -d, --default  & Remove all default productions (:default) from memory  \\
+ \hline 
+ -t, --task  & Remove chunks, justifications, and user productions from memory  \\
+ \hline 
+ -u, --user  & Remove all user productions (but not chunks or default rules) from memory  \\
+ \hline 
+production\_name & Remove the specific production with this name.  \\
+ \hline 
+
+\end{tabular}
+
+
+
+ \\ 
+
+\section*{ Description }
+
+
+ This command removes productions from Soar's memory. The command must be called with either a specific production name or with a flag that indicates a particular group of productions to be removed. Using the flag -a or --all also causes an init-soar. 
+\section*{ Examples }
+
+
+ This command removes the production my*first*production and all chunks: \begin{verbatim}
+excise my*first*production --chunks
+
+\end{verbatim}
+
+
+
+ This removes all productions and does an init-soar: \begin{verbatim}
+excise --all
+
+\end{verbatim}
+
+\section*{ See Also }
+\begin{description}
+init-soar
+
+\end{description}
+
+
+ \\ 
+
+\section*{ Structured Output }
+\subsection*{ On Success }
+\begin{verbatim}
+<result>
+  <arg param="count" type="int">number_of_productions_excised</arg>
+  <arg param="name" type="string">production_name</arg>
+</result>
+
+\end{verbatim}
+\subsection*{ Notes }
+\begin{itemize}
+\item  Each excised production will have its name returned in a separate arg. 
+
+\end{itemize}
+\section*{ Error Values }
+\subsection*{ During Parsing }
+
+
+ kUnrecognizedOption, kGetOptError, kTooManyArgs, kTooFewArgs
+\subsection*{ During Execution }
+
+
+ kAgentRequired, kgSKIError, kProductionNotFound
+
+\end{document}

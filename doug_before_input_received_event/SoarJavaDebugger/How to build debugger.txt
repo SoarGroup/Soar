@@ -1,0 +1,33 @@
+How to build the SoarJavaDebugger
+=================================
+
+March 2005	Douglas Pearson
+June 2005	Bob Marinier
+
+Eclipse
+=======
+1) Building in Eclipse (free Java IDE from www.eclipse.org).
+   a) Create a new Eclipse project (File | New | Project)
+   b) Select "Java Project"
+   c)  i) Project Name: SoarJavaDebugger
+      ii) Location: Create at external location and browse to this file's folder
+     iii) Finish.
+   d) At this point the debugger should build.
+   e) To run create a run configuration and run it
+      (under Run | Debug... | Java Application setting main class to debugger.Application).
+
+2) To create a JAR file from within Eclipse select the JARDescription.jardesc file, right click and "Open Jar Packager..." and follow the wizard (some values like the output JAR path may need updating).  Use the JarManifest file as the manifest.
+
+
+JDK directly
+============
+1) Make sure javac and jar are in your path.
+
+2) Windows: run buildJavaDebugger.bat
+   Linux/OS x: run buildJavaDebugger.sh
+
+   The jar file should be created in soar-library.  You should run it from there.
+
+
+
+

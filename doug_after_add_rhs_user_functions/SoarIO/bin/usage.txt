@@ -1,0 +1,902 @@
+# Command line usage and specification document.
+# Author: Jonathan Voigt, http://sitemaker.umich.edu/soar/
+#
+# Lines starting with # and blank lines are ignored.
+# Lines starting with ~ start the extended usage section (REQUIRED).
+# Lines starting with * separate commands (REQUIRED).
+# The first line of a command section is the command name.
+#
+# All commands have a --help/-h option to print their usage information.
+#
+# Update help.soar when adding/removing commands to keep the test in sync.
+#
+add-wme
+Usage:	add-wme id [^]attribute value [+]
+  id		Must be an existing identifier.
+  ^		Leading ^ on attribute is optional.
+  attribute	Attribute can by any Soar symbol.  Use * to have Soar create
+  		a new identifier.
+  value		Value ican by any soar symbol.  Use * to have Soar create
+  		a new identifier.
+  +		If the optional preference is specified, its value must be 
+  		+ (acceptable).
+
+Manually add an element to working memory.  add-wme is often used by an input 
+function to update Soar's information about the state of the external world.
+
+add-wme adds a new wme with the given id, attribute, value and optional 
+preference.  The given id must be an existing identifier.  The attribute and 
+value fields can be any Soar symbol.  If * is given in the attribute or value 
+field, Soar creates a new identifier (symbol) for that field.  If the preference 
+is given, it can only have the value + to indicate that an acceptable preference 
+should be created for this wme.
+~~~
+***
+alias
+Usage:	alias name cmd [args..]
+	alias -d name
+	alias
+  -d, --disable, --off	Remove the named alias.
+  name			The name of the alias, i.e. the new command.
+  cmd			The command that the alias will be replacing.
+  args			Arguments for the command (optional & optional number).
+
+The alias command with no arguments lists the current alias database.
+~~~
+alias: structured output on success:
+  <result>
+    <arg name="alias" type="string">alias</arg>
+    <arg name="aliasedcommand" type="string">aliased_command</arg>
+  </result>
+
+Notes: 
+  * When listing the current alias database, each alias will have the 
+    alias/aliasedcommand pair returned.
+  * An example pair for step (step=run -s 1) would be:
+    <arg name="alias" type="string">step</arg>
+    <arg name="aliasedcommand" type="string">run -s 1</arg>
+***
+capture-input
+Usage:	capture-input
+~~~
+***
+cd
+Usage:	cd [directory]
+  directory 		The directory to change in to, can be relative or full
+  			path.
+
+Change the current working directory. If run with no arguments, returns to the 
+directory that the command line interface was started in, often referred to the 
+'home' directory.
+
+See also the 'home' command.
+~~~
+cd: structured output on success:
+  <result output="raw">true</result>
+***
+chunk-name-format
+Usage:	chunk-name-format [-sl] -p [<prefix>]
+	chunk-name-format [-sl] -c [<count>]
+  -c, --count
+  count
+  -l, --long
+  -p, --prefix
+  prefix
+  -s, --short
+~~~
+***
+default-wme-depth
+Usage:	default-wme-depth [depth]
+  depth
+~~~
+***
+dirs
+Usage:	dirs
+
+Print out the current directory stack.
+~~~
+dirs: structured output on success:
+  <result>
+    <arg param="directory" type="string">directory_string</arg>
+  </result>
+
+Notes:
+  * Each directory on the stack will be returned as a separate arg.
+***
+echo
+Usage:	echo [-n] string
+  -n, --nonewline	Default is to insert a newline at end of string. This
+  			disables it.
+  string		The string to print back.
+
+Used to echo commands to the console.
+~~~
+echo: structured output on success:
+  <result><arg param="message" type="string">message</arg></result>
+***
+excise
+Usage:	excise production_name
+	excise -[acdtu]
+  -a, --all		Excise everything.
+  -c, --chunks		Excise chunks and justifications
+  -d, --default		Excise default productions.
+  -t, --task		Excise chunks, justifications, and user productions.
+  -u, --user		Excise user productions.
+  production_name	Excise a specific production with this name.
+
+Used to remove Soar productions from working memory. A pound sign is printed for 
+every production excised. The command must be called with either a specific 
+production name or with a flag that indicates a particular group of productions.
+~~~
+excise: structured output on success:
+  <result>
+    <arg param="count" type="int">number_of_productions_excised</arg>
+    <arg param="name" type="string">production_name</arg>
+  </result>
+
+Notes: 
+  * Each excised production will have its name returned in a separate arg.
+***
+explain-backtraces
+Usage:	explain-backtraces
+~~~
+***
+firing-counts
+Usage:	firing-counts [n]
+	firing-counts production_name
+  n                 Number of the top firing productions to list, or 0.
+  production_name   Production to list firing counts for
+
+The firing-counts command prints the number of times each production has fired; 
+production names are given from most requently fired to least frequently fired. 
+With no arguments, it lists all productions. If an integer argument, n, is 
+given, only the top n productions are listed.
+
+If n is zero (0), only the productions that haven't fired at all are listed. If 
+one or more production names are given as arguments, only firing counts for 
+these productions are printed.
+
+Note that firing counts are reset by a call to init-soar.
+~~~
+firing-counts: structured output on success:
+  <result>
+    <arg param="name" type="string">production_name</arg>
+    <arg param="count" type="int">firing_count</arg>
+  </result>
+  
+Notes:
+  * Each production listed will have a name/count arg pair.
+***
+format-watch
+Usage:	format-watch -a[so] restriction format [restriction format]...
+	format-watch -r[so] restriction format [restriction format]...
+  -a, --add
+  -o, --object
+  -r, --remove
+  -s, --stack
+  format
+  restriction
+~~~
+***
+gds-print
+Usage:	gds-print
+
+The gds-print command is a debugging command for examining the Goal Dependency 
+Set (GDS) for each goal in the stack. See the Soar manual for details.
+~~~
+gds-print currently uses print callbacks (no structured output).
+***
+help
+Usage:	help [command_name]
+  command_name		Print online help for this command.
+~~~
+help: does not use structured output.
+  <result output="raw">help_string</result>
+***
+helpex
+Usage:	helpex command_name
+  command_name		Print extended help for this command.
+~~~
+helpex: does not use structured output.
+  <result output="raw">help_string</result>
+***
+home
+Usage:	home [home_directory]
+  home_directory	Optional home directory to set as home.  Otherwise uses
+			current directory.
+
+Used to set the directory where the cd command returns to when invoked with no 
+arguments. This is also the directory where the command line interface looks for 
+the aliases.txt and usage.txt files, and can be used to reload those files from 
+disk.
+~~~
+home: structured output on success:
+  <result output="raw">true</result>
+***
+indifferent-selection
+Usage:	indifferent-selection [-aflr]
+  -a, --ask	Ask the user to choose.
+  -f, --first	Select the first indifferent object from Soar's internal list.
+  -l, --last	Select the last indifferent object from Soar's internal list.
+  -r, --random	Select randomly (default).
+
+The indifferent-selection command allows the user to set which option should be 
+used to select between operator proposals that are mutally indifferent in 
+preference memory.
+~~~
+indifferent-selection: structured output on success:
+query:
+  <result>
+    <arg param="indifferentselectionmode" type="int">2</arg>
+  </result>
+otherwise:
+  <result output="raw">true</result>
+
+Notes:
+  * The integer denoting the current mode corresponds to the gSKI enum values:
+      gSKI_USER_SELECT_FIRST  = 0
+      gSKI_USER_SELECT_LAST   = 3
+      gSKI_USER_SELECT_ASK    = 1
+      gSKI_USER_SELECT_RANDOM = 2
+***
+init-soar
+Usage:	init-soar
+
+The init-soar command reinitializes Soar. It empties working memory, wiping out 
+the subgoal stack, and resets all runtime statistics. The firing counts for all 
+productions is reset to zero. The init-soar command allows a Soar program that 
+has been halted to be reset and start its execution from the beginning.
+
+init-soar does not remove any productions from production memory; to do this, 
+use the excise command. Note however, that all justifications will be removed 
+because they will no longer be supported.
+~~~
+init-soar: structured output on success:
+  <result output="raw">true</result>
+***
+internal-symbols
+Usage:	internal-symbols
+~~~
+***
+io
+Usage:	io
+~~~
+***
+learn
+Usage:	learn [-l]
+	learn -[d|e|E|o][ab]
+  -a, --all-levels      Build productions whenever a subgoal returns a result
+  -b, --bottom-up       Build productions only for subgoals that have not yet
+                        had any subgoals with chunks built
+  -d, --disable, --off  Turn chunking off
+  -e, --enable, --on    Turn chunking on
+  -E, --except          Chunking is on, except as specified by RHS dont-learn
+                        actions
+  -l, --list            Prints listings of dont-learn and force-learn states
+  -o, --only            Chunking is on only as specified by RHS force-learn
+                        actions
+
+The learn command controls the parameters for chunking (Soar's learning 
+mechanism). With no arguments, this command prints out the current learning 
+environment status. If arguments are provided, they will alter the learning 
+environment as described in the options and arguments table.
+~~~
+learn: structured output on success:
+query:
+  <result>
+    <arg param="learn_setting" type="boolean">setting</arg>
+  </result>
+otherwise:
+  <result output="raw">true</result>
+  
+Notes:
+  * Setting is true (learning enabled) or false (disabled).
+***
+log
+Usage:	log [-Ae] filename
+	log -a string
+	log [-cdoq]
+  -A, -e, --append	Append to the end of the specified file.
+  -a, --add		Add the given string to the log.
+  -c, -d, -o, --close, 	Stop logging and close the current log.
+      --disable, --off
+  -q, --query		Query the current logging status.
+  filename              The name of the file to log to.
+
+Invoke log with no arguments (or with -q) to query the current logging status.
+Pass a filename to start logging to that file (relative to the command line
+interface's  home directory (see the home command)). Use the close option to 
+stop logging.
+~~~
+log: structured output on success:
+  <result>
+    <arg param="log_setting" type="boolean">setting</arg>
+    <arg param="filename" type="string">log_filename</arg>
+  </result>
+  
+Notes:
+  * setting is true (log file open) or false (closed).
+  * log_filename is only included if the log is open.
+***
+ls
+Usage:	ls
+~~~
+ls: structured output on success:
+files/directories found:
+  <result>
+    <arg name="filename" type="string">filename</arg>
+    <arg name="directory" type="string">directory</arg>
+  </result>
+***
+matches
+Usage:	matches [-[a|r]12cntw]
+	matches [-012cntw] production_name
+  -a, --assertions	Print match set information only about assertions.
+  -r, --retractions	Print match set information only about retractions.
+  -0, -n, -c, --names	For the match set, print only the names of the 
+      --count		productions that are about to fire or retract (the default).
+  -1, -t, --timetags	Also print the timetags of the wmes that match the 
+  			productions.
+  -2, -w, --wmes	Also print the wmes that match the productions.
+  production_name	Print information about partial matches for the named
+  			production.
+
+The matches command prints a list of productions that have instantiations in the 
+match set, i.e., those productions that will retract or fire in the next Propose 
+or Apply phase.  It also will preint partial match information for a single, 
+named productions.
+~~~
+matches uses print callbacks, structured output pending.
+***
+max-chunks
+Usage:	max-chunks [n]
+
+The max-chunks command is used to limit the maximum number of chunks that may be 
+created during a decision cycle.  The initial value of this variable is 50; 
+allowable settings are any integer greater than 0.
+~~~
+max-chunks: structured output on success:
+query:
+  <result>
+    <arg name="value" type="int">max_chunks</arg>
+  </result>
+otherwise:
+  <result output="raw">true</result>
+***
+max-elaborations
+Usage:	max-elaborations [n]
+  n	Maximum allowed elaboration cycles, must be a positive integer.
+
+The max-elaborations command is used to limit the maximum number of elaboration 
+cycles allowed during an elaboration phase.  The initial value of this variable 
+is 100. max-elaborations with no arguments prints the current value.
+
+The elaboration phase will end after max-elaboration cycles have completed, even 
+if there are more productions eligible to fire or retract; and Soar will proceed 
+to the next phase after a warning message is printed to notify the user.
+~~~
+max-elaborations: structured output on success:
+query:
+  <result>
+    <arg name="value" type="int">max_elaborations</arg>
+  </result>
+otherwise:
+  <result output="raw">true</result>
+***
+max-nil-output-cycles
+Usage:	max-nil-output-cycles
+~~~
+***
+memories
+Usage:	memories [-cdju] [n]
+	memories production_name
+  -c, --chunks		Print memory usage of chunks.
+  -d, --default		Print memory usage of default productions.
+  -j, --justifications	Print memory usage of justifications.
+  -u, --user		Print memory usage of user-defined productions.
+  production_name	Print memory usage for a specific production.
+  n			Number of productions to print, sorted by those that
+  			use the most memory.
+
+The memories command prints out the internal memory usage for full and partial 
+matches of production instantiations, with the productions using the most memory 
+printed first.
+
+Memory usage is recorded according to the tokens that are allocated in the rete 
+network for the given production(s).
+
+With no arguments, the memories command prints memory usage for all productions. 
+If a production_name is specified, memory usage will be printed only for that 
+production.  If a positive integer n is given, only n productions will be 
+printed: the n productions that use the most memory.
+
+Output may be restricted to print memory usage for particular types of 
+productions using the command options.
+~~~
+memories: structured output on success:
+  <result>
+    <arg param="name" type="string">production_name</arg>
+    <arg param="count" type="int">rete_tokens</arg>
+  </result>
+  
+Notes:
+  * Each production listed will have a name/count arg pair.
+***
+multi-attributes
+Usage:	multi-attributes [symbol [n]]
+  symbol	Any Soar attribute.
+  n		Integer > 1, estimate of degree of simultaneous values for 
+  		attribute.
+
+This command declares the given symbol to be an attribute which can take on 
+multiple values.  The optional n is an integer (>1) indicating an upper limit 
+on the number of expected values that will appear for an attribute.  If n is 
+not  specified, the value 10 is used for each declared multi-attribute.  More 
+informed values will tend to result in greater efficiency.  This command is 
+used only to provide hints to the production condition reorderer so it can 
+produce better condition orderings.  Better orderings enable the rete network 
+to run faster.  This command has no effect on the actual contents of working 
+memory and most users needn't use this at all.
+~~~
+multi-attributes: structured output on success:
+query:
+  <result>
+    <arg name="count" type="int">number_of_multi_attributes</arg>
+    <arg name="value" type="int">value_of_multi_attribute_1</arg>
+    <arg name="name" type="string">name_of_multi_attribute_1</arg>
+  </result>
+otherwise:
+  <result output="raw">true</result>
+
+Notes:
+  * During query, there will be a count/value pair for each multi-attribute.
+  * The total number of multi-attributes will be included in count.
+***
+numeric-indifferent-mode
+Usage:	numeric-indifferent-mode [-as]
+  -a, --avg, --average	Use average mode (see Soar manual) (default).
+  -s, --sum		Use sum mode (see Soar manual).
+
+The numeric-indifferent-mode command is used to select the method for combining 
+numeric preferences. This command is only meaningful in indifferent-selection --
+random mode.
+~~~
+numeric-indifferent-mode: structured output on success:
+query:
+  <result>
+    <arg param="numericindifferentmode" type="int">2</arg>
+  </result>
+otherwise:
+  <result output="raw">true</result>
+
+Notes:
+  * The integer denoting the current mode corresponds to the gSKI enum values:
+      gSKI_NUMERIC_INDIFFERENT_MODE_AVG  = 1
+      gSKI_NUMERIC_INDIFFERENT_MODE_SUM  = 0
+***
+o-support-mode
+Usage:	o-support-mode [0|1|2|3|4]
+
+The o-support-mode is used to control the way that O-support is determined for 
+preferences.  The o-support-mode value must be one of three values:
+
+  0	O-support works as described in the Soar manual.
+  1	Same as 0 but a message is printed if the alternative scheme would have
+  	made a difference in the Soar program.
+  2	The alternative O-support scheme is used (see Soar manual for details).
+  3	?
+  4	?
+
+Running o-support-mode with no arguments prints out the current o-support-mode.
+~~~
+o-support-mode: structured output on success:
+  <result>
+    <arg param="value" type="int">mode</arg>
+  </result>
+***
+popd
+Usage:	popd
+
+Pop the current working directory off the stack and change to the next directory 
+on the stack.  Can be relative pathname or fully specified path.
+~~~
+popd: structured output on success:
+  <result output="raw">true</result>
+***
+preferences
+Usage:	preferences [-0123nNtw] [id] [attribute]
+  -0, -n, --none
+  -1, -N, --names
+  -2, -t, --timetags
+  -3, -w, --wmes
+  id
+  attribute
+~~~
+***
+print
+Usage:	print [-fFin] production_name
+	print -[a|c|D|j|u][fFin]
+	print [-fFin] [-d <depth>] identifier|timetag|pattern
+	print -s[oS]
+  -a, --all
+  -c, --chunks
+  -d, --depth
+  -D, --defaults
+  -f, --full
+  -F, --filename
+  -i, --internal
+  -j, --justifications
+  -n, --name
+  -o, --operators
+  -s, --stack
+  -S, --states
+  -u, --user
+  depth
+  identifier
+  pattern
+  production_name
+  timetag
+~~~
+print uses print callbacks, structured output pending.
+***
+production-find
+Usage:	production-find [-clnrs] pattern
+  -c, --chunks		Look only for chunks that match the pattern.
+  -l, --lhs		Match pattern only against the conditions (left-hand
+  			side) of productions (default).
+  -n, --nochunks	Disregard chunks when looking for the pattern.
+  -r, --rhs		Match pattern only against the actions (right-hand
+  			side) of productions.
+  -s, --show-bindings	Show the bindings associated with a wildcard pattern.
+  pattern		Any pattern that can appear in productions.
+
+The production-find command is used to find productions in production memory 
+that include conditions or actions that match a given pattern.  The pattern 
+given specifies one or more condition elements on the left hand side of 
+productions (or negated conditions), or one or more actions on the right-hand 
+side of productions.  Any pattern that can appear in productions can be used in 
+this command.  In addition, the asterisk symbol, *, can be used as a wildcard 
+for an attribute or value.  It is important to note that the whole pattern, 
+including the parenthesis, must be enclosed in curly braces for it to be parsed 
+properly.
+
+The variable names used in a call to production-find do not have to match the 
+variable names used in the productions being retrieved.
+
+The production-find command can also be restricted to apply to only certain 
+types of productions, or to look only at the conditions or only at the actions 
+of productions by using the flags.
+~~~
+production-find uses print callbacks, structured output pending.
+***
+pushd
+Usage:	pushd directory
+  directory	Directory to change to, saving the current directory on to
+  		the stack.
+
+Maintain a stack of working directories and push the directory on to the stack. 
+Can be relative path name or fully specified.
+~~~
+pushd: structured output on success:
+  <result output="raw">true</result>
+***
+pwatch
+Usage:	pwatch [-d|e] [production name]
+  -d, --disable, --off
+  -e, --enable, --on
+  production_name
+
+~~~
+***
+pwd
+Usage:	pwd
+
+Prints the current working directory of Soar.
+~~~
+pwd: structured output on success:
+  <result>
+    <arg name="directory" type="string">directory_string</arg>
+  </result>
+***
+quit
+Usage:	quit
+
+This command stops the run, quits the log and closes Soar.
+~~~
+quit: structured output on success:
+  <result>
+    <arg name="message" type="string">Goodbye.</arg>
+  </result>
+***
+remove-wme
+Usage:	remove-wme timetag
+  timetag	A positive integer matching the timetag of an existing working
+  		memory element.
+
+The remove-wme command removes the working memory element with the given
+timetag.  This command is provided primarily for use in Soar input functions;
+although there is no programming enforcement, add-wme should only be called
+from registered input functions to create working memory elements on Soar's 
+input link.
+
+Beware of weird side effects, including system crashes.
+~~~
+***
+replay-input
+Usage:	replay-input
+~~~
+***
+rete-net
+Usage:	rete-net -s filename
+	rete-net -l filename
+  -s, --save			Save the Rete net in the named file.
+  -l, -r, --load, --restore	Load the named file into the Rete network.
+  filename			The file name to save, usually with a .rete 
+  				extension.
+
+The rete-net command saves the current Rete net to a file or restores a Rete net 
+previously saved.  The Rete net is Soar's internal representation of production 
+memory; the conditions of productions are reordered and common substructures are 
+shared across different productions.  This command provides a fast method of 
+saving and loading productions since a binary format is used.
+~~~
+rete-net: structured output on success:
+  <result output="raw">true</result>
+***
+run
+Usage:	run [count]
+	run -[d|e|p][fS] [count]
+	run -[s|o|O][fS] [count]
+  -d, --decision	Run Soar for count decision cycles.
+  -e, --elaboration	Run Soar for count elaboration cycles.
+  -f, --forever		Run until halted by problem-solving completion or 
+  			until stopped by an interrupt.
+  -O, --operator	Run Soar until the nth time an operator is selected.
+  -o, --output		Run Soar until the nth time output is generated by the
+  			agent.  Limited by the value of max-nil-output-cycles.
+  -p, --phase		Run Soar by phases.  A phase is either an input phase,
+  			proposal phase, decision phase, apply phase, or output
+  			phase.
+  -S, --self		If other agents exist within the kernel, do not run
+  			them at this time.
+  -s, --state		Run Soar until the nth time a state is selected.
+  count			A single integer which specifies the number of cycles
+  			to run Soar.
+
+This command runs the Soar agents.  If the -S flag is issued, only the agent 
+receiving the run command will run.  The count argument is a single integer 
+which specified the number of cycles to run Soar.  If count is unspecified and 
+no units are given, then Soar is run until halted by problem-solving completion 
+or an external interrupt.  If count is specified, but no units are specified, 
+then soar is run by decision cycles.  If units are specified, but count is 
+unpecified, then count defaults to '1'.  The unit argument indicates the unit 
+of measure to be used in counting Soar run cycles.
+~~~
+run: most output is handled through a callback, but there is a return value:
+  <result>
+    <arg name="runresult" type="int">run_result</arg>
+  </result>
+
+Notes:
+  * The run result is as following:
+    gSKI_RUN_EXECUTING                 = 1;
+    gSKI_RUN_INTERRUPTED               = 2;
+    gSKI_RUN_COMPLETED                 = 3;
+    gSKI_RUN_COMPLETED_AND_INTERRUPTED = 4;
+***
+set-default-depth
+Usage:	set-default-depth
+~~~
+***
+soar8
+Usage:	soar8 [-ed]
+  -e, --enable, --on	Use Soar 8 methodology. (Default)
+  -d, --disable, --off	Use Soar 7 methodology.
+
+The soar8 command allows users to revert to Soar 7 methodology in order to run 
+older Soar programs.  Both production memory and working memory must be empty to 
+toggle between Soar 7 and Soar 8 mode.  The soar8 command with no arguments 
+returns the current mode, the default is Soar 8.
+~~~
+***
+source
+Usage:	source filename
+  filename	The file of Soar productions and commands to load.
+
+Load and evaluate the contents of a file.
+~~~
+source: structured output on success:
+  <result output="raw">true</result>
+Notes:
+  * source executes the 'pwd' command if the pushd's and popd's don't match up
+    after parsing the file.  Type 'helpex pwd' for details.
+***
+sp
+Usage:	sp { production_body }
+  production_body	A Soar production.
+
+Create a new production and enter in to production memory.
+~~~
+sp: structured output on success:
+  <result output="raw">true</result>
+***
+stats
+Usage:	stats
+#Todo:
+#Usage:	stats [-s <stat>] [-m <resource>] [-r <rtype_qualifier>]
+#  -m, --memory
+#  -r, --rete
+#  -s, --system
+#  resource
+#  rtype_qualifier
+#  stat
+~~~
+stats uses print callbacks, structured output pending.
+***
+stop-soar
+Usage:	stop-soar [-s] [reason_string]
+  -s, --self
+  reason_string
+~~~
+stop-soar: structured output on success:
+  <result output="raw">true</result>
+
+Todo: reason for stopping
+***
+time
+Usage:	time command [arguments]
+  command
+  arguments
+~~~
+time: structured output on success:
+  <result>
+    <arg name="seconds" type="float">proc_time_elapsed</arg>
+    <arg name="seconds" type="float">real_time_elapsed</arg>
+  </result>
+***
+timers
+Usage:	timers [-ed]
+  -d, --disable, --off   Disable all timers.
+  -e, --enable, --on     Enable timers as compiled.
+
+This command is used to control the timers that collect internal profiling 
+information while Soar is running.  With no arguments, this command prints out 
+the current timer status.  Timers are ENABLED by default.  The default 
+compilation flags for soar enable the basic timers and disable the detaled 
+timers.  The timers command can only enable or disable timers that have already 
+been compiled in.  See the stats command for more info on the Soar timing 
+system.
+~~~
+timers: structured output on success:
+query:
+  <result>
+    <arg name="timers" type="boolean">setting</arg>
+  </result>
+otherwise:
+  <result output="raw">true</result>
+***
+version
+Usage:	version
+
+Prints out the Soar Kernel version number.
+~~~
+version: structured output on success:
+  <result>
+    <arg name="versionmajor" type="int">major</arg>
+    <arg name="versionminor" type="int">minor</arg>
+  </result>
+***
+waitsnc
+Usage:	waitsnc [-de]
+  -d, --disable, --off	State-no-change generates impasse (default)
+  -e, --enable, --on	Turns state-no-change impasse into 'wait' mode
+
+In some systems, especially those that model expert (fully chunked) knowledge, a 
+state-no-change may represent a wait state rather than an impasse.  The waitsnc 
+command allows users to anticipate this situation and cause Soar to generate a 
+wait state whenever a state-no-change impasse would otherwise occur.
+~~~
+waitsnc: structured output on success:
+query:
+  <result>
+    <arg name="waitsnc" type="boolean">setting</arg>
+  </result>
+otherwise:
+  <result output="raw">true</result>
+***
+warnings
+Usage:	warnings [-ed]
+  -e, --enable, --on		Enable printing of warning messages from the
+  				kernel (the default).
+  -d, --disable, --off		Turn printing of warning messages off.
+
+Enables and disables the printing of warning messages from the Soar kernel.
+~~~
+warnings structured output on success:
+query:
+  <result>
+    <arg name="warnings_setting" type="boolean">setting</arg>
+  </result>
+otherwise:
+  <result output="raw">true</result>
+***
+watch
+Usage:	watch [level] [-n] [-b <switch>] [-c <switch>] [-d <switch>] 
+	[-D <switch>] [-i <switch>] [-j <switch>] [-l <detail>] 
+	[-L <switch>] [-p <switch>] [-P <switch>] [-r <switch>] 
+	[-u <switch>] [-w <switch>] [-W <detail>]
+  -b, --backtracing		Print backtracing infromation when a chunk
+  				is created.
+  -c, --chunks			Trace firings of chunks.
+  -d, --decisions		Print the state and operator selected each
+  				decision cycle.
+  -D, --default-productions	Trace firings of default productions.
+  -i, --indifferent-selection	When using random mode, print the score for
+  				tied operators during the decision phase
+  -j, --justifications		Trace firings of justifications.
+  -l, --learning		Print names (detail 1) or entire chunks and
+  				justifications (detail 2) when created.
+  -L, --loading			Print a '*' for each production loaded and a
+  				'#' for each production excised.
+  -n, --none			Turn all watches off.  Overrides all other
+  				flags on the line.
+  -p, --phases			Print out the phases of the decision cycle as
+  				Soar executes.
+  -P, --productions		Equivalent to '-D <switch> -u <switch>
+  				-c <switch> -j <switch>'.
+  -r, --preferences		Print out preferences asserted and retracted
+  				when productions fire and retract.
+  -u, --user-productions	Trace firings of user productions.
+  -w, --wmes			Print working memory elements that are added
+  				and deleted as productions fire and retract.
+  -W, --wme-detail		Print no (detail 0) WME information when
+  				productions fire and retract, print WME
+  				timetags (detail 1), or print full
+  				WMEs (detail 2).
+  detail			Integer from 0-2:
+				  * 0: Off/lowest detail
+				  * 1: On/medium detail
+				  * 2: On/highest detail
+				See option text for specific effect.
+  level				Integer from 0-5, higher numbers include the
+  				lower numbers' effects:
+  				  * 0: Watch nothing (--none)
+  				  * 1: Watch decisions
+  				  * 2: Watch phases (incl. 1)
+  				  * 3: Watch productions (incl. 2, 1)
+  				  * 4: Watch wmes (incl. 3, 2, 1)
+  				  * 5: Watch preferences (incl. 4, 3, 2, 1)
+  switch			Switch argument:
+  				  * 0: Turn watches for this option off
+  				  * 1: Turn watches for this option on
+~~~
+watch structured output on success:
+query:
+  <result>
+    <arg name="sysparam_int" type="boolean">setting</arg>
+    <arg name="sysparam_int" type="int">detail</arg>
+  </result>
+otherwise:
+  <result output="raw">true</result>
+
+Notes:
+  * sysparam_int is an integer constant referring to a relevant sysparam such
+    "14" (TRACE_BACKTRACING_SYSPARAM).
+***
+watch-wmes
+Usage:	watch-wmes -[a|r] -t <type> pattern
+	watch-wmes -[l|R] [-t <type>]
+  -a, --add-filter
+  -l, --list-filter
+  -r, --remove-filter
+  -R, --reset-filter
+~~~
+***
+verbose
+Usage:	verbose
+~~~
+***
+version
+Usage:	version
+~~~
+***

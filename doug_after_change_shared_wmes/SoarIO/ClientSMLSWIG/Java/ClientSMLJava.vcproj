@@ -1,0 +1,216 @@
+<?xml version="1.0" encoding="Windows-1252"?>
+<VisualStudioProject
+	ProjectType="Visual C++"
+	Version="7.10"
+	Name="ClientSMLJava"
+	ProjectGUID="{F8B197A4-FC27-4B02-9B08-CD5B16899AAB}"
+	RootNamespace="ClientSMLSWIG"
+	Keyword="ManagedCProj">
+	<Platforms>
+		<Platform
+			Name="Win32"/>
+	</Platforms>
+	<Configurations>
+		<Configuration
+			Name="Debug|Win32"
+			OutputDirectory="build"
+			IntermediateDirectory="$(OutDir)\Debug"
+			ConfigurationType="2"
+			CharacterSet="2"
+			ManagedExtensions="FALSE">
+			<Tool
+				Name="VCCLCompilerTool"
+				Optimization="0"
+				AdditionalIncludeDirectories="&quot;$(JAVA_INCLUDE)&quot;;&quot;$(JAVA_INCLUDE)\win32&quot;;..\..\ClientSML\include;..\..\ElementXML\include;..\..\ConnectionSML\include"
+				PreprocessorDefinitions="WIN32;_DEBUG"
+				MinimalRebuild="FALSE"
+				BasicRuntimeChecks="0"
+				RuntimeLibrary="1"
+				AssemblerListingLocation="$(IntDir)/"
+				ProgramDataBaseFileName="$(IntDir)/"
+				WarningLevel="3"
+				DebugInformationFormat="3"/>
+			<Tool
+				Name="VCCustomBuildTool"/>
+			<Tool
+				Name="VCLinkerTool"
+				OutputFile="$(OutDir)\Java_sml_ClientInterface.dll"
+				LinkIncremental="1"
+				AdditionalLibraryDirectories=""
+				GenerateDebugInformation="TRUE"
+				AssemblyDebug="1"
+				ImportLibrary="$(OutDir)\$(ProjectName).lib"/>
+			<Tool
+				Name="VCMIDLTool"/>
+			<Tool
+				Name="VCPostBuildEventTool"
+				Description="Build Java files as a sanity check, copy dll to release point"
+				CommandLine="echo on
+cd build
+&quot;%JAVA_BIN%/javac&quot; *.java
+copy Java_sml_ClientInterface.dll ..\..\..\..\soar-library /Y
+cd ..
+"/>
+			<Tool
+				Name="VCPreBuildEventTool"
+				Description="Remove previous Java files"
+				CommandLine="echo on
+cd build
+del *.java
+del *.class
+cd ..
+"
+				ExcludedFromBuild="TRUE"/>
+			<Tool
+				Name="VCPreLinkEventTool"/>
+			<Tool
+				Name="VCResourceCompilerTool"/>
+			<Tool
+				Name="VCWebServiceProxyGeneratorTool"/>
+			<Tool
+				Name="VCXMLDataGeneratorTool"/>
+			<Tool
+				Name="VCWebDeploymentTool"/>
+			<Tool
+				Name="VCManagedWrapperGeneratorTool"/>
+			<Tool
+				Name="VCAuxiliaryManagedWrapperGeneratorTool"/>
+		</Configuration>
+		<Configuration
+			Name="Release|Win32"
+			OutputDirectory="build"
+			IntermediateDirectory="$(OutDir)\Release"
+			ConfigurationType="2"
+			CharacterSet="2"
+			ManagedExtensions="FALSE">
+			<Tool
+				Name="VCCLCompilerTool"
+				AdditionalIncludeDirectories="&quot;$(JAVA_INCLUDE)&quot;;&quot;$(JAVA_INCLUDE)\win32&quot;;..\..\ClientSML\include;..\..\ElementXML\include;..\..\ConnectionSML\include"
+				PreprocessorDefinitions="WIN32;NDEBUG"
+				MinimalRebuild="FALSE"
+				RuntimeLibrary="0"
+				AssemblerListingLocation="$(IntDir)/"
+				ProgramDataBaseFileName="$(IntDir)/"
+				WarningLevel="3"
+				DebugInformationFormat="3"/>
+			<Tool
+				Name="VCCustomBuildTool"/>
+			<Tool
+				Name="VCLinkerTool"
+				OutputFile="$(OutDir)\Java_sml_ClientInterface.dll"
+				LinkIncremental="1"
+				AdditionalLibraryDirectories=""
+				GenerateDebugInformation="FALSE"
+				ImportLibrary="$(OutDir)\$(ProjectName).lib"/>
+			<Tool
+				Name="VCMIDLTool"/>
+			<Tool
+				Name="VCPostBuildEventTool"
+				Description="Build Java files as a sanity check, copy dll to release point"
+				CommandLine="echo on
+cd build
+&quot;%JAVA_BIN%/javac&quot; *.java
+copy Java_sml_ClientInterface.dll ..\..\..\..\soar-library /Y
+cd ..
+"/>
+			<Tool
+				Name="VCPreBuildEventTool"
+				Description="Remove previous Java files"
+				CommandLine="echo on
+cd build
+del *.java
+del *.class
+cd ..
+"/>
+			<Tool
+				Name="VCPreLinkEventTool"/>
+			<Tool
+				Name="VCResourceCompilerTool"/>
+			<Tool
+				Name="VCWebServiceProxyGeneratorTool"/>
+			<Tool
+				Name="VCXMLDataGeneratorTool"/>
+			<Tool
+				Name="VCWebDeploymentTool"/>
+			<Tool
+				Name="VCManagedWrapperGeneratorTool"/>
+			<Tool
+				Name="VCAuxiliaryManagedWrapperGeneratorTool"/>
+		</Configuration>
+	</Configurations>
+	<References>
+		<ProjectReference
+			ReferencedProjectIdentifier="{3EDBED11-A1B3-4E00-8B6E-652523D482F0}"
+			Name="ClientSML"/>
+		<ProjectReference
+			ReferencedProjectIdentifier="{161DC1AD-FB4B-4370-9FD5-B02E2A0D8A36}"
+			Name="ConnectionSML"/>
+		<ProjectReference
+			ReferencedProjectIdentifier="{E9AB0B6E-F1CA-4A63-817B-AB47F7E5417E}"
+			Name="ElementXML"/>
+	</References>
+	<Files>
+		<Filter
+			Name="Source Files"
+			Filter="cpp;c;cxx;def;odl;idl;hpj;bat;asm;asmx"
+			UniqueIdentifier="{4FC737F1-C7A5-4376-A066-2A32D752A2FF}">
+			<File
+				RelativePath=".\Java_sml_ClientInterface_wrap.cxx">
+			</File>
+		</Filter>
+		<Filter
+			Name="Header Files"
+			Filter="h;hpp;hxx;hm;inl;inc;xsd"
+			UniqueIdentifier="{93995380-89BD-4b04-88EB-625FBE52EBFB}">
+			<File
+				RelativePath=".\JavaCallbackByHand.h">
+			</File>
+		</Filter>
+		<Filter
+			Name="Resource Files"
+			Filter="rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx"
+			UniqueIdentifier="{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}">
+			<File
+				RelativePath="..\sml_ClientInterface.i">
+				<FileConfiguration
+					Name="Debug|Win32">
+					<Tool
+						Name="VCCustomBuildTool"/>
+				</FileConfiguration>
+			</File>
+		</Filter>
+		<File
+			RelativePath=".\Java_sml_ClientInterface.i">
+			<FileConfiguration
+				Name="Debug|Win32">
+				<Tool
+					Name="VCCustomBuildTool"
+					Description="Performing Custom Build Step on Java_sml_ClientInterface.i"
+					CommandLine="echo In order to function correctly, please ensure the following environment variables are correctly set:
+echo JAVA_INCLUDE: %JAVA_INCLUDE%
+echo JAVA_BIN: %JAVA_BIN%
+echo SWIG: %SWIG%
+echo on
+$(SWIG)\swig.exe -Wall -c++ -package sml -I../../ClientSML/include -I../../ElementXML/include -I../../ConnectionSML/include -java -outdir build &quot;$(InputPath)&quot;
+"
+					Outputs="$(InputName)_wrap.cxx"/>
+			</FileConfiguration>
+			<FileConfiguration
+				Name="Release|Win32">
+				<Tool
+					Name="VCCustomBuildTool"
+					Description="Performing Custom Build Step on Java_sml_ClientInterface.i"
+					CommandLine="echo In order to function correctly, please ensure the following environment variables are correctly set:
+echo JAVA_INCLUDE: %JAVA_INCLUDE%
+echo JAVA_BIN: %JAVA_BIN%
+echo SWIG: %SWIG%
+echo on
+$(SWIG)\swig.exe -Wall -c++ -package sml -I../../ClientSML/include -I../../ElementXML/include -I../../ConnectionSML/include -java -outdir build &quot;$(InputPath)&quot;
+"
+					Outputs="$(InputName)_wrap.cxx"/>
+			</FileConfiguration>
+		</File>
+	</Files>
+	<Globals>
+	</Globals>
+</VisualStudioProject>

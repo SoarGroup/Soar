@@ -1,0 +1,59 @@
+\documentclass[10pt]{article}
+\usepackage{fullpage, graphicx, url}
+\title{Time - Soar Wiki}
+\begin{document}
+\section*{Time}
+\subsubsection*{From Soar Wiki}
+
+
+ This is part of the Soar Command Line Interface. 
+\section*{ Name }
+
+
+ \textbf{time}
+ - Use a default system clock timer to record the wall time required while executing a command. 
+
+
+ Priority: 3 ; Status: Complete
+\section*{ Synopsis }
+\begin{verbatim}
+time command [arguments]
+
+\end{verbatim}
+\section*{ Options }
+
+
+\begin{tabular}{|p{1in}|p{5in}|}
+\hline 
+ command  & The command to execute.  \\
+ \hline 
+ arguments  & Optional command arguments.  \\
+ \hline 
+
+\end{tabular}
+
+
+
+ \\ 
+
+\section*{ Description }
+\section*{ Structured Output }
+\subsection*{ On Success }
+\begin{verbatim}
+<result>
+  <arg name="seconds" type="float">proc_time_elapsed</arg>
+  <arg name="seconds" type="float">real_time_elapsed</arg>
+</result>
+
+\end{verbatim}
+\section*{ Error Values }
+\subsection*{ During Parsing }
+
+
+ kTooFewArgs
+\subsection*{ During Execution }
+
+
+ kgettimeofdayFail
+
+\end{document}

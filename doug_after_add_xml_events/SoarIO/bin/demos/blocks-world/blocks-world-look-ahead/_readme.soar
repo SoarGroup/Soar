@@ -1,0 +1,22 @@
+# Classic 3 block blocks world with look ahead
+# John E. Laird
+# University of Michigan
+# May 25, 2004
+# Soar version 8.5.1
+
+# This is a simple version of blocks world
+# Three blocks and the table.
+# Does a look-ahead using the selection space.
+
+# In this formulation, clear is computed as an elaboration
+# (in elaborations/clear). The table is always clear.
+
+# Change made to blocks-world to enable look ahead:
+# 1. Add to elaborations/top-state: blocks-world*elaborate*problem-space
+# 2. Change elaborations/detect-success: blocks-world*elaborate*state*success
+#    so it marks the state with success - this will be used in look-ahead
+# 3. Change search-control.soar so it rejects moving the same block twice. 
+#    In look-ahead this will lead to failure when no blocks can be moved and avoid
+#    some non-optimal solutions.
+# 4. Remove = preferences from move-block operator proposals
+

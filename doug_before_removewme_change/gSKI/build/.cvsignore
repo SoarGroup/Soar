@@ -1,0 +1,15 @@
+Debug
+Release
+gSKI-staticd.lib
+gSKI-static.lib
+Debug-static
+Release-static
+gSKId.map
+debug.idb
+gSKI.exp
+gSKI.lib
+gSKId.dll
+gSKId.exp
+gSKId.ilk
+gSKId.lib
+gSKI.dll

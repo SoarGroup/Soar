@@ -1,0 +1,118 @@
+   Link: Creative Commons (meta)
+   Link: copyright
+
+                                      Quit
+
+  From Soar Wiki
+
+   This is part of the Soar Command Line Interface.
+
+    Table of contents
+   1 Name
+   2 Synopsis
+   3 Options
+   4 Description
+   5 Structured Output
+
+   5.1 On Success
+
+   6 Error Values
+
+   6.1 During Parsing
+   6.2 During Execution
+
+   [edit]
+
+                                      Name
+
+   quit - Close log file, terminate Soar, and return user to the operating
+   system.
+
+   Status: Complete
+
+   [edit]
+
+                                    Synopsis
+
+ quit
+
+   [edit]
+
+                                    Options
+
+   No options.
+
+   [edit]
+
+                                  Description
+
+   This command stops the run, quits the log and closes Soar.
+
+   [edit]
+
+                               Structured Output
+
+   [edit]
+
+On Success
+
+ <result>
+   <arg name="message" type="string">Goodbye.</arg>
+ </result>
+
+   [edit]
+
+                                  Error Values
+
+   [edit]
+
+During Parsing
+
+   No errors.
+
+   [edit]
+
+During Execution
+
+   No errors.
+
+   Retrieved from "http://winter.eecs.umich.edu/soarwiki/Quit"
+
+      Views
+
+     * Article
+     * Discussion
+     * Edit
+     * History
+
+      Personal tools
+
+     * Create an account or log in
+
+      Navigation
+
+     * Main Page
+     * Community portal
+     * Current events
+     * Recent changes
+     * Random page
+     * Help
+
+      Search
+
+   _____________________ [ Go ]   [ Search ]
+
+      Toolbox
+
+     * What links here
+     * Related changes
+     * Special pages
+
+   MediaWiki
+   GNU Free Documentation License 1.2
+
+     * This page was last modified 19:11, 17 Feb 2005.
+     * This page has been accessed 15 times.
+     * Content is available under GNU Free Documentation License 1.2.
+     * About Soar Wiki
+     * Disclaimers
