@@ -2,7 +2,6 @@
   <general>
     <game>kitchen</game>
     <map>maps/kitchen/default.xml</map>
-    <seed>0</seed>
   </general>
   <logging>
     <level>INFO</level>

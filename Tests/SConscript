@@ -15,11 +15,18 @@ env.Prepend(CPPPATH = [
 			'../Core/ConnectionSML/include'])
 
 if sys.platform == "darwin":
-	libadd = [ 'ClientSML', 
-		   'ConnectionSML',
-		   'ElementXML', 
-		   'cppunit-osx',
-		   ]
+	if env[ 'processor' ] != 'powerpc':
+		libadd = [ 'ClientSML', 
+			   'ConnectionSML',
+			   'ElementXML', 
+			   'cppunit-osx',
+			   ]
+	else:
+		libadd = [ 'ClientSML', 
+			   'ConnectionSML',
+			   'ElementXML', 
+			   'cppunit-osxppc',
+			   ]
 else:
 	libadd = [ 'ClientSML', 
 		   'ConnectionSML',

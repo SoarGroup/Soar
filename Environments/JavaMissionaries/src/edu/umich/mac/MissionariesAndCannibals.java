@@ -14,6 +14,8 @@ import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.graphics.GC;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.graphics.Rectangle;
+import org.eclipse.swt.layout.GridData;
+import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Canvas;
 import org.eclipse.swt.widgets.Display;
@@ -31,7 +33,7 @@ public class MissionariesAndCannibals
 implements Runnable, PaintListener, MacEnvironmentListener {
     private MacEnvironment me;
     
-    private static Display dpy = new Display();
+    private Display dpy;
     private Shell shell;
     
     private Canvas macCanvas;
@@ -47,14 +49,10 @@ implements Runnable, PaintListener, MacEnvironmentListener {
     // Eclipse looks for the "mac" folder to be under "bin" (with the current Eclipse project settings)
     // while the JAR build looks for it at the top level, so this is a bit clumsy.
     // If anyone really knows how this getResource stuff really works go ahead and clean this up :)
-    private static Image landImg = new Image(dpy,
-            MissionariesAndCannibals.class.getResourceAsStream("/mac/land.gif"));
-    private static Image boatImg = new Image(dpy,
-    		MissionariesAndCannibals.class.getResourceAsStream("/mac/boat.gif"));
-    private static Image missionaryImg = new Image(dpy,
-    		MissionariesAndCannibals.class.getResourceAsStream("/mac/missionary.gif"));
-    private static Image cannibalImg = new Image(dpy,
-    		MissionariesAndCannibals.class.getResourceAsStream("/mac/cannibal.gif"));
+    private static Image landImg;
+    private static Image boatImg;
+    private static Image missionaryImg;
+    private static Image cannibalImg;
 /*
     private static Image landImg = new Image(dpy,
             ClassLoader.getSystemResourceAsStream("/mac/land.gif"));
@@ -65,38 +63,62 @@ implements Runnable, PaintListener, MacEnvironmentListener {
     private static Image cannibalImg = new Image(dpy,
             ClassLoader.getSystemResourceAsStream("/mac/cannibal.gif"));
 */    
-    private static final int[] BOAT_X;
-    private static final int BOAT_Y = 400;
-    private static final int[] CANNIBAL_X;
-    private static final int CANNIBAL_Y = 300;
-    private static final int[] MISSIONARY_X;
-    private static final int MISSIONARY_Y = 330;
+    private static int[] BOAT_X;
+    private static int BOAT_Y;
+    private static int[] CANNIBAL_X;
+    private static int CANNIBAL_Y;
+    private static int[] MISSIONARY_X;
+    private static int MISSIONARY_Y;
     
     static {
-        Display.setAppName("Missionaries & Cannibals");
+        //Display.setAppName("Missionaries & Cannibals");
         
         // initialize X positions for the boat, cannibals and missionaries
         BOAT_X = new int[2];
-        BOAT_X[0] = 60;
-        BOAT_X[1] = landImg.getBounds().width - boatImg.getBounds().width - 60;
-        
         CANNIBAL_X = new int[6];
-        int x_adj = landImg.getBounds().width - cannibalImg.getBounds().width;
-        CANNIBAL_X[0] = 45;
-        CANNIBAL_X[1] = 85;
-        CANNIBAL_X[2] = 125;
-        CANNIBAL_X[3] = x_adj - 125;
-        CANNIBAL_X[4] = x_adj - 85;
-        CANNIBAL_X[5] = x_adj - 45;
-        
         MISSIONARY_X = new int[6];
-        x_adj = landImg.getBounds().width - missionaryImg.getBounds().width;
-        MISSIONARY_X[0] = 50;
-        MISSIONARY_X[1] = 75;
-        MISSIONARY_X[2] = 100;
-        MISSIONARY_X[3] = x_adj - 100;
-        MISSIONARY_X[4] = x_adj - 75;
-        MISSIONARY_X[5] = x_adj - 50;
+        
+    }
+    
+    public void initializeImages()
+    {
+    	landImg = new Image(dpy,
+                MissionariesAndCannibals.class.getResourceAsStream("/mac/land.gif"));
+        boatImg = new Image(dpy,
+        		MissionariesAndCannibals.class.getResourceAsStream("/mac/boat.gif"));
+        missionaryImg = new Image(dpy,
+        		MissionariesAndCannibals.class.getResourceAsStream("/mac/missionary.gif"));
+        cannibalImg = new Image(dpy,
+        		MissionariesAndCannibals.class.getResourceAsStream("/mac/cannibal.gif"));
+    
+        
+        BOAT_Y = 400;
+        CANNIBAL_Y = 300;
+        MISSIONARY_Y = 330;
+        
+        {
+            Display.setAppName("Missionaries & Cannibals");
+            
+            // initialize X positions for the boat, cannibals and missionaries
+            BOAT_X[0] = 60;
+            BOAT_X[1] = landImg.getBounds().width - boatImg.getBounds().width - 60;
+            
+            int x_adj = landImg.getBounds().width - cannibalImg.getBounds().width;
+            CANNIBAL_X[0] = 45;
+            CANNIBAL_X[1] = 85;
+            CANNIBAL_X[2] = 125;
+            CANNIBAL_X[3] = x_adj - 125;
+            CANNIBAL_X[4] = x_adj - 85;
+            CANNIBAL_X[5] = x_adj - 45;
+            
+            x_adj = landImg.getBounds().width - missionaryImg.getBounds().width;
+            MISSIONARY_X[0] = 50;
+            MISSIONARY_X[1] = 75;
+            MISSIONARY_X[2] = 100;
+            MISSIONARY_X[3] = x_adj - 100;
+            MISSIONARY_X[4] = x_adj - 75;
+            MISSIONARY_X[5] = x_adj - 50;
+        }
     }
     
     /**
@@ -124,10 +146,16 @@ implements Runnable, PaintListener, MacEnvironmentListener {
         me = new MacEnvironment();
         me.addEnvironmentListener(this);
         
+        dpy = new Display();
+        initializeImages();
+        
         // init SWT and a window
         shell = new Shell(dpy, SWT.TITLE | SWT.CLOSE | SWT.MIN);
-        shell.setSize(640, 540);
         shell.setText("Missionaries & Cannibals");
+        
+        GridLayout layout = new GridLayout();
+        layout.numColumns = 5;
+        shell.setLayout(layout);
         
         // set up our canvas...
         // Specifying SWT.DOUBLE_BUFFERED to reduce flicker
@@ -136,6 +164,10 @@ implements Runnable, PaintListener, MacEnvironmentListener {
         macCanvas = new Canvas(shell, SWT.DOUBLE_BUFFERED);
         macCanvas.setBounds(0, 0, 640, 480);
         macCanvas.addPaintListener(this);
+        
+        GridData mcdata = new GridData(GridData.FILL_BOTH);
+        mcdata.horizontalSpan = 5;
+        macCanvas.setLayoutData(mcdata);
         
         // ...and initialize our double buffer
         // (note: we are no longer using our own buffer
@@ -149,18 +181,25 @@ implements Runnable, PaintListener, MacEnvironmentListener {
         // create the button controls
         runButton = new Button(shell, SWT.PUSH);
         runButton.setText("Run");
-        runButton.setBounds(2, 482, 78, 32);
+        GridData bdata = new GridData();
+        runButton.setLayoutData(bdata);
+        
         stopButton = new Button(shell, SWT.PUSH);
         stopButton.setText("Stop");
         stopButton.setEnabled(false);
-        stopButton.setBounds(75, 482, 78, 32);
+        bdata = new GridData();
+        stopButton.setLayoutData(bdata);
+        
         stepButton = new Button(shell, SWT.PUSH);
         stepButton.setText("Step");
-        stepButton.setBounds(148, 482, 78, 32);
+        bdata = new GridData();
+        stepButton.setLayoutData(bdata);
+        
         resetButton = new Button(shell, SWT.PUSH);
         resetButton.setText("Reset");
         resetButton.setEnabled(false);
-        resetButton.setBounds(221, 482, 78, 32);
+        bdata = new GridData();
+        resetButton.setLayoutData(bdata);
         
         // add actions to all of the buttons
         runButton.addSelectionListener(new SelectionAdapter() {
@@ -193,6 +232,7 @@ implements Runnable, PaintListener, MacEnvironmentListener {
      */
     public void run() {
         shell.pack();
+        shell.setSize(640, 540);
         shell.open();
         while (!shell.isDisposed()) {
             if (!dpy.readAndDispatch()) {

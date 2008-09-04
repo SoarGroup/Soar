@@ -16,8 +16,8 @@
 	<Configurations>
 		<Configuration
 			Name="Debug|Win32"
-			OutputDirectory="build"
-			IntermediateDirectory="$(OutDir)\Debug"
+			OutputDirectory="build\$(ConfigurationName)"
+			IntermediateDirectory="$(OutDir)"
 			ConfigurationType="4"
 			CharacterSet="2"
 			>
@@ -61,7 +61,7 @@
 			/>
 			<Tool
 				Name="VCLibrarianTool"
-				OutputFile="..\..\SoarLibrary\lib\$(ProjectName).lib"
+				OutputFile="$(SolutionDir)\SoarLibrary\lib\$(ProjectName).lib"
 			/>
 			<Tool
 				Name="VCALinkTool"
@@ -81,8 +81,8 @@
 		</Configuration>
 		<Configuration
 			Name="Release|Win32"
-			OutputDirectory="build"
-			IntermediateDirectory="$(OutDir)\Release"
+			OutputDirectory="build\$(ConfigurationName)"
+			IntermediateDirectory="$(OutDir)"
 			ConfigurationType="4"
 			CharacterSet="2"
 			WholeProgramOptimization="1"
@@ -124,7 +124,7 @@
 			/>
 			<Tool
 				Name="VCLibrarianTool"
-				OutputFile="..\..\SoarLibrary\lib\$(ProjectName).lib"
+				OutputFile="$(SolutionDir)\SoarLibrary\lib\$(ProjectName).lib"
 			/>
 			<Tool
 				Name="VCALinkTool"
@@ -144,8 +144,8 @@
 		</Configuration>
 		<Configuration
 			Name="Debug SCU|Win32"
-			OutputDirectory="$(ConfigurationName)"
-			IntermediateDirectory="$(ConfigurationName)"
+			OutputDirectory="build\$(ConfigurationName)"
+			IntermediateDirectory="$(OutDir)"
 			ConfigurationType="4"
 			CharacterSet="2"
 			>
@@ -189,7 +189,7 @@
 			/>
 			<Tool
 				Name="VCLibrarianTool"
-				OutputFile="..\..\SoarLibrary\lib\$(ProjectName).lib"
+				OutputFile="$(SolutionDir)\SoarLibrary\lib\$(ProjectName).lib"
 			/>
 			<Tool
 				Name="VCALinkTool"
@@ -209,8 +209,8 @@
 		</Configuration>
 		<Configuration
 			Name="Release SCU|Win32"
-			OutputDirectory="$(ConfigurationName)"
-			IntermediateDirectory="$(ConfigurationName)"
+			OutputDirectory="build\$(ConfigurationName)"
+			IntermediateDirectory="$(OutDir)"
 			ConfigurationType="4"
 			CharacterSet="2"
 			WholeProgramOptimization="1"
@@ -252,7 +252,7 @@
 			/>
 			<Tool
 				Name="VCLibrarianTool"
-				OutputFile="..\..\SoarLibrary\lib\$(ProjectName).lib"
+				OutputFile="$(SolutionDir)\SoarLibrary\lib\$(ProjectName).lib"
 			/>
 			<Tool
 				Name="VCALinkTool"
@@ -765,20 +765,6 @@
 				<FileConfiguration
 					Name="Release|Win32"
 					ExcludedFromBuild="true"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Debug SCU|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Release SCU|Win32"
 					>
 					<Tool
 						Name="VCCLCompilerTool"

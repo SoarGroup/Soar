@@ -17,8 +17,8 @@
 	<Configurations>
 		<Configuration
 			Name="Debug|Win32"
-			OutputDirectory="build"
-			IntermediateDirectory="$(OutDir)\Debug"
+			OutputDirectory="build\$(ConfigurationName)"
+			IntermediateDirectory="$(OutDir)"
 			ConfigurationType="2"
 			InheritedPropertySheets="$(VCInstallDir)VCProjectDefaults\UpgradeFromVC71.vsprops"
 			CharacterSet="2"
@@ -70,7 +70,7 @@
 				LinkIncremental="2"
 				GenerateDebugInformation="true"
 				AssemblyDebug="1"
-				ImportLibrary="$(OutDir)\$(ProjectName).lib"
+				ImportLibrary="$(SolutionDir)\SoarLibrary\lib\CSharp_sml_ClientInterface.lib"
 				FixedBaseAddress="0"
 			/>
 			<Tool
@@ -101,8 +101,8 @@
 		</Configuration>
 		<Configuration
 			Name="Release|Win32"
-			OutputDirectory="build"
-			IntermediateDirectory="$(OutDir)\Release"
+			OutputDirectory="build\$(ConfigurationName)"
+			IntermediateDirectory="$(OutDir)"
 			ConfigurationType="2"
 			InheritedPropertySheets="$(VCInstallDir)VCProjectDefaults\UpgradeFromVC71.vsprops"
 			CharacterSet="2"
@@ -152,7 +152,7 @@
 				GenerateDebugInformation="true"
 				OptimizeReferences="2"
 				EnableCOMDATFolding="2"
-				ImportLibrary="$(OutDir)\$(ProjectName).lib"
+				ImportLibrary="$(SolutionDir)\SoarLibrary\lib\CSharp_sml_ClientInterface.lib"
 			/>
 			<Tool
 				Name="VCALinkTool"

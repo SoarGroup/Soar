@@ -26,6 +26,7 @@
 #include "sml_Utils.h"
 #include "sock_Socket.h"
 
+#include <cstdlib>
 #include <assert.h>
 
 #ifdef NON_BLOCKING
@@ -418,14 +419,14 @@ bool Socket::ReceiveBuffer(char* pRecvBuffer, size_t bufferSize)
 }
 
 /////////////////////////////////////////////////////////////////////
-// Function name  : Socket::Close
+// Function name  : Socket::CloseInternal
 // 
 // Return type    : void 	
 // 
 // Description	  : Close down the socket.
 //
 /////////////////////////////////////////////////////////////////////
-void Socket::Close()
+void Socket::CloseInternal()
 {
 	if (m_hSocket)
 	{

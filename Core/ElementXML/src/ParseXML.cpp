@@ -60,12 +60,12 @@ void ParseXML::InitializeLexer()
 // Converts from an escaped character (e.g. &lt; for <) to the original character
 char ParseXML::GetEscapeChar()
 {
-	std::string escape ;
+	std::stringstream escape ;
 
 	// Consume the entire escape sequence up to the ;
 	while (!IsEOF() && GetCurrentChar() != ';')
 	{
-		escape += GetCurrentChar() ;
+		escape << GetCurrentChar() ;
 		GetNextChar() ;
 	}
 
@@ -80,9 +80,9 @@ char ParseXML::GetEscapeChar()
 	}
 
 	// We don't bother to add the trailing ';' to the string, so min length is 3.
-	if (escape.size() < 3)
+	if (escape.str().size() < 3)
 	{
-		RecordError("Found an unknown escape sequence: " + escape) ;
+		RecordError("Found an unknown escape sequence: " + escape.str()) ;
 		return ' ' ;
 	}
 
@@ -95,17 +95,17 @@ char ParseXML::GetEscapeChar()
 	*/
 
 	// The first char is enough to distinguish most cases
-	char ch = escape[1] ;
+	char ch = escape.str().at(1) ;
 
 	switch (ch)
 	{
 	case 'l': return '<' ;
 	case 'g': return '>' ;
 	case 'q': return '"' ;
-	case 'a': return (escape[2] == 'm') ? '&' : '\'' ;
+	case 'a': return (escape.str()[2] == 'm') ? '&' : '\'' ;
 	}
 
-	RecordError("Found an unknown escape sequence: " + escape) ;
+	RecordError("Found an unknown escape sequence: " + escape.str()) ;
 	return ' ' ;
 }
 
@@ -172,7 +172,7 @@ void ParseXML::GetNextToken()
 		// If this is the beginning of a comment <! then handle it differently from a regular symbol
 		else if (IsCommentStart(GetCurrentChar()))
 		{
-			std::string comment ;
+			std::stringstream comment ;
 
 			// Consume the ! and the two leading dashes (BADBAD, I guess we should check that they are leading -- and report a better error if they're not)
 			GetNextChar() ;
@@ -189,16 +189,16 @@ void ParseXML::GetNextToken()
 				//if (ch == kEscapeChar)
 					//ch = GetEscapeChar() ;
 
-				comment += last ;
+				comment << last ;
 				GetNextChar() ;
 
 				// Check if we've reached --> which marks the end of the comment
-				int len = (int)comment.size() ;
-				done = (last == kCloseTagChar && len > 3 && comment[len-3] == '-' && comment[len-2] == '-' && comment[len-1] == '>');
+				int len = (int)comment.str().size() ;
+				done = (last == kCloseTagChar && len > 3 && comment.str().at(len-3) == '-' && comment.str().at(len-2) == '-' && comment.str().at(len-1) == '>');
 			}
 
 			// Store the comment (the part lying between <!-- and -->
-			SetCurrentToken(comment.substr(0, comment.size()-3), kComment) ;
+			SetCurrentToken(comment.str().substr(0, comment.str().size()-3), kComment) ;
  		}
 		
 		return ;
@@ -209,7 +209,7 @@ void ParseXML::GetNextToken()
 	if (m_InCharData)
 	{
 		// Char data
-		std::string data ;
+		std::stringstream data ;
 		ch = GetCurrentChar() ;
 		while (!IsEOF() && !IsEndOfCharData(ch) )
 		{
@@ -218,13 +218,13 @@ void ParseXML::GetNextToken()
 				ch = GetEscapeChar() ;
 			}
 
-			data += ch;
+			data << ch;
 			GetNextChar() ;
 
 			ch = GetCurrentChar() ;
 		}
 		
-		SetCurrentToken(data, kCharData) ;
+		SetCurrentToken(data.str(), kCharData) ;
 		return ;
 	}
 
@@ -232,7 +232,7 @@ void ParseXML::GetNextToken()
 	if (IsQuote(GetCurrentChar()))
 	{
 		// Buffer we'll use to build up the string
-		std::string quoted ;
+		std::stringstream quoted ;
 		
 		// Consume the opening quote.
 		GetNextChar() ;
@@ -247,7 +247,7 @@ void ParseXML::GetNextToken()
 			}
 
 			// Add everything up to the next quote.
-			quoted += ch ;
+			quoted << ch ;
 			GetNextChar() ;
 
 			ch = GetCurrentChar() ;
@@ -256,23 +256,23 @@ void ParseXML::GetNextToken()
 		// Consume the closing quote.
 		GetNextChar() ;
 		
-		SetCurrentToken(quoted, kQuotedString) ;
+		SetCurrentToken(quoted.str(), kQuotedString) ;
 		return ;
 	}
 
 	// Identifier
-	std::string identifier ;
+	std::stringstream identifier ;
 
 	ch = GetCurrentChar() ;
 	while (!IsEOF() && !IsWhiteSpace(ch) && !IsSymbol(ch) && !IsQuote(ch))
 	{
-		identifier += ch ;
+		identifier << ch ;
 		GetNextChar() ;
 
 		ch = GetCurrentChar() ;
 	}
 	
-	SetCurrentToken(identifier, kIdentifier) ;
+	SetCurrentToken(identifier.str(), kIdentifier) ;
 }
 
 /************************************************************************

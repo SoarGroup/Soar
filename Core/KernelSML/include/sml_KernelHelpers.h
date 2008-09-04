@@ -1,5 +1,5 @@
 /*************************************************************************
- * PLEASE SEE THE FILE "COPYING" (INCLUDED WITH THIS SOFTWARE PACKAGE)
+ * PLEASE SEE THE FILE "license.txt" (INCLUDED WITH THIS SOFTWARE PACKAGE)
  * FOR LICENSE AND COPYRIGHT INFORMATION. 
  *************************************************************************/
 
@@ -84,8 +84,8 @@ namespace sml
 
      bool GDSPrint(AgentSML* thisAgent);
 
-	 void GetForceLearnStates(AgentSML* pIAgent, std::string& res);
-	 void GetDontLearnStates(AgentSML* pIAgent, std::string& res);
+	 void GetForceLearnStates(AgentSML* pIAgent, std::stringstream& res);
+	 void GetDontLearnStates(AgentSML* pIAgent, std::stringstream& res);
 
 	 void SetVerbosity(AgentSML* pIAgent, bool setting);
 	 bool GetVerbosity(AgentSML* pIAgent);

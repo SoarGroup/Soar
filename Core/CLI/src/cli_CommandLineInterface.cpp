@@ -57,6 +57,7 @@ EXPORT CommandLineInterface::CommandLineInterface() {
 	m_CommandMap[Commands::kCLIExplainBacktraces]			= &cli::CommandLineInterface::ParseExplainBacktraces;
 	m_CommandMap[Commands::kCLIFiringCounts]				= &cli::CommandLineInterface::ParseFiringCounts;
 	m_CommandMap[Commands::kCLIGDSPrint]					= &cli::CommandLineInterface::ParseGDSPrint;
+	m_CommandMap[Commands::kCLIGP]							= &cli::CommandLineInterface::ParseGP;
 	m_CommandMap[Commands::kCLIHelp]						= &cli::CommandLineInterface::ParseHelp;
 	m_CommandMap[Commands::kCLIIndifferentSelection]		= &cli::CommandLineInterface::ParseIndifferentSelection;
 	m_CommandMap[Commands::kCLIInitSoar]					= &cli::CommandLineInterface::ParseInitSoar;
@@ -109,6 +110,7 @@ EXPORT CommandLineInterface::CommandLineInterface() {
 	m_CommandMap[Commands::kCLIWatchWMEs]					= &cli::CommandLineInterface::ParseWatchWMEs;
 
 	// Indicate which commands should be echoed so that all users can see them when doing a shared debugging session
+	// FIXME: missing stuff like GDSPRINT?
 	m_EchoMap[Commands::kCLIAddWME]						= true ;
 	m_EchoMap[Commands::kCLIAlias]						= true ;
 	m_EchoMap[Commands::kCLIAttributePreferencesMode]	= true ;
@@ -120,6 +122,7 @@ EXPORT CommandLineInterface::CommandLineInterface() {
 	m_EchoMap[Commands::kCLIEcho]						= true ;
 	m_EchoMap[Commands::kCLIEchoCommands]				= true ;
 	m_EchoMap[Commands::kCLIExcise]						= true ;
+	m_EchoMap[Commands::kCLIGP]							= true ;
 	m_EchoMap[Commands::kCLIIndifferentSelection]		= true ;
 	m_EchoMap[Commands::kCLIInitSoar]					= true ;
 	m_EchoMap[Commands::kCLIInputPeriod]				= true ;
@@ -219,6 +222,42 @@ EXPORT bool CommandLineInterface::DoCommand(Connection* pConnection, sml::AgentS
 	// No way to return data
 	if (!pConnection) return false;
 	if (!pResponse) return false;
+	PushAgent( pAgent );
+
+	// Log input
+	if (m_pLogFile) {
+		if (pAgent) (*m_pLogFile) << pAgent->GetName() << "> ";
+		(*m_pLogFile) << pCommandLine << std::endl;
+	}
+
+	m_EchoResult = echoResults ;
+
+	SetTrapPrintCallbacks( true );
+
+	m_SourceDepth = 0;
+	m_SourceMode = SOURCE_DEFAULT;
+	m_SourceVerbose = false; 
+
+	// Process the command, ignoring its result (errors detected with m_LastError)
+	//DoCommandInternal(pCommandLine);
+	std::stringstream soarStream;
+	soarStream << pCommandLine;
+	StreamSource( soarStream, 0 );
+
+	SetTrapPrintCallbacks( false );
+
+	GetLastResultSML(pConnection, pResponse);
+
+	PopAgent();
+
+	// Always returns true to indicate that we've generated any needed error message already
+	return true;
+}
+
+void CommandLineInterface::PushAgent( sml::AgentSML* pAgent )
+{
+	m_pAgentSMLStack.push( pAgent );
+
 	if (pAgent) 
 	{
 		m_pAgentSML = pAgent;
@@ -229,28 +268,33 @@ EXPORT bool CommandLineInterface::DoCommand(Connection* pConnection, sml::AgentS
 		m_pAgentSoar = 0;
 	}
 
-	// Log input
-	if (m_pLogFile) {
-		if (pAgent) (*m_pLogFile) << pAgent->GetName() << "> ";
-		(*m_pLogFile) << pCommandLine << std::endl;
-	}
-
-	m_EchoResult = echoResults ;
-
 	// For kernel callback class we inherit
 	SetAgentSML(m_pAgentSML) ;
+}
 
-	SetTrapPrintCallbacks( true );
+void CommandLineInterface::PopAgent()
+{
+	m_pAgentSMLStack.pop();
+	sml::AgentSML* pAgent = 0;
+	
+	if ( m_pAgentSMLStack.size() )
+	{
+		pAgent = m_pAgentSMLStack.top();
+	}
 
-	// Process the command, ignoring its result (errors detected with m_LastError)
-	DoCommandInternal(pCommandLine);
+	// reset these for the next command
+	SetAgentSML( pAgent ) ;
 
-	SetTrapPrintCallbacks( false );
-
-	GetLastResultSML(pConnection, pResponse);
-
-	// Always returns true to indicate that we've generated any needed error message already
-	return true;
+	m_pAgentSML = pAgent;
+	if (pAgent) 
+	{
+		m_pAgentSoar = pAgent->GetSoarAgent();
+		assert( m_pAgentSoar );
+	}
+	else 
+	{
+		m_pAgentSoar = 0;
+	}
 }
 
 void CommandLineInterface::SetTrapPrintCallbacks(bool setting)
@@ -539,13 +583,14 @@ bool CommandLineInterface::DoCommandInternal(std::vector<std::string>& argv) {
 		if (!exactMatch) {
 			if (possibilities.size() != 1) {
 				// Ambiguous
-				std::string detail = "Ambiguous command, possibilities: ";
+				std::stringstream detail;
+				detail << "Ambiguous command, possibilities: ";
 				liter = possibilities.begin();
 				while (liter != possibilities.end()) {
-					detail += (*liter) + ' ';
+					detail << "'" << (*liter) << "' ";
 					++liter;
 				}
-				SetErrorDetail(detail);
+				SetErrorDetail(detail.str());
 				return SetError(CLIError::kAmbiguousCommand);
 
 			} else {
@@ -763,20 +808,21 @@ bool CommandLineInterface::ProcessOptions(std::vector<std::string>& argv, Option
 						}
 
 						if (!possibilities.size()) {
-							SetErrorDetail("No such m_Option: " + longOption);
+							SetErrorDetail("No such option: " + longOption);
 							return SetError(CLIError::kUnrecognizedOption);
 						} 
 					}
 
 					if (possibilities.size() != 1) {
 						// Ambiguous
-						std::string detail = "Ambiguous m_Option, possibilities: ";
+						std::stringstream detail;
+						detail << "Ambiguous option, possibilities: ";
 						liter = possibilities.begin();
 						while (liter != possibilities.end()) {
-							detail += (*liter).longOpt + ' ';
+							detail << "'--" << (*liter).longOpt << "' ";
 							++liter;
 						}
-						SetErrorDetail(detail);
+						SetErrorDetail(detail.str());
 						return SetError(CLIError::kAmbiguousOption);
 
 					}
@@ -812,7 +858,8 @@ bool CommandLineInterface::ProcessOptions(std::vector<std::string>& argv, Option
 					return true;
 				}
 			}
-			SetErrorDetail("No such m_Option: " + argv[m_Argument][1]);
+			char theOption = argv.at( m_Argument ).at( 1 );
+			SetErrorDetail( std::string("No such option: ") + theOption );
 			return SetError(CLIError::kUnrecognizedOption);
 		}
 		++m_NonOptionArguments;
@@ -1031,9 +1078,9 @@ void CommandLineInterface::OnKernelEvent(int eventID, AgentSML*, void* pCallData
 			assert(p) ;
 			assert(p->name->sc.name) ;
 
-			std::string name = p->name->sc.name ;
+			std::string name( p->name->sc.name );
 
-			m_ExcisedDuringSource.push_back(name.c_str());
+			m_ExcisedDuringSource.push_back( name );
 		}
 	}
 	else if (eventID == smlEVENT_PRINT)

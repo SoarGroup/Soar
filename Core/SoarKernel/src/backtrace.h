@@ -1,5 +1,5 @@
 /*************************************************************************
- * PLEASE SEE THE FILE "COPYING" (INCLUDED WITH THIS SOFTWARE PACKAGE)
+ * PLEASE SEE THE FILE "license.txt" (INCLUDED WITH THIS SOFTWARE PACKAGE)
  * FOR LICENSE AND COPYRIGHT INFORMATION. 
  *************************************************************************/
 
@@ -52,6 +52,9 @@ extern void backtrace_through_instantiation (agent* thisAgent,
                                              goal_stack_level grounds_level,
                                              condition *trace_cond,
                                              int indent);
+
+// To print out the message similar to: a chunk was not created because...
+void report_local_negation (agent* thisAgent, condition* c);
 
 #ifdef __cplusplus
 }

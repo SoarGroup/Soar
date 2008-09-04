@@ -1,5 +1,5 @@
 /*************************************************************************
- * PLEASE SEE THE FILE "COPYING" (INCLUDED WITH THIS SOFTWARE PACKAGE)
+ * PLEASE SEE THE FILE "license.txt" (INCLUDED WITH THIS SOFTWARE PACKAGE)
  * FOR LICENSE AND COPYRIGHT INFORMATION. 
  *************************************************************************/
 
@@ -277,6 +277,9 @@ typedef struct agent_struct {
   Symbol            * ts_context_variable;
   Symbol            * type_symbol;
   Symbol            * wait_symbol;   /* REW:  10.24.97 */
+
+  Symbol            * item_count_symbol; // SBW 5/07
+
 
   /* RPM 9/06 begin */
   Symbol			* input_link_symbol;
@@ -767,6 +770,7 @@ kernel time and total_cpu_time greater than the derived total CPU time. REW */
   rl_stat *rl_stats[ RL_STATS ];
 
   int rl_template_count;
+  bool rl_first_switch;
 
   // select
   select_info *select;

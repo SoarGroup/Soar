@@ -56,8 +56,9 @@ systems would like to make Soar's processing approximate the knowledge
 level as closely as possible.  However, Soar~7 had a number of
 symbol-level ``quirks'' that appeared inconsistent with human
 psychology and that made building large-scale, knowledge-based systems
-in Soar more difficult than necessary.  Bob Wray's thesis (1998)
-\nocite{Wray98:Ensuring} addressed many of these symbol-level problems
+in Soar more difficult than necessary.  Bob Wray's thesis 
+\footnote{Robert E. Wray. \textit{Ensuring Reasoning Consistency in Hierarchical Architectures}. PhD thesis, University of Michigan, 1998.}
+addressed many of these symbol-level problems
 in Soar, among them logical inconsistency in symbol manipulations,
 non-contemporaneous constraints in chunks \cite{Wray96:Compilation},
 race conditions in rule firings and in the decision process, and
@@ -350,16 +351,16 @@ The actual implementation of the GDS in the Soar kernel is slightly
 more complex than the conceptual description of the previous section
 (but not significantly so).  
 
-Elements are added the GDS via elaborate\_gds(), a procedure in
+Elements are added to the GDS via \verb+elaborate_gds()+, a procedure in
 decide.c that mimics the chunking backtrace function.  The algorithm
 is shown in Figure~\ref{tab:dhj:proc}.  When an o-supported preference
 is asserted, elaborate\_gds() is called.  Conditions in a production
 instantiation that are located in a higher context can be added
-directly to the GDS (1).  For local conditions, elaborate\_gds() first
+directly to the GDS (1).  For local conditions, \verb+elaborate_gds()+ first
 checks whether the tested WME is o-supported, or if it has been
 previously been back traced through (2). If either of these are true,
 the WME can be ignored because it's dependencies have been added to
-the GDS previously.  If not, elaborate\_gds() is called recursively,
+the GDS previously.  If not, \verb+elaborate_gds()+ is called recursively,
 to find the context dependencies for the local, contributing WME,~$c$
 (3).
 
@@ -430,9 +431,9 @@ When WME changes occur, each goal/state must be checked to determine
 if the WME appeared on that goal's GDS. Because WME changes occur in
 nearly every Soar elaboration cycle, we chose to extend the WME data
 structure to avoid this scanning.  Figure~\ref{wme} illustrates the
-relationship.  Each GDS consists of a pointer to its goal and a
-pointer to a WME DLL list.  The gds\_next and gds\_prev pointers on
-WME define the GDS WMEs for a particular GDS and the GDS pointer
+relationship.  Each GDS structure consists of a pointer to its goal and a
+pointer to a linked list of WMEs.  The \verb+gds_next+ and \verb+gds_prev+ pointers on
+the WME structure define the GDS WMEs for a particular GDS and the GDS pointer
 provides a link back from each GDS WME to the GDS data structure.
 
 When a WME is removed, the GDS pointer can be checked to determine
@@ -440,8 +441,7 @@ immediately if the goal should be removed.  No scanning is necessary.
 
 
 \begin{figure}
-INSERT DIAGRAM HERE
-%\insertfigure{NEED DIAGRAM}{3in}
+\insertfigure{gds_wme}{3in}
 \caption{The GDS and WME data structures}.
 \label{wme}
 \end{figure}

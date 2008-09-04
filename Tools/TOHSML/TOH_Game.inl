@@ -14,6 +14,7 @@
 #include "TOH_Disk.inl"
 #include "TOH_Tower.inl"
 #include "Stats_Tracker.inl"
+#include <cstring>
 
 void toh_update_event_handler(sml::smlUpdateEventId /*id*/, void *user_data_ptr, sml::Kernel* kernel_ptr, sml::smlRunFlags /*run_flags*/) {
   assert(user_data_ptr);
@@ -95,6 +96,18 @@ void TOH_Game::step() {
 
   m_agent->RunSelf(1u);
 }
+
+#ifdef TOH_COUNT_STEPS
+bool TOH_Game::is_finished() const {
+  size_t other_towers = 0;
+  size_t goal_tower = 0;
+  for(std::vector<TOH_Tower *>::const_iterator it = m_towers.begin(); it != m_towers.end(); ++it) {
+    other_towers += goal_tower;
+    goal_tower += (*it)->get_height();
+  }
+  return !other_towers;
+}
+#endif
 
 void TOH_Game::update(sml::Kernel &/*kernel*/) {
   // Go through all the commands we've received (if any) since we last ran Soar.

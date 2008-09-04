@@ -24,6 +24,7 @@
 #define DATA_SENDER_H
 
 #include <string>
+#include "thread_Lock.h"
 
 namespace sock {
 
@@ -55,8 +56,8 @@ public:
 	// The timeout for waiting for data is secondsWait + millisecondsWait, where millisecondsWait < 1000
 	virtual bool		IsReadDataAvailable(long secondsWait = 0, long millisecondsWait = 0)=0;
 
-	// Close down our side of the data sender
-	virtual void		Close()=0 ;
+	// Close down our side of the data sender, locks and calls CloseInternal
+	void		Close();
 
 	// Get the name of this datasender
 	virtual std::string	GetName() { return name; }
@@ -77,6 +78,12 @@ protected:
 	virtual bool		SendBuffer(char const* pSendBuffer, size_t bufferSize)=0 ;
 	virtual bool		ReceiveBuffer(char* pRecvBuffer, size_t bufferSize)=0 ;
 
+   // Specific kinds of locks have different ways of shutting themselves down, they must do it here
+   virtual void CloseInternal() = 0;
+
+private:
+   // Locks calls to CloseInternal
+   soar_thread::Mutex m_CloseMutex;
 };
 
 } // Namespace

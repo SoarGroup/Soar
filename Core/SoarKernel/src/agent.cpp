@@ -1,7 +1,7 @@
 #include <portability.h>
 
 /*************************************************************************
- * PLEASE SEE THE FILE "COPYING" (INCLUDED WITH THIS SOFTWARE PACKAGE)
+ * PLEASE SEE THE FILE "license.txt" (INCLUDED WITH THIS SOFTWARE PACKAGE)
  * FOR LICENSE AND COPYRIGHT INFORMATION. 
  *************************************************************************/
 
@@ -322,6 +322,8 @@ agent * create_soar_agent (char * agent_name) {                                 
   newAgent->rl_stats[ RL_STAT_GLOBAL_REWARD ] = rl_add_stat( "global-reward" );
 
   rl_initialize_template_tracking( newAgent );
+  
+  newAgent->rl_first_switch = true;
   
   // select initialization
   newAgent->select = new select_info;

@@ -54,6 +54,7 @@ namespace soar_TraceNames
 	static char const* const kPhase_Name  	= "name" ;
 	static char const* const kPhase_Status  	= "status" ;
 	static char const* const kPhase_FiringType 	= "firing_type" ;
+  static char const* const kPhase_LevelNum 	= "level_num" ; // SBW 8/4/2008
 	static char const* const kPhaseName_Input  	= "input" ;
 	static char const* const kPhaseName_Pref  	= "preference" ;
 	static char const* const kPhaseName_WM  	= "workingmemory" ;
@@ -154,6 +155,8 @@ namespace soar_TraceNames
 	static char const* const kBacktracedAlready         = "already-backtraced";
 	static char const* const kBacktraceSymbol1          = "symbol1";
 	static char const* const kBacktraceSymbol2          = "symbol2";
+
+	static char const* const kTagLocalNegation          = "local-negation" ; // SBW 5/07
 
 	// numeric indifference stuff
 	static char const* const kTagCandidate      = "candidate";

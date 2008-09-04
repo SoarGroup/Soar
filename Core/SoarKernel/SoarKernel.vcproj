@@ -16,8 +16,8 @@
 	<Configurations>
 		<Configuration
 			Name="Debug|Win32"
-			OutputDirectory="build"
-			IntermediateDirectory="$(OutDir)\$(ConfigurationName)"
+			OutputDirectory="build\$(ConfigurationName)"
+			IntermediateDirectory="$(OutDir)"
 			ConfigurationType="4"
 			CharacterSet="2"
 			>
@@ -39,7 +39,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				AdditionalIncludeDirectories="include;../shared;../ElementXML/include;&quot;C:\Program Files\boost\boost_1_34_1&quot;"
+				AdditionalIncludeDirectories="include;../shared;../ElementXML/include;&quot;C:\Program Files\boost\boost_1_35_0&quot;"
 				PreprocessorDefinitions="WIN32;_DEBUG;_LIB;_CRT_SECURE_NO_DEPRECATE"
 				StringPooling="true"
 				MinimalRebuild="false"
@@ -63,6 +63,7 @@
 			/>
 			<Tool
 				Name="VCLibrarianTool"
+				OutputFile="$(SolutionDir)\SoarLibrary\lib\$(ProjectName).lib"
 			/>
 			<Tool
 				Name="VCALinkTool"
@@ -82,8 +83,8 @@
 		</Configuration>
 		<Configuration
 			Name="Release|Win32"
-			OutputDirectory="build"
-			IntermediateDirectory="$(OutDir)\$(ConfigurationName)"
+			OutputDirectory="build\$(ConfigurationName)"
+			IntermediateDirectory="$(OutDir)"
 			ConfigurationType="4"
 			CharacterSet="2"
 			WholeProgramOptimization="1"
@@ -111,7 +112,7 @@
 				FavorSizeOrSpeed="0"
 				OmitFramePointers="true"
 				EnableFiberSafeOptimizations="false"
-				AdditionalIncludeDirectories="include;../shared;../ElementXML/include;&quot;C:\Program Files\boost\boost_1_34_1&quot;"
+				AdditionalIncludeDirectories="include;../shared;../ElementXML/include;&quot;C:\Program Files\boost\boost_1_35_0&quot;"
 				PreprocessorDefinitions="WIN32;NDEBUG;_LIB;_CRT_SECURE_NO_DEPRECATE"
 				StringPooling="true"
 				MinimalRebuild="false"
@@ -134,6 +135,7 @@
 			/>
 			<Tool
 				Name="VCLibrarianTool"
+				OutputFile="$(SolutionDir)\SoarLibrary\lib\$(ProjectName).lib"
 			/>
 			<Tool
 				Name="VCALinkTool"
@@ -153,8 +155,8 @@
 		</Configuration>
 		<Configuration
 			Name="Debug SCU|Win32"
-			OutputDirectory="$(ConfigurationName)"
-			IntermediateDirectory="$(ConfigurationName)"
+			OutputDirectory="build\$(ConfigurationName)"
+			IntermediateDirectory="$(OutDir)"
 			ConfigurationType="4"
 			CharacterSet="2"
 			>
@@ -176,7 +178,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				AdditionalIncludeDirectories="include;../shared;../ElementXML/include;&quot;C:\Program Files\boost\boost_1_34_1&quot;"
+				AdditionalIncludeDirectories="include;../shared;../ElementXML/include;&quot;C:\Program Files\boost\boost_1_35_0&quot;"
 				PreprocessorDefinitions="WIN32;_DEBUG;_LIB;_CRT_SECURE_NO_DEPRECATE"
 				StringPooling="true"
 				MinimalRebuild="false"
@@ -200,6 +202,7 @@
 			/>
 			<Tool
 				Name="VCLibrarianTool"
+				OutputFile="$(SolutionDir)\SoarLibrary\lib\$(ProjectName).lib"
 			/>
 			<Tool
 				Name="VCALinkTool"
@@ -219,8 +222,8 @@
 		</Configuration>
 		<Configuration
 			Name="Release SCU|Win32"
-			OutputDirectory="$(ConfigurationName)"
-			IntermediateDirectory="$(ConfigurationName)"
+			OutputDirectory="build\$(ConfigurationName)"
+			IntermediateDirectory="$(OutDir)"
 			ConfigurationType="4"
 			CharacterSet="2"
 			WholeProgramOptimization="1"
@@ -248,7 +251,7 @@
 				FavorSizeOrSpeed="0"
 				OmitFramePointers="true"
 				EnableFiberSafeOptimizations="false"
-				AdditionalIncludeDirectories="include;../shared;../ElementXML/include;&quot;C:\Program Files\boost\boost_1_34_1&quot;"
+				AdditionalIncludeDirectories="include;../shared;../ElementXML/include;&quot;C:\Program Files\boost\boost_1_35_0&quot;"
 				PreprocessorDefinitions="WIN32;NDEBUG;_LIB;_CRT_SECURE_NO_DEPRECATE"
 				StringPooling="true"
 				MinimalRebuild="false"
@@ -271,6 +274,7 @@
 			/>
 			<Tool
 				Name="VCLibrarianTool"
+				OutputFile="$(SolutionDir)\SoarLibrary\lib\$(ProjectName).lib"
 			/>
 			<Tool
 				Name="VCALinkTool"

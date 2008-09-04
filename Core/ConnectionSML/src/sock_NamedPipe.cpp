@@ -276,9 +276,6 @@ bool NamedPipe::ReceiveBuffer(char* pRecvBuffer, size_t bufferSize)
 				else
 #endif
 				{
-					sml::PrintDebug("Error: Error receiving message (named pipe)") ;
-
-					sml::ReportSystemErrorMessage() ;
 
 					// We treat these errors as all being fatal, which they all appear to be.
 					// If we later decide we can survive certain ones, we should test for them here
@@ -287,24 +284,36 @@ bool NamedPipe::ReceiveBuffer(char* pRecvBuffer, size_t bufferSize)
 					//Close() ;
 
 					//return false ;
+
+               sml::Sleep(0,1);
 				}
 			}
 
 			// Check for 0 bytes read--which is the behavior if the remote pipe is
 			// closed gracefully.
-			/*if (thisRead == 0)
+			if (thisRead == 0)
 			{
-				sml::PrintDebug("Remote pipe has closed gracefully") ;
+				if(m_bTraceCommunications) sml::PrintDebug("Remote pipe has closed gracefully") ;
 
 				// Now close down our socket
 				//sml::PrintDebug("Closing our side of the pipe") ;
 
-				//Close() ;
+				Close() ;
 
-				//return false ;	// No message received.
-			}*/
+				return false ;	// No message received.
+			}
 
-		} while (!success) ;
+		} while (!success && tries < 3) ;
+
+      if(!success)
+      {
+         if(m_bTraceCommunications)
+         {
+            sml::PrintDebug("Error: Error receiving message (named pipe)") ;
+		      sml::ReportSystemErrorMessage() ;
+         }
+         return false;
+      }
 
 		//if(tries>1)	sml::PrintDebugFormat("Number tries %d",tries) ;
 
@@ -319,14 +328,14 @@ bool NamedPipe::ReceiveBuffer(char* pRecvBuffer, size_t bufferSize)
 }
 
 /////////////////////////////////////////////////////////////////////
-// Function name  : NamedPipe::Close
+// Function name  : NamedPipe::CloseInternal
 // 
 // Return type    : void 	
 // 
 // Description	  : Close down the pipe.
 //
 /////////////////////////////////////////////////////////////////////
-void NamedPipe::Close()
+void NamedPipe::CloseInternal()
 {
 	if (m_hPipe != INVALID_HANDLE_VALUE)
 	{

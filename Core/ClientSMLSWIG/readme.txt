@@ -1,12 +1,12 @@
 Generating the SWIG wrappers in Windows with Visual Studio
 ==========================================================
-These steps were tested with Visual Studio.NET 2003 and 2005.  Attempt other versions at your own risk.
+These steps were tested with Visual Studio.NET 2005.  Attempt other versions at your own risk.
 
-Java 1.4.2
-==========
-0) You need the Java SDK installed. This may work with earlier versions of Java, but we haven't tested it.
+Java 1.5/5.0 and 1.6/6.0
+========================
+0) You need the Java JDK installed.
 
-1) You need to have SWIG installed. This release was tested with SWIG-1.3.29. Slightly earlier releases may work (but not 1.3.28); we can't guess about future releases. SWIG can be downloaded from www.swig.org.  Be sure to get the swigwin download.
+1) You need to have SWIG installed. This release was tested with SWIG-1.3.31, but later versions will probably work.  SWIG can be downloaded from www.swig.org.  Be sure to get the swigwin download.
 
 2) Define the following user environment variables:
 
@@ -18,27 +18,15 @@ Note: If you define these variables and Visual Studio is already started, then y
 
 3) Build all of the SML stuff (i.e. everything in SML.sln).
 
-4) Rebuild the ClientSMLJava project (due to a bug in VS2003/5, a rebuild is necessary to force this to build correctly).  The sml.jar file and Java_sml_ClientInterface.dll should appear in SoarLibrary/bin.
+4) Rebuild the ClientSMLJava project (due to a bug in VS2005, a rebuild is necessary to force this to build correctly).  The sml.jar file and Java_sml_ClientInterface.dll should appear in SoarLibrary/bin.
 
-5) Interfaces built with Java 1.4.2 appear to work with Java 1.5/5.0 fine.  However, we recommend rebuilding for Java 1.5/5.0 since you can get proper enum support in the wrappers that way.
-
-Java 1.5/5.0
-============
-0) Follow steps 0-3 above.
-
-1) In the file ClientSMLSWIG/Java/Java_sml_ClientInterface.i, uncomment the line:
-
-%include "enums.swg"
-
-This will enable generation of proper enums in the Java code.
-
-Follow steps 4-5 above.
+5) Interfaces built with Java 1.5 appear to work with Java 1.6 fine. The reverse is not true.
 
 Tcl 8.4.11.1
 ============
 0) Install Tcl.  We used ActiveTcl-8.4.11.1, but any non-threaded 8.4.x install should work (so not ActiveTcl 8.4.11.2 or later).
 
-1) You need to have SWIG installed. This release was tested with SWIG-1.3.29. Slightly earlier releases may work (but not 1.3.28); we can't guess about future releases. SWIG can be downloaded from www.swig.org.  Be sure to get the swigwin download.
+1) You need to have SWIG installed. This release was tested with SWIG-1.3.31, but later versions will probably work. SWIG can be downloaded from www.swig.org.  Be sure to get the swigwin download.
 
 2) Define the following user environment variables:
 
@@ -51,13 +39,13 @@ Note: If you define these variables and Visual Studio is already started, then y
 
 3) Build all of the SML stuff (i.e. everything in SML.sln).
 
-4) Rebuild the ClientSMLTcl project (due to a bug in VS2003/5, a rebuild is necessary to force this to build correctly).  The tcl_sml_clientinterface package should appear in SoarLibrary/bin.
+4) Rebuild the ClientSMLTcl project (due to a bug in VS2005, a rebuild is necessary to force this to build correctly).  The tcl_sml_clientinterface package should appear in SoarLibrary/bin.
 
 Python 2.4.3
 ============
 0) Install Python.  We used Python 2.4.3, but other 2.4.x versions may work.  Python 2.5 requires special steps (see below)
 
-1) You need to have SWIG installed. This release was tested with SWIG-1.3.29. Slightly earlier releases may work (but not 1.3.28); we can't guess about future releases. SWIG can be downloaded from www.swig.org.  Be sure to get the swigwin download.
+1) You need to have SWIG installed. This release was tested with SWIG-1.3.31, but later versions will probably work..  SWIG can be downloaded from www.swig.org.  Be sure to get the swigwin download.
 
 2) Define the following user environment variables:
 
@@ -69,15 +57,15 @@ Note: If you define these variables and Visual Studio is already started, then y
 
 3) Build all of the SML stuff (i.e. everything in SML.sln).
 
-4) Rebuild the ClientSMLPython project (due to a bug in VS2003/5, a rebuild is necessary to force this to build correctly).  The Python_sml_clientinterface.py and _Python_sml_ClientInterface.pyd files should appear in SoarLibrary/bin.
+4) Rebuild the ClientSMLPython project (due to a bug in VS2005, a rebuild is necessary to force this to build correctly).  The Python_sml_clientinterface.py and _Python_sml_ClientInterface.pyd files should appear in SoarLibrary/bin.
 
 NOTE: This only works for a release build.  To do a debug build requires building a debug version of python, which is beyond the scope of this document.
 
-Python 2.5.0
-============
-0) Install Python.  We used Python 2.5.0.
+Python 2.5
+==========
+0) Install Python.  We used Python 2.5.0, but other 2.5.x versions may work.
 
-1) You need to have SWIG 1.3.30 installed.  As of this writing, this version was not yet released.  It can be built from the SWIG CVS repository (see www.swig.org).
+1) You need to have SWIG 1.3.31 installed (later versions will probably work).
 
 2) Define the following user environment variables:
 
@@ -91,6 +79,6 @@ Note: If you define these variables and Visual Studio is already started, then y
 
 4) In the ClientSMLPython project linker settings, change the library name from python24.lib to python25.lib.
 
-5) Rebuild the ClientSMLPython project (due to a bug in VS2003/5, a rebuild is necessary to force this to build correctly).  The Python_sml_clientinterface.py and _Python_sml_ClientInterface.pyd files should appear in SoarLibrary/bin.
+5) Rebuild the ClientSMLPython project (due to a bug in VS2005, a rebuild is necessary to force this to build correctly).  The Python_sml_clientinterface.py and _Python_sml_ClientInterface.pyd files should appear in SoarLibrary/bin.
 
 NOTE: This only works for a release build.  To do a debug build requires building a debug version of python, which is beyond the scope of this document.

@@ -2,7 +2,6 @@
   <general>
     <game>book</game>
     <map>maps/book/default.bmap</map>
-    <seed>0</seed>
     <rules>
       <book />
     </rules>

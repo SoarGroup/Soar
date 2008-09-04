@@ -19,6 +19,7 @@
 #include <map>
 #include <list>
 #include <sstream>
+#include <cstdlib>
 
 // Local includes
 #include "sml_KernelCallback.h"
@@ -172,6 +173,7 @@ public:
 	bool XMLMoveCurrentToLastChild() ;
 
 	// The internal Parse functions follow
+	// do not call these directly, these should only be called in DoCommandInternal
 	bool ParseAddWME(std::vector<std::string>& argv);
 	bool ParseAlias(std::vector<std::string>& argv);
 	bool ParseAttributePreferencesMode(std::vector<std::string>& argv);
@@ -188,6 +190,7 @@ public:
 	bool ParseExplainBacktraces(std::vector<std::string>& argv);
 	bool ParseFiringCounts(std::vector<std::string>& argv);
 	bool ParseGDSPrint(std::vector<std::string>& argv);
+	bool ParseGP(std::vector<std::string>& argv);
 	bool ParseHelp(std::vector<std::string>& argv);
 	bool ParseIndifferentSelection(std::vector<std::string>& argv);
 	bool ParseInitSoar(std::vector<std::string>& argv);
@@ -353,6 +356,12 @@ public:
 	* @brief gds-print command
 	*************************************************************/
 	bool DoGDSPrint();
+
+	/*************************************************************
+	* @brief gp command
+	* @param productionString The general soar production to generate more productions to load to memory
+	*************************************************************/
+	bool DoGP(const std::string& productionString);
 
 	/*************************************************************
 	* @brief help command
@@ -733,7 +742,7 @@ protected:
 	/*************************************************************
 	* @brief 
 	*************************************************************/
-	void HandleSourceError(int errorLine, const std::string& filename);
+	void HandleSourceError(int errorLine, const std::string* pFilename);
 
 	/*************************************************************
 	* @brief 
@@ -786,6 +795,12 @@ protected:
 	void GetMemoryStats(); // for stats
 	void GetReteStats(); // for stats
 
+	bool StreamSource( std::istream& soarStream, const std::string* pFilename );
+
+	// These help manage nested CLI calls
+	void PushAgent( sml::AgentSML* pAgent );
+	void PopAgent();
+
 ////////////////////////////////////////////
 	// New options code
 
@@ -802,7 +817,8 @@ protected:
 	eSourceMode m_SourceMode;
 	int			m_NumProductionsSourced;
 	int			m_NumProductionsExcised;
-	std::list<const char*> m_ExcisedDuringSource;
+	int			m_NumProductionsIgnored;
+	std::list< std::string > m_ExcisedDuringSource;
 	bool		m_SourceVerbose;
 
 ////////////////////////////////////////////
@@ -828,6 +844,7 @@ protected:
 	CommandMap			m_CommandMap;			// Mapping of command names to function pointers
 	sml::KernelSML*		m_pKernelSML;
 	sml::AgentSML*		m_pAgentSML;			// Agent we're currently working with
+	std::stack< sml::AgentSML* > m_pAgentSMLStack;	// Agent we're currently working with
 	agent*				m_pAgentSoar;			// Agent we're currently working with (soar kernel)
 	std::string			m_LibraryDirectory;		// The library directory, server side, see help command
 	StringStack			m_DirectoryStack;		// Directory stack for pushd/popd

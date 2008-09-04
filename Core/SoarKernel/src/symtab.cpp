@@ -1,7 +1,7 @@
 #include <portability.h>
 
 /*************************************************************************
- * PLEASE SEE THE FILE "COPYING" (INCLUDED WITH THIS SOFTWARE PACKAGE)
+ * PLEASE SEE THE FILE "license.txt" (INCLUDED WITH THIS SOFTWARE PACKAGE)
  * FOR LICENSE AND COPYRIGHT INFORMATION. 
  *************************************************************************/
 
@@ -577,6 +577,10 @@ void create_predefined_symbols (agent* thisAgent) {
   thisAgent->constraint_failure_symbol = make_sym_constant (thisAgent, "constraint-failure");
   thisAgent->no_change_symbol = make_sym_constant (thisAgent, "no-change");
   thisAgent->multiple_symbol = make_sym_constant (thisAgent, "multiple");
+  
+  // SBW 5/07
+  thisAgent->item_count_symbol = make_sym_constant (thisAgent, "item-count");
+
   thisAgent->conflict_symbol = make_sym_constant (thisAgent, "conflict");
   thisAgent->tie_symbol = make_sym_constant (thisAgent, "tie");
   thisAgent->item_symbol = make_sym_constant (thisAgent, "item");
@@ -649,6 +653,9 @@ void release_predefined_symbols(agent* thisAgent) {
   release_helper(thisAgent,&(thisAgent->so_context_variable));
   release_helper(thisAgent,&(thisAgent->s_context_variable));
   release_helper(thisAgent,&(thisAgent->o_context_variable));
+
+  // SBW 5/07
+  release_helper(thisAgent,&(thisAgent->item_count_symbol));
 
   /* REW: begin 10.24.97 */
   release_helper(thisAgent,&(thisAgent->wait_symbol));

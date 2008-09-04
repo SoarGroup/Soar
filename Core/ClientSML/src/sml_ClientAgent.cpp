@@ -39,11 +39,12 @@ Agent::Agent(Kernel* pKernel, char const* pName)
 {
 	m_Kernel = pKernel ;
 	m_Name	 = pName ;
-	m_WorkingMemory.SetAgent(this) ;
 	m_CallbackIDCounter = 0 ;
 	m_VisitedCounter = 0 ;
 	m_XMLCallback = -1 ;
 	m_BlinkIfNoChange = true ;
+
+	m_WorkingMemory.SetAgent(this) ;
 
 	ClearError() ;
 }
@@ -245,18 +246,19 @@ bool Agent::LoadProductions(char const* pFilename, bool echoResults)
 {
 	// gSKI's LoadProductions command doesn't support all of the command line commands we need,
 	// so we'll send this through the command line processor instead by creating a "source" command.
-	std::string cmd = "source ";
+	std::stringstream cmd;
+	cmd << "source ";
 	if (strlen(pFilename) && (pFilename[0] == '\"') && (pFilename[strlen(pFilename) - 1] == '\"'))
 	{
-		cmd += pFilename ;
+		cmd << pFilename ;
 	} else {
-		cmd += '\"';
-		cmd += pFilename ;
-		cmd += '\"';
+		cmd << '\"';
+		cmd << pFilename ;
+		cmd << '\"';
 	}
 
 	// Execute the source command
-	char const* pResult = ExecuteCommandLine(cmd.c_str(), echoResults) ;
+	char const* pResult = ExecuteCommandLine(cmd.str().c_str(), echoResults) ;
 
 	bool ok = GetLastCommandLineResult() ;
 
@@ -1300,7 +1302,7 @@ char const* Agent::RunSelf(unsigned long numberSteps, smlRunStepSize stepSize)
 #ifdef SML_DIRECT
 		if (GetConnection()->IsDirectConnection())
 		{
-			((EmbeddedConnection*)GetConnection())->DirectRun(this->GetAgentName(), false, stepSize, sml_PHASE, (int)numberSteps) ;
+			((EmbeddedConnection*)GetConnection())->DirectRun(this->GetAgentName(), false, stepSize, sml_DECISION, (int)numberSteps) ;
 			return "DirectRun completed" ;
 		}
 #endif

@@ -17,6 +17,8 @@ soarversionstring = "9.0.0"
 print "Soar", soarversionstring
 print "Detected OS:", os.name
 print "Detected platform:", sys.platform
+processor = os.popen( 'uname -p', 'r' ).read().strip()
+print "Detected processor:", processor
 
 if os.name != "posix":
 	print "Unsupported OS."
@@ -36,6 +38,7 @@ if sys.platform == 'cygwin':
 
 opts = Options()
 opts.AddOptions(
+	BoolOption('scu', 'Build using single compilation units (faster)', 'yes'), 
 	BoolOption('java', 'Build the Soar Java interface (required for debugger)', 'yes'), 
 	BoolOption('swt', 'Build Java SWT projects (required for debugger)', 'yes'), 
 	BoolOption('python', 'Build the Soar Python interface', pythonDefault), 
@@ -161,6 +164,13 @@ if sys.platform != 'cygwin':
 	if not conf.CheckLib('pthread'):
 		Exit(1)
 		
+# if this flag is not included, the linker will complain about not being able
+# to find the symbol __sync_sub_and_fetch_4 when using g++ 4.3
+# only do not include it if we're on powerpc
+if processor != 'powerpc':
+	conf.env.Append(CPPFLAGS = ' -march=i686')
+conf.env[ 'processor' ] = processor
+
 env = conf.Finish()
 Export('env')
 

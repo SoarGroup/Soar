@@ -1,7 +1,7 @@
 #include <portability.h>
 
 /*************************************************************************
- * PLEASE SEE THE FILE "COPYING" (INCLUDED WITH THIS SOFTWARE PACKAGE)
+ * PLEASE SEE THE FILE "license.txt" (INCLUDED WITH THIS SOFTWARE PACKAGE)
  * FOR LICENSE AND COPYRIGHT INFORMATION. 
  *************************************************************************/
 
@@ -472,6 +472,19 @@ void build_chunk_conds_for_grounds_and_add_negateds (agent* thisAgent,
       prev_cc = cc;
     } else {
       /* --- not in TC, so discard the condition --- */
+
+      if ( thisAgent->sysparams[CHUNK_THROUGH_LOCAL_NEGATIONS_SYSPARAM] == FALSE )
+	  {
+        // this chunk will be overgeneral! don't create it
+       
+        // SBW 5/07
+        // report what local negations are preventing the chunk,
+        // and set flags like we saw a ^quiescence t so it won't be created
+        report_local_negation ( thisAgent, cc->cond ); // in backtrace.cpp
+        thisAgent->quiescence_t_flag = TRUE;
+        thisAgent->variablize_this_chunk = FALSE;	    
+	  }
+
       free_with_pool (&thisAgent->chunk_cond_pool, cc);
     }
   }

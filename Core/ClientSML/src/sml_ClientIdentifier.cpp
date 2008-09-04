@@ -52,7 +52,17 @@ void IdentifierSymbol::AddChild(WMElement* pWME)
 	// client would like to know that this identifier was changed in some fashion.
 	SetAreChildrenModified(true) ;
 
-	m_Children.push_back(pWME) ;
+
+	Identifier::ChildrenIter iter = std::find_if( m_Children.begin(), m_Children.end(), WMEFinder( pWME ) );
+	if ( iter == m_Children.end() )
+	{
+		//std::cout << "AddChild: " << pWME->GetIdentifierName() << ", " << pWME->GetAttribute() << ", " << pWME->GetValueAsString() << " (" << pWME->GetTimeTag() << ")" << " (" << pWME << ")" << std::endl;
+		m_Children.push_back(pWME) ;
+	} 
+	else
+	{
+		//std::cout << "Did not AddChild: " << pWME->GetIdentifierName() << ", " << pWME->GetAttribute() << ", " << pWME->GetValueAsString() << " (" << pWME->GetTimeTag() << ")" << " (" << pWME << ")" << std::endl;
+	}
 }
 
 void IdentifierSymbol::RemoveChild(WMElement* pWME)
@@ -61,7 +71,17 @@ void IdentifierSymbol::RemoveChild(WMElement* pWME)
 	// client would like to know that this identifier was changed in some fashion.
 	SetAreChildrenModified(true) ;
 
-	m_Children.remove(pWME) ;
+
+	Identifier::ChildrenIter iter = std::find_if( m_Children.begin(), m_Children.end(), WMEFinder( pWME ) );
+	if ( iter != m_Children.end() )
+	{
+		//std::cout << "RemoveChild: " << pWME->GetIdentifierName() << ", " << pWME->GetAttribute() << ", " << pWME->GetValueAsString() << " (" << pWME->GetTimeTag() << ")" << " (" << pWME << ")" << std::endl;
+		m_Children.erase( iter ) ;
+	} 
+	else
+	{
+		//std::cout << "Did not RemoveChild: " << pWME->GetIdentifierName() << ", " << pWME->GetAttribute() << ", " << pWME->GetValueAsString() << " (" << pWME->GetTimeTag() << ")" << " (" << pWME << ")" << std::endl;
+	}
 }
 
 // This version is only needed at the top of the tree (e.g. the input link)
@@ -179,46 +199,6 @@ void Identifier::AddStatusError()
 void Identifier::AddErrorCode(int errorCode)
 {
 	GetAgent()->CreateIntWME(this, "error-code", errorCode) ;
-}
-
-/*************************************************************
-* @brief Clear the "just added" flag for this and all children
-*		 (The search is recursive over all children).
-*************************************************************/
-void Identifier::ClearJustAdded()
-{
-	this->SetJustAdded(false) ;
-
-	// Go through each child in turn
-	for (ChildrenConstIter iter = m_pSymbol->m_Children.begin() ; iter != m_pSymbol->m_Children.end() ; iter++)
-	{
-		WMElement* pWME = *iter ;
-
-		pWME->SetJustAdded(false) ;
-
-		// If this is an identifer, we clear all of its children.
-		if (pWME->IsIdentifier())
-			((Identifier*)pWME)->ClearJustAdded() ;
-	}
-}
-
-/*************************************************************
-* @brief Clear the "just added" flag for this and all children
-*		 (The search is recursive over all children).
-*************************************************************/
-void Identifier::ClearChildrenModified()
-{
-	this->m_pSymbol->SetAreChildrenModified(false) ;
-
-	// Go through each child in turn
-	for (ChildrenConstIter iter = m_pSymbol->m_Children.begin() ; iter != m_pSymbol->m_Children.end() ; iter++)
-	{
-		WMElement* pWME = *iter ;
-
-		// If this is an identifer, we clear it and all of its children.
-		if (pWME->IsIdentifier())
-			((Identifier*)pWME)->ClearChildrenModified() ;
-	}
 }
 
 /*************************************************************

@@ -131,6 +131,15 @@ bool CommandLineInterface::DoSource(std::string filename) {
 		return SetError(CLIError::kOpenFileFail);
 	}
 
+	bool ret = StreamSource( soarFile, &filename );
+	
+	soarFile.close();
+	if (path.length()) DoPopD();
+
+	return ret;
+}
+
+bool CommandLineInterface::StreamSource( std::istream& soarStream, const std::string* pFilename ) {
 	std::string line;				// Each line removed from the file
 	std::string command;			// The command, sometimes spanning multiple lines
 	std::string::size_type pos;		// Used to find braces on a line (triggering multiple line spanning commands)
@@ -143,22 +152,35 @@ bool CommandLineInterface::DoSource(std::string filename) {
 	
 	static int numTotalProductionsSourced;
 	static int numTotalProductionsExcised;
+	static int numTotalProductionsIgnored;
 
-	if (m_SourceDepth == 0) {				// Check for top-level source call
+	if ( m_SourceDepth == 1 ) {				// Check for top-level source call
 		m_SourceDirDepth = 0;				// Set directory depth to zero on first call to source, even though it should be zero anyway
 
 		m_NumProductionsSourced = 0;		// set production number caches to zero on top level
 		m_NumProductionsExcised = 0;
+		m_NumProductionsIgnored = 0;
 		numTotalProductionsSourced = 0;
 		numTotalProductionsExcised = 0;
+		numTotalProductionsIgnored = 0;
 
 		// Register for production removed events so we can report the number of excised productions
-		this->RegisterWithKernel(smlEVENT_BEFORE_PRODUCTION_REMOVED) ;
+		if ( m_pAgentSML ) // only do this if we have an agent
+		{
+			this->RegisterWithKernel(smlEVENT_BEFORE_PRODUCTION_REMOVED) ;
+		}
 	}
 	++m_SourceDepth;
 
+	if ( m_SourceDepth >= 100 )
+	{
+		SetError(CLIError::kSourceDepthExceeded);
+		HandleSourceError(lineCount, pFilename);
+		return false;
+	}
+
 	// Go through each line of the file (Yay! C++ file parsing!)
-	while (getline(soarFile, line)) {
+	while (getline(soarStream, line)) {
 	
 		// Increment line count
 		++lineCount;
@@ -169,8 +191,7 @@ bool CommandLineInterface::DoSource(std::string filename) {
 		// Trim whitespace and comments
 		if (!Trim(line)) {
 			SetError(CLIError::kNewlineBeforePipe);
-			HandleSourceError(lineCount, filename);
-			if (path.length()) DoPopD();
+			HandleSourceError(lineCount, pFilename);
 			return false;
 		}
 
@@ -188,8 +209,8 @@ bool CommandLineInterface::DoSource(std::string filename) {
 			do {
 				if (lineCountCache != lineCount) {
 					if (!Trim(line)) { // Trim whitespace and comments on additional lines
-						HandleSourceError(lineCount, filename);
-						if (path.length()) DoPopD();
+						SetError(CLIError::kNewlineBeforePipe);
+						HandleSourceError(lineCount, pFilename);
 						return false; 
 					}
 				}
@@ -200,28 +221,42 @@ bool CommandLineInterface::DoSource(std::string filename) {
 				// Enter special parsing mode
 				iter = line.begin();
 				while (iter != line.end()) {
-					// Go through each of the characters, counting brace nesting level
-					if (pipe) {	// bug 968 fix
-						if (*iter == '|') {
-							pipe = false;
+					// skip escaped characters
+					if (*iter == '\\') {
+						// skip escape character
+						++iter;
+
+						if (iter == line.end()) {
+							// can't escape newlines
+							SetError(CLIError::kEscapedNewline);
+							HandleSourceError(lineCount, pFilename);
+							return false; 
 						}
 
 					} else {
-
-						if (*iter == '|') { // bug 968 fix
-							pipe = true;
-						} else if (*iter == '{') {
-							++braces;
-						} else if (*iter == '}') {
-							--braces;
-							
-							// bug 968 fix
-							if (braces < 0) {
-								break;
+						// Go through each of the characters, counting brace nesting level
+						if (pipe) {	// bug 968 fix
+							if (*iter == '|') {
+								pipe = false;
 							}
 
-						} else if (*iter == '\"') {
-							quote = !quote; // bug 967 fix
+						} else {
+
+							if (*iter == '|') { // bug 968 fix
+								pipe = true;
+							} else if (*iter == '{') {
+								++braces;
+							} else if (*iter == '}') {
+								--braces;
+								
+								// bug 968 fix
+								if (braces < 0) {
+									break;
+								}
+
+							} else if (*iter == '\"') {
+								quote = !quote; // bug 967 fix
+							}
 						}
 					}
 
@@ -232,8 +267,7 @@ bool CommandLineInterface::DoSource(std::string filename) {
 				// We finished that line, add it to the command
 				command += line;
 
-				// Are we still waiting for a pipe?
-				if (pipe == true) break; // Yes, break in error
+				assert( pipe == false ); // shouldn't be possible because it is handled in Trim()
 
 				// Did we close all of the braces? and quotes?
 				if (braces == 0 && quote == false) break; // Yes, break out of special parsing mode
@@ -248,32 +282,28 @@ bool CommandLineInterface::DoSource(std::string filename) {
 				++lineCount;
 
 				// Get the next line from the file and repeat
-			} while (getline(soarFile, line));
+			} while (getline(soarStream, line));
 
 			// Did we break out because of closed braces or EOF?
 			if (braces > 0) {
 				// EOF while still nested
 				SetError(CLIError::kUnmatchedBrace);
-				HandleSourceError(lineCountCache, filename);
-				if (path.length()) DoPopD();
+				HandleSourceError(lineCountCache, pFilename);
 				return false;
 
 			} else if (braces < 0) {
 				SetError(CLIError::kExtraClosingBrace);
-				HandleSourceError(lineCountCache, filename);
-				if (path.length()) DoPopD();
+				HandleSourceError(lineCountCache, pFilename);
 				return false;
 
 			} else if (quote == true) { // bug 967 fix
 				SetError(CLIError::kUnmatchedBracketOrQuote);
-				HandleSourceError(lineCountCache, filename);
-				if (path.length()) DoPopD();
+				HandleSourceError(lineCountCache, pFilename);
 				return false;
 
 			} else if (pipe == true) { // bug 968 fix
 				SetError(CLIError::kNewlineBeforePipe);
-				HandleSourceError(lineCountCache, filename);
-				if (path.length()) DoPopD();
+				HandleSourceError(lineCountCache, pFilename);
 				return false;
 			}
 
@@ -302,8 +332,7 @@ bool CommandLineInterface::DoSource(std::string filename) {
 
 		} else {
 			// Command failed, error in result
-			HandleSourceError(lineCountCache, filename);
-			if (path.length()) DoPopD();
+			HandleSourceError(lineCountCache, pFilename);
 			return false;
 		}	
 	}
@@ -312,33 +341,37 @@ bool CommandLineInterface::DoSource(std::string filename) {
 	--m_SourceDepth;
 
 	// If mode ALL, print summary
-	if (m_SourceMode == SOURCE_ALL) {
+	if (pFilename && m_SourceMode == SOURCE_ALL) {
 		if (m_RawOutput) {
 			if (m_NumProductionsSourced) m_Result << '\n';	// add a newline if a production was sourced
-			m_Result << filename << ": " << m_NumProductionsSourced << " production" << ((m_NumProductionsSourced == 1) ? " " : "s ") << "sourced.";
+			m_Result << *pFilename << ": " << m_NumProductionsSourced << " production" << ((m_NumProductionsSourced == 1) ? " " : "s ") << "sourced.";
 			if (m_NumProductionsExcised) {
 				m_Result << " " << m_NumProductionsExcised << " production" << ((m_NumProductionsExcised == 1) ? " " : "s ") << "excised.";
 				if (m_SourceVerbose) {
 					// print excised production names
 					m_Result << "\nExcised productions:";
 
-					std::list<const char*>::iterator iter = m_ExcisedDuringSource.begin();
+					std::list< std::string >::iterator iter = m_ExcisedDuringSource.begin();
 					while (iter != m_ExcisedDuringSource.end()) {
 						m_Result << "\n\t" << (*iter);
 						++iter;
 					}
 				}
 			}
+			if (m_NumProductionsIgnored) {
+				m_Result << " " << m_NumProductionsIgnored << " production" << ((m_NumProductionsIgnored == 1) ? " " : "s ") << "ignored.";
+			}
 
 		} else {
 			char buf[kMinBufferSize];
-			AppendArgTagFast(sml_Names::kParamFilename, sml_Names::kTypeString, filename.c_str());
+			AppendArgTagFast(sml_Names::kParamFilename, sml_Names::kTypeString, pFilename->c_str());
 			AppendArgTag(sml_Names::kParamSourcedProductionCount, sml_Names::kTypeInt, Int2String(m_NumProductionsSourced, buf, kMinBufferSize));
 			AppendArgTag(sml_Names::kParamExcisedProductionCount, sml_Names::kTypeInt, Int2String(m_NumProductionsExcised, buf, kMinBufferSize));
+			AppendArgTag(sml_Names::kParamExcisedProductionCount, sml_Names::kTypeInt, Int2String(m_NumProductionsIgnored, buf, kMinBufferSize));
 
-			std::list<const char*>::iterator iter = m_ExcisedDuringSource.begin();
+			std::list< std::string >::iterator iter = m_ExcisedDuringSource.begin();
 			while (iter != m_ExcisedDuringSource.end()) {
-				AppendArgTagFast(sml_Names::kParamName, sml_Names::kTypeString, (*iter));
+				AppendArgTagFast( sml_Names::kParamName, sml_Names::kTypeString, (*iter).c_str() );
 				++iter;
 			}
 		}
@@ -348,14 +381,19 @@ bool CommandLineInterface::DoSource(std::string filename) {
 
 	numTotalProductionsSourced += m_NumProductionsSourced;
 	numTotalProductionsExcised += m_NumProductionsExcised;
+	numTotalProductionsIgnored += m_NumProductionsIgnored;
 	m_NumProductionsSourced = 0;	// set production number cache to zero after each summary
 	m_NumProductionsExcised = 0;	// set production number cache to zero after each summary
+	m_NumProductionsIgnored = 0;	// set production number cache to zero after each summary
 
 	// if we're returning to the user
-	if (!m_SourceDepth) {
-		
+	if ( m_SourceDepth == 1 ) {
+
 		// Remove production listener
-		this->UnregisterWithKernel(smlEVENT_BEFORE_PRODUCTION_REMOVED) ;
+		if ( m_pAgentSML ) // only do this if we have an agent
+		{
+			this->UnregisterWithKernel(smlEVENT_BEFORE_PRODUCTION_REMOVED) ;
+		}
 
 		if (m_RawOutput) {
 			if (m_SourceMode != SOURCE_DISABLE) {
@@ -369,12 +407,15 @@ bool CommandLineInterface::DoSource(std::string filename) {
 						// print excised production names
 						m_Result << "\nExcised productions:";
 
-						std::list<const char*>::iterator iter = m_ExcisedDuringSource.begin();
+						std::list< std::string >::iterator iter = m_ExcisedDuringSource.begin();
 						while (iter != m_ExcisedDuringSource.end()) {
 							m_Result << "\n\t" << (*iter);
 							++iter;
 						}
 					}
+				}
+				if (numTotalProductionsIgnored) {
+					m_Result << " " << numTotalProductionsIgnored << " production" << ((numTotalProductionsIgnored == 1) ? " " : "s ") << "ignored.";
 				}
 			}
 
@@ -383,11 +424,12 @@ bool CommandLineInterface::DoSource(std::string filename) {
 				char buf[kMinBufferSize];
 				AppendArgTag(sml_Names::kParamSourcedProductionCount, sml_Names::kTypeInt, Int2String(numTotalProductionsSourced, buf, kMinBufferSize));
 				AppendArgTag(sml_Names::kParamExcisedProductionCount, sml_Names::kTypeInt, Int2String(numTotalProductionsExcised, buf, kMinBufferSize));
-				
+				AppendArgTag(sml_Names::kParamExcisedProductionCount, sml_Names::kTypeInt, Int2String(numTotalProductionsIgnored, buf, kMinBufferSize));
+
 				if (m_SourceVerbose) {
-					std::list<const char*>::iterator iter = m_ExcisedDuringSource.begin();
+					std::list< std::string >::iterator iter = m_ExcisedDuringSource.begin();
 					while (iter != m_ExcisedDuringSource.end()) {
-						AppendArgTagFast(sml_Names::kParamName, sml_Names::kTypeString, (*iter));
+						AppendArgTagFast(sml_Names::kParamName, sml_Names::kTypeString, (*iter).c_str() );
 						++iter;
 					}
 				}
@@ -402,21 +444,22 @@ bool CommandLineInterface::DoSource(std::string filename) {
 
 		// Add finished message
 		if (m_RawOutput) {
-			if (m_Result.str()[m_Result.str().size()-1] != '\n') m_Result << '\n';	// add a newline if none present
+			if (m_Result.str().size() && m_Result.str()[m_Result.str().size()-1] != '\n') m_Result << '\n';	// add a newline if none present
 			m_Result << "Source finished.";
 		}
 	}
 
-	soarFile.close();
-	if (path.length()) DoPopD();
 	return true;
 }
 
-void CommandLineInterface::HandleSourceError(int errorLine, const std::string& filename) {
-	if (!m_SourceError) {
+void CommandLineInterface::HandleSourceError( int errorLine, const std::string* pFilename ) {
+	if ( !m_SourceError && m_SourceDepth > 1 ) { // only do this when we're actually dealing with a source error
 
 		// Remove listener
-		this->UnregisterWithKernel(smlEVENT_BEFORE_PRODUCTION_REMOVED) ;
+		if ( m_pAgentSML ) // only do this if we have an agent
+		{
+			this->UnregisterWithKernel(smlEVENT_BEFORE_PRODUCTION_REMOVED) ;
+		}
 
 		// Flush excised production list
 		if (m_ExcisedDuringSource.size()) m_ExcisedDuringSource.clear();
@@ -428,12 +471,15 @@ void CommandLineInterface::HandleSourceError(int errorLine, const std::string& f
 		char buf[kMinBufferSize];
 		m_SourceErrorDetail += Int2String(errorLine, buf, kMinBufferSize);
 
-		m_SourceErrorDetail += " of ";
-		
-		std::string directory;
-		GetCurrentWorkingDirectory(directory); // Again, ignore error here
+		if ( pFilename )
+		{
+			m_SourceErrorDetail += " of ";
 
-		m_SourceErrorDetail += filename + " (" + directory + ")";
+			std::string directory;
+			GetCurrentWorkingDirectory(directory); // Again, ignore error here
+
+			m_SourceErrorDetail += *pFilename + " (" + directory + ")";
+		}
 
 		// PopD to original source directory
 		while (m_SourceDirDepth) {
@@ -441,13 +487,13 @@ void CommandLineInterface::HandleSourceError(int errorLine, const std::string& f
 			DoPopD(); // Ignore error here since it will be rare and a message confusing
 		}
 
-		// Reset depth to zero
-		m_SourceDepth = 0;
-
 		m_SourceError = true;
 
-	} else {
+	} else if ( pFilename ) {
 		char buf[kMinBufferSize];
-		m_SourceErrorDetail += "\n\t--> Sourced by: " + filename + " (line " + Int2String(errorLine, buf, kMinBufferSize) + ")";
+		m_SourceErrorDetail += "\n\t--> Sourced by: " + *pFilename + " (line " + Int2String(errorLine, buf, kMinBufferSize) + ")";
 	}
+
+	// Reset depth to zero
+	m_SourceDepth = 0;
 }

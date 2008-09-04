@@ -23,7 +23,9 @@ using namespace cli;
 
 bool CommandLineInterface::ParseSP(std::vector<std::string>& argv) {
 	// One argument (in brackets)
-	if (argv.size() < 2) return SetError(CLIError::kTooFewArgs);
+	if (argv.size() < 2) {
+		return SetError(CLIError::kTooFewArgs);
+	}
 	if (argv.size() > 2) {
 		SetErrorDetail("Expected one argument (the production) enclosed in braces.");
 		return SetError(CLIError::kTooManyArgs);
@@ -69,15 +71,18 @@ bool CommandLineInterface::DoSP(const std::string& productionString) {
 	soarAlternateInput( m_pAgentSoar, 0, 0, true ); 
 
 	if (!p) { 
-		if (rete_addition_result == DUPLICATE_PRODUCTION) {
-			return SetError( CLIError::kDuplicateProduction );
+		// There was an error, but duplicate production is just a warning
+		if (rete_addition_result != DUPLICATE_PRODUCTION) {
+		  return SetError( CLIError::kProductionAddFailed );
 		}
-		return SetError( CLIError::kProductionAddFailed );
-	}
-
-	++m_NumProductionsSourced;
-	if (m_RawOutput) {
-		m_Result << '*';
+		// production ignored
+		++m_NumProductionsIgnored;
+	} else {
+		// production was sourced
+		++m_NumProductionsSourced;
+		if (m_RawOutput) {
+			m_Result << '*';
+		}
 	}
 	return true;
 }

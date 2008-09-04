@@ -45,6 +45,7 @@ bool ClientTraceXML::IsTagPhase() const						{ return IsTag(sml_Names::kTagPhase
 char const* ClientTraceXML::GetPhaseName() const			{ return GetAttribute(sml_Names::kPhase_Name) ; }
 char const* ClientTraceXML::GetPhaseStatus() const			{ return GetAttribute(sml_Names::kPhase_Status) ; }
 char const* ClientTraceXML::GetFiringType() const			{ return GetAttribute(sml_Names::kPhase_FiringType) ; }
+char const* ClientTraceXML::GetLevelNum() const			{ return GetAttribute(sml_Names::kPhase_LevelNum) ; } // SBW 8/4/08
 
 // Subphase (firing productions/changing wm) tag
 bool ClientTraceXML::IsTagSubphase() const							{ return IsTag(sml_Names::kTagSubphase) ; }
@@ -215,6 +216,7 @@ bool ClientTraceXML::IsTagBacktrace() const				{ return IsTag(sml_Names::kTagBac
 bool ClientTraceXML::IsTagAddToPotentials() const		{ return IsTag(sml_Names::kTagAddToPotentials) ; }
 bool ClientTraceXML::IsTagProhibitPreference() const	{ return IsTag(sml_Names::kTagProhibitPreference) ; }
 bool ClientTraceXML::IsTagBacktraceResult() const		{ return IsTag(sml_Names::kTagBacktraceResult) ; }
+bool ClientTraceXML::IsTagLocalNegation() const			{ return IsTag(sml_Names::kTagLocalNegation) ; }
 
 char const* ClientTraceXML::GetBacktraceAlreadyBacktraced() const { return GetAttribute(sml_Names::kBacktracedAlready) ; }
 char const* ClientTraceXML::GetBacktraceSymbol1() const			  { return GetAttribute(sml_Names::kBacktraceSymbol1) ; }

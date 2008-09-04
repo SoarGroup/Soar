@@ -17,8 +17,8 @@
 	<Configurations>
 		<Configuration
 			Name="Debug|Win32"
-			OutputDirectory="build"
-			IntermediateDirectory="$(OutDir)\Debug"
+			OutputDirectory="build\$(ConfigurationName)"
+			IntermediateDirectory="$(OutDir)"
 			ConfigurationType="4"
 			InheritedPropertySheets="$(VCInstallDir)VCProjectDefaults\UpgradeFromVC71.vsprops"
 			CharacterSet="2"
@@ -42,7 +42,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				AdditionalIncludeDirectories="include;..\SoarKernel\include;..\ElementXML\include;..\ConnectionSML\include;..\KernelSML\include;..\shared;&quot;C:\Program Files\boost\boost_1_34_1&quot;"
+				AdditionalIncludeDirectories="include;..\SoarKernel\include;..\ElementXML\include;..\ConnectionSML\include;..\KernelSML\include;..\shared;&quot;C:\Program Files\boost\boost_1_35_0&quot;"
 				PreprocessorDefinitions="WIN32;_DEBUG;_WINDOWS;_USRDLL;KERNELSML_EXPORTS;DEBUG;_CRT_SECURE_NO_DEPRECATE"
 				StringPooling="true"
 				MinimalRebuild="true"
@@ -68,7 +68,7 @@
 			/>
 			<Tool
 				Name="VCLibrarianTool"
-				OutputFile="$(OutDir)\$(ProjectName).lib"
+				OutputFile="$(SolutionDir)\SoarLibrary\lib\$(ProjectName).lib"
 			/>
 			<Tool
 				Name="VCALinkTool"
@@ -88,8 +88,8 @@
 		</Configuration>
 		<Configuration
 			Name="Release|Win32"
-			OutputDirectory="build"
-			IntermediateDirectory="$(OutDir)\Release"
+			OutputDirectory="build\$(ConfigurationName)"
+			IntermediateDirectory="$(OutDir)"
 			ConfigurationType="4"
 			InheritedPropertySheets="$(VCInstallDir)VCProjectDefaults\UpgradeFromVC71.vsprops"
 			CharacterSet="2"
@@ -116,7 +116,7 @@
 				Optimization="2"
 				InlineFunctionExpansion="2"
 				OmitFramePointers="true"
-				AdditionalIncludeDirectories="include;..\SoarKernel\include;..\ElementXML\include;..\ConnectionSML\include;..\KernelSML\include;..\shared;&quot;C:\Program Files\boost\boost_1_34_1&quot;"
+				AdditionalIncludeDirectories="include;..\SoarKernel\include;..\ElementXML\include;..\ConnectionSML\include;..\KernelSML\include;..\shared;&quot;C:\Program Files\boost\boost_1_35_0&quot;"
 				PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;_USRDLL;KERNELSML_EXPORTS;_CRT_SECURE_NO_DEPRECATE"
 				StringPooling="true"
 				MinimalRebuild="false"
@@ -140,7 +140,7 @@
 			/>
 			<Tool
 				Name="VCLibrarianTool"
-				OutputFile="$(OutDir)\$(ProjectName).lib"
+				OutputFile="$(SolutionDir)\SoarLibrary\lib\$(ProjectName).lib"
 			/>
 			<Tool
 				Name="VCALinkTool"
@@ -160,8 +160,8 @@
 		</Configuration>
 		<Configuration
 			Name="Debug SCU|Win32"
-			OutputDirectory="$(ConfigurationName)"
-			IntermediateDirectory="$(ConfigurationName)"
+			OutputDirectory="build\$(ConfigurationName)"
+			IntermediateDirectory="$(OutDir)"
 			ConfigurationType="4"
 			InheritedPropertySheets="$(VCInstallDir)VCProjectDefaults\UpgradeFromVC71.vsprops"
 			CharacterSet="2"
@@ -185,7 +185,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				AdditionalIncludeDirectories="include;..\SoarKernel\include;..\ElementXML\include;..\ConnectionSML\include;..\KernelSML\include;..\shared;&quot;C:\Program Files\boost\boost_1_34_1&quot;"
+				AdditionalIncludeDirectories="include;..\SoarKernel\include;..\ElementXML\include;..\ConnectionSML\include;..\KernelSML\include;..\shared;&quot;C:\Program Files\boost\boost_1_35_0&quot;"
 				PreprocessorDefinitions="WIN32;_DEBUG;_WINDOWS;_USRDLL;KERNELSML_EXPORTS;DEBUG;_CRT_SECURE_NO_DEPRECATE"
 				StringPooling="true"
 				MinimalRebuild="true"
@@ -211,7 +211,7 @@
 			/>
 			<Tool
 				Name="VCLibrarianTool"
-				OutputFile="$(OutDir)\$(ProjectName).lib"
+				OutputFile="$(SolutionDir)\SoarLibrary\lib\$(ProjectName).lib"
 			/>
 			<Tool
 				Name="VCALinkTool"
@@ -231,8 +231,8 @@
 		</Configuration>
 		<Configuration
 			Name="Release SCU|Win32"
-			OutputDirectory="$(ConfigurationName)"
-			IntermediateDirectory="$(ConfigurationName)"
+			OutputDirectory="build\$(ConfigurationName)"
+			IntermediateDirectory="$(OutDir)"
 			ConfigurationType="4"
 			InheritedPropertySheets="$(VCInstallDir)VCProjectDefaults\UpgradeFromVC71.vsprops"
 			CharacterSet="2"
@@ -259,7 +259,7 @@
 				Optimization="2"
 				InlineFunctionExpansion="2"
 				OmitFramePointers="true"
-				AdditionalIncludeDirectories="include;..\SoarKernel\include;..\ElementXML\include;..\ConnectionSML\include;..\KernelSML\include;..\shared;&quot;C:\Program Files\boost\boost_1_34_1&quot;"
+				AdditionalIncludeDirectories="include;..\SoarKernel\include;..\ElementXML\include;..\ConnectionSML\include;..\KernelSML\include;..\shared;&quot;C:\Program Files\boost\boost_1_35_0&quot;"
 				PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;_USRDLL;KERNELSML_EXPORTS;_CRT_SECURE_NO_DEPRECATE"
 				StringPooling="true"
 				MinimalRebuild="false"
@@ -283,7 +283,7 @@
 			/>
 			<Tool
 				Name="VCLibrarianTool"
-				OutputFile="$(OutDir)\$(ProjectName).lib"
+				OutputFile="$(SolutionDir)\SoarLibrary\lib\$(ProjectName).lib"
 			/>
 			<Tool
 				Name="VCALinkTool"
@@ -675,6 +675,26 @@
 				</File>
 				<File
 					RelativePath=".\src\cli_gdsprint.cpp"
+					>
+					<FileConfiguration
+						Name="Debug SCU|Win32"
+						ExcludedFromBuild="true"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="Release SCU|Win32"
+						ExcludedFromBuild="true"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+						/>
+					</FileConfiguration>
+				</File>
+				<File
+					RelativePath=".\src\cli_gp.cpp"
 					>
 					<FileConfiguration
 						Name="Debug SCU|Win32"

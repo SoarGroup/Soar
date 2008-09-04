@@ -273,11 +273,12 @@ enum smlRunFlags
 
 enum smlRunResult
 {
-    sml_RUN_ERROR,				// NOTE: This enum MUST be kept in synch with egSKIRunResult defined in gSKI_Enumerations.h
+    sml_RUN_ERROR,				
     sml_RUN_EXECUTING,
     sml_RUN_INTERRUPTED,
     sml_RUN_COMPLETED,
-    sml_RUN_COMPLETED_AND_INTERRUPTED	// Stop was requested but run completed before agent was interrupted.
+    sml_RUN_COMPLETED_AND_INTERRUPTED,	// Stop was requested but run completed before agent was interrupted.
+    sml_RUN_ERROR_ALREADY_RUNNING,				
 };
 
 enum smlRunState

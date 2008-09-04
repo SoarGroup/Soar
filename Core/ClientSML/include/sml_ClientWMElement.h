@@ -36,6 +36,7 @@ class WMElement
 	friend class Identifier ;			// Access to just added information
 	friend class WMDelta ;				// Allow it to destroy WMEs
 	friend class IdentifierSymbol ;		// Allow it to destroy WMEs
+	friend class OutputDeltaList ;		// Allow it to clear just added
 
 protected:
 	// The agent which owns this WME.
@@ -120,6 +121,22 @@ private:
 	WMElement( const WMElement & rhs );
 	WMElement& operator=(const WMElement& rhs);
 
+};
+
+
+struct WMEFinder
+{
+	WMEFinder( const WMElement* wme )
+	: wme( wme )
+	{
+	}
+
+	bool operator()( const WMElement* wme2 ) const
+	{
+		return wme->GetTimeTag() == wme2->GetTimeTag();
+	}
+
+	const WMElement* wme;
 };
 
 }	// namespace

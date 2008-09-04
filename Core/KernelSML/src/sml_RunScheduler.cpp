@@ -679,6 +679,13 @@ smlRunResult RunScheduler::RunScheduledAgents(bool forever, smlRunStepSize runSt
 											  smlRunStepSize interleaveStepSize, 
 											  bool synchronize)
 {
+	// check to see if we're already running, return an error if so because soar may not be running
+	// with the same parameters that the command asked for
+	if ( m_IsRunning )
+	{
+		return sml_RUN_ERROR_ALREADY_RUNNING;
+	}
+
 	// Agents were already appropriately added (or not) to the RunList before calling this method.
 	// For every Run Command issued, we can find out if agent is still scheduled to run,
 	// and/or whether it was scheduled to run at all.  When agents stop or Halt, the
