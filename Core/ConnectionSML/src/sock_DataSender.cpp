@@ -57,25 +57,19 @@ bool DataSender::ReceiveString()
 	if (len == 0)
 		return ok ;
 
-	m_Buffer.resize( len );
-
-	char chunk[ 512 ];
-	unsigned long read = 0;
-
-	while ( len )
-	{
-		unsigned long chunkLength = min( len, 512 );
-		assert( chunkLength <= len );
-
-		if ( !ReceiveBuffer( chunk, chunkLength ) )
-		{
-			return false;
-		}
-		m_Buffer.replace( read, chunkLength, chunk, chunkLength );
-
-		len -= chunkLength;
-		read += chunkLength;
+	bufferCurrentSize = 0;
+	if ( len > bufferCapacity - 1 ) {
+		delete [] buffer;
+		buffer = new char[ len + 1 ];
+		bufferCapacity = len + 1;
 	}
+
+	if ( !ReceiveBuffer( buffer, len ) )
+	{
+		return false;
+	}
+
+	buffer[ len ] = 0;
 
 	return true;
 }
