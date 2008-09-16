@@ -1,0 +1,30 @@
+echo RHS Function: op
+
+num --sum
+
+sp {propose1
+(state <s> ^superstate nil)
+-->
+(<s> ^operator <o> + = 10.3)
+(<o> ^name one)
+}
+
+sp {propose2
+(state <s> ^superstate nil)
+-->
+(<s> ^operator <o> + = -5.1)
+(<o> ^name two)
+}
+
+sp {prefs1
+(state <s> ^operator <o> +)
+-->
+(<s> ^operator <o> = 1)
+}
+
+sp {reward*test
+  (state <s> ^operator <o> +)
+  (<o> ^name <name>)
+-->
+  (write (crlf) (exec op <o> | name | <name>))
+}

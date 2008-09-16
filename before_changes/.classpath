@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<classpath>
+	<classpathentry excluding="**/.svn/" kind="src" output="Tools/SoarJavaDebugger/bin" path="Tools/SoarJavaDebugger/src"/>
+	<classpathentry excluding="**/.svn/" kind="src" output="Tools/TestJavaSML/bin" path="Tools/TestJavaSML/src"/>
+	<classpathentry excluding="**/.svn/" kind="src" output="Tools/LoggerJava/bin" path="Tools/LoggerJava/src"/>
+	<classpathentry excluding="**/.svn/" kind="src" path="Tools/VisualSoar/Source"/>
+	<classpathentry excluding="**/.svn/" kind="src" output="Environments/JavaTOH/bin" path="Environments/JavaTOH/src"/>
+	<classpathentry excluding="**/.svn/" kind="src" output="Environments/Soar2D/bin" path="Environments/Soar2D/src"/>
+	<classpathentry excluding="**/.svn/" kind="src" output="Environments/JavaMissionaries/bin" path="Environments/JavaMissionaries/src"/>
+	<classpathentry excluding="**/.svn/" kind="src" path="Tools/TestSharedIDs/src"/>
+	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
+	<classpathentry kind="lib" path="SoarLibrary/bin/sml.jar"/>
+	<classpathentry kind="lib" path="SoarLibrary/bin/swt.jar"/>
+	<classpathentry kind="lib" path="SoarLibrary/bin/tosca.jar"/>
+	<classpathentry kind="lib" path="Environments/Soar2D/jdom.jar"/>
+	<classpathentry kind="lib" path="SoarLibrary/bin/jfreechart-1.0.6-swt.jar"/>
+	<classpathentry kind="lib" path="SoarLibrary/bin/swtgraphics2d.jar"/>
+	<classpathentry kind="lib" path="SoarLibrary/bin/jfreechart-1.0.6.jar"/>
+	<classpathentry kind="lib" path="SoarLibrary/bin/jcommon-1.0.10.jar"/>
+	<classpathentry kind="output" path="SoarLibrary/defaultbin"/>
+</classpath>

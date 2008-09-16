@@ -1,0 +1,28 @@
+sp {top-state*propose*wait
+  (state <s> ^attribute state
+             ^choices none
+            -^operator.name wait)
+-->
+  (<s> ^operator <o>)
+  (<o> ^name wait)}
+
+sp {propose*one
+(state <s> ^superstate nil)
+-->
+(<s> ^operator <o> + = 10)
+(<o> ^name one)
+}
+
+sp {propose*two
+(state <s> ^superstate nil)
+-->
+(<s> ^operator <o> +)
+(<o> ^name two)
+}
+
+sp {report
+(state <s> ^operator <o> +)
+(<o> ^name <name>)
+-->
+(write (crlf) (exec reportoperator <o> | name | <name>))
+}

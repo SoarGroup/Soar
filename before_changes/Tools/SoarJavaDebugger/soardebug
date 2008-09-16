@@ -1,0 +1,5 @@
+#!/bin/bash
+BASEDIR=`dirname $0`
+export DYLD_LIBRARY_PATH=$BASEDIR/../../../../lib
+cd $BASEDIR/../../../../bin
+exec java -XstartOnFirstThread -jar $BASEDIR/SoarJavaDebugger.jar

@@ -1,0 +1,21 @@
+sp {move-to-gateway*propose*blocked
+   (state <s> ^name move-to-gateway
+              ^io.input-link.self.collision <c>
+              ^io.input-link.object <obj>)
+   (<c> ^<< x y >> true)
+   (<obj> ^range < 16.0
+          ^id <bid>)
+-->
+   (<s> ^operator <op> + =)
+   (<op> ^name blocked
+         ^block-id <bid>)
+}
+
+sp {apply*blocked
+   (state <s> ^operator <op>
+              ^top-state <ts>)
+   (<op> ^name blocked
+         ^block-id <bid>)
+-->
+   (<ts> ^block-id <bid>)
+}

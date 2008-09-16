@@ -1,0 +1,165 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- 
+
+To set a constant destination, add the following property
+to the passenger cell-object definition:
+		<property name="passenger-destination" value="red"/>
+
+So, to make red the destination, you'd have:
+	<cell-object name="passenger">
+		<property name="id" value="passenger"/>
+		<property name="passenger" value="true"/>
+		<property name="passenger-destination" value="red"/>
+	</cell-object>
+	
+To have a passenger starting location, add to the desired cell:
+				<object>passenger</object>
+
+To have a taxi starting location, x and y properties to the agent declaration
+in the main config file taxi.xml.
+-->
+
+<map>
+	<cell-object name="fuel">
+		<property name="id" value="fuel"/>
+		<apply>
+			<fuel/>
+		</apply>
+	</cell-object>
+	<cell-object name="red">
+		<property name="destination" value="true"/>
+		<property name="color" value="red"/>
+	</cell-object>
+	<cell-object name="green">
+		<property name="destination" value="true"/>
+		<property name="color" value="green"/>
+	</cell-object>
+	<cell-object name="yellow">
+		<property name="destination" value="true"/>
+		<property name="color" value="yellow"/>
+	</cell-object>
+	<cell-object name="blue">
+		<property name="destination" value="true"/>
+		<property name="color" value="blue"/>
+	</cell-object>
+	<cell-object name="wall-north">
+		<property name="block" value="true"/>
+		<property name="id" value="wall"/>
+		<property name="direction" value="north"/>
+	</cell-object>
+	<cell-object name="wall-east">
+		<property name="block" value="true"/>
+		<property name="id" value="wall"/>
+		<property name="direction" value="east"/>
+	</cell-object>
+	<cell-object name="wall-south">
+		<property name="block" value="true"/>
+		<property name="id" value="wall"/>
+		<property name="direction" value="south"/>
+	</cell-object>
+	<cell-object name="wall-west">
+		<property name="block" value="true"/>
+		<property name="id" value="wall"/>
+		<property name="direction" value="west"/>
+	</cell-object>
+	<cell-object name="passenger">
+		<property name="id" value="passenger"/>
+		<property name="passenger" value="true"/>
+		<!--property name="passenger-destination" value="red"/-->
+	</cell-object>
+	<cells world-size="5">
+		<row id="0">
+			<cell id="0">
+				<object>wall-north</object>
+				<object>wall-west</object>
+				<object>red</object>
+			</cell>
+			<cell id="1">
+				<object>wall-north</object>
+				<object>wall-east</object>
+			</cell>
+			<cell id="2">
+				<object>wall-north</object>
+				<object>wall-west</object>
+			</cell>
+			<cell id="3">
+				<object>wall-north</object>
+			</cell>
+			<cell id="4">
+				<object>wall-north</object>
+				<object>wall-east</object>
+				<object>green</object>
+			</cell>
+		</row>
+		<row id="1">
+			<cell id="0">
+				<object>wall-west</object>
+			</cell>
+			<cell id="1">
+				<object>wall-east</object>
+			</cell>
+			<cell id="2">
+				<object>wall-west</object>
+			</cell>
+			<cell id="3"/>
+			<cell id="4">
+				<object>wall-east</object>
+			</cell>
+		</row>
+		<row id="2">
+			<cell id="0">
+				<object>wall-west</object>
+			</cell>
+			<cell id="1"/>
+			<cell id="2"/>
+			<cell id="3"/>
+			<cell id="4">
+				<object>wall-east</object>
+			</cell>
+		</row>
+		<row id="3">
+			<cell id="0">
+				<object>wall-west</object>
+				<object>wall-east</object>
+			</cell>
+			<cell id="1">
+				<object>wall-west</object>
+			</cell>
+			<cell id="2">
+				<object>fuel</object>
+				<object>wall-east</object>
+			</cell>
+			<cell id="3">
+				<object>wall-west</object>
+			</cell>
+			<cell id="4">
+				<object>wall-east</object>
+			</cell>
+		</row>
+		<row id="4">
+			<cell id="2">
+				<object>wall-south</object>
+				<object>wall-west</object>
+				<object>wall-east</object>
+				<object>yellow</object>
+			</cell>
+			<cell id="1">
+				<object>wall-south</object>
+				<object>wall-west</object>
+			</cell>
+			<cell id="2">
+				<object>wall-south</object>
+				<object>wall-east</object>
+			</cell>
+			<cell id="3">
+				<object>wall-south</object>
+				<object>blue</object>
+				<object>wall-west</object>
+			</cell>
+			<cell id="4">
+				<object>wall-south</object>
+				<object>wall-east</object>
+			</cell>
+		</row>
+	</cells>
+</map>

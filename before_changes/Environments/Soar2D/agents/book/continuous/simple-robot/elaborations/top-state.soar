@@ -1,0 +1,9 @@
+sp {elaborate*task*book
+   (state <s> ^superstate nil)
+   -->
+   (<s> ^name book)}
+
+sp {elaborate*top-state*top-state
+  (state <s> ^name book)
+-->
+  (<s> ^top-state <s>)}

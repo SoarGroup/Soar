@@ -1,0 +1,21 @@
+<soar2d version="2">
+  <general>
+    <game>taxi</game>
+    <map>maps/taxi/default.xml</map>
+    <rules>
+      <taxi />
+    </rules>
+  </general>
+  <logging>
+    <level>INFO</level>
+    <file>soar2d.log</file>
+    <console />
+  </logging>
+  <players>
+    <debuggers></debuggers>
+  </players>
+  <terminals >
+  	<passenger-delivered></passenger-delivered>
+  	<fuel-remaining></fuel-remaining></terminals>
+  <clients />
+</soar2d>

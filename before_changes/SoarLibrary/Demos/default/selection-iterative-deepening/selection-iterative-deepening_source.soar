@@ -1,0 +1,11 @@
+source _firstload.soar
+pushd all
+source all_source.soar
+popd
+pushd elaborations
+source elaborations_source.soar
+popd
+source Operator_Tie.soar
+pushd Operator_Tie
+source Operator_Tie_source.soar
+popd

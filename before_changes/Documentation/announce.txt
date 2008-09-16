@@ -1,0 +1,147 @@
+Soar 9.0.0 Release Notes
+========================
+
+This release of Soar begins the 9.x series of releases during which we 
+expect to introduce several new mechanisms. 9.0.0 includes reinforcement
+learning code (Soar-RL), which was first released alongside the 8.6.4
+beta. 9.0.0 is also the first release to include the SML interface 
+without gSKI.
+
+Soar-RL is the architectural integration of reinforcement learning (RL) with
+Soar.  The RL mechanism will automatically tune the values of
+numeric-indifferent preference rules based on reward generated while a Soar
+agent executes.  These values represent the expected discounted sum of
+future rewards the agent will receive if it selects that operator for states
+matched by the condition of the rule.  See the RL manual and tutorial in
+Documentation.
+
+To see Soar-RL in action right away, try the Water Jug RL demo (it can be
+loaded from the Demos->Water Jug menu in the Java Debugger). To see the effects
+of RL, run it to completion, then init-soar and run it again. Repeat 4-5 times
+to see it reach optimal behavior. (Note: the agent may occasionally perform
+non-optimal behavior even after it has converged because of its exploration 
+policy. See the RL manual and tutorial for details).
+
+Soar-9.0.0 includes all source code, many demo programs, and a 
+number of applications that serve as examples of how to interface 
+Soar to an external Environment.  There is support for integrating 
+Soar with C++, Java, Tcl, Python and C# applications.  Many Tools
+that aid in development of Soar programs are also included.
+
+These Release Notes describe the primary changes in this 
+latest release.  More detailed information can be obtained at 
+http://winter.eecs.umich.edu/soarwiki
+
+This release was generated for Windows, Linux, and OSX systems.  
+Windows XP and Vista are supported.
+
+Soar 9.0.0 can be downloaded from the Soar homepage at:
+
+        http://sitemaker.umich.edu/soar
+
+Installation Requirements
+=========================
+
+* On Windows, the 19MB download file expands to ~45MB when extracted.  
+  Linux and OSX disk requirements are similar. Note that Windows has
+  a 255 character path length limit; some parts of the directory 
+  structure are deep, so users wishing to put Soar in a deep location
+  on their machines may run into issues.
+
+* Java 1.5.0 or newer is required to use the Java applications,
+  including the debugger (Java must be available in the path). Get it 
+  at http://java.sun.com/. Most operating systems probably already have 
+  Java installed. NOTE: Java 1.4.2 is no longer supported.
+
+* If you want to run Tcl applications on Linux, Tcl 8.4.x or later is
+  required (note that the tutorial applications are now available in
+  Java).  Also note that we do not currently support threaded builds
+  of Tcl (e.g. ActiveTcl 8.4.11.2 or later).
+
+* The included Python libraries support Python 2.4.  Python 2.5 support
+  requires a rebuild of the ClientSMLPython project.
+
+Build Requirements
+==================
+Binaries are released for Windows/Linux/OS X, so building is not required.
+For those on other platforms or developers:
+* On all platforms, SWIG 1.3.31 or later is required to build with 
+  cross-language support (e.g. to use the Java debugger).
+* On Windows, Visual Studio 2005 SP1 is required.
+* On Linux/Unix/OS X, Python, SCons, gcc 3.3 or later required.
+
+Components of Soar 9.0.0
+========================
+* Pre-built libraries and executables for Windows (SoarLibrary/bin)
+* all source code, config files, and OS tools for automated Soar builds
+* SoarJavaDebugger 
+* VisualSoar
+* JavaEaters, JavaTankSoar, TclEaters
+* Test and Demo programs
+* Documentation
+
+New in 9.0.0
+============
+
+* Components and Capabilities added
+  -- RL commands and documentation added (see RL manual and tutorial
+     in Documentation directory).
+  -- indifferent-selection command updated to support options primarily
+     intended for (but not limited to) RL.
+  -- select and predict commands added to control operator selection
+     (essentially replaces defunct indifferent-selection --ask functionality).
+  -- New "gp" command added. Generates rules based on simple patterns
+     (intended for use with RL).
+  -- Added iterative deepening support to selection space. To see this
+     in action, load the Water Jug Look-Ahead demo, then source
+     selection-iterative-deepening.soar (in SoarLibrary/Demos/default)
+     and run. Init-soar and run again. Iterative deepening is guaranteed
+     to find the path with the fewest steps.
+  -- Added options to learn command to turn chunking through local negations
+     on or off (on by default for backwards compatibility). If off, a message
+     will be generated if "watch --learning print" is enabled that says a chunk
+     was not created because of local negations, and what those negations were.
+  -- Updated selection space to remove local negations (for compatibility with 
+     new --disable-through-local-negations chunking mode). 
+  -- In a tie impasse, an item-count WME containing the number of tied operators 
+     is now architecturally generated.
+  -- Depth at which productions are firing is reported at watch 5.
+  -- Multiple rules can be loaded via the Java debugger's Edit Production
+     widget, scratch pad, and by pasting into the trace window. This is the
+     result of an underlying change to SML in which arguments to
+     ExecuteCommandLine are passed through logic associated with the source
+     command, and thus multiple commands can be given at once.
+  -- Command boxes in the Java debugger have been enhanced so that history
+     browsing with the up/down arrows works on all platforms.
+  -- New "single compilation unit" build configurations (greatly speeds build time).
+  -- Unit test suite added.
+  -- Other minor enhancements.
+
+* Bug fixes
+  -- Output link supports circular structures.
+  -- Duplicate productions no longer cause sourcing to stop.
+  -- Various memory leaks fixed.
+  -- Several other minor fixes.
+
+* Other updates
+  -- Removed gSKI (10-30% speed increase in simple benchmarking).
+  -- The Soar Java Debugger now uses its default layout the first time
+     it is run with a new version of Soar. Old layouts are preserved
+     and can be loaded if desired (which makes them the default).
+
+
+Known issues:
+=============
+
+* ^status complete appears on the ^output-link immediately instead 
+  of during the next input phase.
+* The Soar 7 mode implementation currently relies on an ugly hack. If
+  you experience problems in this mode, please let us know.
+* Many other minor issues (see bugzilla for details).
+
+If any other issues or bugs are found, please send mail to:
+
+soar-sml-list@lists.sourceforge.net (preferred)
+-or-
+soar-group@lists.sourceforge.net
+
