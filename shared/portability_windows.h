@@ -46,7 +46,7 @@
 #endif // strdup
 
 // Use named pipes instead of sockets for same-machine interprocess communication
-#define ENABLE_NAMED_PIPES
+//#define ENABLE_NAMED_PIPES
 
 // FIXME: This is for gSKI. We do need to address the whole sleep issue though.
 // Sleep on windows is in milliseconds, hence the multiplication by 1000
