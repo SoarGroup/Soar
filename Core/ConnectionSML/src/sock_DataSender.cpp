@@ -43,9 +43,12 @@ bool DataSender::SendString(char const* pString)
 //					a 4-byte length followed by the string of characters.
 //
 /////////////////////////////////////////////////////////////////////
-bool DataSender::ReceiveString()
+bool DataSender::ReceiveString(std::string* pString)
 {
 	unsigned long netLen = 0 ;
+
+	// Make sure we return an empty string if we get an error
+	pString->clear() ;
 
 	// Read the length of the string (the first 4 bytes)
 	bool ok = ReceiveBuffer((char*)&netLen, sizeof(netLen)) ;
@@ -57,25 +60,25 @@ bool DataSender::ReceiveString()
 	if (len == 0)
 		return ok ;
 
-	if ( len + 1 > bufferCapacity ) {
-		while ( len + 1 > bufferCapacity )
-		{
-			bufferCapacity += bufferCapacity;
-		}
+	// Create the buffer into which we'll receive data
+	char* buffer = new char[len+1] ;
 
-		std::cout << name << " resize to " << bufferCapacity << std::endl;
-		delete [] buffer;
-		buffer = new char[ bufferCapacity ];
-	}
+	// Receive the string
+	ok = ok && ReceiveBuffer(buffer, len) ;
 
-	if ( !ReceiveBuffer( buffer, len ) )
+	// Make it null terminated
+	buffer[len] = 0 ;
+
+	// Return the result in the string
+	if (ok)
 	{
-		return false;
+		pString->assign(buffer) ;
 	}
 
-	buffer[ len ] = 0;
+	// Release our temp buffer
+	delete buffer ;
 
-	return true;
+	return ok ;
 }
 
 void DataSender::Close()
