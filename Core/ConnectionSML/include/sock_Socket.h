@@ -89,12 +89,6 @@ public:
 	// NOTE: We still print out information about start up/shut down, errors etc. without this flag being true.
 	void		SetTraceCommunications(bool state) { m_bTraceCommunications = state ; }
 
-	// Send a string of characters.  Outgoing format will be "<4-byte length>"+string data
-	bool		SendString(char const* pString) ;
-
-	// Receive a string of characters.  Incoming format on socket should be "<4-byte length>"+string data
-	bool		ReceiveString(std::string* pString) ;
-
 protected:
 	// Lower level buffer send and receive calls.
 	bool		SendBuffer(char const* pSendBuffer, size_t bufferSize) ;

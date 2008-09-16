@@ -290,7 +290,6 @@ bool RemoteConnection::ReceiveMessages(bool allMessages, long secondsWait, long 
 	//  when the client is sleeping, but we don't want them both to be sending/receiving at the same time).
 	soar_thread::Lock lock(&m_ClientMutex) ;
 
-	std::string xmlString ;
 	bool receivedMessage = false ;
 	bool ok = true ;
 
@@ -316,7 +315,7 @@ bool RemoteConnection::ReceiveMessages(bool allMessages, long secondsWait, long 
 			break ;
 
 		// 	Read the first message that's waiting
-		ok = m_DataSender->ReceiveString(&xmlString) ;
+		ok = m_DataSender->ReceiveString() ;
 
 		if (!ok)
 		{
@@ -330,13 +329,13 @@ bool RemoteConnection::ReceiveMessages(bool allMessages, long secondsWait, long 
 		if (m_bTraceCommunications)
 		{
 			if (IsKernelSide())
-				sml::PrintDebugFormat("Kernel remote receive: %s\n", xmlString.c_str()) ;
+				sml::PrintDebugFormat("Kernel remote receive: %s\n", m_DataSender->GetBufferString() ) ;
 			else
-				sml::PrintDebugFormat("Client remote receive: %s\n", xmlString.c_str()) ;
+				sml::PrintDebugFormat("Client remote receive: %s\n", m_DataSender->GetBufferString() ) ;
 		}
 
 		// Get an XML message from the incoming string
-		ElementXML* pIncomingMsg = ElementXML::ParseXMLFromString(xmlString.c_str()) ;
+		ElementXML* pIncomingMsg = ElementXML::ParseXMLFromString( m_DataSender->GetBufferString() ) ;
 
 		if (!pIncomingMsg)
 		{
