@@ -41,22 +41,11 @@ protected:
 
 	// These objects are created through the ListenerDataSender or ClientDataSender classes.
 protected:
-	DataSender() 
-		: buffer( 0 )
-		, bufferCapacity( 0 )
-	{
-		name="NONAME";
-		bufferCapacity = 512;
-		buffer = new char[ bufferCapacity ];
-		buffer[ 0 ] = 0;
-	}
+	DataSender() {name="NONAME";};
 
 public:
 	// Destructor closes the socket
-	virtual		~DataSender() 
-	{
-		delete [] buffer;
-	}
+	virtual		~DataSender() {};
 
 	// Note: When we try to read/write to the data sender next we may
 	// find this is no longer true--it's just the last state we know about.
@@ -82,20 +71,12 @@ public:
 	bool		SendString(char const* pString) ;
 
 	// Receive a string of characters.  Incoming format on socket should be "<4-byte length>"+string data
-	bool		ReceiveString() ;
-
-	const char* GetBufferString()
-	{
-		return buffer;
-	}
+	bool		ReceiveString(std::string* pString) ;
 
 protected:
 	// Lower level buffer send and receive calls.
 	virtual bool		SendBuffer(char const* pSendBuffer, size_t bufferSize)=0 ;
 	virtual bool		ReceiveBuffer(char* pRecvBuffer, size_t bufferSize)=0 ;
-	
-   char* buffer;
-   unsigned long bufferCapacity;
 
    // Specific kinds of locks have different ways of shutting themselves down, they must do it here
    virtual void CloseInternal() = 0;
