@@ -43,11 +43,10 @@ protected:
 protected:
 	DataSender() 
 		: buffer( 0 )
-		, bufferCurrentSize( 0 )
 		, bufferCapacity( 0 )
 	{
 		name="NONAME";
-		bufferCapacity = 128;
+		bufferCapacity = 512;
 		buffer = new char[ bufferCapacity ];
 		buffer[ 0 ] = 0;
 	}
@@ -96,7 +95,6 @@ protected:
 	virtual bool		ReceiveBuffer(char* pRecvBuffer, size_t bufferSize)=0 ;
 	
    char* buffer;
-   unsigned long bufferCurrentSize;
    unsigned long bufferCapacity;
 
    // Specific kinds of locks have different ways of shutting themselves down, they must do it here
