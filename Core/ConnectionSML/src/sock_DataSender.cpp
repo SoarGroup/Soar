@@ -43,12 +43,9 @@ bool DataSender::SendString(char const* pString)
 //					a 4-byte length followed by the string of characters.
 //
 /////////////////////////////////////////////////////////////////////
-bool DataSender::ReceiveString(std::string* pString)
+bool DataSender::ReceiveString()
 {
 	unsigned long netLen = 0 ;
-
-	// Make sure we return an empty string if we get an error
-	pString->clear() ;
 
 	// Read the length of the string (the first 4 bytes)
 	bool ok = ReceiveBuffer((char*)&netLen, sizeof(netLen)) ;
@@ -60,25 +57,27 @@ bool DataSender::ReceiveString(std::string* pString)
 	if (len == 0)
 		return ok ;
 
-	// Create the buffer into which we'll receive data
-	char* buffer = new char[len+1] ;
+	m_Buffer.resize( len );
 
-	// Receive the string
-	ok = ok && ReceiveBuffer(buffer, len) ;
+	char chunk[ 512 ];
+	unsigned long read = 0;
 
-	// Make it null terminated
-	buffer[len] = 0 ;
-
-	// Return the result in the string
-	if (ok)
+	while ( len )
 	{
-		pString->assign(buffer) ;
+		unsigned long chunkLength = min( len, 512 );
+		assert( chunkLength <= len );
+
+		if ( !ReceiveBuffer( chunk, chunkLength ) )
+		{
+			return false;
+		}
+		m_Buffer.replace( read, chunkLength, chunk, chunkLength );
+
+		len -= chunkLength;
+		read += chunkLength;
 	}
 
-	// Release our temp buffer
-	delete buffer ;
-
-	return ok ;
+	return true;
 }
 
 void DataSender::Close()

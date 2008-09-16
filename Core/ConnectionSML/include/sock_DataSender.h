@@ -71,12 +71,19 @@ public:
 	bool		SendString(char const* pString) ;
 
 	// Receive a string of characters.  Incoming format on socket should be "<4-byte length>"+string data
-	bool		ReceiveString(std::string* pString) ;
+	bool		ReceiveString() ;
+
+	const char* GetBufferString()
+	{
+		return m_Buffer.c_str();
+	}
 
 protected:
 	// Lower level buffer send and receive calls.
 	virtual bool		SendBuffer(char const* pSendBuffer, size_t bufferSize)=0 ;
 	virtual bool		ReceiveBuffer(char* pRecvBuffer, size_t bufferSize)=0 ;
+	
+   std::string m_Buffer;
 
    // Specific kinds of locks have different ways of shutting themselves down, they must do it here
    virtual void CloseInternal() = 0;
