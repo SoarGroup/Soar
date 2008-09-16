@@ -1,0 +1,23 @@
+sp {discrete-agent*propose*get-block
+   (state <s> ^name discrete-agent
+              ^io.input-link.object <block>
+             -^io.input-link.self.carry <carry>)
+   (<block> ^type block
+             ^visible yes
+             ^id <id>)
+   (<s> -^have-carried <id>)
+-->
+   (<s> ^operator <op> + =)
+   (<op> ^name get-block
+         ^block <block>)
+}
+
+sp {discrete-agent*compare*get-block
+   (state <s> ^name discrete-agent
+              ^operator <op1> +
+                        <op2> +)
+   (<op1> ^name get-block)
+   (<op2> ^name wander)
+-->
+   (<s> ^operator <op1> > <op2>)
+}

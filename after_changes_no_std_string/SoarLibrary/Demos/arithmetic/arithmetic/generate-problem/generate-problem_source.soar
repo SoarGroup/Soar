@@ -1,0 +1,6 @@
+source elaborations.soar
+source finish-problem-generation.soar
+source generate-digit1.soar
+source generate-digit2.soar
+source generate-operation.soar
+source next-column.soar

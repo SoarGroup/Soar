@@ -1,0 +1,35 @@
+
+#prob.3d.2
+#A 3-disk problem for the tower-of-hanoi system.
+
+#                             1
+#       2                     2
+#  1    3                     3
+# ---  ---  ---    ---  ---  ---
+#  A    B    C      A    B    C
+#
+# Initial State    Desired State
+
+
+sp {tower-of-hanoi*propose*state*initial-and-desired-states
+    "A 3-Disk Tower of Hanoi Problem." 
+    (state <g> ^name tower-of-hanoi ^problem-space <p>)
+    (<p> ^name tower-of-hanoi)
+    -->
+    (<g> ^state <s>)    
+    (<s> ^disk <disk-1> + &, <disk-2> + &, <disk-3> + &
+         ^peg <peg-a> + &, <peg-b> + &, <peg-c> + &
+         ^holds <h1> + &, <h2> + &, <h3> + & )
+    (<h1> ^disk <disk-1> ^above none ^on <peg-a>)     
+    (<h2> ^disk <disk-2> ^above <disk-3> ^on <peg-b>)
+    (<h3> ^disk <disk-3> ^above none ^on <peg-b>)
+    (<disk-1> ^name 1 ^size 1) 
+    (<disk-2> ^name 2 ^size 2)
+    (<disk-3> ^name 3 ^size 3)
+    (<peg-a> ^name |A|)
+    (<peg-b> ^name |B|)
+    (<peg-c> ^name |C|)
+    (<g> ^desired <d1> + &, <d2> + &, <d3> + & )
+    (<d1> ^disk <disk-1> ^above <disk-2> ^on <peg-c>)
+    (<d2> ^disk <disk-2> ^above <disk-3> ^on <peg-c>)
+    (<d3> ^disk <disk-3> ^above none ^on <peg-c>)}

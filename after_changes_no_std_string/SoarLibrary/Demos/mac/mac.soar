@@ -1,0 +1,3 @@
+pushd mac
+source mac_source.soar
+popd

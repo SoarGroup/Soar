@@ -1,0 +1,31 @@
+PARSER_BEGIN(Example)
+
+public class Example {
+
+  public static void main(String args[]) throws ParseException {
+    Example parser = new Example(System.in);
+    parser.identifier_list();
+  }
+
+}
+
+PARSER_END(Example)
+
+SKIP :
+{
+  " "
+| "\t"
+| "\n"
+| "\r"
+}
+
+void identifier_list() :
+{}
+{
+  <ID> ( "," <ID> )*
+}
+
+TOKEN [IGNORE_CASE] :
+{
+  <ID: (["a"-"z"])+>
+}

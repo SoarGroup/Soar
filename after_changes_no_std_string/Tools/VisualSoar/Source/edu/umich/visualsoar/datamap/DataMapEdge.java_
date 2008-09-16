@@ -1,0 +1,65 @@
+package edu.umich.visualsoar.datamap;
+import edu.umich.visualsoar.graph.*;
+
+/**
+ This class represents an attribute value in Working Memory
+ @author Brad Jones
+ @version 0.5a Jan 2001
+ */
+
+public class DataMapEdge extends NamedEdge {
+// Data Members
+	/**
+	 The documentation string for this attribute value
+	 */
+	private String documentation = "";
+	
+// Constructors
+	/**
+	 A DataMapEdge is a connection between two
+	 vertices, from v0 to v1, with a name
+	 and an optional documentation which is
+	 the empty string
+	 @param v0 where the edge begins
+	 @param v1 where the edge ends
+	 @param inName the attribute of the edge
+	 */
+	 public DataMapEdge(Vertex v0,Vertex v1,String inName) {
+	 	super(v0,v1,inName);
+	 }
+	 
+	 /**
+	  A DataMapEdge is a connection between two
+	  vertices, from v0 to v1, with a name
+	  and a docummentation string
+	  @param v0 where the edge begins
+	  @param v1 where the edge ends
+	  @param inName the attribute for the edge
+	  @param inDoc the documentation string for the attribute-value
+	  */
+	  public DataMapEdge(Vertex v0,Vertex v1,String inName,String inDoc) {
+	  	super(v0,v1,inName);
+	  	documentation = inDoc;
+	  }
+	  
+// Methods
+	  public void write(java.io.Writer w) throws java.io.IOException {
+	   	w.write("" + v0.getValue() + ' ' + name + ' ' + v1.getValue() + ' ' + documentation.length() + ' ' + documentation + '\n');
+	  }
+	  
+	  /**
+	   Gets the documentation string for this edge
+	   @return the documentation string
+	   */
+	  public String getDocumentation() {
+	  	return documentation;
+	  }
+	  
+	  /**
+	   Sets the documentation string for this edge
+	   @param inDoc the string that the documentation string should be set to 
+	   */
+	  public void setDocumentation(String inDoc) {
+	  	documentation = inDoc;
+	  } 
+}

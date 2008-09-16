@@ -1,0 +1,7 @@
+source elaborations.soar
+source Operator_Tie.soar
+pushd Operator_Tie
+source Operator_Tie_source.soar
+popd
+source exceed-depth.soar
+source task-operator.soar
