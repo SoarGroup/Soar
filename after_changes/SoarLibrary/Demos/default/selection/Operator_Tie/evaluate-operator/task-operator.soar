@@ -1,0 +1,35 @@
+
+sp {evaluate-operator*propose*look-ahead
+   :default
+   (state <s> ^look-ahead-operator <o>
+              ^untried-tied-operator <o>)
+   -->
+   (<s> ^operator <o> +)}
+
+sp {evaluate-operator*propose*look-ahead*reject-all-others
+   :default
+   (state <s> ^look-ahead-operator <o>
+              ^untried-tied-operator <o>
+              ^operator { <> <o> <o1> } +)
+   -->
+   (<s> ^operator <o1> -)}
+
+### Detect that the operator has been tried.
+
+sp {evaluate-operator*elaborate*state*tried-tied-operator
+   :default
+   (state <s> ^operator <o> 
+              ^look-ahead-operator <o>)
+   -->
+   (<s> ^tried-tied-operator <o>)}
+
+# SBW 5/07: replaced all occurences of -^tried-tied-operator with ^untried-tied-operator
+# this takes care of lots of local negations
+sp {evaluate-operator*elaborate*state*remove*untried-tied-operator
+   :default
+   (state <s> ^look-ahead-operator <o> 
+              ^operator <o>
+              ^untried-tied-operator <o>)
+-->
+   (<s> ^untried-tied-operator <o> -)
+}

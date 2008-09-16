@@ -1,0 +1,16 @@
+sp {process-column*propose*get-digit2
+   (state <s> ^name process-column
+             -^digit2)
+-->
+   (<s> ^operator <op> + =)
+   (<op> ^name get-digit2)
+}
+
+sp {process-column*apply*get-digit2
+   (state <s> ^operator.name get-digit2
+              ^current-column.digit2 <a>)
+-->
+   (<s> ^digit2 <a>)
+}
+
+

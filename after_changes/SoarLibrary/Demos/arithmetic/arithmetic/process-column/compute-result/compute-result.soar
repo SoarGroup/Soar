@@ -1,0 +1,14 @@
+## to subtract 1 from next column digit1 (prepared in elaboration)
+
+sp {compute-result*propose*compute-result
+   (state <s> ^name compute-result
+              ^digit1 <a1>
+              ^digit2 <a2>
+             -^result)
+-->
+   (<s> ^operator <op> + =)
+   (<op> ^name compute-result)
+}
+
+### Add in the carry for addition will be done by process-column*apply*compute-result*addition
+### Subtract the borrow will be done by process-column*apply*compute-result*subtraction

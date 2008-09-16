@@ -1,0 +1,18 @@
+<soar2d version="2">
+  <general>
+    <game>book</game>
+    <map>maps/book/default.bmap</map>
+    <rules>
+      <book >
+      	<continuous>false</continuous></book>
+    </rules>
+  </general>
+  <logging>
+    <level>INFO</level>
+    <file>soar2d.log</file>
+    <console />
+  </logging>
+  <players><debuggers></debuggers></players>
+  <terminals />
+  <clients />
+</soar2d>
