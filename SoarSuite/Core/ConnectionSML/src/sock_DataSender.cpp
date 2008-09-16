@@ -57,11 +57,15 @@ bool DataSender::ReceiveString()
 	if (len == 0)
 		return ok ;
 
-	bufferCurrentSize = 0;
-	if ( len > bufferCapacity - 1 ) {
+	if ( len + 1 > bufferCapacity ) {
+		while ( len + 1 > bufferCapacity )
+		{
+			bufferCapacity += bufferCapacity;
+		}
+
+		std::cout << name << " resize to " << bufferCapacity << std::endl;
 		delete [] buffer;
-		buffer = new char[ len + 1 ];
-		bufferCapacity = len + 1;
+		buffer = new char[ bufferCapacity ];
 	}
 
 	if ( !ReceiveBuffer( buffer, len ) )
