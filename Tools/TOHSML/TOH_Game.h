@@ -17,15 +17,10 @@
 class TOH_Tower;
 class Stats_Tracker;
 
-//#define TOH_COUNT_STEPS
-
 /* The TOH_Game object is a complete instance of Towers of Hanoi.
  * It is responsible for creating the Kernel, Agent, Towers, Disks, ...
  *
  * Tell it to run, and you're off.
- *
- * Alternatively, set TOH_COUNT_STEPS and it will know when it is
- * done.  You can then run it one step at a time.
  */
 class TOH_Game {
   /// Disabled (No Implementation)
@@ -45,9 +40,7 @@ public:
 
   inline void run();
   inline void step();
-#ifdef TOH_COUNT_STEPS
   inline bool is_finished() const;
-#endif
 
 private:
   inline void update(sml::Kernel &kernel);
@@ -58,10 +51,6 @@ private:
   Soar_Agent m_agent;
 
   std::vector<TOH_Tower *> m_towers;
-
-#ifdef TOH_COUNT_STEPS
-  int m_command_count;
-#endif
 };
 
 #endif
