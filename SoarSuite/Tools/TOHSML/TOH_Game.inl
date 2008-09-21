@@ -23,9 +23,6 @@ void toh_update_event_handler(sml::smlUpdateEventId /*id*/, void *user_data_ptr,
 
 TOH_Game::TOH_Game(const std::string &agent_productions)
 : m_agent(m_kernel, "TOH")
-#ifdef TOH_COUNT_STEPS
-, m_command_count(0)
-#endif
 {
   const int num_towers = 3;
   const int num_disks = 11;
@@ -71,11 +68,6 @@ void TOH_Game::run_trials(const int &num_trials) {
 }
 
 void TOH_Game::run() {
-#ifdef TOH_COUNT_STEPS
-  if(is_finished())
-    return;
-#endif
-
   //// Version 1
   const std::string result = m_agent->RunSelfForever();
   std::cout << result << std::endl;
@@ -89,15 +81,12 @@ void TOH_Game::run() {
 }
 
 void TOH_Game::step() {
-#ifdef TOH_COUNT_STEPS
   if(is_finished())
     return;
-#endif
 
   m_agent->RunSelf(1u);
 }
 
-#ifdef TOH_COUNT_STEPS
 bool TOH_Game::is_finished() const {
   size_t other_towers = 0;
   size_t goal_tower = 0;
@@ -107,15 +96,10 @@ bool TOH_Game::is_finished() const {
   }
   return !other_towers;
 }
-#endif
 
 void TOH_Game::update(sml::Kernel &/*kernel*/) {
   // Go through all the commands we've received (if any) since we last ran Soar.
   const int num_commands = m_agent->GetNumberCommands();
-
-#ifdef TOH_COUNT_STEPS
-  m_command_count += num_commands;
-#endif
 
   for(int i = 0; i < num_commands; ++i) {
     sml::Identifier * const command_ptr = m_agent->GetCommand(i);
