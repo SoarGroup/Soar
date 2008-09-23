@@ -50,7 +50,7 @@ void epmem_clear_result( agent *my_agent, Symbol *state );
 void epmem_new_episode( agent *my_agent );
 void epmem_install_memory( agent *my_agent, Symbol *state, epmem_time_id memory_id );
 
-void epmem_rit_insert_interval( agent *my_agent, epmem_time_id lower, epmem_time_id upper, epmem_node_id id, bool in_transaction );
+void epmem_rit_insert_interval( agent *my_agent, epmem_time_id lower, epmem_time_id upper, epmem_node_id id );
 long long epmem_rit_fork_node( agent *my_agent, epmem_time_id lower, epmem_time_id upper, bool bounds_offset, long long *step = NULL );
 void epmem_rit_prep_left_right( agent *my_agent, epmem_time_id lower, epmem_time_id upper );
 void epmem_rit_clear_left_right( agent *my_agent );
@@ -345,6 +345,10 @@ bool epmem_set_parameter( agent *my_agent, const char *name, double new_val )
 
 	if ( epmem_parameter_protected( my_agent, param ) )
 		return false;
+
+	// special case of commit needing conversion to int
+	if ( param == EPMEM_PARAM_COMMIT )
+		new_val = floor( new_val );
 	
 	if ( !epmem_valid_parameter_value( my_agent, param, new_val ) )
 		return false;
@@ -462,6 +466,10 @@ bool epmem_set_parameter( agent *my_agent, const long param, double new_val )
 {
 	if ( epmem_parameter_protected( my_agent, param ) )
 		return false;
+
+	// special case of commit needing conversion to int
+	if ( param == EPMEM_PARAM_COMMIT )
+		new_val = floor( new_val );
 	
 	if ( !epmem_valid_parameter_value( my_agent, param, new_val ) )
 		return false;
@@ -921,6 +929,21 @@ bool epmem_validate_exclusions( const char * /*new_val*/ )
 /////////////////////////////////////////////////////////////////////////////////////////////////////////
 /////////////////////////////////////////////////////////////////////////////////////////////////////////
 
+/////////////////////////////////////////////////////////////////////////////////////////////////////////
+// commit
+/////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+/***************************************************************************
+ * Function     : epmem_validate_commit
+ **************************************************************************/
+bool epmem_validate_commit( const double new_val )
+{
+	return ( new_val > 0 );
+}
+
+/////////////////////////////////////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////////////////////////////////////
+
 /***************************************************************************
  * Function     : epmem_enabled
  **************************************************************************/
@@ -1227,6 +1250,43 @@ unsigned long epmem_hash_wme( wme *w )
 }
 
 /***************************************************************************
+ * Function     : epmem_in_transaction
+ **************************************************************************/
+bool epmem_in_transaction( agent *my_agent )
+{
+	if ( my_agent->epmem_db_status == -1 )
+		return false;
+	
+	return ( (long long) epmem_get_stat( my_agent, (const long) EPMEM_STAT_TIME ) % (long long) epmem_get_parameter( my_agent, EPMEM_PARAM_COMMIT ) );
+}
+
+/***************************************************************************
+ * Function     : epmem_transaction_begin
+ **************************************************************************/
+void epmem_transaction_begin( agent *my_agent )
+{
+	if ( my_agent->epmem_db_status != -1 )
+	{
+		sqlite3_step( my_agent->epmem_statements[ EPMEM_STMT_BEGIN ] );
+		sqlite3_reset( my_agent->epmem_statements[ EPMEM_STMT_BEGIN ] );
+	}
+}
+
+/***************************************************************************
+ * Function     : epmem_transaction_end
+ **************************************************************************/
+void epmem_transaction_end( agent *my_agent, bool commit )
+{
+	if ( my_agent->epmem_db_status != -1 )
+	{
+		unsigned long end_method = ( ( commit )?( EPMEM_STMT_COMMIT ):( EPMEM_STMT_ROLLBACK ) );
+	
+		sqlite3_step( my_agent->epmem_statements[ end_method ] );
+		sqlite3_reset( my_agent->epmem_statements[ end_method ] );
+	}
+}
+
+/***************************************************************************
  * Function     : epmem_init_db
  **************************************************************************/
 void epmem_init_db( agent *my_agent )
@@ -1263,10 +1323,6 @@ void epmem_init_db( agent *my_agent )
 
 		// update validation count
 		my_agent->epmem_validation++;
-
-		// at this point initialize the database for receipt of episodes
-		sqlite3_step( my_agent->epmem_statements[ EPMEM_STMT_BEGIN ] );
-		sqlite3_reset( my_agent->epmem_statements[ EPMEM_STMT_BEGIN ] );
 					
 		// create vars table (needed before var queries)
 		sqlite3_prepare_v2( my_agent->epmem_db, "CREATE TABLE IF NOT EXISTS vars (id INTEGER PRIMARY KEY,value NONE)", -1, &create, &tail );
@@ -1279,6 +1335,9 @@ void epmem_init_db( agent *my_agent )
 		sqlite3_prepare_v2( my_agent->epmem_db, "ROLLBACK", -1, &( my_agent->epmem_statements[ EPMEM_STMT_ROLLBACK ] ), &tail );			
 		sqlite3_prepare_v2( my_agent->epmem_db, "SELECT value FROM vars WHERE id=?", -1, &( my_agent->epmem_statements[ EPMEM_STMT_VAR_GET ] ), &tail );
 		sqlite3_prepare_v2( my_agent->epmem_db, "REPLACE INTO vars (id,value) VALUES (?,?)", -1, &( my_agent->epmem_statements[ EPMEM_STMT_VAR_SET ] ), &tail );
+
+		// at this point initialize the database for receipt of episodes
+		epmem_transaction_begin( my_agent );
 		
 		// further statement preparation depends upon representation options
 		const long indexing = epmem_get_parameter( my_agent, EPMEM_PARAM_INDEXING, EPMEM_RETURN_LONG );
@@ -1715,7 +1774,7 @@ void epmem_init_db( agent *my_agent )
 					sqlite3_reset( my_agent->epmem_statements[ EPMEM_STMT_BIGTREE_RIT_ADD_POINT ] );
 				}
 				else					
-					epmem_rit_insert_interval( my_agent, sqlite3_column_int64( create, 0 ), time_last, range_start, true );
+					epmem_rit_insert_interval( my_agent, sqlite3_column_int64( create, 0 ), time_last, range_start );
 			}
 			sqlite3_finalize( create );
 
@@ -1919,8 +1978,8 @@ void epmem_init_db( agent *my_agent )
 			}
 		}
 
-		sqlite3_step( my_agent->epmem_statements[ EPMEM_STMT_COMMIT ] );
-		sqlite3_reset( my_agent->epmem_statements[ EPMEM_STMT_COMMIT ] );
+		epmem_transaction_end( my_agent, true );
+		epmem_transaction_begin( my_agent );
 	}
 }
 
@@ -2104,8 +2163,7 @@ void epmem_new_episode( agent *my_agent )
 		syms.push( my_agent->top_goal );
 		ids.push( EPMEM_PARENTID_ROOT );	
 		
-		sqlite3_step( my_agent->epmem_statements[ EPMEM_STMT_BEGIN ] );
-		sqlite3_reset( my_agent->epmem_statements[ EPMEM_STMT_BEGIN ] );
+		// epmem_transaction_begin( my_agent );
 		while ( !syms.empty() )
 		{		
 			parent_sym = syms.front();
@@ -2259,8 +2317,7 @@ void epmem_new_episode( agent *my_agent )
 			e++;
 		}
 
-		sqlite3_step( my_agent->epmem_statements[ EPMEM_STMT_COMMIT ] );
-		sqlite3_reset( my_agent->epmem_statements[ EPMEM_STMT_COMMIT ] );
+		// epmem_transaction_end( my_agent, true );
 		epmem_set_stat( my_agent, (const long) EPMEM_STAT_TIME, time_counter + 1 );
 	}
 	// NEW::BIGTREE_RANGE
@@ -2290,8 +2347,7 @@ void epmem_new_episode( agent *my_agent )
 		syms.push( my_agent->top_goal );
 		ids.push( EPMEM_PARENTID_ROOT );
 		
-		sqlite3_step( my_agent->epmem_statements[ EPMEM_STMT_BEGIN ] );
-		sqlite3_reset( my_agent->epmem_statements[ EPMEM_STMT_BEGIN ] );
+		// epmem_transaction_begin( my_agent );
 		while ( !syms.empty() )
 		{		
 			parent_sym = syms.front();
@@ -2457,8 +2513,7 @@ void epmem_new_episode( agent *my_agent )
 		sqlite3_step( my_agent->epmem_statements[ EPMEM_STMT_BIGTREE_R_ADD_TIME ] );
 		sqlite3_reset( my_agent->epmem_statements[ EPMEM_STMT_BIGTREE_R_ADD_TIME ] );
 
-		sqlite3_step( my_agent->epmem_statements[ EPMEM_STMT_COMMIT ] );
-		sqlite3_reset( my_agent->epmem_statements[ EPMEM_STMT_COMMIT ] );
+		// epmem_transaction_end( my_agent, true );
 		epmem_set_stat( my_agent, (const long) EPMEM_STAT_TIME, time_counter + 1 );
 	}
 	// NEW::BIGTREE_RIT
@@ -2488,8 +2543,7 @@ void epmem_new_episode( agent *my_agent )
 		syms.push( my_agent->top_goal );
 		ids.push( EPMEM_PARENTID_ROOT );
 		
-		sqlite3_step( my_agent->epmem_statements[ EPMEM_STMT_BEGIN ] );
-		sqlite3_reset( my_agent->epmem_statements[ EPMEM_STMT_BEGIN ] );
+		// epmem_transaction_begin( my_agent );
 		while ( !syms.empty() )
 		{		
 			parent_sym = syms.front();
@@ -2666,7 +2720,7 @@ void epmem_new_episode( agent *my_agent )
 				}
 				// node
 				else				
-					epmem_rit_insert_interval( my_agent, range_start, range_end, r->first, true );
+					epmem_rit_insert_interval( my_agent, range_start, range_end, r->first );
 			}
 			
 			r++;
@@ -2678,8 +2732,7 @@ void epmem_new_episode( agent *my_agent )
 		sqlite3_step( my_agent->epmem_statements[ EPMEM_STMT_BIGTREE_RIT_ADD_TIME ] );
 		sqlite3_reset( my_agent->epmem_statements[ EPMEM_STMT_BIGTREE_RIT_ADD_TIME ] );
 
-		sqlite3_step( my_agent->epmem_statements[ EPMEM_STMT_COMMIT ] );
-		sqlite3_reset( my_agent->epmem_statements[ EPMEM_STMT_COMMIT ] );
+		// epmem_transaction_end( my_agent, true );
 		epmem_set_stat( my_agent, (const long) EPMEM_STAT_TIME, time_counter + 1 );
 	}
 	// NEW::BIGTREE_HYBRID
@@ -2712,8 +2765,7 @@ void epmem_new_episode( agent *my_agent )
 		syms.push( my_agent->top_goal );
 		ids.push( EPMEM_PARENTID_ROOT );	
 		
-		sqlite3_step( my_agent->epmem_statements[ EPMEM_STMT_BEGIN ] );
-		sqlite3_reset( my_agent->epmem_statements[ EPMEM_STMT_BEGIN ] );
+		// epmem_transaction_begin( my_agent );
 		while ( !syms.empty() )
 		{		
 			parent_sym = syms.front();
@@ -2925,8 +2977,7 @@ void epmem_new_episode( agent *my_agent )
 
 		//
 
-		sqlite3_step( my_agent->epmem_statements[ EPMEM_STMT_COMMIT ] );
-		sqlite3_reset( my_agent->epmem_statements[ EPMEM_STMT_COMMIT ] );
+		// epmem_transaction_end( my_agent, true );
 		epmem_set_stat( my_agent, (const long) EPMEM_STAT_TIME, time_counter + 1 );
 	}
 }
@@ -3917,8 +3968,7 @@ void epmem_process_query( agent *my_agent, Symbol *state, Symbol *query, Symbol 
 			wme *new_wme;
 			
 			// start transaction: performance measure to keep weights/ranges non-permanent (i.e. in memory)
-			sqlite3_step( my_agent->epmem_statements[ EPMEM_STMT_BEGIN ] );
-			sqlite3_reset( my_agent->epmem_statements[ EPMEM_STMT_BEGIN ] );
+			// epmem_transaction_begin( my_agent );
 
 			// get the leaf id's
 			std::list<epmem_leaf_node *> leaf_ids[2];
@@ -4485,8 +4535,7 @@ void epmem_process_query( agent *my_agent, Symbol *state, Symbol *query, Symbol 
 			sqlite3_reset( my_agent->epmem_statements[ EPMEM_STMT_BIGTREE_R_TRUNCATE_RANGES ] );
 
 			// finish transaction
-			sqlite3_step( my_agent->epmem_statements[ EPMEM_STMT_COMMIT ] );
-			sqlite3_reset( my_agent->epmem_statements[ EPMEM_STMT_COMMIT ] );
+			// epmem_transaction_end( my_agent, true );
 		}
 		// QUERY::BIGTREE_RIT
 		else if ( indexing == EPMEM_INDEXING_BIGTREE_RIT )
@@ -4494,8 +4543,7 @@ void epmem_process_query( agent *my_agent, Symbol *state, Symbol *query, Symbol 
 			wme *new_wme;
 			
 			// start transaction: performance measure to keep weights/ranges non-permanent (i.e. in memory)
-			sqlite3_step( my_agent->epmem_statements[ EPMEM_STMT_BEGIN ] );
-			sqlite3_reset( my_agent->epmem_statements[ EPMEM_STMT_BEGIN ] );
+			// epmem_transaction_begin( my_agent );
 
 			// get the leaf id's			
 			std::list<epmem_leaf_node *> leaf_ids[2];
@@ -5225,8 +5273,7 @@ void epmem_process_query( agent *my_agent, Symbol *state, Symbol *query, Symbol 
 			sqlite3_reset( my_agent->epmem_statements[ EPMEM_STMT_BIGTREE_RIT_TRUNCATE_WEIGHTS ] );
 
 			// finish transaction
-			sqlite3_step( my_agent->epmem_statements[ EPMEM_STMT_COMMIT ] );
-			sqlite3_reset( my_agent->epmem_statements[ EPMEM_STMT_COMMIT ] );
+			// epmem_transaction_end( my_agent, true );
 		}
 		// QUERY::BIGTREE_HYBRID
 		else if ( indexing == EPMEM_INDEXING_BIGTREE_HYBRID )
@@ -5234,8 +5281,7 @@ void epmem_process_query( agent *my_agent, Symbol *state, Symbol *query, Symbol 
 			wme *new_wme;
 			
 			// start transaction: performance measure to keep weights/ranges non-permanent (i.e. in memory)
-			sqlite3_step( my_agent->epmem_statements[ EPMEM_STMT_BEGIN ] );
-			sqlite3_reset( my_agent->epmem_statements[ EPMEM_STMT_BEGIN ] );
+			// epmem_transaction_begin( my_agent );
 
 			// get the leaf id's			
 			std::list<epmem_leaf_node *> leaf_ids[2];
@@ -5965,8 +6011,7 @@ void epmem_process_query( agent *my_agent, Symbol *state, Symbol *query, Symbol 
 			sqlite3_reset( my_agent->epmem_statements[ EPMEM_STMT_BIGTREE_H_TRUNCATE_WEIGHTS ] );
 
 			// finish transaction
-			sqlite3_step( my_agent->epmem_statements[ EPMEM_STMT_COMMIT ] );
-			sqlite3_reset( my_agent->epmem_statements[ EPMEM_STMT_COMMIT ] );
+			// epmem_transaction_end( my_agent, true );
 		}
 	}
 	else
@@ -6170,8 +6215,7 @@ void epmem_install_memory( agent *my_agent, Symbol *state, epmem_time_id memory_
 
 		ids[ 0 ] = retrieved_header;
 
-		sqlite3_step( my_agent->epmem_statements[ EPMEM_STMT_BEGIN ] );
-		sqlite3_reset( my_agent->epmem_statements[ EPMEM_STMT_BEGIN ] );
+		// epmem_transaction_begin( my_agent );
 
 		epmem_rit_prep_left_right( my_agent, memory_id, memory_id );
 
@@ -6232,8 +6276,7 @@ void epmem_install_memory( agent *my_agent, Symbol *state, epmem_time_id memory_
 
 		epmem_rit_clear_left_right( my_agent );
 
-		sqlite3_step( my_agent->epmem_statements[ EPMEM_STMT_COMMIT ] );
-		sqlite3_reset( my_agent->epmem_statements[ EPMEM_STMT_COMMIT ] );
+		// epmem_transaction_end( my_agent, true );
 	}
 	// INSTALL::BIGTREE_HYBRID
 	else if ( indexing == EPMEM_INDEXING_BIGTREE_HYBRID )
@@ -6362,13 +6405,12 @@ void epmem_install_memory( agent *my_agent, Symbol *state, epmem_time_id memory_
 /***************************************************************************
  * Function     : epmem_rit_insert_interval
  **************************************************************************/
-void epmem_rit_insert_interval( agent *my_agent, epmem_time_id lower, epmem_time_id upper, epmem_node_id id, bool in_transaction )
+void epmem_rit_insert_interval( agent *my_agent, epmem_time_id lower, epmem_time_id upper, epmem_node_id id )
 {
-	if ( !in_transaction )
-	{
-		sqlite3_step( my_agent->epmem_statements[ EPMEM_STMT_BEGIN ] );
-		sqlite3_reset( my_agent->epmem_statements[ EPMEM_STMT_BEGIN ] );
-	}
+	// if ( !in_transaction )
+	// {
+		// epmem_transaction_begin( my_agent );
+	// }
 
 	// initialize offset
 	long long offset = epmem_get_stat( my_agent, EPMEM_STAT_RIT_OFFSET );
@@ -6460,11 +6502,10 @@ void epmem_rit_insert_interval( agent *my_agent, epmem_time_id lower, epmem_time
 	sqlite3_step( my_agent->epmem_statements[ EPMEM_STMT_BIGTREE_RIT_ADD_EPISODE ] );
 	sqlite3_reset( my_agent->epmem_statements[ EPMEM_STMT_BIGTREE_RIT_ADD_EPISODE ] );
 
-	if ( !in_transaction )
-	{
-		sqlite3_step( my_agent->epmem_statements[ EPMEM_STMT_COMMIT ] );
-		sqlite3_reset( my_agent->epmem_statements[ EPMEM_STMT_COMMIT ] );
-	}
+	// if ( !in_transaction )
+	// {
+		// epmem_transaction_end( my_agent, true );
+	// }
 }
 
 /***************************************************************************
@@ -6620,4 +6661,19 @@ void epmem_rit_add_right( agent *my_agent, epmem_time_id id )
 
 	sqlite3_step( my_agent->epmem_statements[ EPMEM_STMT_BIGTREE_RIT_ADD_RIGHT ] );
 	sqlite3_reset( my_agent->epmem_statements[ EPMEM_STMT_BIGTREE_RIT_ADD_RIGHT ] );
+}
+
+/***************************************************************************
+ * Function     : epmem_go
+ **************************************************************************/
+void epmem_go( agent *my_agent )
+{
+	if ( !epmem_in_transaction( my_agent ) )
+		epmem_transaction_begin( my_agent );
+	
+	epmem_consider_new_episode( my_agent );
+	epmem_respond_to_cmd( my_agent );
+
+	if ( !epmem_in_transaction( my_agent ) )
+		epmem_transaction_end( my_agent, true );
 }

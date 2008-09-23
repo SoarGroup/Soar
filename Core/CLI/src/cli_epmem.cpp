@@ -204,6 +204,18 @@ bool CommandLineInterface::DoEpMem( const char pOp, const std::string* pAttr, co
 			m_Result << temp << "\n";
 		else
 			AppendArgTagFast( sml_Names::kParamValue, sml_Names::kTypeString, temp.c_str() );
+
+		temp = "commit: ";
+		temp_val = epmem_get_parameter( m_pAgentSoar, EPMEM_PARAM_COMMIT );
+		temp2 = to_string( temp_val );
+		temp += (*temp2);
+		delete temp2;
+		if ( m_RawOutput )
+			m_Result << temp << "\n";
+		else
+		{
+			AppendArgTagFast( sml_Names::kParamValue, sml_Names::kTypeString, temp.c_str() );			
+		}
 				
 		temp = "path: ";
 		temp += epmem_get_parameter( m_pAgentSoar, (const long) EPMEM_PARAM_PATH, EPMEM_RETURN_STRING );

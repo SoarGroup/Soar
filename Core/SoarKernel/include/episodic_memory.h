@@ -149,14 +149,15 @@ typedef struct wme_struct wme;
 // names of params
 #define EPMEM_PARAM_LEARNING						0
 #define EPMEM_PARAM_DB								1
-#define EPMEM_PARAM_PATH							2
-#define EPMEM_PARAM_INDEXING						3
-#define EPMEM_PARAM_PROVENANCE						4
-#define EPMEM_PARAM_TRIGGER							5
-#define EPMEM_PARAM_FORCE							6
-#define EPMEM_PARAM_BALANCE							7
-#define EPMEM_PARAM_EXCLUSIONS						8
-#define EPMEM_PARAMS								9 // must be 1+ last epmem param
+#define EPMEM_PARAM_COMMIT							2
+#define EPMEM_PARAM_PATH							3
+#define EPMEM_PARAM_INDEXING						4
+#define EPMEM_PARAM_PROVENANCE						5
+#define EPMEM_PARAM_TRIGGER							6
+#define EPMEM_PARAM_FORCE							7
+#define EPMEM_PARAM_BALANCE							8
+#define EPMEM_PARAM_EXCLUSIONS						9
+#define EPMEM_PARAMS								10 // must be 1+ last epmem param
 
 // names of stats
 #define EPMEM_STAT_TIME								0
@@ -336,6 +337,9 @@ extern bool epmem_validate_balance( const double new_val );
 // exclusions
 extern bool epmem_validate_exclusions( const char *new_val );
 
+// commit
+extern bool epmem_validate_commit( const double new_val );
+
 // shortcut for determining if EpMem is enabled
 extern bool epmem_enabled( agent *my_agent );
 
@@ -374,11 +378,8 @@ extern bool epmem_set_stat( agent *my_agent, const long stat, long long new_val 
 extern void epmem_reset( agent *my_agent, Symbol *state = NULL );
 extern void epmem_end( agent *my_agent );
 
-// Called to consider adding new episodes to the store
-extern void epmem_consider_new_episode( agent *my_agent );
-
-// Called to react to commands
-extern void epmem_respond_to_cmd( agent *my_agent );
+// perform epmem actions
+extern void epmem_go( agent *my_agent );
 
 // Called to create/remove a fake preference for an epmem wme
 extern preference *epmem_make_fake_preference( agent *my_agent, Symbol *state, wme *w );
