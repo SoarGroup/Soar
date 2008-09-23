@@ -10,7 +10,6 @@
 
   <!-- Dist Clean everyting -->
   <target name="distclean" depends="clean">
-    <delete dir="build"/>
     <delete dir="docs"/>
     <delete file="soaruorc.jar"/>
     <delete dir="depcache"/>

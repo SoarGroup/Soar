@@ -9,10 +9,14 @@ public class uOrcThread extends Thread
 	private Motor leftMotor;
 	private Motor rightMotor;
 
-	private double left;
-	private double right;
+	private class BotState
+	{
+		public double left = 0;
+		public double right = 0;
+	}
+	private BotState state = new BotState();
 	
-	private running = true;
+	private boolean running = true;
 
 	public uOrcThread()
 	{
@@ -23,31 +27,37 @@ public class uOrcThread extends Thread
 	
 	public void run()
 	{
-		//System.out.printf( "%15s %15s %15s %15s\n", "left", "right", "left current", "right current" );
+		System.out.printf( "%15s %15s %15s %15s\n", "left", "right", "left current", "right current" );
 		while ( running ) {
-			//System.out.printf( "%15f %15f %15f %15f\r", left, right, leftMotor.getCurrent(), rightMotor.getCurrent() );
+			double left, right;
+			synchronized ( state )
+			{
+				left = state.left;
+				right = state.right;
+			}
+			System.out.printf( "%15f %15f %15f %15f\r", left, right, leftMotor.getCurrent(), rightMotor.getCurrent() );
 			
 			// write new commands
 			leftMotor.setPWM( left );
-			rightMotor.setPWM(right );
-	
+			rightMotor.setPWM( right );
+			
 			try {
 				Thread.sleep( 30 );
-			} catch (InterruptedException ex) 
+			} catch ( InterruptedException ex ) 
 			{}
 		}
 	}
 	
 	public void setPower( double left, double right )
 	{
-		synchronized
+		synchronized ( state )
 		{
-			this.left = left;
-			this.right = right;
+			state.left = left;
+			state.right = right;
 		}
 	}
 	
-	public void stop()
+	public void stopThread()
 	{
 		running = false;
 	}

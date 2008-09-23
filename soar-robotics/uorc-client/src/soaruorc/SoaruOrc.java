@@ -3,7 +3,7 @@ package	soaruorc;
 import orc.util.*;
 import sml.*;
 
-public class SoaruOrc implements Kernel.UpdateEventInterface, Kernel.SystemEventInterface
+public class SoaruOrc implements Kernel.UpdateEventInterface
 {
 	private GamePad gp = new GamePad();
 	private uOrcThread uorc = new uOrcThread();
@@ -17,14 +17,14 @@ public class SoaruOrc implements Kernel.UpdateEventInterface, Kernel.SystemEvent
 		kernel = Kernel.CreateKernelInNewThread();
 		if ( kernel.HadError() )
 		{
-			System.err.writeln( kernel.GetLastErrorDescription() );
+			System.err.println( kernel.GetLastErrorDescription() );
 			System.exit(1);
 		}
 
-		agent = Kernel.CreateAgent();
+		agent = kernel.CreateAgent( "soar" );
 		if ( kernel.HadError() )
 		{
-			System.err.writeln( kernel.GetLastErrorDescription() );
+			System.err.println( kernel.GetLastErrorDescription() );
 			System.exit(1);
 		}
 		
@@ -41,13 +41,11 @@ public class SoaruOrc implements Kernel.UpdateEventInterface, Kernel.SystemEvent
 		// start the bot thread
 		uorc.start();
 		
-		// start soar
 		kernel.RunAllAgentsForever();
 			
-		// shutdown
-		uorc.stop();
-		kernel.shutdown();
-		delete kernel;
+		uorc.stopThread();
+		kernel.Shutdown();
+		kernel.delete();
 	}
 
 	public void updateEventHandler(int eventID, Object data, Kernel kernel, int runFlags) 
@@ -68,17 +66,17 @@ public class SoaruOrc implements Kernel.UpdateEventInterface, Kernel.SystemEvent
 				double rightCommand = 0;
 				
 				try {
-					leftCommand = Double.decode( commandId.GetParameterValue( "left" ) ).doubleValue();
+					leftCommand = Double.parseDouble( commandId.GetParameterValue( "left" ) );
 				} catch ( NumberFormatException e ) {
-					System.out.writeln( "Unable to parse left: " + commandId.GetParameterValue( "left" ) );
+					System.out.println( "Unable to parse left: " + commandId.GetParameterValue( "left" ) );
 					commandId.AddStatusError();
 					continue;
 				}
 				
 				try {
-					rightCommand = Double.decode( commandId.GetParameterValue( "right" ) ).doubleValue();
+					rightCommand = Double.parseDouble( commandId.GetParameterValue( "right" ) );
 				} catch ( NumberFormatException e ) {
-					System.out.writeln( "Unable to parse right: " + commandId.GetParameterValue( "right" ) );
+					System.out.println( "Unable to parse right: " + commandId.GetParameterValue( "right" ) );
 					commandId.AddStatusError();
 					continue;
 				}
@@ -91,10 +89,10 @@ public class SoaruOrc implements Kernel.UpdateEventInterface, Kernel.SystemEvent
 				
 				uorc.setPower( leftCommand, rightCommand );
 				commandId.AddStatusComplete();
-				continue
+				continue;
 			}
 			
-			System.out.writeln( "Unknown command: " + commandName );
+			System.out.println( "Unknown command: " + commandName );
 			commandId.AddStatusError();
 		}
 		
