@@ -1,0 +1,11 @@
+sp {suggestion-agent*propose*override
+   (state <s> ^name simple-bot
+              ^io.input-link.override <over>)
+   (<over>    ^left <left>
+              ^right <right>)
+-->
+   (<s> ^operator <op> + >)
+   (<op> ^name override
+         ^actions.move.left <left>
+         ^actions.move.right <right>)
+}
