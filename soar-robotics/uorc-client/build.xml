@@ -1,0 +1,82 @@
+<?xml version="1.0" ?>
+
+<project name="soaruorc" default="build" basedir=".">
+
+  <!-- Build everything -->
+  <target name="build" depends="build-java,build-jar"/>
+
+  <!-- Clean everything -->
+  <target name="clean" depends="clean-java"/>
+
+  <!-- Dist Clean everyting -->
+  <target name="distclean" depends="clean">
+    <delete dir="build"/>
+    <delete dir="docs"/>
+    <delete file="soaruorc.jar"/>
+    <delete dir="depcache"/>
+  </target>
+
+  <!-- Build docs -->
+  <target name="docs">
+    <javadoc sourcepath="src/"
+             packagenames="*"
+             defaultexcludes="yes"
+             destdir="docs/api"
+             Public="yes"
+             source="1.6"
+	     />
+  </target>
+
+  <!-- Build Jar -->
+  <target name="build-jar">
+    <jar destfile="soaruorc.jar">
+
+      <fileset dir="build">
+	<include name="**/*.class" />
+      </fileset>
+
+      <manifest>
+	<attribute name="Main-Class" value="soaruorc.SoaruOrc" />
+	<attribute name="Class-Path" value="orc.jar sml.jar" />
+      </manifest>
+    </jar>
+    <copy file="soaruorc.jar" todir="." />
+  </target>
+
+  <target name="build-java">
+    <!-- This does deep dependency checking on class files 
+	 <depend
+	    srcdir="."
+	    cache="depcache"
+	    closure="true"
+	    /> -->
+
+    <!-- This compiles all the java -->
+    <javac
+       srcdir="src"
+       includes="**/*.java"
+       debug="on"
+       optimize="off"
+       destdir="build"
+       compiler="extJavac"
+       deprecation="yes"
+       source="1.5"
+       target="1.5"
+       >
+      <classpath>
+        <pathelement location="src/"/>
+	<pathelement location="orc.jar"/>
+	<pathelement location="sml.jar"/>
+      </classpath>
+    </javac>
+  </target>
+
+  <target name="clean-java" >
+    <delete>
+      <fileset dir="build" includes="**/*.class"/>
+      <fileset dir="." includes="**/*~" defaultexcludes="no"/>
+      <fileset dir="." includes="soaruorc.jar"/>
+    </delete>
+  </target>
+
+</project>
