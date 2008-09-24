@@ -18,6 +18,8 @@
 #include <stack>
 #include <list>
 
+#include "sqlite3.h"
+
 typedef struct wme_struct wme;
 
 //////////////////////////////////////////////////////////
@@ -138,6 +140,9 @@ typedef struct wme_struct wme;
 #define EPMEM_NODE_NEG								1
 #define EPMEM_RANGE_START							0
 #define EPMEM_RANGE_END								1
+#define EPMEM_RANGE_EP								0
+#define EPMEM_RANGE_NOW								1
+#define EPMEM_RANGE_POINT							2
 
 #define EPMEM_RIT_ROOT								0
 #define EPMEM_LN_2									0.693147180559945
@@ -240,6 +245,13 @@ typedef struct epmem_leaf_node_struct
 	epmem_node_id leaf_id;
 	double leaf_weight;
 } epmem_leaf_node;
+
+typedef struct epmem_range_query_struct
+{
+	std::string *sql;
+	sqlite3_stmt *stmt;
+	epmem_time_id val;
+} epmem_range_query;
 
 //
 // These must go below types
