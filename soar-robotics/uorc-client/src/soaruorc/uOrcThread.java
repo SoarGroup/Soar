@@ -27,7 +27,7 @@ public class uOrcThread extends Thread
 	
 	public void run()
 	{
-		System.out.printf( "%15s %15s %15s %15s\n", "left", "right", "left current", "right current" );
+		//System.out.printf( "%15s %15s %15s %15s\n", "left", "right", "left current", "right current" );
 		while ( running ) {
 			double left, right;
 			synchronized ( state )
@@ -35,7 +35,7 @@ public class uOrcThread extends Thread
 				left = state.left;
 				right = state.right;
 			}
-			System.out.printf( "%15f %15f %15f %15f\r", left, right, leftMotor.getCurrent(), rightMotor.getCurrent() );
+			//System.out.printf( "%15f %15f %15f %15f\r", left, right, leftMotor.getCurrent(), rightMotor.getCurrent() );
 			
 			// write new commands
 			leftMotor.setPWM( left );

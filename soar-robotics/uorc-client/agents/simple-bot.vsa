@@ -1,12 +1,12 @@
 VERSION 4
-\simple-bot\simple-bot.dm
+/simple-bot/simple-bot.dm
 0	ROOT simple-bot simple-bot 1
-1	0	FOPERATOR _firstload _firstload.soar 3
-2	0	FOLDER all all 4
-3	0	FOLDER elaborations elaborations 2
+1	0	FOPERATOR _firstload _firstload.soar 2
+2	0	FOLDER all all 3
+3	0	FOLDER elaborations elaborations 4
 4	3	FOPERATOR _all _all.soar 5
-5	3	FOPERATOR output output.soar 9
-6	3	FOPERATOR top-state top-state.soar 6
-7	0	OPERATOR initialize-simple-bot initialize-simple-bot.soar 7
-8	0	OPERATOR override override.soar 8
+5	3	FOPERATOR output output.soar 6
+6	3	FOPERATOR top-state top-state.soar 7
+7	0	OPERATOR initialize-simple-bot initialize-simple-bot.soar 8
+8	0	OPERATOR override override.soar 9
 END
