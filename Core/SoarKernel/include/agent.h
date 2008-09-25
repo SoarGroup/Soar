@@ -804,6 +804,7 @@ kernel time and total_cpu_time greater than the derived total CPU time. REW */
   // epmem
   epmem_parameter *epmem_params[ EPMEM_PARAMS ];
   epmem_stat *epmem_stats[ EPMEM_STATS ];
+  epmem_timer *epmem_timers[ EPMEM_TIMERS ];
   
   sqlite3 *epmem_db;
   int epmem_db_status;

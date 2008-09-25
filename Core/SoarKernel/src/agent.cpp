@@ -363,6 +363,23 @@ agent * create_soar_agent (char * agent_name) {                                 
   newAgent->epmem_stats[ EPMEM_STAT_RIT_LEFTROOT ] = epmem_add_stat( "rit_left_root" );
   newAgent->epmem_stats[ EPMEM_STAT_RIT_RIGHTROOT ] = epmem_add_stat( "rit_right_root" );
   newAgent->epmem_stats[ EPMEM_STAT_RIT_MINSTEP ] = epmem_add_stat( "rit_min_step" );
+
+  newAgent->epmem_timers[ EPMEM_TIMER_QUERY_LEAF ] = epmem_add_timer( "query_leaf" );
+  newAgent->epmem_timers[ EPMEM_TIMER_QUERY_WEIGHTS ] = epmem_add_timer( "query_weights" );
+  newAgent->epmem_timers[ EPMEM_TIMER_QUERY_SQL ] = epmem_add_timer( "query_sql" );
+  newAgent->epmem_timers[ EPMEM_TIMER_QUERY_BIND ] = epmem_add_timer( "query_bind" );
+  newAgent->epmem_timers[ EPMEM_TIMER_QUERY_POS_START_EP ] = epmem_add_timer( "query_pos_start_ep" );
+  newAgent->epmem_timers[ EPMEM_TIMER_QUERY_POS_START_NOW ] = epmem_add_timer( "query_pos_start_now" );
+  newAgent->epmem_timers[ EPMEM_TIMER_QUERY_POS_START_POINT ] = epmem_add_timer( "query_pos_start_point" );
+  newAgent->epmem_timers[ EPMEM_TIMER_QUERY_POS_END_EP ] = epmem_add_timer( "query_pos_end_ep" );
+  newAgent->epmem_timers[ EPMEM_TIMER_QUERY_POS_END_NOW ] = epmem_add_timer( "query_pos_end_now" );
+  newAgent->epmem_timers[ EPMEM_TIMER_QUERY_POS_END_POINT ] = epmem_add_timer( "query_pos_end_point" );
+  newAgent->epmem_timers[ EPMEM_TIMER_QUERY_NEG_START_EP ] = epmem_add_timer( "query_neg_start_ep" );
+  newAgent->epmem_timers[ EPMEM_TIMER_QUERY_NEG_START_NOW ] = epmem_add_timer( "query_neg_start_now" );
+  newAgent->epmem_timers[ EPMEM_TIMER_QUERY_NEG_START_POINT ] = epmem_add_timer( "query_neg_start_point" );
+  newAgent->epmem_timers[ EPMEM_TIMER_QUERY_NEG_END_EP ] = epmem_add_timer( "query_neg_end_ep" );
+  newAgent->epmem_timers[ EPMEM_TIMER_QUERY_NEG_END_NOW ] = epmem_add_timer( "query_neg_end_now" );
+  newAgent->epmem_timers[ EPMEM_TIMER_QUERY_NEG_END_POINT ] = epmem_add_timer( "query_neg_end_point" );
     
   newAgent->epmem_db = NULL;
   newAgent->epmem_db_status = -1;
@@ -523,6 +540,7 @@ void destroy_soar_agent (agent * delete_agent)
   epmem_end( delete_agent );
   epmem_clean_parameters( delete_agent );
   epmem_clean_stats( delete_agent );
+  epmem_clean_timers( delete_agent );
 
   // cleanup wma
   wma_clean_parameters( delete_agent );

@@ -174,6 +174,25 @@ typedef struct wme_struct wme;
 #define EPMEM_STAT_RIT_MINSTEP						6
 #define EPMEM_STATS									7 // must be 1+ last epmem stat
 
+// names of timers
+#define EPMEM_TIMER_QUERY_LEAF						0
+#define EPMEM_TIMER_QUERY_WEIGHTS					1
+#define EPMEM_TIMER_QUERY_SQL						2
+#define EPMEM_TIMER_QUERY_BIND						3
+#define EPMEM_TIMER_QUERY_POS_START_EP				4
+#define EPMEM_TIMER_QUERY_POS_START_NOW				5
+#define EPMEM_TIMER_QUERY_POS_START_POINT			6
+#define EPMEM_TIMER_QUERY_POS_END_EP				7
+#define EPMEM_TIMER_QUERY_POS_END_NOW				8
+#define EPMEM_TIMER_QUERY_POS_END_POINT				9
+#define EPMEM_TIMER_QUERY_NEG_START_EP				10
+#define EPMEM_TIMER_QUERY_NEG_START_NOW				11
+#define EPMEM_TIMER_QUERY_NEG_START_POINT			12
+#define EPMEM_TIMER_QUERY_NEG_END_EP				13
+#define EPMEM_TIMER_QUERY_NEG_END_NOW				14
+#define EPMEM_TIMER_QUERY_NEG_END_POINT				15
+#define EPMEM_TIMERS								16 // must be 1+ last epmem timer
+
 //////////////////////////////////////////////////////////
 // EpMem Types
 //////////////////////////////////////////////////////////
@@ -221,6 +240,15 @@ typedef struct epmem_stat_struct
 
 //
 
+typedef struct epmem_timer_struct
+{
+	struct timeval start_timer;
+	struct timeval total_timer;
+	const char *name;
+} epmem_timer;
+
+//
+
 typedef unsigned long long int epmem_node_id;
 typedef long long int epmem_time_id;
 
@@ -251,6 +279,7 @@ typedef struct epmem_range_query_struct
 	std::string *sql;
 	sqlite3_stmt *stmt;
 	epmem_time_id val;
+	long timer;
 } epmem_range_query;
 
 //
@@ -381,6 +410,37 @@ extern long long epmem_get_stat( agent *my_agent, const long stat );
 // set stat
 extern bool epmem_set_stat( agent *my_agent, const char *name, long long new_val );
 extern bool epmem_set_stat( agent *my_agent, const long stat, long long new_val );
+
+//////////////////////////////////////////////////////////
+// Timers
+//////////////////////////////////////////////////////////
+
+// memory clean
+extern void epmem_clean_timers( agent *my_agent );
+extern void epmem_reset_timers( agent *my_agent );
+
+// add timer
+extern epmem_timer *epmem_add_timer( const char *name );
+
+// convert stat
+extern const long epmem_convert_timer( agent *my_agent, const char *name );
+extern const char *epmem_convert_timer( agent *my_agent, const long timer );
+
+// valid timer
+extern bool epmem_valid_timer( agent *my_agent, const char *name );
+extern bool epmem_valid_timer( agent *my_agent, const long timer );
+
+// get timer
+extern double epmem_get_timer( agent *my_agent, const char *name );
+extern double epmem_get_timer( agent *my_agent, const long timer );
+
+// get timer name
+extern const char *epmem_get_timer_name( agent *my_agent, const char *name );
+extern const char *epmem_get_timer_name( agent *my_agent, const long timer );
+
+// timer functions
+extern void epmem_start_timer( agent *my_agent, const long timer );
+extern void epmem_stop_timer( agent *my_agent, const long timer );
 
 //////////////////////////////////////////////////////////
 // Core Functions

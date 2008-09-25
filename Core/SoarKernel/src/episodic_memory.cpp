@@ -1084,6 +1084,138 @@ bool epmem_set_stat( agent *my_agent, const long stat, long long new_val )
 	return true;
 }
 
+/////////////////////////////////////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+/***************************************************************************
+ * Function     : epmem_clean_timers
+ **************************************************************************/
+void epmem_clean_timers( agent *my_agent )
+{
+	for ( int i=0; i<EPMEM_TIMERS; i++ )
+		delete my_agent->epmem_timers[ i ];
+}
+
+/***************************************************************************
+ * Function     : epmem_reset_timers
+ **************************************************************************/
+void epmem_reset_timers( agent *my_agent )
+{
+	for ( int i=0; i<EPMEM_TIMERS; i++ )
+	{
+		reset_timer( &my_agent->epmem_timers[ i ]->start_timer );
+		reset_timer( &my_agent->epmem_timers[ i ]->total_timer );
+	}
+}
+
+/***************************************************************************
+ * Function     : epmem_add_timer
+ **************************************************************************/
+epmem_timer *epmem_add_timer( const char *name )
+{
+	// new timer entry
+	epmem_timer *newbie = new epmem_timer;
+	newbie->name = name;
+	reset_timer( &newbie->start_timer );
+	reset_timer( &newbie->total_timer );
+	
+	return newbie;
+}
+
+/***************************************************************************
+ * Function     : epmem_convert_timer
+ **************************************************************************/
+const long epmem_convert_timer( agent *my_agent, const char *name )
+{
+	for ( int i=0; i<EPMEM_TIMERS; i++ )
+		if ( !strcmp( name, my_agent->epmem_timers[ i ]->name ) )
+			return i;
+
+	return EPMEM_TIMERS;
+}
+
+const char *epmem_convert_timer( agent *my_agent, const long timer )
+{
+	if ( ( timer < 0 ) || ( timer >= EPMEM_TIMERS ) )
+		return NULL;
+
+	return my_agent->epmem_timers[ timer ]->name;
+}
+
+/***************************************************************************
+ * Function     : epmem_valid_timer
+ **************************************************************************/
+bool epmem_valid_timer( agent *my_agent, const char *name )
+{
+	return ( epmem_convert_timer( my_agent, name ) != EPMEM_TIMERS );
+}
+
+bool epmem_valid_timer( agent *my_agent, const long timer )
+{
+	return ( epmem_convert_timer( my_agent, timer ) != NULL );
+}
+
+/***************************************************************************
+ * Function     : epmem_get_timer
+ **************************************************************************/
+double epmem_get_timer( agent *my_agent, const char *name )
+{
+	const long timer = epmem_convert_timer( my_agent, name );
+	if ( timer == EPMEM_TIMERS )
+		return 0;
+
+	return timer_value( &my_agent->epmem_timers[ timer ]->total_timer );
+}
+
+double epmem_get_timer( agent *my_agent, const long timer )
+{
+	if ( !epmem_valid_timer( my_agent, timer ) )
+		return 0;
+
+	return timer_value( &my_agent->epmem_timers[ timer ]->total_timer );
+}
+
+/***************************************************************************
+ * Function     : epmem_get_timer_name
+ **************************************************************************/
+const char *epmem_get_timer_name( agent *my_agent, const char *name )
+{
+	const long timer = epmem_convert_timer( my_agent, name );
+	if ( timer == EPMEM_TIMERS )
+		return 0;
+
+	return my_agent->epmem_timers[ timer ]->name;
+}
+
+const char *epmem_get_timer_name( agent *my_agent, const long timer )
+{
+	if ( !epmem_valid_timer( my_agent, timer ) )
+		return 0;
+
+	return my_agent->epmem_timers[ timer ]->name;
+}
+
+/***************************************************************************
+ * Function     : epmem_start_timer
+ **************************************************************************/
+void epmem_start_timer( agent *my_agent, const long timer )
+{
+	if ( epmem_valid_timer( my_agent, timer ) )
+		start_timer( my_agent, &my_agent->epmem_timers[ timer ]->start_timer );
+}
+
+/***************************************************************************
+ * Function     : epmem_stop_timer
+ **************************************************************************/
+void epmem_stop_timer( agent *my_agent, const long timer )
+{
+	if ( epmem_valid_timer( my_agent, timer ) )
+		stop_timer( my_agent, &my_agent->epmem_timers[ timer ]->start_timer, &my_agent->epmem_timers[ timer ]->total_timer );
+}
+
+/////////////////////////////////////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////////////////////////////////////
+
 //
 
 /***************************************************************************
@@ -3503,9 +3635,23 @@ epmem_leaf_node *epmem_create_leaf_node( epmem_node_id leaf_id, double leaf_weig
 }
 
 /***************************************************************************
+ * Function     : epmem_exec_range_query
+ **************************************************************************/
+int epmem_exec_range_query( agent *my_agent, epmem_range_query *stmt )
+{
+	int return_val;
+	
+	epmem_start_timer( my_agent, stmt->timer );
+	return_val = sqlite3_step( stmt->stmt );
+	epmem_stop_timer( my_agent, stmt->timer );
+
+	return return_val;
+}
+
+/***************************************************************************
  * Function     : epmem_incremental_row
  **************************************************************************/
-void epmem_incremental_row( epmem_range_query stmts[2][2][3], epmem_time_id tops[2], epmem_time_id &id, long long &ct, double &v, long long &updown, const unsigned int list )
+void epmem_incremental_row( agent *my_agent, epmem_range_query stmts[2][2][3], epmem_time_id tops[2], epmem_time_id &id, long long &ct, double &v, long long &updown, const unsigned int list )
 {
 	// initialize variables
 	id = tops[ list ];
@@ -3531,8 +3677,8 @@ void epmem_incremental_row( epmem_range_query stmts[2][2][3], epmem_time_id tops
 					updown++;
 					v += sqlite3_column_double( stmts[ i ][ list ][ k ].stmt, 1 );
 					ct += sqlite3_column_double( stmts[ i ][ list ][ k ].stmt, 2 );
-
-					more_data = ( sqlite3_step( stmts[ i ][ list ][ k ].stmt ) == SQLITE_ROW );
+					
+					more_data = ( epmem_exec_range_query( my_agent, &stmts[ i ][ list ][ k ] ) == SQLITE_ROW );
 					if ( more_data )
 						next_id = sqlite3_column_int64( stmts[ i ][ list ][ k ].stmt, 0 );
 
@@ -4553,6 +4699,7 @@ void epmem_process_query( agent *my_agent, Symbol *state, Symbol *query, Symbol 
 			std::list<epmem_leaf_node *> leaf_ids[2];
 			std::list<epmem_leaf_node *>::iterator leaf_p;		
 			std::vector<epmem_time_id>::iterator prohibit_p;
+			epmem_start_timer( my_agent, EPMEM_TIMER_QUERY_LEAF );
 			{
 				wme ***wmes;
 				int len;
@@ -4661,12 +4808,14 @@ void epmem_process_query( agent *my_agent, Symbol *state, Symbol *query, Symbol 
 					}
 				}
 			}
+			epmem_stop_timer( my_agent, EPMEM_TIMER_QUERY_LEAF );
 
 			// useful statistics
 			int cue_size = ( leaf_ids[ EPMEM_NODE_POS ].size() + leaf_ids[ EPMEM_NODE_NEG ].size() );
 			int perfect_match = leaf_ids[ EPMEM_NODE_POS ].size();
 
 			// set weights for all leaf id's
+			epmem_start_timer( my_agent, EPMEM_TIMER_QUERY_WEIGHTS );
 			{			
 				for ( int i=EPMEM_NODE_POS; i<=EPMEM_NODE_NEG; i++ )
 				{				
@@ -4682,9 +4831,10 @@ void epmem_process_query( agent *my_agent, Symbol *state, Symbol *query, Symbol 
 					}					
 				}
 			}
+			epmem_stop_timer( my_agent, EPMEM_TIMER_QUERY_WEIGHTS );
 
 			// perform incremental, integrated range search
-			{
+			{				
 				// variables to populate
 				epmem_time_id king_id = EPMEM_MEMID_NONE;
 				double king_score = -1000;
@@ -4692,6 +4842,7 @@ void epmem_process_query( agent *my_agent, Symbol *state, Symbol *query, Symbol 
 
 				// dynamically constructed queries				
 				epmem_range_query range_list[2][2][3];
+				int timer = EPMEM_TIMER_QUERY_POS_START_EP;
 				int i, j, k;
 				for ( i=0; i<2; i++ )
 				{
@@ -4702,11 +4853,13 @@ void epmem_process_query( agent *my_agent, Symbol *state, Symbol *query, Symbol 
 							range_list[ i ][ j ][ k ].sql = NULL;
 							range_list[ i ][ j ][ k ].stmt = NULL;
 							range_list[ i ][ j ][ k ].val = EPMEM_MEMID_NONE;
+							range_list[ i ][ j ][ k ].timer = ( timer++ );
 						}
 					}
 				}
 
 				// prepare range queries
+				epmem_start_timer( my_agent, EPMEM_TIMER_QUERY_SQL );
 				{				
 					const char *tail;					
 
@@ -4996,8 +5149,10 @@ void epmem_process_query( agent *my_agent, Symbol *state, Symbol *query, Symbol 
 						delete qs;
 					}
 				}
+				epmem_stop_timer( my_agent, EPMEM_TIMER_QUERY_SQL );
 
 				// bind variables
+				epmem_start_timer( my_agent, EPMEM_TIMER_QUERY_BIND );
 				{					
 					int position[2][3];
 					epmem_time_id time_now = epmem_get_stat( my_agent, (const long) EPMEM_STAT_TIME ) - 1;
@@ -5097,8 +5252,10 @@ void epmem_process_query( agent *my_agent, Symbol *state, Symbol *query, Symbol 
 						}
 					}
 				}
+				epmem_stop_timer( my_agent, EPMEM_TIMER_QUERY_BIND );
 
 				// clear leaf ids
+				epmem_start_timer( my_agent, EPMEM_TIMER_QUERY_LEAF );
 				{
 					epmem_leaf_node *temp_leaf;
 					
@@ -5113,6 +5270,7 @@ void epmem_process_query( agent *my_agent, Symbol *state, Symbol *query, Symbol 
 						}
 					}
 				}
+				epmem_stop_timer( my_agent, EPMEM_TIMER_QUERY_LEAF );
 
 				// initialize lists
 				epmem_time_id top_list_id[2] = { EPMEM_MEMID_NONE, EPMEM_MEMID_NONE };				
@@ -5125,7 +5283,7 @@ void epmem_process_query( agent *my_agent, Symbol *state, Symbol *query, Symbol 
 							{
 								if ( range_list[ i ][ j ][ k ].stmt != NULL )
 								{
-									if ( sqlite3_step( range_list[ i ][ j ][ k ].stmt ) == SQLITE_ROW )
+									if ( epmem_exec_range_query( my_agent, &range_list[ i ][ j ][ k ] ) == SQLITE_ROW )
 									{
 										range_list[ i ][ j ][ k ].val = sqlite3_column_int64( range_list[ i ][ j ][ k ].stmt, 0 );
 										if ( range_list[ i ][ j ][ k ].val > top_list_id[ j ] )
@@ -5176,7 +5334,7 @@ void epmem_process_query( agent *my_agent, Symbol *state, Symbol *query, Symbol 
 
 					// initialize current as last end
 					// initialize next end
-					epmem_incremental_row( range_list, top_list_id, current_id, current_ct, current_v, current_updown, EPMEM_RANGE_END );
+					epmem_incremental_row( my_agent, range_list, top_list_id, current_id, current_ct, current_v, current_updown, EPMEM_RANGE_END );
 					end_id = top_list_id[ EPMEM_RANGE_END ];
 					
 					// initialize next start					
@@ -5249,7 +5407,7 @@ void epmem_process_query( agent *my_agent, Symbol *state, Symbol *query, Symbol 
 							if ( !done )
 							{
 								// based upon choice, update variables
-								epmem_incremental_row( range_list, top_list_id, current_id, current_ct, current_v, current_updown, next_list );
+								epmem_incremental_row( my_agent, range_list, top_list_id, current_id, current_ct, current_v, current_updown, next_list );
 								current_id = current_end - 1;
 								current_ct *= ( ( next_list == EPMEM_RANGE_START )?( -1 ):( 1 ) );
 								current_v *= ( ( next_list == EPMEM_RANGE_START )?( -1 ):( 1 ) );

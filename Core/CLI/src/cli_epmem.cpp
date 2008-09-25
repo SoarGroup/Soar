@@ -30,6 +30,7 @@ bool CommandLineInterface::ParseEpMem( std::vector<std::string>& argv )
 		{'g', "get",		0},		
 		{'s', "set",		0},
 		{'S', "stats",		0},
+		{'t', "timers",		0},
 		{0, 0, 0} // null
 	};
 	EpMemBitset options(0);
@@ -57,6 +58,10 @@ bool CommandLineInterface::ParseEpMem( std::vector<std::string>& argv )
 				
 			case 'S':
 				options.set( EPMEM_STAT );
+				break;
+
+			case 't':
+				options.set( EPMEM_TIMER );
 				break;
 				
 			default:
@@ -158,6 +163,23 @@ bool CommandLineInterface::ParseEpMem( std::vector<std::string>& argv )
 			// check attribute name
 			if ( epmem_valid_stat( m_pAgentSoar, argv[2].c_str() ) )
 				return DoEpMem( 'S', &( argv[2] ) );
+			else
+				return SetError( CLIError::kInvalidAttribute );
+		}
+		else
+			return SetError( CLIError::kTooManyArgs );
+	}
+
+	// case: timer can do zero or one non-option arguments
+	else if ( options.test( EPMEM_TIMER ) )
+	{
+		if ( m_NonOptionArguments == 0 )
+			return DoEpMem( 't' );
+		else if ( m_NonOptionArguments == 1 )
+		{
+			// check attribute name
+			if ( epmem_valid_timer( m_pAgentSoar, argv[2].c_str() ) )
+				return DoEpMem( 't', &( argv[2] ) );
 			else
 				return SetError( CLIError::kInvalidAttribute );
 		}
@@ -399,7 +421,7 @@ bool CommandLineInterface::DoEpMem( const char pOp, const std::string* pAttr, co
 	{
 		if ( !pAttr )
 		{
-			double temp;
+			long long temp;
 			std::string output;
 			std::string *temp_str;	
 			
@@ -435,7 +457,44 @@ bool CommandLineInterface::DoEpMem( const char pOp, const std::string* pAttr, co
 		}
 		else
 		{
-			double temp = epmem_get_stat( m_pAgentSoar, pAttr->c_str() );
+			long long temp = epmem_get_stat( m_pAgentSoar, pAttr->c_str() );
+			std::string *temp_str = to_string( temp );
+			std::string output = (*temp_str);
+			delete temp_str;
+			
+			if ( m_RawOutput )
+				m_Result << output;
+			else
+				AppendArgTagFast( sml_Names::kParamValue, sml_Names::kTypeDouble, output.c_str() );
+		}
+		
+		return true;
+	}
+	else if ( pOp == 't' )
+	{
+		if ( !pAttr )
+		{
+			double temp;
+			std::string output;
+			std::string *temp_str;
+
+			for ( int i=0; i<EPMEM_TIMERS; i++ )
+			{
+				output = epmem_get_timer_name( m_pAgentSoar, (const long) i );
+				output += ": ";
+				temp = epmem_get_timer( m_pAgentSoar, (const long) i );
+				temp_str = to_string( temp );
+				output += (*temp_str);
+				delete temp_str;
+				if ( m_RawOutput )
+					m_Result << output << "\n";
+				else
+					AppendArgTagFast( sml_Names::kParamValue, sml_Names::kTypeString, output.c_str() );
+			}
+		}
+		else
+		{
+			double temp = epmem_get_timer( m_pAgentSoar, pAttr->c_str() );
 			std::string *temp_str = to_string( temp );
 			std::string output = (*temp_str);
 			delete temp_str;
