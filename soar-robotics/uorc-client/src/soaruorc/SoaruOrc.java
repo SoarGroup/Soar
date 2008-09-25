@@ -14,8 +14,8 @@ public class SoaruOrc implements Kernel.UpdateEventInterface
 	private FloatElement left;
 	private FloatElement right;
 	
-	private boolean useGamePad = false;
-	private boolean useRobot = false;
+	private boolean useGamePad = true;
+	private boolean useRobot = true;
 	
 	public SoaruOrc()
 	{
