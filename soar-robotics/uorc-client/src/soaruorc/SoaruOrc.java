@@ -7,7 +7,11 @@ import java.io.Console;
 public class SoaruOrc implements Kernel.UpdateEventInterface
 {
 	private GamePad gp;
+
 	private uOrcThread uorc;
+	private uOrcThread.BotState botState;
+		
+
 	private Kernel kernel;
 	private Agent agent;
 	private StringElement override_active;
@@ -29,6 +33,7 @@ public class SoaruOrc implements Kernel.UpdateEventInterface
 		if ( useRobot )
 		{
 			uorc = new uOrcThread();
+			botState = uorc.getBotState();
 		}
 		
 		kernel = Kernel.CreateKernelInNewThread();
@@ -111,38 +116,34 @@ public class SoaruOrc implements Kernel.UpdateEventInterface
 
 	public void updateEventHandler(int eventID, Object data, Kernel kernel, int runFlags) 
 	{
-		uOrcThread.BotState state = uorc.getState();
-		
-		double leftInput = 0;
-		double rightInput = 0;
+		// write input
 		if ( useGamePad )
 		{
-			leftInput = gp.getAxis( 1 ) * -1;
-			rightInput = gp.getAxis( 3 ) * -1;
+			double leftInput = gp.getAxis( 1 ) * -1;
+			double rightInput = gp.getAxis( 3 ) * -1;
+			
+			agent.Update( override_active, "true" );
+			agent.Update( override_move_left, leftInput );
+			agent.Update( override_move_right, rightInput );
 		} 
 		else
 		{
-			leftInput = Math.random();
-			rightInput = Math.random();
+			agent.Update( override_active, "false" );
 		}
 
-		double leftCurrent, rightCurrent;
-		synchronized ( state )
+		if ( useRobot )
 		{
-			leftCurrent = state.leftCurrent;
-			rightCurrent = state.rightCurrent;
+			double leftCurrent, rightCurrent;
+			synchronized ( botState )
+			{
+				leftCurrent = botState.leftCurrent;
+				rightCurrent = botState.rightCurrent;
+			}
+			agent.Update( self_motor_left_current, leftCurrent );
+			agent.Update( self_motor_right_current, rightCurrent );
 		}
 		
-		// write input
-		agent.Update( override_active, "true" );
-		agent.Update( override_move_left, leftInput );
-		agent.Update( override_move_right, rightInput );
-		agent.Update( self_motor_left_current, leftCurrent );
-		agent.Update( self_motor_right_current, rightCurrent );
-		
 		// process output
-		double leftCommand = 0;
-		double rightCommand = 0;
 		for ( int i = 0; i < agent.GetNumberCommands(); ++i ) 
 		{
 			Identifier commandId = agent.GetCommand( i );
@@ -150,6 +151,9 @@ public class SoaruOrc implements Kernel.UpdateEventInterface
 			
 			if ( commandName.equals( "move" ) )
 			{
+				double leftCommand = 0;
+				double rightCommand = 0;
+		
 				//System.out.print( "move: " );
 				try 
 				{
@@ -198,10 +202,10 @@ public class SoaruOrc implements Kernel.UpdateEventInterface
 				
 				if ( useRobot )
 				{
-					synchronized ( state )
+					synchronized ( botState )
 					{
-						state.left = leftCommand;
-						state.right = rightCommand;
+						botState.left = leftCommand;
+						botState.right = rightCommand;
 					}
 				}
 				commandId.AddStatusComplete();

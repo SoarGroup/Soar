@@ -56,7 +56,7 @@ public class uOrcThread extends Thread
 		}
 	}
 	
-	public BotState getState()
+	public BotState getBotState()
 	{
 		return state;
 	}
