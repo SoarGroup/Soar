@@ -177,7 +177,7 @@ typedef struct wme_struct wme;
 // names of timers
 #define EPMEM_TIMER_QUERY_LEAF						0
 #define EPMEM_TIMER_QUERY_WEIGHTS					1
-#define EPMEM_TIMER_QUERY_SQL						2
+#define EPMEM_TIMER_QUERY_PREP						2
 #define EPMEM_TIMER_QUERY_BIND						3
 #define EPMEM_TIMER_QUERY_POS_START_EP				4
 #define EPMEM_TIMER_QUERY_POS_START_NOW				5
@@ -276,7 +276,6 @@ typedef struct epmem_leaf_node_struct
 
 typedef struct epmem_range_query_struct
 {
-	std::string *sql;
 	sqlite3_stmt *stmt;
 	epmem_time_id val;
 	long timer;

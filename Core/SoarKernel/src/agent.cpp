@@ -366,7 +366,7 @@ agent * create_soar_agent (char * agent_name) {                                 
 
   newAgent->epmem_timers[ EPMEM_TIMER_QUERY_LEAF ] = epmem_add_timer( "query_leaf" );
   newAgent->epmem_timers[ EPMEM_TIMER_QUERY_WEIGHTS ] = epmem_add_timer( "query_weights" );
-  newAgent->epmem_timers[ EPMEM_TIMER_QUERY_SQL ] = epmem_add_timer( "query_sql" );
+  newAgent->epmem_timers[ EPMEM_TIMER_QUERY_PREP ] = epmem_add_timer( "query_prep" );
   newAgent->epmem_timers[ EPMEM_TIMER_QUERY_BIND ] = epmem_add_timer( "query_bind" );
   newAgent->epmem_timers[ EPMEM_TIMER_QUERY_POS_START_EP ] = epmem_add_timer( "query_pos_start_ep" );
   newAgent->epmem_timers[ EPMEM_TIMER_QUERY_POS_START_NOW ] = epmem_add_timer( "query_pos_start_now" );
