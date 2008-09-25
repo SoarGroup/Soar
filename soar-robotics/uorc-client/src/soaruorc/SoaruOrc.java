@@ -10,9 +10,11 @@ public class SoaruOrc implements Kernel.UpdateEventInterface
 	private uOrcThread uorc;
 	private Kernel kernel;
 	private Agent agent;
-	private StringElement active;
-	private FloatElement left;
-	private FloatElement right;
+	private StringElement override_active;
+	private FloatElement override_move_left;
+	private FloatElement override_move_right;
+	private FloatElement self_motor_left_current;
+	private FloatElement self_motor_right_current;
 	
 	private boolean useGamePad = true;
 	private boolean useRobot = true;
@@ -52,11 +54,29 @@ public class SoaruOrc implements Kernel.UpdateEventInterface
 		//         move
 		//             left 0
 		//             right 0
-		Identifier override = agent.CreateIdWME( agent.GetInputLink(), "override" );
-		active = agent.CreateStringWME( override, "active", "false" );
-		Identifier move = agent.CreateIdWME( override, "move" );
-		left = agent.CreateFloatWME( move, "left", 0 );
-		right = agent.CreateFloatWME( move, "right", 0 );
+		{
+			Identifier override = agent.CreateIdWME( agent.GetInputLink(), "override" );
+			override_active = agent.CreateStringWME( override, "active", "false" );
+			Identifier move = agent.CreateIdWME( override, "move" );
+			override_move_left = agent.CreateFloatWME( move, "left", 0 );
+			override_move_right = agent.CreateFloatWME( move, "right", 0 );
+		}
+		
+		// self
+		//     motor
+		//         left
+		//             current
+		//         right 
+		//             current
+		{
+			Identifier self = agent.CreateIdWME( agent.GetInputLink(), "self" );
+			Identifier self_motor = agent.CreateIdWME( self, "motor" );
+			Identifier self_motor_left = agent.CreateIdWME( self_motor, "left" );
+			Identifier self_motor_right = agent.CreateIdWME( self_motor, "right" );
+
+			self_motor_left_current = agent.CreateFloatWME( self_motor_left, "current", 0 );
+			self_motor_right_current = agent.CreateFloatWME( self_motor_right, "current", 0 );
+		}
 
 		kernel.RegisterForUpdateEvent( smlUpdateEventId.smlEVENT_AFTER_ALL_GENERATED_OUTPUT, this, null );
 		
@@ -66,7 +86,7 @@ public class SoaruOrc implements Kernel.UpdateEventInterface
 			uorc.start();
 		}
 		
-		System.out.printf( "%15s %15s %15s %15s\n", "left input", "right input", "left output", "right output" );
+		//System.out.printf( "%15s %15s %15s %15s\n", "left input", "right input", "left output", "right output" );
 		
 		// let the debugger debug
 		Console console = System.console();
@@ -91,6 +111,8 @@ public class SoaruOrc implements Kernel.UpdateEventInterface
 
 	public void updateEventHandler(int eventID, Object data, Kernel kernel, int runFlags) 
 	{
+		uOrcThread.BotState state = uorc.getState();
+		
 		double leftInput = 0;
 		double rightInput = 0;
 		if ( useGamePad )
@@ -103,11 +125,20 @@ public class SoaruOrc implements Kernel.UpdateEventInterface
 			leftInput = Math.random();
 			rightInput = Math.random();
 		}
+
+		double leftCurrent, rightCurrent;
+		synchronized ( state )
+		{
+			leftCurrent = state.leftCurrent;
+			rightCurrent = state.rightCurrent;
+		}
 		
 		// write input
-		agent.Update( active, "true" );
-		agent.Update( left, leftInput );
-		agent.Update( right, rightInput );
+		agent.Update( override_active, "true" );
+		agent.Update( override_move_left, leftInput );
+		agent.Update( override_move_right, rightInput );
+		agent.Update( self_motor_left_current, leftCurrent );
+		agent.Update( self_motor_right_current, rightCurrent );
 		
 		// process output
 		double leftCommand = 0;
@@ -167,7 +198,11 @@ public class SoaruOrc implements Kernel.UpdateEventInterface
 				
 				if ( useRobot )
 				{
-					uorc.setPower( leftCommand, rightCommand );
+					synchronized ( state )
+					{
+						state.left = leftCommand;
+						state.right = rightCommand;
+					}
 				}
 				commandId.AddStatusComplete();
 				continue;
@@ -177,7 +212,7 @@ public class SoaruOrc implements Kernel.UpdateEventInterface
 			commandId.AddStatusError();
 		}
 		
-		System.out.printf( "%15f %15f %15f %15f\r", leftInput, rightInput, leftCommand, rightCommand );
+		//System.out.printf( "%15f %15f %15f %15f\r", leftInput, rightInput, leftCommand, rightCommand );
 	}
 	
 	public static void main(String args[])
