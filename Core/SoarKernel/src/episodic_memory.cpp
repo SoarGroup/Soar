@@ -3375,7 +3375,9 @@ preference *epmem_make_fake_preference( agent *my_agent, Symbol *state, wme *w )
 			cond->bt.wme_ = (*p);
 			wme_add_ref( (*p) );
 			cond->bt.level = (*p)->id->id.level;
-			cond->bt.trace = NULL;
+			cond->bt.trace = (*p)->preference;
+			if ( cond->bt.trace )
+				preference_add_ref( cond->bt.trace );
 			cond->bt.prohibits = NULL;
 
 			prev_cond = cond;
