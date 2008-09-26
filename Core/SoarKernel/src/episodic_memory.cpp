@@ -5419,7 +5419,7 @@ void epmem_process_query( agent *my_agent, Symbol *state, Symbol *query, Symbol 
 				}
 
 				// delete all weights
-				sqlite3_step( my_agent->epmem_statements[ EPMEM_STMT_BIGTREE_RIT_TRUNCATE_WEIGHTS ] );
+				epmem_exec_query( my_agent, my_agent->epmem_statements[ EPMEM_STMT_BIGTREE_RIT_TRUNCATE_WEIGHTS ], EPMEM_TIMER_QUERY_WEIGHTS );
 				sqlite3_reset( my_agent->epmem_statements[ EPMEM_STMT_BIGTREE_RIT_TRUNCATE_WEIGHTS ] );
 			}
 			else
@@ -5914,7 +5914,7 @@ void epmem_process_query( agent *my_agent, Symbol *state, Symbol *query, Symbol 
 				}
 
 				// delete all weights
-				sqlite3_step( my_agent->epmem_statements[ EPMEM_STMT_BIGTREE_H_TRUNCATE_WEIGHTS ] );
+				epmem_exec_query( my_agent, my_agent->epmem_statements[ EPMEM_STMT_BIGTREE_H_TRUNCATE_WEIGHTS ], EPMEM_TIMER_QUERY_WEIGHTS );
 				sqlite3_reset( my_agent->epmem_statements[ EPMEM_STMT_BIGTREE_H_TRUNCATE_WEIGHTS ] );
 			}
 			else
