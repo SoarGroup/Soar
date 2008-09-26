@@ -177,21 +177,38 @@ typedef struct wme_struct wme;
 // names of timers
 #define EPMEM_TIMER_QUERY_LEAF						0
 #define EPMEM_TIMER_QUERY_WEIGHTS					1
-#define EPMEM_TIMER_QUERY_PREP						2
-#define EPMEM_TIMER_QUERY_BIND						3
-#define EPMEM_TIMER_QUERY_POS_START_EP				4
-#define EPMEM_TIMER_QUERY_POS_START_NOW				5
-#define EPMEM_TIMER_QUERY_POS_START_POINT			6
-#define EPMEM_TIMER_QUERY_POS_END_EP				7
-#define EPMEM_TIMER_QUERY_POS_END_NOW				8
-#define EPMEM_TIMER_QUERY_POS_END_POINT				9
-#define EPMEM_TIMER_QUERY_NEG_START_EP				10
-#define EPMEM_TIMER_QUERY_NEG_START_NOW				11
-#define EPMEM_TIMER_QUERY_NEG_START_POINT			12
-#define EPMEM_TIMER_QUERY_NEG_END_EP				13
-#define EPMEM_TIMER_QUERY_NEG_END_NOW				14
-#define EPMEM_TIMER_QUERY_NEG_END_POINT				15
-#define EPMEM_TIMERS								16 // must be 1+ last epmem timer
+#define EPMEM_TIMER_QUERY_SQL						2
+#define EPMEM_TIMER_QUERY_EXEC						3
+#define EPMEM_TIMER_QUERY_SEARCH					4
+#define EPMEM_TIMER_QUERY_META						5
+#define EPMEM_TIMER_QUERY_PREP						6
+#define EPMEM_TIMER_QUERY_BIND						7
+#define EPMEM_TIMER_QUERY_POS_START_EP				8
+#define EPMEM_TIMER_QUERY_POS_START_NOW				9
+#define EPMEM_TIMER_QUERY_POS_START_POINT			10
+#define EPMEM_TIMER_QUERY_POS_END_EP				11
+#define EPMEM_TIMER_QUERY_POS_END_NOW				12
+#define EPMEM_TIMER_QUERY_POS_END_POINT				13
+#define EPMEM_TIMER_QUERY_NEG_START_EP				14
+#define EPMEM_TIMER_QUERY_NEG_START_NOW				15
+#define EPMEM_TIMER_QUERY_NEG_START_POINT			16
+#define EPMEM_TIMER_QUERY_NEG_END_EP				17
+#define EPMEM_TIMER_QUERY_NEG_END_NOW				18
+#define EPMEM_TIMER_QUERY_NEG_END_POINT				19
+
+#define EPMEM_TIMER_STORAGE_CONSIDER				20
+#define EPMEM_TIMER_STORAGE_COLLECT					21
+#define EPMEM_TIMER_STORAGE_SAVE					22
+
+#define EPMEM_TIMER_INSTALL_VALID					23
+#define EPMEM_TIMER_INSTALL_NODES					24
+#define EPMEM_TIMER_INSTALL_WM						25
+
+#define EPMEM_TIMER_SUM_QUERY						26 // sums should be at end
+#define EPMEM_TIMER_SUM_STORAGE						27 // sums should be at end
+#define EPMEM_TIMER_SUM_INSTALL						28 // sums should be at end
+#define EPMEM_TIMER_SUM								29 // sums should be at end
+#define EPMEM_TIMERS								30 // must be 1+ last epmem timer
 
 //////////////////////////////////////////////////////////
 // EpMem Types
@@ -245,6 +262,7 @@ typedef struct epmem_timer_struct
 	struct timeval start_timer;
 	struct timeval total_timer;
 	const char *name;
+	long parent;
 } epmem_timer;
 
 //
@@ -419,9 +437,9 @@ extern void epmem_clean_timers( agent *my_agent );
 extern void epmem_reset_timers( agent *my_agent );
 
 // add timer
-extern epmem_timer *epmem_add_timer( const char *name );
+extern epmem_timer *epmem_add_timer( const char *name, const long parent = NULL );
 
-// convert stat
+// convert timer
 extern const long epmem_convert_timer( agent *my_agent, const char *name );
 extern const char *epmem_convert_timer( agent *my_agent, const long timer );
 
