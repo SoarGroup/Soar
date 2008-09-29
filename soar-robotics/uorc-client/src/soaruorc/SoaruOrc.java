@@ -23,6 +23,10 @@ public class SoaruOrc implements Kernel.UpdateEventInterface
 	private FloatElement self_motor_right_current;
 	private FloatElement self_motor_right_position;
 	private FloatElement self_motor_right_velocity;
+	private FloatElement self_pose_x;
+	private FloatElement self_pose_y;
+	private FloatElement self_pose_z;
+	private FloatElement self_pose_yaw;
 	
 	private boolean useGamePad = true;
 	private boolean useRobot = true;
@@ -88,22 +92,42 @@ public class SoaruOrc implements Kernel.UpdateEventInterface
 		//             current
 		//             position
 		//             velocity
+		//     pose
+		//             x
+		//             y
+		//             z
+		//             yaw
 		{
 			Identifier self = agent.CreateIdWME( agent.GetInputLink(), "self" );
 
-			Identifier self_geometry = agent.CreateIdWME( self, "geometry" );
-			agent.CreateFloatWME( self_geometry, "baseline", baselineMeters );
+			{
+				Identifier self_geometry = agent.CreateIdWME( self, "geometry" );
+				
+				agent.CreateFloatWME( self_geometry, "baseline", baselineMeters );
+			}
+			
+			{
+				Identifier self_motor = agent.CreateIdWME( self, "motor" );
+				
+				Identifier self_motor_left = agent.CreateIdWME( self_motor, "left" );
+				self_motor_left_current = agent.CreateFloatWME( self_motor_left, "current", 0 );
+				self_motor_left_position = agent.CreateFloatWME( self_motor_left, "position", 0 );
+				self_motor_left_velocity = agent.CreateFloatWME( self_motor_left, "velocity", 0 );
 
-			Identifier self_motor = agent.CreateIdWME( self, "motor" );
-			Identifier self_motor_left = agent.CreateIdWME( self_motor, "left" );
-			Identifier self_motor_right = agent.CreateIdWME( self_motor, "right" );
-
-			self_motor_left_current = agent.CreateFloatWME( self_motor_left, "current", 0 );
-			self_motor_left_position = agent.CreateFloatWME( self_motor_left, "position", 0 );
-			self_motor_left_velocity = agent.CreateFloatWME( self_motor_left, "velocity", 0 );
-			self_motor_right_current = agent.CreateFloatWME( self_motor_right, "current", 0 );
-			self_motor_right_position = agent.CreateFloatWME( self_motor_right, "position", 0 );
-			self_motor_right_velocity = agent.CreateFloatWME( self_motor_right, "velocity", 0 );
+				Identifier self_motor_right = agent.CreateIdWME( self_motor, "right" );
+				self_motor_right_current = agent.CreateFloatWME( self_motor_right, "current", 0 );
+				self_motor_right_position = agent.CreateFloatWME( self_motor_right, "position", 0 );
+				self_motor_right_velocity = agent.CreateFloatWME( self_motor_right, "velocity", 0 );
+			}
+			
+			{
+				Identifier self_pose = agent.CreateIdWME( self, "pose" );
+				
+				self_pose_x = agent.CreateFloatWME( self_pose, "x", 0 );
+				self_pose_y = agent.CreateFloatWME( self_pose, "y", 0 );
+				self_pose_z = agent.CreateFloatWME( self_pose, "z", 0 );
+				self_pose_z = agent.CreateFloatWME( self_pose, "yaw", 0 );
+			}
 		}
 		
 		agent.Commit();
@@ -175,16 +199,42 @@ public class SoaruOrc implements Kernel.UpdateEventInterface
 			leftPosition = leftPosition * tickMeters;
 			leftVelocity = leftVelocity * tickMeters;
 			
+			rightPosition = rightPosition * tickMeters;
+			rightVelocity = rightVelocity * tickMeters;
+			
+			// Equations from A Primer on Odopmetry and Motor Control, Olson 2006
+			// dleft, dright: distance wheel travelled
+			// dbaseline: wheelbase
+			//
+			// dcenter = ( dleft + dright ) / 2
+			// phi = ( dright - dleft ) / dbaseline
+			// thetaprime = theta + phi
+			// xprime = x + ( dcenter * cos( theta ) )
+			// yprime = y + ( dcenter * sin( theta ) )
+			
+			// FIXME: assuming position doesn't roll over, verify
+			double dleft = leftPosition - self_motor_left_position.GetValue();
+			double dright = rightPosition - self_motor_right_position.GetValue();
+			double dcenter = ( dleft + dright ) / 2;
+			
+			double phi = ( dright - dleft ) / baselineMeters;
+			
+			double theta = Math.toRadians( self_pose_yaw.GetValue() );
+			double thetaprime = theta + phi;
+			double xprime = self_pose_x.GetValue() + ( dcenter * Math.cos( theta );
+			double yprime = self_pose_y.GetValue() + ( dcenter * Math.sin( theta );
+
 			agent.Update( self_motor_left_current, leftCurrent );
 			agent.Update( self_motor_left_position, leftPosition );
 			agent.Update( self_motor_left_velocity, leftVelocity );
 
-			rightPosition = rightPosition * tickMeters;
-			rightVelocity = rightVelocity * tickMeters;
-			
 			agent.Update( self_motor_right_current, rightCurrent );
 			agent.Update( self_motor_right_position, rightPosition );
 			agent.Update( self_motor_right_velocity, rightVelocity );
+
+			agent.Update( self_pose_x, xprime );
+			agent.Update( self_pose_y, yprime );
+			agent.Update( self_pose_yaw, Math.toDegrees( thetaprime ) );
 		}
 		
 		// process output
