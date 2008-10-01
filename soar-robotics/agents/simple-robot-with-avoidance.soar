@@ -1,0 +1,3 @@
+pushd simple-robot-with-avoidance
+source simple-robot-with-avoidance_source.soar
+popd

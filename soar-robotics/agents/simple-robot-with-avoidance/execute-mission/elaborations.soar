@@ -1,0 +1,8 @@
+sp {execute-mission*elaborate*substate
+   (state <s> ^name execute-mission
+              ^superstate.operator <so>)
+   (<so> ^name execute-mission
+         ^mission <m>)
+-->
+   (<s> ^mission <m>)
+}
