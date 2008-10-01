@@ -2150,7 +2150,10 @@ void epmem_init_db( agent *my_agent )
 void epmem_end( agent *my_agent )
 {
 	if ( my_agent->epmem_db_status != -1 )
-	{
+	{	
+		if ( epmem_in_transaction( my_agent ) )
+			epmem_transaction_end( my_agent, true );
+		
 		// perform cleanup as necessary
 		const long indexing = epmem_get_parameter( my_agent, EPMEM_PARAM_INDEXING, EPMEM_RETURN_LONG );	
 		if ( indexing == EPMEM_INDEXING_BIGTREE_INSTANCE )
