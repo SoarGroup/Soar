@@ -32,7 +32,13 @@ public class SoaruOrc implements Kernel.UpdateEventInterface
 	private boolean useRobot = true;
 	
 	private static final double tickMeters = 0.0000429250;
-	private static final double baselineMeters = 0.4475;
+	//private static final double baselineMeters = 0.4475;
+	// revised by Jon
+	private static final double baselineMeters = 0.42545;
+	
+	private boolean haveInitialPosition = false;
+	private double leftInitialPosition;
+	private double rightInitialPosition;
 	
 	public SoaruOrc()
 	{
@@ -126,7 +132,7 @@ public class SoaruOrc implements Kernel.UpdateEventInterface
 				self_pose_x = agent.CreateFloatWME( self_pose, "x", 0 );
 				self_pose_y = agent.CreateFloatWME( self_pose, "y", 0 );
 				self_pose_z = agent.CreateFloatWME( self_pose, "z", 0 );
-				self_pose_z = agent.CreateFloatWME( self_pose, "yaw", 0 );
+				self_pose_yaw = agent.CreateFloatWME( self_pose, "yaw", 0 );
 			}
 		}
 		
@@ -196,10 +202,17 @@ public class SoaruOrc implements Kernel.UpdateEventInterface
 				rightVelocity = botState.rightVelocity;
 			}
 			
-			leftPosition = leftPosition * tickMeters;
+			if ( ! haveInitialPosition )
+			{
+				leftInitialPosition = leftPosition;
+				rightInitialPosition = rightPosition;
+				haveInitialPosition = true;
+			}
+			
+			leftPosition = ( leftPosition - leftInitialPosition ) * tickMeters;
 			leftVelocity = leftVelocity * tickMeters;
 			
-			rightPosition = rightPosition * tickMeters;
+			rightPosition = ( rightPosition - rightInitialPosition ) * tickMeters;
 			rightVelocity = rightVelocity * tickMeters;
 			
 			// Equations from A Primer on Odopmetry and Motor Control, Olson 2006
@@ -212,7 +225,6 @@ public class SoaruOrc implements Kernel.UpdateEventInterface
 			// xprime = x + ( dcenter * cos( theta ) )
 			// yprime = y + ( dcenter * sin( theta ) )
 			
-			// FIXME: assuming position doesn't roll over, verify
 			double dleft = leftPosition - self_motor_left_position.GetValue();
 			double dright = rightPosition - self_motor_right_position.GetValue();
 			double dcenter = ( dleft + dright ) / 2;
@@ -221,8 +233,8 @@ public class SoaruOrc implements Kernel.UpdateEventInterface
 			
 			double theta = Math.toRadians( self_pose_yaw.GetValue() );
 			double thetaprime = theta + phi;
-			double xprime = self_pose_x.GetValue() + ( dcenter * Math.cos( theta );
-			double yprime = self_pose_y.GetValue() + ( dcenter * Math.sin( theta );
+			double xprime = self_pose_x.GetValue() + ( dcenter * Math.cos( theta ) );
+			double yprime = self_pose_y.GetValue() + ( dcenter * Math.sin( theta ) );
 
 			agent.Update( self_motor_left_current, leftCurrent );
 			agent.Update( self_motor_left_position, leftPosition );
@@ -234,7 +246,12 @@ public class SoaruOrc implements Kernel.UpdateEventInterface
 
 			agent.Update( self_pose_x, xprime );
 			agent.Update( self_pose_y, yprime );
-			agent.Update( self_pose_yaw, Math.toDegrees( thetaprime ) );
+			thetaprime = Math.toDegrees( thetaprime ) % 360.0;
+			if ( thetaprime < 0 )
+			{
+				thetaprime += 360.0;
+			}
+			agent.Update( self_pose_yaw, thetaprime );
 		}
 		
 		// process output
@@ -298,8 +315,8 @@ public class SoaruOrc implements Kernel.UpdateEventInterface
 				{
 					synchronized ( botState )
 					{
-						botState.left = leftCommand;
-						botState.right = rightCommand;
+						botState.left = leftCommand / 2;
+						botState.right = rightCommand / 2;
 					}
 				}
 				commandId.AddStatusComplete();
