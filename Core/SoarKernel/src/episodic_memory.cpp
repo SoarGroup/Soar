@@ -3978,6 +3978,10 @@ void epmem_process_query( agent *my_agent, Symbol *state, Symbol *query, Symbol 
 					}
 				}
 			}
+			
+			epmem_set_stat( my_agent, EPMEM_STAT_QRY_POS, leaf_ids[ EPMEM_NODE_POS ].size() );
+			epmem_set_stat( my_agent, EPMEM_STAT_QRY_NEG, leaf_ids[ EPMEM_NODE_NEG ].size() );
+			epmem_set_stat( my_agent, EPMEM_STAT_QRY_RET, 0 );
 
 			//////////////////////////////////////////////////////////////////////////
 			epmem_stop_timer( my_agent, EPMEM_TIMER_QUERY_LEAF );
@@ -3986,7 +3990,7 @@ void epmem_process_query( agent *my_agent, Symbol *state, Symbol *query, Symbol 
 			// at this point leaf_ids has ids of interest for
 			// query and neg-query, now proceed
 			if ( leaf_ids[ EPMEM_NODE_POS ].empty() && leaf_ids[ EPMEM_NODE_NEG ].empty() )
-			{
+			{	
 				//////////////////////////////////////////////////////////////////////////
 				epmem_start_timer( my_agent, EPMEM_TIMER_QUERY_META );
 				//////////////////////////////////////////////////////////////////////////
@@ -4243,6 +4247,8 @@ void epmem_process_query( agent *my_agent, Symbol *state, Symbol *query, Symbol 
 					epmem_start_timer( my_agent, EPMEM_TIMER_QUERY_META );
 					//////////////////////////////////////////////////////////////////////////
 					
+					epmem_set_stat( my_agent, EPMEM_STAT_QRY_RET, result_time );
+					
 					// status
 					new_wme = add_input_wme( my_agent, state->id.epmem_result_header, my_agent->epmem_status_symbol, my_agent->epmem_success_symbol );
 					new_wme->preference = epmem_make_fake_preference( my_agent, state, new_wme );
@@ -4416,6 +4422,10 @@ void epmem_process_query( agent *my_agent, Symbol *state, Symbol *query, Symbol 
 				}
 			}
 			int cue_size = ( leaf_ids[ EPMEM_NODE_POS ].size() + leaf_ids[ EPMEM_NODE_NEG ].size() );
+			
+			epmem_set_stat( my_agent, EPMEM_STAT_QRY_POS, leaf_ids[ EPMEM_NODE_POS ].size() );
+			epmem_set_stat( my_agent, EPMEM_STAT_QRY_NEG, leaf_ids[ EPMEM_NODE_NEG ].size() );
+			epmem_set_stat( my_agent, EPMEM_STAT_QRY_RET, 0 );
 
 			//////////////////////////////////////////////////////////////////////////
 			epmem_stop_timer( my_agent, EPMEM_TIMER_QUERY_LEAF );
@@ -4864,6 +4874,8 @@ void epmem_process_query( agent *my_agent, Symbol *state, Symbol *query, Symbol 
 					epmem_start_timer( my_agent, EPMEM_TIMER_QUERY_META );
 					//////////////////////////////////////////////////////////////////////////
 					
+					epmem_set_stat( my_agent, EPMEM_STAT_QRY_RET, king_id );
+					
 					// status
 					new_wme = add_input_wme( my_agent, state->id.epmem_result_header, my_agent->epmem_status_symbol, my_agent->epmem_success_symbol );
 					new_wme->preference = epmem_make_fake_preference( my_agent, state, new_wme );
@@ -5045,6 +5057,11 @@ void epmem_process_query( agent *my_agent, Symbol *state, Symbol *query, Symbol 
 					}
 				}
 			}
+			
+			epmem_set_stat( my_agent, EPMEM_STAT_QRY_POS, leaf_ids[ EPMEM_NODE_POS ].size() );
+			epmem_set_stat( my_agent, EPMEM_STAT_QRY_NEG, leaf_ids[ EPMEM_NODE_NEG ].size() );
+			epmem_set_stat( my_agent, EPMEM_STAT_QRY_RET, 0 );
+			
 			//////////////////////////////////////////////////////////////////////////
 			epmem_stop_timer( my_agent, EPMEM_TIMER_QUERY_LEAF );
 			//////////////////////////////////////////////////////////////////////////
@@ -5313,6 +5330,8 @@ void epmem_process_query( agent *my_agent, Symbol *state, Symbol *query, Symbol 
 						//////////////////////////////////////////////////////////////////////////
 						epmem_start_timer( my_agent, EPMEM_TIMER_QUERY_META );
 						//////////////////////////////////////////////////////////////////////////
+						
+						epmem_set_stat( my_agent, EPMEM_STAT_QRY_RET, king_id );
 						
 						// status
 						new_wme = add_input_wme( my_agent, state->id.epmem_result_header, my_agent->epmem_status_symbol, my_agent->epmem_success_symbol );
@@ -5511,6 +5530,11 @@ void epmem_process_query( agent *my_agent, Symbol *state, Symbol *query, Symbol 
 					}
 				}
 			}
+			
+			epmem_set_stat( my_agent, EPMEM_STAT_QRY_POS, leaf_ids[ EPMEM_NODE_POS ].size() );
+			epmem_set_stat( my_agent, EPMEM_STAT_QRY_NEG, leaf_ids[ EPMEM_NODE_NEG ].size() );
+			epmem_set_stat( my_agent, EPMEM_STAT_QRY_RET, 0 );
+			
 			//////////////////////////////////////////////////////////////////////////
 			epmem_stop_timer( my_agent, EPMEM_TIMER_QUERY_LEAF );
 			//////////////////////////////////////////////////////////////////////////
@@ -5779,6 +5803,8 @@ void epmem_process_query( agent *my_agent, Symbol *state, Symbol *query, Symbol 
 						//////////////////////////////////////////////////////////////////////////
 						epmem_start_timer( my_agent, EPMEM_TIMER_QUERY_META );
 						//////////////////////////////////////////////////////////////////////////
+						
+						epmem_set_stat( my_agent, EPMEM_STAT_QRY_RET, king_id );
 						
 						// status
 						new_wme = add_input_wme( my_agent, state->id.epmem_result_header, my_agent->epmem_status_symbol, my_agent->epmem_success_symbol );

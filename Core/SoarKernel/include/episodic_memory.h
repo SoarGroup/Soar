@@ -164,11 +164,14 @@ typedef struct wme_struct wme;
 #define EPMEM_STAT_TIME								0
 #define EPMEM_STAT_MEM_USAGE						1
 #define EPMEM_STAT_MEM_HIGH							2
-#define EPMEM_STAT_RIT_OFFSET						3
-#define EPMEM_STAT_RIT_LEFTROOT						4
-#define EPMEM_STAT_RIT_RIGHTROOT					5
-#define EPMEM_STAT_RIT_MINSTEP						6
-#define EPMEM_STATS									7 // must be 1+ last epmem stat
+#define EPMEM_STAT_QRY_POS							3
+#define EPMEM_STAT_QRY_NEG							4
+#define EPMEM_STAT_QRY_RET							5
+#define EPMEM_STAT_RIT_OFFSET						6
+#define EPMEM_STAT_RIT_LEFTROOT						7
+#define EPMEM_STAT_RIT_RIGHTROOT					8
+#define EPMEM_STAT_RIT_MINSTEP						9
+#define EPMEM_STATS									10 // must be 1+ last epmem stat
 
 // names of timers
 #define EPMEM_TIMER_QUERY_LEAF						0

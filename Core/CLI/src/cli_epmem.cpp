@@ -454,6 +454,36 @@ bool CommandLineInterface::DoEpMem( const char pOp, const std::string* pAttr, co
 				m_Result << output << "\n";
 			else
 				AppendArgTagFast( sml_Names::kParamValue, sml_Names::kTypeString, output.c_str() );
+			
+			output = "Last Query Positive: ";
+			temp = epmem_get_stat( m_pAgentSoar, (const long) EPMEM_STAT_QRY_POS );
+			temp_str = to_string( temp );
+			output += (*temp_str);
+			delete temp_str;
+			if ( m_RawOutput )
+				m_Result << output << "\n";
+			else
+				AppendArgTagFast( sml_Names::kParamValue, sml_Names::kTypeString, output.c_str() );
+			
+			output = "Last Query Negative: ";
+			temp = epmem_get_stat( m_pAgentSoar, (const long) EPMEM_STAT_QRY_NEG );
+			temp_str = to_string( temp );
+			output += (*temp_str);
+			delete temp_str;
+			if ( m_RawOutput )
+				m_Result << output << "\n";
+			else
+				AppendArgTagFast( sml_Names::kParamValue, sml_Names::kTypeString, output.c_str() );
+			
+			output = "Last Query Retrieved: ";
+			temp = epmem_get_stat( m_pAgentSoar, (const long) EPMEM_STAT_QRY_RET );
+			temp_str = to_string( temp );
+			output += (*temp_str);
+			delete temp_str;
+			if ( m_RawOutput )
+				m_Result << output << "\n";
+			else
+				AppendArgTagFast( sml_Names::kParamValue, sml_Names::kTypeString, output.c_str() );
 		}
 		else
 		{
