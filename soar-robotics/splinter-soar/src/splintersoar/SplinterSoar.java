@@ -10,6 +10,8 @@ public class SplinterSoar
 {
 	SoarInterface soar;
 	SplinterInterface splinter;
+	
+	boolean running = true;
 
 	public static final Logger logger = Logger.getLogger("splintersoar");
 	
@@ -25,13 +27,33 @@ public class SplinterSoar
 		logger.info( "Creating and using game pad for override" );
 		soar.setOverride( new GamePadManager() );
 		
-		logger.info( "Shutting down Soar interface" );
-		soar.shutdown();
-
-		logger.info( "Shutting down splinter interface" );
-		splinter.shutdown();
+		Runtime.getRuntime().addShutdownHook( new ShutdownHook() );
 		
-		logger.info( "Exiting" );
+		logger.info( "Ready" );
+		while ( running )
+		{
+			try 
+			{
+				Thread.sleep( 500 );
+			} catch ( InterruptedException ignored ) 
+			{}
+		}
+	}
+	
+	public class ShutdownHook extends Thread
+	{
+		public void run()
+		{
+			running = false;
+			
+			logger.info( "Shutting down Soar interface" );
+			soar.shutdown();
+
+			logger.info( "Shutting down splinter interface" );
+			splinter.shutdown();
+			
+			logger.info( "Exiting" );
+		}
 	}
 	
 	public static void main( String args[] )
