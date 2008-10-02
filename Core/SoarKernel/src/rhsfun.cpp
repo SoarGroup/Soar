@@ -55,6 +55,7 @@
 #include "soar_TraceNames.h"
 
 #include <map>
+#include <string>
 #include <time.h>
 
 using namespace soar_TraceNames;
@@ -466,6 +467,45 @@ Symbol *ifeq_rhs_function_code (agent* thisAgent, list *args, void* /*user_data*
   else return NIL;
 }
 
+Symbol *trim_rhs_function_code ( agent* thisAgent, list *args, void* /*user_data*/ ) 
+{
+	char *symbol_to_trim;
+	Symbol *sym;
+	
+	if ( !args ) 
+	{
+		print( thisAgent, "Error: 'trim' function called with no arguments.\n" );
+		return NIL;
+	}
+
+	sym = (Symbol *) args->first;
+  
+	if ( sym->common.symbol_type != SYM_CONSTANT_SYMBOL_TYPE ) 
+	{
+		print_with_symbols( thisAgent, "Error: non-symbol (%y) passed to 'trim' function.\n", sym );
+		return NIL;
+	}
+
+	if ( args->rest ) 
+	{
+		print( thisAgent, "Error: 'trim' takes exactly 1 argument.\n" );
+		return NIL;
+	}
+
+	symbol_to_trim = symbol_to_string( thisAgent, sym, FALSE, NIL, 0 );
+	symbol_to_trim = savestring( symbol_to_trim );
+	
+	std::string str( symbol_to_trim );  
+	size_t start_pos = str.find_first_not_of( " \t\n" );  
+	size_t end_pos = str.find_last_not_of( " \t\n" );    
+	
+	if ( ( std::string::npos == start_pos ) || ( std::string::npos == end_pos ) )
+		str = "";
+	else
+		str = str.substr( start_pos, end_pos - start_pos + 1 );
+		
+	return make_sym_constant( thisAgent, str.c_str() );
+}
 
 Symbol *strlen_rhs_function_code (agent* thisAgent, list *args, void* /*user_data*/) {
   Symbol *arg;
@@ -727,6 +767,12 @@ void init_built_in_rhs_functions (agent* thisAgent) {
                     0, TRUE, FALSE, 0);
   add_rhs_function (thisAgent, make_sym_constant (thisAgent, "accept"), accept_rhs_function_code,
                     0, TRUE, FALSE, 0);
+  add_rhs_function (thisAgent, make_sym_constant (thisAgent, "trim"),
+  		    trim_rhs_function_code,
+  		    1,
+  		    TRUE,
+  		    FALSE,
+            0);
   add_rhs_function (thisAgent, make_sym_constant (thisAgent, "capitalize-symbol"),
 		    capitalize_symbol_rhs_function_code,
 		    1,
@@ -763,6 +809,7 @@ void remove_built_in_rhs_functions (agent* thisAgent) {
   remove_rhs_function (thisAgent, find_sym_constant (thisAgent, "make-constant-symbol"));
   remove_rhs_function (thisAgent, find_sym_constant (thisAgent, "timestamp"));
   remove_rhs_function (thisAgent, find_sym_constant (thisAgent, "accept"));
+  remove_rhs_function (thisAgent, find_sym_constant (thisAgent, "trim"));
   remove_rhs_function (thisAgent, find_sym_constant (thisAgent, "capitalize-symbol"));
   remove_rhs_function (thisAgent, find_sym_constant (thisAgent, "ifeq"));
   remove_rhs_function (thisAgent, find_sym_constant (thisAgent, "strlen"));
