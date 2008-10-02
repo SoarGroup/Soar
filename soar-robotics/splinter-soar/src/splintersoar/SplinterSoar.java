@@ -46,13 +46,10 @@ public class SplinterSoar
 		{
 			running = false;
 			
-			logger.info( "Shutting down Soar interface" );
 			soar.shutdown();
-
-			logger.info( "Shutting down splinter interface" );
 			splinter.shutdown();
 			
-			logger.info( "Exiting" );
+			System.out.println( "Terminated" );
 		}
 	}
 	
