@@ -7,6 +7,7 @@ import java.util.Arrays;
 
 import lcm.lcm.*;
 import lcmtypes.*;
+import erp.geom.*;
 
 // TODO: don't assert
 public class LaserLoc implements LCMSubscriber
@@ -39,10 +40,9 @@ public class LaserLoc implements LCMSubscriber
 	
 	// regular state
 	pose_t estimated_pose;
-	// TEMPORARY: TODO: remove, incorporate in to new_estimated_pose
-	double estimated_pose_yaw = 0;	// no old estimated yaw, we don't use the old one to calculate new 
 
-	static boolean testing = false;
+	static boolean testing = true;
+	static boolean verbose = true;
 	
 	LCM lcm;
 	
@@ -68,9 +68,8 @@ public class LaserLoc implements LCMSubscriber
 		if ( estimated_pose == null )
 		{
 			// initialize
-			estimated_pose_yaw = robot_starting_yaw;
-			
 			estimated_pose = getRobotXY( laser_data );
+			estimated_pose.orientation = Geometry.rollPitchYawToQuat( new double[] { 0, 0, robot_starting_yaw } );
 			System.out.print( "initial: " );
 			printOldPose();
 			return;
@@ -90,31 +89,49 @@ public class LaserLoc implements LCMSubscriber
 		// (i.e., we don't have to worry about robot not moving enough between updates)
 		if( translation_dist >= translation_threshold )
 		{
-			estimated_pose_yaw = Math.atan2( new_estimated_pose.pos[ 1 ] - estimated_pose.pos[ 1 ], new_estimated_pose.pos[ 0 ] - estimated_pose.pos[ 0 ] );
+			
+			double estimated_pose_yaw = Math.atan2( new_estimated_pose.pos[ 1 ] - estimated_pose.pos[ 1 ], new_estimated_pose.pos[ 0 ] - estimated_pose.pos[ 0 ] );
+			estimated_pose.orientation = Geometry.rollPitchYawToQuat( new double[] { 0, 0, estimated_pose_yaw } );
 			
 			// TODO: figure out best way to clone
 			estimated_pose.pos[ 0 ] =  new_estimated_pose.pos[ 0 ];
 			estimated_pose.pos[ 1 ] =  new_estimated_pose.pos[ 1 ];
-			 
-			//printOldPose();
 			
-			// TODO: convert yaw to pose structure
-			// TODO: publish lcm message
 			if ( !testing )
 			{
 				estimated_pose.utime = System.nanoTime() / 1000;
 				lcm.publish( "POSE", estimated_pose );
 			}
+
+			if ( verbose )
+			{
+				printOldPose();
+			}
+			else
+			{
+				printSpinner();
+			}
 		}
 		else
 		{
-			//System.out.println( "Skipping update (beneath threshold)" );
+			if ( verbose )
+			{
+				System.out.println( "Skipping update (beneath threshold)" );
+			}
 		}
 	}
 
 	private void printOldPose() 
 	{
-		System.out.println( "x,y,a: " + estimated_pose.pos[ 0 ] + "," + estimated_pose.pos[ 1 ] + "," + Math.toDegrees( estimated_pose_yaw ) );
+		System.out.println( "x,y,a: " + estimated_pose.pos[ 0 ] + "," + estimated_pose.pos[ 1 ] + "," + Math.toDegrees( Geometry.quatToRollPitchYaw( estimated_pose.orientation )[2] ) );
+	}
+
+	int spinner_index = 0;
+	char spinners[] = { '|', '/', '-', '\\', };
+	private void printSpinner() 
+	{
+		System.out.print( spinners[ spinner_index ] );
+		spinner_index = ++spinner_index % spinners.length;
 	}
 
 	private pose_t getRobotXY( laser_t laser_data )
