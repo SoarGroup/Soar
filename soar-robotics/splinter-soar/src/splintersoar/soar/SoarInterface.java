@@ -5,7 +5,6 @@ import splintersoar.*;
 
 public class SoarInterface implements Kernel.UpdateEventInterface
 {
-
 	Kernel kernel;
 	Agent agent;
 	InputLinkManager input;
@@ -15,7 +14,6 @@ public class SoarInterface implements Kernel.UpdateEventInterface
 
 	public SoarInterface( SplinterState state )
 	{
-		
 		kernel = Kernel.CreateKernelInNewThread();
 		if ( kernel.HadError() )
 		{
@@ -60,4 +58,5 @@ public class SoarInterface implements Kernel.UpdateEventInterface
 		
 		agent.Commit();
 	}
+
 }

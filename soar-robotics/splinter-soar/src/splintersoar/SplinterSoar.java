@@ -3,13 +3,15 @@ package splintersoar;
 import java.util.logging.*;
 
 import splintersoar.soar.*;
-import splintersoar.orc.*;
-import splintersoar.gamepad.*;
+import laserloc.*;
+import lcm.lcm.*;
 
-public class SplinterSoar 
+public class SplinterSoar
 {
 	SoarInterface soar;
-	SplinterInterface splinter;
+	OrcInterface orc;
+	LaserLoc laserloc;
+	LCM lcm;
 	
 	boolean running = true;
 
@@ -17,12 +19,18 @@ public class SplinterSoar
 	
 	public SplinterSoar()
 	{
-		logger.info( "Starting splinter interface" );
-		splinter = new OrcInterface();
-		//splinter = new LCMInterface();
+		logger.info( "Starting orc interface" );
+		orc = new OrcInterface();
+
+		logger.info( "Starting laser localizer" );
+		laserloc = new LaserLoc( false );
+		
+		logger.info( "Subscribing orc to POSE channel" );
+		lcm = LCM.getSingleton();
+		lcm.subscribe( LaserLoc.pose_channel, orc );
 
 		logger.info( "Starting Soar interface" );
-		soar = new SoarInterface( splinter.getState() );
+		soar = new SoarInterface( orc.getState() );
 
 		logger.info( "Creating and using game pad for override" );
 		soar.setOverride( new GamePadManager() );
@@ -35,19 +43,21 @@ public class SplinterSoar
 			try 
 			{
 				Thread.sleep( 500 );
-			} catch ( InterruptedException ignored ) 
+			} 
+			catch ( InterruptedException ignored ) 
 			{}
 		}
 	}
 	
 	public class ShutdownHook extends Thread
 	{
+		@Override
 		public void run()
 		{
 			running = false;
 			
 			soar.shutdown();
-			splinter.shutdown();
+			orc.shutdown();
 			
 			System.out.println( "Terminated" );
 		}

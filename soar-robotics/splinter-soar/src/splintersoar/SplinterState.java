@@ -17,6 +17,10 @@ public class SplinterState {
 	public int rightPosition = 0;
 	public double rightVelocity = 0;
 	
+	public double x = 0;
+	public double y = 0;
+	public double yaw = 0;
+	
 	// geometry, configuration
 	public final double baselineMeters = 0.42545;
 	public final double tickMeters = 0.0000429250;

@@ -14,14 +14,11 @@ public class InputLinkManager {
 	FloatElement override_move_right;
 	
 	FloatElement self_motor_left_current;
-	FloatElement self_motor_left_position;
+	IntElement self_motor_left_position;
 	FloatElement self_motor_left_velocity;
 	FloatElement self_motor_right_current;
-	FloatElement self_motor_right_position;
+	IntElement self_motor_right_position;
 	FloatElement self_motor_right_velocity;
-	
-	double leftInitialPosition;
-	double rightInitialPosition;
 	
 	FloatElement self_pose_x;
 	FloatElement self_pose_y;
@@ -59,8 +56,6 @@ public class InputLinkManager {
 		}
 		
 		lastTime = stateCopy.utime;
-		leftInitialPosition = stateCopy.leftPosition;
-		rightInitialPosition = stateCopy.rightPosition;
 		
 		SplinterSoar.logger.fine( "Initializing input link" );
 		Identifier inputLink = agent.GetInputLink();
@@ -108,22 +103,21 @@ public class InputLinkManager {
 				
 				Identifier self_motor_left = agent.CreateIdWME( self_motor, "left" );
 				self_motor_left_current = agent.CreateFloatWME( self_motor_left, "current", stateCopy.leftCurrent );
-				self_motor_left_position = agent.CreateFloatWME( self_motor_left, "position", stateCopy.leftPosition );
+				self_motor_left_position = agent.CreateIntWME( self_motor_left, "position", stateCopy.leftPosition );
 				self_motor_left_velocity = agent.CreateFloatWME( self_motor_left, "velocity", stateCopy.leftVelocity );
 
 				Identifier self_motor_right = agent.CreateIdWME( self_motor, "right" );
 				self_motor_right_current = agent.CreateFloatWME( self_motor_right, "current", stateCopy.rightCurrent );
-				self_motor_right_position = agent.CreateFloatWME( self_motor_right, "position", stateCopy.rightPosition );
+				self_motor_right_position = agent.CreateIntWME( self_motor_right, "position", stateCopy.rightPosition );
 				self_motor_right_velocity = agent.CreateFloatWME( self_motor_right, "velocity", stateCopy.rightVelocity );
 			}
 			
 			{
 				Identifier self_pose = agent.CreateIdWME( self, "pose" );
 				
-				self_pose_x = agent.CreateFloatWME( self_pose, "x", 0 );
-				self_pose_y = agent.CreateFloatWME( self_pose, "y", 0 );
-				self_pose_z = agent.CreateFloatWME( self_pose, "z", 0 );
-				self_pose_yaw = agent.CreateFloatWME( self_pose, "yaw", 0 );
+				self_pose_x = agent.CreateFloatWME( self_pose, "x", stateCopy.x );
+				self_pose_y = agent.CreateFloatWME( self_pose, "y", stateCopy.y );
+				self_pose_yaw = agent.CreateFloatWME( self_pose, "yaw", stateCopy.yaw );
 			}
 		}
 		
@@ -181,49 +175,22 @@ public class InputLinkManager {
 			
 			lastTime = stateCopy.utime;
 			
-			double leftTotalPosition = ( stateCopy.leftPosition - leftInitialPosition ) * stateCopy.tickMeters;
-			double leftVelocity = stateCopy.leftVelocity * stateCopy.tickMeters;
-			
-			double rightTotalPosition = ( stateCopy.rightPosition - rightInitialPosition ) * stateCopy.tickMeters;
-			double rightVelocity = stateCopy.rightVelocity * stateCopy.tickMeters;
-			
-			// Equations from A Primer on Odopmetry and Motor Control, Olson 2006
-			// dleft, dright: distance wheel travelled
-			// dbaseline: wheelbase
-			//
-			// dcenter = ( dleft + dright ) / 2
-			// phi = ( dright - dleft ) / dbaseline
-			// thetaprime = theta + phi
-			// xprime = x + ( dcenter * cos( theta ) )
-			// yprime = y + ( dcenter * sin( theta ) )
-			
-			double dleft = leftTotalPosition - self_motor_left_position.GetValue();
-			double dright = rightTotalPosition - self_motor_right_position.GetValue();
-			double dcenter = ( dleft + dright ) / 2;
-			
-			double phi = ( dright - dleft ) / stateCopy.baselineMeters;
-			
-			double theta = Math.toRadians( self_pose_yaw.GetValue() );
-			double thetaprime = theta + phi;
-			double xprime = self_pose_x.GetValue() + ( dcenter * Math.cos( theta ) );
-			double yprime = self_pose_y.GetValue() + ( dcenter * Math.sin( theta ) );
-
 			agent.Update( self_motor_left_current, stateCopy.leftCurrent );
-			agent.Update( self_motor_left_position, leftTotalPosition );
-			agent.Update( self_motor_left_velocity, leftVelocity );
+			agent.Update( self_motor_left_position, stateCopy.leftPosition );
+			agent.Update( self_motor_left_velocity, stateCopy.leftVelocity );
 
 			agent.Update( self_motor_right_current, stateCopy.rightCurrent );
-			agent.Update( self_motor_right_position, rightTotalPosition );
-			agent.Update( self_motor_right_velocity, rightVelocity );
+			agent.Update( self_motor_right_position, stateCopy.rightPosition );
+			agent.Update( self_motor_right_velocity, stateCopy.rightVelocity );
 
-			agent.Update( self_pose_x, xprime );
-			agent.Update( self_pose_y, yprime );
-			thetaprime = Math.toDegrees( thetaprime ) % 360.0;
-			if ( thetaprime < 0 )
+			agent.Update( self_pose_x, stateCopy.x );
+			agent.Update( self_pose_y, stateCopy.y );
+			double yaw = Math.toDegrees( stateCopy.yaw ) % 360.0;
+			if ( yaw < 0 )
 			{
-				thetaprime += 360.0;
+				yaw += 360.0;
 			}
-			agent.Update( self_pose_yaw, thetaprime );
+			agent.Update( self_pose_yaw, yaw );
 		}
 	}
 }

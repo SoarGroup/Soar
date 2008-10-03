@@ -46,7 +46,7 @@ public class LaserLoc implements LCMSubscriber
 	
 	LCM lcm;
 	
-	public LaserLoc( /* config params? */ )
+	public LaserLoc( boolean verbose )
 	{
 		// ?? initialize?
 		
@@ -70,8 +70,11 @@ public class LaserLoc implements LCMSubscriber
 			// initialize
 			estimated_pose = getRobotXY( laser_data );
 			estimated_pose.orientation = Geometry.rollPitchYawToQuat( new double[] { 0, 0, robot_starting_yaw } );
-			System.out.print( "initial: " );
-			printOldPose();
+			if ( verbose )
+			{
+				System.out.print( "initial: " );
+				printOldPose();
+			}
 			return;
 		}
 		
@@ -107,10 +110,6 @@ public class LaserLoc implements LCMSubscriber
 			{
 				printOldPose();
 			}
-			else
-			{
-				printSpinner();
-			}
 		}
 		else
 		{
@@ -124,14 +123,6 @@ public class LaserLoc implements LCMSubscriber
 	private void printOldPose() 
 	{
 		System.out.println( "x,y,a: " + estimated_pose.pos[ 0 ] + "," + estimated_pose.pos[ 1 ] + "," + Math.toDegrees( Geometry.quatToRollPitchYaw( estimated_pose.orientation )[2] ) );
-	}
-
-	int spinner_index = 0;
-	char spinners[] = { '|', '/', '-', '\\', };
-	private void printSpinner() 
-	{
-		System.out.print( spinners[ spinner_index ] );
-		spinner_index = ++spinner_index % spinners.length;
 	}
 
 	private pose_t getRobotXY( laser_t laser_data )
@@ -267,7 +258,7 @@ public class LaserLoc implements LCMSubscriber
 			for ( int current_test_index = 0; current_test_index < test_data.length; ++current_test_index )
 			{
 				System.out.println( "Starting test " + ( current_test_index + 1 ) );
-				lloc = new LaserLoc();
+				lloc = new LaserLoc( true );
 
 				for ( int current_test_data_index = 0; current_test_data_index < test_data[ current_test_index ].length; ++current_test_data_index )
 				{
@@ -281,7 +272,7 @@ public class LaserLoc implements LCMSubscriber
 		}
 		
 		// Not testing
-		new LaserLoc();
+		new LaserLoc( false );
 		while ( true )
 		{
 			try
