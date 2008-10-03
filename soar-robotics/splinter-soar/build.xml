@@ -36,7 +36,7 @@
 
       <manifest>
 	<attribute name="Main-Class" value="splintersoar.SplinterSoar" />
-	<attribute name="Class-Path" value="../../uorc/user/java/orc.jar ../../SoarSuite/SoarLibrary/bin/sml.jar /usr/local/share/java/lcm.jar" />
+	<attribute name="Class-Path" value="../../uorc/user/java/orc.jar ../../SoarSuite/SoarLibrary/bin/sml.jar ../../erp/lcmtypes/lcmtypes.jar /usr/local/share/java/lcm.jar" />
       </manifest>
     </jar>
     <copy file="splintersoar.jar" todir="." />
@@ -66,6 +66,7 @@
         <pathelement location="src/"/>
 	<pathelement location="../../uorc/user/java/orc.jar"/>
 	<pathelement location="../../SoarSuite/SoarLibrary/bin/sml.jar"/>
+	<pathelement location="../../erp/lcmtypes/lcmtypes.jar"/>
 	<pathelement location="/usr/local/share/java/lcm.jar"/>
       </classpath>
     </javac>

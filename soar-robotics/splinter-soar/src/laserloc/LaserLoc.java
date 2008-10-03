@@ -83,7 +83,7 @@ public class LaserLoc implements LCMSubscriber
 		}
 		
 		double translation_dist = Point.distance( estimated_pose.pos[ 0 ], estimated_pose.pos[ 1 ], new_estimated_pose.pos[ 0 ], new_estimated_pose.pos[ 1 ] );
-		System.out.print( "Moved " + translation_dist + " meters. " );
+		//System.out.print( "Moved " + translation_dist + " meters. " );
 		
 		// only update location if moved enough. Don't want Soar to thrash on constantly changing x,y due to noise
 		// this also means this loop can run as fast as it can and we'll still get reasonable updates
@@ -96,16 +96,19 @@ public class LaserLoc implements LCMSubscriber
 			estimated_pose.pos[ 0 ] =  new_estimated_pose.pos[ 0 ];
 			estimated_pose.pos[ 1 ] =  new_estimated_pose.pos[ 1 ];
 			 
-			printOldPose();
+			//printOldPose();
 			
 			// TODO: convert yaw to pose structure
-			// TODO: publish lcm message\
-			estimated_pose.utime = System.nanoTime() / 1000;
-			lcm.publish( "POSE", estimated_pose );
+			// TODO: publish lcm message
+			if ( !testing )
+			{
+				estimated_pose.utime = System.nanoTime() / 1000;
+				lcm.publish( "POSE", estimated_pose );
+			}
 		}
 		else
 		{
-			System.out.println( "Skipping update (beneath threshold)" );
+			//System.out.println( "Skipping update (beneath threshold)" );
 		}
 	}
 
@@ -262,7 +265,15 @@ public class LaserLoc implements LCMSubscriber
 		
 		// Not testing
 		new LaserLoc();
-		System.exit( 0 );
+		while ( true )
+		{
+			try
+			{
+				Thread.sleep( 500 );
+			} 
+			catch ( InterruptedException ignored )
+			{}
+		}
 	}
 
 }
