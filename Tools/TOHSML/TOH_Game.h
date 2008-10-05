@@ -17,6 +17,8 @@
 class TOH_Tower;
 class Stats_Tracker;
 
+#define TOH_AGENT_PRODUCTIONS "../../Environments/JavaTOH/towers-of-hanoi-SML.soar"
+
 /* The TOH_Game object is a complete instance of Towers of Hanoi.
  * It is responsible for creating the Kernel, Agent, Towers, Disks, ...
  *
@@ -30,10 +32,15 @@ class TOH_Game {
   friend inline void toh_update_event_handler(sml::smlUpdateEventId, void *user_data_ptr, sml::Kernel* kernel_ptr, sml::smlRunFlags);
 
 public:
-  inline TOH_Game(const std::string &agent_productions = "../../Environments/JavaTOH/towers-of-hanoi-SML.soar");
+  /* TOH_Game will create the default 'Soar_Kernel()' if a kernel is not provided.
+   * TOH_Game will take care of the deletion of the given kernel if one is provided.
+   */
+  inline TOH_Game(const std::string &agent_productions = TOH_AGENT_PRODUCTIONS,
+                  sml::Kernel * const kernel = 0);
   inline ~TOH_Game();
 
   static inline void run_trials(const int &num_trials);
+  static void remote_invocation(const std::string &ip_address, const int &port);
 
   // Returns the "disk size" stacks for all towers
   inline std::vector<std::vector<int> > get_tower_stacks() const;

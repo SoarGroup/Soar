@@ -11,6 +11,7 @@
 
 #include "TOH_Game.h"
 
+#include "Soar_Kernel.h"
 #include "TOH_Disk.inl"
 #include "TOH_Tower.inl"
 #include "Stats_Tracker.inl"
@@ -21,8 +22,11 @@ void toh_update_event_handler(sml::smlUpdateEventId /*id*/, void *user_data_ptr,
   reinterpret_cast<TOH_Game *>(user_data_ptr)->update(*kernel_ptr);
 }
 
-TOH_Game::TOH_Game(const std::string &agent_productions)
-: m_agent(m_kernel, "TOH")
+TOH_Game::TOH_Game(const std::string &agent_productions,
+                   sml::Kernel * const kernel)
+: m_kernel(kernel ? kernel :
+           sml::Kernel::CreateKernelInCurrentThread(sml::Kernel::kDefaultLibraryName, true)),
+  m_agent(m_kernel, "TOH")
 {
   const int num_towers = 3;
   const int num_disks = 11;
@@ -58,13 +62,28 @@ std::vector<std::vector<int> > TOH_Game::get_tower_stacks() const {
 }
 
 void TOH_Game::run_trials(const int &num_trials) {
-  std::cout << "Running the C++ Towers of Hanoi SML Demo" << std::endl;
+  std::cout << "Running the C++ Towers of Hanoi SML Demo (Local)" << std::endl;
 
   Stats_Tracker stats_tracker;
   for(int i = 0; i < num_trials; ++i) {
     TOH_Game game;
     stats_tracker.time_run(game.m_agent, i, num_trials);
   }
+}
+
+void TOH_Game::remote_invocation(const std::string &ip_address,
+                                 const int &port) {
+  std::cout << "Running the C++ Towers of Hanoi SML Demo (Remote)" << std::endl;
+
+  Stats_Tracker stats_tracker;
+
+  TOH_Game game(TOH_AGENT_PRODUCTIONS,
+                sml::Kernel::CreateRemoteConnection(true,
+                                                    ip_address.empty() ? 0 : ip_address.c_str(),
+                                                    port,
+                                                    false));
+
+  stats_tracker.time_run(game.m_agent, 0, 1);
 }
 
 void TOH_Game::run() {
