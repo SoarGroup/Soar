@@ -11,22 +11,8 @@ sp {go-to-location*propose*go-to-waypoint
 }
 
 # first rotate-to to the desired heading (in subgoal)
-# then move-to the desired location
-
-sp {apply*go-to-waypoint*move-to
-   (state <s> ^operator <op>
-              ^io.output-link <ol>)
-   (<op> ^name go-to-waypoint
-         ^move-now true
-         ^destination <w>)
-   (<w> ^x <x>
-        ^y <y>)
--->
-   (<ol> ^move-to <mt>)
-   (<mt> ^x <x>
-         ^y <y>
-         ^throttle 1.0)
-}
+# then create structures to track movement
+# then move/rotate to the desired location (in subgoal)
 
 sp {apply*go-to-waypoint*create-move-to
    (state <s> ^operator <op>

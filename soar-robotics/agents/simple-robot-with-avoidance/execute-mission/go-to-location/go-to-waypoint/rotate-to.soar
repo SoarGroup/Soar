@@ -1,12 +1,10 @@
 sp {go-to-waypoint*elaborate*state*desired-yaw
    (state <s> ^superoperator <so>
-              ^io.input-link.self.location <l>)
-   (<so> ^name go-to-waypoint
-         ^destination <w>)
-   (<l> ^x <x1> ^y <y1>)
-   (<w> ^x <x2> ^y <y2>)
+              ^io.input-link.self.waypoints.waypoint <w>)
+   (<w> ^id destination
+        ^relative-heading <rh>)
 -->
-   (<s> ^desired-yaw (compute-heading <x1> <y1> <x2> <y2>))
+   (<s> ^desired-yaw <rh>)
 }
 
 sp {go-to-waypoint*elaborate*superoperator*move-now
