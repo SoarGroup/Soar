@@ -71,19 +71,20 @@ void TOH_Game::run_trials(const int &num_trials) {
   }
 }
 
-void TOH_Game::remote_invocation(const std::string &ip_address,
-                                 const int &port) {
+void TOH_Game::remote_trials(const int &num_trials,
+                             const std::string &ip_address,
+                             const int &port) {
   std::cout << "Running the C++ Towers of Hanoi SML Demo (Remote)" << std::endl;
 
   Stats_Tracker stats_tracker;
-
-  TOH_Game game(TOH_AGENT_PRODUCTIONS,
-                sml::Kernel::CreateRemoteConnection(true,
-                                                    ip_address.empty() ? 0 : ip_address.c_str(),
-                                                    port,
-                                                    false));
-
-  stats_tracker.time_run(game.m_agent, 0, 1);
+  for(int i = 0; i < num_trials; ++i) {
+    TOH_Game game(TOH_AGENT_PRODUCTIONS,
+                  sml::Kernel::CreateRemoteConnection(true,
+                                                      ip_address.empty() ? 0 : ip_address.c_str(),
+                                                      port,
+                                                      false));
+    stats_tracker.time_run(game.m_agent, i, num_trials);
+  }
 }
 
 void TOH_Game::run() {

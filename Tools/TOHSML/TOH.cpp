@@ -150,7 +150,7 @@ int main(int argc, char ** argv) {
   }
 
   if(remote)
-    TOH_Game::remote_invocation(ip_address, port);
+    TOH_Game::remote_trials(3, ip_address, port);
   else
     TOH_Game::run_trials(3);
 
