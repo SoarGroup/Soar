@@ -11,9 +11,9 @@ VERSION 4
 8	4	FOPERATOR selection selection.soar 9
 9	4	FOPERATOR top-state top-state.soar 10
 10	4	FOPERATOR waypoints waypoints.soar 11
-11	0	OPERATOR choose-destination choose-destination.soar 14
-12	0	OPERATOR go-to-waypoint go-to-waypoint.soar 12
-13	0	OPERATOR initialize-simple-robot initialize-simple-robot.soar 13
+11	0	OPERATOR choose-destination choose-destination.soar 12
+12	0	OPERATOR go-to-waypoint go-to-waypoint.soar 13
+13	0	OPERATOR initialize-simple-robot initialize-simple-robot.soar 14
 14	0	HLOPERATOR wander wander.soar wander 11 15
 15	14	FOPERATOR elaborations elaborations.soar 16
 16	14	OPERATOR choose-next-waypoint choose-next-waypoint.soar 17
