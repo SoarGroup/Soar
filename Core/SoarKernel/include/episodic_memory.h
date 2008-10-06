@@ -46,8 +46,9 @@ typedef struct wme_struct wme;
 #define EPMEM_TRIGGER_OUTPUT 2
 #define EPMEM_TRIGGER_DC 3
 
-#define EPMEM_FORCE_ON 1
-#define EPMEM_FORCE_OFF 2
+#define EPMEM_FORCE_REMEMBER 1
+#define EPMEM_FORCE_FORGET 2
+#define EPMEM_FORCE_OFF 3
 
 #define EPMEM_EXCLUSIONS_DEFAULT 1
 

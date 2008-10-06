@@ -888,7 +888,7 @@ const long epmem_convert_trigger( const char *val )
  **************************************************************************/
 bool epmem_validate_force( const long new_val )
 {
-	return ( ( new_val == EPMEM_FORCE_ON ) || ( new_val == EPMEM_FORCE_OFF ) );
+	return ( ( new_val >= EPMEM_FORCE_REMEMBER ) || ( new_val <= EPMEM_FORCE_OFF ) );
 }
 
 /***************************************************************************
@@ -900,8 +900,12 @@ const char *epmem_convert_force( const long val )
 	
 	switch ( val )
 	{
-		case EPMEM_FORCE_ON:
-			return_val = "on";
+		case EPMEM_FORCE_REMEMBER:
+			return_val = "remember";
+			break;
+			
+		case EPMEM_FORCE_FORGET:
+			return_val = "forget";
 			break;
 			
 		case EPMEM_FORCE_OFF:
@@ -916,8 +920,10 @@ const long epmem_convert_force( const char *val )
 {
 	long return_val = NULL;
 	
-	if ( !strcmp( val, "on" ) )
-		return_val = EPMEM_FORCE_ON;
+	if ( !strcmp( val, "remember" ) )
+		return_val = EPMEM_FORCE_REMEMBER;
+	else if ( !strcmp( val, "forget" ) )
+		return_val = EPMEM_FORCE_FORGET;
 	else if ( !strcmp( val, "off" ) )
 		return_val = EPMEM_FORCE_OFF;
 	
@@ -1770,13 +1776,18 @@ void epmem_init_db( agent *my_agent )
 			////
 
 			// now table
-			sqlite3_prepare_v2( my_agent->epmem_db, "CREATE TABLE IF NOT EXISTS now (id INTEGER PRIMARY KEY,start INTEGER)", -1, &create, &tail );
+			sqlite3_prepare_v2( my_agent->epmem_db, "CREATE TABLE IF NOT EXISTS now (id INTEGER,start INTEGER)", -1, &create, &tail );
 			sqlite3_step( create );					
 			sqlite3_finalize( create );
 
 			// now_start index
 			sqlite3_prepare_v2( my_agent->epmem_db, "CREATE INDEX IF NOT EXISTS now_start ON now (start)", -1, &create, &tail );
 			sqlite3_step( create );	
+			sqlite3_finalize( create );
+			
+			// id_start index (for queries)
+			sqlite3_prepare_v2( my_agent->epmem_db, "CREATE UNIQUE INDEX IF NOT EXISTS now_id_start ON now (id,start)", -1, &create, &tail );
+			sqlite3_step( create );
 			sqlite3_finalize( create );
 
 			// custom statement for inserting now
@@ -1797,7 +1808,7 @@ void epmem_init_db( agent *my_agent )
 			sqlite3_step( create );
 			sqlite3_finalize( create );
 			
-			// id_start index (for queries)
+			// start index
 			sqlite3_prepare_v2( my_agent->epmem_db, "CREATE UNIQUE INDEX IF NOT EXISTS points_start ON points (start)", -1, &create, &tail );
 			sqlite3_step( create );
 			sqlite3_finalize( create );
@@ -2223,9 +2234,10 @@ void epmem_consider_new_episode( agent *my_agent )
 	epmem_start_timer( my_agent, EPMEM_TIMER_STORAGE_CONSIDER );
 	//////////////////////////////////////////////////////////////////////////
 	
-	bool new_memory = ( epmem_get_parameter( my_agent, EPMEM_PARAM_FORCE, EPMEM_RETURN_LONG ) == EPMEM_FORCE_ON );
+	const long force = epmem_get_parameter( my_agent, EPMEM_PARAM_FORCE, EPMEM_RETURN_LONG );
+	bool new_memory = false;
 	
-	if ( !new_memory )
+	if ( force == EPMEM_FORCE_OFF )
 	{
 		const long trigger = epmem_get_parameter( my_agent, EPMEM_PARAM_TRIGGER, EPMEM_RETURN_LONG );
 		
@@ -2266,10 +2278,12 @@ void epmem_consider_new_episode( agent *my_agent )
 		{
 			new_memory = false;
 		}
-	}
+	}	
 	else
 	{
-		epmem_set_parameter( my_agent, (const long) EPMEM_PARAM_FORCE, (const long) EPMEM_FORCE_OFF );		
+		new_memory = ( force == EPMEM_FORCE_REMEMBER );
+		
+		epmem_set_parameter( my_agent, (const long) EPMEM_PARAM_FORCE, (const long) EPMEM_FORCE_OFF );
 	}
 	
 	//////////////////////////////////////////////////////////////////////////
