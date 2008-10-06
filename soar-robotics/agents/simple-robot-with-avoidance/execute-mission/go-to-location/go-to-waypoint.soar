@@ -10,9 +10,23 @@ sp {go-to-location*propose*go-to-waypoint
          ^track-progress true) #create a move-to structure on state
 }
 
-# first rotate-to to the desired heading (in subgoal)
-# then create structures to track movement
-# then move/rotate to the desired location (in subgoal)
+# 1) create waypoint structure on input-link
+# 2) rotate-to to the desired heading 
+# 3) create structures to track movement
+# 4) move/rotate to the desired location (in subgoal)
+
+# note that we don't have to explicitly remove any old "destination" waypoints as adding a new one will do a replace
+sp {apply*go-to-waypoint*add-input-waypoint
+   (state <s> ^operator <op>
+              ^io.output-link <ol>)
+   (<op> ^name go-to-waypoint
+         ^destination <w>)
+   (<w> ^x <x> ^y <y>)
+-->
+   (<ol> ^add-waypoint <aw>)
+   (<aw> ^id destination
+         ^x <x> ^y <y>)
+}
 
 sp {apply*go-to-waypoint*create-move-to
    (state <s> ^operator <op>

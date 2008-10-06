@@ -1,6 +1,3 @@
 source elaborations.soar
-source propose-action-operator.soar
 source action.soar
-source move.soar
-source rotate.soar
 source rotate-to.soar

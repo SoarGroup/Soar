@@ -1,4 +1,4 @@
-254
+258
 SOAR_ID 0
 SOAR_ID 1
 SOAR_ID 2
@@ -253,7 +253,11 @@ FLOAT_RANGE 250 0.0 1.0
 ENUMERATION 251 2 false true
 SOAR_ID 252
 FLOAT_RANGE 253 0.0 Infinity
-322
+SOAR_ID 254
+STRING 255
+FLOAT_RANGE 256 -Infinity Infinity
+FLOAT_RANGE 257 -Infinity Infinity
+326
 0 attribute 113
 0 choices 112
 0 desired 31
@@ -292,6 +296,7 @@ FLOAT_RANGE 253 0.0 Infinity
 2 ranges 229
 2 self 26
 2 time 24
+3 add-waypoint 254
 3 broadcast-message 123
 3 move 8
 3 move-to 247
@@ -576,3 +581,6 @@ FLOAT_RANGE 253 0.0 Infinity
 247 y 249
 252 move 8
 252 rotate 9
+254 id 255
+254 x 256
+254 y 257
