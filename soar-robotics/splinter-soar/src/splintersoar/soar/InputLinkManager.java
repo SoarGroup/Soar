@@ -19,7 +19,10 @@ public class InputLinkManager {
 	FloatElement self_motor_right_current;
 	IntElement self_motor_right_position;
 	FloatElement self_motor_right_velocity;
-	
+
+	IntElement time_seconds;
+	IntElement time_microseconds;
+
 	FloatElement self_pose_x;
 	FloatElement self_pose_y;
 	FloatElement self_pose_z;
@@ -62,7 +65,7 @@ public class InputLinkManager {
 		
 		// override
 		//     active [false true]
-		//         ?move
+		//         ?motor
 		//             left [-1.0..1.0]
 		//             right [-1.0..1.0]
 		{
@@ -121,6 +124,20 @@ public class InputLinkManager {
 			}
 		}
 		
+		// time
+		//     seconds
+		//     microseconds
+		{
+			Identifier time = agent.CreateIdWME( inputLink, "time" );
+
+			int seconds = (int)( System.nanoTime() / 1000000000 );
+			int microseconds = (int)( System.nanoTime() % 1000000000 );
+			microseconds /= 1000;
+			
+			time_seconds = agent.CreateIntWME( time, "seconds",  seconds);
+			time_microseconds = agent.CreateIntWME( time, "microseconds", microseconds );
+		}
+		
 		agent.Commit();
 	}
 
@@ -159,9 +176,20 @@ public class InputLinkManager {
 		}
 	}
 	
+	void updateTime()
+	{
+		int seconds = (int)( System.nanoTime() / 1000000000 );
+		int microseconds = (int)( System.nanoTime() % 1000000000 );
+		microseconds /= 1000;
+		
+		agent.Update( time_seconds, seconds );
+		agent.Update( time_microseconds, microseconds );
+	}
+	
 	public void update()
 	{
 		updateOverride();
+		updateTime();
 		
 		// update robot state if we have new state
 		if ( state.utime != lastTime )
