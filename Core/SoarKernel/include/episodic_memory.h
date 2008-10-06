@@ -475,7 +475,6 @@ extern void epmem_go( agent *my_agent );
 
 // Called to create/remove a fake preference for an epmem wme
 extern preference *epmem_make_fake_preference( agent *my_agent, Symbol *state, wme *w );
-extern void epmem_remove_fake_preference( agent *my_agent, wme *w );
 
 // Called to get a specific symbol augmentation
 extern wme *epmem_get_aug_of_id( agent *my_agent, Symbol *sym, char *attr_name, char *value_name );

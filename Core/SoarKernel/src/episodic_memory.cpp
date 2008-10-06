@@ -50,6 +50,8 @@ void epmem_clear_result( agent *my_agent, Symbol *state );
 void epmem_new_episode( agent *my_agent );
 void epmem_install_memory( agent *my_agent, Symbol *state, epmem_time_id memory_id );
 
+void epmem_remove_fake_preference( agent *my_agent, wme *w );
+
 void epmem_rit_insert_interval( agent *my_agent, epmem_time_id lower, epmem_time_id upper, epmem_node_id id );
 long long epmem_rit_fork_node( agent *my_agent, epmem_time_id lower, epmem_time_id upper, bool bounds_offset, long long *step = NULL );
 void epmem_rit_prep_left_right( agent *my_agent, epmem_time_id lower, epmem_time_id upper );
