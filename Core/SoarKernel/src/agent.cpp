@@ -548,22 +548,15 @@ void destroy_soar_agent (agent * delete_agent)
   // cleanup predict
   delete delete_agent->prediction;
   
-  // cleanup EpMem
-  std::list<const char *>::iterator e_p = delete_agent->epmem_exclusions->begin();
-  while ( e_p != delete_agent->epmem_exclusions->end() )
-  {
-	  delete (*e_p);
-	  e_p++;
-  }
-  delete delete_agent->epmem_exclusions;
-
-  delete delete_agent->epmem_range_removals;
-  delete delete_agent->epmem_range_mins;
-  delete delete_agent->epmem_range_maxes;
+  // cleanup EpMem    
   epmem_end( delete_agent );
   epmem_clean_parameters( delete_agent );
   epmem_clean_stats( delete_agent );
   epmem_clean_timers( delete_agent );
+  delete delete_agent->epmem_exclusions;
+  delete delete_agent->epmem_range_removals;
+  delete delete_agent->epmem_range_mins;
+  delete delete_agent->epmem_range_maxes;
 
   // cleanup wma
   wma_clean_parameters( delete_agent );
