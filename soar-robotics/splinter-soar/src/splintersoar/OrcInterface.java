@@ -148,8 +148,8 @@ public class OrcInterface implements LCMSubscriber
 				double yaw = Geometry.quatToRollPitchYaw( pose.orientation )[2];
 
 				// FIXME: possibly slow
-				leftPreviousPosition = leftOdom.getPosition();
-				rightPreviousPosition = rightOdom.getPosition();
+				//leftPreviousPosition = leftOdom.getPosition();
+				//rightPreviousPosition = rightOdom.getPosition();
 				
 				synchronized ( state )
 				{

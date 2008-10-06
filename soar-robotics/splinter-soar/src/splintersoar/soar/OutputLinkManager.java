@@ -76,8 +76,8 @@ public class OutputLinkManager {
 				
 				synchronized ( state )
 				{
-					state.left = leftCommand / 2;
-					state.right = rightCommand / 2;
+					state.left = leftCommand;
+					state.right = rightCommand;
 				}
 				commandId.AddStatusComplete();
 				continue;

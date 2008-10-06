@@ -42,6 +42,10 @@ public class SplinterState {
 		this.rightCurrent = other.rightCurrent;
 		this.rightPosition = other.rightPosition;
 		this.rightVelocity = other.rightVelocity;
+		
+		this.x = other.x;
+		this.y = other.y;
+		this.yaw = other.yaw;
 	}
 	
 }
