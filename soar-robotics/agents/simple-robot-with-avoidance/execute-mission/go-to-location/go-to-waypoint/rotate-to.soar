@@ -2,9 +2,9 @@ sp {go-to-waypoint*elaborate*state*desired-yaw
    (state <s> ^superoperator <so>
               ^io.input-link.self.waypoints.waypoint <w>)
    (<w> ^id destination
-        ^relative-heading <rh>)
+        ^yaw <yaw>)
 -->
-   (<s> ^desired-yaw <rh>)
+   (<s> ^desired-yaw <yaw>)
 }
 
 sp {go-to-waypoint*elaborate*superoperator*move-now
