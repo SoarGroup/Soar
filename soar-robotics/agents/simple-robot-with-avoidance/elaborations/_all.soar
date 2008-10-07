@@ -27,3 +27,8 @@ sp {elaborate*state*waypoints
              -^name selection)
 -->
    (<s> ^waypoints <ws>)}
+
+sp {elaborate*state*parmeters
+   (state <s> ^superstate.parameters <p>)
+-->
+   (<s> ^parameters <p>)}

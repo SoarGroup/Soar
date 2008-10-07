@@ -11,7 +11,7 @@ sp {go-to-waypoint*elaborate*state*desired-yaw
 
 sp {go-to-waypoint*elaborate*superoperator*move-now
    (state <s> ^name go-to-waypoint
-              ^top-state.rotation-tolerance <rt>
+              ^parameters.rotation-tolerance <rt>
               ^waypoint.abs-relative-bearing <= <rt>
               ^superoperator <so>)
 -->

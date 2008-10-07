@@ -3,7 +3,7 @@
 sp {simple-robot*elaborate*min-progress-distance
    (state <s> ^name simple-robot
               ^move-to <mt>
-              ^min-progress-distance <mpd>)
+              ^parameters.min-progress-distance <mpd>)
    (<mt> ^closest <c>)
 -->
    (<mt> ^update-dist (- <c> <mpd>))
@@ -12,7 +12,7 @@ sp {simple-robot*elaborate*min-progress-distance
 sp {simple-robot*elaborate*move-to-cutoff-time
    (state <s> ^name simple-robot
               ^move-to <mt>
-              ^replan-time <rpt>)
+              ^parameters.replan-time <rpt>)
    (<mt> ^time <t>)
 -->
    (<mt> ^cutoff (+ <t> <rpt>))

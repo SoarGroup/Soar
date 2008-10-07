@@ -16,7 +16,7 @@ sp {simple-robot*elaborate*visible-entity
 sp {simple-robot*elaborate*entity-next-message-time
    (state <s> ^name simple-robot
               ^entities.entity <e>
-              ^message-update-time <mut>)
+              ^parameters.message-update-time <mut>)
    (<e> ^last-update-message-time <t>)
 -->
    (<e> ^next-update-message-time (+ <t> <mut>))

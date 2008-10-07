@@ -1,4 +1,4 @@
-255
+256
 SOAR_ID 0
 SOAR_ID 1
 SOAR_ID 2
@@ -254,7 +254,8 @@ SOAR_ID 251
 STRING 252
 FLOAT_RANGE 253 -Infinity Infinity
 FLOAT_RANGE 254 -Infinity Infinity
-324
+SOAR_ID 255
+331
 0 attribute 113
 0 choices 112
 0 desired 31
@@ -263,8 +264,6 @@ FLOAT_RANGE 254 -Infinity Infinity
 0 hiding 219
 0 io 1
 0 item 21
-0 message-update-time 155
-0 min-progress-distance 192
 0 mission 84
 0 move-to 46
 0 name 111
@@ -276,14 +275,11 @@ FLOAT_RANGE 254 -Infinity Infinity
 0 operator 167
 0 operator 169
 0 operator 201
-0 range-tolerance 233
-0 replan-time 23
+0 parameters 255
 0 rotate 200
-0 rotation-tolerance 185
 0 superstate 6
 0 top-state 0
 0 type 5
-0 waypoint-tolerance 189
 0 waypoints 30
 0 yaw-diff 199
 0 yaw-prediff 198
@@ -396,6 +392,7 @@ FLOAT_RANGE 254 -Infinity Infinity
 74 operator 78
 74 operator 80
 74 operator 149
+74 parameters 255
 74 superstate 0
 74 top-state 0
 74 type 75
@@ -412,6 +409,7 @@ FLOAT_RANGE 254 -Infinity Infinity
 81 operator 101
 81 operator 104
 81 operator 107
+81 parameters 255
 81 problem-space 58
 81 success 31
 81 superstate 74
@@ -486,6 +484,7 @@ FLOAT_RANGE 254 -Infinity Infinity
 150 operator 176
 150 operator 178
 150 operator 180
+150 parameters 255
 150 rotate 187
 150 superstate 74
 150 top-state 0
@@ -524,6 +523,7 @@ FLOAT_RANGE 254 -Infinity Infinity
 194 name 196
 194 operator 235
 194 operator 240
+194 parameters 255
 194 superoperator 104
 194 superstate 81
 194 top-state 0
@@ -535,6 +535,7 @@ FLOAT_RANGE 254 -Infinity Infinity
 205 io 1
 205 name 207
 205 operator 209
+205 parameters 255
 205 superoperator 176
 205 superstate 150
 205 top-state 0
@@ -545,6 +546,7 @@ FLOAT_RANGE 254 -Infinity Infinity
 210 io 1
 210 name 212
 210 operator 214
+210 parameters 255
 210 superoperator 178
 210 superstate 150
 210 top-state 0
@@ -579,3 +581,9 @@ FLOAT_RANGE 254 -Infinity Infinity
 251 id 252
 251 x 253
 251 y 254
+255 message-update-time 155
+255 min-progress-distance 192
+255 range-tolerance 233
+255 replan-time 23
+255 rotation-tolerance 185
+255 waypoint-tolerance 189

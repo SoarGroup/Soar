@@ -30,7 +30,7 @@ sp {elaborate*output-link*add-waypoints-for-map
 sp {elaborate*waypoints*at-waypoint
    (state <s> ^io.input-link.self.waypoints.waypoint <wi>
               ^waypoints <ws>
-              ^top-state.waypoint-tolerance <wpt>
+              ^parameters.waypoint-tolerance <wpt>
              -^name selection)
    (<wi> ^distance < <wpt>
          ^id <id>)

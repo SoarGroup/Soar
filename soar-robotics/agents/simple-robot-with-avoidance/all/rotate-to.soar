@@ -33,7 +33,7 @@ sp {elaborate*state*diff*no-correction-needed
 
 # this rule will prevent the proposal from matching and retracting repeatedly
 sp {elaborate*state*diff-outside-tolerance
-   (state <s> ^top-state.rotation-tolerance <rt>
+   (state <s> ^parameters.rotation-tolerance <rt>
               ^yaw-diff > <rt>)
 -->
    (<s> ^rotate true)

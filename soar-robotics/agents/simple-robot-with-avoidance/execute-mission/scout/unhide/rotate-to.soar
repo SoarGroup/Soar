@@ -11,7 +11,7 @@ sp {unhide*elaborate*state*desired-yaw
 
 sp {unhide*elaborate*superoperator*move-now
    (state <s> ^name unhide
-              ^top-state.rotation-tolerance <rt>
+              ^parameters.rotation-tolerance <rt>
               ^yaw-diff <= <rt>
               ^superoperator <so>)
 -->

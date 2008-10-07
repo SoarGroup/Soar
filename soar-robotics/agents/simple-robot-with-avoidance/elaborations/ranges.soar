@@ -1,6 +1,6 @@
 sp {go-to-waypoint*elaborate*range*blocked
    (state <s> ^name simple-robot
-              ^range-tolerance <rt>
+              ^parameters.range-tolerance <rt>
               ^io.input-link.ranges.range <r>)
    (<r> ^distance <= <rt>)
 -->
@@ -9,7 +9,7 @@ sp {go-to-waypoint*elaborate*range*blocked
 
 sp {go-to-waypoint*elaborate*range*not-blocked
    (state <s> ^name simple-robot
-              ^range-tolerance <rt>
+              ^parameters.range-tolerance <rt>
               ^io.input-link.ranges.range <r>)
    (<r> ^distance > <rt>)
 -->
