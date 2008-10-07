@@ -1,4 +1,4 @@
-0 all distances in meters, positive angles are left, negative angles right
+0 all distances in meters, angles in degrees, positive angles are left, negative angles right 
 
 0 
 0 
@@ -69,6 +69,7 @@
 
 0 robot length (x-extent)
 
+0 number of sections in the ranger data
 0 distance per odometry tick
 
 0 robot width (y-extent)
@@ -150,6 +151,7 @@
 0 
 0 percentage effort
 
+0 acceptable error in final heading
 0 desired final yaw
 
 0 

@@ -1,4 +1,4 @@
-82
+84
 SOAR_ID 0
 SOAR_ID 1
 SOAR_ID 2
@@ -81,7 +81,9 @@ ENUMERATION 78 2 complete error
 ENUMERATION 79 2 complete error
 FLOAT_RANGE 80 0.0 Infinity
 FLOAT_RANGE 81 0.0 Infinity
-93
+INTEGER_RANGE 82 1 2147483647
+FLOAT_RANGE 83 0.0 Infinity
+95
 0 io 1
 0 name 7
 0 operator 4
@@ -127,6 +129,7 @@ FLOAT_RANGE 81 0.0 Infinity
 12 stop 49
 14 baseline-meters 15
 14 length 81
+14 ranger-slices 82
 14 tick-meters 16
 14 width 80
 17 left 18
@@ -173,5 +176,6 @@ FLOAT_RANGE 81 0.0 Infinity
 53 status 77
 54 status 71
 54 throttle 69
+54 tolerance 83
 54 yaw 68
 55 status 79
