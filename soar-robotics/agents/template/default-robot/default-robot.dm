@@ -1,4 +1,4 @@
-84
+85
 SOAR_ID 0
 SOAR_ID 1
 SOAR_ID 2
@@ -83,7 +83,8 @@ FLOAT_RANGE 80 0.0 Infinity
 FLOAT_RANGE 81 0.0 Infinity
 INTEGER_RANGE 82 1 2147483647
 FLOAT_RANGE 83 0.0 Infinity
-95
+FLOAT_RANGE 84 0.0 180.0
+96
 0 io 1
 0 name 7
 0 operator 4
@@ -144,6 +145,7 @@ FLOAT_RANGE 83 0.0 Infinity
 26 y 28
 26 yaw 29
 31 waypoint 32
+32 abs-relative-bearing 84
 32 distance 37
 32 id 33
 32 relative-bearing 38

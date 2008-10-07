@@ -70,6 +70,7 @@
 0 robot length (x-extent)
 
 0 number of sections in the ranger data
+
 0 distance per odometry tick
 
 0 robot width (y-extent)
@@ -98,6 +99,7 @@
 
 0 a point
 
+0 absolute value of relative-bearing
 0 distance to waypoint
 
 0 agent-assigned identifier
@@ -152,6 +154,7 @@
 0 percentage effort
 
 0 acceptable error in final heading
+
 0 desired final yaw
 
 0 
