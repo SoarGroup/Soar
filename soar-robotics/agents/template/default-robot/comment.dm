@@ -100,6 +100,7 @@
 0 a point
 
 0 absolute value of relative-bearing
+
 0 distance to waypoint
 
 0 agent-assigned identifier

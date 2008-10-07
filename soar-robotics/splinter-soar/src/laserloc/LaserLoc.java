@@ -29,8 +29,8 @@ public class LaserLoc implements LCMSubscriber
 	public static double laser_y = 0;
 	public static double laser_yaw_adjust = 0; // amount to adjust for laser's yaw = 90 - laser's yaw = 0 if laser is facing positive y directly
 	public static double laser_dist_adjustment = 0; // radius of tube?
-	public static double translation_threshold = 0.05; // minimum translation distance to update x,y location, 0.05 total guess
-	public static String laser_channel = "LASER";
+	public static double translation_threshold = 0.1; // minimum translation distance to update x,y location, 0.05 total guess
+	public static String laser_channel = "LASER_LOC";
 	public static String pose_channel = "POSE";
 
 	// Even though this comes in each message, it may help the compiler optimize 
@@ -39,6 +39,7 @@ public class LaserLoc implements LCMSubscriber
 	// end constants
 	
 	// regular state
+	laser_t laser_data;
 	pose_t estimated_pose;
 
 	static boolean testing = false;
@@ -57,11 +58,17 @@ public class LaserLoc implements LCMSubscriber
 		}
 	}
 	
-	private void updatePose( laser_t laser_data )
+	private void updatePose()
 	{
 		if ( laser_data == null )
 		{
-			assert false;
+			try 
+			{
+				Thread.sleep( 50 );
+			} 
+			catch ( InterruptedException ignored ) 
+			{
+			}
 			return;
 		}
 		
@@ -75,12 +82,14 @@ public class LaserLoc implements LCMSubscriber
 				System.out.print( "initial: " );
 				printOldPose();
 			}
+			laser_data = null;
 			return;
 		}
 		
 		pose_t new_estimated_pose = getRobotXY( laser_data );
 		if ( new_estimated_pose == null )
 		{
+			laser_data = null;
 			return;
 		}
 		
@@ -115,6 +124,7 @@ public class LaserLoc implements LCMSubscriber
 				System.out.println( "Skipping update (beneath threshold)" );
 			}
 		}
+		laser_data = null;
 	}
 
 	private void printOldPose() 
@@ -154,14 +164,19 @@ public class LaserLoc implements LCMSubscriber
 	{
 		if ( channel.equals( laser_channel ) )
 		{
-	         try 
-	         {
-	        	 updatePose( new laser_t( ins ) );
-	          } 
-	         catch ( IOException ex ) 
-	          {
-	             System.out.println( "Error decoding laser message: " + ex );
-	          }
+			if ( laser_data != null )
+			{
+				return;
+			}
+			
+			try 
+			{
+				laser_data = new laser_t( ins );
+			} 
+			catch ( IOException ex ) 
+			{
+				System.out.println( "Error decoding laser message: " + ex );
+			}
 		}
 		
 	}
@@ -260,7 +275,8 @@ public class LaserLoc implements LCMSubscriber
 				for ( int current_test_data_index = 0; current_test_data_index < test_data[ current_test_index ].length; ++current_test_data_index )
 				{
 					System.out.print( "Test data " + current_test_data_index + ": ");
-					lloc.updatePose( test_data[ current_test_index ][ current_test_data_index ] );
+					lloc.laser_data = test_data[ current_test_index ][ current_test_data_index ];
+					lloc.updatePose();
 				}
 				
 			}
@@ -269,15 +285,10 @@ public class LaserLoc implements LCMSubscriber
 		}
 		
 		// Not testing
-		new LaserLoc( false );
+		lloc = new LaserLoc( false );
 		while ( true )
 		{
-			try
-			{
-				Thread.sleep( 500 );
-			} 
-			catch ( InterruptedException ignored )
-			{}
+			lloc.updatePose();
 		}
 	}
 

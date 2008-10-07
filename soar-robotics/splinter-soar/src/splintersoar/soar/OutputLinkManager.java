@@ -6,17 +6,21 @@ import splintersoar.*;
 public class OutputLinkManager {
 	
 	Agent agent;
+	Waypoints waypoints;
 	
 	SplinterState state;
 	
-	public OutputLinkManager( Agent agent, SplinterState state )
+	public OutputLinkManager( Agent agent, Waypoints waypoints, SplinterState state )
 	{
 		this.agent = agent;
+		this.waypoints = waypoints;
 		this.state = state;
 	}
 
 	public void update()
 	{
+		boolean motorsCommanded = false;
+		
 		// process output
 		for ( int i = 0; i < agent.GetNumberCommands(); ++i ) 
 		{
@@ -25,6 +29,12 @@ public class OutputLinkManager {
 			
 			if ( commandName.equals( "motor" ) )
 			{
+				if ( motorsCommanded )
+				{
+					// This is a warning
+					System.out.println( "Motor command received possibly overriding previous orders" );
+				}
+				
 				double leftCommand = 0;
 				double rightCommand = 0;
 		
@@ -78,12 +88,22 @@ public class OutputLinkManager {
 				{
 					state.left = leftCommand;
 					state.right = rightCommand;
+					state.targetYawEnabled = false;
 				}
+				
+				motorsCommanded = true;
 				commandId.AddStatusComplete();
 				continue;
 			}
 			else if ( commandName.equals( "move" ) )
 			{
+				if ( motorsCommanded )
+				{
+					System.out.println( "Move command received but motors already have orders" );
+					commandId.AddStatusError();
+					continue;
+				}
+				
 				String direction = commandId.GetParameterValue( "direction" );		
 				if ( direction == null )
 				{
@@ -119,6 +139,7 @@ public class OutputLinkManager {
 					{
 						state.left = throttle * -1;
 						state.right = throttle * -1;
+						state.targetYawEnabled = false;
 					}
 					
 				}
@@ -128,6 +149,7 @@ public class OutputLinkManager {
 					{
 						state.left = throttle;
 						state.right = throttle;
+						state.targetYawEnabled = false;
 					}
 					
 				}
@@ -137,6 +159,7 @@ public class OutputLinkManager {
 					{
 						state.left = 0;
 						state.right = 0;
+						state.targetYawEnabled = false;
 					}
 					
 				}
@@ -147,9 +170,19 @@ public class OutputLinkManager {
 					continue;
 				}
 				
+				motorsCommanded = true;
+				commandId.AddStatusComplete();
+				continue;
 			}
 			else if ( commandName.equals( "rotate" ) )
 			{
+				if ( motorsCommanded )
+				{
+					System.out.println( "Rotate command received but motors already have orders" );
+					commandId.AddStatusError();
+					continue;
+				}
+				
 				String direction = commandId.GetParameterValue( "direction" );		
 				if ( direction == null )
 				{
@@ -185,6 +218,7 @@ public class OutputLinkManager {
 					{
 						state.left = throttle * -1;
 						state.right = throttle;
+						state.targetYawEnabled = false;
 					}
 					
 				}
@@ -194,6 +228,7 @@ public class OutputLinkManager {
 					{
 						state.left = throttle;
 						state.right = throttle * -1;
+						state.targetYawEnabled = false;
 					}
 					
 				}
@@ -203,6 +238,7 @@ public class OutputLinkManager {
 					{
 						state.left = 0;
 						state.right = 0;
+						state.targetYawEnabled = false;
 					}
 					
 				}
@@ -212,16 +248,232 @@ public class OutputLinkManager {
 					commandId.AddStatusError();
 					continue;
 				}
+				
+				motorsCommanded = true;
+				commandId.AddStatusComplete();
+				continue;
+
+			}
+			else if ( commandName.equals( "rotate-to" ) )
+			{
+				if ( motorsCommanded )
+				{
+					System.out.println( "Rotate-to command received but motors already have orders" );
+					commandId.AddStatusError();
+					continue;
+				}
+				
+				double yaw = 0;
+				try 
+				{
+					yaw = Double.parseDouble( commandId.GetParameterValue( "yaw" ) );
+				} 
+				catch ( NullPointerException ex )
+				{
+					System.out.println( "No yaw on rotate-to command" );
+					commandId.AddStatusError();
+					continue;
+				}
+				catch ( NumberFormatException e ) 
+				{
+					System.out.println( "Unable to parse yaw: " + commandId.GetParameterValue( "yaw" ) );
+					commandId.AddStatusError();
+					continue;
+				}
+				
+				double tolerance = 0;
+				try 
+				{
+					tolerance = Double.parseDouble( commandId.GetParameterValue( "tolerance" ) );
+				} 
+				catch ( NullPointerException ex )
+				{
+					System.out.println( "No tolerance on rotate-to command" );
+					commandId.AddStatusError();
+					continue;
+				}
+				catch ( NumberFormatException e ) 
+				{
+					System.out.println( "Unable to parse tolerance: " + commandId.GetParameterValue( "tolerance" ) );
+					commandId.AddStatusError();
+					continue;
+				}
+
+				tolerance = Math.max( tolerance, 0 );
+				tolerance = Math.min( tolerance, 180 );
+				
+				double throttle = 0;
+				try 
+				{
+					throttle = Double.parseDouble( commandId.GetParameterValue( "throttle" ) );
+				} 
+				catch ( NullPointerException ex )
+				{
+					System.out.println( "No throttle on rotate-to command" );
+					commandId.AddStatusError();
+					continue;
+				}
+				catch ( NumberFormatException e ) 
+				{
+					System.out.println( "Unable to parse throttle: " + commandId.GetParameterValue( "throttle" ) );
+					commandId.AddStatusError();
+					continue;
+				}
+				
+				throttle = Math.max( throttle, 0 );
+				throttle = Math.min( throttle, 1.0 );
+				
+				synchronized ( state )
+				{
+					state.targetYaw = yaw;
+					state.targetYawTolerance = tolerance;
+					state.targetYawEnabled = true;
+					state.left = throttle;
+					state.right = throttle;
+				}
+				
+				motorsCommanded = true;
+				commandId.AddStatusComplete();
+				continue;
 
 			}
 			else if ( commandName.equals( "stop" ) )
 			{
+				if ( motorsCommanded )
+				{
+					// This is a warning
+					System.out.println( "Stop command received, possibly overriding previous orders" );
+				}
+				
 				synchronized ( state )
 				{
 					state.left = 0;
 					state.right = 0;
+					state.targetYawEnabled = false;
 				}
 				
+				motorsCommanded = true;
+				commandId.AddStatusComplete();
+				continue;
+				
+			}
+			else if ( commandName.equals( "add-waypoint" ) )
+			{
+				SplinterState stateCopy;
+				synchronized ( state )
+				{
+					stateCopy = new SplinterState( state );
+				}
+
+				String name = commandId.GetParameterValue( "name" );
+				if ( name == null )
+				{
+					System.out.println( "No name on add-waypoint command" );
+					commandId.AddStatusError();
+					continue;
+				}
+				
+				double x = stateCopy.x;
+				try 
+				{
+					x = Double.parseDouble( commandId.GetParameterValue( "x" ) );
+				} 
+				catch ( NullPointerException ignored )
+				{
+					// no x param is ok, use current
+				}
+				catch ( NumberFormatException e ) 
+				{
+					System.out.println( "Unable to parse x: " + commandId.GetParameterValue( "x" ) );
+					commandId.AddStatusError();
+					continue;
+				}
+
+				double y = stateCopy.y;
+				try 
+				{
+					y = Double.parseDouble( commandId.GetParameterValue( "y" ) );
+				} 
+				catch ( NullPointerException ignored )
+				{
+					// no y param is ok, use current
+				}
+				catch ( NumberFormatException e ) 
+				{
+					System.out.println( "Unable to parse y: " + commandId.GetParameterValue( "y" ) );
+					commandId.AddStatusError();
+					continue;
+				}
+
+				waypoints.add( x, y, name );
+				
+				commandId.AddStatusComplete();
+				continue;
+			}
+			else if ( commandName.equals( "remove-waypoint" ) )
+			{
+				String name = commandId.GetParameterValue( "name" );
+				if ( name == null )
+				{
+					System.out.println( "No name on remove-waypoint command" );
+					commandId.AddStatusError();
+					continue;
+				}
+				
+				if ( waypoints.remove( name ) == false )
+				{
+					System.out.println( "Unable to remove waypoint " + name + ", no such waypoint" );
+					commandId.AddStatusError();
+					continue;
+				}
+				
+				commandId.AddStatusComplete();
+				continue;
+			}
+			else if ( commandName.equals( "enable-waypoint" ) )
+			{
+				String name = commandId.GetParameterValue( "name" );
+				if ( name == null )
+				{
+					System.out.println( "No name on enable-waypoint command" );
+					commandId.AddStatusError();
+					continue;
+				}
+				
+				if ( waypoints.enable( name ) == false )
+				{
+					System.out.println( "Unable to enable waypoint " + name + ", no such waypoint" );
+					commandId.AddStatusError();
+					continue;
+				}
+				
+				commandId.AddStatusComplete();
+				continue;
+			}
+			else if ( commandName.equals( "disable-waypoint" ) )
+			{
+				String name = commandId.GetParameterValue( "name" );
+				if ( name == null )
+				{
+					System.out.println( "No name on disable-waypoint command" );
+					commandId.AddStatusError();
+					continue;
+				}
+				
+				if ( waypoints.disable( name ) == false )
+				{
+					System.out.println( "Unable to disable waypoint " + name + ", no such waypoint" );
+					commandId.AddStatusError();
+					continue;
+				}
+				
+				commandId.AddStatusComplete();
+				continue;
+			}
+			else if ( commandName.equals( "broadcast-message" ) )
+			{
+				System.out.println( "broadcast-message command not implemented, ignoring" );
+				continue;
 			}
 			
 			System.out.println( "Unknown command: " + commandName );

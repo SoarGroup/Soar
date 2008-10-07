@@ -33,8 +33,9 @@ public class SoarInterface implements Kernel.UpdateEventInterface
 		// load productions
 		agent.LoadProductions( "agents/simple-bot.soar" );
 		
-		input = new InputLinkManager( agent, state );
-		output = new OutputLinkManager( agent, state );
+		Waypoints waypoints = new Waypoints( agent );
+		input = new InputLinkManager( agent, waypoints, state );
+		output = new OutputLinkManager( agent, waypoints, state );
 		
 		kernel.RegisterForUpdateEvent( smlUpdateEventId.smlEVENT_AFTER_ALL_GENERATED_OUTPUT, this, null );
 	}

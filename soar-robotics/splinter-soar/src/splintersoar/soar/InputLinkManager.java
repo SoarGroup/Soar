@@ -6,34 +6,61 @@ import splintersoar.*;
 public class InputLinkManager {
 
 	Agent agent;
+	Waypoints waypoints;
 
 	Identifier override;
 	StringElement override_active;
 	Identifier override_motor;
 	FloatElement override_motor_left;
 	FloatElement override_motor_right;
-	
+
+	Identifier ranges;
+
+	Identifier self;
 	FloatElement self_motor_left_current;
 	IntElement self_motor_left_position;
 	FloatElement self_motor_left_velocity;
 	FloatElement self_motor_right_current;
 	IntElement self_motor_right_position;
 	FloatElement self_motor_right_velocity;
-
-	IntElement time_seconds;
-	IntElement time_microseconds;
-
 	FloatElement self_pose_x;
 	FloatElement self_pose_y;
 	FloatElement self_pose_z;
 	FloatElement self_pose_yaw;
-	
+	StringElement self_name;
+	Identifier self_waypoints;
+
+	Identifier time;
+	IntElement time_seconds;
+	IntElement time_microseconds;
+
 	SplinterState state;
 	long lastTime = 0;
 	
 	OverrideInterface overrideInterface;
+	SoarTime soarTime;
+	
+	class SoarTime
+	{
+		int seconds;
+		int microseconds;
+		final static long nanosecondsPerSecond = 1000000000;
+		
+		SoarTime()
+		{
+			update();
+		}
+		
+		void update()
+		{
+			long current = System.nanoTime();
+			seconds = (int)( current / nanosecondsPerSecond );
+			microseconds = (int)( current % nanosecondsPerSecond );
+			microseconds /= 1000;
+		}
+	}
 
-	public InputLinkManager( Agent agent, SplinterState state )
+	public InputLinkManager( Agent agent, Waypoints waypoints, SplinterState state )
 	{
 		this.agent = agent;
 		this.state = state;
@@ -63,79 +90,69 @@ public class InputLinkManager {
 		SplinterSoar.logger.fine( "Initializing input link" );
 		Identifier inputLink = agent.GetInputLink();
 		
-		// override
-		//     active [false true]
-		//         ?motor
-		//             left [-1.0..1.0]
-		//             right [-1.0..1.0]
+		// Please see default-robot.vsa for input link definition and comments!
+		
 		{
 			override = agent.CreateIdWME( inputLink, "override" );
 			override_active = agent.CreateStringWME( override, "active", "false" );
 		}
 		
-		// self
-		//     geometry
-		//         baseline-meters [0.0..]
-		//         tick-meters [0.0..]
-		//     motor
-		//         left
-		//             current [0.0..]
-		//             position [float]
-		//             velocity [float] may only be positive (and not indicate direction), check
-		//         right 
-		//             current [0.0..]
-		//             position [float]
-		//             velocity [float] may only be positive (and not indicate direction), check
-		//     pose
-		//             x [float]
-		//             y [float]
-		//             z [float]
-		//             yaw [float]
 		{
-			Identifier self = agent.CreateIdWME( inputLink, "self" );
+			ranges = agent.CreateIdWME( inputLink, "ranges" );
+		}
+		
+		{
+			self = agent.CreateIdWME( inputLink, "self" );
 
 			{
 				Identifier self_geometry = agent.CreateIdWME( self, "geometry" );
 				
 				agent.CreateFloatWME( self_geometry, "baseline-meters", state.baselineMeters );
 				agent.CreateFloatWME( self_geometry, "tick-meters", state.tickMeters );
+				agent.CreateFloatWME( self_geometry, "length", state.length );
+				agent.CreateFloatWME( self_geometry, "width", state.width );
+				agent.CreateIntWME( self_geometry, "ranger-slices", state.rangerSlices );
 			}
 			
 			{
 				Identifier self_motor = agent.CreateIdWME( self, "motor" );
 				
 				Identifier self_motor_left = agent.CreateIdWME( self_motor, "left" );
-				self_motor_left_current = agent.CreateFloatWME( self_motor_left, "current", stateCopy.leftCurrent );
-				self_motor_left_position = agent.CreateIntWME( self_motor_left, "position", stateCopy.leftPosition );
-				self_motor_left_velocity = agent.CreateFloatWME( self_motor_left, "velocity", stateCopy.leftVelocity );
-
+				{
+					self_motor_left_current = agent.CreateFloatWME( self_motor_left, "current", stateCopy.leftCurrent );
+					self_motor_left_position = agent.CreateIntWME( self_motor_left, "position", stateCopy.leftPosition );
+					self_motor_left_velocity = agent.CreateFloatWME( self_motor_left, "velocity", stateCopy.leftVelocity );
+				}
+				
 				Identifier self_motor_right = agent.CreateIdWME( self_motor, "right" );
-				self_motor_right_current = agent.CreateFloatWME( self_motor_right, "current", stateCopy.rightCurrent );
-				self_motor_right_position = agent.CreateIntWME( self_motor_right, "position", stateCopy.rightPosition );
-				self_motor_right_velocity = agent.CreateFloatWME( self_motor_right, "velocity", stateCopy.rightVelocity );
+				{
+					self_motor_right_current = agent.CreateFloatWME( self_motor_right, "current", stateCopy.rightCurrent );
+					self_motor_right_position = agent.CreateIntWME( self_motor_right, "position", stateCopy.rightPosition );
+					self_motor_right_velocity = agent.CreateFloatWME( self_motor_right, "velocity", stateCopy.rightVelocity );
+				}
 			}
 			
+			self_name = agent.CreateStringWME( self, "name", agent.GetAgentName() );
+
 			{
 				Identifier self_pose = agent.CreateIdWME( self, "pose" );
-				
-				self_pose_x = agent.CreateFloatWME( self_pose, "x", stateCopy.x );
-				self_pose_y = agent.CreateFloatWME( self_pose, "y", stateCopy.y );
-				self_pose_yaw = agent.CreateFloatWME( self_pose, "yaw", stateCopy.yaw );
+				{
+					self_pose_x = agent.CreateFloatWME( self_pose, "x", stateCopy.x );
+					self_pose_y = agent.CreateFloatWME( self_pose, "y", stateCopy.y );
+					self_pose_yaw = agent.CreateFloatWME( self_pose, "yaw", stateCopy.yaw );
+				}
 			}
+			
+			self_waypoints = agent.CreateIdWME( self, "waypoints" );
+			waypoints.setRootIdentifier( self_waypoints );
 		}
 		
-		// time
-		//     seconds
-		//     microseconds
 		{
-			Identifier time = agent.CreateIdWME( inputLink, "time" );
+			time = agent.CreateIdWME( inputLink, "time" );
 
-			int seconds = (int)( System.nanoTime() / 1000000000 );
-			int microseconds = (int)( System.nanoTime() % 1000000000 );
-			microseconds /= 1000;
-			
-			time_seconds = agent.CreateIntWME( time, "seconds",  seconds);
-			time_microseconds = agent.CreateIntWME( time, "microseconds", microseconds );
+			soarTime = new SoarTime();
+			time_seconds = agent.CreateIntWME( time, "seconds",  soarTime.seconds );
+			time_microseconds = agent.CreateIntWME( time, "microseconds", soarTime.microseconds );
 		}
 		
 		agent.Commit();
@@ -178,12 +195,9 @@ public class InputLinkManager {
 	
 	void updateTime()
 	{
-		int seconds = (int)( System.nanoTime() / 1000000000 );
-		int microseconds = (int)( System.nanoTime() % 1000000000 );
-		microseconds /= 1000;
-		
-		agent.Update( time_seconds, seconds );
-		agent.Update( time_microseconds, microseconds );
+		soarTime.update();
+		agent.Update( time_seconds, soarTime.seconds );
+		agent.Update( time_microseconds, soarTime.microseconds );
 	}
 	
 	public void update()

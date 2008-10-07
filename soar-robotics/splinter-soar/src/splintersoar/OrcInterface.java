@@ -10,6 +10,7 @@ import erp.geom.Geometry;
 
 import lcm.lcm.LCM;
 import lcm.lcm.LCMSubscriber;
+import lcmtypes.laser_t;
 import lcmtypes.pose_t;
 
 import orc.Motor;
@@ -29,6 +30,9 @@ public class OrcInterface implements LCMSubscriber
 	private QuadratureEncoder leftOdom;
 	private QuadratureEncoder rightOdom;
 	
+	pose_t pose;
+	laser_t laserData;
+	SplinterState.RangerData [] rangerData = new SplinterState.RangerData[ state.rangerSlices ];
 	int leftPreviousPosition = 0;
 	int rightPreviousPosition = 0;
 	
@@ -62,11 +66,15 @@ public class OrcInterface implements LCMSubscriber
 		@Override
 		public void run()
 		{
-			double left, right, prevX, prevY, prevYaw;
+			double left, right, targetYaw, targetYawTolerance, prevX, prevY, prevYaw;
+			boolean targetYawEnabled;
 			synchronized ( state )
 			{
 				left = state.left;
 				right = state.right;
+				targetYaw = state.targetYaw;
+				targetYawTolerance = state.targetYawTolerance;
+				targetYawEnabled = state.targetYawEnabled;
 				
 				prevX = state.x;
 				prevY = state.y;
@@ -87,38 +95,117 @@ public class OrcInterface implements LCMSubscriber
 			double rightVelocity = rightOdom.getVelocity() * state.tickMeters;
 
 			// write new commands
-			leftMotor.setPWM( left );
-			rightMotor.setPWM( right );
+			if ( targetYawEnabled == false )
+			{
+				leftMotor.setPWM( left );
+				rightMotor.setPWM( right );
+			} 
+			//// end orc communication (more after yaw calculation)
+
+			double thetaprime, xprime, yprime;
+			if ( pose != null )
+			{
+				thetaprime = Geometry.quatToRollPitchYaw( pose.orientation )[2];
+				xprime = pose.pos[0];
+				yprime = pose.pos[1];
+				
+				pose = null;
+			}
+			else
+			{
+				// Equations from A Primer on Odopmetry and Motor Control, Olson 2006
+				// dleft, dright: distance wheel travelled
+				// dbaseline: wheelbase
+				//
+				// dcenter = ( dleft + dright ) / 2
+				// phi = ( dright - dleft ) / dbaseline
+				// thetaprime = theta + phi
+				// xprime = x + ( dcenter * cos( theta ) )
+				// yprime = y + ( dcenter * sin( theta ) )
+				
+				double dleft = ( leftPosition - leftPreviousPosition ) * state.tickMeters;
+				double dright = ( rightPosition - rightPreviousPosition ) * state.tickMeters;
+				double dcenter = ( dleft + dright ) / 2;
+				
+				double phi = ( dright - dleft ) / state.baselineMeters;
+				
+				double theta = prevYaw;
+				
+				thetaprime = theta + phi;
+				xprime = prevX + ( dcenter * Math.cos( theta ) );
+				yprime = prevY + ( dcenter * Math.sin( theta ) );
+			}
+			
+			//// start orc communication
+			if ( targetYawEnabled )
+			{
+				double angleOff = targetYaw - thetaprime;
+				while ( angleOff < 0 )
+				{
+					angleOff += 360;
+				}
+				angleOff %= 360;
+				
+				if ( angleOff < targetYawTolerance )
+				{
+					leftMotor.setPWM( left );
+					rightMotor.setPWM( right * -1 );
+				}
+				else if ( angleOff > targetYawTolerance )
+				{
+					leftMotor.setPWM( left * -1 );
+					rightMotor.setPWM( right );
+				}
+				else
+				{
+					targetYawEnabled = false;
+					left = 0;
+					right = 0;
+					leftMotor.setPWM( left );
+					rightMotor.setPWM( right );
+				}
+			} 
 			//// end orc communication
 
-			// Equations from A Primer on Odopmetry and Motor Control, Olson 2006
-			// dleft, dright: distance wheel travelled
-			// dbaseline: wheelbase
-			//
-			// dcenter = ( dleft + dright ) / 2
-			// phi = ( dright - dleft ) / dbaseline
-			// thetaprime = theta + phi
-			// xprime = x + ( dcenter * cos( theta ) )
-			// yprime = y + ( dcenter * sin( theta ) )
-			
-			double dleft = ( leftPosition - leftPreviousPosition ) * state.tickMeters;
-			double dright = ( rightPosition - rightPreviousPosition ) * state.tickMeters;
-			double dcenter = ( dleft + dright ) / 2;
-			
-			double phi = ( dright - dleft ) / state.baselineMeters;
-			
-			double theta = prevYaw;
-			double thetaprime = theta + phi;
-			double xprime = prevX + ( dcenter * Math.cos( theta ) );
-			double yprime = prevY + ( dcenter * Math.sin( theta ) );
-			
 			leftPreviousPosition = leftPosition;
 			rightPreviousPosition = rightPosition;
+
+			//// ranger update
+			if ( laserData != null )
+			{
+				// FIXME verify this is general, I think sliceChunk must have no remainder
+				assert state.rangerSlices == 5;
+				
+				int sliceChunk = laserData.nranges / state.rangerSlices; // a round number with 180/5 (36)
+				
+				for ( int slice = 0, index = 0; slice < state.rangerSlices; ++slice )
+				{
+					rangerData[ slice ].start = laserData.rad0 + index * laserData.radstep;
+
+					double smallest_range = Double.MAX_VALUE;
+					
+					for ( ; index < sliceChunk * state.rangerSlices; ++index )
+					{
+						if ( laserData.ranges[ index ] < smallest_range )
+						{
+							smallest_range = laserData.ranges[ index ];
+						}
+					}
+					
+					rangerData[ slice ].end = laserData.rad0 + ( index - 1 ) * laserData.radstep;
+					rangerData[ slice ].distance = smallest_range;
+				}
+			}
+			//// end ranger update
 			
 			long utime = System.nanoTime() / 1000;			
 			synchronized ( state )
 			{
 				state.utime = utime;
+				
+				state.targetYawEnabled = targetYawEnabled;
+				state.left = left;
+				state.right = right;
 
 				state.leftCurrent = leftCurrent;
 				state.leftPosition = leftPosition;
@@ -128,10 +215,17 @@ public class OrcInterface implements LCMSubscriber
 				state.rightPosition = rightPosition;
 				state.rightVelocity = rightVelocity;
 				
+				if ( laserData != null )
+				{
+					state.ranger = Arrays.copyOf( rangerData, rangerData.length );
+				}
+				
 				state.x = xprime;
 				state.y = yprime;
 				state.yaw = thetaprime;
 			}
+
+			laserData = null;
 		}
 	}
 	
@@ -140,28 +234,34 @@ public class OrcInterface implements LCMSubscriber
 	{
 		if ( channel.equals( LaserLoc.pose_channel ) )
 		{
+			if ( pose != null )
+			{
+				return;
+			}
+
 			try 
 			{
-				pose_t pose = new pose_t( ins );
-				
-				long utime = System.nanoTime() / 1000;
-				double yaw = Geometry.quatToRollPitchYaw( pose.orientation )[2];
-
-				// FIXME: possibly slow
-				//leftPreviousPosition = leftOdom.getPosition();
-				//rightPreviousPosition = rightOdom.getPosition();
-				
-				synchronized ( state )
-				{
-					state.utime = utime;
-					state.x = pose.pos[0];
-					state.y = pose.pos[1];
-					state.yaw = yaw;
-				}
+				pose = new pose_t( ins );
 			} 
 			catch ( IOException ex ) 
 			{
 				System.out.println( "Error decoding pose message: " + ex );
+			}
+		}
+		else if ( channel.equals( "LASER_FRONT" ) )
+		{
+			if ( laserData != null )
+			{
+				return;
+			}
+			
+			try 
+			{
+				laserData = new laser_t( ins );
+			} 
+			catch ( IOException ex ) 
+			{
+				System.out.println( "Error decoding LASER_FRONT message: " + ex );
 			}
 		}
 	}
