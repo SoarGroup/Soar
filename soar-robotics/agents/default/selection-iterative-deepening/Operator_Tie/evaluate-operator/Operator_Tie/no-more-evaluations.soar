@@ -1,0 +1,21 @@
+sp {selection*propose*no-more-evaluations
+   (state <s> ^name selection
+              ^top-selection false
+              ^remaining-operators 0)
+-->
+   (<s> ^operator <op> + =)
+   (<op> ^name no-more-evaluations)
+}
+sp {apply*increment-no-more-evaluations
+   (state <s> ^operator <op>
+              ^superstate.superstate <ss>
+              ^superstate.superstate.operator <o>)
+   (<ss> ^unevaluated-operator <u>)
+   (<o> ^name evaluate-operator
+        ^evaluation <e>
+        ^superoperator <u>)
+   (<op> ^name no-more-evaluations)
+-->
+   (<e> ^symbolic-value depth-exceeded)
+   (<ss> ^unevaluated-operator <u> -)
+}

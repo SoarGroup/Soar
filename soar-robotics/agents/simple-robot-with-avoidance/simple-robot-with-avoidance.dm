@@ -1,4 +1,4 @@
-258
+257
 SOAR_ID 0
 SOAR_ID 1
 SOAR_ID 2
@@ -235,29 +235,28 @@ FLOAT_RANGE 232 0.0 Infinity
 INTEGER_RANGE 233 -2147483648 2147483647
 FLOAT_RANGE 234 0.0 Infinity
 FLOAT_RANGE 235 0.0 Infinity
-FLOAT_RANGE 236 0.0 180.0
-ENUMERATION 237 1 rotate-to
-SOAR_ID 238
+ENUMERATION 236 1 rotate-to
+SOAR_ID 237
+FLOAT_RANGE 238 -Infinity Infinity
 FLOAT_RANGE 239 -Infinity Infinity
 FLOAT_RANGE 240 -Infinity Infinity
-FLOAT_RANGE 241 -Infinity Infinity
-ENUMERATION 242 1 action
+ENUMERATION 241 1 action
+SOAR_ID 242
 SOAR_ID 243
-SOAR_ID 244
-FLOAT_RANGE 245 -Infinity Infinity
-FLOAT_RANGE 246 0.0 1.0
-SOAR_ID 247
+FLOAT_RANGE 244 -Infinity Infinity
+FLOAT_RANGE 245 0.0 1.0
+SOAR_ID 246
+FLOAT_RANGE 247 -Infinity Infinity
 FLOAT_RANGE 248 -Infinity Infinity
-FLOAT_RANGE 249 -Infinity Infinity
-FLOAT_RANGE 250 0.0 1.0
-ENUMERATION 251 2 false true
-SOAR_ID 252
-FLOAT_RANGE 253 0.0 Infinity
-SOAR_ID 254
-STRING 255
+FLOAT_RANGE 249 0.0 1.0
+ENUMERATION 250 2 false true
+SOAR_ID 251
+FLOAT_RANGE 252 0.0 Infinity
+SOAR_ID 253
+STRING 254
+FLOAT_RANGE 255 -Infinity Infinity
 FLOAT_RANGE 256 -Infinity Infinity
-FLOAT_RANGE 257 -Infinity Infinity
-326
+325
 0 attribute 113
 0 choices 112
 0 desired 31
@@ -296,13 +295,13 @@ FLOAT_RANGE 257 -Infinity Infinity
 2 ranges 229
 2 self 26
 2 time 24
-3 add-waypoint 254
+3 add-waypoint 253
 3 broadcast-message 123
 3 move 8
-3 move-to 247
+3 move-to 246
 3 remove-message 125
 3 rotate 9
-3 rotate-to 244
+3 rotate-to 243
 3 stop 10
 4 name 7
 8 direction 11
@@ -526,8 +525,8 @@ FLOAT_RANGE 257 -Infinity Infinity
 194 desired-yaw 205
 194 io 1
 194 name 196
-194 operator 238
-194 operator 243
+194 operator 237
+194 operator 242
 194 superoperator 104
 194 superstate 81
 194 top-state 0
@@ -556,31 +555,30 @@ FLOAT_RANGE 257 -Infinity Infinity
 212 yaw-diff 223
 216 name 215
 224 waypoint 225
-225 abs-relative-bearing 236
 225 distance 232
 225 id 231
 225 relative-bearing 228
-225 relative-heading 239
+225 relative-heading 238
 225 x 226
 225 y 227
 229 range 230
-230 action 252
-230 blocked 251
+230 action 251
+230 blocked 250
 230 distance 234
-230 end 241
+230 end 240
 230 id 233
-230 start 240
-238 name 237
-243 action 252
-243 distance 253
-243 name 242
-244 throttle 246
-244 yaw 245
-247 throttle 250
-247 x 248
-247 y 249
-252 move 8
-252 rotate 9
-254 id 255
-254 x 256
-254 y 257
+230 start 239
+237 name 236
+242 action 251
+242 distance 252
+242 name 241
+243 throttle 245
+243 yaw 244
+246 throttle 249
+246 x 247
+246 y 248
+251 move 8
+251 rotate 9
+253 id 254
+253 x 255
+253 y 256
