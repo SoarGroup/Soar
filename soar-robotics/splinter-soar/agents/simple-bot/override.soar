@@ -2,12 +2,12 @@ sp {simple-bot*propose*override
    (state <s> ^name simple-bot
               ^io.input-link.override <over>)
    (<over>    ^active true
-              ^move.left <left>
-              ^move.right <right>)
+              ^motor.left <left>
+              ^motor.right <right>)
 -->
    (<s> ^operator <op> + >)
    (<op> ^name override
-         ^move <move>)
+         ^motor <move>)
    (<move> ^left <left>
            ^right <right>)
 }
@@ -15,11 +15,11 @@ sp {simple-bot*propose*override
 sp {simple-bot*apply*override
    (state <s> ^operator <o>
               ^io.output-link <ol>)
-   (<o> ^move <move>)
+   (<o> ^motor <move>)
    (<move> ^left <left>
            ^right <right>)
 -->
-   (<ol> ^move <move>)
+   (<ol> ^motor <move>)
    (<move> ^left <left>
           ^right <right>)
 }

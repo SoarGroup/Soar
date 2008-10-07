@@ -28,7 +28,7 @@ public class OutputLinkManager {
 				double leftCommand = 0;
 				double rightCommand = 0;
 		
-				//System.out.print( "move: " );
+				//System.out.print( "motor: " );
 				try 
 				{
 					leftCommand = Double.parseDouble( commandId.GetParameterValue( "left" ) );

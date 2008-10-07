@@ -41,8 +41,8 @@ public class LaserLoc implements LCMSubscriber
 	// regular state
 	pose_t estimated_pose;
 
-	static boolean testing = true;
-	static boolean verbose = true;
+	static boolean testing = false;
+	static boolean verbose = false;
 	
 	LCM lcm;
 	
@@ -106,10 +106,7 @@ public class LaserLoc implements LCMSubscriber
 				lcm.publish( "POSE", estimated_pose );
 			}
 
-			if ( verbose )
-			{
-				printOldPose();
-			}
+			printOldPose();
 		}
 		else
 		{

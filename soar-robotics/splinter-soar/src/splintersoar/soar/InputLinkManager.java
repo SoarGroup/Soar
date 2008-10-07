@@ -9,9 +9,9 @@ public class InputLinkManager {
 
 	Identifier override;
 	StringElement override_active;
-	Identifier override_move;
-	FloatElement override_move_left;
-	FloatElement override_move_right;
+	Identifier override_motor;
+	FloatElement override_motor_left;
+	FloatElement override_motor_right;
 	
 	FloatElement self_motor_left_current;
 	IntElement self_motor_left_position;
@@ -151,27 +151,27 @@ public class InputLinkManager {
 		if ( override == null )
 		{
 			agent.Update( override_active, "false" );
-			if ( override_move != null )
+			if ( override_motor != null )
 			{
-				agent.DestroyWME( override_move );
-				override_move = null;
-				override_move_left = null;
-				override_move_right = null;
+				agent.DestroyWME( override_motor );
+				override_motor = null;
+				override_motor_left = null;
+				override_motor_right = null;
 			}
 		}
 		else
 		{
 			agent.Update( override_active, "true" );
-			if ( override_move == null )
+			if ( override_motor == null )
 			{
-				override_move = agent.CreateIdWME( override, "move" );
-				override_move_left = agent.CreateFloatWME( override_move, "left", overrideInterface.getLeft() );
-				override_move_right = agent.CreateFloatWME( override_move, "right", overrideInterface.getRight() );
+				override_motor = agent.CreateIdWME( override, "motor" );
+				override_motor_left = agent.CreateFloatWME( override_motor, "left", overrideInterface.getLeft() );
+				override_motor_right = agent.CreateFloatWME( override_motor, "right", overrideInterface.getRight() );
 			}
 			else
 			{
-				agent.Update( override_move_left, overrideInterface.getLeft() );
-				agent.Update( override_move_right, overrideInterface.getRight() );
+				agent.Update( override_motor_left, overrideInterface.getLeft() );
+				agent.Update( override_motor_right, overrideInterface.getRight() );
 			}
 		}
 	}
