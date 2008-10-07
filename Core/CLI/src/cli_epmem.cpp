@@ -263,13 +263,6 @@ bool CommandLineInterface::DoEpMem( const char pOp, const std::string* pAttr, co
 		temp = "indexing: ";
 		temp += epmem_get_parameter( m_pAgentSoar, (const long) EPMEM_PARAM_INDEXING, EPMEM_RETURN_STRING );
 		if ( m_RawOutput )
-			m_Result << temp << "\n";
-		else
-			AppendArgTagFast( sml_Names::kParamValue, sml_Names::kTypeString, temp.c_str() );
-		
-		temp = "provenance: ";
-		temp += epmem_get_parameter( m_pAgentSoar, (const long) EPMEM_PARAM_PROVENANCE, EPMEM_RETURN_STRING );
-		if ( m_RawOutput )
 			m_Result << temp << "\n\n";
 		else
 		{
@@ -512,7 +505,7 @@ bool CommandLineInterface::DoEpMem( const char pOp, const std::string* pAttr, co
 			{
 				output = epmem_get_timer_name( m_pAgentSoar, (const long) i );
 				output += ": ";
-				temp = epmem_get_timer( m_pAgentSoar, (const long) i );
+				temp = epmem_get_timer_value( m_pAgentSoar, (const long) i );
 				temp_str = to_string( temp );
 				output += (*temp_str);
 				delete temp_str;
@@ -524,7 +517,7 @@ bool CommandLineInterface::DoEpMem( const char pOp, const std::string* pAttr, co
 		}
 		else
 		{
-			double temp = epmem_get_timer( m_pAgentSoar, pAttr->c_str() );
+			double temp = epmem_get_timer_value( m_pAgentSoar, pAttr->c_str() );
 			std::string *temp_str = to_string( temp );
 			std::string output = (*temp_str);
 			delete temp_str;
