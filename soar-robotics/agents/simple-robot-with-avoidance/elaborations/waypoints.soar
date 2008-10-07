@@ -5,11 +5,11 @@ sp {apply*waypoints
    (<s> ^waypoints <w>)
    (<w> ^waypoint <w1> <w2> <w3> <w4> <w5> <w6>)
    (<w1> ^x 0 ^y 0 ^id 1 ^next <w2> <w6>)
-   (<w2> ^x 2 ^y 1 ^id 2 ^next <w1> <w3>)
-   (<w3> ^x 4 ^y 1 ^id 3 ^next <w2> <w4>)
+   (<w2> ^x 2 ^y 1 ^id 2 ^next <w1> <w3> <w6>)
+   (<w3> ^x 4 ^y 1 ^id 3 ^next <w2> <w4> <w5>)
    (<w4> ^x 5 ^y 0 ^id 4 ^next <w3> <w5>)
-   (<w5> ^x 4 ^y -1 ^id 5 ^next <w4> <w6>)
-   (<w6> ^x 2 ^y -1 ^id 6 ^next <w5> <w1>)
+   (<w5> ^x 4 ^y -1 ^id 5 ^next <w3> <w4> <w6>)
+   (<w6> ^x 2 ^y -1 ^id 6 ^next <w1> <w2> <w5>)
 }
 
 # this will automatically retract as soon as there is a corresponding waypoint on the input-link
