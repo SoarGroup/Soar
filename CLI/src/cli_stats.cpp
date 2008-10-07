@@ -231,7 +231,7 @@ void CommandLineInterface::GetSystemStats()
 		<< m_pAgentSoar->num_productions_of_type[USER_PRODUCTION_TYPE] << " user, "
 		<< m_pAgentSoar->num_productions_of_type[CHUNK_PRODUCTION_TYPE] << " chunks)\n";
 
-	m_Result << "   + " << m_pAgentSoar->num_productions_of_type[CHUNK_PRODUCTION_TYPE] << " justifications\n";
+	m_Result << "   + " << m_pAgentSoar->num_productions_of_type[JUSTIFICATION_PRODUCTION_TYPE] << " justifications\n";
 
 	/* The fields for the timers are 8.3, providing an upper limit of 
 	approximately 2.5 hours the printing of the run time calculations.  
