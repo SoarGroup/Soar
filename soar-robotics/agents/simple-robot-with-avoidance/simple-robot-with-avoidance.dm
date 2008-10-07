@@ -1,4 +1,4 @@
-256
+261
 SOAR_ID 0
 SOAR_ID 1
 SOAR_ID 2
@@ -255,7 +255,12 @@ STRING 252
 FLOAT_RANGE 253 -Infinity Infinity
 FLOAT_RANGE 254 -Infinity Infinity
 SOAR_ID 255
-331
+FLOAT_RANGE 256 0.0 180.0
+ENUMERATION 257 2 complete error
+FLOAT_RANGE 258 0.0 Infinity
+ENUMERATION 259 2 complete error
+ENUMERATION 260 2 complete error
+336
 0 attribute 113
 0 choices 112
 0 desired 31
@@ -458,6 +463,7 @@ SOAR_ID 255
 123 next 123
 123 word 124
 125 id 126
+125 status 260
 128 io 1
 128 name 130
 128 operator 132
@@ -554,6 +560,7 @@ SOAR_ID 255
 210 yaw-diff 221
 214 name 213
 222 waypoint 223
+223 abs-relative-bearing 256
 223 distance 230
 223 id 229
 223 relative-bearing 226
@@ -571,7 +578,9 @@ SOAR_ID 255
 240 action 249
 240 distance 250
 240 name 239
+241 status 259
 241 throttle 243
+241 tolerance 258
 241 yaw 242
 244 throttle 247
 244 x 245
@@ -579,6 +588,7 @@ SOAR_ID 255
 249 move 8
 249 rotate 9
 251 id 252
+251 status 257
 251 x 253
 251 y 254
 255 message-update-time 155
