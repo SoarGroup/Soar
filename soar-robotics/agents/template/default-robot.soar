@@ -1,0 +1,3 @@
+pushd default-robot
+source default-robot_source.soar
+popd
