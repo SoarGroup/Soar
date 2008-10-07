@@ -187,6 +187,7 @@ public class InputLinkManager {
 			}
 			else
 			{
+				//System.out.print( overrideInterface.getLeft() + "                   \r" );
 				agent.Update( override_motor_left, overrideInterface.getLeft() );
 				agent.Update( override_motor_right, overrideInterface.getRight() );
 			}

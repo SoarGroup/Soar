@@ -84,9 +84,11 @@ public class OutputLinkManager {
 				//System.out.print( leftCommand + " " );
 				//System.out.print( rightCommand + "\n" );
 				
+				//System.out.print( leftCommand + "                   \r" );
 				synchronized ( state )
 				{
 					state.left = leftCommand;
+					//System.out.println( "W: " + state.left );
 					state.right = rightCommand;
 					state.targetYawEnabled = false;
 				}

@@ -29,8 +29,8 @@ public class SplinterSoar
 		lcm = LCM.getSingleton();
 		lcm.subscribe( LaserLoc.pose_channel, orc );
 
-		logger.info( "Subscribing orc to LASER_FRONT channel" );
-		lcm.subscribe( "LASER_FRONT", orc );
+		//logger.info( "Subscribing orc to LASER_FRONT channel" );
+		//lcm.subscribe( "LASER_FRONT", orc );
 
 		logger.info( "Starting Soar interface" );
 		soar = new SoarInterface( orc.getState() );

@@ -32,7 +32,7 @@ public class OrcInterface implements LCMSubscriber
 	
 	pose_t pose;
 	laser_t laserData;
-	SplinterState.RangerData [] rangerData = new SplinterState.RangerData[ state.rangerSlices ];
+	RangerData [] rangerData = new RangerData[ state.rangerSlices ];
 	int leftPreviousPosition = 0;
 	int rightPreviousPosition = 0;
 	
@@ -47,6 +47,11 @@ public class OrcInterface implements LCMSubscriber
 		rightMotor = new Motor( orc, 0, false );
 		rightOdom = new QuadratureEncoder( orc, 0, false);
 		rightPreviousPosition = rightOdom.getPosition();
+		
+		for ( int index = 0; index < rangerData.length; ++index)
+		{
+			rangerData[ index ] = new RangerData();
+		}
 		
 		timer.schedule( new UpdateTask(), 0, 1000 / UPDATE_HZ );
 	}
@@ -71,6 +76,7 @@ public class OrcInterface implements LCMSubscriber
 			synchronized ( state )
 			{
 				left = state.left;
+				//System.out.println( "R: " + state.left );
 				right = state.right;
 				targetYaw = state.targetYaw;
 				targetYawTolerance = state.targetYawTolerance;
@@ -97,6 +103,7 @@ public class OrcInterface implements LCMSubscriber
 			// write new commands
 			if ( targetYawEnabled == false )
 			{
+				//System.out.print( left + "               \r" );
 				leftMotor.setPWM( left );
 				rightMotor.setPWM( right );
 			} 
@@ -158,11 +165,8 @@ public class OrcInterface implements LCMSubscriber
 				}
 				else
 				{
-					targetYawEnabled = false;
-					left = 0;
-					right = 0;
-					leftMotor.setPWM( left );
-					rightMotor.setPWM( right );
+					leftMotor.setPWM( 0 );
+					rightMotor.setPWM( 0 );
 				}
 			} 
 			//// end orc communication
@@ -175,10 +179,12 @@ public class OrcInterface implements LCMSubscriber
 			{
 				// FIXME verify this is general, I think sliceChunk must have no remainder
 				assert state.rangerSlices == 5;
+				assert rangerData != null;
+				assert rangerData.length == state.rangerSlices;
 				
 				int sliceChunk = laserData.nranges / state.rangerSlices; // a round number with 180/5 (36)
 				
-				for ( int slice = 0, index = 0; slice < state.rangerSlices; ++slice )
+				for ( int slice = 0, index = 0; slice < rangerData.length; ++slice )
 				{
 					rangerData[ slice ].start = laserData.rad0 + index * laserData.radstep;
 
@@ -203,10 +209,6 @@ public class OrcInterface implements LCMSubscriber
 			{
 				state.utime = utime;
 				
-				state.targetYawEnabled = targetYawEnabled;
-				state.left = left;
-				state.right = right;
-
 				state.leftCurrent = leftCurrent;
 				state.leftPosition = leftPosition;
 				state.leftVelocity = leftVelocity;

@@ -35,13 +35,6 @@ public class SplinterState {
 	public final double width = 0.42;
 	public final int rangerSlices = 5;
 	
-	public class RangerData
-	{
-		public double start;
-		public double end;
-		public double distance;
-	}
-	
 	public SplinterState()
 	{}
 	
@@ -63,7 +56,10 @@ public class SplinterState {
 		this.rightPosition = other.rightPosition;
 		this.rightVelocity = other.rightVelocity;
 
-		this.ranger = Arrays.copyOf( other.ranger, other.ranger.length );
+		if ( other.ranger != null )
+		{
+			this.ranger = Arrays.copyOf( other.ranger, other.ranger.length );
+		}
 		
 		this.x = other.x;
 		this.y = other.y;
