@@ -1,16 +1,18 @@
 sp {go-to-waypoint*elaborate*state*desired-yaw
-   (state <s> ^superoperator <so>
-              ^io.input-link.self.waypoints.waypoint <w>)
-   (<w> ^id destination
-        ^yaw <yaw>)
+   (state <s> ^waypoint.yaw <yaw>
+              ^io.output-link <ol>)
 -->
-   (<s> ^desired-yaw <yaw>)
+   (<ol> ^rotate-to <rt>)
+   (<rt> ^yaw <yaw>
+         ^throttle 1.0)
+   (write (crlf) |Rotating to | <yaw>)
+   (exec player-print |Rotating to | <yaw>)
 }
 
 sp {go-to-waypoint*elaborate*superoperator*move-now
    (state <s> ^name go-to-waypoint
               ^top-state.rotation-tolerance <rt>
-              ^yaw-diff <= <rt>
+              ^waypoint.abs-relative-bearing <= <rt>
               ^superoperator <so>)
 -->
    (<so> ^move-now true)

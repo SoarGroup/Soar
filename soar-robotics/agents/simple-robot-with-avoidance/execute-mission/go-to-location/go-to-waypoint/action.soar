@@ -45,10 +45,6 @@ sp {apply*action
    (<op> ^name action
          ^action <a>)
    (<a> ^<action> <params>)
-   (<params> ^direction <dir>
-             ^throttle <t>)
 -->
-   (<ol> ^<action> <v>)
-   (<v> ^direction <dir>
-        ^throttle <t>)
+   (<ol> ^<action> <params>)
 }
