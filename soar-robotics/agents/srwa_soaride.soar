@@ -1,0 +1,3 @@
+proc warnings {args} {}
+
+source simple-robot-with-avoidance.soar
