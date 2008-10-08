@@ -9,6 +9,7 @@ public class SoarInterface implements Kernel.UpdateEventInterface
 	Agent agent;
 	InputLinkManager input;
 	OutputLinkManager output;
+	Waypoints waypoints;
 	
 	static final double baselineMeters = 0.42545;
 
@@ -33,7 +34,7 @@ public class SoarInterface implements Kernel.UpdateEventInterface
 		// load productions
 		agent.LoadProductions( "agents/simple-bot.soar" );
 		
-		Waypoints waypoints = new Waypoints( agent );
+		waypoints = new Waypoints( agent );
 		input = new InputLinkManager( agent, waypoints, state );
 		output = new OutputLinkManager( agent, waypoints, state );
 		
@@ -56,6 +57,8 @@ public class SoarInterface implements Kernel.UpdateEventInterface
 	{
 		input.update();
 		output.update();
+		
+		waypoints.update(); // updates input link
 		
 		agent.Commit();
 	}

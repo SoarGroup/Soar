@@ -234,6 +234,8 @@ public class InputLinkManager {
 				yaw += 360.0;
 			}
 			agent.Update( self_pose_yaw, yaw );
+			
+			waypoints.setNewRobotPose( stateCopy.x, stateCopy.y, yaw );
 		}
 	}
 }
