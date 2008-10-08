@@ -30,7 +30,7 @@ sp {go-to-waypoint*elaborate*range*move-forward
 sp {go-to-waypoint*elaborate*range*turn-left
    (state <s> ^name simple-robot
               ^io.input-link.ranges.range <r>)
-   (<r> ^id < 0)
+   (<r> ^id > 0)
 -->
    (<r> ^action <a>)
    (<a> ^rotate <m>)
@@ -41,7 +41,7 @@ sp {go-to-waypoint*elaborate*range*turn-left
 sp {go-to-waypoint*elaborate*range*rotate-right
    (state <s> ^name simple-robot
               ^io.input-link.ranges.range <r>)
-   (<r> ^id > 0)
+   (<r> ^id < 0)
 -->
    (<r> ^action <a>)
    (<a> ^rotate <m>)
