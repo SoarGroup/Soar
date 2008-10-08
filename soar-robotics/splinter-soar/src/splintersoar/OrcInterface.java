@@ -220,6 +220,7 @@ public class OrcInterface implements LCMSubscriber
 				if ( laserData != null )
 				{
 					state.ranger = Arrays.copyOf( rangerData, rangerData.length );
+					state.rangerutime = utime;
 				}
 				
 				state.x = xprime;

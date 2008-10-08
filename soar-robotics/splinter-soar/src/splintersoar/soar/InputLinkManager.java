@@ -7,6 +7,7 @@ public class InputLinkManager {
 
 	Agent agent;
 	Waypoints waypoints;
+	Ranger ranger;
 
 	Identifier override;
 	StringElement override_active;
@@ -99,6 +100,11 @@ public class InputLinkManager {
 		
 		{
 			ranges = agent.CreateIdWME( inputLink, "ranges" );
+			ranger = new Ranger( agent, ranges, stateCopy.rangerSlices );
+			if ( stateCopy.ranger != null )
+			{
+				ranger.update( stateCopy.rangerutime, stateCopy.ranger );
+			}
 		}
 		
 		{
@@ -234,6 +240,8 @@ public class InputLinkManager {
 				yaw += 360.0;
 			}
 			agent.Update( self_pose_yaw, yaw );
+
+			ranger.update( stateCopy.rangerutime, stateCopy.ranger );
 			
 			waypoints.setNewRobotPose( stateCopy.x, stateCopy.y, yaw );
 		}

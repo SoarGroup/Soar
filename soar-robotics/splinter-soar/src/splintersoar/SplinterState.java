@@ -27,6 +27,7 @@ public class SplinterState {
 	public double yaw = 0;
 	
 	public RangerData [] ranger;
+	public long rangerutime = 0; // last time the ranger was updated
 	
 	// geometry, configuration
 	public final double baselineMeters = 0.42545;
@@ -60,6 +61,7 @@ public class SplinterState {
 		{
 			this.ranger = Arrays.copyOf( other.ranger, other.ranger.length );
 		}
+		this.rangerutime = other.rangerutime;
 		
 		this.x = other.x;
 		this.y = other.y;
