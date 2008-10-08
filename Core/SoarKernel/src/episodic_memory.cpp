@@ -1350,9 +1350,9 @@ int epmem_exec_query( agent *my_agent, sqlite3_stmt *stmt, const long timer )
 {
 	int return_val;	
 	
-	epmem_start_timer( my_agent, timer );
+	//epmem_start_timer( my_agent, timer );
 	return_val = sqlite3_step( stmt );
-	epmem_stop_timer( my_agent, timer );
+	//epmem_stop_timer( my_agent, timer );
 
 	return return_val;
 }
@@ -1760,7 +1760,7 @@ void epmem_init_db( agent *my_agent )
 	{
 		const char *tail;
 		sqlite3_stmt *create;
-		epmem_time_id time_max;
+		epmem_time_id time_max;		
 
 		// point stuff
 		epmem_time_id range_start;		
@@ -1820,7 +1820,7 @@ void epmem_init_db( agent *my_agent )
 			sqlite3_finalize( create );
 			
 			// id_start index (for queries)
-			sqlite3_prepare_v2( my_agent->epmem_db, "CREATE UNIQUE INDEX IF NOT EXISTS now_id_start ON now (id,start)", -1, &create, &tail );
+			sqlite3_prepare_v2( my_agent->epmem_db, "CREATE UNIQUE INDEX IF NOT EXISTS now_id_start ON now (id,start DESC)", -1, &create, &tail );
 			sqlite3_step( create );
 			sqlite3_finalize( create );
 
@@ -1838,7 +1838,7 @@ void epmem_init_db( agent *my_agent )
 			sqlite3_finalize( create );
 
 			// id_start index (for queries)
-			sqlite3_prepare_v2( my_agent->epmem_db, "CREATE UNIQUE INDEX IF NOT EXISTS points_id_start ON points (id,start)", -1, &create, &tail );
+			sqlite3_prepare_v2( my_agent->epmem_db, "CREATE UNIQUE INDEX IF NOT EXISTS points_id_start ON points (id,start DESC)", -1, &create, &tail );
 			sqlite3_step( create );
 			sqlite3_finalize( create );
 			
@@ -1868,12 +1868,12 @@ void epmem_init_db( agent *my_agent )
 			sqlite3_finalize( create );
 
 			// id_start index (for queries)
-			sqlite3_prepare_v2( my_agent->epmem_db, "CREATE UNIQUE INDEX IF NOT EXISTS episode_id_start ON episodes (id,start)", -1, &create, &tail );
+			sqlite3_prepare_v2( my_agent->epmem_db, "CREATE UNIQUE INDEX IF NOT EXISTS episode_id_start ON episodes (id,start DESC)", -1, &create, &tail );
 			sqlite3_step( create );					
 			sqlite3_finalize( create );
 
 			// id_end index (for queries)
-			sqlite3_prepare_v2( my_agent->epmem_db, "CREATE UNIQUE INDEX IF NOT EXISTS episode_id_end ON episodes (id,end)", -1, &create, &tail );
+			sqlite3_prepare_v2( my_agent->epmem_db, "CREATE UNIQUE INDEX IF NOT EXISTS episode_id_end ON episodes (id,end DESC)", -1, &create, &tail );
 			sqlite3_step( create );					
 			sqlite3_finalize( create );
 
@@ -2490,7 +2490,7 @@ epmem_leaf_node *epmem_create_leaf_node( epmem_node_id leaf_id, double leaf_weig
 
 // reads all b-tree pointers in parallel
 void epmem_incremental_row( agent *my_agent, epmem_range_query *stmts[2][2][3], epmem_time_id tops[2], int query_sizes[2], epmem_time_id &id, long long &ct, double &v, long long &updown, const unsigned int list )
-{
+{	
 	// initialize variables
 	id = tops[ list ];
 	ct = 0;
@@ -2520,7 +2520,8 @@ void epmem_incremental_row( agent *my_agent, epmem_range_query *stmts[2][2][3], 
 							v += stmts[ i ][ list ][ k ][ m ].weight;
 							ct += stmts[ i ][ list ][ k ][ m ].ct;
 							
-							more_data = ( epmem_exec_range_query( my_agent, &stmts[ i ][ list ][ k ][ m ] ) == SQLITE_ROW );
+							more_data = ( epmem_exec_range_query( my_agent, &( stmts[ i ][ list ][ k ][ m ] ) ) == SQLITE_ROW );
+							
 							if ( more_data )
 								next_id = sqlite3_column_int64( stmts[ i ][ list ][ k ][ m ].stmt, 0 );
 
@@ -2533,8 +2534,8 @@ void epmem_incremental_row( agent *my_agent, epmem_range_query *stmts[2][2][3], 
 								new_top = next_id;
 						}
 						else
-						{
-							sqlite3_finalize( stmts[ i ][ list ][ k ][ m ].stmt );
+						{							
+							sqlite3_finalize( stmts[ i ][ list ][ k ][ m ].stmt );							
 							stmts[ i ][ list ][ k ][ m ].stmt = NULL;
 							stmts[ i ][ list ][ k ][ m ].val = EPMEM_MEMID_NONE;
 						}
@@ -2766,7 +2767,7 @@ void epmem_process_query( agent *my_agent, Symbol *state, Symbol *query, Symbol 
 								}
 							}						
 						}
-					}					
+					}
 
 					// initialize lists
 					epmem_time_id top_list_id[2] = { EPMEM_MEMID_NONE, EPMEM_MEMID_NONE };				
