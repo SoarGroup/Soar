@@ -1,10 +1,36 @@
+sp {go-to-waypoint*propose*rotate-to
+   (state <s> ^name go-to-waypoint
+              ^parameters.rotation-tolerance <rt>
+              ^waypoint <w>)
+  -(<w> ^abs-relative-bearing <= <rt>) #using negation to prevent rematching as bearing changes
+-->
+   (<s> ^operator <op> +)
+   (<op> ^name rotate-to)
+}
+
+# TODO: should test for rotation velocity == 0 to prevent creating a new command every cycle as yaw changes
+sp {apply*rotate-to
+   (state <s> ^operator <op>
+              ^waypoint.yaw <yaw>
+              ^io.output-link <ol>)
+   (<op> ^name rotate-to)
+-->
+   (<ol> ^rotate-to <r>)
+   (<r> ^yaw <yaw>
+         ^throttle 1.0
+         ^tolerance <rt>)
+   (write (crlf) |Rotating to | <yaw>)
+   (exec player-print |Rotating to | <yaw>)
+}
+
+# TODO: possibly wait for rotation velocity to be 0 so robot is fully turned, not just within angle
 sp {go-to-waypoint*elaborate*state*desired-yaw
    (state <s> ^waypoint.yaw <yaw>
               ^io.output-link <ol>
               ^parameters.rotation-tolerance <rt>)
 -->
-   (<ol> ^rotate-to <rt>)
-   (<rt> ^yaw <yaw>
+   (<ol> ^rotate-to <r>)
+   (<r> ^yaw <yaw>
          ^throttle 1.0
          ^tolerance <rt>)
    (write (crlf) |Rotating to | <yaw>)

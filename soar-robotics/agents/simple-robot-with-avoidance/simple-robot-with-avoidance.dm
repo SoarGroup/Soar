@@ -1,4 +1,4 @@
-261
+262
 SOAR_ID 0
 SOAR_ID 1
 SOAR_ID 2
@@ -260,7 +260,8 @@ ENUMERATION 257 2 complete error
 FLOAT_RANGE 258 0.0 Infinity
 ENUMERATION 259 2 complete error
 ENUMERATION 260 2 complete error
-336
+ENUMERATION 261 1 nil
+339
 0 attribute 113
 0 choices 112
 0 desired 31
@@ -432,10 +433,12 @@ ENUMERATION 260 2 complete error
 85 status 87
 86 name 90
 86 next 93
+86 next 261
 86 x 91
 86 y 92
 93 name 94
 93 next 95
+93 next 86
 93 return-time 190
 101 map-updated 103
 101 move-to 46
@@ -444,6 +447,7 @@ ENUMERATION 260 2 complete error
 104 move-now 204
 104 name 105
 104 track-progress 106
+104 waypoint 223
 107 distance 110
 107 name 108
 107 time 109

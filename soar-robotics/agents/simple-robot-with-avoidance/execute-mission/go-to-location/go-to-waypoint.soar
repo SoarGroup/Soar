@@ -28,20 +28,35 @@ sp {apply*go-to-waypoint*add-input-waypoint
          ^x <x> ^y <y>)
 }
 
+sp {elaborate*operator*go-to-waypoint*waypoint
+   (state <s> ^io.input-link.self.waypoints.waypoint <w>
+              ^operator <o>)
+   (<o> ^name go-to-waypoint
+        ^destination <d>)
+   (<w> ^id destination ^x <x> ^y <y>)
+   (<d> ^x <x> ^y <y>)
+-->
+   (<o> ^waypoint <w>)
+}
+
 sp {apply*go-to-waypoint*create-move-to
    (state <s> ^operator <op>
-              ^io.input-link.time.seconds <time>
+              ^io.input-link <il>
               ^waypoints.at <at>
               ^top-state <ts>)
   -(<ts> ^move-to)
+   (<il> ^time.seconds <time>
+         ^self.waypoints.waypoint <w>)
    (<op> ^name go-to-waypoint
          ^move-now true
-         ^destination <w>
-         ^track-progress true)
-   (<w> ^distance <dist>)
+         ^track-progress true
+         ^destination <d>
+         ^waypoint <w>)
+   (<w> ^id destination
+        ^distance <dist>)
 -->
    (<ts> ^move-to <mt>)
-   (<mt> ^destination <w>
+   (<mt> ^destination <d>
          ^source <at>
           ^closest <dist>
           ^time <time>)
