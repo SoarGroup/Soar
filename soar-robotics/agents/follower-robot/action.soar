@@ -1,0 +1,22 @@
+sp {simple-robot*propose*orient
+   (state <s> ^name simple-robot
+              ^io.input-link.ranges.range <r> {<r-other> <> <r>})
+   (<r> ^id <> 0
+        ^distance <d>
+        ^action <a>)
+  -(<r-other> ^distance < <d>)
+-->
+   (<s> ^operator <op> + =)
+   (<op> ^name action
+         ^action <a>)
+}
+
+sp {apply*action
+   (state <s> ^operator <op>
+              ^io.output-link <ol>)
+   (<op> ^name action
+         ^action <a>)
+   (<a> ^<action> <params>)
+-->
+   (<ol> ^<action> <params>)
+}

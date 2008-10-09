@@ -1,0 +1,13 @@
+VERSION 4
+\follower-robot\follower-robot.dm
+0	ROOT follower-robot follower-robot 1
+1	0	FOPERATOR _firstload _firstload.soar 2
+2	0	FOLDER all all 3
+3	0	FOLDER elaborations elaborations 4
+4	3	FOPERATOR _all _all.soar 5
+5	3	FOPERATOR output output.soar 12
+6	3	FOPERATOR ranges ranges.soar 8
+7	3	FOPERATOR top-state top-state.soar 6
+8	0	OPERATOR action action.soar 11
+9	0	OPERATOR initialize initialize.soar 7
+END
