@@ -6,23 +6,22 @@ sp {simple-robot*propose*action
 -->
    (<s> ^operator <op> + =)
    (<op> ^name action
-         ^range <r>
-         ^action <a>)
+         ^range <r>)
 }
 
 sp {compare*actions
-(state <s> ^operator <o1> + <o2> +)
-(<o1> ^range.distance <d1>)
-(<o2> ^range.distance > <d1>)
+   (state <s> ^operator <o1> + <o2> +)
+   (<o1> ^range.distance <d1>)
+   (<o2> ^range.distance > <d1>)
 -->
-(<s> ^operator <o1> > <o2>)
+   (<s> ^operator <o1> > <o2>)
 }
 
 sp {apply*action
    (state <s> ^operator <op>
               ^io.output-link <ol>)
    (<op> ^name action
-         ^action <a>)
+         ^range.action <a>)
    (<a> ^<action> <params>)
    (<params> ^direction <dir>
              ^throttle <thr>)
@@ -33,19 +32,10 @@ sp {apply*action
 }
 
 sp {monitor*action
-(state <s> ^operator.action <a>)
-(<a> ^<action> <p>)
-(<p> ^direction <d>
-     ^throttle <thr>)
+   (state <s> ^operator.range.action <a>)
+   (<a> ^<action> <p>)
+   (<p> ^direction <d>
+        ^throttle <thr>)
 -->
-(write (crlf) <action> | | <d> | at | <thr>)
-}
-
-sp {monitor*output
-(state <s> ^io.output-link <ol>)
-(<ol> ^<action> <p>)
-(<p> ^direction <d>
-     ^throttle <thr>)
--->
-(write (crlf) |output: | <action> | | <d> | at | <thr>)
+   (write (crlf) <action> | | <d> | at | <thr>)
 }
