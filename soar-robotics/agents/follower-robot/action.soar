@@ -24,8 +24,12 @@ sp {apply*action
    (<op> ^name action
          ^action <a>)
    (<a> ^<action> <params>)
+   (<params> ^direction <dir>
+             ^throttle <thr>)
 -->
-   (<ol> ^<action> <params>)
+   (<ol> ^<action> <acopy>)
+   (<acopy> ^direction <dir>
+            ^throttle <thr>)
 }
 
 sp {monitor*action
