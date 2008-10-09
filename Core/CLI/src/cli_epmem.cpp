@@ -314,6 +314,13 @@ bool CommandLineInterface::DoEpMem( const char pOp, const std::string* pAttr, co
 		temp = "exclusions: ";
 		temp += epmem_get_parameter( m_pAgentSoar, (const long) EPMEM_PARAM_EXCLUSIONS, EPMEM_RETURN_STRING );
 		if ( m_RawOutput )
+			m_Result << temp << "\n";
+		else
+			AppendArgTagFast( sml_Names::kParamValue, sml_Names::kTypeString, temp.c_str() );
+		
+		temp = "timers: ";
+		temp += epmem_get_parameter( m_pAgentSoar, (const long) EPMEM_PARAM_TIMERS, EPMEM_RETURN_STRING );
+		if ( m_RawOutput )
 			m_Result << temp << "\n\n";
 		else
 		{
@@ -470,6 +477,16 @@ bool CommandLineInterface::DoEpMem( const char pOp, const std::string* pAttr, co
 			
 			output = "Last Query Retrieved: ";
 			temp = epmem_get_stat( m_pAgentSoar, (const long) EPMEM_STAT_QRY_RET );
+			temp_str = to_string( temp );
+			output += (*temp_str);
+			delete temp_str;
+			if ( m_RawOutput )
+				m_Result << output << "\n";
+			else
+				AppendArgTagFast( sml_Names::kParamValue, sml_Names::kTypeString, output.c_str() );
+			
+			output = "Last Query Cardinality: ";
+			temp = epmem_get_stat( m_pAgentSoar, (const long) EPMEM_STAT_QRY_CARD );
 			temp_str = to_string( temp );
 			output += (*temp_str);
 			delete temp_str;

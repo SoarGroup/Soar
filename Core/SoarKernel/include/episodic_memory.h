@@ -37,7 +37,8 @@ typedef struct wme_struct wme;
 #define EPMEM_PARAM_FORCE							6
 #define EPMEM_PARAM_BALANCE							7
 #define EPMEM_PARAM_EXCLUSIONS						8
-#define EPMEM_PARAMS								9 // must be 1+ last epmem param
+#define EPMEM_PARAM_TIMERS							9
+#define EPMEM_PARAMS								10 // must be 1+ last epmem param
 
 // parameter settings
 #define EPMEM_LEARNING_ON 1
@@ -56,6 +57,9 @@ typedef struct wme_struct wme;
 #define EPMEM_FORCE_IGNORE 2
 #define EPMEM_FORCE_OFF 3
 
+#define EPMEM_TIMERS_ON 1
+#define EPMEM_TIMERS_OFF 2
+
 // statistics
 // * = protected
 #define EPMEM_STAT_TIME								0 // *
@@ -64,11 +68,12 @@ typedef struct wme_struct wme;
 #define EPMEM_STAT_QRY_POS							3
 #define EPMEM_STAT_QRY_NEG							4
 #define EPMEM_STAT_QRY_RET							5
-#define EPMEM_STAT_RIT_OFFSET						6 // *
-#define EPMEM_STAT_RIT_LEFTROOT						7 // *
-#define EPMEM_STAT_RIT_RIGHTROOT					8 // *
-#define EPMEM_STAT_RIT_MINSTEP						9 // *
-#define EPMEM_STATS									10 // must be 1+ last epmem stat
+#define EPMEM_STAT_QRY_CARD							6
+#define EPMEM_STAT_RIT_OFFSET						7 // *
+#define EPMEM_STAT_RIT_LEFTROOT						8 // *
+#define EPMEM_STAT_RIT_RIGHTROOT					9 // *
+#define EPMEM_STAT_RIT_MINSTEP						10 // *
+#define EPMEM_STATS									11 // must be 1+ last epmem stat
 
 // timers
 #define EPMEM_TIMER_TOTAL							0
@@ -325,6 +330,11 @@ extern bool epmem_validate_exclusions( const char *new_val );
 
 // commit
 extern bool epmem_validate_commit( const double new_val );
+
+// timers
+extern bool epmem_validate_ext_timers( const long new_val );
+extern const char *epmem_convert_ext_timers( const long val );
+extern const long epmem_convert_ext_timers( const char *val );
 
 // shortcut for determining if EpMem is enabled
 extern bool epmem_enabled( agent *my_agent );

@@ -798,6 +798,42 @@ bool epmem_validate_commit( const double new_val )
 	return ( new_val > 0 );
 }
 
+// timers parameter
+bool epmem_validate_ext_timers( const long new_val )
+{
+	return ( ( new_val == EPMEM_TIMERS_ON ) || ( new_val == EPMEM_TIMERS_OFF ) );
+}
+
+const char *epmem_convert_ext_timers( const long val )
+{
+	const char *return_val = NULL;
+	
+	switch ( val )
+	{
+		case EPMEM_TIMERS_ON:
+			return_val = "on";
+			break;
+			
+		case EPMEM_TIMERS_OFF:
+			return_val = "off";
+			break;
+	}
+	
+	return return_val;
+}
+
+const long epmem_convert_ext_timers( const char *val )
+{
+	long return_val = NULL;
+	
+	if ( !strcmp( val, "on" ) )
+		return_val = EPMEM_TIMERS_ON;
+	else if ( !strcmp( val, "off" ) )
+		return_val = EPMEM_TIMERS_OFF;
+	
+	return return_val;
+}
+
 // shortcut function to system parameter
 bool epmem_enabled( agent *my_agent )
 {
@@ -1034,7 +1070,7 @@ const char *epmem_get_timer_name( agent *my_agent, const long timer )
 // starts a timer
 void epmem_start_timer( agent *my_agent, const long timer )
 {
-	if ( epmem_valid_timer( my_agent, timer ) )
+	if ( epmem_valid_timer( my_agent, timer ) && ( epmem_get_parameter( my_agent, EPMEM_PARAM_TIMERS, EPMEM_RETURN_LONG ) == EPMEM_TIMERS_ON ) )
 	{
 		start_timer( my_agent, &my_agent->epmem_timers[ timer ]->start_timer );
 	}
@@ -1043,7 +1079,7 @@ void epmem_start_timer( agent *my_agent, const long timer )
 // stops a timer
 void epmem_stop_timer( agent *my_agent, const long timer )
 {
-	if ( epmem_valid_timer( my_agent, timer ) )
+	if ( epmem_valid_timer( my_agent, timer ) && ( epmem_get_parameter( my_agent, EPMEM_PARAM_TIMERS, EPMEM_RETURN_LONG ) == EPMEM_TIMERS_ON ) )
 	{
 		stop_timer( my_agent, &my_agent->epmem_timers[ timer ]->start_timer, &my_agent->epmem_timers[ timer ]->total_timer );
 	}
@@ -1350,9 +1386,9 @@ int epmem_exec_query( agent *my_agent, sqlite3_stmt *stmt, const long timer )
 {
 	int return_val;	
 	
-	//epmem_start_timer( my_agent, timer );
+	epmem_start_timer( my_agent, timer );
 	return_val = sqlite3_step( stmt );
-	//epmem_stop_timer( my_agent, timer );
+	epmem_stop_timer( my_agent, timer );
 
 	return return_val;
 }
@@ -2699,7 +2735,8 @@ void epmem_process_query( agent *my_agent, Symbol *state, Symbol *query, Symbol 
 			
 			epmem_set_stat( my_agent, EPMEM_STAT_QRY_POS, leaf_ids[ EPMEM_NODE_POS ].size() );
 			epmem_set_stat( my_agent, EPMEM_STAT_QRY_NEG, leaf_ids[ EPMEM_NODE_NEG ].size() );
-			epmem_set_stat( my_agent, EPMEM_STAT_QRY_RET, 0 );			
+			epmem_set_stat( my_agent, EPMEM_STAT_QRY_RET, 0 );
+			epmem_set_stat( my_agent, EPMEM_STAT_QRY_CARD, 0 );
 
 			// useful statistics
 			int cue_sizes[2] = { leaf_ids[ EPMEM_NODE_POS ].size(), leaf_ids[ EPMEM_NODE_NEG ].size() };
@@ -2946,6 +2983,7 @@ void epmem_process_query( agent *my_agent, Symbol *state, Symbol *query, Symbol 
 					if ( king_id != EPMEM_MEMID_NONE )
 					{						
 						epmem_set_stat( my_agent, EPMEM_STAT_QRY_RET, king_id );
+						epmem_set_stat( my_agent, EPMEM_STAT_QRY_CARD, king_cardinality );
 						
 						// status
 						new_wme = add_input_wme( my_agent, state->id.epmem_result_header, my_agent->epmem_status_symbol, my_agent->epmem_success_symbol );

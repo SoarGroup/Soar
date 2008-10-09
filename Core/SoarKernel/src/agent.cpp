@@ -352,7 +352,8 @@ agent * create_soar_agent (char * agent_name) {                                 
   newAgent->epmem_params[ EPMEM_PARAM_TRIGGER ] = epmem_add_parameter( "trigger", EPMEM_TRIGGER_OUTPUT, &epmem_validate_trigger, &epmem_convert_trigger, &epmem_convert_trigger );
   newAgent->epmem_params[ EPMEM_PARAM_FORCE ] = epmem_add_parameter( "force", EPMEM_FORCE_OFF, &epmem_validate_force, &epmem_convert_force, &epmem_convert_force );
   newAgent->epmem_params[ EPMEM_PARAM_BALANCE ] = epmem_add_parameter( "balance", 0.5, &epmem_validate_balance );
-  newAgent->epmem_params[ EPMEM_PARAM_EXCLUSIONS ] = epmem_add_parameter( "exclusions", "", &epmem_validate_exclusions );
+  newAgent->epmem_params[ EPMEM_PARAM_EXCLUSIONS ] = epmem_add_parameter( "exclusions", "", &epmem_validate_exclusions );  
+  newAgent->epmem_params[ EPMEM_PARAM_TIMERS ] = epmem_add_parameter( "timers", EPMEM_TIMERS_OFF, &epmem_validate_ext_timers, &epmem_convert_ext_timers, &epmem_convert_ext_timers );
 
   newAgent->epmem_stats[ EPMEM_STAT_TIME ] = epmem_add_stat( "time" );
   newAgent->epmem_stats[ EPMEM_STAT_MEM_USAGE ] = epmem_add_stat( "mem_usage" );
@@ -360,6 +361,7 @@ agent * create_soar_agent (char * agent_name) {                                 
   newAgent->epmem_stats[ EPMEM_STAT_QRY_POS ] = epmem_add_stat( "qry_pos" );
   newAgent->epmem_stats[ EPMEM_STAT_QRY_NEG ] = epmem_add_stat( "qry_neg" );
   newAgent->epmem_stats[ EPMEM_STAT_QRY_RET ] = epmem_add_stat( "qry_ret" );
+  newAgent->epmem_stats[ EPMEM_STAT_QRY_CARD ] = epmem_add_stat( "qry_card" );
   newAgent->epmem_stats[ EPMEM_STAT_RIT_OFFSET ] = epmem_add_stat( "rit_offset" );
   newAgent->epmem_stats[ EPMEM_STAT_RIT_LEFTROOT ] = epmem_add_stat( "rit_left_root" );
   newAgent->epmem_stats[ EPMEM_STAT_RIT_RIGHTROOT ] = epmem_add_stat( "rit_right_root" );
