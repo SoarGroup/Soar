@@ -29,14 +29,14 @@ public class SplinterSoar
 		lcm = LCM.getSingleton();
 		lcm.subscribe( LaserLoc.pose_channel, orc );
 
-		//logger.info( "Subscribing orc to LASER_FRONT channel" );
-		//lcm.subscribe( "LASER_FRONT", orc );
+		logger.info( "Subscribing orc to LASER_FRONT channel" );
+		lcm.subscribe( "LASER_FRONT", orc );
 
 		logger.info( "Starting Soar interface" );
 		soar = new SoarInterface( orc.getState() );
 
-		logger.info( "Creating and using game pad for override" );
-		soar.setOverride( new GamePadManager() );
+		//logger.info( "Creating and using game pad for override" );
+		//soar.setOverride( new GamePadManager() );
 		
 		Runtime.getRuntime().addShutdownHook( new ShutdownHook() );
 		

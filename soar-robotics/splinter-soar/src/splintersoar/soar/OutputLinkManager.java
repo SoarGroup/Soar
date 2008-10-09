@@ -21,6 +21,8 @@ public class OutputLinkManager {
 	{
 		boolean motorsCommanded = false;
 		
+		System.out.print( "." );
+		
 		// process output
 		for ( int i = 0; i < agent.GetNumberCommands(); ++i ) 
 		{
@@ -29,6 +31,7 @@ public class OutputLinkManager {
 			
 			if ( commandName.equals( "motor" ) )
 			{
+				System.out.println( "motor" );
 				if ( motorsCommanded )
 				{
 					// This is a warning
@@ -147,6 +150,7 @@ public class OutputLinkManager {
 				}
 				else if ( direction.equals( "forward" ) )
 				{
+					System.out.println( "move forward" );
 					synchronized ( state )
 					{
 						state.left = throttle;
@@ -173,6 +177,7 @@ public class OutputLinkManager {
 				}
 				
 				motorsCommanded = true;
+				System.out.println( "move status complete" );
 				commandId.AddStatusComplete();
 				continue;
 			}
@@ -216,6 +221,7 @@ public class OutputLinkManager {
 				
 				if ( direction.equals( "left" ) )
 				{
+					System.out.println( "rotate left" );
 					synchronized ( state )
 					{
 						state.left = throttle * -1;
@@ -226,6 +232,7 @@ public class OutputLinkManager {
 				}
 				else if ( direction.equals( "right" ) )
 				{
+					System.out.println( "rotate right" );
 					synchronized ( state )
 					{
 						state.left = throttle;
@@ -252,6 +259,7 @@ public class OutputLinkManager {
 				}
 				
 				motorsCommanded = true;
+				System.out.println( "rotate status complete" );
 				commandId.AddStatusComplete();
 				continue;
 

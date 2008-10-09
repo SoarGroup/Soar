@@ -65,6 +65,7 @@ public class InputLinkManager {
 	{
 		this.agent = agent;
 		this.state = state;
+		this.waypoints = waypoints;
 		
 		this.agent.SetBlinkIfNoChange( false );
 		
@@ -171,7 +172,7 @@ public class InputLinkManager {
 	
 	void updateOverride()
 	{
-		if ( override == null )
+		if ( overrideInterface == null )
 		{
 			agent.Update( override_active, "false" );
 			if ( override_motor != null )
@@ -184,6 +185,7 @@ public class InputLinkManager {
 		}
 		else
 		{
+			//System.out.println( "updateOverride active" );
 			agent.Update( override_active, "true" );
 			if ( override_motor == null )
 			{

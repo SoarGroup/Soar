@@ -32,13 +32,14 @@ public class SoarInterface implements Kernel.UpdateEventInterface
 		}
 		
 		// load productions
-		agent.LoadProductions( "agents/simple-bot.soar" );
+		//agent.LoadProductions( "agents/simple-bot.soar" );
+		agent.LoadProductions( "../agents/follower-robot.soar" );
 		
 		waypoints = new Waypoints( agent );
 		input = new InputLinkManager( agent, waypoints, state );
 		output = new OutputLinkManager( agent, waypoints, state );
 		
-		kernel.RegisterForUpdateEvent( smlUpdateEventId.smlEVENT_AFTER_ALL_GENERATED_OUTPUT, this, null );
+		kernel.RegisterForUpdateEvent( smlUpdateEventId.smlEVENT_AFTER_ALL_OUTPUT_PHASES, this, null );
 	}
 	
 	public void shutdown()
@@ -55,12 +56,27 @@ public class SoarInterface implements Kernel.UpdateEventInterface
 	@Override
 	public void updateEventHandler(int eventID, Object data, Kernel kernel, int runFlags) 
 	{
-		input.update();
-		output.update();
+		try
+		{
+			input.update();
+			output.update();
 		
-		waypoints.update(); // updates input link
+			waypoints.update(); // updates input link
 		
-		agent.Commit();
+			agent.Commit();
+		}
+		catch ( NullPointerException unhandled )
+		{
+			System.out.println( "Unhandled null pointer exception in updateEventHandler" );
+			unhandled.printStackTrace();
+			assert false;
+		}
+		catch ( Throwable unhandled )
+		{
+			System.out.println( "Unhandled throwable in updateEventHandler" );
+			unhandled.printStackTrace();
+			assert false;
+		}
 	}
 
 }

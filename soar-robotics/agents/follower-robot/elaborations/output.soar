@@ -4,4 +4,5 @@ sp {apply*operator*remove-command
    (<ol> ^<att> <value>)
    (<value> ^status complete)
 -->
-   (<ol> ^<att> <value> -)}
+   (<ol> ^<att> <value> -)
+   (write (crlf) |removing old command|)}

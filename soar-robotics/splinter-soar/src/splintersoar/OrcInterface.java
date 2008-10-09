@@ -188,18 +188,18 @@ public class OrcInterface implements LCMSubscriber
 				{
 					rangerData[ slice ].start = laserData.rad0 + index * laserData.radstep;
 
-					double smallest_range = Double.MAX_VALUE;
+					rangerData[ slice ].distance = Double.MAX_VALUE;
 					
-					for ( ; index < sliceChunk * state.rangerSlices; ++index )
+					for ( ; index < ( sliceChunk * slice ) + sliceChunk; ++index )
 					{
-						if ( laserData.ranges[ index ] < smallest_range )
+						if ( laserData.ranges[ index ] < rangerData[ slice ].distance )
 						{
-							smallest_range = laserData.ranges[ index ];
+							rangerData[ slice ].distance = laserData.ranges[ index ];
 						}
 					}
 					
+					//System.out.println( "slice 4 dist: " + rangerData[ 4 ].distance );
 					rangerData[ slice ].end = laserData.rad0 + ( index - 1 ) * laserData.radstep;
-					rangerData[ slice ].distance = smallest_range;
 				}
 			}
 			//// end ranger update
