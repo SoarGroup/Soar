@@ -1,7 +1,7 @@
-watch 0
-timers --off
+# watch 0
+# timers --off
 
-#srand 0
+srand 0
 
 #add-wme i2 ^self *
 #add-wme i4 ^current-location *

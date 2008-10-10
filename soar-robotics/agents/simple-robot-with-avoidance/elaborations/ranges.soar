@@ -18,39 +18,42 @@ sp {go-to-waypoint*elaborate*range*not-blocked
 
 sp {go-to-waypoint*elaborate*range*move-forward
    (state <s> ^name simple-robot
-              ^io.input-link.ranges.range <r>)
+              ^io.input-link.ranges.range <r>
+              ^parameters.throttle <thr>)
    (<r> ^id 0)
 -->
    (<r> ^action <a>)
    (<a> ^move <m>)
    (<m> ^direction forward
-        ^throttle 1.0)
+        ^throttle <thr>)
 }
 
 sp {go-to-waypoint*elaborate*range*turn-left
    (state <s> ^name simple-robot
-              ^io.input-link.ranges.range <r>)
+              ^io.input-link.ranges.range <r>
+              ^parameters.throttle <thr>)
    (<r> ^id > 0)
 -->
    (<r> ^action <a>)
    (<a> ^rotate <m>)
    (<m> ^direction left
-        ^throttle 1.0)
+        ^throttle <thr>)
 }
 
 sp {go-to-waypoint*elaborate*range*rotate-right
    (state <s> ^name simple-robot
-              ^io.input-link.ranges.range <r>)
+              ^io.input-link.ranges.range <r>
+              ^parameters.throttle <thr>)
    (<r> ^id < 0)
 -->
    (<r> ^action <a>)
    (<a> ^rotate <m>)
    (<m> ^direction right
-        ^throttle 1.0)
+        ^throttle <thr>)
 }
 
 sp {go-to-waypoint*elaborate*range*dist-from-goal*0
-   (state <s> ^name simple-robot          
+   (state <s> ^name simple-robot
               ^io.input-link <il>)
    (<il> ^self.waypoints.waypoint <w>
          ^ranges.range <r>)
@@ -63,7 +66,7 @@ sp {go-to-waypoint*elaborate*range*dist-from-goal*0
 }
 
 sp {go-to-waypoint*elaborate*range*dist-from-goal*left
-   (state <s> ^name simple-robot          
+   (state <s> ^name simple-robot
               ^io.input-link <il>)
    (<il> ^self.waypoints.waypoint <w>
          ^ranges.range <r>)
@@ -75,7 +78,7 @@ sp {go-to-waypoint*elaborate*range*dist-from-goal*left
 }
 
 sp {go-to-waypoint*elaborate*range*dist-from-goal*right
-   (state <s> ^name simple-robot          
+   (state <s> ^name simple-robot
               ^io.input-link <il>)
    (<il> ^self.waypoints.waypoint <w>
          ^ranges.range <r>)

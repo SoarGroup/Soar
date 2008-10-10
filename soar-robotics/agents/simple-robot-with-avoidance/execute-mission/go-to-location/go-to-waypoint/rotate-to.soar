@@ -12,12 +12,13 @@ sp {go-to-waypoint*propose*rotate-to
 sp {apply*rotate-to
    (state <s> ^operator <op>
               ^waypoint.yaw <yaw>
-              ^io.output-link <ol>)
+              ^io.output-link <ol>
+              ^parameters.throttle <thr>)
    (<op> ^name rotate-to)
 -->
    (<ol> ^rotate-to <r>)
    (<r> ^yaw <yaw>
-         ^throttle 1.0
+        ^throttle <thr>
          ^tolerance <rt>)
    (write (crlf) |Rotating to | <yaw>)
    (exec player-print |Rotating to | <yaw>)
@@ -27,11 +28,13 @@ sp {apply*rotate-to
 sp {go-to-waypoint*elaborate*state*desired-yaw
    (state <s> ^waypoint.yaw <yaw>
               ^io.output-link <ol>
-              ^parameters.rotation-tolerance <rt>)
+              ^parameters <p>)
+   (<p> ^rotation-tolerance <rt>
+        ^throttle <thr>)
 -->
    (<ol> ^rotate-to <r>)
    (<r> ^yaw <yaw>
-         ^throttle 1.0
+        ^throttle <thr>
          ^tolerance <rt>)
    (write (crlf) |Rotating to | <yaw>)
    (exec player-print |Rotating to | <yaw>)

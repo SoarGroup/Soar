@@ -45,7 +45,8 @@ sp {apply*hide*note-hiding
 
 sp {apply*hide*move-to
    (state <s> ^operator <op>
-              ^io.output-link <ol>)
+              ^io.output-link <ol>
+              ^parameters.throttle <thr>)
    (<op> ^name hide
          ^move-now true
          ^waypoint <h>)
@@ -55,5 +56,5 @@ sp {apply*hide*move-to
    (<ol> ^move-to <mt>)
    (<mt> ^x <x>
          ^y <y>
-         ^throttle 1)
+         ^throttle <thr>)
 }

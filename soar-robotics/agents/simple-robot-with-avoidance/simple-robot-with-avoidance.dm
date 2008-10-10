@@ -1,4 +1,4 @@
-262
+263
 SOAR_ID 0
 SOAR_ID 1
 SOAR_ID 2
@@ -261,7 +261,8 @@ FLOAT_RANGE 258 0.0 Infinity
 ENUMERATION 259 2 complete error
 ENUMERATION 260 2 complete error
 ENUMERATION 261 1 nil
-339
+FLOAT_RANGE 262 0.0 1.0
+340
 0 attribute 113
 0 choices 112
 0 desired 31
@@ -600,4 +601,5 @@ ENUMERATION 261 1 nil
 255 range-tolerance 233
 255 replan-time 23
 255 rotation-tolerance 185
+255 throttle 262
 255 waypoint-tolerance 189

@@ -51,13 +51,15 @@ sp {propose*rotate*above-upper-bound
 sp {apply*rotate
    (state <s> ^operator <op>
               ^io.output-link <ol>
-              ^parameters.rotation-tolerance <rt>)
+              ^parameters <p>)
+   (<p> ^rotation-tolerance <rt>
+        ^throttle <thr>)
    (<op> ^name rotate-to
          ^yaw <yaw>)
 -->
    (<ol> ^rotate-to <r>)
    (<r> ^yaw <yaw>
-        ^throttle 1
+        ^throttle <thr>
         ^tolerance <rt>)
    (write (crlf) |Rotating to | <yaw>)
    (exec player-print |Rotating to | <yaw>)
