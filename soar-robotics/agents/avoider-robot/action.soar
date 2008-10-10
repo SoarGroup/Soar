@@ -4,7 +4,7 @@ sp {simple-robot*propose*action
               ^io.input-link.ranges.range <r>)
    (<r> ^blocked false
         ^action <a>
-        ^distance <d>)
+        ^ang-distance <d>)
 -->
    (<s> ^operator <op> + =)
    (<op> ^name action
