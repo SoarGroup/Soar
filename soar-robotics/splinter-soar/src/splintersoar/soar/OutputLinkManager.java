@@ -21,7 +21,7 @@ public class OutputLinkManager {
 	{
 		boolean motorsCommanded = false;
 		
-		System.out.print( "." );
+		//System.out.print( "." );
 		
 		// process output
 		for ( int i = 0; i < agent.GetNumberCommands(); ++i ) 

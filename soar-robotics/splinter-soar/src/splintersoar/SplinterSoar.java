@@ -17,7 +17,7 @@ public class SplinterSoar
 
 	public static final Logger logger = Logger.getLogger("splintersoar");
 	
-	public SplinterSoar()
+	public SplinterSoar( String args [] )
 	{
 		logger.info( "Starting orc interface" );
 		orc = new OrcInterface();
@@ -32,9 +32,17 @@ public class SplinterSoar
 		logger.info( "Subscribing orc to LASER_FRONT channel" );
 		lcm.subscribe( "LASER_FRONT", orc );
 
-		logger.info( "Starting Soar interface" );
-		soar = new SoarInterface( orc.getState() );
-
+		if ( args.length > 0 )
+		{
+			logger.info( "Starting Soar interface with agent: " + args[ 0 ] );
+			soar = new SoarInterface( orc.getState(), args[ 0 ] );
+		}
+		else
+		{
+			logger.info( "Starting Soar interface with default agent" );
+			soar = new SoarInterface( orc.getState(), null );
+		}
+		
 		//logger.info( "Creating and using game pad for override" );
 		//soar.setOverride( new GamePadManager() );
 		
@@ -68,7 +76,7 @@ public class SplinterSoar
 	
 	public static void main( String args[] )
 	{
-		new SplinterSoar();
+		new SplinterSoar( args );
 	}
 
 }

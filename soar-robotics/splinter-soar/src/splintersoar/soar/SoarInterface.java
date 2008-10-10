@@ -13,7 +13,7 @@ public class SoarInterface implements Kernel.UpdateEventInterface
 	
 	static final double baselineMeters = 0.42545;
 
-	public SoarInterface( SplinterState state )
+	public SoarInterface( SplinterState state, String productions )
 	{
 		kernel = Kernel.CreateKernelInNewThread();
 		if ( kernel.HadError() )
@@ -32,8 +32,11 @@ public class SoarInterface implements Kernel.UpdateEventInterface
 		}
 		
 		// load productions
-		//agent.LoadProductions( "agents/simple-bot.soar" );
-		agent.LoadProductions( "../agents/follower-robot.soar" );
+		if ( productions == null )
+		{
+			productions = "agents/simple-bot.soar";
+		}
+		agent.LoadProductions( productions );
 		
 		waypoints = new Waypoints( agent );
 		input = new InputLinkManager( agent, waypoints, state );
