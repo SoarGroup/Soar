@@ -2969,7 +2969,7 @@ void elaborate_gds (agent* thisAgent) {
 #ifdef DEBUG_GDS
                         else
                         {
-                           print("        this inst is for a pref with a differnt value than the condition WME; skippint it\n");
+                           print(thisAgent, "        this inst is for a pref with a differnt value than the condition WME; skippint it\n");
                         }
 #endif
                      }  /* for pref = s->pref[ACCEPTABLE_PREF ...*/
