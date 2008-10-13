@@ -68,9 +68,9 @@ public class Waypoints {
 			double relativeBearingValue = yawValue - robotYaw;
 			
 			agent.Update( distance, distanceValue );
-			agent.Update( yaw, yawValue );
-			agent.Update( relativeBearing, relativeBearingValue );
-			agent.Update( absRelativeBearing, Math.abs( relativeBearingValue ) );
+			agent.Update( yaw, Math.toDegrees( yawValue ) );
+			agent.Update( relativeBearing, Math.toDegrees( relativeBearingValue ) );
+			agent.Update( absRelativeBearing, Math.toDegrees( Math.abs( relativeBearingValue ) ) );
 		}
 		
 		void enable()

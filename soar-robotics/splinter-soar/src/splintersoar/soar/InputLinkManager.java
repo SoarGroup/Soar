@@ -146,7 +146,7 @@ public class InputLinkManager {
 				{
 					self_pose_x = agent.CreateFloatWME( self_pose, "x", stateCopy.x );
 					self_pose_y = agent.CreateFloatWME( self_pose, "y", stateCopy.y );
-					self_pose_yaw = agent.CreateFloatWME( self_pose, "yaw", stateCopy.yaw );
+					self_pose_yaw = agent.CreateFloatWME( self_pose, "yaw", Math.toDegrees( stateCopy.yaw ) );
 				}
 			}
 			
@@ -236,12 +236,12 @@ public class InputLinkManager {
 
 			agent.Update( self_pose_x, stateCopy.x );
 			agent.Update( self_pose_y, stateCopy.y );
-			double yaw = Math.toDegrees( stateCopy.yaw ) % 360.0;
+			double yaw = stateCopy.yaw % ( 2 * Math.PI );
 			if ( yaw < 0 )
 			{
 				yaw += 360.0;
 			}
-			agent.Update( self_pose_yaw, yaw );
+			agent.Update( self_pose_yaw, Math.toDegrees( yaw ) );
 
 			ranger.update( stateCopy.rangerutime, stateCopy.ranger );
 			

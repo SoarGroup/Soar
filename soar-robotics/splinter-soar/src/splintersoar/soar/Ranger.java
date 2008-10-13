@@ -41,8 +41,8 @@ public class Ranger {
 				createWmes();
 			}
 			
-			agent.Update( start, data.start );
-			agent.Update( end, data.end );
+			agent.Update( start, Math.toDegrees( data.start ) );
+			agent.Update( end, Math.toDegrees( data.end ) );
 			agent.Update( distance, data.distance );
 		}
 	}
