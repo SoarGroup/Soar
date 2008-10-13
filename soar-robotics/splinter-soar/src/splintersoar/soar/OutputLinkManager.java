@@ -290,6 +290,7 @@ public class OutputLinkManager {
 					commandId.AddStatusError();
 					continue;
 				}
+				yaw = Math.toRadians( yaw );
 				
 				double tolerance = 0;
 				try 
