@@ -63,32 +63,18 @@ public class Waypoints {
 		
 		void updateWmes()
 		{
-			System.out.println( "name, robotX, robotY, waypointX, waypointY, robotYaw, distanceValue, yawValue, relativeBearingValue" );
-			System.out.print( name + ", " );
-			System.out.print( robotX + ", " );
-			System.out.print( robotY + ", " );
-			System.out.print( waypointX + ", " );
-			System.out.print( waypointY + ", " );
-			System.out.print( robotYaw + ", " );
-
 			double distanceValue = Point.distance( robotX, robotY, waypointX, waypointY );
+			agent.Update( distance, distanceValue );
+
 			double yawValue = Math.atan2( waypointY - robotY, waypointX - robotX );
+			agent.Update( yaw, Math.toDegrees( yawValue ) );
+
 			while ( yawValue > Math.PI )
 			{
 				yawValue -= 2 * Math.PI;
 			}
-			while ( yawValue < Math.PI )
-			{
-				yawValue += 2 * Math.PI;
-			}
+
 			double relativeBearingValue = yawValue - robotYaw;
-			
-			System.out.print( distanceValue + ", " );
-			System.out.print( yawValue + ", " );
-			System.out.print( relativeBearingValue + "\n" );
-			
-			agent.Update( distance, distanceValue );
-			agent.Update( yaw, Math.toDegrees( yawValue ) );
 			agent.Update( relativeBearing, Math.toDegrees( relativeBearingValue ) );
 			agent.Update( absRelativeBearing, Math.toDegrees( Math.abs( relativeBearingValue ) ) );
 		}
