@@ -122,7 +122,12 @@ public class Waypoints {
 
 	public void add( double waypointX, double waypointY, String name ) 
 	{
-		waypointList.remove( name );
+		Waypoint waypoint = waypointList.remove( name );
+		if ( waypoint != null )
+		{
+			waypoint.disable();
+		}
+
 		waypointList.put( name, new Waypoint( waypointX, waypointY, name ) );
 	}
 
