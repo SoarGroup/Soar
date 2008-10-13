@@ -308,10 +308,11 @@ public class OutputLinkManager {
 					commandId.AddStatusError();
 					continue;
 				}
-
-				tolerance = Math.max( tolerance, 0 );
-				tolerance = Math.min( tolerance, 180 );
 				
+				tolerance = Math.toRadians( tolerance );
+				tolerance = Math.max( tolerance, 0 );
+				tolerance = Math.min( tolerance, Math.PI );
+
 				double throttle = 0;
 				try 
 				{
