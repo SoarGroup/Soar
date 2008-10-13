@@ -26,7 +26,6 @@ public class Waypoints {
 		FloatElement absRelativeBearing;
 		FloatElement distance;
 		FloatElement relativeBearing;
-		FloatElement yaw;
 		
 		public Waypoint( double waypointX, double waypointY, String name )
 		{
@@ -56,7 +55,6 @@ public class Waypoints {
 			agent.CreateFloatWME( waypoint, "y", waypointY );
 			
 			distance = agent.CreateFloatWME( waypoint, "distance", 0 );
-			yaw = agent.CreateFloatWME( waypoint, "yaw", 0 );
 			relativeBearing = agent.CreateFloatWME( waypoint, "relative-bearing", 0 );
 			absRelativeBearing = agent.CreateFloatWME( waypoint, "abs-relative-bearing", 0 );
 		}
@@ -66,15 +64,14 @@ public class Waypoints {
 			double distanceValue = Point.distance( robotX, robotY, waypointX, waypointY );
 			agent.Update( distance, distanceValue );
 
-			double yawValue = Math.atan2( waypointY - robotY, waypointX - robotX );
-			agent.Update( yaw, Math.toDegrees( yawValue ) );
+			double theta = Math.atan2( waypointY - robotY, waypointX - robotX );
 
-			while ( yawValue > Math.PI )
+			while ( theta > Math.PI )
 			{
-				yawValue -= 2 * Math.PI;
+				theta -= 2 * Math.PI;
 			}
 
-			double relativeBearingValue = yawValue - robotYaw;
+			double relativeBearingValue = theta - robotYaw;
 			agent.Update( relativeBearing, Math.toDegrees( relativeBearingValue ) );
 			agent.Update( absRelativeBearing, Math.toDegrees( Math.abs( relativeBearingValue ) ) );
 		}
@@ -103,7 +100,6 @@ public class Waypoints {
 			absRelativeBearing = null;
 			distance = null;
 			relativeBearing = null;
-			yaw = null;
 		}
 	}
 
