@@ -77,6 +77,10 @@ public class Waypoints {
 			{
 				yawValue -= 360;
 			}
+			while ( yawValue < Math.PI )
+			{
+				yawValue += 360;
+			}
 			double relativeBearingValue = yawValue - robotYaw;
 			
 			System.out.print( distanceValue + ", " );
