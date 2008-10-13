@@ -75,11 +75,11 @@ public class Waypoints {
 			double yawValue = Math.atan2( waypointY - robotY, waypointX - robotX );
 			while ( yawValue > Math.PI )
 			{
-				yawValue -= 360;
+				yawValue -= Math.PI;
 			}
 			while ( yawValue < Math.PI )
 			{
-				yawValue += 360;
+				yawValue += Math.PI;
 			}
 			double relativeBearingValue = yawValue - robotYaw;
 			
