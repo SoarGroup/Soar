@@ -146,19 +146,21 @@ public class OrcInterface implements LCMSubscriber
 			//// start orc communication
 			if ( targetYawEnabled )
 			{
-				double angleOff = targetYaw - thetaprime;
-				while ( angleOff < 0 )
+				double relativeBearingValue = targetYaw - thetaprime;
+				if ( relativeBearingValue > Math.PI )
 				{
-					angleOff += 360;
+					relativeBearingValue -= 2 * Math.PI;
+				} else if ( relativeBearingValue < Math.PI )
+				{
+					relativeBearingValue += 2 * Math.PI;
 				}
-				angleOff %= 360;
 				
-				if ( angleOff < targetYawTolerance )
+				if ( relativeBearingValue < ( 0 - targetYawTolerance ) )
 				{
 					leftMotor.setPWM( left );
 					rightMotor.setPWM( right * -1 );
 				}
-				else if ( angleOff > targetYawTolerance )
+				else if ( relativeBearingValue > targetYawTolerance )
 				{
 					leftMotor.setPWM( left * -1 );
 					rightMotor.setPWM( right );

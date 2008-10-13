@@ -334,7 +334,9 @@ public class OutputLinkManager {
 				
 				throttle = Math.max( throttle, 0 );
 				throttle = Math.min( throttle, 1.0 );
-				
+
+				System.out.println( "rotate-to " + yaw + ", " + tolerance );
+
 				synchronized ( state )
 				{
 					state.targetYaw = yaw;
