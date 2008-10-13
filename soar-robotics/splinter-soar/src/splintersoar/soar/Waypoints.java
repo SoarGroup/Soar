@@ -63,9 +63,20 @@ public class Waypoints {
 		
 		void updateWmes()
 		{
+			System.out.println( "robotX, robotY, waypointX, waypointY, robotYaw, distanceValue, yawValue, relativeBearingValue" );
+			System.out.print( robotX + ", " );
+			System.out.print( robotY + ", " );
+			System.out.print( waypointX + ", " );
+			System.out.print( waypointY + ", " );
+			System.out.print( robotYaw + ", " );
+
 			double distanceValue = Point.distance( robotX, robotY, waypointX, waypointY );
 			double yawValue = Math.atan2( waypointY - robotY, waypointX - robotX );
 			double relativeBearingValue = yawValue - robotYaw;
+			
+			System.out.print( distanceValue + ", " );
+			System.out.print( yawValue + ", " );
+			System.out.print( relativeBearingValue + "\n" );
 			
 			agent.Update( distance, distanceValue );
 			agent.Update( yaw, Math.toDegrees( yawValue ) );
