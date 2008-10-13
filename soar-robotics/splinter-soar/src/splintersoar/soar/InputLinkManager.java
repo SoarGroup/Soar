@@ -239,7 +239,7 @@ public class InputLinkManager {
 			double yaw = stateCopy.yaw % ( 2 * Math.PI );
 			if ( yaw < 0 )
 			{
-				yaw += 360.0;
+				yaw += ( 2 * Math.PI );
 			}
 			agent.Update( self_pose_yaw, Math.toDegrees( yaw ) );
 
