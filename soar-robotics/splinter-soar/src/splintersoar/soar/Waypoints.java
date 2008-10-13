@@ -63,7 +63,8 @@ public class Waypoints {
 		
 		void updateWmes()
 		{
-			System.out.println( "robotX, robotY, waypointX, waypointY, robotYaw, distanceValue, yawValue, relativeBearingValue" );
+			System.out.println( "name, robotX, robotY, waypointX, waypointY, robotYaw, distanceValue, yawValue, relativeBearingValue" );
+			System.out.print( name + ", " );
 			System.out.print( robotX + ", " );
 			System.out.print( robotY + ", " );
 			System.out.print( waypointX + ", " );
