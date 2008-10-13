@@ -1880,7 +1880,7 @@ void epmem_init_db( agent *my_agent )
 			sqlite3_finalize( create );
 			
 			// start index
-			sqlite3_prepare_v2( my_agent->epmem_db, "CREATE UNIQUE INDEX IF NOT EXISTS points_start ON points (start)", -1, &create, &tail );
+			sqlite3_prepare_v2( my_agent->epmem_db, "CREATE INDEX IF NOT EXISTS points_start ON points (start)", -1, &create, &tail );
 			sqlite3_step( create );
 			sqlite3_finalize( create );
 
@@ -2284,7 +2284,7 @@ void epmem_new_episode( agent *my_agent )
 				{
 					sqlite3_bind_int64( my_agent->epmem_statements[ EPMEM_STMT_BIGTREE_RIT_ADD_POINT ], 1, r->first );
 					sqlite3_bind_int64( my_agent->epmem_statements[ EPMEM_STMT_BIGTREE_RIT_ADD_POINT ], 2, range_start );					
-					sqlite3_step( my_agent->epmem_statements[ EPMEM_STMT_BIGTREE_RIT_ADD_POINT ] );
+					int res = sqlite3_step( my_agent->epmem_statements[ EPMEM_STMT_BIGTREE_RIT_ADD_POINT ] );
 					sqlite3_reset( my_agent->epmem_statements[ EPMEM_STMT_BIGTREE_RIT_ADD_POINT ] );
 				}
 				// node
