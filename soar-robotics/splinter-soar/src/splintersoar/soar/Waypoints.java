@@ -69,14 +69,17 @@ public class Waypoints {
 			double yawValue = Math.atan2( waypointY - robotY, waypointX - robotX );
 			agent.Update( yaw, Math.toDegrees( yawValue ) );
 			double relativeBearingValue = yawValue - robotYaw;
+			System.out.print( name + ", " + yawValue + ", " + robotYaw + ", " + relativeBearingValue + ": " );
 			
 			if ( relativeBearingValue > Math.PI )
 			{
 				relativeBearingValue -= 2 * Math.PI;
-			} else if ( relativeBearingValue < Math.PI )
+			} else if ( relativeBearingValue < Math.PI * -1 )
 			{
 				relativeBearingValue += 2 * Math.PI;
 			}
+			
+			System.out.println( relativeBearingValue );
 			
 			agent.Update( relativeBearing, Math.toDegrees( relativeBearingValue ) );
 			agent.Update( absRelativeBearing, Math.toDegrees( Math.abs( relativeBearingValue ) ) );

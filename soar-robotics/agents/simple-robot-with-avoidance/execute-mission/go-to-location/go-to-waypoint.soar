@@ -1,8 +1,8 @@
 sp {go-to-location*propose*go-to-waypoint
    (state <s> ^name go-to-location
               ^desired
-              ^waypoints.at.next <w>
-             -^top-state.move-to) # not already executing a move-to command
+              ^waypoints.at.next <w>)
+            # -^top-state.move-to) # not already executing a move-to command
 -->
    (<s> ^operator <op> +)
    (<op> ^name go-to-waypoint

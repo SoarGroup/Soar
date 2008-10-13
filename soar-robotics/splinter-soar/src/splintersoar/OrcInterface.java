@@ -150,7 +150,7 @@ public class OrcInterface implements LCMSubscriber
 				if ( relativeBearingValue > Math.PI )
 				{
 					relativeBearingValue -= 2 * Math.PI;
-				} else if ( relativeBearingValue < Math.PI )
+				} else if ( relativeBearingValue < Math.PI * -1 )
 				{
 					relativeBearingValue += 2 * Math.PI;
 				}

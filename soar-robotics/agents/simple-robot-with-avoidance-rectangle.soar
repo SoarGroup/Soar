@@ -5,9 +5,9 @@ sp {apply*initialize-simple-robot*parameters
    (<op> ^name initialize-simple-robot)
 -->
    (<s> ^parameters <p>)
-   (<p> ^waypoint-tolerance 0.5 # how close (in meters) the agent needs to be to a waypoint to be considered "at" it
+   (<p> ^waypoint-tolerance 0.3 # how close (in meters) the agent needs to be to a waypoint to be considered "at" it
         ^min-progress-distance 0.1 # how much progress the agent has to make when trying to get to a location for it to be considered progress (i.e., to reset cutoff time)
-        ^replan-time 2 # how many seconds (as reported on the input-link) the agent should let the collision avoidance algorithm try to make progress towards the waypoint before replanning
+        ^replan-time 2000 # how many seconds (as reported on the input-link) the agent should let the collision avoidance algorithm try to make progress towards the waypoint before replanning
         ^message-update-time 3 # after how many seconds (as reported on the input-link) the agent should send another positition update of an unfriendly entity)
         ^rotation-tolerance 15 # how many degrees the agent's yaw can be off when it has a desired yaw
         ^range-tolerance 1 # distance at which a range arc is considered blocked
@@ -21,10 +21,10 @@ sp {apply*waypoints
 -->
    (<s> ^waypoints <w>)
    (<w> ^waypoint <w1> <w2> <w3> <w4>)
-   (<w1> ^x 0 ^y 0 ^id 1 ^next <w2>)
-   (<w2> ^x 1 ^y 0 ^id 2 ^next <w3>)
-   (<w3> ^x 1 ^y 1 ^id 3 ^next <w4>)
-   (<w4> ^x 0 ^y 1 ^id 4 ^next <w1>)
+   (<w1> ^x 0. ^y 0. ^id |1| ^next <w2>)
+   (<w2> ^x 1. ^y 0. ^id |2| ^next <w3>)
+   (<w3> ^x 1. ^y 1. ^id |3| ^next <w4>)
+   (<w4> ^x 0. ^y 1. ^id |4| ^next <w1>)
 }
 
 sp {apply*initialize-simple-robot*create-mission
@@ -34,9 +34,16 @@ sp {apply*initialize-simple-robot*create-mission
    (<s> ^mission <m>)
    (<m> ^first <s1>)
    (<s1> ^name go-to-location
-         ^x 0 ^y 1
+         ^x 0. ^y 1.
          ^next <s2>)
    (<s2> ^name go-to-location
-         ^x 0 ^y 0
-         ^next <s1>)
+         ^x 0. ^y 0.
+         ^next nil)
+}
+
+sp {mission-complete*stop
+(state <s> ^mission.current nil
+^io.output-link <ol>)
+-->
+(<ol> ^stop <stop>)
 }

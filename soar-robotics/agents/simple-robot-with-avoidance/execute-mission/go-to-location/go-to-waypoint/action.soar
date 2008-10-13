@@ -40,6 +40,7 @@ sp {go-to-waypoint*propose*turn-left
    (<a> ^rotate <params>)
    (<params> ^direction left
              ^throttle <thr>)
+   (write (crlf) |all arcs blocked (or missing), so rotating left until not blocked|)
 }
 
 sp {apply*action
