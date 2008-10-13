@@ -20,6 +20,7 @@
 #include <list>
 #include <queue>
 #include <map>
+#include <algorithm>
 
 #include "sqlite3.h"
 
