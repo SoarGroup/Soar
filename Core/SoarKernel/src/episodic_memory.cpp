@@ -2284,7 +2284,7 @@ void epmem_new_episode( agent *my_agent )
 				{
 					sqlite3_bind_int64( my_agent->epmem_statements[ EPMEM_STMT_BIGTREE_RIT_ADD_POINT ], 1, r->first );
 					sqlite3_bind_int64( my_agent->epmem_statements[ EPMEM_STMT_BIGTREE_RIT_ADD_POINT ], 2, range_start );					
-					int res = sqlite3_step( my_agent->epmem_statements[ EPMEM_STMT_BIGTREE_RIT_ADD_POINT ] );
+					sqlite3_step( my_agent->epmem_statements[ EPMEM_STMT_BIGTREE_RIT_ADD_POINT ] );
 					sqlite3_reset( my_agent->epmem_statements[ EPMEM_STMT_BIGTREE_RIT_ADD_POINT ] );
 				}
 				// node
