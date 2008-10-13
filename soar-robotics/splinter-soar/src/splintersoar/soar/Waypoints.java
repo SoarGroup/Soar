@@ -72,7 +72,7 @@ public class Waypoints {
 			System.out.print( robotYaw + ", " );
 
 			double distanceValue = Point.distance( robotX, robotY, waypointX, waypointY );
-			double yawValue = Math.atan2( waypointY, waypointX );
+			double yawValue = Math.atan2( waypointY - robotY, waypointX - robotX );
 			while ( yawValue > Math.PI )
 			{
 				yawValue -= 360;
