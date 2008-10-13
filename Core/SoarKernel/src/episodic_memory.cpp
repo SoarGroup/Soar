@@ -1919,7 +1919,7 @@ void epmem_init_db( agent *my_agent )
 			////
 			
 			// ids table
-			sqlite3_prepare_v2( my_agent->epmem_db, "CREATE TABLE IF NOT EXISTS ids (child_id INTEGER PRIMARY KEY AUTOINCREMENT,parent_id INTEGER,name TEXT,value NONE,hash INTEGER)", -1, &create, &tail );
+			sqlite3_prepare_v2( my_agent->epmem_db, "CREATE TABLE IF NOT EXISTS ids (child_id INTEGER PRIMARY KEY AUTOINCREMENT,parent_id INTEGER,name TEXT,value NONE,hash INTEGER,wme_type INTEGER)", -1, &create, &tail );
 			sqlite3_step( create );					
 			sqlite3_finalize( create );
 
@@ -1929,7 +1929,7 @@ void epmem_init_db( agent *my_agent )
 			sqlite3_finalize( create );
 
 			// custom statement for inserting ids
-			sqlite3_prepare_v2( my_agent->epmem_db, "INSERT INTO ids (parent_id,name,value,hash) VALUES (?,?,?,?)", -1, &( my_agent->epmem_statements[ EPMEM_STMT_BIGTREE_RIT_ADD_ID ] ), &tail );
+			sqlite3_prepare_v2( my_agent->epmem_db, "INSERT INTO ids (parent_id,name,value,hash,wme_type) VALUES (?,?,?,?,?)", -1, &( my_agent->epmem_statements[ EPMEM_STMT_BIGTREE_RIT_ADD_ID ] ), &tail );
 
 			// custom statement for finding non-identifier id's
 			sqlite3_prepare_v2( my_agent->epmem_db, "SELECT child_id FROM ids WHERE hash=? AND parent_id=? AND name=? AND value=?", -1, &( my_agent->epmem_statements[ EPMEM_STMT_BIGTREE_RIT_FIND_ID ] ), &tail );
@@ -1971,7 +1971,7 @@ void epmem_init_db( agent *my_agent )
 			sqlite3_prepare_v2( my_agent->epmem_db, "DELETE FROM right_nodes", -1, &( my_agent->epmem_statements[ EPMEM_STMT_BIGTREE_RIT_TRUNCATE_RIGHT ] ), &tail );
 
 			// custom statement for range intersection query
-			sqlite3_prepare_v2( my_agent->epmem_db, "SELECT i.child_id, i.parent_id, i.name, i.value FROM ids i WHERE i.child_id IN (SELECT n.id FROM now n WHERE n.start<= ? UNION ALL SELECT p.id FROM points p WHERE p.start=? UNION ALL SELECT e1.id FROM episodes e1, left_nodes lt WHERE e1.node BETWEEN lt.min AND lt.max AND e1.end >= ? UNION ALL SELECT e2.id FROM episodes e2, right_nodes rt WHERE e2.node = rt.node AND e2.start <= ?) ORDER BY i.child_id ASC", -1, &( my_agent->epmem_statements[ EPMEM_STMT_BIGTREE_RIT_GET_EPISODE ] ), &tail );
+			sqlite3_prepare_v2( my_agent->epmem_db, "SELECT i.child_id, i.parent_id, i.name, i.value, i.wme_type FROM ids i WHERE i.child_id IN (SELECT n.id FROM now n WHERE n.start<= ? UNION ALL SELECT p.id FROM points p WHERE p.start=? UNION ALL SELECT e1.id FROM episodes e1, left_nodes lt WHERE e1.node BETWEEN lt.min AND lt.max AND e1.end >= ? UNION ALL SELECT e2.id FROM episodes e2, right_nodes rt WHERE e2.node = rt.node AND e2.start <= ?) ORDER BY i.child_id ASC", -1, &( my_agent->epmem_statements[ EPMEM_STMT_BIGTREE_RIT_GET_EPISODE ] ), &tail );
 
 			////
 
@@ -2183,10 +2183,12 @@ void epmem_new_episode( agent *my_agent )
 					// insert on no id
 					if ( wmes[i]->epmem_id == NULL )
 					{						
+						long long wme_type = wmes[i]->value->common.symbol_type;
+						
 						// insert (parent_id,name,value,hash)						
 						sqlite3_bind_int64( my_agent->epmem_statements[ EPMEM_STMT_BIGTREE_RIT_ADD_ID ], 1, parent_id );
 						sqlite3_bind_text( my_agent->epmem_statements[ EPMEM_STMT_BIGTREE_RIT_ADD_ID ], 2, (const char *) wmes[i]->attr->sc.name, -1, SQLITE_STATIC );				
-						switch ( wmes[i]->value->common.symbol_type )
+						switch ( wme_type )
 						{
 							case SYM_CONSTANT_SYMBOL_TYPE:
 								sqlite3_bind_text( my_agent->epmem_statements[ EPMEM_STMT_BIGTREE_RIT_ADD_ID ], 3, (const char *) wmes[i]->value->sc.name, -1, SQLITE_STATIC );
@@ -2205,6 +2207,7 @@ void epmem_new_episode( agent *my_agent )
 								break;
 						}
 						sqlite3_bind_int64( my_agent->epmem_statements[ EPMEM_STMT_BIGTREE_RIT_ADD_ID ], 4, my_hash );
+						sqlite3_bind_int64( my_agent->epmem_statements[ EPMEM_STMT_BIGTREE_RIT_ADD_ID ], 5, wme_type );
 						sqlite3_step( my_agent->epmem_statements[ EPMEM_STMT_BIGTREE_RIT_ADD_ID ] );
 						sqlite3_reset( my_agent->epmem_statements[ EPMEM_STMT_BIGTREE_RIT_ADD_ID ] );					
 
@@ -2382,7 +2385,7 @@ void epmem_install_memory( agent *my_agent, Symbol *state, epmem_time_id memory_
 		epmem_node_id child_id;
 		epmem_node_id parent_id;
 		const char *name;
-		int type_code;
+		long long wme_type;
 		Symbol *attr = NULL;
 		Symbol *value = NULL;
 		Symbol *parent = NULL;
@@ -2401,7 +2404,7 @@ void epmem_install_memory( agent *my_agent, Symbol *state, epmem_time_id memory_
 			child_id = sqlite3_column_int64( my_agent->epmem_statements[ EPMEM_STMT_BIGTREE_RIT_GET_EPISODE ], 0 );
 			parent_id = sqlite3_column_int64( my_agent->epmem_statements[ EPMEM_STMT_BIGTREE_RIT_GET_EPISODE ], 1 );
 			name = (const char *) sqlite3_column_text( my_agent->epmem_statements[ EPMEM_STMT_BIGTREE_RIT_GET_EPISODE ], 2 );
-			type_code = sqlite3_column_type( my_agent->epmem_statements[ EPMEM_STMT_BIGTREE_RIT_GET_EPISODE ], 3 );
+			wme_type = sqlite3_column_int64( my_agent->epmem_statements[ EPMEM_STMT_BIGTREE_RIT_GET_EPISODE ], 4 );
 			
 			// make a symbol to represent the attribute name		
 			attr = make_sym_constant( my_agent, const_cast<char *>( name ) );
@@ -2410,7 +2413,7 @@ void epmem_install_memory( agent *my_agent, Symbol *state, epmem_time_id memory_
 			parent = ids[ parent_id ];
 
 			// identifier = NULL, else attr->val
-			if ( type_code == SQLITE_NULL )
+			if ( wme_type == IDENTIFIER_SYMBOL_TYPE )
 			{
 				value = make_new_identifier( my_agent, name[0], parent->id.level );				
 				
@@ -2424,17 +2427,17 @@ void epmem_install_memory( agent *my_agent, Symbol *state, epmem_time_id memory_
 			}
 			else
 			{
-				switch ( type_code )
+				switch ( wme_type )
 				{
-					case SQLITE_INTEGER:
+					case INT_CONSTANT_SYMBOL_TYPE:
 						value = make_int_constant( my_agent, sqlite3_column_int64( my_agent->epmem_statements[ EPMEM_STMT_BIGTREE_RIT_GET_EPISODE ], 3 ) );
 						break;
 
-					case SQLITE_FLOAT:
+					case FLOAT_CONSTANT_SYMBOL_TYPE:
 						value = make_float_constant( my_agent, sqlite3_column_double( my_agent->epmem_statements[ EPMEM_STMT_BIGTREE_RIT_GET_EPISODE ], 3 ) );
 						break;
 
-					case SQLITE_TEXT:						
+					case SYM_CONSTANT_SYMBOL_TYPE:						
 						value = make_sym_constant( my_agent, const_cast<char *>( (const char *) sqlite3_column_text( my_agent->epmem_statements[ EPMEM_STMT_BIGTREE_RIT_GET_EPISODE ], 3 ) ) );
 						break;
 				}
