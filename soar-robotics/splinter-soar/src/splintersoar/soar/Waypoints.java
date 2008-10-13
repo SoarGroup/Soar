@@ -57,7 +57,7 @@ public class Waypoints {
 			
 			distance = agent.CreateFloatWME( waypoint, "distance", 0 );
 			yaw = agent.CreateFloatWME( waypoint, "yaw", 0 );
-			relativeBearing = agent.CreateFloatWME( waypoint, "relativeBearing", 0 );
+			relativeBearing = agent.CreateFloatWME( waypoint, "relative-bearing", 0 );
 			absRelativeBearing = agent.CreateFloatWME( waypoint, "abs-relative-bearing", 0 );
 		}
 		
