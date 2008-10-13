@@ -62,7 +62,7 @@ sp {go-to-waypoint*elaborate*range*dist-from-goal*0
    (<r> ^start <= <rb>
         ^end >= <rb>)
 -->
-   (<r> ^distance 0)
+   (<r> ^angular-distance 0)
 }
 
 sp {go-to-waypoint*elaborate*range*dist-from-goal*left
@@ -74,7 +74,7 @@ sp {go-to-waypoint*elaborate*range*dist-from-goal*left
         ^relative-bearing <rb>)
    (<r> ^start {<start> > <rb>})
 -->
-   (<r> ^distance (- <start> <rb>) )
+   (<r> ^angular-distance (- <start> <rb>) )
 }
 
 sp {go-to-waypoint*elaborate*range*dist-from-goal*right
@@ -86,5 +86,5 @@ sp {go-to-waypoint*elaborate*range*dist-from-goal*right
         ^relative-bearing <rb>)
    (<r> ^end {<end> < <rb>})
 -->
-   (<r> ^distance (- <rb> <end>) )
+   (<r> ^angular-distance (- <rb> <end>) )
 }

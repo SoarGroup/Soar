@@ -1,4 +1,4 @@
-263
+264
 SOAR_ID 0
 SOAR_ID 1
 SOAR_ID 2
@@ -262,7 +262,8 @@ ENUMERATION 259 2 complete error
 ENUMERATION 260 2 complete error
 ENUMERATION 261 1 nil
 FLOAT_RANGE 262 0.0 1.0
-340
+FLOAT_RANGE 263 0.0 Infinity
+341
 0 attribute 113
 0 choices 112
 0 desired 31
@@ -574,6 +575,7 @@ FLOAT_RANGE 262 0.0 1.0
 223 yaw 236
 227 range 228
 228 action 249
+228 angular-distance 263
 228 blocked 248
 228 distance 232
 228 end 238
@@ -581,7 +583,7 @@ FLOAT_RANGE 262 0.0 1.0
 228 start 237
 235 name 234
 240 action 249
-240 distance 250
+240 angular-distance 250
 240 name 239
 241 status 259
 241 throttle 243
