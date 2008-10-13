@@ -375,10 +375,10 @@ public class OutputLinkManager {
 					stateCopy = new SplinterState( state );
 				}
 
-				String name = commandId.GetParameterValue( "name" );
-				if ( name == null )
+				String id = commandId.GetParameterValue( "id" );
+				if ( id == null )
 				{
-					System.out.println( "No name on add-waypoint command" );
+					System.out.println( "No id on add-waypoint command" );
 					commandId.AddStatusError();
 					continue;
 				}
@@ -415,24 +415,24 @@ public class OutputLinkManager {
 					continue;
 				}
 
-				waypoints.add( x, y, name );
+				waypoints.add( x, y, id );
 				
 				commandId.AddStatusComplete();
 				continue;
 			}
 			else if ( commandName.equals( "remove-waypoint" ) )
 			{
-				String name = commandId.GetParameterValue( "name" );
-				if ( name == null )
+				String id = commandId.GetParameterValue( "id" );
+				if ( id == null )
 				{
-					System.out.println( "No name on remove-waypoint command" );
+					System.out.println( "No id on remove-waypoint command" );
 					commandId.AddStatusError();
 					continue;
 				}
 				
-				if ( waypoints.remove( name ) == false )
+				if ( waypoints.remove( id ) == false )
 				{
-					System.out.println( "Unable to remove waypoint " + name + ", no such waypoint" );
+					System.out.println( "Unable to remove waypoint " + id + ", no such waypoint" );
 					commandId.AddStatusError();
 					continue;
 				}
@@ -442,17 +442,17 @@ public class OutputLinkManager {
 			}
 			else if ( commandName.equals( "enable-waypoint" ) )
 			{
-				String name = commandId.GetParameterValue( "name" );
-				if ( name == null )
+				String id = commandId.GetParameterValue( "id" );
+				if ( id == null )
 				{
-					System.out.println( "No name on enable-waypoint command" );
+					System.out.println( "No id on enable-waypoint command" );
 					commandId.AddStatusError();
 					continue;
 				}
 				
-				if ( waypoints.enable( name ) == false )
+				if ( waypoints.enable( id ) == false )
 				{
-					System.out.println( "Unable to enable waypoint " + name + ", no such waypoint" );
+					System.out.println( "Unable to enable waypoint " + id + ", no such waypoint" );
 					commandId.AddStatusError();
 					continue;
 				}
@@ -462,17 +462,17 @@ public class OutputLinkManager {
 			}
 			else if ( commandName.equals( "disable-waypoint" ) )
 			{
-				String name = commandId.GetParameterValue( "name" );
-				if ( name == null )
+				String id = commandId.GetParameterValue( "id" );
+				if ( id == null )
 				{
-					System.out.println( "No name on disable-waypoint command" );
+					System.out.println( "No id on disable-waypoint command" );
 					commandId.AddStatusError();
 					continue;
 				}
 				
-				if ( waypoints.disable( name ) == false )
+				if ( waypoints.disable( id ) == false )
 				{
-					System.out.println( "Unable to disable waypoint " + name + ", no such waypoint" );
+					System.out.println( "Unable to disable waypoint " + id + ", no such waypoint" );
 					commandId.AddStatusError();
 					continue;
 				}
