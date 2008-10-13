@@ -135,21 +135,17 @@
 0 percentage effort
 
 0 
-0 agent-assigned identifier
-
+0 
 0 
 0 global x coordinate of point, optional (if omitted, current position is used)
 
 0 global y coordinate of point, optional (if omitted, current position is used)
 
-0 agent-assigned identifier
-
 0 
-0 agent-assigned identifier
-
 0 
-0 agent-assigned identifier
-
+0 
+0 
+0 
 0 
 0 
 0 percentage effort
