@@ -47,7 +47,7 @@ sp {go-to-waypoint*elaborate*superoperator*move-now
    :o-support
    (state <s> ^name go-to-waypoint
               ^parameters.rotation-tolerance <rt>
-              ^waypoint.abs-relative-bearing <= <rt>
+             -^waypoint.abs-relative-bearing > <rt>
               ^superoperator <so>)
 -->
    (<so> ^move-now true)

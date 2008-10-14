@@ -1,4 +1,4 @@
-266
+268
 SOAR_ID 0
 SOAR_ID 1
 SOAR_ID 2
@@ -265,7 +265,9 @@ FLOAT_RANGE 262 0.0 1.0
 FLOAT_RANGE 263 0.0 Infinity
 ENUMERATION 264 1 reset-mission
 SOAR_ID 265
-344
+ENUMERATION 266 1 choose-waypoint
+SOAR_ID 267
+346
 0 attribute 113
 0 choices 112
 0 desired 31
@@ -420,6 +422,7 @@ SOAR_ID 265
 81 operator 101
 81 operator 104
 81 operator 107
+81 operator 267
 81 parameters 255
 81 problem-space 58
 81 success 31
@@ -610,3 +613,4 @@ SOAR_ID 265
 255 throttle 262
 255 waypoint-tolerance 189
 265 name 264
+267 name 266
