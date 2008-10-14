@@ -30,8 +30,10 @@ public class LaserLoc implements LCMSubscriber
 	public static double laser_yaw_adjust = 0; // amount to adjust for laser's yaw = 90 - laser's yaw = 0 if laser is facing positive y directly
 	public static double laser_dist_adjustment = 0; // radius of tube?
 	public static double translation_threshold = 0.1; // minimum translation distance to update x,y location, 0.05 total guess
+	public static double duration_threshold = 2; // maximum time between updates in seconds
 	public static String laser_channel = "LASER_LOC";
 	public static String pose_channel = "POSE";
+	public static int update_period = 5; // seconds between status updates
 
 	// Even though this comes in each message, it may help the compiler optimize 
 	// if we make it a separate constant (can assert on it not matching the message)
@@ -41,8 +43,11 @@ public class LaserLoc implements LCMSubscriber
 	// regular state
 	laser_t laser_data;
 	pose_t estimated_pose;
+	
+	int droppedLocPackets = 0;
+	long lastStatusUpdate = System.nanoTime();
 
-	static boolean testing = false;
+	static boolean testing = true;
 	static boolean verbose = false;
 	
 	LCM lcm;
@@ -56,10 +61,33 @@ public class LaserLoc implements LCMSubscriber
 			lcm = LCM.getSingleton();
 			lcm.subscribe( laser_channel, this );
 		}
+
+		printHeaderLine();
+	}
+	
+	public void printHeaderLine()
+	{
+		System.out.format( "%10s %10s %10s %10s %10s%n", "x", "y", "vx", "vy", "vmag", "yaw" );
 	}
 	
 	private void updatePose()
 	{
+		// occasionally print out status update
+		long utime = System.nanoTime() / 1000;
+		long elapsed = utime - lastStatusUpdate;
+		if ( elapsed > update_period )
+		{
+			if ( droppedLocPackets > 0 )
+			{
+				float dropRate = droppedLocPackets / elapsed;
+				System.out.format( "LaserLoc: dropping %5.1f %s packets/sec%n", dropRate, laser_channel );
+				printHeaderLine();
+			}
+			
+			droppedLocPackets = 0;
+			lastStatusUpdate = System.nanoTime();
+		}
+		
 		if ( laser_data == null )
 		{
 			try 
@@ -79,9 +107,15 @@ public class LaserLoc implements LCMSubscriber
 			estimated_pose.orientation = Geometry.rollPitchYawToQuat( new double[] { 0, 0, robot_starting_yaw } );
 			if ( verbose )
 			{
-				System.out.print( "initial: " );
 				printOldPose();
 			}
+
+			estimated_pose.utime = utime;
+			if ( !testing )
+			{
+				lcm.publish( pose_channel, estimated_pose );
+			}
+
 			laser_data = null;
 			return;
 		}
@@ -99,8 +133,14 @@ public class LaserLoc implements LCMSubscriber
 		// only update location if moved enough. Don't want Soar to thrash on constantly changing x,y due to noise
 		// this also means this loop can run as fast as it can and we'll still get reasonable updates
 		// (i.e., we don't have to worry about robot not moving enough between updates)
-		if( translation_dist >= translation_threshold )
+		boolean movedEnough = translation_dist >= translation_threshold;
+		boolean enoughTimePassed = ( new_estimated_pose.utime - estimated_pose.utime ) > ( duration_threshold * 1000000 );
+		
+		if( movedEnough || enoughTimePassed )
 		{
+			estimated_pose.vel[0] = ( new_estimated_pose.pos[ 0 ] - estimated_pose.pos[ 0 ] ) / elapsed;
+			estimated_pose.vel[1] = ( new_estimated_pose.pos[ 1 ] - estimated_pose.pos[ 1 ] ) / elapsed;
+			estimated_pose.vel[2] = ( new_estimated_pose.pos[ 2 ] - estimated_pose.pos[ 2 ] ) / elapsed;
 			
 			double estimated_pose_yaw = Math.atan2( new_estimated_pose.pos[ 1 ] - estimated_pose.pos[ 1 ], new_estimated_pose.pos[ 0 ] - estimated_pose.pos[ 0 ] );
 			estimated_pose.orientation = Geometry.rollPitchYawToQuat( new double[] { 0, 0, estimated_pose_yaw } );
@@ -108,11 +148,12 @@ public class LaserLoc implements LCMSubscriber
 			// TODO: figure out best way to clone
 			estimated_pose.pos[ 0 ] =  new_estimated_pose.pos[ 0 ];
 			estimated_pose.pos[ 1 ] =  new_estimated_pose.pos[ 1 ];
+			estimated_pose.pos[ 2 ] =  new_estimated_pose.pos[ 2 ];
 			
+			estimated_pose.utime = utime;
 			if ( !testing )
 			{
-				estimated_pose.utime = System.nanoTime() / 1000;
-				lcm.publish( "POSE", estimated_pose );
+				lcm.publish( pose_channel, estimated_pose );
 			}
 
 			printOldPose();
@@ -129,7 +170,13 @@ public class LaserLoc implements LCMSubscriber
 
 	private void printOldPose() 
 	{
-		System.out.println( "x,y,a: " + estimated_pose.pos[ 0 ] + "," + estimated_pose.pos[ 1 ] + "," + Math.toDegrees( Geometry.quatToRollPitchYaw( estimated_pose.orientation )[2] ) );
+		System.out.format( "%10.3f %10.3f %10.3g %10.3g %10.3g %10.3f%n", 
+				estimated_pose.pos[ 0 ], 
+				estimated_pose.pos[ 1 ], 
+				estimated_pose.vel[ 0 ], 
+				estimated_pose.vel[ 1 ], 
+				Geometry.magnitude( estimated_pose.vel ),
+				Math.toDegrees( Geometry.quatToRollPitchYaw( estimated_pose.orientation )[ 2 ] ) );
 	}
 
 	private pose_t getRobotXY( laser_t laser_data )
@@ -155,6 +202,7 @@ public class LaserLoc implements LCMSubscriber
 		pose_t new_pose = new pose_t();
 		new_pose.pos[ 0 ] = laser_x + laser_dist * Math.cos( laser_angle );
 		new_pose.pos[ 1 ] = laser_y + laser_dist * Math.sin( laser_angle );
+		new_pose.pos[ 2 ] = 0;
 		
 		return new_pose;
 	}
@@ -166,6 +214,7 @@ public class LaserLoc implements LCMSubscriber
 		{
 			if ( laser_data != null )
 			{
+				droppedLocPackets += 1;
 				return;
 			}
 			
@@ -274,7 +323,6 @@ public class LaserLoc implements LCMSubscriber
 
 				for ( int current_test_data_index = 0; current_test_data_index < test_data[ current_test_index ].length; ++current_test_data_index )
 				{
-					System.out.print( "Test data " + current_test_data_index + ": ");
 					lloc.laser_data = test_data[ current_test_index ][ current_test_data_index ];
 					lloc.updatePose();
 				}
