@@ -36,6 +36,10 @@ public class OrcInterface implements LCMSubscriber
 	int leftPreviousPosition = 0;
 	int rightPreviousPosition = 0;
 	
+	double initialX = 0;
+	double initialY = 0;
+	boolean haveInitialCoords = false;
+
 	public OrcInterface()
 	{
 		orc = Orc.makeOrc();
@@ -125,16 +129,23 @@ public class OrcInterface implements LCMSubscriber
 			double xprime, yprime;
 			if ( pose != null )
 			{
-				System.out.print( "s" );
-				xprime = pose.pos[0];
-				yprime = pose.pos[1];
+				if ( haveInitialCoords == false )
+				{
+					initialX = pose.pos[0];
+					initialY = pose.pos[1];
+					haveInitialCoords = true;
+				}
+				
+				System.out.print( "*" );
+				xprime = pose.pos[0] - initialX;
+				yprime = pose.pos[1] - initialY;
 				
 				hadSickData = true;
 				pose = null;
 			}
 			else
 			{
-				System.out.print( "d" );
+				System.out.print( "." );
 				// Equations from A Primer on Odopmetry and Motor Control, Olson 2006
 				// dleft, dright: distance wheel travelled
 				// dbaseline: wheelbase
@@ -176,7 +187,7 @@ public class OrcInterface implements LCMSubscriber
 						prevYawCalcLocX = xprime;
 						prevYawCalcLocY = yprime;
 					
-						System.out.format( "Correcting yaw from  %.3f to %.3f%n", Math.toDegrees( thetaprime ), Math.toDegrees( newThetaPrime ) );
+						System.out.format( "Correcting yaw delta %.3f%n", Math.toDegrees( newThetaPrime ) - Math.toDegrees( thetaprime ) );
 					
 						thetaprime = newThetaPrime;
 						hadSickData = false;

@@ -29,7 +29,7 @@ public class LaserLoc implements LCMSubscriber
 	public static double laser_y = 0;
 	public static double laser_yaw_adjust = 0; // amount to adjust for laser's yaw = 90 - laser's yaw = 0 if laser is facing positive y directly
 	public static double laser_dist_adjustment = 0; // radius of tube?
-	public static double translation_threshold = 0.1; // minimum translation distance to update x,y location, 0.05 total guess
+	public static double translation_threshold = 0; // minimum translation distance to update x,y location, 0.05 total guess
 	public static double duration_threshold = 2; // maximum time between updates in seconds
 	public static String laser_channel = "LASER_LOC";
 	public static String pose_channel = "POSE";
@@ -67,7 +67,7 @@ public class LaserLoc implements LCMSubscriber
 	
 	public void printHeaderLine()
 	{
-		System.out.format( "%10s %10s%n", "x", "y" );
+		//System.out.format( "%10s %10s%n", "x", "y" );
 	}
 	
 	private void updatePose()
@@ -161,9 +161,9 @@ public class LaserLoc implements LCMSubscriber
 
 	private void printOldPose() 
 	{
-		System.out.format( "%10.3f %10.3f%n", 
-				estimated_pose.pos[ 0 ], 
-				estimated_pose.pos[ 1 ] );
+		//System.out.format( "%10.3f %10.3f%n", 
+		//		estimated_pose.pos[ 0 ], 
+		//		estimated_pose.pos[ 1 ] );
 	}
 
 	private pose_t getRobotXY( laser_t laser_data )

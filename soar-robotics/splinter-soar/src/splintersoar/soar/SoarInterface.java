@@ -45,8 +45,35 @@ public class SoarInterface implements Kernel.UpdateEventInterface
 		kernel.RegisterForUpdateEvent( smlUpdateEventId.smlEVENT_AFTER_ALL_OUTPUT_PHASES, this, null );
 	}
 	
+	class SoarRunner implements Runnable
+	{
+		public void run()
+		{
+			kernel.RunAllAgentsForever();
+		}
+	}
+	
+	public void start()
+	{
+		Thread soarThread = new Thread( new SoarRunner() );
+		stopSoar = false;
+		soarThread.start();
+	}
+	
+	boolean stopSoar = false;
+	public void stop()
+	{
+		stopSoar = true;
+	}
+	
 	public void shutdown()
 	{
+		stopSoar = true;
+		try
+		{
+			Thread.sleep( 1000 );
+		} catch ( InterruptedException ignored ) {}
+		
 		kernel.Shutdown();
 		kernel.delete();
 		SplinterSoar.logger.info( "Soar interface down" ); 
@@ -60,6 +87,12 @@ public class SoarInterface implements Kernel.UpdateEventInterface
 	@Override
 	public void updateEventHandler(int eventID, Object data, Kernel kernel, int runFlags) 
 	{
+		if ( stopSoar )
+		{
+			SplinterSoar.logger.info( "Stopping Soar" ); 
+			kernel.StopAllAgents();
+		}
+		
 		try
 		{
 			input.update();

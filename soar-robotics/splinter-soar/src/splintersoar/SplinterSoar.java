@@ -25,8 +25,8 @@ public class SplinterSoar
 		logger.info( "Starting orc interface" );
 		orc = new OrcInterface();
 
-		logger.info( "Starting laser localizer" );
-		laserloc = new LaserLoc( false );
+		//logger.info( "Starting laser localizer" );
+		//laserloc = new LaserLoc( false );
 		
 		logger.info( "Subscribing orc to POSE channel" );
 		lcm = LCM.getSingleton();
@@ -57,6 +57,7 @@ public class SplinterSoar
 			try 
 			{
 				updateOverride();
+				updateStartStop();
 				Thread.sleep( 50 );
 			} 
 			catch ( InterruptedException ignored ) 
@@ -125,6 +126,31 @@ public class SplinterSoar
 				commitOverrideCommand();
 			}
 		}
+	}
+
+	boolean startStopButton = false;
+	boolean startStop = false;
+	
+	private void updateStartStop()
+	{
+		boolean currentStartStopButton = gamePad.getButton( 1 );
+		// change on trailing edge
+		if ( startStopButton && !currentStartStopButton )
+		{
+			startStop = !startStop;
+			
+			if ( startStop )
+			{
+				logger.info( "Starting Soar" );
+				soar.start();
+			}
+			else
+			{
+				SplinterSoar.logger.info( "Stop Soar requested" ); 
+				soar.stop();
+			}
+		}
+		startStopButton = currentStartStopButton;
 	}
 	
 	private void commitOverrideCommand()

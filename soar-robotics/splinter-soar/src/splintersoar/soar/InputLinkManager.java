@@ -10,7 +10,7 @@ public class InputLinkManager {
 	Ranger ranger;
 
 	Identifier ranges;
-
+	
 	Identifier self;
 	FloatElement self_motor_left_current;
 	IntElement self_motor_left_position;
