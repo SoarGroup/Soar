@@ -38,7 +38,10 @@ sp {apply*initialize-simple-robot*create-mission
          ^next <s2>)
    (<s2> ^name go-to-location
          ^x 0. ^y 0.
-         ^next nil)
+         #^next nil)
+		 ^next <s3>)
+   (<s3> ^name reset-mission
+         ^next <s1>)
 }
 
 sp {mission-complete*stop

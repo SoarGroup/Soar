@@ -1,4 +1,4 @@
-264
+266
 SOAR_ID 0
 SOAR_ID 1
 SOAR_ID 2
@@ -263,7 +263,9 @@ ENUMERATION 260 2 complete error
 ENUMERATION 261 1 nil
 FLOAT_RANGE 262 0.0 1.0
 FLOAT_RANGE 263 0.0 Infinity
-341
+ENUMERATION 264 1 reset-mission
+SOAR_ID 265
+344
 0 attribute 113
 0 choices 112
 0 desired 31
@@ -400,6 +402,7 @@ FLOAT_RANGE 263 0.0 Infinity
 74 operator 78
 74 operator 80
 74 operator 149
+74 operator 265
 74 parameters 255
 74 superstate 0
 74 top-state 0
@@ -426,6 +429,7 @@ FLOAT_RANGE 263 0.0 Infinity
 81 waypoints 30
 84 current 85
 84 first 85
+84 resetting 85
 85 delay-time 89
 85 end-time 100
 85 name 88
@@ -605,3 +609,4 @@ FLOAT_RANGE 263 0.0 Infinity
 255 rotation-tolerance 185
 255 throttle 262
 255 waypoint-tolerance 189
+265 name 264
