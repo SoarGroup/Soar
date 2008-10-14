@@ -47,7 +47,7 @@ public class LaserLoc implements LCMSubscriber
 	int droppedLocPackets = 0;
 	long lastStatusUpdate = System.nanoTime();
 
-	static boolean testing = true;
+	static boolean testing = false;
 	static boolean verbose = false;
 	
 	LCM lcm;
