@@ -20,11 +20,12 @@ sp {apply*waypoints
    (<op> ^name initialize-simple-robot)
 -->
    (<s> ^waypoints <w>)
-   (<w> ^waypoint <w1> <w2> <w3> <w4>)
+   (<w> ^waypoint <w1> <w2> <w3> <w4> <w5>)
    (<w1> ^x 0. ^y 0. ^id one ^next <w2>)
-   (<w2> ^x 2. ^y 0. ^id two ^next <w3>)
-   (<w3> ^x 2. ^y 4. ^id three ^next <w4>)
-   (<w4> ^x 0. ^y 4. ^id four ^next <w1>)
+   (<w2> ^x 0.8 ^y 2.5. ^id two ^next <w3>)
+   (<w3> ^x 1.6 ^y 0. ^id three ^next <w4>)
+   (<w4> ^x -0.5 ^y 1.5. ^id four ^next <w5>)
+   (<w5> ^x 2.1 ^y 1.5. ^id five ^next <w1>)
 }
 
 sp {apply*initialize-simple-robot*create-mission
@@ -34,7 +35,7 @@ sp {apply*initialize-simple-robot*create-mission
    (<s> ^mission <m>)
    (<m> ^first <s1>)
    (<s1> ^name go-to-location
-         ^x 0. ^y 4.
+         ^x 2.1 ^y 1.5
          ^next <s2>)
    (<s2> ^name go-to-location
          ^x 0. ^y 0.
