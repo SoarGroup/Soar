@@ -8,8 +8,6 @@
 0 
 0 executing status not used
 
-0 if active, commands that should be passed directly to output link for debugging
-
 0 SICK data
 
 0 
@@ -52,19 +50,6 @@
 
 0 seconds since arbitrary point, use only for elapsed time
 
-0 true if the interface would like to directly command the robot
-
-0 
-0 
-0 
-0 
-0 
-0 
-0 
-0 
-0 
-0 
-0 
 0 wheelbase, distance between wheels
 
 0 robot length (x-extent)

@@ -73,7 +73,5 @@ public class Ranger {
 		{
 			slices[ index ].update( data[ index ] );
 		}
-		
-		//System.out.println( "data 4 dist (soar-side): " + data[ 4 ].distance );
 	}
 }

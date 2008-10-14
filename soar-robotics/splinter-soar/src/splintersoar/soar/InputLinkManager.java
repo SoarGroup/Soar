@@ -9,12 +9,6 @@ public class InputLinkManager {
 	Waypoints waypoints;
 	Ranger ranger;
 
-	Identifier override;
-	StringElement override_active;
-	Identifier override_motor;
-	FloatElement override_motor_left;
-	FloatElement override_motor_right;
-
 	Identifier ranges;
 
 	Identifier self;
@@ -38,7 +32,6 @@ public class InputLinkManager {
 	SplinterState state;
 	long lastTime = 0;
 	
-	OverrideInterface overrideInterface;
 	SoarTime soarTime;
 	
 	class SoarTime
@@ -93,11 +86,6 @@ public class InputLinkManager {
 		Identifier inputLink = agent.GetInputLink();
 		
 		// Please see default-robot.vsa for input link definition and comments!
-		
-		{
-			override = agent.CreateIdWME( inputLink, "override" );
-			override_active = agent.CreateStringWME( override, "active", "false" );
-		}
 		
 		{
 			ranges = agent.CreateIdWME( inputLink, "ranges" );
@@ -165,54 +153,11 @@ public class InputLinkManager {
 		agent.Commit();
 	}
 
-	public void setOverride( OverrideInterface overrideInterface )
-	{
-		this.overrideInterface = overrideInterface;
-	}
-	
-	void updateOverride()
-	{
-		if ( overrideInterface == null )
-		{
-			agent.Update( override_active, "false" );
-			if ( override_motor != null )
-			{
-				agent.DestroyWME( override_motor );
-				override_motor = null;
-				override_motor_left = null;
-				override_motor_right = null;
-			}
-		}
-		else
-		{
-			//System.out.println( "updateOverride active" );
-			agent.Update( override_active, "true" );
-			if ( override_motor == null )
-			{
-				override_motor = agent.CreateIdWME( override, "motor" );
-				override_motor_left = agent.CreateFloatWME( override_motor, "left", overrideInterface.getLeft() );
-				override_motor_right = agent.CreateFloatWME( override_motor, "right", overrideInterface.getRight() );
-			}
-			else
-			{
-				//System.out.print( overrideInterface.getLeft() + "                   \r" );
-				agent.Update( override_motor_left, overrideInterface.getLeft() );
-				agent.Update( override_motor_right, overrideInterface.getRight() );
-			}
-		}
-	}
-	
-	void updateTime()
+	public void update()
 	{
 		soarTime.update();
 		agent.Update( time_seconds, soarTime.seconds );
 		agent.Update( time_microseconds, soarTime.microseconds );
-	}
-	
-	public void update()
-	{
-		updateOverride();
-		updateTime();
 		
 		// update robot state if we have new state
 		if ( state.utime != lastTime )

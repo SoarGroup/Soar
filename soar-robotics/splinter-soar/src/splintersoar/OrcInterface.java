@@ -53,6 +53,7 @@ public class OrcInterface implements LCMSubscriber
 			rangerData[ index ] = new RangerData();
 		}
 		
+		SplinterSoar.logger.info( "Orc up" );
 		timer.schedule( new UpdateTask(), 0, 1000 / UPDATE_HZ );
 	}
 	
@@ -64,6 +65,7 @@ public class OrcInterface implements LCMSubscriber
 	public void shutdown()
 	{
 		timer.cancel();
+		SplinterSoar.logger.info( "Orc down" );
 	}
 
 	class UpdateTask extends TimerTask
@@ -76,7 +78,6 @@ public class OrcInterface implements LCMSubscriber
 			synchronized ( state )
 			{
 				left = state.left;
-				//System.out.println( "R: " + state.left );
 				right = state.right;
 				targetYaw = state.targetYaw;
 				targetYawTolerance = state.targetYawTolerance;
@@ -103,7 +104,6 @@ public class OrcInterface implements LCMSubscriber
 			// write new commands
 			if ( targetYawEnabled == false )
 			{
-				//System.out.print( left + "               \r" );
 				leftMotor.setPWM( left );
 				rightMotor.setPWM( right );
 			} 
@@ -200,7 +200,6 @@ public class OrcInterface implements LCMSubscriber
 						}
 					}
 					
-					//System.out.println( "slice 4 dist: " + rangerData[ 4 ].distance );
 					rangerData[ slice ].end = laserData.rad0 + ( index - 1 ) * laserData.radstep;
 				}
 			}
@@ -250,7 +249,7 @@ public class OrcInterface implements LCMSubscriber
 			} 
 			catch ( IOException ex ) 
 			{
-				System.out.println( "Error decoding pose message: " + ex );
+				SplinterSoar.logger.warning( "Error decoding pose message: " + ex );
 			}
 		}
 		else if ( channel.equals( "LASER_FRONT" ) )
@@ -266,7 +265,7 @@ public class OrcInterface implements LCMSubscriber
 			} 
 			catch ( IOException ex ) 
 			{
-				System.out.println( "Error decoding LASER_FRONT message: " + ex );
+				SplinterSoar.logger.warning( "Error decoding LASER_FRONT message: " + ex );
 			}
 		}
 	}

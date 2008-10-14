@@ -18,7 +18,7 @@ public class SoarInterface implements Kernel.UpdateEventInterface
 		kernel = Kernel.CreateKernelInNewThread();
 		if ( kernel.HadError() )
 		{
-			System.err.println( kernel.GetLastErrorDescription() );
+			SplinterSoar.logger.warning( "Soar error: " + kernel.GetLastErrorDescription() );
 			System.exit(1);
 		}
 
@@ -27,7 +27,7 @@ public class SoarInterface implements Kernel.UpdateEventInterface
 		agent = kernel.CreateAgent( "soar" );
 		if ( kernel.HadError() )
 		{
-			System.err.println( kernel.GetLastErrorDescription() );
+			SplinterSoar.logger.warning( "Soar error: " + kernel.GetLastErrorDescription() );
 			System.exit(1);
 		}
 		
@@ -49,11 +49,12 @@ public class SoarInterface implements Kernel.UpdateEventInterface
 	{
 		kernel.Shutdown();
 		kernel.delete();
+		SplinterSoar.logger.info( "Soar interface down" ); 
 	}
 	
-	public void setOverride( OverrideInterface override )
+	public void setOverride( boolean enabled )
 	{
-		input.setOverride( override );
+		output.setOverride( enabled );
 	}
 	
 	@Override
@@ -70,15 +71,13 @@ public class SoarInterface implements Kernel.UpdateEventInterface
 		}
 		catch ( NullPointerException unhandled )
 		{
-			System.out.println( "Unhandled null pointer exception in updateEventHandler" );
+			SplinterSoar.logger.warning( "Unhandled null pointer exception in updateEventHandler" );
 			unhandled.printStackTrace();
-			assert false;
 		}
 		catch ( Throwable unhandled )
 		{
-			System.out.println( "Unhandled throwable in updateEventHandler" );
+			SplinterSoar.logger.warning( "Unhandled throwable in updateEventHandler" );
 			unhandled.printStackTrace();
-			assert false;
 		}
 	}
 

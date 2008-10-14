@@ -80,7 +80,7 @@ public class LaserLoc implements LCMSubscriber
 			if ( droppedLocPackets > 0 )
 			{
 				float dropRate = droppedLocPackets / elapsed;
-				System.out.format( "LaserLoc: dropping %5.1f %s packets/sec%n", dropRate, laser_channel );
+				System.err.format( "LaserLoc: dropping %5.1f %s packets/sec%n", dropRate, laser_channel );
 				printHeaderLine();
 			}
 			
@@ -128,7 +128,6 @@ public class LaserLoc implements LCMSubscriber
 		}
 		
 		double translation_dist = Point.distance( estimated_pose.pos[ 0 ], estimated_pose.pos[ 1 ], new_estimated_pose.pos[ 0 ], new_estimated_pose.pos[ 1 ] );
-		//System.out.print( "Moved " + translation_dist + " meters. " );
 		
 		// only update location if moved enough. Don't want Soar to thrash on constantly changing x,y due to noise
 		// this also means this loop can run as fast as it can and we'll still get reasonable updates
@@ -224,7 +223,7 @@ public class LaserLoc implements LCMSubscriber
 			} 
 			catch ( IOException ex ) 
 			{
-				System.out.println( "Error decoding laser message: " + ex );
+				System.err.println( "Error decoding laser message: " + ex );
 			}
 		}
 		

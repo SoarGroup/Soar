@@ -2,6 +2,8 @@ package splintersoar;
 
 import java.util.logging.*;
 
+import orc.util.GamePad;
+
 import splintersoar.soar.*;
 import laserloc.*;
 import lcm.lcm.*;
@@ -12,6 +14,7 @@ public class SplinterSoar
 	OrcInterface orc;
 	LaserLoc laserloc;
 	LCM lcm;
+	GamePad gamePad;
 	
 	boolean running = true;
 
@@ -43,8 +46,8 @@ public class SplinterSoar
 			soar = new SoarInterface( orc.getState(), null );
 		}
 		
-		//logger.info( "Creating and using game pad for override" );
-		//soar.setOverride( new GamePadManager() );
+		logger.info( "Creating game pad for override" );
+		gamePad = new GamePad();
 		
 		Runtime.getRuntime().addShutdownHook( new ShutdownHook() );
 		
@@ -53,10 +56,69 @@ public class SplinterSoar
 		{
 			try 
 			{
-				Thread.sleep( 500 );
+				updateOverride();
+				if ( overrideEnabled )
+				{
+					Thread.sleep( 50 );
+				} 
+				else
+				{
+					Thread.sleep( 500 );
+				}
 			} 
 			catch ( InterruptedException ignored ) 
 			{}
+		}
+	}
+	
+	boolean overrideEnabled = false;
+	boolean overrideButton = false;
+	double left = 0;
+	double right = 0;
+	private void updateOverride()
+	{
+		boolean currentOverrideButton = gamePad.getButton( 0 );
+		// change on trailing edge
+		if ( overrideButton && !currentOverrideButton )
+		{
+			overrideEnabled = !overrideEnabled;
+			soar.setOverride( overrideEnabled );
+			
+			if ( overrideEnabled )
+			{
+				logger.info( "Override enabled" );
+				left = 0;
+				right = 0;
+				commitOverrideCommand();
+			}
+			else
+			{
+				logger.info( "Override disabled" );
+			}
+		}
+		overrideButton = currentOverrideButton;
+		
+		if ( overrideEnabled )
+		{
+			double newLeft = gamePad.getAxis( 1 ) * -1;
+			double newRight = gamePad.getAxis( 3 ) * -1;
+			
+			if ( ( newLeft != left ) || ( newRight != right ) )
+			{
+				left = newLeft;
+				right = newRight;
+				commitOverrideCommand();
+			}
+		}
+	}
+	
+	private void commitOverrideCommand()
+	{
+		synchronized ( orc.getState() )
+		{
+			orc.getState().left = left;
+			orc.getState().right = right;
+			orc.getState().targetYawEnabled = false;
 		}
 	}
 	
@@ -70,7 +132,7 @@ public class SplinterSoar
 			soar.shutdown();
 			orc.shutdown();
 			
-			System.out.println( "Terminated" );
+			System.err.println( "Terminated" );
 		}
 	}
 	
