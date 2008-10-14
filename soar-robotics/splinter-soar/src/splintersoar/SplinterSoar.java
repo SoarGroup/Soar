@@ -57,14 +57,7 @@ public class SplinterSoar
 			try 
 			{
 				updateOverride();
-				if ( overrideEnabled )
-				{
-					Thread.sleep( 50 );
-				} 
-				else
-				{
-					Thread.sleep( 500 );
-				}
+				Thread.sleep( 50 );
 			} 
 			catch ( InterruptedException ignored ) 
 			{}
@@ -75,6 +68,8 @@ public class SplinterSoar
 	boolean overrideButton = false;
 	double left = 0;
 	double right = 0;
+	boolean tankMode = false;
+	
 	private void updateOverride()
 	{
 		boolean currentOverrideButton = gamePad.getButton( 0 );
@@ -100,8 +95,28 @@ public class SplinterSoar
 		
 		if ( overrideEnabled )
 		{
-			double newLeft = gamePad.getAxis( 1 ) * -1;
-			double newRight = gamePad.getAxis( 3 ) * -1;
+			double newLeft, newRight;
+			
+			if ( tankMode ) 
+			{
+				newLeft = gamePad.getAxis( 1 ) * -1;
+				newRight = gamePad.getAxis( 3 ) * -1;
+			}
+			else
+			{
+				double fwd = -1 * gamePad.getAxis( 3 ); // +1 = forward, -1 = back
+				double lr  = -1 * gamePad.getAxis( 2 );   // +1 = left, -1 = right
+
+				newLeft = fwd - lr;
+				newRight = fwd + lr;
+
+				double max = Math.max( Math.abs( newLeft ), Math.abs( newRight ) );
+				if ( max > 1 ) 
+				{
+				    newLeft /= max;
+				    newRight /= max;
+				}
+			}
 			
 			if ( ( newLeft != left ) || ( newRight != right ) )
 			{

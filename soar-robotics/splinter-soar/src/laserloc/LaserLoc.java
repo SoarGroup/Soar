@@ -67,7 +67,7 @@ public class LaserLoc implements LCMSubscriber
 	
 	public void printHeaderLine()
 	{
-		System.out.format( "%10s %10s %10s %10s %10s%n", "x", "y", "vx", "vy", "vmag", "yaw" );
+		System.out.format( "%10s %10s%n", "x", "y" );
 	}
 	
 	private void updatePose()
@@ -133,17 +133,9 @@ public class LaserLoc implements LCMSubscriber
 		// this also means this loop can run as fast as it can and we'll still get reasonable updates
 		// (i.e., we don't have to worry about robot not moving enough between updates)
 		boolean movedEnough = translation_dist >= translation_threshold;
-		boolean enoughTimePassed = ( new_estimated_pose.utime - estimated_pose.utime ) > ( duration_threshold * 1000000 );
 		
-		if( movedEnough || enoughTimePassed )
+		if( movedEnough )
 		{
-			estimated_pose.vel[0] = ( new_estimated_pose.pos[ 0 ] - estimated_pose.pos[ 0 ] ) / elapsed;
-			estimated_pose.vel[1] = ( new_estimated_pose.pos[ 1 ] - estimated_pose.pos[ 1 ] ) / elapsed;
-			estimated_pose.vel[2] = ( new_estimated_pose.pos[ 2 ] - estimated_pose.pos[ 2 ] ) / elapsed;
-			
-			double estimated_pose_yaw = Math.atan2( new_estimated_pose.pos[ 1 ] - estimated_pose.pos[ 1 ], new_estimated_pose.pos[ 0 ] - estimated_pose.pos[ 0 ] );
-			estimated_pose.orientation = Geometry.rollPitchYawToQuat( new double[] { 0, 0, estimated_pose_yaw } );
-			
 			// TODO: figure out best way to clone
 			estimated_pose.pos[ 0 ] =  new_estimated_pose.pos[ 0 ];
 			estimated_pose.pos[ 1 ] =  new_estimated_pose.pos[ 1 ];
@@ -169,13 +161,9 @@ public class LaserLoc implements LCMSubscriber
 
 	private void printOldPose() 
 	{
-		System.out.format( "%10.3f %10.3f %10.3g %10.3g %10.3g %10.3f%n", 
+		System.out.format( "%10.3f %10.3f%n", 
 				estimated_pose.pos[ 0 ], 
-				estimated_pose.pos[ 1 ], 
-				estimated_pose.vel[ 0 ], 
-				estimated_pose.vel[ 1 ], 
-				Geometry.magnitude( estimated_pose.vel ),
-				Math.toDegrees( Geometry.quatToRollPitchYaw( estimated_pose.orientation )[ 2 ] ) );
+				estimated_pose.pos[ 1 ] );
 	}
 
 	private pose_t getRobotXY( laser_t laser_data )

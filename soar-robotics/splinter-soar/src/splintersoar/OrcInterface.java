@@ -68,6 +68,12 @@ public class OrcInterface implements LCMSubscriber
 		SplinterSoar.logger.info( "Orc down" );
 	}
 
+	boolean translating = false;
+	double prevYawCalcLocX = 0;
+	double prevYawCalcLocY = 0;
+	double yawCalcDistThreshold = 0.1;
+	boolean hadSickData = false;
+		
 	class UpdateTask extends TimerTask
 	{
 		@Override
@@ -109,17 +115,26 @@ public class OrcInterface implements LCMSubscriber
 			} 
 			//// end orc communication (more after yaw calculation)
 
-			double thetaprime, xprime, yprime;
+			// calculation of new yaw is always based on odometry
+			double dleft = ( leftPosition - leftPreviousPosition ) * state.tickMeters;
+			double dright = ( rightPosition - rightPreviousPosition ) * state.tickMeters;
+			double phi = ( dright - dleft ) / state.baselineMeters;
+			double thetaprime = prevYaw + phi;
+
+			// calculation of x,y
+			double xprime, yprime;
 			if ( pose != null )
 			{
-				thetaprime = Geometry.quatToRollPitchYaw( pose.orientation )[2];
+				System.out.print( "s" );
 				xprime = pose.pos[0];
 				yprime = pose.pos[1];
 				
+				hadSickData = true;
 				pose = null;
 			}
 			else
 			{
+				System.out.print( "d" );
 				// Equations from A Primer on Odopmetry and Motor Control, Olson 2006
 				// dleft, dright: distance wheel travelled
 				// dbaseline: wheelbase
@@ -130,17 +145,53 @@ public class OrcInterface implements LCMSubscriber
 				// xprime = x + ( dcenter * cos( theta ) )
 				// yprime = y + ( dcenter * sin( theta ) )
 				
-				double dleft = ( leftPosition - leftPreviousPosition ) * state.tickMeters;
-				double dright = ( rightPosition - rightPreviousPosition ) * state.tickMeters;
 				double dcenter = ( dleft + dright ) / 2;
 				
-				double phi = ( dright - dleft ) / state.baselineMeters;
+				xprime = prevX + ( dcenter * Math.cos( prevYaw ) );
+				yprime = prevY + ( dcenter * Math.sin( prevYaw ) );
+			}
+			
+			// if we start moving forward or backward, mark that location
+			// if we continue to move forward and move past a certain distance, recalculate yaw
+			if ( hadSickData )
+			{
+				if ( translating )
+				{
+					if ( ( left >= 0 && right <= 0 ) || ( left <= 0 && right >= 0 ) )
+					{
+						translating = false;
+						System.out.println( "Stopped translating" );
+					}
 				
-				double theta = prevYaw;
+					double deltaX = xprime - prevYawCalcLocX;
+					double deltaY = yprime - prevYawCalcLocY;
+					
+					double distanceTravelled = deltaX * deltaX + deltaY * deltaY;
+					distanceTravelled = Math.sqrt( distanceTravelled );
 				
-				thetaprime = theta + phi;
-				xprime = prevX + ( dcenter * Math.cos( theta ) );
-				yprime = prevY + ( dcenter * Math.sin( theta ) );
+					if ( distanceTravelled > yawCalcDistThreshold )
+					{
+						double newThetaPrime = Math.atan2( deltaY, deltaX );
+					
+						prevYawCalcLocX = xprime;
+						prevYawCalcLocY = yprime;
+					
+						System.out.format( "Correcting yaw from  %.3f to %.3f%n", Math.toDegrees( thetaprime ), Math.toDegrees( newThetaPrime ) );
+					
+						thetaprime = newThetaPrime;
+						hadSickData = false;
+					}
+				}
+				else
+				{
+					if ( ( left < 0 && right < 0 ) || ( left > 0 && right > 0 ) )
+					{
+						prevYawCalcLocX = xprime;
+						prevYawCalcLocY = yprime;
+						translating = true;
+						System.out.println( "Started translating" );
+					}
+				}
 			}
 			
 			//// start orc communication
