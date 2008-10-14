@@ -1,4 +1,4 @@
-268
+271
 SOAR_ID 0
 SOAR_ID 1
 SOAR_ID 2
@@ -267,12 +267,16 @@ ENUMERATION 264 1 reset-mission
 SOAR_ID 265
 ENUMERATION 266 1 choose-waypoint
 SOAR_ID 267
-346
+ENUMERATION 268 1 choose-waypoint
+SOAR_ID 269
+SOAR_ID 270
+350
 0 attribute 113
 0 choices 112
 0 desired 31
 0 desired-yaw 197
 0 entities 156
+0 go-to-location 270
 0 hiding 219
 0 io 1
 0 item 21
@@ -405,6 +409,7 @@ SOAR_ID 267
 74 operator 80
 74 operator 149
 74 operator 265
+74 operator 269
 74 parameters 255
 74 superstate 0
 74 top-state 0
@@ -614,3 +619,5 @@ SOAR_ID 267
 255 waypoint-tolerance 189
 265 name 264
 267 name 266
+269 name 268
+270 waypoint 31

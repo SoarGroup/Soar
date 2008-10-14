@@ -1,7 +1,6 @@
 sp {go-to-location*propose*go-to-waypoint
    (state <s> ^name go-to-location
-              ^desired
-              ^waypoints.at.next <w>)
+              ^top-state.go-to-location.waypoint <w>)
             # -^top-state.move-to) # not already executing a move-to command
 -->
    (<s> ^operator <op> +)
@@ -62,11 +61,39 @@ sp {apply*go-to-waypoint*create-move-to
           ^time <time>)
 }
 
+# FIXME: this should never fire because we should properly clean up when we're finished
+# but I think it may be requried after the agent gives up (check that code)
 sp {apply*go-to-waypoint*remove-move-to
    (state <s> ^operator <op>
               ^top-state <ts>)
    (<ts> ^move-to <mt>)
    (<mt> ^destination <> <w>)
+   (<op> ^name go-to-waypoint
+         ^move-now true
+         ^destination <w>)
+-->
+   (<ts> ^move-to <mt> -)
+}
+
+sp {apply*go-to-waypoint*arrived-at-destination*remove-go-to-location
+   (state <s> ^operator <op>
+              ^top-state <ts>
+              ^waypoints.at <w>)
+   (<ts> ^go-to-location <gtl>)
+   (<gtl> ^waypoint <w>)
+   (<op> ^name go-to-waypoint
+         ^move-now true
+         ^destination <w>)
+-->
+   (<ts> ^go-to-location <gtl> -)
+}
+
+sp {apply*go-to-waypoint*arrived-at-destination*remove-move-to
+   (state <s> ^operator <op>
+              ^top-state <ts>
+              ^waypoints.at <w>)
+   (<ts> ^move-to <mt>)
+   (<mt> ^destination <w>)
    (<op> ^name go-to-waypoint
          ^move-now true
          ^destination <w>)

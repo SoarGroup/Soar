@@ -4,6 +4,7 @@ pushd Impasse__Operator_Tie
 source Impasse__Operator_Tie_source.soar
 popd
 source selection.soar
+source choose-waypoint.soar
 source give-up-on-move-to.soar
 pushd give-up-on-move-to
 source give-up-on-move-to_source.soar

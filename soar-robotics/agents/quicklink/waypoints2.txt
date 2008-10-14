@@ -1,0 +1,22 @@
+	#change S1 ^pose /P1
+		change P1 ^x 0.0 0.5
+		change P1 ^y 0.0 0.3
+		change P1 ^yaw 0.0 120
+
+		    #change W3 ^id one
+			change W2 ^distance 0.0 0.583
+			change W2 ^relative-bearing 0.0 -165.0 
+			change W2 ^abs-relative-bearing 0.0 165.0
+			#change W2 ^x 0.0
+			#change W2 ^y 0.0
+			change W2 ^yaw 0.0 315.0
+
+			#change W3 ^id destination
+			change W3 ^distance 1.0 0.583
+			change W3 ^relative-bearing 0.0 -75.0
+			change W3 ^abs-relative-bearing 0.0 75.0
+			#change W3 ^x 1.0
+			#change W3 ^y 0.0
+			change W3 ^yaw 0.0 45.0
+
+change T1 ^seconds 1 5

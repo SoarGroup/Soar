@@ -1,0 +1,20 @@
+sp {go-to-location*propose*choose-waypoint
+   (state <s> ^name go-to-location
+              ^desired
+              ^waypoints.at.next <w>
+             -^top-state.go-to-location) # not already going to a location
+-->
+   (<s> ^operator <op> +)
+   (<op> ^name choose-waypoint
+         ^destination <w>)
+}
+
+sp {apply*choose-waypoint
+   (state <s> ^operator <op>
+              ^top-state <ts>)
+   (<op> ^name choose-waypoint
+         ^destination <w>)
+-->
+   (<ts> ^go-to-location <gtl>)
+   (<gtl> ^waypoint <w>)
+}

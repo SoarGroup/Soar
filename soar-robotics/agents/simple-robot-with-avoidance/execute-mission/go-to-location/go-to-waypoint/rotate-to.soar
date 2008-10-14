@@ -43,6 +43,7 @@ sp {apply*rotate-to
 #   (exec player-print |Rotating to | <yaw>)
 #}
 
+# FIXME: put this on the go-to-location structure on the top-state, then don't need :o-support and it will be re-entrant
 sp {go-to-waypoint*elaborate*superoperator*move-now
    :o-support
    (state <s> ^name go-to-waypoint
