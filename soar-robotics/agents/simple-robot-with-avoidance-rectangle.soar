@@ -33,15 +33,18 @@ sp {apply*initialize-simple-robot*create-mission
 -->
    (<s> ^mission <m>)
    (<m> ^first <s1>)
-   (<s1> ^name go-to-location
-         ^x 0. ^y 4.
-         ^next <s2>)
+   (<s1> ^name localize
+         ^id one
+		 ^next <s2>)
    (<s2> ^name go-to-location
+         ^x 0. ^y 4.
+         ^next <s3>)
+   (<s3> ^name go-to-location
          ^x 0. ^y 0.
          #^next nil)
-		 ^next <s3>)
-   (<s3> ^name reset-mission
-         ^next <s1>)
+		 ^next <s4>)
+   (<s4> ^name reset-mission
+         ^next <s2>)
 }
 
 sp {mission-complete*stop

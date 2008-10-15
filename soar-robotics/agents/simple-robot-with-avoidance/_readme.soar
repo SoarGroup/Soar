@@ -1,5 +1,5 @@
 # todo:
-# only track current location and destination
+# Xonly track current location and destination
 #   need current location to get "at" so can do choose-waypoint
 #   need destination for go-to-location
 #   steps:
