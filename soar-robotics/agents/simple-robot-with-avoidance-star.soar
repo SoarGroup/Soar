@@ -38,10 +38,10 @@ sp {apply*initialize-simple-robot*create-mission
          ^id one
 		 ^next <s2>)
    (<s2> ^name go-to-location
-         ^x 2.1 ^y 1.5
+         ^id five
          ^next <s3>)
    (<s3> ^name go-to-location
-         ^x 0. ^y 0.
+         ^id one
          #^next nil)
 		 ^next <s4>)
    (<s4> ^name reset-mission

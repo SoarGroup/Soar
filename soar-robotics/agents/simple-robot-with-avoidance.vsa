@@ -34,21 +34,21 @@ VERSION 4
 31	30	FOPERATOR elaborations elaborations.soar 32
 32	30	OPERATOR go-to-waypoint go-to-waypoint.soar 33
 33	30	OPERATOR update-map update-map.soar 34
-34	19	HLOPERATOR go-to-waypoint go-to-waypoint.soar go-to-waypoint 194 35
+34	19	HLOPERATOR go-to-waypoint go-to-waypoint.soar go-to-waypoint 192 35
 35	34	FOPERATOR elaborations elaborations.soar 36
 36	34	OPERATOR action action.soar 37
 37	34	OPERATOR rotate-to rotate-to.soar 38
 38	19	OPERATOR update-progress update-progress.soar 39
 39	16	OPERATOR localize localize.soar 40
 40	16	OPERATOR reset-mission reset-mission.soar 41
-41	16	HLOPERATOR scout scout.soar scout 150 42
+41	16	HLOPERATOR scout scout.soar scout 148 42
 42	41	FOPERATOR elaborations elaborations.soar 43
-43	41	HLOPERATOR hide hide.soar hide 205 44
+43	41	HLOPERATOR hide hide.soar hide 203 44
 44	43	FOPERATOR elaborations elaborations.soar 45
 45	43	OPERATOR rotate-to rotate-to.soar 46
 46	41	OPERATOR rotate rotate.soar 47
 47	41	OPERATOR send-entity-report send-entity-report.soar 48
-48	41	HLOPERATOR unhide unhide.soar unhide 210 49
+48	41	HLOPERATOR unhide unhide.soar unhide 208 49
 49	48	FOPERATOR elaborations elaborations.soar 50
 50	48	OPERATOR rotate-to rotate-to.soar 51
 51	16	OPERATOR start start.soar 52
@@ -56,7 +56,7 @@ VERSION 4
 53	0	OPERATOR maintain-entity-make-persistent-copy maintain-entity-make-persistent-copy.soar 54
 54	0	OPERATOR maintain-entity-new maintain-entity-new.soar 55
 55	0	OPERATOR maintain-entity-remove-persistent-copy maintain-entity-remove-persistent-copy.soar 56
-56	0	HLOPERATOR process-message process-message.soar process-message 128 57
+56	0	HLOPERATOR process-message process-message.soar process-message 126 57
 57	56	FOPERATOR elaborations elaborations.soar 58
 58	56	OPERATOR ignore-unknown-message ignore-unknown-message.soar 59
 END

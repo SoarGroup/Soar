@@ -3,9 +3,9 @@
 sp {elaborate*operator*go-to-location*desired
    (state <s> ^operator <op>
               ^waypoints.waypoint <w>)
-   (<w> ^x <x> ^y <y>)
+   (<w> ^id <id>)
    (<op> ^name go-to-location
-         ^x <x> ^y <y>)
+         ^id <id>)
 -->
    (<op> ^desired <w>)
 }
