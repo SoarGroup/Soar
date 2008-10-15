@@ -43,12 +43,11 @@ public class OutputLinkManager {
 					System.err.println( "Motor command received possibly overriding previous orders" );
 				}
 				
-				double leftCommand = 0;
-				double rightCommand = 0;
+				double [] motorThrottle = { 0, 0 };
 		
 				try 
 				{
-					leftCommand = Double.parseDouble( commandId.GetParameterValue( "left" ) );
+					motorThrottle[0] = Double.parseDouble( commandId.GetParameterValue( "left" ) );
 				} 
 				catch ( NullPointerException ex )
 				{
@@ -65,7 +64,7 @@ public class OutputLinkManager {
 				
 				try 
 				{
-					rightCommand = Double.parseDouble( commandId.GetParameterValue( "right" ) );
+					motorThrottle[1] = Double.parseDouble( commandId.GetParameterValue( "right" ) );
 				} 
 				catch ( NullPointerException ex )
 				{
@@ -80,20 +79,19 @@ public class OutputLinkManager {
 					continue;
 				}
 				
-				leftCommand = Math.max( leftCommand, -1.0 );
-				leftCommand = Math.min( leftCommand, 1.0 );
+				motorThrottle[0] = Math.max( motorThrottle[0], -1.0 );
+				motorThrottle[0] = Math.min( motorThrottle[0], 1.0 );
 				
-				rightCommand = Math.max( rightCommand, -1.0 );
-				rightCommand = Math.min( rightCommand, 1.0 );
+				motorThrottle[1] = Math.max( motorThrottle[1], -1.0 );
+				motorThrottle[1] = Math.min( motorThrottle[1], 1.0 );
 				
 				System.out.format( "motor: %10s %10s%n", "left", "right" );
-				System.out.format( "       %10.3f %10.3f%n", leftCommand, rightCommand );
+				System.out.format( "       %10.3f %10.3f%n", motorThrottle[0], motorThrottle[1] );
 				if ( !overrideEnabled )
 				{
 					synchronized ( state )
 					{
-						state.left = leftCommand;
-						state.right = rightCommand;
+						System.arraycopy( motorThrottle, 0, state.throttle, 0, motorThrottle.length );
 						state.targetYawEnabled = false;
 					}
 				}
@@ -149,8 +147,7 @@ public class OutputLinkManager {
 					{
 						synchronized ( state )
 						{
-							state.left = throttle * -1;
-							state.right = throttle * -1;
+							state.throttle = new double [] { throttle * -1, throttle * -1 };
 							state.targetYawEnabled = false;
 						}
 					}					
@@ -161,8 +158,7 @@ public class OutputLinkManager {
 					{
 						synchronized ( state )
 						{
-							state.left = throttle;
-							state.right = throttle;
+							state.throttle = new double [] { throttle, throttle };
 							state.targetYawEnabled = false;
 						}
 					}					
@@ -173,8 +169,7 @@ public class OutputLinkManager {
 					{
 						synchronized ( state )
 						{
-							state.left = 0;
-							state.right = 0;
+							state.throttle = new double [] { 0, 0 };
 							state.targetYawEnabled = false;
 						}
 					}					
@@ -237,8 +232,7 @@ public class OutputLinkManager {
 					{
 						synchronized ( state )
 						{
-							state.left = throttle * -1;
-							state.right = throttle;
+							state.throttle = new double [] { throttle * -1, throttle };
 							state.targetYawEnabled = false;
 						}
 					}					
@@ -249,8 +243,7 @@ public class OutputLinkManager {
 					{
 						synchronized ( state )
 						{
-							state.left = throttle;
-							state.right = throttle * -1;
+							state.throttle = new double [] { throttle, throttle * -1 };
 							state.targetYawEnabled = false;
 						}
 					}					
@@ -261,8 +254,7 @@ public class OutputLinkManager {
 					{
 						synchronized ( state )
 						{
-							state.left = 0;
-							state.right = 0;
+							state.throttle = new double [] { 0, 0 };
 							state.targetYawEnabled = false;
 						}
 					}					
@@ -360,8 +352,7 @@ public class OutputLinkManager {
 						state.targetYaw = yaw;
 						state.targetYawTolerance = tolerance;
 						state.targetYawEnabled = true;
-						state.left = throttle;
-						state.right = throttle;
+						state.throttle = new double [] { throttle, throttle };
 					}
 				}
 				
@@ -384,8 +375,7 @@ public class OutputLinkManager {
 				{
 					synchronized ( state )
 					{
-						state.left = 0;
-						state.right = 0;
+						state.throttle = new double [] { 0, 0 };
 						state.targetYawEnabled = false;
 					}
 				}

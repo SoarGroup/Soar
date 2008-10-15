@@ -110,12 +110,12 @@ public class InputLinkManager {
 				
 				Identifier self_motor_left = agent.CreateIdWME( self_motor, "left" );
 				{
-					self_motor_left_position = agent.CreateIntWME( self_motor_left, "position", stateCopy.leftPosition );
+					self_motor_left_position = agent.CreateIntWME( self_motor_left, "position", stateCopy.motorPosition[0] );
 				}
 				
 				Identifier self_motor_right = agent.CreateIdWME( self_motor, "right" );
 				{
-					self_motor_right_position = agent.CreateIntWME( self_motor_right, "position", stateCopy.rightPosition );
+					self_motor_right_position = agent.CreateIntWME( self_motor_right, "position", stateCopy.motorPosition[1] );
 				}
 			}
 			
@@ -163,8 +163,8 @@ public class InputLinkManager {
 			
 			lastTime = stateCopy.utime;
 			
-			agent.Update( self_motor_left_position, stateCopy.leftPosition );
-			agent.Update( self_motor_right_position, stateCopy.rightPosition );
+			agent.Update( self_motor_left_position, stateCopy.motorPosition[0] );
+			agent.Update( self_motor_right_position, stateCopy.motorPosition[1] );
 
 			agent.Update( self_pose_x, stateCopy.pos[0] );
 			agent.Update( self_pose_y, stateCopy.pos[1] );

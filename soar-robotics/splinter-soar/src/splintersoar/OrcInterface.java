@@ -38,8 +38,16 @@ public class OrcInterface implements LCMSubscriber
 	double [] initialPosition = new double[3];
 	boolean haveInitialCoords = false;
 
-	public OrcInterface()
+	boolean testing = false;
+	
+	public OrcInterface( boolean testing )
 	{
+		this.testing = testing;
+		if ( testing )
+		{
+			return;
+		}
+		
 		Arrays.fill( initialPosition, 0 );
 		
 		orc = Orc.makeOrc();
@@ -82,13 +90,13 @@ public class OrcInterface implements LCMSubscriber
 		@Override
 		public void run()
 		{
-			double left, right, targetYaw, targetYawTolerance, prevYaw;
+			double targetYaw, targetYawTolerance, prevYaw;
+			double [] throttle = new double[2];
 			double [] previousPosition = new double[3];
 			boolean targetYawEnabled;
 			synchronized ( state )
 			{
-				left = state.left;
-				right = state.right;
+				System.arraycopy( state.throttle, 0, throttle, 0, state.throttle.length );
 				targetYaw = state.targetYaw;
 				targetYawTolerance = state.targetYawTolerance;
 				targetYawEnabled = state.targetYawEnabled;
@@ -102,20 +110,18 @@ public class OrcInterface implements LCMSubscriber
 			// Really, we should only be getting one status message per update.
 			// In the interest of not prematurely optimizing, I will leave this
 			// like it is for now.
-			int leftPosition = odom[0].getPosition();
-			int rightPosition = odom[1].getPosition();
+			int [] motorPosition = { odom[0].getPosition(), odom[1].getPosition() };
 
 			// write new commands
 			if ( targetYawEnabled == false )
 			{
-				motor[0].setPWM( left );
-				motor[1].setPWM( right );
+				commandMotors( throttle );
 			} 
 			//// end orc communication (more after yaw calculation)
 
 			// calculation of new yaw is always based on odometry
-			double dleft = ( leftPosition - previousMotorPosition[0] ) * state.tickMeters;
-			double dright = ( rightPosition - previousMotorPosition[1] ) * state.tickMeters;
+			double dleft = ( motorPosition[0] - previousMotorPosition[0] ) * state.tickMeters;
+			double dright = ( motorPosition[1] - previousMotorPosition[1] ) * state.tickMeters;
 			double phi = ( dright - dleft ) / state.baselineMeters;
 			double thetaprime = prevYaw + phi;
 
@@ -162,7 +168,7 @@ public class OrcInterface implements LCMSubscriber
 			{
 				if ( translating )
 				{
-					if ( ( left >= 0 && right <= 0 ) || ( left <= 0 && right >= 0 ) )
+					if ( ( throttle[0] >= 0 && throttle[1] <= 0 ) || ( throttle[0] <= 0 && throttle[1] >= 0 ) )
 					{
 						translating = false;
 						System.out.println( "Stopped translating" );
@@ -183,7 +189,7 @@ public class OrcInterface implements LCMSubscriber
 				}
 				else
 				{
-					if ( ( left < 0 && right < 0 ) || ( left > 0 && right > 0 ) )
+					if ( ( throttle[0] < 0 && throttle[1] < 0 ) || ( throttle[0] > 0 && throttle[1] > 0 ) )
 					{
 						System.arraycopy( newPosition, 0, prevYawCalcLoc, 0, newPosition.length );
 						translating = true;
@@ -206,24 +212,24 @@ public class OrcInterface implements LCMSubscriber
 				
 				if ( relativeBearingValue < ( 0 - targetYawTolerance ) )
 				{
-					motor[0].setPWM( left );
-					motor[1].setPWM( right * -1 );
+					double [] actualThrottle = Arrays.copyOf( throttle, throttle.length );
+					actualThrottle[1] *= -1;
+					commandMotors( actualThrottle );
 				}
 				else if ( relativeBearingValue > targetYawTolerance )
 				{
-					motor[0].setPWM( left * -1 );
-					motor[1].setPWM( right );
+					double [] actualThrottle = Arrays.copyOf( throttle, throttle.length );
+					actualThrottle[0] *= -1;
+					commandMotors( actualThrottle );
 				}
 				else
 				{
-					motor[0].setPWM( 0 );
-					motor[1].setPWM( 0 );
+					commandMotors( new double [] { 0, 0 } );
 				}
 			} 
 			//// end orc communication
 
-			previousMotorPosition[0] = leftPosition;
-			previousMotorPosition[1] = rightPosition;
+			System.arraycopy( motorPosition, 0, previousMotorPosition, 0, motorPosition.length );
 
 			//// ranger update
 			if ( laserData != null )
@@ -259,8 +265,7 @@ public class OrcInterface implements LCMSubscriber
 			{
 				state.utime = utime;
 				
-				state.leftPosition = leftPosition;
-				state.rightPosition = rightPosition;
+				System.arraycopy( motorPosition, 0, state.motorPosition, 0, motorPosition.length );
 				
 				if ( laserData != null )
 				{
@@ -313,4 +318,72 @@ public class OrcInterface implements LCMSubscriber
 		}
 	}
 
+	public static double motorSmoothingConstant = 0.000000001;
+	
+	private long lastutime = 0;
+	private void commandMotors( double [] throttle )
+	{
+		assert throttle[0] <= 1;
+		assert throttle[0] >= -1;
+		assert throttle[1] <= 1;
+		assert throttle[1] >= -1;
+		
+		if ( lastutime == 0 )
+		{
+			lastutime = System.nanoTime();
+		}
+		long elapsed = System.nanoTime() - lastutime; 
+		
+		double [] delta = Geometry.subtract( throttle, command );
+		double modifier = motorSmoothingConstant * elapsed;
+		command[0] += delta[0] * modifier;
+		command[1] += delta[1] * modifier;
+
+		if ( delta[0] > 0 )
+		{
+			command[0] = Math.min( command[0], 1 );
+		}
+		if ( delta[0] < 0 )
+		{
+			command[0] = Math.max( command[0], -1 );
+		}
+		if ( delta[1] > 0 )
+		{
+			command[1] = Math.min( command[0], 1 );
+		}
+		if ( delta[1] < 0 )
+		{
+			command[1] = Math.max( command[0], -1 );
+		}
+		
+		if ( testing )
+		{
+			System.out.format( "%10.3f %10.3f %10.3f%n", elapsed / 1000000000.0, throttle[0], command[0] );
+			return;
+		}
+		
+		lastutime += elapsed;
+		
+		motor[0].setPWM( command[0] );
+		motor[1].setPWM( command[1] );
+	}
+	
+	public static void main( String [] args )
+	{
+		OrcInterface orc = new OrcInterface( true );
+		
+		double [] throttle = { 1, 1 };
+		while ( true )
+		{
+			try
+			{
+				Thread.sleep( 10 );
+			} 
+			catch ( InterruptedException ignored )
+			{}
+
+			orc.commandMotors( throttle );
+		}
+	}
+	
 }

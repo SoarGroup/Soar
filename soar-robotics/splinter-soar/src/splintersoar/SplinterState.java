@@ -5,8 +5,7 @@ import java.util.Arrays;
 public class SplinterState {
 	
 	// command input
-	public double left = 0;
-	public double right = 0;
+	public double [] throttle = { 0, 0 };
 	public double targetYaw = 0;
 	public double targetYawTolerance = 0;
 	public boolean targetYawEnabled = false;
@@ -14,10 +13,9 @@ public class SplinterState {
 	// state output
 	public long utime = 0;
 	
-	public int leftPosition = 0;
-	public int rightPosition = 0;
+	public int [] motorPosition = { 0, 0 };
 	
-	public double [] pos = new double[3];
+	public double [] pos = { 0, 0, 0 };
 	public double yaw = 0;
 	
 	public RangerData [] ranger;
@@ -35,16 +33,14 @@ public class SplinterState {
 	
 	public SplinterState( SplinterState other )
 	{
-		this.left = other.left;
-		this.right = other.right;
+		System.arraycopy( other.throttle, 0, this.throttle, 0, other.throttle.length );
 		this.targetYaw = other.targetYaw;
 		this.targetYawTolerance = other.targetYaw;
 		this.targetYawEnabled = other.targetYawEnabled;
 
 		this.utime = other.utime;
 
-		this.leftPosition = other.leftPosition;
-		this.rightPosition = other.rightPosition;
+		System.arraycopy( other.motorPosition, 0, this.motorPosition, 0, other.motorPosition.length );
 
 		if ( other.ranger == null )
 		{

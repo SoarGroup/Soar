@@ -74,7 +74,7 @@ public class SplinterSoar
 		String agent = config.requireString( "soar.agent" );
 		
 		logger.info( "Starting orc interface" );
-		orc = new OrcInterface();
+		orc = new OrcInterface( false );
 
 		logger.info( "Subscribing orc to " + LaserLoc.pose_channel + " channel" );
 		lcm = LCM.getSingleton();
@@ -107,8 +107,7 @@ public class SplinterSoar
 	
 	boolean overrideEnabled = false;
 	boolean overrideButton = false;
-	double left = 0;
-	double right = 0;
+	double [] throttle = { 0, 0 };
 	boolean tankMode = false;
 	
 	private void updateOverride()
@@ -123,8 +122,7 @@ public class SplinterSoar
 			if ( overrideEnabled )
 			{
 				logger.info( "Override enabled" );
-				left = 0;
-				right = 0;
+				throttle = new double [] { 0, 0 };
 				commitOverrideCommand();
 			}
 			else
@@ -136,33 +134,33 @@ public class SplinterSoar
 		
 		if ( overrideEnabled )
 		{
-			double newLeft, newRight;
+			double [] newThrottle = new double[2];
 			
 			if ( tankMode ) 
 			{
-				newLeft = gamePad.getAxis( 1 ) * -1;
-				newRight = gamePad.getAxis( 3 ) * -1;
+				newThrottle[0] = gamePad.getAxis( 1 ) * -1;
+				newThrottle[1] = gamePad.getAxis( 3 ) * -1;
 			}
 			else
 			{
 				double fwd = -1 * gamePad.getAxis( 3 ); // +1 = forward, -1 = back
 				double lr  = -1 * gamePad.getAxis( 2 );   // +1 = left, -1 = right
 
-				newLeft = fwd - lr;
-				newRight = fwd + lr;
+				newThrottle[0] = fwd - lr;
+				newThrottle[1] = fwd + lr;
 
-				double max = Math.max( Math.abs( newLeft ), Math.abs( newRight ) );
+				double max = Math.max( Math.abs( newThrottle[0] ), Math.abs( newThrottle[1] ) );
 				if ( max > 1 ) 
 				{
-				    newLeft /= max;
-				    newRight /= max;
+					newThrottle[0] /= max;
+					newThrottle[1] /= max;
 				}
 			}
 			
-			if ( ( newLeft != left ) || ( newRight != right ) )
+			if ( ( newThrottle[0] != throttle[0] ) || ( newThrottle[1] != throttle[1] ) )
 			{
-				left = newLeft;
-				right = newRight;
+				throttle[0] = newThrottle[0];
+				throttle[1] = newThrottle[1];
 				commitOverrideCommand();
 			}
 		}
@@ -197,8 +195,7 @@ public class SplinterSoar
 	{
 		synchronized ( orc.getState() )
 		{
-			orc.getState().left = left;
-			orc.getState().right = right;
+			System.arraycopy( throttle, 0, orc.getState().throttle, 0, throttle.length );
 			orc.getState().targetYawEnabled = false;
 		}
 	}
