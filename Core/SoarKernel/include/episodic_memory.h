@@ -27,18 +27,20 @@ typedef struct wme_struct wme;
 #define EPMEM_RETURN_STRING ""
 
 // parameters
-// - protected are [ DB, INDEXING ]
+// - protected are [ DB, MVA_STORE ]
 #define EPMEM_PARAM_LEARNING						0
 #define EPMEM_PARAM_DB								1
 #define EPMEM_PARAM_COMMIT							2
 #define EPMEM_PARAM_PATH							3
 #define EPMEM_PARAM_INDEXING						4
-#define EPMEM_PARAM_TRIGGER							5
-#define EPMEM_PARAM_FORCE							6
-#define EPMEM_PARAM_BALANCE							7
-#define EPMEM_PARAM_EXCLUSIONS						8
-#define EPMEM_PARAM_TIMERS							9
-#define EPMEM_PARAMS								10 // must be 1+ last epmem param
+#define EPMEM_PARAM_MVA_STORE						5
+#define EPMEM_PARAM_MVA_RETRIEVE					6
+#define EPMEM_PARAM_TRIGGER							7
+#define EPMEM_PARAM_FORCE							8
+#define EPMEM_PARAM_BALANCE							9
+#define EPMEM_PARAM_EXCLUSIONS						10
+#define EPMEM_PARAM_TIMERS							11
+#define EPMEM_PARAMS								12 // must be 1+ last epmem param
 
 // parameter settings
 #define EPMEM_LEARNING_ON 1
@@ -48,6 +50,12 @@ typedef struct wme_struct wme;
 #define EPMEM_DB_FILE 2
 
 #define EPMEM_INDEXING_RIT 1
+
+#define EPMEM_MVA_STORE_ON 1
+#define EPMEM_MVA_STORE_OFF 2
+
+#define EPMEM_MVA_RETRIEVE_ON 1
+#define EPMEM_MVA_RETRIEVE_OFF 2
 
 #define EPMEM_TRIGGER_NONE 1
 #define EPMEM_TRIGGER_OUTPUT 2
@@ -311,6 +319,16 @@ extern bool epmem_validate_path( const char *new_val );
 extern bool epmem_validate_indexing( const long new_val );
 extern const char *epmem_convert_indexing( const long val );
 extern const long epmem_convert_indexing( const char *val );
+
+// mva_store
+extern bool epmem_validate_mva_store( const long new_val );
+extern const char *epmem_convert_mva_store( const long val );
+extern const long epmem_convert_mva_store( const char *val );
+
+// mva_retrieve
+extern bool epmem_validate_mva_retrieve( const long new_val );
+extern const char *epmem_convert_mva_retrieve( const long val );
+extern const long epmem_convert_mva_retrieve( const char *val );
 
 // trigger
 extern bool epmem_validate_trigger( const long new_val );

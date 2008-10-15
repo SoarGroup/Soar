@@ -347,7 +347,10 @@ agent * create_soar_agent (char * agent_name) {                                 
   newAgent->epmem_params[ EPMEM_PARAM_PATH ] = epmem_add_parameter( "path", "", &epmem_validate_path );
   newAgent->epmem_params[ EPMEM_PARAM_COMMIT ] = epmem_add_parameter( "commit", 1.0, &epmem_validate_commit );
     
-  newAgent->epmem_params[ EPMEM_PARAM_INDEXING ] = epmem_add_parameter( "indexing", EPMEM_INDEXING_RIT, &epmem_validate_indexing, &epmem_convert_indexing, &epmem_convert_indexing );  
+  newAgent->epmem_params[ EPMEM_PARAM_INDEXING ] = epmem_add_parameter( "indexing", EPMEM_INDEXING_RIT, &epmem_validate_indexing, &epmem_convert_indexing, &epmem_convert_indexing );
+  
+  newAgent->epmem_params[ EPMEM_PARAM_MVA_STORE ] = epmem_add_parameter( "mva_store", EPMEM_MVA_STORE_OFF, &epmem_validate_mva_store, &epmem_convert_mva_store, &epmem_convert_mva_store );
+  newAgent->epmem_params[ EPMEM_PARAM_MVA_RETRIEVE ] = epmem_add_parameter( "mva_retrieve", EPMEM_MVA_RETRIEVE_OFF, &epmem_validate_mva_retrieve, &epmem_convert_mva_retrieve, &epmem_convert_mva_retrieve );
     
   newAgent->epmem_params[ EPMEM_PARAM_TRIGGER ] = epmem_add_parameter( "trigger", EPMEM_TRIGGER_OUTPUT, &epmem_validate_trigger, &epmem_convert_trigger, &epmem_convert_trigger );
   newAgent->epmem_params[ EPMEM_PARAM_FORCE ] = epmem_add_parameter( "force", EPMEM_FORCE_OFF, &epmem_validate_force, &epmem_convert_force, &epmem_convert_force );

@@ -347,7 +347,7 @@ bool epmem_valid_parameter_value( agent *my_agent, const long param, const long 
 // Returns true if a parameter is currently protected from modification
 bool epmem_parameter_protected( agent *my_agent, const long param )
 {
-	return ( ( my_agent->epmem_db_status != -1 ) && ( param >= EPMEM_PARAM_DB ) && ( param <= EPMEM_PARAM_INDEXING ) );
+	return ( ( my_agent->epmem_db_status != -1 ) && ( param >= EPMEM_PARAM_DB ) && ( param <= EPMEM_PARAM_MVA_STORE ) );
 }
 
 // Set parameter value
@@ -448,6 +448,12 @@ bool epmem_set_parameter( agent *my_agent, const char *name, const char *new_val
 	if ( param == EPMEM_PARAM_LEARNING )
 		set_sysparam( my_agent, EPMEM_ENABLED, converted_val );
 	
+	// mva_retrieve special case
+	if ( ( param == EPMEM_PARAM_MVA_RETRIEVE ) &&
+		 ( converted_val == EPMEM_MVA_RETRIEVE_ON ) &&
+		 ( epmem_get_parameter( my_agent, EPMEM_PARAM_MVA_STORE, EPMEM_RETURN_LONG ) == EPMEM_MVA_STORE_OFF ) )
+		return false;
+	
 	my_agent->epmem_params[ param ]->param->constant_param.value = converted_val;
 
 	return true;
@@ -468,6 +474,12 @@ bool epmem_set_parameter( agent *my_agent, const char *name, const long new_val 
 	// learning special case
 	if ( param == EPMEM_PARAM_LEARNING )
 		set_sysparam( my_agent, EPMEM_ENABLED, new_val );
+	
+	// mva_retrieve special case
+	if ( ( param == EPMEM_PARAM_MVA_RETRIEVE ) &&
+		 ( new_val == EPMEM_MVA_RETRIEVE_ON ) &&
+		 ( epmem_get_parameter( my_agent, EPMEM_PARAM_MVA_STORE, EPMEM_RETURN_LONG ) == EPMEM_MVA_STORE_OFF ) )
+		return false;
 	
 	my_agent->epmem_params[ param ]->param->constant_param.value = new_val;
 
@@ -565,6 +577,12 @@ bool epmem_set_parameter( agent *my_agent, const long param, const char *new_val
 	if ( param == EPMEM_PARAM_LEARNING )
 		set_sysparam( my_agent, EPMEM_ENABLED, converted_val );
 	
+	// mva_retrieve special case
+	if ( ( param == EPMEM_PARAM_MVA_RETRIEVE ) &&
+		 ( converted_val == EPMEM_MVA_RETRIEVE_ON ) &&
+		 ( epmem_get_parameter( my_agent, EPMEM_PARAM_MVA_STORE, EPMEM_RETURN_LONG ) == EPMEM_MVA_STORE_OFF ) )
+		return false;
+	
 	my_agent->epmem_params[ param ]->param->constant_param.value = converted_val;
 
 	return true;
@@ -581,6 +599,12 @@ bool epmem_set_parameter( agent *my_agent, const long param, const long new_val 
 	// learning special case
 	if ( param == EPMEM_PARAM_LEARNING )
 		set_sysparam( my_agent, EPMEM_ENABLED, new_val );
+	
+	// mva_retrieve special case
+	if ( ( param == EPMEM_PARAM_MVA_RETRIEVE ) &&
+		 ( new_val == EPMEM_MVA_RETRIEVE_ON ) &&
+		 ( epmem_get_parameter( my_agent, EPMEM_PARAM_MVA_STORE, EPMEM_RETURN_LONG ) == EPMEM_MVA_STORE_OFF ) )
+		return false;
 	
 	my_agent->epmem_params[ param ]->param->constant_param.value = new_val;
 
@@ -692,6 +716,78 @@ const long epmem_convert_indexing( const char *val )
 	if ( !strcmp( val, "rit" ) )
 		return_val = EPMEM_INDEXING_RIT;
 
+	return return_val;
+}
+
+// mva_store parameter
+bool epmem_validate_mva_store( const long new_val )
+{
+	return ( ( new_val == EPMEM_MVA_STORE_ON ) || ( new_val == EPMEM_MVA_STORE_OFF ) );
+}
+
+const char *epmem_convert_mva_store( const long val )
+{
+	const char *return_val = NULL;
+	
+	switch ( val )
+	{
+		case EPMEM_MVA_STORE_ON:
+			return_val = "on";
+			break;
+			
+		case EPMEM_MVA_STORE_OFF:
+			return_val = "off";
+			break;
+	}
+	
+	return return_val;
+}
+
+const long epmem_convert_mva_store( const char *val )
+{
+	long return_val = NULL;
+	
+	if ( !strcmp( val, "on" ) )
+		return_val = EPMEM_MVA_STORE_ON;
+	else if ( !strcmp( val, "off" ) )
+		return_val = EPMEM_MVA_STORE_OFF;
+	
+	return return_val;
+}
+
+// mva_retrieve parameter
+bool epmem_validate_mva_retrieve( const long new_val )
+{
+	return ( ( new_val == EPMEM_MVA_RETRIEVE_ON ) || ( new_val == EPMEM_MVA_RETRIEVE_OFF ) );
+}
+
+const char *epmem_convert_mva_retrieve( const long val )
+{
+	const char *return_val = NULL;
+	
+	switch ( val )
+	{
+		case EPMEM_MVA_RETRIEVE_ON:
+			return_val = "on";
+			break;
+			
+		case EPMEM_MVA_RETRIEVE_OFF:
+			return_val = "off";
+			break;
+	}
+	
+	return return_val;
+}
+
+const long epmem_convert_mva_retrieve( const char *val )
+{
+	long return_val = NULL;
+	
+	if ( !strcmp( val, "on" ) )
+		return_val = EPMEM_MVA_RETRIEVE_ON;
+	else if ( !strcmp( val, "off" ) )
+		return_val = EPMEM_MVA_RETRIEVE_OFF;
+	
 	return return_val;
 }
 
