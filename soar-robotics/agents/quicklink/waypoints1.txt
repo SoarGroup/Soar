@@ -7,5 +7,3 @@
 			add W2 ^x 0.0
 			add W2 ^y 0.0
 			add W2 ^yaw 0.0
-add il ^time /T1
-add T1 ^seconds 1

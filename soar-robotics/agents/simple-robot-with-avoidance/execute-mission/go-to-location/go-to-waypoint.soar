@@ -27,7 +27,7 @@ sp {elaborate*operator*go-to-waypoint*waypoint
 sp {apply*go-to-waypoint*create-move-to
    (state <s> ^operator <op>
               ^io.input-link <il>
-              ^waypoints.at <at>
+              ^waypoints.at {<at> <> <d>} # don't create a move-to structure if we are already at the destination
               ^top-state <ts>)
   -(<ts> ^move-to)
    (<il> ^time.seconds <time>

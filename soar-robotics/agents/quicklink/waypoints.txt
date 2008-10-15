@@ -1,0 +1,7 @@
+load waypoints0.txt
+run 5
+load waypoints1.txt
+run 4
+load waypoints2.txt
+run 6
+load waypoints4.txt
