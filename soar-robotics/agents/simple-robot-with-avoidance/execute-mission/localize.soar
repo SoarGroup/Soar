@@ -1,0 +1,25 @@
+# proposed by generic operator proposal in propose-mission-operator
+
+
+# should this be a mission step (e.g., localize, to determine starting location?)
+sp {apply*localize*add-starting-waypoint
+   (state <s> ^operator <op>
+              ^io.output-link <ol>
+              ^waypoints.waypoint <w>)
+   (<w> ^id <id> ^x {<x> 0.} ^y {<y> 0.})
+   (<op> ^name localize
+         ^id <id>)
+-->
+   (<ol> ^add-waypoint <aw>)
+   (<aw> ^id <id> ^x <x> ^y <y>)
+}
+
+# this is complete when we are "at" some waypoint
+sp {apply*localize*complete
+   (state <s> ^operator <op>
+              ^waypoints.at
+              ^mission.current <c>)
+   (<op> ^name localize)
+-->
+   (<c> ^status complete)
+}

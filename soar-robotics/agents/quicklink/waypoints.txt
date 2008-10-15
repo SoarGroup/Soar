@@ -1,6 +1,6 @@
 set-stop-phase --before --input
 excise -a
-source -v "C:\Bob\soar-robotics\agents\simple-robot-with-avoidance-rectangle.soar"
+source -v "C:\Bob\soar-robotics\agents\simple-robot-with-avoidance-square.soar"
 w 5
 clear
 add il ^self /S1

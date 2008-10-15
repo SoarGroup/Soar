@@ -1,4 +1,4 @@
-271
+273
 SOAR_ID 0
 SOAR_ID 1
 SOAR_ID 2
@@ -270,7 +270,9 @@ SOAR_ID 267
 ENUMERATION 268 1 choose-waypoint
 SOAR_ID 269
 SOAR_ID 270
-350
+ENUMERATION 271 1 localize
+SOAR_ID 272
+352
 0 attribute 113
 0 choices 112
 0 desired 31
@@ -410,6 +412,7 @@ SOAR_ID 270
 74 operator 149
 74 operator 265
 74 operator 269
+74 operator 272
 74 parameters 255
 74 superstate 0
 74 top-state 0
@@ -621,3 +624,4 @@ SOAR_ID 270
 267 name 266
 269 name 268
 270 waypoint 31
+272 name 271

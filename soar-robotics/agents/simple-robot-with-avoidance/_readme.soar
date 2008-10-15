@@ -1,3 +1,20 @@
+# todo:
+# only track current location and destination
+#   need current location to get "at" so can do choose-waypoint
+#   need destination for go-to-location
+#   steps:
+#     - when choose-waypoint completes, remove starting waypoint and add destination waypoint
+#     - do we need to keep track of what the waypoint is (e.g., by giving it a special name or keeping a flag on the state)
+#       or is it implied by whether we are "at" it or not?
+#       - don't use special names, because the destination becomes the at, and we'd have to add the same wp with a different name
+#     - remove rule that puts all waypoints on il
+# use waypoints instead of explicit x,y where possible (e.g., in go-to-location mission step)
+# move update-progress, give-up-on-move-to to go-to-waypoint subgoal
+# merge move-to structure with go-to-waypoint structure
+#   give-up-on-move-to may need changes to support a structure that's always there (add a flag to the structure?)
+#   rename structure to make it part of state instead of functional?
+# rename move-now to orientation-complete?
+
 # how the code works
 #
 # 1) The primary operator is execute-mission. The mission structure is a linked list on the top state.
