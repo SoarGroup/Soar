@@ -32,10 +32,7 @@ public class SoarInterface implements Kernel.UpdateEventInterface
 		}
 		
 		// load productions
-		if ( productions == null )
-		{
-			productions = "agents/simple-bot.soar";
-		}
+		assert productions != null;
 		agent.LoadProductions( productions );
 		
 		waypoints = new Waypoints( agent );

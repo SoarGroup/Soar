@@ -6,8 +6,6 @@ import java.io.IOException;
 import laserloc.*;
 import java.util.*;
 
-import erp.geom.Geometry;
-
 import lcm.lcm.LCM;
 import lcm.lcm.LCMSubscriber;
 import lcmtypes.laser_t;
@@ -16,6 +14,8 @@ import lcmtypes.pose_t;
 import orc.Motor;
 import orc.Orc;
 import orc.QuadratureEncoder;
+
+import erp.geom.*;
 
 public class OrcInterface implements LCMSubscriber
 {
@@ -36,12 +36,13 @@ public class OrcInterface implements LCMSubscriber
 	int leftPreviousPosition = 0;
 	int rightPreviousPosition = 0;
 	
-	double initialX = 0;
-	double initialY = 0;
+	double [] initialPosition = new double[3];
 	boolean haveInitialCoords = false;
 
 	public OrcInterface()
 	{
+		Arrays.fill( initialPosition, 0 );
+		
 		orc = Orc.makeOrc();
 		
 		leftMotor = new Motor( orc, 1, true );
@@ -73,8 +74,7 @@ public class OrcInterface implements LCMSubscriber
 	}
 
 	boolean translating = false;
-	double prevYawCalcLocX = 0;
-	double prevYawCalcLocY = 0;
+	double [] prevYawCalcLoc = new double[3]; 
 	double yawCalcDistThreshold = 0.1;
 	boolean hadSickData = false;
 		
@@ -83,7 +83,8 @@ public class OrcInterface implements LCMSubscriber
 		@Override
 		public void run()
 		{
-			double left, right, targetYaw, targetYawTolerance, prevX, prevY, prevYaw;
+			double left, right, targetYaw, targetYawTolerance, prevYaw;
+			double [] previousPosition = new double[3];
 			boolean targetYawEnabled;
 			synchronized ( state )
 			{
@@ -93,8 +94,7 @@ public class OrcInterface implements LCMSubscriber
 				targetYawTolerance = state.targetYawTolerance;
 				targetYawEnabled = state.targetYawEnabled;
 				
-				prevX = state.x;
-				prevY = state.y;
+				System.arraycopy( state.pos, 0, previousPosition, 0, state.pos.length );
 				prevYaw = state.yaw;
 			}
 			
@@ -126,19 +126,17 @@ public class OrcInterface implements LCMSubscriber
 			double thetaprime = prevYaw + phi;
 
 			// calculation of x,y
-			double xprime, yprime;
+			double [] newPosition;
 			if ( pose != null )
 			{
 				if ( haveInitialCoords == false )
 				{
-					initialX = pose.pos[0];
-					initialY = pose.pos[1];
+					System.arraycopy( pose.pos, 0, initialPosition, 0, pose.pos.length );
 					haveInitialCoords = true;
 				}
 				
 				System.out.print( "*" );
-				xprime = pose.pos[0] - initialX;
-				yprime = pose.pos[1] - initialY;
+				newPosition = Geometry.subtract( pose.pos, initialPosition );
 				
 				hadSickData = true;
 				pose = null;
@@ -158,8 +156,10 @@ public class OrcInterface implements LCMSubscriber
 				
 				double dcenter = ( dleft + dright ) / 2;
 				
-				xprime = prevX + ( dcenter * Math.cos( prevYaw ) );
-				yprime = prevY + ( dcenter * Math.sin( prevYaw ) );
+				newPosition = new double[3];
+				newPosition[0] = previousPosition[0] + ( dcenter * Math.cos( prevYaw ) );
+				newPosition[1] = previousPosition[1] + ( dcenter * Math.sin( prevYaw ) );
+				newPosition[2] = 0;
 			}
 			
 			// if we start moving forward or backward, mark that location
@@ -174,22 +174,16 @@ public class OrcInterface implements LCMSubscriber
 						System.out.println( "Stopped translating" );
 					}
 				
-					double deltaX = xprime - prevYawCalcLocX;
-					double deltaY = yprime - prevYawCalcLocY;
-					
-					double distanceTravelled = deltaX * deltaX + deltaY * deltaY;
-					distanceTravelled = Math.sqrt( distanceTravelled );
+					double [] deltaPos = Geometry.subtract( newPosition, prevYawCalcLoc );
+					double distanceTravelled = Geometry.magnitude( deltaPos );
 				
 					if ( distanceTravelled > yawCalcDistThreshold )
 					{
-						double newThetaPrime = Math.atan2( deltaY, deltaX );
-					
-						prevYawCalcLocX = xprime;
-						prevYawCalcLocY = yprime;
-					
+						double newThetaPrime = Math.atan2( deltaPos[1], deltaPos[0] );
 						System.out.format( "Correcting yaw delta %.3f%n", Math.toDegrees( newThetaPrime ) - Math.toDegrees( thetaprime ) );
-					
 						thetaprime = newThetaPrime;
+					
+						System.arraycopy( newPosition, 0, prevYawCalcLoc, 0, newPosition.length ); 
 						hadSickData = false;
 					}
 				}
@@ -197,8 +191,7 @@ public class OrcInterface implements LCMSubscriber
 				{
 					if ( ( left < 0 && right < 0 ) || ( left > 0 && right > 0 ) )
 					{
-						prevYawCalcLocX = xprime;
-						prevYawCalcLocY = yprime;
+						System.arraycopy( newPosition, 0, prevYawCalcLoc, 0, newPosition.length );
 						translating = true;
 						System.out.println( "Started translating" );
 					}
@@ -286,8 +279,7 @@ public class OrcInterface implements LCMSubscriber
 					state.rangerutime = utime;
 				}
 				
-				state.x = xprime;
-				state.y = yprime;
+				System.arraycopy( newPosition, 0, state.pos, 0, newPosition.length );
 				state.yaw = thetaprime;
 			}
 

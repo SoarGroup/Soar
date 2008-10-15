@@ -22,8 +22,7 @@ public class SplinterState {
 	public int rightPosition = 0;
 	public double rightVelocity = 0;
 	
-	public double x = 0;
-	public double y = 0;
+	public double [] pos = new double[3];
 	public double yaw = 0;
 	
 	public RangerData [] ranger;
@@ -57,14 +56,21 @@ public class SplinterState {
 		this.rightPosition = other.rightPosition;
 		this.rightVelocity = other.rightVelocity;
 
-		if ( other.ranger != null )
+		if ( other.ranger == null )
+		{
+			this.ranger = null;
+		}
+		else
 		{
 			this.ranger = Arrays.copyOf( other.ranger, other.ranger.length );
 		}
 		this.rangerutime = other.rangerutime;
 		
-		this.x = other.x;
-		this.y = other.y;
+		if ( other.pos == null )
+		{
+			other.pos = new double[3];
+		}
+		this.pos = Arrays.copyOf( other.pos, other.pos.length );
 		this.yaw = other.yaw;
 	}
 	

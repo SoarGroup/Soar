@@ -1,5 +1,7 @@
 package splintersoar.soar;
 
+import java.util.Arrays;
+
 import sml.*;
 import splintersoar.*;
 
@@ -409,10 +411,10 @@ public class OutputLinkManager {
 					continue;
 				}
 				
-				double x = stateCopy.x;
+				double [] pos = Arrays.copyOf( stateCopy.pos, stateCopy.pos.length );
 				try 
 				{
-					x = Double.parseDouble( commandId.GetParameterValue( "x" ) );
+					pos[0] = Double.parseDouble( commandId.GetParameterValue( "x" ) );
 				} 
 				catch ( NullPointerException ignored )
 				{
@@ -425,10 +427,9 @@ public class OutputLinkManager {
 					continue;
 				}
 
-				double y = stateCopy.y;
 				try 
 				{
-					y = Double.parseDouble( commandId.GetParameterValue( "y" ) );
+					pos[1] = Double.parseDouble( commandId.GetParameterValue( "y" ) );
 				} 
 				catch ( NullPointerException ignored )
 				{
@@ -442,9 +443,9 @@ public class OutputLinkManager {
 				}
 
 				System.out.format( "add-waypoint: %16s %10s %10s%n", "id", "x", "y" );
-				System.out.format( "              %16s %10.3f %10.3f%n", id, x, y );
+				System.out.format( "              %16s %10.3f %10.3f%n", id, pos[0], pos[1] );
 				
-				waypoints.add( x, y, id );
+				waypoints.add( pos, id );
 				
 				commandId.AddStatusComplete();
 				continue;

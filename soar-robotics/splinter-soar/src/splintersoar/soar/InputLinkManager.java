@@ -132,8 +132,8 @@ public class InputLinkManager {
 			{
 				Identifier self_pose = agent.CreateIdWME( self, "pose" );
 				{
-					self_pose_x = agent.CreateFloatWME( self_pose, "x", stateCopy.x );
-					self_pose_y = agent.CreateFloatWME( self_pose, "y", stateCopy.y );
+					self_pose_x = agent.CreateFloatWME( self_pose, "x", stateCopy.pos[0] );
+					self_pose_y = agent.CreateFloatWME( self_pose, "y", stateCopy.pos[1] );
 					self_pose_yaw = agent.CreateFloatWME( self_pose, "yaw", Math.toDegrees( stateCopy.yaw ) );
 				}
 			}
@@ -179,8 +179,8 @@ public class InputLinkManager {
 			agent.Update( self_motor_right_position, stateCopy.rightPosition );
 			agent.Update( self_motor_right_velocity, stateCopy.rightVelocity );
 
-			agent.Update( self_pose_x, stateCopy.x );
-			agent.Update( self_pose_y, stateCopy.y );
+			agent.Update( self_pose_x, stateCopy.pos[0] );
+			agent.Update( self_pose_y, stateCopy.pos[1] );
 			double yaw = stateCopy.yaw % ( 2 * Math.PI );
 			while ( yaw < 0 )
 			{
@@ -190,7 +190,7 @@ public class InputLinkManager {
 
 			ranger.update( stateCopy.rangerutime, stateCopy.ranger );
 			
-			waypoints.setNewRobotPose( stateCopy.x, stateCopy.y, yaw );
+			waypoints.setNewRobotPose( stateCopy.pos, yaw );
 		}
 	}
 }

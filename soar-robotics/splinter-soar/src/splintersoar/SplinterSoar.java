@@ -1,6 +1,12 @@
 package splintersoar;
 
+import java.io.IOException;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.logging.*;
+
+import erp.config.Config;
+import erp.config.ConfigFile;
 
 import orc.util.GamePad;
 
@@ -20,31 +26,65 @@ public class SplinterSoar
 
 	public static final Logger logger = Logger.getLogger("splintersoar");
 	
+	public class TextFormatter extends Formatter {
+		SimpleDateFormat format = new SimpleDateFormat("HH:mm:ss");
+		
+		public TextFormatter() {
+			super();
+		}
+
+		public String format(LogRecord record) {
+			Date d = new Date(record.getMillis());
+			StringBuilder output = new StringBuilder();
+			output.append( format.format( d ) );
+			output.append( " " );
+			output.append( record.getLevel().getName() );
+			output.append( " " );
+			output.append( record.getMessage() );
+			output.append( java.lang.System.getProperty("line.separator") );
+			return output.toString();
+		}
+
+	}
+
 	public SplinterSoar( String args [] )
 	{
+		ConsoleHandler handler = new ConsoleHandler();
+		handler.setFormatter(new TextFormatter());
+		logger.addHandler(handler);
+
+		if ( args.length != 1 ) 
+		{
+		    System.out.println("Usage: splintersoar <configfile>");
+		    return;
+		}
+
+		Config config;
+
+		try 
+		{
+		    config = ( new ConfigFile( args[0] ) ).getConfig();
+		} 
+		catch ( IOException ex ) 
+		{
+		    SplinterSoar.logger.severe( "Couldn't open config file: " + args[0] );
+		    return;
+		}
+		
+		String agent = config.requireString( "soar.agent" );
+		
 		logger.info( "Starting orc interface" );
 		orc = new OrcInterface();
 
-		//logger.info( "Starting laser localizer" );
-		//laserloc = new LaserLoc( false );
-		
-		logger.info( "Subscribing orc to POSE channel" );
+		logger.info( "Subscribing orc to " + LaserLoc.pose_channel + " channel" );
 		lcm = LCM.getSingleton();
 		lcm.subscribe( LaserLoc.pose_channel, orc );
 
 		logger.info( "Subscribing orc to LASER_FRONT channel" );
 		lcm.subscribe( "LASER_FRONT", orc );
 
-		if ( args.length > 0 )
-		{
-			logger.info( "Starting Soar interface with agent: " + args[ 0 ] );
-			soar = new SoarInterface( orc.getState(), args[ 0 ] );
-		}
-		else
-		{
-			logger.info( "Starting Soar interface with default agent" );
-			soar = new SoarInterface( orc.getState(), null );
-		}
+		logger.info( "Starting Soar interface with agent: " + agent );
+		soar = new SoarInterface( orc.getState(), agent );
 		
 		logger.info( "Creating game pad for override" );
 		gamePad = new GamePad();

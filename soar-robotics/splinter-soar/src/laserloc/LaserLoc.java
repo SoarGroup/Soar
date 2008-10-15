@@ -1,12 +1,15 @@
 package laserloc;
 
-import java.awt.Point;
 import java.io.DataInputStream;
 import java.io.IOException;
 import java.util.Arrays;
 
+import splintersoar.SplinterSoar;
+
 import lcm.lcm.*;
 import lcmtypes.*;
+import erp.config.Config;
+import erp.config.ConfigFile;
 import erp.geom.*;
 
 // TODO: don't assert
@@ -17,27 +20,24 @@ public class LaserLoc implements LCMSubscriber
 		initializeLaserData();
 	}
 
+	public static final String laser_channel = "LASER_LOC";
+	public static final String pose_channel = "POSE";
+
 	// Assumptions:
 		// robot_z is constant
 		// robot starts at a known angle
 		// this level only reports laser data (next layer up decided whether to use odometry or not)
 		// distances in meters
 	
-	// Constants:
-	public static double robot_starting_yaw = 0;
-	public static double laser_x = 0; // if we assume the laser is at the origin facing up the y-axis, the next 3 constants are all 0
-	public static double laser_y = 0;
-	public static double laser_yaw_adjust = 0; // amount to adjust for laser's yaw = 90 - laser's yaw = 0 if laser is facing positive y directly
-	public static double laser_dist_adjustment = 0; // radius of tube?
-	public static double translation_threshold = 0; // minimum translation distance to update x,y location, 0.05 total guess
-	public static double duration_threshold = 2; // maximum time between updates in seconds
-	public static String laser_channel = "LASER_LOC";
-	public static String pose_channel = "POSE";
-	public static int update_period = 5; // seconds between status updates
-
-	// Even though this comes in each message, it may help the compiler optimize 
-	// if we make it a separate constant (can assert on it not matching the message)
-	public static double laser_delta_angle = 0; // angle between laser indexes. 
+	// Configuration:
+	private static double robot_starting_yaw = 0;
+	private static double laser_x = 0; // if we assume the laser is at the origin facing up the y-axis, the next 3 constants are all 0
+	private static double laser_y = 0;
+	private static double laser_yaw_adjust = 0; // amount to adjust for laser's yaw = 90 - laser's yaw = 0 if laser is facing positive y directly
+	private static double laser_dist_adjustment = 0; // radius of tube?
+	private static double translation_threshold = 0; // minimum translation distance to update x,y location, 0.05 total guess
+	private static int update_period = 5; // seconds between status updates
+	private static boolean verbose = false;
 	// end constants
 	
 	// regular state
@@ -47,27 +47,24 @@ public class LaserLoc implements LCMSubscriber
 	int droppedLocPackets = 0;
 	long lastStatusUpdate = System.nanoTime();
 
-	static boolean testing = false;
-	static boolean verbose = false;
-	
 	LCM lcm;
 	
-	public LaserLoc( boolean verbose )
+	public LaserLoc()
 	{
-		// ?? initialize?
-		
-		if ( !testing )
-		{
-			lcm = LCM.getSingleton();
-			lcm.subscribe( laser_channel, this );
-		}
-
 		printHeaderLine();
+	}
+	
+	public void setLCM( LCM lcm )
+	{
+		this.lcm = lcm;
 	}
 	
 	public void printHeaderLine()
 	{
-		//System.out.format( "%10s %10s%n", "x", "y" );
+		if ( verbose )
+		{
+			System.out.format( "%10s %10s%n", "x", "y" );
+		}
 	}
 	
 	private void updatePose()
@@ -105,13 +102,10 @@ public class LaserLoc implements LCMSubscriber
 			// initialize
 			estimated_pose = getRobotXY( laser_data );
 			estimated_pose.orientation = Geometry.rollPitchYawToQuat( new double[] { 0, 0, robot_starting_yaw } );
-			if ( verbose )
-			{
-				printOldPose();
-			}
+			printOldPose();
 
 			estimated_pose.utime = utime;
-			if ( !testing )
+			if ( lcm != null )
 			{
 				lcm.publish( pose_channel, estimated_pose );
 			}
@@ -127,7 +121,7 @@ public class LaserLoc implements LCMSubscriber
 			return;
 		}
 		
-		double translation_dist = Point.distance( estimated_pose.pos[ 0 ], estimated_pose.pos[ 1 ], new_estimated_pose.pos[ 0 ], new_estimated_pose.pos[ 1 ] );
+		double translation_dist = Geometry.distance( estimated_pose.pos, new_estimated_pose.pos );
 		
 		// only update location if moved enough. Don't want Soar to thrash on constantly changing x,y due to noise
 		// this also means this loop can run as fast as it can and we'll still get reasonable updates
@@ -136,34 +130,27 @@ public class LaserLoc implements LCMSubscriber
 		
 		if( movedEnough )
 		{
-			// TODO: figure out best way to clone
-			estimated_pose.pos[ 0 ] =  new_estimated_pose.pos[ 0 ];
-			estimated_pose.pos[ 1 ] =  new_estimated_pose.pos[ 1 ];
-			estimated_pose.pos[ 2 ] =  new_estimated_pose.pos[ 2 ];
+			System.arraycopy( new_estimated_pose.pos, 0, estimated_pose.pos, 0, new_estimated_pose.pos.length );
 			
 			estimated_pose.utime = utime;
-			if ( !testing )
+			if ( lcm != null )
 			{
 				lcm.publish( pose_channel, estimated_pose );
 			}
 
 			printOldPose();
 		}
-		else
-		{
-			if ( verbose )
-			{
-				System.out.println( "Skipping update (beneath threshold)" );
-			}
-		}
 		laser_data = null;
 	}
 
 	private void printOldPose() 
 	{
-		//System.out.format( "%10.3f %10.3f%n", 
-		//		estimated_pose.pos[ 0 ], 
-		//		estimated_pose.pos[ 1 ] );
+		if ( verbose )
+		{
+			System.out.format( "%10.3f %10.3f%n", 
+					estimated_pose.pos[ 0 ], 
+					estimated_pose.pos[ 1 ] );
+		}
 	}
 
 	private pose_t getRobotXY( laser_t laser_data )
@@ -297,16 +284,41 @@ public class LaserLoc implements LCMSubscriber
 
 	public static void main(String[] args) 
 	{
-		// TODO: configuration of constants from command line params
-		// TODO: testing switch from command line params
+		if ( args.length != 1 ) 
+		{
+		    System.out.println("Usage: laserloc <configfile>");
+		    return;
+		}
 
+		Config config;
+
+		try 
+		{
+		    config = ( new ConfigFile( args[0] ) ).getConfig();
+		} 
+		catch ( IOException ex ) 
+		{
+		    SplinterSoar.logger.severe( "Couldn't open config file: " + args[0] );
+		    return;
+		}
+		
+		// set up constants
+		LaserLoc.robot_starting_yaw = config.getDouble( "robot_starting_yaw", 0 );
+		LaserLoc.laser_x = config.getDouble( "laser_x", 0 );
+		LaserLoc.laser_y = config.getDouble( "laser_y", 0 );
+		LaserLoc.laser_yaw_adjust = config.getDouble( "laser_yaw_adjust", 0 );
+		LaserLoc.laser_dist_adjustment = config.getDouble( "laser_dist_adjustment", 0 );
+		LaserLoc.translation_threshold = config.getDouble( "translation_threshold", 0 );
+		LaserLoc.update_period = config.getInt( "update_period", 5 );
+		LaserLoc.verbose = config.getBoolean( "verbose", false );
+		
 		LaserLoc lloc;
-		if ( testing )
+		if ( config.getBoolean( "testing", false ) )
 		{
 			for ( int current_test_index = 0; current_test_index < test_data.length; ++current_test_index )
 			{
-				System.out.println( "Starting test " + ( current_test_index + 1 ) );
-				lloc = new LaserLoc( true );
+				SplinterSoar.logger.info( "Starting test " + ( current_test_index + 1 ) );
+				lloc = new LaserLoc();
 
 				for ( int current_test_data_index = 0; current_test_data_index < test_data[ current_test_index ].length; ++current_test_data_index )
 				{
@@ -315,12 +327,17 @@ public class LaserLoc implements LCMSubscriber
 				}
 				
 			}
-			System.out.println( "All tests done." );
+			SplinterSoar.logger.info( "All tests done." );
 			System.exit( 0 );
 		}
 		
 		// Not testing
-		lloc = new LaserLoc( false );
+		lloc = new LaserLoc();
+
+		LCM lcm = LCM.getSingleton();
+		lcm.subscribe( laser_channel, lloc );
+		lloc.setLCM( lcm );
+
 		while ( true )
 		{
 			lloc.updatePose();
