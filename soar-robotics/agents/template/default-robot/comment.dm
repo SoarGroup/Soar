@@ -64,17 +64,9 @@
 
 0 starboard side motor
 
-0 electrical current to motor, proportional to torque (effort)
-
 0 odometry position in ticks
 
-0 velocity in ticks over time (time unit?) (may not go negative)
-
-0 electrical current to motor, proportional to torque (effort)
-
 0 odometry position in ticks
-
-0 velocity in ticks over time (time unit?) (may not go negative)
 
 0 global x coordinate
 

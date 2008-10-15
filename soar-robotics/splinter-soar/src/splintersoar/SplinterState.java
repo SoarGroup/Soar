@@ -14,13 +14,8 @@ public class SplinterState {
 	// state output
 	public long utime = 0;
 	
-	public double leftCurrent = 0;
 	public int leftPosition = 0;
-	public double leftVelocity = 0;
-	
-	public double rightCurrent = 0;
 	public int rightPosition = 0;
-	public double rightVelocity = 0;
 	
 	public double [] pos = new double[3];
 	public double yaw = 0;
@@ -48,13 +43,8 @@ public class SplinterState {
 
 		this.utime = other.utime;
 
-		this.leftCurrent = other.leftCurrent;
 		this.leftPosition = other.leftPosition;
-		this.leftVelocity = other.leftVelocity;
-
-		this.rightCurrent = other.rightCurrent;
 		this.rightPosition = other.rightPosition;
-		this.rightVelocity = other.rightVelocity;
 
 		if ( other.ranger == null )
 		{

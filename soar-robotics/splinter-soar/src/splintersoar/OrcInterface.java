@@ -25,16 +25,15 @@ public class OrcInterface implements LCMSubscriber
 	SplinterState state = new SplinterState();
 	
 	private Orc orc;
-	private Motor leftMotor;
-	private Motor rightMotor;
-	private QuadratureEncoder leftOdom;
-	private QuadratureEncoder rightOdom;
+	private Motor [] motor = new Motor[2];
+	private QuadratureEncoder [] odom = new QuadratureEncoder[2];
+	
+	private double [] command = { 0, 0 };
 	
 	pose_t pose;
 	laser_t laserData;
 	RangerData [] rangerData = new RangerData[ state.rangerSlices ];
-	int leftPreviousPosition = 0;
-	int rightPreviousPosition = 0;
+	int [] previousMotorPosition = { 0, 0 };
 	
 	double [] initialPosition = new double[3];
 	boolean haveInitialCoords = false;
@@ -45,13 +44,13 @@ public class OrcInterface implements LCMSubscriber
 		
 		orc = Orc.makeOrc();
 		
-		leftMotor = new Motor( orc, 1, true );
-		leftOdom = new QuadratureEncoder( orc, 1, true);
-		leftPreviousPosition = leftOdom.getPosition();
+		motor[0] = new Motor( orc, 1, true );
+		odom[0] = new QuadratureEncoder( orc, 1, true);
+		previousMotorPosition[0] = odom[0].getPosition();
 		
-		rightMotor = new Motor( orc, 0, false );
-		rightOdom = new QuadratureEncoder( orc, 0, false);
-		rightPreviousPosition = rightOdom.getPosition();
+		motor[1] = new Motor( orc, 0, false );
+		odom[1] = new QuadratureEncoder( orc, 0, false);
+		previousMotorPosition[1] = odom[1].getPosition();
 		
 		for ( int index = 0; index < rangerData.length; ++index)
 		{
@@ -103,25 +102,20 @@ public class OrcInterface implements LCMSubscriber
 			// Really, we should only be getting one status message per update.
 			// In the interest of not prematurely optimizing, I will leave this
 			// like it is for now.
-			double leftCurrent = leftMotor.getCurrent();
-			int leftPosition = leftOdom.getPosition();
-			double leftVelocity = leftOdom.getVelocity() * state.tickMeters;
-
-			double rightCurrent = rightMotor.getCurrent();
-			int rightPosition = rightOdom.getPosition();
-			double rightVelocity = rightOdom.getVelocity() * state.tickMeters;
+			int leftPosition = odom[0].getPosition();
+			int rightPosition = odom[1].getPosition();
 
 			// write new commands
 			if ( targetYawEnabled == false )
 			{
-				leftMotor.setPWM( left );
-				rightMotor.setPWM( right );
+				motor[0].setPWM( left );
+				motor[1].setPWM( right );
 			} 
 			//// end orc communication (more after yaw calculation)
 
 			// calculation of new yaw is always based on odometry
-			double dleft = ( leftPosition - leftPreviousPosition ) * state.tickMeters;
-			double dright = ( rightPosition - rightPreviousPosition ) * state.tickMeters;
+			double dleft = ( leftPosition - previousMotorPosition[0] ) * state.tickMeters;
+			double dright = ( rightPosition - previousMotorPosition[1] ) * state.tickMeters;
 			double phi = ( dright - dleft ) / state.baselineMeters;
 			double thetaprime = prevYaw + phi;
 
@@ -212,24 +206,24 @@ public class OrcInterface implements LCMSubscriber
 				
 				if ( relativeBearingValue < ( 0 - targetYawTolerance ) )
 				{
-					leftMotor.setPWM( left );
-					rightMotor.setPWM( right * -1 );
+					motor[0].setPWM( left );
+					motor[1].setPWM( right * -1 );
 				}
 				else if ( relativeBearingValue > targetYawTolerance )
 				{
-					leftMotor.setPWM( left * -1 );
-					rightMotor.setPWM( right );
+					motor[0].setPWM( left * -1 );
+					motor[1].setPWM( right );
 				}
 				else
 				{
-					leftMotor.setPWM( 0 );
-					rightMotor.setPWM( 0 );
+					motor[0].setPWM( 0 );
+					motor[1].setPWM( 0 );
 				}
 			} 
 			//// end orc communication
 
-			leftPreviousPosition = leftPosition;
-			rightPreviousPosition = rightPosition;
+			previousMotorPosition[0] = leftPosition;
+			previousMotorPosition[1] = rightPosition;
 
 			//// ranger update
 			if ( laserData != null )
@@ -265,13 +259,8 @@ public class OrcInterface implements LCMSubscriber
 			{
 				state.utime = utime;
 				
-				state.leftCurrent = leftCurrent;
 				state.leftPosition = leftPosition;
-				state.leftVelocity = leftVelocity;
-				
-				state.rightCurrent = rightCurrent;
 				state.rightPosition = rightPosition;
-				state.rightVelocity = rightVelocity;
 				
 				if ( laserData != null )
 				{

@@ -12,12 +12,8 @@ public class InputLinkManager {
 	Identifier ranges;
 	
 	Identifier self;
-	FloatElement self_motor_left_current;
 	IntElement self_motor_left_position;
-	FloatElement self_motor_left_velocity;
-	FloatElement self_motor_right_current;
 	IntElement self_motor_right_position;
-	FloatElement self_motor_right_velocity;
 	FloatElement self_pose_x;
 	FloatElement self_pose_y;
 	FloatElement self_pose_z;
@@ -114,16 +110,12 @@ public class InputLinkManager {
 				
 				Identifier self_motor_left = agent.CreateIdWME( self_motor, "left" );
 				{
-					self_motor_left_current = agent.CreateFloatWME( self_motor_left, "current", stateCopy.leftCurrent );
 					self_motor_left_position = agent.CreateIntWME( self_motor_left, "position", stateCopy.leftPosition );
-					self_motor_left_velocity = agent.CreateFloatWME( self_motor_left, "velocity", stateCopy.leftVelocity );
 				}
 				
 				Identifier self_motor_right = agent.CreateIdWME( self_motor, "right" );
 				{
-					self_motor_right_current = agent.CreateFloatWME( self_motor_right, "current", stateCopy.rightCurrent );
 					self_motor_right_position = agent.CreateIntWME( self_motor_right, "position", stateCopy.rightPosition );
-					self_motor_right_velocity = agent.CreateFloatWME( self_motor_right, "velocity", stateCopy.rightVelocity );
 				}
 			}
 			
@@ -171,13 +163,8 @@ public class InputLinkManager {
 			
 			lastTime = stateCopy.utime;
 			
-			agent.Update( self_motor_left_current, stateCopy.leftCurrent );
 			agent.Update( self_motor_left_position, stateCopy.leftPosition );
-			agent.Update( self_motor_left_velocity, stateCopy.leftVelocity );
-
-			agent.Update( self_motor_right_current, stateCopy.rightCurrent );
 			agent.Update( self_motor_right_position, stateCopy.rightPosition );
-			agent.Update( self_motor_right_velocity, stateCopy.rightVelocity );
 
 			agent.Update( self_pose_x, stateCopy.pos[0] );
 			agent.Update( self_pose_y, stateCopy.pos[1] );
