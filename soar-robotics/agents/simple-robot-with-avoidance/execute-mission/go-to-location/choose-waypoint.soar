@@ -9,12 +9,26 @@ sp {go-to-location*propose*choose-waypoint
          ^destination <w>)
 }
 
+# create a top-state structure describing the destination
+# add a waypoint for the destination
+# remove the waypoint that we're "at"
 sp {apply*choose-waypoint
    (state <s> ^operator <op>
-              ^top-state <ts>)
+              ^top-state <ts>
+              ^io <io>
+              ^waypoints.at <wa>)
+   (<io> ^input-link.self.waypoints.waypoint <wr>
+         ^output-link <ol>)
    (<op> ^name choose-waypoint
          ^destination <w>)
+   (<w> ^id <ida> ^x <x> ^y <y>)
+   (<wa> ^id <idr>)
+   (<wr> ^id <idr>)
 -->
    (<ts> ^go-to-location <gtl>)
    (<gtl> ^waypoint <w>)
+   (<ol> ^add-waypoint <aw>
+         ^remove-waypoint <rw>)
+   (<aw> ^id <ida> ^x <x> ^y <y>)
+   (<rw> ^id <idr>)
 }

@@ -13,18 +13,18 @@ sp {apply*waypoints
 }
 
 # this will automatically retract as soon as there is a corresponding waypoint on the input-link
-sp {elaborate*output-link*add-waypoints-for-map
-   (state <s> ^io <io>
-              ^waypoints.waypoint <w>)
-   (<io> ^input-link <il>
-         ^output-link <ol>)
-   (<w> ^id <id> ^x <x> ^y <y>)
-  -{(<il> ^self.waypoints.waypoint <wi>)
-    (<wi> ^id <id>)}
--->
-   (<ol> ^add-waypoint <aw>)
-   (<aw> ^id <id> ^x <x> ^y <y>)
-}
+#sp {elaborate*output-link*add-waypoints-for-map
+#   (state <s> ^io <io>
+#              ^waypoints.waypoint <w>)
+#   (<io> ^input-link <il>
+#         ^output-link <ol>)
+#   (<w> ^id <id> ^x <x> ^y <y>)
+#  -{(<il> ^self.waypoints.waypoint <wi>)
+#    (<wi> ^id <id>)}
+#-->
+#   (<ol> ^add-waypoint <aw>)
+#   (<aw> ^id <id> ^x <x> ^y <y>)
+#}
 
 # if we're close enough to a waypoint, then mark that we are "at" the waypoint
 sp {elaborate*waypoints*at-waypoint

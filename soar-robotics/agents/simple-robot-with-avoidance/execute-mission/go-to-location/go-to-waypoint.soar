@@ -14,26 +14,12 @@ sp {go-to-location*propose*go-to-waypoint
 # 3) create structures to track movement
 # 4) move/rotate to the desired location (in subgoal)
 
-# note that we don't have to explicitly remove any old "destination" waypoints as adding a new one will do a replace
-sp {apply*go-to-waypoint*add-input-waypoint
-   (state <s> ^operator <op>
-              ^io.output-link <ol>)
-   (<op> ^name go-to-waypoint
-         ^destination <w>)
-   (<w> ^x <x> ^y <y>)
--->
-   (<ol> ^add-waypoint <aw>)
-   (<aw> ^id destination
-         ^x <x> ^y <y>)
-}
-
 sp {elaborate*operator*go-to-waypoint*waypoint
    (state <s> ^io.input-link.self.waypoints.waypoint <w>
               ^operator <o>)
    (<o> ^name go-to-waypoint
-        ^destination <d>)
-   (<w> ^id destination ^x <x> ^y <y>)
-   (<d> ^x <x> ^y <y>)
+        ^destination.id <id>)
+   (<w> ^id <id>)
 -->
    (<o> ^waypoint <w>)
 }
@@ -51,7 +37,8 @@ sp {apply*go-to-waypoint*create-move-to
          ^track-progress true
          ^destination <d>
          ^waypoint <w>)
-   (<w> ^id destination
+   (<d> ^id <id>)
+   (<w> ^id <id>
         ^distance <dist>)
 -->
    (<ts> ^move-to <mt>)

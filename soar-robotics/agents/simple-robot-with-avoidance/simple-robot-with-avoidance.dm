@@ -1,4 +1,4 @@
-273
+277
 SOAR_ID 0
 SOAR_ID 1
 SOAR_ID 2
@@ -272,7 +272,11 @@ SOAR_ID 269
 SOAR_ID 270
 ENUMERATION 271 1 localize
 SOAR_ID 272
-352
+STRING 273
+SOAR_ID 274
+STRING 275
+ENUMERATION 276 2 complete error
+356
 0 attribute 113
 0 choices 112
 0 desired 31
@@ -312,6 +316,7 @@ SOAR_ID 272
 3 move 8
 3 move-to 244
 3 remove-message 125
+3 remove-waypoint 274
 3 rotate 9
 3 rotate-to 241
 3 stop 10
@@ -624,4 +629,7 @@ SOAR_ID 272
 267 name 266
 269 name 268
 270 waypoint 31
+272 id 273
 272 name 271
+274 id 275
+274 status 276

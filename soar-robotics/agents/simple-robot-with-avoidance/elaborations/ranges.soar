@@ -54,10 +54,11 @@ sp {go-to-waypoint*elaborate*range*rotate-right
 
 sp {go-to-waypoint*elaborate*range*dist-from-goal*0
    (state <s> ^name simple-robot
-              ^io.input-link <il>)
+              ^io.input-link <il>
+              ^go-to-location.waypoint.id <id>)
    (<il> ^self.waypoints.waypoint <w>
          ^ranges.range <r>)
-   (<w> ^id destination
+   (<w> ^id <id>
         ^relative-bearing <rb>)
    (<r> ^start <= <rb>
         ^end >= <rb>)
@@ -67,10 +68,11 @@ sp {go-to-waypoint*elaborate*range*dist-from-goal*0
 
 sp {go-to-waypoint*elaborate*range*dist-from-goal*left
    (state <s> ^name simple-robot
-              ^io.input-link <il>)
+              ^io.input-link <il>
+              ^go-to-location.waypoint.id <id>)
    (<il> ^self.waypoints.waypoint <w>
          ^ranges.range <r>)
-   (<w> ^id destination
+   (<w> ^id <id>
         ^relative-bearing <rb>)
    (<r> ^start {<start> > <rb>})
 -->
@@ -79,10 +81,11 @@ sp {go-to-waypoint*elaborate*range*dist-from-goal*left
 
 sp {go-to-waypoint*elaborate*range*dist-from-goal*right
    (state <s> ^name simple-robot
-              ^io.input-link <il>)
+              ^io.input-link <il>
+              ^go-to-location.waypoint.id <id>)
    (<il> ^self.waypoints.waypoint <w>
          ^ranges.range <r>)
-   (<w> ^id destination
+   (<w> ^id <id>
         ^relative-bearing <rb>)
    (<r> ^end {<end> < <rb>})
 -->

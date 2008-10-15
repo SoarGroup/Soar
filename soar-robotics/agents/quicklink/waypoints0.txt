@@ -9,23 +9,6 @@ add il ^self /S1
 		add P1 ^x 0.0
 		add P1 ^y 0.0
 		add P1 ^yaw 0.0
-	add S1 ^waypoints /W1
-		add W1 ^waypoint /W2
-			add W2 ^id one
-			add W2 ^distance 0.0
-			add W2 ^relative-bearing 0.0
-			add W2 ^abs-relative-bearing 0.0
-			add W2 ^x 0.0
-			add W2 ^y 0.0
-			add W2 ^yaw 0.0
-		add W1 ^waypoint /W3
-			add W3 ^id destination
-			add W3 ^distance 1.0
-			add W3 ^relative-bearing 0.0
-			add W3 ^abs-relative-bearing 0.0
-			add W3 ^x 1.0
-			add W3 ^y 0.0
-			add W3 ^yaw 0.0
 add il ^ranges /R1
 	add R1 ^range /Rid2
 		add Rid2 ^distance 5.0

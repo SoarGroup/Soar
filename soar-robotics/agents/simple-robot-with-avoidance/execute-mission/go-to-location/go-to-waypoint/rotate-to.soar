@@ -48,8 +48,9 @@ sp {go-to-waypoint*elaborate*superoperator*move-now
    :o-support
    (state <s> ^name go-to-waypoint
               ^parameters.rotation-tolerance <rt>
-             -^waypoint.abs-relative-bearing > <rt>
+              ^waypoint <w>
               ^superoperator <so>)
+  -(<w> ^abs-relative-bearing > <rt>)
 -->
    (<so> ^move-now true)
    (write (crlf) |Oriented towards dest|)
