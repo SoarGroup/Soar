@@ -135,7 +135,7 @@ public class OrcInterface implements LCMSubscriber
 					haveInitialCoords = true;
 				}
 				
-				System.out.print( "*" );
+				//System.out.print( "*" );
 				newPosition = Geometry.subtract( pose.pos, initialPosition );
 				
 				hadSickData = true;
@@ -143,7 +143,7 @@ public class OrcInterface implements LCMSubscriber
 			}
 			else
 			{
-				System.out.print( "." );
+				//System.out.print( "." );
 				// Equations from A Primer on Odopmetry and Motor Control, Olson 2006
 				// dleft, dright: distance wheel travelled
 				// dbaseline: wheelbase
@@ -318,7 +318,7 @@ public class OrcInterface implements LCMSubscriber
 		}
 	}
 
-	public static double motorSmoothingConstant = 0.000000001;
+	public static double maxThrottleAccelleration = 2.0;
 	
 	private long lastutime = 0;
 	private void commandMotors( double [] throttle )
@@ -331,48 +331,75 @@ public class OrcInterface implements LCMSubscriber
 		if ( lastutime == 0 )
 		{
 			lastutime = System.nanoTime();
+			return;
 		}
 		long elapsed = System.nanoTime() - lastutime; 
+		double elapsedsec = elapsed / 1000000000.0;
 		
 		double [] delta = Geometry.subtract( throttle, command );
-		double modifier = motorSmoothingConstant * elapsed;
-		command[0] += delta[0] * modifier;
-		command[1] += delta[1] * modifier;
 
+		boolean [] capped = { false, false };
 		if ( delta[0] > 0 )
 		{
-			command[0] = Math.min( command[0], 1 );
+			double newDelta = Math.min( delta[0], elapsedsec * maxThrottleAccelleration );
+			if ( delta[0] != newDelta )
+			{
+				capped[0] = true;
+				delta[0] = newDelta;
+			}
+			//System.out.format( "delta1: %10.3f %10.3f%n", delta[0], delta[1] );
 		}
-		if ( delta[0] < 0 )
+		else if ( delta[0] < 0 )
 		{
-			command[0] = Math.max( command[0], -1 );
+			double newDelta = Math.max( delta[0], -1 * elapsedsec * maxThrottleAccelleration );
+			if ( delta[0] != newDelta )
+			{
+				capped[0] = true;
+				delta[0] = newDelta;
+			}
+			//System.out.format( "delta2: %10.3f %10.3f%n", delta[0], delta[1] );
 		}
 		if ( delta[1] > 0 )
 		{
-			command[1] = Math.min( command[0], 1 );
+			double newDelta = Math.min( delta[1], elapsedsec * maxThrottleAccelleration );
+			if ( delta[1] != newDelta )
+			{
+				capped[1] = true;
+				delta[1] = newDelta;
+			}
+			//System.out.format( "delta3: %10.3f %10.3f%n", delta[0], delta[1] );
 		}
-		if ( delta[1] < 0 )
+		else if ( delta[1] < 0 )
 		{
-			command[1] = Math.max( command[0], -1 );
+			double newDelta = Math.max( delta[1], -1 * elapsedsec * maxThrottleAccelleration );
+			if ( delta[1] != newDelta )
+			{
+				capped[1] = true;
+				delta[1] = newDelta;
+			}
+			//System.out.format( "delta4: %10.3f %10.3f%n", delta[0], delta[1] );
 		}
-		
-		if ( testing )
-		{
-			System.out.format( "%10.3f %10.3f %10.3f%n", elapsed / 1000000000.0, throttle[0], command[0] );
-			return;
-		}
+
+		command[0] += delta[0];
+		command[1] += delta[1];
+
+		//System.out.format( "0: %10.3f %10.3f %10.3f %10.3f %s%n", throttle[0], delta[0], delta[0] / elapsedsec, command[0], capped[0] ? "capped" : "" );
+		//System.out.format( "1: %10.3f %10.3f %10.3f %10.3f %s%n", throttle[1], delta[1], delta[1] / elapsedsec, command[1], capped[1] ? "capped" : "" );
 		
 		lastutime += elapsed;
 		
-		motor[0].setPWM( command[0] );
-		motor[1].setPWM( command[1] );
+		if ( !testing )
+		{
+			motor[0].setPWM( command[0] );
+			motor[1].setPWM( command[1] );
+		}
 	}
 	
 	public static void main( String [] args )
 	{
 		OrcInterface orc = new OrcInterface( true );
 		
-		double [] throttle = { 1, 1 };
+		double [] throttle = { -1, -1 };
 		while ( true )
 		{
 			try
