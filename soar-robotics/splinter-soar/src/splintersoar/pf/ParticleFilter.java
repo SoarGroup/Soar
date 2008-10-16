@@ -76,7 +76,7 @@ public class ParticleFilter {
 		while ( iter.hasNext() )
 		{
 			Particle particle = iter.next();
-
+//
 //			particle.theta += deltaTheta + noise;
 //			
 //			particle.pos[0] += ( Math.cos( particle.theta ) * deltaS ) + noise;
@@ -84,16 +84,12 @@ public class ParticleFilter {
 //			
 //			particle.pos[0] += deltaPos[0];
 //			particle.pos[1] += deltaPos[1];
-			
-			particle.theta = MathUtil.mod2pi( particle.theta );
+//			
+//			particle.theta = MathUtil.mod2pi( particle.theta );
 		}
-	}
+	} 
 	
 	public static void main( String [] args )
 	{
-		ParticleFilter pf = new ParticleFilter();
-		pf.createStartingPopulation( new double [] { 0, 0 }, 0 );
-		
-		pf.laserReading( new double [] { 0.03, 0.03 } );
 	}
 }
