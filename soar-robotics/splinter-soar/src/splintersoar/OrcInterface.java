@@ -29,9 +29,12 @@ public class OrcInterface implements LCMSubscriber
 	private QuadratureEncoder [] odom = new QuadratureEncoder[2];
 	
 	private double [] command = { 0, 0 };
+
+	LCM lcm;
 	
 	pose_t pose;
 	laser_t laserData;
+	pose_t odometry = new pose_t();
 	RangerData [] rangerData = new RangerData[ state.rangerSlices ];
 	int [] previousMotorPosition = { 0, 0 };
 	
@@ -47,6 +50,8 @@ public class OrcInterface implements LCMSubscriber
 		{
 			return;
 		}
+		
+		lcm = LCM.getSingleton();
 		
 		Arrays.fill( initialPosition, 0 );
 		
@@ -124,6 +129,7 @@ public class OrcInterface implements LCMSubscriber
 			double dright = ( motorPosition[1] - previousMotorPosition[1] ) * state.tickMeters;
 			double phi = ( dright - dleft ) / state.baselineMeters;
 			double thetaprime = prevYaw + phi;
+			double dcenter = ( dleft + dright ) / 2;
 
 			// calculation of x,y
 			double [] newPosition;
@@ -153,8 +159,6 @@ public class OrcInterface implements LCMSubscriber
 				// thetaprime = theta + phi
 				// xprime = x + ( dcenter * cos( theta ) )
 				// yprime = y + ( dcenter * sin( theta ) )
-				
-				double dcenter = ( dleft + dright ) / 2;
 				
 				newPosition = new double[3];
 				newPosition[0] = previousPosition[0] + ( dcenter * Math.cos( prevYaw ) );
@@ -260,7 +264,14 @@ public class OrcInterface implements LCMSubscriber
 			}
 			//// end ranger update
 			
-			long utime = System.nanoTime() / 1000;			
+			long utime = System.nanoTime() / 1000;		
+
+			// Odometry debug
+			odometry.pos[0] = dcenter;
+			odometry.pos[1] = phi;
+			odometry.utime = utime;
+			lcm.publish( "ODOM_DEBUG", odometry );
+
 			synchronized ( state )
 			{
 				state.utime = utime;
