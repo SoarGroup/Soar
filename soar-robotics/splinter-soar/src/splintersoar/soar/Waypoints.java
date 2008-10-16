@@ -133,7 +133,13 @@ public class Waypoints {
 
 	public boolean remove( String name ) 
 	{
-		return waypointList.remove( name ) != null;
+		Waypoint waypoint = waypointList.remove( name );
+		if ( waypoint == null )
+		{
+			return false;
+		}
+		waypoint.disable();
+		return true;
 	}
 
 	public boolean enable( String name ) 
@@ -173,7 +179,7 @@ public class Waypoints {
 			return;
 		}
 		
-		System.out.format( "%16s %10s %10s %10s %10s %10s%n", "name", "x", "y", "distance", "yaw", "bearing" );
+		//System.out.format( "%16s %10s %10s %10s %10s %10s%n", "name", "x", "y", "distance", "yaw", "bearing" );
 		Iterator< Waypoint > iter = waypointList.values().iterator();
 		while ( iter.hasNext() )
 		{
