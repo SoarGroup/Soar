@@ -2072,7 +2072,7 @@ void epmem_init_db( agent *my_agent )
 					sqlite3_prepare_v2( my_agent->epmem_db, "INSERT INTO mva (time,mva_id,child_id,parent_id) VALUES (?,?,?,?)", -1, &( my_agent->epmem_statements[ EPMEM_STMT_RIT_MVA_ADD_ID ] ), &tail );
 
 					// custom statement for getting mva stuff for an episode
-					sqlite3_prepare_v2( my_agent->epmem_db, "SELECT m.mva_id, m.child_id, m.parent_id, i.name, i.value, i.wme_type FROM mva m INNER JOIN ids i ON m.child_id=i.child_id WHERE m.time=? ORDER BY m.child_id ASC", -1, &( my_agent->epmem_statements[ EPMEM_STMT_RIT_MVA_GET_EP ] ), &tail );
+					sqlite3_prepare_v2( my_agent->epmem_db, "SELECT m.mva_id, m.child_id, m.parent_id FROM mva m WHERE m.time=? ORDER BY m.child_id ASC", -1, &( my_agent->epmem_statements[ EPMEM_STMT_RIT_MVA_GET_EP ] ), &tail );
 				}
 			}
 			
@@ -2907,78 +2907,228 @@ void epmem_install_memory( agent *my_agent, Symbol *state, epmem_time_id memory_
 	state->id.epmem_info->epmem_wmes->push( new_wme );
 
 	const long indexing = epmem_get_parameter( my_agent, EPMEM_PARAM_INDEXING, EPMEM_RETURN_LONG );
+	const long mva_store = epmem_get_parameter( my_agent, EPMEM_PARAM_MVA_STORE, EPMEM_RETURN_LONG );
 	
 	if ( indexing == EPMEM_INDEXING_RIT )
 	{
-		std::map<epmem_node_id, Symbol *> ids;
-		epmem_node_id child_id;
-		epmem_node_id parent_id;
-		const char *name;
-		long long wme_type;
-		Symbol *attr = NULL;
-		Symbol *value = NULL;
-		Symbol *parent = NULL;
+		if ( mva_store == EPMEM_MVA_STORE_OFF )
+		{		
+			std::map<epmem_node_id, Symbol *> ids;
+			epmem_node_id child_id;
+			epmem_node_id parent_id;
+			const char *name;
+			long long wme_type;
+			Symbol *attr = NULL;
+			Symbol *value = NULL;
+			Symbol *parent = NULL;
 
-		ids[ 0 ] = retrieved_header;
+			ids[ 0 ] = retrieved_header;
 
-		epmem_rit_prep_left_right( my_agent, memory_id, memory_id );
+			epmem_rit_prep_left_right( my_agent, memory_id, memory_id );
 
-		sqlite3_bind_int64( my_agent->epmem_statements[ EPMEM_STMT_RIT_GET_EPISODE ], 1, memory_id );
-		sqlite3_bind_int64( my_agent->epmem_statements[ EPMEM_STMT_RIT_GET_EPISODE ], 2, memory_id );
-		sqlite3_bind_int64( my_agent->epmem_statements[ EPMEM_STMT_RIT_GET_EPISODE ], 3, memory_id );
-		sqlite3_bind_int64( my_agent->epmem_statements[ EPMEM_STMT_RIT_GET_EPISODE ], 4, memory_id );
-		while ( sqlite3_step( my_agent->epmem_statements[ EPMEM_STMT_RIT_GET_EPISODE ] ) == SQLITE_ROW )
-		{			
-			// e.id, i.parent_id, i.name, i.value
-			child_id = sqlite3_column_int64( my_agent->epmem_statements[ EPMEM_STMT_RIT_GET_EPISODE ], 0 );
-			parent_id = sqlite3_column_int64( my_agent->epmem_statements[ EPMEM_STMT_RIT_GET_EPISODE ], 1 );
-			name = (const char *) sqlite3_column_text( my_agent->epmem_statements[ EPMEM_STMT_RIT_GET_EPISODE ], 2 );
-			wme_type = sqlite3_column_int64( my_agent->epmem_statements[ EPMEM_STMT_RIT_GET_EPISODE ], 4 );
-			
-			// make a symbol to represent the attribute name		
-			attr = make_sym_constant( my_agent, const_cast<char *>( name ) );
-
-			// get a reference to the parent
-			parent = ids[ parent_id ];
-
-			// identifier = NULL, else attr->val
-			if ( wme_type == IDENTIFIER_SYMBOL_TYPE )
-			{
-				value = make_new_identifier( my_agent, name[0], parent->id.level );				
+			sqlite3_bind_int64( my_agent->epmem_statements[ EPMEM_STMT_RIT_GET_EPISODE ], 1, memory_id );
+			sqlite3_bind_int64( my_agent->epmem_statements[ EPMEM_STMT_RIT_GET_EPISODE ], 2, memory_id );
+			sqlite3_bind_int64( my_agent->epmem_statements[ EPMEM_STMT_RIT_GET_EPISODE ], 3, memory_id );
+			sqlite3_bind_int64( my_agent->epmem_statements[ EPMEM_STMT_RIT_GET_EPISODE ], 4, memory_id );
+			while ( sqlite3_step( my_agent->epmem_statements[ EPMEM_STMT_RIT_GET_EPISODE ] ) == SQLITE_ROW )
+			{			
+				// e.id, i.parent_id, i.name, i.value
+				child_id = sqlite3_column_int64( my_agent->epmem_statements[ EPMEM_STMT_RIT_GET_EPISODE ], 0 );
+				parent_id = sqlite3_column_int64( my_agent->epmem_statements[ EPMEM_STMT_RIT_GET_EPISODE ], 1 );
+				name = (const char *) sqlite3_column_text( my_agent->epmem_statements[ EPMEM_STMT_RIT_GET_EPISODE ], 2 );
+				wme_type = sqlite3_column_int64( my_agent->epmem_statements[ EPMEM_STMT_RIT_GET_EPISODE ], 4 );
 				
-				new_wme = add_input_wme( my_agent, parent, attr, value );
-				new_wme->preference = epmem_make_fake_preference( my_agent, state, new_wme );
-				state->id.epmem_info->epmem_wmes->push( new_wme );
+				// make a symbol to represent the attribute name		
+				attr = make_sym_constant( my_agent, const_cast<char *>( name ) );
 
-				symbol_remove_ref( my_agent, value );
+				// get a reference to the parent
+				parent = ids[ parent_id ];
 
-				ids[ child_id ] = value;
-			}
-			else
-			{
-				switch ( wme_type )
+				// identifier = NULL, else attr->val
+				if ( wme_type == IDENTIFIER_SYMBOL_TYPE )
 				{
-					case INT_CONSTANT_SYMBOL_TYPE:
-						value = make_int_constant( my_agent, sqlite3_column_int64( my_agent->epmem_statements[ EPMEM_STMT_RIT_GET_EPISODE ], 3 ) );
-						break;
+					value = make_new_identifier( my_agent, name[0], parent->id.level );				
+					
+					new_wme = add_input_wme( my_agent, parent, attr, value );
+					new_wme->preference = epmem_make_fake_preference( my_agent, state, new_wme );
+					state->id.epmem_info->epmem_wmes->push( new_wme );
 
-					case FLOAT_CONSTANT_SYMBOL_TYPE:
-						value = make_float_constant( my_agent, sqlite3_column_double( my_agent->epmem_statements[ EPMEM_STMT_RIT_GET_EPISODE ], 3 ) );
-						break;
+					symbol_remove_ref( my_agent, value );
 
-					case SYM_CONSTANT_SYMBOL_TYPE:						
-						value = make_sym_constant( my_agent, const_cast<char *>( (const char *) sqlite3_column_text( my_agent->epmem_statements[ EPMEM_STMT_RIT_GET_EPISODE ], 3 ) ) );
-						break;
+					ids[ child_id ] = value;
 				}
+				else
+				{
+					switch ( wme_type )
+					{
+						case INT_CONSTANT_SYMBOL_TYPE:
+							value = make_int_constant( my_agent, sqlite3_column_int64( my_agent->epmem_statements[ EPMEM_STMT_RIT_GET_EPISODE ], 3 ) );
+							break;
 
-				new_wme = add_input_wme( my_agent, parent, attr, value );
-				new_wme->preference = epmem_make_fake_preference( my_agent, state, new_wme );
-				state->id.epmem_info->epmem_wmes->push( new_wme );
+						case FLOAT_CONSTANT_SYMBOL_TYPE:
+							value = make_float_constant( my_agent, sqlite3_column_double( my_agent->epmem_statements[ EPMEM_STMT_RIT_GET_EPISODE ], 3 ) );
+							break;
+
+						case SYM_CONSTANT_SYMBOL_TYPE:						
+							value = make_sym_constant( my_agent, const_cast<char *>( (const char *) sqlite3_column_text( my_agent->epmem_statements[ EPMEM_STMT_RIT_GET_EPISODE ], 3 ) ) );
+							break;
+					}
+
+					new_wme = add_input_wme( my_agent, parent, attr, value );
+					new_wme->preference = epmem_make_fake_preference( my_agent, state, new_wme );
+					state->id.epmem_info->epmem_wmes->push( new_wme );
+				}
 			}
-		}
-		sqlite3_reset( my_agent->epmem_statements[ EPMEM_STMT_RIT_GET_EPISODE ] );
+			sqlite3_reset( my_agent->epmem_statements[ EPMEM_STMT_RIT_GET_EPISODE ] );
 
-		epmem_rit_clear_left_right( my_agent );
+			epmem_rit_clear_left_right( my_agent );
+		}
+		else
+		{
+			std::map<epmem_node_id, Symbol *> ids;
+			std::map<epmem_node_id, Symbol *> mva_ids;
+
+			epmem_node_id child_id;
+			epmem_node_id parent_id;
+			epmem_node_id mva_child_id;
+
+			const char *name;
+			long long wme_type;
+			Symbol *attr = NULL;
+			Symbol *value = NULL;
+
+			std::map<epmem_node_id, Symbol *>::iterator parent;
+
+			ids[ 0 ] = retrieved_header;
+
+			// prep mva
+			// m.mva_id, m.child_id, m.parent_id
+			mva_child_id = EPMEM_MEMID_NONE;
+			sqlite3_bind_int64( my_agent->epmem_statements[ EPMEM_STMT_RIT_MVA_GET_EP ], 1, memory_id );
+			if ( sqlite3_step( my_agent->epmem_statements[ EPMEM_STMT_RIT_MVA_GET_EP ] ) == SQLITE_ROW )
+				mva_child_id = sqlite3_column_int64( my_agent->epmem_statements[ EPMEM_STMT_RIT_MVA_GET_EP ], 1 );
+
+			// prep eps
+			epmem_rit_prep_left_right( my_agent, memory_id, memory_id );
+			sqlite3_bind_int64( my_agent->epmem_statements[ EPMEM_STMT_RIT_GET_EPISODE ], 1, memory_id );
+			sqlite3_bind_int64( my_agent->epmem_statements[ EPMEM_STMT_RIT_GET_EPISODE ], 2, memory_id );
+			sqlite3_bind_int64( my_agent->epmem_statements[ EPMEM_STMT_RIT_GET_EPISODE ], 3, memory_id );
+			sqlite3_bind_int64( my_agent->epmem_statements[ EPMEM_STMT_RIT_GET_EPISODE ], 4, memory_id );
+			while ( sqlite3_step( my_agent->epmem_statements[ EPMEM_STMT_RIT_GET_EPISODE ] ) == SQLITE_ROW )
+			{			
+				// e.id, i.parent_id, i.name, i.value
+				child_id = sqlite3_column_int64( my_agent->epmem_statements[ EPMEM_STMT_RIT_GET_EPISODE ], 0 );
+				parent_id = sqlite3_column_int64( my_agent->epmem_statements[ EPMEM_STMT_RIT_GET_EPISODE ], 1 );
+				name = (const char *) sqlite3_column_text( my_agent->epmem_statements[ EPMEM_STMT_RIT_GET_EPISODE ], 2 );
+				wme_type = sqlite3_column_int64( my_agent->epmem_statements[ EPMEM_STMT_RIT_GET_EPISODE ], 4 );
+				
+				// make a symbol to represent the attribute name		
+				attr = make_sym_constant( my_agent, const_cast<char *>( name ) );
+
+				// must differentiate between mva and ep
+				if ( child_id != mva_child_id )
+				{
+					// get a reference to the parent
+					parent = ids.find( parent_id );
+					if ( parent == ids.end() )
+						parent = mva_ids.find( parent_id );
+
+					// identifier = NULL, else attr->val
+					if ( wme_type == IDENTIFIER_SYMBOL_TYPE )
+					{
+						value = make_new_identifier( my_agent, name[0], parent->second->id.level );				
+						
+						new_wme = add_input_wme( my_agent, parent->second, attr, value );
+						new_wme->preference = epmem_make_fake_preference( my_agent, state, new_wme );
+						state->id.epmem_info->epmem_wmes->push( new_wme );
+
+						symbol_remove_ref( my_agent, value );
+
+						ids[ child_id ] = value;
+					}
+					else
+					{
+						switch ( wme_type )
+						{
+							case INT_CONSTANT_SYMBOL_TYPE:
+								value = make_int_constant( my_agent, sqlite3_column_int64( my_agent->epmem_statements[ EPMEM_STMT_RIT_GET_EPISODE ], 3 ) );
+								break;
+
+							case FLOAT_CONSTANT_SYMBOL_TYPE:
+								value = make_float_constant( my_agent, sqlite3_column_double( my_agent->epmem_statements[ EPMEM_STMT_RIT_GET_EPISODE ], 3 ) );
+								break;
+
+							case SYM_CONSTANT_SYMBOL_TYPE:						
+								value = make_sym_constant( my_agent, const_cast<char *>( (const char *) sqlite3_column_text( my_agent->epmem_statements[ EPMEM_STMT_RIT_GET_EPISODE ], 3 ) ) );
+								break;
+						}
+
+						new_wme = add_input_wme( my_agent, parent->second, attr, value );
+						new_wme->preference = epmem_make_fake_preference( my_agent, state, new_wme );
+						state->id.epmem_info->epmem_wmes->push( new_wme );
+					}
+				}
+				else
+				{
+					do
+					{
+						// get appropriate parent
+						if ( sqlite3_column_type( my_agent->epmem_statements[ EPMEM_STMT_RIT_MVA_GET_EP ], 2 ) == SQLITE_NULL )
+							parent = ids.find( parent_id );
+						else
+							parent = mva_ids.find( sqlite3_column_int64( my_agent->epmem_statements[ EPMEM_STMT_RIT_MVA_GET_EP ], 2 ) );
+
+						// identifier = NULL, else attr->val
+						if ( wme_type == IDENTIFIER_SYMBOL_TYPE )
+						{
+							value = make_new_identifier( my_agent, name[0], parent->second->id.level );				
+							
+							new_wme = add_input_wme( my_agent, parent->second, attr, value );
+							new_wme->preference = epmem_make_fake_preference( my_agent, state, new_wme );
+							state->id.epmem_info->epmem_wmes->push( new_wme );
+
+							symbol_remove_ref( my_agent, value );
+
+							if ( sqlite3_column_type( my_agent->epmem_statements[ EPMEM_STMT_RIT_MVA_GET_EP ], 0 ) == SQLITE_NULL )
+								ids[ child_id ] = value;
+							else
+								mva_ids[ sqlite3_column_int64( my_agent->epmem_statements[ EPMEM_STMT_RIT_MVA_GET_EP ], 0 ) ] = value;
+						}
+						else
+						{
+							switch ( wme_type )
+							{
+								case INT_CONSTANT_SYMBOL_TYPE:
+									value = make_int_constant( my_agent, sqlite3_column_int64( my_agent->epmem_statements[ EPMEM_STMT_RIT_GET_EPISODE ], 3 ) );
+									break;
+
+								case FLOAT_CONSTANT_SYMBOL_TYPE:
+									value = make_float_constant( my_agent, sqlite3_column_double( my_agent->epmem_statements[ EPMEM_STMT_RIT_GET_EPISODE ], 3 ) );
+									break;
+
+								case SYM_CONSTANT_SYMBOL_TYPE:						
+									value = make_sym_constant( my_agent, const_cast<char *>( (const char *) sqlite3_column_text( my_agent->epmem_statements[ EPMEM_STMT_RIT_GET_EPISODE ], 3 ) ) );
+									break;
+							}
+
+							new_wme = add_input_wme( my_agent, parent->second, attr, value );
+							new_wme->preference = epmem_make_fake_preference( my_agent, state, new_wme );
+							state->id.epmem_info->epmem_wmes->push( new_wme );
+						}
+
+						if ( sqlite3_step( my_agent->epmem_statements[ EPMEM_STMT_RIT_MVA_GET_EP ] ) == SQLITE_ROW )
+							mva_child_id = sqlite3_column_int64( my_agent->epmem_statements[ EPMEM_STMT_RIT_MVA_GET_EP ], 1 );
+						else
+							mva_child_id = EPMEM_MEMID_NONE;
+
+					} while ( child_id == mva_child_id );
+				}
+			}
+			sqlite3_reset( my_agent->epmem_statements[ EPMEM_STMT_RIT_GET_EPISODE ] );
+			sqlite3_reset( my_agent->epmem_statements[ EPMEM_STMT_RIT_MVA_GET_EP ] );
+
+			epmem_rit_clear_left_right( my_agent );
+		}
 	}
 
 	////////////////////////////////////////////////////////////////////////////
