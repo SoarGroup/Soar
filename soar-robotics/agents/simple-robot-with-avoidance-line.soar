@@ -22,7 +22,7 @@ sp {apply*waypoints
    (<s> ^waypoints <w>)
    (<w> ^waypoint <w1> <w2>)
    (<w1> ^x 0. ^y 0. ^id one ^next <w2>)
-   (<w2> ^x 4. ^y 0. ^id two ^next <w1>)
+   (<w2> ^x 0. ^y -4. ^id two ^next <w1>)
 }
 
 sp {apply*initialize-simple-robot*create-mission
