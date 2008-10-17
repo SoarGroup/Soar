@@ -2574,12 +2574,16 @@ void epmem_new_episode( agent *my_agent )
 									 ( mva_attrib_count[ wmes[i]->attr->sc.name ] > 1 ) )
 								{									
 									mva_gc_wmes = epmem_get_augs_of_id( my_agent, wmes[i]->value, tc, &mva_gc_len );
-									wmes_cache[ wmes[i]->value ] = mva_gc_wmes;
-									wmes_len_cache[ wmes[i]->value ] = mva_gc_len;
 
-									for ( j=0; j<mva_gc_len; j++ )
-										if ( mva_gc_wmes[j]->value->common.symbol_type == IDENTIFIER_SYMBOL_TYPE )
-											mva_gc_counts[ wmes[i]->attr->sc.name ][ mva_gc_wmes[j]->attr->sc.name ]++;
+									if ( mva_gc_wmes != NULL )
+									{
+										wmes_cache[ wmes[i]->value ] = mva_gc_wmes;
+										wmes_len_cache[ wmes[i]->value ] = mva_gc_len;
+
+										for ( j=0; j<mva_gc_len; j++ )
+											if ( mva_gc_wmes[j]->value->common.symbol_type == IDENTIFIER_SYMBOL_TYPE )
+												mva_gc_counts[ wmes[i]->attr->sc.name ][ mva_gc_wmes[j]->attr->sc.name ]++;
+									}
 								}
 							}
 						}
