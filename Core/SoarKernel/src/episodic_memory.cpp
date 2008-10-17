@@ -2474,9 +2474,9 @@ void epmem_new_episode( agent *my_agent )
 			bool mva_gc_check = false;
 			std::map<char *, int> mva_attrib_count;
 			int *mva_attrib_counter;
-			std::map<char *, std::map<char *, bool>> mva_gc_bad;
-			std::map<char *, std::map<char *, int>> mva_gc_counts;
-			std::map<char *, std::map<char *, int>>::iterator mva_gc_attrib_counter;
+			std::map<char *, std::map<char *, bool> > mva_gc_bad;
+			std::map<char *, std::map<char *, int> > mva_gc_counts;
+			std::map<char *, std::map<char *, int> >::iterator mva_gc_attrib_counter;
 			std::map<char *, int>::iterator mva_gc_counter;			
 			wme **mva_gc_wmes = NULL;
 			int mva_gc_len = 0;
