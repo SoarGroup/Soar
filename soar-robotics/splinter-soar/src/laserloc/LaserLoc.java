@@ -2,7 +2,9 @@ package laserloc;
 
 import java.io.DataInputStream;
 import java.io.IOException;
+import java.text.SimpleDateFormat;
 import java.util.Arrays;
+import java.util.Calendar;
 
 import splintersoar.SplinterSoar;
 
@@ -66,11 +68,27 @@ public class LaserLoc implements LCMSubscriber
 			System.out.format( "%10s %10s%n", "x", "y" );
 		}
 	}
-	
+
+	boolean inactive = true;
+    SimpleDateFormat sdf = new SimpleDateFormat("HH:mm:ss");
+	long lastactivityutime = 0;
+	final long ACTIVITY_TIMEOUT = 5 * 1000000;
 	private void updatePose()
 	{
-		// occasionally print out status update
 		long utime = System.nanoTime() / 1000;
+
+		if ( lastactivityutime == 0 )
+		{
+			lastactivityutime = utime;
+		}
+		else if ( utime - lastactivityutime > ACTIVITY_TIMEOUT )
+		{
+			inactive = true;
+			System.out.println( sdf.format(Calendar.getInstance().getTime()) + ": no activity in last 5 seconds" );
+			lastactivityutime = utime;
+		}
+		
+		// occasionally print out status update
 		long elapsed = utime - lastStatusUpdate;
 		if ( elapsed > update_period )
 		{
@@ -95,6 +113,14 @@ public class LaserLoc implements LCMSubscriber
 			{
 			}
 			return;
+		}
+		
+		lastactivityutime = utime;
+		
+		if ( inactive )
+		{
+			System.out.println( sdf.format(Calendar.getInstance().getTime()) + ": receiving data" );
+			inactive = false;
 		}
 		
 		if ( estimated_pose == null )

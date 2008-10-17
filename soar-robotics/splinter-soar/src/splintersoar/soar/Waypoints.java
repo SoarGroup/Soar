@@ -10,14 +10,13 @@ public class Waypoints {
 	
 	Agent agent;
 	Identifier waypoints;
-	double [] robotPosition = new double[3];
-	double robotYaw;
+	double [] robotxyt = new double[3];
 	
 	HashMap< String, Waypoint > waypointList = new HashMap< String, Waypoint >();
 	
 	class Waypoint
 	{
-		double [] pos = new double[3];
+		double [] xyt = new double[3];
 		String name;
 		
 		Identifier waypoint;
@@ -26,9 +25,9 @@ public class Waypoints {
 		FloatElement relativeBearing;
 		FloatElement yaw;
 		
-		public Waypoint( double [] waypointPosition, String name )
+		public Waypoint( double [] waypointxyt, String name )
 		{
-			System.arraycopy( waypointPosition, 0, this.pos, 0, waypointPosition.length );
+			System.arraycopy( waypointxyt, 0, this.xyt, 0, waypointxyt.length );
 			this.name = new String( name );
 			
 			createWmes();
@@ -49,8 +48,8 @@ public class Waypoints {
 		{
 			waypoint = agent.CreateIdWME( waypoints, "waypoint" );
 			agent.CreateStringWME( waypoint, "id", name );
-			agent.CreateFloatWME( waypoint, "x", pos[0] );
-			agent.CreateFloatWME( waypoint, "y", pos[1] );
+			agent.CreateFloatWME( waypoint, "x", xyt[0] );
+			agent.CreateFloatWME( waypoint, "y", xyt[1] );
 			
 			distance = agent.CreateFloatWME( waypoint, "distance", 0 );
 			yaw = agent.CreateFloatWME( waypoint, "yaw", 0 );
@@ -60,13 +59,13 @@ public class Waypoints {
 		
 		void updateWmes()
 		{
-			double distanceValue = Geometry.distance( robotPosition, pos, 2 );
+			double distanceValue = Geometry.distance( robotxyt, xyt, 2 );
 			agent.Update( distance, distanceValue );
 			
-			double [] delta = Geometry.subtract( pos, robotPosition );
+			double [] delta = Geometry.subtract( xyt, robotxyt );
 			double yawValue = Math.atan2( delta[1], delta[0] );
 			agent.Update( yaw, Math.toDegrees( yawValue ) );
-			double relativeBearingValue = yawValue - robotYaw;
+			double relativeBearingValue = yawValue - robotxyt[2];
 			
 			if ( relativeBearingValue > Math.PI )
 			{
@@ -79,7 +78,7 @@ public class Waypoints {
 			agent.Update( relativeBearing, Math.toDegrees( relativeBearingValue ) );
 			agent.Update( absRelativeBearing, Math.abs( Math.toDegrees( relativeBearingValue ) ) );
 			
-			System.out.format( "%16s %10.3f %10.3f %10.3f %10.3f %10.3f%n", name, pos[0], pos[1], distanceValue, Math.toDegrees( yawValue ), Math.toDegrees( relativeBearingValue ) );
+			//System.out.format( "%16s %10.3f %10.3f %10.3f %10.3f %10.3f%n", name, pos[0], pos[1], distanceValue, Math.toDegrees( yawValue ), Math.toDegrees( relativeBearingValue ) );
 		}
 		
 		void enable()
@@ -120,7 +119,7 @@ public class Waypoints {
 		this.waypoints = waypoints;
 	}
 
-	public void add( double [] waypointPosition, String name ) 
+	public void add( double [] waypointxyt, String name ) 
 	{
 		Waypoint waypoint = waypointList.remove( name );
 		if ( waypoint != null )
@@ -128,7 +127,7 @@ public class Waypoints {
 			waypoint.disable();
 		}
 
-		waypointList.put( name, new Waypoint( waypointPosition, name ) );
+		waypointList.put( name, new Waypoint( waypointxyt, name ) );
 	}
 
 	public boolean remove( String name ) 
@@ -166,10 +165,9 @@ public class Waypoints {
 		return true;
 	}
 	
-	public void setNewRobotPose( double [] robotPosition, double robotYaw )
+	public void setNewRobotPose( double [] robotxyt )
 	{
-		System.arraycopy( robotPosition, 0, this.robotPosition, 0, robotPosition.length );
-		this.robotYaw = robotYaw;
+		System.arraycopy( robotxyt, 0, this.robotxyt, 0, robotxyt.length );
 	}
 	
 	public void update()

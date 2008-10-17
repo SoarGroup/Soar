@@ -1,95 +1,112 @@
 package splintersoar.pf;
 
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.Random;
+import java.util.*;
 
-import erp.geom.Geometry;
-import erp.math.MathUtil;
+import erp.math.*;
+import jmat.*;
 
 public class ParticleFilter {
-	
-	Random random = new Random();
-
-	static final int population = 100;
-	static final double xyError = 0.05; // measurement error ( 5 cm ) ??
-	static final double thetaError = 0.05; // ?? possibly should be different
-	
-	ArrayList<Particle> particles;
-	
-	void createStartingPopulation( double [] initialPos, double initalTheta )
-	{
-		System.out.println( "createStartingPopulation" );
-
-		particles = new ArrayList< Particle >();
-		
-		while ( particles.size() < population )
-		{
-			Particle particle = new Particle();
-			
-			particle.pos[0] = initialPos[0] + random.nextGaussian() * xyError;
-			particle.pos[1] = initialPos[1] + random.nextGaussian() * xyError;
-			particle.theta = initalTheta + random.nextGaussian() * thetaError;
-			
-			particles.add( particle );
-			
-			System.out.println( particle );
-		}
+	static class Particle {
+		double xyt[];
+		double weight;
 	}
 	
-	void laserReading( double [] laserPos )
-	{
-		System.out.println( "laserReading" );
+	Random rand = new Random();
 
-		assert laserPos != null;
-		
-		Iterator< Particle > iter = particles.iterator();
-		
-		double total = 0;
-		
-		while ( iter.hasNext() )
-		{
-			Particle particle = iter.next();
-			
-			double squaredDistance = Geometry.squaredDistance( laserPos, particle.pos );
-			particle.probability = Math.exp( -squaredDistance / Math.pow( xyError, 2 ) );
-			total += particle.probability;
+	ArrayList<Particle> particles = new ArrayList<Particle>();
 
-			System.out.println( particle );
-		}		
-		
-		iter = particles.iterator();
-		double cumulative = 0;
-		while ( iter.hasNext() )
-		{
-			Particle particle = iter.next();
-			
-			cumulative += particle.probability / total;
-			particle.cumulative = cumulative;
+	public ParticleFilter() {
+		init();
+	}
+
+	void init() {
+		for (int i = 0; i < 100; i++) {
+			Particle p = new Particle();
+			p.xyt = new double[] { (1 - 2 * rand.nextFloat()) * 5,
+					(1 - 2 * rand.nextFloat()) * 5,
+					2 * rand.nextFloat() * Math.PI };
+			particles.add(p);
 		}
 	}
+
+	double [] oldlaserxy = { 0, 0 };
 	
-	void odometryReading( double deltaS, double deltaTheta )
-	{
-		Iterator< Particle > iter = particles.iterator();
+	public double []  update( double [] deltaxyt, double [] laserxy ) {
+
+		assert deltaxyt != null;
 		
-		while ( iter.hasNext() )
-		{
-			Particle particle = iter.next();
-//
-//			particle.theta += deltaTheta + noise;
-//			
-//			particle.pos[0] += ( Math.cos( particle.theta ) * deltaS ) + noise;
-//			particle.pos[1] += ( Math.sin( particle.theta ) * deltaS ) + noise;
-//			
-//			particle.pos[0] += deltaPos[0];
-//			particle.pos[1] += deltaPos[1];
-//			
-//			particle.theta = MathUtil.mod2pi( particle.theta );
+		// //////////////////////////////////////////////////
+		// propagate odometry
+		for (Particle p : particles) {
+			p.xyt = LinAlg.xytMultiply( p.xyt, deltaxyt );
 		}
-	} 
-	
-	public static void main( String [] args )
-	{
+		
+		// //////////////////////////////////////////////////
+		// use new lidar reading
+		if ( laserxy != null )
+		{
+			System.arraycopy( laserxy, 0, oldlaserxy, 0, laserxy.length );
+		}
+		
+		//System.out.println( oldlaserxy[0] + " " + oldlaserxy[1]);	 
+
+		// //////////////////////////////////////////////////
+		// score particles.
+		double totalweight = 0;
+		for (Particle p : particles) {
+			double dist2 = LinAlg.sq(p.xyt[0] - oldlaserxy[0])
+					+ LinAlg.sq(p.xyt[1] - oldlaserxy[1]);
+
+			p.weight = Math.exp(-dist2 / 0.05);
+			totalweight += p.weight;
+		}
+
+		Particle bestParticle = null;
+
+		// normalize weights
+		for (Particle p : particles) {
+			p.weight /= totalweight;
+			if (bestParticle == null || p.weight > bestParticle.weight)
+				bestParticle = p;
+		}
+
+		Particle fitParticle = new Particle();
+		fitParticle.xyt = new double[3];
+
+		for (Particle p : particles) {
+			fitParticle.xyt[0] += p.weight * p.xyt[0];
+			fitParticle.xyt[1] += p.weight * p.xyt[1];
+			fitParticle.xyt[2] += p.weight
+					* MathUtil.mod2pi(bestParticle.xyt[2], p.xyt[2]);
+		}
+
+		// //////////////////////////////////////////////////
+		// resample.
+		ArrayList<Particle> newParticles = new ArrayList<Particle>();
+
+		for (int i = 0; i < particles.size(); i++) {
+			double tw = rand.nextFloat();
+			Particle p = null;
+			for (int j = 0; j < particles.size(); j++) {
+				tw -= particles.get(j).weight;
+				if (tw < 0) {
+					p = particles.get(j);
+					break;
+				}
+			}
+
+			if (p == null)
+				continue;
+
+			Particle np = new Particle();
+			np.xyt = new double[] { p.xyt[0] + rand.nextGaussian() * 0.05,
+					p.xyt[1] + rand.nextGaussian() * 0.05,
+					p.xyt[2] + rand.nextGaussian() * 0.01 };
+			newParticles.add(np);
+		}
+		particles = newParticles;
+
+		return Arrays.copyOf( fitParticle.xyt, fitParticle.xyt.length );
 	}
+
 }

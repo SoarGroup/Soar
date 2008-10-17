@@ -52,6 +52,7 @@ public class SplinterSoar
 		ConsoleHandler handler = new ConsoleHandler();
 		handler.setFormatter(new TextFormatter());
 		logger.addHandler(handler);
+		logger.setUseParentHandlers( false );
 
 		if ( args.length != 1 ) 
 		{

@@ -401,10 +401,10 @@ public class OutputLinkManager {
 					continue;
 				}
 				
-				double [] pos = Arrays.copyOf( stateCopy.pos, stateCopy.pos.length );
+				double [] xyt = Arrays.copyOf( stateCopy.xyt, stateCopy.xyt.length );
 				try 
 				{
-					pos[0] = Double.parseDouble( commandId.GetParameterValue( "x" ) );
+					xyt[0] = Double.parseDouble( commandId.GetParameterValue( "x" ) );
 				} 
 				catch ( NullPointerException ignored )
 				{
@@ -419,7 +419,7 @@ public class OutputLinkManager {
 
 				try 
 				{
-					pos[1] = Double.parseDouble( commandId.GetParameterValue( "y" ) );
+					xyt[1] = Double.parseDouble( commandId.GetParameterValue( "y" ) );
 				} 
 				catch ( NullPointerException ignored )
 				{
@@ -433,9 +433,9 @@ public class OutputLinkManager {
 				}
 
 				System.out.format( "add-waypoint: %16s %10s %10s%n", "id", "x", "y" );
-				System.out.format( "              %16s %10.3f %10.3f%n", id, pos[0], pos[1] );
+				System.out.format( "              %16s %10.3f %10.3f%n", id, xyt[0], xyt[1] );
 				
-				waypoints.add( pos, id );
+				waypoints.add( xyt, id );
 				
 				commandId.AddStatusComplete();
 				continue;

@@ -15,8 +15,7 @@ public class SplinterState {
 	
 	public int [] motorPosition = { 0, 0 };
 	
-	public double [] pos = { 0, 0, 0 };
-	public double yaw = 0;
+	public double [] xyt = { 0, 0, 0 };
 	
 	public RangerData [] ranger;
 	public long rangerutime = 0; // last time the ranger was updated
@@ -52,12 +51,11 @@ public class SplinterState {
 		}
 		this.rangerutime = other.rangerutime;
 		
-		if ( other.pos == null )
+		if ( other.xyt == null )
 		{
-			other.pos = new double[3];
+			other.xyt = new double[3];
 		}
-		this.pos = Arrays.copyOf( other.pos, other.pos.length );
-		this.yaw = other.yaw;
+		this.xyt = Arrays.copyOf( other.xyt, other.xyt.length );
 	}
 	
 }
