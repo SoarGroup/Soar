@@ -1712,7 +1712,7 @@ void epmem_rit_insert_interval( agent *my_agent, epmem_time_id lower, epmem_time
 		// update left_root
 		if ( ( u < EPMEM_RIT_ROOT ) && ( l <= ( 2 * left_root ) ) )
 		{
-			left_root = pow( -2, floor( log( (double) -l ) / EPMEM_LN_2 ) );
+			left_root = (long long) pow( -2, floor( log( (double) -l ) / EPMEM_LN_2 ) );
 
 			// update database
 			sqlite3_bind_int64( my_agent->epmem_statements[ EPMEM_STMT_VAR_SET ], 1, EPMEM_STAT_RIT_LEFTROOT );
@@ -1727,7 +1727,7 @@ void epmem_rit_insert_interval( agent *my_agent, epmem_time_id lower, epmem_time
 		// update right_root
 		if ( ( l > EPMEM_RIT_ROOT ) && ( u >= ( 2 * right_root ) ) )
 		{
-			right_root = pow( 2, floor( log( (double) u ) / EPMEM_LN_2 ) );
+			right_root = (long long) pow( 2, floor( log( (double) u ) / EPMEM_LN_2 ) );
 
 			// update database
 			sqlite3_bind_int64( my_agent->epmem_statements[ EPMEM_STMT_VAR_SET ], 1, EPMEM_STAT_RIT_RIGHTROOT );
@@ -1918,13 +1918,13 @@ void epmem_init_db( agent *my_agent )
 		sqlite3_bind_int64( my_agent->epmem_statements[ EPMEM_STMT_VAR_GET ], 1, EPMEM_VAR_MVA_STORE );
 		if ( sqlite3_step( my_agent->epmem_statements[ EPMEM_STMT_VAR_GET ] ) == SQLITE_ROW )
 		{
-			const long existing_mva_store = sqlite3_column_int64( my_agent->epmem_statements[ EPMEM_STMT_VAR_GET ], 0 );
+			const long long existing_mva_store = sqlite3_column_int64( my_agent->epmem_statements[ EPMEM_STMT_VAR_GET ], 0 );
 			
 			// might need to turn retrieval off
 			if ( existing_mva_store == EPMEM_MVA_STORE_OFF )
 				epmem_set_parameter( my_agent, (const long) EPMEM_PARAM_MVA_RETRIEVE, (const long) EPMEM_MVA_RETRIEVE_OFF );
 
-			epmem_set_parameter( my_agent, (const long) EPMEM_PARAM_MVA_STORE, existing_mva_store );
+			epmem_set_parameter( my_agent, (const long) EPMEM_PARAM_MVA_STORE, (const long) existing_mva_store );
 		}
 
 		// at this point initialize the database for receipt of episodes
@@ -2042,7 +2042,7 @@ void epmem_init_db( agent *my_agent )
 			sqlite3_prepare_v2( my_agent->epmem_db, "INSERT INTO ids (parent_id,name,value,hash,wme_type) VALUES (?,?,?,?,?)", -1, &( my_agent->epmem_statements[ EPMEM_STMT_RIT_ADD_ID ] ), &tail );
 
 			// custom statement for finding non-identifier id's
-			sqlite3_prepare_v2( my_agent->epmem_db, "SELECT child_id FROM ids WHERE hash=? AND parent_id=? AND name=? AND value=?", -1, &( my_agent->epmem_statements[ EPMEM_STMT_RIT_FIND_ID ] ), &tail );
+			sqlite3_prepare_v2( my_agent->epmem_db, "SELECT child_id FROM ids WHERE hash=? AND parent_id=? AND name=? AND value=? AND wme_type=?", -1, &( my_agent->epmem_statements[ EPMEM_STMT_RIT_FIND_ID ] ), &tail );
 
 			// custom statement for finding identifier id's
 			sqlite3_prepare_v2( my_agent->epmem_db, "SELECT child_id FROM ids WHERE hash=? AND parent_id=? AND name=? AND value IS NULL", -1, &( my_agent->epmem_statements[ EPMEM_STMT_RIT_FIND_ID_NULL ] ), &tail );				
@@ -2286,7 +2286,7 @@ void epmem_new_episode( agent *my_agent )
 							my_hash = epmem_hash_wme( wmes[i] );
 							if ( wmes[i]->value->common.symbol_type != IDENTIFIER_SYMBOL_TYPE )
 							{					
-								// hash=? AND parent_id=? AND name=? AND value=?
+								// hash=? AND parent_id=? AND name=? AND value=? AND wme_type=?
 								sqlite3_bind_int64( my_agent->epmem_statements[ EPMEM_STMT_RIT_FIND_ID ], 1, my_hash );
 								sqlite3_bind_int64( my_agent->epmem_statements[ EPMEM_STMT_RIT_FIND_ID ], 2, parent_id );
 								sqlite3_bind_text( my_agent->epmem_statements[ EPMEM_STMT_RIT_FIND_ID ], 3, (const char *) wmes[i]->attr->sc.name, -1, SQLITE_STATIC );
@@ -2304,6 +2304,7 @@ void epmem_new_episode( agent *my_agent )
 			        					sqlite3_bind_double( my_agent->epmem_statements[ EPMEM_STMT_RIT_FIND_ID ], 4, wmes[i]->value->fc.value );
 										break;
 								}
+								sqlite3_bind_int64( my_agent->epmem_statements[ EPMEM_STMT_RIT_FIND_ID ], 5, wmes[i]->value->common.symbol_type );
 								
 								if ( sqlite3_step( my_agent->epmem_statements[ EPMEM_STMT_RIT_FIND_ID ] ) == SQLITE_ROW )
 									wmes[i]->epmem_id = sqlite3_column_int64( my_agent->epmem_statements[ EPMEM_STMT_RIT_FIND_ID ], 0 );
@@ -2612,7 +2613,7 @@ void epmem_new_episode( agent *my_agent )
 								my_hash = epmem_hash_wme( wmes[i] );
 								if ( wmes[i]->value->common.symbol_type != IDENTIFIER_SYMBOL_TYPE )
 								{					
-									// hash=? AND parent_id=? AND name=? AND value=?
+									// hash=? AND parent_id=? AND name=? AND value=? AND wme_type=?
 									sqlite3_bind_int64( my_agent->epmem_statements[ EPMEM_STMT_RIT_FIND_ID ], 1, my_hash );
 									sqlite3_bind_int64( my_agent->epmem_statements[ EPMEM_STMT_RIT_FIND_ID ], 2, parent_id );
 									sqlite3_bind_text( my_agent->epmem_statements[ EPMEM_STMT_RIT_FIND_ID ], 3, (const char *) wmes[i]->attr->sc.name, -1, SQLITE_STATIC );
@@ -2630,6 +2631,7 @@ void epmem_new_episode( agent *my_agent )
 			        						sqlite3_bind_double( my_agent->epmem_statements[ EPMEM_STMT_RIT_FIND_ID ], 4, wmes[i]->value->fc.value );
 											break;
 									}
+									sqlite3_bind_int64( my_agent->epmem_statements[ EPMEM_STMT_RIT_FIND_ID ], 5, wmes[i]->value->common.symbol_type );
 									
 									if ( sqlite3_step( my_agent->epmem_statements[ EPMEM_STMT_RIT_FIND_ID ] ) == SQLITE_ROW )
 										wmes[i]->epmem_id = sqlite3_column_int64( my_agent->epmem_statements[ EPMEM_STMT_RIT_FIND_ID ], 0 );
@@ -3385,6 +3387,7 @@ void epmem_process_query( agent *my_agent, Symbol *state, Symbol *query, Symbol 
 			        						sqlite3_bind_double( my_agent->epmem_statements[ EPMEM_STMT_RIT_FIND_ID ], 4, (*wmes)[j]->value->fc.value );
 											break;
 									}
+									sqlite3_bind_int64( my_agent->epmem_statements[ EPMEM_STMT_RIT_FIND_ID ], 5, (*wmes)[j]->value->common.symbol_type );
 									
 									if ( sqlite3_step( my_agent->epmem_statements[ EPMEM_STMT_RIT_FIND_ID ] ) == SQLITE_ROW )
 										leaf_ids[i].push_back( epmem_create_leaf_node( sqlite3_column_int64( my_agent->epmem_statements[ EPMEM_STMT_RIT_FIND_ID ], 0 ), wma_get_wme_activation( my_agent, (*wmes)[j] ) ) );
@@ -3428,8 +3431,6 @@ void epmem_process_query( agent *my_agent, Symbol *state, Symbol *query, Symbol 
 			// only perform search if necessary
 			if ( cue_size )
 			{
-				int i;
-
 				// perform incremental, integrated range search
 				{				
 					// variables to populate
@@ -3702,9 +3703,7 @@ void epmem_process_query( agent *my_agent, Symbol *state, Symbol *query, Symbol 
 						state->id.epmem_info->epmem_wmes->push( new_wme );
 					}
 					
-					{
-						epmem_leaf_node *temp_leaf;
-						
+					{						
 						for ( i=EPMEM_NODE_POS; i<=EPMEM_NODE_NEG; i++ )
 						{						
 							leaf_p = leaf_ids[i].begin();
