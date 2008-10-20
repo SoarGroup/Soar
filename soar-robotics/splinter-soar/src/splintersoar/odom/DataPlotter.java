@@ -50,7 +50,7 @@ public class DataPlotter {
 		}
 		br = new BufferedReader( fr );
 
-		System.out.println( "file opened");
+		//System.out.println( "file opened");
 		jf = new JFrame("Odom Plotter");
 		jf.setLayout(new BorderLayout());
 		jf.add(vc, BorderLayout.CENTER);
@@ -159,7 +159,7 @@ public class DataPlotter {
 		double [] deltaxyt = { dcenter * Math.cos( position[2] ), dcenter * Math.sin( position[2] ), phi };
 		position = Geometry.add( position, deltaxyt );
 		position[2] = MathUtil.mod2pi( position[2] );
-		System.out.println( position[0] + "," + position[1] + "," + Math.toDegrees(position[2]) );
+		//System.out.println( position[0] + "," + position[1] + "," + Math.toDegrees(position[2]) );
 		previousOdometry = Arrays.copyOf( odometry, odometry.length );
 	}
 }
