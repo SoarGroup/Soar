@@ -7,6 +7,7 @@ import java.util.Arrays;
 import java.util.Calendar;
 
 import splintersoar.SplinterSoar;
+import splintersoar.lcmtypes.coords_t;
 
 import lcm.lcm.*;
 import lcmtypes.*;
@@ -38,13 +39,13 @@ public class LaserLoc implements LCMSubscriber
 	private static double laser_yaw_adjust = 0; // amount to adjust for laser's yaw = 90 - laser's yaw = 0 if laser is facing positive y directly
 	private static double laser_dist_adjustment = 0; // radius of tube?
 	private static double translation_threshold = 0; // minimum translation distance to update x,y location, 0.05 total guess
-	private static int update_period = 5; // seconds between status updates
+	private static int update_period = 5 * 1000000000; // nanoseconds between status updates
 	private static boolean verbose = false;
 	// end constants
 	
 	// regular state
 	laser_t laser_data;
-	pose_t estimated_pose;
+	coords_t estimated_coords;
 	
 	int droppedLocPackets = 0;
 	long lastStatusUpdate = System.nanoTime();
@@ -71,36 +72,34 @@ public class LaserLoc implements LCMSubscriber
 
 	boolean inactive = true;
     SimpleDateFormat sdf = new SimpleDateFormat("HH:mm:ss");
-	long lastactivityutime = 0;
-	final long ACTIVITY_TIMEOUT = 5 * 1000000;
+	long nanolastactivity = System.nanoTime();
+	final long ACTIVITY_TIMEOUT = 5 * 1000000000;
+	long currentTimeout = ACTIVITY_TIMEOUT;
 	private void updatePose()
 	{
-		long utime = System.nanoTime() / 1000;
+		long nanotime = System.nanoTime();
 
-		if ( lastactivityutime == 0 )
-		{
-			lastactivityutime = utime;
-		}
-		else if ( utime - lastactivityutime > ACTIVITY_TIMEOUT )
+		if ( nanotime - nanolastactivity > currentTimeout )
 		{
 			inactive = true;
-			System.out.println( sdf.format(Calendar.getInstance().getTime()) + ": no activity in last 5 seconds" );
-			lastactivityutime = utime;
+			System.out.println( sdf.format(Calendar.getInstance().getTime()) + ": no activity in last " + ( currentTimeout / 1000000000 ) + " seconds" );
+			nanolastactivity = nanotime;
+			currentTimeout += ACTIVITY_TIMEOUT;
 		}
 		
 		// occasionally print out status update
-		long elapsed = utime - lastStatusUpdate;
-		if ( elapsed > update_period )
+		long nanoelapsed = nanotime - lastStatusUpdate;
+		if ( nanoelapsed > update_period )
 		{
 			if ( droppedLocPackets > 0 )
 			{
-				float dropRate = droppedLocPackets / elapsed;
+				float dropRate = droppedLocPackets / (nanoelapsed / 1000000000);
 				System.err.format( "LaserLoc: dropping %5.1f %s packets/sec%n", dropRate, laser_channel );
 				printHeaderLine();
 			}
 			
 			droppedLocPackets = 0;
-			lastStatusUpdate = System.nanoTime();
+			lastStatusUpdate = nanotime;
 		}
 		
 		if ( laser_data == null )
@@ -115,7 +114,8 @@ public class LaserLoc implements LCMSubscriber
 			return;
 		}
 		
-		lastactivityutime = utime;
+		nanolastactivity = nanotime;
+		currentTimeout = ACTIVITY_TIMEOUT;
 		
 		if ( inactive )
 		{
@@ -123,31 +123,30 @@ public class LaserLoc implements LCMSubscriber
 			inactive = false;
 		}
 		
-		if ( estimated_pose == null )
+		if ( estimated_coords == null )
 		{
 			// initialize
-			estimated_pose = getRobotXY( laser_data );
-			estimated_pose.orientation = Geometry.rollPitchYawToQuat( new double[] { 0, 0, robot_starting_yaw } );
+			estimated_coords = getRobotXY( laser_data );
 			printOldPose();
 
-			estimated_pose.utime = utime;
+			estimated_coords.utime = laser_data.utime;
 			if ( lcm != null )
 			{
-				lcm.publish( pose_channel, estimated_pose );
+				lcm.publish( pose_channel, estimated_coords );
 			}
 
 			laser_data = null;
 			return;
 		}
 		
-		pose_t new_estimated_pose = getRobotXY( laser_data );
-		if ( new_estimated_pose == null )
+		coords_t new_estimated_coords = getRobotXY( laser_data );
+		if ( new_estimated_coords == null )
 		{
 			laser_data = null;
 			return;
 		}
 		
-		double translation_dist = Geometry.distance( estimated_pose.pos, new_estimated_pose.pos );
+		double translation_dist = Geometry.distance( estimated_coords.xy, new_estimated_coords.xy );
 		
 		// only update location if moved enough. Don't want Soar to thrash on constantly changing x,y due to noise
 		// this also means this loop can run as fast as it can and we'll still get reasonable updates
@@ -156,12 +155,12 @@ public class LaserLoc implements LCMSubscriber
 		
 		if( movedEnough )
 		{
-			System.arraycopy( new_estimated_pose.pos, 0, estimated_pose.pos, 0, new_estimated_pose.pos.length );
+			System.arraycopy( new_estimated_coords.xy, 0, estimated_coords.xy, 0, new_estimated_coords.xy.length );
 			
-			estimated_pose.utime = utime;
+			estimated_coords.utime = laser_data.utime;
 			if ( lcm != null )
 			{
-				lcm.publish( pose_channel, estimated_pose );
+				lcm.publish( pose_channel, estimated_coords );
 			}
 
 			printOldPose();
@@ -174,12 +173,12 @@ public class LaserLoc implements LCMSubscriber
 		if ( verbose )
 		{
 			System.out.format( "%10.3f %10.3f%n", 
-					estimated_pose.pos[ 0 ], 
-					estimated_pose.pos[ 1 ] );
+					estimated_coords.xy[ 0 ], 
+					estimated_coords.xy[ 1 ] );
 		}
 	}
 
-	private pose_t getRobotXY( laser_t laser_data )
+	private coords_t getRobotXY( laser_t laser_data )
 	{
 		assert laser_data != null;
 			
@@ -199,12 +198,11 @@ public class LaserLoc implements LCMSubscriber
 		
 		double laser_dist = smallest_range + laser_dist_adjustment;
 		
-		pose_t new_pose = new pose_t();
-		new_pose.pos[ 0 ] = laser_x + laser_dist * Math.cos( laser_angle );
-		new_pose.pos[ 1 ] = laser_y + laser_dist * Math.sin( laser_angle );
-		new_pose.pos[ 2 ] = 0;
+		coords_t new_coords = new coords_t();
+		new_coords.xy[ 0 ] = laser_x + laser_dist * Math.cos( laser_angle );
+		new_coords.xy[ 1 ] = laser_y + laser_dist * Math.sin( laser_angle );
 		
-		return new_pose;
+		return new_coords;
 	}
 
 	@Override

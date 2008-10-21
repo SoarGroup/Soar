@@ -1,7 +1,7 @@
 package splintersoar.soar;
 
 import sml.*;
-import splintersoar.RangerData;
+import splintersoar.ranger.RangerState;
 
 public class Ranger {
 	
@@ -34,7 +34,7 @@ public class Ranger {
 			distance = agent.CreateFloatWME( range, "distance", 0 );
 		}
 		
-		void update( RangerData data )
+		void update( RangerState.RangerData data )
 		{
 			if ( range == null )
 			{
@@ -47,31 +47,60 @@ public class Ranger {
 		}
 	}
 	
-	public Ranger( Agent agent, Identifier ranges, int numSlices )
+	public Ranger( Agent agent, Identifier ranges, RangerState rangerState )
 	{
 		this.agent = agent;
 		this.ranges = ranges;
 		
-		slices = new Range[ numSlices ];
-		for ( int index = 0; index < numSlices; ++index )
+		if ( rangerState != null )
 		{
-			slices[ index ] = new Range( index - ( numSlices / 2 ) );
+			createSlices( rangerState );
+			updateSlices( rangerState );
 		}
 	}
 	
-	public void update( long utime, RangerData[] data )
+	private void createSlices( RangerState rangerState )
 	{
-		if ( utime == lastutime )
+		assert rangerState != null;
+		assert slices == null;
+
+		slices = new Range[ rangerState.ranger.length ];
+		for ( int index = 0; index < rangerState.ranger.length; ++index )
+		{
+			slices[ index ] = new Range( index - ( rangerState.ranger.length / 2 ) );
+		}
+	}
+	
+	public void update( RangerState rangerState )
+	{
+		if ( rangerState == null )
 		{
 			return;
 		}
-		lastutime = utime;
 		
-		assert data.length == slices.length;
-		
-		for ( int index = 0; index < data.length; ++index )
+		if ( rangerState.utime == lastutime )
 		{
-			slices[ index ].update( data[ index ] );
+			return;
+		}
+		lastutime = rangerState.utime;
+		
+		if ( slices == null )
+		{
+			createSlices( rangerState );
+		}
+		else
+		{
+			assert rangerState.ranger.length == slices.length;
+		}
+		
+		updateSlices( rangerState );
+	}
+	
+	private void updateSlices( RangerState rangerState )
+	{
+		for ( int index = 0; index < rangerState.ranger.length; ++index )
+		{
+			slices[ index ].update( rangerState.ranger[ index ] );
 		}
 	}
 }

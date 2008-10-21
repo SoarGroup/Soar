@@ -2,6 +2,11 @@ package splintersoar.soar;
 
 import sml.*;
 import splintersoar.*;
+import splintersoar.orc.OrcInput;
+import splintersoar.orc.OrcOutput;
+import splintersoar.orc.OrcOutputProducer;
+import splintersoar.ranger.RangerState;
+import splintersoar.ranger.RangerStateProducer;
 
 public class SoarInterface implements Kernel.UpdateEventInterface
 {
@@ -10,11 +15,15 @@ public class SoarInterface implements Kernel.UpdateEventInterface
 	InputLinkManager input;
 	OutputLinkManager output;
 	Waypoints waypoints;
+	OrcOutputProducer splinterOutputProducer;
+	RangerStateProducer rangerStateProducer;
 	
 	static final double baselineMeters = 0.42545;
 
-	public SoarInterface( SplinterState state, String productions )
+	public SoarInterface( OrcOutputProducer splinterOutputProducer, RangerStateProducer rangerStateProducer, String productions )
 	{
+		this.splinterOutputProducer = splinterOutputProducer;
+		
 		kernel = Kernel.CreateKernelInNewThread();
 		if ( kernel.HadError() )
 		{
@@ -36,8 +45,26 @@ public class SoarInterface implements Kernel.UpdateEventInterface
 		agent.LoadProductions( productions );
 		
 		waypoints = new Waypoints( agent );
-		input = new InputLinkManager( agent, waypoints, state );
-		output = new OutputLinkManager( agent, waypoints, state );
+
+		OrcOutput splinterOutput = splinterOutputProducer.getOutput();
+
+		// wait for valid data
+		while ( splinterOutput.utime == 0 )
+		{
+			SplinterSoar.logger.fine( "Waiting for valid splinter state" );
+			try 
+			{
+				Thread.sleep( 200 );
+			} catch ( InterruptedException ignored ) 
+			{}
+		}
+		
+		RangerState rangerState = rangerStateProducer.getRangerState();
+		
+		// rangerState could be null 
+		
+		input = new InputLinkManager( agent, waypoints, splinterOutput, rangerState );
+		output = new OutputLinkManager( agent, waypoints );
 		
 		kernel.RegisterForUpdateEvent( smlUpdateEventId.smlEVENT_AFTER_ALL_OUTPUT_PHASES, this, null );
 	}
@@ -76,11 +103,6 @@ public class SoarInterface implements Kernel.UpdateEventInterface
 		SplinterSoar.logger.info( "Soar interface down" ); 
 	}
 	
-	public void setOverride( boolean enabled )
-	{
-		output.setOverride( enabled );
-	}
-	
 	@Override
 	public void updateEventHandler(int eventID, Object data, Kernel kernel, int runFlags) 
 	{
@@ -92,8 +114,11 @@ public class SoarInterface implements Kernel.UpdateEventInterface
 		
 		try
 		{
-			input.update();
-			output.update();
+			OrcOutput splinterOutput = splinterOutputProducer.getOutput();
+			RangerState rangerState = rangerStateProducer.getRangerState();
+			
+			input.update( splinterOutput, rangerState );
+			output.update( splinterOutput );
 		
 			waypoints.update(); // updates input link
 		
@@ -111,4 +136,7 @@ public class SoarInterface implements Kernel.UpdateEventInterface
 		}
 	}
 
+	public OrcInput getSplinterInput() {
+		return output.getSplinterInput();
+	}
 }

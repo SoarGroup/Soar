@@ -5,19 +5,18 @@ import java.awt.Color;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
-import java.io.FileWriter;
 import java.io.IOException;
-import java.util.ArrayList;
+//import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.StringTokenizer;
 
-import javax.swing.*;
-
-import splintersoar.SplinterState;
+import javax.swing.JFrame;
 
 import erp.geom.Geometry;
 import erp.math.MathUtil;
-import erp.vis.*;
+import erp.vis.VisCanvas;
+import erp.vis.VisData;
+import erp.vis.VisDataPointStyle;
+import erp.vis.VisWorld;
 
 public class DataPlotter {
 
@@ -67,7 +66,7 @@ public class DataPlotter {
 		} catch (InterruptedException e) {
 		}
 		
-		ArrayList<VisData> points = new ArrayList<VisData>();
+		//ArrayList<VisData> points = new ArrayList<VisData>();
 
 		try {
 			boolean mark = false;
@@ -148,7 +147,7 @@ public class DataPlotter {
 		//double tickmeters = 0.0000429250;
 		double tickmeters = 0.000043225;
 		//double baselinemeters = 0.42545;
-		double baselinemeters = 0.39;
+		double baselinemeters = 0.383;
 		double dleft = ( odometry[0] - previousOdometry[0] ) * tickmeters;
 		double dright = ( odometry[1] - previousOdometry[1] ) * tickmeters;
 		double phi = ( dright - dleft ) / baselinemeters;

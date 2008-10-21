@@ -2,6 +2,8 @@ package splintersoar.soar;
 
 import sml.*;
 import splintersoar.*;
+import splintersoar.orc.OrcOutput;
+import splintersoar.ranger.RangerState;
 
 public class InputLinkManager {
 
@@ -25,8 +27,7 @@ public class InputLinkManager {
 	IntElement time_seconds;
 	IntElement time_microseconds;
 
-	SplinterState state;
-	long lastTime = 0;
+	long lastTime;
 	
 	SoarTime soarTime;
 	
@@ -50,33 +51,14 @@ public class InputLinkManager {
 		}
 	}
 
-	public InputLinkManager( Agent agent, Waypoints waypoints, SplinterState state )
+	public InputLinkManager( Agent agent, Waypoints waypoints, OrcOutput splinterOutput, RangerState rangerState )
 	{
 		this.agent = agent;
-		this.state = state;
 		this.waypoints = waypoints;
 		
 		this.agent.SetBlinkIfNoChange( false );
 		
-		// wait for valid data
-		while ( state.utime == lastTime )
-		{
-			SplinterSoar.logger.fine( "Waiting for valid splinter state" );
-			try 
-			{
-				Thread.sleep( 200 );
-			} catch ( InterruptedException ignored ) 
-			{}
-		}
-
-		// cache state
-		SplinterState stateCopy;
-		synchronized ( state )
-		{
-			stateCopy = new SplinterState( state );
-		}
-		
-		lastTime = stateCopy.utime;
+		lastTime = splinterOutput.utime;
 		
 		SplinterSoar.logger.fine( "Initializing input link" );
 		Identifier inputLink = agent.GetInputLink();
@@ -85,11 +67,7 @@ public class InputLinkManager {
 		
 		{
 			ranges = agent.CreateIdWME( inputLink, "ranges" );
-			ranger = new Ranger( agent, ranges, stateCopy.rangerSlices );
-			if ( stateCopy.ranger != null )
-			{
-				ranger.update( stateCopy.rangerutime, stateCopy.ranger );
-			}
+			ranger = new Ranger( agent, ranges, rangerState );
 		}
 		
 		{
@@ -98,11 +76,10 @@ public class InputLinkManager {
 			{
 				Identifier self_geometry = agent.CreateIdWME( self, "geometry" );
 				
-				agent.CreateFloatWME( self_geometry, "baseline-meters", state.baselineMeters );
-				agent.CreateFloatWME( self_geometry, "tick-meters", state.tickMeters );
-				agent.CreateFloatWME( self_geometry, "length", state.length );
-				agent.CreateFloatWME( self_geometry, "width", state.width );
-				agent.CreateIntWME( self_geometry, "ranger-slices", state.rangerSlices );
+				agent.CreateFloatWME( self_geometry, "baseline-meters", splinterOutput.BASELINE_METERS );
+				agent.CreateFloatWME( self_geometry, "tick-meters", splinterOutput.TICK_METERS );
+				agent.CreateFloatWME( self_geometry, "length", splinterOutput.LENGTH_METERS );
+				agent.CreateFloatWME( self_geometry, "width", splinterOutput.WIDTH_METERS );
 			}
 			
 			{
@@ -110,12 +87,12 @@ public class InputLinkManager {
 				
 				Identifier self_motor_left = agent.CreateIdWME( self_motor, "left" );
 				{
-					self_motor_left_position = agent.CreateIntWME( self_motor_left, "position", stateCopy.motorPosition[0] );
+					self_motor_left_position = agent.CreateIntWME( self_motor_left, "position", splinterOutput.motorPosition[0] );
 				}
 				
 				Identifier self_motor_right = agent.CreateIdWME( self_motor, "right" );
 				{
-					self_motor_right_position = agent.CreateIntWME( self_motor_right, "position", stateCopy.motorPosition[1] );
+					self_motor_right_position = agent.CreateIntWME( self_motor_right, "position", splinterOutput.motorPosition[1] );
 				}
 			}
 			
@@ -124,9 +101,9 @@ public class InputLinkManager {
 			{
 				Identifier self_pose = agent.CreateIdWME( self, "pose" );
 				{
-					self_pose_x = agent.CreateFloatWME( self_pose, "x", stateCopy.xyt[0] );
-					self_pose_y = agent.CreateFloatWME( self_pose, "y", stateCopy.xyt[1] );
-					self_pose_yaw = agent.CreateFloatWME( self_pose, "yaw", Math.toDegrees( stateCopy.xyt[2] ) );
+					self_pose_x = agent.CreateFloatWME( self_pose, "x", splinterOutput.xyt[0] );
+					self_pose_y = agent.CreateFloatWME( self_pose, "y", splinterOutput.xyt[1] );
+					self_pose_yaw = agent.CreateFloatWME( self_pose, "yaw", Math.toDegrees( splinterOutput.xyt[2] ) );
 				}
 			}
 			
@@ -145,39 +122,32 @@ public class InputLinkManager {
 		agent.Commit();
 	}
 
-	public void update()
+	public void update( OrcOutput splinterOutput, RangerState rangerState )
 	{
 		soarTime.update();
 		agent.Update( time_seconds, soarTime.seconds );
 		agent.Update( time_microseconds, soarTime.microseconds );
 		
 		// update robot state if we have new state
-		if ( state.utime != lastTime )
+		if ( splinterOutput.utime != lastTime )
 		{
-			// cache state
-			SplinterState stateCopy;
-			synchronized ( state )
-			{
-				stateCopy = new SplinterState( state );
-			}
+			lastTime = splinterOutput.utime;
 			
-			lastTime = stateCopy.utime;
-			
-			agent.Update( self_motor_left_position, stateCopy.motorPosition[0] );
-			agent.Update( self_motor_right_position, stateCopy.motorPosition[1] );
+			agent.Update( self_motor_left_position, splinterOutput.motorPosition[0] );
+			agent.Update( self_motor_right_position, splinterOutput.motorPosition[1] );
 
-			agent.Update( self_pose_x, stateCopy.xyt[0] );
-			agent.Update( self_pose_y, stateCopy.xyt[1] );
-			double yaw = stateCopy.xyt[2] % ( 2 * Math.PI );
+			agent.Update( self_pose_x, splinterOutput.xyt[0] );
+			agent.Update( self_pose_y, splinterOutput.xyt[1] );
+			double yaw = splinterOutput.xyt[2] % ( 2 * Math.PI );
 			while ( yaw < 0 )
 			{
 				yaw += ( 2 * Math.PI );
 			}
 			agent.Update( self_pose_yaw, Math.toDegrees( yaw ) );
 
-			ranger.update( stateCopy.rangerutime, stateCopy.ranger );
-			
-			waypoints.setNewRobotPose( stateCopy.xyt );
+			waypoints.setNewRobotPose( splinterOutput.xyt );
 		}
+
+		ranger.update( rangerState );
 	}
 }

@@ -10,14 +10,19 @@ import erp.config.ConfigFile;
 
 import orc.util.GamePad;
 
+import splintersoar.orc.OrcInterface;
+import splintersoar.orc.OrcInput;
+import splintersoar.orc.OrcInputProducer;
+import splintersoar.ranger.RangerManager;
 import splintersoar.soar.*;
 import laserloc.*;
 import lcm.lcm.*;
 
-public class SplinterSoar
+public class SplinterSoar implements OrcInputProducer
 {
 	SoarInterface soar;
 	OrcInterface orc;
+	RangerManager ranger;
 	LaserLoc laserloc;
 	LCM lcm;
 	GamePad gamePad;
@@ -75,17 +80,13 @@ public class SplinterSoar
 		String agent = config.requireString( "soar.agent" );
 		
 		logger.info( "Starting orc interface" );
-		orc = new OrcInterface( false );
+		orc = new OrcInterface( this );
 
-		logger.info( "Subscribing orc to " + LaserLoc.pose_channel + " channel" );
-		lcm = LCM.getSingleton();
-		lcm.subscribe( LaserLoc.pose_channel, orc );
-
-		logger.info( "Subscribing orc to LASER_FRONT channel" );
-		lcm.subscribe( "LASER_FRONT", orc );
+		logger.info( "Starting ranger" );
+		ranger = new RangerManager();
 
 		logger.info( "Starting Soar interface with agent: " + agent );
-		soar = new SoarInterface( orc.getState(), agent );
+		soar = new SoarInterface( orc, ranger, agent );
 		
 		logger.info( "Creating game pad for override" );
 		gamePad = new GamePad();
@@ -117,19 +118,17 @@ public class SplinterSoar
 		// change on trailing edge
 		if ( overrideButton && !currentOverrideButton )
 		{
-			overrideEnabled = !overrideEnabled;
-			soar.setOverride( overrideEnabled );
+			synchronized( throttle )
+			{
+				overrideEnabled = !overrideEnabled;
 			
-			if ( overrideEnabled )
-			{
-				logger.info( "Override enabled" );
-				throttle = new double [] { 0, 0 };
-				commitOverrideCommand();
+				if ( overrideEnabled )
+				{
+					throttle = new double [] { 0, 0 };
+				}
 			}
-			else
-			{
-				logger.info( "Override disabled" );
-			}
+			
+			logger.info( "Override " + ( overrideEnabled ? "enabled" : "disabled" ) );
 		}
 		overrideButton = currentOverrideButton;
 		
@@ -160,9 +159,10 @@ public class SplinterSoar
 			
 			if ( ( newThrottle[0] != throttle[0] ) || ( newThrottle[1] != throttle[1] ) )
 			{
-				throttle[0] = newThrottle[0];
-				throttle[1] = newThrottle[1];
-				commitOverrideCommand();
+				synchronized( throttle )
+				{
+					System.arraycopy( newThrottle, 0, throttle, 0, newThrottle.length );
+				}
 			}
 		}
 	}
@@ -192,15 +192,6 @@ public class SplinterSoar
 		startStopButton = currentStartStopButton;
 	}
 	
-	private void commitOverrideCommand()
-	{
-		synchronized ( orc.getState() )
-		{
-			System.arraycopy( throttle, 0, orc.getState().throttle, 0, throttle.length );
-			orc.getState().targetYawEnabled = false;
-		}
-	}
-	
 	public class ShutdownHook extends Thread
 	{
 		@Override
@@ -218,6 +209,24 @@ public class SplinterSoar
 	public static void main( String args[] )
 	{
 		new SplinterSoar( args );
+	}
+
+	@Override
+	public OrcInput getInput() {
+		if ( overrideEnabled )
+		{
+			OrcInput input = new OrcInput();
+			input.targetYawEnabled = false;
+			synchronized ( throttle )
+			{
+				System.arraycopy( throttle, 0, input.throttle, 0, throttle.length );
+			}
+			return input;
+		} 
+		else
+		{
+			return soar.getSplinterInput();
+		}
 	}
 
 }

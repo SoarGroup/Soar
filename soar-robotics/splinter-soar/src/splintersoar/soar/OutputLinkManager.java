@@ -3,31 +3,25 @@ package splintersoar.soar;
 import java.util.Arrays;
 
 import sml.*;
-import splintersoar.*;
+import splintersoar.orc.OrcInput;
+import splintersoar.orc.OrcOutput;
 
 public class OutputLinkManager {
 	
 	Agent agent;
 	Waypoints waypoints;
 	
-	SplinterState state;
+	OrcInput splinterInput = new OrcInput();
 	
-	public OutputLinkManager( Agent agent, Waypoints waypoints, SplinterState state )
+	public OutputLinkManager( Agent agent, Waypoints waypoints )
 	{
 		this.agent = agent;
 		this.waypoints = waypoints;
-		this.state = state;
 	}
 	
-	boolean overrideEnabled = false;
-	public void setOverride( boolean enabled )
+	public void update( OrcOutput splinterOutput )
 	{
-		this.overrideEnabled = enabled;
-	}
-
-	public void update()
-	{
-		boolean motorsCommanded = false;
+		OrcInput newSplinterInput = null;
 				
 		// process output
 		for ( int i = 0; i < agent.GetNumberCommands(); ++i ) 
@@ -37,7 +31,7 @@ public class OutputLinkManager {
 			
 			if ( commandName.equals( "motor" ) )
 			{
-				if ( motorsCommanded )
+				if ( newSplinterInput != null )
 				{
 					// This is a warning
 					System.err.println( "Motor command received possibly overriding previous orders" );
@@ -87,22 +81,15 @@ public class OutputLinkManager {
 				
 				System.out.format( "motor: %10s %10s%n", "left", "right" );
 				System.out.format( "       %10.3f %10.3f%n", motorThrottle[0], motorThrottle[1] );
-				if ( !overrideEnabled )
-				{
-					synchronized ( state )
-					{
-						System.arraycopy( motorThrottle, 0, state.throttle, 0, motorThrottle.length );
-						state.targetYawEnabled = false;
-					}
-				}
+
+				newSplinterInput = new OrcInput( motorThrottle );
 				
-				motorsCommanded = true;
 				commandId.AddStatusComplete();
 				continue;
 			}
 			else if ( commandName.equals( "move" ) )
 			{
-				if ( motorsCommanded )
+				if ( newSplinterInput != null )
 				{
 					System.err.println( "Move command received but motors already have orders" );
 					commandId.AddStatusError();
@@ -143,36 +130,15 @@ public class OutputLinkManager {
 
 				if ( direction.equals( "backward" ) )
 				{
-					if ( !overrideEnabled )
-					{
-						synchronized ( state )
-						{
-							state.throttle = new double [] { throttle * -1, throttle * -1 };
-							state.targetYawEnabled = false;
-						}
-					}					
+					newSplinterInput = new OrcInput( throttle * -1 );
 				}
 				else if ( direction.equals( "forward" ) )
 				{
-					if ( !overrideEnabled )
-					{
-						synchronized ( state )
-						{
-							state.throttle = new double [] { throttle, throttle };
-							state.targetYawEnabled = false;
-						}
-					}					
+					newSplinterInput = new OrcInput( throttle );
 				}
 				else if ( direction.equals( "stop" ) )
 				{
-					if ( !overrideEnabled )
-					{
-						synchronized ( state )
-						{
-							state.throttle = new double [] { 0, 0 };
-							state.targetYawEnabled = false;
-						}
-					}					
+					newSplinterInput = new OrcInput( 0 );
 				}
 				else
 				{
@@ -181,13 +147,12 @@ public class OutputLinkManager {
 					continue;
 				}
 				
-				motorsCommanded = true;
 				commandId.AddStatusComplete();
 				continue;
 			}
 			else if ( commandName.equals( "rotate" ) )
 			{
-				if ( motorsCommanded )
+				if ( newSplinterInput != null )
 				{
 					System.err.println( "Rotate command received but motors already have orders" );
 					commandId.AddStatusError();
@@ -228,36 +193,15 @@ public class OutputLinkManager {
 				
 				if ( direction.equals( "left" ) )
 				{
-					if ( !overrideEnabled )
-					{
-						synchronized ( state )
-						{
-							state.throttle = new double [] { throttle * -1, throttle };
-							state.targetYawEnabled = false;
-						}
-					}					
+					newSplinterInput = new OrcInput( OrcInput.Direction.left, throttle );
 				}
 				else if ( direction.equals( "right" ) )
 				{
-					if ( !overrideEnabled )
-					{
-						synchronized ( state )
-						{
-							state.throttle = new double [] { throttle, throttle * -1 };
-							state.targetYawEnabled = false;
-						}
-					}					
+					newSplinterInput = new OrcInput( OrcInput.Direction.right, throttle );
 				}
 				else if ( direction.equals( "stop" ) )
 				{
-					if ( !overrideEnabled )
-					{
-						synchronized ( state )
-						{
-							state.throttle = new double [] { 0, 0 };
-							state.targetYawEnabled = false;
-						}
-					}					
+					newSplinterInput = new OrcInput( 0 );
 				}
 				else
 				{
@@ -266,14 +210,13 @@ public class OutputLinkManager {
 					continue;
 				}
 				
-				motorsCommanded = true;
 				commandId.AddStatusComplete();
 				continue;
 
 			}
 			else if ( commandName.equals( "rotate-to" ) )
 			{
-				if ( motorsCommanded )
+				if ( newSplinterInput != null )
 				{
 					System.err.println( "Rotate-to command received but motors already have orders" );
 					commandId.AddStatusError();
@@ -345,25 +288,15 @@ public class OutputLinkManager {
 				System.out.format( "rotate-to: %10s %10s %10s%n", "yaw", "tolerance", "throttle" );
 				System.out.format( "           %10.3f %10.3f %10.3f%n", yaw, tolerance, throttle );
 				
-				if ( !overrideEnabled )
-				{
-					synchronized ( state )
-					{
-						state.targetYaw = yaw;
-						state.targetYawTolerance = tolerance;
-						state.targetYawEnabled = true;
-						state.throttle = new double [] { throttle, throttle };
-					}
-				}
+				newSplinterInput = new OrcInput( yaw, tolerance, throttle );
 				
-				motorsCommanded = true;
 				commandId.AddStatusComplete();
 				continue;
 
 			}
 			else if ( commandName.equals( "stop" ) )
 			{
-				if ( motorsCommanded )
+				if ( newSplinterInput != null )
 				{
 					// This is a warning
 					System.err.println( "Stop command received, possibly overriding previous orders" );
@@ -371,28 +304,14 @@ public class OutputLinkManager {
 
 				System.out.format( "stop:%n" );
 				
-				if ( !overrideEnabled )
-				{
-					synchronized ( state )
-					{
-						state.throttle = new double [] { 0, 0 };
-						state.targetYawEnabled = false;
-					}
-				}
+				newSplinterInput = new OrcInput( 0 );
 				
-				motorsCommanded = true;
 				commandId.AddStatusComplete();
 				continue;
 				
 			}
 			else if ( commandName.equals( "add-waypoint" ) )
 			{
-				SplinterState stateCopy;
-				synchronized ( state )
-				{
-					stateCopy = new SplinterState( state );
-				}
-
 				String id = commandId.GetParameterValue( "id" );
 				if ( id == null )
 				{
@@ -401,7 +320,7 @@ public class OutputLinkManager {
 					continue;
 				}
 				
-				double [] xyt = Arrays.copyOf( stateCopy.xyt, stateCopy.xyt.length );
+				double [] xyt = Arrays.copyOf( splinterOutput.xyt, splinterOutput.xyt.length );
 				try 
 				{
 					xyt[0] = Double.parseDouble( commandId.GetParameterValue( "x" ) );
@@ -517,6 +436,21 @@ public class OutputLinkManager {
 			
 			System.err.println( "Unknown command: " + commandName );
 			commandId.AddStatusError();
+		}
+		
+		if ( newSplinterInput != null )
+		{
+			synchronized( this )
+			{
+				splinterInput = newSplinterInput;
+			}
+		}
+	}
+
+	public OrcInput getSplinterInput() {
+		synchronized( this )
+		{
+			return splinterInput.copy();
 		}
 	}
 }
