@@ -2,6 +2,7 @@ package splintersoar;
 
 import java.io.IOException;
 import java.text.SimpleDateFormat;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.logging.*;
 
@@ -29,7 +30,7 @@ public class SplinterSoar implements OrcInputProducer
 	
 	boolean running = true;
 
-	public static final Logger logger = Logger.getLogger("splintersoar");
+	public static final Logger logger = Logger.getLogger(Logger.GLOBAL_LOGGER_NAME);
 	
 	public class TextFormatter extends Formatter {
 		SimpleDateFormat format = new SimpleDateFormat("HH:mm:ss");
@@ -56,6 +57,8 @@ public class SplinterSoar implements OrcInputProducer
 	{
 		ConsoleHandler handler = new ConsoleHandler();
 		handler.setFormatter(new TextFormatter());
+		handler.setLevel( Level.ALL );
+		logger.setLevel( Level.ALL );
 		logger.addHandler(handler);
 		logger.setUseParentHandlers( false );
 
@@ -225,6 +228,10 @@ public class SplinterSoar implements OrcInputProducer
 		} 
 		else
 		{
+			if ( soar == null )
+			{
+				return null;
+			}
 			return soar.getSplinterInput();
 		}
 	}

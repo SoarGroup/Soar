@@ -28,7 +28,7 @@ public class OrcInterface implements LCMSubscriber, OrcOutputProducer
 	private Orc orc;
 	private Motor [] motor = new Motor[2];
 	private int [] ports = { 1, 0 };
-	private boolean [] invert = { false, true };
+	private boolean [] invert = { true, false };
 
 	private OrcInputProducer inputProducer;
 	private OrcOutput previousOutput = new OrcOutput( 0 );
@@ -87,7 +87,7 @@ public class OrcInterface implements LCMSubscriber, OrcOutputProducer
 	{		
 		int runs = 0;
 		long statustimestamp = 0;
-		final int STATUS_UPDATE_USECS = 5 * 1000000; // 5 seconds
+		final long STATUS_UPDATE_NANOSECS = 5 * 1000000000L; // 5 seconds
 		ParticleFilter pf = new ParticleFilter();
 		
 		public void run()
@@ -108,6 +108,11 @@ public class OrcInterface implements LCMSubscriber, OrcOutputProducer
 			}
 
 			OrcInput input = inputProducer.getInput();
+			if ( input == null )
+			{
+				SplinterSoar.logger.finest( "No input, using default" );
+				input = new OrcInput();
+			}
 			
 			if ( moving )
 			{				
@@ -172,15 +177,16 @@ public class OrcInterface implements LCMSubscriber, OrcOutputProducer
 
 			// status message
 			runs += 1;
+			long nanotime = System.nanoTime();
 			if ( statustimestamp == 0 )
 			{
-				statustimestamp = currentOutput.utime;
+				statustimestamp = nanotime;
 			}
-			else if ( currentOutput.utime - statustimestamp > STATUS_UPDATE_USECS )
+			else if ( nanotime - statustimestamp > STATUS_UPDATE_NANOSECS ) 
 			{
-				double updatesPerSecond = this.runs / ( ( currentOutput.utime - statustimestamp ) / 1000000 );
+				double updatesPerSecond = this.runs / ( ( nanotime - statustimestamp ) / 1000000000.0 );
 				System.out.format( "Orc updates running at %6.2f per sec%n", updatesPerSecond );
-				statustimestamp = currentOutput.utime;
+				statustimestamp = nanotime;
 				runs = 0;
 			}
 
@@ -212,7 +218,7 @@ public class OrcInterface implements LCMSubscriber, OrcOutputProducer
 		}
 	}
 
-	public static double maxThrottleAccellerationusec = 2.0 * 1000000000;
+	public static double maxThrottleAccellerationPeruSec = 2.0 / 1000000;
 	
 	private long lastutime = 0;
 	private void commandMotors( long utime, double [] throttle )
@@ -234,7 +240,7 @@ public class OrcInterface implements LCMSubscriber, OrcOutputProducer
 
 		if ( delta[0] > 0 )
 		{
-			double newDelta = Math.min( delta[0], elapsed * maxThrottleAccellerationusec );
+			double newDelta = Math.min( delta[0], elapsed * maxThrottleAccellerationPeruSec );
 			if ( delta[0] != newDelta )
 			{
 				delta[0] = newDelta;
@@ -242,7 +248,7 @@ public class OrcInterface implements LCMSubscriber, OrcOutputProducer
 		}
 		else if ( delta[0] < 0 )
 		{
-			double newDelta = Math.max( delta[0], -1 * elapsed * maxThrottleAccellerationusec );
+			double newDelta = Math.max( delta[0], -1 * elapsed * maxThrottleAccellerationPeruSec );
 			if ( delta[0] != newDelta )
 			{
 				delta[0] = newDelta;
@@ -250,7 +256,7 @@ public class OrcInterface implements LCMSubscriber, OrcOutputProducer
 		}
 		if ( delta[1] > 0 )
 		{
-			double newDelta = Math.min( delta[1], elapsed * maxThrottleAccellerationusec );
+			double newDelta = Math.min( delta[1], elapsed * maxThrottleAccellerationPeruSec );
 			if ( delta[1] != newDelta )
 			{
 				delta[1] = newDelta;
@@ -258,7 +264,7 @@ public class OrcInterface implements LCMSubscriber, OrcOutputProducer
 		}
 		else if ( delta[1] < 0 )
 		{
-			double newDelta = Math.max( delta[1], -1 * elapsed * maxThrottleAccellerationusec );
+			double newDelta = Math.max( delta[1], -1 * elapsed * maxThrottleAccellerationPeruSec );
 			if ( delta[1] != newDelta )
 			{
 				delta[1] = newDelta;

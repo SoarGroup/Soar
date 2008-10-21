@@ -57,6 +57,7 @@ public class SoarInterface implements Kernel.UpdateEventInterface
 				Thread.sleep( 200 );
 			} catch ( InterruptedException ignored ) 
 			{}
+			splinterOutput = splinterOutputProducer.getOutput();
 		}
 		
 		RangerState rangerState = rangerStateProducer.getRangerState();
