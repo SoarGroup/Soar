@@ -77,12 +77,15 @@ public class RoomMapper implements LCMSubscriber
 			xy[0] = ranges[index] * Math.cos( angle );
 			xy[1] = ranges[index] * Math.sin( angle );
 			
-			System.err.println( Arrays.toString( xy ));
 			vb.addBuffered(new VisData( xy, new VisDataPointStyle(buffer ? Color.red : Color.black, 2)));
 			
 			angle += radstep;
 		}
 		
+		if ( buffer == true ) 
+		{
+			System.out.println( Arrays.toString( ranges ));
+		}
 	}
 	
 	void update()
