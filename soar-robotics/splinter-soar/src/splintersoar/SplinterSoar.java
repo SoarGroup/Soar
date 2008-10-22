@@ -1,10 +1,11 @@
 package splintersoar;
 
 import java.io.IOException;
-import java.text.SimpleDateFormat;
-import java.util.Arrays;
-import java.util.Date;
-import java.util.logging.*;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
+import laserloc.LaserLoc;
+import lcm.lcm.LCM;
 
 import erp.config.Config;
 import erp.config.ConfigFile;
@@ -15,9 +16,7 @@ import splintersoar.orc.OrcInterface;
 import splintersoar.orc.OrcInput;
 import splintersoar.orc.OrcInputProducer;
 import splintersoar.ranger.RangerManager;
-import splintersoar.soar.*;
-import laserloc.*;
-import lcm.lcm.*;
+import splintersoar.soar.SoarInterface;
 
 public class SplinterSoar implements OrcInputProducer
 {
@@ -30,38 +29,10 @@ public class SplinterSoar implements OrcInputProducer
 	
 	boolean running = true;
 
-	public static final Logger logger = Logger.getLogger(Logger.GLOBAL_LOGGER_NAME);
+	private Logger logger;
 	
-	public class TextFormatter extends Formatter {
-		SimpleDateFormat format = new SimpleDateFormat("HH:mm:ss");
-		
-		public TextFormatter() {
-			super();
-		}
-
-		public String format(LogRecord record) {
-			Date d = new Date(record.getMillis());
-			StringBuilder output = new StringBuilder();
-			output.append( format.format( d ) );
-			output.append( " " );
-			output.append( record.getLevel().getName() );
-			output.append( " " );
-			output.append( record.getMessage() );
-			output.append( java.lang.System.getProperty("line.separator") );
-			return output.toString();
-		}
-
-	}
-
 	public SplinterSoar( String args [] )
 	{
-		ConsoleHandler handler = new ConsoleHandler();
-		handler.setFormatter(new TextFormatter());
-		handler.setLevel( Level.ALL );
-		logger.setLevel( Level.ALL );
-		logger.addHandler(handler);
-		logger.setUseParentHandlers( false );
-
 		if ( args.length != 1 ) 
 		{
 		    System.out.println("Usage: splintersoar <configfile>");
@@ -76,20 +47,20 @@ public class SplinterSoar implements OrcInputProducer
 		} 
 		catch ( IOException ex ) 
 		{
-		    SplinterSoar.logger.severe( "Couldn't open config file: " + args[0] );
+		    logger.severe( "Couldn't open config file: " + args[0] );
 		    return;
 		}
 		
-		String agent = config.requireString( "soar.agent" );
+		logger = LogFactory.createSimpleLogger( Level.ALL );
 		
 		logger.info( "Starting orc interface" );
-		orc = new OrcInterface( this );
+		orc = new OrcInterface( config, this );
 
 		logger.info( "Starting ranger" );
 		ranger = new RangerManager();
 
-		logger.info( "Starting Soar interface with agent: " + agent );
-		soar = new SoarInterface( orc, ranger, agent );
+		logger.info( "Starting Soar interface" );
+		soar = new SoarInterface( orc, ranger, config );
 		
 		logger.info( "Creating game pad for override" );
 		gamePad = new GamePad();
@@ -188,7 +159,7 @@ public class SplinterSoar implements OrcInputProducer
 			}
 			else
 			{
-				SplinterSoar.logger.info( "Stop Soar requested" ); 
+				logger.info( "Stop Soar requested" ); 
 				soar.stop();
 			}
 		}
@@ -205,7 +176,9 @@ public class SplinterSoar implements OrcInputProducer
 			soar.shutdown();
 			orc.shutdown();
 			
+			System.out.flush();
 			System.err.println( "Terminated" );
+			System.err.flush();
 		}
 	}
 	

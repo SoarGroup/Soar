@@ -4,16 +4,18 @@ import java.io.DataInputStream;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.Arrays;
-import java.util.Calendar;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
-import splintersoar.SplinterSoar;
+import lcm.lcm.LCM;
+import lcm.lcm.LCMSubscriber;
+import lcmtypes.laser_t;
+
+import splintersoar.LogFactory;
 import splintersoar.lcmtypes.coords_t;
 
-import lcm.lcm.*;
-import lcmtypes.*;
 import erp.config.Config;
 import erp.config.ConfigFile;
-import erp.geom.*;
 
 // TODO: don't assert
 public class LaserLoc implements LCMSubscriber
@@ -24,36 +26,59 @@ public class LaserLoc implements LCMSubscriber
 	}
 
 	public static final String laser_channel = "LASER_LOC";
-	public static final String pose_channel = "POSE";
+	public static final String coords_channel = "COORDS";
 
+	private class Configuration
+	{
+		double laser_x = 0; // if we assume the laser is at the origin facing up the y-axis, the next 3 constants are all 0
+		double laser_y = 0;
+		double laser_yaw_adjust = 0; // amount to adjust for laser's yaw = 90 - laser's yaw = 0 if laser is facing positive y directly
+		double laser_dist_adjustment = 0; // radius of tube?
+		long update_period = 5; // nanoseconds between status updates
+		long activity_timeout = 5;
+
+		Configuration( Config config )
+		{
+			laser_x = config.getDouble( "laser_x", laser_x );
+			laser_y = config.getDouble( "laser_y", laser_y );
+			laser_yaw_adjust = config.getDouble( "laser_yaw_adjust", laser_yaw_adjust );
+			laser_dist_adjustment = config.getDouble( "laser_dist_adjustment", laser_dist_adjustment );
+			update_period = config.getInt( "update_period", (int)update_period );
+			update_period *= 1000000000;
+			activity_timeout = config.getInt( "activity_timeout", (int)activity_timeout );
+			activity_timeout *= 1000000000;
+		}
+	}
+	
+	private Configuration configuration;
+	
 	// Assumptions:
 		// robot_z is constant
 		// robot starts at a known angle
 		// this level only reports laser data (next layer up decided whether to use odometry or not)
 		// distances in meters
 	
-	// Configuration:
-	private static double robot_starting_yaw = 0;
-	private static double laser_x = 0; // if we assume the laser is at the origin facing up the y-axis, the next 3 constants are all 0
-	private static double laser_y = 0;
-	private static double laser_yaw_adjust = 0; // amount to adjust for laser's yaw = 90 - laser's yaw = 0 if laser is facing positive y directly
-	private static double laser_dist_adjustment = 0; // radius of tube?
-	private static double translation_threshold = 0; // minimum translation distance to update x,y location, 0.05 total guess
-	private static int update_period = 5 * 1000000000; // nanoseconds between status updates
-	private static boolean verbose = false;
-	// end constants
-	
 	// regular state
 	laser_t laser_data;
-	coords_t estimated_coords;
 	
 	int droppedLocPackets = 0;
 	long lastStatusUpdate = System.nanoTime();
 
 	LCM lcm;
+
+	boolean inactive = true;
+    SimpleDateFormat sdf = new SimpleDateFormat("HH:mm:ss");
+	long nanolastactivity = System.nanoTime();
+	long currentTimeout = configuration.activity_timeout;
+
+	private Logger logger;
 	
-	public LaserLoc()
+	public LaserLoc( Config config )
 	{
+		configuration = new Configuration( config );
+
+		logger = LogFactory.createSimpleLogger( Level.ALL );
+		
 		printHeaderLine();
 	}
 	
@@ -64,17 +89,9 @@ public class LaserLoc implements LCMSubscriber
 	
 	public void printHeaderLine()
 	{
-		if ( verbose )
-		{
-			System.out.format( "%10s %10s%n", "x", "y" );
-		}
+		logger.fine( String.format( "%10s %10s%n", "x", "y" ) );
 	}
 
-	boolean inactive = true;
-    SimpleDateFormat sdf = new SimpleDateFormat("HH:mm:ss");
-	long nanolastactivity = System.nanoTime();
-	final long ACTIVITY_TIMEOUT = 5 * 1000000000;
-	long currentTimeout = ACTIVITY_TIMEOUT;
 	private void updatePose()
 	{
 		long nanotime = System.nanoTime();
@@ -82,19 +99,19 @@ public class LaserLoc implements LCMSubscriber
 		if ( nanotime - nanolastactivity > currentTimeout )
 		{
 			inactive = true;
-			System.out.println( sdf.format(Calendar.getInstance().getTime()) + ": no activity in last " + ( currentTimeout / 1000000000 ) + " seconds" );
+			logger.warning( String.format("no activity in last " + ( currentTimeout / 1000000000 ) + " seconds" ) );
 			nanolastactivity = nanotime;
-			currentTimeout += ACTIVITY_TIMEOUT;
+			currentTimeout += configuration.activity_timeout;
 		}
 		
 		// occasionally print out status update
 		long nanoelapsed = nanotime - lastStatusUpdate;
-		if ( nanoelapsed > update_period )
+		if ( nanoelapsed > configuration.update_period )
 		{
 			if ( droppedLocPackets > 0 )
 			{
 				float dropRate = droppedLocPackets / (nanoelapsed / 1000000000);
-				System.err.format( "LaserLoc: dropping %5.1f %s packets/sec%n", dropRate, laser_channel );
+				logger.warning( String.format( "LaserLoc: dropping %5.1f %s packets/sec%n", dropRate, laser_channel ) );
 				printHeaderLine();
 			}
 			
@@ -115,67 +132,26 @@ public class LaserLoc implements LCMSubscriber
 		}
 		
 		nanolastactivity = nanotime;
-		currentTimeout = ACTIVITY_TIMEOUT;
+		currentTimeout = configuration.activity_timeout;
 		
 		if ( inactive )
 		{
-			System.out.println( sdf.format(Calendar.getInstance().getTime()) + ": receiving data" );
+			logger.info( "receiving data" );
 			inactive = false;
 		}
 		
-		if ( estimated_coords == null )
-		{
-			// initialize
-			estimated_coords = getRobotXY( laser_data );
-			printOldPose();
+		coords_t estimated_coords = getRobotXY( laser_data );
 
-			estimated_coords.utime = laser_data.utime;
-			if ( lcm != null )
-			{
-				lcm.publish( pose_channel, estimated_coords );
-			}
+		logger.fine( String.format( "%10.3f %10.3f%n", estimated_coords.xy[ 0 ], estimated_coords.xy[ 1 ] ) );
 
-			laser_data = null;
-			return;
-		}
-		
-		coords_t new_estimated_coords = getRobotXY( laser_data );
-		if ( new_estimated_coords == null )
-		{
-			laser_data = null;
-			return;
-		}
-		
-		double translation_dist = Geometry.distance( estimated_coords.xy, new_estimated_coords.xy );
-		
-		// only update location if moved enough. Don't want Soar to thrash on constantly changing x,y due to noise
-		// this also means this loop can run as fast as it can and we'll still get reasonable updates
-		// (i.e., we don't have to worry about robot not moving enough between updates)
-		boolean movedEnough = translation_dist >= translation_threshold;
-		
-		if( movedEnough )
-		{
-			System.arraycopy( new_estimated_coords.xy, 0, estimated_coords.xy, 0, new_estimated_coords.xy.length );
-			
-			estimated_coords.utime = laser_data.utime;
-			if ( lcm != null )
-			{
-				lcm.publish( pose_channel, estimated_coords );
-			}
+		estimated_coords.utime = laser_data.utime;
 
-			printOldPose();
+		if ( lcm != null )
+		{
+			lcm.publish( coords_channel, estimated_coords );
 		}
+
 		laser_data = null;
-	}
-
-	private void printOldPose() 
-	{
-		if ( verbose )
-		{
-			System.out.format( "%10.3f %10.3f%n", 
-					estimated_coords.xy[ 0 ], 
-					estimated_coords.xy[ 1 ] );
-		}
 	}
 
 	private coords_t getRobotXY( laser_t laser_data )
@@ -194,13 +170,13 @@ public class LaserLoc implements LCMSubscriber
 		}
 		assert smallest_range_index != -1;
 		
-		double laser_angle = laser_yaw_adjust + laser_data.rad0 + laser_data.radstep * smallest_range_index;
+		double laser_angle = configuration.laser_yaw_adjust + laser_data.rad0 + laser_data.radstep * smallest_range_index;
 		
-		double laser_dist = smallest_range + laser_dist_adjustment;
+		double laser_dist = smallest_range + configuration.laser_dist_adjustment;
 		
 		coords_t new_coords = new coords_t();
-		new_coords.xy[ 0 ] = laser_x + laser_dist * Math.cos( laser_angle );
-		new_coords.xy[ 1 ] = laser_y + laser_dist * Math.sin( laser_angle );
+		new_coords.xy[ 0 ] = configuration.laser_x + laser_dist * Math.cos( laser_angle );
+		new_coords.xy[ 1 ] = configuration.laser_y + laser_dist * Math.sin( laser_angle );
 		
 		return new_coords;
 	}
@@ -322,27 +298,18 @@ public class LaserLoc implements LCMSubscriber
 		} 
 		catch ( IOException ex ) 
 		{
-		    SplinterSoar.logger.severe( "Couldn't open config file: " + args[0] );
+			System.err.println( "Couldn't open config file: " + args[0] );
 		    return;
 		}
 		
 		// set up constants
-		LaserLoc.robot_starting_yaw = config.getDouble( "robot_starting_yaw", 0 );
-		LaserLoc.laser_x = config.getDouble( "laser_x", 0 );
-		LaserLoc.laser_y = config.getDouble( "laser_y", 0 );
-		LaserLoc.laser_yaw_adjust = config.getDouble( "laser_yaw_adjust", 0 );
-		LaserLoc.laser_dist_adjustment = config.getDouble( "laser_dist_adjustment", 0 );
-		LaserLoc.translation_threshold = config.getDouble( "translation_threshold", 0 );
-		LaserLoc.update_period = config.getInt( "update_period", 5 );
-		LaserLoc.verbose = config.getBoolean( "verbose", false );
-		
-		LaserLoc lloc;
+		LaserLoc lloc = null;
 		if ( config.getBoolean( "testing", false ) )
 		{
 			for ( int current_test_index = 0; current_test_index < test_data.length; ++current_test_index )
 			{
-				SplinterSoar.logger.info( "Starting test " + ( current_test_index + 1 ) );
-				lloc = new LaserLoc();
+				lloc = new LaserLoc( config );
+				lloc.logger.info( "Starting test " + ( current_test_index + 1 ) );
 
 				for ( int current_test_data_index = 0; current_test_data_index < test_data[ current_test_index ].length; ++current_test_data_index )
 				{
@@ -351,12 +318,19 @@ public class LaserLoc implements LCMSubscriber
 				}
 				
 			}
-			SplinterSoar.logger.info( "All tests done." );
+			if (lloc == null)
+			{
+				System.err.println( "No tests run." );
+			}
+			else
+			{
+				lloc.logger.info( "All tests done." );
+			}
 			System.exit( 0 );
 		}
 		
 		// Not testing
-		lloc = new LaserLoc();
+		lloc = new LaserLoc( config );
 
 		LCM lcm = LCM.getSingleton();
 		lcm.subscribe( laser_channel, lloc );

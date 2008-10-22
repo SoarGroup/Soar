@@ -1,7 +1,10 @@
 package splintersoar.soar;
 
-import sml.*;
-import splintersoar.*;
+import sml.Agent;
+import sml.FloatElement;
+import sml.Identifier;
+import sml.IntElement;
+import sml.StringElement;
 import splintersoar.orc.OrcOutput;
 import splintersoar.ranger.RangerState;
 
@@ -60,7 +63,6 @@ public class InputLinkManager {
 		
 		lastTime = splinterOutput.utime;
 		
-		SplinterSoar.logger.fine( "Initializing input link" );
 		Identifier inputLink = agent.GetInputLink();
 		
 		// Please see default-robot.vsa for input link definition and comments!

@@ -5,30 +5,56 @@ import java.io.IOException;
 import java.util.Arrays;
 import java.util.Timer;
 import java.util.TimerTask;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import laserloc.LaserLoc;
 import lcm.lcm.LCM;
 import lcm.lcm.LCMSubscriber;
-import lcmtypes.pose_t;
 
 import orc.Motor;
 import orc.Orc;
 import orc.OrcStatus;
-import splintersoar.SplinterSoar;
+import splintersoar.LogFactory;
+import splintersoar.lcmtypes.coords_t;
 import splintersoar.pf.ParticleFilter;
 
+import erp.config.Config;
 import erp.geom.Geometry;
 import erp.math.MathUtil;
 
 public class OrcInterface implements LCMSubscriber, OrcOutputProducer
 {
-	private Timer timer = new Timer();
-	static final long UPDATE_HZ = 30;
+	private Logger logger;
 	
+	private class Configuration
+	{
+		int updateHz = 30;
+		int [] ports = { 1, 0 };
+		boolean [] invert = { true, false };
+		long statusUpdatePeriodNanos = 5 * 1000000000L;
+		double maxThrottleAccellerationPeruSec = 2.0 / 1000000;
+		
+		Configuration( Config config )
+		{
+			updateHz = config.getInt( "orc.updateHz", configuration.updateHz );
+			ports = config.getInts( "orc.ports", configuration.ports );
+			invert = config.getBooleans( "orc.invert", configuration.invert );
+			
+			int statusUpdatePeriodSeconds = config.getInt( "orc.statusUpdatePeriodSeconds", 5 );
+			statusUpdatePeriodNanos = statusUpdatePeriodSeconds * 1000000000L;
+			
+			double maxThrottleAccelleration = config.getDouble( "orc.maxThrottleAccelleration", 2.0 );
+			maxThrottleAccellerationPeruSec = maxThrottleAccelleration  / 1000000;
+		}
+	}
+	
+	private Configuration configuration;
+	
+	private Timer timer = new Timer();
+
 	private Orc orc;
 	private Motor [] motor = new Motor[2];
-	private int [] ports = { 1, 0 };
-	private boolean [] invert = { true, false };
 
 	private OrcInputProducer inputProducer;
 	private OrcOutput previousOutput = new OrcOutput( 0 );
@@ -37,23 +63,27 @@ public class OrcInterface implements LCMSubscriber, OrcOutputProducer
 
 	private LCM lcm;
 	
-	private pose_t laserxy;
+	private coords_t laserxy;
 	
 	private double [] initialxy = null;
 
-	public OrcInterface( OrcInputProducer inputProducer )
+	public OrcInterface( Config config, OrcInputProducer inputProducer )
 	{
+		configuration = new Configuration( config );
+		
+		logger = LogFactory.createSimpleLogger( Level.ALL );
+
 		this.inputProducer = inputProducer;
 		
 		lcm = LCM.getSingleton();
-		lcm.subscribe( laserloc.LaserLoc.pose_channel, this );
+		lcm.subscribe( laserloc.LaserLoc.coords_channel, this );
 		
 		orc = Orc.makeOrc();
-		motor[0] = new Motor( orc, ports[0], invert[0] );
-		motor[1] = new Motor( orc, ports[1], invert[1] );
+		motor[0] = new Motor( orc, configuration.ports[0], configuration.invert[0] );
+		motor[1] = new Motor( orc, configuration.ports[1], configuration.invert[1] );
 		
-		SplinterSoar.logger.info( "Orc up" );
-		timer.schedule( new PFUpdateTask(), 0, 1000 / UPDATE_HZ );
+		logger.info( "Orc up" );
+		timer.schedule( new PFUpdateTask(), 0, 1000 / configuration.updateHz );
 	}
 	
 	@Override
@@ -68,26 +98,14 @@ public class OrcInterface implements LCMSubscriber, OrcOutputProducer
 	public void shutdown()
 	{
 		timer.cancel();
-		SplinterSoar.logger.info( "Orc down" );
+		logger.info( "Orc down" );
 	}
-
-    public static double [] subtract( double a[], double b[], int len )
-    {
-		double r[] = new double[len];
-	
-		for (int i = 0; i < len; i++)
-		{
-		    r[i] = a[i] - b[i];
-		}
-	
-		return r;
-    }
 
 	class PFUpdateTask extends TimerTask
 	{		
 		int runs = 0;
 		long statustimestamp = 0;
-		final long STATUS_UPDATE_NANOSECS = 5 * 1000000000L; // 5 seconds
+		long statusUpdatePeriodNanos;
 		ParticleFilter pf = new ParticleFilter();
 		
 		public void run()
@@ -103,14 +121,14 @@ public class OrcInterface implements LCMSubscriber, OrcOutputProducer
 	
 				// assemble output
 				currentOutput = new OrcOutput( currentStatus.utime );
-				currentOutput.motorPosition[0] = currentStatus.qeiPosition[ports[0]] * (invert[0] ? -1 : 1);
-				currentOutput.motorPosition[1] = currentStatus.qeiPosition[ports[1]] * (invert[1] ? -1 : 1);
+				currentOutput.motorPosition[0] = currentStatus.qeiPosition[configuration.ports[0]] * (configuration.invert[0] ? -1 : 1);
+				currentOutput.motorPosition[1] = currentStatus.qeiPosition[configuration.ports[1]] * (configuration.invert[1] ? -1 : 1);
 			}
 
 			OrcInput input = inputProducer.getInput();
 			if ( input == null )
 			{
-				SplinterSoar.logger.finest( "No input, using default" );
+				logger.finest( "No input, using default" );
 				input = new OrcInput();
 			}
 			
@@ -131,12 +149,11 @@ public class OrcInterface implements LCMSubscriber, OrcOutputProducer
 				{
 					if ( initialxy == null )
 					{
-						initialxy = Arrays.copyOf( laserxy.pos, 2 );
-						System.out.format( "initialxy: %5.2f, %5.2f%n", initialxy[0], initialxy[1] );
+						initialxy = Arrays.copyOf( laserxy.xy, 2 );
+						logger.finest( String.format( "initialxy: %5.2f, %5.2f%n", initialxy[0], initialxy[1] ) );
 					}
 					
-					// FIXME can delete when laserxy is really 2 coords instead of overloaded pose
-					adjustedlaserxy = subtract( laserxy.pos, initialxy, 2 );
+					adjustedlaserxy = Geometry.subtract( laserxy.xy, initialxy );
 
 					laserxy = null;
 				}
@@ -145,8 +162,7 @@ public class OrcInterface implements LCMSubscriber, OrcOutputProducer
 				currentOutput.xyt = pf.update( deltaxyt, adjustedlaserxy );
 				
 				currentOutput.xyt[2] = MathUtil.mod2pi( currentOutput.xyt[2] );
-				System.out.format( "%10.6f %10.6f %10.6f%n", currentOutput.xyt[0], currentOutput.xyt[1], Math.toDegrees( currentOutput.xyt[2] ) );
-
+				logger.finest( String.format( "%10.6f %10.6f %10.6f%n", currentOutput.xyt[0], currentOutput.xyt[1], Math.toDegrees( currentOutput.xyt[2] ) ) );
 			}
 			
 			// if target yaw command, write it out now since we have location
@@ -182,10 +198,10 @@ public class OrcInterface implements LCMSubscriber, OrcOutputProducer
 			{
 				statustimestamp = nanotime;
 			}
-			else if ( nanotime - statustimestamp > STATUS_UPDATE_NANOSECS ) 
+			else if ( nanotime - statustimestamp > statusUpdatePeriodNanos ) 
 			{
 				double updatesPerSecond = this.runs / ( ( nanotime - statustimestamp ) / 1000000000.0 );
-				System.out.format( "Orc updates running at %6.2f per sec%n", updatesPerSecond );
+				logger.fine( String.format( "Orc updates running at %6.2f per sec%n", updatesPerSecond ) );
 				statustimestamp = nanotime;
 				runs = 0;
 			}
@@ -200,7 +216,7 @@ public class OrcInterface implements LCMSubscriber, OrcOutputProducer
 	@Override
 	public void messageReceived( LCM lcm, String channel, DataInputStream ins ) 
 	{
-		if ( channel.equals( LaserLoc.pose_channel ) )
+		if ( channel.equals( LaserLoc.coords_channel ) )
 		{
 			if ( laserxy != null )
 			{
@@ -209,18 +225,16 @@ public class OrcInterface implements LCMSubscriber, OrcOutputProducer
 
 			try 
 			{
-				laserxy = new pose_t( ins );
+				laserxy = new coords_t( ins );
 			} 
 			catch ( IOException ex ) 
 			{
-				SplinterSoar.logger.warning( "Error decoding laserxy message: " + ex );
+				logger.warning( "Error decoding laserxy message: " + ex );
 			}
 		}
 	}
 
-	public static double maxThrottleAccellerationPeruSec = 2.0 / 1000000;
-	
-	private long lastutime = 0;
+	private long throttleAcceluTime = 0;
 	private void commandMotors( long utime, double [] throttle )
 	{
 		assert throttle[0] <= 1;
@@ -228,19 +242,19 @@ public class OrcInterface implements LCMSubscriber, OrcOutputProducer
 		assert throttle[1] <= 1;
 		assert throttle[1] >= -1;
 		
-		if ( lastutime == 0 )
+		if ( throttleAcceluTime == 0 )
 		{
-			lastutime = utime;
+			throttleAcceluTime = utime;
 			return;
 		}
 		
-		long elapsed = utime - lastutime; 
+		long elapsed = utime - throttleAcceluTime; 
 		
 		double [] delta = Geometry.subtract( throttle, command );
 
 		if ( delta[0] > 0 )
 		{
-			double newDelta = Math.min( delta[0], elapsed * maxThrottleAccellerationPeruSec );
+			double newDelta = Math.min( delta[0], elapsed * configuration.maxThrottleAccellerationPeruSec );
 			if ( delta[0] != newDelta )
 			{
 				delta[0] = newDelta;
@@ -248,7 +262,7 @@ public class OrcInterface implements LCMSubscriber, OrcOutputProducer
 		}
 		else if ( delta[0] < 0 )
 		{
-			double newDelta = Math.max( delta[0], -1 * elapsed * maxThrottleAccellerationPeruSec );
+			double newDelta = Math.max( delta[0], -1 * elapsed * configuration.maxThrottleAccellerationPeruSec );
 			if ( delta[0] != newDelta )
 			{
 				delta[0] = newDelta;
@@ -256,7 +270,7 @@ public class OrcInterface implements LCMSubscriber, OrcOutputProducer
 		}
 		if ( delta[1] > 0 )
 		{
-			double newDelta = Math.min( delta[1], elapsed * maxThrottleAccellerationPeruSec );
+			double newDelta = Math.min( delta[1], elapsed * configuration.maxThrottleAccellerationPeruSec );
 			if ( delta[1] != newDelta )
 			{
 				delta[1] = newDelta;
@@ -264,7 +278,7 @@ public class OrcInterface implements LCMSubscriber, OrcOutputProducer
 		}
 		else if ( delta[1] < 0 )
 		{
-			double newDelta = Math.max( delta[1], -1 * elapsed * maxThrottleAccellerationPeruSec );
+			double newDelta = Math.max( delta[1], -1 * elapsed * configuration.maxThrottleAccellerationPeruSec );
 			if ( delta[1] != newDelta )
 			{
 				delta[1] = newDelta;
@@ -274,7 +288,7 @@ public class OrcInterface implements LCMSubscriber, OrcOutputProducer
 		command[0] += delta[0];
 		command[1] += delta[1];
 		
-		lastutime += elapsed;
+		throttleAcceluTime += elapsed;
 		
 		motor[0].setPWM( command[0] );
 		motor[1].setPWM( command[1] );

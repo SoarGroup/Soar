@@ -1,7 +1,13 @@
 package splintersoar.soar;
 
-import sml.*;
-import splintersoar.*;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
+import erp.config.Config;
+import sml.Agent;
+import sml.Kernel;
+import sml.smlUpdateEventId;
+import splintersoar.LogFactory;
 import splintersoar.orc.OrcInput;
 import splintersoar.orc.OrcOutput;
 import splintersoar.orc.OrcOutputProducer;
@@ -10,6 +16,20 @@ import splintersoar.ranger.RangerStateProducer;
 
 public class SoarInterface implements Kernel.UpdateEventInterface
 {
+	private Logger logger;
+	
+	private class Configuration
+	{
+		String productions;
+		
+		Configuration( Config config )
+		{
+			productions = config.requireString( "soar.agent" );
+		}
+	}
+	
+	private Configuration configuration;
+	
 	Kernel kernel;
 	Agent agent;
 	InputLinkManager input;
@@ -18,16 +38,18 @@ public class SoarInterface implements Kernel.UpdateEventInterface
 	OrcOutputProducer splinterOutputProducer;
 	RangerStateProducer rangerStateProducer;
 	
-	static final double baselineMeters = 0.42545;
-
-	public SoarInterface( OrcOutputProducer splinterOutputProducer, RangerStateProducer rangerStateProducer, String productions )
+	public SoarInterface( OrcOutputProducer splinterOutputProducer, RangerStateProducer rangerStateProducer, Config config )
 	{
+		configuration = new Configuration( config );
+
+		logger = LogFactory.createSimpleLogger( Level.ALL );
+
 		this.splinterOutputProducer = splinterOutputProducer;
 		
 		kernel = Kernel.CreateKernelInNewThread();
 		if ( kernel.HadError() )
 		{
-			SplinterSoar.logger.warning( "Soar error: " + kernel.GetLastErrorDescription() );
+			logger.warning( "Soar error: " + kernel.GetLastErrorDescription() );
 			System.exit(1);
 		}
 
@@ -36,13 +58,12 @@ public class SoarInterface implements Kernel.UpdateEventInterface
 		agent = kernel.CreateAgent( "soar" );
 		if ( kernel.HadError() )
 		{
-			SplinterSoar.logger.warning( "Soar error: " + kernel.GetLastErrorDescription() );
+			logger.warning( "Soar error: " + kernel.GetLastErrorDescription() );
 			System.exit(1);
 		}
 		
 		// load productions
-		assert productions != null;
-		agent.LoadProductions( productions );
+		agent.LoadProductions( configuration.productions );
 		
 		waypoints = new Waypoints( agent );
 
@@ -51,7 +72,7 @@ public class SoarInterface implements Kernel.UpdateEventInterface
 		// wait for valid data
 		while ( splinterOutput.utime == 0 )
 		{
-			SplinterSoar.logger.fine( "Waiting for valid splinter state" );
+			logger.info( "Waiting for valid splinter state" );
 			try 
 			{
 				Thread.sleep( 200 );
@@ -59,6 +80,7 @@ public class SoarInterface implements Kernel.UpdateEventInterface
 			{}
 			splinterOutput = splinterOutputProducer.getOutput();
 		}
+		logger.info( "Have splinter state" );
 		
 		RangerState rangerState = rangerStateProducer.getRangerState();
 		
@@ -101,7 +123,7 @@ public class SoarInterface implements Kernel.UpdateEventInterface
 		
 		kernel.Shutdown();
 		kernel.delete();
-		SplinterSoar.logger.info( "Soar interface down" ); 
+		logger.info( "Soar interface down" ); 
 	}
 	
 	@Override
@@ -109,7 +131,7 @@ public class SoarInterface implements Kernel.UpdateEventInterface
 	{
 		if ( stopSoar )
 		{
-			SplinterSoar.logger.info( "Stopping Soar" ); 
+			logger.info( "Stopping Soar" ); 
 			kernel.StopAllAgents();
 		}
 		
@@ -127,12 +149,12 @@ public class SoarInterface implements Kernel.UpdateEventInterface
 		}
 		catch ( NullPointerException unhandled )
 		{
-			SplinterSoar.logger.warning( "Unhandled null pointer exception in updateEventHandler" );
+			logger.warning( "Unhandled null pointer exception in updateEventHandler" );
 			unhandled.printStackTrace();
 		}
 		catch ( Throwable unhandled )
 		{
-			SplinterSoar.logger.warning( "Unhandled throwable in updateEventHandler" );
+			logger.warning( "Unhandled throwable in updateEventHandler" );
 			unhandled.printStackTrace();
 		}
 	}
