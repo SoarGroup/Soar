@@ -3,7 +3,10 @@ package laserloc;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.io.DataInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.PrintStream;
 import java.util.Arrays;
 
 import javax.swing.JFrame;
@@ -26,46 +29,56 @@ public class RoomMapper implements LCMSubscriber
 	float radstep;
 	
 	JFrame jf;
-	VisWorld vw = new VisWorld();
-	VisCanvas vc = new VisCanvas(vw);
 	
-	public RoomMapper( boolean testing )
+	public RoomMapper( boolean display )
 	{
-		if ( !testing )
+		lcm = LCM.getSingleton();
+		lcm.subscribe( LaserLoc.laser_channel, this );
+	
+		int readings = 75 * 5; // 5 seconds at 75 Hz
+		while ( readings-- > 0 )
 		{
-			lcm = LCM.getSingleton();
-			lcm.subscribe( LaserLoc.laser_channel, this );
+			update();
+		}
 		
-			int readings = 75 * 5; // 5 seconds at 75 Hz
-			while ( readings-- > 0 )
+		if ( display )
+		{
+			VisWorld vw = new VisWorld();
+			VisCanvas vc = new VisCanvas(vw);
+	
+			jf = new JFrame("RoomMapper");
+			jf.setLayout(new BorderLayout());
+			jf.add(vc, BorderLayout.CENTER);
+			jf.setSize(600, 500);
+			jf.setVisible(true);
+			
+			VisWorld.Buffer vb = vw.getBuffer("map");
+		
+			displayRanges(vb, false);
+		
+			float bufferMeters = .25f;
+			for ( int index = 0; index < ranges.length; ++index )
 			{
-				update();
+				ranges[index] -= bufferMeters;
 			}
-		} else {
-			ranges = new float[180];
-			Arrays.fill( ranges, 3.0f );
-			radstep = (float)Math.toRadians( 1 );
+	
+			displayRanges(vb, true);
+			
+			vb.switchBuffer();
 		}
 		
-		jf = new JFrame("RoomMapper");
-		jf.setLayout(new BorderLayout());
-		jf.add(vc, BorderLayout.CENTER);
-		jf.setSize(600, 500);
-		jf.setVisible(true);
-		
-		VisWorld.Buffer vb = vw.getBuffer("map");
-		
-		displayRanges(vb, false);
-		
-		float bufferMeters = .25f;
-		for ( int index = 0; index < ranges.length; ++index )
-		{
-			ranges[index] -= bufferMeters;
-		}
+		FileOutputStream out;
+		try {
+			out = new FileOutputStream("map.txt");
+			PrintStream p = new PrintStream( out );
 
-		displayRanges(vb, true);
-		
-		vb.switchBuffer();
+	        p.print( "map=" );
+	        p.print( Arrays.toString( ranges ));
+	        p.print( ";" );
+	        p.close();
+		} catch (FileNotFoundException e) {
+			e.printStackTrace();
+		}
 	}
 	
 	void displayRanges(VisWorld.Buffer vb, boolean buffer)
@@ -80,11 +93,6 @@ public class RoomMapper implements LCMSubscriber
 			vb.addBuffered(new VisData( xy, new VisDataPointStyle(buffer ? Color.red : Color.black, 2)));
 			
 			angle += radstep;
-		}
-		
-		if ( buffer == true ) 
-		{
-			System.out.println( Arrays.toString( ranges ));
 		}
 	}
 	

@@ -21,7 +21,7 @@ public class RangerManager implements LCMSubscriber, RangerStateProducer
 	
 	public RangerManager()
 	{
-		logger = LogFactory.simpleLogger( Level.ALL );
+		logger = LogFactory.simpleLogger(  );
 		
 		lcm = LCM.getSingleton();
 		lcm.subscribe( LASER_FRONT, this );

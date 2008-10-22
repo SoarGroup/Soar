@@ -50,7 +50,9 @@ public class SplinterSoar
 		    return;
 		}
 		
-		logger = LogFactory.simpleLogger( Level.ALL );
+		logger = LogFactory.simpleLogger( );
+		
+		lcm = LCM.getSingleton();
 		
 		logger.info( "Starting orc interface" );
 		orc = new OrcInterface( config );
@@ -103,7 +105,7 @@ public class SplinterSoar
 					overrideCommand.left = 0;
 					overrideCommand.right = 0;
 					overrideCommand.utime = System.nanoTime() / 1000;
-					lcm.publish( "MOTOR_COMMAND", overrideCommand );
+					lcm.publish( "DRIVE_COMMANDS", overrideCommand );
 				}
 			}
 			
@@ -137,12 +139,11 @@ public class SplinterSoar
 					newCommand.right /= max;
 				}
 			}
-			
 			if ( ( newCommand.left != overrideCommand.left ) || ( newCommand.right != overrideCommand.right ) )
 			{
 				overrideCommand = newCommand;
 				overrideCommand.utime = System.nanoTime() / 1000;
-				lcm.publish( "MOTOR_COMMAND", overrideCommand );
+				lcm.publish( "DRIVE_COMMANDS", overrideCommand );
 			}
 		}
 	}

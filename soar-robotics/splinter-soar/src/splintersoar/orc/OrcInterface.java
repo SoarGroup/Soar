@@ -11,6 +11,7 @@ import java.util.logging.Logger;
 import laserloc.LaserLoc;
 import lcm.lcm.LCM;
 import lcm.lcm.LCMSubscriber;
+import lcmtypes.pose_t;
 
 import orc.Motor;
 import orc.Orc;
@@ -34,7 +35,6 @@ public class OrcInterface implements LCMSubscriber
 		int updateHz = 30;
 		int [] ports = { 1, 0 };
 		boolean [] invert = { true, false };
-		long statusUpdatePeriodNanos = 5 * 1000000000L;
 		double maxThrottleAccellerationPeruSec = 2.0 / 1000000;
 		// geometry, configuration
 		double baselineMeters = 0.383;
@@ -42,16 +42,13 @@ public class OrcInterface implements LCMSubscriber
 		double lengthMeters = 0.64;
 		double widthMeters = 0.42;
 		String splinterPoseChannel = "SPLINTER_POSE";
-		String driveCommandChannel = "MOTOR_COMMANDS";
+		String driveCommandChannel = "DRIVE_COMMANDS";
 		
 		Configuration( Config config )
 		{
-			updateHz = config.getInt( "orc.updateHz", configuration.updateHz );
-			ports = config.getInts( "orc.ports", configuration.ports );
-			invert = config.getBooleans( "orc.invert", configuration.invert );
-			
-			int statusUpdatePeriodSeconds = config.getInt( "orc.statusUpdatePeriodSeconds", 5 );
-			statusUpdatePeriodNanos = statusUpdatePeriodSeconds * 1000000000L;
+			updateHz = config.getInt( "orc.updateHz", updateHz );
+			ports = config.getInts( "orc.ports", ports );
+			invert = config.getBooleans( "orc.invert", invert );
 			
 			double maxThrottleAccelleration = config.getDouble( "orc.maxThrottleAccelleration", 2.0 );
 			maxThrottleAccellerationPeruSec = maxThrottleAccelleration  / 1000000;
@@ -87,8 +84,12 @@ public class OrcInterface implements LCMSubscriber
 	public OrcInterface( Config config )
 	{
 		configuration = new Configuration( config );
+
+		previousState.pose = new pose_t();
+		previousState.pose.orientation = new double [4];
+		previousState.pose.pos = new double [3];
 		
-		logger = LogFactory.simpleLogger( Level.ALL );
+		logger = LogFactory.simpleLogger( );
 
 		lcm = LCM.getSingleton();
 		lcm.subscribe( laserloc.LaserLoc.coords_channel, this );
@@ -164,7 +165,7 @@ public class OrcInterface implements LCMSubscriber
 				// adjustedlaserxy could be null
 				currentState.pose = pf.update( deltaxyt, adjustedlaserxy );
 				
-				logger.finest( String.format( "%10.6f %10.6f %10.6f%n", 
+				logger.finest( String.format( "%10.6f %10.6f %10.6f", 
 						currentState.pose.pos[0], currentState.pose.pos[1], 
 						Math.toDegrees( Geometry.quatToRollPitchYaw( previousState.pose.orientation )[2] ) ) );
 			}
@@ -180,21 +181,6 @@ public class OrcInterface implements LCMSubscriber
 			// command motors
 			commandMotors( currentState.utime );
 			
-			// status message
-			runs += 1;
-			long nanotime = System.nanoTime();
-			if ( statustimestamp == 0 )
-			{
-				statustimestamp = nanotime;
-			}
-			else if ( nanotime - statustimestamp > statusUpdatePeriodNanos ) 
-			{
-				double updatesPerSecond = this.runs / ( ( nanotime - statustimestamp ) / 1000000000.0 );
-				logger.fine( String.format( "Orc updates running at %6.2f per sec%n", updatesPerSecond ) );
-				statustimestamp = nanotime;
-				runs = 0;
-			}
-
 			previousState = currentState;
 		}
 	}
@@ -218,7 +204,7 @@ public class OrcInterface implements LCMSubscriber
 				logger.warning( "Error decoding laserxy message: " + ex );
 			}
 		}
-		else if ( channel.equals( LaserLoc.coords_channel ) )
+		else if ( channel.equals( configuration.driveCommandChannel ) )
 		{
 			try 
 			{
@@ -248,9 +234,9 @@ public class OrcInterface implements LCMSubscriber
 		}
 		if ( newDriveCommand == null )
 		{
-			logger.finest( "No input available" );
 			return;
 		}
+		//logger.finest( String.format("Got input %f %f", newDriveCommand.left, newDriveCommand.right)  );
 		
 		if ( throttleAcceluTime == 0 )
 		{

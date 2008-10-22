@@ -11,6 +11,7 @@ import jmat.LinAlg;
 
 import splintersoar.lcmtypes.splinterstate_t;
 import splintersoar.lcmtypes.waypoints_t;
+import splintersoar.lcmtypes.xy_t;
 
 import lcm.lcm.LCM;
 import lcm.lcm.LCMSubscriber;
@@ -31,11 +32,14 @@ public class Viewer implements LCMSubscriber
 	LCM lcm;
 	splinterstate_t splinterPose;
 	waypoints_t waypoints;
+	xy_t laserxy;
 	
 	public Viewer()
 	{
 		lcm = LCM.getSingleton();
 		lcm.subscribe( "SPLINTER_POSE", this );
+		lcm.subscribe( "WAYPOINTS", this );
+		lcm.subscribe( "COORDS", this );
 
 
 		jf = new JFrame("RoomMapper");
@@ -48,31 +52,28 @@ public class Viewer implements LCMSubscriber
 
 		while ( true )
 		{
-			try {
-				this.wait();
-			} catch (InterruptedException e) {}
-			
 			if ( splinterPose != null )
 			{
 				splinterstate_t sp;
-				synchronized ( splinterPose )
-				{
-					sp = splinterPose.copy();
-				}
+				sp = splinterPose.copy();
 				vb.addBuffered( new VisChain( LinAlg.quatPosToMatrix( sp.pose.orientation, sp.pose.pos),
 						new VisRobot(Color.blue)));
+			}
+			
+			if ( laserxy != null )
+			{
+				xy_t xy;
+				xy = laserxy.copy();
+				vb.addBuffered(new VisData( xy.xy, new VisDataPointStyle(Color.black, 4)));
 			}
 			
 			if ( waypoints != null )
 			{
 				waypoints_t wp;
-				synchronized ( waypoints )
-				{
-					wp = waypoints.copy();
-				}
+				wp = waypoints.copy();
 				for ( int index = 0; index < wp.nwaypoints; ++index )
 				{
-					vb.addBuffered(new VisData( wp.locations[index], new VisDataPointStyle(Color.green, 3)));
+					vb.addBuffered(new VisData( wp.locations[index].xy, new VisDataPointStyle(Color.green, 3)));
 				}
 			}
 			
@@ -87,11 +88,7 @@ public class Viewer implements LCMSubscriber
 		{
 			try 
 			{
-				synchronized ( splinterPose )
-				{
-					splinterPose = new splinterstate_t( ins );
-					splinterPose.notify();
-				}
+				splinterPose = new splinterstate_t( ins );
 			} 
 			catch ( IOException ex ) 
 			{
@@ -102,15 +99,22 @@ public class Viewer implements LCMSubscriber
 		{
 			try 
 			{
-				synchronized ( waypoints )
-				{
-					waypoints = new waypoints_t( ins );
-					waypoints.notify();
-				}
+				waypoints = new waypoints_t( ins );
 			} 
 			catch ( IOException ex ) 
 			{
 				System.err.println( "Error decoding waypoints_t message: " + ex );
+			}
+		}
+		else if ( channel.equals( "COORDS" ) )
+		{
+			try 
+			{
+				laserxy = new xy_t( ins );
+			} 
+			catch ( IOException ex ) 
+			{
+				System.err.println( "Error decoding xy_t message: " + ex );
 			}
 		}
 	}

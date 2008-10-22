@@ -1,9 +1,14 @@
 package splintersoar.soar;
 
+import java.io.DataInputStream;
+import java.io.IOException;
+import java.util.Arrays;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import laserloc.LaserLoc;
 import lcm.lcm.LCM;
+import lcm.lcm.LCMSubscriber;
 
 import erp.config.Config;
 import sml.Agent;
@@ -11,10 +16,11 @@ import sml.Kernel;
 import sml.smlUpdateEventId;
 import splintersoar.LogFactory;
 import splintersoar.lcmtypes.splinterstate_t;
+import splintersoar.lcmtypes.xy_t;
 import splintersoar.ranger.RangerState;
 import splintersoar.ranger.RangerStateProducer;
 
-public class SoarInterface implements Kernel.UpdateEventInterface
+public class SoarInterface implements Kernel.UpdateEventInterface, LCMSubscriber
 {
 	private Logger logger;
 	
@@ -44,8 +50,9 @@ public class SoarInterface implements Kernel.UpdateEventInterface
 		configuration = new Configuration( config );
 		
 		lcm = LCM.getSingleton();
+		lcm.subscribe( "SPLINTER_POSE", this );
 
-		logger = LogFactory.simpleLogger( Level.ALL );
+		logger = LogFactory.simpleLogger( );
 
 		kernel = Kernel.CreateKernelInNewThread();
 		if ( kernel.HadError() )
@@ -80,11 +87,14 @@ public class SoarInterface implements Kernel.UpdateEventInterface
 		}
 		logger.info( "Have splinter state" );
 		
+		splinterstate_t ss = splinterState.copy();
+		
+		this.rangerStateProducer = rangerStateProducer;
 		RangerState rangerState = rangerStateProducer.getRangerState();
 		
 		// rangerState could be null 
 		
-		input = new InputLinkManager( agent, waypoints, splinterState, rangerState );
+		input = new InputLinkManager( agent, waypoints, ss, rangerState );
 		output = new OutputLinkManager( agent, waypoints );
 		
 		kernel.RegisterForUpdateEvent( smlUpdateEventId.smlEVENT_AFTER_ALL_OUTPUT_PHASES, this, null );
@@ -139,12 +149,14 @@ public class SoarInterface implements Kernel.UpdateEventInterface
 		{
 			RangerState rangerState = rangerStateProducer.getRangerState();
 			
-			input.update( splinterState, rangerState );
-			SplinterInput splinterInput = output.update( splinterState );
+			splinterstate_t ss = splinterState.copy();
 			
-			if ( !overrideEnabled )
+			input.update( ss, rangerState );
+			SplinterInput splinterInput = output.update( ss );
+			
+			if ( splinterInput != null && !overrideEnabled )
 			{
-				lcm.publish( "MOTOR_COMMAND", splinterInput.generateDriveCommand( splinterState ) );
+				lcm.publish( "DRIVE_COMMANDS", splinterInput.generateDriveCommand( ss ) );
 			}
 		
 			waypoints.update(); // updates input link due to output link commands
@@ -165,6 +177,21 @@ public class SoarInterface implements Kernel.UpdateEventInterface
 
 	public void setOverride( boolean overrideEnabled ) {
 		this.overrideEnabled = overrideEnabled;
+	}
+
+	@Override
+	public void messageReceived(LCM lcm, String channel, DataInputStream ins) {
+		if ( channel.equals( "SPLINTER_POSE" ) )
+		{
+			try 
+			{
+				splinterState = new splinterstate_t( ins );
+			} 
+			catch ( IOException ex ) 
+			{
+				logger.warning( "Error decoding splinterstate_t message: " + ex );
+			}
+		}
 	}
 
 }

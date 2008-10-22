@@ -35,6 +35,7 @@ public class LaserLoc implements LCMSubscriber
 		double laser_dist_adjustment = 0; // radius of tube?
 		long update_period = 5; // nanoseconds between status updates
 		long activity_timeout = 5;
+		double [] maxRanges;
 
 		Configuration( Config config )
 		{
@@ -47,6 +48,12 @@ public class LaserLoc implements LCMSubscriber
 			update_period *= 1000000000;
 			activity_timeout = config.getInt( "activity_timeout", (int)activity_timeout );
 			activity_timeout *= 1000000000;
+			
+			try {
+				Config mapConfig = new ConfigFile( "map.txt" ).getConfig();
+				maxRanges = mapConfig.getDoubles( "map" );
+			} catch (IOException e) {
+			}
 		}
 	}
 	
@@ -71,18 +78,27 @@ public class LaserLoc implements LCMSubscriber
 	long currentTimeout;
 
 	private Logger logger;
+	RoomMapper mapper;
 	
 	public LaserLoc( Config config )
 	{
 		configuration = new Configuration( config );
-
-		logger = LogFactory.simpleLogger( Level.ALL );
+		
+		logger = LogFactory.simpleLogger( );
 		if ( !configuration.testing )
 		{
 			lcm = LCM.getSingleton();
 			lcm.subscribe( laser_channel, this );
+			lcm.subscribe( "MOTOR_COMMANDS", this );
+
 		}
 
+		if ( configuration.maxRanges == null )
+		{
+			logger.warning( "No map file found, using infinite maximums" );
+			Arrays.fill( configuration.maxRanges, Double.MAX_VALUE );
+		}
+		
 		currentTimeout = configuration.activity_timeout;
 		
 		printHeaderLine();
@@ -111,8 +127,8 @@ public class LaserLoc implements LCMSubscriber
 		{
 			if ( droppedLocPackets > 0 )
 			{
-				float dropRate = droppedLocPackets / (nanoelapsed / 1000000000);
-				logger.warning( String.format( "LaserLoc: dropping %5.1f %s packets/sec%n", dropRate, laser_channel ) );
+				double dropRate = (double) droppedLocPackets / (nanoelapsed / 1000000000);
+				logger.warning( String.format( "LaserLoc: dropping %5.1f %s packets/sec", dropRate, laser_channel ) );
 				printHeaderLine();
 			}
 			
@@ -163,10 +179,13 @@ public class LaserLoc implements LCMSubscriber
 		int smallest_range_index = -1;
 		for ( int index = 0; index < laser_data.nranges; ++index )
 		{
-			if ( laser_data.ranges[ index ] < smallest_range )
+			if ( laser_data.ranges[ index ] < configuration.maxRanges[index] )
 			{
-				smallest_range = laser_data.ranges[ index ];
-				smallest_range_index = index;
+				if ( laser_data.ranges[ index ] < smallest_range )
+				{
+					smallest_range = laser_data.ranges[ index ];
+					smallest_range_index = index;
+				}
 			}
 		}
 		assert smallest_range_index != -1;
