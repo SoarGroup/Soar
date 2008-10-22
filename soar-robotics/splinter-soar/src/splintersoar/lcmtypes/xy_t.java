@@ -3,12 +3,12 @@ package splintersoar.lcmtypes;
 import java.io.*;
 import java.util.*;
  
-public class coords_t implements lcm.lcm.LCMEncodable
+public class xy_t implements lcm.lcm.LCMEncodable
 {
     public long utime;
     public double xy[];
  
-    public coords_t()
+    public xy_t()
     {
         xy = new double[2];
     }
@@ -22,10 +22,10 @@ public class coords_t implements lcm.lcm.LCMEncodable
  
     public static long _hashRecursive(ArrayList<Class> classes)
     {
-        if (classes.contains(splintersoar.lcmtypes.coords_t.class))
+        if (classes.contains(splintersoar.lcmtypes.xy_t.class))
             return 0L;
  
-        classes.add(splintersoar.lcmtypes.coords_t.class);
+        classes.add(splintersoar.lcmtypes.xy_t.class);
         long hash = LCM_FINGERPRINT_BASE
             ;
         classes.remove(classes.size() - 1);
@@ -49,7 +49,7 @@ public class coords_t implements lcm.lcm.LCMEncodable
  
     }
  
-    public coords_t(DataInputStream ins) throws IOException
+    public xy_t(DataInputStream ins) throws IOException
     {
         if (ins.readLong() != LCM_FINGERPRINT)
             throw new IOException("LCM Decode error: bad fingerprint");
@@ -57,9 +57,9 @@ public class coords_t implements lcm.lcm.LCMEncodable
         _decodeRecursive(ins);
     }
  
-    public static splintersoar.lcmtypes.coords_t _decodeRecursiveFactory(DataInputStream ins) throws IOException
+    public static splintersoar.lcmtypes.xy_t _decodeRecursiveFactory(DataInputStream ins) throws IOException
     {
-        splintersoar.lcmtypes.coords_t o = new splintersoar.lcmtypes.coords_t();
+        splintersoar.lcmtypes.xy_t o = new splintersoar.lcmtypes.xy_t();
         o._decodeRecursive(ins);
         return o;
     }
@@ -76,9 +76,9 @@ public class coords_t implements lcm.lcm.LCMEncodable
  
     }
  
-    public splintersoar.lcmtypes.coords_t copy()
+    public splintersoar.lcmtypes.xy_t copy()
     {
-        splintersoar.lcmtypes.coords_t outobj = new splintersoar.lcmtypes.coords_t();
+        splintersoar.lcmtypes.xy_t outobj = new splintersoar.lcmtypes.xy_t();
         outobj.utime = this.utime;
  
         outobj.xy = new double[(int) 2];

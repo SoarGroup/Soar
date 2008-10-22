@@ -9,16 +9,15 @@ import lcm.lcm.LCM;
 
 import erp.config.Config;
 import erp.config.ConfigFile;
+import erp.lcmtypes.differential_drive_command_t;
 
 import orc.util.GamePad;
 
 import splintersoar.orc.OrcInterface;
-import splintersoar.orc.OrcInput;
-import splintersoar.orc.OrcInputProducer;
 import splintersoar.ranger.RangerManager;
 import splintersoar.soar.SoarInterface;
 
-public class SplinterSoar implements OrcInputProducer
+public class SplinterSoar
 {
 	SoarInterface soar;
 	OrcInterface orc;
@@ -54,13 +53,13 @@ public class SplinterSoar implements OrcInputProducer
 		logger = LogFactory.simpleLogger( Level.ALL );
 		
 		logger.info( "Starting orc interface" );
-		orc = new OrcInterface( config, this );
+		orc = new OrcInterface( config );
 
 		logger.info( "Starting ranger" );
 		ranger = new RangerManager();
 
 		logger.info( "Starting Soar interface" );
-		soar = new SoarInterface( orc, ranger, config );
+		soar = new SoarInterface( ranger, config );
 		
 		logger.info( "Creating game pad for override" );
 		gamePad = new GamePad();
@@ -83,7 +82,7 @@ public class SplinterSoar implements OrcInputProducer
 	
 	boolean overrideEnabled = false;
 	boolean overrideButton = false;
-	double [] throttle = { 0, 0 };
+	differential_drive_command_t overrideCommand = new differential_drive_command_t();
 	boolean tankMode = false;
 	
 	private void updateOverride()
@@ -92,13 +91,19 @@ public class SplinterSoar implements OrcInputProducer
 		// change on trailing edge
 		if ( overrideButton && !currentOverrideButton )
 		{
-			synchronized( throttle )
+			synchronized( this )
 			{
 				overrideEnabled = !overrideEnabled;
+				soar.setOverride( overrideEnabled );
 			
 				if ( overrideEnabled )
 				{
-					throttle = new double [] { 0, 0 };
+					overrideCommand.left_enabled = true;
+					overrideCommand.right_enabled = true;
+					overrideCommand.left = 0;
+					overrideCommand.right = 0;
+					overrideCommand.utime = System.nanoTime() / 1000;
+					lcm.publish( "MOTOR_COMMAND", overrideCommand );
 				}
 			}
 			
@@ -108,35 +113,36 @@ public class SplinterSoar implements OrcInputProducer
 		
 		if ( overrideEnabled )
 		{
-			double [] newThrottle = new double[2];
+			differential_drive_command_t newCommand = new differential_drive_command_t();
+			newCommand.left_enabled = true;
+			newCommand.right_enabled = true;
 			
 			if ( tankMode ) 
 			{
-				newThrottle[0] = gamePad.getAxis( 1 ) * -1;
-				newThrottle[1] = gamePad.getAxis( 3 ) * -1;
+				newCommand.left = gamePad.getAxis( 1 ) * -1;
+				newCommand.right = gamePad.getAxis( 3 ) * -1;
 			}
 			else
 			{
 				double fwd = -1 * gamePad.getAxis( 3 ); // +1 = forward, -1 = back
 				double lr  = -1 * gamePad.getAxis( 2 );   // +1 = left, -1 = right
 
-				newThrottle[0] = fwd - lr;
-				newThrottle[1] = fwd + lr;
+				newCommand.left = fwd - lr;
+				newCommand.right = fwd + lr;
 
-				double max = Math.max( Math.abs( newThrottle[0] ), Math.abs( newThrottle[1] ) );
+				double max = Math.max( Math.abs( newCommand.left ), Math.abs( newCommand.right ) );
 				if ( max > 1 ) 
 				{
-					newThrottle[0] /= max;
-					newThrottle[1] /= max;
+					newCommand.left /= max;
+					newCommand.right /= max;
 				}
 			}
 			
-			if ( ( newThrottle[0] != throttle[0] ) || ( newThrottle[1] != throttle[1] ) )
+			if ( ( newCommand.left != overrideCommand.left ) || ( newCommand.right != overrideCommand.right ) )
 			{
-				synchronized( throttle )
-				{
-					System.arraycopy( newThrottle, 0, throttle, 0, newThrottle.length );
-				}
+				overrideCommand = newCommand;
+				overrideCommand.utime = System.nanoTime() / 1000;
+				lcm.publish( "MOTOR_COMMAND", overrideCommand );
 			}
 		}
 	}
@@ -186,27 +192,4 @@ public class SplinterSoar implements OrcInputProducer
 	{
 		new SplinterSoar( args );
 	}
-
-	@Override
-	public OrcInput getInput() {
-		if ( overrideEnabled )
-		{
-			OrcInput input = new OrcInput();
-			input.targetYawEnabled = false;
-			synchronized ( throttle )
-			{
-				System.arraycopy( throttle, 0, input.throttle, 0, throttle.length );
-			}
-			return input;
-		} 
-		else
-		{
-			if ( soar == null )
-			{
-				return null;
-			}
-			return soar.getSplinterInput();
-		}
-	}
-
 }

@@ -1,11 +1,13 @@
 package splintersoar.soar;
 
+import erp.geom.Geometry;
+import erp.math.MathUtil;
 import sml.Agent;
 import sml.FloatElement;
 import sml.Identifier;
 import sml.IntElement;
 import sml.StringElement;
-import splintersoar.orc.OrcOutput;
+import splintersoar.lcmtypes.splinterstate_t;
 import splintersoar.ranger.RangerState;
 
 public class InputLinkManager {
@@ -54,14 +56,14 @@ public class InputLinkManager {
 		}
 	}
 
-	public InputLinkManager( Agent agent, Waypoints waypoints, OrcOutput splinterOutput, RangerState rangerState )
+	public InputLinkManager( Agent agent, Waypoints waypoints, splinterstate_t splinterState, RangerState rangerState )
 	{
 		this.agent = agent;
 		this.waypoints = waypoints;
 		
 		this.agent.SetBlinkIfNoChange( false );
 		
-		lastTime = splinterOutput.utime;
+		lastTime = splinterState.utime;
 		
 		Identifier inputLink = agent.GetInputLink();
 		
@@ -76,25 +78,16 @@ public class InputLinkManager {
 			self = agent.CreateIdWME( inputLink, "self" );
 
 			{
-				Identifier self_geometry = agent.CreateIdWME( self, "geometry" );
-				
-				agent.CreateFloatWME( self_geometry, "baseline-meters", splinterOutput.BASELINE_METERS );
-				agent.CreateFloatWME( self_geometry, "tick-meters", splinterOutput.TICK_METERS );
-				agent.CreateFloatWME( self_geometry, "length", splinterOutput.LENGTH_METERS );
-				agent.CreateFloatWME( self_geometry, "width", splinterOutput.WIDTH_METERS );
-			}
-			
-			{
 				Identifier self_motor = agent.CreateIdWME( self, "motor" );
 				
 				Identifier self_motor_left = agent.CreateIdWME( self_motor, "left" );
 				{
-					self_motor_left_position = agent.CreateIntWME( self_motor_left, "position", splinterOutput.motorPosition[0] );
+					self_motor_left_position = agent.CreateIntWME( self_motor_left, "position", splinterState.leftodom );
 				}
 				
 				Identifier self_motor_right = agent.CreateIdWME( self_motor, "right" );
 				{
-					self_motor_right_position = agent.CreateIntWME( self_motor_right, "position", splinterOutput.motorPosition[1] );
+					self_motor_right_position = agent.CreateIntWME( self_motor_right, "position", splinterState.rightodom );
 				}
 			}
 			
@@ -103,9 +96,10 @@ public class InputLinkManager {
 			{
 				Identifier self_pose = agent.CreateIdWME( self, "pose" );
 				{
-					self_pose_x = agent.CreateFloatWME( self_pose, "x", splinterOutput.xyt[0] );
-					self_pose_y = agent.CreateFloatWME( self_pose, "y", splinterOutput.xyt[1] );
-					self_pose_yaw = agent.CreateFloatWME( self_pose, "yaw", Math.toDegrees( splinterOutput.xyt[2] ) );
+					self_pose_x = agent.CreateFloatWME( self_pose, "x", splinterState.pose.pos[0] );
+					self_pose_y = agent.CreateFloatWME( self_pose, "y", splinterState.pose.pos[1] );
+					self_pose_yaw = agent.CreateFloatWME( self_pose, "yaw", 
+							Math.toDegrees( MathUtil.mod2pi( Geometry.quatToRollPitchYaw( splinterState.pose.orientation ) [2] ) ) );
 				}
 			}
 			
@@ -124,30 +118,25 @@ public class InputLinkManager {
 		agent.Commit();
 	}
 
-	public void update( OrcOutput splinterOutput, RangerState rangerState )
+	public void update( splinterstate_t splinterState, RangerState rangerState )
 	{
 		soarTime.update();
 		agent.Update( time_seconds, soarTime.seconds );
 		agent.Update( time_microseconds, soarTime.microseconds );
 		
 		// update robot state if we have new state
-		if ( splinterOutput.utime != lastTime )
+		if ( splinterState.utime != lastTime )
 		{
-			lastTime = splinterOutput.utime;
+			lastTime = splinterState.utime;
 			
-			agent.Update( self_motor_left_position, splinterOutput.motorPosition[0] );
-			agent.Update( self_motor_right_position, splinterOutput.motorPosition[1] );
+			agent.Update( self_motor_left_position, splinterState.leftodom );
+			agent.Update( self_motor_right_position, splinterState.rightodom );
 
-			agent.Update( self_pose_x, splinterOutput.xyt[0] );
-			agent.Update( self_pose_y, splinterOutput.xyt[1] );
-			double yaw = splinterOutput.xyt[2] % ( 2 * Math.PI );
-			while ( yaw < 0 )
-			{
-				yaw += ( 2 * Math.PI );
-			}
-			agent.Update( self_pose_yaw, Math.toDegrees( yaw ) );
+			agent.Update( self_pose_x, splinterState.pose.pos[0] );
+			agent.Update( self_pose_y, splinterState.pose.pos[1] );
+			agent.Update( self_pose_yaw, Math.toDegrees( MathUtil.mod2pi( Geometry.quatToRollPitchYaw( splinterState.pose.orientation ) [2] ) ) ) ;
 
-			waypoints.setNewRobotPose( splinterOutput.xyt );
+			waypoints.setNewRobotPose( splinterState.pose );
 		}
 
 		ranger.update( rangerState );

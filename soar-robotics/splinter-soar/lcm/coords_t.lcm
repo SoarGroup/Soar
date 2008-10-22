@@ -1,5 +1,0 @@
-struct splintersoar.lcmtypes.coords_t
-{
-	int64_t utime;
-	double xy[2];
-}

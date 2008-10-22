@@ -1,1 +1,37 @@
-* configuration of robot state params
+* init-soar
+* documentation
+* consistent, single location of lcm channel ids
+
+Types (see .lcm files for docs):
+laser_t
+differential_drive_command_t
+pose_t
+xy_t
+waypoints_t
+particles_t
+
+Channels:
+LASER_FRONT: laser_t
+SPLINTER_POSE: pose_t
+WAYPOINTS: waypoints_t
+MOTOR_COMMANDS: differential_drive_command_t
+COORDS: xy_t
+PARTICLES: particles_t
+
+Relationships (chronology, publish/subscribe, channel, network (lcm2 is optional), 
+separated vertically by process):
+----------------------------------------------------------------------------------
+Sick (10:pub:LASER_LOC:LCM)
+
+LaserLoc (20:sub:LASER_LOC:LCM) (30:pub:COORDS:LCM)
+
+ParticleFilter (40:sub:COORDS:LCM) (50:pub:PARTICLES:LCM) (50:pub:SPLINTER_POSE:LCM)
+OrcInterface (80:sub:MOTOR_COMMANDS:LCM)
+
+Sick (10:pub:LASER_FRONT:LCM2)
+
+Ranger (20:sub:LASER_FRONT:LCM2)
+Soar (60:sub:SPLINTER_POSE:LCM) (70:pub:WAYPOINTS:LCM) (70:pub:MOTOR_COMMANDS:LCM)
+
+Visualizer (100:sub:ALL:LCM)
+

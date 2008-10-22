@@ -11,7 +11,7 @@ import lcm.lcm.LCMSubscriber;
 import lcmtypes.laser_t;
 
 import splintersoar.LogFactory;
-import splintersoar.lcmtypes.coords_t;
+import splintersoar.lcmtypes.xy_t;
 
 import erp.config.Config;
 import erp.config.ConfigFile;
@@ -141,7 +141,7 @@ public class LaserLoc implements LCMSubscriber
 			inactive = false;
 		}
 		
-		coords_t estimated_coords = getRobotXY( laser_data );
+		xy_t estimated_coords = getRobotXY( laser_data );
 
 		logger.fine( String.format( "%10.3f %10.3f", estimated_coords.xy[ 0 ], estimated_coords.xy[ 1 ] ) );
 
@@ -155,7 +155,7 @@ public class LaserLoc implements LCMSubscriber
 		laser_data = null;
 	}
 
-	private coords_t getRobotXY( laser_t laser_data )
+	private xy_t getRobotXY( laser_t laser_data )
 	{
 		assert laser_data != null;
 			
@@ -175,7 +175,7 @@ public class LaserLoc implements LCMSubscriber
 		
 		double laser_dist = smallest_range + configuration.laser_dist_adjustment;
 		
-		coords_t new_coords = new coords_t();
+		xy_t new_coords = new xy_t();
 		new_coords.xy[ 0 ] = configuration.laser_x + laser_dist * Math.cos( laser_angle );
 		new_coords.xy[ 1 ] = configuration.laser_y + laser_dist * Math.sin( laser_angle );
 		

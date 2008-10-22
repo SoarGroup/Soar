@@ -3,14 +3,14 @@ package splintersoar.soar;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import lcm.lcm.LCM;
+
 import erp.config.Config;
 import sml.Agent;
 import sml.Kernel;
 import sml.smlUpdateEventId;
 import splintersoar.LogFactory;
-import splintersoar.orc.OrcInput;
-import splintersoar.orc.OrcOutput;
-import splintersoar.orc.OrcOutputProducer;
+import splintersoar.lcmtypes.splinterstate_t;
 import splintersoar.ranger.RangerState;
 import splintersoar.ranger.RangerStateProducer;
 
@@ -35,17 +35,18 @@ public class SoarInterface implements Kernel.UpdateEventInterface
 	InputLinkManager input;
 	OutputLinkManager output;
 	Waypoints waypoints;
-	OrcOutputProducer splinterOutputProducer;
 	RangerStateProducer rangerStateProducer;
+	splinterstate_t splinterState;
+	LCM lcm;
 	
-	public SoarInterface( OrcOutputProducer splinterOutputProducer, RangerStateProducer rangerStateProducer, Config config )
+	public SoarInterface( RangerStateProducer rangerStateProducer, Config config )
 	{
 		configuration = new Configuration( config );
+		
+		lcm = LCM.getSingleton();
 
 		logger = LogFactory.simpleLogger( Level.ALL );
 
-		this.splinterOutputProducer = splinterOutputProducer;
-		
 		kernel = Kernel.CreateKernelInNewThread();
 		if ( kernel.HadError() )
 		{
@@ -67,10 +68,8 @@ public class SoarInterface implements Kernel.UpdateEventInterface
 		
 		waypoints = new Waypoints( agent );
 
-		OrcOutput splinterOutput = splinterOutputProducer.getOutput();
-
 		// wait for valid data
-		while ( splinterOutput.utime == 0 )
+		while ( splinterState == null )
 		{
 			logger.info( "Waiting for valid splinter state" );
 			try 
@@ -78,7 +77,6 @@ public class SoarInterface implements Kernel.UpdateEventInterface
 				Thread.sleep( 200 );
 			} catch ( InterruptedException ignored ) 
 			{}
-			splinterOutput = splinterOutputProducer.getOutput();
 		}
 		logger.info( "Have splinter state" );
 		
@@ -86,7 +84,7 @@ public class SoarInterface implements Kernel.UpdateEventInterface
 		
 		// rangerState could be null 
 		
-		input = new InputLinkManager( agent, waypoints, splinterOutput, rangerState );
+		input = new InputLinkManager( agent, waypoints, splinterState, rangerState );
 		output = new OutputLinkManager( agent, waypoints );
 		
 		kernel.RegisterForUpdateEvent( smlUpdateEventId.smlEVENT_AFTER_ALL_OUTPUT_PHASES, this, null );
@@ -108,6 +106,8 @@ public class SoarInterface implements Kernel.UpdateEventInterface
 	}
 	
 	boolean stopSoar = false;
+
+	private boolean overrideEnabled = false;
 	public void stop()
 	{
 		stopSoar = true;
@@ -137,13 +137,17 @@ public class SoarInterface implements Kernel.UpdateEventInterface
 		
 		try
 		{
-			OrcOutput splinterOutput = splinterOutputProducer.getOutput();
 			RangerState rangerState = rangerStateProducer.getRangerState();
 			
-			input.update( splinterOutput, rangerState );
-			output.update( splinterOutput );
+			input.update( splinterState, rangerState );
+			SplinterInput splinterInput = output.update( splinterState );
+			
+			if ( !overrideEnabled )
+			{
+				lcm.publish( "MOTOR_COMMAND", splinterInput.generateDriveCommand( splinterState ) );
+			}
 		
-			waypoints.update(); // updates input link
+			waypoints.update(); // updates input link due to output link commands
 		
 			agent.Commit();
 		}
@@ -159,7 +163,8 @@ public class SoarInterface implements Kernel.UpdateEventInterface
 		}
 	}
 
-	public OrcInput getSplinterInput() {
-		return output.getSplinterInput();
+	public void setOverride( boolean overrideEnabled ) {
+		this.overrideEnabled = overrideEnabled;
 	}
+
 }

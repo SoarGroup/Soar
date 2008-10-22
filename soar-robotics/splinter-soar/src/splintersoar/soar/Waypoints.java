@@ -1,22 +1,28 @@
 package splintersoar.soar;
 
+import java.util.Arrays;
 import java.util.HashMap;
-import java.util.Iterator;
+
+import lcm.lcm.LCM;
+import lcmtypes.pose_t;
 
 import erp.geom.*;
+import erp.math.MathUtil;
 import sml.*;
+import splintersoar.lcmtypes.waypoints_t;
+import splintersoar.lcmtypes.xy_t;
 
 public class Waypoints {
 	
 	Agent agent;
 	Identifier waypoints;
-	double [] robotxyt = new double[3];
+	pose_t robotpose;
 	
 	HashMap< String, Waypoint > waypointList = new HashMap< String, Waypoint >();
 	
 	class Waypoint
 	{
-		double [] xyt = new double[3];
+		double [] xyz = new double[3];
 		String name;
 		
 		Identifier waypoint;
@@ -25,9 +31,9 @@ public class Waypoints {
 		FloatElement relativeBearing;
 		FloatElement yaw;
 		
-		public Waypoint( double [] waypointxyt, String name )
+		public Waypoint( double [] waypointxyz, String name )
 		{
-			System.arraycopy( waypointxyt, 0, this.xyt, 0, waypointxyt.length );
+			System.arraycopy( waypointxyz, 0, this.xyz, 0, waypointxyz.length );
 			this.name = new String( name );
 			
 			createWmes();
@@ -48,8 +54,8 @@ public class Waypoints {
 		{
 			waypoint = agent.CreateIdWME( waypoints, "waypoint" );
 			agent.CreateStringWME( waypoint, "id", name );
-			agent.CreateFloatWME( waypoint, "x", xyt[0] );
-			agent.CreateFloatWME( waypoint, "y", xyt[1] );
+			agent.CreateFloatWME( waypoint, "x", xyz[0] );
+			agent.CreateFloatWME( waypoint, "y", xyz[1] );
 			
 			distance = agent.CreateFloatWME( waypoint, "distance", 0 );
 			yaw = agent.CreateFloatWME( waypoint, "yaw", 0 );
@@ -59,21 +65,16 @@ public class Waypoints {
 		
 		void updateWmes()
 		{
-			double distanceValue = Geometry.distance( robotxyt, xyt, 2 );
+			double distanceValue = Geometry.distance( robotpose.pos, xyz, 2 );
 			agent.Update( distance, distanceValue );
 			
-			double [] delta = Geometry.subtract( xyt, robotxyt );
+			double [] delta = Geometry.subtract( xyz, robotpose.pos );
+			
 			double yawValue = Math.atan2( delta[1], delta[0] );
 			agent.Update( yaw, Math.toDegrees( yawValue ) );
-			double relativeBearingValue = yawValue - robotxyt[2];
 			
-			if ( relativeBearingValue > Math.PI )
-			{
-				relativeBearingValue -= 2 * Math.PI;
-			} else if ( relativeBearingValue < Math.PI * -1 )
-			{
-				relativeBearingValue += 2 * Math.PI;
-			}
+			double relativeBearingValue = yawValue - Geometry.quatToRollPitchYaw( robotpose.orientation )[2];
+			relativeBearingValue = MathUtil.mod2pi( relativeBearingValue );
 			
 			agent.Update( relativeBearing, Math.toDegrees( relativeBearingValue ) );
 			agent.Update( absRelativeBearing, Math.abs( Math.toDegrees( relativeBearingValue ) ) );
@@ -108,10 +109,13 @@ public class Waypoints {
 			yaw = null;
 		}
 	}
+	
+	LCM lcm;
 
 	Waypoints( Agent agent )
 	{
 		this.agent = agent;
+		lcm = LCM.getSingleton();
 	}
 	
 	void setRootIdentifier( Identifier waypoints )
@@ -119,7 +123,7 @@ public class Waypoints {
 		this.waypoints = waypoints;
 	}
 
-	public void add( double [] waypointxyt, String name ) 
+	public void add( double [] waypointxyz, String name ) 
 	{
 		Waypoint waypoint = waypointList.remove( name );
 		if ( waypoint != null )
@@ -127,7 +131,7 @@ public class Waypoints {
 			waypoint.disable();
 		}
 
-		waypointList.put( name, new Waypoint( waypointxyt, name ) );
+		waypointList.put( name, new Waypoint( waypointxyz, name ) );
 	}
 
 	public boolean remove( String name ) 
@@ -165,24 +169,34 @@ public class Waypoints {
 		return true;
 	}
 	
-	public void setNewRobotPose( double [] robotxyt )
+	public void setNewRobotPose( pose_t robotpose )
 	{
-		System.arraycopy( robotxyt, 0, this.robotxyt, 0, robotxyt.length );
+		this.robotpose = robotpose;
 	}
 	
 	public void update()
 	{
-		if ( waypointList.size() == 0 )
+		waypoints_t waypoints = new waypoints_t();
+		waypoints.utime = System.nanoTime() / 1000;
+		waypoints.nwaypoints = waypointList.size();
+
+		if ( waypointList.size() != 0 )
 		{
-			return;
+			waypoints.names = new String[waypointList.size()];
+			waypoints.locations = new xy_t[waypointList.size()];
+			
+			//System.out.format( "%16s %10s %10s %10s %10s %10s%n", "name", "x", "y", "distance", "yaw", "bearing" );
+			Waypoint [] waypointArray = waypointList.values().toArray( new Waypoint[0] );
+			for ( int index = 0; index < waypointArray.length; ++index )
+			{
+				waypointArray[index].updateWmes();
+				
+				waypoints.names[index] = waypointArray[index].name;
+				waypoints.locations[index] = new xy_t();
+				waypoints.locations[index].utime = waypoints.utime;
+				waypoints.locations[index].xy = Arrays.copyOf( waypointArray[index].xyz, 2 );
+			}
 		}
-		
-		//System.out.format( "%16s %10s %10s %10s %10s %10s%n", "name", "x", "y", "distance", "yaw", "bearing" );
-		Iterator< Waypoint > iter = waypointList.values().iterator();
-		while ( iter.hasNext() )
-		{
-			Waypoint waypoint = iter.next();
-			waypoint.updateWmes();
-		}
+		lcm.publish( "WAYPOINTS", waypoints );
 	}
 }

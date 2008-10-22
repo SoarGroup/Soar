@@ -3,15 +3,14 @@ package splintersoar.soar;
 import java.util.Arrays;
 
 import sml.*;
-import splintersoar.orc.OrcInput;
-import splintersoar.orc.OrcOutput;
+import splintersoar.lcmtypes.splinterstate_t;
 
 public class OutputLinkManager {
 	
 	Agent agent;
 	Waypoints waypoints;
 	
-	OrcInput splinterInput = new OrcInput();
+	SplinterInput splinterInput = new SplinterInput();
 	
 	public OutputLinkManager( Agent agent, Waypoints waypoints )
 	{
@@ -19,9 +18,9 @@ public class OutputLinkManager {
 		this.waypoints = waypoints;
 	}
 	
-	public void update( OrcOutput splinterOutput )
+	public SplinterInput update( splinterstate_t splinterState )
 	{
-		OrcInput newSplinterInput = null;
+		SplinterInput newSplinterInput = null;
 				
 		// process output
 		for ( int i = 0; i < agent.GetNumberCommands(); ++i ) 
@@ -82,7 +81,7 @@ public class OutputLinkManager {
 				System.out.format( "motor: %10s %10s%n", "left", "right" );
 				System.out.format( "       %10.3f %10.3f%n", motorThrottle[0], motorThrottle[1] );
 
-				newSplinterInput = new OrcInput( motorThrottle );
+				newSplinterInput = new SplinterInput( motorThrottle );
 				
 				commandId.AddStatusComplete();
 				continue;
@@ -130,15 +129,15 @@ public class OutputLinkManager {
 
 				if ( direction.equals( "backward" ) )
 				{
-					newSplinterInput = new OrcInput( throttle * -1 );
+					newSplinterInput = new SplinterInput( throttle * -1 );
 				}
 				else if ( direction.equals( "forward" ) )
 				{
-					newSplinterInput = new OrcInput( throttle );
+					newSplinterInput = new SplinterInput( throttle );
 				}
 				else if ( direction.equals( "stop" ) )
 				{
-					newSplinterInput = new OrcInput( 0 );
+					newSplinterInput = new SplinterInput( 0 );
 				}
 				else
 				{
@@ -193,15 +192,15 @@ public class OutputLinkManager {
 				
 				if ( direction.equals( "left" ) )
 				{
-					newSplinterInput = new OrcInput( OrcInput.Direction.left, throttle );
+					newSplinterInput = new SplinterInput( SplinterInput.Direction.left, throttle );
 				}
 				else if ( direction.equals( "right" ) )
 				{
-					newSplinterInput = new OrcInput( OrcInput.Direction.right, throttle );
+					newSplinterInput = new SplinterInput( SplinterInput.Direction.right, throttle );
 				}
 				else if ( direction.equals( "stop" ) )
 				{
-					newSplinterInput = new OrcInput( 0 );
+					newSplinterInput = new SplinterInput( 0 );
 				}
 				else
 				{
@@ -288,7 +287,7 @@ public class OutputLinkManager {
 				System.out.format( "rotate-to: %10s %10s %10s%n", "yaw", "tolerance", "throttle" );
 				System.out.format( "           %10.3f %10.3f %10.3f%n", yaw, tolerance, throttle );
 				
-				newSplinterInput = new OrcInput( yaw, tolerance, throttle );
+				newSplinterInput = new SplinterInput( yaw, tolerance, throttle );
 				
 				commandId.AddStatusComplete();
 				continue;
@@ -304,7 +303,7 @@ public class OutputLinkManager {
 
 				System.out.format( "stop:%n" );
 				
-				newSplinterInput = new OrcInput( 0 );
+				newSplinterInput = new SplinterInput( 0 );
 				
 				commandId.AddStatusComplete();
 				continue;
@@ -320,10 +319,10 @@ public class OutputLinkManager {
 					continue;
 				}
 				
-				double [] xyt = Arrays.copyOf( splinterOutput.xyt, splinterOutput.xyt.length );
+				double [] pos = Arrays.copyOf( splinterState.pose.pos, splinterState.pose.pos.length );
 				try 
 				{
-					xyt[0] = Double.parseDouble( commandId.GetParameterValue( "x" ) );
+					pos[0] = Double.parseDouble( commandId.GetParameterValue( "x" ) );
 				} 
 				catch ( NullPointerException ignored )
 				{
@@ -338,7 +337,7 @@ public class OutputLinkManager {
 
 				try 
 				{
-					xyt[1] = Double.parseDouble( commandId.GetParameterValue( "y" ) );
+					pos[1] = Double.parseDouble( commandId.GetParameterValue( "y" ) );
 				} 
 				catch ( NullPointerException ignored )
 				{
@@ -352,9 +351,9 @@ public class OutputLinkManager {
 				}
 
 				System.out.format( "add-waypoint: %16s %10s %10s%n", "id", "x", "y" );
-				System.out.format( "              %16s %10.3f %10.3f%n", id, xyt[0], xyt[1] );
+				System.out.format( "              %16s %10.3f %10.3f%n", id, pos[0], pos[1] );
 				
-				waypoints.add( xyt, id );
+				waypoints.add( pos, id );
 				
 				commandId.AddStatusComplete();
 				continue;
@@ -438,19 +437,6 @@ public class OutputLinkManager {
 			commandId.AddStatusError();
 		}
 		
-		if ( newSplinterInput != null )
-		{
-			synchronized( this )
-			{
-				splinterInput = newSplinterInput;
-			}
-		}
-	}
-
-	public OrcInput getSplinterInput() {
-		synchronized( this )
-		{
-			return splinterInput.copy();
-		}
+		return newSplinterInput;
 	}
 }

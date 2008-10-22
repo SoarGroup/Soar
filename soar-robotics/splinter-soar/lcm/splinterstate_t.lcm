@@ -1,0 +1,12 @@
+struct splintersoar.lcmtypes.splinterstate_t
+{
+	int64_t utime;	// timestamp
+	double baselinemeters;
+	double tickmeters;
+	double widthmeters;
+	double heightmeters;
+
+	int32_t leftodom; 		// odometry
+	int32_t rightodom; 		// odometry
+	lcmtypes.pose_t pose;	// pose
+}
