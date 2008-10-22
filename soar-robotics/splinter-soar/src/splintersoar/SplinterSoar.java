@@ -51,7 +51,7 @@ public class SplinterSoar implements OrcInputProducer
 		    return;
 		}
 		
-		logger = LogFactory.createSimpleLogger( Level.ALL );
+		logger = LogFactory.simpleLogger( Level.ALL );
 		
 		logger.info( "Starting orc interface" );
 		orc = new OrcInterface( config, this );

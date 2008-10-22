@@ -42,7 +42,7 @@ public class SoarInterface implements Kernel.UpdateEventInterface
 	{
 		configuration = new Configuration( config );
 
-		logger = LogFactory.createSimpleLogger( Level.ALL );
+		logger = LogFactory.simpleLogger( Level.ALL );
 
 		this.splinterOutputProducer = splinterOutputProducer;
 		

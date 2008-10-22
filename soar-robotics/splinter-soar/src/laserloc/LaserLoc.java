@@ -2,7 +2,6 @@ package laserloc;
 
 import java.io.DataInputStream;
 import java.io.IOException;
-import java.text.SimpleDateFormat;
 import java.util.Arrays;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -17,7 +16,6 @@ import splintersoar.lcmtypes.coords_t;
 import erp.config.Config;
 import erp.config.ConfigFile;
 
-// TODO: don't assert
 public class LaserLoc implements LCMSubscriber
 {
 	static
@@ -30,6 +28,7 @@ public class LaserLoc implements LCMSubscriber
 
 	private class Configuration
 	{
+		boolean testing = false;
 		double laser_x = 0; // if we assume the laser is at the origin facing up the y-axis, the next 3 constants are all 0
 		double laser_y = 0;
 		double laser_yaw_adjust = 0; // amount to adjust for laser's yaw = 90 - laser's yaw = 0 if laser is facing positive y directly
@@ -39,6 +38,7 @@ public class LaserLoc implements LCMSubscriber
 
 		Configuration( Config config )
 		{
+			testing = config.getBoolean( "testing", testing );
 			laser_x = config.getDouble( "laser_x", laser_x );
 			laser_y = config.getDouble( "laser_y", laser_y );
 			laser_yaw_adjust = config.getDouble( "laser_yaw_adjust", laser_yaw_adjust );
@@ -67,9 +67,8 @@ public class LaserLoc implements LCMSubscriber
 	LCM lcm;
 
 	boolean inactive = true;
-    SimpleDateFormat sdf = new SimpleDateFormat("HH:mm:ss");
 	long nanolastactivity = System.nanoTime();
-	long currentTimeout = configuration.activity_timeout;
+	long currentTimeout;
 
 	private Logger logger;
 	
@@ -77,19 +76,21 @@ public class LaserLoc implements LCMSubscriber
 	{
 		configuration = new Configuration( config );
 
-		logger = LogFactory.createSimpleLogger( Level.ALL );
+		logger = LogFactory.simpleLogger( Level.ALL );
+		if ( !configuration.testing )
+		{
+			lcm = LCM.getSingleton();
+			lcm.subscribe( laser_channel, this );
+		}
+
+		currentTimeout = configuration.activity_timeout;
 		
 		printHeaderLine();
 	}
 	
-	public void setLCM( LCM lcm )
-	{
-		this.lcm = lcm;
-	}
-	
 	public void printHeaderLine()
 	{
-		logger.fine( String.format( "%10s %10s%n", "x", "y" ) );
+		logger.fine( String.format( "%10s %10s", "x", "y" ) );
 	}
 
 	private void updatePose()
@@ -142,7 +143,7 @@ public class LaserLoc implements LCMSubscriber
 		
 		coords_t estimated_coords = getRobotXY( laser_data );
 
-		logger.fine( String.format( "%10.3f %10.3f%n", estimated_coords.xy[ 0 ], estimated_coords.xy[ 1 ] ) );
+		logger.fine( String.format( "%10.3f %10.3f", estimated_coords.xy[ 0 ], estimated_coords.xy[ 1 ] ) );
 
 		estimated_coords.utime = laser_data.utime;
 
@@ -320,7 +321,7 @@ public class LaserLoc implements LCMSubscriber
 			}
 			if (lloc == null)
 			{
-				System.err.println( "No tests run." );
+				System.err.println( "No tests to run." );
 			}
 			else
 			{
@@ -331,10 +332,6 @@ public class LaserLoc implements LCMSubscriber
 		
 		// Not testing
 		lloc = new LaserLoc( config );
-
-		LCM lcm = LCM.getSingleton();
-		lcm.subscribe( laser_channel, lloc );
-		lloc.setLCM( lcm );
 
 		while ( true )
 		{

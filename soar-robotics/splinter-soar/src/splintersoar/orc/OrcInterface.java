@@ -71,7 +71,7 @@ public class OrcInterface implements LCMSubscriber, OrcOutputProducer
 	{
 		configuration = new Configuration( config );
 		
-		logger = LogFactory.createSimpleLogger( Level.ALL );
+		logger = LogFactory.simpleLogger( Level.ALL );
 
 		this.inputProducer = inputProducer;
 		
