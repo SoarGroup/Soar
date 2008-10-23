@@ -10,6 +10,7 @@ import javax.swing.JFrame;
 import jmat.LinAlg;
 
 import splintersoar.LCMInfo;
+import splintersoar.lcmtypes.particles_t;
 import splintersoar.lcmtypes.splinterstate_t;
 import splintersoar.lcmtypes.waypoints_t;
 import splintersoar.lcmtypes.xy_t;
@@ -20,6 +21,7 @@ import lcm.lcm.LCMSubscriber;
 import erp.vis.VisCanvas;
 import erp.vis.VisChain;
 import erp.vis.VisData;
+import erp.vis.VisDataLineStyle;
 import erp.vis.VisDataPointStyle;
 import erp.vis.VisRobot;
 import erp.vis.VisWorld;
@@ -34,6 +36,7 @@ public class Viewer implements LCMSubscriber
 	splinterstate_t splinterPose;
 	waypoints_t waypoints;
 	xy_t laserxy;
+	particles_t particles;
 	
 	public Viewer()
 	{
@@ -41,6 +44,7 @@ public class Viewer implements LCMSubscriber
 		lcm.subscribe( LCMInfo.SPLINTER_STATE_CHANNEL, this );
 		lcm.subscribe( LCMInfo.WAYPOINTS_CHANNEL, this );
 		lcm.subscribe( LCMInfo.COORDS_CHANNEL, this );
+		lcm.subscribe( LCMInfo.PARTICLES_CHANNEL, this );
 
 
 		jf = new JFrame("RoomMapper");
@@ -50,7 +54,12 @@ public class Viewer implements LCMSubscriber
 		jf.setVisible(true);
 		
 		VisWorld.Buffer vb = vw.getBuffer("splinter");
-
+		VisData vd = new VisData(new double[2], new double[] { 0.2, 0 },
+				new VisDataLineStyle(Color.red, 1));
+		
+		vc.setDrawGrid(true);
+		vc.setDrawGround(true);
+		
 		while ( true )
 		{
 			if ( splinterPose != null )
@@ -75,6 +84,15 @@ public class Viewer implements LCMSubscriber
 				for ( int index = 0; index < wp.nwaypoints; ++index )
 				{
 					vb.addBuffered(new VisData( wp.locations[index].xy, new VisDataPointStyle(Color.green, 3)));
+				}
+			}
+			
+			if ( particles != null )
+			{
+				particles_t p;
+				p = particles.copy();
+				for ( double[] pxyt : p.particle ) {
+					vb.addBuffered(new VisChain(LinAlg.xytToMatrix( pxyt ), vd));
 				}
 			}
 			
@@ -116,6 +134,17 @@ public class Viewer implements LCMSubscriber
 			catch ( IOException ex ) 
 			{
 				System.err.println( "Error decoding xy_t message: " + ex );
+			}
+		}
+		else if ( channel.equals( LCMInfo.PARTICLES_CHANNEL ) )
+		{
+			try 
+			{
+				particles = new particles_t( ins );
+			} 
+			catch ( IOException ex ) 
+			{
+				System.err.println( "Error decoding particles_t message: " + ex );
 			}
 		}
 	}

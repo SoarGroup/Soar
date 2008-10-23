@@ -32,32 +32,34 @@ public class SplinterSoar
 	
 	public SplinterSoar( String args [] )
 	{
-		if ( args.length != 1 ) 
-		{
-		    System.out.println("Usage: splintersoar <configfile>");
-		    return;
-		}
+		Config config = null;
 
-		Config config;
-
-		try 
+		if ( args.length == 1 ) 
 		{
-		    config = ( new ConfigFile( args[0] ) ).getConfig();
-		} 
-		catch ( IOException ex ) 
-		{
-		    logger.severe( "Couldn't open config file: " + args[0] );
-		    return;
+			try 
+			{
+			    config = ( new ConfigFile( args[0] ) ).getConfig();
+			} 
+			catch ( IOException ex ) 
+			{
+			    logger.severe( "Couldn't open config file: " + args[0] );
+			    return;
+			}
 		}
 		
 		logger = LogFactory.createSimpleLogger( "SplinterSoar", Level.INFO );
 		
 		lcm = LCM.getSingleton();
 		
+		logger.info( "Starting laserloc" );
+		laserloc = new LaserLoc( config );
+		laserloc.setDaemon( true );
+		laserloc.start();
+
 		logger.info( "Starting orc interface" );
 		orc = new OrcInterface( config );
 
-		logger.info( "Starting ranger" );
+		logger.info( "Starting ranger manager" );
 		ranger = new RangerManager();
 
 		logger.info( "Starting Soar interface" );
@@ -93,20 +95,17 @@ public class SplinterSoar
 		// change on trailing edge
 		if ( overrideButton && !currentOverrideButton )
 		{
-			synchronized( this )
+			overrideEnabled = !overrideEnabled;
+			soar.setOverride( overrideEnabled );
+		
+			if ( overrideEnabled )
 			{
-				overrideEnabled = !overrideEnabled;
-				soar.setOverride( overrideEnabled );
-			
-				if ( overrideEnabled )
-				{
-					overrideCommand.left_enabled = true;
-					overrideCommand.right_enabled = true;
-					overrideCommand.left = 0;
-					overrideCommand.right = 0;
-					overrideCommand.utime = System.nanoTime() / 1000;
-					lcm.publish( LCMInfo.DRIVE_COMMANDS_CHANNEL, overrideCommand );
-				}
+				overrideCommand.left_enabled = true;
+				overrideCommand.right_enabled = true;
+				overrideCommand.left = 0;
+				overrideCommand.right = 0;
+				overrideCommand.utime = System.nanoTime() / 1000;
+				lcm.publish( LCMInfo.DRIVE_COMMANDS_CHANNEL, overrideCommand );
 			}
 			
 			logger.info( "Override " + ( overrideEnabled ? "enabled" : "disabled" ) );

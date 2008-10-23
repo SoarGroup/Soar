@@ -17,16 +17,10 @@ import splintersoar.lcmtypes.xy_t;
 import erp.config.Config;
 import erp.config.ConfigFile;
 
-public class LaserLoc implements LCMSubscriber
+public class LaserLoc extends Thread implements LCMSubscriber
 {
-	static
-	{
-		initializeLaserData();
-	}
-
 	private class Configuration
 	{
-		boolean testing = false;
 		double laser_x = 0; // if we assume the laser is at the origin facing up the y-axis, the next 3 constants are all 0
 		double laser_y = 0;
 		double laser_yaw_adjust = 0; // amount to adjust for laser's yaw = 90 - laser's yaw = 0 if laser is facing positive y directly
@@ -34,24 +28,29 @@ public class LaserLoc implements LCMSubscriber
 		long update_period = 5; // nanoseconds between status updates
 		long activity_timeout = 5;
 		double [] maxRanges;
+		String mapFile = "map.txt";
 
 		Configuration( Config config )
 		{
-			testing = config.getBoolean( "testing", testing );
-			laser_x = config.getDouble( "laser_x", laser_x );
-			laser_y = config.getDouble( "laser_y", laser_y );
-			laser_yaw_adjust = config.getDouble( "laser_yaw_adjust", laser_yaw_adjust );
-			laser_dist_adjustment = config.getDouble( "laser_dist_adjustment", laser_dist_adjustment );
-			update_period = config.getInt( "update_period", (int)update_period );
-			update_period *= 1000000000;
-			activity_timeout = config.getInt( "activity_timeout", (int)activity_timeout );
-			activity_timeout *= 1000000000;
+			if (config != null)
+			{
+				laser_x = config.getDouble( "laser_x", laser_x );
+				laser_y = config.getDouble( "laser_y", laser_y );
+				laser_yaw_adjust = config.getDouble( "laser_yaw_adjust", laser_yaw_adjust );
+				laser_dist_adjustment = config.getDouble( "laser_dist_adjustment", laser_dist_adjustment );
+				update_period = config.getInt( "update_period", (int)update_period );
+				activity_timeout = config.getInt( "activity_timeout", (int)activity_timeout );
+				mapFile = config.getString( "mapFile", mapFile );
+			}
 			
 			try {
-				Config mapConfig = new ConfigFile( "map.txt" ).getConfig();
+				Config mapConfig = new ConfigFile( mapFile ).getConfig();
 				maxRanges = mapConfig.getDoubles( "map" );
 			} catch (IOException e) {
 			}
+
+			update_period *= 1000000000;
+			activity_timeout *= 1000000000;
 		}
 	}
 	
@@ -83,29 +82,20 @@ public class LaserLoc implements LCMSubscriber
 		configuration = new Configuration( config );
 		
 		logger = LogFactory.createSimpleLogger( "LaserLoc", Level.INFO );
-		if ( !configuration.testing )
-		{
-			lcm = LCM.getSingleton();
-			lcm.subscribe( LCMInfo.LASER_LOC_CHANNEL, this );
 
-		}
+		lcm = LCM.getSingleton();
+		lcm.subscribe( LCMInfo.LASER_LOC_CHANNEL, this );
 
 		if ( configuration.maxRanges == null )
 		{
 			logger.warning( "No map file found, using infinite maximums" );
+			configuration.maxRanges = new double [180];
 			Arrays.fill( configuration.maxRanges, Double.MAX_VALUE );
 		}
 		
 		currentTimeout = configuration.activity_timeout;
-		
-		printHeaderLine();
 	}
 	
-	public void printHeaderLine()
-	{
-		logger.fine( String.format( "%10s %10s", "x", "y" ) );
-	}
-
 	private void updatePose()
 	{
 		long nanotime = System.nanoTime();
@@ -126,7 +116,6 @@ public class LaserLoc implements LCMSubscriber
 			{
 				double dropRate = (double) droppedLocPackets / (nanoelapsed / 1000000000);
 				logger.warning( String.format( "LaserLoc: dropping %5.1f packets/sec", dropRate ) );
-				printHeaderLine();
 			}
 			
 			droppedLocPackets = 0;
@@ -156,14 +145,11 @@ public class LaserLoc implements LCMSubscriber
 		
 		xy_t estimated_coords = getRobotXY( laser_data );
 
-		logger.fine( String.format( "%10.3f %10.3f", estimated_coords.xy[ 0 ], estimated_coords.xy[ 1 ] ) );
-
 		estimated_coords.utime = laser_data.utime;
 
-		if ( lcm != null )
-		{
-			lcm.publish( LCMInfo.COORDS_CHANNEL, estimated_coords );
-		}
+		logger.fine( String.format( "publishing %10.3f %10.3f", estimated_coords.xy[ 0 ], estimated_coords.xy[ 1 ] ) );
+
+		lcm.publish( LCMInfo.COORDS_CHANNEL, estimated_coords );
 
 		laser_data = null;
 	}
@@ -220,82 +206,13 @@ public class LaserLoc implements LCMSubscriber
 		}
 		
 	}
-
-	static laser_t[][] test_data;
-	private static void initializeLaserData()
-	{
-		test_data = new laser_t[2][];
-		for ( int test_index = 0; test_index < test_data.length; ++test_index )
-		{
-			switch ( test_index )
-			{
-			case 0:
-				initializeTestData0();
-				break;
-				
-			case 1:
-				initializeTestData1();
-				break;
-			default:
-				assert false;
-			}
-		}
-	}
 	
-	private static void initializeTestData0() {
-		final int THIS_TEST = 0;
-		
-		float rad0 = (float)Math.PI / -2;
-		float radstep = (float)Math.PI / 180; // one degree
-		float max = 10;
-		long time = -1;
-		int nranges = 180;
-		
-		float start_range = 1;
-
-		test_data[ THIS_TEST ] = new laser_t[ 100 ]; 
-		for ( int index = 0; index < test_data[ THIS_TEST ].length; ++index )
+	@Override
+	public void run()
+	{
+		while ( true )
 		{
-			laser_t data = new laser_t();
-			data.rad0 = rad0;
-			data.radstep = radstep;
-			data.utime = ++time;
-			data.nranges = nranges;
-			data.ranges = new float[ nranges ];
-			Arrays.fill( data.ranges, max );
-
-			data.ranges[ 20 ] = start_range + 0.01f * index;
-			
-			test_data[ THIS_TEST ][ index ] = data;
-		}
-	}
-
-	private static void initializeTestData1() {
-		final int THIS_TEST = 1;
-
-		float rad0 = (float)Math.PI / -2;
-		float radstep = (float)Math.PI / 180; // one degree
-		float max = 10;
-		long time = -1;
-		int nranges = 180;
-
-		int start_range_index = 60;
-		float data_range = 1;
-		
-		test_data[ THIS_TEST ] = new laser_t[ 60 ]; 
-		for ( int index = 0; index < test_data[ THIS_TEST ].length; ++index )
-		{
-			laser_t data = new laser_t();
-			data.rad0 = rad0;
-			data.radstep = radstep;
-			data.utime = ++time;
-			data.nranges = nranges;
-			data.ranges = new float[ nranges ];
-			Arrays.fill( data.ranges, max );
-
-			data.ranges[ start_range_index + index ] = data_range;
-			
-			test_data[ THIS_TEST ][ index ] = data;
+			updatePose();
 		}
 	}
 
@@ -319,40 +236,8 @@ public class LaserLoc implements LCMSubscriber
 		    return;
 		}
 		
-		// set up constants
-		LaserLoc lloc = null;
-		if ( config.getBoolean( "testing", false ) )
-		{
-			for ( int current_test_index = 0; current_test_index < test_data.length; ++current_test_index )
-			{
-				lloc = new LaserLoc( config );
-				lloc.logger.info( "Starting test " + ( current_test_index + 1 ) );
-
-				for ( int current_test_data_index = 0; current_test_data_index < test_data[ current_test_index ].length; ++current_test_data_index )
-				{
-					lloc.laser_data = test_data[ current_test_index ][ current_test_data_index ];
-					lloc.updatePose();
-				}
-				
-			}
-			if (lloc == null)
-			{
-				System.err.println( "No tests to run." );
-			}
-			else
-			{
-				lloc.logger.info( "All tests done." );
-			}
-			System.exit( 0 );
-		}
-		
-		// Not testing
-		lloc = new LaserLoc( config );
-
-		while ( true )
-		{
-			lloc.updatePose();
-		}
+		LaserLoc lloc = new LaserLoc( config );
+		lloc.run();
 	}
 
 }

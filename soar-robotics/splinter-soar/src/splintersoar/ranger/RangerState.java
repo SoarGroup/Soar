@@ -15,6 +15,8 @@ public class RangerState {
 	
 	public RangerState( laser_t laserData ) 
 	{
+		utime = laserData.utime;
+		
 		// FIXME verify this is general, I think sliceChunk must have no remainder
 		assert ranger.length == 5; // for now assert that it is 5
 		

@@ -1,8 +1,11 @@
 package splintersoar.soar;
 
 import java.util.Arrays;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import sml.*;
+import splintersoar.LogFactory;
 import splintersoar.lcmtypes.splinterstate_t;
 
 public class OutputLinkManager {
@@ -11,9 +14,12 @@ public class OutputLinkManager {
 	Waypoints waypoints;
 	
 	SplinterInput splinterInput = new SplinterInput();
+	Logger logger;
 	
 	public OutputLinkManager( Agent agent, Waypoints waypoints )
 	{
+		this.logger = LogFactory.createSimpleLogger( "OutputLinkManager", Level.INFO );
+
 		this.agent = agent;
 		this.waypoints = waypoints;
 	}
@@ -33,7 +39,7 @@ public class OutputLinkManager {
 				if ( newSplinterInput != null )
 				{
 					// This is a warning
-					System.err.println( "Motor command received possibly overriding previous orders" );
+					logger.warning( "Motor command received possibly overriding previous orders" );
 				}
 				
 				double [] motorThrottle = { 0, 0 };
@@ -44,13 +50,13 @@ public class OutputLinkManager {
 				} 
 				catch ( NullPointerException ex )
 				{
-					System.err.println( "No left on motor command" );
+					logger.warning( "No left on motor command" );
 					commandId.AddStatusError();
 					continue;
 				}
 				catch ( NumberFormatException e ) 
 				{
-					System.err.println( "Unable to parse left: " + commandId.GetParameterValue( "left" ) );
+					logger.warning( "Unable to parse left: " + commandId.GetParameterValue( "left" ) );
 					commandId.AddStatusError();
 					continue;
 				}
@@ -61,13 +67,13 @@ public class OutputLinkManager {
 				} 
 				catch ( NullPointerException ex )
 				{
-					System.err.println( "No right on motor command" );
+					logger.warning( "No right on motor command" );
 					commandId.AddStatusError();
 					continue;
 				}
 				catch ( NumberFormatException e ) 
 				{
-					System.err.println( "Unable to parse right: " + commandId.GetParameterValue( "right" ) );
+					logger.warning( "Unable to parse right: " + commandId.GetParameterValue( "right" ) );
 					commandId.AddStatusError();
 					continue;
 				}
@@ -78,8 +84,7 @@ public class OutputLinkManager {
 				motorThrottle[1] = Math.max( motorThrottle[1], -1.0 );
 				motorThrottle[1] = Math.min( motorThrottle[1], 1.0 );
 				
-				System.out.format( "motor: %10s %10s%n", "left", "right" );
-				System.out.format( "       %10.3f %10.3f%n", motorThrottle[0], motorThrottle[1] );
+				logger.fine( String.format( "motor: %10.3f %10.3f", motorThrottle[0], motorThrottle[1] ) );
 
 				newSplinterInput = new SplinterInput( motorThrottle );
 				
@@ -90,7 +95,7 @@ public class OutputLinkManager {
 			{
 				if ( newSplinterInput != null )
 				{
-					System.err.println( "Move command received but motors already have orders" );
+					logger.warning( "Move command received but motors already have orders" );
 					commandId.AddStatusError();
 					continue;
 				}
@@ -98,7 +103,7 @@ public class OutputLinkManager {
 				String direction = commandId.GetParameterValue( "direction" );		
 				if ( direction == null )
 				{
-					System.err.println( "No direction on move command" );
+					logger.warning( "No direction on move command" );
 					commandId.AddStatusError();
 					continue;
 				}
@@ -110,13 +115,13 @@ public class OutputLinkManager {
 				} 
 				catch ( NullPointerException ex )
 				{
-					System.err.println( "No throttle on move command" );
+					logger.warning( "No throttle on move command" );
 					commandId.AddStatusError();
 					continue;
 				}
 				catch ( NumberFormatException e ) 
 				{
-					System.err.println( "Unable to parse throttle: " + commandId.GetParameterValue( "throttle" ) );
+					logger.warning( "Unable to parse throttle: " + commandId.GetParameterValue( "throttle" ) );
 					commandId.AddStatusError();
 					continue;
 				}
@@ -124,8 +129,7 @@ public class OutputLinkManager {
 				throttle = Math.max( throttle, 0 );
 				throttle = Math.min( throttle, 1.0 );
 				
-				System.out.format( "move: %10s %10s%n", "direction", "throttle" );
-				System.out.format( "      %10s %10.3f%n", direction, throttle );
+				logger.fine( String.format( "move: %10s %10.3f", direction, throttle ) );
 
 				if ( direction.equals( "backward" ) )
 				{
@@ -141,7 +145,7 @@ public class OutputLinkManager {
 				}
 				else
 				{
-					System.err.println( "Unknown direction on move command: " + commandId.GetParameterValue( "direction" ) );
+					logger.warning( "Unknown direction on move command: " + commandId.GetParameterValue( "direction" ) );
 					commandId.AddStatusError();
 					continue;
 				}
@@ -153,7 +157,7 @@ public class OutputLinkManager {
 			{
 				if ( newSplinterInput != null )
 				{
-					System.err.println( "Rotate command received but motors already have orders" );
+					logger.warning( "Rotate command received but motors already have orders" );
 					commandId.AddStatusError();
 					continue;
 				}
@@ -161,7 +165,7 @@ public class OutputLinkManager {
 				String direction = commandId.GetParameterValue( "direction" );		
 				if ( direction == null )
 				{
-					System.err.println( "No direction on rotate command" );
+					logger.warning( "No direction on rotate command" );
 					commandId.AddStatusError();
 					continue;
 				}
@@ -173,13 +177,13 @@ public class OutputLinkManager {
 				} 
 				catch ( NullPointerException ex )
 				{
-					System.err.println( "No throttle on rotate command" );
+					logger.warning( "No throttle on rotate command" );
 					commandId.AddStatusError();
 					continue;
 				}
 				catch ( NumberFormatException e ) 
 				{
-					System.err.println( "Unable to parse throttle: " + commandId.GetParameterValue( "throttle" ) );
+					logger.warning( "Unable to parse throttle: " + commandId.GetParameterValue( "throttle" ) );
 					commandId.AddStatusError();
 					continue;
 				}
@@ -187,8 +191,7 @@ public class OutputLinkManager {
 				throttle = Math.max( throttle, 0 );
 				throttle = Math.min( throttle, 1.0 );
 				
-				System.out.format( "rotate: %10s %10s%n", "direction", "throttle" );
-				System.out.format( "        %10s %10.3f%n", direction, throttle );
+				logger.fine( String.format( "rotate: %10s %10.3f", direction, throttle ) );
 				
 				if ( direction.equals( "left" ) )
 				{
@@ -204,7 +207,7 @@ public class OutputLinkManager {
 				}
 				else
 				{
-					System.err.println( "Unknown direction on rotate command: " + commandId.GetParameterValue( "direction" ) );
+					logger.warning( "Unknown direction on rotate command: " + commandId.GetParameterValue( "direction" ) );
 					commandId.AddStatusError();
 					continue;
 				}
@@ -217,7 +220,7 @@ public class OutputLinkManager {
 			{
 				if ( newSplinterInput != null )
 				{
-					System.err.println( "Rotate-to command received but motors already have orders" );
+					logger.warning( "Rotate-to command received but motors already have orders" );
 					commandId.AddStatusError();
 					continue;
 				}
@@ -229,13 +232,13 @@ public class OutputLinkManager {
 				} 
 				catch ( NullPointerException ex )
 				{
-					System.err.println( "No yaw on rotate-to command" );
+					logger.warning( "No yaw on rotate-to command" );
 					commandId.AddStatusError();
 					continue;
 				}
 				catch ( NumberFormatException e ) 
 				{
-					System.err.println( "Unable to parse yaw: " + commandId.GetParameterValue( "yaw" ) );
+					logger.warning( "Unable to parse yaw: " + commandId.GetParameterValue( "yaw" ) );
 					commandId.AddStatusError();
 					continue;
 				}
@@ -248,13 +251,13 @@ public class OutputLinkManager {
 				} 
 				catch ( NullPointerException ex )
 				{
-					System.err.println( "No tolerance on rotate-to command" );
+					logger.warning( "No tolerance on rotate-to command" );
 					commandId.AddStatusError();
 					continue;
 				}
 				catch ( NumberFormatException e ) 
 				{
-					System.err.println( "Unable to parse tolerance: " + commandId.GetParameterValue( "tolerance" ) );
+					logger.warning( "Unable to parse tolerance: " + commandId.GetParameterValue( "tolerance" ) );
 					commandId.AddStatusError();
 					continue;
 				}
@@ -270,13 +273,13 @@ public class OutputLinkManager {
 				} 
 				catch ( NullPointerException ex )
 				{
-					System.err.println( "No throttle on rotate-to command" );
+					logger.warning( "No throttle on rotate-to command" );
 					commandId.AddStatusError();
 					continue;
 				}
 				catch ( NumberFormatException e ) 
 				{
-					System.err.println( "Unable to parse throttle: " + commandId.GetParameterValue( "throttle" ) );
+					logger.warning( "Unable to parse throttle: " + commandId.GetParameterValue( "throttle" ) );
 					commandId.AddStatusError();
 					continue;
 				}
@@ -284,8 +287,7 @@ public class OutputLinkManager {
 				throttle = Math.max( throttle, 0 );
 				throttle = Math.min( throttle, 1.0 );
 
-				System.out.format( "rotate-to: %10s %10s %10s%n", "yaw", "tolerance", "throttle" );
-				System.out.format( "           %10.3f %10.3f %10.3f%n", yaw, tolerance, throttle );
+				logger.fine( String.format( "rotate-to: %10.3f %10.3f %10.3f", yaw, tolerance, throttle ) );
 				
 				newSplinterInput = new SplinterInput( yaw, tolerance, throttle );
 				
@@ -298,10 +300,10 @@ public class OutputLinkManager {
 				if ( newSplinterInput != null )
 				{
 					// This is a warning
-					System.err.println( "Stop command received, possibly overriding previous orders" );
+					logger.warning( "Stop command received, possibly overriding previous orders" );
 				}
 
-				System.out.format( "stop:%n" );
+				logger.fine( "stop:" );
 				
 				newSplinterInput = new SplinterInput( 0 );
 				
@@ -314,7 +316,7 @@ public class OutputLinkManager {
 				String id = commandId.GetParameterValue( "id" );
 				if ( id == null )
 				{
-					System.err.println( "No id on add-waypoint command" );
+					logger.warning( "No id on add-waypoint command" );
 					commandId.AddStatusError();
 					continue;
 				}
@@ -330,7 +332,7 @@ public class OutputLinkManager {
 				}
 				catch ( NumberFormatException e ) 
 				{
-					System.err.println( "Unable to parse x: " + commandId.GetParameterValue( "x" ) );
+					logger.warning( "Unable to parse x: " + commandId.GetParameterValue( "x" ) );
 					commandId.AddStatusError();
 					continue;
 				}
@@ -345,13 +347,12 @@ public class OutputLinkManager {
 				}
 				catch ( NumberFormatException e ) 
 				{
-					System.err.println( "Unable to parse y: " + commandId.GetParameterValue( "y" ) );
+					logger.warning( "Unable to parse y: " + commandId.GetParameterValue( "y" ) );
 					commandId.AddStatusError();
 					continue;
 				}
 
-				System.out.format( "add-waypoint: %16s %10s %10s%n", "id", "x", "y" );
-				System.out.format( "              %16s %10.3f %10.3f%n", id, pos[0], pos[1] );
+				logger.fine( String.format( "add-waypoint: %16s %10.3f %10.3f", id, pos[0], pos[1] ) );
 				
 				waypoints.add( pos, id );
 				
@@ -363,17 +364,16 @@ public class OutputLinkManager {
 				String id = commandId.GetParameterValue( "id" );
 				if ( id == null )
 				{
-					System.err.println( "No id on remove-waypoint command" );
+					logger.warning( "No id on remove-waypoint command" );
 					commandId.AddStatusError();
 					continue;
 				}
 				
-				System.out.format( "remove-waypoint: %16s%n", "id" );
-				System.out.format( "                 %16s%n", id );
+				logger.fine( String.format( "remove-waypoint: %16s", id ) );
 
 				if ( waypoints.remove( id ) == false )
 				{
-					System.err.println( "Unable to remove waypoint " + id + ", no such waypoint" );
+					logger.warning( "Unable to remove waypoint " + id + ", no such waypoint" );
 					commandId.AddStatusError();
 					continue;
 				}
@@ -386,17 +386,16 @@ public class OutputLinkManager {
 				String id = commandId.GetParameterValue( "id" );
 				if ( id == null )
 				{
-					System.err.println( "No id on enable-waypoint command" );
+					logger.warning( "No id on enable-waypoint command" );
 					commandId.AddStatusError();
 					continue;
 				}
 				
-				System.out.format( "enable-waypoint: %16s%n", "id" );
-				System.out.format( "                 %16s%n", id );
+				logger.fine( String.format( "enable-waypoint: %16s", id ) );
 
 				if ( waypoints.enable( id ) == false )
 				{
-					System.err.println( "Unable to enable waypoint " + id + ", no such waypoint" );
+					logger.warning( "Unable to enable waypoint " + id + ", no such waypoint" );
 					commandId.AddStatusError();
 					continue;
 				}
@@ -409,17 +408,16 @@ public class OutputLinkManager {
 				String id = commandId.GetParameterValue( "id" );
 				if ( id == null )
 				{
-					System.err.println( "No id on disable-waypoint command" );
+					logger.warning( "No id on disable-waypoint command" );
 					commandId.AddStatusError();
 					continue;
 				}
 				
-				System.out.format( "disable-waypoint: %16s%n", "id" );
-				System.out.format( "                  %16s%n", id );
+				logger.fine( String.format( "disable-waypoint: %16s", id ) );
 
 				if ( waypoints.disable( id ) == false )
 				{
-					System.err.println( "Unable to disable waypoint " + id + ", no such waypoint" );
+					logger.warning( "Unable to disable waypoint " + id + ", no such waypoint" );
 					commandId.AddStatusError();
 					continue;
 				}
@@ -429,11 +427,11 @@ public class OutputLinkManager {
 			}
 			else if ( commandName.equals( "broadcast-message" ) )
 			{
-				System.err.println( "broadcast-message command not implemented, ignoring" );
+				logger.warning( "broadcast-message command not implemented, ignoring" );
 				continue;
 			}
 			
-			System.err.println( "Unknown command: " + commandName );
+			logger.warning( "Unknown command: " + commandName );
 			commandId.AddStatusError();
 		}
 		

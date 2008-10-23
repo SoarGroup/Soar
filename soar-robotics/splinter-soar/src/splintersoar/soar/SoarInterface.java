@@ -25,11 +25,14 @@ public class SoarInterface implements Kernel.UpdateEventInterface, Kernel.AgentE
 	
 	private class Configuration
 	{
-		String productions;
+		String productions = "../agents/follower-robot.soar";
 		
 		Configuration( Config config )
 		{
-			productions = config.requireString( "soar.agent" );
+			if ( config != null )
+			{
+				productions = config.getString( "soar.productions", productions );
+			}
 		}
 	}
 	

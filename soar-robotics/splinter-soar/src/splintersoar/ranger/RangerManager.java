@@ -2,7 +2,6 @@ package splintersoar.ranger;
 
 import java.io.DataInputStream;
 import java.io.IOException;
-import java.util.concurrent.locks.Lock;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -16,7 +15,6 @@ public class RangerManager implements LCMSubscriber, RangerStateProducer
 {
 	private LCM lcm;
 	private laser_t laserDataCurrent;
-	Lock lock;
 	private Logger logger;
 	
 	public RangerManager()
@@ -34,38 +32,27 @@ public class RangerManager implements LCMSubscriber, RangerStateProducer
 			return null;
 		}
 		
-		laser_t laserDataCopy;
-		lock.lock();
-		try
-		{
-			laserDataCopy = laserDataCurrent.copy();
-		}
-		finally
-		{
-			lock.unlock();
-		}
-		
-		return new RangerState( laserDataCopy );
+		RangerState state = new RangerState( laserDataCurrent );
+		logger.finest( String.format( "New ranger state: %5.2f %5.2f %5.2f %5.2f %5.2f", 
+				state.ranger[0].distance, 
+				state.ranger[1].distance, 
+				state.ranger[2].distance, 
+				state.ranger[3].distance, 
+				state.ranger[4].distance ) );
+		return state;
 	}
 
 	@Override
 	public void messageReceived(LCM lcm, String channel, DataInputStream ins) {
 		if ( channel.equals( LCMInfo.LASER_FRONT_CHANNEL ) )
 		{
-			if ( lock.tryLock() == true )
+			try 
 			{
-				try 
-				{
-					laserDataCurrent = new laser_t( ins );
-				}
-				catch ( IOException ex ) 
-				{
-					logger.warning( "Error decoding LASER_FRONT message: " + ex );
-				}
-				finally
-				{
-					lock.unlock();
-				}
+				laserDataCurrent = new laser_t( ins );
+			}
+			catch ( IOException ex ) 
+			{
+				logger.warning( "Error decoding LASER_FRONT message: " + ex );
 			}
 		}
 	}
