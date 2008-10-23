@@ -2,6 +2,7 @@ package splintersoar.soar;
 
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.Iterator;
 
 import lcm.lcm.LCM;
 import lcmtypes.pose_t;
@@ -79,8 +80,6 @@ public class Waypoints {
 			
 			agent.Update( relativeBearing, Math.toDegrees( relativeBearingValue ) );
 			agent.Update( absRelativeBearing, Math.abs( Math.toDegrees( relativeBearingValue ) ) );
-			
-			//System.out.format( "%16s %10.3f %10.3f %10.3f %10.3f %10.3f%n", name, pos[0], pos[1], distanceValue, Math.toDegrees( yawValue ), Math.toDegrees( relativeBearingValue ) );
 		}
 		
 		void enable()
@@ -199,5 +198,13 @@ public class Waypoints {
 			}
 		}
 		lcm.publish( LCMInfo.WAYPOINTS_CHANNEL, waypoints );
+	}
+
+	public void beforeInitSoar() {
+		while ( waypointList.isEmpty() == false )
+		{
+			Iterator<String> iter = waypointList.keySet().iterator();
+			remove( iter.next() );
+		}
 	}
 }

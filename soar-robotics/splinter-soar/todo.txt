@@ -1,4 +1,3 @@
-* init-soar
 * documentation
 
 Types (see .lcm files for docs):

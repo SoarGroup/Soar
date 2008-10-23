@@ -11,6 +11,7 @@ import lcm.lcm.LCMSubscriber;
 import erp.config.Config;
 import sml.Agent;
 import sml.Kernel;
+import sml.smlAgentEventId;
 import sml.smlUpdateEventId;
 import splintersoar.LCMInfo;
 import splintersoar.LogFactory;
@@ -18,7 +19,7 @@ import splintersoar.lcmtypes.splinterstate_t;
 import splintersoar.ranger.RangerState;
 import splintersoar.ranger.RangerStateProducer;
 
-public class SoarInterface implements Kernel.UpdateEventInterface, LCMSubscriber
+public class SoarInterface implements Kernel.UpdateEventInterface, Kernel.AgentEventInterface, LCMSubscriber
 {
 	private Logger logger;
 	
@@ -96,6 +97,7 @@ public class SoarInterface implements Kernel.UpdateEventInterface, LCMSubscriber
 		output = new OutputLinkManager( agent, waypoints );
 		
 		kernel.RegisterForUpdateEvent( smlUpdateEventId.smlEVENT_AFTER_ALL_OUTPUT_PHASES, this, null );
+		kernel.RegisterForAgentEvent( smlAgentEventId.smlEVENT_BEFORE_AGENT_REINITIALIZED, this, null );
 	}
 	
 	class SoarRunner implements Runnable
@@ -143,6 +145,11 @@ public class SoarInterface implements Kernel.UpdateEventInterface, LCMSubscriber
 			kernel.StopAllAgents();
 		}
 		
+		updateState();
+	}
+	
+	public void updateState()
+	{
 		try
 		{
 			RangerState rangerState = rangerStateProducer.getRangerState();
@@ -163,12 +170,12 @@ public class SoarInterface implements Kernel.UpdateEventInterface, LCMSubscriber
 		}
 		catch ( NullPointerException unhandled )
 		{
-			logger.warning( "Unhandled null pointer exception in updateEventHandler" );
+			logger.warning( "Unhandled null pointer exception in updateState" );
 			unhandled.printStackTrace();
 		}
 		catch ( Throwable unhandled )
 		{
-			logger.warning( "Unhandled throwable in updateEventHandler" );
+			logger.warning( "Unhandled throwable in updateState" );
 			unhandled.printStackTrace();
 		}
 	}
@@ -189,6 +196,15 @@ public class SoarInterface implements Kernel.UpdateEventInterface, LCMSubscriber
 			{
 				logger.warning( "Error decoding splinterstate_t message: " + ex );
 			}
+		}
+	}
+
+	@Override
+	public void agentEventHandler( int id, Object userData, String agentName ) {
+		if ( id == smlAgentEventId.smlEVENT_BEFORE_AGENT_REINITIALIZED.swigValue() )
+		{
+			waypoints.beforeInitSoar();
+			agent.Commit();
 		}
 	}
 
