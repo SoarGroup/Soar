@@ -1,6 +1,5 @@
 * init-soar
 * documentation
-* consistent, single location of lcm channel ids
 
 Types (see .lcm files for docs):
 laser_t

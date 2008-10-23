@@ -2,6 +2,7 @@ package splintersoar.pf;
 
 import java.util.*;
 
+import splintersoar.LCMInfo;
 import splintersoar.lcmtypes.particles_t;
 
 import erp.geom.Geometry;
@@ -46,7 +47,7 @@ public class ParticleFilter {
 		}
 		
 		particleslcm.utime = System.nanoTime() / 1000;
-		lcm.publish( "PARTICLES", particleslcm );
+		lcm.publish( LCMInfo.PARTICLES_CHANNEL, particleslcm );
 	}
 
 	double [] oldlaserxy = { 0, 0 };
@@ -133,7 +134,7 @@ public class ParticleFilter {
 		particles = newParticles;
 
 		particleslcm.utime = System.nanoTime() / 1000;
-		lcm.publish( "PARTICLES", particleslcm );
+		lcm.publish( LCMInfo.PARTICLES_CHANNEL, particleslcm );
 		
 		fitParticle.xyt[2] = MathUtil.mod2pi( fitParticle.xyt[2] );
 		

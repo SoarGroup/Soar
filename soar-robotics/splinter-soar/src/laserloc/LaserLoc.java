@@ -10,6 +10,7 @@ import lcm.lcm.LCM;
 import lcm.lcm.LCMSubscriber;
 import lcmtypes.laser_t;
 
+import splintersoar.LCMInfo;
 import splintersoar.LogFactory;
 import splintersoar.lcmtypes.xy_t;
 
@@ -22,9 +23,6 @@ public class LaserLoc implements LCMSubscriber
 	{
 		initializeLaserData();
 	}
-
-	public static final String laser_channel = "LASER_LOC";
-	public static final String coords_channel = "COORDS";
 
 	private class Configuration
 	{
@@ -84,12 +82,11 @@ public class LaserLoc implements LCMSubscriber
 	{
 		configuration = new Configuration( config );
 		
-		logger = LogFactory.simpleLogger( );
+		logger = LogFactory.createSimpleLogger( "LaserLoc", Level.INFO );
 		if ( !configuration.testing )
 		{
 			lcm = LCM.getSingleton();
-			lcm.subscribe( laser_channel, this );
-			lcm.subscribe( "MOTOR_COMMANDS", this );
+			lcm.subscribe( LCMInfo.LASER_LOC_CHANNEL, this );
 
 		}
 
@@ -128,7 +125,7 @@ public class LaserLoc implements LCMSubscriber
 			if ( droppedLocPackets > 0 )
 			{
 				double dropRate = (double) droppedLocPackets / (nanoelapsed / 1000000000);
-				logger.warning( String.format( "LaserLoc: dropping %5.1f %s packets/sec", dropRate, laser_channel ) );
+				logger.warning( String.format( "LaserLoc: dropping %5.1f packets/sec", dropRate ) );
 				printHeaderLine();
 			}
 			
@@ -165,7 +162,7 @@ public class LaserLoc implements LCMSubscriber
 
 		if ( lcm != null )
 		{
-			lcm.publish( coords_channel, estimated_coords );
+			lcm.publish( LCMInfo.COORDS_CHANNEL, estimated_coords );
 		}
 
 		laser_data = null;
@@ -204,7 +201,7 @@ public class LaserLoc implements LCMSubscriber
 	@Override
 	public void messageReceived( LCM lcm, String channel, DataInputStream ins ) 
 	{
-		if ( channel.equals( laser_channel ) )
+		if ( channel.equals( LCMInfo.LASER_LOC_CHANNEL ) )
 		{
 			if ( laser_data != null )
 			{

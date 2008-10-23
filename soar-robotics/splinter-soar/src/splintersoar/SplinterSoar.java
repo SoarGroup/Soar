@@ -50,7 +50,7 @@ public class SplinterSoar
 		    return;
 		}
 		
-		logger = LogFactory.simpleLogger( );
+		logger = LogFactory.createSimpleLogger( "SplinterSoar", Level.INFO );
 		
 		lcm = LCM.getSingleton();
 		
@@ -105,7 +105,7 @@ public class SplinterSoar
 					overrideCommand.left = 0;
 					overrideCommand.right = 0;
 					overrideCommand.utime = System.nanoTime() / 1000;
-					lcm.publish( "DRIVE_COMMANDS", overrideCommand );
+					lcm.publish( LCMInfo.DRIVE_COMMANDS_CHANNEL, overrideCommand );
 				}
 			}
 			
@@ -143,7 +143,7 @@ public class SplinterSoar
 			{
 				overrideCommand = newCommand;
 				overrideCommand.utime = System.nanoTime() / 1000;
-				lcm.publish( "DRIVE_COMMANDS", overrideCommand );
+				lcm.publish( LCMInfo.DRIVE_COMMANDS_CHANNEL, overrideCommand );
 			}
 		}
 	}

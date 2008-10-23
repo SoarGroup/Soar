@@ -9,6 +9,7 @@ import javax.swing.JFrame;
 
 import jmat.LinAlg;
 
+import splintersoar.LCMInfo;
 import splintersoar.lcmtypes.splinterstate_t;
 import splintersoar.lcmtypes.waypoints_t;
 import splintersoar.lcmtypes.xy_t;
@@ -37,9 +38,9 @@ public class Viewer implements LCMSubscriber
 	public Viewer()
 	{
 		lcm = LCM.getSingleton();
-		lcm.subscribe( "SPLINTER_POSE", this );
-		lcm.subscribe( "WAYPOINTS", this );
-		lcm.subscribe( "COORDS", this );
+		lcm.subscribe( LCMInfo.SPLINTER_STATE_CHANNEL, this );
+		lcm.subscribe( LCMInfo.WAYPOINTS_CHANNEL, this );
+		lcm.subscribe( LCMInfo.COORDS_CHANNEL, this );
 
 
 		jf = new JFrame("RoomMapper");
@@ -84,7 +85,7 @@ public class Viewer implements LCMSubscriber
 	@Override
 	public void messageReceived( LCM lcm, String channel, DataInputStream ins ) 
 	{
-		if ( channel.equals( "SPLINTER_POSE" ) )
+		if ( channel.equals( LCMInfo.SPLINTER_STATE_CHANNEL ) )
 		{
 			try 
 			{
@@ -95,7 +96,7 @@ public class Viewer implements LCMSubscriber
 				System.err.println( "Error decoding splinterstate_t message: " + ex );
 			}
 		}
-		else if ( channel.equals( "WAYPOINTS" ) )
+		else if ( channel.equals( LCMInfo.WAYPOINTS_CHANNEL ) )
 		{
 			try 
 			{
@@ -106,7 +107,7 @@ public class Viewer implements LCMSubscriber
 				System.err.println( "Error decoding waypoints_t message: " + ex );
 			}
 		}
-		else if ( channel.equals( "COORDS" ) )
+		else if ( channel.equals( LCMInfo.COORDS_CHANNEL ) )
 		{
 			try 
 			{

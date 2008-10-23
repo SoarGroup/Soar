@@ -2,11 +2,9 @@ package splintersoar.soar;
 
 import java.io.DataInputStream;
 import java.io.IOException;
-import java.util.Arrays;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import laserloc.LaserLoc;
 import lcm.lcm.LCM;
 import lcm.lcm.LCMSubscriber;
 
@@ -14,9 +12,9 @@ import erp.config.Config;
 import sml.Agent;
 import sml.Kernel;
 import sml.smlUpdateEventId;
+import splintersoar.LCMInfo;
 import splintersoar.LogFactory;
 import splintersoar.lcmtypes.splinterstate_t;
-import splintersoar.lcmtypes.xy_t;
 import splintersoar.ranger.RangerState;
 import splintersoar.ranger.RangerStateProducer;
 
@@ -50,9 +48,9 @@ public class SoarInterface implements Kernel.UpdateEventInterface, LCMSubscriber
 		configuration = new Configuration( config );
 		
 		lcm = LCM.getSingleton();
-		lcm.subscribe( "SPLINTER_POSE", this );
+		lcm.subscribe( LCMInfo.SPLINTER_STATE_CHANNEL, this );
 
-		logger = LogFactory.simpleLogger( );
+		logger = LogFactory.createSimpleLogger( "SoarInterface", Level.INFO );
 
 		kernel = Kernel.CreateKernelInNewThread();
 		if ( kernel.HadError() )
@@ -156,7 +154,7 @@ public class SoarInterface implements Kernel.UpdateEventInterface, LCMSubscriber
 			
 			if ( splinterInput != null && !overrideEnabled )
 			{
-				lcm.publish( "DRIVE_COMMANDS", splinterInput.generateDriveCommand( ss ) );
+				lcm.publish( LCMInfo.DRIVE_COMMANDS_CHANNEL, splinterInput.generateDriveCommand( ss ) );
 			}
 		
 			waypoints.update(); // updates input link due to output link commands
@@ -181,7 +179,7 @@ public class SoarInterface implements Kernel.UpdateEventInterface, LCMSubscriber
 
 	@Override
 	public void messageReceived(LCM lcm, String channel, DataInputStream ins) {
-		if ( channel.equals( "SPLINTER_POSE" ) )
+		if ( channel.equals( LCMInfo.SPLINTER_STATE_CHANNEL ) )
 		{
 			try 
 			{

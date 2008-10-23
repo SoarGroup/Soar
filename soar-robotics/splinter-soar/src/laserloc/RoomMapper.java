@@ -11,6 +11,8 @@ import java.util.Arrays;
 
 import javax.swing.JFrame;
 
+import splintersoar.LCMInfo;
+
 import erp.vis.VisCanvas;
 import erp.vis.VisData;
 import erp.vis.VisDataPointStyle;
@@ -33,7 +35,7 @@ public class RoomMapper implements LCMSubscriber
 	public RoomMapper( boolean display )
 	{
 		lcm = LCM.getSingleton();
-		lcm.subscribe( LaserLoc.laser_channel, this );
+		lcm.subscribe( LCMInfo.LASER_LOC_CHANNEL, this );
 	
 		int readings = 75 * 5; // 5 seconds at 75 Hz
 		while ( readings-- > 0 )
@@ -122,7 +124,7 @@ public class RoomMapper implements LCMSubscriber
 	@Override
 	public void messageReceived( LCM lcm, String channel, DataInputStream ins ) 
 	{
-		if ( channel.equals( LaserLoc.laser_channel ) )
+		if ( channel.equals( LCMInfo.LASER_LOC_CHANNEL ) )
 		{
 			if ( laser_data != null )
 			{

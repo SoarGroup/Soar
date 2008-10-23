@@ -9,6 +9,7 @@ import lcmtypes.pose_t;
 import erp.geom.*;
 import erp.math.MathUtil;
 import sml.*;
+import splintersoar.LCMInfo;
 import splintersoar.lcmtypes.waypoints_t;
 import splintersoar.lcmtypes.xy_t;
 
@@ -197,6 +198,6 @@ public class Waypoints {
 				waypoints.locations[index].xy = Arrays.copyOf( waypointArray[index].xyz, 2 );
 			}
 		}
-		lcm.publish( "WAYPOINTS", waypoints );
+		lcm.publish( LCMInfo.WAYPOINTS_CHANNEL, waypoints );
 	}
 }

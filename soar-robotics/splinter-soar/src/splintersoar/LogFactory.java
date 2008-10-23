@@ -6,15 +6,10 @@ import java.util.logging.Logger;
 
 public class LogFactory {
 
-	private static Logger logger;
-	public static Logger simpleLogger()
+	public static Logger createSimpleLogger( String component, Level level )
 	{
-		if ( logger != null )
-			return logger;
+		Logger logger = Logger.getLogger(component);
 		
-		logger = Logger.getLogger(Logger.GLOBAL_LOGGER_NAME);
-		
-		Level level = Level.ALL;
 		ConsoleHandler handler = new ConsoleHandler();
 		handler.setFormatter(new TextFormatter());
 		handler.setLevel( level );
@@ -23,5 +18,20 @@ public class LogFactory {
 		logger.setUseParentHandlers( false );
 
 		return logger;
+	}
+	
+	public static void main( String [] args )
+	{
+		Logger logger1 = createSimpleLogger( "logger1", Level.ALL );
+		Logger logger2 = createSimpleLogger( "logger2", Level.INFO );
+		Logger logger1copy = Logger.getLogger( "logger1" );
+		
+		logger1.info("info test 1");
+		logger2.info("info test 2");
+		logger1copy.info("info test 3");
+		logger1.fine("fine test 1");
+		logger2.fine("fine test 2");
+		logger1copy.fine("fine test 3");
+		
 	}
 }

@@ -16,6 +16,7 @@ import lcmtypes.pose_t;
 import orc.Motor;
 import orc.Orc;
 import orc.OrcStatus;
+import splintersoar.LCMInfo;
 import splintersoar.LogFactory;
 import splintersoar.lcmtypes.splinterstate_t;
 import splintersoar.lcmtypes.xy_t;
@@ -41,8 +42,6 @@ public class OrcInterface implements LCMSubscriber
 		double tickMeters = 0.000043225;
 		double lengthMeters = 0.64;
 		double widthMeters = 0.42;
-		String splinterPoseChannel = "SPLINTER_POSE";
-		String driveCommandChannel = "DRIVE_COMMANDS";
 		
 		Configuration( Config config )
 		{
@@ -57,8 +56,6 @@ public class OrcInterface implements LCMSubscriber
 			tickMeters = config.getDouble( "orc.tickMeters", tickMeters );
 			lengthMeters = config.getDouble( "orc.lengthMeters", lengthMeters );
 			widthMeters = config.getDouble( "orc.widthMeters", widthMeters );
-			splinterPoseChannel = config.getString( "orc.splinterPoseChannel", splinterPoseChannel );
-			driveCommandChannel = config.getString( "orc.driveCommandChannel", driveCommandChannel );
 		}
 	}
 	
@@ -89,11 +86,11 @@ public class OrcInterface implements LCMSubscriber
 		previousState.pose.orientation = new double [4];
 		previousState.pose.pos = new double [3];
 		
-		logger = LogFactory.simpleLogger( );
+		logger = LogFactory.createSimpleLogger( "OrcInterface", Level.INFO );
 
 		lcm = LCM.getSingleton();
-		lcm.subscribe( laserloc.LaserLoc.coords_channel, this );
-		lcm.subscribe( configuration.driveCommandChannel, this);
+		lcm.subscribe( LCMInfo.COORDS_CHANNEL, this );
+		lcm.subscribe( LCMInfo.DRIVE_COMMANDS_CHANNEL, this);
 		
 		orc = Orc.makeOrc();
 		motor[0] = new Motor( orc, configuration.ports[0], configuration.invert[0] );
@@ -176,7 +173,7 @@ public class OrcInterface implements LCMSubscriber
 			currentState.pose.utime = currentState.utime;
 			
 			// publish pose
-			lcm.publish( configuration.splinterPoseChannel, currentState );
+			lcm.publish( LCMInfo.SPLINTER_STATE_CHANNEL, currentState );
 
 			// command motors
 			commandMotors( currentState.utime );
@@ -188,7 +185,7 @@ public class OrcInterface implements LCMSubscriber
 	@Override
 	public void messageReceived( LCM lcm, String channel, DataInputStream ins ) 
 	{
-		if ( channel.equals( LaserLoc.coords_channel ) )
+		if ( channel.equals( LCMInfo.COORDS_CHANNEL ) )
 		{
 			if ( laserxy != null )
 			{
@@ -204,7 +201,7 @@ public class OrcInterface implements LCMSubscriber
 				logger.warning( "Error decoding laserxy message: " + ex );
 			}
 		}
-		else if ( channel.equals( configuration.driveCommandChannel ) )
+		else if ( channel.equals( LCMInfo.DRIVE_COMMANDS_CHANNEL ) )
 		{
 			try 
 			{
