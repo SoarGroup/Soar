@@ -18,7 +18,7 @@ public class Waypoints {
 
 	Agent agent;
 	Identifier waypoints;
-	pose_t robotpose;
+	pose_t robotPose;
 
 	HashMap<String, Waypoint> waypointList = new HashMap<String, Waypoint>();
 
@@ -61,15 +61,15 @@ public class Waypoints {
 		}
 
 		void updateWmes() {
-			double distanceValue = Geometry.distance(robotpose.pos, xyz, 2);
+			double distanceValue = Geometry.distance(robotPose.pos, xyz, 2);
 			agent.Update(distance, distanceValue);
 
-			double[] delta = Geometry.subtract(xyz, robotpose.pos);
+			double[] delta = Geometry.subtract(xyz, robotPose.pos);
 
 			double yawValue = Math.atan2(delta[1], delta[0]);
 			agent.Update(yaw, Math.toDegrees(yawValue));
 
-			double relativeBearingValue = yawValue - Geometry.quatToRollPitchYaw(robotpose.orientation)[2];
+			double relativeBearingValue = yawValue - Geometry.quatToRollPitchYaw(robotPose.orientation)[2];
 			relativeBearingValue = MathUtil.mod2pi(relativeBearingValue);
 
 			agent.Update(relativeBearing, Math.toDegrees(relativeBearingValue));
@@ -150,7 +150,7 @@ public class Waypoints {
 	}
 
 	public void setNewRobotPose(pose_t robotpose) {
-		this.robotpose = robotpose;
+		this.robotPose = robotpose;
 	}
 
 	public void update() {

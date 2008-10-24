@@ -16,14 +16,14 @@ import splintersoar.ranger.RangerState;
 public class InputLinkManager {
 
 	private class TimeIL {
-		IntElement time_seconds;
-		IntElement time_microseconds;
+		IntElement secondswme;
+		IntElement microsecondswme;
 
 		final static long nanosecondsPerSecond = 1000000000;
 
 		TimeIL(Identifier time) {
-			time_seconds = agent.CreateIntWME(time, "seconds", 0);
-			time_microseconds = agent.CreateIntWME(time, "microseconds", 0);
+			secondswme = agent.CreateIntWME(time, "seconds", 0);
+			microsecondswme = agent.CreateIntWME(time, "microseconds", 0);
 
 			update();
 		}
@@ -34,8 +34,8 @@ public class InputLinkManager {
 			int microseconds = (int) (current % nanosecondsPerSecond);
 			microseconds /= 1000;
 
-			agent.Update(time_seconds, seconds);
-			agent.Update(time_microseconds, microseconds);
+			agent.Update(secondswme, seconds);
+			agent.Update(microsecondswme, microseconds);
 		}
 	}
 
@@ -44,35 +44,35 @@ public class InputLinkManager {
 		class Range {
 			int idNumber;
 
-			Identifier range;
-			FloatElement start;
-			FloatElement end;
-			FloatElement distance;
+			Identifier rangewme;
+			FloatElement startwme;
+			FloatElement endwme;
+			FloatElement distancewme;
 
 			Range(int id) {
 				idNumber = id;
 
-				range = agent.CreateIdWME(ranges, "range");
-				agent.CreateIntWME(range, "id", idNumber);
+				rangewme = agent.CreateIdWME(rangeswme, "range");
+				agent.CreateIntWME(rangewme, "id", idNumber);
 
-				start = agent.CreateFloatWME(range, "start", 0);
-				end = agent.CreateFloatWME(range, "end", 0);
-				distance = agent.CreateFloatWME(range, "distance", 0);
+				startwme = agent.CreateFloatWME(rangewme, "start", 0);
+				endwme = agent.CreateFloatWME(rangewme, "end", 0);
+				distancewme = agent.CreateFloatWME(rangewme, "distance", 0);
 			}
 
 			void update(RangerState.RangerData data) {
-				agent.Update(start, Math.toDegrees(data.start));
-				agent.Update(end, Math.toDegrees(data.end));
-				agent.Update(distance, data.distance);
+				agent.Update(startwme, Math.toDegrees(data.start));
+				agent.Update(endwme, Math.toDegrees(data.end));
+				agent.Update(distancewme, data.distance);
 			}
 		}
 
-		long last_ranger_utime = 0;
+		long lastRangerutime = 0;
 		Range[] slices;
-		Identifier ranges;
+		Identifier rangeswme;
 
 		RangerIL(Identifier ranges, RangerState rangerState) {
-			this.ranges = ranges;
+			this.rangeswme = ranges;
 
 			if (rangerState != null) {
 				createSlices(rangerState);
@@ -95,10 +95,10 @@ public class InputLinkManager {
 				return;
 			}
 
-			if (rangerState.utime == last_ranger_utime) {
+			if (rangerState.utime == lastRangerutime) {
 				return;
 			}
-			last_ranger_utime = rangerState.utime;
+			lastRangerutime = rangerState.utime;
 
 			if (slices == null) {
 				createSlices(rangerState);
@@ -117,50 +117,50 @@ public class InputLinkManager {
 	}
 
 	private class SelfIL {
-		IntElement self_motor_left_position;
-		IntElement self_motor_right_position;
-		FloatElement self_pose_x;
-		FloatElement self_pose_y;
-		FloatElement self_pose_z;
-		FloatElement self_pose_yaw;
-		Identifier self_waypoints;
+		IntElement leftPositionwme;
+		IntElement rightPositionwme;
+		FloatElement xwme;
+		FloatElement ywme;
+		FloatElement zwme;
+		FloatElement yawwme;
+		Identifier waypointswme;
 
-		long last_splinter_uime = 0;
+		long lastSplinterutime = 0;
 
 		SelfIL(Identifier self, splinterstate_t splinterState) {
-			Identifier self_motor = agent.CreateIdWME(self, "motor");
-			Identifier self_motor_left = agent.CreateIdWME(self_motor, "left");
-			self_motor_left_position = agent.CreateIntWME(self_motor_left, "position", 0);
-			Identifier self_motor_right = agent.CreateIdWME(self_motor, "right");
-			self_motor_right_position = agent.CreateIntWME(self_motor_right, "position", 0);
+			Identifier motorwme = agent.CreateIdWME(self, "motor");
+			Identifier leftMotorwme = agent.CreateIdWME(motorwme, "left");
+			leftPositionwme = agent.CreateIntWME(leftMotorwme, "position", 0);
+			Identifier rightMotorwme = agent.CreateIdWME(motorwme, "right");
+			rightPositionwme = agent.CreateIntWME(rightMotorwme, "position", 0);
 
 			agent.CreateStringWME(self, "name", agent.GetAgentName());
 
-			Identifier self_pose = agent.CreateIdWME(self, "pose");
-			self_pose_x = agent.CreateFloatWME(self_pose, "x", 0);
-			self_pose_y = agent.CreateFloatWME(self_pose, "y", 0);
-			self_pose_yaw = agent.CreateFloatWME(self_pose, "yaw", 0);
+			Identifier posewme = agent.CreateIdWME(self, "pose");
+			xwme = agent.CreateFloatWME(posewme, "x", 0);
+			ywme = agent.CreateFloatWME(posewme, "y", 0);
+			yawwme = agent.CreateFloatWME(posewme, "yaw", 0);
 
-			self_waypoints = agent.CreateIdWME(self, "waypoints");
-			waypoints.setRootIdentifier(self_waypoints);
+			waypointswme = agent.CreateIdWME(self, "waypoints");
+			waypoints.setRootIdentifier(waypointswme);
 
 			update(splinterState);
 		}
 
 		void update(splinterstate_t splinterState) {
 			// update robot state if we have new state
-			if (splinterState.utime == last_splinter_uime) {
+			if (splinterState.utime == lastSplinterutime) {
 				return;
 			}
 
-			last_splinter_uime = splinterState.utime;
+			lastSplinterutime = splinterState.utime;
 
-			agent.Update(self_motor_left_position, splinterState.leftodom);
-			agent.Update(self_motor_right_position, splinterState.rightodom);
+			agent.Update(leftPositionwme, splinterState.leftodom);
+			agent.Update(rightPositionwme, splinterState.rightodom);
 
-			agent.Update(self_pose_x, splinterState.pose.pos[0]);
-			agent.Update(self_pose_y, splinterState.pose.pos[1]);
-			agent.Update(self_pose_yaw, Math.toDegrees(MathUtil.mod2pi(Geometry.quatToRollPitchYaw(splinterState.pose.orientation)[2])));
+			agent.Update(xwme, splinterState.pose.pos[0]);
+			agent.Update(ywme, splinterState.pose.pos[1]);
+			agent.Update(yawwme, Math.toDegrees(MathUtil.mod2pi(Geometry.quatToRollPitchYaw(splinterState.pose.orientation)[2])));
 
 			waypoints.setNewRobotPose(splinterState.pose);
 		}

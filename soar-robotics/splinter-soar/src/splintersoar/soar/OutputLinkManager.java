@@ -28,8 +28,8 @@ public class OutputLinkManager {
 
 		// process output
 		for (int i = 0; i < agent.GetNumberCommands(); ++i) {
-			Identifier commandId = agent.GetCommand(i);
-			String commandName = commandId.GetAttribute();
+			Identifier commandwme = agent.GetCommand(i);
+			String commandName = commandwme.GetAttribute();
 
 			if (commandName.equals("motor")) {
 				if (newSplinterInput != null) {
@@ -40,26 +40,26 @@ public class OutputLinkManager {
 				double[] motorThrottle = { 0, 0 };
 
 				try {
-					motorThrottle[0] = Double.parseDouble(commandId.GetParameterValue("left"));
+					motorThrottle[0] = Double.parseDouble(commandwme.GetParameterValue("left"));
 				} catch (NullPointerException ex) {
 					logger.warning("No left on motor command");
-					commandId.AddStatusError();
+					commandwme.AddStatusError();
 					continue;
 				} catch (NumberFormatException e) {
-					logger.warning("Unable to parse left: " + commandId.GetParameterValue("left"));
-					commandId.AddStatusError();
+					logger.warning("Unable to parse left: " + commandwme.GetParameterValue("left"));
+					commandwme.AddStatusError();
 					continue;
 				}
 
 				try {
-					motorThrottle[1] = Double.parseDouble(commandId.GetParameterValue("right"));
+					motorThrottle[1] = Double.parseDouble(commandwme.GetParameterValue("right"));
 				} catch (NullPointerException ex) {
 					logger.warning("No right on motor command");
-					commandId.AddStatusError();
+					commandwme.AddStatusError();
 					continue;
 				} catch (NumberFormatException e) {
-					logger.warning("Unable to parse right: " + commandId.GetParameterValue("right"));
-					commandId.AddStatusError();
+					logger.warning("Unable to parse right: " + commandwme.GetParameterValue("right"));
+					commandwme.AddStatusError();
 					continue;
 				}
 
@@ -73,32 +73,32 @@ public class OutputLinkManager {
 
 				newSplinterInput = new SplinterInput(motorThrottle);
 
-				commandId.AddStatusComplete();
+				commandwme.AddStatusComplete();
 				continue;
 			} else if (commandName.equals("move")) {
 				if (newSplinterInput != null) {
 					logger.warning("Move command received but motors already have orders");
-					commandId.AddStatusError();
+					commandwme.AddStatusError();
 					continue;
 				}
 
-				String direction = commandId.GetParameterValue("direction");
+				String direction = commandwme.GetParameterValue("direction");
 				if (direction == null) {
 					logger.warning("No direction on move command");
-					commandId.AddStatusError();
+					commandwme.AddStatusError();
 					continue;
 				}
 
 				double throttle = 0;
 				try {
-					throttle = Double.parseDouble(commandId.GetParameterValue("throttle"));
+					throttle = Double.parseDouble(commandwme.GetParameterValue("throttle"));
 				} catch (NullPointerException ex) {
 					logger.warning("No throttle on move command");
-					commandId.AddStatusError();
+					commandwme.AddStatusError();
 					continue;
 				} catch (NumberFormatException e) {
-					logger.warning("Unable to parse throttle: " + commandId.GetParameterValue("throttle"));
-					commandId.AddStatusError();
+					logger.warning("Unable to parse throttle: " + commandwme.GetParameterValue("throttle"));
+					commandwme.AddStatusError();
 					continue;
 				}
 
@@ -114,37 +114,37 @@ public class OutputLinkManager {
 				} else if (direction.equals("stop")) {
 					newSplinterInput = new SplinterInput(0);
 				} else {
-					logger.warning("Unknown direction on move command: " + commandId.GetParameterValue("direction"));
-					commandId.AddStatusError();
+					logger.warning("Unknown direction on move command: " + commandwme.GetParameterValue("direction"));
+					commandwme.AddStatusError();
 					continue;
 				}
 
-				commandId.AddStatusComplete();
+				commandwme.AddStatusComplete();
 				continue;
 			} else if (commandName.equals("rotate")) {
 				if (newSplinterInput != null) {
 					logger.warning("Rotate command received but motors already have orders");
-					commandId.AddStatusError();
+					commandwme.AddStatusError();
 					continue;
 				}
 
-				String direction = commandId.GetParameterValue("direction");
+				String direction = commandwme.GetParameterValue("direction");
 				if (direction == null) {
 					logger.warning("No direction on rotate command");
-					commandId.AddStatusError();
+					commandwme.AddStatusError();
 					continue;
 				}
 
 				double throttle = 0;
 				try {
-					throttle = Double.parseDouble(commandId.GetParameterValue("throttle"));
+					throttle = Double.parseDouble(commandwme.GetParameterValue("throttle"));
 				} catch (NullPointerException ex) {
 					logger.warning("No throttle on rotate command");
-					commandId.AddStatusError();
+					commandwme.AddStatusError();
 					continue;
 				} catch (NumberFormatException e) {
-					logger.warning("Unable to parse throttle: " + commandId.GetParameterValue("throttle"));
-					commandId.AddStatusError();
+					logger.warning("Unable to parse throttle: " + commandwme.GetParameterValue("throttle"));
+					commandwme.AddStatusError();
 					continue;
 				}
 
@@ -160,45 +160,45 @@ public class OutputLinkManager {
 				} else if (direction.equals("stop")) {
 					newSplinterInput = new SplinterInput(0);
 				} else {
-					logger.warning("Unknown direction on rotate command: " + commandId.GetParameterValue("direction"));
-					commandId.AddStatusError();
+					logger.warning("Unknown direction on rotate command: " + commandwme.GetParameterValue("direction"));
+					commandwme.AddStatusError();
 					continue;
 				}
 
-				commandId.AddStatusComplete();
+				commandwme.AddStatusComplete();
 				continue;
 
 			} else if (commandName.equals("rotate-to")) {
 				if (newSplinterInput != null) {
 					logger.warning("Rotate-to command received but motors already have orders");
-					commandId.AddStatusError();
+					commandwme.AddStatusError();
 					continue;
 				}
 
 				double yaw = 0;
 				try {
-					yaw = Double.parseDouble(commandId.GetParameterValue("yaw"));
+					yaw = Double.parseDouble(commandwme.GetParameterValue("yaw"));
 				} catch (NullPointerException ex) {
 					logger.warning("No yaw on rotate-to command");
-					commandId.AddStatusError();
+					commandwme.AddStatusError();
 					continue;
 				} catch (NumberFormatException e) {
-					logger.warning("Unable to parse yaw: " + commandId.GetParameterValue("yaw"));
-					commandId.AddStatusError();
+					logger.warning("Unable to parse yaw: " + commandwme.GetParameterValue("yaw"));
+					commandwme.AddStatusError();
 					continue;
 				}
 				yaw = Math.toRadians(yaw);
 
 				double tolerance = 0;
 				try {
-					tolerance = Double.parseDouble(commandId.GetParameterValue("tolerance"));
+					tolerance = Double.parseDouble(commandwme.GetParameterValue("tolerance"));
 				} catch (NullPointerException ex) {
 					logger.warning("No tolerance on rotate-to command");
-					commandId.AddStatusError();
+					commandwme.AddStatusError();
 					continue;
 				} catch (NumberFormatException e) {
-					logger.warning("Unable to parse tolerance: " + commandId.GetParameterValue("tolerance"));
-					commandId.AddStatusError();
+					logger.warning("Unable to parse tolerance: " + commandwme.GetParameterValue("tolerance"));
+					commandwme.AddStatusError();
 					continue;
 				}
 
@@ -208,14 +208,14 @@ public class OutputLinkManager {
 
 				double throttle = 0;
 				try {
-					throttle = Double.parseDouble(commandId.GetParameterValue("throttle"));
+					throttle = Double.parseDouble(commandwme.GetParameterValue("throttle"));
 				} catch (NullPointerException ex) {
 					logger.warning("No throttle on rotate-to command");
-					commandId.AddStatusError();
+					commandwme.AddStatusError();
 					continue;
 				} catch (NumberFormatException e) {
-					logger.warning("Unable to parse throttle: " + commandId.GetParameterValue("throttle"));
-					commandId.AddStatusError();
+					logger.warning("Unable to parse throttle: " + commandwme.GetParameterValue("throttle"));
+					commandwme.AddStatusError();
 					continue;
 				}
 
@@ -226,7 +226,7 @@ public class OutputLinkManager {
 
 				newSplinterInput = new SplinterInput(yaw, tolerance, throttle);
 
-				commandId.AddStatusComplete();
+				commandwme.AddStatusComplete();
 				continue;
 
 			} else if (commandName.equals("stop")) {
@@ -239,35 +239,35 @@ public class OutputLinkManager {
 
 				newSplinterInput = new SplinterInput(0);
 
-				commandId.AddStatusComplete();
+				commandwme.AddStatusComplete();
 				continue;
 
 			} else if (commandName.equals("add-waypoint")) {
-				String id = commandId.GetParameterValue("id");
+				String id = commandwme.GetParameterValue("id");
 				if (id == null) {
 					logger.warning("No id on add-waypoint command");
-					commandId.AddStatusError();
+					commandwme.AddStatusError();
 					continue;
 				}
 
 				double[] pos = Arrays.copyOf(splinterState.pose.pos, splinterState.pose.pos.length);
 				try {
-					pos[0] = Double.parseDouble(commandId.GetParameterValue("x"));
+					pos[0] = Double.parseDouble(commandwme.GetParameterValue("x"));
 				} catch (NullPointerException ignored) {
 					// no x param is ok, use current
 				} catch (NumberFormatException e) {
-					logger.warning("Unable to parse x: " + commandId.GetParameterValue("x"));
-					commandId.AddStatusError();
+					logger.warning("Unable to parse x: " + commandwme.GetParameterValue("x"));
+					commandwme.AddStatusError();
 					continue;
 				}
 
 				try {
-					pos[1] = Double.parseDouble(commandId.GetParameterValue("y"));
+					pos[1] = Double.parseDouble(commandwme.GetParameterValue("y"));
 				} catch (NullPointerException ignored) {
 					// no y param is ok, use current
 				} catch (NumberFormatException e) {
-					logger.warning("Unable to parse y: " + commandId.GetParameterValue("y"));
-					commandId.AddStatusError();
+					logger.warning("Unable to parse y: " + commandwme.GetParameterValue("y"));
+					commandwme.AddStatusError();
 					continue;
 				}
 
@@ -275,13 +275,13 @@ public class OutputLinkManager {
 
 				waypoints.add(pos, id);
 
-				commandId.AddStatusComplete();
+				commandwme.AddStatusComplete();
 				continue;
 			} else if (commandName.equals("remove-waypoint")) {
-				String id = commandId.GetParameterValue("id");
+				String id = commandwme.GetParameterValue("id");
 				if (id == null) {
 					logger.warning("No id on remove-waypoint command");
-					commandId.AddStatusError();
+					commandwme.AddStatusError();
 					continue;
 				}
 
@@ -289,17 +289,17 @@ public class OutputLinkManager {
 
 				if (waypoints.remove(id) == false) {
 					logger.warning("Unable to remove waypoint " + id + ", no such waypoint");
-					commandId.AddStatusError();
+					commandwme.AddStatusError();
 					continue;
 				}
 
-				commandId.AddStatusComplete();
+				commandwme.AddStatusComplete();
 				continue;
 			} else if (commandName.equals("enable-waypoint")) {
-				String id = commandId.GetParameterValue("id");
+				String id = commandwme.GetParameterValue("id");
 				if (id == null) {
 					logger.warning("No id on enable-waypoint command");
-					commandId.AddStatusError();
+					commandwme.AddStatusError();
 					continue;
 				}
 
@@ -307,17 +307,17 @@ public class OutputLinkManager {
 
 				if (waypoints.enable(id) == false) {
 					logger.warning("Unable to enable waypoint " + id + ", no such waypoint");
-					commandId.AddStatusError();
+					commandwme.AddStatusError();
 					continue;
 				}
 
-				commandId.AddStatusComplete();
+				commandwme.AddStatusComplete();
 				continue;
 			} else if (commandName.equals("disable-waypoint")) {
-				String id = commandId.GetParameterValue("id");
+				String id = commandwme.GetParameterValue("id");
 				if (id == null) {
 					logger.warning("No id on disable-waypoint command");
-					commandId.AddStatusError();
+					commandwme.AddStatusError();
 					continue;
 				}
 
@@ -325,11 +325,11 @@ public class OutputLinkManager {
 
 				if (waypoints.disable(id) == false) {
 					logger.warning("Unable to disable waypoint " + id + ", no such waypoint");
-					commandId.AddStatusError();
+					commandwme.AddStatusError();
 					continue;
 				}
 
-				commandId.AddStatusComplete();
+				commandwme.AddStatusComplete();
 				continue;
 			} else if (commandName.equals("broadcast-message")) {
 				logger.warning("broadcast-message command not implemented, ignoring");
@@ -337,7 +337,7 @@ public class OutputLinkManager {
 			}
 
 			logger.warning("Unknown command: " + commandName);
-			commandId.AddStatusError();
+			commandwme.AddStatusError();
 		}
 
 		return newSplinterInput;

@@ -19,26 +19,22 @@ import erp.config.ConfigFile;
 
 public class LaserLoc extends Thread implements LCMSubscriber {
 	private class Configuration {
-		double laser_x = 0; // if we assume the laser is at the origin facing up
-		// the y-axis, the next 3 constants are all 0
-		double laser_y = 0;
-		double laser_yaw_adjust = 0; // amount to adjust for laser's yaw = 90 -
-		// laser's yaw = 0 if laser is facing
-		// positive y directly
-		double laser_dist_adjustment = 0; // radius of tube?
-		long update_period = 5; // nanoseconds between status updates
-		long activity_timeout = 5;
+		double [] laserxyt = { 0, 0, 0 }; // laser location
+		double tubeRadius = 0; 
+		int updatePeriod = 5; // seconds between status updates
+		int activityTimeout = 5;
 		double[] maxRanges;
 		String mapFile = "map.txt";
+		
+		long updatePeriodNanos;
+		long activityTimeoutNanos;
 
 		Configuration(Config config) {
 			if (config != null) {
-				laser_x = config.getDouble("laser_x", laser_x);
-				laser_y = config.getDouble("laser_y", laser_y);
-				laser_yaw_adjust = config.getDouble("laser_yaw_adjust", laser_yaw_adjust);
-				laser_dist_adjustment = config.getDouble("laser_dist_adjustment", laser_dist_adjustment);
-				update_period = config.getInt("update_period", (int) update_period);
-				activity_timeout = config.getInt("activity_timeout", (int) activity_timeout);
+				laserxyt = config.getDoubles("laserxyt", laserxyt);
+				tubeRadius = config.getDouble("tubeRadius", tubeRadius);
+				updatePeriod = config.getInt("updatePeriod", updatePeriod);
+				activityTimeout = config.getInt("activityTimeout", activityTimeout);
 				mapFile = config.getString("mapFile", mapFile);
 			}
 
@@ -48,8 +44,8 @@ public class LaserLoc extends Thread implements LCMSubscriber {
 			} catch (IOException e) {
 			}
 
-			update_period *= 1000000000;
-			activity_timeout *= 1000000000;
+			updatePeriodNanos = updatePeriod * 1000000000;
+			activityTimeoutNanos = activityTimeout * 1000000000;
 		}
 	}
 
@@ -63,7 +59,7 @@ public class LaserLoc extends Thread implements LCMSubscriber {
 	// distances in meters
 
 	// regular state
-	laser_t laser_data;
+	laser_t laserData;
 
 	int droppedLocPackets = 0;
 	long lastStatusUpdate = System.nanoTime();
@@ -91,7 +87,7 @@ public class LaserLoc extends Thread implements LCMSubscriber {
 			Arrays.fill(configuration.maxRanges, Double.MAX_VALUE);
 		}
 
-		currentTimeout = configuration.activity_timeout;
+		currentTimeout = configuration.activityTimeoutNanos;
 	}
 
 	private void updatePose() {
@@ -101,12 +97,12 @@ public class LaserLoc extends Thread implements LCMSubscriber {
 			inactive = true;
 			logger.warning(String.format("no activity in last " + (currentTimeout / 1000000000) + " seconds"));
 			nanolastactivity = nanotime;
-			currentTimeout += configuration.activity_timeout;
+			currentTimeout += configuration.activityTimeoutNanos;
 		}
 
 		// occasionally print out status update
 		long nanoelapsed = nanotime - lastStatusUpdate;
-		if (nanoelapsed > configuration.update_period) {
+		if (nanoelapsed > configuration.updatePeriodNanos) {
 			if (droppedLocPackets > 0) {
 				double dropRate = (double) droppedLocPackets / (nanoelapsed / 1000000000);
 				logger.warning(String.format("LaserLoc: dropping %5.1f packets/sec", dropRate));
@@ -116,7 +112,7 @@ public class LaserLoc extends Thread implements LCMSubscriber {
 			lastStatusUpdate = nanotime;
 		}
 
-		if (laser_data == null) {
+		if (laserData == null) {
 			try {
 				Thread.sleep(50);
 			} catch (InterruptedException ignored) {
@@ -125,22 +121,22 @@ public class LaserLoc extends Thread implements LCMSubscriber {
 		}
 
 		nanolastactivity = nanotime;
-		currentTimeout = configuration.activity_timeout;
+		currentTimeout = configuration.activityTimeoutNanos;
 
 		if (inactive) {
 			logger.info("receiving data");
 			inactive = false;
 		}
 
-		xy_t estimated_coords = getRobotXY(laser_data);
+		xy_t estimated_coords = getRobotXY(laserData);
 
-		estimated_coords.utime = laser_data.utime;
+		estimated_coords.utime = laserData.utime;
 
 		logger.fine(String.format("publishing %10.3f %10.3f", estimated_coords.xy[0], estimated_coords.xy[1]));
 
 		lcm.publish(LCMInfo.COORDS_CHANNEL, estimated_coords);
 
-		laser_data = null;
+		laserData = null;
 	}
 
 	private xy_t getRobotXY(laser_t laser_data) {
@@ -158,13 +154,13 @@ public class LaserLoc extends Thread implements LCMSubscriber {
 		}
 		assert smallest_range_index != -1;
 
-		double laser_angle = configuration.laser_yaw_adjust + laser_data.rad0 + laser_data.radstep * smallest_range_index;
+		double laser_angle = configuration.laserxyt[2] + laser_data.rad0 + laser_data.radstep * smallest_range_index;
 
-		double laser_dist = smallest_range + configuration.laser_dist_adjustment;
+		double laser_dist = smallest_range + configuration.tubeRadius;
 
 		xy_t new_coords = new xy_t();
-		new_coords.xy[0] = configuration.laser_x + laser_dist * Math.cos(laser_angle);
-		new_coords.xy[1] = configuration.laser_y + laser_dist * Math.sin(laser_angle);
+		new_coords.xy[0] = configuration.laserxyt[0] + laser_dist * Math.cos(laser_angle);
+		new_coords.xy[1] = configuration.laserxyt[1] + laser_dist * Math.sin(laser_angle);
 
 		return new_coords;
 	}
@@ -172,13 +168,13 @@ public class LaserLoc extends Thread implements LCMSubscriber {
 	@Override
 	public void messageReceived(LCM lcm, String channel, DataInputStream ins) {
 		if (channel.equals(LCMInfo.LASER_LOC_CHANNEL)) {
-			if (laser_data != null) {
+			if (laserData != null) {
 				droppedLocPackets += 1;
 				return;
 			}
 
 			try {
-				laser_data = new laser_t(ins);
+				laserData = new laser_t(ins);
 			} catch (IOException ex) {
 				System.err.println("Error decoding laser message: " + ex);
 			}

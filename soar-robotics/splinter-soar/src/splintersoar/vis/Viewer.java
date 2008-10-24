@@ -37,7 +37,7 @@ public class Viewer implements LCMSubscriber {
 	waypoints_t waypoints;
 	xy_t laserxy;
 	particles_t particles;
-	laser_t laser_front;
+	laser_t laserFront;
 
 	public Viewer() {
 		lcm = LCM.getSingleton();
@@ -88,9 +88,9 @@ public class Viewer implements LCMSubscriber {
 				}
 			}
 
-			if (laser_front != null) {
+			if (laserFront != null) {
 				laser_t lf;
-				lf = laser_front.copy();
+				lf = laserFront.copy();
 
 				VisData points = new VisData();
 				points.add(new VisDataLineStyle(Color.green, 3, true));
@@ -145,7 +145,7 @@ public class Viewer implements LCMSubscriber {
 			}
 		} else if (channel.equals(LCMInfo.LASER_FRONT_CHANNEL)) {
 			try {
-				laser_front = new laser_t(ins);
+				laserFront = new laser_t(ins);
 			} catch (IOException ex) {
 				System.err.println("Error decoding laser_t message: " + ex);
 			}

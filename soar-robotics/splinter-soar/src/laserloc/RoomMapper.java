@@ -25,7 +25,7 @@ import lcmtypes.laser_t;
 public class RoomMapper implements LCMSubscriber {
 
 	LCM lcm;
-	laser_t laser_data;
+	laser_t laserData;
 	float[] ranges;
 	float radstep;
 
@@ -92,34 +92,34 @@ public class RoomMapper implements LCMSubscriber {
 	}
 
 	void update() {
-		while (laser_data == null) {
+		while (laserData == null) {
 			try {
 				Thread.sleep(500);
 			} catch (InterruptedException e) {
 			}
 		}
 
-		radstep = laser_data.radstep;
+		radstep = laserData.radstep;
 
 		if (ranges == null) {
-			ranges = new float[laser_data.nranges];
+			ranges = new float[laserData.nranges];
 			Arrays.fill(ranges, Float.MAX_VALUE);
 		}
 
-		for (int index = 0; index < laser_data.nranges; ++index) {
-			ranges[index] = Math.min(ranges[index], laser_data.ranges[index]);
+		for (int index = 0; index < laserData.nranges; ++index) {
+			ranges[index] = Math.min(ranges[index], laserData.ranges[index]);
 		}
 	}
 
 	@Override
 	public void messageReceived(LCM lcm, String channel, DataInputStream ins) {
 		if (channel.equals(LCMInfo.LASER_LOC_CHANNEL)) {
-			if (laser_data != null) {
+			if (laserData != null) {
 				return;
 			}
 
 			try {
-				laser_data = new laser_t(ins);
+				laserData = new laser_t(ins);
 			} catch (IOException ex) {
 				System.err.println("Error decoding laser message: " + ex);
 			}
