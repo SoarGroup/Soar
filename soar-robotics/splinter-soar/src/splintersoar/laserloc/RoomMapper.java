@@ -65,6 +65,7 @@ public class RoomMapper implements LCMSubscriber {
 			}
 
 			displayRanges(vb, true);
+			System.out.println("Number of ranges: " + ranges.length );
 
 			vb.switchBuffer();
 		}
@@ -105,7 +106,13 @@ public class RoomMapper implements LCMSubscriber {
 		}
 
 		radstep = laserData.radstep;
-
+		
+		if (laserData.nranges != 180)
+		{
+			System.err.println("Number of ranges is not 180!");
+			System.exit(1);
+		}
+		
 		if (ranges == null) {
 			ranges = new float[laserData.nranges];
 			Arrays.fill(ranges, Float.MAX_VALUE);

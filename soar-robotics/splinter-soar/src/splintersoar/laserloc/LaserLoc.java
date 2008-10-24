@@ -48,8 +48,8 @@ public class LaserLoc extends Thread implements LCMSubscriber {
 			} catch (IOException e) {
 			}
 
-			updatePeriodNanos = updatePeriod * 1000000000;
-			activityTimeoutNanos = activityTimeout * 1000000000;
+			updatePeriodNanos = updatePeriod * 1000000000L;
+			activityTimeoutNanos = activityTimeout * 1000000000L;
 		}
 	}
 
@@ -99,7 +99,7 @@ public class LaserLoc extends Thread implements LCMSubscriber {
 
 		if (nanotime - nanolastactivity > currentTimeout) {
 			inactive = true;
-			logger.warning(String.format("no activity in last " + (currentTimeout / 1000000000) + " seconds"));
+			logger.warning(String.format("no activity in last " + (currentTimeout / 1000000000.0) + " seconds"));
 			nanolastactivity = nanotime;
 			currentTimeout += configuration.activityTimeoutNanos;
 		}
@@ -108,7 +108,7 @@ public class LaserLoc extends Thread implements LCMSubscriber {
 		long nanoelapsed = nanotime - lastStatusUpdate;
 		if (nanoelapsed > configuration.updatePeriodNanos) {
 			if (droppedLocPackets > 0) {
-				double dropRate = (double) droppedLocPackets / (nanoelapsed / 1000000000);
+				double dropRate = (double) droppedLocPackets / (nanoelapsed / 1000000000.0);
 				logger.warning(String.format("LaserLoc: dropping %5.1f packets/sec", dropRate));
 			}
 
@@ -132,41 +132,66 @@ public class LaserLoc extends Thread implements LCMSubscriber {
 			inactive = false;
 		}
 
-		xy_t estimated_coords = getRobotXY(laserData);
-
-		estimated_coords.utime = laserData.utime;
-
-		logger.fine(String.format("publishing %10.3f %10.3f", estimated_coords.xy[0], estimated_coords.xy[1]));
-
-		lcm.publish(LCMInfo.COORDS_CHANNEL, estimated_coords);
-
+		laser_t ld = laserData.copy();
 		laserData = null;
+		if (lastutime == ld.utime) {
+			if (logger.isLoggable(Level.FINE))
+				logger.fine("Skipping message, time hasn't changed");
+
+			try {
+				Thread.sleep(50);
+			} catch (InterruptedException ignored) {
+			}
+			return;
+		}
+		lastutime = ld.utime;
+
+		xy_t estimatedCoords = getRobotXY(ld);
+		if (estimatedCoords == null)
+			return;
+
+		if (logger.isLoggable(Level.FINE))
+			logger.fine(String.format("publishing %10.3f %10.3f", estimatedCoords.xy[0], estimatedCoords.xy[1]));
+
+		lcm.publish(LCMInfo.COORDS_CHANNEL, estimatedCoords);
 	}
+	
+	long lastutime = 0;
 
-	private xy_t getRobotXY(laser_t laser_data) {
-		assert laser_data != null;
-
-		double smallest_range = Double.MAX_VALUE;
-		int smallest_range_index = -1;
-		for (int index = 0; index < laser_data.nranges; ++index) {
-			if (laser_data.ranges[index] < configuration.maxRanges[index]) {
-				if (laser_data.ranges[index] < smallest_range) {
-					smallest_range = laser_data.ranges[index];
-					smallest_range_index = index;
+	private xy_t getRobotXY(laser_t ld) {
+		int nranges = Math.min( configuration.maxRanges.length, ld.nranges);
+		if (configuration.maxRanges.length != ld.nranges)
+		{
+			logger.fine(String.format("maxRanges array not equal in size to nranges, %d %d", configuration.maxRanges.length, ld.nranges));
+		}
+		
+		double smallestRange = Double.MAX_VALUE;
+		int smallestRangeIndex = -1;
+		for (int index = 0; index < nranges; ++index) {
+			if (ld.ranges[index] < configuration.maxRanges[index]) {
+				if (ld.ranges[index] < smallestRange) {
+					smallestRange = ld.ranges[index];
+					smallestRangeIndex = index;
 				}
 			}
 		}
-		assert smallest_range_index != -1;
 
-		double laser_angle = configuration.laserxyt[2] + laser_data.rad0 + laser_data.radstep * smallest_range_index;
+		if (smallestRangeIndex == -1)
+		{
+			logger.warning("did not find smallest range (is there nothing in view?");
+			return null;
+		}
+		
+		double laserAngle = configuration.laserxyt[2] + ld.rad0 + ld.radstep * smallestRangeIndex;
 
-		double laser_dist = smallest_range + configuration.tubeRadius;
+		double laserDist = smallestRange + configuration.tubeRadius;
 
-		xy_t new_coords = new xy_t();
-		new_coords.xy[0] = configuration.laserxyt[0] + laser_dist * Math.cos(laser_angle);
-		new_coords.xy[1] = configuration.laserxyt[1] + laser_dist * Math.sin(laser_angle);
-
-		return new_coords;
+		xy_t newCoords = new xy_t();
+		newCoords.utime = ld.utime;
+		newCoords.xy[0] = configuration.laserxyt[0] + laserDist * Math.cos(laserAngle);
+		newCoords.xy[1] = configuration.laserxyt[1] + laserDist * Math.sin(laserAngle);
+		
+		return newCoords;
 	}
 
 	@Override
@@ -194,18 +219,14 @@ public class LaserLoc extends Thread implements LCMSubscriber {
 	}
 
 	public static void main(String[] args) {
-		if (args.length != 1) {
-			System.out.println("Usage: laserloc <configfile>");
-			return;
-		}
-
-		Config config;
-
-		try {
-			config = (new ConfigFile(args[0])).getConfig();
-		} catch (IOException ex) {
-			System.err.println("Couldn't open config file: " + args[0]);
-			return;
+		Config config = null;
+		if (args.length == 1) {
+			try {
+				config = (new ConfigFile(args[0])).getConfig();
+			} catch (IOException ex) {
+				System.err.println("Couldn't open config file: " + args[0]);
+				return;
+			}
 		}
 
 		LaserLoc lloc = new LaserLoc(config);
