@@ -49,9 +49,7 @@ public class PFTest {
 	void init() {
 		for (int i = 0; i < 100; i++) {
 			Particle p = new Particle();
-			p.xyt = new double[] { (1 - 2 * rand.nextFloat()) * 5,
-					(1 - 2 * rand.nextFloat()) * 5,
-					2 * rand.nextFloat() * Math.PI };
+			p.xyt = new double[] { (1 - 2 * rand.nextFloat()) * 5, (1 - 2 * rand.nextFloat()) * 5, 2 * rand.nextFloat() * Math.PI };
 			particles.add(p);
 		}
 	}
@@ -69,14 +67,12 @@ public class PFTest {
 		double theta = time;
 		double radius = 5;
 
-		double xyt_truth_new[] = new double[] { radius * Math.cos(theta),
-				radius * Math.sin(theta), theta + Math.PI / 2 };
+		double xyt_truth_new[] = new double[] { radius * Math.cos(theta), radius * Math.sin(theta), theta + Math.PI / 2 };
 		if (xyt_truth == null)
 			xyt_truth = LinAlg.copy(xyt_truth_new);
 
 		VisWorld.Buffer vb = vw.getBuffer("truth");
-		vb.addBuffered(new VisChain(LinAlg.xytToMatrix(xyt_truth_new),
-				new VisRobot(Color.blue)));
+		vb.addBuffered(new VisChain(LinAlg.xytToMatrix(xyt_truth_new), new VisRobot(Color.blue)));
 
 		// //////////////////////////////////////////////////
 		// Compute Odometry (perfect)
@@ -97,8 +93,7 @@ public class PFTest {
 			p.xyt = LinAlg.xytMultiply(p.xyt, odom_xyt_noisy);
 		}
 
-		VisData vd = new VisData(new double[2], new double[] { 0.2, 0 },
-				new VisDataLineStyle(Color.red, 1));
+		VisData vd = new VisData(new double[2], new double[] { 0.2, 0 }, new VisDataLineStyle(Color.red, 1));
 
 		for (Particle p : particles) {
 			vb.addBuffered(new VisChain(LinAlg.xytToMatrix(p.xyt), vd));
@@ -106,19 +101,15 @@ public class PFTest {
 
 		// //////////////////////////////////////////////////
 		// simulate lidar.
-		double laser_xy[] = new double[] {
-				xyt_truth[0] + rand.nextGaussian() * 0.05,
-				xyt_truth[1] + rand.nextGaussian() * 0.05 };
+		double laser_xy[] = new double[] { xyt_truth[0] + rand.nextGaussian() * 0.05, xyt_truth[1] + rand.nextGaussian() * 0.05 };
 
-		vb.addBuffered(new VisData(laser_xy, new VisDataPointStyle(Color.black,
-				4)));
+		vb.addBuffered(new VisData(laser_xy, new VisDataPointStyle(Color.black, 4)));
 
 		// //////////////////////////////////////////////////
 		// score particles.
 		double totalweight = 0;
 		for (Particle p : particles) {
-			double dist2 = LinAlg.sq(p.xyt[0] - laser_xy[0])
-					+ LinAlg.sq(p.xyt[1] - laser_xy[1]);
+			double dist2 = LinAlg.sq(p.xyt[0] - laser_xy[0]) + LinAlg.sq(p.xyt[1] - laser_xy[1]);
 
 			p.weight = Math.exp(-dist2 / 0.05);
 			totalweight += p.weight;
@@ -139,12 +130,10 @@ public class PFTest {
 		for (Particle p : particles) {
 			fitParticle.xyt[0] += p.weight * p.xyt[0];
 			fitParticle.xyt[1] += p.weight * p.xyt[1];
-			fitParticle.xyt[2] += p.weight
-					* MathUtil.mod2pi(bestParticle.xyt[2], p.xyt[2]);
+			fitParticle.xyt[2] += p.weight * MathUtil.mod2pi(bestParticle.xyt[2], p.xyt[2]);
 		}
 
-		vb.addBuffered(new VisChain(LinAlg.xytToMatrix(fitParticle.xyt),
-				new VisRobot(Color.yellow)));
+		vb.addBuffered(new VisChain(LinAlg.xytToMatrix(fitParticle.xyt), new VisRobot(Color.yellow)));
 
 		// //////////////////////////////////////////////////
 		// resample.
@@ -165,9 +154,7 @@ public class PFTest {
 				continue;
 
 			Particle np = new Particle();
-			np.xyt = new double[] { p.xyt[0] + rand.nextGaussian() * 0.05,
-					p.xyt[1] + rand.nextGaussian() * 0.05,
-					p.xyt[2] + rand.nextGaussian() * 0.05 };
+			np.xyt = new double[] { p.xyt[0] + rand.nextGaussian() * 0.05, p.xyt[1] + rand.nextGaussian() * 0.05, p.xyt[2] + rand.nextGaussian() * 0.05 };
 			newParticles.add(np);
 		}
 		particles = newParticles;

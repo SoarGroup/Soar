@@ -54,8 +54,7 @@ public class particles_t implements lcm.lcm.LCMEncodable {
 		_decodeRecursive(ins);
 	}
 
-	public static splintersoar.lcmtypes.particles_t _decodeRecursiveFactory(
-			DataInputStream ins) throws IOException {
+	public static splintersoar.lcmtypes.particles_t _decodeRecursiveFactory(DataInputStream ins) throws IOException {
 		splintersoar.lcmtypes.particles_t o = new splintersoar.lcmtypes.particles_t();
 		o._decodeRecursive(ins);
 		return o;

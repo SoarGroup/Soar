@@ -65,8 +65,7 @@ public class PFTest2 implements LCMSubscriber {
 
 			try {
 				pose_t laserlocation = new pose_t(ins);
-				laserxy = new double[] { laserlocation.pos[0],
-						laserlocation.pos[1] };
+				laserxy = new double[] { laserlocation.pos[0], laserlocation.pos[1] };
 			} catch (IOException ex) {
 				System.err.println("Error decoding laser message: " + ex);
 			}
@@ -97,9 +96,7 @@ public class PFTest2 implements LCMSubscriber {
 	void init() {
 		for (int i = 0; i < 100; i++) {
 			Particle p = new Particle();
-			p.xyt = new double[] { (1 - 2 * rand.nextFloat()) * 5,
-					(1 - 2 * rand.nextFloat()) * 5,
-					2 * rand.nextFloat() * Math.PI };
+			p.xyt = new double[] { (1 - 2 * rand.nextFloat()) * 5, (1 - 2 * rand.nextFloat()) * 5, 2 * rand.nextFloat() * Math.PI };
 			particles.add(p);
 		}
 	}
@@ -169,8 +166,7 @@ public class PFTest2 implements LCMSubscriber {
 			p.xyt = LinAlg.xytMultiply(p.xyt, pfxytcopy);
 		}
 
-		VisData vd = new VisData(new double[2], new double[] { 0.2, 0 },
-				new VisDataLineStyle(Color.red, 1));
+		VisData vd = new VisData(new double[2], new double[] { 0.2, 0 }, new VisDataLineStyle(Color.red, 1));
 
 		for (Particle p : particles) {
 			vb.addBuffered(new VisChain(LinAlg.xytToMatrix(p.xyt), vd));
@@ -186,15 +182,13 @@ public class PFTest2 implements LCMSubscriber {
 			laserxy = null;
 		}
 
-		vb.addBuffered(new VisData(oldlaserxy, new VisDataPointStyle(
-				Color.black, 4)));
+		vb.addBuffered(new VisData(oldlaserxy, new VisDataPointStyle(Color.black, 4)));
 
 		// //////////////////////////////////////////////////
 		// score particles.
 		double totalweight = 0;
 		for (Particle p : particles) {
-			double dist2 = LinAlg.sq(p.xyt[0] - oldlaserxy[0])
-					+ LinAlg.sq(p.xyt[1] - oldlaserxy[1]);
+			double dist2 = LinAlg.sq(p.xyt[0] - oldlaserxy[0]) + LinAlg.sq(p.xyt[1] - oldlaserxy[1]);
 
 			p.weight = Math.exp(-dist2 / 0.05);
 			totalweight += p.weight;
@@ -215,16 +209,13 @@ public class PFTest2 implements LCMSubscriber {
 		for (Particle p : particles) {
 			fitParticle.xyt[0] += p.weight * p.xyt[0];
 			fitParticle.xyt[1] += p.weight * p.xyt[1];
-			fitParticle.xyt[2] += p.weight
-					* MathUtil.mod2pi(bestParticle.xyt[2], p.xyt[2]);
+			fitParticle.xyt[2] += p.weight * MathUtil.mod2pi(bestParticle.xyt[2], p.xyt[2]);
 		}
 
-		vb.addBuffered(new VisChain(LinAlg.xytToMatrix(fitParticle.xyt),
-				new VisRobot(Color.yellow)));
+		vb.addBuffered(new VisChain(LinAlg.xytToMatrix(fitParticle.xyt), new VisRobot(Color.yellow)));
 
 		// render laser data on top
-		vb.addBuffered(new VisData(oldlaserxy, new VisDataPointStyle(
-				Color.black, 4)));
+		vb.addBuffered(new VisData(oldlaserxy, new VisDataPointStyle(Color.black, 4)));
 
 		// //////////////////////////////////////////////////
 		// resample.
@@ -245,9 +236,7 @@ public class PFTest2 implements LCMSubscriber {
 				continue;
 
 			Particle np = new Particle();
-			np.xyt = new double[] { p.xyt[0] + rand.nextGaussian() * 0.05,
-					p.xyt[1] + rand.nextGaussian() * 0.05,
-					p.xyt[2] + rand.nextGaussian() * 0.05 };
+			np.xyt = new double[] { p.xyt[0] + rand.nextGaussian() * 0.05, p.xyt[1] + rand.nextGaussian() * 0.05, p.xyt[2] + rand.nextGaussian() * 0.05 };
 			newParticles.add(np);
 		}
 		particles = newParticles;

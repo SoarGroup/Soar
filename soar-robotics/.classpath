@@ -2,11 +2,11 @@
 <classpath>
 	<classpathentry excluding="**/.svn/" kind="src" path="uorc-client/src"/>
 	<classpathentry excluding="**/.svn/" kind="src" path="splinter-soar/src"/>
-	<classpathentry kind="lib" path="orc.jar"/>
-	<classpathentry kind="lib" path="/SoarSuite/SoarLibrary/bin/sml.jar"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
 	<classpathentry kind="lib" path="lcm.jar"/>
-	<classpathentry kind="lib" path="lcmtypes.jar"/>
-	<classpathentry kind="lib" path="erp.jar"/>
+	<classpathentry kind="lib" path="/erp/java/erp.jar"/>
+	<classpathentry kind="lib" path="/erp/lcmtypes/lcmtypes.jar"/>
+	<classpathentry kind="lib" path="/uorc/user/java/orc.jar"/>
+	<classpathentry kind="lib" path="/SoarSuite/SoarLibrary/bin/sml.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

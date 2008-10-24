@@ -54,8 +54,7 @@ public class Viewer implements LCMSubscriber {
 		jf.setVisible(true);
 
 		VisWorld.Buffer vb = vw.getBuffer("splinter");
-		VisData vd = new VisData(new double[2], new double[] { 0.2, 0 },
-				new VisDataLineStyle(Color.red, 1));
+		VisData vd = new VisData(new double[2], new double[] { 0.2, 0 }, new VisDataLineStyle(Color.red, 1));
 
 		vc.setDrawGrid(true);
 		vc.setDrawGround(true);
@@ -64,24 +63,20 @@ public class Viewer implements LCMSubscriber {
 			splinterstate_t sp = null;
 			if (splinterPose != null) {
 				sp = splinterPose.copy();
-				vb.addBuffered(new VisChain(LinAlg.quatPosToMatrix(
-						sp.pose.orientation, sp.pose.pos), new VisRobot(
-						Color.blue)));
+				vb.addBuffered(new VisChain(LinAlg.quatPosToMatrix(sp.pose.orientation, sp.pose.pos), new VisRobot(Color.blue)));
 			}
 
 			if (laserxy != null) {
 				xy_t xy;
 				xy = laserxy.copy();
-				vb.addBuffered(new VisData(xy.xy, new VisDataPointStyle(
-						Color.black, 4)));
+				vb.addBuffered(new VisData(xy.xy, new VisDataPointStyle(Color.black, 4)));
 			}
 
 			if (waypoints != null) {
 				waypoints_t wp;
 				wp = waypoints.copy();
 				for (int index = 0; index < wp.nwaypoints; ++index) {
-					vb.addBuffered(new VisData(wp.locations[index].xy,
-							new VisDataPointStyle(Color.red, 10)));
+					vb.addBuffered(new VisData(wp.locations[index].xy, new VisDataPointStyle(Color.red, 10)));
 				}
 			}
 
@@ -111,9 +106,7 @@ public class Viewer implements LCMSubscriber {
 						yaw = LinAlg.quatToRollPitchYaw(sp.pose.orientation)[2];
 					}
 					double theta = lf.rad0 + i * lf.radstep + yaw;
-					double[] xyz = LinAlg.add(new double[] {
-							lf.ranges[i] * Math.cos(theta),
-							lf.ranges[i] * Math.sin(theta), 0 }, offset);
+					double[] xyz = LinAlg.add(new double[] { lf.ranges[i] * Math.cos(theta), lf.ranges[i] * Math.sin(theta), 0 }, offset);
 					points.add(xyz);
 				}
 
@@ -130,8 +123,7 @@ public class Viewer implements LCMSubscriber {
 			try {
 				splinterPose = new splinterstate_t(ins);
 			} catch (IOException ex) {
-				System.err.println("Error decoding splinterstate_t message: "
-						+ ex);
+				System.err.println("Error decoding splinterstate_t message: " + ex);
 			}
 		} else if (channel.equals(LCMInfo.WAYPOINTS_CHANNEL)) {
 			try {

@@ -48,19 +48,15 @@ public class OrcInterface implements LCMSubscriber {
 				ports = config.getInts("orc.ports", ports);
 				invert = config.getBooleans("orc.invert", invert);
 
-				double maxThrottleAccelleration = config.getDouble(
-						"orc.maxThrottleAccelleration", 2.0);
+				double maxThrottleAccelleration = config.getDouble("orc.maxThrottleAccelleration", 2.0);
 				maxThrottleAccellerationPeruSec = maxThrottleAccelleration / 1000000;
 
-				baselineMeters = config.getDouble("orc.baselineMeters",
-						baselineMeters);
+				baselineMeters = config.getDouble("orc.baselineMeters", baselineMeters);
 				tickMeters = config.getDouble("orc.tickMeters", tickMeters);
-				lengthMeters = config.getDouble("orc.lengthMeters",
-						lengthMeters);
+				lengthMeters = config.getDouble("orc.lengthMeters", lengthMeters);
 				widthMeters = config.getDouble("orc.widthMeters", widthMeters);
 				usePF = config.getBoolean("orc.usePF", usePF);
-				laserThreshold = config.getDouble("orc.laserThreshold",
-						laserThreshold);
+				laserThreshold = config.getDouble("orc.laserThreshold", laserThreshold);
 			}
 		}
 	}
@@ -98,10 +94,8 @@ public class OrcInterface implements LCMSubscriber {
 		lcm.subscribe(LCMInfo.DRIVE_COMMANDS_CHANNEL, this);
 
 		orc = Orc.makeOrc();
-		motor[0] = new Motor(orc, configuration.ports[0],
-				configuration.invert[0]);
-		motor[1] = new Motor(orc, configuration.ports[1],
-				configuration.invert[1]);
+		motor[0] = new Motor(orc, configuration.ports[0], configuration.invert[0]);
+		motor[1] = new Motor(orc, configuration.ports[1], configuration.invert[1]);
 
 		logger.info("Orc up");
 		timer.schedule(new UpdateTask(), 0, 1000 / configuration.updateHz);
@@ -126,15 +120,12 @@ public class OrcInterface implements LCMSubscriber {
 				OrcStatus currentStatus = orc.getStatus();
 
 				// calculate location if moving
-				moving = (currentStatus.qeiVelocity[0] != 0)
-						|| (currentStatus.qeiVelocity[1] != 0);
+				moving = (currentStatus.qeiVelocity[0] != 0) || (currentStatus.qeiVelocity[1] != 0);
 
 				// assemble output
 				currentState.utime = currentStatus.utime;
-				currentState.leftodom = currentStatus.qeiPosition[configuration.ports[0]]
-						* (configuration.invert[0] ? -1 : 1);
-				currentState.rightodom = currentStatus.qeiPosition[configuration.ports[1]]
-						* (configuration.invert[1] ? -1 : 1);
+				currentState.leftodom = currentStatus.qeiPosition[configuration.ports[0]] * (configuration.invert[0] ? -1 : 1);
+				currentState.rightodom = currentStatus.qeiPosition[configuration.ports[1]] * (configuration.invert[1] ? -1 : 1);
 			}
 
 			// update pose
@@ -150,11 +141,10 @@ public class OrcInterface implements LCMSubscriber {
 					// adjustedlaserxy could be null
 					currentState.pose = pf.update(deltaxyt, adjustedlaserxy);
 
-					double yaw = Geometry
-							.quatToRollPitchYaw(currentState.pose.orientation)[2];
-					logger.finer(String.format("pf: %5.2f %5.2f %5.1f",
-							currentState.pose.pos[0], currentState.pose.pos[1],
-							Math.toDegrees(yaw)));
+					double yaw = Geometry.quatToRollPitchYaw(currentState.pose.orientation)[2];
+					if (logger.isLoggable(Level.FINER)) {
+						logger.finer(String.format("pf: %5.2f %5.2f %5.1f", currentState.pose.pos[0], currentState.pose.pos[1], Math.toDegrees(yaw)));
+					}
 				} else {
 					currentState.pose = previousState.pose.copy();
 
@@ -162,26 +152,20 @@ public class OrcInterface implements LCMSubscriber {
 
 					if (adjustedlaserxy != null) {
 						if (yawCalcXY == null) {
-							yawCalcXY = Arrays.copyOf(adjustedlaserxy,
-									adjustedlaserxy.length);
-						} else if (Geometry
-								.distance(yawCalcXY, adjustedlaserxy) > configuration.laserThreshold) {
+							yawCalcXY = Arrays.copyOf(adjustedlaserxy, adjustedlaserxy.length);
+						} else if (Geometry.distance(yawCalcXY, adjustedlaserxy) > configuration.laserThreshold) {
 							currentState.pose.pos[0] = adjustedlaserxy[0];
 							currentState.pose.pos[1] = adjustedlaserxy[1];
 
 							double[] rpy = { 0, 0, 0 };
-							rpy[2] = Math.atan2(adjustedlaserxy[1]
-									- yawCalcXY[1], adjustedlaserxy[0]
-									- yawCalcXY[0]);
+							rpy[2] = Math.atan2(adjustedlaserxy[1] - yawCalcXY[1], adjustedlaserxy[0] - yawCalcXY[0]);
 							rpy[2] = MathUtil.mod2pi(rpy[2]);
-							currentState.pose.orientation = Geometry
-									.rollPitchYawToQuat(rpy);
+							currentState.pose.orientation = Geometry.rollPitchYawToQuat(rpy);
 
-							logger.finer(String.format(
-									"laser: %5.2f %5.2f %5.1f",
-									currentState.pose.pos[0],
-									currentState.pose.pos[1], Math
-											.toDegrees(rpy[2])));
+							if (logger.isLoggable(Level.FINER)) {
+								logger.finer(String.format("laser: %5.2f %5.2f %5.1f", currentState.pose.pos[0], currentState.pose.pos[1], Math
+										.toDegrees(rpy[2])));
+							}
 
 							updated = true;
 						}
@@ -192,17 +176,14 @@ public class OrcInterface implements LCMSubscriber {
 						currentState.pose.pos[1] += deltaxyt[1];
 
 						// FIXME: probably a better way to do this.
-						double[] rpy = Geometry
-								.quatToRollPitchYaw(previousState.pose.orientation);
+						double[] rpy = Geometry.quatToRollPitchYaw(previousState.pose.orientation);
 						rpy[2] += deltaxyt[2];
 						rpy[2] = MathUtil.mod2pi(rpy[2]);
-						currentState.pose.orientation = Geometry
-								.rollPitchYawToQuat(rpy);
+						currentState.pose.orientation = Geometry.rollPitchYawToQuat(rpy);
 
-						logger.finer(String.format(" odom: %5.2f %5.2f %5.1f",
-								currentState.pose.pos[0],
-								currentState.pose.pos[1], Math
-										.toDegrees(rpy[2])));
+						if (logger.isLoggable(Level.FINER)) {
+							logger.finer(String.format(" odom: %5.2f %5.2f %5.1f", currentState.pose.pos[0], currentState.pose.pos[1], Math.toDegrees(rpy[2])));
+						}
 					}
 
 				}
@@ -221,21 +202,17 @@ public class OrcInterface implements LCMSubscriber {
 		}
 
 		double[] calculateDeltaXYT(splinterstate_t currentState) {
-			double dleft = (currentState.leftodom - previousState.leftodom)
-					* configuration.tickMeters;
-			double dright = (currentState.rightodom - previousState.rightodom)
-					* configuration.tickMeters;
+			double dleft = (currentState.leftodom - previousState.leftodom) * configuration.tickMeters;
+			double dright = (currentState.rightodom - previousState.rightodom) * configuration.tickMeters;
 			double phi = (dright - dleft) / configuration.baselineMeters;
 			double dcenter = (dleft + dright) / 2;
 
 			phi = MathUtil.mod2pi(phi);
 
-			double theta = Geometry
-					.quatToRollPitchYaw(previousState.pose.orientation)[2];
+			double theta = Geometry.quatToRollPitchYaw(previousState.pose.orientation)[2];
 			theta = MathUtil.mod2pi(theta);
 
-			return new double[] { dcenter * Math.cos(theta),
-					dcenter * Math.sin(theta), phi };
+			return new double[] { dcenter * Math.cos(theta), dcenter * Math.sin(theta), phi };
 		}
 
 		double[] getAdjustedLaserXY() {
@@ -248,8 +225,9 @@ public class OrcInterface implements LCMSubscriber {
 
 			if (initialxy == null) {
 				initialxy = Arrays.copyOf(laserxycopy.xy, 2);
-				logger.finest(String.format("initialxy: %5.2f, %5.2f%n",
-						initialxy[0], initialxy[1]));
+				if (logger.isLoggable(Level.FINEST)) {
+					logger.finest(String.format("initialxy: %5.2f, %5.2f%n", initialxy[0], initialxy[1]));
+				}
 			}
 
 			return Geometry.subtract(laserxycopy.xy, initialxy);
@@ -272,9 +250,7 @@ public class OrcInterface implements LCMSubscriber {
 			try {
 				driveCommand = new differential_drive_command_t(ins);
 			} catch (IOException ex) {
-				logger
-						.warning("Error decoding differential_drive_command_t message: "
-								+ ex);
+				logger.warning("Error decoding differential_drive_command_t message: " + ex);
 			}
 		}
 	}
@@ -289,8 +265,9 @@ public class OrcInterface implements LCMSubscriber {
 		if (newDriveCommand == null) {
 			return;
 		}
-		// logger.finest( String.format("Got input %f %f", newDriveCommand.left,
-		// newDriveCommand.right) );
+
+		if (logger.isLoggable(Level.FINEST))
+			logger.finest(String.format("Got input %f %f", newDriveCommand.left, newDriveCommand.right));
 
 		if (throttleAcceluTime == 0) {
 			throttleAcceluTime = utime;
@@ -298,8 +275,7 @@ public class OrcInterface implements LCMSubscriber {
 		}
 
 		long elapsed = (utime - throttleAcceluTime);
-		double maxAccel = elapsed
-				* configuration.maxThrottleAccellerationPeruSec;
+		double maxAccel = elapsed * configuration.maxThrottleAccellerationPeruSec;
 
 		if (newDriveCommand.left_enabled) {
 			newDriveCommand.left = Math.min(newDriveCommand.left, 1.0);

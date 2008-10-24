@@ -30,11 +30,10 @@ public class RangerManager implements LCMSubscriber, RangerStateProducer {
 		}
 
 		RangerState state = new RangerState(laserDataCurrent);
-		logger.finest(String.format(
-				"New ranger state: %5.2f %5.2f %5.2f %5.2f %5.2f",
-				state.ranger[0].distance, state.ranger[1].distance,
-				state.ranger[2].distance, state.ranger[3].distance,
-				state.ranger[4].distance));
+		if (logger.isLoggable(Level.FINEST)) {
+			logger.finest(String.format("New ranger state: %5.2f %5.2f %5.2f %5.2f %5.2f", state.ranger[0].distance, state.ranger[1].distance,
+					state.ranger[2].distance, state.ranger[3].distance, state.ranger[4].distance));
+		}
 		return state;
 	}
 

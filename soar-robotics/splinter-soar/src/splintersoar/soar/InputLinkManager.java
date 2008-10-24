@@ -86,8 +86,7 @@ public class InputLinkManager {
 
 			slices = new Range[rangerState.ranger.length];
 			for (int index = 0; index < rangerState.ranger.length; ++index) {
-				slices[index] = new Range(index
-						- (rangerState.ranger.length / 2));
+				slices[index] = new Range(index - (rangerState.ranger.length / 2));
 			}
 		}
 
@@ -131,12 +130,9 @@ public class InputLinkManager {
 		SelfIL(Identifier self, splinterstate_t splinterState) {
 			Identifier self_motor = agent.CreateIdWME(self, "motor");
 			Identifier self_motor_left = agent.CreateIdWME(self_motor, "left");
-			self_motor_left_position = agent.CreateIntWME(self_motor_left,
-					"position", 0);
-			Identifier self_motor_right = agent
-					.CreateIdWME(self_motor, "right");
-			self_motor_right_position = agent.CreateIntWME(self_motor_right,
-					"position", 0);
+			self_motor_left_position = agent.CreateIntWME(self_motor_left, "position", 0);
+			Identifier self_motor_right = agent.CreateIdWME(self_motor, "right");
+			self_motor_right_position = agent.CreateIntWME(self_motor_right, "position", 0);
 
 			agent.CreateStringWME(self, "name", agent.GetAgentName());
 
@@ -164,8 +160,7 @@ public class InputLinkManager {
 
 			agent.Update(self_pose_x, splinterState.pose.pos[0]);
 			agent.Update(self_pose_y, splinterState.pose.pos[1]);
-			agent.Update(self_pose_yaw, Math.toDegrees(MathUtil.mod2pi(Geometry
-					.quatToRollPitchYaw(splinterState.pose.orientation)[2])));
+			agent.Update(self_pose_yaw, Math.toDegrees(MathUtil.mod2pi(Geometry.quatToRollPitchYaw(splinterState.pose.orientation)[2])));
 
 			waypoints.setNewRobotPose(splinterState.pose);
 		}
@@ -180,10 +175,8 @@ public class InputLinkManager {
 
 	Logger logger;
 
-	public InputLinkManager(Agent agent, Waypoints waypoints,
-			splinterstate_t splinterState, RangerState rangerState) {
-		this.logger = LogFactory.createSimpleLogger("InputLinkManager",
-				Level.INFO);
+	public InputLinkManager(Agent agent, Waypoints waypoints, splinterstate_t splinterState, RangerState rangerState) {
+		this.logger = LogFactory.createSimpleLogger("InputLinkManager", Level.INFO);
 
 		this.agent = agent;
 		this.agent.SetBlinkIfNoChange(false);
@@ -193,8 +186,7 @@ public class InputLinkManager {
 		initialize(splinterState, rangerState);
 	}
 
-	private void initialize(splinterstate_t splinterState,
-			RangerState rangerState) {
+	private void initialize(splinterstate_t splinterState, RangerState rangerState) {
 		logger.fine("initializing input link");
 
 		Identifier inputLink = agent.GetInputLink();

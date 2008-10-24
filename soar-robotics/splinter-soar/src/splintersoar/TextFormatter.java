@@ -17,8 +17,7 @@ public class TextFormatter extends Formatter {
 		Date d = new Date(record.getMillis());
 		StringBuilder output = new StringBuilder();
 		output.append(format.format(d));
-		output.append(String.format(" %s (%s): %s%n", record.getLoggerName(),
-				record.getLevel().getName(), record.getMessage()));
+		output.append(String.format(" %s (%s): %s%n", record.getLoggerName(), record.getLevel().getName(), record.getMessage()));
 		return output.toString();
 	}
 }

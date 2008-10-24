@@ -50,8 +50,7 @@ public class xy_t implements lcm.lcm.LCMEncodable {
 		_decodeRecursive(ins);
 	}
 
-	public static splintersoar.lcmtypes.xy_t _decodeRecursiveFactory(
-			DataInputStream ins) throws IOException {
+	public static splintersoar.lcmtypes.xy_t _decodeRecursiveFactory(DataInputStream ins) throws IOException {
 		splintersoar.lcmtypes.xy_t o = new splintersoar.lcmtypes.xy_t();
 		o._decodeRecursive(ins);
 		return o;

@@ -84,13 +84,11 @@ public class DataPlotter {
 				if (mark == false) {
 					// points.add(new VisData( xy, new
 					// VisDataPointStyle(Color.black, 1)));
-					vb.addBuffered(new VisData(xy, new VisDataPointStyle(
-							Color.black, 1)));
+					vb.addBuffered(new VisData(xy, new VisDataPointStyle(Color.black, 1)));
 				} else {
 					// points.add(new VisData( xy, new
 					// VisDataPointStyle(Color.red, 4)));
-					vb.addBuffered(new VisData(xy, new VisDataPointStyle(
-							Color.red, 4)));
+					vb.addBuffered(new VisData(xy, new VisDataPointStyle(Color.red, 4)));
 					mark = false;
 				}
 
@@ -147,8 +145,7 @@ public class DataPlotter {
 		// System.out.println( dleft + "," + dright + "," + phi );
 		double dcenter = (dleft + dright) / 2;
 
-		double[] deltaxyt = { dcenter * Math.cos(position[2]),
-				dcenter * Math.sin(position[2]), phi };
+		double[] deltaxyt = { dcenter * Math.cos(position[2]), dcenter * Math.sin(position[2]), phi };
 		position = Geometry.add(position, deltaxyt);
 		position[2] = MathUtil.mod2pi(position[2]);
 		// System.out.println( position[0] + "," + position[1] + "," +

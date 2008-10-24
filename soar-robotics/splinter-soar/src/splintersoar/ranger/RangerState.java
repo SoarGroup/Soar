@@ -10,8 +10,7 @@ public class RangerState {
 	}
 
 	public long utime = 0;
-	public RangerData[] ranger = { new RangerData(), new RangerData(),
-			new RangerData(), new RangerData(), new RangerData() };
+	public RangerData[] ranger = { new RangerData(), new RangerData(), new RangerData(), new RangerData(), new RangerData() };
 
 	public RangerState(laser_t laserData) {
 		utime = laserData.utime;
@@ -21,7 +20,7 @@ public class RangerState {
 		assert ranger.length == 5; // for now assert that it is 5
 
 		int sliceChunk = laserData.nranges / ranger.length; // a round number
-															// with 180/5 (36)
+		// with 180/5 (36)
 
 		for (int slice = 0, index = 0; slice < ranger.length; ++slice) {
 			ranger[slice].start = laserData.rad0 + index * laserData.radstep;
@@ -33,8 +32,7 @@ public class RangerState {
 				}
 			}
 
-			ranger[slice].end = laserData.rad0 + (index - 1)
-					* laserData.radstep;
+			ranger[slice].end = laserData.rad0 + (index - 1) * laserData.radstep;
 		}
 	}
 }

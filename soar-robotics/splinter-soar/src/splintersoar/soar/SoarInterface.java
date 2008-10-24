@@ -19,8 +19,7 @@ import splintersoar.lcmtypes.splinterstate_t;
 import splintersoar.ranger.RangerState;
 import splintersoar.ranger.RangerStateProducer;
 
-public class SoarInterface implements Kernel.UpdateEventInterface,
-		Kernel.AgentEventInterface, LCMSubscriber {
+public class SoarInterface implements Kernel.UpdateEventInterface, Kernel.AgentEventInterface, LCMSubscriber {
 	private Logger logger;
 
 	private class Configuration {
@@ -91,12 +90,8 @@ public class SoarInterface implements Kernel.UpdateEventInterface,
 		input = new InputLinkManager(agent, waypoints, ss, rangerState);
 		output = new OutputLinkManager(agent, waypoints);
 
-		kernel.RegisterForUpdateEvent(
-				smlUpdateEventId.smlEVENT_AFTER_ALL_OUTPUT_PHASES, this, null);
-		kernel
-				.RegisterForAgentEvent(
-						smlAgentEventId.smlEVENT_BEFORE_AGENT_REINITIALIZED,
-						this, null);
+		kernel.RegisterForUpdateEvent(smlUpdateEventId.smlEVENT_AFTER_ALL_OUTPUT_PHASES, this, null);
+		kernel.RegisterForAgentEvent(smlAgentEventId.smlEVENT_BEFORE_AGENT_REINITIALIZED, this, null);
 	}
 
 	class SoarRunner implements Runnable {
@@ -132,8 +127,7 @@ public class SoarInterface implements Kernel.UpdateEventInterface,
 	}
 
 	@Override
-	public void updateEventHandler(int eventID, Object data, Kernel kernel,
-			int runFlags) {
+	public void updateEventHandler(int eventID, Object data, Kernel kernel, int runFlags) {
 		if (stopSoar) {
 			logger.info("Stopping Soar");
 			kernel.StopAllAgents();
@@ -152,12 +146,11 @@ public class SoarInterface implements Kernel.UpdateEventInterface,
 			SplinterInput splinterInput = output.update(ss);
 
 			if (splinterInput != null && !overrideEnabled) {
-				lcm.publish(LCMInfo.DRIVE_COMMANDS_CHANNEL, splinterInput
-						.generateDriveCommand(ss));
+				lcm.publish(LCMInfo.DRIVE_COMMANDS_CHANNEL, splinterInput.generateDriveCommand(ss));
 			}
 
 			waypoints.update(); // updates input link due to output link
-								// commands
+			// commands
 
 			agent.Commit();
 		} catch (NullPointerException unhandled) {
@@ -186,8 +179,7 @@ public class SoarInterface implements Kernel.UpdateEventInterface,
 
 	@Override
 	public void agentEventHandler(int id, Object userData, String agentName) {
-		if (id == smlAgentEventId.smlEVENT_BEFORE_AGENT_REINITIALIZED
-				.swigValue()) {
+		if (id == smlAgentEventId.smlEVENT_BEFORE_AGENT_REINITIALIZED.swigValue()) {
 			waypoints.beforeInitSoar();
 			agent.Commit();
 		}

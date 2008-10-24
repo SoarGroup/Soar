@@ -28,8 +28,7 @@ public class splinterstate_t implements lcm.lcm.LCMEncodable {
 			return 0L;
 
 		classes.add(splintersoar.lcmtypes.splinterstate_t.class);
-		long hash = LCM_FINGERPRINT_BASE
-				+ lcmtypes.pose_t._hashRecursive(classes);
+		long hash = LCM_FINGERPRINT_BASE + lcmtypes.pose_t._hashRecursive(classes);
 		classes.remove(classes.size() - 1);
 		return (hash << 1) + ((hash >> 63) & 1);
 	}
@@ -66,8 +65,7 @@ public class splinterstate_t implements lcm.lcm.LCMEncodable {
 		_decodeRecursive(ins);
 	}
 
-	public static splintersoar.lcmtypes.splinterstate_t _decodeRecursiveFactory(
-			DataInputStream ins) throws IOException {
+	public static splintersoar.lcmtypes.splinterstate_t _decodeRecursiveFactory(DataInputStream ins) throws IOException {
 		splintersoar.lcmtypes.splinterstate_t o = new splintersoar.lcmtypes.splinterstate_t();
 		o._decodeRecursive(ins);
 		return o;

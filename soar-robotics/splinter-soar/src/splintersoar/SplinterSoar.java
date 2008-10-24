@@ -96,8 +96,7 @@ public class SplinterSoar {
 				lcm.publish(LCMInfo.DRIVE_COMMANDS_CHANNEL, overrideCommand);
 			}
 
-			logger.info("Override "
-					+ (overrideEnabled ? "enabled" : "disabled"));
+			logger.info("Override " + (overrideEnabled ? "enabled" : "disabled"));
 		}
 		overrideButton = currentOverrideButton;
 
@@ -116,15 +115,13 @@ public class SplinterSoar {
 				newCommand.left = fwd - lr;
 				newCommand.right = fwd + lr;
 
-				double max = Math.max(Math.abs(newCommand.left), Math
-						.abs(newCommand.right));
+				double max = Math.max(Math.abs(newCommand.left), Math.abs(newCommand.right));
 				if (max > 1) {
 					newCommand.left /= max;
 					newCommand.right /= max;
 				}
 			}
-			if ((newCommand.left != overrideCommand.left)
-					|| (newCommand.right != overrideCommand.right)) {
+			if ((newCommand.left != overrideCommand.left) || (newCommand.right != overrideCommand.right)) {
 				overrideCommand = newCommand;
 				overrideCommand.utime = System.nanoTime() / 1000;
 				lcm.publish(LCMInfo.DRIVE_COMMANDS_CHANNEL, overrideCommand);

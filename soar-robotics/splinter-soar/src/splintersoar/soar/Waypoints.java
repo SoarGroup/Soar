@@ -56,10 +56,8 @@ public class Waypoints {
 
 			distance = agent.CreateFloatWME(waypoint, "distance", 0);
 			yaw = agent.CreateFloatWME(waypoint, "yaw", 0);
-			relativeBearing = agent.CreateFloatWME(waypoint,
-					"relative-bearing", 0);
-			absRelativeBearing = agent.CreateFloatWME(waypoint,
-					"abs-relative-bearing", 0);
+			relativeBearing = agent.CreateFloatWME(waypoint, "relative-bearing", 0);
+			absRelativeBearing = agent.CreateFloatWME(waypoint, "abs-relative-bearing", 0);
 		}
 
 		void updateWmes() {
@@ -71,13 +69,11 @@ public class Waypoints {
 			double yawValue = Math.atan2(delta[1], delta[0]);
 			agent.Update(yaw, Math.toDegrees(yawValue));
 
-			double relativeBearingValue = yawValue
-					- Geometry.quatToRollPitchYaw(robotpose.orientation)[2];
+			double relativeBearingValue = yawValue - Geometry.quatToRollPitchYaw(robotpose.orientation)[2];
 			relativeBearingValue = MathUtil.mod2pi(relativeBearingValue);
 
 			agent.Update(relativeBearing, Math.toDegrees(relativeBearingValue));
-			agent.Update(absRelativeBearing, Math.abs(Math
-					.toDegrees(relativeBearingValue)));
+			agent.Update(absRelativeBearing, Math.abs(Math.toDegrees(relativeBearingValue)));
 		}
 
 		void enable() {
@@ -168,16 +164,14 @@ public class Waypoints {
 
 			// System.out.format( "%16s %10s %10s %10s %10s %10s%n", "name",
 			// "x", "y", "distance", "yaw", "bearing" );
-			Waypoint[] waypointArray = waypointList.values().toArray(
-					new Waypoint[0]);
+			Waypoint[] waypointArray = waypointList.values().toArray(new Waypoint[0]);
 			for (int index = 0; index < waypointArray.length; ++index) {
 				waypointArray[index].updateWmes();
 
 				waypoints.names[index] = waypointArray[index].name;
 				waypoints.locations[index] = new xy_t();
 				waypoints.locations[index].utime = waypoints.utime;
-				waypoints.locations[index].xy = Arrays.copyOf(
-						waypointArray[index].xyz, 2);
+				waypoints.locations[index].xy = Arrays.copyOf(waypointArray[index].xyz, 2);
 			}
 		}
 		lcm.publish(LCMInfo.WAYPOINTS_CHANNEL, waypoints);

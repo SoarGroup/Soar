@@ -51,18 +51,14 @@ public class SplinterInput {
 		return other;
 	}
 
-	public differential_drive_command_t generateDriveCommand(
-			splinterstate_t splinterState) {
+	public differential_drive_command_t generateDriveCommand(splinterstate_t splinterState) {
 		differential_drive_command_t driveCommand = new differential_drive_command_t();
 		driveCommand.left_enabled = true;
 		driveCommand.right_enabled = true;
 
 		if (targetYawEnabled) {
-			double relativeBearingValue = targetYaw
-					- Geometry
-							.quatToRollPitchYaw(splinterState.pose.orientation)[2];
-			relativeBearingValue = erp.math.MathUtil
-					.mod2pi(relativeBearingValue);
+			double relativeBearingValue = targetYaw - Geometry.quatToRollPitchYaw(splinterState.pose.orientation)[2];
+			relativeBearingValue = erp.math.MathUtil.mod2pi(relativeBearingValue);
 
 			if (relativeBearingValue < (0 - targetYawTolerance)) {
 				driveCommand.left = throttle[0];

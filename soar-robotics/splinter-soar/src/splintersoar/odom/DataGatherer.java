@@ -86,8 +86,7 @@ public class DataGatherer {
 			newThrottle[0] = fwd - lr;
 			newThrottle[1] = fwd + lr;
 
-			double max = Math.max(Math.abs(newThrottle[0]), Math
-					.abs(newThrottle[1]));
+			double max = Math.max(Math.abs(newThrottle[0]), Math.abs(newThrottle[1]));
 			if (max > 1) {
 				newThrottle[0] /= max;
 				newThrottle[1] /= max;
@@ -109,11 +108,9 @@ public class DataGatherer {
 		public void run() {
 			try {
 				synchronized (datawriter) {
-					datawriter.append(Integer
-							.toString(quadenc[0].getPosition()));
+					datawriter.append(Integer.toString(quadenc[0].getPosition()));
 					datawriter.append(",");
-					datawriter.append(Integer
-							.toString(quadenc[1].getPosition()));
+					datawriter.append(Integer.toString(quadenc[1].getPosition()));
 					datawriter.append("\n");
 					datawriter.flush();
 				}
@@ -146,8 +143,7 @@ public class DataGatherer {
 
 		boolean[] capped = { false, false };
 		if (delta[0] > 0) {
-			double newDelta = Math.min(delta[0], elapsedsec
-					* maxThrottleAccelleration);
+			double newDelta = Math.min(delta[0], elapsedsec * maxThrottleAccelleration);
 			if (delta[0] != newDelta) {
 				capped[0] = true;
 				delta[0] = newDelta;
@@ -155,8 +151,7 @@ public class DataGatherer {
 			// System.out.format( "delta1: %10.3f %10.3f%n", delta[0], delta[1]
 			// );
 		} else if (delta[0] < 0) {
-			double newDelta = Math.max(delta[0], -1 * elapsedsec
-					* maxThrottleAccelleration);
+			double newDelta = Math.max(delta[0], -1 * elapsedsec * maxThrottleAccelleration);
 			if (delta[0] != newDelta) {
 				capped[0] = true;
 				delta[0] = newDelta;
@@ -165,8 +160,7 @@ public class DataGatherer {
 			// );
 		}
 		if (delta[1] > 0) {
-			double newDelta = Math.min(delta[1], elapsedsec
-					* maxThrottleAccelleration);
+			double newDelta = Math.min(delta[1], elapsedsec * maxThrottleAccelleration);
 			if (delta[1] != newDelta) {
 				capped[1] = true;
 				delta[1] = newDelta;
@@ -174,8 +168,7 @@ public class DataGatherer {
 			// System.out.format( "delta3: %10.3f %10.3f%n", delta[0], delta[1]
 			// );
 		} else if (delta[1] < 0) {
-			double newDelta = Math.max(delta[1], -1 * elapsedsec
-					* maxThrottleAccelleration);
+			double newDelta = Math.max(delta[1], -1 * elapsedsec * maxThrottleAccelleration);
 			if (delta[1] != newDelta) {
 				capped[1] = true;
 				delta[1] = newDelta;

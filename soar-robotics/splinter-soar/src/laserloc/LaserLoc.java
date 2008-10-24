@@ -35,14 +35,10 @@ public class LaserLoc extends Thread implements LCMSubscriber {
 			if (config != null) {
 				laser_x = config.getDouble("laser_x", laser_x);
 				laser_y = config.getDouble("laser_y", laser_y);
-				laser_yaw_adjust = config.getDouble("laser_yaw_adjust",
-						laser_yaw_adjust);
-				laser_dist_adjustment = config.getDouble(
-						"laser_dist_adjustment", laser_dist_adjustment);
-				update_period = config.getInt("update_period",
-						(int) update_period);
-				activity_timeout = config.getInt("activity_timeout",
-						(int) activity_timeout);
+				laser_yaw_adjust = config.getDouble("laser_yaw_adjust", laser_yaw_adjust);
+				laser_dist_adjustment = config.getDouble("laser_dist_adjustment", laser_dist_adjustment);
+				update_period = config.getInt("update_period", (int) update_period);
+				activity_timeout = config.getInt("activity_timeout", (int) activity_timeout);
 				mapFile = config.getString("mapFile", mapFile);
 			}
 
@@ -103,8 +99,7 @@ public class LaserLoc extends Thread implements LCMSubscriber {
 
 		if (nanotime - nanolastactivity > currentTimeout) {
 			inactive = true;
-			logger.warning(String.format("no activity in last "
-					+ (currentTimeout / 1000000000) + " seconds"));
+			logger.warning(String.format("no activity in last " + (currentTimeout / 1000000000) + " seconds"));
 			nanolastactivity = nanotime;
 			currentTimeout += configuration.activity_timeout;
 		}
@@ -113,10 +108,8 @@ public class LaserLoc extends Thread implements LCMSubscriber {
 		long nanoelapsed = nanotime - lastStatusUpdate;
 		if (nanoelapsed > configuration.update_period) {
 			if (droppedLocPackets > 0) {
-				double dropRate = (double) droppedLocPackets
-						/ (nanoelapsed / 1000000000);
-				logger.warning(String.format(
-						"LaserLoc: dropping %5.1f packets/sec", dropRate));
+				double dropRate = (double) droppedLocPackets / (nanoelapsed / 1000000000);
+				logger.warning(String.format("LaserLoc: dropping %5.1f packets/sec", dropRate));
 			}
 
 			droppedLocPackets = 0;
@@ -143,8 +136,7 @@ public class LaserLoc extends Thread implements LCMSubscriber {
 
 		estimated_coords.utime = laser_data.utime;
 
-		logger.fine(String.format("publishing %10.3f %10.3f",
-				estimated_coords.xy[0], estimated_coords.xy[1]));
+		logger.fine(String.format("publishing %10.3f %10.3f", estimated_coords.xy[0], estimated_coords.xy[1]));
 
 		lcm.publish(LCMInfo.COORDS_CHANNEL, estimated_coords);
 
@@ -166,17 +158,13 @@ public class LaserLoc extends Thread implements LCMSubscriber {
 		}
 		assert smallest_range_index != -1;
 
-		double laser_angle = configuration.laser_yaw_adjust + laser_data.rad0
-				+ laser_data.radstep * smallest_range_index;
+		double laser_angle = configuration.laser_yaw_adjust + laser_data.rad0 + laser_data.radstep * smallest_range_index;
 
-		double laser_dist = smallest_range
-				+ configuration.laser_dist_adjustment;
+		double laser_dist = smallest_range + configuration.laser_dist_adjustment;
 
 		xy_t new_coords = new xy_t();
-		new_coords.xy[0] = configuration.laser_x + laser_dist
-				* Math.cos(laser_angle);
-		new_coords.xy[1] = configuration.laser_y + laser_dist
-				* Math.sin(laser_angle);
+		new_coords.xy[0] = configuration.laser_x + laser_dist * Math.cos(laser_angle);
+		new_coords.xy[1] = configuration.laser_y + laser_dist * Math.sin(laser_angle);
 
 		return new_coords;
 	}
