@@ -60,8 +60,8 @@ public class SplinterSoar {
 		logger.info("Starting ranger manager");
 		ranger = new RangerManager();
 
-		logger.info("Starting Soar interface");
-		soar = new SoarInterface(ranger, config);
+		//logger.info("Starting Soar interface");
+		//soar = new SoarInterface(ranger, config);
 
 		logger.info("Creating game pad for override");
 		gamePad = new GamePad();
