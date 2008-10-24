@@ -16,60 +16,60 @@ public class ParticleFilter {
 		double xyt[];
 		double weight;
 	}
-	
+
 	Random rand = new Random();
 
 	ArrayList<Particle> particles = new ArrayList<Particle>();
 	particles_t particleslcm;
 	LCM lcm;
-	
+
 	public ParticleFilter() {
 		lcm = LCM.getSingleton();
-		
+
 		init();
 	}
 
 	void init() {
 		final int size = 100;
-		
+
 		particleslcm = new particles_t();
 		particleslcm.nparticles = size;
-		particleslcm.particle = new double [size][];
-		
+		particleslcm.particle = new double[size][];
+
 		for (int i = 0; i < 100; i++) {
 			Particle p = new Particle();
 			p.xyt = new double[] { (1 - 2 * rand.nextFloat()) * 5,
 					(1 - 2 * rand.nextFloat()) * 5,
 					2 * rand.nextFloat() * Math.PI };
 			particles.add(p);
-			
-			particleslcm.particle[i] = new double [] { p.xyt[0], p.xyt[1], p.xyt[2] };
+
+			particleslcm.particle[i] = new double[] { p.xyt[0], p.xyt[1],
+					p.xyt[2] };
 		}
-		
+
 		particleslcm.utime = System.nanoTime() / 1000;
-		lcm.publish( LCMInfo.PARTICLES_CHANNEL, particleslcm );
+		lcm.publish(LCMInfo.PARTICLES_CHANNEL, particleslcm);
 	}
 
-	double [] oldlaserxy = { 0, 0 };
-	
-	public pose_t update( double [] deltaxyt, double [] laserxy ) {
+	double[] oldlaserxy = { 0, 0 };
+
+	public pose_t update(double[] deltaxyt, double[] laserxy) {
 
 		assert deltaxyt != null;
-		
+
 		// //////////////////////////////////////////////////
 		// propagate odometry
 		for (Particle p : particles) {
-			p.xyt = LinAlg.xytMultiply( p.xyt, deltaxyt );
+			p.xyt = LinAlg.xytMultiply(p.xyt, deltaxyt);
 		}
-		
+
 		// //////////////////////////////////////////////////
 		// use new lidar reading
-		if ( laserxy != null )
-		{
-			System.arraycopy( laserxy, 0, oldlaserxy, 0, laserxy.length );
+		if (laserxy != null) {
+			System.arraycopy(laserxy, 0, oldlaserxy, 0, laserxy.length);
 		}
-		
-		//System.out.println( oldlaserxy[0] + " " + oldlaserxy[1]);	 
+
+		// System.out.println( oldlaserxy[0] + " " + oldlaserxy[1]);
 
 		// //////////////////////////////////////////////////
 		// score particles.
@@ -107,7 +107,7 @@ public class ParticleFilter {
 
 		particleslcm = new particles_t();
 		particleslcm.nparticles = particles.size();
-		particleslcm.particle = new double [particles.size()][];
+		particleslcm.particle = new double[particles.size()][];
 
 		for (int i = 0; i < particles.size(); i++) {
 			double tw = rand.nextFloat();
@@ -128,20 +128,22 @@ public class ParticleFilter {
 					p.xyt[1] + rand.nextGaussian() * 0.05,
 					p.xyt[2] + rand.nextGaussian() * 0.01 };
 			newParticles.add(np);
-			
-			particleslcm.particle[i] = new double [] { np.xyt[0], np.xyt[1], np.xyt[2] };
+
+			particleslcm.particle[i] = new double[] { np.xyt[0], np.xyt[1],
+					np.xyt[2] };
 		}
 		particles = newParticles;
 
 		particleslcm.utime = System.nanoTime() / 1000;
-		lcm.publish( LCMInfo.PARTICLES_CHANNEL, particleslcm );
-		
-		fitParticle.xyt[2] = MathUtil.mod2pi( fitParticle.xyt[2] );
-		
+		lcm.publish(LCMInfo.PARTICLES_CHANNEL, particleslcm);
+
+		fitParticle.xyt[2] = MathUtil.mod2pi(fitParticle.xyt[2]);
+
 		pose_t pose = new pose_t();
 		pose.pos = new double[] { fitParticle.xyt[0], fitParticle.xyt[1], 0 };
-		pose.orientation = Geometry.rollPitchYawToQuat( new double [] { 0, 0, fitParticle.xyt[2] } );
-		
+		pose.orientation = Geometry.rollPitchYawToQuat(new double[] { 0, 0,
+				fitParticle.xyt[2] });
+
 		return pose;
 	}
 

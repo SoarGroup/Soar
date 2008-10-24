@@ -10,7 +10,6 @@ import erp.vis.*;
 import erp.math.*;
 import jmat.*;
 import lcm.lcm.*;
-import lcmtypes.laser_t;
 import lcmtypes.pose_t;
 
 public class PFTest2 implements LCMSubscriber {
@@ -18,16 +17,15 @@ public class PFTest2 implements LCMSubscriber {
 		double xyt[];
 		double weight;
 	}
-	
+
 	public static void main(String args[]) {
-		
-		
+
 		PFTest2 pf = new PFTest2();
 
 		LCM lcm = LCM.getSingleton();
-		lcm.subscribe( "ODOM_DEBUG", pf );
-		lcm.subscribe( "POSE", pf );
-		
+		lcm.subscribe("ODOM_DEBUG", pf);
+		lcm.subscribe("POSE", pf);
+
 		while (true) {
 			pf.step();
 			try {
@@ -36,63 +34,51 @@ public class PFTest2 implements LCMSubscriber {
 			}
 		}
 	}
-	
-	double [] pfxyt;
-	double [] lcmxyt = new double[3];
-	double [] laserxy;
-	double [] oldlaserxy = new double[2];
-	
+
+	double[] pfxyt;
+	double[] lcmxyt = new double[3];
+	double[] laserxy;
+	double[] oldlaserxy = new double[2];
+
 	@Override
-	public void messageReceived( LCM lcm, String channel, DataInputStream ins ) 
-	{
-		if ( channel.equals( "ODOM_DEBUG" ) )
-		{
-			try 
-			{
-				pose_t rawOdom = new pose_t( ins );
-				
+	public void messageReceived(LCM lcm, String channel, DataInputStream ins) {
+		if (channel.equals("ODOM_DEBUG")) {
+			try {
+				pose_t rawOdom = new pose_t(ins);
+
 				lcmxyt[2] += rawOdom.pos[1];
-				lcmxyt[0] = lcmxyt[0] + ( rawOdom.pos[0] * Math.cos( lcmxyt[2] ) );
-				lcmxyt[1] = lcmxyt[1] + ( rawOdom.pos[0] * Math.sin( lcmxyt[2] ) );
-			} 
-			catch ( IOException ex ) 
-			{
-				System.err.println( "Error decoding odom message: " + ex );
+				lcmxyt[0] = lcmxyt[0] + (rawOdom.pos[0] * Math.cos(lcmxyt[2]));
+				lcmxyt[1] = lcmxyt[1] + (rawOdom.pos[0] * Math.sin(lcmxyt[2]));
+			} catch (IOException ex) {
+				System.err.println("Error decoding odom message: " + ex);
 			}
-			
-			if ( pfxyt == null )
-			{
-				pfxyt = Arrays.copyOf( lcmxyt, lcmxyt.length );
-				
-				Arrays.fill( lcmxyt, 0 );
+
+			if (pfxyt == null) {
+				pfxyt = Arrays.copyOf(lcmxyt, lcmxyt.length);
+
+				Arrays.fill(lcmxyt, 0);
 			}
-		} 
-		else if ( channel.equals( "POSE" ) )
-		{
-			if ( laserxy != null )
-			{
+		} else if (channel.equals("POSE")) {
+			if (laserxy != null) {
 				return;
 			}
 
-			try 
-			{ 
-				pose_t laserlocation = new pose_t( ins );
-				laserxy = new double [] { laserlocation.pos[0], laserlocation.pos[1] };
-			} 
-			catch ( IOException ex ) 
-			{
-				System.err.println( "Error decoding laser message: " + ex );
+			try {
+				pose_t laserlocation = new pose_t(ins);
+				laserxy = new double[] { laserlocation.pos[0],
+						laserlocation.pos[1] };
+			} catch (IOException ex) {
+				System.err.println("Error decoding laser message: " + ex);
 			}
 		}
 	}
-
 
 	JFrame jf;
 	VisWorld vw = new VisWorld();
 	VisCanvas vc = new VisCanvas(vw);
 
-	//double time;
-	//double xyt_truth[];
+	// double time;
+	// double xyt_truth[];
 
 	Random rand = new Random();
 
@@ -119,66 +105,63 @@ public class PFTest2 implements LCMSubscriber {
 	}
 
 	void step() {
-		//time += 0.01;
+		// time += 0.01;
 		update();
-		
-		try
-		{
+
+		try {
 			Thread.sleep(33);
 		} catch (InterruptedException ignored) {
 		}
 	}
 
 	boolean started = false;
+
 	void update() {
-		
-		if ( !started )
-		{
-			if ( pfxyt == null )
-			{
+
+		if (!started) {
+			if (pfxyt == null) {
 				return;
 			}
 			started = true;
-			System.out.println( "Started" );
+			System.out.println("Started");
 		}
-		
-		double [] pfxytcopy = new double[3];
-		if ( pfxyt != null )
-		{
-			System.arraycopy( pfxyt, 0, pfxytcopy, 0, pfxyt.length );
+
+		double[] pfxytcopy = new double[3];
+		if (pfxyt != null) {
+			System.arraycopy(pfxyt, 0, pfxytcopy, 0, pfxyt.length);
 			pfxyt = null;
 		}
-		double thetadeltadegrees = Math.toDegrees( pfxytcopy[2] );
-		System.out.format( "%10.6f%n", thetadeltadegrees );
-		
+		double thetadeltadegrees = Math.toDegrees(pfxytcopy[2]);
+		System.out.format("%10.6f%n", thetadeltadegrees);
+
 		// //////////////////////////////////////////////////
 		// Simulate motion of real robot.
 
 		// drive in a big circle
-		//double theta = time;
-		//double radius = 5;
+		// double theta = time;
+		// double radius = 5;
 
-		//double xyt_truth_new[] = new double[] { radius * Math.cos(theta),
-		//		radius * Math.sin(theta), theta + Math.PI / 2 };
-		//if (xyt_truth == null)
-		//	xyt_truth = LinAlg.copy(xyt_truth_new);
+		// double xyt_truth_new[] = new double[] { radius * Math.cos(theta),
+		// radius * Math.sin(theta), theta + Math.PI / 2 };
+		// if (xyt_truth == null)
+		// xyt_truth = LinAlg.copy(xyt_truth_new);
 
 		VisWorld.Buffer vb = vw.getBuffer("truth");
-		//vb.addBuffered(new VisChain(LinAlg.xytToMatrix(xyt_truth_new),
-		//		new VisRobot(Color.blue)));
+		// vb.addBuffered(new VisChain(LinAlg.xytToMatrix(xyt_truth_new),
+		// new VisRobot(Color.blue)));
 
 		// //////////////////////////////////////////////////
 		// Compute Odometry (perfect)
 
 		// AT = B
 		// T = inv(A)*B
-		//double odom_xyt_truth[];
-		//odom_xyt_truth = LinAlg.xytInvMul31(xyt_truth, xyt_truth_new);
+		// double odom_xyt_truth[];
+		// odom_xyt_truth = LinAlg.xytInvMul31(xyt_truth, xyt_truth_new);
 
-		//double odom_xyt_noisy[] = new double[3];
-		//odom_xyt_noisy[0] = odom_xyt_truth[0] + rand.nextGaussian() * 0.01;
-		//odom_xyt_noisy[1] = odom_xyt_truth[1] + rand.nextGaussian() * 0.01;
-		//odom_xyt_noisy[2] = odom_xyt_truth[2] + rand.nextGaussian() * 0.001;
+		// double odom_xyt_noisy[] = new double[3];
+		// odom_xyt_noisy[0] = odom_xyt_truth[0] + rand.nextGaussian() * 0.01;
+		// odom_xyt_noisy[1] = odom_xyt_truth[1] + rand.nextGaussian() * 0.01;
+		// odom_xyt_noisy[2] = odom_xyt_truth[2] + rand.nextGaussian() * 0.001;
 
 		// //////////////////////////////////////////////////
 		// propagate odometry
@@ -195,17 +178,16 @@ public class PFTest2 implements LCMSubscriber {
 
 		// //////////////////////////////////////////////////
 		// simulate lidar.
-		//double laser_xy[] = new double[] {
-		//		xyt_truth[0] + rand.nextGaussian() * 0.05,
-		//		xyt_truth[1] + rand.nextGaussian() * 0.05 };
-		if ( laserxy != null )
-		{
-			System.arraycopy( laserxy, 0, oldlaserxy, 0, laserxy.length );
+		// double laser_xy[] = new double[] {
+		// xyt_truth[0] + rand.nextGaussian() * 0.05,
+		// xyt_truth[1] + rand.nextGaussian() * 0.05 };
+		if (laserxy != null) {
+			System.arraycopy(laserxy, 0, oldlaserxy, 0, laserxy.length);
 			laserxy = null;
 		}
-		
-		vb.addBuffered(new VisData(oldlaserxy, new VisDataPointStyle(Color.black,
-				4)));
+
+		vb.addBuffered(new VisData(oldlaserxy, new VisDataPointStyle(
+				Color.black, 4)));
 
 		// //////////////////////////////////////////////////
 		// score particles.
@@ -239,10 +221,10 @@ public class PFTest2 implements LCMSubscriber {
 
 		vb.addBuffered(new VisChain(LinAlg.xytToMatrix(fitParticle.xyt),
 				new VisRobot(Color.yellow)));
-		
+
 		// render laser data on top
-		vb.addBuffered(new VisData(oldlaserxy, new VisDataPointStyle(Color.black,
-				4)));
+		vb.addBuffered(new VisData(oldlaserxy, new VisDataPointStyle(
+				Color.black, 4)));
 
 		// //////////////////////////////////////////////////
 		// resample.
@@ -272,7 +254,7 @@ public class PFTest2 implements LCMSubscriber {
 
 		// /////////////////////////////////////////////////
 		// clean up
-		//xyt_truth = xyt_truth_new;
+		// xyt_truth = xyt_truth_new;
 		vb.switchBuffer();
 
 	}
