@@ -89,7 +89,9 @@ public class SplinterSoar {
 		// change on trailing edge
 		if (overrideButton && !currentOverrideButton) {
 			overrideEnabled = !overrideEnabled;
-			soar.setOverride(overrideEnabled);
+			if (soar != null) {
+				soar.setOverride(overrideEnabled);
+			}
 
 			if (overrideEnabled) {
 				overrideCommand.left_enabled = true;
@@ -137,6 +139,9 @@ public class SplinterSoar {
 	boolean startStop = false;
 
 	private void updateStartStop() {
+		if (soar == null)
+			return;
+
 		boolean currentStartStopButton = gamePad.getButton(1);
 		// change on trailing edge
 		if (startStopButton && !currentStartStopButton) {
@@ -158,7 +163,9 @@ public class SplinterSoar {
 		public void run() {
 			running = false;
 
-			soar.shutdown();
+			if (soar != null)
+				soar.shutdown();
+
 			orc.shutdown();
 
 			System.out.flush();

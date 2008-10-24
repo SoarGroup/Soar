@@ -63,7 +63,7 @@ public class OrcInterface implements LCMSubscriber {
 				laserThreshold = config.getDouble("orc.laserThreshold", laserThreshold);
 			}
 			
-			maxThrottleChangePerUpdate = ( 1 / updateHz ) * maxThrottleAccelleration;
+			maxThrottleChangePerUpdate = maxThrottleAccelleration / updateHz;
 		}
 	}
 
@@ -281,6 +281,10 @@ public class OrcInterface implements LCMSubscriber {
 			newDriveCommand.left = Math.max(newDriveCommand.left, -1.0);
 
 			double delta = newDriveCommand.left - command[0];
+			
+			if (logger.isLoggable(Level.FINEST))
+				logger.finest(String.format("Delta %f, Max: %f", delta, configuration.maxThrottleChangePerUpdate));
+
 			if (delta > 0) {
 				delta = Math.min(delta, configuration.maxThrottleChangePerUpdate);
 			} else if (delta < 0) {
@@ -295,6 +299,10 @@ public class OrcInterface implements LCMSubscriber {
 			newDriveCommand.right = Math.max(newDriveCommand.right, -1.0);
 
 			double delta = newDriveCommand.right - command[1];
+
+			if (logger.isLoggable(Level.FINEST))
+				logger.finest(String.format("Delta %f, Max: %f", delta, configuration.maxThrottleChangePerUpdate));
+
 			if (delta > 0) {
 				delta = Math.min(delta, configuration.maxThrottleChangePerUpdate);
 			} else if (delta < 0) {
@@ -302,6 +310,9 @@ public class OrcInterface implements LCMSubscriber {
 			}
 			command[1] += delta;
 		}
+
+		if (logger.isLoggable(Level.FINEST))
+			logger.finest(String.format("Sending input %f %f", command[0], command[1]));
 
 		motor[0].setPWM(command[0]);
 		motor[1].setPWM(command[1]);
