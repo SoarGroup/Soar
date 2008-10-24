@@ -8,6 +8,8 @@ import java.util.TimerTask;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import jmat.LinAlg;
+
 import lcm.lcm.LCM;
 import lcm.lcm.LCMSubscriber;
 import lcmtypes.pose_t;
@@ -22,7 +24,6 @@ import splintersoar.lcmtypes.xy_t;
 import splintersoar.pf.ParticleFilter;
 
 import erp.config.Config;
-import erp.geom.Geometry;
 import erp.lcmtypes.differential_drive_command_t;
 import erp.math.MathUtil;
 
@@ -108,8 +109,14 @@ public class OrcInterface implements LCMSubscriber {
 
 	class UpdateTask extends TimerTask {
 		int runs = 0;
-		ParticleFilter pf = new ParticleFilter();
+		ParticleFilter pf;
 		double[] yawCalcXY;
+		
+		UpdateTask() {
+			if (configuration.usePF) {
+				 pf = new ParticleFilter();
+			}
+		}
 
 		@Override
 		public void run() {
@@ -141,7 +148,7 @@ public class OrcInterface implements LCMSubscriber {
 					// adjustedlaserxy could be null
 					currentState.pose = pf.update(deltaxyt, adjustedlaserxy);
 
-					double yaw = Geometry.quatToRollPitchYaw(currentState.pose.orientation)[2];
+					double yaw = LinAlg.quatToRollPitchYaw(currentState.pose.orientation)[2];
 					if (logger.isLoggable(Level.FINER)) {
 						logger.finer(String.format("pf: %5.2f %5.2f %5.1f", currentState.pose.pos[0], currentState.pose.pos[1], Math.toDegrees(yaw)));
 					}
@@ -153,14 +160,14 @@ public class OrcInterface implements LCMSubscriber {
 					if (adjustedlaserxy != null) {
 						if (yawCalcXY == null) {
 							yawCalcXY = Arrays.copyOf(adjustedlaserxy, adjustedlaserxy.length);
-						} else if (Geometry.distance(yawCalcXY, adjustedlaserxy) > configuration.laserThreshold) {
+						} else if (LinAlg.distance(yawCalcXY, adjustedlaserxy) > configuration.laserThreshold) {
 							currentState.pose.pos[0] = adjustedlaserxy[0];
 							currentState.pose.pos[1] = adjustedlaserxy[1];
 
 							double[] rpy = { 0, 0, 0 };
 							rpy[2] = Math.atan2(adjustedlaserxy[1] - yawCalcXY[1], adjustedlaserxy[0] - yawCalcXY[0]);
 							rpy[2] = MathUtil.mod2pi(rpy[2]);
-							currentState.pose.orientation = Geometry.rollPitchYawToQuat(rpy);
+							currentState.pose.orientation = LinAlg.rollPitchYawToQuat(rpy);
 
 							if (logger.isLoggable(Level.FINER)) {
 								logger.finer(String.format("laser: %5.2f %5.2f %5.1f", currentState.pose.pos[0], currentState.pose.pos[1], Math
@@ -175,10 +182,10 @@ public class OrcInterface implements LCMSubscriber {
 						currentState.pose.pos[0] += deltaxyt[0];
 						currentState.pose.pos[1] += deltaxyt[1];
 
-						double[] rpy = Geometry.quatToRollPitchYaw(previousState.pose.orientation);
+						double[] rpy = LinAlg.quatToRollPitchYaw(previousState.pose.orientation);
 						rpy[2] += deltaxyt[2];
 						rpy[2] = MathUtil.mod2pi(rpy[2]);
-						currentState.pose.orientation = Geometry.rollPitchYawToQuat(rpy);
+						currentState.pose.orientation = LinAlg.rollPitchYawToQuat(rpy);
 
 						if (logger.isLoggable(Level.FINER)) {
 							logger.finer(String.format(" odom: %5.2f %5.2f %5.1f", currentState.pose.pos[0], currentState.pose.pos[1], Math.toDegrees(rpy[2])));
@@ -208,7 +215,7 @@ public class OrcInterface implements LCMSubscriber {
 
 			phi = MathUtil.mod2pi(phi);
 
-			double theta = Geometry.quatToRollPitchYaw(previousState.pose.orientation)[2];
+			double theta = LinAlg.quatToRollPitchYaw(previousState.pose.orientation)[2];
 			theta = MathUtil.mod2pi(theta);
 
 			return new double[] { dcenter * Math.cos(theta), dcenter * Math.sin(theta), phi };
@@ -229,7 +236,7 @@ public class OrcInterface implements LCMSubscriber {
 				}
 			}
 
-			return Geometry.subtract(laserxycopy.xy, initialxy);
+			return LinAlg.subtract(laserxycopy.xy, initialxy);
 		}
 	}
 

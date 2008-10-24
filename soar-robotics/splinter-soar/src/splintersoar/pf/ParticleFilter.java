@@ -1,13 +1,17 @@
 package splintersoar.pf;
 
 import java.util.*;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
+import erp.math.MathUtil;
+
+import jmat.LinAlg;
 
 import splintersoar.LCMInfo;
+import splintersoar.LogFactory;
 import splintersoar.lcmtypes.particles_t;
 
-import erp.geom.Geometry;
-import erp.math.*;
-import jmat.*;
 import lcm.lcm.LCM;
 import lcmtypes.pose_t;
 
@@ -22,15 +26,20 @@ public class ParticleFilter {
 	ArrayList<Particle> particles = new ArrayList<Particle>();
 	particles_t particleslcm;
 	LCM lcm;
+	
+	Logger logger;
 
 	public ParticleFilter() {
 		lcm = LCM.getSingleton();
+		
+		logger = LogFactory.createSimpleLogger("ParticleFilter", Level.FINER);
 
 		init();
 	}
 
 	void init() {
 		final int size = 100;
+		logger.info(String.format("Initialzing %d particles", size));
 
 		particleslcm = new particles_t();
 		particleslcm.nparticles = size;
@@ -42,6 +51,10 @@ public class ParticleFilter {
 			particles.add(p);
 
 			particleslcm.particle[i] = new double[] { p.xyt[0], p.xyt[1], p.xyt[2] };
+			
+			if (logger.isLoggable(Level.FINEST)) {
+				logger.finest(String.format("New particle xyt: %5.3f %5.3f %5.3f", p.xyt[0], p.xyt[1], p.xyt[2]));
+			}
 		}
 
 		particleslcm.utime = System.nanoTime() / 1000;
@@ -54,6 +67,11 @@ public class ParticleFilter {
 
 		assert deltaxyt != null;
 
+		if (logger.isLoggable(Level.FINE)) {
+			logger.fine(String.format("update, delta xy magnitude: %10.6f", LinAlg.magnitude(new double [] { deltaxyt[0], deltaxyt[1] })));
+			logger.fine(String.format("laserxy %5.3f %5.3f", laserxy[0], laserxy[1]));
+		}
+		
 		// //////////////////////////////////////////////////
 		// propagate odometry
 		for (Particle p : particles) {
@@ -86,6 +104,10 @@ public class ParticleFilter {
 			if (bestParticle == null || p.weight > bestParticle.weight)
 				bestParticle = p;
 		}
+		
+		if (logger.isLoggable(Level.FINE)) {
+			logger.fine(String.format("bestParticle %5.3f %5.3f %5.3f %5.3f", bestParticle.xyt[0], bestParticle.xyt[1], bestParticle.xyt[2], bestParticle.weight));
+		}
 
 		Particle fitParticle = new Particle();
 		fitParticle.xyt = new double[3];
@@ -94,6 +116,10 @@ public class ParticleFilter {
 			fitParticle.xyt[0] += p.weight * p.xyt[0];
 			fitParticle.xyt[1] += p.weight * p.xyt[1];
 			fitParticle.xyt[2] += p.weight * MathUtil.mod2pi(bestParticle.xyt[2], p.xyt[2]);
+		}
+
+		if (logger.isLoggable(Level.FINE)) {
+			logger.fine(String.format("fitParticle %5.3f %5.3f %5.3f", fitParticle.xyt[0], fitParticle.xyt[1], fitParticle.xyt[2]));
 		}
 
 		// //////////////////////////////////////////////////
@@ -123,6 +149,10 @@ public class ParticleFilter {
 			newParticles.add(np);
 
 			particleslcm.particle[i] = new double[] { np.xyt[0], np.xyt[1], np.xyt[2] };
+			
+			if (logger.isLoggable(Level.FINEST)) {
+				logger.finest(String.format("Resampled particle xyt: %5.3f %5.3f %5.3f", np.xyt[0], np.xyt[1], np.xyt[2]));
+			}
 		}
 		particles = newParticles;
 
@@ -133,7 +163,7 @@ public class ParticleFilter {
 
 		pose_t pose = new pose_t();
 		pose.pos = new double[] { fitParticle.xyt[0], fitParticle.xyt[1], 0 };
-		pose.orientation = Geometry.rollPitchYawToQuat(new double[] { 0, 0, fitParticle.xyt[2] });
+		pose.orientation = LinAlg.rollPitchYawToQuat(new double[] { 0, 0, fitParticle.xyt[2] });
 
 		return pose;
 	}

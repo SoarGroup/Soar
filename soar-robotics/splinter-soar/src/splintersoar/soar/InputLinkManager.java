@@ -3,7 +3,8 @@ package splintersoar.soar;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import erp.geom.Geometry;
+import jmat.LinAlg;
+
 import erp.math.MathUtil;
 import sml.Agent;
 import sml.FloatElement;
@@ -160,7 +161,7 @@ public class InputLinkManager {
 
 			agent.Update(xwme, splinterState.pose.pos[0]);
 			agent.Update(ywme, splinterState.pose.pos[1]);
-			agent.Update(yawwme, Math.toDegrees(MathUtil.mod2pi(Geometry.quatToRollPitchYaw(splinterState.pose.orientation)[2])));
+			agent.Update(yawwme, Math.toDegrees(MathUtil.mod2pi(LinAlg.quatToRollPitchYaw(splinterState.pose.orientation)[2])));
 
 			waypoints.setNewRobotPose(splinterState.pose);
 		}

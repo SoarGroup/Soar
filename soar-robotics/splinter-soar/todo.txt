@@ -1,4 +1,6 @@
+* stop using deprecated geometry class
 * documentation
+* possibly switch to floats for particles_t unit
 
 Types (see .lcm files for docs):
 laser_t

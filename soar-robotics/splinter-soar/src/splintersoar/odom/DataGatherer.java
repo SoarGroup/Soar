@@ -7,7 +7,7 @@ import java.util.Arrays;
 import java.util.Timer;
 import java.util.TimerTask;
 
-import erp.geom.Geometry;
+import jmat.LinAlg;
 
 import orc.Motor;
 import orc.Orc;
@@ -139,7 +139,7 @@ public class DataGatherer {
 		long elapsed = System.nanoTime() - lastutime;
 		double elapsedsec = elapsed / 1000000000.0;
 
-		double[] delta = Geometry.subtract(throttle, command);
+		double[] delta = LinAlg.subtract(throttle, command);
 
 		boolean[] capped = { false, false };
 		if (delta[0] > 0) {

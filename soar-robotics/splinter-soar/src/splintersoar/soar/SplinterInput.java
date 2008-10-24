@@ -2,7 +2,8 @@ package splintersoar.soar;
 
 import java.util.Arrays;
 
-import erp.geom.Geometry;
+import jmat.LinAlg;
+
 import erp.lcmtypes.differential_drive_command_t;
 
 import splintersoar.lcmtypes.splinterstate_t;
@@ -57,7 +58,7 @@ public class SplinterInput {
 		driveCommand.right_enabled = true;
 
 		if (targetYawEnabled) {
-			double relativeBearingValue = targetYaw - Geometry.quatToRollPitchYaw(splinterState.pose.orientation)[2];
+			double relativeBearingValue = targetYaw - LinAlg.quatToRollPitchYaw(splinterState.pose.orientation)[2];
 			relativeBearingValue = erp.math.MathUtil.mod2pi(relativeBearingValue);
 
 			if (relativeBearingValue < (0 - targetYawTolerance)) {

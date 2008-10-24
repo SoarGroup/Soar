@@ -10,7 +10,8 @@ import java.util.Arrays;
 
 import javax.swing.JFrame;
 
-import erp.geom.Geometry;
+import jmat.LinAlg;
+
 import erp.math.MathUtil;
 import erp.vis.VisCanvas;
 import erp.vis.VisData;
@@ -146,7 +147,7 @@ public class DataPlotter {
 		double dcenter = (dleft + dright) / 2;
 
 		double[] deltaxyt = { dcenter * Math.cos(position[2]), dcenter * Math.sin(position[2]), phi };
-		position = Geometry.add(position, deltaxyt);
+		position = LinAlg.add(position, deltaxyt);
 		position[2] = MathUtil.mod2pi(position[2]);
 		// System.out.println( position[0] + "," + position[1] + "," +
 		// Math.toDegrees(position[2]) );
