@@ -1,4 +1,3 @@
-* stop using deprecated geometry class
 * documentation
 * possibly switch to floats for particles_t unit
 
