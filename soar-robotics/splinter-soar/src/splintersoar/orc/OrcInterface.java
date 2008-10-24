@@ -33,24 +33,22 @@ public class OrcInterface implements LCMSubscriber {
 		int updateHz = 30;
 		int[] ports = { 1, 0 };
 		boolean[] invert = { true, false };
-		double maxThrottleAccellerationPeruSec = 2.0 / 1000000;
-		// geometry, configuration
+		double maxThrottleAccelleration = 2.0; // percent change per second
 		double baselineMeters = 0.383;
 		double tickMeters = 0.000043225;
 		double lengthMeters = 0.64;
 		double widthMeters = 0.42;
 		boolean usePF = false;
 		double laserThreshold = 0.1;
+		
+		double maxThrottleChangePerUpdate; // percent change per update
 
 		Configuration(Config config) {
 			if (config != null) {
 				updateHz = config.getInt("orc.updateHz", updateHz);
 				ports = config.getInts("orc.ports", ports);
 				invert = config.getBooleans("orc.invert", invert);
-
-				double maxThrottleAccelleration = config.getDouble("orc.maxThrottleAccelleration", 2.0);
-				maxThrottleAccellerationPeruSec = maxThrottleAccelleration / 1000000;
-
+				maxThrottleAccelleration = config.getDouble("orc.maxThrottleAccelleration", maxThrottleAccelleration);
 				baselineMeters = config.getDouble("orc.baselineMeters", baselineMeters);
 				tickMeters = config.getDouble("orc.tickMeters", tickMeters);
 				lengthMeters = config.getDouble("orc.lengthMeters", lengthMeters);
@@ -58,6 +56,8 @@ public class OrcInterface implements LCMSubscriber {
 				usePF = config.getBoolean("orc.usePF", usePF);
 				laserThreshold = config.getDouble("orc.laserThreshold", laserThreshold);
 			}
+			
+			maxThrottleChangePerUpdate = ( 1 / updateHz ) * maxThrottleAccelleration;
 		}
 	}
 
@@ -175,7 +175,6 @@ public class OrcInterface implements LCMSubscriber {
 						currentState.pose.pos[0] += deltaxyt[0];
 						currentState.pose.pos[1] += deltaxyt[1];
 
-						// FIXME: probably a better way to do this.
 						double[] rpy = Geometry.quatToRollPitchYaw(previousState.pose.orientation);
 						rpy[2] += deltaxyt[2];
 						rpy[2] = MathUtil.mod2pi(rpy[2]);
@@ -225,8 +224,8 @@ public class OrcInterface implements LCMSubscriber {
 
 			if (initialxy == null) {
 				initialxy = Arrays.copyOf(laserxycopy.xy, 2);
-				if (logger.isLoggable(Level.FINEST)) {
-					logger.finest(String.format("initialxy: %5.2f, %5.2f%n", initialxy[0], initialxy[1]));
+				if (logger.isLoggable(Level.FINE)) {
+					logger.fine(String.format("initialxy: %5.2f, %5.2f%n", initialxy[0], initialxy[1]));
 				}
 			}
 
@@ -255,27 +254,15 @@ public class OrcInterface implements LCMSubscriber {
 		}
 	}
 
-	private long throttleAcceluTime = 0;
-
 	private void commandMotors(long utime) {
-		differential_drive_command_t newDriveCommand = null;
-		if (driveCommand != null) {
-			newDriveCommand = driveCommand.copy();
-		}
-		if (newDriveCommand == null) {
+		if (driveCommand == null) {
 			return;
 		}
+		
+		differential_drive_command_t newDriveCommand = driveCommand.copy();
 
 		if (logger.isLoggable(Level.FINEST))
 			logger.finest(String.format("Got input %f %f", newDriveCommand.left, newDriveCommand.right));
-
-		if (throttleAcceluTime == 0) {
-			throttleAcceluTime = utime;
-			return;
-		}
-
-		long elapsed = (utime - throttleAcceluTime);
-		double maxAccel = elapsed * configuration.maxThrottleAccellerationPeruSec;
 
 		if (newDriveCommand.left_enabled) {
 			newDriveCommand.left = Math.min(newDriveCommand.left, 1.0);
@@ -283,9 +270,9 @@ public class OrcInterface implements LCMSubscriber {
 
 			double delta = newDriveCommand.left - command[0];
 			if (delta > 0) {
-				delta = Math.min(delta, maxAccel);
+				delta = Math.min(delta, configuration.maxThrottleChangePerUpdate);
 			} else if (delta < 0) {
-				delta = Math.max(delta, -1 * maxAccel);
+				delta = Math.max(delta, -1 * configuration.maxThrottleChangePerUpdate);
 			}
 
 			command[0] += delta;
@@ -297,14 +284,12 @@ public class OrcInterface implements LCMSubscriber {
 
 			double delta = newDriveCommand.right - command[1];
 			if (delta > 0) {
-				delta = Math.min(delta, maxAccel);
+				delta = Math.min(delta, configuration.maxThrottleChangePerUpdate);
 			} else if (delta < 0) {
-				delta = Math.max(delta, -1 * maxAccel);
+				delta = Math.max(delta, -1 * configuration.maxThrottleChangePerUpdate);
 			}
 			command[1] += delta;
 		}
-
-		throttleAcceluTime += elapsed;
 
 		motor[0].setPWM(command[0]);
 		motor[1].setPWM(command[1]);
