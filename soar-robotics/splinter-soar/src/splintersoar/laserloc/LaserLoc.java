@@ -1,4 +1,4 @@
-package laserloc;
+package splintersoar.laserloc;
 
 import java.io.DataInputStream;
 import java.io.IOException;

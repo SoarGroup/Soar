@@ -4,7 +4,6 @@ import java.io.IOException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import laserloc.LaserLoc;
 import lcm.lcm.LCM;
 
 import erp.config.Config;
@@ -13,6 +12,7 @@ import erp.lcmtypes.differential_drive_command_t;
 
 import orc.util.GamePad;
 
+import splintersoar.laserloc.LaserLoc;
 import splintersoar.orc.OrcInterface;
 import splintersoar.ranger.RangerManager;
 import splintersoar.soar.SoarInterface;

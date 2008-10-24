@@ -1,4 +1,4 @@
-package laserloc;
+package splintersoar.laserloc;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
