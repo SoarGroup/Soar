@@ -2,6 +2,10 @@ package splintersoar.ranger;
 
 import lcmtypes.laser_t;
 
+/**
+ * @author voigtjr
+ * Coarse ranger data for Soar to use. Essentially divides up ranger data and uses minimums in each sector.
+ */
 public class RangerState {
 	public class RangerData {
 		public double start = 0;

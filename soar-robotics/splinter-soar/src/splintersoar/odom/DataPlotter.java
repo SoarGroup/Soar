@@ -18,6 +18,10 @@ import erp.vis.VisData;
 import erp.vis.VisDataPointStyle;
 import erp.vis.VisWorld;
 
+/**
+ * @author voigtjr
+ * Tool used to plot odometry data for calibration.
+ */
 public class DataPlotter {
 
 	public static void main(String[] args) {

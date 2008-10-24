@@ -22,6 +22,11 @@ import lcm.lcm.LCM;
 import lcm.lcm.LCMSubscriber;
 import lcmtypes.laser_t;
 
+/**
+ * @author voigtjr
+ * Looks at SICK data and collects a boundary. Results are used by the laser localizer
+ * to help it determine if what it is seeing is a beacon or a static object.
+ */
 public class RoomMapper implements LCMSubscriber {
 
 	LCM lcm;

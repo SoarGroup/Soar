@@ -27,6 +27,11 @@ import erp.config.Config;
 import erp.lcmtypes.differential_drive_command_t;
 import erp.math.MathUtil;
 
+/**
+ * @author voigtjr
+ * Represents communication to the orc board. Listens for laser localization coordinates and drive commands.
+ * Produces splinter pose objects indicating where the robot is probably at.
+ */
 public class OrcInterface implements LCMSubscriber {
 	private Logger logger;
 

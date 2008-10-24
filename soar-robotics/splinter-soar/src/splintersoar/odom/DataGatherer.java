@@ -14,6 +14,10 @@ import orc.Orc;
 import orc.QuadratureEncoder;
 import orc.util.GamePad;
 
+/**
+ * @author voigtjr
+ * Simple tool used to collect odometry data for calibration.
+ */
 public class DataGatherer {
 
 	public static void main(String[] args) {

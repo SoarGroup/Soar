@@ -8,6 +8,11 @@ import erp.lcmtypes.differential_drive_command_t;
 
 import splintersoar.lcmtypes.splinterstate_t;
 
+/**
+ * @author voigtjr
+ * Represents input for splinter. Created using a format easy for Soar's output link, generates
+ * a differential drive command easy for uOrc.
+ */
 public class SplinterInput {
 	public double[] throttle = { 0, 0 };
 	public double targetYaw = 0;

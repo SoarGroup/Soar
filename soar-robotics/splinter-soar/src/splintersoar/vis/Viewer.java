@@ -27,6 +27,10 @@ import erp.vis.VisDataPointStyle;
 import erp.vis.VisRobot;
 import erp.vis.VisWorld;
 
+/**
+ * @author voigtjr
+ * Simple viewer for splinter/Soar LCM traffic.
+ */
 public class Viewer implements LCMSubscriber {
 	JFrame jf;
 	VisWorld vw = new VisWorld();

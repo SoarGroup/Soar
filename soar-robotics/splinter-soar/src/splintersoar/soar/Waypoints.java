@@ -14,6 +14,10 @@ import splintersoar.LCMInfo;
 import splintersoar.lcmtypes.waypoints_t;
 import splintersoar.lcmtypes.xy_t;
 
+/**
+ * @author voigtjr
+ * Manages waypoint state initiated by the Soar agent.
+ */
 public class Waypoints {
 
 	Agent agent;

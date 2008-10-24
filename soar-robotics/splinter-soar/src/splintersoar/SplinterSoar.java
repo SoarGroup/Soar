@@ -17,6 +17,10 @@ import splintersoar.orc.OrcInterface;
 import splintersoar.ranger.RangerManager;
 import splintersoar.soar.SoarInterface;
 
+/**
+ * @author voigtjr
+ * Top-level management of the Soar/uOrc interface. Also responsible for injecting override splinter input using the game pad.
+ */
 public class SplinterSoar {
 	SoarInterface soar;
 	OrcInterface orc;

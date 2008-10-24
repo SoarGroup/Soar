@@ -8,6 +8,10 @@ import sml.*;
 import splintersoar.LogFactory;
 import splintersoar.lcmtypes.splinterstate_t;
 
+/**
+ * @author voigtjr
+ * Soar output-link management. Creates input for splinter and other parts of the system.
+ */
 public class OutputLinkManager {
 
 	Agent agent;

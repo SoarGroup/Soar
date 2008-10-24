@@ -14,6 +14,10 @@ import splintersoar.LogFactory;
 import splintersoar.lcmtypes.splinterstate_t;
 import splintersoar.ranger.RangerState;
 
+/**
+ * @author voigtjr
+ * Soar input link management. Also handles some updating of waypoint state.
+ */
 public class InputLinkManager {
 
 	private class TimeIL {

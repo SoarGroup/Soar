@@ -17,6 +17,10 @@ import splintersoar.lcmtypes.xy_t;
 import erp.config.Config;
 import erp.config.ConfigFile;
 
+/**
+ * @author voigtjr
+ * Laser localizer class. Takes as input SICK data and generates x,y position of beacon.
+ */
 public class LaserLoc extends Thread implements LCMSubscriber {
 	private class Configuration {
 		double [] laserxyt = { 0, 0, 0 }; // laser location

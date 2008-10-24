@@ -19,6 +19,10 @@ import splintersoar.lcmtypes.splinterstate_t;
 import splintersoar.ranger.RangerState;
 import splintersoar.ranger.RangerStateProducer;
 
+/**
+ * @author voigtjr
+ * Represents and manages the interface to Soar. Uses components to encapsulate i/o links and waypoints.
+ */
 public class SoarInterface implements Kernel.UpdateEventInterface, Kernel.AgentEventInterface, LCMSubscriber {
 	private Logger logger;
 

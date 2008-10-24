@@ -1,5 +1,9 @@
 package splintersoar;
 
+/**
+ * @author voigtjr
+ * LCM constants.
+ */
 public class LCMInfo {
 	public static final String DRIVE_COMMANDS_CHANNEL = "DRIVE_COMMANDS";
 	public static final String LASER_LOC_CHANNEL = "LASER_LOC";

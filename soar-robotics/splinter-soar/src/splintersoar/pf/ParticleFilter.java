@@ -15,6 +15,11 @@ import splintersoar.lcmtypes.particles_t;
 import lcm.lcm.LCM;
 import lcmtypes.pose_t;
 
+/**
+ * @author voigtjr
+ * Experimental attempt to use a particle filter to help localization. Takes as input noisy odometry deltas and optional
+ * noisy laser localization coordinates. Returns possible pose.
+ */
 public class ParticleFilter {
 	static class Particle {
 		double xyt[];

@@ -4,6 +4,10 @@ import java.util.logging.ConsoleHandler;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+/**
+ * @author voigtjr
+ * Shortcut factory that creates simple loggers.
+ */
 public class LogFactory {
 
 	public static Logger createSimpleLogger(String component, Level level) {

@@ -11,6 +11,10 @@ import lcmtypes.laser_t;
 import splintersoar.LCMInfo;
 import splintersoar.LogFactory;
 
+/**
+ * @author voigtjr
+ * Soar wants coarse ranger data, this class manages its production.
+ */
 public class RangerManager implements LCMSubscriber, RangerStateProducer {
 	private LCM lcm;
 	private laser_t laserDataCurrent;
