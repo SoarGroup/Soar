@@ -17,6 +17,7 @@ import splintersoar.lcmtypes.xy_t;
 
 import lcm.lcm.LCM;
 import lcm.lcm.LCMSubscriber;
+import lcmtypes.laser_t;
 
 import erp.vis.VisCanvas;
 import erp.vis.VisChain;
@@ -37,6 +38,7 @@ public class Viewer implements LCMSubscriber
 	waypoints_t waypoints;
 	xy_t laserxy;
 	particles_t particles;
+	laser_t laser_front;
 	
 	public Viewer()
 	{
@@ -45,6 +47,7 @@ public class Viewer implements LCMSubscriber
 		lcm.subscribe( LCMInfo.WAYPOINTS_CHANNEL, this );
 		lcm.subscribe( LCMInfo.COORDS_CHANNEL, this );
 		lcm.subscribe( LCMInfo.PARTICLES_CHANNEL, this );
+		lcm.subscribe( LCMInfo.LASER_FRONT_CHANNEL, this );
 
 
 		jf = new JFrame("RoomMapper");
@@ -62,9 +65,9 @@ public class Viewer implements LCMSubscriber
 		
 		while ( true )
 		{
+			splinterstate_t sp = null;
 			if ( splinterPose != null )
 			{
-				splinterstate_t sp;
 				sp = splinterPose.copy();
 				vb.addBuffered( new VisChain( LinAlg.quatPosToMatrix( sp.pose.orientation, sp.pose.pos),
 						new VisRobot(Color.blue)));
@@ -83,7 +86,7 @@ public class Viewer implements LCMSubscriber
 				wp = waypoints.copy();
 				for ( int index = 0; index < wp.nwaypoints; ++index )
 				{
-					vb.addBuffered(new VisData( wp.locations[index].xy, new VisDataPointStyle(Color.green, 3)));
+					vb.addBuffered(new VisData( wp.locations[index].xy, new VisDataPointStyle(Color.green, 10)));
 				}
 			}
 			
@@ -94,6 +97,33 @@ public class Viewer implements LCMSubscriber
 				for ( double[] pxyt : p.particle ) {
 					vb.addBuffered(new VisChain(LinAlg.xytToMatrix( pxyt ), vd));
 				}
+			}
+			
+			if ( laser_front != null )
+			{
+				laser_t lf;
+				lf = laser_front.copy();
+				
+				VisData points = new VisData();
+				points.add( new VisDataLineStyle( Color.green, 3, true) );
+				
+			    for (int i = 0; i < lf.nranges; i++) {
+					if (lf.ranges[i] > 50)
+						continue;
+
+					double yaw = 0;
+					double [] offset = new double [] { 0, 0, 0 }; 
+					if (sp != null)
+					{
+						offset = sp.pose.pos;
+						yaw = LinAlg.quatToRollPitchYaw( sp.pose.orientation )[2];
+					}
+					double theta = lf.rad0 + i * lf.radstep + yaw;
+					double [] xyz = LinAlg.add( new double [] { lf.ranges[i] * Math.cos(theta), lf.ranges[i] * Math.sin(theta), 0 }, offset );
+					points.add( xyz );
+				}
+			    
+			    vb.addBuffered( points );
 			}
 			
 			vb.switchBuffer();
@@ -145,6 +175,17 @@ public class Viewer implements LCMSubscriber
 			catch ( IOException ex ) 
 			{
 				System.err.println( "Error decoding particles_t message: " + ex );
+			}
+		}
+		else if ( channel.equals( LCMInfo.LASER_FRONT_CHANNEL ) )
+		{
+			try 
+			{
+				laser_front = new laser_t( ins );
+			} 
+			catch ( IOException ex ) 
+			{
+				System.err.println( "Error decoding laser_t message: " + ex );
 			}
 		}
 	}
