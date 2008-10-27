@@ -4,6 +4,7 @@ import java.awt.BorderLayout;
 import java.awt.Color;
 import java.io.DataInputStream;
 import java.io.IOException;
+import java.util.Arrays;
 
 import javax.swing.JFrame;
 
@@ -42,6 +43,8 @@ public class Viewer implements LCMSubscriber {
 	xy_t laserxy;
 	particles_t particles;
 	laser_t laserFront;
+	laser_t laserLoc;
+	double [] initialxy;
 
 	public Viewer() {
 		lcm = LCM.getSingleton();
@@ -50,6 +53,7 @@ public class Viewer implements LCMSubscriber {
 		lcm.subscribe(LCMInfo.COORDS_CHANNEL, this);
 		lcm.subscribe(LCMInfo.PARTICLES_CHANNEL, this);
 		lcm.subscribe(LCMInfo.LASER_FRONT_CHANNEL, this);
+		lcm.subscribe(LCMInfo.LASER_LOC_CHANNEL, this);
 
 		jf = new JFrame("RoomMapper");
 		jf.setLayout(new BorderLayout());
@@ -66,19 +70,28 @@ public class Viewer implements LCMSubscriber {
 		while (true) {
 			splinterstate_t sp = null;
 			if (splinterPose != null) {
-				sp = splinterPose.copy();
+				sp = splinterPose;
 				vb.addBuffered(new VisChain(LinAlg.quatPosToMatrix(sp.pose.orientation, sp.pose.pos), new VisRobot(Color.blue)));
 			}
 
 			if (laserxy != null) {
 				xy_t xy;
-				xy = laserxy.copy();
+				xy = laserxy;
+
+				if (initialxy == null && sp != null) {
+					initialxy = new double [] { laserxy.xy[0], laserxy.xy[1] };
+				}
+
+				if (initialxy != null) {
+					xy.xy = LinAlg.subtract(xy.xy, initialxy);
+				}
+
 				vb.addBuffered(new VisData(xy.xy, new VisDataPointStyle(Color.black, 4)));
 			}
 
 			if (waypoints != null) {
 				waypoints_t wp;
-				wp = waypoints.copy();
+				wp = waypoints;
 				for (int index = 0; index < wp.nwaypoints; ++index) {
 					vb.addBuffered(new VisData(wp.locations[index].xy, new VisDataPointStyle(Color.red, 10)));
 				}
@@ -86,7 +99,7 @@ public class Viewer implements LCMSubscriber {
 
 			if (particles != null) {
 				particles_t p;
-				p = particles.copy();
+				p = particles;
 				for (double[] pxyt : p.particle) {
 					vb.addBuffered(new VisChain(LinAlg.xytToMatrix(pxyt), vd));
 				}
@@ -94,24 +107,46 @@ public class Viewer implements LCMSubscriber {
 
 			if (laserFront != null) {
 				laser_t lf;
-				lf = laserFront.copy();
+				lf = laserFront;
 
 				VisData points = new VisData();
-				points.add(new VisDataLineStyle(Color.green, 3, true));
+				points.add(new VisDataLineStyle(Color.green, 2, true));
 
 				for (int i = 0; i < lf.nranges; i++) {
 					if (lf.ranges[i] > 50)
 						continue;
 
 					double yaw = 0;
-					double[] offset = new double[] { 0, 0, 0 };
+					double[] offset = new double[] { 0, 0 };
 					if (sp != null) {
-						offset = sp.pose.pos;
+						offset = Arrays.copyOf(sp.pose.pos, 2);
 						yaw = LinAlg.quatToRollPitchYaw(sp.pose.orientation)[2];
 					}
 					double theta = lf.rad0 + i * lf.radstep + yaw;
-					double[] xyz = LinAlg.add(new double[] { lf.ranges[i] * Math.cos(theta), lf.ranges[i] * Math.sin(theta), 0 }, offset);
-					points.add(xyz);
+					double[] xy = LinAlg.add(new double[] { lf.ranges[i] * Math.cos(theta), lf.ranges[i] * Math.sin(theta) }, offset);
+					points.add(xy);
+				}
+
+				vb.addBuffered(points);
+			}
+
+			if (laserLoc != null) {
+				laser_t ll;
+				ll = laserLoc;
+
+				VisData points = new VisData();
+				points.add(new VisDataLineStyle(Color.orange, 2, true));
+
+				for (int i = 0; i < ll.nranges; i++) {
+					if (ll.ranges[i] > 50)
+						continue;
+
+					double theta = ll.rad0 + i * ll.radstep;
+					double [] xy = new double [] { ll.ranges[i] * Math.cos(theta), ll.ranges[i] * Math.sin(theta) };
+					if (initialxy != null) {
+						xy = LinAlg.subtract(xy, initialxy);
+					}
+					points.add(xy);
 				}
 
 				vb.addBuffered(points);
@@ -150,6 +185,12 @@ public class Viewer implements LCMSubscriber {
 		} else if (channel.equals(LCMInfo.LASER_FRONT_CHANNEL)) {
 			try {
 				laserFront = new laser_t(ins);
+			} catch (IOException ex) {
+				System.err.println("Error decoding laser_t message: " + ex);
+			}
+		} else if (channel.equals(LCMInfo.LASER_LOC_CHANNEL)) {
+			try {
+				laserLoc = new laser_t(ins);
 			} catch (IOException ex) {
 				System.err.println("Error decoding laser_t message: " + ex);
 			}

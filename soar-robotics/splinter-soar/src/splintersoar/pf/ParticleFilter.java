@@ -74,7 +74,8 @@ public class ParticleFilter {
 
 		if (logger.isLoggable(Level.FINE)) {
 			logger.fine(String.format("update, delta xy magnitude: %10.6f", LinAlg.magnitude(new double [] { deltaxyt[0], deltaxyt[1] })));
-			logger.fine(String.format("laserxy %5.3f %5.3f", laserxy[0], laserxy[1]));
+			if (laserxy != null) 
+				logger.fine(String.format("laserxy %5.3f %5.3f", laserxy[0], laserxy[1]));
 		}
 		
 		// //////////////////////////////////////////////////

@@ -44,7 +44,7 @@ public class OrcInterface implements LCMSubscriber {
 		double tickMeters = 0.000043225;
 		double lengthMeters = 0.64;
 		double widthMeters = 0.42;
-		boolean usePF = false;
+		boolean usePF = true;
 		double laserThreshold = 0.1;
 		
 		double maxThrottleChangePerUpdate; // percent change per update
