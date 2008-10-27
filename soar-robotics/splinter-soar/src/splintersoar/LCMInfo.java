@@ -25,7 +25,7 @@ public class LCMInfo implements LCMSubscriber {
 	public static final String TEST_CHANNEL_A = "TEST_CHANNEL";
 	public static void main(String[] args) {
 		LCM lcm = LCM.getSingleton();
-		
+
 		if (args.length < 1) {
 			while (true) {
 				differential_drive_command_t dc = new differential_drive_command_t();
@@ -38,7 +38,8 @@ public class LCMInfo implements LCMSubscriber {
 				}
 			}
 		} else {
-			lcm.subscribe(TEST_CHANNEL_A, new LCMInfo());
+			lcm.subscribeAll(new LCMInfo());
+			//lcm.subscribe(TEST_CHANNEL_A, new LCMInfo());
 			while (true) {
 				try {
 					Thread.sleep(1000);
