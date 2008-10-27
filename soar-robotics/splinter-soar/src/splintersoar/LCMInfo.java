@@ -38,8 +38,7 @@ public class LCMInfo implements LCMSubscriber {
 				}
 			}
 		} else {
-			LCMInfo li = new LCMInfo();
-			lcm.subscribe(TEST_CHANNEL_A, li);
+			lcm.subscribe(TEST_CHANNEL_A, new LCMInfo());
 			while (true) {
 				try {
 					Thread.sleep(1000);
