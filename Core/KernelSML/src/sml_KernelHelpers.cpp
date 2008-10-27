@@ -884,25 +884,6 @@ int read_pref_detail_from_string (char *the_lexeme,
 	return true;
 }
 
-
-
-char * pref_names[] =
-{  
-	"acceptable",
-		"require",
-		"reject",
-		"prohibit",
-		"reconsider",
-		"unary indifferent",
-		"unary parallel",
-		"best",
-		"worst",
-		"binary indifferent",
-		"binary parallel",
-		"better",
-		"worse" 
-};
-
 int soar_ecPrintPreferences(agent* soarAgent, char *szId, char *szAttr, bool object, bool print_prod, wme_trace_type wtt)
 {
 
