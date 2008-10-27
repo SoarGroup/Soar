@@ -22,7 +22,7 @@ public class LCMInfo implements LCMSubscriber {
 	public static final String WAYPOINTS_CHANNEL = "WAYPOINTS";
 	public static final String PARTICLES_CHANNEL = "PARTICLES";
 	
-	public static final String TEST_CHANNEL_A = "A";
+	public static final String TEST_CHANNEL_A = "TEST_CHANNEL";
 	public static void main(String[] args) {
 		LCM lcm = LCM.getSingleton();
 		
@@ -56,6 +56,8 @@ public class LCMInfo implements LCMSubscriber {
 				System.out.print("o");
 			} catch (IOException ex) {
 				System.out.println("Error decoding differential_drive_command_t message: " + ex);
+			} catch (Throwable t) {
+				System.out.println("Unhandled exception " + t);
 			}
 		}
 	}
