@@ -83,7 +83,7 @@ public class xy_t implements lcm.lcm.LCMEncodable
  
         outobj.xy = new double[(int) 2];
         for (int a = 0; a < 2; a++) {
-            outobj.xy = this.xy;
+            outobj.xy[a] = this.xy[a];
         }
  
         return outobj;

@@ -100,7 +100,7 @@ public class waypoints_t implements lcm.lcm.LCMEncodable
  
         outobj.names = new String[(int) nwaypoints];
         for (int a = 0; a < nwaypoints; a++) {
-            outobj.names = this.names;
+            outobj.names[a] = this.names[a];
         }
  
         outobj.locations = new lcmtypes.xy_t[(int) nwaypoints];

@@ -94,7 +94,7 @@ public class particles_t implements lcm.lcm.LCMEncodable
         outobj.particle = new double[(int) nparticles][(int) 3];
         for (int a = 0; a < nparticles; a++) {
             for (int b = 0; b < 3; b++) {
-                outobj.particle = this.particle;
+                outobj.particle[a][b] = this.particle[a][b];
             }
             }
  
