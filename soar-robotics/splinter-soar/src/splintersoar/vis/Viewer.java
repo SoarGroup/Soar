@@ -76,14 +76,14 @@ public class Viewer implements LCMSubscriber {
 
 			if (laserxy != null) {
 				xy_t xy;
-				xy = laserxy;
+				xy = laserxy.copy();
 
-				if (initialxy == null && sp != null) {
-					initialxy = new double [] { laserxy.xy[0], laserxy.xy[1] };
+				if (initialxy == null /*&& sp != null*/) {
+					initialxy = new double [] { xy.xy[0], xy.xy[1] };
 				}
 
 				if (initialxy != null) {
-					xy.xy = LinAlg.subtract(xy.xy, initialxy);
+					LinAlg.subtract(xy.xy, initialxy, xy.xy);
 				}
 
 				vb.addBuffered(new VisData(xy.xy, new VisDataPointStyle(Color.black, 4)));
@@ -144,7 +144,7 @@ public class Viewer implements LCMSubscriber {
 					double theta = ll.rad0 + i * ll.radstep;
 					double [] xy = new double [] { ll.ranges[i] * Math.cos(theta), ll.ranges[i] * Math.sin(theta) };
 					if (initialxy != null) {
-						xy = LinAlg.subtract(xy, initialxy);
+						LinAlg.subtract(xy, initialxy, xy);
 					}
 					points.add(xy);
 				}
