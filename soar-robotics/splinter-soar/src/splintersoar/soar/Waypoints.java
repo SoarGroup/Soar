@@ -4,12 +4,15 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Iterator;
 
+import jmat.LinAlg;
+import jmat.MathUtil;
+
 import lcm.lcm.LCM;
 import lcmtypes.pose_t;
 
-import erp.geom.*;
-import erp.math.MathUtil;
-import sml.*;
+import sml.Agent;
+import sml.FloatElement;
+import sml.Identifier;
 import splintersoar.LCMInfo;
 import splintersoar.lcmtypes.waypoints_t;
 import splintersoar.lcmtypes.xy_t;
@@ -65,15 +68,15 @@ public class Waypoints {
 		}
 
 		void updateWmes() {
-			double distanceValue = Geometry.distance(robotPose.pos, xyz, 2);
+			double distanceValue = LinAlg.distance(robotPose.pos, xyz, 2);
 			agent.Update(distance, distanceValue);
 
-			double[] delta = Geometry.subtract(xyz, robotPose.pos);
+			double[] delta = LinAlg.subtract(xyz, robotPose.pos);
 
 			double yawValue = Math.atan2(delta[1], delta[0]);
 			agent.Update(yaw, Math.toDegrees(yawValue));
 
-			double relativeBearingValue = yawValue - Geometry.quatToRollPitchYaw(robotPose.orientation)[2];
+			double relativeBearingValue = yawValue - LinAlg.quatToRollPitchYaw(robotPose.orientation)[2];
 			relativeBearingValue = MathUtil.mod2pi(relativeBearingValue);
 
 			agent.Update(relativeBearing, Math.toDegrees(relativeBearingValue));

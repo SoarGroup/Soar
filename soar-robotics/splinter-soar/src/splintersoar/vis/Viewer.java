@@ -20,13 +20,13 @@ import lcm.lcm.LCM;
 import lcm.lcm.LCMSubscriber;
 import lcmtypes.laser_t;
 
-import erp.vis.VisCanvas;
-import erp.vis.VisChain;
-import erp.vis.VisData;
-import erp.vis.VisDataLineStyle;
-import erp.vis.VisDataPointStyle;
-import erp.vis.VisRobot;
-import erp.vis.VisWorld;
+import vis.VisCanvas;
+import vis.VisChain;
+import vis.VisData;
+import vis.VisDataLineStyle;
+import vis.VisDataPointStyle;
+import vis.VisRobot;
+import vis.VisWorld;
 
 /**
  * @author voigtjr

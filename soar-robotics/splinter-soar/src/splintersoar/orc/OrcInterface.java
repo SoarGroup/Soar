@@ -9,6 +9,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import jmat.LinAlg;
+import jmat.MathUtil;
 
 import lcm.lcm.LCM;
 import lcm.lcm.LCMSubscriber;
@@ -23,9 +24,8 @@ import splintersoar.lcmtypes.splinterstate_t;
 import splintersoar.lcmtypes.xy_t;
 import splintersoar.pf.ParticleFilter;
 
-import erp.config.Config;
-import erp.lcmtypes.differential_drive_command_t;
-import erp.math.MathUtil;
+import april.config.Config;
+import splintersoar.lcmtypes.differential_drive_command_t;
 
 /**
  * @author voigtjr

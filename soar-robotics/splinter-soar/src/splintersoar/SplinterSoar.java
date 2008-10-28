@@ -6,9 +6,9 @@ import java.util.logging.Logger;
 
 import lcm.lcm.LCM;
 
-import erp.config.Config;
-import erp.config.ConfigFile;
-import erp.lcmtypes.differential_drive_command_t;
+import april.config.Config;
+import april.config.ConfigFile;
+import splintersoar.lcmtypes.differential_drive_command_t;
 
 import orc.util.GamePad;
 

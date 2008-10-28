@@ -1,0 +1,12 @@
+package splintersoar.lcmtypes;
+
+struct differential_drive_command_t
+{
+	int64_t utime;
+
+	double  left;         // [-1, 1]
+	boolean left_enabled; // if false, motor is free-turning
+
+	double  right;
+	boolean right_enabled; 
+}

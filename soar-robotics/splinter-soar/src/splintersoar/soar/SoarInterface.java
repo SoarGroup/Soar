@@ -8,7 +8,7 @@ import java.util.logging.Logger;
 import lcm.lcm.LCM;
 import lcm.lcm.LCMSubscriber;
 
-import erp.config.Config;
+import april.config.Config;
 import sml.Agent;
 import sml.Kernel;
 import sml.smlAgentEventId;

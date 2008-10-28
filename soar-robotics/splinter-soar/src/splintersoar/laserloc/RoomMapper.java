@@ -13,10 +13,10 @@ import javax.swing.JFrame;
 
 import splintersoar.LCMInfo;
 
-import erp.vis.VisCanvas;
-import erp.vis.VisData;
-import erp.vis.VisDataPointStyle;
-import erp.vis.VisWorld;
+import vis.VisCanvas;
+import vis.VisData;
+import vis.VisDataPointStyle;
+import vis.VisWorld;
 
 import lcm.lcm.LCM;
 import lcm.lcm.LCMSubscriber;

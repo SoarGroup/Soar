@@ -4,8 +4,8 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import jmat.LinAlg;
+import jmat.MathUtil;
 
-import erp.math.MathUtil;
 import sml.Agent;
 import sml.FloatElement;
 import sml.Identifier;

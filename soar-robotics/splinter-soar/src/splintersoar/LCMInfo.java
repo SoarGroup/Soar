@@ -3,9 +3,7 @@ package splintersoar;
 import java.io.DataInputStream;
 import java.io.IOException;
 
-import splintersoar.lcmtypes.splinterstate_t;
-
-import erp.lcmtypes.differential_drive_command_t;
+import splintersoar.lcmtypes.differential_drive_command_t;
 import lcm.lcm.LCM;
 import lcm.lcm.LCMSubscriber;
 

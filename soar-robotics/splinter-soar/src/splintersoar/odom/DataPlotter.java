@@ -11,12 +11,12 @@ import java.util.Arrays;
 import javax.swing.JFrame;
 
 import jmat.LinAlg;
+import jmat.MathUtil;
 
-import erp.math.MathUtil;
-import erp.vis.VisCanvas;
-import erp.vis.VisData;
-import erp.vis.VisDataPointStyle;
-import erp.vis.VisWorld;
+import vis.VisCanvas;
+import vis.VisData;
+import vis.VisDataPointStyle;
+import vis.VisWorld;
 
 /**
  * @author voigtjr

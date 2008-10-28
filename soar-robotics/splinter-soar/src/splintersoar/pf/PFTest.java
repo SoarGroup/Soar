@@ -3,8 +3,7 @@ package splintersoar.pf;
 import java.util.*;
 import java.awt.*;
 import javax.swing.*;
-import erp.vis.*;
-import erp.math.*;
+import vis.*;
 import jmat.*;
 
 public class PFTest {

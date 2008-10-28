@@ -3,8 +3,9 @@ package splintersoar.soar;
 import java.util.Arrays;
 
 import jmat.LinAlg;
+import jmat.MathUtil;
 
-import erp.lcmtypes.differential_drive_command_t;
+import splintersoar.lcmtypes.differential_drive_command_t;
 
 import splintersoar.lcmtypes.splinterstate_t;
 
@@ -64,7 +65,7 @@ public class SplinterInput {
 
 		if (targetYawEnabled) {
 			double relativeBearingValue = targetYaw - LinAlg.quatToRollPitchYaw(splinterState.pose.orientation)[2];
-			relativeBearingValue = erp.math.MathUtil.mod2pi(relativeBearingValue);
+			relativeBearingValue = MathUtil.mod2pi(relativeBearingValue);
 
 			if (relativeBearingValue < (0 - targetYawTolerance)) {
 				driveCommand.left = throttle[0];

@@ -14,8 +14,8 @@ import splintersoar.LCMInfo;
 import splintersoar.LogFactory;
 import splintersoar.lcmtypes.xy_t;
 
-import erp.config.Config;
-import erp.config.ConfigFile;
+import april.config.Config;
+import april.config.ConfigFile;
 
 /**
  * @author voigtjr
