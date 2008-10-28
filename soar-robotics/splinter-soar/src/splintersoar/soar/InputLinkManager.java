@@ -11,7 +11,7 @@ import sml.FloatElement;
 import sml.Identifier;
 import sml.IntElement;
 import splintersoar.LogFactory;
-import splintersoar.lcmtypes.splinterstate_t;
+import lcmtypes.splinterstate_t;
 import splintersoar.ranger.RangerState;
 
 /**

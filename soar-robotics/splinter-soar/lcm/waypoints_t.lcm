@@ -1,7 +1,7 @@
-struct splintersoar.lcmtypes.waypoints_t
+struct waypoints_t
 {
-	int64_t utime;										// timestamp
-	int32_t nwaypoints;									// number of waypoints
-	string names[nwaypoints];							// waypoint names
-	splintersoar.lcmtypes.xy_t locations[nwaypoints];	// waypoint locations
+	int64_t utime;				// timestamp
+	int32_t nwaypoints;			// number of waypoints
+	string names[nwaypoints];	// waypoint names
+	xy_t locations[nwaypoints];	// waypoint locations
 }

@@ -14,8 +14,8 @@ import sml.Agent;
 import sml.FloatElement;
 import sml.Identifier;
 import splintersoar.LCMInfo;
-import splintersoar.lcmtypes.waypoints_t;
-import splintersoar.lcmtypes.xy_t;
+import lcmtypes.waypoints_t;
+import lcmtypes.xy_t;
 
 /**
  * @author voigtjr

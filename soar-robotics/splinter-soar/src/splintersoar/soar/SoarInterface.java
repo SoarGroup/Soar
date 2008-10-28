@@ -15,7 +15,7 @@ import sml.smlAgentEventId;
 import sml.smlUpdateEventId;
 import splintersoar.LCMInfo;
 import splintersoar.LogFactory;
-import splintersoar.lcmtypes.splinterstate_t;
+import lcmtypes.splinterstate_t;
 import splintersoar.ranger.RangerState;
 import splintersoar.ranger.RangerStateProducer;
 

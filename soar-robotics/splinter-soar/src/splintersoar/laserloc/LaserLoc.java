@@ -12,7 +12,7 @@ import lcmtypes.laser_t;
 
 import splintersoar.LCMInfo;
 import splintersoar.LogFactory;
-import splintersoar.lcmtypes.xy_t;
+import lcmtypes.xy_t;
 
 import april.config.Config;
 import april.config.ConfigFile;

@@ -1,4 +1,4 @@
-struct splintersoar.lcmtypes.xy_t
+struct xy_t
 {
 	int64_t utime;	// timestamp
 	double xy[2];	// (x, y) meters

@@ -20,12 +20,12 @@ import orc.Orc;
 import orc.OrcStatus;
 import splintersoar.LCMInfo;
 import splintersoar.LogFactory;
-import splintersoar.lcmtypes.splinterstate_t;
-import splintersoar.lcmtypes.xy_t;
+import lcmtypes.splinterstate_t;
+import lcmtypes.xy_t;
 import splintersoar.pf.ParticleFilter;
 
 import april.config.Config;
-import splintersoar.lcmtypes.differential_drive_command_t;
+import lcmtypes.differential_drive_command_t;
 
 /**
  * @author voigtjr

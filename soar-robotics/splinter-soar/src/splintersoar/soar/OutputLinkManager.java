@@ -6,7 +6,7 @@ import java.util.logging.Logger;
 
 import sml.*;
 import splintersoar.LogFactory;
-import splintersoar.lcmtypes.splinterstate_t;
+import lcmtypes.splinterstate_t;
 
 /**
  * @author voigtjr

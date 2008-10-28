@@ -1,9 +1,7 @@
-package splintersoar.lcmtypes;
+package lcmtypes;
  
 import java.io.*;
 import java.util.*;
-
-import lcmtypes.pose_t;
  
 public class splinterstate_t implements lcm.lcm.LCMEncodable
 {
@@ -14,7 +12,7 @@ public class splinterstate_t implements lcm.lcm.LCMEncodable
     public double heightmeters;
     public int leftodom;
     public int rightodom;
-    public pose_t pose;
+    public lcmtypes.pose_t pose;
  
     public splinterstate_t()
     {
@@ -29,12 +27,12 @@ public class splinterstate_t implements lcm.lcm.LCMEncodable
  
     public static long _hashRecursive(ArrayList<Class> classes)
     {
-        if (classes.contains(splintersoar.lcmtypes.splinterstate_t.class))
+        if (classes.contains(lcmtypes.splinterstate_t.class))
             return 0L;
  
-        classes.add(splintersoar.lcmtypes.splinterstate_t.class);
+        classes.add(lcmtypes.splinterstate_t.class);
         long hash = LCM_FINGERPRINT_BASE
-             + pose_t._hashRecursive(classes)
+             + lcmtypes.pose_t._hashRecursive(classes)
             ;
         classes.remove(classes.size() - 1);
         return (hash<<1) + ((hash>>63)&1);
@@ -75,9 +73,9 @@ public class splinterstate_t implements lcm.lcm.LCMEncodable
         _decodeRecursive(ins);
     }
  
-    public static splintersoar.lcmtypes.splinterstate_t _decodeRecursiveFactory(DataInputStream ins) throws IOException
+    public static lcmtypes.splinterstate_t _decodeRecursiveFactory(DataInputStream ins) throws IOException
     {
-        splintersoar.lcmtypes.splinterstate_t o = new splintersoar.lcmtypes.splinterstate_t();
+        lcmtypes.splinterstate_t o = new lcmtypes.splinterstate_t();
         o._decodeRecursive(ins);
         return o;
     }
@@ -99,13 +97,13 @@ public class splinterstate_t implements lcm.lcm.LCMEncodable
  
         this.rightodom = ins.readInt();
  
-        this.pose = pose_t._decodeRecursiveFactory(ins);
+        this.pose = lcmtypes.pose_t._decodeRecursiveFactory(ins);
  
     }
  
-    public splintersoar.lcmtypes.splinterstate_t copy()
+    public lcmtypes.splinterstate_t copy()
     {
-        splintersoar.lcmtypes.splinterstate_t outobj = new splintersoar.lcmtypes.splinterstate_t();
+        lcmtypes.splinterstate_t outobj = new lcmtypes.splinterstate_t();
         outobj.utime = this.utime;
  
         outobj.baselinemeters = this.baselinemeters;

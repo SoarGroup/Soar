@@ -1,4 +1,4 @@
-package splintersoar.lcmtypes;
+package lcmtypes;
  
 import java.io.*;
 import java.util.*;
@@ -22,10 +22,10 @@ public class particles_t implements lcm.lcm.LCMEncodable
  
     public static long _hashRecursive(ArrayList<Class> classes)
     {
-        if (classes.contains(splintersoar.lcmtypes.particles_t.class))
+        if (classes.contains(lcmtypes.particles_t.class))
             return 0L;
  
-        classes.add(splintersoar.lcmtypes.particles_t.class);
+        classes.add(lcmtypes.particles_t.class);
         long hash = LCM_FINGERPRINT_BASE
             ;
         classes.remove(classes.size() - 1);
@@ -61,9 +61,9 @@ public class particles_t implements lcm.lcm.LCMEncodable
         _decodeRecursive(ins);
     }
  
-    public static splintersoar.lcmtypes.particles_t _decodeRecursiveFactory(DataInputStream ins) throws IOException
+    public static lcmtypes.particles_t _decodeRecursiveFactory(DataInputStream ins) throws IOException
     {
-        splintersoar.lcmtypes.particles_t o = new splintersoar.lcmtypes.particles_t();
+        lcmtypes.particles_t o = new lcmtypes.particles_t();
         o._decodeRecursive(ins);
         return o;
     }
@@ -84,9 +84,9 @@ public class particles_t implements lcm.lcm.LCMEncodable
  
     }
  
-    public splintersoar.lcmtypes.particles_t copy()
+    public lcmtypes.particles_t copy()
     {
-        splintersoar.lcmtypes.particles_t outobj = new splintersoar.lcmtypes.particles_t();
+        lcmtypes.particles_t outobj = new lcmtypes.particles_t();
         outobj.utime = this.utime;
  
         outobj.nparticles = this.nparticles;

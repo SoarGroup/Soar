@@ -1,4 +1,4 @@
-package splintersoar.lcmtypes;
+package lcmtypes;
  
 import java.io.*;
 import java.util.*;
@@ -24,10 +24,10 @@ public class differential_drive_command_t implements lcm.lcm.LCMEncodable
  
     public static long _hashRecursive(ArrayList<Class> classes)
     {
-        if (classes.contains(splintersoar.lcmtypes.differential_drive_command_t.class))
+        if (classes.contains(lcmtypes.differential_drive_command_t.class))
             return 0L;
  
-        classes.add(splintersoar.lcmtypes.differential_drive_command_t.class);
+        classes.add(lcmtypes.differential_drive_command_t.class);
         long hash = LCM_FINGERPRINT_BASE
             ;
         classes.remove(classes.size() - 1);
@@ -63,9 +63,9 @@ public class differential_drive_command_t implements lcm.lcm.LCMEncodable
         _decodeRecursive(ins);
     }
  
-    public static splintersoar.lcmtypes.differential_drive_command_t _decodeRecursiveFactory(DataInputStream ins) throws IOException
+    public static lcmtypes.differential_drive_command_t _decodeRecursiveFactory(DataInputStream ins) throws IOException
     {
-        splintersoar.lcmtypes.differential_drive_command_t o = new splintersoar.lcmtypes.differential_drive_command_t();
+        lcmtypes.differential_drive_command_t o = new lcmtypes.differential_drive_command_t();
         o._decodeRecursive(ins);
         return o;
     }
@@ -85,9 +85,9 @@ public class differential_drive_command_t implements lcm.lcm.LCMEncodable
  
     }
  
-    public splintersoar.lcmtypes.differential_drive_command_t copy()
+    public lcmtypes.differential_drive_command_t copy()
     {
-        splintersoar.lcmtypes.differential_drive_command_t outobj = new splintersoar.lcmtypes.differential_drive_command_t();
+        lcmtypes.differential_drive_command_t outobj = new lcmtypes.differential_drive_command_t();
         outobj.utime = this.utime;
  
         outobj.left = this.left;

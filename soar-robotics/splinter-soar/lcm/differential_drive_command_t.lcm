@@ -1,5 +1,3 @@
-package splintersoar.lcmtypes;
-
 struct differential_drive_command_t
 {
 	int64_t utime;

@@ -8,7 +8,7 @@ import lcm.lcm.LCM;
 
 import april.config.Config;
 import april.config.ConfigFile;
-import splintersoar.lcmtypes.differential_drive_command_t;
+import lcmtypes.differential_drive_command_t;
 
 import orc.util.GamePad;
 

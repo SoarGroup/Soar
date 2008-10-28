@@ -1,4 +1,4 @@
-package splintersoar.lcmtypes;
+package lcmtypes;
  
 import java.io.*;
 import java.util.*;
@@ -8,7 +8,7 @@ public class waypoints_t implements lcm.lcm.LCMEncodable
     public long utime;
     public int nwaypoints;
     public String names[];
-    public splintersoar.lcmtypes.xy_t locations[];
+    public lcmtypes.xy_t locations[];
  
     public waypoints_t()
     {
@@ -23,12 +23,12 @@ public class waypoints_t implements lcm.lcm.LCMEncodable
  
     public static long _hashRecursive(ArrayList<Class> classes)
     {
-        if (classes.contains(splintersoar.lcmtypes.waypoints_t.class))
+        if (classes.contains(lcmtypes.waypoints_t.class))
             return 0L;
  
-        classes.add(splintersoar.lcmtypes.waypoints_t.class);
+        classes.add(lcmtypes.waypoints_t.class);
         long hash = LCM_FINGERPRINT_BASE
-             + splintersoar.lcmtypes.xy_t._hashRecursive(classes)
+             + lcmtypes.xy_t._hashRecursive(classes)
             ;
         classes.remove(classes.size() - 1);
         return (hash<<1) + ((hash>>63)&1);
@@ -65,9 +65,9 @@ public class waypoints_t implements lcm.lcm.LCMEncodable
         _decodeRecursive(ins);
     }
  
-    public static splintersoar.lcmtypes.waypoints_t _decodeRecursiveFactory(DataInputStream ins) throws IOException
+    public static lcmtypes.waypoints_t _decodeRecursiveFactory(DataInputStream ins) throws IOException
     {
-        splintersoar.lcmtypes.waypoints_t o = new splintersoar.lcmtypes.waypoints_t();
+        lcmtypes.waypoints_t o = new lcmtypes.waypoints_t();
         o._decodeRecursive(ins);
         return o;
     }
@@ -84,16 +84,16 @@ public class waypoints_t implements lcm.lcm.LCMEncodable
             __strbuf = new byte[ins.readInt()-1]; ins.readFully(__strbuf); ins.readByte(); this.names[a] = new String(__strbuf, "UTF-8");
         }
  
-        this.locations = new splintersoar.lcmtypes.xy_t[(int) nwaypoints];
+        this.locations = new lcmtypes.xy_t[(int) nwaypoints];
         for (int a = 0; a < nwaypoints; a++) {
-            this.locations[a] = splintersoar.lcmtypes.xy_t._decodeRecursiveFactory(ins);
+            this.locations[a] = lcmtypes.xy_t._decodeRecursiveFactory(ins);
         }
  
     }
  
-    public splintersoar.lcmtypes.waypoints_t copy()
+    public lcmtypes.waypoints_t copy()
     {
-        splintersoar.lcmtypes.waypoints_t outobj = new splintersoar.lcmtypes.waypoints_t();
+        lcmtypes.waypoints_t outobj = new lcmtypes.waypoints_t();
         outobj.utime = this.utime;
  
         outobj.nwaypoints = this.nwaypoints;
@@ -103,7 +103,7 @@ public class waypoints_t implements lcm.lcm.LCMEncodable
             outobj.names = this.names;
         }
  
-        outobj.locations = new splintersoar.lcmtypes.xy_t[(int) nwaypoints];
+        outobj.locations = new lcmtypes.xy_t[(int) nwaypoints];
         for (int a = 0; a < nwaypoints; a++) {
             outobj.locations[a] = this.locations[a].copy();
         }

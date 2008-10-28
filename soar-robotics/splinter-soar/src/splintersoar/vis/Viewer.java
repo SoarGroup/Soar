@@ -11,10 +11,10 @@ import javax.swing.JFrame;
 import jmat.LinAlg;
 
 import splintersoar.LCMInfo;
-import splintersoar.lcmtypes.particles_t;
-import splintersoar.lcmtypes.splinterstate_t;
-import splintersoar.lcmtypes.waypoints_t;
-import splintersoar.lcmtypes.xy_t;
+import lcmtypes.particles_t;
+import lcmtypes.splinterstate_t;
+import lcmtypes.waypoints_t;
+import lcmtypes.xy_t;
 
 import lcm.lcm.LCM;
 import lcm.lcm.LCMSubscriber;

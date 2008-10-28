@@ -9,7 +9,7 @@ import jmat.MathUtil;
 
 import splintersoar.LCMInfo;
 import splintersoar.LogFactory;
-import splintersoar.lcmtypes.particles_t;
+import lcmtypes.particles_t;
 
 import lcm.lcm.LCM;
 import lcmtypes.pose_t;

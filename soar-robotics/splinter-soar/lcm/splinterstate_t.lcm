@@ -1,4 +1,4 @@
-struct splintersoar.lcmtypes.splinterstate_t
+struct splinterstate_t
 {
 	int64_t utime;	// timestamp
 	double baselinemeters;

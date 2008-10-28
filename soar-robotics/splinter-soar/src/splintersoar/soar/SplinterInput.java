@@ -5,9 +5,9 @@ import java.util.Arrays;
 import jmat.LinAlg;
 import jmat.MathUtil;
 
-import splintersoar.lcmtypes.differential_drive_command_t;
+import lcmtypes.differential_drive_command_t;
 
-import splintersoar.lcmtypes.splinterstate_t;
+import lcmtypes.splinterstate_t;
 
 /**
  * @author voigtjr
