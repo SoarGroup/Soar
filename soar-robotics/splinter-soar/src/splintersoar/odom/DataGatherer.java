@@ -21,10 +21,12 @@ import orc.util.GamePad;
 public class DataGatherer {
 
 	public static void main(String[] args) {
-		new DataGatherer();
+		if (args.length != 1)
+			System.err.println("Usage: DataGatherer output-filename");
+		new DataGatherer(args[0]);
 	}
 
-	public DataGatherer() {
+	public DataGatherer(String outputFilename) {
 		Orc orc = Orc.makeOrc();
 		System.out.println("orc up");
 
@@ -35,7 +37,7 @@ public class DataGatherer {
 
 		gamePad = new GamePad();
 
-		File datafile = new File("odom.txt");
+		File datafile = new File("outputFilename");
 		try {
 			datawriter = new FileWriter(datafile);
 		} catch (IOException e) {
