@@ -1,5 +1,6 @@
 package splintersoar.pf;
 
+import java.io.IOException;
 import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -29,15 +30,23 @@ public class ParticleFilter {
 
 	ArrayList<Particle> particles = new ArrayList<Particle>();
 	particles_t particleslcm;
-	LCM lcm;
+	LCM lcmGG;
 	
 	Logger logger;
 
 	public ParticleFilter() {
-		lcm = LCM.getSingleton();
-		
 		logger = LogFactory.createSimpleLogger("ParticleFilter", Level.FINER);
 
+		try {
+			logger.info(String.format("Using %s for %s provider URL.", LCMInfo.GG_NETWORK, LCMInfo.PARTICLES_CHANNEL));
+			lcmGG = new LCM(LCMInfo.GG_NETWORK);
+
+		} catch (IOException e) {
+			logger.severe("Error creating lcmGG.");
+			e.printStackTrace();
+			System.exit(1);
+		}
+		
 		init();
 	}
 
@@ -62,7 +71,7 @@ public class ParticleFilter {
 		}
 
 		particleslcm.utime = System.nanoTime() / 1000;
-		lcm.publish(LCMInfo.PARTICLES_CHANNEL, particleslcm);
+		lcmGG.publish(LCMInfo.PARTICLES_CHANNEL, particleslcm);
 	}
 
 	double[] oldlaserxy = { 0, 0 };
@@ -162,7 +171,7 @@ public class ParticleFilter {
 		particles = newParticles;
 
 		particleslcm.utime = System.nanoTime() / 1000;
-		lcm.publish(LCMInfo.PARTICLES_CHANNEL, particleslcm);
+		lcmGG.publish(LCMInfo.PARTICLES_CHANNEL, particleslcm);
 
 		fitParticle.xyt[2] = MathUtil.mod2pi(fitParticle.xyt[2]);
 

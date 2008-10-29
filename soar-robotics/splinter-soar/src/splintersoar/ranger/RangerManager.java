@@ -16,15 +16,23 @@ import splintersoar.LogFactory;
  * Soar wants coarse ranger data, this class manages its production.
  */
 public class RangerManager implements LCMSubscriber, RangerStateProducer {
-	private LCM lcm;
+	private LCM lcmGG;
 	private laser_t laserDataCurrent;
 	private Logger logger;
 
 	public RangerManager() {
 		logger = LogFactory.createSimpleLogger("RangerManager", Level.INFO);
 
-		lcm = LCM.getSingleton();
-		lcm.subscribe(LCMInfo.LASER_FRONT_CHANNEL, this);
+		try {
+			logger.info(String.format("Using %s for %s provider URL.", LCMInfo.GG_NETWORK, LCMInfo.LASER_FRONT_CHANNEL));
+			lcmGG = new LCM(LCMInfo.GG_NETWORK);
+
+		} catch (IOException e) {
+			logger.severe("Error creating lcmGG.");
+			e.printStackTrace();
+			System.exit(1);
+		}
+		lcmGG.subscribe(LCMInfo.LASER_FRONT_CHANNEL, this);
 	}
 
 	@Override

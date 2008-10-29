@@ -12,6 +12,11 @@ import lcm.lcm.LCMSubscriber;
  * LCM constants.
  */
 public class LCMInfo implements LCMSubscriber {
+	public static final String L1_NETWORK = "udpm://239.255.1.3:7667?ttl=0";
+	public static final String H1_NETWORK = "udpm://239.255.1.1:7667?ttl=0";
+	public static final String H2_NETWORK = "udpm://239.255.1.2:7667?ttl=0";
+	public static final String GG_NETWORK = "udpm://239.255.1.4:7667?ttl=1";
+	
 	public static final String DRIVE_COMMANDS_CHANNEL = "DRIVE_COMMANDS";
 	public static final String LASER_LOC_CHANNEL = "LASER_LOC";
 	public static final String COORDS_CHANNEL = "COORDS";

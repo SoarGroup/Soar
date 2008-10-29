@@ -35,15 +35,34 @@ public class SoarInterface implements Kernel.UpdateEventInterface, Kernel.AgentE
 	Waypoints waypoints;
 	RangerStateProducer rangerStateProducer;
 	splinterstate_t splinterState;
-	LCM lcm;
+	LCM lcmGG;
+	LCM lcmL1;
 
 	public SoarInterface(RangerStateProducer rangerStateProducer, Configuration cnf) {
 		this.cnf = cnf;
 
-		lcm = LCM.getSingleton();
-		lcm.subscribe(LCMInfo.SPLINTER_STATE_CHANNEL, this);
-
 		logger = LogFactory.createSimpleLogger("SoarInterface", Level.INFO);
+
+		try {
+			logger.info(String.format("Using %s for %s provider URL.", LCMInfo.L1_NETWORK, LCMInfo.DRIVE_COMMANDS_CHANNEL));
+			lcmL1 = new LCM(LCMInfo.L1_NETWORK);
+
+		} catch (IOException e) {
+			logger.severe("Error creating lcmL1.");
+			e.printStackTrace();
+			System.exit(1);
+		}
+
+		try {
+			logger.info(String.format("Using %s for %s provider URL.", LCMInfo.GG_NETWORK, LCMInfo.SPLINTER_STATE_CHANNEL));
+			lcmGG = new LCM(LCMInfo.GG_NETWORK);
+
+		} catch (IOException e) {
+			logger.severe("Error creating lcmGG.");
+			e.printStackTrace();
+			System.exit(1);
+		}
+		lcmGG.subscribe(LCMInfo.SPLINTER_STATE_CHANNEL, this);
 
 		kernel = Kernel.CreateKernelInNewThread();
 		if (kernel.HadError()) {
@@ -140,7 +159,7 @@ public class SoarInterface implements Kernel.UpdateEventInterface, Kernel.AgentE
 			SplinterInput splinterInput = output.update(ss);
 
 			if (splinterInput != null && !overrideEnabled) {
-				lcm.publish(LCMInfo.DRIVE_COMMANDS_CHANNEL, splinterInput.generateDriveCommand(ss));
+				lcmL1.publish(LCMInfo.DRIVE_COMMANDS_CHANNEL, splinterInput.generateDriveCommand(ss));
 			}
 
 			waypoints.update(); // updates input link due to output link

@@ -36,8 +36,8 @@ public class LaserLoc extends Thread implements LCMSubscriber {
 	int droppedLocPackets = 0;
 	long lastStatusUpdate = System.nanoTime();
 
-	LCM lcmin;
-	LCM lcmout;
+	LCM lcmH1;
+	LCM lcmGG;
 
 	boolean inactive = true;
 	long nanolastactivity = System.nanoTime();
@@ -52,24 +52,22 @@ public class LaserLoc extends Thread implements LCMSubscriber {
 		logger = LogFactory.createSimpleLogger("LaserLoc", Level.ALL);
 		
 		try {
-			String provider = "udpm://239.255.77.67:7667?ttl=0";
-			logger.info(String.format("Using %s for %s provider URL.", provider, LCMInfo.LASER_LOC_CHANNEL));
-			lcmin = new LCM(provider);
+			logger.info(String.format("Using %s for %s provider URL.", LCMInfo.H1_NETWORK, LCMInfo.LASER_LOC_CHANNEL));
+			lcmH1 = new LCM(LCMInfo.H1_NETWORK);
 
 		} catch (IOException e) {
-			logger.severe("Error creating lcmin.");
+			logger.severe("Error creating lcmH1.");
 			e.printStackTrace();
 			System.exit(1);
 		}
-		lcmin.subscribe(LCMInfo.LASER_LOC_CHANNEL, this);
+		lcmH1.subscribe(LCMInfo.LASER_LOC_CHANNEL, this);
 
 		try {
-			String provider = "udpm://239.255.76.67:7667?ttl=1";
-			logger.info(String.format("Using %s for %s provider URL.", provider, LCMInfo.COORDS_CHANNEL));
-			lcmout = new LCM(provider);
+			logger.info(String.format("Using %s for %s provider URL.", LCMInfo.GG_NETWORK, LCMInfo.COORDS_CHANNEL));
+			lcmGG = new LCM(LCMInfo.GG_NETWORK);
 
 		} catch (IOException e) {
-			logger.severe("Error creating lcmin.");
+			logger.severe("Error creating lcmGG.");
 			e.printStackTrace();
 			System.exit(1);
 		}
@@ -141,7 +139,7 @@ public class LaserLoc extends Thread implements LCMSubscriber {
 		if (logger.isLoggable(Level.FINE))
 			logger.fine(String.format("publishing %10.3f %10.3f", estimatedCoords.xy[0], estimatedCoords.xy[1]));
 
-		lcmout.publish(LCMInfo.COORDS_CHANNEL, estimatedCoords);
+		lcmGG.publish(LCMInfo.COORDS_CHANNEL, estimatedCoords);
 	}
 	
 	long lastutime = 0;

@@ -25,7 +25,7 @@ public class SplinterSoar {
 	OrcInterface orc;
 	RangerManager ranger;
 	LaserLoc laserloc;
-	LCM lcm;
+	LCM lcmL1;
 	GamePad gamePad;
 
 	boolean running = true;
@@ -79,7 +79,15 @@ public class SplinterSoar {
 		}
 
 		if (!cnf.gamepadDisabled && (!cnf.orcDisabled || !cnf.soarDisabled)) {
-			lcm = LCM.getSingleton();
+			try {
+				logger.info(String.format("Using %s for %s provider URL.", LCMInfo.L1_NETWORK, LCMInfo.DRIVE_COMMANDS_CHANNEL));
+				lcmL1 = new LCM(LCMInfo.L1_NETWORK);
+
+			} catch (IOException e) {
+				logger.severe("Error creating lcmL1.");
+				e.printStackTrace();
+				System.exit(1);
+			}
 			logger.info("Creating game pad for override");
 			gamePad = new GamePad();
 		}
@@ -122,7 +130,7 @@ public class SplinterSoar {
 				overrideCommand.left = 0;
 				overrideCommand.right = 0;
 				overrideCommand.utime = System.nanoTime() / 1000;
-				lcm.publish(LCMInfo.DRIVE_COMMANDS_CHANNEL, overrideCommand);
+				lcmL1.publish(LCMInfo.DRIVE_COMMANDS_CHANNEL, overrideCommand);
 			}
 
 			logger.info("Override " + (overrideEnabled ? "enabled" : "disabled"));
@@ -153,7 +161,7 @@ public class SplinterSoar {
 			if ((newCommand.left != overrideCommand.left) || (newCommand.right != overrideCommand.right)) {
 				overrideCommand = newCommand;
 				overrideCommand.utime = System.nanoTime() / 1000;
-				lcm.publish(LCMInfo.DRIVE_COMMANDS_CHANNEL, overrideCommand);
+				lcmL1.publish(LCMInfo.DRIVE_COMMANDS_CHANNEL, overrideCommand);
 			}
 		}
 	}

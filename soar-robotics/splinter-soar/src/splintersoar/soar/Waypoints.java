@@ -1,8 +1,11 @@
 package splintersoar.soar;
 
+import java.io.IOException;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import jmat.LinAlg;
 import jmat.MathUtil;
@@ -14,6 +17,7 @@ import sml.Agent;
 import sml.FloatElement;
 import sml.Identifier;
 import splintersoar.LCMInfo;
+import splintersoar.LogFactory;
 import lcmtypes.waypoints_t;
 import lcmtypes.xy_t;
 
@@ -107,11 +111,22 @@ public class Waypoints {
 		}
 	}
 
-	LCM lcm;
-
+	LCM lcmGG;
+	Logger logger;
+	
 	Waypoints(Agent agent) {
 		this.agent = agent;
-		lcm = LCM.getSingleton();
+		logger = LogFactory.createSimpleLogger("Waypoints", Level.INFO);
+
+		try {
+			logger.info(String.format("Using %s for %s provider URL.", LCMInfo.GG_NETWORK, LCMInfo.WAYPOINTS_CHANNEL));
+			lcmGG = new LCM(LCMInfo.GG_NETWORK);
+
+		} catch (IOException e) {
+			logger.severe("Error creating lcmGG.");
+			e.printStackTrace();
+			System.exit(1);
+		}
 	}
 
 	void setRootIdentifier(Identifier waypoints) {
@@ -181,7 +196,7 @@ public class Waypoints {
 				waypoints.locations[index].xy = Arrays.copyOf(waypointArray[index].xyz, 2);
 			}
 		}
-		lcm.publish(LCMInfo.WAYPOINTS_CHANNEL, waypoints);
+		lcmGG.publish(LCMInfo.WAYPOINTS_CHANNEL, waypoints);
 	}
 
 	public void beforeInitSoar() {

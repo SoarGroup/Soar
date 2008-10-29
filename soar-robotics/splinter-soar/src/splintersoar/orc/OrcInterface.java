@@ -46,7 +46,8 @@ public class OrcInterface implements LCMSubscriber {
 
 	private double[] command = { 0, 0 };
 
-	private LCM lcm;
+	private LCM lcmL1;
+	private LCM lcmGG;
 
 	private xy_t laserxy;
 
@@ -63,9 +64,28 @@ public class OrcInterface implements LCMSubscriber {
 
 		logger = LogFactory.createSimpleLogger("OrcInterface", Level.INFO);
 
-		lcm = LCM.getSingleton();
-		lcm.subscribe(LCMInfo.COORDS_CHANNEL, this);
-		lcm.subscribe(LCMInfo.DRIVE_COMMANDS_CHANNEL, this);
+		try {
+			logger.info(String.format("Using %s for %s provider URL.", LCMInfo.L1_NETWORK, LCMInfo.DRIVE_COMMANDS_CHANNEL));
+			lcmL1 = new LCM(LCMInfo.L1_NETWORK);
+
+		} catch (IOException e) {
+			logger.severe("Error creating lcmin.");
+			e.printStackTrace();
+			System.exit(1);
+		}
+		lcmL1.subscribe(LCMInfo.DRIVE_COMMANDS_CHANNEL, this);
+
+		try {
+			logger.info(String.format("Using %s for %s provider URL.", LCMInfo.GG_NETWORK, LCMInfo.COORDS_CHANNEL));
+			lcmGG = new LCM(LCMInfo.GG_NETWORK);
+
+		} catch (IOException e) {
+			logger.severe("Error creating lcmin.");
+			e.printStackTrace();
+			System.exit(1);
+		}
+		
+		lcmGG.subscribe(LCMInfo.COORDS_CHANNEL, this);
 
 		orc = Orc.makeOrc();
 		motor[0] = new Motor(orc, cnf.orc.ports[0], cnf.orc.invert[0]);
@@ -172,7 +192,7 @@ public class OrcInterface implements LCMSubscriber {
 			currentState.pose.utime = currentState.utime;
 
 			// publish pose
-			lcm.publish(LCMInfo.SPLINTER_STATE_CHANNEL, currentState);
+			lcmGG.publish(LCMInfo.SPLINTER_STATE_CHANNEL, currentState);
 
 			// command motors
 			commandMotors(currentState.utime);
