@@ -37,7 +37,7 @@ public class DataGatherer {
 
 		gamePad = new GamePad();
 
-		File datafile = new File("outputFilename");
+		File datafile = new File(outputFilename);
 		try {
 			datawriter = new FileWriter(datafile);
 		} catch (IOException e) {
@@ -82,7 +82,7 @@ public class DataGatherer {
 
 		double[] newThrottle = new double[2];
 
-		if (true) {
+		if (false) {
 			newThrottle[0] = gamePad.getAxis(1) * -1;
 			newThrottle[1] = gamePad.getAxis(3) * -1;
 		} else {
