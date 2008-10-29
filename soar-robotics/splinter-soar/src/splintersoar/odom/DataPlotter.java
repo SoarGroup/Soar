@@ -3,6 +3,7 @@ package splintersoar.odom;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.io.BufferedReader;
+import java.io.Console;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException; //import java.util.ArrayList;
@@ -31,14 +32,42 @@ public class DataPlotter {
 		}
 		DataPlotter dp = new DataPlotter(args[0]);
 
-		dp.process();
+		dp.run();
+	}
+	
+	public void run() {
+		Console console = System.console();
+		while (true) {
+			try {
+				String input = console.readLine("plotter> ");
+				
+				input = input.toLowerCase();
+				input = input.trim();
+				String [] args = input.split(" ");
+				
+				if (args[0].equals("plot")) {
+					
+				} else if (args[0].equals("set")) {
+					if (args[1].equals("baseline")) {
+						
+					} else if (args[1].equals("tick")) {
+					}
+				}
+				try {
+					Thread.sleep(500);
+				} catch (InterruptedException e) {
+				}
+			} catch (ArrayIndexOutOfBoundsException ex) {
+				System.err.println("Syntax error");
+			}
+		}
 	}
 
 	BufferedReader br;
 	JFrame jf;
 	VisWorld vw = new VisWorld();
 	VisCanvas vc = new VisCanvas(vw);
-
+	
 	public DataPlotter(String file) {
 		File datafile = new File(file);
 		FileReader fr = null;
@@ -56,6 +85,9 @@ public class DataPlotter {
 		jf.add(vc, BorderLayout.CENTER);
 		jf.setSize(600, 500);
 		jf.setVisible(true);
+		
+		vc.setDrawGrid(true);
+		vc.setDrawGround(true);
 	}
 
 	public void process() {

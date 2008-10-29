@@ -10,50 +10,18 @@ import lcm.lcm.LCM;
 import lcm.lcm.LCMSubscriber;
 import lcmtypes.laser_t;
 
+import splintersoar.Configuration;
 import splintersoar.LCMInfo;
 import splintersoar.LogFactory;
 import lcmtypes.xy_t;
-
-import april.config.Config;
-import april.config.ConfigFile;
 
 /**
  * @author voigtjr
  * Laser localizer class. Takes as input SICK data and generates x,y position of beacon.
  */
 public class LaserLoc extends Thread implements LCMSubscriber {
-	private class Configuration {
-		double [] laserxyt = { 0, 0, 0 }; // laser location
-		double tubeRadius = 0; 
-		int updatePeriod = 5; // seconds between status updates
-		int activityTimeout = 5;
-		double[] maxRanges;
-		String mapFile = "map.txt";
-		
-		long updatePeriodNanos;
-		long activityTimeoutNanos;
 
-		Configuration(Config config) {
-			if (config != null) {
-				laserxyt = config.getDoubles("laserxyt", laserxyt);
-				tubeRadius = config.getDouble("tubeRadius", tubeRadius);
-				updatePeriod = config.getInt("updatePeriod", updatePeriod);
-				activityTimeout = config.getInt("activityTimeout", activityTimeout);
-				mapFile = config.getString("mapFile", mapFile);
-			}
-
-			try {
-				Config mapConfig = new ConfigFile(mapFile).getConfig();
-				maxRanges = mapConfig.getDoubles("map");
-			} catch (IOException e) {
-			}
-
-			updatePeriodNanos = updatePeriod * 1000000000L;
-			activityTimeoutNanos = activityTimeout * 1000000000L;
-		}
-	}
-
-	private Configuration configuration;
+	private Configuration cnf;
 
 	// Assumptions:
 	// robot_z is constant
@@ -77,21 +45,21 @@ public class LaserLoc extends Thread implements LCMSubscriber {
 	private Logger logger;
 	RoomMapper mapper;
 
-	public LaserLoc(Config config) {
-		configuration = new Configuration(config);
+	public LaserLoc(Configuration cnf) {
+		this.cnf = cnf;
 
 		logger = LogFactory.createSimpleLogger("LaserLoc", Level.INFO);
 
 		lcm = LCM.getSingleton();
 		lcm.subscribe(LCMInfo.LASER_LOC_CHANNEL, this);
 
-		if (configuration.maxRanges == null) {
+		if (cnf.lloc.maxRanges == null) {
 			logger.warning("No map file found, using infinite maximums");
-			configuration.maxRanges = new double[180];
-			Arrays.fill(configuration.maxRanges, Double.MAX_VALUE);
+			cnf.lloc.maxRanges = new double[180];
+			Arrays.fill(cnf.lloc.maxRanges, Double.MAX_VALUE);
 		}
 
-		currentTimeout = configuration.activityTimeoutNanos;
+		currentTimeout = cnf.lloc.activityTimeoutNanos;
 	}
 
 	private void updatePose() {
@@ -99,14 +67,14 @@ public class LaserLoc extends Thread implements LCMSubscriber {
 
 		if (nanotime - nanolastactivity > currentTimeout) {
 			inactive = true;
-			logger.warning(String.format("no activity in last " + (currentTimeout / 1000000000.0) + " seconds"));
+			logger.warning(String.format("no activity in last %1.0f seconds", (currentTimeout / 1000000000.0)));
 			nanolastactivity = nanotime;
-			currentTimeout += configuration.activityTimeoutNanos;
+			currentTimeout += cnf.lloc.activityTimeoutNanos;
 		}
 
 		// occasionally print out status update
 		long nanoelapsed = nanotime - lastStatusUpdate;
-		if (nanoelapsed > configuration.updatePeriodNanos) {
+		if (nanoelapsed > cnf.lloc.updatePeriodNanos) {
 			if (droppedLocPackets > 0) {
 				double dropRate = (double) droppedLocPackets / (nanoelapsed / 1000000000.0);
 				logger.warning(String.format("LaserLoc: dropping %5.1f packets/sec", dropRate));
@@ -125,7 +93,7 @@ public class LaserLoc extends Thread implements LCMSubscriber {
 		}
 
 		nanolastactivity = nanotime;
-		currentTimeout = configuration.activityTimeoutNanos;
+		currentTimeout = cnf.lloc.activityTimeoutNanos;
 
 		if (inactive) {
 			logger.info("receiving data");
@@ -159,16 +127,16 @@ public class LaserLoc extends Thread implements LCMSubscriber {
 	long lastutime = 0;
 
 	private xy_t getRobotXY(laser_t ld) {
-		int nranges = Math.min( configuration.maxRanges.length, ld.nranges);
-		if (configuration.maxRanges.length != ld.nranges)
+		int nranges = Math.min( cnf.lloc.maxRanges.length, ld.nranges);
+		if (cnf.lloc.maxRanges.length != ld.nranges)
 		{
-			logger.fine(String.format("maxRanges array not equal in size to nranges, %d %d", configuration.maxRanges.length, ld.nranges));
+			logger.fine(String.format("maxRanges array not equal in size to nranges, %d %d", cnf.lloc.maxRanges.length, ld.nranges));
 		}
 		
 		double smallestRange = Double.MAX_VALUE;
 		int smallestRangeIndex = -1;
 		for (int index = 0; index < nranges; ++index) {
-			if (ld.ranges[index] < configuration.maxRanges[index]) {
+			if (ld.ranges[index] < cnf.lloc.maxRanges[index]) {
 				if (ld.ranges[index] < smallestRange) {
 					smallestRange = ld.ranges[index];
 					smallestRangeIndex = index;
@@ -182,14 +150,14 @@ public class LaserLoc extends Thread implements LCMSubscriber {
 			return null;
 		}
 		
-		double laserAngle = configuration.laserxyt[2] + ld.rad0 + ld.radstep * smallestRangeIndex;
+		double laserAngle = cnf.lloc.laserxyt[2] + ld.rad0 + ld.radstep * smallestRangeIndex;
 
-		double laserDist = smallestRange + configuration.tubeRadius;
+		double laserDist = smallestRange + cnf.lloc.tubeRadius;
 
 		xy_t newCoords = new xy_t();
 		newCoords.utime = ld.utime;
-		newCoords.xy[0] = configuration.laserxyt[0] + laserDist * Math.cos(laserAngle);
-		newCoords.xy[1] = configuration.laserxyt[1] + laserDist * Math.sin(laserAngle);
+		newCoords.xy[0] = cnf.lloc.laserxyt[0] + laserDist * Math.cos(laserAngle);
+		newCoords.xy[1] = cnf.lloc.laserxyt[1] + laserDist * Math.sin(laserAngle);
 		
 		return newCoords;
 	}
@@ -217,20 +185,4 @@ public class LaserLoc extends Thread implements LCMSubscriber {
 			updatePose();
 		}
 	}
-
-	public static void main(String[] args) {
-		Config config = null;
-		if (args.length == 1) {
-			try {
-				config = (new ConfigFile(args[0])).getConfig();
-			} catch (IOException ex) {
-				System.err.println("Couldn't open config file: " + args[0]);
-				return;
-			}
-		}
-
-		LaserLoc lloc = new LaserLoc(config);
-		lloc.run();
-	}
-
 }

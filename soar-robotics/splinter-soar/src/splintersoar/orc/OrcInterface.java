@@ -18,13 +18,13 @@ import lcmtypes.pose_t;
 import orc.Motor;
 import orc.Orc;
 import orc.OrcStatus;
+import splintersoar.Configuration;
 import splintersoar.LCMInfo;
 import splintersoar.LogFactory;
 import lcmtypes.splinterstate_t;
 import lcmtypes.xy_t;
 import splintersoar.pf.ParticleFilter;
 
-import april.config.Config;
 import lcmtypes.differential_drive_command_t;
 
 /**
@@ -35,39 +35,7 @@ import lcmtypes.differential_drive_command_t;
 public class OrcInterface implements LCMSubscriber {
 	private Logger logger;
 
-	private class Configuration {
-		int updateHz = 30;
-		int[] ports = { 1, 0 };
-		boolean[] invert = { true, false };
-		double maxThrottleAccelleration = 2.0; // percent change per second
-		double baselineMeters = 0.383;
-		double tickMeters = 0.000043225;
-		double lengthMeters = 0.64;
-		double widthMeters = 0.42;
-		boolean usePF = true;
-		double laserThreshold = 0.1;
-		
-		double maxThrottleChangePerUpdate; // percent change per update
-
-		Configuration(Config config) {
-			if (config != null) {
-				updateHz = config.getInt("orc.updateHz", updateHz);
-				ports = config.getInts("orc.ports", ports);
-				invert = config.getBooleans("orc.invert", invert);
-				maxThrottleAccelleration = config.getDouble("orc.maxThrottleAccelleration", maxThrottleAccelleration);
-				baselineMeters = config.getDouble("orc.baselineMeters", baselineMeters);
-				tickMeters = config.getDouble("orc.tickMeters", tickMeters);
-				lengthMeters = config.getDouble("orc.lengthMeters", lengthMeters);
-				widthMeters = config.getDouble("orc.widthMeters", widthMeters);
-				usePF = config.getBoolean("orc.usePF", usePF);
-				laserThreshold = config.getDouble("orc.laserThreshold", laserThreshold);
-			}
-			
-			maxThrottleChangePerUpdate = maxThrottleAccelleration / updateHz;
-		}
-	}
-
-	private Configuration configuration;
+	private Configuration cnf;
 
 	private Timer timer = new Timer();
 
@@ -86,8 +54,8 @@ public class OrcInterface implements LCMSubscriber {
 
 	differential_drive_command_t driveCommand;
 
-	public OrcInterface(Config config) {
-		configuration = new Configuration(config);
+	public OrcInterface(Configuration cnf) {
+		this.cnf = cnf;
 
 		previousState.pose = new pose_t();
 		previousState.pose.orientation = new double[4];
@@ -100,11 +68,11 @@ public class OrcInterface implements LCMSubscriber {
 		lcm.subscribe(LCMInfo.DRIVE_COMMANDS_CHANNEL, this);
 
 		orc = Orc.makeOrc();
-		motor[0] = new Motor(orc, configuration.ports[0], configuration.invert[0]);
-		motor[1] = new Motor(orc, configuration.ports[1], configuration.invert[1]);
+		motor[0] = new Motor(orc, cnf.orc.ports[0], cnf.orc.invert[0]);
+		motor[1] = new Motor(orc, cnf.orc.ports[1], cnf.orc.invert[1]);
 
 		logger.info("Orc up");
-		timer.schedule(new UpdateTask(), 0, 1000 / configuration.updateHz);
+		timer.schedule(new UpdateTask(), 0, 1000 / cnf.orc.updateHz);
 	}
 
 	public void shutdown() {
@@ -118,7 +86,7 @@ public class OrcInterface implements LCMSubscriber {
 		double[] yawCalcXY;
 		
 		UpdateTask() {
-			if (configuration.usePF) {
+			if (cnf.orc.usePF) {
 				 pf = new ParticleFilter();
 			}
 		}
@@ -136,8 +104,8 @@ public class OrcInterface implements LCMSubscriber {
 
 				// assemble output
 				currentState.utime = currentStatus.utime;
-				currentState.leftodom = currentStatus.qeiPosition[configuration.ports[0]] * (configuration.invert[0] ? -1 : 1);
-				currentState.rightodom = currentStatus.qeiPosition[configuration.ports[1]] * (configuration.invert[1] ? -1 : 1);
+				currentState.leftodom = currentStatus.qeiPosition[cnf.orc.ports[0]] * (cnf.orc.invert[0] ? -1 : 1);
+				currentState.rightodom = currentStatus.qeiPosition[cnf.orc.ports[1]] * (cnf.orc.invert[1] ? -1 : 1);
 			}
 
 			// update pose
@@ -149,7 +117,7 @@ public class OrcInterface implements LCMSubscriber {
 				double[] adjustedlaserxy = getAdjustedLaserXY();
 
 				// calculate pose
-				if (configuration.usePF) {
+				if (cnf.orc.usePF) {
 					// adjustedlaserxy could be null
 					currentState.pose = pf.update(deltaxyt, adjustedlaserxy);
 
@@ -165,7 +133,7 @@ public class OrcInterface implements LCMSubscriber {
 					if (adjustedlaserxy != null) {
 						if (yawCalcXY == null) {
 							yawCalcXY = Arrays.copyOf(adjustedlaserxy, adjustedlaserxy.length);
-						} else if (LinAlg.distance(yawCalcXY, adjustedlaserxy) > configuration.laserThreshold) {
+						} else if (LinAlg.distance(yawCalcXY, adjustedlaserxy) > cnf.orc.laserThreshold) {
 							currentState.pose.pos[0] = adjustedlaserxy[0];
 							currentState.pose.pos[1] = adjustedlaserxy[1];
 
@@ -213,9 +181,9 @@ public class OrcInterface implements LCMSubscriber {
 		}
 
 		double[] calculateDeltaXYT(splinterstate_t currentState) {
-			double dleft = (currentState.leftodom - previousState.leftodom) * configuration.tickMeters;
-			double dright = (currentState.rightodom - previousState.rightodom) * configuration.tickMeters;
-			double phi = (dright - dleft) / configuration.baselineMeters;
+			double dleft = (currentState.leftodom - previousState.leftodom) * cnf.orc.tickMeters;
+			double dright = (currentState.rightodom - previousState.rightodom) * cnf.orc.tickMeters;
+			double phi = (dright - dleft) / cnf.orc.baselineMeters;
 			double dcenter = (dleft + dright) / 2;
 
 			phi = MathUtil.mod2pi(phi);
@@ -283,12 +251,12 @@ public class OrcInterface implements LCMSubscriber {
 			double delta = newDriveCommand.left - command[0];
 			
 			if (logger.isLoggable(Level.FINEST))
-				logger.finest(String.format("Delta %f, Max: %f", delta, configuration.maxThrottleChangePerUpdate));
+				logger.finest(String.format("Delta %f, Max: %f", delta, cnf.orc.maxThrottleChangePerUpdate));
 
 			if (delta > 0) {
-				delta = Math.min(delta, configuration.maxThrottleChangePerUpdate);
+				delta = Math.min(delta, cnf.orc.maxThrottleChangePerUpdate);
 			} else if (delta < 0) {
-				delta = Math.max(delta, -1 * configuration.maxThrottleChangePerUpdate);
+				delta = Math.max(delta, -1 * cnf.orc.maxThrottleChangePerUpdate);
 			}
 
 			command[0] += delta;
@@ -301,12 +269,12 @@ public class OrcInterface implements LCMSubscriber {
 			double delta = newDriveCommand.right - command[1];
 
 			if (logger.isLoggable(Level.FINEST))
-				logger.finest(String.format("Delta %f, Max: %f", delta, configuration.maxThrottleChangePerUpdate));
+				logger.finest(String.format("Delta %f, Max: %f", delta, cnf.orc.maxThrottleChangePerUpdate));
 
 			if (delta > 0) {
-				delta = Math.min(delta, configuration.maxThrottleChangePerUpdate);
+				delta = Math.min(delta, cnf.orc.maxThrottleChangePerUpdate);
 			} else if (delta < 0) {
-				delta = Math.max(delta, -1 * configuration.maxThrottleChangePerUpdate);
+				delta = Math.max(delta, -1 * cnf.orc.maxThrottleChangePerUpdate);
 			}
 			command[1] += delta;
 		}

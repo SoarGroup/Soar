@@ -8,11 +8,11 @@ import java.util.logging.Logger;
 import lcm.lcm.LCM;
 import lcm.lcm.LCMSubscriber;
 
-import april.config.Config;
 import sml.Agent;
 import sml.Kernel;
 import sml.smlAgentEventId;
 import sml.smlUpdateEventId;
+import splintersoar.Configuration;
 import splintersoar.LCMInfo;
 import splintersoar.LogFactory;
 import lcmtypes.splinterstate_t;
@@ -26,17 +26,7 @@ import splintersoar.ranger.RangerStateProducer;
 public class SoarInterface implements Kernel.UpdateEventInterface, Kernel.AgentEventInterface, LCMSubscriber {
 	private Logger logger;
 
-	private class Configuration {
-		String productions = "../agents/follower-robot.soar";
-
-		Configuration(Config config) {
-			if (config != null) {
-				productions = config.getString("soar.productions", productions);
-			}
-		}
-	}
-
-	private Configuration configuration;
+	private Configuration cnf;
 
 	Kernel kernel;
 	Agent agent;
@@ -47,8 +37,8 @@ public class SoarInterface implements Kernel.UpdateEventInterface, Kernel.AgentE
 	splinterstate_t splinterState;
 	LCM lcm;
 
-	public SoarInterface(RangerStateProducer rangerStateProducer, Config config) {
-		configuration = new Configuration(config);
+	public SoarInterface(RangerStateProducer rangerStateProducer, Configuration cnf) {
+		this.cnf = cnf;
 
 		lcm = LCM.getSingleton();
 		lcm.subscribe(LCMInfo.SPLINTER_STATE_CHANNEL, this);
@@ -70,7 +60,7 @@ public class SoarInterface implements Kernel.UpdateEventInterface, Kernel.AgentE
 		}
 
 		// load productions
-		agent.LoadProductions(configuration.productions);
+		agent.LoadProductions(this.cnf.soar.productions);
 
 		waypoints = new Waypoints(agent);
 

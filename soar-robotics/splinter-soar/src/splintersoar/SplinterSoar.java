@@ -1,7 +1,6 @@
 package splintersoar;
 
 import java.io.IOException;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import lcm.lcm.LCM;
@@ -32,48 +31,67 @@ public class SplinterSoar {
 	boolean running = true;
 
 	private Logger logger;
+	Configuration cnf;
 
 	public SplinterSoar(String args[]) {
-		Config config = null;
 
-		if (args.length == 1) {
-			try {
-				config = (new ConfigFile(args[0])).getConfig();
-			} catch (IOException ex) {
-				logger.severe("Couldn't open config file: " + args[0]);
-				return;
+		{
+			Config config = null;
+			if (args.length == 1) {
+				try {
+					config = (new ConfigFile(args[0])).getConfig();
+				} catch (IOException ex) {
+					logger.severe("Couldn't open config file: " + args[0]);
+					return;
+				}
 			}
+			cnf = new Configuration(config);
+		}
+		
+		logger = LogFactory.createSimpleLogger("SplinterSoar", cnf.loglevel);
+		cnf.dumpWarnings(logger);
+		
+		if (cnf.llocEnabled) {
+			logger.info("Starting laserloc");
+			laserloc = new LaserLoc(cnf);
+			laserloc.setDaemon(true);
+			laserloc.start();
+		}
+		
+		if (cnf.orcEnabled) {
+			logger.info("Starting orc interface");
+			orc = new OrcInterface(cnf);
+		}
+		
+		if (cnf.rangerEnabled) {
+			logger.info("Starting ranger manager");
+			ranger = new RangerManager();
+		}
+		
+		if (cnf.soarEnabled) {
+			logger.info("Starting Soar interface");
+			soar = new SoarInterface(ranger, cnf);
 		}
 
-		logger = LogFactory.createSimpleLogger("SplinterSoar", Level.INFO);
-
-		lcm = LCM.getSingleton();
-
-		logger.info("Starting laserloc");
-		laserloc = new LaserLoc(config);
-		laserloc.setDaemon(true);
-		laserloc.start();
-
-		logger.info("Starting orc interface");
-		orc = new OrcInterface(config);
-
-		logger.info("Starting ranger manager");
-		ranger = new RangerManager();
-
-		//logger.info("Starting Soar interface");
-		//soar = new SoarInterface(ranger, config);
-
-		logger.info("Creating game pad for override");
-		gamePad = new GamePad();
-
+		if (cnf.gamepadEnabled && (cnf.orcEnabled || cnf.soarEnabled)) {
+			lcm = LCM.getSingleton();
+			logger.info("Creating game pad for override");
+			gamePad = new GamePad();
+		}
+		
 		Runtime.getRuntime().addShutdownHook(new ShutdownHook());
 
 		logger.info("Ready");
 		while (running) {
 			try {
-				updateOverride();
-				updateStartStop();
-				Thread.sleep(50);
+				if (cnf.gamepadEnabled) {
+					updateOverride();
+					updateStartStop();
+				} else {
+					synchronized(this) {
+						this.wait();
+					}
+				}
 			} catch (InterruptedException ignored) {
 			}
 		}
@@ -166,7 +184,8 @@ public class SplinterSoar {
 			if (soar != null)
 				soar.shutdown();
 
-			orc.shutdown();
+			if (orc != null)
+				orc.shutdown();
 
 			System.out.flush();
 			System.err.println("Terminated");
