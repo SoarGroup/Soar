@@ -1,0 +1,5 @@
+llocDisabled = true;
+orcDisabled = true;
+soarDisabled = true;
+rangerDisabled = true;
+gamepadDisabled = true;

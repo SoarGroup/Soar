@@ -88,21 +88,23 @@ public class Configuration {
 	public SoarInterface soar;
 	
 	public Level loglevel = Level.INFO;
-	public boolean llocEnabled = true;
-	public boolean orcEnabled = true;
-	public boolean rangerEnabled = true;
-	public boolean soarEnabled = true;
-	public boolean gamepadEnabled = true;
+	public boolean llocDisabled = false;
+	public boolean orcDisabled = false;
+	public boolean rangerDisabled = false;
+	public boolean soarDisabled = false;
+	public boolean gamepadDisabled = false;
 	
 	ArrayList<String> warnings = new ArrayList<String>();
 	
 	public Configuration(Config config) {
-		llocEnabled = config.getBoolean("llocEnabled", llocEnabled);
-		orcEnabled = config.getBoolean("orcEnabled", orcEnabled);
-		soarEnabled = config.getBoolean("soarEnabled", soarEnabled);
-		rangerEnabled = config.getBoolean("rangerEnabled", rangerEnabled);
-		gamepadEnabled = config.getBoolean("gamepadEnabled", gamepadEnabled);
-
+		if (config != null) {
+			llocDisabled = config.getBoolean("llocDisabled", llocDisabled);
+			orcDisabled = config.getBoolean("orcDisabled", orcDisabled);
+			rangerDisabled = config.getBoolean("rangerDisabled", rangerDisabled);
+			soarDisabled = config.getBoolean("soarDisabled", soarDisabled);
+			gamepadDisabled = config.getBoolean("gamepadDisabled", gamepadDisabled);
+		}
+		
 		orc = new OrcInterface(config);
 		lloc = new LaserLoc(config);
 		soar = new SoarInterface(config);
@@ -112,5 +114,9 @@ public class Configuration {
 		for (String warning : warnings) {
 			logger.warning(warning);
 		}
+	}
+	
+	public boolean everythingDisabled() {
+		return llocDisabled && orcDisabled && rangerDisabled && soarDisabled && gamepadDisabled;
 	}
 }

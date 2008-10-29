@@ -41,8 +41,8 @@ public class SplinterSoar {
 				try {
 					config = (new ConfigFile(args[0])).getConfig();
 				} catch (IOException ex) {
-					logger.severe("Couldn't open config file: " + args[0]);
-					return;
+					System.err.println("Couldn't open config file: " + args[0]);
+					System.exit(1);
 				}
 			}
 			cnf = new Configuration(config);
@@ -51,29 +51,34 @@ public class SplinterSoar {
 		logger = LogFactory.createSimpleLogger("SplinterSoar", cnf.loglevel);
 		cnf.dumpWarnings(logger);
 		
-		if (cnf.llocEnabled) {
+		if (cnf.everythingDisabled()) {
+			logger.severe("All components are disabled by configuration.");
+			System.exit(1);
+		}
+		
+		if (!cnf.llocDisabled) {
 			logger.info("Starting laserloc");
 			laserloc = new LaserLoc(cnf);
 			laserloc.setDaemon(true);
 			laserloc.start();
 		}
 		
-		if (cnf.orcEnabled) {
+		if (!cnf.orcDisabled) {
 			logger.info("Starting orc interface");
 			orc = new OrcInterface(cnf);
 		}
 		
-		if (cnf.rangerEnabled) {
+		if (!cnf.rangerDisabled) {
 			logger.info("Starting ranger manager");
 			ranger = new RangerManager();
 		}
 		
-		if (cnf.soarEnabled) {
+		if (!cnf.soarDisabled) {
 			logger.info("Starting Soar interface");
 			soar = new SoarInterface(ranger, cnf);
 		}
 
-		if (cnf.gamepadEnabled && (cnf.orcEnabled || cnf.soarEnabled)) {
+		if (!cnf.gamepadDisabled && (!cnf.orcDisabled || !cnf.soarDisabled)) {
 			lcm = LCM.getSingleton();
 			logger.info("Creating game pad for override");
 			gamePad = new GamePad();
@@ -84,7 +89,7 @@ public class SplinterSoar {
 		logger.info("Ready");
 		while (running) {
 			try {
-				if (cnf.gamepadEnabled) {
+				if (!cnf.gamepadDisabled) {
 					updateOverride();
 					updateStartStop();
 				} else {
