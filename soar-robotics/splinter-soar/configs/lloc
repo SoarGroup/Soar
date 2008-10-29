@@ -1,4 +1,4 @@
-llocDisabled = true;
+llocDisabled = false;
 orcDisabled = true;
 soarDisabled = true;
 rangerDisabled = true;

@@ -36,7 +36,8 @@ public class LaserLoc extends Thread implements LCMSubscriber {
 	int droppedLocPackets = 0;
 	long lastStatusUpdate = System.nanoTime();
 
-	LCM lcm;
+	LCM lcmin;
+	LCM lcmout;
 
 	boolean inactive = true;
 	long nanolastactivity = System.nanoTime();
@@ -48,11 +49,31 @@ public class LaserLoc extends Thread implements LCMSubscriber {
 	public LaserLoc(Configuration cnf) {
 		this.cnf = cnf;
 
-		logger = LogFactory.createSimpleLogger("LaserLoc", Level.INFO);
+		logger = LogFactory.createSimpleLogger("LaserLoc", Level.ALL);
+		
+		try {
+			String provider = "udpm://239.255.77.67:7667?ttl=0";
+			logger.info(String.format("Using %s for %s provider URL.", provider, LCMInfo.LASER_LOC_CHANNEL));
+			lcmin = new LCM(provider);
 
-		lcm = LCM.getSingleton();
-		lcm.subscribe(LCMInfo.LASER_LOC_CHANNEL, this);
+		} catch (IOException e) {
+			logger.severe("Error creating lcmin.");
+			e.printStackTrace();
+			System.exit(1);
+		}
+		lcmin.subscribe(LCMInfo.LASER_LOC_CHANNEL, this);
 
+		try {
+			String provider = "udpm://239.255.76.67:7667?ttl=1";
+			logger.info(String.format("Using %s for %s provider URL.", provider, LCMInfo.COORDS_CHANNEL));
+			lcmout = new LCM(provider);
+
+		} catch (IOException e) {
+			logger.severe("Error creating lcmin.");
+			e.printStackTrace();
+			System.exit(1);
+		}
+		
 		if (cnf.lloc.maxRanges == null) {
 			logger.warning("No map file found, using infinite maximums");
 			cnf.lloc.maxRanges = new double[180];
@@ -68,7 +89,6 @@ public class LaserLoc extends Thread implements LCMSubscriber {
 		if (nanotime - nanolastactivity > currentTimeout) {
 			inactive = true;
 			logger.warning(String.format("no activity in last %1.0f seconds", (currentTimeout / 1000000000.0)));
-			nanolastactivity = nanotime;
 			currentTimeout += cnf.lloc.activityTimeoutNanos;
 		}
 
@@ -121,7 +141,7 @@ public class LaserLoc extends Thread implements LCMSubscriber {
 		if (logger.isLoggable(Level.FINE))
 			logger.fine(String.format("publishing %10.3f %10.3f", estimatedCoords.xy[0], estimatedCoords.xy[1]));
 
-		lcm.publish(LCMInfo.COORDS_CHANNEL, estimatedCoords);
+		lcmout.publish(LCMInfo.COORDS_CHANNEL, estimatedCoords);
 	}
 	
 	long lastutime = 0;

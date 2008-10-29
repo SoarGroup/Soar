@@ -20,15 +20,15 @@ public class LCMInfo implements LCMSubscriber {
 	public static final String WAYPOINTS_CHANNEL = "WAYPOINTS";
 	public static final String PARTICLES_CHANNEL = "PARTICLES";
 
-    static 
-    {
-        System.setProperty("java.net.preferIPv4Stack", "true");
-        System.out.println("LC: Disabling IPV6 support");
-    }
-
 	public static final String TEST_CHANNEL_A = "TEST_CHANNEL";
 	public static void main(String[] args) {
-		LCM lcm = LCM.getSingleton();
+		LCM lcm = null;
+		try {
+			lcm = new LCM("udpm://239.255.76.67:7667?ttl=0");
+		} catch (IOException e) {
+			e.printStackTrace();
+			System.exit(1);
+		}
 
 		if (args.length < 1) {
 			while (true) {
@@ -43,10 +43,11 @@ public class LCMInfo implements LCMSubscriber {
 			}
 		} else {
 			lcm.subscribeAll(new LCMInfo());
-			//lcm.subscribe(TEST_CHANNEL_A, new LCMInfo());
 			while (true) {
 				try {
-					Thread.sleep(1000);
+					synchronized(lcm) {
+						lcm.wait();
+					}
 				} catch (InterruptedException ignored) {
 				}
 			}
