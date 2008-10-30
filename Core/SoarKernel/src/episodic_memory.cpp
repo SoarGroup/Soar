@@ -347,7 +347,7 @@ bool epmem_valid_parameter_value( agent *my_agent, const long param, const long 
 // Returns true if a parameter is currently protected from modification
 bool epmem_parameter_protected( agent *my_agent, const long param )
 {
-	return ( ( my_agent->epmem_db_status != -1 ) && ( param >= EPMEM_PARAM_DB ) && ( param <= EPMEM_PARAM_MVA_STORE ) );
+	return ( ( my_agent->epmem_db_status != -1 ) && ( param >= EPMEM_PARAM_DB ) && ( param <= EPMEM_PARAM_MODE ) );
 }
 
 // Set parameter value
@@ -448,12 +448,6 @@ bool epmem_set_parameter( agent *my_agent, const char *name, const char *new_val
 	if ( param == EPMEM_PARAM_LEARNING )
 		set_sysparam( my_agent, EPMEM_ENABLED, converted_val );
 	
-	// mva_retrieve special case
-	if ( ( param == EPMEM_PARAM_MVA_RETRIEVE ) &&
-		 ( converted_val == EPMEM_MVA_RETRIEVE_ON ) &&
-		 ( epmem_get_parameter( my_agent, EPMEM_PARAM_MVA_STORE, EPMEM_RETURN_LONG ) == EPMEM_MVA_STORE_OFF ) )
-		return false;
-	
 	my_agent->epmem_params[ param ]->param->constant_param.value = converted_val;
 
 	return true;
@@ -474,12 +468,6 @@ bool epmem_set_parameter( agent *my_agent, const char *name, const long new_val 
 	// learning special case
 	if ( param == EPMEM_PARAM_LEARNING )
 		set_sysparam( my_agent, EPMEM_ENABLED, new_val );
-	
-	// mva_retrieve special case
-	if ( ( param == EPMEM_PARAM_MVA_RETRIEVE ) &&
-		 ( new_val == EPMEM_MVA_RETRIEVE_ON ) &&
-		 ( epmem_get_parameter( my_agent, EPMEM_PARAM_MVA_STORE, EPMEM_RETURN_LONG ) == EPMEM_MVA_STORE_OFF ) )
-		return false;
 	
 	my_agent->epmem_params[ param ]->param->constant_param.value = new_val;
 
@@ -577,12 +565,6 @@ bool epmem_set_parameter( agent *my_agent, const long param, const char *new_val
 	if ( param == EPMEM_PARAM_LEARNING )
 		set_sysparam( my_agent, EPMEM_ENABLED, converted_val );
 	
-	// mva_retrieve special case
-	if ( ( param == EPMEM_PARAM_MVA_RETRIEVE ) &&
-		 ( converted_val == EPMEM_MVA_RETRIEVE_ON ) &&
-		 ( epmem_get_parameter( my_agent, EPMEM_PARAM_MVA_STORE, EPMEM_RETURN_LONG ) == EPMEM_MVA_STORE_OFF ) )
-		return false;
-	
 	my_agent->epmem_params[ param ]->param->constant_param.value = converted_val;
 
 	return true;
@@ -599,12 +581,6 @@ bool epmem_set_parameter( agent *my_agent, const long param, const long new_val 
 	// learning special case
 	if ( param == EPMEM_PARAM_LEARNING )
 		set_sysparam( my_agent, EPMEM_ENABLED, new_val );
-	
-	// mva_retrieve special case
-	if ( ( param == EPMEM_PARAM_MVA_RETRIEVE ) &&
-		 ( new_val == EPMEM_MVA_RETRIEVE_ON ) &&
-		 ( epmem_get_parameter( my_agent, EPMEM_PARAM_MVA_STORE, EPMEM_RETURN_LONG ) == EPMEM_MVA_STORE_OFF ) )
-		return false;
 	
 	my_agent->epmem_params[ param ]->param->constant_param.value = new_val;
 
@@ -719,74 +695,44 @@ const long epmem_convert_indexing( const char *val )
 	return return_val;
 }
 
-// mva_store parameter
-bool epmem_validate_mva_store( const long new_val )
+// mode parameter
+bool epmem_validate_mode( const long new_val )
 {
-	return ( ( new_val == EPMEM_MVA_STORE_ON ) || ( new_val == EPMEM_MVA_STORE_OFF ) );
+	return ( ( new_val >= EPMEM_MODE_ONE ) || ( new_val <= EPMEM_MODE_THREE ) );
 }
 
-const char *epmem_convert_mva_store( const long val )
+const char *epmem_convert_mode( const long val )
 {
 	const char *return_val = NULL;
 	
 	switch ( val )
 	{
-		case EPMEM_MVA_STORE_ON:
-			return_val = "on";
+		case EPMEM_MODE_ONE:
+			return_val = "one";
 			break;
 			
-		case EPMEM_MVA_STORE_OFF:
-			return_val = "off";
+		case EPMEM_MODE_TWO:
+			return_val = "two";
+			break;
+
+		case EPMEM_MODE_THREE:
+			return_val = "three";
 			break;
 	}
 	
 	return return_val;
 }
 
-const long epmem_convert_mva_store( const char *val )
+const long epmem_convert_mode( const char *val )
 {
 	long return_val = NULL;
 	
-	if ( !strcmp( val, "on" ) )
-		return_val = EPMEM_MVA_STORE_ON;
-	else if ( !strcmp( val, "off" ) )
-		return_val = EPMEM_MVA_STORE_OFF;
-	
-	return return_val;
-}
-
-// mva_retrieve parameter
-bool epmem_validate_mva_retrieve( const long new_val )
-{
-	return ( ( new_val == EPMEM_MVA_RETRIEVE_ON ) || ( new_val == EPMEM_MVA_RETRIEVE_OFF ) );
-}
-
-const char *epmem_convert_mva_retrieve( const long val )
-{
-	const char *return_val = NULL;
-	
-	switch ( val )
-	{
-		case EPMEM_MVA_RETRIEVE_ON:
-			return_val = "on";
-			break;
-			
-		case EPMEM_MVA_RETRIEVE_OFF:
-			return_val = "off";
-			break;
-	}
-	
-	return return_val;
-}
-
-const long epmem_convert_mva_retrieve( const char *val )
-{
-	long return_val = NULL;
-	
-	if ( !strcmp( val, "on" ) )
-		return_val = EPMEM_MVA_RETRIEVE_ON;
-	else if ( !strcmp( val, "off" ) )
-		return_val = EPMEM_MVA_RETRIEVE_OFF;
+	if ( !strcmp( val, "one" ) )
+		return_val = EPMEM_MODE_ONE;
+	else if ( !strcmp( val, "two" ) )
+		return_val = EPMEM_MODE_TWO;
+	else if ( !strcmp( val, "three" ) )
+		return_val = EPMEM_MODE_THREE;
 	
 	return return_val;
 }
@@ -1915,17 +1861,9 @@ void epmem_init_db( agent *my_agent )
 		sqlite3_prepare_v2( my_agent->epmem_db, "REPLACE INTO vars (id,value) VALUES (?,?)", -1, &( my_agent->epmem_statements[ EPMEM_STMT_VAR_SET ] ), &tail );
 
 		// mva - read if existing
-		sqlite3_bind_int64( my_agent->epmem_statements[ EPMEM_STMT_VAR_GET ], 1, EPMEM_VAR_MVA_STORE );
+		sqlite3_bind_int64( my_agent->epmem_statements[ EPMEM_STMT_VAR_GET ], 1, EPMEM_VAR_MODE );
 		if ( sqlite3_step( my_agent->epmem_statements[ EPMEM_STMT_VAR_GET ] ) == SQLITE_ROW )
-		{
-			const long long existing_mva_store = sqlite3_column_int64( my_agent->epmem_statements[ EPMEM_STMT_VAR_GET ], 0 );
-			
-			// might need to turn retrieval off
-			if ( existing_mva_store == EPMEM_MVA_STORE_OFF )
-				epmem_set_parameter( my_agent, (const long) EPMEM_PARAM_MVA_RETRIEVE, (const long) EPMEM_MVA_RETRIEVE_OFF );
-
-			epmem_set_parameter( my_agent, (const long) EPMEM_PARAM_MVA_STORE, (const long) existing_mva_store );
-		}
+			epmem_set_parameter( my_agent, (const long) EPMEM_PARAM_MODE, (const long) sqlite3_column_int64( my_agent->epmem_statements[ EPMEM_STMT_VAR_GET ], 0 ) );
 
 		// at this point initialize the database for receipt of episodes
 		epmem_transaction_begin( my_agent );
@@ -2050,13 +1988,13 @@ void epmem_init_db( agent *my_agent )
 			////
 
 			{
-				const long mva_store = epmem_get_parameter( my_agent, (const long) EPMEM_PARAM_MVA_STORE, EPMEM_RETURN_LONG );
-				sqlite3_bind_int64( my_agent->epmem_statements[ EPMEM_STMT_VAR_SET ], 1, EPMEM_VAR_MVA_STORE );
-				sqlite3_bind_int64( my_agent->epmem_statements[ EPMEM_STMT_VAR_SET ], 2, mva_store );
+				const long mode = epmem_get_parameter( my_agent, (const long) EPMEM_PARAM_MODE, EPMEM_RETURN_LONG );
+				sqlite3_bind_int64( my_agent->epmem_statements[ EPMEM_STMT_VAR_SET ], 1, EPMEM_VAR_MODE );
+				sqlite3_bind_int64( my_agent->epmem_statements[ EPMEM_STMT_VAR_SET ], 2, mode );
 				sqlite3_step( my_agent->epmem_statements[ EPMEM_STMT_VAR_SET ] );
 				sqlite3_reset( my_agent->epmem_statements[ EPMEM_STMT_VAR_SET ] );				
 
-				if ( mva_store == EPMEM_MVA_STORE_ON )
+				if ( mode >= EPMEM_MODE_TWO )
 				{
 					// mva table
 					sqlite3_prepare_v2( my_agent->epmem_db, "CREATE TABLE IF NOT EXISTS mva (time INTEGER, mva_id INTEGER, child_id INTEGER, parent_id INTEGER)", -1, &create, &tail );
@@ -2224,11 +2162,11 @@ void epmem_new_episode( agent *my_agent )
 	}
 	
 	const long indexing = epmem_get_parameter( my_agent, EPMEM_PARAM_INDEXING, EPMEM_RETURN_LONG );
-	const long mva_store = epmem_get_parameter( my_agent, EPMEM_PARAM_MVA_STORE, EPMEM_RETURN_LONG );
+	const long mode = epmem_get_parameter( my_agent, EPMEM_PARAM_MODE, EPMEM_RETURN_LONG );
 
 	if ( indexing == EPMEM_INDEXING_RIT )
 	{		
-		if ( mva_store == EPMEM_MVA_STORE_OFF )
+		if ( mode == EPMEM_MODE_ONE )
 		{
 			// for now we are only recording episodes at the top state
 			Symbol *parent_sym;
@@ -2913,11 +2851,11 @@ void epmem_install_memory( agent *my_agent, Symbol *state, epmem_time_id memory_
 	state->id.epmem_info->epmem_wmes->push( new_wme );
 
 	const long indexing = epmem_get_parameter( my_agent, EPMEM_PARAM_INDEXING, EPMEM_RETURN_LONG );
-	const long mva_store = epmem_get_parameter( my_agent, EPMEM_PARAM_MVA_STORE, EPMEM_RETURN_LONG );
+	const long mode = epmem_get_parameter( my_agent, EPMEM_PARAM_MODE, EPMEM_RETURN_LONG );
 	
 	if ( indexing == EPMEM_INDEXING_RIT )
 	{
-		if ( mva_store == EPMEM_MVA_STORE_OFF )
+		if ( mode == EPMEM_MODE_ONE )
 		{		
 			std::map<epmem_node_id, Symbol *> ids;
 			epmem_node_id child_id;

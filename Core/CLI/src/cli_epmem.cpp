@@ -269,24 +269,15 @@ bool CommandLineInterface::DoEpMem( const char pOp, const std::string* pAttr, co
 			AppendArgTagFast( sml_Names::kParamValue, sml_Names::kTypeString, temp.c_str() );
 		}
 		
-		temp = "mva_store: ";
-		temp += epmem_get_parameter( m_pAgentSoar, (const long) EPMEM_PARAM_MVA_STORE, EPMEM_RETURN_STRING );
-		if ( m_RawOutput )
-			m_Result << temp << "\n";
-		else
-		{
-			AppendArgTagFast( sml_Names::kParamValue, sml_Names::kTypeString, temp.c_str() );
-		}
-		
-		temp = "mva_retrieve: ";
-		temp += epmem_get_parameter( m_pAgentSoar, (const long) EPMEM_PARAM_MVA_RETRIEVE, EPMEM_RETURN_STRING );
+		temp = "mode: ";
+		temp += epmem_get_parameter( m_pAgentSoar, (const long) EPMEM_PARAM_MODE, EPMEM_RETURN_STRING );
 		if ( m_RawOutput )
 			m_Result << temp << "\n\n";
 		else
 		{
 			AppendArgTagFast( sml_Names::kParamValue, sml_Names::kTypeString, temp.c_str() );
 			AppendArgTagFast( sml_Names::kParamValue, sml_Names::kTypeString, "" );
-		}
+		}	
 		
 		temp = "Space";
 		if ( m_RawOutput )

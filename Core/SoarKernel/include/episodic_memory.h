@@ -27,20 +27,19 @@ typedef struct wme_struct wme;
 #define EPMEM_RETURN_STRING ""
 
 // parameters
-// - protected are [ DB, MVA_STORE ]
+// - protected are [ DB, MVA_MODE ]
 #define EPMEM_PARAM_LEARNING						0
 #define EPMEM_PARAM_DB								1
 #define EPMEM_PARAM_COMMIT							2
 #define EPMEM_PARAM_PATH							3
 #define EPMEM_PARAM_INDEXING						4
-#define EPMEM_PARAM_MVA_STORE						5
-#define EPMEM_PARAM_MVA_RETRIEVE					6
-#define EPMEM_PARAM_TRIGGER							7
-#define EPMEM_PARAM_FORCE							8
-#define EPMEM_PARAM_BALANCE							9
-#define EPMEM_PARAM_EXCLUSIONS						10
-#define EPMEM_PARAM_TIMERS							11
-#define EPMEM_PARAMS								12 // must be 1+ last epmem param
+#define EPMEM_PARAM_MODE							5
+#define EPMEM_PARAM_TRIGGER							6
+#define EPMEM_PARAM_FORCE							7
+#define EPMEM_PARAM_BALANCE							8
+#define EPMEM_PARAM_EXCLUSIONS						9
+#define EPMEM_PARAM_TIMERS							10
+#define EPMEM_PARAMS								11 // must be 1+ last epmem param
 
 // parameter settings
 #define EPMEM_LEARNING_ON 1
@@ -51,11 +50,9 @@ typedef struct wme_struct wme;
 
 #define EPMEM_INDEXING_RIT 1
 
-#define EPMEM_MVA_STORE_ON 1
-#define EPMEM_MVA_STORE_OFF 2
-
-#define EPMEM_MVA_RETRIEVE_ON 1
-#define EPMEM_MVA_RETRIEVE_OFF 2
+#define EPMEM_MODE_ONE 1   // wme tree
+#define EPMEM_MODE_TWO 2   // wme tree + mva/shared wme on retrieval
+#define EPMEM_MODE_THREE 3 // wme tree + mva/shared wme on retrieval/query
 
 #define EPMEM_TRIGGER_NONE 1
 #define EPMEM_TRIGGER_OUTPUT 2
@@ -142,7 +139,7 @@ typedef struct wme_struct wme;
 #define EPMEM_VAR_RIT_LEFTROOT						EPMEM_STAT_RIT_LEFTROOT
 #define EPMEM_VAR_RIT_RIGHTROOT						EPMEM_STAT_RIT_RIGHTROOT
 #define EPMEM_VAR_RIT_MINSTEP						EPMEM_STAT_RIT_MINSTEP
-#define EPMEM_VAR_MVA_STORE							EPMEM_VAR_RIT_MINSTEP + 1
+#define EPMEM_VAR_MODE								EPMEM_VAR_RIT_MINSTEP + 1
 
 // algorithm constants
 #define EPMEM_MEMID_NONE							-1
@@ -329,15 +326,10 @@ extern bool epmem_validate_indexing( const long new_val );
 extern const char *epmem_convert_indexing( const long val );
 extern const long epmem_convert_indexing( const char *val );
 
-// mva_store
-extern bool epmem_validate_mva_store( const long new_val );
-extern const char *epmem_convert_mva_store( const long val );
-extern const long epmem_convert_mva_store( const char *val );
-
-// mva_retrieve
-extern bool epmem_validate_mva_retrieve( const long new_val );
-extern const char *epmem_convert_mva_retrieve( const long val );
-extern const long epmem_convert_mva_retrieve( const char *val );
+// mode
+extern bool epmem_validate_mode( const long new_val );
+extern const char *epmem_convert_mode( const long val );
+extern const long epmem_convert_mode( const char *val );
 
 // trigger
 extern bool epmem_validate_trigger( const long new_val );
