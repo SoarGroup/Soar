@@ -83,9 +83,17 @@ public class ParticleFilter {
 		
 		// //////////////////////////////////////////////////
 		// propagate odometry
+		particleslcm = new particles_t();
+		particleslcm.nparticles = particles.size();
+		particleslcm.particle = new float[particles.size()][];
+		int i = 0;
 		for (Particle p : particles) {
 			p.xyt = LinAlg.xytMultiply(p.xyt, deltaxyt);
+			particleslcm.particle[i] = new float[] { (float)p.xyt[0], (float)p.xyt[1], (float)p.xyt[2] };
+			++i;
 		}
+		particleslcm.utime = System.nanoTime() / 1000;
+		lcmGG.publish(LCMInfo.PARTICLES_CHANNEL, particleslcm);
 	}
 	
 	public pose_t update(double[] laserxy) {
