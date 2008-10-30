@@ -136,23 +136,32 @@ public class OrcInterface implements LCMSubscriber {
 				// laser
 				double[] adjustedlaserxy = getAdjustedLaserXY();
 
+				boolean doOdometry = true;
+				
 				// calculate pose
 				if (cnf.orc.usePF) {
+					// propagate odometry
+					pf.propagate(deltaxyt);
+					
 					// adjustedlaserxy could be null
-					currentState.pose = pf.update(deltaxyt, adjustedlaserxy);
+					if (adjustedlaserxy != null && shouldUpdatePF()) {
+						currentState.pose = pf.update(adjustedlaserxy);
 
-					double yaw = LinAlg.quatToRollPitchYaw(currentState.pose.orientation)[2];
-					if (logger.isLoggable(Level.FINER)) {
-						logger.finer(String.format("pf: %5.2f %5.2f %5.1f", currentState.pose.pos[0], currentState.pose.pos[1], Math.toDegrees(yaw)));
+						double yaw = LinAlg.quatToRollPitchYaw(currentState.pose.orientation)[2];
+						if (logger.isLoggable(Level.FINER)) {
+							logger.finer(String.format("pf: %5.2f %5.2f %5.1f", currentState.pose.pos[0], currentState.pose.pos[1], Math.toDegrees(yaw)));
+						}
+						
+						doOdometry = false;
 					}
+						
 				} else {
 					currentState.pose = previousState.pose.copy();
-
-					boolean updated = false;
 
 					if (adjustedlaserxy != null) {
 						if (yawCalcXY == null) {
 							yawCalcXY = Arrays.copyOf(adjustedlaserxy, adjustedlaserxy.length);
+							
 						} else if (LinAlg.distance(yawCalcXY, adjustedlaserxy) > cnf.orc.laserThreshold) {
 							currentState.pose.pos[0] = adjustedlaserxy[0];
 							currentState.pose.pos[1] = adjustedlaserxy[1];
@@ -167,11 +176,11 @@ public class OrcInterface implements LCMSubscriber {
 										.toDegrees(rpy[2])));
 							}
 
-							updated = true;
+							doOdometry = false;
 						}
 					}
 
-					if (!updated) {
+					if (doOdometry) {
 						currentState.pose.pos[0] += deltaxyt[0];
 						currentState.pose.pos[1] += deltaxyt[1];
 
@@ -198,6 +207,16 @@ public class OrcInterface implements LCMSubscriber {
 			commandMotors(currentState.utime);
 
 			previousState = currentState;
+		}
+
+		long lastPFUpdate = 0;
+		private boolean shouldUpdatePF() {
+			long current = System.nanoTime();
+			if ((current - lastPFUpdate) > cnf.orc.pfUpdatePeriodNanos) {
+				lastPFUpdate = current;
+				return true;
+			}
+			return false;
 		}
 
 		double[] calculateDeltaXYT(splinterstate_t currentState) {

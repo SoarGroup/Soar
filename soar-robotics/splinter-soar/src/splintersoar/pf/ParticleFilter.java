@@ -74,16 +74,11 @@ public class ParticleFilter {
 		lcmGG.publish(LCMInfo.PARTICLES_CHANNEL, particleslcm);
 	}
 
-	double[] oldlaserxy = { 0, 0 };
-
-	public pose_t update(double[] deltaxyt, double[] laserxy) {
-
+	public void propagate(double[] deltaxyt) {
 		assert deltaxyt != null;
 
 		if (logger.isLoggable(Level.FINE)) {
 			logger.fine(String.format("update, delta xy magnitude: %10.6f", LinAlg.magnitude(new double [] { deltaxyt[0], deltaxyt[1] })));
-			if (laserxy != null) 
-				logger.fine(String.format("laserxy %5.3f %5.3f", laserxy[0], laserxy[1]));
 		}
 		
 		// //////////////////////////////////////////////////
@@ -91,20 +86,19 @@ public class ParticleFilter {
 		for (Particle p : particles) {
 			p.xyt = LinAlg.xytMultiply(p.xyt, deltaxyt);
 		}
+	}
+	
+	public pose_t update(double[] laserxy) {
+		assert laserxy != null;
 
 		// //////////////////////////////////////////////////
 		// use new lidar reading
-		if (laserxy != null) {
-			System.arraycopy(laserxy, 0, oldlaserxy, 0, laserxy.length);
-		}
-
-		// System.out.println( oldlaserxy[0] + " " + oldlaserxy[1]);
 
 		// //////////////////////////////////////////////////
 		// score particles.
 		double totalweight = 0;
 		for (Particle p : particles) {
-			double dist2 = LinAlg.sq(p.xyt[0] - oldlaserxy[0]) + LinAlg.sq(p.xyt[1] - oldlaserxy[1]);
+			double dist2 = LinAlg.sq(p.xyt[0] - laserxy[0]) + LinAlg.sq(p.xyt[1] - laserxy[1]);
 
 			p.weight = Math.exp(-dist2 / 0.05);
 			totalweight += p.weight;

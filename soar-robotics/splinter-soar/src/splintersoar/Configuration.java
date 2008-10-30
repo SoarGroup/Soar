@@ -20,10 +20,13 @@ public class Configuration {
 		public double widthMeters = 0.42;
 		public boolean usePF = true;
 		public double laserThreshold = 0.1;
+		public long pfUpdatePeriodNanos;
 		
 		public double maxThrottleChangePerUpdate; // percent change per update
 
 		public OrcInterface(Config config) {
+			double pfUpdatePeriod = 0.2;
+			
 			if (config != null) {
 				updateHz = config.getInt("orc.updateHz", updateHz);
 				ports = config.getInts("orc.ports", ports);
@@ -35,9 +38,11 @@ public class Configuration {
 				widthMeters = config.getDouble("orc.widthMeters", widthMeters);
 				usePF = config.getBoolean("orc.usePF", usePF);
 				laserThreshold = config.getDouble("orc.laserThreshold", laserThreshold);
+				pfUpdatePeriod = config.getDouble("orc.pfUpdatePeriod", pfUpdatePeriod);
 			}
 			
 			maxThrottleChangePerUpdate = maxThrottleAccelleration / updateHz;
+			pfUpdatePeriodNanos = (long)(1000000000L / pfUpdatePeriod);
 		}
 	}
 	
