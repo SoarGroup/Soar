@@ -37,7 +37,8 @@ public class Viewer implements LCMSubscriber {
 	VisWorld vw = new VisWorld();
 	VisCanvas vc = new VisCanvas(vw);
 
-	LCM lcm;
+	LCM lcmH1;
+	LCM lcmGG;
 	splinterstate_t splinterPose;
 	waypoints_t waypoints;
 	xy_t laserxy;
@@ -47,13 +48,28 @@ public class Viewer implements LCMSubscriber {
 	double [] initialxy;
 
 	public Viewer() {
-		lcm = LCM.getSingleton();
-		lcm.subscribe(LCMInfo.SPLINTER_STATE_CHANNEL, this);
-		lcm.subscribe(LCMInfo.WAYPOINTS_CHANNEL, this);
-		lcm.subscribe(LCMInfo.COORDS_CHANNEL, this);
-		lcm.subscribe(LCMInfo.PARTICLES_CHANNEL, this);
-		lcm.subscribe(LCMInfo.LASER_FRONT_CHANNEL, this);
-		lcm.subscribe(LCMInfo.LASER_LOC_CHANNEL, this);
+		try {
+			lcmH1 = new LCM(LCMInfo.H1_NETWORK);
+
+		} catch (IOException e) {
+			e.printStackTrace();
+			System.exit(1);
+		}
+
+		try {
+			lcmGG = new LCM(LCMInfo.GG_NETWORK);
+
+		} catch (IOException e) {
+			e.printStackTrace();
+			System.exit(1);
+		}
+		
+		lcmGG.subscribe(LCMInfo.SPLINTER_STATE_CHANNEL, this);
+		lcmGG.subscribe(LCMInfo.WAYPOINTS_CHANNEL, this);
+		lcmGG.subscribe(LCMInfo.COORDS_CHANNEL, this);
+		lcmGG.subscribe(LCMInfo.PARTICLES_CHANNEL, this);
+		lcmGG.subscribe(LCMInfo.LASER_FRONT_CHANNEL, this);
+		lcmH1.subscribe(LCMInfo.LASER_LOC_CHANNEL, this);
 
 		jf = new JFrame("RoomMapper");
 		jf.setLayout(new BorderLayout());

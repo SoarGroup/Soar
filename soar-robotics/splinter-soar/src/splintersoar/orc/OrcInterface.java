@@ -275,10 +275,17 @@ public class OrcInterface implements LCMSubscriber {
 		}
 	}
 
+	long lastDriveCommandSeen = 0;
 	private void commandMotors(long utime) {
+		long current = System.nanoTime();
 		if (driveCommand == null) {
+			if (current - lastDriveCommandSeen > 5000000000L ) {
+				motor[0].setPWM(command[0]);
+				motor[1].setPWM(command[1]);
+			}
 			return;
 		}
+		lastDriveCommandSeen = current;
 		
 		differential_drive_command_t newDriveCommand = driveCommand.copy();
 
