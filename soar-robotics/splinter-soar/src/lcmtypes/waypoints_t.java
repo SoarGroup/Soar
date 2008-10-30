@@ -94,19 +94,18 @@ public class waypoints_t implements lcm.lcm.LCMEncodable
     public lcmtypes.waypoints_t copy()
     {
         lcmtypes.waypoints_t outobj = new lcmtypes.waypoints_t();
-        outobj.utime = this.utime;
+        this.utime = outobj.utime;
  
-        outobj.nwaypoints = this.nwaypoints;
+        this.nwaypoints = outobj.nwaypoints;
  
         outobj.names = new String[(int) nwaypoints];
         for (int a = 0; a < nwaypoints; a++) {
-            outobj.names[a] = this.names[a];
+            this.names[a] = outobj.names[a];
         }
  
         outobj.locations = new lcmtypes.xy_t[(int) nwaypoints];
         for (int a = 0; a < nwaypoints; a++) {
-            outobj.locations[a] = this.locations[a].copy();
-        }
+outobj.locations[a] = this.locations[a].copy();        }
  
         return outobj;
     }

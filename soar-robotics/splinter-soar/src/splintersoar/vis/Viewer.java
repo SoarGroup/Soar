@@ -100,8 +100,9 @@ public class Viewer implements LCMSubscriber {
 			if (particles != null) {
 				particles_t p;
 				p = particles;
-				for (double[] pxyt : p.particle) {
-					vb.addBuffered(new VisChain(LinAlg.xytToMatrix(pxyt), vd));
+				for (float[] pxyt : p.particle) {
+					double [] dpxyt = new double [] { pxyt[0], pxyt[1], pxyt[2] };
+					vb.addBuffered(new VisChain(LinAlg.xytToMatrix(dpxyt), vd));
 				}
 			}
 

@@ -7,14 +7,14 @@ public class particles_t implements lcm.lcm.LCMEncodable
 {
     public long utime;
     public int nparticles;
-    public double particle[][];
+    public float particle[][];
  
     public particles_t()
     {
     }
  
     public static final long LCM_FINGERPRINT;
-    public static final long LCM_FINGERPRINT_BASE = 0x82c1c7b491ef5a37L;
+    public static final long LCM_FINGERPRINT_BASE = 0x3d85410decab35baL;
  
     static {
         LCM_FINGERPRINT = _hashRecursive(new ArrayList<Class>());
@@ -47,7 +47,7 @@ public class particles_t implements lcm.lcm.LCMEncodable
  
         for (int a = 0; a < nparticles; a++) {
             for (int b = 0; b < 3; b++) {
-                outs.writeDouble(this.particle[a][b]); 
+                outs.writeFloat(this.particle[a][b]); 
             }
             }
  
@@ -75,10 +75,10 @@ public class particles_t implements lcm.lcm.LCMEncodable
  
         this.nparticles = ins.readInt();
  
-        this.particle = new double[(int) nparticles][(int) 3];
+        this.particle = new float[(int) nparticles][(int) 3];
         for (int a = 0; a < nparticles; a++) {
             for (int b = 0; b < 3; b++) {
-                this.particle[a][b] = ins.readDouble();
+                this.particle[a][b] = ins.readFloat();
             }
             }
  
@@ -87,14 +87,14 @@ public class particles_t implements lcm.lcm.LCMEncodable
     public lcmtypes.particles_t copy()
     {
         lcmtypes.particles_t outobj = new lcmtypes.particles_t();
-        outobj.utime = this.utime;
+        this.utime = outobj.utime;
  
-        outobj.nparticles = this.nparticles;
+        this.nparticles = outobj.nparticles;
  
-        outobj.particle = new double[(int) nparticles][(int) 3];
+        outobj.particle = new float[(int) nparticles][(int) 3];
         for (int a = 0; a < nparticles; a++) {
             for (int b = 0; b < 3; b++) {
-                outobj.particle[a][b] = this.particle[a][b];
+                this.particle[a][b] = outobj.particle[a][b];
             }
             }
  
