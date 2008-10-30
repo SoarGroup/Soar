@@ -158,12 +158,22 @@ public class SplinterSoar {
 					newCommand.right /= max;
 				}
 			}
-			if ((newCommand.left != overrideCommand.left) || (newCommand.right != overrideCommand.right)) {
+			if (shouldTransmitDrive() || (newCommand.left != overrideCommand.left) || (newCommand.right != overrideCommand.right)) {
 				overrideCommand = newCommand;
 				overrideCommand.utime = System.nanoTime() / 1000;
 				lcmL1.publish(LCMInfo.DRIVE_COMMANDS_CHANNEL, overrideCommand);
 			}
 		}
+	}
+
+	long lastDriveTransmission = 0;
+	private boolean shouldTransmitDrive() {
+		long current = System.nanoTime();
+		if ((current - lastDriveTransmission) > cnf.orc.updateHz) {
+			lastDriveTransmission = current;
+			return true;
+		}
+		return false;
 	}
 
 	boolean startStopButton = false;

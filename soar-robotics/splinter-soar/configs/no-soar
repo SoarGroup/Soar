@@ -1,0 +1,10 @@
+llocDisabled = true;
+orcDisabled = false;
+soarDisabled = true;
+rangerDisabled = false;
+gamepadDisabled = false;
+
+orc {
+	usePF = true;
+	pfUpdatePeriod = 10;
+}

@@ -49,7 +49,7 @@ public class LaserLoc extends Thread implements LCMSubscriber {
 	public LaserLoc(Configuration cnf) {
 		this.cnf = cnf;
 
-		logger = LogFactory.createSimpleLogger("LaserLoc", Level.ALL);
+		logger = LogFactory.createSimpleLogger("LaserLoc", Level.INFO);
 		
 		try {
 			logger.info(String.format("Using %s for %s provider URL.", LCMInfo.H1_NETWORK, LCMInfo.LASER_LOC_CHANNEL));

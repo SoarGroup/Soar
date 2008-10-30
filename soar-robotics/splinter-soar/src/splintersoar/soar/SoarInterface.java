@@ -149,6 +149,17 @@ public class SoarInterface implements Kernel.UpdateEventInterface, Kernel.AgentE
 		updateState();
 	}
 
+	long lastDriveTransmission = 0;
+	private boolean shouldTransmitDrive() {
+		long current = System.nanoTime();
+		if ((current - lastDriveTransmission) > cnf.orc.updateHz) {
+			lastDriveTransmission = current;
+			return true;
+		}
+		return false;
+	}
+
+	SplinterInput lastSplinterInput;
 	public void updateState() {
 		try {
 			RangerState rangerState = rangerStateProducer.getRangerState();
@@ -159,7 +170,10 @@ public class SoarInterface implements Kernel.UpdateEventInterface, Kernel.AgentE
 			SplinterInput splinterInput = output.update(ss);
 
 			if (splinterInput != null && !overrideEnabled) {
+				lastSplinterInput = splinterInput;
 				lcmL1.publish(LCMInfo.DRIVE_COMMANDS_CHANNEL, splinterInput.generateDriveCommand(ss));
+			} else if (lastSplinterInput != null && shouldTransmitDrive()) {
+				lcmL1.publish(LCMInfo.DRIVE_COMMANDS_CHANNEL, lastSplinterInput.generateDriveCommand(ss));
 			}
 
 			waypoints.update(); // updates input link due to output link
