@@ -279,6 +279,8 @@ public class OrcInterface implements LCMSubscriber {
 		}
 		
 		differential_drive_command_t newDriveCommand = driveCommand.copy();
+		System.out.println("drive command orig " + driveCommand.left + "," + driveCommand.right);
+		System.out.println("drive command copy " + newDriveCommand.left + "," + newDriveCommand.right);
 
 		if (logger.isLoggable(Level.FINEST))
 			logger.finest(String.format("Got input %f %f", newDriveCommand.left, newDriveCommand.right));

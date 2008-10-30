@@ -79,11 +79,11 @@ public class xy_t implements lcm.lcm.LCMEncodable
     public lcmtypes.xy_t copy()
     {
         lcmtypes.xy_t outobj = new lcmtypes.xy_t();
-        this.utime = outobj.utime;
+        outobj.utime = this.utime;
  
         outobj.xy = new double[(int) 2];
         for (int a = 0; a < 2; a++) {
-            this.xy[a] = outobj.xy[a];
+            outobj.xy[a] = this.xy[a];
         }
  
         return outobj;

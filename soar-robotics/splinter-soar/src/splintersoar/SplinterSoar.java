@@ -1,6 +1,7 @@
 package splintersoar;
 
 import java.io.IOException;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import lcm.lcm.LCM;
@@ -48,7 +49,7 @@ public class SplinterSoar {
 			cnf = new Configuration(config);
 		}
 		
-		logger = LogFactory.createSimpleLogger("SplinterSoar", cnf.loglevel);
+		logger = LogFactory.createSimpleLogger("SplinterSoar", Level.INFO);
 		cnf.dumpWarnings(logger);
 		
 		if (cnf.everythingDisabled()) {
@@ -130,6 +131,8 @@ public class SplinterSoar {
 				overrideCommand.left = 0;
 				overrideCommand.right = 0;
 				overrideCommand.utime = System.nanoTime() / 1000;
+				if (logger.isLoggable(Level.FINEST))
+					logger.finest(String.format("Sending override %f %f", overrideCommand.left, overrideCommand.right));
 				lcmL1.publish(LCMInfo.DRIVE_COMMANDS_CHANNEL, overrideCommand);
 			}
 
@@ -161,6 +164,8 @@ public class SplinterSoar {
 			if (shouldTransmitDrive() || (newCommand.left != overrideCommand.left) || (newCommand.right != overrideCommand.right)) {
 				overrideCommand = newCommand;
 				overrideCommand.utime = System.nanoTime() / 1000;
+				if (logger.isLoggable(Level.FINEST))
+					logger.finest(String.format("Sending override %f %f", overrideCommand.left, overrideCommand.right));
 				lcmL1.publish(LCMInfo.DRIVE_COMMANDS_CHANNEL, overrideCommand);
 			}
 		}
@@ -171,8 +176,12 @@ public class SplinterSoar {
 		long current = System.nanoTime();
 		if ((current - lastDriveTransmission) > cnf.orc.updateHz) {
 			lastDriveTransmission = current;
+			if (logger.isLoggable(Level.FINEST))
+				logger.finest(String.format("Should transmit returning true."));
 			return true;
 		}
+		if (logger.isLoggable(Level.FINEST))
+			logger.finest(String.format("Should transmit returning false."));
 		return false;
 	}
 

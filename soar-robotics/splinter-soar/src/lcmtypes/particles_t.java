@@ -87,14 +87,14 @@ public class particles_t implements lcm.lcm.LCMEncodable
     public lcmtypes.particles_t copy()
     {
         lcmtypes.particles_t outobj = new lcmtypes.particles_t();
-        this.utime = outobj.utime;
+        outobj.utime = this.utime;
  
-        this.nparticles = outobj.nparticles;
+        outobj.nparticles = this.nparticles;
  
         outobj.particle = new float[(int) nparticles][(int) 3];
         for (int a = 0; a < nparticles; a++) {
             for (int b = 0; b < 3; b++) {
-                this.particle[a][b] = outobj.particle[a][b];
+                outobj.particle[a][b] = this.particle[a][b];
             }
             }
  

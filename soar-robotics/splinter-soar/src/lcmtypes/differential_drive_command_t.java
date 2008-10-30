@@ -88,15 +88,15 @@ public class differential_drive_command_t implements lcm.lcm.LCMEncodable
     public lcmtypes.differential_drive_command_t copy()
     {
         lcmtypes.differential_drive_command_t outobj = new lcmtypes.differential_drive_command_t();
-        this.utime = outobj.utime;
+        outobj.utime = this.utime;
  
-        this.left = outobj.left;
+        outobj.left = this.left;
  
-        this.left_enabled = outobj.left_enabled;
+        outobj.left_enabled = this.left_enabled;
  
-        this.right = outobj.right;
+        outobj.right = this.right;
  
-        this.right_enabled = outobj.right_enabled;
+        outobj.right_enabled = this.right_enabled;
  
         return outobj;
     }

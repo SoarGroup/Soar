@@ -104,19 +104,19 @@ public class splinterstate_t implements lcm.lcm.LCMEncodable
     public lcmtypes.splinterstate_t copy()
     {
         lcmtypes.splinterstate_t outobj = new lcmtypes.splinterstate_t();
-        this.utime = outobj.utime;
+        outobj.utime = this.utime;
  
-        this.baselinemeters = outobj.baselinemeters;
+        outobj.baselinemeters = this.baselinemeters;
  
-        this.tickmeters = outobj.tickmeters;
+        outobj.tickmeters = this.tickmeters;
  
-        this.widthmeters = outobj.widthmeters;
+        outobj.widthmeters = this.widthmeters;
  
-        this.heightmeters = outobj.heightmeters;
+        outobj.heightmeters = this.heightmeters;
  
-        this.leftodom = outobj.leftodom;
+        outobj.leftodom = this.leftodom;
  
-        this.rightodom = outobj.rightodom;
+        outobj.rightodom = this.rightodom;
  
 outobj.pose = this.pose.copy(); 
         return outobj;
