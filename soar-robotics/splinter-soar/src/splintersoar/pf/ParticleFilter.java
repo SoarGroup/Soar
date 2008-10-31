@@ -180,7 +180,7 @@ public class ParticleFilter {
 		}
 
 		// standing population
-		for (int i = 0; i < cnf.pf.standingPopulation; i++) {
+		for (int i = cnf.pf.numParticles - cnf.pf.standingPopulation; i < cnf.pf.numParticles; i++) {
 			Particle p = new Particle();
 			p.xyt = new double[] { (1 - 2 * rand.nextFloat()) * 5, (1 - 2 * rand.nextFloat()) * 5, 2 * rand.nextFloat() * Math.PI };
 			newParticles.add(p);
