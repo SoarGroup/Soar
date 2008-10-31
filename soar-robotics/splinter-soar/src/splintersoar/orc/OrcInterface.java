@@ -181,22 +181,22 @@ public class OrcInterface implements LCMSubscriber {
 							doOdometry = false;
 						}
 					}
-
-					if (doOdometry) {
-						currentState.pose.pos[0] += deltaxyt[0];
-						currentState.pose.pos[1] += deltaxyt[1];
-
-						double[] rpy = LinAlg.quatToRollPitchYaw(previousState.pose.orientation);
-						rpy[2] += deltaxyt[2];
-						rpy[2] = MathUtil.mod2pi(rpy[2]);
-						currentState.pose.orientation = LinAlg.rollPitchYawToQuat(rpy);
-
-						if (logger.isLoggable(Level.FINER)) {
-							logger.finer(String.format(" odom: %5.2f %5.2f %5.1f", currentState.pose.pos[0], currentState.pose.pos[1], Math.toDegrees(rpy[2])));
-						}
-					}
-
 				}
+
+				if (doOdometry) {
+					currentState.pose.pos[0] += deltaxyt[0];
+					currentState.pose.pos[1] += deltaxyt[1];
+
+					double[] rpy = LinAlg.quatToRollPitchYaw(previousState.pose.orientation);
+					rpy[2] += deltaxyt[2];
+					rpy[2] = MathUtil.mod2pi(rpy[2]);
+					currentState.pose.orientation = LinAlg.rollPitchYawToQuat(rpy);
+
+					if (logger.isLoggable(Level.FINER)) {
+						logger.finer(String.format(" odom: %5.2f %5.2f %5.1f", currentState.pose.pos[0], currentState.pose.pos[1], Math.toDegrees(rpy[2])));
+					}
+				}
+
 			} else {
 				currentState.pose = previousState.pose.copy();
 			}
