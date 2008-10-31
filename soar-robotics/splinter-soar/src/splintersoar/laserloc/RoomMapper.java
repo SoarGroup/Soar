@@ -29,7 +29,7 @@ import lcmtypes.laser_t;
  */
 public class RoomMapper implements LCMSubscriber {
 
-	LCM lcm;
+	LCM lcmH1;
 	laser_t laserData;
 	float[] ranges;
 	float radstep;
@@ -37,8 +37,14 @@ public class RoomMapper implements LCMSubscriber {
 	JFrame jf;
 
 	public RoomMapper(boolean display) {
-		lcm = LCM.getSingleton();
-		lcm.subscribe(LCMInfo.LASER_LOC_CHANNEL, this);
+		try {
+			lcmH1 = new LCM(LCMInfo.H1_NETWORK);
+
+		} catch (IOException e) {
+			e.printStackTrace();
+			System.exit(1);
+		}
+		lcmH1.subscribe(LCMInfo.LASER_LOC_CHANNEL, this);
 
 		int readings = 75 * 5; // 5 seconds at 75 Hz
 		while (readings-- > 0) {
