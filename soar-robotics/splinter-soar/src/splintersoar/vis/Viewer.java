@@ -175,17 +175,20 @@ public class Viewer implements LCMSubscriber {
 				vb.addBuffered(points);
 			}
 
+			if (roomPoints != null)
+				vb.addBuffered(roomPoints);
 			vb.switchBuffer();
 		}
 	}
 	
+	VisData roomPoints;
 	void makePoints(VisWorld.Buffer vb) {
 		try {
 			Config mapConfig = new ConfigFile("map.txt").getConfig();
 			double [] maxRanges = mapConfig.getDoubles("map");
 
-			VisData points = new VisData();
-			points.add(new VisDataLineStyle(Color.black, 2, true));
+			roomPoints = new VisData();
+			roomPoints.add(new VisDataLineStyle(Color.black, 2, true));
 
 			for (int i = 0; i < maxRanges.length; i++) {
 				if (maxRanges[i] > 50)
@@ -196,10 +199,9 @@ public class Viewer implements LCMSubscriber {
 				if (initialxy != null) {
 					LinAlg.subtract(xy, initialxy, xy);
 				}
-				points.add(xy);
+				roomPoints.add(xy);
 			}
 
-			vb.addBuffered(points);
 		} catch (IOException e) {
 		}
 

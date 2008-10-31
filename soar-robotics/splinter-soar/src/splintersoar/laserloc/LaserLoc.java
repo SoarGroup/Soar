@@ -95,7 +95,7 @@ public class LaserLoc extends Thread implements LCMSubscriber {
 		if (nanoelapsed > cnf.lloc.updatePeriodNanos) {
 			if (droppedLocPackets > 0) {
 				double dropRate = (double) droppedLocPackets / (nanoelapsed / 1000000000.0);
-				logger.warning(String.format("LaserLoc: dropping %5.1f packets/sec", dropRate));
+				logger.fine(String.format("LaserLoc: dropping %5.1f packets/sec", dropRate));
 			}
 
 			droppedLocPackets = 0;
@@ -162,6 +162,9 @@ public class LaserLoc extends Thread implements LCMSubscriber {
 			}
 		}
 
+		if (logger.isLoggable(Level.FINEST)) {
+			logger.finest(String.format("picked index %d range %4.2f under maxRange %4.2f", smallestRangeIndex, smallestRange, cnf.lloc.maxRanges[smallestRangeIndex]));
+		}
 		if (smallestRangeIndex == -1)
 		{
 			logger.warning("did not find smallest range (is there nothing in view?");

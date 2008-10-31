@@ -82,13 +82,9 @@ public class ParticleFilter {
 		lcmGG.publish(LCMInfo.PARTICLES_CHANNEL, particleslcm);
 	}
 
-	public void propagate(double[] deltaxyt) {
-		assert deltaxyt != null;
+	public void propagate(double[] deltast) {
+		assert deltast != null;
 
-		if (logger.isLoggable(Level.FINE)) {
-			logger.fine(String.format("update, delta xy magnitude: %10.6f", LinAlg.magnitude(new double [] { deltaxyt[0], deltaxyt[1] })));
-		}
-		
 		// //////////////////////////////////////////////////
 		// propagate odometry
 		particleslcm = new particles_t();
@@ -96,7 +92,11 @@ public class ParticleFilter {
 		particleslcm.particle = new float[particles.size()][];
 		int i = 0;
 		for (Particle p : particles) {
-			p.xyt = LinAlg.xytMultiply(p.xyt, deltaxyt);
+			p.xyt[0] += deltast[0] * Math.cos(p.xyt[2]);
+			p.xyt[1] += deltast[0] * Math.sin(p.xyt[2]);
+			p.xyt[2] += deltast[1];
+			p.xyt[2] = MathUtil.mod2pi(p.xyt[2]);
+			
 			particleslcm.particle[i] = new float[] { (float)p.xyt[0], (float)p.xyt[1], (float)p.xyt[2] };
 			++i;
 		}

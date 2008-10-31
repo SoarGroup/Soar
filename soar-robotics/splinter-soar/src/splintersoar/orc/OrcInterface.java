@@ -131,7 +131,7 @@ public class OrcInterface implements LCMSubscriber {
 			// update pose
 			if (moving) {
 				// odometry
-				double[] deltaxyt = calculateDeltaXYT(currentState);
+				double[] deltast = calculateDeltaST(currentState);
 
 				// laser
 				double[] adjustedlaserxy = getAdjustedLaserXY();
@@ -141,7 +141,7 @@ public class OrcInterface implements LCMSubscriber {
 				// calculate pose
 				if (cnf.orc.usePF) {
 					// propagate odometry
-					pf.propagate(deltaxyt);
+					pf.propagate(deltast);
 					
 					// adjustedlaserxy could be null
 					if (adjustedlaserxy != null && shouldUpdatePF()) {
@@ -186,16 +186,17 @@ public class OrcInterface implements LCMSubscriber {
 				}
 
 				if (doOdometry) {
-					currentState.pose.pos[0] += deltaxyt[0];
-					currentState.pose.pos[1] += deltaxyt[1];
+					double theta = LinAlg.quatToRollPitchYaw(previousState.pose.orientation)[2];
 
-					double[] rpy = LinAlg.quatToRollPitchYaw(previousState.pose.orientation);
-					rpy[2] += deltaxyt[2];
-					rpy[2] = MathUtil.mod2pi(rpy[2]);
-					currentState.pose.orientation = LinAlg.rollPitchYawToQuat(rpy);
+					currentState.pose.pos[0] += deltast[0] * Math.cos(theta);
+					currentState.pose.pos[1] += deltast[0] * Math.sin(theta);
+
+					theta += deltast[1];
+					theta = MathUtil.mod2pi(theta);
+					currentState.pose.orientation = LinAlg.rollPitchYawToQuat(new double[] { 0, 0, theta } );
 
 					if (logger.isLoggable(Level.FINER)) {
-						logger.finer(String.format(" odom: %5.2f %5.2f %5.1f", currentState.pose.pos[0], currentState.pose.pos[1], Math.toDegrees(rpy[2])));
+						logger.finer(String.format(" odom: %5.2f %5.2f %5.1f", currentState.pose.pos[0], currentState.pose.pos[1], Math.toDegrees(theta)));
 					}
 				}
 
@@ -223,18 +224,13 @@ public class OrcInterface implements LCMSubscriber {
 			return false;
 		}
 
-		double[] calculateDeltaXYT(splinterstate_t currentState) {
+		double[] calculateDeltaST(splinterstate_t currentState) {
 			double dleft = (currentState.leftodom - previousState.leftodom) * cnf.orc.tickMeters;
 			double dright = (currentState.rightodom - previousState.rightodom) * cnf.orc.tickMeters;
 			double phi = (dright - dleft) / cnf.orc.baselineMeters;
-			double dcenter = (dleft + dright) / 2;
-
 			phi = MathUtil.mod2pi(phi);
-
-			double theta = LinAlg.quatToRollPitchYaw(previousState.pose.orientation)[2];
-			theta = MathUtil.mod2pi(theta);
-
-			return new double[] { dcenter * Math.cos(theta), dcenter * Math.sin(theta), phi };
+			double dcenter = (dleft + dright) / 2;
+			return new double[] { dcenter, phi };
 		}
 
 		double[] getAdjustedLaserXY() {
