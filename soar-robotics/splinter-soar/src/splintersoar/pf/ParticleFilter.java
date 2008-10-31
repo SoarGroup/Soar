@@ -161,7 +161,7 @@ public class ParticleFilter {
 				continue;
 
 			Particle np = new Particle();
-			np.xyt = new double[] { p.xyt[0] + rand.nextGaussian() * 0.05, p.xyt[1] + rand.nextGaussian() * 0.05, p.xyt[2] + rand.nextGaussian() * 0.01 };
+			np.xyt = new double[] { p.xyt[0] + rand.nextGaussian() * 0.05, p.xyt[1] + rand.nextGaussian() * 0.05, p.xyt[2] + rand.nextGaussian() * Math.PI / 4 };
 			newParticles.add(np);
 
 			particleslcm.particle[i] = new float[] { (float)np.xyt[0], (float)np.xyt[1], (float)np.xyt[2] };
