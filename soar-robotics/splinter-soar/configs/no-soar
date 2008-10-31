@@ -6,14 +6,14 @@ gamepadDisabled = false;
 
 orc {
 	usePF = true;
-	pfUpdatePeriod = 2;
+	pfUpdatePeriod = 0.2;
 	laserThreshold = 0.2;
 }
 
 pf {
 	numParticles = 100;
 	useRandomInitialTheta = true;
-	xySigma = 0.1;
+	xySigma = 0.05;
 	thetaSigma = 0.2;
 	standingPopulation = 5;
 }
