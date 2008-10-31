@@ -173,6 +173,8 @@ public class OrcInterface implements LCMSubscriber {
 							rpy[2] = MathUtil.mod2pi(rpy[2]);
 							currentState.pose.orientation = LinAlg.rollPitchYawToQuat(rpy);
 
+							yawCalcXY = Arrays.copyOf(adjustedlaserxy, adjustedlaserxy.length);
+
 							if (logger.isLoggable(Level.FINER)) {
 								logger.finer(String.format("laser: %5.2f %5.2f %5.1f", currentState.pose.pos[0], currentState.pose.pos[1], Math
 										.toDegrees(rpy[2])));

@@ -5,14 +5,15 @@ rangerDisabled = false;
 gamepadDisabled = false;
 
 orc {
-	usePF = false;
-	pfUpdatePeriod = 10;
+	usePF = true;
+	pfUpdatePeriod = 2;
+	laserThreshold = 0.2;
 }
 
 pf {
 	numParticles = 100;
 	useRandomInitialTheta = true;
-	xySigma = 0.5;
-	thetaSigma = 0.1; # Math.PI / 8;
+	xySigma = 0.1;
+	thetaSigma = 0.2;
 	standingPopulation = 5;
 }

@@ -42,7 +42,7 @@ public class Configuration {
 			}
 			
 			maxThrottleChangePerUpdate = maxThrottleAccelleration / updateHz;
-			pfUpdatePeriodNanos = (long)(1000000000L / pfUpdatePeriod);
+			pfUpdatePeriodNanos = (long)(1000000000L * pfUpdatePeriod);
 		}
 	}
 	

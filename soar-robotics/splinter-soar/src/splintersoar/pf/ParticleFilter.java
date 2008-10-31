@@ -116,7 +116,7 @@ public class ParticleFilter {
 		for (Particle p : particles) {
 			double dist2 = LinAlg.sq(p.xyt[0] - laserxy[0]) + LinAlg.sq(p.xyt[1] - laserxy[1]);
 
-			p.weight = Math.exp(-dist2 / 0.05);
+			p.weight = Math.exp(-dist2 / cnf.pf.xySigma);
 			totalweight += p.weight;
 		}
 
