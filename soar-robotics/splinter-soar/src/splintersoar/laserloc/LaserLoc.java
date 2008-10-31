@@ -153,8 +153,7 @@ public class LaserLoc extends Thread implements LCMSubscriber {
 		
 		double smallestRange = Double.MAX_VALUE;
 		int smallestRangeIndex = -1;
-		// throwing out high/low ranges
-		for (int index = 1; index < nranges-2; ++index) {
+		for (int index = 0; index < nranges; ++index) {
 			if (ld.ranges[index] < cnf.lloc.maxRanges[index]) {
 				if (ld.ranges[index] < smallestRange) {
 					smallestRange = ld.ranges[index];

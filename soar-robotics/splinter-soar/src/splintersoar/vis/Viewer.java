@@ -8,6 +8,9 @@ import java.util.Arrays;
 
 import javax.swing.JFrame;
 
+import april.config.Config;
+import april.config.ConfigFile;
+
 import jmat.LinAlg;
 
 import splintersoar.LCMInfo;
@@ -70,8 +73,8 @@ public class Viewer implements LCMSubscriber {
 		lcmGG.subscribe(LCMInfo.PARTICLES_CHANNEL, this);
 		lcmGG.subscribe(LCMInfo.LASER_FRONT_CHANNEL, this);
 		lcmH1.subscribe(LCMInfo.LASER_LOC_CHANNEL, this);
-
-		jf = new JFrame("RoomMapper");
+		
+		jf = new JFrame("Viewer");
 		jf.setLayout(new BorderLayout());
 		jf.add(vc, BorderLayout.CENTER);
 		jf.setSize(600, 500);
@@ -83,6 +86,8 @@ public class Viewer implements LCMSubscriber {
 		vc.setDrawGrid(true);
 		vc.setDrawGround(true);
 
+		makePoints(vb);
+		
 		while (true) {
 			splinterstate_t sp = null;
 			if (splinterPose != null) {
@@ -96,6 +101,7 @@ public class Viewer implements LCMSubscriber {
 
 				if (initialxy == null /*&& sp != null*/) {
 					initialxy = new double [] { xy.xy[0], xy.xy[1] };
+					makePoints(vb);
 				}
 
 				if (initialxy != null) {
@@ -171,6 +177,32 @@ public class Viewer implements LCMSubscriber {
 
 			vb.switchBuffer();
 		}
+	}
+	
+	void makePoints(VisWorld.Buffer vb) {
+		try {
+			Config mapConfig = new ConfigFile("map.txt").getConfig();
+			double [] maxRanges = mapConfig.getDoubles("map");
+
+			VisData points = new VisData();
+			points.add(new VisDataLineStyle(Color.black, 2, true));
+
+			for (int i = 0; i < maxRanges.length; i++) {
+				if (maxRanges[i] > 50)
+					continue;
+
+				double theta = -(Math.PI / 2) + i * (Math.PI / 180);
+				double [] xy = new double [] { maxRanges[i] * Math.cos(theta), maxRanges[i] * Math.sin(theta) };
+				if (initialxy != null) {
+					LinAlg.subtract(xy, initialxy, xy);
+				}
+				points.add(xy);
+			}
+
+			vb.addBuffered(points);
+		} catch (IOException e) {
+		}
+
 	}
 
 	@Override

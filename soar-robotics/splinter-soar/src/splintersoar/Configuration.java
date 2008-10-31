@@ -86,7 +86,7 @@ public class Configuration {
 
 			try {
 				Config mapConfig = new ConfigFile(mapFile).getConfig();
-				maxRanges = mapConfig.getDoubles("lloc.map");
+				maxRanges = mapConfig.getDoubles("map");
 			} catch (IOException e) {
 			}
 
