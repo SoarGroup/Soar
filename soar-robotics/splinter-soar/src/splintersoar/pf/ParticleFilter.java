@@ -8,6 +8,7 @@ import java.util.logging.Logger;
 import jmat.LinAlg;
 import jmat.MathUtil;
 
+import splintersoar.Configuration;
 import splintersoar.LCMInfo;
 import splintersoar.LogFactory;
 import lcmtypes.particles_t;
@@ -33,8 +34,11 @@ public class ParticleFilter {
 	LCM lcmGG;
 	
 	Logger logger;
+	Configuration cnf;
 
-	public ParticleFilter() {
+	public ParticleFilter(Configuration cnf) {
+		this.cnf = cnf;
+		
 		logger = LogFactory.createSimpleLogger("ParticleFilter", Level.FINER);
 
 		try {
@@ -51,7 +55,7 @@ public class ParticleFilter {
 	}
 
 	void init() {
-		final int size = 100;
+		final int size = cnf.pf.numParticles;
 		logger.info(String.format("Initialzing %d particles", size));
 
 		particleslcm = new particles_t();
@@ -60,7 +64,11 @@ public class ParticleFilter {
 
 		for (int i = 0; i < 100; i++) {
 			Particle p = new Particle();
-			p.xyt = new double[] { (1 - 2 * rand.nextFloat()) * 5, (1 - 2 * rand.nextFloat()) * 5, 2 * rand.nextFloat() * Math.PI };
+			double initialTheta = 0;
+			if (cnf.pf.useRandomInitialTheta) {
+				initialTheta = 2 * rand.nextFloat() * Math.PI;
+			}
+			p.xyt = new double[] { (1 - 2 * rand.nextFloat()) * 5, (1 - 2 * rand.nextFloat()) * 5, initialTheta };
 			particles.add(p);
 
 			particleslcm.particle[i] = new float[] { (float)p.xyt[0], (float)p.xyt[1], (float)p.xyt[2] };
@@ -146,8 +154,7 @@ public class ParticleFilter {
 		particleslcm.nparticles = particles.size();
 		particleslcm.particle = new float[particles.size()][];
 
-		final int standingPopulation = 5;
-		for (int i = 0; i < particles.size() - standingPopulation; i++) {
+		for (int i = 0; i < particles.size() - cnf.pf.standingPopulation; i++) {
 			double tw = rand.nextFloat();
 			Particle p = null;
 			for (int j = 0; j < particles.size(); j++) {
@@ -162,7 +169,7 @@ public class ParticleFilter {
 				continue;
 
 			Particle np = new Particle();
-			np.xyt = new double[] { p.xyt[0] + rand.nextGaussian() * 0.05, p.xyt[1] + rand.nextGaussian() * 0.05, p.xyt[2] + rand.nextGaussian() * Math.PI / 4 };
+			np.xyt = new double[] { p.xyt[0] + rand.nextGaussian() * cnf.pf.xySigma, p.xyt[1] + rand.nextGaussian() * cnf.pf.xySigma, p.xyt[2] + rand.nextGaussian() * cnf.pf.thetaSigma };
 			newParticles.add(np);
 
 			particleslcm.particle[i] = new float[] { (float)np.xyt[0], (float)np.xyt[1], (float)np.xyt[2] };
@@ -173,7 +180,7 @@ public class ParticleFilter {
 		}
 
 		// standing population
-		for (int i = 0; i < standingPopulation; i++) {
+		for (int i = 0; i < cnf.pf.standingPopulation; i++) {
 			Particle p = new Particle();
 			p.xyt = new double[] { (1 - 2 * rand.nextFloat()) * 5, (1 - 2 * rand.nextFloat()) * 5, 2 * rand.nextFloat() * Math.PI };
 			newParticles.add(p);

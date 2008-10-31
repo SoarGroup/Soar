@@ -107,7 +107,7 @@ public class OrcInterface implements LCMSubscriber {
 		
 		UpdateTask() {
 			if (cnf.orc.usePF) {
-				 pf = new ParticleFilter();
+				 pf = new ParticleFilter(cnf);
 			}
 		}
 

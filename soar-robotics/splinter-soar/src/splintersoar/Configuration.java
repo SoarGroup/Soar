@@ -46,6 +46,24 @@ public class Configuration {
 		}
 	}
 	
+	public class ParticleFilter {
+		public int numParticles = 100;
+		public boolean useRandomInitialTheta = true;
+		public double xySigma = 0.05;
+		public double thetaSigma = Math.PI / 4;
+		public int standingPopulation = 5;
+		
+		public ParticleFilter(Config config) {
+			if (config != null) {
+				numParticles = config.getInt("pf.numParticles", numParticles);
+				useRandomInitialTheta = config.getBoolean("pf.useRandomInitialYaw", useRandomInitialTheta);
+				xySigma = config.getDouble("pf.xySigma", xySigma);
+				thetaSigma = config.getDouble("pf.thetaSigma", thetaSigma);
+				standingPopulation = config.getInt("pf.standingPopulation", standingPopulation);
+			}
+		}
+	}
+	
 	public class LaserLoc {
 		public double [] laserxyt = { 0, 0, 0 }; // laser location
 		public double tubeRadius = 0; 
@@ -89,6 +107,7 @@ public class Configuration {
 
 	
 	public OrcInterface orc;
+	public ParticleFilter pf;
 	public LaserLoc lloc;
 	public SoarInterface soar;
 	
@@ -111,6 +130,7 @@ public class Configuration {
 		}
 		
 		orc = new OrcInterface(config);
+		pf = new ParticleFilter(config);
 		lloc = new LaserLoc(config);
 		soar = new SoarInterface(config);
 	}
