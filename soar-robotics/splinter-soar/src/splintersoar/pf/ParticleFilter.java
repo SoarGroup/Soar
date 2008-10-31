@@ -146,7 +146,8 @@ public class ParticleFilter {
 		particleslcm.nparticles = particles.size();
 		particleslcm.particle = new float[particles.size()][];
 
-		for (int i = 0; i < particles.size(); i++) {
+		final int standingPopulation = 5;
+		for (int i = 0; i < particles.size() - standingPopulation; i++) {
 			double tw = rand.nextFloat();
 			Particle p = null;
 			for (int j = 0; j < particles.size(); j++) {
@@ -170,6 +171,20 @@ public class ParticleFilter {
 				logger.finest(String.format("Resampled particle xyt: %5.3f %5.3f %5.3f", np.xyt[0], np.xyt[1], np.xyt[2]));
 			}
 		}
+
+		// standing population
+		for (int i = 0; i < standingPopulation; i++) {
+			Particle p = new Particle();
+			p.xyt = new double[] { (1 - 2 * rand.nextFloat()) * 5, (1 - 2 * rand.nextFloat()) * 5, 2 * rand.nextFloat() * Math.PI };
+			newParticles.add(p);
+
+			particleslcm.particle[i] = new float[] { (float)p.xyt[0], (float)p.xyt[1], (float)p.xyt[2] };
+			
+			if (logger.isLoggable(Level.FINEST)) {
+				logger.finest(String.format("Standing particle xyt: %5.3f %5.3f %5.3f", p.xyt[0], p.xyt[1], p.xyt[2]));
+			}
+		}
+
 		particles = newParticles;
 
 		particleslcm.utime = System.nanoTime() / 1000;
