@@ -2,7 +2,6 @@ package splintersoar.soar;
 
 import java.io.DataInputStream;
 import java.io.IOException;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import lcm.lcm.LCM;
@@ -41,7 +40,7 @@ public class SoarInterface implements Kernel.UpdateEventInterface, Kernel.AgentE
 	public SoarInterface(RangerStateProducer rangerStateProducer, Configuration cnf) {
 		this.cnf = cnf;
 
-		logger = LogFactory.createSimpleLogger("SoarInterface", Level.INFO);
+		logger = LogFactory.createSimpleLogger("SoarInterface", cnf.loglevel);
 
 		try {
 			logger.info(String.format("Using %s for %s provider URL.", LCMInfo.L1_NETWORK, LCMInfo.DRIVE_COMMANDS_CHANNEL));
@@ -81,7 +80,7 @@ public class SoarInterface implements Kernel.UpdateEventInterface, Kernel.AgentE
 		// load productions
 		agent.LoadProductions(this.cnf.soar.productions);
 
-		waypoints = new Waypoints(agent);
+		waypoints = new Waypoints(agent, cnf);
 
 		// wait for valid data
 		while (splinterState == null) {
@@ -100,8 +99,8 @@ public class SoarInterface implements Kernel.UpdateEventInterface, Kernel.AgentE
 
 		// rangerState could be null
 
-		input = new InputLinkManager(agent, waypoints, ss, rangerState);
-		output = new OutputLinkManager(agent, waypoints);
+		input = new InputLinkManager(agent, waypoints, ss, rangerState, cnf);
+		output = new OutputLinkManager(agent, waypoints, cnf);
 
 		kernel.RegisterForUpdateEvent(smlUpdateEventId.smlEVENT_AFTER_ALL_OUTPUT_PHASES, this, null);
 		kernel.RegisterForAgentEvent(smlAgentEventId.smlEVENT_BEFORE_AGENT_REINITIALIZED, this, null);

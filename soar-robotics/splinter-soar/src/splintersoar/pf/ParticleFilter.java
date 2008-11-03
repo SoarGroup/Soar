@@ -39,7 +39,7 @@ public class ParticleFilter {
 	public ParticleFilter(Configuration cnf) {
 		this.cnf = cnf;
 		
-		logger = LogFactory.createSimpleLogger("ParticleFilter", Level.FINER);
+		logger = LogFactory.createSimpleLogger("ParticleFilter", cnf.loglevel);
 
 		try {
 			logger.info(String.format("Using %s for %s provider URL.", LCMInfo.GG_NETWORK, LCMInfo.PARTICLES_CHANNEL));

@@ -8,6 +8,7 @@ import java.util.logging.Logger;
 import lcm.lcm.LCM;
 import lcm.lcm.LCMSubscriber;
 import lcmtypes.laser_t;
+import splintersoar.Configuration;
 import splintersoar.LCMInfo;
 import splintersoar.LogFactory;
 
@@ -20,8 +21,8 @@ public class RangerManager implements LCMSubscriber, RangerStateProducer {
 	private laser_t laserDataCurrent;
 	private Logger logger;
 
-	public RangerManager() {
-		logger = LogFactory.createSimpleLogger("RangerManager", Level.INFO);
+	public RangerManager(Configuration cnf) {
+		logger = LogFactory.createSimpleLogger("RangerManager", cnf.loglevel);
 
 		try {
 			logger.info(String.format("Using %s for %s provider URL.", LCMInfo.GG_NETWORK, LCMInfo.LASER_FRONT_CHANNEL));

@@ -1,10 +1,10 @@
 package splintersoar.soar;
 
 import java.util.Arrays;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import sml.*;
+import splintersoar.Configuration;
 import splintersoar.LogFactory;
 import lcmtypes.splinterstate_t;
 
@@ -20,8 +20,8 @@ public class OutputLinkManager {
 	SplinterInput splinterInput = new SplinterInput();
 	Logger logger;
 
-	public OutputLinkManager(Agent agent, Waypoints waypoints) {
-		this.logger = LogFactory.createSimpleLogger("OutputLinkManager", Level.INFO);
+	public OutputLinkManager(Agent agent, Waypoints waypoints, Configuration cnf) {
+		this.logger = LogFactory.createSimpleLogger("OutputLinkManager", cnf.loglevel);
 
 		this.agent = agent;
 		this.waypoints = waypoints;

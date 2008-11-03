@@ -49,7 +49,7 @@ public class SplinterSoar {
 			cnf = new Configuration(config);
 		}
 		
-		logger = LogFactory.createSimpleLogger("SplinterSoar", Level.INFO);
+		logger = LogFactory.createSimpleLogger("SplinterSoar", cnf.loglevel);
 		cnf.dumpWarnings(logger);
 		
 		if (cnf.everythingDisabled()) {
@@ -71,7 +71,7 @@ public class SplinterSoar {
 		
 		if (!cnf.rangerDisabled) {
 			logger.info("Starting ranger manager");
-			ranger = new RangerManager();
+			ranger = new RangerManager(cnf);
 		}
 		
 		if (!cnf.soarDisabled) {

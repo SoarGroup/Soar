@@ -1,6 +1,5 @@
 package splintersoar.soar;
 
-import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import jmat.LinAlg;
@@ -10,6 +9,7 @@ import sml.Agent;
 import sml.FloatElement;
 import sml.Identifier;
 import sml.IntElement;
+import splintersoar.Configuration;
 import splintersoar.LogFactory;
 import lcmtypes.splinterstate_t;
 import splintersoar.ranger.RangerState;
@@ -180,8 +180,8 @@ public class InputLinkManager {
 
 	Logger logger;
 
-	public InputLinkManager(Agent agent, Waypoints waypoints, splinterstate_t splinterState, RangerState rangerState) {
-		this.logger = LogFactory.createSimpleLogger("InputLinkManager", Level.INFO);
+	public InputLinkManager(Agent agent, Waypoints waypoints, splinterstate_t splinterState, RangerState rangerState, Configuration cnf) {
+		this.logger = LogFactory.createSimpleLogger("InputLinkManager", cnf.loglevel);
 
 		this.agent = agent;
 		this.agent.SetBlinkIfNoChange(false);

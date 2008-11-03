@@ -112,6 +112,7 @@ public class Configuration {
 	public SoarInterface soar;
 	
 	public Level loglevel = Level.INFO;
+	public boolean lcmDebug = false;
 	public boolean llocDisabled = false;
 	public boolean orcDisabled = false;
 	public boolean rangerDisabled = false;
@@ -122,6 +123,7 @@ public class Configuration {
 	
 	public Configuration(Config config) {
 		if (config != null) {
+			lcmDebug = config.getBoolean("lcmDebug", lcmDebug);
 			llocDisabled = config.getBoolean("llocDisabled", llocDisabled);
 			orcDisabled = config.getBoolean("orcDisabled", orcDisabled);
 			rangerDisabled = config.getBoolean("rangerDisabled", rangerDisabled);

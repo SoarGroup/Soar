@@ -4,7 +4,6 @@ import java.io.IOException;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Iterator;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import jmat.LinAlg;
@@ -16,6 +15,7 @@ import lcmtypes.pose_t;
 import sml.Agent;
 import sml.FloatElement;
 import sml.Identifier;
+import splintersoar.Configuration;
 import splintersoar.LCMInfo;
 import splintersoar.LogFactory;
 import lcmtypes.waypoints_t;
@@ -114,9 +114,9 @@ public class Waypoints {
 	LCM lcmGG;
 	Logger logger;
 	
-	Waypoints(Agent agent) {
+	Waypoints(Agent agent, Configuration cnf) {
 		this.agent = agent;
-		logger = LogFactory.createSimpleLogger("Waypoints", Level.INFO);
+		logger = LogFactory.createSimpleLogger("Waypoints", cnf.loglevel);
 
 		try {
 			logger.info(String.format("Using %s for %s provider URL.", LCMInfo.GG_NETWORK, LCMInfo.WAYPOINTS_CHANNEL));

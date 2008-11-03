@@ -62,7 +62,7 @@ public class OrcInterface implements LCMSubscriber {
 		previousState.pose.orientation = new double[4];
 		previousState.pose.pos = new double[3];
 
-		logger = LogFactory.createSimpleLogger("OrcInterface", Level.INFO);
+		logger = LogFactory.createSimpleLogger("OrcInterface", cnf.loglevel);
 
 		try {
 			logger.info(String.format("Using %s for %s provider URL.", LCMInfo.L1_NETWORK, LCMInfo.DRIVE_COMMANDS_CHANNEL));
