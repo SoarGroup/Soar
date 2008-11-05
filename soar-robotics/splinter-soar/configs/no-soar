@@ -12,7 +12,6 @@ orc {
 
 pf {
 	numParticles = 100;
-	useRandomInitialTheta = true;
 	xySigma = 0.05;
 	thetaSigma = 0.2;
 	standingPopulation = 5;

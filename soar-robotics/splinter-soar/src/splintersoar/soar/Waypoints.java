@@ -120,16 +120,14 @@ public class Waypoints {
 		this.agent = agent;
 		logger = LogFactory.createSimpleLogger("Waypoints", cnf.loglevel);
 
-		if (cnf.lcmDebug) {
-			try {
-				logger.info(String.format("Using %s for %s provider URL.", LCMInfo.GG_NETWORK, LCMInfo.WAYPOINTS_CHANNEL));
-				lcmGG = new LCM(LCMInfo.GG_NETWORK);
-	
-			} catch (IOException e) {
-				logger.severe("Error creating lcmGG.");
-				e.printStackTrace();
-				System.exit(1);
-			}
+		try {
+			logger.info(String.format("Using %s for %s provider URL.", LCMInfo.GG_NETWORK, LCMInfo.WAYPOINTS_CHANNEL));
+			lcmGG = new LCM(LCMInfo.GG_NETWORK);
+
+		} catch (IOException e) {
+			logger.severe("Error creating lcmGG.");
+			e.printStackTrace();
+			System.exit(1);
 		}
 	}
 
@@ -180,33 +178,27 @@ public class Waypoints {
 	}
 
 	public void update() {
-		if (cnf.lcmDebug) {
-			waypoints_t lcmwaypoints = new waypoints_t();
-			lcmwaypoints.utime = System.nanoTime() / 1000;
-			lcmwaypoints.nwaypoints = waypointList.size();
+		waypoints_t lcmwaypoints = new waypoints_t();
+		lcmwaypoints.utime = System.nanoTime() / 1000;
+		lcmwaypoints.nwaypoints = waypointList.size();
 
-			if (waypointList.size() != 0) {
-				lcmwaypoints.names = new String[waypointList.size()];
-				lcmwaypoints.locations = new xy_t[waypointList.size()];
+		if (waypointList.size() != 0) {
+			lcmwaypoints.names = new String[waypointList.size()];
+			lcmwaypoints.locations = new xy_t[waypointList.size()];
 
-				// System.out.format( "%16s %10s %10s %10s %10s %10s%n", "name",
-				// "x", "y", "distance", "yaw", "bearing" );
-				Waypoint[] waypointArray = waypointList.values().toArray(new Waypoint[0]);
-				for (int index = 0; index < waypointArray.length; ++index) {
-					waypointArray[index].updateWmes();
+			// System.out.format( "%16s %10s %10s %10s %10s %10s%n", "name",
+			// "x", "y", "distance", "yaw", "bearing" );
+			Waypoint[] waypointArray = waypointList.values().toArray(new Waypoint[0]);
+			for (int index = 0; index < waypointArray.length; ++index) {
+				waypointArray[index].updateWmes();
 
-					lcmwaypoints.names[index] = waypointArray[index].name;
-					lcmwaypoints.locations[index] = new xy_t();
-					lcmwaypoints.locations[index].utime = lcmwaypoints.utime;
-					lcmwaypoints.locations[index].xy = Arrays.copyOf(waypointArray[index].xyz, 2);
-				}
-			}
-			lcmGG.publish(LCMInfo.WAYPOINTS_CHANNEL, lcmwaypoints);
-		} else {
-			for (Waypoint wp : waypointList.values()) {
-				wp.updateWmes();
+				lcmwaypoints.names[index] = waypointArray[index].name;
+				lcmwaypoints.locations[index] = new xy_t();
+				lcmwaypoints.locations[index].utime = lcmwaypoints.utime;
+				lcmwaypoints.locations[index].xy = Arrays.copyOf(waypointArray[index].xyz, 2);
 			}
 		}
+		lcmGG.publish(LCMInfo.WAYPOINTS_CHANNEL, lcmwaypoints);
 	}
 
 	public void beforeInitSoar() {

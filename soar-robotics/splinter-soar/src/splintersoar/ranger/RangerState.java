@@ -5,12 +5,14 @@ import lcmtypes.laser_t;
 /**
  * @author voigtjr
  * Coarse ranger data for Soar to use. Essentially divides up ranger data and uses minimums in each sector.
+ * 
+ * TODO: This entire class could really (and should really) just be a laser_t.
  */
 public class RangerState {
 	public class RangerData {
-		public double start = 0;
-		public double end = 0;
-		public double distance = 0;
+		public float start = 0;
+		public float end = 0;
+		public float distance = 0;
 	}
 
 	public long utime = 0;
@@ -28,7 +30,7 @@ public class RangerState {
 
 		for (int slice = 0, index = 0; slice < ranger.length; ++slice) {
 			ranger[slice].start = laserData.rad0 + index * laserData.radstep;
-			ranger[slice].distance = Double.MAX_VALUE;
+			ranger[slice].distance = Float.MAX_VALUE;
 
 			for (; index < (sliceChunk * slice) + sliceChunk; ++index) {
 				if (laserData.ranges[index] < ranger[slice].distance) {
@@ -38,5 +40,19 @@ public class RangerState {
 
 			ranger[slice].end = laserData.rad0 + (index - 1) * laserData.radstep;
 		}
+	}
+	
+	public laser_t toLaserT() {
+		laser_t lcmData = new laser_t();
+		lcmData.utime = utime;
+		lcmData.nranges = ranger.length;
+		lcmData.ranges = new float[ranger.length];
+		for(int i = 0; i < ranger.length; ++i) {
+			lcmData.ranges[i] = ranger[i].distance;
+		}
+		
+		lcmData.rad0 = (ranger[0].start - ranger[0].end) / 2;
+		lcmData.radstep = (ranger[ranger.length - 1].end - ranger[0].start) / ranger.length;
+		return lcmData;
 	}
 }

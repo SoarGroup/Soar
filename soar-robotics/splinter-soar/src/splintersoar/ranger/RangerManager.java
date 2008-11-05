@@ -18,6 +18,7 @@ import splintersoar.LogFactory;
  */
 public class RangerManager implements LCMSubscriber, RangerStateProducer {
 	private LCM lcmGG;
+	private RangerState state;
 	private laser_t laserDataCurrent;
 	private Logger logger;
 
@@ -41,12 +42,18 @@ public class RangerManager implements LCMSubscriber, RangerStateProducer {
 		if (laserDataCurrent == null) {
 			return null;
 		}
-
-		RangerState state = new RangerState(laserDataCurrent);
+		
+		if (state.utime == laserDataCurrent.utime) {
+			return state;
+		}
+		
+		state = new RangerState(laserDataCurrent);
 		if (logger.isLoggable(Level.FINEST)) {
 			logger.finest(String.format("New ranger state: %5.2f %5.2f %5.2f %5.2f %5.2f", state.ranger[0].distance, state.ranger[1].distance,
 					state.ranger[2].distance, state.ranger[3].distance, state.ranger[4].distance));
 		}
+		
+		lcmGG.publish(LCMInfo.RANGER_CHANNEL, state.toLaserT());
 		return state;
 	}
 

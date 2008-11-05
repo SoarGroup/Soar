@@ -2,8 +2,10 @@ package splintersoar.vis;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
+import java.io.Console;
 import java.io.DataInputStream;
 import java.io.IOException;
+import java.io.Reader;
 import java.util.Arrays;
 
 import javax.swing.JFrame;
@@ -48,7 +50,7 @@ public class Viewer implements LCMSubscriber {
 	particles_t particles;
 	laser_t laserFront;
 	laser_t laserLoc;
-	double [] initialxy;
+	laser_t ranger;
 
 	public Viewer() {
 		try {
@@ -86,26 +88,24 @@ public class Viewer implements LCMSubscriber {
 		vc.setDrawGrid(true);
 		vc.setDrawGround(true);
 
-		makePoints(vb);
+		Reader consoleReader = System.console().reader();
+		makePoints(vb, null);
 		
 		while (true) {
 			splinterstate_t sp = null;
 			if (splinterPose != null) {
 				sp = splinterPose;
 				vb.addBuffered(new VisChain(LinAlg.quatPosToMatrix(sp.pose.orientation, sp.pose.pos), new VisRobot(Color.blue)));
+
+				makePoints(vb, sp);
 			}
 
 			if (laserxy != null) {
 				xy_t xy;
 				xy = laserxy.copy();
 
-				if (initialxy == null /*&& sp != null*/) {
-					initialxy = new double [] { xy.xy[0], xy.xy[1] };
-					makePoints(vb);
-				}
-
-				if (initialxy != null) {
-					LinAlg.subtract(xy.xy, initialxy, xy.xy);
+				if (sp != null) {
+					LinAlg.subtract(xy.xy, sp.xyoffset, xy.xy);
 				}
 
 				vb.addBuffered(new VisData(xy.xy, new VisDataPointStyle(Color.black, 4)));
@@ -129,8 +129,7 @@ public class Viewer implements LCMSubscriber {
 			}
 
 			if (laserFront != null) {
-				laser_t lf;
-				lf = laserFront;
+				laser_t lf = laserFront;
 
 				VisData points = new VisData();
 				points.add(new VisDataLineStyle(Color.green, 2, true));
@@ -153,6 +152,30 @@ public class Viewer implements LCMSubscriber {
 				vb.addBuffered(points);
 			}
 
+			if (ranger != null) {
+				laser_t r = ranger;
+
+				VisData points = new VisData();
+				points.add(new VisDataLineStyle(Color.cyan, 4, true));
+
+				for (int i = 0; i < r.nranges; i++) {
+					if (r.ranges[i] > 50)
+						continue;
+
+					double yaw = 0;
+					double[] offset = new double[] { 0, 0 };
+					if (sp != null) {
+						offset = Arrays.copyOf(sp.pose.pos, 2);
+						yaw = LinAlg.quatToRollPitchYaw(sp.pose.orientation)[2];
+					}
+					double theta = r.rad0 + i * r.radstep + yaw;
+					double[] xy = LinAlg.add(new double[] { r.ranges[i] * Math.cos(theta), r.ranges[i] * Math.sin(theta) }, offset);
+					points.add(xy);
+				}
+
+				vb.addBuffered(points);
+			}
+
 			if (laserLoc != null) {
 				laser_t ll;
 				ll = laserLoc;
@@ -166,8 +189,8 @@ public class Viewer implements LCMSubscriber {
 
 					double theta = ll.rad0 + i * ll.radstep;
 					double [] xy = new double [] { ll.ranges[i] * Math.cos(theta), ll.ranges[i] * Math.sin(theta) };
-					if (initialxy != null) {
-						LinAlg.subtract(xy, initialxy, xy);
+					if (sp != null) {
+						LinAlg.subtract(xy, sp.xyoffset, xy);
 					}
 					points.add(xy);
 				}
@@ -175,14 +198,41 @@ public class Viewer implements LCMSubscriber {
 				vb.addBuffered(points);
 			}
 
-			if (roomPoints != null)
+			if (roomPoints != null) {
 				vb.addBuffered(roomPoints);
+			}
 			vb.switchBuffer();
+			
+			try {
+				if (consoleReader.ready()) {
+					switch (consoleReader.read()) {
+					default:
+						System.out.println("clearing state");
+
+						roomPoints = null;
+						splinterPose = null;
+						waypoints = null;
+						laserxy = null;
+						particles = null;
+						laserFront = null;
+						laserLoc = null;
+						ranger = null;
+
+						makePoints(vb, null);
+
+						vb.switchBuffer();
+						break;
+					}
+				}
+			} catch (IOException e) {
+				e.printStackTrace();
+				System.exit(1);
+			}
 		}
 	}
 	
 	VisData roomPoints;
-	void makePoints(VisWorld.Buffer vb) {
+	void makePoints(VisWorld.Buffer vb, splinterstate_t sp) {
 		try {
 			Config mapConfig = new ConfigFile("map.txt").getConfig();
 			double [] maxRanges = mapConfig.getDoubles("map");
@@ -196,8 +246,8 @@ public class Viewer implements LCMSubscriber {
 
 				double theta = -(Math.PI / 2) + i * (Math.PI / 180);
 				double [] xy = new double [] { maxRanges[i] * Math.cos(theta), maxRanges[i] * Math.sin(theta) };
-				if (initialxy != null) {
-					LinAlg.subtract(xy, initialxy, xy);
+				if (sp != null) {
+					LinAlg.subtract(xy, sp.xyoffset, xy);
 				}
 				roomPoints.add(xy);
 			}
@@ -237,13 +287,19 @@ public class Viewer implements LCMSubscriber {
 			try {
 				laserFront = new laser_t(ins);
 			} catch (IOException ex) {
-				System.err.println("Error decoding laser_t message: " + ex);
+				System.err.println("Error decoding laser_t (front) message: " + ex);
 			}
 		} else if (channel.equals(LCMInfo.LASER_LOC_CHANNEL)) {
 			try {
 				laserLoc = new laser_t(ins);
 			} catch (IOException ex) {
-				System.err.println("Error decoding laser_t message: " + ex);
+				System.err.println("Error decoding laser_t (loc) message: " + ex);
+			}
+		} else if (channel.equals(LCMInfo.RANGER_CHANNEL)) {
+			try {
+				ranger = new laser_t(ins);
+			} catch (IOException ex) {
+				System.err.println("Error decoding laser_t (ranger) message: " + ex);
 			}
 		}
 	}

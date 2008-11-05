@@ -48,18 +48,20 @@ public class Configuration {
 	
 	public class ParticleFilter {
 		public int numParticles = 100;
-		public boolean useRandomInitialTheta = true;
+		public boolean useRandomInitial = false;
 		public double xySigma = 0.05;
 		public double thetaSigma = Math.PI / 4;
 		public int standingPopulation = 5;
+		public boolean lcmDebug = false;
 		
 		public ParticleFilter(Config config) {
 			if (config != null) {
 				numParticles = config.getInt("pf.numParticles", numParticles);
-				useRandomInitialTheta = config.getBoolean("pf.useRandomInitialYaw", useRandomInitialTheta);
+				useRandomInitial = config.getBoolean("pf.useRandomInitial", useRandomInitial);
 				xySigma = config.getDouble("pf.xySigma", xySigma);
 				thetaSigma = config.getDouble("pf.thetaSigma", thetaSigma);
 				standingPopulation = config.getInt("pf.standingPopulation", standingPopulation);
+				lcmDebug = config.getBoolean("lcmDebug", lcmDebug);
 			}
 		}
 	}
@@ -112,7 +114,6 @@ public class Configuration {
 	public SoarInterface soar;
 	
 	public Level loglevel = Level.INFO;
-	public boolean lcmDebug = false;
 	public boolean llocDisabled = false;
 	public boolean orcDisabled = false;
 	public boolean rangerDisabled = false;
@@ -123,7 +124,6 @@ public class Configuration {
 	
 	public Configuration(Config config) {
 		if (config != null) {
-			lcmDebug = config.getBoolean("lcmDebug", lcmDebug);
 			llocDisabled = config.getBoolean("llocDisabled", llocDisabled);
 			orcDisabled = config.getBoolean("orcDisabled", orcDisabled);
 			rangerDisabled = config.getBoolean("rangerDisabled", rangerDisabled);

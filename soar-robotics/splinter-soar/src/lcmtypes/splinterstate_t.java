@@ -12,14 +12,16 @@ public class splinterstate_t implements lcm.lcm.LCMEncodable
     public double heightmeters;
     public int leftodom;
     public int rightodom;
+    public double xyoffset[];
     public lcmtypes.pose_t pose;
  
     public splinterstate_t()
     {
+        xyoffset = new double[2];
     }
  
     public static final long LCM_FINGERPRINT;
-    public static final long LCM_FINGERPRINT_BASE = 0x320c885e82ea29f5L;
+    public static final long LCM_FINGERPRINT_BASE = 0x559c425f395d56e8L;
  
     static {
         LCM_FINGERPRINT = _hashRecursive(new ArrayList<Class>());
@@ -61,6 +63,10 @@ public class splinterstate_t implements lcm.lcm.LCMEncodable
  
         outs.writeInt(this.rightodom); 
  
+        for (int a = 0; a < 2; a++) {
+            outs.writeDouble(this.xyoffset[a]); 
+        }
+ 
         this.pose._encodeRecursive(outs); 
  
     }
@@ -97,6 +103,11 @@ public class splinterstate_t implements lcm.lcm.LCMEncodable
  
         this.rightodom = ins.readInt();
  
+        this.xyoffset = new double[(int) 2];
+        for (int a = 0; a < 2; a++) {
+            this.xyoffset[a] = ins.readDouble();
+        }
+ 
         this.pose = lcmtypes.pose_t._decodeRecursiveFactory(ins);
  
     }
@@ -117,6 +128,11 @@ public class splinterstate_t implements lcm.lcm.LCMEncodable
         outobj.leftodom = this.leftodom;
  
         outobj.rightodom = this.rightodom;
+ 
+        outobj.xyoffset = new double[(int) 2];
+        for (int a = 0; a < 2; a++) {
+            outobj.xyoffset[a] = this.xyoffset[a];
+        }
  
 outobj.pose = this.pose.copy(); 
         return outobj;

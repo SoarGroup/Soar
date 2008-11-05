@@ -64,11 +64,11 @@ public class ParticleFilter {
 
 		for (int i = 0; i < 100; i++) {
 			Particle p = new Particle();
-			double initialTheta = 0;
-			if (cnf.pf.useRandomInitialTheta) {
-				initialTheta = 2 * rand.nextFloat() * Math.PI;
+			if (cnf.pf.useRandomInitial) {
+				p.xyt = new double[] { (1 - 2 * rand.nextFloat()) * 5, (1 - 2 * rand.nextFloat()) * 5, 2 * rand.nextFloat() * Math.PI };
+			} else {
+				p.xyt = new double[] { 0, 0, 0 };
 			}
-			p.xyt = new double[] { (1 - 2 * rand.nextFloat()) * 5, (1 - 2 * rand.nextFloat()) * 5, initialTheta };
 			particles.add(p);
 
 			particleslcm.particle[i] = new float[] { (float)p.xyt[0], (float)p.xyt[1], (float)p.xyt[2] };

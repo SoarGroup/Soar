@@ -24,6 +24,7 @@ public class LCMInfo implements LCMSubscriber {
 	public static final String LASER_FRONT_CHANNEL = "LASER_FRONT";
 	public static final String WAYPOINTS_CHANNEL = "WAYPOINTS";
 	public static final String PARTICLES_CHANNEL = "PARTICLES";
+	public static final String RANGER_CHANNEL = "RANGER";
 
 	public static final String TEST_CHANNEL_A = "TEST_CHANNEL";
 	public static void main(String[] args) {

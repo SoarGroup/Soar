@@ -204,6 +204,12 @@ public class OrcInterface implements LCMSubscriber {
 				currentState.pose = previousState.pose.copy();
 			}
 			currentState.pose.utime = currentState.utime;
+			
+			if (initialxy != null) {
+				currentState.xyoffset = Arrays.copyOf(initialxy, initialxy.length);
+			} else {
+				currentState.xyoffset = new double [] { 0, 0 };
+			}
 
 			// publish pose
 			lcmGG.publish(LCMInfo.SPLINTER_STATE_CHANNEL, currentState);
