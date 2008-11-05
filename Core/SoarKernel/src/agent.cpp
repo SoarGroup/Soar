@@ -346,8 +346,6 @@ agent * create_soar_agent (char * agent_name) {                                 
   newAgent->epmem_params[ EPMEM_PARAM_DB ] = epmem_add_parameter( "database", EPMEM_DB_FILE, &epmem_validate_database, &epmem_convert_database, &epmem_convert_database );
   newAgent->epmem_params[ EPMEM_PARAM_PATH ] = epmem_add_parameter( "path", "", &epmem_validate_path );
   newAgent->epmem_params[ EPMEM_PARAM_COMMIT ] = epmem_add_parameter( "commit", 1.0, &epmem_validate_commit );
-    
-  newAgent->epmem_params[ EPMEM_PARAM_INDEXING ] = epmem_add_parameter( "indexing", EPMEM_INDEXING_RIT, &epmem_validate_indexing, &epmem_convert_indexing, &epmem_convert_indexing );
   
   newAgent->epmem_params[ EPMEM_PARAM_MODE ] = epmem_add_parameter( "mode", EPMEM_MODE_ONE, &epmem_validate_mode, &epmem_convert_mode, &epmem_convert_mode );
     

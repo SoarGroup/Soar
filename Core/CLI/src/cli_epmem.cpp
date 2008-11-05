@@ -258,16 +258,7 @@ bool CommandLineInterface::DoEpMem( const char pOp, const std::string* pAttr, co
 		if ( m_RawOutput )
 			m_Result << temp << "\n";
 		else
-			AppendArgTagFast( sml_Names::kParamValue, sml_Names::kTypeString, temp.c_str() );
-				
-		temp = "indexing: ";
-		temp += epmem_get_parameter( m_pAgentSoar, (const long) EPMEM_PARAM_INDEXING, EPMEM_RETURN_STRING );
-		if ( m_RawOutput )
-			m_Result << temp << "\n";
-		else
-		{
-			AppendArgTagFast( sml_Names::kParamValue, sml_Names::kTypeString, temp.c_str() );
-		}
+			AppendArgTagFast( sml_Names::kParamValue, sml_Names::kTypeString, temp.c_str() );		
 		
 		temp = "mode: ";
 		temp += epmem_get_parameter( m_pAgentSoar, (const long) EPMEM_PARAM_MODE, EPMEM_RETURN_STRING );

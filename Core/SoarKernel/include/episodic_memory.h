@@ -27,19 +27,18 @@ typedef struct wme_struct wme;
 #define EPMEM_RETURN_STRING ""
 
 // parameters
-// - protected are [ DB, MVA_MODE ]
+// - protected are [ DB, MODE ]
 #define EPMEM_PARAM_LEARNING						0
 #define EPMEM_PARAM_DB								1
 #define EPMEM_PARAM_COMMIT							2
 #define EPMEM_PARAM_PATH							3
-#define EPMEM_PARAM_INDEXING						4
-#define EPMEM_PARAM_MODE							5
-#define EPMEM_PARAM_TRIGGER							6
-#define EPMEM_PARAM_FORCE							7
-#define EPMEM_PARAM_BALANCE							8
-#define EPMEM_PARAM_EXCLUSIONS						9
-#define EPMEM_PARAM_TIMERS							10
-#define EPMEM_PARAMS								11 // must be 1+ last epmem param
+#define EPMEM_PARAM_MODE							4
+#define EPMEM_PARAM_TRIGGER							5
+#define EPMEM_PARAM_FORCE							6
+#define EPMEM_PARAM_BALANCE							7
+#define EPMEM_PARAM_EXCLUSIONS						8
+#define EPMEM_PARAM_TIMERS							9
+#define EPMEM_PARAMS								10 // must be 1+ last epmem param
 
 // parameter settings
 #define EPMEM_LEARNING_ON 1
@@ -48,11 +47,9 @@ typedef struct wme_struct wme;
 #define EPMEM_DB_MEM 1
 #define EPMEM_DB_FILE 2
 
-#define EPMEM_INDEXING_RIT 1
-
-#define EPMEM_MODE_ONE 1   // wme tree
-#define EPMEM_MODE_TWO 2   // wme tree + mva/shared wme on retrieval
-#define EPMEM_MODE_THREE 3 // wme tree + mva/shared wme on retrieval/query
+#define EPMEM_MODE_ONE 1   // wm tree
+#define EPMEM_MODE_TWO 2   // wm tree + mva/shared wme on retrieval
+#define EPMEM_MODE_THREE 3 // wm tree + mva/shared wme on retrieval/query
 
 #define EPMEM_TRIGGER_NONE 1
 #define EPMEM_TRIGGER_OUTPUT 2
@@ -106,31 +103,31 @@ typedef struct wme_struct wme;
 
 // statements
 // 0 - 9 => common
-// 10 - 29 => indexing
+// 10 - 29 => mode
 #define EPMEM_STMT_BEGIN					0
 #define EPMEM_STMT_COMMIT					1
 #define EPMEM_STMT_ROLLBACK					2
 #define EPMEM_STMT_VAR_GET					3
 #define EPMEM_STMT_VAR_SET					4
 
-#define EPMEM_STMT_RIT_ADD_TIME				10
-#define EPMEM_STMT_RIT_ADD_EPISODE			11
-#define EPMEM_STMT_RIT_ADD_ID				12
-#define EPMEM_STMT_RIT_FIND_ID				13
-#define EPMEM_STMT_RIT_FIND_ID_NULL			14
-#define EPMEM_STMT_RIT_VALID_EPISODE		15
-#define EPMEM_STMT_RIT_NEXT_EPISODE			16
-#define EPMEM_STMT_RIT_PREV_EPISODE			17
-#define EPMEM_STMT_RIT_ADD_LEFT				18
-#define EPMEM_STMT_RIT_TRUNCATE_LEFT		19
-#define EPMEM_STMT_RIT_ADD_RIGHT			20
-#define EPMEM_STMT_RIT_TRUNCATE_RIGHT		21
-#define EPMEM_STMT_RIT_GET_EPISODE			22
-#define EPMEM_STMT_RIT_ADD_NOW				23
-#define EPMEM_STMT_RIT_DELETE_NOW			24
-#define EPMEM_STMT_RIT_ADD_POINT			25
-#define EPMEM_STMT_RIT_MVA_ADD_ID			26
-#define EPMEM_STMT_RIT_MVA_GET_EP			27
+#define EPMEM_STMT_ONE_ADD_TIME				10
+#define EPMEM_STMT_ONE_ADD_EPISODE			11
+#define EPMEM_STMT_ONE_ADD_ID				12
+#define EPMEM_STMT_ONE_FIND_ID				13
+#define EPMEM_STMT_ONE_FIND_ID_NULL			14
+#define EPMEM_STMT_ONE_VALID_EPISODE		15
+#define EPMEM_STMT_ONE_NEXT_EPISODE			16
+#define EPMEM_STMT_ONE_PREV_EPISODE			17
+#define EPMEM_STMT_ONE_ADD_LEFT				18
+#define EPMEM_STMT_ONE_TRUNCATE_LEFT		19
+#define EPMEM_STMT_ONE_ADD_RIGHT			20
+#define EPMEM_STMT_ONE_TRUNCATE_RIGHT		21
+#define EPMEM_STMT_ONE_GET_EPISODE			22
+#define EPMEM_STMT_ONE_ADD_NOW				23
+#define EPMEM_STMT_ONE_DELETE_NOW			24
+#define EPMEM_STMT_ONE_ADD_POINT			25
+#define EPMEM_STMT_ONE_MVA_ADD_ID			26
+#define EPMEM_STMT_ONE_MVA_GET_EP			27
 
 #define EPMEM_MAX_STATEMENTS 				30 // must be at least 1+ largest of any STMT constant
 
@@ -320,11 +317,6 @@ extern const long epmem_convert_database( const char *val );
 
 // path
 extern bool epmem_validate_path( const char *new_val );
-
-// indexing
-extern bool epmem_validate_indexing( const long new_val );
-extern const char *epmem_convert_indexing( const long val );
-extern const long epmem_convert_indexing( const char *val );
 
 // mode
 extern bool epmem_validate_mode( const long new_val );
