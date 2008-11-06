@@ -87,6 +87,7 @@ const char *epmem_range_queries[2][2][3] =
 };
 
 
+
 //////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////
 // Parameter Functions (epmem::params)
@@ -1454,6 +1455,37 @@ void epmem_transaction_end( agent *my_agent, bool commit )
 
 //////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////
+// Variable Functions (epmem::var)
+//////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////
+
+// gets an epmem variable
+bool epmem_get_variable( agent *my_agent, long long variable_id, long long &variable_value )
+{
+	int status;
+	
+	sqlite3_bind_int64( my_agent->epmem_statements[ EPMEM_STMT_VAR_GET ], 1, variable_id );
+	status = sqlite3_step( my_agent->epmem_statements[ EPMEM_STMT_VAR_GET ] );
+	
+	if ( status == SQLITE_ROW )
+		variable_value = sqlite3_column_int64( my_agent->epmem_statements[ EPMEM_STMT_VAR_GET ], 0 );
+
+	sqlite3_reset( my_agent->epmem_statements[ EPMEM_STMT_VAR_GET ] );
+
+	return ( status == SQLITE_ROW );
+}
+
+// sets an epmem variable
+void epmem_set_variable( agent *my_agent, long long variable_id, long long variable_value )
+{
+	sqlite3_bind_int64( my_agent->epmem_statements[ EPMEM_STMT_VAR_SET ], 1, variable_id );
+	sqlite3_bind_int64( my_agent->epmem_statements[ EPMEM_STMT_VAR_SET ], 2, variable_value );
+	sqlite3_step( my_agent->epmem_statements[ EPMEM_STMT_VAR_SET ] );
+	sqlite3_reset( my_agent->epmem_statements[ EPMEM_STMT_VAR_SET ] );
+}
+
+//////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////
 // RIT Functions (epmem::rit)
 //////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////
@@ -1605,10 +1637,7 @@ void epmem_rit_insert_interval( agent *my_agent, epmem_time_id lower, epmem_time
 		offset = lower;
 		
 		// update database
-		sqlite3_bind_int64( my_agent->epmem_statements[ EPMEM_STMT_VAR_SET ], 1, EPMEM_STAT_RIT_OFFSET );
-		sqlite3_bind_int64( my_agent->epmem_statements[ EPMEM_STMT_VAR_SET ], 2, offset );
-		sqlite3_step( my_agent->epmem_statements[ EPMEM_STMT_VAR_SET ] );
-		sqlite3_reset( my_agent->epmem_statements[ EPMEM_STMT_VAR_SET ] );
+		epmem_set_variable( my_agent, EPMEM_VAR_RIT_OFFSET, offset );		
 
 		// update stat
 		epmem_set_stat( my_agent, EPMEM_STAT_RIT_OFFSET, offset );
@@ -1631,10 +1660,7 @@ void epmem_rit_insert_interval( agent *my_agent, epmem_time_id lower, epmem_time
 			left_root = (long long) pow( -2, floor( log( (double) -l ) / EPMEM_LN_2 ) );
 
 			// update database
-			sqlite3_bind_int64( my_agent->epmem_statements[ EPMEM_STMT_VAR_SET ], 1, EPMEM_STAT_RIT_LEFTROOT );
-			sqlite3_bind_int64( my_agent->epmem_statements[ EPMEM_STMT_VAR_SET ], 2, left_root );
-			sqlite3_step( my_agent->epmem_statements[ EPMEM_STMT_VAR_SET ] );
-			sqlite3_reset( my_agent->epmem_statements[ EPMEM_STMT_VAR_SET ] );
+			epmem_set_variable( my_agent, EPMEM_VAR_RIT_LEFTROOT, left_root );			
 
 			// update stat
 			epmem_set_stat( my_agent, EPMEM_STAT_RIT_LEFTROOT, left_root );
@@ -1646,10 +1672,7 @@ void epmem_rit_insert_interval( agent *my_agent, epmem_time_id lower, epmem_time
 			right_root = (long long) pow( 2, floor( log( (double) u ) / EPMEM_LN_2 ) );
 
 			// update database
-			sqlite3_bind_int64( my_agent->epmem_statements[ EPMEM_STMT_VAR_SET ], 1, EPMEM_STAT_RIT_RIGHTROOT );
-			sqlite3_bind_int64( my_agent->epmem_statements[ EPMEM_STMT_VAR_SET ], 2, right_root );
-			sqlite3_step( my_agent->epmem_statements[ EPMEM_STMT_VAR_SET ] );
-			sqlite3_reset( my_agent->epmem_statements[ EPMEM_STMT_VAR_SET ] );
+			epmem_set_variable( my_agent, EPMEM_VAR_RIT_RIGHTROOT, right_root );			
 
 			// update stat
 			epmem_set_stat( my_agent, EPMEM_STAT_RIT_RIGHTROOT, right_root );
@@ -1664,10 +1687,7 @@ void epmem_rit_insert_interval( agent *my_agent, epmem_time_id lower, epmem_time
 			min_step = step;
 
 			// update database
-			sqlite3_bind_int64( my_agent->epmem_statements[ EPMEM_STMT_VAR_SET ], 1, EPMEM_STAT_RIT_MINSTEP );
-			sqlite3_bind_int64( my_agent->epmem_statements[ EPMEM_STMT_VAR_SET ], 2, min_step );
-			sqlite3_step( my_agent->epmem_statements[ EPMEM_STMT_VAR_SET ] );
-			sqlite3_reset( my_agent->epmem_statements[ EPMEM_STMT_VAR_SET ] );
+			epmem_set_variable( my_agent, EPMEM_VAR_RIT_MINSTEP, min_step );			
 
 			// update stat
 			epmem_set_stat( my_agent, EPMEM_STAT_RIT_MINSTEP, min_step );
@@ -1731,8 +1751,8 @@ void epmem_clear_result( agent *my_agent, Symbol *state )
 {	
 	while ( !state->id.epmem_info->epmem_wmes->empty() )
 	{		
-		remove_input_wme( my_agent, state->id.epmem_info->epmem_wmes->top() );
 		epmem_remove_fake_preference( my_agent, state->id.epmem_info->epmem_wmes->top() );
+		remove_input_wme( my_agent, state->id.epmem_info->epmem_wmes->top() );		
 		state->id.epmem_info->epmem_wmes->pop();
 	}	
 }
@@ -1828,9 +1848,11 @@ void epmem_init_db( agent *my_agent )
 		sqlite3_prepare_v2( my_agent->epmem_db, "REPLACE INTO vars (id,value) VALUES (?,?)", -1, &( my_agent->epmem_statements[ EPMEM_STMT_VAR_SET ] ), &tail );
 
 		// mva - read if existing
-		sqlite3_bind_int64( my_agent->epmem_statements[ EPMEM_STMT_VAR_GET ], 1, EPMEM_VAR_MODE );
-		if ( sqlite3_step( my_agent->epmem_statements[ EPMEM_STMT_VAR_GET ] ) == SQLITE_ROW )
-			epmem_set_parameter( my_agent, (const long) EPMEM_PARAM_MODE, (const long) sqlite3_column_int64( my_agent->epmem_statements[ EPMEM_STMT_VAR_GET ], 0 ) );
+		{
+			long long stored_mode = NULL;
+			if ( epmem_get_variable( my_agent, EPMEM_VAR_MODE, stored_mode ) )
+				epmem_set_parameter( my_agent, (const long) EPMEM_PARAM_MODE, (const long) stored_mode );
+		}
 
 		// at this point initialize the database for receipt of episodes
 		epmem_transaction_begin( my_agent );
@@ -1838,6 +1860,7 @@ void epmem_init_db( agent *my_agent )
 		// further statement preparation depends upon representation options
 		const long mode = epmem_get_parameter( my_agent, EPMEM_PARAM_MODE, EPMEM_RETURN_LONG );		
 		
+		if ( ( mode == EPMEM_MODE_ONE ) || ( mode == EPMEM_MODE_TWO ) )
 		{
 			// variable initialization
 			epmem_set_stat( my_agent, (const long) EPMEM_STAT_TIME, 1 );
@@ -1954,12 +1977,9 @@ void epmem_init_db( agent *my_agent )
 			////
 
 			{				
-				sqlite3_bind_int64( my_agent->epmem_statements[ EPMEM_STMT_VAR_SET ], 1, EPMEM_VAR_MODE );
-				sqlite3_bind_int64( my_agent->epmem_statements[ EPMEM_STMT_VAR_SET ], 2, mode );
-				sqlite3_step( my_agent->epmem_statements[ EPMEM_STMT_VAR_SET ] );
-				sqlite3_reset( my_agent->epmem_statements[ EPMEM_STMT_VAR_SET ] );				
+				epmem_set_variable( my_agent, EPMEM_VAR_MODE, mode );				
 
-				if ( mode >= EPMEM_MODE_TWO )
+				if ( mode == EPMEM_MODE_TWO )
 				{
 					// mva table
 					sqlite3_prepare_v2( my_agent->epmem_db, "CREATE TABLE IF NOT EXISTS mva (time INTEGER, mva_id INTEGER, child_id INTEGER, parent_id INTEGER)", -1, &create, &tail );
@@ -2020,22 +2040,17 @@ void epmem_init_db( agent *my_agent )
 			////
 
 			// get/set RIT variables
-			for ( int i=EPMEM_VAR_RIT_OFFSET; i<=EPMEM_VAR_RIT_MINSTEP; i++ )
 			{
-				sqlite3_bind_int64( my_agent->epmem_statements[ EPMEM_STMT_VAR_GET ], 1, i );
-				if ( sqlite3_step( my_agent->epmem_statements[ EPMEM_STMT_VAR_GET ] ) == SQLITE_ROW )
+				long long var_val;
+				
+				for ( int i=EPMEM_VAR_RIT_OFFSET; i<=EPMEM_VAR_RIT_MINSTEP; i++ )
 				{
-					epmem_set_stat( my_agent, i, sqlite3_column_int64( my_agent->epmem_statements[ EPMEM_STMT_VAR_GET ], 0 ) );
+					if ( epmem_get_variable( my_agent, i, var_val ) )
+						epmem_set_stat( my_agent, i, var_val );
+					else
+						epmem_set_variable( my_agent, i, epmem_get_stat( my_agent, i ) );
 				}
-				else
-				{
-					sqlite3_bind_int64( my_agent->epmem_statements[ EPMEM_STMT_VAR_SET ], 1, i );
-					sqlite3_bind_int64( my_agent->epmem_statements[ EPMEM_STMT_VAR_SET ], 2, epmem_get_stat( my_agent, i ) );
-					sqlite3_step( my_agent->epmem_statements[ EPMEM_STMT_VAR_SET ] );
-					sqlite3_reset( my_agent->epmem_statements[ EPMEM_STMT_VAR_SET ] );
-				}
-				sqlite3_reset( my_agent->epmem_statements[ EPMEM_STMT_VAR_GET ] );
-			}				
+			}
 
 			// get max time
 			sqlite3_prepare_v2( my_agent->epmem_db, "SELECT MAX(id) FROM times", -1, &create, &tail );
@@ -2347,7 +2362,7 @@ void epmem_new_episode( agent *my_agent )
 
 		epmem_set_stat( my_agent, (const long) EPMEM_STAT_TIME, time_counter + 1 );
 	}
-	else
+	else if ( mode == EPMEM_MODE_TWO )
 	{
 		wme **wmes = NULL;
 		int len = 0;
@@ -2884,7 +2899,7 @@ void epmem_install_memory( agent *my_agent, Symbol *state, epmem_time_id memory_
 
 		epmem_rit_clear_left_right( my_agent );
 	}
-	else
+	else if ( mode == EPMEM_MODE_TWO )
 	{
 		std::map<epmem_node_id, Symbol *> ids;
 		std::map<epmem_node_id, Symbol *> mva_ids;
