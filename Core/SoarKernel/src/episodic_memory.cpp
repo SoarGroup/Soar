@@ -39,6 +39,7 @@ extern unsigned long hash_string( const char *s );
 
 // epmem::query
 // epmem::transaction
+// epmem::var
 
 // epmem::rit
 
@@ -86,7 +87,7 @@ const char *epmem_range_queries[2][2][3] =
 	},
 };
 
-
+const long long epmem_rit_state_one[5] = { EPMEM_VAR_RIT_OFFSET_1, EPMEM_VAR_RIT_LEFTROOT_1, EPMEM_VAR_RIT_RIGHTROOT_1, EPMEM_VAR_RIT_MINSTEP_1, EPMEM_STMT_ONE_ADD_EPISODE };
 
 //////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////
@@ -872,7 +873,8 @@ void epmem_clean_stats( agent *my_agent )
 bool epmem_stat_protected( agent *my_agent, const long stat )
 {
 	return ( ( my_agent->epmem_db_status != -1 ) && 
-		     ( ( stat >= EPMEM_STAT_RIT_OFFSET ) && ( stat <= EPMEM_STAT_RIT_MINSTEP ) ) ||
+		     ( ( stat >= EPMEM_STAT_RIT_OFFSET_1 ) && ( stat <= EPMEM_STAT_RIT_MINSTEP_1 ) ) ||
+			 ( ( stat >= EPMEM_STAT_RIT_OFFSET_2 ) && ( stat <= EPMEM_STAT_RIT_MINSTEP_2 ) ) ||
 			 ( stat == EPMEM_STAT_TIME ) );
 }
 
@@ -1490,11 +1492,11 @@ void epmem_set_variable( agent *my_agent, long long variable_id, long long varia
 //////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////
 
-long long epmem_rit_fork_node( agent *my_agent, epmem_time_id lower, epmem_time_id upper, bool bounds_offset, long long *step_return )
+long long epmem_rit_fork_node( agent *my_agent, epmem_time_id lower, epmem_time_id upper, bool bounds_offset, long long *step_return, const long long *rit_state )
 {	
 	if ( !bounds_offset )
 	{
-		long long offset = epmem_get_stat( my_agent, EPMEM_STAT_RIT_OFFSET );
+		long long offset = epmem_get_stat( my_agent, rit_state[ EPMEM_RIT_STATE_OFFSET ] );
 
 		lower = ( lower - offset );
 		upper = ( upper - offset );
@@ -1503,9 +1505,9 @@ long long epmem_rit_fork_node( agent *my_agent, epmem_time_id lower, epmem_time_
 	// descend the tree down to the fork node
 	long long node = EPMEM_RIT_ROOT;
 	if ( upper < EPMEM_RIT_ROOT )
-		node = epmem_get_stat( my_agent, EPMEM_STAT_RIT_LEFTROOT );
+		node = epmem_get_stat( my_agent, rit_state[ EPMEM_RIT_STATE_LEFTROOT ] );
 	else if ( lower > EPMEM_RIT_ROOT )
-		node = epmem_get_stat( my_agent, EPMEM_STAT_RIT_RIGHTROOT );
+		node = epmem_get_stat( my_agent, rit_state[ EPMEM_RIT_STATE_RIGHTROOT ] );
 
 	long long step;	
 	for ( step = ( ( ( node >= 0 )?( node ):( -1 * node ) ) / 2 ); step >= 1; step /= 2 )
@@ -1526,33 +1528,33 @@ long long epmem_rit_fork_node( agent *my_agent, epmem_time_id lower, epmem_time_
 
 void epmem_rit_clear_left_right( agent *my_agent )
 {
-	sqlite3_step( my_agent->epmem_statements[ EPMEM_STMT_ONE_TRUNCATE_LEFT ] );
-	sqlite3_reset( my_agent->epmem_statements[ EPMEM_STMT_ONE_TRUNCATE_LEFT ] );
+	sqlite3_step( my_agent->epmem_statements[ EPMEM_STMT_RIT_TRUNCATE_LEFT ] );
+	sqlite3_reset( my_agent->epmem_statements[ EPMEM_STMT_RIT_TRUNCATE_LEFT ] );
 	
-	sqlite3_step( my_agent->epmem_statements[ EPMEM_STMT_ONE_TRUNCATE_RIGHT ] );
-	sqlite3_reset( my_agent->epmem_statements[ EPMEM_STMT_ONE_TRUNCATE_RIGHT ] );
+	sqlite3_step( my_agent->epmem_statements[ EPMEM_STMT_RIT_TRUNCATE_RIGHT ] );
+	sqlite3_reset( my_agent->epmem_statements[ EPMEM_STMT_RIT_TRUNCATE_RIGHT ] );
 }
 
 void epmem_rit_add_left( agent *my_agent, epmem_time_id min, epmem_time_id max )
 {
-	sqlite3_bind_int64( my_agent->epmem_statements[ EPMEM_STMT_ONE_ADD_LEFT ], 1, min );
-	sqlite3_bind_int64( my_agent->epmem_statements[ EPMEM_STMT_ONE_ADD_LEFT ], 2, max );
+	sqlite3_bind_int64( my_agent->epmem_statements[ EPMEM_STMT_RIT_ADD_LEFT ], 1, min );
+	sqlite3_bind_int64( my_agent->epmem_statements[ EPMEM_STMT_RIT_ADD_LEFT ], 2, max );
 	
-	sqlite3_step( my_agent->epmem_statements[ EPMEM_STMT_ONE_ADD_LEFT ] );
-	sqlite3_reset( my_agent->epmem_statements[ EPMEM_STMT_ONE_ADD_LEFT ] );
+	sqlite3_step( my_agent->epmem_statements[ EPMEM_STMT_RIT_ADD_LEFT ] );
+	sqlite3_reset( my_agent->epmem_statements[ EPMEM_STMT_RIT_ADD_LEFT ] );
 }
 
 void epmem_rit_add_right( agent *my_agent, epmem_time_id id )
 {
-	sqlite3_bind_int64( my_agent->epmem_statements[ EPMEM_STMT_ONE_ADD_RIGHT ], 1, id );	
+	sqlite3_bind_int64( my_agent->epmem_statements[ EPMEM_STMT_RIT_ADD_RIGHT ], 1, id );	
 
-	sqlite3_step( my_agent->epmem_statements[ EPMEM_STMT_ONE_ADD_RIGHT ] );
-	sqlite3_reset( my_agent->epmem_statements[ EPMEM_STMT_ONE_ADD_RIGHT ] );
+	sqlite3_step( my_agent->epmem_statements[ EPMEM_STMT_RIT_ADD_RIGHT ] );
+	sqlite3_reset( my_agent->epmem_statements[ EPMEM_STMT_RIT_ADD_RIGHT ] );
 }
 
-void epmem_rit_prep_left_right( agent *my_agent, epmem_time_id lower, epmem_time_id upper )
+void epmem_rit_prep_left_right( agent *my_agent, epmem_time_id lower, epmem_time_id upper, const long long *rit_state )
 {
-	long long offset = epmem_get_stat( my_agent, EPMEM_STAT_RIT_OFFSET );
+	long long offset = epmem_get_stat( my_agent, rit_state[ EPMEM_RIT_STATE_OFFSET ] );
 	long long node, step;
 	long long left_node, left_step;
 	long long right_node, right_step;
@@ -1570,12 +1572,12 @@ void epmem_rit_prep_left_right( agent *my_agent, epmem_time_id lower, epmem_time
 	{
 		if ( lower > node )
 		{
-			node = epmem_get_stat( my_agent, EPMEM_STAT_RIT_RIGHTROOT );
+			node = epmem_get_stat( my_agent, rit_state[ EPMEM_RIT_STATE_RIGHTROOT ] );
 			epmem_rit_add_left( my_agent, EPMEM_RIT_ROOT, EPMEM_RIT_ROOT );
 		}
 		else
 		{
-			node = epmem_get_stat( my_agent, EPMEM_STAT_RIT_LEFTROOT );
+			node = epmem_get_stat( my_agent, rit_state[ EPMEM_RIT_STATE_LEFTROOT ] );
 			epmem_rit_add_right( my_agent, EPMEM_RIT_ROOT );
 		}
 
@@ -1628,27 +1630,27 @@ void epmem_rit_prep_left_right( agent *my_agent, epmem_time_id lower, epmem_time
 }
 
 // inserts an interval in the RIT
-void epmem_rit_insert_interval( agent *my_agent, epmem_time_id lower, epmem_time_id upper, epmem_node_id id )
+void epmem_rit_insert_interval( agent *my_agent, epmem_time_id lower, epmem_time_id upper, epmem_node_id id, const long long *rit_state )
 {
 	// initialize offset
-	long long offset = epmem_get_stat( my_agent, EPMEM_STAT_RIT_OFFSET );
+	long long offset = epmem_get_stat( my_agent, rit_state[ EPMEM_RIT_STATE_OFFSET ] );
 	if ( offset == -1 )
 	{
 		offset = lower;
 		
 		// update database
-		epmem_set_variable( my_agent, EPMEM_VAR_RIT_OFFSET, offset );		
+		epmem_set_variable( my_agent, rit_state[ EPMEM_RIT_STATE_OFFSET ], offset );		
 
 		// update stat
-		epmem_set_stat( my_agent, EPMEM_STAT_RIT_OFFSET, offset );
+		epmem_set_stat( my_agent, rit_state[ EPMEM_RIT_STATE_OFFSET ], offset );
 	}
 
 	// get node
 	long long node;	
 	{
-		long long left_root = epmem_get_stat( my_agent, EPMEM_STAT_RIT_LEFTROOT );
-		long long right_root = epmem_get_stat( my_agent, EPMEM_STAT_RIT_RIGHTROOT );
-		long long min_step = epmem_get_stat( my_agent, EPMEM_STAT_RIT_MINSTEP );		
+		long long left_root = epmem_get_stat( my_agent, rit_state[ EPMEM_RIT_STATE_LEFTROOT ] );
+		long long right_root = epmem_get_stat( my_agent, rit_state[ EPMEM_RIT_STATE_RIGHTROOT ] );
+		long long min_step = epmem_get_stat( my_agent, rit_state[ EPMEM_RIT_STATE_MINSTEP ] );		
 
 		// shift interval
 		epmem_time_id l = ( lower - offset );
@@ -1660,10 +1662,10 @@ void epmem_rit_insert_interval( agent *my_agent, epmem_time_id lower, epmem_time
 			left_root = (long long) pow( -2, floor( log( (double) -l ) / EPMEM_LN_2 ) );
 
 			// update database
-			epmem_set_variable( my_agent, EPMEM_VAR_RIT_LEFTROOT, left_root );			
+			epmem_set_variable( my_agent, rit_state[ EPMEM_RIT_STATE_LEFTROOT ], left_root );			
 
 			// update stat
-			epmem_set_stat( my_agent, EPMEM_STAT_RIT_LEFTROOT, left_root );
+			epmem_set_stat( my_agent, rit_state[ EPMEM_RIT_STATE_LEFTROOT ], left_root );
 		}
 
 		// update right_root
@@ -1672,36 +1674,36 @@ void epmem_rit_insert_interval( agent *my_agent, epmem_time_id lower, epmem_time
 			right_root = (long long) pow( 2, floor( log( (double) u ) / EPMEM_LN_2 ) );
 
 			// update database
-			epmem_set_variable( my_agent, EPMEM_VAR_RIT_RIGHTROOT, right_root );			
+			epmem_set_variable( my_agent, rit_state[ EPMEM_RIT_STATE_RIGHTROOT ], right_root );			
 
 			// update stat
-			epmem_set_stat( my_agent, EPMEM_STAT_RIT_RIGHTROOT, right_root );
+			epmem_set_stat( my_agent, rit_state[ EPMEM_RIT_STATE_RIGHTROOT ], right_root );
 		}
 
 		// update min_step				
 		long long step;
-		node = epmem_rit_fork_node( my_agent, l, u, true, &step );
+		node = epmem_rit_fork_node( my_agent, l, u, true, &step, rit_state );
 
 		if ( ( node != EPMEM_RIT_ROOT ) && ( step < min_step ) )
 		{
 			min_step = step;
 
 			// update database
-			epmem_set_variable( my_agent, EPMEM_VAR_RIT_MINSTEP, min_step );			
+			epmem_set_variable( my_agent, rit_state[ EPMEM_RIT_STATE_MINSTEP ], min_step );			
 
 			// update stat
-			epmem_set_stat( my_agent, EPMEM_STAT_RIT_MINSTEP, min_step );
+			epmem_set_stat( my_agent, rit_state[ EPMEM_RIT_STATE_MINSTEP ], min_step );
 		}		
 	}
 
 	// perform insert
 	// ( node, start, end, id )
-	sqlite3_bind_int64( my_agent->epmem_statements[ EPMEM_STMT_ONE_ADD_EPISODE ], 1, node );
-	sqlite3_bind_int64( my_agent->epmem_statements[ EPMEM_STMT_ONE_ADD_EPISODE ], 2, lower );
-	sqlite3_bind_int64( my_agent->epmem_statements[ EPMEM_STMT_ONE_ADD_EPISODE ], 3, upper );
-	sqlite3_bind_int64( my_agent->epmem_statements[ EPMEM_STMT_ONE_ADD_EPISODE ], 4, id );
-	sqlite3_step( my_agent->epmem_statements[ EPMEM_STMT_ONE_ADD_EPISODE ] );
-	sqlite3_reset( my_agent->epmem_statements[ EPMEM_STMT_ONE_ADD_EPISODE ] );
+	sqlite3_bind_int64( my_agent->epmem_statements[ rit_state[ EPMEM_RIT_STATE_ADD ] ], 1, node );
+	sqlite3_bind_int64( my_agent->epmem_statements[ rit_state[ EPMEM_RIT_STATE_ADD ] ], 2, lower );
+	sqlite3_bind_int64( my_agent->epmem_statements[ rit_state[ EPMEM_RIT_STATE_ADD ] ], 3, upper );
+	sqlite3_bind_int64( my_agent->epmem_statements[ rit_state[ EPMEM_RIT_STATE_ADD ] ], 4, id );
+	sqlite3_step( my_agent->epmem_statements[ rit_state[ EPMEM_RIT_STATE_ADD ] ] );
+	sqlite3_reset( my_agent->epmem_statements[ rit_state[ EPMEM_RIT_STATE_ADD ] ] );
 }
 
 
@@ -1839,13 +1841,29 @@ void epmem_init_db( agent *my_agent )
 		sqlite3_prepare_v2( my_agent->epmem_db, "CREATE TABLE IF NOT EXISTS vars (id INTEGER PRIMARY KEY,value NONE)", -1, &create, &tail );
 		sqlite3_step( create );
 		sqlite3_finalize( create );
+
+		// left_nodes table (rit)
+		sqlite3_prepare_v2( my_agent->epmem_db, "CREATE TABLE IF NOT EXISTS left_nodes (min INTEGER, max INTEGER)", -1, &create, &tail );
+		sqlite3_step( create );					
+		sqlite3_finalize( create );
+
+		// right_nodes table (rit)
+		sqlite3_prepare_v2( my_agent->epmem_db, "CREATE TABLE IF NOT EXISTS right_nodes (node INTEGER)", -1, &create, &tail );
+		sqlite3_step( create );					
+		sqlite3_finalize( create );	
 		
 		// common queries
 		sqlite3_prepare_v2( my_agent->epmem_db, "BEGIN", -1, &( my_agent->epmem_statements[ EPMEM_STMT_BEGIN ] ), &tail );
 		sqlite3_prepare_v2( my_agent->epmem_db, "COMMIT", -1, &( my_agent->epmem_statements[ EPMEM_STMT_COMMIT ] ), &tail );
-		sqlite3_prepare_v2( my_agent->epmem_db, "ROLLBACK", -1, &( my_agent->epmem_statements[ EPMEM_STMT_ROLLBACK ] ), &tail );			
+		sqlite3_prepare_v2( my_agent->epmem_db, "ROLLBACK", -1, &( my_agent->epmem_statements[ EPMEM_STMT_ROLLBACK ] ), &tail );
+
 		sqlite3_prepare_v2( my_agent->epmem_db, "SELECT value FROM vars WHERE id=?", -1, &( my_agent->epmem_statements[ EPMEM_STMT_VAR_GET ] ), &tail );
 		sqlite3_prepare_v2( my_agent->epmem_db, "REPLACE INTO vars (id,value) VALUES (?,?)", -1, &( my_agent->epmem_statements[ EPMEM_STMT_VAR_SET ] ), &tail );
+
+		sqlite3_prepare_v2( my_agent->epmem_db, "INSERT INTO left_nodes (min,max) VALUES (?,?)", -1, &( my_agent->epmem_statements[ EPMEM_STMT_RIT_ADD_LEFT ] ), &tail );		
+		sqlite3_prepare_v2( my_agent->epmem_db, "DELETE FROM left_nodes", -1, &( my_agent->epmem_statements[ EPMEM_STMT_RIT_TRUNCATE_LEFT ] ), &tail );
+		sqlite3_prepare_v2( my_agent->epmem_db, "INSERT INTO right_nodes (node) VALUES (?)", -1, &( my_agent->epmem_statements[ EPMEM_STMT_RIT_ADD_RIGHT ] ), &tail );
+		sqlite3_prepare_v2( my_agent->epmem_db, "DELETE FROM right_nodes", -1, &( my_agent->epmem_statements[ EPMEM_STMT_RIT_TRUNCATE_RIGHT ] ), &tail );
 
 		// mva - read if existing
 		{
@@ -1864,10 +1882,10 @@ void epmem_init_db( agent *my_agent )
 		{
 			// variable initialization
 			epmem_set_stat( my_agent, (const long) EPMEM_STAT_TIME, 1 );
-			epmem_set_stat( my_agent, (const long) EPMEM_STAT_RIT_OFFSET, -1 );
-			epmem_set_stat( my_agent, (const long) EPMEM_STAT_RIT_LEFTROOT, 0 );
-			epmem_set_stat( my_agent, (const long) EPMEM_STAT_RIT_RIGHTROOT, 0 );
-			epmem_set_stat( my_agent, (const long) EPMEM_STAT_RIT_MINSTEP, LONG_MAX );
+			epmem_set_stat( my_agent, (const long) epmem_rit_state_one[ EPMEM_RIT_STATE_OFFSET ], -1 );
+			epmem_set_stat( my_agent, (const long) epmem_rit_state_one[ EPMEM_RIT_STATE_LEFTROOT ], 0 );
+			epmem_set_stat( my_agent, (const long) epmem_rit_state_one[ EPMEM_RIT_STATE_RIGHTROOT ], 0 );
+			epmem_set_stat( my_agent, (const long) epmem_rit_state_one[ EPMEM_RIT_STATE_MINSTEP ], LONG_MAX );
 			my_agent->epmem_range_mins->clear();
 			my_agent->epmem_range_maxes->clear();
 			my_agent->epmem_range_removals->clear();
@@ -2012,28 +2030,6 @@ void epmem_init_db( agent *my_agent )
 
 			////
 
-			// left_nodes table
-			sqlite3_prepare_v2( my_agent->epmem_db, "CREATE TABLE IF NOT EXISTS left_nodes (min INTEGER, max INTEGER)", -1, &create, &tail );
-			sqlite3_step( create );					
-			sqlite3_finalize( create );			
-
-			// custom statement for inserting left nodes
-			sqlite3_prepare_v2( my_agent->epmem_db, "INSERT INTO left_nodes (min,max) VALUES (?,?)", -1, &( my_agent->epmem_statements[ EPMEM_STMT_ONE_ADD_LEFT ] ), &tail );
-
-			// custom statement for removing left nodes
-			sqlite3_prepare_v2( my_agent->epmem_db, "DELETE FROM left_nodes", -1, &( my_agent->epmem_statements[ EPMEM_STMT_ONE_TRUNCATE_LEFT ] ), &tail );
-
-			// right_nodes table
-			sqlite3_prepare_v2( my_agent->epmem_db, "CREATE TABLE IF NOT EXISTS right_nodes (node INTEGER)", -1, &create, &tail );
-			sqlite3_step( create );					
-			sqlite3_finalize( create );
-
-			// custom statement for inserting right nodes
-			sqlite3_prepare_v2( my_agent->epmem_db, "INSERT INTO right_nodes (node) VALUES (?)", -1, &( my_agent->epmem_statements[ EPMEM_STMT_ONE_ADD_RIGHT ] ), &tail );
-
-			// custom statement for removing right nodes
-			sqlite3_prepare_v2( my_agent->epmem_db, "DELETE FROM right_nodes", -1, &( my_agent->epmem_statements[ EPMEM_STMT_ONE_TRUNCATE_RIGHT ] ), &tail );
-
 			// custom statement for range intersection query
 			sqlite3_prepare_v2( my_agent->epmem_db, "SELECT i.child_id, i.parent_id, i.name, i.value, i.wme_type FROM ids i WHERE i.child_id IN (SELECT n.id FROM now n WHERE n.start<= ? UNION ALL SELECT p.id FROM points p WHERE p.start=? UNION ALL SELECT e1.id FROM episodes e1, left_nodes lt WHERE e1.node BETWEEN lt.min AND lt.max AND e1.end >= ? UNION ALL SELECT e2.id FROM episodes e2, right_nodes rt WHERE e2.node = rt.node AND e2.start <= ?) ORDER BY i.child_id ASC", -1, &( my_agent->epmem_statements[ EPMEM_STMT_ONE_GET_EPISODE ] ), &tail );
 
@@ -2043,7 +2039,7 @@ void epmem_init_db( agent *my_agent )
 			{
 				long long var_val;
 				
-				for ( int i=EPMEM_VAR_RIT_OFFSET; i<=EPMEM_VAR_RIT_MINSTEP; i++ )
+				for ( int i=epmem_rit_state_one[ EPMEM_RIT_STATE_OFFSET ]; i<=epmem_rit_state_one[ EPMEM_RIT_STATE_MINSTEP ]; i++ )
 				{
 					if ( epmem_get_variable( my_agent, i, var_val ) )
 						epmem_set_stat( my_agent, i, var_val );
@@ -2075,7 +2071,7 @@ void epmem_init_db( agent *my_agent )
 					sqlite3_reset( my_agent->epmem_statements[ EPMEM_STMT_ONE_ADD_POINT ] );
 				}
 				else
-					epmem_rit_insert_interval( my_agent, range_start, time_last, sqlite3_column_int64( create, 0 ) );
+					epmem_rit_insert_interval( my_agent, range_start, time_last, sqlite3_column_int64( create, 0 ), epmem_rit_state_one );
 			}
 			sqlite3_finalize( create );
 
@@ -2348,7 +2344,7 @@ void epmem_new_episode( agent *my_agent )
 				}
 				// node
 				else				
-					epmem_rit_insert_interval( my_agent, range_start, range_end, r->first );
+					epmem_rit_insert_interval( my_agent, range_start, range_end, r->first, epmem_rit_state_one );
 			}
 			
 			r++;
@@ -2737,7 +2733,7 @@ void epmem_new_episode( agent *my_agent )
 				}
 				// node
 				else				
-					epmem_rit_insert_interval( my_agent, range_start, range_end, r->first );
+					epmem_rit_insert_interval( my_agent, range_start, range_end, r->first, epmem_rit_state_one );
 			}
 			
 			r++;
@@ -2840,7 +2836,7 @@ void epmem_install_memory( agent *my_agent, Symbol *state, epmem_time_id memory_
 
 		ids[ 0 ] = retrieved_header;
 
-		epmem_rit_prep_left_right( my_agent, memory_id, memory_id );
+		epmem_rit_prep_left_right( my_agent, memory_id, memory_id, epmem_rit_state_one );
 
 		sqlite3_bind_int64( my_agent->epmem_statements[ EPMEM_STMT_ONE_GET_EPISODE ], 1, memory_id );
 		sqlite3_bind_int64( my_agent->epmem_statements[ EPMEM_STMT_ONE_GET_EPISODE ], 2, memory_id );
@@ -2925,7 +2921,7 @@ void epmem_install_memory( agent *my_agent, Symbol *state, epmem_time_id memory_
 			mva_child_id = sqlite3_column_int64( my_agent->epmem_statements[ EPMEM_STMT_ONE_MVA_GET_EP ], 1 );
 
 		// prep eps
-		epmem_rit_prep_left_right( my_agent, memory_id, memory_id );
+		epmem_rit_prep_left_right( my_agent, memory_id, memory_id, epmem_rit_state_one );
 		sqlite3_bind_int64( my_agent->epmem_statements[ EPMEM_STMT_ONE_GET_EPISODE ], 1, memory_id );
 		sqlite3_bind_int64( my_agent->epmem_statements[ EPMEM_STMT_ONE_GET_EPISODE ], 2, memory_id );
 		sqlite3_bind_int64( my_agent->epmem_statements[ EPMEM_STMT_ONE_GET_EPISODE ], 3, memory_id );

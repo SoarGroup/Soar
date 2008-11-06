@@ -362,10 +362,17 @@ agent * create_soar_agent (char * agent_name) {                                 
   newAgent->epmem_stats[ EPMEM_STAT_QRY_NEG ] = epmem_add_stat( "qry_neg" );
   newAgent->epmem_stats[ EPMEM_STAT_QRY_RET ] = epmem_add_stat( "qry_ret" );
   newAgent->epmem_stats[ EPMEM_STAT_QRY_CARD ] = epmem_add_stat( "qry_card" );
-  newAgent->epmem_stats[ EPMEM_STAT_RIT_OFFSET ] = epmem_add_stat( "rit_offset" );
-  newAgent->epmem_stats[ EPMEM_STAT_RIT_LEFTROOT ] = epmem_add_stat( "rit_left_root" );
-  newAgent->epmem_stats[ EPMEM_STAT_RIT_RIGHTROOT ] = epmem_add_stat( "rit_right_root" );
-  newAgent->epmem_stats[ EPMEM_STAT_RIT_MINSTEP ] = epmem_add_stat( "rit_min_step" );
+
+  newAgent->epmem_stats[ EPMEM_STAT_RIT_OFFSET_1 ] = epmem_add_stat( "rit_offset_1" );
+  newAgent->epmem_stats[ EPMEM_STAT_RIT_LEFTROOT_1 ] = epmem_add_stat( "rit_left_root_1" );
+  newAgent->epmem_stats[ EPMEM_STAT_RIT_RIGHTROOT_1 ] = epmem_add_stat( "rit_right_root_1" );
+  newAgent->epmem_stats[ EPMEM_STAT_RIT_MINSTEP_1 ] = epmem_add_stat( "rit_min_step_1" );
+
+  newAgent->epmem_stats[ EPMEM_STAT_RIT_OFFSET_2 ] = epmem_add_stat( "rit_offset_2" );
+  newAgent->epmem_stats[ EPMEM_STAT_RIT_LEFTROOT_2 ] = epmem_add_stat( "rit_left_root_2" );
+  newAgent->epmem_stats[ EPMEM_STAT_RIT_RIGHTROOT_2 ] = epmem_add_stat( "rit_right_root_2" );
+  newAgent->epmem_stats[ EPMEM_STAT_RIT_MINSTEP_2 ] = epmem_add_stat( "rit_min_step_2" );
+
 
   newAgent->epmem_timers[ EPMEM_TIMER_TOTAL ] = epmem_add_timer( "epmem_total" );
   newAgent->epmem_timers[ EPMEM_TIMER_STORAGE ] = epmem_add_timer( "epmem_storage" );

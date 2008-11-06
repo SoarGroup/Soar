@@ -71,11 +71,18 @@ typedef struct wme_struct wme;
 #define EPMEM_STAT_QRY_NEG							4
 #define EPMEM_STAT_QRY_RET							5
 #define EPMEM_STAT_QRY_CARD							6
-#define EPMEM_STAT_RIT_OFFSET						7 // *
-#define EPMEM_STAT_RIT_LEFTROOT						8 // *
-#define EPMEM_STAT_RIT_RIGHTROOT					9 // *
-#define EPMEM_STAT_RIT_MINSTEP						10 // *
-#define EPMEM_STATS									11 // must be 1+ last epmem stat
+
+#define EPMEM_STAT_RIT_OFFSET_1						7 // *
+#define EPMEM_STAT_RIT_LEFTROOT_1					8 // *
+#define EPMEM_STAT_RIT_RIGHTROOT_1					9 // *
+#define EPMEM_STAT_RIT_MINSTEP_1					10 // *
+
+#define EPMEM_STAT_RIT_OFFSET_2						11 // *
+#define EPMEM_STAT_RIT_LEFTROOT_2					12 // *
+#define EPMEM_STAT_RIT_RIGHTROOT_2					13 // *
+#define EPMEM_STAT_RIT_MINSTEP_2					14 // *
+
+#define EPMEM_STATS									15 // must be 1+ last epmem stat
 
 // timers
 #define EPMEM_TIMER_TOTAL							0
@@ -110,6 +117,11 @@ typedef struct wme_struct wme;
 #define EPMEM_STMT_VAR_GET					3
 #define EPMEM_STMT_VAR_SET					4
 
+#define EPMEM_STMT_RIT_ADD_LEFT				5
+#define EPMEM_STMT_RIT_TRUNCATE_LEFT		6
+#define EPMEM_STMT_RIT_ADD_RIGHT			7
+#define EPMEM_STMT_RIT_TRUNCATE_RIGHT		8
+
 #define EPMEM_STMT_ONE_ADD_TIME				10
 #define EPMEM_STMT_ONE_ADD_EPISODE			11
 #define EPMEM_STMT_ONE_ADD_ID				12
@@ -118,25 +130,27 @@ typedef struct wme_struct wme;
 #define EPMEM_STMT_ONE_VALID_EPISODE		15
 #define EPMEM_STMT_ONE_NEXT_EPISODE			16
 #define EPMEM_STMT_ONE_PREV_EPISODE			17
-#define EPMEM_STMT_ONE_ADD_LEFT				18
-#define EPMEM_STMT_ONE_TRUNCATE_LEFT		19
-#define EPMEM_STMT_ONE_ADD_RIGHT			20
-#define EPMEM_STMT_ONE_TRUNCATE_RIGHT		21
-#define EPMEM_STMT_ONE_GET_EPISODE			22
-#define EPMEM_STMT_ONE_ADD_NOW				23
-#define EPMEM_STMT_ONE_DELETE_NOW			24
-#define EPMEM_STMT_ONE_ADD_POINT			25
-#define EPMEM_STMT_ONE_MVA_ADD_ID			26
-#define EPMEM_STMT_ONE_MVA_GET_EP			27
+#define EPMEM_STMT_ONE_GET_EPISODE			18
+#define EPMEM_STMT_ONE_ADD_NOW				19
+#define EPMEM_STMT_ONE_DELETE_NOW			20
+#define EPMEM_STMT_ONE_ADD_POINT			21
+#define EPMEM_STMT_ONE_MVA_ADD_ID			22
+#define EPMEM_STMT_ONE_MVA_GET_EP			23
 
 #define EPMEM_MAX_STATEMENTS 				30 // must be at least 1+ largest of any STMT constant
 
-// variables
-#define EPMEM_VAR_RIT_OFFSET						EPMEM_STAT_RIT_OFFSET
-#define EPMEM_VAR_RIT_LEFTROOT						EPMEM_STAT_RIT_LEFTROOT
-#define EPMEM_VAR_RIT_RIGHTROOT						EPMEM_STAT_RIT_RIGHTROOT
-#define EPMEM_VAR_RIT_MINSTEP						EPMEM_STAT_RIT_MINSTEP
-#define EPMEM_VAR_MODE								EPMEM_VAR_RIT_MINSTEP + 1
+// variables (rit vars must be same as stat versions)
+#define EPMEM_VAR_RIT_OFFSET_1						EPMEM_STAT_RIT_OFFSET_1
+#define EPMEM_VAR_RIT_LEFTROOT_1					EPMEM_STAT_RIT_LEFTROOT_1
+#define EPMEM_VAR_RIT_RIGHTROOT_1					EPMEM_STAT_RIT_RIGHTROOT_1
+#define EPMEM_VAR_RIT_MINSTEP_1						EPMEM_STAT_RIT_MINSTEP_1
+
+#define EPMEM_VAR_RIT_OFFSET_2						EPMEM_STAT_RIT_OFFSET_2
+#define EPMEM_VAR_RIT_LEFTROOT_2					EPMEM_STAT_RIT_LEFTROOT_2
+#define EPMEM_VAR_RIT_RIGHTROOT_2					EPMEM_STAT_RIT_RIGHTROOT_2
+#define EPMEM_VAR_RIT_MINSTEP_2						EPMEM_STAT_RIT_MINSTEP_2
+
+#define EPMEM_VAR_MODE								EPMEM_VAR_RIT_MINSTEP_2 + 1
 
 // algorithm constants
 #define EPMEM_MEMID_NONE							-1
@@ -153,6 +167,11 @@ typedef struct wme_struct wme;
 #define EPMEM_RIT_ROOT								0
 #define EPMEM_LN_2									0.693147180559945
 
+#define EPMEM_RIT_STATE_OFFSET						0
+#define EPMEM_RIT_STATE_LEFTROOT					1
+#define EPMEM_RIT_STATE_RIGHTROOT					2
+#define EPMEM_RIT_STATE_MINSTEP						3
+#define EPMEM_RIT_STATE_ADD							4
 
 //////////////////////////////////////////////////////////
 // EpMem Types
