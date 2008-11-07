@@ -347,7 +347,7 @@ agent * create_soar_agent (char * agent_name) {                                 
   newAgent->epmem_params[ EPMEM_PARAM_PATH ] = epmem_add_parameter( "path", "", &epmem_validate_path );
   newAgent->epmem_params[ EPMEM_PARAM_COMMIT ] = epmem_add_parameter( "commit", 1.0, &epmem_validate_commit );
   
-  newAgent->epmem_params[ EPMEM_PARAM_MODE ] = epmem_add_parameter( "mode", EPMEM_MODE_ONE, &epmem_validate_mode, &epmem_convert_mode, &epmem_convert_mode );
+  newAgent->epmem_params[ EPMEM_PARAM_MODE ] = epmem_add_parameter( "mode", EPMEM_MODE_THREE, &epmem_validate_mode, &epmem_convert_mode, &epmem_convert_mode );
     
   newAgent->epmem_params[ EPMEM_PARAM_TRIGGER ] = epmem_add_parameter( "trigger", EPMEM_TRIGGER_OUTPUT, &epmem_validate_trigger, &epmem_convert_trigger, &epmem_convert_trigger );
   newAgent->epmem_params[ EPMEM_PARAM_FORCE ] = epmem_add_parameter( "force", EPMEM_FORCE_OFF, &epmem_validate_force, &epmem_convert_force, &epmem_convert_force );
@@ -362,6 +362,8 @@ agent * create_soar_agent (char * agent_name) {                                 
   newAgent->epmem_stats[ EPMEM_STAT_QRY_NEG ] = epmem_add_stat( "qry_neg" );
   newAgent->epmem_stats[ EPMEM_STAT_QRY_RET ] = epmem_add_stat( "qry_ret" );
   newAgent->epmem_stats[ EPMEM_STAT_QRY_CARD ] = epmem_add_stat( "qry_card" );
+
+  newAgent->epmem_stats[ EPMEM_STAT_NEXT_ID ] = epmem_add_stat( "next_id" );
 
   newAgent->epmem_stats[ EPMEM_STAT_RIT_OFFSET_1 ] = epmem_add_stat( "rit_offset_1" );
   newAgent->epmem_stats[ EPMEM_STAT_RIT_LEFTROOT_1 ] = epmem_add_stat( "rit_left_root_1" );
@@ -403,9 +405,13 @@ agent * create_soar_agent (char * agent_name) {                                 
 
   newAgent->epmem_exclusions = new std::list<const char *>();
 
-  newAgent->epmem_range_removals = new std::map<epmem_node_id, bool>();
-  newAgent->epmem_range_mins = new std::vector<epmem_time_id>();
-  newAgent->epmem_range_maxes = new std::vector<epmem_time_id>();
+  newAgent->epmem_search_removals = new std::map<epmem_node_id, bool>();
+  newAgent->epmem_search_mins = new std::vector<epmem_time_id>();
+  newAgent->epmem_search_maxes = new std::vector<epmem_time_id>();
+
+  newAgent->epmem_reconstruct_removals = new std::map<epmem_node_id, bool>();
+  newAgent->epmem_reconstruct_mins = new std::vector<epmem_time_id>();
+  newAgent->epmem_reconstruct_maxes = new std::vector<epmem_time_id>();
 
   newAgent->epmem_validation = 0;
 
@@ -546,9 +552,12 @@ void destroy_soar_agent (agent * delete_agent)
   epmem_clean_stats( delete_agent );
   epmem_clean_timers( delete_agent );
   delete delete_agent->epmem_exclusions;
-  delete delete_agent->epmem_range_removals;
-  delete delete_agent->epmem_range_mins;
-  delete delete_agent->epmem_range_maxes;
+  delete delete_agent->epmem_search_removals;
+  delete delete_agent->epmem_search_mins;
+  delete delete_agent->epmem_search_maxes;
+  delete delete_agent->epmem_reconstruct_removals;
+  delete delete_agent->epmem_reconstruct_mins;
+  delete delete_agent->epmem_reconstruct_maxes;
 
   // cleanup wma
   wma_clean_parameters( delete_agent );

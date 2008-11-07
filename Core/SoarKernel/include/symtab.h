@@ -148,6 +148,8 @@ typedef struct agent_struct agent;
 typedef struct dl_cons_struct dl_cons;
 typedef cons list;
 
+typedef unsigned long long int epmem_node_id;
+
 /* WARNING:  In the following structure, next_in_hash_table MUST be the
    first field.  This field is used by the resizable hash table routines. */
 
@@ -254,6 +256,8 @@ typedef struct identifier_struct {
   struct wme_struct *input_wmes;
 
   int depth; /* used to track depth of print (bug 988) RPM 4/07 */
+
+  epmem_node_id epmem_id;
 } identifier;
 
 typedef union symbol_union {

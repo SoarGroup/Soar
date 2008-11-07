@@ -327,6 +327,7 @@ Symbol *make_new_identifier (agent* thisAgent, char name_letter, goal_stack_leve
   sym->id.epmem_cmd_wme = NIL;
   sym->id.epmem_result_header = NIL;
   sym->id.epmem_result_wme = NIL;
+  sym->id.epmem_id = NIL;
 
   add_to_hash_table (thisAgent, thisAgent->identifier_hash_table, sym);
   return sym;

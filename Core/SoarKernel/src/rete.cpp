@@ -1566,7 +1566,7 @@ void add_wme_to_rete (agent* thisAgent, wme *w) {
     add_wme_to_aht (thisAgent, thisAgent->alpha_hash_tables[7],  xor_op(hi,ha,hv), w);
   }
 
-  w->epmem_id = NULL;
+  w->epmem_id = NULL;  
   w->epmem_valid = NULL;
 }
 
@@ -1577,8 +1577,20 @@ void remove_wme_from_rete (agent* thisAgent, wme *w) {
   rete_node *node, *next, *child;
   token *tok, *left;
 
-  if ( w->epmem_id != NULL )
-    (*thisAgent->epmem_range_removals)[ w->epmem_id ] = true;
+  if ( ( w->epmem_id != NULL ) && ( w->epmem_valid == thisAgent->epmem_validation ) )
+  {
+    if ( epmem_get_parameter( thisAgent, EPMEM_PARAM_MODE, EPMEM_RETURN_LONG ) == EPMEM_MODE_THREE )
+	{
+	  if ( w->value->common.symbol_type == IDENTIFIER_SYMBOL_TYPE )
+	    (*thisAgent->epmem_reconstruct_removals)[ w->epmem_id ] = true;
+	  else
+	    (*thisAgent->epmem_search_removals)[ w->epmem_id ] = true;
+	}
+	else
+	{
+	  (*thisAgent->epmem_search_removals)[ w->epmem_id ] = true;
+	}
+  }
   
   /* --- remove w from all_wmes_in_rete --- */
   remove_from_dll (thisAgent->all_wmes_in_rete, w, rete_next, rete_prev);

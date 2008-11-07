@@ -812,9 +812,13 @@ kernel time and total_cpu_time greater than the derived total CPU time. REW */
 
   std::list<const char *> *epmem_exclusions;
   
-  std::map<epmem_node_id, bool> *epmem_range_removals;
-  std::vector<epmem_time_id> *epmem_range_mins;
-  std::vector<epmem_time_id> *epmem_range_maxes;
+  std::map<epmem_node_id, bool> *epmem_search_removals;
+  std::vector<epmem_time_id> *epmem_search_mins;
+  std::vector<epmem_time_id> *epmem_search_maxes;
+
+  std::map<epmem_node_id, bool> *epmem_reconstruct_removals;
+  std::vector<epmem_time_id> *epmem_reconstruct_mins;
+  std::vector<epmem_time_id> *epmem_reconstruct_maxes;
 
   epmem_time_id epmem_validation;
 
