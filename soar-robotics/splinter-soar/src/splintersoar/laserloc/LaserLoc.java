@@ -23,28 +23,43 @@ public class LaserLoc extends Thread implements LCMSubscriber {
 
 	private Configuration cnf;
 
-	// Assumptions:
-	// robot_z is constant
-	// robot starts at a known angle
-	// this level only reports laser data (next layer up decided whether to use
-	// odometry or not)
-	// distances in meters
-
-	// regular state
+	/**
+	 * The data that comes in from the sick
+	 */
 	laser_t laserData;
 
+	/**
+	 * Keep track of how many packets are being ignored, for debugging.
+	 */
 	int droppedLocPackets = 0;
+	/**
+	 * Used when deciding when to print status message about packet loss.
+	 */
 	long lastStatusUpdate = System.nanoTime();
 
+	/**
+	 * H1 network for the sick laser data
+	 */
 	LCM lcmH1;
+	/**
+	 * GG network for the result of this class, the coordinates.
+	 */
 	LCM lcmGG;
 
+	/**
+	 * Used to print out a warning when no sick data is being received.
+	 */
 	boolean inactive = true;
+	/**
+	 * State for inactivity warning message
+	 */
 	long nanolastactivity = System.nanoTime();
+	/**
+	 * Timeout before inactivity warning messages are generated.
+	 */
 	long currentTimeout;
 
 	private Logger logger;
-	RoomMapper mapper;
 
 	public LaserLoc(Configuration cnf) {
 		this.cnf = cnf;
@@ -81,6 +96,9 @@ public class LaserLoc extends Thread implements LCMSubscriber {
 		currentTimeout = cnf.lloc.activityTimeoutNanos;
 	}
 
+	/**
+	 * Main update function, called in a loop.
+	 */
 	private void updatePose() {
 		long nanotime = System.nanoTime();
 
@@ -102,6 +120,7 @@ public class LaserLoc extends Thread implements LCMSubscriber {
 			lastStatusUpdate = nanotime;
 		}
 
+		// If no laser data, sleep for a bit.
 		if (laserData == null) {
 			try {
 				Thread.sleep(50);
@@ -144,6 +163,13 @@ public class LaserLoc extends Thread implements LCMSubscriber {
 	
 	long lastutime = 0;
 
+	/**
+	 * @param ld Data from front sick.
+	 * @return Estimate of splinter location.
+	 * 
+	 * Takes the laser data, looks for the closest thing within the 
+	 * bounds of the "room," returns its location.
+	 */
 	private xy_t getRobotXY(laser_t ld) {
 		int nranges = Math.min( cnf.lloc.maxRanges.length, ld.nranges);
 		if (cnf.lloc.maxRanges.length != ld.nranges)

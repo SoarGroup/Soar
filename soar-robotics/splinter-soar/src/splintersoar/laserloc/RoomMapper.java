@@ -29,8 +29,17 @@ import lcmtypes.laser_t;
  */
 public class RoomMapper implements LCMSubscriber {
 
+	/**
+	 * Sick data from the localizing sick comes in on H1
+	 */
 	LCM lcmH1;
+	/**
+	 * Sick data
+	 */
 	laser_t laserData;
+	/**
+	 * The values we've observed.
+	 */
 	float[] ranges;
 	float radstep;
 
