@@ -87,6 +87,34 @@ const char *epmem_range_queries[2][2][3] =
 	},
 };
 
+const char *epmem_range_queries3[2][2][3] =
+{
+	{
+		{
+			"SELECT e.start AS start FROM search e WHERE e.id=? ORDER BY e.start DESC",
+			"SELECT e.start AS start FROM now_search e WHERE e.id=? ORDER BY e.start DESC",
+			"SELECT e.start AS start FROM points_search e WHERE e.id=? ORDER BY e.start DESC"
+		},
+		{
+			"SELECT e.end AS end FROM search e WHERE e.id=? ORDER BY e.end DESC",
+			"SELECT ? AS end FROM now_search e WHERE e.id=?",
+			"SELECT e.start AS end FROM points_search e WHERE e.id=? ORDER BY e.start DESC"
+		}
+	},
+	{
+		{
+			"SELECT e.start AS start FROM search e WHERE e.id=? ORDER BY e.start DESC",
+			"SELECT e.start AS start FROM now_search e WHERE e.id=? ORDER BY e.start DESC",
+			"SELECT e.start AS start FROM points_search e WHERE e.id=? ORDER BY e.start DESC"
+		},
+		{
+			"SELECT e.end AS end FROM search e WHERE e.id=? ORDER BY e.end DESC",
+			"SELECT ? AS end FROM now_search e WHERE e.id=?",
+			"SELECT e.start AS end FROM points_search e WHERE e.id=? ORDER BY e.start DESC"
+		}
+	},
+};
+
 const long long epmem_rit_state_one[5] = { EPMEM_VAR_RIT_OFFSET_1, EPMEM_VAR_RIT_LEFTROOT_1, EPMEM_VAR_RIT_RIGHTROOT_1, EPMEM_VAR_RIT_MINSTEP_1, EPMEM_STMT_ONE_ADD_EPISODE };
 
 const long long epmem_rit_state_three[2][5] =
@@ -2288,10 +2316,7 @@ void epmem_init_db( agent *my_agent )
 			sqlite3_finalize( create );
 
 			// custom statement for finding features
-			sqlite3_prepare_v2( my_agent->epmem_db, "SELECT child_id FROM features WHERE parent_id=? AND hash=? AND name=? AND value=? AND wme_type=?", -1, &( my_agent->epmem_statements[ EPMEM_STMT_THREE_FIND_FEATURE ] ), &tail );
-
-			// custom statement for finding child features
-			sqlite3_prepare_v2( my_agent->epmem_db, "SELECT child_id FROM features WHERE parent_id=? AND name=? AND value=? AND wme_type=?", -1, &( my_agent->epmem_statements[ EPMEM_STMT_THREE_FIND_CHILD_FEATURES ] ), &tail );
+			sqlite3_prepare_v2( my_agent->epmem_db, "SELECT child_id FROM features WHERE parent_id=? AND hash=? AND name=? AND value=? AND wme_type=?", -1, &( my_agent->epmem_statements[ EPMEM_STMT_THREE_FIND_FEATURE ] ), &tail );			
 			
 			// custom statement for inserting features
 			sqlite3_prepare_v2( my_agent->epmem_db, "INSERT INTO features (parent_id,name,value,hash,wme_type) VALUES (?,?,?,?,?)", -1, &( my_agent->epmem_statements[ EPMEM_STMT_THREE_ADD_FEATURE ] ), &tail );
@@ -2309,10 +2334,7 @@ void epmem_init_db( agent *my_agent )
 			sqlite3_finalize( create );
 
 			// custom statement for finding paths
-			sqlite3_prepare_v2( my_agent->epmem_db, "SELECT parent_id FROM paths WHERE q0=? AND name=? AND q1=?", -1, &( my_agent->epmem_statements[ EPMEM_STMT_THREE_FIND_PATH ] ), &tail );
-
-			// custom statement for exploring paths
-			sqlite3_prepare_v2( my_agent->epmem_db, "SELECT DISTINCT q1 FROM paths WHERE q0=? AND name=?", -1, &( my_agent->epmem_statements[ EPMEM_STMT_THREE_EXPLORE_PATH ] ), &tail );
+			sqlite3_prepare_v2( my_agent->epmem_db, "SELECT q1 FROM paths WHERE q0=? AND name=?", -1, &( my_agent->epmem_statements[ EPMEM_STMT_THREE_FIND_PATH ] ), &tail );			
 			
 			// custom statement for inserting paths
 			sqlite3_prepare_v2( my_agent->epmem_db, "INSERT INTO paths (q0,name,q1) VALUES (?,?,?)", -1, &( my_agent->epmem_statements[ EPMEM_STMT_THREE_ADD_PATH ] ), &tail );
@@ -4028,6 +4050,83 @@ void epmem_incremental_row( agent *my_agent, epmem_range_query *stmts[2][2][3], 
 	tops[ list ] = new_top;
 }
 
+// reads all b-tree pointers in parallel
+void epmem_incremental_row3( agent *my_agent, epmem_range_query *stmts[2][2][3], epmem_time_id tops[2], int ambig_sizes[2], long long *point_groups[2], epmem_time_id &id, long long &ct, double &v, long long &updown, const unsigned int list )
+{	
+	// initialize variables
+	id = tops[ list ];
+	ct = 0;
+	v = 0;
+	updown = 0;
+
+	int i, k, m;
+	bool more_data, group_shift;
+	epmem_time_id next_id = EPMEM_MEMID_NONE;
+	epmem_time_id new_top = EPMEM_MEMID_NONE;
+
+	// identify lists that can possibly contribute to the current top
+	for ( i=EPMEM_NODE_POS; i<=EPMEM_NODE_NEG; i++ )
+	{
+		if ( ambig_sizes[ i ] )
+		{
+			for ( k=EPMEM_RANGE_EP; k<=EPMEM_RANGE_POINT; k++ )
+			{
+				for ( m=0; m<ambig_sizes[ i ]; m++ )
+				{
+					// for each of these, grab new data till no longer good
+					if ( stmts[ i ][ list ][ k ][ m ].val == id )
+					{
+						do
+						{
+							group_shift = false;		
+							if ( list == EPMEM_RANGE_START )
+								group_shift = ( !( --point_groups[ i ][ stmts[ i ][ list ][ k ][ m ].group ] ) );
+							else
+								group_shift = ( !( point_groups[ i ][ stmts[ i ][ list ][ k ][ m ].group ]++ ) );
+
+							if ( group_shift )
+							{
+								updown++;
+								v += stmts[ i ][ list ][ k ][ m ].weight;
+								ct += stmts[ i ][ list ][ k ][ m ].ct;
+							}
+							
+							more_data = ( epmem_exec_range_query( my_agent, &( stmts[ i ][ list ][ k ][ m ] ) ) == SQLITE_ROW );
+							
+							if ( more_data )
+								next_id = sqlite3_column_int64( stmts[ i ][ list ][ k ][ m ].stmt, 0 );
+
+						} while ( more_data && ( next_id == id ) );
+
+						if ( more_data )
+						{
+							stmts[ i ][ list ][ k ][ m ].val = next_id;
+							if ( next_id > new_top )
+								new_top = next_id;
+						}
+						else
+						{							
+							sqlite3_finalize( stmts[ i ][ list ][ k ][ m ].stmt );							
+							stmts[ i ][ list ][ k ][ m ].stmt = NULL;
+							stmts[ i ][ list ][ k ][ m ].val = EPMEM_MEMID_NONE;
+						}
+					}
+					else
+					{
+						if ( stmts[ i ][ list ][ k ][ m ].val > new_top )
+							new_top = stmts[ i ][ list ][ k ][ m ].val;
+					}
+				}
+			}
+		}
+	}
+
+	if ( list == EPMEM_RANGE_START )
+		updown = -updown;
+
+	tops[ list ] = new_top;
+}
+
 // performs cue-based query
 void epmem_process_query( agent *my_agent, Symbol *state, Symbol *query, Symbol *neg_query, std::vector<epmem_time_id> *prohibit, epmem_time_id before, epmem_time_id after )
 {
@@ -4050,7 +4149,7 @@ void epmem_process_query( agent *my_agent, Symbol *state, Symbol *query, Symbol 
 
 		if ( !prohibit->empty() )
 			std::sort( prohibit->begin(), prohibit->end() );		
-		
+		if ( ( mode == EPMEM_MODE_ONE ) || ( mode == EPMEM_MODE_TWO ) )
 		{
 			wme *new_wme;
 
@@ -4241,7 +4340,7 @@ void epmem_process_query( agent *my_agent, Symbol *state, Symbol *query, Symbol 
 					}
 
 					// initialize lists
-					epmem_time_id top_list_id[2] = { EPMEM_MEMID_NONE, EPMEM_MEMID_NONE };				
+					epmem_time_id top_list_id[2] = { EPMEM_MEMID_NONE, EPMEM_MEMID_NONE };
 					{
 						for ( i=EPMEM_NODE_POS; i<=EPMEM_NODE_NEG; i++ )
 						{
@@ -4467,6 +4566,495 @@ void epmem_process_query( agent *my_agent, Symbol *state, Symbol *query, Symbol 
 						}
 					}
 				}			
+			}
+			else
+			{				
+				new_wme = add_input_wme( my_agent, state->id.epmem_result_header, my_agent->epmem_status_symbol, my_agent->epmem_failure_symbol );
+				new_wme->preference = epmem_make_fake_preference( my_agent, state, new_wme );
+				state->id.epmem_info->epmem_wmes->push( new_wme );
+			}
+		}
+		else if ( mode == EPMEM_MODE_THREE )
+		{
+			// get leaf nodes
+			wme *new_wme;
+
+			// get the leaf id's
+			std::list<epmem_ambig_leaf_node *> leaf_ids[2];
+			std::list<epmem_ambig_leaf_node *>::iterator leaf_p;			
+			std::list<epmem_node_id>::iterator ambig_p;
+			std::vector<epmem_time_id>::iterator prohibit_p;
+
+			int ambig_sizes[2] = { 0, 0 };
+
+			{
+				wme ***wmes;
+				int len;
+				
+				std::queue<Symbol *> parent_syms;
+				std::queue<std::list<epmem_node_id> *> parent_ids;
+				int tc = get_new_tc_number( my_agent );				
+				
+				Symbol *parent_sym;
+				std::list<epmem_node_id> *parent_id;
+				unsigned long my_hash;
+
+				std::list<epmem_node_id> *id_identities;
+				epmem_ambig_leaf_node *leaf_identities;
+
+				int i, j;
+				bool just_started;
+
+				for ( i=EPMEM_NODE_POS; i<=EPMEM_NODE_NEG; i++ )
+				{			
+					// init
+					switch ( i )
+					{
+						case EPMEM_NODE_POS:
+							wmes = &wmes_query;
+							len = len_query;					
+							parent_syms.push( query );
+							parent_ids.push( new std::list<epmem_node_id>( 1, EPMEM_MEMID_ROOT ) );
+							just_started = true;
+							break;
+
+						case EPMEM_NODE_NEG:
+							wmes = &wmes_neg_query;
+							len = len_neg_query;						
+							parent_syms.push( neg_query );							
+							parent_ids.push( new std::list<epmem_node_id>( 1, EPMEM_MEMID_ROOT ) );
+							just_started = true;
+							break;
+					}
+
+					// depth-first search
+					while ( !parent_syms.empty() )
+					{
+						// pop current info
+						parent_sym = parent_syms.front();
+						parent_syms.pop();
+
+						parent_id = parent_ids.front();					
+						parent_ids.pop();
+
+						if ( !just_started )
+							(*wmes) = epmem_get_augs_of_id( my_agent, parent_sym, tc, &len );
+						else
+							just_started = false;
+
+						if ( (*wmes) != NULL )
+						{
+							for ( j=0; j<len; j++ )
+							{
+								// add to cue list
+								state->id.epmem_info->cue_wmes->push_back( (*wmes)[ j ] );
+
+								// find wme id							
+								my_hash = epmem_hash_wme( (*wmes)[j] );
+								if ( (*wmes)[j]->value->common.symbol_type == IDENTIFIER_SYMBOL_TYPE )
+								{
+									id_identities = new std::list<epmem_node_id>();
+
+									for ( ambig_p=parent_id->begin(); ambig_p!=parent_id->end(); ambig_p++ )
+									{
+										// q0=? AND name=?
+										sqlite3_bind_int64( my_agent->epmem_statements[ EPMEM_STMT_THREE_FIND_PATH ], 1, (*ambig_p) );
+										sqlite3_bind_text( my_agent->epmem_statements[ EPMEM_STMT_THREE_FIND_PATH ], 2, (const char *) (*wmes)[j]->attr->sc.name, -1, SQLITE_STATIC );
+
+										while ( sqlite3_step( my_agent->epmem_statements[ EPMEM_STMT_THREE_FIND_PATH ] ) == SQLITE_ROW )											
+											id_identities->push_back( sqlite3_column_int64( my_agent->epmem_statements[ EPMEM_STMT_THREE_FIND_PATH ], 0 ) );											
+
+										sqlite3_reset( my_agent->epmem_statements[ EPMEM_STMT_THREE_FIND_PATH ] );
+									}
+
+									if ( id_identities->size() )
+									{
+										parent_syms.push( (*wmes)[j]->value );
+										parent_ids.push( id_identities );
+									}
+									else
+									{
+										delete id_identities;
+									}
+								}
+								else
+								{
+									leaf_identities = new epmem_ambig_leaf_node();
+									leaf_identities->leaf_ids = new std::list<epmem_node_id>();
+
+									for ( ambig_p=parent_id->begin(); ambig_p!=parent_id->end(); ambig_p++ )
+									{
+										// parent_id=? AND hash=? AND name=? AND value=? AND wme_type=?
+										sqlite3_bind_int64( my_agent->epmem_statements[ EPMEM_STMT_THREE_FIND_FEATURE ], 1, (*ambig_p) );
+										sqlite3_bind_int64( my_agent->epmem_statements[ EPMEM_STMT_THREE_FIND_FEATURE ], 2, my_hash );										
+										sqlite3_bind_text( my_agent->epmem_statements[ EPMEM_STMT_THREE_FIND_FEATURE ], 3, (const char *) (*wmes)[j]->attr->sc.name, -1, SQLITE_STATIC );
+										switch( (*wmes)[j]->value->common.symbol_type )
+										{
+											case SYM_CONSTANT_SYMBOL_TYPE:
+												sqlite3_bind_text( my_agent->epmem_statements[ EPMEM_STMT_THREE_FIND_FEATURE ], 4, (const char *) (*wmes)[j]->value->sc.name, -1, SQLITE_STATIC );
+												break;
+									            
+											case INT_CONSTANT_SYMBOL_TYPE:
+			        							sqlite3_bind_int64( my_agent->epmem_statements[ EPMEM_STMT_THREE_FIND_FEATURE ], 4, (*wmes)[j]->value->ic.value );
+												break;
+								
+											case FLOAT_CONSTANT_SYMBOL_TYPE:
+			        							sqlite3_bind_double( my_agent->epmem_statements[ EPMEM_STMT_THREE_FIND_FEATURE ], 4, (*wmes)[j]->value->fc.value );
+												break;
+										}
+										sqlite3_bind_int64( my_agent->epmem_statements[ EPMEM_STMT_THREE_FIND_FEATURE ], 5, (*wmes)[j]->value->common.symbol_type );
+										
+										if ( sqlite3_step( my_agent->epmem_statements[ EPMEM_STMT_THREE_FIND_FEATURE ] ) == SQLITE_ROW )
+											leaf_identities->leaf_ids->push_back( sqlite3_column_int64( my_agent->epmem_statements[ EPMEM_STMT_THREE_FIND_FEATURE ], 0 ) );
+										
+										sqlite3_reset( my_agent->epmem_statements[ EPMEM_STMT_THREE_FIND_FEATURE ] );
+									}
+
+									// if the leaf was valid, add to list of ids
+									if ( leaf_identities->leaf_ids->size() )
+									{
+										leaf_identities->leaf_weight = wma_get_wme_activation( my_agent, (*wmes)[j] );
+										leaf_ids[i].push_back( leaf_identities );
+
+										ambig_sizes[i] += leaf_identities->leaf_ids->size();
+									}
+									else
+									{
+										delete leaf_identities->leaf_ids;
+										delete leaf_identities;
+									}
+								}
+							}
+
+							// free space from aug list
+							free_memory( my_agent, (*wmes), MISCELLANEOUS_MEM_USAGE );
+						}
+
+						// release memory
+						delete parent_id;
+					}
+				}
+			}
+			
+			epmem_set_stat( my_agent, EPMEM_STAT_QRY_POS, leaf_ids[ EPMEM_NODE_POS ].size() );
+			epmem_set_stat( my_agent, EPMEM_STAT_QRY_NEG, leaf_ids[ EPMEM_NODE_NEG ].size() );
+			epmem_set_stat( my_agent, EPMEM_STAT_QRY_RET, 0 );
+			epmem_set_stat( my_agent, EPMEM_STAT_QRY_CARD, 0 );
+
+			// useful statistics
+			int cue_sizes[2] = { leaf_ids[ EPMEM_NODE_POS ].size(), leaf_ids[ EPMEM_NODE_NEG ].size() };
+			int cue_size = ( cue_sizes[ EPMEM_NODE_POS ] + cue_sizes[ EPMEM_NODE_NEG ] );
+			int perfect_match = leaf_ids[ EPMEM_NODE_POS ].size();
+
+			// only perform search if necessary
+			if ( cue_size )
+			{
+				// perform incremental, integrated range search
+				{
+					// variables to populate
+					epmem_time_id king_id = EPMEM_MEMID_NONE;
+					double king_score = -1000;
+					unsigned long long king_cardinality = 0;
+
+					// prepare queries
+					epmem_range_query *range_list[2][2][3] = { NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL };				
+					int i, j, k, m;
+					{
+						const char *tail;
+						int timer, group;
+						epmem_time_id time_now = epmem_get_stat( my_agent, (const long) EPMEM_STAT_TIME ) - 1;
+						int position;
+						
+						for ( i=EPMEM_NODE_POS; i<=EPMEM_NODE_NEG; i++ )
+						{				
+							if ( cue_sizes[ i ] )
+							{						
+								for ( j=EPMEM_RANGE_START; j<=EPMEM_RANGE_END; j++ )
+								{
+									timer = ( ( i == EPMEM_NODE_POS )?( ( j == EPMEM_RANGE_START )?( EPMEM_TIMER_QUERY_POS_START_EP ):( EPMEM_TIMER_QUERY_POS_END_EP ) ):( ( j == EPMEM_RANGE_START )?( EPMEM_TIMER_QUERY_NEG_START_EP ):( EPMEM_TIMER_QUERY_NEG_END_EP ) ) );
+									
+									for ( k=EPMEM_RANGE_EP; k<=EPMEM_RANGE_POINT; k++ )
+									{									
+										range_list[ i ][ j ][ k ] = new epmem_range_query[ ambig_sizes[ i ] ];
+										
+										group = 0;
+										m = 0;
+										for ( leaf_p=leaf_ids[i].begin(); leaf_p!=leaf_ids[i].end(); leaf_p++ )
+										{										
+											for ( ambig_p=(*leaf_p)->leaf_ids->begin(); ambig_p!=(*leaf_p)->leaf_ids->end(); ambig_p++ )
+											{
+												range_list[ i ][ j ][ k ][ m ].val = EPMEM_MEMID_NONE;
+												range_list[ i ][ j ][ k ][ m ].timer = timer;
+												range_list[ i ][ j ][ k ][ m ].weight = ( ( i == EPMEM_NODE_POS )?( 1 ):( -1 ) ) * (*leaf_p)->leaf_weight;
+												range_list[ i ][ j ][ k ][ m ].ct = ( ( i == EPMEM_NODE_POS )?( 1 ):( -1 ) );
+												range_list[ i ][ j ][ k ][ m ].group = group;
+
+												sqlite3_prepare_v2( my_agent->epmem_db, epmem_range_queries3[ i ][ j ][ k ], -1, &( range_list[ i ][ j ][ k ][ m ].stmt ), &tail );
+
+												// bind values
+												position = 1;
+												
+												if ( ( k == EPMEM_RANGE_NOW ) && ( j == EPMEM_RANGE_END ) )
+													sqlite3_bind_int64( range_list[ i ][ j ][ k ][ m ].stmt, position++, time_now );
+
+												sqlite3_bind_int64( range_list[ i ][ j ][ k ][ m ].stmt, position, (*ambig_p) );
+												
+												m++;
+											}										
+
+											group++;
+										}
+
+										timer++;
+									}
+								}
+							}						
+						}
+					}
+
+					// initialize lists
+					epmem_time_id top_list_id[2] = { EPMEM_MEMID_NONE, EPMEM_MEMID_NONE };
+					{
+						for ( i=EPMEM_NODE_POS; i<=EPMEM_NODE_NEG; i++ )
+						{
+							if ( cue_sizes[ i ] )
+							{						
+								for ( j=EPMEM_RANGE_START; j<=EPMEM_RANGE_END; j++ )
+								{
+									for ( k=EPMEM_RANGE_EP; k<=EPMEM_RANGE_POINT; k++ )
+									{
+										for ( m=0; m<ambig_sizes[ i ]; m++ )
+										{
+											if ( epmem_exec_range_query( my_agent, &range_list[ i ][ j ][ k ][ m ] ) == SQLITE_ROW )
+											{
+												range_list[ i ][ j ][ k ][ m ].val = sqlite3_column_int64( range_list[ i ][ j ][ k ][ m ].stmt, 0 );
+												if ( range_list[ i ][ j ][ k ][ m ].val > top_list_id[ j ] )
+													top_list_id[ j ] = range_list[ i ][ j ][ k ][ m ].val;
+											}
+											else
+											{
+												sqlite3_finalize( range_list[ i ][ j ][ k ][ m ].stmt );
+												range_list[ i ][ j ][ k ][ m ].stmt = NULL;
+											}
+										}
+									}
+								}
+							}
+						}				
+					}
+
+					// range search
+					if ( top_list_id[ EPMEM_RANGE_END ] != EPMEM_MEMID_NONE )
+					{
+						double balance = epmem_get_parameter( my_agent, (const long) EPMEM_PARAM_BALANCE );
+						double balance_inv = 1 - balance;
+
+						// dynamic programming stuff
+						long long sum_ct = 0;
+						double sum_v = 0;
+						long long sum_updown = 0;
+
+						// current pointer					
+						epmem_time_id current_id = EPMEM_MEMID_NONE;
+						long long current_ct = 0;
+						double current_v = 0;
+						long long current_updown = 0;
+						epmem_time_id current_end;
+						epmem_time_id current_valid_end;
+						double current_score;
+
+						// next pointers
+						epmem_time_id start_id = EPMEM_MEMID_NONE;
+						epmem_time_id end_id = EPMEM_MEMID_NONE;
+						epmem_time_id *next_id;
+						unsigned int next_list;	
+
+						// prohibit pointer
+						long long current_prohibit = ( ( (long long) prohibit->size() ) - 1 );
+						
+						// completion (allows for smart cut-offs later)
+						bool done = false;
+
+						// initialize group counters
+						long long *point_groups[2];
+						for ( i=EPMEM_NODE_POS; i<=EPMEM_NODE_NEG; i++ )
+						{
+							point_groups[i] = new long long[ cue_sizes[i] ];
+							for ( m=0; m<cue_sizes[i]; m++ )
+								point_groups[i][m] = 0;
+						}
+
+						// initialize current as last end
+						// initialize next end
+						epmem_incremental_row3( my_agent, range_list, top_list_id, ambig_sizes, point_groups, current_id, current_ct, current_v, current_updown, EPMEM_RANGE_END );
+						end_id = top_list_id[ EPMEM_RANGE_END ];
+						
+						// initialize next start					
+						start_id = top_list_id[ EPMEM_RANGE_START ];
+
+						do
+						{
+							// if both lists are finished, we are done
+							if ( ( start_id == EPMEM_MEMID_NONE ) && ( end_id == EPMEM_MEMID_NONE ) )
+							{
+								done = true;
+							}
+							// if we are beyond a specified after, we are done
+							else if ( ( after != EPMEM_MEMID_NONE ) && ( current_id <= after ) )
+							{
+								done = true;
+							}
+							// if one list finished, go to the other
+							else if ( ( start_id == EPMEM_MEMID_NONE ) || ( end_id == EPMEM_MEMID_NONE ) )
+							{
+								next_list = ( ( start_id == EPMEM_MEMID_NONE )?( EPMEM_RANGE_END ):( EPMEM_RANGE_START ) );
+							}
+							// if neither list finished, we prefer the higher id (end in case of tie)
+							else
+							{
+								next_list = ( ( start_id > end_id )?( EPMEM_RANGE_START ):( EPMEM_RANGE_END ) );
+							}
+
+							if ( !done )
+							{
+								// update sums
+								sum_ct += current_ct;
+								sum_v += current_v;
+								sum_updown += current_updown;
+
+								// update end
+								current_end = ( ( next_list == EPMEM_RANGE_END )?( end_id + 1 ):( start_id ) );
+								if ( before == EPMEM_MEMID_NONE )
+									current_valid_end = current_id;
+								else
+									current_valid_end = ( ( current_id < before )?( current_id ):( before - 1 ) );
+								
+								while ( ( current_prohibit != -1 ) && ( current_valid_end >= current_end ) && ( current_valid_end <= (*prohibit)[ current_prohibit ] ) )
+								{							
+									if ( current_valid_end == (*prohibit)[ current_prohibit ] )
+										current_valid_end--;
+
+									current_prohibit--;
+								}
+
+								// if we are beyond before AND
+								// we are in a range, compute score
+								// for possible new king
+								if ( ( current_valid_end >= current_end ) && ( sum_updown != 0 ) )
+								{
+									current_score = ( balance * sum_ct ) + ( balance_inv * sum_v );								
+									
+									// new king if no old king OR better score
+									if ( ( king_id == EPMEM_MEMID_NONE ) || ( current_score > king_score ) )
+									{
+										king_id = current_valid_end;
+										king_score = current_score;
+										king_cardinality = sum_ct;
+
+										if ( king_cardinality == perfect_match )
+											done = true;
+									}
+								}
+
+								if ( !done )
+								{
+									// based upon choice, update variables
+									epmem_incremental_row3( my_agent, range_list, top_list_id, ambig_sizes, point_groups, current_id, current_ct, current_v, current_updown, next_list );
+									current_id = current_end - 1;
+									current_ct *= ( ( next_list == EPMEM_RANGE_START )?( -1 ):( 1 ) );
+									current_v *= ( ( next_list == EPMEM_RANGE_START )?( -1 ):( 1 ) );
+									
+									next_id = ( ( next_list == EPMEM_RANGE_START )?( &start_id ):( &end_id ) );
+									(*next_id) = top_list_id[ next_list ];								
+								}
+							}
+
+						} while ( !done );
+					}
+
+					// clean up queries
+					{
+						for ( i=EPMEM_NODE_POS; i<=EPMEM_NODE_NEG; i++ )
+						{
+							if ( cue_sizes[ i ] )
+							{
+								for ( j=EPMEM_RANGE_START; j<=EPMEM_RANGE_END; j++ )						
+								{
+									for ( k=EPMEM_RANGE_EP; k<=EPMEM_RANGE_POINT; k++ )							
+									{										
+										for ( m=0; m<ambig_sizes[ i ]; m++ )
+										{
+											if ( range_list[ i ][ j ][ k ][ m ].stmt != NULL )
+												sqlite3_finalize( range_list[ i ][ j ][ k ][ m ].stmt );										
+										}
+
+										delete [] ( range_list[ i ][ j ][ k ] );
+									}
+								}
+							}
+						}
+					}
+
+					// place results in WM
+					if ( king_id != EPMEM_MEMID_NONE )
+					{						
+						epmem_set_stat( my_agent, EPMEM_STAT_QRY_RET, king_id );
+						epmem_set_stat( my_agent, EPMEM_STAT_QRY_CARD, king_cardinality );
+						
+						// status
+						new_wme = add_input_wme( my_agent, state->id.epmem_result_header, my_agent->epmem_status_symbol, my_agent->epmem_success_symbol );
+						new_wme->preference = epmem_make_fake_preference( my_agent, state, new_wme );
+						state->id.epmem_info->epmem_wmes->push( new_wme );
+
+						// match score
+						new_wme = add_input_wme( my_agent, state->id.epmem_result_header, my_agent->epmem_match_score_symbol, make_float_constant( my_agent, king_score ) );
+						new_wme->preference = epmem_make_fake_preference( my_agent, state, new_wme );
+						state->id.epmem_info->epmem_wmes->push( new_wme );
+
+						// cue-size
+						new_wme = add_input_wme( my_agent, state->id.epmem_result_header, my_agent->epmem_cue_size_symbol, make_int_constant( my_agent, cue_size ) );
+						new_wme->preference = epmem_make_fake_preference( my_agent, state, new_wme );
+						state->id.epmem_info->epmem_wmes->push( new_wme );
+
+						// normalized-match-score
+						new_wme = add_input_wme( my_agent, state->id.epmem_result_header, my_agent->epmem_normalized_match_score_symbol, make_float_constant( my_agent, ( king_score / cue_size ) ) );
+						new_wme->preference = epmem_make_fake_preference( my_agent, state, new_wme );
+						state->id.epmem_info->epmem_wmes->push( new_wme );
+
+						// match-cardinality
+						new_wme = add_input_wme( my_agent, state->id.epmem_result_header, my_agent->epmem_match_cardinality_symbol, make_int_constant( my_agent, king_cardinality ) );
+						new_wme->preference = epmem_make_fake_preference( my_agent, state, new_wme );
+						state->id.epmem_info->epmem_wmes->push( new_wme );					
+
+						// actual memory
+						epmem_install_memory( my_agent, state, king_id );
+					}
+					else
+					{
+						new_wme = add_input_wme( my_agent, state->id.epmem_result_header, my_agent->epmem_status_symbol, my_agent->epmem_failure_symbol );
+						new_wme->preference = epmem_make_fake_preference( my_agent, state, new_wme );
+						state->id.epmem_info->epmem_wmes->push( new_wme );
+					}
+
+					// clean leaf_ids
+					{						
+						for ( i=EPMEM_NODE_POS; i<=EPMEM_NODE_NEG; i++ )
+						{						
+							for ( leaf_p=leaf_ids[i].begin(); leaf_p!=leaf_ids[i].end(); leaf_p++ )
+							{
+								delete (*leaf_p)->leaf_ids;
+								delete (*leaf_p);								
+							}
+						}
+					}
+				}
+				
+				/*
+				// perform incremental, integrated range search
+				{				
+									
+				}
+				*/
 			}
 			else
 			{				

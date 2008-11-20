@@ -149,16 +149,14 @@ typedef struct wme_struct wme;
 #define EPMEM_STMT_THREE_ADD_SEARCH					17
 #define EPMEM_STMT_THREE_ADD_RECONSTRUCT			18
 #define EPMEM_STMT_THREE_FIND_FEATURE				19
-#define EPMEM_STMT_THREE_FIND_CHILD_FEATURES		20
-#define EPMEM_STMT_THREE_ADD_FEATURE				21
-#define EPMEM_STMT_THREE_FIND_PATH					22
-#define EPMEM_STMT_THREE_EXPLORE_PATH				23
-#define EPMEM_STMT_THREE_ADD_PATH					24
-#define EPMEM_STMT_THREE_VALID_EPISODE				25
-#define EPMEM_STMT_THREE_NEXT_EPISODE				26
-#define EPMEM_STMT_THREE_PREV_EPISODE				27
-#define EPMEM_STMT_THREE_GET_SEARCH					28
-#define EPMEM_STMT_THREE_GET_RECONSTRUCT			29
+#define EPMEM_STMT_THREE_ADD_FEATURE				20
+#define EPMEM_STMT_THREE_FIND_PATH					21
+#define EPMEM_STMT_THREE_ADD_PATH					22
+#define EPMEM_STMT_THREE_VALID_EPISODE				23
+#define EPMEM_STMT_THREE_NEXT_EPISODE				24
+#define EPMEM_STMT_THREE_PREV_EPISODE				25
+#define EPMEM_STMT_THREE_GET_SEARCH					26
+#define EPMEM_STMT_THREE_GET_RECONSTRUCT			27
 
 #define EPMEM_MAX_STATEMENTS 						40 // must be at least 1+ largest of any STMT constant
 
@@ -283,6 +281,12 @@ typedef struct epmem_leaf_node_struct
 	double leaf_weight;
 } epmem_leaf_node;
 
+typedef struct epmem_ambig_leaf_node_struct
+{
+	double leaf_weight;
+	std::list<epmem_node_id> *leaf_ids;
+} epmem_ambig_leaf_node;
+
 typedef struct epmem_range_query_struct
 {
 	sqlite3_stmt *stmt;
@@ -290,6 +294,8 @@ typedef struct epmem_range_query_struct
 
 	double weight;
 	long long ct;
+
+	long long group;
 
 	long timer;	
 } epmem_range_query;
