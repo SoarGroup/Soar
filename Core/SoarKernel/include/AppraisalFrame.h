@@ -84,8 +84,10 @@ struct AppraisalFrame {
 		case SYM_CONSTANT_SYMBOL_TYPE:
 			categorical = true;
 			strValue = value->sc.name;
+			break;
 		default:
-			assert(false && "Bad symbol type");
+			// ignore
+			break;
 		}
 
 		// BADBAD: all of the constants below should be Symbols in common symbols
