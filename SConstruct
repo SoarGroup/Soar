@@ -168,7 +168,8 @@ if sys.platform != 'cygwin':
 # to find the symbol __sync_sub_and_fetch_4 when using g++ 4.3
 # only do not include it if we're on powerpc
 if processor != 'powerpc':
-	conf.env.Append(CPPFLAGS = ' -march=i686')
+	conf.env.Append(CPPFLAGS = ' -march=i686 -m32')
+	conf.env.Append(LINKFLAGS = ' -march=i686 -m32')
 conf.env[ 'processor' ] = processor
 
 env = conf.Finish()

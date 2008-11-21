@@ -485,7 +485,10 @@ value_type decipher_type(const string& str)
 	// look at each member of the string.  If we see a character we know it is a string
 	// otherwise, if we see a period, and all numbers we know it is a float
 	int num_periods = 0;
-	for(int i = 0; i < int(str.length()) ; i++)
+	int start = 0;
+	if(str.length() && str[0] == '-') start = 1; // skip the first character if it's a negative sign
+
+	for(int i = start; i < int(str.length()) ; i++)
 	{
 		if (str[i] == '.')
 			num_periods++;

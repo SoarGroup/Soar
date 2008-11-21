@@ -17,15 +17,12 @@
 class TOH_Tower;
 class Stats_Tracker;
 
-//#define TOH_COUNT_STEPS
+#define TOH_AGENT_PRODUCTIONS "../../Environments/JavaTOH/towers-of-hanoi-SML.soar"
 
 /* The TOH_Game object is a complete instance of Towers of Hanoi.
  * It is responsible for creating the Kernel, Agent, Towers, Disks, ...
  *
  * Tell it to run, and you're off.
- *
- * Alternatively, set TOH_COUNT_STEPS and it will know when it is
- * done.  You can then run it one step at a time.
  */
 class TOH_Game {
   /// Disabled (No Implementation)
@@ -35,19 +32,23 @@ class TOH_Game {
   friend inline void toh_update_event_handler(sml::smlUpdateEventId, void *user_data_ptr, sml::Kernel* kernel_ptr, sml::smlRunFlags);
 
 public:
-  inline TOH_Game(const std::string &agent_productions = "../../Environments/JavaTOH/towers-of-hanoi-SML.soar");
+  /* TOH_Game will create the default 'Soar_Kernel()' if a kernel is not provided.
+   * TOH_Game will take care of the deletion of the given kernel if one is provided.
+   */
+  inline TOH_Game(const std::string &agent_productions = TOH_AGENT_PRODUCTIONS,
+                  sml::Kernel * const kernel = 0);
   inline ~TOH_Game();
 
   static inline void run_trials(const int &num_trials);
+  static void remote_trials(const int &num_trials,
+                            const std::string &ip_address, const int &port);
 
   // Returns the "disk size" stacks for all towers
   inline std::vector<std::vector<int> > get_tower_stacks() const;
 
   inline void run();
   inline void step();
-#ifdef TOH_COUNT_STEPS
   inline bool is_finished() const;
-#endif
 
 private:
   inline void update(sml::Kernel &kernel);
@@ -58,10 +59,6 @@ private:
   Soar_Agent m_agent;
 
   std::vector<TOH_Tower *> m_towers;
-
-#ifdef TOH_COUNT_STEPS
-  int m_command_count;
-#endif
 };
 
 #endif
