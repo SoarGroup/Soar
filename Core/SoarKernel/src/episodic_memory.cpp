@@ -3794,7 +3794,7 @@ void epmem_install_memory( agent *my_agent, Symbol *state, epmem_time_id memory_
 					// out of order
 					straggler = new epmem_path;
 					straggler->q0 = q0;
-					straggler->w = w;
+					straggler->w = new std::string( w );
 					straggler->q1 = q1;
 
 					stragglers.push( straggler );
@@ -3816,11 +3816,11 @@ void epmem_install_memory( agent *my_agent, Symbol *state, epmem_time_id memory_
 					parent = id_p->second;
 
 					// make a symbol to represent the attribute name		
-					attr = make_sym_constant( my_agent, const_cast<char *>( straggler->w ) );
+					attr = make_sym_constant( my_agent, const_cast<char *>( straggler->w->c_str() ) );
 
 					value =& ids[ straggler->q1 ]; 
 					if ( (*value) == NULL )
-						(*value) = make_new_identifier( my_agent, (straggler->w)[0], parent->id.level );
+						(*value) = make_new_identifier( my_agent, straggler->w->at(0), parent->id.level );
 
 					new_wme = add_input_wme( my_agent, parent, attr, (*value) );
 					new_wme->preference = epmem_make_fake_preference( my_agent, state, new_wme );
@@ -3828,6 +3828,7 @@ void epmem_install_memory( agent *my_agent, Symbol *state, epmem_time_id memory_
 
 					symbol_remove_ref( my_agent, (*value) );
 
+					delete straggler->w;
 					delete straggler;
 				}
 				else
@@ -4582,7 +4583,7 @@ void epmem_process_query( agent *my_agent, Symbol *state, Symbol *query, Symbol 
 			// get the leaf id's
 			std::list<epmem_ambig_leaf_node *> leaf_ids[2];
 			std::list<epmem_ambig_leaf_node *>::iterator leaf_p;			
-			std::list<epmem_node_id>::iterator ambig_p;
+			std::set<epmem_node_id>::iterator ambig_p;
 			std::vector<epmem_time_id>::iterator prohibit_p;
 
 			int ambig_sizes[2] = { 0, 0 };
@@ -4592,14 +4593,14 @@ void epmem_process_query( agent *my_agent, Symbol *state, Symbol *query, Symbol 
 				int len;
 				
 				std::queue<Symbol *> parent_syms;
-				std::queue<std::list<epmem_node_id> *> parent_ids;
+				std::queue<std::set<epmem_node_id> *> parent_ids;
 				int tc = get_new_tc_number( my_agent );				
 				
 				Symbol *parent_sym;
-				std::list<epmem_node_id> *parent_id;
+				std::set<epmem_node_id> *parent_id;
 				unsigned long my_hash;
 
-				std::list<epmem_node_id> *id_identities;
+				std::set<epmem_node_id> *id_identities;
 				epmem_ambig_leaf_node *leaf_identities;
 
 				int i, j;
@@ -4607,6 +4608,9 @@ void epmem_process_query( agent *my_agent, Symbol *state, Symbol *query, Symbol 
 
 				for ( i=EPMEM_NODE_POS; i<=EPMEM_NODE_NEG; i++ )
 				{			
+					parent_id = new std::set<epmem_node_id>();
+					parent_id->insert( EPMEM_MEMID_ROOT );
+					
 					// init
 					switch ( i )
 					{
@@ -4614,7 +4618,7 @@ void epmem_process_query( agent *my_agent, Symbol *state, Symbol *query, Symbol 
 							wmes = &wmes_query;
 							len = len_query;					
 							parent_syms.push( query );
-							parent_ids.push( new std::list<epmem_node_id>( 1, EPMEM_MEMID_ROOT ) );
+							parent_ids.push( parent_id );
 							just_started = true;
 							break;
 
@@ -4622,10 +4626,11 @@ void epmem_process_query( agent *my_agent, Symbol *state, Symbol *query, Symbol 
 							wmes = &wmes_neg_query;
 							len = len_neg_query;						
 							parent_syms.push( neg_query );							
-							parent_ids.push( new std::list<epmem_node_id>( 1, EPMEM_MEMID_ROOT ) );
+							parent_ids.push( parent_id );
 							just_started = true;
 							break;
 					}
+					parent_id = NULL;
 
 					// depth-first search
 					while ( !parent_syms.empty() )
@@ -4653,7 +4658,7 @@ void epmem_process_query( agent *my_agent, Symbol *state, Symbol *query, Symbol 
 								my_hash = epmem_hash_wme( (*wmes)[j] );
 								if ( (*wmes)[j]->value->common.symbol_type == IDENTIFIER_SYMBOL_TYPE )
 								{
-									id_identities = new std::list<epmem_node_id>();
+									id_identities = new std::set<epmem_node_id>();
 
 									for ( ambig_p=parent_id->begin(); ambig_p!=parent_id->end(); ambig_p++ )
 									{
@@ -4662,7 +4667,7 @@ void epmem_process_query( agent *my_agent, Symbol *state, Symbol *query, Symbol 
 										sqlite3_bind_text( my_agent->epmem_statements[ EPMEM_STMT_THREE_FIND_PATH ], 2, (const char *) (*wmes)[j]->attr->sc.name, -1, SQLITE_STATIC );
 
 										while ( sqlite3_step( my_agent->epmem_statements[ EPMEM_STMT_THREE_FIND_PATH ] ) == SQLITE_ROW )											
-											id_identities->push_back( sqlite3_column_int64( my_agent->epmem_statements[ EPMEM_STMT_THREE_FIND_PATH ], 0 ) );											
+											id_identities->insert( sqlite3_column_int64( my_agent->epmem_statements[ EPMEM_STMT_THREE_FIND_PATH ], 0 ) );											
 
 										sqlite3_reset( my_agent->epmem_statements[ EPMEM_STMT_THREE_FIND_PATH ] );
 									}
@@ -4680,7 +4685,7 @@ void epmem_process_query( agent *my_agent, Symbol *state, Symbol *query, Symbol 
 								else
 								{
 									leaf_identities = new epmem_ambig_leaf_node();
-									leaf_identities->leaf_ids = new std::list<epmem_node_id>();
+									leaf_identities->leaf_ids = new std::set<epmem_node_id>();
 
 									for ( ambig_p=parent_id->begin(); ambig_p!=parent_id->end(); ambig_p++ )
 									{
@@ -4705,7 +4710,7 @@ void epmem_process_query( agent *my_agent, Symbol *state, Symbol *query, Symbol 
 										sqlite3_bind_int64( my_agent->epmem_statements[ EPMEM_STMT_THREE_FIND_FEATURE ], 5, (*wmes)[j]->value->common.symbol_type );
 										
 										if ( sqlite3_step( my_agent->epmem_statements[ EPMEM_STMT_THREE_FIND_FEATURE ] ) == SQLITE_ROW )
-											leaf_identities->leaf_ids->push_back( sqlite3_column_int64( my_agent->epmem_statements[ EPMEM_STMT_THREE_FIND_FEATURE ], 0 ) );
+											leaf_identities->leaf_ids->insert( sqlite3_column_int64( my_agent->epmem_statements[ EPMEM_STMT_THREE_FIND_FEATURE ], 0 ) );
 										
 										sqlite3_reset( my_agent->epmem_statements[ EPMEM_STMT_THREE_FIND_FEATURE ] );
 									}

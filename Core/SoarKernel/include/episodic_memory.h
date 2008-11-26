@@ -15,6 +15,7 @@
 
 #include <list>
 #include <stack>
+#include <set>
 
 #include "sqlite3.h"
 
@@ -276,15 +277,16 @@ typedef struct epmem_data_struct
 } epmem_data;
 
 typedef struct epmem_leaf_node_struct
-{
-	epmem_node_id leaf_id;
+{	
 	double leaf_weight;
+	epmem_node_id leaf_id;
 } epmem_leaf_node;
 
 typedef struct epmem_ambig_leaf_node_struct
 {
-	double leaf_weight;
-	std::list<epmem_node_id> *leaf_ids;
+	double leaf_weight;	
+	std::set<epmem_node_id> *leaf_ids;
+	unsigned long long context;
 } epmem_ambig_leaf_node;
 
 typedef struct epmem_range_query_struct
@@ -295,7 +297,7 @@ typedef struct epmem_range_query_struct
 	double weight;
 	long long ct;
 
-	long long group;
+	unsigned long long group;
 
 	long timer;	
 } epmem_range_query;
@@ -303,7 +305,7 @@ typedef struct epmem_range_query_struct
 typedef struct epmem_path_struct
 {
 	epmem_node_id q0;
-	const char *w;
+	std::string *w;
 	epmem_node_id q1;
 } epmem_path;
 
