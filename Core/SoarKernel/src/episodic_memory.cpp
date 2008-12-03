@@ -15,16 +15,23 @@
  */
 
 #include "episodic_memory.h"
+#include "instantiations.h"
+#include "io_soar.h"
+#include "misc.h"
+#include "prefmem.h"
+#include "print.h"
+#include "utilities.h"
+#include "wmem.h"
+#include "xml.h"
 
 #include <string>
 #include <list>
 #include <queue>
 #include <map>
 #include <algorithm>
+#include <cmath>
 
 #include "sqlite3.h"
-
-using namespace soar_TraceNames;
 
 // defined in symtab.cpp but not in symtab.h
 //extern unsigned long compress( unsigned long h, short num_bits );
