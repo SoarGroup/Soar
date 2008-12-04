@@ -87,7 +87,7 @@ public class BookVisualWorld extends VisualWorld {
 						}
 						ArrayList<CellObject> blocks = map.getAllWithProperty(location, "mblock");
 						if (blocks.size() > 0) {
-							gc.setBackground(new Color(e.display, 191, 123, 79));
+							gc.setBackground(WindowManager.darkGray);
 						}
 					} else {
 						gc.setBackground(WindowManager.white);
@@ -101,13 +101,13 @@ public class BookVisualWorld extends VisualWorld {
 
 				ArrayList<CellObject> objectIds = map.getAllWithProperty(location, "object-id");
 				if (objectIds.size() > 0) {
-					gc.setForeground(WindowManager.red);
+					gc.setForeground(WindowManager.white);
 					gc.drawString(objectIds.get(0).getProperty("object-id"), cellSize*location.x, cellSize*location.y);
 				} else  {
 					ArrayList<CellObject> numbers = map.getAllWithProperty(location, "number");
 					if (numbers.size() > 0) {
 						if (!roomIds.contains(numbers.get(0).getIntProperty("number"))) {
-							gc.setForeground(WindowManager.green);
+							gc.setForeground(WindowManager.black);
 							gc.drawString(numbers.get(0).getProperty("number"), cellSize*location.x, cellSize*location.y);
 							roomIds.add(numbers.get(0).getIntProperty("number"));
 						}
