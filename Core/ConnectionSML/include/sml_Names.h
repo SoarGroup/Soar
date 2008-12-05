@@ -306,6 +306,7 @@ public:
 	static char const* const kParamStatsProductionCountJustification;
 	static char const* const kParamStatsCycleCountDecision;
 	static char const* const kParamStatsCycleCountElaboration;
+	static char const* const kParamStatsCycleCountInnerElaboration;
 	static char const* const kParamStatsProductionFiringCount;
 	static char const* const kParamStatsWmeCountAddition;
 	static char const* const kParamStatsWmeCountRemoval;
@@ -371,6 +372,8 @@ public:
 	static char const* const kParamWatchBacktracing;
 	static char const* const kParamWatchIndifferentSelection;
 	static char const* const kParamWatchRL;
+	static char const* const kParamWatchWaterfall;
+	
 
 	// Values (these are not case sensitive unlike the rest)
 	static char const* const kTrue ;
