@@ -83,9 +83,8 @@ Bool i_activity_at_goal(Symbol *goal);
 Bool minor_quiescence_at_goal(agent* thisAgent, Symbol *goal);
 int active_production_type_at_goal(Symbol *goal);
 
-// Commented out because the prototype was different than the declaration, and therefore unused
-// Symbol * highest_active_goal_propose(agent* thisAgent, Symbol* start_goal, Bool noneOk);
-// Symbol * highest_active_goal_apply(agent* thisAgent, Symbol* start_goal, Bool noneOk);
+Symbol * highest_active_goal_propose(agent* thisAgent, Symbol* start_goal, Bool noneOk);
+Symbol * highest_active_goal_apply(agent* thisAgent, Symbol* start_goal, Bool noneOk);
 
 /* REW: end   08.20.97 */
 
