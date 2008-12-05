@@ -755,7 +755,7 @@ void create_instantiation (agent* thisAgent, production *prod,
  * Returns true if the function create_instantiation should run for this production.
  * Used to delay firing of matches in the inner preference loop.
  */
-BOOL shouldCreateInstantiation (agent* thisAgent, production *prod, struct token_struct *tok, wme *w) 
+Bool shouldCreateInstantiation (agent* thisAgent, production *prod, struct token_struct *tok, wme *w) 
 {
 	if (thisAgent->active_level == thisAgent->highest_active_level) {
 		return TRUE;
