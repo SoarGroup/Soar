@@ -45,6 +45,7 @@ bool CommandLineInterface::ParseWatch(std::vector<std::string>& argv) {
 		{'T',"template",				2},
 		{'u',"user-productions",		2},
 		{'w',"wmes",					2},
+		{'W',"waterfall",				2}, // TODO: document. note: added to watch 5
 		{0, 0, 0}
 	};
 			 
@@ -228,6 +229,15 @@ bool CommandLineInterface::ParseWatch(std::vector<std::string>& argv) {
 					settings.set(WATCH_WMES);
 				}
 				break;
+			case 'W'://waterfall
+				options.set(WATCH_WATERFALL);
+				if (m_OptionArgument.size()) {
+					if (!CheckOptargRemoveOrZero()) return false; //error, code set in CheckOptargRemoveOrZero
+					settings.reset(WATCH_WATERFALL);
+				} else {
+					settings.set(WATCH_WATERFALL);
+				}
+				break;
 			default:
 				return SetError(CLIError::kGetOptError);
 		}
@@ -269,6 +279,7 @@ bool CommandLineInterface::ProcessWatchLevelSettings(const int level, WatchBitse
 	options.set(WATCH_TEMPLATES);
 	options.set(WATCH_PHASES);
 	options.set(WATCH_DECISIONS);
+	options.set(WATCH_WATERFALL);
 
 	// Start with all off, turn on as appropriate
 	settings.reset(WATCH_PREFERENCES);
@@ -280,6 +291,7 @@ bool CommandLineInterface::ProcessWatchLevelSettings(const int level, WatchBitse
 	settings.reset(WATCH_TEMPLATES);
 	settings.reset(WATCH_PHASES);
 	settings.reset(WATCH_DECISIONS);
+	settings.reset(WATCH_WATERFALL);
 
 	switch (level) {
 		case 0:// none
@@ -290,8 +302,9 @@ bool CommandLineInterface::ProcessWatchLevelSettings(const int level, WatchBitse
 			wmeSetting = 0;
 			break;
 			
-		case 5:// preferences
+		case 5:// preferences, waterfall
 			settings.set(WATCH_PREFERENCES);
+			settings.set(WATCH_WATERFALL);
 			// falls through
 		case 4:// wmes
 			settings.set(WATCH_WMES);
@@ -401,6 +414,7 @@ bool CommandLineInterface::DoWatch(const WatchBitset& options, const WatchBitset
 			m_Result << "\n  Backtracing:  " << (pSysparams[TRACE_BACKTRACING_SYSPARAM] ? "on" : "off");
 			m_Result << "\n  Indifferent selection:  " << (pSysparams[TRACE_INDIFFERENT_SYSPARAM] ? "on" : "off");
 			m_Result << "\n  Soar-RL:  " << (pSysparams[TRACE_RL_SYSPARAM] ? "on" : "off");
+			m_Result << "\n  Waterfall:  " << (pSysparams[TRACE_WATERFALL_SYSPARAM] ? "on" : "off");
 
 		} else {
 			char buf[kMinBufferSize];
@@ -446,6 +460,9 @@ bool CommandLineInterface::DoWatch(const WatchBitset& options, const WatchBitset
 
 			AppendArgTag(sml_Names::kParamWatchRL, sml_Names::kTypeBoolean, 
 				pSysparams[TRACE_RL_SYSPARAM] ? sml_Names::kTrue : sml_Names::kFalse);
+
+			AppendArgTag(sml_Names::kParamWatchWaterfall, sml_Names::kTypeBoolean, 
+				pSysparams[TRACE_WATERFALL_SYSPARAM] ? sml_Names::kTrue : sml_Names::kFalse);
 		}
 
 		return true;
@@ -498,6 +515,10 @@ bool CommandLineInterface::DoWatch(const WatchBitset& options, const WatchBitset
 
 	if (options.test(WATCH_WMES)) {
 		pKernelHack->SetSysparam(m_pAgentSML, TRACE_WM_CHANGES_SYSPARAM, settings.test(WATCH_WMES));
+	}
+
+	if (options.test(WATCH_WATERFALL)) {
+		pKernelHack->SetSysparam(m_pAgentSML, TRACE_WATERFALL_SYSPARAM, settings.test(WATCH_WATERFALL));
 	}
 
 	if (options.test(WATCH_LEARNING)) {
