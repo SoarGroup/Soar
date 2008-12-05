@@ -411,17 +411,23 @@ Bool minor_quiescence_at_goal(agent* thisAgent, Symbol *goal) {
 /* Find the highest goal of activity among the current assertions and
  * retractions */
 
-/* We have to start at the top of the goal stack and go down because *any*
+/* We have to start at the top of the goal stack (not anymore, see next comment)
+ * and go down because *any*
  * goal in the goal stack could be active (and we want to highest one).
  * However, we terminate as soon as a goal with assertions or retractions
  * is found.  Propose cares only about ms_i_assertions & retractions
+ *
+ * Modified for new waterfall to increase code reuse, now it takes a start_goal
+ * which is used as the top of the stack to look down. In the new waterfall
+ * model, we sometimes don't want to look for active goals starting at the 
+ * highest state, this allows us to be flexible.
  */
 
-Symbol * highest_active_goal_propose(agent* thisAgent) {
+Symbol * highest_active_goal_propose(agent* thisAgent, Symbol* start_goal, Bool noneOk) {
 
    Symbol *goal;
 
-   for (goal=thisAgent->top_goal; goal; goal=goal->id.lower_goal) {
+   for (goal=start_goal; goal; goal=goal->id.lower_goal) {
 
 #ifdef DEBUG_DETERMINE_LEVEL_PHASE      
      /* Debugging only */
@@ -444,21 +450,24 @@ Symbol * highest_active_goal_propose(agent* thisAgent) {
    print(thisAgent, "WARNING: Returning NIL active goal because only NIL goal retractions are active.");
    xml_generate_warning(thisAgent, "WARNING: Returning NIL active goal because only NIL goal retractions are active.");
 #endif
-   if (thisAgent->nil_goal_retractions) return NIL;
-   {
-   char msg[BUFFER_MSG_SIZE];
-   strncpy(msg, "\n consistency.c: Error: Unable to find an active goal when not at quiescence.\n", BUFFER_MSG_SIZE);
-   msg[BUFFER_MSG_SIZE - 1] = 0; /* ensure null termination */
-   abort_with_fatal_error(thisAgent, msg);
+   if (thisAgent->nil_goal_retractions) 
+	   return NIL;
+
+   if (!noneOk) {
+	   char msg[BUFFER_MSG_SIZE];
+	   strncpy(msg, "\n consistency.c: Error: Unable to find an active goal when not at quiescence.\n", BUFFER_MSG_SIZE);
+	   msg[BUFFER_MSG_SIZE - 1] = 0; /* ensure null termination */
+	   abort_with_fatal_error(thisAgent, msg);
    }
-   return NIL;  /* unneeded, but avoids gcc -Wall warning */ 
+
+   return NIL; 
 }
 
-Symbol * highest_active_goal_apply(agent* thisAgent) {
+Symbol * highest_active_goal_apply(agent* thisAgent, Symbol* start_goal, Bool noneOk) {
 
    Symbol *goal;
 
-   for (goal=thisAgent->top_goal; goal; goal=goal->id.lower_goal) {
+   for (goal=start_goal; goal; goal=goal->id.lower_goal) {
 
 #if 0 //DEBUG_DETERMINE_LEVEL_PHASE      
      /* Debugging only */
@@ -483,13 +492,17 @@ Symbol * highest_active_goal_apply(agent* thisAgent) {
    print(thisAgent, "WARNING: Returning NIL active goal because only NIL goal retractions are active.");
    xml_generate_warning(thisAgent, "WARNING: Returning NIL active goal because only NIL goal retractions are active.");
 #endif
-   if (thisAgent->nil_goal_retractions) return NIL;
-   { char msg[BUFFER_MSG_SIZE];
-   strncpy(msg, "\nconsistency.c: Error: Unable to find an active goal when not at quiescence.\n", BUFFER_MSG_SIZE);
-   msg[BUFFER_MSG_SIZE - 1] = 0; /* ensure null termination */
-   abort_with_fatal_error(thisAgent, msg);
+   if (thisAgent->nil_goal_retractions) 
+	   return NIL;
+
+   if (!noneOk) { 
+	   char msg[BUFFER_MSG_SIZE];
+	   strncpy(msg, "\nconsistency.c: Error: Unable to find an active goal when not at quiescence.\n", BUFFER_MSG_SIZE);
+	   msg[BUFFER_MSG_SIZE - 1] = 0; /* ensure null termination */
+	   abort_with_fatal_error(thisAgent, msg);
    }
-   return NIL;  /* unneeded, but avoids gcc -Wall warning */ 
+
+   return NIL;  
 }
 
 /* ---------------------------------------------------------------------- */
@@ -644,7 +657,7 @@ void determine_highest_active_production_level_in_stack_apply(agent* thisAgent) 
    thisAgent->previous_active_level = thisAgent->active_level;
    
    /* Determine the new highest level of activity */
-   thisAgent->active_goal = highest_active_goal_apply(thisAgent);
+   thisAgent->active_goal = highest_active_goal_apply(thisAgent, thisAgent->top_goal, FALSE);
    if (thisAgent->active_goal)
       thisAgent->active_level = thisAgent->active_goal->id.level;
    else 
@@ -879,7 +892,7 @@ void determine_highest_active_production_level_in_stack_propose(agent* thisAgent
    thisAgent->previous_active_level = thisAgent->active_level;
    
    /* Determine the new highest level of activity */
-   thisAgent->active_goal = highest_active_goal_propose(thisAgent);
+   thisAgent->active_goal = highest_active_goal_propose(thisAgent, thisAgent->top_goal, FALSE);
    if (thisAgent->active_goal)
       thisAgent->active_level = thisAgent->active_goal->id.level;
    else 
