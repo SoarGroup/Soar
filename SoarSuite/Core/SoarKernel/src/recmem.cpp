@@ -47,6 +47,7 @@
 #include "xml.h"
 #include "utilities.h"
 #include "soar_TraceNames.h"
+#include "consistency.h"
 
 #include <string> // SBW 8/4/08
 #include "misc.h"
