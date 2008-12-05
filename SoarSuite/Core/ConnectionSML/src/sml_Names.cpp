@@ -310,6 +310,7 @@ char const* const sml_Names::kParamStatsProductionCountChunk				= "statsproducti
 char const* const sml_Names::kParamStatsProductionCountJustification		= "statsproductioncountjustification" ;
 char const* const sml_Names::kParamStatsCycleCountDecision					= "statscyclecountdecision" ;
 char const* const sml_Names::kParamStatsCycleCountElaboration				= "statscyclecountelaboration" ;
+char const* const sml_Names::kParamStatsCycleCountInnerElaboration			= "statscyclecountinnerelaboration" ;
 char const* const sml_Names::kParamStatsProductionFiringCount				= "statsproductionfiringcount" ;
 char const* const sml_Names::kParamStatsWmeCountAddition					= "statswmecountaddition" ;
 char const* const sml_Names::kParamStatsWmeCountRemoval						= "statswmecountremoval" ;
@@ -382,6 +383,7 @@ char const* const sml_Names::kParamWatchLearning					= "watchlearning";
 char const* const sml_Names::kParamWatchBacktracing					= "watchbacktracing";
 char const* const sml_Names::kParamWatchIndifferentSelection		= "watchindifferentselection";
 char const* const sml_Names::kParamWatchRL							= "watchrl";
+char const* const sml_Names::kParamWatchWaterfall					= "watchwaterfall";
 
 // Values (these are not case sensitive unlike the rest)
 char const* const sml_Names::kTrue	= "true" ;
