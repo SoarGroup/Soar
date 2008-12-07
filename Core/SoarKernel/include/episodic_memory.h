@@ -327,7 +327,7 @@ typedef struct epmem_shared_match_struct
 struct epmem_shared_literal_struct
 {
 	unsigned long long ct;
-	wme *wme;
+	struct wme_struct *wme;
 	
 	epmem_shared_match *match;
 	epmem_shared_trigger_list *children;
