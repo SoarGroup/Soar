@@ -16,6 +16,7 @@
 #include <list>
 #include <stack>
 #include <set>
+#include <queue>
 
 #include "sqlite3.h"
 
@@ -49,8 +50,7 @@ typedef struct wme_struct wme;
 #define EPMEM_DB_FILE 2
 
 #define EPMEM_MODE_ONE 1   // wm tree
-#define EPMEM_MODE_TWO 2   // wm tree + mva/shared wme on retrieval
-#define EPMEM_MODE_THREE 3 // wm tree + mva/shared wme on retrieval/query
+#define EPMEM_MODE_THREE 3 // mva/shared wme
 
 #define EPMEM_TRIGGER_NONE 1
 #define EPMEM_TRIGGER_OUTPUT 2
@@ -137,27 +137,25 @@ typedef struct wme_struct wme;
 #define EPMEM_STMT_ONE_ADD_NOW						19
 #define EPMEM_STMT_ONE_DELETE_NOW					20
 #define EPMEM_STMT_ONE_ADD_POINT					21
-#define EPMEM_STMT_ONE_MVA_ADD_ID					22
-#define EPMEM_STMT_ONE_MVA_GET_EP					23
 
 #define EPMEM_STMT_THREE_ADD_TIME					10
-#define EPMEM_STMT_THREE_ADD_NOW_SEARCH				11
-#define EPMEM_STMT_THREE_DELETE_NOW_SEARCH			12
-#define EPMEM_STMT_THREE_ADD_NOW_RECONSTRUCT		13
-#define EPMEM_STMT_THREE_DELETE_NOW_RECONSTRUCT		14
-#define EPMEM_STMT_THREE_ADD_POINT_SEARCH			15
-#define EPMEM_STMT_THREE_ADD_POINT_RECONSTRUCT		16
-#define EPMEM_STMT_THREE_ADD_SEARCH					17
-#define EPMEM_STMT_THREE_ADD_RECONSTRUCT			18
-#define EPMEM_STMT_THREE_FIND_FEATURE				19
-#define EPMEM_STMT_THREE_ADD_FEATURE				20
-#define EPMEM_STMT_THREE_FIND_PATH					21
-#define EPMEM_STMT_THREE_ADD_PATH					22
+#define EPMEM_STMT_THREE_ADD_NODE_NOW				11
+#define EPMEM_STMT_THREE_DELETE_NODE_NOW			12
+#define EPMEM_STMT_THREE_ADD_EDGE_NOW				13
+#define EPMEM_STMT_THREE_DELETE_EDGE_NOW			14
+#define EPMEM_STMT_THREE_ADD_NODE_POINT				15
+#define EPMEM_STMT_THREE_ADD_EDGE_POINT				16
+#define EPMEM_STMT_THREE_ADD_NODE_RANGE				17
+#define EPMEM_STMT_THREE_ADD_EDGE_RANGE				18
+#define EPMEM_STMT_THREE_FIND_NODE_UNIQUE			19
+#define EPMEM_STMT_THREE_ADD_NODE_UNIQUE			20
+#define EPMEM_STMT_THREE_FIND_EDGE_UNIQUE			21
+#define EPMEM_STMT_THREE_ADD_EDGE_UNIQUE			22
 #define EPMEM_STMT_THREE_VALID_EPISODE				23
 #define EPMEM_STMT_THREE_NEXT_EPISODE				24
 #define EPMEM_STMT_THREE_PREV_EPISODE				25
-#define EPMEM_STMT_THREE_GET_SEARCH					26
-#define EPMEM_STMT_THREE_GET_RECONSTRUCT			27
+#define EPMEM_STMT_THREE_GET_NODES					26
+#define EPMEM_STMT_THREE_GET_EDGES					27
 
 #define EPMEM_MAX_STATEMENTS 						40 // must be at least 1+ largest of any STMT constant
 
@@ -190,14 +188,17 @@ typedef struct wme_struct wme;
 #define EPMEM_RIT_ROOT								0
 #define EPMEM_LN_2									0.693147180559945
 
+#define EPMEM_DNF									2
+
+// keeping state for multiple RIT's
 #define EPMEM_RIT_STATE_OFFSET						0
 #define EPMEM_RIT_STATE_LEFTROOT					1
 #define EPMEM_RIT_STATE_RIGHTROOT					2
 #define EPMEM_RIT_STATE_MINSTEP						3
 #define EPMEM_RIT_STATE_ADD							4
 
-#define EPMEM_RIT_STATE_SEARCH						0
-#define EPMEM_RIT_STATE_RECONSTRUCT					1
+#define EPMEM_RIT_STATE_NODE						0
+#define EPMEM_RIT_STATE_EDGE						1
 
 //////////////////////////////////////////////////////////
 // EpMem Types
@@ -255,10 +256,12 @@ typedef struct epmem_timer_struct
 	const char *name;
 } epmem_timer;
 
-//
+// common
 
 typedef unsigned long long int epmem_node_id;
 typedef long long int epmem_time_id;
+
+// soar
 
 typedef struct epmem_data_struct 
 {
@@ -272,22 +275,17 @@ typedef struct epmem_data_struct
 
 	wme *ss_wme;
 
-	std::list<wme *> *cue_wmes;		// wmes in last cue
+	std::set<wme *> *cue_wmes;		// wmes in last cue
 	std::stack<wme *> *epmem_wmes;	// wmes in last epmem
 } epmem_data;
+
+// mode: one
 
 typedef struct epmem_leaf_node_struct
 {	
 	double leaf_weight;
 	epmem_node_id leaf_id;
 } epmem_leaf_node;
-
-typedef struct epmem_ambig_leaf_node_struct
-{
-	double leaf_weight;	
-	std::set<epmem_node_id> *leaf_ids;
-	unsigned long long context;
-} epmem_ambig_leaf_node;
 
 typedef struct epmem_range_query_struct
 {
@@ -297,17 +295,62 @@ typedef struct epmem_range_query_struct
 	double weight;
 	long long ct;
 
-	unsigned long long group;
-
 	long timer;	
 } epmem_range_query;
 
-typedef struct epmem_path_struct
+// mode: three
+
+typedef struct epmem_edge_struct
 {
 	epmem_node_id q0;
 	std::string *w;
 	epmem_node_id q1;
-} epmem_path;
+} epmem_edge;
+
+typedef struct epmem_wme_cache_element_struct
+{
+	wme **wmes;
+	int len;
+} epmem_wme_cache_element;
+
+typedef struct epmem_shared_literal_struct epmem_shared_literal;
+typedef std::list<epmem_shared_literal *> epmem_shared_trigger_list;
+
+typedef struct epmem_shared_match_struct
+{
+	double value_weight;
+	long long value_ct;
+
+	unsigned long long ct;
+} epmem_shared_match;
+
+struct epmem_shared_literal_struct
+{
+	unsigned long long ct;
+	wme *wme;
+	
+	epmem_shared_match *match;
+	epmem_shared_trigger_list *children;
+};
+
+typedef struct epmem_shared_query_struct
+{
+	sqlite3_stmt *stmt;
+	epmem_time_id val;
+	long timer;
+
+	epmem_shared_trigger_list *triggers;
+} epmem_shared_query;
+
+struct epmem_compare_shared_queries
+{
+	bool operator() ( const epmem_shared_query *a, const epmem_shared_query *b ) const
+	{
+		return ( a->val < b->val );
+	}
+};
+
+typedef std::priority_queue<epmem_shared_query *, std::vector<epmem_shared_query *>, epmem_compare_shared_queries> epmem_shared_query_list;
 
 //
 // These must go below types

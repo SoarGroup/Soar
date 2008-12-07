@@ -6,11 +6,11 @@ pushd elaborations
 source elaborations_source.soar
 popd
 source done.soar
-source test-next.soar
-source test-cue.soar
 source initialize-kb.soar
 source load.soar
+source test-cue.soar
 source test-init.soar
+source test-next.soar
 source test-notify.soar
 source test-result.soar
 source transition.soar

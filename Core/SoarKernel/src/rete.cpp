@@ -1582,13 +1582,13 @@ void remove_wme_from_rete (agent* thisAgent, wme *w) {
     if ( epmem_get_parameter( thisAgent, EPMEM_PARAM_MODE, EPMEM_RETURN_LONG ) == EPMEM_MODE_THREE )
 	{
 	  if ( w->value->common.symbol_type == IDENTIFIER_SYMBOL_TYPE )
-	    (*thisAgent->epmem_reconstruct_removals)[ w->epmem_id ] = true;
+	    (*thisAgent->epmem_edge_removals)[ w->epmem_id ] = true;
 	  else
-	    (*thisAgent->epmem_search_removals)[ w->epmem_id ] = true;
+	    (*thisAgent->epmem_node_removals)[ w->epmem_id ] = true;
 	}
 	else
 	{
-	  (*thisAgent->epmem_search_removals)[ w->epmem_id ] = true;
+	  (*thisAgent->epmem_node_removals)[ w->epmem_id ] = true;
 	}
   }
   

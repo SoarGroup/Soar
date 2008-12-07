@@ -67,8 +67,7 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-
-				AdditionalDependencies="$(SolutionDir)\SoarLibrary\bin\sqlite3.lib"				
+				AdditionalDependencies="&quot;$(SolutionDir)\SoarLibrary\bin\sqlite3.lib&quot;"
 				OutputFile="$(SolutionDir)\SoarLibrary\bin\Soar$(ProjectName).dll"
 				LinkIncremental="2"
 				AdditionalLibraryDirectories=""
@@ -156,7 +155,7 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="$(SolutionDir)\SoarLibrary\bin\sqlite3.lib"
+				AdditionalDependencies="&quot;$(SolutionDir)\SoarLibrary\bin\sqlite3.lib&quot;"
 				OutputFile="$(SolutionDir)\SoarLibrary\bin\Soar$(ProjectName).dll"
 				LinkIncremental="1"
 				AdditionalLibraryDirectories=""
@@ -246,7 +245,7 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="$(SolutionDir)\SoarLibrary\bin\sqlite3.lib"
+				AdditionalDependencies="&quot;$(SolutionDir)\SoarLibrary\bin\sqlite3.lib&quot;"
 				OutputFile="$(SolutionDir)\SoarLibrary\bin\Soar$(ProjectName).dll"
 				LinkIncremental="2"
 				AdditionalLibraryDirectories=""
@@ -334,7 +333,7 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="$(SolutionDir)\SoarLibrary\bin\sqlite3.lib"
+				AdditionalDependencies="&quot;$(SolutionDir)\SoarLibrary\bin\sqlite3.lib&quot;"
 				OutputFile="$(SolutionDir)\SoarLibrary\bin\Soar$(ProjectName).dll"
 				LinkIncremental="1"
 				AdditionalLibraryDirectories=""

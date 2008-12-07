@@ -2054,7 +2054,7 @@ void create_new_context (agent* thisAgent, Symbol *attr_of_impasse, byte impasse
   id->id.epmem_info->last_ol_count = 0;
   id->id.epmem_info->last_cmd_time = 0;
   id->id.epmem_info->last_cmd_count = 0;
-  id->id.epmem_info->cue_wmes = new std::list<wme *>();
+  id->id.epmem_info->cue_wmes = new std::set<wme *>();
   
   // mark the top state
   if ( thisAgent->top_goal != id )

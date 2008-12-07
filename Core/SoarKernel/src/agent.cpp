@@ -405,13 +405,13 @@ agent * create_soar_agent (char * agent_name) {                                 
 
   newAgent->epmem_exclusions = new std::list<const char *>();
 
-  newAgent->epmem_search_removals = new std::map<epmem_node_id, bool>();
-  newAgent->epmem_search_mins = new std::vector<epmem_time_id>();
-  newAgent->epmem_search_maxes = new std::vector<epmem_time_id>();
+  newAgent->epmem_node_removals = new std::map<epmem_node_id, bool>();
+  newAgent->epmem_node_mins = new std::vector<epmem_time_id>();
+  newAgent->epmem_node_maxes = new std::vector<epmem_time_id>();
 
-  newAgent->epmem_reconstruct_removals = new std::map<epmem_node_id, bool>();
-  newAgent->epmem_reconstruct_mins = new std::vector<epmem_time_id>();
-  newAgent->epmem_reconstruct_maxes = new std::vector<epmem_time_id>();
+  newAgent->epmem_edge_removals = new std::map<epmem_node_id, bool>();
+  newAgent->epmem_edge_mins = new std::vector<epmem_time_id>();
+  newAgent->epmem_edge_maxes = new std::vector<epmem_time_id>();
 
   newAgent->epmem_validation = 0;
 
@@ -552,12 +552,12 @@ void destroy_soar_agent (agent * delete_agent)
   epmem_clean_stats( delete_agent );
   epmem_clean_timers( delete_agent );
   delete delete_agent->epmem_exclusions;
-  delete delete_agent->epmem_search_removals;
-  delete delete_agent->epmem_search_mins;
-  delete delete_agent->epmem_search_maxes;
-  delete delete_agent->epmem_reconstruct_removals;
-  delete delete_agent->epmem_reconstruct_mins;
-  delete delete_agent->epmem_reconstruct_maxes;
+  delete delete_agent->epmem_node_removals;
+  delete delete_agent->epmem_node_mins;
+  delete delete_agent->epmem_node_maxes;
+  delete delete_agent->epmem_edge_removals;
+  delete delete_agent->epmem_edge_mins;
+  delete delete_agent->epmem_edge_maxes;
 
   // cleanup wma
   wma_clean_parameters( delete_agent );

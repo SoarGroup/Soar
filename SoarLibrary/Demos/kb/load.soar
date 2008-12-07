@@ -1,3 +1,13 @@
+sp {kb*elaborate*observing
+   (state <s> ^name kb
+              ^observing <c>
+              ^entries.entry <e>)
+   (<e> ^id <c>)
+-->
+   (<s> ^observing-entry <e>)
+}
+           
+
 sp {kb*propose*load
    (state <s> ^name kb
               ^phase load
@@ -40,4 +50,3 @@ sp {apply*load*increment
    (<s> ^current-entry <c> -
         ^current-entry (+ <c> 1))
 }
-

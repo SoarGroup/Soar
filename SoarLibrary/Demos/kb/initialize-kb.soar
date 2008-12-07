@@ -18,7 +18,7 @@ sp {apply*initialize-kb*params
         ^current-entry 1
         ^current-test 1
         ^max-entries 5        
-        ^max-tests 14
+        ^max-tests 15
         ^entries <e>
         ^tests <t>)
 }
@@ -50,7 +50,8 @@ sp {apply*intialize-kb*fill
         ^test <t11>
         ^test <t12>
         ^test <t13>
-        ^test <t14>)
+        ^test <t14>
+        ^test <t15>)
    (<e1> ^id 1
          ^name |Sei whale|
          ^scientific-name |Balaenoptera borealis|
@@ -742,5 +743,55 @@ sp {apply*intialize-kb*fill
               ^status good
               ^command.previous <n14-14>
               ^expected (- <max-entries> 1))
+   ###
+   (<t15> ^id 15
+          ^name |mode 3 checks|
+          ^note |warm-blooded, score 1; warm-blooded and Cetacea, score 2; warm-blooded, rabies, not Cetacea, score 1; warm-blooded, rabies, not beaked whale, score 2|            
+          ^steps 4
+          ^step <st15-1>
+          ^step <st15-2>
+          ^step <st15-3>
+          ^step <st15-4>)
+   (<st15-1> ^id 1
+             ^type query
+             ^status success
+             ^command <c15-1>
+             ^expected <max-entries>
+             ^score 1.)
+   (<c15-1> ^query <q15-1>)
+   (<q15-1> ^observing-entry.attributes.is warm-blooded)
+   (<st15-2> ^id 2
+             ^type query
+             ^status success
+             ^command <c15-2>
+             ^expected <max-entries>
+             ^score 2.)
+   (<c15-2> ^query <q15-2>)
+   (<q15-2> ^observing-entry.attributes <q15-2-1>)
+   (<q15-2-1> ^is warm-blooded 
+              ^order Cetacea)
+   (<st15-3> ^id 3
+             ^type query
+             ^status success
+             ^command <c15-3>
+             ^expected <max-entries>
+             ^score 1.)
+   (<c15-3> ^query <q15-3>
+            ^neg-query <n15-3>)
+   (<q15-3> ^observing-entry.attributes <q15-3-1>)
+   (<q15-3-1> ^is warm-blooded 
+              ^may-catch rabbies)
+   (<n15-3> ^observing-entry.attributes.order Cetacea)
+   (<st15-4> ^id 4
+             ^type query
+             ^status success
+             ^command <c15-4>
+             ^expected (- <max-entries> 1)
+             ^score 2.)
+   (<c15-4> ^query <q15-4>
+            ^neg-query <n15-4>)
+   (<q15-4> ^observing-entry.attributes <q15-4-1>)
+   (<q15-4-1> ^is warm-blooded 
+              ^may-catch rabbies)
+   (<n15-4> ^observing-entry.attributes.kind-of |beaked whale|)
 }
-
