@@ -3581,7 +3581,10 @@ void epmem_shared_increment( agent *my_agent, epmem_shared_query_list *queries, 
 
 		more_data = ( epmem_exec_shared_query( my_agent, temp_query ) == SQLITE_ROW );
 		if ( more_data )
+		{
+			temp_query->val = sqlite3_column_int64( temp_query->stmt, 0 );
 			queries[ list ].push( temp_query );
+		}
 		else
 		{
 			sqlite3_finalize( temp_query->stmt );
