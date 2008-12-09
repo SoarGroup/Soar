@@ -48,7 +48,6 @@
 #include <time.h>
 
 #include "reinforcement_learning.h"
-#include "ModalEmotion.h"
 #include "emotion.h"
 
 #define INIT_FILE       "init.soar"

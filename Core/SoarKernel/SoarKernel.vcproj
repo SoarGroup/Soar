@@ -972,14 +972,6 @@
 				>
 			</File>
 			<File
-				RelativePath=".\include\AppraisalFrame.h"
-				>
-			</File>
-			<File
-				RelativePath=".\include\AppraisalStatus.h"
-				>
-			</File>
-			<File
 				RelativePath=".\src\backtrace.h"
 				>
 			</File>
@@ -1053,14 +1045,6 @@
 			</File>
 			<File
 				RelativePath=".\include\misc.h"
-				>
-			</File>
-			<File
-				RelativePath=".\include\ModalEmotion.h"
-				>
-			</File>
-			<File
-				RelativePath=".\include\Mood.h"
 				>
 			</File>
 			<File

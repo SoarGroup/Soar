@@ -56,10 +56,6 @@
 #include "decision_manipulation.h"
 #include "misc.h"
 #include "emotion.h"
-#include "AppraisalStatus.h"
-#include "AppraisalFrame.h"
-#include "Mood.h"
-#include "Feeling.h"
 
 #include "assert.h"
 
@@ -1961,6 +1957,7 @@ void remove_existing_context_and_descendents (agent* thisAgent, Symbol *goal) {
   symbol_remove_ref( thisAgent, goal->id.emotion_header_appraisal );
   symbol_remove_ref( thisAgent, goal->id.emotion_header_feeling );
   cleanup_emotion_data(thisAgent, goal->id.emotion_info);
+  delete goal->id.emotion_info;
 
   /* REW: BUG
    * Tentative assertions can exist for removed goals.  However, it looks
@@ -2043,15 +2040,13 @@ void create_new_context (agent* thisAgent, Symbol *attr_of_impasse, byte impasse
   id->id.rl_info->step = 0;  
   id->id.rl_info->impasse_type = NONE_IMPASSE_TYPE;
 
-  id->id.emotion_info = static_cast<emotion_data *>( allocate_memory( thisAgent, sizeof( emotion_data ), MISCELLANEOUS_MEM_USAGE ) );
-  id->id.emotion_info->appraisalStatus = new AppraisalStatus();
+  //id->id.emotion_info = static_cast<emotion_data *>( allocate_memory( thisAgent, sizeof( emotion_data ), MISCELLANEOUS_MEM_USAGE ) );
+  id->id.emotion_info = new emotion_data();
+  /*id->id.emotion_info->appraisalStatus = new AppraisalStatus();
   id->id.emotion_info->currentEmotion = new AppraisalFrame();
   id->id.emotion_info->currentMood = new Mood();
-  id->id.emotion_info->currentFeeling = new Feeling();
+  id->id.emotion_info->currentFeeling = new Feeling();*/
   id->id.emotion_info->feeling_frame = 0;
-  /*id->id.emotion_info->appraisalStatus->Init();
-  id->id.emotion_info->currentEmotion->Init();
-  id->id.emotion_info->currentMood->Init();*/
 
   /* --- invoke callback routine --- */
   soar_invoke_callbacks(thisAgent, 
