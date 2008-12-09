@@ -972,10 +972,6 @@ void emotion_clear_feeling_frame(agent* thisAgent, emotion_data* ed)
 void cleanup_emotion_data(agent* thisAgent, emotion_data* ed)
 {
 	emotion_clear_feeling_frame(thisAgent, ed);
-	//delete ed->appraisalStatus; //BUGBUG: should use custom new/delete so memory usage is reported in a category
-	//delete ed->currentEmotion;
-	//delete ed->currentFeeling;
-	//delete ed->currentMood;
 }
 
 void register_appraisal(emotion_data* ed, wme* appraisal)
@@ -1070,8 +1066,6 @@ void generate_feeling_frame(agent* thisAgent, Symbol * goal)
 	ed->feeling_frame = add_input_wme(thisAgent, goal->id.emotion_header_feeling, frame_att, make_new_identifier(thisAgent, 'F', goal->id.level));
 	symbol_remove_ref(thisAgent, frame_att);
 
-	// TODO: can't all of this repeated stuff below be made into a function?
-
 	generate_feeling_appraisal_numeric(thisAgent, "suddenness", ed);
 	generate_feeling_appraisal_numeric(thisAgent, "unpredictability", ed);
 	generate_feeling_appraisal_numeric(thisAgent, "intrinsic-pleasantness", ed);
@@ -1089,19 +1083,27 @@ void generate_feeling_frame(agent* thisAgent, Symbol * goal)
 	Symbol* tempAtt;
 	Symbol* tempVal;
 
-	tempAtt = make_sym_constant(thisAgent, "intensity");
-	tempVal = make_float_constant(thisAgent, ed->currentFeeling.af.CalculateIntensity());
+	double intensity = ed->currentFeeling.af.CalculateIntensity();
+	double valence = ed->currentFeeling.af.CalculateValence();
+	double reward = intensity * valence;
+
+	tempAtt = make_sym_constant(thisAgent, "intensity");  //BADBAD: this should be a predefined symbol
+	tempVal = make_float_constant(thisAgent, intensity);
 	add_input_wme(thisAgent, ed->feeling_frame->value, tempAtt, tempVal);
 	symbol_remove_ref(thisAgent, tempAtt);
 	symbol_remove_ref(thisAgent, tempVal);
 
-	tempAtt = make_sym_constant(thisAgent, "valence");
-	tempVal = make_float_constant(thisAgent, ed->currentFeeling.af.CalculateValence());
+	tempAtt = make_sym_constant(thisAgent, "valence");  //BADBAD: this should be a predefined symbol
+	tempVal = make_float_constant(thisAgent, valence);
 	add_input_wme(thisAgent, ed->feeling_frame->value, tempAtt, tempVal);
 	symbol_remove_ref(thisAgent, tempAtt);
 	symbol_remove_ref(thisAgent, tempVal);
 
-	//TODO: reward
+	tempAtt = make_sym_constant(thisAgent, "reward");  //BADBAD: this should be a predefined symbol
+	tempVal = make_float_constant(thisAgent, reward);
+	add_input_wme(thisAgent, ed->feeling_frame->value, tempAtt, tempVal);
+	symbol_remove_ref(thisAgent, tempAtt);
+	symbol_remove_ref(thisAgent, tempVal);
 }
 
 void emotion_reset_data( agent *thisAgent )

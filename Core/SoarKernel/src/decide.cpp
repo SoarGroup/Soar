@@ -1957,7 +1957,7 @@ void remove_existing_context_and_descendents (agent* thisAgent, Symbol *goal) {
   symbol_remove_ref( thisAgent, goal->id.emotion_header_appraisal );
   symbol_remove_ref( thisAgent, goal->id.emotion_header_feeling );
   cleanup_emotion_data(thisAgent, goal->id.emotion_info);
-  delete goal->id.emotion_info;
+  delete goal->id.emotion_info; //BUGBUG: should use custom new/delete so memory usage is reported in a category
 
   /* REW: BUG
    * Tentative assertions can exist for removed goals.  However, it looks
