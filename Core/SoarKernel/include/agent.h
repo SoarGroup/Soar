@@ -34,10 +34,6 @@
 
 #include "exploration.h"
 #include "reinforcement_learning.h"
-#include "AppraisalStatus.h"
-#include "AppraisalFrame.h"
-#include "Mood.h"
-#include "Feeling.h"
 
 #include <string>
 #include <map>
@@ -683,12 +679,6 @@ kernel time and total_cpu_time greater than the derived total CPU time. REW */
   Symbol            * io_header_input;
   Symbol            * io_header_output;
 
-  Symbol            * emotion_header;
-  wme               * emotion_header_link;
-  
-  Symbol            * emotion_header_appraisal;
-  Symbol            * emotion_header_feeling;
-
   memory_pool         io_wme_pool;
   Symbol            * prev_top_state;
   
@@ -784,13 +774,6 @@ kernel time and total_cpu_time greater than the derived total CPU time. REW */
   xml_handle xml_destination;		// The current destination for all XML generation, essentially either == to xml_trace or xml_commands
   xml_handle xml_trace;				// During a run, xml_destination will be set to this pointer.
   xml_handle xml_commands;			// During commands, xml_destination will be set to this pointer.
-
-  // emotion stuff
-  AppraisalStatus appraisalStatus;
-  AppraisalFrame currentEmotion;
-  Mood currentMood;
-  Feeling currentFeeling;
-  wme* feeling_frame;
 
 } agent;
 /*************** end of agent struct *****/

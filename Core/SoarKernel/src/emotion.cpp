@@ -33,34 +33,48 @@
 #include "boost/foreach.hpp"
 #include <list>
 
-void emotion_clear_feeling_frame(agent* thisAgent)
+#include "AppraisalStatus.h"
+#include "Mood.h"
+#include "Feeling.h"
+
+void emotion_clear_feeling_frame(agent* thisAgent, emotion_data* ed)
 {
-	for(wme* w = thisAgent->feeling_frame->value->id.input_wmes; w!=NIL; w=w->next)
+	if(!ed->feeling_frame) return;
+	for(wme* w = ed->feeling_frame->value->id.input_wmes; w!=NIL; w=w->next)
 	{
 		release_io_symbol(thisAgent, w->id);  // Not sure why I have to do this explicitly
 //		remove_input_wme(thisAgent, w);
 	}
-	remove_input_wme(thisAgent, thisAgent->feeling_frame);
+	remove_input_wme(thisAgent, ed->feeling_frame);
 }
 
-void register_appraisal(agent* thisAgent, wme* appraisal)
+void cleanup_emotion_data(agent* thisAgent, emotion_data* ed)
+{
+	emotion_clear_feeling_frame(thisAgent, ed);
+	delete ed->appraisalStatus; //BUGBUG: should use custom new/delete so memory usage is reported in a category
+	delete ed->currentEmotion;
+	delete ed->currentFeeling;
+	delete ed->currentMood;
+}
+
+void register_appraisal(emotion_data* ed, wme* appraisal)
 {
 	if(appraisal->attr->sc.common_symbol_info.symbol_type == SYM_CONSTANT_SYMBOL_TYPE)
 	{
-		if(appraisal->id != thisAgent->currentEmotion.id_sym) {
-			thisAgent->currentEmotion.Reset(appraisal->id, thisAgent->currentEmotion.outcome_probability);
+		if(appraisal->id != ed->currentEmotion->id_sym) {
+			ed->currentEmotion->Reset(appraisal->id, ed->currentEmotion->outcome_probability);
 		}
 
-		string result = thisAgent->currentEmotion.SetAppraisalValue(appraisal->attr->sc.name, appraisal->value);
+		string result = ed->currentEmotion->SetAppraisalValue(appraisal->attr->sc.name, appraisal->value);
 	}
 
 }
 
-void get_appraisals(agent* thisAgent)
+void get_appraisals(Symbol* goal)
 {
-	if(!thisAgent->emotion_header_appraisal) return;
+	if(!goal->id.emotion_header_appraisal) return;
 
-	slot* frame_slot = thisAgent->emotion_header_appraisal->id.slots;
+	slot* frame_slot = goal->id.emotion_header_appraisal->id.slots;
 	slot* appraisal_slot;
 	wme *frame, *appraisal;
 
@@ -79,7 +93,7 @@ void get_appraisals(agent* thisAgent)
 						{
 							for ( appraisal = appraisal_slot->wmes; appraisal; appraisal = appraisal->next )
 							{
-								register_appraisal(thisAgent, appraisal);
+								register_appraisal(goal->id.emotion_info, appraisal);
 							}
 						}
 					}
@@ -89,111 +103,97 @@ void get_appraisals(agent* thisAgent)
 	}
 }
 
-void update_mood(agent* thisAgent)
+void update_mood(Symbol* goal)
 {
-	thisAgent->currentMood.Decay();
-	thisAgent->currentMood.MoveTowardEmotion(thisAgent->currentEmotion);
+	emotion_data* ed = goal->id.emotion_info;
+	ed->currentMood->Decay();
+	ed->currentMood->MoveTowardEmotion(ed->currentEmotion);
+}
+
+
+inline void generate_feeling_appraisal_numeric(agent* thisAgent, const char* const name, emotion_data* ed)
+{
+	Symbol* tempAtt;
+	Symbol* tempVal;
+
+	tempAtt = make_sym_constant(thisAgent, name);
+	tempVal = make_float_constant(thisAgent, ed->currentFeeling->GetNumericDimension(name, ed->currentEmotion, ed->currentMood->af, ed->appraisalStatus->GetStatus(name)));
+	add_input_wme(thisAgent, ed->feeling_frame->value, tempAtt, tempVal);
+	symbol_remove_ref(thisAgent, tempAtt);
+	symbol_remove_ref(thisAgent, tempVal);
+}
+
+inline void generate_feeling_appraisal_categorical(agent* thisAgent, const char* const name, emotion_data* ed)
+{
+	Symbol* tempAtt;
+	Symbol* tempVal;
+
+	tempAtt = make_sym_constant(thisAgent, name);
+	tempVal = make_sym_constant(thisAgent, ed->currentFeeling->GetCategoricalDimension(name, ed->currentEmotion, ed->currentMood->af, ed->appraisalStatus->GetStatus(name)).c_str());
+	add_input_wme(thisAgent, ed->feeling_frame->value, tempAtt, tempVal);
+	symbol_remove_ref(thisAgent, tempAtt);
+	symbol_remove_ref(thisAgent, tempVal);
 }
 
 // BADBAD: should have pre-made Symbols for all of these attributes
 // Shouldn't have to pass in status, mood, and emotion -- those should be directly available to the called function
-void generate_feeling_frame(agent* thisAgent)
+void generate_feeling_frame(agent* thisAgent, Symbol * goal)
 {
+	emotion_data* ed = goal->id.emotion_info;
+
 	// clear previous feeling frame (stored on agent structure)
-	if(thisAgent->feeling_frame) { emotion_clear_feeling_frame(thisAgent); }
+	if(ed->feeling_frame) { emotion_clear_feeling_frame(thisAgent, ed); }
 
 	// generate new frame
 	Symbol* frame_att = make_sym_constant(thisAgent, "frame");
-	thisAgent->feeling_frame = add_input_wme(thisAgent, thisAgent->emotion_header_feeling, frame_att, make_new_identifier(thisAgent, 'F', TOP_GOAL_LEVEL));
+	ed->feeling_frame = add_input_wme(thisAgent, goal->id.emotion_header_feeling, frame_att, make_new_identifier(thisAgent, 'F', goal->id.level));
 	symbol_remove_ref(thisAgent, frame_att);
 
-	// generate new values for each appraisal
+	// TODO: can't all of this repeated stuff below be made into a function?
+
+	generate_feeling_appraisal_numeric(thisAgent, "suddenness", ed);
+	generate_feeling_appraisal_numeric(thisAgent, "unpredictability", ed);
+	generate_feeling_appraisal_numeric(thisAgent, "intrinsic-pleasantness", ed);
+	generate_feeling_appraisal_numeric(thisAgent, "goal-relevance", ed);
+	generate_feeling_appraisal_numeric(thisAgent, "outcome-probability", ed);
+	generate_feeling_appraisal_numeric(thisAgent, "discrepancy", ed);
+	generate_feeling_appraisal_numeric(thisAgent, "conduciveness", ed);
+	generate_feeling_appraisal_numeric(thisAgent, "control", ed);
+	generate_feeling_appraisal_numeric(thisAgent, "power", ed);
+	generate_feeling_appraisal_categorical(thisAgent, "causal-agent", ed);
+	generate_feeling_appraisal_categorical(thisAgent, "causal-motive", ed);
+
+
+	// create feeling intensity, valence
 	Symbol* tempAtt;
 	Symbol* tempVal;
 
-	tempAtt = make_sym_constant(thisAgent, "suddenness");
-	tempVal = make_float_constant(thisAgent, thisAgent->currentFeeling.GetNumericDimension("suddenness", thisAgent->currentEmotion, thisAgent->currentMood.af, thisAgent->appraisalStatus.GetStatus("suddenness")));
-	add_input_wme(thisAgent, thisAgent->feeling_frame->value, tempAtt, tempVal);
-	symbol_remove_ref(thisAgent, tempAtt);
-	symbol_remove_ref(thisAgent, tempVal);
-
-	tempAtt = make_sym_constant(thisAgent, "unpredictability");
-	tempVal = make_float_constant(thisAgent, thisAgent->currentFeeling.GetNumericDimension("unpredictability", thisAgent->currentEmotion, thisAgent->currentMood.af, thisAgent->appraisalStatus.GetStatus("unpredictability")));
-	add_input_wme(thisAgent, thisAgent->feeling_frame->value, tempAtt, tempVal);
-	symbol_remove_ref(thisAgent, tempAtt);
-	symbol_remove_ref(thisAgent, tempVal);
-
-	tempAtt = make_sym_constant(thisAgent, "intrinsic-pleasantness");
-	tempVal = make_float_constant(thisAgent, thisAgent->currentFeeling.GetNumericDimension("intrinsic-pleasantness", thisAgent->currentEmotion, thisAgent->currentMood.af, thisAgent->appraisalStatus.GetStatus("unpredictability")));
-	add_input_wme(thisAgent, thisAgent->feeling_frame->value, tempAtt, tempVal);
-	symbol_remove_ref(thisAgent, tempAtt);
-	symbol_remove_ref(thisAgent, tempVal);
-
-	tempAtt = make_sym_constant(thisAgent, "goal-relevance");
-	tempVal = make_float_constant(thisAgent, thisAgent->currentFeeling.GetNumericDimension("goal-relevance", thisAgent->currentEmotion, thisAgent->currentMood.af, thisAgent->appraisalStatus.GetStatus("unpredictability")));
-	add_input_wme(thisAgent, thisAgent->feeling_frame->value, tempAtt, tempVal);
-	symbol_remove_ref(thisAgent, tempAtt);
-	symbol_remove_ref(thisAgent, tempVal);
-
-	tempAtt = make_sym_constant(thisAgent, "outcome-probability");
-	tempVal = make_float_constant(thisAgent, thisAgent->currentFeeling.GetNumericDimension("outcome-probability", thisAgent->currentEmotion, thisAgent->currentMood.af, thisAgent->appraisalStatus.GetStatus("unpredictability")));
-	add_input_wme(thisAgent, thisAgent->feeling_frame->value, tempAtt, tempVal);
-	symbol_remove_ref(thisAgent, tempAtt);
-	symbol_remove_ref(thisAgent, tempVal);
-
-	tempAtt = make_sym_constant(thisAgent, "discrepancy");
-	tempVal = make_float_constant(thisAgent, thisAgent->currentFeeling.GetNumericDimension("discrepancy", thisAgent->currentEmotion, thisAgent->currentMood.af, thisAgent->appraisalStatus.GetStatus("unpredictability")));
-	add_input_wme(thisAgent, thisAgent->feeling_frame->value, tempAtt, tempVal);
-	symbol_remove_ref(thisAgent, tempAtt);
-	symbol_remove_ref(thisAgent, tempVal);
-
-	tempAtt = make_sym_constant(thisAgent, "conduciveness");
-	tempVal = make_float_constant(thisAgent, thisAgent->currentFeeling.GetNumericDimension("conduciveness", thisAgent->currentEmotion, thisAgent->currentMood.af, thisAgent->appraisalStatus.GetStatus("unpredictability")));
-	add_input_wme(thisAgent, thisAgent->feeling_frame->value, tempAtt, tempVal);
-	symbol_remove_ref(thisAgent, tempAtt);
-	symbol_remove_ref(thisAgent, tempVal);
-
-	tempAtt = make_sym_constant(thisAgent, "control");
-	tempVal = make_float_constant(thisAgent, thisAgent->currentFeeling.GetNumericDimension("control", thisAgent->currentEmotion, thisAgent->currentMood.af, thisAgent->appraisalStatus.GetStatus("unpredictability")));
-	add_input_wme(thisAgent, thisAgent->feeling_frame->value, tempAtt, tempVal);
-	symbol_remove_ref(thisAgent, tempAtt);
-	symbol_remove_ref(thisAgent, tempVal);
-
-	tempAtt = make_sym_constant(thisAgent, "power");
-	tempVal = make_float_constant(thisAgent, thisAgent->currentFeeling.GetNumericDimension("power", thisAgent->currentEmotion, thisAgent->currentMood.af, thisAgent->appraisalStatus.GetStatus("unpredictability")));
-	add_input_wme(thisAgent, thisAgent->feeling_frame->value, tempAtt, tempVal);
-	symbol_remove_ref(thisAgent, tempAtt);
-	symbol_remove_ref(thisAgent, tempVal);
-
-	tempAtt = make_sym_constant(thisAgent, "causal-agent");
-	tempVal = make_sym_constant(thisAgent, thisAgent->currentFeeling.GetCategoricalDimension("causal-agent", thisAgent->currentEmotion, thisAgent->currentMood.af, thisAgent->appraisalStatus.GetStatus("unpredictability")).c_str());
-	add_input_wme(thisAgent, thisAgent->feeling_frame->value, tempAtt, tempVal);
-	symbol_remove_ref(thisAgent, tempAtt);
-	symbol_remove_ref(thisAgent, tempVal);
-
-	tempAtt = make_sym_constant(thisAgent, "causal-motive");
-	tempVal = make_sym_constant(thisAgent, thisAgent->currentFeeling.GetCategoricalDimension("causal-motive", thisAgent->currentEmotion, thisAgent->currentMood.af, thisAgent->appraisalStatus.GetStatus("unpredictability")).c_str());
-	add_input_wme(thisAgent, thisAgent->feeling_frame->value, tempAtt, tempVal);
-	symbol_remove_ref(thisAgent, tempAtt);
-	symbol_remove_ref(thisAgent, tempVal);
-
-	// create feeling intensity, valence
 	tempAtt = make_sym_constant(thisAgent, "intensity");
-	tempVal = make_float_constant(thisAgent, thisAgent->currentFeeling.af.CalculateIntensity());
-	add_input_wme(thisAgent, thisAgent->feeling_frame->value, tempAtt, tempVal);
+	tempVal = make_float_constant(thisAgent, ed->currentFeeling->af.CalculateIntensity());
+	add_input_wme(thisAgent, ed->feeling_frame->value, tempAtt, tempVal);
 	symbol_remove_ref(thisAgent, tempAtt);
 	symbol_remove_ref(thisAgent, tempVal);
 
 	tempAtt = make_sym_constant(thisAgent, "valence");
-	tempVal = make_float_constant(thisAgent, thisAgent->currentFeeling.af.CalculateValence());
-	add_input_wme(thisAgent, thisAgent->feeling_frame->value, tempAtt, tempVal);
+	tempVal = make_float_constant(thisAgent, ed->currentFeeling->af.CalculateValence());
+	add_input_wme(thisAgent, ed->feeling_frame->value, tempAtt, tempVal);
 	symbol_remove_ref(thisAgent, tempAtt);
 	symbol_remove_ref(thisAgent, tempVal);
+
+	//TODO: reward
 }
 
-void emotion_reset(agent* thisAgent)
+void emotion_reset_data( agent *thisAgent )
 {
-	// clear feeling frame (stored on agent structure)
-	emotion_clear_feeling_frame(thisAgent);
-	thisAgent->feeling_frame = 0;
+	for(Symbol* goal = thisAgent->top_goal; goal; goal=goal->id.lower_goal)
+	{
+		emotion_clear_feeling_frame(thisAgent, goal->id.emotion_info);
+	}
+}
+
+void emotion_update(agent* thisAgent, Symbol* goal)
+{
+	get_appraisals(goal);
+	update_mood(goal);
+	generate_feeling_frame(thisAgent, goal);
 }

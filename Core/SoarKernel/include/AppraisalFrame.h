@@ -13,20 +13,20 @@ using std::vector;
 using std::ostringstream;
 using boost::lexical_cast;
 
-const double fErrorValue = -246.0;
-const double fInvalidValue = -123.0;
-const string sInvalidValue = "no value";
-const double fVeryLow = 0.0;
-const double fLow = 0.25;
-const double fMedium = 0.5;
-const double fHigh = 0.75;
-const double fVeryHigh = 1.0;
+static const double fErrorValue = -246.0;
+static const double fInvalidValue = -123.0;
+static const string sInvalidValue = "no value";
+static const double fVeryLow = 0.0;
+static const double fLow = 0.25;
+static const double fMedium = 0.5;
+static const double fHigh = 0.75;
+static const double fVeryHigh = 1.0;
 
-const double fFullVeryLow = -1.0;
-const double fFullLow = -0.5;
-const double fFullMedium = 0.0;
-const double fFullHigh = 0.5;
-const double fFullVeryHigh = 1.0;
+static const double fFullVeryLow = -1.0;
+static const double fFullLow = -0.5;
+static const double fFullMedium = 0.0;
+static const double fFullHigh = 0.5;
+static const double fFullVeryHigh = 1.0;
 
 struct AppraisalFrame {
 	Symbol* id_sym;
@@ -45,6 +45,8 @@ struct AppraisalFrame {
 	double conduciveness;
 	double control;
 	double power;
+
+	AppraisalFrame() { Init(); }
 
 	void Init() { Reset(0, fInvalidValue); }
 

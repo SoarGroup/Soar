@@ -285,6 +285,7 @@ Symbol *make_new_identifier (agent* thisAgent, char name_letter, goal_stack_leve
   } else {
     name_letter = 'I';
   }
+
   allocate_with_pool (thisAgent, &thisAgent->identifier_pool, &sym);
   sym->common.symbol_type = IDENTIFIER_SYMBOL_TYPE;
   sym->common.reference_count = 1;
@@ -321,7 +322,13 @@ Symbol *make_new_identifier (agent* thisAgent, char name_letter, goal_stack_leve
   sym->id.rl_info = NIL;
   sym->id.reward_header = NIL;
 
+  sym->id.emotion_info = NIL;
+  sym->id.emotion_header = NIL;
+  sym->id.emotion_header_appraisal = NIL;
+  sym->id.emotion_header_feeling = NIL;
+
   add_to_hash_table (thisAgent, thisAgent->identifier_hash_table, sym);
+
   return sym;
 }
 

@@ -24,6 +24,8 @@ struct AppraisalStatus {
 	bool control;
 	bool power;
 
+	AppraisalStatus() {Init();}
+
    void Init() {
       suddenness = true;
 		unpredictability = true;

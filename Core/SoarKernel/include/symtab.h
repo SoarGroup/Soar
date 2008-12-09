@@ -228,6 +228,11 @@ typedef struct identifier_struct {
   union symbol_union *reward_header;		// pointer to reward_link
   struct rl_data_struct *rl_info;			// various Soar-RL information
 
+  union symbol_union *emotion_header;		// pointer to emotion-link
+  union symbol_union *emotion_header_appraisal;		// pointer to appriasal-link
+  union symbol_union *emotion_header_feeling;		// pointer to feeling-link
+  struct emotion_data *emotion_info;			// various emotion information
+
   /* REW: begin 09.15.96 */
   struct gds_struct *gds;    /* Pointer to a goal's dependency set */
   /* REW: begin 09.15.96 */

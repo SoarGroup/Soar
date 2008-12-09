@@ -387,8 +387,7 @@ bool reinitialize_soar (agent* thisAgent) {
   set_sysparam(thisAgent, TRACE_WM_CHANGES_SYSPARAM,               FALSE);
   /* kjh (CUSP-B4) end */
 
-  emotion_reset(thisAgent);
-
+  emotion_reset_data(thisAgent);
   rl_reset_data( thisAgent );
   clear_goal_stack (thisAgent);
   rl_reset_stats( thisAgent );
@@ -1385,11 +1384,7 @@ void init_agent_memory(agent* thisAgent)
           "There should be no top goal when init_agent_memory is called!");
   if ( thisAgent->top_goal) return;
 
-  thisAgent->feeling_frame = 0;
   InitModalEmotions();
-  thisAgent->appraisalStatus.Init();
-  thisAgent->currentEmotion.Init();
-  thisAgent->currentMood.Init();
 
   thisAgent->io_header = get_new_io_identifier (thisAgent, 'I');
   thisAgent->io_header_input = get_new_io_identifier (thisAgent, 'I');
@@ -1421,21 +1416,6 @@ void init_agent_memory(agent* thisAgent)
   add_input_wme (thisAgent, thisAgent->io_header,
                  thisAgent->output_link_symbol,
                  thisAgent->io_header_output);
-
-  thisAgent->emotion_header = get_new_io_identifier (thisAgent, 'E');
-  thisAgent->emotion_header_appraisal = get_new_io_identifier (thisAgent, 'A');
-  thisAgent->emotion_header_feeling = get_new_io_identifier (thisAgent, 'F');
-
-  thisAgent->emotion_header_link = add_input_wme (thisAgent, 
-                                             thisAgent->top_state,
-                                             thisAgent->emotion_symbol,
-                                             thisAgent->emotion_header);
-  add_input_wme (thisAgent, thisAgent->emotion_header,
-                 thisAgent->appraisal_link_symbol,
-                 thisAgent->emotion_header_appraisal);
-  add_input_wme (thisAgent, thisAgent->emotion_header,
-                 thisAgent->feeling_link_symbol,
-                 thisAgent->emotion_header_feeling);
 
   // KJC & RPM 10/06
   // A lot of stuff isn't initialized properly until the input and output cycles are run the first time.

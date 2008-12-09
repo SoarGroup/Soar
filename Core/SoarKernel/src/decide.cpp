@@ -55,6 +55,11 @@
 #include "reinforcement_learning.h"
 #include "decision_manipulation.h"
 #include "misc.h"
+#include "emotion.h"
+#include "AppraisalStatus.h"
+#include "AppraisalFrame.h"
+#include "Mood.h"
+#include "Feeling.h"
 
 #include "assert.h"
 
@@ -1254,6 +1259,15 @@ Symbol *create_new_impasse (agent* thisAgent, Bool isa_goal, Symbol *object, Sym
 
 	id->id.reward_header = make_new_identifier( thisAgent, 'R', level );	
 	add_input_wme( thisAgent, id, thisAgent->reward_link_symbol, id->id.reward_header );	
+
+	id->id.emotion_header = make_new_identifier (thisAgent, 'E', level);
+   id->id.emotion_header_appraisal = make_new_identifier (thisAgent, 'A', level);
+   id->id.emotion_header_feeling = make_new_identifier (thisAgent, 'F', level);
+
+   add_input_wme (thisAgent, id, thisAgent->emotion_symbol, id->id.emotion_header);
+   add_input_wme (thisAgent, id->id.emotion_header, thisAgent->appraisal_link_symbol, id->id.emotion_header_appraisal);
+   add_input_wme (thisAgent, id->id.emotion_header, thisAgent->feeling_link_symbol, id->id.emotion_header_feeling);
+
   }
   else
     add_impasse_wme (thisAgent, id, thisAgent->object_symbol, object, NIL);
@@ -1943,6 +1957,11 @@ void remove_existing_context_and_descendents (agent* thisAgent, Symbol *goal) {
   symbol_remove_ref( thisAgent, goal->id.reward_header );
   free_memory( thisAgent, goal->id.rl_info, MISCELLANEOUS_MEM_USAGE );
 
+  symbol_remove_ref( thisAgent, goal->id.emotion_header );
+  symbol_remove_ref( thisAgent, goal->id.emotion_header_appraisal );
+  symbol_remove_ref( thisAgent, goal->id.emotion_header_feeling );
+  cleanup_emotion_data(thisAgent, goal->id.emotion_info);
+
   /* REW: BUG
    * Tentative assertions can exist for removed goals.  However, it looks
    * like the removal forces a tentative retraction, which then leads to
@@ -2023,6 +2042,16 @@ void create_new_context (agent* thisAgent, Symbol *attr_of_impasse, byte impasse
   id->id.rl_info->num_prev_op_rl_rules = 0;
   id->id.rl_info->step = 0;  
   id->id.rl_info->impasse_type = NONE_IMPASSE_TYPE;
+
+  id->id.emotion_info = static_cast<emotion_data *>( allocate_memory( thisAgent, sizeof( emotion_data ), MISCELLANEOUS_MEM_USAGE ) );
+  id->id.emotion_info->appraisalStatus = new AppraisalStatus();
+  id->id.emotion_info->currentEmotion = new AppraisalFrame();
+  id->id.emotion_info->currentMood = new Mood();
+  id->id.emotion_info->currentFeeling = new Feeling();
+  id->id.emotion_info->feeling_frame = 0;
+  /*id->id.emotion_info->appraisalStatus->Init();
+  id->id.emotion_info->currentEmotion->Init();
+  id->id.emotion_info->currentMood->Init();*/
 
   /* --- invoke callback routine --- */
   soar_invoke_callbacks(thisAgent, 

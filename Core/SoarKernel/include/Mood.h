@@ -11,6 +11,8 @@ struct Mood {
 	double decay_rate;
 	double move_rate;
 
+	Mood() { Init(); }
+
 	void Init() {
 		// mood is disabled by default
 		decay_rate = 0.0;
@@ -85,22 +87,23 @@ struct Mood {
 		return val + delta;
 	}
 
-	void MoveTowardEmotion(AppraisalFrame& emotion) {
-		af.suddenness = MoveTowardEmotion(af.suddenness, emotion.suddenness);
-		af.unpredictability = MoveTowardEmotion(af.unpredictability, emotion.unpredictability);
-		af.intrinsic_pleasantness = MoveTowardEmotion(af.intrinsic_pleasantness, emotion.intrinsic_pleasantness);
-		af.goal_relevance = MoveTowardEmotion(af.goal_relevance, emotion.goal_relevance);
-		af.causal_agent_self = MoveTowardEmotion(af.causal_agent_self, emotion.causal_agent_self);
-		af.causal_agent_other = MoveTowardEmotion(af.causal_agent_other, emotion.causal_agent_other);
-		af.causal_agent_nature = MoveTowardEmotion(af.causal_agent_nature, emotion.causal_agent_nature);
-		af.causal_motive_intentional = MoveTowardEmotion(af.causal_motive_intentional, emotion.causal_motive_intentional);
-		af.causal_motive_chance = MoveTowardEmotion(af.causal_motive_chance, emotion.causal_motive_chance);
-		af.causal_motive_negligence = MoveTowardEmotion(af.causal_motive_negligence, emotion.causal_motive_negligence);
-		af.outcome_probability = MoveTowardEmotion(af.outcome_probability, emotion.outcome_probability);
-		af.discrepancy = MoveTowardEmotion(af.discrepancy, emotion.discrepancy);
-		af.conduciveness = MoveTowardEmotion(af.conduciveness, emotion.conduciveness);
-		af.control = MoveTowardEmotion(af.control, emotion.control);
-		af.power = MoveTowardEmotion(af.power, emotion.power);
+	void MoveTowardEmotion(AppraisalFrame* emotion) {
+		assert(emotion);
+		af.suddenness = MoveTowardEmotion(af.suddenness, emotion->suddenness);
+		af.unpredictability = MoveTowardEmotion(af.unpredictability, emotion->unpredictability);
+		af.intrinsic_pleasantness = MoveTowardEmotion(af.intrinsic_pleasantness, emotion->intrinsic_pleasantness);
+		af.goal_relevance = MoveTowardEmotion(af.goal_relevance, emotion->goal_relevance);
+		af.causal_agent_self = MoveTowardEmotion(af.causal_agent_self, emotion->causal_agent_self);
+		af.causal_agent_other = MoveTowardEmotion(af.causal_agent_other, emotion->causal_agent_other);
+		af.causal_agent_nature = MoveTowardEmotion(af.causal_agent_nature, emotion->causal_agent_nature);
+		af.causal_motive_intentional = MoveTowardEmotion(af.causal_motive_intentional, emotion->causal_motive_intentional);
+		af.causal_motive_chance = MoveTowardEmotion(af.causal_motive_chance, emotion->causal_motive_chance);
+		af.causal_motive_negligence = MoveTowardEmotion(af.causal_motive_negligence, emotion->causal_motive_negligence);
+		af.outcome_probability = MoveTowardEmotion(af.outcome_probability, emotion->outcome_probability);
+		af.discrepancy = MoveTowardEmotion(af.discrepancy, emotion->discrepancy);
+		af.conduciveness = MoveTowardEmotion(af.conduciveness, emotion->conduciveness);
+		af.control = MoveTowardEmotion(af.control, emotion->control);
+		af.power = MoveTowardEmotion(af.power, emotion->power);
 	}
 
    void DisableAppraisal(string& appraisal) {

@@ -4,10 +4,14 @@
 #include <string>
 #include <map>
 #include <algorithm>
+#include <vector>
+
+#include "AppraisalFrame.h"
 
 using std::string;
 using std::multimap;
 using std::pair;
+using std::vector;
 
 struct Bounds {
 	double lower_bound;
