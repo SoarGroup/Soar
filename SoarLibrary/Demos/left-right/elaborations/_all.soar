@@ -1,11 +1,14 @@
 sp {elaborate*state*name
-   (state <s> ^superstate.operator.name <name>)
+   (state <s> ^superstate <ss>)
+   (<ss> ^operator <op>)
+   (<op> ^name <name>)
 -->
    (<s> ^name <name>)
 }
 
 sp {elaborate*state*top-state
-   (state <s> ^superstate.top-state <ts>)
+   (state <s> ^superstate <ss>)
+   (<ss> ^top-state <ts>)
 -->
    (<s> ^top-state <ts>)
 }

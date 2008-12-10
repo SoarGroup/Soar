@@ -8,5 +8,6 @@ sp {elaborate*reward
               ^direction <dir>)
    (<dir> ^name <d-name> ^reward <d-reward>)
 -->
-   (<r> ^reward.value <d-reward>)
+   (<r> ^reward <rr>)
+   (<rr> ^value <d-reward>)
 }
