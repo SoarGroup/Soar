@@ -419,7 +419,9 @@ typedef struct agent_struct {
   parent_inst *parent_list_head;
 /* REW: end   09.15.96 */
   
-  
+  /* State for new waterfall model */
+  unsigned long       inner_e_cycle_count;     /* # of inner elaboration cycles run so far */
+
   /* ----------------------- Timing statistics -------------------------- */
 
 /* 
@@ -759,6 +761,8 @@ kernel time and total_cpu_time greater than the derived total CPU time. REW */
   struct ms_change_struct * ms_i_assertions;  /* changes to match set */
   /* RCHONG: end 10.11 */
 
+  struct ms_change_struct * postponed_assertions;  /* New waterfall model: postponed assertion list */
+
   /* REW: begin 08.20.97 */
   Bool       operand2_mode;
   goal_stack_level active_level;
@@ -767,6 +771,28 @@ kernel time and total_cpu_time greater than the derived total CPU time. REW */
   Symbol *previous_active_goal;
   struct ms_change_struct *nil_goal_retractions; /* dll of all retractions for removed (ie nil) goals */
   /* REW: end   08.20.97 */
+
+  /**
+   * State for new waterfall model
+   * Represents the original active level of the elaboration cycle, saved so that we can modify the active
+   * level during the inner preference loop and restore it before working memory changes.
+   */
+  goal_stack_level highest_active_level;
+  /**
+   * State for new waterfall model
+   * Same as highest_active_level, just the goal that the level represents.
+   */
+  Symbol* highest_active_goal;
+  /**
+   * State for new waterfall model
+   * Can't fire rules at this level or higher (lower int)
+   */
+  goal_stack_level change_level;
+  /**
+   * State for new waterfall model
+   * Next change_level, in next iteration of inner preference loop.
+   */
+  goal_stack_level next_change_level;
 
   /* delineate btwn Pref/WM(propose) and Pref/WM(apply) KJC 10.05.98 */
   Bool       applyPhase;

@@ -196,6 +196,7 @@ namespace cli {
 		WATCH_BACKTRACING,
 		WATCH_INDIFFERENT,
 		WATCH_RL,
+		WATCH_WATERFALL,
 		WATCH_EPMEM,
 		WATCH_NUM_OPTIONS, // must be last
 	};

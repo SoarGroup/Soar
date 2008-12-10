@@ -11,6 +11,7 @@
 
 #include "TOH_Game.h"
 
+#include "Soar_Kernel.h"
 #include "TOH_Disk.inl"
 #include "TOH_Tower.inl"
 #include "Stats_Tracker.inl"
@@ -21,11 +22,11 @@ void toh_update_event_handler(sml::smlUpdateEventId /*id*/, void *user_data_ptr,
   reinterpret_cast<TOH_Game *>(user_data_ptr)->update(*kernel_ptr);
 }
 
-TOH_Game::TOH_Game(const std::string &agent_productions)
-: m_agent(m_kernel, "TOH")
-#ifdef TOH_COUNT_STEPS
-, m_command_count(0)
-#endif
+TOH_Game::TOH_Game(const std::string &agent_productions,
+                   sml::Kernel * const kernel)
+: m_kernel(kernel ? kernel :
+           sml::Kernel::CreateKernelInCurrentThread(sml::Kernel::kDefaultLibraryName, true)),
+  m_agent(m_kernel, "TOH")
 {
   const int num_towers = 3;
   const int num_disks = 11;
@@ -61,7 +62,7 @@ std::vector<std::vector<int> > TOH_Game::get_tower_stacks() const {
 }
 
 void TOH_Game::run_trials(const int &num_trials) {
-  std::cout << "Running the C++ Towers of Hanoi SML Demo" << std::endl;
+  std::cout << "Running the C++ Towers of Hanoi SML Demo (Local)" << std::endl;
 
   Stats_Tracker stats_tracker;
   for(int i = 0; i < num_trials; ++i) {
@@ -70,12 +71,23 @@ void TOH_Game::run_trials(const int &num_trials) {
   }
 }
 
-void TOH_Game::run() {
-#ifdef TOH_COUNT_STEPS
-  if(is_finished())
-    return;
-#endif
+void TOH_Game::remote_trials(const int &num_trials,
+                             const std::string &ip_address,
+                             const int &port) {
+  std::cout << "Running the C++ Towers of Hanoi SML Demo (Remote)" << std::endl;
 
+  Stats_Tracker stats_tracker;
+  for(int i = 0; i < num_trials; ++i) {
+    TOH_Game game(TOH_AGENT_PRODUCTIONS,
+                  sml::Kernel::CreateRemoteConnection(true,
+                                                      ip_address.empty() ? 0 : ip_address.c_str(),
+                                                      port,
+                                                      false));
+    stats_tracker.time_run(game.m_agent, i, num_trials);
+  }
+}
+
+void TOH_Game::run() {
   //// Version 1
   const std::string result = m_agent->RunSelfForever();
   std::cout << result << std::endl;
@@ -89,15 +101,12 @@ void TOH_Game::run() {
 }
 
 void TOH_Game::step() {
-#ifdef TOH_COUNT_STEPS
   if(is_finished())
     return;
-#endif
 
   m_agent->RunSelf(1u);
 }
 
-#ifdef TOH_COUNT_STEPS
 bool TOH_Game::is_finished() const {
   size_t other_towers = 0;
   size_t goal_tower = 0;
@@ -107,15 +116,10 @@ bool TOH_Game::is_finished() const {
   }
   return !other_towers;
 }
-#endif
 
 void TOH_Game::update(sml::Kernel &/*kernel*/) {
   // Go through all the commands we've received (if any) since we last ran Soar.
   const int num_commands = m_agent->GetNumberCommands();
-
-#ifdef TOH_COUNT_STEPS
-  m_command_count += num_commands;
-#endif
 
   for(int i = 0; i < num_commands; ++i) {
     sml::Identifier * const command_ptr = m_agent->GetCommand(i);

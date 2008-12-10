@@ -178,7 +178,7 @@ Symbol* sml::ExecRhsFunction::Execute(std::vector<Symbol*>* pArguments)
 	  return NULL ;
 	}
 
-	std::string function = symbol_to_string( m_pAgentSML->GetSoarAgent(), pArguments->front(), true, 0, 0 );
+	std::string function = symbol_to_string( m_pAgentSML->GetSoarAgent(), pArguments->front(), false, 0, 0 );
 
 	// Get the command line string.
 	// We've decided for "exec" to just concatenate all arguments together without inserting
@@ -192,7 +192,7 @@ Symbol* sml::ExecRhsFunction::Execute(std::vector<Symbol*>* pArguments)
 					   << "Ignoring it..."
 					   << std::endl;
 			} else {
-				ostr << symbol_to_string( m_pAgentSML->GetSoarAgent(), pSymbol, true, 0, 0 );
+				ostr << symbol_to_string( m_pAgentSML->GetSoarAgent(), pSymbol, false, 0, 0 );
 			}
 	  }
 

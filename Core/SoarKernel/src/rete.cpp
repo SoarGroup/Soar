@@ -1130,14 +1130,22 @@ Bool any_i_assertions_or_retractions_ready (agent* thisAgent) {
 
 /* RCHONG: end 10.11 */
 
-
-Bool get_next_assertion (agent* thisAgent, production **prod,
+/* New waterfall model: 
+ * 
+ * postpone_assertion: formerly get_next_assertion. Removes the first 
+ * assertion from the assertion lists and adds it to the postponed 
+ * assertions list. Returns false if there are no assertions.
+ *
+ * consume_last_postponed_assertion: removes the first assertion from the
+ * postponed assertions list, making it go away permenantly.
+ *
+ * restore_postponed_assertions: replaces the postponed assertions back on
+ * the assertion lists.
+ */
+Bool postpone_assertion (agent* thisAgent, production **prod,
                          struct token_struct **tok,
                          wme **w) {
-  ms_change *msc;
- 
-  msc = NIL; /* unneeded, but avoids gcc -Wall warn */ 
-
+  ms_change *msc = NIL;
   
   /* REW: begin 09.15.96 */
   if (thisAgent->operand2_mode == TRUE) {
@@ -1208,8 +1216,56 @@ Bool get_next_assertion (agent* thisAgent, production **prod,
   *prod = msc->p_node->b.p.prod;
   *tok = msc->tok;
   *w = msc->w;
-  free_with_pool (&thisAgent->ms_change_pool, msc);
+
+  // save the assertion on the postponed list
+  insert_at_head_of_dll (thisAgent->postponed_assertions, msc, next, prev);
+
   return TRUE;
+}
+
+void consume_last_postponed_assertion(agent* thisAgent) {
+	assert (thisAgent->postponed_assertions);
+
+	ms_change *msc = thisAgent->postponed_assertions;
+
+	// get the most recently postponed assertion
+	remove_from_dll (thisAgent->postponed_assertions, msc, next, prev);
+
+	// kill it
+	free_with_pool (&thisAgent->ms_change_pool, msc);
+}
+
+void restore_postponed_assertions (agent* thisAgent) {
+
+	while(thisAgent->postponed_assertions) {
+		ms_change *msc = thisAgent->postponed_assertions;
+
+		// get the most recently postponed assertion
+		remove_from_dll (thisAgent->postponed_assertions, msc, next, prev);
+
+		assert (msc != NIL);
+
+		// do the reverse of postpone_assertion
+		insert_at_head_of_dll (msc->p_node->b.p.tentative_assertions, 
+			msc, next_of_node, prev_of_node);
+
+		if (thisAgent->operand2_mode == TRUE) {
+			assert (thisAgent->active_goal);
+
+			if (thisAgent->FIRING_TYPE == PE_PRODS) {
+				insert_at_head_of_dll (thisAgent->active_goal->id.ms_o_assertions,
+				  msc, next_in_level, prev_in_level);
+				insert_at_head_of_dll (thisAgent->ms_o_assertions, msc, next, prev);
+			} else {
+				// IE
+				insert_at_head_of_dll (thisAgent->active_goal->id.ms_i_assertions,
+				  msc, next_in_level, prev_in_level);
+				insert_at_head_of_dll (thisAgent->ms_i_assertions, msc, next, prev);
+			}
+		} else {
+			insert_at_head_of_dll (thisAgent->ms_assertions, msc, next, prev);
+		}
+	}
 }
 
 Bool get_next_retraction (agent* thisAgent, instantiation **inst) {

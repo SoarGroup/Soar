@@ -220,6 +220,8 @@ agent * create_soar_agent (char * agent_name) {                                 
 
   /* REW: end   09.15.96 */
 
+  newAgent->postponed_assertions			   = NIL;
+
   /* REW: begin 08.20.97 */
   newAgent->active_goal                        = NIL;
   newAgent->active_level                       = 0;

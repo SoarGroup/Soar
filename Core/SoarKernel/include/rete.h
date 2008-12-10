@@ -105,9 +105,9 @@ extern void init_rete (agent* thisAgent);
 
 extern Bool save_rete_net (agent* thisAgent, FILE *dest_file);
 extern Bool any_assertions_or_retractions_ready (agent* thisAgent);
-extern Bool get_next_assertion (agent* thisAgent, production **prod,
-                                struct token_struct **tok,
-                                wme **w);
+extern Bool postpone_assertion (agent* thisAgent, production **prod, struct token_struct **tok, wme **w);
+extern void consume_last_postponed_assertion(agent* thisAgent);
+extern void restore_postponed_assertions (agent* thisAgent);
 extern Bool get_next_retraction (agent* thisAgent, struct instantiation_struct **inst);
 /* REW: begin 08.20.97 */
 /* Special routine for retractions in removed goals.  See note in rete.cpp */
