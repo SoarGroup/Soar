@@ -5,7 +5,8 @@ sp {kb*propose*test-result
               ^step <step>
               ^max-tests <max>
               ^current-test {<c> <= <max>}
-              ^tests.test <t>)
+              ^tests <ts>)
+   (<ts> ^test <t>)
    (<t> ^id <c>
         ^steps {>= <step>})
 -->
@@ -19,8 +20,10 @@ sp {kb*propose*test-result
 
 sp {apply*test-result*retrieve*none*success
    (state <s> ^operator <op>
-              ^tests.test <t>
-              ^epmem.result <e-result>)
+              ^tests <ts>
+              ^epmem <epmem>)
+   (<ts> ^test <t>)
+   (<epmem> ^result <e-result>)
    (<op> ^name test-result
          ^test <c>
          ^step <step>)
@@ -40,8 +43,10 @@ sp {apply*test-result*retrieve*none*success
 
 sp {apply*test-result*retrieve*none*failure
    (state <s> ^operator <op>
-              ^tests.test <t>
-              ^epmem.result <e-result>)
+              ^tests <ts>
+              ^epmem <epmem>)
+   (<ts> ^test <t>)
+   (<epmem> ^result <e-result>)
    (<op> ^name test-result
          ^test <c>
          ^step <step>)
@@ -63,9 +68,12 @@ sp {apply*test-result*retrieve*none*failure
 
 sp {apply*test-result*retrieve*good*success
    (state <s> ^operator <op>
-              ^tests.test <t>
-              ^epmem.result <e-result>
-              ^entries.entry <entry>)
+              ^tests <ts>
+              ^epmem <epmem>
+              ^entries <es>)
+   (<ts> ^test <t>)
+   (<epmem> ^result <e-result>)
+   (<es> ^entry <entry>)
    (<op> ^name test-result
          ^test <c>
          ^step <step>)
@@ -75,7 +83,8 @@ sp {apply*test-result*retrieve*good*success
          ^type retrieve
          ^status good
          ^expected <expected>)
-   (<e-result> ^retrieved.observing <expected>)
+   (<e-result> ^retrieved <retrieved>)
+   (<retrieved> ^observing <expected>)
    (<entry> ^id <expected>
             ^name <entry-name>
             ^scientific-name <entry-s-name>)
@@ -89,10 +98,13 @@ sp {apply*test-result*retrieve*good*success
 
 sp {apply*test-result*retrieve*good*wrong
    (state <s> ^operator <op>
-              ^tests.test <t>
-              ^epmem.result <e-result>
-              ^entries.entry <entry1>
-              ^entries.entry <entry2>)
+              ^tests <ts>
+              ^epmem <epmem>
+              ^entries <es>)
+   (<ts> ^test <t>)
+   (<epmem> ^result <e-result>)
+   (<es> ^entry <entry1>
+         ^entry <entry2>)
    (<op> ^name test-result
          ^test <c>
          ^step <step>)
@@ -102,7 +114,8 @@ sp {apply*test-result*retrieve*good*wrong
          ^type retrieve
          ^status good
          ^expected <expected>)
-   (<e-result> ^retrieved.observing {<observed> <> <expected>})
+   (<e-result> ^retrieved <retrieved>)
+   (<retrieved> ^observing {<observed> <> <expected>})
    (<entry1> ^id <expected>
              ^name <entry1-name>
              ^scientific-name <entry1-s-name>)
@@ -119,9 +132,12 @@ sp {apply*test-result*retrieve*good*wrong
 
 sp {apply*test-result*retrieve*good*none
    (state <s> ^operator <op>
-              ^tests.test <t>
-              ^epmem.result <e-result>
-              ^entries.entry <entry1>)
+              ^tests <ts>
+              ^epmem <epmem>
+              ^entries <es>)
+   (<ts> ^test <t>)
+   (<epmem> ^result <e-result>)
+   (<es> ^entry <entry1>)
    (<op> ^name test-result
          ^test <c>
          ^step <step>)
@@ -148,8 +164,10 @@ sp {apply*test-result*retrieve*good*none
 
 sp {apply*test-result*query*failure*success
    (state <s> ^operator <op>
-              ^tests.test <t>
-              ^epmem.result <e-result>)
+              ^tests <ts>
+              ^epmem <epmem>)
+   (<ts> ^test <t>)
+   (<epmem> ^result <e-result>)
    (<op> ^name test-result
          ^test <c>
          ^step <step>)
@@ -169,9 +187,12 @@ sp {apply*test-result*query*failure*success
 
 sp {apply*test-result*query*failure*failure
    (state <s> ^operator <op>
-              ^tests.test <t>
-              ^epmem.result <e-result>
-              ^entries.entry <entry2>)
+              ^tests <ts>
+              ^epmem <epmem>
+              ^entries <es>)
+   (<ts> ^test <t>)
+   (<epmem> ^result <e-result>)
+   (<es> ^entry <entry2>)
    (<op> ^name test-result
          ^test <c>
          ^step <step>)
@@ -181,7 +202,8 @@ sp {apply*test-result*query*failure*failure
          ^type query
          ^status failure)
    (<e-result> ^status success
-               ^retrieved.observing <observed>)
+               ^retrieved <retrieved>)
+   (<retrieved> ^observing <observed>)
    (<entry2> ^id <observed>
              ^name <entry2-name>
              ^scientific-name <entry2-s-name>)
@@ -197,9 +219,12 @@ sp {apply*test-result*query*failure*failure
 
 sp {apply*test-result*query*success*failure
    (state <s> ^operator <op>
-              ^tests.test <t>
-              ^epmem.result <e-result>
-              ^entries.entry <entry1>)
+              ^tests <ts>
+              ^epmem <epmem>
+              ^entries <es>)
+   (<ts> ^test <t>)
+   (<epmem> ^result <e-result>)
+   (<es> ^entry <entry1>)
    (<op> ^name test-result
          ^test <c>
          ^step <step>)
@@ -223,9 +248,12 @@ sp {apply*test-result*query*success*failure
 
 sp {apply*test-result*query*success*success
    (state <s> ^operator <op>
-              ^tests.test <t>
-              ^epmem.result <e-result>
-              ^entries.entry <entry>)
+              ^tests <ts>
+              ^epmem <epmem>
+              ^entries <es>)
+   (<ts> ^test <t>)
+   (<epmem> ^result <e-result>)
+   (<es> ^entry <entry>)
    (<op> ^name test-result
          ^test <c>
          ^step <step>)
@@ -236,8 +264,9 @@ sp {apply*test-result*query*success*success
          ^status success
          ^expected <expected>
          ^score <score>)
-   (<e-result> ^retrieved.observing <expected>
+   (<e-result> ^retrieved <retrieved>
                ^match-score <score>)
+   (<retrieved> ^observing <expected>)
    (<entry> ^id <expected>
             ^name <entry-name>
             ^scientific-name <entry-s-name>)
@@ -251,10 +280,13 @@ sp {apply*test-result*query*success*success
 
 sp {apply*test-result*query*success*wrong*retrieval
    (state <s> ^operator <op>
-              ^tests.test <t>
-              ^epmem.result <e-result>
-              ^entries.entry <entry1>
-              ^entries.entry <entry2>)
+              ^tests <ts>
+              ^epmem <epmem>
+              ^entries <es>)
+   (<ts> ^test <t>)
+   (<epmem> ^result <e-result>)
+   (<es> ^entry <entry1>
+         ^entry <entry2>)
    (<op> ^name test-result
          ^test <c>
          ^step <step>)
@@ -265,8 +297,9 @@ sp {apply*test-result*query*success*wrong*retrieval
          ^status success
          ^expected <expected>
          ^score <exp-score>)
-   (<e-result> ^retrieved.observing {<observed> <> <expected>}
+   (<e-result> ^retrieved <retrieved>
                ^match-score <obs-score>)
+   (<retrieved> ^observing {<observed> <> <expected>})
    (<entry1> ^id <expected>
             ^name <entry1-name>
             ^scientific-name <entry1-s-name>)
@@ -283,9 +316,12 @@ sp {apply*test-result*query*success*wrong*retrieval
 
 sp {apply*test-result*query*success*wrong*score
    (state <s> ^operator <op>
-              ^tests.test <t>
-              ^epmem.result <e-result>
-              ^entries.entry <entry>)
+              ^tests <ts>
+              ^epmem <epmem>
+              ^entries <es>)
+   (<ts> ^test <t>)
+   (<epmem> ^result <e-result>)
+   (<es> ^entry <entry>)
    (<op> ^name test-result
          ^test <c>
          ^step <step>)
@@ -296,8 +332,9 @@ sp {apply*test-result*query*success*wrong*score
          ^status success
          ^expected <expected>
          ^score <exp-score>)
-   (<e-result> ^retrieved.observing <expected>
+   (<e-result> ^retrieved <retrieved>
                ^match-score {<obs-score> <> <exp-score>})
+   (<retrieved> ^observing <expected>)
    (<entry> ^id <expected>
             ^name <entry-name>
             ^scientific-name <entry-s-name>)

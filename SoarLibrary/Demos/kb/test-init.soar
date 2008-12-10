@@ -12,7 +12,8 @@ sp {kb*propose*test-init
 
 sp {apply*test-init
    (state <s> ^operator <op>
-              ^tests.test <t>)
+              ^tests <ts>)
+   (<ts> ^test <t>)
    (<op> ^name test-init
          ^test <c>)
    (<t> ^id <c>

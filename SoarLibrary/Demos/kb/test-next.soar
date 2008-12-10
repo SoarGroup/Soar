@@ -5,7 +5,8 @@ sp {kb*propose*test-next
               ^step <step>
               ^max-tests <max>
               ^current-test {<c> <= <max>}
-              ^tests.test <t>)
+              ^tests <ts>)
+   (<ts> ^test <t>)
    (<t> ^id <c>
         ^steps {< <step>})
 -->
@@ -17,7 +18,8 @@ sp {kb*propose*test-next
 
 sp {apply*test-next
    (state <s> ^operator <op>
-              ^tests.test <t>)
+              ^tests <ts>)
+   (<ts> ^test <t>)
    (<op> ^name test-next
          ^test <c>
          ^step <step>)

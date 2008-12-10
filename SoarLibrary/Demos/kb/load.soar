@@ -1,7 +1,8 @@
 sp {kb*elaborate*observing
    (state <s> ^name kb
               ^observing <c>
-              ^entries.entry <e>)
+              ^entries <es>)
+   (<es> ^entry <e>)
    (<e> ^id <c>)
 -->
    (<s> ^observing-entry <e>)
@@ -21,7 +22,8 @@ sp {kb*propose*load
 
 sp {apply*load*observe
    (state <s> ^operator <op>
-              ^entries.entry <e>)
+              ^entries <es>)
+   (<es> ^entry <e>)
    (<e> ^id <c>
         ^name <name>
         ^scientific-name <s-name>)

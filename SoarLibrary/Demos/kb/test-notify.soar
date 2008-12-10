@@ -6,7 +6,8 @@ sp {kb*propose*test-notify
               ^step <step>
               ^max-tests <max>
               ^current-test {<c> <= <max>}
-              ^tests.test <t>)
+              ^tests <ts>)
+   (<ts> ^test <t>)
    (<t> ^id <c>
         ^steps {>= <step>})
 -->
@@ -19,7 +20,8 @@ sp {kb*propose*test-notify
 
 sp {apply*test-notify*success
    (state <s> ^operator <op>
-              ^tests.test <t>)
+              ^tests <ts>)
+   (<ts> ^test <t>)
    (<op> ^name test-notify
          ^test <c>
          ^step <step>

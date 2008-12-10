@@ -5,7 +5,8 @@ sp {kb*propose*test-cue
               ^step <step>
               ^max-tests <max>
               ^current-test {<c> <= <max>}
-              ^tests.test <t>)
+              ^tests <ts>)
+   (<ts> ^test <t>)
    (<t> ^id <c>
         ^steps {>= <step>})
 -->
@@ -18,14 +19,16 @@ sp {kb*propose*test-cue
 sp {apply*test-cue*prepare
    (state <s> ^operator <op>
               ^tests.test <t>
-              ^epmem.command <e-cmd>)
+              ^epmem <epmem>)
+   (<epmem> ^command <e-cmd>)
    (<op> ^name test-cue
          ^test <c>
          ^step <step>)
    (<t> ^id <c>
         ^step <st>)
    (<st> ^id <step>
-         ^command.<t-cmd-name> <t-cmd-val>)
+         ^command <st-cmd>)
+   (<st-cmd> ^<t-cmd-name> <t-cmd-val>)
 -->
    (<e-cmd> ^<t-cmd-name> <t-cmd-val>)
    (write (crlf) | | <step>|: cue | <t-cmd-name> )

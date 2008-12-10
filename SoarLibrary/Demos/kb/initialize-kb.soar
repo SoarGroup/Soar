@@ -94,11 +94,13 @@ sp {apply*intialize-kb*fill
    (<st1-1> ^id 1            
             ^type retrieve
             ^status none
-            ^command.retrieve 100)
+            ^command <c1-1>)
+   (<c1-1> ^retrieve 100)
    (<st1-2> ^id 2            
             ^type retrieve
             ^status none
-            ^command.retrieve 99999)
+            ^command <c1-2>)
+   (<c1-2> ^retrieve 99999)
    ###
    (<t2> ^id 2
          ^name |good retrieval|
@@ -108,8 +110,9 @@ sp {apply*intialize-kb*fill
    (<st2-1> ^id 1            
             ^type retrieve
             ^status good
-            ^command.retrieve 1
+            ^command <c2-1>
             ^expected 1)
+   (<c2-1> ^retrieve 1)
    ###
    (<t3> ^id 3         
          ^name |bad query|
@@ -119,7 +122,9 @@ sp {apply*intialize-kb*fill
    (<st3-1> ^id 1
             ^type query
             ^status failure
-            ^command.query.name bad-state-name)
+            ^command <c3-1>)
+   (<c3-1> ^query <q3-1>)
+   (<q3-1> ^name bad-state-name)
    ###
    (<t4> ^id 4
          ^name |soar query|
@@ -133,33 +138,41 @@ sp {apply*intialize-kb*fill
    (<st4-1> ^id 1
             ^type query
             ^status success
-            ^command.query.name kb
+            ^command <c4-1>
             ^expected <max-entries>
             ^score 1.)
+   (<c4-1> ^query <q4-1>)
+   (<q4-1> ^name kb)
    (<st4-2> ^id 2
             ^type query
             ^status success
-            ^command.query.superstate nil
+            ^command <c4-2>
             ^expected <max-entries>
             ^score 1.)
+   (<c4-2> ^query <q4-2>)
+   (<q4-2> ^superstate nil)
    (<st4-3> ^id 3
             ^type query
             ^status failure
-            ^command.query.io <io>)
+            ^command <c4-3>)
+   (<c4-3> ^query <q4-3>)
+   (<q4-3> ^io <io>)
    (<st4-4> ^id 4
             ^type query
             ^status success
-            ^command.query <q4-4>
+            ^command <c4-4>
             ^expected <max-entries>
             ^score 1.)
+   (<c4-4> ^query <q4-4>)
    (<q4-4> ^name kb
            ^name bad-state-name)
    (<st4-5> ^id 5
             ^type query
             ^status success
-            ^command.query <q4-5>
+            ^command <c4-5>
             ^expected <max-entries>
             ^score 2.)
+   (<c4-5> ^query <q4-5>)
    (<q4-5> ^name kb
            ^superstate nil)
    ###
@@ -174,23 +187,31 @@ sp {apply*intialize-kb*fill
    (<st5-1> ^id 1
             ^type query
             ^status failure
-            ^command.query.observing 0)
+            ^command <c5-1>)
+   (<c5-1> ^query <q5-1>)
+   (<q5-1> ^observing 0)
    (<st5-2> ^id 2
             ^type query
             ^status success
-            ^command.query.observing 1
+            ^command <c5-2>
             ^expected 1
             ^score 1.)
+   (<c5-2> ^query <q5-2>)
+   (<q5-2> ^observing 1)
    (<st5-3> ^id 3
             ^type query
             ^status success
-            ^command.query.observing <max-entries>
+            ^command <c5-3>
             ^expected <max-entries>
             ^score 1.)
+   (<c5-3> ^query <q5-3>)
+   (<q5-3> ^observing <max-entries>)
    (<st5-4> ^id 4
             ^type query
             ^status failure
-            ^command.query.observing (+ <max-entries> 1))
+            ^command <c5-4>)
+   (<c5-4> ^query <q5-4>)
+   (<q5-4> ^observing (+ <max-entries> 1))
    ###
    (<t6> ^id 6
          ^name |prohibit test|
@@ -203,29 +224,35 @@ sp {apply*intialize-kb*fill
    (<st6-1> ^id 1
             ^type query
             ^status success
-            ^command.query.observing 1
+            ^command <c6-1>
             ^expected 1
             ^score 1.)
+   (<c6-1> ^query <q6-1>)
+   (<q6-1> ^observing 1)
    (<st6-2> ^id 2
             ^type query
             ^status failure
             ^command <c6-2>)
-   (<c6-2> ^query.observing 1
+   (<c6-2> ^query <q6-2>
            ^prohibit 1)
+   (<q6-2> ^observing 1)
    (<st6-3> ^id 3
             ^type query
             ^status success
-            ^command.query.name kb
+            ^command <c6-3>
             ^expected <max-entries>
             ^score 1.)
+   (<c6-3> ^query <q6-3>)
+   (<q6-3> ^name kb)
    (<st6-4> ^id 4
             ^type query
             ^status success
             ^command <c6-4>
             ^expected (- <max-entries> 1)
             ^score 1.)
-   (<c6-4> ^query.name kb
+   (<c6-4> ^query <q6-4>
            ^prohibit <max-entries>)
+   (<q6-4> ^name kb)
    ###
    (<t7> ^id 7
          ^name |next test|
@@ -239,29 +266,36 @@ sp {apply*intialize-kb*fill
    (<st7-1> ^id 1
             ^type query
             ^status success
-            ^command.query.observing 1
+            ^command <c7-1>
             ^expected 1
             ^score 1.)
+   (<c7-1> ^query <q7-1>)
+   (<q7-1> ^observing 1)
    (<st7-2> ^id 2
             ^type retrieve
             ^status good
-            ^command.next <n7-2>
+            ^command <c7-2>
             ^expected 2)
+   (<c7-2> ^next <n7-2>)
    (<st7-3> ^id 3
             ^type retrieve
             ^status good
-            ^command.next <n7-3>
+            ^command <c7-3>
             ^expected 3)
+   (<c7-3> ^next <n7-3>)
    (<st7-4> ^id 4
             ^type query
             ^status success
-            ^command.query.observing <max-entries>
+            ^command <c7-4>
             ^expected <max-entries>
             ^score 1.)
+   (<c7-4> ^query <q7-4>)
+   (<q7-4> ^observing <max-entries>)
    (<st7-5> ^id 5
             ^type retrieve
             ^status none
-            ^command.next <n7-4>)
+            ^command <c7-5>)
+   (<c7-5> ^next <n7-5>)
    ###
    (<t8> ^id 8
          ^name |previous test|
@@ -275,30 +309,37 @@ sp {apply*intialize-kb*fill
    (<st8-1> ^id 1
             ^type query
             ^status success
-            ^command.query.observing 1
+            ^command <c8-1>
             ^expected 1
             ^score 1.)
+   (<c8-1> ^query <q8-1>)
+   (<q8-1> ^observing 1)
    (<st8-2> ^id 2
             ^type retrieve
             ^status none
-            ^command.previous <p8-2>
+            ^command <c8-2>
             ^expected 2)
+   (<c8-2> ^previous <p8-2>)
    (<st8-3> ^id 3
             ^type query
             ^status success
-            ^command.query.observing <max-entries>
+            ^command <c8-3>
             ^expected <max-entries>
             ^score 1.)
+   (<c8-3> ^query <q8-3>)
+   (<q8-3> ^observing <max-entries>)
    (<st8-4> ^id 4
             ^type retrieve
             ^status good
-            ^command.previous <p8-4>
+            ^command <c8-4>
             ^expected (- <max-entries> 1))
+   (<c8-4> ^previous <p8-4>)
    (<st8-5> ^id 5
             ^type retrieve
             ^status good
-            ^command.previous <p8-5>
+            ^command <c8-5>
             ^expected (- <max-entries> 2))
+   (<c8-5> ^previous <p8-5>)
    ###
    (<t9> ^id 9
          ^name |before test|
@@ -314,49 +355,59 @@ sp {apply*intialize-kb*fill
    (<st9-1> ^id 1
             ^type query
             ^status success
-            ^command.query.observing 1
+            ^command <c9-1>
             ^expected 1
             ^score 1.)
+   (<c9-1> ^query <q9-1>)
+   (<q9-1> ^observing 1)
    (<st9-2> ^id 2
             ^type query
             ^status failure
             ^command <c9-2>)
-   (<c9-2> ^query.observing 1
+   (<c9-2> ^query <q9-2>
            ^before 1)
+   (<q9-2> ^observing 1)
    (<st9-3> ^id 3
             ^type query
             ^status success
-            ^command.query.observing 2
+            ^command <c9-3>
             ^expected 2
             ^score 1.)
+   (<c9-3> ^query <q9-3>)
+   (<q9-3> ^observing 2)
    (<st9-4> ^id 4
             ^type query
             ^status failure
             ^command <c9-4>)
-   (<c9-4> ^query.observing 2
+   (<c9-4> ^query <q9-4>
            ^before 2)
+   (<q9-4> ^observing 2)
    (<st9-5> ^id 5
             ^type query
             ^status success
             ^command <c9-5>
             ^expected 2
             ^score 1.)
-   (<c9-5> ^query.observing 2
+   (<c9-5> ^query <q9-5>
            ^before 3)
+   (<q9-5> ^observing 2)
    (<st9-6> ^id 6
             ^type query
             ^status success
-            ^command.query.name kb
+            ^command <c9-6>
             ^expected <max-entries>
             ^score 1.)
+   (<c9-6> ^query <q9-6>)
+   (<q9-6> ^name kb)
    (<st9-7> ^id 7
             ^type query
             ^status success
             ^command <c9-7>
             ^expected (- <max-entries> 1)
             ^score 1.)
-   (<c9-7> ^query.name kb
+   (<c9-7> ^query <q9-7>
            ^before <max-entries>)
+   (<q9-7> ^name kb)
    ###
    (<t10> ^id 10
           ^name |after test|
@@ -370,35 +421,42 @@ sp {apply*intialize-kb*fill
    (<st10-1> ^id 1
              ^type query
              ^status success
-             ^command.query.observing <max-entries>
+             ^command <c10-1>
              ^expected <max-entries>
              ^score 1.)
+   (<c10-1> ^query <q10-1>)
+   (<q10-1> ^observing <max-entries>)
    (<st10-2> ^id 2
              ^type query
              ^status failure
              ^command <c10-2>)
-   (<c10-2> ^query.observing <max-entries>
+   (<c10-2> ^query <q10-2>
             ^after <max-entries>)
+   (<q10-2> ^observing <max-entries>)
    (<st10-3> ^id 3
              ^type query
              ^status success
-             ^command.query.observing (- <max-entries> 1)
+             ^command <c10-3>
              ^expected (- <max-entries> 1)
              ^score 1.)
+   (<c10-3> ^query <q10-3>)
+   (<q10-3> ^observing (- <max-entries> 1))
    (<st10-4> ^id 4
              ^type query
              ^status failure
              ^command <c10-4>)
-   (<c10-4> ^query.observing (- <max-entries> 1)
+   (<c10-4> ^query <q10-4>
             ^after (- <max-entries> 1))
+   (<q10-4> ^observing (- <max-entries> 1))
    (<st10-5> ^id 5
              ^type query
              ^status success
              ^command <c10-5>
              ^expected (- <max-entries> 1)
              ^score 1.)
-   (<c10-5> ^query.observing (- <max-entries> 1)
+   (<c10-5> ^query <q10-5>
             ^after (- <max-entries> 2))
+   (<q10-5> ^observing (- <max-entries> 1))
    ###
    (<t11> ^id 11
           ^name |before/after test|
@@ -414,57 +472,65 @@ sp {apply*intialize-kb*fill
    (<st11-1> ^id 1
              ^type query
              ^status success
-             ^command.query.observing 3
+             ^command <c11-1>
              ^expected 3
              ^score 1.)
+   (<c11-1> ^query <q11-1>)
+   (<q11-1> ^observing 3)
    (<st11-2> ^id 2
              ^type query
              ^status success
              ^command <c11-2>
              ^expected 3
              ^score 1.)
-   (<c11-2> ^query.observing 3
+   (<c11-2> ^query <q11-2>
             ^before <max-entries>)
+   (<q11-2> ^observing 3)
    (<st11-3> ^id 3
              ^type query
              ^status success
              ^command <c11-3>
              ^expected 3
              ^score 1.)
-   (<c11-3> ^query.observing 3
+   (<c11-3> ^query <q11-3>
             ^after 1)
+   (<q11-3> ^observing 3)
    (<st11-4> ^id 4
              ^type query
              ^status success
              ^command <c11-4>
              ^expected 3
              ^score 1.)
-   (<c11-4> ^query.observing 3
+   (<c11-4> ^query <q11-4>
             ^before <max-entries>
             ^after 1)
+   (<q11-4> ^observing 3)
    (<st11-5> ^id 5
              ^type query
              ^status success
              ^command <c11-5>
              ^expected 3
              ^score 1.)
-   (<c11-5> ^query.observing 3
+   (<c11-5> ^query <q11-5>
             ^before 4
             ^after 2)
+   (<q11-5> ^observing 3)
    (<st11-6> ^id 6
              ^type query
              ^status failure
              ^command <c11-6>)
-   (<c11-6> ^query.observing 3
+   (<c11-6> ^query <q11-6>
             ^before 3
             ^after 2)
+   (<q11-6> ^observing 3)
    (<st11-7> ^id 7
              ^type query
              ^status failure
              ^command <c11-7>)
-   (<c11-7> ^query.observing 3
+   (<c11-7> ^query <q11-7>
             ^before 4
             ^after 3)
+   (<q11-7> ^observing 3)
    ###
    (<t12> ^id 12
           ^name |neg tests|
@@ -477,25 +543,33 @@ sp {apply*intialize-kb*fill
    (<st12-1> ^id 1
              ^type query
              ^status failure
-             ^command.neg-query.name bad-state-name)
+             ^command <c12-1>)
+   (<c12-1> ^neg-query <nq12-1>)
+   (<nq12-1> ^name bad-state-name)
    (<st12-2> ^id 2
              ^type query
              ^status success
-             ^command.neg-query.name kb
+             ^command <c12-2>
              ^expected <max-entries>
              ^score -1.)
+   (<c12-2> ^neg-query <nq12-2>)
+   (<nq12-2> ^name kb)
    (<st12-3> ^id 3
              ^type query
              ^status success
-             ^command.neg-query.observing 1
+             ^command <c12-3>
              ^expected 1
              ^score -1.)
+   (<c12-3> ^neg-query <nq12-3>)
+   (<nq12-3> ^observing 1)
    (<st12-4> ^id 4
              ^type query
              ^status success
-             ^command.neg-query.observing <max-entries>
+             ^command <c12-4>
              ^expected <max-entries>
              ^score -1.)
+   (<c12-4> ^neg-query <nq12-4>)
+   (<nq12-4> ^observing <max-entries>)
    ###
    (<t13> ^id 13
           ^name |pos+neg tests|
@@ -513,40 +587,50 @@ sp {apply*intialize-kb*fill
              ^command <c13-1>
              ^expected <max-entries>
              ^score 1.)
-   (<c13-1> ^query.name kb
-            ^neg-query.name bad-state-name)
+   (<c13-1> ^query <q13-1>
+            ^neg-query <nq13-1>)
+   (<q13-1> ^name kb)
+   (<nq13-1> ^name bad-state-name)
    (<st13-2> ^id 2
              ^type query
              ^status success
              ^command <c13-2>
              ^expected <max-entries>
              ^score -1.)
-   (<c13-2> ^query.name bad-state-name
-            ^neg-query.name kb)
+   (<c13-2> ^query <q13-2>
+            ^neg-query <nq13-2>)
+   (<q13-2> ^name bad-state-name)
+   (<nq13-2> ^name kb)
    (<st13-3> ^id 3
              ^type query
              ^status success
              ^command <c13-3>
              ^expected (- <max-entries> 1)
              ^score 1.)
-   (<c13-3> ^query.name kb
-            ^neg-query.observing <max-entries>)
+   (<c13-3> ^query <q13-3>
+            ^neg-query <nq13-3>)
+   (<q13-3> ^name kb)
+   (<nq13-3> ^observing <max-entries>)
    (<st13-4> ^id 4
              ^type query
              ^status success
              ^command <c13-4>
              ^expected <max-entries>
              ^score 0.)
-   (<c13-4> ^query.observing <max-entries>
-            ^neg-query.name kb)
+   (<c13-4> ^query <q13-4>
+            ^neg-query <nq13-4>)
+   (<q13-4> ^observing <max-entries>)
+   (<nq13-4> ^name kb)
    (<st13-5> ^id 5
              ^type query
              ^status success
              ^command <c13-5>
              ^expected <max-entries>
              ^score 0.)
-   (<c13-5> ^query.observing <max-entries>
-            ^neg-query.observing <max-entries>)
+   (<c13-5> ^query <q13-5>
+            ^neg-query <nq13-5>)
+   (<q13-5> ^observing <max-entries>)
+   (<nq13-5> ^observing <max-entries>)
    (<st13-6> ^id 6
              ^type query
              ^status success
@@ -554,9 +638,10 @@ sp {apply*intialize-kb*fill
              ^expected 1
              ^score 1.)
    (<c13-6> ^query <q13-6>
-            ^neg-query.observing <max-entries>)
+            ^neg-query <nq13-6>)
    (<q13-6> ^observing <max-entries>
             ^observing 1)
+   (<nq13-6> ^observing <max-entries>)
    ###
    (<t14> ^id 14
           ^name |all together now!|
@@ -736,15 +821,17 @@ sp {apply*intialize-kb*fill
    (<st14-13> ^id 13
               ^type retrieve
               ^status good
-              ^command.next <n14-13>
+              ^command <c14-13>
               ^expected <max-entries>)
+   (<c14-13> ^next <n14-13>)
    (<st14-14> ^id 14
               ^type retrieve
               ^status good
-              ^command.previous <n14-14>
+              ^command <c14-14>
               ^expected (- <max-entries> 1))
+   (<c14-14> ^previous <p14-14>)
    ###
-   (<t15> ^id 15
+  (<t15> ^id 15
           ^name |mode 3 checks|
           ^note |warm-blooded, score 1; warm-blooded and Cetacea, score 2; warm-blooded, rabies, not Cetacea, score 1; warm-blooded, rabies, not beaked whale, score 2|            
           ^steps 4
@@ -759,7 +846,9 @@ sp {apply*intialize-kb*fill
              ^expected <max-entries>
              ^score 1.)
    (<c15-1> ^query <q15-1>)
-   (<q15-1> ^observing-entry.attributes.is warm-blooded)
+   (<q15-1> ^observing-entry <oe15-1>)
+   (<oe15-1> ^attributes <a15-1>)
+   (<a15-1> ^is warm-blooded)
    (<st15-2> ^id 2
              ^type query
              ^status success
@@ -767,9 +856,10 @@ sp {apply*intialize-kb*fill
              ^expected <max-entries>
              ^score 2.)
    (<c15-2> ^query <q15-2>)
-   (<q15-2> ^observing-entry.attributes <q15-2-1>)
-   (<q15-2-1> ^is warm-blooded 
-              ^order Cetacea)
+   (<q15-2> ^observing-entry <oe15-2>)
+   (<oe15-2> ^attributes <a15-2>)
+   (<a15-2> ^is warm-blooded 
+            ^order Cetacea)
    (<st15-3> ^id 3
              ^type query
              ^status success
@@ -778,10 +868,13 @@ sp {apply*intialize-kb*fill
              ^score 1.)
    (<c15-3> ^query <q15-3>
             ^neg-query <n15-3>)
-   (<q15-3> ^observing-entry.attributes <q15-3-1>)
-   (<q15-3-1> ^is warm-blooded 
-              ^may-catch rabbies)
-   (<n15-3> ^observing-entry.attributes.order Cetacea)
+   (<q15-3> ^observing-entry <oe15-3>)
+   (<oe15-3> ^attributes <a15-3>)
+   (<a15-3> ^is warm-blooded 
+            ^may-catch rabbies)
+   (<n15-3> ^observing-entry <noe15-3>)
+   (<noe15-3> ^attributes <na15-3>)
+   (<na15-3> ^order Cetacea)
    (<st15-4> ^id 4
              ^type query
              ^status success
@@ -790,8 +883,11 @@ sp {apply*intialize-kb*fill
              ^score 2.)
    (<c15-4> ^query <q15-4>
             ^neg-query <n15-4>)
-   (<q15-4> ^observing-entry.attributes <q15-4-1>)
-   (<q15-4-1> ^is warm-blooded 
+   (<q15-4> ^observing-entry <oe15-4>)
+   (<oe15-4> ^attributes <a15-4>)
+   (<a15-4> ^is warm-blooded 
               ^may-catch rabbies)
-   (<n15-4> ^observing-entry.attributes.kind-of |beaked whale|)
+   (<n15-4> ^observing-entry <noe15-4>)
+   (<noe15-4> ^attributes <na15-4>)
+   (<na15-4> ^kind-of |beaked whale|)
 }
