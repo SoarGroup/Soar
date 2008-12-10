@@ -498,7 +498,7 @@ preference *exploration_choose_according_to_policy( agent *my_agent, slot *s, pr
 {
 	double top_value = candidates->numeric_value;
 	const long exploration_policy = exploration_get_policy( my_agent );
-	preference *return_val;
+	preference *return_val = NULL;
 
 	// get preference values for each candidate
 	for ( preference *cand = candidates; cand != NIL; cand = cand->next_candidate )
