@@ -126,17 +126,17 @@ typedef struct wme_struct wme;
 #define EPMEM_STMT_RIT_TRUNCATE_RIGHT				8
 
 #define EPMEM_STMT_ONE_ADD_TIME						10
-#define EPMEM_STMT_ONE_ADD_EPISODE					11
-#define EPMEM_STMT_ONE_ADD_ID						12
-#define EPMEM_STMT_ONE_FIND_ID						13
-#define EPMEM_STMT_ONE_FIND_ID_NULL					14
+#define EPMEM_STMT_ONE_ADD_NODE_RANGE				11
+#define EPMEM_STMT_ONE_ADD_NODE_UNIQUE				12
+#define EPMEM_STMT_ONE_FIND_NODE_UNIQUE				13
+#define EPMEM_STMT_ONE_FIND_IDENTIFIER				14
 #define EPMEM_STMT_ONE_VALID_EPISODE				15
 #define EPMEM_STMT_ONE_NEXT_EPISODE					16
 #define EPMEM_STMT_ONE_PREV_EPISODE					17
 #define EPMEM_STMT_ONE_GET_EPISODE					18
-#define EPMEM_STMT_ONE_ADD_NOW						19
-#define EPMEM_STMT_ONE_DELETE_NOW					20
-#define EPMEM_STMT_ONE_ADD_POINT					21
+#define EPMEM_STMT_ONE_ADD_NODE_NOW					19
+#define EPMEM_STMT_ONE_DELETE_NODE_NOW				20
+#define EPMEM_STMT_ONE_ADD_NODE_POINT				21
 
 #define EPMEM_STMT_THREE_ADD_TIME					10
 #define EPMEM_STMT_THREE_ADD_NODE_NOW				11
@@ -257,12 +257,10 @@ typedef struct epmem_timer_struct
 } epmem_timer;
 
 // common
-
 typedef unsigned long long int epmem_node_id;
 typedef long long int epmem_time_id;
 
 // soar
-
 typedef struct epmem_data_struct 
 {
 	unsigned long last_ol_time;		// last update to output-link
@@ -280,7 +278,6 @@ typedef struct epmem_data_struct
 } epmem_data;
 
 // mode: one
-
 typedef struct epmem_leaf_node_struct
 {	
 	double leaf_weight;
@@ -298,8 +295,17 @@ typedef struct epmem_range_query_struct
 	long timer;	
 } epmem_range_query;
 
-// mode: three
+struct epmem_compare_range_queries
+{
+	bool operator() ( const epmem_range_query *a, const epmem_range_query *b ) const
+	{
+		return ( a->val < b->val );
+	}
+};
 
+typedef std::priority_queue<epmem_range_query *, std::vector<epmem_range_query *>, epmem_compare_range_queries> epmem_range_query_list;
+
+// mode: three
 typedef struct epmem_edge_struct
 {
 	epmem_node_id q0;
