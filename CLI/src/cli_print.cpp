@@ -29,24 +29,24 @@ using namespace sml;
 
 bool CommandLineInterface::ParsePrint(std::vector<std::string>& argv) {
 	Options optionsData[] = {
-		{'a', "all",			0},
-		{'c', "chunks",			0},
-		{'d', "depth",			1},
-		{'D', "defaults",		0},
-		{'f', "full",			0},
-		{'F', "filename",		0},
-		{'i', "internal",		0},
-		{'j', "justifications",	0},
-		{'n', "name",			0},
-		{'o', "operators",		0},
-		{'r', "rl",				0},
-		{'s', "stack",			0},
-		{'S', "states",			0},
-		{'t', "tree",			0},
-		{'T', "template",		0},
-		{'u', "user",			0},
-		{'v', "varprint",		0},
-		{0, 0, 0}
+		{'a', "all",			OPTARG_NONE},
+		{'c', "chunks",			OPTARG_NONE},
+		{'d', "depth",			OPTARG_REQUIRED},
+		{'D', "defaults",		OPTARG_NONE},
+		{'f', "full",			OPTARG_NONE},
+		{'F', "filename",		OPTARG_NONE},
+		{'i', "internal",		OPTARG_NONE},
+		{'j', "justifications",	OPTARG_NONE},
+		{'n', "name",			OPTARG_NONE},
+		{'o', "operators",		OPTARG_NONE},
+		{'r', "rl",				OPTARG_NONE},
+		{'s', "stack",			OPTARG_NONE},
+		{'S', "states",			OPTARG_NONE},
+		{'t', "tree",			OPTARG_NONE},
+		{'T', "template",		OPTARG_NONE},
+		{'u', "user",			OPTARG_NONE},
+		{'v', "varprint",		OPTARG_NONE},
+		{0, 0, OPTARG_NONE}
 	};
 
 	int depth = m_pAgentSoar->default_wme_depth;

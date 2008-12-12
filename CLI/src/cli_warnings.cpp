@@ -25,11 +25,11 @@ using namespace sml;
 
 bool CommandLineInterface::ParseWarnings(std::vector<std::string>& argv) {
 	Options optionsData[] = {
-		{'e', "enable",		0},
-		{'d', "disable",	0},
-		{'e', "on",			0},
-		{'d', "off",		0},
-		{0, 0, 0}
+		{'e', "enable",		OPTARG_NONE},
+		{'d', "disable",	OPTARG_NONE},
+		{'e', "on",			OPTARG_NONE},
+		{'d', "off",		OPTARG_NONE},
+		{0, 0, OPTARG_NONE}
 	};
 
 	bool query = true;

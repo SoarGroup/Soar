@@ -93,11 +93,17 @@ typedef std::bitset<WATCH_NUM_OPTIONS> WatchBitset;
 typedef std::bitset<WATCH_WMES_TYPE_NUM_OPTIONS> WatchWMEsTypeBitset;
 
 // For option parsing
+enum eOptionArgument {
+	OPTARG_NONE,
+	OPTARG_REQUIRED,
+	OPTARG_OPTIONAL,
+};
+
 struct Options {
 	int shortOpt;
 	const char* longOpt;
-	int argument;
-} ;
+	eOptionArgument argument;
+};
 
 CommandLineInterface* GetCLI() ;
 
@@ -177,6 +183,7 @@ public:
 	bool ParseAddWME(std::vector<std::string>& argv);
 	bool ParseAlias(std::vector<std::string>& argv);
 	bool ParseAttributePreferencesMode(std::vector<std::string>& argv);
+	bool ParseCaptureInput(std::vector<std::string>& argv);
 	bool ParseCD(std::vector<std::string>& argv);
 	bool ParseChunkNameFormat(std::vector<std::string>& argv);
 	bool ParseCLog(std::vector<std::string>& argv);
@@ -218,6 +225,7 @@ public:
 	bool ParsePWD(std::vector<std::string>& argv);
 	bool ParseQuit(std::vector<std::string>& argv);
 	bool ParseRemoveWME(std::vector<std::string>& argv);
+	bool ParseReplayInput(std::vector<std::string>& argv);
 	bool ParseReteNet(std::vector<std::string>& argv);
 	bool ParseRL(std::vector<std::string>& argv);
 	bool ParseRun(std::vector<std::string>& argv);
@@ -266,6 +274,11 @@ public:
 	*		 mode, use null to query current mode
 	*************************************************************/
 	bool DoAttributePreferencesMode(int* pMode = 0);
+
+	/*************************************************************
+	* @brief capture-input command
+	*************************************************************/
+	bool DoCaptureInput(eCaptureInputMode mode, std::string* pathname);
 
 	/*************************************************************
 	* @brief cd command
@@ -541,6 +554,11 @@ public:
 	bool DoRemoveWME(unsigned long timetag);
 
 	/*************************************************************
+	* @brief replay-input command
+	*************************************************************/
+	bool DoReplayInput(eReplayInputMode mode, std::string* pathname);
+
+	/*************************************************************
 	* @brief rete-net command
 	* @param save true to save, false to load
 	* @param filename the rete-net file
@@ -807,7 +825,7 @@ protected:
 	void ResetOptions();
 	bool ProcessOptions(std::vector<std::string>& argv, Options* options);
 	void MoveBack(std::vector<std::string>& argv, int what, int howFar);
-	bool HandleOptionArgument(std::vector<std::string>& argv, const char* option, int arg);
+	bool HandleOptionArgument(std::vector<std::string>& argv, const char* option, eOptionArgument arg);
 
 	int			m_Argument;
 	int			m_Option;
