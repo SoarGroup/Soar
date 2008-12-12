@@ -687,6 +687,51 @@ const long rl_convert_te_enabled( const char *val )
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////
+// hrl-discount
+/////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+/***************************************************************************
+ * Function     : rl_validate_hrl_discount
+ **************************************************************************/
+bool rl_validate_hrl_discount( const long new_val )
+{
+	return ( ( new_val == RL_HRL_D_ON ) || ( new_val == RL_HRL_D_OFF ) );
+}
+
+/***************************************************************************
+ * Function     : rl_convert_hrl_discount
+ **************************************************************************/
+const char *rl_convert_hrl_discount( const long val )
+{
+	const char *return_val = NULL;
+	
+	switch ( val )
+	{
+		case RL_HRL_D_ON:
+			return_val = "on";
+			break;
+			
+		case RL_HRL_D_OFF:
+			return_val = "off";
+			break;
+	}
+	
+	return return_val;
+}
+
+const long rl_convert_hrl_discount( const char *val )
+{
+	long return_val = NULL;
+	
+	if ( !strcmp( val, "on" ) )
+		return_val = RL_HRL_D_ON;
+	else if ( !strcmp( val, "off" ) )
+		return_val = RL_HRL_D_OFF;
+	
+	return return_val;
+}
+
+/////////////////////////////////////////////////////////////////////////////////////////////////////////
 /////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 /***************************************************************************
@@ -1092,7 +1137,8 @@ void rl_tabulate_reward_value_for_goal( agent *my_agent, Symbol *goal )
 	rl_set_stat( my_agent, RL_STAT_TOTAL_REWARD, reward );
 	rl_set_stat( my_agent, RL_STAT_GLOBAL_REWARD, ( global_reward + reward ) );
 
-	data->step++;
+	if ( ( rl_get_parameter( my_agent, RL_PARAM_HRL_DISCOUNT, RL_RETURN_LONG ) == RL_HRL_D_ON ) || ( goal == my_agent->bottom_goal ) )
+		data->step++;
 }
 
 /***************************************************************************
