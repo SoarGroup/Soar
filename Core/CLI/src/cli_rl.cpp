@@ -225,6 +225,15 @@ bool CommandLineInterface::DoRL( const char pOp, const std::string* pAttr, const
 		temp += (*temp2);
 		delete temp2;
 		if ( m_RawOutput )
+			m_Result << temp << "\n";
+		else
+		{
+			AppendArgTagFast( sml_Names::kParamValue, sml_Names::kTypeString, temp.c_str() );			
+		}
+		
+		temp = "hrl-discount: ";
+		temp += rl_get_parameter( m_pAgentSoar, RL_PARAM_HRL_DISCOUNT, RL_RETURN_STRING );
+		if ( m_RawOutput )
 			m_Result << temp << "\n\n";
 		else
 		{
