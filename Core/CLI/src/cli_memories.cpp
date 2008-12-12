@@ -34,12 +34,12 @@ struct MemoriesSort {
 bool CommandLineInterface::ParseMemories(std::vector<std::string>& argv) {
 
 	Options optionsData[] = {
-		{'c', "chunks",			0},
-		{'d', "default",		0},
-		{'j', "justifications",	0},
-		{'T', "template",		0},
-		{'u', "user",			0},
-		{0, 0, 0}
+		{'c', "chunks",			OPTARG_NONE},
+		{'d', "default",		OPTARG_NONE},
+		{'j', "justifications",	OPTARG_NONE},
+		{'T', "template",		OPTARG_NONE},
+		{'u', "user",			OPTARG_NONE},
+		{0, 0, OPTARG_NONE}
 	};
 
 	MemoriesBitset options(0);

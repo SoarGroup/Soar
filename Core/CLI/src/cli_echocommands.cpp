@@ -23,9 +23,9 @@ using namespace sml;
 bool CommandLineInterface::ParseEchoCommands(std::vector<std::string>& argv) {
 
 	Options optionsData[] = {
-		{'y', "yes",		0},
-		{'n', "no",			0},
-		{0, 0, 0}
+		{'y', "yes",		OPTARG_NONE},
+		{'n', "no",			OPTARG_NONE},
+		{0, 0, OPTARG_NONE}
 	};
 
 	bool echoCommands = true ;

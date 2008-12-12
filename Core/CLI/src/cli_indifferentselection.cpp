@@ -32,28 +32,28 @@ bool CommandLineInterface::ParseIndifferentSelection(std::vector<std::string>& a
 	Options optionsData[] = 
 	{
 		// selection policies
-		{'b', "boltzmann",			0},
-		{'g', "epsilon-greedy",		0},
-		{'f', "first",				0},
-		{'l', "last",				0},
-		//{'u', "random-uniform",		0},
-		{'x', "softmax",			0},
+		{'b', "boltzmann",			OPTARG_NONE},
+		{'g', "epsilon-greedy",		OPTARG_NONE},
+		{'f', "first",				OPTARG_NONE},
+		{'l', "last",				OPTARG_NONE},
+		//{'u', "random-uniform",		OPTARG_NONE},
+		{'x', "softmax",			OPTARG_NONE},
 
 		// selection parameters
-		{'e', "epsilon",			0},
-		{'t', "temperature",		0},
+		{'e', "epsilon",			OPTARG_NONE},
+		{'t', "temperature",		OPTARG_NONE},
 
 		// auto-reduction control
-		{'a', "auto-reduce",		0},
+		{'a', "auto-reduce",		OPTARG_NONE},
 
 		// selection parameter reduction
-		{'p', "reduction-policy",	0},
-		{'r', "reduction-rate",		0},
+		{'p', "reduction-policy",	OPTARG_NONE},
+		{'r', "reduction-rate",		OPTARG_NONE},
 
 		// stats
-		{'s', "stats",				0},
+		{'s', "stats",				OPTARG_NONE},
 
-		{0, 0, 0} // null
+		{0, 0, OPTARG_NONE} // null
 	};
 	IndifferentBitset options(0);
 

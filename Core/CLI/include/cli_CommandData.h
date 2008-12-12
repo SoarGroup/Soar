@@ -14,6 +14,18 @@
 
 namespace cli {
 
+	enum eCaptureInputMode {
+		CAPTURE_INPUT_OPEN,
+		CAPTURE_INPUT_QUERY,
+		CAPTURE_INPUT_CLOSE,
+	};
+
+	enum eReplayInputMode {
+		REPLAY_INPUT_OPEN,
+		REPLAY_INPUT_QUERY,
+		REPLAY_INPUT_CLOSE,
+	};
+
 	enum eExciseOptions {
 		EXCISE_ALL,
 		EXCISE_CHUNKS,

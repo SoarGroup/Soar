@@ -77,7 +77,6 @@ typedef struct backtrace_struct backtrace_str;
 typedef struct explain_chunk_struct explain_chunk_str;
 typedef struct io_wme_struct io_wme;
 typedef struct multi_attributes_struct multi_attribute;
-typedef struct replay_struct replay;
 
 // following def's moved here from old interface.h file  KJC nov 05
 /* AGR 568 begin */
@@ -623,19 +622,6 @@ kernel time and total_cpu_time greater than the derived total CPU time. REW */
   int                 printer_output_column;
   int                 saved_printer_output_column;
   
-  /* kjh(CUSP-B10) begin */
-  /* ------------------ Recording/replaying stuff --------------------- */
-  /*  Bool                replaying; */
-  /* kjh(CUSP-B10) end */
-  /* kjc 12/99 capture/replay input cycle files */
-  FILE		    * capture_fileID;
-  FILE		    * replay_fileID;
-  Bool                replay_input_data;
-  replay            * replay_data;
-  unsigned long     * replay_timetags;
-  /* Bool				  capture_input_wmes;
-   * Bool				  replay_input_wmes; 
-   */
   /* ----------------------- Trace Formats -------------------------- */
   
   struct trace_format_struct *(object_tf_for_anything[3]);

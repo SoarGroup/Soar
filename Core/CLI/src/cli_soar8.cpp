@@ -21,11 +21,11 @@ using namespace sml;
 
 bool CommandLineInterface::ParseSoar8(std::vector<std::string>& argv) {
 	Options optionsData[] = {
-		{'e', "on",			0},
-		{'e', "enable",		0},
-		{'d', "off",		0},
-		{'d', "disable",	0},
-		{0, 0, 0}
+		{'e', "on",			OPTARG_NONE},
+		{'e', "enable",		OPTARG_NONE},
+		{'d', "off",		OPTARG_NONE},
+		{'d', "disable",	OPTARG_NONE},
+		{0, 0, OPTARG_NONE}
 	};
 
 	bool query = true;

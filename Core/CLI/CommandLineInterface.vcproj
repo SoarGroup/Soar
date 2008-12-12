@@ -434,6 +434,10 @@
 					</FileConfiguration>
 				</File>
 				<File
+					RelativePath=".\src\cli_captureinput.cpp"
+					>
+				</File>
+				<File
 					RelativePath=".\src\cli_cd.cpp"
 					>
 					<FileConfiguration
@@ -1252,6 +1256,10 @@
 							Name="VCCLCompilerTool"
 						/>
 					</FileConfiguration>
+				</File>
+				<File
+					RelativePath=".\src\cli_replayinput.cpp"
+					>
 				</File>
 				<File
 					RelativePath=".\src\cli_retenet.cpp"
