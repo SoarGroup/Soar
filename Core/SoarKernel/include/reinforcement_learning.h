@@ -34,6 +34,9 @@
 #define RL_TE_ON 1
 #define RL_TE_OFF 2
 
+#define RL_HRL_D_ON 1
+#define RL_HRL_D_OFF 2
+
 // names of params
 #define RL_PARAM_LEARNING					0
 #define RL_PARAM_DISCOUNT_RATE				1
@@ -42,7 +45,8 @@
 #define RL_PARAM_ET_DECAY_RATE				4
 #define RL_PARAM_ET_TOLERANCE				5
 #define RL_PARAM_TEMPORAL_EXTENSION			6
-#define RL_PARAMS							7 // must be 1+ last rl param
+#define RL_PARAM_HRL_DISCOUNT				7
+#define RL_PARAMS							8 // must be 1+ last rl param
 
 // names of stats
 #define RL_STAT_UPDATE_ERROR				0
@@ -203,6 +207,11 @@ extern bool rl_validate_trace_tolerance( const double new_val );
 extern bool rl_validate_te_enabled( const long new_val );
 extern const char *rl_convert_te_enabled( const long val );
 extern const long rl_convert_te_enabled( const char *val );
+
+// hrl-discount
+extern bool rl_validate_hrl_discount( const long new_val );
+extern const char *rl_convert_hrl_discount( const long val );
+extern const long rl_convert_hrl_discount( const char *val );
 
 // shortcut for determining if Soar-RL is enabled
 extern bool rl_enabled( agent *my_agent );

@@ -215,5 +215,7 @@ def ConfigureJNI(env):
     env['JAVA_HOME'] = java_base
     env['JNI_CPPPATH'] = java_headers
     env['JNI_LIBPATH'] = java_libs
+    env['JAVAC'] = os.environ['JAVA_HOME'] + os.sep + 'bin' + os.sep + 'javac'
+    env['JAR'] = os.environ['JAVA_HOME'] + os.sep + 'bin' + os.sep + 'jar' 
     return 1
 

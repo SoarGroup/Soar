@@ -326,6 +326,7 @@ agent * create_soar_agent (char * agent_name) {                                 
   newAgent->rl_params[ RL_PARAM_ET_DECAY_RATE ] = rl_add_parameter( "eligibility-trace-decay-rate", 0, &rl_validate_decay_rate );
   newAgent->rl_params[ RL_PARAM_ET_TOLERANCE ] = rl_add_parameter( "eligibility-trace-tolerance", 0.001, &rl_validate_trace_tolerance );
   newAgent->rl_params[ RL_PARAM_TEMPORAL_EXTENSION ] = rl_add_parameter( "temporal-extension", RL_TE_ON, &rl_validate_te_enabled, &rl_convert_te_enabled, &rl_convert_te_enabled );
+  newAgent->rl_params[ RL_PARAM_HRL_DISCOUNT ] = rl_add_parameter( "hrl-discount", RL_HRL_D_ON, &rl_validate_hrl_discount, &rl_convert_hrl_discount, &rl_convert_hrl_discount );
 
   newAgent->rl_stats[ RL_STAT_UPDATE_ERROR ] = rl_add_stat( "update-error" );
   newAgent->rl_stats[ RL_STAT_TOTAL_REWARD ] = rl_add_stat( "total-reward" );
