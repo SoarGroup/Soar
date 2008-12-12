@@ -25,18 +25,18 @@ using namespace sml;
 
 bool CommandLineInterface::ParseLearn(std::vector<std::string>& argv) {
 	Options optionsData[] = {
-		{'a', "all-levels",	0},
-		{'b', "bottom-up",	0},
-		{'d', "disable",	0},
-		{'d', "off",		0},
-		{'e', "enable",		0},
-		{'e', "on",			0},
-		{'E', "except",		0},
-		{'l', "list",		0},
-		{'o', "only",		0},
-		{'n', "enable-through-local-negations", 0},
-		{'N', "disable-through-local-negations", 0},
-		{0, 0, 0}
+		{'a', "all-levels",	OPTARG_NONE},
+		{'b', "bottom-up",	OPTARG_NONE},
+		{'d', "disable",	OPTARG_NONE},
+		{'d', "off",		OPTARG_NONE},
+		{'e', "enable",		OPTARG_NONE},
+		{'e', "on",			OPTARG_NONE},
+		{'E', "except",		OPTARG_NONE},
+		{'l', "list",		OPTARG_NONE},
+		{'o', "only",		OPTARG_NONE},
+		{'n', "enable-through-local-negations", OPTARG_NONE},
+		{'N', "disable-through-local-negations", OPTARG_NONE},
+		{0, 0, OPTARG_NONE}
 	};
 
 	LearnBitset options(0);

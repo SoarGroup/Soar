@@ -23,14 +23,14 @@ using namespace sml;
 
 bool CommandLineInterface::ParseSetStopPhase(std::vector<std::string>& argv) {
 	Options optionsData[] = {
-		{'B', "before",		0},	// optional (defaults to before)
-		{'A', "after",		0},	// optional
-		{'i', "input",	    0},	// requires one of these
-		{'p', "proposal",	0},
-		{'d', "decision",	0},
-		{'a', "apply",		0},
-		{'o', "output",		0},
-		{0, 0, 0}
+		{'B', "before",		OPTARG_NONE},	// optional (defaults to before)
+		{'A', "after",		OPTARG_NONE},	// optional
+		{'i', "input",	    OPTARG_NONE},	// requires one of these
+		{'p', "proposal",	OPTARG_NONE},
+		{'d', "decision",	OPTARG_NONE},
+		{'a', "apply",		OPTARG_NONE},
+		{'o', "output",		OPTARG_NONE},
+		{0, 0, OPTARG_NONE}
 	};
 
 	smlPhase phase = sml_INPUT_PHASE ;

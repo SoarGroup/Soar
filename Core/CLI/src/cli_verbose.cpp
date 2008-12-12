@@ -24,11 +24,11 @@ using namespace sml;
 
 bool CommandLineInterface::ParseVerbose(std::vector<std::string>& argv) {
 	Options optionsData[] = {
-		{'d', "disable",	0},
-		{'e', "enable",		0},
-		{'d', "off",		0},
-		{'e', "onn",		0},
-		{0, 0, 0}
+		{'d', "disable",	OPTARG_NONE},
+		{'e', "enable",		OPTARG_NONE},
+		{'d', "off",		OPTARG_NONE},
+		{'e', "onn",		OPTARG_NONE},
+		{0, 0, OPTARG_NONE}
 	};
 
 	bool setting = false;

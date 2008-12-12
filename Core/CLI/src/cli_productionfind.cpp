@@ -24,12 +24,12 @@ using namespace sml;
 
 bool CommandLineInterface::ParseProductionFind(std::vector<std::string>& argv) {
 	Options optionsData[] = {
-		{'c', "chunks",			0},
-		{'l', "lhs",				0},
-		{'n', "nochunks",		0},
-		{'r', "rhs",				0},
-		{'s', "show-bindings",	0},
-		{0, 0, 0}
+		{'c', "chunks",			OPTARG_NONE},
+		{'l', "lhs",				OPTARG_NONE},
+		{'n', "nochunks",		OPTARG_NONE},
+		{'r', "rhs",				OPTARG_NONE},
+		{'s', "show-bindings",	OPTARG_NONE},
+		{0, 0, OPTARG_NONE}
 	};
 
 	ProductionFindBitset options(0);

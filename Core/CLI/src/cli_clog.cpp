@@ -26,14 +26,14 @@ using namespace sml;
 
 bool CommandLineInterface::ParseCLog(std::vector<std::string>& argv) {
 	Options optionsData[] = {
-		{'a', "add",		0},
-		{'A', "append",		0},
-		{'c', "close",		0},
-		{'d', "disable",	0},
-		{'e', "existing",	0},
-		{'d', "off",		0},
-		{'q', "query",		0},
-		{0, 0, 0}
+		{'a', "add",		OPTARG_NONE},
+		{'A', "append",		OPTARG_NONE},
+		{'c', "close",		OPTARG_NONE},
+		{'d', "disable",	OPTARG_NONE},
+		{'e', "existing",	OPTARG_NONE},
+		{'d', "off",		OPTARG_NONE},
+		{'q', "query",		OPTARG_NONE},
+		{0, 0, OPTARG_NONE}
 	};
 
 	eLogMode mode = LOG_NEW;

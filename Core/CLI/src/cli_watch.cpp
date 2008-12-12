@@ -26,27 +26,27 @@ using namespace sml;
 
 bool CommandLineInterface::ParseWatch(std::vector<std::string>& argv) {
 	Options optionsData[] = {
-		{'b',"backtracing",				2},
-		{'c',"chunks",					2},
-		{'d',"decisions",				2},
-		{'D',"default-productions",		2},
-		{'f',"fullwmes",				0},
-		{'i',"indifferent-selection",	2},
-		{'j',"justifications",			2},
-		{'L',"learning",				1},
-		{'l',"level",					1},
-		{'N',"none",					0},
-		{'n',"nowmes",					0},
-		{'p',"phases",					2},
-		{'P',"productions",				2},
-		{'r',"preferences",				2},
-		{'R',"rl",						2},
-		{'t',"timetags",				0},
-		{'T',"template",				2},
-		{'u',"user-productions",		2},
-		{'w',"wmes",					2},
-		{'W',"waterfall",				2}, // TODO: document. note: added to watch 5
-		{0, 0, 0}
+		{'b',"backtracing",				OPTARG_OPTIONAL},
+		{'c',"chunks",					OPTARG_OPTIONAL},
+		{'d',"decisions",				OPTARG_OPTIONAL},
+		{'D',"default-productions",		OPTARG_OPTIONAL},
+		{'f',"fullwmes",				OPTARG_NONE},
+		{'i',"indifferent-selection",	OPTARG_OPTIONAL},
+		{'j',"justifications",			OPTARG_OPTIONAL},
+		{'L',"learning",				OPTARG_REQUIRED},
+		{'l',"level",					OPTARG_REQUIRED},
+		{'N',"none",					OPTARG_NONE},
+		{'n',"nowmes",					OPTARG_NONE},
+		{'p',"phases",					OPTARG_OPTIONAL},
+		{'P',"productions",				OPTARG_OPTIONAL},
+		{'r',"preferences",				OPTARG_OPTIONAL},
+		{'R',"rl",						OPTARG_OPTIONAL},
+		{'t',"timetags",				OPTARG_NONE},
+		{'T',"template",				OPTARG_OPTIONAL},
+		{'u',"user-productions",		OPTARG_OPTIONAL},
+		{'w',"wmes",					OPTARG_OPTIONAL},
+		{'W',"waterfall",				OPTARG_OPTIONAL}, // TODO: document. note: added to watch 5
+		{0, 0, OPTARG_NONE}
 	};
 			 
 	WatchBitset options(0);

@@ -893,11 +893,11 @@ void CommandLineInterface::MoveBack(std::vector<std::string>& argv, int what, in
 	argv.erase(target);
 }
 
-bool CommandLineInterface::HandleOptionArgument(std::vector<std::string>& argv, const char* option, int arg) {
+bool CommandLineInterface::HandleOptionArgument(std::vector<std::string>& argv, const char* option, eOptionArgument arg) {
 	switch (arg) {
-		case 0:
+		case OPTARG_NONE:
 			break;
-		case 1:
+		case OPTARG_REQUIRED:
 			// required argument
 			if (static_cast<unsigned>(++m_Argument) >= argv.size()) {
 				std::string detail(option);
@@ -907,7 +907,7 @@ bool CommandLineInterface::HandleOptionArgument(std::vector<std::string>& argv, 
 			m_OptionArgument = argv[m_Argument];
 			MoveBack(argv, m_Argument, m_NonOptionArguments);
 			break;
-		case 2:
+		case OPTARG_OPTIONAL:
 		default:
 			// optional argument
 			if (static_cast<unsigned>(++m_Argument) < argv.size()) {
