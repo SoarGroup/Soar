@@ -21,10 +21,10 @@ using namespace cli;
 
 bool CommandLineInterface::ParseReteNet(std::vector<std::string>& argv) {
 	Options optionsData[] = {
-		{'l', "load",		1},
-		{'r', "restore",	1},
-		{'s', "save",		1},
-		{0, 0, 0}
+		{'l', "load",		OPTARG_REQUIRED},
+		{'r', "restore",	OPTARG_REQUIRED},
+		{'s', "save",		OPTARG_REQUIRED},
+		{0, 0, OPTARG_NONE}
 	};
 
 	bool save = false;

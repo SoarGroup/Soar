@@ -29,13 +29,13 @@ using namespace sml;
 
 bool CommandLineInterface::ParseMatches(std::vector<std::string>& argv) {
 	Options optionsData[] = {
-		{'a', "assertions",		0},
-		{'c', "count",			0},
-		{'n', "names",			0},
-		{'r', "retractions",	0},
-		{'t', "timetags",		0},
-		{'w', "wmes",			0},
-		{0, 0, 0}
+		{'a', "assertions",		OPTARG_NONE},
+		{'c', "count",			OPTARG_NONE},
+		{'n', "names",			OPTARG_NONE},
+		{'r', "retractions",	OPTARG_NONE},
+		{'t', "timetags",		OPTARG_NONE},
+		{'w', "wmes",			OPTARG_NONE},
+		{0, 0, OPTARG_NONE}
 	};
 
 	eWMEDetail detail = WME_DETAIL_NONE;

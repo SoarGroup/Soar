@@ -27,14 +27,14 @@ using namespace sml;
 
 bool CommandLineInterface::ParseExcise(std::vector<std::string>& argv) {
 	Options optionsData[] = {
-		{'a', "all",		0},
-		{'c', "chunks",		0},
-		{'d', "default",	0},
-		{'r', "rl",			0},
-		{'t', "task",		0},
-		{'T', "template",	0},
-		{'u', "user",		0},
-		{0, 0, 0}
+		{'a', "all",		OPTARG_NONE},
+		{'c', "chunks",		OPTARG_NONE},
+		{'d', "default",	OPTARG_NONE},
+		{'r', "rl",			OPTARG_NONE},
+		{'t', "task",		OPTARG_NONE},
+		{'T', "template",	OPTARG_NONE},
+		{'u', "user",		OPTARG_NONE},
+		{0, 0, OPTARG_NONE}
 	};
 
 	ExciseBitset options(0);

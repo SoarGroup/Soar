@@ -175,12 +175,6 @@ typedef struct io_wme_struct {
   unsigned long timetag ;		/* DJP: Added.  Only guaranteed valid for an output wme. */
 } io_wme;
 
-typedef struct replay_struct {
-  struct replay_struct *next, *prev;
-  unsigned long orig_timetag;
-  char  data_string[1024];
-} replay;
-  
 typedef struct output_link_struct {
   struct output_link_struct *next, *prev;  /* dll of all existing links */
   byte status;                             /* current xxx_OL_STATUS */

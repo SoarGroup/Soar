@@ -25,12 +25,12 @@ using namespace sml;
 
 bool CommandLineInterface::ParseWatchWMEs(std::vector<std::string>& argv) {
 	Options optionsData[] = {
-		{'a', "add-filter",		0},
-		{'r', "remove-filter",	0},
-		{'l', "list-filter",	0},
-		{'R', "reset-filter",	0},
-		{'t', "type",			1},
-		{0, 0, 0}
+		{'a', "add-filter",		OPTARG_NONE},
+		{'r', "remove-filter",	OPTARG_NONE},
+		{'l', "list-filter",	OPTARG_NONE},
+		{'R', "reset-filter",	OPTARG_NONE},
+		{'t', "type",			OPTARG_REQUIRED},
+		{0, 0, OPTARG_NONE}
 	};
 
 	eWatchWMEsMode mode = WATCH_WMES_LIST;

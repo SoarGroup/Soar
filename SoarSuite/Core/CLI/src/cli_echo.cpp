@@ -21,8 +21,8 @@ using namespace sml;
 
 bool CommandLineInterface::ParseEcho(std::vector<std::string>& argv) {
 	Options optionsData[] = {
-		{'n', "no-newline", 0},
-		{0, 0, 0}
+		{'n', "no-newline", OPTARG_NONE},
+		{0, 0, OPTARG_NONE}
 	};
 
 	bool echoNewline(true);
