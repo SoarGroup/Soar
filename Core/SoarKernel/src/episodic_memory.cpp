@@ -1830,6 +1830,7 @@ void epmem_init_db( agent *my_agent )
 	
 	// attempt connection
 	my_agent->epmem_db_status = sqlite3_open_v2( db_path, &(my_agent->epmem_db), SQLITE_OPEN_READWRITE | SQLITE_OPEN_CREATE, NULL );
+	
 	if ( my_agent->epmem_db_status )
 	{
 		char buf[256];
@@ -1841,9 +1842,10 @@ void epmem_init_db( agent *my_agent )
 	}
 	else
 	{
+		bool my_assert;
 		const char *tail;
 		sqlite3_stmt *create;
-		epmem_time_id time_max;		
+		epmem_time_id time_max;
 
 		// point stuff
 		epmem_time_id range_start;		
@@ -1853,32 +1855,44 @@ void epmem_init_db( agent *my_agent )
 		my_agent->epmem_validation++;
 					 
 		// create vars table (needed before var queries)
-		assert( sqlite3_prepare_v2( my_agent->epmem_db, "CREATE TABLE IF NOT EXISTS vars (id INTEGER PRIMARY KEY,value NONE)", -1, &create, &tail ) == SQLITE_OK );
+		my_assert = ( sqlite3_prepare_v2( my_agent->epmem_db, "CREATE TABLE IF NOT EXISTS vars (id INTEGER PRIMARY KEY,value NONE)", -1, &create, &tail ) == SQLITE_OK );
+		assert( my_assert );
 		sqlite3_step( create );
 		sqlite3_finalize( create );
 
 		// rit_left_nodes table (rit)
-		assert( sqlite3_prepare_v2( my_agent->epmem_db, "CREATE TABLE IF NOT EXISTS rit_left_nodes (min INTEGER, max INTEGER)", -1, &create, &tail ) == SQLITE_OK );
+		my_assert = ( sqlite3_prepare_v2( my_agent->epmem_db, "CREATE TABLE IF NOT EXISTS rit_left_nodes (min INTEGER, max INTEGER)", -1, &create, &tail ) == SQLITE_OK );
+		assert( my_assert );
 		sqlite3_step( create );					
 		sqlite3_finalize( create );
 
 		// rit_right_nodes table (rit)
-		assert( sqlite3_prepare_v2( my_agent->epmem_db, "CREATE TABLE IF NOT EXISTS rit_right_nodes (node INTEGER)", -1, &create, &tail ) == SQLITE_OK );
+		my_assert = ( sqlite3_prepare_v2( my_agent->epmem_db, "CREATE TABLE IF NOT EXISTS rit_right_nodes (node INTEGER)", -1, &create, &tail ) == SQLITE_OK );
+		assert( my_assert );
 		sqlite3_step( create );					
 		sqlite3_finalize( create );	
 		
 		// common queries
-		assert( sqlite3_prepare_v2( my_agent->epmem_db, "BEGIN", -1, &( my_agent->epmem_statements[ EPMEM_STMT_BEGIN ] ), &tail ) == SQLITE_OK );
-		assert( sqlite3_prepare_v2( my_agent->epmem_db, "COMMIT", -1, &( my_agent->epmem_statements[ EPMEM_STMT_COMMIT ] ), &tail ) == SQLITE_OK );
-		assert( sqlite3_prepare_v2( my_agent->epmem_db, "ROLLBACK", -1, &( my_agent->epmem_statements[ EPMEM_STMT_ROLLBACK ] ), &tail ) == SQLITE_OK );
+		my_assert = ( sqlite3_prepare_v2( my_agent->epmem_db, "BEGIN", -1, &( my_agent->epmem_statements[ EPMEM_STMT_BEGIN ] ), &tail ) == SQLITE_OK );
+		assert( my_assert );
+		my_assert = ( sqlite3_prepare_v2( my_agent->epmem_db, "COMMIT", -1, &( my_agent->epmem_statements[ EPMEM_STMT_COMMIT ] ), &tail ) == SQLITE_OK );
+		assert( my_assert );
+		my_assert = ( sqlite3_prepare_v2( my_agent->epmem_db, "ROLLBACK", -1, &( my_agent->epmem_statements[ EPMEM_STMT_ROLLBACK ] ), &tail ) == SQLITE_OK );
+		assert( my_assert );
 
-		assert( sqlite3_prepare_v2( my_agent->epmem_db, "SELECT value FROM vars WHERE id=?", -1, &( my_agent->epmem_statements[ EPMEM_STMT_VAR_GET ] ), &tail ) == SQLITE_OK );
-		assert( sqlite3_prepare_v2( my_agent->epmem_db, "REPLACE INTO vars (id,value) VALUES (?,?)", -1, &( my_agent->epmem_statements[ EPMEM_STMT_VAR_SET ] ), &tail ) == SQLITE_OK );
+		my_assert = ( sqlite3_prepare_v2( my_agent->epmem_db, "SELECT value FROM vars WHERE id=?", -1, &( my_agent->epmem_statements[ EPMEM_STMT_VAR_GET ] ), &tail ) == SQLITE_OK );
+		assert( my_assert );
+		my_assert = ( sqlite3_prepare_v2( my_agent->epmem_db, "REPLACE INTO vars (id,value) VALUES (?,?)", -1, &( my_agent->epmem_statements[ EPMEM_STMT_VAR_SET ] ), &tail ) == SQLITE_OK );
+		assert( my_assert );
 
-		assert( sqlite3_prepare_v2( my_agent->epmem_db, "INSERT INTO rit_left_nodes (min,max) VALUES (?,?)", -1, &( my_agent->epmem_statements[ EPMEM_STMT_RIT_ADD_LEFT ] ), &tail ) == SQLITE_OK );		
-		assert( sqlite3_prepare_v2( my_agent->epmem_db, "DELETE FROM rit_left_nodes", -1, &( my_agent->epmem_statements[ EPMEM_STMT_RIT_TRUNCATE_LEFT ] ), &tail ) == SQLITE_OK );
-		assert( sqlite3_prepare_v2( my_agent->epmem_db, "INSERT INTO rit_right_nodes (node) VALUES (?)", -1, &( my_agent->epmem_statements[ EPMEM_STMT_RIT_ADD_RIGHT ] ), &tail ) == SQLITE_OK );
-		assert( sqlite3_prepare_v2( my_agent->epmem_db, "DELETE FROM rit_right_nodes", -1, &( my_agent->epmem_statements[ EPMEM_STMT_RIT_TRUNCATE_RIGHT ] ), &tail ) == SQLITE_OK );
+		my_assert = ( sqlite3_prepare_v2( my_agent->epmem_db, "INSERT INTO rit_left_nodes (min,max) VALUES (?,?)", -1, &( my_agent->epmem_statements[ EPMEM_STMT_RIT_ADD_LEFT ] ), &tail ) == SQLITE_OK );		
+		assert( my_assert );
+		my_assert = ( sqlite3_prepare_v2( my_agent->epmem_db, "DELETE FROM rit_left_nodes", -1, &( my_agent->epmem_statements[ EPMEM_STMT_RIT_TRUNCATE_LEFT ] ), &tail ) == SQLITE_OK );
+		assert( my_assert );
+		my_assert = ( sqlite3_prepare_v2( my_agent->epmem_db, "INSERT INTO rit_right_nodes (node) VALUES (?)", -1, &( my_agent->epmem_statements[ EPMEM_STMT_RIT_ADD_RIGHT ] ), &tail ) == SQLITE_OK );
+		assert( my_assert );
+		my_assert = ( sqlite3_prepare_v2( my_agent->epmem_db, "DELETE FROM rit_right_nodes", -1, &( my_agent->epmem_statements[ EPMEM_STMT_RIT_TRUNCATE_RIGHT ] ), &tail ) == SQLITE_OK );
+		assert( my_assert );
 
 		// mode - read if existing
 		{
@@ -1908,122 +1922,148 @@ void epmem_init_db( agent *my_agent )
 			my_agent->epmem_node_removals->clear();
 
 			// times table
-			assert( sqlite3_prepare_v2( my_agent->epmem_db, "CREATE TABLE IF NOT EXISTS times (id INTEGER PRIMARY KEY)", -1, &create, &tail ) == SQLITE_OK );
+			my_assert = ( sqlite3_prepare_v2( my_agent->epmem_db, "CREATE TABLE IF NOT EXISTS times (id INTEGER PRIMARY KEY)", -1, &create, &tail ) == SQLITE_OK );
+			assert( my_assert );
 			sqlite3_step( create );					
 			sqlite3_finalize( create );
 
 			// custom statement for inserting times
-			assert( sqlite3_prepare_v2( my_agent->epmem_db, "INSERT INTO times (id) VALUES (?)", -1, &( my_agent->epmem_statements[ EPMEM_STMT_ONE_ADD_TIME ] ), &tail ) == SQLITE_OK );
+			my_assert = ( sqlite3_prepare_v2( my_agent->epmem_db, "INSERT INTO times (id) VALUES (?)", -1, &( my_agent->epmem_statements[ EPMEM_STMT_ONE_ADD_TIME ] ), &tail ) == SQLITE_OK );
+			assert( my_assert );
 			
 			////
 
 			// node_now table
-			assert( sqlite3_prepare_v2( my_agent->epmem_db, "CREATE TABLE IF NOT EXISTS node_now (id INTEGER,start INTEGER)", -1, &create, &tail ) == SQLITE_OK );
+			my_assert = ( sqlite3_prepare_v2( my_agent->epmem_db, "CREATE TABLE IF NOT EXISTS node_now (id INTEGER,start INTEGER)", -1, &create, &tail ) == SQLITE_OK );
+			assert( my_assert );
 			sqlite3_step( create );					
 			sqlite3_finalize( create );
 
 			// node_now_start index
-			assert( sqlite3_prepare_v2( my_agent->epmem_db, "CREATE INDEX IF NOT EXISTS node_now_start ON node_now (start)", -1, &create, &tail ) == SQLITE_OK );
+			my_assert = ( sqlite3_prepare_v2( my_agent->epmem_db, "CREATE INDEX IF NOT EXISTS node_now_start ON node_now (start)", -1, &create, &tail ) == SQLITE_OK );
+			assert( my_assert );
 			sqlite3_step( create );	
 			sqlite3_finalize( create );
 			
 			// id_start index (for queries)
-			assert( sqlite3_prepare_v2( my_agent->epmem_db, "CREATE UNIQUE INDEX IF NOT EXISTS node_now_id_start ON node_now (id,start DESC)", -1, &create, &tail ) == SQLITE_OK );
+			my_assert = ( sqlite3_prepare_v2( my_agent->epmem_db, "CREATE UNIQUE INDEX IF NOT EXISTS node_now_id_start ON node_now (id,start DESC)", -1, &create, &tail ) == SQLITE_OK );
+			assert( my_assert );
 			sqlite3_step( create );
 			sqlite3_finalize( create );
 
 			// custom statement for inserting now
-			assert( sqlite3_prepare_v2( my_agent->epmem_db, "INSERT INTO node_now (id,start) VALUES (?,?)", -1, &( my_agent->epmem_statements[ EPMEM_STMT_ONE_ADD_NODE_NOW ] ), &tail ) == SQLITE_OK );
+			my_assert = ( sqlite3_prepare_v2( my_agent->epmem_db, "INSERT INTO node_now (id,start) VALUES (?,?)", -1, &( my_agent->epmem_statements[ EPMEM_STMT_ONE_ADD_NODE_NOW ] ), &tail ) == SQLITE_OK );
+			assert( my_assert );
 
 			// custom statement for deleting now
-			assert( sqlite3_prepare_v2( my_agent->epmem_db, "DELETE FROM node_now WHERE id=?", -1, &( my_agent->epmem_statements[ EPMEM_STMT_ONE_DELETE_NODE_NOW ] ), &tail ) == SQLITE_OK );
+			my_assert = ( sqlite3_prepare_v2( my_agent->epmem_db, "DELETE FROM node_now WHERE id=?", -1, &( my_agent->epmem_statements[ EPMEM_STMT_ONE_DELETE_NODE_NOW ] ), &tail ) == SQLITE_OK );
+			assert( my_assert );
 
 			////
 
 			// node_point table
-			assert( sqlite3_prepare_v2( my_agent->epmem_db, "CREATE TABLE IF NOT EXISTS node_point (id INTEGER,start INTEGER)", -1, &create, &tail ) == SQLITE_OK );
+			my_assert = ( sqlite3_prepare_v2( my_agent->epmem_db, "CREATE TABLE IF NOT EXISTS node_point (id INTEGER,start INTEGER)", -1, &create, &tail ) == SQLITE_OK );
+			assert( my_assert );
 			sqlite3_step( create );					
 			sqlite3_finalize( create );
 
 			// id_start index (for queries)
-			assert( sqlite3_prepare_v2( my_agent->epmem_db, "CREATE UNIQUE INDEX IF NOT EXISTS node_point_id_start ON node_point (id,start DESC)", -1, &create, &tail ) == SQLITE_OK );
+			my_assert = ( sqlite3_prepare_v2( my_agent->epmem_db, "CREATE UNIQUE INDEX IF NOT EXISTS node_point_id_start ON node_point (id,start DESC)", -1, &create, &tail ) == SQLITE_OK );
+			assert( my_assert );
 			sqlite3_step( create );
 			sqlite3_finalize( create );
 			
 			// start index
-			assert( sqlite3_prepare_v2( my_agent->epmem_db, "CREATE INDEX IF NOT EXISTS node_point_start ON node_point (start)", -1, &create, &tail ) == SQLITE_OK );
+			my_assert = ( sqlite3_prepare_v2( my_agent->epmem_db, "CREATE INDEX IF NOT EXISTS node_point_start ON node_point (start)", -1, &create, &tail ) == SQLITE_OK );
+			assert( my_assert );
 			sqlite3_step( create );
 			sqlite3_finalize( create );
 
 			// custom statement for inserting nodes
-			assert( sqlite3_prepare_v2( my_agent->epmem_db, "INSERT INTO node_point (id,start) VALUES (?,?)", -1, &( my_agent->epmem_statements[ EPMEM_STMT_ONE_ADD_NODE_POINT ] ), &tail ) == SQLITE_OK );
+			my_assert = ( sqlite3_prepare_v2( my_agent->epmem_db, "INSERT INTO node_point (id,start) VALUES (?,?)", -1, &( my_agent->epmem_statements[ EPMEM_STMT_ONE_ADD_NODE_POINT ] ), &tail ) == SQLITE_OK );
+			assert( my_assert );
 
 			////
 
 			// node_range table
-			assert( sqlite3_prepare_v2( my_agent->epmem_db, "CREATE TABLE IF NOT EXISTS node_range (rit_node INTEGER,start INTEGER,end INTEGER,id INTEGER)", -1, &create, &tail ) == SQLITE_OK );
+			my_assert = ( sqlite3_prepare_v2( my_agent->epmem_db, "CREATE TABLE IF NOT EXISTS node_range (rit_node INTEGER,start INTEGER,end INTEGER,id INTEGER)", -1, &create, &tail ) == SQLITE_OK );
+			assert( my_assert );
 			sqlite3_step( create );					
 			sqlite3_finalize( create );
 			
 			// lowerindex
-			assert( sqlite3_prepare_v2( my_agent->epmem_db, "CREATE INDEX IF NOT EXISTS node_range_lower ON node_range (rit_node,start)", -1, &create, &tail ) == SQLITE_OK );
+			my_assert = ( sqlite3_prepare_v2( my_agent->epmem_db, "CREATE INDEX IF NOT EXISTS node_range_lower ON node_range (rit_node,start)", -1, &create, &tail ) == SQLITE_OK );
+			assert( my_assert );
 			sqlite3_step( create );					
 			sqlite3_finalize( create );
 
 			// upperindex
-			assert( sqlite3_prepare_v2( my_agent->epmem_db, "CREATE INDEX IF NOT EXISTS node_range_upper ON node_range (rit_node,end)", -1, &create, &tail ) == SQLITE_OK );
+			my_assert = ( sqlite3_prepare_v2( my_agent->epmem_db, "CREATE INDEX IF NOT EXISTS node_range_upper ON node_range (rit_node,end)", -1, &create, &tail ) == SQLITE_OK );
+			assert( my_assert );
 			sqlite3_step( create );					
 			sqlite3_finalize( create );
 
 			// id_start index (for queries)
-			assert( sqlite3_prepare_v2( my_agent->epmem_db, "CREATE UNIQUE INDEX IF NOT EXISTS node_range_id_start ON node_range (id,start DESC)", -1, &create, &tail ) == SQLITE_OK );
+			my_assert = ( sqlite3_prepare_v2( my_agent->epmem_db, "CREATE UNIQUE INDEX IF NOT EXISTS node_range_id_start ON node_range (id,start DESC)", -1, &create, &tail ) == SQLITE_OK );
+			assert( my_assert );
 			sqlite3_step( create );					
 			sqlite3_finalize( create );
 
 			// id_end index (for queries)
-			assert( sqlite3_prepare_v2( my_agent->epmem_db, "CREATE UNIQUE INDEX IF NOT EXISTS node_range_id_end ON node_range (id,end DESC)", -1, &create, &tail ) == SQLITE_OK );
+			my_assert = ( sqlite3_prepare_v2( my_agent->epmem_db, "CREATE UNIQUE INDEX IF NOT EXISTS node_range_id_end ON node_range (id,end DESC)", -1, &create, &tail ) == SQLITE_OK );
+			assert( my_assert );
 			sqlite3_step( create );					
 			sqlite3_finalize( create );
 
 			// custom statement for inserting episodes
-			assert( sqlite3_prepare_v2( my_agent->epmem_db, "INSERT INTO node_range (rit_node,start,end,id) VALUES (?,?,?,?)", -1, &( my_agent->epmem_statements[ EPMEM_STMT_ONE_ADD_NODE_RANGE ] ), &tail ) == SQLITE_OK );
+			my_assert = ( sqlite3_prepare_v2( my_agent->epmem_db, "INSERT INTO node_range (rit_node,start,end,id) VALUES (?,?,?,?)", -1, &( my_agent->epmem_statements[ EPMEM_STMT_ONE_ADD_NODE_RANGE ] ), &tail ) == SQLITE_OK );
+			assert( my_assert );
 
 			////
 			
 			// node_unique table
-			assert( sqlite3_prepare_v2( my_agent->epmem_db, "CREATE TABLE IF NOT EXISTS node_unique (child_id INTEGER PRIMARY KEY AUTOINCREMENT,parent_id INTEGER,name TEXT,value NONE,hash INTEGER,wme_type INTEGER)", -1, &create, &tail ) == SQLITE_OK );
+			my_assert = ( sqlite3_prepare_v2( my_agent->epmem_db, "CREATE TABLE IF NOT EXISTS node_unique (child_id INTEGER PRIMARY KEY AUTOINCREMENT,parent_id INTEGER,name TEXT,value NONE,hash INTEGER,wme_type INTEGER)", -1, &create, &tail ) == SQLITE_OK );
+			assert( my_assert );
 			sqlite3_step( create );					
 			sqlite3_finalize( create );
 
 			// hash index for searching
-			assert( sqlite3_prepare_v2( my_agent->epmem_db, "CREATE INDEX IF NOT EXISTS node_unique_hash_parent ON node_unique (hash,parent_id)", -1, &create, &tail ) == SQLITE_OK );
+			my_assert = ( sqlite3_prepare_v2( my_agent->epmem_db, "CREATE INDEX IF NOT EXISTS node_unique_hash_parent ON node_unique (hash,parent_id)", -1, &create, &tail ) == SQLITE_OK );
+			assert( my_assert );
 			sqlite3_step( create );
 			sqlite3_finalize( create );
 
 			// custom statement for inserting ids
-			assert( sqlite3_prepare_v2( my_agent->epmem_db, "INSERT INTO node_unique (parent_id,name,value,hash,wme_type) VALUES (?,?,?,?,?)", -1, &( my_agent->epmem_statements[ EPMEM_STMT_ONE_ADD_NODE_UNIQUE ] ), &tail ) == SQLITE_OK );
+			my_assert = ( sqlite3_prepare_v2( my_agent->epmem_db, "INSERT INTO node_unique (parent_id,name,value,hash,wme_type) VALUES (?,?,?,?,?)", -1, &( my_agent->epmem_statements[ EPMEM_STMT_ONE_ADD_NODE_UNIQUE ] ), &tail ) == SQLITE_OK );
+			assert( my_assert );
 
 			// custom statement for finding non-identifier id's
-			assert( sqlite3_prepare_v2( my_agent->epmem_db, "SELECT child_id FROM node_unique WHERE hash=? AND parent_id=? AND name=? AND value=? AND wme_type=?", -1, &( my_agent->epmem_statements[ EPMEM_STMT_ONE_FIND_NODE_UNIQUE ] ), &tail ) == SQLITE_OK );
+			my_assert = ( sqlite3_prepare_v2( my_agent->epmem_db, "SELECT child_id FROM node_unique WHERE hash=? AND parent_id=? AND name=? AND value=? AND wme_type=?", -1, &( my_agent->epmem_statements[ EPMEM_STMT_ONE_FIND_NODE_UNIQUE ] ), &tail ) == SQLITE_OK );
+			assert( my_assert );
 
 			// custom statement for finding identifier id's
-			assert( sqlite3_prepare_v2( my_agent->epmem_db, "SELECT child_id FROM node_unique WHERE hash=? AND parent_id=? AND name=? AND value IS NULL", -1, &( my_agent->epmem_statements[ EPMEM_STMT_ONE_FIND_IDENTIFIER ] ), &tail ) == SQLITE_OK );				
+			my_assert = ( sqlite3_prepare_v2( my_agent->epmem_db, "SELECT child_id FROM node_unique WHERE hash=? AND parent_id=? AND name=? AND value IS NULL", -1, &( my_agent->epmem_statements[ EPMEM_STMT_ONE_FIND_IDENTIFIER ] ), &tail ) == SQLITE_OK );				
+			assert( my_assert );
 
 			//
 
 			// custom statement for validating an episode
-			assert( sqlite3_prepare_v2( my_agent->epmem_db, "SELECT COUNT(*) AS ct FROM times WHERE id=?", -1, &( my_agent->epmem_statements[ EPMEM_STMT_ONE_VALID_EPISODE ] ), &tail ) == SQLITE_OK );
+			my_assert = ( sqlite3_prepare_v2( my_agent->epmem_db, "SELECT COUNT(*) AS ct FROM times WHERE id=?", -1, &( my_agent->epmem_statements[ EPMEM_STMT_ONE_VALID_EPISODE ] ), &tail ) == SQLITE_OK );
+			assert( my_assert );
 
 			// custom statement for finding the next episode
-			assert( sqlite3_prepare_v2( my_agent->epmem_db, "SELECT id FROM times WHERE id>? ORDER BY id ASC LIMIT 1", -1, &( my_agent->epmem_statements[ EPMEM_STMT_ONE_NEXT_EPISODE ] ), &tail ) == SQLITE_OK );
+			my_assert = ( sqlite3_prepare_v2( my_agent->epmem_db, "SELECT id FROM times WHERE id>? ORDER BY id ASC LIMIT 1", -1, &( my_agent->epmem_statements[ EPMEM_STMT_ONE_NEXT_EPISODE ] ), &tail ) == SQLITE_OK );
+			assert( my_assert );
 
 			// custom statement for finding the prev episode
-			assert( sqlite3_prepare_v2( my_agent->epmem_db, "SELECT id FROM times WHERE id<? ORDER BY id DESC LIMIT 1", -1, &( my_agent->epmem_statements[ EPMEM_STMT_ONE_PREV_EPISODE ] ), &tail ) == SQLITE_OK );
+			my_assert = ( sqlite3_prepare_v2( my_agent->epmem_db, "SELECT id FROM times WHERE id<? ORDER BY id DESC LIMIT 1", -1, &( my_agent->epmem_statements[ EPMEM_STMT_ONE_PREV_EPISODE ] ), &tail ) == SQLITE_OK );
+			assert( my_assert );
 
 			////
 
 			// custom statement for range intersection query
-			assert( sqlite3_prepare_v2( my_agent->epmem_db, "SELECT i.child_id, i.parent_id, i.name, i.value, i.wme_type FROM node_unique i WHERE i.child_id IN (SELECT n.id FROM node_now n WHERE n.start<= ? UNION ALL SELECT p.id FROM node_point p WHERE p.start=? UNION ALL SELECT e1.id FROM node_range e1, rit_left_nodes lt WHERE e1.rit_node BETWEEN lt.min AND lt.max AND e1.end >= ? UNION ALL SELECT e2.id FROM node_range e2, rit_right_nodes rt WHERE e2.rit_node = rt.node AND e2.start <= ?) ORDER BY i.child_id ASC", -1, &( my_agent->epmem_statements[ EPMEM_STMT_ONE_GET_EPISODE ] ), &tail ) == SQLITE_OK );
+			my_assert = ( sqlite3_prepare_v2( my_agent->epmem_db, "SELECT i.child_id, i.parent_id, i.name, i.value, i.wme_type FROM node_unique i WHERE i.child_id IN (SELECT n.id FROM node_now n WHERE n.start<= ? UNION ALL SELECT p.id FROM node_point p WHERE p.start=? UNION ALL SELECT e1.id FROM node_range e1, rit_left_nodes lt WHERE e1.rit_node BETWEEN lt.min AND lt.max AND e1.end >= ? UNION ALL SELECT e2.id FROM node_range e2, rit_right_nodes rt WHERE e2.rit_node = rt.node AND e2.start <= ?) ORDER BY i.child_id ASC", -1, &( my_agent->epmem_statements[ EPMEM_STMT_ONE_GET_EPISODE ] ), &tail ) == SQLITE_OK );
+			assert( my_assert );
 
 			////
 
@@ -2041,7 +2081,8 @@ void epmem_init_db( agent *my_agent )
 			}
 
 			// get max time
-			assert( sqlite3_prepare_v2( my_agent->epmem_db, "SELECT MAX(id) FROM times", -1, &create, &tail ) == SQLITE_OK );
+			my_assert = ( sqlite3_prepare_v2( my_agent->epmem_db, "SELECT MAX(id) FROM times", -1, &create, &tail ) == SQLITE_OK );
+			assert( my_assert );
 			if ( sqlite3_step( create ) == SQLITE_ROW )						
 				epmem_set_stat( my_agent, (const long) EPMEM_STAT_TIME, ( sqlite3_column_int64( create, 0 ) + 1 ) );
 			sqlite3_finalize( create );
@@ -2049,7 +2090,8 @@ void epmem_init_db( agent *my_agent )
 
 			// insert non-NOW intervals for all current NOW's
 			time_last = ( time_max - 1 );
-			assert( sqlite3_prepare_v2( my_agent->epmem_db, "SELECT id,start FROM node_now", -1, &create, &tail ) == SQLITE_OK );				
+			my_assert = ( sqlite3_prepare_v2( my_agent->epmem_db, "SELECT id,start FROM node_now", -1, &create, &tail ) == SQLITE_OK );
+			assert( my_assert );
 			sqlite3_bind_int64( my_agent->epmem_statements[ EPMEM_STMT_ONE_ADD_NODE_POINT ], 2, time_last );
 			while ( sqlite3_step( create ) == SQLITE_ROW )
 			{
@@ -2068,12 +2110,14 @@ void epmem_init_db( agent *my_agent )
 			sqlite3_finalize( create );
 
 			// remove all NOW intervals
-			assert( sqlite3_prepare_v2( my_agent->epmem_db, "DELETE FROM node_now", -1, &create, &tail ) == SQLITE_OK );				
+			my_assert = ( sqlite3_prepare_v2( my_agent->epmem_db, "DELETE FROM node_now", -1, &create, &tail ) == SQLITE_OK );
+			assert( my_assert );
 			sqlite3_step( create );
 			sqlite3_finalize( create );
 			
 			// get max id + max list			
-			assert( sqlite3_prepare_v2( my_agent->epmem_db, "SELECT MAX(child_id) FROM node_unique", -1, &create, &tail ) == SQLITE_OK );
+			my_assert = ( sqlite3_prepare_v2( my_agent->epmem_db, "SELECT MAX(child_id) FROM node_unique", -1, &create, &tail ) == SQLITE_OK );
+			assert( my_assert );
 			sqlite3_step( create );
 			if ( sqlite3_column_type( create, 0 ) != SQLITE_NULL )
 			{
@@ -2120,213 +2164,258 @@ void epmem_init_db( agent *my_agent )
 			////
 
 			// times table
-			assert( sqlite3_prepare_v2( my_agent->epmem_db, "CREATE TABLE IF NOT EXISTS times (id INTEGER PRIMARY KEY)", -1, &create, &tail ) == SQLITE_OK );
+			my_assert = ( sqlite3_prepare_v2( my_agent->epmem_db, "CREATE TABLE IF NOT EXISTS times (id INTEGER PRIMARY KEY)", -1, &create, &tail ) == SQLITE_OK );
+			assert( my_assert );
 			sqlite3_step( create );					
 			sqlite3_finalize( create );
 
 			// custom statement for inserting times
-			assert( sqlite3_prepare_v2( my_agent->epmem_db, "INSERT INTO times (id) VALUES (?)", -1, &( my_agent->epmem_statements[ EPMEM_STMT_THREE_ADD_TIME ] ), &tail ) == SQLITE_OK );
+			my_assert = ( sqlite3_prepare_v2( my_agent->epmem_db, "INSERT INTO times (id) VALUES (?)", -1, &( my_agent->epmem_statements[ EPMEM_STMT_THREE_ADD_TIME ] ), &tail ) == SQLITE_OK );
+			assert( my_assert );
 
 			////
 
 			// node_now table
-			assert( sqlite3_prepare_v2( my_agent->epmem_db, "CREATE TABLE IF NOT EXISTS node_now (id INTEGER,start INTEGER)", -1, &create, &tail ) == SQLITE_OK );
+			my_assert = ( sqlite3_prepare_v2( my_agent->epmem_db, "CREATE TABLE IF NOT EXISTS node_now (id INTEGER,start INTEGER)", -1, &create, &tail ) == SQLITE_OK );
+			assert( my_assert );
 			sqlite3_step( create );
 			sqlite3_finalize( create );
 
 			// start index
-			assert( sqlite3_prepare_v2( my_agent->epmem_db, "CREATE INDEX IF NOT EXISTS node_now_start ON node_now (start)", -1, &create, &tail ) == SQLITE_OK );
+			my_assert = ( sqlite3_prepare_v2( my_agent->epmem_db, "CREATE INDEX IF NOT EXISTS node_now_start ON node_now (start)", -1, &create, &tail ) == SQLITE_OK );
+			assert( my_assert );
 			sqlite3_step( create );	
 			sqlite3_finalize( create );
 			
 			// id_start index (for queries)
-			assert( sqlite3_prepare_v2( my_agent->epmem_db, "CREATE UNIQUE INDEX IF NOT EXISTS node_now_id_start ON node_now (id,start DESC)", -1, &create, &tail ) == SQLITE_OK );
+			my_assert = ( sqlite3_prepare_v2( my_agent->epmem_db, "CREATE UNIQUE INDEX IF NOT EXISTS node_now_id_start ON node_now (id,start DESC)", -1, &create, &tail ) == SQLITE_OK );
+			assert( my_assert );
 			sqlite3_step( create );
 			sqlite3_finalize( create );
 
 			// custom statement for inserting
-			assert( sqlite3_prepare_v2( my_agent->epmem_db, "INSERT INTO node_now (id,start) VALUES (?,?)", -1, &( my_agent->epmem_statements[ EPMEM_STMT_THREE_ADD_NODE_NOW ] ), &tail ) == SQLITE_OK );
+			my_assert = ( sqlite3_prepare_v2( my_agent->epmem_db, "INSERT INTO node_now (id,start) VALUES (?,?)", -1, &( my_agent->epmem_statements[ EPMEM_STMT_THREE_ADD_NODE_NOW ] ), &tail ) == SQLITE_OK );
+			assert( my_assert );
 
 			// custom statement for deleting
-			assert( sqlite3_prepare_v2( my_agent->epmem_db, "DELETE FROM node_now WHERE id=?", -1, &( my_agent->epmem_statements[ EPMEM_STMT_THREE_DELETE_NODE_NOW ] ), &tail ) == SQLITE_OK );
+			my_assert = ( sqlite3_prepare_v2( my_agent->epmem_db, "DELETE FROM node_now WHERE id=?", -1, &( my_agent->epmem_statements[ EPMEM_STMT_THREE_DELETE_NODE_NOW ] ), &tail ) == SQLITE_OK );
+			assert( my_assert );
 
 			////
 
 			// edge_now table
-			assert( sqlite3_prepare_v2( my_agent->epmem_db, "CREATE TABLE IF NOT EXISTS edge_now (id INTEGER,start INTEGER)", -1, &create, &tail ) == SQLITE_OK );
+			my_assert = ( sqlite3_prepare_v2( my_agent->epmem_db, "CREATE TABLE IF NOT EXISTS edge_now (id INTEGER,start INTEGER)", -1, &create, &tail ) == SQLITE_OK );
+			assert( my_assert );
 			sqlite3_step( create );
 			sqlite3_finalize( create );
 
 			// start index
-			assert( sqlite3_prepare_v2( my_agent->epmem_db, "CREATE INDEX IF NOT EXISTS edge_now_start ON edge_now (start)", -1, &create, &tail ) == SQLITE_OK );
+			my_assert = ( sqlite3_prepare_v2( my_agent->epmem_db, "CREATE INDEX IF NOT EXISTS edge_now_start ON edge_now (start)", -1, &create, &tail ) == SQLITE_OK );
+			assert( my_assert );
 			sqlite3_step( create );	
 			sqlite3_finalize( create );
 			
 			// id_start index (for queries)
-			assert( sqlite3_prepare_v2( my_agent->epmem_db, "CREATE UNIQUE INDEX IF NOT EXISTS edge_now_id_start ON edge_now (id,start DESC)", -1, &create, &tail ) == SQLITE_OK );
+			my_assert = ( sqlite3_prepare_v2( my_agent->epmem_db, "CREATE UNIQUE INDEX IF NOT EXISTS edge_now_id_start ON edge_now (id,start DESC)", -1, &create, &tail ) == SQLITE_OK );
+			assert( my_assert );
 			sqlite3_step( create );
 			sqlite3_finalize( create );
 
 			// custom statement for inserting
-			assert( sqlite3_prepare_v2( my_agent->epmem_db, "INSERT INTO edge_now (id,start) VALUES (?,?)", -1, &( my_agent->epmem_statements[ EPMEM_STMT_THREE_ADD_EDGE_NOW ] ), &tail ) == SQLITE_OK );
+			my_assert = ( sqlite3_prepare_v2( my_agent->epmem_db, "INSERT INTO edge_now (id,start) VALUES (?,?)", -1, &( my_agent->epmem_statements[ EPMEM_STMT_THREE_ADD_EDGE_NOW ] ), &tail ) == SQLITE_OK );
+			assert( my_assert );
 
 			// custom statement for deleting
-			assert( sqlite3_prepare_v2( my_agent->epmem_db, "DELETE FROM edge_now WHERE id=?", -1, &( my_agent->epmem_statements[ EPMEM_STMT_THREE_DELETE_EDGE_NOW ] ), &tail ) == SQLITE_OK );
+			my_assert = ( sqlite3_prepare_v2( my_agent->epmem_db, "DELETE FROM edge_now WHERE id=?", -1, &( my_agent->epmem_statements[ EPMEM_STMT_THREE_DELETE_EDGE_NOW ] ), &tail ) == SQLITE_OK );
+			assert( my_assert );
 			
 			////
 
 			// node_point table
-			assert( sqlite3_prepare_v2( my_agent->epmem_db, "CREATE TABLE IF NOT EXISTS node_point (id INTEGER,start INTEGER)", -1, &create, &tail ) == SQLITE_OK );
+			my_assert = ( sqlite3_prepare_v2( my_agent->epmem_db, "CREATE TABLE IF NOT EXISTS node_point (id INTEGER,start INTEGER)", -1, &create, &tail ) == SQLITE_OK );
+			assert( my_assert );
 			sqlite3_step( create );					
 			sqlite3_finalize( create );
 
 			// id_start index (for queries)
-			assert( sqlite3_prepare_v2( my_agent->epmem_db, "CREATE UNIQUE INDEX IF NOT EXISTS node_point_id_start ON node_point (id,start DESC)", -1, &create, &tail ) == SQLITE_OK );
+			my_assert = ( sqlite3_prepare_v2( my_agent->epmem_db, "CREATE UNIQUE INDEX IF NOT EXISTS node_point_id_start ON node_point (id,start DESC)", -1, &create, &tail ) == SQLITE_OK );
+			assert( my_assert );
 			sqlite3_step( create );
 			sqlite3_finalize( create );
 			
 			// start index
-			assert( sqlite3_prepare_v2( my_agent->epmem_db, "CREATE INDEX IF NOT EXISTS node_point_start ON node_point (start)", -1, &create, &tail ) == SQLITE_OK );
+			my_assert = ( sqlite3_prepare_v2( my_agent->epmem_db, "CREATE INDEX IF NOT EXISTS node_point_start ON node_point (start)", -1, &create, &tail ) == SQLITE_OK );
+			assert( my_assert );
 			sqlite3_step( create );
 			sqlite3_finalize( create );
 
 			// custom statement for inserting
-			assert( sqlite3_prepare_v2( my_agent->epmem_db, "INSERT INTO node_point (id,start) VALUES (?,?)", -1, &( my_agent->epmem_statements[ EPMEM_STMT_THREE_ADD_NODE_POINT ] ), &tail ) == SQLITE_OK );
+			my_assert = ( sqlite3_prepare_v2( my_agent->epmem_db, "INSERT INTO node_point (id,start) VALUES (?,?)", -1, &( my_agent->epmem_statements[ EPMEM_STMT_THREE_ADD_NODE_POINT ] ), &tail ) == SQLITE_OK );
+			assert( my_assert );
 
 			////
 
 			// edge_point table
-			assert( sqlite3_prepare_v2( my_agent->epmem_db, "CREATE TABLE IF NOT EXISTS edge_point (id INTEGER,start INTEGER)", -1, &create, &tail ) == SQLITE_OK );
+			my_assert = ( sqlite3_prepare_v2( my_agent->epmem_db, "CREATE TABLE IF NOT EXISTS edge_point (id INTEGER,start INTEGER)", -1, &create, &tail ) == SQLITE_OK );
+			assert( my_assert );
 			sqlite3_step( create );	
 			sqlite3_finalize( create );
 
 			// id_start index (for queries)
-			assert( sqlite3_prepare_v2( my_agent->epmem_db, "CREATE UNIQUE INDEX IF NOT EXISTS edge_point_id_start ON edge_point (id,start DESC)", -1, &create, &tail ) == SQLITE_OK );
+			my_assert = ( sqlite3_prepare_v2( my_agent->epmem_db, "CREATE UNIQUE INDEX IF NOT EXISTS edge_point_id_start ON edge_point (id,start DESC)", -1, &create, &tail ) == SQLITE_OK );
+			assert( my_assert );
 			sqlite3_step( create );
 			sqlite3_finalize( create );
 			
 			// start index
-			assert( sqlite3_prepare_v2( my_agent->epmem_db, "CREATE INDEX IF NOT EXISTS edge_point_start ON edge_point (start)", -1, &create, &tail ) == SQLITE_OK );
+			my_assert = ( sqlite3_prepare_v2( my_agent->epmem_db, "CREATE INDEX IF NOT EXISTS edge_point_start ON edge_point (start)", -1, &create, &tail ) == SQLITE_OK );
+			assert( my_assert );
 			sqlite3_step( create );
 			sqlite3_finalize( create );
 
 			// custom statement for inserting
-			assert( sqlite3_prepare_v2( my_agent->epmem_db, "INSERT INTO edge_point (id,start) VALUES (?,?)", -1, &( my_agent->epmem_statements[ EPMEM_STMT_THREE_ADD_EDGE_POINT ] ), &tail ) == SQLITE_OK );
+			my_assert = ( sqlite3_prepare_v2( my_agent->epmem_db, "INSERT INTO edge_point (id,start) VALUES (?,?)", -1, &( my_agent->epmem_statements[ EPMEM_STMT_THREE_ADD_EDGE_POINT ] ), &tail ) == SQLITE_OK );
+			assert( my_assert );
 
 			////
 
 			// node_range table
-			assert( sqlite3_prepare_v2( my_agent->epmem_db, "CREATE TABLE IF NOT EXISTS node_range (rit_node INTEGER,start INTEGER,end INTEGER,id INTEGER)", -1, &create, &tail ) == SQLITE_OK );
+			my_assert = ( sqlite3_prepare_v2( my_agent->epmem_db, "CREATE TABLE IF NOT EXISTS node_range (rit_node INTEGER,start INTEGER,end INTEGER,id INTEGER)", -1, &create, &tail ) == SQLITE_OK );
+			assert( my_assert );
 			sqlite3_step( create );					
 			sqlite3_finalize( create );
 			
 			// lowerindex
-			assert( sqlite3_prepare_v2( my_agent->epmem_db, "CREATE INDEX IF NOT EXISTS node_range_lower ON node_range (rit_node,start)", -1, &create, &tail ) == SQLITE_OK );
+			my_assert = ( sqlite3_prepare_v2( my_agent->epmem_db, "CREATE INDEX IF NOT EXISTS node_range_lower ON node_range (rit_node,start)", -1, &create, &tail ) == SQLITE_OK );
+			assert( my_assert );
 			sqlite3_step( create );					
 			sqlite3_finalize( create );
 
 			// upperindex
-			assert( sqlite3_prepare_v2( my_agent->epmem_db, "CREATE INDEX IF NOT EXISTS node_range_upper ON node_range (rit_node,end)", -1, &create, &tail ) == SQLITE_OK );
+			my_assert = ( sqlite3_prepare_v2( my_agent->epmem_db, "CREATE INDEX IF NOT EXISTS node_range_upper ON node_range (rit_node,end)", -1, &create, &tail ) == SQLITE_OK );
+			assert( my_assert );
 			sqlite3_step( create );	
 			sqlite3_finalize( create );
 
 			// id_start index (for queries)
-			assert( sqlite3_prepare_v2( my_agent->epmem_db, "CREATE UNIQUE INDEX IF NOT EXISTS node_range_id_start ON node_range (id,start DESC)", -1, &create, &tail ) == SQLITE_OK );
+			my_assert = ( sqlite3_prepare_v2( my_agent->epmem_db, "CREATE UNIQUE INDEX IF NOT EXISTS node_range_id_start ON node_range (id,start DESC)", -1, &create, &tail ) == SQLITE_OK );
+			assert( my_assert );
 			sqlite3_step( create );					
 			sqlite3_finalize( create );
 
 			// id_end index (for queries)
-			assert( sqlite3_prepare_v2( my_agent->epmem_db, "CREATE UNIQUE INDEX IF NOT EXISTS node_range_id_end ON node_range (id,end DESC)", -1, &create, &tail ) == SQLITE_OK );
+			my_assert = ( sqlite3_prepare_v2( my_agent->epmem_db, "CREATE UNIQUE INDEX IF NOT EXISTS node_range_id_end ON node_range (id,end DESC)", -1, &create, &tail ) == SQLITE_OK );
+			assert( my_assert );
 			sqlite3_step( create );
 			sqlite3_finalize( create );
 
 			// custom statement for inserting
-			assert( sqlite3_prepare_v2( my_agent->epmem_db, "INSERT INTO node_range (rit_node,start,end,id) VALUES (?,?,?,?)", -1, &( my_agent->epmem_statements[ EPMEM_STMT_THREE_ADD_NODE_RANGE ] ), &tail ) == SQLITE_OK );
+			my_assert = ( sqlite3_prepare_v2( my_agent->epmem_db, "INSERT INTO node_range (rit_node,start,end,id) VALUES (?,?,?,?)", -1, &( my_agent->epmem_statements[ EPMEM_STMT_THREE_ADD_NODE_RANGE ] ), &tail ) == SQLITE_OK );
+			assert( my_assert );
 
 			////
 
 			// edge_range table
-			assert( sqlite3_prepare_v2( my_agent->epmem_db, "CREATE TABLE IF NOT EXISTS edge_range (rit_node INTEGER,start INTEGER,end INTEGER,id INTEGER)", -1, &create, &tail ) == SQLITE_OK );
+			my_assert = ( sqlite3_prepare_v2( my_agent->epmem_db, "CREATE TABLE IF NOT EXISTS edge_range (rit_node INTEGER,start INTEGER,end INTEGER,id INTEGER)", -1, &create, &tail ) == SQLITE_OK );
+			assert( my_assert );
 			sqlite3_step( create );
 			sqlite3_finalize( create );
 			
 			// lowerindex
-			assert( sqlite3_prepare_v2( my_agent->epmem_db, "CREATE INDEX IF NOT EXISTS edge_range_lower ON edge_range (rit_node,start)", -1, &create, &tail ) == SQLITE_OK );
+			my_assert = ( sqlite3_prepare_v2( my_agent->epmem_db, "CREATE INDEX IF NOT EXISTS edge_range_lower ON edge_range (rit_node,start)", -1, &create, &tail ) == SQLITE_OK );
+			assert( my_assert );
 			sqlite3_step( create );					
 			sqlite3_finalize( create );
 
 			// upperindex
-			assert( sqlite3_prepare_v2( my_agent->epmem_db, "CREATE INDEX IF NOT EXISTS edge_range_upper ON edge_range (rit_node,end)", -1, &create, &tail ) == SQLITE_OK );
+			my_assert = ( sqlite3_prepare_v2( my_agent->epmem_db, "CREATE INDEX IF NOT EXISTS edge_range_upper ON edge_range (rit_node,end)", -1, &create, &tail ) == SQLITE_OK );
+			assert( my_assert );
 			sqlite3_step( create );					
 			sqlite3_finalize( create );
 
 			// id_start index (for queries)
-			assert( sqlite3_prepare_v2( my_agent->epmem_db, "CREATE UNIQUE INDEX IF NOT EXISTS edge_range_id_start ON edge_range (id,start DESC)", -1, &create, &tail ) == SQLITE_OK );
+			my_assert = ( sqlite3_prepare_v2( my_agent->epmem_db, "CREATE UNIQUE INDEX IF NOT EXISTS edge_range_id_start ON edge_range (id,start DESC)", -1, &create, &tail ) == SQLITE_OK );
+			assert( my_assert );
 			sqlite3_step( create );	
 			sqlite3_finalize( create );
 
 			// id_end index (for queries)
-			assert( sqlite3_prepare_v2( my_agent->epmem_db, "CREATE UNIQUE INDEX IF NOT EXISTS edge_range_id_end ON edge_range (id,end DESC)", -1, &create, &tail ) == SQLITE_OK );
+			my_assert = ( sqlite3_prepare_v2( my_agent->epmem_db, "CREATE UNIQUE INDEX IF NOT EXISTS edge_range_id_end ON edge_range (id,end DESC)", -1, &create, &tail ) == SQLITE_OK );
+			assert( my_assert );
 			sqlite3_step( create );
 			sqlite3_finalize( create );
 			
 			// custom statement for inserting
-			assert( sqlite3_prepare_v2( my_agent->epmem_db, "INSERT INTO edge_range (rit_node,start,end,id) VALUES (?,?,?,?)", -1, &( my_agent->epmem_statements[ EPMEM_STMT_THREE_ADD_EDGE_RANGE ] ), &tail ) == SQLITE_OK );
+			my_assert = ( sqlite3_prepare_v2( my_agent->epmem_db, "INSERT INTO edge_range (rit_node,start,end,id) VALUES (?,?,?,?)", -1, &( my_agent->epmem_statements[ EPMEM_STMT_THREE_ADD_EDGE_RANGE ] ), &tail ) == SQLITE_OK );
+			assert( my_assert );
 
 			////
 			
 			// node_unique table
-			assert( sqlite3_prepare_v2( my_agent->epmem_db, "CREATE TABLE IF NOT EXISTS node_unique (child_id INTEGER PRIMARY KEY AUTOINCREMENT,parent_id INTEGER,name TEXT,value NONE,hash INTEGER,wme_type INTEGER)", -1, &create, &tail ) == SQLITE_OK );
+			my_assert = ( sqlite3_prepare_v2( my_agent->epmem_db, "CREATE TABLE IF NOT EXISTS node_unique (child_id INTEGER PRIMARY KEY AUTOINCREMENT,parent_id INTEGER,name TEXT,value NONE,hash INTEGER,wme_type INTEGER)", -1, &create, &tail ) == SQLITE_OK );
+			assert( my_assert );
 			sqlite3_step( create );					
 			sqlite3_finalize( create );
 
 			// hash index for identification
-			assert( sqlite3_prepare_v2( my_agent->epmem_db, "CREATE INDEX IF NOT EXISTS node_unique_parent_hash ON node_unique (parent_id,hash)", -1, &create, &tail ) == SQLITE_OK );
+			my_assert = ( sqlite3_prepare_v2( my_agent->epmem_db, "CREATE INDEX IF NOT EXISTS node_unique_parent_hash ON node_unique (parent_id,hash)", -1, &create, &tail ) == SQLITE_OK );
+			assert( my_assert );
 			sqlite3_step( create );
 			sqlite3_finalize( create );
 
 			// custom statement for finding
-			assert( sqlite3_prepare_v2( my_agent->epmem_db, "SELECT child_id FROM node_unique WHERE parent_id=? AND hash=? AND name=? AND value=? AND wme_type=?", -1, &( my_agent->epmem_statements[ EPMEM_STMT_THREE_FIND_NODE_UNIQUE ] ), &tail ) == SQLITE_OK );
+			my_assert = ( sqlite3_prepare_v2( my_agent->epmem_db, "SELECT child_id FROM node_unique WHERE parent_id=? AND hash=? AND name=? AND value=? AND wme_type=?", -1, &( my_agent->epmem_statements[ EPMEM_STMT_THREE_FIND_NODE_UNIQUE ] ), &tail ) == SQLITE_OK );
+			assert( my_assert );
 			
 			// custom statement for inserting
-			assert( sqlite3_prepare_v2( my_agent->epmem_db, "INSERT INTO node_unique (parent_id,name,value,hash,wme_type) VALUES (?,?,?,?,?)", -1, &( my_agent->epmem_statements[ EPMEM_STMT_THREE_ADD_NODE_UNIQUE ] ), &tail ) == SQLITE_OK );
+			my_assert = ( sqlite3_prepare_v2( my_agent->epmem_db, "INSERT INTO node_unique (parent_id,name,value,hash,wme_type) VALUES (?,?,?,?,?)", -1, &( my_agent->epmem_statements[ EPMEM_STMT_THREE_ADD_NODE_UNIQUE ] ), &tail ) == SQLITE_OK );
+			assert( my_assert );
 
 			////
 			
 			// edge_unique table
-			assert( sqlite3_prepare_v2( my_agent->epmem_db, "CREATE TABLE IF NOT EXISTS edge_unique (parent_id INTEGER PRIMARY KEY AUTOINCREMENT,q0 INTEGER,w TEXT,q1 INTEGER)", -1, &create, &tail ) == SQLITE_OK );
+			my_assert = ( sqlite3_prepare_v2( my_agent->epmem_db, "CREATE TABLE IF NOT EXISTS edge_unique (parent_id INTEGER PRIMARY KEY AUTOINCREMENT,q0 INTEGER,w TEXT,q1 INTEGER)", -1, &create, &tail ) == SQLITE_OK );
+			assert( my_assert );
 			sqlite3_step( create );					
 			sqlite3_finalize( create );			
 
 			// index for identification
-			assert( sqlite3_prepare_v2( my_agent->epmem_db, "CREATE INDEX IF NOT EXISTS edge_unique_q0_w_q1 ON edge_unique (q0,w,q1)", -1, &create, &tail ) == SQLITE_OK );
+			my_assert = ( sqlite3_prepare_v2( my_agent->epmem_db, "CREATE INDEX IF NOT EXISTS edge_unique_q0_w_q1 ON edge_unique (q0,w,q1)", -1, &create, &tail ) == SQLITE_OK );
+			assert( my_assert );
 			sqlite3_step( create );
 			sqlite3_finalize( create );
 
 			// custom statement for finding
-			assert( sqlite3_prepare_v2( my_agent->epmem_db, "SELECT parent_id, q1 FROM edge_unique WHERE q0=? AND w=?", -1, &( my_agent->epmem_statements[ EPMEM_STMT_THREE_FIND_EDGE_UNIQUE ] ), &tail ) == SQLITE_OK );
+			my_assert = ( sqlite3_prepare_v2( my_agent->epmem_db, "SELECT parent_id, q1 FROM edge_unique WHERE q0=? AND w=?", -1, &( my_agent->epmem_statements[ EPMEM_STMT_THREE_FIND_EDGE_UNIQUE ] ), &tail ) == SQLITE_OK );
+			assert( my_assert );
 			
 			// custom statement for inserting
-			assert( sqlite3_prepare_v2( my_agent->epmem_db, "INSERT INTO edge_unique (q0,w,q1) VALUES (?,?,?)", -1, &( my_agent->epmem_statements[ EPMEM_STMT_THREE_ADD_EDGE_UNIQUE ] ), &tail ) == SQLITE_OK );
+			my_assert = ( sqlite3_prepare_v2( my_agent->epmem_db, "INSERT INTO edge_unique (q0,w,q1) VALUES (?,?,?)", -1, &( my_agent->epmem_statements[ EPMEM_STMT_THREE_ADD_EDGE_UNIQUE ] ), &tail ) == SQLITE_OK );
+			assert( my_assert );
 
 			////
 
 			// custom statement for validating an episode
-			assert( sqlite3_prepare_v2( my_agent->epmem_db, "SELECT COUNT(*) AS ct FROM times WHERE id=?", -1, &( my_agent->epmem_statements[ EPMEM_STMT_THREE_VALID_EPISODE ] ), &tail ) == SQLITE_OK );
+			my_assert = ( sqlite3_prepare_v2( my_agent->epmem_db, "SELECT COUNT(*) AS ct FROM times WHERE id=?", -1, &( my_agent->epmem_statements[ EPMEM_STMT_THREE_VALID_EPISODE ] ), &tail ) == SQLITE_OK );
+			assert( my_assert );
 
 			// custom statement for finding the next episode
-			assert( sqlite3_prepare_v2( my_agent->epmem_db, "SELECT id FROM times WHERE id>? ORDER BY id ASC LIMIT 1", -1, &( my_agent->epmem_statements[ EPMEM_STMT_THREE_NEXT_EPISODE ] ), &tail ) == SQLITE_OK );
+			my_assert = ( sqlite3_prepare_v2( my_agent->epmem_db, "SELECT id FROM times WHERE id>? ORDER BY id ASC LIMIT 1", -1, &( my_agent->epmem_statements[ EPMEM_STMT_THREE_NEXT_EPISODE ] ), &tail ) == SQLITE_OK );
+			assert( my_assert );
 
 			// custom statement for finding the prev episode
-			assert( sqlite3_prepare_v2( my_agent->epmem_db, "SELECT id FROM times WHERE id<? ORDER BY id DESC LIMIT 1", -1, &( my_agent->epmem_statements[ EPMEM_STMT_THREE_PREV_EPISODE ] ), &tail ) == SQLITE_OK );
+			my_assert = ( sqlite3_prepare_v2( my_agent->epmem_db, "SELECT id FROM times WHERE id<? ORDER BY id DESC LIMIT 1", -1, &( my_agent->epmem_statements[ EPMEM_STMT_THREE_PREV_EPISODE ] ), &tail ) == SQLITE_OK );
+			assert( my_assert );
 
 			////
 
 			// range intersection query: node
-			assert( sqlite3_prepare_v2( my_agent->epmem_db, "SELECT f.child_id, f.parent_id, f.name, f.value, f.wme_type FROM node_unique f WHERE f.child_id IN (SELECT n.id FROM node_now n WHERE n.start<= ? UNION ALL SELECT p.id FROM node_point p WHERE p.start=? UNION ALL SELECT e1.id FROM node_range e1, rit_left_nodes lt WHERE e1.rit_node BETWEEN lt.min AND lt.max AND e1.end >= ? UNION ALL SELECT e2.id FROM node_range e2, rit_right_nodes rt WHERE e2.rit_node = rt.node AND e2.start <= ?) ORDER BY f.child_id ASC", -1, &( my_agent->epmem_statements[ EPMEM_STMT_THREE_GET_NODES ] ), &tail ) == SQLITE_OK );
+			my_assert = ( sqlite3_prepare_v2( my_agent->epmem_db, "SELECT f.child_id, f.parent_id, f.name, f.value, f.wme_type FROM node_unique f WHERE f.child_id IN (SELECT n.id FROM node_now n WHERE n.start<= ? UNION ALL SELECT p.id FROM node_point p WHERE p.start=? UNION ALL SELECT e1.id FROM node_range e1, rit_left_nodes lt WHERE e1.rit_node BETWEEN lt.min AND lt.max AND e1.end >= ? UNION ALL SELECT e2.id FROM node_range e2, rit_right_nodes rt WHERE e2.rit_node = rt.node AND e2.start <= ?) ORDER BY f.child_id ASC", -1, &( my_agent->epmem_statements[ EPMEM_STMT_THREE_GET_NODES ] ), &tail ) == SQLITE_OK );
+			assert( my_assert );
 
 			// range intersection query: edge
-			assert( sqlite3_prepare_v2( my_agent->epmem_db, "SELECT f.q0, f.w, f.q1 FROM edge_unique f WHERE f.parent_id IN (SELECT n.id FROM edge_now n WHERE n.start<= ? UNION ALL SELECT p.id FROM edge_point p WHERE p.start=? UNION ALL SELECT e1.id FROM edge_range e1, rit_left_nodes lt WHERE e1.rit_node BETWEEN lt.min AND lt.max AND e1.end >= ? UNION ALL SELECT e2.id FROM edge_range e2, rit_right_nodes rt WHERE e2.rit_node = rt.node AND e2.start <= ?) ORDER BY f.q0 ASC, f.q1 ASC", -1, &( my_agent->epmem_statements[ EPMEM_STMT_THREE_GET_EDGES ] ), &tail ) == SQLITE_OK );
+			my_assert = ( sqlite3_prepare_v2( my_agent->epmem_db, "SELECT f.q0, f.w, f.q1 FROM edge_unique f WHERE f.parent_id IN (SELECT n.id FROM edge_now n WHERE n.start<= ? UNION ALL SELECT p.id FROM edge_point p WHERE p.start=? UNION ALL SELECT e1.id FROM edge_range e1, rit_left_nodes lt WHERE e1.rit_node BETWEEN lt.min AND lt.max AND e1.end >= ? UNION ALL SELECT e2.id FROM edge_range e2, rit_right_nodes rt WHERE e2.rit_node = rt.node AND e2.start <= ?) ORDER BY f.q0 ASC, f.q1 ASC", -1, &( my_agent->epmem_statements[ EPMEM_STMT_THREE_GET_EDGES ] ), &tail ) == SQLITE_OK );
+			assert( my_assert );
 
 			////
 
@@ -2350,7 +2439,8 @@ void epmem_init_db( agent *my_agent )
 			////
 
 			// get max time
-			assert( sqlite3_prepare_v2( my_agent->epmem_db, "SELECT MAX(id) FROM times", -1, &create, &tail ) == SQLITE_OK );
+			my_assert = ( sqlite3_prepare_v2( my_agent->epmem_db, "SELECT MAX(id) FROM times", -1, &create, &tail ) == SQLITE_OK );
+			assert( my_assert );
 			if ( sqlite3_step( create ) == SQLITE_ROW )						
 				epmem_set_stat( my_agent, (const long) EPMEM_STAT_TIME, ( sqlite3_column_int64( create, 0 ) + 1 ) );
 			sqlite3_finalize( create );
@@ -2363,7 +2453,8 @@ void epmem_init_db( agent *my_agent )
 				
 				// nodes
 				{
-					assert( sqlite3_prepare_v2( my_agent->epmem_db, "SELECT id,start FROM node_now", -1, &create, &tail ) == SQLITE_OK );		
+					my_assert = ( sqlite3_prepare_v2( my_agent->epmem_db, "SELECT id,start FROM node_now", -1, &create, &tail ) == SQLITE_OK );		
+					assert( my_assert );
 					sqlite3_bind_int64( my_agent->epmem_statements[ EPMEM_STMT_THREE_ADD_NODE_POINT ], 2, time_last );
 					while ( sqlite3_step( create ) == SQLITE_ROW )
 					{
@@ -2381,14 +2472,16 @@ void epmem_init_db( agent *my_agent )
 					}
 					sqlite3_finalize( create );
 					
-					assert( sqlite3_prepare_v2( my_agent->epmem_db, "DELETE FROM node_now", -1, &create, &tail ) == SQLITE_OK );
+					my_assert = ( sqlite3_prepare_v2( my_agent->epmem_db, "DELETE FROM node_now", -1, &create, &tail ) == SQLITE_OK );
+					assert( my_assert );
 					sqlite3_step( create );
 					sqlite3_finalize( create );
 				}
 
 				// edges
 				{					
-					assert( sqlite3_prepare_v2( my_agent->epmem_db, "SELECT id,start FROM edge_now", -1, &create, &tail ) == SQLITE_OK );
+					my_assert = ( sqlite3_prepare_v2( my_agent->epmem_db, "SELECT id,start FROM edge_now", -1, &create, &tail ) == SQLITE_OK );
+					assert( my_assert );
 					sqlite3_bind_int64( my_agent->epmem_statements[ EPMEM_STMT_THREE_ADD_EDGE_POINT ], 2, time_last );
 					while ( sqlite3_step( create ) == SQLITE_ROW )
 					{
@@ -2406,7 +2499,8 @@ void epmem_init_db( agent *my_agent )
 					}
 					sqlite3_finalize( create );
 
-					assert( sqlite3_prepare_v2( my_agent->epmem_db, "DELETE FROM edge_now", -1, &create, &tail ) == SQLITE_OK );
+					my_assert = ( sqlite3_prepare_v2( my_agent->epmem_db, "DELETE FROM edge_now", -1, &create, &tail ) == SQLITE_OK );
+					assert( my_assert );
 					sqlite3_step( create );
 					sqlite3_finalize( create );
 				}
@@ -2416,7 +2510,8 @@ void epmem_init_db( agent *my_agent )
 			{
 				// nodes
 				{
-					assert( sqlite3_prepare_v2( my_agent->epmem_db, "SELECT MAX(child_id) FROM node_unique", -1, &create, &tail ) == SQLITE_OK );
+					my_assert = ( sqlite3_prepare_v2( my_agent->epmem_db, "SELECT MAX(child_id) FROM node_unique", -1, &create, &tail ) == SQLITE_OK );
+					assert( my_assert );
 					sqlite3_step( create );
 					if ( sqlite3_column_type( create, 0 ) != SQLITE_NULL )
 					{
@@ -2431,7 +2526,8 @@ void epmem_init_db( agent *my_agent )
 
 				// edges
 				{
-					assert( sqlite3_prepare_v2( my_agent->epmem_db, "SELECT MAX(parent_id) FROM edge_unique", -1, &create, &tail ) == SQLITE_OK );
+					my_assert = ( sqlite3_prepare_v2( my_agent->epmem_db, "SELECT MAX(parent_id) FROM edge_unique", -1, &create, &tail ) == SQLITE_OK );
+					assert( my_assert );
 					sqlite3_step( create );
 					if ( sqlite3_column_type( create, 0 ) != SQLITE_NULL )
 					{
@@ -3753,7 +3849,8 @@ void epmem_process_query( agent *my_agent, Symbol *state, Symbol *query, Symbol 
 											}
 											
 											// assign sql
-											assert( sqlite3_prepare_v2( my_agent->epmem_db, epmem_range_queries[ EPMEM_RIT_STATE_NODE ][ j ][ k ], -1, &new_stmt, &tail ) == SQLITE_OK );
+											bool my_assert = ( sqlite3_prepare_v2( my_agent->epmem_db, epmem_range_queries[ EPMEM_RIT_STATE_NODE ][ j ][ k ], -1, &new_stmt, &tail ) == SQLITE_OK );
+											assert( my_assert );
 
 											// bind values
 											position = 1;
@@ -4176,7 +4273,8 @@ void epmem_process_query( agent *my_agent, Symbol *state, Symbol *query, Symbol 
 													}
 
 													// assign sql
-													assert( sqlite3_prepare_v2( my_agent->epmem_db, epmem_range_queries[ EPMEM_RIT_STATE_EDGE ][ k ][ m ], -1, &new_stmt, &tail ) == SQLITE_OK );
+													bool my_assert = ( sqlite3_prepare_v2( my_agent->epmem_db, epmem_range_queries[ EPMEM_RIT_STATE_EDGE ][ k ][ m ], -1, &new_stmt, &tail ) == SQLITE_OK );
+													assert( my_assert );
 
 													// bind values
 													position = 1;
@@ -4349,7 +4447,8 @@ void epmem_process_query( agent *my_agent, Symbol *state, Symbol *query, Symbol 
 													}
 
 													// assign sql
-													assert( sqlite3_prepare_v2( my_agent->epmem_db, epmem_range_queries[ EPMEM_RIT_STATE_NODE ][ k ][ m ], -1, &new_stmt, &tail ) == SQLITE_OK );
+													bool my_assert = ( sqlite3_prepare_v2( my_agent->epmem_db, epmem_range_queries[ EPMEM_RIT_STATE_NODE ][ k ][ m ], -1, &new_stmt, &tail ) == SQLITE_OK );
+													assert( my_assert );
 
 													// bind values
 													position = 1;
