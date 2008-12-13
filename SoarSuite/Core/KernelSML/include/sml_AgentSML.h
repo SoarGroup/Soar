@@ -32,6 +32,7 @@ typedef struct wme_struct wme;
 #include <map>
 #include <list>
 #include <string>
+#include <fstream>
 
 namespace sml {
 
@@ -60,6 +61,10 @@ typedef CKTimeMap::iterator					CKTimeMapIter ;
 // Map from kernel side time tag to client time tag
 typedef std::map< unsigned long, long >		KCTimeMap ;
 typedef KCTimeMap::iterator					KCTimeMapIter ;
+
+// Map from client side time tag to client time tag, for replay
+typedef std::map< long, long >				CCTimeMap ;
+typedef CCTimeMap::iterator					CCTimeMapIter ;
 
 // List of input messages waiting for the next input phase callback from the kernel
 typedef std::list<soarxml::ElementXML*>		PendingInputList ;
@@ -169,6 +174,53 @@ protected:
 	static void InputWmeGarbageCollectedHandler( agent* pAgent, int eventID, void* pData, void* pCallData ) ;
 
 	~AgentSML() ;
+
+	// Capture/Replay input
+private:
+	std::fstream*		m_pCaptureFile;
+	std::fstream*		m_pReplayFile;
+    CCTimeMap			m_ReplayTimetagMap;
+	struct CapturedAction 
+	{
+		CapturedAction() {}
+		CapturedAction(unsigned long dc, long timetag)
+			: dc(dc)
+			, timetag(timetag)
+		{}
+		virtual ~CapturedAction() {}
+
+		unsigned long dc;
+		long timetag;
+	};
+	struct CapturedActionAdd : public CapturedAction 
+	{
+		CapturedActionAdd() {}
+		CapturedActionAdd(unsigned long dc, long timetag)
+			: CapturedAction(dc, timetag)
+		{}
+		virtual ~CapturedActionAdd() {}
+
+		std::string id;
+		std::string attr;
+		std::string value;
+		std::string type;
+	};
+	std::queue< CapturedAction* > m_CapturedActions;
+	unsigned long		m_LastDC;
+	static const std::string CAPTURE_SEPERATOR;
+	bool				CaptureInputWMECommon(const CapturedAction& ca);
+	void				CaptureInputWME(const CapturedAction& ca);
+	void				CaptureInputWME(const CapturedActionAdd& caa);
+	void				ReplayInputWMEs(unsigned long dc);
+	void				InitializeCaptureReplay();
+	bool				OpenCaptureReplayFile(std::fstream** file, const std::string& pathname, std::ios_base::openmode mode);
+
+public: 
+	bool				CaptureInput(std::string* pathname);
+	bool				CaptureQuery() { return m_pCaptureFile ? true : false; }
+	bool				ReplayInput(std::string* pathname);
+	bool				ReplayQuery()  { return m_pReplayFile ? true : false; }
+	// end Capture/Replay input
 
 public:
 	void RemoveWmeFromWmeMap( wme* w );
