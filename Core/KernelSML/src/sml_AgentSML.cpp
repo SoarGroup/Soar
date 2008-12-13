@@ -41,6 +41,8 @@ AgentSML::AgentSML(KernelSML* pKernelSML, agent* pAgent)
 	m_pAgentRunCallback = new AgentRunCallback() ;
 	m_pAgentRunCallback->SetAgentSML(this) ;
 
+	m_pCaptureFile = 0;
+	m_pReplayFile = 0;
 }
 
 void AgentSML::InitListeners()
@@ -82,6 +84,8 @@ void AgentSML::Init()
 
 	// Set counters and flags used to control runs
 	InitializeRuntimeState() ;
+	
+	InitializeCaptureReplay();
 
 	// Register for the new INPUT_WME_GARBAGE_COLLECTED_CALLBACK
 	// Base the id on the address of this object which ensures it's unique
@@ -110,6 +114,9 @@ AgentSML::~AgentSML()
 	do_preference_phase (m_agent);   /* allow all i-instantiations to retract */
 
 	destroy_soar_agent( m_agent );
+
+	// essential: deletes any stored captured actions
+	InitializeCaptureReplay();
 }
 
 // Release any objects or other data we are keeping.  We do this just
@@ -211,6 +218,28 @@ void AgentSML::InitializeRuntimeState()
     m_interruptFlags = 0 ;
 }
 
+void AgentSML::InitializeCaptureReplay()
+{
+	if (m_pCaptureFile) 
+	{
+		delete m_pCaptureFile;
+		m_pCaptureFile = 0;
+	}
+	if (m_pReplayFile) 
+	{
+		delete m_pReplayFile;
+		m_pReplayFile = 0;
+	}
+
+	m_ReplayTimetagMap.clear();
+
+	while (m_CapturedActions.size())
+	{
+		delete m_CapturedActions.front();
+		m_CapturedActions.pop();
+	}
+	m_LastDC = 0;
+}
 
 bool AgentSML::Reinitialize()
 {
@@ -220,6 +249,8 @@ bool AgentSML::Reinitialize()
     init_agent_memory( m_agent );
 
 	InitializeRuntimeState() ;
+
+	InitializeCaptureReplay();
 	m_pKernelSML->FireAgentEvent(this, smlEVENT_AFTER_AGENT_REINITIALIZED) ;
 	return ok ;
 }
@@ -903,6 +934,36 @@ bool AgentSML::AddInputWME(char const* pID, char const* pAttribute, Symbol* pVal
 	//if (kDebugInput)
 	//	KernelSML::PrintDebugWme("Adding wme ", pNewInputWme, true) ;
 
+	if (m_pCaptureFile)
+	{
+		// capture input enabled
+		CapturedActionAdd caa;
+		caa.dc = m_agent->d_cycle_count;
+		caa.timetag = clientTimeTag;
+		caa.id = pID;
+		caa.attr = pAttribute;
+		caa.value = symbol_to_string( m_agent, pNewInputWme->value, true, 0, 0 );
+		switch (pNewInputWme->value->common.symbol_type)
+		{
+		case IDENTIFIER_SYMBOL_TYPE:
+			caa.type = sml_Names::kTypeID;
+			break;
+		case INT_CONSTANT_SYMBOL_TYPE:
+			caa.type = sml_Names::kTypeInt;
+			break;
+		case FLOAT_CONSTANT_SYMBOL_TYPE:
+			caa.type = sml_Names::kTypeDouble;
+			break;
+		default:
+			assert(false);
+			// falls to string
+		case SYM_CONSTANT_SYMBOL_TYPE:
+			caa.type = sml_Names::kTypeString;
+			break;
+		}
+		CaptureInputWME(caa);
+	}
+
 	return true ;
 }
 
@@ -1093,6 +1154,15 @@ bool AgentSML::RemoveInputWME(long clientTimeTag)
 
 	CHECK_RET_FALSE(ok) ;
 
+	if (m_pCaptureFile)
+	{
+		// capture input enabled
+		CapturedAction ca;
+		ca.dc = m_agent->d_cycle_count;
+		ca.timetag = clientTimeTag;
+		CaptureInputWME(ca);
+	}
+
 	return (ok != 0) ;  // BADBAD: redundant with previous line?
 }
 
@@ -1139,3 +1209,111 @@ void AgentSML::InputWmeGarbageCollectedHandler( agent* /*pSoarAgent*/, int event
 	pAgent->RemoveWmeFromWmeMap( pWME );
 }
 
+bool AgentSML::OpenCaptureReplayFile(std::fstream** file, const std::string& pathname, std::ios_base::openmode mode)
+{
+	delete *file;
+	*file = 0;
+
+	*file = new std::fstream( pathname.c_str(), mode );
+	if (!*file) return false;
+	if ((*file)->good())
+	{
+		return true;
+	}
+	delete *file;
+	*file = 0;
+	return false;
+}
+
+bool AgentSML::CaptureInput(std::string* pathname)
+{
+	if (m_pReplayFile) return false;
+
+	if (pathname) 
+	{
+		// open
+		return OpenCaptureReplayFile(&m_pCaptureFile, *pathname, std::fstream::out | std::fstream::trunc);
+	} 
+
+	// close
+	delete m_pCaptureFile;
+	m_pCaptureFile = 0;
+	return true;
+}
+
+bool AgentSML::ReplayInput(std::string* pathname)
+{
+	if (m_pCaptureFile) return false;
+
+	if (pathname) 
+	{
+		// open
+		if (!OpenCaptureReplayFile(&m_pReplayFile, *pathname, std::fstream::in))
+		{
+			return false;
+		}
+
+		// load replay file
+		while (m_pReplayFile->good())
+		{
+			unsigned long dc;
+			long timetag;
+			std::string actionType;
+			
+			*m_pReplayFile >> dc >> timetag >> actionType;
+			if (m_pReplayFile->bad()) return false;
+			
+			CapturedAction* ca = 0;
+
+			if (actionType == "add-wme")
+			{
+				CapturedActionAdd* caa = new CapturedActionAdd(dc, timetag);
+				*m_pReplayFile >> caa->id >> caa->attr >> caa->value >> caa->type;
+				if (m_pReplayFile->bad()) return false;
+				ca = caa;
+			}
+			else
+			{
+				ca = new CapturedAction(dc, timetag);
+			}
+			m_CapturedActions.push(ca);
+		}
+	} 
+	else
+	{
+		// close
+		delete m_pReplayFile;
+		m_pReplayFile = 0;
+	}
+
+	return true;
+}
+
+const std::string AgentSML::CAPTURE_SEPERATOR = " ";
+
+bool AgentSML::CaptureInputWMECommon(const CapturedAction& ca) 
+{
+	if (!m_pCaptureFile) return false;
+	if (m_pCaptureFile->bad()) return false;
+
+	*m_pCaptureFile << ca.dc << CAPTURE_SEPERATOR << ca.timetag << CAPTURE_SEPERATOR;
+	return m_pCaptureFile->good();
+}
+
+void AgentSML::CaptureInputWME(const CapturedAction& ca) 
+{
+	if (!CaptureInputWMECommon(ca)) return;
+	*m_pCaptureFile << "remove-wme" << std::endl;
+}
+
+void AgentSML::CaptureInputWME(const CapturedActionAdd& caa) 
+{
+	if (!CaptureInputWMECommon(caa)) return;
+	*m_pCaptureFile << "add-wme" << CAPTURE_SEPERATOR << caa.id << CAPTURE_SEPERATOR 
+		<< caa.attr << CAPTURE_SEPERATOR << caa.value << CAPTURE_SEPERATOR << caa.type << std::endl;
+}
+
+void AgentSML::ReplayInputWMEs(unsigned long dc)
+{
+
+}

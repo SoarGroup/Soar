@@ -95,6 +95,9 @@ namespace cli {
 			kProductionAddFailed				= 90, 
 			kEscapedNewline						= 91, 
 			kSourceDepthExceeded				= 92,
+			kCloseFileFail						= 93,
+			kFileOpen							= 94,
+			kFileNotOpen						= 95,
 		};
 
 		static char const* GetErrorDescription(ErrorCode code) {
@@ -177,6 +180,9 @@ namespace cli {
 				case kProductionAddFailed:				return "Production addition failed.";
 				case kEscapedNewline:					return "Escaped newlines not suppored (line ends with single backslash).";
 				case kSourceDepthExceeded:				return "Source depth (100) exceeded, possible recursive source.";
+				case kCloseFileFail:					return "File close failed.";
+				case kFileOpen:							return "File already open.";
+				case kFileNotOpen:						return "File is not open.";
 				default:								return "Unknown error code.";
 			}
 		}
