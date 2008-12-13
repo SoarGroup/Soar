@@ -13,7 +13,7 @@
 #include "cli_CLIError.h"
 
 #include "cli_Commands.h"
-#include "sml_KernelSML.h"
+#include "sml_AgentSML.h"
 
 
 using namespace cli;
@@ -59,23 +59,28 @@ bool CommandLineInterface::ParseCaptureInput(std::vector<std::string>& argv) {
 bool CommandLineInterface::DoCaptureInput(eCaptureInputMode mode, std::string* pathname) {
 	switch (mode) {
 		case CAPTURE_INPUT_CLOSE:
-			// TODO: close code
-			return SetError(CLIError::kNotImplemented);
+			if (!m_pAgentSML->CaptureQuery()) return SetError(CLIError::kFileNotOpen);
+			if (!m_pAgentSML->CaptureInput(0))
+			{
+				return SetError(CLIError::kCloseFileFail);
+			} 
 			break;
 
 		case CAPTURE_INPUT_OPEN:
+			if (m_pAgentSML->CaptureQuery()) return SetError(CLIError::kFileOpen);
 			if (!pathname) return SetError(CLIError::kMissingFilenameArg);
 			if (!pathname->size()) return SetError(CLIError::kMissingFilenameArg);
 
 			StripQuotes(*pathname);
 
-			// TODO: open code
-			return SetError(CLIError::kNotImplemented);
+			if (!m_pAgentSML->CaptureInput(pathname))
+			{
+				return SetError(CLIError::kOpenFileFail);
+			} 
 			break;
 
 		case CAPTURE_INPUT_QUERY:
-			// TODO: query code
-			return SetError(CLIError::kNotImplemented);
+			m_Result << (m_pAgentSML->CaptureQuery() ? "open" : "closed");
 			break;
 	}
 
