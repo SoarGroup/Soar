@@ -343,9 +343,11 @@ void do_input_cycle (agent* thisAgent) {
 	  soar_invoke_callbacks(thisAgent, INPUT_PHASE_CALLBACK, 
 		  (soar_call_data) NORMAL_INPUT_CYCLE);
 
-	  for (Symbol* goal=thisAgent->top_goal; goal; goal=goal->id.lower_goal)
-	  {
-		  emotion_update(thisAgent, goal);
+	  if(EMOTION_ENABLED) {
+		  for (Symbol* goal=thisAgent->top_goal; goal; goal=goal->id.lower_goal)
+		  {
+			  emotion_update(thisAgent, goal);
+		  }
 	  }
   }
 

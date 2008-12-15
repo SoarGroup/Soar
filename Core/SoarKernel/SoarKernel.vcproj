@@ -1008,10 +1008,6 @@
 				>
 			</File>
 			<File
-				RelativePath=".\include\Feeling.h"
-				>
-			</File>
-			<File
 				RelativePath=".\include\gdatastructs.h"
 				>
 			</File>

@@ -1,10 +1,6 @@
 #ifndef EMOTION_H
 #define EMOTION_H
 
-typedef struct agent_struct agent;
-typedef struct wme_struct wme;
-typedef union symbol_union Symbol;
-
 #include <string>
 #include <vector>
 
@@ -33,6 +29,15 @@ struct AppraisalStatus {
    string SetStatus(string appraisal, bool status);
    bool GetStatus(string appraisal) const;
 };
+
+
+//////////////////////////////////////////////////////////
+// Emotion Types
+//////////////////////////////////////////////////////////
+
+typedef struct agent_struct agent;
+typedef struct wme_struct wme;
+typedef union symbol_union Symbol;
 
 struct AppraisalFrame {
 	Symbol* id_sym;
@@ -146,13 +151,7 @@ struct emotion_data
 };
 
 void cleanup_emotion_data(agent* thisAgent, emotion_data* ed);
-
-void register_appraisal(emotion_data* ed, wme* appraisal);
-void get_appraisals(Symbol* goal);
-void update_mood(Symbol* goal);
-void generate_feeling_frame(agent* thisAgent, Symbol* goal);
 void emotion_reset_data( agent *thisAgent );
-
 void emotion_update(agent* thisAgent, Symbol* goal);
 
 #endif // EMOTION_H
