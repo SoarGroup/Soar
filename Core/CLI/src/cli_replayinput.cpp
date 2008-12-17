@@ -60,7 +60,7 @@ bool CommandLineInterface::DoReplayInput(eReplayInputMode mode, std::string* pat
 	switch (mode) {
 		case REPLAY_INPUT_CLOSE:
 			if (!m_pAgentSML->ReplayQuery()) return SetError(CLIError::kFileNotOpen);
-			if (!m_pAgentSML->ReplayInput(0))
+			if (!m_pAgentSML->StopReplayInput())
 			{
 				return SetError(CLIError::kCloseFileFail);
 			} 
@@ -73,7 +73,7 @@ bool CommandLineInterface::DoReplayInput(eReplayInputMode mode, std::string* pat
 
 			StripQuotes(*pathname);
 
-			if (!m_pAgentSML->ReplayInput(pathname))
+			if (!m_pAgentSML->StartReplayInput(*pathname))
 			{
 				return SetError(CLIError::kOpenFileFail);
 			} 

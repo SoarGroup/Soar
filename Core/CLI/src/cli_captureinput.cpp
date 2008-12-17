@@ -19,12 +19,13 @@
 using namespace cli;
 using namespace sml;
 
-// capture-input --open pathname 
+// capture-input --open pathname [--flush]
 // capture-input [--query]
 // capture-input --close
 bool CommandLineInterface::ParseCaptureInput(std::vector<std::string>& argv) {
 	Options optionsData[] = {
 		{'c', "close", OPTARG_NONE},
+		{'f', "flush", OPTARG_NONE},
 		{'o', "open", OPTARG_REQUIRED},
 		{'q', "query", OPTARG_NONE},
 		{0, 0, OPTARG_NONE}
@@ -33,6 +34,7 @@ bool CommandLineInterface::ParseCaptureInput(std::vector<std::string>& argv) {
 	eCaptureInputMode mode = CAPTURE_INPUT_QUERY;
 	std::string pathname;
 
+	bool autoflush = false;
 	for (;;) {
 		if (!ProcessOptions(argv, optionsData)) return false;
 		if (m_Option == -1) break;
@@ -40,6 +42,9 @@ bool CommandLineInterface::ParseCaptureInput(std::vector<std::string>& argv) {
 		switch (m_Option) {
 			case 'c':
 				mode = CAPTURE_INPUT_CLOSE;
+				break;
+			case 'f':
+				autoflush = true;
 				break;
 			case 'o':
 				mode = CAPTURE_INPUT_OPEN;
@@ -53,14 +58,14 @@ bool CommandLineInterface::ParseCaptureInput(std::vector<std::string>& argv) {
 		}
 	}
 
-	return DoCaptureInput(mode, mode == CAPTURE_INPUT_OPEN ? &pathname : 0);
+	return DoCaptureInput(mode, autoflush, mode == CAPTURE_INPUT_OPEN ? &pathname : 0);
 }
 
-bool CommandLineInterface::DoCaptureInput(eCaptureInputMode mode, std::string* pathname) {
+bool CommandLineInterface::DoCaptureInput(eCaptureInputMode mode, bool autoflush, std::string* pathname) {
 	switch (mode) {
 		case CAPTURE_INPUT_CLOSE:
 			if (!m_pAgentSML->CaptureQuery()) return SetError(CLIError::kFileNotOpen);
-			if (!m_pAgentSML->CaptureInput(0))
+			if (!m_pAgentSML->StopCaptureInput())
 			{
 				return SetError(CLIError::kCloseFileFail);
 			} 
@@ -73,7 +78,7 @@ bool CommandLineInterface::DoCaptureInput(eCaptureInputMode mode, std::string* p
 
 			StripQuotes(*pathname);
 
-			if (!m_pAgentSML->CaptureInput(pathname))
+			if (!m_pAgentSML->StartCaptureInput(*pathname, autoflush))
 			{
 				return SetError(CLIError::kOpenFileFail);
 			} 

@@ -278,7 +278,7 @@ public:
 	/*************************************************************
 	* @brief capture-input command
 	*************************************************************/
-	bool DoCaptureInput(eCaptureInputMode mode, std::string* pathname);
+	bool DoCaptureInput(eCaptureInputMode mode, bool autoflush = false, std::string* pathname = 0);
 
 	/*************************************************************
 	* @brief cd command
