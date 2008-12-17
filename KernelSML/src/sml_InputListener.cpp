@@ -50,6 +50,10 @@ void InputListener::OnKernelEvent(int eventID, AgentSML* pAgentSML, void* pCallD
 			  break;
 			case NORMAL_INPUT_CYCLE:
 			  ProcessPendingInput(pAgentSML, callbacktype) ;
+			  if (pAgentSML->ReplayQuery())
+			  {
+				  pAgentSML->ReplayInputWMEs();
+			  }
 			  break;
 			case TOP_STATE_JUST_REMOVED:
 			  break;
