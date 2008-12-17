@@ -178,48 +178,64 @@ protected:
 	// Capture/Replay input
 private:
 	std::fstream*		m_pCaptureFile;
-	std::fstream*		m_pReplayFile;
+	bool				m_CaptureAutoflush;
+	bool				m_ReplayInput;
     CCTimeMap			m_ReplayTimetagMap;
-	struct CapturedAction 
+	struct CapturedActionAdd
 	{
-		CapturedAction() {}
-		CapturedAction(unsigned long dc, long timetag)
-			: dc(dc)
-			, timetag(timetag)
-		{}
-		virtual ~CapturedAction() {}
-
-		unsigned long dc;
-		long timetag;
-	};
-	struct CapturedActionAdd : public CapturedAction 
-	{
-		CapturedActionAdd() {}
-		CapturedActionAdd(unsigned long dc, long timetag)
-			: CapturedAction(dc, timetag)
-		{}
-		virtual ~CapturedActionAdd() {}
-
 		std::string id;
 		std::string attr;
 		std::string value;
-		std::string type;
+		const char* type;
 	};
-	std::queue< CapturedAction* > m_CapturedActions;
-	unsigned long		m_LastDC;
+	struct CapturedAction
+	{
+		CapturedAction() { add = 0; }
+		CapturedAction(const CapturedAction& other) 
+			: dc(other.dc)
+			, timetag(other.timetag)
+			, add(0)
+		{
+			if (other.add) add = new CapturedActionAdd(*other.add);
+		}
+		~CapturedAction() { if (add) delete add; }
+		CapturedAction& operator=(const CapturedAction& other)
+		{
+			dc = other.dc;
+			timetag = other.timetag;
+			if (other.add) 
+			{
+				add = new CapturedActionAdd(*other.add);
+			}
+			else
+			{
+				add = 0;
+			}
+		}
+
+		unsigned long dc;
+		long timetag;
+		void CreateAdd() { if (!add) add = new CapturedActionAdd(); }
+		CapturedActionAdd* Add() const { return add; }
+
+	private:
+		CapturedActionAdd* add;
+	};
+	std::queue< CapturedAction > m_CapturedActions;
 	static const std::string CAPTURE_SEPERATOR;
-	bool				CaptureInputWMECommon(const CapturedAction& ca);
-	void				CaptureInputWME(const CapturedAction& ca);
-	void				CaptureInputWME(const CapturedActionAdd& caa);
-	void				ReplayInputWMEs(unsigned long dc);
-	void				InitializeCaptureReplay();
-	bool				OpenCaptureReplayFile(std::fstream** file, const std::string& pathname, std::ios_base::openmode mode);
+	bool				CaptureInputWME(const CapturedAction& ca);
+	void				ResetCaptureReplay();
 
 public: 
-	bool				CaptureInput(std::string* pathname);
-	bool				CaptureQuery() { return m_pCaptureFile ? true : false; }
-	bool				ReplayInput(std::string* pathname);
-	bool				ReplayQuery()  { return m_pReplayFile ? true : false; }
+	bool				StartCaptureInput(const std::string& pathname, bool autoflush);
+	bool				StopCaptureInput();
+	inline bool			CaptureQuery() { return m_pCaptureFile ? true : false; }
+
+	bool				StartReplayInput(const std::string& pathname);
+	bool				StopReplayInput();
+	inline bool			ReplayQuery()  { return m_ReplayInput; }
+
+	void				ReplayInputWMEs();
 	// end Capture/Replay input
 
 public:
