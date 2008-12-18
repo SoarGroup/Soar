@@ -9,7 +9,7 @@ sp {go-to-location*propose*go-to-waypoint
          ^track-progress true) #create a move-to structure on state
 }
 
-# 1) create waypoint structure on input-link
+# 1) create waypoint structure on input-link (done by choose-waypoint)
 # 2) rotate-to to the desired heading 
 # 3) create structures to track movement
 # 4) move/rotate to the desired location (in subgoal)

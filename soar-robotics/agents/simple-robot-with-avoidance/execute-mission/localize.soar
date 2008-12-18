@@ -1,7 +1,11 @@
 # proposed by generic operator proposal in propose-mission-operator
 
+# currently, this is very simple (the agent assumes it is at the origin)
+# in general, the agent might try adding all of the waypoints until it
+#  finds one it is at (in parallel or sequence, depending on how many
+#  there are), or, if it's not at a waypoint, it might find the closest
+#  one and try to get there from wherever it's at.
 
-# should this be a mission step (e.g., localize, to determine starting location?)
 sp {apply*localize*add-starting-waypoint
    (state <s> ^operator <op>
               ^io.output-link <ol>
