@@ -227,13 +227,14 @@ private:
 	void				ResetCaptureReplay();
 
 public: 
-	bool				StartCaptureInput(const std::string& pathname, bool autoflush);
+	bool				StartCaptureInput(const std::string& pathname, bool autoflush, unsigned long seed);
 	bool				StopCaptureInput();
 	inline bool			CaptureQuery() { return m_pCaptureFile ? true : false; }
 
 	bool				StartReplayInput(const std::string& pathname);
 	bool				StopReplayInput();
 	inline bool			ReplayQuery()  { return m_ReplayInput; }
+	size_t				NumberOfCapturedActions() { return m_CapturedActions.size(); }
 
 	void				ReplayInputWMEs();
 	// end Capture/Replay input
