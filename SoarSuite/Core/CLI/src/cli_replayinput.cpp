@@ -77,6 +77,7 @@ bool CommandLineInterface::DoReplayInput(eReplayInputMode mode, std::string* pat
 			{
 				return SetError(CLIError::kOpenFileFail);
 			} 
+			m_Result << "Loaded " << m_pAgentSML->NumberOfCapturedActions() << " actions.";
 			break;
 
 		case REPLAY_INPUT_QUERY:
