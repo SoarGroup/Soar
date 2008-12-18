@@ -21,6 +21,7 @@
 
 #include "KernelHeaders.h"
 #include "xml.h"
+#include "soar_rand.h"
 
 #ifdef _DEBUG
 // Comment this in to debug init-soar and inputwme::update calls
@@ -1233,7 +1234,7 @@ void AgentSML::InputWmeGarbageCollectedHandler( agent* /*pSoarAgent*/, int event
 	pAgent->RemoveWmeFromWmeMap( pWME );
 }
 
-bool AgentSML::StartCaptureInput(const std::string& pathname, bool autoflush)
+bool AgentSML::StartCaptureInput(const std::string& pathname, bool autoflush, unsigned long seed)
 {
 	if (CaptureQuery()) return false;
 	if (ReplayQuery()) return false;
@@ -1243,6 +1244,8 @@ bool AgentSML::StartCaptureInput(const std::string& pathname, bool autoflush)
 	m_pCaptureFile = new std::fstream( pathname.c_str(), std::fstream::out | std::fstream::trunc );
 	if (m_pCaptureFile && m_pCaptureFile->good())
 	{
+		SoarSeedRNG(seed);
+		*m_pCaptureFile << seed << std::endl;
 		return true;
 	}
 
@@ -1282,6 +1285,14 @@ bool AgentSML::StartReplayInput(const std::string& pathname)
 	{
 		return false;
 	} 
+
+	unsigned long seed = 0;
+	replayFile >> seed;
+	if (replayFile.bad())
+	{
+		return false;
+	}
+	SoarSeedRNG(seed);
 
 	// load replay file
 	while (replayFile.good())

@@ -14,6 +14,7 @@
 
 #include "cli_Commands.h"
 #include "sml_AgentSML.h"
+#include "soar_rand.h"
 
 
 using namespace cli;
@@ -72,16 +73,21 @@ bool CommandLineInterface::DoCaptureInput(eCaptureInputMode mode, bool autoflush
 			break;
 
 		case CAPTURE_INPUT_OPEN:
-			if (m_pAgentSML->CaptureQuery()) return SetError(CLIError::kFileOpen);
-			if (!pathname) return SetError(CLIError::kMissingFilenameArg);
-			if (!pathname->size()) return SetError(CLIError::kMissingFilenameArg);
-
-			StripQuotes(*pathname);
-
-			if (!m_pAgentSML->StartCaptureInput(*pathname, autoflush))
 			{
-				return SetError(CLIError::kOpenFileFail);
-			} 
+				if (m_pAgentSML->CaptureQuery()) return SetError(CLIError::kFileOpen);
+				if (!pathname) return SetError(CLIError::kMissingFilenameArg);
+				if (!pathname->size()) return SetError(CLIError::kMissingFilenameArg);
+
+				StripQuotes(*pathname);
+
+				unsigned long seed = SoarRandInt();
+
+				if (!m_pAgentSML->StartCaptureInput(*pathname, autoflush, seed))
+				{
+					return SetError(CLIError::kOpenFileFail);
+				} 
+				m_Result << "Capturing input with random seed: " << seed;
+			}
 			break;
 
 		case CAPTURE_INPUT_QUERY:
