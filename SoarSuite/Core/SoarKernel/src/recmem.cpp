@@ -1194,14 +1194,14 @@ void do_preference_phase (agent* thisAgent) {
 
 	  if (thisAgent->active_goal == NIL) {
 		  if (thisAgent->sysparams[TRACE_WATERFALL_SYSPARAM]) {
-			  print(thisAgent, " inner preference loop doesn't have active goal.\n");
+			  print(thisAgent, " inner elaboration loop doesn't have active goal.\n");
 		  }
 		  break;
 	  }
 
 	  if (thisAgent->active_goal->id.lower_goal == NIL) {
 		  if (thisAgent->sysparams[TRACE_WATERFALL_SYSPARAM]) {
-			  print(thisAgent, " inner preference loop at bottom goal.\n");
+			  print(thisAgent, " inner elaboration loop at bottom goal.\n");
 		  }
 		  break;
 	  }
@@ -1217,7 +1217,9 @@ void do_preference_phase (agent* thisAgent) {
 	  {
 		  thisAgent->active_level = thisAgent->active_goal->id.level;
 	  } else {
-		  print(thisAgent, " inner preference loop finished but not at quiescence.\n");
+		  if (thisAgent->sysparams[TRACE_WATERFALL_SYSPARAM]) {
+			  print(thisAgent, " inner elaboration loop finished but not at quiescence.\n");
+		  }
 		  break;
 	  }
   } // end inner elaboration loop
