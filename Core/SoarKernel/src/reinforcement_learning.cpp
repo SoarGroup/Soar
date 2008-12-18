@@ -1199,7 +1199,7 @@ void rl_store_data( agent *my_agent, Symbol *goal, preference *cand )
 			if ( data->reward_age != 0 )
 			{
 				char buf[256];
-				SNPRINTF( buf, 254, "WARNING: gap ended (%c%d)", goal->id.name_letter, goal->id.name_number );
+				SNPRINTF( buf, 254, "gap ended (%c%d)", goal->id.name_letter, goal->id.name_number );
 				
 				print( my_agent, buf );
 				xml_generate_warning( my_agent, buf );
@@ -1216,7 +1216,7 @@ void rl_store_data( agent *my_agent, Symbol *goal, preference *cand )
 			if ( data->reward_age == 0 )
 			{
 				char buf[256];
-				SNPRINTF( buf, 254, "WARNING: gap started (%c%d)", goal->id.name_letter, goal->id.name_number );
+				SNPRINTF( buf, 254, "gap started (%c%d)", goal->id.name_letter, goal->id.name_number );
 				
 				print( my_agent, buf );
 				xml_generate_warning( my_agent, buf );
@@ -1304,7 +1304,21 @@ void rl_perform_update( agent *my_agent, double op_value, Symbol *goal )
 		// update is applied depending upon type of accumulation mode
 		// sum: add the update to the existing value
 		// avg: average the update with the existing value
-		temp += ( update * alpha * iter->second );		
+
+    double delta = (update * alpha * iter->second);
+
+    if ( my_agent->sysparams[ TRACE_RL_SYSPARAM ] ) { // SBW 12/18/08
+      std::string* oldValString = to_string(temp);
+      double newVal = temp + delta;
+      std::string* newValString = to_string(newVal);
+      std::string message = "updating RL rule " + std::string(prod->name->sc.name) + " from " + *oldValString + " to " + *newValString; 
+      print( my_agent, const_cast<char *>( message.c_str() ) );
+      xml_generate_message( my_agent, const_cast<char *>( message.c_str() ) );
+      delete oldValString;
+      delete newValString;
+		}
+    
+    temp += delta;
 
 		// Change value of rule
 		symbol_remove_ref( my_agent, rhs_value_to_symbol( prod->action_list->referent ) );
