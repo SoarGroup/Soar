@@ -315,6 +315,7 @@ typedef struct agent_struct {
   Symbol            * epmem_memory_id_symbol;
   Symbol            * epmem_present_id_symbol;
   Symbol            * epmem_no_memory_symbol;
+  Symbol            * epmem_graph_match_symbol;
   Symbol            * epmem_success_symbol;
   Symbol            * epmem_failure_symbol;
   Symbol            * epmem_bad_cmd_symbol;  

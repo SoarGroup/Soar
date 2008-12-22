@@ -351,6 +351,7 @@ agent * create_soar_agent (char * agent_name) {                                 
   newAgent->epmem_params[ EPMEM_PARAM_COMMIT ] = epmem_add_parameter( "commit", 1.0, &epmem_validate_commit );
   
   newAgent->epmem_params[ EPMEM_PARAM_MODE ] = epmem_add_parameter( "mode", EPMEM_MODE_THREE, &epmem_validate_mode, &epmem_convert_mode, &epmem_convert_mode );
+  newAgent->epmem_params[ EPMEM_PARAM_GRAPH_MATCH ] = epmem_add_parameter( "graph-match", EPMEM_GRAPH_MATCH_OFF, &epmem_validate_graph_match, &epmem_convert_graph_match, &epmem_convert_graph_match );
     
   newAgent->epmem_params[ EPMEM_PARAM_TRIGGER ] = epmem_add_parameter( "trigger", EPMEM_TRIGGER_OUTPUT, &epmem_validate_trigger, &epmem_convert_trigger, &epmem_convert_trigger );
   newAgent->epmem_params[ EPMEM_PARAM_FORCE ] = epmem_add_parameter( "force", EPMEM_FORCE_OFF, &epmem_validate_force, &epmem_convert_force, &epmem_convert_force );

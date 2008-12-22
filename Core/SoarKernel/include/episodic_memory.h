@@ -35,12 +35,13 @@ typedef struct wme_struct wme;
 #define EPMEM_PARAM_COMMIT							2
 #define EPMEM_PARAM_PATH							3
 #define EPMEM_PARAM_MODE							4
-#define EPMEM_PARAM_TRIGGER							5
-#define EPMEM_PARAM_FORCE							6
-#define EPMEM_PARAM_BALANCE							7
-#define EPMEM_PARAM_EXCLUSIONS						8
-#define EPMEM_PARAM_TIMERS							9
-#define EPMEM_PARAMS								10 // must be 1+ last epmem param
+#define EPMEM_PARAM_GRAPH_MATCH						5
+#define EPMEM_PARAM_TRIGGER							6
+#define EPMEM_PARAM_FORCE							7
+#define EPMEM_PARAM_BALANCE							8
+#define EPMEM_PARAM_EXCLUSIONS						9
+#define EPMEM_PARAM_TIMERS							10
+#define EPMEM_PARAMS								11 // must be 1+ last epmem param
 
 // parameter settings
 #define EPMEM_LEARNING_ON 1
@@ -51,6 +52,9 @@ typedef struct wme_struct wme;
 
 #define EPMEM_MODE_ONE 1   // wm tree
 #define EPMEM_MODE_THREE 3 // mva/shared wme
+
+#define EPMEM_GRAPH_MATCH_ON 1
+#define EPMEM_GRAPH_MATCH_OFF 2
 
 #define EPMEM_TRIGGER_NONE 1
 #define EPMEM_TRIGGER_OUTPUT 2
@@ -333,7 +337,9 @@ typedef struct epmem_shared_match_struct
 struct epmem_shared_literal_struct
 {
 	unsigned long long ct;
+
 	struct wme_struct *wme;
+	unsigned long long wme_kids;
 	
 	epmem_shared_match *match;
 	epmem_shared_trigger_list *children;
@@ -432,6 +438,11 @@ extern bool epmem_validate_path( const char *new_val );
 extern bool epmem_validate_mode( const long new_val );
 extern const char *epmem_convert_mode( const long val );
 extern const long epmem_convert_mode( const char *val );
+
+// graph match
+extern bool epmem_validate_graph_match( const long new_val );
+extern const char *epmem_convert_graph_match( const long val );
+extern const long epmem_convert_graph_match( const char *val );
 
 // trigger
 extern bool epmem_validate_trigger( const long new_val );

@@ -632,6 +632,7 @@ void create_predefined_symbols (agent* thisAgent) {
   thisAgent->epmem_memory_id_symbol = make_sym_constant( thisAgent, "memory-id" );
   thisAgent->epmem_present_id_symbol = make_sym_constant( thisAgent, "present-id" );
   thisAgent->epmem_no_memory_symbol = make_sym_constant( thisAgent, "no-memory" );
+  thisAgent->epmem_graph_match_symbol = make_sym_constant( thisAgent, "graph-match" );
   thisAgent->epmem_success_symbol = make_sym_constant( thisAgent, "success" );
   thisAgent->epmem_failure_symbol = make_sym_constant( thisAgent, "failure" );
   thisAgent->epmem_bad_cmd_symbol = make_sym_constant( thisAgent, "bad-cmd" );  
@@ -702,6 +703,7 @@ void release_predefined_symbols(agent* thisAgent) {
   release_helper( thisAgent, &( thisAgent->epmem_memory_id_symbol ) );
   release_helper( thisAgent, &( thisAgent->epmem_present_id_symbol ) );
   release_helper( thisAgent, &( thisAgent->epmem_no_memory_symbol ) );
+  release_helper( thisAgent, &( thisAgent->epmem_graph_match_symbol ) );
   release_helper( thisAgent, &( thisAgent->epmem_success_symbol ) );
   release_helper( thisAgent, &( thisAgent->epmem_failure_symbol ) );
   release_helper( thisAgent, &( thisAgent->epmem_bad_cmd_symbol ) );  
