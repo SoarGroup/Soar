@@ -48,21 +48,21 @@ using std::multimap;
 /////////////////////////////
 
 AppraisalStatus::AppraisalStatus() {
-	suddenness = true;
-	unpredictability = true;
-	intrinsic_pleasantness = true;
-	goal_relevance = true;
-	causal_agent_self = true;
-	causal_agent_other = true;
-	causal_agent_nature = true;
-	causal_motive_intentional = true;
-	causal_motive_chance = true;
-	causal_motive_negligence = true;
+	suddenness = false;
+	unpredictability = false;
+	intrinsic_pleasantness = false;
+	goal_relevance = false;
+	causal_agent_self = false;
+	causal_agent_other = false;
+	causal_agent_nature = false;
+	causal_motive_intentional = false;
+	causal_motive_chance = false;
+	causal_motive_negligence = false;
 	outcome_probability = true;
 	discrepancy = true;
 	conduciveness = true;
-	control = true;
-	power = true;
+	control = false;
+	power = false;
 }
 
 string AppraisalStatus::SetStatus(string appraisal, bool status) {
@@ -719,28 +719,6 @@ void Mood::MoveTowardEmotion(AppraisalFrame& emotion) {
 	af.power = MoveTowardEmotion(af.power, emotion.power);
 }
 
-void Mood::DisableAppraisal(string& appraisal) {
-	if(appraisal == "suddenness") { af.suddenness = fInvalidValue; }
-	else if(appraisal == "unpredictability") { af.unpredictability = fInvalidValue; }
-	else if(appraisal == "intrinsic-pleasantness") { af.intrinsic_pleasantness = fInvalidValue; }
-	else if(appraisal == "goal-relevance") { af.goal_relevance = fInvalidValue; }
-	else if(appraisal == "outcome-probability") { af.outcome_probability = fInvalidValue; }
-	else if(appraisal == "discrepancy") { af.discrepancy = fInvalidValue; }
-	else if(appraisal == "conduciveness") { af.conduciveness = fInvalidValue; }
-	else if(appraisal == "control") { af.control = fInvalidValue; }
-	else if(appraisal == "power") { af.power = fInvalidValue; }
-	else if(appraisal == "causal-agent") {
-		af.causal_agent_nature = fInvalidValue;
-		af.causal_agent_other = fInvalidValue;
-		af.causal_agent_self = fInvalidValue;
-	}
-	else if(appraisal == "causal-motive") {
-		af.causal_motive_intentional = fInvalidValue;
-		af.causal_motive_chance = fInvalidValue;
-		af.causal_motive_negligence = fInvalidValue;
-	}
-}
-
 string Mood::GetDimension(string& dim) {
 	if(dim == "suddenness") { return lexical_cast<string>(af.suddenness); }
 	else if(dim == "unpredictability") { return lexical_cast<string>(af.unpredictability); }
@@ -1083,8 +1061,8 @@ void generate_feeling_frame(agent* thisAgent, Symbol * goal)
 	Symbol* tempAtt;
 	Symbol* tempVal;
 
-	double intensity = ed->currentFeeling.af.CalculateIntensity();
-	double valence = ed->currentFeeling.af.CalculateValence();
+	double intensity = ed->currentFeeling.CalculateIntensity();
+	double valence = ed->currentFeeling.CalculateValence();
 	double reward = intensity * valence;
 
 	tempAtt = make_sym_constant(thisAgent, "intensity");  //BADBAD: this should be a predefined symbol

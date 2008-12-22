@@ -7,7 +7,8 @@
 using std::string;
 using std::vector;
 
-struct AppraisalStatus {
+class AppraisalStatus {
+private:
 	bool suddenness;
 	bool unpredictability;
 	bool intrinsic_pleasantness;
@@ -24,6 +25,7 @@ struct AppraisalStatus {
 	bool control;
 	bool power;
 
+public:
 	AppraisalStatus();
 
    string SetStatus(string appraisal, bool status);
@@ -107,37 +109,46 @@ struct ModalEmotion {
 void InitModalEmotions();
 
 struct Mood {
-	AppraisalFrame af;
-
+public:
+	AppraisalFrame af; // TODO: to make private, need way to easily access all members (i.e., AppraisalFrame needs to provide key/value interface)
+private:
+	// this stuff could be static, but making it non-static allows for the possibility of different parameters for each state
 	double decay_rate;
 	double move_rate;
 
+	double MoveTowardEmotion(double val, double target);
+	double Decay(double val);
+public:
 	Mood();
 
 	string SetParameters(vector<string>& params);
-	double Decay(double val);
 	void Decay();
-	double MoveTowardEmotion(double val, double target);
 	void MoveTowardEmotion(AppraisalFrame& emotion);
-    void DisableAppraisal(string& appraisal);
-    string GetDimension(string& dim);
+	string GetDimension(string& dim);  // for debugging, trace, etc.
 };
 
-struct Feeling {
+class Feeling {
+private:
 	AppraisalFrame af;
 
 	// helper functions
-	double logbase(double a, double base);
-	double MySign(double v);
-	double LogComb(double v1, double v2, double base);
+	static double logbase(double a, double base);
+	static double MySign(double v);
+	static double LogComb(double v1, double v2, double base);
 
 	double GetValue(double emotion_val, double mood_val, bool status);
-	string GetStringValue(double emotion_val, double mood_val, bool status);
 	string SetDimension(const string& dim, const AppraisalFrame& emotion, const AppraisalFrame& mood, bool status);
+public:
 	double GetNumericDimension(const string& dim, const AppraisalFrame& emotion, const AppraisalFrame& mood, bool status);
 	string GetCategoricalDimension(const string& dim, const AppraisalFrame& emotion, const AppraisalFrame& mood, bool status);
-	string GetDimensionAsString(const string& dim, const AppraisalFrame& emotion, const AppraisalFrame& mood, bool status);
+	inline double CalculateIntensity() { return af.CalculateIntensity(); }
+	inline double CalculateValence() { return af.CalculateValence(); }
+	
+	// these for debugging 
 	AppraisalFrame GenerateAppraisalFrame(const AppraisalFrame& emotion, const AppraisalFrame& mood, const AppraisalStatus& as);
+	// TODO: may not be necessary
+	string GetStringValue(double emotion_val, double mood_val, bool status); 
+	string GetDimensionAsString(const string& dim, const AppraisalFrame& emotion, const AppraisalFrame& mood, bool status);
 };
 
 struct emotion_data
