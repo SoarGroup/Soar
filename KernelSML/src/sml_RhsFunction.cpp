@@ -107,14 +107,7 @@ Symbol* sml::ConcatRhsFunction::Execute(std::vector<Symbol*>* pArguments)
 				   << "Ignoring it..."
 				   << std::endl;
 		} else {
-      std::string nextString = symbol_to_string( m_pAgentSML->GetSoarAgent(), pSymbol, true, 0, 0 );
-      // SBW 8/18/08
-      // remove pipes around odd strings, they will be re-added around the
-      // whole string later
-      // without this, behavior is Foo + bar = |\|Foo\|bar|, should be |Foobar|
-      if (nextString.size() > 0 && nextString[0] == '|' && nextString[nextString.size()-1] == '|') {
-        nextString = nextString.substr(1, nextString.size() - 2);
-      }
+			std::string nextString = symbol_to_string( m_pAgentSML->GetSoarAgent(), pSymbol, false, 0, 0 );
 			ostr << nextString;
 		}
 	  }
@@ -153,7 +146,7 @@ Symbol* sml::CmdRhsFunction::Execute(std::vector<Symbol*>* pArguments)
 					   << "Ignoring it..."
 					   << std::endl;
 			} else {
-				ostr << symbol_to_string( m_pAgentSML->GetSoarAgent(), pSymbol, true, 0, 0 );
+				ostr << symbol_to_string( m_pAgentSML->GetSoarAgent(), pSymbol, false, 0, 0 );
 			}
 	  }
 
