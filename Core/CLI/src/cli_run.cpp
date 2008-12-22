@@ -24,16 +24,16 @@ using namespace sml;
 
 bool CommandLineInterface::ParseRun(std::vector<std::string>& argv) {
 	Options optionsData[] = {
-		{'d', "decision",		0},
-		{'e', "elaboration",	0},
-		{'f', "forever",		0},
-		{'i', "interleave",		1},
-		{'n', "noupdate",		0},
-		{'o', "output",			0},
-		{'p', "phase",			0},
-		{'s', "self",			0},
-		{'u', "update",			0},
-		{0, 0, 0}
+		{'d', "decision",		OPTARG_NONE},
+		{'e', "elaboration",	OPTARG_NONE},
+		{'f', "forever",		OPTARG_NONE},
+		{'i', "interleave",		OPTARG_REQUIRED},
+		{'n', "noupdate",		OPTARG_NONE},
+		{'o', "output",			OPTARG_NONE},
+		{'p', "phase",			OPTARG_NONE},
+		{'s', "self",			OPTARG_NONE},
+		{'u', "update",			OPTARG_NONE},
+		{0, 0, OPTARG_NONE}
 	};
 
 	RunBitset options(0);

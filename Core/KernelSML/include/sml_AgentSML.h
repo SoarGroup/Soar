@@ -32,6 +32,7 @@ typedef struct wme_struct wme;
 #include <map>
 #include <list>
 #include <string>
+#include <fstream>
 
 namespace sml {
 
@@ -60,6 +61,10 @@ typedef CKTimeMap::iterator					CKTimeMapIter ;
 // Map from kernel side time tag to client time tag
 typedef std::map< unsigned long, long >		KCTimeMap ;
 typedef KCTimeMap::iterator					KCTimeMapIter ;
+
+// Map from client side time tag to client time tag, for replay
+typedef std::map< long, long >				CCTimeMap ;
+typedef CCTimeMap::iterator					CCTimeMapIter ;
 
 // List of input messages waiting for the next input phase callback from the kernel
 typedef std::list<soarxml::ElementXML*>		PendingInputList ;
@@ -169,6 +174,70 @@ protected:
 	static void InputWmeGarbageCollectedHandler( agent* pAgent, int eventID, void* pData, void* pCallData ) ;
 
 	~AgentSML() ;
+
+	// Capture/Replay input
+private:
+	std::fstream*		m_pCaptureFile;
+	bool				m_CaptureAutoflush;
+	bool				m_ReplayInput;
+    CCTimeMap			m_ReplayTimetagMap;
+	struct CapturedActionAdd
+	{
+		std::string id;
+		std::string attr;
+		std::string value;
+		const char* type;
+	};
+	struct CapturedAction
+	{
+		CapturedAction() { add = 0; }
+		CapturedAction(const CapturedAction& other) 
+			: dc(other.dc)
+			, timetag(other.timetag)
+			, add(0)
+		{
+			if (other.add) add = new CapturedActionAdd(*other.add);
+		}
+		~CapturedAction() { if (add) delete add; }
+		CapturedAction& operator=(const CapturedAction& other)
+		{
+			dc = other.dc;
+			timetag = other.timetag;
+			if (other.add) 
+			{
+				add = new CapturedActionAdd(*other.add);
+			}
+			else
+			{
+				add = 0;
+			}
+		}
+
+		unsigned long dc;
+		long timetag;
+		void CreateAdd() { if (!add) add = new CapturedActionAdd(); }
+		CapturedActionAdd* Add() const { return add; }
+
+	private:
+		CapturedActionAdd* add;
+	};
+	std::queue< CapturedAction > m_CapturedActions;
+	static const std::string CAPTURE_SEPERATOR;
+	bool				CaptureInputWME(const CapturedAction& ca);
+	void				ResetCaptureReplay();
+
+public: 
+	bool				StartCaptureInput(const std::string& pathname, bool autoflush, unsigned long seed);
+	bool				StopCaptureInput();
+	inline bool			CaptureQuery() { return m_pCaptureFile ? true : false; }
+
+	bool				StartReplayInput(const std::string& pathname);
+	bool				StopReplayInput();
+	inline bool			ReplayQuery()  { return m_ReplayInput; }
+	size_t				NumberOfCapturedActions() { return m_CapturedActions.size(); }
+
+	void				ReplayInputWMEs();
+	// end Capture/Replay input
 
 public:
 	void RemoveWmeFromWmeMap( wme* w );

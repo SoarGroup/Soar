@@ -687,6 +687,51 @@ const long rl_convert_te_enabled( const char *val )
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////
+// hrl-discount
+/////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+/***************************************************************************
+ * Function     : rl_validate_hrl_discount
+ **************************************************************************/
+bool rl_validate_hrl_discount( const long new_val )
+{
+	return ( ( new_val == RL_HRL_D_ON ) || ( new_val == RL_HRL_D_OFF ) );
+}
+
+/***************************************************************************
+ * Function     : rl_convert_hrl_discount
+ **************************************************************************/
+const char *rl_convert_hrl_discount( const long val )
+{
+	const char *return_val = NULL;
+	
+	switch ( val )
+	{
+		case RL_HRL_D_ON:
+			return_val = "on";
+			break;
+			
+		case RL_HRL_D_OFF:
+			return_val = "off";
+			break;
+	}
+	
+	return return_val;
+}
+
+const long rl_convert_hrl_discount( const char *val )
+{
+	long return_val = NULL;
+	
+	if ( !strcmp( val, "on" ) )
+		return_val = RL_HRL_D_ON;
+	else if ( !strcmp( val, "off" ) )
+		return_val = RL_HRL_D_OFF;
+	
+	return return_val;
+}
+
+/////////////////////////////////////////////////////////////////////////////////////////////////////////
 /////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 /***************************************************************************
@@ -1092,7 +1137,8 @@ void rl_tabulate_reward_value_for_goal( agent *my_agent, Symbol *goal )
 	rl_set_stat( my_agent, RL_STAT_TOTAL_REWARD, reward );
 	rl_set_stat( my_agent, RL_STAT_GLOBAL_REWARD, ( global_reward + reward ) );
 
-	data->step++;
+	if ( ( rl_get_parameter( my_agent, RL_PARAM_HRL_DISCOUNT, RL_RETURN_LONG ) == RL_HRL_D_ON ) || ( goal == my_agent->bottom_goal ) )
+		data->step++;
 }
 
 /***************************************************************************
@@ -1153,7 +1199,7 @@ void rl_store_data( agent *my_agent, Symbol *goal, preference *cand )
 			if ( data->reward_age != 0 )
 			{
 				char buf[256];
-				SNPRINTF( buf, 254, "WARNING: gap ended (%c%d)", goal->id.name_letter, goal->id.name_number );
+				SNPRINTF( buf, 254, "gap ended (%c%d)", goal->id.name_letter, goal->id.name_number );
 				
 				print( my_agent, buf );
 				xml_generate_warning( my_agent, buf );
@@ -1170,7 +1216,7 @@ void rl_store_data( agent *my_agent, Symbol *goal, preference *cand )
 			if ( data->reward_age == 0 )
 			{
 				char buf[256];
-				SNPRINTF( buf, 254, "WARNING: gap started (%c%d)", goal->id.name_letter, goal->id.name_number );
+				SNPRINTF( buf, 254, "gap started (%c%d)", goal->id.name_letter, goal->id.name_number );
 				
 				print( my_agent, buf );
 				xml_generate_warning( my_agent, buf );
@@ -1258,7 +1304,21 @@ void rl_perform_update( agent *my_agent, double op_value, Symbol *goal )
 		// update is applied depending upon type of accumulation mode
 		// sum: add the update to the existing value
 		// avg: average the update with the existing value
-		temp += ( update * alpha * iter->second );		
+
+    double delta = (update * alpha * iter->second);
+
+    if ( my_agent->sysparams[ TRACE_RL_SYSPARAM ] ) { // SBW 12/18/08
+      std::string* oldValString = to_string(temp);
+      double newVal = temp + delta;
+      std::string* newValString = to_string(newVal);
+      std::string message = "updating RL rule " + std::string(prod->name->sc.name) + " from " + *oldValString + " to " + *newValString; 
+      print( my_agent, const_cast<char *>( message.c_str() ) );
+      xml_generate_message( my_agent, const_cast<char *>( message.c_str() ) );
+      delete oldValString;
+      delete newValString;
+		}
+    
+    temp += delta;
 
 		// Change value of rule
 		symbol_remove_ref( my_agent, rhs_value_to_symbol( prod->action_list->referent ) );

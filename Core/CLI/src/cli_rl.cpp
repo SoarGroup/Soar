@@ -29,10 +29,10 @@ bool CommandLineInterface::ParseRL( std::vector<std::string>& argv )
 {
 	Options optionsData[] = 
 	{
-		{'g', "get",	0},
-		{'s', "set",	0},
-		{'S', "stats",	0},
-		{0, 0, 0} // null
+		{'g', "get",	OPTARG_NONE},
+		{'s', "set",	OPTARG_NONE},
+		{'S', "stats",	OPTARG_NONE},
+		{0, 0, OPTARG_NONE} // null
 	};
 	RLBitset options(0);
 	
@@ -224,6 +224,15 @@ bool CommandLineInterface::DoRL( const char pOp, const std::string* pAttr, const
 		temp2 = to_string( temp_val );
 		temp += (*temp2);
 		delete temp2;
+		if ( m_RawOutput )
+			m_Result << temp << "\n";
+		else
+		{
+			AppendArgTagFast( sml_Names::kParamValue, sml_Names::kTypeString, temp.c_str() );			
+		}
+		
+		temp = "hrl-discount: ";
+		temp += rl_get_parameter( m_pAgentSoar, RL_PARAM_HRL_DISCOUNT, RL_RETURN_STRING );
 		if ( m_RawOutput )
 			m_Result << temp << "\n\n";
 		else

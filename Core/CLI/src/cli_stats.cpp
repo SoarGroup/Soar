@@ -32,10 +32,10 @@ using namespace sml;
 
 bool CommandLineInterface::ParseStats(std::vector<std::string>& argv) {
 	Options optionsData[] = {
-		{'m', "memory",	0},
-		{'r', "rete",	0},
-		{'s', "system",	0},
-		{0, 0, 0}
+		{'m', "memory",	OPTARG_NONE},
+		{'r', "rete",	OPTARG_NONE},
+		{'s', "system",	OPTARG_NONE},
+		{0, 0, OPTARG_NONE}
 	};
 
 	StatsBitset options(0);
@@ -97,6 +97,7 @@ bool CommandLineInterface::DoStats(const StatsBitset& options) {
 	AppendArgTagFast(sml_Names::kParamStatsProductionCountJustification,		sml_Names::kTypeInt,	Int2String(m_pAgentSoar->num_productions_of_type[JUSTIFICATION_PRODUCTION_TYPE], buf, kMinBufferSize));
 	AppendArgTagFast(sml_Names::kParamStatsCycleCountDecision,					sml_Names::kTypeInt,	Int2String(m_pAgentSoar->decision_phases_count, buf, kMinBufferSize));
 	AppendArgTagFast(sml_Names::kParamStatsCycleCountElaboration,				sml_Names::kTypeInt,	Int2String(m_pAgentSoar->e_cycle_count, buf, kMinBufferSize));
+	AppendArgTagFast(sml_Names::kParamStatsCycleCountInnerElaboration,			sml_Names::kTypeInt,	Int2String(m_pAgentSoar->inner_e_cycle_count, buf, kMinBufferSize));
 	AppendArgTagFast(sml_Names::kParamStatsProductionFiringCount,				sml_Names::kTypeInt,	Int2String(m_pAgentSoar->production_firing_count, buf, kMinBufferSize));
 	AppendArgTagFast(sml_Names::kParamStatsWmeCountAddition,					sml_Names::kTypeInt,	Int2String(m_pAgentSoar->wme_addition_count, buf, kMinBufferSize));
 	AppendArgTagFast(sml_Names::kParamStatsWmeCountRemoval,						sml_Names::kTypeInt,	Int2String(m_pAgentSoar->wme_removal_count, buf, kMinBufferSize));
@@ -315,6 +316,7 @@ void CommandLineInterface::GetSystemStats()
 		<< " ec's per dc, "
 		<< (m_pAgentSoar->e_cycle_count ? total_kernel_msec / m_pAgentSoar->e_cycle_count : 0)
 		<< " msec/ec)\n";
+	m_Result << m_pAgentSoar->inner_e_cycle_count << " inner elaboration cycles\n";
 
 	if ( m_pAgentSoar->operand2_mode ) {
 

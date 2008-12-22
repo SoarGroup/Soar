@@ -178,17 +178,20 @@ typedef byte wme_trace_type;   /* must be one of the above constants */
 /* JRV: Bug 1087: Chunk through local negations */
 #define CHUNK_THROUGH_LOCAL_NEGATIONS_SYSPARAM	 40
 
+/* New waterfall model: trace waterfall events */
+#define TRACE_WATERFALL_SYSPARAM				 41
+
 /* RPM: Soar-Emotion parameter */
-#define EMOTION_ENABLED								 41
+#define EMOTION_ENABLED								 42
 
 /* RPM: Soar-Emotion RL parameter */
-#define EMOTION_RL_ENABLED								 42
+#define EMOTION_RL_ENABLED								 43
 
 /* RPM: Soar-Emotion trace information */
-#define TRACE_EMOTION_SYSPARAM						 43
+#define TRACE_EMOTION_SYSPARAM						 44
 
 /* --- Warning: if you add sysparams, be sure to update the next line! --- */
-#define HIGHEST_SYSPARAM_NUMBER                  43
+#define HIGHEST_SYSPARAM_NUMBER                  44
 
 /* -----------------------------------------
    Sysparams[] stores the parameters; set_sysparam()

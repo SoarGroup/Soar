@@ -5,6 +5,7 @@
 #include "src/consistency.cpp"
 #include "src/decide.cpp"
 #include "src/decision_manipulation.cpp"
+#include "src/emotion.cpp"
 #include "src/explain.cpp"
 #include "src/exploration.cpp"
 #include "src/init_soar.cpp"
@@ -30,4 +31,3 @@
 #include "src/utilities.cpp"
 #include "src/wmem.cpp"
 #include "src/xml.cpp"
-#include "src/emotion.cpp"

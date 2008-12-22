@@ -3,8 +3,9 @@
 ##
 sp {left-right*propose*move
    (state <s> ^name left-right
-              ^direction.name <dir>
+              ^direction <d>
               ^location start)
+   (<d> ^name <dir>)
 -->
    (<s> ^operator <op> +)
    (<op> ^name move

@@ -77,7 +77,6 @@ typedef struct backtrace_struct backtrace_str;
 typedef struct explain_chunk_struct explain_chunk_str;
 typedef struct io_wme_struct io_wme;
 typedef struct multi_attributes_struct multi_attribute;
-typedef struct replay_struct replay;
 
 // following def's moved here from old interface.h file  KJC nov 05
 /* AGR 568 begin */
@@ -388,7 +387,9 @@ typedef struct agent_struct {
   parent_inst *parent_list_head;
 /* REW: end   09.15.96 */
   
-  
+  /* State for new waterfall model */
+  unsigned long       inner_e_cycle_count;     /* # of inner elaboration cycles run so far */
+
   /* ----------------------- Timing statistics -------------------------- */
 
 /* 
@@ -625,19 +626,6 @@ kernel time and total_cpu_time greater than the derived total CPU time. REW */
   int                 printer_output_column;
   int                 saved_printer_output_column;
   
-  /* kjh(CUSP-B10) begin */
-  /* ------------------ Recording/replaying stuff --------------------- */
-  /*  Bool                replaying; */
-  /* kjh(CUSP-B10) end */
-  /* kjc 12/99 capture/replay input cycle files */
-  FILE		    * capture_fileID;
-  FILE		    * replay_fileID;
-  Bool                replay_input_data;
-  replay            * replay_data;
-  unsigned long     * replay_timetags;
-  /* Bool				  capture_input_wmes;
-   * Bool				  replay_input_wmes; 
-   */
   /* ----------------------- Trace Formats -------------------------- */
   
   struct trace_format_struct *(object_tf_for_anything[3]);
@@ -728,6 +716,8 @@ kernel time and total_cpu_time greater than the derived total CPU time. REW */
   struct ms_change_struct * ms_i_assertions;  /* changes to match set */
   /* RCHONG: end 10.11 */
 
+  struct ms_change_struct * postponed_assertions;  /* New waterfall model: postponed assertion list */
+
   /* REW: begin 08.20.97 */
   Bool       operand2_mode;
   goal_stack_level active_level;
@@ -736,6 +726,28 @@ kernel time and total_cpu_time greater than the derived total CPU time. REW */
   Symbol *previous_active_goal;
   struct ms_change_struct *nil_goal_retractions; /* dll of all retractions for removed (ie nil) goals */
   /* REW: end   08.20.97 */
+
+  /**
+   * State for new waterfall model
+   * Represents the original active level of the elaboration cycle, saved so that we can modify the active
+   * level during the inner preference loop and restore it before working memory changes.
+   */
+  goal_stack_level highest_active_level;
+  /**
+   * State for new waterfall model
+   * Same as highest_active_level, just the goal that the level represents.
+   */
+  Symbol* highest_active_goal;
+  /**
+   * State for new waterfall model
+   * Can't fire rules at this level or higher (lower int)
+   */
+  goal_stack_level change_level;
+  /**
+   * State for new waterfall model
+   * Next change_level, in next iteration of inner preference loop.
+   */
+  goal_stack_level next_change_level;
 
   /* delineate btwn Pref/WM(propose) and Pref/WM(apply) KJC 10.05.98 */
   Bool       applyPhase;

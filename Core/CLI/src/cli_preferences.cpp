@@ -24,16 +24,16 @@ using namespace sml;
 
 bool CommandLineInterface::ParsePreferences(std::vector<std::string>& argv) {
 	Options optionsData[] = {
-		{'0', "none",		0},
-		{'n', "names",		0},
-		{'1', "names",		0},
-		{'N', "names",		0},
-		{'2', "timetags",	0},
-		{'t', "timetags",	0},
-		{'3', "wmes",		0},
-		{'w', "wmes",		0},
-		{'o', "object",    0},
-		{0, 0, 0}
+		{'0', "none",		OPTARG_NONE},
+		{'n', "names",		OPTARG_NONE},
+		{'1', "names",		OPTARG_NONE},
+		{'N', "names",		OPTARG_NONE},
+		{'2', "timetags",	OPTARG_NONE},
+		{'t', "timetags",	OPTARG_NONE},
+		{'3', "wmes",		OPTARG_NONE},
+		{'w', "wmes",		OPTARG_NONE},
+		{'o', "object",		OPTARG_NONE},
+		{0, 0, OPTARG_NONE}
 	};
 
 	ePreferencesDetail detail = PREFERENCES_ONLY;

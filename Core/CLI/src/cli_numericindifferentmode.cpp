@@ -24,10 +24,10 @@ bool CommandLineInterface::ParseNumericIndifferentMode(std::vector<std::string>&
 
 	Options optionsData[] = 
 	{
-		{'a', "average",	0},
-		{'a', "avg",		0},
-		{'s', "sum",		0},
-		{0, 0, 0}
+		{'a', "average",	OPTARG_NONE},
+		{'a', "avg",		OPTARG_NONE},
+		{'s', "sum",		OPTARG_NONE},
+		{0, 0, OPTARG_NONE}
 	};
 
 	ni_mode mode = NUMERIC_INDIFFERENT_MODE_AVG;

@@ -82,8 +82,10 @@ Bool goal_stack_consistent_through_goal(agent* thisAgent, Symbol *goal);
 Bool i_activity_at_goal(Symbol *goal);
 Bool minor_quiescence_at_goal(agent* thisAgent, Symbol *goal);
 int active_production_type_at_goal(Symbol *goal);
-Symbol * highest_active_goal_propose();
-Symbol * highest_active_goal_apply(agent* thisAgent);
+
+Symbol * highest_active_goal_propose(agent* thisAgent, Symbol* start_goal, Bool noneOk);
+Symbol * highest_active_goal_apply(agent* thisAgent, Symbol* start_goal, Bool noneOk);
+
 /* REW: end   08.20.97 */
 
 #ifdef __cplusplus
