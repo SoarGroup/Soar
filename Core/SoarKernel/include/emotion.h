@@ -65,7 +65,7 @@ struct AppraisalFrame {
 	string ResetAppraisalValue(string appraisal);
 	string GetCategoricalValue(string appraisal);
 	double CalculateIntensity();
-   double CalculateValence();
+	double CalculateValence();
 	string ToString();
 };
 
@@ -119,8 +119,8 @@ struct Mood {
 	void Decay();
 	double MoveTowardEmotion(double val, double target);
 	void MoveTowardEmotion(AppraisalFrame& emotion);
-   void DisableAppraisal(string& appraisal);
-   string GetDimension(string& dim);
+    void DisableAppraisal(string& appraisal);
+    string GetDimension(string& dim);
 };
 
 struct Feeling {
