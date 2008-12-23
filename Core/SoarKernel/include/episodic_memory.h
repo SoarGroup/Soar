@@ -313,7 +313,7 @@ typedef std::priority_queue<epmem_range_query *, std::vector<epmem_range_query *
 typedef struct epmem_edge_struct
 {
 	epmem_node_id q0;
-	std::string *w;
+	Symbol *w;
 	epmem_node_id q1;
 } epmem_edge;
 
