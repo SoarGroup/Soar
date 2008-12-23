@@ -128,13 +128,12 @@ sp {apply*intialize-kb*fill
    ###
    (<t4> ^id 4
          ^name |soar query|
-         ^note |state name; superstate; io; good state, bad state; state, superstate|
-         ^steps 5
+         ^note |state name; superstate; good state, bad state; state, superstate|
+         ^steps 4
          ^step <st4-1>
          ^step <st4-2>
          ^step <st4-3>
-         ^step <st4-4>
-         ^step <st4-5>)
+         ^step <st4-4>)
    (<st4-1> ^id 1
             ^type query
             ^status success
@@ -150,30 +149,24 @@ sp {apply*intialize-kb*fill
             ^expected <max-entries>
             ^score 1.)
    (<c4-2> ^query <q4-2>)
-   (<q4-2> ^superstate nil)
+   (<q4-2> ^superstate nil)   
    (<st4-3> ^id 3
             ^type query
-            ^status failure
-            ^command <c4-3>)
+            ^status success
+            ^command <c4-3>
+            ^expected <max-entries>
+            ^score 1.)
    (<c4-3> ^query <q4-3>)
-   (<q4-3> ^io <io>)
+   (<q4-3> ^name kb
+           ^name bad-state-name)
    (<st4-4> ^id 4
             ^type query
             ^status success
             ^command <c4-4>
             ^expected <max-entries>
-            ^score 1.)
+            ^score 2.)
    (<c4-4> ^query <q4-4>)
    (<q4-4> ^name kb
-           ^name bad-state-name)
-   (<st4-5> ^id 5
-            ^type query
-            ^status success
-            ^command <c4-5>
-            ^expected <max-entries>
-            ^score 2.)
-   (<c4-5> ^query <q4-5>)
-   (<q4-5> ^name kb
            ^superstate nil)
    ###
    (<t5> ^id 5
@@ -833,12 +826,13 @@ sp {apply*intialize-kb*fill
    ###
   (<t15> ^id 15
           ^name |mode 3 checks|
-          ^note |warm-blooded, score 1; warm-blooded and Cetacea, score 2; warm-blooded, rabies, not Cetacea, score 1; warm-blooded, rabies, not beaked whale, score 2|            
-          ^steps 4
+          ^note |warm-blooded, score 1; warm-blooded and Cetacea, score 2; warm-blooded, rabies, not Cetacea, score 1; warm-blooded, rabies, not beaked whale, score 2; io|
+          ^steps 5
           ^step <st15-1>
           ^step <st15-2>
           ^step <st15-3>
-          ^step <st15-4>)
+          ^step <st15-4>
+          ^step <st15-5>)
    (<st15-1> ^id 1
              ^type query
              ^status success
@@ -890,4 +884,12 @@ sp {apply*intialize-kb*fill
    (<n15-4> ^observing-entry <noe15-4>)
    (<noe15-4> ^attributes <na15-4>)
    (<na15-4> ^kind-of |beaked whale|)
+   (<st15-5> ^id 5
+             ^type query
+             ^status success
+             ^command <c15-5>
+             ^expected <max-entries>
+             ^score 1.)
+   (<c15-5> ^query <q15-5>)
+   (<q15-5> ^io <io15-5>)
 }
