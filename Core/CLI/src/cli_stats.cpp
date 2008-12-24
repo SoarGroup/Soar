@@ -32,10 +32,10 @@ using namespace sml;
 
 bool CommandLineInterface::ParseStats(std::vector<std::string>& argv) {
 	Options optionsData[] = {
-		{'m', "memory",	0},
-		{'r', "rete",	0},
-		{'s', "system",	0},
-		{0, 0, 0}
+		{'m', "memory",	OPTARG_NONE},
+		{'r', "rete",	OPTARG_NONE},
+		{'s', "system",	OPTARG_NONE},
+		{0, 0, OPTARG_NONE}
 	};
 
 	StatsBitset options(0);

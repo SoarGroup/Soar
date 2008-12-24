@@ -16,6 +16,7 @@ namespace cli {
 		static char const* kCLIAddWME;
 		static char const* kCLIAlias;
 		static char const* kCLIAttributePreferencesMode;
+		static char const* kCLICaptureInput;
 		static char const* kCLICD;
 		static char const* kCLIChunkNameFormat;
 		static char const* kCLICLog;
@@ -58,6 +59,7 @@ namespace cli {
 		static char const* kCLIPWD;
 		static char const* kCLIQuit;
 		static char const* kCLIRemoveWME;
+		static char const* kCLIReplayInput;
 		static char const* kCLIReteNet;
 		static char const* kCLIRL;
 		static char const* kCLIRun;

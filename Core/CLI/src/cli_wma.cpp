@@ -26,11 +26,11 @@ bool CommandLineInterface::ParseWMA( std::vector<std::string>& argv )
 {	
 	Options optionsData[] = 
 	{
-		{'g', "get",	0},
-		{'p', "print",  0},
-		{'s', "set",	0},
-		{'S', "stats",	0},		
-		{0, 0, 0} // null
+		{'g', "get",	OPTARG_NONE},
+		{'p', "print",  OPTARG_NONE},
+		{'s', "set",	OPTARG_NONE},
+		{'S', "stats",	OPTARG_NONE},		
+		{0, 0, OPTARG_NONE} // null
 	};
 	WMABitset options(0);
 	

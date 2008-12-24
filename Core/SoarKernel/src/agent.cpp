@@ -194,7 +194,6 @@ agent * create_soar_agent (char * agent_name) {                                 
   newAgent->productions_being_traced           = NIL; 
   newAgent->promoted_ids                       = NIL;
   newAgent->reason_for_stopping                = "Startup";
-  newAgent->replay_input_data                  = FALSE;
   newAgent->slots_for_possible_removal         = NIL;
   newAgent->stop_soar                          = TRUE;           
   newAgent->system_halted                      = FALSE;

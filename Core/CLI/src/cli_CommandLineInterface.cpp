@@ -44,6 +44,7 @@ EXPORT CommandLineInterface::CommandLineInterface() {
 	m_CommandMap[Commands::kCLIAddWME]						= &cli::CommandLineInterface::ParseAddWME;
 	m_CommandMap[Commands::kCLIAlias]						= &cli::CommandLineInterface::ParseAlias;
 	m_CommandMap[Commands::kCLIAttributePreferencesMode]	= &cli::CommandLineInterface::ParseAttributePreferencesMode;
+	m_CommandMap[Commands::kCLICaptureInput]				= &cli::CommandLineInterface::ParseCaptureInput;
 	m_CommandMap[Commands::kCLICD]							= &cli::CommandLineInterface::ParseCD;
 	m_CommandMap[Commands::kCLIChunkNameFormat]				= &cli::CommandLineInterface::ParseChunkNameFormat;
 	m_CommandMap[Commands::kCLICLog]						= &cli::CommandLineInterface::ParseCLog;
@@ -86,6 +87,7 @@ EXPORT CommandLineInterface::CommandLineInterface() {
 	m_CommandMap[Commands::kCLIPWD]							= &cli::CommandLineInterface::ParsePWD;
 	m_CommandMap[Commands::kCLIQuit]						= &cli::CommandLineInterface::ParseQuit;
 	m_CommandMap[Commands::kCLIRemoveWME]					= &cli::CommandLineInterface::ParseRemoveWME;
+	m_CommandMap[Commands::kCLIReplayInput]					= &cli::CommandLineInterface::ParseReplayInput;
 	m_CommandMap[Commands::kCLIReteNet]						= &cli::CommandLineInterface::ParseReteNet;
 	m_CommandMap[Commands::kCLIRL]							= &cli::CommandLineInterface::ParseRL;
 	m_CommandMap[Commands::kCLIRun]							= &cli::CommandLineInterface::ParseRun;
@@ -116,6 +118,7 @@ EXPORT CommandLineInterface::CommandLineInterface() {
 	m_EchoMap[Commands::kCLIAddWME]						= true ;
 	m_EchoMap[Commands::kCLIAlias]						= true ;
 	m_EchoMap[Commands::kCLIAttributePreferencesMode]	= true ;
+	m_EchoMap[Commands::kCLICaptureInput]				= true ;
 	m_EchoMap[Commands::kCLICD]							= true ;
 	m_EchoMap[Commands::kCLIChunkNameFormat]			= true ;
 	m_EchoMap[Commands::kCLICLog]						= true ;
@@ -142,6 +145,7 @@ EXPORT CommandLineInterface::CommandLineInterface() {
 	m_EchoMap[Commands::kCLIPushD]						= true ;
 	m_EchoMap[Commands::kCLIQuit]						= true ;
 	m_EchoMap[Commands::kCLIRemoveWME]					= true ;
+	m_EchoMap[Commands::kCLIReplayInput]				= true ;
 	m_EchoMap[Commands::kCLIReteNet]					= true ;
 	m_EchoMap[Commands::kCLIRL]							= true ;
 	m_EchoMap[Commands::kCLIRun]						= true ;
@@ -896,11 +900,11 @@ void CommandLineInterface::MoveBack(std::vector<std::string>& argv, int what, in
 	argv.erase(target);
 }
 
-bool CommandLineInterface::HandleOptionArgument(std::vector<std::string>& argv, const char* option, int arg) {
+bool CommandLineInterface::HandleOptionArgument(std::vector<std::string>& argv, const char* option, eOptionArgument arg) {
 	switch (arg) {
-		case 0:
+		case OPTARG_NONE:
 			break;
-		case 1:
+		case OPTARG_REQUIRED:
 			// required argument
 			if (static_cast<unsigned>(++m_Argument) >= argv.size()) {
 				std::string detail(option);
@@ -910,7 +914,7 @@ bool CommandLineInterface::HandleOptionArgument(std::vector<std::string>& argv, 
 			m_OptionArgument = argv[m_Argument];
 			MoveBack(argv, m_Argument, m_NonOptionArguments);
 			break;
-		case 2:
+		case OPTARG_OPTIONAL:
 		default:
 			// optional argument
 			if (static_cast<unsigned>(++m_Argument) < argv.size()) {

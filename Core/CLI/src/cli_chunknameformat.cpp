@@ -28,11 +28,11 @@ using namespace sml;
 
 bool CommandLineInterface::ParseChunkNameFormat(std::vector<std::string>& argv) {
 	Options optionsData[] = {
-		{'c', "count",		2},
-		{'l', "long",		0},
-		{'p', "prefix",		2},
-		{'s', "short",		0},
-		{0, 0, 0}
+		{'c', "count",		OPTARG_OPTIONAL},
+		{'l', "long",		OPTARG_NONE},
+		{'p', "prefix",		OPTARG_OPTIONAL},
+		{'s', "short",		OPTARG_NONE},
+		{0, 0, OPTARG_NONE}
 	};
 
 	bool changeFormat = false;

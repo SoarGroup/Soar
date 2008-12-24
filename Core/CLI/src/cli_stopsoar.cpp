@@ -22,8 +22,8 @@ using namespace cli;
 
 bool CommandLineInterface::ParseStopSoar(std::vector<std::string>& argv) {
 	Options optionsData[] = {
-		{'s', "self",		0},
-		{0, 0, 0}
+		{'s', "self",		OPTARG_NONE},
+		{0, 0, OPTARG_NONE}
 	};
 
 	bool self = false;

@@ -26,12 +26,12 @@ bool CommandLineInterface::ParseEpMem( std::vector<std::string>& argv )
 {	
 	Options optionsData[] = 
 	{		
-		{'c', "close",		0},		
-		{'g', "get",		0},		
-		{'s', "set",		0},
-		{'S', "stats",		0},
-		{'t', "timers",		0},
-		{0, 0, 0} // null
+		{'c', "close",		OPTARG_NONE},		
+		{'g', "get",		OPTARG_NONE},		
+		{'s', "set",		OPTARG_NONE},
+		{'S', "stats",		OPTARG_NONE},
+		{'t', "timers",		OPTARG_NONE},
+		{0, 0, OPTARG_NONE} // null
 	};
 	EpMemBitset options(0);
 	

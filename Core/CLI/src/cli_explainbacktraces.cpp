@@ -25,9 +25,9 @@ using namespace sml;
 
 bool CommandLineInterface::ParseExplainBacktraces(std::vector<std::string>& argv) {
 	Options optionsData[] = {
-		{'c', "condition",	1},
-		{'f', "full",		0},
-		{0, 0, 0}
+		{'c', "condition",	OPTARG_REQUIRED},
+		{'f', "full",		OPTARG_NONE},
+		{0, 0, OPTARG_NONE}
 	};
 
 	int condition = 0;

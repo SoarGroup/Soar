@@ -179,8 +179,8 @@ def ConfigureJNI(env):
 
     if sys.platform == 'darwin':
         # Apple does not use Sun's naming convention
-        java_headers = [os.path.join(java_base, 'Headers')]
-        java_libs = [os.path.join(java_base, 'Libraries')]
+        java_headers = [os.path.join(java_base, 'include')]
+        java_libs = [os.path.join(java_base, 'lib')]
     else:
         # windows and linux
         java_headers = [os.path.join(java_base, 'include')]

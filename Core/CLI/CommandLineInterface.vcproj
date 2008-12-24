@@ -434,6 +434,26 @@
 					</FileConfiguration>
 				</File>
 				<File
+					RelativePath=".\src\cli_captureinput.cpp"
+					>
+					<FileConfiguration
+						Name="Debug SCU|Win32"
+						ExcludedFromBuild="true"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="Release SCU|Win32"
+						ExcludedFromBuild="true"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+						/>
+					</FileConfiguration>
+				</File>
+				<File
 					RelativePath=".\src\cli_cd.cpp"
 					>
 					<FileConfiguration
@@ -1255,6 +1275,26 @@
 				</File>
 				<File
 					RelativePath=".\src\cli_removewme.cpp"
+					>
+					<FileConfiguration
+						Name="Debug SCU|Win32"
+						ExcludedFromBuild="true"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="Release SCU|Win32"
+						ExcludedFromBuild="true"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+						/>
+					</FileConfiguration>
+				</File>
+				<File
+					RelativePath=".\src\cli_replayinput.cpp"
 					>
 					<FileConfiguration
 						Name="Debug SCU|Win32"

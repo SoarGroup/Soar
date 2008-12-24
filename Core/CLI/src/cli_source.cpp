@@ -29,10 +29,10 @@ using namespace std;
 
 bool CommandLineInterface::ParseSource(std::vector<std::string>& argv) {
 	Options optionsData[] = {
-		{'a', "all",			0},
-		{'d', "disable",		0},
-		{'v', "verbose",		0},
-		{0, 0, 0}
+		{'a', "all",			OPTARG_NONE},
+		{'d', "disable",		OPTARG_NONE},
+		{'v', "verbose",		OPTARG_NONE},
+		{0, 0, OPTARG_NONE}
 	};
 
 	// Set to default on first call to source
