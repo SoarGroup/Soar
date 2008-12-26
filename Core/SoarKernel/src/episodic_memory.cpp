@@ -3941,11 +3941,13 @@ void epmem_process_query( agent *my_agent, Symbol *state, Symbol *query, Symbol 
 				int len;
 				
 				std::queue<Symbol *> parent_syms;
-				std::queue<epmem_node_id> parent_ids;		
+				std::queue<epmem_node_id> parent_ids;
+				std::queue<wme *> parent_wmes;
 				int tc = get_new_tc_number( my_agent );
 
 				Symbol *parent_sym;
 				epmem_node_id parent_id;
+				wme *parent_wme;
 				unsigned long my_hash;				
 
 				int i, j;
@@ -3961,6 +3963,7 @@ void epmem_process_query( agent *my_agent, Symbol *state, Symbol *query, Symbol 
 							len = len_query;					
 							parent_syms.push( query );
 							parent_ids.push( EPMEM_MEMID_ROOT );
+							parent_wmes.push( NULL );
 							just_started = true;
 							break;
 
@@ -3969,6 +3972,7 @@ void epmem_process_query( agent *my_agent, Symbol *state, Symbol *query, Symbol 
 							len = len_neg_query;						
 							parent_syms.push( neg_query );
 							parent_ids.push( EPMEM_MEMID_ROOT );
+							parent_wmes.push( NULL );
 							just_started = true;
 							break;
 					}
@@ -3981,99 +3985,111 @@ void epmem_process_query( agent *my_agent, Symbol *state, Symbol *query, Symbol 
 						parent_id = parent_ids.front();					
 						parent_ids.pop();
 
+						parent_wme = parent_wmes.front();
+						parent_wmes.pop();
+
 						if ( !just_started )
 							(*wmes) = epmem_get_augs_of_id( my_agent, parent_sym, tc, &len );
-						else
-							just_started = false;
 
 						if ( (*wmes) != NULL )
 						{
-							for ( j=0; j<len; j++ )
-							{							
-								// add to cue list
-								state->id.epmem_info->cue_wmes->insert( (*wmes)[ j ] );
+							if ( len )
+							{
+								for ( j=0; j<len; j++ )
+								{							
+									// add to cue list
+									state->id.epmem_info->cue_wmes->insert( (*wmes)[ j ] );
+									
+									// find wme id
+									my_hash = epmem_hash_wme( (*wmes)[j] );
+									if ( (*wmes)[j]->value->common.symbol_type != IDENTIFIER_SYMBOL_TYPE )
+									{
+										// hash=? AND parent_id=? AND name=? AND value=? AND attr_type=? AND value_type=?
+										sqlite3_bind_int64( my_agent->epmem_statements[ EPMEM_STMT_ONE_FIND_NODE_UNIQUE ], 1, my_hash );
+										sqlite3_bind_int64( my_agent->epmem_statements[ EPMEM_STMT_ONE_FIND_NODE_UNIQUE ], 2, parent_id );
+
+										switch( (*wmes)[j]->attr->common.symbol_type )
+										{
+											case SYM_CONSTANT_SYMBOL_TYPE:
+												sqlite3_bind_text( my_agent->epmem_statements[ EPMEM_STMT_ONE_FIND_NODE_UNIQUE ], 3, (const char *) (*wmes)[j]->attr->sc.name, -1, SQLITE_STATIC );
+												break;
+									            
+											case INT_CONSTANT_SYMBOL_TYPE:
+			        							sqlite3_bind_int64( my_agent->epmem_statements[ EPMEM_STMT_ONE_FIND_NODE_UNIQUE ], 3, (*wmes)[j]->attr->ic.value );
+												break;
 								
-								// find wme id							
-								my_hash = epmem_hash_wme( (*wmes)[j] );
-								if ( (*wmes)[j]->value->common.symbol_type != IDENTIFIER_SYMBOL_TYPE )
-								{
-									// hash=? AND parent_id=? AND name=? AND value=? AND attr_type=? AND value_type=?
-									sqlite3_bind_int64( my_agent->epmem_statements[ EPMEM_STMT_ONE_FIND_NODE_UNIQUE ], 1, my_hash );
-									sqlite3_bind_int64( my_agent->epmem_statements[ EPMEM_STMT_ONE_FIND_NODE_UNIQUE ], 2, parent_id );
+											case FLOAT_CONSTANT_SYMBOL_TYPE:
+			        							sqlite3_bind_double( my_agent->epmem_statements[ EPMEM_STMT_ONE_FIND_NODE_UNIQUE ], 3, (*wmes)[j]->attr->fc.value );
+												break;
+										}
+										
+										switch( (*wmes)[j]->value->common.symbol_type )
+										{
+											case SYM_CONSTANT_SYMBOL_TYPE:
+												sqlite3_bind_text( my_agent->epmem_statements[ EPMEM_STMT_ONE_FIND_NODE_UNIQUE ], 4, (const char *) (*wmes)[j]->value->sc.name, -1, SQLITE_STATIC );
+												break;
+									            
+											case INT_CONSTANT_SYMBOL_TYPE:
+			        							sqlite3_bind_int64( my_agent->epmem_statements[ EPMEM_STMT_ONE_FIND_NODE_UNIQUE ], 4, (*wmes)[j]->value->ic.value );
+												break;
+								
+											case FLOAT_CONSTANT_SYMBOL_TYPE:
+			        							sqlite3_bind_double( my_agent->epmem_statements[ EPMEM_STMT_ONE_FIND_NODE_UNIQUE ], 4, (*wmes)[j]->value->fc.value );
+												break;
+										}
 
-									switch( (*wmes)[j]->attr->common.symbol_type )
-									{
-										case SYM_CONSTANT_SYMBOL_TYPE:
-											sqlite3_bind_text( my_agent->epmem_statements[ EPMEM_STMT_ONE_FIND_NODE_UNIQUE ], 3, (const char *) (*wmes)[j]->attr->sc.name, -1, SQLITE_STATIC );
-											break;
-								            
-										case INT_CONSTANT_SYMBOL_TYPE:
-			        						sqlite3_bind_int64( my_agent->epmem_statements[ EPMEM_STMT_ONE_FIND_NODE_UNIQUE ], 3, (*wmes)[j]->attr->ic.value );
-											break;
-							
-										case FLOAT_CONSTANT_SYMBOL_TYPE:
-			        						sqlite3_bind_double( my_agent->epmem_statements[ EPMEM_STMT_ONE_FIND_NODE_UNIQUE ], 3, (*wmes)[j]->attr->fc.value );
-											break;
+										sqlite3_bind_int64( my_agent->epmem_statements[ EPMEM_STMT_ONE_FIND_NODE_UNIQUE ], 5, (*wmes)[j]->attr->common.symbol_type );
+										sqlite3_bind_int64( my_agent->epmem_statements[ EPMEM_STMT_ONE_FIND_NODE_UNIQUE ], 6, (*wmes)[j]->value->common.symbol_type );
+										
+										if ( sqlite3_step( my_agent->epmem_statements[ EPMEM_STMT_ONE_FIND_NODE_UNIQUE ] ) == SQLITE_ROW )
+											leaf_ids[i].push_back( epmem_create_leaf_node( sqlite3_column_int64( my_agent->epmem_statements[ EPMEM_STMT_ONE_FIND_NODE_UNIQUE ], 0 ), wma_get_wme_activation( my_agent, (*wmes)[j] ) ) );
+										
+										sqlite3_reset( my_agent->epmem_statements[ EPMEM_STMT_ONE_FIND_NODE_UNIQUE ] );
 									}
-									
-									switch( (*wmes)[j]->value->common.symbol_type )
+									else
 									{
-										case SYM_CONSTANT_SYMBOL_TYPE:
-											sqlite3_bind_text( my_agent->epmem_statements[ EPMEM_STMT_ONE_FIND_NODE_UNIQUE ], 4, (const char *) (*wmes)[j]->value->sc.name, -1, SQLITE_STATIC );
-											break;
-								            
-										case INT_CONSTANT_SYMBOL_TYPE:
-			        						sqlite3_bind_int64( my_agent->epmem_statements[ EPMEM_STMT_ONE_FIND_NODE_UNIQUE ], 4, (*wmes)[j]->value->ic.value );
-											break;
-							
-										case FLOAT_CONSTANT_SYMBOL_TYPE:
-			        						sqlite3_bind_double( my_agent->epmem_statements[ EPMEM_STMT_ONE_FIND_NODE_UNIQUE ], 4, (*wmes)[j]->value->fc.value );
-											break;
-									}
+										// hash=? AND parent_id=? AND name=? AND value IS NULL AND attr_type=?
+										sqlite3_bind_int64( my_agent->epmem_statements[ EPMEM_STMT_ONE_FIND_IDENTIFIER ], 1, my_hash );
+										sqlite3_bind_int64( my_agent->epmem_statements[ EPMEM_STMT_ONE_FIND_IDENTIFIER ], 2, parent_id );
+										
+										switch( (*wmes)[j]->attr->common.symbol_type )
+										{
+											case SYM_CONSTANT_SYMBOL_TYPE:
+												sqlite3_bind_text( my_agent->epmem_statements[ EPMEM_STMT_ONE_FIND_IDENTIFIER ], 3, (const char *) (*wmes)[j]->attr->sc.name, -1, SQLITE_STATIC );
+												break;
+									            
+											case INT_CONSTANT_SYMBOL_TYPE:
+			        							sqlite3_bind_int64( my_agent->epmem_statements[ EPMEM_STMT_ONE_FIND_IDENTIFIER ], 3, (*wmes)[j]->attr->ic.value );
+												break;
+								
+											case FLOAT_CONSTANT_SYMBOL_TYPE:
+			        							sqlite3_bind_double( my_agent->epmem_statements[ EPMEM_STMT_ONE_FIND_IDENTIFIER ], 3, (*wmes)[j]->attr->fc.value );
+												break;
+										}
+										sqlite3_bind_int64( my_agent->epmem_statements[ EPMEM_STMT_ONE_FIND_IDENTIFIER ], 4, (*wmes)[j]->attr->common.symbol_type );
 
-									sqlite3_bind_int64( my_agent->epmem_statements[ EPMEM_STMT_ONE_FIND_NODE_UNIQUE ], 5, (*wmes)[j]->attr->common.symbol_type );
-									sqlite3_bind_int64( my_agent->epmem_statements[ EPMEM_STMT_ONE_FIND_NODE_UNIQUE ], 6, (*wmes)[j]->value->common.symbol_type );
-									
-									if ( sqlite3_step( my_agent->epmem_statements[ EPMEM_STMT_ONE_FIND_NODE_UNIQUE ] ) == SQLITE_ROW )
-										leaf_ids[i].push_back( epmem_create_leaf_node( sqlite3_column_int64( my_agent->epmem_statements[ EPMEM_STMT_ONE_FIND_NODE_UNIQUE ], 0 ), wma_get_wme_activation( my_agent, (*wmes)[j] ) ) );
-									
-									sqlite3_reset( my_agent->epmem_statements[ EPMEM_STMT_ONE_FIND_NODE_UNIQUE ] );
+										if ( sqlite3_step( my_agent->epmem_statements[ EPMEM_STMT_ONE_FIND_IDENTIFIER ] ) == SQLITE_ROW )
+										{
+											parent_syms.push( (*wmes)[j]->value );
+											parent_ids.push( sqlite3_column_int64( my_agent->epmem_statements[ EPMEM_STMT_ONE_FIND_IDENTIFIER ], 0 ) );
+											parent_wmes.push( (*wmes)[j] );
+										}
+
+										sqlite3_reset( my_agent->epmem_statements[ EPMEM_STMT_ONE_FIND_IDENTIFIER ] );
+									}
 								}
-								else
-								{
-									// hash=? AND parent_id=? AND name=? AND value IS NULL AND attr_type=?
-									sqlite3_bind_int64( my_agent->epmem_statements[ EPMEM_STMT_ONE_FIND_IDENTIFIER ], 1, my_hash );
-									sqlite3_bind_int64( my_agent->epmem_statements[ EPMEM_STMT_ONE_FIND_IDENTIFIER ], 2, parent_id );
-									
-									switch( (*wmes)[j]->attr->common.symbol_type )
-									{
-										case SYM_CONSTANT_SYMBOL_TYPE:
-											sqlite3_bind_text( my_agent->epmem_statements[ EPMEM_STMT_ONE_FIND_IDENTIFIER ], 3, (const char *) (*wmes)[j]->attr->sc.name, -1, SQLITE_STATIC );
-											break;
-								            
-										case INT_CONSTANT_SYMBOL_TYPE:
-			        						sqlite3_bind_int64( my_agent->epmem_statements[ EPMEM_STMT_ONE_FIND_IDENTIFIER ], 3, (*wmes)[j]->attr->ic.value );
-											break;
-							
-										case FLOAT_CONSTANT_SYMBOL_TYPE:
-			        						sqlite3_bind_double( my_agent->epmem_statements[ EPMEM_STMT_ONE_FIND_IDENTIFIER ], 3, (*wmes)[j]->attr->fc.value );
-											break;
-									}
-									sqlite3_bind_int64( my_agent->epmem_statements[ EPMEM_STMT_ONE_FIND_IDENTIFIER ], 4, (*wmes)[j]->attr->common.symbol_type );
-
-									if ( sqlite3_step( my_agent->epmem_statements[ EPMEM_STMT_ONE_FIND_IDENTIFIER ] ) == SQLITE_ROW )
-									{
-										parent_syms.push( (*wmes)[j]->value );
-										parent_ids.push( sqlite3_column_int64( my_agent->epmem_statements[ EPMEM_STMT_ONE_FIND_IDENTIFIER ], 0 ) );
-									}
-
-									sqlite3_reset( my_agent->epmem_statements[ EPMEM_STMT_ONE_FIND_IDENTIFIER ] );
-								}
+							}
+							else
+							{
+								if ( !just_started )
+									leaf_ids[i].push_back( epmem_create_leaf_node( parent_id, wma_get_wme_activation( my_agent, parent_wme ) ) );
 							}
 
 							// free space from aug list
 							free_memory( my_agent, (*wmes), MISCELLANEOUS_MEM_USAGE );
 						}
+
+						just_started = false;
 					}
 				}
 			}
@@ -4424,7 +4440,6 @@ void epmem_process_query( agent *my_agent, Symbol *state, Symbol *query, Symbol 
 
 				// misc
 				int i, j, k, m;
-				bool just_started;				
 
 				// associate common literals with a query
 				std::map<epmem_node_id, epmem_shared_trigger_list *> literal_to_node_query;
@@ -4473,15 +4488,13 @@ void epmem_process_query( agent *my_agent, Symbol *state, Symbol *query, Symbol 
 						case EPMEM_NODE_POS:
 							parent_syms.push( query );
 							parent_ids.push( EPMEM_MEMID_ROOT );
-							parent_literals.push( NULL );
-							just_started = true;
+							parent_literals.push( NULL );							
 							break;
 
 						case EPMEM_NODE_NEG:
 							parent_syms.push( neg_query );
 							parent_ids.push( EPMEM_MEMID_ROOT );
 							parent_literals.push( NULL );
-							just_started = true;
 							break;
 					}					
 					
@@ -4822,9 +4835,7 @@ void epmem_process_query( agent *my_agent, Symbol *state, Symbol *query, Symbol 
 									sqlite3_reset( my_agent->epmem_statements[ EPMEM_STMT_THREE_FIND_NODE_UNIQUE ] );
 								}
 							}
-						}						
-
-						just_started = false;
+						}
 					}
 				}
 
