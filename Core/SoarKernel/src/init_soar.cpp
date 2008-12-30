@@ -1390,7 +1390,7 @@ void init_agent_memory(agent* thisAgent)
           "There should be no top goal when init_agent_memory is called!");
   if ( thisAgent->top_goal) return;
 
-  InitModalEmotions();
+  //InitModalEmotions();
 
   thisAgent->io_header = get_new_io_identifier (thisAgent, 'I');
   thisAgent->io_header_input = get_new_io_identifier (thisAgent, 'I');
