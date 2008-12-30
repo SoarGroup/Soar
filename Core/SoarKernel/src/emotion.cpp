@@ -392,11 +392,14 @@ double AppraisalFrame::CalculateIntensity() {
 
 	for(AppraisalMapItr itr=appraisals.begin(), end=appraisals.end(); itr!=end; itr++)
 	{
-		double value = itr->second->GetValueAsDouble();
-		if(/*a->GetType() == Appraisal::NUMERIC && */ value != fInvalidValue) // don't need to check type since invalid value will get returned for categorical values
+		if(itr->first != "outcome-probability" && itr->first != "discrepancy")
 		{
-			total += value;
-			num += 1;
+			double value = itr->second->GetValueAsDouble();
+			if(/*a->GetType() == Appraisal::NUMERIC && */ value != fInvalidValue) // don't need to check type since invalid value will get returned for categorical values
+			{
+				total += fabs(value);
+				num += 1;
+			}
 		}
 	}
 	
