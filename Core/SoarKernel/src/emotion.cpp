@@ -46,20 +46,20 @@ using std::multimap;
 // Constants
 /////////////////////////////
 
-static const double fErrorValue = -246.0;
+//static const double fErrorValue = -246.0;
 static const double fInvalidValue = -123.0;
-static const string sInvalidValue = "no value";
-static const double fVeryLow = 0.0;
-static const double fLow = 0.25;
-static const double fMedium = 0.5;
-static const double fHigh = 0.75;
-static const double fVeryHigh = 1.0;
-
-static const double fFullVeryLow = -1.0;
-static const double fFullLow = -0.5;
-static const double fFullMedium = 0.0;
-static const double fFullHigh = 0.5;
-static const double fFullVeryHigh = 1.0;
+//static const string sInvalidValue = "no value";
+//static const double fVeryLow = 0.0;
+//static const double fLow = 0.25;
+//static const double fMedium = 0.5;
+//static const double fHigh = 0.75;
+//static const double fVeryHigh = 1.0;
+//
+//static const double fFullVeryLow = -1.0;
+//static const double fFullLow = -0.5;
+//static const double fFullMedium = 0.0;
+//static const double fFullHigh = 0.5;
+//static const double fFullVeryHigh = 1.0;
 
 /////////////////////////////
 // NumericAppraisal
@@ -100,7 +100,8 @@ void NumericAppraisal::SetValue(Symbol* val)
 	if(val == value) return; // symbol hasn't changed, so do nothing
 	if(val->fc.common_symbol_info.symbol_type == FLOAT_CONSTANT_SYMBOL_TYPE || val->fc.common_symbol_info.symbol_type == INT_CONSTANT_SYMBOL_TYPE)
 	{
-		symbol_remove_ref(thisAgent, value);
+		//symbol_remove_ref(thisAgent, value);
+		//symbol_add_ref(val);
 		value = val;
 	}
 	else
@@ -112,7 +113,7 @@ void NumericAppraisal::SetValue(Symbol* val)
 void NumericAppraisal::SetValue(double val)
 {
 	if(val == GetValueAsDouble()) return; // symbol hasn't changed, so do nothing
-	symbol_remove_ref(thisAgent, value);
+	//symbol_remove_ref(thisAgent, value);
 	value = make_float_constant(thisAgent, val);
 }
 
@@ -167,7 +168,7 @@ string NumericAppraisal::GetValueAsString()
 
 NumericAppraisal::~NumericAppraisal()
 {
-	symbol_remove_ref(thisAgent, value);
+	//symbol_remove_ref(thisAgent, value);
 }
 
 /////////////////////////////
@@ -307,6 +308,7 @@ void AppraisalFrame::Reset(Symbol* newid, Symbol* op) {
 	}
 
 	appraisals["outcome-probability"]->SetValue(op);
+	//symbol_remove_ref(thisAgent, op);
 }
 
 string AppraisalFrame::SetAppraisalValue(string appraisal, Symbol* value) {
@@ -486,7 +488,7 @@ double AppraisalFrame::CalculateValence() {
 
 AppraisalFrame::~AppraisalFrame()
 {
-	if(id_sym) symbol_remove_ref(thisAgent, id_sym);
+	//if(id_sym) symbol_remove_ref(thisAgent, id_sym);
 	for(AppraisalMapItr itr = appraisals.begin(), end=appraisals.end(); itr!=end ;itr++)
 	{
 		delete itr->second;
@@ -697,8 +699,9 @@ void emotion_clear_feeling_frame(agent* thisAgent, emotion_data* ed)
 	if(!ed->feeling_frame_header) return;
 	for(wme* w = ed->feeling_frame_header->id.input_wmes; w!=NIL; w=w->next)
 	{
-		release_io_symbol(thisAgent, w->id);  // Not sure why I have to do this explicitly
-		//		remove_input_wme(thisAgent, w);
+		//release_io_symbol(thisAgent, w->id);  // Not sure why I have to do this explicitly
+				remove_input_wme(thisAgent, w);
+				wme_remove_ref(thisAgent, w);
 	}
 	//release_io_symbol(thisAgent, ed->feeling_frame_header);
 }
@@ -766,7 +769,6 @@ void update_mood(Symbol* goal)
 
 
 // BADBAD: should have pre-made Symbols for all of these attributes
-// Shouldn't have to pass in status, mood, and emotion -- those should be directly available to the called function
 void generate_feeling_frame(agent* thisAgent, Symbol * goal)
 {
 	emotion_data* ed = goal->id.emotion_info;
@@ -774,7 +776,7 @@ void generate_feeling_frame(agent* thisAgent, Symbol * goal)
 	// clear previous feeling frame (stored on agent structure)
 	if(ed->feeling_frame_header) {
 		emotion_clear_feeling_frame(thisAgent, ed);
-		remove_input_wme(thisAgent, ed->feeling_frame);
+		//remove_input_wme(thisAgent, ed->feeling_frame);
 	}
 
 	// update feeling
@@ -784,15 +786,18 @@ void generate_feeling_frame(agent* thisAgent, Symbol * goal)
 	Symbol* frame_att = make_sym_constant(thisAgent, "frame");
 	ed->feeling_frame_header = make_new_identifier(thisAgent, 'F', goal->id.level);
 	ed->feeling_frame = add_input_wme(thisAgent, goal->id.emotion_header_feeling, frame_att, ed->feeling_frame_header);
+	//wme_add_ref(ed->feeling_frame);
 	symbol_remove_ref(thisAgent, frame_att);
 
 	Symbol* tempAtt, * tempVal;
+	wme *tempWme;
 	
 	for(AppraisalFrame::AppraisalMapItr itr=ed->currentFeeling.appraisals.begin(), end=ed->currentFeeling.appraisals.end(); itr!=end; ++itr)
 	{
 		tempAtt = make_sym_constant(thisAgent, itr->first.c_str());
 		tempVal = itr->second->GetValue();
-		add_input_wme(thisAgent, ed->feeling_frame_header, tempAtt, tempVal);
+		tempWme = add_input_wme(thisAgent, ed->feeling_frame_header, tempAtt, tempVal);
+		wme_add_ref(tempWme);
 		symbol_remove_ref(thisAgent, tempAtt);
 	}
 
@@ -804,19 +809,22 @@ void generate_feeling_frame(agent* thisAgent, Symbol * goal)
 
 	tempAtt = make_sym_constant(thisAgent, "intensity");  //BADBAD: this should be a predefined symbol
 	tempVal = make_float_constant(thisAgent, intensity);
-	add_input_wme(thisAgent, ed->feeling_frame_header, tempAtt, tempVal);
+	tempWme = add_input_wme(thisAgent, ed->feeling_frame_header, tempAtt, tempVal);
+	wme_add_ref(tempWme);
 	symbol_remove_ref(thisAgent, tempAtt);
 	symbol_remove_ref(thisAgent, tempVal);
 
 	tempAtt = make_sym_constant(thisAgent, "valence");  //BADBAD: this should be a predefined symbol
 	tempVal = make_float_constant(thisAgent, valence);
-	add_input_wme(thisAgent, ed->feeling_frame_header, tempAtt, tempVal);
+	tempWme = add_input_wme(thisAgent, ed->feeling_frame_header, tempAtt, tempVal);
+	wme_add_ref(tempWme);
 	symbol_remove_ref(thisAgent, tempAtt);
 	symbol_remove_ref(thisAgent, tempVal);
 
 	tempAtt = make_sym_constant(thisAgent, "reward");  //BADBAD: this should be a predefined symbol
 	tempVal = make_float_constant(thisAgent, reward);
-	add_input_wme(thisAgent, ed->feeling_frame_header, tempAtt, tempVal);
+	tempWme = add_input_wme(thisAgent, ed->feeling_frame_header, tempAtt, tempVal);
+	wme_add_ref(tempWme);
 	symbol_remove_ref(thisAgent, tempAtt);
 	symbol_remove_ref(thisAgent, tempVal);
 }

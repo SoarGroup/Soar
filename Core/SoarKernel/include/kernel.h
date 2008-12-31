@@ -102,7 +102,7 @@ struct rete_node_struct;
 typedef union symbol_union Symbol;
 
 /* Uncomment the following line to debug memory usage */
-/* #define DEBUG_MEMORY */
+ #define DEBUG_MEMORY 
 
 /* Comment out the following line to avoid the overhead of keeping statistics
    on memory pool usage */
