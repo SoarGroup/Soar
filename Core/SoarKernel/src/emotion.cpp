@@ -71,7 +71,7 @@ void NumericAppraisal::Decay(double decay_rate) {
 	//decay towards zero, but don't pass zero
 	else val = val * (1.0 - decay_rate);
 
-	SetValue(make_float_constant(thisAgent, val));
+	SetValue(val);
 }
 
 void NumericAppraisal::MoveTowardAppraisal(Appraisal* a, double move_rate)
@@ -85,10 +85,10 @@ void NumericAppraisal::MoveTowardAppraisal(Appraisal* a, double move_rate)
 
 	double distance = (target - val);
 	double delta = distance * move_rate;
-	SetValue(make_float_constant(thisAgent, val + delta));
+	SetValue(val+delta);
 }
 
-void NumericAppraisal::Zero() { SetValue(make_float_constant(thisAgent, 0.0)); }
+void NumericAppraisal::Zero() { SetValue(0.0); }
 
 NumericAppraisal::NumericAppraisal(agent* thisAgent, string name, bool valenced, bool enabled) : Appraisal(thisAgent, name, valenced, enabled, NUMERIC)
 { value = make_float_constant(thisAgent, fInvalidValue); }
@@ -107,6 +107,13 @@ void NumericAppraisal::SetValue(Symbol* val)
 	{
 		// TODO: error message in trace
 	}
+}
+
+void NumericAppraisal::SetValue(double val)
+{
+	if(val == GetValueAsDouble()) return; // symbol hasn't changed, so do nothing
+	symbol_remove_ref(thisAgent, value);
+	value = make_float_constant(thisAgent, val);
 }
 
 void NumericAppraisal::SetValue(Appraisal* emotion, Appraisal* mood)
@@ -135,7 +142,7 @@ void NumericAppraisal::SetValue(Appraisal* emotion, Appraisal* mood)
 		}
 	}
 
-	SetValue(make_float_constant(thisAgent, res));
+	SetValue(res);
 }
 
 double NumericAppraisal::GetValueAsDouble()
@@ -191,11 +198,12 @@ void CategoricalAppraisal::SetValue(Symbol* val) {
 	CategoricalAppraisalMapItr itr = values.find(val);
 	if(itr!=values.end())
 	{
-		itr->second->SetValue(make_float_constant(thisAgent, 1.0));
+		itr->second->SetValue(1.0);
 	}
 	else
 	{
 		// TODO: error message in trace
+		// BADBAD: This gets called with fInvalidValue by Reset (which makes no sense). Perhaps Reset needs to be an Appraisal method.
 	}
 }
 
@@ -222,7 +230,7 @@ void CategoricalAppraisal::Zero()
 	CategoricalAppraisalMapItr itr = values.begin(), end=values.end();
 	for(;itr!=end;itr++)
 	{
-		itr->second->SetValue(make_float_constant(thisAgent, 0.0));
+		itr->second->SetValue(0.0);
 	}
 }
 
@@ -295,7 +303,7 @@ void AppraisalFrame::Reset(Symbol* newid, Symbol* op) {
 
 	for(AppraisalMapItr itr=appraisals.begin(), end=appraisals.end(); itr!=end; itr++)
 	{
-		itr->second->SetValue(make_float_constant(thisAgent, fInvalidValue));
+		itr->second->SetValue(make_float_constant(thisAgent, fInvalidValue));  //BADBAD: should call Appraisal::Reset (which doesn't exist yet)
 	}
 
 	appraisals["outcome-probability"]->SetValue(op);

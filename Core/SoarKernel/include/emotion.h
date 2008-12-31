@@ -90,6 +90,7 @@ public:
 
 	Symbol* GetValue();
 	void SetValue(Symbol* val);
+	void SetValue(double val);
 	void SetValue(Appraisal* emotion, Appraisal* mood);
 	double GetValueAsDouble();
 	string GetValueAsString();
