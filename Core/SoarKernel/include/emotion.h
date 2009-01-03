@@ -190,7 +190,7 @@ struct emotion_data
 	Symbol *feeling_frame_header;
 	wme* feeling_frame;
 
-	emotion_data(agent* thisAgent) : currentEmotion(thisAgent), currentFeeling(thisAgent), currentMood(thisAgent) {}
+	emotion_data(agent* thisAgent) : currentEmotion(thisAgent), currentFeeling(thisAgent), currentMood(thisAgent), feeling_frame_header(0), feeling_frame(0) {}
 };
 
 void cleanup_emotion_data(agent* thisAgent, emotion_data* ed);

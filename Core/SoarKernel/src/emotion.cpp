@@ -700,10 +700,10 @@ void emotion_clear_feeling_frame(agent* thisAgent, emotion_data* ed)
 	for(wme* w = ed->feeling_frame_header->id.input_wmes; w!=NIL; w=w->next)
 	{
 		//release_io_symbol(thisAgent, w->id);  // Not sure why I have to do this explicitly
-				remove_input_wme(thisAgent, w);
-				wme_remove_ref(thisAgent, w);
+		remove_input_wme(thisAgent, w);
+		wme_remove_ref(thisAgent, w);
 	}
-	//release_io_symbol(thisAgent, ed->feeling_frame_header);
+	release_io_symbol(thisAgent, ed->feeling_frame_header);
 }
 
 void cleanup_emotion_data(agent* thisAgent, emotion_data* ed)
@@ -776,7 +776,7 @@ void generate_feeling_frame(agent* thisAgent, Symbol * goal)
 	// clear previous feeling frame (stored on agent structure)
 	if(ed->feeling_frame_header) {
 		emotion_clear_feeling_frame(thisAgent, ed);
-		//remove_input_wme(thisAgent, ed->feeling_frame);
+		remove_input_wme(thisAgent, ed->feeling_frame);
 	}
 
 	// update feeling

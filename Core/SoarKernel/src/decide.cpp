@@ -2042,12 +2042,8 @@ void create_new_context (agent* thisAgent, Symbol *attr_of_impasse, byte impasse
 
   //id->id.emotion_info = static_cast<emotion_data *>( allocate_memory( thisAgent, sizeof( emotion_data ), MISCELLANEOUS_MEM_USAGE ) );
   id->id.emotion_info = new emotion_data(thisAgent);
-  /*id->id.emotion_info->appraisalStatus = new AppraisalStatus();
-  id->id.emotion_info->currentEmotion = new AppraisalFrame();
-  id->id.emotion_info->currentMood = new Mood();
-  id->id.emotion_info->currentFeeling = new Feeling();*/
-  id->id.emotion_info->feeling_frame_header = 0;
-  id->id.emotion_info->feeling_frame = 0;
+  generate_feeling_frame(thisAgent, id);
+
 
   /* --- invoke callback routine --- */
   soar_invoke_callbacks(thisAgent, 
