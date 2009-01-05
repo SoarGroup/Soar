@@ -35,6 +35,9 @@
 
 #include "sqlite3.h"
 
+// defined in symtab.cpp but not in symtab.h
+extern unsigned long hash_string( const char *s );
+
 // epmem::params
 // epmem::stats
 // epmem::timers
@@ -1341,22 +1344,9 @@ const char *epmem_symbol_to_string( agent *my_agent, Symbol *sym )
 	return "";
 }
 
-unsigned long epmem_hash_symbol( Symbol *sym )
+unsigned long epmem_hash_wme( agent *my_agent, wme *w )
 {
-	switch( sym->common.symbol_type )
-	{
-		case SYM_CONSTANT_SYMBOL_TYPE:
-		case INT_CONSTANT_SYMBOL_TYPE:
-		case FLOAT_CONSTANT_SYMBOL_TYPE:
-			return sym->common.hash_id;
-	}
-
-	return 0;
-}
-
-unsigned long epmem_hash_wme( wme *w )
-{
-	return ( epmem_hash_symbol( w->attr ) + epmem_hash_symbol( w->value ) );
+	return ( hash_string( epmem_symbol_to_string( my_agent, w->attr ) ) + hash_string( epmem_symbol_to_string( my_agent, w->value ) ) );
 }
 
 
@@ -2724,7 +2714,7 @@ void epmem_new_episode( agent *my_agent )
 						wmes[i]->epmem_id = NULL;
 						wmes[i]->epmem_valid = my_agent->epmem_validation;
 
-						my_hash = epmem_hash_wme( wmes[i] );
+						my_hash = epmem_hash_wme( my_agent, wmes[i] );
 						if ( wmes[i]->value->common.symbol_type != IDENTIFIER_SYMBOL_TYPE )
 						{
 							// hash=? AND parent_id=? AND name=? AND value=? AND attr_type=? AND value_type=?
@@ -3056,7 +3046,7 @@ void epmem_new_episode( agent *my_agent )
 							wmes[i]->epmem_id = NULL;
 							wmes[i]->epmem_valid = my_agent->epmem_validation;
 
-							my_hash = epmem_hash_wme( wmes[i] );
+							my_hash = epmem_hash_wme( my_agent, wmes[i] );
 
 							// try to get feature id
 							{
@@ -4001,7 +3991,7 @@ void epmem_process_query( agent *my_agent, Symbol *state, Symbol *query, Symbol 
 									state->id.epmem_info->cue_wmes->insert( (*wmes)[ j ] );
 
 									// find wme id
-									my_hash = epmem_hash_wme( (*wmes)[j] );
+									my_hash = epmem_hash_wme( my_agent, (*wmes)[j] );
 									if ( (*wmes)[j]->value->common.symbol_type != IDENTIFIER_SYMBOL_TYPE )
 									{
 										// hash=? AND parent_id=? AND name=? AND value=? AND attr_type=? AND value_type=?
@@ -4684,7 +4674,7 @@ void epmem_process_query( agent *my_agent, Symbol *state, Symbol *query, Symbol 
 								{
 									// parent_id=? AND hash=? AND name=? AND value=? AND attr_type=? AND value_type=?
 									sqlite3_bind_int64( my_agent->epmem_statements[ EPMEM_STMT_THREE_FIND_NODE_UNIQUE ], 1, parent_id );
-									sqlite3_bind_int64( my_agent->epmem_statements[ EPMEM_STMT_THREE_FIND_NODE_UNIQUE ], 2, epmem_hash_wme( current_cache_element->wmes[j] ) );
+									sqlite3_bind_int64( my_agent->epmem_statements[ EPMEM_STMT_THREE_FIND_NODE_UNIQUE ], 2, epmem_hash_wme( my_agent, current_cache_element->wmes[j] ) );
 
 									switch( current_cache_element->wmes[j]->attr->common.symbol_type )
 									{
