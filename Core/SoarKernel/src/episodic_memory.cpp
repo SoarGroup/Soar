@@ -849,7 +849,7 @@ const long epmem_convert_trigger( const char *val )
 // force parameter
 bool epmem_validate_force( const long new_val )
 {
-	return ( ( new_val >= EPMEM_FORCE_REMEMBER ) || ( new_val <= EPMEM_FORCE_OFF ) );
+	return ( ( new_val >= EPMEM_FORCE_REMEMBER ) && ( new_val <= EPMEM_FORCE_OFF ) );
 }
 
 const char *epmem_convert_force( const long val )
@@ -2226,7 +2226,7 @@ void epmem_init_db( agent *my_agent )
 			{
 				long long stored_id = NULL;
 				if ( epmem_get_variable( my_agent, EPMEM_VAR_NEXT_ID, stored_id ) )
-					epmem_set_parameter( my_agent, (const long) EPMEM_STAT_NEXT_ID, (const long) stored_id );
+					epmem_set_stat( my_agent, (const long) EPMEM_STAT_NEXT_ID, (const long) stored_id );
 				else
 					epmem_set_variable( my_agent, EPMEM_VAR_NEXT_ID, epmem_get_stat( my_agent, EPMEM_STAT_NEXT_ID ) );
 			}
