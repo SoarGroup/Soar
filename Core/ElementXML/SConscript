@@ -3,7 +3,7 @@ import glob
 import sys
 
 Import('env')
-env = env.Copy()
+env = env.Clone()
 env.Prepend(CPPPATH = ['src', 'include',])
 
 if sys.platform == 'cygwin':

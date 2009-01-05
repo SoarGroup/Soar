@@ -6,7 +6,7 @@ import os
 import SCons.Script
 
 Import('env')
-env = env.Copy()
+env = env.Clone()
 env.Prepend(CPPPATH = [
 			'#Core/ClientSML/include',
 			'#Core/ElementXML/include',
