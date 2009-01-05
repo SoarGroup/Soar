@@ -29,6 +29,8 @@ BOOL WINAPI handle_ctrlc( DWORD dwCtrlType )
 int main( int argc, char** argv )
 {
 #ifdef _WIN32
+	//_crtBreakAlloc = 2168;
+	_CrtSetDbgFlag ( _CRTDBG_ALLOC_MEM_DF | _CRTDBG_LEAK_CHECK_DF ); 
 	SetConsoleCtrlHandler( handle_ctrlc, TRUE );
 #endif // _WIN32
 
@@ -37,20 +39,20 @@ int main( int argc, char** argv )
 	{
 		if ( std::string( argv[1] ) == "--listener" ) 
 		{
-         int port = 12121;
-      	if ( argc >= 3 )
-	      {
-            port = atoi( argv[2] );
-         }
+			int port = 12121;
+			if ( argc >= 3 )
+			{
+				port = atoi( argv[2] );
+			}
 			SimpleListener simpleListener( 600, port );
 			return simpleListener.run();
 		}
 		if ( std::string( argv[1] ) == "--nopause" ) pause = false;
 	}
 
-   srand( (unsigned)time( NULL ) );
+	srand( (unsigned)time( NULL ) );
 
-   //--- Create the event manager and test controller
+	//--- Create the event manager and test controller
 	CPPUNIT_NS::TestResult controller;
 
 	//--- Add a listener that colllects test result

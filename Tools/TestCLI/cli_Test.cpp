@@ -12,6 +12,7 @@
 #include "sml_AnalyzeXML.h"
 #include "ElementXML.h"
 #include "sml_Events.h"
+#include "sml_Names.h"
 
 #include "thread_Lock.h"
 #include "thread_Event.h"
@@ -276,12 +277,14 @@ bool CommandProcessor::ProcessLine(std::string& commandLine) {
 		return true;
 	} 
 
+	bool quit = false;
 	if (g_pInputThread) {
 		string expandedCommandLine = pKernel->ExpandCommandLine(commandLine.c_str());
-		if (expandedCommandLine == "quit") {
+		if (commandLine == "quit" || expandedCommandLine == "quit") {
 			g_pInputThread->Stop(false);
 			g_pWaitForInput->TriggerEvent();
 			g_pInputThread->Stop(true);
+			quit = true;
 		} else {
 			g_pWaitForInput->TriggerEvent();
 		}
@@ -328,11 +331,7 @@ bool CommandProcessor::ProcessLine(std::string& commandLine) {
 		cout << output << endl;
 	}
 
-	// If this string is seen, exit
-	if (output.find("Goodbye.") != std::string::npos) {
-		// Set the thread to stopped
-		//g_pInputThread->Stop(false);
-		//g_pWaitForInput->TriggerEvent();
+	if (quit) {
 		return false;
 	}
 
@@ -350,15 +349,28 @@ int main(int argc, char** argv)
 #endif // _DEBUG
 
 	{ // create local scope to prevent scriptFile from being reported as a memory leak (occurs when script passed in as arg)
+		int scriptArg = 0;
+		bool remote = false;
+		if (argc > 1) {
+			if (argv[1] == std::string("--remote")) {
+				remote = true;
+				if (argc > 2) {
+					scriptArg = 2;
+				}
+			} else {
+				scriptArg = 1;
+			}
+		}
+
 		if (argc > 2) {
 			cout << "Too many args." << endl;
 			exit(1);
 		}
 
 		string scriptFile;
-		if (argc > 1) {
+		if (scriptArg) {
 			scriptFile = "source ";
-			scriptFile += argv[1];
+			scriptFile += argv[scriptArg];
 			scriptFile += '\n';
 		}
 		string::iterator scriptIter = scriptFile.begin();
@@ -366,7 +378,7 @@ int main(int argc, char** argv)
 		// Create an embedded connection to the kernel
 		// Passing false here so we don't execute Soar in our thread
 		// which means we can handle incoming remote connections automatically.
-		sml::Kernel* pKernel = sml::Kernel::CreateKernelInNewThread("SoarKernelSML") ;
+		sml::Kernel* pKernel = remote ? sml::Kernel::CreateRemoteConnection() : sml::Kernel::CreateKernelInNewThread();
 		
 		// Check for kernel creation errors
 		// Note that even if there are errors in the kernel's creation
