@@ -2,7 +2,7 @@
 import glob
 
 Import('env')
-env = env.Copy()
+env = env.Clone()
 env.Prepend(CPPPATH = ['src', 
 		       'include', 
 		       '../SoarKernel/include', 

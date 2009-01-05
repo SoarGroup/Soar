@@ -5,7 +5,7 @@ import SCons.Script
 import sys
 
 Import('env')
-env = env.Copy()
+env = env.Clone()
 env.Prepend(CPPPATH = [
 			'#Core/ClientSML/include',
 			'#Core/ElementXML/include',
@@ -50,7 +50,7 @@ swigflags = '-c++ -java -Wall -package sml -ICore/ClientSML/include -ICore/Eleme
 
 ###
 # Changes suggested by Markus
-env_jni = env.Copy()
+env_jni = env.Clone()
 targetname = 'Java_sml_ClientInterface'
 if sys.platform == 'darwin':
 	env_jni.Append(SHLINKFLAGS = ' -framework JavaVM')
