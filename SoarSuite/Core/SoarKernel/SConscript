@@ -2,7 +2,7 @@
 import glob
 
 Import('env')
-env = env.Copy()
+env = env.Clone()
 env.Append(CPPFLAGS = ' -fno-strict-aliasing')
 env.Prepend(CPPPATH = [ 'src', 
 			'include', 
