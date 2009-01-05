@@ -1,0 +1,222 @@
+/////////////////////////////////////////////////////////////////
+// Command data file.
+//
+// Author: Jonathan Voigt, voigtjr@gmail.com
+// Date  : 2004
+//
+// This file contains enumerations important for the command
+// line interface exposed function calls.
+//
+/////////////////////////////////////////////////////////////////
+
+#ifndef COMMAND_DATA_H
+#define COMMAND_DATA_H
+
+namespace cli {
+
+	enum eCaptureInputMode {
+		CAPTURE_INPUT_OPEN,
+		CAPTURE_INPUT_QUERY,
+		CAPTURE_INPUT_CLOSE,
+	};
+
+	enum eReplayInputMode {
+		REPLAY_INPUT_OPEN,
+		REPLAY_INPUT_QUERY,
+		REPLAY_INPUT_CLOSE,
+	};
+
+	enum eExciseOptions {
+		EXCISE_ALL,
+		EXCISE_CHUNKS,
+		EXCISE_DEFAULT,
+		EXCISE_RL,
+		EXCISE_TASK,
+		EXCISE_TEMPLATE,
+		EXCISE_USER,
+		EXCISE_NUM_OPTIONS, // must be last
+	};
+
+	enum eIndifferentMode {
+		// selection policies
+		INDIFFERENT_BOLTZMANN,
+		INDIFFERENT_E_GREEDY,
+		INDIFFERENT_FIRST,
+		INDIFFERENT_LAST,
+		INDIFFERENT_RANDOM,
+		INDIFFERENT_SOFTMAX,
+		
+		// selection parameters
+		INDIFFERENT_EPSILON,
+		INDIFFERENT_TEMPERATURE,
+		
+		// reduction control
+		INDIFFERENT_RED_AUTO,
+		
+		// selection parameter reduction
+		INDIFFERENT_RED_POLICY,
+		INDIFFERENT_RED_RATE,
+		
+		// stats
+		INDIFFERENT_STATS,
+		
+		// must be last
+		INDIFFERENT_NUM_OPTIONS
+	};
+
+	enum eLearnOptions {
+		LEARN_ALL_LEVELS,
+		LEARN_BOTTOM_UP,
+		LEARN_DISABLE,
+		LEARN_ENABLE,
+		LEARN_EXCEPT,
+		LEARN_LIST,
+		LEARN_ONLY,
+		LEARN_ENABLE_THROUGH_LOCAL_NEGATIONS,
+		LEARN_DISABLE_THROUGH_LOCAL_NEGATIONS,
+		LEARN_NUM_OPTIONS, // must be last
+	};
+
+	enum eLogMode { 
+		LOG_QUERY,
+		LOG_NEW,
+		LOG_NEWAPPEND,
+		LOG_CLOSE,
+		LOG_ADD,
+	};
+
+	enum eMatchesMode {
+		MATCHES_PRODUCTION,
+		MATCHES_ASSERTIONS,
+		MATCHES_RETRACTIONS,
+		MATCHES_ASSERTIONS_RETRACTIONS,
+	};
+
+	enum eWMEDetail {
+		WME_DETAIL_NONE,
+		WME_DETAIL_TIMETAG,
+		WME_DETAIL_FULL,
+	};
+
+	enum eMemoriesOptions {
+		MEMORIES_CHUNKS,
+		MEMORIES_DEFAULT,
+		MEMORIES_JUSTIFICATIONS,
+		MEMORIES_TEMPLATES,
+		MEMORIES_USER,
+		MEMORIES_NUM_OPTIONS, // must be last
+	};
+
+	enum ePreferencesDetail {
+		PREFERENCES_ONLY,
+		PREFERENCES_NAMES,
+		PREFERENCES_TIMETAGS,
+		PREFERENCES_WMES,
+	};
+
+	enum ePrintOptions {
+		PRINT_ALL,
+		PRINT_CHUNKS,
+		PRINT_DEPTH,
+		PRINT_DEFAULTS,
+		PRINT_FULL,
+		PRINT_FILENAME,
+		PRINT_INTERNAL,
+		PRINT_TREE,
+		PRINT_JUSTIFICATIONS,
+		PRINT_NAME,
+		PRINT_OPERATORS,
+		PRINT_RL,
+		PRINT_STACK,
+		PRINT_STATES,
+		PRINT_TEMPLATE,
+		PRINT_USER,
+		PRINT_VARPRINT,
+		PRINT_NUM_OPTIONS, // must be last
+	};
+
+	enum eProductionFindOptions {
+		PRODUCTION_FIND_INCLUDE_LHS,
+		PRODUCTION_FIND_INCLUDE_RHS,
+		PRODUCTION_FIND_ONLY_CHUNKS,
+		PRODUCTION_FIND_NO_CHUNKS,
+		PRODUCTION_FIND_SHOWBINDINGS,
+		PRODUCTION_FIND_NUM_OPTIONS, // must be last
+	};
+	
+	enum eRLOptions {
+		RL_GET,
+		RL_SET,
+		RL_STAT,
+		RL_NUM_OPTIONS,	// must be last
+	};
+
+	enum eRunOptions {
+		RUN_DECISION,
+		RUN_ELABORATION,
+		RUN_FOREVER,
+		RUN_INTERLEAVE,
+		RUN_OUTPUT,
+		RUN_PHASE,
+		RUN_SELF,
+		RUN_UPDATE,
+		RUN_NO_UPDATE,
+		RUN_NUM_OPTIONS, // must be last
+	};
+
+	enum eRunInterleaveMode {
+		RUN_INTERLEAVE_DEFAULT,
+		RUN_INTERLEAVE_ELABORATION,
+		RUN_INTERLEAVE_PHASE,
+		RUN_INTERLEAVE_DECISION,
+		RUN_INTERLEAVE_OUTPUT,
+	};
+
+	enum eSourceMode { 
+		SOURCE_DISABLE, 
+		SOURCE_DEFAULT, 
+		SOURCE_ALL, 
+	};
+
+	enum eStatsOptions {
+		STATS_MEMORY,
+		STATS_RETE,
+		STATS_SYSTEM,
+		STATS_NUM_OPTIONS, // must be last
+	};
+
+	enum eWatchOptions {
+		WATCH_DECISIONS,
+		WATCH_PHASES,
+		WATCH_DEFAULT,
+		WATCH_USER,
+		WATCH_CHUNKS,
+		WATCH_JUSTIFICATIONS,
+		WATCH_TEMPLATES,
+		WATCH_WMES,
+		WATCH_PREFERENCES,
+		WATCH_WME_DETAIL,
+		WATCH_LEARNING,
+		WATCH_BACKTRACING,
+		WATCH_INDIFFERENT,
+		WATCH_RL,
+		WATCH_WATERFALL,
+		WATCH_NUM_OPTIONS, // must be last
+	};
+
+	enum eWatchWMEsMode {
+		WATCH_WMES_ADD,
+		WATCH_WMES_REMOVE,
+		WATCH_WMES_LIST,
+		WATCH_WMES_RESET,
+	};
+
+	enum eWatchWMEsOptions {
+		WATCH_WMES_TYPE_ADDS,
+		WATCH_WMES_TYPE_REMOVES,
+		WATCH_WMES_TYPE_NUM_OPTIONS, // must be last
+	};
+
+} // namespace cli
+
+#endif // COMMAND_DATA_H

@@ -1,0 +1,11 @@
+sp {retreat*propose*move
+   (state <s> ^name retreat
+              ^direction <dir>
+              ^superstate.side-direction.<dir> <ndir>
+             -^direction <ndir>
+             -^avoid-direction <ndir>
+              ^io.input-link.blocked.<ndir> no)
+   -->
+   (<s> ^operator <o> + =)
+   (<o> ^name move
+        ^actions.move.direction <ndir>)}

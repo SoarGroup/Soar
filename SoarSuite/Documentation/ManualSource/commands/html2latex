@@ -1,0 +1,276 @@
+#!/usr/bin/perl -w
+
+#   html2latex
+#   Copyright (C) 2000 Peter Thatcher
+
+#   This program is free software; you can redistribute it and/or
+#   modify it under the terms of the GNU General Public License
+#   as published by the Free Software Foundation; either version 2
+#   of the License, or (at your option) any later version.
+#   This program is distributed in the hope that it will be useful,
+#   but WITHOUT ANY WARRANTY; without even the implied warranty of
+#   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#   GNU General Public License for more details.
+
+#   You should have received a copy of the GNU General Public License
+#   along with this program; if not, write to the Free Software
+#   Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
+
+###################### BEGIN SETUP #########################
+
+
+use strict;
+use Getopt::Long;
+use File::Basename;
+
+my $usage = << 'STOP';
+Usage: html2latex [options] <filename>
+
+Optional Parameters:
+    --help -h ?                         print this help
+    --image_scale --image -i <float>    set image scale
+    --font_size   --font  -f <integer>  set font size.  Must be 10-12
+    --debug  -d                         print debugging info
+    --table_border --border     sets table around borders
+    --document_class --document
+    --class=s <string>                  sets latex document class
+    --package  <string>                 adds a latex package each time
+    --latex2pdf --pdf -p                creates a pdf and latex file
+    --paragraph --par -P                sets the style of the paragraph to 
+                                        HTML style
+    --ban -b <string>                   ban (ignore) tag
+    --head <string>                     add option to documentclass defenition
+    --conf -C <string>                  use alternate configuration file
+    --log -l <string>                   use alternate log file
+STOP
+
+################## BEGIN OPTION PARSING ####################
+
+my %options  = ();
+my @packages = ();
+my @heads    = ();
+my @banned   = ();
+my $latex2pdf;
+my $conffile;
+my $logfile;
+GetOptions(
+	   'image_scale|image|i=f'           => \$options{image},
+	   'font_size|font=i'                => \$options{font_size},
+	   'debug|d+'                        => \$options{debug},
+	   'table_border|table|border!'      => \$options{border},
+	   'document_class|document|class=s' => \$options{document_class},
+	   'help|?|h'                        => sub {print $usage and exit},
+	   'package=s'                       => \@packages,
+	   'head=s'                          => \@heads,
+	   'ban|b=s'                         => \@banned,
+	   'latex2pdf|pdf|p!'                => \$latex2pdf,
+	   'mbox|m!'                         => \$options{mbox},
+	   'cache|local'                     => \$options{cache},
+	   'paragraph|par|P!'                => \$options{paragraph},
+	   'conf|C=s'                        => \$conffile,
+	   'log|l=s'                         => \$logfile
+	   );
+
+print $usage and exit unless @ARGV;
+chomp(my $START_DIR = `pwd`);       #place we start out from
+
+################### END OPTION PARSING ####################
+
+###################### BEGIN MAIN #########################
+
+use HTML::Latex;
+
+my $parser = new HTML::Latex();
+$parser->set_option(\%options);
+$parser->add_package(@packages);
+$parser->add_head(@heads);
+$parser->ban_tag(@banned);
+$parser->set_log($logfile) if defined($logfile);
+foreach my $uri (@ARGV) {
+    #Option 1:
+    #my $in = IO::File->new("< $uri");
+    #my $out = IO::File->new("> $uri.tex");
+    #$parser->html2latex($in,$out);
+
+    #Option 2:
+    print "Processing $uri\n";
+    my ($htmlfile,$latexfile) = $parser->html2latex($uri);
+    latex2pdf($htmlfile,$latexfile) if $latex2pdf;
+}
+
+#Option 3:
+#my $html_string = join("\n",<>);
+#my $html_string = join("",@ARGV);
+#my $tex_string = $parser->parse_string($html_string,1);
+#print $tex_string;
+
+####################### END MAIN ##########################
+
+####################### BEGIN SUBS ########################
+
+#Routine to print help
+
+# runs the system command "pdflatex" after checking for existing files
+# and backing them up.
+# <1> The base of the filename
+sub latex2pdf {
+    my ($htmlfile,$latexfile) = @_; 
+    my ($base,$path,$extension) = fileparse($latexfile,'\.tex');
+    my $texrel  = "$base$extension";   #relative name of the tex file
+    my $logfile = "$path$base.log";
+    my $pdffile = "$path$base.pdf";
+
+    print "PDF: Processing $latexfile from $htmlfile and $texrel\n";
+    chdir($path);  #pdflatex, no matter what I do always insists on making the output 
+                   #files in the current directory.  So here is my workaround.
+    my @errors = grep /^!/, `pdflatex -interaction=nonstopmode $texrel`;
+    chdir($START_DIR);
+    
+    if(@errors){
+	print "PDF: pdflatex reported " . scalar(@errors) . " errors while creating PDF.\n\tCheck $logfile for more information.\n";
+    }
+}
+
+=head1 NAME 
+
+html2latex - HTML to latex converter.
+
+=head1 SYNOPSIS
+
+html2latex [OPTION]... URLS...
+
+=head1 DESCRIPTION
+ 
+html2latex uses HTML::TreeBuilder to parse an HTML file and then it
+converts the HTML::Element into to a Latex file.  Each URL will have a
+.*html extension stripped.  If you use a URL, then the files taken
+from the Internet will be stored in your ~/.html2latex directory.  If
+pictures are included, they are converted to .PNG, which can only be
+used with pdflatex. As an added bonus, there is an option to
+automatically create a PDF from the Latex file (using pdflatex).
+
+=head1 REQUIRES
+
+If your html2latex is not working correctly, this may be because you
+do not have many of the needed packages.  html2latex requires
+HTML::TreeBuilder perhaps LWP::Simple and URI.  If you do not have
+either of these, try typing B<perl -MCPAN -e shell> at the command
+line.  This will bring up a shell for CPAN (The Comprehensive Perl
+Archive Network). Then, as root try typing B<install
+HTML::TreeBuilder>. Should work like magic.
+
+=head1 URLS
+
+In your list of URLs any filename given after a URL will continue to
+use the latest HOST given.  Also, files default to index.html,
+regardless of what the server thinks.  So, if you type:
+
+C<html2latex http://slashdot.org foo.html http://linuxtoday.net bar.html>
+
+html2latex will try to grab http://slashdot.org/index.html,
+http://slashdot.org/foo.html, http://linuxtoday.net/index.html, and
+http://linuxtoday.net/bar.html
+
+=head1 OPTIONS
+
+Options are secondary to document-specified options.  So, if your HTML
+file has border=1, a border will be printed regardless of the
+B<--border> option.  The do overide, however, options given in the
+configuration file.  If you want to change things more permanently,
+try changing the config file, html2latex.xml.  For information on it,
+try the HTML::Latex under section CONFIGURATION FILE.
+
+=over 4
+
+=item B<-h -? --help>
+
+Print the brief help and usage.
+
+=item B<--latex2pdf --pdf -p>
+
+Automatically create a PDF along with a latex file named FILE.pdf.
+This may fail and print a number of cryptic errors.
+
+=item B<-i --image --image_scale=SCALE>
+
+Set the scale for images in the latex file.  This is usefull because
+some images in HTML or much to big to fit on a page.  Default is 1.0.
+SCALE can be any non-zere positive floating point number, large
+numbers are not reccomended.
+
+=item B<-f --font --font_size=SIZE>
+
+Set the default font size.  Can be 10-12.  Do not try anything else.
+html2latex will not check it, but the latex file will not compile (at
+least I think not).  Default is 12.
+
+=item B<-d --debug>
+
+Level of debugging info to print.  The more times this option is used,
+the higher the level.  Default is 0, and you cannot lower that.  Right
+now, 0 prints nothing.  1 prints fun code-tracking info.  2 prints
+lots of data-structure information, so don't do it unless you're
+serious.
+
+=item B<--border --table --table_border>
+
+Sets table around borders on.  Default is off.  Also, B<--noborder> or
+B<--notable> will explicity turn table borders off.
+
+=item B<--class --document --document_class=CLASS>
+
+Set the documentclass to use.  Any valid latex document class is
+valid.  Examples are B<report>, B<book>, and B<article>.  B<article>
+is the default.  If an invalid document class is used, the output
+latex file will not compile.
+
+=item B<--package=PACKAGE>
+
+html2latex will create a latex file using any packages that you
+specify.  PACKAGE will be added to the list of class to put in the
+file.  html2latex will not make sure the packages are valid, but if
+they aren't the latex file won't compile.
+
+=item B<--head=HEAD>
+
+Latex allows you to add options in the preamble of the form
+\documentclass[OPTIONS]{article}.  Each HEAD you add gets added to the
+list included.  For instance, you could use C<--head=twocolumn> to add
+the 'twocolumn' feature of Latex.  Since font sizes are already added,
+don't add them yourself.  See C<--font>
+
+=item B<--mbox -m>
+
+With any of these, html2latex will put a tex \mbox around all of the
+tables it creates.  I do not know why, but with a lot of tables
+(especially nested ones), the tex and pdf output will work better.
+So, if you do not like your output with tables, try this.
+
+=item B<--paragraph --par -P>
+
+Uses HTML-style paragraphs.  This is by default, so try --noparagrph
+or --nopar or -P! to turn it back to Latex-style paragraphs. 
+
+=item B<--cache --local>
+
+
+=item B<--log -l LOGFILE>
+
+Print all messages to LOGFILE instead of STDERR.
+
+=item B<--conf -C CONFFILE>
+
+Change the configuration file to CONFFILE.  For more information on
+this file, see the HTML::Latex manpage.
+
+=back
+
+=head1 Development
+
+Development is being carried out by Peter Thatcher
+(peterthatcher@asu.edu) and Stan Seibert (volsung@asu.edu).  Homepage
+is http://html2latex.sourceforge.net.
+
+=cut
+
+

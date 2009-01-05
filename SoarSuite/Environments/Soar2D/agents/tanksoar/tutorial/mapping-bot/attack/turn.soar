@@ -1,0 +1,11 @@
+sp {attack*propose*turn
+   (state <s> ^name attack
+              ^io.input-link.radar.tank <tank>)
+  (<tank> ^distance 0
+          ^position { << left right >> <dir> })
+   -->
+   (<s> ^operator <o> + =)
+   (<o> ^name turn
+        ^actions <a>)
+   (<a> ^rotate.direction <dir>
+        ^fire.weapon missile)}

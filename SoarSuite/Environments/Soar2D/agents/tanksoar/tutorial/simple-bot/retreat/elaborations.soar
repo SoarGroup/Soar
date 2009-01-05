@@ -1,0 +1,29 @@
+##################################
+## Compute enemy direction from sound, radar, or incoming
+##################################
+
+sp {elaborate*retreat*sound*direction
+   (state <s> ^name retreat
+              ^io.input-link.sound { <> silent <direction> })
+-->
+   (<s> ^direction <direction>)}
+
+sp {elaborate*retreat*radar*front
+   (state <s> ^name retreat
+              ^io.input-link.radar.tank)
+-->
+   (<s> ^direction forward)}
+
+sp {elaborate*retreat*incoming*direction
+   (state <s> ^name retreat
+              ^io.input-link.incoming.<dir> yes)
+-->
+   (<s> ^direction <dir>)}
+
+sp {elaborate*retreat*radar*direction
+   (state <s> ^name retreat
+              ^io.input-link.radar.tank.position { <dir> <> center })
+-->
+   (<s> ^avoid-direction <dir>)}
+
+

@@ -1,0 +1,7 @@
+sp {blocks-world*reject*move-block*twice
+   (state <s> ^name blocks-world
+              ^operator <o> +
+              ^last-moved-block <mb>)
+   (<o> ^moving-block <mb>)
+-->
+   (<s> ^operator <o> < )}
