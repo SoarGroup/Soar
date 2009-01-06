@@ -2131,7 +2131,7 @@ void epmem_init_db( agent *my_agent )
 			////
 
 			// custom statement for range intersection query
-			my_assert = ( sqlite3_prepare_v2( my_agent->epmem_db, "SELECT i.child_id, i.parent_id, i.name, i.value, i.attr_type, i.value_type FROM node_unique i WHERE i.child_id IN (SELECT n.id FROM node_now n WHERE n.start<= ? UNION ALL SELECT p.id FROM node_point p WHERE p.start=? UNION ALL SELECT e1.id FROM node_range e1, rit_left_nodes lt WHERE e1.rit_node BETWEEN lt.min AND lt.max AND e1.end >= ? UNION ALL SELECT e2.id FROM node_range e2, rit_right_nodes rt WHERE e2.rit_node = rt.node AND e2.start <= ?) ORDER BY i.child_id ASC", -1, &( my_agent->epmem_statements[ EPMEM_STMT_ONE_GET_EPISODE ] ), &tail ) == SQLITE_OK );
+			my_assert = ( sqlite3_prepare_v2( my_agent->epmem_db, "SELECT i.child_id, i.parent_id, i.name, i.value, i.attr_type, i.value_type FROM node_unique i WHERE i.child_id IN (SELECT n.id FROM node_now n WHERE n.start<= ? UNION ALL SELECT p.id FROM node_point p WHERE p.start=? UNION ALL SELECT e1.id FROM node_range e1, rit_left_nodes lt WHERE e1.rit_node=lt.min AND e1.end >= ? UNION ALL SELECT e2.id FROM node_range e2, rit_right_nodes rt WHERE e2.rit_node = rt.node AND e2.start <= ?) ORDER BY i.child_id ASC", -1, &( my_agent->epmem_statements[ EPMEM_STMT_ONE_GET_EPISODE ] ), &tail ) == SQLITE_OK );
 			assert( my_assert );
 
 			////
@@ -2479,11 +2479,11 @@ void epmem_init_db( agent *my_agent )
 			////
 
 			// range intersection query: node
-			my_assert = ( sqlite3_prepare_v2( my_agent->epmem_db, "SELECT f.child_id, f.parent_id, f.name, f.value, f.attr_type, f.value_type FROM node_unique f WHERE f.child_id IN (SELECT n.id FROM node_now n WHERE n.start<= ? UNION ALL SELECT p.id FROM node_point p WHERE p.start=? UNION ALL SELECT e1.id FROM node_range e1, rit_left_nodes lt WHERE e1.rit_node BETWEEN lt.min AND lt.max AND e1.end >= ? UNION ALL SELECT e2.id FROM node_range e2, rit_right_nodes rt WHERE e2.rit_node = rt.node AND e2.start <= ?) ORDER BY f.child_id ASC", -1, &( my_agent->epmem_statements[ EPMEM_STMT_THREE_GET_NODES ] ), &tail ) == SQLITE_OK );
+			my_assert = ( sqlite3_prepare_v2( my_agent->epmem_db, "SELECT f.child_id, f.parent_id, f.name, f.value, f.attr_type, f.value_type FROM node_unique f WHERE f.child_id IN (SELECT n.id FROM node_now n WHERE n.start<= ? UNION ALL SELECT p.id FROM node_point p WHERE p.start=? UNION ALL SELECT e1.id FROM node_range e1, rit_left_nodes lt WHERE e1.rit_node=lt.min AND e1.end >= ? UNION ALL SELECT e2.id FROM node_range e2, rit_right_nodes rt WHERE e2.rit_node = rt.node AND e2.start <= ?) ORDER BY f.child_id ASC", -1, &( my_agent->epmem_statements[ EPMEM_STMT_THREE_GET_NODES ] ), &tail ) == SQLITE_OK );
 			assert( my_assert );
 
 			// range intersection query: edge
-			my_assert = ( sqlite3_prepare_v2( my_agent->epmem_db, "SELECT f.q0, f.w, f.q1, f.w_type FROM edge_unique f WHERE f.parent_id IN (SELECT n.id FROM edge_now n WHERE n.start<= ? UNION ALL SELECT p.id FROM edge_point p WHERE p.start=? UNION ALL SELECT e1.id FROM edge_range e1, rit_left_nodes lt WHERE e1.rit_node BETWEEN lt.min AND lt.max AND e1.end >= ? UNION ALL SELECT e2.id FROM edge_range e2, rit_right_nodes rt WHERE e2.rit_node = rt.node AND e2.start <= ?) ORDER BY f.q0 ASC, f.q1 ASC", -1, &( my_agent->epmem_statements[ EPMEM_STMT_THREE_GET_EDGES ] ), &tail ) == SQLITE_OK );
+			my_assert = ( sqlite3_prepare_v2( my_agent->epmem_db, "SELECT f.q0, f.w, f.q1, f.w_type FROM edge_unique f WHERE f.parent_id IN (SELECT n.id FROM edge_now n WHERE n.start<= ? UNION ALL SELECT p.id FROM edge_point p WHERE p.start=? UNION ALL SELECT e1.id FROM edge_range e1, rit_left_nodes lt WHERE e1.rit_node=lt.min AND e1.end >= ? UNION ALL SELECT e2.id FROM edge_range e2, rit_right_nodes rt WHERE e2.rit_node = rt.node AND e2.start <= ?) ORDER BY f.q0 ASC, f.q1 ASC", -1, &( my_agent->epmem_statements[ EPMEM_STMT_THREE_GET_EDGES ] ), &tail ) == SQLITE_OK );
 			assert( my_assert );
 
 			////
