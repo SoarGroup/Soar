@@ -86,6 +86,8 @@ void init_soar_agent(agent* thisAgent) {
   init_real_time(thisAgent);
 #endif
 
+using std::map;
+using std::pair;
 
   /* --- add default object trace formats --- */
   add_trace_format (thisAgent, FALSE, FOR_ANYTHING_TF, NIL,
@@ -324,6 +326,14 @@ agent * create_soar_agent (char * agent_name) {                                 
   newAgent->rl_stats[ RL_STAT_GLOBAL_REWARD ] = rl_add_stat( "global-reward" );
 
   rl_initialize_template_tracking( newAgent );
+
+  // q-value bounding stuff
+  newAgent->rl_params[RL_PARAM_BOUND_CONFIDENCE ] = rl_add_parameter( "bound-conf", 0.01, &validate_probability );
+  newAgent->rl_params[RL_PARAM_IE_WINSIZE ] = rl_add_parameter("ie-win-size", 20.0, &validate_nonnegative);
+  newAgent->rl_params[RL_PARAM_IE_LOWER_INDEX] = rl_add_parameter("ie-lower-index", 5.0, &validate_nonnegative);
+  newAgent->rl_params[RL_PARAM_IE_UPPER_INDEX] = rl_add_parameter("ie-upper-index", 16.0, &validate_nonnegative);
+  newAgent->rl_qconf = new rl_qconf_map(std::less<production*>(), SoarMemoryAllocator<pair<production* const, rl_qconf_data > >(newAgent, MISCELLANEOUS_MEM_USAGE));
+
   
   newAgent->rl_first_switch = true;
   

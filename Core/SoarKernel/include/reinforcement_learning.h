@@ -16,6 +16,7 @@
 #include <map>
 #include <string>
 #include <list>
+#include <set>
 
 #include "production.h"
 
@@ -46,7 +47,12 @@
 #define RL_PARAM_ET_TOLERANCE				5
 #define RL_PARAM_TEMPORAL_EXTENSION			6
 #define RL_PARAM_HRL_DISCOUNT				7
-#define RL_PARAMS							8 // must be 1+ last rl param
+#define RL_PARAM_BOUND_CONFIDENCE     8
+#define RL_PARAM_IE_WINSIZE           9
+#define RL_PARAM_IE_LOWER_INDEX       10
+#define RL_PARAM_IE_UPPER_INDEX       11
+
+#define RL_PARAMS							12 // must be 1+ last rl param
 
 // names of stats
 #define RL_STAT_UPDATE_ERROR				0
@@ -110,6 +116,15 @@ typedef struct rl_data_struct {
 	unsigned int step;			// the number of steps the current operator has been installed at the goal
 	signed int impasse_type;	// if this goal is an impasse, what type
 } rl_data;
+
+typedef struct rl_qconf_data_struct {
+  double q_min;
+  double q_max;
+  // previous n sample window sorted by value
+  std::multiset<double> win_by_val;
+  // previous n sample window sorted by time
+  std::list<double> win_by_time;
+} rl_qconf_data;
 
 //
 // These must go below types
@@ -213,6 +228,10 @@ extern bool rl_validate_hrl_discount( const long new_val );
 extern const char *rl_convert_hrl_discount( const long val );
 extern const long rl_convert_hrl_discount( const char *val );
 
+// for interval estimation
+extern bool validate_nonnegative(const double new_val);
+extern bool validate_probability(const double new_val);
+
 // shortcut for determining if Soar-RL is enabled
 extern bool rl_enabled( agent *my_agent );
 
@@ -306,5 +325,8 @@ extern void rl_perform_update( agent *my_agent, double op_value, Symbol *goal );
 
 // clears eligibility traces in accordance with watkins
 extern void rl_watkins_clear( agent *my_agent, Symbol *goal );
+
+// initialize confidence info for a production
+extern void initialize_qconf(agent* my_agent, production* p);
 
 #endif

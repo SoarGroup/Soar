@@ -181,8 +181,11 @@ typedef byte wme_trace_type;   /* must be one of the above constants */
 /* New waterfall model: trace waterfall events */
 #define TRACE_WATERFALL_SYSPARAM				 41
 
+/* jzxu: chunking confidence (percentage) */
+#define CHUNK_CONFIDENCE               42
+
 /* --- Warning: if you add sysparams, be sure to update the next line! --- */
-#define HIGHEST_SYSPARAM_NUMBER                  41
+#define HIGHEST_SYSPARAM_NUMBER                  42
 
 /* -----------------------------------------
    Sysparams[] stores the parameters; set_sysparam()

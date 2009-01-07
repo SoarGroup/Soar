@@ -19,6 +19,7 @@
 #include <stdlib.h>
 #include <math.h>
 #include <vector>
+#include <set>
 
 #include "production.h"
 #include "rhsfun.h"
@@ -30,6 +31,9 @@
 #include "xml.h"
 
 #include "misc.h"
+#include "decide.h"
+
+using std::multiset;
 
 extern Symbol *instantiate_rhs_value (agent* thisAgent, rhs_value rv, goal_stack_level new_id_level, char new_id_letter, struct token_struct *tok, wme *w);
 extern void variablize_symbol (agent* thisAgent, Symbol **sym);
@@ -574,6 +578,10 @@ bool rl_validate_learning_policy( const long new_val )
 {
 	return ( ( new_val == RL_LEARNING_SARSA ) || ( new_val == RL_LEARNING_Q ) );
 }
+
+bool validate_nonnegative(const double new_val) { return new_val >= 0.0; }
+bool validate_probability(const double new_val) { return 0.0 <= new_val && new_val <= 1.0; }
+
 
 /***************************************************************************
  * Function     : rl_convert_learning_policy
@@ -1233,6 +1241,12 @@ void rl_store_data( agent *my_agent, Symbol *goal, preference *cand )
 	}
 }
 
+void initialize_qconf(agent* my_agent, production* p) {
+  // as a sentinel for not being able to determine bounds yet, set q_min > q_max
+  (*my_agent->rl_qconf)[p].q_min = 1;
+  (*my_agent->rl_qconf)[p].q_max = 0;
+}
+
 /***************************************************************************
  * Function     : rl_perform_update
  **************************************************************************/
@@ -1336,7 +1350,49 @@ void rl_perform_update( agent *my_agent, double op_value, Symbol *goal )
 					pref->referent = make_float_constant( my_agent, temp );
 				}
 			}
-		}	
+		}
+
+    // Update bounds jzxu 7/03
+    // maybe int. est. can easily handle eligibility traces?
+    if (iter->second == 1.0) {
+			if (my_agent->rl_qconf->find(prod) == my_agent->rl_qconf->end()) {
+				initialize_qconf(my_agent, prod);
+			}
+      int window_size = rl_get_parameter(my_agent, RL_PARAM_IE_WINSIZE);
+      int r = rl_get_parameter(my_agent, RL_PARAM_IE_LOWER_INDEX);
+      int s = rl_get_parameter(my_agent, RL_PARAM_IE_UPPER_INDEX);
+      
+      rl_qconf_data &conf_data = (*my_agent->rl_qconf)[prod];
+      conf_data.win_by_val.insert(temp);
+      conf_data.win_by_time.push_back(temp);
+      if (conf_data.win_by_time.size() > window_size) {
+        // keep a constant window size
+        double stale = conf_data.win_by_time.front();
+        // because multiset will erase all elements of the same value using
+        // erase(val), I have to use find to get the position of one element
+        // and erase that position
+        multiset<double>::iterator stale_pos = conf_data.win_by_val.find(stale);
+        conf_data.win_by_val.erase(stale_pos);
+        conf_data.win_by_time.pop_front();
+        
+        // set the min and max to be the values with predetermined indexes
+        // we only do this when the window has filled up
+        std::multiset<double>::iterator i;
+        int c;
+        for(i = conf_data.win_by_val.begin(), c = 0;
+            i != conf_data.win_by_val.end(); ++i, ++c)
+        {
+          if (c == r) {
+            conf_data.q_min = *i;
+          }
+          else if (c == s) {
+            conf_data.q_max = *i;
+            break;
+          }
+        }
+      }
+      print(my_agent, "\nbound_update %s Q: %f Qmin: %f Qmax: %f N: %d\n", prod->name->sc.name, temp, conf_data.q_min, conf_data.q_max, conf_data.win_by_val.size());
+    }
 	}
 
 	data->reward = 0.0;

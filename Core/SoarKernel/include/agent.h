@@ -30,13 +30,16 @@
 #include "lexer.h"
 #include "chunk.h"
 #include "callback.h"
-#include <map>
 
 #include "exploration.h"
 #include "reinforcement_learning.h"
 
 #include <string>
 #include <map>
+#include "stl_support.h"
+
+using std::map;
+using std::pair;
 
 // JRV: Added to support XML management inside Soar
 // These handles should not be used directly, see xml.h
@@ -48,6 +51,11 @@ typedef struct rhs_function_struct rhs_function;
 // Soar-RL types
 typedef struct rl_parameter_struct rl_parameter;
 typedef struct rl_stat_struct rl_stat;
+
+// mapping from rl productions to their q bounds
+template <class T> class SoarMemoryAllocator;
+typedef struct rl_qconf_data_struct rl_qconf_data;
+typedef map<production *, rl_qconf_data, std::less<production *>, SoarMemoryAllocator<pair<production* const, rl_qconf_data> > > rl_qconf_map;
 
 // select types
 typedef struct select_info_struct select_info;
@@ -534,6 +542,10 @@ kernel time and total_cpu_time greater than the derived total CPU time. REW */
   preference        * extra_result_prefs_from_instantiation;
   Bool                quiescence_t_flag;
   char                chunk_name_prefix[kChunkNamePrefixMaxLength];  /* kjh (B14) */
+
+  // jzxu 4/02/2008
+  // this is the probability associated with the current chunk
+  double              chunk_prob;
   
   /* ----------------------- Misc. top-level stuff -------------------------- */
   
@@ -769,6 +781,10 @@ kernel time and total_cpu_time greater than the derived total CPU time. REW */
 
   int rl_template_count;
   bool rl_first_switch;
+
+  /* mapping from productions to the upper and lower bounds for Q(s,a)
+   * associated with that production */
+  rl_qconf_map *rl_qconf;
 
   // select
   select_info *select;

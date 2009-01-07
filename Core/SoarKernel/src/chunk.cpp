@@ -1023,6 +1023,10 @@ void chunk_instantiation (agent* thisAgent,
   }
   
   grounds_level = inst->match_goal_level - 1;
+
+  // jzxu: start the chunking probability at 1, multiply with lower probs as we
+  // backtrace
+  thisAgent->chunk_prob = 1;
   
   thisAgent->backtrace_number++; 
   if (thisAgent->backtrace_number==0) 
@@ -1126,6 +1130,14 @@ void chunk_instantiation (agent* thisAgent,
   nots = get_nots_for_instantiated_conditions (thisAgent, thisAgent->instantiations_with_nots,
 	  tc_for_grounds);
   }
+
+  // jzxu: we had to wait until all backtracing was finished before having the
+  // final value of this chunk's probability. Test it here
+  //print(thisAgent, "Chunk confidence is %f", thisAgent->chunk_prob);
+  if (thisAgent->chunk_prob < thisAgent->sysparams[CHUNK_CONFIDENCE] / 100.0) {
+    thisAgent->variablize_this_chunk = FALSE;
+  }
+
   
   /* --- get symbol for name of new chunk or justification --- */
   if (thisAgent->variablize_this_chunk) {
