@@ -475,7 +475,15 @@ void trace_locals (agent* thisAgent, goal_stack_level grounds_level) {
     if (bt_pref) {
 
       /* mvp 5-17-94 */
-      backtrace_through_instantiation (thisAgent, bt_pref->inst, grounds_level,cond, 0);
+      //backtrace_through_instantiation (thisAgent, bt_pref->inst, grounds_level,cond, 0);
+      /* most preferences should have nothing on their next_numeric pointer.
+       * operator acceptable preferences should have a list of numeric
+       * indifferent preferences that contributed to the operator on that
+       * pointer. We're going to backtrace through all these numeric
+       * indifferent preferences. */
+      for (p = bt_pref; p; p = p->next_numeric) {
+        backtrace_through_instantiation (thisAgent, p->inst, grounds_level,cond, 0);
+      }
 
       /* check if any prohibit preferences */
       if (cond->bt.prohibits) {
