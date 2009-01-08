@@ -815,7 +815,7 @@ void deallocate_instantiation (agent* thisAgent, instantiation *inst) {
 
   /* mvp 5-17-94 */
   list *c, *c_old;
-  preference *pref;
+  preference *pref, *next;
   goal_stack_level level;
   
   level = inst->match_goal_level;
@@ -845,20 +845,41 @@ void deallocate_instantiation (agent* thisAgent, instantiation *inst) {
      /* mvp done */  
 
      #ifdef DO_TOP_LEVEL_REF_CTS
-       wme_remove_ref (thisAgent, cond->bt.wme_);
-       if (cond->bt.trace) {
-         for (pref = cond->bt.trace; pref; pref = pref->next_numeric) {
+     wme_remove_ref (thisAgent, cond->bt.wme_);
+
+     /* if the trace's reference count is 1, then deallocating this
+      * instantiation will also deallocate the preference associated with the
+      * trace, so also remove the reference of the trace preference to the
+      * numeric indifferent preferences associated with it */
+     if (cond->bt.trace) {
+       if (cond->bt.trace->reference_count == 1) {
+         pref = cond->bt.trace;
+         while (pref) {
+           next = pref->next_numeric;
            preference_remove_ref (thisAgent, pref);
+           pref = next;
          }
        }
+       else {
+         preference_remove_ref (thisAgent, cond->bt.trace);
+       }
+     }
      #else
 	   if (level > TOP_GOAL_LEVEL) {
 		   wme_remove_ref (thisAgent, cond->bt.wme_);
-           if (cond->bt.trace) {
-             for (pref = cond->bt.trace; pref; pref = pref->next_numeric) {
-               preference_remove_ref (thisAgent, pref);
-             }
+       if (cond->bt.trace) {
+         if (cond->bt.trace->reference_count == 1) {
+           pref = cond->bt.trace;
+           while (pref) {
+             next = pref->next_numeric;
+             preference_remove_ref (thisAgent, pref);
+             pref = next;
            }
+         }
+         else {
+           preference_remove_ref (thisAgent, cond->bt.trace);
+         }
+       }
 	   }
      #endif
    }

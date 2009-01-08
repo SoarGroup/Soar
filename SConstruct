@@ -46,7 +46,7 @@ opts.AddOptions(
 	BoolOption('tcl', 'Build the Soar Tcl interface', 'no'), 
 	BoolOption('debug', 'Build with debugging symbols', 'yes'),
 	BoolOption('warnings', 'Build with warnings', 'yes'),
-	EnumOption('optimization', 'Build with optimization (May cause run-time errors!)', 'full', ['no','partial','full'], {}, 1),
+	EnumOption('optimization', 'Build with optimization (May cause run-time errors!)', 'no', ['no','partial','full'], {}, 1),
 	BoolOption('eclipse', 'Build everything except the java projects (prepare for eclipse)', 'no'),
 	BoolOption('preprocessor', 'Only run preprocessor', 'no'),
 	BoolOption('verbose', 'Verbose compiler output', 'no'),
@@ -130,6 +130,7 @@ if conf.CheckVisibilityFlag():
 # configure misc command line options
 if conf.env['debug']:
 	conf.env.Append(CPPFLAGS = ' -g3')
+	conf.env.Append(CPPFLAGS = ' -fno-inline')
 	#if sys.platform == 'cygwin':
 	#	conf.env.Append(CPPFLAGS = ' -D_DEBUG')
 if conf.env['warnings']:
