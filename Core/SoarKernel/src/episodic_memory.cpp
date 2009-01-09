@@ -3461,6 +3461,8 @@ void epmem_install_memory( agent *my_agent, Symbol *state, epmem_time_id memory_
 		Symbol *parent = NULL;
 		Symbol *attr = NULL;
 
+		bool existing_identifier = false;
+
 		// first identifiers (i.e. reconstruct)
 		ids[ 0 ] = retrieved_header;
 		{
@@ -3509,7 +3511,9 @@ void epmem_install_memory( agent *my_agent, Symbol *state, epmem_time_id memory_
 					parent = id_p->second;
 
 					value =& ids[ q1 ];
-					if ( (*value) == NULL )
+					existing_identifier = ( (*value) != NULL );
+
+					if ( !existing_identifier )
 						(*value) = make_new_identifier( my_agent, ( ( w_type == SYM_CONSTANT_SYMBOL_TYPE )?( attr->sc.name[0] ):('E') ), parent->id.level );
 
 					new_wme = add_input_wme( my_agent, parent, attr, (*value) );
@@ -3517,7 +3521,9 @@ void epmem_install_memory( agent *my_agent, Symbol *state, epmem_time_id memory_
 					state->id.epmem_info->epmem_wmes->push( new_wme );
 
 					symbol_remove_ref( my_agent, attr );
-					symbol_remove_ref( my_agent, (*value) );
+
+					if ( !existing_identifier )
+						symbol_remove_ref( my_agent, (*value) );
 				}
 				else
 				{
@@ -3546,7 +3552,9 @@ void epmem_install_memory( agent *my_agent, Symbol *state, epmem_time_id memory_
 					parent = id_p->second;
 
 					value =& ids[ straggler->q1 ];
-					if ( (*value) == NULL )
+					existing_identifier = ( (*value) != NULL );
+
+					if ( !existing_identifier )
 						(*value) = make_new_identifier( my_agent, ( ( attr->common.symbol_type == SYM_CONSTANT_SYMBOL_TYPE )?( attr->sc.name[0] ):('E') ), parent->id.level );
 
 					new_wme = add_input_wme( my_agent, parent, attr, (*value) );
@@ -3554,7 +3562,9 @@ void epmem_install_memory( agent *my_agent, Symbol *state, epmem_time_id memory_
 					state->id.epmem_info->epmem_wmes->push( new_wme );
 
 					symbol_remove_ref( my_agent, attr );
-					symbol_remove_ref( my_agent, (*value) );
+
+					if ( !existing_identifier )
+						symbol_remove_ref( my_agent, (*value) );
 
 					delete straggler;
 				}
