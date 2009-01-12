@@ -973,6 +973,10 @@ public class WindowManager {
 			return;
 		}
 		
+		if (Soar2D.config.getType() == SimType.kTankSoar) {
+			this.editMap.removeAll(location);
+		}
+
 		String newContent = null;
 		
 		if (templatesTable.getSelectionIndex() == 0) {
