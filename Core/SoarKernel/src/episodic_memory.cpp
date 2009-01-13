@@ -3359,12 +3359,21 @@ void epmem_install_memory( agent *my_agent, Symbol *state, epmem_time_id memory_
 	symbol_remove_ref( my_agent, retrieved_header );
 
 	// add *-id wme's
-	new_wme = add_input_wme( my_agent, result_header, my_agent->epmem_memory_id_symbol, make_int_constant( my_agent, memory_id ) );
-	new_wme->preference = epmem_make_fake_preference( my_agent, state, new_wme );
-	state->id.epmem_info->epmem_wmes->push( new_wme );
-	new_wme = add_input_wme( my_agent, result_header, my_agent->epmem_present_id_symbol, make_int_constant( my_agent, epmem_get_stat( my_agent, (const long) EPMEM_STAT_TIME ) ) );
-	new_wme->preference = epmem_make_fake_preference( my_agent, state, new_wme );
-	state->id.epmem_info->epmem_wmes->push( new_wme );
+	{		
+		Symbol *my_meta;
+		
+		my_meta = make_int_constant( my_agent, memory_id );		
+		new_wme = add_input_wme( my_agent, result_header, my_agent->epmem_memory_id_symbol, my_meta );
+		new_wme->preference = epmem_make_fake_preference( my_agent, state, new_wme );
+		state->id.epmem_info->epmem_wmes->push( new_wme );		
+		symbol_remove_ref( my_agent, my_meta );		
+
+		my_meta = make_int_constant( my_agent, epmem_get_stat( my_agent, (const long) EPMEM_STAT_TIME ) );		
+		new_wme = add_input_wme( my_agent, result_header, my_agent->epmem_present_id_symbol, my_meta );
+		new_wme->preference = epmem_make_fake_preference( my_agent, state, new_wme );
+		state->id.epmem_info->epmem_wmes->push( new_wme );		
+		symbol_remove_ref( my_agent, my_meta );		
+	}
 
 	const long mode = epmem_get_parameter( my_agent, EPMEM_PARAM_MODE, EPMEM_RETURN_LONG );
 
@@ -4312,6 +4321,8 @@ void epmem_process_query( agent *my_agent, Symbol *state, Symbol *query, Symbol 
 					// place results in WM
 					if ( king_id != EPMEM_MEMID_NONE )
 					{
+						Symbol *my_meta;
+						
 						epmem_set_stat( my_agent, EPMEM_STAT_QRY_RET, king_id );
 						epmem_set_stat( my_agent, EPMEM_STAT_QRY_CARD, king_cardinality );
 
@@ -4321,24 +4332,32 @@ void epmem_process_query( agent *my_agent, Symbol *state, Symbol *query, Symbol 
 						state->id.epmem_info->epmem_wmes->push( new_wme );
 
 						// match score
-						new_wme = add_input_wme( my_agent, state->id.epmem_result_header, my_agent->epmem_match_score_symbol, make_float_constant( my_agent, king_score ) );
+						my_meta = make_float_constant( my_agent, king_score );
+						new_wme = add_input_wme( my_agent, state->id.epmem_result_header, my_agent->epmem_match_score_symbol, my_meta );
 						new_wme->preference = epmem_make_fake_preference( my_agent, state, new_wme );
 						state->id.epmem_info->epmem_wmes->push( new_wme );
+						symbol_remove_ref( my_agent, my_meta );
 
 						// cue-size
-						new_wme = add_input_wme( my_agent, state->id.epmem_result_header, my_agent->epmem_cue_size_symbol, make_int_constant( my_agent, cue_size ) );
+						my_meta = make_int_constant( my_agent, cue_size );
+						new_wme = add_input_wme( my_agent, state->id.epmem_result_header, my_agent->epmem_cue_size_symbol, my_meta );
 						new_wme->preference = epmem_make_fake_preference( my_agent, state, new_wme );
 						state->id.epmem_info->epmem_wmes->push( new_wme );
+						symbol_remove_ref( my_agent, my_meta );
 
 						// normalized-match-score
-						new_wme = add_input_wme( my_agent, state->id.epmem_result_header, my_agent->epmem_normalized_match_score_symbol, make_float_constant( my_agent, ( king_score / perfect_match ) ) );
+						my_meta = make_float_constant( my_agent, ( king_score / perfect_match ) );
+						new_wme = add_input_wme( my_agent, state->id.epmem_result_header, my_agent->epmem_normalized_match_score_symbol, my_meta );
 						new_wme->preference = epmem_make_fake_preference( my_agent, state, new_wme );
 						state->id.epmem_info->epmem_wmes->push( new_wme );
+						symbol_remove_ref( my_agent, my_meta );
 
 						// match-cardinality
-						new_wme = add_input_wme( my_agent, state->id.epmem_result_header, my_agent->epmem_match_cardinality_symbol, make_int_constant( my_agent, king_cardinality ) );
+						my_meta = make_int_constant( my_agent, king_cardinality );
+						new_wme = add_input_wme( my_agent, state->id.epmem_result_header, my_agent->epmem_match_cardinality_symbol, my_meta );
 						new_wme->preference = epmem_make_fake_preference( my_agent, state, new_wme );
 						state->id.epmem_info->epmem_wmes->push( new_wme );
+						symbol_remove_ref( my_agent, my_meta );
 
 						// actual memory
 						epmem_install_memory( my_agent, state, king_id );
@@ -5034,6 +5053,8 @@ void epmem_process_query( agent *my_agent, Symbol *state, Symbol *query, Symbol 
 			// place results in WM
 			if ( king_id != EPMEM_MEMID_NONE )
 			{
+				Symbol *my_meta;
+				
 				epmem_set_stat( my_agent, EPMEM_STAT_QRY_RET, king_id );
 				epmem_set_stat( my_agent, EPMEM_STAT_QRY_CARD, king_cardinality );
 
@@ -5043,31 +5064,41 @@ void epmem_process_query( agent *my_agent, Symbol *state, Symbol *query, Symbol 
 				state->id.epmem_info->epmem_wmes->push( new_wme );
 
 				// match score
-				new_wme = add_input_wme( my_agent, state->id.epmem_result_header, my_agent->epmem_match_score_symbol, make_float_constant( my_agent, king_score ) );
+				my_meta = make_float_constant( my_agent, king_score );
+				new_wme = add_input_wme( my_agent, state->id.epmem_result_header, my_agent->epmem_match_score_symbol, my_meta );
 				new_wme->preference = epmem_make_fake_preference( my_agent, state, new_wme );
 				state->id.epmem_info->epmem_wmes->push( new_wme );
+				symbol_remove_ref( my_agent, my_meta );
 
 				// cue-size
-				new_wme = add_input_wme( my_agent, state->id.epmem_result_header, my_agent->epmem_cue_size_symbol, make_int_constant( my_agent, cue_size ) );
+				my_meta = make_int_constant( my_agent, cue_size );
+				new_wme = add_input_wme( my_agent, state->id.epmem_result_header, my_agent->epmem_cue_size_symbol, my_meta );
 				new_wme->preference = epmem_make_fake_preference( my_agent, state, new_wme );
 				state->id.epmem_info->epmem_wmes->push( new_wme );
+				symbol_remove_ref( my_agent, my_meta );
 
 				// normalized-match-score
-				new_wme = add_input_wme( my_agent, state->id.epmem_result_header, my_agent->epmem_normalized_match_score_symbol, make_float_constant( my_agent, ( king_score / perfect_match ) ) );
+				my_meta = make_float_constant( my_agent, ( king_score / perfect_match ) );
+				new_wme = add_input_wme( my_agent, state->id.epmem_result_header, my_agent->epmem_normalized_match_score_symbol, my_meta );
 				new_wme->preference = epmem_make_fake_preference( my_agent, state, new_wme );
 				state->id.epmem_info->epmem_wmes->push( new_wme );
+				symbol_remove_ref( my_agent, my_meta );
 
 				// match-cardinality
-				new_wme = add_input_wme( my_agent, state->id.epmem_result_header, my_agent->epmem_match_cardinality_symbol, make_int_constant( my_agent, king_cardinality ) );
+				my_meta = make_int_constant( my_agent, king_cardinality );
+				new_wme = add_input_wme( my_agent, state->id.epmem_result_header, my_agent->epmem_match_cardinality_symbol, my_meta );
 				new_wme->preference = epmem_make_fake_preference( my_agent, state, new_wme );
 				state->id.epmem_info->epmem_wmes->push( new_wme );
+				symbol_remove_ref( my_agent, my_meta );
 
 				// graph match
 				if ( graph_match )
 				{
-					new_wme = add_input_wme( my_agent, state->id.epmem_result_header, my_agent->epmem_graph_match_symbol, make_int_constant( my_agent, ( ( king_graph_match == len_query )?(1):(0) ) ) );
+					my_meta = make_int_constant( my_agent, ( ( king_graph_match == len_query )?(1):(0) ) );
+					new_wme = add_input_wme( my_agent, state->id.epmem_result_header, my_agent->epmem_graph_match_symbol, my_meta );
 					new_wme->preference = epmem_make_fake_preference( my_agent, state, new_wme );
 					state->id.epmem_info->epmem_wmes->push( new_wme );
+					symbol_remove_ref( my_agent, my_meta );
 				}
 
 				// actual memory
