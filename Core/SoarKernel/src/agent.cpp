@@ -2,7 +2,7 @@
 
 /*************************************************************************
  * PLEASE SEE THE FILE "license.txt" (INCLUDED WITH THIS SOFTWARE PACKAGE)
- * FOR LICENSE AND COPYRIGHT INFORMATION. 
+ * FOR LICENSE AND COPYRIGHT INFORMATION.
  *************************************************************************/
 
 /*************************************************************************
@@ -60,7 +60,7 @@
 //char * soar_version_string;
 
 /* ===================================================================
-   
+
                            Initialization Function
 
 =================================================================== */
@@ -113,7 +113,7 @@ void init_soar_agent(agent* thisAgent) {
 
   // should come after reset_statistics
   wma_init(thisAgent);
-   
+
   /* RDF: For gSKI */
   init_agent_memory(thisAgent);
   /* END */
@@ -191,11 +191,11 @@ agent * create_soar_agent (char * agent_name) {                                 
   newAgent->print_prompt_flag                  = TRUE;
   newAgent->printer_output_column              = 1;
   newAgent->production_being_fired             = NIL;
-  newAgent->productions_being_traced           = NIL; 
+  newAgent->productions_being_traced           = NIL;
   newAgent->promoted_ids                       = NIL;
   newAgent->reason_for_stopping                = "Startup";
   newAgent->slots_for_possible_removal         = NIL;
-  newAgent->stop_soar                          = TRUE;           
+  newAgent->stop_soar                          = TRUE;
   newAgent->system_halted                      = FALSE;
   newAgent->token_additions                    = 0;
   newAgent->top_dir_stack                      = NIL;   /* AGR 568 */
@@ -282,9 +282,9 @@ agent * create_soar_agent (char * agent_name) {                                 
   newAgent->top_dir_stack->next = NIL;   /* AGR 568 */
   strcpy(newAgent->top_dir_stack->directory, cur_path);   /* AGR 568 */
 
-  /* changed all references of 'i', a var belonging to a previous for loop, to 'productionTypeCounter' to be unique 
+  /* changed all references of 'i', a var belonging to a previous for loop, to 'productionTypeCounter' to be unique
     stokesd Sept 10 2004*/
-  for (int productionTypeCounter=0; productionTypeCounter<NUM_PRODUCTION_TYPES; productionTypeCounter++) {  
+  for (int productionTypeCounter=0; productionTypeCounter<NUM_PRODUCTION_TYPES; productionTypeCounter++) {
     newAgent->all_productions_of_type[productionTypeCounter] = NIL;
     newAgent->num_productions_of_type[productionTypeCounter] = 0;
   }
@@ -312,14 +312,14 @@ agent * create_soar_agent (char * agent_name) {                                 
   // be set before the agent was initialized.
   init_sysparams (newAgent);
 
-  
+
   // exploration initialization
   newAgent->exploration_params[ EXPLORATION_PARAM_EPSILON ] = exploration_add_parameter( 0.1, &exploration_validate_epsilon, "epsilon" );
   newAgent->exploration_params[ EXPLORATION_PARAM_TEMPERATURE ] = exploration_add_parameter( 25, &exploration_validate_temperature, "temperature" );
-  
+
   // rl initialization
-  newAgent->rl_params[ RL_PARAM_LEARNING ] = rl_add_parameter( "learning", RL_LEARNING_OFF, &rl_validate_learning, &rl_convert_learning, &rl_convert_learning );    
-  newAgent->rl_params[ RL_PARAM_DISCOUNT_RATE ] = rl_add_parameter( "discount-rate", 0.9, &rl_validate_discount );  
+  newAgent->rl_params[ RL_PARAM_LEARNING ] = rl_add_parameter( "learning", RL_LEARNING_OFF, &rl_validate_learning, &rl_convert_learning, &rl_convert_learning );
+  newAgent->rl_params[ RL_PARAM_DISCOUNT_RATE ] = rl_add_parameter( "discount-rate", 0.9, &rl_validate_discount );
   newAgent->rl_params[ RL_PARAM_LEARNING_RATE ] = rl_add_parameter( "learning-rate", 0.3, &rl_validate_learning_rate );
   newAgent->rl_params[ RL_PARAM_LEARNING_POLICY ] = rl_add_parameter( "learning-policy", RL_LEARNING_SARSA, &rl_validate_learning_policy, &rl_convert_learning_policy, &rl_convert_learning_policy );
   newAgent->rl_params[ RL_PARAM_ET_DECAY_RATE ] = rl_add_parameter( "eligibility-trace-decay-rate", 0, &rl_validate_decay_rate );
@@ -332,9 +332,9 @@ agent * create_soar_agent (char * agent_name) {                                 
   newAgent->rl_stats[ RL_STAT_GLOBAL_REWARD ] = rl_add_stat( "global-reward" );
 
   rl_initialize_template_tracking( newAgent );
-  
+
   newAgent->rl_first_switch = true;
-  
+
   // select initialization
   newAgent->select = new select_info;
   select_init( newAgent );
@@ -342,25 +342,25 @@ agent * create_soar_agent (char * agent_name) {                                 
   // predict initialization
   newAgent->prediction = new std::string();
   predict_init( newAgent );
-  
+
   // epmem initialization
   newAgent->epmem_params[ EPMEM_PARAM_LEARNING ] = epmem_add_parameter( "learning", EPMEM_LEARNING_ON, &epmem_validate_learning, &epmem_convert_learning, &epmem_convert_learning );
   newAgent->epmem_params[ EPMEM_PARAM_DB ] = epmem_add_parameter( "database", EPMEM_DB_FILE, &epmem_validate_database, &epmem_convert_database, &epmem_convert_database );
   newAgent->epmem_params[ EPMEM_PARAM_PATH ] = epmem_add_parameter( "path", "", &epmem_validate_path );
   newAgent->epmem_params[ EPMEM_PARAM_COMMIT ] = epmem_add_parameter( "commit", 1.0, &epmem_validate_commit );
-  
+
   newAgent->epmem_params[ EPMEM_PARAM_MODE ] = epmem_add_parameter( "mode", EPMEM_MODE_THREE, &epmem_validate_mode, &epmem_convert_mode, &epmem_convert_mode );
   newAgent->epmem_params[ EPMEM_PARAM_GRAPH_MATCH ] = epmem_add_parameter( "graph-match", EPMEM_GRAPH_MATCH_OFF, &epmem_validate_graph_match, &epmem_convert_graph_match, &epmem_convert_graph_match );
-    
+
   newAgent->epmem_params[ EPMEM_PARAM_TRIGGER ] = epmem_add_parameter( "trigger", EPMEM_TRIGGER_OUTPUT, &epmem_validate_trigger, &epmem_convert_trigger, &epmem_convert_trigger );
   newAgent->epmem_params[ EPMEM_PARAM_FORCE ] = epmem_add_parameter( "force", EPMEM_FORCE_OFF, &epmem_validate_force, &epmem_convert_force, &epmem_convert_force );
   newAgent->epmem_params[ EPMEM_PARAM_BALANCE ] = epmem_add_parameter( "balance", 0.5, &epmem_validate_balance );
-  newAgent->epmem_params[ EPMEM_PARAM_EXCLUSIONS ] = epmem_add_parameter( "exclusions", "", &epmem_validate_exclusions );  
+  newAgent->epmem_params[ EPMEM_PARAM_EXCLUSIONS ] = epmem_add_parameter( "exclusions", "", &epmem_validate_exclusions );
   newAgent->epmem_params[ EPMEM_PARAM_TIMERS ] = epmem_add_parameter( "timers", EPMEM_TIMERS_OFF, &epmem_validate_ext_timers, &epmem_convert_ext_timers, &epmem_convert_ext_timers );
 
   newAgent->epmem_stats[ EPMEM_STAT_TIME ] = epmem_add_stat( "time" );
   newAgent->epmem_stats[ EPMEM_STAT_MEM_USAGE ] = epmem_add_stat( "mem_usage" );
-  newAgent->epmem_stats[ EPMEM_STAT_MEM_HIGH ] = epmem_add_stat( "mem_high" );  
+  newAgent->epmem_stats[ EPMEM_STAT_MEM_HIGH ] = epmem_add_stat( "mem_high" );
   newAgent->epmem_stats[ EPMEM_STAT_QRY_POS ] = epmem_add_stat( "qry_pos" );
   newAgent->epmem_stats[ EPMEM_STAT_QRY_NEG ] = epmem_add_stat( "qry_neg" );
   newAgent->epmem_stats[ EPMEM_STAT_QRY_RET ] = epmem_add_stat( "qry_ret" );
@@ -407,6 +407,7 @@ agent * create_soar_agent (char * agent_name) {                                 
   	newAgent->epmem_statements[ i ] = NULL;
 
   newAgent->epmem_exclusions = new std::list<const char *>();
+  epmem_set_parameter( newAgent, EPMEM_PARAM_EXCLUSIONS, "epmem" );
 
   newAgent->epmem_node_removals = new std::map<epmem_node_id, bool>();
   newAgent->epmem_node_mins = new std::vector<epmem_time_id>();
@@ -464,9 +465,9 @@ void destroy_soar_agent (agent * delete_agent)
   for ( multi_attribute* curmattr = delete_agent->multi_attributes;
         curmattr != 0;
         curmattr = curmattr->next ) {
-     
+
      symbol_remove_ref(delete_agent, curmattr->symbol);
-     
+
      free_memory(delete_agent, (void*) lastmattr, MISCELLANEOUS_MEM_USAGE);
      lastmattr = curmattr;
   }
@@ -482,7 +483,7 @@ void destroy_soar_agent (agent * delete_agent)
   free_with_pool(&delete_agent->rete_node_pool, delete_agent->dummy_top_node);
   free_with_pool(&delete_agent->token_pool, delete_agent->dummy_top_token);
 
-  /* Cleaning up the various callbacks 
+  /* Cleaning up the various callbacks
      TODO: Not clear why callbacks need to take the agent pointer essentially twice.
   */
   soar_remove_all_monitorable_callbacks(delete_agent);
@@ -541,15 +542,15 @@ void destroy_soar_agent (agent * delete_agent)
   // cleanup Soar-RL
   rl_clean_parameters( delete_agent );
   rl_clean_stats( delete_agent );
-  
+
   // cleanup select
   select_init( delete_agent );
   delete delete_agent->select;
 
   // cleanup predict
   delete delete_agent->prediction;
-  
-  // cleanup EpMem    
+
+  // cleanup EpMem
   epmem_end( delete_agent );
   epmem_clean_parameters( delete_agent );
   epmem_clean_stats( delete_agent );
