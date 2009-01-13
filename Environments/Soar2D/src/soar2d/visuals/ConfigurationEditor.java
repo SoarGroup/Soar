@@ -184,7 +184,7 @@ public class ConfigurationEditor extends Dialog {
 		tree = new Tree(dialog, SWT.BORDER);
 		{
 			GridData gd = new GridData();
-			gd.heightHint = 430;
+			gd.heightHint = 550;
 			gd.widthHint = 100;
 			tree.setLayoutData(gd);
 		}

@@ -5,7 +5,7 @@ import SoarSCons
 import sys
 
 Import('env')
-env = env.Copy()
+env = env.Clone()
 
 if sys.platform == 'cygwin':
     SoarSCons.SetJavaPaths(env, '"Core/ClientSMLSWIG/Java/sml.jar;SoarLibrary/bin/swt.jar;SoarLibrary/bin/jcommon-1.0.10.jar;SoarLibrary/bin/jfreechart-1.0.6.jar;SoarLibrary/bin/jfreechart-1.0.6-swt.jar;SoarLibrary/bin/swtgraphics2d.jar"')

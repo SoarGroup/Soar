@@ -4,7 +4,7 @@ import SoarSCons
 import sys
 
 Import('env')
-env = env.Copy()
+env = env.Clone()
 
 if sys.platform == 'cygwin':
     SoarSCons.SetJavaPaths(env, '"Core/ClientSMLSWIG/Java/sml.jar;."', 'Tools/VisualSoar/Source')

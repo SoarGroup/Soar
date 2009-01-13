@@ -657,11 +657,16 @@ public class SoarTank extends Tank implements Agent.RunEventInterface {
 				}
 				
 				// charger detection
+				// TODO: consider SetBlinkIfNoChange(false) in constructor
 				String energyRecharger = onEnergyCharger ? Names.kYes : Names.kNo;
-				Update(m_EnergyRechargerWME, energyRecharger);
+				if ( !m_EnergyRechargerWME.GetValue().equals(energyRecharger) ) {
+					Update(m_EnergyRechargerWME, energyRecharger);
+				}
 
 				String healthRecharger = onHealthCharger ? Names.kYes : Names.kNo;
-				Update(m_HealthRechargerWME, healthRecharger);
+				if ( !m_HealthRechargerWME.GetValue().equals(healthRecharger) ) {
+					Update(m_HealthRechargerWME, healthRecharger);
+				}
 			}
 			
 			boolean rotated = !m_DirectionWME.GetValue().equalsIgnoreCase(facingString);
@@ -670,7 +675,7 @@ public class SoarTank extends Tank implements Agent.RunEventInterface {
 				Update(m_DirectionWME, facingString);
 			}
 
-			// charger detection
+			// stats detection
 			if (m_EnergyWME.GetValue() != energy) {
 				Update(m_EnergyWME, energy);
 			}

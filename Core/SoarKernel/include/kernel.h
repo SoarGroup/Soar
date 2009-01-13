@@ -126,7 +126,7 @@ typedef union symbol_union Symbol;
    but if you are trying to improve performance and reduce memory, it's
    worth testing your system with the top-level-ref-cts turned off.
    Soar will be much more efficient.  See comments in recmem.cpp  */
-//#define DO_TOP_LEVEL_REF_CTS
+#define DO_TOP_LEVEL_REF_CTS
 
 /* UNcomment the following line to get some marginally useful msgs
    about creating chunk names. */
