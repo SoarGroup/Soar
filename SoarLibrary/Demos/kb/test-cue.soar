@@ -18,8 +18,9 @@ sp {kb*propose*test-cue
 
 sp {apply*test-cue*prepare
    (state <s> ^operator <op>
-              ^tests.test <t>
+              ^tests <ts>
               ^epmem <epmem>)
+   (<ts> ^test <t>)
    (<epmem> ^command <e-cmd>)
    (<op> ^name test-cue
          ^test <c>

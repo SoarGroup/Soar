@@ -43,9 +43,10 @@ sp {apply*test-notify*success
 
 sp {apply*test-notify*clean*query
    (state <s> ^operator <op>
-              ^epmem.command <cmd>)
+              ^epmem <epmem>)
    (<op> ^name test-notify
          ^result success)
+   (<epmem> ^command <cmd>)
    (<cmd> ^query <q>)
 -->
    (<cmd> ^query <q> -)
@@ -53,9 +54,10 @@ sp {apply*test-notify*clean*query
 
 sp {apply*test-notify*clean*neg-query
    (state <s> ^operator <op>
-              ^epmem.command <cmd>)
+              ^epmem <epmem>)
    (<op> ^name test-notify
          ^result success)
+   (<epmem> ^command <cmd>)
    (<cmd> ^neg-query <q>)
 -->
    (<cmd> ^neg-query <q> -)
@@ -63,9 +65,10 @@ sp {apply*test-notify*clean*neg-query
 
 sp {apply*test-notify*clean*retrieve
    (state <s> ^operator <op>
-              ^epmem.command <cmd>)
+              ^epmem <epmem>)
    (<op> ^name test-notify
          ^result success)
+   (<epmem> ^command <cmd>)
    (<cmd> ^retrieve <q>)
 -->
    (<cmd> ^retrieve <q> -)
@@ -74,9 +77,10 @@ sp {apply*test-notify*clean*retrieve
 
 sp {apply*test-notify*clean*next
    (state <s> ^operator <op>
-              ^epmem.command <cmd>)
+              ^epmem <epmem>)
    (<op> ^name test-notify
          ^result success)
+   (<epmem> ^command <cmd>)
    (<cmd> ^next <q>)
 -->
    (<cmd> ^next <q> -)
@@ -85,9 +89,10 @@ sp {apply*test-notify*clean*next
 
 sp {apply*test-notify*clean*previous
    (state <s> ^operator <op>
-              ^epmem.command <cmd>)
+              ^epmem <epmem>)
    (<op> ^name test-notify
          ^result success)
+   (<epmem> ^command <cmd>)
    (<cmd> ^previous <q>)
 -->
    (<cmd> ^previous <q> -)
@@ -96,9 +101,10 @@ sp {apply*test-notify*clean*previous
 
 sp {apply*test-notify*clean*before
    (state <s> ^operator <op>
-              ^epmem.command <cmd>)
+              ^epmem <epmem>)
    (<op> ^name test-notify
          ^result success)
+   (<epmem> ^command <cmd>)
    (<cmd> ^before <q>)
 -->
    (<cmd> ^before <q> -)
@@ -106,9 +112,10 @@ sp {apply*test-notify*clean*before
 
 sp {apply*test-notify*clean*after
    (state <s> ^operator <op>
-              ^epmem.command <cmd>)
+              ^epmem <epmem>)
    (<op> ^name test-notify
          ^result success)
+   (<epmem> ^command <cmd>)
    (<cmd> ^after <q>)
 -->
    (<cmd> ^after <q> -)
@@ -116,9 +123,10 @@ sp {apply*test-notify*clean*after
 
 sp {apply*test-notify*clean*prohibit
    (state <s> ^operator <op>
-              ^epmem.command <cmd>)
+              ^epmem <epmem>)
    (<op> ^name test-notify
          ^result success)
+   (<epmem> ^command <cmd>)
    (<cmd> ^prohibit <q>)
 -->
    (<cmd> ^prohibit <q> -)
@@ -128,11 +136,12 @@ sp {apply*test-notify*clean*prohibit
 
 sp {apply*test-notify*failure
    (state <s> ^operator <op>
-              ^tests.test <t>)
+              ^tests <ts>)
    (<op> ^name test-notify
          ^test <c>
          ^step <step>
          ^result failure)
+   (<ts> ^test <t>)
    (<t> ^id <c>
         ^step <st>)
    (<st> ^id <step>)
