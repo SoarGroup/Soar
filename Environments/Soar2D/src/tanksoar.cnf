@@ -1,0 +1,3 @@
+general.game = "tanksoar";
+general.map = "maps/tanksoar/default.tmap";
+general.terminals.winning_score = 50;
