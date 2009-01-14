@@ -1,0 +1,3 @@
+general.game = "eaters";
+general.map = "maps/eaters/random-walls.emap";
+general.terminals.food_remaining = true;
