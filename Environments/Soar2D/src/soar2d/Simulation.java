@@ -1,11 +1,14 @@
 package soar2d;
 
+import java.awt.Point;
 import java.io.*;
 import java.util.*;
 import java.util.logging.*;
 
 import sml.*;
-import soar2d.configuration.Configuration.SimType;
+import soar2d.config.Config;
+import soar2d.config.SimConfig;
+import soar2d.config.Soar2DKeys;
 import soar2d.player.*;
 import soar2d.player.book.Dog;
 import soar2d.player.book.Mouse;
@@ -43,6 +46,7 @@ public class Simulation {
 	 * The random number generator used throughout the program
 	 */
 	public static Random random = null;
+	
 	/**
 	 * The world and everything associated with it
 	 */
@@ -59,10 +63,6 @@ public class Simulation {
 	 * String agent name to agent mapping
 	 */
 	private HashMap<String, Agent> agents = new HashMap<String, Agent>();
-	/**
-	 * String agent name to player config mapping
-	 */
-	private HashMap<String, PlayerConfig> configs = new HashMap<String, PlayerConfig>();
 
 	private static final String kDog = "dog";
 	private static final String kMouse = "mouse";
@@ -79,14 +79,14 @@ public class Simulation {
 			unusedColors.add(kColors[i]);
 		}
 		
-		runTilOutput = Soar2D.config.getRunTilOutput();
+		runTilOutput = Soar2D.simConfig.runTilOutput();
 		
 		// Initialize Soar
-		if (Soar2D.config.getRemote()) {
+		if (Soar2D.config.getBoolean(Soar2DKeys.general.soar.remote, false)) {
 			kernel = Kernel.CreateRemoteConnection(true);
 		} else {
 			// Create kernel
-			kernel = Kernel.CreateKernelInNewThread("SoarKernelSML", Soar2D.config.getPort());
+			kernel = Kernel.CreateKernelInNewThread("SoarKernelSML", Soar2D.config.getInt(Soar2DKeys.general.soar.port, 12121));
 			//kernel = Kernel.CreateKernelInCurrentThread("SoarKernelSML", true);
 		}
 
@@ -101,11 +101,12 @@ public class Simulation {
 
 		// Make all runs non-random if asked
 		// For debugging, set this to make all random calls follow the same sequence
-		if (Soar2D.config.hasRandomSeed()) {
+		if (Soar2D.config.hasKey(Soar2DKeys.general.seed)) {
 			// seed the generators
-			if (Soar2D.logger.isLoggable(Level.FINEST)) Soar2D.logger.finest("Seeding generators with " + Soar2D.config.getRandomSeed());
-			kernel.ExecuteCommandLine("srand " + Soar2D.config.getRandomSeed(), null) ;
-			random = new Random(Soar2D.config.getRandomSeed());
+			int seed = Soar2D.config.getInt(Soar2DKeys.general.seed, 0);
+			if (Soar2D.logger.isLoggable(Level.FINEST)) Soar2D.logger.finest("Seeding generators with " + seed);
+			kernel.ExecuteCommandLine("srand " + seed, null) ;
+			random = new Random(seed);
 		} else {
 			if (Soar2D.logger.isLoggable(Level.FINEST)) Soar2D.logger.finest("Not seeding generators.");
 			random = new Random();
@@ -127,17 +128,23 @@ public class Simulation {
 			return false;
 		}
 		
+		// Add default debugger client to configuration, overwriting any existing java-debugger config:
+		String prefix = Soar2DKeys.clientKey(Names.kDebuggerClient) + ".";
+		Soar2D.config.setBoolean(prefix + Soar2DKeys.clients.after, true);
+		Soar2D.config.setInt(prefix + Soar2DKeys.clients.after, 15);
+		
 		// Start or wait for clients (false: before agent creation)
 		if (!doClients(false)) {
 			return false;
 		}
 		
 		// add initial players
-		Iterator<PlayerConfig> iter = Soar2D.config.getPlayers().iterator();
-		while (iter.hasNext()) {
-			createPlayer(iter.next());
+		if (Soar2D.config.hasKey(Soar2DKeys.players.active_players)) {
+			for ( String playerId : Soar2D.config.getStrings(Soar2DKeys.players.active_players)) {
+				createPlayer(playerId);
+			}
 		}
-
+		
 		// Start or wait for clients (true: after agent creation)
 		if (!doClients(true)) {
 			return false;
@@ -231,25 +238,24 @@ public class Simulation {
 	 * 
 	 * create a player and add it to the simulation and world
 	 */
-	public void createPlayer(PlayerConfig playerConfigIn) {
+	public void createPlayer(String playerId) {
+		Config playerConfig = Soar2D.config.getChild(Soar2DKeys.playerKey(playerId));
 		
-		if ((Soar2D.config.getType() == SimType.kTaxi) && (configs.size() > 1)) {
+		if ((Soar2D.simConfig.is(SimConfig.Game.TAXI)) && (world.getPlayers().size() > 1)) {
 			// if this is removed, revisit white color below!
 			Soar2D.control.severeError("Taxi game type only supports 1 player.");
 			return;
 		}
 		
-		PlayerConfig playerConfig = new PlayerConfig(playerConfigIn);
-		
 		// if a color was specified
-		if (playerConfig.hasColor()) {
+		if (playerConfig.hasKey(Soar2DKeys.players.color)) {
 			//make sure it is unused
-			if (!unusedColors.contains(playerConfig.getColor())) {
-				Soar2D.control.severeError("Color used or not available: " + playerConfig.getColor());
+			if (!unusedColors.contains(playerConfig.requireString(Soar2DKeys.players.color))) {
+				Soar2D.control.severeError("Color used or not available: " + playerConfig.requireString(Soar2DKeys.players.color));
 				return;
 			}
 			// it is unused, so use it
-			useAColor(playerConfig.getColor());
+			useAColor(playerConfig.requireString(Soar2DKeys.players.color));
 		} else {
 			
 			// no color specified, pick on at random
@@ -262,68 +268,65 @@ public class Simulation {
 				Soar2D.control.severeError("There are no more player slots available.");
 				return;
 			}
-			
-			// set it
-			playerConfig.setColor(color);
+			playerConfig.setString(Soar2DKeys.players.color, color);
 		}
 		
-		// if we don't have a name
-		if (!playerConfig.hasName()) {
-			// then use our color
-			playerConfig.setName(playerConfig.getColor());
+		// if we don't have a name, use our color
+		if (!playerConfig.hasKey(Soar2DKeys.players.name)) {
+			playerConfig.setString(Soar2DKeys.players.name, playerConfig.requireString(Soar2DKeys.players.color));
 		}
 		
 		try {
 			// check for duplicate name
-			if (configs.containsKey(playerConfig.getName())) {
-				throw new CreationException("Failed to create player: " + playerConfig.getName() + " already exists.");
+			if (world.getPlayers().get(playerConfig.requireString(Soar2DKeys.players.name)) != null) {
+				throw new CreationException("Failed to create player: " + playerConfig.requireString(Soar2DKeys.players.name) + " already exists.");
 			}
 			
 			// check for human agent
-			if (playerConfig.hasProductions() == false) {
+			if (playerConfig.hasKey(Soar2DKeys.players.productions) == false) {
 				
 				// create a human agent
 				Player player = null;
 				
 				// eater or tank depending on the setting
 				boolean human = true;
-				switch(Soar2D.config.getType()) {
-				case kEaters:
-					if (Soar2D.config.getToscaEnabled()) {
-						player = new ToscaEater(playerConfig);
+				switch(Soar2D.simConfig.game()) {
+				case EATERS:
+					if (Soar2D.config.getBoolean(Soar2DKeys.general.tosca, false)) {
+						player = new ToscaEater(playerId);
 						human = false;
 					} else {
-						player = new Eater(playerConfig);
+						player = new Eater(playerId);
 					}
 					break;
 					
-				case kTankSoar:
-					player = new Tank(playerConfig);
+				case TANKSOAR:
+					player = new Tank(playerId);
 					break;
 					
-				case kBook:
-					if (playerConfig.getName().equals(kDog)) {
-						player = new Dog(playerConfig);
+				case ROOM:
+					if (playerConfig.requireString(Soar2DKeys.players.name).equals(kDog)) {
+						player = new Dog(playerId);
 						human = false;
-					} else if (playerConfig.getName().equals(kMouse)) {
-						player = new Mouse(playerConfig);
+					} else if (playerConfig.requireString(Soar2DKeys.players.name).equals(kMouse)) {
+						player = new Mouse(playerId);
 						human = false;
 					} else {
-						player = new Robot(playerConfig);
+						player = new Robot(playerId);
 					}
 					break;
 
-				case kKitchen:
-					if (Soar2D.config.getToscaEnabled()) {
-						player = new ToscaCook(playerConfig);
+				case KITCHEN:
+					if (Soar2D.config.getBoolean(Soar2DKeys.general.tosca, false)	) {
+						player = new ToscaCook(playerId);
 						human = false;
 					} else {
-						player = new Cook(playerConfig);
+						player = new Cook(playerId);
 					}
 					break;
 					
-				case kTaxi:
-					player = new Taxi(playerConfig);
+				case TAXI:
+					player = new Taxi(playerId);
 					break;
 
 				}
@@ -331,71 +334,64 @@ public class Simulation {
 				assert player != null;
 				
 				// set its location if necessary
-				java.awt.Point initialLocation = null;
-				if (playerConfig.hasInitialLocation()) {
-					initialLocation = playerConfig.getInitialLocation();
-				}
+				java.awt.Point initialLocation = getInitialLocation(playerConfig);
 
 				// This can fail if there are no open squares on the map, message printed already
 				if (!world.addPlayer(player, initialLocation, human)) {
 					throw new CreationException();
 				}
-
-				// save the player configuration
-				configs.put(player.getName(), playerConfig);
 				
 			} else {
 				
 				// we need to create a soar agent, do it
-				Agent agent = kernel.CreateAgent(playerConfig.getName());
+				Agent agent = kernel.CreateAgent(playerConfig.requireString(Soar2DKeys.players.name));
 				if (agent == null) {
-					throw new CreationException("Agent " + playerConfig.getName() + " creation failed: " + kernel.GetLastErrorDescription());
+					throw new CreationException("Agent " + playerConfig.requireString(Soar2DKeys.players.name) + " creation failed: " + kernel.GetLastErrorDescription());
 				}
 				
 				try {
 					// now load the productions
-					if (!agent.LoadProductions(playerConfig.getProductions().getAbsolutePath())) {
-						throw new CreationException("Agent " + playerConfig.getName() + " production load failed: " + agent.GetLastErrorDescription());
+					File productionsFile = new File(playerConfig.requireString(Soar2DKeys.players.productions));
+					if (!agent.LoadProductions(productionsFile.getAbsolutePath())) {
+						throw new CreationException("Agent " + playerConfig.requireString(Soar2DKeys.players.name) + " production load failed: " + agent.GetLastErrorDescription());
 					}
 					
 					// if requested, silence agent
-					if (Soar2D.config.getSilentAgents()) {
+					if (Soar2D.config.getBoolean(Soar2DKeys.general.soar.watch_0, false)) {
 						agent.ExecuteCommandLine("watch 0");
 					}
 					
 					// if requested, set max memory usage
-					if (Soar2D.config.getMaxMemoryUsage() > 0) {
-						agent.ExecuteCommandLine("max-memory-usage " + Integer.toString(Soar2D.config.getMaxMemoryUsage()));
+					int maxmem = Soar2D.config.getInt(Soar2DKeys.general.soar.max_memory_usage, -1);
+					if (maxmem > 0) {
+						agent.ExecuteCommandLine("max-memory-usage " + Integer.toString(maxmem));
 					}
 			
 					Player player = null;
 					
 					// create the tank or eater, soar style
-					switch(Soar2D.config.getType()) {
-					case kEaters:
-						player = new SoarEater(agent, playerConfig); 
+					switch(Soar2D.simConfig.game()) {
+					case EATERS:
+						player = new SoarEater(agent, playerId); 
 						break;
-					case kTankSoar:
-						player = new SoarTank(agent, playerConfig);
+					case TANKSOAR:
+						player = new SoarTank(agent, playerId);
 						break;
-					case kBook:
-						player = new SoarRobot(agent, playerConfig);
+					case ROOM:
+						player = new SoarRobot(agent, playerId);
 						break;
-					case kKitchen:
-						player = new SoarCook(agent, playerConfig);
+					case KITCHEN:
+						player = new SoarCook(agent, playerId);
 						break;
-					case kTaxi:
-						player = new SoarTaxi(agent, playerConfig);
+					case TAXI:
+						player = new SoarTaxi(agent, playerId);
 
 					}
 					
 					assert player != null;
 					
 					// handle the initial location if necesary
-					java.awt.Point initialLocation = null;
-					if (playerConfig.hasInitialLocation()) {
-						initialLocation = playerConfig.getInitialLocation();
-					}
+					java.awt.Point initialLocation = getInitialLocation(playerConfig);
 					
 					// This can fail if there are no open squares on the map, message printed already
 					if (!world.addPlayer(player, initialLocation, false)) {
@@ -403,19 +399,18 @@ public class Simulation {
 					}
 		
 					// Scott Lathrop --  register for print events
-					if (Soar2D.config.getLogSoarPrint()) {
+					if (Soar2D.config.getBoolean(Soar2DKeys.general.logging.soar_print, false)) {
 						agent.RegisterForPrintEvent(smlPrintEventId.smlEVENT_PRINT, Soar2D.control.getLogger(), null,true);
 					}
 					
-					// save both the agent
+					// save the agent
 					agents.put(player.getName(), agent);
 					
-					// and the configuration
-					configs.put(player.getName(), playerConfig);
-					
 					// spawn the debugger if we're supposed to
-					Names.kDebuggerClient.command = getDebuggerCommand(player.getName());
-					if (Soar2D.config.getDebuggers() && !isClientConnected(Names.kDebuggerClient)) {
+					String prefix = Soar2DKeys.clientKey(Names.kDebuggerClient) + ".";
+					Soar2D.config.setString(prefix + Soar2DKeys.clients.command, getDebuggerCommand(player.getName()));
+
+					if (Soar2D.config.getBoolean(Soar2DKeys.general.soar.spawn_debuggers, true) && !isClientConnected(Names.kDebuggerClient)) {
 						spawnClient(Names.kDebuggerClient);
 					}
 					
@@ -428,7 +423,7 @@ public class Simulation {
 			}
 		} catch (CreationException e) {
 			// a problem in this block requires us to free up the color
-			freeAColor(playerConfig.getColor());
+			freeAColor(playerConfig.requireString(Soar2DKeys.players.color));
 			if (e.getMessage() != null) {
 				Soar2D.control.severeError(e.getMessage());
 			}
@@ -439,18 +434,28 @@ public class Simulation {
 		Soar2D.control.playerEvent();
 	}
 	
+	private Point getInitialLocation(Config playerConfig) {
+		java.awt.Point initialLocation = null;
+		if (playerConfig.hasKey(Soar2DKeys.players.x) && playerConfig.hasKey(Soar2DKeys.players.y)) {
+			initialLocation = new Point();
+			initialLocation.x = playerConfig.requireInt(Soar2DKeys.players.x);
+			initialLocation.y = playerConfig.requireInt(Soar2DKeys.players.y);
+		}
+		return initialLocation;
+	}
+
 	/**
 	 * @param client the client in question
 	 * @return true if it is connected
 	 * 
 	 * check to see if the client specified by the client config is connected or not
 	 */
-	public boolean isClientConnected(ClientConfig client) {
+	public boolean isClientConnected(String clientId) {
 		boolean connected = false;
 		kernel.GetAllConnectionInfo();
 		for (int i = 0; i < kernel.GetNumberConnections(); ++i) {
 			ConnectionInfo info =  kernel.GetConnectionInfo(i);
-			if (info.GetName().equalsIgnoreCase(client.name)) {
+			if (info.GetName().equalsIgnoreCase(clientId)) {
 				connected = true;
 				break;
 			}
@@ -468,10 +473,12 @@ public class Simulation {
 		String commandLine;
 		if (os.matches(".+indows.*") || os.matches("INDOWS")) {
 			commandLine = "javaw -jar \"" + getBasePath() 
-			+ "..\\..\\SoarLibrary\\bin\\SoarJavaDebugger.jar\" -cascade -remote -agent " + agentName + " -port " + Soar2D.config.getPort();
+			+ "..\\..\\SoarLibrary\\bin\\SoarJavaDebugger.jar\" -cascade -remote -agent " 
+			+ agentName + " -port " + Soar2D.config.getInt(Soar2DKeys.general.soar.port, 12121);
 		} else {
 			commandLine = System.getProperty("java.home") + "/bin/java -jar " + getBasePath()
-			+ "../../SoarLibrary/bin/SoarJavaDebugger.jar -XstartOnFirstThread -cascade -remote -agent " + agentName + " -port " + Soar2D.config.getPort();
+			+ "../../SoarLibrary/bin/SoarJavaDebugger.jar -XstartOnFirstThread -cascade -remote -agent " 
+			+ agentName + " -port " + Soar2D.config.getInt(Soar2DKeys.general.soar.port, 12121);
 		}
 		
 		return commandLine;
@@ -486,9 +493,6 @@ public class Simulation {
 	public void destroyPlayer(Player player) {
 		// remove it from the world, can't fail
 		world.removePlayer(player.getName());
-		
-		// remove it from the config list
-		configs.remove(player.getName());
 		
 		// free its color
 		freeAColor(player.getColor());
@@ -522,45 +526,32 @@ public class Simulation {
 		if (agent == null) {
 			return;
 		}
-		PlayerConfig config = configs.get(player.getName());
-		assert config != null;
-		assert config.hasProductions();
-		agent.LoadProductions(config.getProductions().getAbsolutePath());
+		;
+		Config playerConfig = Soar2D.config.getChild(Soar2DKeys.playerKey(player.getId()));
+		assert playerConfig != null;
+		assert playerConfig.hasKey(Soar2DKeys.players.productions);
+		File productionsFile = new File(playerConfig.requireString(Soar2DKeys.players.productions));
+		agent.LoadProductions(productionsFile.getAbsolutePath());
 	}
 	
-	/**
-	 * @param name the name of the player to clone
-	 * @param newName the name of the new player
-	 * 
-	 * This creates a player similar to a current one. the name changes, the color
-	 * changes. This doesn't necessarily succeed. control playerEvent is 
-	 * called on success.
-	 */
-	public void clonePlayer(String name, String newName) {
-		PlayerConfig config = configs.get(name);
-		assert config != null;
-		config.setName(newName);
-		config.setColor(null);
-		createPlayer(config);
-	}
-
 	/**
 	 * @param after do the clients denoted as "after" agent creation
 	 * @return true if the clients all connected.
 	 */
 	private boolean doClients(boolean after) {
-		Iterator<ClientConfig> clientIter = Soar2D.config.clients.iterator();
-		while (clientIter.hasNext()) {
-			ClientConfig client = clientIter.next();
-			if (client.after == after) {
-				continue;
-			}
-			if (client.command != null) {
-				spawnClient(client);
-			} else {
-				if (!waitForClient(client)) {
-					Soar2D.control.severeError("Client spawn failed: " + client.name);
-					return false;
+		if (Soar2D.config.hasKey(Soar2DKeys.clients.active_clients)) {
+			for ( String clientId : Soar2D.config.getStrings(Soar2DKeys.clients.active_clients)) {
+				Config clientConfig = Soar2D.config.getChild(Soar2DKeys.clientKey(clientId));
+				if (clientConfig.hasKey(Soar2DKeys.clients.after) == after) {
+					continue;
+				}
+				if (clientConfig.hasKey(Soar2DKeys.clients.command)) {
+					spawnClient(clientId);
+				} else {
+					if (!waitForClient(clientId)) {
+						Soar2D.control.severeError("Client spawn failed: " + clientId);
+						return false;
+					}
 				}
 			}
 		}
@@ -595,12 +586,14 @@ public class Simulation {
 	 * 
 	 * spawns a client, waits for it to connect
 	 */
-	public void spawnClient(ClientConfig client) {
+	public void spawnClient(String clientId) {
+		Config clientConfig = Soar2D.config.getChild(Soar2DKeys.clientKey(clientId));
+		
 		Runtime r = java.lang.Runtime.getRuntime();
-		if (Soar2D.logger.isLoggable(Level.FINER)) Soar2D.logger.finer("Spawning client: " + client.command);
+		if (Soar2D.logger.isLoggable(Level.FINER)) Soar2D.logger.finer("Spawning client: " + clientId);
 
 		try {
-			Process p = r.exec(client.command);
+			Process p = r.exec(clientConfig.requireString(Soar2DKeys.clients.command));
 			
 			InputStream is = p.getInputStream();
 			InputStreamReader isr = new InputStreamReader(is);
@@ -614,13 +607,13 @@ public class Simulation {
 			rd = new Redirector(br);
 			rd.start();
 			
-			if (!waitForClient(client)) {
-				Soar2D.control.severeError("Client spawn failed: " + client.name);
+			if (!waitForClient(clientId)) {
+				Soar2D.control.severeError("Client spawn failed: " + clientId);
 				return;
 			}
 			
 		} catch (IOException e) {
-			Soar2D.control.severeError("IOException spawning client: " + client.name + ": " + e.getMessage());
+			Soar2D.control.severeError("IOException spawning client: " + clientId + ": " + e.getMessage());
 			shutdown();
 			System.exit(1);
 		}
@@ -632,15 +625,17 @@ public class Simulation {
 	 * 
 	 * waits for a client to report ready
 	 */
-	public boolean waitForClient(ClientConfig client) {
+	public boolean waitForClient(String clientId) {
+		Config clientConfig = Soar2D.config.getChild(Soar2DKeys.clientKey(clientId));
+
 		boolean ready = false;
 		// do this loop if timeout seconds is 0 (code for wait indefinitely) or if we have tries left
-		for (int tries = 0; (client.timeout == 0) || (tries < client.timeout); ++tries) {
+		for (int tries = 0; (clientConfig.getInt(Soar2DKeys.clients.timeout, 0) == 0) || (tries < clientConfig.getInt(Soar2DKeys.clients.timeout, 0)); ++tries) {
 			kernel.GetAllConnectionInfo();
 			if (kernel.HasConnectionInfoChanged()) {
 				for (int i = 0; i < kernel.GetNumberConnections(); ++i) {
 					ConnectionInfo info =  kernel.GetConnectionInfo(i);
-					if (info.GetName().equalsIgnoreCase(client.name)) {
+					if (info.GetName().equalsIgnoreCase(clientId)) {
 						if (info.GetAgentStatus().equalsIgnoreCase(sml_Names.getKStatusReady())) {
 							ready = true;
 							break;
@@ -652,7 +647,7 @@ public class Simulation {
 				}
 			}
 			try { 
-				if (Soar2D.logger.isLoggable(Level.FINEST)) Soar2D.logger.finest("Waiting for client: "+ client.name);
+				if (Soar2D.logger.isLoggable(Level.FINEST)) Soar2D.logger.finest("Waiting for client: "+ clientId);
 				Thread.sleep(1000); 
 			} catch (InterruptedException ignored) {}
 		}
@@ -697,7 +692,8 @@ public class Simulation {
 	public boolean reset() {
 		Soar2D.logger.info("Resetting simulation.");
 		if (!world.load()) {
-			Soar2D.control.severeError("Error loading map " + Soar2D.config.getMap().getAbsolutePath());
+			File mapFile = new File(Soar2D.config.getString(Soar2DKeys.general.map));
+			Soar2D.control.severeError("Error loading map " + mapFile.getAbsolutePath());
 			return false;
 		}
 		return true;
@@ -712,7 +708,6 @@ public class Simulation {
 		}
 		
 		assert this.agents.size() == 0;
-		assert this.configs.size() == 0;
 		
 		if (kernel != null) {
 			if (Soar2D.logger.isLoggable(Level.FINEST)) Soar2D.logger.finest("Shutting down kernel.");
@@ -725,7 +720,7 @@ public class Simulation {
 	 * @return true if there are human agents present
 	 */
 	public boolean hasHumanAgents() {
-		return agents.size() < this.configs.size();
+		return agents.size() < world.getPlayers().size();
 	}
 	
 	/**
@@ -747,5 +742,25 @@ public class Simulation {
 
 	public String getBasePath() {
 		return System.getProperty("user.dir") + System.getProperty("file.separator");
+	}
+	public String getMapPath() {
+		return Soar2D.simulation.getBasePath() + "maps" + System.getProperty("file.separator");
+	}
+	public String getMapExt() {
+		switch (Soar2D.simConfig.game()) {
+		case TANKSOAR:
+			return "tmap";
+		case EATERS:
+			return "emap";
+		case ROOM:
+			return "bmap";
+		case KITCHEN:
+		case TAXI:
+			return "xml";
+		}
+		return null;
+	}
+	public String getAgentPath() {
+		return Soar2D.simulation.getBasePath() + "agents" + System.getProperty("file.separator");
 	}
 }

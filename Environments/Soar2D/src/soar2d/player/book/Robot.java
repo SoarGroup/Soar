@@ -5,14 +5,13 @@ import soar2d.map.BookMap;
 import soar2d.map.CellObject;
 import soar2d.player.MoveInfo;
 import soar2d.player.Player;
-import soar2d.player.PlayerConfig;
 import soar2d.world.World;
 
 public class Robot extends Player {
 	private MoveInfo move;
 
-	public Robot(PlayerConfig playerConfig) {
-		super(playerConfig);
+	public Robot(String playerId) {
+		super(playerId);
 	}
 	
 	public MoveInfo getMove() {
@@ -20,11 +19,6 @@ public class Robot extends Player {
 	}
 
 	public boolean getHumanMove() {
-		if (Soar2D.config.getNoGUI()) {
-			move = new MoveInfo();
-			return true;
-		}
-		
 		move = Soar2D.wm.getHumanMove(this);
 
 		if (move == null) {

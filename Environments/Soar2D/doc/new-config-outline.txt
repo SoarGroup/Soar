@@ -1,23 +1,4 @@
 <soar2d version="2">
-	<general>
-		?<tosca> (presence of this tag enables tosca)
-		<game>
-			enum { tanksoar, eaters, book, kitchen, taxi }
-		<map>
-			string filename
-		?<port>
-			int port (what ip port to listen on)
-		?<seed>
-			int seed
-		?<remote>
-		?<hide> (this is to hide the map, useful for tanksoar)
-		?<no-gui>
-		?<silent-agents> (execute command watch 0 after production load)
-		?<max-memory-usage> 
-			int bytes (execute command after production load)
-		?<async>
-			int millisecondDelay
-		?<force-human> force human input for input-link debugging
 		?<metadata>
 			string path to file
 		?<rules>
@@ -91,12 +72,6 @@
 				?<fuel-maximum>
 					int max fuel, must be >= starting-maximum
 	?<logging>
-		?<level>
-			enum { severe, warning, info, fine, finer, finest }
-		?<file>
-			string filename
-		?<console>
-		?<time>
 		?<soar-print>
 	?<players>
 		?<debuggers>

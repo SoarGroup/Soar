@@ -10,7 +10,8 @@ import java.util.Iterator;
 import soar2d.Direction;
 import soar2d.Simulation;
 import soar2d.Soar2D;
-import soar2d.configuration.Configuration;
+import soar2d.config.Config;
+import soar2d.config.Soar2DKeys;
 import soar2d.world.TankSoarWorld;
 
 public class TaxiMap extends GridMap {
@@ -18,14 +19,14 @@ public class TaxiMap extends GridMap {
 	// this should be a property of the player, but this is easier
 	int fuel;
 	
-	public TaxiMap(Configuration config) {
+	public TaxiMap(Config config) {
 		super(config);
 		
-		fuel = Simulation.random.nextInt(1 + Soar2D.config.xConfig.getFuelStartingMaximum() - Soar2D.config.xConfig.getFuelStartingMinimum() ) + Soar2D.config.xConfig.getFuelStartingMinimum(); 
+		fuel = Simulation.random.nextInt(1 + Soar2D.config.getInt(Soar2DKeys.taxi.fuel_starting_maximum, 12) - Soar2D.config.getInt(Soar2DKeys.taxi.fuel_starting_minimum, 5) ) + Soar2D.config.getInt(Soar2DKeys.taxi.fuel_starting_minimum, 5); 
 	}
 	
 	public void consumeFuel() {
-		if (Soar2D.config.xConfig.getDisableFuel()) {
+		if (Soar2D.config.getBoolean(Soar2DKeys.taxi.disable_fuel, false)) {
 			logger.info("fuel consumption disabled");
 		}
 		logger.info("fuel: " + Integer.toString(fuel) + " -> " + Integer.toString(fuel-1));
@@ -218,7 +219,7 @@ public class TaxiMap extends GridMap {
 		if (fuelObject == null) {
 			return false;
 		}
-		int maximum = Soar2D.config.xConfig.getFuelMaximum();
+		int maximum = Soar2D.config.getInt(Soar2DKeys.taxi.fuel_maximum, 14);
 		logger.info("fuel: " + Integer.toString(fuel) + " -> " + maximum + " (fillup)");
 		fuel = maximum;
 		return true;

@@ -4,6 +4,8 @@ import java.awt.geom.Point2D;
 import java.util.logging.*;
 
 import soar2d.*;
+import soar2d.config.Config;
+import soar2d.config.Soar2DKeys;
 import soar2d.map.CellObject;
 
 /**
@@ -21,7 +23,7 @@ public class Player {
 	private String color;	// valid color string
 	protected java.awt.Point previousLocation = new java.awt.Point(-1, -1);	// where i was last update
 	protected boolean moved = false;	// if I moved since last update
-	protected PlayerConfig playerConfig;
+	protected String playerId;
 
 	private boolean pointsChanged = false;
 	private int pointsDelta = 0;
@@ -37,15 +39,17 @@ public class Player {
 	/**
 	 * @param playerConfig configuration params
 	 */
-	public Player(PlayerConfig playerConfig) {
-		this.playerConfig = playerConfig;
+	public Player(String playerId) {
+		this.playerId = playerId;
+		Config playerConfig = Soar2D.config.getChild(Soar2DKeys.playerKey(playerId));
 		
-		this.name = playerConfig.getName();
+		assert playerConfig.hasKey(Soar2DKeys.players.name);
+		this.name = playerConfig.requireString(Soar2DKeys.players.name);
 		
 		this.reset();
 		
-		assert playerConfig.hasColor();
-		this.color = playerConfig.getColor();
+		assert playerConfig.hasKey(Soar2DKeys.players.color);
+		this.color = playerConfig.requireString(Soar2DKeys.players.color);
 	}
 	
 	public String getName() {
@@ -192,21 +196,23 @@ public class Player {
 	 * called to reset player state between runs
 	 */
 	public void reset() {
+		Config playerConfig = Soar2D.config.getChild(Soar2DKeys.playerKey(playerId));
+
 		previousLocation = new java.awt.Point(-1, -1);
-		
-		if (playerConfig.hasFacing()) {
-			this.setFacingInt(playerConfig.getFacing());
+
+		if (playerConfig.hasKey(Soar2DKeys.players.facing)) {
+			this.setFacingInt(Direction.getInt(playerConfig.requireString(Soar2DKeys.players.facing)));
 		} else {
 			this.setFacingInt(Simulation.random.nextInt(4) + 1);
 		}
 		
 		// Nick, for some reason, would like to keep the scores across resets
 		// Because, he says, he is super-awesome.
-		if (Soar2D.config.getToscaEnabled() == false) {
-			if (playerConfig.hasPoints()) {
-				this.points = playerConfig.getPoints();
+		if (Soar2D.config.getBoolean(Soar2DKeys.general.tosca, false) == false) {
+			if (playerConfig.hasKey(Soar2DKeys.players.points)) {
+				this.points = playerConfig.requireInt(Soar2DKeys.players.facing);
 			} else {
-				this.points = Soar2D.config.getDefaultPoints();
+				this.points = Soar2D.config.getInt(Soar2DKeys.general.default_points, 0);
 			}
 		}
 
@@ -472,5 +478,8 @@ public class Player {
 	
 	public String toString() {
 		return getName();
+	}
+	public String getId() {
+		return playerId;
 	}
 }

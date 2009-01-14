@@ -67,7 +67,7 @@ public class EatersAgentDisplay extends AgentDisplay {
 		m_CloneAgentButton.setText("Clone");
 		m_CloneAgentButton.addSelectionListener(new SelectionAdapter() {
 			public void widgetSelected(SelectionEvent e) {
-				Soar2D.simulation.clonePlayer(selectedPlayer.getName(), null);
+				clonePlayer(selectedPlayer.getId());
 			}
 		});
 		
