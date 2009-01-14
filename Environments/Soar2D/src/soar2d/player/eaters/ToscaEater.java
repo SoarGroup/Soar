@@ -5,7 +5,6 @@ import java.util.logging.Logger;
 import soar2d.Direction;
 import soar2d.Soar2D;
 import soar2d.player.MoveInfo;
-import soar2d.player.PlayerConfig;
 import soar2d.tosca2d.*;
 import tosca.*;
 
@@ -26,8 +25,8 @@ public class ToscaEater extends Eater {
 	/** If true the agent will just walk forward until hitting an obstacle and then turn right.  If false, calls to Tosca code to reason about the move. */
 	private static final boolean kSimulatedOutput = false ;
 
-	public ToscaEater( PlayerConfig playerConfig ) {
-		super(playerConfig);
+	public ToscaEater( String playerId ) {
+		super(playerId);
 		
 		// Establish a link to the C++ library code
 		m_ToscaInterface = ToscaInterface.getTosca() ;

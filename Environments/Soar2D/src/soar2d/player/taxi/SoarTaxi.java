@@ -2,6 +2,7 @@ package soar2d.player.taxi;
 
 import java.awt.Point;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.logging.*;
@@ -11,12 +12,13 @@ import soar2d.Direction;
 import soar2d.Names;
 import soar2d.Simulation;
 import soar2d.Soar2D;
+import soar2d.config.Config;
+import soar2d.config.Soar2DKeys;
 import soar2d.map.CellObject;
 import soar2d.map.TaxiMap;
 import soar2d.player.InputLinkMetadata;
 import soar2d.player.MoveInfo;
 import soar2d.player.Player;
-import soar2d.player.PlayerConfig;
 import soar2d.world.World;
 
 /**
@@ -79,11 +81,15 @@ public class SoarTaxi extends Taxi {
 	 * @param agent a valid soar agent
 	 * @param playerConfig the rest of the player config
 	 */
-	public SoarTaxi(Agent agent, PlayerConfig playerConfig) {
-		super(playerConfig);
+	public SoarTaxi(Agent agent, String playerId) {
+		super(playerId);
 
 		this.agent = agent;
-		this.shutdownCommands = playerConfig.getShutdownCommands();
+		Config playerConfig = Soar2D.config.getChild(Soar2DKeys.playerKey(playerId));
+		if (playerConfig.hasKey(Soar2DKeys.players.shutdown_commands)) {
+			String [] sc = playerConfig.requireStrings(Soar2DKeys.players.shutdown_commands);
+			this.shutdownCommands = new ArrayList<String>(Arrays.asList(sc));
+		}
 		
 		initInputLink();
 		
@@ -143,8 +149,8 @@ public class SoarTaxi extends Taxi {
 	private void loadMetadata() {
 		metadata = new InputLinkMetadata(agent);
 		try {
-			if (Soar2D.config.getMetadata() != null) {
-				metadata.load(Soar2D.config.getMetadata());
+			if (Soar2D.config.hasKey(Soar2DKeys.general.soar.metadata)) {
+				metadata.load(Soar2D.config.requireString(Soar2DKeys.general.soar.metadata));
 			}
 			if (Soar2D.simulation.world.getMap().getMetadata() != null) {
 				metadata.load(Soar2D.simulation.world.getMap().getMetadata());
@@ -295,7 +301,7 @@ public class SoarTaxi extends Taxi {
 	}
 	
 	public MoveInfo getMove() {
-		if (Soar2D.config.getForceHuman()) {
+		if (Soar2D.config.getBoolean(Soar2DKeys.general.force_human, false)) {
 			return super.getMove();
 		}
 		

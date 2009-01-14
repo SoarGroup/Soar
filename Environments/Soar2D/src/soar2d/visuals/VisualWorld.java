@@ -53,24 +53,24 @@ public abstract class VisualWorld extends Canvas implements PaintListener {
 		display = parent.getDisplay();
 		this.cellSize = cellSize;
 
-		switch(Soar2D.config.getType()) {
-		case kTankSoar:
+		switch(Soar2D.simConfig.game()) {
+		case TANKSOAR:
 			tanks.put(new Integer(Direction.kSouthInt), new Image(display, Soar2D.class.getResourceAsStream("/images/tanksoar/tank_down.gif")));
 			tanks.put(new Integer(Direction.kNorthInt), new Image(display, Soar2D.class.getResourceAsStream("/images/tanksoar/tank_up.gif")));
 			tanks.put(new Integer(Direction.kEastInt), new Image(display, Soar2D.class.getResourceAsStream("/images/tanksoar/tank_right.gif")));
 			tanks.put(new Integer(Direction.kWestInt), new Image(display, Soar2D.class.getResourceAsStream("/images/tanksoar/tank_left.gif")));
 			break;
 			
-		case kEaters:
+		case EATERS:
 			break;
 			
-		case kBook:
+		case ROOM:
 			break;
 			
-		case kKitchen:
+		case KITCHEN:
 			break;
 			
-		case kTaxi:
+		case TAXI:
 			break;
 		}
 		

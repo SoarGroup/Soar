@@ -8,6 +8,7 @@ import sml.IntElement;
 import sml.StringElement;
 import soar2d.Direction;
 import soar2d.Soar2D;
+import soar2d.config.Soar2DKeys;
 import soar2d.map.BookMap.Barrier;
 import soar2d.world.PlayersManager;
 import soar2d.world.World;
@@ -44,7 +45,7 @@ class BarrierInputLink {
 		center = robot.agent.CreateIdWME(parent, "center");
 		{
 			centerpoint = barrier.centerpoint();
-			if (Soar2D.config.bConfig.getContinuous()) {
+			if (Soar2D.config.getBoolean(Soar2DKeys.room.continuous, true)) {
 				x = robot.agent.CreateFloatWME(center, "x", centerpoint.x);
 				y = robot.agent.CreateFloatWME(center, "y", centerpoint.y);
 			}
