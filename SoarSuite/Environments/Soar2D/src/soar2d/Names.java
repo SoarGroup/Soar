@@ -1,13 +1,16 @@
 package soar2d;
 
-import soar2d.ClientConfig;
-
 /**
  * @author voigtjr
  *
  * Useful constants
  */
 public class Names {
+	public class configs {
+		public static final String eatersCnf = "eaters.cnf";
+		public static final String tanksoarCnf = "tanksoar.cnf";
+	}
+	
 	public static final String kNone = "none";
 
 	public static final String kTrue = "true";
@@ -139,12 +142,5 @@ public class Names {
 	public static final String kPropertyShape = "shape";
 	public static final String kPropertyStatus = "status";
 
-	public static final ClientConfig kDebuggerClient = new ClientConfig();
-
-	static {
-		kDebuggerClient.name = "java-debugger";
-		kDebuggerClient.after = true;
-		kDebuggerClient.command = null;
-		kDebuggerClient.timeout = ClientConfig.kDefaultTimeout;
-	}
+	public static final String kDebuggerClient = "java-debugger";
 }

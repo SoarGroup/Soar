@@ -2,20 +2,15 @@ package soar2d.player.kitchen;
 
 import java.awt.Point;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.Iterator;
 import java.util.logging.Logger;
 
 import soar2d.Direction;
-import soar2d.Simulation;
 import soar2d.Soar2D;
 import soar2d.map.CellObject;
 import soar2d.map.KitchenMap;
 import soar2d.player.MoveInfo;
-import soar2d.player.PlayerConfig;
-import soar2d.tosca2d.*;
 import soar2d.world.World;
-import tosca.*;
 
 /**
  * @author doug
@@ -25,8 +20,8 @@ import tosca.*;
 public class ToscaCook extends Cook {
 	protected Logger logger = Soar2D.logger;
 
-	public ToscaCook( PlayerConfig playerConfig ) {
-		super(playerConfig);
+	public ToscaCook( String playerId ) {
+		super(playerId);
 	}
 	
 	@Override

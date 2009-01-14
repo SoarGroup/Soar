@@ -6,6 +6,7 @@ import org.eclipse.swt.layout.*;
 import org.eclipse.swt.widgets.*;
 
 import soar2d.*;
+import soar2d.config.Soar2DKeys;
 import soar2d.map.GridMap;
 import soar2d.player.*;
 import soar2d.world.PlayersManager;
@@ -120,7 +121,7 @@ public class TankSoarAgentDisplay extends AgentDisplay {
 		m_CloneAgentButton.setText("Clone");
 		m_CloneAgentButton.addSelectionListener(new SelectionAdapter() {
 			public void widgetSelected(SelectionEvent e) {
-				Soar2D.simulation.clonePlayer(selectedPlayer.getName(), null);
+				clonePlayer(selectedPlayer.getId());
 			}
 		});
 		{
@@ -182,7 +183,7 @@ public class TankSoarAgentDisplay extends AgentDisplay {
 
 		m_Radar = new ProgressBar(row5, SWT.NONE | SWT.VERTICAL);
 		m_Radar.setMinimum(0);
-		m_Radar.setMaximum(Soar2D.config.tConfig.getRadarHeight());
+		m_Radar.setMaximum(Soar2D.config.getInt(Soar2DKeys.tanksoar.radar_height, 15));
 		{
 			GridData gd = new GridData();
 			gd.heightHint = m_AgentWorld.getHeight();

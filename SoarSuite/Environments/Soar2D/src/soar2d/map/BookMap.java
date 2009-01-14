@@ -11,13 +11,14 @@ import java.util.LinkedList;
 import soar2d.Direction;
 import soar2d.Names;
 import soar2d.Soar2D;
-import soar2d.configuration.Configuration;
-import soar2d.configuration.Configuration.SimType;
+import soar2d.config.Config;
+import soar2d.config.SimConfig;
+import soar2d.config.Soar2DKeys;
 import soar2d.world.TankSoarWorld;
 
 public class BookMap extends GridMap {
 
-	public BookMap(Configuration config) {
+	public BookMap(Config config) {
 		super(config);
 	}
 
@@ -44,10 +45,10 @@ public class BookMap extends GridMap {
 			BookObjectInfo info = new BookObjectInfo();
 			info.location = new Point(location);
 			info.floatLocation = new Point2D.Double();
-			info.floatLocation.x = info.location.x * Soar2D.config.bConfig.getBookCellSize();
-			info.floatLocation.y = info.location.y * Soar2D.config.bConfig.getBookCellSize();
-			info.floatLocation.x += Soar2D.config.bConfig.getBookCellSize() / 2.0;
-			info.floatLocation.y += Soar2D.config.bConfig.getBookCellSize() / 2.0;
+			info.floatLocation.x = info.location.x * Soar2D.config.getInt(Soar2DKeys.room.cell_size, 16);
+			info.floatLocation.y = info.location.y * Soar2D.config.getInt(Soar2DKeys.room.cell_size, 16);
+			info.floatLocation.x += Soar2D.config.getInt(Soar2DKeys.room.cell_size, 16) / 2.0;
+			info.floatLocation.y += Soar2D.config.getInt(Soar2DKeys.room.cell_size, 16) / 2.0;
 			info.object = object;
 			if (!object.hasProperty("object-id")) {
 				object.addProperty("object-id", Integer.toString(newObjectId()));
@@ -151,7 +152,7 @@ public class BookMap extends GridMap {
 
 	public int getLocationId(Point location) {
 		assert location != null;
-		assert config.getType() == SimType.kBook;
+		assert Soar2D.simConfig.game() == SimConfig.Game.ROOM;
 
 		ArrayList<CellObject> locationObjects = getAllWithProperty(location, Names.kPropertyNumber);
 		assert locationObjects.size() == 1;
@@ -199,31 +200,31 @@ public class BookMap extends GridMap {
 					// horizontal
 					m = left.x;
 					n = right.x;
-					centerpoint.y = left.y * Soar2D.config.bConfig.getBookCellSize();
+					centerpoint.y = left.y * Soar2D.config.getInt(Soar2DKeys.room.cell_size, 16);
 					break;
 				case Direction.kEastInt:
 				case Direction.kWestInt:
 					// vertical
 					m = left.y;
 					n = right.y;
-					centerpoint.x = left.x * Soar2D.config.bConfig.getBookCellSize();
+					centerpoint.x = left.x * Soar2D.config.getInt(Soar2DKeys.room.cell_size, 16);
 					break;
 				}
 			} else {
 				// single block
-				centerpoint.x = left.x * Soar2D.config.bConfig.getBookCellSize();
-				centerpoint.y = left.y * Soar2D.config.bConfig.getBookCellSize();
+				centerpoint.x = left.x * Soar2D.config.getInt(Soar2DKeys.room.cell_size, 16);
+				centerpoint.y = left.y * Soar2D.config.getInt(Soar2DKeys.room.cell_size, 16);
 
 				switch (direction) {
 				case Direction.kNorthInt:
-					centerpoint.y += Soar2D.config.bConfig.getBookCellSize();
+					centerpoint.y += Soar2D.config.getInt(Soar2DKeys.room.cell_size, 16);
 				case Direction.kSouthInt:
-					centerpoint.x += Soar2D.config.bConfig.getBookCellSize() / 2;
+					centerpoint.x += Soar2D.config.getInt(Soar2DKeys.room.cell_size, 16) / 2;
 					break;
 				case Direction.kWestInt:
-					centerpoint.x += Soar2D.config.bConfig.getBookCellSize();
+					centerpoint.x += Soar2D.config.getInt(Soar2DKeys.room.cell_size, 16);
 				case Direction.kEastInt:
-					centerpoint.y += Soar2D.config.bConfig.getBookCellSize() / 2;
+					centerpoint.y += Soar2D.config.getInt(Soar2DKeys.room.cell_size, 16) / 2;
 					break;
 				}
 				return centerpoint;
@@ -242,23 +243,23 @@ public class BookMap extends GridMap {
 			if (left.x == right.x) {
 				// vertical
 				// add half to y
-				centerpoint.y = upperLeft.y * Soar2D.config.bConfig.getBookCellSize();
-				centerpoint.y += (numberOfBlocks / 2.0) * Soar2D.config.bConfig.getBookCellSize();
+				centerpoint.y = upperLeft.y * Soar2D.config.getInt(Soar2DKeys.room.cell_size, 16);
+				centerpoint.y += (numberOfBlocks / 2.0) * Soar2D.config.getInt(Soar2DKeys.room.cell_size, 16);
 				
 				// if west, we gotta add a cell size to x
 				if (direction == Direction.kWestInt) {
-					centerpoint.x += Soar2D.config.bConfig.getBookCellSize();
+					centerpoint.x += Soar2D.config.getInt(Soar2DKeys.room.cell_size, 16);
 				}
 				
 			} else {
 				// horizontal
 				// add half to x
-				centerpoint.x = upperLeft.x * Soar2D.config.bConfig.getBookCellSize();
-				centerpoint.x += (numberOfBlocks / 2.0) * Soar2D.config.bConfig.getBookCellSize();
+				centerpoint.x = upperLeft.x * Soar2D.config.getInt(Soar2DKeys.room.cell_size, 16);
+				centerpoint.x += (numberOfBlocks / 2.0) * Soar2D.config.getInt(Soar2DKeys.room.cell_size, 16);
 
 				// if north, we gotta add a cell size to y
 				if (direction == Direction.kNorthInt) {
-					centerpoint.y += Soar2D.config.bConfig.getBookCellSize();
+					centerpoint.y += Soar2D.config.getInt(Soar2DKeys.room.cell_size, 16);
 				}
 			}
 			return centerpoint;

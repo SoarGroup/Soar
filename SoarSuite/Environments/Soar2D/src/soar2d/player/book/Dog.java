@@ -3,16 +3,16 @@ package soar2d.player.book;
 import java.util.Iterator;
 
 import soar2d.Soar2D;
+import soar2d.config.Soar2DKeys;
 import soar2d.player.MoveInfo;
 import soar2d.player.Player;
-import soar2d.player.PlayerConfig;
 import soar2d.world.PlayersManager;
 import soar2d.world.World;
 
 public class Dog extends Player {
 
-	public Dog(PlayerConfig playerConfig) {
-		super(playerConfig);
+	public Dog(String playerId) {
+		super(playerId);
 	}
 
 	Player target;
@@ -34,7 +34,7 @@ public class Dog extends Player {
 				}
 				if (player.getLocationId() == this.getLocationId()) {
 					double angleOff = players.angleOff(this, player);
-					double maxAngleOff = Soar2D.config.bConfig.getVisionCone() / 2;
+					double maxAngleOff = Soar2D.config.getDouble(Soar2DKeys.room.vision_cone, Math.PI) / 2;
 					if (Math.abs(angleOff) <= maxAngleOff) {
 						target = player;
 						targetAngleOff = angleOff;

@@ -5,6 +5,7 @@ import java.util.Date;
 import java.util.logging.*;
 
 import sml.*;
+import soar2d.config.Soar2DKeys;
 import soar2d.visuals.WindowManager;
 
 /**
@@ -58,7 +59,7 @@ public class Controller implements Kernel.UpdateEventInterface, Kernel.SystemEve
 		Soar2D.logger.severe(message);
 		
 		if (Soar2D.wm.using()) {
-			Soar2D.wm.errorMessage(Soar2D.config.getTitle(), message);
+			Soar2D.wm.errorMessage(Soar2D.simConfig.title(), message);
 		}
 	}
 	
@@ -71,7 +72,7 @@ public class Controller implements Kernel.UpdateEventInterface, Kernel.SystemEve
 		Soar2D.logger.info(message);
 		
 		if (Soar2D.wm.using()) {
-			Soar2D.wm.infoMessage(Soar2D.config.getTitle(), message);
+			Soar2D.wm.infoMessage(Soar2D.simConfig.title(), message);
 		}
 	}
 	
@@ -97,7 +98,7 @@ public class Controller implements Kernel.UpdateEventInterface, Kernel.SystemEve
 		if (step) {
 			Soar2D.wm.setStatus("Stepping", WindowManager.black);
 		} else {
-			if (Soar2D.config.getASyncDelay() > 0) {
+			if (Soar2D.config.hasKey(Soar2DKeys.general.async)) {
 				Soar2D.wm.setStatus("Running Async", WindowManager.black);
 			} else {
 				Soar2D.wm.setStatus("Running", WindowManager.black);
@@ -157,8 +158,7 @@ public class Controller implements Kernel.UpdateEventInterface, Kernel.SystemEve
 				timeStamp = new Date().getTime();
 				Soar2D.simulation.runForever();
 			}
-		} else if (Soar2D.config.getToscaEnabled())
-		{
+		} else if (Soar2D.config.getBoolean(Soar2DKeys.general.tosca, false)) {
 			if (step)
 				soar2d.tosca2d.ToscaInterface.getTosca().runStep() ;
 			else
@@ -208,7 +208,8 @@ public class Controller implements Kernel.UpdateEventInterface, Kernel.SystemEve
 	 * a loop if necessary.
 	 */
 	public void tickEvent() {
-		timeSlice = (float)Soar2D.config.getCycleTimeSlice() / 1000.0f;
+		// this is 50 except for book, where it is configurable
+		timeSlice = Soar2D.simConfig.timeSlice() / 1000.0f;
 		totalTime += timeSlice;
 
 		Soar2D.simulation.update();
@@ -250,9 +251,11 @@ public class Controller implements Kernel.UpdateEventInterface, Kernel.SystemEve
   	 */
   	public void updateEventHandler(int eventID, Object data, Kernel kernel, int runFlags) {
 
-  		if (Soar2D.config.getASyncDelay() > 0 && !step) {
+  		int asyncDelay = Soar2D.config.getInt(Soar2DKeys.general.async, -1);
+
+  		if (asyncDelay > 0 && !step) {
   			Date date = new Date();
-  			if ((timeStamp + Soar2D.config.getASyncDelay()) >= date.getTime()) {
+  			if ((timeStamp + asyncDelay) >= date.getTime()) {
   				return;
   			}
   			timeStamp = date.getTime();
@@ -355,7 +358,7 @@ public class Controller implements Kernel.UpdateEventInterface, Kernel.SystemEve
 		if (!mapFile.exists()) {
 			
 			// doesn't exist as absolute, check relative to map dir
-			mapFile = new File(Soar2D.config.getMapPath() + map);
+			mapFile = new File(Soar2D.simulation.getMapPath() + map);
 			if (!mapFile.exists()) {
 				
 				// doesn't exist there either
@@ -365,14 +368,14 @@ public class Controller implements Kernel.UpdateEventInterface, Kernel.SystemEve
 		}
 		
 		// save the old map in case the new one is screwed up
-		File oldMap = Soar2D.config.getMap();
-		Soar2D.config.setMap(mapFile);
+		File oldMap = new File(Soar2D.config.getString(Soar2DKeys.general.map));
+		Soar2D.config.setString(Soar2DKeys.general.map, mapFile.getAbsolutePath());
 
 		// the reset will fail if the map fails to load
 		if (!resetSimulation()) {
 			
 			// and if it fails the map will remain unchanged, set it back
-			Soar2D.config.setMap(oldMap);
+			Soar2D.config.setString(Soar2DKeys.general.map, oldMap.getAbsolutePath());
 		}
 	}
 	

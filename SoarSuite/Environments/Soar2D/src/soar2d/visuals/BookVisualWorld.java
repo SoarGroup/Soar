@@ -14,6 +14,7 @@ import org.eclipse.swt.widgets.Composite;
 import soar2d.Direction;
 import soar2d.Names;
 import soar2d.Soar2D;
+import soar2d.config.Soar2DKeys;
 import soar2d.map.CellObject;
 import soar2d.player.Player;
 import soar2d.world.PlayersManager;
@@ -31,7 +32,7 @@ public class BookVisualWorld extends VisualWorld {
 		gc.setLineWidth(1);
 
 		if (Soar2D.control.isRunning()) {
-			if (Soar2D.config.getHide()) {
+			if (Soar2D.config.getBoolean(Soar2DKeys.general.hidemap, false)) {
 				painted = true;
 				return;
 			}
@@ -43,10 +44,10 @@ public class BookVisualWorld extends VisualWorld {
 				painted = false;
 			}
 
-			if (Soar2D.config.getHide() || disabled || !painted) {
+			if (Soar2D.config.getBoolean(Soar2DKeys.general.hidemap, false) || disabled || !painted) {
 				gc.setBackground(WindowManager.widget_background);
 				gc.fillRectangle(0,0, this.getWidth(), this.getHeight());
-				if (disabled || Soar2D.config.getHide()) {
+				if (disabled || Soar2D.config.getBoolean(Soar2DKeys.general.hidemap, false)) {
 					painted = true;
 					return;
 				}
@@ -71,7 +72,7 @@ public class BookVisualWorld extends VisualWorld {
 					
 					if (map.getAllWithProperty(location, Names.kPropertyGatewayRender).size() == 0) {
 
-						if (!Soar2D.config.bConfig.getColoredRooms()) {
+						if (!Soar2D.config.getBoolean(Soar2DKeys.room.colored_rooms, false)) {
 							// normal:
 							gc.setBackground(WindowManager.widget_background);
 						} else {

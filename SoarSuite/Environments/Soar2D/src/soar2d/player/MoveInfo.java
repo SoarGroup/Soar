@@ -74,8 +74,8 @@ public class MoveInfo {
 	public String toString() {
 		String output = new String();
 		
-		switch(Soar2D.config.getType()) {
-		case kEaters:
+		switch(Soar2D.simConfig.game()) {
+		case EATERS:
 			if (jump) {
 				output += "(" + Names.kJumpID + ")";
 			} 
@@ -94,7 +94,7 @@ public class MoveInfo {
 			}
 			break;
 			
-		case kTankSoar:
+		case TANKSOAR:
 			if (move) {
 				output += "(" + Names.kMoveID + ": " + Direction.stringOf[moveDirection] + ")";
 			}
@@ -115,7 +115,7 @@ public class MoveInfo {
 			}
 			break;
 			
-		case kBook:
+		case ROOM:
 			if (forward) {
 				output += "(" + Names.kForwardID + ")";
 			}
@@ -144,7 +144,7 @@ public class MoveInfo {
 			}
 			break;
 
-		case kKitchen:
+		case KITCHEN:
 			if (move) {
 				output += "(" + Names.kMoveID + ": " + Direction.stringOf[moveDirection] + ")";
 			}
@@ -162,7 +162,7 @@ public class MoveInfo {
 			}
 			break;
 
-		case kTaxi:
+		case TAXI:
 			if (move) {
 				output += "(" + Names.kMoveID + ": " + Direction.stringOf[moveDirection] + ")";
 			}

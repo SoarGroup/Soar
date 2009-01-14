@@ -29,8 +29,8 @@ public class MapButtons extends Composite {
 	void changeMap() {
 		FileDialog fd = new FileDialog(getShell(), SWT.OPEN);
 		fd.setText("Open");
-		fd.setFilterPath(Soar2D.config.getMapPath());
-		String ext = Soar2D.config.getMapExt();
+		fd.setFilterPath(Soar2D.simulation.getMapPath());
+		String ext = Soar2D.simulation.getMapExt();
 		fd.setFilterExtensions(new String[] {"*." + ext, "*.*"});
 		VisualWorld.internalRepaint = true;
 		String map = fd.open();

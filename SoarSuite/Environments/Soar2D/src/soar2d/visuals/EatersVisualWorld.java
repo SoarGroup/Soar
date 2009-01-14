@@ -11,6 +11,7 @@ import org.eclipse.swt.widgets.Composite;
 import soar2d.Direction;
 import soar2d.Names;
 import soar2d.Soar2D;
+import soar2d.config.Soar2DKeys;
 import soar2d.map.CellObject;
 import soar2d.player.Player;
 
@@ -26,11 +27,11 @@ public class EatersVisualWorld extends VisualWorld {
 	}
 	
 	public int getMiniWidth() {
-		return cellSize * ((Soar2D.config.eConfig.getEaterVision() * 2) + 1);
+		return cellSize * ((Soar2D.config.getInt(Soar2DKeys.eaters.vision, 2) * 2) + 1);
 	}
 	
 	public int getMiniHeight() {
-		return cellSize * ((Soar2D.config.eConfig.getEaterVision() * 2) + 1);
+		return cellSize * ((Soar2D.config.getInt(Soar2DKeys.eaters.vision, 2) * 2) + 1);
 	}
 	
 	public void paintControl(PaintEvent e) {
@@ -44,7 +45,7 @@ public class EatersVisualWorld extends VisualWorld {
 				painted = false;
 			}
 			
-			if (Soar2D.config.getHide()) {
+			if (Soar2D.config.getBoolean(Soar2DKeys.general.hidemap, false)) {
 				painted = true;
 				return;
 			}
@@ -56,10 +57,10 @@ public class EatersVisualWorld extends VisualWorld {
 				painted = false;
 			}
 
-			if (Soar2D.config.getHide() || disabled || !painted) {
+			if (Soar2D.config.getBoolean(Soar2DKeys.general.hidemap, false) || disabled || !painted) {
 				gc.setBackground(WindowManager.widget_background);
 				gc.fillRectangle(0,0, this.getWidth(), this.getHeight());
-				if (disabled || Soar2D.config.getHide()) {
+				if (disabled || Soar2D.config.getBoolean(Soar2DKeys.general.hidemap, false)) {
 					painted = true;
 					return;
 				}
@@ -71,20 +72,22 @@ public class EatersVisualWorld extends VisualWorld {
 		java.awt.Point location = new java.awt.Point();
 		for(location.x = 0; location.x < map.getSize(); ++location.x){
 			if (agentLocation != null) {
-				if ((location.x < agentLocation.x - Soar2D.config.eConfig.getEaterVision()) || (location.x > agentLocation.x + Soar2D.config.eConfig.getEaterVision())) {
+				if ((location.x < agentLocation.x - Soar2D.config.getInt(Soar2DKeys.eaters.vision, 2)) 
+						|| (location.x > agentLocation.x + Soar2D.config.getInt(Soar2DKeys.eaters.vision, 2))) {
 					continue;
 				} 
-				xDraw = location.x + Soar2D.config.eConfig.getEaterVision() - agentLocation.x;
+				xDraw = location.x + Soar2D.config.getInt(Soar2DKeys.eaters.vision, 2) - agentLocation.x;
 			} else {
 				xDraw = location.x;
 			}
 			
 			for(location.y = 0; location.y < map.getSize(); ++location.y){
 				if (agentLocation != null) {
-					if ((location.y < agentLocation.y - Soar2D.config.eConfig.getEaterVision()) || (location.y > agentLocation.y + Soar2D.config.eConfig.getEaterVision())) {
+					if ((location.y < agentLocation.y - Soar2D.config.getInt(Soar2DKeys.eaters.vision, 2)) 
+							|| (location.y > agentLocation.y + Soar2D.config.getInt(Soar2DKeys.eaters.vision, 2))) {
 						continue;
 					} 
-					yDraw = location.y + Soar2D.config.eConfig.getEaterVision() - agentLocation.y;
+					yDraw = location.y + Soar2D.config.getInt(Soar2DKeys.eaters.vision, 2) - agentLocation.y;
 				} else {
 					yDraw = location.y;
 				}

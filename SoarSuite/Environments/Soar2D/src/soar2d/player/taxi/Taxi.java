@@ -3,7 +3,6 @@ package soar2d.player.taxi;
 import soar2d.Soar2D;
 import soar2d.player.MoveInfo;
 import soar2d.player.Player;
-import soar2d.player.PlayerConfig;
 
 /**
  * @author voigtjr
@@ -12,8 +11,8 @@ import soar2d.player.PlayerConfig;
 public class Taxi extends Player {	
 	private MoveInfo move;
 
-	public Taxi( PlayerConfig playerConfig ) {
-		super(playerConfig) ;
+	public Taxi(String playerId) {
+		super(playerId) ;
 	}
 	
 	public void update(java.awt.Point location) {
@@ -25,11 +24,6 @@ public class Taxi extends Player {
 	}
 
 	public boolean getHumanMove() {
-		if (Soar2D.config.getNoGUI()) {
-			move = new MoveInfo();
-			return true;
-		}
-
 		move = Soar2D.wm.getHumanMove(this);
 
 		if (move == null) {

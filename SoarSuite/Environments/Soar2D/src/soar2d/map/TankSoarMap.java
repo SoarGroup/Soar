@@ -10,13 +10,13 @@ import org.jdom.Element;
 import soar2d.Direction;
 import soar2d.Names;
 import soar2d.Soar2D;
-import soar2d.configuration.Configuration;
+import soar2d.config.Config;
 import soar2d.player.Player;
 import soar2d.world.TankSoarWorld;
 
 public class TankSoarMap extends GridMap {
 	
-	public TankSoarMap(Configuration config) {
+	public TankSoarMap(Config config) {
 		super(config);
 	}
 

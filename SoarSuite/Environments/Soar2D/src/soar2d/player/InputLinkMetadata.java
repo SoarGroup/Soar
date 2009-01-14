@@ -24,6 +24,11 @@ public class InputLinkMetadata {
 		this.agent = agent;
 	}
 	
+	public void load(String metadata) throws Exception {
+		File metadataFile = new File(metadata);
+		load(metadataFile);
+	}
+	
 	public void load(File metadataFile) throws Exception {
 		if (files.contains(metadataFile)) {
 			Soar2D.logger.fine("Ignoring duplicate metadata file " + metadataFile.getAbsolutePath());

@@ -3,7 +3,6 @@ package soar2d.player.eaters;
 import soar2d.Soar2D;
 import soar2d.player.MoveInfo;
 import soar2d.player.Player;
-import soar2d.player.PlayerConfig;
 
 /**
  * @author voigtjr
@@ -15,8 +14,8 @@ import soar2d.player.PlayerConfig;
 public class Eater extends Player {	
 	private MoveInfo move;
 
-	public Eater( PlayerConfig playerConfig ) {
-		super(playerConfig) ;
+	public Eater( String playerId ) {
+		super(playerId) ;
 	}
 	
 	/* (non-Javadoc)
@@ -36,11 +35,6 @@ public class Eater extends Player {
 	}
 
 	public boolean getHumanMove() {
-		if (Soar2D.config.getNoGUI()) {
-			move = new MoveInfo();
-			return true;
-		}
-
 		move = Soar2D.wm.getHumanMove(this);
 
 		if (move == null) {

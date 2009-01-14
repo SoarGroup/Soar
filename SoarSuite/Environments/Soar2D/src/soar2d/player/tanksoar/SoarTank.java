@@ -5,10 +5,11 @@ import java.util.logging.*;
 
 import sml.*;
 import soar2d.*;
+import soar2d.config.Config;
+import soar2d.config.Soar2DKeys;
 import soar2d.player.InputLinkMetadata;
 import soar2d.player.MoveInfo;
 import soar2d.player.Player;
-import soar2d.player.PlayerConfig;
 import soar2d.player.RadarCell;
 import soar2d.world.PlayersManager;
 import soar2d.world.World;
@@ -72,14 +73,18 @@ public class SoarTank extends Tank implements Agent.RunEventInterface {
 	
 	InputLinkMetadata metadata;
 
-	public SoarTank(Agent agent, PlayerConfig playerConfig) {
-		super(playerConfig);
+	public SoarTank(Agent agent, String playerId) {
+		super(playerId);
 		this.agent = agent;
-		this.shutdownCommands = playerConfig.getShutdownCommands();
+		Config playerConfig = Soar2D.config.getChild(Soar2DKeys.playerKey(playerId));
+		if (playerConfig.hasKey(Soar2DKeys.players.shutdown_commands)) {
+			String [] sc = playerConfig.requireStrings(Soar2DKeys.players.shutdown_commands);
+			this.shutdownCommands = new ArrayList<String>(Arrays.asList(sc));
+		}
 
 
-		radarCellIDs = new Identifier[Soar2D.config.tConfig.getRadarWidth()][Soar2D.config.tConfig.getRadarHeight()];
-		radarColors = new StringElement[Soar2D.config.tConfig.getRadarWidth()][Soar2D.config.tConfig.getRadarHeight()];
+		radarCellIDs = new Identifier[Soar2D.config.getInt(Soar2DKeys.tanksoar.radar_width, 3)][Soar2D.config.getInt(Soar2DKeys.tanksoar.radar_height, 15)];
+		radarColors = new StringElement[Soar2D.config.getInt(Soar2DKeys.tanksoar.radar_width, 3)][Soar2D.config.getInt(Soar2DKeys.tanksoar.radar_height, 15)];
 
 
 		assert agent != null;
@@ -96,8 +101,8 @@ public class SoarTank extends Tank implements Agent.RunEventInterface {
 	private void loadMetadata() {
 		metadata = new InputLinkMetadata(agent);
 		try {
-			if (Soar2D.config.getMetadata() != null) {
-				metadata.load(Soar2D.config.getMetadata());
+			if (Soar2D.config.hasKey(Soar2DKeys.general.soar.metadata)) {
+				metadata.load(Soar2D.config.requireString(Soar2DKeys.general.soar.metadata));
 			}
 			if (Soar2D.simulation.world.getMap().getMetadata() != null) {
 				metadata.load(Soar2D.simulation.world.getMap().getMetadata());
@@ -169,7 +174,7 @@ public class SoarTank extends Tank implements Agent.RunEventInterface {
 	}
 	
 	public MoveInfo getMove() {
-		if (Soar2D.config.getForceHuman()) {
+		if (Soar2D.config.getBoolean(Soar2DKeys.general.force_human, false)) {
 			return super.getMove();
 		}
 
@@ -829,9 +834,9 @@ public class SoarTank extends Tank implements Agent.RunEventInterface {
 		if (Soar2D.logger.isLoggable(Level.FINEST)) {
 			logger.finest(this.getName() + ": radar data: generating new"); 
 		}
-		for (height = 0; height < Soar2D.config.tConfig.getRadarHeight(); ++height) {
+		for (height = 0; height < Soar2D.config.getInt(Soar2DKeys.tanksoar.radar_height, 15); ++height) {
 			boolean done = false;
-			for (int width = 0; width < Soar2D.config.tConfig.getRadarWidth(); ++width) {
+			for (int width = 0; width < Soar2D.config.getInt(Soar2DKeys.tanksoar.radar_width, 3); ++width) {
 				// Always skip self, this screws up the tanks.
 				if (width == 1 && height == 0) {
 					if (Soar2D.logger.isLoggable(Level.FINEST)) {
@@ -876,8 +881,8 @@ public class SoarTank extends Tank implements Agent.RunEventInterface {
 		if (Soar2D.logger.isLoggable(Level.FINEST)) {
 			logger.finest(this.getName() + ": radar data: updating"); 
 		}
-		for (int width = 0; width < Soar2D.config.tConfig.getRadarWidth(); ++width) {
-			for (int height = 0; height < Soar2D.config.tConfig.getRadarHeight(); ++height) {
+		for (int width = 0; width < Soar2D.config.getInt(Soar2DKeys.tanksoar.radar_width, 3); ++width) {
+			for (int height = 0; height < Soar2D.config.getInt(Soar2DKeys.tanksoar.radar_height, 15); ++height) {
 				// Always skip self, this screws up the tanks.
 				if (width == 1 && height == 0) {
 					if (Soar2D.logger.isLoggable(Level.FINEST)) {
@@ -943,8 +948,8 @@ public class SoarTank extends Tank implements Agent.RunEventInterface {
 	}
 
 	private void clearRadar() {
-		for (int width = 0; width < Soar2D.config.tConfig.getRadarWidth(); ++width) {
-			for (int height = 0; height < Soar2D.config.tConfig.getRadarHeight(); ++height) {
+		for (int width = 0; width < Soar2D.config.getInt(Soar2DKeys.tanksoar.radar_width, 3); ++width) {
+			for (int height = 0; height < Soar2D.config.getInt(Soar2DKeys.tanksoar.radar_height, 15); ++height) {
 				radarCellIDs[width][height] = null;
 				radarColors[width][height] = null;
 			}

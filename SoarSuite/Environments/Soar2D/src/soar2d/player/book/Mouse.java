@@ -5,14 +5,13 @@ import java.util.Iterator;
 import soar2d.Soar2D;
 import soar2d.player.MoveInfo;
 import soar2d.player.Player;
-import soar2d.player.PlayerConfig;
 import soar2d.world.PlayersManager;
 import soar2d.world.World;
 
 public class Mouse extends Player {
 
-	public Mouse(PlayerConfig playerConfig) {
-		super(playerConfig);
+	public Mouse(String playerId) {
+		super(playerId);
 	}
 
 	Player target;

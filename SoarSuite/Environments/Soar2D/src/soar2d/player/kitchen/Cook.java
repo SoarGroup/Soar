@@ -1,9 +1,9 @@
 package soar2d.player.kitchen;
 
 import soar2d.Soar2D;
+import soar2d.config.Soar2DKeys;
 import soar2d.player.MoveInfo;
 import soar2d.player.Player;
-import soar2d.player.PlayerConfig;
 
 /**
  * @author voigtjr
@@ -11,8 +11,8 @@ import soar2d.player.PlayerConfig;
 public class Cook extends Player {	
 	private MoveInfo move;
 	
-	public Cook( PlayerConfig playerConfig ) {
-		super(playerConfig) ;
+	public Cook(String playerId) {
+		super(playerId) ;
 	}
 	
 	/* (non-Javadoc)
@@ -30,7 +30,7 @@ public class Cook extends Player {
 	}
 
 	public boolean getHumanMove() {
-		if (Soar2D.config.getNoGUI()) {
+		if (Soar2D.config.getBoolean(Soar2DKeys.general.nogui, false)) {
 			move = new MoveInfo();
 			return true;
 		}
