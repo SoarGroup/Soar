@@ -102,7 +102,6 @@ public class CreateAgentDialog extends Dialog {
 				lastProductions = null;
 				m_Productions = null;
 				m_ProductionsLabel.setText(Names.kHumanProductions);
-				Soar2D.config.setBoolean(Soar2DKeys.general.soar.spawn_debuggers, true);
 				updateButtons();
 			}
 		});
@@ -175,7 +174,7 @@ public class CreateAgentDialog extends Dialog {
 				Soar2D.config.setBoolean(Soar2DKeys.general.soar.spawn_debuggers, m_SpawnDebuggerButton.getSelection());
 			}
 		});		
-		m_SpawnDebuggerButton.setSelection(Soar2D.config.getBoolean(Soar2DKeys.general.soar.spawn_debuggers, false));
+		m_SpawnDebuggerButton.setSelection(Soar2D.config.getBoolean(Soar2DKeys.general.soar.spawn_debuggers, true));
 
 		Composite okCancel = new Composite(dialog, SWT.NONE);
 		{
