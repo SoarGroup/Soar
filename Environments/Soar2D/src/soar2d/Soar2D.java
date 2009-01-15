@@ -48,6 +48,10 @@ public class Soar2D {
 		install(Names.configs.tanksoarConsoleCnf);
 		install(Names.configs.eatersCnf);
 		install(Names.configs.eatersConsoleCnf);
+		install(Names.configs.roomCnf);
+		install(Names.configs.roomDiscreteCnf);
+		install(Names.configs.kitchenCnf);
+		install(Names.configs.taxiCnf);
 
 		loadConfig(args);
 		initializeLogger();
