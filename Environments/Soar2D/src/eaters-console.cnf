@@ -1,6 +1,8 @@
 # See http://winter.eecs.umich.edu/soarwiki/Environments/Soar2D/Configuration_File_Format
 general.game = "eaters";
 general.map = "maps/eaters/random-walls.emap";
-#players.active_players = [ "eater" ];
-#players.eater.productions = "agents/eaters/tutorial/advanced-move.soar";
+general.nogui = true;
+general.soar.spawn_debuggers = false;
+players.active_players = [ "eater" ];
+players.eater.productions = "agents/eaters/tutorial/advanced-move.soar";
 terminals.food_remaining = true;

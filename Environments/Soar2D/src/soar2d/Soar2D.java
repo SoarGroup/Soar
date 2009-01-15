@@ -45,7 +45,9 @@ public class Soar2D {
 
 		// Try to install default config files
 		install(Names.configs.tanksoarCnf);
+		install(Names.configs.tanksoarConsoleCnf);
 		install(Names.configs.eatersCnf);
+		install(Names.configs.eatersConsoleCnf);
 
 		loadConfig(args);
 		initializeLogger();
