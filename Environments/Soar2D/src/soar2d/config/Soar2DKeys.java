@@ -127,4 +127,9 @@ public class Soar2DKeys {
 		public static final String passenger_delivered = "terminals.passenger_delivered";
 		public static final String passenger_pick_up = "terminals.passenger_pick_up";
 	}
+	
+	public class preferences {
+		public static final String last_productions = "last_productions";
+		public static final String window_position = "window_position";
+	}
 }

@@ -1,5 +1,7 @@
 package soar2d.config;
 
+import java.io.FileNotFoundException;
+
 /** Abstract source of configuration information. **/
 public abstract class ConfigSource {
 	public abstract boolean hasKey(String key);
@@ -25,4 +27,6 @@ public abstract class ConfigSource {
 	public abstract byte[] getBytes(String key);
 
 	public abstract void setBytes(String key, byte v[]);
+	
+	public abstract void save(String path) throws FileNotFoundException;
 }

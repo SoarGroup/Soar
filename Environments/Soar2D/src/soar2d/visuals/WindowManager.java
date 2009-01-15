@@ -145,6 +145,20 @@ public class WindowManager {
 			display = null;
 			return false;		}
 		initColors(display);
+		
+		shell.addDisposeListener(new DisposeListener() {
+			public void widgetDisposed(DisposeEvent arg0) {
+				// save window position
+				if (shell != null) {
+					int [] xy = new int[2];
+					xy[0] = shell.getLocation().x;
+					xy[1] = shell.getLocation().y;
+					if (Soar2D.simConfig != null) {
+						Soar2D.simConfig.saveWindowPosition(xy);
+					}
+				}
+			}
+		});
 		return true;
 	}
 	
@@ -1419,7 +1433,13 @@ public class WindowManager {
 				visualWorld.redraw();			
 			}
 		});
-		
+
+		int [] xy = Soar2D.simConfig.getWindowPosition();
+		if (xy != null && xy.length == 2)
+		{
+			shell.setLocation(xy[0], xy[1]);
+		}
+
 		rhs.layout(true);
 		shell.layout(true);
 		
@@ -1570,6 +1590,7 @@ public class WindowManager {
 	}
 
 	public void shutdown() {
+
 		if (humanMove != null) {
 			synchronized(humanMove) {
 				humanMove.notifyAll();
