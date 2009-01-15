@@ -290,7 +290,6 @@ public class World {
 		
 			if (Soar2D.config.getBoolean(Soar2DKeys.terminals.food_remaining, false)) {
 				if (eMap.getFoodCount() <= 0) {
-					boolean stopNow = true;
 					
 					if (Soar2D.control.checkRunsTerminal()) {
 						stopAndDumpStats("All of the food is gone.");

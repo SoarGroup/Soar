@@ -26,6 +26,11 @@ public class CreateAgentDialog extends Dialog {
 	
 	public CreateAgentDialog(Shell parent) {
 		super(parent);
+		
+		String lastProductionsString = Soar2D.simConfig.getLastProductions();
+		if (lastProductionsString != null) {
+			lastProductions = new File(lastProductionsString);
+		}
 	}
 	
 	public void open() {
@@ -86,6 +91,7 @@ public class CreateAgentDialog extends Dialog {
 					lastProductions = file;
 					m_ProductionsLabel.setText(file.getName());
 				}
+				Soar2D.simConfig.saveLastProductions(lastProductions.getAbsolutePath());
 				updateButtons();
 			}
 		});

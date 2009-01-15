@@ -232,12 +232,12 @@ public class ConfigFile extends ConfigSource {
 				if (in_string) {
 					// in a string literal
 
-					if (c == '\\' && pos + 1 < line.length()) {
-						// escape sequence.
-						tok += line.charAt(pos + 1);
-						pos++;
-						continue;
-					}
+//					if (c == '\\' && pos + 1 < line.length()) {
+//						// escape sequence.
+//						tok += line.charAt(pos + 1);
+//						pos++;
+//						continue;
+//					}
 
 					if (c == '\"') {
 						// end of string.
@@ -335,19 +335,63 @@ public class ConfigFile extends ConfigSource {
 			return tok;
 		}
 	}
+	
+	public void save(String path) throws FileNotFoundException {
+		PrintStream p = null;
+		if (path != null) {
+			FileOutputStream out = new FileOutputStream(path);
+			p = new PrintStream(out);
+		} else {
+			p = System.out;
+		}
+		
+		
+		for (Map.Entry<String, String[]> entry : keys.entrySet()) {
+			p.print(entry.getKey() + " = ");
+			
+			assert entry.getValue().length > 0;
+			if (entry.getValue().length < 2) {
+				p.print("\"" + entry.getValue()[0] + "\"");
+			} else {
+				p.print("[");
+				for ( String value : entry.getValue()) {
+					p.print("\"" + value + "\"");
+					p.print(",");
+				}
+				p.print("]");
+			}
+			
+			p.println(";");
+		}
+	 
+		p.close();
+	}
 
 	// ///////////////////////////////////////////////////////
 	// Simple testing harness
 
 	public static void main(String args[]) {
-		try {
-			ConfigFile cf = new ConfigFile(args[0]);
-
-			for (double v : cf.getDoubles("a.d"))
-				System.out.println(v);
-
-		} catch (IOException ex) {
-			System.out.println("ex: " + ex);
+		if (args.length > 0) {
+			try {
+				ConfigFile cf = new ConfigFile(args[0]);
+	
+				for (double v : cf.getDoubles("a.d"))
+					System.out.println(v);
+	
+			} catch (IOException ex) {
+				System.out.println("ex: " + ex);
+			}
+		} else {
+			// test saving by printing to console
+			ConfigFile cf = new ConfigFile();
+			cf.setStrings("testing.one", new String [] { "one" });
+			cf.setStrings("testing.two", new String [] { "one", "two" });
+			cf.setStrings("three", new String [] { "one", "two", "three" });
+			try {
+				cf.save(null);
+			} catch (FileNotFoundException e) {
+				System.out.println("ex: " + e);
+			}
 		}
 	}
 }

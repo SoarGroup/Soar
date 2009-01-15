@@ -1,5 +1,7 @@
 package soar2d.config;
 
+import java.io.FileNotFoundException;
+
 /**
  * A view into a ConfigSource. The view can have a specific "scope", i.e., a
  * prefix that is automatically added to every get/set request.
@@ -15,6 +17,10 @@ public class Config {
 		this.source = source;
 		this.parent = null;
 		this.prefix = "";
+	}
+	
+	public void save(String path) throws FileNotFoundException {
+		source.save(path);
 	}
 
 	public Config getParent() {
