@@ -1,0 +1,5 @@
+# See http://winter.eecs.umich.edu/soarwiki/Environments/Soar2D/Configuration_File_Format
+general.game = "room";
+general.map = "maps/book/default.bmap";
+room.continuous = false;
+players.mouse.name = "mouse";
