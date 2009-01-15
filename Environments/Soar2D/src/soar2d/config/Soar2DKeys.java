@@ -69,8 +69,7 @@ public class Soar2DKeys {
 		public static final String name = "name";
 		public static final String productions = "productions";
 		public static final String color = "color";
-		public static final String x = "x";
-		public static final String y = "y";
+		public static final String pos = "pos";
 		public static final String facing = "facing";
 		public static final String points = "points";
 		public static final String energy = "energy";

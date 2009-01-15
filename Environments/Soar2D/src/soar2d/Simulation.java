@@ -436,10 +436,13 @@ public class Simulation {
 	
 	private Point getInitialLocation(Config playerConfig) {
 		java.awt.Point initialLocation = null;
-		if (playerConfig.hasKey(Soar2DKeys.players.x) && playerConfig.hasKey(Soar2DKeys.players.y)) {
+		if (playerConfig.hasKey(Soar2DKeys.players.pos)) {
 			initialLocation = new Point();
-			initialLocation.x = playerConfig.requireInt(Soar2DKeys.players.x);
-			initialLocation.y = playerConfig.requireInt(Soar2DKeys.players.y);
+			int [] pos = playerConfig.requireInts(Soar2DKeys.players.pos);
+			if (pos != null && pos.length == 2) {
+				initialLocation.x = pos[0];
+				initialLocation.y = pos[1];
+			}
 		}
 		return initialLocation;
 	}
