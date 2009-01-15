@@ -82,6 +82,8 @@ public class Soar2D {
 		
 		// calls wm.shutdown()
 		control.shutdown();
+		
+		simConfig.savePreferences();
 	}
 	
 	private void loadConfig(String [] args) {
@@ -120,14 +122,12 @@ public class Soar2D {
 	private void initializeLogger() {
 		Level level = null;
 		try {
-			level = Level.parse(config.getString(Soar2DKeys.general.logging.level));
+			level = Level.parse(config.getString(Soar2DKeys.general.logging.level, Level.INFO.toString()));
 		} catch (IllegalArgumentException e) {
 			wm.initialize();
 			control.severeError(Soar2DKeys.general.logging.level + ": " + e.getMessage());
 			wm.shutdown();
 			System.exit(1);
-		} catch (NullPointerException e) {
-			level = Level.INFO;
 		}
 
 		logger.setLevel(level);
