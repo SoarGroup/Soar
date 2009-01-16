@@ -252,11 +252,8 @@ public class ConfigFile extends ConfigSource {
 				} else {
 					// NOT in a string literal
 
-					if (c == '#')
-						return;
-
 					// strip spaces when not in a string literal
-					if (c == ' ')
+					if (Character.isWhitespace(c))
 						continue;
 
 					// starting a string literal
@@ -280,6 +277,9 @@ public class ConfigFile extends ConfigSource {
 						tokens.addLast(tok);
 						tok = "";
 					}
+
+					if (c == '#')
+						return;
 
 					// add this terminator character
 					tok = "" + c;
@@ -370,14 +370,53 @@ public class ConfigFile extends ConfigSource {
 	// ///////////////////////////////////////////////////////
 	// Simple testing harness
 
+	private static void testKey(String key, ConfigFile cf) {
+		System.out.println(key + ": " + Arrays.toString(cf.getStrings(key)));
+	}
+	
 	public static void main(String args[]) {
 		if (args.length > 0) {
 			try {
 				ConfigFile cf = new ConfigFile(args[0]);
-	
-				for (double v : cf.getDoubles("a.d"))
-					System.out.println(v);
-	
+				
+				String [] keys = {
+					"hello", 
+					"block.inside",
+					"block.outside",
+					"parent.child1.one",
+					"parent.child1.two",
+					"parent.child2.one",
+					"parent.child2.two",
+					"quotes",
+					"noquotes",
+					"quotesspace",
+					"noquotesspace",
+					"single",
+					"single_element_array",
+					"trailing_comma_ok",
+					"two_element_array",
+					"two_element_array_with_trailer",
+					"array_no_quotes",
+					"array_spaces_no_quotes",
+					"array_spaces_no_quotes_with_trailer",
+					"double_noquotes",
+					"double_quotes",
+					"split_across_lines",
+					"array_line_split",
+					"array_line_split_noquotes",
+					"crazy.spacing",
+					"key1",
+					"key2",
+					"key3",
+					"key4",
+					"key5",
+					"key6.subkey6.1",
+					"key6.subkey6.2",
+				};
+				
+				for (String key : keys) {
+					testKey(key, cf);
+				}
 			} catch (IOException ex) {
 				System.out.println("ex: " + ex);
 			}
