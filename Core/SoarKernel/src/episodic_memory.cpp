@@ -3566,11 +3566,11 @@ void epmem_install_memory( agent *my_agent, Symbol *state, epmem_time_id memory_
 					if ( !existing_identifier )
 						(*value) = make_new_identifier( my_agent, ( ( attr->common.symbol_type == SYM_CONSTANT_SYMBOL_TYPE )?( attr->sc.name[0] ):('E') ), parent->id.level );
 
-					new_wme = add_input_wme( my_agent, parent, attr, (*value) );
+					new_wme = add_input_wme( my_agent, parent, straggler->w, (*value) );
 					new_wme->preference = epmem_make_fake_preference( my_agent, state, new_wme );
 					state->id.epmem_info->epmem_wmes->push( new_wme );
 
-					symbol_remove_ref( my_agent, attr );
+					symbol_remove_ref( my_agent, straggler->w );
 
 					if ( !existing_identifier )
 						symbol_remove_ref( my_agent, (*value) );
@@ -5307,20 +5307,22 @@ void epmem_respond_to_cmd( agent *my_agent )
 
 			if ( state->id.epmem_info->last_cmd_count != wme_count )
 			{
+				new_cue = true;
 				state->id.epmem_info->last_cmd_count = wme_count;
+			}
 
-				if ( wme_count != 0 )
-					new_cue = true;
-				else
-					epmem_clear_result( my_agent, state );
+			if ( new_cue )
+			{
+				// clear old cue
+				state->id.epmem_info->cue_wmes->clear();
+
+				// clear old results
+				epmem_clear_result( my_agent, state );
 			}
 		}
 
-		if ( new_cue )
+		if ( new_cue && wme_count )
 		{
-			// clear old cue
-			state->id.epmem_info->cue_wmes->clear();
-
 			// initialize command vars
 			retrieve = EPMEM_MEMID_NONE;
 			next = false;
@@ -5459,26 +5461,21 @@ void epmem_respond_to_cmd( agent *my_agent )
 				// retrieve
 				if ( path == 1 )
 				{
-					epmem_clear_result( my_agent, state );
 					epmem_install_memory( my_agent, state, retrieve );
 				}
 				// previous or next
 				else if ( path == 2 )
 				{
-					epmem_clear_result( my_agent, state );
 					epmem_install_memory( my_agent, state, ( ( next )?( epmem_next_episode( my_agent, state->id.epmem_info->last_memory ) ):( epmem_previous_episode( my_agent, state->id.epmem_info->last_memory ) ) ) );
 				}
 				// query
 				else if ( path == 3 )
 				{
-					epmem_clear_result( my_agent, state );
 					epmem_process_query( my_agent, state, query, neg_query, prohibit, before, after );
 				}
 			}
 			else
 			{
-				epmem_clear_result( my_agent, state );
-
 				wme *new_wme = add_input_wme( my_agent, state->id.epmem_result_header, my_agent->epmem_status_symbol, my_agent->epmem_bad_cmd_symbol );
 				new_wme->preference = epmem_make_fake_preference( my_agent, state, new_wme );
 				state->id.epmem_info->epmem_wmes->push( new_wme );
