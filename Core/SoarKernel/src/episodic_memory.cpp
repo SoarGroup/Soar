@@ -912,7 +912,7 @@ bool epmem_validate_commit( const double new_val )
 // timers parameter
 bool epmem_validate_ext_timers( const long new_val )
 {
-	return ( ( new_val == EPMEM_TIMERS_ON ) || ( new_val == EPMEM_TIMERS_OFF ) );
+	return ( ( new_val >= EPMEM_TIMERS_OFF ) && ( new_val <= EPMEM_TIMERS_THREE ) );
 }
 
 const char *epmem_convert_ext_timers( const long val )
@@ -921,12 +921,20 @@ const char *epmem_convert_ext_timers( const long val )
 
 	switch ( val )
 	{
-		case EPMEM_TIMERS_ON:
-			return_val = "on";
-			break;
-
 		case EPMEM_TIMERS_OFF:
 			return_val = "off";
+			break;
+
+		case EPMEM_TIMERS_ONE:
+			return_val = "one";
+			break;
+
+		case EPMEM_TIMERS_TWO:
+			return_val = "two";
+			break;
+
+		case EPMEM_TIMERS_THREE:
+			return_val = "three";
 			break;
 	}
 
@@ -937,10 +945,14 @@ const long epmem_convert_ext_timers( const char *val )
 {
 	long return_val = NULL;
 
-	if ( !strcmp( val, "on" ) )
-		return_val = EPMEM_TIMERS_ON;
-	else if ( !strcmp( val, "off" ) )
+	if ( !strcmp( val, "off" ) )
 		return_val = EPMEM_TIMERS_OFF;
+	else if ( !strcmp( val, "one" ) )
+		return_val = EPMEM_TIMERS_ONE;
+	else if ( !strcmp( val, "two" ) )
+		return_val = EPMEM_TIMERS_TWO;
+	else if ( !strcmp( val, "three" ) )
+		return_val = EPMEM_TIMERS_THREE;
 
 	return return_val;
 }
@@ -1102,11 +1114,12 @@ void epmem_reset_timers( agent *my_agent )
 }
 
 // adds/initializes a timer
-epmem_timer *epmem_add_timer( const char *name )
+epmem_timer *epmem_add_timer( const char *name, long level )
 {
 	// new timer entry
 	epmem_timer *newbie = new epmem_timer;
 	newbie->name = name;
+	newbie->level = level;
 
 	reset_timer( &newbie->start_timer );
 	reset_timer( &newbie->total_timer );
@@ -1182,7 +1195,7 @@ const char *epmem_get_timer_name( agent *my_agent, const long timer )
 // starts a timer
 void epmem_start_timer( agent *my_agent, const long timer )
 {
-	if ( epmem_valid_timer( my_agent, timer ) && ( epmem_get_parameter( my_agent, EPMEM_PARAM_TIMERS, EPMEM_RETURN_LONG ) == EPMEM_TIMERS_ON ) )
+	if ( epmem_valid_timer( my_agent, timer ) && ( epmem_get_parameter( my_agent, EPMEM_PARAM_TIMERS, EPMEM_RETURN_LONG ) >= my_agent->epmem_timers[ timer ]->level ) )
 	{
 		start_timer( my_agent, &my_agent->epmem_timers[ timer ]->start_timer );
 	}
@@ -1191,7 +1204,7 @@ void epmem_start_timer( agent *my_agent, const long timer )
 // stops a timer
 void epmem_stop_timer( agent *my_agent, const long timer )
 {
-	if ( epmem_valid_timer( my_agent, timer ) && ( epmem_get_parameter( my_agent, EPMEM_PARAM_TIMERS, EPMEM_RETURN_LONG ) == EPMEM_TIMERS_ON ) )
+	if ( epmem_valid_timer( my_agent, timer ) && ( epmem_get_parameter( my_agent, EPMEM_PARAM_TIMERS, EPMEM_RETURN_LONG ) >= my_agent->epmem_timers[ timer ]->level ) )
 	{
 		stop_timer( my_agent, &my_agent->epmem_timers[ timer ]->start_timer, &my_agent->epmem_timers[ timer ]->total_timer );
 	}
@@ -4318,6 +4331,36 @@ void epmem_process_query( agent *my_agent, Symbol *state, Symbol *query, Symbol 
 						} while ( !done );
 					}
 
+					// cleanup
+					{
+						// leaf_ids
+						for ( i=EPMEM_NODE_POS; i<=EPMEM_NODE_NEG; i++ )
+						{
+							leaf_p = leaf_ids[i].begin();
+							while ( leaf_p != leaf_ids[i].end() )
+							{
+								delete (*leaf_p);
+
+								leaf_p++;
+							}
+						}
+
+						// queries
+						epmem_range_query *del_query;
+						for ( i=EPMEM_NODE_POS; i<=EPMEM_NODE_NEG; i++ )
+						{
+							while ( !queries[ i ].empty() )
+							{
+								del_query = queries[ i ].top();
+								queries[ i ].pop();
+
+								sqlite3_finalize( del_query->stmt );
+								delete del_query;
+							}
+						}
+						delete [] queries;
+					}
+
 					// place results in WM
 					if ( king_id != EPMEM_MEMID_NONE )
 					{
@@ -4359,6 +4402,10 @@ void epmem_process_query( agent *my_agent, Symbol *state, Symbol *query, Symbol 
 						state->id.epmem_info->epmem_wmes->push( new_wme );
 						symbol_remove_ref( my_agent, my_meta );
 
+						////////////////////////////////////////////////////////////////////////////
+						epmem_stop_timer( my_agent, EPMEM_TIMER_QUERY );
+						////////////////////////////////////////////////////////////////////////////
+
 						// actual memory
 						epmem_install_memory( my_agent, state, king_id );
 					}
@@ -4367,37 +4414,11 @@ void epmem_process_query( agent *my_agent, Symbol *state, Symbol *query, Symbol 
 						new_wme = add_input_wme( my_agent, state->id.epmem_result_header, my_agent->epmem_status_symbol, my_agent->epmem_failure_symbol );
 						new_wme->preference = epmem_make_fake_preference( my_agent, state, new_wme );
 						state->id.epmem_info->epmem_wmes->push( new_wme );
-					}
 
-					// cleanup
-					{
-						// leaf_ids
-						for ( i=EPMEM_NODE_POS; i<=EPMEM_NODE_NEG; i++ )
-						{
-							leaf_p = leaf_ids[i].begin();
-							while ( leaf_p != leaf_ids[i].end() )
-							{
-								delete (*leaf_p);
-
-								leaf_p++;
-							}
-						}
-
-						// queries
-						epmem_range_query *del_query;
-						for ( i=EPMEM_NODE_POS; i<=EPMEM_NODE_NEG; i++ )
-						{
-							while ( !queries[ i ].empty() )
-							{
-								del_query = queries[ i ].top();
-								queries[ i ].pop();
-
-								sqlite3_finalize( del_query->stmt );
-								delete del_query;
-							}
-						}
-						delete [] queries;
-					}
+						////////////////////////////////////////////////////////////////////////////
+						epmem_stop_timer( my_agent, EPMEM_TIMER_QUERY );
+						////////////////////////////////////////////////////////////////////////////
+					}					
 				}
 			}
 			else
@@ -4405,6 +4426,10 @@ void epmem_process_query( agent *my_agent, Symbol *state, Symbol *query, Symbol 
 				new_wme = add_input_wme( my_agent, state->id.epmem_result_header, my_agent->epmem_status_symbol, my_agent->epmem_failure_symbol );
 				new_wme->preference = epmem_make_fake_preference( my_agent, state, new_wme );
 				state->id.epmem_info->epmem_wmes->push( new_wme );
+
+				////////////////////////////////////////////////////////////////////////////
+				epmem_stop_timer( my_agent, EPMEM_TIMER_QUERY );
+				////////////////////////////////////////////////////////////////////////////
 			}
 		}
 		else if ( mode == EPMEM_MODE_THREE )
@@ -5050,6 +5075,46 @@ void epmem_process_query( agent *my_agent, Symbol *state, Symbol *query, Symbol 
 				} while ( !done );
 			}
 
+			// clean up
+			{
+				int i;
+
+				// literals
+				std::list<epmem_shared_literal *>::iterator literal_p;
+				for ( literal_p=literals.begin(); literal_p!=literals.end(); literal_p++ )
+				{
+					if ( (*literal_p)->children )
+						delete (*literal_p)->children;
+
+					delete (*literal_p);
+				}
+
+				// matches
+				std::list<epmem_shared_match *>::iterator match_p;
+				for ( match_p=matches.begin(); match_p!=matches.end(); match_p++ )
+					delete (*match_p);
+
+				// trigger lists
+				std::list<epmem_shared_trigger_list *>::iterator trigger_list_p;
+				for ( trigger_list_p=trigger_lists.begin(); trigger_list_p!=trigger_lists.end(); trigger_list_p++ )
+					delete (*trigger_list_p);
+
+				// queries
+				epmem_shared_query *del_query;
+				for ( i=EPMEM_NODE_POS; i<=EPMEM_NODE_NEG; i++ )
+				{
+					while ( !queries[ i ].empty() )
+					{
+						del_query = queries[ i ].top();
+						queries[ i ].pop();
+
+						sqlite3_finalize( del_query->stmt );
+						delete del_query;
+					}
+				}
+				delete [] queries;
+			}
+
 			// place results in WM
 			if ( king_id != EPMEM_MEMID_NONE )
 			{
@@ -5101,6 +5166,10 @@ void epmem_process_query( agent *my_agent, Symbol *state, Symbol *query, Symbol 
 					symbol_remove_ref( my_agent, my_meta );
 				}
 
+				////////////////////////////////////////////////////////////////////////////
+				epmem_stop_timer( my_agent, EPMEM_TIMER_QUERY );
+				////////////////////////////////////////////////////////////////////////////
+
 				// actual memory
 				epmem_install_memory( my_agent, state, king_id );
 			}
@@ -5109,47 +5178,11 @@ void epmem_process_query( agent *my_agent, Symbol *state, Symbol *query, Symbol 
 				new_wme = add_input_wme( my_agent, state->id.epmem_result_header, my_agent->epmem_status_symbol, my_agent->epmem_failure_symbol );
 				new_wme->preference = epmem_make_fake_preference( my_agent, state, new_wme );
 				state->id.epmem_info->epmem_wmes->push( new_wme );
-			}
 
-			// clean up
-			{
-				int i;
-
-				// literals
-				std::list<epmem_shared_literal *>::iterator literal_p;
-				for ( literal_p=literals.begin(); literal_p!=literals.end(); literal_p++ )
-				{
-					if ( (*literal_p)->children )
-						delete (*literal_p)->children;
-
-					delete (*literal_p);
-				}
-
-				// matches
-				std::list<epmem_shared_match *>::iterator match_p;
-				for ( match_p=matches.begin(); match_p!=matches.end(); match_p++ )
-					delete (*match_p);
-
-				// trigger lists
-				std::list<epmem_shared_trigger_list *>::iterator trigger_list_p;
-				for ( trigger_list_p=trigger_lists.begin(); trigger_list_p!=trigger_lists.end(); trigger_list_p++ )
-					delete (*trigger_list_p);
-
-				// queries
-				epmem_shared_query *del_query;
-				for ( i=EPMEM_NODE_POS; i<=EPMEM_NODE_NEG; i++ )
-				{
-					while ( !queries[ i ].empty() )
-					{
-						del_query = queries[ i ].top();
-						queries[ i ].pop();
-
-						sqlite3_finalize( del_query->stmt );
-						delete del_query;
-					}
-				}
-				delete [] queries;
-			}
+				////////////////////////////////////////////////////////////////////////////
+				epmem_stop_timer( my_agent, EPMEM_TIMER_QUERY );
+				////////////////////////////////////////////////////////////////////////////
+			}			
 		}
 	}
 	else
@@ -5160,11 +5193,11 @@ void epmem_process_query( agent *my_agent, Symbol *state, Symbol *query, Symbol 
 
 		free_memory( my_agent, wmes_query, MISCELLANEOUS_MEM_USAGE );
 		free_memory( my_agent, wmes_neg_query, MISCELLANEOUS_MEM_USAGE );
-	}
 
-	////////////////////////////////////////////////////////////////////////////
-	epmem_stop_timer( my_agent, EPMEM_TIMER_QUERY );
-	////////////////////////////////////////////////////////////////////////////
+		////////////////////////////////////////////////////////////////////////////
+		epmem_stop_timer( my_agent, EPMEM_TIMER_QUERY );
+		////////////////////////////////////////////////////////////////////////////
+	}
 }
 
 

@@ -64,8 +64,10 @@ typedef struct wme_struct wme;
 #define EPMEM_FORCE_IGNORE 2
 #define EPMEM_FORCE_OFF 3
 
-#define EPMEM_TIMERS_ON 1
-#define EPMEM_TIMERS_OFF 2
+#define EPMEM_TIMERS_OFF 0
+#define EPMEM_TIMERS_ONE 1
+#define EPMEM_TIMERS_TWO 2
+#define EPMEM_TIMERS_THREE 3
 
 // statistics
 // * = protected
@@ -258,6 +260,8 @@ typedef struct epmem_timer_struct
 	struct timeval start_timer;
 	struct timeval total_timer;
 	const char *name;
+
+	long level;
 } epmem_timer;
 
 // common
@@ -509,7 +513,7 @@ extern void epmem_clean_timers( agent *my_agent );
 extern void epmem_reset_timers( agent *my_agent );
 
 // add timer
-extern epmem_timer *epmem_add_timer( const char *name );
+extern epmem_timer *epmem_add_timer( const char *name, long timer );
 
 // convert timer
 extern const long epmem_convert_timer( agent *my_agent, const char *name );
