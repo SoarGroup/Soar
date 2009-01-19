@@ -356,7 +356,7 @@ agent * create_soar_agent (char * agent_name) {                                 
   newAgent->epmem_params[ EPMEM_PARAM_FORCE ] = epmem_add_parameter( "force", EPMEM_FORCE_OFF, &epmem_validate_force, &epmem_convert_force, &epmem_convert_force );
   newAgent->epmem_params[ EPMEM_PARAM_BALANCE ] = epmem_add_parameter( "balance", 0.5, &epmem_validate_balance );
   newAgent->epmem_params[ EPMEM_PARAM_EXCLUSIONS ] = epmem_add_parameter( "exclusions", "", &epmem_validate_exclusions );
-  newAgent->epmem_params[ EPMEM_PARAM_TIMERS ] = epmem_add_parameter( "timers", EPMEM_TIMERS_TWO, &epmem_validate_ext_timers, &epmem_convert_ext_timers, &epmem_convert_ext_timers );
+  newAgent->epmem_params[ EPMEM_PARAM_TIMERS ] = epmem_add_parameter( "timers", EPMEM_TIMERS_OFF, &epmem_validate_ext_timers, &epmem_convert_ext_timers, &epmem_convert_ext_timers );
 
   newAgent->epmem_stats[ EPMEM_STAT_TIME ] = epmem_add_stat( "time" );
   newAgent->epmem_stats[ EPMEM_STAT_MEM_USAGE ] = epmem_add_stat( "mem_usage" );
