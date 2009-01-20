@@ -1,6 +1,6 @@
 package soar2d.player.taxi;
 
-import java.awt.Point;
+import java.util.Arrays;
 import java.util.logging.*;
 
 import sml.*;
@@ -161,7 +161,7 @@ public class SoarTaxi extends Taxi {
 		this.random = newRandom;
 	}
 	
-	public void update(java.awt.Point location) {
+	public void update(int [] location) {
 		World world = Soar2D.simulation.world;
 
 		// check to see if we've moved
@@ -169,8 +169,8 @@ public class SoarTaxi extends Taxi {
 		
 		// if we moved, update the location
 		if (moved) {
-			agent.Update(xWME, location.x);
-			int newY = Soar2D.simulation.world.getMap().getSize() - 1 - location.y;
+			agent.Update(xWME, location[0]);
+			int newY = Soar2D.simulation.world.getMap().getSize() - 1 - location[1];
 			agent.Update(yWME, newY);
 		}
 		
@@ -251,8 +251,8 @@ public class SoarTaxi extends Taxi {
 		//this.resetPointsChanged();
 	}
 	
-	private void updateView(Point location, TaxiMap xMap, int direction, StringElement type, StringElement passenger, StringElement wall) {
-		Point tempLocation = new Point(location);
+	private void updateView(int [] location, TaxiMap xMap, int direction, StringElement type, StringElement passenger, StringElement wall) {
+		int [] tempLocation = Arrays.copyOf(location, location.length);
 		
 		Direction.translate(tempLocation, direction);
 		if (!type.GetValueAsString().equals(xMap.getStringType(tempLocation))) {

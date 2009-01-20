@@ -118,5 +118,5 @@ class Cell {
 
 	// for sound algorithm
 	int distance = -1;
-	java.awt.Point parent;
+	int [] parent;
 }

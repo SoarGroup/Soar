@@ -1,7 +1,7 @@
 package soar2d.world;
 
-import java.awt.Point;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.ListIterator;
@@ -38,11 +38,11 @@ public class EatersWorld implements IWorld {
 		return restartAfterUpdate;
 	}
 	
-	public void fragPlayer(Player player, GridMap map, PlayersManager players, Point location) {
+	public void fragPlayer(Player player, GridMap map, PlayersManager players, int [] location) {
 		
 	}
 	
-	public void putInStartingLocation(Player player, GridMap map, PlayersManager players, Point location) {
+	public void putInStartingLocation(Player player, GridMap map, PlayersManager players, int [] location) {
 		
 	}
 	
@@ -69,8 +69,8 @@ public class EatersWorld implements IWorld {
 			}
 
 			// Calculate new location
-			Point oldLocation = players.getLocation(player);
-			Point newLocation = new Point(oldLocation);
+			int [] oldLocation = players.getLocation(player);
+			int [] newLocation = Arrays.copyOf(oldLocation, oldLocation.length);
 			Direction.translate(newLocation, move.moveDirection);
 			if (move.jump) {
 				Direction.translate(newLocation, move.moveDirection);
@@ -97,7 +97,7 @@ public class EatersWorld implements IWorld {
 		while (iter.hasNext()) {
 			Player player = iter.next();
 			MoveInfo lastMove = players.getMove(player);
-			Point location = players.getLocation(player);
+			int [] location = players.getLocation(player);
 			
 			if (lastMove.move || lastMove.jump) {
 				map.setPlayer(location, player);
@@ -124,7 +124,7 @@ public class EatersWorld implements IWorld {
 		}
 	}
 	
-	private void open(Player player, EatersMap map, Point location, int openCode) {
+	private void open(Player player, EatersMap map, int [] location, int openCode) {
 		ArrayList<CellObject> boxes = map.getAllWithProperty(location, Names.kPropertyBox);
 		if (boxes.size() <= 0) {
 			Soar2D.logger.warning(player.getName() + " tried to open but there is no box.");
@@ -157,7 +157,7 @@ public class EatersWorld implements IWorld {
 		}
 	}
 	
-	private void eat(Player player, EatersMap map, Point location) {
+	private void eat(Player player, EatersMap map, int [] location) {
 		ArrayList<CellObject> list = map.getAllWithProperty(location, Names.kPropertyEdible);
 		Iterator<CellObject> foodIter = list.iterator();
 		while (foodIter.hasNext()) {
@@ -263,7 +263,7 @@ public class EatersWorld implements IWorld {
 				if (Soar2D.logger.isLoggable(Level.FINER)) Soar2D.logger.finer("Sum of cash is negative.");
 			}
 			
-			Point collisionLocation = players.getLocation(collision.get(0));
+			int [] collisionLocation = players.getLocation(collision.get(0));
 
 			// Add the boom on the map
 			map.setExplosion(collisionLocation);
@@ -275,7 +275,7 @@ public class EatersWorld implements IWorld {
 			collideeIter = collision.listIterator();
 			while (collideeIter.hasNext()) {
 				Player player = collideeIter.next();
-				Point location = Soar2D.simulation.world.putInStartingLocation(player, false);
+				int [] location = Soar2D.simulation.world.putInStartingLocation(player, false);
 				assert location != null;
 				player.fragged();
 				if (!players.getMove(player).dontEat) {

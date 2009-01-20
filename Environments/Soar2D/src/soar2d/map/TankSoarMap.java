@@ -1,6 +1,5 @@
 package soar2d.map;
 
-import java.awt.Point;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -34,7 +33,7 @@ public class TankSoarMap extends GridMap {
 	}
 	
 	@Override
-	protected void cell(Element cell, java.awt.Point location) throws LoadError {
+	protected void cell(Element cell, int [] location) throws LoadError {
 		boolean background = false;
 		
 		List<Element> children = (List<Element>)cell.getChildren();
@@ -57,7 +56,7 @@ public class TankSoarMap extends GridMap {
 	}
 	
 	@Override
-	protected boolean object(Element object, java.awt.Point location) throws LoadError {
+	protected boolean object(Element object, int [] location) throws LoadError {
 		String name = object.getTextTrim();
 		if (name.length() <= 0) {
 			throw new LoadError("object doesn't have name");
@@ -82,7 +81,7 @@ public class TankSoarMap extends GridMap {
 	}
 
 	@Override
-	public void addObjectToCell(Point location, CellObject object) {
+	public void addObjectToCell(int [] location, CellObject object) {
 		Cell cell = getCell(location);
 		if (cell.hasObject(object.getName())) {
 			CellObject old = cell.removeObject(object.getName());
@@ -114,7 +113,7 @@ public class TankSoarMap extends GridMap {
 	}
 
 	@Override
-	public boolean isAvailable(Point location) {
+	public boolean isAvailable(int [] location) {
 		Cell cell = getCell(location);
 		boolean enterable = cell.enterable();
 		boolean noPlayer = cell.getPlayer() == null;
@@ -148,7 +147,7 @@ public class TankSoarMap extends GridMap {
 	}
 
 	@Override
-	public void setExplosion(Point location) {
+	public void setExplosion(int [] location) {
 		addObjectToCell(location, cellObjectManager.createObject(Names.kExplosion));
 	}
 
@@ -157,10 +156,10 @@ public class TankSoarMap extends GridMap {
 		if (!updatables.isEmpty()) {
 			Iterator<CellObject> iter = updatables.iterator();
 			
-			ArrayList<java.awt.Point> explosions = new ArrayList<java.awt.Point>();
+			ArrayList<int []> explosions = new ArrayList<int []>();
 			while (iter.hasNext()) {
 				CellObject cellObject = iter.next();
-				java.awt.Point location = updatablesLocations.get(cellObject);
+				int [] location = updatablesLocations.get(cellObject);
 				assert location != null;
 				
 				if (cellObject.update(location)) {
@@ -186,14 +185,14 @@ public class TankSoarMap extends GridMap {
 				}
 			}
 			
-			Iterator<java.awt.Point> explosion = explosions.iterator();
+			Iterator<int []> explosion = explosions.iterator();
 			while (explosion.hasNext()) {
 				setExplosion(explosion.next());
 			}
 		}
 	}
 	
-	private boolean shouldRemoveMissile(TankSoarWorld tsWorld, java.awt.Point location, Cell cell, CellObject missile) {
+	private boolean shouldRemoveMissile(TankSoarWorld tsWorld, int [] location, Cell cell, CellObject missile) {
 		// instead of removing missiles, move them
 
 		// what direction is it going

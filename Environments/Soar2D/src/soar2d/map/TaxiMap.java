@@ -1,7 +1,7 @@
 package soar2d.map;
 
-import java.awt.Point;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -31,8 +31,8 @@ public class TaxiMap extends GridMap {
 	
 	// passenger section
 	CellObject passenger;
-	Point passengerLocation;
-	Point passengerDefaultLocation;
+	int [] passengerLocation;
+	int [] passengerDefaultLocation;
 	String passengerDestination;
 	String passengerDefaultDestination;
 	String passengerFormerDestination;
@@ -44,7 +44,7 @@ public class TaxiMap extends GridMap {
 	public void setPassengerDefaults() {
 		assert passenger == null;
 		if (this.passengerLocation != null) {
-			this.passengerDefaultLocation = new Point(this.passengerLocation);
+			this.passengerDefaultLocation = Arrays.copyOf(this.passengerLocation, this.passengerLocation.length);
 			this.passenger = this.getObject(passengerLocation, "passenger");
 		} else {
 			this.passenger = cellObjectManager.createObject("passenger");
@@ -79,7 +79,7 @@ public class TaxiMap extends GridMap {
 		logger.info("passenger destination: " + passengerDestination);
 	}
 	
-	public boolean pickUp(Point location) {
+	public boolean pickUp(int [] location) {
 		if (passengerLocation == null) {
 			return false;
 		}
@@ -91,7 +91,7 @@ public class TaxiMap extends GridMap {
 		}
 		return false;
 	}
-	public boolean putDown(Point location) {
+	public boolean putDown(int [] location) {
 		if (passengerLocation != null) {
 			return false;
 		}
@@ -116,11 +116,11 @@ public class TaxiMap extends GridMap {
 			assert ret;
 		}
 		
-		Collection<Point> locations = destinationLocations.values();
+		Collection<int [] > locations = destinationLocations.values();
 		assert locations.size() > 1;
 		
 		int pick = Simulation.random.nextInt(locations.size());
-		Iterator<Point> iter = locations.iterator();
+		Iterator<int [] > iter = locations.iterator();
 		for (int index = 0; index < pick; index++) {
 			assert iter.hasNext();
 			iter.next();
@@ -132,7 +132,7 @@ public class TaxiMap extends GridMap {
 		setPassengerDestination();
 	}
 
-	public boolean isPassengerDestination(Point location) {
+	public boolean isPassengerDestination(int []  location) {
 		if (passengerDestination.equals(destinationMap.get(location))) {
 			return true;
 		}
@@ -149,11 +149,11 @@ public class TaxiMap extends GridMap {
 
 	// end passenger section
 	
-	HashMap<CellObject, Point> destinationLocations = new HashMap<CellObject, Point>();
-	HashMap<Point, String> destinationMap = new HashMap<Point, String>();
+	HashMap<CellObject, int []> destinationLocations = new HashMap<CellObject, int []>();
+	HashMap<int [], String> destinationMap = new HashMap<int [], String>();
 	
 	@Override
-	public void addObjectToCell(Point location, CellObject object) {
+	public void addObjectToCell(int [] location, CellObject object) {
 		Cell cell = getCell(location);
 		if (cell.hasObject(object.getName())) {
 			CellObject old = cell.removeObject(object.getName());
@@ -173,7 +173,7 @@ public class TaxiMap extends GridMap {
 		}
 		
 		if (object.hasProperty("passenger")) {
-			this.passengerLocation = new Point(location);
+			this.passengerLocation = Arrays.copyOf(location, location.length);
 		}
 		
 		cell.addCellObject(object);
@@ -181,7 +181,7 @@ public class TaxiMap extends GridMap {
 	}
 	
 	@Override
-	public boolean isAvailable(Point location) {
+	public boolean isAvailable(int []  location) {
 		Cell cell = getCell(location);
 		boolean destination = cell.getAllWithProperty("destination").size() > 0;
 		boolean fuel = cell.hasObject("fuel");
@@ -192,7 +192,7 @@ public class TaxiMap extends GridMap {
 	@Override
 	void removalStateUpdate(CellObject object) {
 		if (object.hasProperty("destination")) {
-			Point location = destinationLocations.remove(object);
+			int []  location = destinationLocations.remove(object);
 			destinationMap.remove(location);
 		}
 	}
@@ -210,7 +210,7 @@ public class TaxiMap extends GridMap {
 		return fuel;
 	}
 
-	public boolean fillUp(Point location) {
+	public boolean fillUp(int []  location) {
 		CellObject fuelObject = getObject(location, "fuel");
 		if (fuelObject == null) {
 			return false;
@@ -221,7 +221,7 @@ public class TaxiMap extends GridMap {
 		return true;
 	}
 
-	public String getStringType(Point location) {
+	public String getStringType(int []  location) {
 		if (!this.isInBounds(location)) {
 			return "none";
 		}
@@ -239,7 +239,7 @@ public class TaxiMap extends GridMap {
 		return "normal";
 	}
 	
-	public boolean wall(Point from, int to) {
+	public boolean wall(int []  from, int to) {
 		Iterator<CellObject> iter = this.getAllWithProperty(from, "block").iterator();
 		while (iter.hasNext()) {
 			CellObject wall = iter.next();

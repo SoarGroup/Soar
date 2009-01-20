@@ -1,7 +1,5 @@
 package soar2d.map;
 
-import java.awt.Point;
-import java.awt.geom.Point2D;
 import java.io.File;
 import java.io.IOException;
 import java.util.*;
@@ -408,21 +406,13 @@ public abstract class GridMap {
 	}
 
 	private Cell[][] mapCells = null;	// the cells
-	Cell getCell(java.awt.Point location) {
+	Cell getCell(int [] location) {
 		if (location == null) return null;
-		assert location.x >= 0;
-		assert location.y >= 0;
-		assert location.x < size;
-		assert location.y < size;
-		return mapCells[location.y][location.x];
-	}
-	
-	Cell getCell(int x, int y) {
-		assert x >= 0;
-		assert y >= 0;
-		assert x < size;
-		assert y < size;
-		return mapCells[y][x];
+		assert location[0] >= 0;
+		assert location[1] >= 0;
+		assert location[0] < size;
+		assert location[1] < size;
+		return mapCells[location[1]][location[0]];
 	}
 	
 	private static final String kTagRow = "row";
@@ -568,7 +558,7 @@ public abstract class GridMap {
 			}
 			
 			this.mapCells[rowIndex][colIndex] = new Cell();
-			cell(child, new java.awt.Point(colIndex, rowIndex));
+			cell(child, new int [] { colIndex, rowIndex });
 			
 			colIndex += 1;
 		}
@@ -583,7 +573,7 @@ public abstract class GridMap {
 		}
 	}
 	
-	protected void cell(Element cell, java.awt.Point location) throws LoadError {
+	protected void cell(Element cell, int [] location) throws LoadError {
 		List<Element> children = (List<Element>)cell.getChildren();
 		Iterator<Element> iter = children.iterator();
 		while (iter.hasNext()) {
@@ -597,7 +587,7 @@ public abstract class GridMap {
 		}
 	}
 	
-	protected boolean object(Element object, java.awt.Point location) throws LoadError {
+	protected boolean object(Element object, int [] location) throws LoadError {
 		String name = object.getTextTrim();
 		if (name.length() <= 0) {
 			throw new LoadError("object doesn't have name");
@@ -638,21 +628,21 @@ public abstract class GridMap {
 			if (mapCells[row][0] == null) {
 				mapCells[row][0] = new Cell();
 			}
-			addWallAndRemoveFood(new java.awt.Point(0, row));
+			addWallAndRemoveFood(new int [] { 0, row });
 			if (mapCells[row][size - 1] == null) {
 				mapCells[row][size - 1] = new Cell();
 			}
-			addWallAndRemoveFood(new java.awt.Point(size - 1, row));
+			addWallAndRemoveFood(new int [] { size - 1, row });
 		}
 		for (int col = 1; col < size - 1; ++col) {
 			if (mapCells[0][col] == null) {
 				mapCells[0][col] = new Cell();
 			}
-			addWallAndRemoveFood(new java.awt.Point(col, 0));
+			addWallAndRemoveFood(new int [] { col, 0 });
 			if (mapCells[size - 1][col] == null) {
 				mapCells[size - 1][col] = new Cell();
 			}
-			addWallAndRemoveFood(new java.awt.Point(col, size - 1));
+			addWallAndRemoveFood(new int [] { col, size - 1 });
 		}
 		
 		double probability = Soar2D.config.eatersConfig().low_probability;
@@ -666,7 +656,7 @@ public abstract class GridMap {
 						if (mapCells[row][col] == null) {
 							mapCells[row][col] = new Cell();
 						}
-						addWallAndRemoveFood(new java.awt.Point(col, row));
+						addWallAndRemoveFood(new int [] { col, row });
 					}
 					probability = Soar2D.config.eatersConfig().low_probability;
 				}
@@ -674,7 +664,7 @@ public abstract class GridMap {
 		}
 	}
 	
-	private void addWallAndRemoveFood(java.awt.Point location) {
+	private void addWallAndRemoveFood(int [] location) {
 		removeAllWithProperty(location, Names.kPropertyEdible);
 		
 		ArrayList<CellObject> walls = getAllWithProperty(location, Names.kPropertyBlock);
@@ -741,7 +731,7 @@ public abstract class GridMap {
 					
 				}
 				if (mapCells[row][col].enterable()) {
-					java.awt.Point location = new java.awt.Point(col, row);
+					int [] location = new int [] { col, row };
 					removeAllWithProperty(location, Names.kPropertyEdible);
 					addRandomObjectWithProperty(location, Names.kPropertyEdible);
 				}
@@ -750,16 +740,16 @@ public abstract class GridMap {
 	}
 
 	HashSet<CellObject> updatables = new HashSet<CellObject>();
-	HashMap<CellObject, java.awt.Point> updatablesLocations = new HashMap<CellObject, java.awt.Point>();
+	HashMap<CellObject, int []> updatablesLocations = new HashMap<CellObject, int []>();
 	
 	public class BookObjectInfo {
 		public CellObject object;
-		public Point location;
-		public Point2D.Double floatLocation;
+		public int [] location;
+		public double [] floatLocation;
 		public int area = -1;
 	}
 	
-	public void addObjectToCell(java.awt.Point location, CellObject object) {
+	public void addObjectToCell(int [] location, CellObject object) {
 		Cell cell = getCell(location);
 		if (cell.hasObject(object.getName())) {
 			CellObject old = cell.removeObject(object.getName());
@@ -777,7 +767,7 @@ public abstract class GridMap {
 		setRedraw(cell);
 	}
 	
-	public boolean addRandomObjectWithProperty(java.awt.Point location, String property) {
+	public boolean addRandomObjectWithProperty(int [] location, String property) {
 		CellObject object = cellObjectManager.createRandomObjectWithProperty(property);
 		if (object == null) {
 			return false;
@@ -790,7 +780,7 @@ public abstract class GridMap {
 		return cellObjectManager.createObject(name);
 	}
 	
-	public boolean addObjectByName(java.awt.Point location, String name) {
+	public boolean addObjectByName(int [] location, String name) {
 		CellObject object = cellObjectManager.createObject(name);
 		if (object == null) {
 			return false;
@@ -804,7 +794,7 @@ public abstract class GridMap {
 		return cellObjectManager.createRandomObjectWithProperty(property);
 	}
 
-	public boolean addRandomObjectWithProperties(java.awt.Point location, String property1, String property2) {
+	public boolean addRandomObjectWithProperties(int [] location, String property1, String property2) {
 		CellObject object = cellObjectManager.createRandomObjectWithProperties(property1, property2);
 		if (object == null) {
 			return false;
@@ -815,13 +805,13 @@ public abstract class GridMap {
 	
 	public abstract void updateObjects(TankSoarWorld tsWorld);
 	
-	public void setPlayer(java.awt.Point location, Player player) {
+	public void setPlayer(int [] location, Player player) {
 		Cell cell = getCell(location);
 		cell.setPlayer(player);
 		setRedraw(cell);
 	}
 	
-	public int pointsCount(java.awt.Point location) {
+	public int pointsCount(int [] location) {
 		Cell cell = getCell(location);
 		ArrayList<CellObject> list = cell.getAllWithProperty(Names.kPropertyEdible);
 		Iterator<CellObject> iter = list.iterator();
@@ -832,13 +822,13 @@ public abstract class GridMap {
 		return count;
 	}
 
-	public abstract boolean isAvailable(java.awt.Point location);
+	public abstract boolean isAvailable(int [] location);
 	
-	public boolean enterable(java.awt.Point location) {
+	public boolean enterable(int [] location) {
 		return getCell(location).enterable();
 	}
 	
-	public boolean exitable(java.awt.Point location, int direction) {
+	public boolean exitable(int [] location, int direction) {
 		ArrayList<CellObject> wallList;
 		wallList = this.getAllWithProperty(location, "block");
 		Iterator<CellObject> wallIter = wallList.iterator();
@@ -851,7 +841,7 @@ public abstract class GridMap {
 		return true;
 	}
 	
-	public CellObject removeObject(java.awt.Point location, String objectName) {
+	public CellObject removeObject(int [] location, String objectName) {
 		Cell cell = getCell(location);
 		setRedraw(cell);
 		CellObject object = cell.removeObject(objectName);
@@ -868,19 +858,19 @@ public abstract class GridMap {
 		return object;
 	}
 	
-	public Player getPlayer(java.awt.Point location) {
+	public Player getPlayer(int [] location) {
 		if (location == null) return null;
 		Cell cell = getCell(location);
 		return cell.getPlayer();
 	}
 	
-	public boolean hasObject(java.awt.Point location, String name) {
+	public boolean hasObject(int [] location, String name) {
 		if (location == null) return false;
 		Cell cell = getCell(location);
 		return cell.hasObject(name);
 	}
 	
-	public CellObject getObject(java.awt.Point location, String name) {
+	public CellObject getObject(int [] location, String name) {
 		if (location == null) return null;
 		Cell cell = getCell(location);
 		return cell.getObject(name);
@@ -899,7 +889,7 @@ public abstract class GridMap {
 				continue;
 			}
 	
-			java.awt.Point threatenedLocation = new java.awt.Point(updatablesLocations.get(missile));
+			int [] threatenedLocation = Arrays.copyOf( updatablesLocations.get(missile), updatablesLocations.get(missile).length );
 			while (true) {
 				int direction = missile.getIntProperty(Names.kPropertyDirection);
 				Direction.translate(threatenedLocation, direction);
@@ -917,20 +907,20 @@ public abstract class GridMap {
 	
 	abstract void removalStateUpdate(CellObject object);
 
-	public void setExplosion(Point location) {
+	public void setExplosion(int [] location) {
 	}
 	
-	public ArrayList<CellObject> getAllWithProperty(java.awt.Point location, String name) {
+	public ArrayList<CellObject> getAllWithProperty(int [] location, String name) {
 		Cell cell = getCell(location);
 		return cell.getAllWithProperty(name);
 	}
 	
-	public void removeAll(java.awt.Point location) {
+	public void removeAll(int [] location) {
 		removeAllWithProperty(location, null);
 		
 	}
 	
-	public void removeAllWithProperty(java.awt.Point location, String name) {
+	public void removeAllWithProperty(int [] location, String name) {
 		Cell cell = getCell(location);
 		
 		cell.iter = cell.cellObjects.values().iterator();
@@ -968,7 +958,7 @@ public abstract class GridMap {
 		size = 0;
 	}
 
-	public int getRadar(RadarCell[][] radar, java.awt.Point location, int facing, int radarPower) {
+	public int getRadar(RadarCell[][] radar, int [] location, int facing, int radarPower) {
 		if (radarPower == 0) {
 			return 0;
 		}
@@ -982,7 +972,7 @@ public abstract class GridMap {
 		return distance;
 	}
 	
-	private RadarCell getRadarCell(java.awt.Point location) {
+	private RadarCell getRadarCell(int [] location) {
 		// TODO: cache these each frame!!
 		
 		Cell cell;
@@ -1010,7 +1000,7 @@ public abstract class GridMap {
 		return radarCell;
 	}
 	
-	private int radarProbe(RadarCell[][] radar, java.awt.Point myLocation, int facing, int distance, int maxDistance) {
+	private int radarProbe(RadarCell[][] radar, int [] myLocation, int facing, int distance, int maxDistance) {
 		assert maxDistance < radar[1].length;
 		assert distance >= 0;
 		assert distance + 1 < radar[1].length;
@@ -1018,9 +1008,9 @@ public abstract class GridMap {
 		assert facing > 0;
 		assert facing < 5;
 		
-		java.awt.Point location;
+		int [] location;
 		
-		location = new java.awt.Point(myLocation);
+		location = Arrays.copyOf(myLocation, myLocation.length);
 		Direction.translate(location, Direction.leftOf[facing]);
 		radar[0][distance] = getRadarCell(location);
 		if (radar[0][distance].player != null) {
@@ -1031,7 +1021,7 @@ public abstract class GridMap {
 			}
 		}
 		
-		location = new java.awt.Point(myLocation);
+		location = Arrays.copyOf(myLocation, myLocation.length);
 		Direction.translate(location, Direction.rightOf[facing]);
 		radar[2][distance] = getRadarCell(location);
 		if (radar[2][distance].player != null) {
@@ -1044,7 +1034,7 @@ public abstract class GridMap {
 
 		distance += 1;
 
-		location = new java.awt.Point(myLocation);
+		location = Arrays.copyOf(myLocation, myLocation.length);
 		Direction.translate(location, facing);
 		radar[1][distance] = getRadarCell(location);
 		if (radar[1][distance].player != null) {
@@ -1075,35 +1065,35 @@ public abstract class GridMap {
 		return distance;
 	}
 
-	public int getBlocked(Point location) {
+	public int getBlocked(int [] location) {
 		Cell cell;
 		int blocked = 0;
 		
-		cell = getCell(location.x+1, location.y);
+		cell = getCell(new int [] { location[0]+1, location[1] });
 		if (!cell.enterable() || cell.getPlayer() != null) {
 			blocked |= Direction.kEastIndicator;
 		}
-		cell = getCell(location.x-1, location.y);
+		cell = getCell(new int [] { location[0]-1, location[1] });
 		if (!cell.enterable() || cell.getPlayer() != null) {
 			blocked |= Direction.kWestIndicator;
 		}
-		cell = getCell(location.x, location.y+1);
+		cell = getCell(new int [] { location[0], location[1]+1 });
 		if (!cell.enterable() || cell.getPlayer() != null) {
 			blocked |= Direction.kSouthIndicator;
 		}
-		cell = getCell(location.x, location.y-1);
+		cell = getCell(new int [] { location[0], location[1]-1 });
 		if (!cell.enterable() || cell.getPlayer() != null) {
 			blocked |= Direction.kNorthIndicator;
 		}
 		return blocked;
 	}
 	
-	public boolean isBlocked(Point location) {
+	public boolean isBlocked(int [] location) {
 		Cell cell = getCell(location);
 		return !cell.enterable() || cell.getPlayer() != null;
 	}
 	
-	public int getSoundNear(java.awt.Point location) {
+	public int getSoundNear(int [] location) {
 		if (Soar2D.simulation.world.getPlayers().numberOfPlayers() < 2) {
 			return 0;
 		}
@@ -1115,16 +1105,15 @@ public abstract class GridMap {
 			}
 		}
 		
-		LinkedList<java.awt.Point> searchList = new LinkedList<java.awt.Point>();
-		searchList.addLast(new java.awt.Point(location));
+		LinkedList<int []> searchList = new LinkedList<int []>();
+		searchList.addLast(Arrays.copyOf(location, location.length));
 		int distance = 0;
 		getCell(location).distance = distance;
 		getCell(location).parent = null;
 
 		int relativeDirection = -1;
-		int newCellX = 0;
-		int newCellY = 0;
-		java.awt.Point parentLocation;
+		int [] newCellLocation;
+		int [] parentLocation;
 		Cell parentCell;
 		Cell newCell;
 
@@ -1142,16 +1131,15 @@ public abstract class GridMap {
 
 			// Explore cell.
 			for (int i = 1; i < 5; ++i) {
-				newCellX = parentLocation.x;
-				newCellY = parentLocation.y;
-				newCellX += Direction.xDelta[i];
-				newCellY += Direction.yDelta[i];
+				newCellLocation = Arrays.copyOf(parentLocation, parentLocation.length);
+				newCellLocation[0] += Direction.xDelta[i];
+				newCellLocation[1] += Direction.yDelta[i];
 
-				if (!isInBounds(newCellX, newCellY)) {
+				if (!isInBounds(newCellLocation)) {
 					continue;
 				}
 
-				newCell = getCell(newCellX, newCellY);
+				newCell = getCell(newCellLocation);
 				if (!newCell.enterable()) {
 					//System.out.println(parentCell + " not enterable");
 					continue;
@@ -1168,8 +1156,7 @@ public abstract class GridMap {
 					// I'm its parent, so see if I'm the top here
 					while(parentCell.parent != null) {
 						// the new cell becomes me
-						newCellX = parentLocation.x;
-						newCellY = parentLocation.y;
+						newCellLocation = Arrays.copyOf(parentLocation, parentLocation.length);
 						
 						// I become my parent
 						parentLocation = getCell(parentLocation).parent;
@@ -1177,13 +1164,13 @@ public abstract class GridMap {
 					}
 					// location is now the top of the list, compare
 					// to find the direction to the new cell
-					if (newCellX < parentLocation.x) {
+					if (newCellLocation[0] < parentLocation[0]) {
 						relativeDirection = Direction.kWestInt;
-					} else if (newCellX > parentLocation.x) {
+					} else if (newCellLocation[0] > parentLocation[0]) {
 						relativeDirection = Direction.kEastInt;
-					} else if (newCellY < parentLocation.y) {
+					} else if (newCellLocation[1] < parentLocation[1]) {
 						relativeDirection = Direction.kNorthInt;
-					} else if (newCellY > parentLocation.y) {
+					} else if (newCellLocation[1] > parentLocation[1]) {
 						relativeDirection = Direction.kSouthInt;
 					} else {
 						assert false;
@@ -1199,7 +1186,7 @@ public abstract class GridMap {
 				// add me as the new cell's parent				
 				newCell.parent = parentLocation;
 				// add the new cell to the search list
-				searchList.addLast(new java.awt.Point(newCellX, newCellY));
+				searchList.addLast(newCellLocation);
 			}
 			
 			if (relativeDirection != -1) {
@@ -1213,12 +1200,8 @@ public abstract class GridMap {
 		return relativeDirection;
 	}
 
-	public boolean isInBounds(int x, int y) {
-		return (x >= 0) && (y >= 0) && (x < getSize()) && (y < getSize());
-	}
-
-	public boolean isInBounds(Point location) {
-		return isInBounds(location.x, location.y);
+	public boolean isInBounds(int [] location) {
+		return (location[0] >= 0) && (location[1] >= 0) && (location[0] < getSize()) && (location[1] < getSize());
 	}
 
 	public String toString() {
@@ -1245,11 +1228,11 @@ public abstract class GridMap {
 		return output;
 	}
 	
-	public ArrayList<Point> getAvailableLocations() {
-		ArrayList<Point> availableLocations = new ArrayList<Point>();
+	public ArrayList<int []> getAvailableLocations() {
+		ArrayList<int []> availableLocations = new ArrayList<int []>();
 		for (int x = 0; x < getSize(); ++x) {
 			for (int y = 0; y < getSize(); ++ y) {
-				Point potentialLocation = new Point(x, y);
+				int [] potentialLocation = new int [] { x, y };
 				if (isAvailable(potentialLocation)) {
 					availableLocations.add(potentialLocation);
 				}

@@ -15,7 +15,7 @@ public class Taxi extends Player {
 		super(playerId) ;
 	}
 	
-	public void update(java.awt.Point location) {
+	public void update(int [] location) {
 		super.update(location);
 	}
 

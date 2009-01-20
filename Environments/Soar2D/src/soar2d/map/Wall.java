@@ -4,11 +4,11 @@ import java.awt.Point;
 
 public class Wall {
 	int locationId = -1;
-	Point leftExtent;
-	Point rightExtent;
+	int [] leftExtent;
+	int [] rightExtent;
 	int direction;
 	
-	Wall(int locationId, Point leftExtent, Point rightExtent, int direction) {
+	Wall(int locationId, int [] leftExtent, int [] rightExtent, int direction) {
 		this.locationId = locationId;
 		this.leftExtent = leftExtent;
 		this.rightExtent = rightExtent;
@@ -19,11 +19,11 @@ public class Wall {
 		return locationId;
 	}
 	
-	public Point getLeftExtent() {
+	public int [] getLeftExtent() {
 		return leftExtent;
 	}
 
-	public Point getRightExtent() {
+	public int [] getRightExtent() {
 		return rightExtent;
 	}
 	

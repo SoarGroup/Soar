@@ -1,6 +1,5 @@
 package soar2d.world;
 
-import java.awt.Point;
 import java.util.*;
 import java.util.logging.*;
 import java.lang.Math;
@@ -98,7 +97,7 @@ public class World {
 	
 	private boolean resetPlayer(Player player, boolean resetDuringRun) {
 		// find a suitable starting location
-		Point startingLocation = putInStartingLocation(player, true);
+		int [] startingLocation = putInStartingLocation(player, true);
 		if (startingLocation == null) {
 			return false;
 		}
@@ -130,22 +129,22 @@ public class World {
 		
 	}
 	
-	Point putInStartingLocation(Player player, boolean useInitialLocation) {
+	int [] putInStartingLocation(Player player, boolean useInitialLocation) {
 		// Get available cells
 		
-		ArrayList<Point> availableLocations = map.getAvailableLocations();
+		ArrayList<int []> availableLocations = map.getAvailableLocations();
 		// make sure there is an available cell
 		if (availableLocations.size() < worldModule.getMinimumAvailableLocations()) {
 			Soar2D.control.severeError("There are no suitable starting locations for " + player.getName() + ".");
 			return null;
 		}
 		
-		Point location = null;
+		int [] location = null;
 
 		if (useInitialLocation && players.hasInitialLocation(player)) {
 			location = players.getInitialLocation(player);
 			if (!availableLocations.contains(location)) {
-				logger.warning(player.getName() + ": Initial location (" + location.x + "," + location.y + ") is blocked, going random.");
+				logger.warning(player.getName() + ": Initial location (" + location[0] + "," + location[1] + ") is blocked, going random.");
 				location = null;
 			}
 		}
@@ -161,7 +160,7 @@ public class World {
 		return location;
 	}
 
-	public boolean addPlayer(Player player, Point initialLocation, boolean human) {
+	public boolean addPlayer(Player player, int [] initialLocation, boolean human) {
 		assert players.exists(player) == false;
 		logger.info("Adding player " + player);
 
@@ -172,7 +171,7 @@ public class World {
 			return false;
 		}
 		
-		Point location = players.getLocation(player);
+		int [] location = players.getLocation(player);
 		assert location != null;
 		printSpawnMessage(player, location);
 		
@@ -180,13 +179,13 @@ public class World {
 		return true;
 	}
 	
-	void printSpawnMessage(Player player, Point location) {
+	void printSpawnMessage(Player player, int [] location) {
 		if (Soar2D.config.game() == SimConfig.Game.TANKSOAR) {
 			logger.info(player.getName() + ": Spawning at (" + 
-					location.x + "," + location.y + "), facing " + soar2d.Direction.stringOf[player.getFacingInt()]);
+					location[0] + "," + location[1] + "), facing " + soar2d.Direction.stringOf[player.getFacingInt()]);
 		} else {
 			logger.info(player.getName() + ": Spawning at (" + 
-					location.x + "," + location.y + ")");
+					location[0] + "," + location[1] + ")");
 		}
 	}
 	
@@ -411,16 +410,16 @@ public class World {
 	
 	void fragPlayer(Player player) {
 		// remove from past cell
-		Point oldLocation = players.getLocation(player);
+		int [] oldLocation = players.getLocation(player);
 		map.setExplosion(oldLocation);
 		map.setPlayer(oldLocation, null);
 
 		// Get available spots
-		ArrayList<Point> spots = map.getAvailableLocations();
+		ArrayList<int []> spots = map.getAvailableLocations();
 		assert spots.size() > 0;
 		
 		// pick one and put the player in it
-		Point location = spots.get(Simulation.random.nextInt(spots.size()));
+		int [] location = spots.get(Simulation.random.nextInt(spots.size()));
 		map.setPlayer(location, player);
 		
 		// save the location

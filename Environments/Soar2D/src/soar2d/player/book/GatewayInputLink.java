@@ -23,9 +23,9 @@ class GatewayInputLink extends BarrierInputLink {
 		
 		super.initialize(barrier, world);
 
-		double dx = centerpoint.x - players.getFloatLocation(robot).x;
+		double dx = centerpoint[0] - players.getFloatLocation(robot)[0];
 		dx *= dx;
-		double dy = centerpoint.y - players.getFloatLocation(robot).y;
+		double dy = centerpoint[1] - players.getFloatLocation(robot)[1];
 		dy *= dy;
 		double r = Math.sqrt(dx + dy);
 

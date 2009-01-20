@@ -146,9 +146,9 @@ class SelfInputLink {
 		PlayerInputLink pIL = playersIL.get(player);
 		PlayersManager players = world.getPlayers();
 
-		double dx = players.getFloatLocation(player).x - players.getFloatLocation(robot).x;
+		double dx = players.getFloatLocation(player)[0] - players.getFloatLocation(robot)[0];
 		dx *= dx;
-		double dy = players.getFloatLocation(player).y - players.getFloatLocation(robot).y;
+		double dy = players.getFloatLocation(player)[1] - players.getFloatLocation(robot)[1];
 		dy *= dy;
 		double range = Math.sqrt(dx + dy);
 		
@@ -163,18 +163,18 @@ class SelfInputLink {
 			if (pIL.area.GetValue() != player.getLocationId()) {
 				robot.agent.Update(pIL.area, player.getLocationId());
 			}
-			if (pIL.row.GetValue() != players.getLocation(player).y) {
-				robot.agent.Update(pIL.row, players.getLocation(player).y);
+			if (pIL.row.GetValue() != players.getLocation(player)[1]) {
+				robot.agent.Update(pIL.row, players.getLocation(player)[1]);
 			}
-			if (pIL.col.GetValue() != players.getLocation(player).x) {
-				robot.agent.Update(pIL.col, players.getLocation(player).x);
+			if (pIL.col.GetValue() != players.getLocation(player)[0]) {
+				robot.agent.Update(pIL.col, players.getLocation(player)[0]);
 			}
 			if (Soar2D.config.roomConfig().continuous) {
-				if (pIL.x.GetValue() != players.getFloatLocation(player).x) {
-					robot.agent.Update(pIL.x, players.getFloatLocation(player).x);
+				if (pIL.x.GetValue() != players.getFloatLocation(player)[0]) {
+					robot.agent.Update(pIL.x, players.getFloatLocation(player)[0]);
 				}
-				if (pIL.y.GetValue() != players.getFloatLocation(player).y) {
-					robot.agent.Update(pIL.y, players.getFloatLocation(player).y);
+				if (pIL.y.GetValue() != players.getFloatLocation(player)[1]) {
+					robot.agent.Update(pIL.y, players.getFloatLocation(player)[1]);
 				}
 			}
 			if (pIL.range.GetValue() != range) {
@@ -191,9 +191,9 @@ class SelfInputLink {
 		ObjectInputLink oIL = objectsIL.get(objectInfo.object.getIntProperty("object-id"));
 		PlayersManager players = world.getPlayers();
 
-		double dx = objectInfo.floatLocation.x - players.getFloatLocation(robot).x;
+		double dx = objectInfo.floatLocation[0] - players.getFloatLocation(robot)[0];
 		dx *= dx;
-		double dy = objectInfo.floatLocation.y - players.getFloatLocation(robot).y;
+		double dy = objectInfo.floatLocation[1] - players.getFloatLocation(robot)[1];
 		dy *= dy;
 		double range = Math.sqrt(dx + dy);
 		
@@ -208,18 +208,18 @@ class SelfInputLink {
 			if (oIL.area.GetValue() != objectInfo.area) {
 				robot.agent.Update(oIL.area, objectInfo.area);
 			}
-			if (oIL.row.GetValue() != objectInfo.location.y) {
-				robot.agent.Update(oIL.row, objectInfo.location.y);
+			if (oIL.row.GetValue() != objectInfo.location[1]) {
+				robot.agent.Update(oIL.row, objectInfo.location[1]);
 			}
-			if (oIL.col.GetValue() != objectInfo.location.x) {
-				robot.agent.Update(oIL.col, objectInfo.location.x);
+			if (oIL.col.GetValue() != objectInfo.location[0]) {
+				robot.agent.Update(oIL.col, objectInfo.location[0]);
 			}
 			if (Soar2D.config.roomConfig().continuous) {
-				if (oIL.x.GetValue() != objectInfo.floatLocation.x) {
-					robot.agent.Update(oIL.x, objectInfo.location.x);
+				if (oIL.x.GetValue() != objectInfo.floatLocation[0]) {
+					robot.agent.Update(oIL.x, objectInfo.location[0]);
 				}
-				if (oIL.y.GetValue() != objectInfo.floatLocation.y) {
-					robot.agent.Update(oIL.y, objectInfo.location.y);
+				if (oIL.y.GetValue() != objectInfo.floatLocation[1]) {
+					robot.agent.Update(oIL.y, objectInfo.location[1]);
 				}
 			}
 			if (oIL.range.GetValue() != range) {

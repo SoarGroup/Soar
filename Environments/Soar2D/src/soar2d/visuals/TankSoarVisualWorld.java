@@ -59,9 +59,9 @@ public class TankSoarVisualWorld extends VisualWorld {
 		
 		// Draw world
 		ArrayList<DrawMissile> drawMissiles = new ArrayList<DrawMissile>();
-		java.awt.Point location = new java.awt.Point();
-		for(location.x = 0; location.x < map.getSize(); ++location.x){
-			for(location.y = 0; location.y < map.getSize(); ++location.y){
+		int [] location = new int [2];
+		for(location[0] = 0; location[0] < map.getSize(); ++location[0]){
+			for(location[1] = 0; location[1] < map.getSize(); ++location[1]){
 				if ((this.map.removeObject(location, Names.kRedraw) == null) && painted) {
 					continue;
 				}
@@ -87,7 +87,7 @@ public class TankSoarVisualWorld extends VisualWorld {
 				Player tank = this.map.getPlayer(location);
 				
 				// draw the wall or ground or energy charger or health charger
-				gc.drawImage(background[location.x][location.y], location.x*cellSize, location.y*cellSize);
+				gc.drawImage(background[location[0]][location[1]], location[0]*cellSize, location[1]*cellSize);
 				
 				// draw the explosion
 				if (explosion != null) {
@@ -96,7 +96,7 @@ public class TankSoarVisualWorld extends VisualWorld {
 					if (image == null) {
 						image = bootstrapImage(imageName);
 					}
-					gc.drawImage(image, location.x*cellSize, location.y*cellSize);
+					gc.drawImage(image, location[0]*cellSize, location[1]*cellSize);
 				}
 				
 				// draw the missile packs or tanks
@@ -106,25 +106,25 @@ public class TankSoarVisualWorld extends VisualWorld {
 					if (image == null) {
 						image = bootstrapImage(imageName);
 					}
-					gc.drawImage(image, location.x*cellSize, location.y*cellSize);
+					gc.drawImage(image, location[0]*cellSize, location[1]*cellSize);
 				} else if (tank != null) {
 					Image image = tanks.get(new Integer(tank.getFacingInt()));
 					assert image != null;
 
-					gc.drawImage(image, location.x*cellSize, location.y*cellSize);
+					gc.drawImage(image, location[0]*cellSize, location[1]*cellSize);
 
 					if (tank.shieldsUp()) {
 				        gc.setForeground(WindowManager.getColor(tank.getColor()));
 						gc.setLineWidth(3);
-						gc.drawOval(cellSize*location.x+2, cellSize*location.y+2, cellSize-5, cellSize-5);
+						gc.drawOval(cellSize*location[0]+2, cellSize*location[1]+2, cellSize-5, cellSize-5);
 				        gc.setForeground(WindowManager.black);
 						gc.setLineWidth(1);
 					}
 
 					// draw the player color
 					gc.setBackground(WindowManager.getColor(tank.getColor()));
-					gc.fillOval(cellSize*location.x + cellSize/2 - kDotSize/2, 
-							cellSize*location.y + cellSize/2 - kDotSize/2, 
+					gc.fillOval(cellSize*location[0] + cellSize/2 - kDotSize/2, 
+							cellSize*location[1] + cellSize/2 - kDotSize/2, 
 							kDotSize, kDotSize);
 				}
 
@@ -176,8 +176,8 @@ public class TankSoarVisualWorld extends VisualWorld {
 						assert false;
 						break;
 					}
-					//gc.drawImage(image, (location.x * cellSize) + mX, (location.y * cellSize) + mY);						
-					drawMissiles.add(new DrawMissile(gc, image, (location.x * cellSize) + mX, (location.y * cellSize) + mY, missileColor));
+					//gc.drawImage(image, (location[0] * cellSize) + mX, (location[1] * cellSize) + mY);						
+					drawMissiles.add(new DrawMissile(gc, image, (location[0] * cellSize) + mX, (location[1] * cellSize) + mY, missileColor));
 				}
 				
 				// Finally, draw the radar waves
@@ -212,7 +212,7 @@ public class TankSoarVisualWorld extends VisualWorld {
 						assert false;
 						break;
 					}
-					gc.drawArc((location.x * cellSize) + xMod, (location.y * cellSize) + yMod, cellSize - 1, cellSize - 1, start, 180);
+					gc.drawArc((location[0] * cellSize) + xMod, (location[1] * cellSize) + yMod, cellSize - 1, cellSize - 1, start, 180);
 				}
 			}
 		}
@@ -228,9 +228,9 @@ public class TankSoarVisualWorld extends VisualWorld {
 	
 	private void generateBackground() {
 		background = new Image[map.getSize()][map.getSize()];
-		java.awt.Point location = new java.awt.Point();
-		for(location.x = 0; location.x < map.getSize(); ++location.x){
-			for(location.y = 0; location.y < map.getSize(); ++location.y){
+		int [] location = new int [2];
+		for(location[0] = 0; location[0] < map.getSize(); ++location[0]){
+			for(location[1] = 0; location[1] < map.getSize(); ++location[1]){
 				updateBackground(location);
 			}
 		}
@@ -242,7 +242,7 @@ public class TankSoarVisualWorld extends VisualWorld {
 		background = null;
 	}
 	
-	public void updateBackground(java.awt.Point location) {
+	public void updateBackground(int [] location) {
 		ArrayList<CellObject> drawList = this.map.getAllWithProperty(location, Names.kPropertyImage);
 		
 		Iterator<CellObject> iter = drawList.iterator();
@@ -277,7 +277,7 @@ public class TankSoarVisualWorld extends VisualWorld {
 		if (image == null) {
 			image = bootstrapImage(imageName);
 		}
-		background[location.x][location.y] = image;
+		background[location[0]][location[1]] = image;
 	}
 
 }

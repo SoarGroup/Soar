@@ -1,7 +1,7 @@
 package soar2d.world;
 
-import java.awt.Point;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -18,7 +18,7 @@ import soar2d.player.kitchen.Cook;
 public class KitchenWorld implements IWorld {
 
 	public void fragPlayer(Player player, GridMap map, PlayersManager players,
-			Point location) {
+			int [] location) {
 
 	}
 
@@ -27,7 +27,7 @@ public class KitchenWorld implements IWorld {
 	}
 
 	public void putInStartingLocation(Player player, GridMap map,
-			PlayersManager players, Point location) {
+			PlayersManager players, int [] location) {
 	}
 
 	public void reset(GridMap map) {
@@ -52,8 +52,8 @@ public class KitchenWorld implements IWorld {
 
 			if (move.move) {
 				// Calculate new location
-				Point oldLocation = players.getLocation(player);
-				Point newLocation = new Point(oldLocation);
+				int [] oldLocation = players.getLocation(player);
+				int [] newLocation = Arrays.copyOf(oldLocation, oldLocation.length);
 				Direction.translate(newLocation, move.moveDirection);
 				
 				// Verify legal move and commit move

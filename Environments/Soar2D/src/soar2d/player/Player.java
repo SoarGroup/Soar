@@ -1,6 +1,6 @@
 package soar2d.player;
 
-import java.awt.geom.Point2D;
+import java.util.Arrays;
 import java.util.logging.*;
 
 import soar2d.*;
@@ -20,7 +20,7 @@ public class Player {
 	private int facingInt;	// what direction I'm currently facing
 	private int points;	// current point count
 	private String color;	// valid color string
-	protected java.awt.Point previousLocation = new java.awt.Point(-1, -1);	// where i was last update
+	protected int [] previousLocation = new int [] { -1, -1 };	// where i was last update
 	protected boolean moved = false;	// if I moved since last update
 	protected String playerID;
 	protected PlayerConfig playerConfig;
@@ -179,24 +179,24 @@ public class Player {
 	 * 
 	 * called to update the player's sensors and what not, this is basically an input update
 	 */
-	public void update(java.awt.Point location) {
-		moved = (location.x != this.previousLocation.x) || (location.y != this.previousLocation.y);
+	public void update(int [] location) {
+		moved = (location[0] != this.previousLocation[0]) || (location[1] != this.previousLocation[1]);
 		if (moved) {
-			this.previousLocation = new java.awt.Point(location);
+			this.previousLocation = Arrays.copyOf(location, location.length);
 		}
 	}
 	
 	/**
 	 * called to write sensor data to the input link
 	 */
-	public void commit(java.awt.Point location) {
+	public void commit(int [] location) {
 	}
 	
 	/**
 	 * called to reset player state between runs
 	 */
 	public void reset() {
-		previousLocation = new java.awt.Point(-1, -1);
+		previousLocation = new int [] { -1, -1 };
 
 		if (playerConfig.facing != null) {
 			this.setFacingInt(Direction.getInt(playerConfig.facing));
@@ -221,7 +221,7 @@ public class Player {
 		collisionY = false;
 		rotationSpeed = 0;
 		destinationHeading = null;
-		velocity = new Point2D.Double(0,0);
+		velocity = new double [] { 0, 0 };
 		speed = 0;
 		carriedObject = null;
 	}
@@ -369,12 +369,12 @@ public class Player {
 		// this is for tosca's reward system
 	}
 	
-	private Point2D.Double velocity = new Point2D.Double(0,0);
-	public void setVelocity(Point2D.Double velocity) {
+	private double [] velocity = new double [] { 0, 0 };
+	public void setVelocity(double [] velocity) {
 		assert velocity != null;
 		this.velocity = velocity;
 	}
-	public Point2D.Double getVelocity() {
+	public double [] getVelocity() {
 		return this.velocity;
 	}
 

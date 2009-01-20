@@ -8,7 +8,6 @@ package soar2d.tosca2d;
  *
  */
 
-import java.awt.Point;
 import java.util.ArrayList;
 
 import soar2d.*;
@@ -39,7 +38,7 @@ public class EatersInputStateVariable extends JavaStateVariable {
 		GetCurrentValue().TakeGroup(init) ;
 	}
 
-	private RefValue createMapCell(ToscaEater eater, World world, Point viewLocation, Point location)
+	private RefValue createMapCell(ToscaEater eater, World world, int [] viewLocation, int [] location)
 	{
 		int maxProperties = 20 ;
 		Vector mapCell = new Vector(maxProperties) ;
@@ -118,7 +117,7 @@ public class EatersInputStateVariable extends JavaStateVariable {
 		recentMapReset = true;
 	}
 	
-	public void update(int time, soar2d.player.eaters.ToscaEater eater, java.awt.Point location) {
+	public void update(int time, soar2d.player.eaters.ToscaEater eater, int [] location) {
 		World world = Soar2D.simulation.world;
 		
 		// The value is stored as a group containing some named values and
@@ -153,8 +152,8 @@ public class EatersInputStateVariable extends JavaStateVariable {
 		main.AddNamedValue("PossibleActions", possibleActions);
 		
 		Vector stateRep = new Vector(2);
-		stateRep.Set(0, location.x);
-		stateRep.Set(1, location.y);
+		stateRep.Set(0, location[0]);
+		stateRep.Set(1, location[1]);
 		main.AddNamedValue("StateRepresentation", stateRep);
         
         Vector ltm = new Vector();
@@ -163,9 +162,9 @@ public class EatersInputStateVariable extends JavaStateVariable {
 		relevantActions.Set(1, 2.0);
 		relevantActions.Set(2, 3.0);
 		relevantActions.Set(3, 4.0);
-		java.awt.Point myLocation = new java.awt.Point();
-		myLocation.x = location.x;
-		myLocation.y = location.y;
+		int [] myLocation = new int [2];
+		myLocation[0] = location[0];
+		myLocation[1] = location[1];
 		ArrayList<CellObject> boxes = world.getMap().getAllWithProperty(myLocation, Names.kPropertyBox);
 		if (boxes.size() > 0)
 		{
@@ -209,24 +208,24 @@ public class EatersInputStateVariable extends JavaStateVariable {
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 		
-		main.AddNamedValue("x", new tosca.Integer(location.x)) ;
-		main.AddNamedValue("y", new tosca.Integer(location.y)) ;
+		main.AddNamedValue("x", new tosca.Integer(location[0])) ;
+		main.AddNamedValue("y", new tosca.Integer(location[1])) ;
 		main.AddNamedValue("facing", new tosca.Integer(eater.getFacingInt())) ;
 		
 		Group map = new Group() ;
 		
-		java.awt.Point viewLocation = new java.awt.Point();
+		int [] viewLocation = new int [2];
 		int visionRange = Soar2D.config.eatersConfig().vision ;
-		for (int x = location.x - visionRange; x <= location.x + visionRange; ++x) {
-			for (int y = location.y - visionRange; y <= location.y + visionRange; ++y) {
-				viewLocation.x = x ;
-				viewLocation.y = y ;
+		for (int x = location[0] - visionRange; x <= location[0] + visionRange; ++x) {
+			for (int y = location[1] - visionRange; y <= location[1] + visionRange; ++y) {
+				viewLocation[0] = x ;
+				viewLocation[1] = y ;
 
 				RefValue mapCell = createMapCell(eater, world, viewLocation, location) ;				
 				
 				// We'll name the map entries "cell00" to "cell55" so we can pull them out by name if we wish.
-				int indexX = x - (location.x - visionRange) ;
-				int indexY = y - (location.y - visionRange) ;
+				int indexX = x - (location[0] - visionRange) ;
+				int indexY = y - (location[1] - visionRange) ;
 				
 				String name = "cell" + indexX + indexY ;
 				map.AddNamedValue(name, mapCell) ;

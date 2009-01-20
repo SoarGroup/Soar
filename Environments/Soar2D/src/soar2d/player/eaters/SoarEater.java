@@ -188,9 +188,9 @@ public class SoarEater extends Eater {
 	}
 	
 	/* (non-Javadoc)
-	 * @see soar2d.player.Eater#update(soar2d.World, java.awt.Point)
+	 * @see soar2d.player.Eater#update(soar2d.World, int [])
 	 */
-	public void update(java.awt.Point location) {
+	public void update(int [] location) {
 		World world = Soar2D.simulation.world;
 
 		// check to see if we've moved
@@ -202,11 +202,11 @@ public class SoarEater extends Eater {
 		}
 		
 		// update the 5x5
-		java.awt.Point viewLocation = new java.awt.Point();
+		int [] viewLocation = new int [2];
 		for (int x = 0; x < cells.length; ++x) {
-			viewLocation.x = x - Soar2D.config.eatersConfig().vision + location.x;
+			viewLocation[0] = x - Soar2D.config.eatersConfig().vision + location[0];
 			for (int y = 0; y < cells[x].length; ++y) {
-				viewLocation.y = y - Soar2D.config.eatersConfig().vision + location.y;
+				viewLocation[1] = y - Soar2D.config.eatersConfig().vision + location[1];
 
 				// get the current soarcell to update
 				SoarCell soarCell = cells[x][y];
@@ -435,8 +435,8 @@ public class SoarEater extends Eater {
 		
 		// if we moved, update the location
 		if (moved) {
-			agent.Update(xWME, location.x);
-			agent.Update(yWME, location.y);
+			agent.Update(xWME, location[0]);
+			agent.Update(yWME, location[1]);
 		}
 		
 		// update the random no matter what

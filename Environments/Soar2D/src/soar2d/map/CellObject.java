@@ -330,7 +330,7 @@ public class CellObject {
 	 * 
 	 * This is called if the object is "updatable"
 	 */
-	public boolean update(java.awt.Point location) {
+	public boolean update(int [] location) {
 		if (decayUpdate) {
 			assert properties.containsKey(Names.kPropertyPoints);
 			int points = Integer.parseInt(properties.get(Names.kPropertyPoints));

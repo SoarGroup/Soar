@@ -141,8 +141,8 @@ public class KitchenAgentDisplay extends AgentDisplay {
 	void selectPlayer(Player player) {
 		selectedPlayer = player;
 		m_AgentTable.setSelection(players.indexOf(player));
-		java.awt.Point playerLocation = players.getLocation(selectedPlayer);
-		location.setText("(" + playerLocation.x + "," + playerLocation.y + ")");
+		int [] playerLocation = players.getLocation(selectedPlayer);
+		location.setText("(" + playerLocation[0] + "," + playerLocation[1] + ")");
 		updateButtons();
 	}
 	
@@ -153,8 +153,8 @@ public class KitchenAgentDisplay extends AgentDisplay {
 
 	void worldChangeEvent() {
 		if (selectedPlayer != null) {
-			java.awt.Point playerLocation = players.getLocation(selectedPlayer);
-			location.setText("(" + playerLocation.x + "," + playerLocation.y + ")");
+			int [] playerLocation = players.getLocation(selectedPlayer);
+			location.setText("(" + playerLocation[0] + "," + playerLocation[1] + ")");
 		}
 		
 		for (int i = 0; i < m_Items.length; ++i) {
