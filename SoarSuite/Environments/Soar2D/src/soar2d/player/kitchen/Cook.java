@@ -15,9 +15,9 @@ public class Cook extends Player {
 	}
 	
 	/* (non-Javadoc)
-	 * @see soar2d.player.Player#update(soar2d.World, java.awt.Point)
+	 * @see soar2d.player.Player#update(soar2d.World, int [])
 	 */
-	public void update(java.awt.Point location) {
+	public void update(int [] location) {
 		super.update(location);
 	}
 

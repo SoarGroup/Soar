@@ -1,8 +1,7 @@
 package soar2d.map;
 
-import java.awt.Point;
-import java.awt.geom.Point2D;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -20,7 +19,7 @@ public class BookMap extends GridMap {
 	}
 
 	@Override
-	public void addObjectToCell(java.awt.Point location, CellObject object) {
+	public void addObjectToCell(int [] location, CellObject object) {
 		Cell cell = getCell(location);
 		if (cell.hasObject(object.getName())) {
 			CellObject old = cell.removeObject(object.getName());
@@ -40,12 +39,13 @@ public class BookMap extends GridMap {
 		if (isBookObject(object)) {
 			bookObjects.add(object);
 			BookObjectInfo info = new BookObjectInfo();
-			info.location = new Point(location);
-			info.floatLocation = new Point2D.Double();
-			info.floatLocation.x = info.location.x * Soar2D.config.roomConfig().cell_size;
-			info.floatLocation.y = info.location.y * Soar2D.config.roomConfig().cell_size;
-			info.floatLocation.x += Soar2D.config.roomConfig().cell_size / 2.0;
-			info.floatLocation.y += Soar2D.config.roomConfig().cell_size / 2.0;
+			info.location = Arrays.copyOf(location, location.length);
+			info.floatLocation = new double [] { 
+					info.location[0] * Soar2D.config.roomConfig().cell_size, 
+					info.location[1] * Soar2D.config.roomConfig().cell_size 
+					};
+			info.floatLocation[0] += Soar2D.config.roomConfig().cell_size / 2.0;
+			info.floatLocation[1] += Soar2D.config.roomConfig().cell_size / 2.0;
 			info.object = object;
 			if (!object.hasProperty("object-id")) {
 				object.addProperty("object-id", Integer.toString(newObjectId()));
@@ -77,7 +77,7 @@ public class BookMap extends GridMap {
 	}
 
 	@Override
-	public CellObject removeObject(java.awt.Point location, String objectName) {
+	public CellObject removeObject(int [] location, String objectName) {
 		Cell cell = getCell(location);
 		setRedraw(cell);
 		CellObject object = cell.removeObject(objectName);
@@ -99,7 +99,7 @@ public class BookMap extends GridMap {
 	}
 
 	@Override
-	public void removeAllWithProperty(java.awt.Point location, String name) {
+	public void removeAllWithProperty(int [] location, String name) {
 		Cell cell = getCell(location);
 		
 		cell.iter = cell.cellObjects.values().iterator();
@@ -128,7 +128,7 @@ public class BookMap extends GridMap {
 			
 			while (iter.hasNext()) {
 				CellObject cellObject = iter.next();
-				java.awt.Point location = updatablesLocations.get(cellObject);
+				int [] location = updatablesLocations.get(cellObject);
 				assert location != null;
 				
 				if (cellObject.update(location)) {
@@ -147,7 +147,7 @@ public class BookMap extends GridMap {
 		}
 	}
 
-	public int getLocationId(Point location) {
+	public int getLocationId(int [] location) {
 		assert location != null;
 		assert Soar2D.config.game() == SimConfig.Game.ROOM;
 
@@ -157,7 +157,7 @@ public class BookMap extends GridMap {
 	}
 
 	@Override
-	public boolean isAvailable(java.awt.Point location) {
+	public boolean isAvailable(int [] location) {
 		Cell cell = getCell(location);
 		boolean enterable = cell.enterable();
 		boolean noPlayer = cell.getPlayer() == null;
@@ -174,13 +174,13 @@ public class BookMap extends GridMap {
 		public int id = -1;
 		public boolean gateway = false;
 		
-		public java.awt.Point left;
-		public java.awt.Point right;
+		public int [] left;
+		public int [] right;
 		
 		public int direction;
 
-		private Point2D.Double centerpoint;
-		public Point2D.Double centerpoint() {
+		private double [] centerpoint;
+		public double [] centerpoint() {
 			//  IMPORTANT! Assumes left/right won't change
 			if (centerpoint != null) {
 				return centerpoint;
@@ -188,46 +188,46 @@ public class BookMap extends GridMap {
 			
 			int m = 0;
 			int n = 0;
-			centerpoint = new Point2D.Double(0,0);
+			centerpoint = new double [] { 0, 0 };
 			
 			if (left.equals(right) == false) {
 				switch (direction) {
 				case Direction.kNorthInt:
 				case Direction.kSouthInt:
 					// horizontal
-					m = left.x;
-					n = right.x;
-					centerpoint.y = left.y * Soar2D.config.roomConfig().cell_size;
+					m = left[0];
+					n = right[0];
+					centerpoint[1] = left[1] * Soar2D.config.roomConfig().cell_size;
 					break;
 				case Direction.kEastInt:
 				case Direction.kWestInt:
 					// vertical
-					m = left.y;
-					n = right.y;
-					centerpoint.x = left.x * Soar2D.config.roomConfig().cell_size;
+					m = left[1];
+					n = right[1];
+					centerpoint[0] = left[0] * Soar2D.config.roomConfig().cell_size;
 					break;
 				}
 			} else {
 				// single block
-				centerpoint.x = left.x * Soar2D.config.roomConfig().cell_size;
-				centerpoint.y = left.y * Soar2D.config.roomConfig().cell_size;
+				centerpoint[0] = left[0] * Soar2D.config.roomConfig().cell_size;
+				centerpoint[1] = left[1] * Soar2D.config.roomConfig().cell_size;
 
 				switch (direction) {
 				case Direction.kNorthInt:
-					centerpoint.y += Soar2D.config.roomConfig().cell_size;
+					centerpoint[1] += Soar2D.config.roomConfig().cell_size;
 				case Direction.kSouthInt:
-					centerpoint.x += Soar2D.config.roomConfig().cell_size / 2;
+					centerpoint[0] += Soar2D.config.roomConfig().cell_size / 2;
 					break;
 				case Direction.kWestInt:
-					centerpoint.x += Soar2D.config.roomConfig().cell_size;
+					centerpoint[0] += Soar2D.config.roomConfig().cell_size;
 				case Direction.kEastInt:
-					centerpoint.y += Soar2D.config.roomConfig().cell_size / 2;
+					centerpoint[1] += Soar2D.config.roomConfig().cell_size / 2;
 					break;
 				}
 				return centerpoint;
 			}
 			int numberOfBlocks = n - m;
-			java.awt.Point upperLeft = left;
+			int [] upperLeft = left;
 			// take abs, also note that if negative then we need to calculate center from the upper-left block
 			// which this case is the "right"
 			if (numberOfBlocks < 0) {
@@ -237,26 +237,26 @@ public class BookMap extends GridMap {
 			numberOfBlocks += 1; // endpoints 0,0 and 0,3 represent 4 blocks
 			assert numberOfBlocks > 1;
 			
-			if (left.x == right.x) {
+			if (left[0] == right[0]) {
 				// vertical
 				// add half to y
-				centerpoint.y = upperLeft.y * Soar2D.config.roomConfig().cell_size;
-				centerpoint.y += (numberOfBlocks / 2.0) * Soar2D.config.roomConfig().cell_size;
+				centerpoint[1] = upperLeft[1] * Soar2D.config.roomConfig().cell_size;
+				centerpoint[1] += (numberOfBlocks / 2.0) * Soar2D.config.roomConfig().cell_size;
 				
 				// if west, we gotta add a cell size to x
 				if (direction == Direction.kWestInt) {
-					centerpoint.x += Soar2D.config.roomConfig().cell_size;
+					centerpoint[0] += Soar2D.config.roomConfig().cell_size;
 				}
 				
 			} else {
 				// horizontal
 				// add half to x
-				centerpoint.x = upperLeft.x * Soar2D.config.roomConfig().cell_size;
-				centerpoint.x += (numberOfBlocks / 2.0) * Soar2D.config.roomConfig().cell_size;
+				centerpoint[0] = upperLeft[0] * Soar2D.config.roomConfig().cell_size;
+				centerpoint[0] += (numberOfBlocks / 2.0) * Soar2D.config.roomConfig().cell_size;
 
 				// if north, we gotta add a cell size to y
 				if (direction == Direction.kNorthInt) {
-					centerpoint.y += Soar2D.config.roomConfig().cell_size;
+					centerpoint[1] += Soar2D.config.roomConfig().cell_size;
 				}
 			}
 			return centerpoint;
@@ -266,10 +266,10 @@ public class BookMap extends GridMap {
 		public String toString() {
 			String output = new String(Integer.toString(id));
 			output += " (" + Direction.stringOf[direction] + ")";
-			Point2D.Double center = centerpoint();
-			output += " (" + Integer.toString(left.x) + "," + Integer.toString(left.y) + ")-(" 
-					+ Double.toString(center.x) + "," + Double.toString(center.y) + ")-(" 
-					+ Integer.toString(right.x) + "," + Integer.toString(right.y) + ")";
+			double [] center = centerpoint();
+			output += " (" + Integer.toString(left[0]) + "," + Integer.toString(left[1]) + ")-(" 
+					+ Double.toString(center[0]) + "," + Double.toString(center[1]) + ")-(" 
+					+ Integer.toString(right[0]) + "," + Integer.toString(right[1]) + ")";
 			if (gateway) {
 				output += " (gateway)";
 			}
@@ -293,8 +293,8 @@ public class BookMap extends GridMap {
 		// Start in upper-left corner
 		// if cell is enterable, flood fill to find boundaries of room
 		// Go from left to right, then to the start of the next line
-		LinkedList<java.awt.Point> floodQueue = new LinkedList<java.awt.Point>();
-		HashSet<java.awt.Point> explored = new HashSet<java.awt.Point>((this.size-2)*2);
+		LinkedList<int []> floodQueue = new LinkedList<int []>();
+		HashSet<int []> explored = new HashSet<int []>((this.size-2)*2);
 		
 		// this is where we will store gateway barriers for conversion to rooms 
 		// in the second phase of map structure generation. 
@@ -302,9 +302,9 @@ public class BookMap extends GridMap {
 		// be represented by the same squares
 		ArrayList<Barrier> gatewayBarriers = new ArrayList<Barrier>();
 
-		java.awt.Point location = new java.awt.Point();
-		for (location.y = 1; location.y < (this.size - 1); ++location.y) {
-			for (location.x = 1; location.x < (this.size - 1); ++location.x) {
+		int [] location = new int [2];
+		for (location[1] = 1; location[1] < (this.size - 1); ++location[1]) {
+			for (location[0] = 1; location[0] < (this.size - 1); ++location[0]) {
 				if (explored.contains(location)) {
 					continue;
 				}
@@ -324,21 +324,21 @@ public class BookMap extends GridMap {
 				CellObject roomObject = cellObjectManager.createObject(Names.kRoomID);
 				roomObject.addProperty(Names.kPropertyNumber, Integer.toString(roomNumber));
 
-				HashSet<java.awt.Point> floodExplored = new HashSet<java.awt.Point>((this.size-2)*2);
+				HashSet<int []> floodExplored = new HashSet<int []>((this.size-2)*2);
 				floodExplored.add(location);
 				cell.addCellObject(roomObject);
-				//System.out.print("Room " + roomNumber + ": (" + location.x + "," + location.y + ") ");
+				//System.out.print("Room " + roomNumber + ": (" + location[0] + "," + location[1] + ") ");
 				
 				// add the surrounding cells to the queue 
-				floodQueue.add(new java.awt.Point(location.x+1,location.y));
-				floodQueue.add(new java.awt.Point(location.x,location.y+1));
-				floodQueue.add(new java.awt.Point(location.x-1,location.y));
-				floodQueue.add(new java.awt.Point(location.x,location.y-1));
+				floodQueue.add(new int [] { location[0]+1,location[1] });
+				floodQueue.add(new int [] { location[0],location[1]+1 });
+				floodQueue.add(new int [] { location[0]-1,location[1] });
+				floodQueue.add(new int [] { location[0],location[1]-1 });
 				
 				// flood and mark all room cells and save walls
-				HashSet<java.awt.Point> walls = new HashSet<java.awt.Point>();
+				HashSet<int []> walls = new HashSet<int []>();
 				while(floodQueue.size() > 0) {
-					java.awt.Point floodLocation = floodQueue.removeFirst();
+					int [] floodLocation = floodQueue.removeFirst();
 
 					if (floodExplored.contains(floodLocation)) {
 						continue;
@@ -354,19 +354,19 @@ public class BookMap extends GridMap {
 					explored.add(floodLocation);
 
 					cell.addCellObject(new CellObject(roomObject));
-					//System.out.print("(" + floodLocation.x + "," + floodLocation.y + ") ");
+					//System.out.print("(" + floodLocation[0] + "," + floodLocation[1] + ") ");
 
 					// add the four surrounding cells to the queue
-					floodQueue.add(new java.awt.Point(floodLocation.x+1,floodLocation.y));
-					floodQueue.add(new java.awt.Point(floodLocation.x-1,floodLocation.y));
-					floodQueue.add(new java.awt.Point(floodLocation.x,floodLocation.y+1));
-					floodQueue.add(new java.awt.Point(floodLocation.x,floodLocation.y-1));
+					floodQueue.add(new int [] { floodLocation[0]+1,floodLocation[1] });
+					floodQueue.add(new int [] { floodLocation[0]-1,floodLocation[1] });
+					floodQueue.add(new int [] { floodLocation[0],floodLocation[1]+1 });
+					floodQueue.add(new int [] { floodLocation[0],floodLocation[1]-1 });
 				}
 				
 				// figure out walls going clockwise starting with the wall north of the first square in the room
 				int direction = Direction.kEastInt;
-				java.awt.Point startingWall = new java.awt.Point(location.x, location.y-1);
-				java.awt.Point next = new java.awt.Point(startingWall);
+				int [] startingWall = new int [] { location[0], location[1]-1 };
+				int [] next = Arrays.copyOf(startingWall, startingWall.length);
 				
 				// Keep track of the current barrier information. When the wall ends, simply add it to the the room
 				// barrier map.
@@ -382,13 +382,13 @@ public class BookMap extends GridMap {
 					
 					// This is used to figure out how to turn corners when walking along walls.
 					// Also used with figuring out barrier endpoints.
-					java.awt.Point previous = new java.awt.Point(next);
+					int [] previous = Arrays.copyOf( next, next.length );
 					
 					// next is actually the location we're examining now
 					cell = getCell(next);
 					
 					// used to detect turns
-					java.awt.Point rightOfNext = null;
+					int [] rightOfNext = null;
 					
 					// Get the wall and gateway objects. The can't both exist.
 					CellObject gatewayObject = cell.getObject(Names.kGatewayID);
@@ -414,7 +414,7 @@ public class BookMap extends GridMap {
 							// create a barrier
 							currentBarrier = new Barrier();
 							currentBarrier.gateway = true;
-							currentBarrier.left = new java.awt.Point(next);
+							currentBarrier.left = Arrays.copyOf(next, next.length);
 							currentBarrier.direction = Direction.leftOf[direction];
 							
 							// create a new gateway id
@@ -453,7 +453,7 @@ public class BookMap extends GridMap {
 							
 							// getting here means we're starting a new section of wall
 							currentBarrier = new Barrier();
-							currentBarrier.left = new java.awt.Point(next);
+							currentBarrier.left = Arrays.copyOf(next, next.length);
 							currentBarrier.direction = Direction.leftOf[direction];
 							
 							// create a new id
@@ -472,10 +472,10 @@ public class BookMap extends GridMap {
 						assert false;
 					}
 					
-					//System.out.print("(" + next.x + "," + next.y + ") ");
+					//System.out.print("(" + next[0] + "," + next[1] + ") ");
 
 					// since current barrier is the gateway we're walking, update it's endpoint before we translate it
-					currentBarrier.right = new java.awt.Point(next);
+					currentBarrier.right = Arrays.copyOf(next, next.length);
 					
 					// walk to the next section of wall
 					Direction.translate(next, direction);
@@ -484,7 +484,7 @@ public class BookMap extends GridMap {
 					// a wall to the right of it, that means next is a gateway but there is
 					// a wall in the way so that gateway doesn't technically border our room,
 					// so, the gateway ends and we continue on the next segment of wall.
-					rightOfNext = new java.awt.Point(next);
+					rightOfNext = Arrays.copyOf(next, next.length);
 					Direction.translate(rightOfNext, Direction.rightOf[direction]);
 
 					// if there isn't a next, we're done anyway.
@@ -536,7 +536,7 @@ public class BookMap extends GridMap {
 
 					} else {
 						// try turning left next
-						next = new java.awt.Point(previous);
+						next = Arrays.copyOf(previous, previous.length);
 						Direction.translate(next, Direction.leftOf[direction]);
 						
 						if (walls.contains(next)) {
@@ -609,14 +609,14 @@ public class BookMap extends GridMap {
 	 * @param direction The direction to go to reach the wall
 	 * @param barrierList The barrier list for our new room
 	 */
-	private void doNewWall(java.awt.Point endPoint, int direction, ArrayList<Barrier> barrierList) {
+	private void doNewWall(int [] endPoint, int direction, ArrayList<Barrier> barrierList) {
 		Barrier currentBarrier = new Barrier();
-		currentBarrier.left = new java.awt.Point(endPoint);
-		currentBarrier.left.x += Direction.xDelta[direction];
-		currentBarrier.left.y += Direction.yDelta[direction];
+		currentBarrier.left = Arrays.copyOf(endPoint, endPoint.length);
+		currentBarrier.left[0] += Direction.xDelta[direction];
+		currentBarrier.left[1] += Direction.yDelta[direction];
 
 		// this is a wall and is only size 1
-		currentBarrier.right = new java.awt.Point(currentBarrier.left);
+		currentBarrier.right = Arrays.copyOf(currentBarrier.left, currentBarrier.left.length);
 		
 		// get a new wall id
 		currentBarrier.id = roomCount + gatewayCount + wallCount + objectCount;
@@ -645,13 +645,13 @@ public class BookMap extends GridMap {
 	 * @param roomNumber This is the id number of the room we're in
 	 * @param barrierList This is the list of barriers for the room we're in
 	 */
-	private void doNewGateway(java.awt.Point startPoint, java.awt.Point endPoint, int direction, int walkDirection, int roomNumber, ArrayList<Barrier> barrierList) {
+	private void doNewGateway(int [] startPoint, int [] endPoint, int direction, int walkDirection, int roomNumber, ArrayList<Barrier> barrierList) {
 		// next is the gateway to the left of our left endpoint
 		Barrier currentBarrier = new Barrier();
 		currentBarrier.gateway = true;
-		currentBarrier.left = new java.awt.Point(startPoint);
-		currentBarrier.left.x += Direction.xDelta[direction];
-		currentBarrier.left.y += Direction.yDelta[direction];
+		currentBarrier.left = Arrays.copyOf(startPoint, startPoint.length);
+		currentBarrier.left[0] += Direction.xDelta[direction];
+		currentBarrier.left[1] += Direction.yDelta[direction];
 
 		// get a new gateway id
 		currentBarrier.id = roomCount + gatewayCount + wallCount + objectCount;
@@ -660,12 +660,12 @@ public class BookMap extends GridMap {
 		currentBarrier.direction = direction;
 
 		// this is a gateway of unknown size
-		currentBarrier.right = new java.awt.Point(currentBarrier.left);
+		currentBarrier.right = Arrays.copyOf(currentBarrier.left, currentBarrier.left.length);
 		
 		// we know it ends left of the right endpoint
-		java.awt.Point endOfGateway = new java.awt.Point(endPoint);
-		endOfGateway.x += Direction.xDelta[direction];
-		endOfGateway.y += Direction.yDelta[direction];
+		int [] endOfGateway = Arrays.copyOf(endPoint, endPoint.length);
+		endOfGateway[0] += Direction.xDelta[direction];
+		endOfGateway[1] += Direction.yDelta[direction];
 		
 		while (true) {
 			// create the gateway object
@@ -691,8 +691,8 @@ public class BookMap extends GridMap {
 			}
 			
 			// increment and loop
-			currentBarrier.right.x += Direction.xDelta[walkDirection];
-			currentBarrier.right.y += Direction.yDelta[walkDirection];
+			currentBarrier.right[0] += Direction.xDelta[walkDirection];
+			currentBarrier.right[1] += Direction.yDelta[walkDirection];
 		}
 
 		// store the barrier
@@ -736,23 +736,23 @@ public class BookMap extends GridMap {
 			}
 
 			int incrementDirection = -1;
-			if (gatewayBarrier.left.x == gatewayBarrier.right.x) {
+			if (gatewayBarrier.left[0] == gatewayBarrier.right[0]) {
 				// vertical gateway
-				if (gatewayBarrier.left.y < gatewayBarrier.right.y) {
+				if (gatewayBarrier.left[1] < gatewayBarrier.right[1]) {
 					// increasing to right, south
 					incrementDirection = Direction.kSouthInt;
 
-				} else if (gatewayBarrier.left.y > gatewayBarrier.right.y) {
+				} else if (gatewayBarrier.left[1] > gatewayBarrier.right[1]) {
 					// decreasing to right, north
 					incrementDirection = Direction.kNorthInt;
 				}
 			} else {
 				// horizontal gateway
-				if (gatewayBarrier.left.x < gatewayBarrier.right.x) {
+				if (gatewayBarrier.left[0] < gatewayBarrier.right[0]) {
 					// increasing to right, east
 					incrementDirection = Direction.kEastInt;
 
-				} else if (gatewayBarrier.left.x > gatewayBarrier.right.x) {
+				} else if (gatewayBarrier.left[0] > gatewayBarrier.right[0]) {
 					// decreasing to right, west
 					incrementDirection = Direction.kWestInt;
 				}
@@ -760,9 +760,9 @@ public class BookMap extends GridMap {
 			
 			if (incrementDirection == -1) {
 				// Direction depends on which ways have walls and which ways have rooms
-				java.awt.Point feeler;
-				feeler = new java.awt.Point(gatewayBarrier.left);
-				feeler.x -= 1;
+				int [] feeler;
+				feeler = Arrays.copyOf(gatewayBarrier.left, gatewayBarrier.left.length);
+				feeler[0] -= 1;
 				Cell cell = getCell(feeler);
 				if (cell.getObject(Names.kWallID) != null) {
 					// horizontal gateway
@@ -774,10 +774,10 @@ public class BookMap extends GridMap {
 			}
 			
 			// we need to walk to the right and assing the room id to everyone
-			java.awt.Point current = new java.awt.Point(gatewayBarrier.left);
+			int [] current = Arrays.copyOf(gatewayBarrier.left, gatewayBarrier.left.length);
 			while (current.equals(gatewayBarrier.right) == false) {
-				current.x += Direction.xDelta[incrementDirection];
-				current.y += Direction.yDelta[incrementDirection];
+				current[0] += Direction.xDelta[incrementDirection];
+				current[1] += Direction.yDelta[incrementDirection];
 
 				Cell cell = getCell(current);
 				cell.addCellObject(new CellObject(theNewRoomObject));
@@ -831,7 +831,7 @@ public class BookMap extends GridMap {
 		}
 	}
 	
-	public CellObject getInObject(Point location) {
+	public CellObject getInObject(int [] location) {
 		if (!this.isInBounds(location)) {
 			return null;
 		}

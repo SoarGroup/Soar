@@ -1,7 +1,5 @@
 package soar2d.world;
 
-import java.awt.Point;
-import java.awt.geom.Point2D;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -15,9 +13,9 @@ public class PlayersManager {
 	private ArrayList<Player> players = new ArrayList<Player>(7);
 	private ArrayList<Player> humanPlayers = new ArrayList<Player>(7);
 	private HashMap<String, Player> playersMap = new HashMap<String, Player>(7);
-	private HashMap<Player, Point> initialLocations = new HashMap<Player, Point>(7);
-	private HashMap<Player, Point> locations = new HashMap<Player, Point>(7);
-	private HashMap<Player, Point2D.Double> floatLocations = new HashMap<Player, Point2D.Double>(7);
+	private HashMap<Player, int []> initialLocations = new HashMap<Player, int []>(7);
+	private HashMap<Player, int []> locations = new HashMap<Player, int []>(7);
+	private HashMap<Player, double []> floatLocations = new HashMap<Player, double []>(7);
 	private HashMap<Player, MoveInfo> lastMoves = new HashMap<Player, MoveInfo>(7);
 	
 	public int numberOfPlayers() {
@@ -40,19 +38,19 @@ public class PlayersManager {
 		return players.listIterator(index);
 	}
 	
-	public Point getLocation(Player player) {
+	public int [] getLocation(Player player) {
 		return locations.get(player);
 	}
 	
-	void setLocation(Player player, Point location) {
+	void setLocation(Player player, int [] location) {
 		locations.put(player, location);
 	}
 	
-	public Point2D.Double getFloatLocation(Player player) {
+	public double [] getFloatLocation(Player player) {
 		return floatLocations.get(player);
 	}
 	
-	void setFloatLocation(Player player, Point2D.Double location) {
+	void setFloatLocation(Player player, double [] location) {
 		floatLocations.put(player, location);
 	}
 	
@@ -86,7 +84,7 @@ public class PlayersManager {
 		lastMoves.remove(player);
 	}
 	
-	void add(Player player, Point initialLocation, boolean human) {
+	void add(Player player, int [] initialLocation, boolean human) {
 		players.add(player);
 		playersMap.put(player.getName(), player);
 		
@@ -103,7 +101,7 @@ public class PlayersManager {
 		return initialLocations.containsKey(player);
 	}
 
-	public Point getInitialLocation(Player player) {
+	public int [] getInitialLocation(Player player) {
 		return initialLocations.get(player);
 	}
 	
@@ -112,9 +110,7 @@ public class PlayersManager {
 	}
 	
 	public double angleOff(Player left, Player right) {
-		Point2D.Double target = new Point2D.Double();
-		target.x = floatLocations.get(right).x;
-		target.y = floatLocations.get(right).y;
+		double [] target = new double [] { floatLocations.get(right)[0], floatLocations.get(right)[1] };
 		
 		return angleOff(left, target);
 	}
@@ -124,41 +120,37 @@ public class PlayersManager {
 	}
 	
 
-	public double angleOff(Player left, Point2D.Double target) {
-		Point2D.Double playerVector = new Point2D.Double();
-		playerVector.x = floatLocations.get(left).x;
-		playerVector.y = floatLocations.get(left).y;
+	public double angleOff(Player left, double [] target) {
+		double [] playerVector = new double [] { floatLocations.get(left)[0], floatLocations.get(left)[1] };
 
 		if (Soar2D.config.roomConfig().continuous == false) {
 			// translate the player's location back a little bit to increase peripheral vision
-			playerVector.x -= Math.cos(left.getHeadingRadians());
-			playerVector.y -= Math.sin(left.getHeadingRadians());
+			playerVector[0] -= Math.cos(left.getHeadingRadians());
+			playerVector[1] -= Math.sin(left.getHeadingRadians());
 		}
 			
-		Point2D.Double targetVector = new Point2D.Double();
-		targetVector.x = target.x;
-		targetVector.y = target.y;
+		double [] targetVector = new double [] { target[0], target[1] };
 		
 		// translate target so i'm the origin
-		targetVector.x -= playerVector.x;
-		targetVector.y -= playerVector.y;
+		targetVector[0] -= playerVector[0];
+		targetVector[1] -= playerVector[1];
 		
 		// make target unit vector
-		double targetVectorLength = Math.sqrt(Math.pow(targetVector.x, 2) + Math.pow(targetVector.y, 2));
+		double targetVectorLength = Math.sqrt(Math.pow(targetVector[0], 2) + Math.pow(targetVector[1], 2));
 		if (targetVectorLength > 0) {
-			targetVector.x /= targetVectorLength;
-			targetVector.y /= targetVectorLength;
+			targetVector[0] /= targetVectorLength;
+			targetVector[1] /= targetVectorLength;
 		} else {
-			targetVector.x = 0;
-			targetVector.y = 0;
+			targetVector[0] = 0;
+			targetVector[1] = 0;
 		}
 		
 		// make player facing vector
-		playerVector.x = Math.cos(left.getHeadingRadians());
-		playerVector.y = Math.sin(left.getHeadingRadians());
+		playerVector[0] = Math.cos(left.getHeadingRadians());
+		playerVector[1] = Math.sin(left.getHeadingRadians());
 		
-		double dotProduct = (targetVector.x * playerVector.x) + (targetVector.y * playerVector.y);
-		double crossProduct = (targetVector.x * playerVector.y) - (targetVector.y * playerVector.x);
+		double dotProduct = (targetVector[0] * playerVector[0]) + (targetVector[1] * playerVector[1]);
+		double crossProduct = (targetVector[0] * playerVector[1]) - (targetVector[1] * playerVector[0]);
 		
 		// calculate inverse cosine of that for angle
 		if (crossProduct < 0) {

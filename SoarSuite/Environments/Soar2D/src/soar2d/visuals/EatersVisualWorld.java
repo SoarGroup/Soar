@@ -1,6 +1,7 @@
 package soar2d.visuals;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Iterator;
 
 import org.eclipse.swt.events.PaintEvent;
@@ -19,10 +20,10 @@ public class EatersVisualWorld extends VisualWorld {
 		super(parent, style, cellSize);
 	}
 
-	java.awt.Point agentLocation;
+	int [] agentLocation;
 	
-	public void setAgentLocation(java.awt.Point location) {
-		agentLocation = new java.awt.Point(location);
+	public void setAgentLocation(int [] location) {
+		agentLocation = Arrays.copyOf(location, location.length);
 	}
 	
 	public int getMiniWidth() {
@@ -68,27 +69,27 @@ public class EatersVisualWorld extends VisualWorld {
 		
 		// Draw world
 		int fill1, fill2, xDraw, yDraw;
-		java.awt.Point location = new java.awt.Point();
-		for(location.x = 0; location.x < map.getSize(); ++location.x){
+		int [] location = new int [2];
+		for(location[0] = 0; location[0] < map.getSize(); ++location[0]){
 			if (agentLocation != null) {
-				if ((location.x < agentLocation.x - Soar2D.config.eatersConfig().vision) 
-						|| (location.x > agentLocation.x + Soar2D.config.eatersConfig().vision)) {
+				if ((location[0] < agentLocation[0] - Soar2D.config.eatersConfig().vision) 
+						|| (location[0] > agentLocation[0] + Soar2D.config.eatersConfig().vision)) {
 					continue;
 				} 
-				xDraw = location.x + Soar2D.config.eatersConfig().vision - agentLocation.x;
+				xDraw = location[0] + Soar2D.config.eatersConfig().vision - agentLocation[0];
 			} else {
-				xDraw = location.x;
+				xDraw = location[0];
 			}
 			
-			for(location.y = 0; location.y < map.getSize(); ++location.y){
+			for(location[1] = 0; location[1] < map.getSize(); ++location[1]){
 				if (agentLocation != null) {
-					if ((location.y < agentLocation.y - Soar2D.config.eatersConfig().vision) 
-							|| (location.y > agentLocation.y + Soar2D.config.eatersConfig().vision)) {
+					if ((location[1] < agentLocation[1] - Soar2D.config.eatersConfig().vision) 
+							|| (location[1] > agentLocation[1] + Soar2D.config.eatersConfig().vision)) {
 						continue;
 					} 
-					yDraw = location.y + Soar2D.config.eatersConfig().vision - agentLocation.y;
+					yDraw = location[1] + Soar2D.config.eatersConfig().vision - agentLocation[1];
 				} else {
-					yDraw = location.y;
+					yDraw = location[1];
 				}
 				
 				if (agentLocation == null) {

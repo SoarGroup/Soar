@@ -38,11 +38,11 @@ class ObjectInputLink {
 		this.yaw = robot.agent.CreateFloatWME(angleOff, "yaw", angleOffDouble);
 		this.position = robot.agent.CreateIdWME(parent, "position");
 		{
-			this.col = robot.agent.CreateIntWME(position, "col", info.location.x);
-			this.row = robot.agent.CreateIntWME(position, "row", info.location.y);
+			this.col = robot.agent.CreateIntWME(position, "col", info.location[0]);
+			this.row = robot.agent.CreateIntWME(position, "row", info.location[1]);
 			if (Soar2D.config.roomConfig().continuous) {
-				this.x = robot.agent.CreateFloatWME(position, "x", info.floatLocation.x);
-				this.y = robot.agent.CreateFloatWME(position, "y", info.floatLocation.y);
+				this.x = robot.agent.CreateFloatWME(position, "x", info.floatLocation[0]);
+				this.y = robot.agent.CreateFloatWME(position, "y", info.floatLocation[1]);
 			}
 		}
 		this.range = robot.agent.CreateFloatWME(parent, "range", range);

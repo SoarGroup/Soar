@@ -1,7 +1,7 @@
 package soar2d.player.kitchen;
 
-import java.awt.Point;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Iterator;
 import java.util.logging.Logger;
 
@@ -25,7 +25,7 @@ public class ToscaCook extends Cook {
 	}
 	
 	@Override
-	public void update(java.awt.Point location) {
+	public void update(int [] location) {
 		World world = Soar2D.simulation.world;
 		KitchenMap map = (KitchenMap)world.getMap();
 
@@ -35,28 +35,28 @@ public class ToscaCook extends Cook {
 		if (moved) {
 			// we have moved
 			
-			// location.x; // column on map
-			// location.y; // row on map
+			// location[0]; // column on map
+			// location[1]; // row on map
 			
-			Point tempLocation;
+			int [] tempLocation;
 
 			// examine cell to the north
-			tempLocation = new Point(location);
+			tempLocation = Arrays.copyOf(location, location.length);
 			Direction.translate(tempLocation, Direction.kNorthInt);
 			examineCell(map, tempLocation);
 
 			// examine cell to the south
-			tempLocation = new Point(location);
+			tempLocation = Arrays.copyOf(location, location.length);
 			Direction.translate(tempLocation, Direction.kSouthInt);
 			examineCell(map, tempLocation);
 			
 			// examine cell to the east
-			tempLocation = new Point(location);
+			tempLocation = Arrays.copyOf(location, location.length);
 			Direction.translate(tempLocation, Direction.kEastInt);
 			examineCell(map, tempLocation);
 			
 			// examine cell to the west
-			tempLocation = new Point(location);
+			tempLocation = Arrays.copyOf(location, location.length);
 			Direction.translate(tempLocation, Direction.kWestInt);
 			examineCell(map, tempLocation);
 			
@@ -83,7 +83,7 @@ public class ToscaCook extends Cook {
 		this.getPointsDelta(); // points changed this frame (reward for last action)
 	}
 	
-	private void examineCell(KitchenMap map, Point tempLocation) {
+	private void examineCell(KitchenMap map, int [] tempLocation) {
 		if (map.getAllWithProperty(tempLocation, "smell").size() > 0) {
 			// there is an object in the cell
 		} else {

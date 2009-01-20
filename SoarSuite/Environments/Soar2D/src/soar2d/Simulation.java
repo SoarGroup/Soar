@@ -325,7 +325,7 @@ public class Simulation {
 				assert player != null;
 				
 				// set its location if necessary
-				java.awt.Point initialLocation = playerConfig.pos == null ? null : new java.awt.Point(playerConfig.pos[0], playerConfig.pos[1]);
+				int [] initialLocation = playerConfig.pos == null ? null : new int [] { playerConfig.pos[0], playerConfig.pos[1] };
 
 				// This can fail if there are no open squares on the map, message printed already
 				if (!world.addPlayer(player, initialLocation, human)) {
@@ -382,7 +382,7 @@ public class Simulation {
 					assert player != null;
 					
 					// handle the initial location if necessary
-					java.awt.Point initialLocation = playerConfig.pos == null ? null : new java.awt.Point(playerConfig.pos[0], playerConfig.pos[1]);
+					int [] initialLocation = playerConfig.pos == null ? null : new int [] { playerConfig.pos[0], playerConfig.pos[1] };
 					
 					// This can fail if there are no open squares on the map, message printed already
 					if (!world.addPlayer(player, initialLocation, false)) {

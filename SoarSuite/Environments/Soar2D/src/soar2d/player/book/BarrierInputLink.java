@@ -1,7 +1,5 @@
 package soar2d.player.book;
 
-import java.awt.geom.Point2D;
-
 import sml.FloatElement;
 import sml.Identifier;
 import sml.IntElement;
@@ -20,7 +18,7 @@ class BarrierInputLink {
 	FloatElement x, y, yaw;
 	StringElement direction;
 	
-	Point2D.Double centerpoint;
+	double [] centerpoint;
 	
 	BarrierInputLink(SoarRobot robot, Identifier parent) {
 		this.robot = robot;
@@ -33,20 +31,20 @@ class BarrierInputLink {
 		id = robot.agent.CreateIntWME(parent, "id", barrier.id);
 		left = robot.agent.CreateIdWME(parent, "left");
 		{
-			leftRow = robot.agent.CreateIntWME(left, "row", barrier.left.y);
-			leftCol = robot.agent.CreateIntWME(left, "col", barrier.left.x);
+			leftRow = robot.agent.CreateIntWME(left, "row", barrier.left[1]);
+			leftCol = robot.agent.CreateIntWME(left, "col", barrier.left[0]);
 		}
 		right = robot.agent.CreateIdWME(parent, "right");
 		{
-			rightRow = robot.agent.CreateIntWME(right, "row", barrier.right.y);
-			rightCol = robot.agent.CreateIntWME(right, "col", barrier.right.x);
+			rightRow = robot.agent.CreateIntWME(right, "row", barrier.right[1]);
+			rightCol = robot.agent.CreateIntWME(right, "col", barrier.right[0]);
 		}
 		center = robot.agent.CreateIdWME(parent, "center");
 		{
 			centerpoint = barrier.centerpoint();
 			if (Soar2D.config.roomConfig().continuous) {
-				x = robot.agent.CreateFloatWME(center, "x", centerpoint.x);
-				y = robot.agent.CreateFloatWME(center, "y", centerpoint.y);
+				x = robot.agent.CreateFloatWME(center, "x", centerpoint[0]);
+				y = robot.agent.CreateFloatWME(center, "y", centerpoint[1]);
 			}
 			angleOff = robot.agent.CreateIdWME(center, "angle-off");
 			yaw = robot.agent.CreateFloatWME(angleOff, "yaw", players.angleOff(robot, centerpoint));

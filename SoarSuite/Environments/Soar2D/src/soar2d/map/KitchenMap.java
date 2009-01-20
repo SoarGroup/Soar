@@ -1,6 +1,6 @@
 package soar2d.map;
 
-import java.awt.Point;
+import java.util.Arrays;
 import java.util.Iterator;
 
 import soar2d.Soar2D;
@@ -12,22 +12,22 @@ public class KitchenMap extends GridMap {
 	}
 	
 	boolean haveButter = false;
-	Point spawnButter;
+	int [] spawnButter;
 	
 	boolean haveSugar = false;
-	Point spawnSugar;
+	int [] spawnSugar;
 	
 	boolean haveEggs = false;
-	Point spawnEggs;
+	int [] spawnEggs;
 	
 	boolean haveFlour = false;
-	Point spawnFlour;
+	int [] spawnFlour;
 	
 	boolean haveCinnamon = false;
-	Point spawnCinnamon;
+	int [] spawnCinnamon;
 	
 	boolean haveMolasses = false;
-	Point spawnMolasses;
+	int [] spawnMolasses;
 	
 	public void spawnBasics() {
 		if (!haveButter) {
@@ -57,7 +57,7 @@ public class KitchenMap extends GridMap {
 	}
 
 	@Override
-	public void addObjectToCell(Point location, CellObject object) {
+	public void addObjectToCell(int [] location, CellObject object) {
 		Cell cell = getCell(location);
 		if (cell.hasObject(object.getName())) {
 			CellObject old = cell.removeObject(object.getName());
@@ -78,47 +78,47 @@ public class KitchenMap extends GridMap {
 		setRedraw(cell);
 	}
 	
-	private void checkBasics(Point location, CellObject object, boolean adding) {
+	private void checkBasics(int [] location, CellObject object, boolean adding) {
 		if (object.getName().equals("butter")) {
 			assert adding ^ haveButter;
 			haveButter = adding;
 			if (spawnButter == null) {
-				spawnButter = new Point(location);
+				spawnButter = Arrays.copyOf(spawnButter, spawnButter.length);
 			}
 		}
 		if (object.getName().equals("sugar")) {
 			assert adding ^ haveSugar;
 			haveSugar = adding;
 			if (spawnSugar == null) {
-				spawnSugar = new Point(location);
+				spawnSugar = Arrays.copyOf(spawnSugar, spawnSugar.length);
 			}
 		}
 		if (object.getName().equals("eggs")) {
 			assert adding ^ haveEggs;
 			haveEggs = adding;
 			if (spawnEggs == null) {
-				spawnEggs = new Point(location);
+				spawnEggs = Arrays.copyOf(spawnEggs, spawnEggs.length);
 			}
 		}
 		if (object.getName().equals("flour")) {
 			assert adding ^ haveFlour;
 			haveFlour = adding;
 			if (spawnFlour == null) {
-				spawnFlour = new Point(location);
+				spawnFlour = Arrays.copyOf(spawnFlour, spawnFlour.length);
 			}
 		}
 		if (object.getName().equals("cinnamon")) {
 			assert adding ^ haveCinnamon;
 			haveCinnamon = adding;
 			if (spawnCinnamon == null) {
-				spawnCinnamon = new Point(location);
+				spawnCinnamon = Arrays.copyOf(spawnCinnamon, spawnCinnamon.length);
 			}
 		}
 		if (object.getName().equals("molasses")) {
 			assert adding ^ haveMolasses;
 			haveMolasses = adding;
 			if (spawnMolasses == null) {
-				spawnMolasses = new Point(location);
+				spawnMolasses = Arrays.copyOf(spawnMolasses, spawnMolasses.length);
 			}
 		}
 	}
@@ -129,7 +129,7 @@ public class KitchenMap extends GridMap {
 			
 			while (iter.hasNext()) {
 				CellObject cellObject = iter.next();
-				java.awt.Point location = map.updatablesLocations.get(cellObject);
+				int [] location = map.updatablesLocations.get(cellObject);
 				assert location != null;
 				
 				if (cellObject.update(location)) {
@@ -149,7 +149,7 @@ public class KitchenMap extends GridMap {
 	}
 
 	@Override
-	public boolean isAvailable(Point location) {
+	public boolean isAvailable(int [] location) {
 		Cell cell = getCell(location);
 		boolean enterable = cell.enterable();
 		boolean noPlayer = cell.getPlayer() == null;
@@ -167,11 +167,11 @@ public class KitchenMap extends GridMap {
 		
 	}
 
-	public boolean isCountertop(Point location) {
+	public boolean isCountertop(int [] location) {
 		return getCell(location).getObject("countertop") != null;
 	}
 	
-	public boolean isOven(Point location) {
+	public boolean isOven(int [] location) {
 		return getCell(location).getObject("oven") != null;
 	}
 }

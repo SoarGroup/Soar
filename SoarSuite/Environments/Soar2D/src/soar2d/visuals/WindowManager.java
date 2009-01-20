@@ -173,7 +173,7 @@ public class WindowManager {
 
 		visualWorld.addMouseListener(new MouseAdapter() {
 			public void mouseDown(MouseEvent e) {
-				Player player = visualWorld.getPlayerAtPixel(e.x, e.y);
+				Player player = visualWorld.getPlayerAtPixel(new int [] { e.x, e.y });
 				if (player == null) {
 					return;
 				}
@@ -257,7 +257,7 @@ public class WindowManager {
 
 		visualWorld.addMouseListener(new MouseAdapter() {
 			public void mouseDown(MouseEvent e) {
-				Player player = visualWorld.getPlayerAtPixel(e.x, e.y);
+				Player player = visualWorld.getPlayerAtPixel(new int [] { e.x, e.y });
 				if (player == null) {
 					return;
 				}
@@ -338,7 +338,7 @@ public class WindowManager {
 
 		visualWorld.addMouseListener(new MouseAdapter() {
 			public void mouseDown(MouseEvent e) {
-				Player player = visualWorld.getPlayerAtPixel(e.x, e.y);
+				Player player = visualWorld.getPlayerAtPixel(new int [] { e.x, e.y });
 				if (player == null) {
 					return;
 				}
@@ -750,7 +750,7 @@ public class WindowManager {
 
 		visualWorld.addMouseListener(new MouseAdapter() {
 			public void mouseDown(MouseEvent e) {
-				Player player = visualWorld.getPlayerAtPixel(e.x, e.y);
+				Player player = visualWorld.getPlayerAtPixel(new int [] { e.x, e.y });
 				if (player == null) {
 					return;
 				}
@@ -982,7 +982,7 @@ public class WindowManager {
 		}
 	}
 	
-	void processEdit(java.awt.Point location) {
+	void processEdit(int [] location) {
 		if (templatesTable.getSelectionIndex() < 0) {
 			return;
 		}
@@ -1386,10 +1386,10 @@ public class WindowManager {
 		visualWorld.addMouseListener(new MouseAdapter() {
 			public void mouseDown(MouseEvent e) {
 				if (mapEditMode) {
-					java.awt.Point location = visualWorld.getCellAtPixel(e.x, e.y);
+					int [] location = visualWorld.getCellAtPixel(new int [] { e.x, e.y });
 					processEdit(location);
 				} else {
-					Player player = visualWorld.getPlayerAtPixel(e.x, e.y);
+					Player player = visualWorld.getPlayerAtPixel(new int [] { e.x, e.y });
 					if (player == null) {
 						return;
 					}

@@ -1,7 +1,7 @@
 package soar2d.player.kitchen;
 
-import java.awt.Point;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.logging.*;
@@ -162,7 +162,7 @@ public class SoarCook extends Cook {
 	}
 	
 	@Override
-	public void update(java.awt.Point location) {
+	public void update(int [] location) {
 		World world = Soar2D.simulation.world;
 		KitchenMap map = (KitchenMap)world.getMap();
 		
@@ -178,24 +178,24 @@ public class SoarCook extends Cook {
 			objects.clear();
 
 			// update position
-			agent.Update(x, location.x);
-			agent.Update(y, location.y);
+			agent.Update(x, location[0]);
+			agent.Update(y, location[1]);
 
 			// update view
-			Point tempLocation;
-			tempLocation = new Point(location);
+			int [] tempLocation;
+			tempLocation = Arrays.copyOf(location, location.length);
 			Direction.translate(tempLocation, Direction.kNorthInt);
 			updateCell(map, tempLocation, northObject, northType);
 
-			tempLocation = new Point(location);
+			tempLocation = Arrays.copyOf(location, location.length);
 			Direction.translate(tempLocation, Direction.kSouthInt);
 			updateCell(map, tempLocation, southObject, southType);
 			
-			tempLocation = new Point(location);
+			tempLocation = Arrays.copyOf(location, location.length);
 			Direction.translate(tempLocation, Direction.kEastInt);
 			updateCell(map, tempLocation, eastObject, eastType);
 			
-			tempLocation = new Point(location);
+			tempLocation = Arrays.copyOf(location, location.length);
 			Direction.translate(tempLocation, Direction.kWestInt);
 			updateCell(map, tempLocation, westObject, westType);
 
@@ -268,7 +268,7 @@ public class SoarCook extends Cook {
 		}
 	}
 	
-	private void updateCell(KitchenMap map, Point tempLocation, StringElement objectWME, StringElement typeWME) {
+	private void updateCell(KitchenMap map, int [] tempLocation, StringElement objectWME, StringElement typeWME) {
 		if (objectWME != null) {
 			if (map.getAllWithProperty(tempLocation, "smell").size() > 0) {
 				agent.Update(objectWME, "true");

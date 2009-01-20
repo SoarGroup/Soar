@@ -433,8 +433,8 @@ public class TankSoarAgentDisplay extends AgentDisplay {
 		} else {
 			m_Smell.setToolTipText("no smell");
 		}
-		java.awt.Point playerLocation = players.getLocation(selectedPlayer);
-		location.setText("(" + playerLocation.x + "," + playerLocation.y + ")");
+		int [] playerLocation = players.getLocation(selectedPlayer);
+		location.setText("(" + playerLocation[0] + "," + playerLocation[1] + ")");
 		m_AgentWorld.redraw();
 	}
 	

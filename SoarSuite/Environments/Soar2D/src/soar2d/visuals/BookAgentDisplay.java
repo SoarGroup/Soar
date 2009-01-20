@@ -1,6 +1,5 @@
 package soar2d.visuals;
 
-import java.awt.geom.Point2D;
 import java.text.NumberFormat;
 
 import org.eclipse.swt.*;
@@ -294,12 +293,12 @@ public class BookAgentDisplay extends AgentDisplay {
 	
 	void updateSensors() {
 		assert selectedPlayer != null;
-		java.awt.Point gl = players.getLocation(selectedPlayer);
-		Point2D.Double fl = players.getFloatLocation(selectedPlayer);
+		int [] gl = players.getLocation(selectedPlayer);
+		double [] fl = players.getFloatLocation(selectedPlayer);
 		NumberFormat nf = NumberFormat.getInstance();
 		nf.setMaximumFractionDigits(2);
-		gridLocation.setText("(" + nf.format(gl.x) + "," + nf.format(gl.y) + ")");
-		floatLocation.setText("(" + nf.format(fl.x) + "," + nf.format(fl.y) + ")");
+		gridLocation.setText("(" + nf.format(gl[0]) + "," + nf.format(gl[1]) + ")");
+		floatLocation.setText("(" + nf.format(fl[0]) + "," + nf.format(fl[1]) + ")");
 
 		heading.setText(nf.format(selectedPlayer.getHeadingRadians()));
 
@@ -307,10 +306,10 @@ public class BookAgentDisplay extends AgentDisplay {
 		String col = selectedPlayer.getCollisionX() ? "true" : "false";
 		col += selectedPlayer.getCollisionY() ? ",true" : ",false";
 		collision.setText(col);
-		String vel = nf.format(selectedPlayer.getVelocity().x) + "," + nf.format(selectedPlayer.getVelocity().y);
+		String vel = nf.format(selectedPlayer.getVelocity()[0]) + "," + nf.format(selectedPlayer.getVelocity()[1]);
 		velocity.setText(vel);
 		rotation.setText(nf.format(selectedPlayer.getRotationSpeed()));
-		speed.setText(nf.format(Math.sqrt((selectedPlayer.getVelocity().x * selectedPlayer.getVelocity().x) + (selectedPlayer.getVelocity().y * selectedPlayer.getVelocity().y))));
+		speed.setText(nf.format(Math.sqrt((selectedPlayer.getVelocity()[0] * selectedPlayer.getVelocity()[0]) + (selectedPlayer.getVelocity()[1] * selectedPlayer.getVelocity()[1]))));
 		
 		carry.setText(selectedPlayer.getCarryType());
 	}

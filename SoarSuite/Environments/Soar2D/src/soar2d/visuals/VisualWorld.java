@@ -105,17 +105,18 @@ public abstract class VisualWorld extends Canvas implements PaintListener {
 		}
 	}
 
-	java.awt.Point getCellAtPixel(int x, int y) {
-		x /= cellSize;
-		y /= cellSize;
-		if (map.isInBounds(x, y)) {
-			return new java.awt.Point(x, y);
+	int [] getCellAtPixel(int [] loc) {
+		int [] pixelLoc = Arrays.copyOf(loc, loc.length);
+		pixelLoc[0] /= cellSize;
+		pixelLoc[1] /= cellSize;
+		if (map.isInBounds(pixelLoc)) {
+			return pixelLoc;
 		}
 		return null;
 	}
 	
-	Player getPlayerAtPixel(int x, int y) {
-		return this.map.getPlayer(getCellAtPixel(x, y));
+	Player getPlayerAtPixel(int [] loc) {
+		return this.map.getPlayer(getCellAtPixel(loc));
 	}
 	
 	class DrawMissile {
@@ -160,16 +161,16 @@ public abstract class VisualWorld extends Canvas implements PaintListener {
 		int yBase = cellSize*y;
 		int halfCell = cellSize/2;
 		
-		java.awt.Point center = new java.awt.Point(xBase + halfCell, yBase + halfCell);
-		java.awt.Point north = new java.awt.Point(center.x, yBase);
-		java.awt.Point east = new java.awt.Point(xBase + cellSize, center.y);
-		java.awt.Point south = new java.awt.Point(center.x, yBase + cellSize);
-		java.awt.Point west = new java.awt.Point(xBase, center.y);
+		int [] center = new int [] { xBase + halfCell, yBase + halfCell };
+		int [] north = new int [] { center[0], yBase };
+		int [] east = new int [] { xBase + cellSize, center[1] };
+		int [] south = new int [] { center[0], yBase + cellSize };
+		int [] west = new int [] { xBase, center[1] };
 		
-		gc.fillPolygon(new int[] {center.x, center.y, north.x, north.y, center.x + offCenter, center.y});
-		gc.fillPolygon(new int[] {center.x, center.y, east.x,  east.y,  center.x, center.y + offCenter});
-		gc.fillPolygon(new int[] {center.x, center.y, south.x, south.y, center.x - offCenter, center.y});
-		gc.fillPolygon(new int[] {center.x, center.y, west.x,  west.y,  center.x, center.y - offCenter});
+		gc.fillPolygon(new int[] {center[0], center[1], north[0], north[1], center[0] + offCenter, center[1]});
+		gc.fillPolygon(new int[] {center[0], center[1], east[0],  east[1],  center[0], center[1] + offCenter});
+		gc.fillPolygon(new int[] {center[0], center[1], south[0], south[1], center[0] - offCenter, center[1]});
+		gc.fillPolygon(new int[] {center[0], center[1], west[0],  west[1],  center[0], center[1] - offCenter});
 	}
 	
 	public void setRepaint() {
