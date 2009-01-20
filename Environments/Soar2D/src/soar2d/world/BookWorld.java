@@ -1,8 +1,7 @@
 package soar2d.world;
 
-import java.awt.Point;
-import java.awt.geom.Point2D;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.ListIterator;
@@ -35,7 +34,7 @@ public class BookWorld implements IWorld {
 			
 			assert player.getRotationSpeed() == 0;
 			assert player.getSpeed() == 0;
-			assert player.getVelocity().x == 0.0;
+			assert player.getVelocity()[0] == 0.0;
 			
 			MoveInfo move = players.getMove(player);
 			
@@ -62,8 +61,8 @@ public class BookWorld implements IWorld {
 
 			// translate
 			if (move.forward || move.backward) {
-				Point oldLocation = players.getLocation(player);
-				Point newLocation = new Point(oldLocation);
+				int [] oldLocation = players.getLocation(player);
+				int [] newLocation = Arrays.copyOf(oldLocation, oldLocation.length);
 
 				if (move.forward && move.backward) {
 					Soar2D.logger.warning("Move: both forward and backward indicated, ignoring");
@@ -129,7 +128,7 @@ public class BookWorld implements IWorld {
 	}
 
 	private void get(BookMap map, MoveInfo move, Player player) {
-		Soar2D.logger.finer("Move: get, location " + move.getLocation.x + "," + move.getLocation.y);
+		Soar2D.logger.finer("Move: get, location " + move.getLocation[0] + "," + move.getLocation[1]);
 		CellObject block = map.getObject(move.getLocation, "mblock");
 		if (block == null || player.isCarrying()) {
 			if (block == null) {
@@ -268,7 +267,7 @@ public class BookWorld implements IWorld {
 			if (player.getSpeed() != 0) {
 				bookMovePlayerContinuous(player, map, players, time);
 			} else {
-				player.setVelocity(new Point2D.Double(0,0));
+				player.setVelocity(new double [] { 0, 0 });
 			}
 			
 			if (move.get) {
@@ -276,19 +275,19 @@ public class BookWorld implements IWorld {
 			}
 			
 			if (move.drop) {
-				Point2D.Double dropFloatLocation = new Point2D.Double(players.getFloatLocation(player).x, players.getFloatLocation(player).y);
-				dropFloatLocation.x += Soar2D.config.roomConfig().cell_size * Math.cos(player.getHeadingRadians());
-				dropFloatLocation.y += Soar2D.config.roomConfig().cell_size * Math.sin(player.getHeadingRadians());
-				java.awt.Point dropLocation = new java.awt.Point((int)dropFloatLocation.x / Soar2D.config.roomConfig().cell_size, (int)dropFloatLocation.y / Soar2D.config.roomConfig().cell_size);
+				double [] dropFloatLocation = Arrays.copyOf(players.getFloatLocation(player), players.getFloatLocation(player).length);
+				dropFloatLocation[0] += Soar2D.config.roomConfig().cell_size * Math.cos(player.getHeadingRadians());
+				dropFloatLocation[1] += Soar2D.config.roomConfig().cell_size * Math.sin(player.getHeadingRadians());
+				int [] dropLocation = new int [] { (int)dropFloatLocation[0] / Soar2D.config.roomConfig().cell_size, (int)dropFloatLocation[1] / Soar2D.config.roomConfig().cell_size };
 				
 				if (dropLocation.equals(players.getLocation(player))) {
-					dropFloatLocation.x += (Soar2D.config.roomConfig().cell_size * 0.42) * Math.cos(player.getHeadingRadians());
-					dropFloatLocation.y += (Soar2D.config.roomConfig().cell_size * 0.42) * Math.sin(player.getHeadingRadians());
-					dropLocation = new java.awt.Point((int)dropFloatLocation.x / Soar2D.config.roomConfig().cell_size, (int)dropFloatLocation.y / Soar2D.config.roomConfig().cell_size);
+					dropFloatLocation[0] += (Soar2D.config.roomConfig().cell_size * 0.42) * Math.cos(player.getHeadingRadians());
+					dropFloatLocation[1] += (Soar2D.config.roomConfig().cell_size * 0.42) * Math.sin(player.getHeadingRadians());
+					dropLocation = new int [] { (int)dropFloatLocation[0] / Soar2D.config.roomConfig().cell_size, (int)dropFloatLocation[1] / Soar2D.config.roomConfig().cell_size };
 					assert !dropLocation.equals(players.getLocation(player));
 				}
 
-				Soar2D.logger.finer("Move: drop " + dropLocation.x + "," + dropLocation.y);
+				Soar2D.logger.finer("Move: drop " + dropLocation[0] + "," + dropLocation[1]);
 				
 				if (checkBlocked(dropLocation, map)) {
 					Soar2D.logger.warning("drop command failed, blocked");
@@ -406,25 +405,25 @@ public class BookWorld implements IWorld {
 	public void reset(GridMap map) {
 	}
 	
-	public void fragPlayer(Player player, GridMap _map, PlayersManager players, Point location) {
+	public void fragPlayer(Player player, GridMap _map, PlayersManager players, int [] location) {
 		BookMap map = (BookMap)_map;
 		player.setLocationId(map.getLocationId(location));
 		players.setFloatLocation(player, defaultFloatLocation(location));
 	}
 	
-	public void putInStartingLocation(Player player, GridMap _map, PlayersManager players, Point location) {
+	public void putInStartingLocation(Player player, GridMap _map, PlayersManager players, int [] location) {
 		BookMap map = (BookMap)_map;
 		player.setLocationId(map.getLocationId(location));
 		players.setFloatLocation(player, defaultFloatLocation(location));
 	}
 
-	private Point2D.Double defaultFloatLocation(Point location) {
-		Point2D.Double floatLocation = new Point2D.Double();
+	private double [] defaultFloatLocation(int [] location) {
+		double [] floatLocation = new double [2];
 		final int cellSize = Soar2D.config.roomConfig().cell_size;
 		
 		// default to center of square
-		floatLocation.x = (location.x * cellSize) + (cellSize / 2); 
-		floatLocation.y = (location.y * cellSize) + (cellSize / 2); 
+		floatLocation[0] = (location[0] * cellSize) + (cellSize / 2); 
+		floatLocation[1] = (location[1] * cellSize) + (cellSize / 2); 
 
 		return floatLocation;
 	}
@@ -440,38 +439,38 @@ public class BookWorld implements IWorld {
 	private void bookMovePlayerContinuous(Player player, BookMap map, PlayersManager players, double time) {
 		final int cellSize = Soar2D.config.roomConfig().cell_size;
 		
-		Point oldLocation = players.getLocation(player);
-		Point newLocation = new Point(oldLocation);
+		int [] oldLocation = players.getLocation(player);
+		int [] newLocation = Arrays.copyOf(oldLocation, oldLocation.length);
 
-		Point2D.Double oldFloatLocation = players.getFloatLocation(player);
-		Point2D.Double newFloatLocation = new Point2D.Double(oldFloatLocation.x, oldFloatLocation.y);
+		double [] oldFloatLocation = players.getFloatLocation(player);
+		double [] newFloatLocation = Arrays.copyOf(oldFloatLocation, oldFloatLocation.length);
 
-		newFloatLocation.x += player.getSpeed() * Math.cos(player.getHeadingRadians()) * time;
-		newFloatLocation.y += player.getSpeed() * Math.sin(player.getHeadingRadians()) * time;
+		newFloatLocation[0] += player.getSpeed() * Math.cos(player.getHeadingRadians()) * time;
+		newFloatLocation[1] += player.getSpeed() * Math.sin(player.getHeadingRadians()) * time;
 		
-		newLocation.x = (int)newFloatLocation.x / cellSize;
-		newLocation.y = (int)newFloatLocation.y / cellSize;
+		newLocation[0] = (int)newFloatLocation[0] / cellSize;
+		newLocation[1] = (int)newFloatLocation[1] / cellSize;
 		
 		while (checkBlocked(newLocation, map)) {
 			// 1) determine what edge we're intersecting
-			if ((newLocation.x != oldLocation.x) && (newLocation.y != oldLocation.y)) {
+			if ((newLocation[0] != oldLocation[0]) && (newLocation[1] != oldLocation[1])) {
 				// corner case
-				java.awt.Point oldx = new java.awt.Point(oldLocation.x, newLocation.y);
+				int [] oldx = new int [] { oldLocation[0], newLocation[1] };
 				
 				// if oldx is blocked
 				if (checkBlocked(oldx, map)) {
 					player.setCollisionY(true);
 					// calculate y first
-					if (newLocation.y > oldLocation.y) {
+					if (newLocation[1] > oldLocation[1]) {
 						// south
-						newFloatLocation.y = oldLocation.y * cellSize;
-						newFloatLocation.y += cellSize - 0.1;
-						newLocation.y = oldLocation.y;
+						newFloatLocation[1] = oldLocation[1] * cellSize;
+						newFloatLocation[1] += cellSize - 0.1;
+						newLocation[1] = oldLocation[1];
 					} 
-					else if (newLocation.y < oldLocation.y) {
+					else if (newLocation[1] < oldLocation[1]) {
 						// north
-						newFloatLocation.y = oldLocation.y * cellSize;
-						newLocation.y = oldLocation.y;
+						newFloatLocation[1] = oldLocation[1] * cellSize;
+						newLocation[1] = oldLocation[1];
 					} else {
 						assert false;
 					}
@@ -479,16 +478,16 @@ public class BookWorld implements IWorld {
 				else {
 					player.setCollisionX(true);
 					// calculate x first
-					if (newLocation.x > oldLocation.x) {
+					if (newLocation[0] > oldLocation[0]) {
 						// east
-						newFloatLocation.x = oldLocation.x * cellSize;
-						newFloatLocation.x += cellSize - 0.1;
-						newLocation.x = oldLocation.x;
+						newFloatLocation[0] = oldLocation[0] * cellSize;
+						newFloatLocation[0] += cellSize - 0.1;
+						newLocation[0] = oldLocation[0];
 					} 
-					else if (newLocation.x < oldLocation.x) {
+					else if (newLocation[0] < oldLocation[0]) {
 						// west
-						newFloatLocation.x = oldLocation.x * cellSize;
-						newLocation.x = oldLocation.x;
+						newFloatLocation[0] = oldLocation[0] * cellSize;
+						newLocation[0] = oldLocation[0];
 					} else {
 						assert false;
 					} 
@@ -496,35 +495,35 @@ public class BookWorld implements IWorld {
 				continue;
 			}
 			
-			if (newLocation.x > oldLocation.x) {
+			if (newLocation[0] > oldLocation[0]) {
 				player.setCollisionX(true);
 				// east
-				newFloatLocation.x = oldLocation.x * cellSize;
-				newFloatLocation.x += cellSize - 0.1;
-				newLocation.x = oldLocation.x;
+				newFloatLocation[0] = oldLocation[0] * cellSize;
+				newFloatLocation[0] += cellSize - 0.1;
+				newLocation[0] = oldLocation[0];
 			} 
-			else if (newLocation.x < oldLocation.x) {
+			else if (newLocation[0] < oldLocation[0]) {
 				player.setCollisionX(true);
 				// west
-				newFloatLocation.x = oldLocation.x * cellSize;
-				newLocation.x = oldLocation.x;
+				newFloatLocation[0] = oldLocation[0] * cellSize;
+				newLocation[0] = oldLocation[0];
 			} 
-			else if (newLocation.y > oldLocation.y) {
+			else if (newLocation[1] > oldLocation[1]) {
 				player.setCollisionY(true);
 				// south
-				newFloatLocation.y = oldLocation.y * cellSize;
-				newFloatLocation.y += cellSize - 0.1;
-				newLocation.y = oldLocation.y;
+				newFloatLocation[1] = oldLocation[1] * cellSize;
+				newFloatLocation[1] += cellSize - 0.1;
+				newLocation[1] = oldLocation[1];
 			} 
-			else if (newLocation.y < oldLocation.y) {
+			else if (newLocation[1] < oldLocation[1]) {
 				player.setCollisionY(true);
 				// north
-				newFloatLocation.y = oldLocation.y * cellSize;
-				newLocation.y = oldLocation.y;
+				newFloatLocation[1] = oldLocation[1] * cellSize;
+				newLocation[1] = oldLocation[1];
 			}
 		}
 		
-		player.setVelocity(new Point2D.Double((newFloatLocation.x - oldFloatLocation.x)/time, (newFloatLocation.y - oldFloatLocation.y)/time));
+		player.setVelocity(new double [] { (newFloatLocation[0] - oldFloatLocation[0])/time, (newFloatLocation[1] - oldFloatLocation[1])/time });
 		map.setPlayer(oldLocation, null);
 		players.setLocation(player, newLocation);
 		player.setLocationId(map.getLocationId(newLocation));
@@ -557,14 +556,14 @@ public class BookWorld implements IWorld {
 			ListIterator<Player> collideeIter = collision.listIterator();
 			while (collideeIter.hasNext()) {
 				Player player = collideeIter.next();
-				Point location = Soar2D.simulation.world.putInStartingLocation(player, false);
+				int [] location = Soar2D.simulation.world.putInStartingLocation(player, false);
 				assert location != null;
 				player.fragged();
 			}
 		}
 	}
 	
-	private boolean checkBlocked(Point location, GridMap map) {
+	private boolean checkBlocked(int [] location, GridMap map) {
 		if (map.getAllWithProperty(location, Names.kPropertyBlock).size() > 0) {
 			return true;
 		}

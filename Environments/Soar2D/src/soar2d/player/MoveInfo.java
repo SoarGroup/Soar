@@ -46,7 +46,7 @@ public class MoveInfo {
 	public boolean rotateRelative = false;	// rotate tank
 	public double rotateRelativeYaw;		// how far to rotate
 	public boolean get = false;
-	public java.awt.Point getLocation = null;
+	public int [] getLocation = null;
 	public int getId;
 	public boolean drop = false;
 	public int dropId;
@@ -132,7 +132,7 @@ public class MoveInfo {
 				output += "(" + Names.kRotateRelativeID + ": " + rotateRelativeYaw + ")";			
 			}
 			if (get) {
-				output += "(" + Names.kGetID + ": " + getId + ": " + getLocation.x + "," + getLocation.y + ")";
+				output += "(" + Names.kGetID + ": " + getId + ": " + getLocation[0] + "," + getLocation[1] + ")";
 			}
 			if (drop) {
 				output += "(" + Names.kDropID + ": " + dropId + ")";

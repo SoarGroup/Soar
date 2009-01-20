@@ -38,11 +38,11 @@ class PlayerInputLink { // FIXME should share code with OIL
 		this.yaw = robot.agent.CreateFloatWME(angleOff, "yaw", angleOffDouble);
 		this.position = robot.agent.CreateIdWME(parent, "position");
 		{
-			this.col = robot.agent.CreateIntWME(position, "col", players.getLocation(player).x);
-			this.row = robot.agent.CreateIntWME(position, "row", players.getLocation(player).y);
+			this.col = robot.agent.CreateIntWME(position, "col", players.getLocation(player)[0]);
+			this.row = robot.agent.CreateIntWME(position, "row", players.getLocation(player)[1]);
 			if (Soar2D.config.roomConfig().continuous) {
-				this.x = robot.agent.CreateFloatWME(position, "x", players.getFloatLocation(player).x);
-				this.y = robot.agent.CreateFloatWME(position, "y", players.getFloatLocation(player).y);
+				this.x = robot.agent.CreateFloatWME(position, "x", players.getFloatLocation(player)[0]);
+				this.y = robot.agent.CreateFloatWME(position, "y", players.getFloatLocation(player)[1]);
 			}
 		}
 		this.range = robot.agent.CreateFloatWME(parent, "range", range);

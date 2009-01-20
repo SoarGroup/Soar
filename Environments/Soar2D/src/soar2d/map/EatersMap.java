@@ -13,7 +13,7 @@ public class EatersMap extends GridMap {
 	}
 
 	@Override
-	public void addObjectToCell(java.awt.Point location, CellObject object) {
+	public void addObjectToCell(int [] location, CellObject object) {
 		Cell cell = getCell(location);
 		if (cell.hasObject(object.getName())) {
 			CellObject old = cell.removeObject(object.getName());
@@ -52,7 +52,7 @@ public class EatersMap extends GridMap {
 			
 			while (iter.hasNext()) {
 				CellObject cellObject = iter.next();
-				java.awt.Point location = updatablesLocations.get(cellObject);
+				int [] location = updatablesLocations.get(cellObject);
 				assert location != null;
 				
 				int previousScore = setPreviousScore(cellObject);
@@ -102,7 +102,7 @@ public class EatersMap extends GridMap {
 	}
 	
 	@Override
-	public boolean isAvailable(java.awt.Point location) {
+	public boolean isAvailable(int [] location) {
 		Cell cell = getCell(location);
 		boolean enterable = cell.enterable();
 		boolean noPlayer = cell.getPlayer() == null;
@@ -110,7 +110,7 @@ public class EatersMap extends GridMap {
 	}
 	
 	@Override
-	public void setExplosion(java.awt.Point location) {
+	public void setExplosion(int [] location) {
 		CellObject explosion = new CellObject(Names.kExplosion);
 		explosion.addProperty(Names.kPropertyLinger, "2");
 		explosion.setLingerUpdate(true);

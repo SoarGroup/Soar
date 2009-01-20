@@ -171,12 +171,12 @@ public class Direction {
 	 * 
 	 * takes a point p and translates it one unit in the direction indicated
 	 */
-	public static void translate(java.awt.Point p, int direction) {
+	public static void translate(int [] p, int direction) {
 		assert direction > 0;
 		assert direction < 5;
 		
-		p.x += xDelta[direction];
-		p.y += yDelta[direction];
+		p[0] += xDelta[direction];
+		p[1] += yDelta[direction];
 	}
 	
 	private Direction() {

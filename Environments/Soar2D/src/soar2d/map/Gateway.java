@@ -1,17 +1,17 @@
 package soar2d.map;
 
-import java.awt.Point;
 import java.util.ArrayList;
+import java.util.Arrays;
 
 public class Gateway {
 
 	ArrayList<Integer> locationIDs;
-	Point leftExtent;
-	Point rightExtent;
+	int [] leftExtent;
+	int [] rightExtent;
 
-	Gateway(Point leftExtent, Point rightExtent) {
-		this.leftExtent = new Point(leftExtent);
-		this.rightExtent = new Point(rightExtent);
+	Gateway(int [] leftExtent, int [] rightExtent) {
+		this.leftExtent = Arrays.copyOf(leftExtent, leftExtent.length);
+		this.rightExtent = Arrays.copyOf(rightExtent, rightExtent.length);
 	}
 	
 	void addLocationID(int id) {

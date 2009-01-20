@@ -1,6 +1,5 @@
 package soar2d.player.book;
 
-import java.awt.geom.Point2D;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -100,7 +99,7 @@ public class SoarRobot extends Robot {
 		return super.drop();
 	}
 	
-	public void update(java.awt.Point location) {
+	public void update(int [] location) {
 		World world = Soar2D.simulation.world;
 
 		PlayersManager players = world.getPlayers();
@@ -172,9 +171,9 @@ public class SoarRobot extends Robot {
 					GatewayInputLink gateway = gatewayIter.next();
 					
 					agent.Update(gateway.yaw, players.angleOff(this, gateway.centerpoint));
-					double dx = gateway.centerpoint.x - players.getFloatLocation(this).x;
+					double dx = gateway.centerpoint[0] - players.getFloatLocation(this)[0];
 					dx *= dx;
-					double dy = gateway.centerpoint.y - players.getFloatLocation(this).y;
+					double dy = gateway.centerpoint[1] - players.getFloatLocation(this)[1];
 					dy *= dy;
 					double r = Math.sqrt(dx + dy);
 					
@@ -184,13 +183,13 @@ public class SoarRobot extends Robot {
 			}
 
 			// update the location
-			agent.Update(selfIL.col, location.x);
-			agent.Update(selfIL.row, location.y);
+			agent.Update(selfIL.col, location[0]);
+			agent.Update(selfIL.row, location[1]);
 			
 			if (Soar2D.config.roomConfig().continuous) {
-				Point2D.Double floatLocation = players.getFloatLocation(this);
-				agent.Update(selfIL.x, floatLocation.x);
-				agent.Update(selfIL.y, floatLocation.y);
+				double [] floatLocation = players.getFloatLocation(this);
+				agent.Update(selfIL.x, floatLocation[0]);
+				agent.Update(selfIL.y, floatLocation[1]);
 			}
 			
 			// heading
@@ -206,9 +205,9 @@ public class SoarRobot extends Robot {
 		
 		if (Soar2D.config.roomConfig().continuous) {
 			// velocity
-			agent.Update(selfIL.speed, Math.sqrt((getVelocity().x * getVelocity().x) + (getVelocity().y * getVelocity().y)));
-			agent.Update(selfIL.dx, getVelocity().x);
-			agent.Update(selfIL.dy, getVelocity().y);
+			agent.Update(selfIL.speed, Math.sqrt((getVelocity()[0] * getVelocity()[0]) + (getVelocity()[1] * getVelocity()[1])));
+			agent.Update(selfIL.dx, getVelocity()[0]);
+			agent.Update(selfIL.dy, getVelocity()[1]);
 			agent.Update(selfIL.rotation, this.getRotationSpeed());
 
 			// collisions
@@ -448,7 +447,7 @@ public class SoarRobot extends Robot {
 				
 				move.get = true;
 				getCommandId = commandId;
-				move.getLocation = new java.awt.Point(oIL.col.GetValue(), oIL.row.GetValue());
+				move.getLocation = new int [] { oIL.col.GetValue(), oIL.row.GetValue() };
 				
 			} else if (commandName.equalsIgnoreCase(Names.kDropID)) {
 				if (move.drop) {
@@ -730,7 +729,7 @@ public class SoarRobot extends Robot {
 				
 				move.get = true;
 				getCommandId = commandId;
-				move.getLocation = new java.awt.Point(oIL.col.GetValue(), oIL.row.GetValue());
+				move.getLocation = new int [] { oIL.col.GetValue(), oIL.row.GetValue() };
 				
 			} else if (commandName.equalsIgnoreCase(Names.kDropID)) {
 				if (move.drop) {

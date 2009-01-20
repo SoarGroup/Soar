@@ -1,5 +1,6 @@
 package soar2d.player.eaters;
 
+import java.util.Arrays;
 import java.util.logging.Logger;
 
 import soar2d.Direction;
@@ -47,15 +48,15 @@ public class ToscaEater extends Eater {
 	}
 	
 	/* (non-Javadoc)
-	 * @see soar2d.player.Player#update(soar2d.World, java.awt.Point)
+	 * @see soar2d.player.Player#update(soar2d.World, int [])
 	 */
-	public void update(java.awt.Point location) {
+	public void update(int [] location) {
 		super.update(location);
 
 		// check to see if we've moved.
-		moved = (location.x != previousLocation.x) || (location.y != previousLocation.y);
+		moved = (location[0] != previousLocation[0]) || (location[1] != previousLocation[1]);
 		if (moved) {
-			previousLocation = new java.awt.Point(location);
+			previousLocation = Arrays.copyOf(location, location.length);
 		}
 		
 		Clock clock = m_Library.GetClock() ;
@@ -75,7 +76,7 @@ public class ToscaEater extends Eater {
 		// Switching to have tosca eater auto generate a direction so the eater
 		// moves w/o my having to enter something.
 		MoveInfo move = new MoveInfo() ;
-		java.awt.Point oldLocation = previousLocation ;
+		int [] oldLocation = previousLocation ;
 		
 		if (kSimulatedOutput)
 		{
@@ -90,7 +91,7 @@ public class ToscaEater extends Eater {
 					move.moveDirection = 1 ;
 				
 				// Calculate new location
-				java.awt.Point newLocation = new java.awt.Point(oldLocation);
+				int [] newLocation = Arrays.copyOf(oldLocation, oldLocation.length);
 				Direction.translate(newLocation, move.moveDirection);
 				// Verify legal move and commit move
 				if (Soar2D.simulation.world.getMap().isInBounds(newLocation) && Soar2D.simulation.world.getMap().enterable(newLocation))

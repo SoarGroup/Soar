@@ -171,9 +171,9 @@ public class TaxiAgentDisplay extends AgentDisplay {
 	void selectPlayer(Player player) {
 		selectedPlayer = player;
 		m_AgentTable.setSelection(players.indexOf(player));
-		java.awt.Point playerLocation = players.getLocation(selectedPlayer);
-		int newY = Soar2D.simulation.world.getMap().getSize() - 1 - playerLocation.y;
-		location.setText("(" + playerLocation.x + "," + newY + ")");
+		int [] playerLocation = players.getLocation(selectedPlayer);
+		int newY = Soar2D.simulation.world.getMap().getSize() - 1 - playerLocation[1];
+		location.setText("(" + playerLocation[0] + "," + newY + ")");
 		updateButtons();
 	}
 	
@@ -185,9 +185,9 @@ public class TaxiAgentDisplay extends AgentDisplay {
 	void worldChangeEvent() {
 		TaxiMap xMap = (TaxiMap)Soar2D.simulation.world.getMap();
 		if (selectedPlayer != null) {
-			java.awt.Point playerLocation = players.getLocation(selectedPlayer);
-			int newY = Soar2D.simulation.world.getMap().getSize() - 1 - playerLocation.y;
-			location.setText("(" + playerLocation.x + "," + newY + ")");
+			int [] playerLocation = players.getLocation(selectedPlayer);
+			int newY = Soar2D.simulation.world.getMap().getSize() - 1 - playerLocation[1];
+			location.setText("(" + playerLocation[0] + "," + newY + ")");
 			fuel.setSelection(xMap.getFuel());
 			fuel.setToolTipText(Integer.toString(xMap.getFuel()));
 		}

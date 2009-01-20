@@ -1,7 +1,7 @@
 package soar2d.world;
 
-import java.awt.Point;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -50,7 +50,7 @@ public class TankSoarWorld implements IWorld {
 		TankSoarMap tMap = (TankSoarMap)_map;
 		
 		// We'll cache the tank new locations
-		HashMap<Player, Point> newLocations = new HashMap<Player, Point>();
+		HashMap<Player, int []> newLocations = new HashMap<Player, int []>();
 		
 		// And we'll cache tanks that moved
 		ArrayList<Player> movedTanks = new ArrayList<Player>(players.numberOfPlayers());
@@ -119,7 +119,7 @@ public class TankSoarWorld implements IWorld {
 			// we haven't been checked yet
 			
 			// Calculate new location if I moved, or just use the old location
-			Point oldLocation = players.getLocation(player);
+			int [] oldLocation = players.getLocation(player);
 			
 			if (!playerMove.move) {
 				// No move, cross collision impossible
@@ -128,7 +128,7 @@ public class TankSoarWorld implements IWorld {
 			}
 			
 			// we moved, calcuate new location
-			Point newLocation = new Point(oldLocation);
+			int [] newLocation = Arrays.copyOf(oldLocation, oldLocation.length);
 			Direction.translate(newLocation, playerMove.moveDirection);
 			
 			//Cell dest = map.getCell(newLocation);
@@ -231,7 +231,7 @@ public class TankSoarWorld implements IWorld {
 		// We've eliminated all cross collisions and walls
 		
 		// We'll need to save where people move, indexed by location
-		HashMap<Point, ArrayList<Player> > collisionMap = new HashMap<Point, ArrayList<Player> >();
+		HashMap<int [], ArrayList<Player> > collisionMap = new HashMap<int [], ArrayList<Player> >();
 		
 		// Iterate through players, checking for all other types of collisions
 		// Also, moves are committed at this point and they won't respawn on
@@ -321,7 +321,7 @@ public class TankSoarWorld implements IWorld {
 		while (playerIter.hasNext()) {
 			Player player = playerIter.next();
 			// put in new cell
-			Point location = newLocations.get(player);
+			int [] location = newLocations.get(player);
 			players.setLocation(player, location);
 			tMap.setPlayer(location, player);
 			
@@ -376,7 +376,7 @@ public class TankSoarWorld implements IWorld {
 		playerIter = firedTanks.iterator();
 		while (playerIter.hasNext()) {
 			Player player = playerIter.next();
-			Point missileLoc = new Point(players.getLocation(player));
+			int [] missileLoc = Arrays.copyOf(players.getLocation(player), players.getLocation(player).length);
 			
 			int direction = player.getFacingInt();
 			Direction.translate(missileLoc, direction);
@@ -474,11 +474,11 @@ public class TankSoarWorld implements IWorld {
 		player.adjustEnergy(player.getRadarPower() * -1, "radar");
 	}
 	
-	public void fragPlayer(Player player, GridMap map, PlayersManager players, Point location) {
+	public void fragPlayer(Player player, GridMap map, PlayersManager players, int [] location) {
 		
 	}
 	
-	public void putInStartingLocation(Player player, GridMap map, PlayersManager players, Point location) {
+	public void putInStartingLocation(Player player, GridMap map, PlayersManager players, int [] location) {
 		
 	}
 	
@@ -487,7 +487,7 @@ public class TankSoarWorld implements IWorld {
 		missileReset = 0;
 	}
 	
-	private void chargeUp(Player player, TankSoarMap map, Point location) {
+	private void chargeUp(Player player, TankSoarMap map, int [] location) {
 		// Charge up
 		ArrayList<CellObject> chargers = map.getAllWithProperty(location, Names.kPropertyCharger);
 		Iterator<CellObject> iter = chargers.iterator();
@@ -533,9 +533,9 @@ public class TankSoarWorld implements IWorld {
 						continue;
 					}
 					
-					Point playerLoc = players.getLocation(player);
-					Point otherLoc = players.getLocation(other);
-					int newDistance = Math.abs(playerLoc.x - otherLoc.x) + Math.abs(playerLoc.y - otherLoc.y);
+					int [] playerLoc = players.getLocation(player);
+					int [] otherLoc = players.getLocation(other);
+					int newDistance = Math.abs(playerLoc[0] - otherLoc[0]) + Math.abs(playerLoc[1] - otherLoc[1]);
 					
 					if (newDistance < distance) {
 						distance = newDistance;
@@ -572,21 +572,21 @@ public class TankSoarWorld implements IWorld {
 
 
 	private boolean addCharger(boolean health, TankSoarMap newMap) {
-		ArrayList<Point> locations = newMap.getAvailableLocations();
+		ArrayList<int []> locations = newMap.getAvailableLocations();
 		if (locations.size() <= 0) {
 			Soar2D.control.severeError("No place to put charger!");
 			return false;
 		}
 		
-		Point location = locations.get(Simulation.random.nextInt(locations.size()));
+		int [] location = locations.get(Simulation.random.nextInt(locations.size()));
 		if (health) {
-			Soar2D.logger.info("spawning health charger at (" + location.x + "," + location.y + ")");
+			Soar2D.logger.info("spawning health charger at (" + location[0] + "," + location[1] + ")");
 			if (!newMap.addRandomObjectWithProperties(location, Names.kPropertyHealth, Names.kPropertyCharger)) {
 				Soar2D.control.severeError("Couldn't add charger to map!");
 				return false;
 			}
 		} else {			
-			Soar2D.logger.info("spawning energy charger at (" + location.x + "," + location.y + ")");
+			Soar2D.logger.info("spawning energy charger at (" + location[0] + "," + location[1] + ")");
 			if (!newMap.addRandomObjectWithProperties(location, Names.kPropertyEnergy, Names.kPropertyCharger)) {
 				Soar2D.control.severeError("Couldn't add charger to map!");
 				return false;
@@ -599,14 +599,14 @@ public class TankSoarWorld implements IWorld {
 	private boolean spawnMissilePack(TankSoarMap theMap, boolean force) {
 		if (force || (Simulation.random.nextInt(100) < Soar2D.config.tanksoarConfig().missile_pack_respawn_chance)) {
 			// Get available spots
-			ArrayList<Point> spots = theMap.getAvailableLocations();
+			ArrayList<int []> spots = theMap.getAvailableLocations();
 			if (spots.size() <= 0) {
 				return false;
 			}
 			
 			// Add a missile pack to a spot
-			Point spot = spots.get(Simulation.random.nextInt(spots.size()));
-			Soar2D.logger.info("spawning missile pack at (" + spot.x + "," + spot.y + ")");
+			int [] spot = spots.get(Simulation.random.nextInt(spots.size()));
+			Soar2D.logger.info("spawning missile pack at (" + spot[0] + "," + spot[1] + ")");
 			boolean ret = theMap.addRandomObjectWithProperty(spot, Names.kPropertyMissiles);
 			if (ret == false) {
 				return false;
@@ -615,7 +615,7 @@ public class TankSoarWorld implements IWorld {
 		return true;
 	}
 	
-	public void missileHit(Player player, TankSoarMap tMap, Point location, CellObject missile, PlayersManager players) {
+	public void missileHit(Player player, TankSoarMap tMap, int [] location, CellObject missile, PlayersManager players) {
 		// Yes, I'm hit
 		missile.apply(player);
 		
@@ -646,12 +646,12 @@ public class TankSoarWorld implements IWorld {
 	}
 	
 	private void doMoveCollisions(Player player, PlayersManager players, 
-			HashMap<Player, Point> newLocations, 
-			HashMap<Point, ArrayList<Player> > collisionMap, 
+			HashMap<Player, int []> newLocations, 
+			HashMap<int [], ArrayList<Player> > collisionMap, 
 			ArrayList<Player> movedTanks) {
 		
 		// Get destination location
-		Point newLocation = newLocations.get(player);
+		int [] newLocation = newLocations.get(player);
 		
 		// Wall collisions checked for earlier
 		
@@ -693,7 +693,7 @@ public class TankSoarWorld implements IWorld {
 	}
 	
 	private void cancelMove(Player player, PlayersManager players, 
-			HashMap<Player, Point> newLocations, 
+			HashMap<Player, int []> newLocations, 
 			ArrayList<Player> movedTanks) {
 		MoveInfo move = players.getMove(player);
 		move.move = false;

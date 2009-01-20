@@ -51,15 +51,15 @@ public class TaxiVisualWorld extends VisualWorld {
 		
 		// Draw world
 		int fill;
-		java.awt.Point location = new java.awt.Point();
-		for(location.x = 0; location.x < map.getSize(); ++location.x){			
-			for(location.y = 0; location.y < map.getSize(); ++location.y){				
+		int [] location = new int [2];
+		for(location[0] = 0; location[0] < map.getSize(); ++location[0]){			
+			for(location[1] = 0; location[1] < map.getSize(); ++location[1]){				
 				if ((this.map.removeObject(location, Names.kRedraw) == null) && painted) {
 					//continue;
 				}
 
 				gc.setBackground(WindowManager.widget_background);
-				gc.fillRectangle(cellSize*location.x+1, cellSize*location.y+1, cellSize-2, cellSize-2);
+				gc.fillRectangle(cellSize*location[0]+1, cellSize*location[1]+1, cellSize-2, cellSize-2);
 				
 				// destination
 				ArrayList<CellObject> destinationList;
@@ -68,7 +68,7 @@ public class TaxiVisualWorld extends VisualWorld {
 					CellObject destination = destinationList.get(0);
 					Color color = WindowManager.getColor(destination.getProperty(Names.kPropertyColor));
 					gc.setBackground(color);
-				    gc.fillRectangle(cellSize*location.x + 1, cellSize*location.y + 1, cellSize - 2, cellSize - 2);
+				    gc.fillRectangle(cellSize*location[0] + 1, cellSize*location[1] + 1, cellSize - 2, cellSize - 2);
 				}
 				
 				if (this.map.hasObject(location, "fuel")) {
@@ -78,8 +78,8 @@ public class TaxiVisualWorld extends VisualWorld {
 					gc.setForeground(WindowManager.orange);
 					gc.setBackground(WindowManager.widget_background);
 					
-					gc.fillRectangle(cellSize*location.x + fill, cellSize*location.y + fill, size, size);
-					gc.drawRectangle(cellSize*location.x + fill, cellSize*location.y + fill, size-1, size-1);
+					gc.fillRectangle(cellSize*location[0] + fill, cellSize*location[1] + fill, size, size);
+					gc.drawRectangle(cellSize*location[0] + fill, cellSize*location[1] + fill, size-1, size-1);
 			        
 					gc.setForeground(WindowManager.black);
 				}
@@ -92,14 +92,14 @@ public class TaxiVisualWorld extends VisualWorld {
 
 					int size = 12;
 					fill = cellSize/2 - size/2;
-					gc.fillRectangle(cellSize*location.x + fill, cellSize*location.y + fill, size, size);
-					gc.drawRectangle(cellSize*location.x + fill, cellSize*location.y + fill, size-1, size-1);
+					gc.fillRectangle(cellSize*location[0] + fill, cellSize*location[1] + fill, size, size);
+					gc.drawRectangle(cellSize*location[0] + fill, cellSize*location[1] + fill, size-1, size-1);
 					
 					TaxiMap xMap = (TaxiMap)map;
 					if (xMap.isPassengerCarried()) {
 						size = 4;
 						fill = cellSize/2 - size/2;
-						gc.drawOval(cellSize*location.x + fill, cellSize*location.y + fill, size - 1, size - 1);
+						gc.drawOval(cellSize*location[0] + fill, cellSize*location[1] + fill, size - 1, size - 1);
 					}
 				}
 				
@@ -108,8 +108,8 @@ public class TaxiVisualWorld extends VisualWorld {
 					int size = 8;
 					fill = cellSize/2 - size/2;
 					gc.setBackground(WindowManager.getColor("black"));
-					gc.fillOval(cellSize*location.x + fill, cellSize*location.y + fill, size, size);
-					gc.drawOval(cellSize*location.x + fill, cellSize*location.y + fill, size - 1, size - 1);
+					gc.fillOval(cellSize*location[0] + fill, cellSize*location[1] + fill, size, size);
+					gc.drawOval(cellSize*location[0] + fill, cellSize*location[1] + fill, size - 1, size - 1);
 				}
 
 				// walls
@@ -120,16 +120,16 @@ public class TaxiVisualWorld extends VisualWorld {
 					CellObject wall = (CellObject)wallIter.next();
 					switch(Direction.getInt(wall.getProperty("direction"))) {
 					case Direction.kNorthInt:
-						gc.drawLine(cellSize*location.x, cellSize*location.y, cellSize*location.x + cellSize-1, cellSize*location.y);
+						gc.drawLine(cellSize*location[0], cellSize*location[1], cellSize*location[0] + cellSize-1, cellSize*location[1]);
 						break; 
 					case Direction.kSouthInt:
-						gc.drawLine(cellSize*location.x, cellSize*location.y + cellSize-1, cellSize*location.x + cellSize-1, cellSize*location.y + cellSize-1);
+						gc.drawLine(cellSize*location[0], cellSize*location[1] + cellSize-1, cellSize*location[0] + cellSize-1, cellSize*location[1] + cellSize-1);
 						break;
 					case Direction.kEastInt:
-						gc.drawLine(cellSize*location.x + cellSize-1, cellSize*location.y, cellSize*location.x + cellSize-1, cellSize*location.y + cellSize-1);
+						gc.drawLine(cellSize*location[0] + cellSize-1, cellSize*location[1], cellSize*location[0] + cellSize-1, cellSize*location[1] + cellSize-1);
 						break;
 					case Direction.kWestInt:
-						gc.drawLine(cellSize*location.x, cellSize*location.y, cellSize*location.x, cellSize*location.y + cellSize-1);
+						gc.drawLine(cellSize*location[0], cellSize*location[1], cellSize*location[0], cellSize*location[1] + cellSize-1);
 						break;
 					default:
 						assert false;

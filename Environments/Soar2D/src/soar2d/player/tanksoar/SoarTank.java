@@ -98,7 +98,7 @@ public class SoarTank extends Tank implements Agent.RunEventInterface {
 		agent.RegisterForRunEvent(smlRunEventId.smlEVENT_MAX_MEMORY_USAGE_EXCEEDED, this, null);
 		m_InputLink = agent.GetInputLink();
 
-		previousLocation = new java.awt.Point(-1, -1);
+		previousLocation = new int [] { -1, -1 };
 		
 		loadMetadata();
 	}
@@ -174,7 +174,7 @@ public class SoarTank extends Tank implements Agent.RunEventInterface {
 		return agent.CreateFloatWME(id, attribute, value);
 	}
 
-	public void update(java.awt.Point location) {
+	public void update(int [] location) {
 		super.update(location);
 	}
 	
@@ -497,7 +497,7 @@ public class SoarTank extends Tank implements Agent.RunEventInterface {
 		playersChanged = true;
 	}
 
-	public void commit(java.awt.Point location) {
+	public void commit(int [] location) {
 		int facing = getFacingInt();
 		String facingString = Direction.stringOf[facing];
 		World world = Soar2D.simulation.world;
@@ -536,7 +536,7 @@ public class SoarTank extends Tank implements Agent.RunEventInterface {
 
 		if (Soar2D.logger.isLoggable(Level.FINEST)) {
 			logger.finest(this.getName() + " input dump: ");
-			logger.finest(this.getName() + ": x,y: " + location.x + "," + location.y);
+			logger.finest(this.getName() + ": x,y: " + location[0] + "," + location[1]);
 			logger.finest(this.getName() + ": " + Names.kEnergyRechargerID + ": " + (onEnergyCharger ? Names.kYes : Names.kNo));
 			logger.finest(this.getName() + ": " + Names.kHealthRechargerID + ": " + (onHealthCharger ? Names.kYes : Names.kNo));
 			logger.finest(this.getName() + ": " + Names.kDirectionID + ": " + facingString);
@@ -570,8 +570,8 @@ public class SoarTank extends Tank implements Agent.RunEventInterface {
 
 		if (m_Reset) {
 			// location
-			m_xWME = CreateIntWME(m_InputLink, Names.kXID, location.x);
-			m_yWME = CreateIntWME(m_InputLink, Names.kYID, location.y);
+			m_xWME = CreateIntWME(m_InputLink, Names.kXID, location[0]);
+			m_yWME = CreateIntWME(m_InputLink, Names.kYID, location[1]);
 			
 			// charger detection
 			String energyRecharger = onEnergyCharger ? Names.kYes : Names.kNo;
@@ -658,12 +658,12 @@ public class SoarTank extends Tank implements Agent.RunEventInterface {
 		} else {
 			if (moved) {
 				// location
-				if (location.x != m_xWME.GetValue()) {
-					Update(m_xWME, location.x);
+				if (location[0] != m_xWME.GetValue()) {
+					Update(m_xWME, location[0]);
 				}
 				
-				if (location.y != m_yWME.GetValue()) {
-					Update(m_yWME, location.y);
+				if (location[1] != m_yWME.GetValue()) {
+					Update(m_yWME, location[1]);
 				}
 				
 				// charger detection

@@ -244,7 +244,7 @@ public class Tank extends Player {
 		return shieldsUp;
 	}
 
-	public void update(java.awt.Point location) {
+	public void update(int [] location) {
 		World world = Soar2D.simulation.world;
 		super.update(location);
 		

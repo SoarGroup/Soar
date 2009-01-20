@@ -152,11 +152,11 @@ public class EatersAgentDisplay extends AgentDisplay {
 	void selectPlayer(Player player) {
 		selectedPlayer = player;
 		m_AgentTable.setSelection(players.indexOf(player));
-		java.awt.Point playerLocation = players.getLocation(selectedPlayer);
+		int [] playerLocation = players.getLocation(selectedPlayer);
 		m_AgentWorld.setAgentLocation(playerLocation);
 		m_AgentWorld.enable();
 		m_AgentWorld.redraw();
-		location.setText("(" + playerLocation.x + "," + playerLocation.y + ")");
+		location.setText("(" + playerLocation[0] + "," + playerLocation[1] + ")");
 		updateButtons();
 	}
 	
@@ -167,10 +167,10 @@ public class EatersAgentDisplay extends AgentDisplay {
 
 	void worldChangeEvent() {
 		if (selectedPlayer != null) {
-			java.awt.Point playerLocation = players.getLocation(selectedPlayer);
+			int [] playerLocation = players.getLocation(selectedPlayer);
 			m_AgentWorld.setAgentLocation(playerLocation);
 			m_AgentWorld.redraw();
-			location.setText("(" + playerLocation.x + "," + playerLocation.y + ")");
+			location.setText("(" + playerLocation[0] + "," + playerLocation[1] + ")");
 		}
 		
 		for (int i = 0; i < m_Items.length; ++i) {

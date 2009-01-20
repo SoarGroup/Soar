@@ -17,7 +17,7 @@ public class Dog extends Player {
 	Player target;
 	double targetAngleOff;
 	
-	public void update(java.awt.Point location) {
+	public void update(int [] location) {
 		World world = Soar2D.simulation.world;
 		
 		super.update(location);
