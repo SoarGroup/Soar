@@ -8,7 +8,6 @@ import java.util.Iterator;
 import java.util.ListIterator;
 
 import soar2d.Soar2D;
-import soar2d.config.Soar2DKeys;
 import soar2d.player.MoveInfo;
 import soar2d.player.Player;
 
@@ -130,7 +129,7 @@ public class PlayersManager {
 		playerVector.x = floatLocations.get(left).x;
 		playerVector.y = floatLocations.get(left).y;
 
-		if (Soar2D.config.getBoolean(Soar2DKeys.room.continuous, true) == false) {
+		if (Soar2D.config.roomConfig().continuous == false) {
 			// translate the player's location back a little bit to increase peripheral vision
 			playerVector.x -= Math.cos(left.getHeadingRadians());
 			playerVector.y -= Math.sin(left.getHeadingRadians());

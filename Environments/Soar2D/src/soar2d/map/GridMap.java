@@ -15,8 +15,6 @@ import org.jdom.output.Format;
 import org.jdom.output.XMLOutputter;
 
 import soar2d.*;
-import soar2d.config.Config;
-import soar2d.config.Soar2DKeys;
 import soar2d.player.*;
 import soar2d.world.TankSoarWorld;
 
@@ -28,9 +26,7 @@ import soar2d.world.TankSoarWorld;
 public abstract class GridMap {
 	public static final Logger logger = Logger.getLogger("soar2d");
 
-	Config config;
-	public GridMap(Config config) {
-		this.config = config;
+	public GridMap() {
 	}
 	
 	private static final String kTagMap = "map";
@@ -49,11 +45,7 @@ public abstract class GridMap {
 		// one load call per object
 		assert mapCells == null;
 		
-		if (config == null) {
-			throw new LoadError("Configuration not set");
-		}
-		
-		File mapFile = new File(config.getString(Soar2DKeys.general.map));
+		File mapFile = new File(Soar2D.config.generalConfig().map);
 		if (!mapFile.exists()) {
 			throw new LoadError("Map file doesn't exist: " + mapFile.getAbsolutePath());
 		}
@@ -663,12 +655,12 @@ public abstract class GridMap {
 			addWallAndRemoveFood(new java.awt.Point(col, size - 1));
 		}
 		
-		double probability = Soar2D.config.getDouble(Soar2DKeys.eaters.low_probability, 0.15);
+		double probability = Soar2D.config.eatersConfig().low_probability;
 		for (int row = 2; row < size - 2; ++row) {
 			for (int col = 2; col < size - 2; ++col) {
 				if (noWallsOnCorners(row, col)) {
 					if (wallOnAnySide(row, col)) {
-						probability = Soar2D.config.getDouble(Soar2DKeys.eaters.high_probability, 0.65);					
+						probability = Soar2D.config.eatersConfig().high_probability;					
 					}
 					if (Simulation.random.nextDouble() < probability) {
 						if (mapCells[row][col] == null) {
@@ -676,7 +668,7 @@ public abstract class GridMap {
 						}
 						addWallAndRemoveFood(new java.awt.Point(col, row));
 					}
-					probability = Soar2D.config.getDouble(Soar2DKeys.eaters.low_probability, 0.15);
+					probability = Soar2D.config.eatersConfig().low_probability;
 				}
 			}
 		}
@@ -1143,7 +1135,7 @@ public abstract class GridMap {
 			searchList.removeFirst();
 			parentCell = getCell(parentLocation);
 			distance = parentCell.distance;
-			if (distance >= Soar2D.config.getInt(Soar2DKeys.tanksoar.max_smell_distance, 7)) {
+			if (distance >= Soar2D.config.tanksoarConfig().max_smell_distance) {
 				//System.out.println(parentCell + " too far");
 				continue;
 			}

@@ -20,7 +20,7 @@ import tosca.Vector;
 public class ToscaInterface {
 	// Test code -- remove once things are working
 	private static ToscaInterface s_Tosca = null ;
-	private LoaderJNI 		m_Loader = null ;
+	//private LoaderJNI 		m_Loader = null ;
 	private tosca.Library   m_EatersLibrary = null ;
 	private int				m_AgentNumber = 0 ;
 	private EatersInputFunctionModule m_InputModule ;	// BADBAD: I think we have to stop this from being garbage collected.  In C++ we pass it to Library and it takes ownership--that's not clear to SWIG.
@@ -44,7 +44,7 @@ public class ToscaInterface {
 	protected void loadLibrary() {
 		LoaderJNI loader = new LoaderJNI("EatersDLL") ;
 		long rawLibrarian = loader.Librarian_GetExistingLibrarian() ;
-		m_Loader = loader ;
+		//m_Loader = loader ;
 		
 	    //tosca.Librarian librarian = tosca.Librarian.GetLibrarian() ;
 		tosca.Librarian librarian = tosca.Librarian.UseExistingLibrarian(rawLibrarian) ;
@@ -149,7 +149,7 @@ public class ToscaInterface {
 		// Loads our test C++ code and gets a pointer to it
 		LoaderJNI loader = new LoaderJNI("EatersDLL") ;
 		long rawLibrarian = loader.Librarian_GetExistingLibrarian() ;
-		m_Loader = loader ;
+		//m_Loader = loader ;
 		
 	    //tosca.Librarian librarian = tosca.Librarian.GetLibrarian() ;
 		tosca.Librarian librarian = tosca.Librarian.UseExistingLibrarian(rawLibrarian) ;

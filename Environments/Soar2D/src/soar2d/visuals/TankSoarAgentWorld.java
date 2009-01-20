@@ -4,9 +4,9 @@ import org.eclipse.swt.events.*;
 import org.eclipse.swt.graphics.*;
 import org.eclipse.swt.widgets.*;
 
-import soar2d.*;
-import soar2d.config.Soar2DKeys;
-import soar2d.player.*;
+import soar2d.Soar2D;
+import soar2d.player.Player;
+import soar2d.player.RadarCell;
 
 public class TankSoarAgentWorld extends Canvas implements PaintListener {
 
@@ -28,8 +28,8 @@ public class TankSoarAgentWorld extends Canvas implements PaintListener {
 	public TankSoarAgentWorld(Composite parent, int style) {
 		super(parent, style);
 		
-		radar = new Image[Soar2D.config.getInt(Soar2DKeys.tanksoar.radar_width, 3)][Soar2D.config.getInt(Soar2DKeys.tanksoar.radar_height, 15)];
-		tanks = new Color[Soar2D.config.getInt(Soar2DKeys.tanksoar.radar_width, 3)][Soar2D.config.getInt(Soar2DKeys.tanksoar.radar_height, 15)];
+		radar = new Image[Soar2D.config.tanksoarConfig().radar_width][Soar2D.config.tanksoarConfig().radar_height];
+		tanks = new Color[Soar2D.config.tanksoarConfig().radar_width][Soar2D.config.tanksoarConfig().radar_height];
 
 		question = new Image(WindowManager.display, Soar2D.class.getResourceAsStream("/images/tanksoar/question.gif"));
 		tankImage = new Image(WindowManager.display, Soar2D.class.getResourceAsStream("/images/tanksoar/tank-mini.gif"));
@@ -83,8 +83,8 @@ public class TankSoarAgentWorld extends Canvas implements PaintListener {
 
 		RadarCell[][] tankRadar = tank.getRadar();
 		int distance = tank.getObservedDistance();
-		for(int x = 0; x < Soar2D.config.getInt(Soar2DKeys.tanksoar.radar_width, 3); ++x){
-			for(int y = 0; y < Soar2D.config.getInt(Soar2DKeys.tanksoar.radar_height, 15); ++y){
+		for(int x = 0; x < Soar2D.config.tanksoarConfig().radar_width; ++x){
+			for(int y = 0; y < Soar2D.config.tanksoarConfig().radar_height; ++y){
 				if ((y < distance) || (y == distance && x == 1)) {
 					if (x == 1 && y == 0) {
 						radar[x][y] = tankImage;
@@ -147,11 +147,11 @@ public class TankSoarAgentWorld extends Canvas implements PaintListener {
 	}
 
 	public int getWidth() {
-		return kCellSize * Soar2D.config.getInt(Soar2DKeys.tanksoar.radar_width, 3);
+		return kCellSize * Soar2D.config.tanksoarConfig().radar_width;
 	}
 	
 	public int getHeight() {
-		return kCellSize * Soar2D.config.getInt(Soar2DKeys.tanksoar.radar_height, 15);
+		return kCellSize * Soar2D.config.tanksoarConfig().radar_height;
 	}
 
 	public void enable() {

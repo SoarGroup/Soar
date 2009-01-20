@@ -74,7 +74,7 @@ public class MoveInfo {
 	public String toString() {
 		String output = new String();
 		
-		switch(Soar2D.simConfig.game()) {
+		switch(Soar2D.config.game()) {
 		case EATERS:
 			if (jump) {
 				output += "(" + Names.kJumpID + ")";

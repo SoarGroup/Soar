@@ -1,9 +1,7 @@
 package soar2d.player.book;
 
-import java.awt.Point;
 import java.awt.geom.Point2D;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.logging.Level;
@@ -15,8 +13,6 @@ import soar2d.Direction;
 import soar2d.Names;
 import soar2d.Simulation;
 import soar2d.Soar2D;
-import soar2d.config.Config;
-import soar2d.config.Soar2DKeys;
 import soar2d.map.BookMap;
 import soar2d.map.CellObject;
 import soar2d.map.GridMap;
@@ -36,7 +32,7 @@ public class SoarRobot extends Robot {
 	
 	int oldLocationId;
 	
-	private ArrayList<String> shutdownCommands;	// soar commands to run before this agent is destroyed
+	String [] shutdownCommands;	// soar commands to run before this agent is destroyed
 
 	InputLinkMetadata metadata;
 
@@ -48,11 +44,7 @@ public class SoarRobot extends Robot {
 		super(playerId);
 		this.agent = agent;
 		
-		Config playerConfig = Soar2D.config.getChild(Soar2DKeys.playerKey(playerId));
-		if (playerConfig.hasKey(Soar2DKeys.players.shutdown_commands)) {
-			String [] sc = playerConfig.requireStrings(Soar2DKeys.players.shutdown_commands);
-			this.shutdownCommands = new ArrayList<String>(Arrays.asList(sc));
-		}
+		this.shutdownCommands = playerConfig.shutdown_commands;
 
 		agent.SetBlinkIfNoChange(false);
 		oldLocationId = -1;
@@ -74,8 +66,8 @@ public class SoarRobot extends Robot {
 	private void loadMetadata() {
 		metadata = new InputLinkMetadata(agent);
 		try {
-			if (Soar2D.config.hasKey(Soar2DKeys.general.soar.metadata)) {
-				metadata.load(Soar2D.config.requireString(Soar2DKeys.general.soar.metadata));
+			if (Soar2D.config.soarConfig().metadata != null) {
+				metadata.load(Soar2D.config.soarConfig().metadata);
 			}
 			if (Soar2D.simulation.world.getMap().getMetadata() != null) {
 				metadata.load(Soar2D.simulation.world.getMap().getMetadata());
@@ -195,14 +187,14 @@ public class SoarRobot extends Robot {
 			agent.Update(selfIL.col, location.x);
 			agent.Update(selfIL.row, location.y);
 			
-			if (Soar2D.config.getBoolean(Soar2DKeys.room.continuous, true)) {
+			if (Soar2D.config.roomConfig().continuous) {
 				Point2D.Double floatLocation = players.getFloatLocation(this);
 				agent.Update(selfIL.x, floatLocation.x);
 				agent.Update(selfIL.y, floatLocation.y);
 			}
 			
 			// heading
-			if (Soar2D.config.getBoolean(Soar2DKeys.room.zero_is_east, false) == false) {
+			if (Soar2D.config.roomConfig().zero_is_east == false) {
 				agent.Update(selfIL.yaw, Direction.toDisplayRadians(getHeadingRadians()));
 			} else {
 				agent.Update(selfIL.yaw, getHeadingRadians());
@@ -212,7 +204,7 @@ public class SoarRobot extends Robot {
 			agent.Update(selfIL.cycle, world.getWorldCount());
 		}
 		
-		if (Soar2D.config.getBoolean(Soar2DKeys.room.continuous, true)) {
+		if (Soar2D.config.roomConfig().continuous) {
 			// velocity
 			agent.Update(selfIL.speed, Math.sqrt((getVelocity().x * getVelocity().x) + (getVelocity().y * getVelocity().y)));
 			agent.Update(selfIL.dx, getVelocity().x);
@@ -263,7 +255,7 @@ public class SoarRobot extends Robot {
 			CellObject bObj = bookObjectIter.next();
 			GridMap.BookObjectInfo bInfo = map.getBookObjectInfo(bObj);
 			if (bInfo.area == locationId) {
-				double maxAngleOff = Soar2D.config.getDouble(Soar2DKeys.room.vision_cone, Math.PI) / 2;
+				double maxAngleOff = Soar2D.config.roomConfig().vision_cone / 2;
 				double angleOff = players.angleOff(this, bInfo.floatLocation);
 				if (Math.abs(angleOff) <= maxAngleOff) {
 					selfIL.addOrUpdateObject(bInfo, world, angleOff);
@@ -322,7 +314,7 @@ public class SoarRobot extends Robot {
 	 * @see soar2d.player.Eater#getMove()
 	 */
 	public MoveInfo getMove() {
-		if (Soar2D.config.getBoolean(Soar2DKeys.general.force_human, false)) {
+		if (Soar2D.config.generalConfig().force_human) {
 			return super.getMove();
 		}
 
@@ -332,7 +324,7 @@ public class SoarRobot extends Robot {
 			return new MoveInfo();
 		}
 
-		if (Soar2D.config.getBoolean(Soar2DKeys.room.continuous, true)) 
+		if (Soar2D.config.roomConfig().continuous) 
 			return getMoveContinuous();
 		return getMoveDiscrete();
 	}
@@ -448,7 +440,7 @@ public class SoarRobot extends Robot {
 					continue;
 				}
 				if (oIL.row.GetValue() != selfIL.row.GetValue() || oIL.col.GetValue() != selfIL.col.GetValue())
-				if (oIL.range.GetValue() > Soar2D.config.getInt(Soar2DKeys.room.cell_size, 16)) {
+				if (oIL.range.GetValue() > Soar2D.config.roomConfig().cell_size) {
 					logger.warning(getName() + " get command object not in same cell");
 					commandId.AddStatusError();
 					continue;
@@ -655,7 +647,7 @@ public class SoarRobot extends Robot {
 					continue;
 				}
 				
-				if (Soar2D.config.getBoolean(Soar2DKeys.room.zero_is_east, false) == false) {
+				if (Soar2D.config.roomConfig().zero_is_east == false) {
 					move.rotateAbsoluteHeading = Direction.toInternalRadians(move.rotateAbsoluteHeading);
 				} else {
 					move.rotateAbsoluteHeading = move.rotateAbsoluteHeading;
@@ -730,7 +722,7 @@ public class SoarRobot extends Robot {
 					commandId.AddStatusError();
 					continue;
 				}
-				if (oIL.range.GetValue() > Soar2D.config.getInt(Soar2DKeys.room.cell_size, 16)) {
+				if (oIL.range.GetValue() > Soar2D.config.roomConfig().cell_size) {
 					logger.warning(getName() + " get command object out of range");
 					commandId.AddStatusError();
 					continue;
@@ -887,9 +879,7 @@ public class SoarRobot extends Robot {
 		assert agent != null;
 		if (shutdownCommands != null) { 
 			// execute the pre-shutdown commands
-			Iterator<String> iter = shutdownCommands.iterator();
-			while(iter.hasNext()) {
-				String command = iter.next();
+			for (String command : shutdownCommands) {
 				String result = getName() + ": result: " + agent.ExecuteCommandLine(command, true);
 				Soar2D.logger.info(getName() + ": shutdown command: " + command);
 				if (agent.HadError()) {

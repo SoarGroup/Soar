@@ -8,7 +8,6 @@ import java.lang.Math;
 import soar2d.Simulation;
 import soar2d.Soar2D;
 import soar2d.config.SimConfig;
-import soar2d.config.Soar2DKeys;
 import soar2d.map.*;
 import soar2d.player.*;
 
@@ -30,7 +29,7 @@ public class World {
 	
 	public boolean load() {
 		if (worldModule == null) {
-			switch(Soar2D.simConfig.game()) {
+			switch(Soar2D.config.game()) {
 			case TANKSOAR:
 				worldModule = new TankSoarWorld();
 				break;
@@ -50,12 +49,12 @@ public class World {
 			}
 		}
 		
-		Soar2D.control.setRunsTerminal(Soar2D.config.getInt(Soar2DKeys.terminals.max_runs, 0));
+		Soar2D.control.setRunsTerminal(Soar2D.config.terminalsConfig().max_runs);
 		return loadInternal(false);
 	}
 
 	private boolean loadInternal(boolean resetDuringRun) {
-		GridMap newMap = worldModule.newMap(Soar2D.config);
+		GridMap newMap = worldModule.newMap();
 		
 		try {
 			newMap.load();
@@ -75,7 +74,7 @@ public class World {
 		Soar2D.control.resetTime();
 		resetPlayers(resetDuringRun);
 		
-		logger.info(Soar2D.config.getString(Soar2DKeys.general.map) + " loaded, world reset.");
+		logger.info(Soar2D.config.generalConfig().map + " loaded, world reset.");
 		if (map.getOpenCode() != 0) {
 			logger.info("The correct open code is: " + map.getOpenCode());
 		}
@@ -182,7 +181,7 @@ public class World {
 	}
 	
 	void printSpawnMessage(Player player, Point location) {
-		if (Soar2D.simConfig.game() == SimConfig.Game.TANKSOAR) {
+		if (Soar2D.config.game() == SimConfig.Game.TANKSOAR) {
 			logger.info(player.getName() + ": Spawning at (" + 
 					location.x + "," + location.y + "), facing " + soar2d.Direction.stringOf[player.getFacingInt()]);
 		} else {
@@ -238,11 +237,11 @@ public class World {
 		
 		boolean restartAfterUpdate = false;
 		
-		Soar2D.config.setBoolean(Soar2DKeys.general.hidemap, false);
+		Soar2D.config.generalConfig().hidemap = false;
 		
 		// Collect human input
 		Iterator<Player> humanPlayerIter = players.humanIterator();
-		if (Soar2D.config.getBoolean(Soar2DKeys.general.force_human, false)) {
+		if (Soar2D.config.generalConfig().force_human) {
 			humanPlayerIter = players.iterator();
 		} else {
 			humanPlayerIter = players.humanIterator();
@@ -256,8 +255,8 @@ public class World {
 		
 		++worldCount;
 
-		if (Soar2D.config.getInt(Soar2DKeys.terminals.max_updates, 0) > 0) {
-			if (worldCount >= Soar2D.config.getInt(Soar2DKeys.terminals.max_updates, 0)) {
+		if (Soar2D.config.terminalsConfig().max_updates > 0) {
+			if (worldCount >= Soar2D.config.terminalsConfig().max_updates) {
 				if (Soar2D.control.checkRunsTerminal()) {
 					stopAndDumpStats("Reached maximum updates, stopping.");
 					return;
@@ -267,11 +266,11 @@ public class World {
 			}
 		}
 		
-		if (Soar2D.config.getInt(Soar2DKeys.terminals.winning_score, 0) > 0) {
+		if (Soar2D.config.terminalsConfig().winning_score > 0) {
 			int[] scores = getSortedScores();
-			if (scores[scores.length - 1] >= Soar2D.config.getInt(Soar2DKeys.terminals.winning_score, 0)) {
+			if (scores[scores.length - 1] >= Soar2D.config.terminalsConfig().winning_score) {
 				if (Soar2D.control.checkRunsTerminal()) {
-					stopAndDumpStats("At least one player has achieved at least " + Soar2D.config.getInt(Soar2DKeys.terminals.winning_score, 0) + " points.");
+					stopAndDumpStats("At least one player has achieved at least " + Soar2D.config.terminalsConfig().winning_score + " points.");
 					return;
 				} else {
 					restartAfterUpdate = true;
@@ -279,16 +278,16 @@ public class World {
 			}
 		}
 		
-		if (Soar2D.simConfig.game() == SimConfig.Game.EATERS) {
+		if (Soar2D.config.game() == SimConfig.Game.EATERS) {
 			EatersMap eMap = (EatersMap)map;
-			if (Soar2D.config.getBoolean(Soar2DKeys.terminals.points_remaining, false)) {
+			if (Soar2D.config.terminalsConfig().points_remaining) {
 				if (eMap.getScoreCount() <= 0) {
 					stopAndDumpStats("There are no points remaining.");
 					return;
 				}
 			}
 		
-			if (Soar2D.config.getBoolean(Soar2DKeys.terminals.food_remaining, false)) {
+			if (Soar2D.config.terminalsConfig().food_remaining) {
 				if (eMap.getFoodCount() <= 0) {
 					
 					if (Soar2D.control.checkRunsTerminal()) {
@@ -301,7 +300,7 @@ public class World {
 				}
 			}
 
-			if (Soar2D.config.getBoolean(Soar2DKeys.terminals.unopened_boxes, false)) {
+			if (Soar2D.config.terminalsConfig().unopened_boxes) {
 				if (eMap.getUnopenedBoxCount() <= 0) {
 					stopAndDumpStats("All of the boxes are open.");
 					return;
@@ -332,7 +331,7 @@ public class World {
 			players.setMove(player, move);
 			
 			if (move.stopSim) {
-				if (Soar2D.config.getBoolean(Soar2DKeys.terminals.agent_command, false)) {
+				if (Soar2D.config.terminalsConfig().agent_command) {
 					stopAndDumpStats(player.getName() + " issued simulation stop command.");
 				} else {
 					Soar2D.logger.warning(player.getName() + " issued ignored stop command.");
@@ -344,9 +343,9 @@ public class World {
 			restartAfterUpdate = true;
 		}
 
-		if (Soar2D.simConfig.game() == SimConfig.Game.TAXI) {
+		if (Soar2D.config.game() == SimConfig.Game.TAXI) {
 			TaxiMap xMap = (TaxiMap)map;
-			if (Soar2D.config.getBoolean(Soar2DKeys.terminals.passenger_delivered, false)) {
+			if (Soar2D.config.terminalsConfig().passenger_delivered) {
 				if (stopNextCyclePassengerDelivered) {
 					this.stopNextCyclePassengerDelivered = false;
 					stopAndDumpStats("The passenger has been delivered.");
@@ -356,7 +355,7 @@ public class World {
 				}
 			}
 
-			if (Soar2D.config.getBoolean(Soar2DKeys.terminals.passenger_pick_up, false)) {
+			if (Soar2D.config.terminalsConfig().passenger_pick_up) {
 				if (stopNextCyclePassengerPickUp) {
 					this.stopNextCyclePassengerPickUp = false;
 					stopAndDumpStats("The passenger has been picked up.");
@@ -366,7 +365,7 @@ public class World {
 				}
 			}
 			
-			if (Soar2D.config.getBoolean(Soar2DKeys.terminals.fuel_remaining, false)) {
+			if (Soar2D.config.terminalsConfig().fuel_remaining) {
 				if (stopNextCycleFuelRemaining) {
 					this.stopNextCycleFuelRemaining = false;
 					stopAndDumpStats("The taxi has run out of fuel.");

@@ -1,0 +1,9 @@
+general.game = room;
+room.colored_rooms = true;
+room.test_string = "the new value";
+players.active_players = [foo, bar];
+players.foo.pos = [3, 4];
+players.foo.shutdown_commands = [alpha, beta];
+players.bar.pos = [40, 30];
+clients.active_clients = [fnord];
+clients.fnord.command = "echo hello world";

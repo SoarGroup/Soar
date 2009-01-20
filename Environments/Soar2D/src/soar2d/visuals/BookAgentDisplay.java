@@ -9,8 +9,6 @@ import org.eclipse.swt.layout.*;
 import org.eclipse.swt.widgets.*;
 
 import soar2d.*;
-import soar2d.config.Config;
-import soar2d.config.Soar2DKeys;
 import soar2d.player.*;
 import soar2d.world.PlayersManager;
 
@@ -76,7 +74,7 @@ public class BookAgentDisplay extends AgentDisplay {
 		m_CloneAgentButton.setText("Clone");
 		m_CloneAgentButton.addSelectionListener(new SelectionAdapter() {
 			public void widgetSelected(SelectionEvent e) {
-				clonePlayer(selectedPlayer.getId());
+				clonePlayer(selectedPlayer.getID());
 			}
 		});
 		

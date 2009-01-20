@@ -11,8 +11,6 @@ import soar2d.Direction;
 import soar2d.Names;
 import soar2d.Simulation;
 import soar2d.Soar2D;
-import soar2d.config.Config;
-import soar2d.config.Soar2DKeys;
 import soar2d.map.CellObject;
 import soar2d.map.GridMap;
 import soar2d.map.TankSoarMap;
@@ -34,7 +32,7 @@ public class TankSoarWorld implements IWorld {
 			}
 		}
 		// Spawn missile packs
-		while (tMap.numberMissilePacks() < Soar2D.config.getInt(Soar2DKeys.tanksoar.max_missile_packs, 3)) {
+		while (tMap.numberMissilePacks() < Soar2D.config.tanksoarConfig().max_missile_packs) {
 			if (spawnMissilePack(tMap, true) == false) {
 				Soar2D.logger.severe("Missile pack spawn failed.");
 				return false;
@@ -145,7 +143,7 @@ public class TankSoarWorld implements IWorld {
 				
 				// take damage
 				String name = tMap.getAllWithProperty(newLocation, Names.kPropertyBlock).get(0).getName();
-				player.adjustHealth(Soar2D.config.getInt(Soar2DKeys.tanksoar.collision_penalty, -100), name);
+				player.adjustHealth(Soar2D.config.tanksoarConfig().collision_penalty, name);
 				
 				if (player.getHealth() <= 0) {
 					HashSet<Player> assailants = killedTanks.get(player);
@@ -191,13 +189,13 @@ public class TankSoarWorld implements IWorld {
 			
 			// take damage
 			
-			player.adjustHealth(Soar2D.config.getInt(Soar2DKeys.tanksoar.collision_penalty, -100), "cross collision " + other);
+			player.adjustHealth(Soar2D.config.tanksoarConfig().collision_penalty, "cross collision " + other);
 			// Getting rammed on a charger is deadly
 			if (tMap.getAllWithProperty(players.getLocation(player), Names.kPropertyCharger).size() > 0) {
 				player.adjustHealth(player.getHealth() * -1, "hit on charger");
 			}
 			
-			other.adjustHealth(Soar2D.config.getInt(Soar2DKeys.tanksoar.collision_penalty, -100), "cross collision " + player);
+			other.adjustHealth(Soar2D.config.tanksoarConfig().collision_penalty, "cross collision " + player);
 			// Getting rammed on a charger is deadly
 			if (tMap.getAllWithProperty(players.getLocation(other), Names.kPropertyCharger).size() > 0) {
 				other.adjustHealth(other.getHealth() * -1, "hit on charger");
@@ -251,7 +249,7 @@ public class TankSoarWorld implements IWorld {
 			// Shields
 			if (player.shieldsUp()) {
 				if (player.getEnergy() > 0) {
-					player.adjustEnergy(Soar2D.config.getInt(Soar2DKeys.tanksoar.shield_energy_usage, -20), "shields");
+					player.adjustEnergy(Soar2D.config.tanksoarConfig().shield_energy_usage, "shields");
 				} else {
 					if (Soar2D.logger.isLoggable(Level.FINER)) Soar2D.logger.finer(player + ": shields ran out of energy");
 					player.setShields(false);
@@ -274,7 +272,7 @@ public class TankSoarWorld implements IWorld {
 			if (collision.size() > 1) {
 				
 				int damage = collision.size() - 1;
-				damage *= Soar2D.config.getInt(Soar2DKeys.tanksoar.collision_penalty, -100);
+				damage *= Soar2D.config.tanksoarConfig().collision_penalty;
 				
 				if (Soar2D.logger.isLoggable(Level.FINE)) Soar2D.logger.fine("Collision, " + (damage * -1) + " damage:");
 				
@@ -416,7 +414,7 @@ public class TankSoarWorld implements IWorld {
 		tMap.handleIncoming();
 		
 		// Spawn missile packs
-		if (tMap.numberMissilePacks() < Soar2D.config.getInt(Soar2DKeys.tanksoar.max_missile_packs, 3)) {
+		if (tMap.numberMissilePacks() < Soar2D.config.tanksoarConfig().max_missile_packs) {
 			spawnMissilePack(tMap, false);
 		}
 		
@@ -427,7 +425,7 @@ public class TankSoarWorld implements IWorld {
 			// apply points
 			Player player = playerIter.next();
 			
-			player.adjustPoints(Soar2D.config.getInt(Soar2DKeys.tanksoar.kill_penalty, -2), "fragged");
+			player.adjustPoints(Soar2D.config.tanksoarConfig().kill_penalty, "fragged");
 			assert killedTanks.containsKey(player);
 			Iterator<Player> killedPlayerIter = killedTanks.get(player).iterator();
 			while (killedPlayerIter.hasNext()) {
@@ -435,7 +433,7 @@ public class TankSoarWorld implements IWorld {
 				if (assailant.equals(player)) {
 					continue;
 				}
-				assailant.adjustPoints(Soar2D.config.getInt(Soar2DKeys.tanksoar.kill_award, 3), "fragged " + player);
+				assailant.adjustPoints(Soar2D.config.tanksoarConfig().kill_award, "fragged " + player);
 			}
 			
 			Soar2D.simulation.world.fragPlayer(player);
@@ -443,7 +441,7 @@ public class TankSoarWorld implements IWorld {
 		
 		// if the missile reset counter is 100 and there were no killed tanks
 		// this turn, reset all tanks
-		if ((missileReset >= Soar2D.config.getInt(Soar2DKeys.tanksoar.missile_reset_threshold, 100)) && (killedTanks.size() == 0)) {
+		if ((missileReset >= Soar2D.config.tanksoarConfig().missile_reset_threshold) && (killedTanks.size() == 0)) {
 			Soar2D.logger.info("missile reset threshold exceeded, resetting all tanks");
 			missileReset = 0;
 			playerIter = players.iterator();
@@ -497,13 +495,13 @@ public class TankSoarWorld implements IWorld {
 			CellObject charger = iter.next();
 			if (charger.hasProperty(Names.kPropertyHealth)) {
 				player.setOnHealthCharger(true);
-				if (player.getHealth() < Soar2D.config.getInt(Soar2DKeys.tanksoar.default_health, 1000)) {
+				if (player.getHealth() < Soar2D.config.tanksoarConfig().default_health) {
 					player.adjustHealth(charger.getIntProperty(Names.kPropertyHealth), "charger");
 				}
 			}
 			if (charger.hasProperty(Names.kPropertyEnergy)) {
 				player.setOnEnergyCharger(true);
-				if (player.getEnergy() < Soar2D.config.getInt(Soar2DKeys.tanksoar.default_energy, 1000)) {
+				if (player.getEnergy() < Soar2D.config.tanksoarConfig().default_energy) {
 					player.adjustEnergy(charger.getIntProperty(Names.kPropertyEnergy), "charger");
 				}
 			}
@@ -599,7 +597,7 @@ public class TankSoarWorld implements IWorld {
 	}
 	
 	private boolean spawnMissilePack(TankSoarMap theMap, boolean force) {
-		if (force || (Simulation.random.nextInt(100) < Soar2D.config.getInt(Soar2DKeys.tanksoar.missile_pack_respawn_chance, 5))) {
+		if (force || (Simulation.random.nextInt(100) < Soar2D.config.tanksoarConfig().missile_pack_respawn_chance)) {
 			// Get available spots
 			ArrayList<Point> spots = theMap.getAvailableLocations();
 			if (spots.size() <= 0) {
@@ -622,11 +620,11 @@ public class TankSoarWorld implements IWorld {
 		missile.apply(player);
 		
 		// apply points
-		player.adjustPoints(Soar2D.config.getInt(Soar2DKeys.tanksoar.missile_hit_penalty, -1), missile.getName());
+		player.adjustPoints(Soar2D.config.tanksoarConfig().missile_hit_penalty, missile.getName());
 		Player other = players.get(missile.getProperty(Names.kPropertyOwner));
 		// can be null if the player was deleted after he fired but before the missile hit
 		if (other != null) {
-			other.adjustPoints(Soar2D.config.getInt(Soar2DKeys.tanksoar.missile_hit_award, 2), missile.getName());
+			other.adjustPoints(Soar2D.config.tanksoarConfig().missile_hit_award, missile.getName());
 		}
 		
 		// charger insta-kill
@@ -704,14 +702,14 @@ public class TankSoarWorld implements IWorld {
 	}
 	
 	public int getMinimumAvailableLocations() {
-		return Soar2D.config.getInt(Soar2DKeys.tanksoar.max_missile_packs, 3) + 1;
+		return Soar2D.config.tanksoarConfig().max_missile_packs + 1;
 	}
 	
 	public void resetPlayer(GridMap map, Player player, PlayersManager players, boolean resetDuringRun) {
 		player.reset();
 	}
 
-	public GridMap newMap(Config config) {
-		return new TankSoarMap(config);
+	public GridMap newMap() {
+		return new TankSoarMap();
 	}
 }
