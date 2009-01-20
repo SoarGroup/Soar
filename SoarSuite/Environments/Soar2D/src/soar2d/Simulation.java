@@ -3,8 +3,8 @@ package soar2d;
 import java.io.*;
 import java.util.*;
 import java.util.Map.Entry;
-import java.util.logging.*;
 
+import org.apache.log4j.Logger;
 import sml.*;
 import soar2d.config.ClientConfig;
 import soar2d.config.PlayerConfig;
@@ -33,6 +33,7 @@ import soar2d.world.World;
  * is the major member of this class. Creates the soar kernel and registers events.
  */
 public class Simulation {
+	private static Logger logger = Logger.getLogger(Simulation.class);
 
 	/**
 	 * True if we want to use the run-til-output feature
@@ -64,9 +65,6 @@ public class Simulation {
 	 */
 	private HashMap<String, Agent> agents = new HashMap<String, Agent>();
 
-	private static final String kDog = "dog";
-	private static final String kMouse = "mouse";
-	
 	/**
 	 * @return true if there were no errors during initialization
 	 * 
@@ -75,8 +73,8 @@ public class Simulation {
 	 */
 	public boolean initialize() {
 		// keep track of colors
-		for (int i = 0; i < kColors.length; ++i) {
-			unusedColors.add(kColors[i]);
+		for (String color : kColors) {
+			unusedColors.add(color);
 		}
 		
 		runTilOutput = Soar2D.config.runTilOutput();
@@ -91,12 +89,12 @@ public class Simulation {
 		}
 
 		if (kernel.HadError()) {
-			Soar2D.control.severeError("Error creating kernel: " + kernel.GetLastErrorDescription());
+			fatalError(Names.Errors.kernelCreation + kernel.GetLastErrorDescription());
 			return false;
 		}
 		
 		// We want the most performance
-		if (Soar2D.logger.isLoggable(Level.FINEST)) Soar2D.logger.finest("Setting auto commit false.");
+		logger.debug(Names.Debug.autoCommit);
 		kernel.SetAutoCommit(false);
 
 		// Make all runs non-random if asked
@@ -104,47 +102,62 @@ public class Simulation {
 		if (Soar2D.config.hasSeed()) {
 			// seed the generators
 			int seed = Soar2D.config.generalConfig().seed;
-			if (Soar2D.logger.isLoggable(Level.FINEST)) Soar2D.logger.finest("Seeding generators with " + seed);
+			logger.debug(Names.Debug.seed + seed);
 			kernel.ExecuteCommandLine("srand " + seed, null) ;
 			random = new Random(seed);
 		} else {
-			if (Soar2D.logger.isLoggable(Level.FINEST)) Soar2D.logger.finest("Not seeding generators.");
+			logger.debug(Names.Debug.noSeed);
 			random = new Random();
 		}
 		
 		// Register for events
+		logger.trace(Names.Trace.eventRegistration);
 		kernel.RegisterForSystemEvent(smlSystemEventId.smlEVENT_SYSTEM_START, Soar2D.control, null);
 		kernel.RegisterForSystemEvent(smlSystemEventId.smlEVENT_SYSTEM_STOP, Soar2D.control, null);
 		if (runTilOutput) {
-			if (Soar2D.logger.isLoggable(Level.FINEST)) Soar2D.logger.finest("Registering for: smlEVENT_AFTER_ALL_GENERATED_OUTPUT");
+			logger.debug(Names.Debug.runTilOutput);
 			kernel.RegisterForUpdateEvent(smlUpdateEventId.smlEVENT_AFTER_ALL_GENERATED_OUTPUT, Soar2D.control, null);
 		} else {
-			if (Soar2D.logger.isLoggable(Level.FINEST)) Soar2D.logger.finest("Registering for: smlEVENT_AFTER_ALL_OUTPUT_PHASES");
+			logger.debug(Names.Debug.noRunTilOutput);
 			kernel.RegisterForUpdateEvent(smlUpdateEventId.smlEVENT_AFTER_ALL_OUTPUT_PHASES, Soar2D.control, null);
 		}
 		
 		// Load the world
+		logger.trace(Names.Trace.loadingWorld);
 		if(!world.load()) {
 			return false;
 		}
 		
 		// Start or wait for clients (false: before agent creation)
+		logger.trace(Names.Trace.beforeClients);
 		if (!doClients(false)) {
 			return false;
 		}
 		
 		// add initial players
+		logger.trace(Names.Trace.initialPlayers);
 		for ( Entry<String, PlayerConfig> entry : Soar2D.config.playerConfigs().entrySet()) {
 			createPlayer(entry.getKey(), entry.getValue());
 		}
 		
 		// Start or wait for clients (true: after agent creation)
+		logger.trace(Names.Trace.afterClients);
 		if (!doClients(true)) {
 			return false;
 		}
 		
 		// success
 		return true;
+	}
+	
+	private void fatalError(String message) {
+		logger.fatal(message);
+		Soar2D.control.errorPopUp(message);
+	}
+	
+	private void error(String message) {
+		logger.fatal(message);
+		Soar2D.control.errorPopUp(message);
 	}
 	
 	public ArrayList<String> getUnusedColors() {
@@ -190,8 +203,8 @@ public class Simulation {
 	public boolean freeAColor(String color) {
 		assert color != null;
 		boolean legal = false;
-		for (int i = 0; i < kColors.length; ++i) {
-			if (color.equals(kColors[i])) {
+		for (String knownColor : kColors) {
+			if (color.equals(knownColor)) {
 				legal = true;
 			}
 		}
@@ -234,7 +247,7 @@ public class Simulation {
 	public void createPlayer(String playerId, PlayerConfig playerConfig) {
 		if (SimConfig.Game.TAXI == Soar2D.config.game() && (world.getPlayers().size() > 1)) {
 			// if this is removed, revisit white color below!
-			Soar2D.control.severeError("Taxi game type only supports 1 player.");
+			error(Names.Errors.taxi1Player);
 			return;
 		}
 		
@@ -242,7 +255,7 @@ public class Simulation {
 		if (playerConfig.color != null) {
 			//make sure it is unused
 			if (!unusedColors.contains(playerConfig.color)) {
-				Soar2D.control.severeError("Color used or not available: " + playerConfig.color);
+				error(Names.Errors.usedColor + playerConfig.color);
 				return;
 			}
 			// it is unused, so use it
@@ -256,7 +269,7 @@ public class Simulation {
 			if (color == null) {
 				
 				// if we didn't then they are all gone
-				Soar2D.control.severeError("There are no more player slots available.");
+				error(Names.Errors.noMoreSlots);
 				return;
 			}
 			playerConfig.color = color;
@@ -296,10 +309,10 @@ public class Simulation {
 					break;
 					
 				case ROOM:
-					if (playerConfig.name.equals(kDog)) {
+					if (playerConfig.name.equals(Names.kDog)) {
 						player = new Dog(playerId);
 						human = false;
-					} else if (playerConfig.name.equals(kMouse)) {
+					} else if (playerConfig.name.equals(Names.kMouse)) {
 						player = new Mouse(playerId);
 						human = false;
 					} else {
@@ -390,7 +403,7 @@ public class Simulation {
 					}
 		
 					// Scott Lathrop --  register for print events
-					if (Soar2D.config.loggingConfig().soar_print) {
+					if (Soar2D.config.soarConfig().soar_print) {
 						agent.RegisterForPrintEvent(smlPrintEventId.smlEVENT_PRINT, Soar2D.control.getLogger(), null,true);
 					}
 					
@@ -416,7 +429,7 @@ public class Simulation {
 			// a problem in this block requires us to free up the color
 			freeAColor(playerConfig.color);
 			if (e.getMessage() != null) {
-				Soar2D.control.severeError(e.getMessage());
+				error(e.getMessage());
 			}
 			return;
 		}
@@ -485,9 +498,7 @@ public class Simulation {
 		Agent agent = agents.remove(player.getName());
 		if (agent != null) {
 			// there was an agent, destroy it
-			if (!kernel.DestroyAgent(agent)) {
-				Soar2D.control.severeError("Failed to destroy soar agent " + player.getName() + ": " + kernel.GetLastErrorDescription());
-			}
+			kernel.DestroyAgent(agent);
 			agent.delete();
 			agent = null;
 		}
@@ -533,7 +544,7 @@ public class Simulation {
 				spawnClient(entry.getKey(), entry.getValue());
 			} else {
 				if (!waitForClient(entry.getKey(), entry.getValue())) {
-					Soar2D.control.severeError("Client spawn failed: " + entry.getKey());
+					error(Names.Errors.clientSpawn + entry.getKey());
 					return false;
 				}
 			}
@@ -571,7 +582,7 @@ public class Simulation {
 	 */
 	public void spawnClient(String clientID, ClientConfig clientConfig) {
 		Runtime r = java.lang.Runtime.getRuntime();
-		if (Soar2D.logger.isLoggable(Level.FINER)) Soar2D.logger.finer("Spawning client: " + clientID);
+		logger.trace(Names.Trace.spawningClient + clientID);
 
 		try {
 			Process p = r.exec(clientConfig.command);
@@ -589,12 +600,12 @@ public class Simulation {
 			rd.start();
 			
 			if (!waitForClient(clientID, clientConfig)) {
-				Soar2D.control.severeError("Client spawn failed: " + clientID);
+				error(Names.Errors.clientSpawn + clientID);
 				return;
 			}
 			
 		} catch (IOException e) {
-			Soar2D.control.severeError("IOException spawning client: " + clientID + ": " + e.getMessage());
+			error(Names.Errors.clientSpawn + clientID + ": " + e.getMessage());
 			shutdown();
 			System.exit(1);
 		}
@@ -626,7 +637,7 @@ public class Simulation {
 				}
 			}
 			try { 
-				if (Soar2D.logger.isLoggable(Level.FINEST)) Soar2D.logger.finest("Waiting for client: "+ clientID);
+				logger.trace(Names.Trace.waitClient + clientID);
 				Thread.sleep(1000); 
 			} catch (InterruptedException ignored) {}
 		}
@@ -669,10 +680,10 @@ public class Simulation {
 	 * resets the world, ready for a new run
 	 */
 	public boolean reset() {
-		Soar2D.logger.info("Resetting simulation.");
+		logger.info(Names.Info.reset);
 		if (!world.load()) {
 			File mapFile = new File(Soar2D.config.generalConfig().map);
-			Soar2D.control.severeError("Error loading map " + mapFile.getAbsolutePath());
+			error("Error loading map " + mapFile.getAbsolutePath());
 			return false;
 		}
 		return true;
@@ -689,7 +700,7 @@ public class Simulation {
 		assert this.agents.size() == 0;
 		
 		if (kernel != null) {
-			if (Soar2D.logger.isLoggable(Level.FINEST)) Soar2D.logger.finest("Shutting down kernel.");
+			logger.trace(Names.Trace.kernelShutdown);
 			kernel.Shutdown();
 			kernel.delete();
 		}

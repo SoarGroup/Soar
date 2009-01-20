@@ -3,7 +3,6 @@ package soar2d.player.kitchen;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Iterator;
-import java.util.logging.Logger;
 
 import soar2d.Direction;
 import soar2d.Soar2D;
@@ -18,8 +17,6 @@ import soar2d.world.World;
  * Represents the communication between an agent and Tosca
  */
 public class ToscaCook extends Cook {
-	protected Logger logger = Soar2D.logger;
-
 	public ToscaCook( String playerId ) {
 		super(playerId);
 	}

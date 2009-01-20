@@ -5,7 +5,8 @@ import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.ListIterator;
-import java.util.logging.Level;
+
+import org.apache.log4j.Logger;
 
 import soar2d.Names;
 import soar2d.Soar2D;
@@ -17,6 +18,7 @@ import soar2d.player.MoveInfo;
 import soar2d.player.Player;
 
 public class BookWorld implements IWorld {
+	private static Logger logger = Logger.getLogger(BookWorld.class);
 
 	public boolean postLoad(GridMap _map) {
 		BookMap map = (BookMap)_map;
@@ -38,21 +40,21 @@ public class BookWorld implements IWorld {
 			
 			MoveInfo move = players.getMove(player);
 			
-			Soar2D.logger.finer("Processing move: " + player.getName());
+			logger.debug("Processing move: " + player.getName());
 			
 			// rotate
 			if (move.rotate) {
 				int facing = player.getFacingInt();
 				if (move.rotateDirection.equals(Names.kRotateLeft)) {
-					Soar2D.logger.finer("Rotate: left");
+					logger.debug("Rotate: left");
 					player.setFacingInt(Direction.leftOf[facing]);
 				} 
 				else if (move.rotateDirection.equals(Names.kRotateRight)) {
-					Soar2D.logger.finer("Rotate: right");
+					logger.debug("Rotate: right");
 					player.setFacingInt(Direction.rightOf[facing]);
 				} 
 				else {
-					Soar2D.logger.warning("Rotate: invalid direction");
+					logger.warn("Rotate: invalid direction");
 					move.rotate = false;
 				}
 				
@@ -65,19 +67,19 @@ public class BookWorld implements IWorld {
 				int [] newLocation = Arrays.copyOf(oldLocation, oldLocation.length);
 
 				if (move.forward && move.backward) {
-					Soar2D.logger.warning("Move: both forward and backward indicated, ignoring");
+					logger.warn("Move: both forward and backward indicated, ignoring");
 				} 
 				else if (move.forward) {
-					Soar2D.logger.finer("Move: forward");
+					logger.debug("Move: forward");
 					Direction.translate(newLocation, player.getFacingInt());
 				}
 				else if (move.backward) {
-					Soar2D.logger.finer("Move: backward");
+					logger.debug("Move: backward");
 					Direction.translate(newLocation, Direction.backwardOf[player.getFacingInt()]);
 				}
 				
 				if (checkBlocked(newLocation, map)) {
-					Soar2D.logger.info("Move: collision (blocked)");
+					logger.info("Move: collision (blocked)");
 				} else {
 					map.setPlayer(oldLocation, null);
 					players.setLocation(player, newLocation);
@@ -95,7 +97,7 @@ public class BookWorld implements IWorld {
 			if (move.drop) {
 				assert Soar2D.config.roomConfig().blocks_block == false;
 				
-				Soar2D.logger.finer("Move: drop");
+				logger.debug("Move: drop");
 				
 				// FIXME: store drop info for processing later
 				map.addObjectToCell(players.getLocation(player), player.drop());
@@ -119,7 +121,7 @@ public class BookWorld implements IWorld {
 			MoveInfo.Communication comm = commIter.next();
 			Player toPlayer = players.get(comm.to);
 			if (toPlayer == null) {
-				Soar2D.logger.warning("Move: communicate: unknown player: " + comm.to);
+				logger.warn("Move: communicate: unknown player: " + comm.to);
 				continue;
 			}
 			
@@ -128,13 +130,13 @@ public class BookWorld implements IWorld {
 	}
 
 	private void get(BookMap map, MoveInfo move, Player player) {
-		Soar2D.logger.finer("Move: get, location " + move.getLocation[0] + "," + move.getLocation[1]);
+		logger.debug("Move: get, location " + move.getLocation[0] + "," + move.getLocation[1]);
 		CellObject block = map.getObject(move.getLocation, "mblock");
 		if (block == null || player.isCarrying()) {
 			if (block == null) {
-				Soar2D.logger.warning("get command failed, no object");
+				logger.warn("get command failed, no object");
 			} else {
-				Soar2D.logger.warning("get command failed, full");
+				logger.warn("get command failed, full");
 			}
 			move.get = false;
 			player.updateGetStatus(false);
@@ -152,32 +154,32 @@ public class BookWorld implements IWorld {
 			Player player = iter.next();
 			MoveInfo move = players.getMove(player);
 			
-			Soar2D.logger.finer("Processing move: " + player.getName());
+			logger.debug("Processing move: " + player.getName());
 			
 			// update rotation speed
 			if (move.rotate) {
 				if (move.rotateDirection.equals(Names.kRotateLeft)) {
-					Soar2D.logger.finer("Rotate: left");
+					logger.debug("Rotate: left");
 					player.setRotationSpeed(Soar2D.config.roomConfig().rotate_speed * -1 * time);
 				} 
 				else if (move.rotateDirection.equals(Names.kRotateRight)) {
-					Soar2D.logger.finer("Rotate: right");
+					logger.debug("Rotate: right");
 					player.setRotationSpeed(Soar2D.config.roomConfig().rotate_speed * time);
 				} 
 				else if (move.rotateDirection.equals(Names.kRotateStop)) {
-					Soar2D.logger.finer("Rotate: stop");
+					logger.debug("Rotate: stop");
 					player.setRotationSpeed(0);
 				}
 				player.resetDestinationHeading();
 			} 
 			else if (move.rotateAbsolute) {
 				while (move.rotateAbsoluteHeading < 0) {
-					Soar2D.logger.finest("Correcting command negative heading");
+					logger.trace("Correcting command negative heading");
 					move.rotateAbsoluteHeading += 2 * Math.PI;
 				}
 				move.rotateAbsoluteHeading = Direction.fmod(move.rotateAbsoluteHeading, 2 * Math.PI);
 
-				Soar2D.logger.finer("Rotate absolute: " + move.rotateAbsoluteHeading);
+				logger.debug("Rotate absolute: " + move.rotateAbsoluteHeading);
 				
 				setRotationAndAbsoluteHeading(player, move.rotateAbsoluteHeading, time);
 			}
@@ -185,11 +187,11 @@ public class BookWorld implements IWorld {
 				double absoluteHeading = player.getHeadingRadians() + move.rotateRelativeYaw;
 				
 				while (absoluteHeading < 0) {
-					Soar2D.logger.finest("Correcting command negative heading");
+					logger.trace("Correcting command negative heading");
 					absoluteHeading += 2 * Math.PI;
 				}
 				absoluteHeading = Direction.fmod(absoluteHeading, 2 * Math.PI);
-				Soar2D.logger.finer("Rotate relative: " + move.rotateRelativeYaw + ", absolute: " + absoluteHeading);
+				logger.debug("Rotate relative: " + move.rotateRelativeYaw + ", absolute: " + absoluteHeading);
 				setRotationAndAbsoluteHeading(player, absoluteHeading, time);
 			}
 
@@ -199,17 +201,17 @@ public class BookWorld implements IWorld {
 				double heading = player.getHeadingRadians() + player.getRotationSpeed();
 				
 				if (heading < 0) {
-					Soar2D.logger.finest("Correcting computed negative heading");
+					logger.trace("Correcting computed negative heading");
 					heading += 2 * Math.PI;
 				} 
 				heading = Direction.fmod(heading, 2 * Math.PI);
 
-				Soar2D.logger.finer("Rotating, computed heading: " + heading);
+				logger.debug("Rotating, computed heading: " + heading);
 				
 				if (player.hasDestinationHeading()) {
 					double relativeHeading = player.getDestinationHeading() - heading;
 					if (relativeHeading == 0) {
-						Soar2D.logger.fine("Destination heading reached: " + heading);
+						logger.debug("Destination heading reached: " + heading);
 						player.rotateComplete();
 						player.resetDestinationHeading();
 					} else {
@@ -221,23 +223,23 @@ public class BookWorld implements IWorld {
 						if (player.getRotationSpeed() < 0) {
 							if (relativeHeading < Math.PI) {
 								heading = player.getDestinationHeading();
-								Soar2D.logger.fine("Destination heading reached: " + heading);
+								logger.debug("Destination heading reached: " + heading);
 								player.rotateComplete();
 								player.resetDestinationHeading();
 								player.setRotationSpeed(0);
 							} else {
-								Soar2D.logger.finer("Destination heading pending");
+								logger.debug("Destination heading pending");
 							}
 						}
 						else if (player.getRotationSpeed() > 0) {
 							if (relativeHeading > Math.PI) {
-								Soar2D.logger.fine("Destination heading reached: " + heading);
+								logger.debug("Destination heading reached: " + heading);
 								heading = player.getDestinationHeading();
 								player.rotateComplete();
 								player.resetDestinationHeading();
 								player.setRotationSpeed(0);
 							} else {
-								Soar2D.logger.finer("Destination heading pending");
+								logger.debug("Destination heading pending");
 							}
 						}
 					}
@@ -247,15 +249,15 @@ public class BookWorld implements IWorld {
 			
 			// update speed
 			if (move.forward && move.backward) {
-				Soar2D.logger.finer("Move: stop");
+				logger.debug("Move: stop");
 				player.setSpeed(0);
 			} 
 			else if (move.forward) {
-				Soar2D.logger.finer("Move: forward");
+				logger.debug("Move: forward");
 				player.setSpeed(Soar2D.config.roomConfig().speed);
 			}
 			else if (move.backward) {
-				Soar2D.logger.finer("Move: backward");
+				logger.debug("Move: backward");
 				player.setSpeed(Soar2D.config.roomConfig().speed * -1);
 			}
 			
@@ -287,10 +289,10 @@ public class BookWorld implements IWorld {
 					assert !dropLocation.equals(players.getLocation(player));
 				}
 
-				Soar2D.logger.finer("Move: drop " + dropLocation[0] + "," + dropLocation[1]);
+				logger.debug("Move: drop " + dropLocation[0] + "," + dropLocation[1]);
 				
 				if (checkBlocked(dropLocation, map)) {
-					Soar2D.logger.warning("drop command failed, blocked");
+					logger.warn("drop command failed, blocked");
 					move.drop = false;
 					player.updateDropStatus(false);
 				} else {
@@ -362,7 +364,7 @@ public class BookWorld implements IWorld {
 					if (collision.size() == 0) {
 						collision.add(left);
 						
-						if (Soar2D.logger.isLoggable(Level.FINER)) Soar2D.logger.finer("collision at " + players.getLocation(left));
+						logger.debug("collision at " + players.getLocation(left));
 					}
 					// Add each right as it is detected
 					collision.add(right);
@@ -547,7 +549,7 @@ public class BookWorld implements IWorld {
 			collision = collisionIter.next();
 
 			assert collision.size() > 0;
-			if (Soar2D.logger.isLoggable(Level.FINER)) Soar2D.logger.finer("Processing collision group with " + collision.size() + " collidees.");
+			logger.debug("Processing collision group with " + collision.size() + " collidees.");
 
 			// Remove from former location (only one of these for all players)
 			map.setPlayer(players.getLocation(collision.get(0)), null);

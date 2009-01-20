@@ -4,8 +4,8 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.Iterator;
-import java.util.logging.*;
 
+import org.apache.log4j.Logger;
 import org.eclipse.swt.*;
 import org.eclipse.swt.events.*;
 import org.eclipse.swt.graphics.*;
@@ -24,8 +24,8 @@ import soar2d.map.TaxiMap;
 import soar2d.player.*;
 
 public class WindowManager {
-	private static Logger logger = Logger.getLogger("soar2d");
-	
+	private static Logger logger = Logger.getLogger(WindowManager.class);
+
 	public static Color white = null;
 	public static Color widget_background = null;
 	public static Color blue = null;
@@ -1136,7 +1136,7 @@ public class WindowManager {
 			Soar2D.config.generalConfig().map = mapFile.getAbsolutePath();
 		}
 		
-   		Soar2D.logger.info("Exiting map editor.");
+   		logger.info("Exiting map editor.");
    		mapEditMode = false;
    		
    		mapMenuHeader.setEnabled(true);
@@ -1182,7 +1182,7 @@ public class WindowManager {
     	
 		// we're going in to edit mode, destroy current side, create edit side
 
-		Soar2D.logger.info("Entering map editor.");
+		logger.info("Entering map editor.");
 	
 		mapMenuHeader.setEnabled(false);
 		
@@ -1222,11 +1222,18 @@ public class WindowManager {
 
 	}
 	
+	private void error(String message) {
+		logger.error(message);
+		if (using()) {
+			errorMessage(Soar2D.config.title(), message);
+		}
+	}
+	
 	private File saveMap() {
 		String output = this.editMap.generateXMLString();
 
 		if (output == null) {
-			Soar2D.control.severeError("Couldn't generate map file.");
+			error("Couldn't generate map file.");
 			return null;
 		}
 		
@@ -1244,7 +1251,7 @@ public class WindowManager {
 			
 			File mapFile = new File(mapFileString);
 			if (mapFile.exists() && !mapFile.canWrite()) {
-				Soar2D.control.severeError("Cannot write to file.");
+				error("Cannot write to file.");
 				return null;
 			}
 			try {
@@ -1252,7 +1259,7 @@ public class WindowManager {
 				out.write(output);
 				out.close();
 			} catch (IOException exception) {
-				Soar2D.control.severeError("Error writing file: " + exception.getMessage());
+				error("Error writing file: " + exception.getMessage());
 				return null;
 			}
 			return mapFile;

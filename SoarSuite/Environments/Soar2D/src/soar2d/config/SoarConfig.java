@@ -7,4 +7,5 @@ public class SoarConfig {
 	public boolean spawn_debuggers = true;
 	public boolean watch_0 = false;
 	public String metadata = null;
+	public boolean soar_print = false;
 }

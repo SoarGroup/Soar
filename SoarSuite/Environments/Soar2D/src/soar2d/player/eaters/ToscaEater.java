@@ -1,7 +1,8 @@
 package soar2d.player.eaters;
 
 import java.util.Arrays;
-import java.util.logging.Logger;
+
+import org.apache.log4j.Logger;
 
 import soar2d.Direction;
 import soar2d.Soar2D;
@@ -15,7 +16,7 @@ import tosca.*;
  * Represents the communication between an agent and Tosca
  */
 public class ToscaEater extends Eater {
-	protected Logger logger = Soar2D.logger;
+	private static Logger logger = Logger.getLogger(ToscaEater.class);
 
 	protected ToscaInterface 	m_ToscaInterface ;
 	protected Library		 	m_Library ;

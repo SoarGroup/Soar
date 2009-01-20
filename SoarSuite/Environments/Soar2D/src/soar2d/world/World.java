@@ -1,8 +1,9 @@
 package soar2d.world;
 
 import java.util.*;
-import java.util.logging.*;
 import java.lang.Math;
+
+import org.apache.log4j.Logger;
 
 import soar2d.Simulation;
 import soar2d.Soar2D;
@@ -11,11 +12,10 @@ import soar2d.map.*;
 import soar2d.player.*;
 
 public class World {
+	private static Logger logger = Logger.getLogger(World.class);
 
 	private IWorld worldModule;
 	
-	private static Logger logger = Logger.getLogger("soar2d");
-
 	private PlayersManager players = new PlayersManager();
 	
 	private int worldCount = 0;
@@ -26,6 +26,11 @@ public class World {
 		return map;
 	}
 	
+	private void error(String message) {
+		logger.error(message);
+		Soar2D.control.errorPopUp(message);
+	}
+
 	public boolean load() {
 		if (worldModule == null) {
 			switch(Soar2D.config.game()) {
@@ -58,7 +63,7 @@ public class World {
 		try {
 			newMap.load();
 		} catch (GridMap.LoadError e) {
-			Soar2D.control.severeError(e.getMessage());
+			error(e.getMessage());
 			return false;
 		}
 		
@@ -120,7 +125,7 @@ public class World {
 		logger.info("Removing player " + name);
 		Player player = players.get(name);
 		if (player == null) {
-			logger.warning("destroyPlayer: Couldn't find player name match for " + name + ", ignoring.");
+			logger.warn("destroyPlayer: Couldn't find player name match for " + name + ", ignoring.");
 			return;
 		}
 		map.setPlayer(players.getLocation(player), null);
@@ -135,7 +140,7 @@ public class World {
 		ArrayList<int []> availableLocations = map.getAvailableLocations();
 		// make sure there is an available cell
 		if (availableLocations.size() < worldModule.getMinimumAvailableLocations()) {
-			Soar2D.control.severeError("There are no suitable starting locations for " + player.getName() + ".");
+			error("There are no suitable starting locations for " + player.getName() + ".");
 			return null;
 		}
 		
@@ -144,7 +149,7 @@ public class World {
 		if (useInitialLocation && players.hasInitialLocation(player)) {
 			location = players.getInitialLocation(player);
 			if (!availableLocations.contains(location)) {
-				logger.warning(player.getName() + ": Initial location (" + location[0] + "," + location[1] + ") is blocked, going random.");
+				logger.warn(player.getName() + ": Initial location (" + location[0] + "," + location[1] + ") is blocked, going random.");
 				location = null;
 			}
 		}
@@ -199,7 +204,7 @@ public class World {
 			boolean draw = false;
 			if (scores.length > 1) {
 				if (scores[scores.length - 1] ==  scores[scores.length - 2]) {
-					if (logger.isLoggable(Level.FINER)) logger.finer("Draw detected.");
+					logger.debug("Draw detected.");
 					draw = true;
 				}
 			}
@@ -308,7 +313,7 @@ public class World {
 		}
 
 		if (players.numberOfPlayers() == 0) {
-			logger.warning("Update called with no players.");
+			logger.warn("Update called with no players.");
 			Soar2D.control.stopSimulation();
 			return;
 		}
@@ -333,7 +338,7 @@ public class World {
 				if (Soar2D.config.terminalsConfig().agent_command) {
 					stopAndDumpStats(player.getName() + " issued simulation stop command.");
 				} else {
-					Soar2D.logger.warning(player.getName() + " issued ignored stop command.");
+					logger.warn(player.getName() + " issued ignored stop command.");
 				}
 			}
 		}
@@ -380,7 +385,7 @@ public class World {
 			boolean draw = false;
 			if (scores.length > 1) {
 				if (scores[scores.length - 1] ==  scores[scores.length - 2]) {
-					if (logger.isLoggable(Level.FINER)) logger.finer("Draw detected.");
+					logger.debug("Draw detected.");
 					draw = true;
 				}
 			}
