@@ -5,7 +5,8 @@ import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.ListIterator;
-import java.util.logging.Level;
+
+import org.apache.log4j.Logger;
 
 import soar2d.Direction;
 import soar2d.Names;
@@ -17,6 +18,7 @@ import soar2d.player.MoveInfo;
 import soar2d.player.Player;
 
 public class EatersWorld implements IWorld {
+	private static Logger logger = Logger.getLogger(EatersWorld.class);
 
 	public boolean postLoad(GridMap newMap) {
 		return true;
@@ -127,7 +129,7 @@ public class EatersWorld implements IWorld {
 	private void open(Player player, EatersMap map, int [] location, int openCode) {
 		ArrayList<CellObject> boxes = map.getAllWithProperty(location, Names.kPropertyBox);
 		if (boxes.size() <= 0) {
-			Soar2D.logger.warning(player.getName() + " tried to open but there is no box.");
+			logger.warn(player.getName() + " tried to open but there is no box.");
 			return;
 		}
 
@@ -137,7 +139,7 @@ public class EatersWorld implements IWorld {
 		CellObject box = boxes.get(0);
 		if (box.hasProperty(Names.kPropertyStatus)) {
 			if (box.getProperty(Names.kPropertyStatus).equalsIgnoreCase(Names.kOpen)) {
-				Soar2D.logger.warning(player.getName() + " tried to open an open box.");
+				logger.warn(player.getName() + " tried to open an open box.");
 				return;
 			}
 		}
@@ -213,7 +215,7 @@ public class EatersWorld implements IWorld {
 					if (collision.size() == 0) {
 						collision.add(left);
 						
-						if (Soar2D.logger.isLoggable(Level.FINER)) Soar2D.logger.finer("collision at " + players.getLocation(left));
+						logger.debug("collision at " + players.getLocation(left));
 					}
 					// Add each right as it is detected
 					collision.add(right);
@@ -243,7 +245,7 @@ public class EatersWorld implements IWorld {
 			collision = collisionIter.next();
 
 			assert collision.size() > 0;
-			if (Soar2D.logger.isLoggable(Level.FINER)) Soar2D.logger.finer("Processing collision group with " + collision.size() + " collidees.");
+			logger.debug("Processing collision group with " + collision.size() + " collidees.");
 
 			// Redistribute wealth
 			int cash = 0;			
@@ -254,13 +256,13 @@ public class EatersWorld implements IWorld {
 			if (cash > 0) {
 				int trash = cash % collision.size();
 				cash /= collision.size();
-				if (Soar2D.logger.isLoggable(Level.FINER)) Soar2D.logger.finer("Cash to each: " + cash + " (" + trash + " lost in division)");
+				logger.debug("Cash to each: " + cash + " (" + trash + " lost in division)");
 				collideeIter = collision.listIterator();
 				while (collideeIter.hasNext()) {
 					collideeIter.next().setPoints(cash, "collision");
 				}
 			} else {
-				if (Soar2D.logger.isLoggable(Level.FINER)) Soar2D.logger.finer("Sum of cash is negative.");
+				logger.debug("Sum of cash is negative.");
 			}
 			
 			int [] collisionLocation = players.getLocation(collision.get(0));

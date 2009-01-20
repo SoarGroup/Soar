@@ -6,6 +6,8 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 
+import org.apache.log4j.Logger;
+
 import soar2d.Direction;
 import soar2d.Soar2D;
 import soar2d.map.CellObject;
@@ -16,6 +18,7 @@ import soar2d.player.Player;
 import soar2d.player.kitchen.Cook;
 
 public class KitchenWorld implements IWorld {
+	private static Logger logger = Logger.getLogger(KitchenWorld.class);
 
 	public void fragPlayer(Player player, GridMap map, PlayersManager players,
 			int [] location) {
@@ -72,7 +75,7 @@ public class KitchenWorld implements IWorld {
 									// move with object fails!
 									player.moveWithObjectFailed();
 									move.moveWithObject = false;
-									Soar2D.logger.info(player.getName() + ": move-with-object fails because I can't move a product in to a non-empty cell");
+									logger.info(player.getName() + ": move-with-object fails because I can't move a product in to a non-empty cell");
 								}
 							} else {
 								// I'm moving stuff, destination cell must not contain a product
@@ -82,7 +85,7 @@ public class KitchenWorld implements IWorld {
 									// dest does contain a product, move with object fails!
 									player.moveWithObjectFailed();
 									move.moveWithObject = false;
-									Soar2D.logger.info(player.getName() + ": move-with-object fails because I can't move stuff in to a cell with a product");
+									logger.info(player.getName() + ": move-with-object fails because I can't move stuff in to a cell with a product");
 								}
 							}
 						} 
@@ -112,7 +115,7 @@ public class KitchenWorld implements IWorld {
 								}
 							}
 							stuffNames += ")";
-							Soar2D.logger.info(player.getName() + ": moving with: " + stuffNames);
+							logger.info(player.getName() + ": moving with: " + stuffNames);
 						}
 					}
 				}
@@ -224,7 +227,7 @@ public class KitchenWorld implements IWorld {
 							assert false;
 						}
 						
-						Soar2D.logger.info(player.getName() + ": New mixture " + printIngredients(ingredients)
+						logger.info(player.getName() + ": New mixture " + printIngredients(ingredients)
 								+ ": " + mixture.getProperty("texture") 
 								+ "/" + mixture.getProperty("color") 
 								+ "/" + mixture.getProperty("smell"));
@@ -232,13 +235,13 @@ public class KitchenWorld implements IWorld {
 						map.addObjectToCell(players.getLocation(player), mixture);
 					} else {
 						if (stuff.size() == 1 && stuff.get(0).hasProperty("product")) {
-							Soar2D.logger.info(player.getName() + ": can't mix a product");
+							logger.info(player.getName() + ": can't mix a product");
 						} else {
-							Soar2D.logger.info(player.getName() + ": can't mix less than 2 things");
+							logger.info(player.getName() + ": can't mix less than 2 things");
 						}
 					}
 				} else {
-					Soar2D.logger.info(player.getName() + ": Tried to mix but not at countertop or oven");
+					logger.info(player.getName() + ": Tried to mix but not at countertop or oven");
 				}
 			}
 			
@@ -246,12 +249,12 @@ public class KitchenWorld implements IWorld {
 				if (map.isOven(players.getLocation(player))) {
 					ArrayList<CellObject> stuff = map.getAllWithProperty(players.getLocation(player), "smell");
 					if (stuff.size() > 1) {
-						Soar2D.logger.info(player.getName() + ": Too many things to cook, mix first");
+						logger.info(player.getName() + ": Too many things to cook, mix first");
 						
 					} else if (stuff.size() == 1) {
 						CellObject ingredient = stuff.get(0);
 						if (ingredient.hasProperty("product")) {
-							Soar2D.logger.info(player.getName() + ": Can't cook a product");
+							logger.info(player.getName() + ": Can't cook a product");
 						} else {
 							// consume it
 							map.removeAllWithProperty(players.getLocation(player), "smell");
@@ -304,43 +307,43 @@ public class KitchenWorld implements IWorld {
 							switch (product) {
 							case Burned:
 								map.addObjectByName(players.getLocation(player), "burned");
-								Soar2D.logger.info(player.getName() + ": creating burned");
+								logger.info(player.getName() + ": creating burned");
 								break;
 							case Toffee:
 								map.addObjectByName(players.getLocation(player), "toffee");
-								Soar2D.logger.info(player.getName() + ": creating toffee");
+								logger.info(player.getName() + ": creating toffee");
 								break;
 							case SugarCookies:
 								map.addObjectByName(players.getLocation(player), "sugarcookies");
-								Soar2D.logger.info(player.getName() + ": creating sugarcookies");
+								logger.info(player.getName() + ": creating sugarcookies");
 								break;
 							case Snickerdoodles:
 								map.addObjectByName(players.getLocation(player), "snickerdoodles");
-								Soar2D.logger.info(player.getName() + ": creating snickerdoodles");
+								logger.info(player.getName() + ": creating snickerdoodles");
 								break;
 							case MolassesCookies:
 								map.addObjectByName(players.getLocation(player), "molassescookies");
-								Soar2D.logger.info(player.getName() + ": creating molassescookies");
+								logger.info(player.getName() + ": creating molassescookies");
 								break;
 							case Custard:
 								map.addObjectByName(players.getLocation(player), "custard");
-								Soar2D.logger.info(player.getName() + ": creating custard");
+								logger.info(player.getName() + ": creating custard");
 								break;
 							}
 							
 						}
 					} else {
-						Soar2D.logger.info(player.getName() + ": Nothing to cook");
+						logger.info(player.getName() + ": Nothing to cook");
 					}
 				} else {
-					Soar2D.logger.info(player.getName() + ": Tried to cook but not at oven");
+					logger.info(player.getName() + ": Tried to cook but not at oven");
 				}
 			}
 			
 			if (move.eat) {
 				ArrayList<CellObject> stuff = map.getAllWithProperty(players.getLocation(player), "smell");
 				if (stuff.size() > 1) {
-					Soar2D.logger.info(player.getName() + ": Too many things to eat, mix first");
+					logger.info(player.getName() + ": Too many things to eat, mix first");
 					
 				} else if (stuff.size() == 1) {
 					// consume it
@@ -366,7 +369,7 @@ public class KitchenWorld implements IWorld {
 					player.adjustPoints(points, "ate " + name);
 					
 				} else {
-					Soar2D.logger.info(player.getName() + ": Nothing to eat");
+					logger.info(player.getName() + ": Nothing to eat");
 				}
 			}
 		}

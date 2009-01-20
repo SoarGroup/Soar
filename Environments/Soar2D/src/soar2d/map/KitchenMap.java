@@ -3,10 +3,13 @@ package soar2d.map;
 import java.util.Arrays;
 import java.util.Iterator;
 
-import soar2d.Soar2D;
+import org.apache.log4j.Logger;
+
+import soar2d.Names;
 import soar2d.world.TankSoarWorld;
 
 public class KitchenMap extends GridMap {
+	private static Logger logger = Logger.getLogger(KitchenMap.class);
 
 	public KitchenMap() {
 	}
@@ -31,27 +34,27 @@ public class KitchenMap extends GridMap {
 	
 	public void spawnBasics() {
 		if (!haveButter) {
-			Soar2D.logger.info("Spawning butter");
+			logger.info(Names.Info.spawningButter);
 			this.addObjectToCell(spawnButter, this.cellObjectManager.createObject("butter"));
 		}
 		if (!haveSugar) {
-			Soar2D.logger.info("Spawning sugar");
+			logger.info(Names.Info.spawningSugar);
 			this.addObjectToCell(spawnSugar, this.cellObjectManager.createObject("sugar"));
 		}
 		if (!haveEggs) {
-			Soar2D.logger.info("Spawning eggs");
+			logger.info(Names.Info.spawningEggs);
 			this.addObjectToCell(spawnEggs, this.cellObjectManager.createObject("eggs"));
 		}
 		if (!haveFlour) {
-			Soar2D.logger.info("Spawning flour");
+			logger.info(Names.Info.spawningFlour);
 			this.addObjectToCell(spawnFlour, this.cellObjectManager.createObject("flour"));
 		}
 		if (!haveCinnamon) {
-			Soar2D.logger.info("Spawning cinnamon");
+			logger.info(Names.Info.spawningCinnamon);
 			this.addObjectToCell(spawnCinnamon, this.cellObjectManager.createObject("cinnamon"));
 		}
 		if (!haveMolasses) {
-			Soar2D.logger.info("Spawning molasses");
+			logger.info(Names.Info.spawningMolasses);
 			this.addObjectToCell(spawnMolasses, this.cellObjectManager.createObject("molasses"));
 		}
 	}

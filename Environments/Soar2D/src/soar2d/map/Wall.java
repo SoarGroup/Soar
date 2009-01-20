@@ -1,7 +1,5 @@
 package soar2d.map;
 
-import java.awt.Point;
-
 public class Wall {
 	int locationId = -1;
 	int [] leftExtent;

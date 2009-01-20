@@ -4,7 +4,8 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Iterator;
-import java.util.logging.*;
+
+import org.apache.log4j.Logger;
 
 import sml.*;
 import soar2d.Direction;
@@ -18,6 +19,8 @@ import soar2d.player.MoveInfo;
 import soar2d.world.World;
 
 public class SoarCook extends Cook {
+	private static Logger logger = Logger.getLogger(SoarCook.class);
+
 	private Agent agent;
 	private float random;
 	
@@ -73,9 +76,14 @@ public class SoarCook extends Cook {
 		initInputLink();
 		
 		if (!agent.Commit()) {
-			Soar2D.control.severeError("Failed to commit input to Soar agent " + this.getName());
+			error(Names.Errors.commitFail + this.getName());
 			Soar2D.control.stopSimulation();
 		}
+	}
+	
+	private void error(String message) {
+		logger.error(message);
+		Soar2D.control.errorPopUp(message);
 	}
 	
 	/**
@@ -126,7 +134,7 @@ public class SoarCook extends Cook {
 				metadata.load(Soar2D.simulation.world.getMap().getMetadata());
 			}
 		} catch (Exception e) {
-			Soar2D.control.severeError("Failed to load metadata: " + this.getName() + ": " + e.getMessage());
+			error(Names.Errors.metadata + this.getName() + ": " + e.getMessage());
 			Soar2D.control.stopSimulation();
 		}
 	}
@@ -263,7 +271,7 @@ public class SoarCook extends Cook {
 		
 		// commit everything
 		if (!agent.Commit()) {
-			Soar2D.control.severeError("Failed to commit input to Soar agent " + this.getName());
+			error(Names.Errors.commitFail + this.getName());
 			Soar2D.control.stopSimulation();
 		}
 	}
@@ -300,7 +308,9 @@ public class SoarCook extends Cook {
 	public MoveInfo getMove() {
 		// if there was no command issued, that is kind of strange
 		if (agent.GetNumberCommands() == 0) {
-			if (logger.isLoggable(Level.FINER)) logger.finer(getName() + " issued no command.");
+			if (logger.isDebugEnabled()) {
+				logger.debug(getName() + " issued no command.");
+			}
 			return new MoveInfo();
 		}
 
@@ -313,7 +323,7 @@ public class SoarCook extends Cook {
 			
 			if (commandName.equalsIgnoreCase(Names.kMoveID)) {
 				if (move.move) {
-					logger.warning(getName() + ": multiple move commands detected");
+					logger.warn(getName() + ": multiple move commands detected");
 					continue;
 				}
 				move.move = true;
@@ -328,7 +338,7 @@ public class SoarCook extends Cook {
 				
 			} else if (commandName.equalsIgnoreCase("move-with-object")) {
 				if (move.moveWithObject) {
-					logger.warning(getName() + ": multiple move-with-object commands detected");
+					logger.warn(getName() + ": multiple move-with-object commands detected");
 					continue;
 				}
 				move.moveWithObject = true;
@@ -337,7 +347,7 @@ public class SoarCook extends Cook {
 
 			} else if (commandName.equalsIgnoreCase("mix")) {
 				if (move.mix) {
-					logger.warning(getName() + ": multiple mix commands detected");
+					logger.warn(getName() + ": multiple mix commands detected");
 					continue;
 				}
 				move.mix = true;
@@ -346,7 +356,7 @@ public class SoarCook extends Cook {
 
 			} else if (commandName.equalsIgnoreCase("cook")) {
 				if (move.cook) {
-					logger.warning(getName() + ": multiple cook commands detected");
+					logger.warn(getName() + ": multiple cook commands detected");
 					continue;
 				}
 				move.cook = true;
@@ -355,7 +365,7 @@ public class SoarCook extends Cook {
 
 			} else if (commandName.equalsIgnoreCase("eat")) {
 				if (move.eat) {
-					logger.warning(getName() + ": multiple eat commands detected");
+					logger.warn(getName() + ": multiple eat commands detected");
 					continue;
 				}
 				move.eat = true;
@@ -363,15 +373,15 @@ public class SoarCook extends Cook {
 				continue;
 
 			} else {
-				logger.warning("Unknown command: " + commandName);
+				logger.warn("Unknown command: " + commandName);
 				continue;
 			}
 			
-			logger.warning("Improperly formatted command: " + commandName);
+			logger.warn("Improperly formatted command: " + commandName);
 		}
 		agent.ClearOutputLinkChanges();
 		if (!agent.Commit()) {
-			Soar2D.control.severeError("Failed to commit input to Soar agent " + this.getName());
+			error(Names.Errors.commitFail + this.getName());
 			Soar2D.control.stopSimulation();
 		}
 		return move;
@@ -397,7 +407,7 @@ public class SoarCook extends Cook {
 
 
 		if (!agent.Commit()) {
-			Soar2D.control.severeError("Failed to commit input to Soar agent " + this.getName());
+			error(Names.Errors.commitFail + this.getName());
 			Soar2D.control.stopSimulation();
 		}
 

@@ -5,7 +5,8 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
-import java.util.logging.Level;
+
+import org.apache.log4j.Logger;
 
 import soar2d.Direction;
 import soar2d.Names;
@@ -18,6 +19,7 @@ import soar2d.player.MoveInfo;
 import soar2d.player.Player;
 
 public class TankSoarWorld implements IWorld {
+	private static Logger logger = Logger.getLogger(TankSoarWorld.class);
 
 	public boolean postLoad(GridMap _map) {
 		TankSoarMap tMap = (TankSoarMap)_map;
@@ -34,7 +36,7 @@ public class TankSoarWorld implements IWorld {
 		// Spawn missile packs
 		while (tMap.numberMissilePacks() < Soar2D.config.tanksoarConfig().max_missile_packs) {
 			if (spawnMissilePack(tMap, true) == false) {
-				Soar2D.logger.severe("Missile pack spawn failed.");
+				logger.error("Missile pack spawn failed.");
 				return false;
 			}
 		}
@@ -81,7 +83,7 @@ public class TankSoarWorld implements IWorld {
 					player.adjustMissiles(-1, "fire");
 					firedTanks.add(player);
 				} else {
-					if (Soar2D.logger.isLoggable(Level.FINER)) Soar2D.logger.finer(player + ": fired with no ammo");
+					logger.debug(player + ": fired with no ammo");
 				}
 			}
 			
@@ -93,7 +95,7 @@ public class TankSoarWorld implements IWorld {
 				} else if (playerMove.rotateDirection.equals(Names.kRotateRight)) {
 					facing = Direction.rightOf[facing];
 				} else {
-					Soar2D.logger.warning(player + ": unknown rotation command: " + playerMove.rotateDirection);
+					logger.warn(player + ": unknown rotation command: " + playerMove.rotateDirection);
 				}
 				player.setFacingInt(facing);
 			}
@@ -251,7 +253,7 @@ public class TankSoarWorld implements IWorld {
 				if (player.getEnergy() > 0) {
 					player.adjustEnergy(Soar2D.config.tanksoarConfig().shield_energy_usage, "shields");
 				} else {
-					if (Soar2D.logger.isLoggable(Level.FINER)) Soar2D.logger.finer(player + ": shields ran out of energy");
+					logger.debug(player + ": shields ran out of energy");
 					player.setShields(false);
 				}
 			}
@@ -274,7 +276,7 @@ public class TankSoarWorld implements IWorld {
 				int damage = collision.size() - 1;
 				damage *= Soar2D.config.tanksoarConfig().collision_penalty;
 				
-				if (Soar2D.logger.isLoggable(Level.FINE)) Soar2D.logger.fine("Collision, " + (damage * -1) + " damage:");
+				logger.debug("Collision, " + (damage * -1) + " damage:");
 				
 				playerIter = collision.iterator();
 				while (playerIter.hasNext()) {
@@ -442,7 +444,7 @@ public class TankSoarWorld implements IWorld {
 		// if the missile reset counter is 100 and there were no killed tanks
 		// this turn, reset all tanks
 		if ((missileReset >= Soar2D.config.tanksoarConfig().missile_reset_threshold) && (killedTanks.size() == 0)) {
-			Soar2D.logger.info("missile reset threshold exceeded, resetting all tanks");
+			logger.info("missile reset threshold exceeded, resetting all tanks");
 			missileReset = 0;
 			playerIter = players.iterator();
 			while (playerIter.hasNext()) {
@@ -463,10 +465,10 @@ public class TankSoarWorld implements IWorld {
 		int available = player.getEnergy();
 		if (available < player.getRadarPower()) {
 			if (available > 0) {
-				if (Soar2D.logger.isLoggable(Level.FINER)) Soar2D.logger.finer(player.getName() + ": reducing radar power due to energy shortage");
+				logger.debug(player.getName() + ": reducing radar power due to energy shortage");
 				player.setRadarPower(available);
 			} else {
-				if (Soar2D.logger.isLoggable(Level.FINER)) Soar2D.logger.finer(player.getName() + ": radar switched off due to energy shortage");
+				logger.debug(player.getName() + ": radar switched off due to energy shortage");
 				player.setRadarSwitch(false);
 				return;
 			}
@@ -569,26 +571,29 @@ public class TankSoarWorld implements IWorld {
 		}
 	}
 	
-
+	private void error(String message) {
+		logger.error(message);
+		Soar2D.control.errorPopUp(message);
+	}
 
 	private boolean addCharger(boolean health, TankSoarMap newMap) {
 		ArrayList<int []> locations = newMap.getAvailableLocations();
 		if (locations.size() <= 0) {
-			Soar2D.control.severeError("No place to put charger!");
+			error("No place to put charger!");
 			return false;
 		}
 		
 		int [] location = locations.get(Simulation.random.nextInt(locations.size()));
 		if (health) {
-			Soar2D.logger.info("spawning health charger at (" + location[0] + "," + location[1] + ")");
+			logger.info("spawning health charger at (" + location[0] + "," + location[1] + ")");
 			if (!newMap.addRandomObjectWithProperties(location, Names.kPropertyHealth, Names.kPropertyCharger)) {
-				Soar2D.control.severeError("Couldn't add charger to map!");
+				error("Couldn't add charger to map!");
 				return false;
 			}
 		} else {			
-			Soar2D.logger.info("spawning energy charger at (" + location[0] + "," + location[1] + ")");
+			logger.info("spawning energy charger at (" + location[0] + "," + location[1] + ")");
 			if (!newMap.addRandomObjectWithProperties(location, Names.kPropertyEnergy, Names.kPropertyCharger)) {
-				Soar2D.control.severeError("Couldn't add charger to map!");
+				error("Couldn't add charger to map!");
 				return false;
 			}
 		}
@@ -606,7 +611,7 @@ public class TankSoarWorld implements IWorld {
 			
 			// Add a missile pack to a spot
 			int [] spot = spots.get(Simulation.random.nextInt(spots.size()));
-			Soar2D.logger.info("spawning missile pack at (" + spot[0] + "," + spot[1] + ")");
+			logger.info("spawning missile pack at (" + spot[0] + "," + spot[1] + ")");
 			boolean ret = theMap.addRandomObjectWithProperty(spot, Names.kPropertyMissiles);
 			if (ret == false) {
 				return false;

@@ -1,6 +1,6 @@
 package soar2d.player.tanksoar;
 
-import java.util.logging.Level;
+import org.apache.log4j.Logger;
 
 import soar2d.Direction;
 import soar2d.Simulation;
@@ -11,6 +11,8 @@ import soar2d.player.RadarCell;
 import soar2d.world.World;
 
 public class Tank extends Player {
+	private static Logger logger = Logger.getLogger(Tank.class);
+
 	/**
 	 * missile count
 	 */
@@ -76,7 +78,9 @@ public class Tank extends Player {
 			return;
 		}
 		radarSwitch = setting;
-		if (Soar2D.logger.isLoggable(Level.FINER)) logger.finer(getName() + " radar switched " + (setting ? "on" : "off"));
+		if (logger.isDebugEnabled()) { 
+			logger.debug(getName() + " radar switched " + (setting ? "on" : "off"));
+		}
 	}
 	
 	public int getRadarPower() {
@@ -94,7 +98,9 @@ public class Tank extends Player {
 			return;
 		}
 		radarPower = setting;
-		if (Soar2D.logger.isLoggable(Level.FINER)) logger.finer(getName() + " radar power set to: " + Integer.toString(this.radarPower));
+		if (logger.isDebugEnabled()) { 
+			logger.debug(getName() + " radar power set to: " + Integer.toString(this.radarPower));
+		}
 	}
 	
 	public int getMissiles() {
@@ -108,11 +114,11 @@ public class Tank extends Player {
 	 */
 	public void setMissiles(int missiles, String comment) {
 		this.missiles = missiles;
-		if (Soar2D.logger.isLoggable(Level.FINE)) {
+		if (logger.isDebugEnabled()) {
 			if (comment != null) {
-				logger.fine(getName() + " missiles set to: " + Integer.toString(this.missiles) + " (" + comment + ")");
+				logger.debug(getName() + " missiles set to: " + Integer.toString(this.missiles) + " (" + comment + ")");
 			} else {
-				logger.fine(getName() + " missiles set to: " + Integer.toString(this.missiles));
+				logger.debug(getName() + " missiles set to: " + Integer.toString(this.missiles));
 			}
 		}
 	}
@@ -127,17 +133,17 @@ public class Tank extends Player {
 		int previous = this.missiles;
 		this.missiles += delta;
 		if (missiles < 0) {
-			logger.warning(getName() + ": missiles adjusted to negative value");
+			logger.warn(getName() + ": missiles adjusted to negative value");
 			missiles = 0;
 		}
 		if (missiles == previous) {
 			return;
 		}
-		if (Soar2D.logger.isLoggable(Level.FINE)) {
+		if (logger.isDebugEnabled()) {
 			if (comment != null) {
-				logger.fine(getName() + " missiles: " + Integer.toString(previous) + " -> " + Integer.toString(this.missiles) + " (" + comment + ")");
+				logger.debug(getName() + " missiles: " + Integer.toString(previous) + " -> " + Integer.toString(this.missiles) + " (" + comment + ")");
 			} else {
-				logger.fine(getName() + " missiles: " + Integer.toString(previous) + " -> " + Integer.toString(this.missiles));
+				logger.debug(getName() + " missiles: " + Integer.toString(previous) + " -> " + Integer.toString(this.missiles));
 			}
 		}
 	}
@@ -155,11 +161,11 @@ public class Tank extends Player {
 		// Bring down shields if out of energy
 
 		this.energy = energy;
-		if (Soar2D.logger.isLoggable(Level.FINE)) {
+		if (logger.isDebugEnabled()) {
 			if (comment != null) {
-				logger.fine(getName() + " energy set to: " + Integer.toString(this.energy) + " (" + comment + ")");
+				logger.debug(getName() + " energy set to: " + Integer.toString(this.energy) + " (" + comment + ")");
 			} else {
-				logger.fine(getName() + " energy set to: " + Integer.toString(this.energy));
+				logger.debug(getName() + " energy set to: " + Integer.toString(this.energy));
 			}
 		}
 	}
@@ -184,11 +190,11 @@ public class Tank extends Player {
 		if (energy == previous) {
 			return;
 		}
-		if (Soar2D.logger.isLoggable(Level.FINE)) {
+		if (logger.isDebugEnabled()) {
 			if (comment != null) {
-				logger.fine(getName() + " energy: " + Integer.toString(previous) + " -> " + Integer.toString(this.energy) + " (" + comment + ")");
+				logger.debug(getName() + " energy: " + Integer.toString(previous) + " -> " + Integer.toString(this.energy) + " (" + comment + ")");
 			} else {
-				logger.fine(getName() + " energy: " + Integer.toString(previous) + " -> " + Integer.toString(this.energy));
+				logger.debug(getName() + " energy: " + Integer.toString(previous) + " -> " + Integer.toString(this.energy));
 			}
 		}
 	}
@@ -204,11 +210,11 @@ public class Tank extends Player {
 	 */
 	public void setHealth(int health, String comment) {
 		this.health = health;
-		if (Soar2D.logger.isLoggable(Level.FINE)) {
+		if (logger.isDebugEnabled()) {
 			if (comment != null) {
-				logger.fine(getName() + " health set to: " + Integer.toString(this.health) + " (" + comment + ")");
+				logger.debug(getName() + " health set to: " + Integer.toString(this.health) + " (" + comment + ")");
 			} else {
-				logger.fine(getName() + " health set to: " + Integer.toString(this.health));
+				logger.debug(getName() + " health set to: " + Integer.toString(this.health));
 			}
 		}
 	}
@@ -231,11 +237,11 @@ public class Tank extends Player {
 		if (health == previous) {
 			return;
 		}
-		if (Soar2D.logger.isLoggable(Level.FINE)) {
+		if (logger.isDebugEnabled()) {
 			if (comment != null) {
-				logger.fine(getName() + " health: " + Integer.toString(previous) + " -> " + Integer.toString(this.health) + " (" + comment + ")");
+				logger.debug(getName() + " health: " + Integer.toString(previous) + " -> " + Integer.toString(this.health) + " (" + comment + ")");
 			} else {
-				logger.fine(getName() + " health: " + Integer.toString(previous) + " -> " + Integer.toString(this.health));
+				logger.debug(getName() + " health: " + Integer.toString(previous) + " -> " + Integer.toString(this.health));
 			}
 		}
 	}
@@ -276,7 +282,9 @@ public class Tank extends Player {
 		// Do not allow a move if we rotated.
 		if (move.rotate) {
 			if (move.move) {
-				if (Soar2D.logger.isLoggable(Level.FINER)) logger.finer(": move ignored (rotating)");
+				if (logger.isDebugEnabled()) {
+					logger.debug(": move ignored (rotating)");
+				}
 				move.move = false;
 			}
 		}
@@ -330,7 +338,9 @@ public class Tank extends Player {
 		if (shieldsUp == setting) {
 			return;
 		}
-		if (Soar2D.logger.isLoggable(Level.FINER)) logger.finer(getName() + " shields switched " + (setting ? "on" : "off"));
+		if (logger.isDebugEnabled()) {
+			logger.debug(getName() + " shields switched " + (setting ? "on" : "off"));
+		}
 		shieldsUp = setting;
 	}
 	

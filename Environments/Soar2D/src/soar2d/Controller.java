@@ -1,7 +1,8 @@
 package soar2d;
 
 import java.io.File;
-import java.util.logging.*;
+
+import org.apache.log4j.Logger;
 
 import sml.*;
 import soar2d.visuals.WindowManager;
@@ -13,6 +14,8 @@ import soar2d.visuals.WindowManager;
  * process, etc.
  */
 public class Controller implements Kernel.UpdateEventInterface, Kernel.SystemEventInterface, Runnable {
+	private static Logger logger = Logger.getLogger(Controller.class);
+
 	/**
 	 * Set to true when a stop is requested
 	 */
@@ -42,32 +45,13 @@ public class Controller implements Kernel.UpdateEventInterface, Kernel.SystemEve
 	 */
 	public synchronized boolean isStopped() { return this.stop ; }
 	
-	/**
-	 * @param message The message to display to the screen, console and/or log
-	 * 
-	 * Call whenever there is a severe error. An attempt will be made to dump the
-	 * error to a message box. The error will be logged to the console no matter what.
-	 * It will also go to the log.
-	 * 
-	 * The program does not have to quit when this is called.
-	 */
-	public void severeError(String message) {
-		System.err.println(message);
-		Soar2D.logger.severe(message);
-		
+	public void errorPopUp(String message) {
 		if (Soar2D.wm.using()) {
 			Soar2D.wm.errorMessage(Soar2D.config.title(), message);
 		}
 	}
 	
-	/**
-	 * @param message The message to display to the screen, console and/or log
-	 * 
-	 * Called to issue a pop-up message. Also sends a message to the log.
-	 */
 	public void infoPopUp(String message) {
-		Soar2D.logger.info(message);
-		
 		if (Soar2D.wm.using()) {
 			Soar2D.wm.infoMessage(Soar2D.config.title(), message);
 		}
@@ -184,7 +168,7 @@ public class Controller implements Kernel.UpdateEventInterface, Kernel.SystemEve
 	 * starting the sim.
 	 */
 	public void startEvent() {
-		if (Soar2D.logger.isLoggable(Level.FINEST)) Soar2D.logger.finest("Start event.");
+		logger.trace(Names.Trace.startEvent);
 		stop = false;
 		running = true;
 
@@ -229,7 +213,7 @@ public class Controller implements Kernel.UpdateEventInterface, Kernel.SystemEve
 	 * after a stop is requested.
 	 */
 	public void stopEvent() {
-		if (Soar2D.logger.isLoggable(Level.FINEST)) Soar2D.logger.finest("Stop event.");
+		logger.trace(Names.Trace.stopEvent);
 		running = false;
 		
 		if (Soar2D.wm.using()) {
@@ -246,7 +230,7 @@ public class Controller implements Kernel.UpdateEventInterface, Kernel.SystemEve
   		// check for override
   		int dontUpdate = runFlags & smlRunFlags.sml_DONT_UPDATE_WORLD.swigValue();
   		if (dontUpdate != 0) {
-  			Soar2D.logger.warning("Not updating world due to run flags!");
+  			logger.warn(Names.Warn.noUpdate);
   			return;
   		}
   		
@@ -256,7 +240,7 @@ public class Controller implements Kernel.UpdateEventInterface, Kernel.SystemEve
 		// Test this after the world has been updated, in case it's asking us to stop
 		if (stop) {
 			// the world has asked us to kindly stop running
-  			if (Soar2D.logger.isLoggable(Level.FINEST)) Soar2D.logger.finest("Stop requested during update.");
+  			logger.debug(Names.Debug.stopRequested);
   			
   			// note that soar actually controls when we stop
   			kernel.StopAllAgents();
@@ -275,7 +259,7 @@ public class Controller implements Kernel.UpdateEventInterface, Kernel.SystemEve
   			stopEvent();
   		} else {
   			// soar says something we weren't expecting
-  			Soar2D.logger.warning("Unknown system event received from kernel, ignoring: " + eventID);
+  			logger.warn(Names.Warn.unknownEvent + eventID);
  		}
    }
    
@@ -306,7 +290,7 @@ public class Controller implements Kernel.UpdateEventInterface, Kernel.SystemEve
 		
 		// make sure things are stopped, doesn't hurt to call this when stopped
 		stopSimulation();
-		Soar2D.logger.info("Shutdown called.");
+		logger.info(Names.Info.shutdown);
 		if (Soar2D.wm.using()) {
 			// closes out the window manager
 			Soar2D.wm.shutdown();
@@ -321,6 +305,12 @@ public class Controller implements Kernel.UpdateEventInterface, Kernel.SystemEve
 	public boolean isRunning() {
 		return running;
 	}
+	
+	private void error(String message) {
+		logger.error(message);
+		errorPopUp(message);
+
+	}
 
 	/**
 	 * @param map the name of the map to change to
@@ -331,9 +321,9 @@ public class Controller implements Kernel.UpdateEventInterface, Kernel.SystemEve
 		
 		// make sure it is somewhat valid
 		if ((map == null) || (map.length() <= 0)) {
-			severeError("map not specified, is required");
+			error(Names.Errors.mapRequired);
 		}
-		if (Soar2D.logger.isLoggable(Level.FINER)) Soar2D.logger.finer("Changing map to " + map);
+		logger.debug(Names.Debug.changingMap + map);
 		
 		File mapFile = new File(map);
 		// check as absolute
@@ -344,7 +334,7 @@ public class Controller implements Kernel.UpdateEventInterface, Kernel.SystemEve
 			if (!mapFile.exists()) {
 				
 				// doesn't exist there either
-				severeError("Error finding map " + map);
+				error(Names.Errors.findingMap + map);
 				return;
 			}
 		}
@@ -367,17 +357,17 @@ public class Controller implements Kernel.UpdateEventInterface, Kernel.SystemEve
 	 * @author Scott Lathrop
 	 *
 	 */
-	public Logger getLogger() { return Logger.getLogger(); }
+	public PrintLogger getLogger() { return PrintLogger.getLogger(); }
 	
 	
-	public static class Logger implements Agent.PrintEventInterface
+	public static class PrintLogger implements Agent.PrintEventInterface
 	{
-		protected static Logger m_Logger = null;
+		protected static PrintLogger m_Logger = null;
 		
-		public static Logger getLogger() 
+		public static PrintLogger getLogger() 
 		{
 			if (m_Logger == null) {
-				m_Logger = new Logger();
+				m_Logger = new PrintLogger();
 			}
 			
 			return m_Logger;
@@ -389,12 +379,12 @@ public class Controller implements Kernel.UpdateEventInterface, Kernel.SystemEve
 		public void printEventHandler (int eventID, Object data, Agent agent, String message) 
 		{
 			if (eventID == smlPrintEventId.smlEVENT_PRINT.swigValue()) {
-				Soar2D.logger.info(message);
+				logger.info(message);
 			}
 				
 		} // SoarAgentprintEventHandler	
 		
-		private Logger () {}
+		private PrintLogger () {}
 		
 	} // Logger
 	

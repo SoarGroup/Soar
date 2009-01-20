@@ -3,7 +3,8 @@ package soar2d.player.eaters;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
-import java.util.logging.*;
+
+import org.apache.log4j.Logger;
 
 import sml.*;
 import soar2d.Direction;
@@ -24,6 +25,8 @@ import soar2d.world.World;
  * now
  */
 public class SoarEater extends Eater {
+	private static Logger logger = Logger.getLogger(SoarEater.class);
+
 	/**
 	 * the soar agent
 	 */
@@ -109,7 +112,7 @@ public class SoarEater extends Eater {
 		loadMetadata();
 		
 		if (!agent.Commit()) {
-			Soar2D.control.severeError("Failed to commit input to Soar agent " + this.getName());
+			error(Names.Errors.commitFail + this.getName());
 			Soar2D.control.stopSimulation();
 		}
 	}
@@ -124,9 +127,14 @@ public class SoarEater extends Eater {
 				metadata.load(Soar2D.simulation.world.getMap().getMetadata());
 			}
 		} catch (Exception e) {
-			Soar2D.control.severeError("Failed to load metadata: " + this.getName() + ": " + e.getMessage());
+			error(Names.Errors.metadata + this.getName() + ": " + e.getMessage());
 			Soar2D.control.stopSimulation();
 		}
+	}
+	
+	private void error(String message) {
+		logger.error(message);
+		Soar2D.control.errorPopUp(message);
 	}
 	
 	/**
@@ -448,7 +456,7 @@ public class SoarEater extends Eater {
 		
 		// commit everything
 		if (!agent.Commit()) {
-			Soar2D.control.severeError("Failed to commit input to Soar agent " + this.getName());
+			error(Names.Errors.commitFail + this.getName());
 			Soar2D.control.stopSimulation();
 		}
 		this.resetPointsChanged();
@@ -528,7 +536,7 @@ public class SoarEater extends Eater {
 
 		// if there was no command issued, that is kind of strange
 		if (agent.GetNumberCommands() == 0) {
-			if (logger.isLoggable(Level.FINER)) logger.finer(getName() + " issued no command.");
+			logger.debug(getName() + " issued no command.");
 			return new MoveInfo();
 		}
 
@@ -542,7 +550,7 @@ public class SoarEater extends Eater {
 			
 			if (commandName.equalsIgnoreCase(Names.kMoveID)) {
 				if (move.move || moveWait) {
-					logger.warning(getName() + ": multiple move/jump commands detected (move)");
+					logger.warn(getName() + ": multiple move/jump commands detected (move)");
 					continue;
 				}
 				move.move = true;
@@ -566,7 +574,7 @@ public class SoarEater extends Eater {
 				
 			} else if (commandName.equalsIgnoreCase(Names.kJumpID)) {
 				if (move.move) {
-					logger.warning(getName() + ": multiple move/jump commands detected, ignoring (jump)");
+					logger.warn(getName() + ": multiple move/jump commands detected, ignoring (jump)");
 					continue;
 				}
 				move.move = true;
@@ -581,7 +589,7 @@ public class SoarEater extends Eater {
 
 			} else if (commandName.equalsIgnoreCase(Names.kStopSimID)) {
 				if (move.stopSim) {
-					logger.warning(getName() + ": multiple stop commands detected, ignoring");
+					logger.warn(getName() + ": multiple stop commands detected, ignoring");
 					continue;
 				}
 				move.stopSim = true;
@@ -590,7 +598,7 @@ public class SoarEater extends Eater {
 				
 			} else if (commandName.equalsIgnoreCase(Names.kOpenID)) {
 				if (move.open) {
-					logger.warning(getName() + ": multiple open commands detected, ignoring");
+					logger.warn(getName() + ": multiple open commands detected, ignoring");
 					continue;
 				}
 				move.open = true;
@@ -601,7 +609,7 @@ public class SoarEater extends Eater {
 					try {
 						move.openCode = Integer.parseInt(openCode);
 					} catch (NumberFormatException e) {	
-						logger.warning(getName() + ": invalid open code");
+						logger.warn(getName() + ": invalid open code");
 						continue;
 					}
 					continue;
@@ -610,7 +618,7 @@ public class SoarEater extends Eater {
 				
 			} else if (commandName.equalsIgnoreCase(Names.kDontEatID)) {
 				if (move.dontEat) {
-					logger.warning(getName() + ": multiple dont eat commands detected, ignoring");
+					logger.warn(getName() + ": multiple dont eat commands detected, ignoring");
 					continue;
 				}
 				move.dontEat = true;
@@ -618,15 +626,15 @@ public class SoarEater extends Eater {
 				continue;
 				
 			} else {
-				logger.warning("Unknown command: " + commandName);
+				logger.warn("Unknown command: " + commandName);
 				continue;
 			}
 			
-			logger.warning("Improperly formatted command: " + commandName);
+			logger.warn("Improperly formatted command: " + commandName);
 		}
 		agent.ClearOutputLinkChanges();
 		if (!agent.Commit()) {
-			Soar2D.control.severeError("Failed to commit input to Soar agent " + this.getName());
+			error(Names.Errors.commitFail + this.getName());
 			Soar2D.control.stopSimulation();
 		}
 		return move;
@@ -666,7 +674,7 @@ public class SoarEater extends Eater {
 		loadMetadata();
 
 		if (!agent.Commit()) {
-			Soar2D.control.severeError("Failed to commit input to Soar agent " + this.getName());
+			error(Names.Errors.commitFail + this.getName());
 			Soar2D.control.stopSimulation();
 		}
 
@@ -686,11 +694,11 @@ public class SoarEater extends Eater {
 			// execute the pre-shutdown commands
 			for (String command : shutdownCommands) {
 				String result = getName() + ": result: " + agent.ExecuteCommandLine(command, true);
-				Soar2D.logger.info(getName() + ": shutdown command: " + command);
+				logger.info(getName() + ": shutdown command: " + command);
 				if (agent.HadError()) {
-					Soar2D.control.severeError(result);
+					error(result);
 				} else {
-					Soar2D.logger.info(getName() + ": result: " + result);
+					logger.info(getName() + ": result: " + result);
 				}
 			}
 		}
