@@ -1,24 +1,14 @@
 package soar2d.world;
 
 import java.awt.Point;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Iterator;
 
 import soar2d.Direction;
-import soar2d.Names;
-import soar2d.Simulation;
 import soar2d.Soar2D;
-import soar2d.config.Config;
-import soar2d.map.CellObject;
 import soar2d.map.GridMap;
-import soar2d.map.KitchenMap;
-import soar2d.map.TankSoarMap;
 import soar2d.map.TaxiMap;
 import soar2d.player.MoveInfo;
 import soar2d.player.Player;
-import soar2d.player.kitchen.Cook;
 import soar2d.player.taxi.Taxi;
 
 public class TaxiWorld implements IWorld {
@@ -134,7 +124,7 @@ public class TaxiWorld implements IWorld {
 		player.reset();
 	}
 
-	public GridMap newMap(Config config) {
-		return new TaxiMap(config);
+	public GridMap newMap() {
+		return new TaxiMap();
 	}
 }

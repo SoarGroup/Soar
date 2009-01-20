@@ -10,14 +10,12 @@ import org.jdom.Element;
 import soar2d.Direction;
 import soar2d.Names;
 import soar2d.Soar2D;
-import soar2d.config.Config;
 import soar2d.player.Player;
 import soar2d.world.TankSoarWorld;
 
 public class TankSoarMap extends GridMap {
 	
-	public TankSoarMap(Config config) {
-		super(config);
+	public TankSoarMap() {
 	}
 
 	int missilePacks = 0;	// returns the number of missile packs on the map

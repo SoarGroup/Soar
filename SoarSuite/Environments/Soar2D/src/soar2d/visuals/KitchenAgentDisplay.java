@@ -65,7 +65,7 @@ public class KitchenAgentDisplay extends AgentDisplay {
 		m_CloneAgentButton.setText("Clone");
 		m_CloneAgentButton.addSelectionListener(new SelectionAdapter() {
 			public void widgetSelected(SelectionEvent e) {
-				clonePlayer(selectedPlayer.getId());
+				clonePlayer(selectedPlayer.getID());
 			}
 		});
 		

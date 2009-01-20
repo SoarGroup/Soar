@@ -11,7 +11,6 @@ import sml.IntElement;
 import sml.StringElement;
 import soar2d.Direction;
 import soar2d.Soar2D;
-import soar2d.config.Soar2DKeys;
 import soar2d.map.CellObject;
 import soar2d.map.GridMap;
 import soar2d.player.Player;
@@ -67,21 +66,21 @@ class SelfInputLink {
 		assert il != null;
 		assert self == null;
 
-		continuous = robot.agent.CreateStringWME(il, "continuous", Soar2D.config.getBoolean(Soar2DKeys.room.continuous, true) ? "true" : "false");
+		continuous = robot.agent.CreateStringWME(il, "continuous", Soar2D.config.roomConfig().continuous ? "true" : "false");
 		
 		self = robot.agent.CreateIdWME(il, "self");
 		angle = robot.agent.CreateIdWME(self, "angle");
 		{
-			if (Soar2D.config.getBoolean(Soar2DKeys.room.zero_is_east, false) == false) {
+			if (Soar2D.config.roomConfig().zero_is_east == false) {
 				yaw = robot.agent.CreateFloatWME(angle, "yaw", Direction.toDisplayRadians(robot.getHeadingRadians()));
 			} else {
 				yaw = robot.agent.CreateFloatWME(angle, "yaw", robot.getHeadingRadians());
 			}
-			if (Soar2D.config.getBoolean(Soar2DKeys.room.continuous, true) == false) {
+			if (Soar2D.config.roomConfig().continuous == false) {
 				direction = robot.agent.CreateStringWME(angle, "direction", Direction.stringOf[robot.getFacingInt()]);
 			}
 		}
-		if (Soar2D.config.getBoolean(Soar2DKeys.room.continuous, true) == false) {
+		if (Soar2D.config.roomConfig().continuous == false) {
 			Identifier blocked = robot.agent.CreateIdWME(self, "blocked");
 			blockedForward = robot.agent.CreateStringWME(blocked, "forward", "false");
 			blockedBackward = robot.agent.CreateStringWME(blocked, "backward", "false");
@@ -89,7 +88,7 @@ class SelfInputLink {
 			blockedRight = robot.agent.CreateStringWME(blocked, "right", "false");
 		}
 		area = robot.agent.CreateIntWME(self, "area", -1);
-		if (Soar2D.config.getBoolean(Soar2DKeys.room.continuous, true)) {
+		if (Soar2D.config.roomConfig().continuous) {
 			collision = robot.agent.CreateIdWME(self, "collision");
 			{
 				collisionX = robot.agent.CreateStringWME(collision, "x", "false");
@@ -100,7 +99,7 @@ class SelfInputLink {
 		score = robot.agent.CreateIntWME(self, "score", 0);
 		position = robot.agent.CreateIdWME(self, "position");
 		{
-			if (Soar2D.config.getBoolean(Soar2DKeys.room.continuous, true)) {
+			if (Soar2D.config.roomConfig().continuous) {
 				x = robot.agent.CreateFloatWME(position, "x", 0);
 				y = robot.agent.CreateFloatWME(position, "y", 0);
 			}
@@ -109,7 +108,7 @@ class SelfInputLink {
 		}
 		random = robot.agent.CreateFloatWME(self, "random", robot.random);
 		time = robot.agent.CreateFloatWME(self, "time", 0);
-		if (Soar2D.config.getBoolean(Soar2DKeys.room.continuous, true)) {
+		if (Soar2D.config.roomConfig().continuous) {
 			velocity = robot.agent.CreateIdWME(self, "velocity");
 			{
 				speed = robot.agent.CreateFloatWME(velocity, "speed", 0);
@@ -170,7 +169,7 @@ class SelfInputLink {
 			if (pIL.col.GetValue() != players.getLocation(player).x) {
 				robot.agent.Update(pIL.col, players.getLocation(player).x);
 			}
-			if (Soar2D.config.getBoolean(Soar2DKeys.room.continuous, true)) {
+			if (Soar2D.config.roomConfig().continuous) {
 				if (pIL.x.GetValue() != players.getFloatLocation(player).x) {
 					robot.agent.Update(pIL.x, players.getFloatLocation(player).x);
 				}
@@ -215,7 +214,7 @@ class SelfInputLink {
 			if (oIL.col.GetValue() != objectInfo.location.x) {
 				robot.agent.Update(oIL.col, objectInfo.location.x);
 			}
-			if (Soar2D.config.getBoolean(Soar2DKeys.room.continuous, true)) {
+			if (Soar2D.config.roomConfig().continuous) {
 				if (oIL.x.GetValue() != objectInfo.floatLocation.x) {
 					robot.agent.Update(oIL.x, objectInfo.location.x);
 				}

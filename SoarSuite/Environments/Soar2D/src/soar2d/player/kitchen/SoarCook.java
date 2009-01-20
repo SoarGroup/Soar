@@ -11,7 +11,6 @@ import soar2d.Direction;
 import soar2d.Names;
 import soar2d.Simulation;
 import soar2d.Soar2D;
-import soar2d.config.Soar2DKeys;
 import soar2d.map.CellObject;
 import soar2d.map.KitchenMap;
 import soar2d.player.InputLinkMetadata;
@@ -120,8 +119,8 @@ public class SoarCook extends Cook {
 	private void loadMetadata() {
 		metadata = new InputLinkMetadata(agent);
 		try {
-			if (Soar2D.config.hasKey(Soar2DKeys.general.soar.metadata)) {
-				metadata.load(Soar2D.config.requireString(Soar2DKeys.general.soar.metadata));
+			if (Soar2D.config.soarConfig().metadata != null) {
+				metadata.load(Soar2D.config.soarConfig().metadata);
 			}
 			if (Soar2D.simulation.world.getMap().getMetadata() != null) {
 				metadata.load(Soar2D.simulation.world.getMap().getMetadata());

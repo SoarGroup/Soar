@@ -11,7 +11,6 @@ import org.eclipse.swt.widgets.Composite;
 import soar2d.Direction;
 import soar2d.Names;
 import soar2d.Soar2D;
-import soar2d.config.Soar2DKeys;
 import soar2d.map.CellObject;
 import soar2d.map.TaxiMap;
 import soar2d.player.Player;
@@ -28,7 +27,7 @@ public class TaxiVisualWorld extends VisualWorld {
 		gc.setLineWidth(1);
 
 		if (Soar2D.control.isRunning()) {
-			if (Soar2D.config.getBoolean(Soar2DKeys.general.hidemap, false)) {
+			if (Soar2D.config.generalConfig().hidemap) {
 				painted = true;
 				return;
 			}
@@ -40,10 +39,10 @@ public class TaxiVisualWorld extends VisualWorld {
 				painted = false;
 			}
 
-			if (Soar2D.config.getBoolean(Soar2DKeys.general.hidemap, false) || disabled || !painted) {
+			if (Soar2D.config.generalConfig().hidemap || disabled || !painted) {
 				gc.setBackground(WindowManager.widget_background);
 				gc.fillRectangle(0,0, this.getWidth(), this.getHeight());
-				if (disabled || Soar2D.config.getBoolean(Soar2DKeys.general.hidemap, false)) {
+				if (disabled || Soar2D.config.generalConfig().hidemap) {
 					painted = true;
 					return;
 				}

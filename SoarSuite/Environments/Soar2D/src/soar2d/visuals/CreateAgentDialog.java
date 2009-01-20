@@ -9,9 +9,7 @@ import org.eclipse.swt.layout.*;
 import org.eclipse.swt.widgets.*;
 
 import soar2d.*;
-import soar2d.config.Config;
-import soar2d.config.Soar2DKeys;
-import soar2d.player.*;
+import soar2d.config.PlayerConfig;
 
 public class CreateAgentDialog extends Dialog {
 	final int kNameCharacterLimit = 12;
@@ -27,7 +25,7 @@ public class CreateAgentDialog extends Dialog {
 	public CreateAgentDialog(Shell parent) {
 		super(parent);
 		
-		String lastProductionsString = Soar2D.simConfig.getLastProductions();
+		String lastProductionsString = Soar2D.config.getLastProductions();
 		if (lastProductionsString != null) {
 			lastProductions = new File(lastProductionsString);
 		}
@@ -91,7 +89,7 @@ public class CreateAgentDialog extends Dialog {
 					lastProductions = file;
 					m_ProductionsLabel.setText(file.getName());
 				}
-				Soar2D.simConfig.saveLastProductions(lastProductions.getAbsolutePath());
+				Soar2D.config.saveLastProductions(lastProductions.getAbsolutePath());
 				updateButtons();
 			}
 		});
@@ -177,10 +175,10 @@ public class CreateAgentDialog extends Dialog {
 		m_SpawnDebuggerButton.setText("Spawn debugger");
 		m_SpawnDebuggerButton.addSelectionListener(new SelectionAdapter() {
 			public void widgetSelected(SelectionEvent e) {
-				Soar2D.config.setBoolean(Soar2DKeys.general.soar.spawn_debuggers, m_SpawnDebuggerButton.getSelection());
+				Soar2D.config.soarConfig().spawn_debuggers = m_SpawnDebuggerButton.getSelection();
 			}
 		});		
-		m_SpawnDebuggerButton.setSelection(Soar2D.config.getBoolean(Soar2DKeys.general.soar.spawn_debuggers, true));
+		m_SpawnDebuggerButton.setSelection(Soar2D.config.soarConfig().spawn_debuggers);
 
 		Composite okCancel = new Composite(dialog, SWT.NONE);
 		{
@@ -200,14 +198,16 @@ public class CreateAgentDialog extends Dialog {
 				String playerId = "gui" + Integer.toString(++guiPlayer);
 				
 				// create configuration harness
-				Config playerConfig = Soar2D.config.getChild(Soar2DKeys.playerKey(playerId));
+				PlayerConfig playerConfig = new PlayerConfig();
 				
-				playerConfig.setString(Soar2DKeys.players.name, m_Name.getText());
+				playerConfig.name = m_Name.getText();
 				if (m_Productions != null) {
-					playerConfig.setString(Soar2DKeys.players.productions, m_Productions.getAbsolutePath());
+					playerConfig.productions = m_Productions.getAbsolutePath();
 				}
-				playerConfig.setString(Soar2DKeys.players.color, m_Color.getText());
-				Soar2D.simulation.createPlayer(playerId);
+				playerConfig.color = m_Color.getText();
+				
+				Soar2D.config.playerConfigs().put(playerId, playerConfig);
+				Soar2D.simulation.createPlayer(playerId, playerConfig);
 				dialog.dispose();
 			}
 		});

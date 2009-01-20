@@ -12,7 +12,6 @@ import java.awt.Point;
 import java.util.ArrayList;
 
 import soar2d.*;
-import soar2d.config.Soar2DKeys;
 import soar2d.map.CellObject;
 import soar2d.player.eaters.ToscaEater;
 import soar2d.world.World;
@@ -217,7 +216,7 @@ public class EatersInputStateVariable extends JavaStateVariable {
 		Group map = new Group() ;
 		
 		java.awt.Point viewLocation = new java.awt.Point();
-		int visionRange = Soar2D.config.getInt(Soar2DKeys.eaters.vision, 2) ;
+		int visionRange = Soar2D.config.eatersConfig().vision ;
 		for (int x = location.x - visionRange; x <= location.x + visionRange; ++x) {
 			for (int y = location.y - visionRange; y <= location.y + visionRange; ++y) {
 				viewLocation.x = x ;

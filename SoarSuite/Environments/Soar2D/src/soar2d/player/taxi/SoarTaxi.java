@@ -1,10 +1,6 @@
 package soar2d.player.taxi;
 
 import java.awt.Point;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.Iterator;
 import java.util.logging.*;
 
 import sml.*;
@@ -12,13 +8,9 @@ import soar2d.Direction;
 import soar2d.Names;
 import soar2d.Simulation;
 import soar2d.Soar2D;
-import soar2d.config.Config;
-import soar2d.config.Soar2DKeys;
-import soar2d.map.CellObject;
 import soar2d.map.TaxiMap;
 import soar2d.player.InputLinkMetadata;
 import soar2d.player.MoveInfo;
-import soar2d.player.Player;
 import soar2d.world.World;
 
 /**
@@ -73,7 +65,7 @@ public class SoarTaxi extends Taxi {
 	/**
 	 * soar commands to run before this agent is destroyed
 	 */
-	private ArrayList<String> shutdownCommands;
+	private String [] shutdownCommands;
 
 	InputLinkMetadata metadata;
 
@@ -85,11 +77,7 @@ public class SoarTaxi extends Taxi {
 		super(playerId);
 
 		this.agent = agent;
-		Config playerConfig = Soar2D.config.getChild(Soar2DKeys.playerKey(playerId));
-		if (playerConfig.hasKey(Soar2DKeys.players.shutdown_commands)) {
-			String [] sc = playerConfig.requireStrings(Soar2DKeys.players.shutdown_commands);
-			this.shutdownCommands = new ArrayList<String>(Arrays.asList(sc));
-		}
+		this.shutdownCommands = playerConfig.shutdown_commands;
 		
 		initInputLink();
 		
@@ -149,8 +137,8 @@ public class SoarTaxi extends Taxi {
 	private void loadMetadata() {
 		metadata = new InputLinkMetadata(agent);
 		try {
-			if (Soar2D.config.hasKey(Soar2DKeys.general.soar.metadata)) {
-				metadata.load(Soar2D.config.requireString(Soar2DKeys.general.soar.metadata));
+			if (Soar2D.config.soarConfig().metadata != null) {
+				metadata.load(Soar2D.config.soarConfig().metadata);
 			}
 			if (Soar2D.simulation.world.getMap().getMetadata() != null) {
 				metadata.load(Soar2D.simulation.world.getMap().getMetadata());
@@ -301,7 +289,7 @@ public class SoarTaxi extends Taxi {
 	}
 	
 	public MoveInfo getMove() {
-		if (Soar2D.config.getBoolean(Soar2DKeys.general.force_human, false)) {
+		if (Soar2D.config.generalConfig().force_human) {
 			return super.getMove();
 		}
 		
@@ -431,9 +419,7 @@ public class SoarTaxi extends Taxi {
 		assert agent != null;
 		if (shutdownCommands != null) { 
 			// execute the pre-shutdown commands
-			Iterator<String> iter = shutdownCommands.iterator();
-			while(iter.hasNext()) {
-				String command = iter.next();
+			for (String command : shutdownCommands) {
 				String result = getName() + ": result: " + agent.ExecuteCommandLine(command, true);
 				Soar2D.logger.info(getName() + ": shutdown command: " + command);
 				if (agent.HadError()) {
