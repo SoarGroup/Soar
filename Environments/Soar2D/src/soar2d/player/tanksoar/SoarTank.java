@@ -1,12 +1,21 @@
 package soar2d.player.tanksoar;
 
-import java.util.*;
-import java.util.logging.*;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.logging.Level;
 
-import sml.*;
-import soar2d.*;
-import soar2d.config.Config;
-import soar2d.config.Soar2DKeys;
+import sml.Agent;
+import sml.FloatElement;
+import sml.Identifier;
+import sml.IntElement;
+import sml.StringElement;
+import sml.WMElement;
+import sml.smlRunEventId;
+import soar2d.Direction;
+import soar2d.Names;
+import soar2d.Simulation;
+import soar2d.Soar2D;
 import soar2d.player.InputLinkMetadata;
 import soar2d.player.MoveInfo;
 import soar2d.player.Player;
@@ -16,7 +25,7 @@ import soar2d.world.World;
 
 public class SoarTank extends Tank implements Agent.RunEventInterface {
 	private Agent agent;
-	private ArrayList<String> shutdownCommands;
+	private String [] shutdownCommands;
 
 	private Identifier m_InputLink;
 	private Identifier m_BlockedWME;
@@ -76,15 +85,11 @@ public class SoarTank extends Tank implements Agent.RunEventInterface {
 	public SoarTank(Agent agent, String playerId) {
 		super(playerId);
 		this.agent = agent;
-		Config playerConfig = Soar2D.config.getChild(Soar2DKeys.playerKey(playerId));
-		if (playerConfig.hasKey(Soar2DKeys.players.shutdown_commands)) {
-			String [] sc = playerConfig.requireStrings(Soar2DKeys.players.shutdown_commands);
-			this.shutdownCommands = new ArrayList<String>(Arrays.asList(sc));
-		}
+		this.shutdownCommands = playerConfig.shutdown_commands;
 
 
-		radarCellIDs = new Identifier[Soar2D.config.getInt(Soar2DKeys.tanksoar.radar_width, 3)][Soar2D.config.getInt(Soar2DKeys.tanksoar.radar_height, 15)];
-		radarColors = new StringElement[Soar2D.config.getInt(Soar2DKeys.tanksoar.radar_width, 3)][Soar2D.config.getInt(Soar2DKeys.tanksoar.radar_height, 15)];
+		radarCellIDs = new Identifier[Soar2D.config.tanksoarConfig().radar_width][Soar2D.config.tanksoarConfig().radar_height];
+		radarColors = new StringElement[Soar2D.config.tanksoarConfig().radar_width][Soar2D.config.tanksoarConfig().radar_height];
 
 
 		assert agent != null;
@@ -101,8 +106,8 @@ public class SoarTank extends Tank implements Agent.RunEventInterface {
 	private void loadMetadata() {
 		metadata = new InputLinkMetadata(agent);
 		try {
-			if (Soar2D.config.hasKey(Soar2DKeys.general.soar.metadata)) {
-				metadata.load(Soar2D.config.requireString(Soar2DKeys.general.soar.metadata));
+			if (Soar2D.config.soarConfig().metadata != null) {
+				metadata.load(Soar2D.config.soarConfig().metadata);
 			}
 			if (Soar2D.simulation.world.getMap().getMetadata() != null) {
 				metadata.load(Soar2D.simulation.world.getMap().getMetadata());
@@ -174,7 +179,7 @@ public class SoarTank extends Tank implements Agent.RunEventInterface {
 	}
 	
 	public MoveInfo getMove() {
-		if (Soar2D.config.getBoolean(Soar2DKeys.general.force_human, false)) {
+		if (Soar2D.config.generalConfig().force_human) {
 			return super.getMove();
 		}
 
@@ -834,9 +839,9 @@ public class SoarTank extends Tank implements Agent.RunEventInterface {
 		if (Soar2D.logger.isLoggable(Level.FINEST)) {
 			logger.finest(this.getName() + ": radar data: generating new"); 
 		}
-		for (height = 0; height < Soar2D.config.getInt(Soar2DKeys.tanksoar.radar_height, 15); ++height) {
+		for (height = 0; height < Soar2D.config.tanksoarConfig().radar_height; ++height) {
 			boolean done = false;
-			for (int width = 0; width < Soar2D.config.getInt(Soar2DKeys.tanksoar.radar_width, 3); ++width) {
+			for (int width = 0; width < Soar2D.config.tanksoarConfig().radar_width; ++width) {
 				// Always skip self, this screws up the tanks.
 				if (width == 1 && height == 0) {
 					if (Soar2D.logger.isLoggable(Level.FINEST)) {
@@ -881,8 +886,8 @@ public class SoarTank extends Tank implements Agent.RunEventInterface {
 		if (Soar2D.logger.isLoggable(Level.FINEST)) {
 			logger.finest(this.getName() + ": radar data: updating"); 
 		}
-		for (int width = 0; width < Soar2D.config.getInt(Soar2DKeys.tanksoar.radar_width, 3); ++width) {
-			for (int height = 0; height < Soar2D.config.getInt(Soar2DKeys.tanksoar.radar_height, 15); ++height) {
+		for (int width = 0; width < Soar2D.config.tanksoarConfig().radar_width; ++width) {
+			for (int height = 0; height < Soar2D.config.tanksoarConfig().radar_height; ++height) {
 				// Always skip self, this screws up the tanks.
 				if (width == 1 && height == 0) {
 					if (Soar2D.logger.isLoggable(Level.FINEST)) {
@@ -948,8 +953,8 @@ public class SoarTank extends Tank implements Agent.RunEventInterface {
 	}
 
 	private void clearRadar() {
-		for (int width = 0; width < Soar2D.config.getInt(Soar2DKeys.tanksoar.radar_width, 3); ++width) {
-			for (int height = 0; height < Soar2D.config.getInt(Soar2DKeys.tanksoar.radar_height, 15); ++height) {
+		for (int width = 0; width < Soar2D.config.tanksoarConfig().radar_width; ++width) {
+			for (int height = 0; height < Soar2D.config.tanksoarConfig().radar_height; ++height) {
 				radarCellIDs[width][height] = null;
 				radarColors[width][height] = null;
 			}
@@ -990,9 +995,8 @@ public class SoarTank extends Tank implements Agent.RunEventInterface {
 	public void shutdown() {
 		assert agent != null;
 		if (shutdownCommands != null) { 
-			Iterator<String> iter = shutdownCommands.iterator();
-			while(iter.hasNext()) {
-				String command = iter.next();
+			// execute the pre-shutdown commands
+			for (String command : shutdownCommands) {
 				String result = getName() + ": result: " + agent.ExecuteCommandLine(command, true);
 				Soar2D.logger.info(getName() + ": shutdown command: " + command);
 				if (agent.HadError()) {

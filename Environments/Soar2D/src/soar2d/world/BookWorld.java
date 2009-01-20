@@ -11,8 +11,6 @@ import java.util.logging.Level;
 import soar2d.Names;
 import soar2d.Soar2D;
 import soar2d.Direction;
-import soar2d.config.Config;
-import soar2d.config.Soar2DKeys;
 import soar2d.map.BookMap;
 import soar2d.map.CellObject;
 import soar2d.map.GridMap;
@@ -96,7 +94,7 @@ public class BookWorld implements IWorld {
 			}
 			
 			if (move.drop) {
-				assert Soar2D.config.getBoolean(Soar2DKeys.room.blocks_block, true) == false;
+				assert Soar2D.config.roomConfig().blocks_block == false;
 				
 				Soar2D.logger.finer("Move: drop");
 				
@@ -161,11 +159,11 @@ public class BookWorld implements IWorld {
 			if (move.rotate) {
 				if (move.rotateDirection.equals(Names.kRotateLeft)) {
 					Soar2D.logger.finer("Rotate: left");
-					player.setRotationSpeed(Soar2D.config.getDouble(Soar2DKeys.room.rotate_speed, (float)java.lang.Math.PI / 4) * -1 * time);
+					player.setRotationSpeed(Soar2D.config.roomConfig().rotate_speed * -1 * time);
 				} 
 				else if (move.rotateDirection.equals(Names.kRotateRight)) {
 					Soar2D.logger.finer("Rotate: right");
-					player.setRotationSpeed(Soar2D.config.getDouble(Soar2DKeys.room.rotate_speed, (float)java.lang.Math.PI / 4) * time);
+					player.setRotationSpeed(Soar2D.config.roomConfig().rotate_speed * time);
 				} 
 				else if (move.rotateDirection.equals(Names.kRotateStop)) {
 					Soar2D.logger.finer("Rotate: stop");
@@ -255,11 +253,11 @@ public class BookWorld implements IWorld {
 			} 
 			else if (move.forward) {
 				Soar2D.logger.finer("Move: forward");
-				player.setSpeed(Soar2D.config.getDouble(Soar2DKeys.room.speed, 16));
+				player.setSpeed(Soar2D.config.roomConfig().speed);
 			}
 			else if (move.backward) {
 				Soar2D.logger.finer("Move: backward");
-				player.setSpeed(Soar2D.config.getDouble(Soar2DKeys.room.speed, 16) * -1);
+				player.setSpeed(Soar2D.config.roomConfig().speed * -1);
 			}
 			
 			// reset collision sensor
@@ -279,14 +277,14 @@ public class BookWorld implements IWorld {
 			
 			if (move.drop) {
 				Point2D.Double dropFloatLocation = new Point2D.Double(players.getFloatLocation(player).x, players.getFloatLocation(player).y);
-				dropFloatLocation.x += Soar2D.config.getInt(Soar2DKeys.room.cell_size, 16) * Math.cos(player.getHeadingRadians());
-				dropFloatLocation.y += Soar2D.config.getInt(Soar2DKeys.room.cell_size, 16) * Math.sin(player.getHeadingRadians());
-				java.awt.Point dropLocation = new java.awt.Point((int)dropFloatLocation.x / Soar2D.config.getInt(Soar2DKeys.room.cell_size, 16), (int)dropFloatLocation.y / Soar2D.config.getInt(Soar2DKeys.room.cell_size, 16));
+				dropFloatLocation.x += Soar2D.config.roomConfig().cell_size * Math.cos(player.getHeadingRadians());
+				dropFloatLocation.y += Soar2D.config.roomConfig().cell_size * Math.sin(player.getHeadingRadians());
+				java.awt.Point dropLocation = new java.awt.Point((int)dropFloatLocation.x / Soar2D.config.roomConfig().cell_size, (int)dropFloatLocation.y / Soar2D.config.roomConfig().cell_size);
 				
 				if (dropLocation.equals(players.getLocation(player))) {
-					dropFloatLocation.x += (Soar2D.config.getInt(Soar2DKeys.room.cell_size, 16) * 0.42) * Math.cos(player.getHeadingRadians());
-					dropFloatLocation.y += (Soar2D.config.getInt(Soar2DKeys.room.cell_size, 16) * 0.42) * Math.sin(player.getHeadingRadians());
-					dropLocation = new java.awt.Point((int)dropFloatLocation.x / Soar2D.config.getInt(Soar2DKeys.room.cell_size, 16), (int)dropFloatLocation.y / Soar2D.config.getInt(Soar2DKeys.room.cell_size, 16));
+					dropFloatLocation.x += (Soar2D.config.roomConfig().cell_size * 0.42) * Math.cos(player.getHeadingRadians());
+					dropFloatLocation.y += (Soar2D.config.roomConfig().cell_size * 0.42) * Math.sin(player.getHeadingRadians());
+					dropLocation = new java.awt.Point((int)dropFloatLocation.x / Soar2D.config.roomConfig().cell_size, (int)dropFloatLocation.y / Soar2D.config.roomConfig().cell_size);
 					assert !dropLocation.equals(players.getLocation(player));
 				}
 
@@ -316,7 +314,7 @@ public class BookWorld implements IWorld {
 
 	public boolean update(GridMap _map, PlayersManager players) {
 		double time = Soar2D.control.getTimeSlice();
-		if (Soar2D.config.getBoolean(Soar2DKeys.room.continuous, true))
+		if (Soar2D.config.roomConfig().continuous)
 			return updateContinuous((BookMap)_map, players, time);
 		return updateDiscrete((BookMap)_map, players, time);
 	}
@@ -395,11 +393,11 @@ public class BookWorld implements IWorld {
 		}
 		
 		if (relativeHeading > Math.PI) {
-			player.setRotationSpeed(Soar2D.config.getDouble(Soar2DKeys.room.rotate_speed, Math.PI/4) * -1 * time);
+			player.setRotationSpeed(Soar2D.config.roomConfig().rotate_speed * -1 * time);
 			player.setDestinationHeading(targetHeading);
 		}
 		else {
-			player.setRotationSpeed(Soar2D.config.getDouble(Soar2DKeys.room.rotate_speed, Math.PI/4) * time);
+			player.setRotationSpeed(Soar2D.config.roomConfig().rotate_speed * time);
 			player.setDestinationHeading(targetHeading);
 		}
 		
@@ -422,7 +420,7 @@ public class BookWorld implements IWorld {
 
 	private Point2D.Double defaultFloatLocation(Point location) {
 		Point2D.Double floatLocation = new Point2D.Double();
-		final int cellSize = Soar2D.config.getInt(Soar2DKeys.room.cell_size, 16);
+		final int cellSize = Soar2D.config.roomConfig().cell_size;
 		
 		// default to center of square
 		floatLocation.x = (location.x * cellSize) + (cellSize / 2); 
@@ -440,7 +438,7 @@ public class BookWorld implements IWorld {
 	}
 
 	private void bookMovePlayerContinuous(Player player, BookMap map, PlayersManager players, double time) {
-		final int cellSize = Soar2D.config.getInt(Soar2DKeys.room.cell_size, 16);
+		final int cellSize = Soar2D.config.roomConfig().cell_size;
 		
 		Point oldLocation = players.getLocation(player);
 		Point newLocation = new Point(oldLocation);
@@ -570,7 +568,7 @@ public class BookWorld implements IWorld {
 		if (map.getAllWithProperty(location, Names.kPropertyBlock).size() > 0) {
 			return true;
 		}
-		if (Soar2D.config.getBoolean(Soar2DKeys.room.blocks_block, true) && map.getAllWithProperty(location, "mblock").size() > 0) {
+		if (Soar2D.config.roomConfig().blocks_block && map.getAllWithProperty(location, "mblock").size() > 0) {
 			// FIXME: check height
 			return true;
 		}
@@ -590,8 +588,8 @@ public class BookWorld implements IWorld {
 		}
 	}
 
-	public GridMap newMap(Config config) {
-		return new BookMap(config);
+	public GridMap newMap() {
+		return new BookMap();
 	}
 
 }

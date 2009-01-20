@@ -4,13 +4,11 @@ import java.awt.Point;
 import java.util.Iterator;
 
 import soar2d.Soar2D;
-import soar2d.config.Config;
 import soar2d.world.TankSoarWorld;
 
 public class KitchenMap extends GridMap {
 
-	public KitchenMap(Config config) {
-		super(config);
+	public KitchenMap() {
 	}
 	
 	boolean haveButter = false;

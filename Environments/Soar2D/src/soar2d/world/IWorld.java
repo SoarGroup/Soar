@@ -2,7 +2,6 @@ package soar2d.world;
 
 import java.awt.Point;
 
-import soar2d.config.Config;
 import soar2d.map.GridMap;
 import soar2d.player.Player;
 
@@ -15,5 +14,5 @@ public interface IWorld {
 	public void reset(GridMap map);
 	public int getMinimumAvailableLocations();
 	public void resetPlayer(GridMap map, Player player, PlayersManager players, boolean resetDuringRun);
-	public GridMap newMap(Config config);
+	public GridMap newMap();
 }

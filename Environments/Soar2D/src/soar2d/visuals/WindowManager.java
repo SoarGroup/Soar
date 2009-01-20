@@ -14,7 +14,6 @@ import org.eclipse.swt.widgets.*;
 
 import soar2d.*;
 import soar2d.config.SimConfig;
-import soar2d.config.Soar2DKeys;
 import soar2d.map.BookMap;
 import soar2d.map.CellObject;
 import soar2d.map.EatersMap;
@@ -153,8 +152,8 @@ public class WindowManager {
 					int [] xy = new int[2];
 					xy[0] = shell.getLocation().x;
 					xy[1] = shell.getLocation().y;
-					if (Soar2D.simConfig != null) {
-						Soar2D.simConfig.saveWindowPosition(xy);
+					if (Soar2D.config != null) {
+						Soar2D.config.saveWindowPosition(xy);
 					}
 				}
 			}
@@ -163,7 +162,7 @@ public class WindowManager {
 	}
 	
 	public boolean using() {
-		return !Soar2D.config.getBoolean(Soar2DKeys.general.nogui, false);
+		return !Soar2D.config.generalConfig().nogui;
 	}
 	
 	public void setupEaters() {
@@ -746,7 +745,7 @@ public class WindowManager {
 	public void setupBook() {
 		worldGroup = new Group(shell, SWT.NONE);
 		worldGroup.setLayout(new FillLayout());
-		visualWorld = new BookVisualWorld(worldGroup, SWT.NONE, Soar2D.config.getInt(Soar2DKeys.room.cell_size, 16));
+		visualWorld = new BookVisualWorld(worldGroup, SWT.NONE, Soar2D.config.roomConfig().cell_size);
 		visualWorld.setMap(Soar2D.simulation.world.getMap());
 
 		visualWorld.addMouseListener(new MouseAdapter() {
@@ -988,7 +987,7 @@ public class WindowManager {
 			return;
 		}
 		
-		if (Soar2D.simConfig.game() == SimConfig.Game.TANKSOAR) {
+		if (Soar2D.config.game() == SimConfig.Game.TANKSOAR) {
 			this.editMap.removeAll(location);
 		}
 
@@ -998,7 +997,7 @@ public class WindowManager {
 			// clear out the cell
 			this.editMap.removeAll(location);
 			
-			if (Soar2D.simConfig.game() == SimConfig.Game.TANKSOAR) {
+			if (Soar2D.config.game() == SimConfig.Game.TANKSOAR) {
 				newContent = Names.kGround;
 			}
 		} else {
@@ -1009,7 +1008,7 @@ public class WindowManager {
 			this.editMap.addObjectByName(location, newContent);
 		}
 
-		if (Soar2D.simConfig.game() == SimConfig.Game.TANKSOAR) {
+		if (Soar2D.config.game() == SimConfig.Game.TANKSOAR) {
 			TankSoarVisualWorld tsVisualWorld = (TankSoarVisualWorld)visualWorld;
 			tsVisualWorld.updateBackground(location);
 		}
@@ -1064,7 +1063,7 @@ public class WindowManager {
 //		Button newTemplateButton = new Button(currentSide, SWT.PUSH);
 //		newTemplateButton.setText("Create New Template");
 		
-		if (Soar2D.simConfig.game() == SimConfig.Game.EATERS) {
+		if (Soar2D.config.game() == SimConfig.Game.EATERS) {
 			final Button randomFoodButton = new Button(currentSide, SWT.CHECK);
 			randomFoodButton.setText("Random food");
 			randomFoodButton.setSelection(Soar2D.simulation.world.getMap().getRandomFood());
@@ -1134,7 +1133,7 @@ public class WindowManager {
 			if (mapFile == null) {
 				return;
 			}
-			Soar2D.config.setString(Soar2DKeys.general.map, mapFile.getAbsolutePath());
+			Soar2D.config.generalConfig().map = mapFile.getAbsolutePath();
 		}
 		
    		Soar2D.logger.info("Exiting map editor.");
@@ -1146,7 +1145,7 @@ public class WindowManager {
 		this.editMap = null;
 		
 		currentSide.dispose();
-		switch (Soar2D.simConfig.game()) {
+		switch (Soar2D.config.game()) {
 		case EATERS:
 			createEatersSide();
 			break;
@@ -1187,22 +1186,21 @@ public class WindowManager {
 	
 		mapMenuHeader.setEnabled(false);
 		
-		switch (Soar2D.simConfig.game()) {
+		switch (Soar2D.config.game()) {
 		case EATERS:
-			this.editMap = new EatersMap(Soar2D.config);
+			this.editMap = new EatersMap();
 			break;
 		case TANKSOAR:
-			this.editMap = new TankSoarMap(Soar2D.config);
+			this.editMap = new TankSoarMap();
 			break;
 		case ROOM:
-			this.editMap = new BookMap(Soar2D.config);
+			this.editMap = new BookMap();
 			break;
 		case KITCHEN:
-			this.editMap = new KitchenMap(Soar2D.config);
+			this.editMap = new KitchenMap();
 			break;
-			
 		case TAXI:
-			this.editMap = new TaxiMap(Soar2D.config);
+			this.editMap = new TaxiMap();
 			break;
 		}
 		
@@ -1353,7 +1351,7 @@ public class WindowManager {
 		gl.numColumns = 2;
 		shell.setLayout(gl);
 
-		switch (Soar2D.simConfig.game()) {
+		switch (Soar2D.config.game()) {
 		case EATERS:
 			setupEaters();
 			break;
@@ -1434,7 +1432,7 @@ public class WindowManager {
 			}
 		});
 
-		int [] xy = Soar2D.simConfig.getWindowPosition();
+		int [] xy = Soar2D.config.getWindowPosition();
 		if (xy != null && xy.length == 2)
 		{
 			shell.setLocation(xy[0], xy[1]);
@@ -1500,7 +1498,7 @@ public class WindowManager {
 	}
 
 	void updateWorldGroup() {
-		worldGroup.setText("Map: " + Soar2D.config.getString(Soar2DKeys.general.map));
+		worldGroup.setText("Map: " + Soar2D.config.generalConfig().map);
 		visualWorld.setSize(visualWorld.getWidth(), visualWorld.getHeight());
 		GridData gd = new GridData();
 		gd.widthHint = visualWorld.getWidth();
@@ -1512,7 +1510,7 @@ public class WindowManager {
 	}
 	
 	void updateCounts() {
-		if (Soar2D.simConfig.game() == SimConfig.Game.EATERS) {
+		if (Soar2D.config.game() == SimConfig.Game.EATERS) {
 			EatersMap eMap = (EatersMap)Soar2D.simulation.world.getMap();
 			foodCount.setText(Integer.toString(eMap.getFoodCount()));
 			scoreCount.setText(Integer.toString(eMap.getScoreCount()));
@@ -1620,7 +1618,7 @@ public class WindowManager {
 
 	public MoveInfo getHumanMove(Player player) {
 		humanMove = new MoveInfo();
-		if (Soar2D.config.getBoolean(Soar2DKeys.general.nogui, false)) {
+		if (Soar2D.config.generalConfig().nogui) {
 			return humanMove;
 		}
 		if (player.getRadarSwitch()) {

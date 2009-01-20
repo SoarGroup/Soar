@@ -3,10 +3,7 @@ package soar2d;
 import java.io.*;
 import java.util.logging.*;
 
-import soar2d.config.Config;
-import soar2d.config.ConfigUtil;
 import soar2d.config.SimConfig;
-import soar2d.config.Soar2DKeys;
 import soar2d.visuals.*;
 /*
  * A note about log levels:
@@ -35,8 +32,7 @@ import soar2d.visuals.*;
 
 public class Soar2D {
 	public static final Logger logger = Logger.getLogger("soar2d");
-	public static Config config = null;
-	public static SimConfig simConfig = null;
+	public static SimConfig config = null;
 	public static final WindowManager wm = new WindowManager();
 	public static final Simulation simulation = new Simulation();
 	public static final Controller control = new Controller();
@@ -57,7 +53,7 @@ public class Soar2D {
 		initializeLogger();
 		
 		// if using gui
-		boolean usingGUI = !config.getBoolean(Soar2DKeys.general.nogui, false);
+		boolean usingGUI = !config.generalConfig().nogui;
 		if (usingGUI) {
 			// initialize wm
 			if (!wm.initialize()) {
@@ -83,7 +79,7 @@ public class Soar2D {
 		// calls wm.shutdown()
 		control.shutdown();
 		
-		simConfig.savePreferences();
+		config.savePreferences();
 	}
 	
 	private void loadConfig(String [] args) {
@@ -103,39 +99,35 @@ public class Soar2D {
 		}
 
 		// Read config file
-		config = ConfigUtil.tryLoadConfig(configPath);
-		if(config == null) {
-			wm.initialize();
-			control.severeError("Error loading configuration file");
-			wm.shutdown();
-			System.exit(1);
-		}
-		simConfig = SimConfig.create(config.getString("general.game"));
-		if (simConfig == null) {
-			wm.initialize();
-			control.severeError("Illegal game: " + config.getString("general.game"));
-			wm.shutdown();
-			System.exit(1);
+		try {
+			config = SimConfig.load(configPath);
+		} catch (IOException e) {
+			if(config == null) {
+				wm.initialize();
+				control.severeError("Error loading configuration file: " + e.getMessage());
+				wm.shutdown();
+				System.exit(1);
+			}
 		}
 	}
 	
 	private void initializeLogger() {
 		Level level = null;
 		try {
-			level = Level.parse(config.getString(Soar2DKeys.general.logging.level, Level.INFO.toString()));
+			level = Level.parse(config.loggingConfig().level);
 		} catch (IllegalArgumentException e) {
 			wm.initialize();
-			control.severeError(Soar2DKeys.general.logging.level + ": " + e.getMessage());
+			control.severeError(config.loggingConfig().level + ": " + e.getMessage());
 			wm.shutdown();
 			System.exit(1);
 		}
 
 		logger.setLevel(level);
-		boolean logTime = config.getBoolean(Soar2DKeys.general.logging.time, false);
+		boolean logTime = config.loggingConfig().time;
 		boolean notLogging = true;
 
 		// Start logger
-		String loggingFile = config.getString(Soar2DKeys.general.logging.file);
+		String loggingFile = config.loggingConfig().file;
 		if (loggingFile != null) {
 			FileHandler handler = null;
 			try {
@@ -156,7 +148,7 @@ public class Soar2D {
 			notLogging = false;
 		}
 		
-		if (config.getBoolean(Soar2DKeys.general.logging.console, true)) {
+		if (config.loggingConfig().console) {
 			// Console handler
 			ConsoleHandler handler = new ConsoleHandler();
 			handler.setLevel(level);

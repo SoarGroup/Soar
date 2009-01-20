@@ -46,6 +46,7 @@ public class Config {
 	void missingRequired(String key) {
 		System.out.println("Config: Required key '" + key + "' missing.");
 		assert (false);
+		throw new IllegalArgumentException("Config: Required key '" + key + "' missing.");
 	}
 
 	// //////////////////////////
@@ -59,7 +60,7 @@ public class Config {
 		return (v == null) ? defaults : v;
 	}
 
-	public int[] requireInts(String key) {
+	public int[] requireInts(String key) throws IllegalArgumentException {
 		int v[] = source.getInts(prefix + key);
 		if (v == null)
 			missingRequired(prefix + key);
@@ -71,7 +72,7 @@ public class Config {
 		return (v == null) ? def : v[0];
 	}
 
-	public int requireInt(String key) {
+	public int requireInt(String key) throws IllegalArgumentException {
 		int v[] = source.getInts(prefix + key);
 		if (v == null)
 			missingRequired(prefix + key);
@@ -97,7 +98,7 @@ public class Config {
 		return (v == null) ? defaults : v;
 	}
 
-	public String[] requireStrings(String key) {
+	public String[] requireStrings(String key) throws IllegalArgumentException {
 		String v[] = source.getStrings(prefix + key);
 		if (v == null)
 			missingRequired(prefix + key);
@@ -113,7 +114,7 @@ public class Config {
 		return (v == null) ? def : v[0];
 	}
 
-	public String requireString(String key) {
+	public String requireString(String key) throws IllegalArgumentException {
 		String v[] = source.getStrings(prefix + key);
 		if (v == null)
 			missingRequired(prefix + key);
@@ -140,7 +141,7 @@ public class Config {
 		return (v == null) ? defaults : v;
 	}
 
-	public boolean[] requireBooleans(String key) {
+	public boolean[] requireBooleans(String key) throws IllegalArgumentException {
 		boolean v[] = source.getBooleans(prefix + key);
 		if (v == null)
 			missingRequired(prefix + key);
@@ -152,7 +153,7 @@ public class Config {
 		return (v == null) ? def : v[0];
 	}
 
-	public boolean requireBoolean(String key) {
+	public boolean requireBoolean(String key) throws IllegalArgumentException {
 		boolean v[] = source.getBooleans(prefix + key);
 		if (v == null)
 			missingRequired(prefix + key);
@@ -178,7 +179,7 @@ public class Config {
 		return (v == null) ? defaults : v;
 	}
 
-	public double[] requireDoubles(String key) {
+	public double[] requireDoubles(String key) throws IllegalArgumentException {
 		double v[] = source.getDoubles(prefix + key);
 		if (v == null)
 			missingRequired(prefix + key);
@@ -190,7 +191,7 @@ public class Config {
 		return (v == null) ? def : v[0];
 	}
 
-	public double requireDouble(String key) {
+	public double requireDouble(String key) throws IllegalArgumentException {
 		double v[] = source.getDoubles(prefix + key);
 		if (v == null)
 			missingRequired(prefix + key);
@@ -212,7 +213,7 @@ public class Config {
 		return (v == null) ? defaults : v;
 	}
 
-	public byte[] requireBytes(String key) {
+	public byte[] requireBytes(String key) throws IllegalArgumentException {
 		byte v[] = source.getBytes(prefix + key);
 		if (v == null)
 			missingRequired(prefix + key);

@@ -10,8 +10,6 @@ import java.util.logging.Level;
 import soar2d.Direction;
 import soar2d.Names;
 import soar2d.Soar2D;
-import soar2d.config.Config;
-import soar2d.config.Soar2DKeys;
 import soar2d.map.CellObject;
 import soar2d.map.EatersMap;
 import soar2d.map.GridMap;
@@ -84,12 +82,12 @@ public class EatersWorld implements IWorld {
 				map.setPlayer(oldLocation, null);
 				
 				if (move.jump) {
-					player.adjustPoints(Soar2D.config.getInt(Soar2DKeys.eaters.jump_penalty, -5), "jump penalty");
+					player.adjustPoints(Soar2D.config.eatersConfig().jump_penalty, "jump penalty");
 				}
 				players.setLocation(player, newLocation);
 				
 			} else {
-				player.adjustPoints(Soar2D.config.getInt(Soar2DKeys.eaters.wall_penalty, -5), "wall collision");
+				player.adjustPoints(Soar2D.config.eatersConfig().wall_penalty, "wall collision");
 			}
 		}
 	}
@@ -305,7 +303,7 @@ public class EatersWorld implements IWorld {
 		player.reset();
 	}
 
-	public GridMap newMap(Config config) {
-		return new EatersMap(config);
+	public GridMap newMap() {
+		return new EatersMap();
 	}
 }

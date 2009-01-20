@@ -8,7 +8,6 @@ import java.util.Iterator;
 
 import soar2d.Direction;
 import soar2d.Soar2D;
-import soar2d.config.Config;
 import soar2d.map.CellObject;
 import soar2d.map.GridMap;
 import soar2d.map.KitchenMap;
@@ -472,7 +471,7 @@ public class KitchenWorld implements IWorld {
 		player.reset();
 	}
 
-	public GridMap newMap(Config config) {
-		return new KitchenMap(config);
+	public GridMap newMap() {
+		return new KitchenMap();
 	}
 }

@@ -4,15 +4,12 @@ import java.util.HashSet;
 import java.util.Iterator;
 
 import soar2d.Names;
-import soar2d.config.Config;
-import soar2d.config.Soar2DKeys;
+import soar2d.Soar2D;
 import soar2d.world.TankSoarWorld;
 
 public class EatersMap extends GridMap {
 
-	public EatersMap(Config config) {
-		super(config);
-
+	public EatersMap() {
 	}
 
 	@Override
@@ -29,7 +26,7 @@ public class EatersMap extends GridMap {
 			updatables.add(object);
 			updatablesLocations.put(object, location);
 		}
-		if (config.getBoolean(Soar2DKeys.terminals.unopened_boxes, false)) {
+		if (Soar2D.config.terminalsConfig().unopened_boxes) {
 			if (isUnopenedBox(object)) {
 				unopenedBoxes.add(object);
 			}
@@ -78,7 +75,7 @@ public class EatersMap extends GridMap {
 			}
 		}
 		
-		if (config.getBoolean(Soar2DKeys.terminals.unopened_boxes, false)) {
+		if (Soar2D.config.terminalsConfig().unopened_boxes) {
 			Iterator<CellObject> iter = unopenedBoxes.iterator();
 			while (iter.hasNext()) {
 				CellObject box = iter.next();
@@ -129,7 +126,7 @@ public class EatersMap extends GridMap {
 	
 	@Override
 	void removalStateUpdate(CellObject object) {
-		if (config.getBoolean(Soar2DKeys.terminals.unopened_boxes, false)) {
+		if (Soar2D.config.terminalsConfig().unopened_boxes) {
 			if (isUnopenedBox(object)) {
 				unopenedBoxes.remove(object);
 			}
