@@ -2,6 +2,8 @@ package soar2d.map;
 
 import java.util.*;
 
+import org.apache.log4j.Logger;
+
 import soar2d.*;
 import soar2d.player.Player;
 import soar2d.world.World;
@@ -14,6 +16,8 @@ import soar2d.world.World;
  * an explosion object to trigger the drawing of an explosion.
  */
 public class CellObject {
+	private static Logger logger = Logger.getLogger(CellObject.class);
+
 	private static final boolean kDefaultPropertyBoolean = false;	// if a bool property doesn't exist
 	private static final float kDefaultPropertyFloat = 0;			// if a float property doesn't exist
 	private static final int kDefaultPropertyInt = 0;				// if an int property doesn't exist
@@ -252,7 +256,7 @@ public class CellObject {
 			while (iter.hasNext()) {
 				String key = iter.next();
 				String value = propertiesApply.get(key);
-				Soar2D.logger.info("New property: " + key + " --> " + value);
+				logger.info(Names.Info.newProperty + key + " --> " + value);
 				properties.put(key, value);
 			}
 		}

@@ -1,7 +1,8 @@
 package soar2d.player.taxi;
 
 import java.util.Arrays;
-import java.util.logging.*;
+
+import org.apache.log4j.Logger;
 
 import sml.*;
 import soar2d.Direction;
@@ -18,6 +19,8 @@ import soar2d.world.World;
  *
  */
 public class SoarTaxi extends Taxi {
+	private static Logger logger = Logger.getLogger(SoarTaxi.class);
+
 	/**
 	 * the soar agent
 	 */
@@ -82,9 +85,14 @@ public class SoarTaxi extends Taxi {
 		initInputLink();
 		
 		if (!agent.Commit()) {
-			Soar2D.control.severeError("Failed to commit input to Soar agent " + this.getName());
+			error(Names.Errors.commitFail + this.getName());
 			Soar2D.control.stopSimulation();
 		}
+	}
+	
+	private void error(String message) {
+		logger.error(message);
+		Soar2D.control.errorPopUp(message);
 	}
 	
 	private void initInputLink() {
@@ -144,7 +152,7 @@ public class SoarTaxi extends Taxi {
 				metadata.load(Soar2D.simulation.world.getMap().getMetadata());
 			}
 		} catch (Exception e) {
-			Soar2D.control.severeError("Failed to load metadata: " + this.getName() + ": " + e.getMessage());
+			error(Names.Errors.commitFail + this.getName() + ": " + e.getMessage());
 			Soar2D.control.stopSimulation();
 		}
 	}
@@ -245,7 +253,7 @@ public class SoarTaxi extends Taxi {
 		
 		// commit everything
 		if (!agent.Commit()) {
-			Soar2D.control.severeError("Failed to commit input to Soar agent " + this.getName());
+			error(Names.Errors.commitFail + this.getName());
 			Soar2D.control.stopSimulation();
 		}
 		//this.resetPointsChanged();
@@ -295,7 +303,9 @@ public class SoarTaxi extends Taxi {
 		
 		// if there was no command issued, that is kind of strange
 		if (agent.GetNumberCommands() == 0) {
-			if (logger.isLoggable(Level.FINER)) logger.finer(getName() + " issued no command.");
+			if (logger.isDebugEnabled()) {
+				logger.debug(getName() + " issued no command.");
+			}
 			return new MoveInfo();
 		}
 
@@ -304,7 +314,7 @@ public class SoarTaxi extends Taxi {
 		MoveInfo move = new MoveInfo();
 		boolean moveWait = false;
 		if (agent.GetNumberCommands() > 1) {
-			logger.warning(getName() + ": " + agent.GetNumberCommands() 
+			logger.warn(getName() + ": " + agent.GetNumberCommands() 
 					+ " commands detected, all but the first will be ignored");
 		}
 		for (int i = 0; i < agent.GetNumberCommands(); ++i) {
@@ -313,7 +323,7 @@ public class SoarTaxi extends Taxi {
 			
 			if (commandName.equalsIgnoreCase(Names.kMoveID)) {
 				if (move.move || moveWait) {
-					logger.warning(getName() + ": multiple move commands detected");
+					logger.warn(getName() + ": multiple move commands detected");
 					commandId.AddStatusError();
 					continue;
 				}
@@ -337,7 +347,7 @@ public class SoarTaxi extends Taxi {
 				
 			} else if (commandName.equalsIgnoreCase(Names.kStopSimID)) {
 				if (move.stopSim) {
-					logger.warning(getName() + ": multiple stop commands detected, ignoring");
+					logger.warn(getName() + ": multiple stop commands detected, ignoring");
 					commandId.AddStatusError();
 					continue;
 				}
@@ -347,7 +357,7 @@ public class SoarTaxi extends Taxi {
 				
 			} else if (commandName.equalsIgnoreCase(Names.kPickUpID)) {
 				if (move.pickup) {
-					logger.warning(getName() + ": multiple " + Names.kPickUpID + " commands detected, ignoring");
+					logger.warn(getName() + ": multiple " + Names.kPickUpID + " commands detected, ignoring");
 					commandId.AddStatusError();
 					continue;
 				}
@@ -357,7 +367,7 @@ public class SoarTaxi extends Taxi {
 				
 			} else if (commandName.equalsIgnoreCase(Names.kPutDownID)) {
 				if (move.putdown) {
-					logger.warning(getName() + ": multiple " + Names.kPutDownID + " commands detected, ignoring");
+					logger.warn(getName() + ": multiple " + Names.kPutDownID + " commands detected, ignoring");
 					commandId.AddStatusError();
 					continue;
 				}
@@ -367,7 +377,7 @@ public class SoarTaxi extends Taxi {
 				
 			} else if (commandName.equalsIgnoreCase(Names.kFillUpID)) {
 				if (move.fillup) {
-					logger.warning(getName() + ": multiple " + Names.kFillUpID + " commands detected, ignoring");
+					logger.warn(getName() + ": multiple " + Names.kFillUpID + " commands detected, ignoring");
 					commandId.AddStatusError();
 					continue;
 				}
@@ -376,17 +386,17 @@ public class SoarTaxi extends Taxi {
 				continue;
 				
 			} else {
-				logger.warning("Unknown command: " + commandName);
+				logger.warn("Unknown command: " + commandName);
 				commandId.AddStatusError();
 				continue;
 			}
 			
-			logger.warning("Improperly formatted command: " + commandName);
+			logger.warn("Improperly formatted command: " + commandName);
 			commandId.AddStatusError();
 		}
 		agent.ClearOutputLinkChanges();
 		if (!agent.Commit()) {
-			Soar2D.control.severeError("Failed to commit input to Soar agent " + this.getName());
+			error(Names.Errors.commitFail + this.getName());
 			Soar2D.control.stopSimulation();
 		}
 		return move;
@@ -410,7 +420,7 @@ public class SoarTaxi extends Taxi {
 		this.initInputLink();
 
 		if (!agent.Commit()) {
-			Soar2D.control.severeError("Failed to commit input to Soar agent " + this.getName());
+			error(Names.Errors.commitFail + this.getName());
 			Soar2D.control.stopSimulation();
 		}
 	}
@@ -421,11 +431,11 @@ public class SoarTaxi extends Taxi {
 			// execute the pre-shutdown commands
 			for (String command : shutdownCommands) {
 				String result = getName() + ": result: " + agent.ExecuteCommandLine(command, true);
-				Soar2D.logger.info(getName() + ": shutdown command: " + command);
+				logger.info(getName() + ": shutdown command: " + command);
 				if (agent.HadError()) {
-					Soar2D.control.severeError(result);
+					error(result);
 				} else {
-					Soar2D.logger.info(getName() + ": result: " + result);
+					logger.info(getName() + ": result: " + result);
 				}
 			}
 		}

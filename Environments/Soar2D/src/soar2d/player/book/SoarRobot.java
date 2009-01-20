@@ -3,8 +3,9 @@ package soar2d.player.book;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Iterator;
-import java.util.logging.Level;
 import java.lang.Math;
+
+import org.apache.log4j.Logger;
 
 import sml.Agent;
 import sml.Identifier;
@@ -23,6 +24,8 @@ import soar2d.world.PlayersManager;
 import soar2d.world.World;
 
 public class SoarRobot extends Robot {
+	private static Logger logger = Logger.getLogger(SoarRobot.class);
+
 	Agent agent;	// the soar agent
 	float random;	// a random number, guaranteed to change every frame
 	private boolean fragged = true;
@@ -57,9 +60,14 @@ public class SoarRobot extends Robot {
 		loadMetadata();
 		
 		if (!agent.Commit()) {
-			Soar2D.control.severeError("Failed to commit input to Soar agent " + this.getName());
+			error(Names.Errors.commitFail + this.getName());
 			Soar2D.control.stopSimulation();
 		}
+	}
+	
+	private void error(String message) {
+		logger.error(message);
+		Soar2D.control.errorPopUp(message);
 	}
 	
 	private void loadMetadata() {
@@ -72,7 +80,7 @@ public class SoarRobot extends Robot {
 				metadata.load(Soar2D.simulation.world.getMap().getMetadata());
 			}
 		} catch (Exception e) {
-			Soar2D.control.severeError("Failed to load metadata: " + this.getName() + ": " + e.getMessage());
+			error(Names.Errors.metadata + this.getName() + ": " + e.getMessage());
 			Soar2D.control.stopSimulation();
 		}
 	}
@@ -258,9 +266,9 @@ public class SoarRobot extends Robot {
 				double angleOff = players.angleOff(this, bInfo.floatLocation);
 				if (Math.abs(angleOff) <= maxAngleOff) {
 					selfIL.addOrUpdateObject(bInfo, world, angleOff);
-					logger.finer(getName() + ": object " + bInfo.object.getProperty("object-id") + " added to input link");
+					logger.debug(getName() + ": object " + bInfo.object.getProperty("object-id") + " added to input link");
 				} else {
-					logger.finer(getName() + ": object " + bInfo.object.getProperty("object-id") + " out of cone");
+					logger.debug(getName() + ": object " + bInfo.object.getProperty("object-id") + " out of cone");
 				}
 			}
 		}
@@ -297,7 +305,7 @@ public class SoarRobot extends Robot {
 		
 		// commit everything
 		if (!agent.Commit()) {
-			Soar2D.control.severeError("Failed to commit input to Soar agent " + this.getName());
+			error(Names.Errors.commitFail + this.getName());
 			Soar2D.control.stopSimulation();
 		}
 	}
@@ -319,7 +327,9 @@ public class SoarRobot extends Robot {
 
 		// if there was no command issued, that is kind of strange
 		if (agent.GetNumberCommands() == 0) {
-			if (logger.isLoggable(Level.FINER)) logger.finer(getName() + " issued no command.");
+			if (logger.isDebugEnabled()) {
+				logger.debug(getName() + " issued no command.");
+			}
 			return new MoveInfo();
 		}
 
@@ -337,7 +347,7 @@ public class SoarRobot extends Robot {
 			
 			if (commandName.equalsIgnoreCase(Names.kMoveID)) {
 				if (move.move) {
-					logger.warning(getName() + " multiple move commands issued");
+					logger.warn(getName() + " multiple move commands issued");
 					commandId.AddStatusError();
 					continue;
 				}
@@ -345,7 +355,7 @@ public class SoarRobot extends Robot {
 				String direction = commandId.GetParameterValue(Names.kDirectionID);
 				
 				if (direction == null) {
-					logger.warning(getName() + " move command missing direction parameter");
+					logger.warn(getName() + " move command missing direction parameter");
 					commandId.AddStatusError();
 					continue;
 				}
@@ -357,7 +367,7 @@ public class SoarRobot extends Robot {
 					move.backward = true;
 				
 				} else {
-					logger.warning(getName() + "unrecognized move direction: " + direction);
+					logger.warn(getName() + "unrecognized move direction: " + direction);
 					commandId.AddStatusError();
 					continue;
 				}
@@ -367,7 +377,7 @@ public class SoarRobot extends Robot {
 
 			} else if (commandName.equalsIgnoreCase(Names.kRotateID)) {
 				if (move.rotate) {
-					logger.warning(getName() + " multiple rotate commands issued");
+					logger.warn(getName() + " multiple rotate commands issued");
 					commandId.AddStatusError();
 					continue;
 				}
@@ -375,7 +385,7 @@ public class SoarRobot extends Robot {
 				String direction = commandId.GetParameterValue(Names.kDirectionID);
 				
 				if (direction == null) {
-					logger.warning(getName() + " rotate command missing direction parameter");
+					logger.warn(getName() + " rotate command missing direction parameter");
 					commandId.AddStatusError();
 					continue;
 				}
@@ -387,7 +397,7 @@ public class SoarRobot extends Robot {
 					move.rotateDirection = Names.kRotateRight;
 				
 				} else {
-					logger.warning(getName() + "unrecognized rotate direction: " + direction);
+					logger.warn(getName() + "unrecognized rotate direction: " + direction);
 					commandId.AddStatusError();
 					continue;
 					
@@ -398,7 +408,7 @@ public class SoarRobot extends Robot {
 
 			} else if (commandName.equalsIgnoreCase(Names.kStopSimID)) {
 				if (move.stopSim) {
-					logger.warning(getName() + " multiple stop-sim commands issued");
+					logger.warn(getName() + " multiple stop-sim commands issued");
 					commandId.AddStatusError();
 					continue;
 				}
@@ -407,40 +417,40 @@ public class SoarRobot extends Robot {
 				
 			} else if (commandName.equalsIgnoreCase(Names.kGetID)) {
 				if (move.get) {
-					logger.warning(getName() + " multiple get commands issued");
+					logger.warn(getName() + " multiple get commands issued");
 					commandId.AddStatusError();
 					continue;
 				}
 
 				if (move.drop) {
-					logger.warning(getName() + " get: both get and drop simultaneously issued");
+					logger.warn(getName() + " get: both get and drop simultaneously issued");
 					commandId.AddStatusError();
 					continue;
 				}
 				
 				String idString = commandId.GetParameterValue("id");
 				if (idString == null) {
-					logger.warning(getName() + " get command missing id parameter");
+					logger.warn(getName() + " get command missing id parameter");
 					commandId.AddStatusError();
 					continue;
 				}
 				try {
 					move.getId = Integer.parseInt(idString);
 				} catch (NumberFormatException e) {
-					logger.warning(getName() + " get command id parameter improperly formatted");
+					logger.warn(getName() + " get command id parameter improperly formatted");
 					commandId.AddStatusError();
 					continue;
 				}
 				
 				ObjectInputLink oIL = selfIL.getOIL(move.getId);
 				if (oIL == null) {
-					logger.warning(getName() + " get command invalid id " + move.getId);
+					logger.warn(getName() + " get command invalid id " + move.getId);
 					commandId.AddStatusError();
 					continue;
 				}
 				if (oIL.row.GetValue() != selfIL.row.GetValue() || oIL.col.GetValue() != selfIL.col.GetValue())
 				if (oIL.range.GetValue() > Soar2D.config.roomConfig().cell_size) {
-					logger.warning(getName() + " get command object not in same cell");
+					logger.warn(getName() + " get command object not in same cell");
 					commandId.AddStatusError();
 					continue;
 				}
@@ -451,27 +461,27 @@ public class SoarRobot extends Robot {
 				
 			} else if (commandName.equalsIgnoreCase(Names.kDropID)) {
 				if (move.drop) {
-					logger.warning(getName() + " multiple drop commands issued");
+					logger.warn(getName() + " multiple drop commands issued");
 					commandId.AddStatusError();
 					continue;
 				}
 
 				if (move.get) {
-					logger.warning(getName() + " drop: both drop and get simultaneously issued");
+					logger.warn(getName() + " drop: both drop and get simultaneously issued");
 					commandId.AddStatusError();
 					continue;
 				}
 				
 				String idString = commandId.GetParameterValue("id");
 				if (idString == null) {
-					logger.warning(getName() + " drop command missing id parameter");
+					logger.warn(getName() + " drop command missing id parameter");
 					commandId.AddStatusError();
 					continue;
 				}
 				try {
 					move.dropId = Integer.parseInt(idString);
 				} catch (NumberFormatException e) {
-					logger.warning(getName() + " drop command id parameter improperly formatted");
+					logger.warn(getName() + " drop command id parameter improperly formatted");
 					commandId.AddStatusError();
 					continue;
 				}
@@ -483,7 +493,7 @@ public class SoarRobot extends Robot {
 				MoveInfo.Communication comm = move.new Communication();
 				String toString = commandId.GetParameterValue("to");
 				if (toString == null) {
-					logger.warning(getName() + " communicate command missing to parameter");
+					logger.warn(getName() + " communicate command missing to parameter");
 					commandId.AddStatusError();
 					continue;
 				}
@@ -491,7 +501,7 @@ public class SoarRobot extends Robot {
 				
 				String messageString = commandId.GetParameterValue("message");
 				if (messageString == null) {
-					logger.warning(getName() + " communicate command missing message parameter");
+					logger.warn(getName() + " communicate command missing message parameter");
 					commandId.AddStatusError();
 					continue;
 				}
@@ -501,13 +511,13 @@ public class SoarRobot extends Robot {
 				commandId.AddStatusComplete();
 				
 			} else {
-				logger.warning("Unknown command: " + commandName);
+				logger.warn("Unknown command: " + commandName);
 				commandId.AddStatusError();
 			}
 		}
 		agent.ClearOutputLinkChanges();
 		if (!agent.Commit()) {
-			Soar2D.control.severeError("Failed to commit input to Soar agent " + this.getName());
+			error(Names.Errors.commitFail + this.getName());
 			Soar2D.control.stopSimulation();
 		}
 		return move;
@@ -529,7 +539,7 @@ public class SoarRobot extends Robot {
 					}
 				}
 				if (move.move) {
-					logger.warning(getName() + " multiple move commands issued");
+					logger.warn(getName() + " multiple move commands issued");
 					commandId.AddStatusError();
 					continue;
 				}
@@ -537,7 +547,7 @@ public class SoarRobot extends Robot {
 				String direction = commandId.GetParameterValue(Names.kDirectionID);
 				
 				if (direction == null) {
-					logger.warning(getName() + " move command missing direction parameter");
+					logger.warn(getName() + " move command missing direction parameter");
 					commandId.AddStatusError();
 					continue;
 				}
@@ -556,7 +566,7 @@ public class SoarRobot extends Robot {
 					continue;
 					
 				} else {
-					logger.warning(getName() + "unrecognized move direction: " + direction);
+					logger.warn(getName() + "unrecognized move direction: " + direction);
 					commandId.AddStatusError();
 					continue;
 				}
@@ -573,7 +583,7 @@ public class SoarRobot extends Robot {
 					}
 				}
 				if (move.rotate) {
-					logger.warning(getName() + " multiple rotate commands issued");
+					logger.warn(getName() + " multiple rotate commands issued");
 					commandId.AddStatusError();
 					continue;
 				}
@@ -581,7 +591,7 @@ public class SoarRobot extends Robot {
 				String direction = commandId.GetParameterValue(Names.kDirectionID);
 				
 				if (direction == null) {
-					logger.warning(getName() + " rotate command missing direction parameter");
+					logger.warn(getName() + " rotate command missing direction parameter");
 					commandId.AddStatusError();
 					continue;
 				}
@@ -599,7 +609,7 @@ public class SoarRobot extends Robot {
 					continue;
 				
 				} else {
-					logger.warning(getName() + "unrecognized rotate direction: " + direction);
+					logger.warn(getName() + "unrecognized rotate direction: " + direction);
 					commandId.AddStatusError();
 					continue;
 					
@@ -611,7 +621,7 @@ public class SoarRobot extends Robot {
 
 			} else if (commandName.equalsIgnoreCase(Names.kStopSimID)) {
 				if (move.stopSim) {
-					logger.warning(getName() + " multiple stop-sim commands issued");
+					logger.warn(getName() + " multiple stop-sim commands issued");
 					commandId.AddStatusError();
 					continue;
 				}
@@ -626,14 +636,14 @@ public class SoarRobot extends Robot {
 					}
 				}
 				if (move.rotateAbsolute) {
-					logger.warning(getName() + " multiple rotate-absolute commands issued");
+					logger.warn(getName() + " multiple rotate-absolute commands issued");
 					commandId.AddStatusError();
 					continue;
 				}
 				
 				String yawString = commandId.GetParameterValue("yaw");
 				if (yawString == null) {
-					logger.warning(getName() + " rotate-absolute command missing yaw parameter");
+					logger.warn(getName() + " rotate-absolute command missing yaw parameter");
 					commandId.AddStatusError();
 					continue;
 				}
@@ -641,7 +651,7 @@ public class SoarRobot extends Robot {
 				try {
 					move.rotateAbsoluteHeading = Double.parseDouble(yawString);
 				} catch (NumberFormatException e) {
-					logger.warning(getName() + " rotate-absolute yaw parameter improperly formatted");
+					logger.warn(getName() + " rotate-absolute yaw parameter improperly formatted");
 					commandId.AddStatusError();
 					continue;
 				}
@@ -664,14 +674,14 @@ public class SoarRobot extends Robot {
 					}
 				}
 				if (move.rotateRelative) {
-					logger.warning(getName() + " multiple rotate-relative commands issued");
+					logger.warn(getName() + " multiple rotate-relative commands issued");
 					commandId.AddStatusError();
 					continue;
 				}
 				
 				String amountString = commandId.GetParameterValue("yaw");
 				if (amountString == null) {
-					logger.warning(getName() + " rotate-relative command missing yaw parameter");
+					logger.warn(getName() + " rotate-relative command missing yaw parameter");
 					commandId.AddStatusError();
 					continue;
 				}
@@ -679,7 +689,7 @@ public class SoarRobot extends Robot {
 				try {
 					move.rotateRelativeYaw = Double.parseDouble(amountString);
 				} catch (NumberFormatException e) {
-					logger.warning(getName() + " rotate-relative yaw parameter improperly formatted");
+					logger.warn(getName() + " rotate-relative yaw parameter improperly formatted");
 					commandId.AddStatusError();
 					continue;
 				}
@@ -690,39 +700,39 @@ public class SoarRobot extends Robot {
 				
 			} else if (commandName.equalsIgnoreCase(Names.kGetID)) {
 				if (move.get) {
-					logger.warning(getName() + " multiple get commands issued");
+					logger.warn(getName() + " multiple get commands issued");
 					commandId.AddStatusError();
 					continue;
 				}
 
 				if (move.drop) {
-					logger.warning(getName() + " get: both get and drop simultaneously issued");
+					logger.warn(getName() + " get: both get and drop simultaneously issued");
 					commandId.AddStatusError();
 					continue;
 				}
 				
 				String idString = commandId.GetParameterValue("id");
 				if (idString == null) {
-					logger.warning(getName() + " get command missing id parameter");
+					logger.warn(getName() + " get command missing id parameter");
 					commandId.AddStatusError();
 					continue;
 				}
 				try {
 					move.getId = Integer.parseInt(idString);
 				} catch (NumberFormatException e) {
-					logger.warning(getName() + " get command id parameter improperly formatted");
+					logger.warn(getName() + " get command id parameter improperly formatted");
 					commandId.AddStatusError();
 					continue;
 				}
 				
 				ObjectInputLink oIL = selfIL.getOIL(move.getId);
 				if (oIL == null) {
-					logger.warning(getName() + " get command invalid id " + move.getId);
+					logger.warn(getName() + " get command invalid id " + move.getId);
 					commandId.AddStatusError();
 					continue;
 				}
 				if (oIL.range.GetValue() > Soar2D.config.roomConfig().cell_size) {
-					logger.warning(getName() + " get command object out of range");
+					logger.warn(getName() + " get command object out of range");
 					commandId.AddStatusError();
 					continue;
 				}
@@ -733,27 +743,27 @@ public class SoarRobot extends Robot {
 				
 			} else if (commandName.equalsIgnoreCase(Names.kDropID)) {
 				if (move.drop) {
-					logger.warning(getName() + " multiple drop commands issued");
+					logger.warn(getName() + " multiple drop commands issued");
 					commandId.AddStatusError();
 					continue;
 				}
 
 				if (move.get) {
-					logger.warning(getName() + " drop: both drop and get simultaneously issued");
+					logger.warn(getName() + " drop: both drop and get simultaneously issued");
 					commandId.AddStatusError();
 					continue;
 				}
 				
 				String idString = commandId.GetParameterValue("id");
 				if (idString == null) {
-					logger.warning(getName() + " drop command missing id parameter");
+					logger.warn(getName() + " drop command missing id parameter");
 					commandId.AddStatusError();
 					continue;
 				}
 				try {
 					move.dropId = Integer.parseInt(idString);
 				} catch (NumberFormatException e) {
-					logger.warning(getName() + " drop command id parameter improperly formatted");
+					logger.warn(getName() + " drop command id parameter improperly formatted");
 					commandId.AddStatusError();
 					continue;
 				}
@@ -765,7 +775,7 @@ public class SoarRobot extends Robot {
 				MoveInfo.Communication comm = move.new Communication();
 				String toString = commandId.GetParameterValue("to");
 				if (toString == null) {
-					logger.warning(getName() + " communicate command missing to parameter");
+					logger.warn(getName() + " communicate command missing to parameter");
 					commandId.AddStatusError();
 					continue;
 				}
@@ -773,7 +783,7 @@ public class SoarRobot extends Robot {
 				
 				String messageString = commandId.GetParameterValue("message");
 				if (messageString == null) {
-					logger.warning(getName() + " communicate command missing message parameter");
+					logger.warn(getName() + " communicate command missing message parameter");
 					commandId.AddStatusError();
 					continue;
 				}
@@ -783,14 +793,14 @@ public class SoarRobot extends Robot {
 				commandId.AddStatusComplete();
 				
 			} else {
-				logger.warning("Unknown command: " + commandName);
+				logger.warn("Unknown command: " + commandName);
 				commandId.AddStatusError();
 				continue;
 			}
 		}
 		agent.ClearOutputLinkChanges();
 		if (!agent.Commit()) {
-			Soar2D.control.severeError("Failed to commit input to Soar agent " + this.getName());
+			error(Names.Errors.commitFail + this.getName());
 			Soar2D.control.stopSimulation();
 		}
 		return move;
@@ -851,7 +861,7 @@ public class SoarRobot extends Robot {
 		metadata = null;
 
 		if (!agent.Commit()) {
-			Soar2D.control.severeError("Failed to commit input to Soar agent " + this.getName());
+			error(Names.Errors.commitFail + this.getName());
 			Soar2D.control.stopSimulation();
 		}
 
@@ -861,7 +871,7 @@ public class SoarRobot extends Robot {
 		loadMetadata();
 		agent.ClearOutputLinkChanges();
 		if (!agent.Commit()) {
-			Soar2D.control.severeError("Failed to commit input to Soar agent " + this.getName());
+			error(Names.Errors.commitFail + this.getName());
 			Soar2D.control.stopSimulation();
 		}
 		
@@ -880,11 +890,11 @@ public class SoarRobot extends Robot {
 			// execute the pre-shutdown commands
 			for (String command : shutdownCommands) {
 				String result = getName() + ": result: " + agent.ExecuteCommandLine(command, true);
-				Soar2D.logger.info(getName() + ": shutdown command: " + command);
+				logger.info(getName() + ": shutdown command: " + command);
 				if (agent.HadError()) {
-					Soar2D.control.severeError(result);
+					error(result);
 				} else {
-					Soar2D.logger.info(getName() + ": result: " + result);
+					logger.info(getName() + ": result: " + result);
 				}
 			}
 		}

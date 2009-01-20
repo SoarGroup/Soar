@@ -6,12 +6,16 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.Iterator;
 
+import org.apache.log4j.Logger;
+
 import soar2d.Direction;
+import soar2d.Names;
 import soar2d.Simulation;
 import soar2d.Soar2D;
 import soar2d.world.TankSoarWorld;
 
 public class TaxiMap extends GridMap {
+	private static Logger logger = Logger.getLogger(TaxiMap.class);
 
 	// this should be a property of the player, but this is easier
 	int fuel;
@@ -23,9 +27,9 @@ public class TaxiMap extends GridMap {
 	
 	public void consumeFuel() {
 		if (Soar2D.config.taxiConfig().disable_fuel) {
-			logger.info("fuel consumption disabled");
+			logger.info(Names.Info.fuelConsumption);
 		}
-		logger.info("fuel: " + Integer.toString(fuel) + " -> " + Integer.toString(fuel-1));
+		logger.info(Names.Info.fuel + Integer.toString(fuel) + " -> " + Integer.toString(fuel-1));
 		fuel -= 1;
 	}
 	

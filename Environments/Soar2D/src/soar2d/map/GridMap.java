@@ -3,7 +3,6 @@ package soar2d.map;
 import java.io.File;
 import java.io.IOException;
 import java.util.*;
-import java.util.logging.Logger;
 
 import org.jdom.Document;
 import org.jdom.Element;
@@ -22,8 +21,6 @@ import soar2d.world.TankSoarWorld;
  * houses the map and associated meta-data. used for grid worlds.
  */
 public abstract class GridMap {
-	public static final Logger logger = Logger.getLogger("soar2d");
-
 	public GridMap() {
 	}
 	

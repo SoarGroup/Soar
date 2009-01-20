@@ -42,7 +42,7 @@ public class SimConfig implements GameConfig {
 	private Config config;
 	
 	private GeneralConfig generalConfig;
-	private LoggingConfig loggingConfig;
+	private String loggingConfig;
 	private SoarConfig soarConfig;
 	private TerminalsConfig terminalsConfig;
 	
@@ -57,8 +57,7 @@ public class SimConfig implements GameConfig {
 		generalConfig = new GeneralConfig();
 		loadSubConfig(config.getChild(Keys.general), GeneralConfig.class.getFields(), generalConfig);
 
-		loggingConfig = new LoggingConfig();
-		loadSubConfig(config.getChild(Keys.logging), LoggingConfig.class.getFields(), loggingConfig);
+		loggingConfig = config.getString(Keys.logging);
 
 		soarConfig = new SoarConfig();
 		loadSubConfig(config.getChild(Keys.soar), SoarConfig.class.getFields(), soarConfig);
@@ -192,7 +191,7 @@ public class SimConfig implements GameConfig {
 		return generalConfig;
 	}
 	
-	public LoggingConfig loggingConfig() {
+	public String loggingConfig() {
 		return loggingConfig;
 	}
 	

@@ -4,16 +4,18 @@ import java.io.File;
 import java.io.IOException;
 import java.util.*;
 
+import org.apache.log4j.Logger;
 import org.jdom.Document;
 import org.jdom.Element;
 import org.jdom.JDOMException;
 import org.jdom.input.SAXBuilder;
 
 import sml.*;
-import soar2d.Soar2D;
+import soar2d.Names;
 
 public class InputLinkMetadata {
-	
+	private static Logger logger = Logger.getLogger(InputLinkMetadata.class);
+
 	private ArrayList<File> files = new ArrayList<File>(1);
 	private Agent agent;
 	private Identifier metadataWME;
@@ -31,7 +33,7 @@ public class InputLinkMetadata {
 	
 	public void load(File metadataFile) throws Exception {
 		if (files.contains(metadataFile)) {
-			Soar2D.logger.fine("Ignoring duplicate metadata file " + metadataFile.getAbsolutePath());
+			logger.debug(Names.Debug.duplicateMetadata + metadataFile.getAbsolutePath());
 			return;
 		}
 		
@@ -66,8 +68,8 @@ public class InputLinkMetadata {
 			}
 					
 		} catch (Exception e) {
-			String message = "Metadata: " + e.getMessage();
-			Soar2D.logger.severe(message);
+			String message = Names.Errors.metadata + e.getMessage();
+			logger.error(message);
 			throw new Exception(message);
 		}
 		
@@ -91,7 +93,7 @@ public class InputLinkMetadata {
 
 			if (child.getName().equalsIgnoreCase("identifier")) {
 				if (valueString != null) 
-					Soar2D.logger.info("Ignoring identifier value parameter");
+					logger.info("Ignoring identifier value parameter");
 
 				int sharedId = 0; // only valid if sharedIdString not null
 				
@@ -129,7 +131,7 @@ public class InputLinkMetadata {
 				assert child.getChildren().size() == 0;
 
 				if (sharedIdString != null) 
-					Soar2D.logger.info("Ignoring string-element sharedId parameter");
+					logger.info("Ignoring string-element sharedId parameter");
 				if (valueString == null) {
 					throw new Exception(element.getName() + " under " + element.getName() + " missing value parameter.");
 				}
@@ -143,7 +145,7 @@ public class InputLinkMetadata {
 				assert child.getChildren().size() == 0;
 
 				if (sharedIdString != null) 
-					Soar2D.logger.info("Ignoring int-element sharedId parameter");
+					logger.info("Ignoring int-element sharedId parameter");
 				if (valueString == null) {
 					throw new Exception(element.getName() + " under " + element.getName() + " missing value parameter.");
 				}
@@ -159,7 +161,7 @@ public class InputLinkMetadata {
 				assert child.getChildren().size() == 0;
 
 				if (sharedIdString != null) 
-					Soar2D.logger.info("Ignoring float-element sharedId parameter");
+					logger.info("Ignoring float-element sharedId parameter");
 				if (valueString == null) {
 					throw new Exception(element.getName() + " under " + element.getName() + " missing value parameter.");
 				}
@@ -179,7 +181,7 @@ public class InputLinkMetadata {
 		sharedIdentifierMap.clear();
 		
 		if (metadataWME == null) {
-			Soar2D.logger.fine("No metadata WME to destroy.");
+			logger.debug(Names.Debug.noMetadataWme);
 			return;
 		}
 		

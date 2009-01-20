@@ -17,6 +17,76 @@ public class Names {
 		public static final String taxiCnf = "taxi.cnf";
 	}
 	
+	public class Errors {
+		public static final String initDisplayfail = "Failed to initialize display.";
+		public static final String simulationInitFail = "Failed to initialize simulation.";
+		public static final String noConfig = "No configuration file specified. Please specify a configuration file on the command line.";
+		public static final String loadingConfig = "Error loading configuration file: ";
+		public static final String installingConfig = "IOException installing default configuration file: ";
+		public static final String kernelCreation = "Error creating kernel: ";
+		public static final String taxi1Player = "Taxi game type only supports 1 player.";
+		public static final String usedColor = "Color used or not available: ";
+		public static final String noMoreSlots = "There are no more player slots available.";
+		public static final String clientSpawn = "Client spawn failed: ";
+		public static final String mapRequired = "Map is required.";
+		public static final String findingMap = "Error finding map: ";
+		public static final String metadata = "Metadata: ";
+		public static final String commitFail = "Failed to commit input to Soar agent: ";
+	}
+	
+	public class Trace {
+		public static final String loggerInitialized = "Logger initialized.";
+		public static final String initDisplay = "Initializing display.";
+		public static final String initSimulation = "Initializing simulation.";
+		public static final String startGUI = "Starting GUI.";
+		public static final String startSimulation = "Starting Simulation.";
+		public static final String shutdown = "Shutting down.";
+		public static final String savingPreferences = "Saving preferences.";
+		public static final String exitErrorLevel = "Exiting with error level: ";
+		public static final String eventRegistration = "Registering for Soar events.";
+		public static final String loadingWorld = "Loading world.";
+		public static final String beforeClients = "Spawning clients before agent creation.";
+		public static final String initialPlayers = "Creating players.";
+		public static final String afterClients = "Spawning clients after agent creation.";
+		public static final String spawningClient = "Spawning client: ";
+		public static final String waitClient = "Waiting for client: ";
+		public static final String kernelShutdown = "Shutting down kernel.";
+		public static final String startEvent = "Start event.";
+		public static final String stopEvent = "Stop event.";
+	}
+	
+	public class Debug {
+		public static final String autoCommit = "Setting auto commit false";
+		public static final String seed = "Seeding generators with: ";
+		public static final String noSeed = "Not seeding generators.";
+		public static final String runTilOutput = "Registering for: smlEVENT_AFTER_ALL_GENERATED_OUTPUT";
+		public static final String noRunTilOutput = "Registering for: smlEVENT_AFTER_ALL_OUTPUT_PHASES";
+		public static final String stopRequested = "Stop requested during update.";
+		public static final String changingMap = "Changing map to: ";
+		public static final String duplicateMetadata = "Ignoring duplicate metadata file: ";
+		public static final String noMetadataWme = "No metadata WME to destroy.";
+	}
+	
+	public class Info {
+		public static final String reset = "Resetting simulation.";
+		public static final String shutdown = "Shutdown called.";
+		public static final String newProperty = "New property: ";		
+		public static final String spawningButter = "Spawning butter";		
+		public static final String spawningSugar = "Spawning sugar";		
+		public static final String spawningEggs = "Spawning eggs";		
+		public static final String spawningFlour = "Spawning flour";		
+		public static final String spawningCinnamon = "Spawning cinnamon";		
+		public static final String spawningMolasses = "Spawning molasses";	
+		public static final String fuelConsumption = "Fuel consumption disabled";
+		public static final String fuel = "Fuel";
+	}
+	
+	public class Warn {
+		public static final String noUpdate = "Not updating world due to run flags!";
+		public static final String unknownEvent = "Unknown system event received from kernel, ignoring: ";
+	}
+	
+	
 	public static final String kNone = "none";
 
 	public static final String kTrue = "true";
@@ -149,4 +219,8 @@ public class Names {
 	public static final String kPropertyStatus = "status";
 
 	public static final String kDebuggerClient = "java-debugger";
+
+	static final String kDog = "dog";
+
+	static final String kMouse = "mouse";
 }

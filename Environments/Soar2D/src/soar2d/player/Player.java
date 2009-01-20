@@ -1,7 +1,8 @@
 package soar2d.player;
 
 import java.util.Arrays;
-import java.util.logging.*;
+
+import org.apache.log4j.Logger;
 
 import soar2d.*;
 import soar2d.config.PlayerConfig;
@@ -14,7 +15,7 @@ import soar2d.map.CellObject;
  * can be a Tank, Eater, whatever.
  */
 public class Player {
-	protected Logger logger = Soar2D.logger;	// handy java logger
+	private static Logger logger = Logger.getLogger(Player.class);
 
 	private String name;	// player name
 	private int facingInt;	// what direction I'm currently facing
@@ -58,7 +59,7 @@ public class Player {
 	public void setName(String name) {
 		String previous = this.name;
 		this.name = name;
-		logger.warning(previous + " name changed to: " + this.name);
+		logger.warn(previous + " name changed to: " + this.name);
 	}
 	
 	public int getPoints() {
@@ -170,7 +171,7 @@ public class Player {
 	public void setColor(String color) {
 		String previous = this.color;
 		this.color = color;
-		logger.warning(this.name + " (" + previous + ") color changed to: " + this.name);
+		logger.warn(this.name + " (" + previous + ") color changed to: " + this.name);
 	}
 	
 	/**
