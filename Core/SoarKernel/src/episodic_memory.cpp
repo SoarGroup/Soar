@@ -3899,36 +3899,32 @@ void epmem_shared_increment( agent *my_agent, epmem_shared_query_list *queries, 
 		updown = -updown;
 }
 
-unsigned long long epmem_graph_match( epmem_shared_trigger_list *literals, std::map<wme *, unsigned long long> *wme_counts, unsigned long long *count_tc )
+unsigned long long epmem_graph_match( epmem_shared_trigger_list *literals )
 {
 	epmem_shared_trigger_list::iterator l_p;
 	unsigned long long return_val = 0;
-	unsigned long long *wme_count;
+	wme *done_wme = NULL;
 
 	for ( l_p=literals->begin(); l_p!=literals->end(); l_p++ )
 	{
 		if ( (*l_p)->ct == EPMEM_DNF )
 		{
-			wme_count =& (*wme_counts)[ (*l_p)->wme ];
-
-			if ( (*wme_count) != (*count_tc) )
+			if ( done_wme != (*l_p)->wme )
 			{
 				if ( (*l_p)->wme_kids )
 				{
-					if ( ( (*l_p)->children ) && ( epmem_graph_match( (*l_p)->children, wme_counts, count_tc ) == (*l_p)->wme_kids ) )
+					if ( ( (*l_p)->children ) && ( epmem_graph_match( (*l_p)->children ) == (*l_p)->wme_kids ) )
 					{
 						return_val++;
-						(*wme_count) = (*count_tc);
-					}
-					else
-						(*count_tc)++;
+						done_wme = (*l_p)->wme;
+					}					
 				}
 				else
 				{
 					if ( (*l_p)->match->ct )
 					{
 						return_val++;
-						(*wme_count) = (*count_tc);
+						done_wme = (*l_p)->wme;
 					}
 				}
 			}
@@ -4462,8 +4458,7 @@ void epmem_process_query( agent *my_agent, Symbol *state, Symbol *query, Symbol 
 			// literals
 			std::list<epmem_shared_literal *> literals;
 
-			// graph match
-			std::map<wme *, unsigned long long> graph_match_wmes;
+			// graph match			
 			epmem_shared_trigger_list graph_match_roots;
 			bool graph_match = ( epmem_get_parameter( my_agent, (const long) EPMEM_PARAM_GRAPH_MATCH, EPMEM_RETURN_LONG ) == EPMEM_GRAPH_MATCH_ON );
 
@@ -4571,11 +4566,7 @@ void epmem_process_query( agent *my_agent, Symbol *state, Symbol *query, Symbol 
 							for ( j=0; j<current_cache_element->len; j++ )
 							{
 								// add to cue list
-								state->id.epmem_info->cue_wmes->insert( current_cache_element->wmes[j] );
-
-								// add to graph match counters
-								if ( ( i == EPMEM_NODE_POS ) && graph_match )
-									graph_match_wmes[ current_cache_element->wmes[j] ] = 0;
+								state->id.epmem_info->cue_wmes->insert( current_cache_element->wmes[j] );								
 
 								if ( current_cache_element->wmes[j]->value->common.symbol_type == IDENTIFIER_SYMBOL_TYPE )
 								{
@@ -4953,8 +4944,7 @@ void epmem_process_query( agent *my_agent, Symbol *state, Symbol *query, Symbol 
 				bool done = false;
 
 				// graph match
-				unsigned long long current_graph_match_counter = 0;
-				unsigned long long graph_match_tc = 1;
+				unsigned long long current_graph_match_counter = 0;				
 
 				// initialize current as last end
 				// initialize next end
@@ -5027,8 +5017,7 @@ void epmem_process_query( agent *my_agent, Symbol *state, Symbol *query, Symbol 
 								{
 									if ( sum_ct == perfect_match )
 									{
-										current_graph_match_counter = epmem_graph_match( &graph_match_roots, &graph_match_wmes, &graph_match_tc );
-										graph_match_tc++;
+										current_graph_match_counter = epmem_graph_match( &graph_match_roots );
 
 										if ( ( king_id == EPMEM_MEMID_NONE ) ||
 											 ( current_score > king_score ) ||
