@@ -361,6 +361,7 @@ agent * create_soar_agent (char * agent_name) {                                 
   newAgent->epmem_stats[ EPMEM_STAT_TIME ] = epmem_add_stat( "time" );
   newAgent->epmem_stats[ EPMEM_STAT_MEM_USAGE ] = epmem_add_stat( "mem_usage" );
   newAgent->epmem_stats[ EPMEM_STAT_MEM_HIGH ] = epmem_add_stat( "mem_high" );
+  newAgent->epmem_stats[ EPMEM_STAT_NCB_WMES ] = epmem_add_stat( "ncb_wmes" );
   newAgent->epmem_stats[ EPMEM_STAT_QRY_POS ] = epmem_add_stat( "qry_pos" );
   newAgent->epmem_stats[ EPMEM_STAT_QRY_NEG ] = epmem_add_stat( "qry_neg" );
   newAgent->epmem_stats[ EPMEM_STAT_QRY_RET ] = epmem_add_stat( "qry_ret" );

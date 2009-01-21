@@ -1,6 +1,6 @@
 /*************************************************************************
  * PLEASE SEE THE FILE "COPYING" (INCLUDED WITH THIS SOFTWARE PACKAGE)
- * FOR LICENSE AND COPYRIGHT INFORMATION. 
+ * FOR LICENSE AND COPYRIGHT INFORMATION.
  *************************************************************************/
 
 /*************************************************************************
@@ -74,24 +74,25 @@ typedef struct wme_struct wme;
 #define EPMEM_STAT_TIME								0 // *
 #define EPMEM_STAT_MEM_USAGE						1
 #define EPMEM_STAT_MEM_HIGH							2
-#define EPMEM_STAT_QRY_POS							3
-#define EPMEM_STAT_QRY_NEG							4
-#define EPMEM_STAT_QRY_RET							5
-#define EPMEM_STAT_QRY_CARD							6
+#define EPMEM_STAT_NCB_WMES							3
+#define EPMEM_STAT_QRY_POS							4
+#define EPMEM_STAT_QRY_NEG							5
+#define EPMEM_STAT_QRY_RET							6
+#define EPMEM_STAT_QRY_CARD							7
 
-#define EPMEM_STAT_NEXT_ID							7
+#define EPMEM_STAT_NEXT_ID							8
 
-#define EPMEM_STAT_RIT_OFFSET_1						8 // *
-#define EPMEM_STAT_RIT_LEFTROOT_1					9 // *
-#define EPMEM_STAT_RIT_RIGHTROOT_1					10 // *
-#define EPMEM_STAT_RIT_MINSTEP_1					11 // *
+#define EPMEM_STAT_RIT_OFFSET_1						9 // *
+#define EPMEM_STAT_RIT_LEFTROOT_1					10 // *
+#define EPMEM_STAT_RIT_RIGHTROOT_1					11 // *
+#define EPMEM_STAT_RIT_MINSTEP_1					12 // *
 
-#define EPMEM_STAT_RIT_OFFSET_2						12 // *
-#define EPMEM_STAT_RIT_LEFTROOT_2					13 // *
-#define EPMEM_STAT_RIT_RIGHTROOT_2					14 // *
-#define EPMEM_STAT_RIT_MINSTEP_2					15 // *
+#define EPMEM_STAT_RIT_OFFSET_2						13 // *
+#define EPMEM_STAT_RIT_LEFTROOT_2					14 // *
+#define EPMEM_STAT_RIT_RIGHTROOT_2					15 // *
+#define EPMEM_STAT_RIT_MINSTEP_2					16 // *
 
-#define EPMEM_STATS									16 // must be 1+ last epmem stat
+#define EPMEM_STATS									17 // must be 1+ last epmem stat
 
 // timers
 #define EPMEM_TIMER_TOTAL							0
@@ -115,6 +116,7 @@ typedef struct wme_struct wme;
 #define EPMEM_TIMER_QUERY_NEG_END_EP				18
 #define EPMEM_TIMER_QUERY_NEG_END_NOW				19
 #define EPMEM_TIMER_QUERY_NEG_END_POINT				20
+
 #define EPMEM_TIMERS								21 // must be 1+ last epmem timer
 
 // statements
@@ -213,7 +215,7 @@ typedef struct wme_struct wme;
 // parameters
 enum epmem_param_type { epmem_param_constant = 1, epmem_param_number = 2, epmem_param_string = 3, epmem_param_invalid = 4 };
 
-typedef struct epmem_constant_parameter_struct  
+typedef struct epmem_constant_parameter_struct
 {
 	long value;
 	bool (*val_func)( const long );
@@ -221,13 +223,13 @@ typedef struct epmem_constant_parameter_struct
 	const long (*from_str)( const char * );
 } epmem_constant_parameter;
 
-typedef struct epmem_number_parameter_struct  
+typedef struct epmem_number_parameter_struct
 {
 	double value;
 	bool (*val_func)( double );
 } epmem_number_parameter;
 
-typedef struct epmem_string_parameter_struct  
+typedef struct epmem_string_parameter_struct
 {
 	std::string *value;
 	bool (*val_func)( const char * );
@@ -269,7 +271,7 @@ typedef unsigned long long int epmem_node_id;
 typedef long long int epmem_time_id;
 
 // soar
-typedef struct epmem_data_struct 
+typedef struct epmem_data_struct
 {
 	unsigned long last_ol_time;		// last update to output-link
 	unsigned long last_ol_count;	// last count of output-link
@@ -287,7 +289,7 @@ typedef struct epmem_data_struct
 
 // mode: one
 typedef struct epmem_leaf_node_struct
-{	
+{
 	double leaf_weight;
 	epmem_node_id leaf_id;
 } epmem_leaf_node;
@@ -300,7 +302,7 @@ typedef struct epmem_range_query_struct
 	double weight;
 	long long ct;
 
-	long timer;	
+	long timer;
 } epmem_range_query;
 
 struct epmem_compare_range_queries
@@ -344,7 +346,7 @@ struct epmem_shared_literal_struct
 
 	struct wme_struct *wme;
 	unsigned long long wme_kids;
-	
+
 	epmem_shared_match *match;
 	epmem_shared_trigger_list *children;
 };
