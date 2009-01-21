@@ -17,5 +17,6 @@
 	<classpathentry kind="lib" path="SoarLibrary/bin/swtgraphics2d.jar"/>
 	<classpathentry kind="lib" path="SoarLibrary/bin/jfreechart-1.0.6.jar"/>
 	<classpathentry kind="lib" path="SoarLibrary/bin/jcommon-1.0.10.jar"/>
+	<classpathentry kind="lib" path="Environments/Soar2D/log4j-1.2.15.jar"/>
 	<classpathentry kind="output" path="SoarLibrary/defaultbin"/>
 </classpath>

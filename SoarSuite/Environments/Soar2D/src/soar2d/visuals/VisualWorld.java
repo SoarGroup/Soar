@@ -1,19 +1,28 @@
 package soar2d.visuals;
 
-import java.util.*;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.Iterator;
 
-import org.eclipse.swt.*;
+import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.PaintEvent;
 import org.eclipse.swt.events.PaintListener;
 import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.Font;
 import org.eclipse.swt.graphics.GC;
 import org.eclipse.swt.graphics.Image;
-import org.eclipse.swt.widgets.*;
+import org.eclipse.swt.widgets.Canvas;
+import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Display;
 
-import soar2d.*;
-import soar2d.map.*;
-import soar2d.player.*;
+import soar2d.Direction;
+import soar2d.Names;
+import soar2d.Soar2D;
+import soar2d.map.CellObject;
+import soar2d.map.CellObjectManager;
+import soar2d.map.GridMap;
+import soar2d.players.Player;
+import soar2d.players.RadarCell;
 import soar2d.world.PlayersManager;
 
 public abstract class VisualWorld extends Canvas implements PaintListener {

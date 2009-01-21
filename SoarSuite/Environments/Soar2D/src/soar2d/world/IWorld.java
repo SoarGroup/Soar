@@ -1,7 +1,7 @@
 package soar2d.world;
 
 import soar2d.map.GridMap;
-import soar2d.player.Player;
+import soar2d.players.Player;
 
 public interface IWorld {
 	public boolean postLoad(GridMap newMap);

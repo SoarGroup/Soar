@@ -1,7 +1,7 @@
 package soar2d.config;
 
-import java.awt.*;
-import java.io.*;
+import java.io.File;
+import java.io.IOException;
 
 /** Useful configuration utilities. **/
 public class ConfigUtil {
@@ -48,23 +48,6 @@ public class ConfigUtil {
 		}
 
 		return config;
-	}
-
-	public static Color getColor(Config config, String sensorName,
-			Color defaultColor) {
-		double v[] = config.getDoubles(sensorName + ".color");
-		if (v == null)
-			return defaultColor;
-
-		if (v.length == 3)
-			return new Color((float) v[0], (float) v[1], (float) v[2]);
-		if (v.length == 4)
-			return new Color((float) v[0], (float) v[1], (float) v[2],
-					(float) v[3]);
-
-		System.out.println("Badly formatted color specification for "
-				+ sensorName);
-		return defaultColor;
 	}
 
 	public static double[] getPosition(Config config, String sensorName) {

@@ -2,7 +2,13 @@ package soar2d.map;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.LinkedList;
+import java.util.List;
 
 import org.jdom.Document;
 import org.jdom.Element;
@@ -11,8 +17,12 @@ import org.jdom.input.SAXBuilder;
 import org.jdom.output.Format;
 import org.jdom.output.XMLOutputter;
 
-import soar2d.*;
-import soar2d.player.*;
+import soar2d.Direction;
+import soar2d.Names;
+import soar2d.Simulation;
+import soar2d.Soar2D;
+import soar2d.players.Player;
+import soar2d.players.RadarCell;
 import soar2d.world.TankSoarWorld;
 
 /**

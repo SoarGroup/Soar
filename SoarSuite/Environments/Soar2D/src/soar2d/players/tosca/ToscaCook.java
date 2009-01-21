@@ -1,4 +1,4 @@
-package soar2d.player.kitchen;
+package soar2d.players.tosca;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -8,7 +8,8 @@ import soar2d.Direction;
 import soar2d.Soar2D;
 import soar2d.map.CellObject;
 import soar2d.map.KitchenMap;
-import soar2d.player.MoveInfo;
+import soar2d.players.Cook;
+import soar2d.players.MoveInfo;
 import soar2d.world.World;
 
 /**

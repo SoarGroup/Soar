@@ -1,9 +1,12 @@
 package soar2d;
 
-import java.io.*;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
 
 import soar2d.config.SimConfig;
-import soar2d.visuals.*;
+import soar2d.visuals.WindowManager;
 
 import org.apache.log4j.BasicConfigurator;
 import org.apache.log4j.Logger;

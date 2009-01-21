@@ -1,9 +1,11 @@
-package soar2d.player;
+package soar2d.players;
 
 import java.util.ArrayList;
 import java.util.Iterator;
 
-import soar2d.*;
+import soar2d.Direction;
+import soar2d.Names;
+import soar2d.Soar2D;
 
 /**
  * @author voigtjr

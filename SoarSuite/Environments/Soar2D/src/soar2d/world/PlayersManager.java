@@ -6,8 +6,8 @@ import java.util.Iterator;
 import java.util.ListIterator;
 
 import soar2d.Soar2D;
-import soar2d.player.MoveInfo;
-import soar2d.player.Player;
+import soar2d.players.MoveInfo;
+import soar2d.players.Player;
 
 public class PlayersManager {
 	private ArrayList<Player> players = new ArrayList<Player>(7);

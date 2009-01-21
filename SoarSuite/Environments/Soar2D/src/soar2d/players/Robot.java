@@ -1,10 +1,9 @@
-package soar2d.player.book;
+package soar2d.players;
 
-import soar2d.*;
+import soar2d.Names;
+import soar2d.Soar2D;
 import soar2d.map.BookMap;
 import soar2d.map.CellObject;
-import soar2d.player.MoveInfo;
-import soar2d.player.Player;
 import soar2d.world.World;
 
 public class Robot extends Player {

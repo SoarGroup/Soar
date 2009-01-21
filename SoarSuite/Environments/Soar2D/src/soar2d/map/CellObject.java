@@ -1,11 +1,14 @@
 package soar2d.map;
 
-import java.util.*;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.Set;
 
 import org.apache.log4j.Logger;
 
-import soar2d.*;
-import soar2d.player.Player;
+import soar2d.Names;
+import soar2d.Soar2D;
+import soar2d.players.Player;
 import soar2d.world.World;
 
 /**

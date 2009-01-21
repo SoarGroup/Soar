@@ -1,10 +1,11 @@
 package soar2d.map;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.concurrent.ConcurrentHashMap;
 
 import soar2d.Names;
-import soar2d.player.Player;
+import soar2d.players.Player;
 
 /**
  * @author voigtjr

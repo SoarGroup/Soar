@@ -1,29 +1,44 @@
 package soar2d;
 
-import java.io.*;
-import java.util.*;
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.Random;
 import java.util.Map.Entry;
 
 import org.apache.log4j.Logger;
-import sml.*;
+
+import sml.Agent;
+import sml.ConnectionInfo;
+import sml.Kernel;
+import sml.smlPrintEventId;
+import sml.smlRunStepSize;
+import sml.smlSystemEventId;
+import sml.smlUpdateEventId;
+import sml.sml_Names;
 import soar2d.config.ClientConfig;
 import soar2d.config.PlayerConfig;
 import soar2d.config.SimConfig;
-import soar2d.player.*;
-import soar2d.player.book.Dog;
-import soar2d.player.book.Mouse;
-import soar2d.player.book.Robot;
-import soar2d.player.book.SoarRobot;
-import soar2d.player.eaters.Eater;
-import soar2d.player.eaters.SoarEater;
-import soar2d.player.eaters.ToscaEater;
-import soar2d.player.kitchen.Cook;
-import soar2d.player.kitchen.SoarCook;
-import soar2d.player.kitchen.ToscaCook;
-import soar2d.player.tanksoar.SoarTank;
-import soar2d.player.tanksoar.Tank;
-import soar2d.player.taxi.SoarTaxi;
-import soar2d.player.taxi.Taxi;
+import soar2d.players.Cook;
+import soar2d.players.Dog;
+import soar2d.players.Eater;
+import soar2d.players.Mouse;
+import soar2d.players.Player;
+import soar2d.players.Robot;
+import soar2d.players.Tank;
+import soar2d.players.Taxi;
+import soar2d.players.soar.SoarCook;
+import soar2d.players.soar.SoarEater;
+import soar2d.players.soar.SoarRobot;
+import soar2d.players.soar.SoarTank;
+import soar2d.players.soar.SoarTaxi;
+import soar2d.players.tosca.ToscaCook;
+import soar2d.players.tosca.ToscaEater;
 import soar2d.world.World;
 
 /**

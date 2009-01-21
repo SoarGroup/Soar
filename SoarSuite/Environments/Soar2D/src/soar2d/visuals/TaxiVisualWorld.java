@@ -13,7 +13,7 @@ import soar2d.Names;
 import soar2d.Soar2D;
 import soar2d.map.CellObject;
 import soar2d.map.TaxiMap;
-import soar2d.player.Player;
+import soar2d.players.Player;
 
 public class TaxiVisualWorld extends VisualWorld {
 	public TaxiVisualWorld(Composite parent, int style, int cellSize) {

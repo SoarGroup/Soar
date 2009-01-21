@@ -1,6 +1,7 @@
 package soar2d.tosca2d;
 
-import tosca.*;
+import tosca.Value;
+
 
 public class SimpleStateVar extends JavaStateVariable {
 	protected Value m_Value = new Value() ;

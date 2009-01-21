@@ -1,4 +1,4 @@
-package soar2d.player.eaters;
+package soar2d.players.soar;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -6,15 +6,19 @@ import java.util.Iterator;
 
 import org.apache.log4j.Logger;
 
-import sml.*;
+import sml.Agent;
+import sml.FloatElement;
+import sml.Identifier;
+import sml.IntElement;
+import sml.StringElement;
 import soar2d.Direction;
 import soar2d.Names;
 import soar2d.Simulation;
 import soar2d.Soar2D;
 import soar2d.map.CellObject;
-import soar2d.player.InputLinkMetadata;
-import soar2d.player.MoveInfo;
-import soar2d.player.Player;
+import soar2d.players.Eater;
+import soar2d.players.MoveInfo;
+import soar2d.players.Player;
 import soar2d.world.World;
 
 /**
