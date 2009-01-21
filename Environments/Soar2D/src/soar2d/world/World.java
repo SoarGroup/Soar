@@ -1,15 +1,20 @@
 package soar2d.world;
 
-import java.util.*;
 import java.lang.Math;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Iterator;
 
 import org.apache.log4j.Logger;
 
 import soar2d.Simulation;
 import soar2d.Soar2D;
 import soar2d.config.SimConfig;
-import soar2d.map.*;
-import soar2d.player.*;
+import soar2d.map.EatersMap;
+import soar2d.map.GridMap;
+import soar2d.map.TaxiMap;
+import soar2d.players.MoveInfo;
+import soar2d.players.Player;
 
 public class World {
 	private static Logger logger = Logger.getLogger(World.class);

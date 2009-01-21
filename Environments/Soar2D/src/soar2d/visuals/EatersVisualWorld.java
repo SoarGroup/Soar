@@ -13,7 +13,7 @@ import soar2d.Direction;
 import soar2d.Names;
 import soar2d.Soar2D;
 import soar2d.map.CellObject;
-import soar2d.player.Player;
+import soar2d.players.Player;
 
 public class EatersVisualWorld extends VisualWorld {
 	public EatersVisualWorld(Composite parent, int style, int cellSize) {

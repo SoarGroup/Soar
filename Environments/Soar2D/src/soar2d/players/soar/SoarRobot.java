@@ -1,4 +1,4 @@
-package soar2d.player.book;
+package soar2d.players.soar;
 
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -17,9 +17,9 @@ import soar2d.map.BookMap;
 import soar2d.map.CellObject;
 import soar2d.map.GridMap;
 import soar2d.map.BookMap.Barrier;
-import soar2d.player.InputLinkMetadata;
-import soar2d.player.MoveInfo;
-import soar2d.player.Player;
+import soar2d.players.MoveInfo;
+import soar2d.players.Player;
+import soar2d.players.Robot;
 import soar2d.world.PlayersManager;
 import soar2d.world.World;
 

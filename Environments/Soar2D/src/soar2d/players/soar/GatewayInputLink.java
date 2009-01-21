@@ -1,4 +1,4 @@
-package soar2d.player.book;
+package soar2d.players.soar;
 
 import java.util.ArrayList;
 

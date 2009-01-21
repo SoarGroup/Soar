@@ -13,7 +13,7 @@ import org.eclipse.swt.widgets.Composite;
 import soar2d.Names;
 import soar2d.Soar2D;
 import soar2d.map.CellObject;
-import soar2d.player.Player;
+import soar2d.players.Player;
 import soar2d.world.PlayersManager;
 
 public class BookVisualWorld extends VisualWorld {

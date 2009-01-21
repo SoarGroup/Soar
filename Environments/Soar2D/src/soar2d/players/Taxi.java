@@ -1,8 +1,6 @@
-package soar2d.player.taxi;
+package soar2d.players;
 
 import soar2d.Soar2D;
-import soar2d.player.MoveInfo;
-import soar2d.player.Player;
 
 /**
  * @author voigtjr

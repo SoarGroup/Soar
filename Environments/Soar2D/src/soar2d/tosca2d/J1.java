@@ -2,7 +2,9 @@
  * 
  */
 package soar2d.tosca2d;
-import tosca.* ;
+
+import tosca.StateVariable;
+import tosca.Value;
 
 /**
  * @author Doug

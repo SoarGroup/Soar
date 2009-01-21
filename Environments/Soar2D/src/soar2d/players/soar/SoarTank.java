@@ -1,4 +1,4 @@
-package soar2d.player.tanksoar;
+package soar2d.players.soar;
 
 import java.util.HashMap;
 import java.util.HashSet;
@@ -17,10 +17,10 @@ import soar2d.Direction;
 import soar2d.Names;
 import soar2d.Simulation;
 import soar2d.Soar2D;
-import soar2d.player.InputLinkMetadata;
-import soar2d.player.MoveInfo;
-import soar2d.player.Player;
-import soar2d.player.RadarCell;
+import soar2d.players.MoveInfo;
+import soar2d.players.Player;
+import soar2d.players.RadarCell;
+import soar2d.players.Tank;
 import soar2d.world.PlayersManager;
 import soar2d.world.World;
 

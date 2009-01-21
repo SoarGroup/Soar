@@ -1,8 +1,11 @@
-package soar2d.player;
+package soar2d.players.soar;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
 
 import org.apache.log4j.Logger;
 import org.jdom.Document;
@@ -10,7 +13,8 @@ import org.jdom.Element;
 import org.jdom.JDOMException;
 import org.jdom.input.SAXBuilder;
 
-import sml.*;
+import sml.Agent;
+import sml.Identifier;
 import soar2d.Names;
 
 public class InputLinkMetadata {

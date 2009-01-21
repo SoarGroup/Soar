@@ -1,7 +1,8 @@
 package soar2d.config;
 
-import java.util.*;
-import java.io.*;
+import java.io.ByteArrayOutputStream;
+import java.util.ArrayList;
+import java.util.Random;
 
 /** Base64 encoding and decoding functions. **/
 public class Base64 {
