@@ -1,10 +1,12 @@
-package soar2d.player;
+package soar2d.players;
 
 import java.util.Arrays;
 
 import org.apache.log4j.Logger;
 
-import soar2d.*;
+import soar2d.Direction;
+import soar2d.Simulation;
+import soar2d.Soar2D;
 import soar2d.config.PlayerConfig;
 import soar2d.map.CellObject;
 

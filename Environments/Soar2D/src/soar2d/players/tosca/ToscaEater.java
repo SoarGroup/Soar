@@ -1,4 +1,4 @@
-package soar2d.player.eaters;
+package soar2d.players.tosca;
 
 import java.util.Arrays;
 
@@ -6,9 +6,13 @@ import org.apache.log4j.Logger;
 
 import soar2d.Direction;
 import soar2d.Soar2D;
-import soar2d.player.MoveInfo;
-import soar2d.tosca2d.*;
-import tosca.*;
+import soar2d.players.Eater;
+import soar2d.players.MoveInfo;
+import soar2d.tosca2d.EatersInputStateVariable;
+import soar2d.tosca2d.EatersOutputStateVariable;
+import soar2d.tosca2d.ToscaInterface;
+import tosca.Clock;
+import tosca.Library;
 
 /**
  * @author doug

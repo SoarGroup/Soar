@@ -9,7 +9,7 @@ import org.jdom.Element;
 import soar2d.Direction;
 import soar2d.Names;
 import soar2d.Soar2D;
-import soar2d.player.Player;
+import soar2d.players.Player;
 import soar2d.world.TankSoarWorld;
 
 public class TankSoarMap extends GridMap {

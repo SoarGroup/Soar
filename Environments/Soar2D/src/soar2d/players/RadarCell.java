@@ -1,6 +1,7 @@
-package soar2d.player;
+package soar2d.players;
 
 import org.eclipse.swt.graphics.Image;
+
 
 public class RadarCell {
 	public boolean missiles;

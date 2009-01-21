@@ -1,4 +1,4 @@
-package soar2d.player.kitchen;
+package soar2d.players.soar;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -7,15 +7,19 @@ import java.util.Iterator;
 
 import org.apache.log4j.Logger;
 
-import sml.*;
+import sml.Agent;
+import sml.FloatElement;
+import sml.Identifier;
+import sml.IntElement;
+import sml.StringElement;
 import soar2d.Direction;
 import soar2d.Names;
 import soar2d.Simulation;
 import soar2d.Soar2D;
 import soar2d.map.CellObject;
 import soar2d.map.KitchenMap;
-import soar2d.player.InputLinkMetadata;
-import soar2d.player.MoveInfo;
+import soar2d.players.Cook;
+import soar2d.players.MoveInfo;
 import soar2d.world.World;
 
 public class SoarCook extends Cook {

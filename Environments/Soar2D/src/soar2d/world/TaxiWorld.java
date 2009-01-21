@@ -7,9 +7,9 @@ import soar2d.Direction;
 import soar2d.Soar2D;
 import soar2d.map.GridMap;
 import soar2d.map.TaxiMap;
-import soar2d.player.MoveInfo;
-import soar2d.player.Player;
-import soar2d.player.taxi.Taxi;
+import soar2d.players.MoveInfo;
+import soar2d.players.Player;
+import soar2d.players.Taxi;
 
 public class TaxiWorld implements IWorld {
 

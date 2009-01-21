@@ -14,8 +14,8 @@ import soar2d.Soar2D;
 import soar2d.map.CellObject;
 import soar2d.map.EatersMap;
 import soar2d.map.GridMap;
-import soar2d.player.MoveInfo;
-import soar2d.player.Player;
+import soar2d.players.MoveInfo;
+import soar2d.players.Player;
 
 public class EatersWorld implements IWorld {
 	private static Logger logger = Logger.getLogger(EatersWorld.class);

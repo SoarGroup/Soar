@@ -1,11 +1,11 @@
-package soar2d.player.book;
+package soar2d.players.soar;
 
 import sml.FloatElement;
 import sml.Identifier;
 import sml.IntElement;
 import sml.StringElement;
 import soar2d.Soar2D;
-import soar2d.player.Player;
+import soar2d.players.Player;
 import soar2d.world.PlayersManager;
 import soar2d.world.World;
 

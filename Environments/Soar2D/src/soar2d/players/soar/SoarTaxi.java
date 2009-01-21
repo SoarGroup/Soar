@@ -1,17 +1,21 @@
-package soar2d.player.taxi;
+package soar2d.players.soar;
 
 import java.util.Arrays;
 
 import org.apache.log4j.Logger;
 
-import sml.*;
+import sml.Agent;
+import sml.FloatElement;
+import sml.Identifier;
+import sml.IntElement;
+import sml.StringElement;
 import soar2d.Direction;
 import soar2d.Names;
 import soar2d.Simulation;
 import soar2d.Soar2D;
 import soar2d.map.TaxiMap;
-import soar2d.player.InputLinkMetadata;
-import soar2d.player.MoveInfo;
+import soar2d.players.MoveInfo;
+import soar2d.players.Taxi;
 import soar2d.world.World;
 
 /**

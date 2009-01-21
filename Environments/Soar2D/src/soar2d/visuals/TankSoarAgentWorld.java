@@ -1,12 +1,16 @@
 package soar2d.visuals;
 
-import org.eclipse.swt.events.*;
-import org.eclipse.swt.graphics.*;
-import org.eclipse.swt.widgets.*;
+import org.eclipse.swt.events.PaintEvent;
+import org.eclipse.swt.events.PaintListener;
+import org.eclipse.swt.graphics.Color;
+import org.eclipse.swt.graphics.GC;
+import org.eclipse.swt.graphics.Image;
+import org.eclipse.swt.widgets.Canvas;
+import org.eclipse.swt.widgets.Composite;
 
 import soar2d.Soar2D;
-import soar2d.player.Player;
-import soar2d.player.RadarCell;
+import soar2d.players.Player;
+import soar2d.players.RadarCell;
 
 public class TankSoarAgentWorld extends Canvas implements PaintListener {
 

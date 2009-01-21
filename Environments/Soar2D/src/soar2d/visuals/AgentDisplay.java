@@ -1,12 +1,12 @@
 package soar2d.visuals;
 
-import org.eclipse.swt.*;
-import org.eclipse.swt.widgets.*;
+import org.eclipse.swt.SWT;
+import org.eclipse.swt.widgets.Composite;
 
 import soar2d.Soar2D;
 import soar2d.config.PlayerConfig;
 import soar2d.map.GridMap;
-import soar2d.player.Player;
+import soar2d.players.Player;
 
 public class AgentDisplay extends Composite {
 	

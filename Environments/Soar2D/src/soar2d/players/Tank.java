@@ -1,13 +1,10 @@
-package soar2d.player.tanksoar;
+package soar2d.players;
 
 import org.apache.log4j.Logger;
 
 import soar2d.Direction;
 import soar2d.Simulation;
 import soar2d.Soar2D;
-import soar2d.player.MoveInfo;
-import soar2d.player.Player;
-import soar2d.player.RadarCell;
 import soar2d.world.World;
 
 public class Tank extends Player {
@@ -40,18 +37,18 @@ public class Tank extends Player {
 	
 	protected int observedPower;
 
-	RadarCell[][] radar;
+	protected RadarCell[][] radar;
 	
 	protected int rwaves;
 	protected int blocked;
 	protected int incoming;
 	private int resurrectFrame = 0;
 	
-	int smellDistance;
-	String smellColor;
+	protected int smellDistance;
+	protected String smellColor;
 	
 	private MoveInfo move;
-	int sound;
+	protected int sound;
 	protected boolean onHealthCharger;
 	protected boolean onEnergyCharger;
 

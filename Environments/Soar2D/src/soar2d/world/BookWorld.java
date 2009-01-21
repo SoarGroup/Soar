@@ -14,8 +14,8 @@ import soar2d.Direction;
 import soar2d.map.BookMap;
 import soar2d.map.CellObject;
 import soar2d.map.GridMap;
-import soar2d.player.MoveInfo;
-import soar2d.player.Player;
+import soar2d.players.MoveInfo;
+import soar2d.players.Player;
 
 public class BookWorld implements IWorld {
 	private static Logger logger = Logger.getLogger(BookWorld.class);

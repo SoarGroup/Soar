@@ -1,4 +1,4 @@
-package soar2d.player.book;
+package soar2d.players.soar;
 
 import sml.FloatElement;
 import sml.Identifier;

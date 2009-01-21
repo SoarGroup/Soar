@@ -4,8 +4,12 @@ import java.io.File;
 
 import org.apache.log4j.Logger;
 
-import sml.*;
 import soar2d.visuals.WindowManager;
+import sml.Agent;
+import sml.Kernel;
+import sml.smlPrintEventId;
+import sml.smlRunFlags;
+import sml.smlSystemEventId;
 
 /**
  * @author voigtjr
