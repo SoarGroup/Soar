@@ -87,8 +87,11 @@ public class TankSoarWorld implements IWorld {
 				}
 			}
 			
+			int [] oldLocation = players.getLocation(player);
+			
 			// Check for rotate
 			if (playerMove.rotate) {
+				tMap.forceRedraw(oldLocation);
 				int facing = player.getFacingInt();
 				if (playerMove.rotateDirection.equals(Names.kRotateLeft)) {
 					facing = Direction.leftOf[facing];
@@ -121,8 +124,6 @@ public class TankSoarWorld implements IWorld {
 			// we haven't been checked yet
 			
 			// Calculate new location if I moved, or just use the old location
-			int [] oldLocation = players.getLocation(player);
-			
 			if (!playerMove.move) {
 				// No move, cross collision impossible
 				newLocations.put(player, oldLocation);
@@ -233,7 +234,7 @@ public class TankSoarWorld implements IWorld {
 		// We've eliminated all cross collisions and walls
 		
 		// We'll need to save where people move, indexed by location
-		HashMap<int [], ArrayList<Player> > collisionMap = new HashMap<int [], ArrayList<Player> >();
+		HashMap<Integer, ArrayList<Player> > collisionMap = new HashMap<Integer, ArrayList<Player> >();
 		
 		// Iterate through players, checking for all other types of collisions
 		// Also, moves are committed at this point and they won't respawn on
@@ -333,7 +334,7 @@ public class TankSoarWorld implements IWorld {
 				assert missilePacks.size() == 1;
 				CellObject pack = missilePacks.get(0);
 				pack.apply(player);
-				tMap.removeAllWithProperty(location, Names.kPropertyMissiles);
+				tMap.removeAllByProperty(location, Names.kPropertyMissiles);
 			}
 			
 			
@@ -584,16 +585,20 @@ public class TankSoarWorld implements IWorld {
 		int [] location = locations.get(Simulation.random.nextInt(locations.size()));
 		if (health) {
 			logger.info("spawning health charger at (" + location[0] + "," + location[1] + ")");
-			if (!newMap.addRandomObjectWithProperties(location, Names.kPropertyHealth, Names.kPropertyCharger)) {
+			CellObject charger = newMap.createRandomObjectWithProperties(Names.kPropertyHealth, Names.kPropertyCharger);
+			if (charger == null) {
 				error("Couldn't add charger to map!");
 				return false;
 			}
+			newMap.addObjectToCell(location, charger);
 		} else {			
 			logger.info("spawning energy charger at (" + location[0] + "," + location[1] + ")");
-			if (!newMap.addRandomObjectWithProperties(location, Names.kPropertyEnergy, Names.kPropertyCharger)) {
+			CellObject charger = newMap.createRandomObjectWithProperties(Names.kPropertyEnergy, Names.kPropertyCharger);
+			if (charger == null) {
 				error("Couldn't add charger to map!");
 				return false;
 			}
+			newMap.addObjectToCell(location, charger);
 		}
 		
 		return true;
@@ -610,10 +615,11 @@ public class TankSoarWorld implements IWorld {
 			// Add a missile pack to a spot
 			int [] spot = spots.get(Simulation.random.nextInt(spots.size()));
 			logger.info("spawning missile pack at (" + spot[0] + "," + spot[1] + ")");
-			boolean ret = theMap.addRandomObjectWithProperty(spot, Names.kPropertyMissiles);
-			if (ret == false) {
+			CellObject missiles = theMap.createRandomObjectWithProperty(Names.kPropertyMissiles);
+			if (missiles == null) {
 				return false;
 			}
+			theMap.addObjectToCell(spot, missiles);
 		}
 		return true;
 	}
@@ -650,7 +656,7 @@ public class TankSoarWorld implements IWorld {
 	
 	private void doMoveCollisions(Player player, PlayersManager players, 
 			HashMap<Player, int []> newLocations, 
-			HashMap<int [], ArrayList<Player> > collisionMap, 
+			HashMap<Integer, ArrayList<Player> > collisionMap, 
 			ArrayList<Player> movedTanks) {
 		
 		// Get destination location
@@ -659,7 +665,7 @@ public class TankSoarWorld implements IWorld {
 		// Wall collisions checked for earlier
 		
 		// is there a collision in the cell
-		ArrayList<Player> collision = collisionMap.get(newLocation);
+		ArrayList<Player> collision = collisionMap.get(Arrays.hashCode(newLocation));
 		if (collision != null) {
 			
 			// there is a collision
@@ -678,7 +684,7 @@ public class TankSoarWorld implements IWorld {
 			
 			// Add ourselves to this cell's collision list
 			collision.add(player);
-			collisionMap.put(newLocation, collision);
+			collisionMap.put(Arrays.hashCode(newLocation), collision);
 			
 			// cancel my move
 			if (players.getMove(player).move) {
@@ -692,7 +698,7 @@ public class TankSoarWorld implements IWorld {
 		// There is nothing in this cell, create a new list and add ourselves
 		collision = new ArrayList<Player>(4);
 		collision.add(player);
-		collisionMap.put(newLocation, collision);
+		collisionMap.put(Arrays.hashCode(newLocation), collision);
 	}
 	
 	private void cancelMove(Player player, PlayersManager players, 

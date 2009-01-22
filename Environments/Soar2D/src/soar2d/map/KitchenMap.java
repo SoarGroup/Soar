@@ -59,28 +59,6 @@ public class KitchenMap extends GridMap {
 		}
 	}
 
-	@Override
-	public void addObjectToCell(int [] location, CellObject object) {
-		Cell cell = getCell(location);
-		if (cell.hasObject(object.getName())) {
-			CellObject old = cell.removeObject(object.getName());
-			assert old != null;
-			updatables.remove(old);
-			updatablesLocations.remove(old);
-			removalStateUpdate(old);
-		}
-		if (object.updatable()) {
-			updatables.add(object);
-			updatablesLocations.put(object, location);
-		}
-		
-		// Update state we keep track of specific to game type
-		checkBasics(location, object, true);
-		
-		cell.addCellObject(object);
-		setRedraw(cell);
-	}
-	
 	private void checkBasics(int [] location, CellObject object, boolean adding) {
 		if (object.getName().equals("butter")) {
 			assert adding ^ haveButter;
@@ -126,31 +104,6 @@ public class KitchenMap extends GridMap {
 		}
 	}
 	
-	public void updateObjects(GridMap map, TankSoarWorld tsWorld) {
-		if (!map.updatables.isEmpty()) {
-			Iterator<CellObject> iter = map.updatables.iterator();
-			
-			while (iter.hasNext()) {
-				CellObject cellObject = iter.next();
-				int [] location = map.updatablesLocations.get(cellObject);
-				assert location != null;
-				
-				if (cellObject.update(location)) {
-					Cell cell = map.getCell(location);
-					
-					cellObject = cell.removeObject(cellObject.getName());
-					assert cellObject != null;
-					
-					map.setRedraw(cell);
-					
-					iter.remove();
-					map.updatablesLocations.remove(cellObject);
-					map.removalStateUpdate(cellObject);
-				}
-			}
-		}
-	}
-
 	@Override
 	public boolean isAvailable(int [] location) {
 		Cell cell = getCell(location);
@@ -159,22 +112,23 @@ public class KitchenMap extends GridMap {
 		return enterable && noPlayer;
 	}
 
-	@Override
-	void removalStateUpdate(CellObject object) {
-		checkBasics(null, object, false);
-	}
-
-	@Override
-	public void updateObjects(TankSoarWorld tsWorld) {
-		// TODO Auto-generated method stub
-		
-	}
-
 	public boolean isCountertop(int [] location) {
 		return getCell(location).getObject("countertop") != null;
 	}
 	
 	public boolean isOven(int [] location) {
 		return getCell(location).getObject("oven") != null;
+	}
+	@Override
+	void addStateUpdate(int [] location, CellObject added) {
+		super.addStateUpdate(location, added);
+		// Update state we keep track of specific to game type
+		checkBasics(location, added, true);
+	}
+	
+	@Override
+	void removalStateUpdate(CellObject removed) {
+		super.removalStateUpdate(removed);
+		checkBasics(null, removed, false);
 	}
 }

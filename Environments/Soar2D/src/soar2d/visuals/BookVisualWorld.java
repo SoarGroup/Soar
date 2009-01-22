@@ -3,7 +3,6 @@ package soar2d.visuals;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
-import java.util.Iterator;
 
 import org.eclipse.swt.events.PaintEvent;
 import org.eclipse.swt.graphics.GC;
@@ -57,7 +56,7 @@ public class BookVisualWorld extends VisualWorld {
 		HashSet<Integer> roomIds = new HashSet<Integer>();
 		for(location[0] = 0; location[0] < map.getSize(); ++location[0]){
 			for(location[1] = 0; location[1] < map.getSize(); ++location[1]){
-				if ((this.map.removeObject(location, Names.kRedraw) == null) && painted) {
+				if (!this.map.resetRedraw(location) && painted) {
 					continue;
 				}
 				
@@ -83,7 +82,7 @@ public class BookVisualWorld extends VisualWorld {
 								gc.setBackground(WindowManager.getColor(Soar2D.simulation.kColors[roomID]));
 							}
 						}
-						if (map.hasAnyWithProperty(location, "mblock")) {
+						if (map.hasAnyWithProperty(location, Names.kBookObjectName)) {
 							gc.setBackground(WindowManager.darkGray);
 						}
 					} else {
@@ -114,9 +113,8 @@ public class BookVisualWorld extends VisualWorld {
 		}
 		
 		// draw entities now so they appear on top
-		Iterator<int []> playerLocIter = playerLocs.iterator();
-		while (playerLocIter.hasNext()) {
-			Player player = this.map.getPlayer(playerLocIter.next());
+		for (int [] playerLoc : playerLocs) {
+			Player player = this.map.getPlayer(playerLoc);
 			//FIXME:
 			if (player == null) {
 				continue;

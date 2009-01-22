@@ -2,9 +2,7 @@ package soar2d.map;
 
 import java.util.ArrayList;
 import java.util.Iterator;
-import java.util.concurrent.ConcurrentHashMap;
 
-import soar2d.Names;
 import soar2d.players.Player;
 
 /**
@@ -16,25 +14,30 @@ class Cell {
 	
 	Cell() {}
 	
-	/**
-	 * The player in the cell. Currently we're limited to one player per cell.
-	 */
+	boolean draw = true;
+	boolean resetRedraw() {
+		boolean temp = draw;
+		draw = false;
+		return temp;
+	}
+	boolean checkRedraw() {
+		return draw;
+	}
+	void forceRedraw() {
+		draw = true;
+	}
+	
+	/** The player in the cell. Currently we're limited to one player per cell. */
 	Player player;
-	/**
-	 * The list of objects in the cell, mapped by object name. The names must be
-	 * unique.
-	 */
-	ConcurrentHashMap<String, CellObject> cellObjects = new ConcurrentHashMap<String, CellObject>();
-	/**
-	 * An iterator reference so we don't have to create it each time.
-	 */
-	Iterator<CellObject> iter;
+	
+	private ArrayList<CellObject> cellObjects = new ArrayList<CellObject>();
 	
 	Player getPlayer() {
 		return this.player;
 	}
 	
 	void setPlayer(Player player) {
+		draw = true;
 		this.player = player;
 	}
 	
@@ -44,7 +47,8 @@ class Cell {
 	 * Adds a cell object to the object list.
 	 */
 	synchronized void addCellObject(CellObject cellObject) {
-		cellObjects.put(cellObject.getName(), cellObject);
+		draw = true;
+		cellObjects.add(cellObject);
 	}
 	
 	/**
@@ -55,20 +59,24 @@ class Cell {
 	 * The returned list is never null but could be length zero.
 	 */
 	synchronized ArrayList<CellObject> getAllWithProperty(String name) {	
-		ArrayList<CellObject> list = null;
-		for (CellObject object : cellObjects.values()) {
+		ArrayList<CellObject> ret = null;
+		for (CellObject object : cellObjects) {
 			if (object.hasProperty(name)) {
-				if (list == null) {
-					list = new ArrayList<CellObject>(1);
+				if (ret == null) {
+					ret = new ArrayList<CellObject>(1);
 				}
-				list.add(object);
+				ret.add(object);
 			}
 		}
-		return list;
+		return ret;
+	}
+	
+	synchronized ArrayList<CellObject> getAll() {	
+		return new ArrayList<CellObject>(cellObjects);
 	}
 	
 	synchronized boolean hasAnyWithProperty(String name) {	
-		for (CellObject object : cellObjects.values()) {
+		for (CellObject object : cellObjects) {
 			if (object.hasProperty(name)) {
 				return true;
 			}
@@ -76,14 +84,43 @@ class Cell {
 		return false;
 	}
 	
+	synchronized public ArrayList<CellObject> removeAllByProperty(String name) {
+		draw = true;
+		ArrayList<CellObject> ret = null;
+		Iterator<CellObject> iter = cellObjects.iterator();
+		while(iter.hasNext()) {
+			CellObject object = iter.next();
+			if (object.hasProperty(name)) {
+				if (ret == null) {
+					ret = new ArrayList<CellObject>(1);
+				}
+				ret.add(object);
+				iter.remove();
+			}
+		}
+		return ret;
+	}
+	
+	synchronized public ArrayList<CellObject> removeAll() {
+		draw = true;
+		ArrayList<CellObject> ret = cellObjects;
+		cellObjects = new ArrayList<CellObject>();
+		return ret;
+	}
+
 	/**
 	 * @param name the object name
 	 * @return the object or null if none
 	 * 
-	 * Returns the object by name. Very fast.
+	 * Returns the object by name.
 	 */
-	CellObject getObject(String name) {
-		return cellObjects.get(name);
+	synchronized CellObject getObject(String name) {
+		for (CellObject object : cellObjects) {
+			if (object.getName().equals(name)) {
+				return object;
+			}
+		}
+		return null;
 	}
 	
 	/**
@@ -92,8 +129,13 @@ class Cell {
 	 * 
 	 * Check to see if the object with the specified name is in the cell.
 	 */
-	boolean hasObject(String name) {
-		return cellObjects.containsKey(name);
+	synchronized boolean hasObject(String name) {
+		for (CellObject object : cellObjects) {
+			if (object.getName().equals(name)) {
+				return true;
+			}
+		}
+		return false;
 	}
 	
 	/**
@@ -104,7 +146,16 @@ class Cell {
 	 * Null is returned if the object isn't in the cell.
 	 */
 	synchronized CellObject removeObject(String name) {
-		return cellObjects.remove(name);
+		draw = true;
+		Iterator<CellObject> iter = cellObjects.iterator();
+		while(iter.hasNext()) {
+			CellObject object = iter.next();
+			if (object.getName().equals(name)) {
+				iter.remove();
+				return object;
+			}
+		}
+		return null;
 	}
 
 	// for sound algorithm

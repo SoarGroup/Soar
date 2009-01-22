@@ -11,63 +11,12 @@ import soar2d.Direction;
 import soar2d.Names;
 import soar2d.Soar2D;
 import soar2d.config.SimConfig;
-import soar2d.world.TankSoarWorld;
 
 public class BookMap extends GridMap {
 
 	public BookMap() {
 	}
 
-	@Override
-	public void addObjectToCell(int [] location, CellObject object) {
-		Cell cell = getCell(location);
-		if (cell.hasObject(object.getName())) {
-			CellObject old = cell.removeObject(object.getName());
-			assert old != null;
-			updatables.remove(old);
-			updatablesLocations.remove(old);
-			if (isBookObject(old)) {
-				bookObjects.remove(old);
-				bookObjectInfo.remove(old);
-			}
-			removalStateUpdate(old);
-		}
-		if (object.updatable()) {
-			updatables.add(object);
-			updatablesLocations.put(object, location);
-		}
-		if (isBookObject(object)) {
-			bookObjects.add(object);
-			BookObjectInfo info = new BookObjectInfo();
-			info.location = Arrays.copyOf(location, location.length);
-			info.floatLocation = new double [] { 
-					info.location[0] * Soar2D.config.roomConfig().cell_size, 
-					info.location[1] * Soar2D.config.roomConfig().cell_size 
-					};
-			info.floatLocation[0] += Soar2D.config.roomConfig().cell_size / 2.0;
-			info.floatLocation[1] += Soar2D.config.roomConfig().cell_size / 2.0;
-			info.object = object;
-			if (!object.hasProperty("object-id")) {
-				object.addProperty("object-id", Integer.toString(newObjectId()));
-			}
-			ArrayList<CellObject> numbered = getAllWithProperty(info.location, Names.kPropertyNumber);
-			if (numbered != null) {
-				info.area = numbered.get(0).getIntProperty(Names.kPropertyNumber);
-			}
-			bookObjectInfo.put(object, info);
-		}
-		
-		cell.addCellObject(object);
-		setRedraw(cell);
-	}
-
-	public boolean isBookObject(CellObject co) {
-		if (co.name.equals("mblock")) {
-			return true;
-		}
-		return false;
-	}
-	
 	HashSet<CellObject> bookObjects = new HashSet<CellObject>();
 	HashMap<CellObject, BookObjectInfo> bookObjectInfo = new HashMap<CellObject, BookObjectInfo>();
 	public HashSet<CellObject> getBookObjects() {
@@ -75,77 +24,6 @@ public class BookMap extends GridMap {
 	}
 	public BookObjectInfo getBookObjectInfo(CellObject obj) {
 		return bookObjectInfo.get(obj);
-	}
-
-	@Override
-	public CellObject removeObject(int [] location, String objectName) {
-		Cell cell = getCell(location);
-		setRedraw(cell);
-		CellObject object = cell.removeObject(objectName);
-		if (object == null) {
-			return null;
-		}
-		
-		if (object.updatable()) {
-			updatables.remove(object);
-			updatablesLocations.remove(object);
-		}
-		if (isBookObject(object)) {
-			bookObjects.remove(object);
-			bookObjectInfo.remove(object);
-		}
-		removalStateUpdate(object);
-		
-		return object;
-	}
-
-	@Override
-	public void removeAllWithProperty(int [] location, String name) {
-		Cell cell = getCell(location);
-		
-		cell.iter = cell.cellObjects.values().iterator();
-		CellObject cellObject;
-		while (cell.iter.hasNext()) {
-			cellObject = cell.iter.next();
-			if (name == null || cellObject.hasProperty(name)) {
-				if (cellObject.updatable()) {
-					updatables.remove(cellObject);
-					updatablesLocations.remove(cellObject);
-				}
-				if (isBookObject(cellObject)) {
-					bookObjects.remove(cellObject);
-					bookObjectInfo.remove(cellObject);
-				}
-				cell.iter.remove();
-				removalStateUpdate(cellObject);
-			}
-		}
-	}
-
-	@Override
-	public void updateObjects(TankSoarWorld tsWorld) {
-		if (!updatables.isEmpty()) {
-			Iterator<CellObject> iter = updatables.iterator();
-			
-			while (iter.hasNext()) {
-				CellObject cellObject = iter.next();
-				int [] location = updatablesLocations.get(cellObject);
-				assert location != null;
-				
-				if (cellObject.update(location)) {
-					Cell cell = getCell(location);
-					
-					cellObject = cell.removeObject(cellObject.getName());
-					assert cellObject != null;
-					
-					setRedraw(cell);
-					
-					iter.remove();
-					updatablesLocations.remove(cellObject);
-					removalStateUpdate(cellObject);
-				}
-			}
-		}
 	}
 
 	public int getLocationId(int [] location) {
@@ -163,7 +41,7 @@ public class BookMap extends GridMap {
 		Cell cell = getCell(location);
 		boolean enterable = !cell.hasAnyWithProperty(Names.kPropertyBlock);
 		boolean noPlayer = cell.getPlayer() == null;
-		boolean mblock = cell.hasAnyWithProperty("mblock");
+		boolean mblock = cell.hasAnyWithProperty(Names.kBookObjectName);
 		return enterable && noPlayer && !mblock;
 	}
 	
@@ -296,7 +174,7 @@ public class BookMap extends GridMap {
 		// if cell is enterable, flood fill to find boundaries of room
 		// Go from left to right, then to the start of the next line
 		LinkedList<int []> floodQueue = new LinkedList<int []>();
-		HashSet<int []> explored = new HashSet<int []>((this.size-2)*2);
+		HashSet<Integer> explored = new HashSet<Integer>((this.size-2)*2);
 		
 		// this is where we will store gateway barriers for conversion to rooms 
 		// in the second phase of map structure generation. 
@@ -310,7 +188,7 @@ public class BookMap extends GridMap {
 				if (explored.contains(location)) {
 					continue;
 				}
-				explored.add(location);
+				explored.add(Arrays.hashCode(location));
 				
 				Cell cell = getCell(location);
 				if (!cell.hasAnyWithProperty(Names.kPropertyBlock) || cell.hasObject(Names.kPropertyGateway)) {
@@ -326,8 +204,8 @@ public class BookMap extends GridMap {
 				CellObject roomObject = cellObjectManager.createObject(Names.kRoomID);
 				roomObject.addProperty(Names.kPropertyNumber, Integer.toString(roomNumber));
 
-				HashSet<int []> floodExplored = new HashSet<int []>((this.size-2)*2);
-				floodExplored.add(location);
+				HashSet<Integer> floodExplored = new HashSet<Integer>((this.size-2)*2);
+				floodExplored.add(Arrays.hashCode(location));
 				cell.addCellObject(roomObject);
 				//System.out.print("Room " + roomNumber + ": (" + location[0] + "," + location[1] + ") ");
 				
@@ -338,22 +216,22 @@ public class BookMap extends GridMap {
 				floodQueue.add(new int [] { location[0],location[1]-1 });
 				
 				// flood and mark all room cells and save walls
-				HashSet<int []> walls = new HashSet<int []>();
+				HashSet<Integer> walls = new HashSet<Integer>();
 				while(floodQueue.size() > 0) {
 					int [] floodLocation = floodQueue.removeFirst();
 
 					if (floodExplored.contains(floodLocation)) {
 						continue;
 					}
-					floodExplored.add(floodLocation);
+					floodExplored.add(Arrays.hashCode(floodLocation));
 					
 					cell = getCell(floodLocation);
 					if (cell.hasAnyWithProperty(Names.kPropertyBlock) || cell.hasObject(Names.kPropertyGateway)) {
-						walls.add(floodLocation);
+						walls.add(Arrays.hashCode(floodLocation));
 						continue;
 					}
 
-					explored.add(floodLocation);
+					explored.add(Arrays.hashCode(floodLocation));
 
 					cell.addCellObject(new CellObject(roomObject));
 					//System.out.print("(" + floodLocation[0] + "," + floodLocation[1] + ") ");
@@ -849,9 +727,39 @@ public class BookMap extends GridMap {
 		
 		return cellObject;
 	}
+	
+	@Override
+	void addStateUpdate(int [] location, CellObject added) {
+		super.addStateUpdate(location, added);
+		if (added.getName() != Names.kBookObjectName) {
+			return;
+		}
+		bookObjects.add(added);
+		BookObjectInfo info = new BookObjectInfo();
+		info.location = Arrays.copyOf(location, location.length);
+		info.floatLocation = new double [] { 
+				info.location[0] * Soar2D.config.roomConfig().cell_size, 
+				info.location[1] * Soar2D.config.roomConfig().cell_size 
+				};
+		info.floatLocation[0] += Soar2D.config.roomConfig().cell_size / 2.0;
+		info.floatLocation[1] += Soar2D.config.roomConfig().cell_size / 2.0;
+		info.object = added;
+		if (!added.hasProperty("object-id")) {
+			added.addProperty("object-id", Integer.toString(newObjectId()));
+		}
+		ArrayList<CellObject> numbered = getAllWithProperty(info.location, Names.kPropertyNumber);
+		if (numbered != null) {
+			info.area = numbered.get(0).getIntProperty(Names.kPropertyNumber);
+		}
+		bookObjectInfo.put(added, info);
+	}
 
 	@Override
-	void removalStateUpdate(CellObject object) {
-		// nothing to do here
+	void removalStateUpdate(CellObject removed) {
+		super.removalStateUpdate(removed);
+		if (removed.getName() == Names.kBookObjectName) {
+			bookObjects.remove(removed);
+			bookObjectInfo.remove(removed);
+		}
 	}
 }
