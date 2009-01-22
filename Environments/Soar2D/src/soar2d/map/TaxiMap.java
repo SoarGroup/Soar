@@ -12,7 +12,6 @@ import soar2d.Direction;
 import soar2d.Names;
 import soar2d.Simulation;
 import soar2d.Soar2D;
-import soar2d.world.TankSoarWorld;
 
 public class TaxiMap extends GridMap {
 	private static Logger logger = Logger.getLogger(TaxiMap.class);
@@ -64,7 +63,7 @@ public class TaxiMap extends GridMap {
 		return passengerDestination;
 	}
 	private void setPassengerDestination() {
-		passengerFormerDestination = destinationMap.get(passengerLocation);
+		passengerFormerDestination = destinationMap.get(Arrays.hashCode(passengerLocation));
 		
 		if (passengerDefaultDestination != null) {
 			passengerDestination = passengerDefaultDestination;
@@ -100,7 +99,7 @@ public class TaxiMap extends GridMap {
 			return false;
 		}
 		addObjectToCell(location, passenger);
-		passengerFormerDestination = destinationMap.get(location);
+		passengerFormerDestination = destinationMap.get(Arrays.hashCode(location));
 		return true;
 	}
 	public boolean isPassengerCarried() {
@@ -120,11 +119,11 @@ public class TaxiMap extends GridMap {
 			assert ret;
 		}
 		
-		Collection<int [] > locations = destinationLocations.values();
+		Collection<int []> locations = destinationLocations.values();
 		assert locations.size() > 1;
 		
 		int pick = Simulation.random.nextInt(locations.size());
-		Iterator<int [] > iter = locations.iterator();
+		Iterator<int []> iter = locations.iterator();
 		for (int index = 0; index < pick; index++) {
 			assert iter.hasNext();
 			iter.next();
@@ -137,7 +136,7 @@ public class TaxiMap extends GridMap {
 	}
 
 	public boolean isPassengerDestination(int []  location) {
-		if (passengerDestination.equals(destinationMap.get(location))) {
+		if (passengerDestination.equals(destinationMap.get(Arrays.hashCode(location)))) {
 			return true;
 		}
 		return false;
@@ -154,35 +153,7 @@ public class TaxiMap extends GridMap {
 	// end passenger section
 	
 	HashMap<CellObject, int []> destinationLocations = new HashMap<CellObject, int []>();
-	HashMap<int [], String> destinationMap = new HashMap<int [], String>();
-	
-	@Override
-	public void addObjectToCell(int [] location, CellObject object) {
-		Cell cell = getCell(location);
-		if (cell.hasObject(object.getName())) {
-			CellObject old = cell.removeObject(object.getName());
-			assert old != null;
-			updatables.remove(old);
-			updatablesLocations.remove(old);
-			removalStateUpdate(old);
-		}
-		if (object.updatable()) {
-			updatables.add(object);
-			updatablesLocations.put(object, location);
-		}
-		
-		if (object.hasProperty("destination")) {
-			destinationLocations.put(object, location);
-			destinationMap.put(location, object.getProperty("color"));
-		}
-		
-		if (object.hasProperty("passenger")) {
-			this.passengerLocation = Arrays.copyOf(location, location.length);
-		}
-		
-		cell.addCellObject(object);
-		setRedraw(cell);
-	}
+	HashMap<Integer, String> destinationMap = new HashMap<Integer, String>();
 	
 	@Override
 	public boolean isAvailable(int []  location) {
@@ -191,19 +162,6 @@ public class TaxiMap extends GridMap {
 		boolean fuel = cell.hasObject("fuel");
 		boolean noPlayer = cell.getPlayer() == null;
 		return !destination && !fuel && noPlayer;
-	}
-
-	@Override
-	void removalStateUpdate(CellObject object) {
-		if (object.hasProperty("destination")) {
-			int []  location = destinationLocations.remove(object);
-			destinationMap.remove(location);
-		}
-	}
-
-	@Override
-	public void updateObjects(TankSoarWorld tsWorld) {
-		
 	}
 
 	public boolean isFuelNegative() {
@@ -250,5 +208,34 @@ public class TaxiMap extends GridMap {
 			}
 		}
 		return false;
+	}
+	
+	@Override
+	void addStateUpdate(int [] location, CellObject added) {
+		super.addStateUpdate(location, added);
+		if (added.hasProperty("destination")) {
+			destinationLocations.put(added, location);
+			destinationMap.put(Arrays.hashCode(location), added.getProperty("color"));
+		}
+		
+		if (added.hasProperty("passenger")) {
+			this.passengerLocation = Arrays.copyOf(location, location.length);
+		}
+		
+	}
+	
+	@Override
+	void removalStateUpdate(CellObject removed) {
+		super.removalStateUpdate(removed);
+		
+		if (removed.hasProperty("destination")) {
+			int []  location = destinationLocations.remove(removed);
+			destinationMap.remove(Arrays.hashCode(location));
+		}
+		
+		// note: this could go here but we keep the location around after pick-up
+		//if (removed.hasProperty("passenger")) {
+		//	this.passengerLocation = null;
+		//}
 	}
 }

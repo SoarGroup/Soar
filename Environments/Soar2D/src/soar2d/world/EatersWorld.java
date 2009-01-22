@@ -46,7 +46,7 @@ public class EatersWorld implements IWorld {
 	
 	public void putInStartingLocation(Player player, GridMap map, PlayersManager players, int [] location) {
 		// remove food from it
-		map.removeAllWithProperty(players.getLocation(player), Names.kPropertyEdible);
+		map.removeAllByProperty(players.getLocation(player), Names.kPropertyEdible);
 	}
 	
 	public void reset(GridMap map) {
