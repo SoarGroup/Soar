@@ -191,6 +191,9 @@ public class WindowManager {
 	}
 	
 	public boolean using() {
+		if (Soar2D.config == null) {
+			return false;
+		}
 		return !Soar2D.config.generalConfig().nogui;
 	}
 	

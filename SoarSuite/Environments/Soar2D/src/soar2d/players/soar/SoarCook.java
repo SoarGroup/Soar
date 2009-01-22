@@ -125,24 +125,9 @@ public class SoarCook extends Cook {
 		type = agent.CreateStringWME(cell, "type", "normal");
 		randomWME = agent.CreateFloatWME(agent.GetInputLink(), "random", random);
 		
-		loadMetadata();
+		metadata = InputLinkMetadata.load(agent);
 	}
 
-	private void loadMetadata() {
-		metadata = new InputLinkMetadata(agent);
-		try {
-			if (Soar2D.config.soarConfig().metadata != null) {
-				metadata.load(Soar2D.config.soarConfig().metadata);
-			}
-			if (Soar2D.simulation.world.getMap().getMetadata() != null) {
-				metadata.load(Soar2D.simulation.world.getMap().getMetadata());
-			}
-		} catch (Exception e) {
-			error(Names.Errors.metadata + this.getName() + ": " + e.getMessage());
-			Soar2D.control.stopSimulation();
-		}
-	}
-	
 	@Override
 	public void moveWithObjectFailed() {
 		moveWithObjectCommand.AddStatusError();

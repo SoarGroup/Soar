@@ -1,24 +1,14 @@
 package soar2d.players.soar;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Iterator;
-
 import org.apache.log4j.Logger;
 
 import sml.Agent;
-import sml.FloatElement;
 import sml.Identifier;
-import sml.IntElement;
-import sml.StringElement;
 import soar2d.Direction;
 import soar2d.Names;
-import soar2d.Simulation;
 import soar2d.Soar2D;
-import soar2d.map.CellObject;
 import soar2d.players.Eater;
 import soar2d.players.MoveInfo;
-import soar2d.players.Player;
 import soar2d.world.World;
 
 /**
@@ -31,39 +21,13 @@ import soar2d.world.World;
 public class SoarEater extends Eater {
 	private static Logger logger = Logger.getLogger(SoarEater.class);
 
+	private SoarEaterIL input;
+	
 	/**
 	 * the soar agent
 	 */
 	private Agent agent;
-	/**
-	 * a random number, guaranteed to change every frame
-	 */
-	private float random;
 	
-	/**
-	 * which way we're facing
-	 */
-	private StringElement directionWME;
-	/**
-	 * our current score
-	 */
-	private IntElement scoreWME;
-	/**
-	 * our current x location
-	 */
-	private IntElement xWME;
-	/**
-	 * our current y location
-	 */
-	private IntElement yWME;
-	/**
-	 * the wme for the random number
-	 */
-	private FloatElement randomWME;
-	/**
-	 * the 5x5 vision grid
-	 */
-	private SoarCell[][] cells;
 	/**
 	 * soar commands to run before this agent is destroyed
 	 */
@@ -85,53 +49,22 @@ public class SoarEater extends Eater {
 		super(playerId);
 
 		this.agent = agent;
+		agent.SetBlinkIfNoChange(false);
+		
 		this.shutdownCommands = playerConfig.shutdown_commands;
 		
-		// BUGBUG remove
-		//debugInputLink();
-
-		Identifier eater = agent.CreateIdWME(agent.GetInputLink(), Names.kEaterID);
-		
-		directionWME = agent.CreateStringWME(eater, Names.kDirectionID, Names.kNorth);
-		agent.CreateStringWME(eater, Names.kNameID, getName());
-		scoreWME = agent.CreateIntWME(eater, Names.kScoreID, getPoints());
-		xWME = agent.CreateIntWME(eater, Names.kXID, 0);
-		yWME = agent.CreateIntWME(eater, Names.kYID, 0);
-		
-		cells = new SoarCell[(Soar2D.config.eatersConfig().vision * 2 ) + 1][(Soar2D.config.eatersConfig().vision * 2 ) + 1];
-		for (int i = 0; i < cells.length; ++i) {
-			for (int j = 0; j < cells.length; ++j) {
-				cells[i][j] = new SoarCell();
-			}
-		}
-
-		// bootstrap the 5x5 grid
-		cells[Soar2D.config.eatersConfig().vision][Soar2D.config.eatersConfig().vision].me = agent.CreateIdWME(agent.GetInputLink(), Names.kMyLocationID);
-		createView(Soar2D.config.eatersConfig().vision, Soar2D.config.eatersConfig().vision);
-		
-		random = 0;
-		generateNewRandom();
-		randomWME = agent.CreateFloatWME(agent.GetInputLink(), Names.kRandomID, random);
-		
-		loadMetadata();
-		
-		if (!agent.Commit()) {
+		input = new SoarEaterIL(agent, Soar2D.config.eatersConfig().vision);
+		try {
+			input.create(getName(), getPoints());
+		} catch (CommitException e) {
 			error(Names.Errors.commitFail + this.getName());
 			Soar2D.control.stopSimulation();
 		}
-	}
-	
-	private void loadMetadata() {
-		metadata = new InputLinkMetadata(agent);
-		try {
-			if (Soar2D.config.soarConfig().metadata != null) {
-				metadata.load(Soar2D.config.soarConfig().metadata);
-			}
-			if (Soar2D.simulation.world.getMap().getMetadata() != null) {
-				metadata.load(Soar2D.simulation.world.getMap().getMetadata());
-			}
-		} catch (Exception e) {
-			error(Names.Errors.metadata + this.getName() + ": " + e.getMessage());
+		
+		metadata = InputLinkMetadata.load(agent);
+		
+		if (!agent.Commit()) {
+			error(Names.Errors.commitFail + this.getName());
 			Soar2D.control.stopSimulation();
 		}
 	}
@@ -141,67 +74,6 @@ public class SoarEater extends Eater {
 		Soar2D.control.errorPopUp(message);
 	}
 	
-	/**
-	 * @param x current cell x location to init
-	 * @param y current cell y location to init
-	 * 
-	 * recursive function to initialize the 5x5 grid. kind of confusing but works great.
-	 * each cell's iterated bool gets set true if it is initialized.
-	 */
-	private void createView(int x, int y) {
-		if (x >= 0 && x <= (Soar2D.config.eatersConfig().vision * 2) && y >=0 && y <= (Soar2D.config.eatersConfig().vision * 2) && !cells[x][y].iterated) {
-			cells[x][y].iterated = true;
-
-			if (x > 0) {
-				if (cells[x - 1][y].me == null)
-					cells[x - 1][y].me = agent.CreateIdWME(cells[x][y].me, Names.kWest);
-				else
-					cells[x][y].west = agent.CreateSharedIdWME(cells[x][y].me, Names.kWest, cells[x - 1][y].me);
-			}
-			
-			if (x < (Soar2D.config.eatersConfig().vision * 2)) {
-				if (cells[x + 1][y].me == null)
-					cells[x + 1][y].me = agent.CreateIdWME(cells[x][y].me, Names.kEast);
-				else
-					cells[x][y].east = agent.CreateSharedIdWME(cells[x][y].me, Names.kEast, cells[x + 1][y].me);
-			}
-			
-			if (y > 0) {
-				if (cells[x][y - 1].me == null)
-					cells[x][y - 1].me = agent.CreateIdWME(cells[x][y].me, Names.kNorth);
-				else
-					cells[x][y].north = agent.CreateSharedIdWME(cells[x][y].me, Names.kNorth, cells[x][y - 1].me);
-			}
-			
-			if (y < (Soar2D.config.eatersConfig().vision * 2)) {
-				if (cells[x][y + 1].me == null)
-					cells[x][y + 1].me = agent.CreateIdWME(cells[x][y].me, Names.kSouth);
-				else
-					cells[x][y].south = agent.CreateSharedIdWME(cells[x][y].me, Names.kSouth, cells[x][y + 1].me);
-			}
-			
-			createView(x - 1,y);
-			createView(x + 1,y);
-			createView(x,y - 1);
-			createView(x,y + 1);
-		}	
-	}
-	
-	/**
-	 * create a new random number
-	 * make sure it is different from current
-	 */
-	private void generateNewRandom() {
-		float newRandom;
-		do {
-			newRandom = Simulation.random.nextFloat();
-		} while (this.random == newRandom);
-		this.random = newRandom;
-	}
-	
-	/* (non-Javadoc)
-	 * @see soar2d.player.Eater#update(soar2d.World, int [])
-	 */
 	public void update(int [] location) {
 		World world = Soar2D.simulation.world;
 
@@ -213,250 +85,12 @@ public class SoarEater extends Eater {
 			moved = true;
 		}
 		
-		// update the 5x5
-		int [] viewLocation = new int [2];
-		for (int x = 0; x < cells.length; ++x) {
-			viewLocation[0] = x - Soar2D.config.eatersConfig().vision + location[0];
-			for (int y = 0; y < cells[x].length; ++y) {
-				viewLocation[1] = y - Soar2D.config.eatersConfig().vision + location[1];
-
-				// get the current soarcell to update
-				SoarCell soarCell = cells[x][y];
-				
-				// Clear the content if we moved.
-				if (moved) {
-					
-					// we've moved, clear anything there
-					destroyWMEsAndClear(soarCell.content);
-					if (soarCell.box != null) {
-						agent.DestroyWME(soarCell.box);
-						soarCell.box = null;
-						soarCell.boxProperties.clear();
-					}
-					
-					// If we're out of bounds create a wall
-					if (!world.getMap().isInBounds(viewLocation)) {
-						createContent(soarCell.content, soarCell, Names.kWallID);
-						continue;
-					}
-					
-					// If cell is wall, do the wall
-					if (!world.getMap().enterable(viewLocation)) {
-						// get all things that block
-						ArrayList<CellObject> walls = world.getMap().getAllWithProperty(viewLocation, Names.kPropertyBlock);
-						
-						// we must have at least one
-						assert walls.size() >= 1;
-						
-						// get the object
-						CellObject wall = walls.get(0);
-						
-						// update the soarcell with the new content
-						// use the id property as its id on the input link
-						assert wall.hasProperty(Names.kPropertyID);
-						createContent(soarCell.content, soarCell, wall.getProperty(Names.kPropertyID));
-						continue;
-					}
-					
-					// if we get to this point, the cell is not a wall
-					assert world.getMap().enterable(viewLocation);
-					
-					// player test
-					Player player = world.getMap().getPlayer(viewLocation);
-					if (player != null) {
-						// ther is a player in the cell, use the eaterid
-						createContent(soarCell.content, soarCell, Names.kEaterID);
-					}
-					
-					// food test
-					// get all foods
-					ArrayList<CellObject> foodList = world.getMap().getObjectManager().getTemplatesWithProperty(Names.kPropertyEdible);
-					Iterator<CellObject> objectIter = foodList.iterator();
-					boolean hadFood = false;
-					while (objectIter.hasNext()) {
-						// for each food
-						CellObject food = objectIter.next();
-						// see if it is in the cell
-						if (world.getMap().hasObject(viewLocation, food.getName())) {
-							// yes
-							hadFood = true;
-							// create it using its id property on the link
-							assert food.hasProperty(Names.kPropertyID);
-							createContent(soarCell.content, soarCell, food.getProperty(Names.kPropertyID));
-						}
-					}
-					
-					// box test
-					// get all boxes
-					ArrayList<CellObject> boxes = world.getMap().getAllWithProperty(viewLocation, Names.kPropertyBox);
-					assert boxes.size() <= 1;
-					if (boxes.size() > 0) {
-						// create them if necessary
-						createBox(soarCell, boxes.get(0));
-					
-					}
-					// empty test
-					// a cell is empty if it doesn't have food, a player, or a box
-					// wall is implied since we can't get here if there is a wall
-					if(!hadFood && (player == null) && (boxes.size() == 0)) {
-						createContent(soarCell.content, soarCell, Names.kEmpty);
-					}
-				} else {
-				
-					// We didn't move
-					// Create a new name -> wme map
-					// for each item (that we care about) in the cell
-					//   if it doesn't exist in the soarcell map
-					//     create it and store in new map
-					//   else
-					//     take existing and store in new map
-					//   remove from soarcell map
-					// destroy remaining elements in soarcell map
-					// assign new map to soarcell map
-
-					// create the new map
-					HashMap<String, StringElement> newContent = new HashMap<String, StringElement>();
-
-					// Anything out of bounds will not change
-					if (!world.getMap().isInBounds(viewLocation)) {
-						continue;
-					}
-					
-					// Walls do not change
-					if (!world.getMap().enterable(viewLocation)) {
-						continue;
-					}
-	
-					// check for a player
- 					Player player = world.getMap().getPlayer(viewLocation);
-					if (player != null) {
-						
-						// there is a player, see if there was one there before
-						StringElement element = soarCell.content.remove(Names.kEaterID);
-						if (element == null) {
-							// no, create it
-							createContent(newContent, soarCell, Names.kEaterID);
-						} else {
-							// yes, keep it
-							newContent.put(Names.kEaterID, element);
-						}
-						
-						// TODO: we don't tell if it is a different player, it is possible if it is.
-						// perhaps we should blink if it is a different player.
-					}
-					
-					// food test
-					// get all foods
-					ArrayList<CellObject> foodList = Soar2D.simulation.world.getMap().getObjectManager().getTemplatesWithProperty(Names.kPropertyEdible);
-					Iterator<CellObject> objectIter = foodList.iterator();
-					boolean hadFood = false;
-					while (objectIter.hasNext()) {
-						// for each food
-						CellObject food = objectIter.next();
-						// does the cell have one
-						if (world.getMap().hasObject(viewLocation, food.getName())) {
-							// yes
-							hadFood = true;
-							
-							// did it have one before
-							StringElement element = soarCell.content.remove(food.getName());
-							if (element == null) {
-								// no, create it
-								assert food.hasProperty(Names.kPropertyID);
-								createContent(newContent, soarCell, food.getProperty(Names.kPropertyID));
-							} else {
-								// yes, save it
-								assert food.hasProperty(Names.kPropertyID);
-								newContent.put(food.getProperty(Names.kPropertyID), element);
-							}
-						}
-					}
-					
-					// box test is a special case
-					// get all boxes
-					ArrayList<CellObject> boxes = world.getMap().getAllWithProperty(viewLocation, Names.kPropertyBox);
-					
-					// TODO: there can only be one (as of right now)
-					assert boxes.size() <= 1;
-					
-					// if there are boxes
-					if (boxes.size() > 0) {
-						CellObject box = boxes.get(0);
-						// was there a box
-						if (soarCell.box == null) {
-							// no, so make sure there are no properties
-							assert soarCell.boxProperties.size() == 0;
-							
-							// and create one
-							createBox(soarCell, box);
-						} else {
-							
-							// there was a box
-							
-							// Check the box properties using the same algorithm
-							HashMap<String, StringElement> newBoxProperties = new HashMap<String, StringElement>();
-							Iterator<String> iter = box.getPropertyNames().iterator();
-							while (iter.hasNext()) {
-								// for each property on the box
-								String name = iter.next();
-								// was the property on it before?
-								StringElement element = soarCell.boxProperties.remove(name);
-								if (element == null) {
-									// no, add it
-									String value = box.getProperty(name);
-									element = agent.CreateStringWME(soarCell.box, name, value);
-								}
-								// save it regardless
-								newBoxProperties.put(name, element);
-							}
-							
-							// get rid of the old properties
-							destroyWMEsAndClear(soarCell.boxProperties);
-							// set the new ones
-							soarCell.boxProperties = newBoxProperties;
-						}
-					}
-					
-					// empty test
-					// a cell is empty if it doesn't have food, a player, or a box
-					// wall is implied since we can't get here if there is a wall
-					if(!hadFood && (player == null) && (boxes.size() == 0)) {
-						// if we get to this point, the cell is not a wall
-						assert world.getMap().enterable(viewLocation);
-						
-						StringElement element = soarCell.content.remove(Names.kEmpty);
-						if (element == null) {
-							createContent(newContent, soarCell, Names.kEmpty);
-						} else {
-							newContent.put(Names.kEmpty, element);
-						}
-					}
-					
-					// get rid of the old content
-					destroyWMEsAndClear(soarCell.content);
-					
-					// set the new content
-					soarCell.content = newContent;
-				} // if moved/didn't move
-			}
+		try {
+			input.update(moved, location, world.getMap(), getPoints());
+		} catch (CommitException e) {
+			error(Names.Errors.commitFail + this.getName());
+			Soar2D.control.stopSimulation();
 		}
-
-		updateScoreWME();
-		
-		updateFacingWME();
-		
-		// if we moved, update the location
-		if (moved) {
-			agent.Update(xWME, location[0]);
-			agent.Update(yWME, location[1]);
-		}
-		
-		// update the random no matter what
-		float oldrandom = random;
-		do {
-			random = Simulation.random.nextFloat();
-		} while (random == oldrandom);
-		agent.Update(randomWME, random);
 		
 		// commit everything
 		if (!agent.Commit()) {
@@ -467,72 +101,6 @@ public class SoarEater extends Eater {
 
 	}
 	
-	private void updateFacingWME() {
-		// update the facing if it changed
-		if (!directionWME.GetValue().equalsIgnoreCase(Direction.stringOf[getFacingInt()])) {
-			agent.Update(directionWME, Direction.stringOf[getFacingInt()]);
-		}
-	}
-	
-	private void updateScoreWME() {
-		// update the score if it changed
-		if (this.pointsChanged()) {
-			agent.Update(scoreWME, getPoints());
-		}
-	}
-	
-	/**
-	 * @param soarCell the cell that contains the box
-	 * @param box the box object
-	 */
-	private void createBox(SoarCell soarCell, CellObject box) {
-		// create the wme
-		assert box.hasProperty(Names.kPropertyID);
-		soarCell.box = agent.CreateIdWME(soarCell.me, box.getProperty(Names.kPropertyID));
-		// make sure that happened
-		assert soarCell.box != null;
-		
-		// go through the properties and add them
-		Iterator<String> iter = box.getPropertyNames().iterator();
-		while (iter.hasNext()) {
-			String name = iter.next();
-			String value = box.getProperty(name);
-			StringElement element = agent.CreateStringWME(soarCell.box, name, value);
-			soarCell.boxProperties.put(name, element);
-		}
-	}
-	
-	/**
-	 * @param map the map to clear
-	 * 
-	 * take all the wmes in the map and destroy them, then clear the map
-	 */
-	private void destroyWMEsAndClear(HashMap<String, StringElement> map) {
-		Iterator<StringElement> contentIter = map.values().iterator();
-		while (contentIter.hasNext()) {
-			StringElement element = contentIter.next();
-			agent.DestroyWME(element);
-		}
-		map.clear();
-	}
-	
-	/**
-	 * @param map the name to element mapping for the cell
-	 * @param soarCell the cell
-	 * @param name the name of the content to create
-	 */
-	private void createContent(HashMap<String, StringElement> map, SoarCell soarCell, String name) {
-		// create the wme
-		StringElement element = agent.CreateStringWME(soarCell.me, Names.kContentID, name);
-		// make sure it happened
-		assert element != null;
-		// store the element
-		map.put(name, element);
-	}
-	
-	/* (non-Javadoc)
-	 * @see soar2d.player.Eater#getMove()
-	 */
 	public MoveInfo getMove() {
 		if (Soar2D.config.generalConfig().force_human) {
 			return super.getMove();
@@ -654,35 +222,29 @@ public class SoarEater extends Eater {
 		if (agent == null) {
 			return;
 		}
-
-		// clear the 5x5
-		Iterator<StringElement> iter;
-		for (int x = 0; x < cells.length; ++x) {
-			for (int y = 0; y < cells[x].length; ++y) {
-				if (cells[x][y].boxProperties.size() > 0) {
-					iter = cells[x][y].boxProperties.values().iterator();
-					while (iter.hasNext()) {
-						StringElement name = iter.next();
-						agent.DestroyWME(name);
-					}
-					cells[x][y].boxProperties.clear();
-				}
-			}
-		}
 		
-		updateFacingWME();
-		updateScoreWME();
-		
-		metadata.destroy();
-		metadata = null;
-		loadMetadata();
-
-		if (!agent.Commit()) {
+		try {
+			input.destroy();
+		} catch (CommitException e) {
 			error(Names.Errors.commitFail + this.getName());
 			Soar2D.control.stopSimulation();
 		}
 
+		metadata.destroy();
+		metadata = null;
+		metadata = InputLinkMetadata.load(agent);
+
+		if (!agent.Commit()) {
+		}
+
 		agent.InitSoar();
+			
+		try {
+			input.create(getName(), getPoints());
+		} catch (CommitException e) {
+			error(Names.Errors.commitFail + this.getName());
+			Soar2D.control.stopSimulation();
+		}
 	}
 
 	public void fragged() {
