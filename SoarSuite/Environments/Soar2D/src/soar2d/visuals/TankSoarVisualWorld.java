@@ -72,15 +72,15 @@ public class TankSoarVisualWorld extends VisualWorld {
 				CellObject object = null;
 				ArrayList<CellObject> missiles = new ArrayList<CellObject>();
 				
-				Iterator<CellObject> iter = drawList.iterator();
-				while (iter.hasNext()) {
-					CellObject cellObject = iter.next();
-					if (cellObject.getName().equals(Names.kExplosion)) {
-						explosion = cellObject;
-					} else if (cellObject.hasProperty(Names.kPropertyMissiles)) {
-						object = cellObject;
-					} else if (cellObject.hasProperty(Names.kPropertyMissile)) {
-						missiles.add(cellObject);
+				if (drawList != null) {
+					for (CellObject cellObject : drawList) {
+						if (cellObject.getName().equals(Names.kExplosion)) {
+							explosion = cellObject;
+						} else if (cellObject.hasProperty(Names.kPropertyMissiles)) {
+							object = cellObject;
+						} else if (cellObject.hasProperty(Names.kPropertyMissile)) {
+							missiles.add(cellObject);
+						}
 					}
 				}
 				
@@ -129,9 +129,7 @@ public class TankSoarVisualWorld extends VisualWorld {
 				}
 
 				// cache all the missiles
-				iter = missiles.iterator();
-				while (iter.hasNext()) {
-					CellObject missile = iter.next();
+				for (CellObject missile : missiles) {
 					
 					String imageName = missile.getProperty(Names.kPropertyImage);
 					Image image = images.get(imageName);
@@ -182,37 +180,38 @@ public class TankSoarVisualWorld extends VisualWorld {
 				
 				// Finally, draw the radar waves
 				ArrayList<CellObject> radarWaves = this.map.getAllWithProperty(location, Names.kPropertyRadarWaves);
-				iter = radarWaves.iterator();
 				gc.setForeground(WindowManager.getColor("white"));
-				while (iter.hasNext()) {
-					CellObject cellObject = iter.next();
-					int direction = cellObject.getIntProperty(Names.kPropertyDirection);
-					int start = 0;
-					int xMod = 0;
-					int yMod = 0;
-					switch (direction) {
-					case Direction.kNorthInt:
-						start = 0;
-						yMod = cellSize / 4;
+				
+				if (radarWaves != null) {
+					for (CellObject cellObject : radarWaves) {
+						int direction = cellObject.getIntProperty(Names.kPropertyDirection);
+						int start = 0;
+						int xMod = 0;
+						int yMod = 0;
+						switch (direction) {
+						case Direction.kNorthInt:
+							start = 0;
+							yMod = cellSize / 4;
+							break;
+						case Direction.kSouthInt:
+							start = -180;
+							yMod = cellSize / -4;
+							break;
+						case Direction.kEastInt:
+							start = -90;
+							xMod = cellSize / -4;
+							break;
+						case Direction.kWestInt:
+							start = 90;
+							xMod = cellSize / 4;
+							break;
+						default:
+							// TODO: warn
+							assert false;
 						break;
-					case Direction.kSouthInt:
-						start = -180;
-						yMod = cellSize / -4;
-						break;
-					case Direction.kEastInt:
-						start = -90;
-						xMod = cellSize / -4;
-						break;
-					case Direction.kWestInt:
-						start = 90;
-						xMod = cellSize / 4;
-						break;
-					default:
-						// TODO: warn
-						assert false;
-						break;
+						}
+						gc.drawArc((location[0] * cellSize) + xMod, (location[1] * cellSize) + yMod, cellSize - 1, cellSize - 1, start, 180);
 					}
-					gc.drawArc((location[0] * cellSize) + xMod, (location[1] * cellSize) + yMod, cellSize - 1, cellSize - 1, start, 180);
 				}
 			}
 		}
@@ -245,19 +244,20 @@ public class TankSoarVisualWorld extends VisualWorld {
 	public void updateBackground(int [] location) {
 		ArrayList<CellObject> drawList = this.map.getAllWithProperty(location, Names.kPropertyImage);
 		
-		Iterator<CellObject> iter = drawList.iterator();
 		CellObject backgroundObject = null;
-		while (iter.hasNext()) {
-			CellObject cellObject = iter.next();
-			if (cellObject.hasProperty(Names.kPropertyBlock)) {
-				backgroundObject = cellObject;
-			} else if (cellObject.getName().equals(Names.kGround)) {
-				backgroundObject = cellObject;
-			} else if (cellObject.hasProperty(Names.kPropertyCharger)) {
-				backgroundObject = cellObject;
-				break;
+		if (drawList != null) {
+			for (CellObject cellObject : drawList) {
+				if (cellObject.hasProperty(Names.kPropertyBlock)) {
+					backgroundObject = cellObject;
+				} else if (cellObject.getName().equals(Names.kGround)) {
+					backgroundObject = cellObject;
+				} else if (cellObject.hasProperty(Names.kPropertyCharger)) {
+					backgroundObject = cellObject;
+					break;
+				}
 			}
 		}
+
 		// FIXME: handle gracefully
 		assert backgroundObject != null;
 		

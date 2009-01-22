@@ -80,7 +80,7 @@ public class EatersWorld implements IWorld {
 			}
 			
 			// Verify legal move and commit move
-			if (map.isInBounds(newLocation) && map.enterable(newLocation)) {
+			if (map.isInBounds(newLocation) && !map.hasAnyWithProperty(newLocation, Names.kPropertyBlock)) {
 				// remove from cell
 				map.setPlayer(oldLocation, null);
 				
@@ -106,10 +106,8 @@ public class EatersWorld implements IWorld {
 				map.setPlayer(location, player);
 
 				ArrayList<CellObject> moveApply = map.getAllWithProperty(location, Names.kPropertyMoveApply);
-				if (moveApply.size() > 0) {
-					Iterator<CellObject> maIter = moveApply.iterator();
-					while (maIter.hasNext()) {
-						CellObject object = maIter.next();
+				if (moveApply != null) {
+					for (CellObject object : moveApply) {
 						if (object.apply(player)) {
 							map.removeObject(location, object.getName());
 						}
@@ -129,7 +127,7 @@ public class EatersWorld implements IWorld {
 	
 	private void open(Player player, EatersMap map, int [] location, int openCode) {
 		ArrayList<CellObject> boxes = map.getAllWithProperty(location, Names.kPropertyBox);
-		if (boxes.size() <= 0) {
+		if (boxes == null) {
 			logger.warn(player.getName() + " tried to open but there is no box.");
 			return;
 		}
@@ -162,14 +160,14 @@ public class EatersWorld implements IWorld {
 	
 	private void eat(Player player, EatersMap map, int [] location) {
 		ArrayList<CellObject> list = map.getAllWithProperty(location, Names.kPropertyEdible);
-		Iterator<CellObject> foodIter = list.iterator();
-		while (foodIter.hasNext()) {
-			CellObject food = foodIter.next();
-			if (food.apply(player)) {
-				// if this returns true, it is consumed
-				map.removeObject(location, food.getName());
+		if (list != null) {
+			for (CellObject food : list) {
+				if (food.apply(player)) {
+					// if this returns true, it is consumed
+					map.removeObject(location, food.getName());
+				}
 			}
-		}
+		}			
 	}
 	
 	private ArrayList<ArrayList<Player>> findCollisions(PlayersManager players) {

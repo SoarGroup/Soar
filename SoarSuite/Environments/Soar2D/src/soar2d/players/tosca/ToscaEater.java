@@ -5,6 +5,7 @@ import java.util.Arrays;
 import org.apache.log4j.Logger;
 
 import soar2d.Direction;
+import soar2d.Names;
 import soar2d.Soar2D;
 import soar2d.players.Eater;
 import soar2d.players.MoveInfo;
@@ -99,7 +100,7 @@ public class ToscaEater extends Eater {
 				int [] newLocation = Arrays.copyOf(oldLocation, oldLocation.length);
 				Direction.translate(newLocation, move.moveDirection);
 				// Verify legal move and commit move
-				if (Soar2D.simulation.world.getMap().isInBounds(newLocation) && Soar2D.simulation.world.getMap().enterable(newLocation))
+				if (Soar2D.simulation.world.getMap().isInBounds(newLocation) && !Soar2D.simulation.world.getMap().hasAnyWithProperty(newLocation, Names.kPropertyBlock))
 					break ;
 			}
 		}

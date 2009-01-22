@@ -50,8 +50,9 @@ public class BookMap extends GridMap {
 			if (!object.hasProperty("object-id")) {
 				object.addProperty("object-id", Integer.toString(newObjectId()));
 			}
-			if (getAllWithProperty(info.location, Names.kPropertyNumber).size() > 0) {
-				info.area = getAllWithProperty(info.location, Names.kPropertyNumber).get(0).getIntProperty(Names.kPropertyNumber);
+			ArrayList<CellObject> numbered = getAllWithProperty(info.location, Names.kPropertyNumber);
+			if (numbered != null) {
+				info.area = numbered.get(0).getIntProperty(Names.kPropertyNumber);
 			}
 			bookObjectInfo.put(object, info);
 		}
@@ -152,6 +153,7 @@ public class BookMap extends GridMap {
 		assert Soar2D.config.game() == SimConfig.Game.ROOM;
 
 		ArrayList<CellObject> locationObjects = getAllWithProperty(location, Names.kPropertyNumber);
+		assert locationObjects != null;
 		assert locationObjects.size() == 1;
 		return locationObjects.get(0).getIntProperty(Names.kPropertyNumber);
 	}
@@ -159,10 +161,10 @@ public class BookMap extends GridMap {
 	@Override
 	public boolean isAvailable(int [] location) {
 		Cell cell = getCell(location);
-		boolean enterable = cell.enterable();
+		boolean enterable = !cell.hasAnyWithProperty(Names.kPropertyBlock);
 		boolean noPlayer = cell.getPlayer() == null;
-		boolean noMBlock = cell.getAllWithProperty("mblock").size() <= 0;
-		return enterable && noPlayer && noMBlock;
+		boolean mblock = cell.hasAnyWithProperty("mblock");
+		return enterable && noPlayer && !mblock;
 	}
 	
 	private int roomCount = 0;
@@ -311,7 +313,7 @@ public class BookMap extends GridMap {
 				explored.add(location);
 				
 				Cell cell = getCell(location);
-				if (!cell.enterable() || cell.hasObject(Names.kPropertyGateway)) {
+				if (!cell.hasAnyWithProperty(Names.kPropertyBlock) || cell.hasObject(Names.kPropertyGateway)) {
 					continue;
 				}
 				
@@ -346,7 +348,7 @@ public class BookMap extends GridMap {
 					floodExplored.add(floodLocation);
 					
 					cell = getCell(floodLocation);
-					if (!cell.enterable() || cell.hasObject(Names.kPropertyGateway)) {
+					if (cell.hasAnyWithProperty(Names.kPropertyBlock) || cell.hasObject(Names.kPropertyGateway)) {
 						walls.add(floodLocation);
 						continue;
 					}
@@ -577,6 +579,7 @@ public class BookMap extends GridMap {
 		Iterator<BookObjectInfo> infoIter = bookObjectInfo.values().iterator();
 		while (infoIter.hasNext()) {
 			BookObjectInfo info = infoIter.next();
+			
 			info.area = getAllWithProperty(info.location, Names.kPropertyNumber).get(0).getIntProperty(Names.kPropertyNumber);
 		}
 		

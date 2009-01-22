@@ -115,10 +115,10 @@ public class TankSoarMap extends GridMap {
 	@Override
 	public boolean isAvailable(int [] location) {
 		Cell cell = getCell(location);
-		boolean enterable = cell.enterable();
+		boolean enterable = !cell.hasAnyWithProperty(Names.kPropertyBlock);
 		boolean noPlayer = cell.getPlayer() == null;
-		boolean noMissilePack = cell.getAllWithProperty(Names.kPropertyMissiles).size() <= 0;
-		boolean noCharger = cell.getAllWithProperty(Names.kPropertyCharger).size() <= 0;
+		boolean noMissilePack = !cell.hasAnyWithProperty(Names.kPropertyMissiles);
+		boolean noCharger = !cell.hasAnyWithProperty(Names.kPropertyCharger);
 		return enterable && noPlayer && noMissilePack && noCharger;
 	}
 
@@ -205,7 +205,7 @@ public class TankSoarMap extends GridMap {
 			// check destination
 			cell = getCell(location);
 			
-			if (!cell.enterable()) {
+			if (cell.hasAnyWithProperty(Names.kPropertyBlock)) {
 				// missile is destroyed
 				return true;
 			}
