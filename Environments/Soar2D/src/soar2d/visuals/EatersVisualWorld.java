@@ -105,7 +105,7 @@ public class EatersVisualWorld extends VisualWorld {
 				ArrayList<CellObject> drawList;
 				drawList = this.map.getAllWithProperty(location, Names.kPropertyShape);
 				
-				if (!this.map.enterable(location)) {
+				if (this.map.hasAnyWithProperty(location, Names.kPropertyBlock)) {
 				    gc.setBackground(WindowManager.black);
 				    gc.fillRectangle(cellSize*xDraw + 1, cellSize*yDraw + 1, cellSize - 2, cellSize - 2);
 					
@@ -140,35 +140,35 @@ public class EatersVisualWorld extends VisualWorld {
 						}
 					}
 					
-					Iterator<CellObject> iter = drawList.iterator();
-					while (iter.hasNext()) {
-						CellObject object = iter.next();
-						
-						if (empty) {
-							gc.setBackground(WindowManager.widget_background);
-							gc.fillRectangle(cellSize*xDraw, cellSize*yDraw, cellSize, cellSize);
-						}
-						empty = false;
-					    
-					    Color color = WindowManager.getColor(object.getProperty(Names.kPropertyColor));
-					    if (color == null) {
-					    	//TODO: draw outline!
-					    }
-						gc.setBackground(color);
-						
-						Shape shape = Shape.getShape(object.getProperty(Names.kPropertyShape));
-						if (shape != null) {
-							if (shape.equals(Shape.ROUND)) {
-								fill1 = (int)(cellSize/2.8);
-								fill2 = cellSize - fill1 + 1;
-								gc.fillOval(cellSize*xDraw + fill1, cellSize*yDraw + fill1, cellSize - fill2, cellSize - fill2);
-								gc.drawOval(cellSize*xDraw + fill1, cellSize*yDraw + fill1, cellSize - fill2 - 1, cellSize - fill2 - 1);
-								
-							} else if (shape.equals(Shape.SQUARE)) {
-								fill1 = (int)(cellSize/2.8);
-								fill2 = cellSize - fill1 + 1;
-								gc.fillRectangle(cellSize*xDraw + fill1, cellSize*yDraw + fill1, cellSize - fill2, cellSize - fill2);
-								gc.drawRectangle(cellSize*xDraw + fill1, cellSize*yDraw + fill1, cellSize - fill2, cellSize - fill2);
+					if (drawList != null) {
+						for (CellObject object : drawList) {
+							
+							if (empty) {
+								gc.setBackground(WindowManager.widget_background);
+								gc.fillRectangle(cellSize*xDraw, cellSize*yDraw, cellSize, cellSize);
+							}
+							empty = false;
+						    
+						    Color color = WindowManager.getColor(object.getProperty(Names.kPropertyColor));
+						    if (color == null) {
+						    	//TODO: draw outline!
+						    }
+							gc.setBackground(color);
+							
+							Shape shape = Shape.getShape(object.getProperty(Names.kPropertyShape));
+							if (shape != null) {
+								if (shape.equals(Shape.ROUND)) {
+									fill1 = (int)(cellSize/2.8);
+									fill2 = cellSize - fill1 + 1;
+									gc.fillOval(cellSize*xDraw + fill1, cellSize*yDraw + fill1, cellSize - fill2, cellSize - fill2);
+									gc.drawOval(cellSize*xDraw + fill1, cellSize*yDraw + fill1, cellSize - fill2 - 1, cellSize - fill2 - 1);
+									
+								} else if (shape.equals(Shape.SQUARE)) {
+									fill1 = (int)(cellSize/2.8);
+									fill2 = cellSize - fill1 + 1;
+									gc.fillRectangle(cellSize*xDraw + fill1, cellSize*yDraw + fill1, cellSize - fill2, cellSize - fill2);
+									gc.drawRectangle(cellSize*xDraw + fill1, cellSize*yDraw + fill1, cellSize - fill2, cellSize - fill2);
+								}
 							}
 						}
 					}

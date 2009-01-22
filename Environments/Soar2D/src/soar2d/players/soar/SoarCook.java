@@ -202,30 +202,28 @@ public class SoarCook extends Cook {
 		
 		// update object information
 		ArrayList<CellObject> stuff = map.getAllWithProperty(location, "smell");
-		Iterator<CellObject> stuffIter = stuff.iterator();
 		HashMap<String, ObjectInputLink> newObjects = new HashMap<String, ObjectInputLink>();
-		while (stuffIter.hasNext()) {
-			CellObject item = stuffIter.next();
-			ObjectInputLink itemIL = objects.get(item.getName());
-			if (itemIL == null) {
-				itemIL = new ObjectInputLink(
-						item.getName(), 
-						item.getProperty("texture"), 
-						item.getProperty("color"), 
-						item.getProperty("smell"));
-			} else {
-				itemIL.Update(
-						item.getProperty("texture"), 
-						item.getProperty("color"), 
-						item.getProperty("smell"));
+		if (stuff != null) {
+			for (CellObject item : stuff) {
+				ObjectInputLink itemIL = objects.get(item.getName());
+				if (itemIL == null) {
+					itemIL = new ObjectInputLink(
+							item.getName(), 
+							item.getProperty("texture"), 
+							item.getProperty("color"), 
+							item.getProperty("smell"));
+				} else {
+					itemIL.Update(
+							item.getProperty("texture"), 
+							item.getProperty("color"), 
+							item.getProperty("smell"));
+				}
+				newObjects.put(item.getName(), itemIL);
 			}
-			newObjects.put(item.getName(), itemIL);
-		}
-		Iterator<String> objIter = objects.keySet().iterator();
-		while (objIter.hasNext()) {
-			String objKey = objIter.next();
-			if (newObjects.containsKey(objKey) == false) {
-				objects.get(objKey).destroy();
+			for (String objKey : objects.keySet()) {
+				if (newObjects.containsKey(objKey) == false) {
+					objects.get(objKey).destroy();
+				}
 			}
 		}
 		objects.clear();
@@ -267,7 +265,7 @@ public class SoarCook extends Cook {
 	
 	private void updateCell(KitchenMap map, int [] tempLocation, StringElement objectWME, StringElement typeWME) {
 		if (objectWME != null) {
-			if (map.getAllWithProperty(tempLocation, "smell").size() > 0) {
+			if (map.hasAnyWithProperty(tempLocation, "smell")) {
 				agent.Update(objectWME, "true");
 			} else {
 				agent.Update(objectWME, "false");

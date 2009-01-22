@@ -154,7 +154,7 @@ public class KitchenMap extends GridMap {
 	@Override
 	public boolean isAvailable(int [] location) {
 		Cell cell = getCell(location);
-		boolean enterable = cell.enterable();
+		boolean enterable = !cell.hasAnyWithProperty(Names.kPropertyBlock);
 		boolean noPlayer = cell.getPlayer() == null;
 		return enterable && noPlayer;
 	}
