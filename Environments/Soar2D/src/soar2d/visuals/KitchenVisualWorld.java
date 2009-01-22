@@ -59,7 +59,7 @@ public class KitchenVisualWorld extends VisualWorld {
 				ArrayList<CellObject> drawList;
 				drawList = this.map.getAllWithProperty(location, Names.kPropertyColor);
 				
-				if (!this.map.enterable(location)) {
+				if (this.map.hasAnyWithProperty(location, Names.kPropertyBlock)) {
 				    gc.setBackground(WindowManager.black);
 				    gc.fillRectangle(cellSize*location[0] + 1, cellSize*location[1] + 1, cellSize - 2, cellSize - 2);
 					
@@ -76,56 +76,55 @@ public class KitchenVisualWorld extends VisualWorld {
 						gc.setBackground(WindowManager.widget_background);
 					}
 					
-					Iterator<CellObject> iter = drawList.iterator();
-					while (iter.hasNext()) {
-						CellObject object = iter.next();
-						
-						if (empty) {
-							gc.setBackground(WindowManager.widget_background);
-							gc.fillRectangle(cellSize*location[0], cellSize*location[1], cellSize, cellSize);
-						}
-						empty = false;
-					    
-					    Color color = WindowManager.getColor(object.getProperty(Names.kPropertyColor));
-					    assert color != null;
-						gc.setBackground(color);
-						
-						Shape shape = Shape.getShape(object.getProperty(Names.kPropertyShape));
-						if (shape != null) {
-							if (shape.equals(Shape.ROUND)) {
-								fill1 = (int)(cellSize/2.8);
-								fill2 = cellSize - fill1 + 1;
-								gc.fillOval(cellSize*location[0] + fill1, cellSize*location[1] + fill1, cellSize - fill2, cellSize - fill2);
-								gc.drawOval(cellSize*location[0] + fill1, cellSize*location[1] + fill1, cellSize - fill2 - 1, cellSize - fill2 - 1);
-								
-							} else if (shape.equals(Shape.SQUARE)) {
-								fill1 = (int)(cellSize/2.8);
-								fill2 = cellSize - fill1 + 1;
-								gc.fillRectangle(cellSize*location[0] + fill1, cellSize*location[1] + fill1, cellSize - fill2, cellSize - fill2);
-								gc.drawRectangle(cellSize*location[0] + fill1, cellSize*location[1] + fill1, cellSize - fill2, cellSize - fill2);
-								
-							} else if (shape.equals(Shape.TRIANGLE)) {
-								fill1 = (int)(cellSize/2.8);
-								fill2 = cellSize - fill1 + 1;
-								
-								int [] verts = new int[6];
-
-								verts [0] = cellSize*location[0] + cellSize/2;
-								verts [1] = cellSize*location[1] + fill1;
-								
-								verts [2] = cellSize*location[0] + fill1;
-								verts [3] = cellSize*location[1] + fill2;
-								
-								verts [4] = cellSize*location[0] + fill2;
-								verts [5] = cellSize*location[1] + fill2;
-								
-								gc.fillPolygon(verts);
-								gc.drawPolygon(verts);
+					if (drawList != null) {
+						for (CellObject object : drawList) {
+							if (empty) {
+								gc.setBackground(WindowManager.widget_background);
+								gc.fillRectangle(cellSize*location[0], cellSize*location[1], cellSize, cellSize);
 							}
-						} else {
-							gc.setForeground(color);
-							gc.drawRectangle(cellSize*location[0], cellSize*location[1], cellSize-1, cellSize-1);
-							gc.setForeground(WindowManager.black);
+							empty = false;
+						    
+						    Color color = WindowManager.getColor(object.getProperty(Names.kPropertyColor));
+						    assert color != null;
+							gc.setBackground(color);
+							
+							Shape shape = Shape.getShape(object.getProperty(Names.kPropertyShape));
+							if (shape != null) {
+								if (shape.equals(Shape.ROUND)) {
+									fill1 = (int)(cellSize/2.8);
+									fill2 = cellSize - fill1 + 1;
+									gc.fillOval(cellSize*location[0] + fill1, cellSize*location[1] + fill1, cellSize - fill2, cellSize - fill2);
+									gc.drawOval(cellSize*location[0] + fill1, cellSize*location[1] + fill1, cellSize - fill2 - 1, cellSize - fill2 - 1);
+									
+								} else if (shape.equals(Shape.SQUARE)) {
+									fill1 = (int)(cellSize/2.8);
+									fill2 = cellSize - fill1 + 1;
+									gc.fillRectangle(cellSize*location[0] + fill1, cellSize*location[1] + fill1, cellSize - fill2, cellSize - fill2);
+									gc.drawRectangle(cellSize*location[0] + fill1, cellSize*location[1] + fill1, cellSize - fill2, cellSize - fill2);
+									
+								} else if (shape.equals(Shape.TRIANGLE)) {
+									fill1 = (int)(cellSize/2.8);
+									fill2 = cellSize - fill1 + 1;
+									
+									int [] verts = new int[6];
+	
+									verts [0] = cellSize*location[0] + cellSize/2;
+									verts [1] = cellSize*location[1] + fill1;
+									
+									verts [2] = cellSize*location[0] + fill1;
+									verts [3] = cellSize*location[1] + fill2;
+									
+									verts [4] = cellSize*location[0] + fill2;
+									verts [5] = cellSize*location[1] + fill2;
+									
+									gc.fillPolygon(verts);
+									gc.drawPolygon(verts);
+								}
+							} else {
+								gc.setForeground(color);
+								gc.drawRectangle(cellSize*location[0], cellSize*location[1], cellSize-1, cellSize-1);
+								gc.setForeground(WindowManager.black);
+							}
 						}
 					}
 					

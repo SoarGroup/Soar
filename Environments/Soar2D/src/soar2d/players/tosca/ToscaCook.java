@@ -66,23 +66,23 @@ public class ToscaCook extends Cook {
 		// Get all of the objects in this cell. 
 		// Anything with a "smell" qualifies as an object we care about.
 		ArrayList<CellObject> stuff = map.getAllWithProperty(location, "smell");
-		Iterator<CellObject> stuffIter = stuff.iterator();
-		while (stuffIter.hasNext()) {
-			CellObject item = stuffIter.next();
-			item.getName(); // name of the object (e.g., butter, toffee, mixture-5)
-			// note: mixtures are named mixture-<id> where <id> is a unique id
-			// agents shouldn't be aware of the id number though, they should just know it is a mixture
-			
-			item.getProperty("texture"); // texture of object (e.g., solid, liquid)
-			item.getProperty("color"); // color of object (e.g., white, brown)
-			item.getProperty("smell"); // smell of object (e.g., strong, mild)
+		if (stuff != null) {
+			for (CellObject item : stuff) {
+				item.getName(); // name of the object (e.g., butter, toffee, mixture-5)
+				// note: mixtures are named mixture-<id> where <id> is a unique id
+				// agents shouldn't be aware of the id number though, they should just know it is a mixture
+				
+				item.getProperty("texture"); // texture of object (e.g., solid, liquid)
+				item.getProperty("color"); // color of object (e.g., white, brown)
+				item.getProperty("smell"); // smell of object (e.g., strong, mild)
+			}
 		}
 		
 		this.getPointsDelta(); // points changed this frame (reward for last action)
 	}
 	
 	private void examineCell(KitchenMap map, int [] tempLocation) {
-		if (map.getAllWithProperty(tempLocation, "smell").size() > 0) {
+		if (map.hasAnyWithProperty(tempLocation, "smell")) {
 			// there is an object in the cell
 		} else {
 			// there is not an object in the cell

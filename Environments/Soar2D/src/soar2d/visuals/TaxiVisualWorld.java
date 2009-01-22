@@ -64,7 +64,7 @@ public class TaxiVisualWorld extends VisualWorld {
 				// destination
 				ArrayList<CellObject> destinationList;
 				destinationList = this.map.getAllWithProperty(location, "destination");
-				if (destinationList.size() > 0) {
+				if (destinationList != null) {
 					CellObject destination = destinationList.get(0);
 					Color color = WindowManager.getColor(destination.getProperty(Names.kPropertyColor));
 					gc.setBackground(color);
@@ -115,25 +115,25 @@ public class TaxiVisualWorld extends VisualWorld {
 				// walls
 				ArrayList<CellObject> wallList;
 				wallList = this.map.getAllWithProperty(location, "block");
-				Iterator<CellObject> wallIter = wallList.iterator();
-				while (wallIter.hasNext()) {
-					CellObject wall = (CellObject)wallIter.next();
-					switch(Direction.getInt(wall.getProperty("direction"))) {
-					case Direction.kNorthInt:
-						gc.drawLine(cellSize*location[0], cellSize*location[1], cellSize*location[0] + cellSize-1, cellSize*location[1]);
-						break; 
-					case Direction.kSouthInt:
-						gc.drawLine(cellSize*location[0], cellSize*location[1] + cellSize-1, cellSize*location[0] + cellSize-1, cellSize*location[1] + cellSize-1);
-						break;
-					case Direction.kEastInt:
-						gc.drawLine(cellSize*location[0] + cellSize-1, cellSize*location[1], cellSize*location[0] + cellSize-1, cellSize*location[1] + cellSize-1);
-						break;
-					case Direction.kWestInt:
-						gc.drawLine(cellSize*location[0], cellSize*location[1], cellSize*location[0], cellSize*location[1] + cellSize-1);
-						break;
-					default:
-						assert false;
-						break;	
+				if (wallList != null) {
+					for (CellObject wall : wallList ) {
+						switch(Direction.getInt(wall.getProperty("direction"))) {
+						case Direction.kNorthInt:
+							gc.drawLine(cellSize*location[0], cellSize*location[1], cellSize*location[0] + cellSize-1, cellSize*location[1]);
+							break; 
+						case Direction.kSouthInt:
+							gc.drawLine(cellSize*location[0], cellSize*location[1] + cellSize-1, cellSize*location[0] + cellSize-1, cellSize*location[1] + cellSize-1);
+							break;
+						case Direction.kEastInt:
+							gc.drawLine(cellSize*location[0] + cellSize-1, cellSize*location[1], cellSize*location[0] + cellSize-1, cellSize*location[1] + cellSize-1);
+							break;
+						case Direction.kWestInt:
+							gc.drawLine(cellSize*location[0], cellSize*location[1], cellSize*location[0], cellSize*location[1] + cellSize-1);
+							break;
+						default:
+							assert false;
+							break;	
+						}
 					}
 				}
 				

@@ -39,25 +39,6 @@ class Cell {
 	}
 	
 	/**
-	 * @return true if there are no cell objects with the block property
-	 * 
-	 * Checks to see if the cell has no blocking cell objects.
-	 */
-	synchronized boolean enterable() {
-		// Check to see if any contained objects have the block property
-		if (cellObjects.size() > 0) {
-			this.iter = cellObjects.values().iterator();
-			while (this.iter.hasNext()) {
-				CellObject cellObject = this.iter.next();
-				if (cellObject.getBooleanProperty(Names.kPropertyBlock)) {
-					return false;
-				}
-			}
-		}
-		return true;
-	}
-	
-	/**
 	 * @param cellObject the object to add
 	 * 
 	 * Adds a cell object to the object list.
@@ -73,17 +54,26 @@ class Cell {
 	 * Returns all objects in the cell with the specified property.
 	 * The returned list is never null but could be length zero.
 	 */
-	synchronized ArrayList<CellObject> getAllWithProperty(String name) {
-		ArrayList<CellObject> list = new ArrayList<CellObject>();
-		this.iter = cellObjects.values().iterator();
-		CellObject cellObject;
-		while (this.iter.hasNext()) {
-			cellObject = this.iter.next();
-			if (cellObject.hasProperty(name)) {
-				list.add(cellObject);
+	synchronized ArrayList<CellObject> getAllWithProperty(String name) {	
+		ArrayList<CellObject> list = null;
+		for (CellObject object : cellObjects.values()) {
+			if (object.hasProperty(name)) {
+				if (list == null) {
+					list = new ArrayList<CellObject>(1);
+				}
+				list.add(object);
 			}
 		}
 		return list;
+	}
+	
+	synchronized boolean hasAnyWithProperty(String name) {	
+		for (CellObject object : cellObjects.values()) {
+			if (object.hasProperty(name)) {
+				return true;
+			}
+		}
+		return false;
 	}
 	
 	/**

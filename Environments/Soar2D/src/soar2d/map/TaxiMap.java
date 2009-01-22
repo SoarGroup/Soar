@@ -187,7 +187,7 @@ public class TaxiMap extends GridMap {
 	@Override
 	public boolean isAvailable(int []  location) {
 		Cell cell = getCell(location);
-		boolean destination = cell.getAllWithProperty("destination").size() > 0;
+		boolean destination = cell.hasAnyWithProperty("destination");
 		boolean fuel = cell.hasObject("fuel");
 		boolean noPlayer = cell.getPlayer() == null;
 		return !destination && !fuel && noPlayer;
@@ -231,8 +231,8 @@ public class TaxiMap extends GridMap {
 		}
 		
 		ArrayList<CellObject> dests = this.getAllWithProperty(location, "destination");
-		assert dests.size() < 2;
-		if (dests.size() > 0) {
+		if (dests != null) {
+			assert dests.size() == 1;
 			return dests.get(0).getProperty("color");
 		}
 		
@@ -244,9 +244,7 @@ public class TaxiMap extends GridMap {
 	}
 	
 	public boolean wall(int []  from, int to) {
-		Iterator<CellObject> iter = this.getAllWithProperty(from, "block").iterator();
-		while (iter.hasNext()) {
-			CellObject wall = iter.next();
+		for (CellObject wall : getAllWithProperty(from, "block")) {
 			if (wall.getProperty("direction").equals(Direction.stringOf[to])) {
 				return true;
 			}

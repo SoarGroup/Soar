@@ -72,6 +72,33 @@ class SoarEaterIL {
 			
 			/** used during initialization */
 			boolean iterated = false;
+			
+			void clearContents() {
+				if (eater != null) {
+					agent.DestroyWME(eater);
+					eater = null;
+				}
+				
+				for (StringElement element : comestibles.values()) {
+					agent.DestroyWME(element);
+				}
+				comestibles.clear();
+				
+				for (StringElement element : staticContent.values()) {
+					agent.DestroyWME(element);
+				}
+				staticContent.clear();
+				
+				if (box != null) {
+					agent.DestroyWME(box);
+					box = null;
+					
+					for (StringElement element : boxProperties.values()) {
+						agent.DestroyWME(element);
+					}
+					boxProperties.clear();
+				}
+			}
 		}
 		
 		/** the vision grid */
@@ -173,18 +200,21 @@ class SoarEaterIL {
 			// Food
 			HashMap<String, StringElement> remaining = new HashMap<String, StringElement>(cell.comestibles);
 			// For each food type in the cell on the map
-			for (CellObject comestible : map.getAllWithProperty(view, Names.kPropertyEdible)) {
-				
-				String id = comestible.getProperty(Names.kPropertyID);
-				
-				// Do we have one?
-				if (cell.comestibles.containsKey(id)) {
-					// Keep it and remove it from the remaining
-					remaining.remove(id);
-				} else {
+			ArrayList<CellObject> comestibles = map.getAllWithProperty(view, Names.kPropertyEdible);
+			if (comestibles != null) {
+				for (CellObject comestible : comestibles) {
 					
-					// Create it and move on
-					createContent(cell.comestibles, cell, id);
+					String id = comestible.getProperty(Names.kPropertyID);
+					
+					// Do we have one?
+					if (cell.comestibles.containsKey(id)) {
+						// Keep it and remove it from the remaining
+						remaining.remove(id);
+					} else {
+						
+						// Create it and move on
+						createContent(cell.comestibles, cell, id);
+					}
 				}
 			}
 			
@@ -272,10 +302,17 @@ class SoarEaterIL {
 			}
 		}
 		
+		private void clearView() {
+			for (Cell[] rows : cells) {
+				for (Cell cell : rows) {
+					cell.clearContents();
+				}
+			}
+		}
+		
 		private void update(boolean moved, int[] pos, GridMap map) {
 			if (moved) {
-				destroy();
-				create();
+				clearView();
 			}
 
 			int[] view = new int[2];
@@ -296,10 +333,12 @@ class SoarEaterIL {
 							continue;
 						}
 						
+						// get all things that block
+						ArrayList<CellObject> blockers = map.getAllWithProperty(view, Names.kPropertyBlock);
+
 						// Blocking cells are simple, put anything with IDs on the input link
-						if (!map.enterable(view)) {
-							// get all things that block
-							for (CellObject object : map.getAllWithProperty(view, Names.kPropertyBlock)) {
+						if (blockers != null) {
+							for (CellObject object : blockers) {
 								// use the id property as its id on the input link
 								createContent(cell.staticContent, cell, object.getProperty(Names.kPropertyID));
 							}
@@ -308,7 +347,7 @@ class SoarEaterIL {
 					} else {
 						
 						// Filter out locations that will not change:
-						if (!map.isInBounds(view) || !map.enterable(view)) {
+						if (!map.isInBounds(view) || map.hasAnyWithProperty(view, Names.kPropertyBlock)) {
 							continue;
 						}
 					}
@@ -321,10 +360,9 @@ class SoarEaterIL {
 					
 					// TODO: there can only be one (as of right now)
 					ArrayList<CellObject> boxes = map.getAllWithProperty(view, Names.kPropertyBox);
-					assert boxes.size() <= 1;
-					CellObject box = boxes.size() > 0 ? boxes.get(0) : null;
-					
-					updateBox(box, cell);
+					if (boxes != null) {
+						updateBox(boxes.get(0), cell);
+					}
 					
 					checkEmpty(cell);
 				}

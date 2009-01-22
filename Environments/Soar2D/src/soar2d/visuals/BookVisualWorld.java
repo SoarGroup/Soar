@@ -61,13 +61,13 @@ public class BookVisualWorld extends VisualWorld {
 					continue;
 				}
 				
-				if (!this.map.enterable(location)) {
+				if (this.map.hasAnyWithProperty(location, Names.kPropertyBlock)) {
 				    gc.setBackground(WindowManager.black);
 				    gc.fillRectangle(cellSize*location[0], cellSize*location[1], cellSize, cellSize);
 					
 				} else {
 					
-					if (map.getAllWithProperty(location, Names.kPropertyGatewayRender).size() == 0) {
+					if (!map.hasAnyWithProperty(location, Names.kPropertyGatewayRender)) {
 
 						if (!Soar2D.config.roomConfig().colored_rooms) {
 							// normal:
@@ -83,8 +83,7 @@ public class BookVisualWorld extends VisualWorld {
 								gc.setBackground(WindowManager.getColor(Soar2D.simulation.kColors[roomID]));
 							}
 						}
-						ArrayList<CellObject> blocks = map.getAllWithProperty(location, "mblock");
-						if (blocks.size() > 0) {
+						if (map.hasAnyWithProperty(location, "mblock")) {
 							gc.setBackground(WindowManager.darkGray);
 						}
 					} else {
@@ -98,12 +97,12 @@ public class BookVisualWorld extends VisualWorld {
 				}
 
 				ArrayList<CellObject> objectIds = map.getAllWithProperty(location, "object-id");
-				if (objectIds.size() > 0) {
+				if (objectIds != null) {
 					gc.setForeground(WindowManager.white);
 					gc.drawString(objectIds.get(0).getProperty("object-id"), cellSize*location[0], cellSize*location[1]);
 				} else  {
 					ArrayList<CellObject> numbers = map.getAllWithProperty(location, "number");
-					if (numbers.size() > 0) {
+					if (numbers!= null) {
 						if (!roomIds.contains(numbers.get(0).getIntProperty("number"))) {
 							gc.setForeground(WindowManager.black);
 							gc.drawString(numbers.get(0).getProperty("number"), cellSize*location[0], cellSize*location[1]);

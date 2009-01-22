@@ -566,10 +566,10 @@ public class BookWorld implements IWorld {
 	}
 	
 	private boolean checkBlocked(int [] location, GridMap map) {
-		if (map.getAllWithProperty(location, Names.kPropertyBlock).size() > 0) {
+		if (map.hasAnyWithProperty(location, Names.kPropertyBlock)) {
 			return true;
 		}
-		if (Soar2D.config.roomConfig().blocks_block && map.getAllWithProperty(location, "mblock").size() > 0) {
+		if (Soar2D.config.roomConfig().blocks_block && map.hasAnyWithProperty(location, "mblock")) {
 			// FIXME: check height
 			return true;
 		}

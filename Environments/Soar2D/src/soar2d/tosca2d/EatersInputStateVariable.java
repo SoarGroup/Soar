@@ -49,16 +49,18 @@ public class EatersInputStateVariable extends JavaStateVariable {
 		if (world.getMap().isInBounds(viewLocation)) {
 			mapCell.Set(0, 1.0) ;	// Property 0 is whether this location is valid or not
 			
-			if (!world.getMap().enterable(viewLocation)) {
+			if (world.getMap().hasAnyWithProperty(viewLocation, Names.kPropertyBlock)) {
 				mapCell.Set(1, 1.0) ;	// Property 1 is whether it's a wall
 			} else {
 				// Property 3: is there a box in the cell
 				// box test
 				// get all boxes
 				ArrayList<CellObject> boxes = world.getMap().getAllWithProperty(viewLocation, Names.kPropertyBox);
-				// max one box per cell, we're not prepared to handle more
-				assert boxes.size() <= 1;
-				if (boxes.size() > 0) {
+				if (boxes != null) {
+
+					// max one box per cell, we're not prepared to handle more
+					assert boxes.size() == 1;
+					
 					// there is a box
 					mapCell.Set(3, 1.0);
 
@@ -167,7 +169,7 @@ public class EatersInputStateVariable extends JavaStateVariable {
 		myLocation[0] = location[0];
 		myLocation[1] = location[1];
 		ArrayList<CellObject> boxes = world.getMap().getAllWithProperty(myLocation, Names.kPropertyBox);
-		if (boxes.size() > 0)
+		if (boxes != null)
 		{
 			CellObject box = boxes.get(0);
 			assert box.hasProperty(Names.kPropertyBoxID);

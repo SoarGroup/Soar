@@ -9,6 +9,7 @@ import java.util.Iterator;
 import org.apache.log4j.Logger;
 
 import soar2d.Direction;
+import soar2d.Names;
 import soar2d.Soar2D;
 import soar2d.map.CellObject;
 import soar2d.map.GridMap;
@@ -60,18 +61,18 @@ public class KitchenWorld implements IWorld {
 				Direction.translate(newLocation, move.moveDirection);
 				
 				// Verify legal move and commit move
-				if (map.isInBounds(newLocation) && map.enterable(newLocation)) {
+				if (map.isInBounds(newLocation) && !map.hasAnyWithProperty(newLocation, Names.kPropertyBlock)) {
 					ArrayList<CellObject> myStuff = map.getAllWithProperty(oldLocation, "smell");
 
 					// verify I can move with food if I need to
 					if (move.moveWithObject) {
 						// do I have stuff?
-						if (myStuff.size() > 0) {
+						if (myStuff != null) {
 							// do I have a product?
 							if (myStuff.get(0).hasProperty("product")) {
 								// yes, I have a product, destination cell must be empty
 								ArrayList<CellObject> destStuff  = map.getAllWithProperty(newLocation, "smell");
-								if (destStuff.size() > 0) {
+								if (destStuff != null) {
 									// move with object fails!
 									player.moveWithObjectFailed();
 									move.moveWithObject = false;
@@ -80,8 +81,7 @@ public class KitchenWorld implements IWorld {
 							} else {
 								// I'm moving stuff, destination cell must not contain a product
 								ArrayList<CellObject> destProducts = map.getAllWithProperty(newLocation, "product");
-								assert destProducts.size() < 2;
-								if (destProducts.size() > 0) {
+								if (destProducts != null) {
 									// dest does contain a product, move with object fails!
 									player.moveWithObjectFailed();
 									move.moveWithObject = false;
@@ -101,18 +101,14 @@ public class KitchenWorld implements IWorld {
 
 					// move stuff with the player
 					if (move.moveWithObject) {
-						if (myStuff.size() > 0) {
+						if (myStuff != null) {
 							map.removeAllWithProperty(oldLocation, "smell");
 							
-							Iterator<CellObject> stuffIter = myStuff.iterator();
 							String stuffNames = "(";
-							while (stuffIter.hasNext()) {
-								CellObject object = stuffIter.next();
+							for (CellObject object : myStuff) {
 								map.addObjectToCell(newLocation, object);
 								stuffNames += object.getName();
-								if (stuffIter.hasNext()) {
-									stuffNames += ", ";
-								}
+								stuffNames += ", ";
 							}
 							stuffNames += ")";
 							logger.info(player.getName() + ": moving with: " + stuffNames);
@@ -124,7 +120,7 @@ public class KitchenWorld implements IWorld {
 			if (move.mix) {
 				if (map.isCountertop(players.getLocation(player)) || map.isOven(players.getLocation(player))) {
 					ArrayList<CellObject> stuff = map.getAllWithProperty(players.getLocation(player), "smell");
-					if (stuff.size() > 1) {
+					if (stuff != null && stuff.size() > 1) {
 						map.removeAllWithProperty(players.getLocation(player), "smell");
 	
 						CellObject mixture = map.createObjectByName("mixture");
@@ -234,7 +230,7 @@ public class KitchenWorld implements IWorld {
 						
 						map.addObjectToCell(players.getLocation(player), mixture);
 					} else {
-						if (stuff.size() == 1 && stuff.get(0).hasProperty("product")) {
+						if (stuff != null && stuff.size() == 1 && stuff.get(0).hasProperty("product")) {
 							logger.info(player.getName() + ": can't mix a product");
 						} else {
 							logger.info(player.getName() + ": can't mix less than 2 things");
@@ -248,10 +244,10 @@ public class KitchenWorld implements IWorld {
 			if (move.cook) {
 				if (map.isOven(players.getLocation(player))) {
 					ArrayList<CellObject> stuff = map.getAllWithProperty(players.getLocation(player), "smell");
-					if (stuff.size() > 1) {
+					if (stuff != null && stuff.size() > 1) {
 						logger.info(player.getName() + ": Too many things to cook, mix first");
 						
-					} else if (stuff.size() == 1) {
+					} else if (stuff != null && stuff.size() == 1) {
 						CellObject ingredient = stuff.get(0);
 						if (ingredient.hasProperty("product")) {
 							logger.info(player.getName() + ": Can't cook a product");
@@ -342,10 +338,10 @@ public class KitchenWorld implements IWorld {
 			
 			if (move.eat) {
 				ArrayList<CellObject> stuff = map.getAllWithProperty(players.getLocation(player), "smell");
-				if (stuff.size() > 1) {
+				if (stuff != null && stuff.size() > 1) {
 					logger.info(player.getName() + ": Too many things to eat, mix first");
 					
-				} else if (stuff.size() == 1) {
+				} else if (stuff != null && stuff.size() == 1) {
 					// consume it
 					map.removeAllWithProperty(players.getLocation(player), "smell");
 					

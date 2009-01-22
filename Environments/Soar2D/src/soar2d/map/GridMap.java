@@ -414,11 +414,6 @@ public abstract class GridMap {
 
 	private Cell[][] mapCells = null;	// the cells
 	Cell getCell(int [] location) {
-		if (location == null) return null;
-		assert location[0] >= 0;
-		assert location[1] >= 0;
-		assert location[0] < size;
-		assert location[1] < size;
 		return mapCells[location[1]][location[0]];
 	}
 	
@@ -674,30 +669,29 @@ public abstract class GridMap {
 	private void addWallAndRemoveFood(int [] location) {
 		removeAllWithProperty(location, Names.kPropertyEdible);
 		
-		ArrayList<CellObject> walls = getAllWithProperty(location, Names.kPropertyBlock);
-		if (walls.size() <= 0) {
+		if (!hasAnyWithProperty(location, Names.kPropertyBlock)) {
 			addRandomObjectWithProperty(location, Names.kPropertyBlock);
 		}
 	}
 	
 	private boolean noWallsOnCorners(int row, int col) {
 		Cell cell = mapCells[row + 1][col + 1];
-		if (cell != null && !cell.enterable()) {
+		if (cell != null && cell.hasAnyWithProperty(Names.kPropertyBlock)) {
 			return false;
 		}
 		
 		cell = mapCells[row - 1][col - 1];
-		if (cell != null && !cell.enterable()) {
+		if (cell != null && cell.hasAnyWithProperty(Names.kPropertyBlock)) {
 			return false;
 		}
 		
 		cell = mapCells[row + 1][col - 1];
-		if (cell != null && !cell.enterable()) {
+		if (cell != null && cell.hasAnyWithProperty(Names.kPropertyBlock)) {
 			return false;
 		}
 		
 		cell = mapCells[row - 1][col + 1];
-		if (cell != null && !cell.enterable()) {
+		if (cell != null && cell.hasAnyWithProperty(Names.kPropertyBlock)) {
 			return false;
 		}
 		return true;
@@ -705,22 +699,22 @@ public abstract class GridMap {
 	
 	private boolean wallOnAnySide(int row, int col) {
 		Cell cell = mapCells[row + 1][col];
-		if (cell != null && !cell.enterable()) {
+		if (cell != null && cell.hasAnyWithProperty(Names.kPropertyBlock)) {
 			return true;
 		}
 		
 		cell = mapCells[row][col + 1];
-		if (cell != null && !cell.enterable()) {
+		if (cell != null && cell.hasAnyWithProperty(Names.kPropertyBlock)) {
 			return true;
 		}
 		
 		cell = mapCells[row - 1][col];
-		if (cell != null && !cell.enterable()) {
+		if (cell != null && cell.hasAnyWithProperty(Names.kPropertyBlock)) {
 			return true;
 		}
 		
 		cell = mapCells[row][col - 1];
-		if (cell != null && !cell.enterable()) {
+		if (cell != null && cell.hasAnyWithProperty(Names.kPropertyBlock)) {
 			return true;
 		}
 		return false;
@@ -737,7 +731,7 @@ public abstract class GridMap {
 					mapCells[row][col] = new Cell();
 					
 				}
-				if (mapCells[row][col].enterable()) {
+				if (!mapCells[row][col].hasAnyWithProperty(Names.kPropertyBlock)) {
 					int [] location = new int [] { col, row };
 					removeAllWithProperty(location, Names.kPropertyEdible);
 					addRandomObjectWithProperty(location, Names.kPropertyEdible);
@@ -821,28 +815,25 @@ public abstract class GridMap {
 	public int pointsCount(int [] location) {
 		Cell cell = getCell(location);
 		ArrayList<CellObject> list = cell.getAllWithProperty(Names.kPropertyEdible);
-		Iterator<CellObject> iter = list.iterator();
+		if (list == null) {
+			return 0;
+		}
 		int count = 0;
-		while (iter.hasNext()) {
-			count += ((CellObject)iter.next()).getIntProperty(Names.kPropertyPoints);
+		for (CellObject object : list) {
+			count += object.getIntProperty(Names.kPropertyPoints);
 		}
 		return count;
 	}
 
 	public abstract boolean isAvailable(int [] location);
 	
-	public boolean enterable(int [] location) {
-		return getCell(location).enterable();
-	}
-	
 	public boolean exitable(int [] location, int direction) {
-		ArrayList<CellObject> wallList;
-		wallList = this.getAllWithProperty(location, "block");
-		Iterator<CellObject> wallIter = wallList.iterator();
-		while (wallIter.hasNext()) {
-			CellObject wall = (CellObject)wallIter.next();
-			if (direction == Direction.getInt(wall.getProperty("direction"))) {
-				return false;
+		ArrayList<CellObject> wallList = getAllWithProperty(location, "block");
+		if (wallList != null) {
+			for (CellObject object : wallList) {
+				if (direction == Direction.getInt(object.getProperty("direction"))) {
+					return false;
+				}
 			}
 		}
 		return true;
@@ -900,7 +891,8 @@ public abstract class GridMap {
 			while (true) {
 				int direction = missile.getIntProperty(Names.kPropertyDirection);
 				Direction.translate(threatenedLocation, direction);
-				if (!enterable(threatenedLocation)) {
+				// stops at wall
+				if (hasAnyWithProperty(threatenedLocation, Names.kPropertyBlock)) {
 					break;
 				}
 				Player player = getPlayer(threatenedLocation);
@@ -920,6 +912,11 @@ public abstract class GridMap {
 	public ArrayList<CellObject> getAllWithProperty(int [] location, String name) {
 		Cell cell = getCell(location);
 		return cell.getAllWithProperty(name);
+	}
+	
+	public boolean hasAnyWithProperty(int [] location, String name) {
+		Cell cell = getCell(location);
+		return cell.hasAnyWithProperty(name);
 	}
 	
 	public void removeAll(int [] location) {
@@ -983,16 +980,13 @@ public abstract class GridMap {
 		// TODO: cache these each frame!!
 		
 		Cell cell;
-		Iterator<CellObject> iter;
 		RadarCell radarCell;
 
 		cell = getCell(location);
 		radarCell = new RadarCell();
 		radarCell.player = cell.getPlayer();
-		if (cell.enterable()) {
-			iter = cell.getAllWithProperty(Names.kPropertyMiniImage).iterator();
-			while (iter.hasNext()) {
-				CellObject object = iter.next();
+		if (!cell.hasAnyWithProperty(Names.kPropertyBlock)) {
+			for (CellObject object : cell.getAllWithProperty(Names.kPropertyMiniImage)) {
 				if (object.getName().equals(Names.kEnergy)) {
 					radarCell.energy = true;
 				} else if (object.getName().equals(Names.kHealth)) {
@@ -1077,19 +1071,19 @@ public abstract class GridMap {
 		int blocked = 0;
 		
 		cell = getCell(new int [] { location[0]+1, location[1] });
-		if (!cell.enterable() || cell.getPlayer() != null) {
+		if (cell.hasAnyWithProperty(Names.kPropertyBlock) || cell.getPlayer() != null) {
 			blocked |= Direction.kEastIndicator;
 		}
 		cell = getCell(new int [] { location[0]-1, location[1] });
-		if (!cell.enterable() || cell.getPlayer() != null) {
+		if (cell.hasAnyWithProperty(Names.kPropertyBlock) || cell.getPlayer() != null) {
 			blocked |= Direction.kWestIndicator;
 		}
 		cell = getCell(new int [] { location[0], location[1]+1 });
-		if (!cell.enterable() || cell.getPlayer() != null) {
+		if (cell.hasAnyWithProperty(Names.kPropertyBlock) || cell.getPlayer() != null) {
 			blocked |= Direction.kSouthIndicator;
 		}
 		cell = getCell(new int [] { location[0], location[1]-1 });
-		if (!cell.enterable() || cell.getPlayer() != null) {
+		if (cell.hasAnyWithProperty(Names.kPropertyBlock) || cell.getPlayer() != null) {
 			blocked |= Direction.kNorthIndicator;
 		}
 		return blocked;
@@ -1097,7 +1091,7 @@ public abstract class GridMap {
 	
 	public boolean isBlocked(int [] location) {
 		Cell cell = getCell(location);
-		return !cell.enterable() || cell.getPlayer() != null;
+		return cell.hasAnyWithProperty(Names.kPropertyBlock) || cell.getPlayer() != null;
 	}
 	
 	public int getSoundNear(int [] location) {
@@ -1147,7 +1141,7 @@ public abstract class GridMap {
 				}
 
 				newCell = getCell(newCellLocation);
-				if (!newCell.enterable()) {
+				if (newCell.hasAnyWithProperty(Names.kPropertyBlock)) {
 					//System.out.println(parentCell + " not enterable");
 					continue;
 				}
