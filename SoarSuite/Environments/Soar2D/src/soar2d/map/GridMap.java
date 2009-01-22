@@ -569,9 +569,8 @@ public abstract class GridMap {
 	protected static final String kTagObject = "object";
 	
 	private void cellSave(Element cell, Cell theCell) {
-		Iterator<String> iter = theCell.cellObjects.keySet().iterator();
-		while (iter.hasNext()) {
-			cell.addContent(new Element(kTagObject).setText(iter.next()));
+		for (CellObject object : theCell.getAll()) {
+			cell.addContent(new Element(kTagObject).setText(object.getName()));
 		}
 	}
 	
@@ -667,10 +666,10 @@ public abstract class GridMap {
 	}
 	
 	private void addWallAndRemoveFood(int [] location) {
-		removeAllWithProperty(location, Names.kPropertyEdible);
+		removeAllByProperty(location, Names.kPropertyEdible);
 		
 		if (!hasAnyWithProperty(location, Names.kPropertyBlock)) {
-			addRandomObjectWithProperty(location, Names.kPropertyBlock);
+			addObjectToCell(location, createRandomObjectWithProperty(Names.kPropertyBlock));
 		}
 	}
 	
@@ -733,8 +732,8 @@ public abstract class GridMap {
 				}
 				if (!mapCells[row][col].hasAnyWithProperty(Names.kPropertyBlock)) {
 					int [] location = new int [] { col, row };
-					removeAllWithProperty(location, Names.kPropertyEdible);
-					addRandomObjectWithProperty(location, Names.kPropertyEdible);
+					removeAllByProperty(location, Names.kPropertyEdible);
+					addObjectToCell(location, createRandomObjectWithProperty(Names.kPropertyEdible));
 				}
 			}
 		}		
@@ -751,65 +750,38 @@ public abstract class GridMap {
 	}
 	
 	public void addObjectToCell(int [] location, CellObject object) {
+		removeObject(location, object.getName());
+		addStateUpdate(location, object);
+
 		Cell cell = getCell(location);
-		if (cell.hasObject(object.getName())) {
-			CellObject old = cell.removeObject(object.getName());
-			assert old != null;
-			updatables.remove(old);
-			updatablesLocations.remove(old);
-			removalStateUpdate(old);
-		}
-		if (object.updatable()) {
-			updatables.add(object);
-			updatablesLocations.put(object, location);
-		}
-		
 		cell.addCellObject(object);
-		setRedraw(cell);
-	}
-	
-	public boolean addRandomObjectWithProperty(int [] location, String property) {
-		CellObject object = cellObjectManager.createRandomObjectWithProperty(property);
-		if (object == null) {
-			return false;
-		}
-		addObjectToCell(location, object);
-		return true;
 	}
 	
 	public CellObject createObjectByName(String name) {
 		return cellObjectManager.createObject(name);
 	}
 	
-	public boolean addObjectByName(int [] location, String name) {
-		CellObject object = cellObjectManager.createObject(name);
-		if (object == null) {
-			return false;
-		}
-
-		addObjectToCell(location, object);
-		return true;
-	}
-
 	public CellObject createRandomObjectWithProperty(String property) {
 		return cellObjectManager.createRandomObjectWithProperty(property);
 	}
 
-	public boolean addRandomObjectWithProperties(int [] location, String property1, String property2) {
-		CellObject object = cellObjectManager.createRandomObjectWithProperties(property1, property2);
-		if (object == null) {
-			return false;
-		}
-		addObjectToCell(location, object);
-		return true;
+	public CellObject createRandomObjectWithProperties(String property1, String property2) {
+		return cellObjectManager.createRandomObjectWithProperties(property1, property2);
 	}
 	
-	public abstract void updateObjects(TankSoarWorld tsWorld);
-	
+	public void updateObjects(TankSoarWorld tsWorld) {
+		HashSet<CellObject> copy = new HashSet<CellObject>(updatables);
+		for (CellObject cellObject : copy) {
+			int [] location = updatablesLocations.get(cellObject);
+			
+			if (cellObject.update(location)) {
+				removalStateUpdate(getCell(location).removeObject(cellObject.getName()));
+			}
+		}
+	}
+
 	public void setPlayer(int [] location, Player player) {
-		Cell cell = getCell(location);
-		cell.setPlayer(player);
-		setRedraw(cell);
+		getCell(location).setPlayer(player);
 	}
 	
 	public int pointsCount(int [] location) {
@@ -840,38 +812,22 @@ public abstract class GridMap {
 	}
 	
 	public CellObject removeObject(int [] location, String objectName) {
-		Cell cell = getCell(location);
-		setRedraw(cell);
-		CellObject object = cell.removeObject(objectName);
-		if (object == null) {
-			return null;
-		}
-		
-		if (object.updatable()) {
-			updatables.remove(object);
-			updatablesLocations.remove(object);
-		}
+		CellObject object = getCell(location).removeObject(objectName);
+		if (object == null) return null;
 		removalStateUpdate(object);
-		
 		return object;
 	}
 	
 	public Player getPlayer(int [] location) {
-		if (location == null) return null;
-		Cell cell = getCell(location);
-		return cell.getPlayer();
+		return getCell(location).getPlayer();
 	}
 	
 	public boolean hasObject(int [] location, String name) {
-		if (location == null) return false;
-		Cell cell = getCell(location);
-		return cell.hasObject(name);
+		return getCell(location).hasObject(name);
 	}
 	
 	public CellObject getObject(int [] location, String name) {
-		if (location == null) return null;
-		Cell cell = getCell(location);
-		return cell.getObject(name);
+		return getCell(location).getObject(name);
 	}
 	
 	public void handleIncoming() {
@@ -880,9 +836,7 @@ public abstract class GridMap {
 		// probably more work than it is worth as this should only be slow when there are
 		// a ton of missiles flying
 		
-		Iterator<CellObject> iter = updatables.iterator();
-		while (iter.hasNext()) {
-			CellObject missile = iter.next();
+		for (CellObject missile : updatables) {
 			if (!missile.hasProperty(Names.kPropertyMissile)) {
 				continue;
 			}
@@ -904,41 +858,49 @@ public abstract class GridMap {
 		}
 	}
 	
-	abstract void removalStateUpdate(CellObject object);
-
+	void addStateUpdate(int [] location, CellObject added) {
+		assert added != null;
+		if (added.updatable()) {
+			updatables.add(added);
+			updatablesLocations.put(added, location);
+		}
+	}
+	
+	void removalStateUpdate(CellObject removed) {
+		if (removed == null) {
+			return;
+		}
+		if (removed.updatable()) {
+			updatables.remove(removed);
+			updatablesLocations.remove(removed);
+		}
+	}
+	
 	public void setExplosion(int [] location) {
 	}
 	
 	public ArrayList<CellObject> getAllWithProperty(int [] location, String name) {
-		Cell cell = getCell(location);
-		return cell.getAllWithProperty(name);
+		return getCell(location).getAllWithProperty(name);
 	}
 	
 	public boolean hasAnyWithProperty(int [] location, String name) {
-		Cell cell = getCell(location);
-		return cell.hasAnyWithProperty(name);
+		return getCell(location).hasAnyWithProperty(name);
 	}
 	
 	public void removeAll(int [] location) {
-		removeAllWithProperty(location, null);
-		
+		ArrayList<CellObject> removed = getCell(location).removeAll();
+		for (CellObject object : removed) {
+			removalStateUpdate(object);
+		}
 	}
 	
-	public void removeAllWithProperty(int [] location, String name) {
-		Cell cell = getCell(location);
-		
-		cell.iter = cell.cellObjects.values().iterator();
-		CellObject cellObject;
-		while (cell.iter.hasNext()) {
-			cellObject = cell.iter.next();
-			if (name == null || cellObject.hasProperty(name)) {
-				if (cellObject.updatable()) {
-					updatables.remove(cellObject);
-					updatablesLocations.remove(cellObject);
-				}
-				cell.iter.remove();
-				removalStateUpdate(cellObject);
-			}
+	public void removeAllByProperty(int [] location, String name) {
+		ArrayList<CellObject> removed = getCell(location).removeAllByProperty(name);
+		if (removed == null) {
+			return;
+		}
+		for (CellObject object : removed) {
+			removalStateUpdate(object);
 		}
 	}
 	
@@ -950,10 +912,6 @@ public abstract class GridMap {
 			}
 		}
 		return false;
-	}
-	
-	void setRedraw(Cell cell) {
-		cell.addCellObject(new CellObject(Names.kRedraw));
 	}
 	
 	public void shutdown() {
@@ -1211,7 +1169,7 @@ public abstract class GridMap {
 			for (int x = 0; x < mapCells[y].length; ++x) {
 				String cellString = y + "," + x + ":\n";
 				Cell cell = mapCells[y][x];
-				Iterator<CellObject> iter = cell.cellObjects.values().iterator();
+				Iterator<CellObject> iter = cell.getAll().iterator();
 				while (iter.hasNext()) {
 					CellObject object = iter.next();
 					cellString += "\t" + object.getName() + ": ";
@@ -1240,5 +1198,14 @@ public abstract class GridMap {
 			}
 		}
 		return availableLocations;
+	}
+	public boolean resetRedraw(int[] location) {
+		return getCell(location).resetRedraw();
+	}
+	public boolean checkRedraw(int[] location) {
+		return getCell(location).checkRedraw();
+	}
+	public void forceRedraw(int[] location) {
+		getCell(location).forceRedraw();
 	}
 }

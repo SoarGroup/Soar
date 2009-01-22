@@ -131,7 +131,7 @@ public class BookWorld implements IWorld {
 
 	private void get(BookMap map, MoveInfo move, Player player) {
 		logger.debug("Move: get, location " + move.getLocation[0] + "," + move.getLocation[1]);
-		CellObject block = map.getObject(move.getLocation, "mblock");
+		CellObject block = map.getObject(move.getLocation, Names.kBookObjectName);
 		if (block == null || player.isCarrying()) {
 			if (block == null) {
 				logger.warn("get command failed, no object");
@@ -142,8 +142,8 @@ public class BookWorld implements IWorld {
 			player.updateGetStatus(false);
 		} else {
 			// FIXME: store get info for processing later
-			player.carry(map.getAllWithProperty(move.getLocation, "mblock").get(0));
-			map.removeObject(move.getLocation, "mblock");
+			player.carry(map.getAllWithProperty(move.getLocation, Names.kBookObjectName).get(0));
+			map.removeObject(move.getLocation, Names.kBookObjectName);
 			player.updateGetStatus(true);
 		}
 	}
@@ -569,7 +569,7 @@ public class BookWorld implements IWorld {
 		if (map.hasAnyWithProperty(location, Names.kPropertyBlock)) {
 			return true;
 		}
-		if (Soar2D.config.roomConfig().blocks_block && map.hasAnyWithProperty(location, "mblock")) {
+		if (Soar2D.config.roomConfig().blocks_block && map.hasAnyWithProperty(location, Names.kBookObjectName)) {
 			// FIXME: check height
 			return true;
 		}

@@ -1,6 +1,8 @@
 package soar2d.map;
 
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 
@@ -81,38 +83,6 @@ public class TankSoarMap extends GridMap {
 	}
 
 	@Override
-	public void addObjectToCell(int [] location, CellObject object) {
-		Cell cell = getCell(location);
-		if (cell.hasObject(object.getName())) {
-			CellObject old = cell.removeObject(object.getName());
-			assert old != null;
-			updatables.remove(old);
-			updatablesLocations.remove(old);
-			removalStateUpdate(old);
-		}
-		if (object.updatable()) {
-			updatables.add(object);
-			updatablesLocations.put(object, location);
-		}
-		
-		// Update state we keep track of specific to game type
-		if (object.hasProperty(Names.kPropertyCharger)) {
-			if (!health && object.hasProperty(Names.kPropertyHealth)) {
-				health = true;
-			}
-			if (!energy && object.hasProperty(Names.kPropertyEnergy)) {
-				energy = true;
-			}
-		}
-		if (object.hasProperty(Names.kPropertyMissiles)) {
-			missilePacks += 1;
-		}
-
-		cell.addCellObject(object);
-		setRedraw(cell);
-	}
-
-	@Override
 	public boolean isAvailable(int [] location) {
 		Cell cell = getCell(location);
 		boolean enterable = !cell.hasAnyWithProperty(Names.kPropertyBlock);
@@ -132,105 +102,124 @@ public class TankSoarMap extends GridMap {
 	}
 
 	@Override
-	public void removalStateUpdate(CellObject object) {
-		if (object.hasProperty(Names.kPropertyCharger)) {
-			if (health && object.hasProperty(Names.kPropertyHealth)) {
-				health = false;
-			}
-			if (energy && object.hasProperty(Names.kPropertyEnergy)) {
-				energy = false;
-			}
-		}
-		if (object.hasProperty(Names.kPropertyMissiles)) {
-			missilePacks -= 1;
-		}
-	}
-
-	@Override
 	public void setExplosion(int [] location) {
 		addObjectToCell(location, cellObjectManager.createObject(Names.kExplosion));
 	}
 
+	private static class MissileData {
+		MissileData(int [] location, CellObject missile) {
+			this.location = location;
+			this.missile = missile;
+		}
+		int [] location;
+		CellObject missile;
+	}
 	@Override
 	public void updateObjects(TankSoarWorld tsWorld) {
-		if (!updatables.isEmpty()) {
-			Iterator<CellObject> iter = updatables.iterator();
+		HashSet<CellObject> copy = new HashSet<CellObject>(updatables);
+		ArrayList<int []> explosions = new ArrayList<int []>();
+		ArrayList<MissileData> newMissiles = new ArrayList<MissileData>();
+		for (CellObject cellObject : copy) {
+			int [] location = Arrays.copyOf(updatablesLocations.get(cellObject), updatablesLocations.get(cellObject).length);
 			
-			ArrayList<int []> explosions = new ArrayList<int []>();
-			while (iter.hasNext()) {
-				CellObject cellObject = iter.next();
-				int [] location = updatablesLocations.get(cellObject);
-				assert location != null;
-				
-				if (cellObject.update(location)) {
-					Cell cell = getCell(location);
+			if (cellObject.update(location)) {
+
+				// Remove it from the cell
+				removalStateUpdate(getCell(location).removeObject(cellObject.getName()));
+
+				// Missiles fly, handle that
+				if (cellObject.hasProperty(Names.kPropertyMissile)) {
 					
-					cellObject = cell.removeObject(cellObject.getName());
-					assert cellObject != null;
+					// |*  | * |  *|  <|>  |*  | * |  *|  <|>  |
+					//  0    1    2    3    0    1    2    3
+					// phase 3 threatens two squares
+					// we're in phase 3 when detected in phase 2
+	
+					// what direction is it going
+					int missileDir = cellObject.getIntProperty(Names.kPropertyDirection);
 					
-					setRedraw(cell);
-					
-					// if the cell is not a missile or if shouldRemoveMissile returns true
-					if (!cellObject.hasProperty(Names.kPropertyMissile) 
-							|| shouldRemoveMissile(tsWorld, location, cell, cellObject)) {
+					while (true) {
+						int phase = cellObject.getIntProperty(Names.kPropertyFlyPhase);
 						
-						// we need an explosion if it was a missile
-						if (cellObject.hasProperty(Names.kPropertyMissile)) {
-							explosions.add(location);
+						if (phase == 0) {
+							int [] overlapLocation = Arrays.copyOf(location, location.length);
+							Direction.translate(overlapLocation, Direction.backwardOf[missileDir]);
+							getCell(overlapLocation).forceRedraw();
 						}
-						iter.remove();
-						updatablesLocations.remove(cellObject);
-						removalStateUpdate(cellObject);
+						
+						// move it
+						Direction.translate(location, missileDir);
+						
+						// check destination
+						Cell cell = getCell(location);
+						
+						if (cell.hasAnyWithProperty(Names.kPropertyBlock)) {
+							// missile is destroyed
+							explosions.add(location);
+							break;
+						}
+						
+						Player player = cell.getPlayer();
+						
+						if (player != null) {
+							// missile is destroyed
+							tsWorld.missileHit(player, this, location, cellObject, Soar2D.simulation.world.getPlayers());
+							explosions.add(location);
+							break;
+						}
+				
+						// missile didn't hit anything
+						
+						// if the missile is not in phase 2, return
+						if (phase != 2) {
+							newMissiles.add(new MissileData(location, cellObject));
+							break;
+						}
+						
+						// we are in phase 2, call update again, this will move us out of phase 2 to phase 3
+						cellObject.update(location);
 					}
 				}
 			}
-			
-			Iterator<int []> explosion = explosions.iterator();
-			while (explosion.hasNext()) {
-				setExplosion(explosion.next());
-			}
+		}
+
+		for (int[] location : explosions) {
+			setExplosion(location);
+		}
+		for (MissileData data : newMissiles) {
+			addObjectToCell(data.location, data.missile);
 		}
 	}
 	
-	private boolean shouldRemoveMissile(TankSoarWorld tsWorld, int [] location, Cell cell, CellObject missile) {
-		// instead of removing missiles, move them
-
-		// what direction is it going
-		int missileDir = missile.getIntProperty(Names.kPropertyDirection);
-		
-		while (true) {
-			// move it
-			Direction.translate(location, missileDir);
-			
-			// check destination
-			cell = getCell(location);
-			
-			if (cell.hasAnyWithProperty(Names.kPropertyBlock)) {
-				// missile is destroyed
-				return true;
+	@Override
+	void addStateUpdate(int [] location, CellObject added) {
+		super.addStateUpdate(location, added);
+		// Update state we keep track of specific to game type
+		if (added.hasProperty(Names.kPropertyCharger)) {
+			if (!health && added.hasProperty(Names.kPropertyHealth)) {
+				health = true;
 			}
-			
-			Player player = cell.getPlayer();
-			
-			if (player != null) {
-				// missile is destroyed
-				tsWorld.missileHit(player, this, location, missile, Soar2D.simulation.world.getPlayers());
-				return true;
+			if (!energy && added.hasProperty(Names.kPropertyEnergy)) {
+				energy = true;
 			}
-	
-			// missile didn't hit anything
-			
-			// if the missile is not in phase 2, return
-			if (missile.getIntProperty(Names.kPropertyFlyPhase) != 2) {
-				cell.addCellObject(missile);
-				updatablesLocations.put(missile, location);
-				return false;
-			}
-			
-			// we are in phase 2, call update again, this will move us out of phase 2 to phase 3
-			missile.update(location);
+		}
+		if (added.hasProperty(Names.kPropertyMissiles)) {
+			missilePacks += 1;
 		}
 	}
-		
-
+	@Override
+	void removalStateUpdate(CellObject removed) {
+		super.removalStateUpdate(removed);
+		if (removed.hasProperty(Names.kPropertyCharger)) {
+			if (health && removed.hasProperty(Names.kPropertyHealth)) {
+				health = false;
+			}
+			if (energy && removed.hasProperty(Names.kPropertyEnergy)) {
+				energy = false;
+			}
+		}
+		if (removed.hasProperty(Names.kPropertyMissiles)) {
+			missilePacks -= 1;
+		}
+	}
 }

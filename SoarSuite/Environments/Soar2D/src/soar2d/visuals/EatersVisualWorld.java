@@ -2,7 +2,6 @@ package soar2d.visuals;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Iterator;
 
 import org.eclipse.swt.events.PaintEvent;
 import org.eclipse.swt.graphics.Color;
@@ -93,11 +92,11 @@ public class EatersVisualWorld extends VisualWorld {
 				}
 				
 				if (agentLocation == null) {
-					if ((this.map.removeObject(location, Names.kRedraw) == null) && painted) {
+					if (!this.map.resetRedraw(location) && painted) {
 						continue;
 					}
 				} else {
-					if (!this.map.hasObject(location, Names.kRedraw) && painted) {
+					if (!this.map.checkRedraw(location) && painted) {
 						continue;
 					}
 				}

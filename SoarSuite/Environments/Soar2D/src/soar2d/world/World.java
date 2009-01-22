@@ -153,7 +153,14 @@ public class World {
 
 		if (useInitialLocation && players.hasInitialLocation(player)) {
 			location = players.getInitialLocation(player);
-			if (!availableLocations.contains(location)) {
+			boolean found = false;
+			for (int[] spot : availableLocations) {
+				if (Arrays.equals(location, spot)) {
+					found = true;
+					break;
+				}
+			}
+			if (!found) {
 				logger.warn(player.getName() + ": Initial location (" + location[0] + "," + location[1] + ") is blocked, going random.");
 				location = null;
 			}

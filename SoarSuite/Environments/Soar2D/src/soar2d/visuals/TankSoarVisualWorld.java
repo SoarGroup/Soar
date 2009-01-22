@@ -62,7 +62,7 @@ public class TankSoarVisualWorld extends VisualWorld {
 		int [] location = new int [2];
 		for(location[0] = 0; location[0] < map.getSize(); ++location[0]){
 			for(location[1] = 0; location[1] < map.getSize(); ++location[1]){
-				if ((this.map.removeObject(location, Names.kRedraw) == null) && painted) {
+				if (!this.map.resetRedraw(location) && painted) {
 					continue;
 				}
 				

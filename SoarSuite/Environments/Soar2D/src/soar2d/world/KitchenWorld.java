@@ -102,7 +102,7 @@ public class KitchenWorld implements IWorld {
 					// move stuff with the player
 					if (move.moveWithObject) {
 						if (myStuff != null) {
-							map.removeAllWithProperty(oldLocation, "smell");
+							map.removeAllByProperty(oldLocation, "smell");
 							
 							String stuffNames = "(";
 							for (CellObject object : myStuff) {
@@ -121,7 +121,7 @@ public class KitchenWorld implements IWorld {
 				if (map.isCountertop(players.getLocation(player)) || map.isOven(players.getLocation(player))) {
 					ArrayList<CellObject> stuff = map.getAllWithProperty(players.getLocation(player), "smell");
 					if (stuff != null && stuff.size() > 1) {
-						map.removeAllWithProperty(players.getLocation(player), "smell");
+						map.removeAllByProperty(players.getLocation(player), "smell");
 	
 						CellObject mixture = map.createObjectByName("mixture");
 						int id = idCounter++;
@@ -253,7 +253,7 @@ public class KitchenWorld implements IWorld {
 							logger.info(player.getName() + ": Can't cook a product");
 						} else {
 							// consume it
-							map.removeAllWithProperty(players.getLocation(player), "smell");
+							map.removeAllByProperty(players.getLocation(player), "smell");
 
 							// create something
 							Product product = Product.Burned;
@@ -300,33 +300,39 @@ public class KitchenWorld implements IWorld {
 								}
 							}
 							
+							CellObject object;
 							switch (product) {
 							case Burned:
-								map.addObjectByName(players.getLocation(player), "burned");
+								object = map.createObjectByName("burned");
+								map.addObjectToCell(players.getLocation(player), object);
 								logger.info(player.getName() + ": creating burned");
 								break;
 							case Toffee:
-								map.addObjectByName(players.getLocation(player), "toffee");
+								object = map.createObjectByName("toffee");
+								map.addObjectToCell(players.getLocation(player), object);
 								logger.info(player.getName() + ": creating toffee");
 								break;
 							case SugarCookies:
-								map.addObjectByName(players.getLocation(player), "sugarcookies");
+								object = map.createObjectByName("sugarcookies");
+								map.addObjectToCell(players.getLocation(player), object);
 								logger.info(player.getName() + ": creating sugarcookies");
 								break;
 							case Snickerdoodles:
-								map.addObjectByName(players.getLocation(player), "snickerdoodles");
+								object = map.createObjectByName("snickerdoodles");
+								map.addObjectToCell(players.getLocation(player), object);
 								logger.info(player.getName() + ": creating snickerdoodles");
 								break;
 							case MolassesCookies:
-								map.addObjectByName(players.getLocation(player), "molassescookies");
+								object = map.createObjectByName("molassescookies");
+								map.addObjectToCell(players.getLocation(player), object);
 								logger.info(player.getName() + ": creating molassescookies");
 								break;
 							case Custard:
-								map.addObjectByName(players.getLocation(player), "custard");
+								object = map.createObjectByName("custard");
+								map.addObjectToCell(players.getLocation(player), object);
 								logger.info(player.getName() + ": creating custard");
 								break;
 							}
-							
 						}
 					} else {
 						logger.info(player.getName() + ": Nothing to cook");
@@ -343,7 +349,7 @@ public class KitchenWorld implements IWorld {
 					
 				} else if (stuff != null && stuff.size() == 1) {
 					// consume it
-					map.removeAllWithProperty(players.getLocation(player), "smell");
+					map.removeAllByProperty(players.getLocation(player), "smell");
 					
 					// what is it?
 					String name = stuff.get(0).getName();

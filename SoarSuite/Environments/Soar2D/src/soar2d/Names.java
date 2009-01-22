@@ -115,7 +115,6 @@ public class Names {
 	public static final String kHealth = "health";
 	public static final String kMissiles = "missiles";
 	public static final String kOpen = "open";
-	public static final String kRedraw = "redraw";
 	
 	public static final String kBackwardID = "backward";
 	public static final String kBlockedID = "blocked";
@@ -222,7 +221,8 @@ public class Names {
 
 	public static final String kDebuggerClient = "java-debugger";
 
-	static final String kDog = "dog";
-
-	static final String kMouse = "mouse";
+	public static final String kDog = "dog";
+	public static final String kMouse = "mouse";
+	
+	public static final String kBookObjectName = "mblock";
 }

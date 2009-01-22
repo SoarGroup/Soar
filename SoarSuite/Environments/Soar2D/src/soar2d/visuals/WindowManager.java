@@ -1037,7 +1037,7 @@ public class WindowManager {
 		}
 
 		if (newContent != null) {
-			this.editMap.addObjectByName(location, newContent);
+			this.editMap.addObjectToCell(location, this.editMap.createObjectByName(newContent));
 		}
 
 		if (Soar2D.config.game() == SimConfig.Game.TANKSOAR) {
