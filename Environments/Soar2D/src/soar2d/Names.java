@@ -106,6 +106,8 @@ public class Names {
 	
 	public static final String kHumanProductions = "<Human>";
 	
+	public static final String kDefaultBoxID = "box";
+	
 	public static final String kEmpty = "empty";
 	public static final String kEnergy = "energy";
 	public static final String kExplosion = "explosion";

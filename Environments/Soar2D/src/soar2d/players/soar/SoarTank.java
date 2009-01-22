@@ -103,22 +103,7 @@ public class SoarTank extends Tank implements Agent.RunEventInterface {
 
 		previousLocation = new int [] { -1, -1 };
 		
-		loadMetadata();
-	}
-	
-	private void loadMetadata() {
-		metadata = new InputLinkMetadata(agent);
-		try {
-			if (Soar2D.config.soarConfig().metadata != null) {
-				metadata.load(Soar2D.config.soarConfig().metadata);
-			}
-			if (Soar2D.simulation.world.getMap().getMetadata() != null) {
-				metadata.load(Soar2D.simulation.world.getMap().getMetadata());
-			}
-		} catch (Exception e) {
-			error(Names.Errors.metadata + this.getName() + ": " + e.getMessage());
-			Soar2D.control.stopSimulation();
-		}
+		metadata = InputLinkMetadata.load(agent);
 	}
 	
 	private void error(String message) {
@@ -367,8 +352,7 @@ public class SoarTank extends Tank implements Agent.RunEventInterface {
 		
 		metadata.destroy();
 		metadata = null;
-		
-		loadMetadata();
+		metadata = InputLinkMetadata.load(agent);
 		
 		agent.InitSoar();
 	}

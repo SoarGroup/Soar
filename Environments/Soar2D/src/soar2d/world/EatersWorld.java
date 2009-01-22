@@ -45,7 +45,8 @@ public class EatersWorld implements IWorld {
 	}
 	
 	public void putInStartingLocation(Player player, GridMap map, PlayersManager players, int [] location) {
-		
+		// remove food from it
+		map.removeAllWithProperty(players.getLocation(player), Names.kPropertyEdible);
 	}
 	
 	public void reset(GridMap map) {
@@ -292,9 +293,6 @@ public class EatersWorld implements IWorld {
 	}
 
 	public void resetPlayer(GridMap map, Player player, PlayersManager players, boolean resetDuringRun) {
-		// remove food from it
-		map.removeAllWithProperty(players.getLocation(player), Names.kPropertyEdible);
-		
 		// This is here because the TOSCA stuff wants to keep around the reward
 		// in the beginning of the next phase
 		

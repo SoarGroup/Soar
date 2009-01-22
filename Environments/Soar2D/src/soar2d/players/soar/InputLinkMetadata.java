@@ -16,8 +16,28 @@ import org.jdom.input.SAXBuilder;
 import sml.Agent;
 import sml.Identifier;
 import soar2d.Names;
+import soar2d.Soar2D;
 
 public class InputLinkMetadata {
+	public static InputLinkMetadata load(Agent agent) {
+		try {
+			InputLinkMetadata metadata = new InputLinkMetadata(agent);
+			if (Soar2D.config.soarConfig().metadata != null) {
+				metadata.load(Soar2D.config.soarConfig().metadata);
+			}
+			if (Soar2D.simulation.world.getMap().getMetadata() != null) {
+				metadata.load(Soar2D.simulation.world.getMap().getMetadata());
+			}
+			return metadata;
+		} catch (Exception e) {
+			String message = Names.Errors.metadata + agent.GetAgentName() + ": " + e.getMessage();
+			logger.error(message);
+			Soar2D.control.errorPopUp(message);
+			Soar2D.control.stopSimulation();
+		}
+		return null;
+	}
+	
 	private static Logger logger = Logger.getLogger(InputLinkMetadata.class);
 
 	private ArrayList<File> files = new ArrayList<File>(1);
@@ -25,17 +45,17 @@ public class InputLinkMetadata {
 	private Identifier metadataWME;
 	private HashMap<Integer, Identifier> sharedIdentifierMap = new HashMap<Integer, Identifier>();
 	
-	public InputLinkMetadata(Agent agent) {
+	private InputLinkMetadata(Agent agent) {
 		assert agent != null;
 		this.agent = agent;
 	}
 	
-	public void load(String metadata) throws Exception {
+	private void load(String metadata) throws Exception {
 		File metadataFile = new File(metadata);
 		load(metadataFile);
 	}
 	
-	public void load(File metadataFile) throws Exception {
+	private void load(File metadataFile) throws Exception {
 		if (files.contains(metadataFile)) {
 			logger.debug(Names.Debug.duplicateMetadata + metadataFile.getAbsolutePath());
 			return;

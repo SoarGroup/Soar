@@ -170,14 +170,15 @@ public class World {
 		return location;
 	}
 
-	public boolean addPlayer(Player player, int [] initialLocation, boolean human) {
+	public boolean addPlayer(Player player, int [] suggestedInitialLocation, boolean human) {
 		assert players.exists(player) == false;
 		logger.info("Adding player " + player);
 
-		players.add(player, initialLocation, human);
+		players.add(player, suggestedInitialLocation, human);
 
-		if (!resetPlayer(player, false)) {
-			players.remove(player);
+		// find a suitable starting location (either by using suggestion or random).
+		int [] startingLocation = putInStartingLocation(player, true);
+		if (startingLocation == null) {
 			return false;
 		}
 		
