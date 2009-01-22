@@ -3,6 +3,7 @@ package soar2d.map;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Set;
+import java.util.Map.Entry;
 
 import org.apache.log4j.Logger;
 
@@ -383,6 +384,12 @@ public class CellObject {
 		return false;
 	}
 	
+	/**
+	 * @return a set of property names
+	 */
+	public Set< Entry<String, String> >getPropertyEntries() {
+		return properties.entrySet();
+	}
 	/**
 	 * @return a set of property names
 	 */

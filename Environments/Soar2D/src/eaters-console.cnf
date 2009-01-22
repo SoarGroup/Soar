@@ -2,7 +2,7 @@
 general.game = "eaters";
 general.map = "maps/eaters/random-walls.emap";
 general.nogui = true;
-general.soar.spawn_debuggers = false;
+soar.spawn_debuggers = false;
 players.active_players = [ "eater" ];
 players.eater.productions = "agents/eaters/tutorial/advanced-move.soar";
 terminals.food_remaining = true;

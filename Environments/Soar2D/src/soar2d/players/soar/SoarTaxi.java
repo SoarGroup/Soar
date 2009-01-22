@@ -143,22 +143,7 @@ public class SoarTaxi extends Taxi {
 		cellType = agent.CreateStringWME(cell, "type", "none");
 		cellPassenger = agent.CreateStringWME(cell, "passenger", "false");
 		
-		loadMetadata();
-	}
-	
-	private void loadMetadata() {
-		metadata = new InputLinkMetadata(agent);
-		try {
-			if (Soar2D.config.soarConfig().metadata != null) {
-				metadata.load(Soar2D.config.soarConfig().metadata);
-			}
-			if (Soar2D.simulation.world.getMap().getMetadata() != null) {
-				metadata.load(Soar2D.simulation.world.getMap().getMetadata());
-			}
-		} catch (Exception e) {
-			error(Names.Errors.commitFail + this.getName() + ": " + e.getMessage());
-			Soar2D.control.stopSimulation();
-		}
+		metadata = InputLinkMetadata.load(agent);
 	}
 	
 	/**

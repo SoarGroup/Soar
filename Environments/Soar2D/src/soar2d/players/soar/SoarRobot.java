@@ -57,7 +57,7 @@ public class SoarRobot extends Robot {
 		selfIL = new SelfInputLink(this);
 		selfIL.initialize();
 		
-		loadMetadata();
+		metadata = InputLinkMetadata.load(agent);
 		
 		if (!agent.Commit()) {
 			error(Names.Errors.commitFail + this.getName());
@@ -68,21 +68,6 @@ public class SoarRobot extends Robot {
 	private void error(String message) {
 		logger.error(message);
 		Soar2D.control.errorPopUp(message);
-	}
-	
-	private void loadMetadata() {
-		metadata = new InputLinkMetadata(agent);
-		try {
-			if (Soar2D.config.soarConfig().metadata != null) {
-				metadata.load(Soar2D.config.soarConfig().metadata);
-			}
-			if (Soar2D.simulation.world.getMap().getMetadata() != null) {
-				metadata.load(Soar2D.simulation.world.getMap().getMetadata());
-			}
-		} catch (Exception e) {
-			error(Names.Errors.metadata + this.getName() + ": " + e.getMessage());
-			Soar2D.control.stopSimulation();
-		}
 	}
 	
 	/**
@@ -859,6 +844,7 @@ public class SoarRobot extends Robot {
 
 		metadata.destroy();
 		metadata = null;
+		metadata = InputLinkMetadata.load(agent);
 
 		if (!agent.Commit()) {
 			error(Names.Errors.commitFail + this.getName());
@@ -868,7 +854,6 @@ public class SoarRobot extends Robot {
 		agent.InitSoar();
 
 		selfIL.initialize();
-		loadMetadata();
 		agent.ClearOutputLinkChanges();
 		if (!agent.Commit()) {
 			error(Names.Errors.commitFail + this.getName());
