@@ -142,9 +142,9 @@ public class TankSoarMap extends GridMap {
 						int phase = cellObject.getIntProperty(Names.kPropertyFlyPhase);
 						
 						if (phase == 0) {
-							int [] overlapLocation = Arrays.copyOf(location, location.length);
-							Direction.translate(overlapLocation, Direction.backwardOf[missileDir]);
-							getCell(overlapLocation).forceRedraw();
+							Cell overlapCell = getCell(location);
+							overlapCell = overlapCell.neighbors[Direction.backwardOf[missileDir]];
+							overlapCell.forceRedraw();
 						}
 						
 						// move it
