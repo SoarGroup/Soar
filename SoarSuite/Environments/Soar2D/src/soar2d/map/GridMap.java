@@ -10,6 +10,7 @@ import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 
+import org.apache.log4j.Logger;
 import org.jdom.Document;
 import org.jdom.Element;
 import org.jdom.JDOMException;
@@ -31,6 +32,8 @@ import soar2d.world.TankSoarWorld;
  * houses the map and associated meta-data. used for grid worlds.
  */
 public abstract class GridMap {
+	private static Logger logger = Logger.getLogger(GridMap.class);
+
 	public GridMap() {
 	}
 	
@@ -85,6 +88,22 @@ public abstract class GridMap {
 			throw new LoadError("Error during parsing: " + e.getMessage());
 		} catch (IllegalStateException e) {
 			throw new LoadError("Illegal state: " + e.getMessage());
+		}
+		
+		// Build cell reference map
+		int [] neighborLoc = new int [2];
+		for (int x = 0; x < size; ++x) {
+			for (int y = 0; y < size; ++y) {
+				Cell cell = getCell(new int[] { x, y });
+				for (int direction = 1; direction < 5; ++direction) {
+					neighborLoc[0] = x + Direction.xDelta[direction];
+					neighborLoc[1] = y + Direction.yDelta[direction];
+					if (isInBounds(neighborLoc)) {
+						Cell neighbor = getCell(neighborLoc);
+						cell.neighbors[direction] = neighbor;
+					}
+				}
+			}
 		}
 	}
 	
@@ -559,7 +578,7 @@ public abstract class GridMap {
 				throw new LoadError("unrecognized tag: " + child.getName());
 			}
 			
-			this.mapCells[rowIndex][colIndex] = new Cell();
+			this.mapCells[rowIndex][colIndex] = new Cell(colIndex, rowIndex);
 			cell(child, new int [] { colIndex, rowIndex });
 			
 			colIndex += 1;
@@ -627,21 +646,21 @@ public abstract class GridMap {
 				mapCells[row] = new Cell[size];
 			}
 			if (mapCells[row][0] == null) {
-				mapCells[row][0] = new Cell();
+				mapCells[row][0] = new Cell(0, row);
 			}
 			addWallAndRemoveFood(new int [] { 0, row });
 			if (mapCells[row][size - 1] == null) {
-				mapCells[row][size - 1] = new Cell();
+				mapCells[row][size - 1] = new Cell(size - 1, row);
 			}
 			addWallAndRemoveFood(new int [] { size - 1, row });
 		}
 		for (int col = 1; col < size - 1; ++col) {
 			if (mapCells[0][col] == null) {
-				mapCells[0][col] = new Cell();
+				mapCells[0][col] = new Cell(col, 0);
 			}
 			addWallAndRemoveFood(new int [] { col, 0 });
 			if (mapCells[size - 1][col] == null) {
-				mapCells[size - 1][col] = new Cell();
+				mapCells[size - 1][col] = new Cell(col, size - 1);
 			}
 			addWallAndRemoveFood(new int [] { col, size - 1 });
 		}
@@ -655,7 +674,7 @@ public abstract class GridMap {
 					}
 					if (Simulation.random.nextDouble() < probability) {
 						if (mapCells[row][col] == null) {
-							mapCells[row][col] = new Cell();
+							mapCells[row][col] = new Cell(col, row);
 						}
 						addWallAndRemoveFood(new int [] { col, row });
 					}
@@ -727,7 +746,7 @@ public abstract class GridMap {
 		for (int row = 1; row < size - 1; ++row) {
 			for (int col = 1; col < size - 1; ++col) {
 				if (mapCells[row][col] == null) {
-					mapCells[row][col] = new Cell();
+					mapCells[row][col] = new Cell(col, row);
 					
 				}
 				if (!mapCells[row][col].hasAnyWithProperty(Names.kPropertyBlock)) {
@@ -1058,105 +1077,120 @@ public abstract class GridMap {
 		}
 		
 		// Set all cells unexplored.
-		for(int y = 1; y < mapCells.length - 1; ++y) {
-			for (int x = 1; x < mapCells.length - 1; ++x) {
-				mapCells[y][x].distance = -1;
+		for(Cell[] cols : mapCells) {
+			for (Cell cell : cols) {
+				cell.explored = false;
 			}
 		}
 		
-		LinkedList<int []> searchList = new LinkedList<int []>();
-		searchList.addLast(Arrays.copyOf(location, location.length));
-		int distance = 0;
-		getCell(location).distance = distance;
-		getCell(location).parent = null;
-
-		int relativeDirection = -1;
-		int [] newCellLocation;
-		int [] parentLocation;
-		Cell parentCell;
-		Cell newCell;
-
-
-
+		LinkedList<Cell> searchList = new LinkedList<Cell>();
+		{
+			Cell start = getCell(location);
+			start.explored = true;
+			start.distance = 0;
+			start.parent = null;
+			searchList.addLast(start);
+		}
+		
+		int finalDirection = 0;
+		
 		while (searchList.size() > 0) {
-			parentLocation = searchList.getFirst();
+			Cell parentCell = searchList.getFirst();
 			searchList.removeFirst();
-			parentCell = getCell(parentLocation);
-			distance = parentCell.distance;
-			if (distance >= Soar2D.config.tanksoarConfig().max_smell_distance) {
-				//System.out.println(parentCell + " too far");
+
+			if (logger.isTraceEnabled()) {
+				logger.trace("Sound: new parent " + parentCell);
+			}
+			
+			// subtract 1 because we add one later (exploring neighbors)
+			if (parentCell.distance >= Soar2D.config.tanksoarConfig().max_sound_distance) {
+				if (logger.isTraceEnabled()) {
+					logger.trace("Sound: parent distance " + parentCell.distance + " is too far");
+				}
 				continue;
 			}
 
 			// Explore cell.
 			for (int i = 1; i < 5; ++i) {
-				newCellLocation = Arrays.copyOf(parentLocation, parentLocation.length);
-				newCellLocation[0] += Direction.xDelta[i];
-				newCellLocation[1] += Direction.yDelta[i];
-
-				if (!isInBounds(newCellLocation)) {
+				Cell neighbor = parentCell.neighbors[i];
+				if (neighbor == null) {
 					continue;
 				}
 
-				newCell = getCell(newCellLocation);
-				if (newCell.hasAnyWithProperty(Names.kPropertyBlock)) {
-					//System.out.println(parentCell + " not enterable");
+				if (neighbor.explored) {
+					continue;
+				}
+
+				if (logger.isTraceEnabled()) {
+					logger.trace("Sound: exploring " + neighbor);
+				}
+				neighbor.explored = true;
+				
+				if (neighbor.hasAnyWithProperty(Names.kPropertyBlock)) {
+					logger.trace("Sound: blocked");
 					continue;
 				}
 							
-				if (newCell.distance >= 0) {
-					//System.out.println(parentCell + " already explored");
-					continue;
-				}
-				newCell.distance = distance + 1;
+				neighbor.distance = parentCell.distance + 1;
 				
-				Player targetPlayer = newCell.getPlayer();
+				if (logger.isTraceEnabled()) {
+					logger.trace("Sound: distance " + neighbor.distance);
+				}
+				
+				Player targetPlayer = neighbor.getPlayer();
 				if ((targetPlayer != null) && Soar2D.simulation.world.recentlyMovedOrRotated(targetPlayer)) {
+					if (logger.isTraceEnabled()) {
+						logger.trace("Sound: found recently moved player " + targetPlayer.getName());
+					}
+					
+					// found a sound! walk home
 					// I'm its parent, so see if I'm the top here
 					while(parentCell.parent != null) {
 						// the new cell becomes me
-						newCellLocation = Arrays.copyOf(parentLocation, parentLocation.length);
+						neighbor = parentCell;
 						
 						// I become my parent
-						parentLocation = getCell(parentLocation).parent;
-						parentCell = getCell(parentLocation);
+						parentCell = parentCell.parent;
 					}
-					// location is now the top of the list, compare
-					// to find the direction to the new cell
-					if (newCellLocation[0] < parentLocation[0]) {
-						relativeDirection = Direction.kWestInt;
-					} else if (newCellLocation[0] > parentLocation[0]) {
-						relativeDirection = Direction.kEastInt;
-					} else if (newCellLocation[1] < parentLocation[1]) {
-						relativeDirection = Direction.kNorthInt;
-					} else if (newCellLocation[1] > parentLocation[1]) {
-						relativeDirection = Direction.kSouthInt;
+
+					// Find direction to new sound
+					for (finalDirection = 1; i < 5; ++finalDirection) {
+						if (neighbor == parentCell.neighbors[finalDirection]) {
+							break;
+						}
+					}
+					
+					// shouldn't happen
+					if (finalDirection < 5) {
+						if (logger.isTraceEnabled()) {
+							logger.trace("Sound: done, originated from " + Direction.stringOf[finalDirection]);
+						}
 					} else {
+						// didn't find direction to new sound
+						logger.trace("Sound: error: didn't find direction to sound!");
 						assert false;
-						relativeDirection = 0;
+						finalDirection = 0;
 					}
-					break;
+					
 				}
 				
-				if (relativeDirection != -1) {
+				// end condition: this is not 0 if we found someone
+				if (finalDirection != 0) {
 					break;
 				}
+
+				neighbor.parent = parentCell;
 				
-				// add me as the new cell's parent				
-				newCell.parent = parentLocation;
 				// add the new cell to the search list
-				searchList.addLast(newCellLocation);
+				searchList.addLast(neighbor);
 			}
 			
-			if (relativeDirection != -1) {
+			// end condition: this is not 0 if we found someone
+			if (finalDirection != 0) {
 				break;
 			}
 		}
-		
-		if (relativeDirection == -1) {
-			relativeDirection = 0;
-		}
-		return relativeDirection;
+		return finalDirection;
 	}
 
 	public boolean isInBounds(int [] location) {

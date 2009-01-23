@@ -512,9 +512,7 @@ public class TankSoarWorld implements IWorld {
 
 	
 	public void updatePlayers(boolean playersChanged, GridMap map, PlayersManager players) {
-		Iterator<Player> iter = players.iterator();
-		while (iter.hasNext()) {
-			Player player = iter.next();
+		for (Player player : players.getAll()) {
 			
 			if (playersChanged) {
 				player.playersChanged();
@@ -551,8 +549,15 @@ public class TankSoarWorld implements IWorld {
 					}
 				}
 				player.setSmell(distance, color);
-				// TODO: can eliminate sound check if smell is greater than max sound distance 
-				player.setSound(map.getSoundNear(players.getLocation(player)));
+				
+				if (distance > Soar2D.config.tanksoarConfig().max_sound_distance) {
+					if (logger.isTraceEnabled()) {
+						logger.trace("Skipping sound check, smell was " + distance);
+					}
+					player.setSound(0);
+				} else {
+					player.setSound(map.getSoundNear(players.getLocation(player)));
+				}
 			}
 				
 			player.update(players.getLocation(player));

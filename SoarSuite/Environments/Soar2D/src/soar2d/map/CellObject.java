@@ -1,7 +1,6 @@
 package soar2d.map;
 
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.Set;
 import java.util.Map.Entry;
 
@@ -255,14 +254,10 @@ public class CellObject {
 	public boolean apply(Player player) {
 		World world = Soar2D.simulation.world;
 		
-		if (propertiesApply.size() > 0) {
-			Iterator<String> iter = propertiesApply.keySet().iterator();
-			while (iter.hasNext()) {
-				String key = iter.next();
-				String value = propertiesApply.get(key);
-				logger.info(Names.Info.newProperty + key + " --> " + value);
-				properties.put(key, value);
-			}
+		for (String key : propertiesApply.keySet()) {
+			String value = propertiesApply.get(key);
+			logger.info(Names.Info.newProperty + key + " --> " + value);
+			properties.put(key, value);
 		}
 		
 		if (pointsApply) {
@@ -353,7 +348,7 @@ public class CellObject {
 			int phase = this.getIntProperty(Names.kPropertyFlyPhase);
 			phase += 1;
 			phase %= 4;
-			this.addProperty(Names.kPropertyFlyPhase, Integer.toString(phase));
+			properties.put(Names.kPropertyFlyPhase, Integer.toString(phase));
 			return true;
 		}
 		
@@ -378,10 +373,7 @@ public class CellObject {
 	 * of the property, but rather its existence.
 	 */
 	public boolean hasProperty(String name) {
-		if (properties.containsKey(name)) {
-			return true;
-		}
-		return false;
+		return properties.containsKey(name);
 	}
 	
 	/**
@@ -401,10 +393,7 @@ public class CellObject {
 	 * @return the property value or null if it doesn't exist
 	 */
 	public String getProperty(String name) {
-		if (properties.containsKey(name)) {
-			return (String)properties.get(name);
-		}
-		return null;
+		return properties.get(name);
 	}
 	/**
 	 * @param name the property
@@ -414,10 +403,11 @@ public class CellObject {
 	 * use with care
 	 */
 	public boolean getBooleanProperty(String name) {
-		if (properties.containsKey(name)) {
-			return Boolean.parseBoolean((String)properties.get(name));
+		String property = properties.get(name);
+		if (property == null) {
+			return kDefaultPropertyBoolean;
 		}
-		return kDefaultPropertyBoolean;
+		return Boolean.parseBoolean(property);
 	}
 	/**
 	 * @param name the property
@@ -427,10 +417,11 @@ public class CellObject {
 	 * use with care
 	 */
 	public int getIntProperty(String name) {
-		if (properties.containsKey(name)) {
-			return Integer.parseInt((String)properties.get(name));
+		String property = properties.get(name);
+		if (property == null) {
+			return kDefaultPropertyInt;
 		}
-		return kDefaultPropertyInt;
+		return Integer.parseInt(property);
 	}
 	/**
 	 * @param name the property
@@ -440,14 +431,14 @@ public class CellObject {
 	 * use with care
 	 */
 	public float getFloatProperty(String name) {
-		if (properties.containsKey(name)) {
-			return Float.parseFloat((String)properties.get(name));
+		String property = properties.get(name);
+		if (property == null) {
+			return kDefaultPropertyFloat;
 		}
-		return kDefaultPropertyFloat;
+		return Float.parseFloat(property);
 	}
 
 	public void removeProperty(String property) {
-		String value = properties.remove(property);
-		assert value != null;
+		properties.remove(property);
 	}
 }
