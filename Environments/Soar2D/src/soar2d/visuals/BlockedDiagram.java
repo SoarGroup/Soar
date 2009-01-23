@@ -38,11 +38,11 @@ public class BlockedDiagram extends Canvas implements PaintListener {
 		addPaintListener(this);		
 	}
 	
-	void set(int directions, int facing) {
-		m_Forward = ((directions & Direction.indicators[facing]) > 0);
-		m_Backward = ((directions & Direction.indicators[Direction.backwardOf[facing]]) > 0);
-		m_Left = ((directions & Direction.indicators[Direction.leftOf[facing]]) > 0);
-		m_Right = ((directions & Direction.indicators[Direction.rightOf[facing]]) > 0);		
+	void set(int directions, Direction facing) {
+		m_Forward = ((directions & facing.indicator()) > 0);
+		m_Backward = ((directions & facing.backward().indicator()) > 0);
+		m_Left = ((directions & facing.left().indicator()) > 0);
+		m_Right = ((directions & facing.right().indicator()) > 0);		
 		this.redraw();
 	}
 

@@ -185,7 +185,7 @@ public class World {
 	void printSpawnMessage(Player player, int [] location) {
 		if (Soar2D.config.game() == SimConfig.Game.TANKSOAR) {
 			logger.info(player.getName() + ": Spawning at (" + 
-					location[0] + "," + location[1] + "), facing " + soar2d.Direction.stringOf[player.getFacingInt()]);
+					location[0] + "," + location[1] + "), facing " + player.getFacing().id());
 		} else {
 			logger.info(player.getName() + ": Spawning at (" + 
 					location[0] + "," + location[1] + ")");

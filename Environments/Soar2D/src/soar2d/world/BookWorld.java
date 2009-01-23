@@ -44,14 +44,14 @@ public class BookWorld implements IWorld {
 			
 			// rotate
 			if (move.rotate) {
-				int facing = player.getFacingInt();
+				Direction facing = player.getFacing();
 				if (move.rotateDirection.equals(Names.kRotateLeft)) {
 					logger.debug("Rotate: left");
-					player.setFacingInt(Direction.leftOf[facing]);
+					player.setFacing(facing.left());
 				} 
 				else if (move.rotateDirection.equals(Names.kRotateRight)) {
 					logger.debug("Rotate: right");
-					player.setFacingInt(Direction.rightOf[facing]);
+					player.setFacing(facing.right());
 				} 
 				else {
 					logger.warn("Rotate: invalid direction");
@@ -71,11 +71,11 @@ public class BookWorld implements IWorld {
 				} 
 				else if (move.forward) {
 					logger.debug("Move: forward");
-					Direction.translate(newLocation, player.getFacingInt());
+					Direction.translate(newLocation, player.getFacing());
 				}
 				else if (move.backward) {
 					logger.debug("Move: backward");
-					Direction.translate(newLocation, Direction.backwardOf[player.getFacingInt()]);
+					Direction.translate(newLocation, player.getFacing().backward());
 				}
 				
 				if (checkBlocked(newLocation, map)) {

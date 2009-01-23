@@ -20,7 +20,7 @@ public class Player {
 	private static Logger logger = Logger.getLogger(Player.class);
 
 	private String name;	// player name
-	private int facingInt;	// what direction I'm currently facing
+	private Direction facing;	// what direction I'm currently facing
 	private int points;	// current point count
 	private String color;	// valid color string
 	protected int [] previousLocation = new int [] { -1, -1 };	// where i was last update
@@ -153,15 +153,15 @@ public class Player {
 		return false;
 	}
 
-	public int getFacingInt() {
-		return facingInt;
+	public Direction getFacing() {
+		return facing;
 	}
 	/**
-	 * @param facingInt make sure it is valid
+	 * @param facing make sure it is valid
 	 */
-	public void setFacingInt(int facingInt) {
-		this.facingInt = facingInt;
-		this.headingRadians = Direction.radiansOf[getFacingInt()];
+	public void setFacing(Direction facing) {
+		this.facing = facing;
+		this.headingRadians = facing.radians();
 	}
 
 	public String getColor() {
@@ -202,9 +202,9 @@ public class Player {
 		previousLocation = new int [] { -1, -1 };
 
 		if (playerConfig.facing != null) {
-			this.setFacingInt(Direction.getInt(playerConfig.facing));
+			this.setFacing(Direction.parse(playerConfig.facing));
 		} else {
-			this.setFacingInt(Simulation.random.nextInt(4) + 1);
+			this.setFacing(Direction.values()[Simulation.random.nextInt(4) + 1]);
 		}
 		
 		// Nick, for some reason, would like to keep the scores across resets
@@ -260,7 +260,7 @@ public class Player {
 	public void setRadarPower(int setting) {
 	}
 
-	public void radarTouch(int i) {
+	public void radarTouch(Direction i) {
 		
 	}
 
@@ -294,7 +294,7 @@ public class Player {
 		return name.equals(player.name);
 	}
 
-	public void setIncoming(int i) {
+	public void setIncoming(Direction d) {
 	}
 
 	public int getIncoming() {
@@ -320,12 +320,12 @@ public class Player {
 		return null;
 	}
 
-	public void setSound(int soundNear) {
+	public void setSound(Direction soundNear) {
 		
 	}
 	
-	public int getSound() {
-		return 0;
+	public Direction getSound() {
+		return Direction.NONE;
 	}
 	
 	public void fragged() {

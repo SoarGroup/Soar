@@ -91,10 +91,12 @@ public class ToscaEater extends Eater {
 			{
 				move.move = true;
 				
-				// Tend to keep moving in the same direction as before
-				move.moveDirection = getFacingInt() + dir ;
-				if (move.moveDirection > 4)
-					move.moveDirection = 1 ;
+				assert false;
+				// REWRITE THIS:
+//				// Tend to keep moving in the same direction as before
+//				move.moveDirection = getFacing() + dir ;
+//				if (move.moveDirection > 4)
+//					move.moveDirection = 1 ;
 				
 				// Calculate new location
 				int [] newLocation = Arrays.copyOf(oldLocation, oldLocation.length);
@@ -110,17 +112,19 @@ public class ToscaEater extends Eater {
 				move.open = true;
 				move.openCode = this.m_OutputVar.GetOpenCode();
 			} else {
-				move.move = true ;
-				move.moveDirection = this.m_OutputVar.GetDirection() ;
-				
-				if (move.moveDirection == 0)
-					move.move = false ;
+				assert false;
+				// REWRITE THIS:
+//				move.move = true ;
+//				move.moveDirection = this.m_OutputVar.GetDirection() ;
+//				
+//				if (move.moveDirection == 0)
+//					move.move = false ;
 			}
 		}
 
 		//MoveInfo move = Soar2D.wm.getHumanMove(getEater().getColor());
 		// the facing depends on the move
-		setFacingInt(move.moveDirection);
+		setFacing(move.moveDirection);
 		logger.info("Tosca agent move direction " + move.moveDirection);
 		return move;
 	}

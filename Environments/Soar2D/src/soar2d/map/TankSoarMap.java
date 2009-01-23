@@ -136,14 +136,14 @@ public class TankSoarMap extends GridMap {
 					// we're in phase 3 when detected in phase 2
 	
 					// what direction is it going
-					int missileDir = cellObject.getIntProperty(Names.kPropertyDirection);
+					Direction missileDir = Direction.parse(cellObject.getProperty(Names.kPropertyDirection));
 					
 					while (true) {
 						int phase = cellObject.getIntProperty(Names.kPropertyFlyPhase);
 						
 						if (phase == 0) {
 							Cell overlapCell = getCell(location);
-							overlapCell = overlapCell.neighbors[Direction.backwardOf[missileDir]];
+							overlapCell = overlapCell.neighbors[missileDir.backward().index()];
 							overlapCell.forceRedraw();
 						}
 						

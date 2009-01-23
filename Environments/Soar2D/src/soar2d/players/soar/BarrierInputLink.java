@@ -4,7 +4,6 @@ import sml.FloatElement;
 import sml.Identifier;
 import sml.IntElement;
 import sml.StringElement;
-import soar2d.Direction;
 import soar2d.Soar2D;
 import soar2d.map.BookMap.Barrier;
 import soar2d.world.PlayersManager;
@@ -49,7 +48,7 @@ class BarrierInputLink {
 			angleOff = robot.agent.CreateIdWME(center, "angle-off");
 			yaw = robot.agent.CreateFloatWME(angleOff, "yaw", players.angleOff(robot, centerpoint));
 		}
-		direction = robot.agent.CreateStringWME(parent, "direction", Direction.stringOf[barrier.direction]);
+		direction = robot.agent.CreateStringWME(parent, "direction", barrier.direction.id());
 	}
 }
 

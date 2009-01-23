@@ -211,13 +211,13 @@ public class SoarTank extends Tank implements Agent.RunEventInterface {
 				}
 				
 				if (moveDirection.equalsIgnoreCase(Names.kForwardID)) {
-					move.moveDirection = getFacingInt();
+					move.moveDirection = getFacing();
 				} else if (moveDirection.equalsIgnoreCase(Names.kBackwardID)) {
-					move.moveDirection = Direction.backwardOf[this.getFacingInt()];
+					move.moveDirection = getFacing().backward();
 				} else if (moveDirection.equalsIgnoreCase(Names.kLeftID)) {
-					move.moveDirection = Direction.leftOf[this.getFacingInt()];
+					move.moveDirection = getFacing().left();
 				} else if (moveDirection.equalsIgnoreCase(Names.kRightID)) {
-					move.moveDirection = Direction.rightOf[this.getFacingInt()];
+					move.moveDirection = getFacing().right();
 				} else if (moveDirection.equalsIgnoreCase(Names.kNone)) {
 					// legal wait
 					moveWait = true;
@@ -492,27 +492,27 @@ public class SoarTank extends Tank implements Agent.RunEventInterface {
 	}
 
 	public void commit(int [] location) {
-		int facing = getFacingInt();
-		String facingString = Direction.stringOf[facing];
+		Direction facing = getFacing();
+		String facingString = facing.id();
 		World world = Soar2D.simulation.world;
 		String shieldStatus = shieldsUp ? Names.kOn : Names.kOff;
-		String blockedForward = ((blocked & Direction.indicators[facing]) > 0) ? Names.kYes : Names.kNo;
-		String blockedBackward = ((blocked & Direction.indicators[Direction.backwardOf[facing]]) > 0) ? Names.kYes : Names.kNo;
-		String blockedLeft = ((blocked & Direction.indicators[Direction.leftOf[facing]]) > 0) ? Names.kYes : Names.kNo;
-		String blockedRight = ((blocked & Direction.indicators[Direction.rightOf[facing]]) > 0) ? Names.kYes : Names.kNo;
-		String incomingForward = ((incoming & Direction.indicators[facing]) > 0) ? Names.kYes : Names.kNo;
-		String incomingBackward = ((incoming & Direction.indicators[Direction.backwardOf[facing]]) > 0) ? Names.kYes : Names.kNo;
-		String incomingLeft = ((incoming & Direction.indicators[Direction.leftOf[facing]]) > 0) ? Names.kYes : Names.kNo;
-		String incomingRight = ((incoming & Direction.indicators[Direction.rightOf[facing]]) > 0) ? Names.kYes : Names.kNo;
+		String blockedForward = ((blocked & facing.indicator()) > 0) ? Names.kYes : Names.kNo;
+		String blockedBackward = ((blocked & facing.backward().indicator()) > 0) ? Names.kYes : Names.kNo;
+		String blockedLeft = ((blocked & facing.left().indicator()) > 0) ? Names.kYes : Names.kNo;
+		String blockedRight = ((blocked & facing.right().indicator()) > 0) ? Names.kYes : Names.kNo;
+		String incomingForward = ((incoming & facing.indicator()) > 0) ? Names.kYes : Names.kNo;
+		String incomingBackward = ((incoming & facing.backward().indicator()) > 0) ? Names.kYes : Names.kNo;
+		String incomingLeft = ((incoming & facing.left().indicator()) > 0) ? Names.kYes : Names.kNo;
+		String incomingRight = ((incoming & facing.right().indicator()) > 0) ? Names.kYes : Names.kNo;
 		String smellColorString = (smellColor == null) ? Names.kNone : smellColor;
 		String soundString;
 		if (sound == facing) {
 			soundString = Names.kForwardID;
-		} else if (sound == Direction.backwardOf[facing]) {
+		} else if (sound == facing.backward()) {
 			soundString = Names.kBackwardID;
-		} else if (sound == Direction.leftOf[facing]) {
+		} else if (sound == facing.left()) {
 			soundString = Names.kLeftID;
-		} else if (sound == Direction.rightOf[facing]) {
+		} else if (sound == facing.right()) {
 			soundString = Names.kRightID;
 		} else {
 			soundString = Names.kSilentID;
@@ -523,10 +523,10 @@ public class SoarTank extends Tank implements Agent.RunEventInterface {
 		do {
 			random = Simulation.random.nextFloat();
 		} while (random == oldrandom);
-		String rwavesForward = (rwaves & facing) > 0 ? Names.kYes : Names.kNo;
-		String rwavesBackward = (rwaves & Direction.indicators[Direction.backwardOf[facing]]) > 0 ? Names.kYes : Names.kNo;;
-		String rwavesLeft = (rwaves & Direction.indicators[Direction.leftOf[facing]]) > 0 ? Names.kYes : Names.kNo;
-		String rwavesRight = (rwaves & Direction.indicators[Direction.rightOf[facing]]) > 0 ? Names.kYes : Names.kNo;
+		String rwavesForward = (rwaves & facing.indicator()) > 0 ? Names.kYes : Names.kNo;
+		String rwavesBackward = (rwaves & facing.backward().indicator()) > 0 ? Names.kYes : Names.kNo;;
+		String rwavesLeft = (rwaves & facing.left().indicator()) > 0 ? Names.kYes : Names.kNo;
+		String rwavesRight = (rwaves & facing.right().indicator()) > 0 ? Names.kYes : Names.kNo;
 
 		if (logger.isTraceEnabled()) {
 			logger.trace(this.getName() + " input dump: ");

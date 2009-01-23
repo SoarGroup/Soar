@@ -1,185 +1,117 @@
 package soar2d;
 
-import java.util.HashMap;
-
-/**
- * @author voigtjr
- *
- * Direction class does a few funky things with numbers. The key thing to note:
- * 1 = north = kNorthInt
- * 2 = east = kEastInt
- * 3 = south = kSouthInt
- * 4 = west = kWestInt
- * 
- * Use stringOf to convert from "north" to 1
- * 
- * Use getInt to convert from 1 to "north"
- */
-public class Direction {
+public enum Direction {
+	NONE (0, 0, Names.kNone, 0, new int[] {0, 0}) {
+	},
 	
-	/**
-	 * represents north
-	 */
-	public final static int kNorthInt = 1;
-	/**
-	 * represents east
-	 */
-	public final static int kEastInt = 2;
-	/**
-	 * represents south
-	 */
-	public final static int kSouthInt = 3;
-	/**
-	 * represents west
-	 */
-	public final static int kWestInt = 4;
+	NORTH (1, 1, Names.kNorth, 3 * Math.PI / 2, new int[] {0, -1}) {
+	}, 
 	
-	/**
-	 * Used in tanksoar sensors
-	 */
-	public final static int kNorthIndicator = 1;
-	/**
-	 * Used in tanksoar sensors
-	 */
-	public final static int kEastIndicator = 2;
-	/**
-	 * Used in tanksoar sensors
-	 */
-	public final static int kSouthIndicator = 4;
-	/**
-	 * Used in tanksoar sensors
-	 */
-	public final static int kWestIndicator = 8;
+	EAST (2, 2, Names.kEast, 0, new int[] {1, 0}) {
+	},
 	
-	public final static Integer kNorthInteger = new Integer(kNorthInt);
-	public final static Integer kEastInteger = new Integer(kEastInt);
-	public final static Integer kSouthInteger = new Integer(kSouthInt);
-	public final static Integer kWestInteger = new Integer(kWestInt);
+	SOUTH (3, 4, Names.kSouth, Math.PI / 2, new int[] {0, 1}) {
+	}, 
 	
-	/**
-	 * Use to convert an int to a string direction
-	 */
-	public final static String[] stringOf = new String[5];
+	WEST (4, 8, Names.kWest, Math.PI, new int[] {-1, 0}) {
+	};
 	
-	/**
-	 * Use to convert an int to a string direction
-	 */
-	public final static double[] radiansOf = new double[5];
-	
-	/**
-	 * Use to convert from direction int to indicator int
-	 */
-	public final static int[] indicators = new int[5];
-	/**
-	 * Use to get direction opposite of current
-	 */
-	public final static int[] backwardOf = new int[5];
-	/**
-	 * Use to get direction left of current
-	 */
-	public final static int[] leftOf = new int[5];
-	/**
-	 * Use to get direction right of current
-	 */
-	public final static int[] rightOf = new int[5];
-	/**
-	 * Use to get change in x when travelling a certain direction
-	 */
-	public final static int[] xDelta = new int[5];
-	/**
-	 * Use to get change in y when travelling a certain direction
-	 */
-	public final static int[] yDelta = new int[5];
-
-	/**
-	 * used to get Integers froms strings
-	 */
-	private final static HashMap<String, Integer> ints = new HashMap<String, Integer>(4);
+	private final int index;
+	private final int indicator;
+	private final String id;
+	private final double radians;
+	private final int[] delta;
+	private Direction backward;
+	private Direction left;
+	private Direction right;
 	
 	static {
-		// set all those data structures up
-		
-		ints.put(Names.kNorth, kNorthInteger);	// string -> int
-		ints.put(Names.kEast, kEastInteger);
-		ints.put(Names.kSouth, kSouthInteger);
-		ints.put(Names.kWest, kWestInteger);
-		
-		indicators[0] = 0;
-		indicators[kNorthInt] = kNorthIndicator;
-		indicators[kEastInt] = kEastIndicator;
-		indicators[kSouthInt] = kSouthIndicator;
-		indicators[kWestInt] = kWestIndicator;
-		
-		stringOf[0] = null;					// int -> string
-		stringOf[kNorthInt] = Names.kNorth;
-		stringOf[kEastInt] = Names.kEast;
-		stringOf[kSouthInt] = Names.kSouth;
-		stringOf[kWestInt] = Names.kWest;
-		
-		radiansOf[0] = 0.0;					
-		radiansOf[kNorthInt] = 3 * Math.PI / 2;
-		radiansOf[kEastInt] = 0.0;
-		radiansOf[kSouthInt] = Math.PI / 2;
-		radiansOf[kWestInt] = Math.PI;
-		
-		backwardOf[0] = 0;					
-		backwardOf[kNorthInt] = kSouthInt;	// backward of north is south
-		backwardOf[kEastInt] = kWestInt;
-		backwardOf[kSouthInt] = kNorthInt;
-		backwardOf[kWestInt] = kEastInt;
-		
-		leftOf[0] = 0;				
-		leftOf[kNorthInt] = kWestInt;		// left of north is west
-		leftOf[kEastInt] = kNorthInt;
-		leftOf[kSouthInt] = kEastInt;
-		leftOf[kWestInt] = kSouthInt;
-		
-		rightOf[0] = 0;					
-		rightOf[kNorthInt] = kEastInt;	// right of north is east
-		rightOf[kEastInt] = kSouthInt;
-		rightOf[kSouthInt] = kWestInt;
-		rightOf[kWestInt] = kNorthInt;
-		
-		xDelta[0] = 0;					
-		xDelta[kNorthInt] = 0;	
-		xDelta[kEastInt] = 1;
-		xDelta[kSouthInt] = 0;
-		xDelta[kWestInt] = -1;
-		
-		yDelta[0] = 0;					
-		yDelta[kNorthInt] = -1;	
-		yDelta[kEastInt] = 0;
-		yDelta[kSouthInt] = 1;
-		yDelta[kWestInt] = 0;
+		Direction.NORTH.backward = Direction.SOUTH;
+		Direction.EAST.backward = Direction.WEST;
+		Direction.SOUTH.backward = Direction.NORTH;
+		Direction.WEST.backward = Direction.EAST;
+
+		Direction.NORTH.left = Direction.WEST;
+		Direction.EAST.left = Direction.NORTH;
+		Direction.SOUTH.left = Direction.EAST;
+		Direction.WEST.left = Direction.SOUTH;
+
+		Direction.NORTH.right = Direction.EAST;
+		Direction.EAST.right = Direction.SOUTH;
+		Direction.SOUTH.right = Direction.WEST;
+		Direction.WEST.right = Direction.NORTH;
+	}
+
+	Direction(int index, int indicator, String id, double radians, int[] delta) {
+		this.index = index;
+		this.indicator = indicator;
+		this.id = id;
+		this.radians = radians;
+		this.delta = delta;
 	}
 	
-	/**
-	 * @param direction the string direction to convert
-	 * @return the integer direction, such as kNorthInt (the default when string invalid)
-	 */
-	public static int getInt(String direction) {
-		Integer d = ints.get(direction);
-		if (d == null) {
-			return 0;
+	public int index() { 
+		return index; 
+	}
+	public int indicator() { 
+		return indicator; 
+	}
+	public String id() { 
+		return id; 
+	}
+	public double radians() { 
+		return radians; 
+	}
+	public Direction backward() { 
+		return backward; 
+	}
+	public Direction left() { 
+		return left; 
+	}
+	public Direction right() { 
+		return right; 
+	}
+	public static Direction parse(String name) {
+		if (name.length() == 0) {
+			return null;
 		}
-		return d.intValue();
-	}
-	
-	/**
-	 * @param p the point to move
-	 * @param direction the direction to move the point
-	 * 
-	 * takes a point p and translates it one unit in the direction indicated
-	 */
-	public static void translate(int [] p, int direction) {
-		assert direction > 0;
-		assert direction < 5;
 		
-		p[0] += xDelta[direction];
-		p[1] += yDelta[direction];
+		switch (name.charAt(0)) {
+		case 'N':
+		case 'n':
+			if (name.equalsIgnoreCase(Direction.NONE.id)) {
+				return Direction.NONE;
+			} 
+			// assume north
+			return Direction.NORTH;
+		case 'E':
+		case 'e':
+			return Direction.EAST;
+		case 'S':
+		case 's':
+			return Direction.SOUTH;
+		case 'W':
+		case 'w':
+			return Direction.WEST;
+		default:
+			break;
+		}
+		return null;
 	}
 	
-	private Direction() {
+	// translate point toward cell in direction, storing result in destination
+	// if destination null, use point
+	public static int[] translate(int[] point, Direction direction, int[] destination) {
+		if (destination == null) {
+			destination = point;
+		}
+		destination[0] = point[0] + direction.delta[0];
+		destination[1] = point[1] + direction.delta[1];
+		return destination;
+	}
+
+	public static int[] translate(int[] point, Direction direction) {
+		return translate(point, direction, null);
 	}
 
 	public static double toDisplayRadians(double internalRadians) {
@@ -188,7 +120,7 @@ public class Direction {
 		}
 		return fmod(internalRadians + Math.PI / 2, 2 * Math.PI);
 	}
-	
+
 	public static double toInternalRadians(double displayRadians) {
 		while (displayRadians < 0) {
 			displayRadians += 2 * Math.PI;
@@ -199,7 +131,7 @@ public class Direction {
 		}
 		return displayRadians;
 	}
-	
+
 	public static double fmod(double a, double mod) {
 		double result = a;
 		assert mod > 0;
@@ -213,4 +145,3 @@ public class Direction {
 		return result;
 	}
 }
-

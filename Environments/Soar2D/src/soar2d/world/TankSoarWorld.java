@@ -92,15 +92,15 @@ public class TankSoarWorld implements IWorld {
 			// Check for rotate
 			if (playerMove.rotate) {
 				tMap.forceRedraw(oldLocation);
-				int facing = player.getFacingInt();
+				Direction facing = player.getFacing();
 				if (playerMove.rotateDirection.equals(Names.kRotateLeft)) {
-					facing = Direction.leftOf[facing];
+					facing = facing.left();
 				} else if (playerMove.rotateDirection.equals(Names.kRotateRight)) {
-					facing = Direction.rightOf[facing];
+					facing = facing.right();
 				} else {
 					logger.warn(player + ": unknown rotation command: " + playerMove.rotateDirection);
 				}
-				player.setFacingInt(facing);
+				player.setFacing(facing);
 			}
 			
 			// Check shields
@@ -181,7 +181,7 @@ public class TankSoarWorld implements IWorld {
 			
 			// the other player is moving, check its direction
 			
-			if (playerMove.moveDirection != Direction.backwardOf[otherMove.moveDirection]) {
+			if (playerMove.moveDirection != otherMove.moveDirection.backward()) {
 				// we moved but not toward each other, cross collision impossible
 				newLocations.put(player, newLocation);
 				movedTanks.add(player);
@@ -348,7 +348,7 @@ public class TankSoarWorld implements IWorld {
 			// are any flying toward me?
 			MoveInfo move = players.getMove(player);
 			for (CellObject missile : missiles) {
-				if (move.moveDirection == Direction.backwardOf[missile.getIntProperty(Names.kPropertyDirection)]) {
+				if (move.moveDirection == Direction.parse(missile.getProperty(Names.kPropertyDirection)).backward()) {
 					missileHit(player, tMap, location, missile, players);
 					tMap.removeObject(location, missile.getName());
 
@@ -379,7 +379,7 @@ public class TankSoarWorld implements IWorld {
 			Player player = playerIter.next();
 			int [] missileLoc = Arrays.copyOf(players.getLocation(player), players.getLocation(player).length);
 			
-			int direction = player.getFacingInt();
+			Direction direction = player.getFacing();
 			Direction.translate(missileLoc, direction);
 			
 			if (!tMap.isInBounds(missileLoc)) {
@@ -393,7 +393,7 @@ public class TankSoarWorld implements IWorld {
 			
 			CellObject missile = tMap.createRandomObjectWithProperty(Names.kPropertyMissile);
 			missile.setName(player + "-" + missileID++);
-			missile.addProperty(Names.kPropertyDirection, Integer.toString(direction));
+			missile.addProperty(Names.kPropertyDirection, direction.id());
 			missile.addProperty(Names.kPropertyFlyPhase, "0");
 			missile.addProperty(Names.kPropertyOwner, player.getName());
 			missile.addProperty(Names.kPropertyColor, player.getColor());
@@ -519,7 +519,7 @@ public class TankSoarWorld implements IWorld {
 			}
 			if (players.numberOfPlayers() < 2) {
 				player.setSmell(0, null);
-				player.setSound(0);
+				player.setSound(Direction.NONE);
 			} else {
 				int distance = 99;
 				String color = null;
@@ -554,7 +554,7 @@ public class TankSoarWorld implements IWorld {
 					if (logger.isTraceEnabled()) {
 						logger.trace("Skipping sound check, smell was " + distance);
 					}
-					player.setSound(0);
+					player.setSound(Direction.NONE);
 				} else {
 					player.setSound(map.getSoundNear(players.getLocation(player)));
 				}
