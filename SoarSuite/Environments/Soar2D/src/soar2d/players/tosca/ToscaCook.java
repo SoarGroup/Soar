@@ -2,7 +2,6 @@ package soar2d.players.tosca;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Iterator;
 
 import soar2d.Direction;
 import soar2d.Soar2D;
