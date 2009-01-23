@@ -1221,7 +1221,7 @@ public abstract class GridMap {
 		return output;
 	}
 	
-	public ArrayList<int []> getAvailableLocations() {
+	public ArrayList<int []> getAvailableLocationsSlow() {
 		ArrayList<int []> availableLocations = new ArrayList<int []>();
 		for (int x = 0; x < getSize(); ++x) {
 			for (int y = 0; y < getSize(); ++ y) {
@@ -1233,6 +1233,27 @@ public abstract class GridMap {
 		}
 		return availableLocations;
 	}
+
+	// Assumes walls on borders!
+	public int [] getAvailableLocationAmortized() {
+		int [] potentialLocation = new int [2];;
+		
+		// Loop in case there are no free spots, the 100 is totally arbitrary
+		for (int counter = 0; counter < 100; ++counter) {
+			potentialLocation[0] = Simulation.random.nextInt(size - 2) + 1;
+			potentialLocation[1] = Simulation.random.nextInt(size - 2) + 1;
+			
+			if (isAvailable(potentialLocation)) {
+				return potentialLocation;
+			}
+		}
+		ArrayList<int []> locations = getAvailableLocationsSlow();
+		if (locations.size() == 0) {
+			return null;
+		}
+		return locations.get(Simulation.random.nextInt(locations.size()));
+	}
+	
 	public boolean resetRedraw(int[] location) {
 		return getCell(location).resetRedraw();
 	}

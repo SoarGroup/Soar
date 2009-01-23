@@ -1,13 +1,11 @@
 package soar2d.world;
 
 import java.lang.Math;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Iterator;
 
 import org.apache.log4j.Logger;
 
-import soar2d.Simulation;
 import soar2d.Soar2D;
 import soar2d.config.SimConfig;
 import soar2d.map.EatersMap;
@@ -140,34 +138,21 @@ public class World {
 	}
 	
 	int [] putInStartingLocation(Player player, boolean useInitialLocation) {
-		// Get available cells
-		
-		ArrayList<int []> availableLocations = map.getAvailableLocations();
-		// make sure there is an available cell
-		if (availableLocations.size() < worldModule.getMinimumAvailableLocations()) {
-			error("There are no suitable starting locations for " + player.getName() + ".");
-			return null;
-		}
-		
-		int [] location = null;
-
+		int[] location = null;
 		if (useInitialLocation && players.hasInitialLocation(player)) {
 			location = players.getInitialLocation(player);
-			boolean found = false;
-			for (int[] spot : availableLocations) {
-				if (Arrays.equals(location, spot)) {
-					found = true;
-					break;
-				}
-			}
-			if (!found) {
+			if (!map.isAvailable(location)) {
 				logger.warn(player.getName() + ": Initial location (" + location[0] + "," + location[1] + ") is blocked, going random.");
 				location = null;
 			}
 		}
 		
 		if (location == null) {
-			location = availableLocations.get(Simulation.random.nextInt(availableLocations.size()));
+			location = map.getAvailableLocationAmortized();
+			if (location == null) {
+				error("There are no suitable starting locations for " + player.getName() + ".");
+				return null;
+			}
 		}
 		
 		// put the player in it
@@ -212,6 +197,7 @@ public class World {
 		
 		if (!printedStats) {
 			printedStats = true;
+			System.out.println(message);
 			Soar2D.control.infoPopUp(message);
 			Soar2D.control.stopSimulation();
 			boolean draw = false;
@@ -231,7 +217,9 @@ public class World {
 				} else {
 					status = "loser";
 				}
-				logger.info(player.getName() + ": " + player.getPoints() + " (" + status + ").");
+				String statline = player.getName() + ": " + player.getPoints() + " (" + status + ")";
+				logger.info(statline);
+				System.out.println(statline);
 			}
 		}
 	}
@@ -432,12 +420,14 @@ public class World {
 		map.setExplosion(oldLocation);
 		map.setPlayer(oldLocation, null);
 
-		// Get available spots
-		ArrayList<int []> spots = map.getAvailableLocations();
-		assert spots.size() > 0;
+		// put the player somewhere
+		int [] location = map.getAvailableLocationAmortized();
+		if (location == null) {
+			logger.error("Couldn't find spot to spawn player!");
+			assert false;
+			return;
+		}
 		
-		// pick one and put the player in it
-		int [] location = spots.get(Simulation.random.nextInt(spots.size()));
 		map.setPlayer(location, player);
 		
 		// save the location
