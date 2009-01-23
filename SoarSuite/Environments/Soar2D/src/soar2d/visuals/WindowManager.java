@@ -221,22 +221,22 @@ public class WindowManager {
 				switch (e.keyCode) {
 				case SWT.KEYPAD_8:
 					humanMove.move = true;
-					humanMove.moveDirection = Direction.kNorthInt;
+					humanMove.moveDirection = Direction.NORTH;
 					go = true;
 					break;
 				case SWT.KEYPAD_6:
 					humanMove.move = true;
-					humanMove.moveDirection = Direction.kEastInt;
+					humanMove.moveDirection = Direction.EAST;
 					go = true;
 					break;
 				case SWT.KEYPAD_2:
 					humanMove.move = true;
-					humanMove.moveDirection = Direction.kSouthInt;
+					humanMove.moveDirection = Direction.SOUTH;
 					go = true;
 					break;
 				case SWT.KEYPAD_4:
 					humanMove.move = true;
-					humanMove.moveDirection = Direction.kWestInt;
+					humanMove.moveDirection = Direction.WEST;
 					go = true;
 					break;
 				case SWT.KEYPAD_5:
@@ -305,22 +305,22 @@ public class WindowManager {
 				switch (e.keyCode) {
 				case SWT.KEYPAD_8:
 					humanMove.move = true;
-					humanMove.moveDirection = Direction.kNorthInt;
+					humanMove.moveDirection = Direction.NORTH;
 					go = true;
 					break;
 				case SWT.KEYPAD_6:
 					humanMove.move = true;
-					humanMove.moveDirection = Direction.kEastInt;
+					humanMove.moveDirection = Direction.EAST;
 					go = true;
 					break;
 				case SWT.KEYPAD_2:
 					humanMove.move = true;
-					humanMove.moveDirection = Direction.kSouthInt;
+					humanMove.moveDirection = Direction.SOUTH;
 					go = true;
 					break;
 				case SWT.KEYPAD_4:
 					humanMove.move = true;
-					humanMove.moveDirection = Direction.kWestInt;
+					humanMove.moveDirection = Direction.WEST;
 					go = true;
 					break;
 				case SWT.KEYPAD_5:
@@ -385,19 +385,19 @@ public class WindowManager {
 				switch (e.keyCode) {
 				case SWT.KEYPAD_8:
 					humanMove.move = true;
-					humanMove.moveDirection = Direction.kNorthInt;
+					humanMove.moveDirection = Direction.NORTH;
 					break;
 				case SWT.KEYPAD_6:
 					humanMove.move = true;
-					humanMove.moveDirection = Direction.kEastInt;
+					humanMove.moveDirection = Direction.EAST;
 					break;
 				case SWT.KEYPAD_2:
 					humanMove.move = true;
-					humanMove.moveDirection = Direction.kSouthInt;
+					humanMove.moveDirection = Direction.SOUTH;
 					break;
 				case SWT.KEYPAD_4:
 					humanMove.move = true;
-					humanMove.moveDirection = Direction.kWestInt;
+					humanMove.moveDirection = Direction.WEST;
 					break;
 				case SWT.KEYPAD_5:
 					humanMove.fillup = true;
@@ -860,7 +860,7 @@ public class WindowManager {
 					return;
 				}
 				boolean go = false;
-				int facing = human.getFacingInt();
+				Direction facing = human.getFacing();
 				switch (e.keyCode) {
 				case SWT.KEYPAD_8:
 					humanMove.move = true;
@@ -868,15 +868,15 @@ public class WindowManager {
 					break;
 				case SWT.KEYPAD_6:
 					humanMove.move = true;
-					humanMove.moveDirection = Direction.rightOf[facing];
+					humanMove.moveDirection = facing.right();
 					break;
 				case SWT.KEYPAD_2:
 					humanMove.move = true;
-					humanMove.moveDirection = Direction.backwardOf[facing];
+					humanMove.moveDirection = facing.backward();
 					break;
 				case SWT.KEYPAD_4:
 					humanMove.move = true;
-					humanMove.moveDirection = Direction.leftOf[facing];
+					humanMove.moveDirection = facing.left();
 					break;
 				case SWT.KEYPAD_1:
 					humanMove.rotate = !humanMove.rotate;

@@ -180,19 +180,19 @@ public class SoarCook extends Cook {
 			// update view
 			int [] tempLocation;
 			tempLocation = Arrays.copyOf(location, location.length);
-			Direction.translate(tempLocation, Direction.kNorthInt);
+			Direction.translate(tempLocation, Direction.NORTH);
 			updateCell(map, tempLocation, northObject, northType);
 
 			tempLocation = Arrays.copyOf(location, location.length);
-			Direction.translate(tempLocation, Direction.kSouthInt);
+			Direction.translate(tempLocation, Direction.SOUTH);
 			updateCell(map, tempLocation, southObject, southType);
 			
 			tempLocation = Arrays.copyOf(location, location.length);
-			Direction.translate(tempLocation, Direction.kEastInt);
+			Direction.translate(tempLocation, Direction.EAST);
 			updateCell(map, tempLocation, eastObject, eastType);
 			
 			tempLocation = Arrays.copyOf(location, location.length);
-			Direction.translate(tempLocation, Direction.kWestInt);
+			Direction.translate(tempLocation, Direction.WEST);
 			updateCell(map, tempLocation, westObject, westType);
 
 			// update cell type
@@ -316,8 +316,8 @@ public class SoarCook extends Cook {
 				
 				String direction = commandId.GetParameterValue(Names.kDirectionID);
 				if (direction != null) {
-					move.moveDirection = Direction.getInt(direction); 
-					this.setFacingInt(move.moveDirection);
+					move.moveDirection = Direction.parse(direction); 
+					this.setFacing(move.moveDirection);
 					moveCommand = commandId;
 					continue;
 				}

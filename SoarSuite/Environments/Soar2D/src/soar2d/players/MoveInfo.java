@@ -19,7 +19,7 @@ public class MoveInfo {
 	
 	// eaters + tanksoar + kitchen
 	public boolean move = false;	// move
-	public int moveDirection = -1;	// direction to move
+	public Direction moveDirection = Direction.NONE;	// direction to move
 	
 	// eaters
 	public boolean open = false;	// open the box on the current cell
@@ -82,7 +82,7 @@ public class MoveInfo {
 				output += "(" + Names.kJumpID + ")";
 			} 
 			if (move) {
-				output += "(" + Names.kMoveID + ": " + Direction.stringOf[moveDirection] + ")";
+				output += "(" + Names.kMoveID + ": " + moveDirection.id() + ")";
 			}
 			
 			if (dontEat) {
@@ -98,7 +98,7 @@ public class MoveInfo {
 			
 		case TANKSOAR:
 			if (move) {
-				output += "(" + Names.kMoveID + ": " + Direction.stringOf[moveDirection] + ")";
+				output += "(" + Names.kMoveID + ": " + moveDirection.id() + ")";
 			}
 			if (rotate) {
 				output += "(" + Names.kRotateID + ": " + rotateDirection + ")";			
@@ -148,7 +148,7 @@ public class MoveInfo {
 
 		case KITCHEN:
 			if (move) {
-				output += "(" + Names.kMoveID + ": " + Direction.stringOf[moveDirection] + ")";
+				output += "(" + Names.kMoveID + ": " + moveDirection.id() + ")";
 			}
 			if (moveWithObject) {
 				output += "(move-with-object)";
@@ -166,7 +166,7 @@ public class MoveInfo {
 
 		case TAXI:
 			if (move) {
-				output += "(" + Names.kMoveID + ": " + Direction.stringOf[moveDirection] + ")";
+				output += "(" + Names.kMoveID + ": " + moveDirection.id() + ")";
 			}
 			if (pickup) {
 				output += "(" + Names.kPickUpID + ")";

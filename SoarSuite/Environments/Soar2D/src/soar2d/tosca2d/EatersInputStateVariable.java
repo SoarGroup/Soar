@@ -213,7 +213,7 @@ public class EatersInputStateVariable extends JavaStateVariable {
 		
 		main.AddNamedValue("x", new tosca.Integer(location[0])) ;
 		main.AddNamedValue("y", new tosca.Integer(location[1])) ;
-		main.AddNamedValue("facing", new tosca.Integer(eater.getFacingInt())) ;
+		main.AddNamedValue("facing", new tosca.Integer(eater.getFacing().index())) ;
 		
 		Group map = new Group() ;
 		

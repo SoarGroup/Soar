@@ -410,32 +410,32 @@ public class TankSoarAgentDisplay extends AgentDisplay {
 	
 	private void updateSensors() {
 		m_AgentWorld.update(selectedPlayer);
-		int facingInt = selectedPlayer.getFacingInt();
+		Direction facingDir = selectedPlayer.getFacing();
 		m_Radar.setSelection(selectedPlayer.getRadarPower());
 		m_Radar.setToolTipText(Integer.toString(selectedPlayer.getRadarPower()));
-		m_RWaves.set(selectedPlayer.getRWaves(), facingInt);
-		m_Blocked.set(selectedPlayer.getBlocked(), facingInt);
-		facing.setText(Direction.stringOf[facingInt]);
+		m_RWaves.set(selectedPlayer.getRWaves(), facingDir);
+		m_Blocked.set(selectedPlayer.getBlocked(), facingDir);
+		facing.setText(facingDir.id());
 		energyCharger.setText(selectedPlayer.getOnEnergyCharger() ? "yes" : "no");
 		healthCharger.setText(selectedPlayer.getOnHealthCharger() ? "yes" : "no");
 		resurrect.setText(selectedPlayer.getResurrect() ? "yes" : "no");
 		shields.setText(selectedPlayer.shieldsUp() ? "yes" : "no");
-		m_Incoming.set(selectedPlayer.getIncoming(), facingInt);
+		m_Incoming.set(selectedPlayer.getIncoming(), facingDir);
 		switch (selectedPlayer.getSound()) {
-		case Direction.kNorthInt:
-			m_Sound.set(Direction.kNorthIndicator, facingInt);
+		case NORTH:
+			m_Sound.set(Direction.NORTH.indicator(), facingDir);
 			break;
-		case Direction.kSouthInt:
-			m_Sound.set(Direction.kSouthIndicator, facingInt);
+		case SOUTH:
+			m_Sound.set(Direction.SOUTH.indicator(), facingDir);
 			break;
-		case Direction.kEastInt:
-			m_Sound.set(Direction.kEastIndicator, facingInt);
+		case EAST:
+			m_Sound.set(Direction.EAST.indicator(), facingDir);
 			break;
-		case Direction.kWestInt:
-			m_Sound.set(Direction.kWestIndicator, facingInt);
+		case WEST:
+			m_Sound.set(Direction.WEST.indicator(), facingDir);
 			break;
 		default:
-			m_Sound.set(0, facingInt);
+			m_Sound.set(Direction.NONE.indicator(), facingDir);
 		}
 		m_Smell.setSelection(selectedPlayer.getSmellDistance());
 		if (selectedPlayer.getSmellColor() != null) {

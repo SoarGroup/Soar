@@ -201,9 +201,9 @@ public class TaxiMap extends GridMap {
 		return "normal";
 	}
 	
-	public boolean wall(int []  from, int to) {
+	public boolean wall(int []  from, Direction to) {
 		for (CellObject wall : getAllWithProperty(from, "block")) {
-			if (wall.getProperty("direction").equals(Direction.stringOf[to])) {
+			if (wall.getProperty("direction").equals(to.id())) {
 				return true;
 			}
 		}

@@ -39,22 +39,22 @@ public class ToscaCook extends Cook {
 
 			// examine cell to the north
 			tempLocation = Arrays.copyOf(location, location.length);
-			Direction.translate(tempLocation, Direction.kNorthInt);
+			Direction.translate(tempLocation, Direction.NORTH);
 			examineCell(map, tempLocation);
 
 			// examine cell to the south
 			tempLocation = Arrays.copyOf(location, location.length);
-			Direction.translate(tempLocation, Direction.kSouthInt);
+			Direction.translate(tempLocation, Direction.SOUTH);
 			examineCell(map, tempLocation);
 			
 			// examine cell to the east
 			tempLocation = Arrays.copyOf(location, location.length);
-			Direction.translate(tempLocation, Direction.kEastInt);
+			Direction.translate(tempLocation, Direction.EAST);
 			examineCell(map, tempLocation);
 			
 			// examine cell to the west
 			tempLocation = Arrays.copyOf(location, location.length);
-			Direction.translate(tempLocation, Direction.kWestInt);
+			Direction.translate(tempLocation, Direction.WEST);
 			examineCell(map, tempLocation);
 			
 			// examine current cell
@@ -104,11 +104,11 @@ public class ToscaCook extends Cook {
 		
 		// 1) example of normal move
 		move.move = true;
-		move.moveDirection = Direction.kNorthInt;
+		move.moveDirection = Direction.NORTH;
 		
 		// 2) example of move with object(s)
 		move.move = true;
-		move.moveDirection = Direction.kSouthInt;
+		move.moveDirection = Direction.SOUTH;
 		move.moveWithObject = true;
 		
 		// 3) example of mix

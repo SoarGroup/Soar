@@ -108,7 +108,7 @@ public class TankSoarVisualWorld extends VisualWorld {
 					}
 					gc.drawImage(image, location[0]*cellSize, location[1]*cellSize);
 				} else if (tank != null) {
-					Image image = tanks.get(new Integer(tank.getFacingInt()));
+					Image image = tanks[tank.getFacing().index()];
 					assert image != null;
 
 					gc.drawImage(image, location[0]*cellSize, location[1]*cellSize);
@@ -143,10 +143,10 @@ public class TankSoarVisualWorld extends VisualWorld {
 					Color missileColor = WindowManager.getColor(colorName);
 					
 					int flightPhase = missile.getIntProperty(Names.kPropertyFlyPhase);
-					int direction = missile.getIntProperty(Names.kPropertyDirection);
+					Direction direction = Direction.parse(missile.getProperty(Names.kPropertyDirection));
 
 					if (flightPhase == 0) {
-						direction = Direction.backwardOf[direction];
+						direction = direction.backward();
 					}
 					
 					boolean thirdPhase = (flightPhase == 3);
@@ -154,19 +154,19 @@ public class TankSoarVisualWorld extends VisualWorld {
 					int mX = 0;
 					int mY = 0;
 					switch (direction) {
-					case Direction.kNorthInt:
+					case NORTH:
 						mX = 10;
 						mY = thirdPhase ? 26 : 5;
 						break;
-					case Direction.kEastInt:
+					case EAST:
 						mX = thirdPhase ? -6 : 15;
 						mY = 10;
 						break;
-					case Direction.kSouthInt:
+					case SOUTH:
 						mX = 10;
 						mY = thirdPhase ? -6 : 15;
 						break;
-					case Direction.kWestInt:
+					case WEST:
 						mX = thirdPhase ? 26 : 5;
 						mY = 10;
 						break;
@@ -184,24 +184,24 @@ public class TankSoarVisualWorld extends VisualWorld {
 				
 				if (radarWaves != null) {
 					for (CellObject cellObject : radarWaves) {
-						int direction = cellObject.getIntProperty(Names.kPropertyDirection);
+						Direction direction = Direction.parse(cellObject.getProperty(Names.kPropertyDirection));
 						int start = 0;
 						int xMod = 0;
 						int yMod = 0;
 						switch (direction) {
-						case Direction.kNorthInt:
+						case NORTH:
 							start = 0;
 							yMod = cellSize / 4;
 							break;
-						case Direction.kSouthInt:
+						case SOUTH:
 							start = -180;
 							yMod = cellSize / -4;
 							break;
-						case Direction.kEastInt:
+						case EAST:
 							start = -90;
 							xMod = cellSize / -4;
 							break;
-						case Direction.kWestInt:
+						case WEST:
 							start = 90;
 							xMod = cellSize / 4;
 							break;

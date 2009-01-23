@@ -57,7 +57,7 @@ public class BookMap extends GridMap {
 		public int [] left;
 		public int [] right;
 		
-		public int direction;
+		public Direction direction;
 
 		private double [] centerpoint;
 		public double [] centerpoint() {
@@ -72,15 +72,15 @@ public class BookMap extends GridMap {
 			
 			if (left.equals(right) == false) {
 				switch (direction) {
-				case Direction.kNorthInt:
-				case Direction.kSouthInt:
+				case NORTH:
+				case SOUTH:
 					// horizontal
 					m = left[0];
 					n = right[0];
 					centerpoint[1] = left[1] * Soar2D.config.roomConfig().cell_size;
 					break;
-				case Direction.kEastInt:
-				case Direction.kWestInt:
+				case EAST:
+				case WEST:
 					// vertical
 					m = left[1];
 					n = right[1];
@@ -93,14 +93,14 @@ public class BookMap extends GridMap {
 				centerpoint[1] = left[1] * Soar2D.config.roomConfig().cell_size;
 
 				switch (direction) {
-				case Direction.kNorthInt:
+				case NORTH:
 					centerpoint[1] += Soar2D.config.roomConfig().cell_size;
-				case Direction.kSouthInt:
+				case SOUTH:
 					centerpoint[0] += Soar2D.config.roomConfig().cell_size / 2;
 					break;
-				case Direction.kWestInt:
+				case WEST:
 					centerpoint[0] += Soar2D.config.roomConfig().cell_size;
-				case Direction.kEastInt:
+				case EAST:
 					centerpoint[1] += Soar2D.config.roomConfig().cell_size / 2;
 					break;
 				}
@@ -124,7 +124,7 @@ public class BookMap extends GridMap {
 				centerpoint[1] += (numberOfBlocks / 2.0) * Soar2D.config.roomConfig().cell_size;
 				
 				// if west, we gotta add a cell size to x
-				if (direction == Direction.kWestInt) {
+				if (direction == Direction.WEST) {
 					centerpoint[0] += Soar2D.config.roomConfig().cell_size;
 				}
 				
@@ -135,7 +135,7 @@ public class BookMap extends GridMap {
 				centerpoint[0] += (numberOfBlocks / 2.0) * Soar2D.config.roomConfig().cell_size;
 
 				// if north, we gotta add a cell size to y
-				if (direction == Direction.kNorthInt) {
+				if (direction == Direction.NORTH) {
 					centerpoint[1] += Soar2D.config.roomConfig().cell_size;
 				}
 			}
@@ -145,7 +145,7 @@ public class BookMap extends GridMap {
 		@Override
 		public String toString() {
 			String output = new String(Integer.toString(id));
-			output += " (" + Direction.stringOf[direction] + ")";
+			output += " (" + direction.id() + ")";
 			double [] center = centerpoint();
 			output += " (" + Integer.toString(left[0]) + "," + Integer.toString(left[1]) + ")-(" 
 					+ Double.toString(center[0]) + "," + Double.toString(center[1]) + ")-(" 
@@ -244,7 +244,7 @@ public class BookMap extends GridMap {
 				}
 				
 				// figure out walls going clockwise starting with the wall north of the first square in the room
-				int direction = Direction.kEastInt;
+				Direction direction = Direction.EAST;
 				int [] startingWall = new int [] { location[0], location[1]-1 };
 				int [] next = Arrays.copyOf(startingWall, startingWall.length);
 				
@@ -295,7 +295,7 @@ public class BookMap extends GridMap {
 							currentBarrier = new Barrier();
 							currentBarrier.gateway = true;
 							currentBarrier.left = Arrays.copyOf(next, next.length);
-							currentBarrier.direction = Direction.leftOf[direction];
+							currentBarrier.direction = direction.left();
 							
 							// create a new gateway id
 							currentBarrier.id = roomCount + gatewayCount + wallCount + objectCount;
@@ -314,7 +314,7 @@ public class BookMap extends GridMap {
 						}
 
 						// is are noted by the direction of the wall
-						gatewayObject.addProperty(Direction.stringOf[currentBarrier.direction], Integer.toString(currentBarrier.id));
+						gatewayObject.addProperty(currentBarrier.direction.id(), Integer.toString(currentBarrier.id));
 						
 					} else if (wallObject != null) /*redundant*/ {
 					
@@ -334,7 +334,7 @@ public class BookMap extends GridMap {
 							// getting here means we're starting a new section of wall
 							currentBarrier = new Barrier();
 							currentBarrier.left = Arrays.copyOf(next, next.length);
-							currentBarrier.direction = Direction.leftOf[direction];
+							currentBarrier.direction = direction.left();
 							
 							// create a new id
 							currentBarrier.id = roomCount + gatewayCount + wallCount + objectCount;
@@ -345,7 +345,7 @@ public class BookMap extends GridMap {
 						}
 						
 						// is are noted by the direction of the wall
-						wallObject.addProperty(Direction.stringOf[currentBarrier.direction], Integer.toString(currentBarrier.id));
+						wallObject.addProperty(currentBarrier.direction.id(), Integer.toString(currentBarrier.id));
 
 					} else {
 						// the world is ending, check the asserts
@@ -365,7 +365,7 @@ public class BookMap extends GridMap {
 					// a wall in the way so that gateway doesn't technically border our room,
 					// so, the gateway ends and we continue on the next segment of wall.
 					rightOfNext = Arrays.copyOf(next, next.length);
-					Direction.translate(rightOfNext, Direction.rightOf[direction]);
+					Direction.translate(rightOfNext, direction.right());
 
 					// if there isn't a next, we're done anyway.
 					// continue if we're moving on with this section of wall, or fall
@@ -409,19 +409,19 @@ public class BookMap extends GridMap {
 					// +---+---+---+ +---+---+---+ +---+---+---+
 					
 					// try turning right first
-					Direction.translate(next, Direction.rightOf[direction]);
+					Direction.translate(next, direction.right());
 					if (walls.contains(next)) {
 						// right worked
-						direction = Direction.rightOf[direction];
+						direction = direction.right();
 
 					} else {
 						// try turning left next
 						next = Arrays.copyOf(previous, previous.length);
-						Direction.translate(next, Direction.leftOf[direction]);
+						Direction.translate(next, direction.left());
 						
 						if (walls.contains(next)) {
 							// left worked
-							direction = Direction.leftOf[direction];
+							direction = direction.left();
 							
 							// need to stay on previous because it is included on the new wall
 							next = previous;
@@ -429,7 +429,7 @@ public class BookMap extends GridMap {
 							
 						} else {
 							// single length wall (perform "left" turn)
-							direction = Direction.leftOf[direction];
+							direction = direction.left();
 
 							// need to stay on previous because it is included on the new wall
 							next = previous;
@@ -490,11 +490,9 @@ public class BookMap extends GridMap {
 	 * @param direction The direction to go to reach the wall
 	 * @param barrierList The barrier list for our new room
 	 */
-	private void doNewWall(int [] endPoint, int direction, ArrayList<Barrier> barrierList) {
+	private void doNewWall(int [] endPoint, Direction direction, ArrayList<Barrier> barrierList) {
 		Barrier currentBarrier = new Barrier();
-		currentBarrier.left = Arrays.copyOf(endPoint, endPoint.length);
-		currentBarrier.left[0] += Direction.xDelta[direction];
-		currentBarrier.left[1] += Direction.yDelta[direction];
+		currentBarrier.left = Direction.translate(endPoint, direction, new int[2]);
 
 		// this is a wall and is only size 1
 		currentBarrier.right = Arrays.copyOf(currentBarrier.left, currentBarrier.left.length);
@@ -510,7 +508,7 @@ public class BookMap extends GridMap {
 		CellObject wallObject = cell.getObject(Names.kWallID);
 		
 		// walls don't share ids, they are noted by the direction of the wall
-		wallObject.addProperty(Direction.stringOf[currentBarrier.direction], Integer.toString(currentBarrier.id));
+		wallObject.addProperty(currentBarrier.direction.id(), Integer.toString(currentBarrier.id));
 
 		// store the barrier
 		barrierList.add(currentBarrier);
@@ -526,13 +524,11 @@ public class BookMap extends GridMap {
 	 * @param roomNumber This is the id number of the room we're in
 	 * @param barrierList This is the list of barriers for the room we're in
 	 */
-	private void doNewGateway(int [] startPoint, int [] endPoint, int direction, int walkDirection, int roomNumber, ArrayList<Barrier> barrierList) {
+	private void doNewGateway(int [] startPoint, int [] endPoint, Direction direction, Direction walkDirection, int roomNumber, ArrayList<Barrier> barrierList) {
 		// next is the gateway to the left of our left endpoint
 		Barrier currentBarrier = new Barrier();
 		currentBarrier.gateway = true;
-		currentBarrier.left = Arrays.copyOf(startPoint, startPoint.length);
-		currentBarrier.left[0] += Direction.xDelta[direction];
-		currentBarrier.left[1] += Direction.yDelta[direction];
+		currentBarrier.left = Direction.translate(startPoint, direction, new int[2]);
 
 		// get a new gateway id
 		currentBarrier.id = roomCount + gatewayCount + wallCount + objectCount;
@@ -544,9 +540,7 @@ public class BookMap extends GridMap {
 		currentBarrier.right = Arrays.copyOf(currentBarrier.left, currentBarrier.left.length);
 		
 		// we know it ends left of the right endpoint
-		int [] endOfGateway = Arrays.copyOf(endPoint, endPoint.length);
-		endOfGateway[0] += Direction.xDelta[direction];
-		endOfGateway[1] += Direction.yDelta[direction];
+		int [] endOfGateway = Direction.translate(endPoint, direction, new int[2]);
 		
 		while (true) {
 			// create the gateway object
@@ -554,7 +548,7 @@ public class BookMap extends GridMap {
 			gatewayObject.removeProperty(Names.kPropertyGatewayRender);
 
 			// gateway don't share ids, they are noted by the direction of the gateway
-			gatewayObject.addProperty(Direction.stringOf[currentBarrier.direction], Integer.toString(currentBarrier.id));
+			gatewayObject.addProperty(currentBarrier.direction.id(), Integer.toString(currentBarrier.id));
 
 			// put the object in the cell
 			Cell cell = getCell(currentBarrier.right);
@@ -572,8 +566,7 @@ public class BookMap extends GridMap {
 			}
 			
 			// increment and loop
-			currentBarrier.right[0] += Direction.xDelta[walkDirection];
-			currentBarrier.right[1] += Direction.yDelta[walkDirection];
+			currentBarrier.right = Direction.translate(currentBarrier.right, walkDirection);
 		}
 
 		// store the barrier
@@ -616,30 +609,30 @@ public class BookMap extends GridMap {
 				cell.addCellObject(theNewRoomObject);
 			}
 
-			int incrementDirection = -1;
+			Direction incrementDirection = Direction.NONE;
 			if (gatewayBarrier.left[0] == gatewayBarrier.right[0]) {
 				// vertical gateway
 				if (gatewayBarrier.left[1] < gatewayBarrier.right[1]) {
 					// increasing to right, south
-					incrementDirection = Direction.kSouthInt;
+					incrementDirection = Direction.SOUTH;
 
 				} else if (gatewayBarrier.left[1] > gatewayBarrier.right[1]) {
 					// decreasing to right, north
-					incrementDirection = Direction.kNorthInt;
+					incrementDirection = Direction.NORTH;
 				}
 			} else {
 				// horizontal gateway
 				if (gatewayBarrier.left[0] < gatewayBarrier.right[0]) {
 					// increasing to right, east
-					incrementDirection = Direction.kEastInt;
+					incrementDirection = Direction.EAST;
 
 				} else if (gatewayBarrier.left[0] > gatewayBarrier.right[0]) {
 					// decreasing to right, west
-					incrementDirection = Direction.kWestInt;
+					incrementDirection = Direction.WEST;
 				}
 			}
 			
-			if (incrementDirection == -1) {
+			if (incrementDirection == Direction.NONE) {
 				// Direction depends on which ways have walls and which ways have rooms
 				int [] feeler;
 				feeler = Arrays.copyOf(gatewayBarrier.left, gatewayBarrier.left.length);
@@ -647,18 +640,17 @@ public class BookMap extends GridMap {
 				Cell cell = getCell(feeler);
 				if (cell.getObject(Names.kWallID) != null) {
 					// horizontal gateway
-					incrementDirection = Direction.kEastInt;
+					incrementDirection = Direction.EAST;
 				} else {
 					// vertical gateway
-					incrementDirection = Direction.kSouthInt;
+					incrementDirection = Direction.SOUTH;
 				}
 			}
 			
 			// we need to walk to the right and assing the room id to everyone
 			int [] current = Arrays.copyOf(gatewayBarrier.left, gatewayBarrier.left.length);
 			while (current.equals(gatewayBarrier.right) == false) {
-				current[0] += Direction.xDelta[incrementDirection];
-				current[1] += Direction.yDelta[incrementDirection];
+				current = Direction.translate(current, incrementDirection);
 
 				Cell cell = getCell(current);
 				cell.addCellObject(new CellObject(theNewRoomObject));
@@ -669,12 +661,12 @@ public class BookMap extends GridMap {
 			
 			////////////////////
 			// we can start by walking the wrong direction off the left endpoint
-			doNewWall(gatewayBarrier.left, Direction.backwardOf[incrementDirection], barrierList);
+			doNewWall(gatewayBarrier.left, incrementDirection.backward(), barrierList);
 			////////////////////
 			
 			////////////////////
 			// then to the left of our left endpoint, and walk down the gateway to the left of the right endpoint
-			doNewGateway(gatewayBarrier.left, gatewayBarrier.right, Direction.leftOf[incrementDirection], incrementDirection, roomNumber, barrierList);
+			doNewGateway(gatewayBarrier.left, gatewayBarrier.right, incrementDirection.left(), incrementDirection, roomNumber, barrierList);
 			////////////////////
 			
 			////////////////////
@@ -684,7 +676,7 @@ public class BookMap extends GridMap {
 
 			////////////////////
 			// then to the right of our right endpoint, and walk backwards down the gateway to the right of the left endpoint
-			doNewGateway(gatewayBarrier.right, gatewayBarrier.left, Direction.rightOf[incrementDirection], Direction.backwardOf[incrementDirection], roomNumber, barrierList);
+			doNewGateway(gatewayBarrier.right, gatewayBarrier.left, incrementDirection.right(), incrementDirection.backward(), roomNumber, barrierList);
 			////////////////////
 
 			// Generate centerpoints and store room information
