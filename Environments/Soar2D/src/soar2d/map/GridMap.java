@@ -860,15 +860,17 @@ public abstract class GridMap {
 				continue;
 			}
 	
-			int [] threatenedLocation = Arrays.copyOf( updatablesLocations.get(missile), updatablesLocations.get(missile).length );
+			Cell threatenedCell = getCell(updatablesLocations.get(missile));
 			while (true) {
 				int direction = missile.getIntProperty(Names.kPropertyDirection);
-				Direction.translate(threatenedLocation, direction);
+				threatenedCell = threatenedCell.neighbors[direction];
+				
 				// stops at wall
-				if (hasAnyWithProperty(threatenedLocation, Names.kPropertyBlock)) {
+				if (threatenedCell.hasAnyWithProperty(Names.kPropertyBlock)) {
 					break;
 				}
-				Player player = getPlayer(threatenedLocation);
+				
+				Player player = threatenedCell.getPlayer();
 				if (player != null) {
 					player.setIncoming(Direction.backwardOf[direction]);
 					break;
