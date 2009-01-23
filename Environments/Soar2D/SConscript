@@ -8,9 +8,9 @@ Import('env')
 env = env.Clone()
 
 if sys.platform == 'cygwin':
-	SoarSCons.SetJavaPaths(env, '"Core/ClientSMLSWIG/Java/sml.jar;SoarLibrary/bin/swt.jar;SoarLibrary/bin/tosca.jar;Environments/Soar2D/jdom.jar"')
+	SoarSCons.SetJavaPaths(env, '"Core/ClientSMLSWIG/Java/sml.jar;SoarLibrary/bin/swt.jar;SoarLibrary/bin/tosca.jar;Environments/Soar2D/jdom.jar;Environments/Soar2D/log4j-1.2.15.jar"')
 else:
-	SoarSCons.SetJavaPaths(env, 'Core/ClientSMLSWIG/Java/sml.jar:SoarLibrary/bin/swt.jar:SoarLibrary/bin/tosca.jar:Environments/Soar2D/jdom.jar')
+	SoarSCons.SetJavaPaths(env, 'Core/ClientSMLSWIG/Java/sml.jar:SoarLibrary/bin/swt.jar:SoarLibrary/bin/tosca.jar:Environments/Soar2D/jdom.jar:Environments/Soar2D/log4j-1.2.15.jar')
 
 javacStep = env.Java(target = 'classes', source = 'src')
 
