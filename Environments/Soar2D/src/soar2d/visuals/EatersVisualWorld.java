@@ -8,7 +8,6 @@ import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.GC;
 import org.eclipse.swt.widgets.Composite;
 
-import soar2d.Direction;
 import soar2d.Names;
 import soar2d.Soar2D;
 import soar2d.map.CellObject;
@@ -121,17 +120,17 @@ public class EatersVisualWorld extends VisualWorld {
 						gc.setBackground(WindowManager.widget_background);
 						
 						
-						switch (eater.getFacingInt()) {
-						case Direction.kNorthInt:
+						switch (eater.getFacing()) {
+						case NORTH:
 							drawEaterMouth(xDraw, yDraw, 1, 0, 1, 1, gc);
 							break;
-						case Direction.kEastInt:
+						case EAST:
 							drawEaterMouth(xDraw + 1, yDraw, 0, 1, -1, 1, gc);
 							break;
-						case Direction.kSouthInt:
+						case SOUTH:
 							drawEaterMouth(xDraw, yDraw + 1, 1, 0, 1, -1, gc);
 							break;
-						case Direction.kWestInt:
+						case WEST:
 							drawEaterMouth(xDraw, yDraw, 0, 1, 1, 1, gc);
 							break;
 						default:

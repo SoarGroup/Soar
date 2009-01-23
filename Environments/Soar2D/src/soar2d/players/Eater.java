@@ -28,7 +28,7 @@ public class Eater extends Player {
 	 */
 	public MoveInfo getMove() {
 		// the facing depends on the move
-		this.setFacingInt(move.moveDirection);
+		this.setFacing(move.moveDirection);
 		return move;
 	}
 

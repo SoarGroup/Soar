@@ -77,7 +77,7 @@ class SelfInputLink {
 				yaw = robot.agent.CreateFloatWME(angle, "yaw", robot.getHeadingRadians());
 			}
 			if (Soar2D.config.roomConfig().continuous == false) {
-				direction = robot.agent.CreateStringWME(angle, "direction", Direction.stringOf[robot.getFacingInt()]);
+				direction = robot.agent.CreateStringWME(angle, "direction", robot.getFacing().id());
 			}
 		}
 		if (Soar2D.config.roomConfig().continuous == false) {

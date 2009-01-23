@@ -216,14 +216,15 @@ public class SoarRobot extends Robot {
 			}
 		} else {
 			// facing
-			agent.Update(selfIL.direction, Direction.stringOf[getFacingInt()]);
+			agent.Update(selfIL.direction, getFacing().id());
 			
 			// blocked
 			int blocked = world.getMap().getBlocked(location);
-			String blockedForward = ((blocked & Direction.indicators[getFacingInt()]) > 0) ? "true" : "false";
-			String blockedBackward = ((blocked & Direction.indicators[Direction.backwardOf[getFacingInt()]]) > 0) ? "true" : "false";
-			String blockedLeft = ((blocked & Direction.indicators[Direction.leftOf[getFacingInt()]]) > 0) ? "true" : "false";
-			String blockedRight = ((blocked & Direction.indicators[Direction.rightOf[getFacingInt()]]) > 0) ? "true" : "false";
+			int facingIndicator = getFacing().indicator();
+			String blockedForward = ((blocked & facingIndicator) > 0) ? "true" : "false";
+			String blockedBackward = ((blocked & facingIndicator) > 0) ? "true" : "false";
+			String blockedLeft = ((blocked & facingIndicator) > 0) ? "true" : "false";
+			String blockedRight = ((blocked & facingIndicator) > 0) ? "true" : "false";
 			agent.Update(selfIL.blockedForward, blockedForward);
 			agent.Update(selfIL.blockedBackward, blockedBackward);
 			agent.Update(selfIL.blockedLeft, blockedLeft);

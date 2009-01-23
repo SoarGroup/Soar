@@ -41,7 +41,7 @@ public abstract class VisualWorld extends Canvas implements PaintListener {
 	}
 	
 	protected static HashMap<String, Image> images = new HashMap<String, Image>();
-	protected static HashMap<Integer, Image> tanks = new HashMap<Integer, Image>();
+	protected static Image[] tanks = new Image[5];
 
 	public static boolean internalRepaint = false;
 	
@@ -64,10 +64,10 @@ public abstract class VisualWorld extends Canvas implements PaintListener {
 
 		switch(Soar2D.config.game()) {
 		case TANKSOAR:
-			tanks.put(new Integer(Direction.kSouthInt), new Image(display, Soar2D.class.getResourceAsStream("/images/tanksoar/tank_down.gif")));
-			tanks.put(new Integer(Direction.kNorthInt), new Image(display, Soar2D.class.getResourceAsStream("/images/tanksoar/tank_up.gif")));
-			tanks.put(new Integer(Direction.kEastInt), new Image(display, Soar2D.class.getResourceAsStream("/images/tanksoar/tank_right.gif")));
-			tanks.put(new Integer(Direction.kWestInt), new Image(display, Soar2D.class.getResourceAsStream("/images/tanksoar/tank_left.gif")));
+			tanks[Direction.SOUTH.index()] = new Image(display, Soar2D.class.getResourceAsStream("/images/tanksoar/tank_down.gif"));
+			tanks[Direction.NORTH.index()] = new Image(display, Soar2D.class.getResourceAsStream("/images/tanksoar/tank_up.gif"));
+			tanks[Direction.EAST.index()] = new Image(display, Soar2D.class.getResourceAsStream("/images/tanksoar/tank_right.gif"));
+			tanks[Direction.WEST.index()] = new Image(display, Soar2D.class.getResourceAsStream("/images/tanksoar/tank_left.gif"));
 			break;
 			
 		case EATERS:

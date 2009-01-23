@@ -48,7 +48,7 @@ public class Tank extends Player {
 	protected String smellColor;
 	
 	private MoveInfo move;
-	protected int sound;
+	protected Direction sound;
 	protected boolean onHealthCharger;
 	protected boolean onEnergyCharger;
 
@@ -252,7 +252,7 @@ public class Tank extends Player {
 		super.update(location);
 		
 		if (radarSwitch) {
-			observedPower = world.getMap().getRadar(radar, location, getFacingInt(), radarPower);
+			observedPower = world.getMap().getRadar(radar, location, getFacing(), radarPower);
 		} else {
 			clearRadar();
 			observedPower = 0;
@@ -299,7 +299,7 @@ public class Tank extends Player {
 		health = Soar2D.config.tanksoarConfig().default_health;
 		missiles = Soar2D.config.tanksoarConfig().default_missiles;
 		resurrectFrame = Soar2D.simulation.world.getWorldCount(); 
-		setFacingInt(Simulation.random.nextInt(4) + 1);
+		setFacing(Direction.values()[Simulation.random.nextInt(4) + 1]);
 		clearRadar();
 		resetSensors();
 	}
@@ -341,12 +341,12 @@ public class Tank extends Player {
 		shieldsUp = setting;
 	}
 	
-	public void radarTouch(int fromDirection) {
-		rwaves |= Direction.indicators[fromDirection];
+	public void radarTouch(Direction fromDirection) {
+		rwaves |= fromDirection.indicator();
 	}
 	
-	public void setIncoming(int fromDirection) {
-		incoming |= Direction.indicators[fromDirection];
+	public void setIncoming(Direction fromDirection) {
+		incoming |= fromDirection.indicator();
 		//System.out.println(getName() + ": incoming set " + incoming);
 	}
 	public int getRWaves() {
@@ -359,7 +359,7 @@ public class Tank extends Player {
 		blocked = 0;
 		smellDistance = 0;
 		smellColor = null;
-		sound = 0;
+		sound = Direction.NONE;
 		onHealthCharger = false;
 		onEnergyCharger = false;
 	}
@@ -377,11 +377,11 @@ public class Tank extends Player {
 		return smellColor;
 	}
 
-	public void setSound(int soundNear) {
+	public void setSound(Direction soundNear) {
 		this.sound = soundNear;
 	}
 
-	public int getSound() {
+	public Direction getSound() {
 		return sound;
 	}
 	

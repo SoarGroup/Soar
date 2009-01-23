@@ -116,17 +116,17 @@ public class TaxiVisualWorld extends VisualWorld {
 				wallList = this.map.getAllWithProperty(location, "block");
 				if (wallList != null) {
 					for (CellObject wall : wallList ) {
-						switch(Direction.getInt(wall.getProperty("direction"))) {
-						case Direction.kNorthInt:
+						switch(Direction.parse(wall.getProperty("direction"))) {
+						case NORTH:
 							gc.drawLine(cellSize*location[0], cellSize*location[1], cellSize*location[0] + cellSize-1, cellSize*location[1]);
 							break; 
-						case Direction.kSouthInt:
+						case SOUTH:
 							gc.drawLine(cellSize*location[0], cellSize*location[1] + cellSize-1, cellSize*location[0] + cellSize-1, cellSize*location[1] + cellSize-1);
 							break;
-						case Direction.kEastInt:
+						case EAST:
 							gc.drawLine(cellSize*location[0] + cellSize-1, cellSize*location[1], cellSize*location[0] + cellSize-1, cellSize*location[1] + cellSize-1);
 							break;
-						case Direction.kWestInt:
+						case WEST:
 							gc.drawLine(cellSize*location[0], cellSize*location[1], cellSize*location[0], cellSize*location[1] + cellSize-1);
 							break;
 						default:

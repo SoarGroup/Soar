@@ -91,16 +91,19 @@ public abstract class GridMap {
 		}
 		
 		// Build cell reference map
-		int [] neighborLoc = new int [2];
 		for (int x = 0; x < size; ++x) {
 			for (int y = 0; y < size; ++y) {
 				Cell cell = getCell(new int[] { x, y });
-				for (int direction = 1; direction < 5; ++direction) {
-					neighborLoc[0] = x + Direction.xDelta[direction];
-					neighborLoc[1] = y + Direction.yDelta[direction];
+				logger.trace(cell);
+				for (Direction dir : Direction.values()) {
+					if (dir == Direction.NONE) {
+						continue;
+					}
+					int[] neighborLoc = Direction.translate(cell.location, dir, new int[2]);
 					if (isInBounds(neighborLoc)) {
+						logger.trace(dir);
 						Cell neighbor = getCell(neighborLoc);
-						cell.neighbors[direction] = neighbor;
+						cell.neighbors[dir.index()] = neighbor;
 					}
 				}
 			}
@@ -818,11 +821,11 @@ public abstract class GridMap {
 
 	public abstract boolean isAvailable(int [] location);
 	
-	public boolean exitable(int [] location, int direction) {
+	public boolean exitable(int [] location, Direction direction) {
 		ArrayList<CellObject> wallList = getAllWithProperty(location, "block");
 		if (wallList != null) {
 			for (CellObject object : wallList) {
-				if (direction == Direction.getInt(object.getProperty("direction"))) {
+				if (direction == Direction.parse(object.getProperty("direction"))) {
 					return false;
 				}
 			}
@@ -861,9 +864,9 @@ public abstract class GridMap {
 			}
 	
 			Cell threatenedCell = getCell(updatablesLocations.get(missile));
+			Direction direction = Direction.parse(missile.getProperty(Names.kPropertyDirection));
 			while (true) {
-				int direction = missile.getIntProperty(Names.kPropertyDirection);
-				threatenedCell = threatenedCell.neighbors[direction];
+				threatenedCell = threatenedCell.neighbors[direction.index()];
 				
 				// stops at wall
 				if (threatenedCell.hasAnyWithProperty(Names.kPropertyBlock)) {
@@ -872,7 +875,7 @@ public abstract class GridMap {
 				
 				Player player = threatenedCell.getPlayer();
 				if (player != null) {
-					player.setIncoming(Direction.backwardOf[direction]);
+					player.setIncoming(direction.backward());
 					break;
 				}
 			}
@@ -941,7 +944,7 @@ public abstract class GridMap {
 		size = 0;
 	}
 
-	public int getRadar(RadarCell[][] radar, int [] location, int facing, int radarPower) {
+	public int getRadar(RadarCell[][] radar, int [] location, Direction facing, int radarPower) {
 		if (radarPower == 0) {
 			return 0;
 		}
@@ -980,35 +983,34 @@ public abstract class GridMap {
 		return radarCell;
 	}
 	
-	private int radarProbe(RadarCell[][] radar, int [] myLocation, int facing, int distance, int maxDistance) {
+	private int radarProbe(RadarCell[][] radar, int [] myLocation, Direction facing, int distance, int maxDistance) {
 		assert maxDistance < radar[1].length;
 		assert distance >= 0;
 		assert distance + 1 < radar[1].length;
 		assert distance < maxDistance;
-		assert facing > 0;
-		assert facing < 5;
+		assert facing != Direction.NONE;
 		
 		int [] location;
 		
 		location = Arrays.copyOf(myLocation, myLocation.length);
-		Direction.translate(location, Direction.leftOf[facing]);
+		Direction.translate(location, facing.left());
 		radar[0][distance] = getRadarCell(location);
 		if (radar[0][distance].player != null) {
 			if (distance != 0) {
-				radar[0][distance].player.radarTouch(Direction.backwardOf[facing]);
+				radar[0][distance].player.radarTouch(facing.backward());
 			} else {
-				radar[0][distance].player.radarTouch(Direction.rightOf[facing]);
+				radar[0][distance].player.radarTouch(facing.right());
 			}
 		}
 		
 		location = Arrays.copyOf(myLocation, myLocation.length);
-		Direction.translate(location, Direction.rightOf[facing]);
+		Direction.translate(location, facing.right());
 		radar[2][distance] = getRadarCell(location);
 		if (radar[2][distance].player != null) {
 			if (distance != 0) {
-				radar[2][distance].player.radarTouch(Direction.backwardOf[facing]);
+				radar[2][distance].player.radarTouch(facing.backward());
 			} else {
-				radar[2][distance].player.radarTouch(Direction.leftOf[facing]);
+				radar[2][distance].player.radarTouch(facing.left());
 			}
 		}
 
@@ -1018,7 +1020,7 @@ public abstract class GridMap {
 		Direction.translate(location, facing);
 		radar[1][distance] = getRadarCell(location);
 		if (radar[1][distance].player != null) {
-			radar[1][distance].player.radarTouch(Direction.backwardOf[facing]);
+			radar[1][distance].player.radarTouch(facing.backward());
 		}
 
 		boolean enterable = radar[1][distance].obstacle == false;
@@ -1027,7 +1029,7 @@ public abstract class GridMap {
 		if (enterable && noPlayer) {
 			CellObject radarWaves = new CellObject("radar-" + facing);
 			radarWaves.addProperty(Names.kPropertyRadarWaves, "true");
-			radarWaves.addProperty(Names.kPropertyDirection, Integer.toString(facing));
+			radarWaves.addProperty(Names.kPropertyDirection, facing.id());
 			radarWaves.addProperty(Names.kPropertyLinger, "1");
 			radarWaves.setLingerUpdate(true);
 			//System.out.println("Adding radar waves to " + location);
@@ -1051,19 +1053,19 @@ public abstract class GridMap {
 		
 		cell = getCell(new int [] { location[0]+1, location[1] });
 		if (cell.hasAnyWithProperty(Names.kPropertyBlock) || cell.getPlayer() != null) {
-			blocked |= Direction.kEastIndicator;
+			blocked |= Direction.EAST.indicator();
 		}
 		cell = getCell(new int [] { location[0]-1, location[1] });
 		if (cell.hasAnyWithProperty(Names.kPropertyBlock) || cell.getPlayer() != null) {
-			blocked |= Direction.kWestIndicator;
+			blocked |= Direction.WEST.indicator();
 		}
 		cell = getCell(new int [] { location[0], location[1]+1 });
 		if (cell.hasAnyWithProperty(Names.kPropertyBlock) || cell.getPlayer() != null) {
-			blocked |= Direction.kSouthIndicator;
+			blocked |= Direction.SOUTH.indicator();
 		}
 		cell = getCell(new int [] { location[0], location[1]-1 });
 		if (cell.hasAnyWithProperty(Names.kPropertyBlock) || cell.getPlayer() != null) {
-			blocked |= Direction.kNorthIndicator;
+			blocked |= Direction.NORTH.indicator();
 		}
 		return blocked;
 	}
@@ -1073,9 +1075,9 @@ public abstract class GridMap {
 		return cell.hasAnyWithProperty(Names.kPropertyBlock) || cell.getPlayer() != null;
 	}
 	
-	public int getSoundNear(int [] location) {
+	public Direction getSoundNear(int [] location) {
 		if (Soar2D.simulation.world.getPlayers().numberOfPlayers() < 2) {
-			return 0;
+			return Direction.NONE;
 		}
 		
 		// Set all cells unexplored.
@@ -1094,7 +1096,7 @@ public abstract class GridMap {
 			searchList.addLast(start);
 		}
 		
-		int finalDirection = 0;
+		Direction finalDirection = Direction.NONE;
 		
 		while (searchList.size() > 0) {
 			Cell parentCell = searchList.getFirst();
@@ -1113,8 +1115,12 @@ public abstract class GridMap {
 			}
 
 			// Explore cell.
-			for (int i = 1; i < 5; ++i) {
-				Cell neighbor = parentCell.neighbors[i];
+			for (Direction exploreDir : Direction.values()) {
+				if (exploreDir == Direction.NONE) {
+					continue;
+				}
+				
+				Cell neighbor = parentCell.neighbors[exploreDir.index()];
 				if (neighbor == null) {
 					continue;
 				}
@@ -1156,28 +1162,34 @@ public abstract class GridMap {
 					}
 
 					// Find direction to new sound
-					for (finalDirection = 1; i < 5; ++finalDirection) {
-						if (neighbor == parentCell.neighbors[finalDirection]) {
+					boolean found = false;
+					for (Direction dir : Direction.values()) {
+						if (dir == Direction.NONE) {
+							continue;
+						}
+						if (neighbor == parentCell.neighbors[dir.index()]) {
+							finalDirection = dir;
+							found = true;
 							break;
 						}
 					}
 					
 					// shouldn't happen
-					if (finalDirection < 5) {
+					if (found) {
 						if (logger.isTraceEnabled()) {
-							logger.trace("Sound: done, originated from " + Direction.stringOf[finalDirection]);
+							logger.trace("Sound: done, originated from " + finalDirection.id());
 						}
 					} else {
 						// didn't find direction to new sound
 						logger.trace("Sound: error: didn't find direction to sound!");
 						assert false;
-						finalDirection = 0;
+						finalDirection = Direction.NONE;
 					}
 					
 				}
 				
-				// end condition: this is not 0 if we found someone
-				if (finalDirection != 0) {
+				// end condition: this is not Direction.NONE if we found someone
+				if (finalDirection != Direction.NONE) {
 					break;
 				}
 
@@ -1187,8 +1199,8 @@ public abstract class GridMap {
 				searchList.addLast(neighbor);
 			}
 			
-			// end condition: this is not 0 if we found someone
-			if (finalDirection != 0) {
+			// end condition: this is not Direction.NONE if we found someone
+			if (finalDirection != Direction.NONE) {
 				break;
 			}
 		}

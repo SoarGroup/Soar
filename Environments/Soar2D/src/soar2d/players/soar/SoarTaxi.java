@@ -1,7 +1,5 @@
 package soar2d.players.soar;
 
-import java.util.Arrays;
-
 import org.apache.log4j.Logger;
 
 import sml.Agent;
@@ -228,10 +226,10 @@ public class SoarTaxi extends Taxi {
 		}
 		
 		// view
-		updateView(location, xMap, Direction.kNorthInt, northType, northPassenger, northWall);
-		updateView(location, xMap, Direction.kSouthInt, southType, southPassenger, southWall);
-		updateView(location, xMap, Direction.kEastInt, eastType, eastPassenger, eastWall);
-		updateView(location, xMap, Direction.kWestInt, westType, westPassenger, westWall);
+		updateView(location, xMap, Direction.NORTH, northType, northPassenger, northWall);
+		updateView(location, xMap, Direction.SOUTH, southType, southPassenger, southWall);
+		updateView(location, xMap, Direction.EAST, eastType, eastPassenger, eastWall);
+		updateView(location, xMap, Direction.WEST, westType, westPassenger, westWall);
 		
 		// update the random no matter what
 		float oldrandom = random;
@@ -248,10 +246,10 @@ public class SoarTaxi extends Taxi {
 		//this.resetPointsChanged();
 	}
 	
-	private void updateView(int [] location, TaxiMap xMap, int direction, StringElement type, StringElement passenger, StringElement wall) {
-		int [] tempLocation = Arrays.copyOf(location, location.length);
+	private void updateView(int [] location, TaxiMap xMap, Direction direction, StringElement type, StringElement passenger, StringElement wall) {
+		int [] tempLocation = Direction.translate(location, direction, new int[2]);
 		
-		Direction.translate(tempLocation, direction);
+		
 		if (!type.GetValueAsString().equals(xMap.getStringType(tempLocation))) {
 			agent.Update(type, xMap.getStringType(tempLocation));
 		}
@@ -327,8 +325,8 @@ public class SoarTaxi extends Taxi {
 						commandId.AddStatusComplete();
 						continue;
 					} else {
-						move.moveDirection = Direction.getInt(direction); 
-						this.setFacingInt(move.moveDirection);
+						move.moveDirection = Direction.parse(direction); 
+						this.setFacing(move.moveDirection);
 						commandId.AddStatusComplete();
 						continue;
 					}

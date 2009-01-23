@@ -137,8 +137,8 @@ public class SoarEater extends Eater {
 						commandId.AddStatusComplete();
 						continue;
 					} else {
-						move.moveDirection = Direction.getInt(direction); 
-						this.setFacingInt(move.moveDirection);
+						move.moveDirection = Direction.parse(direction); 
+						this.setFacing(move.moveDirection);
 						commandId.AddStatusComplete();
 						continue;
 					}
@@ -153,8 +153,8 @@ public class SoarEater extends Eater {
 				move.jump = true;
 				String direction = commandId.GetParameterValue(Names.kDirectionID);
 				if (direction != null) {
-					move.moveDirection = Direction.getInt(direction); 
-					this.setFacingInt(move.moveDirection);
+					move.moveDirection = Direction.parse(direction); 
+					this.setFacing(move.moveDirection);
 					commandId.AddStatusComplete();
 					continue;
 				}
