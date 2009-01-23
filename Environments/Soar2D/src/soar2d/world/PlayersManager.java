@@ -26,6 +26,10 @@ public class PlayersManager {
 		return humanPlayers.iterator();
 	}
 	
+	public ArrayList<Player> getAll() {
+		return players;
+	}
+	
 	public Iterator<Player> iterator() {
 		return players.iterator();
 	}

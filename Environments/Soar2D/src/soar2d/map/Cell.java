@@ -1,6 +1,7 @@
 package soar2d.map;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Iterator;
 
 import soar2d.players.Player;
@@ -12,7 +13,17 @@ import soar2d.players.Player;
  */
 class Cell {
 	
-	Cell() {}
+	Cell(int x, int y) {
+		this.location =new int [] { x, y };
+	}
+	int [] location;
+	
+	@Override
+	public String toString() {
+		return "cell" + Arrays.toString(location);
+	}
+	
+	Cell[] neighbors = new Cell[5]; // uses Direction, which is 1-4 not 0-5
 	
 	boolean draw = true;
 	boolean resetRedraw() {
@@ -159,6 +170,7 @@ class Cell {
 	}
 
 	// for sound algorithm
+	boolean explored = false;
 	int distance = -1;
-	int [] parent;
+	Cell parent;
 }
