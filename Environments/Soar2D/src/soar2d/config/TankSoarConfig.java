@@ -15,7 +15,7 @@ public class TankSoarConfig implements GameConfig {
 	public int kill_penalty = -2;
 	public int radar_width = 3;
 	public int radar_height = 15;
-	public int max_smell_distance = 7;
+	public int max_sound_distance = 7;
 	public int missile_reset_threshold = 100;
 	
 	public String title() {
