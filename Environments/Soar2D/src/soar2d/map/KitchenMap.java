@@ -1,12 +1,10 @@
 package soar2d.map;
 
 import java.util.Arrays;
-import java.util.Iterator;
 
 import org.apache.log4j.Logger;
 
 import soar2d.Names;
-import soar2d.world.TankSoarWorld;
 
 public class KitchenMap extends GridMap {
 	private static Logger logger = Logger.getLogger(KitchenMap.class);
