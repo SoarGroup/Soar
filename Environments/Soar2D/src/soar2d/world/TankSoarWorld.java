@@ -581,13 +581,12 @@ public class TankSoarWorld implements IWorld {
 	}
 
 	private boolean addCharger(boolean health, TankSoarMap newMap) {
-		ArrayList<int []> locations = newMap.getAvailableLocations();
-		if (locations.size() <= 0) {
+		int [] location = newMap.getAvailableLocationAmortized();
+		if (location == null) {
 			error("No place to put charger!");
 			return false;
 		}
-		
-		int [] location = locations.get(Simulation.random.nextInt(locations.size()));
+
 		if (health) {
 			logger.info("spawning health charger at (" + location[0] + "," + location[1] + ")");
 			CellObject charger = newMap.createRandomObjectWithProperties(Names.kPropertyHealth, Names.kPropertyCharger);
@@ -611,14 +610,14 @@ public class TankSoarWorld implements IWorld {
 	
 	private boolean spawnMissilePack(TankSoarMap theMap, boolean force) {
 		if (force || (Simulation.random.nextInt(100) < Soar2D.config.tanksoarConfig().missile_pack_respawn_chance)) {
-			// Get available spots
-			ArrayList<int []> spots = theMap.getAvailableLocations();
-			if (spots.size() <= 0) {
+			// I used to call getAvailableLocations but that is slow. Brute force find a spot. Time out in case of crazyness.
+			int [] spot = theMap.getAvailableLocationAmortized();
+			if (spot == null) {
+				logger.error("could not find available location!");
 				return false;
 			}
 			
 			// Add a missile pack to a spot
-			int [] spot = spots.get(Simulation.random.nextInt(spots.size()));
 			logger.info("spawning missile pack at (" + spot[0] + "," + spot[1] + ")");
 			CellObject missiles = theMap.createRandomObjectWithProperty(Names.kPropertyMissiles);
 			if (missiles == null) {
