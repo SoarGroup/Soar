@@ -53,8 +53,9 @@ typedef struct wme_struct wme;
 #define EPMEM_MODE_ONE 1   // wm tree
 #define EPMEM_MODE_THREE 3 // mva/shared wme
 
-#define EPMEM_GRAPH_MATCH_ON 1
-#define EPMEM_GRAPH_MATCH_OFF 2
+#define EPMEM_GRAPH_MATCH_OFF 1
+#define EPMEM_GRAPH_MATCH_PATHS 2
+#define EPMEM_GRAPH_MATCH_WMES 3
 
 #define EPMEM_TRIGGER_NONE 1
 #define EPMEM_TRIGGER_OUTPUT 2
@@ -342,6 +343,8 @@ typedef struct epmem_shared_match_struct
 
 struct epmem_shared_literal_struct
 {
+	epmem_node_id shared_id;
+	
 	unsigned long long ct;
 
 	struct wme_struct *wme;
@@ -369,6 +372,8 @@ struct epmem_compare_shared_queries
 };
 
 typedef std::priority_queue<epmem_shared_query *, std::vector<epmem_shared_query *>, epmem_compare_shared_queries> epmem_shared_query_list;
+
+typedef std::map<Symbol *, epmem_node_id> epmem_constraint_list;
 
 //
 // These must go below types

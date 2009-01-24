@@ -468,7 +468,7 @@ bool epmem_set_parameter( agent *my_agent, const char *name, const char *new_val
 	// graph match headaches
 	else if ( param == EPMEM_PARAM_GRAPH_MATCH )
 	{
-		if ( ( converted_val == EPMEM_GRAPH_MATCH_ON ) && ( my_agent->epmem_params[ EPMEM_PARAM_MODE ]->param->constant_param.value != EPMEM_MODE_THREE ) )
+		if ( ( converted_val != EPMEM_GRAPH_MATCH_OFF ) && ( my_agent->epmem_params[ EPMEM_PARAM_MODE ]->param->constant_param.value != EPMEM_MODE_THREE ) )
 			return false;
 	}
 	else if ( param == EPMEM_PARAM_MODE )
@@ -502,7 +502,7 @@ bool epmem_set_parameter( agent *my_agent, const char *name, const long new_val 
 	// graph match headaches
 	else if ( param == EPMEM_PARAM_GRAPH_MATCH )
 	{
-		if ( ( new_val == EPMEM_GRAPH_MATCH_ON ) && ( my_agent->epmem_params[ EPMEM_PARAM_MODE ]->param->constant_param.value != EPMEM_MODE_THREE ) )
+		if ( ( new_val != EPMEM_GRAPH_MATCH_OFF ) && ( my_agent->epmem_params[ EPMEM_PARAM_MODE ]->param->constant_param.value != EPMEM_MODE_THREE ) )
 			return false;
 	}
 	else if ( param == EPMEM_PARAM_MODE )
@@ -609,7 +609,7 @@ bool epmem_set_parameter( agent *my_agent, const long param, const char *new_val
 		set_sysparam( my_agent, EPMEM_ENABLED, converted_val );
 	}
 	// graph match headaches
-	if ( ( converted_val == EPMEM_GRAPH_MATCH_ON ) && ( my_agent->epmem_params[ EPMEM_PARAM_MODE ]->param->constant_param.value != EPMEM_MODE_THREE ) )
+	if ( ( converted_val != EPMEM_GRAPH_MATCH_OFF ) && ( my_agent->epmem_params[ EPMEM_PARAM_MODE ]->param->constant_param.value != EPMEM_MODE_THREE ) )
 	{
 		if ( my_agent->epmem_params[ EPMEM_PARAM_MODE ]->param->constant_param.value != EPMEM_MODE_THREE )
 			return false;
@@ -641,7 +641,7 @@ bool epmem_set_parameter( agent *my_agent, const long param, const long new_val 
 	// graph match headaches
 	else if ( param == EPMEM_PARAM_GRAPH_MATCH )
 	{
-		if ( ( new_val == EPMEM_GRAPH_MATCH_ON ) && ( my_agent->epmem_params[ EPMEM_PARAM_MODE ]->param->constant_param.value != EPMEM_MODE_THREE ) )
+		if ( ( new_val != EPMEM_GRAPH_MATCH_OFF ) && ( my_agent->epmem_params[ EPMEM_PARAM_MODE ]->param->constant_param.value != EPMEM_MODE_THREE ) )
 			return false;
 	}
 	else if ( param == EPMEM_PARAM_MODE )
@@ -772,7 +772,7 @@ const long epmem_convert_mode( const char *val )
 // graph match parameter
 bool epmem_validate_graph_match( const long new_val )
 {
-	return ( ( new_val == EPMEM_GRAPH_MATCH_ON ) || ( new_val == EPMEM_GRAPH_MATCH_OFF ) );
+	return ( ( new_val >= EPMEM_GRAPH_MATCH_OFF ) && ( new_val <= EPMEM_GRAPH_MATCH_WMES ) );
 }
 
 const char *epmem_convert_graph_match( const long val )
@@ -781,12 +781,16 @@ const char *epmem_convert_graph_match( const long val )
 
 	switch ( val )
 	{
-		case EPMEM_GRAPH_MATCH_ON:
-			return_val = "on";
-			break;
-
 		case EPMEM_GRAPH_MATCH_OFF:
 			return_val = "off";
+			break;
+
+		case EPMEM_GRAPH_MATCH_PATHS:
+			return_val = "paths";
+			break;
+
+		case EPMEM_GRAPH_MATCH_WMES:
+			return_val = "wmes";
 			break;
 	}
 
@@ -797,10 +801,12 @@ const long epmem_convert_graph_match( const char *val )
 {
 	long return_val = NULL;
 
-	if ( !strcmp( val, "on" ) )
-		return_val = EPMEM_GRAPH_MATCH_ON;
-	else if ( !strcmp( val, "off" ) )
+	if ( !strcmp( val, "off" ) )
 		return_val = EPMEM_GRAPH_MATCH_OFF;
+	else if ( !strcmp( val, "paths" ) )
+		return_val = EPMEM_GRAPH_MATCH_PATHS;
+	else if ( !strcmp( val, "wmes" ) )
+		return_val = EPMEM_GRAPH_MATCH_WMES;
 
 	return return_val;
 }
@@ -3899,7 +3905,7 @@ void epmem_shared_increment( agent *my_agent, epmem_shared_query_list *queries, 
 		updown = -updown;
 }
 
-unsigned long long epmem_graph_match( epmem_shared_trigger_list *literals )
+unsigned long long epmem_graph_match_paths( epmem_shared_trigger_list *literals )
 {
 	epmem_shared_trigger_list::iterator l_p;
 	unsigned long long return_val = 0;
@@ -3913,7 +3919,7 @@ unsigned long long epmem_graph_match( epmem_shared_trigger_list *literals )
 			{
 				if ( (*l_p)->wme_kids )
 				{
-					if ( ( (*l_p)->children ) && ( epmem_graph_match( (*l_p)->children ) == (*l_p)->wme_kids ) )
+					if ( ( (*l_p)->children ) && ( epmem_graph_match_paths( (*l_p)->children ) == (*l_p)->wme_kids ) )
 					{
 						return_val++;
 						done_wme = (*l_p)->wme;
@@ -3928,6 +3934,232 @@ unsigned long long epmem_graph_match( epmem_shared_trigger_list *literals )
 					}
 				}
 			}
+		}
+	}
+
+	return return_val;
+}
+
+unsigned long long epmem_graph_match_wmes( epmem_shared_trigger_list *literals, epmem_constraint_list *constraints )
+{	
+	unsigned long long return_val = 0;
+	
+	std::stack<epmem_shared_trigger_list::iterator *> c_ps;
+	std::stack<epmem_constraint_list *> c_cs;
+	std::stack<epmem_node_id> c_ids;
+
+	std::list<epmem_shared_trigger_list::iterator *> firsts;
+
+	epmem_shared_trigger_list::iterator *c_p = new epmem_shared_trigger_list::iterator();
+	epmem_constraint_list *c_c;
+	epmem_node_id c_id;
+	wme *c_w;
+	epmem_shared_literal *c_l;
+
+	std::list<epmem_shared_trigger_list::iterator *>::iterator c_f;
+
+	epmem_shared_trigger_list::iterator *n_p = new epmem_shared_trigger_list::iterator();
+	epmem_constraint_list *n_c;
+
+	epmem_constraint_list::iterator c;
+
+	bool done = false;
+	bool good_literal = false;
+	bool good_pop = false;
+
+	if ( !literals->empty() )
+	{
+		(*c_p) = literals->begin();
+		c_l = (*(*c_p));
+		c_w = c_l->wme;
+
+		c_c = new epmem_constraint_list( *constraints );
+
+		// get constraint for this wme, if exists
+		c_id = EPMEM_MEMID_NONE;
+		if ( c_w->value->common.symbol_type == IDENTIFIER_SYMBOL_TYPE )
+		{
+			c = c_c->find( c_w->value );
+			if ( c != c_c->end() )
+				c_id = c->second;
+		}
+
+		firsts.push_back( c_p );
+		c_f = firsts.begin();
+
+		do
+		{			
+			// determine if literal is a match
+			{
+				good_literal = false;				
+				
+				// must be ON
+				if ( c_l->ct == EPMEM_DNF )				
+				{
+					// cue identifier
+					if ( c_l->wme_kids )
+					{
+						if ( c_id == EPMEM_MEMID_NONE )
+						{
+							n_c = new epmem_constraint_list( *c_c );						
+
+							if ( ( c_l->children ) && ( epmem_graph_match_wmes( c_l->children, n_c ) == c_l->wme_kids ) )
+							{
+								good_literal = true;
+								(*c_c) = (*n_c);
+
+								// update constraints
+								(*c_c)[ c_w->value ] = c_l->shared_id;
+							}
+
+							delete n_c;
+						}
+						else
+						{
+							good_literal = ( c_id == c_l->shared_id );							
+						}
+					}
+					// leaf node
+					else
+					{
+						good_literal = ( c_l->match->ct );
+					}
+				}
+			}
+
+			if ( good_literal )
+			{
+				// update number of unified wmes
+				return_val++;				
+
+				// proceed to next wme
+				{
+					// try to use firsts cache
+					c_f++;
+					if ( c_f != firsts.end() )
+					{
+						n_p = (*c_f);
+					}
+					else
+					{
+						// proceed till next wme or done
+						for ( (*n_p)=(*c_p); ( ( (*n_p) != literals->end() ) && ( (*(*n_p))->wme == c_w ) ); (*n_p)++ );
+
+						if ( (*n_p) == literals->end() )
+						{
+							done = true;
+						}
+						else
+						{
+							// cache the new first
+							{
+								firsts.push_back( n_p );
+								c_f = firsts.end();
+								c_f--;
+							}
+
+							// push
+							{
+								c_ps.push( c_p );
+								c_cs.push( c_c );
+								c_ids.push( c_id );
+
+								c_p = new epmem_shared_trigger_list::iterator();
+
+								(*c_p) = (*n_p);
+								c_l = (*(*c_p));
+								c_w = c_l->wme;
+
+								c_c = new epmem_constraint_list( *c_c );
+
+								// get constraint for this wme, if exists
+								c_id = EPMEM_MEMID_NONE;
+								if ( c_w->value->common.symbol_type == IDENTIFIER_SYMBOL_TYPE )
+								{
+									c = c_c->find( c_w->value );
+									if ( c != c_c->end() )
+										c_id = c->second;
+								}
+							}
+						}
+					}
+				}
+			}
+			else
+			{
+				good_pop = false;
+				
+				do
+				{
+					// increment
+					(*c_p)++;
+
+					// make sure still within the wme
+					if ( (*c_p) == literals->end() )
+					{
+						done = true;
+					}
+					else
+					{
+						c_l = (*(*c_p));
+						
+						if ( c_l->wme == c_w )
+						{
+							good_pop = true;
+						}
+						else
+						{
+							if ( c_ps.empty() )
+							{
+								done = true;
+							}
+							else
+							{								
+								delete c_p;
+								c_p = c_ps.top();
+								c_ps.pop();
+
+								delete c_c;
+								c_c = c_cs.top();
+								c_cs.pop();
+
+								c_id = c_ids.top();
+								c_ids.pop();
+
+								c_f--;
+
+								return_val--;
+							}
+						}
+					}
+				} while ( !good_pop && !done );
+			}
+		} while ( !done );
+
+		// pass on new constraints
+		(*constraints) = (*c_c);
+	}
+
+	// clean up
+	{
+		delete c_p;
+		delete n_p;
+		delete c_c;
+
+		while ( !c_ps.empty() )
+		{
+			c_p = c_ps.top();
+			c_ps.pop();
+
+			delete c_p;
+		}
+
+		while ( !c_cs.empty() )
+		{
+			c_c = c_cs.top();
+			c_cs.pop();
+
+			delete c_c;
 		}
 	}
 
@@ -4460,7 +4692,7 @@ void epmem_process_query( agent *my_agent, Symbol *state, Symbol *query, Symbol 
 
 			// graph match			
 			epmem_shared_trigger_list graph_match_roots;
-			bool graph_match = ( epmem_get_parameter( my_agent, (const long) EPMEM_PARAM_GRAPH_MATCH, EPMEM_RETURN_LONG ) == EPMEM_GRAPH_MATCH_ON );
+			long long graph_match = epmem_get_parameter( my_agent, (const long) EPMEM_PARAM_GRAPH_MATCH, EPMEM_RETURN_LONG );
 
 			unsigned long long leaf_ids[2] = { 0, 0 };
 
@@ -4601,7 +4833,7 @@ void epmem_process_query( agent *my_agent, Symbol *state, Symbol *query, Symbol 
 										{
 											new_literal->ct = 1;
 
-											if ( ( i == EPMEM_NODE_POS ) && graph_match )
+											if ( ( i == EPMEM_NODE_POS ) && ( graph_match != EPMEM_GRAPH_MATCH_OFF ) )
 												graph_match_roots.push_back( new_literal );
 										}
 										else
@@ -4612,6 +4844,7 @@ void epmem_process_query( agent *my_agent, Symbol *state, Symbol *query, Symbol 
 
 											parent_literal->children->push_back( new_literal );
 										}
+										new_literal->shared_id = shared_identity;
 										new_literal->wme = current_cache_element->wmes[j];
 										new_literal->children = NULL;
 										new_literal->match = NULL;
@@ -4776,7 +5009,7 @@ void epmem_process_query( agent *my_agent, Symbol *state, Symbol *query, Symbol 
 										{
 											new_literal->ct = 1;
 
-											if ( ( i == EPMEM_NODE_POS ) && graph_match )
+											if ( ( i == EPMEM_NODE_POS ) && ( graph_match != EPMEM_GRAPH_MATCH_OFF ) )
 												graph_match_roots.push_back( new_literal );
 										}
 										else
@@ -4787,6 +5020,7 @@ void epmem_process_query( agent *my_agent, Symbol *state, Symbol *query, Symbol 
 
 											parent_literal->children->push_back( new_literal );
 										}
+										new_literal->shared_id = EPMEM_MEMID_NONE;
 										new_literal->wme_kids = 0;
 										new_literal->wme = current_cache_element->wmes[j];
 										new_literal->children = NULL;
@@ -4944,7 +5178,8 @@ void epmem_process_query( agent *my_agent, Symbol *state, Symbol *query, Symbol 
 				bool done = false;
 
 				// graph match
-				unsigned long long current_graph_match_counter = 0;				
+				unsigned long long current_graph_match_counter = 0;
+				epmem_constraint_list no_constraints;
 
 				// initialize current as last end
 				// initialize next end
@@ -5006,7 +5241,7 @@ void epmem_process_query( agent *my_agent, Symbol *state, Symbol *query, Symbol 
 						{
 							current_score = ( balance * sum_ct ) + ( balance_inv * sum_v );
 
-							if ( graph_match )
+							if ( graph_match != EPMEM_GRAPH_MATCH_OFF )
 							{
 								// policy:
 								// - king candidate MUST have AT LEAST king score
@@ -5017,7 +5252,14 @@ void epmem_process_query( agent *my_agent, Symbol *state, Symbol *query, Symbol 
 								{
 									if ( sum_ct == perfect_match )
 									{
-										current_graph_match_counter = epmem_graph_match( &graph_match_roots );
+										if ( graph_match == EPMEM_GRAPH_MATCH_PATHS )
+										{
+											current_graph_match_counter = epmem_graph_match_paths( &graph_match_roots );
+										}
+										else
+										{											
+											current_graph_match_counter = epmem_graph_match_wmes( &graph_match_roots, &no_constraints );
+										}
 
 										if ( ( king_id == EPMEM_MEMID_NONE ) ||
 											 ( current_score > king_score ) ||
@@ -5157,7 +5399,7 @@ void epmem_process_query( agent *my_agent, Symbol *state, Symbol *query, Symbol 
 				symbol_remove_ref( my_agent, my_meta );
 
 				// graph match
-				if ( graph_match )
+				if ( graph_match != EPMEM_GRAPH_MATCH_OFF )
 				{
 					my_meta = make_int_constant( my_agent, ( ( king_graph_match == len_query )?(1):(0) ) );
 					new_wme = add_input_wme( my_agent, state->id.epmem_result_header, my_agent->epmem_graph_match_symbol, my_meta );
