@@ -95,12 +95,12 @@ const char *epmem_range_queries[2][2][3] =
 	},
 };
 
-const long long epmem_rit_state_one[5] = { EPMEM_VAR_RIT_OFFSET_1, EPMEM_VAR_RIT_LEFTROOT_1, EPMEM_VAR_RIT_RIGHTROOT_1, EPMEM_VAR_RIT_MINSTEP_1, EPMEM_STMT_ONE_ADD_NODE_RANGE };
+const long long epmem_rit_state_one[6] = { EPMEM_VAR_RIT_OFFSET_1, EPMEM_VAR_RIT_LEFTROOT_1, EPMEM_VAR_RIT_RIGHTROOT_1, EPMEM_VAR_RIT_MINSTEP_1, EPMEM_STMT_ONE_ADD_NODE_RANGE, EPMEM_TIMER_NCB_NODE_RIT };
 
-const long long epmem_rit_state_three[2][5] =
+const long long epmem_rit_state_three[2][6] =
 {
-	{ EPMEM_VAR_RIT_OFFSET_1, EPMEM_VAR_RIT_LEFTROOT_1, EPMEM_VAR_RIT_RIGHTROOT_1, EPMEM_VAR_RIT_MINSTEP_1, EPMEM_STMT_THREE_ADD_NODE_RANGE },
-	{ EPMEM_VAR_RIT_OFFSET_2, EPMEM_VAR_RIT_LEFTROOT_2, EPMEM_VAR_RIT_RIGHTROOT_2, EPMEM_VAR_RIT_MINSTEP_2, EPMEM_STMT_THREE_ADD_EDGE_RANGE }
+	{ EPMEM_VAR_RIT_OFFSET_1, EPMEM_VAR_RIT_LEFTROOT_1, EPMEM_VAR_RIT_RIGHTROOT_1, EPMEM_VAR_RIT_MINSTEP_1, EPMEM_STMT_THREE_ADD_NODE_RANGE, EPMEM_TIMER_NCB_NODE_RIT },
+	{ EPMEM_VAR_RIT_OFFSET_2, EPMEM_VAR_RIT_LEFTROOT_2, EPMEM_VAR_RIT_RIGHTROOT_2, EPMEM_VAR_RIT_MINSTEP_2, EPMEM_STMT_THREE_ADD_EDGE_RANGE, EPMEM_TIMER_NCB_EDGE_RIT }
 };
 
 //////////////////////////////////////////////////////////
@@ -1657,6 +1657,10 @@ void epmem_rit_add_right( agent *my_agent, epmem_time_id id )
 
 void epmem_rit_prep_left_right( agent *my_agent, epmem_time_id lower, epmem_time_id upper, const long long *rit_state )
 {
+	////////////////////////////////////////////////////////////////////////////
+	epmem_start_timer( my_agent, rit_state[ EPMEM_RIT_STATE_TIMER ] );
+	////////////////////////////////////////////////////////////////////////////
+	
 	long long offset = epmem_get_stat( my_agent, rit_state[ EPMEM_RIT_STATE_OFFSET ] );
 	long long node, step;
 	long long left_node, left_step;
@@ -1730,6 +1734,10 @@ void epmem_rit_prep_left_right( agent *my_agent, epmem_time_id lower, epmem_time
 		else
 			right_node += right_step;
 	}
+
+	////////////////////////////////////////////////////////////////////////////
+	epmem_stop_timer( my_agent, rit_state[ EPMEM_RIT_STATE_TIMER ] );
+	////////////////////////////////////////////////////////////////////////////
 }
 
 // inserts an interval in the RIT
@@ -3419,7 +3427,7 @@ void epmem_install_memory( agent *my_agent, Symbol *state, epmem_time_id memory_
 		sqlite3_bind_int64( my_agent->epmem_statements[ EPMEM_STMT_ONE_GET_EPISODE ], 2, memory_id );
 		sqlite3_bind_int64( my_agent->epmem_statements[ EPMEM_STMT_ONE_GET_EPISODE ], 3, memory_id );
 		sqlite3_bind_int64( my_agent->epmem_statements[ EPMEM_STMT_ONE_GET_EPISODE ], 4, memory_id );
-		while ( sqlite3_step( my_agent->epmem_statements[ EPMEM_STMT_ONE_GET_EPISODE ] ) == SQLITE_ROW )
+		while ( epmem_exec_query( my_agent, my_agent->epmem_statements[ EPMEM_STMT_ONE_GET_EPISODE ], EPMEM_TIMER_NCB_NODE ) == SQLITE_ROW )
 		{
 			// e.id, i.parent_id, i.name, i.value, i.attr_type, i.value_type
 			child_id = sqlite3_column_int64( my_agent->epmem_statements[ EPMEM_STMT_ONE_GET_EPISODE ], 0 );
@@ -3517,7 +3525,7 @@ void epmem_install_memory( agent *my_agent, Symbol *state, epmem_time_id memory_
 			sqlite3_bind_int64( my_agent->epmem_statements[ EPMEM_STMT_THREE_GET_EDGES ], 2, memory_id );
 			sqlite3_bind_int64( my_agent->epmem_statements[ EPMEM_STMT_THREE_GET_EDGES ], 3, memory_id );
 			sqlite3_bind_int64( my_agent->epmem_statements[ EPMEM_STMT_THREE_GET_EDGES ], 4, memory_id );
-			while ( sqlite3_step( my_agent->epmem_statements[ EPMEM_STMT_THREE_GET_EDGES ] ) == SQLITE_ROW )
+			while ( epmem_exec_query( my_agent, my_agent->epmem_statements[ EPMEM_STMT_THREE_GET_EDGES ], EPMEM_TIMER_NCB_EDGE ) == SQLITE_ROW )			
 			{
 				// q0, w, q1, w_type
 				q0 = sqlite3_column_int64( my_agent->epmem_statements[ EPMEM_STMT_THREE_GET_EDGES ], 0 );
@@ -3627,7 +3635,7 @@ void epmem_install_memory( agent *my_agent, Symbol *state, epmem_time_id memory_
 			sqlite3_bind_int64( my_agent->epmem_statements[ EPMEM_STMT_THREE_GET_NODES ], 2, memory_id );
 			sqlite3_bind_int64( my_agent->epmem_statements[ EPMEM_STMT_THREE_GET_NODES ], 3, memory_id );
 			sqlite3_bind_int64( my_agent->epmem_statements[ EPMEM_STMT_THREE_GET_NODES ], 4, memory_id );
-			while ( sqlite3_step( my_agent->epmem_statements[ EPMEM_STMT_THREE_GET_NODES ] ) == SQLITE_ROW )
+			while ( epmem_exec_query( my_agent, my_agent->epmem_statements[ EPMEM_STMT_THREE_GET_NODES ], EPMEM_TIMER_NCB_NODE ) == SQLITE_ROW )			
 			{
 				// f.child_id, f.parent_id, f.name, f.value, f.attr_type, f.value_type
 				child_id = sqlite3_column_int64( my_agent->epmem_statements[ EPMEM_STMT_THREE_GET_NODES ], 0 );
@@ -5257,12 +5265,29 @@ void epmem_process_query( agent *my_agent, Symbol *state, Symbol *query, Symbol 
 									{
 										if ( graph_match == EPMEM_GRAPH_MATCH_PATHS )
 										{
+											////////////////////////////////////////////////////////////////////////////
+											epmem_start_timer( my_agent, EPMEM_TIMER_QUERY_GRAPH_MATCH );
+											////////////////////////////////////////////////////////////////////////////
+											
 											current_graph_match_counter = epmem_graph_match_paths( &graph_match_roots );
+
+											////////////////////////////////////////////////////////////////////////////
+											epmem_stop_timer( my_agent, EPMEM_TIMER_QUERY_GRAPH_MATCH );
+											////////////////////////////////////////////////////////////////////////////
 										}
 										else
 										{											
 											current_constraints.clear();
+
+											////////////////////////////////////////////////////////////////////////////
+											epmem_start_timer( my_agent, EPMEM_TIMER_QUERY_GRAPH_MATCH );
+											////////////////////////////////////////////////////////////////////////////
+
 											current_graph_match_counter = epmem_graph_match_wmes( &graph_match_roots, &current_constraints );
+
+											////////////////////////////////////////////////////////////////////////////
+											epmem_stop_timer( my_agent, EPMEM_TIMER_QUERY_GRAPH_MATCH );
+											////////////////////////////////////////////////////////////////////////////
 										}
 
 										if ( ( king_id == EPMEM_MEMID_NONE ) ||

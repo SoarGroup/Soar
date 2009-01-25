@@ -65,10 +65,10 @@ typedef struct wme_struct wme;
 #define EPMEM_FORCE_IGNORE 2
 #define EPMEM_FORCE_OFF 3
 
-#define EPMEM_TIMERS_OFF 0
-#define EPMEM_TIMERS_ONE 1
-#define EPMEM_TIMERS_TWO 2
-#define EPMEM_TIMERS_THREE 3
+#define EPMEM_TIMERS_OFF 1
+#define EPMEM_TIMERS_ONE 2
+#define EPMEM_TIMERS_TWO 3
+#define EPMEM_TIMERS_THREE 4
 
 // statistics
 // * = protected
@@ -105,20 +105,25 @@ typedef struct wme_struct wme;
 #define EPMEM_TIMER_INIT							6
 #define EPMEM_TIMER_NEXT							7
 #define EPMEM_TIMER_PREV							8
-#define EPMEM_TIMER_QUERY_POS_START_EP				9
-#define EPMEM_TIMER_QUERY_POS_START_NOW				10
-#define EPMEM_TIMER_QUERY_POS_START_POINT			11
-#define EPMEM_TIMER_QUERY_POS_END_EP				12
-#define EPMEM_TIMER_QUERY_POS_END_NOW				13
-#define EPMEM_TIMER_QUERY_POS_END_POINT				14
-#define EPMEM_TIMER_QUERY_NEG_START_EP				15
-#define EPMEM_TIMER_QUERY_NEG_START_NOW				16
-#define EPMEM_TIMER_QUERY_NEG_START_POINT			17
-#define EPMEM_TIMER_QUERY_NEG_END_EP				18
-#define EPMEM_TIMER_QUERY_NEG_END_NOW				19
-#define EPMEM_TIMER_QUERY_NEG_END_POINT				20
+#define EPMEM_TIMER_NCB_EDGE						9
+#define EPMEM_TIMER_NCB_EDGE_RIT					10
+#define EPMEM_TIMER_NCB_NODE						11
+#define EPMEM_TIMER_NCB_NODE_RIT					12
+#define EPMEM_TIMER_QUERY_GRAPH_MATCH				13
+#define EPMEM_TIMER_QUERY_POS_START_EP				14
+#define EPMEM_TIMER_QUERY_POS_START_NOW				15
+#define EPMEM_TIMER_QUERY_POS_START_POINT			16
+#define EPMEM_TIMER_QUERY_POS_END_EP				17
+#define EPMEM_TIMER_QUERY_POS_END_NOW				18
+#define EPMEM_TIMER_QUERY_POS_END_POINT				19
+#define EPMEM_TIMER_QUERY_NEG_START_EP				20
+#define EPMEM_TIMER_QUERY_NEG_START_NOW				21
+#define EPMEM_TIMER_QUERY_NEG_START_POINT			22
+#define EPMEM_TIMER_QUERY_NEG_END_EP				23
+#define EPMEM_TIMER_QUERY_NEG_END_NOW				24
+#define EPMEM_TIMER_QUERY_NEG_END_POINT				25
 
-#define EPMEM_TIMERS								21 // must be 1+ last epmem timer
+#define EPMEM_TIMERS								26 // must be 1+ last epmem timer
 
 // statements
 // 0 - 9 => common
@@ -205,6 +210,7 @@ typedef struct wme_struct wme;
 #define EPMEM_RIT_STATE_RIGHTROOT					2
 #define EPMEM_RIT_STATE_MINSTEP						3
 #define EPMEM_RIT_STATE_ADD							4
+#define EPMEM_RIT_STATE_TIMER						5
 
 #define EPMEM_RIT_STATE_NODE						0
 #define EPMEM_RIT_STATE_EDGE						1
