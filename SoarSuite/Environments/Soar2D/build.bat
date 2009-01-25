@@ -24,7 +24,7 @@ xcopy /q /y /s src\images\tanksoar* tmp\images\tanksoar
 xcopy /q /y /s src\images\book* tmp\images\book
 
 @echo ----------=========Compiling=========----------
-%2javac -source 1.5 -d tmp -classpath jdom.jar;%SOARBIN%\swt.jar;%SOARBIN%\sml.jar;%SOARBIN%\tosca.jar -sourcepath src src\soar2d\Soar2D.java
+%2javac -source 1.5 -d tmp -classpath jdom.jar;log4j-1.2.15.jar;%SOARBIN%\swt.jar;%SOARBIN%\sml.jar;%SOARBIN%\tosca.jar -sourcepath src src\soar2d\Soar2D.java
 
 @echo ----------==========Jarring==========----------
 %2jar cfm Soar2D.jar JarManifest -C tmp .
