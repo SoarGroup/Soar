@@ -38,7 +38,7 @@ public class KitchenWorld implements IWorld {
 
 	}
 	
-	public boolean update(GridMap _map, PlayersManager players) {
+	public String update(GridMap _map, PlayersManager players) {
 		KitchenMap map = (KitchenMap)_map;
 		
 		Iterator<Player> iter = players.iterator();
@@ -51,7 +51,7 @@ public class KitchenWorld implements IWorld {
 			
 			// check for break-out
 			if (Soar2D.control.isShuttingDown()) {
-				return false;
+				return null;
 			}
 
 			if (move.move) {
@@ -383,7 +383,7 @@ public class KitchenWorld implements IWorld {
 		map.spawnBasics();
 
 		// do not reset after this frame
-		return false;
+		return null;
 	}
 	
 	private String printIngredients(HashSet<Integer> ingredients) {

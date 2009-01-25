@@ -776,7 +776,7 @@ public abstract class GridMap {
 		addStateUpdate(location, object);
 
 		Cell cell = getCell(location);
-		cell.addCellObject(object);
+		cell.addObject(object);
 	}
 	
 	public CellObject createObjectByName(String name) {

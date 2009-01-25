@@ -24,20 +24,22 @@ public class EatersWorld implements IWorld {
 		return true;
 	}
 	
-	boolean restartAfterUpdate = false;
+	String restartMessage;
 
-	public boolean update(GridMap _map, PlayersManager players) {
+	public String update(GridMap _map, PlayersManager players) {
+		restartMessage = null;
+		
 		EatersMap map = (EatersMap)_map;
 		moveEaters(map, players);
 		if (Soar2D.control.isShuttingDown()) {
-			return false;
+			return null;
 		}
 		updateMapAndEatFood(map, players);
 		handleEatersCollisions(map, players, findCollisions(players));	
 		updatePlayers(false, map, players);
 		map.updateObjects(null);
 		
-		return restartAfterUpdate;
+		return restartMessage;
 	}
 	
 	public void fragPlayer(Player player, GridMap map, PlayersManager players, int [] location) {
@@ -50,7 +52,7 @@ public class EatersWorld implements IWorld {
 	}
 	
 	public void reset(GridMap map) {
-		this.restartAfterUpdate = false;
+		this.restartMessage = null;
 	}
 	
 	public void updatePlayers(boolean playersChanged, GridMap map, PlayersManager players) {
@@ -150,10 +152,11 @@ public class EatersWorld implements IWorld {
 		}
 		
 		if (box.getResetApply()) {
+			String message = "Max resets achieved.";
 			if (Soar2D.control.checkRunsTerminal()) {
-				Soar2D.simulation.world.stopAndDumpStats("Max resets achieved.");
+				Soar2D.simulation.world.dumpStats(true, message);
 			} else {
-				restartAfterUpdate = true;
+				restartMessage = message;
 			}
 		}
 	}
