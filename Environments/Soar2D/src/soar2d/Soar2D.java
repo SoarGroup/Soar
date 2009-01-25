@@ -54,8 +54,9 @@ public class Soar2D {
 		install(Names.configs.kitchenCnf);
 		install(Names.configs.taxiCnf);
 
+		BasicConfigurator.configure();
 		loadConfig(args);
-		initializeLogger();
+		initializeLogger(config.loggingConfig());
 		
 		// if using gui
 		boolean usingGUI = !config.generalConfig().headless;
@@ -130,11 +131,8 @@ public class Soar2D {
 		}
 	}
 	
-	private void initializeLogger() {
-		String path = config.loggingConfig();
-		if (path == null) {
-			BasicConfigurator.configure();
-		} else {
+	private void initializeLogger(String path) {
+		if (path != null) {
 			PropertyConfigurator.configure(path);
 		}
 		logger.trace(Names.Trace.loggerInitialized);
