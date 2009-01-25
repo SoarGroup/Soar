@@ -58,7 +58,7 @@ public class Soar2D {
 		initializeLogger();
 		
 		// if using gui
-		boolean usingGUI = !config.generalConfig().nogui;
+		boolean usingGUI = !config.generalConfig().headless;
 		if (usingGUI) {
 			// initialize wm
 			logger.trace(Names.Trace.initDisplay);

@@ -27,7 +27,7 @@ public class Cook extends Player {
 	}
 
 	public boolean getHumanMove() {
-		if (Soar2D.config.generalConfig().nogui) {
+		if (Soar2D.config.generalConfig().headless) {
 			move = new MoveInfo();
 			return true;
 		}
