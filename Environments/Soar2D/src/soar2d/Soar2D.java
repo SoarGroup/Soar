@@ -144,8 +144,10 @@ public class Soar2D {
 			// load library will work.
 			File library = new File(file) ;
 	
-			if (library.exists()) {
-				//System.out.println(library + " already exists so not installing from the JAR file") ;
+			// library.exists() not working correctly in linux (!?)
+			if (library.isFile() || library.isDirectory()) {
+				//System.out.println("exists: " + library.exists() + ", isFile: " + library.isFile() + ", canRead: " + library.canRead());
+				//System.out.println(library.getAbsolutePath() + " already exists so not installing from the JAR file");
 				return;
 			}
 			
