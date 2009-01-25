@@ -373,6 +373,7 @@ struct epmem_compare_shared_queries
 
 typedef std::priority_queue<epmem_shared_query *, std::vector<epmem_shared_query *>, epmem_compare_shared_queries> epmem_shared_query_list;
 
+typedef std::map<epmem_node_id, Symbol *> epmem_id_mapping;
 typedef std::map<Symbol *, epmem_node_id> epmem_constraint_list;
 
 //

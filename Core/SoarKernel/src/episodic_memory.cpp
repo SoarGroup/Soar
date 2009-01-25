@@ -746,11 +746,11 @@ const char *epmem_convert_mode( const long val )
 	switch ( val )
 	{
 		case EPMEM_MODE_ONE:
-			return_val = "one";
+			return_val = "tree";
 			break;
 
 		case EPMEM_MODE_THREE:
-			return_val = "three";
+			return_val = "graph";
 			break;
 	}
 
@@ -761,9 +761,9 @@ const long epmem_convert_mode( const char *val )
 {
 	long return_val = NULL;
 
-	if ( !strcmp( val, "one" ) )
+	if ( !strcmp( val, "tree" ) )
 		return_val = EPMEM_MODE_ONE;
-	else if ( !strcmp( val, "three" ) )
+	else if ( !strcmp( val, "graph" ) )
 		return_val = EPMEM_MODE_THREE;
 
 	return return_val;
@@ -790,7 +790,7 @@ const char *epmem_convert_graph_match( const long val )
 			break;
 
 		case EPMEM_GRAPH_MATCH_WMES:
-			return_val = "wmes";
+			return_val = "full";
 			break;
 	}
 
@@ -805,7 +805,7 @@ const long epmem_convert_graph_match( const char *val )
 		return_val = EPMEM_GRAPH_MATCH_OFF;
 	else if ( !strcmp( val, "paths" ) )
 		return_val = EPMEM_GRAPH_MATCH_PATHS;
-	else if ( !strcmp( val, "wmes" ) )
+	else if ( !strcmp( val, "full" ) )
 		return_val = EPMEM_GRAPH_MATCH_WMES;
 
 	return return_val;
@@ -3342,7 +3342,7 @@ bool epmem_valid_episode( agent *my_agent, epmem_time_id memory_id )
 }
 
 // reconstructs an episode in working memory
-void epmem_install_memory( agent *my_agent, Symbol *state, epmem_time_id memory_id )
+void epmem_install_memory( agent *my_agent, Symbol *state, epmem_time_id memory_id, epmem_id_mapping *id_reuse = NULL )
 {
 	wme *new_wme;
 
@@ -3402,7 +3402,7 @@ void epmem_install_memory( agent *my_agent, Symbol *state, epmem_time_id memory_
 
 	if ( mode == EPMEM_MODE_ONE )
 	{
-		std::map<epmem_node_id, Symbol *> ids;
+		epmem_id_mapping ids;
 		epmem_node_id child_id;
 		epmem_node_id parent_id;
 		long long attr_type;
@@ -3489,7 +3489,9 @@ void epmem_install_memory( agent *my_agent, Symbol *state, epmem_time_id memory_
 	}
 	else if ( mode == EPMEM_MODE_THREE )
 	{
-		std::map<epmem_node_id, Symbol *> ids;
+		epmem_id_mapping ids;
+		if ( id_reuse )
+			ids = (*id_reuse);
 
 		Symbol *parent = NULL;
 		Symbol *attr = NULL;
@@ -3505,7 +3507,7 @@ void epmem_install_memory( agent *my_agent, Symbol *state, epmem_time_id memory_
 
 			Symbol **value = NULL;
 
-			std::map<epmem_node_id, Symbol *>::iterator id_p;
+			epmem_id_mapping::iterator id_p;
 			std::queue<epmem_edge *> stragglers;
 			epmem_edge *straggler;
 
@@ -5144,6 +5146,7 @@ void epmem_process_query( agent *my_agent, Symbol *state, Symbol *query, Symbol 
 			double king_score = -1000;
 			unsigned long long king_cardinality = 0;
 			unsigned long long king_graph_match = 0;
+			epmem_constraint_list king_constraints;
 
 			// perform range search if any leaf wmes
 			if ( cue_size )
@@ -5179,7 +5182,7 @@ void epmem_process_query( agent *my_agent, Symbol *state, Symbol *query, Symbol 
 
 				// graph match
 				unsigned long long current_graph_match_counter = 0;
-				epmem_constraint_list no_constraints;
+				epmem_constraint_list current_constraints;
 
 				// initialize current as last end
 				// initialize next end
@@ -5258,7 +5261,8 @@ void epmem_process_query( agent *my_agent, Symbol *state, Symbol *query, Symbol 
 										}
 										else
 										{											
-											current_graph_match_counter = epmem_graph_match_wmes( &graph_match_roots, &no_constraints );
+											current_constraints.clear();
+											current_graph_match_counter = epmem_graph_match_wmes( &graph_match_roots, &current_constraints );
 										}
 
 										if ( ( king_id == EPMEM_MEMID_NONE ) ||
@@ -5269,6 +5273,7 @@ void epmem_process_query( agent *my_agent, Symbol *state, Symbol *query, Symbol 
 											king_score = current_score;
 											king_cardinality = sum_ct;
 											king_graph_match = current_graph_match_counter;
+											king_constraints = current_constraints;
 
 											if ( king_graph_match == len_query )
 												done = true;
@@ -5361,6 +5366,7 @@ void epmem_process_query( agent *my_agent, Symbol *state, Symbol *query, Symbol 
 			if ( king_id != EPMEM_MEMID_NONE )
 			{
 				Symbol *my_meta;
+				epmem_id_mapping *my_mapping = NULL;
 
 				epmem_set_stat( my_agent, EPMEM_STAT_QRY_RET, king_id );
 				epmem_set_stat( my_agent, EPMEM_STAT_QRY_CARD, king_cardinality );
@@ -5406,6 +5412,42 @@ void epmem_process_query( agent *my_agent, Symbol *state, Symbol *query, Symbol 
 					new_wme->preference = epmem_make_fake_preference( my_agent, state, new_wme );
 					state->id.epmem_info->epmem_wmes->push( new_wme );
 					symbol_remove_ref( my_agent, my_meta );
+
+					if ( ( graph_match == EPMEM_GRAPH_MATCH_WMES) && ( king_graph_match == len_query ) )
+					{
+						Symbol *my_meta2;
+						Symbol *my_meta3;
+						
+						my_meta = make_new_identifier( my_agent, 'M', state->id.epmem_result_header->id.level );
+						new_wme = add_input_wme( my_agent, state->id.epmem_result_header, my_agent->epmem_graph_match_mapping_symbol, my_meta );
+						new_wme->preference = epmem_make_fake_preference( my_agent, state, new_wme );
+						state->id.epmem_info->epmem_wmes->push( new_wme );
+						symbol_remove_ref( my_agent, my_meta );
+
+						my_mapping = new epmem_id_mapping();
+						for ( epmem_constraint_list::iterator c_p=king_constraints.begin(); c_p!=king_constraints.end(); c_p++ )
+						{							
+							// create the node
+							my_meta2 = make_new_identifier( my_agent, 'N', my_meta->id.level );
+							new_wme = add_input_wme( my_agent, my_meta, my_agent->epmem_graph_match_mapping_node_symbol, my_meta2 );
+							new_wme->preference = epmem_make_fake_preference( my_agent, state, new_wme );
+							state->id.epmem_info->epmem_wmes->push( new_wme );
+							symbol_remove_ref( my_agent, my_meta2 );
+
+							// point to the cue identifier
+							new_wme = add_input_wme( my_agent, my_meta2, my_agent->epmem_graph_match_mapping_cue_symbol, c_p->first );
+							new_wme->preference = epmem_make_fake_preference( my_agent, state, new_wme );
+							state->id.epmem_info->epmem_wmes->push( new_wme );
+
+							// create and store away the [yet-to-be-retrieved] identifier
+							my_meta3 = make_new_identifier( my_agent, c_p->first->id.name_letter, my_meta2->id.level );
+							new_wme = add_input_wme( my_agent, my_meta2, my_agent->epmem_retrieved_symbol, my_meta3 );
+							new_wme->preference = epmem_make_fake_preference( my_agent, state, new_wme );
+							state->id.epmem_info->epmem_wmes->push( new_wme );
+							symbol_remove_ref( my_agent, my_meta3 );
+							(*my_mapping)[ c_p->second ] = my_meta3;
+						}
+					}
 				}
 
 				////////////////////////////////////////////////////////////////////////////
@@ -5413,7 +5455,10 @@ void epmem_process_query( agent *my_agent, Symbol *state, Symbol *query, Symbol 
 				////////////////////////////////////////////////////////////////////////////
 
 				// actual memory
-				epmem_install_memory( my_agent, state, king_id );
+				epmem_install_memory( my_agent, state, king_id, my_mapping );
+
+				if ( my_mapping )
+					delete my_mapping;
 			}
 			else
 			{
