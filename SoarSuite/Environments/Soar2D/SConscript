@@ -15,7 +15,7 @@ else:
 javacStep = env.Java(target = 'classes', source = 'src')
 
 copySources = []
-copySources.extend(glob.glob('src/*.xml'))
+copySources.extend(glob.glob('src/*.cnf'))
 copySources.extend(glob.glob('src/images/book/*'))
 copySources.extend(glob.glob('src/images/tanksoar/*'))
 
