@@ -4052,38 +4052,37 @@ unsigned long long epmem_graph_match_wmes( epmem_shared_trigger_list *literals, 
 						{
 							done = true;
 						}
-						else
+						else						
+						// cache the new first
 						{
-							// cache the new first
-							{
-								firsts.push_back( n_p );
-								c_f = firsts.end();
-								c_f--;
-							}
+							firsts.push_back( n_p );
+							c_f = firsts.end();
+							c_f--;
+						}
+					}
+					
+					// push
+					if ( !done )					
+					{
+						c_ps.push( c_p );
+						c_cs.push( c_c );
+						c_ids.push( c_id );
 
-							// push
-							{
-								c_ps.push( c_p );
-								c_cs.push( c_c );
-								c_ids.push( c_id );
+						c_p = new epmem_shared_trigger_list::iterator();
 
-								c_p = new epmem_shared_trigger_list::iterator();
+						(*c_p) = (*n_p);
+						c_l = (*(*c_p));
+						c_w = c_l->wme;
 
-								(*c_p) = (*n_p);
-								c_l = (*(*c_p));
-								c_w = c_l->wme;
+						c_c = new epmem_constraint_list( *c_c );
 
-								c_c = new epmem_constraint_list( *c_c );
-
-								// get constraint for this wme, if exists
-								c_id = EPMEM_MEMID_NONE;
-								if ( c_w->value->common.symbol_type == IDENTIFIER_SYMBOL_TYPE )
-								{
-									c = c_c->find( c_w->value );
-									if ( c != c_c->end() )
-										c_id = c->second;
-								}
-							}
+						// get constraint for this wme, if exists
+						c_id = EPMEM_MEMID_NONE;
+						if ( c_w->value->common.symbol_type == IDENTIFIER_SYMBOL_TYPE )
+						{
+							c = c_c->find( c_w->value );
+							if ( c != c_c->end() )
+								c_id = c->second;
 						}
 					}
 				}
