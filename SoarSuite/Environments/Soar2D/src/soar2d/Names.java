@@ -21,7 +21,7 @@ public class Names {
 		public static final String initDisplayfail = "Failed to initialize display.";
 		public static final String simulationInitFail = "Failed to initialize simulation.";
 		public static final String noConfig = "No configuration file specified. Please specify a configuration file on the command line.";
-		public static final String loadingConfig = "Error loading configuration file: ";
+		public static final String loadingConfig = "Error loading configuration file, it might not exist.";
 		public static final String installingConfig = "IOException installing default configuration file: ";
 		public static final String kernelCreation = "Error creating kernel: ";
 		public static final String taxi1Player = "Taxi game type only supports 1 player.";
