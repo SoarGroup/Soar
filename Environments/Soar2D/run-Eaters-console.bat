@@ -1,3 +1,3 @@
 set SOARLIB=../../SoarLibrary/bin
 set PATH=%SOARLIB%;%PATH%
-java -jar Soar2D.jar eaters-console.xml
+java -cp log4j-1.2.15.jar;soar2d.jar soar2d.Soar2D eaters-console.cnf
