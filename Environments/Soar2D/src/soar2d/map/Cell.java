@@ -7,9 +7,16 @@ import java.util.Iterator;
 import soar2d.players.Player;
 
 class Cell {
+	public static Cell createCell(boolean headless, int[] xy) {
+		if (headless) {
+			// only one thread
+			return new Cell(xy);
+		}
+		return new CellSynchronized(xy);
+	}
 	
-	Cell(int x, int y) {
-		this.location =new int [] { x, y };
+	protected Cell(int[] xy) {
+		this.location = Arrays.copyOf(xy, xy.length);
 	}
 	int [] location;
 	

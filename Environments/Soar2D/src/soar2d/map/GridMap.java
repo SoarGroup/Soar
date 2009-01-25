@@ -581,7 +581,7 @@ public abstract class GridMap {
 				throw new LoadError("unrecognized tag: " + child.getName());
 			}
 			
-			this.mapCells[rowIndex][colIndex] = new Cell(colIndex, rowIndex);
+			this.mapCells[rowIndex][colIndex] = Cell.createCell(Soar2D.config.generalConfig().headless, new int[] {colIndex, rowIndex});
 			cell(child, new int [] { colIndex, rowIndex });
 			
 			colIndex += 1;
@@ -649,21 +649,21 @@ public abstract class GridMap {
 				mapCells[row] = new Cell[size];
 			}
 			if (mapCells[row][0] == null) {
-				mapCells[row][0] = new Cell(0, row);
+				mapCells[row][0] = Cell.createCell(Soar2D.config.generalConfig().headless, new int[] {0, row});
 			}
 			addWallAndRemoveFood(new int [] { 0, row });
 			if (mapCells[row][size - 1] == null) {
-				mapCells[row][size - 1] = new Cell(size - 1, row);
+				mapCells[row][size - 1] = Cell.createCell(Soar2D.config.generalConfig().headless, new int[] {size - 1, row});
 			}
 			addWallAndRemoveFood(new int [] { size - 1, row });
 		}
 		for (int col = 1; col < size - 1; ++col) {
 			if (mapCells[0][col] == null) {
-				mapCells[0][col] = new Cell(col, 0);
+				mapCells[0][col] = Cell.createCell(Soar2D.config.generalConfig().headless, new int[] {col, 0});
 			}
 			addWallAndRemoveFood(new int [] { col, 0 });
 			if (mapCells[size - 1][col] == null) {
-				mapCells[size - 1][col] = new Cell(col, size - 1);
+				mapCells[size - 1][col] = Cell.createCell(Soar2D.config.generalConfig().headless, new int[] {col, size - 1});
 			}
 			addWallAndRemoveFood(new int [] { col, size - 1 });
 		}
@@ -677,7 +677,7 @@ public abstract class GridMap {
 					}
 					if (Simulation.random.nextDouble() < probability) {
 						if (mapCells[row][col] == null) {
-							mapCells[row][col] = new Cell(col, row);
+							mapCells[row][col] = Cell.createCell(Soar2D.config.generalConfig().headless, new int[] {col, row});
 						}
 						addWallAndRemoveFood(new int [] { col, row });
 					}
@@ -746,16 +746,16 @@ public abstract class GridMap {
 			throw new LoadError("tried to generate random walls with no food types");
 		}
 		
-		for (int row = 1; row < size - 1; ++row) {
-			for (int col = 1; col < size - 1; ++col) {
-				if (mapCells[row][col] == null) {
-					mapCells[row][col] = new Cell(col, row);
+		int[] xy = new int[2];
+		for (xy[1] = 1; xy[1] < size - 1; ++xy[1]) {
+			for (xy[0] = 1; xy[0] < size - 1; ++xy[0]) {
+				if (mapCells[xy[1]][xy[0]] == null) {
+					mapCells[xy[1]][xy[0]] = Cell.createCell(Soar2D.config.generalConfig().headless, xy);
 					
 				}
-				if (!mapCells[row][col].hasAnyWithProperty(Names.kPropertyBlock)) {
-					int [] location = new int [] { col, row };
-					removeAllByProperty(location, Names.kPropertyEdible);
-					addObjectToCell(location, createRandomObjectWithProperty(Names.kPropertyEdible));
+				if (!mapCells[xy[1]][xy[0]].hasAnyWithProperty(Names.kPropertyBlock)) {
+					removeAllByProperty(xy, Names.kPropertyEdible);
+					addObjectToCell(xy, createRandomObjectWithProperty(Names.kPropertyEdible));
 				}
 			}
 		}		

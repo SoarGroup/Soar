@@ -5,8 +5,8 @@ import java.util.ArrayList;
 import soar2d.players.Player;
 
 class CellSynchronized extends Cell {
-	CellSynchronized(int x, int y) {
-		super(x, y);
+	protected CellSynchronized(int[] xy) {
+		super(xy);
 	}
 	
 	@Override

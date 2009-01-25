@@ -7,7 +7,7 @@ public class GeneralConfig {
 	public String game = "unspecified";
 	public boolean hidemap = false;
 	public String map = null;
-	public boolean nogui = false;
+	public boolean headless = false;
 	public String preferences_file = "preferences";
 	public int runs = 0;
 	public int seed = 0; // Note: has special field in SimConfig for null case TODO: make Integer and null

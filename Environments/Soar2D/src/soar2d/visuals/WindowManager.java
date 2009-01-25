@@ -194,7 +194,7 @@ public class WindowManager {
 		if (Soar2D.config == null) {
 			return false;
 		}
-		return !Soar2D.config.generalConfig().nogui;
+		return !Soar2D.config.generalConfig().headless;
 	}
 	
 	public void setupEaters() {
@@ -1662,7 +1662,7 @@ public class WindowManager {
 
 	public MoveInfo getHumanMove(Player player) {
 		humanMove = new MoveInfo();
-		if (Soar2D.config.generalConfig().nogui) {
+		if (Soar2D.config.generalConfig().headless) {
 			return humanMove;
 		}
 		if (player.getRadarSwitch()) {
