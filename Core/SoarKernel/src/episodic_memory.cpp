@@ -1850,13 +1850,6 @@ void epmem_end( agent *my_agent )
 		my_agent->epmem_db = NULL;
 		my_agent->epmem_db_status = -1;
 	}
-
-	std::list<const char *>::iterator e_p = my_agent->epmem_exclusions->begin();
-	while ( e_p != my_agent->epmem_exclusions->end() )
-	{
-		delete (*e_p);
-		e_p++;
-	}
 }
 
 // performs cleanup of the current state retrieval

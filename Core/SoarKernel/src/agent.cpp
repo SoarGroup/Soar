@@ -561,6 +561,12 @@ void destroy_soar_agent (agent * delete_agent)
   epmem_clean_parameters( delete_agent );
   epmem_clean_stats( delete_agent );
   epmem_clean_timers( delete_agent );
+
+  for ( std::list<const char *>::iterator e_p=delete_agent->epmem_exclusions->begin();
+	    e_p!=delete_agent->epmem_exclusions->end();
+		e_p++ )
+    delete (*e_p);
+
   delete delete_agent->epmem_exclusions;
   delete delete_agent->epmem_node_removals;
   delete delete_agent->epmem_node_mins;
