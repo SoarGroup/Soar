@@ -126,7 +126,7 @@ public class Soar2D {
 		} catch (IOException e) {
 			if(config == null) {
 				wm.initialize();
-				fatalError(Names.Errors.loadingConfig + e.getMessage());
+				fatalError(Names.Errors.loadingConfig);
 			}
 		}
 	}
