@@ -45,7 +45,7 @@
 				Optimization="0"
 				InlineFunctionExpansion="0"
 				OmitFramePointers="false"
-				AdditionalIncludeDirectories="&quot;$(TCL_INCLUDE)&quot;;..\..\ClientSML\include;..\..\ElementXML\include;..\..\ConnectionSML\include;..\..\shared"
+				AdditionalIncludeDirectories="&quot;$(TCL_HOME)\include&quot;;..\..\ClientSML\include;..\..\ElementXML\include;..\..\ConnectionSML\include;..\..\shared"
 				PreprocessorDefinitions="WIN32;_DEBUG;_CRT_SECURE_NO_DEPRECATE"
 				StringPooling="true"
 				MinimalRebuild="true"
@@ -72,7 +72,7 @@
 				AdditionalDependencies="tcl84.lib"
 				OutputFile="$(SolutionDir)\SoarLibrary\bin\Tcl_sml_ClientInterface\Tcl_sml_ClientInterface.dll"
 				LinkIncremental="2"
-				AdditionalLibraryDirectories="&quot;$(TCL_LIB)&quot;"
+				AdditionalLibraryDirectories="&quot;$(TCL_HOME)\lib&quot;"
 				GenerateDebugInformation="true"
 				AssemblyDebug="1"
 				SubSystem="2"
@@ -103,7 +103,7 @@
 			<Tool
 				Name="VCPostBuildEventTool"
 				Description="Make Tcl package"
-				CommandLine="cd ..\..\..\SoarLibrary\bin\&#x0D;&#x0A;set PATH=%PATH%;$(TargetDir)..&#x0D;&#x0A;&quot;%TCL_BIN%\tclsh&quot; makeTclSMLPackage.tcl&#x0D;&#x0A;"
+				CommandLine="cd ..\..\..\SoarLibrary\bin\&#x0D;&#x0A;set PATH=%PATH%;$(TargetDir)..&#x0D;&#x0A;&quot;%TCL_HOME%\bin\tclsh&quot; makeTclSMLPackage.tcl&#x0D;&#x0A;"
 			/>
 		</Configuration>
 		<Configuration
@@ -137,7 +137,7 @@
 				Optimization="2"
 				InlineFunctionExpansion="2"
 				OmitFramePointers="true"
-				AdditionalIncludeDirectories="&quot;$(TCL_INCLUDE)&quot;;..\..\ClientSML\include;..\..\ElementXML\include;..\..\ConnectionSML\include;..\..\shared"
+				AdditionalIncludeDirectories="&quot;$(TCL_HOME)\include&quot;;..\..\ClientSML\include;..\..\ElementXML\include;..\..\ConnectionSML\include;..\..\shared"
 				PreprocessorDefinitions="WIN32;NDEBUG;_CRT_SECURE_NO_DEPRECATE"
 				StringPooling="true"
 				MinimalRebuild="false"
@@ -163,7 +163,7 @@
 				AdditionalDependencies="tcl84.lib"
 				OutputFile="$(SolutionDir)\SoarLibrary\bin\Tcl_sml_ClientInterface\Tcl_sml_ClientInterface.dll"
 				LinkIncremental="1"
-				AdditionalLibraryDirectories="&quot;$(TCL_LIB)&quot;"
+				AdditionalLibraryDirectories="&quot;$(TCL_HOME)\lib&quot;"
 				GenerateDebugInformation="true"
 				ProgramDatabaseFile="$(OutDir)/$(ProjectName).pdb"
 				SubSystem="2"
@@ -196,7 +196,7 @@
 			<Tool
 				Name="VCPostBuildEventTool"
 				Description="Make Tcl package"
-				CommandLine="cd ..\..\..\SoarLibrary\bin\&#x0D;&#x0A;set PATH=%PATH%;$(TargetDir)..&#x0D;&#x0A;&quot;%TCL_BIN%\tclsh&quot; makeTclSMLPackage.tcl&#x0D;&#x0A;"
+				CommandLine="cd ..\..\..\SoarLibrary\bin\&#x0D;&#x0A;set PATH=%PATH%;$(TargetDir)..&#x0D;&#x0A;&quot;%TCL_HOME%\bin\tclsh&quot; makeTclSMLPackage.tcl&#x0D;&#x0A;"
 			/>
 		</Configuration>
 	</Configurations>
@@ -249,7 +249,7 @@
 				>
 				<Tool
 					Name="VCCustomBuildTool"
-					CommandLine="echo In order to function correctly, please ensure the following environment variables are correctly set:&#x0D;&#x0A;echo TCL_INCLUDE: %TCL_INCLUDE%&#x0D;&#x0A;echo TCL_LIB: %TCL_LIB%&#x0D;&#x0A;echo TCL_BIN: %TCL_BIN%&#x0D;&#x0A;echo SWIG: %SWIG%&#x0D;&#x0A;echo on&#x0D;&#x0A;&quot;$(SWIG)\swig.exe&quot; -Wall -c++ -tcl -pkgversion 9.0.0  -I../../ClientSML/include -I../../ElementXML/include -I../../ConnectionSML/include -outdir build &quot;$(InputPath)&quot;&#x0D;&#x0A;"
+					CommandLine="echo In order to function correctly, please ensure the following environment variables are correctly set:&#x0D;&#x0A;echo TCL_HOME: %TCL_HOME%&#x0D;&#x0A;echo SWIG_HOME: %SWIG_HOME%&#x0D;&#x0A;echo on&#x0D;&#x0A;&quot;$(SWIG_HOME)\swig.exe&quot; -Wall -c++ -tcl -pkgversion 9.0.0  -I../../ClientSML/include -I../../ElementXML/include -I../../ConnectionSML/include -outdir build &quot;$(InputPath)&quot;&#x0D;&#x0A;"
 					AdditionalDependencies="$(SolutionDir)\SoarLibrary\lib\ClientSML.lib;$(SolutionDir)\SoarLibrary\lib\ConnectionSML.lib;$(TargetDir)\ElementXML.dll"
 					Outputs="$(InputName)_wrap.cxx"
 				/>
@@ -259,7 +259,7 @@
 				>
 				<Tool
 					Name="VCCustomBuildTool"
-					CommandLine="echo In order to function correctly, please ensure the following environment variables are correctly set:&#x0D;&#x0A;echo TCL_INCLUDE: %TCL_INCLUDE%&#x0D;&#x0A;echo TCL_LIB: %TCL_LIB%&#x0D;&#x0A;echo TCL_BIN: %TCL_BIN%&#x0D;&#x0A;echo SWIG: %SWIG%&#x0D;&#x0A;echo on&#x0D;&#x0A;&quot;$(SWIG)\swig.exe&quot; -Wall -c++ -tcl -pkgversion 9.0.0  -I../../ClientSML/include -I../../ElementXML/include -I../../ConnectionSML/include -outdir build &quot;$(InputPath)&quot;&#x0D;&#x0A;"
+					CommandLine="echo In order to function correctly, please ensure the following environment variables are correctly set:&#x0D;&#x0A;echo TCL_HOME: %TCL_HOME%&#x0D;&#x0A;echo SWIG_HOME: %SWIG_HOME%&#x0D;&#x0A;echo on&#x0D;&#x0A;&quot;$(SWIG_HOME)\swig.exe&quot; -Wall -c++ -tcl -pkgversion 9.0.0  -I../../ClientSML/include -I../../ElementXML/include -I../../ConnectionSML/include -outdir build &quot;$(InputPath)&quot;&#x0D;&#x0A;"
 					AdditionalDependencies="$(SolutionDir)\SoarLibrary\lib\ClientSML.lib;$(SolutionDir)\SoarLibrary\lib\ConnectionSML.lib;$(TargetDir)\ElementXML.dll"
 					Outputs="$(InputName)_wrap.cxx"
 				/>
