@@ -1474,7 +1474,12 @@ public class WindowManager {
 		int [] xy = Soar2D.config.getWindowPosition();
 		if (xy != null && xy.length == 2)
 		{
-			shell.setLocation(xy[0], xy[1]);
+			// it shouldn't be created off-screen
+			if ((xy[0] < display.getClientArea().width - 100) && (xy[1] < display.getClientArea().height - 100)) {
+				shell.setLocation(xy[0], xy[1]);
+			} else {
+				logger.warn("Ignoring old window location, screen is too small.");
+			}
 		}
 
 		rhs.layout(true);
