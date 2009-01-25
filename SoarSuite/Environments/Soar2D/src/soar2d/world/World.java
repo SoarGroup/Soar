@@ -56,7 +56,7 @@ public class World {
 			}
 		}
 		
-		Soar2D.control.setRunsTerminal(Soar2D.config.terminalsConfig().max_runs);
+		Soar2D.control.setRunsTerminal(Soar2D.config.generalConfig().runs);
 		return loadInternal(false);
 	}
 
