@@ -206,7 +206,7 @@ public class BookMap extends GridMap {
 
 				HashSet<Integer> floodExplored = new HashSet<Integer>((this.size-2)*2);
 				floodExplored.add(Arrays.hashCode(location));
-				cell.addCellObject(roomObject);
+				cell.addObject(roomObject);
 				//System.out.print("Room " + roomNumber + ": (" + location[0] + "," + location[1] + ") ");
 				
 				// add the surrounding cells to the queue 
@@ -233,7 +233,7 @@ public class BookMap extends GridMap {
 
 					explored.add(Arrays.hashCode(floodLocation));
 
-					cell.addCellObject(new CellObject(roomObject));
+					cell.addObject(new CellObject(roomObject));
 					//System.out.print("(" + floodLocation[0] + "," + floodLocation[1] + ") ");
 
 					// add the four surrounding cells to the queue
@@ -552,7 +552,7 @@ public class BookMap extends GridMap {
 
 			// put the object in the cell
 			Cell cell = getCell(currentBarrier.right);
-			cell.addCellObject(gatewayObject);
+			cell.addObject(gatewayObject);
 			
 			// record the destinations which is the new room and the room the gateway is sitting on
 			// add the current room to the gateway destination list
@@ -606,7 +606,7 @@ public class BookMap extends GridMap {
 			theNewRoomObject.addProperty(Names.kPropertyNumber, Integer.toString(roomNumber));
 			{
 				Cell cell = getCell(gatewayBarrier.left);
-				cell.addCellObject(theNewRoomObject);
+				cell.addObject(theNewRoomObject);
 			}
 
 			Direction incrementDirection = Direction.NONE;
@@ -653,7 +653,7 @@ public class BookMap extends GridMap {
 				current = Direction.translate(current, incrementDirection);
 
 				Cell cell = getCell(current);
-				cell.addCellObject(new CellObject(theNewRoomObject));
+				cell.addObject(new CellObject(theNewRoomObject));
 			}
 
 			// now we need to round up the four barriers

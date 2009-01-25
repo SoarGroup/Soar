@@ -34,7 +34,7 @@ public class TaxiWorld implements IWorld {
 		map.placePassengerAndSetDestination();
 	}
 	
-	public boolean update(GridMap _map, PlayersManager players) {
+	public String update(GridMap _map, PlayersManager players) {
 		TaxiMap map = (TaxiMap)_map;
 		
 		Iterator<Player> iter = players.iterator();
@@ -47,7 +47,7 @@ public class TaxiWorld implements IWorld {
 			
 			// check for break-out
 			if (Soar2D.control.isShuttingDown()) {
-				return false;
+				return null;
 			}
 
 			if (move.move) {
@@ -105,7 +105,7 @@ public class TaxiWorld implements IWorld {
 		map.updateObjects(null);
 		
 		// do not reset after this frame
-		return false;
+		return null;
 	}
 
 	public void updatePlayers(boolean playersChanged, GridMap map, PlayersManager players) {

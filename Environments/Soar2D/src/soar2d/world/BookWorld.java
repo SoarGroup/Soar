@@ -28,7 +28,7 @@ public class BookWorld implements IWorld {
 		return true;
 	}
 	
-	private boolean updateDiscrete(BookMap map, PlayersManager players, double time) {
+	private String updateDiscrete(BookMap map, PlayersManager players, double time) {
 		
 		Iterator<Player> iter = players.iterator();
 		while (iter.hasNext()) {
@@ -111,7 +111,7 @@ public class BookWorld implements IWorld {
 		updatePlayers(false, map, players);
 		
 		// do not reset after update
-		return false;
+		return null;
 	}
 
 	private void handleCommunication(MoveInfo move, Player player, PlayersManager players) {
@@ -148,7 +148,7 @@ public class BookWorld implements IWorld {
 		}
 	}
 
-	private boolean updateContinuous(BookMap map, PlayersManager players, double time) {
+	private String updateContinuous(BookMap map, PlayersManager players, double time) {
 		Iterator<Player> iter = players.iterator();
 		while (iter.hasNext()) {
 			Player player = iter.next();
@@ -310,10 +310,10 @@ public class BookWorld implements IWorld {
 		updatePlayers(false, map, players);
 		
 		// do not reset after update
-		return false;
+		return null;
 	}
 
-	public boolean update(GridMap _map, PlayersManager players) {
+	public String update(GridMap _map, PlayersManager players) {
 		double time = Soar2D.control.getTimeSlice();
 		if (Soar2D.config.roomConfig().continuous)
 			return updateContinuous((BookMap)_map, players, time);

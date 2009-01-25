@@ -48,7 +48,7 @@ public class TankSoarWorld implements IWorld {
 	private int missileID = 0;
 	private int missileReset = 0;
 
-	public boolean update(GridMap _map, PlayersManager players) {
+	public String update(GridMap _map, PlayersManager players) {
 		TankSoarMap tMap = (TankSoarMap)_map;
 		
 		// We'll cache the tank new locations
@@ -457,7 +457,7 @@ public class TankSoarWorld implements IWorld {
 		updatePlayers(false, tMap, players);
 
 		// no reset after update
-		return false;
+		return null;
 	}
 	
 	private void handleRadarEnergy(Player player) {
