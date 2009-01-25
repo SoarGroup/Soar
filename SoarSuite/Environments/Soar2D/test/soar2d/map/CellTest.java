@@ -18,7 +18,7 @@ public class CellTest {
 
 	@Before
 	public void setUp() throws Exception {
-		cell = new Cell(0, 0);
+		cell = Cell.createCell(true, new int[] {0, 0});
 		
 		objects[0] = new CellObject("test0");
 		objects[0].addProperty("property0", "value0");
