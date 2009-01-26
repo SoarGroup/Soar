@@ -35,7 +35,6 @@ public class Names {
 	}
 	
 	public class Trace {
-		public static final String loggerInitialized = "Logger initialized.";
 		public static final String initDisplay = "Initializing display.";
 		public static final String initSimulation = "Initializing simulation.";
 		public static final String startGUI = "Starting GUI.";
