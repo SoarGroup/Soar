@@ -25,7 +25,6 @@ public class SimConfig implements GameConfig {
 		private static final String last_productions = "last_productions";
 		private static final String window_position = "window_position";
 		private static final String general = "general";
-		private static final String logging = "logging";
 		private static final String soar = "soar";
 		private static final String terminals = "terminals";
 		private static final String players = "players";
@@ -42,7 +41,6 @@ public class SimConfig implements GameConfig {
 	private Config config;
 	
 	private GeneralConfig generalConfig;
-	private String loggingConfig;
 	private SoarConfig soarConfig;
 	private TerminalsConfig terminalsConfig;
 	
@@ -56,8 +54,6 @@ public class SimConfig implements GameConfig {
 		
 		generalConfig = new GeneralConfig();
 		loadSubConfig(config.getChild(Keys.general), GeneralConfig.class.getFields(), generalConfig);
-
-		loggingConfig = config.getString(Keys.logging);
 
 		soarConfig = new SoarConfig();
 		loadSubConfig(config.getChild(Keys.soar), SoarConfig.class.getFields(), soarConfig);
@@ -189,10 +185,6 @@ public class SimConfig implements GameConfig {
 	
 	public GeneralConfig generalConfig() {
 		return generalConfig;
-	}
-	
-	public String loggingConfig() {
-		return loggingConfig;
 	}
 	
 	public SoarConfig soarConfig() {
