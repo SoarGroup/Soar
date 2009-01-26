@@ -344,7 +344,7 @@ bool CommandLineInterface::DoEpMem( const char pOp, const std::string* pAttr, co
 		const char *msg = "EpMem database closed.";
 		const char *tag_type = sml_Names::kTypeString;
 
-		epmem_end( m_pAgentSoar );
+		epmem_close( m_pAgentSoar );
 		if ( m_RawOutput )
 			m_Result << msg;
 		else

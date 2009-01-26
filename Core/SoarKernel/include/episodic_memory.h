@@ -50,12 +50,12 @@ typedef struct wme_struct wme;
 #define EPMEM_DB_MEM 1
 #define EPMEM_DB_FILE 2
 
-#define EPMEM_MODE_ONE 1   // wm tree
-#define EPMEM_MODE_THREE 3 // mva/shared wme
+#define EPMEM_MODE_ONE 1   // tree
+#define EPMEM_MODE_THREE 3 // graph
 
-#define EPMEM_GRAPH_MATCH_OFF 1
-#define EPMEM_GRAPH_MATCH_PATHS 2
-#define EPMEM_GRAPH_MATCH_WMES 3
+#define EPMEM_GRAPH_MATCH_OFF 1 // off
+#define EPMEM_GRAPH_MATCH_PATHS 2 // paths
+#define EPMEM_GRAPH_MATCH_WMES 3 // full
 
 #define EPMEM_TRIGGER_NONE 1
 #define EPMEM_TRIGGER_OUTPUT 2
@@ -216,10 +216,9 @@ typedef struct wme_struct wme;
 #define EPMEM_RIT_STATE_EDGE						1
 
 //////////////////////////////////////////////////////////
-// EpMem Types
+// Parameter Types
 //////////////////////////////////////////////////////////
 
-// parameters
 enum epmem_param_type { epmem_param_constant = 1, epmem_param_number = 2, epmem_param_string = 3, epmem_param_invalid = 4 };
 
 typedef struct epmem_constant_parameter_struct
@@ -256,14 +255,22 @@ typedef struct epmem_parameter_struct
 	const char *name;
 } epmem_parameter;
 
-// statistics
+
+//////////////////////////////////////////////////////////
+// Stat Types
+//////////////////////////////////////////////////////////
+
 typedef struct epmem_stat_struct
 {
 	long long value;
 	const char *name;
 } epmem_stat;
 
-// timers
+
+//////////////////////////////////////////////////////////
+// Timer Types
+//////////////////////////////////////////////////////////
+
 typedef struct epmem_timer_struct
 {
 	struct timeval start_timer;
@@ -273,45 +280,65 @@ typedef struct epmem_timer_struct
 	long level;
 } epmem_timer;
 
-// common
+
+//////////////////////////////////////////////////////////
+// Common Types
+//////////////////////////////////////////////////////////
+
+// represents a unique node identifier in the episodic store
 typedef unsigned long long int epmem_node_id;
+
+// represents a unique episode identifier in the episodic store
 typedef long long int epmem_time_id;
 
-// soar
+
+//////////////////////////////////////////////////////////
+// Soar Integration Types
+//////////////////////////////////////////////////////////
+
+// data associated with each state
 typedef struct epmem_data_struct
 {
-	unsigned long last_ol_time;		// last update to output-link
-	unsigned long last_ol_count;	// last count of output-link
+	unsigned long last_ol_time;				// last update to output-link
+	unsigned long last_ol_count;			// last count of output-link
 
-	unsigned long last_cmd_time;	// last update to epmem.command
-	unsigned long last_cmd_count;	// last update to epmem.command
+	unsigned long last_cmd_time;			// last update to epmem.command
+	unsigned long last_cmd_count;			// last update to epmem.command
 
-	epmem_time_id last_memory;		// last retrieved memory
+	epmem_time_id last_memory;				// last retrieved memory
 
 	wme *ss_wme;
 
-	std::set<wme *> *cue_wmes;		// wmes in last cue
-	std::stack<wme *> *epmem_wmes;	// wmes in last epmem
+	std::set<wme *> *cue_wmes;				// wmes in last cue
+	std::stack<wme *> *epmem_wmes;			// wmes in last epmem
 } epmem_data;
 
-// mode: one
+
+//////////////////////////////////////////////////////////
+// Mode "one" Types (i.e. Working Memory Tree)
+//////////////////////////////////////////////////////////
+
+// represents a leaf wme
 typedef struct epmem_leaf_node_struct
 {
-	double leaf_weight;
-	epmem_node_id leaf_id;
+	double leaf_weight;						// wma value
+	epmem_node_id leaf_id;					// node id
 } epmem_leaf_node;
 
+// maintains state within sqlite b-trees
 typedef struct epmem_range_query_struct
 {
-	sqlite3_stmt *stmt;
-	epmem_time_id val;
+	sqlite3_stmt *stmt;						// sqlite query
+	epmem_time_id val;						// current b-tree leaf value
 
-	double weight;
-	long long ct;
+	double weight;							// wma value
+	long long ct;							// cardinality w.r.t. positive/negative query
 
-	long timer;
+	long timer;								// timer to update upon executing the query
 } epmem_range_query;
 
+// functor to maintain a priority cue of b-tree pointers
+// based upon their current value
 struct epmem_compare_range_queries
 {
 	bool operator() ( const epmem_range_query *a, const epmem_range_query *b ) const
@@ -319,56 +346,71 @@ struct epmem_compare_range_queries
 		return ( a->val < b->val );
 	}
 };
-
 typedef std::priority_queue<epmem_range_query *, std::vector<epmem_range_query *>, epmem_compare_range_queries> epmem_range_query_list;
 
-// mode: three
+
+//////////////////////////////////////////////////////////
+// Mode "three" Types (i.e. Working Memory Graph)
+//////////////////////////////////////////////////////////
+
+// represents a graph edge (i.e. identifier)
+// follows cs theory notation of finite automata: q1 = d( q0, w )
 typedef struct epmem_edge_struct
 {
-	epmem_node_id q0;
-	Symbol *w;
-	epmem_node_id q1;
+	epmem_node_id q0;						// id
+	Symbol *w;								// attr
+	epmem_node_id q1;						// value
 } epmem_edge;
 
+// represents cached children of an identifier in working memory
 typedef struct epmem_wme_cache_element_struct
 {
-	wme **wmes;
-	int len;
+	wme **wmes;								// child wmes
+	int len;								// number of children
 } epmem_wme_cache_element;
 
+// see below
 typedef struct epmem_shared_literal_struct epmem_shared_literal;
 typedef std::list<epmem_shared_literal *> epmem_shared_trigger_list;
 
+// represents state of a leaf wme
+// at a particular episode
 typedef struct epmem_shared_match_struct
 {
-	double value_weight;
-	long long value_ct;
+	double value_weight;					// wma value
+	long long value_ct;						// cardinality w.r.t. positive/negative query
 
-	unsigned long long ct;
+	unsigned long long ct;					// number of contributing literals that are "on"
 } epmem_shared_match;
 
+// represents state of one historical
+// identity of a cue wme at a particular
+// episode
 struct epmem_shared_literal_struct
 {
-	epmem_node_id shared_id;
-	
-	unsigned long long ct;
+	epmem_node_id shared_id;				// shared q1, if identifier
 
-	struct wme_struct *wme;
-	unsigned long long wme_kids;
+	unsigned long long ct;					// number of contributing literals that are "on"
 
-	epmem_shared_match *match;
-	epmem_shared_trigger_list *children;
+	struct wme_struct *wme;					// associated cue wme
+	unsigned long long wme_kids;			// number of children the cue wme has
+
+	epmem_shared_match *match;				// associated match, if leaf wme
+	epmem_shared_trigger_list *children;	// child literals, if not leaf wme
 };
 
+// maintains state within sqlite b-trees
 typedef struct epmem_shared_query_struct
 {
-	sqlite3_stmt *stmt;
-	epmem_time_id val;
-	long timer;
+	sqlite3_stmt *stmt;						// associated sqlite query
+	epmem_time_id val;						// current b-tree leaf value
+	long timer;								// timer to update upon executing the query
 
-	epmem_shared_trigger_list *triggers;
+	epmem_shared_trigger_list *triggers;	// literals to update when stepping this b-tree
 } epmem_shared_query;
 
+// functor to maintain a priority cue of b-tree pointers
+// based upon their current value
 struct epmem_compare_shared_queries
 {
 	bool operator() ( const epmem_shared_query *a, const epmem_shared_query *b ) const
@@ -376,10 +418,13 @@ struct epmem_compare_shared_queries
 		return ( a->val < b->val );
 	}
 };
-
 typedef std::priority_queue<epmem_shared_query *, std::vector<epmem_shared_query *>, epmem_compare_shared_queries> epmem_shared_query_list;
 
+// lookup table to facilitate shared identifiers
 typedef std::map<epmem_node_id, Symbol *> epmem_id_mapping;
+
+// lookup table to propagate constrained identifiers during
+// full graph-match
 typedef std::map<Symbol *, epmem_node_id> epmem_constraint_list;
 
 //
@@ -389,16 +434,16 @@ typedef std::map<Symbol *, epmem_node_id> epmem_constraint_list;
 #include "stl_support.h"
 
 //////////////////////////////////////////////////////////
-// Parameter Functions
+// Parameter Functions (see cpp for comments)
 //////////////////////////////////////////////////////////
 
 // clean memory
 extern void epmem_clean_parameters( agent *my_agent );
 
 // add parameter
-extern epmem_parameter *epmem_add_parameter( const char *name, double value, bool (*val_func)( double ) );
-extern epmem_parameter *epmem_add_parameter( const char *name, const long value, bool (*val_func)( const long ), const char *(*to_str)( long ), const long (*from_str)( const char * ) );
-extern epmem_parameter *epmem_add_parameter( const char *name, const char *value, bool (*val_func)( const char * ) );
+extern epmem_parameter *epmem_new_parameter( const char *name, double value, bool (*val_func)( double ) );
+extern epmem_parameter *epmem_new_parameter( const char *name, const long value, bool (*val_func)( const long ), const char *(*to_str)( long ), const long (*from_str)( const char * ) );
+extern epmem_parameter *epmem_new_parameter( const char *name, const char *value, bool (*val_func)( const char * ) );
 
 // convert parameter
 extern const char *epmem_convert_parameter( agent *my_agent, const long param );
@@ -491,7 +536,7 @@ extern bool epmem_enabled( agent *my_agent );
 
 
 //////////////////////////////////////////////////////////
-// Stat Functions
+// Stat Functions (see cpp for comments)
 //////////////////////////////////////////////////////////
 
 // memory clean
@@ -499,7 +544,7 @@ extern void epmem_clean_stats( agent *my_agent );
 extern void epmem_reset_stats( agent *my_agent );
 
 // add stat
-extern epmem_stat *epmem_add_stat( const char *name );
+extern epmem_stat *epmem_new_stat( const char *name );
 
 // convert stat
 extern const long epmem_convert_stat( agent *my_agent, const char *name );
@@ -519,7 +564,7 @@ extern bool epmem_set_stat( agent *my_agent, const long stat, long long new_val 
 
 
 //////////////////////////////////////////////////////////
-// Timer Functions
+// Timer Functions (see cpp for comments)
 //////////////////////////////////////////////////////////
 
 // memory clean
@@ -527,7 +572,7 @@ extern void epmem_clean_timers( agent *my_agent );
 extern void epmem_reset_timers( agent *my_agent );
 
 // add timer
-extern epmem_timer *epmem_add_timer( const char *name, long timer );
+extern epmem_timer *epmem_new_timer( const char *name, long timer );
 
 // convert timer
 extern const long epmem_convert_timer( agent *my_agent, const char *name );
@@ -551,12 +596,12 @@ extern void epmem_stop_timer( agent *my_agent, const long timer );
 
 
 //////////////////////////////////////////////////////////
-// Soar Functions
+// Soar Functions (see cpp for comments)
 //////////////////////////////////////////////////////////
 
 // init, end
 extern void epmem_reset( agent *my_agent, Symbol *state = NULL );
-extern void epmem_end( agent *my_agent );
+extern void epmem_close( agent *my_agent );
 
 // perform epmem actions
 extern void epmem_go( agent *my_agent );

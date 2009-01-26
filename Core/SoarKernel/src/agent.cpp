@@ -344,68 +344,68 @@ agent * create_soar_agent (char * agent_name) {                                 
   predict_init( newAgent );
 
   // epmem initialization
-  newAgent->epmem_params[ EPMEM_PARAM_LEARNING ] = epmem_add_parameter( "learning", EPMEM_LEARNING_ON, &epmem_validate_learning, &epmem_convert_learning, &epmem_convert_learning );
-  newAgent->epmem_params[ EPMEM_PARAM_DB ] = epmem_add_parameter( "database", EPMEM_DB_FILE, &epmem_validate_database, &epmem_convert_database, &epmem_convert_database );
-  newAgent->epmem_params[ EPMEM_PARAM_PATH ] = epmem_add_parameter( "path", "", &epmem_validate_path );
-  newAgent->epmem_params[ EPMEM_PARAM_COMMIT ] = epmem_add_parameter( "commit", 1.0, &epmem_validate_commit );
+  newAgent->epmem_params[ EPMEM_PARAM_LEARNING ] = epmem_new_parameter( "learning", EPMEM_LEARNING_ON, &epmem_validate_learning, &epmem_convert_learning, &epmem_convert_learning );
+  newAgent->epmem_params[ EPMEM_PARAM_DB ] = epmem_new_parameter( "database", EPMEM_DB_FILE, &epmem_validate_database, &epmem_convert_database, &epmem_convert_database );
+  newAgent->epmem_params[ EPMEM_PARAM_PATH ] = epmem_new_parameter( "path", "", &epmem_validate_path );
+  newAgent->epmem_params[ EPMEM_PARAM_COMMIT ] = epmem_new_parameter( "commit", 1.0, &epmem_validate_commit );
 
-  newAgent->epmem_params[ EPMEM_PARAM_MODE ] = epmem_add_parameter( "mode", EPMEM_MODE_THREE, &epmem_validate_mode, &epmem_convert_mode, &epmem_convert_mode );
-  newAgent->epmem_params[ EPMEM_PARAM_GRAPH_MATCH ] = epmem_add_parameter( "graph-match", EPMEM_GRAPH_MATCH_OFF, &epmem_validate_graph_match, &epmem_convert_graph_match, &epmem_convert_graph_match );
+  newAgent->epmem_params[ EPMEM_PARAM_MODE ] = epmem_new_parameter( "mode", EPMEM_MODE_THREE, &epmem_validate_mode, &epmem_convert_mode, &epmem_convert_mode );
+  newAgent->epmem_params[ EPMEM_PARAM_GRAPH_MATCH ] = epmem_new_parameter( "graph-match", EPMEM_GRAPH_MATCH_OFF, &epmem_validate_graph_match, &epmem_convert_graph_match, &epmem_convert_graph_match );
 
-  newAgent->epmem_params[ EPMEM_PARAM_TRIGGER ] = epmem_add_parameter( "trigger", EPMEM_TRIGGER_OUTPUT, &epmem_validate_trigger, &epmem_convert_trigger, &epmem_convert_trigger );
-  newAgent->epmem_params[ EPMEM_PARAM_FORCE ] = epmem_add_parameter( "force", EPMEM_FORCE_OFF, &epmem_validate_force, &epmem_convert_force, &epmem_convert_force );
-  newAgent->epmem_params[ EPMEM_PARAM_BALANCE ] = epmem_add_parameter( "balance", 0.5, &epmem_validate_balance );
-  newAgent->epmem_params[ EPMEM_PARAM_EXCLUSIONS ] = epmem_add_parameter( "exclusions", "", &epmem_validate_exclusions );
-  newAgent->epmem_params[ EPMEM_PARAM_TIMERS ] = epmem_add_parameter( "timers", EPMEM_TIMERS_OFF, &epmem_validate_ext_timers, &epmem_convert_ext_timers, &epmem_convert_ext_timers );
+  newAgent->epmem_params[ EPMEM_PARAM_TRIGGER ] = epmem_new_parameter( "trigger", EPMEM_TRIGGER_OUTPUT, &epmem_validate_trigger, &epmem_convert_trigger, &epmem_convert_trigger );
+  newAgent->epmem_params[ EPMEM_PARAM_FORCE ] = epmem_new_parameter( "force", EPMEM_FORCE_OFF, &epmem_validate_force, &epmem_convert_force, &epmem_convert_force );
+  newAgent->epmem_params[ EPMEM_PARAM_BALANCE ] = epmem_new_parameter( "balance", 0.5, &epmem_validate_balance );
+  newAgent->epmem_params[ EPMEM_PARAM_EXCLUSIONS ] = epmem_new_parameter( "exclusions", "", &epmem_validate_exclusions );
+  newAgent->epmem_params[ EPMEM_PARAM_TIMERS ] = epmem_new_parameter( "timers", EPMEM_TIMERS_OFF, &epmem_validate_ext_timers, &epmem_convert_ext_timers, &epmem_convert_ext_timers );
 
-  newAgent->epmem_stats[ EPMEM_STAT_TIME ] = epmem_add_stat( "time" );
-  newAgent->epmem_stats[ EPMEM_STAT_MEM_USAGE ] = epmem_add_stat( "mem_usage" );
-  newAgent->epmem_stats[ EPMEM_STAT_MEM_HIGH ] = epmem_add_stat( "mem_high" );
-  newAgent->epmem_stats[ EPMEM_STAT_NCB_WMES ] = epmem_add_stat( "ncb_wmes" );
-  newAgent->epmem_stats[ EPMEM_STAT_QRY_POS ] = epmem_add_stat( "qry_pos" );
-  newAgent->epmem_stats[ EPMEM_STAT_QRY_NEG ] = epmem_add_stat( "qry_neg" );
-  newAgent->epmem_stats[ EPMEM_STAT_QRY_RET ] = epmem_add_stat( "qry_ret" );
-  newAgent->epmem_stats[ EPMEM_STAT_QRY_CARD ] = epmem_add_stat( "qry_card" );
+  newAgent->epmem_stats[ EPMEM_STAT_TIME ] = epmem_new_stat( "time" );
+  newAgent->epmem_stats[ EPMEM_STAT_MEM_USAGE ] = epmem_new_stat( "mem_usage" );
+  newAgent->epmem_stats[ EPMEM_STAT_MEM_HIGH ] = epmem_new_stat( "mem_high" );
+  newAgent->epmem_stats[ EPMEM_STAT_NCB_WMES ] = epmem_new_stat( "ncb_wmes" );
+  newAgent->epmem_stats[ EPMEM_STAT_QRY_POS ] = epmem_new_stat( "qry_pos" );
+  newAgent->epmem_stats[ EPMEM_STAT_QRY_NEG ] = epmem_new_stat( "qry_neg" );
+  newAgent->epmem_stats[ EPMEM_STAT_QRY_RET ] = epmem_new_stat( "qry_ret" );
+  newAgent->epmem_stats[ EPMEM_STAT_QRY_CARD ] = epmem_new_stat( "qry_card" );
 
-  newAgent->epmem_stats[ EPMEM_STAT_NEXT_ID ] = epmem_add_stat( "next_id" );
+  newAgent->epmem_stats[ EPMEM_STAT_NEXT_ID ] = epmem_new_stat( "next_id" );
 
-  newAgent->epmem_stats[ EPMEM_STAT_RIT_OFFSET_1 ] = epmem_add_stat( "rit_offset_1" );
-  newAgent->epmem_stats[ EPMEM_STAT_RIT_LEFTROOT_1 ] = epmem_add_stat( "rit_left_root_1" );
-  newAgent->epmem_stats[ EPMEM_STAT_RIT_RIGHTROOT_1 ] = epmem_add_stat( "rit_right_root_1" );
-  newAgent->epmem_stats[ EPMEM_STAT_RIT_MINSTEP_1 ] = epmem_add_stat( "rit_min_step_1" );
+  newAgent->epmem_stats[ EPMEM_STAT_RIT_OFFSET_1 ] = epmem_new_stat( "rit_offset_1" );
+  newAgent->epmem_stats[ EPMEM_STAT_RIT_LEFTROOT_1 ] = epmem_new_stat( "rit_left_root_1" );
+  newAgent->epmem_stats[ EPMEM_STAT_RIT_RIGHTROOT_1 ] = epmem_new_stat( "rit_right_root_1" );
+  newAgent->epmem_stats[ EPMEM_STAT_RIT_MINSTEP_1 ] = epmem_new_stat( "rit_min_step_1" );
 
-  newAgent->epmem_stats[ EPMEM_STAT_RIT_OFFSET_2 ] = epmem_add_stat( "rit_offset_2" );
-  newAgent->epmem_stats[ EPMEM_STAT_RIT_LEFTROOT_2 ] = epmem_add_stat( "rit_left_root_2" );
-  newAgent->epmem_stats[ EPMEM_STAT_RIT_RIGHTROOT_2 ] = epmem_add_stat( "rit_right_root_2" );
-  newAgent->epmem_stats[ EPMEM_STAT_RIT_MINSTEP_2 ] = epmem_add_stat( "rit_min_step_2" );
+  newAgent->epmem_stats[ EPMEM_STAT_RIT_OFFSET_2 ] = epmem_new_stat( "rit_offset_2" );
+  newAgent->epmem_stats[ EPMEM_STAT_RIT_LEFTROOT_2 ] = epmem_new_stat( "rit_left_root_2" );
+  newAgent->epmem_stats[ EPMEM_STAT_RIT_RIGHTROOT_2 ] = epmem_new_stat( "rit_right_root_2" );
+  newAgent->epmem_stats[ EPMEM_STAT_RIT_MINSTEP_2 ] = epmem_new_stat( "rit_min_step_2" );
 
 
-  newAgent->epmem_timers[ EPMEM_TIMER_TOTAL ] = epmem_add_timer( "epmem_total", EPMEM_TIMERS_ONE );
-  newAgent->epmem_timers[ EPMEM_TIMER_STORAGE ] = epmem_add_timer( "epmem_storage", EPMEM_TIMERS_TWO );
-  newAgent->epmem_timers[ EPMEM_TIMER_NCB_RETRIEVAL ] = epmem_add_timer( "epmem_ncb_retrieval", EPMEM_TIMERS_TWO );
-  newAgent->epmem_timers[ EPMEM_TIMER_QUERY ] = epmem_add_timer( "epmem_query", EPMEM_TIMERS_TWO );
-  newAgent->epmem_timers[ EPMEM_TIMER_API ] = epmem_add_timer( "epmem_api", EPMEM_TIMERS_TWO );
-  newAgent->epmem_timers[ EPMEM_TIMER_TRIGGER ] = epmem_add_timer( "epmem_trigger", EPMEM_TIMERS_TWO );
-  newAgent->epmem_timers[ EPMEM_TIMER_INIT ] = epmem_add_timer( "epmem_init", EPMEM_TIMERS_TWO );
-  newAgent->epmem_timers[ EPMEM_TIMER_NEXT ] = epmem_add_timer( "epmem_next", EPMEM_TIMERS_TWO );
-  newAgent->epmem_timers[ EPMEM_TIMER_PREV ] = epmem_add_timer( "epmem_prev", EPMEM_TIMERS_TWO );
-  newAgent->epmem_timers[ EPMEM_TIMER_NCB_EDGE ] = epmem_add_timer( "ncb_edge", EPMEM_TIMERS_THREE );
-  newAgent->epmem_timers[ EPMEM_TIMER_NCB_EDGE_RIT ] = epmem_add_timer( "ncb_edge_rit", EPMEM_TIMERS_THREE );
-  newAgent->epmem_timers[ EPMEM_TIMER_NCB_NODE ] = epmem_add_timer( "ncb_node", EPMEM_TIMERS_THREE );
-  newAgent->epmem_timers[ EPMEM_TIMER_NCB_NODE_RIT ] = epmem_add_timer( "ncb_node_rit", EPMEM_TIMERS_THREE );
-  newAgent->epmem_timers[ EPMEM_TIMER_QUERY_GRAPH_MATCH ] = epmem_add_timer( "query_graph_match", EPMEM_TIMERS_THREE );
-  newAgent->epmem_timers[ EPMEM_TIMER_QUERY_POS_START_EP ] = epmem_add_timer( "query_pos_start_ep", EPMEM_TIMERS_THREE );
-  newAgent->epmem_timers[ EPMEM_TIMER_QUERY_POS_START_NOW ] = epmem_add_timer( "query_pos_start_now", EPMEM_TIMERS_THREE );
-  newAgent->epmem_timers[ EPMEM_TIMER_QUERY_POS_START_POINT ] = epmem_add_timer( "query_pos_start_point", EPMEM_TIMERS_THREE );
-  newAgent->epmem_timers[ EPMEM_TIMER_QUERY_POS_END_EP ] = epmem_add_timer( "query_pos_end_ep", EPMEM_TIMERS_THREE );
-  newAgent->epmem_timers[ EPMEM_TIMER_QUERY_POS_END_NOW ] = epmem_add_timer( "query_pos_end_now", EPMEM_TIMERS_THREE );
-  newAgent->epmem_timers[ EPMEM_TIMER_QUERY_POS_END_POINT ] = epmem_add_timer( "query_pos_end_point", EPMEM_TIMERS_THREE );
-  newAgent->epmem_timers[ EPMEM_TIMER_QUERY_NEG_START_EP ] = epmem_add_timer( "query_neg_start_ep", EPMEM_TIMERS_THREE );
-  newAgent->epmem_timers[ EPMEM_TIMER_QUERY_NEG_START_NOW ] = epmem_add_timer( "query_neg_start_now", EPMEM_TIMERS_THREE );
-  newAgent->epmem_timers[ EPMEM_TIMER_QUERY_NEG_START_POINT ] = epmem_add_timer( "query_neg_start_point", EPMEM_TIMERS_THREE );
-  newAgent->epmem_timers[ EPMEM_TIMER_QUERY_NEG_END_EP ] = epmem_add_timer( "query_neg_end_ep", EPMEM_TIMERS_THREE );
-  newAgent->epmem_timers[ EPMEM_TIMER_QUERY_NEG_END_NOW ] = epmem_add_timer( "query_neg_end_now", EPMEM_TIMERS_THREE );
-  newAgent->epmem_timers[ EPMEM_TIMER_QUERY_NEG_END_POINT ] = epmem_add_timer( "query_neg_end_point", EPMEM_TIMERS_THREE );  
+  newAgent->epmem_timers[ EPMEM_TIMER_TOTAL ] = epmem_new_timer( "epmem_total", EPMEM_TIMERS_ONE );
+  newAgent->epmem_timers[ EPMEM_TIMER_STORAGE ] = epmem_new_timer( "epmem_storage", EPMEM_TIMERS_TWO );
+  newAgent->epmem_timers[ EPMEM_TIMER_NCB_RETRIEVAL ] = epmem_new_timer( "epmem_ncb_retrieval", EPMEM_TIMERS_TWO );
+  newAgent->epmem_timers[ EPMEM_TIMER_QUERY ] = epmem_new_timer( "epmem_query", EPMEM_TIMERS_TWO );
+  newAgent->epmem_timers[ EPMEM_TIMER_API ] = epmem_new_timer( "epmem_api", EPMEM_TIMERS_TWO );
+  newAgent->epmem_timers[ EPMEM_TIMER_TRIGGER ] = epmem_new_timer( "epmem_trigger", EPMEM_TIMERS_TWO );
+  newAgent->epmem_timers[ EPMEM_TIMER_INIT ] = epmem_new_timer( "epmem_init", EPMEM_TIMERS_TWO );
+  newAgent->epmem_timers[ EPMEM_TIMER_NEXT ] = epmem_new_timer( "epmem_next", EPMEM_TIMERS_TWO );
+  newAgent->epmem_timers[ EPMEM_TIMER_PREV ] = epmem_new_timer( "epmem_prev", EPMEM_TIMERS_TWO );
+  newAgent->epmem_timers[ EPMEM_TIMER_NCB_EDGE ] = epmem_new_timer( "ncb_edge", EPMEM_TIMERS_THREE );
+  newAgent->epmem_timers[ EPMEM_TIMER_NCB_EDGE_RIT ] = epmem_new_timer( "ncb_edge_rit", EPMEM_TIMERS_THREE );
+  newAgent->epmem_timers[ EPMEM_TIMER_NCB_NODE ] = epmem_new_timer( "ncb_node", EPMEM_TIMERS_THREE );
+  newAgent->epmem_timers[ EPMEM_TIMER_NCB_NODE_RIT ] = epmem_new_timer( "ncb_node_rit", EPMEM_TIMERS_THREE );
+  newAgent->epmem_timers[ EPMEM_TIMER_QUERY_GRAPH_MATCH ] = epmem_new_timer( "query_graph_match", EPMEM_TIMERS_THREE );
+  newAgent->epmem_timers[ EPMEM_TIMER_QUERY_POS_START_EP ] = epmem_new_timer( "query_pos_start_ep", EPMEM_TIMERS_THREE );
+  newAgent->epmem_timers[ EPMEM_TIMER_QUERY_POS_START_NOW ] = epmem_new_timer( "query_pos_start_now", EPMEM_TIMERS_THREE );
+  newAgent->epmem_timers[ EPMEM_TIMER_QUERY_POS_START_POINT ] = epmem_new_timer( "query_pos_start_point", EPMEM_TIMERS_THREE );
+  newAgent->epmem_timers[ EPMEM_TIMER_QUERY_POS_END_EP ] = epmem_new_timer( "query_pos_end_ep", EPMEM_TIMERS_THREE );
+  newAgent->epmem_timers[ EPMEM_TIMER_QUERY_POS_END_NOW ] = epmem_new_timer( "query_pos_end_now", EPMEM_TIMERS_THREE );
+  newAgent->epmem_timers[ EPMEM_TIMER_QUERY_POS_END_POINT ] = epmem_new_timer( "query_pos_end_point", EPMEM_TIMERS_THREE );
+  newAgent->epmem_timers[ EPMEM_TIMER_QUERY_NEG_START_EP ] = epmem_new_timer( "query_neg_start_ep", EPMEM_TIMERS_THREE );
+  newAgent->epmem_timers[ EPMEM_TIMER_QUERY_NEG_START_NOW ] = epmem_new_timer( "query_neg_start_now", EPMEM_TIMERS_THREE );
+  newAgent->epmem_timers[ EPMEM_TIMER_QUERY_NEG_START_POINT ] = epmem_new_timer( "query_neg_start_point", EPMEM_TIMERS_THREE );
+  newAgent->epmem_timers[ EPMEM_TIMER_QUERY_NEG_END_EP ] = epmem_new_timer( "query_neg_end_ep", EPMEM_TIMERS_THREE );
+  newAgent->epmem_timers[ EPMEM_TIMER_QUERY_NEG_END_NOW ] = epmem_new_timer( "query_neg_end_now", EPMEM_TIMERS_THREE );
+  newAgent->epmem_timers[ EPMEM_TIMER_QUERY_NEG_END_POINT ] = epmem_new_timer( "query_neg_end_point", EPMEM_TIMERS_THREE );
 
   newAgent->epmem_db = NULL;
   newAgent->epmem_db_status = -1;
@@ -557,7 +557,7 @@ void destroy_soar_agent (agent * delete_agent)
   delete delete_agent->prediction;
 
   // cleanup EpMem
-  epmem_end( delete_agent );
+  epmem_close( delete_agent );
   epmem_clean_parameters( delete_agent );
   epmem_clean_stats( delete_agent );
   epmem_clean_timers( delete_agent );
