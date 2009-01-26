@@ -53,7 +53,6 @@ public class Soar2D {
 		install(Names.configs.kitchenCnf);
 		install(Names.configs.taxiCnf);
 
-		BasicConfigurator.configure();
 		loadConfig(args);
 
 		// if using gui
