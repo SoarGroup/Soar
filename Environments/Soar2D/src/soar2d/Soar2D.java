@@ -10,7 +10,6 @@ import soar2d.visuals.WindowManager;
 
 import org.apache.log4j.BasicConfigurator;
 import org.apache.log4j.Logger;
-import org.apache.log4j.PropertyConfigurator;
 
 /*
  * A note about log levels:
@@ -56,8 +55,7 @@ public class Soar2D {
 
 		BasicConfigurator.configure();
 		loadConfig(args);
-		initializeLogger(config.loggingConfig());
-		
+
 		// if using gui
 		boolean usingGUI = !config.generalConfig().headless;
 		if (usingGUI) {
@@ -131,13 +129,6 @@ public class Soar2D {
 		}
 	}
 	
-	private void initializeLogger(String path) {
-		if (path != null) {
-			PropertyConfigurator.configure(path);
-		}
-		logger.trace(Names.Trace.loggerInitialized);
-	}
-
 	private void install(String file) {	
 		try {
 			// We just work relative to the current directory because that's how
