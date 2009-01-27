@@ -4281,9 +4281,9 @@ void epmem_shared_flip( epmem_shared_literal *flip, const unsigned int list, EPM
 		{
 			if ( flip->children )
 			{
-				epmem_shared_trigger_list::iterator literal_p;
+				epmem_shared_literal_list::iterator literal_p;
 
-				for ( literal_p=flip->children->begin(); literal_p!=flip->children->end(); literal_p++ )
+				for ( literal_p=flip->children->literals->begin(); literal_p!=flip->children->literals->end(); literal_p++ )
 					epmem_shared_flip( (*literal_p), list, ct, v, updown );
 			}
 			else if ( flip->match )
@@ -4304,9 +4304,9 @@ void epmem_shared_flip( epmem_shared_literal *flip, const unsigned int list, EPM
 		{
 			if ( flip->children )
 			{
-				epmem_shared_trigger_list::iterator literal_p;
+				epmem_shared_literal_list::iterator literal_p;
 
-				for ( literal_p=flip->children->begin(); literal_p!=flip->children->end(); literal_p++ )
+				for ( literal_p=flip->children->literals->begin(); literal_p!=flip->children->literals->end(); literal_p++ )
 					epmem_shared_flip( (*literal_p), list, ct, v, updown );
 			}
 			else if ( flip->match )
@@ -4339,7 +4339,7 @@ void epmem_shared_increment( agent *my_agent, epmem_shared_query_list *queries, 
 
 	bool more_data;
 	epmem_shared_query *temp_query;
-	epmem_shared_trigger_list::iterator literal_p;
+	epmem_shared_literal_list::iterator literal_p;
 
 	// a step continues until we run out
 	// of endpoints or we get to a new
@@ -4392,48 +4392,87 @@ void epmem_shared_increment( agent *my_agent, epmem_shared_query_list *queries, 
  * 					- this is not true graph-match because it does
  * 				      not respect constraints of shared identifiers.
  **************************************************************************/
-unsigned EPMEM_TYPE_INT epmem_graph_match_paths( epmem_shared_trigger_list *literals )
+unsigned EPMEM_TYPE_INT epmem_graph_match_paths( epmem_shared_literal_group *literals )
 {
 	// number of satisfied matches reached
 	unsigned EPMEM_TYPE_INT return_val = 0;
 
-	// keeps track of the current literal
-	epmem_shared_trigger_list::iterator l_p;
-
-	// keeps track of the current WME
-	wme *done_wme = NULL;
-
-	for ( l_p=literals->begin(); l_p!=literals->end(); l_p++ )
+	if ( !literals->literals->empty() )
 	{
-		// only need to consider a literal if it is satisfied
-		if ( (*l_p)->ct == EPMEM_DNF )
+		// keeps track of the current literal
+		epmem_shared_literal_list::size_type l_c = 0;
+		epmem_shared_literal *l_p = literals->literals->front();
+
+		// keeps track of the current WME
+		epmem_shared_wme_list::iterator w_p = literals->wmes->begin();
+		literals->c_wme = l_p->wme;
+
+		bool good_literal = false;
+		bool done = false;
+
+		// proceed through all the wmes in the group
+		do
 		{
-			// only consider a literal if we haven't
-			// already dealt with its associated wme
-			if ( done_wme != (*l_p)->wme )
+			// try the literal
+			good_literal = false;
+			if ( l_p->ct == EPMEM_DNF )
 			{
 				// if the associated wme has children
-				if ( (*l_p)->wme_kids )
+				if ( l_p->wme_kids )
 				{
 					// can we reach the appropriate number
 					// of satisfied matches?
-					if ( ( (*l_p)->children ) && ( epmem_graph_match_paths( (*l_p)->children ) == (*l_p)->wme_kids ) )
+					if ( ( l_p->children ) && ( epmem_graph_match_paths( l_p->children ) == l_p->wme_kids ) )
 					{
-						return_val++;
-						done_wme = (*l_p)->wme;
+						good_literal = true;
 					}
 				}
 				else
 				{
 					// is the associated match satisfied?
-					if ( (*l_p)->match->ct )
+					if ( l_p->match->ct )
 					{
-						return_val++;
-						done_wme = (*l_p)->wme;
+						good_literal = true;
 					}
 				}
 			}
-		}
+
+			if ( good_literal )
+			{
+				// successful at this wme
+				return_val++;
+
+				// proceed to the next wme
+				w_p++;
+				if ( w_p != literals->wmes->end() )
+				{
+					l_c = (*w_p);
+					l_p = (*literals->literals)[ l_c ];
+					literals->c_wme = l_p->wme;
+				}
+				else
+				{
+					done = true;
+				}
+			}
+			else
+			{
+				// try next literal
+				l_c++;
+				if ( l_c < literals->literals->size() )
+				{
+					l_p = (*literals->literals)[ l_c ];
+					if ( literals->c_wme != l_p->wme )
+					{
+						done = true;
+					}
+				}
+				else
+				{
+					done = true;
+				}
+			}
+		} while ( !done );
 	}
 
 	return return_val;
@@ -4469,36 +4508,26 @@ unsigned EPMEM_TYPE_INT epmem_graph_match_paths( epmem_shared_trigger_list *lite
  * 				      DNF graph is handled through function calls
  *
  **************************************************************************/
-unsigned EPMEM_TYPE_INT epmem_graph_match_wmes( epmem_shared_trigger_list *literals, epmem_constraint_list *constraints )
+unsigned EPMEM_TYPE_INT epmem_graph_match_wmes( epmem_shared_literal_group *literals, epmem_constraint_list *constraints )
 {
 	// number of satisfied leaf WMEs in this list
 	unsigned EPMEM_TYPE_INT return_val = 0;
 
 	// stacks to maintain state within the list
-	std::stack<epmem_shared_trigger_list::iterator *> c_ps; // literal pointers (position within a WME)
+	std::stack<epmem_shared_literal_list::size_type> c_ps; // literal pointers (position within a WME)
 	std::stack<epmem_constraint_list *> c_cs; // constraints (previously assumed correct)
 	std::stack<epmem_node_id> c_ids; // shared id of the current wme
 
-	// literals are grouped together sequentially by WME.
-	// when proceeding from one WME to the next, we thus have to
-	// walk the literals.  after the first walk, we maintain
-	// a book mark of the first literal of the next WME.
-	// as we proceed down/up the stack, we concurrently proceed
-	// left/right in this list.
-	std::list<epmem_shared_trigger_list::iterator *> firsts;
-	std::list<epmem_shared_trigger_list::iterator *>::iterator c_f;
+	// literals are grouped together sequentially by WME.	
+	epmem_shared_wme_list::iterator c_f;
 
 	// current values from the stacks
-	epmem_shared_trigger_list::iterator *c_p = new epmem_shared_trigger_list::iterator();
-	epmem_constraint_list *c_c = NULL;
+	epmem_shared_literal_list::size_type c_p;
+	epmem_constraint_list *c_c;
 	epmem_node_id c_id;
 
-	// derived values from iterators
-	wme *c_w;
+	// derived values from current values
 	epmem_shared_literal *c_l;
-
-	// used to populate the firsts cache
-	epmem_shared_trigger_list::iterator *n_p = new epmem_shared_trigger_list::iterator();
 
 	// used to propogate constraints without committing prematurely
 	epmem_constraint_list *n_c;
@@ -4511,29 +4540,26 @@ unsigned EPMEM_TYPE_INT epmem_graph_match_wmes( epmem_shared_trigger_list *liter
 	bool good_pop = false;
 
 	// shouldn't ever happen
-	if ( !literals->empty() )
+	if ( !literals->literals->empty() )
 	{
 		// initialize to the beginning of the list
-		(*c_p) = literals->begin();
-		c_l = (*(*c_p));
-		c_w = c_l->wme;
+		c_p = 0;
+		c_l = literals->literals->front();		
+		c_f = literals->wmes->begin();
+		literals->c_wme = c_l->wme;
 
 		// current constraints = previous constraints
 		c_c = new epmem_constraint_list( *constraints );
 
 		// get constraint for this wme, if exists
 		c_id = EPMEM_NODEID_ROOT;
-		if ( c_w->value->common.symbol_type == IDENTIFIER_SYMBOL_TYPE )
+		if ( c_l->wme->value->common.symbol_type == IDENTIFIER_SYMBOL_TYPE )
 		{
-			c = c_c->find( c_w->value );
+			c = c_c->find( c_l->wme->value );
 			if ( c != c_c->end() )
 				c_id = c->second;
 		}
-
-		// initialize firsts cache
-		firsts.push_back( c_p );
-		c_f = firsts.begin();
-
+		
 		do
 		{
 			// determine if literal is a match
@@ -4560,7 +4586,7 @@ unsigned EPMEM_TYPE_INT epmem_graph_match_wmes( epmem_shared_trigger_list *liter
 								(*c_c) = (*n_c);
 
 								// update constraints with this literal
-								(*c_c)[ c_w->value ] = c_l->shared_id;
+								(*c_c)[ c_l->wme->value ] = c_l->shared_id;
 							}
 
 							delete n_c;
@@ -4585,58 +4611,35 @@ unsigned EPMEM_TYPE_INT epmem_graph_match_wmes( epmem_shared_trigger_list *liter
 				// update number of unified wmes
 				return_val++;
 
-				// proceed to next wme
+				// proceed to next wme				
+				c_f++;
+
+				// yippee (potential success)
+				if ( c_f == literals->wmes->end() )
+				{					
+					done = true;
+				}
+				else
+				// push, try next wme with new constraints
+				if ( !done )
 				{
-					// try to use firsts cache
-					c_f++;
-					if ( c_f != firsts.end() )
+					c_ps.push( c_p );
+					c_cs.push( c_c );
+					c_ids.push( c_id );					
+
+					c_p = (*c_f);
+					c_l = (*literals->literals)[ c_p ];
+					literals->c_wme = c_l->wme;					
+
+					c_c = new epmem_constraint_list( *c_c );
+
+					// get constraint for this wme, if exists
+					c_id = EPMEM_NODEID_ROOT;
+					if ( c_l->wme->value->common.symbol_type == IDENTIFIER_SYMBOL_TYPE )
 					{
-						n_p = (*c_f);
-					}
-					else
-					{
-						// proceed till next wme or done
-						for ( (*n_p)=(*c_p); ( ( (*n_p) != literals->end() ) && ( (*(*n_p))->wme == c_w ) ); (*n_p)++ );
-
-						// if no more WMEs, we have succeeded at this level
-						if ( (*n_p) == literals->end() )
-						{
-							done = true;
-						}
-						else
-						{
-							// cache the new first
-							firsts.push_back( n_p );
-
-							// reposition current first
-							c_f = firsts.end();
-							c_f--;
-						}
-					}
-
-					// push, try next wme with new constraints
-					if ( !done )
-					{
-						c_ps.push( c_p );
-						c_cs.push( c_c );
-						c_ids.push( c_id );
-
-						c_p = new epmem_shared_trigger_list::iterator();
-
-						(*c_p) = (*n_p);
-						c_l = (*(*c_p));
-						c_w = c_l->wme;
-
-						c_c = new epmem_constraint_list( *c_c );
-
-						// get constraint for this wme, if exists
-						c_id = EPMEM_NODEID_ROOT;
-						if ( c_w->value->common.symbol_type == IDENTIFIER_SYMBOL_TYPE )
-						{
-							c = c_c->find( c_w->value );
-							if ( c != c_c->end() )
-								c_id = c->second;
-						}
+						c = c_c->find( c_l->wme->value );
+						if ( c != c_c->end() )
+							c_id = c->second;
 					}
 				}
 			}
@@ -4650,21 +4653,21 @@ unsigned EPMEM_TYPE_INT epmem_graph_match_wmes( epmem_shared_trigger_list *liter
 				do
 				{
 					// increment
-					(*c_p)++;
+					c_p++;
 
 					// if end of the road, failure
-					if ( (*c_p) == literals->end() )
+					if ( c_p >= literals->literals->size() )
 					{
 						done = true;
 					}
 					else
 					{
 						// else, look at the literal
-						c_l = (*(*c_p));
+						c_l = (*literals->literals)[ c_p ];						
 
 						// if still within the wme, we can try again
 						// with current constraints
-						if ( c_l->wme == c_w )
+						if ( c_l->wme == literals->c_wme )
 						{
 							good_pop = true;
 						}
@@ -4680,8 +4683,7 @@ unsigned EPMEM_TYPE_INT epmem_graph_match_wmes( epmem_shared_trigger_list *liter
 								// otherwise, backtrack:
 								// - pop previous state
 								// - repeat trying to increment (and possibly have to recursively pop again)
-
-								delete c_p;
+								
 								c_p = c_ps.top();
 								c_ps.pop();
 
@@ -4707,22 +4709,9 @@ unsigned EPMEM_TYPE_INT epmem_graph_match_wmes( epmem_shared_trigger_list *liter
 	}
 
 	// clean up
-	{
-		delete c_p;
-		delete n_p;
-		
+	{				
 		if ( c_c )
 			delete c_c;
-
-		// we've been dynamically creating new
-		// iterator pointers all along
-		while ( !c_ps.empty() )
-		{
-			c_p = c_ps.top();
-			c_ps.pop();
-
-			delete c_p;
-		}
 
 		// we've been dynamically creating new
 		// constraint pointers all along
@@ -5253,7 +5242,7 @@ void epmem_process_query( agent *my_agent, Symbol *state, Symbol *query, Symbol 
 		{
 			// queries
 			epmem_shared_query_list *queries = new epmem_shared_query_list[2];
-			std::list<epmem_shared_trigger_list *> trigger_lists;
+			std::list<epmem_shared_literal_list *> trigger_lists;
 
 			// match counters
 			std::list<epmem_shared_match *> matches;
@@ -5261,9 +5250,17 @@ void epmem_process_query( agent *my_agent, Symbol *state, Symbol *query, Symbol 
 			// literals
 			std::list<epmem_shared_literal *> literals;
 
-			// graph match
-			epmem_shared_trigger_list graph_match_roots;
+			// graph match			
 			const long graph_match = epmem_get_parameter( my_agent, (const long) EPMEM_PARAM_GRAPH_MATCH, EPMEM_RETURN_LONG );
+			epmem_shared_literal_group *graph_match_roots;
+			if ( graph_match != EPMEM_GRAPH_MATCH_OFF )
+			{
+				graph_match_roots = new epmem_shared_literal_group();
+
+				graph_match_roots->literals = new epmem_shared_literal_list();
+				graph_match_roots->wmes = new epmem_shared_wme_list();
+				graph_match_roots->c_wme = NULL;
+			}
 
 			unsigned EPMEM_TYPE_INT leaf_ids[2] = { 0, 0 };
 
@@ -5297,9 +5294,9 @@ void epmem_process_query( agent *my_agent, Symbol *state, Symbol *query, Symbol 
 				unsigned EPMEM_TYPE_INT j;
 
 				// associate common literals with a query
-				std::map<epmem_node_id, epmem_shared_trigger_list *> literal_to_node_query;
-				std::map<epmem_node_id, epmem_shared_trigger_list *> literal_to_edge_query;
-				epmem_shared_trigger_list **query_triggers;
+				std::map<epmem_node_id, epmem_shared_literal_list *> literal_to_node_query;
+				std::map<epmem_node_id, epmem_shared_literal_list *> literal_to_edge_query;
+				epmem_shared_literal_list **query_triggers;
 
 				// associate common WMEs with a match
 				std::map<wme *, epmem_shared_match *> wme_to_match;
@@ -5310,7 +5307,9 @@ void epmem_process_query( agent *my_agent, Symbol *state, Symbol *query, Symbol 
 				epmem_shared_match *new_match = NULL;
 				epmem_shared_query *new_query = NULL;
 				epmem_wme_cache_element *new_cache_element = NULL;
-				epmem_shared_trigger_list *new_trigger_list = NULL;
+				epmem_shared_literal_list *new_trigger_list = NULL;
+				epmem_shared_wme_list *new_wme_list = NULL;
+				epmem_shared_literal_group *new_literal_group = NULL;
 				long new_timer = NULL;
 				sqlite3_stmt *new_stmt = NULL;
 
@@ -5401,32 +5400,63 @@ void epmem_process_query( agent *my_agent, Symbol *state, Symbol *query, Symbol 
 
 										// create new literal
 										new_literal = new epmem_shared_literal;
-										literals.push_back( new_literal );
+										new_literal->shared_id = shared_identity;
+										new_literal->wme = current_cache_element->wmes[j];
+										new_literal->children = NULL;
+										new_literal->match = NULL;										
 										if ( parent_id == EPMEM_NODEID_ROOT )
 										{
 											new_literal->ct = 1;
 
 											if ( ( i == EPMEM_NODE_POS ) && ( graph_match != EPMEM_GRAPH_MATCH_OFF ) )
-												graph_match_roots.push_back( new_literal );
+											{
+												if ( new_literal->wme != graph_match_roots->c_wme )
+												{
+													graph_match_roots->c_wme = new_literal->wme;
+													graph_match_roots->wmes->push_back( graph_match_roots->literals->size() );
+												}
+
+												graph_match_roots->literals->push_back( new_literal );
+											}												
 										}
 										else
 										{
 											new_literal->ct = 0;
-											if ( !parent_literal->children )
-												parent_literal->children = new epmem_shared_trigger_list();
 
-											parent_literal->children->push_back( new_literal );
+											if ( !parent_literal->children )
+											{
+												new_literal_group = new epmem_shared_literal_group();												
+												new_literal_group->literals = new epmem_shared_literal_list();
+												new_literal_group->wmes = new epmem_shared_wme_list();
+
+												new_literal_group->c_wme = new_literal->wme;
+												new_literal_group->literals->push_back( new_literal );
+												new_literal_group->wmes->push_back( 0 );
+
+												parent_literal->children = new_literal_group;
+												new_literal_group = NULL;
+											}
+											else
+											{
+												new_literal_group = parent_literal->children;
+												
+												if ( new_literal->wme != new_literal_group->c_wme )
+												{
+													new_literal_group->c_wme = new_literal->wme;
+													new_literal_group->wmes->push_back( new_literal_group->literals->size() );
+												}
+
+												new_literal_group->literals->push_back( new_literal );
+												new_literal_group = NULL;
+											}
 										}
-										new_literal->shared_id = shared_identity;
-										new_literal->wme = current_cache_element->wmes[j];
-										new_literal->children = NULL;
-										new_literal->match = NULL;
+										literals.push_back( new_literal );
 
 										// create queries if necessary
 										query_triggers =& literal_to_edge_query[ unique_identity ];
 										if ( !(*query_triggers) )
 										{
-											new_trigger_list = new epmem_shared_trigger_list;
+											new_trigger_list = new epmem_shared_literal_list;
 											trigger_lists.push_back( new_trigger_list );
 
 											// add all respective queries
@@ -5577,26 +5607,53 @@ void epmem_process_query( agent *my_agent, Symbol *state, Symbol *query, Symbol 
 
 										// create new literal
 										new_literal = new epmem_shared_literal;
-										literals.push_back( new_literal );
+										new_literal->shared_id = EPMEM_NODEID_ROOT;
+										new_literal->wme_kids = 0;
+										new_literal->wme = current_cache_element->wmes[j];
+										new_literal->children = NULL;										
 										if ( parent_id == EPMEM_NODEID_ROOT )
 										{
 											new_literal->ct = 1;
 
 											if ( ( i == EPMEM_NODE_POS ) && ( graph_match != EPMEM_GRAPH_MATCH_OFF ) )
-												graph_match_roots.push_back( new_literal );
+											{
+												graph_match_roots->c_wme = new_literal->wme;
+												graph_match_roots->wmes->push_back( graph_match_roots->literals->size() );
+												graph_match_roots->literals->push_back( new_literal );
+											}												
 										}
 										else
 										{
 											new_literal->ct = 0;
-											if ( !parent_literal->children )
-												parent_literal->children = new epmem_shared_trigger_list();
 
-											parent_literal->children->push_back( new_literal );
+											if ( !parent_literal->children )
+											{
+												new_literal_group = new epmem_shared_literal_group();												
+												new_literal_group->literals = new epmem_shared_literal_list();
+												new_literal_group->wmes = new epmem_shared_wme_list();
+
+												new_literal_group->c_wme = new_literal->wme;
+												new_literal_group->literals->push_back( new_literal );
+												new_literal_group->wmes->push_back( 0 );
+
+												parent_literal->children = new_literal_group;
+												new_literal_group = NULL;
+											}
+											else
+											{
+												new_literal_group = parent_literal->children;
+												
+												if ( new_literal->wme != new_literal_group->c_wme )
+												{
+													new_literal_group->c_wme = new_literal->wme;
+													new_literal_group->wmes->push_back( new_literal_group->literals->size() );
+												}
+
+												new_literal_group->literals->push_back( new_literal );
+												new_literal_group = NULL;
+											}
 										}
-										new_literal->shared_id = EPMEM_NODEID_ROOT;
-										new_literal->wme_kids = 0;
-										new_literal->wme = current_cache_element->wmes[j];
-										new_literal->children = NULL;
+										literals.push_back( new_literal );
 
 										// create match if necessary
 										wme_match =& wme_to_match[ current_cache_element->wmes[j] ];
@@ -5619,7 +5676,7 @@ void epmem_process_query( agent *my_agent, Symbol *state, Symbol *query, Symbol 
 										query_triggers =& literal_to_node_query[ unique_identity ];
 										if ( !(*query_triggers) )
 										{
-											new_trigger_list = new epmem_shared_trigger_list;
+											new_trigger_list = new epmem_shared_literal_list;
 											trigger_lists.push_back( new_trigger_list );
 
 											// add all respective queries
@@ -5832,7 +5889,7 @@ void epmem_process_query( agent *my_agent, Symbol *state, Symbol *query, Symbol 
 											epmem_start_timer( my_agent, EPMEM_TIMER_QUERY_GRAPH_MATCH );
 											////////////////////////////////////////////////////////////////////////////
 
-											current_graph_match_counter = epmem_graph_match_paths( &graph_match_roots );
+											current_graph_match_counter = epmem_graph_match_paths( graph_match_roots );
 
 											////////////////////////////////////////////////////////////////////////////
 											epmem_stop_timer( my_agent, EPMEM_TIMER_QUERY_GRAPH_MATCH );
@@ -5846,7 +5903,7 @@ void epmem_process_query( agent *my_agent, Symbol *state, Symbol *query, Symbol 
 											epmem_start_timer( my_agent, EPMEM_TIMER_QUERY_GRAPH_MATCH );
 											////////////////////////////////////////////////////////////////////////////
 
-											current_graph_match_counter = epmem_graph_match_wmes( &graph_match_roots, &current_constraints );
+											current_graph_match_counter = epmem_graph_match_wmes( graph_match_roots, &current_constraints );
 
 											////////////////////////////////////////////////////////////////////////////
 											epmem_stop_timer( my_agent, EPMEM_TIMER_QUERY_GRAPH_MATCH );
@@ -5915,11 +5972,15 @@ void epmem_process_query( agent *my_agent, Symbol *state, Symbol *query, Symbol 
 				int i;
 
 				// literals
-				std::list<epmem_shared_literal *>::iterator literal_p;
+				std::list<epmem_shared_literal *>::iterator literal_p;				
 				for ( literal_p=literals.begin(); literal_p!=literals.end(); literal_p++ )
 				{
 					if ( (*literal_p)->children )
+					{
+						delete (*literal_p)->children->literals;
+						delete (*literal_p)->children->wmes;
 						delete (*literal_p)->children;
+					}
 
 					delete (*literal_p);
 				}
@@ -5930,7 +5991,7 @@ void epmem_process_query( agent *my_agent, Symbol *state, Symbol *query, Symbol 
 					delete (*match_p);
 
 				// trigger lists
-				std::list<epmem_shared_trigger_list *>::iterator trigger_list_p;
+				std::list<epmem_shared_literal_list *>::iterator trigger_list_p;
 				for ( trigger_list_p=trigger_lists.begin(); trigger_list_p!=trigger_lists.end(); trigger_list_p++ )
 					delete (*trigger_list_p);
 
@@ -5948,6 +6009,14 @@ void epmem_process_query( agent *my_agent, Symbol *state, Symbol *query, Symbol 
 					}
 				}
 				delete [] queries;
+
+				// graph match
+				if ( graph_match != EPMEM_GRAPH_MATCH_OFF )
+				{
+					delete graph_match_roots->literals;
+					delete graph_match_roots->wmes;
+					delete graph_match_roots;
+				}
 			}
 
 			// place results in WM

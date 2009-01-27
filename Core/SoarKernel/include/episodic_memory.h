@@ -408,7 +408,8 @@ typedef struct epmem_wme_cache_element_struct
 
 // see below
 typedef struct epmem_shared_literal_struct epmem_shared_literal;
-typedef std::vector<epmem_shared_literal *> epmem_shared_trigger_list;
+typedef std::vector<epmem_shared_literal *> epmem_shared_literal_list;
+typedef std::list<epmem_shared_literal_list::size_type> epmem_shared_wme_list;
 
 // represents state of a leaf wme
 // at a particular episode
@@ -419,6 +420,14 @@ typedef struct epmem_shared_match_struct
 
 	unsigned EPMEM_TYPE_INT ct;				// number of contributing literals that are "on"
 } epmem_shared_match;
+
+typedef struct epmem_shared_literal_group_struct
+{
+	epmem_shared_literal_list *literals;
+	epmem_shared_wme_list *wmes;
+
+	wme *c_wme;
+} epmem_shared_literal_group;
 
 // represents state of one historical
 // identity of a cue wme at a particular
@@ -433,7 +442,7 @@ struct epmem_shared_literal_struct
 	unsigned EPMEM_TYPE_INT wme_kids;		// number of children the cue wme has
 
 	epmem_shared_match *match;				// associated match, if leaf wme
-	epmem_shared_trigger_list *children;	// child literals, if not leaf wme
+	epmem_shared_literal_group *children;	// grouped child literals, if not leaf wme
 };
 
 // maintains state within sqlite b-trees
@@ -443,7 +452,7 @@ typedef struct epmem_shared_query_struct
 	epmem_time_id val;						// current b-tree leaf value
 	long timer;								// timer to update upon executing the query
 
-	epmem_shared_trigger_list *triggers;	// literals to update when stepping this b-tree
+	epmem_shared_literal_list *triggers;	// literals to update when stepping this b-tree
 } epmem_shared_query;
 
 // functor to maintain a priority cue of b-tree pointers
