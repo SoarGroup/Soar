@@ -421,12 +421,14 @@ typedef struct epmem_shared_match_struct
 	unsigned EPMEM_TYPE_INT ct;				// number of contributing literals that are "on"
 } epmem_shared_match;
 
+// represents a list of literals grouped
+// sequentially by cue wme
 typedef struct epmem_shared_literal_group_struct
 {
-	epmem_shared_literal_list *literals;
-	epmem_shared_wme_list *wmes;
+	epmem_shared_literal_list *literals;	// vector of sequentially grouped literals
+	epmem_shared_wme_list *wmes;			// list of indexes to the start of wmes
 
-	wme *c_wme;
+	wme *c_wme;								// current wme (used during building and using groups)
 } epmem_shared_literal_group;
 
 // represents state of one historical

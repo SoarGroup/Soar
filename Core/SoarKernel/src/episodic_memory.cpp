@@ -1463,7 +1463,7 @@ bool epmem_wme_has_value( wme *w, char *attr_name, char *value_name )
  **************************************************************************/
 wme *epmem_get_aug_of_id( agent *my_agent, Symbol *sym, char *attr_name, char *value_name )
 {
-	wme **wmes;	
+	wme **wmes;
 	wme *return_val = NULL;
 
 	unsigned EPMEM_TYPE_INT len = 0;
@@ -2259,7 +2259,7 @@ void epmem_init_db( agent *my_agent )
 		}
 
 		// at this point initialize the database for receipt of episodes
-		epmem_transaction_begin( my_agent );		
+		epmem_transaction_begin( my_agent );
 
 		if ( mode == EPMEM_MODE_ONE )
 		{
@@ -3716,7 +3716,7 @@ void epmem_install_memory( agent *my_agent, Symbol *state, epmem_time_id memory_
 		new_wme->preference = epmem_make_fake_preference( my_agent, state, new_wme );
 		state->id.epmem_info->epmem_wmes->push( new_wme );
 		symbol_remove_ref( my_agent, my_meta );
-		
+
 		my_meta = make_int_constant( my_agent, epmem_get_stat( my_agent, (const long) EPMEM_STAT_TIME ) );
 		new_wme = add_input_wme( my_agent, result_header, my_agent->epmem_present_id_symbol, my_meta );
 		new_wme->preference = epmem_make_fake_preference( my_agent, state, new_wme );
@@ -4518,7 +4518,7 @@ unsigned EPMEM_TYPE_INT epmem_graph_match_wmes( epmem_shared_literal_group *lite
 	std::stack<epmem_constraint_list *> c_cs; // constraints (previously assumed correct)
 	std::stack<epmem_node_id> c_ids; // shared id of the current wme
 
-	// literals are grouped together sequentially by WME.	
+	// literals are grouped together sequentially by WME.
 	epmem_shared_wme_list::iterator c_f;
 
 	// current values from the stacks
@@ -4544,7 +4544,7 @@ unsigned EPMEM_TYPE_INT epmem_graph_match_wmes( epmem_shared_literal_group *lite
 	{
 		// initialize to the beginning of the list
 		c_p = 0;
-		c_l = literals->literals->front();		
+		c_l = literals->literals->front();
 		c_f = literals->wmes->begin();
 		literals->c_wme = c_l->wme;
 
@@ -4559,7 +4559,7 @@ unsigned EPMEM_TYPE_INT epmem_graph_match_wmes( epmem_shared_literal_group *lite
 			if ( c != c_c->end() )
 				c_id = c->second;
 		}
-		
+
 		do
 		{
 			// determine if literal is a match
@@ -4611,12 +4611,12 @@ unsigned EPMEM_TYPE_INT epmem_graph_match_wmes( epmem_shared_literal_group *lite
 				// update number of unified wmes
 				return_val++;
 
-				// proceed to next wme				
+				// proceed to next wme
 				c_f++;
 
 				// yippee (potential success)
 				if ( c_f == literals->wmes->end() )
-				{					
+				{
 					done = true;
 				}
 				else
@@ -4625,11 +4625,11 @@ unsigned EPMEM_TYPE_INT epmem_graph_match_wmes( epmem_shared_literal_group *lite
 				{
 					c_ps.push( c_p );
 					c_cs.push( c_c );
-					c_ids.push( c_id );					
+					c_ids.push( c_id );
 
 					c_p = (*c_f);
 					c_l = (*literals->literals)[ c_p ];
-					literals->c_wme = c_l->wme;					
+					literals->c_wme = c_l->wme;
 
 					c_c = new epmem_constraint_list( *c_c );
 
@@ -4663,7 +4663,7 @@ unsigned EPMEM_TYPE_INT epmem_graph_match_wmes( epmem_shared_literal_group *lite
 					else
 					{
 						// else, look at the literal
-						c_l = (*literals->literals)[ c_p ];						
+						c_l = (*literals->literals)[ c_p ];
 
 						// if still within the wme, we can try again
 						// with current constraints
@@ -4683,7 +4683,7 @@ unsigned EPMEM_TYPE_INT epmem_graph_match_wmes( epmem_shared_literal_group *lite
 								// otherwise, backtrack:
 								// - pop previous state
 								// - repeat trying to increment (and possibly have to recursively pop again)
-								
+
 								c_p = c_ps.top();
 								c_ps.pop();
 
@@ -4709,7 +4709,7 @@ unsigned EPMEM_TYPE_INT epmem_graph_match_wmes( epmem_shared_literal_group *lite
 	}
 
 	// clean up
-	{				
+	{
 		if ( c_c )
 			delete c_c;
 
@@ -5250,7 +5250,7 @@ void epmem_process_query( agent *my_agent, Symbol *state, Symbol *query, Symbol 
 			// literals
 			std::list<epmem_shared_literal *> literals;
 
-			// graph match			
+			// graph match
 			const long graph_match = epmem_get_parameter( my_agent, (const long) EPMEM_PARAM_GRAPH_MATCH, EPMEM_RETURN_LONG );
 			epmem_shared_literal_group *graph_match_roots;
 			if ( graph_match != EPMEM_GRAPH_MATCH_OFF )
@@ -5403,13 +5403,16 @@ void epmem_process_query( agent *my_agent, Symbol *state, Symbol *query, Symbol 
 										new_literal->shared_id = shared_identity;
 										new_literal->wme = current_cache_element->wmes[j];
 										new_literal->children = NULL;
-										new_literal->match = NULL;										
+										new_literal->match = NULL;
 										if ( parent_id == EPMEM_NODEID_ROOT )
 										{
+											// root is always on and satisfies one parental branch
 											new_literal->ct = 1;
 
+											// keep track of root literals for graph-match
 											if ( ( i == EPMEM_NODE_POS ) && ( graph_match != EPMEM_GRAPH_MATCH_OFF ) )
 											{
+												// enforce wme grouping
 												if ( new_literal->wme != graph_match_roots->c_wme )
 												{
 													graph_match_roots->c_wme = new_literal->wme;
@@ -5417,15 +5420,16 @@ void epmem_process_query( agent *my_agent, Symbol *state, Symbol *query, Symbol 
 												}
 
 												graph_match_roots->literals->push_back( new_literal );
-											}												
+											}
 										}
 										else
 										{
 											new_literal->ct = 0;
 
+											// if this is parent's first child we can use some good initial values
 											if ( !parent_literal->children )
 											{
-												new_literal_group = new epmem_shared_literal_group();												
+												new_literal_group = new epmem_shared_literal_group();
 												new_literal_group->literals = new epmem_shared_literal_list();
 												new_literal_group->wmes = new epmem_shared_wme_list();
 
@@ -5438,8 +5442,10 @@ void epmem_process_query( agent *my_agent, Symbol *state, Symbol *query, Symbol 
 											}
 											else
 											{
+												// otherwise, enforce wme grouping
+
 												new_literal_group = parent_literal->children;
-												
+
 												if ( new_literal->wme != new_literal_group->c_wme )
 												{
 													new_literal_group->c_wme = new_literal->wme;
@@ -5610,25 +5616,27 @@ void epmem_process_query( agent *my_agent, Symbol *state, Symbol *query, Symbol 
 										new_literal->shared_id = EPMEM_NODEID_ROOT;
 										new_literal->wme_kids = 0;
 										new_literal->wme = current_cache_element->wmes[j];
-										new_literal->children = NULL;										
+										new_literal->children = NULL;
 										if ( parent_id == EPMEM_NODEID_ROOT )
 										{
 											new_literal->ct = 1;
 
 											if ( ( i == EPMEM_NODE_POS ) && ( graph_match != EPMEM_GRAPH_MATCH_OFF ) )
 											{
+												// only one literal/root non-identifier
 												graph_match_roots->c_wme = new_literal->wme;
 												graph_match_roots->wmes->push_back( graph_match_roots->literals->size() );
 												graph_match_roots->literals->push_back( new_literal );
-											}												
+											}
 										}
 										else
 										{
 											new_literal->ct = 0;
 
+											// if this is parent's first child we can use some good initial values
 											if ( !parent_literal->children )
 											{
-												new_literal_group = new epmem_shared_literal_group();												
+												new_literal_group = new epmem_shared_literal_group();
 												new_literal_group->literals = new epmem_shared_literal_list();
 												new_literal_group->wmes = new epmem_shared_wme_list();
 
@@ -5641,8 +5649,10 @@ void epmem_process_query( agent *my_agent, Symbol *state, Symbol *query, Symbol 
 											}
 											else
 											{
+												// else enforce wme grouping
+
 												new_literal_group = parent_literal->children;
-												
+
 												if ( new_literal->wme != new_literal_group->c_wme )
 												{
 													new_literal_group->c_wme = new_literal->wme;
@@ -5972,7 +5982,7 @@ void epmem_process_query( agent *my_agent, Symbol *state, Symbol *query, Symbol 
 				int i;
 
 				// literals
-				std::list<epmem_shared_literal *>::iterator literal_p;				
+				std::list<epmem_shared_literal *>::iterator literal_p;
 				for ( literal_p=literals.begin(); literal_p!=literals.end(); literal_p++ )
 				{
 					if ( (*literal_p)->children )
