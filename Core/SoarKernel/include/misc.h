@@ -53,9 +53,6 @@ template <class T> bool from_string( T &val, std::string str )
 // Determine if a string represents a natural number (i.e. all numbers)
 extern bool is_natural_number( std::string *str );
 
-// Create a string that is n copies of src
-extern std::string *string_multi_copy( const char *src, unsigned int n );
-
 //////////////////////////////////////////////////////////
 // Map functions
 //////////////////////////////////////////////////////////

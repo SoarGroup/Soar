@@ -408,7 +408,7 @@ agent * create_soar_agent (char * agent_name) {                                 
   newAgent->epmem_timers[ EPMEM_TIMER_QUERY_NEG_END_POINT ] = epmem_new_timer( "query_neg_end_point", EPMEM_TIMERS_THREE );
 
   newAgent->epmem_db = NULL;
-  newAgent->epmem_db_status = -1;
+  newAgent->epmem_db_status = EPMEM_DB_CLOSED;
   for ( int i=0; i<EPMEM_MAX_STATEMENTS; i++ )
   	newAgent->epmem_statements[ i ] = NULL;
 

@@ -112,11 +112,11 @@ const char *epmem_range_queries[2][2][3] =
 // array locations are indicated by the
 // EPMEM_RIT_STATE_OFFSET - EPMEM_RIT_STATE_TIMER
 // predefines
-const long long epmem_rit_state_one[6] = { EPMEM_VAR_RIT_OFFSET_1, EPMEM_VAR_RIT_LEFTROOT_1, EPMEM_VAR_RIT_RIGHTROOT_1, EPMEM_VAR_RIT_MINSTEP_1, EPMEM_STMT_ONE_ADD_NODE_RANGE, EPMEM_TIMER_NCB_NODE_RIT };
+const long epmem_rit_state_one[6] = { EPMEM_VAR_RIT_OFFSET_1, EPMEM_VAR_RIT_LEFTROOT_1, EPMEM_VAR_RIT_RIGHTROOT_1, EPMEM_VAR_RIT_MINSTEP_1, EPMEM_STMT_ONE_ADD_NODE_RANGE, EPMEM_TIMER_NCB_NODE_RIT };
 
 // first array adheres to the EPMEM_RIT_STATE_NODE/EDGE
 // predefines
-const long long epmem_rit_state_three[2][6] =
+const long epmem_rit_state_three[2][6] =
 {
 	{ EPMEM_VAR_RIT_OFFSET_1, EPMEM_VAR_RIT_LEFTROOT_1, EPMEM_VAR_RIT_RIGHTROOT_1, EPMEM_VAR_RIT_MINSTEP_1, EPMEM_STMT_THREE_ADD_NODE_RANGE, EPMEM_TIMER_NCB_NODE_RIT },
 	{ EPMEM_VAR_RIT_OFFSET_2, EPMEM_VAR_RIT_LEFTROOT_2, EPMEM_VAR_RIT_RIGHTROOT_2, EPMEM_VAR_RIT_MINSTEP_2, EPMEM_STMT_THREE_ADD_EDGE_RANGE, EPMEM_TIMER_NCB_EDGE_RIT }
@@ -425,7 +425,7 @@ bool epmem_valid_parameter_value( agent *my_agent, const long param, const long 
  **************************************************************************/
 bool epmem_parameter_protected( agent *my_agent, const long param )
 {
-	return ( ( my_agent->epmem_db_status != -1 ) && ( param >= EPMEM_PARAM_DB ) && ( param <= EPMEM_PARAM_MODE ) );
+	return ( ( my_agent->epmem_db_status != EPMEM_DB_CLOSED ) && ( param >= EPMEM_PARAM_DB ) && ( param <= EPMEM_PARAM_MODE ) );
 }
 
 /***************************************************************************
@@ -1059,7 +1059,7 @@ void epmem_clean_stats( agent *my_agent )
  **************************************************************************/
 bool epmem_stat_protected( agent *my_agent, const long stat )
 {
-	return ( ( my_agent->epmem_db_status != -1 ) &&
+	return ( ( my_agent->epmem_db_status != EPMEM_DB_CLOSED ) &&
 		     ( ( stat >= EPMEM_STAT_RIT_OFFSET_1 ) && ( stat <= EPMEM_STAT_RIT_MINSTEP_1 ) ) ||
 			 ( ( stat >= EPMEM_STAT_RIT_OFFSET_2 ) && ( stat <= EPMEM_STAT_RIT_MINSTEP_2 ) ) ||
 			 ( stat == EPMEM_STAT_TIME ) );
@@ -1134,29 +1134,29 @@ bool epmem_valid_stat( agent *my_agent, const long stat )
  * Notes		: Get a statistic value
  * 				  Special consideration for sqlite info
  **************************************************************************/
-long long epmem_get_stat( agent *my_agent, const char *name )
+EPMEM_TYPE_INT epmem_get_stat( agent *my_agent, const char *name )
 {
 	const long stat = epmem_convert_stat( my_agent, name );
 	if ( stat == EPMEM_STATS )
 		return 0;
 
 	if ( stat == EPMEM_STAT_MEM_USAGE )
-		return sqlite3_memory_used();
+		return (EPMEM_TYPE_INT) sqlite3_memory_used();
 	if ( stat == EPMEM_STAT_MEM_HIGH )
-		return sqlite3_memory_highwater( false );
+		return (EPMEM_TYPE_INT) sqlite3_memory_highwater( false );
 
 	return my_agent->epmem_stats[ stat ]->value;
 }
 
-long long epmem_get_stat( agent *my_agent, const long stat )
+EPMEM_TYPE_INT epmem_get_stat( agent *my_agent, const long stat )
 {
 	if ( !epmem_valid_stat( my_agent, stat ) )
 		return 0;
 
 	if ( stat == EPMEM_STAT_MEM_USAGE )
-		return sqlite3_memory_used();
+		return (EPMEM_TYPE_INT) sqlite3_memory_used();
 	if ( stat == EPMEM_STAT_MEM_HIGH )
-		return sqlite3_memory_highwater( false );
+		return (EPMEM_TYPE_INT) sqlite3_memory_highwater( false );
 
 	return my_agent->epmem_stats[ stat ]->value;
 }
@@ -1167,7 +1167,7 @@ long long epmem_get_stat( agent *my_agent, const long stat )
  * Notes		: Set a statistic value
  * 				  Special consideration for sqlite info
  **************************************************************************/
-bool epmem_set_stat( agent *my_agent, const char *name, long long new_val )
+bool epmem_set_stat( agent *my_agent, const char *name, EPMEM_TYPE_INT new_val )
 {
 	const long stat = epmem_convert_stat( my_agent, name );
 	if ( ( stat == EPMEM_STATS ) ||
@@ -1180,7 +1180,7 @@ bool epmem_set_stat( agent *my_agent, const char *name, long long new_val )
 	return true;
 }
 
-bool epmem_set_stat( agent *my_agent, const long stat, long long new_val )
+bool epmem_set_stat( agent *my_agent, const long stat, EPMEM_TYPE_INT new_val )
 {
 	if ( !epmem_valid_stat( my_agent, stat ) )
 		return false;
@@ -1367,13 +1367,13 @@ void epmem_stop_timer( agent *my_agent, const long timer )
  *				  highly un-portable.  I'm told this is no longer true but I'm
  *				  still bitter.
  **************************************************************************/
-wme **epmem_get_augs_of_id( agent* my_agent, Symbol * id, tc_number tc, int *num_attr )
+wme **epmem_get_augs_of_id( agent* my_agent, Symbol * id, tc_number tc, unsigned EPMEM_TYPE_INT *num_attr )
 {
 	slot *s;
 	wme *w;
 	wme **list;
-	int list_position;
-	int n = 0;
+	unsigned EPMEM_TYPE_INT list_position;
+	unsigned EPMEM_TYPE_INT n = 0;
 
 	// augs only exist for identifiers
 	if ( id->common.symbol_type != IDENTIFIER_SYMBOL_TYPE )
@@ -1463,15 +1463,17 @@ bool epmem_wme_has_value( wme *w, char *attr_name, char *value_name )
  **************************************************************************/
 wme *epmem_get_aug_of_id( agent *my_agent, Symbol *sym, char *attr_name, char *value_name )
 {
-	wme **wmes;
-	int len = 0;
+	wme **wmes;	
 	wme *return_val = NULL;
+
+	unsigned EPMEM_TYPE_INT len = 0;
+	unsigned EPMEM_TYPE_INT i;
 
 	wmes = epmem_get_augs_of_id( my_agent, sym, get_new_tc_number( my_agent ), &len );
 	if ( wmes == NULL )
 		return return_val;
 
-	for ( int i=0; i<len; i++ )
+	for ( i=0; i<len; i++ )
 	{
 		if ( epmem_wme_has_value( wmes[ i ], attr_name, value_name ) )
 		{
@@ -1703,10 +1705,10 @@ int epmem_exec_shared_query( agent *my_agent, epmem_shared_query *stmt )
  **************************************************************************/
 bool epmem_in_transaction( agent *my_agent )
 {
-	if ( my_agent->epmem_db_status == -1 )
+	if ( my_agent->epmem_db_status == EPMEM_DB_CLOSED )
 		return false;
 
-	return ( (long long) epmem_get_stat( my_agent, (const long) EPMEM_STAT_TIME ) % (long long) epmem_get_parameter( my_agent, EPMEM_PARAM_COMMIT ) );
+	return ( (EPMEM_TYPE_INT) epmem_get_stat( my_agent, (const long) EPMEM_STAT_TIME ) % (EPMEM_TYPE_INT) epmem_get_parameter( my_agent, EPMEM_PARAM_COMMIT ) );
 }
 
 /***************************************************************************
@@ -1716,7 +1718,7 @@ bool epmem_in_transaction( agent *my_agent )
  **************************************************************************/
 void epmem_transaction_begin( agent *my_agent )
 {
-	if ( my_agent->epmem_db_status != -1 )
+	if ( my_agent->epmem_db_status != EPMEM_DB_CLOSED )
 	{
 		sqlite3_step( my_agent->epmem_statements[ EPMEM_STMT_BEGIN ] );
 		sqlite3_reset( my_agent->epmem_statements[ EPMEM_STMT_BEGIN ] );
@@ -1730,7 +1732,7 @@ void epmem_transaction_begin( agent *my_agent )
  **************************************************************************/
 void epmem_transaction_end( agent *my_agent, bool commit )
 {
-	if ( my_agent->epmem_db_status != -1 )
+	if ( my_agent->epmem_db_status != EPMEM_DB_CLOSED )
 	{
 		unsigned long end_method = ( ( commit )?( EPMEM_STMT_COMMIT ):( EPMEM_STMT_ROLLBACK ) );
 
@@ -1756,15 +1758,15 @@ void epmem_transaction_end( agent *my_agent, bool commit )
  * Author		: Nate Derbinsky
  * Notes		: Gets an EpMem variable from the database
  **************************************************************************/
-bool epmem_get_variable( agent *my_agent, long long variable_id, long long &variable_value )
+bool epmem_get_variable( agent *my_agent, EPMEM_TYPE_INT variable_id, EPMEM_TYPE_INT *variable_value )
 {
 	int status;
 
-	sqlite3_bind_int64( my_agent->epmem_statements[ EPMEM_STMT_VAR_GET ], 1, variable_id );
+	EPMEM_SQLITE_BIND_INT( my_agent->epmem_statements[ EPMEM_STMT_VAR_GET ], 1, variable_id );
 	status = sqlite3_step( my_agent->epmem_statements[ EPMEM_STMT_VAR_GET ] );
 
 	if ( status == SQLITE_ROW )
-		variable_value = sqlite3_column_int64( my_agent->epmem_statements[ EPMEM_STMT_VAR_GET ], 0 );
+		(*variable_value) = EPMEM_SQLITE_COLUMN_INT( my_agent->epmem_statements[ EPMEM_STMT_VAR_GET ], 0 );
 
 	sqlite3_reset( my_agent->epmem_statements[ EPMEM_STMT_VAR_GET ] );
 
@@ -1776,10 +1778,10 @@ bool epmem_get_variable( agent *my_agent, long long variable_id, long long &vari
  * Author		: Nate Derbinsky
  * Notes		: Sets an EpMem variable in the database
  **************************************************************************/
-void epmem_set_variable( agent *my_agent, long long variable_id, long long variable_value )
+void epmem_set_variable( agent *my_agent, EPMEM_TYPE_INT variable_id, EPMEM_TYPE_INT variable_value )
 {
-	sqlite3_bind_int64( my_agent->epmem_statements[ EPMEM_STMT_VAR_SET ], 1, variable_id );
-	sqlite3_bind_int64( my_agent->epmem_statements[ EPMEM_STMT_VAR_SET ], 2, variable_value );
+	EPMEM_SQLITE_BIND_INT( my_agent->epmem_statements[ EPMEM_STMT_VAR_SET ], 1, variable_id );
+	EPMEM_SQLITE_BIND_INT( my_agent->epmem_statements[ EPMEM_STMT_VAR_SET ], 2, variable_value );
 	sqlite3_step( my_agent->epmem_statements[ EPMEM_STMT_VAR_SET ] );
 	sqlite3_reset( my_agent->epmem_statements[ EPMEM_STMT_VAR_SET ] );
 }
@@ -1795,24 +1797,24 @@ void epmem_set_variable( agent *my_agent, long long variable_id, long long varia
  * Author		: Nate Derbinsky
  * Notes		: Implements the forkNode function of RIT
  **************************************************************************/
-long long epmem_rit_fork_node( agent *my_agent, epmem_time_id lower, epmem_time_id upper, bool bounds_offset, long long *step_return, const long long *rit_state )
+EPMEM_TYPE_INT epmem_rit_fork_node( agent *my_agent, epmem_time_id lower, epmem_time_id upper, bool bounds_offset, EPMEM_TYPE_INT *step_return, const long *rit_state )
 {
 	if ( !bounds_offset )
 	{
-		long long offset = epmem_get_stat( my_agent, rit_state[ EPMEM_RIT_STATE_OFFSET ] );
+		EPMEM_TYPE_INT offset = epmem_get_stat( my_agent, rit_state[ EPMEM_RIT_STATE_OFFSET ] );
 
 		lower = ( lower - offset );
 		upper = ( upper - offset );
 	}
 
 	// descend the tree down to the fork node
-	long long node = EPMEM_RIT_ROOT;
+	EPMEM_TYPE_INT node = EPMEM_RIT_ROOT;
 	if ( upper < EPMEM_RIT_ROOT )
 		node = epmem_get_stat( my_agent, rit_state[ EPMEM_RIT_STATE_LEFTROOT ] );
 	else if ( lower > EPMEM_RIT_ROOT )
 		node = epmem_get_stat( my_agent, rit_state[ EPMEM_RIT_STATE_RIGHTROOT ] );
 
-	long long step;
+	EPMEM_TYPE_INT step;
 	for ( step = ( ( ( node >= 0 )?( node ):( -1 * node ) ) / 2 ); step >= 1; step /= 2 )
 	{
 		if ( upper < node )
@@ -1850,8 +1852,8 @@ void epmem_rit_clear_left_right( agent *my_agent )
  **************************************************************************/
 void epmem_rit_add_left( agent *my_agent, epmem_time_id min, epmem_time_id max )
 {
-	sqlite3_bind_int64( my_agent->epmem_statements[ EPMEM_STMT_RIT_ADD_LEFT ], 1, min );
-	sqlite3_bind_int64( my_agent->epmem_statements[ EPMEM_STMT_RIT_ADD_LEFT ], 2, max );
+	EPMEM_SQLITE_BIND_INT( my_agent->epmem_statements[ EPMEM_STMT_RIT_ADD_LEFT ], 1, min );
+	EPMEM_SQLITE_BIND_INT( my_agent->epmem_statements[ EPMEM_STMT_RIT_ADD_LEFT ], 2, max );
 
 	sqlite3_step( my_agent->epmem_statements[ EPMEM_STMT_RIT_ADD_LEFT ] );
 	sqlite3_reset( my_agent->epmem_statements[ EPMEM_STMT_RIT_ADD_LEFT ] );
@@ -1864,7 +1866,7 @@ void epmem_rit_add_left( agent *my_agent, epmem_time_id min, epmem_time_id max )
  **************************************************************************/
 void epmem_rit_add_right( agent *my_agent, epmem_time_id id )
 {
-	sqlite3_bind_int64( my_agent->epmem_statements[ EPMEM_STMT_RIT_ADD_RIGHT ], 1, id );
+	EPMEM_SQLITE_BIND_INT( my_agent->epmem_statements[ EPMEM_STMT_RIT_ADD_RIGHT ], 1, id );
 
 	sqlite3_step( my_agent->epmem_statements[ EPMEM_STMT_RIT_ADD_RIGHT ] );
 	sqlite3_reset( my_agent->epmem_statements[ EPMEM_STMT_RIT_ADD_RIGHT ] );
@@ -1876,16 +1878,16 @@ void epmem_rit_add_right( agent *my_agent, epmem_time_id id )
  * Notes		: Implements the computational components of the RIT
  * 				  query algorithm
  **************************************************************************/
-void epmem_rit_prep_left_right( agent *my_agent, epmem_time_id lower, epmem_time_id upper, const long long *rit_state )
+void epmem_rit_prep_left_right( agent *my_agent, epmem_time_id lower, epmem_time_id upper, const long *rit_state )
 {
 	////////////////////////////////////////////////////////////////////////////
 	epmem_start_timer( my_agent, rit_state[ EPMEM_RIT_STATE_TIMER ] );
 	////////////////////////////////////////////////////////////////////////////
 
-	long long offset = epmem_get_stat( my_agent, rit_state[ EPMEM_RIT_STATE_OFFSET ] );
-	long long node, step;
-	long long left_node, left_step;
-	long long right_node, right_step;
+	EPMEM_TYPE_INT offset = epmem_get_stat( my_agent, rit_state[ EPMEM_RIT_STATE_OFFSET ] );
+	EPMEM_TYPE_INT node, step;
+	EPMEM_TYPE_INT left_node, left_step;
+	EPMEM_TYPE_INT right_node, right_step;
 
 	lower = ( lower - offset );
 	upper = ( upper - offset );
@@ -1966,11 +1968,11 @@ void epmem_rit_prep_left_right( agent *my_agent, epmem_time_id lower, epmem_time
  * Author		: Nate Derbinsky
  * Notes		: Inserts an interval in the RIT
  **************************************************************************/
-void epmem_rit_insert_interval( agent *my_agent, epmem_time_id lower, epmem_time_id upper, epmem_node_id id, const long long *rit_state )
+void epmem_rit_insert_interval( agent *my_agent, epmem_time_id lower, epmem_time_id upper, epmem_node_id id, const long *rit_state )
 {
 	// initialize offset
-	long long offset = epmem_get_stat( my_agent, rit_state[ EPMEM_RIT_STATE_OFFSET ] );
-	if ( offset == -1 )
+	EPMEM_TYPE_INT offset = epmem_get_stat( my_agent, rit_state[ EPMEM_RIT_STATE_OFFSET ] );
+	if ( offset == EPMEM_RIT_OFFSET_INIT )
 	{
 		offset = lower;
 
@@ -1982,11 +1984,11 @@ void epmem_rit_insert_interval( agent *my_agent, epmem_time_id lower, epmem_time
 	}
 
 	// get node
-	long long node;
+	EPMEM_TYPE_INT node;
 	{
-		long long left_root = epmem_get_stat( my_agent, rit_state[ EPMEM_RIT_STATE_LEFTROOT ] );
-		long long right_root = epmem_get_stat( my_agent, rit_state[ EPMEM_RIT_STATE_RIGHTROOT ] );
-		long long min_step = epmem_get_stat( my_agent, rit_state[ EPMEM_RIT_STATE_MINSTEP ] );
+		EPMEM_TYPE_INT left_root = epmem_get_stat( my_agent, rit_state[ EPMEM_RIT_STATE_LEFTROOT ] );
+		EPMEM_TYPE_INT right_root = epmem_get_stat( my_agent, rit_state[ EPMEM_RIT_STATE_RIGHTROOT ] );
+		EPMEM_TYPE_INT min_step = epmem_get_stat( my_agent, rit_state[ EPMEM_RIT_STATE_MINSTEP ] );
 
 		// shift interval
 		epmem_time_id l = ( lower - offset );
@@ -1995,7 +1997,7 @@ void epmem_rit_insert_interval( agent *my_agent, epmem_time_id lower, epmem_time
 		// update left_root
 		if ( ( u < EPMEM_RIT_ROOT ) && ( l <= ( 2 * left_root ) ) )
 		{
-			left_root = (long long) pow( -2, floor( log( (double) -l ) / EPMEM_LN_2 ) );
+			left_root = (EPMEM_TYPE_INT) pow( -2, floor( log( (double) -l ) / EPMEM_LN_2 ) );
 
 			// update database
 			epmem_set_variable( my_agent, rit_state[ EPMEM_RIT_STATE_LEFTROOT ], left_root );
@@ -2007,7 +2009,7 @@ void epmem_rit_insert_interval( agent *my_agent, epmem_time_id lower, epmem_time
 		// update right_root
 		if ( ( l > EPMEM_RIT_ROOT ) && ( u >= ( 2 * right_root ) ) )
 		{
-			right_root = (long long) pow( 2, floor( log( (double) u ) / EPMEM_LN_2 ) );
+			right_root = (EPMEM_TYPE_INT) pow( 2, floor( log( (double) u ) / EPMEM_LN_2 ) );
 
 			// update database
 			epmem_set_variable( my_agent, rit_state[ EPMEM_RIT_STATE_RIGHTROOT ], right_root );
@@ -2017,7 +2019,7 @@ void epmem_rit_insert_interval( agent *my_agent, epmem_time_id lower, epmem_time
 		}
 
 		// update min_step
-		long long step;
+		EPMEM_TYPE_INT step;
 		node = epmem_rit_fork_node( my_agent, l, u, true, &step, rit_state );
 
 		if ( ( node != EPMEM_RIT_ROOT ) && ( step < min_step ) )
@@ -2034,10 +2036,10 @@ void epmem_rit_insert_interval( agent *my_agent, epmem_time_id lower, epmem_time
 
 	// perform insert
 	// ( node, start, end, id )
-	sqlite3_bind_int64( my_agent->epmem_statements[ rit_state[ EPMEM_RIT_STATE_ADD ] ], 1, node );
-	sqlite3_bind_int64( my_agent->epmem_statements[ rit_state[ EPMEM_RIT_STATE_ADD ] ], 2, lower );
-	sqlite3_bind_int64( my_agent->epmem_statements[ rit_state[ EPMEM_RIT_STATE_ADD ] ], 3, upper );
-	sqlite3_bind_int64( my_agent->epmem_statements[ rit_state[ EPMEM_RIT_STATE_ADD ] ], 4, id );
+	EPMEM_SQLITE_BIND_INT( my_agent->epmem_statements[ rit_state[ EPMEM_RIT_STATE_ADD ] ], 1, node );
+	EPMEM_SQLITE_BIND_INT( my_agent->epmem_statements[ rit_state[ EPMEM_RIT_STATE_ADD ] ], 2, lower );
+	EPMEM_SQLITE_BIND_INT( my_agent->epmem_statements[ rit_state[ EPMEM_RIT_STATE_ADD ] ], 3, upper );
+	EPMEM_SQLITE_BIND_INT( my_agent->epmem_statements[ rit_state[ EPMEM_RIT_STATE_ADD ] ], 4, id );
 	sqlite3_step( my_agent->epmem_statements[ rit_state[ EPMEM_RIT_STATE_ADD ] ] );
 	sqlite3_reset( my_agent->epmem_statements[ rit_state[ EPMEM_RIT_STATE_ADD ] ] );
 }
@@ -2057,16 +2059,19 @@ void epmem_rit_insert_interval( agent *my_agent, epmem_time_id lower, epmem_time
  **************************************************************************/
 void epmem_close( agent *my_agent )
 {
-	if ( my_agent->epmem_db_status != -1 )
+	if ( my_agent->epmem_db_status != EPMEM_DB_CLOSED )
 	{
 		// end any pending transactions
 		if ( epmem_in_transaction( my_agent ) )
 			epmem_transaction_end( my_agent, true );
 
 		// perform mode-specific cleanup as necessary
+		// note: not being used, so commented out to avoid compiler warning
+		/*
 		const long mode = epmem_get_parameter( my_agent, EPMEM_PARAM_MODE, EPMEM_RETURN_LONG );
 		{
 		}
+		*/
 
 		// deallocate query statements
 		for ( int i=0; i<EPMEM_MAX_STATEMENTS; i++ )
@@ -2083,7 +2088,7 @@ void epmem_close( agent *my_agent )
 
 		// initialize database status
 		my_agent->epmem_db = NULL;
-		my_agent->epmem_db_status = -1;
+		my_agent->epmem_db_status = EPMEM_DB_CLOSED;
 	}
 }
 
@@ -2158,7 +2163,7 @@ void epmem_reset( agent *my_agent, Symbol *state )
  **************************************************************************/
 void epmem_init_db( agent *my_agent )
 {
-	if ( my_agent->epmem_db_status != -1 )
+	if ( my_agent->epmem_db_status != EPMEM_DB_CLOSED )
 		return;
 
 	////////////////////////////////////////////////////////////////////////////
@@ -2198,65 +2203,69 @@ void epmem_init_db( agent *my_agent )
 		my_agent->epmem_validation++;
 
 		// create vars table (needed before var queries)
-		my_assert = ( sqlite3_prepare_v2( my_agent->epmem_db, "CREATE TABLE IF NOT EXISTS vars (id INTEGER PRIMARY KEY,value NONE)", -1, &create, &tail ) == SQLITE_OK );
+		my_assert = ( sqlite3_prepare_v2( my_agent->epmem_db, "CREATE TABLE IF NOT EXISTS vars (id INTEGER PRIMARY KEY,value NONE)", EPMEM_DB_PREP_STR_MAX, &create, &tail ) == SQLITE_OK );
 		assert( my_assert );
 		sqlite3_step( create );
 		sqlite3_finalize( create );
 
 		// rit_left_nodes table (rit)
-		my_assert = ( sqlite3_prepare_v2( my_agent->epmem_db, "CREATE TABLE IF NOT EXISTS rit_left_nodes (min INTEGER, max INTEGER)", -1, &create, &tail ) == SQLITE_OK );
+		my_assert = ( sqlite3_prepare_v2( my_agent->epmem_db, "CREATE TABLE IF NOT EXISTS rit_left_nodes (min INTEGER, max INTEGER)", EPMEM_DB_PREP_STR_MAX, &create, &tail ) == SQLITE_OK );
 		assert( my_assert );
 		sqlite3_step( create );
 		sqlite3_finalize( create );
 
 		// rit_right_nodes table (rit)
-		my_assert = ( sqlite3_prepare_v2( my_agent->epmem_db, "CREATE TABLE IF NOT EXISTS rit_right_nodes (node INTEGER)", -1, &create, &tail ) == SQLITE_OK );
+		my_assert = ( sqlite3_prepare_v2( my_agent->epmem_db, "CREATE TABLE IF NOT EXISTS rit_right_nodes (node INTEGER)", EPMEM_DB_PREP_STR_MAX, &create, &tail ) == SQLITE_OK );
 		assert( my_assert );
 		sqlite3_step( create );
 		sqlite3_finalize( create );
 
 		// common queries
-		my_assert = ( sqlite3_prepare_v2( my_agent->epmem_db, "BEGIN", -1, &( my_agent->epmem_statements[ EPMEM_STMT_BEGIN ] ), &tail ) == SQLITE_OK );
+		my_assert = ( sqlite3_prepare_v2( my_agent->epmem_db, "BEGIN", EPMEM_DB_PREP_STR_MAX, &( my_agent->epmem_statements[ EPMEM_STMT_BEGIN ] ), &tail ) == SQLITE_OK );
 		assert( my_assert );
-		my_assert = ( sqlite3_prepare_v2( my_agent->epmem_db, "COMMIT", -1, &( my_agent->epmem_statements[ EPMEM_STMT_COMMIT ] ), &tail ) == SQLITE_OK );
+		my_assert = ( sqlite3_prepare_v2( my_agent->epmem_db, "COMMIT", EPMEM_DB_PREP_STR_MAX, &( my_agent->epmem_statements[ EPMEM_STMT_COMMIT ] ), &tail ) == SQLITE_OK );
 		assert( my_assert );
-		my_assert = ( sqlite3_prepare_v2( my_agent->epmem_db, "ROLLBACK", -1, &( my_agent->epmem_statements[ EPMEM_STMT_ROLLBACK ] ), &tail ) == SQLITE_OK );
-		assert( my_assert );
-
-		my_assert = ( sqlite3_prepare_v2( my_agent->epmem_db, "SELECT value FROM vars WHERE id=?", -1, &( my_agent->epmem_statements[ EPMEM_STMT_VAR_GET ] ), &tail ) == SQLITE_OK );
-		assert( my_assert );
-		my_assert = ( sqlite3_prepare_v2( my_agent->epmem_db, "REPLACE INTO vars (id,value) VALUES (?,?)", -1, &( my_agent->epmem_statements[ EPMEM_STMT_VAR_SET ] ), &tail ) == SQLITE_OK );
+		my_assert = ( sqlite3_prepare_v2( my_agent->epmem_db, "ROLLBACK", EPMEM_DB_PREP_STR_MAX, &( my_agent->epmem_statements[ EPMEM_STMT_ROLLBACK ] ), &tail ) == SQLITE_OK );
 		assert( my_assert );
 
-		my_assert = ( sqlite3_prepare_v2( my_agent->epmem_db, "INSERT INTO rit_left_nodes (min,max) VALUES (?,?)", -1, &( my_agent->epmem_statements[ EPMEM_STMT_RIT_ADD_LEFT ] ), &tail ) == SQLITE_OK );
+		my_assert = ( sqlite3_prepare_v2( my_agent->epmem_db, "SELECT value FROM vars WHERE id=?", EPMEM_DB_PREP_STR_MAX, &( my_agent->epmem_statements[ EPMEM_STMT_VAR_GET ] ), &tail ) == SQLITE_OK );
 		assert( my_assert );
-		my_assert = ( sqlite3_prepare_v2( my_agent->epmem_db, "DELETE FROM rit_left_nodes", -1, &( my_agent->epmem_statements[ EPMEM_STMT_RIT_TRUNCATE_LEFT ] ), &tail ) == SQLITE_OK );
+		my_assert = ( sqlite3_prepare_v2( my_agent->epmem_db, "REPLACE INTO vars (id,value) VALUES (?,?)", EPMEM_DB_PREP_STR_MAX, &( my_agent->epmem_statements[ EPMEM_STMT_VAR_SET ] ), &tail ) == SQLITE_OK );
 		assert( my_assert );
-		my_assert = ( sqlite3_prepare_v2( my_agent->epmem_db, "INSERT INTO rit_right_nodes (node) VALUES (?)", -1, &( my_agent->epmem_statements[ EPMEM_STMT_RIT_ADD_RIGHT ] ), &tail ) == SQLITE_OK );
+
+		my_assert = ( sqlite3_prepare_v2( my_agent->epmem_db, "INSERT INTO rit_left_nodes (min,max) VALUES (?,?)", EPMEM_DB_PREP_STR_MAX, &( my_agent->epmem_statements[ EPMEM_STMT_RIT_ADD_LEFT ] ), &tail ) == SQLITE_OK );
 		assert( my_assert );
-		my_assert = ( sqlite3_prepare_v2( my_agent->epmem_db, "DELETE FROM rit_right_nodes", -1, &( my_agent->epmem_statements[ EPMEM_STMT_RIT_TRUNCATE_RIGHT ] ), &tail ) == SQLITE_OK );
+		my_assert = ( sqlite3_prepare_v2( my_agent->epmem_db, "DELETE FROM rit_left_nodes", EPMEM_DB_PREP_STR_MAX, &( my_agent->epmem_statements[ EPMEM_STMT_RIT_TRUNCATE_LEFT ] ), &tail ) == SQLITE_OK );
+		assert( my_assert );
+		my_assert = ( sqlite3_prepare_v2( my_agent->epmem_db, "INSERT INTO rit_right_nodes (node) VALUES (?)", EPMEM_DB_PREP_STR_MAX, &( my_agent->epmem_statements[ EPMEM_STMT_RIT_ADD_RIGHT ] ), &tail ) == SQLITE_OK );
+		assert( my_assert );
+		my_assert = ( sqlite3_prepare_v2( my_agent->epmem_db, "DELETE FROM rit_right_nodes", EPMEM_DB_PREP_STR_MAX, &( my_agent->epmem_statements[ EPMEM_STMT_RIT_TRUNCATE_RIGHT ] ), &tail ) == SQLITE_OK );
 		assert( my_assert );
 
 		// mode - read if existing
+		long mode;
 		{
-			long long stored_mode = NULL;
-			if ( epmem_get_variable( my_agent, EPMEM_VAR_MODE, stored_mode ) )
+			EPMEM_TYPE_INT stored_mode = NULL;
+			if ( epmem_get_variable( my_agent, EPMEM_VAR_MODE, &stored_mode ) )
+			{
 				epmem_set_parameter( my_agent, (const long) EPMEM_PARAM_MODE, (const long) stored_mode );
+				mode = (long) stored_mode;
+			}
 			else
-				epmem_set_variable( my_agent, EPMEM_VAR_MODE, epmem_get_parameter( my_agent, EPMEM_PARAM_MODE, EPMEM_RETURN_LONG ) );
+			{
+				mode = epmem_get_parameter( my_agent, EPMEM_PARAM_MODE, EPMEM_RETURN_LONG );
+				epmem_set_variable( my_agent, EPMEM_VAR_MODE, (EPMEM_TYPE_INT) mode );
+			}
 		}
 
 		// at this point initialize the database for receipt of episodes
-		epmem_transaction_begin( my_agent );
-
-		// further statement preparation depends upon parameters
-		const long mode = epmem_get_parameter( my_agent, EPMEM_PARAM_MODE, EPMEM_RETURN_LONG );
+		epmem_transaction_begin( my_agent );		
 
 		if ( mode == EPMEM_MODE_ONE )
 		{
 			// variable initialization
 			epmem_set_stat( my_agent, (const long) EPMEM_STAT_TIME, 1 );
-			epmem_set_stat( my_agent, (const long) epmem_rit_state_one[ EPMEM_RIT_STATE_OFFSET ], -1 );
+			epmem_set_stat( my_agent, (const long) epmem_rit_state_one[ EPMEM_RIT_STATE_OFFSET ], EPMEM_RIT_OFFSET_INIT );
 			epmem_set_stat( my_agent, (const long) epmem_rit_state_one[ EPMEM_RIT_STATE_LEFTROOT ], 0 );
 			epmem_set_stat( my_agent, (const long) epmem_rit_state_one[ EPMEM_RIT_STATE_RIGHTROOT ], 0 );
 			epmem_set_stat( my_agent, (const long) epmem_rit_state_one[ EPMEM_RIT_STATE_MINSTEP ], LONG_MAX );
@@ -2265,158 +2274,158 @@ void epmem_init_db( agent *my_agent )
 			my_agent->epmem_node_removals->clear();
 
 			// times table
-			my_assert = ( sqlite3_prepare_v2( my_agent->epmem_db, "CREATE TABLE IF NOT EXISTS times (id INTEGER PRIMARY KEY)", -1, &create, &tail ) == SQLITE_OK );
+			my_assert = ( sqlite3_prepare_v2( my_agent->epmem_db, "CREATE TABLE IF NOT EXISTS times (id INTEGER PRIMARY KEY)", EPMEM_DB_PREP_STR_MAX, &create, &tail ) == SQLITE_OK );
 			assert( my_assert );
 			sqlite3_step( create );
 			sqlite3_finalize( create );
 
 			// custom statement for inserting times
-			my_assert = ( sqlite3_prepare_v2( my_agent->epmem_db, "INSERT INTO times (id) VALUES (?)", -1, &( my_agent->epmem_statements[ EPMEM_STMT_ONE_ADD_TIME ] ), &tail ) == SQLITE_OK );
+			my_assert = ( sqlite3_prepare_v2( my_agent->epmem_db, "INSERT INTO times (id) VALUES (?)", EPMEM_DB_PREP_STR_MAX, &( my_agent->epmem_statements[ EPMEM_STMT_ONE_ADD_TIME ] ), &tail ) == SQLITE_OK );
 			assert( my_assert );
 
 			////
 
 			// node_now table
-			my_assert = ( sqlite3_prepare_v2( my_agent->epmem_db, "CREATE TABLE IF NOT EXISTS node_now (id INTEGER,start INTEGER)", -1, &create, &tail ) == SQLITE_OK );
+			my_assert = ( sqlite3_prepare_v2( my_agent->epmem_db, "CREATE TABLE IF NOT EXISTS node_now (id INTEGER,start INTEGER)", EPMEM_DB_PREP_STR_MAX, &create, &tail ) == SQLITE_OK );
 			assert( my_assert );
 			sqlite3_step( create );
 			sqlite3_finalize( create );
 
 			// node_now_start index
-			my_assert = ( sqlite3_prepare_v2( my_agent->epmem_db, "CREATE INDEX IF NOT EXISTS node_now_start ON node_now (start)", -1, &create, &tail ) == SQLITE_OK );
+			my_assert = ( sqlite3_prepare_v2( my_agent->epmem_db, "CREATE INDEX IF NOT EXISTS node_now_start ON node_now (start)", EPMEM_DB_PREP_STR_MAX, &create, &tail ) == SQLITE_OK );
 			assert( my_assert );
 			sqlite3_step( create );
 			sqlite3_finalize( create );
 
 			// id_start index (for queries)
-			my_assert = ( sqlite3_prepare_v2( my_agent->epmem_db, "CREATE UNIQUE INDEX IF NOT EXISTS node_now_id_start ON node_now (id,start DESC)", -1, &create, &tail ) == SQLITE_OK );
+			my_assert = ( sqlite3_prepare_v2( my_agent->epmem_db, "CREATE UNIQUE INDEX IF NOT EXISTS node_now_id_start ON node_now (id,start DESC)", EPMEM_DB_PREP_STR_MAX, &create, &tail ) == SQLITE_OK );
 			assert( my_assert );
 			sqlite3_step( create );
 			sqlite3_finalize( create );
 
 			// custom statement for inserting now
-			my_assert = ( sqlite3_prepare_v2( my_agent->epmem_db, "INSERT INTO node_now (id,start) VALUES (?,?)", -1, &( my_agent->epmem_statements[ EPMEM_STMT_ONE_ADD_NODE_NOW ] ), &tail ) == SQLITE_OK );
+			my_assert = ( sqlite3_prepare_v2( my_agent->epmem_db, "INSERT INTO node_now (id,start) VALUES (?,?)", EPMEM_DB_PREP_STR_MAX, &( my_agent->epmem_statements[ EPMEM_STMT_ONE_ADD_NODE_NOW ] ), &tail ) == SQLITE_OK );
 			assert( my_assert );
 
 			// custom statement for deleting now
-			my_assert = ( sqlite3_prepare_v2( my_agent->epmem_db, "DELETE FROM node_now WHERE id=?", -1, &( my_agent->epmem_statements[ EPMEM_STMT_ONE_DELETE_NODE_NOW ] ), &tail ) == SQLITE_OK );
+			my_assert = ( sqlite3_prepare_v2( my_agent->epmem_db, "DELETE FROM node_now WHERE id=?", EPMEM_DB_PREP_STR_MAX, &( my_agent->epmem_statements[ EPMEM_STMT_ONE_DELETE_NODE_NOW ] ), &tail ) == SQLITE_OK );
 			assert( my_assert );
 
 			////
 
 			// node_point table
-			my_assert = ( sqlite3_prepare_v2( my_agent->epmem_db, "CREATE TABLE IF NOT EXISTS node_point (id INTEGER,start INTEGER)", -1, &create, &tail ) == SQLITE_OK );
+			my_assert = ( sqlite3_prepare_v2( my_agent->epmem_db, "CREATE TABLE IF NOT EXISTS node_point (id INTEGER,start INTEGER)", EPMEM_DB_PREP_STR_MAX, &create, &tail ) == SQLITE_OK );
 			assert( my_assert );
 			sqlite3_step( create );
 			sqlite3_finalize( create );
 
 			// id_start index (for queries)
-			my_assert = ( sqlite3_prepare_v2( my_agent->epmem_db, "CREATE UNIQUE INDEX IF NOT EXISTS node_point_id_start ON node_point (id,start DESC)", -1, &create, &tail ) == SQLITE_OK );
+			my_assert = ( sqlite3_prepare_v2( my_agent->epmem_db, "CREATE UNIQUE INDEX IF NOT EXISTS node_point_id_start ON node_point (id,start DESC)", EPMEM_DB_PREP_STR_MAX, &create, &tail ) == SQLITE_OK );
 			assert( my_assert );
 			sqlite3_step( create );
 			sqlite3_finalize( create );
 
 			// start index
-			my_assert = ( sqlite3_prepare_v2( my_agent->epmem_db, "CREATE INDEX IF NOT EXISTS node_point_start ON node_point (start)", -1, &create, &tail ) == SQLITE_OK );
+			my_assert = ( sqlite3_prepare_v2( my_agent->epmem_db, "CREATE INDEX IF NOT EXISTS node_point_start ON node_point (start)", EPMEM_DB_PREP_STR_MAX, &create, &tail ) == SQLITE_OK );
 			assert( my_assert );
 			sqlite3_step( create );
 			sqlite3_finalize( create );
 
 			// custom statement for inserting nodes
-			my_assert = ( sqlite3_prepare_v2( my_agent->epmem_db, "INSERT INTO node_point (id,start) VALUES (?,?)", -1, &( my_agent->epmem_statements[ EPMEM_STMT_ONE_ADD_NODE_POINT ] ), &tail ) == SQLITE_OK );
+			my_assert = ( sqlite3_prepare_v2( my_agent->epmem_db, "INSERT INTO node_point (id,start) VALUES (?,?)", EPMEM_DB_PREP_STR_MAX, &( my_agent->epmem_statements[ EPMEM_STMT_ONE_ADD_NODE_POINT ] ), &tail ) == SQLITE_OK );
 			assert( my_assert );
 
 			////
 
 			// node_range table
-			my_assert = ( sqlite3_prepare_v2( my_agent->epmem_db, "CREATE TABLE IF NOT EXISTS node_range (rit_node INTEGER,start INTEGER,end INTEGER,id INTEGER)", -1, &create, &tail ) == SQLITE_OK );
+			my_assert = ( sqlite3_prepare_v2( my_agent->epmem_db, "CREATE TABLE IF NOT EXISTS node_range (rit_node INTEGER,start INTEGER,end INTEGER,id INTEGER)", EPMEM_DB_PREP_STR_MAX, &create, &tail ) == SQLITE_OK );
 			assert( my_assert );
 			sqlite3_step( create );
 			sqlite3_finalize( create );
 
 			// lowerindex
-			my_assert = ( sqlite3_prepare_v2( my_agent->epmem_db, "CREATE INDEX IF NOT EXISTS node_range_lower ON node_range (rit_node,start)", -1, &create, &tail ) == SQLITE_OK );
+			my_assert = ( sqlite3_prepare_v2( my_agent->epmem_db, "CREATE INDEX IF NOT EXISTS node_range_lower ON node_range (rit_node,start)", EPMEM_DB_PREP_STR_MAX, &create, &tail ) == SQLITE_OK );
 			assert( my_assert );
 			sqlite3_step( create );
 			sqlite3_finalize( create );
 
 			// upperindex
-			my_assert = ( sqlite3_prepare_v2( my_agent->epmem_db, "CREATE INDEX IF NOT EXISTS node_range_upper ON node_range (rit_node,end)", -1, &create, &tail ) == SQLITE_OK );
+			my_assert = ( sqlite3_prepare_v2( my_agent->epmem_db, "CREATE INDEX IF NOT EXISTS node_range_upper ON node_range (rit_node,end)", EPMEM_DB_PREP_STR_MAX, &create, &tail ) == SQLITE_OK );
 			assert( my_assert );
 			sqlite3_step( create );
 			sqlite3_finalize( create );
 
 			// id_start index (for queries)
-			my_assert = ( sqlite3_prepare_v2( my_agent->epmem_db, "CREATE UNIQUE INDEX IF NOT EXISTS node_range_id_start ON node_range (id,start DESC)", -1, &create, &tail ) == SQLITE_OK );
+			my_assert = ( sqlite3_prepare_v2( my_agent->epmem_db, "CREATE UNIQUE INDEX IF NOT EXISTS node_range_id_start ON node_range (id,start DESC)", EPMEM_DB_PREP_STR_MAX, &create, &tail ) == SQLITE_OK );
 			assert( my_assert );
 			sqlite3_step( create );
 			sqlite3_finalize( create );
 
 			// id_end index (for queries)
-			my_assert = ( sqlite3_prepare_v2( my_agent->epmem_db, "CREATE UNIQUE INDEX IF NOT EXISTS node_range_id_end ON node_range (id,end DESC)", -1, &create, &tail ) == SQLITE_OK );
+			my_assert = ( sqlite3_prepare_v2( my_agent->epmem_db, "CREATE UNIQUE INDEX IF NOT EXISTS node_range_id_end ON node_range (id,end DESC)", EPMEM_DB_PREP_STR_MAX, &create, &tail ) == SQLITE_OK );
 			assert( my_assert );
 			sqlite3_step( create );
 			sqlite3_finalize( create );
 
 			// custom statement for inserting episodes
-			my_assert = ( sqlite3_prepare_v2( my_agent->epmem_db, "INSERT INTO node_range (rit_node,start,end,id) VALUES (?,?,?,?)", -1, &( my_agent->epmem_statements[ EPMEM_STMT_ONE_ADD_NODE_RANGE ] ), &tail ) == SQLITE_OK );
+			my_assert = ( sqlite3_prepare_v2( my_agent->epmem_db, "INSERT INTO node_range (rit_node,start,end,id) VALUES (?,?,?,?)", EPMEM_DB_PREP_STR_MAX, &( my_agent->epmem_statements[ EPMEM_STMT_ONE_ADD_NODE_RANGE ] ), &tail ) == SQLITE_OK );
 			assert( my_assert );
 
 			////
 
 			// node_unique table
-			my_assert = ( sqlite3_prepare_v2( my_agent->epmem_db, "CREATE TABLE IF NOT EXISTS node_unique (child_id INTEGER PRIMARY KEY AUTOINCREMENT,parent_id INTEGER,name NONE,value NONE,hash INTEGER,attr_type INTEGER,value_type INTEGER)", -1, &create, &tail ) == SQLITE_OK );
+			my_assert = ( sqlite3_prepare_v2( my_agent->epmem_db, "CREATE TABLE IF NOT EXISTS node_unique (child_id INTEGER PRIMARY KEY AUTOINCREMENT,parent_id INTEGER,name NONE,value NONE,hash INTEGER,attr_type INTEGER,value_type INTEGER)", EPMEM_DB_PREP_STR_MAX, &create, &tail ) == SQLITE_OK );
 			assert( my_assert );
 			sqlite3_step( create );
 			sqlite3_finalize( create );
 
 			// hash index for searching
-			my_assert = ( sqlite3_prepare_v2( my_agent->epmem_db, "CREATE INDEX IF NOT EXISTS node_unique_hash_parent ON node_unique (hash,parent_id)", -1, &create, &tail ) == SQLITE_OK );
+			my_assert = ( sqlite3_prepare_v2( my_agent->epmem_db, "CREATE INDEX IF NOT EXISTS node_unique_hash_parent ON node_unique (hash,parent_id)", EPMEM_DB_PREP_STR_MAX, &create, &tail ) == SQLITE_OK );
 			assert( my_assert );
 			sqlite3_step( create );
 			sqlite3_finalize( create );
 
 			// custom statement for inserting ids
-			my_assert = ( sqlite3_prepare_v2( my_agent->epmem_db, "INSERT INTO node_unique (parent_id,name,value,hash,attr_type,value_type) VALUES (?,?,?,?,?,?)", -1, &( my_agent->epmem_statements[ EPMEM_STMT_ONE_ADD_NODE_UNIQUE ] ), &tail ) == SQLITE_OK );
+			my_assert = ( sqlite3_prepare_v2( my_agent->epmem_db, "INSERT INTO node_unique (parent_id,name,value,hash,attr_type,value_type) VALUES (?,?,?,?,?,?)", EPMEM_DB_PREP_STR_MAX, &( my_agent->epmem_statements[ EPMEM_STMT_ONE_ADD_NODE_UNIQUE ] ), &tail ) == SQLITE_OK );
 			assert( my_assert );
 
 			// custom statement for finding non-identifier id's
-			my_assert = ( sqlite3_prepare_v2( my_agent->epmem_db, "SELECT child_id FROM node_unique WHERE hash=? AND parent_id=? AND name=? AND value=? AND attr_type=? AND value_type=?", -1, &( my_agent->epmem_statements[ EPMEM_STMT_ONE_FIND_NODE_UNIQUE ] ), &tail ) == SQLITE_OK );
+			my_assert = ( sqlite3_prepare_v2( my_agent->epmem_db, "SELECT child_id FROM node_unique WHERE hash=? AND parent_id=? AND name=? AND value=? AND attr_type=? AND value_type=?", EPMEM_DB_PREP_STR_MAX, &( my_agent->epmem_statements[ EPMEM_STMT_ONE_FIND_NODE_UNIQUE ] ), &tail ) == SQLITE_OK );
 			assert( my_assert );
 
 			// custom statement for finding identifier id's
-			my_assert = ( sqlite3_prepare_v2( my_agent->epmem_db, "SELECT child_id FROM node_unique WHERE hash=? AND parent_id=? AND name=? AND value IS NULL AND attr_type=?", -1, &( my_agent->epmem_statements[ EPMEM_STMT_ONE_FIND_IDENTIFIER ] ), &tail ) == SQLITE_OK );
+			my_assert = ( sqlite3_prepare_v2( my_agent->epmem_db, "SELECT child_id FROM node_unique WHERE hash=? AND parent_id=? AND name=? AND value IS NULL AND attr_type=?", EPMEM_DB_PREP_STR_MAX, &( my_agent->epmem_statements[ EPMEM_STMT_ONE_FIND_IDENTIFIER ] ), &tail ) == SQLITE_OK );
 			assert( my_assert );
 
 			//
 
 			// custom statement for validating an episode
-			my_assert = ( sqlite3_prepare_v2( my_agent->epmem_db, "SELECT COUNT(*) AS ct FROM times WHERE id=?", -1, &( my_agent->epmem_statements[ EPMEM_STMT_ONE_VALID_EPISODE ] ), &tail ) == SQLITE_OK );
+			my_assert = ( sqlite3_prepare_v2( my_agent->epmem_db, "SELECT COUNT(*) AS ct FROM times WHERE id=?", EPMEM_DB_PREP_STR_MAX, &( my_agent->epmem_statements[ EPMEM_STMT_ONE_VALID_EPISODE ] ), &tail ) == SQLITE_OK );
 			assert( my_assert );
 
 			// custom statement for finding the next episode
-			my_assert = ( sqlite3_prepare_v2( my_agent->epmem_db, "SELECT id FROM times WHERE id>? ORDER BY id ASC LIMIT 1", -1, &( my_agent->epmem_statements[ EPMEM_STMT_ONE_NEXT_EPISODE ] ), &tail ) == SQLITE_OK );
+			my_assert = ( sqlite3_prepare_v2( my_agent->epmem_db, "SELECT id FROM times WHERE id>? ORDER BY id ASC LIMIT 1", EPMEM_DB_PREP_STR_MAX, &( my_agent->epmem_statements[ EPMEM_STMT_ONE_NEXT_EPISODE ] ), &tail ) == SQLITE_OK );
 			assert( my_assert );
 
 			// custom statement for finding the prev episode
-			my_assert = ( sqlite3_prepare_v2( my_agent->epmem_db, "SELECT id FROM times WHERE id<? ORDER BY id DESC LIMIT 1", -1, &( my_agent->epmem_statements[ EPMEM_STMT_ONE_PREV_EPISODE ] ), &tail ) == SQLITE_OK );
+			my_assert = ( sqlite3_prepare_v2( my_agent->epmem_db, "SELECT id FROM times WHERE id<? ORDER BY id DESC LIMIT 1", EPMEM_DB_PREP_STR_MAX, &( my_agent->epmem_statements[ EPMEM_STMT_ONE_PREV_EPISODE ] ), &tail ) == SQLITE_OK );
 			assert( my_assert );
 
 			////
 
 			// custom statement for range intersection query
-			my_assert = ( sqlite3_prepare_v2( my_agent->epmem_db, "SELECT i.child_id, i.parent_id, i.name, i.value, i.attr_type, i.value_type FROM node_unique i WHERE i.child_id IN (SELECT n.id FROM node_now n WHERE n.start<= ? UNION ALL SELECT p.id FROM node_point p WHERE p.start=? UNION ALL SELECT e1.id FROM node_range e1, rit_left_nodes lt WHERE e1.rit_node=lt.min AND e1.end >= ? UNION ALL SELECT e2.id FROM node_range e2, rit_right_nodes rt WHERE e2.rit_node = rt.node AND e2.start <= ?) ORDER BY i.child_id ASC", -1, &( my_agent->epmem_statements[ EPMEM_STMT_ONE_GET_EPISODE ] ), &tail ) == SQLITE_OK );
+			my_assert = ( sqlite3_prepare_v2( my_agent->epmem_db, "SELECT i.child_id, i.parent_id, i.name, i.value, i.attr_type, i.value_type FROM node_unique i WHERE i.child_id IN (SELECT n.id FROM node_now n WHERE n.start<= ? UNION ALL SELECT p.id FROM node_point p WHERE p.start=? UNION ALL SELECT e1.id FROM node_range e1, rit_left_nodes lt WHERE e1.rit_node=lt.min AND e1.end >= ? UNION ALL SELECT e2.id FROM node_range e2, rit_right_nodes rt WHERE e2.rit_node = rt.node AND e2.start <= ?) ORDER BY i.child_id ASC", EPMEM_DB_PREP_STR_MAX, &( my_agent->epmem_statements[ EPMEM_STMT_ONE_GET_EPISODE ] ), &tail ) == SQLITE_OK );
 			assert( my_assert );
 
 			////
 
 			// get/set RIT variables
 			{
-				long long var_val;
+				EPMEM_TYPE_INT var_val;
 
 				for ( int i=epmem_rit_state_one[ EPMEM_RIT_STATE_OFFSET ]; i<=epmem_rit_state_one[ EPMEM_RIT_STATE_MINSTEP ]; i++ )
 				{
-					if ( epmem_get_variable( my_agent, i, var_val ) )
+					if ( epmem_get_variable( my_agent, i, &var_val ) )
 						epmem_set_stat( my_agent, i, var_val );
 					else
 						epmem_set_variable( my_agent, i, epmem_get_stat( my_agent, i ) );
@@ -2424,47 +2433,47 @@ void epmem_init_db( agent *my_agent )
 			}
 
 			// get max time
-			my_assert = ( sqlite3_prepare_v2( my_agent->epmem_db, "SELECT MAX(id) FROM times", -1, &create, &tail ) == SQLITE_OK );
+			my_assert = ( sqlite3_prepare_v2( my_agent->epmem_db, "SELECT MAX(id) FROM times", EPMEM_DB_PREP_STR_MAX, &create, &tail ) == SQLITE_OK );
 			assert( my_assert );
 			if ( sqlite3_step( create ) == SQLITE_ROW )
-				epmem_set_stat( my_agent, (const long) EPMEM_STAT_TIME, ( sqlite3_column_int64( create, 0 ) + 1 ) );
+				epmem_set_stat( my_agent, (const long) EPMEM_STAT_TIME, ( EPMEM_SQLITE_COLUMN_INT( create, 0 ) + 1 ) );
 			sqlite3_finalize( create );
 			time_max = epmem_get_stat( my_agent, (const long) EPMEM_STAT_TIME );
 
 			// insert non-NOW intervals for all current NOW's
 			time_last = ( time_max - 1 );
-			my_assert = ( sqlite3_prepare_v2( my_agent->epmem_db, "SELECT id,start FROM node_now", -1, &create, &tail ) == SQLITE_OK );
+			my_assert = ( sqlite3_prepare_v2( my_agent->epmem_db, "SELECT id,start FROM node_now", EPMEM_DB_PREP_STR_MAX, &create, &tail ) == SQLITE_OK );
 			assert( my_assert );
-			sqlite3_bind_int64( my_agent->epmem_statements[ EPMEM_STMT_ONE_ADD_NODE_POINT ], 2, time_last );
+			EPMEM_SQLITE_BIND_INT( my_agent->epmem_statements[ EPMEM_STMT_ONE_ADD_NODE_POINT ], 2, time_last );
 			while ( sqlite3_step( create ) == SQLITE_ROW )
 			{
-				range_start = sqlite3_column_int64( create, 1 );
+				range_start = EPMEM_SQLITE_COLUMN_INT( create, 1 );
 
 				// point
 				if ( range_start == time_last )
 				{
-					sqlite3_bind_int64( my_agent->epmem_statements[ EPMEM_STMT_ONE_ADD_NODE_POINT ], 1, sqlite3_column_int64( create, 0 ) );
+					EPMEM_SQLITE_BIND_INT( my_agent->epmem_statements[ EPMEM_STMT_ONE_ADD_NODE_POINT ], 1, EPMEM_SQLITE_COLUMN_INT( create, 0 ) );
 					sqlite3_step( my_agent->epmem_statements[ EPMEM_STMT_ONE_ADD_NODE_POINT ] );
 					sqlite3_reset( my_agent->epmem_statements[ EPMEM_STMT_ONE_ADD_NODE_POINT ] );
 				}
 				else
-					epmem_rit_insert_interval( my_agent, range_start, time_last, sqlite3_column_int64( create, 0 ), epmem_rit_state_one );
+					epmem_rit_insert_interval( my_agent, range_start, time_last, EPMEM_SQLITE_COLUMN_INT( create, 0 ), epmem_rit_state_one );
 			}
 			sqlite3_finalize( create );
 
 			// remove all NOW intervals
-			my_assert = ( sqlite3_prepare_v2( my_agent->epmem_db, "DELETE FROM node_now", -1, &create, &tail ) == SQLITE_OK );
+			my_assert = ( sqlite3_prepare_v2( my_agent->epmem_db, "DELETE FROM node_now", EPMEM_DB_PREP_STR_MAX, &create, &tail ) == SQLITE_OK );
 			assert( my_assert );
 			sqlite3_step( create );
 			sqlite3_finalize( create );
 
 			// get max id + max list
-			my_assert = ( sqlite3_prepare_v2( my_agent->epmem_db, "SELECT MAX(child_id) FROM node_unique", -1, &create, &tail ) == SQLITE_OK );
+			my_assert = ( sqlite3_prepare_v2( my_agent->epmem_db, "SELECT MAX(child_id) FROM node_unique", EPMEM_DB_PREP_STR_MAX, &create, &tail ) == SQLITE_OK );
 			assert( my_assert );
 			sqlite3_step( create );
 			if ( sqlite3_column_type( create, 0 ) != SQLITE_NULL )
 			{
-				unsigned long long num_ids = sqlite3_column_int64( create, 0 );
+				unsigned EPMEM_TYPE_INT num_ids = EPMEM_SQLITE_COLUMN_INT( create, 0 );
 
 				my_agent->epmem_node_maxes->resize( num_ids, EPMEM_MEMID_NONE );
 				my_agent->epmem_node_mins->resize( num_ids, time_max );
@@ -2488,9 +2497,9 @@ void epmem_init_db( agent *my_agent )
 			// initialize next_id
 			epmem_set_stat( my_agent, (const long) EPMEM_STAT_NEXT_ID, 1 );
 			{
-				long long stored_id = NULL;
-				if ( epmem_get_variable( my_agent, EPMEM_VAR_NEXT_ID, stored_id ) )
-					epmem_set_stat( my_agent, (const long) EPMEM_STAT_NEXT_ID, (const long) stored_id );
+				EPMEM_TYPE_INT stored_id = NULL;
+				if ( epmem_get_variable( my_agent, EPMEM_VAR_NEXT_ID, &stored_id ) )
+					epmem_set_stat( my_agent, (const long) EPMEM_STAT_NEXT_ID, stored_id );
 				else
 					epmem_set_variable( my_agent, EPMEM_VAR_NEXT_ID, epmem_get_stat( my_agent, EPMEM_STAT_NEXT_ID ) );
 			}
@@ -2498,7 +2507,7 @@ void epmem_init_db( agent *my_agent )
 			// initialize rit state
 			for ( int i=EPMEM_RIT_STATE_NODE; i<=EPMEM_RIT_STATE_EDGE; i++ )
 			{
-				epmem_set_stat( my_agent, (const long) epmem_rit_state_three[ i ][ EPMEM_RIT_STATE_OFFSET ], -1 );
+				epmem_set_stat( my_agent, (const long) epmem_rit_state_three[ i ][ EPMEM_RIT_STATE_OFFSET ], EPMEM_RIT_OFFSET_INIT );
 				epmem_set_stat( my_agent, (const long) epmem_rit_state_three[ i ][ EPMEM_RIT_STATE_LEFTROOT ], 0 );
 				epmem_set_stat( my_agent, (const long) epmem_rit_state_three[ i ][ EPMEM_RIT_STATE_RIGHTROOT ], 0 );
 				epmem_set_stat( my_agent, (const long) epmem_rit_state_three[ i ][ EPMEM_RIT_STATE_MINSTEP ], LONG_MAX );
@@ -2507,271 +2516,271 @@ void epmem_init_db( agent *my_agent )
 			////
 
 			// times table
-			my_assert = ( sqlite3_prepare_v2( my_agent->epmem_db, "CREATE TABLE IF NOT EXISTS times (id INTEGER PRIMARY KEY)", -1, &create, &tail ) == SQLITE_OK );
+			my_assert = ( sqlite3_prepare_v2( my_agent->epmem_db, "CREATE TABLE IF NOT EXISTS times (id INTEGER PRIMARY KEY)", EPMEM_DB_PREP_STR_MAX, &create, &tail ) == SQLITE_OK );
 			assert( my_assert );
 			sqlite3_step( create );
 			sqlite3_finalize( create );
 
 			// custom statement for inserting times
-			my_assert = ( sqlite3_prepare_v2( my_agent->epmem_db, "INSERT INTO times (id) VALUES (?)", -1, &( my_agent->epmem_statements[ EPMEM_STMT_THREE_ADD_TIME ] ), &tail ) == SQLITE_OK );
+			my_assert = ( sqlite3_prepare_v2( my_agent->epmem_db, "INSERT INTO times (id) VALUES (?)", EPMEM_DB_PREP_STR_MAX, &( my_agent->epmem_statements[ EPMEM_STMT_THREE_ADD_TIME ] ), &tail ) == SQLITE_OK );
 			assert( my_assert );
 
 			////
 
 			// node_now table
-			my_assert = ( sqlite3_prepare_v2( my_agent->epmem_db, "CREATE TABLE IF NOT EXISTS node_now (id INTEGER,start INTEGER)", -1, &create, &tail ) == SQLITE_OK );
+			my_assert = ( sqlite3_prepare_v2( my_agent->epmem_db, "CREATE TABLE IF NOT EXISTS node_now (id INTEGER,start INTEGER)", EPMEM_DB_PREP_STR_MAX, &create, &tail ) == SQLITE_OK );
 			assert( my_assert );
 			sqlite3_step( create );
 			sqlite3_finalize( create );
 
 			// start index
-			my_assert = ( sqlite3_prepare_v2( my_agent->epmem_db, "CREATE INDEX IF NOT EXISTS node_now_start ON node_now (start)", -1, &create, &tail ) == SQLITE_OK );
+			my_assert = ( sqlite3_prepare_v2( my_agent->epmem_db, "CREATE INDEX IF NOT EXISTS node_now_start ON node_now (start)", EPMEM_DB_PREP_STR_MAX, &create, &tail ) == SQLITE_OK );
 			assert( my_assert );
 			sqlite3_step( create );
 			sqlite3_finalize( create );
 
 			// id_start index (for queries)
-			my_assert = ( sqlite3_prepare_v2( my_agent->epmem_db, "CREATE UNIQUE INDEX IF NOT EXISTS node_now_id_start ON node_now (id,start DESC)", -1, &create, &tail ) == SQLITE_OK );
+			my_assert = ( sqlite3_prepare_v2( my_agent->epmem_db, "CREATE UNIQUE INDEX IF NOT EXISTS node_now_id_start ON node_now (id,start DESC)", EPMEM_DB_PREP_STR_MAX, &create, &tail ) == SQLITE_OK );
 			assert( my_assert );
 			sqlite3_step( create );
 			sqlite3_finalize( create );
 
 			// custom statement for inserting
-			my_assert = ( sqlite3_prepare_v2( my_agent->epmem_db, "INSERT INTO node_now (id,start) VALUES (?,?)", -1, &( my_agent->epmem_statements[ EPMEM_STMT_THREE_ADD_NODE_NOW ] ), &tail ) == SQLITE_OK );
+			my_assert = ( sqlite3_prepare_v2( my_agent->epmem_db, "INSERT INTO node_now (id,start) VALUES (?,?)", EPMEM_DB_PREP_STR_MAX, &( my_agent->epmem_statements[ EPMEM_STMT_THREE_ADD_NODE_NOW ] ), &tail ) == SQLITE_OK );
 			assert( my_assert );
 
 			// custom statement for deleting
-			my_assert = ( sqlite3_prepare_v2( my_agent->epmem_db, "DELETE FROM node_now WHERE id=?", -1, &( my_agent->epmem_statements[ EPMEM_STMT_THREE_DELETE_NODE_NOW ] ), &tail ) == SQLITE_OK );
+			my_assert = ( sqlite3_prepare_v2( my_agent->epmem_db, "DELETE FROM node_now WHERE id=?", EPMEM_DB_PREP_STR_MAX, &( my_agent->epmem_statements[ EPMEM_STMT_THREE_DELETE_NODE_NOW ] ), &tail ) == SQLITE_OK );
 			assert( my_assert );
 
 			////
 
 			// edge_now table
-			my_assert = ( sqlite3_prepare_v2( my_agent->epmem_db, "CREATE TABLE IF NOT EXISTS edge_now (id INTEGER,start INTEGER)", -1, &create, &tail ) == SQLITE_OK );
+			my_assert = ( sqlite3_prepare_v2( my_agent->epmem_db, "CREATE TABLE IF NOT EXISTS edge_now (id INTEGER,start INTEGER)", EPMEM_DB_PREP_STR_MAX, &create, &tail ) == SQLITE_OK );
 			assert( my_assert );
 			sqlite3_step( create );
 			sqlite3_finalize( create );
 
 			// start index
-			my_assert = ( sqlite3_prepare_v2( my_agent->epmem_db, "CREATE INDEX IF NOT EXISTS edge_now_start ON edge_now (start)", -1, &create, &tail ) == SQLITE_OK );
+			my_assert = ( sqlite3_prepare_v2( my_agent->epmem_db, "CREATE INDEX IF NOT EXISTS edge_now_start ON edge_now (start)", EPMEM_DB_PREP_STR_MAX, &create, &tail ) == SQLITE_OK );
 			assert( my_assert );
 			sqlite3_step( create );
 			sqlite3_finalize( create );
 
 			// id_start index (for queries)
-			my_assert = ( sqlite3_prepare_v2( my_agent->epmem_db, "CREATE UNIQUE INDEX IF NOT EXISTS edge_now_id_start ON edge_now (id,start DESC)", -1, &create, &tail ) == SQLITE_OK );
+			my_assert = ( sqlite3_prepare_v2( my_agent->epmem_db, "CREATE UNIQUE INDEX IF NOT EXISTS edge_now_id_start ON edge_now (id,start DESC)", EPMEM_DB_PREP_STR_MAX, &create, &tail ) == SQLITE_OK );
 			assert( my_assert );
 			sqlite3_step( create );
 			sqlite3_finalize( create );
 
 			// custom statement for inserting
-			my_assert = ( sqlite3_prepare_v2( my_agent->epmem_db, "INSERT INTO edge_now (id,start) VALUES (?,?)", -1, &( my_agent->epmem_statements[ EPMEM_STMT_THREE_ADD_EDGE_NOW ] ), &tail ) == SQLITE_OK );
+			my_assert = ( sqlite3_prepare_v2( my_agent->epmem_db, "INSERT INTO edge_now (id,start) VALUES (?,?)", EPMEM_DB_PREP_STR_MAX, &( my_agent->epmem_statements[ EPMEM_STMT_THREE_ADD_EDGE_NOW ] ), &tail ) == SQLITE_OK );
 			assert( my_assert );
 
 			// custom statement for deleting
-			my_assert = ( sqlite3_prepare_v2( my_agent->epmem_db, "DELETE FROM edge_now WHERE id=?", -1, &( my_agent->epmem_statements[ EPMEM_STMT_THREE_DELETE_EDGE_NOW ] ), &tail ) == SQLITE_OK );
+			my_assert = ( sqlite3_prepare_v2( my_agent->epmem_db, "DELETE FROM edge_now WHERE id=?", EPMEM_DB_PREP_STR_MAX, &( my_agent->epmem_statements[ EPMEM_STMT_THREE_DELETE_EDGE_NOW ] ), &tail ) == SQLITE_OK );
 			assert( my_assert );
 
 			////
 
 			// node_point table
-			my_assert = ( sqlite3_prepare_v2( my_agent->epmem_db, "CREATE TABLE IF NOT EXISTS node_point (id INTEGER,start INTEGER)", -1, &create, &tail ) == SQLITE_OK );
+			my_assert = ( sqlite3_prepare_v2( my_agent->epmem_db, "CREATE TABLE IF NOT EXISTS node_point (id INTEGER,start INTEGER)", EPMEM_DB_PREP_STR_MAX, &create, &tail ) == SQLITE_OK );
 			assert( my_assert );
 			sqlite3_step( create );
 			sqlite3_finalize( create );
 
 			// id_start index (for queries)
-			my_assert = ( sqlite3_prepare_v2( my_agent->epmem_db, "CREATE UNIQUE INDEX IF NOT EXISTS node_point_id_start ON node_point (id,start DESC)", -1, &create, &tail ) == SQLITE_OK );
+			my_assert = ( sqlite3_prepare_v2( my_agent->epmem_db, "CREATE UNIQUE INDEX IF NOT EXISTS node_point_id_start ON node_point (id,start DESC)", EPMEM_DB_PREP_STR_MAX, &create, &tail ) == SQLITE_OK );
 			assert( my_assert );
 			sqlite3_step( create );
 			sqlite3_finalize( create );
 
 			// start index
-			my_assert = ( sqlite3_prepare_v2( my_agent->epmem_db, "CREATE INDEX IF NOT EXISTS node_point_start ON node_point (start)", -1, &create, &tail ) == SQLITE_OK );
+			my_assert = ( sqlite3_prepare_v2( my_agent->epmem_db, "CREATE INDEX IF NOT EXISTS node_point_start ON node_point (start)", EPMEM_DB_PREP_STR_MAX, &create, &tail ) == SQLITE_OK );
 			assert( my_assert );
 			sqlite3_step( create );
 			sqlite3_finalize( create );
 
 			// custom statement for inserting
-			my_assert = ( sqlite3_prepare_v2( my_agent->epmem_db, "INSERT INTO node_point (id,start) VALUES (?,?)", -1, &( my_agent->epmem_statements[ EPMEM_STMT_THREE_ADD_NODE_POINT ] ), &tail ) == SQLITE_OK );
+			my_assert = ( sqlite3_prepare_v2( my_agent->epmem_db, "INSERT INTO node_point (id,start) VALUES (?,?)", EPMEM_DB_PREP_STR_MAX, &( my_agent->epmem_statements[ EPMEM_STMT_THREE_ADD_NODE_POINT ] ), &tail ) == SQLITE_OK );
 			assert( my_assert );
 
 			////
 
 			// edge_point table
-			my_assert = ( sqlite3_prepare_v2( my_agent->epmem_db, "CREATE TABLE IF NOT EXISTS edge_point (id INTEGER,start INTEGER)", -1, &create, &tail ) == SQLITE_OK );
+			my_assert = ( sqlite3_prepare_v2( my_agent->epmem_db, "CREATE TABLE IF NOT EXISTS edge_point (id INTEGER,start INTEGER)", EPMEM_DB_PREP_STR_MAX, &create, &tail ) == SQLITE_OK );
 			assert( my_assert );
 			sqlite3_step( create );
 			sqlite3_finalize( create );
 
 			// id_start index (for queries)
-			my_assert = ( sqlite3_prepare_v2( my_agent->epmem_db, "CREATE UNIQUE INDEX IF NOT EXISTS edge_point_id_start ON edge_point (id,start DESC)", -1, &create, &tail ) == SQLITE_OK );
+			my_assert = ( sqlite3_prepare_v2( my_agent->epmem_db, "CREATE UNIQUE INDEX IF NOT EXISTS edge_point_id_start ON edge_point (id,start DESC)", EPMEM_DB_PREP_STR_MAX, &create, &tail ) == SQLITE_OK );
 			assert( my_assert );
 			sqlite3_step( create );
 			sqlite3_finalize( create );
 
 			// start index
-			my_assert = ( sqlite3_prepare_v2( my_agent->epmem_db, "CREATE INDEX IF NOT EXISTS edge_point_start ON edge_point (start)", -1, &create, &tail ) == SQLITE_OK );
+			my_assert = ( sqlite3_prepare_v2( my_agent->epmem_db, "CREATE INDEX IF NOT EXISTS edge_point_start ON edge_point (start)", EPMEM_DB_PREP_STR_MAX, &create, &tail ) == SQLITE_OK );
 			assert( my_assert );
 			sqlite3_step( create );
 			sqlite3_finalize( create );
 
 			// custom statement for inserting
-			my_assert = ( sqlite3_prepare_v2( my_agent->epmem_db, "INSERT INTO edge_point (id,start) VALUES (?,?)", -1, &( my_agent->epmem_statements[ EPMEM_STMT_THREE_ADD_EDGE_POINT ] ), &tail ) == SQLITE_OK );
+			my_assert = ( sqlite3_prepare_v2( my_agent->epmem_db, "INSERT INTO edge_point (id,start) VALUES (?,?)", EPMEM_DB_PREP_STR_MAX, &( my_agent->epmem_statements[ EPMEM_STMT_THREE_ADD_EDGE_POINT ] ), &tail ) == SQLITE_OK );
 			assert( my_assert );
 
 			////
 
 			// node_range table
-			my_assert = ( sqlite3_prepare_v2( my_agent->epmem_db, "CREATE TABLE IF NOT EXISTS node_range (rit_node INTEGER,start INTEGER,end INTEGER,id INTEGER)", -1, &create, &tail ) == SQLITE_OK );
+			my_assert = ( sqlite3_prepare_v2( my_agent->epmem_db, "CREATE TABLE IF NOT EXISTS node_range (rit_node INTEGER,start INTEGER,end INTEGER,id INTEGER)", EPMEM_DB_PREP_STR_MAX, &create, &tail ) == SQLITE_OK );
 			assert( my_assert );
 			sqlite3_step( create );
 			sqlite3_finalize( create );
 
 			// lowerindex
-			my_assert = ( sqlite3_prepare_v2( my_agent->epmem_db, "CREATE INDEX IF NOT EXISTS node_range_lower ON node_range (rit_node,start)", -1, &create, &tail ) == SQLITE_OK );
+			my_assert = ( sqlite3_prepare_v2( my_agent->epmem_db, "CREATE INDEX IF NOT EXISTS node_range_lower ON node_range (rit_node,start)", EPMEM_DB_PREP_STR_MAX, &create, &tail ) == SQLITE_OK );
 			assert( my_assert );
 			sqlite3_step( create );
 			sqlite3_finalize( create );
 
 			// upperindex
-			my_assert = ( sqlite3_prepare_v2( my_agent->epmem_db, "CREATE INDEX IF NOT EXISTS node_range_upper ON node_range (rit_node,end)", -1, &create, &tail ) == SQLITE_OK );
+			my_assert = ( sqlite3_prepare_v2( my_agent->epmem_db, "CREATE INDEX IF NOT EXISTS node_range_upper ON node_range (rit_node,end)", EPMEM_DB_PREP_STR_MAX, &create, &tail ) == SQLITE_OK );
 			assert( my_assert );
 			sqlite3_step( create );
 			sqlite3_finalize( create );
 
 			// id_start index (for queries)
-			my_assert = ( sqlite3_prepare_v2( my_agent->epmem_db, "CREATE UNIQUE INDEX IF NOT EXISTS node_range_id_start ON node_range (id,start DESC)", -1, &create, &tail ) == SQLITE_OK );
+			my_assert = ( sqlite3_prepare_v2( my_agent->epmem_db, "CREATE UNIQUE INDEX IF NOT EXISTS node_range_id_start ON node_range (id,start DESC)", EPMEM_DB_PREP_STR_MAX, &create, &tail ) == SQLITE_OK );
 			assert( my_assert );
 			sqlite3_step( create );
 			sqlite3_finalize( create );
 
 			// id_end index (for queries)
-			my_assert = ( sqlite3_prepare_v2( my_agent->epmem_db, "CREATE UNIQUE INDEX IF NOT EXISTS node_range_id_end ON node_range (id,end DESC)", -1, &create, &tail ) == SQLITE_OK );
+			my_assert = ( sqlite3_prepare_v2( my_agent->epmem_db, "CREATE UNIQUE INDEX IF NOT EXISTS node_range_id_end ON node_range (id,end DESC)", EPMEM_DB_PREP_STR_MAX, &create, &tail ) == SQLITE_OK );
 			assert( my_assert );
 			sqlite3_step( create );
 			sqlite3_finalize( create );
 
 			// custom statement for inserting
-			my_assert = ( sqlite3_prepare_v2( my_agent->epmem_db, "INSERT INTO node_range (rit_node,start,end,id) VALUES (?,?,?,?)", -1, &( my_agent->epmem_statements[ EPMEM_STMT_THREE_ADD_NODE_RANGE ] ), &tail ) == SQLITE_OK );
+			my_assert = ( sqlite3_prepare_v2( my_agent->epmem_db, "INSERT INTO node_range (rit_node,start,end,id) VALUES (?,?,?,?)", EPMEM_DB_PREP_STR_MAX, &( my_agent->epmem_statements[ EPMEM_STMT_THREE_ADD_NODE_RANGE ] ), &tail ) == SQLITE_OK );
 			assert( my_assert );
 
 			////
 
 			// edge_range table
-			my_assert = ( sqlite3_prepare_v2( my_agent->epmem_db, "CREATE TABLE IF NOT EXISTS edge_range (rit_node INTEGER,start INTEGER,end INTEGER,id INTEGER)", -1, &create, &tail ) == SQLITE_OK );
+			my_assert = ( sqlite3_prepare_v2( my_agent->epmem_db, "CREATE TABLE IF NOT EXISTS edge_range (rit_node INTEGER,start INTEGER,end INTEGER,id INTEGER)", EPMEM_DB_PREP_STR_MAX, &create, &tail ) == SQLITE_OK );
 			assert( my_assert );
 			sqlite3_step( create );
 			sqlite3_finalize( create );
 
 			// lowerindex
-			my_assert = ( sqlite3_prepare_v2( my_agent->epmem_db, "CREATE INDEX IF NOT EXISTS edge_range_lower ON edge_range (rit_node,start)", -1, &create, &tail ) == SQLITE_OK );
+			my_assert = ( sqlite3_prepare_v2( my_agent->epmem_db, "CREATE INDEX IF NOT EXISTS edge_range_lower ON edge_range (rit_node,start)", EPMEM_DB_PREP_STR_MAX, &create, &tail ) == SQLITE_OK );
 			assert( my_assert );
 			sqlite3_step( create );
 			sqlite3_finalize( create );
 
 			// upperindex
-			my_assert = ( sqlite3_prepare_v2( my_agent->epmem_db, "CREATE INDEX IF NOT EXISTS edge_range_upper ON edge_range (rit_node,end)", -1, &create, &tail ) == SQLITE_OK );
+			my_assert = ( sqlite3_prepare_v2( my_agent->epmem_db, "CREATE INDEX IF NOT EXISTS edge_range_upper ON edge_range (rit_node,end)", EPMEM_DB_PREP_STR_MAX, &create, &tail ) == SQLITE_OK );
 			assert( my_assert );
 			sqlite3_step( create );
 			sqlite3_finalize( create );
 
 			// id_start index (for queries)
-			my_assert = ( sqlite3_prepare_v2( my_agent->epmem_db, "CREATE UNIQUE INDEX IF NOT EXISTS edge_range_id_start ON edge_range (id,start DESC)", -1, &create, &tail ) == SQLITE_OK );
+			my_assert = ( sqlite3_prepare_v2( my_agent->epmem_db, "CREATE UNIQUE INDEX IF NOT EXISTS edge_range_id_start ON edge_range (id,start DESC)", EPMEM_DB_PREP_STR_MAX, &create, &tail ) == SQLITE_OK );
 			assert( my_assert );
 			sqlite3_step( create );
 			sqlite3_finalize( create );
 
 			// id_end index (for queries)
-			my_assert = ( sqlite3_prepare_v2( my_agent->epmem_db, "CREATE UNIQUE INDEX IF NOT EXISTS edge_range_id_end ON edge_range (id,end DESC)", -1, &create, &tail ) == SQLITE_OK );
+			my_assert = ( sqlite3_prepare_v2( my_agent->epmem_db, "CREATE UNIQUE INDEX IF NOT EXISTS edge_range_id_end ON edge_range (id,end DESC)", EPMEM_DB_PREP_STR_MAX, &create, &tail ) == SQLITE_OK );
 			assert( my_assert );
 			sqlite3_step( create );
 			sqlite3_finalize( create );
 
 			// custom statement for inserting
-			my_assert = ( sqlite3_prepare_v2( my_agent->epmem_db, "INSERT INTO edge_range (rit_node,start,end,id) VALUES (?,?,?,?)", -1, &( my_agent->epmem_statements[ EPMEM_STMT_THREE_ADD_EDGE_RANGE ] ), &tail ) == SQLITE_OK );
+			my_assert = ( sqlite3_prepare_v2( my_agent->epmem_db, "INSERT INTO edge_range (rit_node,start,end,id) VALUES (?,?,?,?)", EPMEM_DB_PREP_STR_MAX, &( my_agent->epmem_statements[ EPMEM_STMT_THREE_ADD_EDGE_RANGE ] ), &tail ) == SQLITE_OK );
 			assert( my_assert );
 
 			////
 
 			// node_unique table
-			my_assert = ( sqlite3_prepare_v2( my_agent->epmem_db, "CREATE TABLE IF NOT EXISTS node_unique (child_id INTEGER PRIMARY KEY AUTOINCREMENT,parent_id INTEGER,name NONE,value NONE,hash INTEGER,attr_type INTEGER,value_type INTEGER)", -1, &create, &tail ) == SQLITE_OK );
+			my_assert = ( sqlite3_prepare_v2( my_agent->epmem_db, "CREATE TABLE IF NOT EXISTS node_unique (child_id INTEGER PRIMARY KEY AUTOINCREMENT,parent_id INTEGER,name NONE,value NONE,hash INTEGER,attr_type INTEGER,value_type INTEGER)", EPMEM_DB_PREP_STR_MAX, &create, &tail ) == SQLITE_OK );
 			assert( my_assert );
 			sqlite3_step( create );
 			sqlite3_finalize( create );
 
 			// hash index for identification
-			my_assert = ( sqlite3_prepare_v2( my_agent->epmem_db, "CREATE INDEX IF NOT EXISTS node_unique_parent_hash ON node_unique (parent_id,hash)", -1, &create, &tail ) == SQLITE_OK );
+			my_assert = ( sqlite3_prepare_v2( my_agent->epmem_db, "CREATE INDEX IF NOT EXISTS node_unique_parent_hash ON node_unique (parent_id,hash)", EPMEM_DB_PREP_STR_MAX, &create, &tail ) == SQLITE_OK );
 			assert( my_assert );
 			sqlite3_step( create );
 			sqlite3_finalize( create );
 
 			// custom statement for finding
-			my_assert = ( sqlite3_prepare_v2( my_agent->epmem_db, "SELECT child_id FROM node_unique WHERE parent_id=? AND hash=? AND name=? AND value=? AND attr_type=? AND value_type=?", -1, &( my_agent->epmem_statements[ EPMEM_STMT_THREE_FIND_NODE_UNIQUE ] ), &tail ) == SQLITE_OK );
+			my_assert = ( sqlite3_prepare_v2( my_agent->epmem_db, "SELECT child_id FROM node_unique WHERE parent_id=? AND hash=? AND name=? AND value=? AND attr_type=? AND value_type=?", EPMEM_DB_PREP_STR_MAX, &( my_agent->epmem_statements[ EPMEM_STMT_THREE_FIND_NODE_UNIQUE ] ), &tail ) == SQLITE_OK );
 			assert( my_assert );
 
 			// custom statement for inserting
-			my_assert = ( sqlite3_prepare_v2( my_agent->epmem_db, "INSERT INTO node_unique (parent_id,name,value,hash,attr_type,value_type) VALUES (?,?,?,?,?,?)", -1, &( my_agent->epmem_statements[ EPMEM_STMT_THREE_ADD_NODE_UNIQUE ] ), &tail ) == SQLITE_OK );
+			my_assert = ( sqlite3_prepare_v2( my_agent->epmem_db, "INSERT INTO node_unique (parent_id,name,value,hash,attr_type,value_type) VALUES (?,?,?,?,?,?)", EPMEM_DB_PREP_STR_MAX, &( my_agent->epmem_statements[ EPMEM_STMT_THREE_ADD_NODE_UNIQUE ] ), &tail ) == SQLITE_OK );
 			assert( my_assert );
 
 			////
 
 			// edge_unique table
-			my_assert = ( sqlite3_prepare_v2( my_agent->epmem_db, "CREATE TABLE IF NOT EXISTS edge_unique (parent_id INTEGER PRIMARY KEY AUTOINCREMENT,q0 INTEGER,w NONE,q1 INTEGER,w_type INTEGER)", -1, &create, &tail ) == SQLITE_OK );
+			my_assert = ( sqlite3_prepare_v2( my_agent->epmem_db, "CREATE TABLE IF NOT EXISTS edge_unique (parent_id INTEGER PRIMARY KEY AUTOINCREMENT,q0 INTEGER,w NONE,q1 INTEGER,w_type INTEGER)", EPMEM_DB_PREP_STR_MAX, &create, &tail ) == SQLITE_OK );
 			assert( my_assert );
 			sqlite3_step( create );
 			sqlite3_finalize( create );
 
 			// index for identification
-			my_assert = ( sqlite3_prepare_v2( my_agent->epmem_db, "CREATE INDEX IF NOT EXISTS edge_unique_q0_w_q1 ON edge_unique (q0,w,q1)", -1, &create, &tail ) == SQLITE_OK );
+			my_assert = ( sqlite3_prepare_v2( my_agent->epmem_db, "CREATE INDEX IF NOT EXISTS edge_unique_q0_w_q1 ON edge_unique (q0,w,q1)", EPMEM_DB_PREP_STR_MAX, &create, &tail ) == SQLITE_OK );
 			assert( my_assert );
 			sqlite3_step( create );
 			sqlite3_finalize( create );
 
 			// custom statement for finding
-			my_assert = ( sqlite3_prepare_v2( my_agent->epmem_db, "SELECT parent_id, q1 FROM edge_unique WHERE q0=? AND w=? AND w_type=?", -1, &( my_agent->epmem_statements[ EPMEM_STMT_THREE_FIND_EDGE_UNIQUE ] ), &tail ) == SQLITE_OK );
+			my_assert = ( sqlite3_prepare_v2( my_agent->epmem_db, "SELECT parent_id, q1 FROM edge_unique WHERE q0=? AND w=? AND w_type=?", EPMEM_DB_PREP_STR_MAX, &( my_agent->epmem_statements[ EPMEM_STMT_THREE_FIND_EDGE_UNIQUE ] ), &tail ) == SQLITE_OK );
 			assert( my_assert );
 
 			// custom statement for inserting
-			my_assert = ( sqlite3_prepare_v2( my_agent->epmem_db, "INSERT INTO edge_unique (q0,w,q1,w_type) VALUES (?,?,?,?)", -1, &( my_agent->epmem_statements[ EPMEM_STMT_THREE_ADD_EDGE_UNIQUE ] ), &tail ) == SQLITE_OK );
+			my_assert = ( sqlite3_prepare_v2( my_agent->epmem_db, "INSERT INTO edge_unique (q0,w,q1,w_type) VALUES (?,?,?,?)", EPMEM_DB_PREP_STR_MAX, &( my_agent->epmem_statements[ EPMEM_STMT_THREE_ADD_EDGE_UNIQUE ] ), &tail ) == SQLITE_OK );
 			assert( my_assert );
 
 			////
 
 			// custom statement for validating an episode
-			my_assert = ( sqlite3_prepare_v2( my_agent->epmem_db, "SELECT COUNT(*) AS ct FROM times WHERE id=?", -1, &( my_agent->epmem_statements[ EPMEM_STMT_THREE_VALID_EPISODE ] ), &tail ) == SQLITE_OK );
+			my_assert = ( sqlite3_prepare_v2( my_agent->epmem_db, "SELECT COUNT(*) AS ct FROM times WHERE id=?", EPMEM_DB_PREP_STR_MAX, &( my_agent->epmem_statements[ EPMEM_STMT_THREE_VALID_EPISODE ] ), &tail ) == SQLITE_OK );
 			assert( my_assert );
 
 			// custom statement for finding the next episode
-			my_assert = ( sqlite3_prepare_v2( my_agent->epmem_db, "SELECT id FROM times WHERE id>? ORDER BY id ASC LIMIT 1", -1, &( my_agent->epmem_statements[ EPMEM_STMT_THREE_NEXT_EPISODE ] ), &tail ) == SQLITE_OK );
+			my_assert = ( sqlite3_prepare_v2( my_agent->epmem_db, "SELECT id FROM times WHERE id>? ORDER BY id ASC LIMIT 1", EPMEM_DB_PREP_STR_MAX, &( my_agent->epmem_statements[ EPMEM_STMT_THREE_NEXT_EPISODE ] ), &tail ) == SQLITE_OK );
 			assert( my_assert );
 
 			// custom statement for finding the prev episode
-			my_assert = ( sqlite3_prepare_v2( my_agent->epmem_db, "SELECT id FROM times WHERE id<? ORDER BY id DESC LIMIT 1", -1, &( my_agent->epmem_statements[ EPMEM_STMT_THREE_PREV_EPISODE ] ), &tail ) == SQLITE_OK );
+			my_assert = ( sqlite3_prepare_v2( my_agent->epmem_db, "SELECT id FROM times WHERE id<? ORDER BY id DESC LIMIT 1", EPMEM_DB_PREP_STR_MAX, &( my_agent->epmem_statements[ EPMEM_STMT_THREE_PREV_EPISODE ] ), &tail ) == SQLITE_OK );
 			assert( my_assert );
 
 			////
 
 			// range intersection query: node
-			my_assert = ( sqlite3_prepare_v2( my_agent->epmem_db, "SELECT f.child_id, f.parent_id, f.name, f.value, f.attr_type, f.value_type FROM node_unique f WHERE f.child_id IN (SELECT n.id FROM node_now n WHERE n.start<= ? UNION ALL SELECT p.id FROM node_point p WHERE p.start=? UNION ALL SELECT e1.id FROM node_range e1, rit_left_nodes lt WHERE e1.rit_node=lt.min AND e1.end >= ? UNION ALL SELECT e2.id FROM node_range e2, rit_right_nodes rt WHERE e2.rit_node = rt.node AND e2.start <= ?) ORDER BY f.child_id ASC", -1, &( my_agent->epmem_statements[ EPMEM_STMT_THREE_GET_NODES ] ), &tail ) == SQLITE_OK );
+			my_assert = ( sqlite3_prepare_v2( my_agent->epmem_db, "SELECT f.child_id, f.parent_id, f.name, f.value, f.attr_type, f.value_type FROM node_unique f WHERE f.child_id IN (SELECT n.id FROM node_now n WHERE n.start<= ? UNION ALL SELECT p.id FROM node_point p WHERE p.start=? UNION ALL SELECT e1.id FROM node_range e1, rit_left_nodes lt WHERE e1.rit_node=lt.min AND e1.end >= ? UNION ALL SELECT e2.id FROM node_range e2, rit_right_nodes rt WHERE e2.rit_node = rt.node AND e2.start <= ?) ORDER BY f.child_id ASC", EPMEM_DB_PREP_STR_MAX, &( my_agent->epmem_statements[ EPMEM_STMT_THREE_GET_NODES ] ), &tail ) == SQLITE_OK );
 			assert( my_assert );
 
 			// range intersection query: edge
-			my_assert = ( sqlite3_prepare_v2( my_agent->epmem_db, "SELECT f.q0, f.w, f.q1, f.w_type FROM edge_unique f WHERE f.parent_id IN (SELECT n.id FROM edge_now n WHERE n.start<= ? UNION ALL SELECT p.id FROM edge_point p WHERE p.start=? UNION ALL SELECT e1.id FROM edge_range e1, rit_left_nodes lt WHERE e1.rit_node=lt.min AND e1.end >= ? UNION ALL SELECT e2.id FROM edge_range e2, rit_right_nodes rt WHERE e2.rit_node = rt.node AND e2.start <= ?) ORDER BY f.q0 ASC, f.q1 ASC", -1, &( my_agent->epmem_statements[ EPMEM_STMT_THREE_GET_EDGES ] ), &tail ) == SQLITE_OK );
+			my_assert = ( sqlite3_prepare_v2( my_agent->epmem_db, "SELECT f.q0, f.w, f.q1, f.w_type FROM edge_unique f WHERE f.parent_id IN (SELECT n.id FROM edge_now n WHERE n.start<= ? UNION ALL SELECT p.id FROM edge_point p WHERE p.start=? UNION ALL SELECT e1.id FROM edge_range e1, rit_left_nodes lt WHERE e1.rit_node=lt.min AND e1.end >= ? UNION ALL SELECT e2.id FROM edge_range e2, rit_right_nodes rt WHERE e2.rit_node = rt.node AND e2.start <= ?) ORDER BY f.q0 ASC, f.q1 ASC", EPMEM_DB_PREP_STR_MAX, &( my_agent->epmem_statements[ EPMEM_STMT_THREE_GET_EDGES ] ), &tail ) == SQLITE_OK );
 			assert( my_assert );
 
 			////
 
 			// get/set RIT variables
 			{
-				long long var_val;
+				EPMEM_TYPE_INT var_val;
 				int i, j;
 
 				for ( i=EPMEM_RIT_STATE_NODE; i<=EPMEM_RIT_STATE_EDGE; i++ )
 				{
 					for ( j=epmem_rit_state_three[ i ][ EPMEM_RIT_STATE_OFFSET ]; j<=epmem_rit_state_three[ i ][ EPMEM_RIT_STATE_MINSTEP ]; j++ )
 					{
-						if ( epmem_get_variable( my_agent, j, var_val ) )
+						if ( epmem_get_variable( my_agent, j, &var_val ) )
 							epmem_set_stat( my_agent, j, var_val );
 						else
 							epmem_set_variable( my_agent, j, epmem_get_stat( my_agent, j ) );
@@ -2782,10 +2791,10 @@ void epmem_init_db( agent *my_agent )
 			////
 
 			// get max time
-			my_assert = ( sqlite3_prepare_v2( my_agent->epmem_db, "SELECT MAX(id) FROM times", -1, &create, &tail ) == SQLITE_OK );
+			my_assert = ( sqlite3_prepare_v2( my_agent->epmem_db, "SELECT MAX(id) FROM times", EPMEM_DB_PREP_STR_MAX, &create, &tail ) == SQLITE_OK );
 			assert( my_assert );
 			if ( sqlite3_step( create ) == SQLITE_ROW )
-				epmem_set_stat( my_agent, (const long) EPMEM_STAT_TIME, ( sqlite3_column_int64( create, 0 ) + 1 ) );
+				epmem_set_stat( my_agent, (const long) EPMEM_STAT_TIME, ( EPMEM_SQLITE_COLUMN_INT( create, 0 ) + 1 ) );
 			sqlite3_finalize( create );
 			time_max = epmem_get_stat( my_agent, (const long) EPMEM_STAT_TIME );
 
@@ -2796,26 +2805,26 @@ void epmem_init_db( agent *my_agent )
 
 				// nodes
 				{
-					my_assert = ( sqlite3_prepare_v2( my_agent->epmem_db, "SELECT id,start FROM node_now", -1, &create, &tail ) == SQLITE_OK );
+					my_assert = ( sqlite3_prepare_v2( my_agent->epmem_db, "SELECT id,start FROM node_now", EPMEM_DB_PREP_STR_MAX, &create, &tail ) == SQLITE_OK );
 					assert( my_assert );
-					sqlite3_bind_int64( my_agent->epmem_statements[ EPMEM_STMT_THREE_ADD_NODE_POINT ], 2, time_last );
+					EPMEM_SQLITE_BIND_INT( my_agent->epmem_statements[ EPMEM_STMT_THREE_ADD_NODE_POINT ], 2, time_last );
 					while ( sqlite3_step( create ) == SQLITE_ROW )
 					{
-						range_start = sqlite3_column_int64( create, 1 );
+						range_start = EPMEM_SQLITE_COLUMN_INT( create, 1 );
 
 						// point
 						if ( range_start == time_last )
 						{
-							sqlite3_bind_int64( my_agent->epmem_statements[ EPMEM_STMT_THREE_ADD_NODE_POINT ], 1, sqlite3_column_int64( create, 0 ) );
+							EPMEM_SQLITE_BIND_INT( my_agent->epmem_statements[ EPMEM_STMT_THREE_ADD_NODE_POINT ], 1, EPMEM_SQLITE_COLUMN_INT( create, 0 ) );
 							sqlite3_step( my_agent->epmem_statements[ EPMEM_STMT_THREE_ADD_NODE_POINT ] );
 							sqlite3_reset( my_agent->epmem_statements[ EPMEM_STMT_THREE_ADD_NODE_POINT ] );
 						}
 						else
-							epmem_rit_insert_interval( my_agent, range_start, time_last, sqlite3_column_int64( create, 0 ), epmem_rit_state_three[ EPMEM_RIT_STATE_NODE ] );
+							epmem_rit_insert_interval( my_agent, range_start, time_last, EPMEM_SQLITE_COLUMN_INT( create, 0 ), epmem_rit_state_three[ EPMEM_RIT_STATE_NODE ] );
 					}
 					sqlite3_finalize( create );
 
-					my_assert = ( sqlite3_prepare_v2( my_agent->epmem_db, "DELETE FROM node_now", -1, &create, &tail ) == SQLITE_OK );
+					my_assert = ( sqlite3_prepare_v2( my_agent->epmem_db, "DELETE FROM node_now", EPMEM_DB_PREP_STR_MAX, &create, &tail ) == SQLITE_OK );
 					assert( my_assert );
 					sqlite3_step( create );
 					sqlite3_finalize( create );
@@ -2823,26 +2832,26 @@ void epmem_init_db( agent *my_agent )
 
 				// edges
 				{
-					my_assert = ( sqlite3_prepare_v2( my_agent->epmem_db, "SELECT id,start FROM edge_now", -1, &create, &tail ) == SQLITE_OK );
+					my_assert = ( sqlite3_prepare_v2( my_agent->epmem_db, "SELECT id,start FROM edge_now", EPMEM_DB_PREP_STR_MAX, &create, &tail ) == SQLITE_OK );
 					assert( my_assert );
-					sqlite3_bind_int64( my_agent->epmem_statements[ EPMEM_STMT_THREE_ADD_EDGE_POINT ], 2, time_last );
+					EPMEM_SQLITE_BIND_INT( my_agent->epmem_statements[ EPMEM_STMT_THREE_ADD_EDGE_POINT ], 2, time_last );
 					while ( sqlite3_step( create ) == SQLITE_ROW )
 					{
-						range_start = sqlite3_column_int64( create, 1 );
+						range_start = EPMEM_SQLITE_COLUMN_INT( create, 1 );
 
 						// point
 						if ( range_start == time_last )
 						{
-							sqlite3_bind_int64( my_agent->epmem_statements[ EPMEM_STMT_THREE_ADD_EDGE_POINT ], 1, sqlite3_column_int64( create, 0 ) );
+							EPMEM_SQLITE_BIND_INT( my_agent->epmem_statements[ EPMEM_STMT_THREE_ADD_EDGE_POINT ], 1, EPMEM_SQLITE_COLUMN_INT( create, 0 ) );
 							sqlite3_step( my_agent->epmem_statements[ EPMEM_STMT_THREE_ADD_EDGE_POINT ] );
 							sqlite3_reset( my_agent->epmem_statements[ EPMEM_STMT_THREE_ADD_EDGE_POINT ] );
 						}
 						else
-							epmem_rit_insert_interval( my_agent, range_start, time_last, sqlite3_column_int64( create, 0 ), epmem_rit_state_three[ EPMEM_RIT_STATE_EDGE ] );
+							epmem_rit_insert_interval( my_agent, range_start, time_last, EPMEM_SQLITE_COLUMN_INT( create, 0 ), epmem_rit_state_three[ EPMEM_RIT_STATE_EDGE ] );
 					}
 					sqlite3_finalize( create );
 
-					my_assert = ( sqlite3_prepare_v2( my_agent->epmem_db, "DELETE FROM edge_now", -1, &create, &tail ) == SQLITE_OK );
+					my_assert = ( sqlite3_prepare_v2( my_agent->epmem_db, "DELETE FROM edge_now", EPMEM_DB_PREP_STR_MAX, &create, &tail ) == SQLITE_OK );
 					assert( my_assert );
 					sqlite3_step( create );
 					sqlite3_finalize( create );
@@ -2853,12 +2862,12 @@ void epmem_init_db( agent *my_agent )
 			{
 				// nodes
 				{
-					my_assert = ( sqlite3_prepare_v2( my_agent->epmem_db, "SELECT MAX(child_id) FROM node_unique", -1, &create, &tail ) == SQLITE_OK );
+					my_assert = ( sqlite3_prepare_v2( my_agent->epmem_db, "SELECT MAX(child_id) FROM node_unique", EPMEM_DB_PREP_STR_MAX, &create, &tail ) == SQLITE_OK );
 					assert( my_assert );
 					sqlite3_step( create );
 					if ( sqlite3_column_type( create, 0 ) != SQLITE_NULL )
 					{
-						unsigned long long num_ids = sqlite3_column_int64( create, 0 );
+						unsigned EPMEM_TYPE_INT num_ids = EPMEM_SQLITE_COLUMN_INT( create, 0 );
 
 						my_agent->epmem_node_maxes->resize( num_ids, EPMEM_MEMID_NONE );
 						my_agent->epmem_node_mins->resize( num_ids, time_max );
@@ -2869,12 +2878,12 @@ void epmem_init_db( agent *my_agent )
 
 				// edges
 				{
-					my_assert = ( sqlite3_prepare_v2( my_agent->epmem_db, "SELECT MAX(parent_id) FROM edge_unique", -1, &create, &tail ) == SQLITE_OK );
+					my_assert = ( sqlite3_prepare_v2( my_agent->epmem_db, "SELECT MAX(parent_id) FROM edge_unique", EPMEM_DB_PREP_STR_MAX, &create, &tail ) == SQLITE_OK );
 					assert( my_assert );
 					sqlite3_step( create );
 					if ( sqlite3_column_type( create, 0 ) != SQLITE_NULL )
 					{
-						unsigned long long num_ids = sqlite3_column_int64( create, 0 );
+						unsigned EPMEM_TYPE_INT num_ids = EPMEM_SQLITE_COLUMN_INT( create, 0 );
 
 						my_agent->epmem_edge_maxes->resize( num_ids, EPMEM_MEMID_NONE );
 						my_agent->epmem_edge_mins->resize( num_ids, time_max );
@@ -2919,7 +2928,7 @@ void epmem_init_db( agent *my_agent )
 void epmem_new_episode( agent *my_agent )
 {
 	// if this is the first episode, initialize db components
-	if ( my_agent->epmem_db_status == -1 )
+	if ( my_agent->epmem_db_status == EPMEM_DB_CLOSED )
 		epmem_init_db( my_agent );
 
 	// add the episode only if db is properly initialized
@@ -2952,8 +2961,8 @@ void epmem_new_episode( agent *my_agent )
 
 		// keeps children of the identifier of interest
 		wme **wmes = NULL;
-		int len = 0;
-		int i;
+		unsigned EPMEM_TYPE_INT len = 0;
+		unsigned EPMEM_TYPE_INT i;
 
 		// future states of breadth-first search
 		std::queue<Symbol *> syms;
@@ -2980,7 +2989,7 @@ void epmem_new_episode( agent *my_agent )
 
 		// initialize BFS at top-state
 		syms.push( my_agent->top_goal );
-		ids.push( EPMEM_MEMID_ROOT );
+		ids.push( EPMEM_NODEID_ROOT );
 
 		while ( !syms.empty() )
 		{
@@ -3021,17 +3030,17 @@ void epmem_new_episode( agent *my_agent )
 						if ( wmes[i]->value->common.symbol_type != IDENTIFIER_SYMBOL_TYPE )
 						{
 							// hash=? AND parent_id=? AND name=? AND value=? AND attr_type=? AND value_type=?
-							sqlite3_bind_int64( my_agent->epmem_statements[ EPMEM_STMT_ONE_FIND_NODE_UNIQUE ], 1, my_hash );
-							sqlite3_bind_int64( my_agent->epmem_statements[ EPMEM_STMT_ONE_FIND_NODE_UNIQUE ], 2, parent_id );
+							EPMEM_SQLITE_BIND_INT( my_agent->epmem_statements[ EPMEM_STMT_ONE_FIND_NODE_UNIQUE ], 1, my_hash );
+							EPMEM_SQLITE_BIND_INT( my_agent->epmem_statements[ EPMEM_STMT_ONE_FIND_NODE_UNIQUE ], 2, parent_id );
 
 							switch( wmes[i]->attr->common.symbol_type )
 							{
 								case SYM_CONSTANT_SYMBOL_TYPE:
-									sqlite3_bind_text( my_agent->epmem_statements[ EPMEM_STMT_ONE_FIND_NODE_UNIQUE ], 3, (const char *) wmes[i]->attr->sc.name, -1, SQLITE_STATIC );
+									sqlite3_bind_text( my_agent->epmem_statements[ EPMEM_STMT_ONE_FIND_NODE_UNIQUE ], 3, (const char *) wmes[i]->attr->sc.name, EPMEM_DB_PREP_STR_MAX, SQLITE_STATIC );
 									break;
 
 								case INT_CONSTANT_SYMBOL_TYPE:
-		        					sqlite3_bind_int64( my_agent->epmem_statements[ EPMEM_STMT_ONE_FIND_NODE_UNIQUE ], 3, wmes[i]->attr->ic.value );
+		        					EPMEM_SQLITE_BIND_INT( my_agent->epmem_statements[ EPMEM_STMT_ONE_FIND_NODE_UNIQUE ], 3, wmes[i]->attr->ic.value );
 									break;
 
 								case FLOAT_CONSTANT_SYMBOL_TYPE:
@@ -3042,49 +3051,49 @@ void epmem_new_episode( agent *my_agent )
 							switch( wmes[i]->value->common.symbol_type )
 							{
 								case SYM_CONSTANT_SYMBOL_TYPE:
-									sqlite3_bind_text( my_agent->epmem_statements[ EPMEM_STMT_ONE_FIND_NODE_UNIQUE ], 4, (const char *) wmes[i]->value->sc.name, -1, SQLITE_STATIC );
+									sqlite3_bind_text( my_agent->epmem_statements[ EPMEM_STMT_ONE_FIND_NODE_UNIQUE ], 4, (const char *) wmes[i]->value->sc.name, EPMEM_DB_PREP_STR_MAX, SQLITE_STATIC );
 									break;
 
 								case INT_CONSTANT_SYMBOL_TYPE:
-		        					sqlite3_bind_int64( my_agent->epmem_statements[ EPMEM_STMT_ONE_FIND_NODE_UNIQUE ], 4, wmes[i]->value->ic.value );
+		        					EPMEM_SQLITE_BIND_INT( my_agent->epmem_statements[ EPMEM_STMT_ONE_FIND_NODE_UNIQUE ], 4, wmes[i]->value->ic.value );
 									break;
 
 								case FLOAT_CONSTANT_SYMBOL_TYPE:
 		        					sqlite3_bind_double( my_agent->epmem_statements[ EPMEM_STMT_ONE_FIND_NODE_UNIQUE ], 4, wmes[i]->value->fc.value );
 									break;
 							}
-							sqlite3_bind_int64( my_agent->epmem_statements[ EPMEM_STMT_ONE_FIND_NODE_UNIQUE ], 5, wmes[i]->attr->common.symbol_type );
-							sqlite3_bind_int64( my_agent->epmem_statements[ EPMEM_STMT_ONE_FIND_NODE_UNIQUE ], 6, wmes[i]->value->common.symbol_type );
+							EPMEM_SQLITE_BIND_INT( my_agent->epmem_statements[ EPMEM_STMT_ONE_FIND_NODE_UNIQUE ], 5, wmes[i]->attr->common.symbol_type );
+							EPMEM_SQLITE_BIND_INT( my_agent->epmem_statements[ EPMEM_STMT_ONE_FIND_NODE_UNIQUE ], 6, wmes[i]->value->common.symbol_type );
 
 							if ( sqlite3_step( my_agent->epmem_statements[ EPMEM_STMT_ONE_FIND_NODE_UNIQUE ] ) == SQLITE_ROW )
-								wmes[i]->epmem_id = sqlite3_column_int64( my_agent->epmem_statements[ EPMEM_STMT_ONE_FIND_NODE_UNIQUE ], 0 );
+								wmes[i]->epmem_id = EPMEM_SQLITE_COLUMN_INT( my_agent->epmem_statements[ EPMEM_STMT_ONE_FIND_NODE_UNIQUE ], 0 );
 
 							sqlite3_reset( my_agent->epmem_statements[ EPMEM_STMT_ONE_FIND_NODE_UNIQUE ] );
 						}
 						else
 						{
 							// hash=? AND parent_id=? AND name=? AND value IS NULL AND attr_type=?
-							sqlite3_bind_int64( my_agent->epmem_statements[ EPMEM_STMT_ONE_FIND_IDENTIFIER ], 1, my_hash );
-							sqlite3_bind_int64( my_agent->epmem_statements[ EPMEM_STMT_ONE_FIND_IDENTIFIER ], 2, parent_id );
+							EPMEM_SQLITE_BIND_INT( my_agent->epmem_statements[ EPMEM_STMT_ONE_FIND_IDENTIFIER ], 1, my_hash );
+							EPMEM_SQLITE_BIND_INT( my_agent->epmem_statements[ EPMEM_STMT_ONE_FIND_IDENTIFIER ], 2, parent_id );
 
 							switch( wmes[i]->attr->common.symbol_type )
 							{
 								case SYM_CONSTANT_SYMBOL_TYPE:
-									sqlite3_bind_text( my_agent->epmem_statements[ EPMEM_STMT_ONE_FIND_IDENTIFIER ], 3, (const char *) wmes[i]->attr->sc.name, -1, SQLITE_STATIC );
+									sqlite3_bind_text( my_agent->epmem_statements[ EPMEM_STMT_ONE_FIND_IDENTIFIER ], 3, (const char *) wmes[i]->attr->sc.name, EPMEM_DB_PREP_STR_MAX, SQLITE_STATIC );
 									break;
 
 								case INT_CONSTANT_SYMBOL_TYPE:
-		        					sqlite3_bind_int64( my_agent->epmem_statements[ EPMEM_STMT_ONE_FIND_IDENTIFIER ], 3, wmes[i]->attr->ic.value );
+		        					EPMEM_SQLITE_BIND_INT( my_agent->epmem_statements[ EPMEM_STMT_ONE_FIND_IDENTIFIER ], 3, wmes[i]->attr->ic.value );
 									break;
 
 								case FLOAT_CONSTANT_SYMBOL_TYPE:
 		        					sqlite3_bind_double( my_agent->epmem_statements[ EPMEM_STMT_ONE_FIND_IDENTIFIER ], 3, wmes[i]->attr->fc.value );
 									break;
 							}
-							sqlite3_bind_int64( my_agent->epmem_statements[ EPMEM_STMT_ONE_FIND_IDENTIFIER ], 4, wmes[i]->attr->common.symbol_type );
+							EPMEM_SQLITE_BIND_INT( my_agent->epmem_statements[ EPMEM_STMT_ONE_FIND_IDENTIFIER ], 4, wmes[i]->attr->common.symbol_type );
 
 							if ( sqlite3_step( my_agent->epmem_statements[ EPMEM_STMT_ONE_FIND_IDENTIFIER ] ) == SQLITE_ROW )
-								wmes[i]->epmem_id = sqlite3_column_int64( my_agent->epmem_statements[ EPMEM_STMT_ONE_FIND_IDENTIFIER ], 0 );
+								wmes[i]->epmem_id = EPMEM_SQLITE_COLUMN_INT( my_agent->epmem_statements[ EPMEM_STMT_ONE_FIND_IDENTIFIER ], 0 );
 
 							sqlite3_reset( my_agent->epmem_statements[ EPMEM_STMT_ONE_FIND_IDENTIFIER ] );
 						}
@@ -3093,20 +3102,20 @@ void epmem_new_episode( agent *my_agent )
 					// insert on no id
 					if ( wmes[i]->epmem_id == NULL )
 					{
-						long long attr_type = wmes[i]->attr->common.symbol_type;
-						long long value_type = wmes[i]->value->common.symbol_type;
+						EPMEM_TYPE_INT attr_type = wmes[i]->attr->common.symbol_type;
+						EPMEM_TYPE_INT value_type = wmes[i]->value->common.symbol_type;
 
 						// insert (parent_id,name,value,hash,attr_type,value_type)
-						sqlite3_bind_int64( my_agent->epmem_statements[ EPMEM_STMT_ONE_ADD_NODE_UNIQUE ], 1, parent_id );
+						EPMEM_SQLITE_BIND_INT( my_agent->epmem_statements[ EPMEM_STMT_ONE_ADD_NODE_UNIQUE ], 1, parent_id );
 
 						switch ( attr_type )
 						{
 							case SYM_CONSTANT_SYMBOL_TYPE:
-								sqlite3_bind_text( my_agent->epmem_statements[ EPMEM_STMT_ONE_ADD_NODE_UNIQUE ], 2, (const char *) wmes[i]->attr->sc.name, -1, SQLITE_STATIC );
+								sqlite3_bind_text( my_agent->epmem_statements[ EPMEM_STMT_ONE_ADD_NODE_UNIQUE ], 2, (const char *) wmes[i]->attr->sc.name, EPMEM_DB_PREP_STR_MAX, SQLITE_STATIC );
 								break;
 
 							case INT_CONSTANT_SYMBOL_TYPE:
-								sqlite3_bind_int64( my_agent->epmem_statements[ EPMEM_STMT_ONE_ADD_NODE_UNIQUE ], 2, wmes[i]->attr->ic.value );
+								EPMEM_SQLITE_BIND_INT( my_agent->epmem_statements[ EPMEM_STMT_ONE_ADD_NODE_UNIQUE ], 2, wmes[i]->attr->ic.value );
 								break;
 
 							case FLOAT_CONSTANT_SYMBOL_TYPE:
@@ -3117,11 +3126,11 @@ void epmem_new_episode( agent *my_agent )
 						switch ( value_type )
 						{
 							case SYM_CONSTANT_SYMBOL_TYPE:
-								sqlite3_bind_text( my_agent->epmem_statements[ EPMEM_STMT_ONE_ADD_NODE_UNIQUE ], 3, (const char *) wmes[i]->value->sc.name, -1, SQLITE_STATIC );
+								sqlite3_bind_text( my_agent->epmem_statements[ EPMEM_STMT_ONE_ADD_NODE_UNIQUE ], 3, (const char *) wmes[i]->value->sc.name, EPMEM_DB_PREP_STR_MAX, SQLITE_STATIC );
 								break;
 
 							case INT_CONSTANT_SYMBOL_TYPE:
-								sqlite3_bind_int64( my_agent->epmem_statements[ EPMEM_STMT_ONE_ADD_NODE_UNIQUE ], 3, wmes[i]->value->ic.value );
+								EPMEM_SQLITE_BIND_INT( my_agent->epmem_statements[ EPMEM_STMT_ONE_ADD_NODE_UNIQUE ], 3, wmes[i]->value->ic.value );
 								break;
 
 							case FLOAT_CONSTANT_SYMBOL_TYPE:
@@ -3132,13 +3141,13 @@ void epmem_new_episode( agent *my_agent )
 								sqlite3_bind_null( my_agent->epmem_statements[ EPMEM_STMT_ONE_ADD_NODE_UNIQUE ], 3 );
 								break;
 						}
-						sqlite3_bind_int64( my_agent->epmem_statements[ EPMEM_STMT_ONE_ADD_NODE_UNIQUE ], 4, my_hash );
-						sqlite3_bind_int64( my_agent->epmem_statements[ EPMEM_STMT_ONE_ADD_NODE_UNIQUE ], 5, attr_type );
-						sqlite3_bind_int64( my_agent->epmem_statements[ EPMEM_STMT_ONE_ADD_NODE_UNIQUE ], 6, value_type );
+						EPMEM_SQLITE_BIND_INT( my_agent->epmem_statements[ EPMEM_STMT_ONE_ADD_NODE_UNIQUE ], 4, my_hash );
+						EPMEM_SQLITE_BIND_INT( my_agent->epmem_statements[ EPMEM_STMT_ONE_ADD_NODE_UNIQUE ], 5, attr_type );
+						EPMEM_SQLITE_BIND_INT( my_agent->epmem_statements[ EPMEM_STMT_ONE_ADD_NODE_UNIQUE ], 6, value_type );
 						sqlite3_step( my_agent->epmem_statements[ EPMEM_STMT_ONE_ADD_NODE_UNIQUE ] );
 						sqlite3_reset( my_agent->epmem_statements[ EPMEM_STMT_ONE_ADD_NODE_UNIQUE ] );
 
-						wmes[i]->epmem_id = sqlite3_last_insert_rowid( my_agent->epmem_db );
+						wmes[i]->epmem_id = (epmem_node_id) sqlite3_last_insert_rowid( my_agent->epmem_db );
 
 						// new nodes definitely start
 						epmem[ wmes[i]->epmem_id ] = true;
@@ -3177,8 +3186,8 @@ void epmem_new_episode( agent *my_agent )
 		{
 			// add NOW entry
 			// id = ?, start = ?
-			sqlite3_bind_int64( my_agent->epmem_statements[ EPMEM_STMT_ONE_ADD_NODE_NOW ], 1, e->first );
-			sqlite3_bind_int64( my_agent->epmem_statements[ EPMEM_STMT_ONE_ADD_NODE_NOW ], 2, time_counter );
+			EPMEM_SQLITE_BIND_INT( my_agent->epmem_statements[ EPMEM_STMT_ONE_ADD_NODE_NOW ], 1, e->first );
+			EPMEM_SQLITE_BIND_INT( my_agent->epmem_statements[ EPMEM_STMT_ONE_ADD_NODE_NOW ], 2, time_counter );
 			sqlite3_step( my_agent->epmem_statements[ EPMEM_STMT_ONE_ADD_NODE_NOW ] );
 			sqlite3_reset( my_agent->epmem_statements[ EPMEM_STMT_ONE_ADD_NODE_NOW ] );
 
@@ -3198,7 +3207,7 @@ void epmem_new_episode( agent *my_agent )
 			{
 				// remove NOW entry
 				// id = ?
-				sqlite3_bind_int64( my_agent->epmem_statements[ EPMEM_STMT_ONE_DELETE_NODE_NOW ], 1, r->first );
+				EPMEM_SQLITE_BIND_INT( my_agent->epmem_statements[ EPMEM_STMT_ONE_DELETE_NODE_NOW ], 1, r->first );
 				sqlite3_step( my_agent->epmem_statements[ EPMEM_STMT_ONE_DELETE_NODE_NOW ] );
 				sqlite3_reset( my_agent->epmem_statements[ EPMEM_STMT_ONE_DELETE_NODE_NOW ] );
 
@@ -3208,8 +3217,8 @@ void epmem_new_episode( agent *my_agent )
 				// point (id, start)
 				if ( range_start == range_end )
 				{
-					sqlite3_bind_int64( my_agent->epmem_statements[ EPMEM_STMT_ONE_ADD_NODE_POINT ], 1, r->first );
-					sqlite3_bind_int64( my_agent->epmem_statements[ EPMEM_STMT_ONE_ADD_NODE_POINT ], 2, range_start );
+					EPMEM_SQLITE_BIND_INT( my_agent->epmem_statements[ EPMEM_STMT_ONE_ADD_NODE_POINT ], 1, r->first );
+					EPMEM_SQLITE_BIND_INT( my_agent->epmem_statements[ EPMEM_STMT_ONE_ADD_NODE_POINT ], 2, range_start );
 					sqlite3_step( my_agent->epmem_statements[ EPMEM_STMT_ONE_ADD_NODE_POINT ] );
 					sqlite3_reset( my_agent->epmem_statements[ EPMEM_STMT_ONE_ADD_NODE_POINT ] );
 				}
@@ -3223,7 +3232,7 @@ void epmem_new_episode( agent *my_agent )
 		my_agent->epmem_node_removals->clear();
 
 		// add the time id to the times table
-		sqlite3_bind_int64( my_agent->epmem_statements[ EPMEM_STMT_ONE_ADD_TIME ], 1, time_counter );
+		EPMEM_SQLITE_BIND_INT( my_agent->epmem_statements[ EPMEM_STMT_ONE_ADD_TIME ], 1, time_counter );
 		sqlite3_step( my_agent->epmem_statements[ EPMEM_STMT_ONE_ADD_TIME ] );
 		sqlite3_reset( my_agent->epmem_statements[ EPMEM_STMT_ONE_ADD_TIME ] );
 
@@ -3254,8 +3263,8 @@ void epmem_new_episode( agent *my_agent )
 
 		// children of the current identifier
 		wme **wmes = NULL;
-		int len = 0;
-		int i;
+		unsigned EPMEM_TYPE_INT len = 0;
+		unsigned EPMEM_TYPE_INT i;
 
 		// prevent recording exclusions
 		std::list<const char *>::iterator exclusion;
@@ -3263,7 +3272,7 @@ void epmem_new_episode( agent *my_agent )
 
 		// initialize BFS
 		parent_syms.push( my_agent->top_goal );
-		parent_ids.push( EPMEM_MEMID_ROOT );
+		parent_ids.push( EPMEM_NODEID_ROOT );
 
 		while ( !parent_syms.empty() )
 		{
@@ -3309,16 +3318,16 @@ void epmem_new_episode( agent *my_agent )
 								}
 
 								// insert (q0,w,q1,w_type)
-								sqlite3_bind_int64( my_agent->epmem_statements[ EPMEM_STMT_THREE_ADD_EDGE_UNIQUE ], 1, parent_id );
+								EPMEM_SQLITE_BIND_INT( my_agent->epmem_statements[ EPMEM_STMT_THREE_ADD_EDGE_UNIQUE ], 1, parent_id );
 
 								switch( wmes[i]->attr->common.symbol_type )
 								{
 									case SYM_CONSTANT_SYMBOL_TYPE:
-										sqlite3_bind_text( my_agent->epmem_statements[ EPMEM_STMT_THREE_ADD_EDGE_UNIQUE ], 2, (const char *) wmes[i]->attr->sc.name, -1, SQLITE_STATIC );
+										sqlite3_bind_text( my_agent->epmem_statements[ EPMEM_STMT_THREE_ADD_EDGE_UNIQUE ], 2, (const char *) wmes[i]->attr->sc.name, EPMEM_DB_PREP_STR_MAX, SQLITE_STATIC );
 										break;
 
 									case INT_CONSTANT_SYMBOL_TYPE:
-		        						sqlite3_bind_int64( my_agent->epmem_statements[ EPMEM_STMT_THREE_ADD_EDGE_UNIQUE ], 2, wmes[i]->attr->ic.value );
+		        						EPMEM_SQLITE_BIND_INT( my_agent->epmem_statements[ EPMEM_STMT_THREE_ADD_EDGE_UNIQUE ], 2, wmes[i]->attr->ic.value );
 										break;
 
 									case FLOAT_CONSTANT_SYMBOL_TYPE:
@@ -3326,12 +3335,12 @@ void epmem_new_episode( agent *my_agent )
 										break;
 								}
 
-								sqlite3_bind_int64( my_agent->epmem_statements[ EPMEM_STMT_THREE_ADD_EDGE_UNIQUE ], 3, wmes[i]->value->id.epmem_id );
-								sqlite3_bind_int64( my_agent->epmem_statements[ EPMEM_STMT_THREE_ADD_EDGE_UNIQUE ], 4, wmes[i]->attr->common.symbol_type );
+								EPMEM_SQLITE_BIND_INT( my_agent->epmem_statements[ EPMEM_STMT_THREE_ADD_EDGE_UNIQUE ], 3, wmes[i]->value->id.epmem_id );
+								EPMEM_SQLITE_BIND_INT( my_agent->epmem_statements[ EPMEM_STMT_THREE_ADD_EDGE_UNIQUE ], 4, wmes[i]->attr->common.symbol_type );
 								sqlite3_step( my_agent->epmem_statements[ EPMEM_STMT_THREE_ADD_EDGE_UNIQUE ] );
 								sqlite3_reset( my_agent->epmem_statements[ EPMEM_STMT_THREE_ADD_EDGE_UNIQUE ] );
 
-								wmes[i]->epmem_id = sqlite3_last_insert_rowid( my_agent->epmem_db );
+								wmes[i]->epmem_id = (epmem_node_id) sqlite3_last_insert_rowid( my_agent->epmem_db );
 
 								// new nodes definitely start
 								epmem_edge.push( wmes[i]->epmem_id );
@@ -3362,17 +3371,17 @@ void epmem_new_episode( agent *my_agent )
 							// try to get node id
 							{
 								// parent_id=? AND hash=? AND name=? AND value=? AND attr_type=? AND value_type=?
-								sqlite3_bind_int64( my_agent->epmem_statements[ EPMEM_STMT_THREE_FIND_NODE_UNIQUE ], 1, parent_id );
-								sqlite3_bind_int64( my_agent->epmem_statements[ EPMEM_STMT_THREE_FIND_NODE_UNIQUE ], 2, my_hash );
+								EPMEM_SQLITE_BIND_INT( my_agent->epmem_statements[ EPMEM_STMT_THREE_FIND_NODE_UNIQUE ], 1, parent_id );
+								EPMEM_SQLITE_BIND_INT( my_agent->epmem_statements[ EPMEM_STMT_THREE_FIND_NODE_UNIQUE ], 2, my_hash );
 
 								switch( wmes[i]->attr->common.symbol_type )
 								{
 									case SYM_CONSTANT_SYMBOL_TYPE:
-										sqlite3_bind_text( my_agent->epmem_statements[ EPMEM_STMT_THREE_FIND_NODE_UNIQUE ], 3, (const char *) wmes[i]->attr->sc.name, -1, SQLITE_STATIC );
+										sqlite3_bind_text( my_agent->epmem_statements[ EPMEM_STMT_THREE_FIND_NODE_UNIQUE ], 3, (const char *) wmes[i]->attr->sc.name, EPMEM_DB_PREP_STR_MAX, SQLITE_STATIC );
 										break;
 
 									case INT_CONSTANT_SYMBOL_TYPE:
-		        						sqlite3_bind_int64( my_agent->epmem_statements[ EPMEM_STMT_THREE_FIND_NODE_UNIQUE ], 3, wmes[i]->attr->ic.value );
+		        						EPMEM_SQLITE_BIND_INT( my_agent->epmem_statements[ EPMEM_STMT_THREE_FIND_NODE_UNIQUE ], 3, wmes[i]->attr->ic.value );
 										break;
 
 									case FLOAT_CONSTANT_SYMBOL_TYPE:
@@ -3383,22 +3392,22 @@ void epmem_new_episode( agent *my_agent )
 								switch( wmes[i]->value->common.symbol_type )
 								{
 									case SYM_CONSTANT_SYMBOL_TYPE:
-										sqlite3_bind_text( my_agent->epmem_statements[ EPMEM_STMT_THREE_FIND_NODE_UNIQUE ], 4, (const char *) wmes[i]->value->sc.name, -1, SQLITE_STATIC );
+										sqlite3_bind_text( my_agent->epmem_statements[ EPMEM_STMT_THREE_FIND_NODE_UNIQUE ], 4, (const char *) wmes[i]->value->sc.name, EPMEM_DB_PREP_STR_MAX, SQLITE_STATIC );
 										break;
 
 									case INT_CONSTANT_SYMBOL_TYPE:
-		        						sqlite3_bind_int64( my_agent->epmem_statements[ EPMEM_STMT_THREE_FIND_NODE_UNIQUE ], 4, wmes[i]->value->ic.value );
+		        						EPMEM_SQLITE_BIND_INT( my_agent->epmem_statements[ EPMEM_STMT_THREE_FIND_NODE_UNIQUE ], 4, wmes[i]->value->ic.value );
 										break;
 
 									case FLOAT_CONSTANT_SYMBOL_TYPE:
 		        						sqlite3_bind_double( my_agent->epmem_statements[ EPMEM_STMT_THREE_FIND_NODE_UNIQUE ], 4, wmes[i]->value->fc.value );
 										break;
 								}
-								sqlite3_bind_int64( my_agent->epmem_statements[ EPMEM_STMT_THREE_FIND_NODE_UNIQUE ], 5, wmes[i]->attr->common.symbol_type );
-								sqlite3_bind_int64( my_agent->epmem_statements[ EPMEM_STMT_THREE_FIND_NODE_UNIQUE ], 6, wmes[i]->value->common.symbol_type );
+								EPMEM_SQLITE_BIND_INT( my_agent->epmem_statements[ EPMEM_STMT_THREE_FIND_NODE_UNIQUE ], 5, wmes[i]->attr->common.symbol_type );
+								EPMEM_SQLITE_BIND_INT( my_agent->epmem_statements[ EPMEM_STMT_THREE_FIND_NODE_UNIQUE ], 6, wmes[i]->value->common.symbol_type );
 
 								if ( sqlite3_step( my_agent->epmem_statements[ EPMEM_STMT_THREE_FIND_NODE_UNIQUE ] ) == SQLITE_ROW )
-									wmes[i]->epmem_id = sqlite3_column_int64( my_agent->epmem_statements[ EPMEM_STMT_THREE_FIND_NODE_UNIQUE ], 0 );
+									wmes[i]->epmem_id = EPMEM_SQLITE_COLUMN_INT( my_agent->epmem_statements[ EPMEM_STMT_THREE_FIND_NODE_UNIQUE ], 0 );
 
 								sqlite3_reset( my_agent->epmem_statements[ EPMEM_STMT_THREE_FIND_NODE_UNIQUE ] );
 							}
@@ -3406,20 +3415,20 @@ void epmem_new_episode( agent *my_agent )
 							// act depending on new/existing feature
 							if ( wmes[i]->epmem_id == NULL )
 							{
-								long long attr_type = wmes[i]->attr->common.symbol_type;
-								long long value_type = wmes[i]->value->common.symbol_type;
+								EPMEM_TYPE_INT attr_type = wmes[i]->attr->common.symbol_type;
+								EPMEM_TYPE_INT value_type = wmes[i]->value->common.symbol_type;
 
 								// insert (parent_id,name,value,hash,attr_type,value_type)
-								sqlite3_bind_int64( my_agent->epmem_statements[ EPMEM_STMT_THREE_ADD_NODE_UNIQUE ], 1, parent_id );
+								EPMEM_SQLITE_BIND_INT( my_agent->epmem_statements[ EPMEM_STMT_THREE_ADD_NODE_UNIQUE ], 1, parent_id );
 
 								switch( attr_type )
 								{
 									case SYM_CONSTANT_SYMBOL_TYPE:
-										sqlite3_bind_text( my_agent->epmem_statements[ EPMEM_STMT_THREE_ADD_NODE_UNIQUE ], 2, (const char *) wmes[i]->attr->sc.name, -1, SQLITE_STATIC );
+										sqlite3_bind_text( my_agent->epmem_statements[ EPMEM_STMT_THREE_ADD_NODE_UNIQUE ], 2, (const char *) wmes[i]->attr->sc.name, EPMEM_DB_PREP_STR_MAX, SQLITE_STATIC );
 										break;
 
 									case INT_CONSTANT_SYMBOL_TYPE:
-		        						sqlite3_bind_int64( my_agent->epmem_statements[ EPMEM_STMT_THREE_ADD_NODE_UNIQUE ], 2, wmes[i]->attr->ic.value );
+		        						EPMEM_SQLITE_BIND_INT( my_agent->epmem_statements[ EPMEM_STMT_THREE_ADD_NODE_UNIQUE ], 2, wmes[i]->attr->ic.value );
 										break;
 
 									case FLOAT_CONSTANT_SYMBOL_TYPE:
@@ -3430,24 +3439,24 @@ void epmem_new_episode( agent *my_agent )
 								switch ( value_type )
 								{
 									case SYM_CONSTANT_SYMBOL_TYPE:
-										sqlite3_bind_text( my_agent->epmem_statements[ EPMEM_STMT_THREE_ADD_NODE_UNIQUE ], 3, (const char *) wmes[i]->value->sc.name, -1, SQLITE_STATIC );
+										sqlite3_bind_text( my_agent->epmem_statements[ EPMEM_STMT_THREE_ADD_NODE_UNIQUE ], 3, (const char *) wmes[i]->value->sc.name, EPMEM_DB_PREP_STR_MAX, SQLITE_STATIC );
 										break;
 
 									case INT_CONSTANT_SYMBOL_TYPE:
-										sqlite3_bind_int64( my_agent->epmem_statements[ EPMEM_STMT_THREE_ADD_NODE_UNIQUE ], 3, wmes[i]->value->ic.value );
+										EPMEM_SQLITE_BIND_INT( my_agent->epmem_statements[ EPMEM_STMT_THREE_ADD_NODE_UNIQUE ], 3, wmes[i]->value->ic.value );
 										break;
 
 									case FLOAT_CONSTANT_SYMBOL_TYPE:
 										sqlite3_bind_double( my_agent->epmem_statements[ EPMEM_STMT_THREE_ADD_NODE_UNIQUE ], 3, wmes[i]->value->fc.value );
 										break;
 								}
-								sqlite3_bind_int64( my_agent->epmem_statements[ EPMEM_STMT_THREE_ADD_NODE_UNIQUE ], 4, my_hash );
-								sqlite3_bind_int64( my_agent->epmem_statements[ EPMEM_STMT_THREE_ADD_NODE_UNIQUE ], 5, attr_type );
-								sqlite3_bind_int64( my_agent->epmem_statements[ EPMEM_STMT_THREE_ADD_NODE_UNIQUE ], 6, value_type );
+								EPMEM_SQLITE_BIND_INT( my_agent->epmem_statements[ EPMEM_STMT_THREE_ADD_NODE_UNIQUE ], 4, my_hash );
+								EPMEM_SQLITE_BIND_INT( my_agent->epmem_statements[ EPMEM_STMT_THREE_ADD_NODE_UNIQUE ], 5, attr_type );
+								EPMEM_SQLITE_BIND_INT( my_agent->epmem_statements[ EPMEM_STMT_THREE_ADD_NODE_UNIQUE ], 6, value_type );
 								sqlite3_step( my_agent->epmem_statements[ EPMEM_STMT_THREE_ADD_NODE_UNIQUE ] );
 								sqlite3_reset( my_agent->epmem_statements[ EPMEM_STMT_THREE_ADD_NODE_UNIQUE ] );
 
-								wmes[i]->epmem_id = sqlite3_last_insert_rowid( my_agent->epmem_db );
+								wmes[i]->epmem_id = (epmem_node_id) sqlite3_last_insert_rowid( my_agent->epmem_db );
 
 								// new nodes definitely start
 								epmem_node.push( wmes[i]->epmem_id );
@@ -3486,8 +3495,8 @@ void epmem_new_episode( agent *my_agent )
 
 				// add NOW entry
 				// id = ?, start = ?
-				sqlite3_bind_int64( my_agent->epmem_statements[ EPMEM_STMT_THREE_ADD_NODE_NOW ], 1, (*temp_node) );
-				sqlite3_bind_int64( my_agent->epmem_statements[ EPMEM_STMT_THREE_ADD_NODE_NOW ], 2, time_counter );
+				EPMEM_SQLITE_BIND_INT( my_agent->epmem_statements[ EPMEM_STMT_THREE_ADD_NODE_NOW ], 1, (*temp_node) );
+				EPMEM_SQLITE_BIND_INT( my_agent->epmem_statements[ EPMEM_STMT_THREE_ADD_NODE_NOW ], 2, time_counter );
 				sqlite3_step( my_agent->epmem_statements[ EPMEM_STMT_THREE_ADD_NODE_NOW ] );
 				sqlite3_reset( my_agent->epmem_statements[ EPMEM_STMT_THREE_ADD_NODE_NOW ] );
 
@@ -3504,8 +3513,8 @@ void epmem_new_episode( agent *my_agent )
 
 				// add NOW entry
 				// id = ?, start = ?
-				sqlite3_bind_int64( my_agent->epmem_statements[ EPMEM_STMT_THREE_ADD_EDGE_NOW ], 1, (*temp_node) );
-				sqlite3_bind_int64( my_agent->epmem_statements[ EPMEM_STMT_THREE_ADD_EDGE_NOW ], 2, time_counter );
+				EPMEM_SQLITE_BIND_INT( my_agent->epmem_statements[ EPMEM_STMT_THREE_ADD_EDGE_NOW ], 1, (*temp_node) );
+				EPMEM_SQLITE_BIND_INT( my_agent->epmem_statements[ EPMEM_STMT_THREE_ADD_EDGE_NOW ], 2, time_counter );
 				sqlite3_step( my_agent->epmem_statements[ EPMEM_STMT_THREE_ADD_EDGE_NOW ] );
 				sqlite3_reset( my_agent->epmem_statements[ EPMEM_STMT_THREE_ADD_EDGE_NOW ] );
 
@@ -3530,7 +3539,7 @@ void epmem_new_episode( agent *my_agent )
 				{
 					// remove NOW entry
 					// id = ?
-					sqlite3_bind_int64( my_agent->epmem_statements[ EPMEM_STMT_THREE_DELETE_NODE_NOW ], 1, r->first );
+					EPMEM_SQLITE_BIND_INT( my_agent->epmem_statements[ EPMEM_STMT_THREE_DELETE_NODE_NOW ], 1, r->first );
 					sqlite3_step( my_agent->epmem_statements[ EPMEM_STMT_THREE_DELETE_NODE_NOW ] );
 					sqlite3_reset( my_agent->epmem_statements[ EPMEM_STMT_THREE_DELETE_NODE_NOW ] );
 
@@ -3540,8 +3549,8 @@ void epmem_new_episode( agent *my_agent )
 					// point (id, start)
 					if ( range_start == range_end )
 					{
-						sqlite3_bind_int64( my_agent->epmem_statements[ EPMEM_STMT_THREE_ADD_NODE_POINT ], 1, r->first );
-						sqlite3_bind_int64( my_agent->epmem_statements[ EPMEM_STMT_THREE_ADD_NODE_POINT ], 2, range_start );
+						EPMEM_SQLITE_BIND_INT( my_agent->epmem_statements[ EPMEM_STMT_THREE_ADD_NODE_POINT ], 1, r->first );
+						EPMEM_SQLITE_BIND_INT( my_agent->epmem_statements[ EPMEM_STMT_THREE_ADD_NODE_POINT ], 2, range_start );
 						sqlite3_step( my_agent->epmem_statements[ EPMEM_STMT_THREE_ADD_NODE_POINT ] );
 						sqlite3_reset( my_agent->epmem_statements[ EPMEM_STMT_THREE_ADD_NODE_POINT ] );
 					}
@@ -3562,7 +3571,7 @@ void epmem_new_episode( agent *my_agent )
 				{
 					// remove NOW entry
 					// id = ?
-					sqlite3_bind_int64( my_agent->epmem_statements[ EPMEM_STMT_THREE_DELETE_EDGE_NOW ], 1, r->first );
+					EPMEM_SQLITE_BIND_INT( my_agent->epmem_statements[ EPMEM_STMT_THREE_DELETE_EDGE_NOW ], 1, r->first );
 					sqlite3_step( my_agent->epmem_statements[ EPMEM_STMT_THREE_DELETE_EDGE_NOW ] );
 					sqlite3_reset( my_agent->epmem_statements[ EPMEM_STMT_THREE_DELETE_EDGE_NOW ] );
 
@@ -3572,8 +3581,8 @@ void epmem_new_episode( agent *my_agent )
 					// point (id, start)
 					if ( range_start == range_end )
 					{
-						sqlite3_bind_int64( my_agent->epmem_statements[ EPMEM_STMT_THREE_ADD_EDGE_POINT ], 1, r->first );
-						sqlite3_bind_int64( my_agent->epmem_statements[ EPMEM_STMT_THREE_ADD_EDGE_POINT ], 2, range_start );
+						EPMEM_SQLITE_BIND_INT( my_agent->epmem_statements[ EPMEM_STMT_THREE_ADD_EDGE_POINT ], 1, r->first );
+						EPMEM_SQLITE_BIND_INT( my_agent->epmem_statements[ EPMEM_STMT_THREE_ADD_EDGE_POINT ], 2, range_start );
 						sqlite3_step( my_agent->epmem_statements[ EPMEM_STMT_THREE_ADD_EDGE_POINT ] );
 						sqlite3_reset( my_agent->epmem_statements[ EPMEM_STMT_THREE_ADD_EDGE_POINT ] );
 					}
@@ -3588,7 +3597,7 @@ void epmem_new_episode( agent *my_agent )
 		}
 
 		// add the time id to the times table
-		sqlite3_bind_int64( my_agent->epmem_statements[ EPMEM_STMT_THREE_ADD_TIME ], 1, time_counter );
+		EPMEM_SQLITE_BIND_INT( my_agent->epmem_statements[ EPMEM_STMT_THREE_ADD_TIME ], 1, time_counter );
 		sqlite3_step( my_agent->epmem_statements[ EPMEM_STMT_THREE_ADD_TIME ] );
 		sqlite3_reset( my_agent->epmem_statements[ EPMEM_STMT_THREE_ADD_TIME ] );
 
@@ -3627,17 +3636,17 @@ bool epmem_valid_episode( agent *my_agent, epmem_time_id memory_id )
 
 	if ( mode == EPMEM_MODE_ONE )
 	{
-		sqlite3_bind_int64( my_agent->epmem_statements[ EPMEM_STMT_ONE_VALID_EPISODE ], 1, memory_id );
+		EPMEM_SQLITE_BIND_INT( my_agent->epmem_statements[ EPMEM_STMT_ONE_VALID_EPISODE ], 1, memory_id );
 		sqlite3_step( my_agent->epmem_statements[ EPMEM_STMT_ONE_VALID_EPISODE ] );
-		return_val = ( sqlite3_column_int64( my_agent->epmem_statements[ EPMEM_STMT_ONE_VALID_EPISODE ], 0 ) > 0 );
+		return_val = ( EPMEM_SQLITE_COLUMN_INT( my_agent->epmem_statements[ EPMEM_STMT_ONE_VALID_EPISODE ], 0 ) > 0 );
 
 		sqlite3_reset( my_agent->epmem_statements[ EPMEM_STMT_ONE_VALID_EPISODE ] );
 	}
 	else if ( mode == EPMEM_MODE_THREE )
 	{
-		sqlite3_bind_int64( my_agent->epmem_statements[ EPMEM_STMT_THREE_VALID_EPISODE ], 1, memory_id );
+		EPMEM_SQLITE_BIND_INT( my_agent->epmem_statements[ EPMEM_STMT_THREE_VALID_EPISODE ], 1, memory_id );
 		sqlite3_step( my_agent->epmem_statements[ EPMEM_STMT_THREE_VALID_EPISODE ] );
-		return_val = ( sqlite3_column_int64( my_agent->epmem_statements[ EPMEM_STMT_THREE_VALID_EPISODE ], 0 ) > 0 );
+		return_val = ( EPMEM_SQLITE_COLUMN_INT( my_agent->epmem_statements[ EPMEM_STMT_THREE_VALID_EPISODE ], 0 ) > 0 );
 
 		sqlite3_reset( my_agent->epmem_statements[ EPMEM_STMT_THREE_VALID_EPISODE ] );
 	}
@@ -3671,7 +3680,7 @@ void epmem_install_memory( agent *my_agent, Symbol *state, epmem_time_id memory_
 	Symbol *result_header = state->id.epmem_result_header;
 
 	// initialize stat
-	long long num_wmes = 0;
+	EPMEM_TYPE_INT num_wmes = 0;
 	epmem_set_stat( my_agent, EPMEM_STAT_NCB_WMES, num_wmes );
 
 	// if no memory, say so
@@ -3707,7 +3716,7 @@ void epmem_install_memory( agent *my_agent, Symbol *state, epmem_time_id memory_
 		new_wme->preference = epmem_make_fake_preference( my_agent, state, new_wme );
 		state->id.epmem_info->epmem_wmes->push( new_wme );
 		symbol_remove_ref( my_agent, my_meta );
-
+		
 		my_meta = make_int_constant( my_agent, epmem_get_stat( my_agent, (const long) EPMEM_STAT_TIME ) );
 		new_wme = add_input_wme( my_agent, result_header, my_agent->epmem_present_id_symbol, my_meta );
 		new_wme->preference = epmem_make_fake_preference( my_agent, state, new_wme );
@@ -3722,8 +3731,8 @@ void epmem_install_memory( agent *my_agent, Symbol *state, epmem_time_id memory_
 		epmem_id_mapping ids;
 		epmem_node_id child_id;
 		epmem_node_id parent_id;
-		long long attr_type;
-		long long value_type;
+		EPMEM_TYPE_INT attr_type;
+		EPMEM_TYPE_INT value_type;
 		Symbol *attr = NULL;
 		Symbol *value = NULL;
 		Symbol *parent = NULL;
@@ -3732,23 +3741,23 @@ void epmem_install_memory( agent *my_agent, Symbol *state, epmem_time_id memory_
 
 		epmem_rit_prep_left_right( my_agent, memory_id, memory_id, epmem_rit_state_one );
 
-		sqlite3_bind_int64( my_agent->epmem_statements[ EPMEM_STMT_ONE_GET_EPISODE ], 1, memory_id );
-		sqlite3_bind_int64( my_agent->epmem_statements[ EPMEM_STMT_ONE_GET_EPISODE ], 2, memory_id );
-		sqlite3_bind_int64( my_agent->epmem_statements[ EPMEM_STMT_ONE_GET_EPISODE ], 3, memory_id );
-		sqlite3_bind_int64( my_agent->epmem_statements[ EPMEM_STMT_ONE_GET_EPISODE ], 4, memory_id );
+		EPMEM_SQLITE_BIND_INT( my_agent->epmem_statements[ EPMEM_STMT_ONE_GET_EPISODE ], 1, memory_id );
+		EPMEM_SQLITE_BIND_INT( my_agent->epmem_statements[ EPMEM_STMT_ONE_GET_EPISODE ], 2, memory_id );
+		EPMEM_SQLITE_BIND_INT( my_agent->epmem_statements[ EPMEM_STMT_ONE_GET_EPISODE ], 3, memory_id );
+		EPMEM_SQLITE_BIND_INT( my_agent->epmem_statements[ EPMEM_STMT_ONE_GET_EPISODE ], 4, memory_id );
 		while ( epmem_exec_query( my_agent, my_agent->epmem_statements[ EPMEM_STMT_ONE_GET_EPISODE ], EPMEM_TIMER_NCB_NODE ) == SQLITE_ROW )
 		{
 			// e.id, i.parent_id, i.name, i.value, i.attr_type, i.value_type
-			child_id = sqlite3_column_int64( my_agent->epmem_statements[ EPMEM_STMT_ONE_GET_EPISODE ], 0 );
-			parent_id = sqlite3_column_int64( my_agent->epmem_statements[ EPMEM_STMT_ONE_GET_EPISODE ], 1 );
-			attr_type = sqlite3_column_int64( my_agent->epmem_statements[ EPMEM_STMT_ONE_GET_EPISODE ], 4 );
-			value_type = sqlite3_column_int64( my_agent->epmem_statements[ EPMEM_STMT_ONE_GET_EPISODE ], 5 );
+			child_id = EPMEM_SQLITE_COLUMN_INT( my_agent->epmem_statements[ EPMEM_STMT_ONE_GET_EPISODE ], 0 );
+			parent_id = EPMEM_SQLITE_COLUMN_INT( my_agent->epmem_statements[ EPMEM_STMT_ONE_GET_EPISODE ], 1 );
+			attr_type = EPMEM_SQLITE_COLUMN_INT( my_agent->epmem_statements[ EPMEM_STMT_ONE_GET_EPISODE ], 4 );
+			value_type = EPMEM_SQLITE_COLUMN_INT( my_agent->epmem_statements[ EPMEM_STMT_ONE_GET_EPISODE ], 5 );
 
 			// make a symbol to represent the attribute name
 			switch ( attr_type )
 			{
 				case INT_CONSTANT_SYMBOL_TYPE:
-					attr = make_int_constant( my_agent, sqlite3_column_int64( my_agent->epmem_statements[ EPMEM_STMT_ONE_GET_EPISODE ], 2 ) );
+					attr = make_int_constant( my_agent, EPMEM_SQLITE_COLUMN_INT( my_agent->epmem_statements[ EPMEM_STMT_ONE_GET_EPISODE ], 2 ) );
 					break;
 
 				case FLOAT_CONSTANT_SYMBOL_TYPE:
@@ -3779,7 +3788,7 @@ void epmem_install_memory( agent *my_agent, Symbol *state, epmem_time_id memory_
 				switch ( value_type )
 				{
 					case INT_CONSTANT_SYMBOL_TYPE:
-						value = make_int_constant( my_agent, sqlite3_column_int64( my_agent->epmem_statements[ EPMEM_STMT_ONE_GET_EPISODE ], 3 ) );
+						value = make_int_constant( my_agent, EPMEM_SQLITE_COLUMN_INT( my_agent->epmem_statements[ EPMEM_STMT_ONE_GET_EPISODE ], 3 ) );
 						break;
 
 					case FLOAT_CONSTANT_SYMBOL_TYPE:
@@ -3836,7 +3845,7 @@ void epmem_install_memory( agent *my_agent, Symbol *state, epmem_time_id memory_
 			epmem_node_id q0; // id
 			epmem_node_id q1; // attribute
 			Symbol **value = NULL; // value
-			long long w_type; // we support any constant attribute symbol
+			EPMEM_TYPE_INT w_type; // we support any constant attribute symbol
 
 			// used to lookup shared identifiers
 			epmem_id_mapping::iterator id_p;
@@ -3847,21 +3856,21 @@ void epmem_install_memory( agent *my_agent, Symbol *state, epmem_time_id memory_
 
 			epmem_rit_prep_left_right( my_agent, memory_id, memory_id, epmem_rit_state_three[ EPMEM_RIT_STATE_EDGE ] );
 
-			sqlite3_bind_int64( my_agent->epmem_statements[ EPMEM_STMT_THREE_GET_EDGES ], 1, memory_id );
-			sqlite3_bind_int64( my_agent->epmem_statements[ EPMEM_STMT_THREE_GET_EDGES ], 2, memory_id );
-			sqlite3_bind_int64( my_agent->epmem_statements[ EPMEM_STMT_THREE_GET_EDGES ], 3, memory_id );
-			sqlite3_bind_int64( my_agent->epmem_statements[ EPMEM_STMT_THREE_GET_EDGES ], 4, memory_id );
+			EPMEM_SQLITE_BIND_INT( my_agent->epmem_statements[ EPMEM_STMT_THREE_GET_EDGES ], 1, memory_id );
+			EPMEM_SQLITE_BIND_INT( my_agent->epmem_statements[ EPMEM_STMT_THREE_GET_EDGES ], 2, memory_id );
+			EPMEM_SQLITE_BIND_INT( my_agent->epmem_statements[ EPMEM_STMT_THREE_GET_EDGES ], 3, memory_id );
+			EPMEM_SQLITE_BIND_INT( my_agent->epmem_statements[ EPMEM_STMT_THREE_GET_EDGES ], 4, memory_id );
 			while ( epmem_exec_query( my_agent, my_agent->epmem_statements[ EPMEM_STMT_THREE_GET_EDGES ], EPMEM_TIMER_NCB_EDGE ) == SQLITE_ROW )
 			{
 				// q0, w, q1, w_type
-				q0 = sqlite3_column_int64( my_agent->epmem_statements[ EPMEM_STMT_THREE_GET_EDGES ], 0 );
-				q1 = sqlite3_column_int64( my_agent->epmem_statements[ EPMEM_STMT_THREE_GET_EDGES ], 2 );
-				w_type = sqlite3_column_int64( my_agent->epmem_statements[ EPMEM_STMT_THREE_GET_EDGES ], 3 );
+				q0 = EPMEM_SQLITE_COLUMN_INT( my_agent->epmem_statements[ EPMEM_STMT_THREE_GET_EDGES ], 0 );
+				q1 = EPMEM_SQLITE_COLUMN_INT( my_agent->epmem_statements[ EPMEM_STMT_THREE_GET_EDGES ], 2 );
+				w_type = EPMEM_SQLITE_COLUMN_INT( my_agent->epmem_statements[ EPMEM_STMT_THREE_GET_EDGES ], 3 );
 
 				switch ( w_type )
 				{
 					case INT_CONSTANT_SYMBOL_TYPE:
-						attr = make_int_constant( my_agent, sqlite3_column_int64( my_agent->epmem_statements[ EPMEM_STMT_THREE_GET_EDGES ], 1 ) );
+						attr = make_int_constant( my_agent, EPMEM_SQLITE_COLUMN_INT( my_agent->epmem_statements[ EPMEM_STMT_THREE_GET_EDGES ], 1 ) );
 						break;
 
 					case FLOAT_CONSTANT_SYMBOL_TYPE:
@@ -3950,24 +3959,24 @@ void epmem_install_memory( agent *my_agent, Symbol *state, epmem_time_id memory_
 		{
 			epmem_node_id child_id;
 			epmem_node_id parent_id;
-			long long attr_type;
-			long long value_type;
+			EPMEM_TYPE_INT attr_type;
+			EPMEM_TYPE_INT value_type;
 
 			Symbol *value = NULL;
 
 			epmem_rit_prep_left_right( my_agent, memory_id, memory_id, epmem_rit_state_three[ EPMEM_RIT_STATE_NODE ] );
 
-			sqlite3_bind_int64( my_agent->epmem_statements[ EPMEM_STMT_THREE_GET_NODES ], 1, memory_id );
-			sqlite3_bind_int64( my_agent->epmem_statements[ EPMEM_STMT_THREE_GET_NODES ], 2, memory_id );
-			sqlite3_bind_int64( my_agent->epmem_statements[ EPMEM_STMT_THREE_GET_NODES ], 3, memory_id );
-			sqlite3_bind_int64( my_agent->epmem_statements[ EPMEM_STMT_THREE_GET_NODES ], 4, memory_id );
+			EPMEM_SQLITE_BIND_INT( my_agent->epmem_statements[ EPMEM_STMT_THREE_GET_NODES ], 1, memory_id );
+			EPMEM_SQLITE_BIND_INT( my_agent->epmem_statements[ EPMEM_STMT_THREE_GET_NODES ], 2, memory_id );
+			EPMEM_SQLITE_BIND_INT( my_agent->epmem_statements[ EPMEM_STMT_THREE_GET_NODES ], 3, memory_id );
+			EPMEM_SQLITE_BIND_INT( my_agent->epmem_statements[ EPMEM_STMT_THREE_GET_NODES ], 4, memory_id );
 			while ( epmem_exec_query( my_agent, my_agent->epmem_statements[ EPMEM_STMT_THREE_GET_NODES ], EPMEM_TIMER_NCB_NODE ) == SQLITE_ROW )
 			{
 				// f.child_id, f.parent_id, f.name, f.value, f.attr_type, f.value_type
-				child_id = sqlite3_column_int64( my_agent->epmem_statements[ EPMEM_STMT_THREE_GET_NODES ], 0 );
-				parent_id = sqlite3_column_int64( my_agent->epmem_statements[ EPMEM_STMT_THREE_GET_NODES ], 1 );
-				attr_type = sqlite3_column_int64( my_agent->epmem_statements[ EPMEM_STMT_THREE_GET_NODES ], 4 );
-				value_type = sqlite3_column_int64( my_agent->epmem_statements[ EPMEM_STMT_THREE_GET_NODES ], 5 );
+				child_id = EPMEM_SQLITE_COLUMN_INT( my_agent->epmem_statements[ EPMEM_STMT_THREE_GET_NODES ], 0 );
+				parent_id = EPMEM_SQLITE_COLUMN_INT( my_agent->epmem_statements[ EPMEM_STMT_THREE_GET_NODES ], 1 );
+				attr_type = EPMEM_SQLITE_COLUMN_INT( my_agent->epmem_statements[ EPMEM_STMT_THREE_GET_NODES ], 4 );
+				value_type = EPMEM_SQLITE_COLUMN_INT( my_agent->epmem_statements[ EPMEM_STMT_THREE_GET_NODES ], 5 );
 
 				// get a reference to the parent
 				parent = ids[ parent_id ];
@@ -3976,7 +3985,7 @@ void epmem_install_memory( agent *my_agent, Symbol *state, epmem_time_id memory_
 				switch ( attr_type )
 				{
 					case INT_CONSTANT_SYMBOL_TYPE:
-						attr = make_int_constant( my_agent, sqlite3_column_int64( my_agent->epmem_statements[ EPMEM_STMT_THREE_GET_NODES ], 2 ) );
+						attr = make_int_constant( my_agent, EPMEM_SQLITE_COLUMN_INT( my_agent->epmem_statements[ EPMEM_STMT_THREE_GET_NODES ], 2 ) );
 						break;
 
 					case FLOAT_CONSTANT_SYMBOL_TYPE:
@@ -3992,7 +4001,7 @@ void epmem_install_memory( agent *my_agent, Symbol *state, epmem_time_id memory_
 				switch ( value_type )
 				{
 					case INT_CONSTANT_SYMBOL_TYPE:
-						value = make_int_constant( my_agent, sqlite3_column_int64( my_agent->epmem_statements[ EPMEM_STMT_THREE_GET_NODES ], 3 ) );
+						value = make_int_constant( my_agent, EPMEM_SQLITE_COLUMN_INT( my_agent->epmem_statements[ EPMEM_STMT_THREE_GET_NODES ], 3 ) );
 						break;
 
 					case FLOAT_CONSTANT_SYMBOL_TYPE:
@@ -4044,17 +4053,17 @@ epmem_time_id epmem_next_episode( agent *my_agent, epmem_time_id memory_id )
 
 	if ( mode == EPMEM_MODE_ONE )
 	{
-		sqlite3_bind_int64( my_agent->epmem_statements[ EPMEM_STMT_ONE_NEXT_EPISODE ], 1, memory_id );
+		EPMEM_SQLITE_BIND_INT( my_agent->epmem_statements[ EPMEM_STMT_ONE_NEXT_EPISODE ], 1, memory_id );
 		if ( sqlite3_step( my_agent->epmem_statements[ EPMEM_STMT_ONE_NEXT_EPISODE ] ) == SQLITE_ROW )
-			return_val = ( sqlite3_column_int64( my_agent->epmem_statements[ EPMEM_STMT_ONE_NEXT_EPISODE ], 0 ) );
+			return_val = ( EPMEM_SQLITE_COLUMN_INT( my_agent->epmem_statements[ EPMEM_STMT_ONE_NEXT_EPISODE ], 0 ) );
 
 		sqlite3_reset( my_agent->epmem_statements[ EPMEM_STMT_ONE_NEXT_EPISODE ] );
 	}
 	else if ( mode == EPMEM_MODE_THREE )
 	{
-		sqlite3_bind_int64( my_agent->epmem_statements[ EPMEM_STMT_THREE_NEXT_EPISODE ], 1, memory_id );
+		EPMEM_SQLITE_BIND_INT( my_agent->epmem_statements[ EPMEM_STMT_THREE_NEXT_EPISODE ], 1, memory_id );
 		if ( sqlite3_step( my_agent->epmem_statements[ EPMEM_STMT_THREE_NEXT_EPISODE ] ) == SQLITE_ROW )
-			return_val = ( sqlite3_column_int64( my_agent->epmem_statements[ EPMEM_STMT_THREE_NEXT_EPISODE ], 0 ) );
+			return_val = ( EPMEM_SQLITE_COLUMN_INT( my_agent->epmem_statements[ EPMEM_STMT_THREE_NEXT_EPISODE ], 0 ) );
 
 		sqlite3_reset( my_agent->epmem_statements[ EPMEM_STMT_THREE_NEXT_EPISODE ] );
 	}
@@ -4084,17 +4093,17 @@ epmem_time_id epmem_previous_episode( agent *my_agent, epmem_time_id memory_id )
 
 	if ( mode == EPMEM_MODE_ONE )
 	{
-		sqlite3_bind_int64( my_agent->epmem_statements[ EPMEM_STMT_ONE_PREV_EPISODE ], 1, memory_id );
+		EPMEM_SQLITE_BIND_INT( my_agent->epmem_statements[ EPMEM_STMT_ONE_PREV_EPISODE ], 1, memory_id );
 		if ( sqlite3_step( my_agent->epmem_statements[ EPMEM_STMT_ONE_PREV_EPISODE ] ) == SQLITE_ROW )
-			return_val = ( sqlite3_column_int64( my_agent->epmem_statements[ EPMEM_STMT_ONE_PREV_EPISODE ], 0 ) );
+			return_val = ( EPMEM_SQLITE_COLUMN_INT( my_agent->epmem_statements[ EPMEM_STMT_ONE_PREV_EPISODE ], 0 ) );
 
 		sqlite3_reset( my_agent->epmem_statements[ EPMEM_STMT_ONE_PREV_EPISODE ] );
 	}
 	else if ( mode == EPMEM_MODE_THREE )
 	{
-		sqlite3_bind_int64( my_agent->epmem_statements[ EPMEM_STMT_THREE_PREV_EPISODE ], 1, memory_id );
+		EPMEM_SQLITE_BIND_INT( my_agent->epmem_statements[ EPMEM_STMT_THREE_PREV_EPISODE ], 1, memory_id );
 		if ( sqlite3_step( my_agent->epmem_statements[ EPMEM_STMT_THREE_PREV_EPISODE ] ) == SQLITE_ROW )
-			return_val = ( sqlite3_column_int64( my_agent->epmem_statements[ EPMEM_STMT_THREE_PREV_EPISODE ], 0 ) );
+			return_val = ( EPMEM_SQLITE_COLUMN_INT( my_agent->epmem_statements[ EPMEM_STMT_THREE_PREV_EPISODE ], 0 ) );
 
 		sqlite3_reset( my_agent->epmem_statements[ EPMEM_STMT_THREE_PREV_EPISODE ] );
 	}
@@ -4135,7 +4144,7 @@ epmem_time_id epmem_previous_episode( agent *my_agent, epmem_time_id memory_id )
 // ambiguous identities over time.  Thus I introduced
 // the Disjunctive Normal Form (DNF) tree.
 //
-// The primary insight of the DNF tree is that paths to
+// The primary insight of the DNF graph is that paths to
 // leaf nodes can be written as the disjunction of the
 // conjunction of paths.
 //
@@ -4161,7 +4170,7 @@ epmem_time_id epmem_previous_episode( agent *my_agent, epmem_time_id memory_id )
 // satisfaction while flipping on/off a single literal
 // (which may exist in multiple clauses).
 //
-// The DNF tree implements this intuition efficiently by
+// The DNF graph implements this intuition efficiently by
 // (say it with me) only processing changes!  First we
 // construct the graph by creating "literals" (gA, fA, etc)
 // and maintaining parent-child relationships (gA connects
@@ -4174,7 +4183,7 @@ epmem_time_id epmem_previous_episode( agent *my_agent, epmem_time_id memory_id )
 // each of the literals.  It is possible that a query
 // can serve multiple literals, so we gain from sharing.
 //
-// Nodes within the DNF Tree need only save a "count":
+// Nodes within the DNF Graph need only save a "count":
 // zero means neither it nor its lineage to date is
 // satisfied, one means either its lineage or it is
 // satisfied, two means it and its lineage is satisfied.
@@ -4213,7 +4222,7 @@ epmem_leaf_node *epmem_create_leaf_node( epmem_node_id leaf_id, double leaf_weig
  * Notes		: Implements a step in the range search algorithm for
  * 				  WM Tree (see above description).
  **************************************************************************/
-void epmem_incremental_row( agent *my_agent, epmem_range_query_list *queries, epmem_time_id &id, long long &ct, double &v, long long &updown, const unsigned int list )
+void epmem_incremental_row( agent *my_agent, epmem_range_query_list *queries, epmem_time_id &id, EPMEM_TYPE_INT &ct, double &v, EPMEM_TYPE_INT &updown, const unsigned int list )
 {
 	// initialize variables
 	id = queries[ list ].top()->val;
@@ -4243,7 +4252,7 @@ void epmem_incremental_row( agent *my_agent, epmem_range_query_list *queries, ep
 		if ( more_data )
 		{
 			// if so, add back to the priority queue
-			temp_query->val = sqlite3_column_int64( temp_query->stmt, 0 );
+			temp_query->val = EPMEM_SQLITE_COLUMN_INT( temp_query->stmt, 0 );
 			queries[ list ].push( temp_query );
 		}
 		else
@@ -4261,10 +4270,10 @@ void epmem_incremental_row( agent *my_agent, epmem_range_query_list *queries, ep
 /***************************************************************************
  * Function     : epmem_shared_flip
  * Author		: Nate Derbinsky
- * Notes		: Implements flipping a literal in the DNF Tree
+ * Notes		: Implements flipping a literal in the DNF Graph
  * 				  (see above description).
  **************************************************************************/
-void epmem_shared_flip( epmem_shared_literal *flip, const unsigned int list, long long &ct, double &v, long long &updown )
+void epmem_shared_flip( epmem_shared_literal *flip, const unsigned int list, EPMEM_TYPE_INT &ct, double &v, EPMEM_TYPE_INT &updown )
 {
 	if ( list == EPMEM_RANGE_START )
 	{
@@ -4320,7 +4329,7 @@ void epmem_shared_flip( epmem_shared_literal *flip, const unsigned int list, lon
  * Notes		: Implements a step in the range search algorithm for
  * 				  WM Graph (see above description).
  **************************************************************************/
-void epmem_shared_increment( agent *my_agent, epmem_shared_query_list *queries, epmem_time_id &id, long long &ct, double &v, long long &updown, const unsigned int list )
+void epmem_shared_increment( agent *my_agent, epmem_shared_query_list *queries, epmem_time_id &id, EPMEM_TYPE_INT &ct, double &v, EPMEM_TYPE_INT &updown, const unsigned int list )
 {
 	// initialize variables
 	id = queries[ list ].top()->val;
@@ -4350,7 +4359,7 @@ void epmem_shared_increment( agent *my_agent, epmem_shared_query_list *queries, 
 		if ( more_data )
 		{
 			// if so, add back to the priority queue
-			temp_query->val = sqlite3_column_int64( temp_query->stmt, 0 );
+			temp_query->val = EPMEM_SQLITE_COLUMN_INT( temp_query->stmt, 0 );
 			queries[ list ].push( temp_query );
 		}
 		else
@@ -4383,10 +4392,10 @@ void epmem_shared_increment( agent *my_agent, epmem_shared_query_list *queries, 
  * 					- this is not true graph-match because it does
  * 				      not respect constraints of shared identifiers.
  **************************************************************************/
-unsigned long long epmem_graph_match_paths( epmem_shared_trigger_list *literals )
+unsigned EPMEM_TYPE_INT epmem_graph_match_paths( epmem_shared_trigger_list *literals )
 {
 	// number of satisfied matches reached
-	unsigned long long return_val = 0;
+	unsigned EPMEM_TYPE_INT return_val = 0;
 
 	// keeps track of the current literal
 	epmem_shared_trigger_list::iterator l_p;
@@ -4457,13 +4466,13 @@ unsigned long long epmem_graph_match_paths( epmem_shared_trigger_list *literals 
  * 				      of the same WME are grouped together)
  * 					- recursion across the WMEs within the provided list is
  * 				      implemented with stacks; DFS recursion through the
- * 				      DNF tree is handled through function calls
+ * 				      DNF graph is handled through function calls
  *
  **************************************************************************/
-unsigned long long epmem_graph_match_wmes( epmem_shared_trigger_list *literals, epmem_constraint_list *constraints )
+unsigned EPMEM_TYPE_INT epmem_graph_match_wmes( epmem_shared_trigger_list *literals, epmem_constraint_list *constraints )
 {
 	// number of satisfied leaf WMEs in this list
-	unsigned long long return_val = 0;
+	unsigned EPMEM_TYPE_INT return_val = 0;
 
 	// stacks to maintain state within the list
 	std::stack<epmem_shared_trigger_list::iterator *> c_ps; // literal pointers (position within a WME)
@@ -4481,7 +4490,7 @@ unsigned long long epmem_graph_match_wmes( epmem_shared_trigger_list *literals, 
 
 	// current values from the stacks
 	epmem_shared_trigger_list::iterator *c_p = new epmem_shared_trigger_list::iterator();
-	epmem_constraint_list *c_c;
+	epmem_constraint_list *c_c = NULL;
 	epmem_node_id c_id;
 
 	// derived values from iterators
@@ -4513,7 +4522,7 @@ unsigned long long epmem_graph_match_wmes( epmem_shared_trigger_list *literals, 
 		c_c = new epmem_constraint_list( *constraints );
 
 		// get constraint for this wme, if exists
-		c_id = EPMEM_MEMID_NONE;
+		c_id = EPMEM_NODEID_ROOT;
 		if ( c_w->value->common.symbol_type == IDENTIFIER_SYMBOL_TYPE )
 		{
 			c = c_c->find( c_w->value );
@@ -4538,7 +4547,7 @@ unsigned long long epmem_graph_match_wmes( epmem_shared_trigger_list *literals, 
 					if ( c_l->wme_kids )
 					{
 						// check if unconstrained
-						if ( c_id == EPMEM_MEMID_NONE )
+						if ( c_id == EPMEM_NODEID_ROOT )
 						{
 							// copy constraints
 							n_c = new epmem_constraint_list( *c_c );
@@ -4621,7 +4630,7 @@ unsigned long long epmem_graph_match_wmes( epmem_shared_trigger_list *literals, 
 						c_c = new epmem_constraint_list( *c_c );
 
 						// get constraint for this wme, if exists
-						c_id = EPMEM_MEMID_NONE;
+						c_id = EPMEM_NODEID_ROOT;
 						if ( c_w->value->common.symbol_type == IDENTIFIER_SYMBOL_TYPE )
 						{
 							c = c_c->find( c_w->value );
@@ -4701,7 +4710,9 @@ unsigned long long epmem_graph_match_wmes( epmem_shared_trigger_list *literals, 
 	{
 		delete c_p;
 		delete n_p;
-		delete c_c;
+		
+		if ( c_c )
+			delete c_c;
 
 		// we've been dynamically creating new
 		// iterator pointers all along
@@ -4732,13 +4743,13 @@ unsigned long long epmem_graph_match_wmes( epmem_shared_trigger_list *literals, 
  * Author		: Nate Derbinsky
  * Notes		: Performs cue-based query (see section description above).
  **************************************************************************/
-void epmem_process_query( agent *my_agent, Symbol *state, Symbol *query, Symbol *neg_query, std::vector<epmem_time_id> *prohibit, epmem_time_id before, epmem_time_id after )
+void epmem_process_query( agent *my_agent, Symbol *state, Symbol *query, Symbol *neg_query, epmem_time_list *prohibit, epmem_time_id before, epmem_time_id after )
 {
 	////////////////////////////////////////////////////////////////////////////
 	epmem_start_timer( my_agent, EPMEM_TIMER_QUERY );
 	////////////////////////////////////////////////////////////////////////////
 
-	int len_query = 0, len_neg_query = 0;
+	unsigned EPMEM_TYPE_INT len_query = 0, len_neg_query = 0;
 	wme **wmes_query = NULL;
 	if ( query != NULL )
 		wmes_query = epmem_get_augs_of_id( my_agent, query, get_new_tc_number( my_agent ), &len_query );
@@ -4762,10 +4773,10 @@ void epmem_process_query( agent *my_agent, Symbol *state, Symbol *query, Symbol 
 			// BFS to get the leaf id's
 			std::list<epmem_leaf_node *> leaf_ids[2];
 			std::list<epmem_leaf_node *>::iterator leaf_p;
-			std::vector<epmem_time_id>::iterator prohibit_p;
+			epmem_time_list::iterator prohibit_p;
 			{
 				wme ***wmes;
-				int len;
+				unsigned EPMEM_TYPE_INT len;
 
 				std::queue<Symbol *> parent_syms;
 				std::queue<epmem_node_id> parent_ids;
@@ -4777,7 +4788,8 @@ void epmem_process_query( agent *my_agent, Symbol *state, Symbol *query, Symbol 
 				wme *parent_wme;
 				unsigned long my_hash;
 
-				int i, j;
+				int i;
+				unsigned EPMEM_TYPE_INT j;
 				bool just_started;
 
 				// initialize pos/neg lists
@@ -4789,7 +4801,7 @@ void epmem_process_query( agent *my_agent, Symbol *state, Symbol *query, Symbol 
 							wmes = &wmes_query;
 							len = len_query;
 							parent_syms.push( query );
-							parent_ids.push( EPMEM_MEMID_ROOT );
+							parent_ids.push( EPMEM_NODEID_ROOT );
 							parent_wmes.push( NULL );
 							just_started = true;
 							break;
@@ -4798,7 +4810,7 @@ void epmem_process_query( agent *my_agent, Symbol *state, Symbol *query, Symbol 
 							wmes = &wmes_neg_query;
 							len = len_neg_query;
 							parent_syms.push( neg_query );
-							parent_ids.push( EPMEM_MEMID_ROOT );
+							parent_ids.push( EPMEM_NODEID_ROOT );
 							parent_wmes.push( NULL );
 							just_started = true;
 							break;
@@ -4832,17 +4844,17 @@ void epmem_process_query( agent *my_agent, Symbol *state, Symbol *query, Symbol 
 									if ( (*wmes)[j]->value->common.symbol_type != IDENTIFIER_SYMBOL_TYPE )
 									{
 										// hash=? AND parent_id=? AND name=? AND value=? AND attr_type=? AND value_type=?
-										sqlite3_bind_int64( my_agent->epmem_statements[ EPMEM_STMT_ONE_FIND_NODE_UNIQUE ], 1, my_hash );
-										sqlite3_bind_int64( my_agent->epmem_statements[ EPMEM_STMT_ONE_FIND_NODE_UNIQUE ], 2, parent_id );
+										EPMEM_SQLITE_BIND_INT( my_agent->epmem_statements[ EPMEM_STMT_ONE_FIND_NODE_UNIQUE ], 1, my_hash );
+										EPMEM_SQLITE_BIND_INT( my_agent->epmem_statements[ EPMEM_STMT_ONE_FIND_NODE_UNIQUE ], 2, parent_id );
 
 										switch( (*wmes)[j]->attr->common.symbol_type )
 										{
 											case SYM_CONSTANT_SYMBOL_TYPE:
-												sqlite3_bind_text( my_agent->epmem_statements[ EPMEM_STMT_ONE_FIND_NODE_UNIQUE ], 3, (const char *) (*wmes)[j]->attr->sc.name, -1, SQLITE_STATIC );
+												sqlite3_bind_text( my_agent->epmem_statements[ EPMEM_STMT_ONE_FIND_NODE_UNIQUE ], 3, (const char *) (*wmes)[j]->attr->sc.name, EPMEM_DB_PREP_STR_MAX, SQLITE_STATIC );
 												break;
 
 											case INT_CONSTANT_SYMBOL_TYPE:
-			        							sqlite3_bind_int64( my_agent->epmem_statements[ EPMEM_STMT_ONE_FIND_NODE_UNIQUE ], 3, (*wmes)[j]->attr->ic.value );
+			        							EPMEM_SQLITE_BIND_INT( my_agent->epmem_statements[ EPMEM_STMT_ONE_FIND_NODE_UNIQUE ], 3, (*wmes)[j]->attr->ic.value );
 												break;
 
 											case FLOAT_CONSTANT_SYMBOL_TYPE:
@@ -4853,11 +4865,11 @@ void epmem_process_query( agent *my_agent, Symbol *state, Symbol *query, Symbol 
 										switch( (*wmes)[j]->value->common.symbol_type )
 										{
 											case SYM_CONSTANT_SYMBOL_TYPE:
-												sqlite3_bind_text( my_agent->epmem_statements[ EPMEM_STMT_ONE_FIND_NODE_UNIQUE ], 4, (const char *) (*wmes)[j]->value->sc.name, -1, SQLITE_STATIC );
+												sqlite3_bind_text( my_agent->epmem_statements[ EPMEM_STMT_ONE_FIND_NODE_UNIQUE ], 4, (const char *) (*wmes)[j]->value->sc.name, EPMEM_DB_PREP_STR_MAX, SQLITE_STATIC );
 												break;
 
 											case INT_CONSTANT_SYMBOL_TYPE:
-			        							sqlite3_bind_int64( my_agent->epmem_statements[ EPMEM_STMT_ONE_FIND_NODE_UNIQUE ], 4, (*wmes)[j]->value->ic.value );
+			        							EPMEM_SQLITE_BIND_INT( my_agent->epmem_statements[ EPMEM_STMT_ONE_FIND_NODE_UNIQUE ], 4, (*wmes)[j]->value->ic.value );
 												break;
 
 											case FLOAT_CONSTANT_SYMBOL_TYPE:
@@ -4865,40 +4877,40 @@ void epmem_process_query( agent *my_agent, Symbol *state, Symbol *query, Symbol 
 												break;
 										}
 
-										sqlite3_bind_int64( my_agent->epmem_statements[ EPMEM_STMT_ONE_FIND_NODE_UNIQUE ], 5, (*wmes)[j]->attr->common.symbol_type );
-										sqlite3_bind_int64( my_agent->epmem_statements[ EPMEM_STMT_ONE_FIND_NODE_UNIQUE ], 6, (*wmes)[j]->value->common.symbol_type );
+										EPMEM_SQLITE_BIND_INT( my_agent->epmem_statements[ EPMEM_STMT_ONE_FIND_NODE_UNIQUE ], 5, (*wmes)[j]->attr->common.symbol_type );
+										EPMEM_SQLITE_BIND_INT( my_agent->epmem_statements[ EPMEM_STMT_ONE_FIND_NODE_UNIQUE ], 6, (*wmes)[j]->value->common.symbol_type );
 
 										if ( sqlite3_step( my_agent->epmem_statements[ EPMEM_STMT_ONE_FIND_NODE_UNIQUE ] ) == SQLITE_ROW )
-											leaf_ids[i].push_back( epmem_create_leaf_node( sqlite3_column_int64( my_agent->epmem_statements[ EPMEM_STMT_ONE_FIND_NODE_UNIQUE ], 0 ), wma_get_wme_activation( my_agent, (*wmes)[j] ) ) );
+											leaf_ids[i].push_back( epmem_create_leaf_node( EPMEM_SQLITE_COLUMN_INT( my_agent->epmem_statements[ EPMEM_STMT_ONE_FIND_NODE_UNIQUE ], 0 ), wma_get_wme_activation( my_agent, (*wmes)[j] ) ) );
 
 										sqlite3_reset( my_agent->epmem_statements[ EPMEM_STMT_ONE_FIND_NODE_UNIQUE ] );
 									}
 									else
 									{
 										// hash=? AND parent_id=? AND name=? AND value IS NULL AND attr_type=?
-										sqlite3_bind_int64( my_agent->epmem_statements[ EPMEM_STMT_ONE_FIND_IDENTIFIER ], 1, my_hash );
-										sqlite3_bind_int64( my_agent->epmem_statements[ EPMEM_STMT_ONE_FIND_IDENTIFIER ], 2, parent_id );
+										EPMEM_SQLITE_BIND_INT( my_agent->epmem_statements[ EPMEM_STMT_ONE_FIND_IDENTIFIER ], 1, my_hash );
+										EPMEM_SQLITE_BIND_INT( my_agent->epmem_statements[ EPMEM_STMT_ONE_FIND_IDENTIFIER ], 2, parent_id );
 
 										switch( (*wmes)[j]->attr->common.symbol_type )
 										{
 											case SYM_CONSTANT_SYMBOL_TYPE:
-												sqlite3_bind_text( my_agent->epmem_statements[ EPMEM_STMT_ONE_FIND_IDENTIFIER ], 3, (const char *) (*wmes)[j]->attr->sc.name, -1, SQLITE_STATIC );
+												sqlite3_bind_text( my_agent->epmem_statements[ EPMEM_STMT_ONE_FIND_IDENTIFIER ], 3, (const char *) (*wmes)[j]->attr->sc.name, EPMEM_DB_PREP_STR_MAX, SQLITE_STATIC );
 												break;
 
 											case INT_CONSTANT_SYMBOL_TYPE:
-			        							sqlite3_bind_int64( my_agent->epmem_statements[ EPMEM_STMT_ONE_FIND_IDENTIFIER ], 3, (*wmes)[j]->attr->ic.value );
+			        							EPMEM_SQLITE_BIND_INT( my_agent->epmem_statements[ EPMEM_STMT_ONE_FIND_IDENTIFIER ], 3, (*wmes)[j]->attr->ic.value );
 												break;
 
 											case FLOAT_CONSTANT_SYMBOL_TYPE:
 			        							sqlite3_bind_double( my_agent->epmem_statements[ EPMEM_STMT_ONE_FIND_IDENTIFIER ], 3, (*wmes)[j]->attr->fc.value );
 												break;
 										}
-										sqlite3_bind_int64( my_agent->epmem_statements[ EPMEM_STMT_ONE_FIND_IDENTIFIER ], 4, (*wmes)[j]->attr->common.symbol_type );
+										EPMEM_SQLITE_BIND_INT( my_agent->epmem_statements[ EPMEM_STMT_ONE_FIND_IDENTIFIER ], 4, (*wmes)[j]->attr->common.symbol_type );
 
 										if ( sqlite3_step( my_agent->epmem_statements[ EPMEM_STMT_ONE_FIND_IDENTIFIER ] ) == SQLITE_ROW )
 										{
 											parent_syms.push( (*wmes)[j]->value );
-											parent_ids.push( sqlite3_column_int64( my_agent->epmem_statements[ EPMEM_STMT_ONE_FIND_IDENTIFIER ], 0 ) );
+											parent_ids.push( EPMEM_SQLITE_COLUMN_INT( my_agent->epmem_statements[ EPMEM_STMT_ONE_FIND_IDENTIFIER ], 0 ) );
 											parent_wmes.push( (*wmes)[j] );
 										}
 
@@ -4929,7 +4941,7 @@ void epmem_process_query( agent *my_agent, Symbol *state, Symbol *query, Symbol 
 			// useful statistics
 			int cue_sizes[2] = { leaf_ids[ EPMEM_NODE_POS ].size(), leaf_ids[ EPMEM_NODE_NEG ].size() };
 			int cue_size = ( cue_sizes[ EPMEM_NODE_POS ] + cue_sizes[ EPMEM_NODE_NEG ] );
-			int perfect_match = leaf_ids[ EPMEM_NODE_POS ].size();
+			unsigned EPMEM_TYPE_INT perfect_match = leaf_ids[ EPMEM_NODE_POS ].size();
 
 			// only perform search if necessary
 			if ( cue_size )
@@ -4939,7 +4951,7 @@ void epmem_process_query( agent *my_agent, Symbol *state, Symbol *query, Symbol 
 					// variables to populate
 					epmem_time_id king_id = EPMEM_MEMID_NONE;
 					double king_score = -1000;
-					unsigned long long king_cardinality = 0;
+					unsigned EPMEM_TYPE_INT king_cardinality = 0;
 
 					// prepare queries
 					epmem_range_query_list *queries = new epmem_range_query_list[2];
@@ -4979,20 +4991,20 @@ void epmem_process_query( agent *my_agent, Symbol *state, Symbol *query, Symbol 
 											}
 
 											// assign sql
-											bool my_assert = ( sqlite3_prepare_v2( my_agent->epmem_db, epmem_range_queries[ EPMEM_RIT_STATE_NODE ][ j ][ k ], -1, &new_stmt, &tail ) == SQLITE_OK );
+											bool my_assert = ( sqlite3_prepare_v2( my_agent->epmem_db, epmem_range_queries[ EPMEM_RIT_STATE_NODE ][ j ][ k ], EPMEM_DB_PREP_STR_MAX, &new_stmt, &tail ) == SQLITE_OK );
 											assert( my_assert );
 
 											// bind values
 											position = 1;
 
 											if ( ( k == EPMEM_RANGE_NOW ) && ( j == EPMEM_RANGE_END ) )
-												sqlite3_bind_int64( new_stmt, position++, time_now );
-											sqlite3_bind_int64( new_stmt, position, (*leaf_p)->leaf_id );
+												EPMEM_SQLITE_BIND_INT( new_stmt, position++, time_now );
+											EPMEM_SQLITE_BIND_INT( new_stmt, position, (*leaf_p)->leaf_id );
 
 											if ( epmem_exec_query( my_agent, new_stmt, new_timer ) == SQLITE_ROW )
 											{
 												new_query = new epmem_range_query;
-												new_query->val = sqlite3_column_int64( new_stmt, 0 );
+												new_query->val = EPMEM_SQLITE_COLUMN_INT( new_stmt, 0 );
 												new_query->stmt = new_stmt;
 												new_query->timer = new_timer;
 
@@ -5023,15 +5035,15 @@ void epmem_process_query( agent *my_agent, Symbol *state, Symbol *query, Symbol 
 						double balance_inv = 1 - balance;
 
 						// dynamic programming stuff
-						long long sum_ct = 0;
+						EPMEM_TYPE_INT sum_ct = 0;
 						double sum_v = 0;
-						long long sum_updown = 0;
+						EPMEM_TYPE_INT sum_updown = 0;
 
 						// current pointer
 						epmem_time_id current_id = EPMEM_MEMID_NONE;
-						long long current_ct = 0;
+						EPMEM_TYPE_INT current_ct = 0;
 						double current_v = 0;
-						long long current_updown = 0;
+						EPMEM_TYPE_INT current_updown = 0;
 						epmem_time_id current_end;
 						epmem_time_id current_valid_end;
 						double current_score;
@@ -5043,7 +5055,7 @@ void epmem_process_query( agent *my_agent, Symbol *state, Symbol *query, Symbol 
 						unsigned int next_list;
 
 						// prohibit pointer
-						long long current_prohibit = ( ( (long long) prohibit->size() ) - 1 );
+						epmem_time_list::size_type current_prohibit = ( prohibit->size() - 1 );
 
 						// completion (allows for smart cut-offs later)
 						bool done = false;
@@ -5093,7 +5105,7 @@ void epmem_process_query( agent *my_agent, Symbol *state, Symbol *query, Symbol 
 								else
 									current_valid_end = ( ( current_id < before )?( current_id ):( before - 1 ) );
 
-								while ( ( current_prohibit != -1 ) && ( current_valid_end >= current_end ) && ( current_valid_end <= (*prohibit)[ current_prohibit ] ) )
+								while ( ( current_prohibit != EPMEM_MEMID_NONE ) && ( current_valid_end >= current_end ) && ( current_valid_end <= (*prohibit)[ current_prohibit ] ) )
 								{
 									if ( current_valid_end == (*prohibit)[ current_prohibit ] )
 										current_valid_end--;
@@ -5251,14 +5263,14 @@ void epmem_process_query( agent *my_agent, Symbol *state, Symbol *query, Symbol 
 
 			// graph match
 			epmem_shared_trigger_list graph_match_roots;
-			long long graph_match = epmem_get_parameter( my_agent, (const long) EPMEM_PARAM_GRAPH_MATCH, EPMEM_RETURN_LONG );
+			const long graph_match = epmem_get_parameter( my_agent, (const long) EPMEM_PARAM_GRAPH_MATCH, EPMEM_RETURN_LONG );
 
-			unsigned long long leaf_ids[2] = { 0, 0 };
+			unsigned EPMEM_TYPE_INT leaf_ids[2] = { 0, 0 };
 
 			wme *new_wme;
 			epmem_time_id time_now = epmem_get_stat( my_agent, (const long) EPMEM_STAT_TIME ) - 1;
 
-			// simultaneously process cue, construct DNF tree, and add queries to priority cue
+			// simultaneously process cue, construct DNF graph, and add queries to priority cue
 			// (i.e. prep for range search query)
 			{
 				// wme cache
@@ -5281,7 +5293,8 @@ void epmem_process_query( agent *my_agent, Symbol *state, Symbol *query, Symbol 
 				int position;
 
 				// misc
-				int i, j, k, m;
+				int i, k, m;
+				unsigned EPMEM_TYPE_INT j;
 
 				// associate common literals with a query
 				std::map<epmem_node_id, epmem_shared_trigger_list *> literal_to_node_query;
@@ -5329,13 +5342,13 @@ void epmem_process_query( agent *my_agent, Symbol *state, Symbol *query, Symbol 
 					{
 						case EPMEM_NODE_POS:
 							parent_syms.push( query );
-							parent_ids.push( EPMEM_MEMID_ROOT );
+							parent_ids.push( EPMEM_NODEID_ROOT );
 							parent_literals.push( NULL );
 							break;
 
 						case EPMEM_NODE_NEG:
 							parent_syms.push( neg_query );
-							parent_ids.push( EPMEM_MEMID_ROOT );
+							parent_ids.push( EPMEM_NODEID_ROOT );
 							parent_literals.push( NULL );
 							break;
 					}
@@ -5363,33 +5376,33 @@ void epmem_process_query( agent *my_agent, Symbol *state, Symbol *query, Symbol 
 								if ( current_cache_element->wmes[j]->value->common.symbol_type == IDENTIFIER_SYMBOL_TYPE )
 								{
 									// q0=? AND w=? AND w_type=?
-									sqlite3_bind_int64( my_agent->epmem_statements[ EPMEM_STMT_THREE_FIND_EDGE_UNIQUE ], 1, parent_id );
+									EPMEM_SQLITE_BIND_INT( my_agent->epmem_statements[ EPMEM_STMT_THREE_FIND_EDGE_UNIQUE ], 1, parent_id );
 									switch( current_cache_element->wmes[j]->attr->common.symbol_type )
 									{
 										case SYM_CONSTANT_SYMBOL_TYPE:
-											sqlite3_bind_text( my_agent->epmem_statements[ EPMEM_STMT_THREE_FIND_EDGE_UNIQUE ], 2, (const char *) current_cache_element->wmes[j]->attr->sc.name, -1, SQLITE_STATIC );
+											sqlite3_bind_text( my_agent->epmem_statements[ EPMEM_STMT_THREE_FIND_EDGE_UNIQUE ], 2, (const char *) current_cache_element->wmes[j]->attr->sc.name, EPMEM_DB_PREP_STR_MAX, SQLITE_STATIC );
 											break;
 
 										case INT_CONSTANT_SYMBOL_TYPE:
-			        						sqlite3_bind_int64( my_agent->epmem_statements[ EPMEM_STMT_THREE_FIND_EDGE_UNIQUE ], 2, current_cache_element->wmes[j]->attr->ic.value );
+			        						EPMEM_SQLITE_BIND_INT( my_agent->epmem_statements[ EPMEM_STMT_THREE_FIND_EDGE_UNIQUE ], 2, current_cache_element->wmes[j]->attr->ic.value );
 											break;
 
 										case FLOAT_CONSTANT_SYMBOL_TYPE:
 			        						sqlite3_bind_double( my_agent->epmem_statements[ EPMEM_STMT_THREE_FIND_EDGE_UNIQUE ], 2, current_cache_element->wmes[j]->attr->fc.value );
 											break;
 									}
-									sqlite3_bind_int64( my_agent->epmem_statements[ EPMEM_STMT_THREE_FIND_EDGE_UNIQUE ], 3, current_cache_element->wmes[j]->attr->common.symbol_type );
+									EPMEM_SQLITE_BIND_INT( my_agent->epmem_statements[ EPMEM_STMT_THREE_FIND_EDGE_UNIQUE ], 3, current_cache_element->wmes[j]->attr->common.symbol_type );
 
 									while ( sqlite3_step( my_agent->epmem_statements[ EPMEM_STMT_THREE_FIND_EDGE_UNIQUE ] ) == SQLITE_ROW )
 									{
 										// get identity
-										unique_identity = sqlite3_column_int64( my_agent->epmem_statements[ EPMEM_STMT_THREE_FIND_EDGE_UNIQUE ], 0 );
-										shared_identity = sqlite3_column_int64( my_agent->epmem_statements[ EPMEM_STMT_THREE_FIND_EDGE_UNIQUE ], 1 );
+										unique_identity = EPMEM_SQLITE_COLUMN_INT( my_agent->epmem_statements[ EPMEM_STMT_THREE_FIND_EDGE_UNIQUE ], 0 );
+										shared_identity = EPMEM_SQLITE_COLUMN_INT( my_agent->epmem_statements[ EPMEM_STMT_THREE_FIND_EDGE_UNIQUE ], 1 );
 
 										// create new literal
 										new_literal = new epmem_shared_literal;
 										literals.push_back( new_literal );
-										if ( parent_id == EPMEM_MEMID_ROOT )
+										if ( parent_id == EPMEM_NODEID_ROOT )
 										{
 											new_literal->ct = 1;
 
@@ -5400,7 +5413,7 @@ void epmem_process_query( agent *my_agent, Symbol *state, Symbol *query, Symbol 
 										{
 											new_literal->ct = 0;
 											if ( !parent_literal->children )
-												parent_literal->children = new std::list<epmem_shared_literal *>();
+												parent_literal->children = new epmem_shared_trigger_list();
 
 											parent_literal->children->push_back( new_literal );
 										}
@@ -5438,21 +5451,21 @@ void epmem_process_query( agent *my_agent, Symbol *state, Symbol *query, Symbol 
 													}
 
 													// assign sql
-													bool my_assert = ( sqlite3_prepare_v2( my_agent->epmem_db, epmem_range_queries[ EPMEM_RIT_STATE_EDGE ][ k ][ m ], -1, &new_stmt, &tail ) == SQLITE_OK );
+													bool my_assert = ( sqlite3_prepare_v2( my_agent->epmem_db, epmem_range_queries[ EPMEM_RIT_STATE_EDGE ][ k ][ m ], EPMEM_DB_PREP_STR_MAX, &new_stmt, &tail ) == SQLITE_OK );
 													assert( my_assert );
 
 													// bind values
 													position = 1;
 
 													if ( ( m == EPMEM_RANGE_NOW ) && ( k == EPMEM_RANGE_END ) )
-														sqlite3_bind_int64( new_stmt, position++, time_now );
-													sqlite3_bind_int64( new_stmt, position, unique_identity );
+														EPMEM_SQLITE_BIND_INT( new_stmt, position++, time_now );
+													EPMEM_SQLITE_BIND_INT( new_stmt, position, unique_identity );
 
 													// take first step
 													if ( epmem_exec_query( my_agent, new_stmt, new_timer ) == SQLITE_ROW )
 													{
 														new_query = new epmem_shared_query;
-														new_query->val = sqlite3_column_int64( new_stmt, 0 );
+														new_query->val = EPMEM_SQLITE_COLUMN_INT( new_stmt, 0 );
 														new_query->stmt = new_stmt;
 														new_query->timer = new_timer;
 
@@ -5522,17 +5535,17 @@ void epmem_process_query( agent *my_agent, Symbol *state, Symbol *query, Symbol 
 								else
 								{
 									// parent_id=? AND hash=? AND name=? AND value=? AND attr_type=? AND value_type=?
-									sqlite3_bind_int64( my_agent->epmem_statements[ EPMEM_STMT_THREE_FIND_NODE_UNIQUE ], 1, parent_id );
-									sqlite3_bind_int64( my_agent->epmem_statements[ EPMEM_STMT_THREE_FIND_NODE_UNIQUE ], 2, epmem_hash_wme( my_agent, current_cache_element->wmes[j] ) );
+									EPMEM_SQLITE_BIND_INT( my_agent->epmem_statements[ EPMEM_STMT_THREE_FIND_NODE_UNIQUE ], 1, parent_id );
+									EPMEM_SQLITE_BIND_INT( my_agent->epmem_statements[ EPMEM_STMT_THREE_FIND_NODE_UNIQUE ], 2, epmem_hash_wme( my_agent, current_cache_element->wmes[j] ) );
 
 									switch( current_cache_element->wmes[j]->attr->common.symbol_type )
 									{
 										case SYM_CONSTANT_SYMBOL_TYPE:
-											sqlite3_bind_text( my_agent->epmem_statements[ EPMEM_STMT_THREE_FIND_NODE_UNIQUE ], 3, (const char *) current_cache_element->wmes[j]->attr->sc.name, -1, SQLITE_STATIC );
+											sqlite3_bind_text( my_agent->epmem_statements[ EPMEM_STMT_THREE_FIND_NODE_UNIQUE ], 3, (const char *) current_cache_element->wmes[j]->attr->sc.name, EPMEM_DB_PREP_STR_MAX, SQLITE_STATIC );
 											break;
 
 										case INT_CONSTANT_SYMBOL_TYPE:
-	        								sqlite3_bind_int64( my_agent->epmem_statements[ EPMEM_STMT_THREE_FIND_NODE_UNIQUE ], 3, current_cache_element->wmes[j]->attr->ic.value );
+	        								EPMEM_SQLITE_BIND_INT( my_agent->epmem_statements[ EPMEM_STMT_THREE_FIND_NODE_UNIQUE ], 3, current_cache_element->wmes[j]->attr->ic.value );
 											break;
 
 										case FLOAT_CONSTANT_SYMBOL_TYPE:
@@ -5543,29 +5556,29 @@ void epmem_process_query( agent *my_agent, Symbol *state, Symbol *query, Symbol 
 									switch( current_cache_element->wmes[j]->value->common.symbol_type )
 									{
 										case SYM_CONSTANT_SYMBOL_TYPE:
-											sqlite3_bind_text( my_agent->epmem_statements[ EPMEM_STMT_THREE_FIND_NODE_UNIQUE ], 4, (const char *) current_cache_element->wmes[j]->value->sc.name, -1, SQLITE_STATIC );
+											sqlite3_bind_text( my_agent->epmem_statements[ EPMEM_STMT_THREE_FIND_NODE_UNIQUE ], 4, (const char *) current_cache_element->wmes[j]->value->sc.name, EPMEM_DB_PREP_STR_MAX, SQLITE_STATIC );
 											break;
 
 										case INT_CONSTANT_SYMBOL_TYPE:
-	        								sqlite3_bind_int64( my_agent->epmem_statements[ EPMEM_STMT_THREE_FIND_NODE_UNIQUE ], 4, current_cache_element->wmes[j]->value->ic.value );
+	        								EPMEM_SQLITE_BIND_INT( my_agent->epmem_statements[ EPMEM_STMT_THREE_FIND_NODE_UNIQUE ], 4, current_cache_element->wmes[j]->value->ic.value );
 											break;
 
 										case FLOAT_CONSTANT_SYMBOL_TYPE:
 	        								sqlite3_bind_double( my_agent->epmem_statements[ EPMEM_STMT_THREE_FIND_NODE_UNIQUE ], 4, current_cache_element->wmes[j]->value->fc.value );
 											break;
 									}
-									sqlite3_bind_int64( my_agent->epmem_statements[ EPMEM_STMT_THREE_FIND_NODE_UNIQUE ], 5, current_cache_element->wmes[j]->attr->common.symbol_type );
-									sqlite3_bind_int64( my_agent->epmem_statements[ EPMEM_STMT_THREE_FIND_NODE_UNIQUE ], 6, current_cache_element->wmes[j]->value->common.symbol_type );
+									EPMEM_SQLITE_BIND_INT( my_agent->epmem_statements[ EPMEM_STMT_THREE_FIND_NODE_UNIQUE ], 5, current_cache_element->wmes[j]->attr->common.symbol_type );
+									EPMEM_SQLITE_BIND_INT( my_agent->epmem_statements[ EPMEM_STMT_THREE_FIND_NODE_UNIQUE ], 6, current_cache_element->wmes[j]->value->common.symbol_type );
 
 									if ( sqlite3_step( my_agent->epmem_statements[ EPMEM_STMT_THREE_FIND_NODE_UNIQUE ] ) == SQLITE_ROW )
 									{
 										// get identity
-										unique_identity = sqlite3_column_int64( my_agent->epmem_statements[ EPMEM_STMT_THREE_FIND_NODE_UNIQUE ], 0 );
+										unique_identity = EPMEM_SQLITE_COLUMN_INT( my_agent->epmem_statements[ EPMEM_STMT_THREE_FIND_NODE_UNIQUE ], 0 );
 
 										// create new literal
 										new_literal = new epmem_shared_literal;
 										literals.push_back( new_literal );
-										if ( parent_id == EPMEM_MEMID_ROOT )
+										if ( parent_id == EPMEM_NODEID_ROOT )
 										{
 											new_literal->ct = 1;
 
@@ -5576,11 +5589,11 @@ void epmem_process_query( agent *my_agent, Symbol *state, Symbol *query, Symbol 
 										{
 											new_literal->ct = 0;
 											if ( !parent_literal->children )
-												parent_literal->children = new std::list<epmem_shared_literal *>();
+												parent_literal->children = new epmem_shared_trigger_list();
 
 											parent_literal->children->push_back( new_literal );
 										}
-										new_literal->shared_id = EPMEM_MEMID_NONE;
+										new_literal->shared_id = EPMEM_NODEID_ROOT;
 										new_literal->wme_kids = 0;
 										new_literal->wme = current_cache_element->wmes[j];
 										new_literal->children = NULL;
@@ -5631,21 +5644,21 @@ void epmem_process_query( agent *my_agent, Symbol *state, Symbol *query, Symbol 
 													}
 
 													// assign sql
-													bool my_assert = ( sqlite3_prepare_v2( my_agent->epmem_db, epmem_range_queries[ EPMEM_RIT_STATE_NODE ][ k ][ m ], -1, &new_stmt, &tail ) == SQLITE_OK );
+													bool my_assert = ( sqlite3_prepare_v2( my_agent->epmem_db, epmem_range_queries[ EPMEM_RIT_STATE_NODE ][ k ][ m ], EPMEM_DB_PREP_STR_MAX, &new_stmt, &tail ) == SQLITE_OK );
 													assert( my_assert );
 
 													// bind values
 													position = 1;
 
 													if ( ( m == EPMEM_RANGE_NOW ) && ( k == EPMEM_RANGE_END ) )
-														sqlite3_bind_int64( new_stmt, position++, time_now );
-													sqlite3_bind_int64( new_stmt, position, unique_identity );
+														EPMEM_SQLITE_BIND_INT( new_stmt, position++, time_now );
+													EPMEM_SQLITE_BIND_INT( new_stmt, position, unique_identity );
 
 													// take first step
 													if ( epmem_exec_query( my_agent, new_stmt, new_timer ) == SQLITE_ROW )
 													{
 														new_query = new epmem_shared_query;
-														new_query->val = sqlite3_column_int64( new_stmt, 0 );
+														new_query->val = EPMEM_SQLITE_COLUMN_INT( new_stmt, 0 );
 														new_query->stmt = new_stmt;
 														new_query->timer = new_timer;
 
@@ -5697,13 +5710,13 @@ void epmem_process_query( agent *my_agent, Symbol *state, Symbol *query, Symbol 
 
 			// useful statistics
 			int cue_size = ( leaf_ids[ EPMEM_NODE_POS ] + leaf_ids[ EPMEM_NODE_NEG ] );
-			int perfect_match = leaf_ids[ EPMEM_NODE_POS ];
+			unsigned EPMEM_TYPE_INT perfect_match = leaf_ids[ EPMEM_NODE_POS ];
 
 			// vars to set in range search
 			epmem_time_id king_id = EPMEM_MEMID_NONE;
 			double king_score = -1000;
-			unsigned long long king_cardinality = 0;
-			unsigned long long king_graph_match = 0;
+			unsigned EPMEM_TYPE_INT king_cardinality = 0;
+			unsigned EPMEM_TYPE_INT king_graph_match = 0;
 			epmem_constraint_list king_constraints;
 
 			// perform range search if any leaf wmes
@@ -5713,15 +5726,15 @@ void epmem_process_query( agent *my_agent, Symbol *state, Symbol *query, Symbol 
 				double balance_inv = 1 - balance;
 
 				// dynamic programming stuff
-				long long sum_ct = 0;
+				EPMEM_TYPE_INT sum_ct = 0;
 				double sum_v = 0;
-				long long sum_updown = 0;
+				EPMEM_TYPE_INT sum_updown = 0;
 
 				// current pointer
 				epmem_time_id current_id = EPMEM_MEMID_NONE;
-				long long current_ct = 0;
+				EPMEM_TYPE_INT current_ct = 0;
 				double current_v = 0;
-				long long current_updown = 0;
+				EPMEM_TYPE_INT current_updown = 0;
 				epmem_time_id current_end;
 				epmem_time_id current_valid_end;
 				double current_score;
@@ -5733,13 +5746,13 @@ void epmem_process_query( agent *my_agent, Symbol *state, Symbol *query, Symbol 
 				unsigned int next_list;
 
 				// prohibit pointer
-				long long current_prohibit = ( ( (long long) prohibit->size() ) - 1 );
+				epmem_time_list::size_type current_prohibit = ( prohibit->size() - 1 );
 
 				// completion (allows for smart cut-offs later)
 				bool done = false;
 
 				// graph match
-				unsigned long long current_graph_match_counter = 0;
+				unsigned EPMEM_TYPE_INT current_graph_match_counter = 0;
 				epmem_constraint_list current_constraints;
 
 				// initialize current as last end
@@ -5787,7 +5800,7 @@ void epmem_process_query( agent *my_agent, Symbol *state, Symbol *query, Symbol 
 						else
 							current_valid_end = ( ( current_id < before )?( current_id ):( before - 1 ) );
 
-						while ( ( current_prohibit != -1 ) && ( current_valid_end >= current_end ) && ( current_valid_end <= (*prohibit)[ current_prohibit ] ) )
+						while ( ( current_prohibit != EPMEM_MEMID_NONE ) && ( current_valid_end >= current_end ) && ( current_valid_end <= (*prohibit)[ current_prohibit ] ) )
 						{
 							if ( current_valid_end == (*prohibit)[ current_prohibit ] )
 								current_valid_end--;
@@ -5811,7 +5824,7 @@ void epmem_process_query( agent *my_agent, Symbol *state, Symbol *query, Symbol 
 
 								if ( ( king_id == EPMEM_MEMID_NONE ) || ( current_score >= king_score ) )
 								{
-									if ( sum_ct == perfect_match )
+									if ( sum_ct == (EPMEM_TYPE_INT) perfect_match )
 									{
 										if ( graph_match == EPMEM_GRAPH_MATCH_PATHS )
 										{
@@ -6095,7 +6108,7 @@ void epmem_consider_new_episode( agent *my_agent )
 			slot *s;
 			wme *w;
 			Symbol *ol = my_agent->io_header_output;
-			unsigned long wme_count = 0;
+			unsigned EPMEM_TYPE_INT wme_count = 0;
 
 			// examine all commands on the output-link for any
 			// that appeared since last memory was recorded
@@ -6152,7 +6165,7 @@ void epmem_consider_new_episode( agent *my_agent )
 void epmem_respond_to_cmd( agent *my_agent )
 {
 	// if this is before the first episode, initialize db components
-	if ( my_agent->epmem_db_status == -1 )
+	if ( my_agent->epmem_db_status == EPMEM_DB_CLOSED )
 		epmem_init_db( my_agent );
 
 	// respond to query only if db is properly initialized
@@ -6169,14 +6182,14 @@ void epmem_respond_to_cmd( agent *my_agent )
 
 	wme **wmes;
 	const char *attr_name;
-	int len;
-	int i;
+	unsigned EPMEM_TYPE_INT len;
+	unsigned EPMEM_TYPE_INT i;
 
 	epmem_time_id retrieve;
 	bool next, previous;
 	Symbol *query;
 	Symbol *neg_query;
-	std::vector<epmem_time_id> *prohibit;
+	epmem_time_list *prohibit;
 	epmem_time_id before, after;
 	bool good_cue;
 	int path;
@@ -6184,7 +6197,7 @@ void epmem_respond_to_cmd( agent *my_agent )
 	slot *s;
 	wme *w;
 	Symbol *epmem_cmd;
-	unsigned long wme_count;
+	unsigned EPMEM_TYPE_INT wme_count;
 	bool new_cue;
 
 	while ( state != NULL )
@@ -6238,7 +6251,7 @@ void epmem_respond_to_cmd( agent *my_agent )
 			previous = false;
 			query = NULL;
 			neg_query = NULL;
-			prohibit = new std::vector<epmem_time_id>();
+			prohibit = new epmem_time_list();
 			before = EPMEM_MEMID_NONE;
 			after = EPMEM_MEMID_NONE;
 			good_cue = true;

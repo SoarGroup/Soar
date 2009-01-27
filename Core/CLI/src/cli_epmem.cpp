@@ -430,7 +430,7 @@ bool CommandLineInterface::DoEpMem( const char pOp, const std::string* pAttr, co
 	{
 		if ( !pAttr )
 		{
-			long long temp;
+			EPMEM_TYPE_INT temp;
 			std::string output;
 			std::string *temp_str;
 
@@ -516,7 +516,7 @@ bool CommandLineInterface::DoEpMem( const char pOp, const std::string* pAttr, co
 		}
 		else
 		{
-			long long temp = epmem_get_stat( m_pAgentSoar, pAttr->c_str() );
+			EPMEM_TYPE_INT temp = epmem_get_stat( m_pAgentSoar, pAttr->c_str() );
 			std::string *temp_str = to_string( temp );
 			std::string output = (*temp_str);
 			delete temp_str;

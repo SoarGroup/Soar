@@ -13,6 +13,9 @@
 #ifndef EPISODIC_MEMORY_H
 #define EPISODIC_MEMORY_H
 
+#include <portability.h>
+
+#include <map>
 #include <list>
 #include <stack>
 #include <set>
@@ -20,7 +23,35 @@
 
 #include "sqlite3.h"
 
+typedef union symbol_union Symbol;
 typedef struct wme_struct wme;
+
+//////////////////////////////////////////////////////////
+// EpMem Capacity
+//
+// There's an inherent problem in the storage capacity
+// difference between the EpMem code, the Soar kernel
+// (mainly Symbols), the STL, and SQLite.  Integer
+// symbols are currently 32-bit. STL depends upon
+// compiler options.  SQLite can go either way.
+//
+// portability.h defines EPMEM_64 (because epmem types
+// are scattered throughout the kernel).  Here we use it
+// to define the appropriate sqlite function names.
+//
+//////////////////////////////////////////////////////////
+
+#ifdef EPMEM_64
+
+#define EPMEM_SQLITE_BIND_INT sqlite3_bind_int64
+#define EPMEM_SQLITE_COLUMN_INT sqlite3_column_int64
+
+#else
+
+#define EPMEM_SQLITE_BIND_INT sqlite3_bind_int
+#define EPMEM_SQLITE_COLUMN_INT sqlite3_column_int
+
+#endif
 
 //////////////////////////////////////////////////////////
 // EpMem Constants
@@ -188,8 +219,11 @@ typedef struct wme_struct wme;
 #define EPMEM_VAR_NEXT_ID							EPMEM_VAR_MODE + 1
 
 // algorithm constants
+#define EPMEM_DB_CLOSED								-1 // initialize db_status to this (sqlite error codes are positive)
+#define EPMEM_DB_PREP_STR_MAX						-1 // non-zero nByte param indicates to read to zero terminator
+
 #define EPMEM_MEMID_NONE							-1
-#define EPMEM_MEMID_ROOT							0
+#define EPMEM_NODEID_ROOT							0
 
 #define EPMEM_NODE_POS								0
 #define EPMEM_NODE_NEG								1
@@ -200,6 +234,7 @@ typedef struct wme_struct wme;
 #define EPMEM_RANGE_POINT							2
 
 #define EPMEM_RIT_ROOT								0
+#define EPMEM_RIT_OFFSET_INIT						-1
 #define EPMEM_LN_2									0.693147180559945
 
 #define EPMEM_DNF									2
@@ -262,7 +297,7 @@ typedef struct epmem_parameter_struct
 
 typedef struct epmem_stat_struct
 {
-	long long value;
+	EPMEM_TYPE_INT value;
 	const char *name;
 } epmem_stat;
 
@@ -286,11 +321,13 @@ typedef struct epmem_timer_struct
 //////////////////////////////////////////////////////////
 
 // represents a unique node identifier in the episodic store
-typedef unsigned long long int epmem_node_id;
+typedef unsigned EPMEM_TYPE_INT epmem_node_id;
 
 // represents a unique episode identifier in the episodic store
-typedef long long int epmem_time_id;
+typedef EPMEM_TYPE_INT epmem_time_id;
 
+// represents a vector of times
+typedef std::vector<epmem_time_id> epmem_time_list;
 
 //////////////////////////////////////////////////////////
 // Soar Integration Types
@@ -299,11 +336,11 @@ typedef long long int epmem_time_id;
 // data associated with each state
 typedef struct epmem_data_struct
 {
-	unsigned long last_ol_time;				// last update to output-link
-	unsigned long last_ol_count;			// last count of output-link
+	unsigned EPMEM_TYPE_INT last_ol_time;	// last update to output-link
+	unsigned EPMEM_TYPE_INT last_ol_count;	// last count of output-link
 
-	unsigned long last_cmd_time;			// last update to epmem.command
-	unsigned long last_cmd_count;			// last update to epmem.command
+	unsigned EPMEM_TYPE_INT last_cmd_time;	// last update to epmem.command
+	unsigned EPMEM_TYPE_INT last_cmd_count;	// last update to epmem.command
 
 	epmem_time_id last_memory;				// last retrieved memory
 
@@ -332,7 +369,7 @@ typedef struct epmem_range_query_struct
 	epmem_time_id val;						// current b-tree leaf value
 
 	double weight;							// wma value
-	long long ct;							// cardinality w.r.t. positive/negative query
+	EPMEM_TYPE_INT ct;						// cardinality w.r.t. positive/negative query
 
 	long timer;								// timer to update upon executing the query
 } epmem_range_query;
@@ -366,21 +403,21 @@ typedef struct epmem_edge_struct
 typedef struct epmem_wme_cache_element_struct
 {
 	wme **wmes;								// child wmes
-	int len;								// number of children
+	unsigned EPMEM_TYPE_INT len;			// number of children
 } epmem_wme_cache_element;
 
 // see below
 typedef struct epmem_shared_literal_struct epmem_shared_literal;
-typedef std::list<epmem_shared_literal *> epmem_shared_trigger_list;
+typedef std::vector<epmem_shared_literal *> epmem_shared_trigger_list;
 
 // represents state of a leaf wme
 // at a particular episode
 typedef struct epmem_shared_match_struct
 {
 	double value_weight;					// wma value
-	long long value_ct;						// cardinality w.r.t. positive/negative query
+	EPMEM_TYPE_INT value_ct;				// cardinality w.r.t. positive/negative query
 
-	unsigned long long ct;					// number of contributing literals that are "on"
+	unsigned EPMEM_TYPE_INT ct;				// number of contributing literals that are "on"
 } epmem_shared_match;
 
 // represents state of one historical
@@ -390,10 +427,10 @@ struct epmem_shared_literal_struct
 {
 	epmem_node_id shared_id;				// shared q1, if identifier
 
-	unsigned long long ct;					// number of contributing literals that are "on"
+	unsigned EPMEM_TYPE_INT ct;				// number of contributing literals that are "on"
 
 	struct wme_struct *wme;					// associated cue wme
-	unsigned long long wme_kids;			// number of children the cue wme has
+	unsigned EPMEM_TYPE_INT wme_kids;		// number of children the cue wme has
 
 	epmem_shared_match *match;				// associated match, if leaf wme
 	epmem_shared_trigger_list *children;	// child literals, if not leaf wme
@@ -534,7 +571,6 @@ extern const long epmem_convert_ext_timers( const char *val );
 // shortcut for determining if EpMem is enabled
 extern bool epmem_enabled( agent *my_agent );
 
-
 //////////////////////////////////////////////////////////
 // Stat Functions (see cpp for comments)
 //////////////////////////////////////////////////////////
@@ -555,12 +591,12 @@ extern bool epmem_valid_stat( agent *my_agent, const char *name );
 extern bool epmem_valid_stat( agent *my_agent, const long stat );
 
 // get stat
-extern long long epmem_get_stat( agent *my_agent, const char *name );
-extern long long epmem_get_stat( agent *my_agent, const long stat );
+extern EPMEM_TYPE_INT epmem_get_stat( agent *my_agent, const char *name );
+extern EPMEM_TYPE_INT epmem_get_stat( agent *my_agent, const long stat );
 
 // set stat
-extern bool epmem_set_stat( agent *my_agent, const char *name, long long new_val );
-extern bool epmem_set_stat( agent *my_agent, const long stat, long long new_val );
+extern bool epmem_set_stat( agent *my_agent, const char *name, EPMEM_TYPE_INT new_val );
+extern bool epmem_set_stat( agent *my_agent, const long stat, EPMEM_TYPE_INT new_val );
 
 
 //////////////////////////////////////////////////////////
@@ -611,6 +647,5 @@ extern preference *epmem_make_fake_preference( agent *my_agent, Symbol *state, w
 
 // Called to get a specific symbol augmentation
 extern wme *epmem_get_aug_of_id( agent *my_agent, Symbol *sym, char *attr_name, char *value_name );
-
 
 #endif

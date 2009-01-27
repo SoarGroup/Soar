@@ -49,8 +49,8 @@ typedef union symbol_union Symbol;
 
 typedef struct wma_decay_element_struct wma_decay_element_t;
 
-typedef unsigned long long int epmem_node_id;
-typedef long long int epmem_time_id;
+typedef unsigned EPMEM_TYPE_INT epmem_node_id;
+typedef EPMEM_TYPE_INT epmem_time_id;
 
 extern void reset_wme_timetags (agent* thisAgent);
 extern wme *make_wme (agent* thisAgent, Symbol *id, Symbol *attr, Symbol *value,Bool acceptable);

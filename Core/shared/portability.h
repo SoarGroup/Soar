@@ -69,4 +69,32 @@ static inline long atomic_dec( volatile long *v )
 
 #endif
 
+//////////////////////////////////////////////////////////
+// EpMem Capacity
+//
+// There's an inherent problem in the storage capacity
+// difference between the EpMem code, the Soar kernel
+// (mainly Symbols), the STL, and SQLite.  Integer
+// symbols are currently 32-bit. STL depends upon
+// compiler options.  SQLite can go either way (but
+// the function names are different).
+//
+// I try to unify 32 vs. 64 here with compile-time
+// defines.  Define EPMEM_64 only when the kernel
+// can back it up on a 64-bit machine.
+//
+//////////////////////////////////////////////////////////
+
+//#define EPMEM_64
+#ifdef EPMEM_64
+
+#define EPMEM_TYPE_INT long long int
+
+#else
+
+#define EPMEM_TYPE_INT long int
+
+#endif
+
+
 #endif // PORTABILITY_H
