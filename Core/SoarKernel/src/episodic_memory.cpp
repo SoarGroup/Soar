@@ -6208,7 +6208,7 @@ void epmem_consider_new_episode( agent *my_agent )
 			// check for change in the number of WMEs (catches the case of a removed WME)
 			if ( my_agent->bottom_goal->id.epmem_info->last_ol_count != wme_count )
 			{
-				new_memory = true;
+				new_memory = ( wme_count != 0 );
 				my_agent->bottom_goal->id.epmem_info->last_ol_count = wme_count;
 			}
 		}
