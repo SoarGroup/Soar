@@ -449,6 +449,22 @@
 			UniqueIdentifier="{4FC737F1-C7A5-4376-A066-2A32D752A2FF}"
 			>
 			<File
+				RelativePath=".\config_Config.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\config_File.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\config_Source.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\config_Util.cpp"
+				>
+			</File>
+			<File
 				RelativePath=".\src\sml_AnalyzeXML.cpp"
 				>
 				<FileConfiguration
@@ -1378,6 +1394,22 @@
 			Filter="h;hpp;hxx;hm;inl;inc;xsd"
 			UniqueIdentifier="{93995380-89BD-4b04-88EB-625FBE52EBFB}"
 			>
+			<File
+				RelativePath=".\config_Config.h"
+				>
+			</File>
+			<File
+				RelativePath=".\config_File.h"
+				>
+			</File>
+			<File
+				RelativePath=".\config_Source.h"
+				>
+			</File>
+			<File
+				RelativePath=".\config_Util.h"
+				>
+			</File>
 			<File
 				RelativePath=".\include\EmbeddedSMLInterface.h"
 				>
