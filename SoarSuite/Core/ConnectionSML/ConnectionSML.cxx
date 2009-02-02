@@ -1,3 +1,7 @@
+#include "src/config_Config.cpp"
+#include "src/config_File.cpp"
+#include "src/config_Source.cpp"
+#include "src/config_Util.cpp"
 #include "src/sml_AnalyzeXML.cpp"
 #include "src/sml_ArgMap.cpp"
 #include "src/sml_Connection.cpp"
