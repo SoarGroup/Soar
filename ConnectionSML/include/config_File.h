@@ -1,5 +1,5 @@
-#ifndef CONFIG_CONFIG_H
-#define CONFIG_CONFIG_H
+#ifndef CONFIG_FILE_H
+#define CONFIG_FILE_H
 
 /**
  * Port of a configuration file utility used in Soar2D so that it is available
@@ -21,10 +21,12 @@
 #include <vector>
 #include <map>
 #include <iostream>
+#include <sstream>
 #include <exception>
 #include <assert.h>
 
 #include "config_Source.h"
+#include "config_Config.h"
 
 namespace config {
 
@@ -46,7 +48,7 @@ namespace config {
 	//			std::string TOKSTOP = "[];{},=#";
 
 	//			std::string tok = "";
-	//			boolean in_string = false;
+	//			bool in_string = false;
 
 	//			for (int pos = 0; pos < line.length(); pos++) {
 	//				char c = line.charAt(pos);
@@ -119,7 +121,7 @@ namespace config {
 
 	//		}
 
-	//		boolean hasNext() throws IOException {
+	//		bool hasNext() throws IOException {
 	//			while (true) {
 	//				if (tokens.size() > 0)
 	//					return true;
@@ -134,7 +136,7 @@ namespace config {
 	//		}
 
 	//		// If the next token is s, consume it.
-	//		boolean consume(std::string s) throws IOException {
+	//		bool consume(std::string s) throws IOException {
 	//			if (peek().equals(s)) {
 	//				next();
 	//				return true;
@@ -178,152 +180,190 @@ namespace config {
 			this->path = "(in memory)";
 		}
 
-	//	Config getConfig() {
-	//		return new Config(this);
-	//	}
+		Config* getConfig() {
+			return new Config(this);
+		}
 
-	//	@Override
-	//	ConfigSource copy() {
-	//		ConfigFile newConfigFile = new ConfigFile();
-	//		newConfigFile.path = new std::string(this->path);
-	//		newConfigFile.keys = new HashMap<std::string, std::vector<std::string>>(this->keys);
-	//		
-	//		return newConfigFile;
-	//	}
+		ConfigSource* copy() {
+			ConfigFile* newConfigFile = new ConfigFile();
+			newConfigFile->path = this->path;
+			
+			std::map< std::string, std::vector< std::string > >::const_iterator iter = this->keys.begin();
+			for (; iter != this->keys.end(); ++iter) {
+				newConfigFile->keys[ iter->first ] = std::vector< std::string >(iter->second);
+			}
 
-	//	@Override
-	//	std::vector<std::string> getKeys(std::string root) {
-	//		if (!root.equals(""))
-	//			root += ".";
+			return newConfigFile;
+		}
 
-	//		List<std::string> subkeys = new ArrayList<std::string>();
+		std::vector<std::string> getKeys(std::string root) {
+			if (root.size())
+				root.append(".");
 
-	//		for (std::string key : keys.keySet()) {
-	//			if (key.startsWith(root))
-	//				subkeys.add(key);
-	//		}
+			std::vector<std::string> subkeys;
 
-	//		return subkeys.toArray(new std::string[0]);
-	//	}
+			std::map< std::string, std::vector< std::string > >::const_iterator iter = this->keys.begin();
+			for (; iter != this->keys.end(); ++iter) {
+				if (iter->first.compare(0, root.length(), root) == 0) {
+					subkeys.push_back(iter->first);
+				}
+			}
 
-	//	@Override
-	//	boolean hasKey(std::string key) {
-	//		return keys.containsKey(key);
-	//	}
+			return subkeys;
+		}
 
-	//	@Override
-	//	void removeKey(std::string key) {
-	//		keys.remove(key);
-	//	}
-	//	
-	//	@Override
-	//	std::vector<std::string> keyList(std::string prefix) {
-	//		List<std::string> keyList = new ArrayList<std::string>();
-	//		for (std::string key : keys.keySet()) {
-	//			if (key.length() <= prefix.length()) {
-	//				continue;
-	//			}
-	//			if (key.startsWith(prefix)) {
-	//				std::string strippedKey = key.substring(prefix.length());
-	//				keyList.add(strippedKey);
-	//			}
-	//		}
-	//		return keyList.toArray(new std::string[keyList.size()]);
-	//	}
-	//	
-	//	@Override
-	//	int[] getInts(std::string key) {
-	//		std::string vs[] = keys.get(key);
-	//		if (vs == null)
-	//			return null;
+		bool hasKey(std::string key) {
+			return keys.find(key) != keys.end();
+		}
 
-	//		int v[] = new int[vs.length];
-	//		for (int i = 0; i < vs.length; i++) {
-	//			v[i] = Integer.parseInt(vs[i]);
-	//		}
+		void removeKey(std::string key) {
+			keys.erase(key);
+		}
 
-	//		return v;
-	//	}
+		std::vector<std::string> keyList(std::string prefix) {
+			std::vector<std::string> keyList;
 
-	//	@Override
-	//	void setInts(std::string key, int v[]) {
-	//		std::string s[] = new std::string[v.length];
-	//		for (int i = 0; i < v.length; i++)
-	//			s[i] = "" + v[i];
-	//		keys.put(key, s);
-	//	}
+			std::map< std::string, std::vector< std::string > >::const_iterator iter = this->keys.begin();
+			for (; iter != this->keys.end(); ++iter) {
+				if (iter->first.length() <= prefix.length()) {
+					continue;
+				}
+				if (iter->first.compare(0, prefix.length(), prefix) == 0) {
+					std::string strippedKey = iter->first.substr(0, prefix.length());
+					keyList.push_back(strippedKey);
+				}
+			}
 
-	//	@Override
-	//	boolean[] getBooleans(std::string key) {
-	//		std::string vs[] = keys.get(key);
-	//		if (vs == null)
-	//			return null;
+			return keyList;
+		}
 
-	//		boolean v[] = new boolean[vs.length];
-	//		for (int i = 0; i < vs.length; i++) {
-	//			v[i] = Boolean.parseBoolean(vs[i]);
-	//		}
+		std::vector<int>* getInts(std::string key) {
+			std::map< std::string, std::vector< std::string > >::const_iterator iter;
+			iter = keys.find(key);
+			if (iter == keys.end()) {
+				return 0;
+			}
 
-	//		return v;
-	//	}
+			std::vector< std::string > vs = iter->second;
 
-	//	@Override
-	//	void setBooleans(std::string key, boolean v[]) {
-	//		std::string s[] = new std::string[v.length];
-	//		for (int i = 0; i < v.length; i++)
-	//			s[i] = "" + v[i];
-	//		keys.put(key, s);
-	//	}
+			std::vector<int>* v = new std::vector<int>(vs.size());
+			for (unsigned i = 0; i < vs.size(); i++) {
+				int vi = 0;
+				if (sscanf(vs.at(i).c_str(), "%d", &vi) != 1) {
+					throw std::exception("Failed to parse int.");
+				}
+				v->push_back(vi);
+			}
 
-	//	@Override
-	//	std::vector<std::string> getStrings(std::string key) {
-	//		std::string vs[] = keys.get(key);
-	//		if (vs == null)
-	//			return null;
+			return v;
+		}
 
-	//		return vs;
-	//	}
+		void setInts(std::string key, std::vector<int>* v) {
+			std::vector< std::string > s;
 
-	//	@Override
-	//	void setStrings(std::string key, std::string v[]) {
-	//		keys.put(key, v);
-	//	}
+			std::vector<int>::const_iterator iter = v->begin();
+			for (; iter != v->end(); ++iter) {
+				std::stringstream vs;
+				vs << *iter;
+				s.push_back( vs.str() );
+			}
 
-	//	@Override
-	//	double[] getDoubles(std::string key) {
-	//		std::string vs[] = keys.get(key);
-	//		if (vs == null)
-	//			return null;
+			keys[key] = s;
+		}
 
-	//		double v[] = new double[vs.length];
-	//		for (int i = 0; i < vs.length; i++) {
-	//			v[i] = Double.parseDouble(vs[i]);
-	//		}
+		std::vector<bool>* getBools(std::string key) {
+			std::map< std::string, std::vector< std::string > >::const_iterator iter;
+			iter = keys.find(key);
+			if (iter == keys.end()) {
+				return 0;
+			}
 
-	//		return v;
-	//	}
+			std::vector< std::string > vs = iter->second;
 
-	//	@Override
-	//	void setDoubles(std::string key, double v[]) {
-	//		std::string s[] = new std::string[v.length];
-	//		for (int i = 0; i < v.length; i++)
-	//			s[i] = "" + v[i];
-	//		keys.put(key, s);
-	//	}
+			std::vector<bool>* v = new std::vector<bool>(vs.size());
+			for (unsigned i = 0; i < vs.size(); i++) {
+				// FIXME: Expand to more than just lowercase true and false.
+				if (vs.at(i).compare("true")) {
+					v->push_back(true);
+				} else if (vs.at(i).compare("false")) {
+					v->push_back(false);
+				} else {
+					throw std::exception("Failed to parse bool.");
+				}
+			}
 
-	//	@Override
-	//	byte[] getBytes(std::string key) {
-	//		std::string lines[] = getStrings(key);
-	//		if (lines == null)
-	//			return null;
+			return v;
+		}
 
-	//		return Base64.decode(lines);
-	//	}
+		void setBools(std::string key, std::vector<bool>* v) {
+			std::vector< std::string > s;
 
-	//	@Override
-	//	void setBytes(std::string key, byte v[]) {
-	//		keys.put(key, Base64.encode(v));
-	//	}
+			std::vector<bool>::const_iterator iter = v->begin();
+			for (; iter != v->end(); ++iter) {
+				if (*iter) {
+					s.push_back( "true" );
+				} else {
+					s.push_back( "false" );
+				}
+			}
+
+			keys[key] = s;
+		}
+
+		std::vector<std::string>* getStrings(std::string key) {
+			std::map< std::string, std::vector< std::string > >::const_iterator iter;
+			iter = keys.find(key);
+			if (iter == keys.end()) {
+				return 0;
+			}
+
+			std::vector< std::string > vs = iter->second;
+
+			std::vector< std::string >* v = new std::vector< std::string >(vs.size());
+			for (unsigned i = 0; i < vs.size(); i++) {
+				v->push_back(vs.at(i));
+			}
+
+			return v;
+		}
+
+		void setStrings(std::string key, std::vector<std::string>* v) {
+			keys[key] = *v;
+		}
+
+		std::vector<double>* getDoubles(std::string key) {
+			std::map< std::string, std::vector< std::string > >::const_iterator iter;
+			iter = keys.find(key);
+			if (iter == keys.end()) {
+				return 0;
+			}
+
+			std::vector< std::string > vs = iter->second;
+
+			std::vector<double>* v = new std::vector<double>(vs.size());
+			for (unsigned i = 0; i < vs.size(); i++) {
+				double vi = 0;
+				if (sscanf(vs.at(i).c_str(), "%f", &vi) != 1) {
+					throw std::exception("Failed to parse double.");
+				}
+				v->push_back(vi);
+			}
+
+			return v;
+		}
+
+		void setDoubles(std::string key, std::vector<double>* v) {
+			std::vector< std::string > s;
+
+			std::vector<double>::const_iterator iter = v->begin();
+			for (; iter != v->end(); ++iter) {
+				std::stringstream vs;
+				vs << *iter;
+				s.push_back( vs.str() );
+			}
+
+			keys[key] = s;
+		}
 
 	//	// ///////////////////////////////////////////////////////
 	//	// File parsing below
@@ -417,9 +457,7 @@ namespace config {
 	//		}
 		}
 
-	//	
-	//	@Override
-	//	void save(std::string path) throws FileNotFoundException {
+		void save(std::string path) {
 	//		PrintStream p = null;
 	//		if (path != null) {
 	//			FileOutputStream out = new FileOutputStream(path);
@@ -448,7 +486,7 @@ namespace config {
 	//		}
 	//	 
 	//		p.close();
-	//	}
+		}
 
 	};
 }
