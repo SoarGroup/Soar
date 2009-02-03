@@ -1,0 +1,2 @@
+Make sure all april jars, etc. are in classpath
+java splintersoar.SplinterSoar <config file>
