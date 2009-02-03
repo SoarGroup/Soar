@@ -24,6 +24,8 @@
 #include <sstream>
 #include <exception>
 #include <assert.h>
+#include <queue>
+#include <fstream>
 
 #include "config_Source.h"
 #include "config_Config.h"
@@ -31,133 +33,148 @@
 namespace config {
 
 	class Tokenizer {
+	private:
+		static std::ifstream ins;
+
+		// tokens belonging to the current line
+		std::string line;
+		int lineNumber;
+		std::queue< std::string > tokens;
+
 	public:
-	//		BufferedReader ins;
+		Tokenizer(std::string path) 
+			: lineNumber(0) 
+		{
+			ins.open(path.c_str());
+		}
 
-	//		// tokens belonging to the current line
-	//		std::string line;
-	//		int lineNumber = 0;
-	//		Queue<std::string> tokens = new LinkedList<std::string>();
+		// doesn't support string literals spread across multiple lines.
+		void tokenizeLine(std::string line) {
+			std::string TOKSTOP = "[];{},=#";
 
-			Tokenizer(std::string path) {
-	//			ins = new BufferedReader(new FileReader(path));
+			std::string tok;
+			bool in_string = false;
+
+			for (unsigned pos = 0; pos < line.length(); pos++) {
+				char c = line.at(pos);
+
+				if (in_string) {
+					// in a string literal
+
+//					if (c == '\\' && pos + 1 < line.length()) {
+//						// escape sequence.
+//						tok += line.charAt(pos + 1);
+//						pos++;
+//						continue;
+//					}
+
+					if (c == '\"') {
+						// end of string.
+						tokens.push(tok);
+						in_string = false;
+						tok = "";
+						continue;
+					}
+
+					tok.append(1, c);
+
+				} else {
+					// NOT in a string literal
+
+					// strip spaces when not in a string literal
+					if (isspace(c)) {
+						continue;
+					}
+
+					// starting a string literal
+					if (c == '\"' && tok.length() == 0) {
+						in_string = true;
+						continue;
+					}
+
+					// does this character end a token?
+					if (TOKSTOP.find(c) != std::string::npos) {
+						// nope, add it to our token so far
+						tok.append(1, c);
+						continue;
+					}
+
+					// produce (up to) two new tokens: the accumulated token
+					// which has just ended, and a token corresponding to the
+					// new character.
+					tok = trim(tok);
+					if (tok.length() > 0) {
+						tokens.push(tok);
+						tok = "";
+					}
+
+					if (c == '#')
+						return;
+
+					// add this terminator character
+					tok.append(1, c);
+					tok = trim(tok);
+					if (tok.length() > 0) {
+						tokens.push(tok);
+						tok = "";
+					}
+				}
 			}
 
-	//		// doesn't support string literals spread across multiple lines.
-	//		void tokenizeLine(std::string line) {
-	//			std::string TOKSTOP = "[];{},=#";
+			tok = trim(tok);
+			if (tok.length() > 0)
+				tokens.push(tok);
 
-	//			std::string tok = "";
-	//			bool in_string = false;
+		}
 
-	//			for (int pos = 0; pos < line.length(); pos++) {
-	//				char c = line.charAt(pos);
+		std::string trim(std::string str) {
+			size_t left = str.find_first_of(" \t");
+			str = str.substr(left);
+			while( str.length() && isspace(str.at(str.length() - 1))) {
+				str.erase(str.length() - 1);
+			}
+			return str;
+		}
 
-	//				if (in_string) {
-	//					// in a string literal
+		bool hasNext() {
+			while (true) {
+				if (tokens.size() > 0)
+					return true;
 
-	////					if (c == '\\' && pos + 1 < line.length()) {
-	////						// escape sequence.
-	////						tok += line.charAt(pos + 1);
-	////						pos++;
-	////						continue;
-	////					}
+				std::getline(ins, line);
+				if (!ins)
+					return false;
+				lineNumber++;
 
-	//					if (c == '\"') {
-	//						// end of string.
-	//						tokens.add(tok);
-	//						in_string = false;
-	//						tok = "";
-	//						continue;
-	//					}
+				tokenizeLine(line);
+			}
+		}
 
-	//					tok += c;
+		// If the next token is s, consume it.
+		bool consume(std::string s) {
+			std::string peekTok = peek();
+			if (peek() == s) {
+				next();
+				return true;
+			}
+			return false;
+		}
 
-	//				} else {
-	//					// NOT in a string literal
+		std::string peek() {
+			if (!hasNext())
+				return "";
 
-	//					// strip spaces when not in a string literal
-	//					if (Character.isWhitespace(c))
-	//						continue;
+			return tokens.front();
+		}
 
-	//					// starting a string literal
-	//					if (c == '\"' && tok.length() == 0) {
-	//						in_string = true;
-	//						continue;
-	//					}
+		std::string next() {
+			if (!hasNext())
+				return "";
 
-	//					// does this character end a token?
-	//					if (TOKSTOP.indexOf(c) < 0) {
-	//						// nope, add it to our token so far
-	//						tok += c;
-	//						continue;
-	//					}
-
-	//					// produce (up to) two new tokens: the accumulated token
-	//					// which has just ended, and a token corresponding to the
-	//					// new character.
-	//					tok = tok.trim();
-	//					if (tok.length() > 0) {
-	//						tokens.add(tok);
-	//						tok = "";
-	//					}
-
-	//					if (c == '#')
-	//						return;
-
-	//					// add this terminator character
-	//					tok = "" + c;
-	//					tok = tok.trim();
-	//					if (tok.length() > 0) {
-	//						tokens.add(tok);
-	//						tok = "";
-	//					}
-	//				}
-	//			}
-
-	//			tok = tok.trim();
-	//			if (tok.length() > 0)
-	//				tokens.add(tok);
-
-	//		}
-
-	//		bool hasNext() throws IOException {
-	//			while (true) {
-	//				if (tokens.size() > 0)
-	//					return true;
-
-	//				line = ins.readLine();
-	//				lineNumber++;
-	//				if (line == null)
-	//					return false;
-
-	//				tokenizeLine(line);
-	//			}
-	//		}
-
-	//		// If the next token is s, consume it.
-	//		bool consume(std::string s) throws IOException {
-	//			if (peek().equals(s)) {
-	//				next();
-	//				return true;
-	//			}
-	//			return false;
-	//		}
-
-	//		std::string peek() throws IOException {
-	//			if (!hasNext())
-	//				return null;
-
-	//			return tokens.peek();
-	//		}
-
-	//		std::string next() throws IOException {
-	//			if (!hasNext())
-	//				return null;
-
-	//			std::string tok = tokens.poll();
-	//			return tok;
-	//		}
+			std::string tok = tokens.front();
+			tokens.pop();
+			return tok;
+		}
 	};
 
 	class ConfigFile : ConfigSource 
