@@ -42,6 +42,8 @@ bool __stdcall DllMain( void * /*hModule*/,
 //		_CrtDbgReport(_CRT_WARN, NULL, NULL, "ElementXML", "Checking memory in ElementXML\n");
 //		_CrtDumpMemoryLeaks();
 	}
+#else // _DEBUG
+	(void)ul_reason_for_call; // silences compiler warning in release mode
 #endif // _DEBUG
 
     return 1;
