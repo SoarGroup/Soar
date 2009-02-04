@@ -43,7 +43,7 @@ public class RangerManager implements LCMSubscriber, RangerStateProducer {
 			return null;
 		}
 		
-		if (state.utime == laserDataCurrent.utime) {
+		if (state != null && state.utime == laserDataCurrent.utime) {
 			return state;
 		}
 		

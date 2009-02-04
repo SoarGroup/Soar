@@ -87,7 +87,7 @@ public class OrcInterface implements LCMSubscriber {
 		
 		lcmGG.subscribe(LCMInfo.COORDS_CHANNEL, this);
 
-		orc = Orc.makeOrc();
+		orc = Orc.makeOrc("192.168.237.7");
 		motor[0] = new Motor(orc, cnf.orc.ports[0], cnf.orc.invert[0]);
 		motor[1] = new Motor(orc, cnf.orc.ports[1], cnf.orc.invert[1]);
 

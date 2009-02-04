@@ -119,6 +119,7 @@ public class Configuration {
 	public boolean rangerDisabled = false;
 	public boolean soarDisabled = false;
 	public boolean gamepadDisabled = false;
+	public boolean tankMode = false;
 	
 	ArrayList<String> warnings = new ArrayList<String>();
 	
@@ -129,6 +130,7 @@ public class Configuration {
 			rangerDisabled = config.getBoolean("rangerDisabled", rangerDisabled);
 			soarDisabled = config.getBoolean("soarDisabled", soarDisabled);
 			gamepadDisabled = config.getBoolean("gamepadDisabled", gamepadDisabled);
+			tankMode = config.getBoolean("tankMode", tankMode);
 		}
 		
 		orc = new OrcInterface(config);

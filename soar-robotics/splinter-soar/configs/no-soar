@@ -1,13 +1,15 @@
 llocDisabled = true;
 orcDisabled = false;
 soarDisabled = true;
-rangerDisabled = false;
+rangerDisabled = true;
 gamepadDisabled = false;
 
 orc {
 	usePF = true;
 	pfUpdatePeriod = 0.2;
 	laserThreshold = 0.2;
+	invert = [true,true];
+	ports = [0, 1];
 }
 
 pf {

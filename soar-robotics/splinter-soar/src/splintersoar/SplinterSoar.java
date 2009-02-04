@@ -73,6 +73,9 @@ public class SplinterSoar {
 		// warnings during configuration file load, above.
 		cnf.dumpWarnings(logger);
 		
+		// configure tank mode
+		this.tankMode = cnf.tankMode;
+		
 		if (cnf.everythingDisabled()) {
 			logger.severe("All components are disabled by configuration.");
 			System.exit(1);
