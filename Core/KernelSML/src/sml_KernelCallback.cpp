@@ -24,7 +24,7 @@
 
 using namespace sml ;
 
-void KernelCallback::KernelCallbackStatic(agent* pAgent, int eventID, void* pData, void* pCallData)
+void KernelCallback::KernelCallbackStatic(agent* /*pAgent*/, int eventID, void* pData, void* pCallData)
 {
 	KernelCallback* pThis = (KernelCallback*)pData ;
 
