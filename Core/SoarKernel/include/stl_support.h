@@ -162,7 +162,10 @@ public:
   SoarMemoryAllocator<T>& operator=(const SoarMemoryAllocator&) { return *this; }
   void              construct(pointer p, const T& val) 
                     { new ((T*) p) T(val); }
-  void              destroy(pointer p) { p->~T(); }
+  void              destroy(pointer p) { 
+	  (void)p; // silence compiler warning about unused parameter in certain cases
+	  p->~T(); 
+  }
 
   size_type         max_size() const { return size_t(-1); }
 
