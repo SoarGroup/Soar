@@ -1224,8 +1224,9 @@ wme* AgentSML::FindWmeFromKernelTimetag( unsigned long timetag )
    return wi->second;
 }
 
-void AgentSML::InputWmeGarbageCollectedHandler( agent* /*pSoarAgent*/, int /*eventID*/, void* pData, void* pCallData )
+void AgentSML::InputWmeGarbageCollectedHandler( agent* /*pSoarAgent*/, int eventID, void* pData, void* pCallData )
 {
+	(void)eventID; // silences warning in release mode
 	assert( eventID == static_cast< int >( INPUT_WME_GARBAGE_COLLECTED_CALLBACK ) );
 
 	wme* pWME = reinterpret_cast< wme* >( pCallData );
