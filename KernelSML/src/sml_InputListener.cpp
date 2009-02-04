@@ -76,7 +76,7 @@ void InputListener::ProcessPendingInput(AgentSML* pAgentSML, int )
 		msg.Analyze(pInputMsg) ;
 
 		// Get the "name" attribute from the <command> tag
-		char const* pCommandName = msg.GetCommandName() ;
+		/*char const* pCommandName = */msg.GetCommandName() ;
 
 		// Only input commands should be stored in the pending input list
 		assert(!strcmp(pCommandName, "input")) ;
