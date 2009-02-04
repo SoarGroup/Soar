@@ -43,9 +43,17 @@ alternative matching function that uses a sort of DFA algorithm (not a true
 FSM). This is NOT Perl- compatible, but it has advantages in certain
 applications. */
 
-
+#ifdef NLBLOCK
+#undef NLBLOCK
+#endif
 #define NLBLOCK md             /* Block containing newline information */
+#ifdef PSSTART
+#undef PSSTART
+#endif
 #define PSSTART start_subject  /* Field containing processed string start */
+#ifdef PSEND
+#undef PSEND
+#endif
 #define PSEND   end_subject    /* Field containing processed string end */
 
 #include "pcre_internal.h"
