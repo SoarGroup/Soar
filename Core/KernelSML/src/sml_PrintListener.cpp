@@ -85,7 +85,7 @@ void PrintListener::OnKernelEvent(int eventID, AgentSML* pAgentSML, void* pCallD
 	OnEvent(static_cast<smlPrintEventId>(eventID), pAgentSML, (const char*)pCallData) ;
 }
 
-void PrintListener::OnEvent(smlPrintEventId eventID, AgentSML* pAgentSML, const char* msg)
+void PrintListener::OnEvent(smlPrintEventId eventID, AgentSML* /*pAgentSML*/, const char* msg)
 {
 	// We're assuming this is correct in the flush output function, so we should check it here
 	assert(pAgentSML == GetAgentSML());
