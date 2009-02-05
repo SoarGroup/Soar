@@ -267,7 +267,7 @@ namespace config {
 			for (unsigned i = 0; i < vs.size(); i++) {
 				int vi = 0;
 				if (sscanf(vs.at(i).c_str(), "%d", &vi) != 1) {
-					throw std::exception("Failed to parse int.");
+					throw std::exception(/*"Failed to parse int."*/);
 				}
 				v->push_back(vi);
 			}
@@ -305,7 +305,7 @@ namespace config {
 				} else if (vs.at(i).compare("false")) {
 					v->push_back(false);
 				} else {
-					throw std::exception("Failed to parse bool.");
+					throw std::exception(/*"Failed to parse bool."*/);
 				}
 			}
 
@@ -361,7 +361,7 @@ namespace config {
 			for (unsigned i = 0; i < vs.size(); i++) {
 				double vi = 0;
 				if (sscanf(vs.at(i).c_str(), "%f", &vi) != 1) {
-					throw std::exception("Failed to parse double.");
+					throw std::exception(/*"Failed to parse double."*/);
 				}
 				v->push_back(vi);
 			}
