@@ -89,7 +89,7 @@ namespace config
 			std::string message = "Config: Required key '" + key + "' missing.";
 			std::cout << message << std::endl;
 			assert (false);
-			throw std::exception(message.c_str());
+			throw std::exception(/*message.c_str()*/);
 		}
 
 		// //////////////////////////
