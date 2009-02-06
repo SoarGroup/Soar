@@ -2741,6 +2741,10 @@ void epmem_init_db( agent *my_agent )
 			my_assert = ( sqlite3_prepare_v2( my_agent->epmem_db, "SELECT parent_id, q1 FROM edge_unique WHERE q0=? AND w=? AND w_type=?", EPMEM_DB_PREP_STR_MAX, &( my_agent->epmem_statements[ EPMEM_STMT_THREE_FIND_EDGE_UNIQUE ] ), &tail ) == SQLITE_OK );
 			assert( my_assert );
 
+			// custom statement for finding
+			my_assert = ( sqlite3_prepare_v2( my_agent->epmem_db, "SELECT parent_id FROM edge_unique WHERE q0=? AND w=? AND q1=? AND w_type=?", EPMEM_DB_PREP_STR_MAX, &( my_agent->epmem_statements[ EPMEM_STMT_THREE_FIND_EDGE_UNIQUE_SHARED ] ), &tail ) == SQLITE_OK );
+			assert( my_assert );
+
 			// custom statement for inserting
 			my_assert = ( sqlite3_prepare_v2( my_agent->epmem_db, "INSERT INTO edge_unique (q0,w,q1,w_type) VALUES (?,?,?,?)", EPMEM_DB_PREP_STR_MAX, &( my_agent->epmem_statements[ EPMEM_STMT_THREE_ADD_EDGE_UNIQUE ] ), &tail ) == SQLITE_OK );
 			assert( my_assert );
@@ -3245,7 +3249,7 @@ void epmem_new_episode( agent *my_agent )
 		std::map<epmem_node_id, bool> seen_ids;
 		std::map<epmem_node_id, bool>::iterator seen_p;
 
-		// depth first search state
+		// breadth first search state
 		std::queue<Symbol *> parent_syms;
 		Symbol *parent_sym;
 		std::queue<epmem_node_id> parent_ids;
@@ -3306,8 +3310,53 @@ void epmem_new_episode( agent *my_agent )
 						if ( ( wmes[i]->epmem_id == NULL ) || ( wmes[i]->epmem_valid != my_agent->epmem_validation ) )
 						{
 							wmes[i]->epmem_valid = my_agent->epmem_validation;
+							wmes[i]->epmem_id = NULL;
+
+							// try to get node id
+							if ( wmes[i]->value->id.epmem_id != NULL )
+							{
+								// find (q0, w, q1, w_type)
+								EPMEM_SQLITE_BIND_INT( my_agent->epmem_statements[ EPMEM_STMT_THREE_FIND_EDGE_UNIQUE_SHARED ], 1, parent_id );
+
+								switch( wmes[i]->attr->common.symbol_type )
+								{
+									case SYM_CONSTANT_SYMBOL_TYPE:
+										sqlite3_bind_text( my_agent->epmem_statements[ EPMEM_STMT_THREE_FIND_EDGE_UNIQUE_SHARED ], 2, (const char *) wmes[i]->attr->sc.name, EPMEM_DB_PREP_STR_MAX, SQLITE_STATIC );
+										break;
+
+									case INT_CONSTANT_SYMBOL_TYPE:
+		        						EPMEM_SQLITE_BIND_INT( my_agent->epmem_statements[ EPMEM_STMT_THREE_FIND_EDGE_UNIQUE_SHARED ], 2, wmes[i]->attr->ic.value );
+										break;
+
+									case FLOAT_CONSTANT_SYMBOL_TYPE:
+		        						sqlite3_bind_double( my_agent->epmem_statements[ EPMEM_STMT_THREE_FIND_EDGE_UNIQUE_SHARED ], 2, wmes[i]->attr->fc.value );
+										break;
+								}
+								EPMEM_SQLITE_BIND_INT( my_agent->epmem_statements[ EPMEM_STMT_THREE_FIND_EDGE_UNIQUE_SHARED ], 3, wmes[i]->value->id.epmem_id );
+								EPMEM_SQLITE_BIND_INT( my_agent->epmem_statements[ EPMEM_STMT_THREE_FIND_EDGE_UNIQUE_SHARED ], 4, wmes[i]->attr->common.symbol_type );
+
+								// if found - yippee!
+								// assign id, update times as necessary
+								if ( sqlite3_step( my_agent->epmem_statements[ EPMEM_STMT_THREE_FIND_EDGE_UNIQUE_SHARED ] ) == SQLITE_ROW )
+								{
+									wmes[i]->epmem_id = EPMEM_SQLITE_COLUMN_INT( my_agent->epmem_statements[ EPMEM_STMT_THREE_FIND_EDGE_UNIQUE_SHARED ], 0 );
+
+									// definitely don't update/delete
+									(*my_agent->epmem_edge_removals)[ wmes[i]->epmem_id ] = false;
+
+									// we insert if current time is > 1+ max
+									if ( (*my_agent->epmem_edge_maxes)[ wmes[i]->epmem_id - 1 ] < ( time_counter - 1 ) )
+										epmem_edge.push( wmes[i]->epmem_id );
+
+									// update max irrespectively
+									(*my_agent->epmem_edge_maxes)[ wmes[i]->epmem_id - 1 ] = time_counter;
+								}
+
+								sqlite3_reset( my_agent->epmem_statements[ EPMEM_STMT_THREE_FIND_EDGE_UNIQUE_SHARED ] );
+							}
 
 							// add path
+							if ( wmes[i]->epmem_id == NULL )
 							{
 								if ( wmes[i]->value->id.epmem_id == NULL )
 								{
@@ -3817,7 +3866,7 @@ void epmem_install_memory( agent *my_agent, Symbol *state, epmem_time_id memory_
 	{
 		// Big picture: create identifier skeleton, then hang non-identifers
 		//
-		// Because of shared WMEs at different levels of the storage depth-first search,
+		// Because of shared WMEs at different levels of the storage breadth-first search,
 		// there is the possibility that the unique database id of an identifier can be
 		// greater than that of its parent.  Because the retrieval query sorts by
 		// unique id ascending, it is thus possible to have an "orphan" - a child with
