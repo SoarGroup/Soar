@@ -24,7 +24,9 @@ if os.name != "posix":
 	print "Unsupported OS."
 	Exit(1)
 
-pythonDefault = 'yes'
+#pythonDefault = 'yes'
+# changed to no because it doesn't work out of the box on ubuntu
+pythonDefault = 'no'
 if sys.platform == 'cygwin':
 	print "Disabling python by default, it will not yet build on this platform."
 	pythonDefault = 'no'
