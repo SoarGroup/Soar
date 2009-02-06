@@ -111,20 +111,21 @@ typedef struct wme_struct wme;
 #define EPMEM_STAT_QRY_NEG							5
 #define EPMEM_STAT_QRY_RET							6
 #define EPMEM_STAT_QRY_CARD							7
+#define EPMEM_STAT_QRY_LITS							8
 
-#define EPMEM_STAT_NEXT_ID							8
+#define EPMEM_STAT_NEXT_ID							9
 
-#define EPMEM_STAT_RIT_OFFSET_1						9 // *
-#define EPMEM_STAT_RIT_LEFTROOT_1					10 // *
-#define EPMEM_STAT_RIT_RIGHTROOT_1					11 // *
-#define EPMEM_STAT_RIT_MINSTEP_1					12 // *
+#define EPMEM_STAT_RIT_OFFSET_1						10 // *
+#define EPMEM_STAT_RIT_LEFTROOT_1					11 // *
+#define EPMEM_STAT_RIT_RIGHTROOT_1					12 // *
+#define EPMEM_STAT_RIT_MINSTEP_1					13 // *
 
-#define EPMEM_STAT_RIT_OFFSET_2						13 // *
-#define EPMEM_STAT_RIT_LEFTROOT_2					14 // *
-#define EPMEM_STAT_RIT_RIGHTROOT_2					15 // *
-#define EPMEM_STAT_RIT_MINSTEP_2					16 // *
+#define EPMEM_STAT_RIT_OFFSET_2						14 // *
+#define EPMEM_STAT_RIT_LEFTROOT_2					15 // *
+#define EPMEM_STAT_RIT_RIGHTROOT_2					16 // *
+#define EPMEM_STAT_RIT_MINSTEP_2					17 // *
 
-#define EPMEM_STATS									17 // must be 1+ last epmem stat
+#define EPMEM_STATS									18 // must be 1+ last epmem stat
 
 // timers
 #define EPMEM_TIMER_TOTAL							0

@@ -366,6 +366,7 @@ agent * create_soar_agent (char * agent_name) {                                 
   newAgent->epmem_stats[ EPMEM_STAT_QRY_NEG ] = epmem_new_stat( "qry_neg" );
   newAgent->epmem_stats[ EPMEM_STAT_QRY_RET ] = epmem_new_stat( "qry_ret" );
   newAgent->epmem_stats[ EPMEM_STAT_QRY_CARD ] = epmem_new_stat( "qry_card" );
+  newAgent->epmem_stats[ EPMEM_STAT_QRY_LITS ] = epmem_new_stat( "qry_lits" );
 
   newAgent->epmem_stats[ EPMEM_STAT_NEXT_ID ] = epmem_new_stat( "next_id" );
 

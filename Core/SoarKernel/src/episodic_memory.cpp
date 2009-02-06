@@ -3297,7 +3297,7 @@ void epmem_new_episode( agent *my_agent )
 				// check for MVAs
 				for ( i=0; i<len; i++ )
 					level_counters[ wmes[i]->attr ]++;
-				
+
 				for ( i=0; i<len; i++ )
 				{
 					// prevent exclusions from being recorded
@@ -3363,7 +3363,7 @@ void epmem_new_episode( agent *my_agent )
 							}
 							else
 							{
-								// assumption: if we encounter an unknown non-mva that 
+								// assumption: if we encounter an unknown non-mva that
 								// is historically singular (only a single instance has
 								// ever occurred in an episode), then we can assume
 								// persistent identity
@@ -3388,7 +3388,7 @@ void epmem_new_episode( agent *my_agent )
 										case FLOAT_CONSTANT_SYMBOL_TYPE:
 		        							sqlite3_bind_double( my_agent->epmem_statements[ EPMEM_STMT_THREE_FIND_EDGE_UNIQUE ], 2, wmes[i]->attr->fc.value );
 											break;
-									}									
+									}
 									EPMEM_SQLITE_BIND_INT( my_agent->epmem_statements[ EPMEM_STMT_THREE_FIND_EDGE_UNIQUE ], 3, wmes[i]->attr->common.symbol_type );
 
 									// if found, make sure there are no additional rows
@@ -5399,7 +5399,7 @@ void epmem_process_query( agent *my_agent, Symbol *state, Symbol *query, Symbol 
 			////////////////////////////////////////////////////////////////////////////
 			epmem_start_timer( my_agent, EPMEM_TIMER_QUERY_DNF );
 			////////////////////////////////////////////////////////////////////////////
-			
+
 			// simultaneously process cue, construct DNF graph, and add queries to priority cue
 			// (i.e. prep for range search query)
 			{
@@ -5911,6 +5911,7 @@ void epmem_process_query( agent *my_agent, Symbol *state, Symbol *query, Symbol 
 			epmem_set_stat( my_agent, EPMEM_STAT_QRY_NEG, leaf_ids[ EPMEM_NODE_NEG ] );
 			epmem_set_stat( my_agent, EPMEM_STAT_QRY_RET, 0 );
 			epmem_set_stat( my_agent, EPMEM_STAT_QRY_CARD, 0 );
+			epmem_set_stat( my_agent, EPMEM_STAT_QRY_LITS, literals.size() );
 
 			// useful statistics
 			int cue_size = ( leaf_ids[ EPMEM_NODE_POS ] + leaf_ids[ EPMEM_NODE_NEG ] );
