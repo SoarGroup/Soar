@@ -21,7 +21,7 @@ public class Config {
 	}
 	
 	public void save(String path) throws FileNotFoundException {
-		source.save(path);
+		source.save(path, this.prefix);
 	}
 	
 	public Config copy() {

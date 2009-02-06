@@ -387,7 +387,7 @@ public class ConfigFile extends ConfigSource {
 	}
 	
 	@Override
-	public void save(String path) throws FileNotFoundException {
+	public void save(String path, String rootWithDot) throws FileNotFoundException {
 		PrintStream p = null;
 		if (path != null) {
 			FileOutputStream out = new FileOutputStream(path);
@@ -398,21 +398,27 @@ public class ConfigFile extends ConfigSource {
 		
 		
 		for (Map.Entry<String, String[]> entry : keys.entrySet()) {
-			p.print(entry.getKey() + " = ");
-			
-			assert entry.getValue().length > 0;
-			if (entry.getValue().length < 2) {
-				p.print("\"" + entry.getValue()[0] + "\"");
-			} else {
-				p.print("[");
-				for ( String value : entry.getValue()) {
-					p.print("\"" + value + "\"");
-					p.print(",");
-				}
-				p.print("]");
+			if (entry.getKey().length() <= rootWithDot.length()) {
+				continue;
 			}
-			
-			p.println(";");
+			if (entry.getKey().startsWith(rootWithDot)) {
+				String strippedKey = entry.getKey().substring(rootWithDot.length());
+				p.print(strippedKey + " = ");
+				
+				assert entry.getValue().length > 0;
+				if (entry.getValue().length < 2) {
+					p.print("\"" + entry.getValue()[0] + "\"");
+				} else {
+					p.print("[");
+					for ( String value : entry.getValue()) {
+						p.print("\"" + value + "\"");
+						p.print(",");
+					}
+					p.print("]");
+				}
+				
+				p.println(";");
+			}
 		}
 	 
 		p.close();

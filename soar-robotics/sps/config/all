@@ -1,5 +1,9 @@
-# first, list the active modules
-active = [spy, viewer, splinter, simulator, sick, controller];
+# first, what to launch when "start all" is executed
+all = [spy, viewer, splinter, simulator, sick, controller];
+
+env {
+	command = "env";
+}
 
 # next, define each module
 spy {
@@ -9,7 +13,9 @@ spy {
 
 viewer {
 	# what command to run
-	command = "java april.viewer.Viewer";
+	command = ["java","april.viewer.Viewer"];
+	config = config; # seems weird, but is actually saying "use the config subkey for configuration"
+	
 	# write this config out to file and append its filename to the command
 	config { # component-specific config
 		viewer {
@@ -33,7 +39,9 @@ viewer {
 }
 
 splinter {
-	command = "java sps.splinter.Splinter";
+	command = ["java","sps.splinter.Splinter"];
+	config = config; # seems weird, but is actually saying "use the config subkey for configuration"
+	
 	config { # component-specific config
 		updateHz = 30;
 		ports = [0, 1];
@@ -42,7 +50,9 @@ splinter {
 }
 
 simulator {
-	command = "java april.sim.Simulator";
+	command = ["java","april.sim.Simulator"];
+	config = config; # seems weird, but is actually saying "use the config subkey for configuration"
+	
 	config { # component-specific config
 		simulator {
 		    obstacle_image {
@@ -69,7 +79,9 @@ sick {
 }
 
 controller {
-	command = "java sps.control.Controller";
+	command = ["java","sps.control.Controller"];
+	config = config; # seems weird, but is actually saying "use the config subkey for configuration"
+	
 	config { # component-specific config
 		productions = "agents/simple-square.soar";
 	}

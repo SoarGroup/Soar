@@ -1,8 +1,12 @@
 package sps.sm;
 
 import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.io.PrintStream;
+import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.log4j.Logger;
@@ -14,26 +18,66 @@ public class Runner {
 	
 	private Process process;
 	private List<String> command;
-	private Config config;
-	private Connection connection;
+	private PrintStream out;
+	private File configFile;
+	private String component;
+	private boolean alive = false;
 	
-	Runner(List<String> command, Config config) {
+	Runner(String component, ArrayList<String> command, PrintStream out, Config config) {
+		if (component == null || command == null || out == null) {
+			throw new NullPointerException();
+		}
+		this.component = component;
 		this.command = command;
+		this.out = out;
+		this.alive = false;
 
-		// create temp file
-		// write config to temp file
-		// add config file to command line
+		if (config != null) {
+			// create temp file
+			try {
+				configFile = File.createTempFile("sps-", ".config", new File(System.getProperty("user.dir")));
+			} catch (IOException e) {
+				logger.error("Could not create temporary file for configuration!");
+				throw new IllegalStateException(e);
+			}
+			
+			logger.info("Created temporary file: " + configFile.getAbsolutePath());
+			
+			// write config to temp file
+			try {
+				config.save(configFile.getAbsolutePath());
+			} catch (FileNotFoundException e) {
+				throw new IllegalStateException(e);
+			}
+			
+			// add config file to command line
+			command.add(configFile.getAbsolutePath());
+		}
 	}
 	
-	void setConnection(Connection connection) {
-		// where to put this component's output
+	String getComponentName() {
+		return component;
 	}
 	
 	void start() throws IOException {
+		if (process != null) {
+			throw new IllegalStateException();
+		}
+		
 		// start the component
 		ProcessBuilder builder = new ProcessBuilder(command);
 		builder.redirectErrorStream(true); // combine stdout/stderr
-		process = builder.start();
+		try {
+			process = builder.start();
+			alive = true;
+		} catch (IOException e) {
+			configFile.delete();
+			throw e;
+		}
+		Thread outputHandler = new Thread(new OutputHandler());
+		outputHandler.start();
+		Thread aliveHandler = new Thread(new AliveHandler());
+		aliveHandler.start();
 	}
 	
 	class OutputHandler implements Runnable {
@@ -45,13 +89,51 @@ public class Runner {
 			String line;
 			try {
 				while((line = procIn.readLine()) != null) {
-					connection.getOutputStream().write(line);
+					out.println(component + ": " + line);
 				}
 			} catch (IOException e) {
-				logger.error(e.getMessage());
-				System.exit(1);
+				if (out != null) {
+					// we aren't shutting down so this is unexpected
+					// don't delete config file for debugging
+					logger.error(e.getMessage());
+					System.exit(1);
+				}
 			}
 		}
+	}
+	
+	class AliveHandler implements Runnable {
+		@Override
+		public void run() {
+			while (true) {
+				try {
+					process.waitFor();
+				} catch (InterruptedException ignored) {
+					logger.warn(component + " interrupted");
+				}
+
+				try {
+					process.exitValue();
+					
+					// it's really dead
+					break;
+				} catch (IllegalStateException ignored) {
+					logger.warn(component + " still alive");
+				}
+			}
+			
+			logger.info(component + " process is dead.");
+			alive = false;
+			if (configFile != null) {
+				configFile.delete();
+				configFile = null;
+				logger.info("Removed temporary file: " + configFile.getAbsolutePath());
+			}
+		}
+	}
+	
+	boolean isAlive() {
+		return alive;
 	}
 	
 	void destroy() {
