@@ -3274,6 +3274,9 @@ void epmem_new_episode( agent *my_agent )
 		std::list<const char *>::iterator exclusion;
 		bool should_exclude;
 
+		// check for current MVAs
+		std::map<Symbol *, unsigned EPMEM_TYPE_INT> level_counters;
+
 		// initialize BFS
 		parent_syms.push( my_agent->top_goal );
 		parent_ids.push( EPMEM_NODEID_ROOT );
@@ -3291,6 +3294,10 @@ void epmem_new_episode( agent *my_agent )
 
 			if ( wmes != NULL )
 			{
+				// check for MVAs
+				for ( i=0; i<len; i++ )
+					level_counters[ wmes[i]->attr ]++;
+				
 				for ( i=0; i<len; i++ )
 				{
 					// prevent exclusions from being recorded
@@ -3353,6 +3360,64 @@ void epmem_new_episode( agent *my_agent )
 								}
 
 								sqlite3_reset( my_agent->epmem_statements[ EPMEM_STMT_THREE_FIND_EDGE_UNIQUE_SHARED ] );
+							}
+							else
+							{
+								// assumption: if we encounter an unknown non-mva that 
+								// is historically singular (only a single instance has
+								// ever occurred in an episode), then we can assume
+								// persistent identity
+
+								if ( level_counters[ wmes[i]->attr ] == 1 )
+								{
+									// (parent_id, q1) = q0, w, w_type
+									// EPMEM_STMT_THREE_FIND_EDGE_UNIQUE
+
+									EPMEM_SQLITE_BIND_INT( my_agent->epmem_statements[ EPMEM_STMT_THREE_FIND_EDGE_UNIQUE ], 1, parent_id );
+
+									switch( wmes[i]->attr->common.symbol_type )
+									{
+										case SYM_CONSTANT_SYMBOL_TYPE:
+											sqlite3_bind_text( my_agent->epmem_statements[ EPMEM_STMT_THREE_FIND_EDGE_UNIQUE ], 2, (const char *) wmes[i]->attr->sc.name, EPMEM_DB_PREP_STR_MAX, SQLITE_STATIC );
+											break;
+
+										case INT_CONSTANT_SYMBOL_TYPE:
+		        							EPMEM_SQLITE_BIND_INT( my_agent->epmem_statements[ EPMEM_STMT_THREE_FIND_EDGE_UNIQUE ], 2, wmes[i]->attr->ic.value );
+											break;
+
+										case FLOAT_CONSTANT_SYMBOL_TYPE:
+		        							sqlite3_bind_double( my_agent->epmem_statements[ EPMEM_STMT_THREE_FIND_EDGE_UNIQUE ], 2, wmes[i]->attr->fc.value );
+											break;
+									}									
+									EPMEM_SQLITE_BIND_INT( my_agent->epmem_statements[ EPMEM_STMT_THREE_FIND_EDGE_UNIQUE ], 3, wmes[i]->attr->common.symbol_type );
+
+									// if found, make sure there are no additional rows
+									if ( sqlite3_step( my_agent->epmem_statements[ EPMEM_STMT_THREE_FIND_EDGE_UNIQUE ] ) == SQLITE_ROW )
+									{
+										wmes[i]->epmem_id = EPMEM_SQLITE_COLUMN_INT( my_agent->epmem_statements[ EPMEM_STMT_THREE_FIND_EDGE_UNIQUE ], 0 );
+										wmes[i]->value->id.epmem_id = EPMEM_SQLITE_COLUMN_INT( my_agent->epmem_statements[ EPMEM_STMT_THREE_FIND_EDGE_UNIQUE ], 1 );
+
+										if ( sqlite3_step( my_agent->epmem_statements[ EPMEM_STMT_THREE_FIND_EDGE_UNIQUE ] ) == SQLITE_ROW )
+										{
+											wmes[i]->epmem_id = NULL;
+											wmes[i]->value->id.epmem_id = NULL;
+										}
+										else
+										{
+											// definitely don't update/delete
+											(*my_agent->epmem_edge_removals)[ wmes[i]->epmem_id ] = false;
+
+											// we insert if current time is > 1+ max
+											if ( (*my_agent->epmem_edge_maxes)[ wmes[i]->epmem_id - 1 ] < ( time_counter - 1 ) )
+												epmem_edge.push( wmes[i]->epmem_id );
+
+											// update max irrespectively
+											(*my_agent->epmem_edge_maxes)[ wmes[i]->epmem_id - 1 ] = time_counter;
+										}
+									}
+
+									sqlite3_reset( my_agent->epmem_statements[ EPMEM_STMT_THREE_FIND_EDGE_UNIQUE ] );
+								}
 							}
 
 							// add path
@@ -3542,6 +3607,9 @@ void epmem_new_episode( agent *my_agent )
 
 				// free space from aug list
 				free_memory( my_agent, wmes, MISCELLANEOUS_MEM_USAGE );
+
+				// free mva list
+				level_counters.clear();
 			}
 		}
 
