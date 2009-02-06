@@ -393,6 +393,7 @@ agent * create_soar_agent (char * agent_name) {                                 
   newAgent->epmem_timers[ EPMEM_TIMER_NCB_EDGE_RIT ] = epmem_new_timer( "ncb_edge_rit", EPMEM_TIMERS_THREE );
   newAgent->epmem_timers[ EPMEM_TIMER_NCB_NODE ] = epmem_new_timer( "ncb_node", EPMEM_TIMERS_THREE );
   newAgent->epmem_timers[ EPMEM_TIMER_NCB_NODE_RIT ] = epmem_new_timer( "ncb_node_rit", EPMEM_TIMERS_THREE );
+  newAgent->epmem_timers[ EPMEM_TIMER_QUERY_DNF ] = epmem_new_timer( "query_dnf", EPMEM_TIMERS_THREE );
   newAgent->epmem_timers[ EPMEM_TIMER_QUERY_GRAPH_MATCH ] = epmem_new_timer( "query_graph_match", EPMEM_TIMERS_THREE );
   newAgent->epmem_timers[ EPMEM_TIMER_QUERY_POS_START_EP ] = epmem_new_timer( "query_pos_start_ep", EPMEM_TIMERS_THREE );
   newAgent->epmem_timers[ EPMEM_TIMER_QUERY_POS_START_NOW ] = epmem_new_timer( "query_pos_start_now", EPMEM_TIMERS_THREE );

@@ -4271,7 +4271,7 @@ epmem_time_id epmem_previous_episode( agent *my_agent, epmem_time_id memory_id )
 // However, when we add graph functionality, path is
 // important.  Moreover, identifiers that "blink" have
 // ambiguous identities over time.  Thus I introduced
-// the Disjunctive Normal Form (DNF) tree.
+// the Disjunctive Normal Form (DNF) graph.
 //
 // The primary insight of the DNF graph is that paths to
 // leaf nodes can be written as the disjunction of the
@@ -5396,6 +5396,10 @@ void epmem_process_query( agent *my_agent, Symbol *state, Symbol *query, Symbol 
 			wme *new_wme;
 			epmem_time_id time_now = epmem_get_stat( my_agent, (const long) EPMEM_STAT_TIME ) - 1;
 
+			////////////////////////////////////////////////////////////////////////////
+			epmem_start_timer( my_agent, EPMEM_TIMER_QUERY_DNF );
+			////////////////////////////////////////////////////////////////////////////
+			
 			// simultaneously process cue, construct DNF graph, and add queries to priority cue
 			// (i.e. prep for range search query)
 			{
@@ -5898,6 +5902,10 @@ void epmem_process_query( agent *my_agent, Symbol *state, Symbol *query, Symbol 
 					delete cache_p->second;
 				}
 			}
+
+			////////////////////////////////////////////////////////////////////////////
+			epmem_stop_timer( my_agent, EPMEM_TIMER_QUERY_DNF );
+			////////////////////////////////////////////////////////////////////////////
 
 			epmem_set_stat( my_agent, EPMEM_STAT_QRY_POS, leaf_ids[ EPMEM_NODE_POS ] );
 			epmem_set_stat( my_agent, EPMEM_STAT_QRY_NEG, leaf_ids[ EPMEM_NODE_NEG ] );
