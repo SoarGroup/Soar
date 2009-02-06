@@ -1,6 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <classpath>
 	<classpathentry excluding="**/.svn/" kind="src" path="splinter-soar/src"/>
+	<classpathentry excluding="**/.svn/" kind="src" path="sps/src"/>
+	<classpathentry kind="src" path="sps/test"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
 	<classpathentry kind="lib" path="/SoarSuite/SoarLibrary/bin/sml.jar"/>
 	<classpathentry kind="lib" path="/usr/local/share/java/lcm.jar"/>
@@ -9,5 +11,6 @@
 	<classpathentry kind="lib" path="/home/voigtjr/soar/april-code/java/lcmtypes/lcmtypes.jar"/>
 	<classpathentry kind="lib" path="/home/voigtjr/soar/april-code/java/vis/vis.jar"/>
 	<classpathentry kind="lib" path="/home/voigtjr/soar/uorc/user/java/orc.jar"/>
+	<classpathentry kind="lib" path="log4j-1.2.15.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>
