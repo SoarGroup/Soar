@@ -3397,6 +3397,18 @@ void epmem_new_episode( agent *my_agent )
 								my_agent->epmem_edge_maxes->push_back( time_counter );
 							}
 						}
+						else
+						{
+							// definitely don't update/delete
+							(*my_agent->epmem_edge_removals)[ wmes[i]->epmem_id ] = false;
+
+							// we insert if current time is > 1+ max
+							if ( (*my_agent->epmem_edge_maxes)[ wmes[i]->epmem_id - 1 ] < ( time_counter - 1 ) )
+								epmem_edge.push( wmes[i]->epmem_id );
+
+							// update max irrespectively
+							(*my_agent->epmem_edge_maxes)[ wmes[i]->epmem_id - 1 ] = time_counter;
+						}
 
 						// path id in cache?
 						seen_p = seen_ids.find( wmes[i]->value->id.epmem_id );
