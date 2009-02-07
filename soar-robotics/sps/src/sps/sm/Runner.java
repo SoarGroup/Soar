@@ -125,9 +125,9 @@ public class Runner {
 			logger.info(component + " process is dead.");
 			alive = false;
 			if (configFile != null) {
+				logger.info("Removed temporary file: " + configFile.getAbsolutePath());
 				configFile.delete();
 				configFile = null;
-				logger.info("Removed temporary file: " + configFile.getAbsolutePath());
 			}
 		}
 	}

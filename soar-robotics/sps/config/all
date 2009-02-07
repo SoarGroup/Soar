@@ -86,3 +86,7 @@ controller {
 		productions = "agents/simple-square.soar";
 	}
 }
+
+debugger {
+	command = ["java","-jar","../../SoarSuite/SoarLibrary/bin/SoarJavaDebugger.jar","-remote"];
+}

@@ -18,6 +18,4 @@ public class SessionSlave {
 			System.exit(1);
 		}
 	}
-	
-
 }
