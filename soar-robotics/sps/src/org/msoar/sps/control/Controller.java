@@ -15,6 +15,7 @@ import org.msoar.sps.config.ConfigFile;
 
 public class Controller extends TimerTask {
 	private static Logger logger = Logger.getLogger(Controller.class);
+	private static int DEFAULT_RANGES_COUNT = 5;
 	
 	private Config config;
 	private GamepadInterface gp;
@@ -31,7 +32,9 @@ public class Controller extends TimerTask {
 		this.config = config;
 
 		gp = new GamepadInterface();
-		soar = new SoarInterface(this.config.getString("productions"));
+		String productions = this.config.getString("productions");
+		int rangesCount = this.config.getInt("ranges_count", DEFAULT_RANGES_COUNT);
+		soar = new SoarInterface(productions, rangesCount);
 		lcm = LCM.getSingleton();
 		
 		Runtime.getRuntime().addShutdownHook(new ShutdownHook());

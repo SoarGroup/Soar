@@ -19,7 +19,7 @@ public class SoarInterface implements Kernel.UpdateEventInterface, Kernel.System
 	private boolean stopSoar = false;
 	private boolean running = false;
 	
-	SoarInterface(String productions) {
+	SoarInterface(String productions, int rangesCount) {
 		kernel = Kernel.CreateKernelInNewThread();
 		if (kernel.HadError()) {
 			logger.error("Soar error: " + kernel.GetLastErrorDescription());
@@ -35,14 +35,14 @@ public class SoarInterface implements Kernel.UpdateEventInterface, Kernel.System
 		}
 
 		// load productions
-		if (!agent.LoadProductions(productions)) {
+		if (productions != null && !agent.LoadProductions(productions)) {
 			logger.error("Failed to load productions: " + productions);
 			logger.error("Agent error: " + agent.GetLastErrorDescription());
 			logger.error("Not shutting down, use debugger to fix.");
 			agent.ExecuteCommandLine("waitsnc -e");
 		}
 		
-		input = new InputLinkManager(agent);
+		input = new InputLinkManager(agent, rangesCount);
 		output = new OutputLinkManager(agent);
 		
 		kernel.RegisterForUpdateEvent(smlUpdateEventId.smlEVENT_AFTER_ALL_OUTPUT_PHASES, this, null);

@@ -1,6 +1,6 @@
 # first, what to launch when "start all" is executed
 #all = [spy, viewer, splinter, sim, sick, control];
-all = [viewer, sim, control];
+all = [viewer, sim, control, debugger];
 
 env {
 	# For debugging
