@@ -23,6 +23,10 @@ public class SessionManager {
 	private Config config;
 	
 	SessionManager(Config config) {
+		if (config == null) {
+			throw new NullPointerException();
+		}
+		
 		this.config = config;
 //		try {
 //			socket = new ServerSocket(PORT);
@@ -34,7 +38,6 @@ public class SessionManager {
 		
 		// run simple command interpreter:
 		BufferedReader input = new BufferedReader(new InputStreamReader(System.in));
-		
 		String command = null;
 		try {
 			System.out.print("sm> ");
