@@ -1,6 +1,8 @@
 package org.msoar.sps.control;
 
 import org.apache.log4j.Logger;
+import org.msoar.sps.control.io.InputLinkManager;
+import org.msoar.sps.control.io.OutputLinkManager;
 
 import sml.Agent;
 import sml.Kernel;
@@ -43,7 +45,7 @@ public class SoarInterface implements Kernel.UpdateEventInterface, Kernel.System
 		}
 		
 		input = new InputLinkManager(agent, rangesCount);
-		output = new OutputLinkManager(agent);
+		output = new OutputLinkManager(agent, input.getWaypointsIL());
 		
 		kernel.RegisterForUpdateEvent(smlUpdateEventId.smlEVENT_AFTER_ALL_OUTPUT_PHASES, this, null);
 		kernel.RegisterForSystemEvent(smlSystemEventId.smlEVENT_SYSTEM_START, this, null);

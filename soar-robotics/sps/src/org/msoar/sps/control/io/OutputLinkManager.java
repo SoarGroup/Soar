@@ -1,4 +1,4 @@
-package org.msoar.sps.control;
+package org.msoar.sps.control.io;
 
 import java.io.DataInputStream;
 import java.io.IOException;
@@ -25,15 +25,17 @@ public class OutputLinkManager implements LCMSubscriber {
 	private Agent agent;
 	private pose_t pose;
 	private SplinterInput command = null;
+	private WaypointsIL waypoints;
 
-	OutputLinkManager(Agent agent) {
+	public OutputLinkManager(Agent agent, WaypointsIL waypoints) {
 		this.agent = agent;
+		this.waypoints = waypoints;
 		
 		LCM lcm = LCM.getSingleton();
 		lcm.subscribe(Names.POSE_CHANNEL, this);
 	}
 	
-	void getDC(differential_drive_command_t dc, double currentYaw) {
+	public void getDC(differential_drive_command_t dc, double currentYaw) {
 		if (command == null) {
 			dc.left_enabled = false;
 			dc.right_enabled = false;
@@ -42,7 +44,7 @@ public class OutputLinkManager implements LCMSubscriber {
 		}
 	}
 	
-	void update() {
+	public void update() {
 		SplinterInput newSplinterInput = null;
 		
 		// process output
@@ -292,7 +294,7 @@ public class OutputLinkManager implements LCMSubscriber {
 
 				logger.debug(String.format("add-waypoint: %16s %10.3f %10.3f", id, pos[0], pos[1]));
 
-				// TODO waypoints.add(pos, id);
+				waypoints.add(pos, id);
 
 				commandwme.AddStatusComplete();
 				continue;
@@ -306,11 +308,11 @@ public class OutputLinkManager implements LCMSubscriber {
 
 				logger.debug(String.format("remove-waypoint: %16s", id));
 
-				// TODO if (waypoints.remove(id) == false) {
-				//	logger.warn("Unable to remove waypoint " + id + ", no such waypoint");
-				//	commandwme.AddStatusError();
-				//	continue;
-				//}
+				if (waypoints.remove(id) == false) {
+					logger.warn("Unable to remove waypoint " + id + ", no such waypoint");
+					commandwme.AddStatusError();
+					continue;
+				}
 
 				commandwme.AddStatusComplete();
 				continue;
@@ -324,11 +326,11 @@ public class OutputLinkManager implements LCMSubscriber {
 
 				logger.debug(String.format("enable-waypoint: %16s", id));
 
-				// TODO if (waypoints.enable(id) == false) {
-				//	logger.warn("Unable to enable waypoint " + id + ", no such waypoint");
-				//	commandwme.AddStatusError();
-				//	continue;
-				//}
+				if (waypoints.enable(id, pose) == false) {
+					logger.warn("Unable to enable waypoint " + id + ", no such waypoint");
+					commandwme.AddStatusError();
+					continue;
+				}
 
 				commandwme.AddStatusComplete();
 				continue;
@@ -342,11 +344,11 @@ public class OutputLinkManager implements LCMSubscriber {
 
 				logger.debug(String.format("disable-waypoint: %16s", id));
 
-				// TODO if (waypoints.disable(id) == false) {
-				//	logger.warn("Unable to disable waypoint " + id + ", no such waypoint");
-				//	commandwme.AddStatusError();
-				//	continue;
-				//}
+				if (waypoints.disable(id) == false) {
+					logger.warn("Unable to disable waypoint " + id + ", no such waypoint");
+					commandwme.AddStatusError();
+					continue;
+				}
 
 				commandwme.AddStatusComplete();
 				continue;

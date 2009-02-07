@@ -1,4 +1,4 @@
-package org.msoar.sps.control;
+package org.msoar.sps.control.io;
 
 import sml.Agent;
 import sml.FloatElement;

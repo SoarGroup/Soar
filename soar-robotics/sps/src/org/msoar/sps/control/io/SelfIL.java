@@ -1,4 +1,4 @@
-package org.msoar.sps.control;
+package org.msoar.sps.control.io;
 
 import jmat.LinAlg;
 import jmat.MathUtil;
@@ -8,6 +8,7 @@ import sml.FloatElement;
 import sml.Identifier;
 
 class SelfIL {
+	private WaypointsIL waypointsIL;
 	private FloatElement xwme;
 	private FloatElement ywme;
 	private FloatElement zwme;
@@ -26,6 +27,9 @@ class SelfIL {
 		zwme = agent.CreateFloatWME(posewme, "z", 0);
 		yaw = 0;
 		yawwme = agent.CreateFloatWME(posewme, "yaw", yaw);
+		
+		Identifier waypoints = agent.CreateIdWME(self, "waypoints");
+		waypointsIL = new WaypointsIL(agent, waypoints);
 	}
 	
 	double getYaw() {
@@ -41,15 +45,15 @@ class SelfIL {
 			return; // same info
 		}
 
-		// TODO: possibly need synchronization here
-		pose_t poseCopy = pose.copy();
-		utimeLast = poseCopy.utime;
+		utimeLast = pose.utime;
 		
-		agent.Update(xwme, poseCopy.pos[0]);
-		agent.Update(ywme, poseCopy.pos[1]);
-		agent.Update(zwme, poseCopy.pos[2]);
-		yaw = toDisplayYaw(poseCopy.orientation);
+		agent.Update(xwme, pose.pos[0]);
+		agent.Update(ywme, pose.pos[1]);
+		agent.Update(zwme, pose.pos[2]);
+		yaw = toDisplayYaw(pose.orientation);
 		agent.Update(yawwme, yaw);
+		
+		waypointsIL.update(pose);
 	}
 	
 	private double toDisplayYaw(double[] orientation) {
@@ -57,6 +61,10 @@ class SelfIL {
 		newYaw = MathUtil.mod2pi(newYaw);
 		newYaw = Math.toDegrees(newYaw);
 		return newYaw;
+	}
+
+	WaypointsIL getWaypointsIL() {
+		return waypointsIL;
 	}
 }
 

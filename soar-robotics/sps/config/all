@@ -82,7 +82,7 @@ control {
 	config = control_config;
 }
 control_config {
-	productions = "agents/simple-square.soar";
+	productions = "agents/avoider-robot.soar";
 }
 
 debugger {

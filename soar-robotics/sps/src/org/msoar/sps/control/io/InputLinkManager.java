@@ -1,4 +1,4 @@
-package org.msoar.sps.control;
+package org.msoar.sps.control.io;
 
 import java.io.DataInputStream;
 import java.io.IOException;
@@ -18,7 +18,7 @@ import sml.Identifier;
  * @author voigtjr
  * Soar input link management. Also handles some updating of waypoint state.
  */
-class InputLinkManager implements LCMSubscriber {
+public class InputLinkManager implements LCMSubscriber {
 	private static Logger logger = Logger.getLogger(InputLinkManager.class);
 
 	private Agent agent;
@@ -28,7 +28,7 @@ class InputLinkManager implements LCMSubscriber {
 	private pose_t pose;
 	private laser_t laser;
 
-	InputLinkManager(Agent agent, int rangesCount) {
+	public InputLinkManager(Agent agent, int rangesCount) {
 		this.agent = agent;
 		this.agent.SetBlinkIfNoChange(false);
 
@@ -58,7 +58,7 @@ class InputLinkManager implements LCMSubscriber {
 		agent.Commit();
 	}
 
-	void update() {
+	public void update() {
 		timeIL.update();
 		selfIL.update(pose);
 		rangerIL.update(laser);
@@ -83,5 +83,9 @@ class InputLinkManager implements LCMSubscriber {
 
 	public double getYaw() {
 		return selfIL.getYaw();
+	}
+
+	public WaypointsIL getWaypointsIL() {
+		return selfIL.getWaypointsIL();
 	}
 }
