@@ -1,5 +1,5 @@
 # first, what to launch when "start all" is executed
-all = [spy, viewer, splinter, simulator, sick, controller];
+all = [spy, viewer, splinter, sim, sick, control];
 
 env {
 	command = "env";
@@ -39,7 +39,7 @@ viewer {
 }
 
 splinter {
-	command = ["java","sps.splinter.Splinter"];
+	command = ["java","org.msoar.sps.splinter.Splinter"];
 	config = config; # seems weird, but is actually saying "use the config subkey for configuration"
 	
 	config { # component-specific config
@@ -49,7 +49,7 @@ splinter {
 	}
 }
 
-simulator {
+sim {
 	command = ["java","april.sim.Simulator"];
 	config = config; # seems weird, but is actually saying "use the config subkey for configuration"
 	
@@ -78,8 +78,8 @@ sick {
 	command = ["../../april-code/bin/sick","-c","LIDAR_FRONT"];
 }
 
-controller {
-	command = ["java","sps.control.Controller"];
+control {
+	command = ["java","org.msoar.sps.control.Controller"];
 	config = config; # seems weird, but is actually saying "use the config subkey for configuration"
 	
 	config { # component-specific config

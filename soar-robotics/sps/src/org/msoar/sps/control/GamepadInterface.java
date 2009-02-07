@@ -32,7 +32,7 @@ public class GamepadInterface {
 		button = gp.getButton(1);		
 		// change on trailing edge
 		if (soarControlButton && !button) {
-			soarControl = !soarControl;
+			soarControl = true;
 		}
 		soarControlButton = button;
 		

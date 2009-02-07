@@ -9,6 +9,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Map.Entry;
 
 import org.apache.log4j.Logger;
 import org.msoar.sps.config.Config;
@@ -50,7 +51,6 @@ public class SessionManager {
 			}
 		} catch (IOException e) {
 			logger.error(e.getMessage());
-			System.exit(1);
 		}
 	}
 	
@@ -60,6 +60,7 @@ public class SessionManager {
 		if (args[0].length() != 0) {
 			// quit/exit
 			if (args[0].equals("quit") || args[0].equals("exit")) {
+				stopAll();
 				return false;
 			} else if (args[0].equals("start")) {
 				// start all
@@ -85,7 +86,7 @@ public class SessionManager {
 	}
 	
 	private void start(String component) {
-		if (component == "all") {
+		if (component == null || component == "all") {
 			String[] components = config.getStrings("all");
 			for (String c : components) {
 				if (c.equals("all")) {
@@ -131,8 +132,15 @@ public class SessionManager {
 		}
 	}
 	
+	private void stopAll() {
+		ArrayList<String> components = new ArrayList<String>(runners.keySet());
+		for (String component : components) {
+			stop(component);
+		}
+	}
+	
 	private void stop(String component) {
-		if (component == "all") {
+		if (component == null || component == "all") {
 			String[] components = config.getStrings("all");
 			for (String c : components) {
 				if (c.equals("all")) {
@@ -185,6 +193,5 @@ public class SessionManager {
 			}
 			new SessionManager(config);
 		}
-		System.exit(0);
 	}
 }

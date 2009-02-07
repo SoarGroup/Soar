@@ -93,10 +93,7 @@ public class Runner {
 				}
 			} catch (IOException e) {
 				if (out != null) {
-					// we aren't shutting down so this is unexpected
-					// don't delete config file for debugging
-					logger.error(e.getMessage());
-					System.exit(1);
+					logger.warn(e.getMessage());
 				}
 			}
 		}

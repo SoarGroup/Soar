@@ -16,7 +16,7 @@ import org.msoar.sps.config.ConfigFile;
 public class Controller extends TimerTask {
 	private static Logger logger = Logger.getLogger(Controller.class);
 	
-	//private Config config;
+	private Config config;
 	private GamepadInterface gp;
 	private SoarInterface soar;
 	private Timer timer = new Timer();
@@ -28,10 +28,10 @@ public class Controller extends TimerTask {
 			throw new NullPointerException();
 		}
 		
-		//this.config = config;
+		this.config = config;
 
 		gp = new GamepadInterface();
-		soar = new SoarInterface();
+		soar = new SoarInterface(this.config.getString("productions"));
 		lcm = LCM.getSingleton();
 		
 		Runtime.getRuntime().addShutdownHook(new ShutdownHook());
