@@ -1,5 +1,6 @@
 # first, what to launch when "start all" is executed
-all = [spy, viewer, splinter, sim, sick, control];
+#all = [spy, viewer, splinter, sim, sick, control];
+all = [viewer, sim, control];
 
 env {
 	command = "env";
@@ -13,11 +14,29 @@ spy {
 
 viewer {
 	# what command to run
-	command = ["java","april.viewer.Viewer"];
+	command = ["/usr/lib/jvm/java-6-sun/bin/java","april.viewer.Viewer"];
 	config = config; # seems weird, but is actually saying "use the config subkey for configuration"
 	
 	# write this config out to file and append its filename to the command
 	config { # component-specific config
+		simulator {
+		    obstacle_image {
+		        path = "sim/intelmapbig.png";
+		        meters_per_pixel = 0.01;
+		    }
+			
+		    lasers = [ "LIDAR_FRONT" ];    
+		    laser_max_range_m = 30;
+		}
+		
+		# the robot's coordinate frame has the vehicle at the origin, looking
+		# down the X axis, with +Y = left and +Z = up.
+		LIDAR_FRONT {
+		    position = [ 0, 0, 0.5 ];
+		    rollpitchyaw_degrees = [ 0, 0, 0 ];
+		    color = [1, 0, 0];
+		}
+
 		viewer {
 		    avatar_hubi {
 		        path = "sim/meshmodels/hubi.rwx";
@@ -50,7 +69,7 @@ splinter {
 }
 
 sim {
-	command = ["java","april.sim.Simulator"];
+	command = ["java","-Xmx500m", "april.sim.Simulator"];
 	config = config; # seems weird, but is actually saying "use the config subkey for configuration"
 	
 	config { # component-specific config
