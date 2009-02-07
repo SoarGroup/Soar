@@ -1,0 +1,29 @@
+# proposed by generic operator proposal in propose-mission-operator
+
+# currently, this is very simple (the agent assumes it is at the origin)
+# in general, the agent might try adding all of the waypoints until it
+#  finds one it is at (in parallel or sequence, depending on how many
+#  there are), or, if it's not at a waypoint, it might find the closest
+#  one and try to get there from wherever it's at.
+
+sp {apply*localize*add-starting-waypoint
+   (state <s> ^operator <op>
+              ^io.output-link <ol>
+              ^waypoints.waypoint <w>)
+   (<w> ^id <id> ^x {<x> 0.} ^y {<y> 0.})
+   (<op> ^name localize
+         ^id <id>)
+-->
+   (<ol> ^add-waypoint <aw>)
+   (<aw> ^id <id> ^x <x> ^y <y>)
+}
+
+# this is complete when we are "at" some waypoint
+sp {apply*localize*complete
+   (state <s> ^operator <op>
+              ^waypoints.at
+              ^mission.current <c>)
+   (<op> ^name localize)
+-->
+   (<c> ^status complete)
+}

@@ -273,5 +273,11 @@ public class Config {
 			assert false;
 		}
 	}
+
+	public void merge(Config includedConfig) {
+		for (String key : includedConfig.getKeys()) {
+			this.setStrings(key, includedConfig.getStrings(key));
+		}
+	}
 	
 }

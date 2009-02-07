@@ -1,6 +1,7 @@
 package org.msoar.sps.sm;
 
 import java.io.BufferedReader;
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStreamReader;
 //import java.net.ServerSocket;
@@ -16,7 +17,7 @@ import org.msoar.sps.config.ConfigFile;
 public class SessionManager {
 	private static Logger logger = Logger.getLogger(SessionManager.class);
 	static int PORT = 42140;
-	private static String USAGE = "Argument should be config file OR component@hostname";
+	private static String USAGE = "Argument should be config file OR component@hostname\n\n *** WORKING DIRECTORY MUST BE soar-robotics/sps ***";
 	//private ServerSocket socket;
 	private Map<String, Runner> runners = new HashMap<String, Runner>();
 	private Config config;
@@ -74,6 +75,11 @@ public class SessionManager {
 				// restart all
 				// restart <component>
 				stop(args.length > 1 ? args[1] : null);
+				try {
+					logger.info("Sleeping for 5 seconds.");
+					Thread.sleep(5000);
+				} catch (InterruptedException ignored) {
+				}
 				start(args.length > 1 ? args[1] : null);
 				
 			} else {
@@ -94,6 +100,7 @@ public class SessionManager {
 					start(c);
 				}
 			}
+			return;
 		}
 		
 		logger.info("Start " + component);
@@ -184,6 +191,10 @@ public class SessionManager {
 			Config config = null;
 			try {
 				config = new Config(new ConfigFile(args[0]));
+				for (String include : config.getStrings("include", new String[0])) {
+					Config includedConfig = new Config(new ConfigFile("config" + File.separator + include));
+					config.merge(includedConfig);
+				}
 			} catch (IOException e) {
 				logger.error(e.getMessage());
 				logger.error(USAGE);

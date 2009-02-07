@@ -1,6 +1,6 @@
-# first, what to launch when "start all" is executed
-#all = [spy, viewer, splinter, sim, sick, control];
-all = [viewer, sim, control, debugger];
+# this file does not define:
+#  control_config
+#  all
 
 env {
 	# For debugging
@@ -28,7 +28,7 @@ april_config {
 	# viewer and sim use this config
 	simulator {
 	    obstacle_image {
-	        path = "sim/intelmapbig.png";
+	        path = "sim/intelmapbig-clean.png";
 	        meters_per_pixel = 0.01;
 	    }
 		
@@ -80,9 +80,6 @@ sick {
 control {
 	command = ["java","org.msoar.sps.control.Controller"];
 	config = control_config;
-}
-control_config {
-	productions = "agents/avoider-robot.soar";
 }
 
 debugger {

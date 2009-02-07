@@ -1,0 +1,36 @@
+#
+# if we have an entry and it's visible and we have a persistent copy, remove the persistent copy
+#
+
+sp {simple-robot*propose*maintain-entity-remove-persistent-copy
+   (state <s> ^name simple-robot
+              ^io.input-link <il>
+              ^entities.entity <es>)
+   (<il> ^entities.entity <e>)
+   (<e> ^visible true
+        ^id <id>)
+   (<es> ^id <id>
+         ^persistent-copy <d>)
+-->
+   (<s> ^operator <op> +)
+   (<op> ^name maintain-entity-remove-persistent-copy
+         ^state-entity <es>)
+   #(interrupt)
+}
+
+sp {apply*maintain-entity-remove-persistent-copy
+   (state <s> ^operator <op>)
+   (<op> ^name maintain-entity-remove-persistent-copy
+         ^state-entity <e>)
+   (<e> ^persistent-copy <d>
+        ^data <d>
+        ^last-contact-time <time>
+        ^id <id>
+        ^last-update-message-time <lumt>)
+-->
+   (<e> ^data <d> -
+        ^persistent-copy <d> -
+        ^last-contact-time <time> -
+        ^last-update-message-time <lumt> - -1000) #force message to be sent immediately (if agent decides to send at all)
+   (write (crlf) |Removed persisent copy of entity | <id>)
+}

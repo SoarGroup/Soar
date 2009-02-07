@@ -1,0 +1,66 @@
+sp {propose*initialize-simple-robot
+   (state <s> ^superstate nil
+             -^name)
+-->
+   (<s> ^operator <o> +)
+   (<o> ^name initialize-simple-robot)
+}
+
+sp {apply*initialize-simple-robot
+   (state <s> ^operator <op>)
+   (<op> ^name initialize-simple-robot)
+-->
+   (<s> ^name simple-robot
+        ^entities <e>)
+}
+
+sp {apply*initialize-simple-robot*parameters
+   (state <s> ^operator <op>)
+   (<op> ^name initialize-simple-robot)
+-->
+   (<s> ^parameters <p>)
+   (<p> ^waypoint-tolerance 0.5 # how close (in meters) the agent needs to be to a waypoint to be considered "at" it
+        ^min-progress-distance 0.1 # how much progress the agent has to make when trying to get to a location for it to be considered progress (i.e., to reset cutoff time)
+        ^replan-time 2 # how many seconds (as reported on the input-link) the agent should let the collision avoidance algorithm try to make progress towards the waypoint before replanning
+        ^message-update-time 3 # after how many seconds (as reported on the input-link) the agent should send another positition update of an unfriendly entity)
+        ^rotation-tolerance 15 # how many degrees the agent's yaw can be off when it has a desired yaw
+        ^range-tolerance 1 # distance at which a range arc is considered blocked
+        ^throttle 0.5 # throttle at which to move
+   )
+}
+
+sp {apply*initialize-simple-robot*create-mission
+   (state <s> ^operator <op>)
+   (<op> ^name initialize-simple-robot)
+-->
+   (<s> ^mission <m>)
+   (<m> ^first <s1>)
+   (<s1> ^name start
+         ^delay-time 0
+         ^next <s2>)
+   (<s2> ^name go-to-location
+         ^x 5 ^y 0
+         ^next <s3>)
+   (<s3> ^name scout
+         ^return-time 60
+         ^next <s4>)
+   (<s4> ^name go-to-location
+         ^x 0 ^y 0
+         ^next nil)
+}
+
+#sp {elaborate*initialize-simple-robot*set-desired
+#   (state <s> ^waypoints.waypoint <w>)
+#   (<w> ^x -2 ^y -1)
+#-->
+#   (<s> ^desired <w>)
+#}
+#
+#sp {at-goal
+#   (state <s> ^superstate nil
+#              ^desired <w>
+#              ^waypoints.at <w>)
+#-->
+#   (write (crlf) |At goal|)
+#   (halt)
+#}

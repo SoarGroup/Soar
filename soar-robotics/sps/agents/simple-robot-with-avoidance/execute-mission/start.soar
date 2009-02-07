@@ -1,0 +1,42 @@
+# proposed by generic operator proposal in propose-mission-operator
+
+#sp {execute-mission*propose*start
+#   (state <s> ^name execute-mission
+#              ^mission.current <c>)
+#   (<c> ^name start
+#        ^delay-time <t>)
+#-->
+#   (<s> ^operator <op> +)
+#   (<op> ^name start
+#         ^delay-time <t>)
+#}
+
+sp {apply*start*mark-start
+   (state <s> ^operator <op>
+              ^io.input-link.time.seconds <time>
+              ^mission.current <c>)
+   (<op> ^name start)
+  -(<c> ^start-time)
+-->
+   (<c> ^start-time <time>)
+}
+
+sp {apply*start*end-time
+   (state <s> ^operator <op>
+              ^mission.current <c>)
+   (<op> ^name start)
+   (<c> ^start-time <st>
+        ^delay-time <d>)
+-->
+   (<c> ^end-time (+ <st> <d>))
+}
+
+sp {apply*start*complete
+   (state <s> ^operator <op>
+              ^io.input-link.time.seconds >= <et> 
+              ^mission.current <c>)
+   (<op> ^name start)
+   (<c> ^end-time <et>)
+-->
+   (<c> ^status complete)
+}

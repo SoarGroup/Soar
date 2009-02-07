@@ -1,0 +1,13 @@
+source elaborations.soar
+source propose-mission-operator.soar
+source go-to-location.soar
+pushd go-to-location
+source go-to-location_source.soar
+popd
+source localize.soar
+source reset-mission.soar
+source scout.soar
+pushd scout
+source scout_source.soar
+popd
+source start.soar
