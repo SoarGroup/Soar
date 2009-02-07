@@ -3,6 +3,7 @@
 all = [viewer, sim, control];
 
 env {
+	# For debugging
 	command = "env";
 }
 
@@ -12,85 +13,64 @@ spy {
 	command = "lcm-spy";
 }
 
+sim {
+	command = ["java","-Xmx500m", "april.sim.Simulator"];
+	config = april_config; # what config to use, maps to top-level key
+}
 viewer {
 	# what command to run
 	command = ["/usr/lib/jvm/java-6-sun/bin/java","april.viewer.Viewer"];
-	config = config; # seems weird, but is actually saying "use the config subkey for configuration"
+	config = april_config; # what config to use, maps to top-level key
 	
 	# write this config out to file and append its filename to the command
-	config { # component-specific config
-		simulator {
-		    obstacle_image {
-		        path = "sim/intelmapbig.png";
-		        meters_per_pixel = 0.01;
-		    }
-			
-		    lasers = [ "LIDAR_FRONT" ];    
-		    laser_max_range_m = 30;
-		}
+}
+april_config {
+	# viewer and sim use this config
+	simulator {
+	    obstacle_image {
+	        path = "sim/intelmapbig.png";
+	        meters_per_pixel = 0.01;
+	    }
 		
-		# the robot's coordinate frame has the vehicle at the origin, looking
-		# down the X axis, with +Y = left and +Z = up.
-		LIDAR_FRONT {
-		    position = [ 0, 0, 0.5 ];
-		    rollpitchyaw_degrees = [ 0, 0, 0 ];
-		    color = [1, 0, 0];
-		}
+	    lasers = [ "LIDAR_FRONT" ];    
+	    laser_max_range_m = 30;
+	}
+	
+	# the robot's coordinate frame has the vehicle at the origin, looking
+	# down the X axis, with +Y = left and +Z = up.
+	LIDAR_FRONT {
+	    position = [ 0, 0, 0.5 ];
+	    rollpitchyaw_degrees = [ 0, 0, 0 ];
+	    color = [1, 0, 0];
+	}
 
-		viewer {
-		    avatar_hubi {
-		        path = "sim/meshmodels/hubi.rwx";
-		        scale = 7;
-		
-		        position = [ 0, 0, 0.63 ];
-		        rollpitchyaw_degrees = [ 90, 0, 90 ];
-		    }
-		
-		    avatar {
-		        path = "sim/meshmodels/cy.rwx";
-		        scale = 7;
-		        
-		        position = [ 0, 0, 0 ];
-		        rollpitchyaw_degrees = [ 90, 0, 90 ];
-		    }
-		}
+	viewer {
+	    avatar_hubi {
+	        path = "sim/meshmodels/hubi.rwx";
+	        scale = 7;
+	
+	        position = [ 0, 0, 0.63 ];
+	        rollpitchyaw_degrees = [ 90, 0, 90 ];
+	    }
+	
+	    avatar {
+	        path = "sim/meshmodels/cy.rwx";
+	        scale = 7;
+	        
+	        position = [ 0, 0, 0 ];
+	        rollpitchyaw_degrees = [ 90, 0, 90 ];
+	    }
 	}
 }
 
 splinter {
 	command = ["java","org.msoar.sps.splinter.Splinter"];
-	config = config; # seems weird, but is actually saying "use the config subkey for configuration"
-	
-	config { # component-specific config
-		updateHz = 30;
-		ports = [0, 1];
-		invert = [true, false];
-	}
+	config = splinter_config;
 }
-
-sim {
-	command = ["java","-Xmx500m", "april.sim.Simulator"];
-	config = config; # seems weird, but is actually saying "use the config subkey for configuration"
-	
-	config { # component-specific config
-		simulator {
-		    obstacle_image {
-		        path = "sim/intelmapbig.png";
-		        meters_per_pixel = 0.01;
-		    }
-			
-		    lasers = [ "LIDAR_FRONT" ];    
-		    laser_max_range_m = 30;
-		}
-		
-		# the robot's coordinate frame has the vehicle at the origin, looking
-		# down the X axis, with +Y = left and +Z = up.
-		LIDAR_FRONT {
-		    position = [ 0, 0, 0.5 ];
-		    rollpitchyaw_degrees = [ 0, 0, 0 ];
-		    color = [1, 0, 0];
-		}
-	}
+splinter_config {
+	updateHz = 30;
+	ports = [0, 1];
+	invert = [true, false];
 }
 
 sick {
@@ -99,11 +79,10 @@ sick {
 
 control {
 	command = ["java","org.msoar.sps.control.Controller"];
-	config = config; # seems weird, but is actually saying "use the config subkey for configuration"
-	
-	config { # component-specific config
-		productions = "agents/simple-square.soar";
-	}
+	config = control_config;
+}
+control_config {
+	productions = "agents/simple-square.soar";
 }
 
 debugger {

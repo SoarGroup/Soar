@@ -1,6 +1,5 @@
 package org.msoar.sps.sm;
 
-
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -9,7 +8,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Map.Entry;
 
 import org.apache.log4j.Logger;
 import org.msoar.sps.config.Config;
@@ -120,7 +118,7 @@ public class SessionManager {
 		Config componentConfig = null;
 		String componentConfigId = config.getString(component + ".config");
 		if (componentConfigId != null) {
-			componentConfig = config.getChild(component + "." + componentConfigId);
+			componentConfig = config.getChild(componentConfigId);
 		}
 		
 		try {
