@@ -1,4 +1,4 @@
-package sps.sm;
+package org.msoar.sps.sm;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -10,8 +10,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.log4j.Logger;
+import org.msoar.sps.config.Config;
 
-import sps.config.Config;
 
 public class Runner {
 	private static Logger logger = Logger.getLogger(Runner.class);

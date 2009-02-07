@@ -1,9 +1,9 @@
-package sps.sm;
+package org.msoar.sps.sm;
 
 //import java.io.IOException;
 //import java.net.Socket;
 
-import org.apache.log4j.Logger;
+//import org.apache.log4j.Logger;
 
 public class SessionSlave {
 //	private static Logger logger = Logger.getLogger(SessionSlave.class);

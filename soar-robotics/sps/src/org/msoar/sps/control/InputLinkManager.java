@@ -1,9 +1,10 @@
-package sps.control;
+package org.msoar.sps.control;
 
 import java.io.DataInputStream;
 import java.io.IOException;
 
 import org.apache.log4j.Logger;
+import org.msoar.sps.Names;
 
 import jmat.LinAlg;
 import jmat.MathUtil;
@@ -15,7 +16,6 @@ import sml.Agent;
 import sml.FloatElement;
 import sml.Identifier;
 import sml.IntElement;
-import sps.Names;
 
 /**
  * @author voigtjr

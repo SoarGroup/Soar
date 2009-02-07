@@ -1,4 +1,4 @@
-package sps.config;
+package org.msoar.sps.config;
 
 import java.io.File;
 import java.io.IOException;

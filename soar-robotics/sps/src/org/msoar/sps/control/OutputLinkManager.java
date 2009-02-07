@@ -1,4 +1,4 @@
-package sps.control;
+package org.msoar.sps.control;
 
 import java.io.DataInputStream;
 import java.io.IOException;
@@ -10,10 +10,10 @@ import lcmtypes.differential_drive_command_t;
 import lcmtypes.pose_t;
 
 import org.apache.log4j.Logger;
+import org.msoar.sps.Names;
 
 import sml.Agent;
 import sml.Identifier;
-import sps.Names;
 
 /**
  * @author voigtjr

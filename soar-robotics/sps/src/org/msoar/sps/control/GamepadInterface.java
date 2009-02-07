@@ -1,4 +1,4 @@
-package sps.control;
+package org.msoar.sps.control;
 
 import org.apache.log4j.Logger;
 

@@ -1,4 +1,4 @@
-package sps.control;
+package org.msoar.sps.control;
 
 import java.io.IOException;
 import java.util.Timer;
@@ -8,10 +8,10 @@ import lcm.lcm.LCM;
 import lcmtypes.differential_drive_command_t;
 
 import org.apache.log4j.Logger;
+import org.msoar.sps.Names;
+import org.msoar.sps.config.Config;
+import org.msoar.sps.config.ConfigFile;
 
-import sps.Names;
-import sps.config.Config;
-import sps.config.ConfigFile;
 
 public class Controller extends TimerTask {
 	private static Logger logger = Logger.getLogger(Controller.class);

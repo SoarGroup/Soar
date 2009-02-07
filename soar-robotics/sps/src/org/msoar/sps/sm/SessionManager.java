@@ -1,7 +1,5 @@
-package sps.sm;
+package org.msoar.sps.sm;
 
-import sps.config.Config;
-import sps.config.ConfigFile;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -13,6 +11,8 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.apache.log4j.Logger;
+import org.msoar.sps.config.Config;
+import org.msoar.sps.config.ConfigFile;
 
 public class SessionManager {
 	private static Logger logger = Logger.getLogger(SessionManager.class);
