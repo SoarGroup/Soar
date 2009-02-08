@@ -16,10 +16,12 @@ public class RemoteRunner implements Runner {
 	private static Logger logger = Logger.getLogger(RemoteRunner.class);
 	
 	private String component;
+	private Socket socket;
 	private ObjectInputStream oin;
 	private ObjectOutputStream oout;
 
 	RemoteRunner(Socket socket) throws IOException {
+		this.socket = socket;
 		this.oout = new ObjectOutputStream(new BufferedOutputStream(socket.getOutputStream()));
 		this.oout.flush();
 		this.oin = new ObjectInputStream(new BufferedInputStream(socket.getInputStream()));
@@ -39,11 +41,23 @@ public class RemoteRunner implements Runner {
 		oout.writeObject(Names.NET_CONFIGURE);
 		oout.writeObject(command);
 		oout.writeObject(config);
+		oout.flush();
 	}
 
 	@Override
-	public void destroy() throws IOException {
-		oout.writeObject(Names.NET_DESTROY);
+	public void stop() throws IOException {
+		oout.writeObject(Names.NET_STOP);
+		oout.flush();
+	}
+
+	@Override
+	public void quit() {
+		try {
+			oout.writeObject(Names.NET_QUIT);
+			oout.flush();
+			socket.close();
+		} catch (IOException ignored) {
+		}
 	}
 
 	@Override
@@ -54,6 +68,7 @@ public class RemoteRunner implements Runner {
 	@Override
 	public boolean isAlive() throws IOException {
 		oout.writeObject(Names.NET_ALIVE);
+		oout.flush();
 		Boolean response = false;
 		try {
 			response = (Boolean)oin.readObject();
@@ -67,6 +82,7 @@ public class RemoteRunner implements Runner {
 	@Override
 	public void start() throws IOException {
 		oout.writeObject(Names.NET_START);
+		oout.flush();
 	}
 
 }

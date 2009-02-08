@@ -10,5 +10,6 @@ interface Runner {
 	void configure(ArrayList<String> command, Config config) throws IOException;
 	void start() throws IOException;
 	boolean isAlive()throws IOException;
-	void destroy() throws IOException;
+	void stop() throws IOException;
+	void quit();
 }

@@ -9,6 +9,6 @@ public class Names {
 	public static final String NET_CONFIGURE = "configure";
 	public static final String NET_START = "start";
 	public static final String NET_ALIVE = "alive";
-	public static final String NET_DESTROY = "destroy";
+	public static final String NET_STOP = "destroy";
 	public static final String NET_QUIT = "quit";
 }

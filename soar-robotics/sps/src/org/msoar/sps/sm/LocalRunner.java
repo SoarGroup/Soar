@@ -143,7 +143,11 @@ public class LocalRunner implements Runner {
 	}
 	
 	@Override
-	public void destroy() {
+	public void stop() {
 		process.destroy();
+	}
+	
+	@Override
+	public void quit() {
 	}
 }

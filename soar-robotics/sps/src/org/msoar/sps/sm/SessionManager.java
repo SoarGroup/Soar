@@ -89,6 +89,7 @@ public class SessionManager implements Runnable {
 			// quit/exit
 			if (args[0].equals("quit") || args[0].equals("exit")) {
 				stopAll();
+				quitAll();
 				return false;
 			} else if (args[0].equals("start")) {
 				// start all
@@ -184,6 +185,12 @@ public class SessionManager implements Runnable {
 		}
 	}
 	
+	private void quitAll() {
+		for (Runner runner : runners.values()) {
+			runner.quit();
+		}
+	}
+	
 	private void stop(String component) {
 		if (component == null || component == "all") {
 			String[] components = config.getStrings("all");
@@ -204,7 +211,7 @@ public class SessionManager implements Runnable {
 		if (runner != null) {
 			try {
 				if (runner.isAlive()) {
-					runner.destroy();
+					runner.stop();
 					return;
 				}
 			} catch (IOException e) {

@@ -86,9 +86,10 @@ class SlaveRunner {
 				} else {
 					this.oout.writeObject(new Boolean(false));
 				}
+				oout.flush();
 				
-			} else if (netCommand.equals(Names.NET_DESTROY)) {
-				runner.destroy();
+			} else if (netCommand.equals(Names.NET_STOP)) {
+				runner.stop();
 	
 			} else if (netCommand.equals(Names.NET_QUIT)) {
 				return;
