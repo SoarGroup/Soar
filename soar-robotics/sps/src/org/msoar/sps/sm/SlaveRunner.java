@@ -20,8 +20,14 @@ class SlaveRunner {
 	private ObjectOutputStream oout;
 
 	SlaveRunner(String component, Socket socket) throws IOException {
+		logger.trace("socket is connected: " + socket.isConnected());
+		logger.trace("socket input shutdown: " + socket.isInputShutdown());
+		logger.trace("creating bin");
+		BufferedInputStream bin = new BufferedInputStream(socket.getInputStream());
+		logger.trace("bin available: " + bin.available());
 		logger.trace("creating oin");
-		this.oin = new ObjectInputStream(new BufferedInputStream(socket.getInputStream()));
+		this.oin = new ObjectInputStream(bin);
+		
 		logger.trace("creating oout");
 		this.oout = new ObjectOutputStream(new BufferedOutputStream(socket.getOutputStream()));
 
