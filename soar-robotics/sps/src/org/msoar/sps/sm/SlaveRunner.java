@@ -19,24 +19,30 @@ class SlaveRunner {
 	private ObjectOutputStream oout;
 
 	SlaveRunner(String component, Socket socket) throws IOException {
-		this.oout = new ObjectOutputStream(new BufferedOutputStream(socket.getOutputStream()));
-		this.oout.flush();
-		this.oin = new ObjectInputStream(new BufferedInputStream(socket.getInputStream()));
-
-		logger.trace("creating local runner");
-		this.runner = new LocalRunner(component);
-		
-		// handshake
-		logger.trace("writing component name");
-		this.oout.writeObject(component);
-		this.oout.flush();
-		
-		logger.debug("wrote component name");
-		if (!readString().equals(Names.NET_OK)) {
-			throw new IOException();
+		try {
+			this.oout = new ObjectOutputStream(new BufferedOutputStream(socket.getOutputStream()));
+			this.oout.flush();
+			this.oin = new ObjectInputStream(new BufferedInputStream(socket.getInputStream()));
+	
+			logger.trace("creating local runner");
+			this.runner = new LocalRunner(component);
+			
+			// handshake
+			logger.trace("writing component name");
+			this.oout.writeObject(component);
+			this.oout.flush();
+			
+			logger.debug("wrote component name");
+			if (!readString().equals(Names.NET_OK)) {
+				throw new IOException();
+			}
+			run();
+			logger.info("quitting");
+		} catch (IOException e) {
+			throw e;
+		} finally {
+			stop();
 		}
-		run();
-		logger.info("quitting");
 	}
 	
 	private String readString() throws IOException {
@@ -92,6 +98,15 @@ class SlaveRunner {
 	
 			} else if (netCommand.equals(Names.NET_QUIT)) {
 				return;
+			}
+		}
+	}
+	
+	void stop() {
+		if (runner != null) {
+			try {
+				runner.stop();
+			} catch (IOException ignored) {
 			}
 		}
 	}
