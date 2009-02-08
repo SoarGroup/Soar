@@ -68,9 +68,14 @@ splinter {
 	config = splinter_config;
 }
 splinter_config {
+	orcHostname = "192.168.237.7";
 	updateHz = 30;
-	ports = [0, 1];
-	invert = [true, false];
+	ports = [0, 1]; # LEFT, RIGHT
+	invert = [true, false];# LEFT, RIGHT
+	# should initial pose be here?
+	tickMeters = 0.000043225;
+	baselineMeters = 0.383;
+	maxThrottleAccelleration = 2.0;
 }
 
 sick {

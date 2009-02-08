@@ -13,7 +13,7 @@ public class Configuration {
 		public int updateHz = 30;
 		public int[] ports = { 1, 0 };
 		public boolean[] invert = { true, false };
-		public double maxThrottleAccelleration = 2.0; // percent change per second
+		public double maxThrottleAccelleration = 2.0;
 		public double baselineMeters = 0.383;
 		public double tickMeters = 0.000043225;
 		public double lengthMeters = 0.64;
@@ -22,7 +22,7 @@ public class Configuration {
 		public double laserThreshold = 0.1;
 		public long pfUpdatePeriodNanos;
 		
-		public double maxThrottleChangePerUpdate; // percent change per update
+		public double maxThrottleChangePerUpdate;
 
 		public OrcInterface(Config config) {
 			double pfUpdatePeriod = 0.2;
