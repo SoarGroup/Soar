@@ -155,6 +155,7 @@ public class SessionManager {
 					stop(c);
 				}
 			}
+			return;
 		}
 		
 		logger.info("Stop " + component);

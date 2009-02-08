@@ -53,6 +53,13 @@ public class SoarInterface implements Kernel.UpdateEventInterface, Kernel.System
 	}
 	
 	void getDC(differential_drive_command_t dc) {
+		if (!running) {
+			dc.left_enabled = true;
+			dc.right_enabled = true;
+			dc.left = 0;
+			dc.right = 0;
+			return;
+		}
 		output.getDC(dc, input.getYaw());
 	}
 
