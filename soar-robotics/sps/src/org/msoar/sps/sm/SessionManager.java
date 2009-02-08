@@ -70,8 +70,9 @@ public class SessionManager implements Runnable {
 				Socket clientSocket = serverSocket.accept();
 				logger.info("New connection from " + clientSocket.getRemoteSocketAddress());
 
+				logger.debug("Creating remote runner");
 				Runner runner = new RemoteRunner(clientSocket);
-				logger.info("Creating new remote runner for " + runner.getComponentName());
+				logger.info("Created new remote runner for " + runner.getComponentName());
 				runners.put(runner.getComponentName(), runner);
 
 			} catch (IOException e) {

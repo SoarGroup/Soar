@@ -23,6 +23,7 @@ public class RemoteRunner implements Runner {
 		this.oin = new ObjectInputStream(new BufferedInputStream(socket.getInputStream()));
 		this.oout = new ObjectOutputStream(new BufferedOutputStream(socket.getOutputStream()));
 		
+		logger.debug("reading component name");
 		try {
 			this.component = (String)oin.readObject();
 		} catch (ClassNotFoundException e) {

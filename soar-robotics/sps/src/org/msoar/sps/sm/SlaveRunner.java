@@ -26,6 +26,7 @@ class SlaveRunner {
 		this.runner = new LocalRunner(component);
 		
 		// handshake
+		logger.debug("writing component name");
 		this.oout.writeObject(component);
 		this.oout.flush();
 		logger.debug("wrote component name");
