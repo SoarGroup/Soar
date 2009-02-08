@@ -20,8 +20,8 @@ public class RemoteRunner implements Runner {
 	private ObjectOutputStream oout;
 
 	RemoteRunner(Socket socket) throws IOException {
-		this.oin = new ObjectInputStream(new BufferedInputStream(socket.getInputStream()));
 		this.oout = new ObjectOutputStream(new BufferedOutputStream(socket.getOutputStream()));
+		this.oin = new ObjectInputStream(new BufferedInputStream(socket.getInputStream()));
 		
 		logger.debug("reading component name");
 		try {
