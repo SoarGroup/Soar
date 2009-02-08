@@ -1,6 +1,7 @@
 package org.msoar.sps.config;
 
 import java.io.BufferedReader;
+import java.io.ByteArrayOutputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.FileReader;
@@ -395,8 +396,14 @@ public class ConfigFile extends ConfigSource {
 		} else {
 			p = System.out;
 		}
-		
-		
+
+		writeToStream(p, rootWithDot);
+	 
+		p.close();
+	}
+
+	@Override
+	public void writeToStream(PrintStream p, String rootWithDot) {
 		for (Map.Entry<String, String[]> entry : keys.entrySet()) {
 			if (entry.getKey().length() <= rootWithDot.length()) {
 				continue;
@@ -420,8 +427,5 @@ public class ConfigFile extends ConfigSource {
 				p.println(";");
 			}
 		}
-	 
-		p.close();
 	}
-
 }

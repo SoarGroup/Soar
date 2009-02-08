@@ -1,6 +1,7 @@
 package org.msoar.sps.config;
 
 import java.io.FileNotFoundException;
+import java.io.PrintStream;
 
 /** Abstract source of configuration information. **/
 public abstract class ConfigSource {
@@ -33,4 +34,6 @@ public abstract class ConfigSource {
 	public abstract ConfigSource copy();
 
 	public abstract void removeKey(String key);
+	
+	public abstract void writeToStream(PrintStream p, String rootWithDot);
 }

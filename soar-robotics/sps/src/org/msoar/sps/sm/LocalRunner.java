@@ -3,14 +3,14 @@ package org.msoar.sps.sm;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.io.PrintStream;
 import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.log4j.Logger;
-import org.msoar.sps.config.Config;
-
 
 public class LocalRunner implements Runner {
 	private static Logger logger = Logger.getLogger(LocalRunner.class);
@@ -20,7 +20,7 @@ public class LocalRunner implements Runner {
 
 	// can change per run
 	private List<String> command;
-	private Config config;
+	private String config;
 
 	// will change per run
 	private Process process;
@@ -39,7 +39,7 @@ public class LocalRunner implements Runner {
 	}
 	
 	@Override
-	public void configure(ArrayList<String> command, Config config) {
+	public void configure(ArrayList<String> command, String config) {
 		if (command == null) {
 			throw new NullPointerException();
 		}
@@ -56,7 +56,7 @@ public class LocalRunner implements Runner {
 		if (config != null) {
 			// create temp file
 			try {
-				configFile = File.createTempFile("sps-", ".config", new File(System.getProperty("user.dir")));
+				configFile = File.createTempFile(component + "-", ".sps", new File(System.getProperty("user.dir")));
 			} catch (IOException e) {
 				logger.error("Could not create temporary file for configuration!");
 				throw new IllegalStateException(e);
@@ -66,7 +66,9 @@ public class LocalRunner implements Runner {
 			
 			// write config to temp file
 			try {
-				config.save(configFile.getAbsolutePath());
+				FileOutputStream fout = new FileOutputStream(configFile);
+				PrintStream out = new PrintStream(fout);
+				out.print(config);
 			} catch (FileNotFoundException e) {
 				throw new IllegalStateException(e);
 			}

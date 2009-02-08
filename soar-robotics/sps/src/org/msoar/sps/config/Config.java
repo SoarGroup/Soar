@@ -1,6 +1,8 @@
 package org.msoar.sps.config;
 
+import java.io.ByteArrayOutputStream;
 import java.io.FileNotFoundException;
+import java.io.PrintStream;
 import java.lang.reflect.Field;
 
 /**
@@ -278,6 +280,14 @@ public class Config {
 		for (String key : includedConfig.getKeys()) {
 			this.setStrings(key, includedConfig.getStrings(key));
 		}
+	}
+	
+	@Override
+	public String toString() {
+		ByteArrayOutputStream stream = new ByteArrayOutputStream();
+		PrintStream p = new PrintStream(stream);
+		source.writeToStream(p, prefix);
+		return stream.toString();
 	}
 	
 }

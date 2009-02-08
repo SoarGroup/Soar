@@ -10,7 +10,6 @@ import java.util.ArrayList;
 
 import org.apache.log4j.Logger;
 import org.msoar.sps.Names;
-import org.msoar.sps.config.Config;
 
 public class RemoteRunner implements Runner {
 	private static Logger logger = Logger.getLogger(RemoteRunner.class);
@@ -38,7 +37,7 @@ public class RemoteRunner implements Runner {
 	}
 
 	@Override
-	public void configure(ArrayList<String> command, Config config) throws IOException {
+	public void configure(ArrayList<String> command, String config) throws IOException {
 		oout.writeObject(Names.NET_CONFIGURE);
 		oout.writeObject(command);
 		oout.writeObject(config);

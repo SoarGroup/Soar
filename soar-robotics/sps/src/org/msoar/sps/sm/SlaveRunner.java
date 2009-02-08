@@ -10,7 +10,6 @@ import java.util.ArrayList;
 
 import org.apache.log4j.Logger;
 import org.msoar.sps.Names;
-import org.msoar.sps.config.Config;
 
 class SlaveRunner {
 	private static Logger logger = Logger.getLogger(SlaveRunner.class);
@@ -31,15 +30,16 @@ class SlaveRunner {
 		logger.trace("writing component name");
 		this.oout.writeObject(component);
 		this.oout.flush();
+		
 		logger.debug("wrote component name");
-		if (!readNetCommand().equals(Names.NET_OK)) {
+		if (!readString().equals(Names.NET_OK)) {
 			throw new IOException();
 		}
 		run();
 		logger.info("quitting");
 	}
 	
-	private String readNetCommand() throws IOException {
+	private String readString() throws IOException {
 		try {
 			return (String)oin.readObject();
 		} catch (ClassNotFoundException e) {
@@ -59,23 +59,14 @@ class SlaveRunner {
 		}
 	}
 
-	private Config readConfig() throws IOException {
-		try {
-			return (Config)oin.readObject();
-		} catch (ClassNotFoundException e) {
-			logger.error(e.getMessage());
-			throw new IOException(e);
-		}
-	}
-
 	private void run() throws IOException {
 		logger.info("running");
 		while (true) {
-			String netCommand = readNetCommand();
+			String netCommand = readString();
 			logger.debug("net command: " + netCommand);
 
 			if (netCommand.equals(Names.NET_CONFIGURE)) {
-				runner.configure(readCommand(), readConfig());
+				runner.configure(readCommand(), readString());
 				
 			} else if (netCommand.equals(Names.NET_START)) {
 				runner.start();
