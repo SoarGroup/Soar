@@ -40,7 +40,20 @@
 
       <manifest>
 	<attribute name="Main-Class" value="org.msoar.sps.sm.SessionManager" />
-	<attribute name="Class-Path" value="" />
+	<attribute name="Class-Path" value="
+		../../SoarSuite/SoarLibrary/bin/sml.jar 
+		../../SoarSuite/SoarLibrary/bin/swt.jar 
+		../../SoarSuite/SoarLibrary/bin/log4j-1.2.15.jar 
+		../../uorc/user/java/orc.jar 
+		../../april-code/java/jmat/jmat.jar 
+		../../april-code/java/vis/vis.jar 
+		../../april-code/java/april/april.jar 
+		../../april-code/java/lcmtypes/lcmtypes.jar 
+		/usr/share/java/jzlib.jar 
+		/usr/share/java/gluegen-rt.jar 
+		/usr/share/java/jogl.jar 
+		/usr/local/share/java/lcm.jar 
+		/usr/share/java/svn-javahl.jar" />
       </manifest>
     </jar>
     <copy file="sps.jar" todir="." />
