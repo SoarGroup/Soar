@@ -21,6 +21,7 @@ class SlaveRunner {
 
 	SlaveRunner(String component, Socket socket) throws IOException {
 		this.oout = new ObjectOutputStream(new BufferedOutputStream(socket.getOutputStream()));
+		this.oout.flush();
 		this.oin = new ObjectInputStream(new BufferedInputStream(socket.getInputStream()));
 
 		logger.trace("creating local runner");
