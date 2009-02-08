@@ -20,13 +20,16 @@ class SlaveRunner {
 	private ObjectOutputStream oout;
 
 	SlaveRunner(String component, Socket socket) throws IOException {
+		logger.trace("creating oin");
 		this.oin = new ObjectInputStream(new BufferedInputStream(socket.getInputStream()));
+		logger.trace("creating oout");
 		this.oout = new ObjectOutputStream(new BufferedOutputStream(socket.getOutputStream()));
 
+		logger.trace("creating local runner");
 		this.runner = new LocalRunner(component);
 		
 		// handshake
-		logger.debug("writing component name");
+		logger.trace("writing component name");
 		this.oout.writeObject(component);
 		this.oout.flush();
 		logger.debug("wrote component name");
