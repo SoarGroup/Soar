@@ -4,7 +4,8 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStreamReader;
-//import java.net.ServerSocket;
+import java.net.ServerSocket;
+import java.net.Socket;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -14,27 +15,35 @@ import org.apache.log4j.Logger;
 import org.msoar.sps.config.Config;
 import org.msoar.sps.config.ConfigFile;
 
-public class SessionManager {
+public class SessionManager implements Runnable {
 	private static Logger logger = Logger.getLogger(SessionManager.class);
 	static int PORT = 42140;
 	private static String USAGE = "Argument should be config file OR component@hostname\n\n *** WORKING DIRECTORY MUST BE soar-robotics/sps ***";
-	//private ServerSocket socket;
+	private ServerSocket serverSocket;
 	private Map<String, Runner> runners = new HashMap<String, Runner>();
 	private Config config;
 	
 	SessionManager(Config config) {
+		String test = "test\n";
+		test = test.trim();
+		System.out.print("test: '" + test + "'");
+		
 		if (config == null) {
 			throw new NullPointerException();
 		}
 		
 		this.config = config;
-//		try {
-//			socket = new ServerSocket(PORT);
-//			logger.info("Listening on port " + PORT);
-//		} catch (IOException e) {
-//			logger.error(e.getMessage());
-//			System.exit(1);
-//		}
+		
+		try {
+			serverSocket = new ServerSocket(PORT);
+		} catch (IOException e) {
+			logger.error(e.getMessage());
+			System.exit(1);
+		}
+		
+		Thread acceptThread = new Thread(this);
+		acceptThread.setDaemon(true);
+		acceptThread.start();
 		
 		// run simple command interpreter:
 		BufferedReader input = new BufferedReader(new InputStreamReader(System.in));
@@ -50,6 +59,25 @@ public class SessionManager {
 			}
 		} catch (IOException e) {
 			logger.error(e.getMessage());
+		}
+	}
+
+	@Override
+	public void run() {
+		logger.info("Listening on port " + serverSocket.getLocalPort());
+		while (true) {
+			try {
+				Socket clientSocket = serverSocket.accept();
+				logger.info("New connection from " + clientSocket.getRemoteSocketAddress());
+
+				Runner runner = new RemoteRunner(clientSocket);
+				logger.info("Creating new remote runner for " + runner.getComponentName());
+				runners.put(runner.getComponentName(), runner);
+
+			} catch (IOException e) {
+				logger.error("New connection failed: " + e.getMessage());
+				continue;
+			}
 		}
 	}
 	
@@ -108,30 +136,41 @@ public class SessionManager {
 		String[] command = config.getStrings(component + ".command");
 		if (command == null) {
 			logger.error("Unknown component: " + component);
+			
+			if (runners.containsKey(component)) {
+				logger.error("Pruning component " + component);
+				runners.remove(component);
+			}
 			return;
 		}
 		
 		Runner runner = runners.get(component);
 		if (runner != null) {
-			if (runner.isAlive()) {
-				logger.error("Already running: " + component);
-				return;
+			try {
+				if (runner.isAlive()) {
+					logger.error("Already running: " + component);
+					return;
+				}
+			} catch (IOException e) {
+				logger.error("Component error: " + e.getMessage());
+				logger.error("Pruning component " + component);
+				runners.remove(component);
 			}
-			logger.trace("Pruning dead component: " + runner.getComponentName());
-			runners.remove(component);
+		} else {
+			logger.info("Creating new local runner for " + component);
+			runner = new LocalRunner(component);
+			runners.put(component, runner);
 		}
-		runner = null;
 		
 		Config componentConfig = null;
 		String componentConfigId = config.getString(component + ".config");
 		if (componentConfigId != null) {
 			componentConfig = config.getChild(componentConfigId);
 		}
-		
+
 		try {
-			runner = new Runner(component, new ArrayList<String>(Arrays.asList(command)), System.out, componentConfig);
+			runner.configure(new ArrayList<String>(Arrays.asList(command)), componentConfig);
 			runner.start();
-			runners.put(component, runner);
 		} catch (IOException e) {
 			logger.error(e.getMessage());
 		}
@@ -160,13 +199,18 @@ public class SessionManager {
 		
 		logger.info("Stop " + component);
 		
-		Runner runner = runners.remove(component);
+		Runner runner = runners.get(component);
 		if (runner != null) {
-			if (runner.isAlive()) {
-				runner.destroy();
-				return;
+			try {
+				if (runner.isAlive()) {
+					runner.destroy();
+					return;
+				}
+			} catch (IOException e) {
+				logger.error("Component error: " + e.getMessage());
+				logger.error("Pruning component " + component);
+				runners.remove(component);
 			}
-			logger.trace("Pruning dead component: " + runner.getComponentName());
 		}
 		logger.error("Component not running: " + component);
 	}
