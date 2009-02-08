@@ -31,6 +31,7 @@ class SlaveRunner {
 			throw new IOException();
 		}
 		run();
+		logger.info("quitting");
 	}
 	
 	private String readNetCommand() throws IOException {
@@ -63,9 +64,11 @@ class SlaveRunner {
 	}
 
 	private void run() throws IOException {
+		logger.info("running");
 		while (true) {
 			String netCommand = readNetCommand();
-			
+			logger.debug("net command: " + netCommand);
+
 			if (netCommand.equals(Names.NET_CONFIGURE)) {
 				runner.configure(readCommand(), readConfig());
 				
