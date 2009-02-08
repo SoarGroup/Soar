@@ -27,6 +27,8 @@ class SlaveRunner {
 		
 		// handshake
 		this.oout.writeObject(component);
+		this.oout.flush();
+		logger.debug("wrote component name");
 		if (!readNetCommand().equals(Names.NET_OK)) {
 			throw new IOException();
 		}

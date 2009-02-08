@@ -13,6 +13,7 @@ public class SessionSlave {
 		logger.info("Connecting as " + component + "@" + hostname + ":" + SessionManager.PORT);
 		try {
 			Socket socket = new Socket(hostname, SessionManager.PORT);
+			logger.info("connected");
 			new SlaveRunner(component, socket);
 		} catch (IOException e) {
 			logger.error(e.getMessage());
