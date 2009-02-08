@@ -18,11 +18,9 @@ public class SessionSlave {
 			sr = new SlaveRunner(component, socket);
 		} catch (IOException e) {
 			logger.error(e.getMessage());
-			System.exit(1);
 		}
 		if (sr != null) {
 			sr.stop();
 		}
-		System.exit(0);
 	}
 }
