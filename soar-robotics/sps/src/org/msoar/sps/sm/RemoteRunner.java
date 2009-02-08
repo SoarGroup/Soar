@@ -40,7 +40,12 @@ public class RemoteRunner implements Runner {
 	public void configure(ArrayList<String> command, String config) throws IOException {
 		oout.writeObject(Names.NET_CONFIGURE);
 		oout.writeObject(command);
-		oout.writeObject(config);
+		if (config == null) {
+			oout.writeObject(Names.NET_CONFIG_NO);
+		} else {
+			oout.writeObject(Names.NET_CONFIG_YES);
+			oout.writeObject(config);
+		}
 		oout.flush();
 	}
 

@@ -171,7 +171,7 @@ public class SessionManager implements Runnable {
 		}
 
 		try {
-			runner.configure(new ArrayList<String>(Arrays.asList(command)), componentConfig.toString());
+			runner.configure(new ArrayList<String>(Arrays.asList(command)), componentConfig == null ? null : componentConfig.toString());
 			runner.start();
 		} catch (IOException e) {
 			logger.error(e.getMessage());

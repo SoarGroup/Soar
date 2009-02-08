@@ -66,7 +66,15 @@ class SlaveRunner {
 			logger.debug("net command: " + netCommand);
 
 			if (netCommand.equals(Names.NET_CONFIGURE)) {
-				runner.configure(readCommand(), readString());
+				ArrayList<String> command = readCommand();
+				netCommand = readString();
+				if (netCommand.equals(Names.NET_CONFIG_NO)) {
+					runner.configure(command, null);
+				} else if (netCommand.equals(Names.NET_CONFIG_YES)) {
+					runner.configure(command, readString());
+				} else {
+					throw new IOException("didn't get config yes/no message");
+				}
 				
 			} else if (netCommand.equals(Names.NET_START)) {
 				runner.start();

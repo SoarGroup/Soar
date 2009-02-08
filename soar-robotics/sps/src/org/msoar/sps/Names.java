@@ -7,6 +7,8 @@ public class Names {
 	
 	public static final String NET_OK = "ok";
 	public static final String NET_CONFIGURE = "configure";
+	public static final String NET_CONFIG_NO = "config-no";
+	public static final String NET_CONFIG_YES = "config-yes";
 	public static final String NET_START = "start";
 	public static final String NET_ALIVE = "alive";
 	public static final String NET_STOP = "destroy";
