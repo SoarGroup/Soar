@@ -34,6 +34,7 @@ public class RemoteRunner implements Runner {
 			throw new IOException(e);
 		}
 		oout.writeObject(Names.NET_OK);
+		this.oout.flush();
 	}
 
 	@Override
