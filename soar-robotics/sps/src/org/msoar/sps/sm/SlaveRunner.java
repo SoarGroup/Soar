@@ -5,7 +5,6 @@ import java.io.BufferedOutputStream;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
-import java.io.PrintStream;
 import java.net.Socket;
 import java.util.ArrayList;
 
@@ -26,13 +25,8 @@ class SlaveRunner {
 			
 			this.oin = new ObjectInputStream(new BufferedInputStream(controlSocket.getInputStream()));
 	
-			logger.debug("setting up output socket");
-			PrintStream out = new PrintStream(outputSocket.getOutputStream());
-			out.print(component + "\r\n");
-			out.flush();
-			
 			logger.trace("creating local runner");
-			this.runner = new LocalRunner(component, out);
+			this.runner = new LocalRunner(component, outputSocket);
 			
 			// handshake
 			logger.trace("writing component name");
@@ -94,6 +88,8 @@ class SlaveRunner {
 		if (runner != null) {
 			try {
 				runner.stop();
+				this.oin.close();
+				this.oout.close();
 			} catch (IOException ignored) {
 			}
 		}

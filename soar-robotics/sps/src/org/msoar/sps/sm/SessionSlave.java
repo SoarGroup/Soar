@@ -8,11 +8,14 @@ import org.msoar.sps.Names;
 
 public class SessionSlave {
 	private static Logger logger = Logger.getLogger(SessionSlave.class);
-
+	
+	private SlaveRunner sr;
+	
 	SessionSlave(String component, String hostname) {
+		Runtime.getRuntime().addShutdownHook(new ShutdownHook());
+
 		// connect to a SessionManager master at hostname
 		logger.info("Connecting as " + component + "@" + hostname + ":" + SessionManager.PORT);
-		SlaveRunner sr = null;
 		try {
 			Socket controlSocket = new Socket(hostname, SessionManager.PORT);
 			controlSocket.getOutputStream().write(Names.TYPE_COMPONENT);
@@ -30,6 +33,18 @@ public class SessionSlave {
 		}
 		if (sr != null) {
 			sr.stop();
+		}
+	}
+	
+	public class ShutdownHook extends Thread {
+		@Override
+		public void run() {
+			if (sr != null)
+				sr.stop();
+
+			System.out.flush();
+			System.err.println("Terminated");
+			System.err.flush();
 		}
 	}
 }

@@ -7,6 +7,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintStream;
+import java.net.Socket;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -27,12 +28,27 @@ public class LocalRunner implements Runner {
 	private Process process;
 	private File configFile;
 	
-	LocalRunner(String component, PrintStream out) {
-		if (component == null || out == null) {
+	LocalRunner(String component) {
+		setComponent(component);
+	}
+	
+	LocalRunner(String component, Socket outputSocket) throws IOException {
+		setComponent(component);
+		if (outputSocket == null) {
+			throw new NullPointerException();
+		}
+
+		logger.debug("setting up output socket");
+		this.out = new PrintStream(outputSocket.getOutputStream());
+		this.out.print(component + "\r\n");
+		this.out.flush();
+	}
+	
+	private void setComponent(String component) {
+		if (component == null) {
 			throw new NullPointerException();
 		}
 		this.component = component;
-		this.out = out;
 	}
 	
 	@Override
@@ -103,8 +119,12 @@ public class LocalRunner implements Runner {
 			String line;
 			try {
 				while((line = procIn.readLine()) != null) {
-					out.println(component + ": " + line);
-					out.flush();
+					if (out == null) {
+						System.out.println(component + ": " + line);
+					} else {
+						out.println(component + ": " + line);
+						out.flush();
+					}
 				}
 			} catch (IOException e) {
 				logger.warn(e.getMessage());
@@ -151,6 +171,10 @@ public class LocalRunner implements Runner {
 	public void stop() {
 		if (process != null) {
 			process.destroy();
+		}
+		
+		if (out != null) {
+			out.close();
 		}
 	}
 	
