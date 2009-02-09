@@ -43,7 +43,7 @@ public class RemoteRunner implements Runner {
 				throw new IOException();
 			}
 		}
-		
+		logger.debug("got component name");
 		oout.writeObject(Names.NET_OK);
 		this.oout.flush();
 	}
@@ -88,14 +88,16 @@ public class RemoteRunner implements Runner {
 		oout.writeObject(Names.NET_ALIVE);
 		oout.flush();
 		
-		try {
-			rt.wait();
-		} catch (InterruptedException e) {
-			throw new IOException(e);
-		}
-		
-		if (aliveResponse == null) {
-			throw new IOException();
+		synchronized (rt) {
+			try {
+				rt.wait();
+			} catch (InterruptedException e) {
+				throw new IOException(e);
+			}
+			
+			if (aliveResponse == null) {
+				throw new IOException();
+			}
 		}
 		
 		return aliveResponse;
@@ -119,26 +121,30 @@ public class RemoteRunner implements Runner {
 		
 		@Override
 		public void run() {
+			logger.debug("rt alive");
 			try {
 				try {
 					synchronized (this) {
 						component = (String)oin.readObject();
-						this.notify();
+						rt.notify();
 					}
 				} catch (ClassNotFoundException e) {
 					logger.error(e.getMessage());
 					return;
 				}
 
+				logger.debug("wrote component");
+
 				while(true) {
 					String netCommand = NetworkRunner.readString(oin);
+					logger.debug("received command: " + netCommand);
 					
-					if (netCommand == Names.NET_OUTPUT) {
+					if (netCommand.equals(Names.NET_OUTPUT)) {
 						System.out.print(NetworkRunner.readString(oin));
-					} else if (netCommand == Names.NET_ALIVE_RESPONSE) {
+					} else if (netCommand.equals(Names.NET_ALIVE_RESPONSE)) {
 						synchronized (this) {
 							aliveResponse = NetworkRunner.readBoolean(oin);
-							this.notify();
+							rt.notify();
 						}
 					} else {
 						logger.error("Unknown network command: " + netCommand);
