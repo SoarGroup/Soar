@@ -16,6 +16,6 @@ public class Names {
 	public static final String NET_STOP = "destroy";
 	public static final String NET_QUIT = "quit";
 	
-	public static final Byte TYPE_COMPONENT = new Byte("0x0");
-	public static final Byte TYPE_OUTPUT = new Byte("0x1");
+	public static final Byte TYPE_COMPONENT = new Byte("0");
+	public static final Byte TYPE_OUTPUT = new Byte("1");
 }
