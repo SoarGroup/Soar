@@ -87,7 +87,9 @@ public class SessionManager implements Runnable {
 				} else if (Names.TYPE_OUTPUT.equals(t[0])) {
 					logger.debug("Connection is output");
 					BufferedReader br = new BufferedReader(new InputStreamReader(new GZIPInputStream(clientSocket.getInputStream())));
+					logger.debug("Waiting for name");
 					String component = br.readLine();
+					logger.debug("Got name: " + component);
 					runners.get(component).setOutput(br);
 					logger.info("Associated output stream with remote runner " + component);
 

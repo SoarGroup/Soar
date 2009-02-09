@@ -29,7 +29,7 @@ class SlaveRunner {
 	
 			logger.debug("setting up output socket");
 			PrintStream out = new PrintStream(new GZIPOutputStream(outputSocket.getOutputStream()));
-			out.println(component);
+			out.print(component + "\r\n");
 			out.flush();
 			
 			logger.trace("creating local runner");
