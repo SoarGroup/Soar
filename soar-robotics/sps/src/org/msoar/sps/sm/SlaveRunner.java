@@ -43,7 +43,7 @@ class SlaveRunner {
 		} catch (IOException e) {
 			throw e;
 		} finally {
-			stop();
+			quit();
 		}
 	}
 	
@@ -84,14 +84,18 @@ class SlaveRunner {
 		}
 	}
 	
-	void stop() {
-		if (runner != null) {
-			try {
-				runner.stop();
-				this.oin.close();
-				this.oout.close();
-			} catch (IOException ignored) {
+	void quit() {
+		try {
+			if (runner != null) {
+				runner.quit();
 			}
+			if (oin != null) {
+				oin.close();
+			}
+			if (oout != null) {
+				oout.close();
+			}
+		} catch (IOException ignored) {
 		}
 	}
 }

@@ -172,15 +172,15 @@ public class LocalRunner implements Runner {
 		if (process != null) {
 			process.destroy();
 		}
-		
-		if (out != null) {
-			out.close();
-		}
 	}
 	
 	@Override
 	public void quit() {
 		stop();
+
+		if (out != null) {
+			out.close();
+		}
 	}
 	
 	@Override
