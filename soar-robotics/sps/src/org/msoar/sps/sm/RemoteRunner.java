@@ -17,32 +17,22 @@ public class RemoteRunner implements Runner {
 	
 	private String component;
 	private ObjectOutputStream oout;
+	private ObjectInputStream oin;
 	private Boolean aliveResponse;
-	private ReceiverThread rt;
 	
 	RemoteRunner(Socket socket) throws IOException {
 		this.oout = new ObjectOutputStream(new BufferedOutputStream(socket.getOutputStream()));
 		this.oout.flush();
 		
-		rt = new ReceiverThread(new ObjectInputStream(new BufferedInputStream(socket.getInputStream())));
-		{
-			Thread recv = new Thread(rt);
-			recv.setDaemon(true);
-			recv.start();
-		}
+		this.oin = new ObjectInputStream(new BufferedInputStream(socket.getInputStream()));
 		
-		logger.debug("reading component name");
-		synchronized (rt) {
-			try {
-				rt.wait();
-			} catch (InterruptedException ignored) {
-			}
-			
-			if (component == null) {
-				throw new IOException();
-			}
+		logger.debug("new remote runner waiting for component name");
+		this.component = NetworkRunner.readString(oin);
+		if (component == null) {
+			throw new IOException();
 		}
-		logger.debug("got component name");
+
+		logger.debug("'" + component + "' received, writing ok");
 		oout.writeObject(Names.NET_OK);
 		this.oout.flush();
 	}
@@ -72,7 +62,7 @@ public class RemoteRunner implements Runner {
 			oout.writeObject(Names.NET_QUIT);
 			oout.flush();
 			oout.close();
-			rt.close();
+			oin.close();
 		} catch (IOException ignored) {
 		}
 	}
@@ -87,17 +77,10 @@ public class RemoteRunner implements Runner {
 		aliveResponse = null;
 		oout.writeObject(Names.NET_ALIVE);
 		oout.flush();
-		
-		synchronized (rt) {
-			try {
-				rt.wait();
-			} catch (InterruptedException e) {
-				throw new IOException(e);
-			}
-			
-			if (aliveResponse == null) {
-				throw new IOException();
-			}
+		aliveResponse = NetworkRunner.readBoolean(oin);
+
+		if (aliveResponse == null) {
+			throw new IOException();
 		}
 		
 		return aliveResponse;
@@ -109,59 +92,6 @@ public class RemoteRunner implements Runner {
 		oout.flush();
 	}
 
-	private class ReceiverThread implements Runnable {
-		private ObjectInputStream oin;
-
-		ReceiverThread(ObjectInputStream oin) {
-			if (oin == null) {
-				throw new NullPointerException();
-			}
-			this.oin = oin;
-		}
-		
-		void close() throws IOException {
-			this.oin.close();
-		}
-		
-		@Override
-		public void run() {
-			logger.debug("rt alive");
-			try {
-				try {
-					synchronized (this) {
-						component = (String)oin.readObject();
-						rt.notify();
-					}
-				} catch (ClassNotFoundException e) {
-					logger.error(e.getMessage());
-					return;
-				}
-
-				logger.debug("wrote component");
-
-				while(true) {
-					String netCommand = NetworkRunner.readString(oin);
-					logger.debug("received command: " + netCommand);
-					
-					if (netCommand.equals(Names.NET_OUTPUT)) {
-						System.out.print(NetworkRunner.readString(oin));
-					} else if (netCommand.equals(Names.NET_ALIVE_RESPONSE)) {
-						synchronized (this) {
-							aliveResponse = NetworkRunner.readBoolean(oin);
-							rt.notify();
-						}
-					} else {
-						logger.error("Unknown network command: " + netCommand);
-						return;
-					}
-				}
-			} catch (IOException e) {
-				logger.error(e.getMessage());
-				return;
-			}
-		}
-	}
-
 	private class OutputPump implements Runnable {
 		BufferedReader output;
 		
@@ -171,6 +101,7 @@ public class RemoteRunner implements Runner {
 		
 		@Override
 		public void run() {
+			logger.debug(component + ": output pump alive");
 			String out;
 			try {
 				while (( out = output.readLine()) != null) {

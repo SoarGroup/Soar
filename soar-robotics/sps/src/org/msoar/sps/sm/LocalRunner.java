@@ -104,6 +104,7 @@ public class LocalRunner implements Runner {
 			try {
 				while((line = procIn.readLine()) != null) {
 					out.println(component + ": " + line);
+					out.flush();
 				}
 			} catch (IOException e) {
 				logger.warn(e.getMessage());

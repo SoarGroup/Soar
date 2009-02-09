@@ -79,19 +79,21 @@ public class SessionManager implements Runnable {
 				}
 				
 				if (Names.TYPE_COMPONENT.equals(t[0])) {
-					logger.debug("Creating remote runner");
+					logger.debug("Connection is component");
 					Runner runner = new RemoteRunner(clientSocket);
-					logger.info("Created new remote runner for " + runner.getComponentName());
 					runners.put(runner.getComponentName(), runner);
+					logger.info("Created new remote runner for " + runner.getComponentName());
 
 				} else if (Names.TYPE_OUTPUT.equals(t[0])) {
+					logger.debug("Connection is output");
 					BufferedReader br = new BufferedReader(new InputStreamReader(new GZIPInputStream(clientSocket.getInputStream())));
 					String component = br.readLine();
 					runners.get(component).setOutput(br);
+					logger.info("Associated output stream with remote runner " + component);
+
 				} else {
 					logger.error("Unknown type header: " + Byte.toString(t[0]));
 				}
-				
 			} catch (IOException e) {
 				logger.error("New connection failed: " + e.getMessage());
 				continue;

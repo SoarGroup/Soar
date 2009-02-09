@@ -19,17 +19,18 @@ class SlaveRunner {
 	private Runner runner;
 	private ObjectInputStream oin;
 	private ObjectOutputStream oout;
-	private PrintStream out;
 
 	SlaveRunner(String component, Socket controlSocket, Socket outputSocket) throws IOException {
 		try {
 			this.oout = new ObjectOutputStream(new BufferedOutputStream(controlSocket.getOutputStream()));
 			this.oout.flush();
+			
 			this.oin = new ObjectInputStream(new BufferedInputStream(controlSocket.getInputStream()));
 	
 			logger.debug("setting up output socket");
-			out = new PrintStream(new GZIPOutputStream(outputSocket.getOutputStream()));
+			PrintStream out = new PrintStream(new GZIPOutputStream(outputSocket.getOutputStream()));
 			out.println(component);
+			out.flush();
 			
 			logger.trace("creating local runner");
 			this.runner = new LocalRunner(component, out);
