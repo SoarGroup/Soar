@@ -19,7 +19,7 @@ sim {
 }
 viewer {
 	# what command to run
-	command = ["/usr/lib/jvm/java-6-sun/bin/java","-Xmx256m","april.viewer.Viewer"];
+	command = ["/usr/lib/jvm/java-6-sun/bin/java","-Xmx512m","april.viewer.Viewer"];
 	config = april_config; # what config to use, maps to top-level key
 	
 	# write this config out to file and append its filename to the command

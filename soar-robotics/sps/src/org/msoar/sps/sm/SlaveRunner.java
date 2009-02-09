@@ -25,7 +25,7 @@ class SlaveRunner {
 			this.oin = new ObjectInputStream(new BufferedInputStream(socket.getInputStream()));
 	
 			logger.trace("creating local runner");
-			this.runner = new LocalRunner(component);
+			this.runner = new LocalRunner(component, System.out);
 			
 			// handshake
 			logger.trace("writing component name");
@@ -33,7 +33,7 @@ class SlaveRunner {
 			this.oout.flush();
 			
 			logger.debug("wrote component name");
-			if (!readString().equals(Names.NET_OK)) {
+			if (!NetworkRunner.readString(oin).equals(Names.NET_OK)) {
 				throw new IOException();
 			}
 			run();
@@ -45,39 +45,19 @@ class SlaveRunner {
 		}
 	}
 	
-	private String readString() throws IOException {
-		try {
-			return (String)oin.readObject();
-		} catch (ClassNotFoundException e) {
-			logger.error(e.getMessage());
-			throw new IOException(e);
-		}
-	}
-
-	// TODO: how do you check a cast?
-	@SuppressWarnings("unchecked")
-	private ArrayList<String> readCommand() throws IOException {
-		try {
-			return (ArrayList<String>)oin.readObject();
-		} catch (ClassNotFoundException e) {
-			logger.error(e.getMessage());
-			throw new IOException(e);
-		}
-	}
-
 	private void run() throws IOException {
 		logger.info("running");
 		while (true) {
-			String netCommand = readString();
+			String netCommand = NetworkRunner.readString(oin);
 			logger.debug("net command: " + netCommand);
 
 			if (netCommand.equals(Names.NET_CONFIGURE)) {
-				ArrayList<String> command = readCommand();
-				netCommand = readString();
+				ArrayList<String> command = NetworkRunner.readCommand(oin);
+				netCommand = NetworkRunner.readString(oin);
 				if (netCommand.equals(Names.NET_CONFIG_NO)) {
 					runner.configure(command, null);
 				} else if (netCommand.equals(Names.NET_CONFIG_YES)) {
-					runner.configure(command, readString());
+					runner.configure(command, NetworkRunner.readString(oin));
 				} else {
 					throw new IOException("didn't get config yes/no message");
 				}
@@ -86,6 +66,7 @@ class SlaveRunner {
 				runner.start();
 	
 			} else if (netCommand.equals(Names.NET_ALIVE)) {
+				this.oout.writeObject(Names.NET_ALIVE_RESPONSE);
 				if (runner.isAlive()) {
 					this.oout.writeObject(new Boolean(true));
 				} else {

@@ -160,7 +160,7 @@ public class SessionManager implements Runnable {
 			}
 		} else {
 			logger.info("Creating new local runner for " + component);
-			runner = new LocalRunner(component);
+			runner = new LocalRunner(component, System.out);
 			runners.put(component, runner);
 		}
 		

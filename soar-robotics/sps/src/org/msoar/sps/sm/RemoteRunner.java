@@ -16,22 +16,32 @@ public class RemoteRunner implements Runner {
 	
 	private String component;
 	private Socket socket;
-	private ObjectInputStream oin;
 	private ObjectOutputStream oout;
-
+	private Boolean aliveResponse;
+	private ReceiverThread rt;
+	
 	RemoteRunner(Socket socket) throws IOException {
 		this.socket = socket;
 		this.oout = new ObjectOutputStream(new BufferedOutputStream(socket.getOutputStream()));
 		this.oout.flush();
-		this.oin = new ObjectInputStream(new BufferedInputStream(socket.getInputStream()));
+		
+		rt = new ReceiverThread(new ObjectInputStream(new BufferedInputStream(socket.getInputStream())));
+		{
+			Thread recv = new Thread(rt);
+			recv.setDaemon(true);
+			recv.start();
+		}
 		
 		logger.debug("reading component name");
 		try {
-			this.component = (String)oin.readObject();
-		} catch (ClassNotFoundException e) {
-			logger.error(e.getMessage());
-			throw new IOException(e);
+			rt.wait();
+		} catch (InterruptedException ignored) {
 		}
+		
+		if (component == null) {
+			throw new IOException();
+		}
+		
 		oout.writeObject(Names.NET_OK);
 		this.oout.flush();
 	}
@@ -72,16 +82,21 @@ public class RemoteRunner implements Runner {
 
 	@Override
 	public boolean isAlive() throws IOException {
+		aliveResponse = null;
 		oout.writeObject(Names.NET_ALIVE);
 		oout.flush();
-		Boolean response = false;
+		
 		try {
-			response = (Boolean)oin.readObject();
-		} catch (ClassNotFoundException e) {
-			logger.error(e.getMessage());
+			rt.wait();
+		} catch (InterruptedException e) {
 			throw new IOException(e);
 		}
-		return response;
+		
+		if (aliveResponse == null) {
+			throw new IOException();
+		}
+		
+		return aliveResponse;
 	}
 
 	@Override
@@ -90,4 +105,46 @@ public class RemoteRunner implements Runner {
 		oout.flush();
 	}
 
+	private class ReceiverThread implements Runnable {
+		private ObjectInputStream oin;
+
+		ReceiverThread(ObjectInputStream oin) {
+			if (oin == null) {
+				throw new NullPointerException();
+			}
+			this.oin = oin;
+		}
+		
+		@Override
+		public void run() {
+			try {
+				try {
+					component = (String)oin.readObject();
+					this.notify();
+				} catch (ClassNotFoundException e) {
+					logger.error(e.getMessage());
+					return;
+				}
+
+				while(true) {
+					String netCommand = NetworkRunner.readString(oin);
+					
+					if (netCommand == Names.NET_OUTPUT) {
+						System.out.print(NetworkRunner.readString(oin));
+					} else if (netCommand == Names.NET_ALIVE_RESPONSE) {
+						aliveResponse = NetworkRunner.readBoolean(oin);
+						this.notify();
+					} else {
+						logger.error("Unknown network command: " + netCommand);
+						return;
+					}
+				}
+			} catch (IOException e) {
+				logger.error(e.getMessage());
+				return;
+			} finally {
+				this.notifyAll();
+			}
+		}
+	}
 }

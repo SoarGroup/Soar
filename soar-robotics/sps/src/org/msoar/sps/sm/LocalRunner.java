@@ -17,7 +17,8 @@ public class LocalRunner implements Runner {
 	
 	// constant
 	private String component;
-
+	private PrintStream out;
+	
 	// can change per run
 	private List<String> command;
 	private String config;
@@ -26,11 +27,12 @@ public class LocalRunner implements Runner {
 	private Process process;
 	private File configFile;
 	
-	LocalRunner(String component) {
-		if (component == null) {
+	LocalRunner(String component, PrintStream out) {
+		if (component == null || out == null) {
 			throw new NullPointerException();
 		}
 		this.component = component;
+		this.out = out;
 	}
 	
 	@Override
@@ -101,7 +103,7 @@ public class LocalRunner implements Runner {
 			String line;
 			try {
 				while((line = procIn.readLine()) != null) {
-					System.out.println(component + ": " + line);
+					out.println(component + ": " + line);
 				}
 			} catch (IOException e) {
 				logger.warn(e.getMessage());
