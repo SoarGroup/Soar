@@ -148,7 +148,9 @@ public class LocalRunner implements Runner {
 	
 	@Override
 	public void stop() {
-		process.destroy();
+		if (process != null) {
+			process.destroy();
+		}
 	}
 	
 	@Override

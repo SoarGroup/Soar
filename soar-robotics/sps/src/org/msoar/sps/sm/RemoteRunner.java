@@ -33,13 +33,15 @@ public class RemoteRunner implements Runner {
 		}
 		
 		logger.debug("reading component name");
-		try {
-			rt.wait();
-		} catch (InterruptedException ignored) {
-		}
-		
-		if (component == null) {
-			throw new IOException();
+		synchronized (rt) {
+			try {
+				rt.wait();
+			} catch (InterruptedException ignored) {
+			}
+			
+			if (component == null) {
+				throw new IOException();
+			}
 		}
 		
 		oout.writeObject(Names.NET_OK);
@@ -119,8 +121,10 @@ public class RemoteRunner implements Runner {
 		public void run() {
 			try {
 				try {
-					component = (String)oin.readObject();
-					this.notify();
+					synchronized (this) {
+						component = (String)oin.readObject();
+						this.notify();
+					}
 				} catch (ClassNotFoundException e) {
 					logger.error(e.getMessage());
 					return;
@@ -132,8 +136,10 @@ public class RemoteRunner implements Runner {
 					if (netCommand == Names.NET_OUTPUT) {
 						System.out.print(NetworkRunner.readString(oin));
 					} else if (netCommand == Names.NET_ALIVE_RESPONSE) {
-						aliveResponse = NetworkRunner.readBoolean(oin);
-						this.notify();
+						synchronized (this) {
+							aliveResponse = NetworkRunner.readBoolean(oin);
+							this.notify();
+						}
 					} else {
 						logger.error("Unknown network command: " + netCommand);
 						return;
@@ -142,8 +148,6 @@ public class RemoteRunner implements Runner {
 			} catch (IOException e) {
 				logger.error(e.getMessage());
 				return;
-			} finally {
-				this.notifyAll();
 			}
 		}
 	}
