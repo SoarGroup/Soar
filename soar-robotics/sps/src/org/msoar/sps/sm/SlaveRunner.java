@@ -8,7 +8,6 @@ import java.io.ObjectOutputStream;
 import java.io.PrintStream;
 import java.net.Socket;
 import java.util.ArrayList;
-import java.util.zip.GZIPOutputStream;
 
 import org.apache.log4j.Logger;
 import org.msoar.sps.Names;
@@ -28,7 +27,7 @@ class SlaveRunner {
 			this.oin = new ObjectInputStream(new BufferedInputStream(controlSocket.getInputStream()));
 	
 			logger.debug("setting up output socket");
-			PrintStream out = new PrintStream(new GZIPOutputStream(outputSocket.getOutputStream()));
+			PrintStream out = new PrintStream(outputSocket.getOutputStream());
 			out.print(component + "\r\n");
 			out.flush();
 			

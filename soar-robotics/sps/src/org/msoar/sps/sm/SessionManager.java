@@ -10,7 +10,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.zip.GZIPInputStream;
 
 import org.apache.log4j.Logger;
 import org.msoar.sps.Names;
@@ -86,7 +85,7 @@ public class SessionManager implements Runnable {
 
 				} else if (Names.TYPE_OUTPUT.equals(t[0])) {
 					logger.debug("Connection is output");
-					BufferedReader br = new BufferedReader(new InputStreamReader(new GZIPInputStream(clientSocket.getInputStream())));
+					BufferedReader br = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
 					logger.debug("Waiting for name");
 					String component = br.readLine();
 					logger.debug("Got name: " + component);
