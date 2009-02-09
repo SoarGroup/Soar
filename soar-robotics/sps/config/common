@@ -7,8 +7,12 @@ env {
 	command = "env";
 }
 
-svnant {
-	command = "svn up && ant";
+svn {
+	command = ["svn","up"];
+}
+
+ant {
+	command = ["ant"];
 }
 
 # next, define each module
