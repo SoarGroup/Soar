@@ -101,7 +101,9 @@ public class LocalRunner implements Runner {
 		try {
 			process = builder.start();
 		} catch (IOException e) {
-			configFile.delete();
+			if (configFile != null) {
+				configFile.delete();
+			}
 			throw e;
 		}
 		Thread outputHandler = new Thread(new OutputHandler());

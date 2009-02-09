@@ -7,6 +7,10 @@ env {
 	command = "env";
 }
 
+svnant {
+	command = "svn up && ant";
+}
+
 # next, define each module
 spy {
 	# what command to run
@@ -28,7 +32,7 @@ april_config {
 	# viewer and sim use this config
 	simulator {
 	    obstacle_image {
-	        path = "sim/intelmapbig-clean.png";
+	        path = "sim/lab.png";
 	        meters_per_pixel = 0.01;
 	    }
 		
