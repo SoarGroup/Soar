@@ -11,7 +11,6 @@ public class Names {
 	public static final String NET_CONFIG_YES = "config-yes";
 	public static final String NET_START = "start";
 	public static final String NET_ALIVE = "alive";
-	public static final String NET_ALIVE_RESPONSE = "alive-response";
 	public static final String NET_STOP = "destroy";
 	public static final String NET_QUIT = "quit";
 	

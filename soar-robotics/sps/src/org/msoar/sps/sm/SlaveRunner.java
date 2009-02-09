@@ -74,7 +74,6 @@ class SlaveRunner {
 				runner.start();
 	
 			} else if (netCommand.equals(Names.NET_ALIVE)) {
-				this.oout.writeObject(Names.NET_ALIVE_RESPONSE);
 				if (runner.isAlive()) {
 					this.oout.writeObject(new Boolean(true));
 				} else {
