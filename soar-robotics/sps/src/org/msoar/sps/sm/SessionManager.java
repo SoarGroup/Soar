@@ -10,6 +10,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.zip.GZIPInputStream;
 
 import org.apache.log4j.Logger;
 import org.msoar.sps.Names;
@@ -84,7 +85,7 @@ public class SessionManager implements Runnable {
 					runners.put(runner.getComponentName(), runner);
 
 				} else if (Names.TYPE_OUTPUT.equals(t[0])) {
-					BufferedReader br = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
+					BufferedReader br = new BufferedReader(new InputStreamReader(new GZIPInputStream(clientSocket.getInputStream())));
 					String component = br.readLine();
 					runners.get(component).setOutput(br);
 				} else {

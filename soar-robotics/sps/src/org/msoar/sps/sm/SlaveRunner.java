@@ -2,14 +2,13 @@ package org.msoar.sps.sm;
 
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
-import java.io.BufferedWriter;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.PrintStream;
-import java.io.PrintWriter;
 import java.net.Socket;
 import java.util.ArrayList;
+import java.util.zip.GZIPOutputStream;
 
 import org.apache.log4j.Logger;
 import org.msoar.sps.Names;
@@ -29,7 +28,7 @@ class SlaveRunner {
 			this.oin = new ObjectInputStream(new BufferedInputStream(controlSocket.getInputStream()));
 	
 			logger.debug("setting up output socket");
-			out = new PrintStream(outputSocket.getOutputStream());
+			out = new PrintStream(new GZIPOutputStream(outputSocket.getOutputStream()));
 			out.println(component);
 			
 			logger.trace("creating local runner");
