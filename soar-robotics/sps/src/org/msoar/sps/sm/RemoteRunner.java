@@ -2,6 +2,7 @@ package org.msoar.sps.sm;
 
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
+import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
@@ -15,13 +16,11 @@ public class RemoteRunner implements Runner {
 	private static Logger logger = Logger.getLogger(RemoteRunner.class);
 	
 	private String component;
-	private Socket socket;
 	private ObjectOutputStream oout;
 	private Boolean aliveResponse;
 	private ReceiverThread rt;
 	
 	RemoteRunner(Socket socket) throws IOException {
-		this.socket = socket;
 		this.oout = new ObjectOutputStream(new BufferedOutputStream(socket.getOutputStream()));
 		this.oout.flush();
 		
@@ -72,7 +71,8 @@ public class RemoteRunner implements Runner {
 		try {
 			oout.writeObject(Names.NET_QUIT);
 			oout.flush();
-			socket.close();
+			oout.close();
+			rt.close();
 		} catch (IOException ignored) {
 		}
 	}
@@ -119,6 +119,10 @@ public class RemoteRunner implements Runner {
 			this.oin = oin;
 		}
 		
+		void close() throws IOException {
+			this.oin.close();
+		}
+		
 		@Override
 		public void run() {
 			logger.debug("rt alive");
@@ -156,5 +160,32 @@ public class RemoteRunner implements Runner {
 				return;
 			}
 		}
+	}
+
+	private class OutputPump implements Runnable {
+		BufferedReader output;
+		
+		OutputPump(BufferedReader output) {
+			this.output = output;
+		}
+		
+		@Override
+		public void run() {
+			String out;
+			try {
+				while (( out = output.readLine()) != null) {
+					System.out.println(out);
+				}
+			} catch (IOException e) {
+				logger.error(e.getMessage());
+			}
+		}
+	}
+	
+	@Override
+	public void setOutput(BufferedReader output) {
+		Thread thread = new Thread(new OutputPump(output));
+		thread.setDaemon(true);
+		thread.start();
 	}
 }

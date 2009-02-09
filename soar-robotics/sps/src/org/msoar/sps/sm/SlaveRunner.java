@@ -2,9 +2,12 @@ package org.msoar.sps.sm;
 
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
+import java.io.BufferedWriter;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
+import java.io.PrintStream;
+import java.io.PrintWriter;
 import java.net.Socket;
 import java.util.ArrayList;
 
@@ -17,15 +20,20 @@ class SlaveRunner {
 	private Runner runner;
 	private ObjectInputStream oin;
 	private ObjectOutputStream oout;
+	private PrintStream out;
 
-	SlaveRunner(String component, Socket socket) throws IOException {
+	SlaveRunner(String component, Socket controlSocket, Socket outputSocket) throws IOException {
 		try {
-			this.oout = new ObjectOutputStream(new BufferedOutputStream(socket.getOutputStream()));
+			this.oout = new ObjectOutputStream(new BufferedOutputStream(controlSocket.getOutputStream()));
 			this.oout.flush();
-			this.oin = new ObjectInputStream(new BufferedInputStream(socket.getInputStream()));
+			this.oin = new ObjectInputStream(new BufferedInputStream(controlSocket.getInputStream()));
 	
+			logger.debug("setting up output socket");
+			out = new PrintStream(outputSocket.getOutputStream());
+			out.println(component);
+			
 			logger.trace("creating local runner");
-			this.runner = new LocalRunner(component, System.out);
+			this.runner = new LocalRunner(component, out);
 			
 			// handshake
 			logger.trace("writing component name");
@@ -36,6 +44,7 @@ class SlaveRunner {
 			if (!NetworkRunner.readString(oin).equals(Names.NET_OK)) {
 				throw new IOException();
 			}
+			
 			run();
 			logger.info("quitting");
 		} catch (IOException e) {

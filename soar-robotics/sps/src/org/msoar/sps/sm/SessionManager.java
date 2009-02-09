@@ -12,6 +12,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.apache.log4j.Logger;
+import org.msoar.sps.Names;
 import org.msoar.sps.config.Config;
 import org.msoar.sps.config.ConfigFile;
 
@@ -69,12 +70,27 @@ public class SessionManager implements Runnable {
 			try {
 				Socket clientSocket = serverSocket.accept();
 				logger.info("New connection from " + clientSocket.getRemoteSocketAddress());
+				
+				byte[] t = new byte[1];
+				int read = 0;
+				while (read == 0) {
+					read = clientSocket.getInputStream().read(t, 0, 1);
+				}
+				
+				if (Names.TYPE_COMPONENT.equals(t)) {
+					logger.debug("Creating remote runner");
+					Runner runner = new RemoteRunner(clientSocket);
+					logger.info("Created new remote runner for " + runner.getComponentName());
+					runners.put(runner.getComponentName(), runner);
 
-				logger.debug("Creating remote runner");
-				Runner runner = new RemoteRunner(clientSocket);
-				logger.info("Created new remote runner for " + runner.getComponentName());
-				runners.put(runner.getComponentName(), runner);
-
+				} else if (Names.TYPE_OUTPUT.equals(t)) {
+					BufferedReader br = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
+					String component = br.readLine();
+					runners.get(component).setOutput(br);
+				} else {
+					logger.error("Unknown type header: " + t);
+				}
+				
 			} catch (IOException e) {
 				logger.error("New connection failed: " + e.getMessage());
 				continue;

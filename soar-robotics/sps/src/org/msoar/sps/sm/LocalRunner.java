@@ -155,5 +155,12 @@ public class LocalRunner implements Runner {
 	
 	@Override
 	public void quit() {
+		stop();
+	}
+	
+	@Override
+	public void setOutput(BufferedReader output) {
+		logger.error("Called setOutput on local runner");
+		assert false;
 	}
 }

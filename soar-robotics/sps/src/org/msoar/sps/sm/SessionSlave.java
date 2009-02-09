@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.net.Socket;
 
 import org.apache.log4j.Logger;
+import org.msoar.sps.Names;
 
 public class SessionSlave {
 	private static Logger logger = Logger.getLogger(SessionSlave.class);
@@ -13,9 +14,17 @@ public class SessionSlave {
 		logger.info("Connecting as " + component + "@" + hostname + ":" + SessionManager.PORT);
 		SlaveRunner sr = null;
 		try {
-			Socket socket = new Socket(hostname, SessionManager.PORT);
+			Socket controlSocket = new Socket(hostname, SessionManager.PORT);
+			controlSocket.getOutputStream().write(Names.TYPE_COMPONENT);
+			controlSocket.getOutputStream().flush();
+			
+			Socket outputSocket = new Socket(hostname, SessionManager.PORT);
+			outputSocket.getOutputStream().write(Names.TYPE_OUTPUT);
+			outputSocket.getOutputStream().flush();
+			
 			logger.info("connected");
-			sr = new SlaveRunner(component, socket);
+			sr = new SlaveRunner(component, controlSocket, outputSocket);
+
 		} catch (IOException e) {
 			logger.error(e.getMessage());
 		}
