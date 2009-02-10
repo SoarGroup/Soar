@@ -21,6 +21,7 @@ import org.apache.log4j.Logger;
 import org.msoar.sps.Names;
 import org.msoar.sps.config.Config;
 import org.msoar.sps.config.ConfigFile;
+import org.msoar.sps.lcmtypes.odom_t;
 
 public class Splinter extends TimerTask implements LCMSubscriber {
 	private static Logger logger = Logger.getLogger(Splinter.class);
@@ -46,8 +47,8 @@ public class Splinter extends TimerTask implements LCMSubscriber {
 	
 	// for odometry update
 	private pose_t pose = new pose_t();
-	private int[] odom = new int[2];
-	private int[] newOdom = new int[2];
+	private odom_t odom = new odom_t();
+	private odom_t newOdom = new odom_t();
 	private double[] deltaxyt = new double[3];
 	
 	Splinter(Config config) {
@@ -78,9 +79,9 @@ public class Splinter extends TimerTask implements LCMSubscriber {
 		timer.schedule(this, 0, (long)updatePeriodMS); 
 	}
 	
-	private void getOdometry(int[] dest, OrcStatus currentStatus) {
-		dest[LEFT] = currentStatus.qeiPosition[ports[LEFT]] * (invert[LEFT] ? -1 : 1);
-		dest[RIGHT] = currentStatus.qeiPosition[ports[RIGHT]] * (invert[RIGHT] ? -1 : 1);
+	private void getOdometry(odom_t dest, OrcStatus currentStatus) {
+		dest.left = currentStatus.qeiPosition[ports[LEFT]] * (invert[LEFT] ? -1 : 1);
+		dest.right = currentStatus.qeiPosition[ports[RIGHT]] * (invert[RIGHT] ? -1 : 1);
 	}
 	
 	@Override
@@ -94,8 +95,8 @@ public class Splinter extends TimerTask implements LCMSubscriber {
 		
 		// don't update odom unless moving
 		if (moving) {
-			double dleft = (newOdom[LEFT] - odom[LEFT]) * tickMeters;
-			double dright = (newOdom[RIGHT] - odom[RIGHT]) * tickMeters;
+			double dleft = (newOdom.left - odom.left) * tickMeters;
+			double dright = (newOdom.right - odom.right) * tickMeters;
 			
 			// phi
 			deltaxyt[2] = MathUtil.mod2pi((dright - dleft) / baselineMeters);
@@ -125,10 +126,14 @@ public class Splinter extends TimerTask implements LCMSubscriber {
 		}
 
 		// save old state
-		System.arraycopy(newOdom, 0, odom, 0, newOdom.length);
+		odom.left = newOdom.left;
+		odom.right = newOdom.right;
 		
 		pose.utime = currentStatus.utime;
 		lcm.publish(Names.POSE_CHANNEL, pose);
+		
+		odom.utime = currentStatus.utime;
+		lcm.publish(Names.ODOM_CHANNEL, odom);
 		
 		commandMotors();
 	}
