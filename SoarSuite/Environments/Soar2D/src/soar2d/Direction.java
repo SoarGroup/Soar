@@ -1,20 +1,11 @@
 package soar2d;
 
 public enum Direction {
-	NONE (0, 0, Names.kNone, 0, new int[] {0, 0}) {
-	},
-	
-	NORTH (1, 1, Names.kNorth, 3 * Math.PI / 2, new int[] {0, -1}) {
-	}, 
-	
-	EAST (2, 2, Names.kEast, 0, new int[] {1, 0}) {
-	},
-	
-	SOUTH (3, 4, Names.kSouth, Math.PI / 2, new int[] {0, 1}) {
-	}, 
-	
-	WEST (4, 8, Names.kWest, Math.PI, new int[] {-1, 0}) {
-	};
+	NONE (0, 0, Names.kNone, 0, new int[] {0, 0}) {},
+	NORTH (1, 1, Names.kNorth, 3 * Math.PI / 2, new int[] {0, -1}) {}, 
+	EAST (2, 2, Names.kEast, 0, new int[] {1, 0}) {},
+	SOUTH (3, 4, Names.kSouth, Math.PI / 2, new int[] {0, 1}) {}, 
+	WEST (4, 8, Names.kWest, Math.PI, new int[] {-1, 0}) {};
 	
 	private final int index;
 	private final int indicator;
