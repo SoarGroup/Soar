@@ -98,3 +98,8 @@ control {
 debugger {
 	command = ["java","-jar","../../SoarSuite/SoarLibrary/bin/SoarJavaDebugger.jar","-remote"];
 }
+
+odom {
+	command = ["java","org.msoar.sps.splinter.OdomGatherer"];
+	config = splinter_config;
+}
