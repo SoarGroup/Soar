@@ -18,7 +18,8 @@ public class GamepadInterface {
 	private boolean tankModeButton = false;
 	private boolean tankMode = false;
 	
-	private boolean shutdownRequested = false;
+	private boolean slowModeButton = false;
+	private boolean slowMode = false;
 	
 	public void update() {
 		boolean button = gp.getButton(0);		
@@ -44,9 +45,14 @@ public class GamepadInterface {
 		}
 		tankModeButton = button;
 		
-		if (gp.getButton(3)) {
-			shutdownRequested = true;
+		button = gp.getButton(3);		
+		// change on trailing edge
+		if (slowModeButton && !button) {
+			slowMode = !slowMode;
+			logger.info("Slow mode " + (slowMode ? "enabled" : "disabled"));
 		}
+		slowModeButton = button;
+		
 	}
 	
 	public boolean getOverrideMode() {
@@ -62,8 +68,8 @@ public class GamepadInterface {
 		return false;
 	}
 	
-	public boolean getShutdownButton() {
-		return shutdownRequested;
+	public boolean getSlowMode() {
+		return slowMode;
 	}
 
 	public void getDC(differential_drive_command_t dc) {
