@@ -78,6 +78,7 @@ public class Controller extends TimerTask {
 	private void transmit(differential_drive_command_t dc) {
 		dc.utime = System.nanoTime() / 1000;
 		if (gp.getSlowMode()) {
+			logger.debug("slow mode halving throttle");
 			dc.left /= 2;
 			dc.right /= 2;
 		}

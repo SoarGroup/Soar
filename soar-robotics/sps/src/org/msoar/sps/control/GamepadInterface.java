@@ -9,74 +9,48 @@ public class GamepadInterface {
 	private static Logger logger = Logger.getLogger(Controller.class);
 
 	private GamePad gp = new GamePad();
-	private boolean overrideButton = false;
-	private boolean override = false;
-
-	private boolean soarControlButton = false;
-	private boolean soarControl = false;
+	private ModeButton override;
+	private ModeButton soarControl;
+	private ModeButton tankMode;
+	private ModeButton slowMode;
 	
-	private boolean tankModeButton = false;
-	private boolean tankMode = false;
-	
-	private boolean slowModeButton = false;
-	private boolean slowMode = false;
+	GamepadInterface() {
+		override = new ModeButton(gp, 0);
+		soarControl = new ModeButton(gp, 1);
+		tankMode = new ModeButton(gp, 2);
+		slowMode = new ModeButton(gp, 3);
+	}
 	
 	public void update() {
-		boolean button = gp.getButton(0);		
-		// change on trailing edge
-		if (overrideButton && !button) {
-			override = !override;
-			logger.info("Override " + (override ? "enabled" : "disabled"));
-		}
-		overrideButton = button;
+		override.update();
+		logger.info("Override " + (override.isEnabled() ? "enabled" : "disabled"));
 		
-		button = gp.getButton(1);		
-		// change on trailing edge
-		if (soarControlButton && !button) {
-			soarControl = true;
-		}
-		soarControlButton = button;
+		soarControl.update();
 		
-		button = gp.getButton(2);		
-		// change on trailing edge
-		if (tankModeButton && !button) {
-			tankMode = !tankMode;
-			logger.info("Tank mode " + (tankMode ? "enabled" : "disabled"));
-		}
-		tankModeButton = button;
+		tankMode.update();
+		logger.info("Tank mode " + (tankMode.isEnabled() ? "enabled" : "disabled"));
 		
-		button = gp.getButton(3);		
-		// change on trailing edge
-		if (slowModeButton && !button) {
-			slowMode = !slowMode;
-			logger.info("Slow mode " + (slowMode ? "enabled" : "disabled"));
-		}
-		slowModeButton = button;
-		
+		slowMode.update();
+		logger.info("Slow mode " + (slowMode.isEnabled() ? "enabled" : "disabled"));
 	}
 	
 	public boolean getOverrideMode() {
-		return override;
+		return override.isEnabled();
 	}
 
 	public boolean getSoarControlButton() {
-		if (soarControl) {
-			soarControl = false;
-			logger.info("Soar control triggered");
-			return true;
-		}
-		return false;
+		return soarControl.checkAndDisable();
 	}
 	
 	public boolean getSlowMode() {
-		return slowMode;
+		return slowMode.isEnabled();
 	}
 
 	public void getDC(differential_drive_command_t dc) {
 		dc.left_enabled = true;
 		dc.right_enabled = true;
 		
-		if (tankMode) {
+		if (tankMode.isEnabled()) {
 			dc.left = gp.getAxis(1) * -1;
 			dc.right = gp.getAxis(3) * -1;
 		} else {
