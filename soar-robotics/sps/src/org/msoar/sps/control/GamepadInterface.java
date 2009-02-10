@@ -1,37 +1,39 @@
 package org.msoar.sps.control;
 
-import org.apache.log4j.Logger;
-
 import lcmtypes.differential_drive_command_t;
 import orc.util.GamePad;
 
 public class GamepadInterface {
-	private static Logger logger = Logger.getLogger(Controller.class);
-
 	private GamePad gp = new GamePad();
 	private ModeButton override;
 	private ModeButton soarControl;
 	private ModeButton tankMode;
 	private ModeButton slowMode;
+	private ModeButton captureMode;
+	private ModeButton tagCapture;
 	
 	GamepadInterface() {
-		override = new ModeButton(gp, 0);
-		soarControl = new ModeButton(gp, 1);
-		tankMode = new ModeButton(gp, 2);
-		slowMode = new ModeButton(gp, 3);
+		override = new ModeButton("Override", gp, 0);
+		soarControl = new ModeButton("Soar control", gp, 1);
+		tankMode = new ModeButton("Tank mode", gp, 2);
+		slowMode = new ModeButton("Slow mode", gp, 3);
+		captureMode = new ModeButton("Capture mode", gp, 4);
+		tagCapture = new ModeButton("Tag capture", gp, 5);
 	}
 	
 	public void update() {
 		override.update();
-		logger.info("Override " + (override.isEnabled() ? "enabled" : "disabled"));
+		if (override.isEnabled()) {
+			tankMode.update();
+		}
 		
 		soarControl.update();
-		
-		tankMode.update();
-		logger.info("Tank mode " + (tankMode.isEnabled() ? "enabled" : "disabled"));
-		
 		slowMode.update();
-		logger.info("Slow mode " + (slowMode.isEnabled() ? "enabled" : "disabled"));
+
+		captureMode.update();
+		if (captureMode.isEnabled()) {
+			tagCapture.update();
+		}
 	}
 	
 	public boolean getOverrideMode() {
@@ -44,6 +46,14 @@ public class GamepadInterface {
 	
 	public boolean getSlowMode() {
 		return slowMode.isEnabled();
+	}
+
+	public boolean getCaptureMode() {
+		return captureMode.isEnabled();
+	}
+
+	public boolean getTagCapture() {
+		return tagCapture.checkAndDisable();
 	}
 
 	public void getDC(differential_drive_command_t dc) {

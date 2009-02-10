@@ -1,14 +1,20 @@
 package org.msoar.sps.control;
 
+import org.apache.log4j.Logger;
+
 import orc.util.GamePad;
 
 class ModeButton {
+	private static Logger logger = Logger.getLogger(ModeButton.class);
+
 	private boolean buttonState = false;
 	private boolean modeEnabled = false;
+	private String name;
 	private GamePad gp;
-	int buttonNumber;
+	private int buttonNumber;
 	
-	ModeButton(GamePad gp, int buttonNumber) {
+	ModeButton(String name, GamePad gp, int buttonNumber) {
+		this.name = name;
 		this.gp = gp;
 		this.buttonNumber = buttonNumber;
 	}
@@ -18,6 +24,7 @@ class ModeButton {
 		// change on trailing edge
 		if (buttonState && !button) {
 			modeEnabled = !modeEnabled;
+			logger.info(name + " changed to " + (modeEnabled ? "enabled" : "disabled"));
 		}
 		buttonState = button;
 	}
