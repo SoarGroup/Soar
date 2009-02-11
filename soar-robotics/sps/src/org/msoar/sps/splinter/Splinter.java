@@ -5,9 +5,6 @@ import java.io.IOException;
 import java.util.Timer;
 import java.util.TimerTask;
 
-import jmat.LinAlg;
-import jmat.MathUtil;
-
 import lcm.lcm.LCM;
 import lcm.lcm.LCMSubscriber;
 import lcmtypes.differential_drive_command_t;
@@ -19,6 +16,7 @@ import orc.OrcStatus;
 
 import org.apache.log4j.Logger;
 import org.msoar.sps.Names;
+import org.msoar.sps.Odometry;
 import org.msoar.sps.config.Config;
 import org.msoar.sps.config.ConfigFile;
 import org.msoar.sps.lcmtypes.odom_t;
@@ -29,6 +27,9 @@ public class Splinter extends TimerTask implements LCMSubscriber {
 	private static int RIGHT = 1;
 	private static long DELAY_BEFORE_WARN_NO_FIRST_INPUT_MILLIS = 5000;
 	private static long DELAY_BEFORE_WARN_NO_INPUT_MILLIS = 1000;
+	
+	public static final double DEFAULT_BASELINE = 0.383;
+	public static final double DEFAULT_TICKMETERS = 0.000043225;
 	
 	private Timer timer = new Timer();
 	private Orc orc;
@@ -46,14 +47,15 @@ public class Splinter extends TimerTask implements LCMSubscriber {
 	private boolean failsafeSpew = false;
 	
 	// for odometry update
+	private Odometry odometry;
+	private odom_t oldOdom = new odom_t();
 	private pose_t pose = new pose_t();
-	private odom_t odom = new odom_t();
 	private odom_t newOdom = new odom_t();
-	private double[] deltaxyt = new double[3];
 	
 	Splinter(Config config) {
-		tickMeters = config.getDouble("tickMeters", 0.000043225);
-		baselineMeters = config.getDouble("baselineMeters", 0.383);
+		tickMeters = config.getDouble("tickMeters", DEFAULT_TICKMETERS);
+		baselineMeters = config.getDouble("baselineMeters", DEFAULT_BASELINE);
+		odometry = new Odometry(tickMeters, baselineMeters);
 		
 		double maxThrottleAccelleration = config.getDouble("maxThrottleAccelleration", 2.0);
 		double updateHz = config.getDouble("updateHz", 30.0);
@@ -68,7 +70,7 @@ public class Splinter extends TimerTask implements LCMSubscriber {
 		motor[LEFT] = new Motor(orc, ports[LEFT], invert[LEFT]);
 		motor[RIGHT] = new Motor(orc, ports[RIGHT], invert[RIGHT]);
 		
-		getOdometry(odom, orc.getStatus());
+		getOdometry(oldOdom, orc.getStatus());
 		
 		// drive commands
 		lcm = LCM.getSingleton();
@@ -95,49 +97,22 @@ public class Splinter extends TimerTask implements LCMSubscriber {
 		
 		// don't update odom unless moving
 		if (moving) {
-			double dleft = (newOdom.left - odom.left) * tickMeters;
-			double dright = (newOdom.right - odom.right) * tickMeters;
-			
-			// phi
-			deltaxyt[2] = MathUtil.mod2pi((dright - dleft) / baselineMeters);
-			
-			double dCenter = (dleft + dright) / 2;
-			
-			// delta x, delta y
-			deltaxyt[0] += dCenter * Math.cos(deltaxyt[2]);
-			deltaxyt[1] += dCenter * Math.sin(deltaxyt[2]);
-			
-			// our current theta
-			double theta = LinAlg.quatToRollPitchYaw(pose.orientation)[2];
-			
-			// calculate and store new xyt
-			pose.pos[0] += (deltaxyt[0] * Math.cos(theta)) - (deltaxyt[1] * Math.sin(theta));
-			pose.pos[1] += (deltaxyt[0] * Math.sin(theta)) + (deltaxyt[1] * Math.cos(theta));
-			theta += deltaxyt[2];
-			
-			// convert theta to quat and store
-			pose.orientation = LinAlg.rollPitchYawToQuat(new double[] {0, 0, theta});
-			
-			if (logger.isTraceEnabled()) {
-				theta = MathUtil.mod2pi(theta);
-				theta = Math.toDegrees(theta);
-				logger.trace(String.format(" odom: %5.2f %5.2f %5.1f", pose.pos[0], pose.pos[1], theta));
-			}
+			odometry.propagate(newOdom, oldOdom, pose);
 		}
 
 		// save old state
-		odom.left = newOdom.left;
-		odom.right = newOdom.right;
+		oldOdom.left = newOdom.left;
+		oldOdom.right = newOdom.right;
 		
 		pose.utime = currentStatus.utime;
 		lcm.publish(Names.POSE_CHANNEL, pose);
 		
-		odom.utime = currentStatus.utime;
-		lcm.publish(Names.ODOM_CHANNEL, odom);
+		oldOdom.utime = currentStatus.utime;
+		lcm.publish(Names.ODOM_CHANNEL, oldOdom);
 		
 		commandMotors();
 	}
-
+	
 	private void commandMotors() {
 		if (dc == null) {
 			if (lastSeenDCTime == 0) {
