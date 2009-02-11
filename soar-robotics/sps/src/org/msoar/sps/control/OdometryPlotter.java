@@ -171,11 +171,13 @@ public class OdometryPlotter {
 				oldOdom = newOdom.copy();
 			} else if (newOdom != null) {
 				odometry.propagate(newOdom, oldOdom, pose);
+				oldOdom = newOdom.copy();
+				//Console console = System.console();
+				//console.readLine();
+				
 			} else {
-				if (oldOdom != null) {
-					mark = true;
-					newOdom = oldOdom.copy();
-				}
+				mark = true;
+				newOdom = oldOdom.copy();
 			}
 			
 			double[] xy = new double[] { pose.pos[0], pose.pos[1], z };

@@ -28,8 +28,13 @@ public class Splinter extends TimerTask implements LCMSubscriber {
 	private static long DELAY_BEFORE_WARN_NO_FIRST_INPUT_MILLIS = 5000;
 	private static long DELAY_BEFORE_WARN_NO_INPUT_MILLIS = 1000;
 	
-	public static final double DEFAULT_BASELINE = 0.383;
-	public static final double DEFAULT_TICKMETERS = 0.000043225;
+	//green
+	//public static final double DEFAULT_BASELINE = 0.383;
+	//public static final double DEFAULT_TICKMETERS = 0.000043225;
+	
+	// blue
+	public static final double DEFAULT_BASELINE = 0.37;
+	public static final double DEFAULT_TICKMETERS = 0.0000428528;
 	
 	private Timer timer = new Timer();
 	private Orc orc;
