@@ -111,6 +111,7 @@ public class Controller extends TimerTask {
 			} else {
 				if (odom != null) {
 					odom.close();
+					odom = null;
 				}
 			}
 		} else {

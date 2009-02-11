@@ -23,8 +23,9 @@ class OdometryLogger implements LCMSubscriber {
 		LCM lcm = LCM.getSingleton();
 		lcm.subscribe(Names.ODOM_CHANNEL, this);
 		
-		File datafile = File.createTempFile("odom-", ".txt");
+		File datafile = File.createTempFile("odom-", ".txt", new File(System.getProperty("user.dir")));
 		datawriter = new FileWriter(datafile);
+		logger.info("Opened " + datafile.getAbsolutePath());
 	}
 	
 	void update(boolean tag) throws IOException {
@@ -38,8 +39,12 @@ class OdometryLogger implements LCMSubscriber {
 	}
 	
 	private void record(odom_t now) throws IOException {
-		if (now.utime > prev.utime) {
-			if (now.left != prev.left || now.right != prev.right) {
+		if (now == null) {
+			logger.debug("record called with null odometry reading");
+			return;
+		}
+		if (prev == null || now.utime > prev.utime) {
+			if (prev == null || now.left != prev.left || now.right != prev.right) {
 				// record
 				datawriter.append(Long.toString(now.utime));
 				datawriter.append(",");
@@ -49,6 +54,9 @@ class OdometryLogger implements LCMSubscriber {
 				datawriter.append("\n");
 				datawriter.flush();
 				
+				if (prev == null) {
+					prev = new odom_t();
+				}
 				prev.left = now.left;
 				prev.right = now.right;
 			}
@@ -64,6 +72,7 @@ class OdometryLogger implements LCMSubscriber {
 		} catch (IOException e) {
 			logger.error("Error closing stream" + e.getMessage());
 		}
+		logger.info("closed odometry file");
 	}
 
 	@Override

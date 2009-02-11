@@ -43,6 +43,7 @@ public class Odometry {
 		// convert theta to quat and store
 		pose.orientation = LinAlg.rollPitchYawToQuat(new double[] {0, 0, theta});
 		
+		System.out.println(String.format("odom: %5.2f %5.2f %5.1f", pose.pos[0], pose.pos[1], theta));
 		if (logger.isTraceEnabled()) {
 			theta = MathUtil.mod2pi(theta);
 			theta = Math.toDegrees(theta);
