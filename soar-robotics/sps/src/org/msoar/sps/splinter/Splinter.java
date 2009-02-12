@@ -101,6 +101,7 @@ public class Splinter extends TimerTask implements LCMSubscriber {
 		dest.utime = currentStatus.utime;
 		dest.left = currentStatus.qeiPosition[ports[LEFT]] * (invert[LEFT] ? -1 : 1);
 		dest.right = currentStatus.qeiPosition[ports[RIGHT]] * (invert[RIGHT] ? -1 : 1);
+		System.out.println("New odometry reading: " + dest.left + "," + dest.right);
 	}
 	
 	@Override
