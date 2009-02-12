@@ -133,6 +133,16 @@ public class OdometryPlotter {
 							tickMeters += Double.parseDouble(args[2]);
 						}
 						plot();
+					} else if (args[0].equals("set")) {
+						if (args[1].equals("baseline")) {
+							baselineMeters = Double.parseDouble(args[2]);
+						} else if (args[1].equals("tick")) {
+							tickMeters = Double.parseDouble(args[2]);
+						}
+						plot();
+					} else if (args[0].equals("help")) {
+						System.out.println("plot file dec inc set quit");
+						
 					} else if (args[0].equals("quit") || args[0].equals("exit")) {
 						jf.dispose();
 						System.exit(1);
@@ -146,7 +156,7 @@ public class OdometryPlotter {
 				}
 			}
 		} else {
-			System.out.println("Warning: no console.");
+			System.err.println("Error: no console.");
 		}
 	}
 
