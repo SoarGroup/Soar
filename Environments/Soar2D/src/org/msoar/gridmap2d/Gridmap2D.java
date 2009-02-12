@@ -145,18 +145,16 @@ public class Gridmap2D {
 		try {
 			// We just work relative to the current directory because that's how
 			// load library will work.
-			File map = new File(file) ;
-			File mapDest = new File("config" + System.getProperty("file.separator") + file) ;
+			File cnf = new File(file) ;
+			File cnfDest = new File("config" + System.getProperty("file.separator") + file) ;
 	
-			if (mapDest.exists()) {
-				//System.out.println("exists: " + library.exists() + ", isFile: " + library.isFile() + ", canRead: " + library.canRead());
-				//System.out.println(library.getAbsolutePath() + " already exists so not installing from the JAR file");
+			if (cnfDest.exists()) {
 				return;
 			}
 			
 			// Get the DLL from inside the JAR file
 			// It should be placed at the root of the JAR (not in a subfolder)
-			String jarpath = "/" + map.getPath() ;
+			String jarpath = "/" + cnf.getPath() ;
 			InputStream is = this.getClass().getResourceAsStream(jarpath) ;
 			
 			if (is == null) {
@@ -165,7 +163,7 @@ public class Gridmap2D {
 			}
 			
 			// Create the new file on disk
-			FileOutputStream os = new FileOutputStream(mapDest) ;
+			FileOutputStream os = new FileOutputStream(cnfDest) ;
 			
 			// Copy the file onto disk
 			byte bytes[] = new byte[2048];
