@@ -14,10 +14,10 @@ else:
 
 javacStep = env.Java(target = 'classes', source = 'src')
 
-copySources = []
+copySources = []	
+copySources.extend(glob.glob('src/log4j.properties'))
 copySources.extend(glob.glob('src/*.cnf'))
-copySources.extend(glob.glob('src/images/book/*'))
-copySources.extend(glob.glob('src/images/tanksoar/*'))
+copySources.extend(glob.glob('src/org/msoar/gridmap2d/images/tanksoar/*'))
 
 copyTargets = map(lambda x: x.replace('src', 'classes'), copySources)
 	

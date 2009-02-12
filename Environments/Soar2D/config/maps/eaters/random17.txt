@@ -1,0 +1,7 @@
+objects_file = "objects/objects.txt";
+objects = [b,n,w];
+cells {
+	size = 17;
+	random_walls = true;
+	random_food = true;
+}
