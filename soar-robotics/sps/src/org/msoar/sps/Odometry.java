@@ -20,6 +20,8 @@ public class Odometry {
 	}
 	
 	public void propagate(odom_t newOdom, odom_t oldOdom, pose_t pose) {
+		System.out.println("delta left ticks: " + (newOdom.left - oldOdom.left));
+		System.out.println("delta right ticks: " + (newOdom.right - oldOdom.right));
 		double dleft = (newOdom.left - oldOdom.left) * tickMeters;
 		double dright = (newOdom.right - oldOdom.right) * tickMeters;
 		
