@@ -145,10 +145,10 @@ public class Gridmap2D {
 		try {
 			// We just work relative to the current directory because that's how
 			// load library will work.
-			File library = new File("config" + System.getProperty("file.separator") + file) ;
+			File map = new File(file) ;
+			File mapDest = new File("config" + System.getProperty("file.separator") + file) ;
 	
-			// library.exists() not working correctly in linux (!?)
-			if (library.isFile() || library.isDirectory()) {
+			if (mapDest.exists()) {
 				//System.out.println("exists: " + library.exists() + ", isFile: " + library.isFile() + ", canRead: " + library.canRead());
 				//System.out.println(library.getAbsolutePath() + " already exists so not installing from the JAR file");
 				return;
@@ -156,7 +156,7 @@ public class Gridmap2D {
 			
 			// Get the DLL from inside the JAR file
 			// It should be placed at the root of the JAR (not in a subfolder)
-			String jarpath = "/" + library.getPath() ;
+			String jarpath = "/" + map.getPath() ;
 			InputStream is = this.getClass().getResourceAsStream(jarpath) ;
 			
 			if (is == null) {
@@ -164,18 +164,8 @@ public class Gridmap2D {
 				return;
 			}
 			
-			// Make sure we can delete the library.  This is actually here to cover the
-			// case where we're running in Eclipse without a JAR file.  The getResourceAsStream()
-			// call can end up loading the same library that we're trying to save to and we
-			// end up with a blank file.  Explicitly trying to delete it first ensures that
-			// we're not reading the same file that we're writing.
-			if (library.exists() && !library.delete()) {
-				System.err.println("Failed to remove the existing layout file " + library) ;
-				return;
-			}
-			
 			// Create the new file on disk
-			FileOutputStream os = new FileOutputStream(library) ;
+			FileOutputStream os = new FileOutputStream(mapDest) ;
 			
 			// Copy the file onto disk
 			byte bytes[] = new byte[2048];
@@ -191,8 +181,6 @@ public class Gridmap2D {
 	
 			is.close() ;
 			os.close() ;
-			
-			//System.out.println("Installed " + library + " onto the local disk from JAR file") ;
 		} catch (IOException e) {
 			wm.initialize();
 			fatalError(Names.Errors.installingConfig + file + ": " + e.getMessage());
