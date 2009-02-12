@@ -1,0 +1,23 @@
+objects_file = "objects/objects.txt";
+objects = [e,m,M,t,r,g,h,x,radar-north,radar-south,radar-east,radar-west];
+cells {
+	size = 16;
+	rows {
+		 0 = [r,r,r,r,r,r,r,r,r,r,r,r,r,r,r,r];
+		 1 = [r,g,g,g,g,g,g,g,g,g,g,g,g,g,g,r];
+		 2 = [r,g,g,g,g,g,g,g,g,g,g,g,g,g,g,r];
+		 3 = [r,g,g,g,g,g,g,g,g,g,g,g,g,g,g,r];
+		 4 = [r,g,g,g,g,g,g,g,g,g,g,g,g,g,g,r];
+		 5 = [r,g,g,g,g,g,g,g,g,g,g,g,g,g,g,r];
+		 6 = [r,g,g,g,g,g,g,g,g,g,g,g,g,g,g,r];
+		 7 = [r,g,g,g,g,g,g,g,g,g,g,g,g,g,g,r];
+		 8 = [r,g,g,g,g,g,g,g,g,g,g,g,g,g,g,r];
+		 9 = [r,g,g,g,g,g,g,g,g,g,g,g,g,g,g,r];
+		10 = [r,g,g,g,g,g,g,g,g,g,g,g,g,g,g,r];
+		11 = [r,g,g,g,g,g,g,g,g,g,g,g,g,g,g,r];
+		12 = [r,g,g,g,g,g,g,g,g,g,g,g,g,g,g,r];
+		13 = [r,g,g,g,g,g,g,g,g,g,g,g,g,g,g,r];
+		14 = [r,g,g,g,g,g,g,g,g,g,g,g,g,g,g,r];
+		15 = [r,r,r,r,r,r,r,r,r,r,r,r,r,r,r,r];
+	}
+}

@@ -1,0 +1,88 @@
+objects {
+	e {
+		name = energy;
+		apply.image = energy-apply.gif;
+		energy = 250;
+		image = energy.gif;
+		mini-image = energy-mini.gif;
+		charger = true;
+		id = energy;
+	}
+	M {
+		name = missile;
+		missile = true;
+		apply.energy = -250;
+		apply.energy.shields = true;
+		apply.health = -400;
+		apply.health.shields-down = true;
+		image = missile.gif;
+		update.fly-missile = 1;
+	}
+	radar-north {
+		name = radar-north;
+		radar-waves = true;
+		update.linger = 1;
+	}
+	radar-south {
+		name = radar-south;
+		radar-waves = true;
+		update.linger = 1;
+	}
+	radar-east {
+		name = radar-east;
+		radar-waves = true;
+		update.linger = 1;
+	}
+	radar-west {
+		name = radar-west;
+		radar-waves = true;
+		update.linger = 1;
+	}
+	t {
+		name = trees;
+		image-max = 3;
+		image = trees.gif;
+		mini-image = trees-mini.gif;
+		image-min = 1;
+		id = wall;
+		block = true;
+	}
+	r {
+		name = rocks;
+		image-max = 3;
+		image = rocks.gif;
+		mini-image = trees-mini.gif;
+		image-min = 1;
+		id = wall;
+		block = true;
+	}
+	g {
+		name = ground;
+		image-max = 3;
+		image = ground.gif;
+		mini-image = ground-mini.gif;
+		image-min = 1;
+	}
+	h {
+		name = health;
+		apply.image = health-apply.gif;
+		health = 250;
+		image = health.gif;
+		mini-image = health-mini.gif;
+		charger = true;
+		id = health;
+	}
+	m {
+		name = missiles;
+		image = missiles.gif;
+		mini-image = missiles-mini.gif;
+		max-exist = 3;
+		id = missiles;
+		apply.missiles = 7;
+	}
+	x {
+		name = explosion;
+		update.linger = 1;
+		image = explosion.gif;
+	}
+}
