@@ -88,7 +88,6 @@ splinter_config {
 	tickMeters = 0.000043225;
 	baselineMeters = 0.383;
 	maxThrottleAccelleration = 2.0;
-	captureOdometry = false;
 }
 splinter_config_capture {
 	captureOdometry = true;
