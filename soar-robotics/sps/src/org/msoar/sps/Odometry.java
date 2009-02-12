@@ -20,8 +20,8 @@ public class Odometry {
 	}
 	
 	public void propagate(odom_t newOdom, odom_t oldOdom, pose_t pose) {
-		System.out.println("delta left ticks: " + (newOdom.left - oldOdom.left));
-		System.out.println("delta right ticks: " + (newOdom.right - oldOdom.right));
+		//System.out.println("delta left ticks: " + (newOdom.left - oldOdom.left));
+		//System.out.println("delta right ticks: " + (newOdom.right - oldOdom.right));
 		double dleft = (newOdom.left - oldOdom.left) * tickMeters;
 		double dright = (newOdom.right - oldOdom.right) * tickMeters;
 		
@@ -31,8 +31,8 @@ public class Odometry {
 		double dCenter = (dleft + dright) / 2;
 		
 		// delta x, delta y
-		deltaxyt[0] += dCenter * Math.cos(deltaxyt[2]);
-		deltaxyt[1] += dCenter * Math.sin(deltaxyt[2]);
+		deltaxyt[0] = dCenter * Math.cos(deltaxyt[2]);
+		deltaxyt[1] = dCenter * Math.sin(deltaxyt[2]);
 		
 		// our current theta
 		double theta = LinAlg.quatToRollPitchYaw(pose.orientation)[2];
