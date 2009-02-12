@@ -172,9 +172,6 @@ public class OdometryPlotter {
 			} else if (newOdom != null) {
 				odometry.propagate(newOdom, oldOdom, pose);
 				oldOdom = newOdom.copy();
-				//Console console = System.console();
-				//console.readLine();
-				
 			} else {
 				mark = true;
 				newOdom = oldOdom.copy();
