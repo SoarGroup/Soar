@@ -21,8 +21,8 @@ class ModeButton {
 	
 	void update() {
 		boolean button = gp.getButton(buttonNumber);		
-		// change on trailing edge
-		if (buttonState && !button) {
+		// change on leading edge
+		if (!buttonState && button) {
 			modeEnabled = !modeEnabled;
 			logger.info(name + " changed to " + (modeEnabled ? "enabled" : "disabled"));
 		}

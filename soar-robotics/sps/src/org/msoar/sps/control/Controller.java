@@ -1,11 +1,16 @@
 package org.msoar.sps.control;
 
+import java.io.DataInputStream;
+import java.io.File;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.util.Timer;
 import java.util.TimerTask;
 
 import lcm.lcm.LCM;
+import lcm.lcm.LCMSubscriber;
 import lcmtypes.differential_drive_command_t;
+import lcmtypes.pose_t;
 
 import orc.util.GamePad;
 
@@ -15,7 +20,7 @@ import org.msoar.sps.config.Config;
 import org.msoar.sps.config.ConfigFile;
 
 
-public class Controller extends TimerTask {
+public class Controller extends TimerTask implements LCMSubscriber {
 	private static Logger logger = Logger.getLogger(Controller.class);
 	private static int DEFAULT_RANGES_COUNT = 5;
 	
@@ -25,10 +30,11 @@ public class Controller extends TimerTask {
 	private Timer timer = new Timer();
 	private differential_drive_command_t dc = new differential_drive_command_t();
 	private LCM lcm;
-	private OdometryLogger odom;
+	private FileWriter tagWriter;
+	private long poseUtime;
 	
 	private enum Buttons {
-		OVERRIDE, SOAR, TANK, SLOW, CAPTURE, TAG;
+		OVERRIDE, SOAR, TANK, SLOW, TAG;
 		private ModeButton b;
 		
 		void setButton(ModeButton b) {
@@ -51,13 +57,13 @@ public class Controller extends TimerTask {
 		int rangesCount = this.config.getInt("ranges_count", DEFAULT_RANGES_COUNT);
 		soar = new SoarInterface(productions, rangesCount);
 		lcm = LCM.getSingleton();
+		lcm.subscribe(Names.POSE_CHANNEL, this);
 
 		Buttons.OVERRIDE.setButton(new ModeButton("Override", gp, 0));
 		Buttons.SOAR.setButton(new ModeButton("Soar control", gp, 1));
 		Buttons.TANK.setButton(new ModeButton("Tank mode", gp, 2));
 		Buttons.SLOW.setButton(new ModeButton("Slow mode", gp, 3));
-		Buttons.CAPTURE.setButton(new ModeButton("Capture mode", gp, 4));
-		Buttons.TAG.setButton(new ModeButton("Tag capture", gp, 5));
+		Buttons.TAG.setButton(new ModeButton("Tag", gp, 4));
 		
 		Runtime.getRuntime().addShutdownHook(new ShutdownHook());
 		
@@ -68,6 +74,13 @@ public class Controller extends TimerTask {
 	public class ShutdownHook extends Thread {
 		@Override
 		public void run() {
+			if (tagWriter != null) {
+				try {
+					tagWriter.close();
+				} catch (IOException ignored) {
+				}
+			}
+			
 			if (soar != null)
 				soar.shutdown();
 
@@ -94,31 +107,40 @@ public class Controller extends TimerTask {
 				soar.changeRunningState();
 			}
 			
-			if (Buttons.CAPTURE.getButton().isEnabled()) {
+			if (Buttons.TAG.getButton().checkAndDisable()) {
 				try {
-					if (odom == null) {
-						odom = new OdometryLogger();
+					if (tagWriter == null) {
+						// TODO: use date/time
+						File datafile = File.createTempFile("tags-", ".txt", new File(System.getProperty("user.dir")));
+						tagWriter = new FileWriter(datafile);
+						logger.info("Opened " + datafile.getAbsolutePath());
 					}
-					odom.update(Buttons.TAG.getButton().checkAndDisable());
+					logger.info("mark " + poseUtime);
+					tagWriter.append(poseUtime + "\n");
+					tagWriter.flush();
 					
 				} catch (IOException e) {
-					logger.error("IOException while updating odometry: " + e.getMessage());
-					if (odom != null) {
-						odom.close();
-						odom = null;
-					}
-				}
-			} else {
-				if (odom != null) {
-					odom.close();
-					odom = null;
+					logger.error("IOException while recording mark: " + e.getMessage());
 				}
 			}
+			
 		} else {
 			soar.getDC(dc);
 		}	
 		
 		transmit(dc);
+	}
+	
+	@Override
+	public void messageReceived(LCM lcm, String channel, DataInputStream ins) {
+		if (channel.equals(Names.POSE_CHANNEL)) {
+			try {
+				pose_t pose = new pose_t(ins);
+				poseUtime = pose.utime;
+			} catch (IOException e) {
+				logger.error("Error decoding pose_t message: " + e.getMessage());
+			}
+		}
 	}
 	
 	private void getDC(differential_drive_command_t dc) {

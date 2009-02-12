@@ -34,6 +34,7 @@ public class Splinter extends TimerTask implements LCMSubscriber {
 	
 	// blue
 	public static final double DEFAULT_BASELINE = 0.37;
+	// TODO: should use two tickmeters, left/right
 	public static final double DEFAULT_TICKMETERS = 0.0000428528;
 	
 	private Timer timer = new Timer();
@@ -50,6 +51,7 @@ public class Splinter extends TimerTask implements LCMSubscriber {
 	private long lastSeenDCTime = 0;
 	private long lastUtime = 0;
 	private boolean failsafeSpew = false;
+	private OdometryLogger capture;
 	
 	// for odometry update
 	private Odometry odometry;
@@ -77,6 +79,15 @@ public class Splinter extends TimerTask implements LCMSubscriber {
 		
 		getOdometry(oldOdom, orc.getStatus());
 		
+		if (config.getBoolean("captureOdometry", false)) {
+			try {
+				capture = new OdometryLogger();
+				capture.record(oldOdom);
+			} catch (IOException e) {
+				logger.error("Error opening odometry logger: " + e.getMessage());
+			}
+		}
+		
 		// drive commands
 		lcm = LCM.getSingleton();
 		lcm.subscribe(Names.DRIVE_CHANNEL, this);
@@ -87,6 +98,7 @@ public class Splinter extends TimerTask implements LCMSubscriber {
 	}
 	
 	private void getOdometry(odom_t dest, OrcStatus currentStatus) {
+		dest.utime = currentStatus.utime;
 		dest.left = currentStatus.qeiPosition[ports[LEFT]] * (invert[LEFT] ? -1 : 1);
 		dest.right = currentStatus.qeiPosition[ports[RIGHT]] * (invert[RIGHT] ? -1 : 1);
 	}
@@ -103,6 +115,15 @@ public class Splinter extends TimerTask implements LCMSubscriber {
 		// don't update odom unless moving
 		if (moving) {
 			odometry.propagate(newOdom, oldOdom, pose);
+
+			if (capture != null) {
+				try {
+					capture.record(newOdom);
+				} catch (IOException e) {
+					logger.error("IOException while writing odometry: " + e.getMessage());
+					capture = null;
+				}
+			}
 		}
 
 		// save old state
@@ -111,9 +132,6 @@ public class Splinter extends TimerTask implements LCMSubscriber {
 		
 		pose.utime = currentStatus.utime;
 		lcm.publish(Names.POSE_CHANNEL, pose);
-		
-		oldOdom.utime = currentStatus.utime;
-		lcm.publish(Names.ODOM_CHANNEL, oldOdom);
 		
 		commandMotors();
 	}
