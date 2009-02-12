@@ -184,20 +184,28 @@ public class SessionManager implements Runnable {
 			runners.put(component, runner);
 		}
 		
-		Config componentConfig = null;
-		String componentConfigId = config.getString(component + ".config");
-		if (componentConfigId != null) {
-			componentConfig = config.getChild(componentConfigId);
-		}
-
 		try {
-			runner.configure(new ArrayList<String>(Arrays.asList(command)), componentConfig == null ? null : componentConfig.toString());
+			runner.configure(new ArrayList<String>(Arrays.asList(command)), getConfigString(component));
 			runner.start();
 		} catch (IOException e) {
 			logger.error(e.getMessage());
 		}
 	}
 	
+	private String getConfigString(String component){
+		StringBuilder sb = new StringBuilder();
+		boolean hadConfig = false;
+		for (String componentConfigId : config.getStrings(component + ".config", new String[0])) {
+			hadConfig = true;
+			sb.append(config.getChild(componentConfigId).toString());
+			sb.append("\n");
+		}
+		if (hadConfig) {
+			return sb.toString();
+		}
+		return null;
+	}
+
 	private void stopAll() {
 		ArrayList<String> components = new ArrayList<String>(runners.keySet());
 		for (String component : components) {
