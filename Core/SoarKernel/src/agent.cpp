@@ -345,7 +345,7 @@ agent * create_soar_agent (char * agent_name) {                                 
 
   // epmem initialization
   newAgent->epmem_params[ EPMEM_PARAM_LEARNING ] = epmem_new_parameter( "learning", EPMEM_LEARNING_ON, &epmem_validate_learning, &epmem_convert_learning, &epmem_convert_learning );
-  newAgent->epmem_params[ EPMEM_PARAM_DB ] = epmem_new_parameter( "database", EPMEM_DB_FILE, &epmem_validate_database, &epmem_convert_database, &epmem_convert_database );
+  newAgent->epmem_params[ EPMEM_PARAM_DB ] = epmem_new_parameter( "database", EPMEM_DB_MEM, &epmem_validate_database, &epmem_convert_database, &epmem_convert_database );
   newAgent->epmem_params[ EPMEM_PARAM_PATH ] = epmem_new_parameter( "path", "", &epmem_validate_path );
   newAgent->epmem_params[ EPMEM_PARAM_COMMIT ] = epmem_new_parameter( "commit", 1.0, &epmem_validate_commit );
 
