@@ -965,7 +965,7 @@ void WorkingMemory::GenerateNewID(char const* pAttribute, std::string* pID)
 	char letter = pAttribute[0] ;
 
 	// Convert to lowercase
-	if (letter >= 'A' || letter <= 'Z')
+	if (letter >= 'A' && letter <= 'Z')
 		letter = letter - 'A' + 'a' ;
 
 	// Make sure we got a letter here (just in case)
