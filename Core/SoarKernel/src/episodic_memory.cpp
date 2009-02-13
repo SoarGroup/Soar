@@ -1964,7 +1964,7 @@ void epmem_rit_prep_left_right( agent *my_agent, epmem_time_id lower, epmem_time
 }
 
 /***************************************************************************
- * Function     : epmem_rit_prep_left_right
+ * Function     : epmem_rit_insert_interval
  * Author		: Nate Derbinsky
  * Notes		: Inserts an interval in the RIT
  **************************************************************************/
@@ -2160,8 +2160,12 @@ void epmem_reset( agent *my_agent, Symbol *state )
  *                All statement preparation should be asserted
  *                to help reduce hard-to-detect errors due to
  *                typos in SQL.
+ *
+ *                The readonly param should only be used in
+ *                experimentation where you don't want to alter
+ *                previous database state.
  **************************************************************************/
-void epmem_init_db( agent *my_agent )
+void epmem_init_db( agent *my_agent, bool readonly = false )
 {
 	if ( my_agent->epmem_db_status != EPMEM_DB_CLOSED )
 		return;
@@ -2440,32 +2444,35 @@ void epmem_init_db( agent *my_agent )
 			sqlite3_finalize( create );
 			time_max = epmem_get_stat( my_agent, (const long) EPMEM_STAT_TIME );
 
-			// insert non-NOW intervals for all current NOW's
-			time_last = ( time_max - 1 );
-			my_assert = ( sqlite3_prepare_v2( my_agent->epmem_db, "SELECT id,start FROM node_now", EPMEM_DB_PREP_STR_MAX, &create, &tail ) == SQLITE_OK );
-			assert( my_assert );
-			EPMEM_SQLITE_BIND_INT( my_agent->epmem_statements[ EPMEM_STMT_ONE_ADD_NODE_POINT ], 2, time_last );
-			while ( sqlite3_step( create ) == SQLITE_ROW )
+			if ( !readonly )
 			{
-				range_start = EPMEM_SQLITE_COLUMN_INT( create, 1 );
-
-				// point
-				if ( range_start == time_last )
+				// insert non-NOW intervals for all current NOW's
+				time_last = ( time_max - 1 );
+				my_assert = ( sqlite3_prepare_v2( my_agent->epmem_db, "SELECT id,start FROM node_now", EPMEM_DB_PREP_STR_MAX, &create, &tail ) == SQLITE_OK );
+				assert( my_assert );
+				EPMEM_SQLITE_BIND_INT( my_agent->epmem_statements[ EPMEM_STMT_ONE_ADD_NODE_POINT ], 2, time_last );
+				while ( sqlite3_step( create ) == SQLITE_ROW )
 				{
-					EPMEM_SQLITE_BIND_INT( my_agent->epmem_statements[ EPMEM_STMT_ONE_ADD_NODE_POINT ], 1, EPMEM_SQLITE_COLUMN_INT( create, 0 ) );
-					sqlite3_step( my_agent->epmem_statements[ EPMEM_STMT_ONE_ADD_NODE_POINT ] );
-					sqlite3_reset( my_agent->epmem_statements[ EPMEM_STMT_ONE_ADD_NODE_POINT ] );
-				}
-				else
-					epmem_rit_insert_interval( my_agent, range_start, time_last, EPMEM_SQLITE_COLUMN_INT( create, 0 ), epmem_rit_state_one );
-			}
-			sqlite3_finalize( create );
+					range_start = EPMEM_SQLITE_COLUMN_INT( create, 1 );
 
-			// remove all NOW intervals
-			my_assert = ( sqlite3_prepare_v2( my_agent->epmem_db, "DELETE FROM node_now", EPMEM_DB_PREP_STR_MAX, &create, &tail ) == SQLITE_OK );
-			assert( my_assert );
-			sqlite3_step( create );
-			sqlite3_finalize( create );
+					// point
+					if ( range_start == time_last )
+					{
+						EPMEM_SQLITE_BIND_INT( my_agent->epmem_statements[ EPMEM_STMT_ONE_ADD_NODE_POINT ], 1, EPMEM_SQLITE_COLUMN_INT( create, 0 ) );
+						sqlite3_step( my_agent->epmem_statements[ EPMEM_STMT_ONE_ADD_NODE_POINT ] );
+						sqlite3_reset( my_agent->epmem_statements[ EPMEM_STMT_ONE_ADD_NODE_POINT ] );
+					}
+					else
+						epmem_rit_insert_interval( my_agent, range_start, time_last, EPMEM_SQLITE_COLUMN_INT( create, 0 ), epmem_rit_state_one );
+				}
+				sqlite3_finalize( create );
+
+				// remove all NOW intervals
+				my_assert = ( sqlite3_prepare_v2( my_agent->epmem_db, "DELETE FROM node_now", EPMEM_DB_PREP_STR_MAX, &create, &tail ) == SQLITE_OK );
+				assert( my_assert );
+				sqlite3_step( create );
+				sqlite3_finalize( create );
+			}
 
 			// get max id + max list
 			my_assert = ( sqlite3_prepare_v2( my_agent->epmem_db, "SELECT MAX(child_id) FROM node_unique", EPMEM_DB_PREP_STR_MAX, &create, &tail ) == SQLITE_OK );
@@ -2804,6 +2811,7 @@ void epmem_init_db( agent *my_agent )
 
 			// insert non-NOW intervals for all current NOW's
 			// remove NOW's
+			if ( !readonly )
 			{
 				time_last = ( time_max - 1 );
 
@@ -3784,7 +3792,7 @@ bool epmem_valid_episode( agent *my_agent, epmem_time_id memory_id )
 }
 
 /***************************************************************************
- * Function     : epmem_valid_episode
+ * Function     : epmem_install_memory
  * Author		: Nate Derbinsky
  * Notes		: Reconstructs an episode in working memory.
  *
@@ -4860,8 +4868,14 @@ unsigned EPMEM_TYPE_INT epmem_graph_match_wmes( epmem_shared_literal_group *lite
  * Function     : epmem_process_query
  * Author		: Nate Derbinsky
  * Notes		: Performs cue-based query (see section description above).
+ *
+ * 				  The level parameter should be used only for profiling
+ * 				  in experimentation:
+ * 				  - level 3 (default): full query processing
+ * 				  - level 2: no installing of found memory
+ * 				  - level 1: no interval search
  **************************************************************************/
-void epmem_process_query( agent *my_agent, Symbol *state, Symbol *query, Symbol *neg_query, epmem_time_list *prohibit, epmem_time_id before, epmem_time_id after )
+void epmem_process_query( agent *my_agent, Symbol *state, Symbol *query, Symbol *neg_query, epmem_time_list *prohibit, epmem_time_id before, epmem_time_id after, int level=3 )
 {
 	////////////////////////////////////////////////////////////////////////////
 	epmem_start_timer( my_agent, EPMEM_TIMER_QUERY );
@@ -5062,7 +5076,7 @@ void epmem_process_query( agent *my_agent, Symbol *state, Symbol *query, Symbol 
 			unsigned EPMEM_TYPE_INT perfect_match = leaf_ids[ EPMEM_NODE_POS ].size();
 
 			// only perform search if necessary
-			if ( cue_size )
+			if ( ( level > 1 ) && cue_size )
 			{
 				// perform incremental, integrated range search
 				{
@@ -5342,7 +5356,8 @@ void epmem_process_query( agent *my_agent, Symbol *state, Symbol *query, Symbol 
 						////////////////////////////////////////////////////////////////////////////
 
 						// actual memory
-						epmem_install_memory( my_agent, state, king_id );
+						if ( level > 2 )
+							epmem_install_memory( my_agent, state, king_id );
 					}
 					else
 					{
@@ -5925,7 +5940,7 @@ void epmem_process_query( agent *my_agent, Symbol *state, Symbol *query, Symbol 
 			epmem_constraint_list king_constraints;
 
 			// perform range search if any leaf wmes
-			if ( cue_size )
+			if ( ( level > 1 ) && cue_size )
 			{
 				double balance = epmem_get_parameter( my_agent, (const long) EPMEM_PARAM_BALANCE );
 				double balance_inv = 1 - balance;
@@ -6262,7 +6277,8 @@ void epmem_process_query( agent *my_agent, Symbol *state, Symbol *query, Symbol 
 				////////////////////////////////////////////////////////////////////////////
 
 				// actual memory
-				epmem_install_memory( my_agent, state, king_id, my_mapping );
+				if ( level > 2 )
+					epmem_install_memory( my_agent, state, king_id, my_mapping );
 
 				if ( my_mapping )
 					delete my_mapping;
@@ -6643,6 +6659,8 @@ void epmem_go( agent *my_agent )
 {
 	epmem_start_timer( my_agent, EPMEM_TIMER_TOTAL );
 
+#ifndef EPMEM_EXPERIMENT
+
 	if ( !epmem_in_transaction( my_agent ) )
 		epmem_transaction_begin( my_agent );
 
@@ -6651,6 +6669,12 @@ void epmem_go( agent *my_agent )
 
 	if ( !epmem_in_transaction( my_agent ) )
 		epmem_transaction_end( my_agent, true );
+
+#else // EPMEM_EXPERIMENT
+
+
+
+#endif // EPMEM_EXPERIMENT
 
 	epmem_stop_timer( my_agent, EPMEM_TIMER_TOTAL );
 }
