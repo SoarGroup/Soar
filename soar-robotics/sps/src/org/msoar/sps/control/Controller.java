@@ -12,8 +12,6 @@ import lcm.lcm.LCMSubscriber;
 import lcmtypes.differential_drive_command_t;
 import lcmtypes.pose_t;
 
-import orc.util.GamePad;
-
 import org.apache.log4j.Logger;
 import org.msoar.sps.Names;
 import org.msoar.sps.config.Config;
@@ -25,7 +23,7 @@ public class Controller extends TimerTask implements LCMSubscriber {
 	private static int DEFAULT_RANGES_COUNT = 5;
 	
 	private Config config;
-	private GamePad gp = new GamePad();
+	private Gamepad gp;
 	private SoarInterface soar;
 	private Timer timer = new Timer();
 	private differential_drive_command_t dc = new differential_drive_command_t();
@@ -41,8 +39,24 @@ public class Controller extends TimerTask implements LCMSubscriber {
 			this.b = b;
 		}
 		
-		ModeButton getButton() {
-			return b;
+		boolean isEnabled() {
+			if (b == null) {
+				return false;
+			}
+			return b.isEnabled();
+		}
+		
+		boolean checkAndDisable() {
+			if (b == null) {
+				return false;
+			}
+			return b.checkAndDisable();
+		}
+		
+		void update() {
+			if (b != null) {
+				b.update();
+			}
 		}
 	}
 
@@ -50,8 +64,19 @@ public class Controller extends TimerTask implements LCMSubscriber {
 		if (config == null) {
 			throw new NullPointerException();
 		}
-		
 		this.config = config;
+		
+		try {
+			gp = new Gamepad();
+			
+			Buttons.OVERRIDE.setButton(new ModeButton("Override", gp, 0));
+			Buttons.SOAR.setButton(new ModeButton("Soar control", gp, 1));
+			Buttons.TANK.setButton(new ModeButton("Tank mode", gp, 2));
+			Buttons.SLOW.setButton(new ModeButton("Slow mode", gp, 3));
+			Buttons.TAG.setButton(new ModeButton("Tag", gp, 4));
+		} catch (IllegalStateException e) {
+			logger.warn("Disabling gamepad: " + e.getMessage());
+		}
 
 		String productions = this.config.getString("productions");
 		int rangesCount = this.config.getInt("ranges_count", DEFAULT_RANGES_COUNT);
@@ -59,16 +84,10 @@ public class Controller extends TimerTask implements LCMSubscriber {
 		lcm = LCM.getSingleton();
 		lcm.subscribe(Names.POSE_CHANNEL, this);
 
-		Buttons.OVERRIDE.setButton(new ModeButton("Override", gp, 0));
-		Buttons.SOAR.setButton(new ModeButton("Soar control", gp, 1));
-		Buttons.TANK.setButton(new ModeButton("Tank mode", gp, 2));
-		Buttons.SLOW.setButton(new ModeButton("Slow mode", gp, 3));
-		Buttons.TAG.setButton(new ModeButton("Tag", gp, 4));
-		
 		Runtime.getRuntime().addShutdownHook(new ShutdownHook());
 		
-		// if gp == null, start soar
 		timer.schedule(this, 0, 1000 / 10); // 10 Hz
+		
 	}
 	
 	public class ShutdownHook extends Thread {
@@ -94,20 +113,20 @@ public class Controller extends TimerTask implements LCMSubscriber {
 	public void run() {
 		logger.trace("Controller update");
 		for (Buttons button : Buttons.values()) {
-			button.getButton().update();
+			button.update();
 		}
 		if (gp != null) {
-			if (Buttons.OVERRIDE.getButton().isEnabled()) {
+			if (Buttons.OVERRIDE.isEnabled()) {
 				getDC(dc);
 			} else {
 				soar.getDC(dc);
 			}
 			
-			if (Buttons.SOAR.getButton().checkAndDisable()) {
+			if (Buttons.SOAR.checkAndDisable()) {
 				soar.changeRunningState();
 			}
 			
-			if (Buttons.TAG.getButton().checkAndDisable()) {
+			if (Buttons.TAG.checkAndDisable()) {
 				try {
 					if (tagWriter == null) {
 						// TODO: use date/time
@@ -147,7 +166,7 @@ public class Controller extends TimerTask implements LCMSubscriber {
 		dc.left_enabled = true;
 		dc.right_enabled = true;
 		
-		if (Buttons.TANK.getButton().isEnabled()) {
+		if (Buttons.TANK.isEnabled()) {
 			dc.left = gp.getAxis(1) * -1;
 			dc.right = gp.getAxis(3) * -1;
 		} else {
@@ -168,7 +187,7 @@ public class Controller extends TimerTask implements LCMSubscriber {
 
 	private void transmit(differential_drive_command_t dc) {
 		dc.utime = System.nanoTime() / 1000;
-		if (Buttons.SLOW.getButton().isEnabled()) {
+		if (Buttons.SLOW.isEnabled()) {
 			logger.debug("slow mode halving throttle");
 			dc.left /= 2;
 			dc.right /= 2;
