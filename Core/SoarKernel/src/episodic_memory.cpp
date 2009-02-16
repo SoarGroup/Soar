@@ -3345,7 +3345,10 @@ void epmem_new_episode( agent *my_agent )
 			{
 				// check for MVAs
 				for ( i=0; i<len; i++ )
-					level_counters[ wmes[i]->attr ]++;
+				{
+					if ( !wmes[i]->acceptable )
+						level_counters[ wmes[i]->attr ]++;
+				}
 
 				for ( i=0; i<len; i++ )
 				{
