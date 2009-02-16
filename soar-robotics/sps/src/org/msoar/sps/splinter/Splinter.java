@@ -33,7 +33,7 @@ public class Splinter extends TimerTask implements LCMSubscriber {
 	//public static final double DEFAULT_TICKMETERS = 0.000043225;
 	
 	// blue
-	public static final double DEFAULT_BASELINE = 0.37;
+	public static final double DEFAULT_BASELINE = 0.37405;
 	// TODO: should use two tickmeters, left/right
 	public static final double DEFAULT_TICKMETERS = 0.0000428528;
 	
