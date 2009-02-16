@@ -38,6 +38,7 @@ april_config {
 	    obstacle_image {
 	        path = "sim/lab.png";
 	        meters_per_pixel = 0.01;
+	        origin = [555, 916];
 	    }
 		
 	    lasers = [ "LIDAR_FRONT" ];    

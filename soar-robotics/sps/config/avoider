@@ -1,6 +1,6 @@
 include = common;
 
-all = [viewer, sim, control, debugger];
+all = [viewer, sim, control];
 
 control_config {
 	productions = "agents/avoider-robot.soar";
