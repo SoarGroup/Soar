@@ -883,6 +883,43 @@ const long epmem_convert_graph_match( const char *val )
 	return return_val;
 }
 
+// phase parameter
+bool epmem_validate_phase( const long new_val )
+{
+	return ( ( new_val > 0 ) && ( new_val <= EPMEM_PHASE_SELECTION ) );
+}
+
+const char *epmem_convert_phase( const long val )
+{
+	const char *return_val = NULL;
+
+	switch ( val )
+	{
+		case EPMEM_PHASE_OUTPUT:
+			return_val = "output";
+			break;
+
+		case EPMEM_PHASE_SELECTION:
+			return_val = "selection";
+			break;
+	}
+
+	return return_val;
+}
+
+const long epmem_convert_phase( const char *val )
+{
+	long return_val = NULL;	
+
+	if ( !strcmp( val, "output" ) )
+		return_val = EPMEM_PHASE_OUTPUT;
+
+	if ( !strcmp( val, "selection" ) )
+		return_val = EPMEM_PHASE_SELECTION;
+
+	return return_val;
+}
+
 // trigger parameter
 bool epmem_validate_trigger( const long new_val )
 {
@@ -3019,6 +3056,10 @@ void epmem_new_episode( agent *my_agent )
 			{
 				for ( i=0; i<len; i++ )
 				{
+					// prevent acceptables from being recorded
+					if ( wmes[i]->acceptable )
+						continue;
+					
 					// prevent exclusions from being recorded
 					should_exclude = false;
 					attr_name = epmem_symbol_to_string( my_agent, wmes[i]->attr );
@@ -3308,6 +3349,10 @@ void epmem_new_episode( agent *my_agent )
 
 				for ( i=0; i<len; i++ )
 				{
+					// prevent acceptables from being recorded
+					if ( wmes[i]->acceptable )
+						continue;
+					
 					// prevent exclusions from being recorded
 					should_exclude = false;
 					attr_name = epmem_symbol_to_string( my_agent, wmes[i]->attr );

@@ -77,12 +77,13 @@ typedef struct wme_struct wme;
 #define EPMEM_PARAM_PATH							3
 #define EPMEM_PARAM_MODE							4
 #define EPMEM_PARAM_GRAPH_MATCH						5
-#define EPMEM_PARAM_TRIGGER							6
-#define EPMEM_PARAM_FORCE							7
-#define EPMEM_PARAM_BALANCE							8
-#define EPMEM_PARAM_EXCLUSIONS						9
-#define EPMEM_PARAM_TIMERS							10
-#define EPMEM_PARAMS								11 // must be 1+ last epmem param
+#define EPMEM_PARAM_PHASE							6
+#define EPMEM_PARAM_TRIGGER							7
+#define EPMEM_PARAM_FORCE							8
+#define EPMEM_PARAM_BALANCE							9
+#define EPMEM_PARAM_EXCLUSIONS						10
+#define EPMEM_PARAM_TIMERS							11
+#define EPMEM_PARAMS								12 // must be 1+ last epmem param
 
 // parameter settings
 #define EPMEM_LEARNING_ON 1
@@ -101,6 +102,9 @@ typedef struct wme_struct wme;
 #define EPMEM_TRIGGER_NONE 1
 #define EPMEM_TRIGGER_OUTPUT 2
 #define EPMEM_TRIGGER_DC 3
+
+#define EPMEM_PHASE_OUTPUT 1
+#define EPMEM_PHASE_SELECTION 2
 
 #define EPMEM_FORCE_REMEMBER 1
 #define EPMEM_FORCE_IGNORE 2
@@ -567,6 +571,11 @@ extern const long epmem_convert_mode( const char *val );
 extern bool epmem_validate_graph_match( const long new_val );
 extern const char *epmem_convert_graph_match( const long val );
 extern const long epmem_convert_graph_match( const char *val );
+
+// phase
+extern bool epmem_validate_phase( const long new_val );
+extern const char *epmem_convert_phase( const long val );
+extern const long epmem_convert_phase( const char *val );
 
 // trigger
 extern bool epmem_validate_trigger( const long new_val );

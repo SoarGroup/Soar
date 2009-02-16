@@ -889,7 +889,7 @@ void do_one_top_level_phase (agent* thisAgent)
 	  if ( wma_enabled( thisAgent ) )
 		  wma_move_and_remove_wmes( thisAgent );
 
-	  if ( epmem_enabled( thisAgent ) )
+	  if ( epmem_enabled( thisAgent ) && ( epmem_get_parameter( thisAgent, (const long) EPMEM_PARAM_PHASE, EPMEM_RETURN_LONG ) == EPMEM_PHASE_OUTPUT ) )
 		  epmem_go( thisAgent );
 
 	  // Count the outputs the agent generates (or times reaching max-nil-outputs without sending output)
@@ -1079,6 +1079,9 @@ void do_one_top_level_phase (agent* thisAgent)
 		  &thisAgent->decision_cycle_phase_timers[DECISION_PHASE]);
       #endif
 	  /* REW: end 28.07.96 */
+
+	  if ( epmem_enabled( thisAgent ) && ( epmem_get_parameter( thisAgent, (const long) EPMEM_PARAM_PHASE, EPMEM_RETURN_LONG ) == EPMEM_PHASE_SELECTION ) )
+		epmem_go( thisAgent );
 
 	  break;  /* end DECISION phase */
 	  
