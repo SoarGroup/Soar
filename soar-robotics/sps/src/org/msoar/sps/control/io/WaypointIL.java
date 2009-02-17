@@ -1,5 +1,9 @@
 package org.msoar.sps.control.io;
 
+import java.util.Arrays;
+
+import org.apache.log4j.Logger;
+
 import jmat.LinAlg;
 import jmat.MathUtil;
 import lcmtypes.pose_t;
@@ -8,6 +12,8 @@ import sml.FloatElement;
 import sml.Identifier;
 
 class WaypointIL {
+	private static Logger logger = Logger.getLogger(WaypointIL.class);
+
 	private double[] xyz = new double[3];
 	private String name;
 	private Identifier waypoints;
@@ -37,13 +43,19 @@ class WaypointIL {
 	void update(pose_t pose) {
 		double distanceValue = LinAlg.distance(pose.pos, xyz, 2);
 		double[] delta = LinAlg.subtract(xyz, pose.pos);
-		double yawValue = Math.atan2(delta[1], delta[0]);
-		double yawValueDeg = Math.toDegrees(yawValue);
-		double relativeBearingValue = yawValue - LinAlg.quatToRollPitchYaw(pose.orientation)[2];
-		relativeBearingValue = MathUtil.mod2pi(relativeBearingValue);
-		double relativeBearingValueDeg = Math.toDegrees(relativeBearingValue);
+		double yawValueRad = Math.atan2(delta[1], delta[0]);
+		double yawValueDeg = Math.toDegrees(yawValueRad);
+		
+		double relativeBearingValueRad = yawValueRad - LinAlg.quatToRollPitchYaw(pose.orientation)[2];
+		relativeBearingValueRad = MathUtil.mod2pi(relativeBearingValueRad);
+		double relativeBearingValueDeg = Math.toDegrees(relativeBearingValueRad);
+		
 		double absRelativeBearingValueDeg = Math.abs(relativeBearingValueDeg);
 
+		if (logger.isTraceEnabled()) {
+			logger.trace(String.format("xyz%s y%1.2f rb%1.2f", Arrays.toString(xyz), yawValueRad, relativeBearingValueRad));
+		}
+		
 		if (waypoint == null) {
 			waypoint = agent.CreateIdWME(waypoints, "waypoint");
 			

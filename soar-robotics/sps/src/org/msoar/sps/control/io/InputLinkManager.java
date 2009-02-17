@@ -81,8 +81,8 @@ public class InputLinkManager implements LCMSubscriber {
 		}
 	}
 
-	public double getYaw() {
-		return selfIL.getYaw();
+	public double getYawRadians() {
+		return selfIL.getYawRadians();
 	}
 
 	public WaypointsIL getWaypointsIL() {

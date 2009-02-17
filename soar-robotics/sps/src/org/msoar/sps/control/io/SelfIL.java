@@ -15,7 +15,7 @@ class SelfIL {
 	private FloatElement yawwme;
 	private long utimeLast = 0;
 	private Agent agent;
-	private double yaw;
+	private double yawRadians;
 
 	SelfIL(Agent agent, Identifier self) {
 		this.agent = agent;
@@ -25,15 +25,15 @@ class SelfIL {
 		xwme = agent.CreateFloatWME(posewme, "x", 0);
 		ywme = agent.CreateFloatWME(posewme, "y", 0);
 		zwme = agent.CreateFloatWME(posewme, "z", 0);
-		yaw = 0;
-		yawwme = agent.CreateFloatWME(posewme, "yaw", yaw);
+		yawRadians = 0;
+		yawwme = agent.CreateFloatWME(posewme, "yaw", 0);
 		
 		Identifier waypoints = agent.CreateIdWME(self, "waypoints");
 		waypointsIL = new WaypointsIL(agent, waypoints);
 	}
 	
-	double getYaw() {
-		return yaw;
+	double getYawRadians() {
+		return yawRadians;
 	}
 
 	void update(pose_t pose) {
@@ -50,19 +50,13 @@ class SelfIL {
 		agent.Update(xwme, pose.pos[0]);
 		agent.Update(ywme, pose.pos[1]);
 		agent.Update(zwme, pose.pos[2]);
-		yaw = toDisplayYaw(pose.orientation);
-		agent.Update(yawwme, yaw);
+		yawRadians = LinAlg.quatToRollPitchYaw(pose.orientation)[2];
+		yawRadians = MathUtil.mod2pi(yawRadians);
+		agent.Update(yawwme, Math.toDegrees(yawRadians));
 		
 		waypointsIL.update(pose);
 	}
 	
-	private double toDisplayYaw(double[] orientation) {
-		double newYaw = LinAlg.quatToRollPitchYaw(orientation)[2];
-		newYaw = MathUtil.mod2pi(newYaw);
-		newYaw = Math.toDegrees(newYaw);
-		return newYaw;
-	}
-
 	WaypointsIL getWaypointsIL() {
 		return waypointsIL;
 	}

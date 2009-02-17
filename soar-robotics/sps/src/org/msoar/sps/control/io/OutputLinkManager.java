@@ -35,12 +35,12 @@ public class OutputLinkManager implements LCMSubscriber {
 		lcm.subscribe(Names.POSE_CHANNEL, this);
 	}
 	
-	public void getDC(differential_drive_command_t dc, double currentYaw) {
+	public void getDC(differential_drive_command_t dc, double currentYawRadians) {
 		if (command == null) {
 			dc.left_enabled = false;
 			dc.right_enabled = false;
 		} else {
-			command.getDC(dc, currentYaw);
+			command.getDC(dc, currentYawRadians);
 		}
 	}
 	

@@ -60,7 +60,7 @@ public class SoarInterface implements Kernel.UpdateEventInterface, Kernel.System
 			dc.right = 0;
 			return;
 		}
-		output.getDC(dc, input.getYaw());
+		output.getDC(dc, input.getYawRadians());
 	}
 
 	private class SoarRunner implements Runnable {
