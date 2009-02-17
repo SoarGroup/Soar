@@ -86,8 +86,8 @@ splinter_config {
 	ports = [0, 1]; # LEFT, RIGHT
 	invert = [true, true];# LEFT, RIGHT
 	# should initial pose be here?
-	tickMeters = 0.000043225;
-	baselineMeters = 0.383;
+	tickMeters = 0.0000428528;
+	baselineMeters = 0.37405;
 	maxThrottleAccelleration = 2.0;
 }
 splinter_config_capture {
