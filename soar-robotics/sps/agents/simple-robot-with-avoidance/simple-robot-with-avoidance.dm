@@ -1,4 +1,4 @@
-276
+277
 SOAR_ID 0
 SOAR_ID 1
 SOAR_ID 2
@@ -275,7 +275,8 @@ SOAR_ID 272
 STRING 273
 ENUMERATION 274 2 complete error
 STRING 275
-355
+INTEGER_RANGE 276 0 999999
+356
 0 attribute 111
 0 choices 110
 0 desired 31
@@ -330,6 +331,7 @@ STRING 275
 18 name 19
 18 random 20
 21 name 22
+24 microseconds 276
 24 seconds 25
 26 name 125
 26 pose 27

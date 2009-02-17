@@ -2,7 +2,8 @@ sp {go-to-waypoint*propose*rotate-to
    (state <s> ^name go-to-waypoint
              -^superoperator.move-now true
               ^parameters.rotation-tolerance <rt>
-              ^waypoint <w>)
+              ^waypoint <w>
+              ^io.input-link.time.microseconds <microsecs>)
   -(<w> ^abs-relative-bearing <= <rt>) #using negation to prevent rematching as bearing changes
 -->
    (<s> ^operator <op> +)

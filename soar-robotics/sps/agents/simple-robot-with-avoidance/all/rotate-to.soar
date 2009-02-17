@@ -41,7 +41,8 @@ sp {elaborate*state*diff-outside-tolerance
 
 sp {propose*rotate*above-upper-bound
    (state <s> ^rotate true
-              ^desired-yaw <dyaw>)
+              ^desired-yaw <dyaw>
+              ^io.input-link.time.microseconds <microsecs>)
 -->
    (<s> ^operator <op> +)
    (<op> ^name rotate-to

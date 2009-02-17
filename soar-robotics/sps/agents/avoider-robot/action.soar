@@ -1,7 +1,8 @@
 # propose the action associated with each unblocked arc
 sp {simple-robot*propose*action
    (state <s> ^name simple-robot
-              ^io.input-link.ranges.range <r>)
+              ^io.input-link.ranges.range <r>
+              ^io.input-link.time.microseconds <m>)
    (<r> ^blocked false
         ^action <a>
         ^ang-distance <d>)
@@ -29,6 +30,7 @@ sp {simple-robot*compare*action
 sp {simple-robot*propose*turn-left
    (state <s> ^name simple-robot
               ^io.input-link.ranges <rs>
+              ^io.input-link.time.microseconds <m>
               ^parameters.throttle <thr>)
   -(<rs> ^range.blocked false)
 -->
