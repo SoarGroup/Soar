@@ -163,6 +163,7 @@ public class Controller extends TimerTask implements LCMSubscriber {
 	}
 	
 	private void getDC(differential_drive_command_t dc) {
+		dc.utime = soar.getPoseUtime();
 		dc.left_enabled = true;
 		dc.right_enabled = true;
 		
@@ -186,7 +187,6 @@ public class Controller extends TimerTask implements LCMSubscriber {
 	}
 
 	private void transmit(differential_drive_command_t dc) {
-		dc.utime = System.nanoTime() / 1000;
 		if (Buttons.SLOW.isEnabled()) {
 			logger.debug("slow mode halving throttle");
 			dc.left /= 2;

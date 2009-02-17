@@ -15,6 +15,7 @@ class SplinterInput {
 	private double targetYaw = 0;
 	private double targetYawTolerance = 0;
 	private boolean targetYawEnabled = false;
+	private long utime = 0;
 
 	public String toString() {
 		StringBuilder sb = new StringBuilder();
@@ -26,20 +27,24 @@ class SplinterInput {
 			sb.append(") ");
 		}
 		sb.append(Arrays.toString(throttle));
+		sb.append(" ");
+		sb.append(utime);
 		return sb.toString();
 	}
 	enum Direction {
 		left, right
 	};
 
-	public SplinterInput(double throttle) {
+	public SplinterInput(long utime, double throttle) {
+		this.utime = utime;
 		Arrays.fill(this.throttle, throttle);
 		if (logger.isDebugEnabled()) {
 			logger.debug("SplinterInput: " + this);
 		}
 	}
 
-	public SplinterInput(Direction dir, double throttle) {
+	public SplinterInput(long utime, Direction dir, double throttle) {
+		this.utime = utime;
 		this.throttle[0] = throttle * (dir == Direction.left ? -1 : 1);
 		this.throttle[1] = throttle * (dir == Direction.right ? -1 : 1);
 		if (logger.isDebugEnabled()) {
@@ -47,14 +52,16 @@ class SplinterInput {
 		}
 	}
 
-	public SplinterInput(double[] throttle) {
+	public SplinterInput(long utime, double[] throttle) {
+		this.utime = utime;
 		System.arraycopy(throttle, 0, this.throttle, 0, throttle.length);
 		if (logger.isDebugEnabled()) {
 			logger.debug("SplinterInput: " + this);
 		}
 	}
 
-	public SplinterInput(double yaw, double tolerance, double throttle) {
+	public SplinterInput(long utime, double yaw, double tolerance, double throttle) {
+		this.utime = utime;
 		this.targetYaw = yaw;
 		this.targetYawTolerance = tolerance;
 		this.targetYawEnabled = true;
@@ -66,12 +73,14 @@ class SplinterInput {
 
 	public SplinterInput(SplinterInput other) {
 		System.arraycopy(other.throttle, 0, this.throttle, 0, other.throttle.length);
+		this.utime = other.utime;
 		this.targetYaw = other.targetYaw;
 		this.targetYawTolerance = other.targetYaw;
 		this.targetYawEnabled = other.targetYawEnabled;
 	}
 
 	public void getDC(differential_drive_command_t dc, double currentYawRadians) {
+		dc.utime = this.utime;
 		dc.left_enabled = true;
 		dc.right_enabled = true;
 

@@ -49,18 +49,21 @@ sp {apply*action
          ^action <a>)
    (<a> ^<action> <params>)
    (<params> ^direction <dir>
-             ^throttle <thr>)
+             ^throttle <thr>
+             ^utime <utime>)
 -->
    (<ol> ^<action> <acopy>)
    (<acopy> ^direction <dir>
-            ^throttle <thr>)
+            ^throttle <thr>
+            ^utime <utime>)
 }
 
 sp {monitor*action
    (state <s> ^operator.action <a>)
    (<a> ^<action> <p>)
    (<p> ^direction <d>
-        ^throttle <thr>)
+        ^throttle <thr>
+        ^utime <utime>)
 -->
-   (write (crlf) <action> | | <d> | at | <thr>)
+   (write (crlf) <action> | | <d> | at | <thr> | utime | <utime>)
 }

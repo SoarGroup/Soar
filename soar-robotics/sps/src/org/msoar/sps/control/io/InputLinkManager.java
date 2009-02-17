@@ -88,4 +88,12 @@ public class InputLinkManager implements LCMSubscriber {
 	public WaypointsIL getWaypointsIL() {
 		return selfIL.getWaypointsIL();
 	}
+
+	public long getPoseUtime() {
+		if (pose == null) {
+			return 0;
+		}
+		
+		return pose.utime;
+	}
 }

@@ -33,7 +33,8 @@ sp {go-to-waypoint*propose*turn-left
               ^superoperator.move-now true
               ^io.input-link.ranges <rs>
               ^parameters.throttle <thr>
-              ^io.input-link.time.microseconds <microsecs>)
+              ^io.input-link.time.microseconds <microsecs>
+              ^io.input-link.self.pose.utime <utime>)
   -(<rs> ^range.blocked false)
 -->
    (<s> ^operator <op> + =)
@@ -41,7 +42,8 @@ sp {go-to-waypoint*propose*turn-left
          ^action <a>)
    (<a> ^rotate <params>)
    (<params> ^direction left
-             ^throttle <thr>)
+             ^throttle <thr>
+             ^utime <utime>)
    (write (crlf) |all arcs blocked (or missing), so rotating left until not blocked|)
 }
 
@@ -52,18 +54,21 @@ sp {apply*action
          ^action <a>)
    (<a> ^<action> <params>)
    (<params> ^direction <dir>
-             ^throttle <thr>)
+             ^throttle <thr>
+             ^utime <utime>)
 -->
    (<ol> ^<action> <acopy>)
    (<acopy> ^direction <dir>
-            ^throttle <thr>)
+            ^throttle <thr>
+            ^utime <utime>)
 }
 
 sp {monitor*action
    (state <s> ^operator.action <a>)
    (<a> ^<action> <p>)
    (<p> ^direction <d>
-        ^throttle <thr>)
+        ^throttle <thr>
+        ^utime <utime>)
 -->
-   (write (crlf) <action> | | <d> | at | <thr>)
+   (write (crlf) <action> | | <d> | at | <thr> | utime | <utime>)
 }

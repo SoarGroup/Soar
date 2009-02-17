@@ -27,6 +27,7 @@ public class Splinter extends TimerTask implements LCMSubscriber {
 	private static int RIGHT = 1;
 	private static long DELAY_BEFORE_WARN_NO_FIRST_INPUT_MILLIS = 5000;
 	private static long DELAY_BEFORE_WARN_NO_INPUT_MILLIS = 1000;
+	private static long DCDELAY_THRESHOLD_USEC = 1000000L; // one second
 	
 	//green
 	//public static final double DEFAULT_BASELINE = 0.383;
@@ -58,6 +59,7 @@ public class Splinter extends TimerTask implements LCMSubscriber {
 	private odom_t oldOdom = new odom_t();
 	private pose_t pose = new pose_t();
 	private odom_t newOdom = new odom_t();
+	private long currentUtime;
 	
 	Splinter(Config config) {
 		tickMeters = config.getDouble("tickMeters", DEFAULT_TICKMETERS);
@@ -77,7 +79,9 @@ public class Splinter extends TimerTask implements LCMSubscriber {
 		motor[LEFT] = new Motor(orc, ports[LEFT], invert[LEFT]);
 		motor[RIGHT] = new Motor(orc, ports[RIGHT], invert[RIGHT]);
 		
-		getOdometry(oldOdom, orc.getStatus());
+		OrcStatus currentStatus = orc.getStatus();
+		currentUtime = currentStatus.utime;
+		getOdometry(oldOdom, currentStatus);
 		
 		if (config.getBoolean("captureOdometry", false)) {
 			try {
@@ -107,6 +111,7 @@ public class Splinter extends TimerTask implements LCMSubscriber {
 	public void run() {
 		// Get OrcStatus
 		OrcStatus currentStatus = orc.getStatus();
+		currentUtime  = currentStatus.utime;
 		
 		boolean moving = (currentStatus.qeiVelocity[0] != 0) || (currentStatus.qeiVelocity[1] != 0);
 		
@@ -143,7 +148,7 @@ public class Splinter extends TimerTask implements LCMSubscriber {
 			}
 			long millisSinceLastCommand = System.currentTimeMillis() - lastSeenDCTime;
 			if (millisSinceLastCommand > DELAY_BEFORE_WARN_NO_FIRST_INPUT_MILLIS) {
-				logger.warn("Haven't seen a drive command yet!"); 
+				logger.warn("No drive command yet"); 
 				lastSeenDCTime = System.currentTimeMillis();
 			}
 			// we haven't seen a drive command yet
@@ -153,6 +158,18 @@ public class Splinter extends TimerTask implements LCMSubscriber {
 
 		differential_drive_command_t dcNew = dc.copy();
 
+		// is it timely
+		long dcDelay = currentUtime - dcNew.utime;
+		if (dcDelay > DCDELAY_THRESHOLD_USEC) {
+			// not timely, fail-safe
+			if (failsafeSpew == false) {
+				logger.error("Obsolete drive command " + dcDelay + " usec");
+				failsafeSpew = true;
+			}
+			commandFailSafe();
+			return;
+		}
+		
 		// is it a new command? 
 		if (lastUtime != dcNew.utime) {
 			// it is, save state
@@ -163,9 +180,9 @@ public class Splinter extends TimerTask implements LCMSubscriber {
 			long millisSinceLastCommand = System.currentTimeMillis() - lastSeenDCTime;
 			if (millisSinceLastCommand > DELAY_BEFORE_WARN_NO_INPUT_MILLIS) {
 				if (failsafeSpew == false) {
-					logger.error("Haven't seen new drive command in " 
+					logger.error("No recent drive command " 
 							+ millisSinceLastCommand / 1000.0 
-							+ " seconds, commanding fail safe");
+							+ " seconds");
 					failsafeSpew = true;
 				}
 				commandFailSafe();
@@ -175,7 +192,7 @@ public class Splinter extends TimerTask implements LCMSubscriber {
 		
 		failsafeSpew = false;		
 		if (logger.isTraceEnabled()) {
-			logger.trace(String.format("Got input %f %f", dcNew.left, dcNew.right));
+			logger.trace(String.format("Got input %1.2f %1.2f, delay %1.6f sec", dcNew.left, dcNew.right, dcDelay / 1000000));
 		}
 		
 		if (dcNew.left_enabled) {

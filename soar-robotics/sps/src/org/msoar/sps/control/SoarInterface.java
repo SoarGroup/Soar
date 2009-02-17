@@ -53,14 +53,15 @@ public class SoarInterface implements Kernel.UpdateEventInterface, Kernel.System
 	}
 	
 	void getDC(differential_drive_command_t dc) {
-		if (!running) {
+		if (!running || !output.getDC(dc, input.getYawRadians())) {
+			// not running or don't have output this cycle, fail-safe stop
+			dc.utime = input.getPoseUtime();
 			dc.left_enabled = true;
 			dc.right_enabled = true;
 			dc.left = 0;
 			dc.right = 0;
 			return;
 		}
-		output.getDC(dc, input.getYawRadians());
 	}
 
 	private class SoarRunner implements Runnable {
@@ -117,5 +118,9 @@ public class SoarInterface implements Kernel.UpdateEventInterface, Kernel.System
 			logger.info("Soar stopped.");
 			running = false;
 		}
+	}
+
+	public long getPoseUtime() {
+		return input.getPoseUtime();
 	}
 }

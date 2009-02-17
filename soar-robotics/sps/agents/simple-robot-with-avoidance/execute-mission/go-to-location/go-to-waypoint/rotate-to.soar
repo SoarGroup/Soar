@@ -15,7 +15,8 @@ sp {apply*rotate-to
    (state <s> ^operator <op>
               ^waypoint.yaw <yaw>
               ^io.output-link <ol>
-              ^parameters <p>)
+              ^parameters <p>
+              ^io.input-link.self.pose.utime <utime>)
    (<p> ^rotation-tolerance <rt>
         ^throttle <thr>)
    (<op> ^name rotate-to)
@@ -23,7 +24,8 @@ sp {apply*rotate-to
    (<ol> ^rotate-to <r>)
    (<r> ^yaw <yaw>
         ^throttle <thr>
-         ^tolerance <rt>)
+         ^tolerance <rt>
+         ^utime <utime>)
    (write (crlf) |Rotating to | <yaw>)
    (exec player-print |Rotating to | <yaw>)
 }

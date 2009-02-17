@@ -6,9 +6,11 @@ import lcmtypes.pose_t;
 import sml.Agent;
 import sml.FloatElement;
 import sml.Identifier;
+import sml.StringElement;
 
 class SelfIL {
 	private WaypointsIL waypointsIL;
+	private StringElement utime;
 	private FloatElement xwme;
 	private FloatElement ywme;
 	private FloatElement zwme;
@@ -22,6 +24,7 @@ class SelfIL {
 		agent.CreateStringWME(self, "name", agent.GetAgentName());
 
 		Identifier posewme = agent.CreateIdWME(self, "pose");
+		utime = agent.CreateStringWME(posewme, "utime", "0");
 		xwme = agent.CreateFloatWME(posewme, "x", 0);
 		ywme = agent.CreateFloatWME(posewme, "y", 0);
 		zwme = agent.CreateFloatWME(posewme, "z", 0);
@@ -47,6 +50,7 @@ class SelfIL {
 
 		utimeLast = pose.utime;
 		
+		agent.Update(utime, Long.toString(utimeLast));
 		agent.Update(xwme, pose.pos[0]);
 		agent.Update(ywme, pose.pos[1]);
 		agent.Update(zwme, pose.pos[2]);

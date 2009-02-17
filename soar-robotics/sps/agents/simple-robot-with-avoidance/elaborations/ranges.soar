@@ -19,37 +19,43 @@ sp {go-to-waypoint*elaborate*range*not-blocked
 sp {go-to-waypoint*elaborate*range*move-forward
    (state <s> ^name simple-robot
               ^io.input-link.ranges.range <r>
-              ^parameters.throttle <thr>)
+              ^parameters.throttle <thr>
+              ^io.input-link.self.pose.utime <utime>)
    (<r> ^id 0)
 -->
    (<r> ^action <a>)
    (<a> ^move <m>)
    (<m> ^direction forward
-        ^throttle <thr>)
+        ^throttle <thr>
+        ^utime <utime>)
 }
 
 sp {go-to-waypoint*elaborate*range*turn-left
    (state <s> ^name simple-robot
               ^io.input-link.ranges.range <r>
-              ^parameters.throttle <thr>)
+              ^parameters.throttle <thr>
+              ^io.input-link.self.pose.utime <utime>)
    (<r> ^id > 0)
 -->
    (<r> ^action <a>)
    (<a> ^rotate <m>)
    (<m> ^direction left
-        ^throttle <thr>)
+        ^throttle <thr>
+        ^utime <utime>)
 }
 
 sp {go-to-waypoint*elaborate*range*rotate-right
    (state <s> ^name simple-robot
               ^io.input-link.ranges.range <r>
-              ^parameters.throttle <thr>)
+              ^parameters.throttle <thr>
+              ^io.input-link.self.pose.utime <utime>)
    (<r> ^id < 0)
 -->
    (<r> ^action <a>)
    (<a> ^rotate <m>)
    (<m> ^direction right
-        ^throttle <thr>)
+        ^throttle <thr>
+        ^utime <utime>)
 }
 
 sp {go-to-waypoint*elaborate*range*dist-from-goal*0

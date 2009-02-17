@@ -1,4 +1,4 @@
-277
+284
 SOAR_ID 0
 SOAR_ID 1
 SOAR_ID 2
@@ -276,7 +276,14 @@ STRING 273
 ENUMERATION 274 2 complete error
 STRING 275
 INTEGER_RANGE 276 0 999999
-356
+STRING 277
+STRING 278
+STRING 279
+STRING 280
+STRING 281
+STRING 282
+STRING 283
+363
 0 attribute 111
 0 choices 110
 0 desired 31
@@ -324,10 +331,13 @@ INTEGER_RANGE 276 0 999999
 8 direction 11
 8 status 13
 8 throttle 12
+8 utime 278
 9 direction 14
 9 status 16
 9 throttle 15
+9 utime 280
 10 status 17
+10 utime 282
 18 name 19
 18 random 20
 21 name 22
@@ -337,6 +347,7 @@ INTEGER_RANGE 276 0 999999
 26 pose 27
 26 received-messages 112
 26 waypoints 220
+27 utime 277
 27 x 28
 27 y 29
 27 yaw 182
@@ -562,6 +573,7 @@ INTEGER_RANGE 276 0 999999
 192 type 193
 192 waypoint 221
 199 name 200
+199 utime 283
 199 yaw 201
 203 desired-yaw 215
 203 io 1
@@ -608,8 +620,10 @@ INTEGER_RANGE 276 0 999999
 239 status 257
 239 throttle 241
 239 tolerance 256
+239 utime 281
 239 yaw 240
 242 throttle 245
+242 utime 279
 242 x 243
 242 y 244
 247 move 8

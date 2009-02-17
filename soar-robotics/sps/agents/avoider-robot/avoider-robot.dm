@@ -1,4 +1,4 @@
-93
+99
 SOAR_ID 0
 SOAR_ID 1
 SOAR_ID 2
@@ -92,7 +92,13 @@ SOAR_ID 89
 SOAR_ID 90
 ENUMERATION 91 1 action
 FLOAT_RANGE 92 -180.0 180.0
-107
+STRING 93
+STRING 94
+STRING 95
+STRING 96
+STRING 97
+STRING 98
+113
 0 io 1
 0 name 7
 0 operator 4
@@ -151,6 +157,7 @@ FLOAT_RANGE 92 -180.0 180.0
 22 current 23
 22 position 24
 22 velocity 25
+26 utime 98
 26 x 27
 26 y 28
 26 yaw 29
@@ -171,13 +178,17 @@ FLOAT_RANGE 92 -180.0 180.0
 46 left 63
 46 right 62
 46 status 75
+46 utime 93
 47 direction 64
 47 status 74
 47 throttle 65
+47 utime 94
 48 direction 67
 48 status 72
 48 throttle 66
+48 utime 95
 49 status 70
+49 utime 97
 50 name 56
 50 status 78
 50 x 57
@@ -191,6 +202,7 @@ FLOAT_RANGE 92 -180.0 180.0
 54 status 71
 54 throttle 69
 54 tolerance 83
+54 utime 96
 54 yaw 68
 55 status 79
 85 range-tolerance 87

@@ -42,11 +42,13 @@ sp {elaborate*state*diff-outside-tolerance
 sp {propose*rotate*above-upper-bound
    (state <s> ^rotate true
               ^desired-yaw <dyaw>
-              ^io.input-link.time.microseconds <microsecs>)
+              ^io.input-link.time.microseconds <microsecs>
+              ^io.input-link.self.pose.utime <utime>)
 -->
    (<s> ^operator <op> +)
    (<op> ^name rotate-to
-         ^yaw <dyaw>)
+         ^yaw <dyaw>
+         ^utime <utime>)
 }
 
 sp {apply*rotate
@@ -56,12 +58,14 @@ sp {apply*rotate
    (<p> ^rotation-tolerance <rt>
         ^throttle <thr>)
    (<op> ^name rotate-to
-         ^yaw <yaw>)
+         ^yaw <yaw>
+         ^utime <utime>)
 -->
    (<ol> ^rotate-to <r>)
    (<r> ^yaw <yaw>
         ^throttle <thr>
-        ^tolerance <rt>)
+        ^tolerance <rt>
+        ^utime <utime>)
    (write (crlf) |Rotating to | <yaw>)
    (exec player-print |Rotating to | <yaw>)
 }

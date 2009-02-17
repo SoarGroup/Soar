@@ -35,20 +35,30 @@ public class OutputLinkManager implements LCMSubscriber {
 		lcm.subscribe(Names.POSE_CHANNEL, this);
 	}
 	
-	public void getDC(differential_drive_command_t dc, double currentYawRadians) {
+	public boolean getDC(differential_drive_command_t dc, double currentYawRadians) {
 		if (command == null) {
-			dc.left_enabled = true;
-			dc.right_enabled = true;
-			dc.left = 0;
-			dc.right = 0;
-		} else {
-			command.getDC(dc, currentYawRadians);
+			return false;
 		}
+		command.getDC(dc, currentYawRadians);
+		return true;
+	}
+	
+	private long getUtimeParameter(Identifier commandwme) {
+		try {
+			return Long.parseLong(commandwme.GetParameterValue("utime"));
+		} catch (NullPointerException ex) {
+			logger.warn("No utime on " + commandwme.GetCommandName() + " command");
+			commandwme.AddStatusError();
+		} catch (NumberFormatException e) {
+			logger.warn("Unable to parse utime: " + commandwme.GetParameterValue("utime"));
+			commandwme.AddStatusError();
+		}
+		return 0;
 	}
 	
 	public void update() {
 		SplinterInput newSplinterInput = null;
-		
+
 		// process output
 		for (int i = 0; i < agent.GetNumberCommands(); ++i) {
 			Identifier commandwme = agent.GetCommand(i);
@@ -94,7 +104,8 @@ public class OutputLinkManager implements LCMSubscriber {
 
 				logger.debug(String.format("motor: %10.3f %10.3f", motorThrottle[0], motorThrottle[1]));
 
-				newSplinterInput = new SplinterInput(motorThrottle);
+				long utime = getUtimeParameter(commandwme);
+				newSplinterInput = new SplinterInput(utime, motorThrottle);
 
 				commandwme.AddStatusComplete();
 				continue;
@@ -130,12 +141,13 @@ public class OutputLinkManager implements LCMSubscriber {
 
 				logger.debug(String.format("move: %10s %10.3f", direction, throttle));
 
+				long utime = getUtimeParameter(commandwme);
 				if (direction.equals("backward")) {
-					newSplinterInput = new SplinterInput(throttle * -1);
+					newSplinterInput = new SplinterInput(utime, throttle * -1);
 				} else if (direction.equals("forward")) {
-					newSplinterInput = new SplinterInput(throttle);
+					newSplinterInput = new SplinterInput(utime, throttle);
 				} else if (direction.equals("stop")) {
-					newSplinterInput = new SplinterInput(0);
+					newSplinterInput = new SplinterInput(utime, 0);
 				} else {
 					logger.warn("Unknown direction on move command: " + commandwme.GetParameterValue("direction"));
 					commandwme.AddStatusError();
@@ -176,12 +188,13 @@ public class OutputLinkManager implements LCMSubscriber {
 
 				logger.debug(String.format("rotate: %10s %10.3f", direction, throttle));
 
+				long utime = getUtimeParameter(commandwme);
 				if (direction.equals("left")) {
-					newSplinterInput = new SplinterInput(SplinterInput.Direction.left, throttle);
+					newSplinterInput = new SplinterInput(utime, SplinterInput.Direction.left, throttle);
 				} else if (direction.equals("right")) {
-					newSplinterInput = new SplinterInput(SplinterInput.Direction.right, throttle);
+					newSplinterInput = new SplinterInput(utime, SplinterInput.Direction.right, throttle);
 				} else if (direction.equals("stop")) {
-					newSplinterInput = new SplinterInput(0);
+					newSplinterInput = new SplinterInput(utime, 0);
 				} else {
 					logger.warn("Unknown direction on rotate command: " + commandwme.GetParameterValue("direction"));
 					commandwme.AddStatusError();
@@ -247,7 +260,8 @@ public class OutputLinkManager implements LCMSubscriber {
 
 				logger.debug(String.format("rotate-to: %10.3f %10.3f %10.3f", yaw, tolerance, throttle));
 
-				newSplinterInput = new SplinterInput(yaw, tolerance, throttle);
+				long utime = getUtimeParameter(commandwme);
+				newSplinterInput = new SplinterInput(utime, yaw, tolerance, throttle);
 
 				commandwme.AddStatusComplete();
 				continue;
@@ -260,7 +274,8 @@ public class OutputLinkManager implements LCMSubscriber {
 
 				logger.debug("stop:");
 
-				newSplinterInput = new SplinterInput(0);
+				long utime = getUtimeParameter(commandwme);
+				newSplinterInput = new SplinterInput(utime, 0);
 
 				commandwme.AddStatusComplete();
 				continue;
