@@ -37,8 +37,10 @@ public class OutputLinkManager implements LCMSubscriber {
 	
 	public void getDC(differential_drive_command_t dc, double currentYawRadians) {
 		if (command == null) {
-			dc.left_enabled = false;
-			dc.right_enabled = false;
+			dc.left_enabled = true;
+			dc.right_enabled = true;
+			dc.left = 0;
+			dc.right = 0;
 		} else {
 			command.getDC(dc, currentYawRadians);
 		}
@@ -361,9 +363,10 @@ public class OutputLinkManager implements LCMSubscriber {
 			commandwme.AddStatusError();
 		}
 
-		if (newSplinterInput != null) {
-			command = newSplinterInput;
-		}
+		// Soar is required to issue commands every DC.
+		// If newSplinterInput is null, no command is issued this DC, 
+		// this will cause a stop to be issued.
+		command = newSplinterInput;
 	}
 
 	@Override
