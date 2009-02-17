@@ -192,7 +192,7 @@ public class Splinter extends TimerTask implements LCMSubscriber {
 		
 		failsafeSpew = false;		
 		if (logger.isTraceEnabled()) {
-			logger.trace(String.format("Got input %1.2f %1.2f, delay %1.6f sec", dcNew.left, dcNew.right, dcDelay / 1000000));
+			logger.trace(String.format("Got input %1.2f %1.2f, delay %1.6f sec", dcNew.left, dcNew.right, dcDelay / 1000000.0));
 		}
 		
 		if (dcNew.left_enabled) {
