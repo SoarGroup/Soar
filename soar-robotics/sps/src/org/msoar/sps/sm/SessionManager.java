@@ -25,10 +25,6 @@ public class SessionManager implements Runnable {
 	private Config config;
 	
 	SessionManager(Config config) {
-		String test = "test\n";
-		test = test.trim();
-		System.out.print("test: '" + test + "'");
-		
 		if (config == null) {
 			throw new NullPointerException();
 		}
