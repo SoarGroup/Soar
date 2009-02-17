@@ -366,6 +366,9 @@ public class OutputLinkManager implements LCMSubscriber {
 		// Soar is required to issue commands every DC.
 		// If newSplinterInput is null, no command is issued this DC, 
 		// this will cause a stop to be issued.
+		if (newSplinterInput == null) {
+			logger.warn("Commanding stop: Soar must issue a command every decision cycle and didn't.");
+		}
 		command = newSplinterInput;
 	}
 
