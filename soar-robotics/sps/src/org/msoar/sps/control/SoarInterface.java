@@ -1,6 +1,10 @@
 package org.msoar.sps.control;
 
+import java.io.DataInputStream;
+import java.io.IOException;
+
 import org.apache.log4j.Logger;
+import org.msoar.sps.Names;
 import org.msoar.sps.control.io.InputLinkManager;
 import org.msoar.sps.control.io.OutputLinkManager;
 
@@ -9,9 +13,13 @@ import sml.Kernel;
 import sml.smlSystemEventId;
 import sml.smlUpdateEventId;
 
+import lcm.lcm.LCM;
+import lcm.lcm.LCMSubscriber;
 import lcmtypes.differential_drive_command_t;
+import lcmtypes.laser_t;
+import lcmtypes.pose_t;
 
-public class SoarInterface implements Kernel.UpdateEventInterface, Kernel.SystemEventInterface {
+public class SoarInterface implements Kernel.UpdateEventInterface, Kernel.SystemEventInterface, LCMSubscriber {
 	private static Logger logger = Logger.getLogger(SoarInterface.class);
 
 	private Kernel kernel;
@@ -20,6 +28,10 @@ public class SoarInterface implements Kernel.UpdateEventInterface, Kernel.System
 	private OutputLinkManager output;
 	private boolean stopSoar = false;
 	private boolean running = false;
+	private pose_t pose;
+	private laser_t laser;
+	private static long DCDELAY_THRESHOLD_USEC = 250000L; // 250 ms
+	private boolean failsafeSpew = false;
 	
 	SoarInterface(String productions, int rangesCount) {
 		kernel = Kernel.CreateKernelInNewThread();
@@ -44,6 +56,10 @@ public class SoarInterface implements Kernel.UpdateEventInterface, Kernel.System
 			agent.ExecuteCommandLine("waitsnc -e");
 		}
 		
+		LCM lcm = LCM.getSingleton();
+		lcm.subscribe(Names.POSE_CHANNEL, this);
+		lcm.subscribe(Names.LASER_CHANNEL, this);
+		
 		input = new InputLinkManager(agent, rangesCount);
 		output = new OutputLinkManager(agent, input.getWaypointsIL());
 		
@@ -52,16 +68,31 @@ public class SoarInterface implements Kernel.UpdateEventInterface, Kernel.System
 		kernel.RegisterForSystemEvent(smlSystemEventId.smlEVENT_SYSTEM_STOP, this, null);
 	}
 	
+	private void failSafe(differential_drive_command_t dc) {
+		dc.left_enabled = true;
+		dc.right_enabled = true;
+		dc.left = 0;
+		dc.right = 0;
+		dc.utime = getCurrentUtime();
+	}
 	void getDC(differential_drive_command_t dc) {
-		if (!running || !output.getDC(dc, input.getYawRadians())) {
-			// not running or don't have output this cycle, fail-safe stop
-			dc.utime = input.getPoseUtime();
-			dc.left_enabled = true;
-			dc.right_enabled = true;
-			dc.left = 0;
-			dc.right = 0;
+		if (!output.getDC(dc, input.getYawRadians())) {
+			failSafe(dc);
 			return;
 		}
+
+		// is it timely
+		long dcDelay = getCurrentUtime() - dc.utime;
+		if (dcDelay > DCDELAY_THRESHOLD_USEC) {
+			// not timely, fail-safe
+			if (failsafeSpew == false) {
+				logger.error("Obsolete drive command " + dcDelay + " usec");
+				failsafeSpew = true;
+			}
+			failSafe(dc);
+			return;
+		}
+		failsafeSpew = false;
 	}
 
 	private class SoarRunner implements Runnable {
@@ -91,10 +122,15 @@ public class SoarInterface implements Kernel.UpdateEventInterface, Kernel.System
 			kernel.StopAllAgents();
 		}
 
-		input.update();
-		output.update();
+		input.update(pose, laser);
+		
+		output.update(pose, getCurrentUtime());
 		
 		agent.Commit();
+	}
+	
+	long getCurrentUtime() {
+		return System.nanoTime() / 1000L;
 	}
 
 	public void shutdown() {
@@ -120,7 +156,21 @@ public class SoarInterface implements Kernel.UpdateEventInterface, Kernel.System
 		}
 	}
 
-	public long getPoseUtime() {
-		return input.getPoseUtime();
+	@Override
+	public void messageReceived(LCM lcm, String channel, DataInputStream ins) {
+		if (channel.equals(Names.POSE_CHANNEL)) {
+			try {
+				pose = new pose_t(ins);
+			} catch (IOException e) {
+				logger.error("Error decoding pose_t message: " + e.getMessage());
+			}
+		} else if (channel.equals(Names.LASER_CHANNEL)) {
+			try {
+				laser = new laser_t(ins);
+			} catch (IOException e) {
+				logger.error("Error decoding laser_t message: " + e.getMessage());
+			}
+		}
 	}
+
 }

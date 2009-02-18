@@ -11,7 +11,7 @@ sp {apply*initialize-simple-robot*parameters
         ^message-update-time 3 			# after how many seconds (as reported on the input-link) the agent should send another positition update of an unfriendly entity)
         ^rotation-tolerance 15 			# how many degrees the agent's yaw can be off when it has a desired yaw
         ^range-tolerance 1.			# distance at which a range arc is considered blocked
-        ^throttle 0.5 					# throttle at which to move
+        ^throttle 0.3 					# throttle at which to move
    )
 }
 

@@ -35,16 +35,14 @@ class SplinterInput {
 		left, right
 	};
 
-	public SplinterInput(long utime, double throttle) {
-		this.utime = utime;
+	public SplinterInput(double throttle) {
 		Arrays.fill(this.throttle, throttle);
 		if (logger.isDebugEnabled()) {
 			logger.debug("SplinterInput: " + this);
 		}
 	}
 
-	public SplinterInput(long utime, Direction dir, double throttle) {
-		this.utime = utime;
+	public SplinterInput(Direction dir, double throttle) {
 		this.throttle[0] = throttle * (dir == Direction.left ? -1 : 1);
 		this.throttle[1] = throttle * (dir == Direction.right ? -1 : 1);
 		if (logger.isDebugEnabled()) {
@@ -52,16 +50,14 @@ class SplinterInput {
 		}
 	}
 
-	public SplinterInput(long utime, double[] throttle) {
-		this.utime = utime;
+	public SplinterInput(double[] throttle) {
 		System.arraycopy(throttle, 0, this.throttle, 0, throttle.length);
 		if (logger.isDebugEnabled()) {
 			logger.debug("SplinterInput: " + this);
 		}
 	}
 
-	public SplinterInput(long utime, double yaw, double tolerance, double throttle) {
-		this.utime = utime;
+	public SplinterInput(double yaw, double tolerance, double throttle) {
 		this.targetYaw = yaw;
 		this.targetYawTolerance = tolerance;
 		this.targetYawEnabled = true;
@@ -69,14 +65,6 @@ class SplinterInput {
 		if (logger.isDebugEnabled()) {
 			logger.debug("SplinterInput: " + this);
 		}
-	}
-
-	public SplinterInput(SplinterInput other) {
-		System.arraycopy(other.throttle, 0, this.throttle, 0, other.throttle.length);
-		this.utime = other.utime;
-		this.targetYaw = other.targetYaw;
-		this.targetYawTolerance = other.targetYaw;
-		this.targetYawEnabled = other.targetYawEnabled;
 	}
 
 	public void getDC(differential_drive_command_t dc, double currentYawRadians) {
@@ -115,5 +103,9 @@ class SplinterInput {
 		if (logger.isDebugEnabled()) {
 			logger.debug(String.format("[%b:%f,%b:%f]",dc.left_enabled,dc.left,dc.right_enabled,dc.right));
 		}
+	}
+
+	public void setUtime(long utime) {
+		this.utime = utime;		
 	}
 }

@@ -2,8 +2,7 @@ sp {go-to-waypoint*propose*rotate-to
    (state <s> ^name go-to-waypoint
              -^superoperator.move-now true
               ^parameters.rotation-tolerance <rt>
-              ^waypoint <w>
-              ^io.input-link.time.microseconds <microsecs>)
+              ^waypoint <w>)
   -(<w> ^abs-relative-bearing <= <rt>) #using negation to prevent rematching as bearing changes
 -->
    (<s> ^operator <op> +)
@@ -15,8 +14,7 @@ sp {apply*rotate-to
    (state <s> ^operator <op>
               ^waypoint.yaw <yaw>
               ^io.output-link <ol>
-              ^parameters <p>
-              ^io.input-link.self.pose.utime <utime>)
+              ^parameters <p>)
    (<p> ^rotation-tolerance <rt>
         ^throttle <thr>)
    (<op> ^name rotate-to)
@@ -24,8 +22,7 @@ sp {apply*rotate-to
    (<ol> ^rotate-to <r>)
    (<r> ^yaw <yaw>
         ^throttle <thr>
-         ^tolerance <rt>
-         ^utime <utime>)
+         ^tolerance <rt>)
    (write (crlf) |Rotating to | <yaw>)
    (exec player-print |Rotating to | <yaw>)
 }

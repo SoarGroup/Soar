@@ -93,7 +93,6 @@
 
 0 velocity in ticks over time (time unit?) (may not go negative)
 
-0 
 0 global x coordinate
 
 0 global y coordinate
@@ -133,16 +132,12 @@
 0 
 0 
 0 
-0 
 0 percentage effort
 
 0 
 0 
-0 
 0 percentage effort
 
-0 
-0 
 0 
 0 agent-assigned identifier
 
@@ -165,7 +160,6 @@
 
 0 acceptable error in final heading
 
-0 
 0 desired final yaw
 
 0 

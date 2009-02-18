@@ -27,7 +27,6 @@ public class Splinter extends TimerTask implements LCMSubscriber {
 	private static int RIGHT = 1;
 	private static long DELAY_BEFORE_WARN_NO_FIRST_INPUT_MILLIS = 5000;
 	private static long DELAY_BEFORE_WARN_NO_INPUT_MILLIS = 1000;
-	private static long DCDELAY_THRESHOLD_USEC = 1000000L; // one second
 	
 	//green
 	//public static final double DEFAULT_BASELINE = 0.383;
@@ -51,15 +50,14 @@ public class Splinter extends TimerTask implements LCMSubscriber {
 	private double maxThrottleChangePerUpdate;
 	private long lastSeenDCTime = 0;
 	private long lastUtime = 0;
-	private boolean failsafeSpew = false;
 	private OdometryLogger capture;
-	
+	private boolean failsafeSpew = false;
+
 	// for odometry update
 	private Odometry odometry;
 	private odom_t oldOdom = new odom_t();
 	private pose_t pose = new pose_t();
 	private odom_t newOdom = new odom_t();
-	private long currentUtime;
 	
 	Splinter(Config config) {
 		tickMeters = config.getDouble("tickMeters", DEFAULT_TICKMETERS);
@@ -80,7 +78,6 @@ public class Splinter extends TimerTask implements LCMSubscriber {
 		motor[RIGHT] = new Motor(orc, ports[RIGHT], invert[RIGHT]);
 		
 		OrcStatus currentStatus = orc.getStatus();
-		currentUtime = currentStatus.utime;
 		getOdometry(oldOdom, currentStatus);
 		
 		if (config.getBoolean("captureOdometry", false)) {
@@ -111,7 +108,6 @@ public class Splinter extends TimerTask implements LCMSubscriber {
 	public void run() {
 		// Get OrcStatus
 		OrcStatus currentStatus = orc.getStatus();
-		currentUtime  = currentStatus.utime;
 		
 		boolean moving = (currentStatus.qeiVelocity[0] != 0) || (currentStatus.qeiVelocity[1] != 0);
 		
@@ -158,18 +154,6 @@ public class Splinter extends TimerTask implements LCMSubscriber {
 
 		differential_drive_command_t dcNew = dc.copy();
 
-		// is it timely
-		long dcDelay = currentUtime - dcNew.utime;
-		if (dcDelay > DCDELAY_THRESHOLD_USEC) {
-			// not timely, fail-safe
-			if (failsafeSpew == false) {
-				logger.error("Obsolete drive command " + dcDelay + " usec");
-				failsafeSpew = true;
-			}
-			commandFailSafe();
-			return;
-		}
-		
 		// is it a new command? 
 		if (lastUtime != dcNew.utime) {
 			// it is, save state
@@ -192,7 +176,7 @@ public class Splinter extends TimerTask implements LCMSubscriber {
 		
 		failsafeSpew = false;		
 		if (logger.isTraceEnabled()) {
-			logger.trace(String.format("Got input %1.2f %1.2f, delay %1.6f sec", dcNew.left, dcNew.right, dcDelay / 1000000.0));
+			logger.trace(String.format("Got input %1.2f %1.2f", dcNew.left, dcNew.right));
 		}
 		
 		if (dcNew.left_enabled) {

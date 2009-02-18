@@ -163,7 +163,7 @@ public class Controller extends TimerTask implements LCMSubscriber {
 	}
 	
 	private void getDC(differential_drive_command_t dc) {
-		dc.utime = soar.getPoseUtime();
+		dc.utime = soar.getCurrentUtime();
 		dc.left_enabled = true;
 		dc.right_enabled = true;
 		
@@ -191,6 +191,9 @@ public class Controller extends TimerTask implements LCMSubscriber {
 			logger.debug("slow mode halving throttle");
 			dc.left /= 2;
 			dc.right /= 2;
+		}
+		if (logger.isTraceEnabled()) {
+			logger.trace("transmit: " + dc.left + "," + dc.right);
 		}
 		lcm.publish(Names.DRIVE_CHANNEL, dc);
 	}

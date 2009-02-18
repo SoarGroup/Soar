@@ -1,16 +1,11 @@
 package org.msoar.sps.control.io;
 
-import java.io.DataInputStream;
-import java.io.IOException;
 import java.util.Arrays;
 
-import lcm.lcm.LCM;
-import lcm.lcm.LCMSubscriber;
 import lcmtypes.differential_drive_command_t;
 import lcmtypes.pose_t;
 
 import org.apache.log4j.Logger;
-import org.msoar.sps.Names;
 
 import sml.Agent;
 import sml.Identifier;
@@ -19,20 +14,16 @@ import sml.Identifier;
  * @author voigtjr
  * Soar output-link management. Creates input for splinter and other parts of the system.
  */
-public class OutputLinkManager implements LCMSubscriber {
+public class OutputLinkManager {
 	private static Logger logger = Logger.getLogger(OutputLinkManager.class);
 
 	private Agent agent;
-	private pose_t pose;
 	private SplinterInput command = null;
 	private WaypointsIL waypoints;
 
 	public OutputLinkManager(Agent agent, WaypointsIL waypoints) {
 		this.agent = agent;
 		this.waypoints = waypoints;
-		
-		LCM lcm = LCM.getSingleton();
-		lcm.subscribe(Names.POSE_CHANNEL, this);
 	}
 	
 	public boolean getDC(differential_drive_command_t dc, double currentYawRadians) {
@@ -43,20 +34,7 @@ public class OutputLinkManager implements LCMSubscriber {
 		return true;
 	}
 	
-	private long getUtimeParameter(Identifier commandwme) {
-		try {
-			return Long.parseLong(commandwme.GetParameterValue("utime"));
-		} catch (NullPointerException ex) {
-			logger.warn("No utime on " + commandwme.GetCommandName() + " command");
-			commandwme.AddStatusError();
-		} catch (NumberFormatException e) {
-			logger.warn("Unable to parse utime: " + commandwme.GetParameterValue("utime"));
-			commandwme.AddStatusError();
-		}
-		return 0;
-	}
-	
-	public void update() {
+	public void update(pose_t pose, long lastUpdate) {
 		SplinterInput newSplinterInput = null;
 
 		// process output
@@ -104,8 +82,7 @@ public class OutputLinkManager implements LCMSubscriber {
 
 				logger.debug(String.format("motor: %10.3f %10.3f", motorThrottle[0], motorThrottle[1]));
 
-				long utime = getUtimeParameter(commandwme);
-				newSplinterInput = new SplinterInput(utime, motorThrottle);
+				newSplinterInput = new SplinterInput(motorThrottle);
 
 				commandwme.AddStatusComplete();
 				continue;
@@ -141,13 +118,12 @@ public class OutputLinkManager implements LCMSubscriber {
 
 				logger.debug(String.format("move: %10s %10.3f", direction, throttle));
 
-				long utime = getUtimeParameter(commandwme);
 				if (direction.equals("backward")) {
-					newSplinterInput = new SplinterInput(utime, throttle * -1);
+					newSplinterInput = new SplinterInput(throttle * -1);
 				} else if (direction.equals("forward")) {
-					newSplinterInput = new SplinterInput(utime, throttle);
+					newSplinterInput = new SplinterInput(throttle);
 				} else if (direction.equals("stop")) {
-					newSplinterInput = new SplinterInput(utime, 0);
+					newSplinterInput = new SplinterInput(0);
 				} else {
 					logger.warn("Unknown direction on move command: " + commandwme.GetParameterValue("direction"));
 					commandwme.AddStatusError();
@@ -188,13 +164,12 @@ public class OutputLinkManager implements LCMSubscriber {
 
 				logger.debug(String.format("rotate: %10s %10.3f", direction, throttle));
 
-				long utime = getUtimeParameter(commandwme);
 				if (direction.equals("left")) {
-					newSplinterInput = new SplinterInput(utime, SplinterInput.Direction.left, throttle);
+					newSplinterInput = new SplinterInput(SplinterInput.Direction.left, throttle);
 				} else if (direction.equals("right")) {
-					newSplinterInput = new SplinterInput(utime, SplinterInput.Direction.right, throttle);
+					newSplinterInput = new SplinterInput(SplinterInput.Direction.right, throttle);
 				} else if (direction.equals("stop")) {
-					newSplinterInput = new SplinterInput(utime, 0);
+					newSplinterInput = new SplinterInput(0);
 				} else {
 					logger.warn("Unknown direction on rotate command: " + commandwme.GetParameterValue("direction"));
 					commandwme.AddStatusError();
@@ -260,8 +235,7 @@ public class OutputLinkManager implements LCMSubscriber {
 
 				logger.debug(String.format("rotate-to: %10.3f %10.3f %10.3f", yaw, tolerance, throttle));
 
-				long utime = getUtimeParameter(commandwme);
-				newSplinterInput = new SplinterInput(utime, yaw, tolerance, throttle);
+				newSplinterInput = new SplinterInput(yaw, tolerance, throttle);
 
 				commandwme.AddStatusComplete();
 				continue;
@@ -274,8 +248,7 @@ public class OutputLinkManager implements LCMSubscriber {
 
 				logger.debug("stop:");
 
-				long utime = getUtimeParameter(commandwme);
-				newSplinterInput = new SplinterInput(utime, 0);
+				newSplinterInput = new SplinterInput(0);
 
 				commandwme.AddStatusComplete();
 				continue;
@@ -288,6 +261,12 @@ public class OutputLinkManager implements LCMSubscriber {
 					continue;
 				}
 
+				if (pose == null) {
+					logger.error("add-waypoint called with no current pose");
+					commandwme.AddStatusError();
+					continue;
+				}
+				
 				double[] pos = Arrays.copyOf(pose.pos, pose.pos.length);
 				try {
 					pos[0] = Double.parseDouble(commandwme.GetParameterValue("x"));
@@ -378,30 +357,12 @@ public class OutputLinkManager implements LCMSubscriber {
 			commandwme.AddStatusError();
 		}
 
-		// Soar is required to issue commands every DC.
-		// If newSplinterInput is null, no command is issued this DC, 
-		// this will cause a stop to be issued.
-		if (newSplinterInput == null) {
-			if (!warnedAlready) {
-				logger.warn("Commanding stop: Soar must issue a command every decision cycle and didn't.");
-				warnedAlready = true;
-			}
-		} else {
-			warnedAlready = false;
+		if (newSplinterInput != null) {
+			command = newSplinterInput;
 		}
-		command = newSplinterInput;
-	}
-
-	boolean warnedAlready = false;
-
-	@Override
-	public void messageReceived(LCM lcm, String channel, DataInputStream ins) {
-		if (channel.equals(Names.POSE_CHANNEL)) {
-			try {
-				pose = new pose_t(ins);
-			} catch (IOException e) {
-				logger.error("Error decoding pose_t message: " + e.getMessage());
-			}
+		if (command != null) {
+			command.setUtime(lastUpdate);
 		}
 	}
+
 }
