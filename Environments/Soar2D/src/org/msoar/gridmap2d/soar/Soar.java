@@ -20,6 +20,8 @@ import org.msoar.gridmap2d.players.Eater;
 import org.msoar.gridmap2d.players.EaterCommander;
 import org.msoar.gridmap2d.players.Tank;
 import org.msoar.gridmap2d.players.TankCommander;
+import org.msoar.gridmap2d.players.Taxi;
+import org.msoar.gridmap2d.players.TaxiCommander;
 
 import sml.Agent;
 import sml.ConnectionInfo;
@@ -441,5 +443,13 @@ public class Soar implements CognitiveArchitecture, Kernel.UpdateEventInterface,
   			logger.warn(Names.Warn.unknownEvent + eventID);
  		}
    }
+
+public TaxiCommander createTaxiCommander(Taxi taxi, String productions,
+		String[] shutdown_commands, File metadataFile, boolean debug)
+		throws Exception {
+	// TODO Auto-generated method stub
+	assert false;
+	return null;
+}
    
 }

@@ -85,13 +85,13 @@ public class SimConfig implements GameConfig {
 			gameConfig = new EatersConfig();
 			loadSubConfig(childConfig, EatersConfig.class.getFields(), gameConfig);
 			break;
+		case TAXI:
+			gameConfig = new TaxiConfig();
+			loadSubConfig(childConfig, TaxiConfig.class.getFields(), gameConfig);
+			break;
 //		case KITCHEN:
 //			gameConfig = new KitchenConfig();
 //			loadSubConfig(childConfig, KitchenConfig.class.getFields(), gameConfig);
-//			break;
-//		case TAXI:
-//			gameConfig = new TaxiConfig();
-//			loadSubConfig(childConfig, TaxiConfig.class.getFields(), gameConfig);
 //			break;
 //		case ROOM:
 //			gameConfig = new RoomConfig();
@@ -209,16 +209,16 @@ public class SimConfig implements GameConfig {
 		return (TankSoarConfig)gameConfig;
 	}
 	
+	public TaxiConfig taxiConfig() {
+		return (TaxiConfig)gameConfig;
+	}
+	
 //	public KitchenConfig kitchenConfig() {
 //		return (KitchenConfig)gameConfig;
 //	}
 //	
 //	public RoomConfig roomConfig() {
 //		return (RoomConfig)gameConfig;
-//	}
-//	
-//	public TaxiConfig taxiConfig() {
-//		return (TaxiConfig)gameConfig;
 //	}
 	
 	public Map<String, PlayerConfig> playerConfigs() {
