@@ -4,7 +4,7 @@ sp {go-to-location*propose*choose-waypoint
               ^waypoints.at.next <w>
              -^top-state.go-to-location) # not already going to a location
 -->
-   (interrupt)
+#   (interrupt)
    (<s> ^operator <op> +)
    (<op> ^name choose-waypoint
          ^destination <w>)
