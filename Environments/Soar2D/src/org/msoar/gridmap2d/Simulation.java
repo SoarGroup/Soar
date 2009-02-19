@@ -9,11 +9,13 @@ import java.util.Map.Entry;
 import org.apache.log4j.Logger;
 import org.msoar.gridmap2d.config.PlayerConfig;
 import org.msoar.gridmap2d.config.SimConfig;
+import org.msoar.gridmap2d.config.TaxiConfig;
 import org.msoar.gridmap2d.map.Cell;
 import org.msoar.gridmap2d.players.Player;
 import org.msoar.gridmap2d.soar.Soar;
 import org.msoar.gridmap2d.world.EatersWorld;
 import org.msoar.gridmap2d.world.TankSoarWorld;
+import org.msoar.gridmap2d.world.TaxiWorld;
 import org.msoar.gridmap2d.world.World;
 
 
@@ -75,9 +77,10 @@ public class Simulation {
 //		case KITCHEN:
 //			world = new KitchenWorld(config.generalConfig().map);
 //			break;
-//		case TAXI:
-//			world = new TaxiWorld(config.generalConfig().map);
-//			break;
+		case TAXI:
+			TaxiConfig tc = Gridmap2D.config.taxiConfig();
+			world = new TaxiWorld(cogArch, tc.fuel_starting_minimum, tc.fuel_starting_maximum, tc.fuel_maximum, tc.disable_fuel);
+			break;
 //		case ROOM:
 //			world = new BookWorld(config.generalConfig().map);
 //			break;

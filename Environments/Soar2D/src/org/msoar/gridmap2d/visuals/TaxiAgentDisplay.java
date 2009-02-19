@@ -1,4 +1,4 @@
-package broken.soar2d.visuals;
+package org.msoar.gridmap2d.visuals;
 
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionAdapter;
@@ -14,11 +14,12 @@ import org.eclipse.swt.widgets.ProgressBar;
 import org.eclipse.swt.widgets.Table;
 import org.eclipse.swt.widgets.TableColumn;
 import org.eclipse.swt.widgets.TableItem;
-
-import soar2d.Soar2D;
-import soar2d.map.TaxiMap;
-import soar2d.players.Player;
-import soar2d.world.PlayersManager;
+import org.msoar.gridmap2d.CognitiveArchitecture;
+import org.msoar.gridmap2d.Gridmap2D;
+import org.msoar.gridmap2d.map.TaxiMap;
+import org.msoar.gridmap2d.players.Player;
+import org.msoar.gridmap2d.players.Taxi;
+import org.msoar.gridmap2d.world.World;
 
 public class TaxiAgentDisplay extends AgentDisplay {
 	
@@ -31,7 +32,7 @@ public class TaxiAgentDisplay extends AgentDisplay {
 	Table m_AgentTable;
 	Player selectedPlayer;
 	TableItem[] m_Items = new TableItem[0];
-	PlayersManager players;
+	Player[] players;
 	Composite m_AgentButtons;
 	Button m_NewAgentButton;
 	Button m_DestroyAgentButton;
@@ -39,13 +40,15 @@ public class TaxiAgentDisplay extends AgentDisplay {
 	Label location;
 	Label destination;
 	ProgressBar fuel;
+	World world;
 
-	public TaxiAgentDisplay(final Composite parent) {
+	public TaxiAgentDisplay(final Composite parent, World world, final CognitiveArchitecture cogArch) {
 		super(parent);
 
 		setLayout(new FillLayout());
 		
-		players = Soar2D.simulation.world.getPlayers();
+		players = world.getPlayers();
+		this.world = world;
 		
 		m_Group = new Group(this, SWT.NONE);
 		m_Group.setText("Agents");
@@ -69,7 +72,7 @@ public class TaxiAgentDisplay extends AgentDisplay {
 		m_NewAgentButton.setText("New");
 		m_NewAgentButton.addSelectionListener(new SelectionAdapter() {
 			public void widgetSelected(SelectionEvent e) {
-				new CreateAgentDialog(parent.getShell()).open();
+				new CreateAgentDialog(parent.getShell(), cogArch).open();
 			}
 		});
 		
@@ -80,7 +83,10 @@ public class TaxiAgentDisplay extends AgentDisplay {
 				if (selectedPlayer == null) {
 					return;
 				}
-				Soar2D.simulation.destroyPlayer(selectedPlayer);
+				try {
+					Gridmap2D.simulation.destroyPlayer(selectedPlayer);
+				} catch (Exception ignored) {
+				}
 			}
 		});
 				
@@ -91,7 +97,7 @@ public class TaxiAgentDisplay extends AgentDisplay {
 				if (selectedPlayer == null) {
 					return;
 				}
-				Soar2D.simulation.reloadPlayer(selectedPlayer);
+				Gridmap2D.simulation.reloadPlayer(selectedPlayer);
 			}
 		});
 				
@@ -111,7 +117,7 @@ public class TaxiAgentDisplay extends AgentDisplay {
 		m_AgentTable.setHeaderVisible(true);
 		m_AgentTable.addSelectionListener(new SelectionAdapter() {
 			public void widgetSelected(SelectionEvent e) {
-				selectPlayer(players.get(m_AgentTable.getSelectionIndex()));
+				selectPlayer(players[m_AgentTable.getSelectionIndex()]);
 				updateButtons();
 			}
 		});
@@ -146,7 +152,7 @@ public class TaxiAgentDisplay extends AgentDisplay {
 		}
 		
 		destination = new Label(worldGroup, SWT.NONE);
-		TaxiMap xMap = (TaxiMap)Soar2D.simulation.world.getMap();
+		TaxiMap xMap = (TaxiMap)world.getMap();
 		if (xMap.getPassengerDestination() != null) {
 			destination.setText(xMap.getPassengerDestination());
 		} else {
@@ -180,9 +186,15 @@ public class TaxiAgentDisplay extends AgentDisplay {
 	
 	void selectPlayer(Player player) {
 		selectedPlayer = player;
-		m_AgentTable.setSelection(players.indexOf(player));
-		int [] playerLocation = players.getLocation(selectedPlayer);
-		int newY = Soar2D.simulation.world.getMap().getSize() - 1 - playerLocation[1];
+		int index;
+		for(index = 0; index < players.length; ++index) {
+			if (players[index].equals(selectedPlayer)) {
+				break;
+			}
+		}
+		m_AgentTable.setSelection(index);
+		int [] playerLocation = selectedPlayer.getLocation();
+		int newY = world.getMap().size() - 1 - playerLocation[1];
 		location.setText("(" + playerLocation[0] + "," + newY + ")");
 		updateButtons();
 	}
@@ -193,18 +205,19 @@ public class TaxiAgentDisplay extends AgentDisplay {
 	}
 
 	void worldChangeEvent() {
-		TaxiMap xMap = (TaxiMap)Soar2D.simulation.world.getMap();
+		TaxiMap xMap = (TaxiMap)world.getMap();
 		if (selectedPlayer != null) {
-			int [] playerLocation = players.getLocation(selectedPlayer);
-			int newY = Soar2D.simulation.world.getMap().getSize() - 1 - playerLocation[1];
+			int [] playerLocation = selectedPlayer.getLocation();
+			int newY = world.getMap().size() - 1 - playerLocation[1];
 			location.setText("(" + playerLocation[0] + "," + newY + ")");
-			fuel.setSelection(xMap.getFuel());
-			fuel.setToolTipText(Integer.toString(xMap.getFuel()));
+			Taxi taxi = (Taxi)selectedPlayer;
+			fuel.setSelection(taxi.getFuel());
+			fuel.setToolTipText(Integer.toString(taxi.getFuel()));
 		}
 		
 		for (int i = 0; i < m_Items.length; ++i) {
-			if (players.get(i).pointsChanged()) {
-				m_Items[i].setText(1, Integer.toString(players.get(i).getPointsDelta()));
+			if (players[i].pointsChanged()) {
+				m_Items[i].setText(1, Integer.toString(players[i].getPointsDelta()));
 			} else {
 				m_Items[i].setText(1, "0");
 			}
@@ -218,19 +231,19 @@ public class TaxiAgentDisplay extends AgentDisplay {
 	}
 	
 	void updateTaxiList() {
-		players = Soar2D.simulation.world.getPlayers();
+		players = world.getPlayers();
 		m_AgentTable.removeAll();
 		boolean foundSelected = false;
 		
-		m_Items = new TableItem[players.numberOfPlayers()];
-		for (int i = 0; i < players.numberOfPlayers(); ++i) {
+		m_Items = new TableItem[players.length];
+		for (int i = 0; i < players.length; ++i) {
 			m_Items[i] = new TableItem(m_AgentTable, SWT.NONE);
-			if (players.get(i).pointsChanged()) {
-				m_Items[i].setText(new String[] {players.get(i).getName(), Integer.toString(players.get(i).getPointsDelta())});
+			if (players[i].pointsChanged()) {
+				m_Items[i].setText(new String[] {players[i].getName(), Integer.toString(players[i].getPointsDelta())});
 			} else {
-				m_Items[i].setText(new String[] {players.get(i).getName(), "0" });
+				m_Items[i].setText(new String[] {players[i].getName(), "0" });
 			}
-			if (selectedPlayer == players.get(i)) {
+			if (selectedPlayer == players[i]) {
 				foundSelected = true;
 				m_AgentTable.setSelection(i);
 			}
@@ -242,15 +255,15 @@ public class TaxiAgentDisplay extends AgentDisplay {
 			location.setText("-");
 		}
 		
-		if (players.numberOfPlayers() > 0) {
-			selectPlayer(players.get(0));
+		if (players.length > 0) {
+			selectPlayer(players[0]);
 		}
 	}
 	
 	void updateButtons() {
-		boolean running = Soar2D.control.isRunning();
-		boolean slotsAvailable = Soar2D.simulation.getUnusedColors().size() > 6;
-		boolean hasPlayers = players.numberOfPlayers() > 0;
+		boolean running = Gridmap2D.control.isRunning();
+		boolean slotsAvailable = Gridmap2D.simulation.getUnusedColors().size() > 6;
+		boolean hasPlayers = players.length > 0;
 		boolean selectedCook = (selectedPlayer != null);
 		
 		m_NewAgentButton.setEnabled(!running && slotsAvailable);

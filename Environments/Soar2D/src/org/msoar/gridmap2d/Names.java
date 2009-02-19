@@ -14,7 +14,7 @@ public class Names {
 //		public static final String roomCnf = "room.cnf";
 //		public static final String roomDiscreteCnf = "room-discrete.cnf";
 //		public static final String kitchenCnf = "kitchen.cnf";
-//		public static final String taxiCnf = "taxi.cnf";
+		public static final String taxiCnf = "taxi.cnf";
 	}
 	
 	public class Errors {
