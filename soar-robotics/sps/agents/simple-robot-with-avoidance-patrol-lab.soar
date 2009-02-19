@@ -5,13 +5,13 @@ sp {apply*initialize-simple-robot*parameters
    (<op> ^name initialize-simple-robot)
 -->
    (<s> ^parameters <p>)
-   (<p> ^waypoint-tolerance 0.3 		# how close (in meters) the agent needs to be to a waypoint to be considered "at" it
-        ^min-progress-distance 0.1 		# how much progress the agent has to make when trying to get to a location for it to be considered progress (i.e., to reset cutoff time)
-        ^replan-time 2000 				# how many seconds (as reported on the input-link) the agent should let the collision avoidance algorithm try to make progress towards the waypoint before replanning
-        ^message-update-time 3 			# after how many seconds (as reported on the input-link) the agent should send another positition update of an unfriendly entity)
-        ^rotation-tolerance 15 			# how many degrees the agent's yaw can be off when it has a desired yaw
-        ^range-tolerance 1.			# distance at which a range arc is considered blocked
-        ^throttle 0.3 					# throttle at which to move
+   (<p> ^waypoint-tolerance 0.3     # how close (in meters) the agent needs to be to a waypoint to be considered "at" it
+        ^min-progress-distance 0.1     # how much progress the agent has to make when trying to get to a location for it to be considered progress (i.e., to reset cutoff time)
+        ^replan-time 2000         # how many seconds (as reported on the input-link) the agent should let the collision avoidance algorithm try to make progress towards the waypoint before replanning
+        ^message-update-time 3       # after how many seconds (as reported on the input-link) the agent should send another positition update of an unfriendly entity)
+        ^rotation-tolerance 15       # how many degrees the agent's yaw can be off when it has a desired yaw
+        ^range-tolerance 1.      # distance at which a range arc is considered blocked
+        ^throttle 0.2           # throttle at which to move
    )
 }
 
@@ -22,10 +22,10 @@ sp {apply*waypoints
    (<s> ^waypoints <w>)
    (<w> ^waypoint <w1> <w2> <w3> <w4> <w5>)
    (<w1> ^x 0. ^y 0. ^id one ^next <w2>)
-   (<w2> ^x 0.03 ^y 5.48 ^id two ^next <w3>)
-   (<w3> ^x -4.19 ^y 5.40 ^id three ^next <w4>)
-   (<w4> ^x -0.35 ^y 7.58 ^id four ^next <w5>)
-   (<w5> ^x -2.72 ^y 8.11 ^id five ^next <w2>)
+   (<w2> ^x 0.03 ^y 5.48 ^id two ^next <w3> ^next <w4> ^next <w1>)
+   (<w3> ^x -4.19 ^y 5.40 ^id three ^next <w2> ^next <w5>)
+   (<w4> ^x -0.35 ^y 7.58 ^id four ^next <w5> ^next <w2>)
+   (<w5> ^x -2.72 ^y 8.11 ^id five ^next <w4> ^next <w3>)
 }
 
 sp {apply*initialize-simple-robot*create-mission
@@ -36,19 +36,13 @@ sp {apply*initialize-simple-robot*create-mission
    (<m> ^first <s1>)
    (<s1> ^name localize
          ^id one
-		 ^next <s2>)
+         ^next <s2>)
    (<s2> ^name go-to-location
          ^id two
          ^next <s3>)
    (<s3> ^name go-to-location
          ^id three
-		 ^next <s4>)
-   (<s4> ^name go-to-location
-         ^id five
-		 ^next <s5>)
-   (<s5> ^name go-to-location
-         ^id four
-		 ^next <s2>)
+         ^next nil)
 }
 
 sp {mission-complete*stop

@@ -4,6 +4,7 @@ sp {go-to-location*propose*choose-waypoint
               ^waypoints.at.next <w>
              -^top-state.go-to-location) # not already going to a location
 -->
+   (interrupt)
    (<s> ^operator <op> +)
    (<op> ^name choose-waypoint
          ^destination <w>)
@@ -31,4 +32,15 @@ sp {apply*choose-waypoint
          ^remove-waypoint <rw>)
    (<aw> ^id <ida> ^x <x> ^y <y>)
    (<rw> ^id <idr>)
+}
+
+sp {select*choose-waypoint
+   (state <s> ^operator <op> +
+              ^top-state.mission.current <mission>)
+   (<mission> ^id <waypoint>
+              ^name go-to-location)
+   (<op> ^name choose-waypoint
+         ^destination.id <waypoint>)
+-->
+   (<s> ^operator <op> >)
 }

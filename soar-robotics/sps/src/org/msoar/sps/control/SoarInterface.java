@@ -92,7 +92,11 @@ public class SoarInterface implements Kernel.UpdateEventInterface, Kernel.System
 			failSafe(dc);
 			return;
 		}
-		failsafeSpew = false;
+		
+		if (failsafeSpew) {
+			logger.info("Receiving valid commands again, leaving fail-safe.");
+			failsafeSpew = false;
+		}
 	}
 
 	private class SoarRunner implements Runnable {
