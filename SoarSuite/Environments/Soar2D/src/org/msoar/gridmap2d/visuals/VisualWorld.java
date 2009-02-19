@@ -66,17 +66,11 @@ public abstract class VisualWorld extends Canvas implements PaintListener {
 			tanks[Direction.WEST.index()] = new Image(display, Gridmap2D.class.getResourceAsStream("/org/msoar/gridmap2d/images/tanksoar/tank_left.gif"));
 			break;
 			
+//		case KITCHEN:
+//		case ROOM:
+		case TAXI:
 		case EATERS:
 			break;
-			
-//		case ROOM:
-//			break;
-//			
-//		case KITCHEN:
-//			break;
-//			
-//		case TAXI:
-//			break;
 		}
 		
 		font = new Font(parent.getDisplay(), "Helvetica", 9, SWT.NONE);

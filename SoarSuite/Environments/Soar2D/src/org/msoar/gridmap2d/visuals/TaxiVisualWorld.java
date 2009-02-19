@@ -1,18 +1,17 @@
-package broken.soar2d.visuals;
+package org.msoar.gridmap2d.visuals;
 
-import java.util.ArrayList;
+import java.util.List;
 
 import org.eclipse.swt.events.PaintEvent;
 import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.GC;
 import org.eclipse.swt.widgets.Composite;
-
-import soar2d.Direction;
-import soar2d.Names;
-import soar2d.Soar2D;
-import soar2d.map.CellObject;
-import soar2d.map.TaxiMap;
-import soar2d.players.Player;
+import org.msoar.gridmap2d.Direction;
+import org.msoar.gridmap2d.Gridmap2D;
+import org.msoar.gridmap2d.map.CellObject;
+import org.msoar.gridmap2d.map.TaxiMap;
+import org.msoar.gridmap2d.players.Taxi;
+import org.msoar.gridmap2d.Names;
 
 public class TaxiVisualWorld extends VisualWorld {
 	public TaxiVisualWorld(Composite parent, int style, int cellSize) {
@@ -25,23 +24,17 @@ public class TaxiVisualWorld extends VisualWorld {
         gc.setForeground(WindowManager.black);
 		gc.setLineWidth(1);
 
-		if (Soar2D.control.isRunning()) {
-			if (Soar2D.config.generalConfig().hidemap) {
-				painted = true;
-				return;
-			}
-			
-		} else {
+		if (!Gridmap2D.control.isRunning()) {
 			if (lastX != e.x || lastY != e.y || internalRepaint) {
 				lastX = e.x;
 				lastY = e.y;
 				painted = false;
 			}
 
-			if (Soar2D.config.generalConfig().hidemap || disabled || !painted) {
+			if (disabled || !painted) {
 				gc.setBackground(WindowManager.widget_background);
 				gc.fillRectangle(0,0, this.getWidth(), this.getHeight());
-				if (disabled || Soar2D.config.generalConfig().hidemap) {
+				if (disabled) {
 					painted = true;
 					return;
 				}
@@ -51,9 +44,9 @@ public class TaxiVisualWorld extends VisualWorld {
 		// Draw world
 		int fill;
 		int [] location = new int [2];
-		for(location[0] = 0; location[0] < map.getSize(); ++location[0]){			
-			for(location[1] = 0; location[1] < map.getSize(); ++location[1]){				
-				if (!this.map.resetRedraw(location) && painted) {
+		for(location[0] = 0; location[0] < map.size(); ++location[0]){			
+			for(location[1] = 0; location[1] < map.size(); ++location[1]){				
+				if (!this.map.getCell(location).checkAndResetRedraw() && painted) {
 					//continue;
 				}
 
@@ -62,7 +55,7 @@ public class TaxiVisualWorld extends VisualWorld {
 				
 				// destination
 				List<CellObject> destinationList;
-				destinationList = this.map.getAllWithProperty(location, "destination");
+				destinationList = this.map.getCell(location).getAllWithProperty("destination");
 				if (destinationList != null) {
 					CellObject destination = destinationList.get(0);
 					Color color = WindowManager.getColor(destination.getProperty(Names.kPropertyColor));
@@ -70,7 +63,7 @@ public class TaxiVisualWorld extends VisualWorld {
 				    gc.fillRectangle(cellSize*location[0] + 1, cellSize*location[1] + 1, cellSize - 2, cellSize - 2);
 				}
 				
-				if (this.map.hasObject(location, "fuel")) {
+				if (this.map.getCell(location).hasObject("fuel")) {
 					int size = 14;
 					fill = cellSize/2 - size/2;
 
@@ -83,10 +76,10 @@ public class TaxiVisualWorld extends VisualWorld {
 					gc.setForeground(WindowManager.black);
 				}
 				
-				Player taxi = this.map.getPlayer(location);
+				Taxi taxi = (Taxi)this.map.getCell(location).getPlayer();
 				
 				if (taxi != null) {
-					// BUGBUG if multiple players are supported, this needs to be changed
+					// TODO: if multiple players are supported, this needs to be changed
 					gc.setBackground(WindowManager.getColor("white"));
 
 					int size = 12;
@@ -102,7 +95,7 @@ public class TaxiVisualWorld extends VisualWorld {
 					}
 				}
 				
-				if (this.map.hasObject(location, "passenger")) {
+				if (this.map.getCell(location).hasObject("passenger")) {
 
 					int size = 8;
 					fill = cellSize/2 - size/2;
@@ -113,7 +106,7 @@ public class TaxiVisualWorld extends VisualWorld {
 
 				// walls
 				List<CellObject> wallList;
-				wallList = this.map.getAllWithProperty(location, "block");
+				wallList = this.map.getCell(location).getAllWithProperty("block");
 				if (wallList != null) {
 					for (CellObject wall : wallList ) {
 						switch(Direction.parse(wall.getProperty("direction"))) {

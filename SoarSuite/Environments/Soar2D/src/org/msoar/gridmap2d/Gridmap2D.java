@@ -52,7 +52,7 @@ public class Gridmap2D {
 //		install(Names.configs.roomCnf);
 //		install(Names.configs.roomDiscreteCnf);
 //		install(Names.configs.kitchenCnf);
-//		install(Names.configs.taxiCnf);
+		install(Names.configs.taxiCnf);
 
 		loadConfig(args);
 

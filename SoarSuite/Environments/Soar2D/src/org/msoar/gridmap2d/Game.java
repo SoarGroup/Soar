@@ -2,9 +2,9 @@ package org.msoar.gridmap2d;
 
 public enum Game {
 	TANKSOAR, 
-	EATERS; 
+	EATERS, 
+	TAXI; 
 //	KITCHEN, 
-//	TAXI, 
 //	ROOM;
 	
 	public String id() {

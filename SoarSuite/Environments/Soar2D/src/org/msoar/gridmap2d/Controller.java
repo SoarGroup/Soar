@@ -149,6 +149,7 @@ public class Controller implements Runnable {
 					tickEvent();
 				}
 			} catch (Exception e) {
+				e.printStackTrace();
 				error(e.getMessage());
 			}
 			

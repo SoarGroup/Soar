@@ -7,7 +7,7 @@ public class TerminalsConfig {
 	public int winning_score = 0;
 	public boolean food_remaining = false;
 	public boolean unopened_boxes = false;
-//	public boolean fuel_remaining = false;
-//	public boolean passenger_delivered = false;
-//	public boolean passenger_pick_up = false;
+	public boolean fuel_remaining = false;
+	public boolean passenger_delivered = false;
+	public boolean passenger_pick_up = false;
 }

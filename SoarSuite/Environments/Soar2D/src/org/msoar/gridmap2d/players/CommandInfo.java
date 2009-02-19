@@ -66,10 +66,10 @@ public class CommandInfo {
 //	public boolean cook = false;
 //	public boolean eat = false;
 //	
-//	// taxi
-//	public boolean pickup = false;
-//	public boolean putdown = false;
-//	public boolean fillup = false;
+	// taxi
+	public boolean pickup = false;
+	public boolean putdown = false;
+	public boolean fillup = false;
 	
 	public class Communication {
 		public String to;
@@ -330,20 +330,20 @@ public class CommandInfo {
 //			}
 //			break;
 //
-//		case TAXI:
-//			if (move) {
-//				output += "(" + Names.kMoveID + ": " + moveDirection.id() + ")";
-//			}
-//			if (pickup) {
-//				output += "(" + Names.kPickUpID + ")";
-//			}
-//			if (putdown) {
-//				output += "(" + Names.kPutDownID + ")";
-//			}
-//			if (fillup) {
-//				output += "(" + Names.kFillUpID + ")";
-//			}
-//			break;
+		case TAXI:
+			if (move) {
+				output += "(" + Names.kMoveID + ": " + moveDirection.id() + ")";
+			}
+			if (pickup) {
+				output += "(" + Names.kPickUpID + ")";
+			}
+			if (putdown) {
+				output += "(" + Names.kPutDownID + ")";
+			}
+			if (fillup) {
+				output += "(" + Names.kFillUpID + ")";
+			}
+			break;
 			
 		}
 		

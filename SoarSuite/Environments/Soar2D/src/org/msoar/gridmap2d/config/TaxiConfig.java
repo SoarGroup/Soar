@@ -1,6 +1,5 @@
 package org.msoar.gridmap2d.config;
 
-
 public class TaxiConfig implements GameConfig{
 	public boolean disable_fuel = false;
 	public int fuel_starting_minimum = 5;
