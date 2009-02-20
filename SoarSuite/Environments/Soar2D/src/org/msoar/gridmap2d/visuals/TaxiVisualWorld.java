@@ -58,9 +58,18 @@ public class TaxiVisualWorld extends VisualWorld {
 				destinationList = this.map.getCell(location).getAllWithProperty("destination");
 				if (destinationList != null) {
 					CellObject destination = destinationList.get(0);
-					Color color = WindowManager.getColor(destination.getProperty(Names.kPropertyColor));
+					String colorString = destination.getProperty(Names.kPropertyColor);
+					Color color = WindowManager.getColor(colorString);
 					gc.setBackground(color);
 				    gc.fillRectangle(cellSize*location[0] + 1, cellSize*location[1] + 1, cellSize - 2, cellSize - 2);
+				    
+				    if (colorString.equals("blue")) {
+				    	gc.setForeground(WindowManager.white);
+				    } else {
+				    	gc.setForeground(WindowManager.black);
+				    }
+				    gc.drawString(colorString.substring(0, 1), cellSize*location[0] + 1, cellSize*location[1] + 1);
+			    	gc.setForeground(WindowManager.black);
 				}
 				
 				if (this.map.getCell(location).hasObject("fuel")) {
@@ -74,6 +83,8 @@ public class TaxiVisualWorld extends VisualWorld {
 					gc.drawRectangle(cellSize*location[0] + fill, cellSize*location[1] + fill, size-1, size-1);
 			        
 					gc.setForeground(WindowManager.black);
+				    gc.drawString("f", cellSize*location[0] + 8, cellSize*location[1] + 3);
+
 				}
 				
 				Taxi taxi = (Taxi)this.map.getCell(location).getPlayer();
