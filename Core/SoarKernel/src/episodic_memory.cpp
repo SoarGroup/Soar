@@ -31,8 +31,6 @@
 #include <algorithm>
 #include <cmath>
 
-#include <fstream.h>
-
 #include <assert.h>
 
 #include "sqlite3.h"
