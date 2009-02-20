@@ -68,8 +68,10 @@ class SoarTaxiIL {
 			}
 			
 			private void destroy() {
-				agent.DestroyWME(randomWME);
-				randomWME = null;
+				if (randomWME != null) {
+					agent.DestroyWME(randomWME);
+					randomWME = null;
+				}
 			}
 		}
 		
@@ -132,9 +134,11 @@ class SoarTaxiIL {
 		}
 		
 		private void destroy() {
-			agent.DestroyWME(selfWME);
-			selfWME = null;
 			random.destroy();
+			if (selfWME != null) {
+				agent.DestroyWME(selfWME);
+				selfWME = null;
+			}
 		}
 	}
 	
@@ -210,8 +214,10 @@ class SoarTaxiIL {
 		}
 		
 		private void destroy() {
-			agent.DestroyWME(viewWME);
-			viewWME = null;
+			if (viewWME != null) {
+				agent.DestroyWME(viewWME);
+				viewWME = null;
+			}
 		}
 	}
 	
@@ -239,8 +245,10 @@ class SoarTaxiIL {
 		}
 		
 		private void destroy() {
-			agent.DestroyWME(cellWME);
-			cellWME = null;
+			if (cellWME != null) {
+				agent.DestroyWME(cellWME);
+				cellWME = null;
+			}
 		}
 	}
 }
