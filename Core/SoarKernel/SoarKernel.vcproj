@@ -1201,6 +1201,10 @@
 					/>
 				</FileConfiguration>
 			</File>
+			<File
+				RelativePath=".\sqlite\sqlite3.c"
+				>
+			</File>
 		</Filter>
 	</Files>
 	<Globals>
