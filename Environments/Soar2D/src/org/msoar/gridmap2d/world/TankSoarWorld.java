@@ -33,7 +33,8 @@ public class TankSoarWorld implements World {
 	private int maxMissilePacks;
 	private List<String> stopMessages = new ArrayList<String>();
 	private CognitiveArchitecture cogArch;
-	
+	private boolean forceHuman = false;
+
 	public TankSoarWorld(int maxMissilePacks, CognitiveArchitecture cogArch) throws Exception {
 		this.maxMissilePacks = maxMissilePacks;
 		this.cogArch = cogArch;
@@ -165,7 +166,7 @@ public class TankSoarWorld implements World {
 		for (Tank tank : players.getAll()) {
 			tank.getState().resetSensors(); // TODO: can this go somewhere else?
 			
-			CommandInfo command = tank.getCommand();
+			CommandInfo command = forceHuman ? Gridmap2D.control.getHumanCommand(tank) : tank.getCommand();
 			if (command == null) {
 				Gridmap2D.control.stopSimulation();
 				return;
@@ -844,5 +845,9 @@ public class TankSoarWorld implements World {
 		players.remove(tank);
 		tank.shutdownCommander();
 		updatePlayers(true);
+	}
+
+	public void setForceHumanInput(boolean setting) {
+		forceHuman = setting;
 	}
 }

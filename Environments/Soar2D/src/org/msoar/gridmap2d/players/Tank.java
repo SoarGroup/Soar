@@ -6,7 +6,6 @@ import org.msoar.gridmap2d.Gridmap2D;
 import org.msoar.gridmap2d.map.TankSoarMap;
 
 public class Tank extends Player {
-	private CommandInfo command;
 	private TankCommander commander;
 	
 	private TankState state;
@@ -29,6 +28,7 @@ public class Tank extends Player {
 	}
 	
 	public CommandInfo getCommand() throws Exception {
+		CommandInfo command;
 		if (commander != null) {
 			command = commander.nextCommand();
 		} else {

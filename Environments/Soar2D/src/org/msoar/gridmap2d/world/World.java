@@ -18,6 +18,7 @@ public interface World {
 	public Player[] getPlayers();
 	
 	// control
+	public void setForceHumanInput(boolean setting);
 	public boolean isTerminal();
 	public void interrupted(String agentName) throws Exception;
 }

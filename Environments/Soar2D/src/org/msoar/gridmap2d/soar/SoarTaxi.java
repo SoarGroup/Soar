@@ -5,67 +5,61 @@ import java.io.File;
 import org.apache.log4j.Logger;
 import org.msoar.gridmap2d.Direction;
 import org.msoar.gridmap2d.Names;
-import org.msoar.gridmap2d.map.EatersMap;
+import org.msoar.gridmap2d.map.TaxiMap;
 import org.msoar.gridmap2d.players.CommandInfo;
-import org.msoar.gridmap2d.players.Eater;
-import org.msoar.gridmap2d.players.EaterCommander;
+import org.msoar.gridmap2d.players.Taxi;
+import org.msoar.gridmap2d.players.TaxiCommander;
 
 import sml.Agent;
 import sml.Identifier;
 
-public final class SoarEater implements EaterCommander {
-	private static Logger logger = Logger.getLogger(SoarEater.class);
+public class SoarTaxi implements TaxiCommander {
+	private static Logger logger = Logger.getLogger(SoarTaxi.class);
 
-	private Eater eater;
-	
-	private SoarEaterIL input;
+	private Taxi taxi;
 	private Agent agent;
-	private String[] shutdownCommands;
-	boolean fragged = false;
+	private String [] shutdownCommands;
 	private InputLinkMetadata metadata;
 	private File commonMetadataFile;
 	private File mapMetadataFile;
-	
-	public SoarEater(Eater eater, Agent agent, int vision, String[] shutdownCommands, File commonMetadataFile, File mapMetadataFile) throws Exception {
-		this.eater = eater;
+	private SoarTaxiIL input;
+
+	public SoarTaxi(Taxi taxi, Agent agent, String[] shutdown_commands, File commonMetadataFile, File mapMetadataFile) throws Exception {
+		this.taxi = taxi;
 		this.agent = agent;
 		this.commonMetadataFile = commonMetadataFile;
 		this.mapMetadataFile = mapMetadataFile;
+		this.shutdownCommands = shutdown_commands;
+		
 		agent.SetBlinkIfNoChange(false);
 		
-		this.shutdownCommands = shutdownCommands;
-		
-		input = new SoarEaterIL(agent, vision);
+		input = new SoarTaxiIL(agent);
 		try {
-			input.create(eater.getName(), eater.getPoints());
+			input.create();
 		} catch (CommitException e) {
-			throw new Exception(Names.Errors.commitFail + eater.getName());
+			throw new Exception(Names.Errors.commitFail + taxi.getName());
 		}
-		
-		metadata = InputLinkMetadata.load(agent, commonMetadataFile, mapMetadataFile);
+		this.metadata = InputLinkMetadata.load(agent, commonMetadataFile, mapMetadataFile);
 		
 		if (!agent.Commit()) {
-			throw new Exception(Names.Errors.commitFail + eater.getName());
+			throw new Exception(Names.Errors.commitFail + taxi.getName());
 		}
 	}
-	
-	public void update(EatersMap eatersMap) throws Exception {
+
+	public void update(TaxiMap taxiMap) throws Exception {
 		try {
-			input.update(eater.getMoved(), eater.getLocation(), eatersMap, eater.getPoints());
+			input.update(taxi.getMoved(), taxi.getLocation(), taxiMap, taxi.getPointsDelta(), taxi.getFuel());
 		} catch (CommitException e) {
-			throw new Exception(Names.Errors.commitFail + eater.getName());
-		}
-		
-		// commit everything
-		if (!agent.Commit()) {
-			throw new Exception(Names.Errors.commitFail + eater.getName());
+			throw new Exception(Names.Errors.commitFail + taxi.getName());
 		}
 	}
-	
+
 	public CommandInfo nextCommand() throws Exception {
 		// if there was no command issued, that is kind of strange
 		if (agent.GetNumberCommands() == 0) {
-			logger.debug(eater.getName() + " issued no command.");
+			if (logger.isDebugEnabled()) {
+				logger.debug(taxi.getName() + " issued no command.");
+			}
 			return new CommandInfo();
 		}
 
@@ -73,17 +67,21 @@ public final class SoarEater implements EaterCommander {
 		// see move info for details
 		CommandInfo move = new CommandInfo();
 		boolean moveWait = false;
+		if (agent.GetNumberCommands() > 1) {
+			logger.warn(taxi.getName() + ": " + agent.GetNumberCommands() 
+					+ " commands detected, all but the first will be ignored");
+		}
 		for (int i = 0; i < agent.GetNumberCommands(); ++i) {
 			Identifier commandId = agent.GetCommand(i);
 			String commandName = commandId.GetAttribute();
 			
 			if (commandName.equalsIgnoreCase(Names.kMoveID)) {
 				if (move.move || moveWait) {
-					logger.warn(eater.getName() + ": multiple move/jump commands detected (move)");
+					logger.warn(taxi.getName() + ": multiple move commands detected");
+					commandId.AddStatusError();
 					continue;
 				}
 				move.move = true;
-				move.jump = false;
 				
 				String direction = commandId.GetParameterValue(Names.kDirectionID);
 				if (direction != null) {
@@ -100,61 +98,62 @@ public final class SoarEater implements EaterCommander {
 					}
 				}
 				
-			} else if (commandName.equalsIgnoreCase(Names.kJumpID)) {
-				if (move.move) {
-					logger.warn(eater.getName() + ": multiple move/jump commands detected, ignoring (jump)");
-					continue;
-				}
-				move.move = true;
-				move.jump = true;
-				String direction = commandId.GetParameterValue(Names.kDirectionID);
-				if (direction != null) {
-					move.moveDirection = Direction.parse(direction); 
-					commandId.AddStatusComplete();
-					continue;
-				}
-
 			} else if (commandName.equalsIgnoreCase(Names.kStopSimID)) {
 				if (move.stopSim) {
-					logger.warn(eater.getName() + ": multiple stop commands detected, ignoring");
+					logger.warn(taxi.getName() + ": multiple stop commands detected, ignoring");
+					commandId.AddStatusError();
 					continue;
 				}
 				move.stopSim = true;
 				commandId.AddStatusComplete();
 				continue;
 				
-			} else if (commandName.equalsIgnoreCase(Names.kOpenID)) {
-				if (move.open) {
-					logger.warn(eater.getName() + ": multiple open commands detected, ignoring");
+			} else if (commandName.equalsIgnoreCase(Names.kPickUpID)) {
+				if (move.pickup) {
+					logger.warn(taxi.getName() + ": multiple " + Names.kPickUpID + " commands detected, ignoring");
+					commandId.AddStatusError();
 					continue;
 				}
-				move.open = true;
+				move.pickup = true;
 				commandId.AddStatusComplete();
 				continue;
 				
-			} else if (commandName.equalsIgnoreCase(Names.kDontEatID)) {
-				if (move.dontEat) {
-					logger.warn(eater.getName() + ": multiple dont eat commands detected, ignoring");
+			} else if (commandName.equalsIgnoreCase(Names.kPutDownID)) {
+				if (move.putdown) {
+					logger.warn(taxi.getName() + ": multiple " + Names.kPutDownID + " commands detected, ignoring");
+					commandId.AddStatusError();
 					continue;
 				}
-				move.dontEat = true;
+				move.putdown = true;
+				commandId.AddStatusComplete();
+				continue;
+				
+			} else if (commandName.equalsIgnoreCase(Names.kFillUpID)) {
+				if (move.fillup) {
+					logger.warn(taxi.getName() + ": multiple " + Names.kFillUpID + " commands detected, ignoring");
+					commandId.AddStatusError();
+					continue;
+				}
+				move.fillup = true;
 				commandId.AddStatusComplete();
 				continue;
 				
 			} else {
 				logger.warn("Unknown command: " + commandName);
+				commandId.AddStatusError();
 				continue;
 			}
 			
 			logger.warn("Improperly formatted command: " + commandName);
+			commandId.AddStatusError();
 		}
 		agent.ClearOutputLinkChanges();
 		if (!agent.Commit()) {
-			throw new Exception(Names.Errors.commitFail + eater.getName());
+			throw new Exception(Names.Errors.commitFail + taxi.getName());
 		}
 		return move;
 	}
-	
+
 	public void reset() throws Exception {
 		if (agent == null) {
 			return;
@@ -163,7 +162,7 @@ public final class SoarEater implements EaterCommander {
 		try {
 			input.destroy();
 		} catch (CommitException e) {
-			throw new Exception(Names.Errors.commitFail + eater.getName());
+			throw new Exception(Names.Errors.commitFail + taxi.getName());
 		}
 
 		metadata.destroy();
@@ -171,15 +170,15 @@ public final class SoarEater implements EaterCommander {
 		metadata = InputLinkMetadata.load(agent, commonMetadataFile, mapMetadataFile);
 
 		if (!agent.Commit()) {
-			throw new Exception(Names.Errors.commitFail + eater.getName());
+			throw new Exception(Names.Errors.commitFail + taxi.getName());
 		}
 
 		agent.InitSoar();
 			
 		try {
-			input.create(eater.getName(), eater.getPoints());
+			input.create();
 		} catch (CommitException e) {
-			throw new Exception(Names.Errors.commitFail + eater.getName());
+			throw new Exception(Names.Errors.commitFail + taxi.getName());
 		}
 	}
 
@@ -188,12 +187,12 @@ public final class SoarEater implements EaterCommander {
 		if (shutdownCommands != null) { 
 			// execute the pre-shutdown commands
 			for (String command : shutdownCommands) {
-				String result = eater.getName() + ": result: " + agent.ExecuteCommandLine(command, true);
-				logger.info(eater.getName() + ": shutdown command: " + command);
+				String result = taxi.getName() + ": result: " + agent.ExecuteCommandLine(command, true);
+				logger.info(taxi.getName() + ": shutdown command: " + command);
 				if (agent.HadError()) {
 					throw new Exception(result);
 				} else {
-					logger.info(eater.getName() + ": result: " + result);
+					logger.info(taxi.getName() + ": result: " + result);
 				}
 			}
 		}
