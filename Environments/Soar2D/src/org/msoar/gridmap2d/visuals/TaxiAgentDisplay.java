@@ -24,7 +24,7 @@ import org.msoar.gridmap2d.world.World;
 public class TaxiAgentDisplay extends AgentDisplay {
 	
 	public static final int kAgentMapCellSize = 20;
-	static final int kTableHeight = 16;
+	static final int kTableHeight = 30;
 	static final int kNameWidth = 75;
 	static final int kScoreWidth = 55;
 	
@@ -105,6 +105,7 @@ public class TaxiAgentDisplay extends AgentDisplay {
 		{
 			GridData gd = new GridData();
 			gd.heightHint = kTableHeight;
+			gd.minimumHeight = kTableHeight;
 			gd.horizontalSpan = 2;
 			m_AgentTable.setLayoutData(gd);
 		}
