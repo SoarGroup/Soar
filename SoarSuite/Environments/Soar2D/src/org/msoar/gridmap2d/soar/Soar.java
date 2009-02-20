@@ -404,6 +404,13 @@ public class Soar implements CognitiveArchitecture, Kernel.UpdateEventInterface,
 		return new SoarTank(tank, agent, shutdownCommands, commonMetadataFile, mapMetadataFile);
 	}
 
+	public TaxiCommander createTaxiCommander(Taxi taxi, String productions,
+			String[] shutdownCommands, File mapMetadataFile, boolean debug)
+			throws Exception {
+		Agent agent = createSoarAgent(taxi.getName(), productions, debug);
+		return new SoarTaxi(taxi, agent, shutdownCommands, commonMetadataFile, mapMetadataFile);
+	}
+	   
   	public void updateEventHandler(int eventID, Object data, Kernel kernel, int runFlags) {
 
   		// check for override
@@ -444,12 +451,4 @@ public class Soar implements CognitiveArchitecture, Kernel.UpdateEventInterface,
  		}
    }
 
-public TaxiCommander createTaxiCommander(Taxi taxi, String productions,
-		String[] shutdown_commands, File metadataFile, boolean debug)
-		throws Exception {
-	// TODO Auto-generated method stub
-	assert false;
-	return null;
-}
-   
 }

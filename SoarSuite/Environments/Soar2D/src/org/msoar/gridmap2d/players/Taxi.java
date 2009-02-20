@@ -8,7 +8,6 @@ import org.msoar.gridmap2d.map.TaxiMap;
 public class Taxi extends Player {	
 	private static Logger logger = Logger.getLogger(Taxi.class);
 
-	private CommandInfo command;
 	private TaxiCommander commander;
 
 	private int fuel;
@@ -33,6 +32,7 @@ public class Taxi extends Player {
 	}
 	
 	public CommandInfo getCommand() throws Exception {
+		CommandInfo command;
 		if (commander != null) {
 			command = commander.nextCommand();
 		} else {
@@ -48,7 +48,7 @@ public class Taxi extends Player {
 			commander.update(taxiMap);
 		}
 		
-		// TODO: possibly necessary: resetPointsChanged();
+		resetPointsChanged();
 	}
 	
 	@Override

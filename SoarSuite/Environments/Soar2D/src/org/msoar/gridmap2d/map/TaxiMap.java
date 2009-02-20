@@ -32,7 +32,8 @@ public class TaxiMap implements GridMap, CellObjectObserver {
 	
 	public void reset() throws Exception {
 		destinations.clear();
-
+		passengerDestination = null;
+		
 		data = GridMapUtil.loadFromConfigFile(mapPath, this);
 		
 		passengerDelivered = false;
@@ -195,5 +196,38 @@ public class TaxiMap implements GridMap, CellObjectObserver {
 	public String getPassengerDestination() {
 		assert passengerDestination != null;
 		return passengerDestination;
+	}
+	
+	public String getStringType(int[] location) {
+		if (!this.isInBounds(location)) {
+			return "none";
+		}
+		
+		List<CellObject> dests = this.getCell(location).getAllWithProperty("destination");
+		if (dests != null) {
+			assert dests.size() < 2;
+			if (dests.size() > 0) {
+				return dests.get(0).getProperty("color");
+			}
+			
+		}
+		
+		if (this.getCell(location).getObject("fuel") != null) {
+			return "fuel";
+		}
+
+		return "normal";
+	}
+	
+	public boolean wall(int[] from, Direction to) {
+		List<CellObject> walls = this.getCell(from).getAllWithProperty("block");
+		if (walls != null) {
+			for (CellObject wall : walls) {
+				if (wall.getProperty("direction").equals(to.id())) {
+					return true;
+				}
+			}
+		}
+		return false;
 	}
 }

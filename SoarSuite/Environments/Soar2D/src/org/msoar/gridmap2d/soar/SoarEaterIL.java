@@ -10,7 +10,6 @@ import org.msoar.gridmap2d.Names;
 import org.msoar.gridmap2d.Simulation;
 import org.msoar.gridmap2d.map.CellObject;
 import org.msoar.gridmap2d.map.EatersMap;
-import org.msoar.gridmap2d.players.CommitException;
 import org.msoar.gridmap2d.players.Player;
 
 import sml.Agent;

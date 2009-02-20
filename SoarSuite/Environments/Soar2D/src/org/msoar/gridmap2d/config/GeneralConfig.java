@@ -9,4 +9,5 @@ public class GeneralConfig {
 	public String preferences_file = "preferences";
 	public int runs = 0;
 	public int seed = 0; // Note: has special field in SimConfig for null case TODO: make Integer and null
+	public boolean force_human = false;
 }

@@ -85,6 +85,7 @@ public class Simulation {
 //			world = new BookWorld(config.generalConfig().map);
 //			break;
 		}
+		world.setForceHumanInput(config.generalConfig().force_human);
 		Gridmap2D.control.setRunsTerminal(config.generalConfig().runs);
 		Gridmap2D.control.resetTime();
 		
