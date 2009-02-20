@@ -27,6 +27,7 @@ public class TaxiWorld implements World {
 	private int fuelStartMax;
 	private int refuel;
 	private boolean disableFuel;
+	private boolean forceHuman = false;
 
 	public TaxiWorld(CognitiveArchitecture cogArch, int fuelStartMin, int fuelStartMax, int refuel, boolean disableFuel) throws Exception {
 		this.cogArch = cogArch;
@@ -148,7 +149,7 @@ public class TaxiWorld implements World {
 
 		// Collect input
 		for (Taxi taxi : players.getAll()) {
-			CommandInfo command = taxi.getCommand();
+			CommandInfo command = forceHuman ? Gridmap2D.control.getHumanCommand(taxi) : taxi.getCommand();
 			if (command == null) {
 				Gridmap2D.control.stopSimulation();
 				return;
@@ -263,5 +264,9 @@ public class TaxiWorld implements World {
 		players.remove(taxi);
 		taxi.shutdownCommander();
 		updatePlayers();
+	}
+
+	public void setForceHumanInput(boolean setting) {
+		forceHuman = setting;
 	}
 }

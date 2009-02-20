@@ -31,7 +31,8 @@ public class EatersWorld implements World {
 	private PlayersManager<Eater> players = new PlayersManager<Eater>();
 	private List<String> stopMessages = new ArrayList<String>();
 	private CognitiveArchitecture cogArch;
-
+	private boolean forceHuman = false;
+	
 	public EatersWorld(CognitiveArchitecture cogArch) throws Exception {
 		this.cogArch = cogArch;
 	}
@@ -114,7 +115,7 @@ public class EatersWorld implements World {
 
 		// Collect input
 		for (Eater eater : players.getAll()) {
-			CommandInfo command = eater.getCommand();
+			CommandInfo command = forceHuman ? Gridmap2D.control.getHumanCommand(eater) : eater.getCommand();
 			if (command == null) {
 				Gridmap2D.control.stopSimulation();
 				return;
@@ -464,5 +465,9 @@ public class EatersWorld implements World {
 
 	public Player[] getPlayers() {
 		return players.getAllAsPlayers();
+	}
+
+	public void setForceHumanInput(boolean setting) {
+		forceHuman = setting;
 	}
 }

@@ -4,7 +4,6 @@ import org.msoar.gridmap2d.Gridmap2D;
 import org.msoar.gridmap2d.map.EatersMap;
 
 public class Eater extends Player {	
-	private CommandInfo command;
 	private EaterCommander commander;
 
 	public Eater(String playerId) throws Exception {
@@ -16,6 +15,7 @@ public class Eater extends Player {
 	}
 	
 	public CommandInfo getCommand() throws Exception {
+		CommandInfo command;
 		if (commander != null) {
 			command = commander.nextCommand();
 		} else {
