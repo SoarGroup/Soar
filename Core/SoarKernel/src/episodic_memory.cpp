@@ -31,6 +31,8 @@
 #include <algorithm>
 #include <cmath>
 
+#include <fstream.h>
+
 #include <assert.h>
 
 #include "sqlite3.h"
@@ -909,7 +911,7 @@ const char *epmem_convert_phase( const long val )
 
 const long epmem_convert_phase( const char *val )
 {
-	long return_val = NULL;	
+	long return_val = NULL;
 
 	if ( !strcmp( val, "output" ) )
 		return_val = EPMEM_PHASE_OUTPUT;
@@ -3059,7 +3061,7 @@ void epmem_new_episode( agent *my_agent )
 					// prevent acceptables from being recorded
 					if ( wmes[i]->acceptable )
 						continue;
-					
+
 					// prevent exclusions from being recorded
 					should_exclude = false;
 					attr_name = epmem_symbol_to_string( my_agent, wmes[i]->attr );
@@ -3355,7 +3357,7 @@ void epmem_new_episode( agent *my_agent )
 					// prevent acceptables from being recorded
 					if ( wmes[i]->acceptable )
 						continue;
-					
+
 					// prevent exclusions from being recorded
 					should_exclude = false;
 					attr_name = epmem_symbol_to_string( my_agent, wmes[i]->attr );
@@ -6720,7 +6722,126 @@ void epmem_go( agent *my_agent )
 
 #else // EPMEM_EXPERIMENT
 
+	// storing database snapshots at commit intervals
+	/*
+	if ( !epmem_in_transaction( my_agent ) )
+		epmem_transaction_begin( my_agent );
 
+	epmem_consider_new_episode( my_agent );
+	epmem_respond_to_cmd( my_agent );
+
+	if ( !epmem_in_transaction( my_agent ) )
+	{
+		epmem_transaction_end( my_agent, true );
+
+		EPMEM_TYPE_INT counter = epmem_get_stat( my_agent, EPMEM_STAT_NCB_WMES );
+		epmem_set_stat( my_agent, EPMEM_STAT_NCB_WMES, ( counter + 1 ) );
+		std::string path( "cp " );
+		path.append( epmem_get_parameter( my_agent, EPMEM_PARAM_PATH, EPMEM_RETURN_STRING ) );
+		path.append( " " );
+		path.append( epmem_get_parameter( my_agent, EPMEM_PARAM_PATH, EPMEM_RETURN_STRING ) );
+		path.append( "_" );
+		path.append( *to_string( counter ) );
+
+		system( path.c_str() );
+	}
+	*/
+
+	// retrieving lots of episodes (commit = number of repeats)
+	/*
+	{
+		const int max_queries = 10;
+		const int repeat = (EPMEM_TYPE_INT) epmem_get_parameter( my_agent, EPMEM_PARAM_COMMIT );
+		epmem_time_id queries[ max_queries ] = { 10, 50, 100, 250, 500, 1000, 2500, 5000, 6000, 8200 };
+
+		epmem_init_db( my_agent, true );
+		epmem_transaction_begin( my_agent );
+
+		timeval start;
+		timeval total;
+
+		for ( int j=0; j<max_queries; j++ )
+		{
+			reset_timer( &start );
+			reset_timer( &total );
+
+			start_timer( my_agent, &start );
+
+			for ( int i=0; i<repeat; i++ )
+			{
+				epmem_install_memory( my_agent, my_agent->top_goal, queries[j], NULL );
+				epmem_clear_result( my_agent, my_agent->top_goal );
+			}
+
+			stop_timer( my_agent, &start, &total );
+
+			std::cout << (j) << "," << ( (double) timer_value( &total ) / (double) repeat ) << std::endl;
+		}
+
+		stop_timer( my_agent, &start, &total );
+
+		epmem_transaction_end( my_agent, false );
+		epmem_close( my_agent );
+	}
+	*/
+
+	// cue matching over lots of cues (numerical wmes under "queries" wme, commit=level)
+	/*
+	{
+		EPMEM_TYPE_INT level = (EPMEM_TYPE_INT) epmem_get_parameter( my_agent, EPMEM_PARAM_COMMIT );
+		const int repeat = 20;
+		const int trials = 3;
+		const int lens = 10;
+
+		epmem_time_list *prohibit = new epmem_time_list();
+		unsigned long max_queries;
+		wme **wmes;
+		{
+			Symbol *queries = NULL;
+			wmes = epmem_get_augs_of_id( my_agent, my_agent->top_goal, get_new_tc_number( my_agent ), &max_queries );
+			for ( int i=0; i<max_queries; i++ )
+			{
+				if ( ( wmes[i]->attr->sc.common_symbol_info.symbol_type == SYM_CONSTANT_SYMBOL_TYPE ) && !strcmp( wmes[i]->attr->sc.name, "queries" ) )
+					queries = wmes[i]->value;
+			}
+			free_memory( my_agent, wmes, MISCELLANEOUS_MEM_USAGE );
+
+			wmes = epmem_get_augs_of_id( my_agent, queries, get_new_tc_number( my_agent ), &max_queries );
+		}
+
+		{
+			int real_query;
+			timeval start;
+			timeval total;
+
+			epmem_init_db( my_agent, true );
+			epmem_transaction_begin( my_agent );
+
+			for ( int i=0; i<max_queries; i++ )
+			{
+				real_query = wmes[i]->attr->ic.value;
+
+				reset_timer( &start );
+				reset_timer( &total );
+
+				start_timer( my_agent, &start );
+
+				for ( int j=0; j<repeat; j++ )
+				{
+					epmem_process_query( my_agent, my_agent->top_goal, wmes[i]->value, NULL, prohibit, EPMEM_MEMID_NONE, EPMEM_MEMID_NONE, level );
+					epmem_clear_result( my_agent, my_agent->top_goal );
+				}
+
+				stop_timer( my_agent, &start, &total );
+
+				std::cout << ( real_query ) << "," << ( (double) timer_value( &total ) / (double) repeat ) << std::endl;
+			}
+
+			epmem_transaction_end( my_agent, false );
+			epmem_close( my_agent );
+		}
+	}
+	*/
 
 #endif // EPMEM_EXPERIMENT
 
