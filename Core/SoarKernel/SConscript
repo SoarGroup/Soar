@@ -8,6 +8,8 @@ env.Prepend(CPPPATH = [ 'src',
 			'include', 
 			'../ElementXML/include'])
 
+SQLite = env.SharedObject('sqlite3.os', 'sqlite/sqlite3.c')
+
 if env['scu']:
 	SoarKernel = env.StaticLibrary('SoarKernel', 'SoarKernel.cxx')
 else:
