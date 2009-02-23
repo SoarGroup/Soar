@@ -26,12 +26,12 @@
 #include <intrin.h>
 #pragma intrinsic (_InterlockedIncrement)
 
-static inline long atomic_inc( volatile long  *v ) 
+static inline long atomic_inc( volatile long  *v )
 {
        return _InterlockedIncrement(v);
 }
 
-static inline long atomic_dec( volatile long *v ) 
+static inline long atomic_dec( volatile long *v )
 {
        return _InterlockedDecrement(v);
 }
@@ -57,12 +57,12 @@ static inline long atomic_dec( volatile long *v )
 
 #define DEBUG_REFCOUNTS 1
 
-static inline long atomic_inc( volatile long  *v ) 
+static inline long atomic_inc( volatile long  *v )
 {
        return (++(*v));
 }
 
-static inline long atomic_dec( volatile long *v ) 
+static inline long atomic_dec( volatile long *v )
 {
        return (--(*v));
 }
@@ -86,15 +86,7 @@ static inline long atomic_dec( volatile long *v )
 //////////////////////////////////////////////////////////
 
 //#define EPMEM_64
-#ifdef EPMEM_64
-
-#define EPMEM_TYPE_INT long long int
-
-#else
-
 #define EPMEM_TYPE_INT long int
-
-#endif
 
 
 #endif // PORTABILITY_H
