@@ -54,6 +54,7 @@ opts.AddOptions(
 	BoolOption('verbose', 'Verbose compiler output', 'no'),
 	
 	BoolOption('gcc42', 'Use GCC-4.2 (experimental, Darwin only)', 'no'),
+	BoolOption('m64', 'Compile to 64-bit (experimental)', 'no'),
 )
 
 # Create the environment using the options
@@ -170,8 +171,12 @@ if sys.platform != 'cygwin':
 # to find the symbol __sync_sub_and_fetch_4 when using g++ 4.3
 # only do not include it if we're on powerpc
 if processor != 'powerpc':
-	conf.env.Append(CPPFLAGS = ' -march=i686 -m32')
-	conf.env.Append(LINKFLAGS = ' -march=i686 -m32')
+	if env['m64']:
+		conf.env.Append(CPPFLAGS = ' -m64 -DSOAR_64 -fPIC')
+		conf.env.Append(LINKFLAGS = ' -m64')
+	else:
+		conf.env.Append(CPPFLAGS = ' -m32')
+		conf.env.Append(LINKFLAGS = ' -m32')
 conf.env[ 'processor' ] = processor
 
 env = conf.Finish()
@@ -218,5 +223,7 @@ SConscript('#Tools/TOHSML/SConscript')
 SConscript('#Tools/TestSMLEvents/SConscript')
 SConscript('#Tools/TestSMLPerformance/SConscript')
 SConscript('#Tools/TestSoarPerformance/SConscript')
-SConscript('#Tests/SConscript')
+
+if not ( env['m64'] and ( env[ 'processor' ] == 'powerpc' ) ):
+	SConscript('#Tests/SConscript')
 

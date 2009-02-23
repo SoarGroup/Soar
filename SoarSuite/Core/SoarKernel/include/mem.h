@@ -481,7 +481,12 @@ extern dl_list *extract_dl_list_elements (agent* thisAgent, dl_list **header, dl
 /* Resizable hash table routines */
 /* ----------------------------- */
 
+#ifdef SOAR_64
+extern unsigned long masks_for_n_low_order_bits[65];
+#else
 extern unsigned long masks_for_n_low_order_bits[33];
+#endif
+
 typedef unsigned long ((*hash_function)(void *item, short num_bits));
 
 typedef struct item_in_hash_table_struct {
