@@ -16,11 +16,18 @@ env.Prepend(CPPPATH = [
 
 if sys.platform == "darwin":
 	if env[ 'processor' ] != 'powerpc':
-		libadd = [ 'ClientSML', 
-			   'ConnectionSML',
-			   'ElementXML', 
-			   'cppunit-osx',
-			   ]
+		if env['m64']:
+			libadd = [ 'ClientSML', 
+				   'ConnectionSML',
+				   'ElementXML', 
+				   'cppunit-osx-64',
+				   ]
+		else:
+			libadd = [ 'ClientSML', 
+				   'ConnectionSML',
+				   'ElementXML', 
+				   'cppunit-osx',
+				   ]
 	else:
 		libadd = [ 'ClientSML', 
 			   'ConnectionSML',
@@ -28,7 +35,14 @@ if sys.platform == "darwin":
 			   'cppunit-osxppc',
 			   ]
 else:
-	libadd = [ 'ClientSML', 
+	if env['m64']:
+		libadd = [ 'ClientSML', 
+		   'ConnectionSML',
+		   'ElementXML', 
+		   'cppunit-linux-64',
+		   ]
+	else:
+		libadd = [ 'ClientSML', 
 		   'ConnectionSML',
 		   'ElementXML', 
 		   'cppunit-linux',
