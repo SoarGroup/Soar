@@ -59,6 +59,20 @@
    resizable hash table routines.
 ------------------------------------------------------------------- */
 
+#ifdef SOAR_64
+unsigned long compress (unsigned long h, short num_bits) {
+  unsigned long result;
+  if (num_bits < 32) h = (h & 0xFFFFFFFF) ^ (h >> 32);
+  if (num_bits < 16) h = (h & 0xFFFF) ^ (h >> 16);
+  if (num_bits < 8) h = (h & 0xFF) ^ (h >> 8);
+  result = 0;
+  while (h) {
+    result ^= (h & masks_for_n_low_order_bits[num_bits]);
+    h = h >> num_bits;
+  }
+  return result;
+}
+#else
 unsigned long compress (unsigned long h, short num_bits) {
   unsigned long result;
 
@@ -71,6 +85,7 @@ unsigned long compress (unsigned long h, short num_bits) {
   }
   return result;
 }
+#endif
 
 unsigned long hash_string (const char *s) {   /* AGR 600 */
   unsigned long h;
