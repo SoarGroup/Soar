@@ -522,6 +522,20 @@ bool epmem_set_parameter( agent *my_agent, const char *name, const char *new_val
 
 	if ( epmem_get_parameter_type( my_agent, param ) == epmem_param_string )
 	{
+		// path special case
+		if ( param == EPMEM_PARAM_PATH )
+		{
+			if ( my_agent->epmem_first_switch )
+			{
+				my_agent->epmem_first_switch = false;
+				my_agent->epmem_params[ EPMEM_PARAM_DB ]->param->constant_param.value = EPMEM_DB_FILE;
+
+				const char *msg = "Database set to file";
+				print( my_agent, const_cast<char *>( msg ) );
+				xml_generate_message( my_agent, const_cast<char *>( msg ) );
+			}
+		}
+
 		(*my_agent->epmem_params[ param ]->param->string_param.value) = new_val;
 		return true;
 	}
@@ -665,6 +679,20 @@ bool epmem_set_parameter( agent *my_agent, const long param, const char *new_val
 
 	if ( epmem_get_parameter_type( my_agent, param ) == epmem_param_string )
 	{
+		// path special case
+		if ( param == EPMEM_PARAM_PATH )
+		{
+			if ( my_agent->epmem_first_switch )
+			{
+				my_agent->epmem_first_switch = false;
+				my_agent->epmem_params[ EPMEM_PARAM_DB ]->param->constant_param.value = EPMEM_DB_FILE;
+
+				const char *msg = "Database set to file";
+				print( my_agent, const_cast<char *>( msg ) );
+				xml_generate_message( my_agent, const_cast<char *>( msg ) );
+			}
+		}
+
 		(*my_agent->epmem_params[ param ]->param->string_param.value) = new_val;
 		return true;
 	}

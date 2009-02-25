@@ -427,6 +427,7 @@ agent * create_soar_agent (char * agent_name) {                                 
   newAgent->epmem_edge_maxes = new std::vector<epmem_time_id>();
 
   newAgent->epmem_validation = 0;
+  newAgent->epmem_first_switch = true;
 
 
   // wma initialization
