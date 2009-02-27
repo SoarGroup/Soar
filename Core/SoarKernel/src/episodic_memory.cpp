@@ -883,7 +883,7 @@ const char *epmem_convert_graph_match( const long val )
 	{
 		case EPMEM_GRAPH_MATCH_OFF:
 			return_val = "off";
-			break;		
+			break;
 
 		case EPMEM_GRAPH_MATCH_ON:
 			return_val = "on";
@@ -898,7 +898,7 @@ const long epmem_convert_graph_match( const char *val )
 	long return_val = NULL;
 
 	if ( !strcmp( val, "off" ) )
-		return_val = EPMEM_GRAPH_MATCH_OFF;	
+		return_val = EPMEM_GRAPH_MATCH_OFF;
 	else if ( !strcmp( val, "on" ) )
 		return_val = EPMEM_GRAPH_MATCH_ON;
 
@@ -2248,7 +2248,6 @@ void epmem_init_db( agent *my_agent, bool readonly = false )
 		SNPRINTF( buf, 254, "DB ERROR: %s", sqlite3_errmsg( my_agent->epmem_db ) );
 
 		print( my_agent, buf );
-
 		xml_generate_warning( my_agent, buf );
 	}
 	else
@@ -3019,7 +3018,6 @@ void epmem_new_episode( agent *my_agent )
 		SNPRINTF( buf, 254, "NEW EPISODE: (%c%d, %d)", my_agent->bottom_goal->id.name_letter, my_agent->bottom_goal->id.name_number, time_counter );
 
 		print( my_agent, buf );
-
 		xml_generate_warning( my_agent, buf );
 	}
 
@@ -5218,12 +5216,32 @@ void epmem_process_query( agent *my_agent, Symbol *state, Symbol *query, Symbol 
 								{
 									current_score = ( balance * sum_ct ) + ( balance_inv * sum_v );
 
+									// provide trace output
+									if ( my_agent->sysparams[ TRACE_EPMEM_SYSPARAM ] )
+									{
+										char buf[256];
+										SNPRINTF( buf, 254, "CONSIDERING EPISODE (time, cardinality, score): (%d, %d, %f)", current_valid_end, sum_ct, current_score );
+
+										print( my_agent, buf );
+										xml_generate_warning( my_agent, buf );
+									}
+
 									// new king if no old king OR better score
 									if ( ( king_id == EPMEM_MEMID_NONE ) || ( current_score > king_score ) )
 									{
 										king_id = current_valid_end;
 										king_score = current_score;
 										king_cardinality = sum_ct;
+
+										// provide trace output
+										if ( my_agent->sysparams[ TRACE_EPMEM_SYSPARAM ] )
+										{
+											char buf[256];
+											SNPRINTF( buf, 254, "NEW KING (perfect): (%s)", ( ( king_cardinality == perfect_match )?("true"):("false") ) );
+
+											print( my_agent, buf );
+											xml_generate_warning( my_agent, buf );
+										}
 
 										if ( king_cardinality == perfect_match )
 											done = true;
@@ -5390,7 +5408,7 @@ void epmem_process_query( agent *my_agent, Symbol *state, Symbol *query, Symbol 
 				epmem_wme_cache_element *current_cache_element;
 				epmem_wme_cache_element **cache_hit;
 
-				// literal mapping				
+				// literal mapping
 				epmem_literal_mapping::iterator lit_map_p;
 				bool shared_cue_id;
 
@@ -5418,14 +5436,14 @@ void epmem_process_query( agent *my_agent, Symbol *state, Symbol *query, Symbol 
 
 				// associate common WMEs with a match
 				std::map<wme *, epmem_shared_match *> wme_to_match;
-				epmem_shared_match **wme_match;				
+				epmem_shared_match **wme_match;
 
 				// temp new things
 				epmem_shared_literal *new_literal = NULL;
 				epmem_shared_match *new_match = NULL;
 				epmem_shared_query *new_query = NULL;
 				epmem_wme_cache_element *new_cache_element = NULL;
-				epmem_shared_literal_list *new_trigger_list = NULL;				
+				epmem_shared_literal_list *new_trigger_list = NULL;
 				epmem_shared_literal_group *new_literal_group = NULL;
 				long new_timer = NULL;
 				sqlite3_stmt *new_stmt = NULL;
@@ -5438,7 +5456,7 @@ void epmem_process_query( agent *my_agent, Symbol *state, Symbol *query, Symbol 
 				{
 					wme **starter_wmes;
 					unsigned EPMEM_TYPE_INT starter_len;
-					
+
 					// query
 					new_cache_element = new epmem_wme_cache_element;
 					new_cache_element->len = len_query;
@@ -5456,7 +5474,7 @@ void epmem_process_query( agent *my_agent, Symbol *state, Symbol *query, Symbol 
 					new_cache_element->lits = new epmem_literal_mapping;
 					wme_cache[ neg_query ] = new_cache_element;
 					new_cache_element = NULL;
-					
+
 					for ( i=EPMEM_NODE_POS; i<=EPMEM_NODE_NEG; i++ )
 					{
 						switch ( i )
@@ -5510,7 +5528,7 @@ void epmem_process_query( agent *my_agent, Symbol *state, Symbol *query, Symbol 
 											}
 										}
 									}
-									
+
 									new_cache_element = NULL;
 								}
 								cache_hit = NULL;
@@ -5588,7 +5606,7 @@ void epmem_process_query( agent *my_agent, Symbol *state, Symbol *query, Symbol 
 										shared_cue_id = false;
 										cache_hit =& wme_cache[ current_cache_element->wmes[j]->value ];
 										lit_map_p = (*cache_hit)->lits->find( shared_identity );
-										shared_cue_id = ( lit_map_p != (*cache_hit)->lits->end() );										
+										shared_cue_id = ( lit_map_p != (*cache_hit)->lits->end() );
 
 										if ( shared_cue_id )
 										{
@@ -5602,7 +5620,7 @@ void epmem_process_query( agent *my_agent, Symbol *state, Symbol *query, Symbol 
 											new_literal->ct = 0;
 											new_literal->max = ( (*cache_hit)->parents * EPMEM_DNF );
 
-											new_literal->shared_id = shared_identity;											
+											new_literal->shared_id = shared_identity;
 
 											new_literal->wme = current_cache_element->wmes[j];
 											new_literal->wme_kids = (*cache_hit)->len;
@@ -5614,7 +5632,7 @@ void epmem_process_query( agent *my_agent, Symbol *state, Symbol *query, Symbol 
 											(*(*cache_hit)->lits)[ shared_identity ] = new_literal;
 										}
 										cache_hit = NULL;
-										
+
 										if ( parent_id == EPMEM_NODEID_ROOT )
 										{
 											// root is always on and satisfies one parental branch
@@ -5664,7 +5682,7 @@ void epmem_process_query( agent *my_agent, Symbol *state, Symbol *query, Symbol 
 												new_literal_group->literals->push_back( new_literal );
 												new_literal_group = NULL;
 											}
-										}										
+										}
 
 										// create queries if necessary
 										query_triggers =& literal_to_edge_query[ unique_identity ];
@@ -6091,6 +6109,16 @@ void epmem_process_query( agent *my_agent, Symbol *state, Symbol *query, Symbol 
 						{
 							current_score = ( balance * sum_ct ) + ( balance_inv * sum_v );
 
+							// provide trace output
+							if ( my_agent->sysparams[ TRACE_EPMEM_SYSPARAM ] )
+							{
+								char buf[256];
+								SNPRINTF( buf, 254, "CONSIDERING EPISODE (time, cardinality, score): (%d, %d, %f)", current_valid_end, sum_ct, current_score );
+
+								print( my_agent, buf );
+								xml_generate_warning( my_agent, buf );
+							}
+
 							if ( graph_match != EPMEM_GRAPH_MATCH_OFF )
 							{
 								// policy:
@@ -6101,7 +6129,7 @@ void epmem_process_query( agent *my_agent, Symbol *state, Symbol *query, Symbol 
 								if ( ( king_id == EPMEM_MEMID_NONE ) || ( current_score >= king_score ) )
 								{
 									if ( sum_ct == (EPMEM_TYPE_INT) perfect_match )
-									{										
+									{
 										current_constraints.clear();
 
 										////////////////////////////////////////////////////////////////////////////
@@ -6113,7 +6141,7 @@ void epmem_process_query( agent *my_agent, Symbol *state, Symbol *query, Symbol 
 										////////////////////////////////////////////////////////////////////////////
 										epmem_stop_timer( my_agent, EPMEM_TIMER_QUERY_GRAPH_MATCH );
 										////////////////////////////////////////////////////////////////////////////
-										
+
 										if ( ( king_id == EPMEM_MEMID_NONE ) ||
 											 ( current_score > king_score ) ||
 											 ( current_graph_match_counter == len_query ) )
@@ -6123,6 +6151,16 @@ void epmem_process_query( agent *my_agent, Symbol *state, Symbol *query, Symbol 
 											king_cardinality = sum_ct;
 											king_graph_match = current_graph_match_counter;
 											king_constraints = current_constraints;
+
+											// provide trace output
+											if ( my_agent->sysparams[ TRACE_EPMEM_SYSPARAM ] )
+											{
+												char buf[256];
+												SNPRINTF( buf, 254, "NEW KING (perfect, graph-match): (true, %s)", ( ( king_graph_match == len_query )?("true"):("false") ) );
+
+												print( my_agent, buf );
+												xml_generate_warning( my_agent, buf );
+											}
 
 											if ( king_graph_match == len_query )
 												done = true;
@@ -6136,6 +6174,16 @@ void epmem_process_query( agent *my_agent, Symbol *state, Symbol *query, Symbol 
 											king_score = current_score;
 											king_cardinality = sum_ct;
 											king_graph_match = 0;
+
+											// provide trace output
+											if ( my_agent->sysparams[ TRACE_EPMEM_SYSPARAM ] )
+											{
+												char buf[256];
+												SNPRINTF( buf, 254, "NEW KING (perfect, graph-match): (false, false)" );
+
+												print( my_agent, buf );
+												xml_generate_warning( my_agent, buf );
+											}
 										}
 									}
 								}
@@ -6148,6 +6196,16 @@ void epmem_process_query( agent *my_agent, Symbol *state, Symbol *query, Symbol 
 									king_id = current_valid_end;
 									king_score = current_score;
 									king_cardinality = sum_ct;
+
+									// provide trace output
+									if ( my_agent->sysparams[ TRACE_EPMEM_SYSPARAM ] )
+									{
+										char buf[256];
+										SNPRINTF( buf, 254, "NEW KING (perfect): (%s)", ( ( king_cardinality == perfect_match )?("true"):("false") ) );
+
+										print( my_agent, buf );
+										xml_generate_warning( my_agent, buf );
+									}
 
 									if ( king_cardinality == perfect_match )
 										done = true;
