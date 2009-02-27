@@ -36,6 +36,7 @@
     	
       <fileset dir="src">
 		<include name="log4j.properties" />
+		<include name="org/msoar/sps/control/html/*" />
       </fileset>
 
       <manifest>

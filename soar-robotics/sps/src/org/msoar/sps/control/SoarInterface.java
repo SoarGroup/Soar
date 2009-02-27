@@ -2,6 +2,7 @@ package org.msoar.sps.control;
 
 import java.io.DataInputStream;
 import java.io.IOException;
+import java.util.List;
 
 import org.apache.log4j.Logger;
 import org.msoar.sps.Names;
@@ -32,6 +33,7 @@ public class SoarInterface implements Kernel.UpdateEventInterface, Kernel.System
 	private laser_t laser;
 	private static long DCDELAY_THRESHOLD_USEC = 250000L; // 250 ms
 	private boolean failsafeSpew = false;
+	private List<String> tokens;
 	
 	SoarInterface(String productions, int rangesCount) {
 		kernel = Kernel.CreateKernelInNewThread();
@@ -61,7 +63,7 @@ public class SoarInterface implements Kernel.UpdateEventInterface, Kernel.System
 		lcm.subscribe(Names.LASER_CHANNEL, this);
 		
 		input = new InputLinkManager(agent, rangesCount);
-		output = new OutputLinkManager(agent, input.getWaypointsIL());
+		output = new OutputLinkManager(agent, input.getWaypointsIL(), input.getMessagesIL());
 		
 		kernel.RegisterForUpdateEvent(smlUpdateEventId.smlEVENT_AFTER_ALL_OUTPUT_PHASES, this, null);
 		kernel.RegisterForSystemEvent(smlSystemEventId.smlEVENT_SYSTEM_START, this, null);
@@ -125,7 +127,10 @@ public class SoarInterface implements Kernel.UpdateEventInterface, Kernel.System
 			kernel.StopAllAgents();
 		}
 
-		input.update(pose, laser);
+		synchronized (this) {
+			input.update(pose, laser, tokens);
+			tokens = null;
+		}
 		
 		output.update(pose, getCurrentUtime());
 		
@@ -171,6 +176,12 @@ public class SoarInterface implements Kernel.UpdateEventInterface, Kernel.System
 			} catch (IOException e) {
 				logger.error("Error decoding laser_t message: " + e.getMessage());
 			}
+		}
+	}
+
+	public void setStringInput(List<String> tokens) {
+		synchronized (this) {
+			this.tokens = tokens;
 		}
 	}
 

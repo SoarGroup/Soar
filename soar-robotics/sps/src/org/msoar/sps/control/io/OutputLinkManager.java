@@ -19,11 +19,13 @@ public class OutputLinkManager {
 
 	private Agent agent;
 	private SplinterInput command = null;
-	private WaypointsIL waypoints;
+	private WaypointsIL waypointsIL;
+	private ReceivedMessagesIL messagesIL;
 
-	public OutputLinkManager(Agent agent, WaypointsIL waypoints) {
+	public OutputLinkManager(Agent agent, WaypointsIL waypoints, ReceivedMessagesIL messages) {
 		this.agent = agent;
-		this.waypoints = waypoints;
+		this.waypointsIL = waypoints;
+		this.messagesIL = messages;
 	}
 	
 	public boolean getDC(differential_drive_command_t dc, double currentYawRadians) {
@@ -290,7 +292,7 @@ public class OutputLinkManager {
 
 				logger.debug(String.format("add-waypoint: %16s %10.3f %10.3f", id, pos[0], pos[1]));
 
-				waypoints.add(pos, id);
+				waypointsIL.add(pos, id);
 
 				commandwme.AddStatusComplete();
 				continue;
@@ -304,7 +306,7 @@ public class OutputLinkManager {
 
 				logger.debug(String.format("remove-waypoint: %16s", id));
 
-				if (waypoints.remove(id) == false) {
+				if (waypointsIL.remove(id) == false) {
 					logger.warn("Unable to remove waypoint " + id + ", no such waypoint");
 					commandwme.AddStatusError();
 					continue;
@@ -322,7 +324,7 @@ public class OutputLinkManager {
 
 				logger.debug(String.format("enable-waypoint: %16s", id));
 
-				if (waypoints.enable(id, pose) == false) {
+				if (waypointsIL.enable(id, pose) == false) {
 					logger.warn("Unable to enable waypoint " + id + ", no such waypoint");
 					commandwme.AddStatusError();
 					continue;
@@ -340,7 +342,7 @@ public class OutputLinkManager {
 
 				logger.debug(String.format("disable-waypoint: %16s", id));
 
-				if (waypoints.disable(id) == false) {
+				if (waypointsIL.disable(id) == false) {
 					logger.warn("Unable to disable waypoint " + id + ", no such waypoint");
 					commandwme.AddStatusError();
 					continue;
@@ -350,6 +352,34 @@ public class OutputLinkManager {
 				continue;
 			} else if (commandName.equals("broadcast-message")) {
 				logger.warn("broadcast-message command not implemented, ignoring");
+				continue;
+			} else if (commandName.equals("remove-message")) {
+				int id = -1;
+				try {
+					id = Integer.parseInt(commandwme.GetParameterValue("id"));
+				} catch (NullPointerException ignored) {
+					logger.warn("No id on remove-message command");
+					commandwme.AddStatusError();
+					continue;
+				} catch (NumberFormatException e) {
+					logger.warn("Unable to parse id: " + commandwme.GetParameterValue("id"));
+					commandwme.AddStatusError();
+					continue;
+				}
+
+				logger.debug(String.format("remove-message: %d", id));
+				
+				if (messagesIL.remove(id) == false) {
+					logger.warn("Unable to remove message " + id + ", no such message");
+					commandwme.AddStatusError();
+					continue;
+				}
+
+				commandwme.AddStatusComplete();
+				continue;
+			} else if (commandName.equals("clear-messages")) {
+				messagesIL.clear();
+				commandwme.AddStatusComplete();
 				continue;
 			}
 

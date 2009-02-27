@@ -1,5 +1,7 @@
 package org.msoar.sps.control.io;
 
+import java.util.List;
+
 import org.apache.log4j.Logger;
 
 import lcmtypes.laser_t;
@@ -47,9 +49,9 @@ public class InputLinkManager {
 		agent.Commit();
 	}
 
-	public void update(pose_t pose, laser_t laser) {
+	public void update(pose_t pose, laser_t laser, List<String> tokens) {
 		timeIL.update();
-		selfIL.update(pose);
+		selfIL.update(pose, tokens);
 		rangerIL.update(laser);
 	}
 
@@ -61,4 +63,7 @@ public class InputLinkManager {
 		return selfIL.getWaypointsIL();
 	}
 
+	public ReceivedMessagesIL getMessagesIL() {
+		return selfIL.getMessagesIL();
+	}
 }

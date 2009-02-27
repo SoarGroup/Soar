@@ -1,5 +1,7 @@
 package org.msoar.sps.control.io;
 
+import java.util.List;
+
 import jmat.LinAlg;
 import jmat.MathUtil;
 import lcmtypes.pose_t;
@@ -16,6 +18,7 @@ class SelfIL {
 	private long utimeLast = 0;
 	private Agent agent;
 	private double yawRadians;
+	private ReceivedMessagesIL receivedMessagesIL;
 
 	SelfIL(Agent agent, Identifier self) {
 		this.agent = agent;
@@ -30,13 +33,16 @@ class SelfIL {
 		
 		Identifier waypoints = agent.CreateIdWME(self, "waypoints");
 		waypointsIL = new WaypointsIL(agent, waypoints);
+		
+		Identifier receivedwme = agent.CreateIdWME(self, "received-messages");
+		receivedMessagesIL = new ReceivedMessagesIL(agent, receivedwme);
 	}
 	
 	double getYawRadians() {
 		return yawRadians;
 	}
 
-	void update(pose_t pose) {
+	void update(pose_t pose, List<String> tokens) {
 		if (pose == null) {
 			return; // no info
 		}
@@ -53,10 +59,24 @@ class SelfIL {
 		agent.Update(yawwme, Math.toDegrees(yawRadians));
 		
 		waypointsIL.update(pose);
+		
+		// TODO support multiple sources
+		if (tokens != null) {
+			// TODO tokens len 0 triggering clear is overloaded and messy
+			if (tokens.size() == 0) {
+				receivedMessagesIL.clear();
+			} else {
+				receivedMessagesIL.update(tokens);
+			}
+		}
 	}
 	
 	WaypointsIL getWaypointsIL() {
 		return waypointsIL;
+	}
+
+	public ReceivedMessagesIL getMessagesIL() {
+		return receivedMessagesIL;
 	}
 }
 
