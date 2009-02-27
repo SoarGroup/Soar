@@ -106,7 +106,6 @@ public class LCMInfo implements LCMSubscriber {
 		}
 	}
 	
-	@Override
 	public void messageReceived(LCM lcm, String channel, DataInputStream ins) {
 		if (channel.equals(TEST_CHANNEL_A)) {
 			try {

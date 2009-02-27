@@ -59,7 +59,6 @@ public class SessionManager implements Runnable {
 		}
 	}
 
-	@Override
 	public void run() {
 		logger.info("Listening on port " + serverSocket.getLocalPort());
 		while (true) {

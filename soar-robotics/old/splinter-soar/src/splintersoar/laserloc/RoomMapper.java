@@ -138,7 +138,6 @@ public class RoomMapper implements LCMSubscriber {
 		}
 	}
 
-	@Override
 	public void messageReceived(LCM lcm, String channel, DataInputStream ins) {
 		if (channel.equals(LCMInfo.LASER_LOC_CHANNEL)) {
 			if (laserData != null) {

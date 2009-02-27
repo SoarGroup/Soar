@@ -209,7 +209,6 @@ public class LaserLoc extends Thread implements LCMSubscriber {
 		return newCoords;
 	}
 
-	@Override
 	public void messageReceived(LCM lcm, String channel, DataInputStream ins) {
 		if (channel.equals(LCMInfo.LASER_LOC_CHANNEL)) {
 			if (laserData != null) {

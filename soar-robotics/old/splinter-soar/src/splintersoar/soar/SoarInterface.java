@@ -138,7 +138,6 @@ public class SoarInterface implements Kernel.UpdateEventInterface, Kernel.AgentE
 		logger.info("Soar interface down");
 	}
 
-	@Override
 	public void updateEventHandler(int eventID, Object data, Kernel kernel, int runFlags) {
 		if (stopSoar) {
 			logger.info("Stopping Soar");
@@ -192,7 +191,6 @@ public class SoarInterface implements Kernel.UpdateEventInterface, Kernel.AgentE
 		this.overrideEnabled = overrideEnabled;
 	}
 
-	@Override
 	public void messageReceived(LCM lcm, String channel, DataInputStream ins) {
 		if (channel.equals(LCMInfo.SPLINTER_STATE_CHANNEL)) {
 			try {
@@ -203,7 +201,6 @@ public class SoarInterface implements Kernel.UpdateEventInterface, Kernel.AgentE
 		}
 	}
 
-	@Override
 	public void agentEventHandler(int id, Object userData, String agentName) {
 		if (id == smlAgentEventId.smlEVENT_BEFORE_AGENT_REINITIALIZED.swigValue()) {
 			waypoints.beforeInitSoar();

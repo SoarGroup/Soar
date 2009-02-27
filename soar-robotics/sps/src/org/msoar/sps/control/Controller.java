@@ -150,7 +150,6 @@ public class Controller extends TimerTask implements LCMSubscriber {
 		transmit(dc);
 	}
 	
-	@Override
 	public void messageReceived(LCM lcm, String channel, DataInputStream ins) {
 		if (channel.equals(Names.POSE_CHANNEL)) {
 			try {

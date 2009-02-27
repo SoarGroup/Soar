@@ -236,7 +236,6 @@ public class Splinter extends TimerTask implements LCMSubscriber {
 		new Splinter(config);
 	}
 
-	@Override
 	public void messageReceived(LCM lcm, String channel, DataInputStream ins) {
 		if (channel.equals(Names.DRIVE_CHANNEL)) {
 			try {

@@ -51,12 +51,10 @@ public class LocalRunner implements Runner {
 		this.component = component;
 	}
 	
-	@Override
 	public String getComponentName() {
 		return component;
 	}
 	
-	@Override
 	public void configure(ArrayList<String> command, String config) {
 		if (command == null) {
 			throw new NullPointerException();
@@ -65,7 +63,6 @@ public class LocalRunner implements Runner {
 		this.config = config;
 	}
 	
-	@Override
 	public void start() throws IOException {
 		if (process != null) {
 			throw new IllegalStateException();
@@ -114,7 +111,6 @@ public class LocalRunner implements Runner {
 	
 	class OutputHandler implements Runnable {
 		private BufferedReader procIn;
-		@Override
 		public void run() {
 			// pipe this output to 
 			procIn = new BufferedReader(new InputStreamReader(process.getInputStream()));
@@ -135,7 +131,6 @@ public class LocalRunner implements Runner {
 	}
 	
 	class AliveHandler implements Runnable {
-		@Override
 		public void run() {
 			while (true) {
 				try {
@@ -164,19 +159,16 @@ public class LocalRunner implements Runner {
 		}
 	}
 	
-	@Override
 	public boolean isAlive() {
 		return process != null;
 	}
 	
-	@Override
 	public void stop() {
 		if (process != null) {
 			process.destroy();
 		}
 	}
 	
-	@Override
 	public void quit() {
 		stop();
 
@@ -185,7 +177,6 @@ public class LocalRunner implements Runner {
 		}
 	}
 	
-	@Override
 	public void setOutput(BufferedReader output) {
 		logger.error("Called setOutput on local runner");
 		assert false;

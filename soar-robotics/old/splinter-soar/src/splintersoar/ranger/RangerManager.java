@@ -37,7 +37,6 @@ public class RangerManager implements LCMSubscriber, RangerStateProducer {
 		lcmGG.subscribe(LCMInfo.LASER_FRONT_CHANNEL, this);
 	}
 
-	@Override
 	public RangerState getRangerState() {
 		if (laserDataCurrent == null) {
 			return null;
@@ -57,7 +56,6 @@ public class RangerManager implements LCMSubscriber, RangerStateProducer {
 		return state;
 	}
 
-	@Override
 	public void messageReceived(LCM lcm, String channel, DataInputStream ins) {
 		if (channel.equals(LCMInfo.LASER_FRONT_CHANNEL)) {
 			try {

@@ -37,7 +37,6 @@ public class RemoteRunner implements Runner {
 		this.oout.flush();
 	}
 
-	@Override
 	public void configure(ArrayList<String> command, String config) throws IOException {
 		oout.writeObject(Names.NET_CONFIGURE);
 		oout.writeObject(command);
@@ -50,13 +49,11 @@ public class RemoteRunner implements Runner {
 		oout.flush();
 	}
 
-	@Override
 	public void stop() throws IOException {
 		oout.writeObject(Names.NET_STOP);
 		oout.flush();
 	}
 
-	@Override
 	public void quit() {
 		try {
 			oout.writeObject(Names.NET_QUIT);
@@ -67,12 +64,10 @@ public class RemoteRunner implements Runner {
 		}
 	}
 
-	@Override
 	public String getComponentName() {
 		return component;
 	}
 
-	@Override
 	public boolean isAlive() throws IOException {
 		aliveResponse = null;
 		oout.writeObject(Names.NET_ALIVE);
@@ -86,7 +81,6 @@ public class RemoteRunner implements Runner {
 		return aliveResponse;
 	}
 
-	@Override
 	public void start() throws IOException {
 		oout.writeObject(Names.NET_START);
 		oout.flush();
@@ -99,7 +93,6 @@ public class RemoteRunner implements Runner {
 			this.output = output;
 		}
 		
-		@Override
 		public void run() {
 			logger.debug(component + ": output pump alive");
 			String out;
@@ -113,7 +106,6 @@ public class RemoteRunner implements Runner {
 		}
 	}
 	
-	@Override
 	public void setOutput(BufferedReader output) {
 		Thread thread = new Thread(new OutputPump(output));
 		thread.setDaemon(true);

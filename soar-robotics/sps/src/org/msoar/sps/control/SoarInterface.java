@@ -119,7 +119,6 @@ public class SoarInterface implements Kernel.UpdateEventInterface, Kernel.System
 		}
 	}
 
-	@Override
 	public void updateEventHandler(int arg0, Object arg1, Kernel arg2, int arg3) {
 		if (stopSoar) {
 			logger.debug("Stopping Soar");
@@ -149,7 +148,6 @@ public class SoarInterface implements Kernel.UpdateEventInterface, Kernel.System
 		logger.info("Soar interface down");
 	}
 
-	@Override
 	public void systemEventHandler(int eventId, Object arg1, Kernel arg2) {
 		if (eventId == smlSystemEventId.smlEVENT_SYSTEM_START.swigValue()) {
 			logger.info("Soar started.");
@@ -160,7 +158,6 @@ public class SoarInterface implements Kernel.UpdateEventInterface, Kernel.System
 		}
 	}
 
-	@Override
 	public void messageReceived(LCM lcm, String channel, DataInputStream ins) {
 		if (channel.equals(Names.POSE_CHANNEL)) {
 			try {

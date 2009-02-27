@@ -257,7 +257,6 @@ public class Viewer implements LCMSubscriber {
 
 	}
 
-	@Override
 	public void messageReceived(LCM lcm, String channel, DataInputStream ins) {
 		if (channel.equals(LCMInfo.SPLINTER_STATE_CHANNEL)) {
 			try {

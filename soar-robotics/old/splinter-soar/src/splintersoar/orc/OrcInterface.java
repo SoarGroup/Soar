@@ -258,7 +258,6 @@ public class OrcInterface implements LCMSubscriber {
 		}
 	}
 
-	@Override
 	public void messageReceived(LCM lcm, String channel, DataInputStream ins) {
 		if (channel.equals(LCMInfo.COORDS_CHANNEL)) {
 			if (laserxy != null) {
