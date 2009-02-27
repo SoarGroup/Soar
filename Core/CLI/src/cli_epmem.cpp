@@ -263,15 +263,6 @@ bool CommandLineInterface::DoEpMem( const char pOp, const std::string* pAttr, co
 		temp = "mode: ";
 		temp += epmem_get_parameter( m_pAgentSoar, (const long) EPMEM_PARAM_MODE, EPMEM_RETURN_STRING );
 		if ( m_RawOutput )
-			m_Result << temp << "\n";
-		else
-		{
-			AppendArgTagFast( sml_Names::kParamValue, sml_Names::kTypeString, temp.c_str() );
-		}
-
-		temp = "graph-match: ";
-		temp += epmem_get_parameter( m_pAgentSoar, (const long) EPMEM_PARAM_GRAPH_MATCH, EPMEM_RETURN_STRING );
-		if ( m_RawOutput )
 			m_Result << temp << "\n\n";
 		else
 		{
@@ -293,10 +284,11 @@ bool CommandLineInterface::DoEpMem( const char pOp, const std::string* pAttr, co
 		temp = "phase: ";
 		temp += epmem_get_parameter( m_pAgentSoar, (const long) EPMEM_PARAM_PHASE, EPMEM_RETURN_STRING );
 		if ( m_RawOutput )
-			m_Result << temp << "\n";
+			m_Result << temp << "\n\n";
 		else
 		{
 			AppendArgTagFast( sml_Names::kParamValue, sml_Names::kTypeString, temp.c_str() );
+			AppendArgTagFast( sml_Names::kParamValue, sml_Names::kTypeString, "" );
 		}
 
 		temp = "trigger: ";
@@ -317,6 +309,17 @@ bool CommandLineInterface::DoEpMem( const char pOp, const std::string* pAttr, co
 			AppendArgTagFast( sml_Names::kParamValue, sml_Names::kTypeString, temp.c_str() );
 		}
 
+		temp = "exclusions: ";
+		temp += epmem_get_parameter( m_pAgentSoar, (const long) EPMEM_PARAM_EXCLUSIONS, EPMEM_RETURN_STRING );
+		if ( m_RawOutput )
+			m_Result << temp << "\n\n";
+		else
+		{
+			AppendArgTagFast( sml_Names::kParamValue, sml_Names::kTypeString, temp.c_str() );
+			AppendArgTagFast( sml_Names::kParamValue, sml_Names::kTypeString, "" );
+		}
+
+
 		temp = "balance: ";
 		temp_val = epmem_get_parameter( m_pAgentSoar, EPMEM_PARAM_BALANCE );
 		temp2 = to_string( temp_val );
@@ -329,12 +332,15 @@ bool CommandLineInterface::DoEpMem( const char pOp, const std::string* pAttr, co
 			AppendArgTagFast( sml_Names::kParamValue, sml_Names::kTypeString, temp.c_str() );
 		}
 
-		temp = "exclusions: ";
-		temp += epmem_get_parameter( m_pAgentSoar, (const long) EPMEM_PARAM_EXCLUSIONS, EPMEM_RETURN_STRING );
+		temp = "graph-match: ";
+		temp += epmem_get_parameter( m_pAgentSoar, (const long) EPMEM_PARAM_GRAPH_MATCH, EPMEM_RETURN_STRING );
 		if ( m_RawOutput )
-			m_Result << temp << "\n";
+			m_Result << temp << "\n\n";
 		else
+		{
 			AppendArgTagFast( sml_Names::kParamValue, sml_Names::kTypeString, temp.c_str() );
+			AppendArgTagFast( sml_Names::kParamValue, sml_Names::kTypeString, "" );
+		}
 
 		temp = "timers: ";
 		temp += epmem_get_parameter( m_pAgentSoar, (const long) EPMEM_PARAM_TIMERS, EPMEM_RETURN_STRING );
@@ -345,6 +351,7 @@ bool CommandLineInterface::DoEpMem( const char pOp, const std::string* pAttr, co
 			AppendArgTagFast( sml_Names::kParamValue, sml_Names::kTypeString, temp.c_str() );
 			AppendArgTagFast( sml_Names::kParamValue, sml_Names::kTypeString, "" );
 		}
+
 
 		return true;
 	}

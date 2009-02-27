@@ -95,9 +95,8 @@ typedef struct wme_struct wme;
 #define EPMEM_MODE_ONE 1   // tree
 #define EPMEM_MODE_THREE 3 // graph
 
-#define EPMEM_GRAPH_MATCH_OFF 1 // off
-#define EPMEM_GRAPH_MATCH_PATHS 2 // paths
-#define EPMEM_GRAPH_MATCH_WMES 3 // full
+#define EPMEM_GRAPH_MATCH_OFF 1
+#define EPMEM_GRAPH_MATCH_ON 2
 
 #define EPMEM_TRIGGER_NONE 1
 #define EPMEM_TRIGGER_OUTPUT 2
@@ -407,6 +406,19 @@ typedef std::priority_queue<epmem_range_query *, std::vector<epmem_range_query *
 // Mode "three" Types (i.e. Working Memory Graph)
 //////////////////////////////////////////////////////////
 
+// see below
+typedef struct epmem_shared_literal_struct epmem_shared_literal;
+typedef std::vector<epmem_shared_literal *> epmem_shared_literal_list;
+typedef std::list<epmem_shared_literal_list::size_type> epmem_shared_wme_list;
+
+// lookup tables to facilitate shared identifiers
+typedef std::map<epmem_node_id, Symbol *> epmem_id_mapping;
+typedef std::map<epmem_node_id, epmem_shared_literal *> epmem_literal_mapping;
+
+// lookup table to propagate constrained identifiers during
+// full graph-match
+typedef std::map<Symbol *, epmem_node_id> epmem_constraint_list;
+
 // represents a graph edge (i.e. identifier)
 // follows cs theory notation of finite automata: q1 = d( q0, w )
 typedef struct epmem_edge_struct
@@ -421,12 +433,10 @@ typedef struct epmem_wme_cache_element_struct
 {
 	wme **wmes;								// child wmes
 	unsigned EPMEM_TYPE_INT len;			// number of children
-} epmem_wme_cache_element;
+	unsigned EPMEM_TYPE_INT parents;		// number of parents
 
-// see below
-typedef struct epmem_shared_literal_struct epmem_shared_literal;
-typedef std::vector<epmem_shared_literal *> epmem_shared_literal_list;
-typedef std::list<epmem_shared_literal_list::size_type> epmem_shared_wme_list;
+	epmem_literal_mapping *lits;			// child literals
+} epmem_wme_cache_element;
 
 // represents state of a leaf wme
 // at a particular episode
@@ -456,6 +466,7 @@ struct epmem_shared_literal_struct
 	epmem_node_id shared_id;				// shared q1, if identifier
 
 	unsigned EPMEM_TYPE_INT ct;				// number of contributing literals that are "on"
+	unsigned EPMEM_TYPE_INT max;			// number of contributing literals that *need* to be on
 
 	struct wme_struct *wme;					// associated cue wme
 	unsigned EPMEM_TYPE_INT wme_kids;		// number of children the cue wme has
@@ -484,13 +495,6 @@ struct epmem_compare_shared_queries
 	}
 };
 typedef std::priority_queue<epmem_shared_query *, std::vector<epmem_shared_query *>, epmem_compare_shared_queries> epmem_shared_query_list;
-
-// lookup table to facilitate shared identifiers
-typedef std::map<epmem_node_id, Symbol *> epmem_id_mapping;
-
-// lookup table to propagate constrained identifiers during
-// full graph-match
-typedef std::map<Symbol *, epmem_node_id> epmem_constraint_list;
 
 //
 // These must go below types
