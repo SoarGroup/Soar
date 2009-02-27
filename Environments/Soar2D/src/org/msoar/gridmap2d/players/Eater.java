@@ -35,7 +35,6 @@ public class Eater extends Player {
 		if (commander != null) {
 			commander.update(eatersMap);
 		}
-		resetPointsChanged();
 	}
 
 	@Override
