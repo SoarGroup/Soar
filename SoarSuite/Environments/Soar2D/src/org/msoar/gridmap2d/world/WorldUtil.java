@@ -1,6 +1,5 @@
 package org.msoar.gridmap2d.world;
 
-import java.util.Arrays;
 import java.util.List;
 
 import org.apache.log4j.Logger;
@@ -84,7 +83,7 @@ public class WorldUtil {
 	public static int [] getStartingLocation(Player player, GridMap map, int[] initialLocation) throws Exception {
 		int[] location = null;
 		if (initialLocation != null) {
-			location = Arrays.copyOf(initialLocation, initialLocation.length);
+			location = org.msoar.gridmap2d.Arrays.copyOf(initialLocation, initialLocation.length);
 			if (!map.isAvailable(location)) {
 				logger.warn(player.getName() + ": Initial location (" + location[0] + "," + location[1] + ") is blocked, going random.");
 				location = null;

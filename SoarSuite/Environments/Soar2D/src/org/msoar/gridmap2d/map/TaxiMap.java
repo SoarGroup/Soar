@@ -99,7 +99,7 @@ public class TaxiMap implements GridMap, CellObjectObserver {
 		}
 		
 		if (added.hasProperty("passenger")) {
-			passengerLocation = Arrays.copyOf(location, location.length);
+			passengerLocation = org.msoar.gridmap2d.Arrays.copyOf(location, location.length);
 		}
 	}
 

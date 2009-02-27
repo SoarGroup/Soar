@@ -1,6 +1,5 @@
 package org.msoar.gridmap2d.visuals;
 
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -102,7 +101,7 @@ public abstract class VisualWorld extends Canvas implements PaintListener {
 	}
 
 	int [] getCellAtPixel(int [] loc) {
-		int [] pixelLoc = Arrays.copyOf(loc, loc.length);
+		int [] pixelLoc = org.msoar.gridmap2d.Arrays.copyOf(loc, loc.length);
 		pixelLoc[0] /= cellSize;
 		pixelLoc[1] /= cellSize;
 		if (map.isInBounds(pixelLoc)) {

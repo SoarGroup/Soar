@@ -1,7 +1,6 @@
 package org.msoar.gridmap2d.world;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
@@ -171,7 +170,7 @@ public class EatersWorld implements World {
 
 			// Calculate new location
 			int [] oldLocation = players.getLocation(eater);
-			int [] newLocation = Arrays.copyOf(oldLocation, oldLocation.length);
+			int [] newLocation = org.msoar.gridmap2d.Arrays.copyOf(oldLocation, oldLocation.length);
 			Direction.translate(newLocation, command.moveDirection);
 			if (command.jump) {
 				Direction.translate(newLocation, command.moveDirection);
