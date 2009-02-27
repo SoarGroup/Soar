@@ -47,8 +47,6 @@ public class Taxi extends Player {
 		if (commander != null) {
 			commander.update(taxiMap);
 		}
-		
-		resetPointsChanged();
 	}
 	
 	@Override

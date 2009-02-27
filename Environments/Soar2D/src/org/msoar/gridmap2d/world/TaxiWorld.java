@@ -148,6 +148,7 @@ public class TaxiWorld implements World {
 
 		// Collect input
 		for (Taxi taxi : players.getAll()) {
+			taxi.resetPointsChanged();
 			CommandInfo command = forceHuman ? Gridmap2D.control.getHumanCommand(taxi) : taxi.getCommand();
 			if (command == null) {
 				Gridmap2D.control.stopSimulation();

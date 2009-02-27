@@ -114,6 +114,8 @@ public class EatersWorld implements World {
 
 		// Collect input
 		for (Eater eater : players.getAll()) {
+			eater.resetPointsChanged();
+
 			CommandInfo command = forceHuman ? Gridmap2D.control.getHumanCommand(eater) : eater.getCommand();
 			if (command == null) {
 				Gridmap2D.control.stopSimulation();
