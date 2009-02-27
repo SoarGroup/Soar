@@ -1,7 +1,5 @@
 package org.msoar.gridmap2d.players;
 
-import java.util.Arrays;
-
 import org.apache.log4j.Logger;
 import org.msoar.gridmap2d.Direction;
 import org.msoar.gridmap2d.Simulation;
@@ -151,12 +149,12 @@ public class Player {
 	protected void update(int[] newLocation) {
 		moved = (newLocation[0] != this.location[0]) || (newLocation[1] != this.location[1]);
 		if (moved) {
-			this.location = Arrays.copyOf(newLocation, newLocation.length);
+			this.location = org.msoar.gridmap2d.Arrays.copyOf(newLocation, newLocation.length);
 		}
 	}
 	
 	public int[] getLocation() {
-		return Arrays.copyOf(location, location.length);
+		return org.msoar.gridmap2d.Arrays.copyOf(location, location.length);
 	}
 	
 	public boolean getMoved() {
