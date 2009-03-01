@@ -218,6 +218,9 @@ typedef struct wme_struct wme;
 #define EPMEM_STMT_THREE_GET_NODES					27
 #define EPMEM_STMT_THREE_GET_EDGES					28
 
+#define EPMEM_STMT_THREE_GET_HASH					38
+#define EPMEM_STMT_THREE_ADD_HASH					39
+
 #define EPMEM_MAX_STATEMENTS 						40 // must be at least 1+ largest of any STMT constant
 
 // variables (rit vars must be same as stat versions)
