@@ -1,4 +1,4 @@
-package org.msoar.sps.control.io;
+package org.msoar.sps.control.io.i;
 
 import java.util.HashMap;
 import java.util.List;
@@ -38,11 +38,11 @@ public class ReceivedMessagesIL {
 		messages.put(id, message);
 	}
 	
-	boolean remove(int id) {
+	public boolean remove(int id) {
 		return messages.remove(Integer.valueOf(id)) != null;
 	}
 	
-	void clear() {
+	public void clear() {
 		for (Identifier message : messages.values()) {
 			agent.DestroyWME(message);
 		}

@@ -1,4 +1,4 @@
-package org.msoar.sps.control.io;
+package org.msoar.sps.control.io.i;
 
 import java.util.HashMap;
 
@@ -6,7 +6,7 @@ import lcmtypes.pose_t;
 import sml.Agent;
 import sml.Identifier;
 
-class WaypointsIL {
+public class WaypointsIL {
 	private Agent agent;
 	private Identifier waypoints;
 
@@ -17,7 +17,7 @@ class WaypointsIL {
 		this.waypoints = waypoints;
 	}
 
-	void add(double[] waypointxyz, String name, boolean useFloatWmes) {
+	public void add(double[] waypointxyz, String name, boolean useFloatWmes) {
 		WaypointIL waypoint = waypointList.remove(name);
 		if (waypoint != null) {
 			waypoint.disable();
@@ -26,7 +26,7 @@ class WaypointsIL {
 		waypointList.put(name, new WaypointIL(agent, waypointxyz, name, waypoints, useFloatWmes));
 	}
 
-	boolean remove(String name) {
+	public boolean remove(String name) {
 		WaypointIL waypoint = waypointList.remove(name);
 		if (waypoint == null) {
 			return false;
@@ -35,7 +35,7 @@ class WaypointsIL {
 		return true;
 	}
 
-	boolean enable(String name, pose_t pose) {
+	public boolean enable(String name, pose_t pose) {
 		WaypointIL waypoint = waypointList.get(name);
 		if (name == null) {
 			return false;
@@ -45,7 +45,7 @@ class WaypointsIL {
 		return true;
 	}
 
-	boolean disable(String name) {
+	public boolean disable(String name) {
 		WaypointIL waypoint = waypointList.get(name);
 		if (name == null) {
 			return false;
