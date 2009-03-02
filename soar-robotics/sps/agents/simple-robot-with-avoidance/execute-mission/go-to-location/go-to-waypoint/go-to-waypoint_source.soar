@@ -1,3 +1,6 @@
 source elaborations.soar
 source action.soar
+source give-up-on-destination-waypoint.soar
+source initialize-progress.soar
+source record-progress.soar
 source rotate-to.soar

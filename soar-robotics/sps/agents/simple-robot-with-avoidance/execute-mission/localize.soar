@@ -21,7 +21,7 @@ sp {apply*localize*add-starting-waypoint
 # this is complete when we are "at" some waypoint
 sp {apply*localize*complete
    (state <s> ^operator <op>
-              ^waypoints.at
+              ^waypoints.current-waypoint
               ^mission.current <c>)
    (<op> ^name localize)
 -->

@@ -1,7 +1,7 @@
 sp {scout*propose*hide
    (state <s> ^name scout
               ^top-state.entities.entity.area <a>
-              ^waypoints.at <w>)
+              ^waypoints.current-waypoint <w>)
    (<w> ^hide <wh>)
    (<wh> ^area <a>)
 -->
@@ -13,7 +13,7 @@ sp {scout*propose*hide
 sp {scout*propose*hide*switch-hiding-location
    (state <s> ^name scout
               ^top-state.entities.entity.area <a>
-              ^waypoints.at <wh>)
+              ^waypoints.current-waypoint <wh>)
    (<wh> ^hiding <w>)
    (<w> ^hide {<wh-o> <> <wh>})
    (<wh-o> ^area <a>)
@@ -43,7 +43,7 @@ sp {apply*hide*note-hiding
    (exec player-print |Hiding|)
 }
 
-sp {apply*hide*move-to
+sp {apply*hide*destination-waypoint
    (state <s> ^operator <op>
               ^io.output-link <ol>
               ^parameters.throttle <thr>)
@@ -53,8 +53,7 @@ sp {apply*hide*move-to
    (<h> ^x <x>
         ^y <y>)
 -->
-   (<ol> ^move-to <mt>)
+   (<ol> ^add-waypoint <mt>)
    (<mt> ^x <x>
-         ^y <y>
-         ^throttle <thr>)
+         ^y <y>)
 }

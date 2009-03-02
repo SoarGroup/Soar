@@ -9,13 +9,13 @@ sp {execute-mission*propose*mission-operator
    (<op> ^type mission-operator)
 }
 
-# copy mission step info to operator
 sp {execute-mission*elaborate*mission-operator
    (state <s> ^name execute-mission
-              ^operator <op> +
-              ^mission.current.<att> <val>)
-   (<op> ^type mission-operator)
+              ^mission.current <c>
+              ^operator <o> +)
+   (<o> ^type mission-operator)
+   (<c> ^<att> <val>)
 -->
-   (<s> ^operator <op> +)
-   (<op> ^<att> <val>)
+   (<o> ^<att> <val>)
 }
+

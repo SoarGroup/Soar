@@ -13,7 +13,7 @@ sp {elaborate*operator*go-to-location*desired
    
 sp {apply*go-to-location*complete
    (state <s> ^operator <op>
-              ^waypoints.at <w>
+              ^waypoints.current-waypoint <w>
               ^mission.current <c>)
    (<op> ^name go-to-location
          ^desired <w>)

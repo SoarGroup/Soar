@@ -1,6 +1,41 @@
 sp {go-to-waypoint*elaborate*state*destination-waypoint
    (state <s> ^name go-to-waypoint
-              ^superoperator.waypoint <w>)
+              ^superoperator.destination <des>
+              ^io.input-link.self.waypoints.waypoint <w>)
 -->
-   (<s> ^waypoint <w>)
+   (<s> ^destination <des>
+        ^waypoint <w>)
+}
+
+sp {go-to-waypoint*elaborate*yaw-aligned*true
+   (state <s> ^name go-to-waypoint
+              ^parameters <p> 
+              ^waypoint <w>)
+   (<p> ^max-angular-distance <max>
+        ^min-angular-distance <min>)
+  (<w> -^abs-relative-bearing > <max>
+       -^abs-relative-bearing < <min>)
+-->
+   (<s> ^yaw-aligned true)
+   (write (crlf) |Oriented towards dest|)
+}
+
+sp {go-to-waypoint*elaborate*yaw-aligned*false*max
+   (state <s> ^name go-to-waypoint
+              ^parameters.max-angular-distance <max>
+              ^waypoint <w>)
+  -(<w> ^abs-relative-bearing <= <max>)
+-->
+   (<s> ^yaw-aligned false)
+   (write (crlf) |Not oriented towards dest|)
+}
+
+sp {go-to-waypoint*elaborate*yaw-aligned*false*min
+   (state <s> ^name go-to-waypoint
+              ^parameters.min-angular-distance <min>
+              ^waypoint <w>)
+  -(<w> ^abs-relative-bearing >= <min>)
+-->
+   (<s> ^yaw-aligned false)
+   (write (crlf) |Not oriented towards dest|)
 }

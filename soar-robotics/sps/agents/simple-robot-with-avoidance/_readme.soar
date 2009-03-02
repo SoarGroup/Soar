@@ -1,15 +1,12 @@
 # todo list:
-# move update-progress, give-up-on-move-to to go-to-waypoint subgoal
-# merge move-to structure with go-to-location structure
-#   give-up-on-move-to may need changes to support a structure that's always there since some rules treat
-#   the move-to structure like a flag. Probably should just add a flag to the merged structure.
-#   rename structure to make it part of state instead of functional?
-# rename move-now (in go-to-waypoint, etc.) to orientation-complete? It is intended to simply mark that
-#   the initial orientation to the waypoint has been completed, after which additional rotations or moves 
-#   may occur.
 # update code as noted in "how the code works" below.
 
-
+# Notes: JEL - 2/27/2009 
+# 1. Check whether throttle is needs for all actions - must mod data map and action files
+# 3. Does rotation stop forward progress?
+# 4. Need ^status executing while external operator is executing
+# 5. Just find neighboring ones go-to-waypoint*elaborate*range*dist-from-goal*left
+    
 # how the code works
 #
 # 1) The primary operator is execute-mission. The mission structure is a linked list on the top state.
@@ -41,21 +38,22 @@
 #    destination must correspond to a waypoint's location.  The agent will search for the next waypoint to
 #    go to using choose-waypoint (which uses the selection space with iterative deepening). It will then go
 #    to the chosen waypoint with go-to-waypoint. If will track its progress with update-progress, and if it
-#    fails to make sufficient progress, it will give up with give-up-on-move-to. 
+#    fails to make sufficient progress, it will give up with give-up-on-destination-waypoint. 
 #
 # 3) choose-waypoint will propose going to each waypoint that is adjacent to the current waypoint.  If there 
 #    is more than one, the selection space with iterative deepening will take over and determine which one to 
 #    follow. When one is selected, it will remove the waypoint it is at from the input-link and add the one
 #    it wants to go to (thus, there is only one waypoint on the input-link at a time). It will also create
-#    a go-to-location structure on the top-state the keeps track of the waypoint the agent has choosen (this
-#    is used by elaborations/ranges). NOTE: this structure should be merged with the move-to structure.
+#    a destination-waypoint structure on the top-state the keeps track of the waypoint the agent has choosen (this
+#    is used by elaborations/ranges).
 #
 # 4) go-to-waypoint does the following:
-#       1) creates a top-state move-to structure that keeps track of where the source of the movement, 
-#          the destination, the last time progress was being made, and how close the agent was at that time
+#       1) uses the top-state destination-waypoint structure to keep track of where the source of the movement, 
+#          the destination, progress, and how close the agent was at that time
 #          (among other things). This is so the operator can be interrupted (e.g., by an incoming message 
 #          or GDS issue) and still pick up from where it left off. That is, this structure contains enough
 #          information to recreate the state stack for this operator.
+## Need to update description
 #       2) drops into a subgoal that does two things. First it will first execute the rotate-to 
 #          operator to get pointed in the right direction. Then it will execute an action operator which takes
 #          different actions depending on the status of the 5 input arcs. Basically, each arc is marked as blocked
@@ -64,7 +62,7 @@
 #          is in front, it goes forward, and rotates left or right if the arc is to the left or right. Basically, this
 #          causes the agent to get the closest unblocked arc in the center and then moves towards it. 
 #          Once the agent gets within waypoint-tolerance of the destination, go-to-waypoint has succeeded.
-#          This results in the move-to structure getting removed. If this is not the final destination 
+#          This results in the destination-waypoint structure getting removed. If this is not the final destination 
 #          specified by go-to-location, then the agent will return to choose-waypoint.
 #
 # The rest of what follows has not been updated since moving to real robots and the input-link waypoint system.
@@ -78,20 +76,20 @@
 #
 # 5) As the agent is moving towards its next waypoint, the update-progress operator will fire whenever 
 #    it gets closer than min-progress-distance to the destination.  This operator will update the closest
-#    distance and time on the move-to top-state structure. This operator may still work as-is.
+#    distance and time on the destination-waypoint top-state structure. This operator may still work as-is.
 #
 # 6) If the agent doesn't make enough progress within the allotted time (specified by replan-time) then 
-#    the agent will execute the give-up-on-move-to operator. This updates the waypoint map by removing 
+#    the agent will execute the give-up-on-destination-waypoint operator. This updates the waypoint map by removing 
 #    the links between the nodes, sends a message to the other agents to do the same, and then returns 
 #    the source of the go-to-waypoint (this is not timed).  When the agent reaches the source, the top-state 
-#    move-to structure is removed (which completes the give-up-on-move-to operator).  The agent will
+#    destination-waypoint structure is removed (which completes the give-up-on-destination-waypoint operator).  The agent will
 #    then replan from the source location using the updated map.
 #
 # 7) Messages are broadcast as linked lists.  All agents will get the message, including the one that 
 #    sent it. The process-message operator fires for all messages in the top-state, which will blow 
 #    away the state stack. Thus, when an agent gives up, it will update its map, send the message, process 
 #    the message (it will ignore its own messages) re-create the stack stack and finish the giving up 
-#    by executing the move-to command to get back to the source.
+#    by executing the destination-waypoint command to get back to the source.
 #
 # 8) The scout operator orients the agent to the yaw specified by the waypoint (north is 0 degrees, 
 #    east is 90) and waits for an entity to appear or for the scout time to expire.
@@ -123,7 +121,7 @@
 #     to the yaw associated with that waypoint.  When the agent is hiding, it will put a flag on the
 #     top state to prevent the desired-yaw of the scout operator from interfering with the rotation to
 #     face the hiding spot.
-#     NOTE: this currently uses the all/rotate-to operator and the move-to command (which doesn't exist
+#     NOTE: this currently uses the all/rotate-to operator and the destination-waypoint command (which doesn't exist
 #     anymore). It should be changed to use local rotate-to and action operators like go-to-waypoint.
 #     The all/rotate-to operator was from an earlier time when we had to calculate whether we 
 #     were within tolerance ourselves (that is now part of the command). In other words, the all/rotate-to
@@ -148,8 +146,8 @@
 #  complains).  This forces code that belongs together to be split across different locations, which 
 #  can make it hard to follow.
 # Note: this is really an issue with Visual Soar, not Soar
-# Example: elaborations/give-up-on-move-to has rules that are only relevant to
-#  execute-mission/go-to-location/give-up-on-move-to
+# Example: elaborations/give-up-on-destination-waypoint has rules that are only relevant to
+#  execute-mission/go-to-location/give-up-on-destination-waypoint
 # Example: elaborations/process-unfriendly-entity has rules that are only relevant to
 #  execute-mission/scout/process-unfriendly-entity
 # Unworkable solution: It might seem that a good approach is to create a link to the top-state structure 

@@ -1,37 +1,84 @@
-sp {go-to-location*propose*choose-waypoint
+# Choose which waypoint to go to next
+# Two cases: already at a waypoint so can choose a connected waypoint
+#            not at a waypoint so first go to nearest waypoint
+#                 this second could lead to trouble as nearest waypoint is not guaranteed to
+#                  be accessible - more complex would be to turn and see if way is clear
+#                                  to that waypoint before heading toward it.
+
+sp {go-to-location*propose*choose-waypoint*at-current-waypoint
    (state <s> ^name go-to-location
-              ^desired
-              ^waypoints.at.next <w>
-             -^top-state.go-to-location) # not already going to a location
+              ^waypoints.current-waypoint.next <w> # at a waypoint
+             -^top-state.destination-waypoint) # not already going to a location
 -->
-#   (interrupt)
    (<s> ^operator <op> +)
    (<op> ^name choose-waypoint
          ^destination <w>)
 }
 
-# create a top-state structure describing the destination
-# add a waypoint for the destination
-# remove the waypoint that we're "at"
-sp {apply*choose-waypoint
-   (state <s> ^operator <op>
-              ^top-state <ts>
-              ^io <io>
-              ^waypoints.at <wa>)
-   (<io> ^input-link.self.waypoints.waypoint <wr>
-         ^output-link <ol>)
+sp {go-to-location*propose*choose-waypoint*not-at-current-waypoint
+   (state <s> ^name go-to-location
+             -^waypoints.current-waypoint # not at a waypoint
+             -^top-state.abandoned-waypoint.source <source>
+             -^top-state.destination-waypoint) # not already going to a location
+-->
+   (<s> ^operator <op> +, <)
    (<op> ^name choose-waypoint
          ^destination <w>)
-   (<w> ^id <ida> ^x <x> ^y <y>)
-   (<wa> ^id <idr>)
-   (<wr> ^id <idr>)
+}
+
+# return to previous waypoint
+sp {go-to-location*propose*choose-waypoint*abandoned-waypoint
+   (state <s> ^name go-to-location
+              ^top-state.abandoned-waypoint.source <source>
+             -^waypoints.current-waypoint # not at a waypoint 
+             -^top-state.destination-waypoint) # not already going to a location
 -->
-   (<ts> ^go-to-location <gtl>)
-   (<gtl> ^waypoint <w>)
+   (<s> ^operator <op> +, <)
+   (<op> ^name choose-waypoint
+         ^destination <source>)
+}
+
+# Switch waypoint on waypoint-computer
+# remove the waypoint that we're "at" - current-waypoint
+sp {apply*choose-waypoint*add-waypoint-output-link
+   (state <s> ^operator <op>
+              ^io.output-link <ol>
+              ^waypoints.current-waypoint.id <idr>)
+   (<op> ^name choose-waypoint
+         ^destination <w>)
+   (<w> ^id <ida>
+        ^x <x>
+        ^y <y>)
+-->
    (<ol> ^add-waypoint <aw>
-         ^remove-waypoint <rw>)
-   (<aw> ^id <ida> ^x <x> ^y <y>)
-   (<rw> ^id <idr>)
+         ^remove-waypoint.id <idr>)
+   (<aw> ^id <ida>
+         ^x <x>
+         ^y <y>)
+}
+
+sp {apply*choose-waypoint*create-destination-waypoint
+   (state <s> ^operator <op>
+              ^top-state <ts>
+              ^waypoints.current-waypoint <current>)
+   (<op> ^name choose-waypoint
+         ^destination <dest>)
+   (<ts> ^io.input-link.time.seconds <time>)
+-->
+   (<ts> ^destination-waypoint <mt>)
+   (<mt> ^waypoint <dest>
+         ^source <current>)
+}
+
+sp {apply*choose-waypoint*remove-abandoned-waypoint
+   (state <s> ^operator <op>
+              ^top-state <ts>)
+   (<op> ^name choose-waypoint
+         ^destination <dest>)
+   (<ts> ^abandoned-waypoint <ab>)
+   (<ab> ^source <dest>)
+-->
+   (<ts> ^abandoned-waypoint <ab> -)
 }
 
 sp {select*choose-waypoint

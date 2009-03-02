@@ -28,6 +28,6 @@ sp {go-to-location*elaborate*problem-space
 sp {go-to-location*evaluate*state*success
    (state <s> ^desired <d>
               ^problem-space.name go-to-location
-              ^waypoints.at <d>)
+              ^waypoints.current-waypoint <d>)
 -->
    (<s> ^success <d>)}
