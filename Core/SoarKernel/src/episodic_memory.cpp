@@ -35,10 +35,6 @@
 
 #include "sqlite3.h"
 
-// defined in symtab.cpp but not in symtab.h
-extern unsigned long hash_string( const char *s );
-
-
 //////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////
 // Bookmark strings to help navigate the code
@@ -1565,18 +1561,6 @@ const char *epmem_symbol_to_string( agent *my_agent, Symbol *sym )
 
 	return "";
 }
-
-/***************************************************************************
- * Function     : epmem_hash_wme
- * Author		: Nate Derbinsky
- * Notes		: Calculates the hash of a wme as the string hash of
- * 				  the attribute added to the string hash of the value
- **************************************************************************/
-unsigned long epmem_hash_wme( agent *my_agent, wme *w )
-{
-	return ( hash_string( epmem_symbol_to_string( my_agent, w->attr ) ) + hash_string( epmem_symbol_to_string( my_agent, w->value ) ) );
-}
-
 
 //////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////
@@ -3549,17 +3533,20 @@ void epmem_new_episode( agent *my_agent )
 							{
 								r_p = id_reservations.find( wmes[i] );
 
-								// restore reservation info
-								my_hash = r_p->second->my_hash;
-								if ( r_p->second->my_id != EPMEM_NODEID_ROOT )
+								if ( r_p != id_reservations.end() )
 								{
-									wmes[i]->epmem_id = r_p->second->my_id;
-									(*my_agent->epmem_id_replacement)[ wmes[i]->epmem_id ] = r_p->second->my_pool;
-								}
+									// restore reservation info
+									my_hash = r_p->second->my_hash;
+									if ( r_p->second->my_id != EPMEM_NODEID_ROOT )
+									{
+										wmes[i]->epmem_id = r_p->second->my_id;
+										(*my_agent->epmem_id_replacement)[ wmes[i]->epmem_id ] = r_p->second->my_pool;
+									}
 
-								// delete reservation and map entry
-								delete r_p->second;
-								id_reservations.erase( r_p );
+									// delete reservation and map entry
+									delete r_p->second;
+									id_reservations.erase( r_p );
+								}
 							}
 							else
 							{
