@@ -15,7 +15,7 @@ class RangerIL {
 		}
 	}
 
-	void update(laser_t laser) {
+	void update(laser_t laser, boolean useFloatYawWmes) {
 		if (laser == null) {
 			return;
 		}
@@ -25,10 +25,10 @@ class RangerIL {
 		}
 		utimeLast = laser.utime;
 
-		updateSlices(laser);
+		updateSlices(laser, useFloatYawWmes);
 	}
 
-	void updateSlices(laser_t laser) {
+	void updateSlices(laser_t laser, boolean useFloatYawWmes) {
 		// FIXME verify this is general, I think sliceChunk must have no remainder
 		int sliceChunk = laser.nranges / slices.length; // a round number with 180/5 (36)
 
@@ -45,7 +45,7 @@ class RangerIL {
 
 			double end = laser.rad0 + (index - 1) * laser.radstep;
 			
-			slices[slice].update(start, end, distance);
+			slices[slice].update(start, end, distance, useFloatYawWmes);
 		}
 	}
 

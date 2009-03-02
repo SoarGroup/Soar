@@ -21,11 +21,16 @@ public class OutputLinkManager {
 	private SplinterInput command = null;
 	private WaypointsIL waypointsIL;
 	private ReceivedMessagesIL messagesIL;
+	private boolean useFloatYawWmes = true;
 
 	public OutputLinkManager(Agent agent, WaypointsIL waypoints, ReceivedMessagesIL messages) {
 		this.agent = agent;
 		this.waypointsIL = waypoints;
 		this.messagesIL = messages;
+	}
+	
+	public boolean getUseFloatYawWmes() {
+		return useFloatYawWmes;
 	}
 	
 	public boolean getDC(differential_drive_command_t dc, double currentYawRadians) {
@@ -292,7 +297,7 @@ public class OutputLinkManager {
 
 				logger.debug(String.format("add-waypoint: %16s %10.3f %10.3f", id, pos[0], pos[1]));
 
-				waypointsIL.add(pos, id);
+				waypointsIL.add(pos, id, useFloatYawWmes);
 
 				commandwme.AddStatusComplete();
 				continue;
@@ -379,6 +384,22 @@ public class OutputLinkManager {
 				continue;
 			} else if (commandName.equals("clear-messages")) {
 				messagesIL.clear();
+				commandwme.AddStatusComplete();
+				continue;
+			} else if (commandName.equals("configure")) {
+				String yawFormat = commandwme.GetParameterValue("yaw-format");
+				if (yawFormat != null) {
+					if (yawFormat.equals("float")) {
+						useFloatYawWmes = true;
+					} else if (yawFormat.equals("int")) {
+						useFloatYawWmes = false;
+					} else {
+						logger.warn("Unknown yaw-format: " + yawFormat);
+						commandwme.AddStatusError();
+						continue;
+					}
+					logger.info("yaw-format set to " + yawFormat);
+				}
 				commandwme.AddStatusComplete();
 				continue;
 			}

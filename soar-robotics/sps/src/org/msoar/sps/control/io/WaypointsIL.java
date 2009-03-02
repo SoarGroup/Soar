@@ -17,13 +17,13 @@ class WaypointsIL {
 		this.waypoints = waypoints;
 	}
 
-	void add(double[] waypointxyz, String name) {
+	void add(double[] waypointxyz, String name, boolean useFloatWmes) {
 		WaypointIL waypoint = waypointList.remove(name);
 		if (waypoint != null) {
 			waypoint.disable();
 		}
 
-		waypointList.put(name, new WaypointIL(agent, waypointxyz, name, waypoints));
+		waypointList.put(name, new WaypointIL(agent, waypointxyz, name, waypoints, useFloatWmes));
 	}
 
 	boolean remove(String name) {

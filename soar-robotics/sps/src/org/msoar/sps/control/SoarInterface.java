@@ -127,12 +127,12 @@ public class SoarInterface implements Kernel.UpdateEventInterface, Kernel.System
 			kernel.StopAllAgents();
 		}
 
+		output.update(pose, getCurrentUtime());
+		
 		synchronized (this) {
-			input.update(pose, laser, tokens);
+			input.update(pose, laser, tokens, output.getUseFloatYawWmes());
 			tokens = null;
 		}
-		
-		output.update(pose, getCurrentUtime());
 		
 		agent.Commit();
 	}

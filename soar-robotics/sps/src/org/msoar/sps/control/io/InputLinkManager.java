@@ -49,10 +49,10 @@ public class InputLinkManager {
 		agent.Commit();
 	}
 
-	public void update(pose_t pose, laser_t laser, List<String> tokens) {
+	public void update(pose_t pose, laser_t laser, List<String> tokens, boolean useFloatYawWmes) {
 		timeIL.update();
-		selfIL.update(pose, tokens);
-		rangerIL.update(laser);
+		selfIL.update(pose, tokens, useFloatYawWmes);
+		rangerIL.update(laser, useFloatYawWmes);
 	}
 
 	public double getYawRadians() {
