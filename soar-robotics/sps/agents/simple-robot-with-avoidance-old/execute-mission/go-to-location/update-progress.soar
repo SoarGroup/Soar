@@ -1,0 +1,52 @@
+sp {go-to-location*propose*update-progress
+   (state <s> ^name go-to-location
+              ^io.input-link.time.seconds <t>
+              ^top-state.move-to <mt>)
+   (<mt> ^update-dist <ud>
+         ^destination.distance {<d> <= <ud>}
+         ^closest <closest>)
+-->
+   (<s> ^operator <op> +)
+   (<op> ^name update-progress
+         ^time <t>
+         ^distance <d>)
+}
+
+sp {go-to-location*compare*update-progress
+   (state <s> ^name go-to-location
+              ^operator <op1> +
+                        <op2> +)
+   (<op1> ^name update-progress)
+  -(<op2> ^name update-progress)
+  -{(<op2> ^name give-up-on-move-to
+           ^move-to.give-up immediate)}
+-->
+   (<s> ^operator <op1> > <op2>)
+}
+
+
+sp {apply*update-progress
+   (state <s> ^operator <op>
+              ^top-state.move-to <mt>
+             -^waypoints.at <dest>)
+   (<op> ^name update-progress
+         ^time <time>
+         ^distance <d>)
+   (<mt> ^time <oldtime>
+         ^closest <olddist>
+         ^destination <dest>)
+-->
+   (<mt> ^time <oldtime> - <time>
+         ^closest <olddist> - <d>)
+}
+
+sp {apply*update-progress*at-destination
+   (state <s> ^operator <op>
+              ^top-state <ts>
+              ^waypoints.at <dest>)
+   (<op> ^name update-progress)
+   (<ts> ^move-to <mt>)
+   (<mt> ^destination <dest>)
+-->
+   (<ts> ^move-to <mt> -)
+}

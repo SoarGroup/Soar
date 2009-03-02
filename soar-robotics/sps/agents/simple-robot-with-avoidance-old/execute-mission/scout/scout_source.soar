@@ -1,0 +1,11 @@
+source elaborations.soar
+source hide.soar
+pushd hide
+source hide_source.soar
+popd
+source rotate.soar
+source send-entity-report.soar
+source unhide.soar
+pushd unhide
+source unhide_source.soar
+popd

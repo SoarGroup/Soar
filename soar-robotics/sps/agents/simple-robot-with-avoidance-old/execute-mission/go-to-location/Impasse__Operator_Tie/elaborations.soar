@@ -1,0 +1,4 @@
+sp {Impasse__Operator_Tie*elaborate*superstate-set
+   (state <s> ^superstate <ss>)
+-->
+   (<s> ^superstate-set <ss>)}
