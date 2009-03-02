@@ -426,6 +426,9 @@ agent * create_soar_agent (char * agent_name) {                                 
   newAgent->epmem_edge_mins = new std::vector<epmem_time_id>();
   newAgent->epmem_edge_maxes = new std::vector<epmem_time_id>();
 
+  newAgent->epmem_id_repository = new epmem_parent_id_pool();
+  newAgent->epmem_id_replacement = new epmem_return_id_pool();
+
   newAgent->epmem_validation = 0;
   newAgent->epmem_first_switch = true;
 
@@ -578,6 +581,8 @@ void destroy_soar_agent (agent * delete_agent)
   delete delete_agent->epmem_edge_removals;
   delete delete_agent->epmem_edge_mins;
   delete delete_agent->epmem_edge_maxes;
+  delete delete_agent->epmem_id_repository;
+  delete delete_agent->epmem_id_replacement;
 
   // cleanup wma
   wma_clean_parameters( delete_agent );

@@ -422,6 +422,17 @@ typedef std::map<epmem_node_id, epmem_shared_literal *> epmem_literal_mapping;
 // full graph-match
 typedef std::map<Symbol *, epmem_node_id> epmem_constraint_list;
 
+// types/structures to facilitate re-use of identifiers
+typedef std::map<epmem_node_id, epmem_node_id> epmem_id_pool;
+typedef std::map<EPMEM_TYPE_INT, epmem_id_pool *> epmem_hashed_id_pool;
+typedef std::map<epmem_node_id, epmem_hashed_id_pool *> epmem_parent_id_pool;
+typedef std::map<epmem_node_id, epmem_id_pool *> epmem_return_id_pool;
+typedef struct epmem_id_reservation_struct
+{
+	epmem_node_id my_id;
+	EPMEM_TYPE_INT my_hash;
+} epmem_id_reservation;
+
 // represents a graph edge (i.e. identifier)
 // follows cs theory notation of finite automata: q1 = d( q0, w )
 typedef struct epmem_edge_struct

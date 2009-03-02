@@ -2126,13 +2126,23 @@ void epmem_close( agent *my_agent )
 		if ( epmem_in_transaction( my_agent ) )
 			epmem_transaction_end( my_agent, true );
 
-		// perform mode-specific cleanup as necessary
-		// note: not being used, so commented out to avoid compiler warning
-		/*
+		// perform mode-specific cleanup as necessary		
 		const long mode = epmem_get_parameter( my_agent, EPMEM_PARAM_MODE, EPMEM_RETURN_LONG );
+		if ( mode == EPMEM_MODE_THREE )
 		{
+			epmem_parent_id_pool::iterator p;
+			epmem_hashed_id_pool::iterator p_p;
+
+			for ( p=my_agent->epmem_id_repository->begin(); p!=my_agent->epmem_id_repository->end(); p++ )
+			{
+				for ( p_p=p->second->begin(); p_p!=p->second->end(); p_p++ )
+				{
+					delete p_p->second;
+				}
+
+				delete p->second;
+			}
 		}
-		*/
 
 		// deallocate query statements
 		for ( int i=0; i<EPMEM_MAX_STATEMENTS; i++ )
@@ -2577,6 +2587,9 @@ void epmem_init_db( agent *my_agent, bool readonly = false )
 			my_agent->epmem_edge_maxes->clear();
 			my_agent->epmem_edge_removals->clear();
 
+			(*my_agent->epmem_id_repository)[ EPMEM_NODEID_ROOT ] = new epmem_hashed_id_pool();
+			my_agent->epmem_id_replacement->clear();
+
 			// initialize time
 			epmem_set_stat( my_agent, (const long) EPMEM_STAT_TIME, 1 );
 
@@ -3007,7 +3020,7 @@ void epmem_init_db( agent *my_agent, bool readonly = false )
  * Notes		: Returns a temporally unique integer representing
  *                a symbol constant.
  **************************************************************************/
-EPMEM_TYPE_INT epmem_temporal_hash( agent *my_agent, Symbol *sym )
+EPMEM_TYPE_INT epmem_temporal_hash( agent *my_agent, Symbol *sym, bool add_on_fail = true )
 {
 	EPMEM_TYPE_INT return_val = NULL;
 
@@ -3029,7 +3042,7 @@ EPMEM_TYPE_INT epmem_temporal_hash( agent *my_agent, Symbol *sym )
 		}
 
 		// add (type, value)
-		if ( !return_val )
+		if ( !return_val && add_on_fail )
 		{
 			EPMEM_SQLITE_BIND_INT( my_agent->epmem_statements[ EPMEM_STMT_ADD_HASH ], 1, SYM_CONSTANT_SYMBOL_TYPE );
 			sqlite3_bind_text( my_agent->epmem_statements[ EPMEM_STMT_ADD_HASH ], 2, (const char *) sym->sc.name, EPMEM_DB_PREP_STR_MAX, SQLITE_STATIC );
@@ -3053,7 +3066,7 @@ EPMEM_TYPE_INT epmem_temporal_hash( agent *my_agent, Symbol *sym )
 		}
 
 		// add (type, value)
-		if ( !return_val )
+		if ( !return_val && add_on_fail )
 		{
 			EPMEM_SQLITE_BIND_INT( my_agent->epmem_statements[ EPMEM_STMT_ADD_HASH ], 1, INT_CONSTANT_SYMBOL_TYPE );
 			EPMEM_SQLITE_BIND_INT( my_agent->epmem_statements[ EPMEM_STMT_ADD_HASH ], 2, sym->ic.value );
@@ -3077,7 +3090,7 @@ EPMEM_TYPE_INT epmem_temporal_hash( agent *my_agent, Symbol *sym )
 		}
 
 		// add (type, value)
-		if ( !return_val )
+		if ( !return_val && add_on_fail )
 		{
 			EPMEM_SQLITE_BIND_INT( my_agent->epmem_statements[ EPMEM_STMT_ADD_HASH ], 1, FLOAT_CONSTANT_SYMBOL_TYPE );
 			sqlite3_bind_double( my_agent->epmem_statements[ EPMEM_STMT_ADD_HASH ], 2, sym->fc.value );
@@ -3382,6 +3395,13 @@ void epmem_new_episode( agent *my_agent )
 		EPMEM_TYPE_INT my_hash;		// attribute
 		EPMEM_TYPE_INT my_hash2;	// value
 
+		// id repository		
+		epmem_id_pool **my_id_repo;
+		epmem_id_pool::iterator pool_p;
+		std::map<wme *, epmem_id_reservation *> id_reservations;
+		std::map<wme *, epmem_id_reservation *>::iterator r_p;
+		epmem_id_reservation *new_id_reservation;
+
 		// used to implement attribute label exclusions
 		const char *attr_name;
 
@@ -3393,9 +3413,6 @@ void epmem_new_episode( agent *my_agent )
 		// prevent recording exclusions
 		std::list<const char *>::iterator exclusion;
 		bool should_exclude;
-
-		// check for current MVAs
-		std::map<Symbol *, unsigned EPMEM_TYPE_INT> level_counters;
 
 		// initialize BFS
 		parent_syms.push( my_agent->top_goal );
@@ -3414,13 +3431,58 @@ void epmem_new_episode( agent *my_agent )
 
 			if ( wmes != NULL )
 			{
-				// check for MVAs
+				// pre-assign unknown identifiers with known children (prevents ordering issues with unknown children)				
 				for ( i=0; i<len; i++ )
 				{
-					if ( !wmes[i]->acceptable )
-						level_counters[ wmes[i]->attr ]++;
-				}
+					if ( ( wmes[i]->value->common.symbol_type == IDENTIFIER_SYMBOL_TYPE ) &&
+						 ( ( wmes[i]->epmem_id == NULL ) || ( wmes[i]->epmem_valid != my_agent->epmem_validation ) ) &&
+						 ( wmes[i]->value->id.epmem_id ) )
+					{
+						// prevent acceptables from being recorded
+						if ( wmes[i]->acceptable )
+							continue;
 
+						// prevent exclusions from being recorded
+						should_exclude = false;
+						attr_name = epmem_symbol_to_string( my_agent, wmes[i]->attr );
+						for ( exclusion=my_agent->epmem_exclusions->begin();
+							  ( ( !should_exclude ) && ( exclusion!=my_agent->epmem_exclusions->end() ) );
+							  exclusion++ )
+							if ( strcmp( attr_name, (*exclusion) ) == 0 )
+								should_exclude = true;
+						if ( should_exclude )
+							continue;
+						
+						// if still here, create reservation
+						new_id_reservation = new epmem_id_reservation;
+						new_id_reservation->my_hash = epmem_temporal_hash( my_agent, wmes[i]->attr );
+						new_id_reservation->my_id = EPMEM_NODEID_ROOT;
+
+						// try to find appropriate reservation
+						my_id_repo =& (*(*my_agent->epmem_id_repository)[ parent_id ])[ new_id_reservation->my_hash ];
+						if ( (*my_id_repo) )
+						{
+							if ( !(*my_id_repo)->empty() )
+							{
+								pool_p = (*my_id_repo)->find( wmes[i]->value->id.epmem_id );
+								if ( pool_p != (*my_id_repo)->end() )
+								{
+									new_id_reservation->my_id = pool_p->second;									
+									(*my_id_repo)->erase( pool_p );									
+								}
+							}
+						}
+						else
+						{
+							// add repository								
+							(*my_id_repo) = new epmem_id_pool();
+						}
+
+						id_reservations[ wmes[i] ] = new_id_reservation;
+						new_id_reservation = NULL;
+					}
+				}
+				
 				for ( i=0; i<len; i++ )
 				{
 					// prevent acceptables from being recorded
@@ -3446,77 +3508,44 @@ void epmem_new_episode( agent *my_agent )
 							wmes[i]->epmem_valid = my_agent->epmem_validation;
 							wmes[i]->epmem_id = NULL;
 
-							// get temporal hash
-							my_hash = epmem_temporal_hash( my_agent, wmes[i]->attr );
-
-							// try to get node id
-							if ( wmes[i]->value->id.epmem_id != NULL )
+							// in the case of a known child, we already have a reservation
+							if ( wmes[i]->value->id.epmem_id )
 							{
-								// find (q0, w, q1)
-								EPMEM_SQLITE_BIND_INT( my_agent->epmem_statements[ EPMEM_STMT_THREE_FIND_EDGE_UNIQUE_SHARED ], 1, parent_id );
-								EPMEM_SQLITE_BIND_INT( my_agent->epmem_statements[ EPMEM_STMT_THREE_FIND_EDGE_UNIQUE_SHARED ], 2, my_hash );								
-								EPMEM_SQLITE_BIND_INT( my_agent->epmem_statements[ EPMEM_STMT_THREE_FIND_EDGE_UNIQUE_SHARED ], 3, wmes[i]->value->id.epmem_id );								
+								r_p = id_reservations.find( wmes[i] );
 
-								// if found - yippee!
-								// assign id, update times as necessary
-								if ( sqlite3_step( my_agent->epmem_statements[ EPMEM_STMT_THREE_FIND_EDGE_UNIQUE_SHARED ] ) == SQLITE_ROW )
+								// restore reservation info
+								my_hash = r_p->second->my_hash;
+								if ( r_p->second->my_id != EPMEM_NODEID_ROOT )
 								{
-									wmes[i]->epmem_id = EPMEM_SQLITE_COLUMN_INT( my_agent->epmem_statements[ EPMEM_STMT_THREE_FIND_EDGE_UNIQUE_SHARED ], 0 );
-
-									// definitely don't update/delete
-									(*my_agent->epmem_edge_removals)[ wmes[i]->epmem_id ] = false;
-
-									// we insert if current time is > 1+ max
-									if ( (*my_agent->epmem_edge_maxes)[ wmes[i]->epmem_id - 1 ] < ( time_counter - 1 ) )
-										epmem_edge.push( wmes[i]->epmem_id );
-
-									// update max irrespectively
-									(*my_agent->epmem_edge_maxes)[ wmes[i]->epmem_id - 1 ] = time_counter;
+									wmes[i]->epmem_id = r_p->second->my_id;
 								}
 
-								sqlite3_reset( my_agent->epmem_statements[ EPMEM_STMT_THREE_FIND_EDGE_UNIQUE_SHARED ] );
+								// delete reservation and map entry
+								delete r_p->second;
+								id_reservations.erase( r_p );
 							}
 							else
 							{
-								// assumption: if we encounter an unknown non-mva that
-								// is historically singular (only a single instance has
-								// ever occurred in an episode), then we can assume
-								// persistent identity
+								// get temporal hash
+								my_hash = epmem_temporal_hash( my_agent, wmes[i]->attr );
 
-								if ( level_counters[ wmes[i]->attr ] == 1 )
+								// try to find node
+								my_id_repo =& (*(*my_agent->epmem_id_repository)[ parent_id ])[ my_hash ];
+								if ( (*my_id_repo) )
 								{
-									// (parent_id, q1) = q0, w
-									// EPMEM_STMT_THREE_FIND_EDGE_UNIQUE
-
-									EPMEM_SQLITE_BIND_INT( my_agent->epmem_statements[ EPMEM_STMT_THREE_FIND_EDGE_UNIQUE ], 1, parent_id );									
-									EPMEM_SQLITE_BIND_INT( my_agent->epmem_statements[ EPMEM_STMT_THREE_FIND_EDGE_UNIQUE ], 2, my_hash );
-
-									// if found, make sure there are no additional rows
-									if ( sqlite3_step( my_agent->epmem_statements[ EPMEM_STMT_THREE_FIND_EDGE_UNIQUE ] ) == SQLITE_ROW )
-									{
-										wmes[i]->epmem_id = EPMEM_SQLITE_COLUMN_INT( my_agent->epmem_statements[ EPMEM_STMT_THREE_FIND_EDGE_UNIQUE ], 0 );
-										wmes[i]->value->id.epmem_id = EPMEM_SQLITE_COLUMN_INT( my_agent->epmem_statements[ EPMEM_STMT_THREE_FIND_EDGE_UNIQUE ], 1 );
-
-										if ( sqlite3_step( my_agent->epmem_statements[ EPMEM_STMT_THREE_FIND_EDGE_UNIQUE ] ) == SQLITE_ROW )
-										{
-											wmes[i]->epmem_id = NULL;
-											wmes[i]->value->id.epmem_id = NULL;
-										}
-										else
-										{
-											// definitely don't update/delete
-											(*my_agent->epmem_edge_removals)[ wmes[i]->epmem_id ] = false;
-
-											// we insert if current time is > 1+ max
-											if ( (*my_agent->epmem_edge_maxes)[ wmes[i]->epmem_id - 1 ] < ( time_counter - 1 ) )
-												epmem_edge.push( wmes[i]->epmem_id );
-
-											// update max irrespectively
-											(*my_agent->epmem_edge_maxes)[ wmes[i]->epmem_id - 1 ] = time_counter;
-										}
+									// if something leftover, use it
+									if ( !(*my_id_repo)->empty() )
+									{										
+										pool_p = (*my_id_repo)->begin();
+										wmes[i]->epmem_id = pool_p->second;
+										wmes[i]->value->id.epmem_id = pool_p->first;
+										(*my_id_repo)->erase( pool_p );
 									}
-
-									sqlite3_reset( my_agent->epmem_statements[ EPMEM_STMT_THREE_FIND_EDGE_UNIQUE ] );
+								}
+								else
+								{
+									// add repository								
+									(*my_id_repo) = new epmem_id_pool();
 								}
 							}
 
@@ -3529,6 +3558,9 @@ void epmem_new_episode( agent *my_agent )
 									wmes[i]->value->id.epmem_id = epmem_get_stat( my_agent, EPMEM_STAT_NEXT_ID );
 									epmem_set_stat( my_agent, EPMEM_STAT_NEXT_ID, wmes[i]->value->id.epmem_id + 1 );
 									epmem_set_variable( my_agent, EPMEM_VAR_NEXT_ID, wmes[i]->value->id.epmem_id + 1);
+
+									// add repository
+									(*my_agent->epmem_id_repository)[ wmes[i]->value->id.epmem_id ] = new epmem_hashed_id_pool();
 								}
 
 								// insert (q0,w,q1)
@@ -3540,10 +3572,24 @@ void epmem_new_episode( agent *my_agent )
 
 								wmes[i]->epmem_id = (epmem_node_id) sqlite3_last_insert_rowid( my_agent->epmem_db );
 
+								(*my_agent->epmem_id_replacement)[ wmes[i]->epmem_id ] = (*my_id_repo);
+
 								// new nodes definitely start
 								epmem_edge.push( wmes[i]->epmem_id );
 								my_agent->epmem_edge_mins->push_back( time_counter );
-								my_agent->epmem_edge_maxes->push_back( time_counter );
+								my_agent->epmem_edge_maxes->push_back( time_counter );								
+							}
+							else
+							{
+								// definitely don't update/delete
+								(*my_agent->epmem_edge_removals)[ wmes[i]->epmem_id ] = false;
+
+								// we insert if current time is > 1+ max
+								if ( (*my_agent->epmem_edge_maxes)[ wmes[i]->epmem_id - 1 ] < ( time_counter - 1 ) )
+									epmem_edge.push( wmes[i]->epmem_id );
+
+								// update max irrespectively
+								(*my_agent->epmem_edge_maxes)[ wmes[i]->epmem_id - 1 ] = time_counter;
 							}
 						}
 						else
@@ -3628,9 +3674,6 @@ void epmem_new_episode( agent *my_agent )
 
 				// free space from aug list
 				free_memory( my_agent, wmes, MISCELLANEOUS_MEM_USAGE );
-
-				// free mva list
-				level_counters.clear();
 			}
 		}
 
@@ -3718,7 +3761,7 @@ void epmem_new_episode( agent *my_agent )
 			while ( r != my_agent->epmem_edge_removals->end() )
 			{
 				if ( r->second )
-				{
+				{					
 					// remove NOW entry
 					// id = ?
 					EPMEM_SQLITE_BIND_INT( my_agent->epmem_statements[ EPMEM_STMT_THREE_DELETE_EDGE_NOW ], 1, r->first );
