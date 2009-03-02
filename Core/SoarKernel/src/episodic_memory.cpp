@@ -2989,6 +2989,39 @@ void epmem_init_db( agent *my_agent, bool readonly = false )
 					sqlite3_finalize( create );
 				}
 			}
+
+			// get id pools			
+			{
+				epmem_node_id q0;
+				EPMEM_TYPE_INT w;
+				epmem_node_id q1;
+				epmem_node_id parent_id;
+
+				epmem_hashed_id_pool **hp;
+				epmem_id_pool **ip;
+				
+				my_assert = ( sqlite3_prepare_v2( my_agent->epmem_db, "SELECT q0, w, q1, parent_id FROM edge_unique", EPMEM_DB_PREP_STR_MAX, &create, &tail ) == SQLITE_OK );
+				assert( my_assert );
+
+				while ( sqlite3_step( create ) == SQLITE_ROW )
+				{
+					q0 = EPMEM_SQLITE_COLUMN_INT( create, 0 );
+					w = EPMEM_SQLITE_COLUMN_INT( create, 1 );
+					q1 = EPMEM_SQLITE_COLUMN_INT( create, 2 );
+					parent_id = EPMEM_SQLITE_COLUMN_INT( create, 3 );
+
+					hp =& (*my_agent->epmem_id_repository)[ q0 ];
+					if ( !(*hp) )
+						(*hp) = new epmem_hashed_id_pool();
+
+					ip =& (*(*hp))[ w ];
+					if ( !(*ip) )
+						(*ip) = new epmem_id_pool();
+
+					(*(*ip))[ q1 ] = parent_id;
+				}
+				sqlite3_finalize( create );
+			}
 		}
 
 		epmem_transaction_end( my_agent, true );
@@ -3457,6 +3490,7 @@ void epmem_new_episode( agent *my_agent )
 						new_id_reservation = new epmem_id_reservation;
 						new_id_reservation->my_hash = epmem_temporal_hash( my_agent, wmes[i]->attr );
 						new_id_reservation->my_id = EPMEM_NODEID_ROOT;
+						new_id_reservation->my_pool = NULL;
 
 						// try to find appropriate reservation
 						my_id_repo =& (*(*my_agent->epmem_id_repository)[ parent_id ])[ new_id_reservation->my_hash ];
@@ -3467,7 +3501,9 @@ void epmem_new_episode( agent *my_agent )
 								pool_p = (*my_id_repo)->find( wmes[i]->value->id.epmem_id );
 								if ( pool_p != (*my_id_repo)->end() )
 								{
-									new_id_reservation->my_id = pool_p->second;									
+									new_id_reservation->my_id = pool_p->second;
+									new_id_reservation->my_pool = (*my_id_repo);
+
 									(*my_id_repo)->erase( pool_p );									
 								}
 							}
@@ -3518,6 +3554,7 @@ void epmem_new_episode( agent *my_agent )
 								if ( r_p->second->my_id != EPMEM_NODEID_ROOT )
 								{
 									wmes[i]->epmem_id = r_p->second->my_id;
+									(*my_agent->epmem_id_replacement)[ wmes[i]->epmem_id ] = r_p->second->my_pool;
 								}
 
 								// delete reservation and map entry
@@ -3540,6 +3577,8 @@ void epmem_new_episode( agent *my_agent )
 										wmes[i]->epmem_id = pool_p->second;
 										wmes[i]->value->id.epmem_id = pool_p->first;
 										(*my_id_repo)->erase( pool_p );
+
+										(*my_agent->epmem_id_replacement)[ wmes[i]->epmem_id ] = (*my_id_repo);
 									}
 								}
 								else
@@ -3571,7 +3610,6 @@ void epmem_new_episode( agent *my_agent )
 								sqlite3_reset( my_agent->epmem_statements[ EPMEM_STMT_THREE_ADD_EDGE_UNIQUE ] );
 
 								wmes[i]->epmem_id = (epmem_node_id) sqlite3_last_insert_rowid( my_agent->epmem_db );
-
 								(*my_agent->epmem_id_replacement)[ wmes[i]->epmem_id ] = (*my_id_repo);
 
 								// new nodes definitely start

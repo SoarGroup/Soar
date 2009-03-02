@@ -431,6 +431,7 @@ typedef struct epmem_id_reservation_struct
 {
 	epmem_node_id my_id;
 	EPMEM_TYPE_INT my_hash;
+	epmem_id_pool *my_pool;
 } epmem_id_reservation;
 
 // represents a graph edge (i.e. identifier)
