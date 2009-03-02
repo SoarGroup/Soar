@@ -9,3 +9,4 @@ source go-to-waypoint.soar
 pushd go-to-waypoint
 source go-to-waypoint_source.soar
 popd
+source set-waypoint-computer.soar

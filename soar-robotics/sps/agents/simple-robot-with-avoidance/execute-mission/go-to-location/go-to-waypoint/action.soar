@@ -63,7 +63,7 @@ sp {apply*action*rotate
    (<a> ^rotate <params>)
    (<params> ^direction <dir>)
 -->
-   (<ol> ^<action> <acopy>)
+   (<ol> ^rotate <acopy>)
    (<acopy> ^direction <dir>
             ^throttle <thr>)
 }
@@ -78,7 +78,7 @@ sp {apply*action*move
    (<a> ^move <params>)
    (<params> ^direction <dir>)
 -->
-   (<ol> ^<action> <acopy>)
+   (<ol> ^move <acopy>)
    (<acopy> ^direction <dir>
             ^throttle <thr>)
 }

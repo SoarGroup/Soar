@@ -1,6 +1,7 @@
 sp {go-to-waypoint*propose*give-up-on-destination-waypoint
    (state <s> ^name go-to-waypoint
-              ^top-state.destination-waypoint.give-up true)
+              ^top-state.destination-waypoint <mt>)
+   (<mt> ^give-up true)
 -->
    (<s> ^operator <op> +, =, >)
    (<op> ^name give-up-on-destination-waypoint

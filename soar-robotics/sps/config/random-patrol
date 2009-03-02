@@ -3,5 +3,5 @@ include = common;
 all = [viewer, sim, control, debugger];
 
 control_config {
-	productions = "agents/simple-robot-with-avoidance-patrol-lab.soar";
+	productions = "agents/simple-robot-with-avoidance-patrol-y.soar";
 }

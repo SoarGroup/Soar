@@ -16,7 +16,7 @@ sp {elaborate*operator*go-to-waypoint*waypoint
    (state <s> ^io.input-link.self.waypoints.waypoint <w>
               ^operator <o>)
    (<o> ^name go-to-waypoint
-        ^destination.id <id>)
+        ^destination.waypoint.id <id>)
    (<w> ^id <id>)
 -->
    (<o> ^waypoint <w>)

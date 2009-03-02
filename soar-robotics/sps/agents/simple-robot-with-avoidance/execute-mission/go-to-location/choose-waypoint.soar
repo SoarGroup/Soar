@@ -38,24 +38,6 @@ sp {go-to-location*propose*choose-waypoint*abandoned-waypoint
          ^destination <source>)
 }
 
-# Switch waypoint on waypoint-computer
-# remove the waypoint that we're "at" - current-waypoint
-sp {apply*choose-waypoint*add-waypoint-output-link
-   (state <s> ^operator <op>
-              ^io.output-link <ol>
-              ^waypoints.current-waypoint.id <idr>)
-   (<op> ^name choose-waypoint
-         ^destination <w>)
-   (<w> ^id <ida>
-        ^x <x>
-        ^y <y>)
--->
-   (<ol> ^add-waypoint <aw>
-         ^remove-waypoint.id <idr>)
-   (<aw> ^id <ida>
-         ^x <x>
-         ^y <y>)
-}
 
 sp {apply*choose-waypoint*create-destination-waypoint
    (state <s> ^operator <op>

@@ -1,4 +1,4 @@
-269
+271
 SOAR_ID 0
 SOAR_ID 1
 SOAR_ID 2
@@ -268,7 +268,9 @@ FLOAT_RANGE 265 -Infinity Infinity
 FLOAT_RANGE 266 -Infinity Infinity
 ENUMERATION 267 2 immediate true
 FLOAT_RANGE 268 -Infinity Infinity
-347
+ENUMERATION 269 1 set-waypoint-computer
+SOAR_ID 270
+349
 0 abandoned-waypoint 251
 0 attribute 92
 0 choices 91
@@ -406,6 +408,7 @@ FLOAT_RANGE 268 -Infinity Infinity
 68 name 70
 68 operator 88
 68 operator 239
+68 operator 270
 68 parameters 227
 68 problem-space 45
 68 success 28
@@ -616,3 +619,4 @@ FLOAT_RANGE 268 -Infinity Infinity
 251 waypoint 28
 253 name 252
 262 name 261
+270 name 269
