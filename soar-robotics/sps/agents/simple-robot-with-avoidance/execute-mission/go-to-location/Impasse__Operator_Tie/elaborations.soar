@@ -3,3 +3,17 @@ sp {Impasse__Operator_Tie*elaborate*superstate-set
               ^superstate <ss>)
 -->
    (<s> ^superstate-set <ss>)}
+
+sp {Impasse__Operator_Conflict*elaborate*
+   (state <s> ^impasse conflict)
+-->
+   (interrupt)
+   (<s> ^interrupt t)}
+
+sp {Impasse__Operator_tie*elaborate*stop
+   (state <s> ^impasse tie
+              ^superstate.top-state.io.output-link <ol>)
+-->
+   (<ol> ^stop <x>)
+}
+

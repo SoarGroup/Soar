@@ -19,9 +19,12 @@ sp {go-to-location*propose*choose-waypoint*not-at-current-waypoint
    (state <s> ^name go-to-location
              -^waypoints.current-waypoint # not at a waypoint
              -^top-state.abandoned-waypoint.source <source>
-             -^top-state.destination-waypoint) # not already going to a location
+             -^top-state.destination-waypoint
+              ^waypoints.waypoint <w>) # not already going to a location
 -->
-   (<s> ^operator <op> +, <)
+   (write (crlf) |Lost!|)
+ #  (interrupt)
+   (<s> ^operator <op> +, <, =)
    (<op> ^name choose-waypoint
          ^destination <w>)
 }
@@ -30,7 +33,7 @@ sp {go-to-location*propose*choose-waypoint*not-at-current-waypoint
 sp {go-to-location*propose*choose-waypoint*abandoned-waypoint
    (state <s> ^name go-to-location
               ^top-state.abandoned-waypoint.source <source>
-             -^waypoints.current-waypoint # not at a waypoint 
+             -^waypoints.current-waypoint # not at a waypoint
              -^top-state.destination-waypoint) # not already going to a location
 -->
    (<s> ^operator <op> +, <)
@@ -38,14 +41,12 @@ sp {go-to-location*propose*choose-waypoint*abandoned-waypoint
          ^destination <source>)
 }
 
-
 sp {apply*choose-waypoint*create-destination-waypoint
    (state <s> ^operator <op>
               ^top-state <ts>
               ^waypoints.current-waypoint <current>)
    (<op> ^name choose-waypoint
          ^destination <dest>)
-   (<ts> ^io.input-link.time.seconds <time>)
 -->
    (<ts> ^destination-waypoint <mt>)
    (<mt> ^waypoint <dest>
@@ -58,9 +59,13 @@ sp {apply*choose-waypoint*remove-abandoned-waypoint
    (<op> ^name choose-waypoint
          ^destination <dest>)
    (<ts> ^abandoned-waypoint <ab>)
-   (<ab> ^source <dest>)
+   (<ab> ^source <dest>
+         ^waypoint <current>)
 -->
-   (<ts> ^abandoned-waypoint <ab> -)
+   (<ts> ^abandoned-waypoint <ab> -
+         ^destination-waypoint <mt>)
+   (<mt> ^waypoint <dest>
+         ^source <current>)
 }
 
 sp {select*choose-waypoint

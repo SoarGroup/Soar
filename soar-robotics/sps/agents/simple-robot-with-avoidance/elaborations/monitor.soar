@@ -18,3 +18,31 @@
 #   (write (crlf) | Operator tie between | <name1> | & | <name2>)
 #   (interrupt)
 #}
+
+sp {monitor*waypoints*at-waypoint
+   (state <s> ^superstate nil
+              ^waypoints.current-waypoint <a>)
+   (<a> ^x <x> ^y <y>)
+-->
+   (write (crlf) |Current-waypoint: (| <x> |,| <y> |)|)
+}
+
+sp {monitor*waypoints*at-waypoint*top
+   (state <s> ^superstate nil
+              ^waypoints.current-waypoint <a>)
+   (<a> ^x <x> ^y <y>)
+-->
+   (exec player-print |Current-waypoint: (| <x> |,| <y> |)|)
+}
+
+sp {monitor*multiple-ats
+   (state <s> ^superstate nil
+              ^waypoints <ws>)
+   (<ws> ^current-waypoint <a1> {<a2> <> <a1>})
+   (<a1> ^next)
+   (<a2> ^next)
+-->
+   (write (crlf) |Multiple ats in waypoints: | <a1> | | <a2>)
+   (exec print |Multiple ats in waypoints: | <a1> | | <a2>)
+ #  (interrupt)
+}

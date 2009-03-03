@@ -5,4 +5,4 @@ source output.soar
 source parameters.soar
 source ranges.soar
 source top-state.soar
-source waypoints.soar
+source waypoint.soar

@@ -8,3 +8,11 @@ sp {evaluate-operator*evaluate*state*failure*duplicate
                ^waypoints.current-waypoint <a>)
 -->
    (<s2> ^failure <d>)}
+
+sp {evaluate-operator*create*top-state
+   (state <s> ^name evaluate-operator
+              ^superstate.superstate <ss>)
+-->
+   (<ss> ^top-state <ts>)
+       
+}

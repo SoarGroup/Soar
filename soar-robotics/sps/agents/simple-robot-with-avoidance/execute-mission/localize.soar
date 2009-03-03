@@ -18,10 +18,10 @@ sp {apply*localize*add-starting-waypoint
    (<aw> ^id <id> ^x <x> ^y <y>)
 }
 
-# this is complete when we are "at" some waypoint
+# this is complete when we are "near" some waypoint
 sp {apply*localize*complete
    (state <s> ^operator <op>
-              ^waypoints.current-waypoint
+              ^waypoints.near-waypoint
               ^mission.current <c>)
    (<op> ^name localize)
 -->

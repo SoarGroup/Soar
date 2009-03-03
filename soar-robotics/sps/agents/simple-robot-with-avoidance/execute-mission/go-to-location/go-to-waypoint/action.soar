@@ -23,7 +23,7 @@ sp {go-to-waypoint*compare*action
    (<op1> ^name action
           ^angular-distance <d>)
    (<op2> ^name action
-        - ^angular-distance < <d>)
+        - ^angular-distance <= <d>)
 -->
    (<s> ^operator <op1> > <op2>)
 }

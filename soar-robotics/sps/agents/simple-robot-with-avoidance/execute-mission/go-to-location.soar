@@ -7,7 +7,7 @@ sp {elaborate*operator*go-to-location*desired
    (<op> ^name go-to-location
          ^id <id>)
 -->
-   (<op> ^desired <w>)
+   (<op> ^desired-waypoint <w>)
 }
 
    
@@ -16,7 +16,7 @@ sp {apply*go-to-location*complete
               ^waypoints.current-waypoint <w>
               ^mission.current <c>)
    (<op> ^name go-to-location
-         ^desired <w>)
+         ^desired-waypoint <w>)
 -->
    (<c> ^status complete)
 }

@@ -14,26 +14,6 @@ sp {apply*initialize-simple-robot
         ^entities <e>)
 }
 
-sp {apply*initialize-simple-robot*create-mission
-   (state <s> ^operator <op>)
-   (<op> ^name initialize-simple-robot)
--->
-   (<s> ^mission <m>)
-   (<m> ^first <s1>)
-   (<s1> ^name start
-         ^delay-time 0
-         ^next <s2>)
-   (<s2> ^name go-to-location
-         ^x 5 ^y 0
-         ^next <s3>)
-   (<s3> ^name scout
-         ^return-time 60
-         ^next <s4>)
-   (<s4> ^name go-to-location
-         ^x 0 ^y 0
-         ^next nil)
-}
-
 #sp {elaborate*initialize-simple-robot*set-desired
 #   (state <s> ^waypoints.waypoint <w>)
 #   (<w> ^x -2 ^y -1)
