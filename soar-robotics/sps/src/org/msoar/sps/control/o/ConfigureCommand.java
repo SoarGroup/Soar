@@ -1,7 +1,7 @@
 /**
  * 
  */
-package org.msoar.sps.control.io.o;
+package org.msoar.sps.control.o;
 
 import org.apache.log4j.Logger;
 

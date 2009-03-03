@@ -1,4 +1,4 @@
-package org.msoar.sps.control.io.o;
+package org.msoar.sps.control.o;
 
 import java.util.HashMap;
 
@@ -6,8 +6,8 @@ import lcmtypes.differential_drive_command_t;
 import lcmtypes.pose_t;
 
 import org.apache.log4j.Logger;
-import org.msoar.sps.control.io.i.ReceivedMessagesIL;
-import org.msoar.sps.control.io.i.WaypointsIL;
+import org.msoar.sps.control.i.ReceivedMessagesIL;
+import org.msoar.sps.control.i.WaypointsIL;
 
 import sml.Agent;
 import sml.Identifier;

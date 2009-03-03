@@ -1,7 +1,7 @@
 /**
  * 
  */
-package org.msoar.sps.control.io.o;
+package org.msoar.sps.control.o;
 
 import lcmtypes.pose_t;
 import sml.Identifier;

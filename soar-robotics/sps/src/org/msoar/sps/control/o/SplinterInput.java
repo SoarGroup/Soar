@@ -1,4 +1,4 @@
-package org.msoar.sps.control.io.o;
+package org.msoar.sps.control.o;
 
 import java.util.Arrays;
 
