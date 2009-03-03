@@ -13,46 +13,52 @@ import sml.Identifier;
 class AddWaypointCommand implements Command {
 	private static Logger logger = Logger.getLogger(AddWaypointCommand.class);
 	
-	public SplinterInput execute(SplinterInput input, Identifier commandwme, pose_t pose, OutputLinkManager outputLinkManager) {
-		String id = commandwme.GetParameterValue("id");
+	public CommandStatus execute(Identifier command, pose_t pose, OutputLinkManager outputLinkManager) {
+		String id = command.GetParameterValue("id");
 		if (id == null) {
 			logger.warn("No id on add-waypoint command");
-			commandwme.AddStatusError();
-			return input;
+			return CommandStatus.error;
 		}
 
 		if (pose == null) {
 			logger.error("add-waypoint called with no current pose");
-			commandwme.AddStatusError();
-			return input;
+			return CommandStatus.error;
 		}
 		
 		double[] pos = Arrays.copyOf(pose.pos, pose.pos.length);
 		try {
-			pos[0] = Double.parseDouble(commandwme.GetParameterValue("x"));
+			pos[0] = Double.parseDouble(command.GetParameterValue("x"));
 		} catch (NullPointerException ignored) {
 			// no x param is ok, use current
 		} catch (NumberFormatException e) {
-			logger.warn("Unable to parse x: " + commandwme.GetParameterValue("x"));
-			commandwme.AddStatusError();
-			return input;
+			logger.warn("Unable to parse x: " + command.GetParameterValue("x"));
+			return CommandStatus.error;
 		}
 
 		try {
-			pos[1] = Double.parseDouble(commandwme.GetParameterValue("y"));
+			pos[1] = Double.parseDouble(command.GetParameterValue("y"));
 		} catch (NullPointerException ignored) {
 			// no y param is ok, use current
 		} catch (NumberFormatException e) {
-			logger.warn("Unable to parse y: " + commandwme.GetParameterValue("y"));
-			commandwme.AddStatusError();
-			return input;
+			logger.warn("Unable to parse y: " + command.GetParameterValue("y"));
+			return CommandStatus.error;
 		}
 
 		logger.debug(String.format("add-waypoint: %16s %10.3f %10.3f", id, pos[0], pos[1]));
-
 		outputLinkManager.waypointsIL.add(pos, id, outputLinkManager.useFloatYawWmes);
 
-		commandwme.AddStatusComplete();
-		return input;
+		return CommandStatus.complete;
+	}
+
+	public boolean isInterruptable() {
+		return false;
+	}
+
+	public boolean modifiesInput() {
+		return false;
+	}
+
+	public void updateInput(SplinterInput input) {
+		assert false;
 	}
 }

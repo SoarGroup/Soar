@@ -11,17 +11,20 @@ import sml.Identifier;
 class StopCommand implements Command {
 	private static Logger logger = Logger.getLogger(StopCommand.class);
 	
-	public SplinterInput execute(SplinterInput input, Identifier commandwme, pose_t pose, OutputLinkManager outputLinkManager) {
-		if (input != null) {
-			// This is a warning
-			logger.warn("Stop command received, possibly overriding previous orders");
-		}
-
+	public CommandStatus execute(Identifier command, pose_t pose, OutputLinkManager outputLinkManager) {
 		logger.debug("stop:");
+		return CommandStatus.complete;
+	}
 
-		input = new SplinterInput(0);
+	public boolean isInterruptable() {
+		return false;
+	}
 
-		commandwme.AddStatusComplete();
-		return input;
+	public boolean modifiesInput() {
+		return true;
+	}
+
+	public void updateInput(SplinterInput input) {
+		input.stop();
 	}
 }

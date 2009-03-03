@@ -11,31 +11,36 @@ import sml.Identifier;
 class MoveCommand implements Command {
 	private static Logger logger = Logger.getLogger(MoveCommand.class);
 	
-	public SplinterInput execute(SplinterInput input, Identifier commandwme, pose_t pose, OutputLinkManager outputLinkManager) {
-		if (input != null) {
-			logger.warn("Move command received but motors already have orders");
-			commandwme.AddStatusError();
-			return input;
-		}
-
-		String direction = commandwme.GetParameterValue("direction");
-		if (direction == null) {
+	private enum Direction {
+		forward,
+		backward,
+		stop;
+	}
+	
+	private Direction direction;
+	private double throttle;
+	
+	public CommandStatus execute(Identifier command, pose_t pose, OutputLinkManager outputLinkManager) {
+		String directionString = command.GetParameterValue("direction");
+		if (directionString == null) {
 			logger.warn("No direction on move command");
-			commandwme.AddStatusError();
-			return input;
+			return CommandStatus.error;
+		}
+		
+		direction = Direction.valueOf(directionString);
+		if (direction == null) {
+			logger.warn("Unknown direction on move command: " + directionString);
+			return CommandStatus.error;
 		}
 
-		double throttle = 0;
 		try {
-			throttle = Double.parseDouble(commandwme.GetParameterValue("throttle"));
+			throttle = Double.parseDouble(command.GetParameterValue("throttle"));
 		} catch (NullPointerException ex) {
 			logger.warn("No throttle on move command");
-			commandwme.AddStatusError();
-			return input;
+			return CommandStatus.error;
 		} catch (NumberFormatException e) {
-			logger.warn("Unable to parse throttle: " + commandwme.GetParameterValue("throttle"));
-			commandwme.AddStatusError();
-			return input;
+			logger.warn("Unable to parse throttle: " + command.GetParameterValue("throttle"));
+			return CommandStatus.error;
 		}
 
 		throttle = Math.max(throttle, 0);
@@ -43,19 +48,25 @@ class MoveCommand implements Command {
 
 		logger.debug(String.format("move: %10s %10.3f", direction, throttle));
 
-		if (direction.equals("backward")) {
-			input = new SplinterInput(throttle * -1);
-		} else if (direction.equals("forward")) {
-			input = new SplinterInput(throttle);
-		} else if (direction.equals("stop")) {
-			input = new SplinterInput(0);
-		} else {
-			logger.warn("Unknown direction on move command: " + commandwme.GetParameterValue("direction"));
-			commandwme.AddStatusError();
-			return input;
-		}
+		return direction == Direction.stop ? CommandStatus.complete : CommandStatus.executing;
+	}
 
-		commandwme.AddStatusComplete();
-		return input;
+	public boolean isInterruptable() {
+		return false;
+	}
+
+	public boolean modifiesInput() {
+		return true;
+	}
+
+	public void updateInput(SplinterInput input) {
+		if (direction == Direction.backward) {
+			input.move(throttle * -1);
+		} else if (direction == Direction.forward) {
+			input.move(throttle);
+		} else {
+			assert direction == Direction.stop;
+			input.stop();
+		}
 	}
 }

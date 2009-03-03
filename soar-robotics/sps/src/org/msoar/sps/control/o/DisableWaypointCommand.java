@@ -11,23 +11,32 @@ import sml.Identifier;
 class DisableWaypointCommand implements Command {
 	private static Logger logger = Logger.getLogger(DisableWaypointCommand.class);
 	
-	public SplinterInput execute(SplinterInput input, Identifier commandwme, pose_t pose, OutputLinkManager outputLinkManager) {
-		String id = commandwme.GetParameterValue("id");
+	public CommandStatus execute(Identifier command, pose_t pose, OutputLinkManager outputLinkManager) {
+		String id = command.GetParameterValue("id");
 		if (id == null) {
 			logger.warn("No id on disable-waypoint command");
-			commandwme.AddStatusError();
-			return input;
+			return CommandStatus.error;
 		}
 
 		logger.debug(String.format("disable-waypoint: %16s", id));
 
 		if (outputLinkManager.waypointsIL.disable(id) == false) {
 			logger.warn("Unable to disable waypoint " + id + ", no such waypoint");
-			commandwme.AddStatusError();
-			return input;
+			return CommandStatus.error;
 		}
 
-		commandwme.AddStatusComplete();
-		return input;
+		return CommandStatus.complete;
+	}
+
+	public boolean isInterruptable() {
+		return false;
+	}
+
+	public boolean modifiesInput() {
+		return false;
+	}
+
+	public void updateInput(SplinterInput input) {
+		assert false;
 	}
 }

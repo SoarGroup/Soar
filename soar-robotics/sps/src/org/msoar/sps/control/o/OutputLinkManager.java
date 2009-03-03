@@ -20,12 +20,16 @@ public class OutputLinkManager {
 	private static Logger logger = Logger.getLogger(OutputLinkManager.class);
 
 	private Agent agent;
-	private SplinterInput command = null;
+	private SplinterInput input = new SplinterInput();
 	WaypointsIL waypointsIL;
 	ReceivedMessagesIL messagesIL;
 	boolean useFloatYawWmes = true;
-	HashMap<String, Command> commands = new HashMap<String, Command>();
+	private HashMap<String, Command> commands = new HashMap<String, Command>();
 
+	private Identifier runningCommandWme;
+	private CommandStatus runningCommandStatus;
+	private boolean runningCommandIsInterruptable = false;
+	
 	public OutputLinkManager(Agent agent, WaypointsIL waypoints, ReceivedMessagesIL messages) {
 		this.agent = agent;
 		this.waypointsIL = waypoints;
@@ -51,35 +55,101 @@ public class OutputLinkManager {
 	}
 	
 	public boolean getDC(differential_drive_command_t dc, double currentYawRadians) {
-		if (command == null) {
-			return false;
+		synchronized (input) {
+			if (!input.hasInput()) {
+				return false;
+			}
+			CommandStatus status = input.getDC(dc, currentYawRadians);
+			if (runningCommandWme != null) {
+				if (status == CommandStatus.executing) {
+					if (runningCommandStatus == CommandStatus.accepted) {
+						runningCommandStatus = CommandStatus.executing;
+						CommandStatus.executing.addStatus(agent, runningCommandWme);
+					}
+				} else if (status == CommandStatus.complete) {
+					CommandStatus.complete.addStatus(agent, runningCommandWme);
+					runningCommandWme = null;
+				}
+			}
 		}
-		command.getDC(dc, currentYawRadians);
 		return true;
 	}
 	
 	public void update(pose_t pose, long lastUpdate) {
-		SplinterInput newSplinterInput = null;
-
 		// process output
+		boolean producedInput = false;
 		for (int i = 0; i < agent.GetNumberCommands(); ++i) {
-			Identifier commandwme = agent.GetCommand(i);
-			String commandName = commandwme.GetAttribute();
-			Command command = commands.get(commandName);
-			if (command == null) {
+			Identifier commandWme = agent.GetCommand(i);
+			if (runningCommandWme != null) {
+				if (commandWme.GetTimeTag() == runningCommandWme.GetTimeTag()) {
+					continue;
+				}
+			}
+			
+			String commandName = commandWme.GetAttribute();
+			logger.trace(commandName + " " + commandWme.GetTimeTag());
+			
+			Command commandObject = commands.get(commandName);
+			if (commandObject == null) {
 				logger.warn("Unknown command: " + commandName);
-				commandwme.AddStatusError();
+				CommandStatus.error.addStatus(agent, commandWme);
 				continue;
 			}
 			
-			newSplinterInput = command.execute(newSplinterInput, commandwme, pose, this);
-		}
+			if (commandObject.modifiesInput() && producedInput) {
+				logger.warn("Multiple input commands received, skipping " + commandName);
+				continue;
+			}
+			
+			CommandStatus status = commandObject.execute(commandWme, pose, this);
+			if (status == CommandStatus.error) {
+				CommandStatus.error.addStatus(agent, commandWme);
+				continue;
+			}
 
-		if (newSplinterInput != null) {
-			command = newSplinterInput;
+			if (status == CommandStatus.accepted) {
+				CommandStatus.accepted.addStatus(agent, commandWme);
+				
+			} else if (status == CommandStatus.executing) {
+				CommandStatus.accepted.addStatus(agent, commandWme);
+				CommandStatus.executing.addStatus(agent, commandWme);
+				
+			} else if (status == CommandStatus.complete) {
+				CommandStatus.accepted.addStatus(agent, commandWme);
+				CommandStatus.complete.addStatus(agent, commandWme);
+				
+			} else {
+				throw new IllegalStateException();
+			}
+			
+			if (commandObject.modifiesInput()) {
+				producedInput = true;
+				synchronized (input) {
+					if (runningCommandWme != null) {
+						if (runningCommandIsInterruptable) {
+							CommandStatus.interrupted.addStatus(agent, runningCommandWme);
+						} else {
+							CommandStatus.complete.addStatus(agent, runningCommandWme);
+						}
+						runningCommandWme = null;
+					}
+					
+					if (status != CommandStatus.complete) {
+						runningCommandWme = commandWme;
+						runningCommandIsInterruptable = commandObject.isInterruptable();
+						runningCommandStatus = status;
+					}
+					
+					commandObject.updateInput(input);
+					input.setUtime(lastUpdate);
+				}
+			}
 		}
-		if (command != null) {
-			command.setUtime(lastUpdate);
+		
+		if (!producedInput) {
+			synchronized (input) {
+				input.setUtime(lastUpdate);
+			}
 		}
-	}
+	}	
 }

@@ -11,8 +11,8 @@ import sml.Identifier;
 class ConfigureCommand implements Command {
 	private static Logger logger = Logger.getLogger(ConfigureCommand.class);
 	
-	public SplinterInput execute(SplinterInput input, Identifier commandwme, pose_t pose, OutputLinkManager outputLinkManager) {
-		String yawFormat = commandwme.GetParameterValue("yaw-format");
+	public CommandStatus execute(Identifier command, pose_t pose, OutputLinkManager outputLinkManager) {
+		String yawFormat = command.GetParameterValue("yaw-format");
 		if (yawFormat != null) {
 			if (yawFormat.equals("float")) {
 				outputLinkManager.useFloatYawWmes = true;
@@ -20,12 +20,22 @@ class ConfigureCommand implements Command {
 				outputLinkManager.useFloatYawWmes = false;
 			} else {
 				logger.warn("Unknown yaw-format: " + yawFormat);
-				commandwme.AddStatusError();
-				return input;
+				return CommandStatus.error;
 			}
 			logger.info("yaw-format set to " + yawFormat);
 		}
-		commandwme.AddStatusComplete();
-		return input;
+		return CommandStatus.complete;
+	}
+
+	public boolean isInterruptable() {
+		return false;
+	}
+
+	public boolean modifiesInput() {
+		return false;
+	}
+
+	public void updateInput(SplinterInput input) {
+		assert false;
 	}
 }

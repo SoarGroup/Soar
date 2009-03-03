@@ -11,65 +11,64 @@ import sml.Identifier;
 class RotateToCommand implements Command {
 	private static Logger logger = Logger.getLogger(RotateToCommand.class);
 	
-	public SplinterInput execute(SplinterInput input, Identifier commandwme, pose_t pose, OutputLinkManager outputLinkManager) {
-		if (input != null) {
-			logger.warn("Rotate-to command received but motors already have orders");
-			commandwme.AddStatusError();
-			return input;
-		}
-
-		double yaw = 0;
+	double yaw;
+	double tolerance;
+	double throttle;
+	
+	public CommandStatus execute(Identifier command, pose_t pose, OutputLinkManager outputLinkManager) {
 		try {
-			yaw = Double.parseDouble(commandwme.GetParameterValue("yaw"));
+			yaw = Double.parseDouble(command.GetParameterValue("yaw"));
 		} catch (NullPointerException ex) {
 			logger.warn("No yaw on rotate-to command");
-			commandwme.AddStatusError();
-			return input;
+			return CommandStatus.error;
 		} catch (NumberFormatException e) {
-			logger.warn("Unable to parse yaw: " + commandwme.GetParameterValue("yaw"));
-			commandwme.AddStatusError();
-			return input;
+			logger.warn("Unable to parse yaw: " + command.GetParameterValue("yaw"));
+			return CommandStatus.error;
 		}
 		yaw = Math.toRadians(yaw);
 
-		double tolerance = 0;
 		try {
-			tolerance = Double.parseDouble(commandwme.GetParameterValue("tolerance"));
+			tolerance = Double.parseDouble(command.GetParameterValue("tolerance"));
 		} catch (NullPointerException ex) {
 			logger.warn("No tolerance on rotate-to command");
-			commandwme.AddStatusError();
-			return input;
+			return CommandStatus.error;
 		} catch (NumberFormatException e) {
-			logger.warn("Unable to parse tolerance: " + commandwme.GetParameterValue("tolerance"));
-			commandwme.AddStatusError();
-			return input;
+			logger.warn("Unable to parse tolerance: " + command.GetParameterValue("tolerance"));
+			return CommandStatus.error;
 		}
 
 		tolerance = Math.toRadians(tolerance);
 		tolerance = Math.max(tolerance, 0);
 		tolerance = Math.min(tolerance, Math.PI);
 
-		double throttle = 0;
 		try {
-			throttle = Double.parseDouble(commandwme.GetParameterValue("throttle"));
+			throttle = Double.parseDouble(command.GetParameterValue("throttle"));
 		} catch (NullPointerException ex) {
 			logger.warn("No throttle on rotate-to command");
-			commandwme.AddStatusError();
-			return input;
+			return CommandStatus.error;
 		} catch (NumberFormatException e) {
-			logger.warn("Unable to parse throttle: " + commandwme.GetParameterValue("throttle"));
-			commandwme.AddStatusError();
-			return input;
+			logger.warn("Unable to parse throttle: " + command.GetParameterValue("throttle"));
+			return CommandStatus.error;
 		}
 
 		throttle = Math.max(throttle, 0);
 		throttle = Math.min(throttle, 1.0);
 
 		logger.debug(String.format("rotate-to: %10.3f %10.3f %10.3f", yaw, tolerance, throttle));
+		
+		return CommandStatus.accepted;
+	}
 
-		input = new SplinterInput(yaw, tolerance, throttle);
+	
+	public boolean isInterruptable() {
+		return true;
+	}
 
-		commandwme.AddStatusComplete();
-		return input;
+	public boolean modifiesInput() {
+		return true;
+	}
+
+	public void updateInput(SplinterInput input) {
+		input.rotateTo(yaw, tolerance, throttle);
 	}
 }

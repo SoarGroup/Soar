@@ -11,29 +11,37 @@ import sml.Identifier;
 class RemoveMessageCommand implements Command {
 	private static Logger logger = Logger.getLogger(RemoveMessageCommand.class);
 	
-	public SplinterInput execute(SplinterInput input, Identifier commandwme, pose_t pose, OutputLinkManager outputLinkManager) {
+	public CommandStatus execute(Identifier command, pose_t pose, OutputLinkManager outputLinkManager) {
 		int id = -1;
 		try {
-			id = Integer.parseInt(commandwme.GetParameterValue("id"));
+			id = Integer.parseInt(command.GetParameterValue("id"));
 		} catch (NullPointerException ignored) {
 			logger.warn("No id on remove-message command");
-			commandwme.AddStatusError();
-			return input;
+			return CommandStatus.error;
 		} catch (NumberFormatException e) {
-			logger.warn("Unable to parse id: " + commandwme.GetParameterValue("id"));
-			commandwme.AddStatusError();
-			return input;
+			logger.warn("Unable to parse id: " + command.GetParameterValue("id"));
+			return CommandStatus.error;
 		}
 
 		logger.debug(String.format("remove-message: %d", id));
 		
 		if (outputLinkManager.messagesIL.remove(id) == false) {
 			logger.warn("Unable to remove message " + id + ", no such message");
-			commandwme.AddStatusError();
-			return input;
+			return CommandStatus.error;
 		}
 
-		commandwme.AddStatusComplete();
-		return input;
+		return CommandStatus.complete;
+	}
+
+	public boolean isInterruptable() {
+		return false;
+	}
+
+	public boolean modifiesInput() {
+		return false;
+	}
+
+	public void updateInput(SplinterInput input) {
+		assert false;
 	}
 }

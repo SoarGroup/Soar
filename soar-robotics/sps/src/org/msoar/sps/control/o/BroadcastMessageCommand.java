@@ -11,9 +11,20 @@ import sml.Identifier;
 class BroadcastMessageCommand implements Command {
 	private static Logger logger = Logger.getLogger(BroadcastMessageCommand.class);
 	
-	public SplinterInput execute(SplinterInput input, Identifier commandwme, pose_t pose, OutputLinkManager outputLinkManager) {
+	public CommandStatus execute(Identifier command, pose_t pose, OutputLinkManager outputLinkManager) {
 		logger.warn("broadcast-message command not implemented, ignoring");
-		commandwme.AddStatusError();
-		return input;
+		return CommandStatus.error;
+	}
+
+	public boolean isInterruptable() {
+		return false;
+	}
+
+	public boolean modifiesInput() {
+		return false;
+	}
+
+	public void updateInput(SplinterInput input) {
+		assert false;
 	}
 }
