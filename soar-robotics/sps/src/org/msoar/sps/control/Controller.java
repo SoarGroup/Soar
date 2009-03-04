@@ -4,12 +4,6 @@ import java.io.DataInputStream;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.io.OutputStream;
-import java.net.InetSocketAddress;
-import java.net.URI;
-import java.util.Arrays;
-import java.util.Iterator;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Timer;
 import java.util.TimerTask;
@@ -23,16 +17,11 @@ import org.apache.log4j.Logger;
 import org.msoar.sps.Names;
 import org.msoar.sps.config.Config;
 import org.msoar.sps.config.ConfigFile;
+import org.msoar.sps.control.html.HttpController;
 
-import com.sun.net.httpserver.HttpExchange;
-import com.sun.net.httpserver.HttpHandler;
-import com.sun.net.httpserver.HttpServer;
-
-
-public class Controller extends TimerTask implements LCMSubscriber, HttpHandler {
+public class Controller extends TimerTask implements LCMSubscriber {
 	private static Logger logger = Logger.getLogger(Controller.class);
 	private static int DEFAULT_RANGES_COUNT = 5;
-	private static int HTTP_PORT = 8000;
 	
 	private Config config;
 	private Gamepad gp;
@@ -42,6 +31,7 @@ public class Controller extends TimerTask implements LCMSubscriber, HttpHandler 
 	private LCM lcm;
 	private FileWriter tagWriter;
 	private long poseUtime;
+	private HttpController httpController = new HttpController();
 	
 	private enum Buttons {
 		OVERRIDE, SOAR, TANK, SLOW, TAG;
@@ -98,20 +88,7 @@ public class Controller extends TimerTask implements LCMSubscriber, HttpHandler 
 
 		Runtime.getRuntime().addShutdownHook(new ShutdownHook());
 		
-		try {
-		    HttpServer server = HttpServer.create(new InetSocketAddress(HTTP_PORT), 0);
-		    server.createContext("/", this);
-		    server.start();
-		} catch (IOException e) {
-			logger.fatal("Error starting http server: " + e.getMessage());
-			e.printStackTrace();
-			System.exit(1);
-		}
-		
-		logger.info("http server running on port " + HTTP_PORT);
-
 	    timer.schedule(this, 0, 1000 / 10); // 10 Hz
-		
 	}
 	
 	public class ShutdownHook extends Thread {
@@ -139,6 +116,12 @@ public class Controller extends TimerTask implements LCMSubscriber, HttpHandler 
 		for (Buttons button : Buttons.values()) {
 			button.update();
 		}
+		
+		List<String> messageTokens = httpController.getMessageTokens();
+		if (messageTokens != null) {
+			soar.setStringInput(messageTokens);
+		}
+		
 		if (gp != null) {
 			if (Buttons.OVERRIDE.isEnabled()) {
 				getDC(dc);
@@ -234,55 +217,6 @@ public class Controller extends TimerTask implements LCMSubscriber, HttpHandler 
 			config = new Config(new ConfigFile());
 		}
 		new Controller(config);
-	}
-
-//	private void sendIndex(HttpExchange xchg) throws IOException {
-//	    StringBuffer response = new StringBuffer();
-//
-//	    // I'm sure there is a better way to pipe this stuff!
-//	    InputStreamReader ir = new InputStreamReader(Controller.class.getResourceAsStream("/org/msoar/sps/control/html/index.html"));
-//	    BufferedReader br = new BufferedReader(ir);
-//	    
-//	    String line;
-//	    while ((line = br.readLine()) != null) {
-//	    	response.append(line);
-//	    	response.append("\n");
-//	    }
-//	    
-//		sendResponse(xchg, response.toString());
-//	}
-
-	public void handle(HttpExchange xchg) throws IOException {
-		URI uri = xchg.getRequestURI();
-		logger.info("http request: " + uri.getPath());
-
-		//String[] tokens = uri.getPath().split("/");
-		List<String> tokens = new LinkedList<String>(Arrays.asList(uri.getPath().split("/")));
-		Iterator<String> iter = tokens.iterator();
-		while (iter.hasNext()) {
-			if (iter.next().length() == 0) {
-				iter.remove();
-			}
-		}
-		soar.setStringInput(tokens);
-		
-	    StringBuffer response = new StringBuffer();
-	    if (tokens.size() > 0) {
-		    response.append("Sent: ");
-		    response.append(Arrays.toString(tokens.toArray(new String[tokens.size()])));
-		    response.append("\n");
-	    } else {
-	    	response.append("Cleared all messages.\n");
-	    }
-	    
-	    sendResponse(xchg, response.toString());
-	}
-	
-	private void sendResponse(HttpExchange xchg, String response) throws IOException {
-	    xchg.sendResponseHeaders(200, response.length());
-	    OutputStream os = xchg.getResponseBody();
-	    os.write(response.toString().getBytes());
-	    os.close();
 	}
 
 }

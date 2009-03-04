@@ -2,6 +2,7 @@ package org.msoar.sps.control;
 
 import java.io.DataInputStream;
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.List;
 
 import org.apache.log4j.Logger;
@@ -180,8 +181,16 @@ public class SoarInterface implements Kernel.UpdateEventInterface, Kernel.System
 	}
 
 	public void setStringInput(List<String> tokens) {
+		List<String> warn = null;
 		synchronized (this) {
+			warn = (this.tokens != null ? this.tokens : null);
 			this.tokens = tokens;
+		}
+		if (warn != null) {
+			logger.warn("Overwriting message " 
+					+ Arrays.toString(warn.toArray(new String[warn.size()]))
+					+ " with "
+					+ Arrays.toString(tokens.toArray(new String[tokens.size()])));
 		}
 	}
 
