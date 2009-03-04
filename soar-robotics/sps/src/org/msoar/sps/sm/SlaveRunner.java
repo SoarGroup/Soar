@@ -12,7 +12,7 @@ import org.apache.log4j.Logger;
 import org.msoar.sps.Names;
 
 class SlaveRunner {
-	private static Logger logger = Logger.getLogger(SlaveRunner.class);
+	private static final Logger logger = Logger.getLogger(SlaveRunner.class);
 			
 	private Runner runner;
 	private ObjectInputStream oin;

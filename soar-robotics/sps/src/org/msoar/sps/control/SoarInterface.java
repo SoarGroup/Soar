@@ -22,7 +22,7 @@ import lcmtypes.laser_t;
 import lcmtypes.pose_t;
 
 public class SoarInterface implements Kernel.UpdateEventInterface, Kernel.SystemEventInterface, LCMSubscriber {
-	private static Logger logger = Logger.getLogger(SoarInterface.class);
+	private static final Logger logger = Logger.getLogger(SoarInterface.class);
 
 	private Kernel kernel;
 	private Agent agent;

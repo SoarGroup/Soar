@@ -9,7 +9,7 @@ import lcmtypes.pose_t;
 import sml.Identifier;
 
 class MoveCommand implements Command {
-	private static Logger logger = Logger.getLogger(MoveCommand.class);
+	private static final Logger logger = Logger.getLogger(MoveCommand.class);
 	
 	private enum Direction {
 		forward,

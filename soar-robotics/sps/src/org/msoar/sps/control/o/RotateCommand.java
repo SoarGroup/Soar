@@ -9,7 +9,7 @@ import lcmtypes.pose_t;
 import sml.Identifier;
 
 class RotateCommand implements Command {
-	private static Logger logger = Logger.getLogger(RotateCommand.class);
+	private static final Logger logger = Logger.getLogger(RotateCommand.class);
 
 	private enum Direction {
 		left,

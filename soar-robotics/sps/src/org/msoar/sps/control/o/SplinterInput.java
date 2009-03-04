@@ -9,7 +9,7 @@ import jmat.MathUtil;
 import lcmtypes.differential_drive_command_t;
 
 class SplinterInput {
-	private static Logger logger = Logger.getLogger(SplinterInput.class);
+	private static final Logger logger = Logger.getLogger(SplinterInput.class);
 	private static final double DISABLED = Double.NEGATIVE_INFINITY;
 	private static final long NO_INPUT = Long.MIN_VALUE; 
 	

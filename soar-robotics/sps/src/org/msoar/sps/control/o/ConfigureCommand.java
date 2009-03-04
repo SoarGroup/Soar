@@ -9,7 +9,7 @@ import lcmtypes.pose_t;
 import sml.Identifier;
 
 class ConfigureCommand implements Command {
-	private static Logger logger = Logger.getLogger(ConfigureCommand.class);
+	private static final Logger logger = Logger.getLogger(ConfigureCommand.class);
 	
 	public CommandStatus execute(Identifier command, pose_t pose, OutputLinkManager outputLinkManager) {
 		String yawFormat = command.GetParameterValue("yaw-format");

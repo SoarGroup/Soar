@@ -8,7 +8,7 @@ import org.apache.log4j.Logger;
 import org.msoar.sps.lcmtypes.odom_t;
 
 public class Odometry {
-	private static Logger logger = Logger.getLogger(Odometry.class);
+	private static final Logger logger = Logger.getLogger(Odometry.class);
 
 	private final double tickMeters;
 	private final double baselineMeters;

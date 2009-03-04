@@ -13,7 +13,7 @@ import sml.Identifier;
 import sml.IntElement;
 
 class WaypointIL {
-	private static Logger logger = Logger.getLogger(WaypointIL.class);
+	private static final Logger logger = Logger.getLogger(WaypointIL.class);
 
 	private double[] xyz = new double[3];
 	private String name;

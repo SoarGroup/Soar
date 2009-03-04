@@ -14,7 +14,7 @@ import java.util.List;
 import org.apache.log4j.Logger;
 
 public class LocalRunner implements Runner {
-	private static Logger logger = Logger.getLogger(LocalRunner.class);
+	private static final Logger logger = Logger.getLogger(LocalRunner.class);
 	
 	// constant
 	private String component;

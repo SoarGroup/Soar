@@ -7,7 +7,7 @@ import org.apache.log4j.Logger;
 import org.msoar.sps.Names;
 
 public class SessionSlave {
-	private static Logger logger = Logger.getLogger(SessionSlave.class);
+	private static final Logger logger = Logger.getLogger(SessionSlave.class);
 	
 	SessionSlave(String component, String hostname) {
 		// connect to a SessionManager master at hostname

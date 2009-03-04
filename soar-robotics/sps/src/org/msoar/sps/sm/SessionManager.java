@@ -17,7 +17,7 @@ import org.msoar.sps.config.Config;
 import org.msoar.sps.config.ConfigFile;
 
 public class SessionManager implements Runnable {
-	private static Logger logger = Logger.getLogger(SessionManager.class);
+	private static final Logger logger = Logger.getLogger(SessionManager.class);
 	static int PORT = 42140;
 	private static String USAGE = "Argument should be config file OR component@hostname\n\n *** WORKING DIRECTORY MUST BE soar-robotics/sps ***";
 	private ServerSocket serverSocket;

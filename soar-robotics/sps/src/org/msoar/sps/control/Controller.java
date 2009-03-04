@@ -20,18 +20,18 @@ import org.msoar.sps.config.ConfigFile;
 import org.msoar.sps.control.html.HttpController;
 
 public class Controller extends TimerTask implements LCMSubscriber {
-	private static Logger logger = Logger.getLogger(Controller.class);
-	private static int DEFAULT_RANGES_COUNT = 5;
+	private static final Logger logger = Logger.getLogger(Controller.class);
+	private static final int DEFAULT_RANGES_COUNT = 5;
 	
-	private Config config;
-	private Gamepad gp;
-	private SoarInterface soar;
-	private Timer timer = new Timer();
-	private differential_drive_command_t dc = new differential_drive_command_t();
-	private LCM lcm;
+	private final Config config;
+	private final Gamepad gp;
+	private final SoarInterface soar;
+	private final Timer timer = new Timer();
+	private final differential_drive_command_t dc = new differential_drive_command_t();
+	private final LCM lcm;
 	private FileWriter tagWriter;
 	private long poseUtime;
-	private HttpController httpController = new HttpController();
+	private final HttpController httpController = new HttpController();
 	
 	private enum Buttons {
 		OVERRIDE, SOAR, TANK, SLOW, TAG;
@@ -67,18 +67,20 @@ public class Controller extends TimerTask implements LCMSubscriber {
 			throw new NullPointerException();
 		}
 		this.config = config;
-		
+
+		Gamepad gamepad = null;
 		try {
-			gp = new Gamepad();
+			gamepad = new Gamepad();
 			
-			Buttons.OVERRIDE.setButton(new ModeButton("Override", gp, 0));
-			Buttons.SOAR.setButton(new ModeButton("Soar control", gp, 1));
-			Buttons.TANK.setButton(new ModeButton("Tank mode", gp, 2));
-			Buttons.SLOW.setButton(new ModeButton("Slow mode", gp, 3));
-			Buttons.TAG.setButton(new ModeButton("Tag", gp, 4));
+			Buttons.OVERRIDE.setButton(new ModeButton("Override", gamepad, 0));
+			Buttons.SOAR.setButton(new ModeButton("Soar control", gamepad, 1));
+			Buttons.TANK.setButton(new ModeButton("Tank mode", gamepad, 2));
+			Buttons.SLOW.setButton(new ModeButton("Slow mode", gamepad, 3));
+			Buttons.TAG.setButton(new ModeButton("Tag", gamepad, 4));
 		} catch (IllegalStateException e) {
 			logger.warn("Disabling gamepad: " + e.getMessage());
 		}
+		gp = gamepad;
 
 		String productions = this.config.getString("productions");
 		int rangesCount = this.config.getInt("ranges_count", DEFAULT_RANGES_COUNT);

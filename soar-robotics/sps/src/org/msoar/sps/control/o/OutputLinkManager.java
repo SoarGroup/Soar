@@ -17,7 +17,7 @@ import sml.Identifier;
  * Soar output-link management. Creates input for splinter and other parts of the system.
  */
 public class OutputLinkManager {
-	private static Logger logger = Logger.getLogger(OutputLinkManager.class);
+	private static final Logger logger = Logger.getLogger(OutputLinkManager.class);
 
 	private Agent agent;
 	private SplinterInput input = new SplinterInput();

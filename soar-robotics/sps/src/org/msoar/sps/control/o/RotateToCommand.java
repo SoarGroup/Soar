@@ -9,7 +9,7 @@ import lcmtypes.pose_t;
 import sml.Identifier;
 
 class RotateToCommand implements Command {
-	private static Logger logger = Logger.getLogger(RotateToCommand.class);
+	private static final Logger logger = Logger.getLogger(RotateToCommand.class);
 	
 	double yaw;
 	double tolerance;

@@ -9,7 +9,7 @@ import lcmtypes.pose_t;
 import sml.Identifier;
 
 class StopCommand implements Command {
-	private static Logger logger = Logger.getLogger(StopCommand.class);
+	private static final Logger logger = Logger.getLogger(StopCommand.class);
 	
 	public CommandStatus execute(Identifier command, pose_t pose, OutputLinkManager outputLinkManager) {
 		logger.debug("stop:");

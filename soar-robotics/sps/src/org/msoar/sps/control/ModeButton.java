@@ -3,7 +3,7 @@ package org.msoar.sps.control;
 import org.apache.log4j.Logger;
 
 class ModeButton {
-	private static Logger logger = Logger.getLogger(ModeButton.class);
+	private static final Logger logger = Logger.getLogger(ModeButton.class);
 
 	private boolean buttonState = false;
 	private boolean modeEnabled = false;

@@ -9,7 +9,7 @@ import lcmtypes.pose_t;
 import sml.Identifier;
 
 class RemoveMessageCommand implements Command {
-	private static Logger logger = Logger.getLogger(RemoveMessageCommand.class);
+	private static final Logger logger = Logger.getLogger(RemoveMessageCommand.class);
 	
 	public CommandStatus execute(Identifier command, pose_t pose, OutputLinkManager outputLinkManager) {
 		int id = -1;

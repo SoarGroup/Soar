@@ -9,7 +9,7 @@ import lcmtypes.pose_t;
 import sml.Identifier;
 
 class MotorCommand implements Command {
-	private static Logger logger = Logger.getLogger(MotorCommand.class);
+	private static final Logger logger = Logger.getLogger(MotorCommand.class);
 	double[] motorThrottle = new double[2];
 	
 	public CommandStatus execute(Identifier command, pose_t pose, OutputLinkManager outputLinkManager) {

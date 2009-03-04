@@ -13,7 +13,7 @@ import org.apache.log4j.Logger;
 import org.msoar.sps.Names;
 
 public class RemoteRunner implements Runner {
-	private static Logger logger = Logger.getLogger(RemoteRunner.class);
+	private static final Logger logger = Logger.getLogger(RemoteRunner.class);
 	
 	private String component;
 	private ObjectOutputStream oout;

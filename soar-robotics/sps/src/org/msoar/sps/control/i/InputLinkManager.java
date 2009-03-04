@@ -15,7 +15,7 @@ import sml.Identifier;
  * Soar input link management. Also handles some updating of waypoint state.
  */
 public class InputLinkManager {
-	private static Logger logger = Logger.getLogger(InputLinkManager.class);
+	private static final Logger logger = Logger.getLogger(InputLinkManager.class);
 
 	private Agent agent;
 	private TimeIL timeIL;

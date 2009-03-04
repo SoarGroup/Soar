@@ -9,7 +9,7 @@ import lcmtypes.pose_t;
 import sml.Identifier;
 
 class BroadcastMessageCommand implements Command {
-	private static Logger logger = Logger.getLogger(BroadcastMessageCommand.class);
+	private static final Logger logger = Logger.getLogger(BroadcastMessageCommand.class);
 	
 	public CommandStatus execute(Identifier command, pose_t pose, OutputLinkManager outputLinkManager) {
 		logger.warn("broadcast-message command not implemented, ignoring");

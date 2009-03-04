@@ -21,7 +21,7 @@ import com.sun.net.httpserver.HttpHandler;
 import com.sun.net.httpserver.HttpServer;
 
 public class HttpController {
-	private static Logger logger = Logger.getLogger(HttpController.class);
+	private static final Logger logger = Logger.getLogger(HttpController.class);
 	private static final int HTTP_PORT = 8000;
 	
 	private final String ACTION = "action";

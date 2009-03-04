@@ -22,7 +22,7 @@ import org.msoar.sps.config.ConfigFile;
 import org.msoar.sps.lcmtypes.odom_t;
 
 public class Splinter extends TimerTask implements LCMSubscriber {
-	private static Logger logger = Logger.getLogger(Splinter.class);
+	private static final Logger logger = Logger.getLogger(Splinter.class);
 	private static int LEFT = 0;
 	private static int RIGHT = 1;
 	private static long DELAY_BEFORE_WARN_NO_FIRST_INPUT_MILLIS = 5000;
