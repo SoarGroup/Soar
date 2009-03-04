@@ -24,45 +24,16 @@ public class Controller extends TimerTask implements LCMSubscriber {
 	private static final int DEFAULT_RANGES_COUNT = 5;
 	
 	private final Config config;
-	private final Gamepad gp;
 	private final SoarInterface soar;
 	private final Timer timer = new Timer();
 	private final differential_drive_command_t dc = new differential_drive_command_t();
 	private final LCM lcm;
+	private final Gamepad gp;
 	private FileWriter tagWriter;
 	private long poseUtime;
 	private final HttpController httpController = new HttpController();
 	
-	private enum Buttons {
-		OVERRIDE, SOAR, TANK, SLOW, TAG;
-		private ModeButton b;
-		
-		void setButton(ModeButton b) {
-			this.b = b;
-		}
-		
-		boolean isEnabled() {
-			if (b == null) {
-				return false;
-			}
-			return b.isEnabled();
-		}
-		
-		boolean checkAndDisable() {
-			if (b == null) {
-				return false;
-			}
-			return b.checkAndDisable();
-		}
-		
-		void update() {
-			if (b != null) {
-				b.update();
-			}
-		}
-	}
-
-	Controller(Config config) {
+	private Controller(Config config) {
 		if (config == null) {
 			throw new NullPointerException();
 		}
@@ -71,12 +42,7 @@ public class Controller extends TimerTask implements LCMSubscriber {
 		Gamepad gamepad = null;
 		try {
 			gamepad = new Gamepad();
-			
-			Buttons.OVERRIDE.setButton(new ModeButton("Override", gamepad, 0));
-			Buttons.SOAR.setButton(new ModeButton("Soar control", gamepad, 1));
-			Buttons.TANK.setButton(new ModeButton("Tank mode", gamepad, 2));
-			Buttons.SLOW.setButton(new ModeButton("Slow mode", gamepad, 3));
-			Buttons.TAG.setButton(new ModeButton("Tag", gamepad, 4));
+			Buttons.setGamepad(gamepad);
 		} catch (IllegalStateException e) {
 			logger.warn("Disabling gamepad: " + e.getMessage());
 		}
@@ -93,7 +59,7 @@ public class Controller extends TimerTask implements LCMSubscriber {
 	    timer.schedule(this, 0, 1000 / 10); // 10 Hz
 	}
 	
-	public class ShutdownHook extends Thread {
+	private class ShutdownHook extends Thread {
 		@Override
 		public void run() {
 			if (tagWriter != null) {
@@ -124,7 +90,7 @@ public class Controller extends TimerTask implements LCMSubscriber {
 			soar.setStringInput(messageTokens);
 		}
 		
-		if (gp != null) {
+		if (Buttons.haveGamepad()) {
 			if (Buttons.OVERRIDE.isEnabled()) {
 				getDC(dc);
 			} else {

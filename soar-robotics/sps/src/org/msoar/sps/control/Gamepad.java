@@ -9,8 +9,7 @@ class Gamepad {
 	int axes[] = new int[16];
 	int buttons[] = new int[16];
 
-	// /////////////////////////////////////////////////////
-	public Gamepad() {
+	Gamepad() {
 		String paths[] = { "/dev/js0", "/dev/input/js0" };
 
 		for (int i = 0; i < paths.length; i++) {
@@ -29,20 +28,20 @@ class Gamepad {
 		new ReaderThread().start();
 	}
 
-	public Gamepad(String path) {
+	Gamepad(String path) {
 		this.devicePath = path;
 		new ReaderThread().start();
 	}
 
 	// returns [-1, 1]
-	public double getAxis(int axis) {
+	double getAxis(int axis) {
 		if (axis >= axes.length)
 			return 0;
 
 		return axes[axis] / 32767.0;
 	}
 
-	public boolean getButton(int button) {
+	boolean getButton(int button) {
 		if (button >= buttons.length)
 			return false;
 
@@ -54,7 +53,7 @@ class Gamepad {
 	 * is useful with cordless game pads as a way of ensuring that there's
 	 * actually a device connected.
 	 **/
-	public int waitForAnyButtonPress() {
+	int waitForAnyButtonPress() {
 		boolean buttonState[] = new boolean[16];
 		for (int i = 0; i < buttonState.length; i++)
 			buttonState[i] = getButton(i);
@@ -72,8 +71,8 @@ class Gamepad {
 		}
 	}
 
-	class ReaderThread extends Thread {
-		ReaderThread() {
+	private class ReaderThread extends Thread {
+		private ReaderThread() {
 			setDaemon(true);
 		}
 
@@ -85,15 +84,16 @@ class Gamepad {
 			}
 		}
 
-		public void runEx() throws IOException {
+		private void runEx() throws IOException {
 			FileInputStream fins = new FileInputStream(new File(devicePath));
 			byte buf[] = new byte[8];
 
 			while (true) {
 				fins.read(buf);
 
-//				int mstime = (buf[0] & 0xff) | ((buf[1] & 0xff) << 8)
-//						| ((buf[2] & 0xff) << 16) | ((buf[3] & 0xff) << 24);
+				// ?? time the button is held down maybe
+				//int mstime = (buf[0] & 0xff) | ((buf[1] & 0xff) << 8)
+				//		| ((buf[2] & 0xff) << 16) | ((buf[3] & 0xff) << 24);
 				int value = (buf[4] & 0xff) | ((buf[5] & 0xff) << 8);
 
 				if ((value & 0x8000) > 0) // sign extend
