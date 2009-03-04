@@ -5,10 +5,11 @@ import sml.Identifier;
 import sml.IntElement;
 
 class TimeIL {
-	private IntElement secondswme;
-	private IntElement microsecondswme;
-	private final static long nanosecondsPerSecond = 1000000000;
-	private Agent agent;
+	private final static long nanosecondsPerSecond = 1000000000L;
+
+	private final Agent agent;
+	private final IntElement secondswme;
+	private final IntElement microsecondswme;
 	
 	TimeIL(Agent agent, Identifier time) {
 		this.agent = agent;

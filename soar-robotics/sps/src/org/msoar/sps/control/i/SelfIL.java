@@ -11,17 +11,18 @@ import sml.Identifier;
 import sml.IntElement;
 
 class SelfIL {
-	private WaypointsIL waypointsIL;
-	private FloatElement xwme;
-	private FloatElement ywme;
-	private FloatElement zwme;
-	private Identifier posewme;
+	private final Agent agent;
+	private final WaypointsIL waypointsIL;
+	private final FloatElement xwme;
+	private final FloatElement ywme;
+	private final FloatElement zwme;
+	private final Identifier posewme;
+	private final long utimeLast = 0;
+	private final ReceivedMessagesIL receivedMessagesIL;
+	
 	private IntElement yawwmei;
 	private FloatElement yawwmef;
-	private long utimeLast = 0;
-	private Agent agent;
-	private double yawRadians;
-	private ReceivedMessagesIL receivedMessagesIL;
+	private double yawRadians = 0;
 	
 	SelfIL(Agent agent, Identifier self) {
 		this.agent = agent;
@@ -31,7 +32,6 @@ class SelfIL {
 		xwme = agent.CreateFloatWME(posewme, "x", 0);
 		ywme = agent.CreateFloatWME(posewme, "y", 0);
 		zwme = agent.CreateFloatWME(posewme, "z", 0);
-		yawRadians = 0;
 		yawwmef = agent.CreateFloatWME(posewme, "yaw", 0);
 		
 		Identifier waypoints = agent.CreateIdWME(self, "waypoints");
@@ -98,7 +98,7 @@ class SelfIL {
 		return waypointsIL;
 	}
 
-	public ReceivedMessagesIL getMessagesIL() {
+	ReceivedMessagesIL getMessagesIL() {
 		return receivedMessagesIL;
 	}
 }

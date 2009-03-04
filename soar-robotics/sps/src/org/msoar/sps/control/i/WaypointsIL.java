@@ -7,10 +7,9 @@ import sml.Agent;
 import sml.Identifier;
 
 public class WaypointsIL {
-	private Agent agent;
-	private Identifier waypoints;
-
-	private HashMap<String, WaypointIL> waypointList = new HashMap<String, WaypointIL>();
+	private final Agent agent;
+	private final Identifier waypoints;
+	private final HashMap<String, WaypointIL> waypointList = new HashMap<String, WaypointIL>();
 
 	WaypointsIL(Agent agent, Identifier waypoints) {
 		this.agent = agent;

@@ -21,20 +21,22 @@ import lcmtypes.differential_drive_command_t;
 import lcmtypes.laser_t;
 import lcmtypes.pose_t;
 
-public class SoarInterface implements Kernel.UpdateEventInterface, Kernel.SystemEventInterface, LCMSubscriber {
+class SoarInterface implements Kernel.UpdateEventInterface, Kernel.SystemEventInterface, LCMSubscriber {
 	private static final Logger logger = Logger.getLogger(SoarInterface.class);
 
-	private Kernel kernel;
-	private Agent agent;
-	private InputLinkManager input;
-	private OutputLinkManager output;
+	private final static long DCDELAY_THRESHOLD_USEC = 250000L; // 250 ms
+
+	private final Kernel kernel;
+	private final Agent agent;
+	private final InputLinkManager input;
+	private final OutputLinkManager output;
+
 	private boolean stopSoar = false;
 	private boolean running = false;
-	private pose_t pose;
-	private laser_t laser;
-	private static long DCDELAY_THRESHOLD_USEC = 250000L; // 250 ms
 	private boolean failsafeSpew = false;
 	private List<String> tokens;
+	private pose_t pose;
+	private laser_t laser;
 	
 	SoarInterface(String productions, int rangesCount) {
 		kernel = Kernel.CreateKernelInNewThread();
@@ -71,13 +73,6 @@ public class SoarInterface implements Kernel.UpdateEventInterface, Kernel.System
 		kernel.RegisterForSystemEvent(smlSystemEventId.smlEVENT_SYSTEM_STOP, this, null);
 	}
 	
-	private void failSafe(differential_drive_command_t dc) {
-		dc.left_enabled = true;
-		dc.right_enabled = true;
-		dc.left = 0;
-		dc.right = 0;
-		dc.utime = getCurrentUtime();
-	}
 	void getDC(differential_drive_command_t dc) {
 		if (!output.getDC(dc, input.getYawRadians())) {
 			failSafe(dc);
@@ -102,6 +97,14 @@ public class SoarInterface implements Kernel.UpdateEventInterface, Kernel.System
 		}
 	}
 
+	private void failSafe(differential_drive_command_t dc) {
+		dc.left_enabled = true;
+		dc.right_enabled = true;
+		dc.left = 0;
+		dc.right = 0;
+		dc.utime = getCurrentUtime();
+	}
+	
 	private class SoarRunner implements Runnable {
 		public void run() {
 			kernel.RunAllAgentsForever();
@@ -142,7 +145,7 @@ public class SoarInterface implements Kernel.UpdateEventInterface, Kernel.System
 		return System.nanoTime() / 1000L;
 	}
 
-	public void shutdown() {
+	void shutdown() {
 		stopSoar = true;
 		try {
 			Thread.sleep(1000);
@@ -180,7 +183,7 @@ public class SoarInterface implements Kernel.UpdateEventInterface, Kernel.System
 		}
 	}
 
-	public void setStringInput(List<String> tokens) {
+	void setStringInput(List<String> tokens) {
 		List<String> warn = null;
 		synchronized (this) {
 			warn = (this.tokens != null ? this.tokens : null);
@@ -193,5 +196,4 @@ public class SoarInterface implements Kernel.UpdateEventInterface, Kernel.System
 					+ Arrays.toString(tokens.toArray(new String[tokens.size()])));
 		}
 	}
-
 }

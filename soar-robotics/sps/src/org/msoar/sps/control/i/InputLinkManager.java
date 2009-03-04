@@ -17,26 +17,19 @@ import sml.Identifier;
 public class InputLinkManager {
 	private static final Logger logger = Logger.getLogger(InputLinkManager.class);
 
-	private Agent agent;
-	private TimeIL timeIL;
-	private SelfIL selfIL;
-	private RangerIL rangerIL;
+	private final Agent agent;
+	private final TimeIL timeIL;
+	private final SelfIL selfIL;
+	private final RangerIL rangerIL;
 
 	public InputLinkManager(Agent agent, int rangesCount) {
 		this.agent = agent;
 		this.agent.SetBlinkIfNoChange(false);
 
-		initialize(rangesCount);
-	}
-
-	private void initialize(int rangesCount) {
 		logger.debug("Initializing input-link");
 
 		Identifier inputLink = agent.GetInputLink();
 
-		// Please see default-robot.vsa for input link definition and comments!
-		// TODO: make new default-robot.vsa
-		
 		Identifier time = agent.CreateIdWME(inputLink, "time");
 		timeIL = new TimeIL(agent, time);
 
