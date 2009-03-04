@@ -484,7 +484,7 @@ struct epmem_shared_literal_struct
 	unsigned EPMEM_TYPE_INT max;			// number of contributing literals that *need* to be on
 
 	struct wme_struct *wme;					// associated cue wme
-	unsigned EPMEM_TYPE_INT wme_kids;		// number of children the cue wme has
+	bool wme_kids;							// does the cue wme have children (indicative of leaf wme status)
 
 	epmem_shared_match *match;				// associated match, if leaf wme
 	epmem_shared_literal_group *children;	// grouped child literals, if not leaf wme

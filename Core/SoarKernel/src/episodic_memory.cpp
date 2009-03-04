@@ -4696,26 +4696,36 @@ unsigned EPMEM_TYPE_INT epmem_graph_match( epmem_shared_literal_group *literals,
 				if ( c_l->ct == c_l->max )
 				{
 					// cue identifier
-					if ( c_l->wme_kids )
+					if ( c_l->shared_id != EPMEM_NODEID_ROOT )
 					{
 						// check if unconstrained
 						if ( c_id == EPMEM_NODEID_ROOT )
 						{
-							// copy constraints
-							n_c = new epmem_constraint_list( *c_c );
-
-							// try DFS
-							if ( ( c_l->children ) && ( epmem_graph_match( c_l->children, n_c ) == c_l->wme_kids ) )
+							// if substructure, check
+							if ( c_l->children )
 							{
-								// on success, keep new constraints
-								good_literal = true;
-								(*c_c) = (*n_c);
+								// copy constraints
+								n_c = new epmem_constraint_list( *c_c );
 
-								// update constraints with this literal
+								// try DFS
+								if ( epmem_graph_match( c_l->children, n_c ) == c_l->children->wmes->size() )
+								{
+									// on success, keep new constraints
+									good_literal = true;
+									(*c_c) = (*n_c);
+
+									// update constraints with this literal
+									(*c_c)[ c_l->wme->value ] = c_l->shared_id;
+								}
+
+								delete n_c;
+							}
+							// otherwise winner by default, pass along constraint
+							else
+							{
+								good_literal = true;
 								(*c_c)[ c_l->wme->value ] = c_l->shared_id;
 							}
-
-							delete n_c;
 						}
 						else
 						{
@@ -4724,7 +4734,7 @@ unsigned EPMEM_TYPE_INT epmem_graph_match( epmem_shared_literal_group *literals,
 							good_literal = ( c_id == c_l->shared_id );
 						}
 					}
-					// leaf node
+					// leaf node, non-identifier
 					else
 					{
 						good_literal = ( c_l->match->ct );
