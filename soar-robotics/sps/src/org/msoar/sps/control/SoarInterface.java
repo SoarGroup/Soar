@@ -66,7 +66,7 @@ class SoarInterface implements Kernel.UpdateEventInterface, Kernel.SystemEventIn
 		lcm.subscribe(Names.LASER_CHANNEL, this);
 		
 		input = new InputLinkManager(agent, rangesCount);
-		output = new OutputLinkManager(agent, input.getWaypointsIL(), input.getMessagesIL());
+		output = new OutputLinkManager(agent, input.getInterface());
 		
 		kernel.RegisterForUpdateEvent(smlUpdateEventId.smlEVENT_AFTER_ALL_OUTPUT_PHASES, this, null);
 		kernel.RegisterForSystemEvent(smlSystemEventId.smlEVENT_SYSTEM_START, this, null);
@@ -74,7 +74,7 @@ class SoarInterface implements Kernel.UpdateEventInterface, Kernel.SystemEventIn
 	}
 	
 	void getDC(differential_drive_command_t dc) {
-		if (!output.getDC(dc, input.getYawRadians())) {
+		if (!output.getDC(dc, pose)) {
 			failSafe(dc);
 			return;
 		}

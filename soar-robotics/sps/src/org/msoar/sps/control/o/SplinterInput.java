@@ -4,9 +4,11 @@ import java.util.Arrays;
 
 import org.apache.log4j.Logger;
 
+import jmat.LinAlg;
 import jmat.MathUtil;
 
 import lcmtypes.differential_drive_command_t;
+import lcmtypes.pose_t;
 
 class SplinterInput {
 	private static final Logger logger = Logger.getLogger(SplinterInput.class);
@@ -94,39 +96,46 @@ class SplinterInput {
 		return sb.toString();
 	}
 
-	CommandStatus getDC(differential_drive_command_t dc, double currentYawRadians) {
+	CommandStatus getDC(differential_drive_command_t dc, pose_t pose) {
 		CommandStatus status = CommandStatus.executing;
 		dc.utime = this.utime;
 		dc.left_enabled = true;
 		dc.right_enabled = true;
 
 		if (targetYawTolerance != DISABLED) {
-			double relativeBearingValue = targetYaw - currentYawRadians;
-			relativeBearingValue = MathUtil.mod2pi(relativeBearingValue);
-			
-			if (Math.abs(relativeBearingValue) < targetYawTolerance) {
-				logger.trace("within tolerance: " + relativeBearingValue);
-				dc.left = 0;
-				dc.right = 0;
-				Arrays.fill(this.throttle, 0);
-				status = CommandStatus.complete;
+			if (pose != null) {
+				double currentYawRadians = LinAlg.quatToRollPitchYaw(pose.orientation)[2];
+				double relativeBearingValue = targetYaw - currentYawRadians;
+				relativeBearingValue = MathUtil.mod2pi(relativeBearingValue);
 				
-			} else if (relativeBearingValue < 0) {
-				if (logger.isTraceEnabled()) {
-					logger.trace("right turn: " + relativeBearingValue);
+				if (Math.abs(relativeBearingValue) < targetYawTolerance) {
+					logger.trace("within tolerance: " + relativeBearingValue);
+					dc.left = 0;
+					dc.right = 0;
+					Arrays.fill(this.throttle, 0);
+					status = CommandStatus.complete;
+					
+				} else if (relativeBearingValue < 0) {
+					if (logger.isTraceEnabled()) {
+						logger.trace("right turn: " + relativeBearingValue);
+					}
+					dc.left = throttle[0];
+					dc.right = throttle[1] * -1;
+					
+				} else if (relativeBearingValue > 0) {
+					if (logger.isTraceEnabled()) {
+						logger.trace("left turn: " + relativeBearingValue);
+					}
+					dc.left = throttle[0] * -1;
+					dc.right = throttle[1];
+					
+				} else {
+					throw new IllegalStateException();
 				}
-				dc.left = throttle[0];
-				dc.right = throttle[1] * -1;
-				
-			} else if (relativeBearingValue > 0) {
-				if (logger.isTraceEnabled()) {
-					logger.trace("left turn: " + relativeBearingValue);
-				}
-				dc.left = throttle[0] * -1;
-				dc.right = throttle[1];
 				
 			} else {
-				throw new IllegalStateException();
+				dc.left = 0;
+				dc.right = 0;
 			}
 			
 		} else {

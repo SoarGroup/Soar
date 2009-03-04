@@ -8,7 +8,7 @@ import sml.Identifier;
 
 class ClearMessagesCommand implements Command {
 	public CommandStatus execute(Identifier command, pose_t pose, OutputLinkManager outputLinkManager) {
-		outputLinkManager.messagesIL.clear();
+		outputLinkManager.inputLink.clearMessages();
 		return CommandStatus.complete;
 	}
 

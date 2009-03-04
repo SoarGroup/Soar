@@ -45,7 +45,7 @@ class AddWaypointCommand implements Command {
 		}
 
 		logger.debug(String.format("add-waypoint: %16s %10.3f %10.3f", id, pos[0], pos[1]));
-		outputLinkManager.waypointsIL.add(pos, id, outputLinkManager.useFloatYawWmes);
+		outputLinkManager.inputLink.addWaypoint(pos, id, outputLinkManager.useFloatYawWmes);
 
 		return CommandStatus.complete;
 	}

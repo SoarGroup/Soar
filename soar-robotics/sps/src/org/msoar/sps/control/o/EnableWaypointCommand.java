@@ -20,7 +20,7 @@ class EnableWaypointCommand implements Command {
 
 		logger.debug(String.format("enable-waypoint: %16s", id));
 
-		if (outputLinkManager.waypointsIL.enable(id, pose) == false) {
+		if (outputLinkManager.inputLink.enableWaypoint(id, pose) == false) {
 			logger.warn("Unable to enable waypoint " + id + ", no such waypoint");
 			return CommandStatus.error;
 		}

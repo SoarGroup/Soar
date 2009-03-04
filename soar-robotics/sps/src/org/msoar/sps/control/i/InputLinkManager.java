@@ -3,6 +3,7 @@ package org.msoar.sps.control.i;
 import java.util.List;
 
 import org.apache.log4j.Logger;
+import org.msoar.sps.control.InputLinkInterface;
 
 import lcmtypes.laser_t;
 import lcmtypes.pose_t;
@@ -47,16 +48,8 @@ public class InputLinkManager {
 		selfIL.update(pose, tokens, useFloatYawWmes);
 		rangerIL.update(laser, useFloatYawWmes);
 	}
-
-	public double getYawRadians() {
-		return selfIL.getYawRadians();
-	}
-
-	public WaypointsIL getWaypointsIL() {
-		return selfIL.getWaypointsIL();
-	}
-
-	public ReceivedMessagesIL getMessagesIL() {
-		return selfIL.getMessagesIL();
+	
+	public InputLinkInterface getInterface() {
+		return selfIL;
 	}
 }

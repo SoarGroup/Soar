@@ -6,8 +6,7 @@ import lcmtypes.differential_drive_command_t;
 import lcmtypes.pose_t;
 
 import org.apache.log4j.Logger;
-import org.msoar.sps.control.i.ReceivedMessagesIL;
-import org.msoar.sps.control.i.WaypointsIL;
+import org.msoar.sps.control.InputLinkInterface;
 
 import sml.Agent;
 import sml.Identifier;
@@ -19,10 +18,9 @@ import sml.Identifier;
 public class OutputLinkManager {
 	private static final Logger logger = Logger.getLogger(OutputLinkManager.class);
 
-	private Agent agent;
-	private SplinterInput input = new SplinterInput();
-	WaypointsIL waypointsIL;
-	ReceivedMessagesIL messagesIL;
+	private final Agent agent;
+	private final SplinterInput input = new SplinterInput();
+	final InputLinkInterface inputLink;
 	boolean useFloatYawWmes = true;
 	private HashMap<String, Command> commands = new HashMap<String, Command>();
 
@@ -30,10 +28,9 @@ public class OutputLinkManager {
 	private CommandStatus runningCommandStatus;
 	private boolean runningCommandIsInterruptable = false;
 	
-	public OutputLinkManager(Agent agent, WaypointsIL waypoints, ReceivedMessagesIL messages) {
+	public OutputLinkManager(Agent agent, InputLinkInterface inputLink) {
 		this.agent = agent;
-		this.waypointsIL = waypoints;
-		this.messagesIL = messages;
+		this.inputLink = inputLink;
 		
 		commands.put("motor", new MotorCommand());
 		commands.put("move", new MoveCommand());
@@ -54,12 +51,12 @@ public class OutputLinkManager {
 		return useFloatYawWmes;
 	}
 	
-	public boolean getDC(differential_drive_command_t dc, double currentYawRadians) {
+	public boolean getDC(differential_drive_command_t dc, pose_t pose) {
 		synchronized (input) {
 			if (!input.hasInput()) {
 				return false;
 			}
-			CommandStatus status = input.getDC(dc, currentYawRadians);
+			CommandStatus status = input.getDC(dc, pose);
 			if (runningCommandWme != null) {
 				if (status == CommandStatus.executing) {
 					if (runningCommandStatus == CommandStatus.accepted) {

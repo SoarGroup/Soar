@@ -25,7 +25,7 @@ class RemoveMessageCommand implements Command {
 
 		logger.debug(String.format("remove-message: %d", id));
 		
-		if (outputLinkManager.messagesIL.remove(id) == false) {
+		if (outputLinkManager.inputLink.removeMessage(id) == false) {
 			logger.warn("Unable to remove message " + id + ", no such message");
 			return CommandStatus.error;
 		}

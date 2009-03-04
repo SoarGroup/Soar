@@ -20,7 +20,7 @@ class DisableWaypointCommand implements Command {
 
 		logger.debug(String.format("disable-waypoint: %16s", id));
 
-		if (outputLinkManager.waypointsIL.disable(id) == false) {
+		if (outputLinkManager.inputLink.disableWaypoint(id) == false) {
 			logger.warn("Unable to disable waypoint " + id + ", no such waypoint");
 			return CommandStatus.error;
 		}

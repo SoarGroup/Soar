@@ -20,7 +20,7 @@ class RemoveWaypointCommand implements Command {
 
 		logger.debug(String.format("remove-waypoint: %16s", id));
 
-		if (outputLinkManager.waypointsIL.remove(id) == false) {
+		if (outputLinkManager.inputLink.removeWaypoint(id) == false) {
 			logger.warn("Unable to remove waypoint " + id + ", no such waypoint");
 			return CommandStatus.error;
 		}

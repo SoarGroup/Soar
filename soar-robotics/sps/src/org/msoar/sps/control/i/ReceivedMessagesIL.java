@@ -7,7 +7,7 @@ import java.util.Map;
 import sml.Agent;
 import sml.Identifier;
 
-public class ReceivedMessagesIL {
+class ReceivedMessagesIL {
 	Agent agent;
 	Identifier receivedwme;
 	int count = 0;
@@ -18,7 +18,7 @@ public class ReceivedMessagesIL {
 		this.receivedwme = receivedwme;
 	}
 
-	public void update(List<String> tokens) {
+	void update(List<String> tokens) {
 		if (tokens == null || tokens.size() == 0) {
 			return;
 		}
@@ -38,11 +38,11 @@ public class ReceivedMessagesIL {
 		messages.put(id, message);
 	}
 	
-	public boolean remove(int id) {
+	boolean remove(int id) {
 		return messages.remove(Integer.valueOf(id)) != null;
 	}
 	
-	public void clear() {
+	void clear() {
 		for (Identifier message : messages.values()) {
 			agent.DestroyWME(message);
 		}

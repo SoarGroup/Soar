@@ -6,7 +6,7 @@ import lcmtypes.pose_t;
 import sml.Agent;
 import sml.Identifier;
 
-public class WaypointsIL {
+class WaypointsIL {
 	private final Agent agent;
 	private final Identifier waypoints;
 	private final HashMap<String, WaypointIL> waypointList = new HashMap<String, WaypointIL>();
@@ -16,7 +16,7 @@ public class WaypointsIL {
 		this.waypoints = waypoints;
 	}
 
-	public void add(double[] waypointxyz, String name, boolean useFloatWmes) {
+	void add(double[] waypointxyz, String name, boolean useFloatWmes) {
 		WaypointIL waypoint = waypointList.remove(name);
 		if (waypoint != null) {
 			waypoint.disable();
@@ -25,7 +25,7 @@ public class WaypointsIL {
 		waypointList.put(name, new WaypointIL(agent, waypointxyz, name, waypoints, useFloatWmes));
 	}
 
-	public boolean remove(String name) {
+	boolean remove(String name) {
 		WaypointIL waypoint = waypointList.remove(name);
 		if (waypoint == null) {
 			return false;
@@ -34,7 +34,7 @@ public class WaypointsIL {
 		return true;
 	}
 
-	public boolean enable(String name, pose_t pose) {
+	boolean enable(String name, pose_t pose) {
 		WaypointIL waypoint = waypointList.get(name);
 		if (name == null) {
 			return false;
@@ -44,7 +44,7 @@ public class WaypointsIL {
 		return true;
 	}
 
-	public boolean disable(String name) {
+	boolean disable(String name) {
 		WaypointIL waypoint = waypointList.get(name);
 		if (name == null) {
 			return false;

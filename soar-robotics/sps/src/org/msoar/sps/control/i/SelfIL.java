@@ -2,6 +2,8 @@ package org.msoar.sps.control.i;
 
 import java.util.List;
 
+import org.msoar.sps.control.InputLinkInterface;
+
 import jmat.LinAlg;
 import jmat.MathUtil;
 import lcmtypes.pose_t;
@@ -10,7 +12,7 @@ import sml.FloatElement;
 import sml.Identifier;
 import sml.IntElement;
 
-class SelfIL {
+class SelfIL implements InputLinkInterface {
 	private final Agent agent;
 	private final WaypointsIL waypointsIL;
 	private final FloatElement xwme;
@@ -22,7 +24,6 @@ class SelfIL {
 	
 	private IntElement yawwmei;
 	private FloatElement yawwmef;
-	private double yawRadians = 0;
 	
 	SelfIL(Agent agent, Identifier self) {
 		this.agent = agent;
@@ -41,7 +42,7 @@ class SelfIL {
 		receivedMessagesIL = new ReceivedMessagesIL(agent, receivedwme);
 	}
 	
-	private void updateYawWme(boolean useFloatYawWmes) {
+	private void updateYawWme(boolean useFloatYawWmes, double yawRadians) {
 		double yawDegrees = Math.toDegrees(yawRadians);
 		
 		if (useFloatYawWmes) {
@@ -61,10 +62,6 @@ class SelfIL {
 		}
 	}
 	
-	double getYawRadians() {
-		return yawRadians;
-	}
-
 	void update(pose_t pose, List<String> tokens, boolean useFloatYawWmes) {
 		if (pose == null) {
 			return; // no info
@@ -77,9 +74,9 @@ class SelfIL {
 		agent.Update(xwme, pose.pos[0]);
 		agent.Update(ywme, pose.pos[1]);
 		agent.Update(zwme, pose.pos[2]);
-		yawRadians = LinAlg.quatToRollPitchYaw(pose.orientation)[2];
+		double yawRadians = LinAlg.quatToRollPitchYaw(pose.orientation)[2];
 		yawRadians = MathUtil.mod2pi(yawRadians);
-		updateYawWme(useFloatYawWmes);
+		updateYawWme(useFloatYawWmes, yawRadians);
 		
 		waypointsIL.update(pose);
 		
@@ -100,6 +97,30 @@ class SelfIL {
 
 	ReceivedMessagesIL getMessagesIL() {
 		return receivedMessagesIL;
+	}
+
+	public void addWaypoint(double[] pos, String id, boolean useFloatYawWmes) {
+		waypointsIL.add(pos, id, useFloatYawWmes);
+	}
+
+	public void clearMessages() {
+		receivedMessagesIL.clear();
+	}
+
+	public boolean disableWaypoint(String id) {
+		return waypointsIL.disable(id);
+	}
+
+	public boolean enableWaypoint(String id, pose_t pose) {
+		return waypointsIL.enable(id, pose);
+	}
+
+	public boolean removeMessage(int id) {
+		return receivedMessagesIL.remove(id);
+	}
+
+	public boolean removeWaypoint(String id) {
+		return waypointsIL.remove(id);
 	}
 }
 
