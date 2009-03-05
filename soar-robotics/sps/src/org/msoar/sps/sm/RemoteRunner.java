@@ -40,7 +40,6 @@ final class RemoteRunner implements Runner {
 	}
 
 	public void configure(List<String> command, String config, Map<String, String> environment) throws IOException {
-		assert false; // FIXME: ENVIRONMENT
 		oout.writeObject(Names.NET_CONFIGURE);
 		oout.writeObject(command.toArray(new String[command.size()]));
 		if (config == null) {
@@ -49,6 +48,15 @@ final class RemoteRunner implements Runner {
 			oout.writeObject(Names.NET_CONFIG_YES);
 			oout.writeObject(config);
 		}
+		
+		if (environment == null) {
+			oout.writeObject(Names.NET_ENVIRONMENT_NO);
+		} else {
+			oout.writeObject(Names.NET_ENVIRONMENT_YES);
+			oout.writeObject(environment.keySet().toArray(new String[environment.keySet().size()]));
+			oout.writeObject(environment.values().toArray(new String[environment.values().size()]));
+		}
+
 		oout.flush();
 	}
 

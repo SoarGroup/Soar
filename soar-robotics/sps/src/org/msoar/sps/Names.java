@@ -9,6 +9,8 @@ public final class Names {
 	public static final String NET_CONFIGURE = "configure";
 	public static final String NET_CONFIG_NO = "config-no";
 	public static final String NET_CONFIG_YES = "config-yes";
+	public static final String NET_ENVIRONMENT_NO = "environment-no";
+	public static final String NET_ENVIRONMENT_YES = "environment-yes";
 	public static final String NET_START = "start";
 	public static final String NET_ALIVE = "alive";
 	public static final String NET_STOP = "destroy";

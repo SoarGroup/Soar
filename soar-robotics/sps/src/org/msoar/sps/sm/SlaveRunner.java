@@ -7,6 +7,7 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.Socket;
 import java.util.List;
+import java.util.Map;
 
 import org.apache.log4j.Logger;
 import org.msoar.sps.Names;
@@ -19,7 +20,6 @@ final class SlaveRunner {
 	private final ObjectOutputStream oout;
 
 	SlaveRunner(String component, Socket controlSocket, Socket outputSocket) throws IOException {
-		assert false; // FIXME: ENVIRONMENT
 		try {
 			this.oout = new ObjectOutputStream(new BufferedOutputStream(controlSocket.getOutputStream()));
 			this.oout.flush();
@@ -56,14 +56,28 @@ final class SlaveRunner {
 
 			if (netCommand.equals(Names.NET_CONFIGURE)) {
 				List<String> command = NetworkRunner.readCommand(oin);
+				String config = null;
+				Map<String, String> environment = null;
+				
 				netCommand = NetworkRunner.readString(oin);
-				if (netCommand.equals(Names.NET_CONFIG_NO)) {
-					runner.configure(command, null, null); // TODO: FIXME: ENVIRONMENT
-				} else if (netCommand.equals(Names.NET_CONFIG_YES)) {
-					runner.configure(command, NetworkRunner.readString(oin), null);// TODO: FIXME: ENVIRONMENT
+				if (netCommand.equals(Names.NET_CONFIG_YES)) {
+					config = NetworkRunner.readString(oin);
 				} else {
-					throw new IOException("didn't get config yes/no message");
+					if (!netCommand.equals(Names.NET_CONFIG_NO)) {
+						throw new IOException("didn't get config yes/no message");
+					}
 				}
+
+				netCommand = NetworkRunner.readString(oin);
+				if (netCommand.equals(Names.NET_ENVIRONMENT_YES)) {
+					environment = NetworkRunner.readEnvironment(oin);
+				} else {
+					if (!netCommand.equals(Names.NET_ENVIRONMENT_NO)) {
+						throw new IOException("didn't get environment yes/no message");
+					}
+				}
+
+				runner.configure(command, config, environment);
 				
 			} else if (netCommand.equals(Names.NET_START)) {
 				runner.start();
