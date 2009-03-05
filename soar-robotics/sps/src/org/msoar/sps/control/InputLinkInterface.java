@@ -2,7 +2,7 @@ package org.msoar.sps.control;
 
 import lcmtypes.pose_t;
 
-public interface InputLinkInterface {
+interface InputLinkInterface {
 	void addWaypoint(double[] pos, String id, boolean useFloatYawWmes);
 	void clearMessages();
 	boolean disableWaypoint(String id);

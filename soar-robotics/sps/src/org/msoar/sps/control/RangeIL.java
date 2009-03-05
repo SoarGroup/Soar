@@ -5,9 +5,9 @@ import sml.FloatElement;
 import sml.Identifier;
 import sml.IntElement;
 
-class RangeIL {
-	private Identifier rangewme;
-	private Agent agent;
+final class RangeIL {
+	private final Identifier rangewme;
+	private final Agent agent;
 
 	private FloatElement startwmef;
 	private FloatElement endwmef;

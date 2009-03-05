@@ -7,12 +7,13 @@ import java.util.Map;
 import sml.Agent;
 import sml.Identifier;
 
-class ReceivedMessagesIL {
-	Agent agent;
-	Identifier receivedwme;
-	int count = 0;
-	Map<Integer, Identifier> messages = new HashMap<Integer, Identifier>();
+final class ReceivedMessagesIL {
+	private final Agent agent;
+	private final Identifier receivedwme;
+	private final Map<Integer, Identifier> messages = new HashMap<Integer, Identifier>();
 	
+	private int count = 0;
+
 	ReceivedMessagesIL(Agent agent, Identifier receivedwme) {
 		this.agent = agent;
 		this.receivedwme = receivedwme;

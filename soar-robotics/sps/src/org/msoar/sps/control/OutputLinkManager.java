@@ -14,20 +14,20 @@ import sml.Identifier;
  * @author voigtjr
  * Soar output-link management. Creates input for splinter and other parts of the system.
  */
-public class OutputLinkManager {
+final class OutputLinkManager {
 	private static final Logger logger = Logger.getLogger(OutputLinkManager.class);
 
 	private final Agent agent;
 	private final SplinterInput input = new SplinterInput();
-	final InputLinkInterface inputLink;
-	boolean useFloatYawWmes = true;
-	private HashMap<String, Command> commands = new HashMap<String, Command>();
+	private final InputLinkInterface inputLink;
+	private final HashMap<String, Command> commands = new HashMap<String, Command>();
 
+	boolean useFloatYawWmes = true;
 	private Identifier runningCommandWme;
 	private CommandStatus runningCommandStatus;
 	private boolean runningCommandIsInterruptable = false;
 	
-	public OutputLinkManager(Agent agent, InputLinkInterface inputLink) {
+	OutputLinkManager(Agent agent, InputLinkInterface inputLink) {
 		this.agent = agent;
 		this.inputLink = inputLink;
 		
@@ -46,11 +46,11 @@ public class OutputLinkManager {
 		commands.put("configure", new ConfigureCommand());
 	}
 	
-	public boolean getUseFloatYawWmes() {
+	boolean getUseFloatYawWmes() {
 		return useFloatYawWmes;
 	}
 	
-	public boolean getDC(differential_drive_command_t dc, pose_t pose) {
+	boolean getDC(differential_drive_command_t dc, pose_t pose) {
 		synchronized (input) {
 			if (!input.hasInput()) {
 				return false;
@@ -71,7 +71,7 @@ public class OutputLinkManager {
 		return true;
 	}
 	
-	public void update(pose_t pose, long lastUpdate) {
+	void update(pose_t pose, long lastUpdate) {
 		// process output
 		boolean producedInput = false;
 		for (int i = 0; i < agent.GetNumberCommands(); ++i) {
@@ -97,7 +97,7 @@ public class OutputLinkManager {
 				continue;
 			}
 			
-			CommandStatus status = commandObject.execute(commandWme, pose, this);
+			CommandStatus status = commandObject.execute(inputLink, commandWme, pose, this);
 			if (status == CommandStatus.error) {
 				CommandStatus.error.addStatus(agent, commandWme);
 				continue;

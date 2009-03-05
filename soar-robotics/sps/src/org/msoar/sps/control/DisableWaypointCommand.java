@@ -8,10 +8,10 @@ import org.apache.log4j.Logger;
 import lcmtypes.pose_t;
 import sml.Identifier;
 
-class DisableWaypointCommand implements Command {
+final class DisableWaypointCommand implements Command {
 	private static final Logger logger = Logger.getLogger(DisableWaypointCommand.class);
 	
-	public CommandStatus execute(Identifier command, pose_t pose, OutputLinkManager outputLinkManager) {
+	public CommandStatus execute(InputLinkInterface inputLink, Identifier command, pose_t pose, OutputLinkManager outputLinkManager) {
 		String id = command.GetParameterValue("id");
 		if (id == null) {
 			logger.warn("No id on disable-waypoint command");
@@ -20,7 +20,7 @@ class DisableWaypointCommand implements Command {
 
 		logger.debug(String.format("disable-waypoint: %16s", id));
 
-		if (outputLinkManager.inputLink.disableWaypoint(id) == false) {
+		if (inputLink.disableWaypoint(id) == false) {
 			logger.warn("Unable to disable waypoint " + id + ", no such waypoint");
 			return CommandStatus.error;
 		}

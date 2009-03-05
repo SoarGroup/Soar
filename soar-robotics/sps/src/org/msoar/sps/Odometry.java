@@ -7,12 +7,12 @@ import lcmtypes.pose_t;
 import org.apache.log4j.Logger;
 import org.msoar.sps.lcmtypes.odom_t;
 
-public class Odometry {
+public final class Odometry {
 	private static final Logger logger = Logger.getLogger(Odometry.class);
 
 	private final double tickMeters;
 	private final double baselineMeters;
-	private double[] deltaxyt = new double[3];
+	private final double[] deltaxyt = new double[3];
 
 	public Odometry(double tickMeters, double baselineMeters) {
 		this.tickMeters = tickMeters;
@@ -48,7 +48,10 @@ public class Odometry {
 		if (logger.isTraceEnabled()) {
 			theta = MathUtil.mod2pi(theta);
 			theta = Math.toDegrees(theta);
-			logger.trace(String.format("odom: n(%d,%d) o(%d,%d) p(%5.2f,%5.2f,%5.1f)", newOdom.left, newOdom.right, oldOdom.left, oldOdom.right, pose.pos[0], pose.pos[1], theta));
+			logger.trace(String.format(
+					"odom: n(%d,%d) o(%d,%d) p(%5.2f,%5.2f,%5.1f)", 
+					newOdom.left, newOdom.right, oldOdom.left, oldOdom.right, 
+					pose.pos[0], pose.pos[1], theta));
 		}
 	}
 	
@@ -81,7 +84,10 @@ public class Odometry {
 		if (logger.isTraceEnabled()) {
 			theta = MathUtil.mod2pi(theta);
 			theta = Math.toDegrees(theta);
-			logger.trace(String.format("odom: n(%d,%d) o(%d,%d) p(%5.2f,%5.2f,%5.1f)", newOdom.left, newOdom.right, oldOdom.left, oldOdom.right, pose.pos[0], pose.pos[1], theta));
+			logger.trace(String.format(
+					"odom: n(%d,%d) o(%d,%d) p(%5.2f,%5.2f,%5.1f)", 
+					newOdom.left, newOdom.right, oldOdom.left, oldOdom.right, 
+					pose.pos[0], pose.pos[1], theta));
 		}
 	}
 }

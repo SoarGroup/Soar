@@ -10,10 +10,10 @@ import org.apache.log4j.Logger;
 import lcmtypes.pose_t;
 import sml.Identifier;
 
-class AddWaypointCommand implements Command {
+final class AddWaypointCommand implements Command {
 	private static final Logger logger = Logger.getLogger(AddWaypointCommand.class);
 	
-	public CommandStatus execute(Identifier command, pose_t pose, OutputLinkManager outputLinkManager) {
+	public CommandStatus execute(InputLinkInterface inputLink, Identifier command, pose_t pose, OutputLinkManager outputLinkManager) {
 		String id = command.GetParameterValue("id");
 		if (id == null) {
 			logger.warn("No id on add-waypoint command");
@@ -45,7 +45,7 @@ class AddWaypointCommand implements Command {
 		}
 
 		logger.debug(String.format("add-waypoint: %16s %10.3f %10.3f", id, pos[0], pos[1]));
-		outputLinkManager.inputLink.addWaypoint(pos, id, outputLinkManager.useFloatYawWmes);
+		inputLink.addWaypoint(pos, id, outputLinkManager.useFloatYawWmes);
 
 		return CommandStatus.complete;
 	}

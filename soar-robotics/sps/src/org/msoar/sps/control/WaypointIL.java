@@ -12,13 +12,13 @@ import sml.FloatElement;
 import sml.Identifier;
 import sml.IntElement;
 
-class WaypointIL {
+final class WaypointIL {
 	private static final Logger logger = Logger.getLogger(WaypointIL.class);
 
-	private double[] xyz = new double[3];
-	private String name;
-	private Identifier waypoints;
-	private Agent agent;
+	private final double[] xyz = new double[3];
+	private final String name;
+	private final Identifier waypoints;
+	private final Agent agent;
 
 	private Identifier waypoint;
 	private FloatElement distance;

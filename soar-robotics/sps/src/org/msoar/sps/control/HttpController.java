@@ -20,7 +20,7 @@ import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
 import com.sun.net.httpserver.HttpServer;
 
-public class HttpController {
+final class HttpController {
 	private static final Logger logger = Logger.getLogger(HttpController.class);
 	private static final int HTTP_PORT = 8000;
 	
@@ -35,7 +35,7 @@ public class HttpController {
 	
 	private IndexHandler indexHandler = new IndexHandler();
 	
-	public HttpController() {
+	HttpController() {
 		try {
 		    HttpServer server = HttpServer.create(new InetSocketAddress(HTTP_PORT), 0);
 		    server.createContext("/", new IndexHandler());
@@ -183,7 +183,7 @@ public class HttpController {
 	    os.close();
 	}
 	
-	public List<String> getMessageTokens() {
+	List<String> getMessageTokens() {
 		List<String> temp = indexHandler.tokens;
 		indexHandler.tokens = null;
 		return temp;

@@ -6,9 +6,9 @@ package org.msoar.sps.control;
 import lcmtypes.pose_t;
 import sml.Identifier;
 
-class ClearMessagesCommand implements Command {
-	public CommandStatus execute(Identifier command, pose_t pose, OutputLinkManager outputLinkManager) {
-		outputLinkManager.inputLink.clearMessages();
+final class ClearMessagesCommand implements Command {
+	public CommandStatus execute(InputLinkInterface inputLink, Identifier command, pose_t pose, OutputLinkManager outputLinkManager) {
+		inputLink.clearMessages();
 		return CommandStatus.complete;
 	}
 

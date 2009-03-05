@@ -19,7 +19,7 @@ import lcmtypes.differential_drive_command_t;
 import lcmtypes.laser_t;
 import lcmtypes.pose_t;
 
-class SoarInterface implements Kernel.UpdateEventInterface, Kernel.SystemEventInterface, LCMSubscriber {
+final class SoarInterface implements Kernel.UpdateEventInterface, Kernel.SystemEventInterface, LCMSubscriber {
 	private static final Logger logger = Logger.getLogger(SoarInterface.class);
 
 	private final static long DCDELAY_THRESHOLD_USEC = 250000L; // 250 ms

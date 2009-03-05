@@ -4,7 +4,7 @@ import sml.Agent;
 import sml.Identifier;
 import sml.StringElement;
 
-public enum CommandStatus {
+enum CommandStatus {
 	accepted,
 	executing,
 	complete,

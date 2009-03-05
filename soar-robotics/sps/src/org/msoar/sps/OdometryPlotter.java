@@ -27,14 +27,15 @@ import vis.VisWorld;
  * @author voigtjr
  * Tool used to plot odometry data for calibration.
  */
-public class OdometryPlotter {
+public final class OdometryPlotter {
+	private final JFrame jf;
+	private final VisWorld vw = new VisWorld();
+	private final VisCanvas vc = new VisCanvas(vw);
+	
+	private ArrayList<odom_t> data;
 	private double baselineMeters = Splinter.DEFAULT_BASELINE;
 	private double tickMeters = Splinter.DEFAULT_TICKMETERS;
-	private ArrayList<odom_t> data;
-	private JFrame jf;
-	private VisWorld vw = new VisWorld();
-	private VisCanvas vc = new VisCanvas(vw);
-	
+
 	public static void main(String[] args) {
 		if (args.length < 1) {
 			System.err.println("Usage: OdometryPlotter <odometry-data>");

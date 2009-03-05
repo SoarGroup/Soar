@@ -4,24 +4,26 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 
-class Gamepad {
-	String devicePath;
-	int axes[] = new int[16];
-	int buttons[] = new int[16];
+final class Gamepad {
+	private final String devicePath;
+	private final int axes[] = new int[16];
+	private final int buttons[] = new int[16];
 
 	Gamepad() {
 		String paths[] = { "/dev/js0", "/dev/input/js0" };
 
+		String devicePath = null;
 		for (int i = 0; i < paths.length; i++) {
 			String path = paths[i];
 			File f = new File(path);
 			if (f.exists()) {
-				this.devicePath = path;
+				devicePath = path;
 				break;
 			}
 		}
+		this.devicePath = devicePath;
 
-		if (devicePath == null) {
+		if (this.devicePath == null) {
 			throw new IllegalStateException("Couldn't find a joystick.");
 		}
 

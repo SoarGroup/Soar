@@ -8,10 +8,10 @@ import org.apache.log4j.Logger;
 import lcmtypes.pose_t;
 import sml.Identifier;
 
-class ConfigureCommand implements Command {
+final class ConfigureCommand implements Command {
 	private static final Logger logger = Logger.getLogger(ConfigureCommand.class);
 	
-	public CommandStatus execute(Identifier command, pose_t pose, OutputLinkManager outputLinkManager) {
+	public CommandStatus execute(InputLinkInterface inputLink, Identifier command, pose_t pose, OutputLinkManager outputLinkManager) {
 		String yawFormat = command.GetParameterValue("yaw-format");
 		if (yawFormat != null) {
 			if (yawFormat.equals("float")) {

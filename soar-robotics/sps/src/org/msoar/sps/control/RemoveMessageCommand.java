@@ -8,10 +8,10 @@ import org.apache.log4j.Logger;
 import lcmtypes.pose_t;
 import sml.Identifier;
 
-class RemoveMessageCommand implements Command {
+final class RemoveMessageCommand implements Command {
 	private static final Logger logger = Logger.getLogger(RemoveMessageCommand.class);
 	
-	public CommandStatus execute(Identifier command, pose_t pose, OutputLinkManager outputLinkManager) {
+	public CommandStatus execute(InputLinkInterface inputLink, Identifier command, pose_t pose, OutputLinkManager outputLinkManager) {
 		int id = -1;
 		try {
 			id = Integer.parseInt(command.GetParameterValue("id"));
@@ -25,7 +25,7 @@ class RemoveMessageCommand implements Command {
 
 		logger.debug(String.format("remove-message: %d", id));
 		
-		if (outputLinkManager.inputLink.removeMessage(id) == false) {
+		if (inputLink.removeMessage(id) == false) {
 			logger.warn("Unable to remove message " + id + ", no such message");
 			return CommandStatus.error;
 		}

@@ -20,7 +20,7 @@ class MoveCommand implements Command {
 	private Direction direction;
 	private double throttle;
 	
-	public CommandStatus execute(Identifier command, pose_t pose, OutputLinkManager outputLinkManager) {
+	public CommandStatus execute(InputLinkInterface inputLink, Identifier command, pose_t pose, OutputLinkManager outputLinkManager) {
 		String directionString = command.GetParameterValue("direction");
 		if (directionString == null) {
 			logger.warn("No direction on move command");

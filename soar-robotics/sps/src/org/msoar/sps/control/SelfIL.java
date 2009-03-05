@@ -11,7 +11,7 @@ import sml.FloatElement;
 import sml.Identifier;
 import sml.IntElement;
 
-class SelfIL implements InputLinkInterface {
+final class SelfIL implements InputLinkInterface {
 	private final Agent agent;
 	private final WaypointsIL waypointsIL;
 	private final FloatElement xwme;

@@ -4,9 +4,9 @@ import lcmtypes.laser_t;
 import sml.Agent;
 import sml.Identifier;
 
-class RangerIL {
+final class RangerIL {
 	private long utimeLast = 0;
-	private RangeIL[] slices;
+	private final RangeIL[] slices;
 
 	RangerIL(Agent agent, Identifier ranges, int count) {
 		this.slices = new RangeIL[count];

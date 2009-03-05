@@ -6,7 +6,7 @@ import lcmtypes.pose_t;
 import sml.Agent;
 import sml.Identifier;
 
-class WaypointsIL {
+final class WaypointsIL {
 	private final Agent agent;
 	private final Identifier waypoints;
 	private final HashMap<String, WaypointIL> waypointList = new HashMap<String, WaypointIL>();

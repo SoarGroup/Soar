@@ -10,16 +10,16 @@ import jmat.MathUtil;
 import lcmtypes.differential_drive_command_t;
 import lcmtypes.pose_t;
 
-class SplinterInput {
+final class SplinterInput {
 	private static final Logger logger = Logger.getLogger(SplinterInput.class);
 	private static final double DISABLED = Double.NEGATIVE_INFINITY;
 	private static final long NO_INPUT = Long.MIN_VALUE; 
 	
-	enum Direction {
+	enum RotateDirection {
 		left, right
 	};
 	
-	private double[] throttle = new double[2];
+	private final double[] throttle = new double[2];
 	private double targetYaw;
 	private double targetYawTolerance;
 	private long utime = NO_INPUT;
@@ -60,10 +60,10 @@ class SplinterInput {
 		debugOut();
 	}
 	
-	void rotate(Direction dir, double throttle) {
+	void rotate(RotateDirection dir, double throttle) {
 		clear();
-		this.throttle[0] = throttle * (dir == Direction.left ? -1 : 1);
-		this.throttle[1] = throttle * (dir == Direction.right ? -1 : 1);
+		this.throttle[0] = throttle * (dir == RotateDirection.left ? -1 : 1);
+		this.throttle[1] = throttle * (dir == RotateDirection.right ? -1 : 1);
 		debugOut();
 	}
 	

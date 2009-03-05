@@ -8,14 +8,14 @@ import org.apache.log4j.Logger;
 import lcmtypes.pose_t;
 import sml.Identifier;
 
-class RotateToCommand implements Command {
+final class RotateToCommand implements Command {
 	private static final Logger logger = Logger.getLogger(RotateToCommand.class);
 	
 	double yaw;
 	double tolerance;
 	double throttle;
 	
-	public CommandStatus execute(Identifier command, pose_t pose, OutputLinkManager outputLinkManager) {
+	public CommandStatus execute(InputLinkInterface inputLink, Identifier command, pose_t pose, OutputLinkManager outputLinkManager) {
 		try {
 			yaw = Double.parseDouble(command.GetParameterValue("yaw"));
 		} catch (NullPointerException ex) {

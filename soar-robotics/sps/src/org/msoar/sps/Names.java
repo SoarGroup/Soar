@@ -1,6 +1,6 @@
 package org.msoar.sps;
 
-public class Names {
+public final class Names {
 	public static final String DRIVE_CHANNEL = "DIFFERENTIAL_DRIVE_COMMAND";
 	public static final String POSE_CHANNEL = "POSE";
 	public static final String LASER_CHANNEL = "LIDAR_FRONT";
@@ -14,6 +14,10 @@ public class Names {
 	public static final String NET_STOP = "destroy";
 	public static final String NET_QUIT = "quit";
 	
-	public static final Byte TYPE_COMPONENT = new Byte("0");
-	public static final Byte TYPE_OUTPUT = new Byte("1");
+	public static final Byte TYPE_COMPONENT = Byte.parseByte("0");
+	public static final Byte TYPE_OUTPUT = Byte.parseByte("1");
+	
+	private Names() {
+		assert false;
+	}
 }

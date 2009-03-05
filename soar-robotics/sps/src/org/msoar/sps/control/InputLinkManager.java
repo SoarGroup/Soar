@@ -14,7 +14,7 @@ import sml.Identifier;
  * @author voigtjr
  * Soar input link management. Also handles some updating of waypoint state.
  */
-public class InputLinkManager {
+final class InputLinkManager {
 	private static final Logger logger = Logger.getLogger(InputLinkManager.class);
 
 	private final Agent agent;
@@ -22,7 +22,7 @@ public class InputLinkManager {
 	private final SelfIL selfIL;
 	private final RangerIL rangerIL;
 
-	public InputLinkManager(Agent agent, int rangesCount) {
+	InputLinkManager(Agent agent, int rangesCount) {
 		this.agent = agent;
 		this.agent.SetBlinkIfNoChange(false);
 
@@ -42,13 +42,13 @@ public class InputLinkManager {
 		agent.Commit();
 	}
 
-	public void update(pose_t pose, laser_t laser, List<String> tokens, boolean useFloatYawWmes) {
+	void update(pose_t pose, laser_t laser, List<String> tokens, boolean useFloatYawWmes) {
 		timeIL.update();
 		selfIL.update(pose, tokens, useFloatYawWmes);
 		rangerIL.update(laser, useFloatYawWmes);
 	}
 	
-	public InputLinkInterface getInterface() {
+	InputLinkInterface getInterface() {
 		return selfIL;
 	}
 }

@@ -8,11 +8,11 @@ import org.apache.log4j.Logger;
 import lcmtypes.pose_t;
 import sml.Identifier;
 
-class MotorCommand implements Command {
+final class MotorCommand implements Command {
 	private static final Logger logger = Logger.getLogger(MotorCommand.class);
-	double[] motorThrottle = new double[2];
+	final double[] motorThrottle = new double[2];
 	
-	public CommandStatus execute(Identifier command, pose_t pose, OutputLinkManager outputLinkManager) {
+	public CommandStatus execute(InputLinkInterface inputLink, Identifier command, pose_t pose, OutputLinkManager outputLinkManager) {
 		try {
 			motorThrottle[0] = Double.parseDouble(command.GetParameterValue("left"));
 		} catch (NullPointerException ex) {

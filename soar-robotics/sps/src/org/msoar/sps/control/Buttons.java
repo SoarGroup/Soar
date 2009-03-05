@@ -29,6 +29,9 @@ enum Buttons {
 	}
 	
 	void update() {
+		if (gp == null) {
+			return;
+		}
 		boolean button = gp.getButton(this.ordinal());		
 		// change on leading edge
 		if (!buttonState && button) {

@@ -4,7 +4,7 @@ import sml.Agent;
 import sml.Identifier;
 import sml.IntElement;
 
-class TimeIL {
+final class TimeIL {
 	private final static long nanosecondsPerSecond = 1000000000L;
 
 	private final Agent agent;

@@ -8,7 +8,7 @@ import org.apache.log4j.Logger;
 import lcmtypes.pose_t;
 import sml.Identifier;
 
-class RotateCommand implements Command {
+final class RotateCommand implements Command {
 	private static final Logger logger = Logger.getLogger(RotateCommand.class);
 
 	private enum Direction {
@@ -20,7 +20,7 @@ class RotateCommand implements Command {
 	private Direction direction;
 	private double throttle;
 
-	public CommandStatus execute(Identifier command, pose_t pose, OutputLinkManager outputLinkManager) {
+	public CommandStatus execute(InputLinkInterface inputLink, Identifier command, pose_t pose, OutputLinkManager outputLinkManager) {
 		command.GetTimeTag();
 		String directionString = command.GetParameterValue("direction");
 		if (directionString == null) {
@@ -62,9 +62,9 @@ class RotateCommand implements Command {
 
 	public void updateInput(SplinterInput input) {
 		if (direction == Direction.left) {
-			input.rotate(SplinterInput.Direction.left, throttle);
+			input.rotate(SplinterInput.RotateDirection.left, throttle);
 		} else if (direction == Direction.right) {
-			input.rotate(SplinterInput.Direction.right, throttle);
+			input.rotate(SplinterInput.RotateDirection.right, throttle);
 		} else {
 			assert direction == Direction.stop;
 			input.stop();
