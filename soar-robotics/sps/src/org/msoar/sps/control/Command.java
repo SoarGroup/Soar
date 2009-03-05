@@ -1,7 +1,7 @@
 /**
  * 
  */
-package org.msoar.sps.control.o;
+package org.msoar.sps.control;
 
 
 import lcmtypes.pose_t;

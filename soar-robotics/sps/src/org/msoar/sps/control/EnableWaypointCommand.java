@@ -1,27 +1,27 @@
 /**
  * 
  */
-package org.msoar.sps.control.o;
+package org.msoar.sps.control;
 
 import org.apache.log4j.Logger;
 
 import lcmtypes.pose_t;
 import sml.Identifier;
 
-class DisableWaypointCommand implements Command {
-	private static final Logger logger = Logger.getLogger(DisableWaypointCommand.class);
+class EnableWaypointCommand implements Command {
+	private static final Logger logger = Logger.getLogger(EnableWaypointCommand.class);
 	
 	public CommandStatus execute(Identifier command, pose_t pose, OutputLinkManager outputLinkManager) {
 		String id = command.GetParameterValue("id");
 		if (id == null) {
-			logger.warn("No id on disable-waypoint command");
+			logger.warn("No id on enable-waypoint command");
 			return CommandStatus.error;
 		}
 
-		logger.debug(String.format("disable-waypoint: %16s", id));
+		logger.debug(String.format("enable-waypoint: %16s", id));
 
-		if (outputLinkManager.inputLink.disableWaypoint(id) == false) {
-			logger.warn("Unable to disable waypoint " + id + ", no such waypoint");
+		if (outputLinkManager.inputLink.enableWaypoint(id, pose) == false) {
+			logger.warn("Unable to enable waypoint " + id + ", no such waypoint");
 			return CommandStatus.error;
 		}
 

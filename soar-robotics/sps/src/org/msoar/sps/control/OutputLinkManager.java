@@ -1,4 +1,4 @@
-package org.msoar.sps.control.o;
+package org.msoar.sps.control;
 
 import java.util.HashMap;
 
@@ -6,7 +6,6 @@ import lcmtypes.differential_drive_command_t;
 import lcmtypes.pose_t;
 
 import org.apache.log4j.Logger;
-import org.msoar.sps.control.InputLinkInterface;
 
 import sml.Agent;
 import sml.Identifier;

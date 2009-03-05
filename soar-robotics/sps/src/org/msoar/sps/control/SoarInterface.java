@@ -7,8 +7,6 @@ import java.util.List;
 
 import org.apache.log4j.Logger;
 import org.msoar.sps.Names;
-import org.msoar.sps.control.i.InputLinkManager;
-import org.msoar.sps.control.o.OutputLinkManager;
 
 import sml.Agent;
 import sml.Kernel;

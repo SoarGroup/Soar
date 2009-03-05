@@ -1,4 +1,4 @@
-package org.msoar.sps.control.i;
+package org.msoar.sps.control;
 
 import sml.Agent;
 import sml.Identifier;

@@ -1,4 +1,4 @@
-package org.msoar.sps.control.html;
+package org.msoar.sps.control;
 
 import java.io.BufferedReader;
 import java.io.IOException;

@@ -1,9 +1,8 @@
-package org.msoar.sps.control.i;
+package org.msoar.sps.control;
 
 import java.util.List;
 
 import org.apache.log4j.Logger;
-import org.msoar.sps.control.InputLinkInterface;
 
 import lcmtypes.laser_t;
 import lcmtypes.pose_t;

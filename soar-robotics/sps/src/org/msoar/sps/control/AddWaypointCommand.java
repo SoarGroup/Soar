@@ -1,7 +1,7 @@
 /**
  * 
  */
-package org.msoar.sps.control.o;
+package org.msoar.sps.control;
 
 import java.util.Arrays;
 

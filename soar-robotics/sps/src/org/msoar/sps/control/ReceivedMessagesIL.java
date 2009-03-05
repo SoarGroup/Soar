@@ -1,4 +1,4 @@
-package org.msoar.sps.control.i;
+package org.msoar.sps.control;
 
 import java.util.HashMap;
 import java.util.List;

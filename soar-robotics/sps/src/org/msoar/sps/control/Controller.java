@@ -17,7 +17,6 @@ import org.apache.log4j.Logger;
 import org.msoar.sps.Names;
 import org.msoar.sps.config.Config;
 import org.msoar.sps.config.ConfigFile;
-import org.msoar.sps.control.html.HttpController;
 
 public class Controller extends TimerTask implements LCMSubscriber {
 	private static final Logger logger = Logger.getLogger(Controller.class);

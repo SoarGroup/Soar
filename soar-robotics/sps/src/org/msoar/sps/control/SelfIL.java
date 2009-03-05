@@ -1,8 +1,7 @@
-package org.msoar.sps.control.i;
+package org.msoar.sps.control;
 
 import java.util.List;
 
-import org.msoar.sps.control.InputLinkInterface;
 
 import jmat.LinAlg;
 import jmat.MathUtil;

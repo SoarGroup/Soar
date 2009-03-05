@@ -1,4 +1,4 @@
-package org.msoar.sps.control.i;
+package org.msoar.sps.control;
 
 import lcmtypes.laser_t;
 import sml.Agent;
