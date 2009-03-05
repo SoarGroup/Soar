@@ -18,7 +18,7 @@ import org.msoar.sps.Names;
 import org.msoar.sps.config.Config;
 import org.msoar.sps.config.ConfigFile;
 
-public final class Controller extends TimerTask implements LCMSubscriber {
+final class Controller extends TimerTask implements LCMSubscriber {
 	private static final Logger logger = Logger.getLogger(Controller.class);
 	private static final int DEFAULT_RANGES_COUNT = 5;
 	

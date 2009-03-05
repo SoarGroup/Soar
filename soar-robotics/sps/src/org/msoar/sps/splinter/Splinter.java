@@ -21,12 +21,12 @@ import org.msoar.sps.config.Config;
 import org.msoar.sps.config.ConfigFile;
 import org.msoar.sps.lcmtypes.odom_t;
 
-public class Splinter extends TimerTask implements LCMSubscriber {
+public final class Splinter extends TimerTask implements LCMSubscriber {
 	private static final Logger logger = Logger.getLogger(Splinter.class);
-	private static int LEFT = 0;
-	private static int RIGHT = 1;
-	private static long DELAY_BEFORE_WARN_NO_FIRST_INPUT_MILLIS = 5000;
-	private static long DELAY_BEFORE_WARN_NO_INPUT_MILLIS = 1000;
+	private static final int LEFT = 0;
+	private static final int RIGHT = 1;
+	private static final long DELAY_BEFORE_WARN_NO_FIRST_INPUT_MILLIS = 5000;
+	private static final long DELAY_BEFORE_WARN_NO_INPUT_MILLIS = 1000;
 	
 	//green
 	//public static final double DEFAULT_BASELINE = 0.383;
@@ -37,29 +37,30 @@ public class Splinter extends TimerTask implements LCMSubscriber {
 	// TODO: should use two tickmeters, left/right
 	public static final double DEFAULT_TICKMETERS = 0.0000428528;
 	
-	private Timer timer = new Timer();
-	private Orc orc;
-	private Motor[] motor = new Motor[2];
-	private int[] ports;
-	private boolean[] invert;
+	private final Timer timer = new Timer();
+	private final Orc orc;
+	private final Motor[] motor = new Motor[2];
+	private final int[] ports;
+	private final boolean[] invert;
+	private final LCM lcm;
+	private final double tickMeters;
+	private final double baselineMeters;
+	private final double[] command = { 0, 0 };
+	private final double maxThrottleChangePerUpdate;
+
+	private OdometryLogger capture;
 	private differential_drive_command_t dc;
-	private LCM lcm;
-	private double tickMeters;
-	private double baselineMeters;
-	private double[] command = { 0, 0 };
-	private double maxThrottleChangePerUpdate;
 	private long lastSeenDCTime = 0;
 	private long lastUtime = 0;
-	private OdometryLogger capture;
 	private boolean failsafeSpew = false;
 
 	// for odometry update
-	private Odometry odometry;
-	private odom_t oldOdom = new odom_t();
-	private pose_t pose = new pose_t();
-	private odom_t newOdom = new odom_t();
+	private final Odometry odometry;
+	private final odom_t oldOdom = new odom_t();
+	private final pose_t pose = new pose_t();
+	private final odom_t newOdom = new odom_t();
 	
-	Splinter(Config config) {
+	private Splinter(Config config) {
 		tickMeters = config.getDouble("tickMeters", DEFAULT_TICKMETERS);
 		baselineMeters = config.getDouble("baselineMeters", DEFAULT_BASELINE);
 		odometry = new Odometry(tickMeters, baselineMeters);
@@ -122,7 +123,6 @@ public class Splinter extends TimerTask implements LCMSubscriber {
 					capture.record(newOdom);
 				} catch (IOException e) {
 					logger.error("IOException while writing odometry: " + e.getMessage());
-					capture = null;
 				}
 			}
 		}

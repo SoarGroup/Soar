@@ -6,17 +6,17 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.Socket;
-import java.util.ArrayList;
+import java.util.List;
 
 import org.apache.log4j.Logger;
 import org.msoar.sps.Names;
 
-class SlaveRunner {
+final class SlaveRunner {
 	private static final Logger logger = Logger.getLogger(SlaveRunner.class);
 			
-	private Runner runner;
-	private ObjectInputStream oin;
-	private ObjectOutputStream oout;
+	private final Runner runner;
+	private final ObjectInputStream oin;
+	private final ObjectOutputStream oout;
 
 	SlaveRunner(String component, Socket controlSocket, Socket outputSocket) throws IOException {
 		try {
@@ -26,7 +26,7 @@ class SlaveRunner {
 			this.oin = new ObjectInputStream(new BufferedInputStream(controlSocket.getInputStream()));
 	
 			logger.trace("creating local runner");
-			this.runner = new LocalRunner(component, outputSocket);
+			this.runner = LocalRunner.newSlaveInstance(component, outputSocket);
 			
 			// handshake
 			logger.trace("writing component name");
@@ -54,7 +54,7 @@ class SlaveRunner {
 			logger.debug("net command: " + netCommand);
 
 			if (netCommand.equals(Names.NET_CONFIGURE)) {
-				ArrayList<String> command = NetworkRunner.readCommand(oin);
+				List<String> command = NetworkRunner.readCommand(oin);
 				netCommand = NetworkRunner.readString(oin);
 				if (netCommand.equals(Names.NET_CONFIG_NO)) {
 					runner.configure(command, null);

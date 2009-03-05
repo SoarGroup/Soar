@@ -7,10 +7,10 @@ import java.io.IOException;
 import org.apache.log4j.Logger;
 import org.msoar.sps.lcmtypes.odom_t;
 
-class OdometryLogger {
+final class OdometryLogger {
 	private static final Logger logger = Logger.getLogger(OdometryLogger.class);
 	
-	private FileWriter datawriter;
+	private final FileWriter datawriter;
 	
 	OdometryLogger() throws IOException {
 		File datafile = File.createTempFile("odom-", ".txt", new File(System.getProperty("user.dir")));

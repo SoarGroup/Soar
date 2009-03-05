@@ -2,20 +2,22 @@ package org.msoar.sps.sm;
 
 import java.io.IOException;
 import java.io.ObjectInputStream;
-import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 
-class NetworkRunner {
-	// TODO: how do you check a cast?
-	@SuppressWarnings("unchecked")
-	public static ArrayList<String> readCommand(ObjectInputStream oin) throws IOException {
+final class NetworkRunner {
+	static List<String> readCommand(ObjectInputStream oin) throws IOException {
+		String[] command = null;
 		try {
-			return (ArrayList<String>)oin.readObject();
+			command = (String[])oin.readObject();
+
 		} catch (ClassNotFoundException e) {
 			throw new IOException(e);
 		}
+		return Arrays.asList(command);
 	}
 
-	public static String readString(ObjectInputStream oin) throws IOException {
+	static String readString(ObjectInputStream oin) throws IOException {
 		try {
 			return (String)oin.readObject();
 		} catch (ClassNotFoundException e) {
@@ -23,7 +25,7 @@ class NetworkRunner {
 		}
 	}
 
-	public static Boolean readBoolean(ObjectInputStream oin) throws IOException {
+	static Boolean readBoolean(ObjectInputStream oin) throws IOException {
 		try {
 			return (Boolean)oin.readObject();
 		} catch (ClassNotFoundException e) {
@@ -31,5 +33,7 @@ class NetworkRunner {
 		}
 	}
 
-
+	private NetworkRunner() {
+		assert false;
+	}
 }

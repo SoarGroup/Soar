@@ -6,37 +6,40 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.ServerSocket;
 import java.net.Socket;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
 
 import org.apache.log4j.Logger;
 import org.msoar.sps.Names;
 import org.msoar.sps.config.Config;
 import org.msoar.sps.config.ConfigFile;
 
-public class SessionManager implements Runnable {
+final class SessionManager implements Runnable {
 	private static final Logger logger = Logger.getLogger(SessionManager.class);
-	static int PORT = 42140;
-	private static String USAGE = "Argument should be config file OR component@hostname\n\n *** WORKING DIRECTORY MUST BE soar-robotics/sps ***";
-	private ServerSocket serverSocket;
-	private Map<String, Runner> runners = new HashMap<String, Runner>();
-	private Config config;
+	private static final int PORT = 42140;
+	private static final String USAGE = 
+		"Argument should be config file OR component@hostname\n\n" +
+		" *** WORKING DIRECTORY MUST BE soar-robotics/sps ***";
+	private final ServerSocket serverSocket;
+	private final Map<String, Runner> runners = new HashMap<String, Runner>();
+	private final Config config;
 	
-	SessionManager(Config config) {
+	private SessionManager(Config config) {
 		if (config == null) {
 			throw new NullPointerException();
 		}
-		
 		this.config = config;
 		
+		ServerSocket serverSocket = null;
 		try {
 			serverSocket = new ServerSocket(PORT);
 		} catch (IOException e) {
 			logger.error(e.getMessage());
 			System.exit(1);
 		}
+		this.serverSocket = serverSocket;
 		
 		Thread acceptThread = new Thread(this);
 		acceptThread.setDaemon(true);
@@ -175,12 +178,12 @@ public class SessionManager implements Runnable {
 			}
 		} else {
 			logger.info("Creating new local runner for " + component);
-			runner = new LocalRunner(component);
+			runner = LocalRunner.newInstance(component);
 			runners.put(component, runner);
 		}
 		
 		try {
-			runner.configure(new ArrayList<String>(Arrays.asList(command)), getConfigString(component));
+			runner.configure(Arrays.asList(command), getConfigString(component));
 			runner.start();
 		} catch (IOException e) {
 			logger.error(e.getMessage());
@@ -202,7 +205,7 @@ public class SessionManager implements Runnable {
 	}
 
 	private void stopAll() {
-		ArrayList<String> components = new ArrayList<String>(runners.keySet());
+		Set<String> components = runners.keySet();
 		for (String component : components) {
 			stop(component);
 		}
@@ -260,7 +263,7 @@ public class SessionManager implements Runnable {
 				logger.error(USAGE);
 				System.exit(1);
 			}
-			new SessionSlave(netInfo[0], netInfo[1]);
+			new SessionSlave(netInfo[0], netInfo[1], PORT);
 			
 		} else {
 			// load config

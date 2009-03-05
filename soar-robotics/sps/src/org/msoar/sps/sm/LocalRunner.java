@@ -13,12 +13,30 @@ import java.util.List;
 
 import org.apache.log4j.Logger;
 
-public class LocalRunner implements Runner {
+final class LocalRunner implements Runner {
 	private static final Logger logger = Logger.getLogger(LocalRunner.class);
 	
+	static LocalRunner newInstance(String component) {
+		try {
+			return new LocalRunner(component, null);
+		} catch (IOException e) {
+			//this can't happen
+			assert false;
+		}
+		return null;
+	}
+	
+	static LocalRunner newSlaveInstance(String component, Socket outputSocket) throws IOException {
+		if (outputSocket == null) {
+			throw new NullPointerException();
+		}
+		return new LocalRunner(component, outputSocket);
+	}
+	
 	// constant
-	private String component;
-	private PrintStream out;
+	private final String component;
+	private final PrintStream out;
+	private final boolean slave;
 	
 	// can change per run
 	private List<String> command;
@@ -28,38 +46,34 @@ public class LocalRunner implements Runner {
 	private Process process;
 	private File configFile;
 	
-	LocalRunner(String component) {
-		setComponent(component);
-	}
-	
-	LocalRunner(String component, Socket outputSocket) throws IOException {
-		setComponent(component);
-		if (outputSocket == null) {
+	private LocalRunner(String component, Socket outputSocket) throws IOException {
+		if (component == null) {
 			throw new NullPointerException();
 		}
+		this.component = component;
 
+		if (outputSocket == null) {
+			this.slave = false;
+			this.out = System.out;
+			return;
+		}
+		
+		this.slave = true;
 		logger.debug("setting up output socket");
 		this.out = new PrintStream(outputSocket.getOutputStream());
 		this.out.print(component + "\r\n");
 		this.out.flush();
 	}
 	
-	private void setComponent(String component) {
-		if (component == null) {
-			throw new NullPointerException();
-		}
-		this.component = component;
-	}
-	
 	public String getComponentName() {
 		return component;
 	}
 	
-	public void configure(ArrayList<String> command, String config) {
+	public void configure(List<String> command, String config) {
 		if (command == null) {
 			throw new NullPointerException();
 		}
-		this.command = command;
+		this.command = new ArrayList<String>(command);
 		this.config = config;
 	}
 	
@@ -109,18 +123,20 @@ public class LocalRunner implements Runner {
 		aliveHandler.start();
 	}
 	
-	class OutputHandler implements Runnable {
-		private BufferedReader procIn;
-		public void run() {
+	private final class OutputHandler implements Runnable {
+		private final BufferedReader procIn;
+		
+		private OutputHandler() {
 			// pipe this output to 
 			procIn = new BufferedReader(new InputStreamReader(process.getInputStream()));
-			String line;
+		}
+		
+		public void run() {
 			try {
+				String line;
 				while((line = procIn.readLine()) != null) {
-					if (out == null) {
-						System.out.println(component + ": " + line);
-					} else {
-						out.println(component + ": " + line);
+					out.println(component + ": " + line);
+					if (slave) {
 						out.flush();
 					}
 				}
@@ -130,7 +146,7 @@ public class LocalRunner implements Runner {
 		}
 	}
 	
-	class AliveHandler implements Runnable {
+	private final class AliveHandler implements Runnable {
 		public void run() {
 			while (true) {
 				try {

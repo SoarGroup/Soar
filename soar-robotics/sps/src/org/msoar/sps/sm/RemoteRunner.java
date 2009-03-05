@@ -7,19 +7,20 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.Socket;
-import java.util.ArrayList;
+import java.util.List;
 
 import org.apache.log4j.Logger;
 import org.msoar.sps.Names;
 
-public class RemoteRunner implements Runner {
+final class RemoteRunner implements Runner {
 	private static final Logger logger = Logger.getLogger(RemoteRunner.class);
 	
-	private String component;
-	private ObjectOutputStream oout;
-	private ObjectInputStream oin;
-	private Boolean aliveResponse;
+	private final String component;
+	private final ObjectOutputStream oout;
+	private final ObjectInputStream oin;
 	
+	private Boolean aliveResponse;
+
 	RemoteRunner(Socket socket) throws IOException {
 		this.oout = new ObjectOutputStream(new BufferedOutputStream(socket.getOutputStream()));
 		this.oout.flush();
@@ -37,9 +38,9 @@ public class RemoteRunner implements Runner {
 		this.oout.flush();
 	}
 
-	public void configure(ArrayList<String> command, String config) throws IOException {
+	public void configure(List<String> command, String config) throws IOException {
 		oout.writeObject(Names.NET_CONFIGURE);
-		oout.writeObject(command);
+		oout.writeObject(command.toArray(new String[command.size()]));
 		if (config == null) {
 			oout.writeObject(Names.NET_CONFIG_NO);
 		} else {
