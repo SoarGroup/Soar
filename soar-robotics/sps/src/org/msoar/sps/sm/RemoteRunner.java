@@ -8,6 +8,7 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.Socket;
 import java.util.List;
+import java.util.Map;
 
 import org.apache.log4j.Logger;
 import org.msoar.sps.Names;
@@ -38,7 +39,8 @@ final class RemoteRunner implements Runner {
 		this.oout.flush();
 	}
 
-	public void configure(List<String> command, String config) throws IOException {
+	public void configure(List<String> command, String config, Map<String, String> environment) throws IOException {
+		assert false; // FIXME: ENVIRONMENT
 		oout.writeObject(Names.NET_CONFIGURE);
 		oout.writeObject(command.toArray(new String[command.size()]));
 		if (config == null) {

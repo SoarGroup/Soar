@@ -19,6 +19,7 @@ final class SlaveRunner {
 	private final ObjectOutputStream oout;
 
 	SlaveRunner(String component, Socket controlSocket, Socket outputSocket) throws IOException {
+		assert false; // FIXME: ENVIRONMENT
 		try {
 			this.oout = new ObjectOutputStream(new BufferedOutputStream(controlSocket.getOutputStream()));
 			this.oout.flush();
@@ -57,9 +58,9 @@ final class SlaveRunner {
 				List<String> command = NetworkRunner.readCommand(oin);
 				netCommand = NetworkRunner.readString(oin);
 				if (netCommand.equals(Names.NET_CONFIG_NO)) {
-					runner.configure(command, null);
+					runner.configure(command, null, null); // TODO: FIXME: ENVIRONMENT
 				} else if (netCommand.equals(Names.NET_CONFIG_YES)) {
-					runner.configure(command, NetworkRunner.readString(oin));
+					runner.configure(command, NetworkRunner.readString(oin), null);// TODO: FIXME: ENVIRONMENT
 				} else {
 					throw new IOException("didn't get config yes/no message");
 				}

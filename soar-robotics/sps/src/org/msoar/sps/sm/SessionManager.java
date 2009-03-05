@@ -183,7 +183,7 @@ final class SessionManager implements Runnable {
 		}
 		
 		try {
-			runner.configure(Arrays.asList(command), getConfigString(component));
+			runner.configure(Arrays.asList(command), getConfigString(component), getEnvironmentString(component));
 			runner.start();
 		} catch (IOException e) {
 			logger.error(e.getMessage());
@@ -200,6 +200,23 @@ final class SessionManager implements Runnable {
 		}
 		if (hadConfig) {
 			return sb.toString();
+		}
+		return null;
+	}
+	
+	private Map<String, String> getEnvironmentString(String component) {
+		Map<String, String> theNewEnvironment = new HashMap<String, String>();
+		boolean hadEnvironment = false;
+		for (String componentEnvironmentId : config.getStrings(component + ".environment", new String[0])) {
+			hadEnvironment = true;
+			Config childConf = config.getChild(componentEnvironmentId);
+			String[] keys = childConf.getKeys();
+			for (String key : keys) {
+				theNewEnvironment.put(key, childConf.getString(key));
+			}
+		}
+		if (hadEnvironment) {
+			return theNewEnvironment;
 		}
 		return null;
 	}

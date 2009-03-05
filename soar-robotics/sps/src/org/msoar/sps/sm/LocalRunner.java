@@ -10,6 +10,8 @@ import java.io.PrintStream;
 import java.net.Socket;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
 
 import org.apache.log4j.Logger;
 
@@ -40,6 +42,7 @@ final class LocalRunner implements Runner {
 	
 	// can change per run
 	private List<String> command;
+	private Map<String, String> environment;
 	private String config;
 
 	// will change per run
@@ -69,11 +72,12 @@ final class LocalRunner implements Runner {
 		return component;
 	}
 	
-	public void configure(List<String> command, String config) {
+	public void configure(List<String> command, String config, Map<String, String> environment) {
 		if (command == null) {
 			throw new NullPointerException();
 		}
 		this.command = new ArrayList<String>(command);
+		this.environment = environment;
 		this.config = config;
 	}
 	
@@ -109,6 +113,19 @@ final class LocalRunner implements Runner {
 		// start the component
 		ProcessBuilder builder = new ProcessBuilder(command);
 		builder.redirectErrorStream(true); // combine stdout/stderr
+		
+		// pass addition environment variables if requested
+		logger.debug("checking for environment");
+		if (environment != null) {
+			builder.environment().putAll(environment);
+			
+			if (logger.isDebugEnabled()) {
+				for (Entry<String, String> entry : environment.entrySet()) {
+					logger.debug("adding to environment: " + entry.getKey() + " => " + entry.getValue());
+				}
+			}
+		}
+		
 		try {
 			process = builder.start();
 		} catch (IOException e) {
