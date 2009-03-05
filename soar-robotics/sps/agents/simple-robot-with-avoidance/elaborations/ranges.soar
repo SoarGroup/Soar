@@ -2,7 +2,7 @@ sp {go-to-waypoint*elaborate*range*blocked
    (state <s> ^name simple-robot
               ^parameters.range-tolerance <rt>
               ^io.input-link.ranges.range <r>)
-   (<r> ^distance <= <rt>)
+  - (<r> ^distance > <rt>)
 -->
    (<r> ^blocked true)
 }
@@ -11,7 +11,7 @@ sp {go-to-waypoint*elaborate*range*not-blocked
    (state <s> ^name simple-robot
               ^parameters.range-tolerance <rt>
               ^io.input-link.ranges.range <r>)
-   (<r> ^distance > <rt>)
+  - (<r> ^distance <= <rt>)
 -->
    (<r> ^blocked false)
 }
@@ -27,7 +27,7 @@ sp {go-to-waypoint*elaborate*range*move-forward
 sp {go-to-waypoint*elaborate*range*turn-left
    (state <s> ^name simple-robot
               ^io.input-link.ranges.range <r>)
-   (<r> ^id > 0)
+  - (<r> ^id <= 0)
 -->
    (<r> ^action.rotate.direction left)
 }
@@ -35,7 +35,7 @@ sp {go-to-waypoint*elaborate*range*turn-left
 sp {go-to-waypoint*elaborate*range*rotate-right
    (state <s> ^name simple-robot
               ^io.input-link.ranges.range <r>)
-   (<r> ^id < 0)
+  - (<r> ^id >= 0)
 -->
    (<r> ^action.rotate.direction right)
 }

@@ -1,18 +1,16 @@
-sp {evaluate-operator*evaluate*state*failure*duplicate
-   (state <s2> ^name go-to-location
-               ^superstate-set <s1>
-               ^waypoints.current-waypoint <a>
-               ^tried-tied-operator)
-   (<s1> ^name go-to-location
-               ^desired <d>
-               ^waypoints.current-waypoint <a>)
--->
-   (<s2> ^failure <d>)}
+#sp {evaluate-operator*evaluate*state*failure*duplicate
+#   (state <s2> ^name go-to-location
+#               ^superstate-set <s1>
+#               ^waypoints.current-waypoint.next <a>
+#               ^tried-tied-operator)
+#   (<s1> ^name go-to-location
+#         ^desired <d>
+#         ^waypoints.current-waypoint <a>)
+#-->
+#   (<s2> ^failure <d>)}
 
 sp {evaluate-operator*create*top-state
-   (state <s> ^name evaluate-operator
-              ^superstate.superstate <ss>)
+   (state <s> ^name evaluate-operator)
 -->
-   (<ss> ^top-state <ts>)
-       
+   (<s> ^top-state <ts>)
 }

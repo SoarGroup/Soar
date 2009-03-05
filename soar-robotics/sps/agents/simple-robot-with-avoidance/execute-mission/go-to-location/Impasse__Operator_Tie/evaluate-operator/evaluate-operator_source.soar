@@ -1,4 +1,5 @@
 source elaborations.soar
+source choose-waypoint.soar
 source go-to-waypoint.soar
 source Impasse__Operator_Tie.soar
 pushd Impasse__Operator_Tie

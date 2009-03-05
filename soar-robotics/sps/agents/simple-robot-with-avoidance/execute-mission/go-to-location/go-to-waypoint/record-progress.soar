@@ -22,14 +22,14 @@ sp {apply*record-progress*time
                               <nut> -)
 }
 
-sp {apply*record-progress*last-distance
+sp {apply*record-progress*min-distance
    (state <s> ^operator.name record-progress
               ^top-state <ts>
               ^waypoint.distance <dis>)
    (<ts> ^destination-waypoint <dw>)
-   (<dw> ^last-distance { <> <dis> <ld> })
+   (<dw> ^min-distance { > <dis> <ld> })
 -->
-   (<dw> ^last-distance <ld> -
+   (<dw> ^min-distance <ld> -
                         <dis>)
 }
 
@@ -39,7 +39,7 @@ sp {apply*record-progress*progress
               ^top-state <ts>
               ^waypoint.distance <dis>)
    (<ts> ^destination-waypoint <dw>)
-   (<dw> ^last-distance <ld>
+   (<dw> ^min-distance <ld>
          ^progress <prog>)
 -->
    (<dw> ^progress <prog> -

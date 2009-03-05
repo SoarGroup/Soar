@@ -18,6 +18,7 @@ sp {apply*record-progress*initialize
    (<wp> ^distance <dis>)
 -->
    (<dw> ^last-distance <dis>
+         ^min-distance <dis>
          ^progress (* 4 <mpd>)
          ^next-update-time (+ <sec> <put>))
 }

@@ -6,6 +6,7 @@ sp {go-to-waypoint*propose*give-up-on-destination-waypoint
    (<s> ^operator <op> +, =, >)
    (<op> ^name give-up-on-destination-waypoint
          ^destination-waypoint <mt>)
+   (interrupt)
 }
 
 # if the give-up is marked as immediate, then make this better

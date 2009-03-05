@@ -5,6 +5,7 @@ sp {execute-mission*propose*mission-operator
    (state <s> ^name execute-mission
               ^mission.current)
 -->
+  # (interrupt)
    (<s> ^operator <op> +)
    (<op> ^type mission-operator)
 }

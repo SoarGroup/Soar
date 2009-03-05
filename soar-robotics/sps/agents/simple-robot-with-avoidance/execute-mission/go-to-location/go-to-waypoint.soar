@@ -1,6 +1,11 @@
 sp {go-to-location*propose*go-to-waypoint*destination-waypoint
    (state <s> ^name go-to-location
+              ^waypoints <wps>
               ^top-state.destination-waypoint <dw>)
+   (<dw> ^waypoint <wp>
+         ^source <so>)
+  -(<wps> ^current-waypoint <> <so>)
+  -(<wps> ^current-waypoint <wp>)
 -->
    (<s> ^operator <op> +)
    (<op> ^name go-to-waypoint

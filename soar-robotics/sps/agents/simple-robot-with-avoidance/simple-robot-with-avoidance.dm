@@ -1,4 +1,4 @@
-264
+268
 SOAR_ID 0
 SOAR_ID 1
 SOAR_ID 2
@@ -263,7 +263,11 @@ ENUMERATION 260 1 set-waypoint-computer
 SOAR_ID 261
 ENUMERATION 262 1 detect-waypoint
 SOAR_ID 263
-345
+ENUMERATION 264 1 choose-waypoint
+SOAR_ID 265
+FLOAT_RANGE 266 -Infinity Infinity
+ENUMERATION 267 2 false true
+349
 0 abandoned-waypoint 242
 0 attribute 85
 0 choices 84
@@ -351,6 +355,7 @@ SOAR_ID 263
 40 failure 28
 40 name 42
 40 operator 44
+40 operator 265
 40 superstate 49
 40 superstate-set 0
 40 top-state 0
@@ -509,6 +514,7 @@ SOAR_ID 263
 152 name 151
 152 yaw 155
 165 destination 242
+165 destination-in-front 245
 165 io 1
 165 name 167
 165 operator 199
@@ -522,7 +528,7 @@ SOAR_ID 263
 165 top-state 0
 165 type 166
 165 waypoint 187
-165 yaw-aligned 245
+165 yaw-aligned 267
 169 desired-yaw 181
 169 io 1
 169 name 171
@@ -600,6 +606,7 @@ SOAR_ID 263
 242 give-up 258
 242 last-action-purpose 249
 242 last-distance 254
+242 min-distance 266
 242 next-update-time 251
 242 next-update-time 256
 242 progress 255
@@ -609,3 +616,4 @@ SOAR_ID 263
 253 name 252
 261 name 260
 263 name 262
+265 name 264
