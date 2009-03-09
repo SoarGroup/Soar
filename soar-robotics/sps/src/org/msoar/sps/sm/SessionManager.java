@@ -20,13 +20,20 @@ final class SessionManager implements Runnable {
 	private static final Logger logger = Logger.getLogger(SessionManager.class);
 	private static final int PORT = 42140;
 	private static final String USAGE = 
-		"Argument should be config file OR component@hostname\n\n" +
-		" *** WORKING DIRECTORY MUST BE soar-robotics/sps ***";
+		"\n\nusage: java -jar sps.jar CONFIG_FILE [wait]\n" +
+		"       java -jar sps.jar COMPONENT@HOSTNAME\n" +
+		"  CONFIG_FILE: Path to configuration file\n" +
+		"  wait: If present, do not automatically start default components\n" +
+		"Note: Working directory must be soar-robotics/sps\n" +
+		"Examples: \n" +
+		"  java -jar sps.jar configs/avoider\n" +
+		"  java -jar sps.jar env@localhost\n" +
+		"  java -jar sps.jar configs/avoider-irl wait\n\n";
 	private final ServerSocket serverSocket;
 	private final Map<String, Runner> runners = new HashMap<String, Runner>();
 	private final Config config;
 	
-	private SessionManager(Config config) {
+	private SessionManager(boolean autoStart, Config config) {
 		if (config == null) {
 			throw new NullPointerException();
 		}
@@ -44,6 +51,10 @@ final class SessionManager implements Runnable {
 		Thread acceptThread = new Thread(this);
 		acceptThread.setDaemon(true);
 		acceptThread.start();
+		
+		if (autoStart) {
+			start(null);
+		}
 		
 		// run simple command interpreter:
 		BufferedReader input = new BufferedReader(new InputStreamReader(System.in));
@@ -268,12 +279,16 @@ final class SessionManager implements Runnable {
 	
 	public static void main(String[] args) {
 		logger.info("Starting up.");
-		if (args.length != 1) {
+		if (args.length > 2) {
 			logger.error(USAGE);
 			System.exit(1);
 		}
 
 		if (args[0].indexOf("@") != -1) {
+			if (args.length == 2) {
+				logger.error(USAGE);
+				System.exit(1);
+			}
 			// start a slave
 			String[] netInfo = args[0].split("@");
 			if (netInfo.length != 2) {
@@ -296,7 +311,14 @@ final class SessionManager implements Runnable {
 				logger.error(USAGE);
 				System.exit(1);
 			}
-			new SessionManager(config);
+			
+			boolean autoStart = true;
+			if (args.length == 2) {
+				if (args[1].equals("wait")) {
+					autoStart = false;
+				}
+			}
+			new SessionManager(autoStart, config);
 		}
 	}
 }

@@ -55,7 +55,7 @@ final class Controller extends TimerTask implements LCMSubscriber {
 
 		Runtime.getRuntime().addShutdownHook(new ShutdownHook());
 		
-	    timer.schedule(this, 0, 1000 / 10); // 10 Hz
+	    timer.schedule(this, 0, 1000 / 20); // 20 Hz
 	}
 	
 	private class ShutdownHook extends Thread {
