@@ -6,7 +6,7 @@ import java.util.Arrays;
 import java.util.List;
 
 import org.apache.log4j.Logger;
-import org.msoar.sps.Names;
+import org.msoar.sps.SharedNames;
 
 import sml.Agent;
 import sml.Kernel;
@@ -60,8 +60,8 @@ final class SoarInterface implements Kernel.UpdateEventInterface, Kernel.SystemE
 		}
 		
 		LCM lcm = LCM.getSingleton();
-		lcm.subscribe(Names.POSE_CHANNEL, this);
-		lcm.subscribe(Names.LASER_CHANNEL, this);
+		lcm.subscribe(SharedNames.POSE_CHANNEL, this);
+		lcm.subscribe(SharedNames.LASER_CHANNEL, this);
 		
 		input = new InputLinkManager(agent, rangesCount);
 		output = new OutputLinkManager(agent, input.getInterface());
@@ -166,13 +166,13 @@ final class SoarInterface implements Kernel.UpdateEventInterface, Kernel.SystemE
 	}
 
 	public void messageReceived(LCM lcm, String channel, DataInputStream ins) {
-		if (channel.equals(Names.POSE_CHANNEL)) {
+		if (channel.equals(SharedNames.POSE_CHANNEL)) {
 			try {
 				pose = new pose_t(ins);
 			} catch (IOException e) {
 				logger.error("Error decoding pose_t message: " + e.getMessage());
 			}
-		} else if (channel.equals(Names.LASER_CHANNEL)) {
+		} else if (channel.equals(SharedNames.LASER_CHANNEL)) {
 			try {
 				laser = new laser_t(ins);
 			} catch (IOException e) {

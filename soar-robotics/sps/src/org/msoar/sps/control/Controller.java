@@ -14,7 +14,7 @@ import lcmtypes.differential_drive_command_t;
 import lcmtypes.pose_t;
 
 import org.apache.log4j.Logger;
-import org.msoar.sps.Names;
+import org.msoar.sps.SharedNames;
 import org.msoar.sps.config.Config;
 import org.msoar.sps.config.ConfigFile;
 
@@ -51,7 +51,7 @@ final class Controller extends TimerTask implements LCMSubscriber {
 		int rangesCount = this.config.getInt("ranges_count", DEFAULT_RANGES_COUNT);
 		soar = new SoarInterface(productions, rangesCount);
 		lcm = LCM.getSingleton();
-		lcm.subscribe(Names.POSE_CHANNEL, this);
+		lcm.subscribe(SharedNames.POSE_CHANNEL, this);
 
 		Runtime.getRuntime().addShutdownHook(new ShutdownHook());
 		
@@ -125,7 +125,7 @@ final class Controller extends TimerTask implements LCMSubscriber {
 	}
 	
 	public void messageReceived(LCM lcm, String channel, DataInputStream ins) {
-		if (channel.equals(Names.POSE_CHANNEL)) {
+		if (channel.equals(SharedNames.POSE_CHANNEL)) {
 			try {
 				pose_t pose = new pose_t(ins);
 				poseUtime = pose.utime;
@@ -168,7 +168,7 @@ final class Controller extends TimerTask implements LCMSubscriber {
 		if (logger.isTraceEnabled()) {
 			logger.trace("transmit: " + dc.left + "," + dc.right);
 		}
-		lcm.publish(Names.DRIVE_CHANNEL, dc);
+		lcm.publish(SharedNames.DRIVE_CHANNEL, dc);
 	}
 	
 	public static void main(String[] args) {

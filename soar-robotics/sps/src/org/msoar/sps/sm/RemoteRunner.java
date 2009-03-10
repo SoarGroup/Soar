@@ -11,7 +11,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.apache.log4j.Logger;
-import org.msoar.sps.Names;
+import org.msoar.sps.SharedNames;
 
 final class RemoteRunner implements Runner {
 	private static final Logger logger = Logger.getLogger(RemoteRunner.class);
@@ -35,24 +35,24 @@ final class RemoteRunner implements Runner {
 		}
 
 		logger.debug("'" + component + "' received, writing ok");
-		oout.writeObject(Names.NET_OK);
+		oout.writeObject(SharedNames.NET_OK);
 		this.oout.flush();
 	}
 
 	public void configure(List<String> command, String config, Map<String, String> environment) throws IOException {
-		oout.writeObject(Names.NET_CONFIGURE);
+		oout.writeObject(SharedNames.NET_CONFIGURE);
 		oout.writeObject(command.toArray(new String[command.size()]));
 		if (config == null) {
-			oout.writeObject(Names.NET_CONFIG_NO);
+			oout.writeObject(SharedNames.NET_CONFIG_NO);
 		} else {
-			oout.writeObject(Names.NET_CONFIG_YES);
+			oout.writeObject(SharedNames.NET_CONFIG_YES);
 			oout.writeObject(config);
 		}
 		
 		if (environment == null) {
-			oout.writeObject(Names.NET_ENVIRONMENT_NO);
+			oout.writeObject(SharedNames.NET_ENVIRONMENT_NO);
 		} else {
-			oout.writeObject(Names.NET_ENVIRONMENT_YES);
+			oout.writeObject(SharedNames.NET_ENVIRONMENT_YES);
 			oout.writeObject(environment.keySet().toArray(new String[environment.keySet().size()]));
 			oout.writeObject(environment.values().toArray(new String[environment.values().size()]));
 		}
@@ -61,13 +61,13 @@ final class RemoteRunner implements Runner {
 	}
 
 	public void stop() throws IOException {
-		oout.writeObject(Names.NET_STOP);
+		oout.writeObject(SharedNames.NET_STOP);
 		oout.flush();
 	}
 
 	public void quit() {
 		try {
-			oout.writeObject(Names.NET_QUIT);
+			oout.writeObject(SharedNames.NET_QUIT);
 			oout.flush();
 			oout.close();
 			oin.close();
@@ -81,7 +81,7 @@ final class RemoteRunner implements Runner {
 
 	public boolean isAlive() throws IOException {
 		aliveResponse = null;
-		oout.writeObject(Names.NET_ALIVE);
+		oout.writeObject(SharedNames.NET_ALIVE);
 		oout.flush();
 		aliveResponse = NetworkRunner.readBoolean(oin);
 
@@ -93,7 +93,7 @@ final class RemoteRunner implements Runner {
 	}
 
 	public void start() throws IOException {
-		oout.writeObject(Names.NET_START);
+		oout.writeObject(SharedNames.NET_START);
 		oout.flush();
 	}
 

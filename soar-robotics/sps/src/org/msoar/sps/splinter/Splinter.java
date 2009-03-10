@@ -15,7 +15,7 @@ import orc.Orc;
 import orc.OrcStatus;
 
 import org.apache.log4j.Logger;
-import org.msoar.sps.Names;
+import org.msoar.sps.SharedNames;
 import org.msoar.sps.Odometry;
 import org.msoar.sps.config.Config;
 import org.msoar.sps.config.ConfigFile;
@@ -92,7 +92,7 @@ public final class Splinter extends TimerTask implements LCMSubscriber {
 		
 		// drive commands
 		lcm = LCM.getSingleton();
-		lcm.subscribe(Names.DRIVE_CHANNEL, this);
+		lcm.subscribe(SharedNames.DRIVE_CHANNEL, this);
 	
 		double updatePeriodMS = 1000 / updateHz;
 		logger.debug("Splinter thread running, period " + updatePeriodMS);
@@ -132,7 +132,7 @@ public final class Splinter extends TimerTask implements LCMSubscriber {
 		oldOdom.right = newOdom.right;
 		
 		pose.utime = currentStatus.utime;
-		lcm.publish(Names.POSE_CHANNEL, pose);
+		lcm.publish(SharedNames.POSE_CHANNEL, pose);
 		
 		commandMotors();
 	}
@@ -237,7 +237,7 @@ public final class Splinter extends TimerTask implements LCMSubscriber {
 	}
 
 	public void messageReceived(LCM lcm, String channel, DataInputStream ins) {
-		if (channel.equals(Names.DRIVE_CHANNEL)) {
+		if (channel.equals(SharedNames.DRIVE_CHANNEL)) {
 			try {
 				dc = new differential_drive_command_t(ins);
 			} catch (IOException e) {

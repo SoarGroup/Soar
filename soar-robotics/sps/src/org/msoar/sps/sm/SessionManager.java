@@ -12,23 +12,37 @@ import java.util.Map;
 import java.util.Set;
 
 import org.apache.log4j.Logger;
-import org.msoar.sps.Names;
+import org.msoar.sps.SharedNames;
 import org.msoar.sps.config.Config;
 import org.msoar.sps.config.ConfigFile;
 
 final class SessionManager implements Runnable {
+	private static class Names {
+		private static final String USAGE = 
+			"Usage: java -jar sps.jar CONFIG_FILE [wait]\n" +
+			"       java -jar sps.jar COMPONENT@HOSTNAME\n" +
+			"Run session manager master instance using CONFIG_FILE or run slave COMPONENT\n" +
+			"on machine HOSTNAME. Master instance starts components locally by default but\n" +
+			"can optionally be told to 'wait' for network connections.\n" +
+			"\n" +
+			"Working directory must be soar-robotics/sps.\n";
+		private static final String PROMPT = "sm> ";
+		private static final String DOT_COMMAND = ".command";
+		private static final String DOT_CONFIG = ".config";
+		private static final String DOT_ENVIRONMENT = ".environment";
+		private static final String INCLUDE = "include";
+	}
+	
+	private enum Command {
+		EXIT, QUIT, START, STOP, RESTART;
+	}
+	
+	private enum CommandResult {
+		CONTINUE, STOP;
+	}
+	
 	private static final Logger logger = Logger.getLogger(SessionManager.class);
 	private static final int PORT = 42140;
-	private static final String USAGE = 
-		"\n\nusage: java -jar sps.jar CONFIG_FILE [wait]\n" +
-		"       java -jar sps.jar COMPONENT@HOSTNAME\n" +
-		"  CONFIG_FILE: Path to configuration file\n" +
-		"  wait: If present, do not automatically start default components\n" +
-		"Note: Working directory must be soar-robotics/sps\n" +
-		"Examples: \n" +
-		"  java -jar sps.jar configs/avoider\n" +
-		"  java -jar sps.jar env@localhost\n" +
-		"  java -jar sps.jar configs/avoider-irl wait\n\n";
 	private final ServerSocket serverSocket;
 	private final Map<String, Runner> runners = new HashMap<String, Runner>();
 	private final Config config;
@@ -39,6 +53,7 @@ final class SessionManager implements Runnable {
 		}
 		this.config = config;
 		
+		logger.info("Starting up.");
 		ServerSocket serverSocket = null;
 		try {
 			serverSocket = new ServerSocket(PORT);
@@ -60,13 +75,12 @@ final class SessionManager implements Runnable {
 		BufferedReader input = new BufferedReader(new InputStreamReader(System.in));
 		String command = null;
 		try {
-			System.out.print("sm> ");
+			System.out.print(Names.PROMPT);
 			while ((command = input.readLine()) != null) {
-				boolean cont = handleCommand(command);
-				if (!cont) {
+				if (handleCommand(command) == CommandResult.STOP) {
 					break;
 				}
-				System.out.print("sm> ");
+				System.out.print(Names.PROMPT);
 			}
 		} catch (IOException e) {
 			logger.error(e.getMessage());
@@ -86,13 +100,13 @@ final class SessionManager implements Runnable {
 					read = clientSocket.getInputStream().read(t, 0, 1);
 				}
 				
-				if (Names.TYPE_COMPONENT.equals(t[0])) {
+				if (SharedNames.TYPE_COMPONENT.equals(t[0])) {
 					logger.debug("Connection is component");
 					Runner runner = new RemoteRunner(clientSocket);
 					runners.put(runner.getComponentName(), runner);
 					logger.info("Created new remote runner for " + runner.getComponentName());
 
-				} else if (Names.TYPE_OUTPUT.equals(t[0])) {
+				} else if (SharedNames.TYPE_OUTPUT.equals(t[0])) {
 					logger.debug("Connection is output");
 					BufferedReader br = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
 					logger.debug("Waiting for name");
@@ -111,60 +125,53 @@ final class SessionManager implements Runnable {
 		}
 	}
 	
-	private boolean handleCommand(String command) {
-		String[] args = command.split(" ");
-		
+	private CommandResult handleCommand(String command) {
+		logger.trace("command: " + command);
+		String[] args = command.split(" "); // TODO: try " +"
 		if (args[0].length() != 0) {
-			// quit/exit
-			if (args[0].equals("quit") || args[0].equals("exit")) {
-				stopAll();
-				quitAll();
-				return false;
-			} else if (args[0].equals("start")) {
-				// start all
-				// start <component>
-				start(args.length > 1 ? args[1] : null);
-				
-			} else if (args[0].equals("stop")) {
-				// stop all
-				// stop <component>
-				stop(args.length > 1 ? args[1] : null);
-				
-			} else if (args[0].equals("restart")) {
-				// restart all
-				// restart <component>
-				stop(args.length > 1 ? args[1] : null);
-				try {
-					logger.info("Sleeping for 5 seconds.");
-					Thread.sleep(5000);
-				} catch (InterruptedException ignored) {
-				}
-				start(args.length > 1 ? args[1] : null);
-				
-			} else {
+			Command cmd = Command.valueOf(args[0].toUpperCase());
+			if (cmd == null) {
 				logger.error("Unknown command: " + args[0]);
+			} else {
+				String component = args.length > 1 ? args[1] : null;
+				switch (cmd) {
+				case QUIT:
+				case EXIT:
+					stopAll();
+					quitAll();
+					return CommandResult.STOP;
+					
+				case START:
+					start(component);
+					break;
+					
+				case STOP:
+					stop(component);
+					break;
+					
+				case RESTART:
+					stop(component);
+					try {
+						logger.info("Sleeping for 5 seconds.");
+						Thread.sleep(5000);
+					} catch (InterruptedException ignored) {
+					}
+					start(component);
+					break;
+				}
 			}
 		}
-		return true;
+		return CommandResult.CONTINUE;
 	}
 	
 	private void start(String component) {
-		if (component == null || component == "all") {
-			String[] components = config.getStrings("all");
-			for (String c : components) {
-				if (c.equals("all")) {
-					assert false;
-					logger.error("Skipping 'all' component");
-				} else {
-					start(c);
-				}
-			}
+		if (component == null) {
+			startAll();
 			return;
 		}
-		
 		logger.info("Start " + component);
 		
-		String[] command = config.getStrings(component + ".command");
+		String[] command = config.getStrings(component + Names.DOT_COMMAND);
 		if (command == null) {
 			logger.error("Unknown component: " + component);
 			
@@ -204,7 +211,7 @@ final class SessionManager implements Runnable {
 	private String getConfigString(String component){
 		StringBuilder sb = new StringBuilder();
 		boolean hadConfig = false;
-		for (String componentConfigId : config.getStrings(component + ".config", new String[0])) {
+		for (String componentConfigId : config.getStrings(component + Names.DOT_CONFIG, new String[0])) {
 			hadConfig = true;
 			sb.append(config.getChild(componentConfigId).toString());
 			sb.append("\n");
@@ -218,7 +225,7 @@ final class SessionManager implements Runnable {
 	private Map<String, String> getEnvironmentString(String component) {
 		Map<String, String> theNewEnvironment = new HashMap<String, String>();
 		boolean hadEnvironment = false;
-		for (String componentEnvironmentId : config.getStrings(component + ".environment", new String[0])) {
+		for (String componentEnvironmentId : config.getStrings(component + Names.DOT_ENVIRONMENT, new String[0])) {
 			hadEnvironment = true;
 			Config childConf = config.getChild(componentEnvironmentId);
 			String[] keys = childConf.getKeys();
@@ -232,6 +239,13 @@ final class SessionManager implements Runnable {
 		return null;
 	}
 
+	private void startAll() {
+		String[] components = config.getStrings("all");
+		for (String component : components) {
+			start(component);
+		}
+	}
+	
 	private void stopAll() {
 		Set<String> components = runners.keySet();
 		for (String component : components) {
@@ -246,19 +260,10 @@ final class SessionManager implements Runnable {
 	}
 	
 	private void stop(String component) {
-		if (component == null || component == "all") {
-			String[] components = config.getStrings("all");
-			for (String c : components) {
-				if (c.equals("all")) {
-					assert false;
-					logger.error("Skipping 'all' component");
-				} else {
-					stop(c);
-				}
-			}
+		if (component == null) {
+			stopAll();
 			return;
 		}
-		
 		logger.info("Stop " + component);
 		
 		Runner runner = runners.get(component);
@@ -278,21 +283,20 @@ final class SessionManager implements Runnable {
 	}
 	
 	public static void main(String[] args) {
-		logger.info("Starting up.");
-		if (args.length > 2) {
-			logger.error(USAGE);
+		if (args.length > 2 || args.length < 1) {
+			System.err.print(Names.USAGE);
 			System.exit(1);
 		}
 
 		if (args[0].indexOf("@") != -1) {
 			if (args.length == 2) {
-				logger.error(USAGE);
+				System.err.print(Names.USAGE);
 				System.exit(1);
 			}
 			// start a slave
 			String[] netInfo = args[0].split("@");
 			if (netInfo.length != 2) {
-				logger.error(USAGE);
+				System.err.print(Names.USAGE);
 				System.exit(1);
 			}
 			new SessionSlave(netInfo[0], netInfo[1], PORT);
@@ -302,13 +306,13 @@ final class SessionManager implements Runnable {
 			Config config = null;
 			try {
 				config = new Config(new ConfigFile(args[0]));
-				for (String include : config.getStrings("include", new String[0])) {
+				for (String include : config.getStrings(Names.INCLUDE, new String[0])) {
 					Config includedConfig = new Config(new ConfigFile("config" + File.separator + include));
 					config.merge(includedConfig);
 				}
 			} catch (IOException e) {
-				logger.error(e.getMessage());
-				logger.error(USAGE);
+				System.err.println(e.getMessage());
+				System.err.print(Names.USAGE);
 				System.exit(1);
 			}
 			

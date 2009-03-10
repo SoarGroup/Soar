@@ -10,7 +10,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.apache.log4j.Logger;
-import org.msoar.sps.Names;
+import org.msoar.sps.SharedNames;
 
 final class SlaveRunner {
 	private static final Logger logger = Logger.getLogger(SlaveRunner.class);
@@ -35,7 +35,7 @@ final class SlaveRunner {
 			this.oout.flush();
 			
 			logger.debug("wrote component name");
-			if (!NetworkRunner.readString(oin).equals(Names.NET_OK)) {
+			if (!NetworkRunner.readString(oin).equals(SharedNames.NET_OK)) {
 				throw new IOException();
 			}
 			
@@ -54,35 +54,35 @@ final class SlaveRunner {
 			String netCommand = NetworkRunner.readString(oin);
 			logger.debug("net command: " + netCommand);
 
-			if (netCommand.equals(Names.NET_CONFIGURE)) {
+			if (netCommand.equals(SharedNames.NET_CONFIGURE)) {
 				List<String> command = NetworkRunner.readCommand(oin);
 				String config = null;
 				Map<String, String> environment = null;
 				
 				netCommand = NetworkRunner.readString(oin);
-				if (netCommand.equals(Names.NET_CONFIG_YES)) {
+				if (netCommand.equals(SharedNames.NET_CONFIG_YES)) {
 					config = NetworkRunner.readString(oin);
 				} else {
-					if (!netCommand.equals(Names.NET_CONFIG_NO)) {
+					if (!netCommand.equals(SharedNames.NET_CONFIG_NO)) {
 						throw new IOException("didn't get config yes/no message");
 					}
 				}
 
 				netCommand = NetworkRunner.readString(oin);
-				if (netCommand.equals(Names.NET_ENVIRONMENT_YES)) {
+				if (netCommand.equals(SharedNames.NET_ENVIRONMENT_YES)) {
 					environment = NetworkRunner.readEnvironment(oin);
 				} else {
-					if (!netCommand.equals(Names.NET_ENVIRONMENT_NO)) {
+					if (!netCommand.equals(SharedNames.NET_ENVIRONMENT_NO)) {
 						throw new IOException("didn't get environment yes/no message");
 					}
 				}
 
 				runner.configure(command, config, environment);
 				
-			} else if (netCommand.equals(Names.NET_START)) {
+			} else if (netCommand.equals(SharedNames.NET_START)) {
 				runner.start();
 	
-			} else if (netCommand.equals(Names.NET_ALIVE)) {
+			} else if (netCommand.equals(SharedNames.NET_ALIVE)) {
 				if (runner.isAlive()) {
 					this.oout.writeObject(new Boolean(true));
 				} else {
@@ -90,10 +90,10 @@ final class SlaveRunner {
 				}
 				oout.flush();
 				
-			} else if (netCommand.equals(Names.NET_STOP)) {
+			} else if (netCommand.equals(SharedNames.NET_STOP)) {
 				runner.stop();
 	
-			} else if (netCommand.equals(Names.NET_QUIT)) {
+			} else if (netCommand.equals(SharedNames.NET_QUIT)) {
 				return;
 			}
 		}
