@@ -1,0 +1,5 @@
+Error: Rete build found test of unbound var: <max>
+Soar cannot recover from this error. 
+You will have to restart Soar to run an agent.
+Data is still available for inspection, but may be corrupt.
+If a log was open, it has been closed for safety.

@@ -1,0 +1,12 @@
+sp {elaborate*near-waypoint
+   (state <s> ^superstate nil
+              ^io.input-link.self.waypoints.waypoint <wi>
+              ^waypoints <ws>
+              ^parameters.waypoint-tolerance <wpt>)
+   (<wi> -^distance > <wpt>
+          ^id <id>)
+   (<ws> ^waypoint <w>)
+   (<w> ^id <id>)
+-->
+   (<ws> ^near-waypoint <w>)
+}
