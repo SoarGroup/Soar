@@ -9,7 +9,6 @@ import java.net.Socket;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Set;
 
 import org.apache.log4j.Logger;
 import org.msoar.sps.SharedNames;
@@ -44,6 +43,7 @@ final class SessionManager implements Runnable {
 	private static final Logger logger = Logger.getLogger(SessionManager.class);
 	private static final int PORT = 42140;
 	private final ServerSocket serverSocket;
+	private final Map<String, RemoteConnection> remoteConnections = new HashMap<String, RemoteConnection>(); // TODO: set?
 	private final Map<String, Runner> runners = new HashMap<String, Runner>();
 	private final Config config;
 	
@@ -102,18 +102,20 @@ final class SessionManager implements Runnable {
 				
 				if (SharedNames.TYPE_COMPONENT.equals(t[0])) {
 					logger.debug("Connection is component");
-					Runner runner = new RemoteRunner(clientSocket);
-					runners.put(runner.getComponentName(), runner);
-					logger.info("Created new remote runner for " + runner.getComponentName());
+					RemoteConnection rc = new RemoteConnection(clientSocket);
+					remoteConnections.put(rc.getComponentName(), rc);
+					logger.info("Created new remote connection for " + rc.getComponentName());
 
 				} else if (SharedNames.TYPE_OUTPUT.equals(t[0])) {
 					logger.debug("Connection is output");
 					BufferedReader br = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
+
 					logger.debug("Waiting for name");
 					String component = br.readLine();
 					logger.debug("Got name: " + component);
-					runners.get(component).setOutput(br);
-					logger.info("Associated output stream with remote runner " + component);
+					
+					remoteConnections.get(component).setOutput(br);
+					logger.info("Associated output stream with remote connection " + component);
 
 				} else {
 					logger.error("Unknown type header: " + Byte.toString(t[0]));
@@ -138,7 +140,7 @@ final class SessionManager implements Runnable {
 				case QUIT:
 				case EXIT:
 					stopAll();
-					quitAll();
+					closeConnections();
 					return CommandResult.STOP;
 					
 				case START:
@@ -162,50 +164,6 @@ final class SessionManager implements Runnable {
 			}
 		}
 		return CommandResult.CONTINUE;
-	}
-	
-	private void start(String component) {
-		if (component == null) {
-			startAll();
-			return;
-		}
-		logger.info("Start " + component);
-		
-		String[] command = config.getStrings(component + Names.DOT_COMMAND);
-		if (command == null) {
-			logger.error("Unknown component: " + component);
-			
-			if (runners.containsKey(component)) {
-				logger.error("Pruning component " + component);
-				runners.remove(component);
-			}
-			return;
-		}
-		
-		Runner runner = runners.get(component);
-		if (runner != null) {
-			try {
-				if (runner.isAlive()) {
-					logger.error("Already running: " + component);
-					return;
-				}
-			} catch (IOException e) {
-				logger.error("Component error: " + e.getMessage());
-				logger.error("Pruning component " + component);
-				runners.remove(component);
-			}
-		} else {
-			logger.info("Creating new local runner for " + component);
-			runner = LocalRunner.newInstance(component);
-			runners.put(component, runner);
-		}
-		
-		try {
-			runner.configure(Arrays.asList(command), getConfigString(component), getEnvironmentString(component));
-			runner.start();
-		} catch (IOException e) {
-			logger.error(e.getMessage());
-		}
 	}
 	
 	private String getConfigString(String component){
@@ -242,21 +200,57 @@ final class SessionManager implements Runnable {
 	private void startAll() {
 		String[] components = config.getStrings("all");
 		for (String component : components) {
+			assert component != null;
 			start(component);
 		}
 	}
 	
-	private void stopAll() {
-		Set<String> components = runners.keySet();
-		for (String component : components) {
-			stop(component);
+	private void start(String component) {
+		if (component == null) {
+			startAll();
+			return;
+		}
+		logger.info("Start " + component);
+		
+		String[] command = config.getStrings(component + Names.DOT_COMMAND);
+		if (command == null) {
+			logger.error("Unknown component: " + component);
+			
+			if (runners.containsKey(component)) {
+				logger.error("Pruning component " + component);
+				runners.remove(component);
+			}
+			return;
+		}
+		
+		if (runners.containsKey(component)) {
+			logger.error("Already running: " + component);
+			return;
+		} 
+		
+		try {
+			RemoteConnection rc = remoteConnections.get(component);
+			Runner runner;
+			if (rc == null) {
+				logger.debug("Creating new local runner for " + component);
+				runner = LocalRunner.newInstance(component, Arrays.asList(command), getConfigString(component), getEnvironmentString(component));
+			} else {
+				logger.debug("Creating new remote runner for " + component);
+				runner = RemoteRunner.newInstance(rc, Arrays.asList(command), getConfigString(component), getEnvironmentString(component));
+			}
+			logger.info("Created new runner for " + component);
+			runners.put(component, runner);
+		} catch (IOException e) {
+			logger.error(e.getMessage());
+			e.printStackTrace();
 		}
 	}
 	
-	private void quitAll() {
+	private void stopAll() {
 		for (Runner runner : runners.values()) {
-			runner.quit();
+			stop(runner);
 		}
+		runners.clear();
 	}
 	
 	private void stop(String component) {
@@ -266,20 +260,32 @@ final class SessionManager implements Runnable {
 		}
 		logger.info("Stop " + component);
 		
-		Runner runner = runners.get(component);
-		if (runner != null) {
-			try {
-				if (runner.isAlive()) {
-					runner.stop();
-					return;
-				}
-			} catch (IOException e) {
-				logger.error("Component error: " + e.getMessage());
-				logger.error("Pruning component " + component);
-				runners.remove(component);
-			}
+		Runner runner = runners.remove(component);
+		if (runner == null) {
+			logger.error("Component not running: " + component);
+			return;
 		}
-		logger.error("Component not running: " + component);
+		stop(runner);
+	}
+	
+	private void stop(Runner runner) {
+		try {
+			runner.stop();
+		} catch (IOException e) {
+			RemoteConnection rc = remoteConnections.remove(runner.getComponentName());
+			if (rc != null) {
+				rc.close();
+			}
+			logger.error(e.getMessage());
+			e.printStackTrace();
+		}
+	}
+	
+	private void closeConnections() {
+		for (RemoteConnection rc : remoteConnections.values()) {
+			rc.close();
+		}
+		remoteConnections.clear();
 	}
 	
 	public static void main(String[] args) {
@@ -299,7 +305,12 @@ final class SessionManager implements Runnable {
 				System.err.print(Names.USAGE);
 				System.exit(1);
 			}
-			SessionSlave.newInstance(netInfo[0], netInfo[1], PORT).run();
+			try {
+				ClientConnection.newInstance(netInfo[0], netInfo[1], PORT);
+			} catch (IOException e) {
+				System.err.println(e.getMessage());
+				System.exit(1);
+			}
 			
 		} else {
 			// load config

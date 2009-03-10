@@ -6,15 +6,13 @@ public final class SharedNames {
 	public static final String LASER_CHANNEL = "LIDAR_FRONT";
 	
 	public static final String NET_OK = "ok";
-	public static final String NET_CONFIGURE = "configure";
 	public static final String NET_CONFIG_NO = "config-no";
 	public static final String NET_CONFIG_YES = "config-yes";
 	public static final String NET_ENVIRONMENT_NO = "environment-no";
 	public static final String NET_ENVIRONMENT_YES = "environment-yes";
 	public static final String NET_START = "start";
-	public static final String NET_ALIVE = "alive";
 	public static final String NET_STOP = "destroy";
-	public static final String NET_QUIT = "quit";
+	public static final String NET_CLOSE = "close";
 	
 	public static final Byte TYPE_COMPONENT = Byte.parseByte("0");
 	public static final Byte TYPE_OUTPUT = Byte.parseByte("1");

@@ -7,7 +7,6 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintStream;
-import java.net.Socket;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -18,74 +17,36 @@ import org.apache.log4j.Logger;
 final class LocalRunner implements Runner {
 	private static final Logger logger = Logger.getLogger(LocalRunner.class);
 	
-	static LocalRunner newInstance(String component) {
-		try {
-			return new LocalRunner(component, null);
-		} catch (IOException e) {
-			//this can't happen
-			assert false;
-		}
-		return null;
+	static LocalRunner newInstance(String component, List<String> command, String config, Map<String, String> environment) throws IOException {
+		return new LocalRunner(component, System.out, command, config, environment);
 	}
 	
-	static LocalRunner newSlaveInstance(String component, Socket outputSocket) throws IOException {
-		if (outputSocket == null) {
-			throw new NullPointerException();
-		}
-		return new LocalRunner(component, outputSocket);
+	static LocalRunner newSlaveInstance(String component, PrintStream out, List<String> command, String config, Map<String, String> environment) throws IOException {
+		return new LocalRunner(component, out, command, config, environment);
 	}
 	
-	// constant
 	private final String component;
 	private final PrintStream out;
-	private final boolean slave;
+	private final Process process;
+	private final File configFile;
 	
-	// can change per run
-	private List<String> command;
-	private Map<String, String> environment;
-	private String config;
-
-	// will change per run
-	private Process process;
-	private File configFile;
-	
-	private LocalRunner(String component, Socket outputSocket) throws IOException {
+	private LocalRunner(String component, PrintStream out, List<String> command, String config, Map<String, String> environment) throws IOException {
 		if (component == null) {
 			throw new NullPointerException();
 		}
 		this.component = component;
 
-		if (outputSocket == null) {
-			this.slave = false;
-			this.out = System.out;
-			return;
-		}
-		
-		this.slave = true;
-		logger.debug("setting up output socket");
-		this.out = new PrintStream(outputSocket.getOutputStream());
-		this.out.print(component + "\r\n");
-		this.out.flush();
-	}
-	
-	public String getComponentName() {
-		return component;
-	}
-	
-	public void configure(List<String> command, String config, Map<String, String> environment) {
 		if (command == null) {
 			throw new NullPointerException();
 		}
-		this.command = new ArrayList<String>(command);
-		this.environment = environment;
-		this.config = config;
-	}
-	
-	public void start() throws IOException {
-		if (process != null) {
-			throw new IllegalStateException();
+		command = new ArrayList<String>(command);
+
+		if (out == null) {
+			throw new NullPointerException();
 		}
+		this.out = out;
 		
+		File configFile = null;
 		if (config != null) {
 			// create temp file
 			try {
@@ -99,9 +60,7 @@ final class LocalRunner implements Runner {
 			
 			// write config to temp file
 			try {
-				FileOutputStream fout = new FileOutputStream(configFile);
-				PrintStream out = new PrintStream(fout);
-				out.print(config);
+				new PrintStream(new FileOutputStream(configFile)).print(config);
 			} catch (FileNotFoundException e) {
 				throw new IllegalStateException(e);
 			}
@@ -109,6 +68,7 @@ final class LocalRunner implements Runner {
 			// add config file to command line
 			command.add(configFile.getAbsolutePath());
 		}
+		this.configFile = configFile;
 
 		// start the component
 		ProcessBuilder builder = new ProcessBuilder(command);
@@ -127,6 +87,7 @@ final class LocalRunner implements Runner {
 		}
 		
 		try {
+			logger.info("Starting process " + component);
 			process = builder.start();
 		} catch (IOException e) {
 			if (configFile != null) {
@@ -134,10 +95,15 @@ final class LocalRunner implements Runner {
 			}
 			throw e;
 		}
+		
 		Thread outputHandler = new Thread(new OutputHandler());
 		outputHandler.start();
 		Thread aliveHandler = new Thread(new AliveHandler());
 		aliveHandler.start();
+	}
+	
+	public String getComponentName() {
+		return component;
 	}
 	
 	private final class OutputHandler implements Runnable {
@@ -153,9 +119,7 @@ final class LocalRunner implements Runner {
 				String line;
 				while((line = procIn.readLine()) != null) {
 					out.println(component + ": " + line);
-					if (slave) {
-						out.flush();
-					}
+					out.flush();	// TODO: probably unnecessary
 				}
 			} catch (IOException e) {
 				logger.warn(e.getMessage());
@@ -183,35 +147,14 @@ final class LocalRunner implements Runner {
 			}
 			
 			logger.info(component + " process is dead.");
-			process = null;
 			if (configFile != null) {
 				logger.info("Removed temporary file: " + configFile.getAbsolutePath());
 				configFile.delete();
-				configFile = null;
 			}
 		}
 	}
 	
-	public boolean isAlive() {
-		return process != null;
-	}
-	
 	public void stop() {
-		if (process != null) {
-			process.destroy();
-		}
-	}
-	
-	public void quit() {
-		stop();
-
-		if (out != null) {
-			out.close();
-		}
-	}
-	
-	public void setOutput(BufferedReader output) {
-		logger.error("Called setOutput on local runner");
-		assert false;
+		process.destroy();
 	}
 }
