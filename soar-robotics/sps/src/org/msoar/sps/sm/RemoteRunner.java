@@ -20,8 +20,6 @@ final class RemoteRunner implements Runner {
 	private final ObjectOutputStream oout;
 	private final ObjectInputStream oin;
 	
-	private Boolean aliveResponse;
-
 	RemoteRunner(Socket socket) throws IOException {
 		this.oout = new ObjectOutputStream(new BufferedOutputStream(socket.getOutputStream()));
 		this.oout.flush();
@@ -29,7 +27,7 @@ final class RemoteRunner implements Runner {
 		this.oin = new ObjectInputStream(new BufferedInputStream(socket.getInputStream()));
 		
 		logger.debug("new remote runner waiting for component name");
-		this.component = NetworkRunner.readString(oin);
+		this.component = Runners.readString(oin);
 		if (component == null) {
 			throw new IOException();
 		}
@@ -80,10 +78,10 @@ final class RemoteRunner implements Runner {
 	}
 
 	public boolean isAlive() throws IOException {
-		aliveResponse = null;
+		Boolean aliveResponse = null;
 		oout.writeObject(SharedNames.NET_ALIVE);
 		oout.flush();
-		aliveResponse = NetworkRunner.readBoolean(oin);
+		aliveResponse = Runners.readBoolean(oin);
 
 		if (aliveResponse == null) {
 			throw new IOException();
@@ -97,11 +95,13 @@ final class RemoteRunner implements Runner {
 		oout.flush();
 	}
 
-	private class OutputPump implements Runnable {
-		BufferedReader output;
+	private final static class OutputPump implements Runnable {
+		private final BufferedReader output;
+		private final String component;
 		
-		OutputPump(BufferedReader output) {
+		private OutputPump(BufferedReader output, String component) {
 			this.output = output;
+			this.component = component;
 		}
 		
 		public void run() {
@@ -118,7 +118,7 @@ final class RemoteRunner implements Runner {
 	}
 	
 	public void setOutput(BufferedReader output) {
-		Thread thread = new Thread(new OutputPump(output));
+		Thread thread = new Thread(new OutputPump(output, component));
 		thread.setDaemon(true);
 		thread.start();
 	}

@@ -7,7 +7,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-final class NetworkRunner {
+final class Runners {
 	static Map<String, String> readEnvironment(ObjectInputStream oin) throws IOException {
 		String[] keys = null;
 		String[] values = null;
@@ -57,7 +57,7 @@ final class NetworkRunner {
 		}
 	}
 
-	private NetworkRunner() {
+	private Runners() {
 		assert false;
 	}
 }

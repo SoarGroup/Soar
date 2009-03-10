@@ -299,7 +299,7 @@ final class SessionManager implements Runnable {
 				System.err.print(Names.USAGE);
 				System.exit(1);
 			}
-			new SessionSlave(netInfo[0], netInfo[1], PORT);
+			SessionSlave.newInstance(netInfo[0], netInfo[1], PORT).run();
 			
 		} else {
 			// load config
