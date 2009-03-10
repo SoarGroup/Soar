@@ -42,7 +42,7 @@ sp {go-to-waypoint*propose*turn-left
         ^purpose large-turn-around-obstacle)
    (<params> ^direction left)
    (write (crlf) |all arcs blocked (or missing), so rotating left until not blocked|)
-   (interrupt)
+  # (interrupt)
 }
 
 sp {goto-waypoint*apply*action*record*purpose

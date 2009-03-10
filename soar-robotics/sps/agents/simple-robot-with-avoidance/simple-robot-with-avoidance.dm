@@ -1,4 +1,4 @@
-268
+270
 SOAR_ID 0
 SOAR_ID 1
 SOAR_ID 2
@@ -267,7 +267,9 @@ ENUMERATION 264 1 choose-waypoint
 SOAR_ID 265
 FLOAT_RANGE 266 -Infinity Infinity
 ENUMERATION 267 2 false true
-349
+SOAR_ID 268
+ENUMERATION 269 1 near-waypoint
+351
 0 abandoned-waypoint 242
 0 attribute 85
 0 choices 84
@@ -365,6 +367,7 @@ ENUMERATION 267 2 false true
 44 destination 28
 44 name 43
 45 default-state-copy 47
+45 dont-copy 269
 45 name 46
 45 two-level-attributes 48
 49 item 32
@@ -402,6 +405,7 @@ ENUMERATION 267 2 false true
 67 desired-waypoint 28
 67 id 239
 67 name 66
+68 desired 268
 68 desired-waypoint 28
 68 io 1
 68 name 70

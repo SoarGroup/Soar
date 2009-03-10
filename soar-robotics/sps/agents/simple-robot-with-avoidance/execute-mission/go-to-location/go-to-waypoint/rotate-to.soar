@@ -17,7 +17,7 @@ sp {apply*rotate-to
               ^io.output-link <ol>
               ^parameters <p>)
    (<p> ^rotation-tolerance <rt>
-        ^throttle <thr>)
+        ^rotation-throttle <thr>)
 -->
    (<ol> ^rotate-to <r>)
    (<r> ^yaw <yaw>

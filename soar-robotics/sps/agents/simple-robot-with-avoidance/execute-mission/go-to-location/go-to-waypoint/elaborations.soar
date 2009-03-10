@@ -9,12 +9,12 @@ sp {go-to-waypoint*elaborate*state*destination-waypoint
 
 sp {go-to-waypoint*elaborate*destination-in-front*true
    (state <s> ^name go-to-waypoint
-              ^parameters <p> 
+              ^parameters <p>
               ^waypoint <w>)
    (<p> ^max-angular-distance <max>
         ^min-angular-distance <min>)
-  (<w> -^abs-relative-bearing > <max>
-       -^abs-relative-bearing < <min>)
+   (<w> -^abs-relative-bearing > <max>
+        -^abs-relative-bearing < <min>)
 -->
    (<s> ^destination-in-front true)
    (write (crlf) |Oriented towards dest|)
@@ -43,10 +43,10 @@ sp {go-to-waypoint*elaborate*destination-in-front*false*min
 
 sp {go-to-waypoint*elaborate*yaw-aligned*true
    (state <s> ^name go-to-waypoint
-              ^parameters <p> 
+              ^parameters <p>
               ^waypoint <w>)
    (<p> ^rotation-tolerance <min>)
-  (<w> -^abs-relative-bearing > <max>)
+   (<w> -^abs-relative-bearing > <min>)
 -->
    (<s> ^yaw-aligned true)
    (write (crlf) |Yaw Aligned|)
@@ -55,12 +55,13 @@ sp {go-to-waypoint*elaborate*yaw-aligned*true
 
 sp {go-to-waypoint*elaborate*yaw-aligned*false
    (state <s> ^name go-to-waypoint
-              ^parameters <p> 
+              ^parameters <p>
               ^waypoint <w>)
    (<p> ^rotation-tolerance <min>)
-   (<w> -^abs-relative-bearing <= <max>)
+   (<w> -^abs-relative-bearing <= <min>)
 -->
    (<s> ^yaw-aligned false)
    (write (crlf) |Yaw Not Aligned|)
 }
+
 

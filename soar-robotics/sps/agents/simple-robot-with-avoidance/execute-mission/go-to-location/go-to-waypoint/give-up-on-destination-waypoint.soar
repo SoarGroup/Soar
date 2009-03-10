@@ -6,7 +6,7 @@ sp {go-to-waypoint*propose*give-up-on-destination-waypoint
    (<s> ^operator <op> +, =, >)
    (<op> ^name give-up-on-destination-waypoint
          ^destination-waypoint <mt>)
-   (interrupt)
+  (interrupt)
 }
 
 # if the give-up is marked as immediate, then make this better
@@ -60,14 +60,14 @@ sp {apply*give-up-on-destination*update-map
 -->
    (<source> ^next <dest> -)
    (<dest> ^next <source> -)
-   (<ol> ^broadcast-message <w1>)
-   (<w1> ^word update-map
-         ^next <w2>)
-   (<w2> ^word remove-link
-         ^next <w3>)
-   (<w3> ^word <id1>
-         ^next <w4>)
-   (<w4> ^word <id2>
-         ^next nil)
+ #  (<ol> ^broadcast-message <w1>)
+#   (<w1> ^word update-map
+#         ^next <w2>)
+#   (<w2> ^word remove-link
+#         ^next <w3>)
+#   (<w3> ^word <id1>
+#         ^next <w4>)
+#   (<w4> ^word <id2>
+#         ^next nil)
    #(interrupt)
 }

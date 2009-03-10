@@ -14,6 +14,14 @@ sp {apply*initialize-simple-robot
         ^entities <e>)
 }
 
+sp {apply*initialize-simple-robot*config
+   (state <s> ^operator <op>
+              ^io.output-link <out>)
+   (<op> ^name initialize-simple-robot)
+-->
+   (<out> ^configure.yaw-format float)
+}
+
 #sp {elaborate*initialize-simple-robot*set-desired
 #   (state <s> ^waypoints.waypoint <w>)
 #   (<w> ^x -2 ^y -1)
