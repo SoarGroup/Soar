@@ -1,6 +1,0 @@
-source _all.soar
-source monitor.soar
-source output.soar
-source selection.soar
-source top-state.soar
-source waypoints.soar

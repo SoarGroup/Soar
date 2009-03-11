@@ -1,9 +1,0 @@
-		delete W1 ^waypoint /W2
-		add W1 ^waypoint /W3
-			add W3 ^id two
-			add W3 ^distance 1.0
-			add W3 ^relative-bearing 0.0
-			add W3 ^abs-relative-bearing 0.0
-			add W3 ^x 1.0
-			add W3 ^y 0.0
-			add W3 ^yaw 0.0

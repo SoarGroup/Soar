@@ -1,6 +1,0 @@
-struct particles_t
-{
-	int64_t utime;						// timestamp
-	int32_t nparticles;					// number of particles
-	float particle[nparticles][3];		// particle x,y,t
-}

@@ -11,11 +11,12 @@ import sml.Agent;
 import sml.Identifier;
 
 /**
- * @author voigtjr
- * Soar output-link management. Creates input for splinter and other parts of the system.
+ * @author voigtjr Soar output-link management. Creates input for splinter and
+ *         other parts of the system.
  */
 final class OutputLinkManager {
-	private static final Logger logger = Logger.getLogger(OutputLinkManager.class);
+	private static final Logger logger = Logger
+			.getLogger(OutputLinkManager.class);
 
 	private final Agent agent;
 	private final SplinterInput input = new SplinterInput();
@@ -26,11 +27,11 @@ final class OutputLinkManager {
 	private Identifier runningCommandWme;
 	private CommandStatus runningCommandStatus;
 	private boolean runningCommandIsInterruptable = false;
-	
+
 	OutputLinkManager(Agent agent, InputLinkInterface inputLink) {
 		this.agent = agent;
 		this.inputLink = inputLink;
-		
+
 		commands.put("motor", new MotorCommand());
 		commands.put("move", new MoveCommand());
 		commands.put("rotate", new RotateCommand());
@@ -45,11 +46,11 @@ final class OutputLinkManager {
 		commands.put("clear-messages", new ClearMessagesCommand());
 		commands.put("configure", new ConfigureCommand());
 	}
-	
+
 	boolean getUseFloatYawWmes() {
 		return useFloatYawWmes;
 	}
-	
+
 	boolean getDC(differential_drive_command_t dc, pose_t pose) {
 		synchronized (input) {
 			if (!input.hasInput()) {
@@ -60,7 +61,8 @@ final class OutputLinkManager {
 				if (status == CommandStatus.executing) {
 					if (runningCommandStatus == CommandStatus.accepted) {
 						runningCommandStatus = CommandStatus.executing;
-						CommandStatus.executing.addStatus(agent, runningCommandWme);
+						CommandStatus.executing.addStatus(agent,
+								runningCommandWme);
 					}
 				} else if (status == CommandStatus.complete) {
 					CommandStatus.complete.addStatus(agent, runningCommandWme);
@@ -70,7 +72,7 @@ final class OutputLinkManager {
 		}
 		return true;
 	}
-	
+
 	void update(pose_t pose, long lastUpdate) {
 		// process output
 		boolean producedInput = false;
@@ -81,23 +83,25 @@ final class OutputLinkManager {
 					continue;
 				}
 			}
-			
+
 			String commandName = commandWme.GetAttribute();
 			logger.trace(commandName + " " + commandWme.GetTimeTag());
-			
+
 			Command commandObject = commands.get(commandName);
 			if (commandObject == null) {
 				logger.warn("Unknown command: " + commandName);
 				CommandStatus.error.addStatus(agent, commandWme);
 				continue;
 			}
-			
+
 			if (commandObject.modifiesInput() && producedInput) {
-				logger.warn("Multiple input commands received, skipping " + commandName);
+				logger.warn("Multiple input commands received, skipping "
+						+ commandName);
 				continue;
 			}
-			
-			CommandStatus status = commandObject.execute(inputLink, commandWme, pose, this);
+
+			CommandStatus status = commandObject.execute(inputLink, commandWme,
+					pose, this);
 			if (status == CommandStatus.error) {
 				CommandStatus.error.addStatus(agent, commandWme);
 				continue;
@@ -105,47 +109,50 @@ final class OutputLinkManager {
 
 			if (status == CommandStatus.accepted) {
 				CommandStatus.accepted.addStatus(agent, commandWme);
-				
+
 			} else if (status == CommandStatus.executing) {
 				CommandStatus.accepted.addStatus(agent, commandWme);
 				CommandStatus.executing.addStatus(agent, commandWme);
-				
+
 			} else if (status == CommandStatus.complete) {
 				CommandStatus.accepted.addStatus(agent, commandWme);
 				CommandStatus.complete.addStatus(agent, commandWme);
-				
+
 			} else {
 				throw new IllegalStateException();
 			}
-			
+
 			if (commandObject.modifiesInput()) {
 				producedInput = true;
 				synchronized (input) {
 					if (runningCommandWme != null) {
 						if (runningCommandIsInterruptable) {
-							CommandStatus.interrupted.addStatus(agent, runningCommandWme);
+							CommandStatus.interrupted.addStatus(agent,
+									runningCommandWme);
 						} else {
-							CommandStatus.complete.addStatus(agent, runningCommandWme);
+							CommandStatus.complete.addStatus(agent,
+									runningCommandWme);
 						}
 						runningCommandWme = null;
 					}
-					
+
 					if (status != CommandStatus.complete) {
 						runningCommandWme = commandWme;
-						runningCommandIsInterruptable = commandObject.isInterruptable();
+						runningCommandIsInterruptable = commandObject
+								.isInterruptable();
 						runningCommandStatus = status;
 					}
-					
+
 					commandObject.updateInput(input);
 					input.setUtime(lastUpdate);
 				}
 			}
 		}
-		
+
 		if (!producedInput) {
 			synchronized (input) {
 				input.setUtime(lastUpdate);
 			}
 		}
-	}	
+	}
 }

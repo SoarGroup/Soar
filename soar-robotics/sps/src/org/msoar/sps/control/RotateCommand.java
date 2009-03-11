@@ -12,15 +12,14 @@ final class RotateCommand implements Command {
 	private static final Logger logger = Logger.getLogger(RotateCommand.class);
 
 	private enum Direction {
-		left,
-		right,
-		stop;
+		left, right, stop;
 	}
-	
+
 	private Direction direction;
 	private double throttle;
 
-	public CommandStatus execute(InputLinkInterface inputLink, Identifier command, pose_t pose, OutputLinkManager outputLinkManager) {
+	public CommandStatus execute(InputLinkInterface inputLink,
+			Identifier command, pose_t pose, OutputLinkManager outputLinkManager) {
 		command.GetTimeTag();
 		String directionString = command.GetParameterValue("direction");
 		if (directionString == null) {
@@ -30,17 +29,20 @@ final class RotateCommand implements Command {
 
 		direction = Direction.valueOf(directionString);
 		if (direction == null) {
-			logger.warn("Unknown direction on rotate command: " + directionString);
+			logger.warn("Unknown direction on rotate command: "
+					+ directionString);
 			return CommandStatus.error;
 		}
 
 		try {
-			throttle = Double.parseDouble(command.GetParameterValue("throttle"));
+			throttle = Double
+					.parseDouble(command.GetParameterValue("throttle"));
 		} catch (NullPointerException ex) {
 			logger.warn("No throttle on rotate command");
 			return CommandStatus.error;
 		} catch (NumberFormatException e) {
-			logger.warn("Unable to parse throttle: " + command.GetParameterValue("throttle"));
+			logger.warn("Unable to parse throttle: "
+					+ command.GetParameterValue("throttle"));
 			return CommandStatus.error;
 		}
 
@@ -48,8 +50,9 @@ final class RotateCommand implements Command {
 		throttle = Math.min(throttle, 1.0);
 
 		logger.debug(String.format("rotate: %10s %10.3f", direction, throttle));
-		
-		return direction == Direction.stop ? CommandStatus.complete : CommandStatus.executing;
+
+		return direction == Direction.stop ? CommandStatus.complete
+				: CommandStatus.executing;
 	}
 
 	public boolean isInterruptable() {

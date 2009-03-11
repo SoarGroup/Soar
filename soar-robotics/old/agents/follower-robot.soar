@@ -1,3 +1,0 @@
-pushd follower-robot
-source follower-robot_source.soar
-popd

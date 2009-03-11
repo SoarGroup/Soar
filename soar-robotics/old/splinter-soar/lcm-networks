@@ -1,4 +1,0 @@
-export LCM_DEFAULT_URL="udpm://239.255.1.3:7667?ttl=0"; # L1
-export LCM_DEFAULT_URL="udpm://239.255.1.1:7667?ttl=0"; # H1
-export LCM_DEFAULT_URL="udpm://239.255.1.2:7667?ttl=0"; # H2
-export LCM_DEFAULT_URL="udpm://239.255.1.4:7667?ttl=1"; # GG

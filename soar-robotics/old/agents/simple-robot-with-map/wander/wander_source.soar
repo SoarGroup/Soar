@@ -1,7 +1,0 @@
-source elaborations.soar
-source choose-next-waypoint.soar
-source clean-up-destination.soar
-source go-to-waypoint.soar
-source move.soar
-source rotate.soar
-source stop.soar

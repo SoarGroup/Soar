@@ -1,6 +1,0 @@
-/** @ingroup tutorials
-@defgroup tutorial_cameras Using cameras and blobfinders
-@brief Configuring and accessing cameras
-
-@include camera.cc
-*/

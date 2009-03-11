@@ -1,3 +1,0 @@
-soar {
-	productions = "../agents/avoider-robot.soar";
-}
