@@ -10,27 +10,33 @@ import java.util.Map;
 import java.util.Map.Entry;
 
 import org.apache.log4j.Logger;
-import org.msoar.sps.SharedNames;
+import org.msoar.sps.SharedNames.ClientCommands;
+import org.msoar.sps.SharedNames.ServerCommands;
 
 final class RemoteConnection implements Runnable {
 	private static final Logger logger = Logger.getLogger(RemoteConnection.class);
 	
-	static RemoteConnection newInstance(Socket socket) throws IOException {
-		return new RemoteConnection(socket);
+	static RemoteConnection newInstance(Socket socket, DoneListener done) throws IOException {
+		return new RemoteConnection(socket, done);
 	}
 	
 	private final String component;
 	private final PrintWriter out;
 	private final BufferedReader in;
+	private final DoneListener done;
 	
-	private RemoteConnection(Socket socket) throws IOException {
+	private RemoteConnection(Socket socket, DoneListener done) throws IOException {
 		this.out = new PrintWriter(socket.getOutputStream(), true);
 		this.in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
+		this.done = done;
 		
 		this.component = in.readLine();
 		if (this.component == null) {
 			throw new IOException();
 		}
+		
+		Thread thread = new Thread(this);
+		thread.start();
 		
 		logger.debug(this.component + " initialized");
 	}
@@ -40,49 +46,49 @@ final class RemoteConnection implements Runnable {
 	}
 	
 	void close() {
-		out.println(SharedNames.ServerCommands.CLOSE);
-		closeInternal();
+		out.println(ServerCommands.CLOSE);
 	}
 	
-	private void closeInternal() {
-		out.flush();
-		out.close();
-		try {
-			in.close();
-		} catch (IOException ignored) {
-		}
-	}
-
 	public void run() {
 		// listen for commands
 		try {
 			String inputLine;
 			while ((inputLine = in.readLine()) != null) {
-				SharedNames.ClientCommands command = SharedNames.ClientCommands.valueOf(inputLine);
+				ClientCommands command = ClientCommands.valueOf(inputLine);
 				if (command == null) {
 					// This is not recoverable.
 					throw new IOException("Unknown command: " + inputLine);
 				}
 				
+				boolean close = false;
 				switch (command) {
 				case OUTPUT:
 					output();
 					break;
 					
 				case DONE:
-					// TODO: done
+					done.done(this.component);
 					break;
 					
 				case CLOSE:
-					closeInternal();
+					out.println(ServerCommands.CLOSE);
+					close = true;
+					break;
+				}
+				if (close) {
+					logger.trace("closed, shutting down receive loop");
 					break;
 				}
 			}
 
 		} catch (IOException e) {
-			close();
 			logger.error(e.getMessage());
 			e.printStackTrace();
+		} finally {
+			out.close();
+			try {
+				in.close();
+			} catch (IOException ignored) {}
 		}
 	}
 	
@@ -95,6 +101,7 @@ final class RemoteConnection implements Runnable {
 			}
 
 			int total = Integer.valueOf(inputLine);
+			
 			char[] cbuf = new char[total];
 			int sofar = 0;
 			while (sofar < total) {
@@ -109,7 +116,7 @@ final class RemoteConnection implements Runnable {
 			builder.append(this.component);
 			builder.append(": ");
 			builder.append(cbuf);
-			System.out.print(builder.toString());
+			System.out.println(builder.toString());
 
 		} catch (NumberFormatException e) {
 			logger.error("malformed argument on output command");
@@ -123,38 +130,34 @@ final class RemoteConnection implements Runnable {
 	}
 
 	void command(List<String> command) {
-		out.println(SharedNames.ServerCommands.COMMAND);
+		out.println(ServerCommands.COMMAND);
 		out.println(command.size());
 		for (String arg : command) {
 			out.println(arg);
 		}
-		out.flush();
 	}
 
 	void config(String config) {
-		out.println(SharedNames.ServerCommands.CONFIG);
+		out.println(ServerCommands.CONFIG);
 		out.println(config.length());
-		out.print(config);
+		out.write(config);
 		out.flush();
 	}
 
 	void environment(Map<String, String> environment) {
-		out.println(SharedNames.ServerCommands.ENVIRONMENT);
+		out.println(ServerCommands.ENVIRONMENT);
 		out.println(environment.size());
 		for (Entry<String, String> arg : environment.entrySet()) {
 			out.println(arg.getKey());
 			out.println(arg.getValue());
 		}
-		out.flush();
 	}
 	
 	void start() {
-		out.println(SharedNames.ServerCommands.START);
-		out.flush();
+		out.println(ServerCommands.START);
 	}
 
 	void stop() {
-		out.println(SharedNames.ServerCommands.STOP);
-		out.flush();
+		out.println(ServerCommands.STOP);
 	}
 }

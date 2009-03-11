@@ -11,9 +11,10 @@ import java.util.List;
 import java.util.Map;
 
 import org.apache.log4j.Logger;
-import org.msoar.sps.SharedNames;
+import org.msoar.sps.SharedNames.ClientCommands;
+import org.msoar.sps.SharedNames.ServerCommands;
 
-final class ClientConnection {
+final class ClientConnection implements DoneListener {
 	private static final Logger logger = Logger.getLogger(ClientConnection.class);
 	
 	static ClientConnection newInstance(String component, String hostname, int port) throws IOException {
@@ -22,8 +23,10 @@ final class ClientConnection {
 
 	private final PrintWriter out;
 	private final BufferedReader in;
+	private final String component;
 
 	private ClientConnection(String component, String hostname, int port) throws IOException {
+		this.component = component;
 		// connect to a SessionManager master at hostname
 		logger.info("Connecting as " + component + "@" + hostname + ":" + port);
 
@@ -36,7 +39,6 @@ final class ClientConnection {
 		// handshake
 		logger.trace("writing component name");
 		out.println(component);
-		out.flush();
 		logger.debug("wrote component name");
 
 		// listen for commands
@@ -48,7 +50,7 @@ final class ClientConnection {
 			Runner runner = null;
 			
 			while ((inputLine = in.readLine()) != null) {
-				SharedNames.ServerCommands command = SharedNames.ServerCommands.valueOf(inputLine);
+				ServerCommands command = ServerCommands.valueOf(inputLine);
 				if (command == null) {
 					// This is not recoverable.
 					throw new IOException("Unknown command: " + inputLine);
@@ -80,7 +82,7 @@ final class ClientConnection {
 						runner.stop();
 					}
 					logger.trace("creating local runner");
-					runner = LocalRunner.newSlaveInstance(component, this, commandArgs, config, environment);
+					runner = LocalRunner.newSlaveInstance(component, this, commandArgs, config, environment, this);
 					break;
 					
 				case STOP:
@@ -93,20 +95,25 @@ final class ClientConnection {
 					break;
 					
 				case CLOSE:
-					close(false);
+					out.println(ServerCommands.CLOSE);
 					close = true;
 					break;
 				}
 				
 				if (close) {
+					logger.trace("closed, shutting down receive loop");
 					break;
 				}
 			}
 
 		} catch (IOException e) {
-			close(true);
 			logger.error(e.getMessage());
 			e.printStackTrace();
+		} finally {
+			out.close();
+			try {
+				in.close();
+			} catch (IOException ignored) {}
 		}
 	}
 	
@@ -185,22 +192,14 @@ final class ClientConnection {
 	}
 	
 	void output(String data) {
-		out.println(SharedNames.ClientCommands.OUTPUT);
+		out.println(ClientCommands.OUTPUT);
 		out.println(data.length());
-		out.print(data);
+		out.write(data);
 		out.flush();
 	}
 	
-	private void close(boolean send) {
-		if (send) {
-			out.println(SharedNames.ClientCommands.CLOSE);
-		}
-		
-		out.flush();
-		out.close();
-		try {
-			in.close();
-		} catch (IOException ignored) {
-		}
+	public void done(String component) {
+		assert this.component.equals(component);
+		out.println(ClientCommands.DONE);
 	}
 }

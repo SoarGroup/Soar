@@ -5,11 +5,12 @@ import java.net.Socket;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 import org.apache.log4j.Logger;
 import org.msoar.sps.config.Config;
 
-final class Components {
+final class Components implements DoneListener {
 	private static final Logger logger = Logger.getLogger(Components.class);
 
 	private static final class Names {
@@ -20,8 +21,8 @@ final class Components {
 		private Names() { assert false; }
 	}
 	
-	private final Map<String, RemoteConnection> connections = new HashMap<String, RemoteConnection>();
-	private final Map<String, Runner> running = new HashMap<String, Runner>();
+	private final Map<String, RemoteConnection> connections = new ConcurrentHashMap<String, RemoteConnection>();
+	private final Map<String, Runner> running = new ConcurrentHashMap<String, Runner>();
 	private final Config config;
 	
 	Components(Config config) {
@@ -30,7 +31,7 @@ final class Components {
 	
 	void newConnection(Socket socket) {
 		try {
-			RemoteConnection rc = RemoteConnection.newInstance(socket);
+			RemoteConnection rc = RemoteConnection.newInstance(socket, this);
 			assert rc != null;
 			
 			if (connections.containsKey(rc.getComponentName())) {
@@ -67,7 +68,6 @@ final class Components {
 			return;
 		}
 		
-		// TODO: synchronization
 		if (running.containsKey(component)) {
 			logger.error("Already running: " + component);
 			return;
@@ -78,7 +78,7 @@ final class Components {
 			Runner runner;
 			if (rc == null) {
 				logger.debug("Creating new local runner for " + component);
-				runner = LocalRunner.newInstance(component, Arrays.asList(command), getConfigString(component), getEnvironmentString(component));
+				runner = LocalRunner.newInstance(component, Arrays.asList(command), getConfigString(component), getEnvironmentString(component), this);
 			} else {
 				logger.debug("Creating new remote runner for " + component);
 				runner = RemoteRunner.newInstance(rc, Arrays.asList(command), getConfigString(component), getEnvironmentString(component));
@@ -154,5 +154,10 @@ final class Components {
 			rc.close();
 		}
 		connections.clear();
+	}
+	
+	public void done(String component) {
+		logger.info(component + " is done running");
+		running.remove(component);
 	}
 }

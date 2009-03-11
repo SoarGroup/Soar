@@ -17,20 +17,21 @@ import org.apache.log4j.Logger;
 final class LocalRunner implements Runner {
 	private static final Logger logger = Logger.getLogger(LocalRunner.class);
 	
-	static LocalRunner newInstance(String component, List<String> command, String config, Map<String, String> environment) throws IOException {
-		return new LocalRunner(component, null, command, config, environment);
+	static LocalRunner newInstance(String component, List<String> command, String config, Map<String, String> environment, DoneListener done) throws IOException {
+		return new LocalRunner(component, null, command, config, environment, done);
 	}
 	
-	static LocalRunner newSlaveInstance(String component, ClientConnection client, List<String> command, String config, Map<String, String> environment) throws IOException {
-		return new LocalRunner(component, client, command, config, environment);
+	static LocalRunner newSlaveInstance(String component, ClientConnection client, List<String> command, String config, Map<String, String> environment, DoneListener done) throws IOException {
+		return new LocalRunner(component, client, command, config, environment, done);
 	}
 	
 	private final String component;
 	private final Process process;
 	private final File configFile;
 	private final ClientConnection client;
+	private final DoneListener done;
 	
-	private LocalRunner(String component, ClientConnection client, List<String> command, String config, Map<String, String> environment) throws IOException {
+	private LocalRunner(String component, ClientConnection client, List<String> command, String config, Map<String, String> environment, DoneListener done) throws IOException {
 		if (component == null) {
 			throw new NullPointerException();
 		}
@@ -42,6 +43,7 @@ final class LocalRunner implements Runner {
 		command = new ArrayList<String>(command);
 
 		this.client = client;
+		this.done = done;
 		
 		File configFile = null;
 		if (config != null) {
@@ -146,11 +148,12 @@ final class LocalRunner implements Runner {
 				}
 			}
 			
-			logger.info(component + " process is dead.");
+			logger.debug(component + " process is dead.");
 			if (configFile != null) {
 				logger.info("Removed temporary file: " + configFile.getAbsolutePath());
 				configFile.delete();
 			}
+			done.done(component);
 		}
 	}
 	
