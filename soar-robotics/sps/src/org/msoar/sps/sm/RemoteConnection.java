@@ -1,87 +1,160 @@
 package org.msoar.sps.sm;
 
-import java.io.BufferedInputStream;
-import java.io.BufferedOutputStream;
 import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
+import java.io.InputStreamReader;
+import java.io.PrintWriter;
 import java.net.Socket;
+import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
 
 import org.apache.log4j.Logger;
 import org.msoar.sps.SharedNames;
 
-final class RemoteConnection {
+final class RemoteConnection implements Runnable {
 	private static final Logger logger = Logger.getLogger(RemoteConnection.class);
 	
-	private final String component;
-	private final ObjectOutputStream oout;
-	private final ObjectInputStream oin;
+	static RemoteConnection newInstance(Socket socket) throws IOException {
+		return new RemoteConnection(socket);
+	}
 	
-	RemoteConnection(Socket socket) throws IOException {
-		this.oout = new ObjectOutputStream(new BufferedOutputStream(socket.getOutputStream()));
-		this.oout.flush();
+	private final String component;
+	private final PrintWriter out;
+	private final BufferedReader in;
+	
+	private RemoteConnection(Socket socket) throws IOException {
+		this.out = new PrintWriter(socket.getOutputStream(), true);
+		this.in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
 		
-		this.oin = new ObjectInputStream(new BufferedInputStream(socket.getInputStream()));
-		
-		logger.debug("new remote runner waiting for component name");
-		this.component = Runners.readString(oin);
-		if (component == null) {
+		this.component = in.readLine();
+		if (this.component == null) {
 			throw new IOException();
 		}
-
-		logger.debug("'" + component + "' received, writing ok");
-		oout.writeObject(SharedNames.NET_OK);
-		this.oout.flush();
-	}
-	
-	private final static class OutputPump implements Runnable {
-		private final BufferedReader output;
-		private final String component;
 		
-		private OutputPump(BufferedReader output, String component) {
-			this.output = output;
-			this.component = component;
-		}
-		
-		public void run() {
-			logger.debug(component + ": output pump alive");
-			String out;
-			try {
-				while (( out = output.readLine()) != null) {
-					System.out.println(out);
-				}
-			} catch (IOException e) {
-				logger.error(e.getMessage());
-			}
-		}
-	}
-	
-	void setOutput(BufferedReader output) {
-		Thread thread = new Thread(new OutputPump(output, component));
-		thread.setDaemon(true);
-		thread.start();
+		logger.debug(this.component + " initialized");
 	}
 	
 	String getComponentName() {
-		return component;
-	}
-	
-	ObjectOutputStream getObjectOutputStream() {
-		return oout;
-	}
-	
-	ObjectInputStream getObjectInputStream() {
-		return oin;
+		return this.component;
 	}
 	
 	void close() {
+		out.println(SharedNames.ServerCommands.CLOSE);
+		closeInternal();
+	}
+	
+	private void closeInternal() {
+		out.flush();
+		out.close();
 		try {
-			oout.writeObject(SharedNames.NET_CLOSE);
-			oout.flush();
-			oout.close();
-			oin.close();
+			in.close();
 		} catch (IOException ignored) {
 		}
+	}
+
+	public void run() {
+		// listen for commands
+		try {
+			String inputLine;
+			while ((inputLine = in.readLine()) != null) {
+				SharedNames.ClientCommands command = SharedNames.ClientCommands.valueOf(inputLine);
+				if (command == null) {
+					// This is not recoverable.
+					throw new IOException("Unknown command: " + inputLine);
+				}
+				
+				switch (command) {
+				case OUTPUT:
+					output();
+					break;
+					
+				case DONE:
+					// TODO: done
+					break;
+					
+				case CLOSE:
+					closeInternal();
+					break;
+				}
+			}
+
+		} catch (IOException e) {
+			close();
+			logger.error(e.getMessage());
+			e.printStackTrace();
+		}
+	}
+	
+	private void output() throws IOException {
+		try {
+			String inputLine = in.readLine();
+			if (inputLine == null) {
+				logger.error("no argument on output command");
+				throw new IOException();
+			}
+
+			int total = Integer.valueOf(inputLine);
+			char[] cbuf = new char[total];
+			int sofar = 0;
+			while (sofar < total) {
+				int read = in.read(cbuf, sofar, total - sofar);
+				if (read < 0) {
+					logger.error("error reading all of output");
+					throw new IOException();
+				}
+				sofar += read;
+			}
+			StringBuilder builder = new StringBuilder();
+			builder.append(this.component);
+			builder.append(": ");
+			builder.append(cbuf);
+			System.out.print(builder.toString());
+
+		} catch (NumberFormatException e) {
+			logger.error("malformed argument on output command");
+			throw new IOException(e);
+		}
+	}
+	
+	@Override
+	public int hashCode() {
+		return component.hashCode();
+	}
+
+	void command(List<String> command) {
+		out.println(SharedNames.ServerCommands.COMMAND);
+		out.println(command.size());
+		for (String arg : command) {
+			out.println(arg);
+		}
+		out.flush();
+	}
+
+	void config(String config) {
+		out.println(SharedNames.ServerCommands.CONFIG);
+		out.println(config.length());
+		out.print(config);
+		out.flush();
+	}
+
+	void environment(Map<String, String> environment) {
+		out.println(SharedNames.ServerCommands.ENVIRONMENT);
+		out.println(environment.size());
+		for (Entry<String, String> arg : environment.entrySet()) {
+			out.println(arg.getKey());
+			out.println(arg.getValue());
+		}
+		out.flush();
+	}
+	
+	void start() {
+		out.println(SharedNames.ServerCommands.START);
+		out.flush();
+	}
+
+	void stop() {
+		out.println(SharedNames.ServerCommands.STOP);
+		out.flush();
 	}
 }

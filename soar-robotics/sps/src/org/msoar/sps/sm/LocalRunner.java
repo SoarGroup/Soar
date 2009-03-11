@@ -18,19 +18,19 @@ final class LocalRunner implements Runner {
 	private static final Logger logger = Logger.getLogger(LocalRunner.class);
 	
 	static LocalRunner newInstance(String component, List<String> command, String config, Map<String, String> environment) throws IOException {
-		return new LocalRunner(component, System.out, command, config, environment);
+		return new LocalRunner(component, null, command, config, environment);
 	}
 	
-	static LocalRunner newSlaveInstance(String component, PrintStream out, List<String> command, String config, Map<String, String> environment) throws IOException {
-		return new LocalRunner(component, out, command, config, environment);
+	static LocalRunner newSlaveInstance(String component, ClientConnection client, List<String> command, String config, Map<String, String> environment) throws IOException {
+		return new LocalRunner(component, client, command, config, environment);
 	}
 	
 	private final String component;
-	private final PrintStream out;
 	private final Process process;
 	private final File configFile;
+	private final ClientConnection client;
 	
-	private LocalRunner(String component, PrintStream out, List<String> command, String config, Map<String, String> environment) throws IOException {
+	private LocalRunner(String component, ClientConnection client, List<String> command, String config, Map<String, String> environment) throws IOException {
 		if (component == null) {
 			throw new NullPointerException();
 		}
@@ -41,10 +41,7 @@ final class LocalRunner implements Runner {
 		}
 		command = new ArrayList<String>(command);
 
-		if (out == null) {
-			throw new NullPointerException();
-		}
-		this.out = out;
+		this.client = client;
 		
 		File configFile = null;
 		if (config != null) {
@@ -118,8 +115,11 @@ final class LocalRunner implements Runner {
 			try {
 				String line;
 				while((line = procIn.readLine()) != null) {
-					out.println(component + ": " + line);
-					out.flush();	// TODO: probably unnecessary
+					if (client == null) {
+						System.out.println(line);
+					} else {
+						client.output(line);
+					}
 				}
 			} catch (IOException e) {
 				logger.warn(e.getMessage());

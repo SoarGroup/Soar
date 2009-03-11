@@ -1,12 +1,12 @@
 package org.msoar.sps.sm;
 
-import java.io.BufferedInputStream;
-import java.io.BufferedOutputStream;
+import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
-import java.io.PrintStream;
+import java.io.InputStreamReader;
+import java.io.PrintWriter;
 import java.net.Socket;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -20,98 +20,187 @@ final class ClientConnection {
 		return new ClientConnection(component, hostname, port);
 	}
 
-	private final ObjectInputStream oin;
-	private final ObjectOutputStream oout;
+	private final PrintWriter out;
+	private final BufferedReader in;
 
 	private ClientConnection(String component, String hostname, int port) throws IOException {
 		// connect to a SessionManager master at hostname
 		logger.info("Connecting as " + component + "@" + hostname + ":" + port);
 
-		Socket controlSocket = new Socket(hostname, port);
-		controlSocket.getOutputStream().write(SharedNames.TYPE_COMPONENT);
-		controlSocket.getOutputStream().flush();
-		
-		Socket outputSocket = new Socket(hostname, port);
-		outputSocket.getOutputStream().write(SharedNames.TYPE_OUTPUT);
-		outputSocket.getOutputStream().flush();
-		
+		Socket socket = new Socket(hostname, port);
 		logger.info("connected");
-		oout = new ObjectOutputStream(new BufferedOutputStream(controlSocket.getOutputStream()));
-		oout.flush();
-		
-		oin = new ObjectInputStream(new BufferedInputStream(controlSocket.getInputStream()));
 
-		logger.debug("setting up output socket");
-		PrintStream out = new PrintStream(outputSocket.getOutputStream());
-		out.print(component + "\r\n");
-		out.flush();
+		this.out = new PrintWriter(socket.getOutputStream(), true);
+		this.in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
 		
 		// handshake
 		logger.trace("writing component name");
-		oout.writeObject(component);
-		oout.flush();
-		
+		out.println(component);
+		out.flush();
 		logger.debug("wrote component name");
-		if (!Runners.readString(oin).equals(SharedNames.NET_OK)) {
-			throw new IllegalStateException();
-		}
 
+		// listen for commands
 		try {
-			logger.info("running");
+			String inputLine;
+			List<String> commandArgs = null;
+			String config = null;
+			Map<String, String> environment = null;
 			Runner runner = null;
-			while (true) {
-				String netCommand = Runners.readString(oin);
-				logger.debug("net command: " + netCommand);
-	
-				if (netCommand.equals(SharedNames.NET_START)) {
-					List<String> command = Runners.readCommand(oin);
-					String config = null;
-					Map<String, String> environment = null;
+			
+			while ((inputLine = in.readLine()) != null) {
+				SharedNames.ServerCommands command = SharedNames.ServerCommands.valueOf(inputLine);
+				if (command == null) {
+					// This is not recoverable.
+					throw new IOException("Unknown command: " + inputLine);
+				}
+				
+				boolean close = false;
+				switch (command) {
+				case COMMAND:
+					// clear out config and env
+					config = null;
+					environment = null;
+					commandArgs = command();
+					break;
 					
-					netCommand = Runners.readString(oin);
-					if (netCommand.equals(SharedNames.NET_CONFIG_YES)) {
-						config = Runners.readString(oin);
-					} else {
-						if (!netCommand.equals(SharedNames.NET_CONFIG_NO)) {
-							throw new IOException("didn't get config yes/no message");
-						}
-					}
-	
-					netCommand = Runners.readString(oin);
-					if (netCommand.equals(SharedNames.NET_ENVIRONMENT_YES)) {
-						environment = Runners.readEnvironment(oin);
-					} else {
-						if (!netCommand.equals(SharedNames.NET_ENVIRONMENT_NO)) {
-							throw new IOException("didn't get environment yes/no message");
-						}
-					}
-	
-					logger.trace("creating local runner");
-					runner = LocalRunner.newSlaveInstance(component, out, command, config, environment);
-
-				} else if (netCommand.equals(SharedNames.NET_STOP)) {
-					if (runner == null) {
+				case CONFIG:
+					config = config();
+					break;
+					
+				case ENVIRONMENT:
+					environment = environment();
+					break;
+					
+				case START:
+					if (command == null) {
 						throw new IllegalStateException();
 					}
-					runner.stop();
-					runner = null;
-		
-				} else if (netCommand.equals(SharedNames.NET_CLOSE)) {
 					if (runner != null) {
-						throw new IllegalStateException();
+						logger.warn("stopping old runner");
+						runner.stop();
 					}
-					if (oin != null) {
-						oin.close();
+					logger.trace("creating local runner");
+					runner = LocalRunner.newSlaveInstance(component, this, commandArgs, config, environment);
+					break;
+					
+				case STOP:
+					if (runner == null) {
+						logger.warn("already stopped");
+					} else {
+						runner.stop();
+						runner = null;
 					}
-					if (oout != null) {
-						oout.close();
-					}
-					return;
+					break;
+					
+				case CLOSE:
+					close(false);
+					close = true;
+					break;
+				}
+				
+				if (close) {
+					break;
 				}
 			}
+
 		} catch (IOException e) {
+			close(true);
 			logger.error(e.getMessage());
 			e.printStackTrace();
+		}
+	}
+	
+	private List<String> command() throws IOException {
+		try {
+			String inputLine = in.readLine();
+			if (inputLine == null) {
+				logger.error("no argument on command command");
+				throw new IOException();
+			}
+
+			int remaining = Integer.valueOf(inputLine);
+			List<String> command = new ArrayList<String>(remaining);
+			while (remaining > 0) {
+				command.add(in.readLine());
+				remaining -= 1;
+			}
+			return command;
+
+		} catch (NumberFormatException e) {
+			logger.error("malformed argument on command command");
+			throw new IOException(e);
+		}
+	}
+	
+	private String config() throws IOException {
+		try {
+			String inputLine = in.readLine();
+			if (inputLine == null) {
+				logger.error("no argument on output command");
+				throw new IOException();
+			}
+
+			int total = Integer.valueOf(inputLine);
+			char[] cbuf = new char[total];
+			int sofar = 0;
+			while (sofar < total) {
+				int read = in.read(cbuf, sofar, total - sofar);
+				if (read < 0) {
+					logger.error("error reading all of output");
+					throw new IOException();
+				}
+				sofar += read;
+			}
+			return String.valueOf(cbuf);
+
+		} catch (NumberFormatException e) {
+			logger.error("malformed argument on output command");
+			throw new IOException(e);
+		}
+
+	}
+	
+	private Map<String, String> environment() throws IOException {
+		try {
+			String inputLine = in.readLine();
+			if (inputLine == null) {
+				logger.error("no argument on command command");
+				throw new IOException();
+			}
+
+			int remaining = Integer.valueOf(inputLine);
+			Map<String, String> environment = new HashMap<String, String>(remaining);
+			while (remaining > 0) {
+				String key = in.readLine();
+				String value = in.readLine();
+				environment.put(key, value);
+				remaining -= 1;
+			}
+			return environment;
+
+		} catch (NumberFormatException e) {
+			logger.error("malformed argument on command command");
+			throw new IOException(e);
+		}
+	}
+	
+	void output(String data) {
+		out.println(SharedNames.ClientCommands.OUTPUT);
+		out.println(data.length());
+		out.print(data);
+		out.flush();
+	}
+	
+	private void close(boolean send) {
+		if (send) {
+			out.println(SharedNames.ClientCommands.CLOSE);
+		}
+		
+		out.flush();
+		out.close();
+		try {
+			in.close();
+		} catch (IOException ignored) {
 		}
 	}
 }
