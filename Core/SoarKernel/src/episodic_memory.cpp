@@ -2126,6 +2126,9 @@ void epmem_close( agent *my_agent )
 
 				delete p->second;
 			}
+			
+			my_agent->epmem_id_repository->clear();
+			my_agent->epmem_id_replacement->clear();
 		}
 
 		// deallocate query statements
@@ -2577,8 +2580,7 @@ void epmem_init_db( agent *my_agent, bool readonly = false )
 			my_agent->epmem_edge_maxes->clear();
 			my_agent->epmem_edge_removals->clear();
 
-			(*my_agent->epmem_id_repository)[ EPMEM_NODEID_ROOT ] = new epmem_hashed_id_pool();
-			my_agent->epmem_id_replacement->clear();
+			(*my_agent->epmem_id_repository)[ EPMEM_NODEID_ROOT ] = new epmem_hashed_id_pool();			
 
 			// initialize time
 			epmem_set_stat( my_agent, (const long) EPMEM_STAT_TIME, 1 );

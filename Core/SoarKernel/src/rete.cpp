@@ -1635,22 +1635,25 @@ void remove_wme_from_rete (agent* thisAgent, wme *w) {
 
   if ( ( w->epmem_id != NULL ) && ( w->epmem_valid == thisAgent->epmem_validation ) )
   {
-    if ( epmem_get_parameter( thisAgent, EPMEM_PARAM_MODE, EPMEM_RETURN_LONG ) == EPMEM_MODE_THREE )
+    if ( thisAgent->epmem_db_status != EPMEM_DB_CLOSED )
 	{
-	  if ( w->value->common.symbol_type == IDENTIFIER_SYMBOL_TYPE )
+	  if ( epmem_get_parameter( thisAgent, EPMEM_PARAM_MODE, EPMEM_RETURN_LONG ) == EPMEM_MODE_THREE )
 	  {
-	    (*thisAgent->epmem_edge_removals)[ w->epmem_id ] = true;
+	    if ( w->value->common.symbol_type == IDENTIFIER_SYMBOL_TYPE )
+	    {
+	      (*thisAgent->epmem_edge_removals)[ w->epmem_id ] = true;
 		
-		epmem_return_id_pool::iterator p = thisAgent->epmem_id_replacement->find( w->epmem_id );
-		(*p->second)[ w->value->id.epmem_id ] = w->epmem_id;
-		thisAgent->epmem_id_replacement->erase( p );		
+		  epmem_return_id_pool::iterator p = thisAgent->epmem_id_replacement->find( w->epmem_id );
+		  (*p->second)[ w->value->id.epmem_id ] = w->epmem_id;
+		  thisAgent->epmem_id_replacement->erase( p );		
+	    }
+	    else
+	      (*thisAgent->epmem_node_removals)[ w->epmem_id ] = true;
 	  }
 	  else
+	  {
 	    (*thisAgent->epmem_node_removals)[ w->epmem_id ] = true;
-	}
-	else
-	{
-	  (*thisAgent->epmem_node_removals)[ w->epmem_id ] = true;
+	  }
 	}
   }
   
