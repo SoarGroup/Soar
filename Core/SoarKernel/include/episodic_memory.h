@@ -421,6 +421,7 @@ typedef std::map<epmem_node_id, epmem_shared_literal *> epmem_literal_mapping;
 // lookup table to propagate constrained identifiers during
 // full graph-match
 typedef std::map<Symbol *, epmem_node_id> epmem_constraint_list;
+typedef std::map<epmem_node_id, Symbol *> epmem_reverse_constraint_list;
 
 // types/structures to facilitate re-use of identifiers
 typedef std::map<epmem_node_id, epmem_node_id> epmem_id_pool;

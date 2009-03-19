@@ -837,7 +837,9 @@ kernel time and total_cpu_time greater than the derived total CPU time. REW */
   std::vector<epmem_time_id> *epmem_edge_maxes;
 
   epmem_parent_id_pool *epmem_id_repository;
-  epmem_return_id_pool *epmem_id_replacement;  
+  epmem_return_id_pool *epmem_id_replacement;
+  epmem_constraint_list *epmem_identifier_to_id;
+  epmem_reverse_constraint_list *epmem_id_to_identifier;
 
   epmem_time_id epmem_validation;
   bool epmem_first_switch;

@@ -2129,6 +2129,9 @@ void epmem_close( agent *my_agent )
 			
 			my_agent->epmem_id_repository->clear();
 			my_agent->epmem_id_replacement->clear();
+
+			my_agent->epmem_identifier_to_id->clear();
+			my_agent->epmem_id_to_identifier->clear();
 		}
 
 		// deallocate query statements
@@ -3574,12 +3577,34 @@ void epmem_new_episode( agent *my_agent )
 									// if something leftover, use it
 									if ( !(*my_id_repo)->empty() )
 									{
+										epmem_reverse_constraint_list::iterator rcp;										
 										pool_p = (*my_id_repo)->begin();
-										wmes[i]->epmem_id = pool_p->second;
-										wmes[i]->value->id.epmem_id = pool_p->first;
-										(*my_id_repo)->erase( pool_p );
 
-										(*my_agent->epmem_id_replacement)[ wmes[i]->epmem_id ] = (*my_id_repo);
+										do
+										{
+											rcp = my_agent->epmem_id_to_identifier->find( pool_p->first );
+											if ( rcp == my_agent->epmem_id_to_identifier->end() )
+											{
+												(*my_agent->epmem_identifier_to_id)[ wmes[i]->value ] = pool_p->first;
+												(*my_agent->epmem_id_to_identifier)[ pool_p->first ] = wmes[i]->value;
+												
+												wmes[i]->epmem_id = pool_p->second;
+												wmes[i]->value->id.epmem_id = pool_p->first;
+												(*my_id_repo)->erase( pool_p );
+												(*my_agent->epmem_id_replacement)[ wmes[i]->epmem_id ] = (*my_id_repo);
+												
+												pool_p = (*my_id_repo)->end();
+											}
+											else
+											{
+												pool_p++;
+											}
+										} while ( pool_p != (*my_id_repo)->end() );									
+									}
+									else
+									{
+										// a child identifier was set AFTER pre-processing (i.e. reservation)
+										my_hash = epmem_temporal_hash( my_agent, wmes[i]->attr );
 									}
 								}
 								else
