@@ -52,6 +52,8 @@
 #include "episodic_memory.h"
 #include "sqlite3.h"
 
+#include "semantic_memory.h"
+
 #include "wma.h"
 
 
@@ -450,6 +452,29 @@ agent * create_soar_agent (char * agent_name) {                                 
   newAgent->wma_first = true;
 
 
+  // smem initialization
+  newAgent->smem_params[ SMEM_PARAM_LEARNING ] = smem_new_parameter( "learning", SMEM_LEARNING_ON, &smem_validate_learning, &smem_convert_learning, &smem_convert_learning );
+
+  newAgent->smem_params[ SMEM_PARAM_DB ] = smem_new_parameter( "database", SMEM_DB_MEM, &smem_validate_database, &smem_convert_database, &smem_convert_database );
+  newAgent->smem_params[ SMEM_PARAM_PATH ] = smem_new_parameter( "path", "", &smem_validate_path );
+  newAgent->smem_params[ SMEM_PARAM_COMMIT ] = smem_new_parameter( "commit", 1.0, &smem_validate_commit );
+
+  newAgent->smem_params[ SMEM_PARAM_TIMERS ] = smem_new_parameter( "timers", SMEM_TIMERS_OFF, &smem_validate_ext_timers, &smem_convert_ext_timers, &smem_convert_ext_timers );
+
+
+  newAgent->smem_stats[ SMEM_STAT_MEM_USAGE ] = smem_new_stat( "mem_usage" );
+  newAgent->smem_stats[ SMEM_STAT_MEM_HIGH ] = smem_new_stat( "mem_high" );
+  newAgent->smem_stats[ SMEM_STAT_NEXT_ID ] = smem_new_stat( "next_id" );
+
+  newAgent->smem_timers[ SMEM_TIMER_TOTAL ] = smem_new_timer( "smem_total", SMEM_TIMERS_ONE );
+  newAgent->smem_timers[ SMEM_TIMER_STORAGE ] = smem_new_timer( "smem_storage", SMEM_TIMERS_TWO );
+  newAgent->smem_timers[ SMEM_TIMER_NCB_RETRIEVAL ] = smem_new_timer( "smem_ncb_retrieval", SMEM_TIMERS_TWO );
+  newAgent->smem_timers[ SMEM_TIMER_QUERY ] = smem_new_timer( "smem_query", SMEM_TIMERS_TWO );
+  newAgent->smem_timers[ SMEM_TIMER_API ] = smem_new_timer( "smem_api", SMEM_TIMERS_TWO );
+  newAgent->smem_timers[ SMEM_TIMER_INIT ] = smem_new_timer( "smem_init", SMEM_TIMERS_TWO );
+
+  newAgent->smem_db_status = SMEM_DB_CLOSED;
+
   return newAgent;
 }
 
@@ -591,6 +616,12 @@ void destroy_soar_agent (agent * delete_agent)
   // cleanup wma
   wma_clean_parameters( delete_agent );
   wma_clean_stats( delete_agent );
+
+  // cleanup smem
+  smem_close( delete_agent );
+  smem_clean_parameters( delete_agent );
+  smem_clean_stats( delete_agent );
+  smem_clean_timers( delete_agent );
 
   // JRV: Frees data used by XML generation
   xml_destroy( delete_agent );

@@ -344,6 +344,13 @@ Symbol *make_new_identifier (agent* thisAgent, char name_letter, goal_stack_leve
   sym->id.epmem_result_wme = NIL;
   sym->id.epmem_id = NIL;
 
+  sym->id.smem_header = NIL;
+  sym->id.smem_wme = NIL;
+  sym->id.smem_cmd_header = NIL;
+  sym->id.smem_cmd_wme = NIL;
+  sym->id.smem_result_header = NIL;
+  sym->id.smem_result_wme = NIL;
+
   add_to_hash_table (thisAgent, thisAgent->identifier_hash_table, sym);
   return sym;
 }
@@ -665,6 +672,10 @@ void create_predefined_symbols (agent* thisAgent) {
   thisAgent->epmem_success_symbol = make_sym_constant( thisAgent, "success" );
   thisAgent->epmem_failure_symbol = make_sym_constant( thisAgent, "failure" );
   thisAgent->epmem_bad_cmd_symbol = make_sym_constant( thisAgent, "bad-cmd" );
+
+  thisAgent->smem_symbol = make_sym_constant( thisAgent, "smem" );
+  thisAgent->smem_cmd_symbol = make_sym_constant( thisAgent, "command" );
+  thisAgent->smem_result_symbol = make_sym_constant( thisAgent, "result" );
 }
 
 void release_helper(agent* thisAgent, Symbol** sym) {
@@ -739,4 +750,8 @@ void release_predefined_symbols(agent* thisAgent) {
   release_helper( thisAgent, &( thisAgent->epmem_success_symbol ) );
   release_helper( thisAgent, &( thisAgent->epmem_failure_symbol ) );
   release_helper( thisAgent, &( thisAgent->epmem_bad_cmd_symbol ) );  
+
+  release_helper( thisAgent, &( thisAgent->smem_symbol ) );
+  release_helper( thisAgent, &( thisAgent->smem_cmd_symbol ) );
+  release_helper( thisAgent, &( thisAgent->smem_result_symbol ) );
 }

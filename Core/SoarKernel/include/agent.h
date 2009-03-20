@@ -39,6 +39,8 @@
 #include "episodic_memory.h"
 #include "sqlite3.h"
 
+#include "semantic_memory.h"
+
 #include <string>
 #include <map>
 
@@ -321,6 +323,10 @@ typedef struct agent_struct {
   Symbol            * epmem_success_symbol;
   Symbol            * epmem_failure_symbol;
   Symbol            * epmem_bad_cmd_symbol;
+
+  Symbol            * smem_symbol;
+  Symbol            * smem_cmd_symbol;
+  Symbol            * smem_result_symbol;
 
   /* ----------------------- Symbol table stuff -------------------------- */
 
@@ -857,6 +863,15 @@ kernel time and total_cpu_time greater than the derived total CPU time. REW */
   bool wma_initialized;
   bool wma_first;
   tc_number wma_tc_counter;
+
+  // smem
+  smem_parameter *smem_params[ SMEM_PARAMS ];
+  smem_stat *smem_stats[ SMEM_STATS ];
+  smem_timer *smem_timers[ SMEM_TIMERS ];
+
+  int smem_db_status;
+
+  bool smem_first_switch;
 
 
 

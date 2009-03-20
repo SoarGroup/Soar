@@ -68,6 +68,7 @@ char const* Commands::kCLISaveBacktraces			= "save-backtraces";
 char const* Commands::kCLISelect					= "select";
 char const* Commands::kCLISetLibraryLocation		= "set-library-location";
 char const* Commands::kCLISetStopPhase				= "set-stop-phase";
+char const* Commands::kCLISMem						= "smem";
 char const* Commands::kCLISoar8						= "soar8";
 char const* Commands::kCLISoarNews					= "soarnews";
 char const* Commands::kCLISource					= "source";

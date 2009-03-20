@@ -250,6 +250,9 @@ void init_sysparams (agent* thisAgent) {
 
   thisAgent->sysparams[WMA_ENABLED] = WMA_ACTIVATION_ON;
 
+
+  thisAgent->sysparams[SMEM_ENABLED] = SMEM_LEARNING_ON;
+
 }
 
 /* ===================================================================
@@ -361,6 +364,7 @@ void reset_statistics (agent* thisAgent) {
   }
 
   epmem_reset_timers( thisAgent );
+  smem_reset_timers( thisAgent );
 }
 
 bool reinitialize_soar (agent* thisAgent) {
@@ -407,6 +411,7 @@ bool reinitialize_soar (agent* thisAgent) {
   rl_reset_stats( thisAgent );
   epmem_reset_stats( thisAgent );
   wma_reset_stats( thisAgent );
+  smem_reset_stats( thisAgent );
 
 
   if (thisAgent->operand2_mode == TRUE) {
@@ -1495,6 +1500,7 @@ void init_agent_memory(agent* thisAgent)
   }
 
   epmem_reset_timers( thisAgent );
+  smem_reset_timers( thisAgent );
 
   // This is an important part of the state of the agent for io purposes
   // (see io.cpp for details)

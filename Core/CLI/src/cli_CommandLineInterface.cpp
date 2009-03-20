@@ -94,6 +94,7 @@ EXPORT CommandLineInterface::CommandLineInterface() {
 	m_CommandMap[Commands::kCLISaveBacktraces]				= &cli::CommandLineInterface::ParseSaveBacktraces;
 	m_CommandMap[Commands::kCLISelect]						= &cli::CommandLineInterface::ParseSelect;
 	m_CommandMap[Commands::kCLISetLibraryLocation]			= &cli::CommandLineInterface::ParseSetLibraryLocation;
+	m_CommandMap[Commands::kCLISMem]						= &cli::CommandLineInterface::ParseSMem;
 	m_CommandMap[Commands::kCLISoar8]						= &cli::CommandLineInterface::ParseSoar8;
 	m_CommandMap[Commands::kCLISoarNews]					= &cli::CommandLineInterface::ParseSoarNews;
 	m_CommandMap[Commands::kCLISource]						= &cli::CommandLineInterface::ParseSource;
