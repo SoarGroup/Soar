@@ -89,6 +89,7 @@ typedef std::bitset<PRINT_NUM_OPTIONS> PrintBitset;
 typedef std::bitset<PRODUCTION_FIND_NUM_OPTIONS> ProductionFindBitset;
 typedef std::bitset<RL_NUM_OPTIONS> RLBitset;
 typedef std::bitset<RUN_NUM_OPTIONS> RunBitset;
+typedef std::bitset<SMEM_NUM_OPTIONS> SMemBitset;
 typedef std::bitset<STATS_NUM_OPTIONS> StatsBitset;
 typedef std::bitset<WATCH_NUM_OPTIONS> WatchBitset;
 typedef std::bitset<WATCH_WMES_TYPE_NUM_OPTIONS> WatchWMEsTypeBitset;
@@ -235,6 +236,7 @@ public:
 	bool ParseSaveBacktraces(std::vector<std::string>& argv);
 	bool ParseSelect(std::vector<std::string>& argv);
 	bool ParseSetLibraryLocation(std::vector<std::string>& argv);
+	bool ParseSMem(std::vector<std::string>& argv);
 	bool ParseSoar8(std::vector<std::string>& argv);
 	bool ParseSoarNews(std::vector<std::string>& argv);
 	bool ParseSource(std::vector<std::string>& argv);
@@ -620,6 +622,14 @@ public:
 	* @param phase
 	*************************************************************/
 	bool DoSetStopPhase(bool setPhase, bool before, sml::smlPhase phase);
+
+	/*************************************************************
+	* @brief smem command
+	* @param pOp the smem switch to implement, pass 0 (null) for full parameter configuration
+	* @param pAttr the attribute to get/set/stats, pass 0 (null) only if no pOp (all config) or stats (full stats)
+	* @param pVal the value to set, pass 0 (null) only if no pOp (all config), get, or stats
+	*************************************************************/
+	bool DoSMem(const char pOp = 0, const std::string *pAttr = 0, const std::string *pVal = 0);
 
 	/*************************************************************
 	* @brief soar8 command
