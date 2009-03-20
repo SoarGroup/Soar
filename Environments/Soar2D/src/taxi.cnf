@@ -1,0 +1,7 @@
+# See http://winter.eecs.umich.edu/soarwiki/Environments/Soar2D/Configuration_File_Format
+general.game = "taxi";
+general.map = "config/maps/taxi/default.txt";
+#players.active_players = [ "human" ];
+#players.human.name = human;
+terminals.passenger_delivered = true;
+terminals.fuel_remaining = true;

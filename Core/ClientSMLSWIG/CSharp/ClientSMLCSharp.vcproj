@@ -234,7 +234,7 @@
 				>
 				<Tool
 					Name="VCCustomBuildTool"
-					CommandLine="echo In order to function correctly, please ensure the following environment variables are correctly set:&#x0D;&#x0A;echo SWIG: %SWIG%&#x0D;&#x0A;echo on&#x0D;&#x0A;&quot;$(SWIG)\swig.exe&quot; -Wall -c++ -namespace sml -dllimport CSharp_sml_ClientInterface -I../../shared -I../../ClientSML/include -I../../ElementXML/include -I../../ConnectionSML/include -csharp -outdir build &quot;$(InputPath)&quot;&#x0D;&#x0A;"
+					CommandLine="echo In order to function correctly, please ensure the following environment variables are correctly set:&#x0D;&#x0A;echo SWIG_HOME: %SWIG_HOME%&#x0D;&#x0A;echo on&#x0D;&#x0A;&quot;$(SWIG_HOME)\swig.exe&quot; -Wall -c++ -namespace sml -dllimport CSharp_sml_ClientInterface -I../../shared -I../../ClientSML/include -I../../ElementXML/include -I../../ConnectionSML/include -csharp -outdir build &quot;$(InputPath)&quot;&#x0D;&#x0A;"
 					AdditionalDependencies="$(SolutionDir)\SoarLibrary\lib\ClientSML.lib;$(SolutionDir)\SoarLibrary\lib\ConnectionSML.lib;$(TargetDir)\ElementXML.dll"
 					Outputs="$(InputName)_wrap.cxx"
 				/>
@@ -244,7 +244,7 @@
 				>
 				<Tool
 					Name="VCCustomBuildTool"
-					CommandLine="echo In order to function correctly, please ensure the following environment variables are correctly set:&#x0D;&#x0A;echo SWIG: %SWIG%&#x0D;&#x0A;echo on&#x0D;&#x0A;&quot;$(SWIG)\swig.exe&quot; -Wall -c++ -namespace sml -dllimport CSharp_sml_ClientInterface -I../../shared -I../../ClientSML/include -I../../ElementXML/include -I../../ConnectionSML/include -csharp -outdir build &quot;$(InputPath)&quot;&#x0D;&#x0A;"
+					CommandLine="echo In order to function correctly, please ensure the following environment variables are correctly set:&#x0D;&#x0A;echo SWIG_HOME: %SWIG_HOME%&#x0D;&#x0A;echo on&#x0D;&#x0A;&quot;$(SWIG_HOME)\swig.exe&quot; -Wall -c++ -namespace sml -dllimport CSharp_sml_ClientInterface -I../../shared -I../../ClientSML/include -I../../ElementXML/include -I../../ConnectionSML/include -csharp -outdir build &quot;$(InputPath)&quot;&#x0D;&#x0A;"
 					AdditionalDependencies="$(SolutionDir)\SoarLibrary\lib\ClientSML.lib;$(SolutionDir)\SoarLibrary\lib\ConnectionSML.lib;$(TargetDir)\ElementXML.dll"
 					Outputs="$(InputName)_wrap.cxx"
 				/>

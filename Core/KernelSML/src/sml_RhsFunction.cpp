@@ -112,7 +112,8 @@ Symbol* sml::ConcatRhsFunction::Execute(std::vector<Symbol*>* pArguments)
 		}
 	  }
 
-	  char const* pResultStr = ostr.str().c_str() ;
+	  std::string result = ostr.str();
+	  char const* pResultStr = result.c_str() ;
 	  Symbol* pResult = make_sym_constant(m_pAgentSML->GetSoarAgent(), pResultStr) ;
 	  return pResult ;
 }

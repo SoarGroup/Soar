@@ -88,6 +88,7 @@ void PrintListener::OnKernelEvent(int eventID, AgentSML* pAgentSML, void* pCallD
 void PrintListener::OnEvent(smlPrintEventId eventID, AgentSML* pAgentSML, const char* msg)
 {
 	// We're assuming this is correct in the flush output function, so we should check it here
+	(void)pAgentSML; // silences warning in release mode
 	assert(pAgentSML == GetAgentSML());
 
 	// If the print callbacks have been disabled, then don't forward this message

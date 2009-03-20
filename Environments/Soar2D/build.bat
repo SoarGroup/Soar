@@ -8,6 +8,7 @@ echo ************* Building Soar2D ****************
 echo.
 
 set SOARBIN=..\..\SoarLibrary\bin
+set IMAGES=org\msoar\gridmap2d\images
 
 IF NOT EXIST %SOARBIN%\swt.jar GOTO no_swt
 IF NOT EXIST %SOARBIN%\sml.jar GOTO no_sml
@@ -15,16 +16,14 @@ IF NOT EXIST %SOARBIN%\sml.jar GOTO no_sml
 echo ----------=====Setting up tmp dir====----------
 IF EXIST tmp rmdir /S /Q tmp
 mkdir tmp
-mkdir tmp\images
-mkdir tmp\images\tanksoar
-mkdir tmp\images\book
+mkdir tmp\%IMAGES%
+mkdir tmp\%IMAGES%\tanksoar
 xcopy /q /y src\* tmp
-xcopy /q /y /s src\images\* tmp\images\
-xcopy /q /y /s src\images\tanksoar* tmp\images\tanksoar
-xcopy /q /y /s src\images\book* tmp\images\book
+xcopy /q /y /s src\%IMAGES%\* tmp\%IMAGES%\
+xcopy /q /y /s src\%IMAGES%\tanksoar* tmp\%IMAGES%\tanksoar
 
 @echo ----------=========Compiling=========----------
-%2javac -source 1.5 -d tmp -classpath jdom.jar;%SOARBIN%\swt.jar;%SOARBIN%\sml.jar;%SOARBIN%\tosca.jar -sourcepath src src\soar2d\Soar2D.java
+%2javac -source 1.5 -d tmp -classpath jdom.jar;%SOARBIN%\log4j-1.2.15.jar;%SOARBIN%\swt.jar;%SOARBIN%\sml.jar;%SOARBIN%\tosca.jar -sourcepath src src\org\msoar\gridmap2d\Gridmap2D.java
 
 @echo ----------==========Jarring==========----------
 %2jar cfm Soar2D.jar JarManifest -C tmp .

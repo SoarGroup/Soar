@@ -1,0 +1,9 @@
+# See http://winter.eecs.umich.edu/soarwiki/Environments/Soar2D/Configuration_File_Format
+general.game = "tanksoar";
+general.map = "config/maps/tanksoar/default.txt";
+general.headless = true;
+soar.spawn_debuggers = false;
+players.active_players = [ "tank1", "tank2" ];
+players.tank1.productions = "agents/tanksoar/obscure-bot.soar";
+players.tank2.productions = "agents/tanksoar/obscure-bot.soar";
+terminals.winning_score = 50;

@@ -29,6 +29,7 @@ void KernelCallback::KernelCallbackStatic(agent* pAgent, int eventID, void* pDat
 	KernelCallback* pThis = (KernelCallback*)pData ;
 
 	// Make sure everything matches up correctly.
+	(void)pAgent; // silences warning in release mode
 	assert(pThis->m_pCallbackAgentSML->GetSoarAgent() == pAgent) ;
 
 	// Make the callback to the non-static method 

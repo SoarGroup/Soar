@@ -79,6 +79,7 @@ void InputListener::ProcessPendingInput(AgentSML* pAgentSML, int )
 		char const* pCommandName = msg.GetCommandName() ;
 
 		// Only input commands should be stored in the pending input list
+		(void)pCommandName; // silences warning in release mode
 		assert(!strcmp(pCommandName, "input")) ;
 
 		soarxml::ElementXML const* pCommand = msg.GetCommandTag() ;

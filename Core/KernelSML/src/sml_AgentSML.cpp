@@ -1039,26 +1039,18 @@ bool AgentSML::AddIdInputWME(char const* pID, char const* pAttribute, char const
 		// Number is ignored in new ID case
 	}
 	// Find/create the identifier
-	pValueSymbol = get_io_identifier( m_agent, idValueLetter, idValueNumber ) ;
-
-	// If we just created this symbol record it in our mapping table
-	if (pValueSymbol->common.reference_count == 1)
-	{
-		CHECK_RET_FALSE( didntFindId );		// sanity check: if we're here, we better not have found the id in the conversion
-
-		// We need to record the id that the kernel assigned to this object and match it against the id the
-		// client is using, so that in future we can map the client's id to the kernel's.
-		std::ostringstream buffer;
-		buffer << pValueSymbol->id.name_letter ;
-		buffer << pValueSymbol->id.name_number ;
-
-		this->RecordIDMapping(pValue, buffer.str().c_str()) ;
-
-		//if (kDebugInput)
-		//{
-		//	PrintDebugFormat("Recording id mapping of %s to %s", pValue, newid.c_str()) ;
-		//}
-	}
+	pValueSymbol = get_io_identifier( m_agent, idValueLetter, idValueNumber ) ;	
+	
+	// If pValueSymbol is a new id, then RecordIDMapping will create a map between the client and kernel id names. 
+	// Otherwise, RecordIDMapping will add a ref count to client id name.
+	std::ostringstream buffer;
+	buffer << pValueSymbol->id.name_letter ;
+	buffer << pValueSymbol->id.name_number ;
+	this->RecordIDMapping(pValue, buffer.str().c_str()) ;
+	//if (kDebugInput)
+	//{
+	//	PrintDebugFormat("Recording id mapping of %s to %s", pValue, newid.c_str()) ;
+	//}	
 
 	if (CaptureQuery())
 	{
@@ -1226,6 +1218,7 @@ wme* AgentSML::FindWmeFromKernelTimetag( unsigned long timetag )
 
 void AgentSML::InputWmeGarbageCollectedHandler( agent* /*pSoarAgent*/, int eventID, void* pData, void* pCallData )
 {
+	(void)eventID; // silences warning in release mode
 	assert( eventID == static_cast< int >( INPUT_WME_GARBAGE_COLLECTED_CALLBACK ) );
 
 	wme* pWME = reinterpret_cast< wme* >( pCallData );

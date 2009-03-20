@@ -1,3 +1,2 @@
-set SOARLIB=../../SoarLibrary/bin
-set PATH=%SOARLIB%;%PATH%
-start javaw -jar Soar2D.jar
+set PATH=..\..\SoarLibrary\bin;%PATH%
+start javaw -jar soar2d.jar

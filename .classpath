@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <classpath>
 	<classpathentry excluding="**/.svn/" kind="src" output="Tools/SoarJavaDebugger/bin" path="Tools/SoarJavaDebugger/src"/>
+	<classpathentry excluding="**/.svn/" kind="src" output="Environments/Soar2D/bin" path="Environments/Soar2D/test"/>
 	<classpathentry excluding="**/.svn/" kind="src" output="Tools/TestJavaSML/bin" path="Tools/TestJavaSML/src"/>
 	<classpathentry excluding="**/.svn/" kind="src" output="Tools/LoggerJava/bin" path="Tools/LoggerJava/src"/>
 	<classpathentry excluding="**/.svn/" kind="src" path="Tools/VisualSoar/Source"/>
@@ -17,5 +18,7 @@
 	<classpathentry kind="lib" path="SoarLibrary/bin/swtgraphics2d.jar"/>
 	<classpathentry kind="lib" path="SoarLibrary/bin/jfreechart-1.0.6.jar"/>
 	<classpathentry kind="lib" path="SoarLibrary/bin/jcommon-1.0.10.jar"/>
+	<classpathentry kind="con" path="org.eclipse.jdt.junit.JUNIT_CONTAINER/4"/>
+	<classpathentry kind="lib" path="SoarLibrary/bin/log4j-1.2.15.jar"/>
 	<classpathentry kind="output" path="SoarLibrary/defaultbin"/>
 </classpath>
