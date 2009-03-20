@@ -1119,7 +1119,7 @@ bool epmem_stat_protected( agent *my_agent, const long stat )
 	return ( ( my_agent->epmem_db_status != EPMEM_DB_CLOSED ) &&
 		     ( ( stat >= EPMEM_STAT_RIT_OFFSET_1 ) && ( stat <= EPMEM_STAT_RIT_MINSTEP_1 ) ) ||
 			 ( ( stat >= EPMEM_STAT_RIT_OFFSET_2 ) && ( stat <= EPMEM_STAT_RIT_MINSTEP_2 ) ) ||
-			 ( stat == EPMEM_STAT_TIME ) );
+			 ( stat == EPMEM_STAT_TIME ) || ( stat == EPMEM_STAT_NEXT_ID ) );
 }
 
 /***************************************************************************
@@ -3622,7 +3622,7 @@ void epmem_new_episode( agent *my_agent )
 									// update next id
 									wmes[i]->value->id.epmem_id = epmem_get_stat( my_agent, EPMEM_STAT_NEXT_ID );
 									epmem_set_stat( my_agent, EPMEM_STAT_NEXT_ID, wmes[i]->value->id.epmem_id + 1 );
-									epmem_set_variable( my_agent, EPMEM_VAR_NEXT_ID, wmes[i]->value->id.epmem_id + 1);
+									epmem_set_variable( my_agent, EPMEM_VAR_NEXT_ID, wmes[i]->value->id.epmem_id + 1 );
 
 									// add repository
 									(*my_agent->epmem_id_repository)[ wmes[i]->value->id.epmem_id ] = new epmem_hashed_id_pool();

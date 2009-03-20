@@ -126,7 +126,7 @@ typedef struct wme_struct wme;
 #define EPMEM_STAT_QRY_CARD							7
 #define EPMEM_STAT_QRY_LITS							8
 
-#define EPMEM_STAT_NEXT_ID							9
+#define EPMEM_STAT_NEXT_ID							9 // *
 
 #define EPMEM_STAT_RIT_OFFSET_1						10 // *
 #define EPMEM_STAT_RIT_LEFTROOT_1					11 // *
