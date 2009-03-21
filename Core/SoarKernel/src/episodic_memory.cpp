@@ -1191,29 +1191,29 @@ bool epmem_valid_stat( agent *my_agent, const long stat )
  * Notes		: Get a statistic value
  * 				  Special consideration for sqlite info
  **************************************************************************/
-EPMEM_TYPE_INT epmem_get_stat( agent *my_agent, const char *name )
+long epmem_get_stat( agent *my_agent, const char *name )
 {
 	const long stat = epmem_convert_stat( my_agent, name );
 	if ( stat == EPMEM_STATS )
 		return 0;
 
 	if ( stat == EPMEM_STAT_MEM_USAGE )
-		return (EPMEM_TYPE_INT) sqlite3_memory_used();
+		return (long) sqlite3_memory_used();
 	if ( stat == EPMEM_STAT_MEM_HIGH )
-		return (EPMEM_TYPE_INT) sqlite3_memory_highwater( false );
+		return (long) sqlite3_memory_highwater( false );
 
 	return my_agent->epmem_stats[ stat ]->value;
 }
 
-EPMEM_TYPE_INT epmem_get_stat( agent *my_agent, const long stat )
+long epmem_get_stat( agent *my_agent, const long stat )
 {
 	if ( !epmem_valid_stat( my_agent, stat ) )
 		return 0;
 
 	if ( stat == EPMEM_STAT_MEM_USAGE )
-		return (EPMEM_TYPE_INT) sqlite3_memory_used();
+		return (long) sqlite3_memory_used();
 	if ( stat == EPMEM_STAT_MEM_HIGH )
-		return (EPMEM_TYPE_INT) sqlite3_memory_highwater( false );
+		return (long) sqlite3_memory_highwater( false );
 
 	return my_agent->epmem_stats[ stat ]->value;
 }
@@ -1224,7 +1224,7 @@ EPMEM_TYPE_INT epmem_get_stat( agent *my_agent, const long stat )
  * Notes		: Set a statistic value
  * 				  Special consideration for sqlite info
  **************************************************************************/
-bool epmem_set_stat( agent *my_agent, const char *name, EPMEM_TYPE_INT new_val )
+bool epmem_set_stat( agent *my_agent, const char *name, long new_val )
 {
 	const long stat = epmem_convert_stat( my_agent, name );
 	if ( ( stat == EPMEM_STATS ) ||
@@ -1237,7 +1237,7 @@ bool epmem_set_stat( agent *my_agent, const char *name, EPMEM_TYPE_INT new_val )
 	return true;
 }
 
-bool epmem_set_stat( agent *my_agent, const long stat, EPMEM_TYPE_INT new_val )
+bool epmem_set_stat( agent *my_agent, const long stat, long new_val )
 {
 	if ( !epmem_valid_stat( my_agent, stat ) )
 		return false;
@@ -1424,13 +1424,13 @@ void epmem_stop_timer( agent *my_agent, const long timer )
  *				  highly un-portable.  I'm told this is no longer true but I'm
  *				  still bitter.
  **************************************************************************/
-wme **epmem_get_augs_of_id( agent* my_agent, Symbol * id, tc_number tc, unsigned EPMEM_TYPE_INT *num_attr )
+wme **epmem_get_augs_of_id( agent* my_agent, Symbol * id, tc_number tc, unsigned long *num_attr )
 {
 	slot *s;
 	wme *w;
 	wme **list;
-	unsigned EPMEM_TYPE_INT list_position;
-	unsigned EPMEM_TYPE_INT n = 0;
+	unsigned long list_position;
+	unsigned long n = 0;
 
 	// augs only exist for identifiers
 	if ( id->common.symbol_type != IDENTIFIER_SYMBOL_TYPE )
@@ -1523,8 +1523,8 @@ wme *epmem_get_aug_of_id( agent *my_agent, Symbol *sym, char *attr_name, char *v
 	wme **wmes;
 	wme *return_val = NULL;
 
-	unsigned EPMEM_TYPE_INT len = 0;
-	unsigned EPMEM_TYPE_INT i;
+	unsigned long len = 0;
+	unsigned long i;
 
 	wmes = epmem_get_augs_of_id( my_agent, sym, get_new_tc_number( my_agent ), &len );
 	if ( wmes == NULL )
@@ -1753,7 +1753,7 @@ bool epmem_in_transaction( agent *my_agent )
 	if ( my_agent->epmem_db_status == EPMEM_DB_CLOSED )
 		return false;
 
-	return ( (EPMEM_TYPE_INT) epmem_get_stat( my_agent, (const long) EPMEM_STAT_TIME ) % (EPMEM_TYPE_INT) epmem_get_parameter( my_agent, EPMEM_PARAM_COMMIT ) );
+	return ( (long) epmem_get_stat( my_agent, (const long) EPMEM_STAT_TIME ) % (long) epmem_get_parameter( my_agent, EPMEM_PARAM_COMMIT ) );
 }
 
 /***************************************************************************
@@ -1803,7 +1803,7 @@ void epmem_transaction_end( agent *my_agent, bool commit )
  * Author		: Nate Derbinsky
  * Notes		: Gets an EpMem variable from the database
  **************************************************************************/
-bool epmem_get_variable( agent *my_agent, EPMEM_TYPE_INT variable_id, EPMEM_TYPE_INT *variable_value )
+bool epmem_get_variable( agent *my_agent, long variable_id, long *variable_value )
 {
 	int status;
 
@@ -1823,7 +1823,7 @@ bool epmem_get_variable( agent *my_agent, EPMEM_TYPE_INT variable_id, EPMEM_TYPE
  * Author		: Nate Derbinsky
  * Notes		: Sets an EpMem variable in the database
  **************************************************************************/
-void epmem_set_variable( agent *my_agent, EPMEM_TYPE_INT variable_id, EPMEM_TYPE_INT variable_value )
+void epmem_set_variable( agent *my_agent, long variable_id, long variable_value )
 {
 	EPMEM_SQLITE_BIND_INT( my_agent->epmem_statements[ EPMEM_STMT_VAR_SET ], 1, variable_id );
 	EPMEM_SQLITE_BIND_INT( my_agent->epmem_statements[ EPMEM_STMT_VAR_SET ], 2, variable_value );
@@ -1842,24 +1842,24 @@ void epmem_set_variable( agent *my_agent, EPMEM_TYPE_INT variable_id, EPMEM_TYPE
  * Author		: Nate Derbinsky
  * Notes		: Implements the forkNode function of RIT
  **************************************************************************/
-EPMEM_TYPE_INT epmem_rit_fork_node( agent *my_agent, epmem_time_id lower, epmem_time_id upper, bool bounds_offset, EPMEM_TYPE_INT *step_return, const long *rit_state )
+long epmem_rit_fork_node( agent *my_agent, epmem_time_id lower, epmem_time_id upper, bool bounds_offset, long *step_return, const long *rit_state )
 {
 	if ( !bounds_offset )
 	{
-		EPMEM_TYPE_INT offset = epmem_get_stat( my_agent, rit_state[ EPMEM_RIT_STATE_OFFSET ] );
+		long offset = epmem_get_stat( my_agent, rit_state[ EPMEM_RIT_STATE_OFFSET ] );
 
 		lower = ( lower - offset );
 		upper = ( upper - offset );
 	}
 
 	// descend the tree down to the fork node
-	EPMEM_TYPE_INT node = EPMEM_RIT_ROOT;
+	long node = EPMEM_RIT_ROOT;
 	if ( upper < EPMEM_RIT_ROOT )
 		node = epmem_get_stat( my_agent, rit_state[ EPMEM_RIT_STATE_LEFTROOT ] );
 	else if ( lower > EPMEM_RIT_ROOT )
 		node = epmem_get_stat( my_agent, rit_state[ EPMEM_RIT_STATE_RIGHTROOT ] );
 
-	EPMEM_TYPE_INT step;
+	long step;
 	for ( step = ( ( ( node >= 0 )?( node ):( -1 * node ) ) / 2 ); step >= 1; step /= 2 )
 	{
 		if ( upper < node )
@@ -1929,10 +1929,10 @@ void epmem_rit_prep_left_right( agent *my_agent, epmem_time_id lower, epmem_time
 	epmem_start_timer( my_agent, rit_state[ EPMEM_RIT_STATE_TIMER ] );
 	////////////////////////////////////////////////////////////////////////////
 
-	EPMEM_TYPE_INT offset = epmem_get_stat( my_agent, rit_state[ EPMEM_RIT_STATE_OFFSET ] );
-	EPMEM_TYPE_INT node, step;
-	EPMEM_TYPE_INT left_node, left_step;
-	EPMEM_TYPE_INT right_node, right_step;
+	long offset = epmem_get_stat( my_agent, rit_state[ EPMEM_RIT_STATE_OFFSET ] );
+	long node, step;
+	long left_node, left_step;
+	long right_node, right_step;
 
 	lower = ( lower - offset );
 	upper = ( upper - offset );
@@ -2016,7 +2016,7 @@ void epmem_rit_prep_left_right( agent *my_agent, epmem_time_id lower, epmem_time
 void epmem_rit_insert_interval( agent *my_agent, epmem_time_id lower, epmem_time_id upper, epmem_node_id id, const long *rit_state )
 {
 	// initialize offset
-	EPMEM_TYPE_INT offset = epmem_get_stat( my_agent, rit_state[ EPMEM_RIT_STATE_OFFSET ] );
+	long offset = epmem_get_stat( my_agent, rit_state[ EPMEM_RIT_STATE_OFFSET ] );
 	if ( offset == EPMEM_RIT_OFFSET_INIT )
 	{
 		offset = lower;
@@ -2029,11 +2029,11 @@ void epmem_rit_insert_interval( agent *my_agent, epmem_time_id lower, epmem_time
 	}
 
 	// get node
-	EPMEM_TYPE_INT node;
+	long node;
 	{
-		EPMEM_TYPE_INT left_root = epmem_get_stat( my_agent, rit_state[ EPMEM_RIT_STATE_LEFTROOT ] );
-		EPMEM_TYPE_INT right_root = epmem_get_stat( my_agent, rit_state[ EPMEM_RIT_STATE_RIGHTROOT ] );
-		EPMEM_TYPE_INT min_step = epmem_get_stat( my_agent, rit_state[ EPMEM_RIT_STATE_MINSTEP ] );
+		long left_root = epmem_get_stat( my_agent, rit_state[ EPMEM_RIT_STATE_LEFTROOT ] );
+		long right_root = epmem_get_stat( my_agent, rit_state[ EPMEM_RIT_STATE_RIGHTROOT ] );
+		long min_step = epmem_get_stat( my_agent, rit_state[ EPMEM_RIT_STATE_MINSTEP ] );
 
 		// shift interval
 		epmem_time_id l = ( lower - offset );
@@ -2042,7 +2042,7 @@ void epmem_rit_insert_interval( agent *my_agent, epmem_time_id lower, epmem_time
 		// update left_root
 		if ( ( u < EPMEM_RIT_ROOT ) && ( l <= ( 2 * left_root ) ) )
 		{
-			left_root = (EPMEM_TYPE_INT) pow( -2, floor( log( (double) -l ) / EPMEM_LN_2 ) );
+			left_root = (long) pow( -2, floor( log( (double) -l ) / EPMEM_LN_2 ) );
 
 			// update database
 			epmem_set_variable( my_agent, rit_state[ EPMEM_RIT_STATE_LEFTROOT ], left_root );
@@ -2054,7 +2054,7 @@ void epmem_rit_insert_interval( agent *my_agent, epmem_time_id lower, epmem_time
 		// update right_root
 		if ( ( l > EPMEM_RIT_ROOT ) && ( u >= ( 2 * right_root ) ) )
 		{
-			right_root = (EPMEM_TYPE_INT) pow( 2, floor( log( (double) u ) / EPMEM_LN_2 ) );
+			right_root = (long) pow( 2, floor( log( (double) u ) / EPMEM_LN_2 ) );
 
 			// update database
 			epmem_set_variable( my_agent, rit_state[ EPMEM_RIT_STATE_RIGHTROOT ], right_root );
@@ -2064,7 +2064,7 @@ void epmem_rit_insert_interval( agent *my_agent, epmem_time_id lower, epmem_time
 		}
 
 		// update min_step
-		EPMEM_TYPE_INT step;
+		long step;
 		node = epmem_rit_fork_node( my_agent, l, u, true, &step, rit_state );
 
 		if ( ( node != EPMEM_RIT_ROOT ) && ( step < min_step ) )
@@ -2334,7 +2334,7 @@ void epmem_init_db( agent *my_agent, bool readonly = false )
 		// mode - read if existing
 		long mode;
 		{
-			EPMEM_TYPE_INT stored_mode = NULL;
+			long stored_mode = NULL;
 			if ( epmem_get_variable( my_agent, EPMEM_VAR_MODE, &stored_mode ) )
 			{
 				epmem_set_parameter( my_agent, (const long) EPMEM_PARAM_MODE, (const long) stored_mode );
@@ -2343,7 +2343,7 @@ void epmem_init_db( agent *my_agent, bool readonly = false )
 			else
 			{
 				mode = epmem_get_parameter( my_agent, EPMEM_PARAM_MODE, EPMEM_RETURN_LONG );
-				epmem_set_variable( my_agent, EPMEM_VAR_MODE, (EPMEM_TYPE_INT) mode );
+				epmem_set_variable( my_agent, EPMEM_VAR_MODE, (long) mode );
 			}
 		}
 
@@ -2510,7 +2510,7 @@ void epmem_init_db( agent *my_agent, bool readonly = false )
 
 			// get/set RIT variables
 			{
-				EPMEM_TYPE_INT var_val;
+				long var_val;
 
 				for ( int i=epmem_rit_state_one[ EPMEM_RIT_STATE_OFFSET ]; i<=epmem_rit_state_one[ EPMEM_RIT_STATE_MINSTEP ]; i++ )
 				{
@@ -2565,7 +2565,7 @@ void epmem_init_db( agent *my_agent, bool readonly = false )
 			sqlite3_step( create );
 			if ( sqlite3_column_type( create, 0 ) != SQLITE_NULL )
 			{
-				unsigned EPMEM_TYPE_INT num_ids = EPMEM_SQLITE_COLUMN_INT( create, 0 );
+				unsigned long num_ids = EPMEM_SQLITE_COLUMN_INT( create, 0 );
 
 				my_agent->epmem_node_maxes->resize( num_ids, EPMEM_MEMID_NONE );
 				my_agent->epmem_node_mins->resize( num_ids, time_max );
@@ -2591,7 +2591,7 @@ void epmem_init_db( agent *my_agent, bool readonly = false )
 			// initialize next_id
 			epmem_set_stat( my_agent, (const long) EPMEM_STAT_NEXT_ID, 1 );
 			{
-				EPMEM_TYPE_INT stored_id = NULL;
+				long stored_id = NULL;
 				if ( epmem_get_variable( my_agent, EPMEM_VAR_NEXT_ID, &stored_id ) )
 					epmem_set_stat( my_agent, (const long) EPMEM_STAT_NEXT_ID, stored_id );
 				else
@@ -2871,7 +2871,7 @@ void epmem_init_db( agent *my_agent, bool readonly = false )
 
 			// get/set RIT variables
 			{
-				EPMEM_TYPE_INT var_val;
+				long var_val;
 				int i, j;
 
 				for ( i=EPMEM_RIT_STATE_NODE; i<=EPMEM_RIT_STATE_EDGE; i++ )
@@ -2966,7 +2966,7 @@ void epmem_init_db( agent *my_agent, bool readonly = false )
 					sqlite3_step( create );
 					if ( sqlite3_column_type( create, 0 ) != SQLITE_NULL )
 					{
-						unsigned EPMEM_TYPE_INT num_ids = EPMEM_SQLITE_COLUMN_INT( create, 0 );
+						unsigned long num_ids = EPMEM_SQLITE_COLUMN_INT( create, 0 );
 
 						my_agent->epmem_node_maxes->resize( num_ids, EPMEM_MEMID_NONE );
 						my_agent->epmem_node_mins->resize( num_ids, time_max );
@@ -2982,7 +2982,7 @@ void epmem_init_db( agent *my_agent, bool readonly = false )
 					sqlite3_step( create );
 					if ( sqlite3_column_type( create, 0 ) != SQLITE_NULL )
 					{
-						unsigned EPMEM_TYPE_INT num_ids = EPMEM_SQLITE_COLUMN_INT( create, 0 );
+						unsigned long num_ids = EPMEM_SQLITE_COLUMN_INT( create, 0 );
 
 						my_agent->epmem_edge_maxes->resize( num_ids, EPMEM_MEMID_NONE );
 						my_agent->epmem_edge_mins->resize( num_ids, time_max );
@@ -2994,7 +2994,7 @@ void epmem_init_db( agent *my_agent, bool readonly = false )
 			// get id pools
 			{
 				epmem_node_id q0;
-				EPMEM_TYPE_INT w;
+				long w;
 				epmem_node_id q1;
 				epmem_node_id parent_id;
 
@@ -3054,9 +3054,9 @@ void epmem_init_db( agent *my_agent, bool readonly = false )
  * Notes		: Returns a temporally unique integer representing
  *                a symbol constant.
  **************************************************************************/
-EPMEM_TYPE_INT epmem_temporal_hash( agent *my_agent, Symbol *sym, bool add_on_fail = true )
+long epmem_temporal_hash( agent *my_agent, Symbol *sym, bool add_on_fail = true )
 {
-	EPMEM_TYPE_INT return_val = NULL;
+	long return_val = NULL;
 
 	// basic process:
 	// - search
@@ -3083,7 +3083,7 @@ EPMEM_TYPE_INT epmem_temporal_hash( agent *my_agent, Symbol *sym, bool add_on_fa
 			sqlite3_step( my_agent->epmem_statements[ EPMEM_STMT_ADD_HASH ] );
 			sqlite3_reset( my_agent->epmem_statements[ EPMEM_STMT_ADD_HASH ] );
 
-			return_val = (EPMEM_TYPE_INT) sqlite3_last_insert_rowid( my_agent->epmem_db );
+			return_val = (long) sqlite3_last_insert_rowid( my_agent->epmem_db );
 		}
 	}
 	else if ( sym->common.symbol_type == INT_CONSTANT_SYMBOL_TYPE )
@@ -3107,7 +3107,7 @@ EPMEM_TYPE_INT epmem_temporal_hash( agent *my_agent, Symbol *sym, bool add_on_fa
 			sqlite3_step( my_agent->epmem_statements[ EPMEM_STMT_ADD_HASH ] );
 			sqlite3_reset( my_agent->epmem_statements[ EPMEM_STMT_ADD_HASH ] );
 
-			return_val = (EPMEM_TYPE_INT) sqlite3_last_insert_rowid( my_agent->epmem_db );
+			return_val = (long) sqlite3_last_insert_rowid( my_agent->epmem_db );
 		}
 	}
 	else if ( sym->common.symbol_type == FLOAT_CONSTANT_SYMBOL_TYPE )
@@ -3131,7 +3131,7 @@ EPMEM_TYPE_INT epmem_temporal_hash( agent *my_agent, Symbol *sym, bool add_on_fa
 			sqlite3_step( my_agent->epmem_statements[ EPMEM_STMT_ADD_HASH ] );
 			sqlite3_reset( my_agent->epmem_statements[ EPMEM_STMT_ADD_HASH ] );
 
-			return_val = (EPMEM_TYPE_INT) sqlite3_last_insert_rowid( my_agent->epmem_db );
+			return_val = (long) sqlite3_last_insert_rowid( my_agent->epmem_db );
 		}
 	}
 
@@ -3195,8 +3195,8 @@ void epmem_new_episode( agent *my_agent )
 
 		// keeps children of the identifier of interest
 		wme **wmes = NULL;
-		unsigned EPMEM_TYPE_INT len = 0;
-		unsigned EPMEM_TYPE_INT i;
+		unsigned long len = 0;
+		unsigned long i;
 
 		// future states of breadth-first search
 		std::queue<Symbol *> syms;
@@ -3209,8 +3209,8 @@ void epmem_new_episode( agent *my_agent )
 		std::map<epmem_node_id, bool> epmem;
 
 		// wme hashing improves search speed
-		EPMEM_TYPE_INT my_hash;		// attribute
-		EPMEM_TYPE_INT my_hash2;	// value
+		long my_hash;		// attribute
+		long my_hash2;	// value
 
 		// prevents infinite loops
 		int tc = get_new_tc_number( my_agent );
@@ -3426,8 +3426,8 @@ void epmem_new_episode( agent *my_agent )
 		std::queue<epmem_node_id> epmem_edge;
 
 		// temporal hash
-		EPMEM_TYPE_INT my_hash;		// attribute
-		EPMEM_TYPE_INT my_hash2;	// value
+		long my_hash;		// attribute
+		long my_hash2;	// value
 
 		// id repository
 		epmem_id_pool **my_id_repo;
@@ -3441,8 +3441,8 @@ void epmem_new_episode( agent *my_agent )
 
 		// children of the current identifier
 		wme **wmes = NULL;
-		unsigned EPMEM_TYPE_INT len = 0;
-		unsigned EPMEM_TYPE_INT i;
+		unsigned long len = 0;
+		unsigned long i;
 
 		// prevent recording exclusions
 		std::list<const char *>::iterator exclusion;
@@ -3937,7 +3937,7 @@ void epmem_install_memory( agent *my_agent, Symbol *state, epmem_time_id memory_
 	Symbol *result_header = state->id.epmem_result_header;
 
 	// initialize stat
-	EPMEM_TYPE_INT num_wmes = 0;
+	long num_wmes = 0;
 	epmem_set_stat( my_agent, EPMEM_STAT_NCB_WMES, num_wmes );
 
 	// if no memory, say so
@@ -3988,8 +3988,8 @@ void epmem_install_memory( agent *my_agent, Symbol *state, epmem_time_id memory_
 		epmem_id_mapping ids;
 		epmem_node_id child_id;
 		epmem_node_id parent_id;
-		EPMEM_TYPE_INT attr_type;
-		EPMEM_TYPE_INT value_type;
+		long attr_type;
+		long value_type;
 		Symbol *attr = NULL;
 		Symbol *value = NULL;
 		Symbol *parent = NULL;
@@ -4102,7 +4102,7 @@ void epmem_install_memory( agent *my_agent, Symbol *state, epmem_time_id memory_
 			epmem_node_id q0; // id
 			epmem_node_id q1; // attribute
 			Symbol **value = NULL; // value
-			EPMEM_TYPE_INT w_type; // we support any constant attribute symbol
+			long w_type; // we support any constant attribute symbol
 
 			// used to lookup shared identifiers
 			epmem_id_mapping::iterator id_p;
@@ -4216,8 +4216,8 @@ void epmem_install_memory( agent *my_agent, Symbol *state, epmem_time_id memory_
 		{
 			epmem_node_id child_id;
 			epmem_node_id parent_id;
-			EPMEM_TYPE_INT attr_type;
-			EPMEM_TYPE_INT value_type;
+			long attr_type;
+			long value_type;
 
 			Symbol *value = NULL;
 
@@ -4479,7 +4479,7 @@ epmem_leaf_node *epmem_create_leaf_node( epmem_node_id leaf_id, double leaf_weig
  * Notes		: Implements a step in the range search algorithm for
  * 				  WM Tree (see above description).
  **************************************************************************/
-void epmem_incremental_row( agent *my_agent, epmem_range_query_list *queries, epmem_time_id &id, EPMEM_TYPE_INT &ct, double &v, EPMEM_TYPE_INT &updown, const unsigned int list )
+void epmem_incremental_row( agent *my_agent, epmem_range_query_list *queries, epmem_time_id &id, long &ct, double &v, long &updown, const unsigned int list )
 {
 	// initialize variables
 	id = queries[ list ].top()->val;
@@ -4530,7 +4530,7 @@ void epmem_incremental_row( agent *my_agent, epmem_range_query_list *queries, ep
  * Notes		: Implements flipping a literal in the DNF Graph
  * 				  (see above description).
  **************************************************************************/
-void epmem_shared_flip( epmem_shared_literal *flip, const unsigned int list, EPMEM_TYPE_INT &ct, double &v, EPMEM_TYPE_INT &updown )
+void epmem_shared_flip( epmem_shared_literal *flip, const unsigned int list, long &ct, double &v, long &updown )
 {
 	if ( list == EPMEM_RANGE_START )
 	{
@@ -4586,7 +4586,7 @@ void epmem_shared_flip( epmem_shared_literal *flip, const unsigned int list, EPM
  * Notes		: Implements a step in the range search algorithm for
  * 				  WM Graph (see above description).
  **************************************************************************/
-void epmem_shared_increment( agent *my_agent, epmem_shared_query_list *queries, epmem_time_id &id, EPMEM_TYPE_INT &ct, double &v, EPMEM_TYPE_INT &updown, const unsigned int list )
+void epmem_shared_increment( agent *my_agent, epmem_shared_query_list *queries, epmem_time_id &id, long &ct, double &v, long &updown, const unsigned int list )
 {
 	// initialize variables
 	id = queries[ list ].top()->val;
@@ -4661,10 +4661,10 @@ void epmem_shared_increment( agent *my_agent, epmem_shared_query_list *queries, 
  * 				      DNF graph is handled through function calls
  *
  **************************************************************************/
-unsigned EPMEM_TYPE_INT epmem_graph_match( epmem_shared_literal_group *literals, epmem_constraint_list *constraints )
+unsigned long epmem_graph_match( epmem_shared_literal_group *literals, epmem_constraint_list *constraints )
 {
 	// number of satisfied leaf WMEs in this list
-	unsigned EPMEM_TYPE_INT return_val = 0;
+	unsigned long return_val = 0;
 
 	// stacks to maintain state within the list
 	std::stack<epmem_shared_literal_list::size_type> c_ps; // literal pointers (position within a WME)
@@ -4907,7 +4907,7 @@ void epmem_process_query( agent *my_agent, Symbol *state, Symbol *query, Symbol 
 	epmem_start_timer( my_agent, EPMEM_TIMER_QUERY );
 	////////////////////////////////////////////////////////////////////////////
 
-	unsigned EPMEM_TYPE_INT len_query = 0, len_neg_query = 0;
+	unsigned long len_query = 0, len_neg_query = 0;
 	wme **wmes_query = NULL;
 	if ( query != NULL )
 		wmes_query = epmem_get_augs_of_id( my_agent, query, get_new_tc_number( my_agent ), &len_query );
@@ -4934,7 +4934,7 @@ void epmem_process_query( agent *my_agent, Symbol *state, Symbol *query, Symbol 
 			epmem_time_list::iterator prohibit_p;
 			{
 				wme ***wmes;
-				unsigned EPMEM_TYPE_INT len;
+				unsigned long len;
 
 				std::queue<Symbol *> parent_syms;
 				std::queue<epmem_node_id> parent_ids;
@@ -4946,11 +4946,11 @@ void epmem_process_query( agent *my_agent, Symbol *state, Symbol *query, Symbol 
 				wme *parent_wme;
 
 				// temporal hashing
-				EPMEM_TYPE_INT my_hash;		// attribute
-				EPMEM_TYPE_INT my_hash2;	// value
+				long my_hash;		// attribute
+				long my_hash2;	// value
 
 				int i;
-				unsigned EPMEM_TYPE_INT j;
+				unsigned long j;
 				bool just_started;
 
 				// initialize pos/neg lists
@@ -5058,7 +5058,7 @@ void epmem_process_query( agent *my_agent, Symbol *state, Symbol *query, Symbol 
 			// useful statistics
 			int cue_sizes[2] = { leaf_ids[ EPMEM_NODE_POS ].size(), leaf_ids[ EPMEM_NODE_NEG ].size() };
 			int cue_size = ( cue_sizes[ EPMEM_NODE_POS ] + cue_sizes[ EPMEM_NODE_NEG ] );
-			unsigned EPMEM_TYPE_INT perfect_match = leaf_ids[ EPMEM_NODE_POS ].size();
+			unsigned long perfect_match = leaf_ids[ EPMEM_NODE_POS ].size();
 
 			// only perform search if necessary
 			if ( ( level > 1 ) && cue_size )
@@ -5068,7 +5068,7 @@ void epmem_process_query( agent *my_agent, Symbol *state, Symbol *query, Symbol 
 					// variables to populate
 					epmem_time_id king_id = EPMEM_MEMID_NONE;
 					double king_score = -1000;
-					unsigned EPMEM_TYPE_INT king_cardinality = 0;
+					unsigned long king_cardinality = 0;
 
 					// prepare queries
 					epmem_range_query_list *queries = new epmem_range_query_list[2];
@@ -5152,15 +5152,15 @@ void epmem_process_query( agent *my_agent, Symbol *state, Symbol *query, Symbol 
 						double balance_inv = 1 - balance;
 
 						// dynamic programming stuff
-						EPMEM_TYPE_INT sum_ct = 0;
+						long sum_ct = 0;
 						double sum_v = 0;
-						EPMEM_TYPE_INT sum_updown = 0;
+						long sum_updown = 0;
 
 						// current pointer
 						epmem_time_id current_id = EPMEM_MEMID_NONE;
-						EPMEM_TYPE_INT current_ct = 0;
+						long current_ct = 0;
 						double current_v = 0;
-						EPMEM_TYPE_INT current_updown = 0;
+						long current_updown = 0;
 						epmem_time_id current_end;
 						epmem_time_id current_valid_end;
 						double current_score;
@@ -5411,7 +5411,7 @@ void epmem_process_query( agent *my_agent, Symbol *state, Symbol *query, Symbol 
 				graph_match_roots->c_wme = NULL;
 			}
 
-			unsigned EPMEM_TYPE_INT leaf_ids[2] = { 0, 0 };
+			unsigned long leaf_ids[2] = { 0, 0 };
 
 			wme *new_wme;
 			epmem_time_id time_now = epmem_get_stat( my_agent, (const long) EPMEM_STAT_TIME ) - 1;
@@ -5448,7 +5448,7 @@ void epmem_process_query( agent *my_agent, Symbol *state, Symbol *query, Symbol 
 
 				// misc
 				int i, k, m;
-				unsigned EPMEM_TYPE_INT j;
+				unsigned long j;
 
 				// associate common literals with a query
 				std::map<epmem_node_id, epmem_shared_literal_list *> literal_to_node_query;
@@ -5474,13 +5474,13 @@ void epmem_process_query( agent *my_agent, Symbol *state, Symbol *query, Symbol 
 				epmem_node_id shared_identity;
 
 				// temporal hashing
-				EPMEM_TYPE_INT my_hash;		// attribute
-				EPMEM_TYPE_INT my_hash2;	// value
+				long my_hash;		// attribute
+				long my_hash2;	// value
 
 				// fully populate wme cache (we need to know parent info a priori)
 				{
 					wme **starter_wmes;
-					unsigned EPMEM_TYPE_INT starter_len;
+					unsigned long starter_len;
 
 					// query
 					new_cache_element = new epmem_wme_cache_element;
@@ -5989,13 +5989,13 @@ void epmem_process_query( agent *my_agent, Symbol *state, Symbol *query, Symbol 
 
 			// useful statistics
 			int cue_size = ( leaf_ids[ EPMEM_NODE_POS ] + leaf_ids[ EPMEM_NODE_NEG ] );
-			unsigned EPMEM_TYPE_INT perfect_match = leaf_ids[ EPMEM_NODE_POS ];
+			unsigned long perfect_match = leaf_ids[ EPMEM_NODE_POS ];
 
 			// vars to set in range search
 			epmem_time_id king_id = EPMEM_MEMID_NONE;
 			double king_score = -1000;
-			unsigned EPMEM_TYPE_INT king_cardinality = 0;
-			unsigned EPMEM_TYPE_INT king_graph_match = 0;
+			unsigned long king_cardinality = 0;
+			unsigned long king_graph_match = 0;
 			epmem_constraint_list king_constraints;
 
 			// perform range search if any leaf wmes
@@ -6005,15 +6005,15 @@ void epmem_process_query( agent *my_agent, Symbol *state, Symbol *query, Symbol 
 				double balance_inv = 1 - balance;
 
 				// dynamic programming stuff
-				EPMEM_TYPE_INT sum_ct = 0;
+				long sum_ct = 0;
 				double sum_v = 0;
-				EPMEM_TYPE_INT sum_updown = 0;
+				long sum_updown = 0;
 
 				// current pointer
 				epmem_time_id current_id = EPMEM_MEMID_NONE;
-				EPMEM_TYPE_INT current_ct = 0;
+				long current_ct = 0;
 				double current_v = 0;
-				EPMEM_TYPE_INT current_updown = 0;
+				long current_updown = 0;
 				epmem_time_id current_end;
 				epmem_time_id current_valid_end;
 				double current_score;
@@ -6031,7 +6031,7 @@ void epmem_process_query( agent *my_agent, Symbol *state, Symbol *query, Symbol 
 				bool done = false;
 
 				// graph match
-				unsigned EPMEM_TYPE_INT current_graph_match_counter = 0;
+				unsigned long current_graph_match_counter = 0;
 				epmem_constraint_list current_constraints;
 
 				// initialize current as last end
@@ -6113,7 +6113,7 @@ void epmem_process_query( agent *my_agent, Symbol *state, Symbol *query, Symbol 
 
 								if ( ( king_id == EPMEM_MEMID_NONE ) || ( current_score >= king_score ) )
 								{
-									if ( sum_ct == (EPMEM_TYPE_INT) perfect_match )
+									if ( sum_ct == (long) perfect_match )
 									{
 										current_constraints.clear();
 
@@ -6425,7 +6425,7 @@ void epmem_consider_new_episode( agent *my_agent )
 			slot *s;
 			wme *w;
 			Symbol *ol = my_agent->io_header_output;
-			unsigned EPMEM_TYPE_INT wme_count = 0;
+			unsigned long wme_count = 0;
 
 			// examine all commands on the output-link for any
 			// that appeared since last memory was recorded
@@ -6499,8 +6499,8 @@ void epmem_respond_to_cmd( agent *my_agent )
 
 	wme **wmes;
 	const char *attr_name;
-	unsigned EPMEM_TYPE_INT len;
-	unsigned EPMEM_TYPE_INT i;
+	unsigned long len;
+	unsigned long i;
 
 	epmem_time_id retrieve;
 	bool next, previous;
@@ -6514,7 +6514,7 @@ void epmem_respond_to_cmd( agent *my_agent )
 	slot *s;
 	wme *w;
 	Symbol *epmem_cmd;
-	unsigned EPMEM_TYPE_INT wme_count;
+	unsigned long wme_count;
 	bool new_cue;
 
 	while ( state != NULL )
@@ -6768,7 +6768,7 @@ void epmem_go( agent *my_agent )
 	{
 		epmem_transaction_end( my_agent, true );
 
-		EPMEM_TYPE_INT counter = epmem_get_stat( my_agent, EPMEM_STAT_NCB_WMES );
+		long counter = epmem_get_stat( my_agent, EPMEM_STAT_NCB_WMES );
 		epmem_set_stat( my_agent, EPMEM_STAT_NCB_WMES, ( counter + 1 ) );
 		std::string path( "cp " );
 		path.append( epmem_get_parameter( my_agent, EPMEM_PARAM_PATH, EPMEM_RETURN_STRING ) );
@@ -6785,7 +6785,7 @@ void epmem_go( agent *my_agent )
 	/*
 	{
 		const int max_queries = 10;
-		const int repeat = (EPMEM_TYPE_INT) epmem_get_parameter( my_agent, EPMEM_PARAM_COMMIT );
+		const int repeat = (long) epmem_get_parameter( my_agent, EPMEM_PARAM_COMMIT );
 		epmem_time_id queries[ max_queries ] = { 10, 50, 100, 250, 500, 1000, 2500, 5000, 6000, 8200 };
 
 		epmem_init_db( my_agent, true );
@@ -6821,7 +6821,7 @@ void epmem_go( agent *my_agent )
 
 	// cue matching over lots of cues (numerical wmes under "queries" wme, commit=level)
 	/*{
-		EPMEM_TYPE_INT level = (EPMEM_TYPE_INT) epmem_get_parameter( my_agent, EPMEM_PARAM_COMMIT );
+		long level = (long) epmem_get_parameter( my_agent, EPMEM_PARAM_COMMIT );
 		const int repeat = 20;
 
 		epmem_time_list *prohibit = new epmem_time_list();

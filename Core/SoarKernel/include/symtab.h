@@ -148,7 +148,7 @@ typedef struct agent_struct agent;
 typedef struct dl_cons_struct dl_cons;
 typedef cons list;
 
-typedef unsigned EPMEM_TYPE_INT epmem_node_id;
+typedef unsigned long epmem_node_id;
 
 /* WARNING:  In the following structure, next_in_hash_table MUST be the
    first field.  This field is used by the resizable hash table routines. */
