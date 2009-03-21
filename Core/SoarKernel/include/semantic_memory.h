@@ -132,7 +132,7 @@ typedef struct smem_parameter_struct
 
 typedef struct smem_stat_struct
 {
-	EPMEM_TYPE_INT value;
+	long value;
 	const char *name;
 } smem_stat;
 
@@ -158,8 +158,8 @@ typedef struct smem_timer_struct
 // data associated with each state
 typedef struct smem_data_struct
 {
-	unsigned EPMEM_TYPE_INT last_cmd_time;	// last update to epmem.command
-	unsigned EPMEM_TYPE_INT last_cmd_count;	// last update to epmem.command	
+	unsigned long last_cmd_time;	// last update to epmem.command
+	unsigned long last_cmd_count;	// last update to epmem.command	
 
 	wme *ss_wme;
 
@@ -271,12 +271,12 @@ extern bool smem_valid_stat( agent *my_agent, const char *name );
 extern bool smem_valid_stat( agent *my_agent, const long stat );
 
 // get stat
-extern EPMEM_TYPE_INT smem_get_stat( agent *my_agent, const char *name );
-extern EPMEM_TYPE_INT smem_get_stat( agent *my_agent, const long stat );
+extern long smem_get_stat( agent *my_agent, const char *name );
+extern long smem_get_stat( agent *my_agent, const long stat );
 
 // set stat
-extern bool smem_set_stat( agent *my_agent, const char *name, EPMEM_TYPE_INT new_val );
-extern bool smem_set_stat( agent *my_agent, const long stat, EPMEM_TYPE_INT new_val );
+extern bool smem_set_stat( agent *my_agent, const char *name, long new_val );
+extern bool smem_set_stat( agent *my_agent, const long stat, long new_val );
 
 
 //////////////////////////////////////////////////////////

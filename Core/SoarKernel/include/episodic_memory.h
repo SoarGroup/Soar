@@ -126,7 +126,7 @@ typedef struct wme_struct wme;
 #define EPMEM_STAT_QRY_CARD							7
 #define EPMEM_STAT_QRY_LITS							8
 
-#define EPMEM_STAT_NEXT_ID							9
+#define EPMEM_STAT_NEXT_ID							9 // *
 
 #define EPMEM_STAT_RIT_OFFSET_1						10 // *
 #define EPMEM_STAT_RIT_LEFTROOT_1					11 // *
@@ -316,7 +316,7 @@ typedef struct epmem_parameter_struct
 
 typedef struct epmem_stat_struct
 {
-	EPMEM_TYPE_INT value;
+	long value;
 	const char *name;
 } epmem_stat;
 
@@ -340,10 +340,10 @@ typedef struct epmem_timer_struct
 //////////////////////////////////////////////////////////
 
 // represents a unique node identifier in the episodic store
-typedef unsigned EPMEM_TYPE_INT epmem_node_id;
+typedef unsigned long epmem_node_id;
 
 // represents a unique episode identifier in the episodic store
-typedef EPMEM_TYPE_INT epmem_time_id;
+typedef long epmem_time_id;
 
 // represents a vector of times
 typedef std::vector<epmem_time_id> epmem_time_list;
@@ -355,11 +355,11 @@ typedef std::vector<epmem_time_id> epmem_time_list;
 // data associated with each state
 typedef struct epmem_data_struct
 {
-	unsigned EPMEM_TYPE_INT last_ol_time;	// last update to output-link
-	unsigned EPMEM_TYPE_INT last_ol_count;	// last count of output-link
+	unsigned long last_ol_time;	// last update to output-link
+	unsigned long last_ol_count;	// last count of output-link
 
-	unsigned EPMEM_TYPE_INT last_cmd_time;	// last update to epmem.command
-	unsigned EPMEM_TYPE_INT last_cmd_count;	// last update to epmem.command
+	unsigned long last_cmd_time;	// last update to epmem.command
+	unsigned long last_cmd_count;	// last update to epmem.command
 
 	epmem_time_id last_memory;				// last retrieved memory
 
@@ -388,7 +388,7 @@ typedef struct epmem_range_query_struct
 	epmem_time_id val;						// current b-tree leaf value
 
 	double weight;							// wma value
-	EPMEM_TYPE_INT ct;						// cardinality w.r.t. positive/negative query
+	long ct;						// cardinality w.r.t. positive/negative query
 
 	long timer;								// timer to update upon executing the query
 } epmem_range_query;
@@ -425,13 +425,13 @@ typedef std::map<epmem_node_id, Symbol *> epmem_reverse_constraint_list;
 
 // types/structures to facilitate re-use of identifiers
 typedef std::map<epmem_node_id, epmem_node_id> epmem_id_pool;
-typedef std::map<EPMEM_TYPE_INT, epmem_id_pool *> epmem_hashed_id_pool;
+typedef std::map<long, epmem_id_pool *> epmem_hashed_id_pool;
 typedef std::map<epmem_node_id, epmem_hashed_id_pool *> epmem_parent_id_pool;
 typedef std::map<epmem_node_id, epmem_id_pool *> epmem_return_id_pool;
 typedef struct epmem_id_reservation_struct
 {
 	epmem_node_id my_id;
-	EPMEM_TYPE_INT my_hash;
+	long my_hash;
 	epmem_id_pool *my_pool;
 } epmem_id_reservation;
 
@@ -448,8 +448,8 @@ typedef struct epmem_edge_struct
 typedef struct epmem_wme_cache_element_struct
 {
 	wme **wmes;								// child wmes
-	unsigned EPMEM_TYPE_INT len;			// number of children
-	unsigned EPMEM_TYPE_INT parents;		// number of parents
+	unsigned long len;			// number of children
+	unsigned long parents;		// number of parents
 
 	epmem_literal_mapping *lits;			// child literals
 } epmem_wme_cache_element;
@@ -459,9 +459,9 @@ typedef struct epmem_wme_cache_element_struct
 typedef struct epmem_shared_match_struct
 {
 	double value_weight;					// wma value
-	EPMEM_TYPE_INT value_ct;				// cardinality w.r.t. positive/negative query
+	long value_ct;				// cardinality w.r.t. positive/negative query
 
-	unsigned EPMEM_TYPE_INT ct;				// number of contributing literals that are "on"
+	unsigned long ct;				// number of contributing literals that are "on"
 } epmem_shared_match;
 
 // represents a list of literals grouped
@@ -481,8 +481,8 @@ struct epmem_shared_literal_struct
 {
 	epmem_node_id shared_id;				// shared q1, if identifier
 
-	unsigned EPMEM_TYPE_INT ct;				// number of contributing literals that are "on"
-	unsigned EPMEM_TYPE_INT max;			// number of contributing literals that *need* to be on
+	unsigned long ct;				// number of contributing literals that are "on"
+	unsigned long max;			// number of contributing literals that *need* to be on
 
 	struct wme_struct *wme;					// associated cue wme
 	bool wme_kids;							// does the cue wme have children (indicative of leaf wme status)
@@ -644,12 +644,12 @@ extern bool epmem_valid_stat( agent *my_agent, const char *name );
 extern bool epmem_valid_stat( agent *my_agent, const long stat );
 
 // get stat
-extern EPMEM_TYPE_INT epmem_get_stat( agent *my_agent, const char *name );
-extern EPMEM_TYPE_INT epmem_get_stat( agent *my_agent, const long stat );
+extern long epmem_get_stat( agent *my_agent, const char *name );
+extern long epmem_get_stat( agent *my_agent, const long stat );
 
 // set stat
-extern bool epmem_set_stat( agent *my_agent, const char *name, EPMEM_TYPE_INT new_val );
-extern bool epmem_set_stat( agent *my_agent, const long stat, EPMEM_TYPE_INT new_val );
+extern bool epmem_set_stat( agent *my_agent, const char *name, long new_val );
+extern bool epmem_set_stat( agent *my_agent, const long stat, long new_val );
 
 
 //////////////////////////////////////////////////////////

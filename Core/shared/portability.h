@@ -86,7 +86,5 @@ static inline long atomic_dec( volatile long *v )
 //////////////////////////////////////////////////////////
 
 //#define EPMEM_64
-#define EPMEM_TYPE_INT long int
-
 
 #endif // PORTABILITY_H

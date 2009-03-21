@@ -355,7 +355,7 @@ bool CommandLineInterface::DoSMem( const char pOp, const std::string* pAttr, con
 	{
 		if ( !pAttr )
 		{
-			EPMEM_TYPE_INT temp;
+			long temp;
 			std::string output;
 			std::string *temp_str;			
 
@@ -381,7 +381,7 @@ bool CommandLineInterface::DoSMem( const char pOp, const std::string* pAttr, con
 		}
 		else
 		{
-			EPMEM_TYPE_INT temp = smem_get_stat( m_pAgentSoar, pAttr->c_str() );
+			long temp = smem_get_stat( m_pAgentSoar, pAttr->c_str() );
 			std::string *temp_str = to_string( temp );
 			std::string output = (*temp_str);
 			delete temp_str;

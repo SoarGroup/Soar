@@ -753,29 +753,29 @@ bool smem_valid_stat( agent *my_agent, const long stat )
  * Notes		: Get a statistic value
  * 				  Special consideration for sqlite info
  **************************************************************************/
-EPMEM_TYPE_INT smem_get_stat( agent *my_agent, const char *name )
+long smem_get_stat( agent *my_agent, const char *name )
 {
 	const long stat = smem_convert_stat( my_agent, name );
 	if ( stat == SMEM_STATS )
 		return 0;
 
 	if ( stat == SMEM_STAT_MEM_USAGE )
-		return (EPMEM_TYPE_INT) sqlite3_memory_used();
+		return (long) sqlite3_memory_used();
 	if ( stat == SMEM_STAT_MEM_HIGH )
-		return (EPMEM_TYPE_INT) sqlite3_memory_highwater( false );
+		return (long) sqlite3_memory_highwater( false );
 
 	return my_agent->smem_stats[ stat ]->value;
 }
 
-EPMEM_TYPE_INT smem_get_stat( agent *my_agent, const long stat )
+long smem_get_stat( agent *my_agent, const long stat )
 {
 	if ( !smem_valid_stat( my_agent, stat ) )
 		return 0;
 
 	if ( stat == SMEM_STAT_MEM_USAGE )
-		return (EPMEM_TYPE_INT) sqlite3_memory_used();
+		return (long) sqlite3_memory_used();
 	if ( stat == SMEM_STAT_MEM_HIGH )
-		return (EPMEM_TYPE_INT) sqlite3_memory_highwater( false );
+		return (long) sqlite3_memory_highwater( false );
 
 	return my_agent->smem_stats[ stat ]->value;
 }
@@ -786,7 +786,7 @@ EPMEM_TYPE_INT smem_get_stat( agent *my_agent, const long stat )
  * Notes		: Set a statistic value
  * 				  Special consideration for sqlite info
  **************************************************************************/
-bool smem_set_stat( agent *my_agent, const char *name, EPMEM_TYPE_INT new_val )
+bool smem_set_stat( agent *my_agent, const char *name, long new_val )
 {
 	const long stat = smem_convert_stat( my_agent, name );
 	if ( ( stat == SMEM_STATS ) ||
@@ -799,7 +799,7 @@ bool smem_set_stat( agent *my_agent, const char *name, EPMEM_TYPE_INT new_val )
 	return true;
 }
 
-bool smem_set_stat( agent *my_agent, const long stat, EPMEM_TYPE_INT new_val )
+bool smem_set_stat( agent *my_agent, const long stat, long new_val )
 {
 	if ( !smem_valid_stat( my_agent, stat ) )
 		return false;
@@ -986,13 +986,13 @@ void smem_stop_timer( agent *my_agent, const long timer )
  *				  highly un-portable.  I'm told this is no longer true but I'm
  *				  still bitter.
  **************************************************************************/
-wme **smem_get_augs_of_id( agent* my_agent, Symbol * id, tc_number tc, unsigned EPMEM_TYPE_INT *num_attr )
+wme **smem_get_augs_of_id( agent* my_agent, Symbol * id, tc_number tc, unsigned long *num_attr )
 {
 	slot *s;
 	wme *w;
 	wme **list;
-	unsigned EPMEM_TYPE_INT list_position;
-	unsigned EPMEM_TYPE_INT n = 0;
+	unsigned long list_position;
+	unsigned long n = 0;
 
 	// augs only exist for identifiers
 	if ( id->common.symbol_type != IDENTIFIER_SYMBOL_TYPE )
@@ -1085,8 +1085,8 @@ wme *smem_get_aug_of_id( agent *my_agent, Symbol *sym, char *attr_name, char *va
 	wme **wmes;
 	wme *return_val = NULL;
 
-	unsigned EPMEM_TYPE_INT len = 0;
-	unsigned EPMEM_TYPE_INT i;
+	unsigned long len = 0;
+	unsigned long i;
 
 	wmes = smem_get_augs_of_id( my_agent, sym, get_new_tc_number( my_agent ), &len );
 	if ( wmes == NULL )
