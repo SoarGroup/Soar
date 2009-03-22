@@ -505,7 +505,7 @@ preference *exploration_choose_according_to_policy( agent *my_agent, slot *s, pr
 		exploration_compute_value_of_candidate( my_agent, cand, s );
 
 	// should find highest valued candidate in q-learning
-	if ( rl_enabled( my_agent ) && ( rl_get_parameter( my_agent, RL_PARAM_LEARNING_POLICY, RL_RETURN_LONG ) == RL_LEARNING_Q ) )
+	if ( rl_enabled( my_agent ) && ( my_agent->rl_params->learning_policy->get_value() == rl_param_container::q ) )
 		for ( preference *cand=candidates; cand!=NIL; cand=cand->next_candidate )
 			if ( cand->numeric_value > top_value )
 				top_value = cand->numeric_value;
@@ -538,9 +538,9 @@ preference *exploration_choose_according_to_policy( agent *my_agent, slot *s, pr
 	}
 
 	// should perform update here for chosen candidate in sarsa
-	if ( rl_enabled( my_agent ) && ( rl_get_parameter( my_agent, RL_PARAM_LEARNING_POLICY, RL_RETURN_LONG ) == RL_LEARNING_SARSA ) )
+	if ( rl_enabled( my_agent ) && ( my_agent->rl_params->learning_policy->get_value() == rl_param_container::sarsa ) )
 		rl_perform_update( my_agent, return_val->numeric_value, s->id );
-	else if ( rl_enabled( my_agent ) && ( rl_get_parameter( my_agent, RL_PARAM_LEARNING_POLICY, RL_RETURN_LONG ) == RL_LEARNING_Q ) )
+	else if ( rl_enabled( my_agent ) && ( my_agent->rl_params->learning_policy->get_value() == rl_param_container::q ) )
 	{
 		if ( return_val->numeric_value != top_value )
 			rl_watkins_clear( my_agent, s->id );
