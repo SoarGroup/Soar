@@ -492,7 +492,7 @@ namespace soar_module
 	};
 	
 	// these are easy definitions for int and double parameters
-	typedef primitive_stat<int> integer_stat;
+	typedef primitive_stat<long> integer_stat;
 	typedef primitive_stat<double> decimal_stat;
 
 	///////////////////////////////////////////////////////////////////////////
