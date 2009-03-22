@@ -2,7 +2,7 @@
 
 /*************************************************************************
  * PLEASE SEE THE FILE "COPYING" (INCLUDED WITH THIS SOFTWARE PACKAGE)
- * FOR LICENSE AND COPYRIGHT INFORMATION. 
+ * FOR LICENSE AND COPYRIGHT INFORMATION.
  *************************************************************************/
 
 /*************************************************************************
@@ -36,17 +36,17 @@
 // Parameters
 /////////////////////////////////////////////////////
 
-wma_decay_param::wma_decay_param( const char *new_name, double new_value, predicate<double> *new_val_pred, predicate<double> *new_prot_pred ): primitive_param( new_name, new_value, new_val_pred, new_prot_pred ) {};
+wma_decay_param::wma_decay_param( const char *new_name, double new_value, predicate<double> *new_val_pred, predicate<double> *new_prot_pred ): decimal_param( new_name, new_value, new_val_pred, new_prot_pred ) {};
 
 void wma_decay_param::set_value( double new_value ) { value = -new_value; };
 
 //
 
 template <typename T>
-wma_activation_predicate<T>::wma_activation_predicate( agent *new_agent ): agent_predicate( new_agent ) {};
+wma_activation_predicate<T>::wma_activation_predicate( agent *new_agent ): agent_predicate<T>( new_agent ) {};
 
 template <typename T>
-bool wma_activation_predicate<T>::operator() ( T /*val*/ ) { return wma_enabled( my_agent ); };
+bool wma_activation_predicate<T>::operator() ( T /*val*/ ) { return wma_enabled( this->my_agent ); };
 
 //
 
@@ -64,9 +64,9 @@ wma_param_container::wma_param_container( agent *new_agent ): param_container( n
 
 	/**
 	 * Specifies what WMEs will have decay values.
-	 * O_AGENT - Only o-supported WMEs created by the agent 
+	 * O_AGENT - Only o-supported WMEs created by the agent
 	 *           (i.e., they have a supporting preference)
-	 * O_AGENT_ARCH - All o-supported WMEs including 
+	 * O_AGENT_ARCH - All o-supported WMEs including
 	 *                architecture created WMEs
 	 * ALL - All wmes are activated
 	 */
@@ -83,18 +83,18 @@ wma_param_container::wma_param_container( agent *new_agent ): param_container( n
 	add_param( forgetting );
 
 	/**
-	 * Specifies the mode in which i-supported WMEs 
+	 * Specifies the mode in which i-supported WMEs
 	 * affect activation levels.
 	 * NONE - i-supported WMEs do not affect activation levels
-	 * NO_CREATE - i-supported WMEs boost the activation levels 
-	 *             of all o-supported WMEs in the instantiations 
-	 *             that test them.  Each WME receives and equal 
-	 *             boost regardless of "distance" (in the backtrace) 
+	 * NO_CREATE - i-supported WMEs boost the activation levels
+	 *             of all o-supported WMEs in the instantiations
+	 *             that test them.  Each WME receives and equal
+	 *             boost regardless of "distance" (in the backtrace)
 	 *             from the tested WME.
-	 * UNIFORM - i-supported WMEs boost the activation levels of 
-	 *           all o-supported WMEs in the instantiations that 
-	 *           created or test them.  Each WME receives an equal 
-	 *           boost regardless of "distance" (in the backtrace) 
+	 * UNIFORM - i-supported WMEs boost the activation levels of
+	 *           all o-supported WMEs in the instantiations that
+	 *           created or test them.  Each WME receives an equal
+	 *           boost regardless of "distance" (in the backtrace)
 	 *           from the tested WME.
 	 */
 	isupport = new constant_param<isupport_choices>( "i-support", uniform, new wma_activation_predicate<isupport_choices>( my_agent ) );
@@ -104,7 +104,7 @@ wma_param_container::wma_param_container( agent *new_agent ): param_container( n
 	add_param( isupport );
 
 	/**
-	 * Whether or not an instantiation activates WMEs just once, 
+	 * Whether or not an instantiation activates WMEs just once,
 	 * or every cycle until it is retracted.
 	 */
 	persistence = new boolean_param( "persistence", off, new wma_activation_predicate<boolean>( my_agent ) );
@@ -142,7 +142,7 @@ wma_stat_container::wma_stat_container( agent *new_agent ): stat_container( new_
 /***************************************************************************
  * Function     : wma_enabled
  **************************************************************************/
-inline bool wma_enabled( agent *my_agent )
+bool wma_enabled( agent *my_agent )
 {
 	return ( my_agent->wma_params->activation->get_value() == soar_module::on );
 }
@@ -151,10 +151,10 @@ inline bool wma_enabled( agent *my_agent )
 /***************************************************************************
  * Function     : wma_init
  * Author		: Andy Nuxoll?
- * Notes		: wma_init will set up the memory pool which holds the 
- *                decay_elements (which are the elements of the linked 
- *                lists at each decay_timelist position).  It also sets up 
- *                the timelist for all positions, and sets the current 
+ * Notes		: wma_init will set up the memory pool which holds the
+ *                decay_elements (which are the elements of the linked
+ *                lists at each decay_timelist position).  It also sets up
+ *                the timelist for all positions, and sets the current
  *                pointer to the first of those.
  *
  *                Subsequent calls will free the memory pool.
@@ -163,13 +163,13 @@ void wma_init( agent *my_agent )
 {
 	if ( my_agent->wma_initialized )
 		return;
-	
+
 	wma_timelist_element *temp_timelist = NULL;
 	unsigned long current_time = my_agent->d_cycle_count;
 	int i;
 
 	// initialize memory pool
-	if ( my_agent->wma_first )	
+	if ( my_agent->wma_first )
 	{
 		my_agent->wma_first = false;
 		init_memory_pool( my_agent, &( my_agent->wma_decay_element_pool ), sizeof( wma_decay_element_t ), "wma_decay" );
@@ -201,11 +201,11 @@ void wma_init( agent *my_agent )
 	my_agent->wma_quick_boost[0] = 0;
 	{
 		// number of times to simulate
-		const unsigned long num_iterations = 1000;		
-		
+		const unsigned long num_iterations = 1000;
+
 		wma_decay_element_t el;
 		double activation_level;
-		double sum;		
+		double sum;
 		long i;
 		long n;
 
@@ -249,7 +249,7 @@ void wma_init( agent *my_agent )
 					sum = 0;
 
 					// Existing WME
-					for ( history_iter = 0; history_iter<el.history_count; history_iter++ ) 
+					for ( history_iter = 0; history_iter<el.history_count; history_iter++ )
 					{
 						n = time_iter - el.boost_history[ history_iter ] + 1;
 						if ( n < WMA_POWER_SIZE )
@@ -282,15 +282,15 @@ void wma_init( agent *my_agent )
 /***************************************************************************
  * Function     : wma_deinit
  * Author		: Andy Nuxoll?
- * Notes		: wma_deinit will set the decay_elements for all of the 
- *                wmes in the decay timelist to NIL, otherwise there will 
+ * Notes		: wma_deinit will set the decay_elements for all of the
+ *                wmes in the decay timelist to NIL, otherwise there will
  *                be dangling pointers if decay is turned back on.
  **************************************************************************/
 void wma_deinit( agent *my_agent )
 {
 	if ( !my_agent->wma_initialized )
 		return;
-	
+
 	{
 		long first_spot, last_spot;
 		wma_decay_element_t *remove_this;
@@ -316,12 +316,12 @@ void wma_deinit( agent *my_agent )
 /***************************************************************************
  * Function     : wma_decay_helper
  * Author		: Andy Nuxoll?
- * Notes		: This function recursively discovers the activated WMEs 
- *                that led to the creation of a given WME.  When found, 
- *                their boost histories are added to the history in the 
+ * Notes		: This function recursively discovers the activated WMEs
+ *                that led to the creation of a given WME.  When found,
+ *                their boost histories are added to the history in the
  *                given decay element.
  *
- *                This function returns the number of supporting WMEs 
+ *                This function returns the number of supporting WMEs
  *                found.
  **************************************************************************/
 unsigned long wma_decay_helper( wme *w, wma_decay_element_t *el, unsigned long tc_value )
@@ -333,7 +333,7 @@ unsigned long wma_decay_helper( wme *w, wma_decay_element_t *el, unsigned long t
 	wme *cond_wme;
 	long i, j;
 
-	if ( pref == NIL ) 
+	if ( pref == NIL )
 		return 0;
 
 	inst = pref->inst;
@@ -375,14 +375,14 @@ unsigned long wma_decay_helper( wme *w, wma_decay_element_t *el, unsigned long t
 /***************************************************************************
  * Function     : wma_calculate_average_history
  * Author		: Andy Nuxoll?
- * Notes		: This function examines the production instantiation that 
- *                led to the creation of a WME.  The decay history of each 
- *                WME in that instantiation is examined and averaged.  This 
- *                new average boost history is inserted into the given decay 
+ * Notes		: This function examines the production instantiation that
+ *                led to the creation of a WME.  The decay history of each
+ *                WME in that instantiation is examined and averaged.  This
+ *                new average boost history is inserted into the given decay
  *                element.
  *
- *                If the WME is not o-supported or no conditions are found 
- *                that meet the criteria (positive conditions on wmes that 
+ *                If the WME is not o-supported or no conditions are found
+ *                that meet the criteria (positive conditions on wmes that
  *                have a decay history) then an empty history is assigned.
  **************************************************************************/
 void wma_calculate_average_history( agent* my_agent, wme *w, wma_decay_element_t *el )
@@ -401,18 +401,18 @@ void wma_calculate_average_history( agent* my_agent, wme *w, wma_decay_element_t
 	num_cond_wmes = wma_decay_helper( w, el, ++my_agent->wma_tc_counter );
 
 	if ( num_cond_wmes > 0 )
-	{		
+	{
 		// Calculate the average
 		for( i = 0; i<WMA_DECAY_HISTORY; i++ )
 			el->boost_history[ i ] /= num_cond_wmes;
 
 		// Determine the actual length of the history
 		for( i=( WMA_DECAY_HISTORY - 1 ); i>=0; i-- )
-			if ( el->boost_history[ i ] > 0 ) 
+			if ( el->boost_history[ i ] > 0 )
 				el->history_count++;
 
 		// Compress the array values into the left hand side of the array
-		for( i=0; i<( el->history_count ); i++ )			
+		for( i=0; i<( el->history_count ); i++ )
 			el->boost_history[i] = el->boost_history[ i + ( WMA_DECAY_HISTORY - el->history_count ) ];
 	}
 }
@@ -420,11 +420,11 @@ void wma_calculate_average_history( agent* my_agent, wme *w, wma_decay_element_t
 /***************************************************************************
  * Function     : wma_decay_reference_wme
  * Author		: Andy Nuxoll?
- * Notes		: Given a WME, this function increments its reference count.  
- *                If the WME is not activated (because it has i-support) 
- *                then this function traces the given WME's preference tree 
- *                to find the set of all activated WMEs that must exist in 
- *                order for the given WME to exist.  Each of these activated 
+ * Notes		: Given a WME, this function increments its reference count.
+ *                If the WME is not activated (because it has i-support)
+ *                then this function traces the given WME's preference tree
+ *                to find the set of all activated WMEs that must exist in
+ *                order for the given WME to exist.  Each of these activated
  *                WMEs is given a reference.
  **************************************************************************/
 void wma_decay_reference_wme( agent *my_agent, wme *w, int depth = 0 )
@@ -434,7 +434,7 @@ void wma_decay_reference_wme( agent *my_agent, wme *w, int depth = 0 )
 	condition *c;
 
 	// Avoid stack overflow
-	if ( depth > 10 ) 
+	if ( depth > 10 )
 		return;
 
 	// Step 1:  Check for cases where referencing the WME is easy.  This should
@@ -479,7 +479,7 @@ void wma_decay_reference_wme( agent *my_agent, wme *w, int depth = 0 )
 		return;
 	}
 
-	
+
 	// Step 2:  In this case we have an i-supported WME that has been
 	//          referenced.  We need to find the supporting o-supported WMEs and
 	//          reference them instead.
@@ -490,8 +490,8 @@ void wma_decay_reference_wme( agent *my_agent, wme *w, int depth = 0 )
 	{
 		// BUGBUG: How to handle negative conditions?  Ignore for now.
 		if ( c->type == POSITIVE_CONDITION )
-		{			
-			wma_decay_reference_wme( my_agent, c->bt.wme_, depth + 1 ); 
+		{
+			wma_decay_reference_wme( my_agent, c->bt.wme_, depth + 1 );
 		}
 		c = c->next;
 	}
@@ -501,15 +501,15 @@ void wma_decay_reference_wme( agent *my_agent, wme *w, int depth = 0 )
 /***************************************************************************
  * Function     : wma_update_new_wme
  * Author		: Andy Nuxoll?
- * Notes		: This function adds a decay element to an existing WME.  
- *                It is called whenever a wme is discovered that does not 
- *                have a decay element (usually this is at wme creation 
+ * Notes		: This function adds a decay element to an existing WME.
+ *                It is called whenever a wme is discovered that does not
+ *                have a decay element (usually this is at wme creation
  *                time.)
  **************************************************************************/
 void wma_update_new_wme( agent *my_agent, wme *w, int num_refs )
 {
 	wma_decay_element_t *temp_el;
-	
+
 	// should this be an activated wme?
 	bool good_wme = true;
 
@@ -538,13 +538,13 @@ void wma_update_new_wme( agent *my_agent, wme *w, int num_refs )
 		if ( ( w->preference != NIL ) && ( w->preference->o_supported != TRUE ) )
 		{
 			const long i_support = my_agent->wma_params->isupport->get_value();
-			
+
 			switch( i_support )
 			{
 				case wma_param_container::none:
 				case wma_param_container::no_create:
 				break;
-			
+
 				case wma_param_container::uniform:
 					wma_decay_reference_wme( my_agent, w );
 				break;
@@ -567,7 +567,7 @@ void wma_update_new_wme( agent *my_agent, wme *w, int num_refs )
 	temp_el->num_references = num_refs;
 
 	// Give the WME an initial history based upon the WMEs that were tested to create it.
-	wma_calculate_average_history( my_agent, w, temp_el );	
+	wma_calculate_average_history( my_agent, w, temp_el );
 
 	// Insert at the current position in the decay timelist
 	// It will be boosted out of this position at the next update
@@ -586,9 +586,9 @@ void wma_update_new_wme( agent *my_agent, wme *w, int num_refs )
 /***************************************************************************
  * Function     : wma_deactivate_element
  * Author		: Andy Nuxoll?
- * Notes		: This routine marks a decay element as being attached to a 
- *                wme struct that has been removed from working memory.  
- *                When the wme struct is actually deallocated then the 
+ * Notes		: This routine marks a decay element as being attached to a
+ *                wme struct that has been removed from working memory.
+ *                When the wme struct is actually deallocated then the
  *                wma_remove_decay_element() routine is called.
  **************************************************************************/
 void wma_deactivate_element( agent * /*my_agent*/, wme *w )
@@ -596,7 +596,7 @@ void wma_deactivate_element( agent * /*my_agent*/, wme *w )
 	// Make sure this wme has an element and that element has not already been
 	// deactivated
 	if ( !w->wma_has_decay_element || w->wma_decay_element->just_removed )
-		return;	
+		return;
 
 	// Remove the decay element from the decay timelist
 	if ( w->wma_decay_element->previous == NIL )
@@ -613,7 +613,7 @@ void wma_deactivate_element( agent * /*my_agent*/, wme *w )
 	if ( w->wma_decay_element->next != NIL )
 	{
 		// if the element has a next update prev -> next
-		w->wma_decay_element->next->previous = w->wma_decay_element->previous;		
+		w->wma_decay_element->next->previous = w->wma_decay_element->previous;
 	}
 
 	w->wma_decay_element->next = NIL;
@@ -624,7 +624,7 @@ void wma_deactivate_element( agent * /*my_agent*/, wme *w )
 /***************************************************************************
  * Function     : wma_remove_decay_element
  * Author		: Andy Nuxoll?
- * Notes		: This routine deallocates the decay element attached to a 
+ * Notes		: This routine deallocates the decay element attached to a
  *                given WME.
  **************************************************************************/
 void wma_remove_decay_element( agent *my_agent, wme *w )
@@ -645,7 +645,7 @@ void wma_remove_decay_element( agent *my_agent, wme *w )
 /***************************************************************************
  * Function     : wma_activate_wmes_in_pref
  * Author		: Andy Nuxoll?
- * Notes		: This routine boosts the activation of all WMEs in a given 
+ * Notes		: This routine boosts the activation of all WMEs in a given
  *                preference
  **************************************************************************/
 void wma_activate_wmes_in_pref( agent *my_agent, preference *pref )
@@ -654,7 +654,7 @@ void wma_activate_wmes_in_pref( agent *my_agent, preference *pref )
 
 	// I have the recreated code here instead of a seperate function so that
 	// all newly_created_insts are picked up.
-	if ( ( pref->type != REJECT_PREFERENCE_TYPE ) && 
+	if ( ( pref->type != REJECT_PREFERENCE_TYPE ) &&
 		 ( pref->type != PROHIBIT_PREFERENCE_TYPE ) &&
 		 ( pref->slot != NIL ) )
 	{
@@ -662,9 +662,9 @@ void wma_activate_wmes_in_pref( agent *my_agent, preference *pref )
 		while ( w )
 		{
 			// id and attr should already match so just compare the value
-			if ( w->value == pref->value )			
+			if ( w->value == pref->value )
 				wma_decay_reference_wme( my_agent, w );
-			
+
 			w = w->next;
 		}
 	}
@@ -673,20 +673,20 @@ void wma_activate_wmes_in_pref( agent *my_agent, preference *pref )
 /***************************************************************************
  * Function     : wma_activate_wmes_in_inst
  * Author		: Andy Nuxoll?
- * Notes		: This routine boosts the activation of all WMEs in a given 
+ * Notes		: This routine boosts the activation of all WMEs in a given
  *                production instantiation.
  **************************************************************************/
 void wma_activate_wmes_in_inst( agent *my_agent, instantiation *inst )
 {
 	for ( condition *cond=inst->top_of_instantiated_conditions; cond!=NIL; cond=cond->next )
 		if ( cond->type==POSITIVE_CONDITION )
-			wma_decay_reference_wme( my_agent, cond->bt.wme_ ); 
+			wma_decay_reference_wme( my_agent, cond->bt.wme_ );
 }
 
 /***************************************************************************
  * Function     : wma_update_wmes_in_retracted_inst
  * Author		: Andy Nuxoll?
- * Notes		: This code is detecting production retractions that affect 
+ * Notes		: This code is detecting production retractions that affect
  *                activated WMEs and decrementing their reference counts.
  **************************************************************************/
 void wma_update_wmes_in_retracted_inst( agent *my_agent, instantiation *inst )
@@ -700,7 +700,7 @@ void wma_update_wmes_in_retracted_inst( agent *my_agent, instantiation *inst )
 		{
 			next = pref->inst_next;
 
-			if ( ( pref->type != REJECT_PREFERENCE_TYPE ) && 
+			if ( ( pref->type != REJECT_PREFERENCE_TYPE ) &&
 				 ( pref->type != PROHIBIT_PREFERENCE_TYPE ) &&
 				 ( pref->o_supported ) &&
 				 ( pref->slot != NIL ) )
@@ -715,13 +715,13 @@ void wma_update_wmes_in_retracted_inst( agent *my_agent, instantiation *inst )
 					{
 						// we got a match with an existing wme
 						if ( w->wma_decay_element != NIL )
-						{							
+						{
 							w->wma_decay_element->num_references--;
 						}
 					}
 
 					w = w->next;
-				} 
+				}
 			}
 		}
 	}
@@ -730,7 +730,7 @@ void wma_update_wmes_in_retracted_inst( agent *my_agent, instantiation *inst )
 /***************************************************************************
  * Function     : wma_update_wmes_in_prods
  * Author		: Andy Nuxoll?
- * Notes		: This function scans all the match set changes and updates 
+ * Notes		: This function scans all the match set changes and updates
  *                the reference count for affected WMEs.
  **************************************************************************/
 void wma_update_wmes_tested_in_prods( agent *my_agent )
@@ -763,7 +763,7 @@ void wma_update_wmes_tested_in_prods( agent *my_agent )
 
 		while ( t != my_agent->dummy_top_token )
 		{
-			if ( t->w != NIL )		
+			if ( t->w != NIL )
 				wma_decay_reference_wme( my_agent, t->w );
 
 			t = t->parent;
@@ -799,22 +799,22 @@ void wma_update_wmes_tested_in_prods( agent *my_agent )
 /***************************************************************************
  * Function     : wma_get_wme_activation_low
  * Author		: Andy Nuxoll?
- * Notes		: This function is provided for external use.  Given a WME, 
- *                this it calculates an approximate activation level of that 
- *                WME as a floating point number between 0 and 1.  The 
+ * Notes		: This function is provided for external use.  Given a WME,
+ *                this it calculates an approximate activation level of that
+ *                WME as a floating point number between 0 and 1.  The
  *                higher the number the more activated the WME is.
  *                Calculating a real valued activation level is expensive
  *                and usually unnecessary.  This function provides a nice
  *                compromise.
  *
- *                If the given WME does not have a decay element, this 
+ *                If the given WME does not have a decay element, this
  *                function returns WMA_ACTIVATION_NONE.
  **************************************************************************/
 double wma_get_wme_activation_low( agent *my_agent, wme *w )
 {
 	if ( !w->wma_has_decay_element )
 		return (double) WMA_ACTIVATION_NONE;
-	
+
 	{
 		long wme_pos = w->wma_decay_element->time_spot->position;
 		long curr_pos = my_agent->wma_timelist_current->position;
@@ -826,12 +826,12 @@ double wma_get_wme_activation_low( agent *my_agent, wme *w )
 /***************************************************************************
  * Function     : wma_get_wme_activation_high
  * Author		: Andy Nuxoll?
- * Notes		: This function is provided for external use.  Given a WME, 
- *                this it calculates an EXACT activation level of that WME 
- *                as a floating point number.  The higher the number the 
+ * Notes		: This function is provided for external use.  Given a WME,
+ *                this it calculates an EXACT activation level of that WME
+ *                as a floating point number.  The higher the number the
  *                more activated the WME is.
  *
- *                If the given WME does not have a decay element, this 
+ *                If the given WME does not have a decay element, this
  *                function returns WMA_ACTIVATION_NONE
  **************************************************************************/
 double wma_get_wme_activation_high( agent *my_agent, wme *w )
@@ -846,7 +846,7 @@ double wma_get_wme_activation_high( agent *my_agent, wme *w )
 		for ( long i=0; i<w->wma_decay_element->history_count; i++ )
 		{
 			n = w->wma_decay_element->time_spot->time - w->wma_decay_element->boost_history[ i ] + 1;
-			
+
 			if ( n < WMA_POWER_SIZE )
 				sum += my_agent->wma_power_array[ n ];
 		}
@@ -858,12 +858,12 @@ double wma_get_wme_activation_high( agent *my_agent, wme *w )
 /***************************************************************************
  * Function     : wma_get_wme_activation
  * Author		: Nate Derbinsky
- * Notes		: This function is provided for external use.  Given a WME, 
+ * Notes		: This function is provided for external use.  Given a WME,
  *                this it calculates activation based upon current
  *                precision parameter.
  **************************************************************************/
 double wma_get_wme_activation( agent *my_agent, wme *w )
-{	
+{
 	return ( ( my_agent->wma_params->precision->get_value() == wma_param_container::high )?
 		     ( wma_get_wme_activation_high( my_agent, w ) ):
 			 ( wma_get_wme_activation_low( my_agent, w ) ) );
@@ -872,12 +872,12 @@ double wma_get_wme_activation( agent *my_agent, wme *w )
 /***************************************************************************
  * Function     : wma_add_refs_to_history
  * Author		: Andy Nuxoll?
- * Notes		: This function adds N refs at the previous cycle to the 
+ * Notes		: This function adds N refs at the previous cycle to the
  *                boost history of a given decay element.
  *
- *                CAVEAT: Why previous cycle instead of current?  It's a 
- *                kludge. This function is only called by wma_boost_wme() 
- *                which is called at the end of the cycle but after the 
+ *                CAVEAT: Why previous cycle instead of current?  It's a
+ *                kludge. This function is only called by wma_boost_wme()
+ *                which is called at the end of the cycle but after the
  *                cycle count has been incremented.  So I compensate here.
  **************************************************************************/
 void wma_add_refs_to_history( agent *my_agent, wma_decay_element_t *el, long num_refs )
@@ -913,8 +913,8 @@ void wma_add_refs_to_history( agent *my_agent, wma_decay_element_t *el, long num
 /***************************************************************************
  * Function     : wma_boost_wme
  * Author		: Andy Nuxoll?
- * Notes		: This function calculates the new position in the decay 
- *                timelist for a decay element when its associated WME is 
+ * Notes		: This function calculates the new position in the decay
+ *                timelist for a decay element when its associated WME is
  *                referenced.
  **************************************************************************/
 long wma_boost_wme( agent *my_agent, wma_decay_element_t *cur_decay_el )
@@ -923,7 +923,7 @@ long wma_boost_wme( agent *my_agent, wma_decay_element_t *cur_decay_el )
 	long time_iter;
 	double sum, activation_level;
 	int history_iter;
-	
+
 	// Step 1: Update the boost history
 
 	// For new WMEs, we need to make sure the ref count is nonzero
@@ -932,12 +932,12 @@ long wma_boost_wme( agent *my_agent, wma_decay_element_t *cur_decay_el )
 
 	wma_add_refs_to_history( my_agent, cur_decay_el, cur_decay_el->num_references );
 
-	
+
 	// Step 2:  Calculate the new position in the decay timelist
-	
+
 	// start at the current time_spot for this wme, because the
 	// new time spot can't be lower than the current.
-	time_iter = cur_decay_el->time_spot->time; 
+	time_iter = cur_decay_el->time_spot->time;
 
 	if ( my_agent->wma_params->precision->get_value() == wma_param_container::low )
 	{
@@ -947,7 +947,7 @@ long wma_boost_wme( agent *my_agent, wma_decay_element_t *cur_decay_el )
 	else
 	{
 		long n;
-		
+
 		do
 		{
 			sum = 0;
@@ -980,7 +980,7 @@ long wma_boost_wme( agent *my_agent, wma_decay_element_t *cur_decay_el )
 		decay_spot = decay_spot % ( WMA_MAX_TIMELIST + 1 );
 	}
 
-	
+
 	// Step 0 revisited:  More special handling for just created WMEs
 	if ( cur_decay_el->just_created )
 	{
@@ -1000,7 +1000,7 @@ long wma_boost_wme( agent *my_agent, wma_decay_element_t *cur_decay_el )
 /***************************************************************************
  * Function     : wma_reposition_wme
  * Author		: Andy Nuxoll?
- * Notes		: This function repositions a decay element in the decay 
+ * Notes		: This function repositions a decay element in the decay
  *                timelist.
  **************************************************************************/
 void wma_reposition_wme( agent *my_agent, wma_decay_element_t *cur_decay_el, long decay_spot )
@@ -1022,7 +1022,7 @@ void wma_reposition_wme( agent *my_agent, wma_decay_element_t *cur_decay_el, lon
 	{
 		// it is not first (so will have a previous for sure)
 		cur_decay_el->previous->next = cur_decay_el->next;
-		
+
 		if( cur_decay_el->next != NIL )
 			cur_decay_el->next->previous = cur_decay_el->previous;
 	}
@@ -1044,7 +1044,7 @@ void wma_reposition_wme( agent *my_agent, wma_decay_element_t *cur_decay_el, lon
 /***************************************************************************
  * Function     : wma_forget_wme
  * Author		: Andy Nuxoll?
- * Notes		: This routine removes an activated WME from working memory 
+ * Notes		: This routine removes an activated WME from working memory
  *                and performs all necessary cleanup related to that removal.
  **************************************************************************/
 void wma_forget_wme( agent *my_agent, wme *w )
@@ -1053,7 +1053,7 @@ void wma_forget_wme( agent *my_agent, wme *w )
 	slot *s;
 	Symbol *id;
 	preference *p;
-	
+
 	id = w->id;
 
 	// what lists will w be on?  acceptable preferences??
@@ -1069,7 +1069,7 @@ void wma_forget_wme( agent *my_agent, wme *w )
 		{
 			if ( w == w2 )
 			{
-				remove_from_dll( s->acceptable_preference_wmes, w, next, prev ); 
+				remove_from_dll( s->acceptable_preference_wmes, w, next, prev );
 				break;
 			}
 		}
@@ -1102,35 +1102,35 @@ void wma_forget_wme( agent *my_agent, wme *w )
 		{
 			if ( w->gds->goal != NIL )
 			{
-				gds_invalid_so_remove_goal( my_agent, w ); 
+				gds_invalid_so_remove_goal( my_agent, w );
 			}
 		}
 #ifndef SOAR_8_ONLY
 	}
 #endif
 
-	remove_wme_from_wm( my_agent, w );      
+	remove_wme_from_wm( my_agent, w );
 }
 
 /***************************************************************************
  * Function     : wma_move_and_remove_wmes
  * Author		: Andy Nuxoll?
- * Notes		: This function is called at the end of each cycle to boost 
- *                WMEs that have been referenced this cycle and remove WMEs 
+ * Notes		: This function is called at the end of each cycle to boost
+ *                WMEs that have been referenced this cycle and remove WMEs
  *                that have been forgotten due to decay.
  *
- *                NOTE:  The bulk of the work done by the decay system is 
+ *                NOTE:  The bulk of the work done by the decay system is
  *                done in this routine or one of its subroutines).
  **************************************************************************/
 void wma_move_and_remove_wmes( agent *my_agent )
 {
 	wma_decay_element_t *cur_decay_el, *next;
 	long array_iter, array_position, start_position;
-	
+
 	// New position for the wme in the decay timelist
 	long decay_spot;
 
-	
+
 	// Step 1:  Reposition all WMEs have have been created or referenced this
 	//          cycle
 
@@ -1141,9 +1141,9 @@ void wma_move_and_remove_wmes( agent *my_agent )
 	for ( array_iter=0; array_iter<=WMA_MAX_TIMELIST; array_iter++ )
 	{
 		// Find position in the array for this iteration (starting 1 back from
-		// current) 
+		// current)
 		array_position = ( start_position - array_iter + WMA_MAX_TIMELIST ) % ( WMA_MAX_TIMELIST + 1 );
-		cur_decay_el = my_agent->wma_timelist[ array_position ].first_decay_element;		
+		cur_decay_el = my_agent->wma_timelist[ array_position ].first_decay_element;
 
 		// loop over all decay elemnts at this position in the timelist
 		while ( cur_decay_el != NIL )
@@ -1188,7 +1188,7 @@ void wma_move_and_remove_wmes( agent *my_agent )
 	// loop above.  This has to be done before changing first_decay_element at
 	// current time, otherwise it will cause pointer problems.
 	if ( forgetting )
-		do_buffered_wm_and_ownership_changes( my_agent ); 
+		do_buffered_wm_and_ownership_changes( my_agent );
 
 	// update position that just had removals
 	my_agent->wma_timelist_current->time += ( WMA_MAX_TIMELIST + 1 );
@@ -1211,7 +1211,7 @@ void wma_print_activated_wmes( agent *my_agent, long n )
 {
 	wma_timelist_element *decay_list;
 	wma_decay_element_t *decay_element;
-	long decay_pos, power_pos;   
+	long decay_pos, power_pos;
 	double sum = 0;
 	int history_iter;
 	char act_buf[512];
