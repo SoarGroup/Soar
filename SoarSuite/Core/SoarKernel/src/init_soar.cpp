@@ -226,8 +226,7 @@ void init_sysparams (agent* thisAgent) {
   thisAgent->sysparams[LEARNING_ONLY_SYSPARAM] = FALSE;  /* AGR MVL1 */
   thisAgent->sysparams[LEARNING_EXCEPT_SYSPARAM] = FALSE;  /* KJC 8/96 */
   thisAgent->sysparams[LEARNING_ALL_GOALS_SYSPARAM] = TRUE;
-  thisAgent->sysparams[USER_SELECT_MODE_SYSPARAM] = USER_SELECT_SOFTMAX;
-  thisAgent->sysparams[RL_ENABLED] = RL_LEARNING_OFF;
+  thisAgent->sysparams[USER_SELECT_MODE_SYSPARAM] = USER_SELECT_SOFTMAX;  
   thisAgent->sysparams[USER_SELECT_REDUCE_SYSPARAM] = FALSE;
   thisAgent->sysparams[PRINT_WARNINGS_SYSPARAM] = TRUE;
   thisAgent->sysparams[PRINT_ALIAS_SYSPARAM] = TRUE;  /* AGR 627 */
@@ -389,7 +388,7 @@ bool reinitialize_soar (agent* thisAgent) {
 
   rl_reset_data( thisAgent );
   clear_goal_stack (thisAgent);
-  rl_reset_stats( thisAgent );
+  thisAgent->rl_stats->reset_stats();
 
   if (thisAgent->operand2_mode == TRUE) {
      thisAgent->active_level = 0; /* Signal that everything should be retracted */
