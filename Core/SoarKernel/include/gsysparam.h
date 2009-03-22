@@ -169,32 +169,23 @@ typedef byte wme_trace_type;   /* must be one of the above constants */
 /* NLD: auto-reduction of exploration parameters */
 #define USER_SELECT_REDUCE_SYSPARAM				 37
 
-/* NLD: Soar-RL learning parameter */
-#define RL_ENABLED								 38
-
 /* NLD: Soar-RL trace information */
-#define TRACE_RL_SYSPARAM						 39
+#define TRACE_RL_SYSPARAM						 38
 
 /* JRV: Bug 1087: Chunk through local negations */
-#define CHUNK_THROUGH_LOCAL_NEGATIONS_SYSPARAM	 40
+#define CHUNK_THROUGH_LOCAL_NEGATIONS_SYSPARAM	 39
 
 /* New waterfall model: trace waterfall events */
-#define TRACE_WATERFALL_SYSPARAM				 41
-
-/* NLD: WMA enabled parameter */
-#define WMA_ENABLED								 42
+#define TRACE_WATERFALL_SYSPARAM				 40
 
 /* NLD: WMA trace information */
-#define TRACE_WMA_SYSPARAM						 43
-
-/* NLD: EpMem enabled parameter */
-#define EPMEM_ENABLED							 44
+#define TRACE_WMA_SYSPARAM						 41
 
 /* NLD: EpMem trace information */
-#define TRACE_EPMEM_SYSPARAM					 45
+#define TRACE_EPMEM_SYSPARAM					 42
 
 /* --- Warning: if you add sysparams, be sure to update the next line! --- */
-#define HIGHEST_SYSPARAM_NUMBER                  45
+#define HIGHEST_SYSPARAM_NUMBER                  42
 
 /* -----------------------------------------
    Sysparams[] stores the parameters; set_sysparam()

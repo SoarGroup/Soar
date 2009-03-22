@@ -88,7 +88,8 @@ bool CommandLineInterface::ParseWMA( std::vector<std::string>& argv )
 			return SetError( CLIError::kTooManyArgs );
 		
 		// check attribute name here
-		if ( wma_valid_parameter( m_pAgentSoar, argv[2].c_str() ) )
+		soar_module::param *my_param = m_pAgentSoar->wma_params->get_param( argv[2].c_str() );
+		if ( my_param )
 			return DoWMA( 'g', &( argv[2] ) );
 		else
 			return SetError( CLIError::kInvalidAttribute );
@@ -103,37 +104,13 @@ bool CommandLineInterface::ParseWMA( std::vector<std::string>& argv )
 			return SetError( CLIError::kTooManyArgs );
 		
 		// check attribute name/potential vals here
-		if ( wma_valid_parameter( m_pAgentSoar, argv[2].c_str() ) )
+		soar_module::param *my_param = m_pAgentSoar->wma_params->get_param( argv[2].c_str() );
+		if ( my_param )
 		{
-			switch ( wma_get_parameter_type( m_pAgentSoar, argv[2].c_str() ) )
-			{
-				case wma_param_constant:
-					if ( !wma_valid_parameter_value( m_pAgentSoar, argv[2].c_str(), argv[3].c_str() ) )
-						return SetError( CLIError::kInvalidValue );
-					else
-						return DoWMA( 's', &( argv[2] ), &( argv[3] ) );
-					break;
-					
-				case wma_param_number:
-					double temp;
-					from_string( temp, argv[3] );
-					if ( !wma_valid_parameter_value( m_pAgentSoar, argv[2].c_str(), temp ) )
-						return SetError( CLIError::kInvalidValue );
-					else
-						return DoWMA( 's', &( argv[2] ), &( argv[3] ) );
-					break;
-					
-				case wma_param_string:
-					if ( !wma_valid_parameter_value( m_pAgentSoar, argv[2].c_str(), argv[3].c_str() ) )
-						return SetError( CLIError::kInvalidValue );
-					else
-						return DoWMA( 's', &( argv[2] ), &( argv[3] ) );
-					break;
-					
-				case wma_param_invalid:
-					return SetError( CLIError::kInvalidAttribute );
-					break;
-			}
+			if ( !my_param->validate_string( argv[3].c_str() ) )
+				return SetError( CLIError::kInvalidValue );
+			else
+				return DoWMA( 's', &( argv[2] ), &( argv[3] ) );
 		}
 		else
 			return SetError( CLIError::kInvalidAttribute );
@@ -147,7 +124,8 @@ bool CommandLineInterface::ParseWMA( std::vector<std::string>& argv )
 		else if ( m_NonOptionArguments == 1 )
 		{
 			// check attribute name
-			if ( wma_valid_stat( m_pAgentSoar, argv[2].c_str() ) )
+			soar_module::stat *my_stat = m_pAgentSoar->wma_stats->get_stat( argv[2].c_str() );
+			if ( my_stat )
 				return DoWMA( 'S', &( argv[2] ) );
 			else
 				return SetError( CLIError::kInvalidAttribute );
@@ -165,11 +143,12 @@ bool CommandLineInterface::DoWMA( const char pOp, const std::string* pAttr, cons
 	if ( !pOp )
 	{
 		std::string temp;
-		std::string *temp2;
-		double temp_val;
+		char *temp2;
 		
 		temp = "WMA activation: ";
-		temp += wma_get_parameter( m_pAgentSoar, (const long) WMA_PARAM_ACTIVATION, WMA_RETURN_STRING );
+		temp2 = m_pAgentSoar->wma_params->activation->get_string();
+		temp += temp2;
+		delete temp2;
 		if ( m_RawOutput )
 			m_Result << temp << "\n\n";
 		else
@@ -190,9 +169,8 @@ bool CommandLineInterface::DoWMA( const char pOp, const std::string* pAttr, cons
 			AppendArgTagFast( sml_Names::kParamValue, sml_Names::kTypeString, temp.c_str() );
 
 		temp = "decay-rate: ";
-		temp_val = wma_get_parameter( m_pAgentSoar, WMA_PARAM_DECAY_RATE );
-		temp2 = to_string( temp_val );
-		temp += (*temp2);
+		temp2 = m_pAgentSoar->wma_params->decay_rate->get_string();
+		temp += temp2;
 		delete temp2;
 		if ( m_RawOutput )
 			m_Result << temp << "\n";
@@ -202,7 +180,9 @@ bool CommandLineInterface::DoWMA( const char pOp, const std::string* pAttr, cons
 		}
 
 		temp = "criteria: ";
-		temp += wma_get_parameter( m_pAgentSoar, (const long) WMA_PARAM_CRITERIA, WMA_RETURN_STRING );
+		temp2 = m_pAgentSoar->wma_params->criteria->get_string();
+		temp += temp2;
+		delete temp2;
 		if ( m_RawOutput )
 			m_Result << temp << "\n";
 		else
@@ -211,7 +191,9 @@ bool CommandLineInterface::DoWMA( const char pOp, const std::string* pAttr, cons
 		}
 
 		temp = "forgetting: ";
-		temp += wma_get_parameter( m_pAgentSoar, (const long) WMA_PARAM_FORGETTING, WMA_RETURN_STRING );
+		temp2 = m_pAgentSoar->wma_params->forgetting->get_string();
+		temp += temp2;
+		delete temp2;
 		if ( m_RawOutput )
 			m_Result << temp << "\n";
 		else
@@ -220,7 +202,9 @@ bool CommandLineInterface::DoWMA( const char pOp, const std::string* pAttr, cons
 		}
 
 		temp = "i-support: ";
-		temp += wma_get_parameter( m_pAgentSoar, (const long) WMA_PARAM_I_SUPPORT, WMA_RETURN_STRING );
+		temp2 = m_pAgentSoar->wma_params->isupport->get_string();
+		temp += temp2;
+		delete temp2;
 		if ( m_RawOutput )
 			m_Result << temp << "\n";
 		else
@@ -229,7 +213,9 @@ bool CommandLineInterface::DoWMA( const char pOp, const std::string* pAttr, cons
 		}
 
 		temp = "persistence: ";
-		temp += wma_get_parameter( m_pAgentSoar, (const long) WMA_PARAM_PERSISTENCE, WMA_RETURN_STRING );
+		temp2 = m_pAgentSoar->wma_params->persistence->get_string();
+		temp += temp2;
+		delete temp2;
 		if ( m_RawOutput )
 			m_Result << temp << "\n";
 		else
@@ -238,7 +224,9 @@ bool CommandLineInterface::DoWMA( const char pOp, const std::string* pAttr, cons
 		}
 
 		temp = "precision: ";
-		temp += wma_get_parameter( m_pAgentSoar, (const long) WMA_PARAM_PRECISION, WMA_RETURN_STRING );
+		temp2 = m_pAgentSoar->wma_params->precision->get_string();
+		temp += temp2;
+		delete temp2;
 		if ( m_RawOutput )
 			m_Result << temp << "\n";
 		else
@@ -259,74 +247,33 @@ bool CommandLineInterface::DoWMA( const char pOp, const std::string* pAttr, cons
 	}	
 	else if ( pOp == 'g' )
 	{
-		std::string output = "";
-		double temp;
-		std::string *temp2;
-		const char *tag_type = sml_Names::kTypeString;
-		
-		switch ( wma_get_parameter_type( m_pAgentSoar, pAttr->c_str() ) )
-		{
-			case wma_param_constant:
-				output += wma_get_parameter( m_pAgentSoar, pAttr->c_str(), WMA_RETURN_STRING );
-				break;
-				
-			case wma_param_number:
-				temp = wma_get_parameter( m_pAgentSoar, pAttr->c_str() );
-				temp2 = to_string( temp );
-				output += (*temp2);
-				delete temp2;
-				tag_type = sml_Names::kTypeDouble;
-				break;
-				
-			case wma_param_string:
-				output += wma_get_parameter( m_pAgentSoar, pAttr->c_str(), WMA_RETURN_STRING );
-				break;
-		}
+		soar_module::param *my_param = m_pAgentSoar->wma_params->get_param( pAttr->c_str() );
+		char *temp2 = my_param->get_string();
+		std::string output( temp2 );
+		delete temp2;		
 					
 		if ( m_RawOutput )
 			m_Result << output;
 		else
-			AppendArgTagFast( sml_Names::kParamValue, tag_type, output.c_str() );
+			AppendArgTagFast( sml_Names::kParamValue, sml_Names::kTypeString, output.c_str() );
 		
 		return true;
 	}	
 	else if ( pOp == 's' )
 	{
-		bool result = false;
-		bool invalid = false;
+		soar_module::param *my_param = m_pAgentSoar->wma_params->get_param( pAttr->c_str() );
+		bool result = my_param->set_string( pVal->c_str() );		
 		
-		switch ( wma_get_parameter_type( m_pAgentSoar, pAttr->c_str() ) )
-		{
-			case wma_param_constant:
-				result = wma_set_parameter( m_pAgentSoar, pAttr->c_str(), pVal->c_str() );
-				break;
-				
-			case wma_param_number:
-				double temp;
-				from_string( temp, *pVal );
-				result = wma_set_parameter( m_pAgentSoar, pAttr->c_str(), temp );				
-				break;
-				
-			case wma_param_string:
-				result = wma_set_parameter( m_pAgentSoar, pAttr->c_str(), pVal->c_str() );
-				break;
-				
-			case wma_param_invalid:
-				invalid = true;
-				break;
-		}
-
 		// since parameter name and value have been validated,
 		// this can only mean the parameter is protected
-		if ( !invalid && !result )
+		if ( !result )
 		{
-			const char *msg = "ERROR: this parameter is protected while WMA is on.";
-			const char *tag_type = sml_Names::kTypeString;			
+			const char *msg = "ERROR: this parameter is protected while WMA is on.";			
 			
 			if ( m_RawOutput )
 				m_Result << msg;
 			else
-				AppendArgTagFast( sml_Names::kParamValue, tag_type, msg );
+				AppendArgTagFast( sml_Names::kParamValue, sml_Names::kTypeString, msg );
 		}
 
 		return result;
@@ -334,16 +281,15 @@ bool CommandLineInterface::DoWMA( const char pOp, const std::string* pAttr, cons
 	else if ( pOp == 'S' )
 	{
 		if ( !pAttr )
-		{
-			double temp;
+		{			
 			std::string output;
-			std::string *temp_str;	
+			char *temp2;			
 			
 			output = "Dummy: ";
-			temp = wma_get_stat( m_pAgentSoar, (const long) WMA_STAT_DUMMY );
-			temp_str = to_string( temp );
-			output += (*temp_str);
-			delete temp_str;
+			temp2 = m_pAgentSoar->wma_stats->dummy->get_string();
+			output += temp2;
+			delete temp2;
+			
 			if ( m_RawOutput )
 				m_Result << output << "\n";
 			else
@@ -351,15 +297,16 @@ bool CommandLineInterface::DoWMA( const char pOp, const std::string* pAttr, cons
 		}
 		else
 		{
-			double temp = wma_get_stat( m_pAgentSoar, pAttr->c_str() );
-			std::string *temp_str = to_string( temp );
-			std::string output = (*temp_str);
-			delete temp_str;
+			soar_module::stat *my_stat = m_pAgentSoar->wma_stats->get_stat( pAttr->c_str() );
+
+			char *temp2 = my_stat->get_string();
+			std::string output( temp2 );
+			delete temp2;			
 			
 			if ( m_RawOutput )
 				m_Result << output;
 			else
-				AppendArgTagFast( sml_Names::kParamValue, sml_Names::kTypeDouble, output.c_str() );
+				AppendArgTagFast( sml_Names::kParamValue, sml_Names::kTypeString, output.c_str() );
 		}
 		
 		return true;

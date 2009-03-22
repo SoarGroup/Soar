@@ -1637,7 +1637,7 @@ void remove_wme_from_rete (agent* thisAgent, wme *w) {
   {
     if ( thisAgent->epmem_db_status != EPMEM_DB_CLOSED )
 	{
-	  if ( epmem_get_parameter( thisAgent, EPMEM_PARAM_MODE, EPMEM_RETURN_LONG ) == EPMEM_MODE_THREE )
+		if ( thisAgent->epmem_params->mode->get_value() == epmem_param_container::graph )
 	  {
 	    if ( w->value->common.symbol_type == IDENTIFIER_SYMBOL_TYPE )
 	    {

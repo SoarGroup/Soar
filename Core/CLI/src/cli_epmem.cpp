@@ -102,7 +102,8 @@ bool CommandLineInterface::ParseEpMem( std::vector<std::string>& argv )
 			return SetError( CLIError::kTooManyArgs );
 
 		// check attribute name here
-		if ( epmem_valid_parameter( m_pAgentSoar, argv[2].c_str() ) )
+		soar_module::param *my_param = m_pAgentSoar->epmem_params->get_param( argv[2].c_str() );
+		if ( my_param )
 			return DoEpMem( 'g', &( argv[2] ) );
 		else
 			return SetError( CLIError::kInvalidAttribute );
@@ -117,37 +118,13 @@ bool CommandLineInterface::ParseEpMem( std::vector<std::string>& argv )
 			return SetError( CLIError::kTooManyArgs );
 
 		// check attribute name/potential vals here
-		if ( epmem_valid_parameter( m_pAgentSoar, argv[2].c_str() ) )
+		soar_module::param *my_param = m_pAgentSoar->epmem_params->get_param( argv[2].c_str() );
+		if ( my_param )
 		{
-			switch ( epmem_get_parameter_type( m_pAgentSoar, argv[2].c_str() ) )
-			{
-				case epmem_param_constant:
-					if ( !epmem_valid_parameter_value( m_pAgentSoar, argv[2].c_str(), argv[3].c_str() ) )
-						return SetError( CLIError::kInvalidValue );
-					else
-						return DoEpMem( 's', &( argv[2] ), &( argv[3] ) );
-					break;
-
-				case epmem_param_number:
-					double temp;
-					from_string( temp, argv[3] );
-					if ( !epmem_valid_parameter_value( m_pAgentSoar, argv[2].c_str(), temp ) )
-						return SetError( CLIError::kInvalidValue );
-					else
-						return DoEpMem( 's', &( argv[2] ), &( argv[3] ) );
-					break;
-
-				case epmem_param_string:
-					if ( !epmem_valid_parameter_value( m_pAgentSoar, argv[2].c_str(), argv[3].c_str() ) )
-						return SetError( CLIError::kInvalidValue );
-					else
-						return DoEpMem( 's', &( argv[2] ), &( argv[3] ) );
-					break;
-
-				case epmem_param_invalid:
-					return SetError( CLIError::kInvalidAttribute );
-					break;
-			}
+			if ( !my_param->validate_string( argv[3].c_str() ) )
+				return SetError( CLIError::kInvalidValue );
+			else
+				return DoEpMem( 's', &( argv[2] ), &( argv[3] ) );
 		}
 		else
 			return SetError( CLIError::kInvalidAttribute );
@@ -161,7 +138,8 @@ bool CommandLineInterface::ParseEpMem( std::vector<std::string>& argv )
 		else if ( m_NonOptionArguments == 1 )
 		{
 			// check attribute name
-			if ( epmem_valid_stat( m_pAgentSoar, argv[2].c_str() ) )
+			soar_module::stat *my_stat = m_pAgentSoar->epmem_stats->get_stat( argv[2].c_str() );
+			if ( my_stat )
 				return DoEpMem( 'S', &( argv[2] ) );
 			else
 				return SetError( CLIError::kInvalidAttribute );
@@ -196,11 +174,12 @@ bool CommandLineInterface::DoEpMem( const char pOp, const std::string* pAttr, co
 	if ( !pOp )
 	{
 		std::string temp;
-		std::string *temp2;
-		double temp_val;
+		char *temp2;		
 
 		temp = "EpMem learning: ";
-		temp += epmem_get_parameter( m_pAgentSoar, (const long) EPMEM_PARAM_LEARNING, EPMEM_RETURN_STRING );
+		temp2 = m_pAgentSoar->epmem_params->learning->get_string();
+		temp += temp2;
+		delete temp2;
 		if ( m_RawOutput )
 			m_Result << temp << "\n\n";
 		else
@@ -221,16 +200,17 @@ bool CommandLineInterface::DoEpMem( const char pOp, const std::string* pAttr, co
 			AppendArgTagFast( sml_Names::kParamValue, sml_Names::kTypeString, temp.c_str() );
 
 		temp = "database: ";
-		temp += epmem_get_parameter( m_pAgentSoar, (const long) EPMEM_PARAM_DB, EPMEM_RETURN_STRING );
+		temp2 = m_pAgentSoar->epmem_params->database->get_string();
+		temp += temp2;
+		delete temp2;
 		if ( m_RawOutput )
 			m_Result << temp << "\n";
 		else
 			AppendArgTagFast( sml_Names::kParamValue, sml_Names::kTypeString, temp.c_str() );
 
 		temp = "commit: ";
-		temp_val = epmem_get_parameter( m_pAgentSoar, EPMEM_PARAM_COMMIT );
-		temp2 = to_string( temp_val );
-		temp += (*temp2);
+		temp2 = m_pAgentSoar->epmem_params->commit->get_string();
+		temp += temp2;
 		delete temp2;
 		if ( m_RawOutput )
 			m_Result << temp << "\n";
@@ -240,7 +220,9 @@ bool CommandLineInterface::DoEpMem( const char pOp, const std::string* pAttr, co
 		}
 
 		temp = "path: ";
-		temp += epmem_get_parameter( m_pAgentSoar, (const long) EPMEM_PARAM_PATH, EPMEM_RETURN_STRING );
+		temp2 = m_pAgentSoar->epmem_params->path->get_string();
+		temp += temp2;
+		delete temp2;
 		if ( m_RawOutput )
 			m_Result << temp << "\n\n";
 		else
@@ -261,7 +243,9 @@ bool CommandLineInterface::DoEpMem( const char pOp, const std::string* pAttr, co
 			AppendArgTagFast( sml_Names::kParamValue, sml_Names::kTypeString, temp.c_str() );
 
 		temp = "mode: ";
-		temp += epmem_get_parameter( m_pAgentSoar, (const long) EPMEM_PARAM_MODE, EPMEM_RETURN_STRING );
+		temp2 = m_pAgentSoar->epmem_params->mode->get_string();
+		temp += temp2;
+		delete temp2;
 		if ( m_RawOutput )
 			m_Result << temp << "\n\n";
 		else
@@ -282,7 +266,9 @@ bool CommandLineInterface::DoEpMem( const char pOp, const std::string* pAttr, co
 			AppendArgTagFast( sml_Names::kParamValue, sml_Names::kTypeString, temp.c_str() );
 
 		temp = "phase: ";
-		temp += epmem_get_parameter( m_pAgentSoar, (const long) EPMEM_PARAM_PHASE, EPMEM_RETURN_STRING );
+		temp2 = m_pAgentSoar->epmem_params->phase->get_string();
+		temp += temp2;
+		delete temp2;
 		if ( m_RawOutput )
 			m_Result << temp << "\n\n";
 		else
@@ -292,7 +278,9 @@ bool CommandLineInterface::DoEpMem( const char pOp, const std::string* pAttr, co
 		}
 
 		temp = "trigger: ";
-		temp += epmem_get_parameter( m_pAgentSoar, (const long) EPMEM_PARAM_TRIGGER, EPMEM_RETURN_STRING );
+		temp2 = m_pAgentSoar->epmem_params->trigger->get_string();
+		temp += temp2;
+		delete temp2;
 		if ( m_RawOutput )
 			m_Result << temp << "\n";
 		else
@@ -301,7 +289,9 @@ bool CommandLineInterface::DoEpMem( const char pOp, const std::string* pAttr, co
 		}
 
 		temp = "force: ";
-		temp += epmem_get_parameter( m_pAgentSoar, (const long) EPMEM_PARAM_FORCE, EPMEM_RETURN_STRING );
+		temp2 = m_pAgentSoar->epmem_params->force->get_string();
+		temp += temp2;
+		delete temp2;
 		if ( m_RawOutput )
 			m_Result << temp << "\n";
 		else
@@ -310,7 +300,9 @@ bool CommandLineInterface::DoEpMem( const char pOp, const std::string* pAttr, co
 		}
 
 		temp = "exclusions: ";
-		temp += epmem_get_parameter( m_pAgentSoar, (const long) EPMEM_PARAM_EXCLUSIONS, EPMEM_RETURN_STRING );
+		temp2 = m_pAgentSoar->epmem_params->exclusions->get_string();
+		temp += temp2;
+		delete temp2;
 		if ( m_RawOutput )
 			m_Result << temp << "\n\n";
 		else
@@ -321,9 +313,8 @@ bool CommandLineInterface::DoEpMem( const char pOp, const std::string* pAttr, co
 
 
 		temp = "balance: ";
-		temp_val = epmem_get_parameter( m_pAgentSoar, EPMEM_PARAM_BALANCE );
-		temp2 = to_string( temp_val );
-		temp += (*temp2);
+		temp2 = m_pAgentSoar->epmem_params->balance->get_string();
+		temp += temp2;
 		delete temp2;
 		if ( m_RawOutput )
 			m_Result << temp << "\n";
@@ -333,7 +324,9 @@ bool CommandLineInterface::DoEpMem( const char pOp, const std::string* pAttr, co
 		}
 
 		temp = "graph-match: ";
-		temp += epmem_get_parameter( m_pAgentSoar, (const long) EPMEM_PARAM_GRAPH_MATCH, EPMEM_RETURN_STRING );
+		temp2 = m_pAgentSoar->epmem_params->graph_match->get_string();
+		temp += temp2;
+		delete temp2;
 		if ( m_RawOutput )
 			m_Result << temp << "\n\n";
 		else
@@ -343,7 +336,9 @@ bool CommandLineInterface::DoEpMem( const char pOp, const std::string* pAttr, co
 		}
 
 		temp = "timers: ";
-		temp += epmem_get_parameter( m_pAgentSoar, (const long) EPMEM_PARAM_TIMERS, EPMEM_RETURN_STRING );
+		temp2 = m_pAgentSoar->epmem_params->timers->get_string();
+		temp += temp2;
+		delete temp2;
 		if ( m_RawOutput )
 			m_Result << temp << "\n\n";
 		else
@@ -370,74 +365,31 @@ bool CommandLineInterface::DoEpMem( const char pOp, const std::string* pAttr, co
 	}
 	else if ( pOp == 'g' )
 	{
-		std::string output = "";
-		double temp;
-		std::string *temp2;
-		const char *tag_type = sml_Names::kTypeString;
-
-		switch ( epmem_get_parameter_type( m_pAgentSoar, pAttr->c_str() ) )
-		{
-			case epmem_param_constant:
-				output += epmem_get_parameter( m_pAgentSoar, pAttr->c_str(), EPMEM_RETURN_STRING );
-				break;
-
-			case epmem_param_number:
-				temp = epmem_get_parameter( m_pAgentSoar, pAttr->c_str() );
-				temp2 = to_string( temp );
-				output += (*temp2);
-				delete temp2;
-				tag_type = sml_Names::kTypeDouble;
-				break;
-
-			case epmem_param_string:
-				output += epmem_get_parameter( m_pAgentSoar, pAttr->c_str(), EPMEM_RETURN_STRING );
-				break;
-		}
+		char *temp2 = m_pAgentSoar->epmem_params->get_param( pAttr->c_str() )->get_string();
+		std::string output( temp2 );
+		delete temp2;		
 
 		if ( m_RawOutput )
 			m_Result << output;
 		else
-			AppendArgTagFast( sml_Names::kParamValue, tag_type, output.c_str() );
+			AppendArgTagFast( sml_Names::kParamValue, sml_Names::kTypeString, output.c_str() );
 
 		return true;
 	}
 	else if ( pOp == 's' )
 	{
-		bool result = false;
-		bool invalid = false;
-
-		switch ( epmem_get_parameter_type( m_pAgentSoar, pAttr->c_str() ) )
-		{
-			case epmem_param_constant:
-				result = epmem_set_parameter( m_pAgentSoar, pAttr->c_str(), pVal->c_str() );
-				break;
-
-			case epmem_param_number:
-				double temp;
-				from_string( temp, *pVal );
-				result = epmem_set_parameter( m_pAgentSoar, pAttr->c_str(), temp );
-				break;
-
-			case epmem_param_string:
-				result = epmem_set_parameter( m_pAgentSoar, pAttr->c_str(), pVal->c_str() );
-				break;
-
-			case epmem_param_invalid:
-				invalid = true;
-				break;
-		}
+		bool result = m_pAgentSoar->epmem_params->get_param( pAttr->c_str() )->set_string( pVal->c_str() );
 
 		// since parameter name and value have been validated,
 		// this can only mean the parameter is protected
-		if ( !invalid && !result )
+		if ( !result )
 		{
-			const char *msg = "ERROR: this parameter is protected while the EpMem database is open.";
-			const char *tag_type = sml_Names::kTypeString;
+			const char *msg = "ERROR: this parameter is protected while the EpMem database is open.";			
 
 			if ( m_RawOutput )
 				m_Result << msg;
 			else
-				AppendArgTagFast( sml_Names::kParamValue, tag_type, msg );
+				AppendArgTagFast( sml_Names::kParamValue, sml_Names::kTypeString, msg );
 		}
 
 		return result;
@@ -445,96 +397,86 @@ bool CommandLineInterface::DoEpMem( const char pOp, const std::string* pAttr, co
 	else if ( pOp == 'S' )
 	{
 		if ( !pAttr )
-		{
-			long temp;
+		{			
 			std::string output;
-			std::string *temp_str;
+			char *temp2;
 
 			output = "Time: ";
-			temp = epmem_get_stat( m_pAgentSoar, (const long) EPMEM_STAT_TIME );
-			temp_str = to_string( temp );
-			output += (*temp_str);
-			delete temp_str;
+			temp2 = m_pAgentSoar->epmem_stats->time->get_string();
+			output += temp2;
+			delete temp2;
 			if ( m_RawOutput )
 				m_Result << output << "\n";
 			else
 				AppendArgTagFast( sml_Names::kParamValue, sml_Names::kTypeString, output.c_str() );
 
 			output = "Memory Usage: ";
-			temp = epmem_get_stat( m_pAgentSoar, (const long) EPMEM_STAT_MEM_USAGE );
-			temp_str = to_string( temp );
-			output += (*temp_str);
-			delete temp_str;
+			temp2 = m_pAgentSoar->epmem_stats->mem_usage->get_string();
+			output += temp2;
+			delete temp2;
 			if ( m_RawOutput )
 				m_Result << output << "\n";
 			else
 				AppendArgTagFast( sml_Names::kParamValue, sml_Names::kTypeString, output.c_str() );
 
 			output = "Memory Highwater: ";
-			temp = epmem_get_stat( m_pAgentSoar, (const long) EPMEM_STAT_MEM_HIGH );
-			temp_str = to_string( temp );
-			output += (*temp_str);
-			delete temp_str;
+			temp2 = m_pAgentSoar->epmem_stats->mem_high->get_string();
+			output += temp2;
+			delete temp2;
 			if ( m_RawOutput )
 				m_Result << output << "\n";
 			else
 				AppendArgTagFast( sml_Names::kParamValue, sml_Names::kTypeString, output.c_str() );
 
 			output = "Last Retrieval WMEs: ";
-			temp = epmem_get_stat( m_pAgentSoar, (const long) EPMEM_STAT_NCB_WMES );
-			temp_str = to_string( temp );
-			output += (*temp_str);
-			delete temp_str;
+			temp2 = m_pAgentSoar->epmem_stats->ncb_wmes->get_string();
+			output += temp2;
+			delete temp2;
 			if ( m_RawOutput )
 				m_Result << output << "\n";
 			else
 				AppendArgTagFast( sml_Names::kParamValue, sml_Names::kTypeString, output.c_str() );
 
 			output = "Last Query Positive: ";
-			temp = epmem_get_stat( m_pAgentSoar, (const long) EPMEM_STAT_QRY_POS );
-			temp_str = to_string( temp );
-			output += (*temp_str);
-			delete temp_str;
+			temp2 = m_pAgentSoar->epmem_stats->qry_pos->get_string();
+			output += temp2;
+			delete temp2;
 			if ( m_RawOutput )
 				m_Result << output << "\n";
 			else
 				AppendArgTagFast( sml_Names::kParamValue, sml_Names::kTypeString, output.c_str() );
 
 			output = "Last Query Negative: ";
-			temp = epmem_get_stat( m_pAgentSoar, (const long) EPMEM_STAT_QRY_NEG );
-			temp_str = to_string( temp );
-			output += (*temp_str);
-			delete temp_str;
+			temp2 = m_pAgentSoar->epmem_stats->qry_neg->get_string();
+			output += temp2;
+			delete temp2;
 			if ( m_RawOutput )
 				m_Result << output << "\n";
 			else
 				AppendArgTagFast( sml_Names::kParamValue, sml_Names::kTypeString, output.c_str() );
 
 			output = "Last Query Retrieved: ";
-			temp = epmem_get_stat( m_pAgentSoar, (const long) EPMEM_STAT_QRY_RET );
-			temp_str = to_string( temp );
-			output += (*temp_str);
-			delete temp_str;
+			temp2 = m_pAgentSoar->epmem_stats->qry_ret->get_string();
+			output += temp2;
+			delete temp2;
 			if ( m_RawOutput )
 				m_Result << output << "\n";
 			else
 				AppendArgTagFast( sml_Names::kParamValue, sml_Names::kTypeString, output.c_str() );
 
 			output = "Last Query Cardinality: ";
-			temp = epmem_get_stat( m_pAgentSoar, (const long) EPMEM_STAT_QRY_CARD );
-			temp_str = to_string( temp );
-			output += (*temp_str);
-			delete temp_str;
+			temp2 = m_pAgentSoar->epmem_stats->qry_card->get_string();
+			output += temp2;
+			delete temp2;
 			if ( m_RawOutput )
 				m_Result << output << "\n";
 			else
 				AppendArgTagFast( sml_Names::kParamValue, sml_Names::kTypeString, output.c_str() );
 
 			output = "Last Query Literals: ";
-			temp = epmem_get_stat( m_pAgentSoar, (const long) EPMEM_STAT_QRY_LITS );
-			temp_str = to_string( temp );
-			output += (*temp_str);
-			delete temp_str;
+			temp2 = m_pAgentSoar->epmem_stats->qry_lits->get_string();
+			output += temp2;
+			delete temp2;
 			if ( m_RawOutput )
 				m_Result << output << "\n";
 			else
@@ -542,15 +484,14 @@ bool CommandLineInterface::DoEpMem( const char pOp, const std::string* pAttr, co
 		}
 		else
 		{
-			long temp = epmem_get_stat( m_pAgentSoar, pAttr->c_str() );
-			std::string *temp_str = to_string( temp );
-			std::string output = (*temp_str);
-			delete temp_str;
+			char *temp2 = m_pAgentSoar->epmem_stats->get_stat( pAttr->c_str() )->get_string();
+			std::string output( temp2 );
+			delete temp2;			
 
 			if ( m_RawOutput )
 				m_Result << output;
 			else
-				AppendArgTagFast( sml_Names::kParamValue, sml_Names::kTypeDouble, output.c_str() );
+				AppendArgTagFast( sml_Names::kParamValue, sml_Names::kTypeString, output.c_str() );
 		}
 
 		return true;

@@ -49,22 +49,10 @@ typedef void* xml_handle;
 /* JC ADDED: Included so we can put the RHS functions in here */
 typedef struct rhs_function_struct rhs_function;
 
-// Soar-RL types
-typedef struct rl_parameter_struct rl_parameter;
-typedef struct rl_stat_struct rl_stat;
-
 // select types
 typedef struct select_info_struct select_info;
 
-
-// EpMem types
-typedef struct epmem_parameter_struct epmem_parameter;
-typedef struct epmem_stat_struct epmem_stat;
-
-
 // WMA types
-typedef struct wma_parameter_struct wma_parameter;
-typedef struct wma_stat_struct wma_stat;
 typedef struct wma_timelist_element_struct wma_timelist_element;
 
 
@@ -803,8 +791,8 @@ kernel time and total_cpu_time greater than the derived total CPU time. REW */
   exploration_parameter *exploration_params[ EXPLORATION_PARAMS ];
 
   // reinforcement learning
-  rl_parameter *rl_params[ RL_PARAMS ];
-  rl_stat *rl_stats[ RL_STATS ];
+  rl_param_container *rl_params;
+  rl_stat_container *rl_stats;
 
   int rl_template_count;
   bool rl_first_switch;
@@ -818,15 +806,13 @@ kernel time and total_cpu_time greater than the derived total CPU time. REW */
 
 
   // epmem
-  epmem_parameter *epmem_params[ EPMEM_PARAMS ];
-  epmem_stat *epmem_stats[ EPMEM_STATS ];
+  epmem_param_container *epmem_params;  
+  epmem_stat_container *epmem_stats;
   epmem_timer *epmem_timers[ EPMEM_TIMERS ];
 
   sqlite3 *epmem_db;
   int epmem_db_status;
   sqlite3_stmt *epmem_statements[ EPMEM_MAX_STATEMENTS ];
-
-  std::list<const char *> *epmem_exclusions;
 
   std::map<epmem_node_id, bool> *epmem_node_removals;
   std::vector<epmem_time_id> *epmem_node_mins;
@@ -846,8 +832,8 @@ kernel time and total_cpu_time greater than the derived total CPU time. REW */
 
 
   // wma
-  wma_parameter *wma_params[ WMA_PARAMS ];
-  wma_stat *wma_stats[ WMA_STATS ];
+  wma_param_container *wma_params;
+  wma_stat_container *wma_stats;
 
   wma_timelist_element wma_timelist[ WMA_MAX_TIMELIST + 1 ];
   wma_timelist_element *wma_timelist_current;

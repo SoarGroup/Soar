@@ -31,871 +31,122 @@
 
 #include "print.h"
 
-/***************************************************************************
- * Function     : wma_clean_parameters
- **************************************************************************/
-void wma_clean_parameters( agent *my_agent )
-{
-	for ( int i=0; i<WMA_PARAMS; i++ )
-	{
-		if ( my_agent->wma_params[ i ]->type == wma_param_string )
-			delete my_agent->wma_params[ i ]->param->string_param.value;
-		
-		delete my_agent->wma_params[ i ]->param;
-		delete my_agent->wma_params[ i ];
-	}
-}
 
-/***************************************************************************
- * Function     : wma_add_parameter
- **************************************************************************/
-wma_parameter *wma_add_parameter( const char *name, double value, bool (*val_func)( double ) )
-{
-	// new parameter entry
-	wma_parameter *newbie = new wma_parameter;
-	newbie->param = new wma_parameter_union;
-	newbie->param->number_param.value = value;
-	newbie->param->number_param.val_func = val_func;
-	newbie->type = wma_param_number;
-	newbie->name = name;
-	
-	return newbie;
-}
+/////////////////////////////////////////////////////
+// Parameters
+/////////////////////////////////////////////////////
 
-wma_parameter *wma_add_parameter( const char *name, const long value, bool (*val_func)( const long ), const char *(*to_str)( long ), const long (*from_str)( const char * ) )
-{
-	// new parameter entry
-	wma_parameter *newbie = new wma_parameter;
-	newbie->param = new wma_parameter_union;
-	newbie->param->constant_param.val_func = val_func;
-	newbie->param->constant_param.to_str = to_str;
-	newbie->param->constant_param.from_str = from_str;
-	newbie->param->constant_param.value = value;
-	newbie->type = wma_param_constant;
-	newbie->name = name;
-	
-	return newbie;
-}
+wma_decay_param::wma_decay_param( const char *new_name, double new_value, predicate<double> *new_val_pred, predicate<double> *new_prot_pred ): primitive_param( new_name, new_value, new_val_pred, new_prot_pred ) {};
 
-wma_parameter *wma_add_parameter( const char *name, const char *value, bool (*val_func)( const char * ) )
-{
-	// new parameter entry
-	wma_parameter *newbie = new wma_parameter;
-	newbie->param = new wma_parameter_union;
-	newbie->param->string_param.value = new std::string( value );
-	newbie->param->string_param.val_func = val_func;
-	newbie->type = wma_param_string;
-	newbie->name = name;
-	
-	return newbie;
-}
-
-/***************************************************************************
- * Function     : wma_convert_parameter
- **************************************************************************/
-const char *wma_convert_parameter( agent *my_agent, const long param )
-{
-	if ( ( param < 0 ) || ( param >= WMA_PARAMS ) )
-		return NULL;
-
-	return my_agent->wma_params[ param ]->name;
-}
-
-const long wma_convert_parameter( agent *my_agent, const char *name )
-{
-	for ( int i=0; i<WMA_PARAMS; i++ )
-		if ( !strcmp( name, my_agent->wma_params[ i ]->name ) )
-			return i;
-
-	return WMA_PARAMS;
-}
-
-/***************************************************************************
- * Function     : wma_valid_parameter
- **************************************************************************/
-bool wma_valid_parameter( agent *my_agent, const char *name )
-{
-	return ( wma_convert_parameter( my_agent, name ) != WMA_PARAMS );
-}
-
-bool wma_valid_parameter( agent *my_agent, const long param )
-{
-	return ( wma_convert_parameter( my_agent, param ) != NULL );
-}
-
-/***************************************************************************
- * Function     : wma_get_parameter_type
- **************************************************************************/
-wma_param_type wma_get_parameter_type( agent *my_agent, const char *name )
-{
-	const long param = wma_convert_parameter( my_agent, name );
-	if ( param == WMA_PARAMS )
-		return wma_param_invalid;
-	
-	return my_agent->wma_params[ param ]->type;
-}
-
-wma_param_type wma_get_parameter_type( agent *my_agent, const long param )
-{
-	if ( !wma_valid_parameter( my_agent, param ) )
-		return wma_param_invalid;
-
-	return my_agent->wma_params[ param ]->type;
-}
-
-/***************************************************************************
- * Function     : wma_get_parameter
- **************************************************************************/
-const long wma_get_parameter( agent *my_agent, const char *name, const double /*test*/ )
-{
-	const long param = wma_convert_parameter( my_agent, name );
-	if ( param == WMA_PARAMS )
-		return NULL;
-	
-	if ( wma_get_parameter_type( my_agent, param ) != wma_param_constant )
-		return NULL;
-	
-	return my_agent->wma_params[ param ]->param->constant_param.value;
-}
-
-const char *wma_get_parameter( agent *my_agent, const char *name, const char * /*test*/ )
-{
-	const long param = wma_convert_parameter( my_agent, name );
-	if ( param == WMA_PARAMS )
-		return NULL;
-	
-	if ( wma_get_parameter_type( my_agent, param ) == wma_param_string )
-		return my_agent->wma_params[ param ]->param->string_param.value->c_str();
-	if ( wma_get_parameter_type( my_agent, param ) != wma_param_constant )
-		return NULL;
-	
-	return my_agent->wma_params[ param ]->param->constant_param.to_str( my_agent->wma_params[ param ]->param->constant_param.value );
-}
-
-double wma_get_parameter( agent *my_agent, const char *name )
-{
-	const long param = wma_convert_parameter( my_agent, name );
-	if ( param == WMA_PARAMS )
-		return NULL;
-	
-	if ( wma_get_parameter_type( my_agent, param ) != wma_param_number )
-		return NULL;
-	
-	return my_agent->wma_params[ param ]->param->number_param.value;
-}
+void wma_decay_param::set_value( double new_value ) { value = -new_value; };
 
 //
 
-const long wma_get_parameter( agent *my_agent, const long param, const double /*test*/ )
-{
-	if ( !wma_valid_parameter( my_agent, param ) )
-		return NULL;
+template <typename T>
+wma_activation_predicate<T>::wma_activation_predicate( agent *new_agent ): agent_predicate( new_agent ) {};
 
-	if ( wma_get_parameter_type( my_agent, param ) != wma_param_constant )
-		return NULL;
-	
-	return my_agent->wma_params[ param ]->param->constant_param.value;
-}
-
-const char *wma_get_parameter( agent *my_agent, const long param, const char * /*test*/ )
-{
-	if ( !wma_valid_parameter( my_agent, param ) )
-		return NULL;
-	
-	if ( wma_get_parameter_type( my_agent, param ) == wma_param_string )
-		return my_agent->wma_params[ param ]->param->string_param.value->c_str();
-	if ( wma_get_parameter_type( my_agent, param ) != wma_param_constant )
-		return NULL;
-	
-	return my_agent->wma_params[ param ]->param->constant_param.to_str( my_agent->wma_params[ param ]->param->constant_param.value );
-}
-
-double wma_get_parameter( agent *my_agent, const long param )
-{
-	if ( !wma_valid_parameter( my_agent, param ) )
-		return NULL;
-	
-	if ( wma_get_parameter_type( my_agent, param ) != wma_param_number )
-		return NULL;
-	
-	return my_agent->wma_params[ param ]->param->number_param.value;
-}
-
-/***************************************************************************
- * Function     : wma_valid_parameter_value
- **************************************************************************/
-bool wma_valid_parameter_value( agent *my_agent, const char *name, double new_val )
-{
-	const long param = wma_convert_parameter( my_agent, name );
-	if ( param == WMA_PARAMS )
-		return false;
-	
-	if ( wma_get_parameter_type( my_agent, param ) != wma_param_number )
-		return false;
-	
-	return my_agent->wma_params[ param ]->param->number_param.val_func( new_val );
-}
-
-bool wma_valid_parameter_value( agent *my_agent, const char *name, const char *new_val )
-{
-	const long param = wma_convert_parameter( my_agent, name );
-	if ( param == WMA_PARAMS )
-		return false;
-	
-	if ( wma_get_parameter_type( my_agent, param ) == wma_param_string )
-		return my_agent->wma_params[ param ]->param->string_param.val_func( new_val );
-	if ( wma_get_parameter_type( my_agent, param ) != wma_param_constant )
-		return false;
-	
-	return my_agent->wma_params[ param ]->param->constant_param.val_func( my_agent->wma_params[ param ]->param->constant_param.from_str( new_val ) );
-}
-
-bool wma_valid_parameter_value( agent *my_agent, const char *name, const long new_val )
-{
-	const long param = wma_convert_parameter( my_agent, name );
-	if ( param == WMA_PARAMS )
-		return false;
-	
-	if ( wma_get_parameter_type( my_agent, param ) != wma_param_constant )
-		return false;
-	
-	return my_agent->wma_params[ param ]->param->constant_param.val_func( new_val );
-}
+template <typename T>
+bool wma_activation_predicate<T>::operator() ( T /*val*/ ) { return wma_enabled( my_agent ); };
 
 //
 
-bool wma_valid_parameter_value( agent *my_agent, const long param, double new_val )
+wma_param_container::wma_param_container( agent *new_agent ): param_container( new_agent )
 {
-	if ( !wma_valid_parameter( my_agent, param ) )
-		return false;
-	
-	if ( wma_get_parameter_type( my_agent, param ) != wma_param_number )
-		return false;
-	
-	return my_agent->wma_params[ param ]->param->number_param.val_func( new_val );
-}
+	/**
+	 * WMA on/off
+	 */
+	activation = new boolean_param( "activation", on, new f_predicate<boolean>() );
+	add_param( activation );
 
-bool wma_valid_parameter_value( agent *my_agent, const long param, const char *new_val )
+	// decay-rate
+	decay_rate = new wma_decay_param( "decay-rate", -0.8, new btw_predicate<double>( 0, 1, true ), new wma_activation_predicate<double>( my_agent ) );
+	add_param( decay_rate );
+
+	/**
+	 * Specifies what WMEs will have decay values.
+	 * O_AGENT - Only o-supported WMEs created by the agent 
+	 *           (i.e., they have a supporting preference)
+	 * O_AGENT_ARCH - All o-supported WMEs including 
+	 *                architecture created WMEs
+	 * ALL - All wmes are activated
+	 */
+	criteria = new constant_param<criteria_choices>( "criteria", crit_all, new wma_activation_predicate<criteria_choices>( my_agent ) );
+	criteria->add_mapping( crit_agent, "o-agent" );
+	criteria->add_mapping( crit_agent_arch, "o-agent-arch" );
+	criteria->add_mapping( crit_all, "all" );
+	add_param( criteria );
+
+	/**
+	 * Are WMEs removed from WM when activation gets too low?
+	 */
+	forgetting = new boolean_param( "forgetting", off, new wma_activation_predicate<boolean>( my_agent ) );
+	add_param( forgetting );
+
+	/**
+	 * Specifies the mode in which i-supported WMEs 
+	 * affect activation levels.
+	 * NONE - i-supported WMEs do not affect activation levels
+	 * NO_CREATE - i-supported WMEs boost the activation levels 
+	 *             of all o-supported WMEs in the instantiations 
+	 *             that test them.  Each WME receives and equal 
+	 *             boost regardless of "distance" (in the backtrace) 
+	 *             from the tested WME.
+	 * UNIFORM - i-supported WMEs boost the activation levels of 
+	 *           all o-supported WMEs in the instantiations that 
+	 *           created or test them.  Each WME receives an equal 
+	 *           boost regardless of "distance" (in the backtrace) 
+	 *           from the tested WME.
+	 */
+	isupport = new constant_param<isupport_choices>( "i-support", uniform, new wma_activation_predicate<isupport_choices>( my_agent ) );
+	isupport->add_mapping( none, "none" );
+	isupport->add_mapping( no_create, "no-create" );
+	isupport->add_mapping( uniform, "uniform" );
+	add_param( isupport );
+
+	/**
+	 * Whether or not an instantiation activates WMEs just once, 
+	 * or every cycle until it is retracted.
+	 */
+	persistence = new boolean_param( "persistence", off, new wma_activation_predicate<boolean>( my_agent ) );
+	add_param( persistence );
+
+	/**
+	 * Level of precision with which activation levels are calculated.
+	 */
+	precision = new constant_param<precision_choices>( "precision", low, new wma_activation_predicate<precision_choices>( my_agent ) );
+	precision->add_mapping( low, "low" );
+	precision->add_mapping( high, "high" );
+	add_param( precision );
+};
+
+/////////////////////////////////////////////////////
+/////////////////////////////////////////////////////
+
+
+/////////////////////////////////////////////////////
+// Statistics
+/////////////////////////////////////////////////////
+
+wma_stat_container::wma_stat_container( agent *new_agent ): stat_container( new_agent )
 {
-	if ( !wma_valid_parameter( my_agent, param ) )
-		return false;
-	
-	if ( wma_get_parameter_type( my_agent, param ) == wma_param_string )
-		return my_agent->wma_params[ param ]->param->string_param.val_func( new_val );
-	if ( wma_get_parameter_type( my_agent, param ) != wma_param_constant )
-		return false;
-	
-	return my_agent->wma_params[ param ]->param->constant_param.val_func( my_agent->wma_params[ param ]->param->constant_param.from_str( new_val ) );
-}
+	// update-error
+	dummy = new integer_stat( "dummy", 0, new f_predicate<long>() );
+	add_stat( dummy );
+};
 
-bool wma_valid_parameter_value( agent *my_agent, const long param, const long new_val )
-{
-	if ( !wma_valid_parameter( my_agent, param ) )
-		return false;
-	
-	if ( wma_get_parameter_type( my_agent, param ) != wma_param_constant )
-		return false;
-	
-	return my_agent->wma_params[ param ]->param->constant_param.val_func( new_val );
-}
+/////////////////////////////////////////////////////
+/////////////////////////////////////////////////////
 
-/***************************************************************************
- * Function     : wma_set_parameter
- **************************************************************************/
-bool wma_parameter_protected( agent *my_agent, const long param )
-{
-	return ( ( my_agent->wma_initialized ) && ( param > WMA_PARAM_ACTIVATION ) && ( param < WMA_PARAMS ) );
-}
 
-bool wma_set_parameter( agent *my_agent, const char *name, double new_val )
-{
-	const long param = wma_convert_parameter( my_agent, name );
-	if ( param == WMA_PARAMS )
-		return false;
-
-	if ( wma_parameter_protected( my_agent, param ) )
-		return false;
-	
-	if ( !wma_valid_parameter_value( my_agent, param, new_val ) )
-		return false;
-
-	// special case of decay rate needing negative numbers
-	if ( param == WMA_PARAM_DECAY_RATE )
-		my_agent->wma_params[ param ]->param->number_param.value = -new_val;
-	else
-		my_agent->wma_params[ param ]->param->number_param.value = new_val;
-
-	return true;
-}
-
-bool wma_set_parameter( agent *my_agent, const char *name, const char *new_val )
-{	
-	const long param = wma_convert_parameter( my_agent, name );
-	if ( param == WMA_PARAMS )
-		return false;
-
-	if ( wma_parameter_protected( my_agent, param ) )
-		return false;
-	
-	if ( !wma_valid_parameter_value( my_agent, param, new_val ) )
-		return false;
-
-	if ( wma_get_parameter_type( my_agent, param ) == wma_param_string )
-	{
-		(*my_agent->wma_params[ param ]->param->string_param.value) = new_val;
-		return true;
-	}
-	
-	const long converted_val = my_agent->wma_params[ param ]->param->constant_param.from_str( new_val );
-
-	// learning special case
-	if ( param == WMA_PARAM_ACTIVATION )
-	{
-		set_sysparam( my_agent, WMA_ENABLED, converted_val );
-
-		if ( converted_val == WMA_ACTIVATION_ON )
-			wma_init( my_agent );
-		else
-			wma_deinit( my_agent );
-	}
-	
-	my_agent->wma_params[ param ]->param->constant_param.value = converted_val;
-
-	return true;
-}
-
-bool wma_set_parameter( agent *my_agent, const char *name, const long new_val )
-{
-	const long param = wma_convert_parameter( my_agent, name );
-	if ( param == WMA_PARAMS )
-		return false;
-
-	if ( wma_parameter_protected( my_agent, param ) )
-		return false;
-	
-	if ( !wma_valid_parameter_value( my_agent, param, new_val ) )
-		return false;
-
-	// learning special case
-	if ( param == WMA_PARAM_ACTIVATION )
-	{
-		set_sysparam( my_agent, WMA_ENABLED, new_val );
-
-		if ( new_val == WMA_ACTIVATION_ON )
-			wma_init( my_agent );
-		else
-			wma_deinit( my_agent );
-	}
-	
-	my_agent->wma_params[ param ]->param->constant_param.value = new_val;
-
-	return true;
-}
-
-//
-
-bool wma_set_parameter( agent *my_agent, const long param, double new_val )
-{	
-	if ( !wma_valid_parameter_value( my_agent, param, new_val ) )
-		return false;
-	
-	// special case of decay rate needing negative numbers
-	if ( param == WMA_PARAM_DECAY_RATE )
-		my_agent->wma_params[ param ]->param->number_param.value = -new_val;
-	else
-		my_agent->wma_params[ param ]->param->number_param.value = new_val;
-
-	return true;
-}
-
-bool wma_set_parameter( agent *my_agent, const long param, const char *new_val )
-{	
-	if ( wma_parameter_protected( my_agent, param ) )
-		return false;
-	
-	if ( !wma_valid_parameter_value( my_agent, param, new_val ) )
-		return false;
-
-	if ( wma_get_parameter_type( my_agent, param ) == wma_param_string )
-	{
-		(*my_agent->wma_params[ param ]->param->string_param.value) = new_val;
-		return true;
-	}
-	
-	const long converted_val = my_agent->wma_params[ param ]->param->constant_param.from_str( new_val );
-
-	// learning special case
-	if ( param == WMA_PARAM_ACTIVATION )
-	{
-		set_sysparam( my_agent, WMA_ENABLED, converted_val );
-
-		if ( converted_val == WMA_ACTIVATION_ON )
-			wma_init( my_agent );
-		else
-			wma_deinit( my_agent );
-	}
-	
-	my_agent->wma_params[ param ]->param->constant_param.value = converted_val;
-
-	return true;
-}
-
-bool wma_set_parameter( agent *my_agent, const long param, const long new_val )
-{	
-	if ( wma_parameter_protected( my_agent, param ) )
-		return false;
-	
-	if ( !wma_valid_parameter_value( my_agent, param, new_val ) )
-		return false;
-
-	// learning special case
-	if ( param == WMA_PARAM_ACTIVATION )
-	{
-		set_sysparam( my_agent, WMA_ENABLED, new_val );
-
-		if ( new_val == WMA_ACTIVATION_ON )
-			wma_init( my_agent );
-		else
-			wma_deinit( my_agent );
-	}
-	
-	my_agent->wma_params[ param ]->param->constant_param.value = new_val;
-
-	return true;
-}
-
-/////////////////////////////////////////////////////////////////////////////////////////////////////////
-// activation
-/////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-/***************************************************************************
- * Function     : wma_validate_activation
- **************************************************************************/
-bool wma_validate_activation( const long new_val )
-{
-	return ( ( new_val == WMA_ACTIVATION_ON ) || ( new_val == WMA_ACTIVATION_OFF ) );
-}
-
-/***************************************************************************
- * Function     : wma_convert_activation
- **************************************************************************/
-const char *wma_convert_activation( const long val )
-{
-	const char *return_val = NULL;
-	
-	switch ( val )
-	{
-		case WMA_ACTIVATION_ON:
-			return_val = "on";
-			break;
-			
-		case WMA_ACTIVATION_OFF:
-			return_val = "off";
-			break;
-	}
-	
-	return return_val;
-}
-
-const long wma_convert_activation( const char *val )
-{
-	long return_val = NULL;
-	
-	if ( !strcmp( val, "on" ) )
-		return_val = WMA_ACTIVATION_ON;
-	else if ( !strcmp( val, "off" ) )
-		return_val = WMA_ACTIVATION_OFF;
-	
-	return return_val;
-}
-
-/////////////////////////////////////////////////////////////////////////////////////////////////////////
-/////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-/////////////////////////////////////////////////////////////////////////////////////////////////////////
-// decay
-/////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-/***************************************************************************
- * Function     : wma_validate_decay
- **************************************************************************/
-bool wma_validate_decay( const double new_val )
-{
-	return ( ( new_val >= 0 ) && ( new_val <= 1 ) );
-}
-
-/////////////////////////////////////////////////////////////////////////////////////////////////////////
-/////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-/////////////////////////////////////////////////////////////////////////////////////////////////////////
-// criteria
-/////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-/***************************************************************************
- * Function     : wma_validate_criteria
- **************************************************************************/
-bool wma_validate_criteria( const long new_val )
-{
-	return ( ( new_val >= WMA_CRITERIA_O_AGENT ) && ( new_val <= WMA_CRITERIA_ALL ) );
-}
-
-/***************************************************************************
- * Function     : wma_convert_criteria
- **************************************************************************/
-const char *wma_convert_criteria( const long val )
-{
-	const char *return_val = NULL;
-	
-	switch ( val )
-	{
-		case WMA_CRITERIA_O_AGENT:
-			return_val = "o-agent";
-			break;
-			
-		case WMA_CRITERIA_O_AGENT_ARCH:
-			return_val = "o-agent-arch";
-			break;
-
-		case WMA_CRITERIA_ALL:
-			return_val = "all";
-			break;
-	}
-	
-	return return_val;
-}
-
-const long wma_convert_criteria( const char *val )
-{
-	long return_val = NULL;
-	
-	if ( !strcmp( val, "o-agent" ) )
-		return_val = WMA_CRITERIA_O_AGENT;
-	else if ( !strcmp( val, "o-agent-arch" ) )
-		return_val = WMA_CRITERIA_O_AGENT_ARCH;
-	else if ( !strcmp( val, "all" ) )
-		return_val = WMA_CRITERIA_ALL;
-	
-	return return_val;
-}
-
-/////////////////////////////////////////////////////////////////////////////////////////////////////////
-/////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-/////////////////////////////////////////////////////////////////////////////////////////////////////////
-// forgetting
-/////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-/***************************************************************************
- * Function     : wma_validate_forgetting
- **************************************************************************/
-bool wma_validate_forgetting( const long new_val )
-{
-	return ( ( new_val == WMA_FORGETTING_ON ) || ( new_val == WMA_FORGETTING_OFF ) );
-}
-
-/***************************************************************************
- * Function     : wma_convert_forgetting
- **************************************************************************/
-const char *wma_convert_forgetting( const long val )
-{
-	const char *return_val = NULL;
-	
-	switch ( val )
-	{
-		case WMA_FORGETTING_ON:
-			return_val = "on";
-			break;
-			
-		case WMA_FORGETTING_OFF:
-			return_val = "off";
-			break;
-	}
-	
-	return return_val;
-}
-
-const long wma_convert_forgetting( const char *val )
-{
-	long return_val = NULL;
-	
-	if ( !strcmp( val, "on" ) )
-		return_val = WMA_FORGETTING_ON;
-	else if ( !strcmp( val, "off" ) )
-		return_val = WMA_FORGETTING_OFF;
-	
-	return return_val;
-}
-
-/////////////////////////////////////////////////////////////////////////////////////////////////////////
-/////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-/////////////////////////////////////////////////////////////////////////////////////////////////////////
-// i_support
-/////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-/***************************************************************************
- * Function     : wma_validate_i_support
- **************************************************************************/
-bool wma_validate_i_support( const long new_val )
-{
-	return ( ( new_val >= WMA_I_NONE ) && ( new_val <= WMA_I_UNIFORM ) );
-}
-
-/***************************************************************************
- * Function     : wma_convert_i_support
- **************************************************************************/
-const char *wma_convert_i_support( const long val )
-{
-	const char *return_val = NULL;
-	
-	switch ( val )
-	{
-		case WMA_I_NONE:
-			return_val = "none";
-			break;
-			
-		case WMA_I_NO_CREATE:
-			return_val = "no-create";
-			break;
-
-		case WMA_I_UNIFORM:
-			return_val = "uniform";
-			break;
-	}
-	
-	return return_val;
-}
-
-const long wma_convert_i_support( const char *val )
-{
-	long return_val = NULL;
-	
-	if ( !strcmp( val, "none" ) )
-		return_val = WMA_I_NONE;
-	else if ( !strcmp( val, "no-create" ) )
-		return_val = WMA_I_NO_CREATE;
-	else if ( !strcmp( val, "uniform" ) )
-		return_val = WMA_I_UNIFORM;
-	
-	return return_val;
-}
-
-/////////////////////////////////////////////////////////////////////////////////////////////////////////
-/////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-/////////////////////////////////////////////////////////////////////////////////////////////////////////
-// persistence
-/////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-/***************************************************************************
- * Function     : wma_validate_persistence
- **************************************************************************/
-bool wma_validate_persistence( const long new_val )
-{
-	return ( ( new_val == WMA_PERSISTENCE_ON ) || ( new_val == WMA_PERSISTENCE_OFF ) );
-}
-
-/***************************************************************************
- * Function     : wma_convert_persistence
- **************************************************************************/
-const char *wma_convert_persistence( const long val )
-{
-	const char *return_val = NULL;
-	
-	switch ( val )
-	{
-		case WMA_PERSISTENCE_ON:
-			return_val = "on";
-			break;
-			
-		case WMA_PERSISTENCE_OFF:
-			return_val = "off";
-			break;
-	}
-	
-	return return_val;
-}
-
-const long wma_convert_persistence( const char *val )
-{
-	long return_val = NULL;
-	
-	if ( !strcmp( val, "on" ) )
-		return_val = WMA_PERSISTENCE_ON;
-	else if ( !strcmp( val, "off" ) )
-		return_val = WMA_PERSISTENCE_OFF;
-	
-	return return_val;
-}
-
-/////////////////////////////////////////////////////////////////////////////////////////////////////////
-/////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-/////////////////////////////////////////////////////////////////////////////////////////////////////////
-// precision
-/////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-/***************************************************************************
- * Function     : wma_validate_precision
- **************************************************************************/
-bool wma_validate_precision( const long new_val )
-{
-	return ( ( new_val == WMA_PRECISION_LOW ) || ( new_val == WMA_PRECISION_HIGH ) );
-}
-
-/***************************************************************************
- * Function     : wma_convert_precision
- **************************************************************************/
-const char *wma_convert_precision( const long val )
-{
-	const char *return_val = NULL;
-	
-	switch ( val )
-	{
-		case WMA_PRECISION_LOW:
-			return_val = "low";
-			break;
-			
-		case WMA_PRECISION_HIGH:
-			return_val = "high";
-			break;
-	}
-	
-	return return_val;
-}
-
-const long wma_convert_precision( const char *val )
-{
-	long return_val = NULL;
-	
-	if ( !strcmp( val, "low" ) )
-		return_val = WMA_PRECISION_LOW;
-	else if ( !strcmp( val, "high" ) )
-		return_val = WMA_PRECISION_HIGH;
-	
-	return return_val;
-}
-
-/////////////////////////////////////////////////////////////////////////////////////////////////////////
-/////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 /***************************************************************************
  * Function     : wma_enabled
  **************************************************************************/
-bool wma_enabled( agent *my_agent )
+inline bool wma_enabled( agent *my_agent )
 {
-	return ( my_agent->sysparams[ WMA_ENABLED ] == WMA_ACTIVATION_ON );
+	return ( my_agent->wma_params->activation->get_value() == soar_module::on );
 }
 
-/***************************************************************************
- * Function     : wma_clean_stats
- **************************************************************************/
-void wma_clean_stats( agent *my_agent )
-{
-	for ( int i=0; i<WMA_STATS; i++ )
-	  delete my_agent->wma_stats[ i ];
-}
-
-/***************************************************************************
- * Function     : wma_reset_stats
- **************************************************************************/
-void wma_reset_stats( agent *my_agent )
-{
-	for ( int i=0; i<WMA_STATS; i++ )
-		my_agent->wma_stats[ i ]->value = 0;
-}
-
-/***************************************************************************
- * Function     : wma_add_stat
- **************************************************************************/
-wma_stat *wma_add_stat( const char *name )
-{
-	// new stat entry
-	wma_stat *newbie = new wma_stat;
-	newbie->name = name;
-	newbie->value = 0;
-	
-	return newbie;
-}
-
-/***************************************************************************
- * Function     : wma_convert_stat
- **************************************************************************/
-const long wma_convert_stat( agent *my_agent, const char *name )
-{
-	for ( int i=0; i<WMA_STATS; i++ )
-		if ( !strcmp( name, my_agent->wma_stats[ i ]->name ) )
-			return i;
-
-	return WMA_STATS;
-}
-
-const char *wma_convert_stat( agent *my_agent, const long stat )
-{
-	if ( ( stat < 0 ) || ( stat >= WMA_STATS ) )
-		return NULL;
-
-	return my_agent->wma_stats[ stat ]->name;
-}
-
-/***************************************************************************
- * Function     : wma_valid_stat
- **************************************************************************/
-bool wma_valid_stat( agent *my_agent, const char *name )
-{
-	return ( wma_convert_stat( my_agent, name ) != WMA_STATS );
-}
-
-bool wma_valid_stat( agent *my_agent, const long stat )
-{
-	return ( wma_convert_stat( my_agent, stat ) != NULL );
-}
-
-/***************************************************************************
- * Function     : wma_get_stat
- **************************************************************************/
-double wma_get_stat( agent *my_agent, const char *name )
-{
-	const long stat = wma_convert_stat( my_agent, name );
-	if ( stat == WMA_STATS )
-		return 0;	
-
-	return my_agent->wma_stats[ stat ]->value;
-}
-
-double wma_get_stat( agent *my_agent, const long stat )
-{
-	if ( !wma_valid_stat( my_agent, stat ) )
-		return 0;
-
-	return my_agent->wma_stats[ stat ]->value;
-}
-
-/***************************************************************************
- * Function     : wma_set_stat
- **************************************************************************/
-bool wma_set_stat( agent *my_agent, const char *name, double new_val )
-{
-	const long stat = wma_convert_stat( my_agent, name );
-	if ( stat == WMA_STATS )
-		return false;
-	
-	my_agent->wma_stats[ stat ]->value = new_val;
-	
-	return true;
-}
-
-bool wma_set_stat( agent *my_agent, const long stat, double new_val )
-{
-	if ( !wma_valid_stat( my_agent, stat ) )
-		return false;	
-		
-	my_agent->wma_stats[ stat ]->value = new_val;
-	
-	return true;
-}
-
-//
 
 /***************************************************************************
  * Function     : wma_init
@@ -941,7 +192,7 @@ void wma_init( agent *my_agent )
 
 	// Pre-compute the integer powers of the decay exponent in order to avoid
 	// repeated calls to pow() at runtime
-	double decay_rate = wma_get_parameter( my_agent, WMA_PARAM_DECAY_RATE );
+	double decay_rate = my_agent->wma_params->decay_rate->get_value();
 	for( i=0; i<WMA_POWER_SIZE; i++ )
 		my_agent->wma_power_array[ i ] = pow( (double) i, decay_rate );
 
@@ -1223,7 +474,7 @@ void wma_decay_reference_wme( agent *my_agent, wme *w, int depth = 0 )
 		return;
 	}
 	// If i-support mode is 'none' then we can stop here
-	else if ( wma_get_parameter( my_agent, WMA_PARAM_I_SUPPORT, WMA_RETURN_LONG ) == WMA_I_NONE )
+	else if ( my_agent->wma_params->isupport->get_value() == wma_param_container::none )
 	{
 		return;
 	}
@@ -1263,18 +514,18 @@ void wma_update_new_wme( agent *my_agent, wme *w, int num_refs )
 	bool good_wme = true;
 
 	// Step 1: Verify that this WME meets the criteria for being an activated wme
-	const long criteria = wma_get_parameter( my_agent, WMA_PARAM_CRITERIA, WMA_RETURN_LONG );
+	const long criteria = my_agent->wma_params->criteria->get_value();
 	switch( criteria )
 	{
-		case WMA_CRITERIA_ALL:
+		case wma_param_container::crit_all:
 			break;
 
-		case WMA_CRITERIA_O_AGENT_ARCH:
+		case wma_param_container::crit_agent_arch:
 			if ( ( w->preference != NIL ) && ( w->preference->o_supported != TRUE ) )
 				good_wme = false;
 			break;
 
-		case WMA_CRITERIA_O_AGENT:
+		case wma_param_container::crit_agent:
 			if ( ( w->preference == NIL ) || ( w->preference->o_supported != TRUE ) )
 				good_wme = false;
 			break;
@@ -1286,15 +537,15 @@ void wma_update_new_wme( agent *my_agent, wme *w, int num_refs )
 		// led to its creation.
 		if ( ( w->preference != NIL ) && ( w->preference->o_supported != TRUE ) )
 		{
-			const long i_support = wma_get_parameter( my_agent, WMA_PARAM_I_SUPPORT, WMA_RETURN_LONG );
+			const long i_support = my_agent->wma_params->isupport->get_value();
 			
 			switch( i_support )
 			{
-				case WMA_I_NONE:
-				case WMA_I_NO_CREATE:
+				case wma_param_container::none:
+				case wma_param_container::no_create:
 				break;
 			
-				case WMA_I_UNIFORM:
+				case wma_param_container::uniform:
 					wma_decay_reference_wme( my_agent, w );
 				break;
 			}
@@ -1443,7 +694,7 @@ void wma_update_wmes_in_retracted_inst( agent *my_agent, instantiation *inst )
 	wme *w;
 	preference *pref, *next;
 
-	if ( wma_get_parameter( my_agent, WMA_PARAM_PERSISTENCE, WMA_RETURN_LONG ) == WMA_PERSISTENCE_ON )
+	if ( my_agent->wma_params->persistence->get_value() == soar_module::on )
 	{
 		for ( pref=inst->preferences_generated; pref!=NIL; pref=next )
 		{
@@ -1521,7 +772,7 @@ void wma_update_wmes_tested_in_prods( agent *my_agent )
 
 	// If instantiations do not persistently activate WMEs then there is no need
 	// to decrement the reference count for retractions. :AMN: 12 Aug 2003
-	if ( wma_get_parameter( my_agent, WMA_PARAM_PERSISTENCE, WMA_RETURN_LONG ) == WMA_PERSISTENCE_ON )
+	if ( my_agent->wma_params->persistence->get_value() == soar_module::on )
 	{
 		for ( msc=my_agent->ms_retractions; msc!=NIL; msc=msc->next )
 		{
@@ -1613,7 +864,7 @@ double wma_get_wme_activation_high( agent *my_agent, wme *w )
  **************************************************************************/
 double wma_get_wme_activation( agent *my_agent, wme *w )
 {	
-	return ( ( wma_get_parameter( my_agent, WMA_PARAM_PRECISION, WMA_RETURN_LONG ) == WMA_PRECISION_HIGH )?
+	return ( ( my_agent->wma_params->precision->get_value() == wma_param_container::high )?
 		     ( wma_get_wme_activation_high( my_agent, w ) ):
 			 ( wma_get_wme_activation_low( my_agent, w ) ) );
 }
@@ -1688,7 +939,7 @@ long wma_boost_wme( agent *my_agent, wma_decay_element_t *cur_decay_el )
 	// new time spot can't be lower than the current.
 	time_iter = cur_decay_el->time_spot->time; 
 
-	if ( wma_get_parameter( my_agent, WMA_PARAM_PRECISION, WMA_RETURN_LONG ) == WMA_PRECISION_LOW )
+	if ( my_agent->wma_params->precision->get_value() == wma_param_container::low )
 	{
 		time_iter += my_agent->wma_quick_boost[ cur_decay_el->history_count ];
 		time_iter += cur_decay_el->num_references;
@@ -1907,7 +1158,7 @@ void wma_move_and_remove_wmes( agent *my_agent )
 				// If we are *not* using persistent activation then the reference
 				// count should be set to zero here to prevent subsequent
 				// activation. :AMN: 12 Aug 2003
-				if ( wma_get_parameter( my_agent, WMA_PARAM_PERSISTENCE, WMA_RETURN_LONG ) != WMA_PERSISTENCE_ON )
+				if ( my_agent->wma_params->persistence->get_value() != soar_module::on )
 					cur_decay_el->num_references = 0;
 			}
 
@@ -1918,7 +1169,7 @@ void wma_move_and_remove_wmes( agent *my_agent )
 	// Step 2: Removes all the WMEs that are still at the current spot in the
 	//         decay timelist.  This is the actual forgetting mechanism
 	//         associated with decay.
-	bool forgetting = ( wma_get_parameter( my_agent, WMA_PARAM_FORGETTING, WMA_RETURN_LONG ) == WMA_FORGETTING_ON );
+	bool forgetting = ( my_agent->wma_params->forgetting->get_value() == soar_module::on );
 	cur_decay_el = my_agent->wma_timelist_current->first_decay_element;
 	while( cur_decay_el != NIL )
 	{

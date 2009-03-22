@@ -14,86 +14,15 @@
 #define WMA_H
 
 #include <string>
+#include "soar_module.h"
+
+using namespace soar_module;
 
 typedef struct wme_struct wme;
 
 //////////////////////////////////////////////////////////
 // WMA Constants
 //////////////////////////////////////////////////////////
-#define WMA_RETURN_LONG 0.1
-#define WMA_RETURN_STRING ""
-
-/**
- * WMA on/off
- */
-#define WMA_ACTIVATION_ON 1
-#define WMA_ACTIVATION_OFF 2
-
-/**
- * Specifies what WMEs will have decay values.
- * O_AGENT - Only o-supported WMEs created by the agent 
- *           (i.e., they have a supporting preference)
- * O_AGENT_ARCH - All o-supported WMEs including 
- *                architecture created WMEs
- * ALL - All wmes are activated
- */
-#define WMA_CRITERIA_O_AGENT 1
-#define WMA_CRITERIA_O_AGENT_ARCH 2
-#define WMA_CRITERIA_ALL 3
-
-/**
- * Are WMEs removed from WM when activation gets too low?
- */
-#define WMA_FORGETTING_ON 1
-#define WMA_FORGETTING_OFF 2
-
-/**
- * Specifies the mode in which i-supported WMEs 
- * affect activation levels.
- * NONE - i-supported WMEs do not affect activation levels
- * NO_CREATE - i-supported WMEs boost the activation levels 
- *             of all o-supported WMEs in the instantiations 
- *             that test them.  Each WME receives and equal 
- *             boost regardless of "distance" (in the backtrace) 
- *             from the tested WME.
- * UNIFORM - i-supported WMEs boost the activation levels of 
- *           all o-supported WMEs in the instantiations that 
- *           created or test them.  Each WME receives an equal 
- *           boost regardless of "distance" (in the backtrace) 
- *           from the tested WME.
- */
-#define WMA_I_NONE 1
-#define WMA_I_NO_CREATE 2
-#define WMA_I_UNIFORM 3
-
-/**
- * Whether or not an instantiation activates WMEs just once, 
- * or every cycle until it is retracted.
- */
-#define WMA_PERSISTENCE_ON 1
-#define WMA_PERSISTENCE_OFF 2
-
-/**
- * Level of precision with which activation levels are calculated.
- */
-#define WMA_PRECISION_LOW 1
-#define WMA_PRECISION_HIGH 2
-
-// names of params
-#define WMA_PARAM_ACTIVATION						0
-#define WMA_PARAM_DECAY_RATE						1
-#define WMA_PARAM_CRITERIA							2
-#define WMA_PARAM_FORGETTING						3
-#define WMA_PARAM_I_SUPPORT							4
-#define WMA_PARAM_PERSISTENCE						5
-#define WMA_PARAM_PRECISION							6
-#define WMA_PARAMS									7 // must be 1+ last wma param
-
-// names of stats
-#define WMA_STAT_DUMMY								0
-#define WMA_STATS									1 // must be 1+ last wma stat
-
-//
 
 /**
  * Size of the timelist array
@@ -137,53 +66,63 @@ typedef struct wme_struct wme;
  */
 #define WMA_ACTIVATION_CUTOFF -1.6
 
+
+//////////////////////////////////////////////////////////
+// WMA Parameters
+//////////////////////////////////////////////////////////
+
+class wma_decay_param;
+
+class wma_param_container: public param_container
+{
+	public:	
+		
+		enum criteria_choices { crit_agent, crit_agent_arch, crit_all };
+		enum isupport_choices { none, no_create, uniform };
+		enum precision_choices { low, high };		
+		
+		boolean_param *activation;
+		wma_decay_param *decay_rate;
+		constant_param<criteria_choices> *criteria;
+		boolean_param *forgetting;
+		constant_param<isupport_choices> *isupport;
+		boolean_param *persistence;
+		constant_param<precision_choices> *precision;
+				
+		wma_param_container( agent *new_agent );
+};
+
+class wma_decay_param: public decimal_param
+{
+	public:
+		wma_decay_param( const char *new_name, double new_value, predicate<double> *new_val_pred, predicate<double> *new_prot_pred );
+		virtual void set_value( double new_value );
+};
+
+template <typename T>
+class wma_activation_predicate: public agent_predicate<T>
+{	
+	public:
+		wma_activation_predicate( agent *new_agent );
+		bool operator() ( T val );
+};
+
+//////////////////////////////////////////////////////////
+// WMA Statistics
+//////////////////////////////////////////////////////////
+
+class wma_stat_container: public stat_container
+{
+	public:	
+		integer_stat *dummy;		
+				
+		wma_stat_container( agent *new_agent );
+};
+
+
 //////////////////////////////////////////////////////////
 // WMA Types
 //////////////////////////////////////////////////////////
-
-enum wma_param_type { wma_param_constant = 1, wma_param_number = 2, wma_param_string = 3, wma_param_invalid = 4 };
-
-typedef struct wma_constant_parameter_struct  
-{
-	long value;
-	bool (*val_func)( const long );
-	const char *(*to_str)( const long );
-	const long (*from_str)( const char * );
-} wma_constant_parameter;
-
-typedef struct wma_number_parameter_struct  
-{
-	double value;
-	bool (*val_func)( double );
-} wma_number_parameter;
-
-typedef struct wma_string_parameter_struct  
-{
-	std::string *value;
-	bool (*val_func)( const char * );
-} wma_string_parameter;
-
-typedef union wma_parameter_union_class
-{
-	wma_constant_parameter constant_param;
-	wma_number_parameter number_param;
-	wma_string_parameter string_param;
-} wma_parameter_union;
-
-typedef struct wma_parameter_struct
-{
-	wma_parameter_union *param;
-	wma_param_type type;
-	const char *name;
-} wma_parameter;
-
-typedef struct wma_stat_struct
-{
-	double value;
-	const char *name;
-} wma_stat;
-
-//
 
 typedef struct wma_decay_log_struct wma_decay_log;
 typedef struct wma_decay_element_struct wma_decay_element_t;
@@ -268,115 +207,9 @@ struct wma_timelist_element_struct
 // Parameter Functions
 //////////////////////////////////////////////////////////
 
-// clean memory
-extern void wma_clean_parameters( agent *my_agent );
-
-// add parameter
-extern wma_parameter *wma_add_parameter( const char *name, double value, bool (*val_func)( double ) );
-extern wma_parameter *wma_add_parameter( const char *name, const long value, bool (*val_func)( const long ), const char *(*to_str)( long ), const long (*from_str)( const char * ) );
-extern wma_parameter *wma_add_parameter( const char *name, const char *value, bool (*val_func)( const char * ) );
-
-// convert parameter
-extern const char *wma_convert_parameter( agent *my_agent, const long param );
-extern const long wma_convert_parameter( agent *my_agent, const char *name );
-
-// validate parameter
-extern bool wma_valid_parameter( agent *my_agent, const char *name );
-extern bool wma_valid_parameter( agent *my_agent, const long param );
-
-// parameter type
-extern wma_param_type wma_get_parameter_type( agent *my_agent, const char *name );
-extern wma_param_type wma_get_parameter_type( agent *my_agent, const long param );
-
-// get parameter
-extern const long wma_get_parameter( agent *my_agent, const char *name, const double test );
-extern const char *wma_get_parameter( agent *my_agent, const char *name, const char *test );
-extern double wma_get_parameter( agent *my_agent, const char *name );
-
-extern const long wma_get_parameter( agent *my_agent, const long param, const double test );
-extern const char *wma_get_parameter( agent *my_agent, const long param, const char *test );
-extern double wma_get_parameter( agent *my_agent, const long param );
-
-// validate parameter value
-extern bool wma_valid_parameter_value( agent *my_agent, const char *name, double new_val );
-extern bool wma_valid_parameter_value( agent *my_agent, const char *name, const char *new_val );
-extern bool wma_valid_parameter_value( agent *my_agent, const char *name, const long new_val );
-
-extern bool wma_valid_parameter_value( agent *my_agent, const long param, double new_val );
-extern bool wma_valid_parameter_value( agent *my_agent, const long param, const char *new_val );
-extern bool wma_valid_parameter_value( agent *my_agent, const long param, const long new_val );
-
-// set parameter
-extern bool wma_set_parameter( agent *my_agent, const char *name, double new_val );
-extern bool wma_set_parameter( agent *my_agent, const char *name, const char *new_val );
-extern bool wma_set_parameter( agent *my_agent, const char *name, const long new_val );
-
-extern bool wma_set_parameter( agent *my_agent, const long param, double new_val );
-extern bool wma_set_parameter( agent *my_agent, const long param, const char *new_val );
-extern bool wma_set_parameter( agent *my_agent, const long param, const long new_val );
-
-// activation
-extern bool wma_validate_activation( const long new_val );
-extern const char *wma_convert_activation( const long val );
-extern const long wma_convert_activation( const char *val );
-
-// decay
-extern bool wma_validate_decay( const double new_val );
-
-// criteria
-extern bool wma_validate_criteria( const long new_val );
-extern const char *wma_convert_criteria( const long val );
-extern const long wma_convert_criteria( const char *val );
-
-// forgetting
-extern bool wma_validate_forgetting( const long new_val );
-extern const char *wma_convert_forgetting( const long val );
-extern const long wma_convert_forgetting( const char *val );
-
-// i-support
-extern bool wma_validate_i_support( const long new_val );
-extern const char *wma_convert_i_support( const long val );
-extern const long wma_convert_i_support( const char *val );
-
-// persistence
-extern bool wma_validate_persistence( const long new_val );
-extern const char *wma_convert_persistence( const long val );
-extern const long wma_convert_persistence( const char *val );
-
-// precision
-extern bool wma_validate_precision( const long new_val );
-extern const char *wma_convert_precision( const long val );
-extern const long wma_convert_precision( const char *val );
-
 // shortcut for determining if WMA is enabled
 extern bool wma_enabled( agent *my_agent );
 
-//////////////////////////////////////////////////////////
-// Stat Functions
-//////////////////////////////////////////////////////////
-
-// memory clean
-extern void wma_clean_stats( agent *my_agent );
-extern void wma_reset_stats( agent *my_agent );
-
-// add stat
-extern wma_stat *wma_add_stat( const char *name );
-
-// convert stat
-extern const long wma_convert_stat( agent *my_agent, const char *name );
-extern const char *wma_convert_stat( agent *my_agent, const long stat );
-
-// valid stat
-extern bool wma_valid_stat( agent *my_agent, const char *name );
-extern bool wma_valid_stat( agent *my_agent, const long stat );
-
-// get stat
-extern double wma_get_stat( agent *my_agent, const char *name );
-extern double wma_get_stat( agent *my_agent, const long stat );
-
-// set stat
-extern bool wma_set_stat( agent *my_agent, const char *name, double new_val );
-extern bool wma_set_stat( agent *my_agent, const long stat, double new_val );
 
 //////////////////////////////////////////////////////////
 // The Meat

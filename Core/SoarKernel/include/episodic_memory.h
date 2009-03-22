@@ -23,6 +23,10 @@
 
 #include "sqlite3.h"
 
+#include "soar_module.h"
+
+using namespace soar_module;
+
 typedef union symbol_union Symbol;
 typedef struct wme_struct wme;
 
@@ -63,82 +67,15 @@ typedef struct wme_struct wme;
 
 //#define EPMEM_EXPERIMENT
 
+
 //////////////////////////////////////////////////////////
 // EpMem Constants
 //////////////////////////////////////////////////////////
-#define EPMEM_RETURN_LONG 0.1
-#define EPMEM_RETURN_STRING ""
 
-// parameters
-// - protected are [ DB, MODE ]
-#define EPMEM_PARAM_LEARNING						0
-#define EPMEM_PARAM_DB								1
-#define EPMEM_PARAM_COMMIT							2
-#define EPMEM_PARAM_PATH							3
-#define EPMEM_PARAM_MODE							4
-#define EPMEM_PARAM_GRAPH_MATCH						5
-#define EPMEM_PARAM_PHASE							6
-#define EPMEM_PARAM_TRIGGER							7
-#define EPMEM_PARAM_FORCE							8
-#define EPMEM_PARAM_BALANCE							9
-#define EPMEM_PARAM_EXCLUSIONS						10
-#define EPMEM_PARAM_TIMERS							11
-#define EPMEM_PARAMS								12 // must be 1+ last epmem param
-
-// parameter settings
-#define EPMEM_LEARNING_ON 1
-#define EPMEM_LEARNING_OFF 2
-
-#define EPMEM_DB_MEM 1
-#define EPMEM_DB_FILE 2
-
-#define EPMEM_MODE_ONE 1   // tree
-#define EPMEM_MODE_THREE 3 // graph
-
-#define EPMEM_GRAPH_MATCH_OFF 1
-#define EPMEM_GRAPH_MATCH_ON 2
-
-#define EPMEM_TRIGGER_NONE 1
-#define EPMEM_TRIGGER_OUTPUT 2
-#define EPMEM_TRIGGER_DC 3
-
-#define EPMEM_PHASE_OUTPUT 1
-#define EPMEM_PHASE_SELECTION 2
-
-#define EPMEM_FORCE_REMEMBER 1
-#define EPMEM_FORCE_IGNORE 2
-#define EPMEM_FORCE_OFF 3
-
-#define EPMEM_TIMERS_OFF 1
-#define EPMEM_TIMERS_ONE 2
-#define EPMEM_TIMERS_TWO 3
-#define EPMEM_TIMERS_THREE 4
-
-// statistics
-// * = protected
-#define EPMEM_STAT_TIME								0 // *
-#define EPMEM_STAT_MEM_USAGE						1
-#define EPMEM_STAT_MEM_HIGH							2
-#define EPMEM_STAT_NCB_WMES							3
-#define EPMEM_STAT_QRY_POS							4
-#define EPMEM_STAT_QRY_NEG							5
-#define EPMEM_STAT_QRY_RET							6
-#define EPMEM_STAT_QRY_CARD							7
-#define EPMEM_STAT_QRY_LITS							8
-
-#define EPMEM_STAT_NEXT_ID							9 // *
-
-#define EPMEM_STAT_RIT_OFFSET_1						10 // *
-#define EPMEM_STAT_RIT_LEFTROOT_1					11 // *
-#define EPMEM_STAT_RIT_RIGHTROOT_1					12 // *
-#define EPMEM_STAT_RIT_MINSTEP_1					13 // *
-
-#define EPMEM_STAT_RIT_OFFSET_2						14 // *
-#define EPMEM_STAT_RIT_LEFTROOT_2					15 // *
-#define EPMEM_STAT_RIT_RIGHTROOT_2					16 // *
-#define EPMEM_STAT_RIT_MINSTEP_2					17 // *
-
-#define EPMEM_STATS									18 // must be 1+ last epmem stat
+#define EPMEM_TIMERS_OFF 0
+#define EPMEM_TIMERS_ONE 1
+#define EPMEM_TIMERS_TWO 2
+#define EPMEM_TIMERS_THREE 3
 
 // timers
 #define EPMEM_TIMER_TOTAL							0
@@ -224,18 +161,12 @@ typedef struct wme_struct wme;
 #define EPMEM_MAX_STATEMENTS 						40 // must be at least 1+ largest of any STMT constant
 
 // variables (rit vars must be same as stat versions)
-#define EPMEM_VAR_RIT_OFFSET_1						EPMEM_STAT_RIT_OFFSET_1
-#define EPMEM_VAR_RIT_LEFTROOT_1					EPMEM_STAT_RIT_LEFTROOT_1
-#define EPMEM_VAR_RIT_RIGHTROOT_1					EPMEM_STAT_RIT_RIGHTROOT_1
-#define EPMEM_VAR_RIT_MINSTEP_1						EPMEM_STAT_RIT_MINSTEP_1
-
-#define EPMEM_VAR_RIT_OFFSET_2						EPMEM_STAT_RIT_OFFSET_2
-#define EPMEM_VAR_RIT_LEFTROOT_2					EPMEM_STAT_RIT_LEFTROOT_2
-#define EPMEM_VAR_RIT_RIGHTROOT_2					EPMEM_STAT_RIT_RIGHTROOT_2
-#define EPMEM_VAR_RIT_MINSTEP_2						EPMEM_STAT_RIT_MINSTEP_2
-
-#define EPMEM_VAR_MODE								EPMEM_VAR_RIT_MINSTEP_2 + 1
-#define EPMEM_VAR_NEXT_ID							EPMEM_VAR_MODE + 1
+enum epmem_variable_key
+{ 
+	var_rit_offset_1, var_rit_leftroot_1, var_rit_rightroot_1, var_rit_minstep_1,
+	var_rit_offset_2, var_rit_leftroot_2, var_rit_rightroot_2, var_rit_minstep_2,
+	var_mode, var_next_id
+};
 
 // algorithm constants
 #define EPMEM_DB_CLOSED								-1 // initialize db_status to this (sqlite error codes are positive)
@@ -258,67 +189,138 @@ typedef struct wme_struct wme;
 
 #define EPMEM_DNF									2
 
-// keeping state for multiple RIT's
-#define EPMEM_RIT_STATE_OFFSET						0
-#define EPMEM_RIT_STATE_LEFTROOT					1
-#define EPMEM_RIT_STATE_RIGHTROOT					2
-#define EPMEM_RIT_STATE_MINSTEP						3
-#define EPMEM_RIT_STATE_ADD							4
-#define EPMEM_RIT_STATE_TIMER						5
-
 #define EPMEM_RIT_STATE_NODE						0
 #define EPMEM_RIT_STATE_EDGE						1
 
-//////////////////////////////////////////////////////////
-// Parameter Types
-//////////////////////////////////////////////////////////
-
-enum epmem_param_type { epmem_param_constant = 1, epmem_param_number = 2, epmem_param_string = 3, epmem_param_invalid = 4 };
-
-typedef struct epmem_constant_parameter_struct
-{
-	long value;
-	bool (*val_func)( const long );
-	const char *(*to_str)( const long );
-	const long (*from_str)( const char * );
-} epmem_constant_parameter;
-
-typedef struct epmem_number_parameter_struct
-{
-	double value;
-	bool (*val_func)( double );
-} epmem_number_parameter;
-
-typedef struct epmem_string_parameter_struct
-{
-	std::string *value;
-	bool (*val_func)( const char * );
-} epmem_string_parameter;
-
-typedef union epmem_parameter_union_class
-{
-	epmem_constant_parameter constant_param;
-	epmem_number_parameter number_param;
-	epmem_string_parameter string_param;
-} epmem_parameter_union;
-
-typedef struct epmem_parameter_struct
-{
-	epmem_parameter_union *param;
-	epmem_param_type type;
-	const char *name;
-} epmem_parameter;
-
 
 //////////////////////////////////////////////////////////
-// Stat Types
+// EpMem Parameters
 //////////////////////////////////////////////////////////
 
-typedef struct epmem_stat_struct
+class epmem_path_param;
+class epmem_graph_match_param;
+class epmem_mode_param;
+
+class epmem_param_container: public param_container
 {
-	long value;
-	const char *name;
-} epmem_stat;
+	public:
+		enum db_choices { memory, file };
+		enum mode_choices { tree, graph };
+		enum phase_choices { phase_output, phase_selection };
+		enum trigger_choices { none, output, dc };
+		enum force_choices { remember, ignore, force_off };
+		enum timers_choices { timers_off, one, two, three };
+
+		boolean_param *learning;
+		constant_param<db_choices> *database;
+		epmem_path_param *path;
+		integer_param *commit;
+
+		epmem_mode_param *mode;
+		epmem_graph_match_param *graph_match;
+
+		constant_param<phase_choices> *phase;
+		constant_param<trigger_choices> *trigger;
+		constant_param<force_choices> *force;
+		decimal_param *balance;
+		set_param *exclusions;
+		constant_param<timers_choices> *timers;
+				
+		epmem_param_container( agent *new_agent );
+};
+
+class epmem_path_param: public string_param
+{
+	protected:
+		agent *my_agent;
+
+	public:
+		epmem_path_param( const char *new_name, const char *new_value, predicate<const char *> *new_val_pred, predicate<const char *> *new_prot_pred, agent *new_agent );
+		virtual void set_value( const char *new_value );
+};
+
+class epmem_graph_match_param: public boolean_param
+{
+	protected:
+		agent *my_agent;
+
+	public:
+		epmem_graph_match_param( const char *new_name, boolean new_value, predicate<boolean> *new_prot_pred, agent *new_agent );
+		virtual bool validate_string( const char *new_string );
+};
+
+class epmem_mode_param: public constant_param<epmem_param_container::mode_choices>
+{
+	protected:
+		agent *my_agent;
+
+	public:
+		epmem_mode_param( const char *new_name, epmem_param_container::mode_choices new_value, predicate<epmem_param_container::mode_choices> *new_prot_pred, agent *new_agent );
+		virtual void set_value( epmem_param_container::mode_choices new_value );
+};
+
+template <typename T>
+class epmem_db_predicate: public agent_predicate<T>
+{	
+	public:
+		epmem_db_predicate( agent *new_agent );
+		bool operator() ( T val );
+};
+
+
+//////////////////////////////////////////////////////////
+// EpMem Statistics
+//////////////////////////////////////////////////////////
+
+class epmem_mem_usage_stat;
+class epmem_mem_high_stat;
+
+class epmem_stat_container: public stat_container
+{
+	public:
+		integer_stat *time;
+		epmem_mem_usage_stat *mem_usage;
+		epmem_mem_high_stat *mem_high;
+		integer_stat *ncb_wmes;
+
+		integer_stat *qry_pos;
+		integer_stat *qry_neg;
+		integer_stat *qry_ret;
+		integer_stat *qry_card;
+		integer_stat *qry_lits;
+
+		integer_stat *next_id;
+
+		integer_stat *rit_offset_1;
+		integer_stat *rit_left_root_1;
+		integer_stat *rit_right_root_1;
+		integer_stat *rit_min_step_1;
+
+		integer_stat *rit_offset_2;
+		integer_stat *rit_left_root_2;
+		integer_stat *rit_right_root_2;
+		integer_stat *rit_min_step_2;
+		
+		epmem_stat_container( agent *my_agent );
+};
+
+//
+
+class epmem_mem_usage_stat: public integer_stat
+{
+	public:
+		epmem_mem_usage_stat( const char *new_name, long new_value, predicate<long> *new_prot_pred );
+		long get_value();
+};
+
+//
+
+class epmem_mem_high_stat: public integer_stat
+{
+	public:
+		epmem_mem_high_stat( const char *new_name, long new_value, predicate<long> *new_prot_pred );
+		long get_value();
+};
 
 
 //////////////////////////////////////////////////////////
@@ -347,6 +349,24 @@ typedef long epmem_time_id;
 
 // represents a vector of times
 typedef std::vector<epmem_time_id> epmem_time_list;
+
+// keeping state for multiple RIT's
+typedef struct epmem_rit_state_param_struct
+{
+	soar_module::integer_stat *stat;
+	epmem_variable_key var_key;
+} epmem_rit_state_param;
+
+typedef struct epmem_rit_state_struct
+{
+	epmem_rit_state_param offset;
+	epmem_rit_state_param leftroot;
+	epmem_rit_state_param rightroot;
+	epmem_rit_state_param minstep;
+
+	long add_query;
+	long timer;
+} epmem_rit_state;
 
 //////////////////////////////////////////////////////////
 // Soar Integration Types
@@ -522,134 +542,8 @@ typedef std::priority_queue<epmem_shared_query *, std::vector<epmem_shared_query
 // Parameter Functions (see cpp for comments)
 //////////////////////////////////////////////////////////
 
-// clean memory
-extern void epmem_clean_parameters( agent *my_agent );
-
-// add parameter
-extern epmem_parameter *epmem_new_parameter( const char *name, double value, bool (*val_func)( double ) );
-extern epmem_parameter *epmem_new_parameter( const char *name, const long value, bool (*val_func)( const long ), const char *(*to_str)( long ), const long (*from_str)( const char * ) );
-extern epmem_parameter *epmem_new_parameter( const char *name, const char *value, bool (*val_func)( const char * ) );
-
-// convert parameter
-extern const char *epmem_convert_parameter( agent *my_agent, const long param );
-extern const long epmem_convert_parameter( agent *my_agent, const char *name );
-
-// validate parameter
-extern bool epmem_valid_parameter( agent *my_agent, const char *name );
-extern bool epmem_valid_parameter( agent *my_agent, const long param );
-
-// parameter type
-extern epmem_param_type epmem_get_parameter_type( agent *my_agent, const char *name );
-extern epmem_param_type epmem_get_parameter_type( agent *my_agent, const long param );
-
-// get parameter
-extern const long epmem_get_parameter( agent *my_agent, const char *name, const double test );
-extern const char *epmem_get_parameter( agent *my_agent, const char *name, const char *test );
-extern double epmem_get_parameter( agent *my_agent, const char *name );
-
-extern const long epmem_get_parameter( agent *my_agent, const long param, const double test );
-extern const char *epmem_get_parameter( agent *my_agent, const long param, const char *test );
-extern double epmem_get_parameter( agent *my_agent, const long param );
-
-// validate parameter value
-extern bool epmem_valid_parameter_value( agent *my_agent, const char *name, double new_val );
-extern bool epmem_valid_parameter_value( agent *my_agent, const char *name, const char *new_val );
-extern bool epmem_valid_parameter_value( agent *my_agent, const char *name, const long new_val );
-
-extern bool epmem_valid_parameter_value( agent *my_agent, const long param, double new_val );
-extern bool epmem_valid_parameter_value( agent *my_agent, const long param, const char *new_val );
-extern bool epmem_valid_parameter_value( agent *my_agent, const long param, const long new_val );
-
-// set parameter
-extern bool epmem_set_parameter( agent *my_agent, const char *name, double new_val );
-extern bool epmem_set_parameter( agent *my_agent, const char *name, const char *new_val );
-extern bool epmem_set_parameter( agent *my_agent, const char *name, const long new_val );
-
-extern bool epmem_set_parameter( agent *my_agent, const long param, double new_val );
-extern bool epmem_set_parameter( agent *my_agent, const long param, const char *new_val );
-extern bool epmem_set_parameter( agent *my_agent, const long param, const long new_val );
-
-// learning
-extern bool epmem_validate_learning( const long new_val );
-extern const char *epmem_convert_learning( const long val );
-extern const long epmem_convert_learning( const char *val );
-
-// database
-extern bool epmem_validate_database( const long new_val );
-extern const char *epmem_convert_database( const long val );
-extern const long epmem_convert_database( const char *val );
-
-// path
-extern bool epmem_validate_path( const char *new_val );
-
-// mode
-extern bool epmem_validate_mode( const long new_val );
-extern const char *epmem_convert_mode( const long val );
-extern const long epmem_convert_mode( const char *val );
-
-// graph match
-extern bool epmem_validate_graph_match( const long new_val );
-extern const char *epmem_convert_graph_match( const long val );
-extern const long epmem_convert_graph_match( const char *val );
-
-// phase
-extern bool epmem_validate_phase( const long new_val );
-extern const char *epmem_convert_phase( const long val );
-extern const long epmem_convert_phase( const char *val );
-
-// trigger
-extern bool epmem_validate_trigger( const long new_val );
-extern const char *epmem_convert_trigger( const long val );
-extern const long epmem_convert_trigger( const char *val );
-
-// force
-extern bool epmem_validate_force( const long new_val );
-extern const char *epmem_convert_force( const long val );
-extern const long epmem_convert_force( const char *val );
-
-// balance
-extern bool epmem_validate_balance( const double new_val );
-
-// exclusions
-extern bool epmem_validate_exclusions( const char *new_val );
-
-// commit
-extern bool epmem_validate_commit( const double new_val );
-
-// timers
-extern bool epmem_validate_ext_timers( const long new_val );
-extern const char *epmem_convert_ext_timers( const long val );
-extern const long epmem_convert_ext_timers( const char *val );
-
 // shortcut for determining if EpMem is enabled
 extern bool epmem_enabled( agent *my_agent );
-
-//////////////////////////////////////////////////////////
-// Stat Functions (see cpp for comments)
-//////////////////////////////////////////////////////////
-
-// memory clean
-extern void epmem_clean_stats( agent *my_agent );
-extern void epmem_reset_stats( agent *my_agent );
-
-// add stat
-extern epmem_stat *epmem_new_stat( const char *name );
-
-// convert stat
-extern const long epmem_convert_stat( agent *my_agent, const char *name );
-extern const char *epmem_convert_stat( agent *my_agent, const long stat );
-
-// valid stat
-extern bool epmem_valid_stat( agent *my_agent, const char *name );
-extern bool epmem_valid_stat( agent *my_agent, const long stat );
-
-// get stat
-extern long epmem_get_stat( agent *my_agent, const char *name );
-extern long epmem_get_stat( agent *my_agent, const long stat );
-
-// set stat
-extern bool epmem_set_stat( agent *my_agent, const char *name, long new_val );
-extern bool epmem_set_stat( agent *my_agent, const long stat, long new_val );
 
 
 //////////////////////////////////////////////////////////

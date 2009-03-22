@@ -37,25 +37,79 @@ extern void variablize_nots_and_insert_into_conditions (agent* thisAgent, not_st
 extern void variablize_condition_list (agent* thisAgent, condition *cond);
 
 
-/***************************************************************************
- * Function     : rl_clean_parameters
- **************************************************************************/
-void rl_clean_parameters( agent *my_agent )
+/////////////////////////////////////////////////////
+// Parameters
+/////////////////////////////////////////////////////
+
+rl_param_container::rl_param_container( agent *new_agent ): param_container( new_agent )
 {
-	for ( int i=0; i<RL_PARAMS; i++ )
-	{
-		delete my_agent->rl_params[ i ]->param;
-		delete my_agent->rl_params[ i ];
-	}
-}
+	// learning
+	learning = new boolean_param( "learning", off, new f_predicate<boolean>() );
+	add_param( learning );
+
+	// discount-rate
+	discount_rate = new decimal_param( "discount-rate", 0.9, new btw_predicate<double>( 0, 1, true ), new f_predicate<double>() );
+	add_param( discount_rate );
+
+	// learning-rate
+	learning_rate = new decimal_param( "learning-rate", 0.3, new btw_predicate<double>( 0, 1, true ), new f_predicate<double>() );
+	add_param( learning_rate );
+
+	// learning-policy
+	learning_policy = new constant_param<learning_choices>( "learning-policy", sarsa, new f_predicate<learning_choices>() );
+	learning_policy->add_mapping( sarsa, "sarsa" );
+	learning_policy->add_mapping( q, "q" );
+	add_param( learning_policy );
+
+	// eligibility-trace-decay-rate
+	et_decay_rate = new decimal_param( "eligibility-trace-decay-rate", 0, new btw_predicate<double>( 0, 1, true ), new f_predicate<double>() );
+	add_param( et_decay_rate );
+
+	// eligibility-trace-tolerance
+	et_tolerance = new decimal_param( "eligibility-trace-tolerance", 0.001, new gt_predicate<double>( 0, false ), new f_predicate<double>() );
+	add_param( et_tolerance );
+
+	// temporal-extension
+	temporal_extension = new boolean_param( "temporal-extension", on, new f_predicate<boolean>() );
+	add_param( temporal_extension );
+
+	// hrl-discount
+	hrl_discount = new boolean_param( "hrl-discount", on, new f_predicate<boolean>() );
+	add_param( hrl_discount );
+};
+
+/////////////////////////////////////////////////////
+/////////////////////////////////////////////////////
+
+/////////////////////////////////////////////////////
+// Stats
+/////////////////////////////////////////////////////
+
+rl_stat_container::rl_stat_container( agent *new_agent ): stat_container( new_agent )
+{
+	// update-error
+	update_error = new decimal_stat( "update-error", 0, new f_predicate<double>() );
+	add_stat( update_error );
+
+	// total-reward
+	total_reward = new decimal_stat( "total-reward", 0, new f_predicate<double>() );
+	add_stat( total_reward );
+
+	// global-reward
+	global_reward = new decimal_stat( "global-reward", 0, new f_predicate<double>() );
+	add_stat( global_reward );
+};
+
+/////////////////////////////////////////////////////
+/////////////////////////////////////////////////////
+
 
 /***************************************************************************
- * Function     : rl_clean_stats
+ * Function     : rl_enabled
  **************************************************************************/
-void rl_clean_stats( agent *my_agent )
+inline bool rl_enabled( agent *my_agent )
 {
-	for ( int i=0; i<RL_STATS; i++ )
-	  delete my_agent->rl_stats[ i ];
+	return ( my_agent->rl_params->learning->get_value() == soar_module::on );
 }
 
 /***************************************************************************
@@ -85,15 +139,6 @@ void rl_reset_data( agent *my_agent )
 }
 
 /***************************************************************************
- * Function     : reset_rl
- **************************************************************************/
-void rl_reset_stats( agent *my_agent )
-{
-	for ( int i=0; i<RL_STATS; i++ )
-		my_agent->rl_stats[ i ]->value = 0;
-}
-
-/***************************************************************************
  * Function     : rl_remove_refs_for_prod
  **************************************************************************/
 void rl_remove_refs_for_prod( agent *my_agent, production *prod )
@@ -106,730 +151,6 @@ void rl_remove_refs_for_prod( agent *my_agent, production *prod )
 			if ( static_cast<production *>(c->first) == prod ) 
 				c->first = NIL;
 	}
-}
-
-/***************************************************************************
- * Function     : rl_add_parameter
- **************************************************************************/
-rl_parameter *rl_add_parameter( const char *name, double value, bool (*val_func)( double ) )
-{
-	// new parameter entry
-	rl_parameter *newbie = new rl_parameter;
-	newbie->param = new rl_parameter_union;
-	newbie->param->number_param.value = value;
-	newbie->param->number_param.val_func = val_func;
-	newbie->type = rl_param_number;
-	newbie->name = name;
-	
-	return newbie;
-}
-
-rl_parameter *rl_add_parameter( const char *name, const long value, bool (*val_func)( const long ), const char *(*to_str)( long ), const long (*from_str)( const char * ) )
-{
-	// new parameter entry
-	rl_parameter *newbie = new rl_parameter;
-	newbie->param = new rl_parameter_union;
-	newbie->param->string_param.val_func = val_func;
-	newbie->param->string_param.to_str = to_str;
-	newbie->param->string_param.from_str = from_str;
-	newbie->param->string_param.value = value;
-	newbie->type = rl_param_string;
-	newbie->name = name;
-	
-	return newbie;
-}
-
-/***************************************************************************
- * Function     : rl_convert_parameter
- **************************************************************************/
-const char *rl_convert_parameter( agent *my_agent, const long param )
-{
-	if ( ( param < 0 ) || ( param >= RL_PARAMS ) )
-		return NULL;
-
-	return my_agent->rl_params[ param ]->name;
-}
-
-const long rl_convert_parameter( agent *my_agent, const char *name )
-{
-	for ( int i=0; i<RL_PARAMS; i++ )
-		if ( !strcmp( name, my_agent->rl_params[ i ]->name ) )
-			return i;
-
-	return RL_PARAMS;
-}
-
-/***************************************************************************
- * Function     : rl_valid_parameter
- **************************************************************************/
-bool rl_valid_parameter( agent *my_agent, const char *name )
-{
-	return ( rl_convert_parameter( my_agent, name ) != RL_PARAMS );
-}
-
-bool rl_valid_parameter( agent *my_agent, const long param )
-{
-	return ( rl_convert_parameter( my_agent, param ) != NULL );
-}
-
-/***************************************************************************
- * Function     : rl_get_parameter_type
- **************************************************************************/
-rl_param_type rl_get_parameter_type( agent *my_agent, const char *name )
-{
-	const long param = rl_convert_parameter( my_agent, name );
-	if ( param == RL_PARAMS )
-		return rl_param_invalid;
-	
-	return my_agent->rl_params[ param ]->type;
-}
-
-rl_param_type rl_get_parameter_type( agent *my_agent, const long param )
-{
-	if ( !rl_valid_parameter( my_agent, param ) )
-		return rl_param_invalid;
-
-	return my_agent->rl_params[ param ]->type;
-}
-
-/***************************************************************************
- * Function     : rl_get_parameter
- **************************************************************************/
-const long rl_get_parameter( agent *my_agent, const char *name, const double /*test*/ )
-{
-	const long param = rl_convert_parameter( my_agent, name );
-	if ( param == RL_PARAMS )
-		return NULL;
-	
-	if ( rl_get_parameter_type( my_agent, param ) != rl_param_string )
-		return NULL;
-	
-	return my_agent->rl_params[ param ]->param->string_param.value;
-}
-
-const char *rl_get_parameter( agent *my_agent, const char *name, const char * /*test*/ )
-{
-	const long param = rl_convert_parameter( my_agent, name );
-	if ( param == RL_PARAMS )
-		return NULL;
-	
-	if ( rl_get_parameter_type( my_agent, param ) != rl_param_string )
-		return NULL;
-	
-	return my_agent->rl_params[ param ]->param->string_param.to_str( my_agent->rl_params[ param ]->param->string_param.value );
-}
-
-double rl_get_parameter( agent *my_agent, const char *name )
-{
-	const long param = rl_convert_parameter( my_agent, name );
-	if ( param == RL_PARAMS )
-		return NULL;
-	
-	if ( rl_get_parameter_type( my_agent, param ) != rl_param_number )
-		return NULL;
-	
-	return my_agent->rl_params[ param ]->param->number_param.value;
-}
-
-//
-
-const long rl_get_parameter( agent *my_agent, const long param, const double /*test*/ )
-{
-	if ( !rl_valid_parameter( my_agent, param ) )
-		return NULL;
-
-	if ( rl_get_parameter_type( my_agent, param ) != rl_param_string )
-		return NULL;
-	
-	return my_agent->rl_params[ param ]->param->string_param.value;
-}
-
-const char *rl_get_parameter( agent *my_agent, const long param, const char * /*test*/ )
-{
-	if ( !rl_valid_parameter( my_agent, param ) )
-		return NULL;
-	
-	if ( rl_get_parameter_type( my_agent, param ) != rl_param_string )
-		return NULL;
-	
-	return my_agent->rl_params[ param ]->param->string_param.to_str( my_agent->rl_params[ param ]->param->string_param.value );
-}
-
-double rl_get_parameter( agent *my_agent, const long param )
-{
-	if ( !rl_valid_parameter( my_agent, param ) )
-		return NULL;
-	
-	if ( rl_get_parameter_type( my_agent, param ) != rl_param_number )
-		return NULL;
-	
-	return my_agent->rl_params[ param ]->param->number_param.value;
-}
-
-/***************************************************************************
- * Function     : rl_valid_parameter_value
- **************************************************************************/
-bool rl_valid_parameter_value( agent *my_agent, const char *name, double new_val )
-{
-	const long param = rl_convert_parameter( my_agent, name );
-	if ( param == RL_PARAMS )
-		return false;
-	
-	if ( rl_get_parameter_type( my_agent, param ) != rl_param_number )
-		return false;
-	
-	return my_agent->rl_params[ param ]->param->number_param.val_func( new_val );
-}
-
-bool rl_valid_parameter_value( agent *my_agent, const char *name, const char *new_val )
-{
-	const long param = rl_convert_parameter( my_agent, name );
-	if ( param == RL_PARAMS )
-		return false;
-	
-	if ( rl_get_parameter_type( my_agent, param ) != rl_param_string )
-		return false;
-	
-	return my_agent->rl_params[ param ]->param->string_param.val_func( my_agent->rl_params[ param ]->param->string_param.from_str( new_val ) );
-}
-
-bool rl_valid_parameter_value( agent *my_agent, const char *name, const long new_val )
-{
-	const long param = rl_convert_parameter( my_agent, name );
-	if ( param == RL_PARAMS )
-		return false;
-	
-	if ( rl_get_parameter_type( my_agent, param ) != rl_param_string )
-		return false;
-	
-	return my_agent->rl_params[ param ]->param->string_param.val_func( new_val );
-}
-
-//
-
-bool rl_valid_parameter_value( agent *my_agent, const long param, double new_val )
-{
-	if ( !rl_valid_parameter( my_agent, param ) )
-		return false;
-	
-	if ( rl_get_parameter_type( my_agent, param ) != rl_param_number )
-		return false;
-	
-	return my_agent->rl_params[ param ]->param->number_param.val_func( new_val );
-}
-
-bool rl_valid_parameter_value( agent *my_agent, const long param, const char *new_val )
-{
-	if ( !rl_valid_parameter( my_agent, param ) )
-		return false;
-	
-	if ( rl_get_parameter_type( my_agent, param ) != rl_param_string )
-		return false;
-	
-	return my_agent->rl_params[ param ]->param->string_param.val_func( my_agent->rl_params[ param ]->param->string_param.from_str( new_val ) );
-}
-
-bool rl_valid_parameter_value( agent *my_agent, const long param, const long new_val )
-{
-	if ( !rl_valid_parameter( my_agent, param ) )
-		return false;
-	
-	if ( rl_get_parameter_type( my_agent, param ) != rl_param_string )
-		return false;
-	
-	return my_agent->rl_params[ param ]->param->string_param.val_func( new_val );
-}
-
-/***************************************************************************
- * Function     : rl_set_parameter
- **************************************************************************/
-bool rl_set_parameter( agent *my_agent, const char *name, double new_val )
-{
-	const long param = rl_convert_parameter( my_agent, name );
-	if ( param == RL_PARAMS )
-		return false;
-	
-	if ( !rl_valid_parameter_value( my_agent, param, new_val ) )
-		return false;
-	
-	my_agent->rl_params[ param ]->param->number_param.value = new_val;
-
-	return true;
-}
-
-bool rl_set_parameter( agent *my_agent, const char *name, const char *new_val )
-{
-	const long param = rl_convert_parameter( my_agent, name );
-	if ( param == RL_PARAMS )
-		return false;
-	
-	if ( !rl_valid_parameter_value( my_agent, param, new_val ) )
-		return false;
-
-	const long converted_val = my_agent->rl_params[ param ]->param->string_param.from_str( new_val );
-
-	// learning special case
-	if ( param == RL_PARAM_LEARNING )
-	{
-		set_sysparam( my_agent, RL_ENABLED, converted_val );
-		
-		if ( ( converted_val == RL_LEARNING_ON ) && my_agent->rl_first_switch )
-		{
-			my_agent->rl_first_switch = false;
-			exploration_set_policy( my_agent, USER_SELECT_E_GREEDY );
-			
-			const char *msg = "Exploration Mode changed to epsilon-greedy";
-			print( my_agent, const_cast<char *>( msg ) );
-       		xml_generate_message( my_agent, const_cast<char *>( msg ) );
-		}
-	}
-	
-	my_agent->rl_params[ param ]->param->string_param.value = converted_val;
-
-	return true;
-}
-
-bool rl_set_parameter( agent *my_agent, const char *name, const long new_val )
-{
-	const long param = rl_convert_parameter( my_agent, name );
-	if ( param == RL_PARAMS )
-		return false;
-	
-	if ( !rl_valid_parameter_value( my_agent, param, new_val ) )
-		return false;
-
-	// learning special case
-	if ( param == RL_PARAM_LEARNING )
-	{
-		set_sysparam( my_agent, RL_ENABLED, new_val );
-		
-		if ( ( new_val == RL_LEARNING_ON ) && my_agent->rl_first_switch )
-		{
-			my_agent->rl_first_switch = false;
-			exploration_set_policy( my_agent, USER_SELECT_E_GREEDY );
-			
-			const char *msg = "Exploration Mode changed to epsilon-greedy";
-			print( my_agent, const_cast<char *>( msg ) );
-       		xml_generate_message( my_agent, const_cast<char *>( msg ) );
-		}
-	}
-	
-	my_agent->rl_params[ param ]->param->string_param.value = new_val;
-
-	return true;
-}
-
-//
-
-bool rl_set_parameter( agent *my_agent, const long param, double new_val )
-{
-	if ( !rl_valid_parameter_value( my_agent, param, new_val ) )
-		return false;
-	
-	my_agent->rl_params[ param ]->param->number_param.value = new_val;
-
-	return true;
-}
-
-bool rl_set_parameter( agent *my_agent, const long param, const char *new_val )
-{
-	if ( !rl_valid_parameter_value( my_agent, param, new_val ) )
-		return false;
-
-	const long converted_val = my_agent->rl_params[ param ]->param->string_param.from_str( new_val );
-
-	// learning special case
-	if ( param == RL_PARAM_LEARNING )
-	{
-		set_sysparam( my_agent, RL_ENABLED, converted_val );
-		
-		if ( ( converted_val == RL_LEARNING_ON ) && my_agent->rl_first_switch )
-		{
-			my_agent->rl_first_switch = false;
-			exploration_set_policy( my_agent, USER_SELECT_E_GREEDY );
-			
-			const char *msg = "Exploration Mode changed to epsilon-greedy";
-			print( my_agent, const_cast<char *>( msg ) );
-       		xml_generate_message( my_agent, const_cast<char *>( msg ) );
-		}
-	}
-	
-	my_agent->rl_params[ param ]->param->string_param.value = converted_val;
-
-	return true;
-}
-
-bool rl_set_parameter( agent *my_agent, const long param, const long new_val )
-{	
-	if ( !rl_valid_parameter_value( my_agent, param, new_val ) )
-		return false;
-
-	// learning special case
-	if ( param == RL_PARAM_LEARNING )
-	{
-		set_sysparam( my_agent, RL_ENABLED, new_val );
-		
-		if ( ( new_val == RL_LEARNING_ON ) && my_agent->rl_first_switch )
-		{
-			my_agent->rl_first_switch = false;
-			exploration_set_policy( my_agent, USER_SELECT_E_GREEDY );
-			
-			const char *msg = "Exploration Mode changed to epsilon-greedy";
-			print( my_agent, const_cast<char *>( msg ) );
-       		xml_generate_message( my_agent, const_cast<char *>( msg ) );
-		}
-	}
-	
-	my_agent->rl_params[ param ]->param->string_param.value = new_val;
-
-	return true;
-}
-
-/////////////////////////////////////////////////////////////////////////////////////////////////////////
-// learning
-/////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-/***************************************************************************
- * Function     : rl_validate_learning
- **************************************************************************/
-bool rl_validate_learning( const long new_val )
-{
-	return ( ( new_val == RL_LEARNING_ON ) || ( new_val == RL_LEARNING_OFF ) );
-}
-
-/***************************************************************************
- * Function     : rl_convert_learning
- **************************************************************************/
-const char *rl_convert_learning( const long val )
-{
-	const char *return_val = NULL;
-	
-	switch ( val )
-	{
-		case RL_LEARNING_ON:
-			return_val = "on";
-			break;
-			
-		case RL_LEARNING_OFF:
-			return_val = "off";
-			break;
-	}
-	
-	return return_val;
-}
-
-const long rl_convert_learning( const char *val )
-{
-	long return_val = NULL;
-	
-	if ( !strcmp( val, "on" ) )
-		return_val = RL_LEARNING_ON;
-	else if ( !strcmp( val, "off" ) )
-		return_val = RL_LEARNING_OFF;
-	
-	return return_val;
-}
-
-/////////////////////////////////////////////////////////////////////////////////////////////////////////
-/////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-/////////////////////////////////////////////////////////////////////////////////////////////////////////
-// discount rate
-/////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-/***************************************************************************
- * Function     : rl_validate_discount
- **************************************************************************/
-bool rl_validate_discount( const double new_val )
-{
-	return ( ( new_val >= 0 ) && ( new_val <= 1 ) );
-}
-
-/////////////////////////////////////////////////////////////////////////////////////////////////////////
-/////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-/////////////////////////////////////////////////////////////////////////////////////////////////////////
-// learning rate
-/////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-/***************************************************************************
- * Function     : rl_validate_learning_rate
- **************************************************************************/
-bool rl_validate_learning_rate( const double new_val )
-{
-	return ( ( new_val >= 0 ) && ( new_val <= 1 ) );
-}
-
-/////////////////////////////////////////////////////////////////////////////////////////////////////////
-/////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-/////////////////////////////////////////////////////////////////////////////////////////////////////////
-// learning policy
-/////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-/***************************************************************************
- * Function     : rl_validate_learning_policy
- **************************************************************************/
-bool rl_validate_learning_policy( const long new_val )
-{
-	return ( ( new_val == RL_LEARNING_SARSA ) || ( new_val == RL_LEARNING_Q ) );
-}
-
-/***************************************************************************
- * Function     : rl_convert_learning_policy
- **************************************************************************/
-const char *rl_convert_learning_policy( const long val )
-{
-	const char *return_val = NULL;
-	
-	switch ( val )
-	{
-		case RL_LEARNING_SARSA:
-			return_val = "sarsa";
-			break;
-			
-		case RL_LEARNING_Q:
-			return_val = "q-learning";
-			break;
-	}
-	
-	return return_val;
-}
-
-const long rl_convert_learning_policy( const char *val )
-{
-	long return_val = NULL;
-	
-	if ( !strcmp( val, "sarsa" ) )
-		return_val = RL_LEARNING_SARSA;
-	else if ( !strcmp( val, "q-learning" ) )
-		return_val = RL_LEARNING_Q;
-	
-	return return_val;
-}
-
-/////////////////////////////////////////////////////////////////////////////////////////////////////////
-/////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-/////////////////////////////////////////////////////////////////////////////////////////////////////////
-// eligibility trace decay rate
-/////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-/***************************************************************************
- * Function     : rl_validate_decay_rate
- **************************************************************************/
-bool rl_validate_decay_rate( const double new_val )
-{
-	return ( ( new_val >= 0 ) && ( new_val <= 1 ) );
-}
-
-/////////////////////////////////////////////////////////////////////////////////////////////////////////
-/////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-/////////////////////////////////////////////////////////////////////////////////////////////////////////
-// eligibility trace tolerance
-/////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-/***************************************************************************
- * Function     : rl_validate_trace_tolerance
- **************************************************************************/
-bool rl_validate_trace_tolerance( const double new_val )
-{
-	return ( new_val > 0 );
-}
-
-/////////////////////////////////////////////////////////////////////////////////////////////////////////
-/////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-/////////////////////////////////////////////////////////////////////////////////////////////////////////
-// temporal-extension
-/////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-/***************************************************************************
- * Function     : rl_validate_te_enabled
- **************************************************************************/
-bool rl_validate_te_enabled( const long new_val )
-{
-	return ( ( new_val == RL_TE_ON ) || ( new_val == RL_TE_OFF ) );
-}
-
-/***************************************************************************
- * Function     : rl_convert_te_enabled
- **************************************************************************/
-const char *rl_convert_te_enabled( const long val )
-{
-	const char *return_val = NULL;
-	
-	switch ( val )
-	{
-		case RL_TE_ON:
-			return_val = "on";
-			break;
-			
-		case RL_TE_OFF:
-			return_val = "off";
-			break;
-	}
-	
-	return return_val;
-}
-
-const long rl_convert_te_enabled( const char *val )
-{
-	long return_val = NULL;
-	
-	if ( !strcmp( val, "on" ) )
-		return_val = RL_TE_ON;
-	else if ( !strcmp( val, "off" ) )
-		return_val = RL_TE_OFF;
-	
-	return return_val;
-}
-
-/////////////////////////////////////////////////////////////////////////////////////////////////////////
-// hrl-discount
-/////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-/***************************************************************************
- * Function     : rl_validate_hrl_discount
- **************************************************************************/
-bool rl_validate_hrl_discount( const long new_val )
-{
-	return ( ( new_val == RL_HRL_D_ON ) || ( new_val == RL_HRL_D_OFF ) );
-}
-
-/***************************************************************************
- * Function     : rl_convert_hrl_discount
- **************************************************************************/
-const char *rl_convert_hrl_discount( const long val )
-{
-	const char *return_val = NULL;
-	
-	switch ( val )
-	{
-		case RL_HRL_D_ON:
-			return_val = "on";
-			break;
-			
-		case RL_HRL_D_OFF:
-			return_val = "off";
-			break;
-	}
-	
-	return return_val;
-}
-
-const long rl_convert_hrl_discount( const char *val )
-{
-	long return_val = NULL;
-	
-	if ( !strcmp( val, "on" ) )
-		return_val = RL_HRL_D_ON;
-	else if ( !strcmp( val, "off" ) )
-		return_val = RL_HRL_D_OFF;
-	
-	return return_val;
-}
-
-/////////////////////////////////////////////////////////////////////////////////////////////////////////
-/////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-/***************************************************************************
- * Function     : rl_enabled
- **************************************************************************/
-bool rl_enabled( agent *my_agent )
-{
-	return ( my_agent->sysparams[ RL_ENABLED ] == RL_LEARNING_ON );
-}
-
-/***************************************************************************
- * Function     : rl_add_stat
- **************************************************************************/
-rl_stat *rl_add_stat( const char *name )
-{
-	// new stat entry
-	rl_stat *newbie = new rl_stat;
-	newbie->name = name;
-	newbie->value = 0;
-	
-	return newbie;
-}
-
-/***************************************************************************
- * Function     : rl_convert_stat
- **************************************************************************/
-const long rl_convert_stat( agent *my_agent, const char *name )
-{
-	for ( int i=0; i<RL_STATS; i++ )
-		if ( !strcmp( name, my_agent->rl_stats[ i ]->name ) )
-			return i;
-
-	return RL_STATS;
-}
-
-const char *rl_convert_stat( agent *my_agent, const long stat )
-{
-	if ( ( stat < 0 ) || ( stat >= RL_STATS ) )
-		return NULL;
-
-	return my_agent->rl_stats[ stat ]->name;
-}
-
-/***************************************************************************
- * Function     : rl_valid_stat
- **************************************************************************/
-bool rl_valid_stat( agent *my_agent, const char *name )
-{
-	return ( rl_convert_stat( my_agent, name ) != RL_STATS );
-}
-
-bool rl_valid_stat( agent *my_agent, const long stat )
-{
-	return ( rl_convert_stat( my_agent, stat ) != NULL );
-}
-
-/***************************************************************************
- * Function     : rl_get_stat
- **************************************************************************/
-double rl_get_stat( agent *my_agent, const char *name )
-{
-	const long stat = rl_convert_stat( my_agent, name );
-	if ( stat == RL_STATS )
-		return 0;
-
-	return my_agent->rl_stats[ stat ]->value;
-}
-
-double rl_get_stat( agent *my_agent, const long stat )
-{
-	if ( !rl_valid_stat( my_agent, stat ) )
-		return 0;
-
-	return my_agent->rl_stats[ stat ]->value;
-}
-
-/***************************************************************************
- * Function     : rl_set_stat
- **************************************************************************/
-bool rl_set_stat( agent *my_agent, const char *name, double new_val )
-{
-	const long stat = rl_convert_stat( my_agent, name );
-	if ( stat == RL_STATS )
-		return false;
-	
-	my_agent->rl_stats[ stat ]->value = new_val;
-	
-	return true;
-}
-
-bool rl_set_stat( agent *my_agent, const long stat, double new_val )
-{
-	if ( !rl_valid_stat( my_agent, stat ) )
-		return false;
-	
-	my_agent->rl_stats[ stat ]->value = new_val;
-	
-	return true;
 }
 
 /***************************************************************************
@@ -1133,11 +454,11 @@ void rl_tabulate_reward_value_for_goal( agent *my_agent, Symbol *goal )
 	}
 
 	// update stats
-	double global_reward = rl_get_stat( my_agent, RL_STAT_GLOBAL_REWARD );
-	rl_set_stat( my_agent, RL_STAT_TOTAL_REWARD, reward );
-	rl_set_stat( my_agent, RL_STAT_GLOBAL_REWARD, ( global_reward + reward ) );
-
-	if ( ( rl_get_parameter( my_agent, RL_PARAM_HRL_DISCOUNT, RL_RETURN_LONG ) == RL_HRL_D_ON ) || ( goal == my_agent->bottom_goal ) )
+	double global_reward = my_agent->rl_stats->global_reward->get_value();
+	my_agent->rl_stats->total_reward->set_value( reward );
+	my_agent->rl_stats->global_reward->set_value( global_reward + reward );
+	
+	if ( ( my_agent->rl_params->hrl_discount->get_value() == soar_module::on ) || ( goal == my_agent->bottom_goal ) )
 		data->step++;
 }
 
@@ -1160,7 +481,7 @@ void rl_tabulate_reward_values( agent *my_agent )
  **************************************************************************/
 double rl_discount_reward( agent *my_agent, double reward, unsigned int step )
 {
-	double rate = rl_get_parameter( my_agent, RL_PARAM_DISCOUNT_RATE );
+	double rate = my_agent->rl_params->discount_rate->get_value();
 
 	return ( reward * pow( rate, (double) step ) );
 }
@@ -1174,7 +495,7 @@ void rl_store_data( agent *my_agent, Symbol *goal, preference *cand )
 	Symbol *op = cand->value;
     data->previous_q = cand->numeric_value;
 
-	bool using_gaps = ( rl_get_parameter( my_agent, RL_PARAM_TEMPORAL_EXTENSION, RL_RETURN_LONG ) == RL_TE_ON );
+	bool using_gaps = ( my_agent->rl_params->temporal_extension->get_value() == soar_module::on );
 	
 	// Make list of just-fired prods
 	unsigned int just_fired = 0;
@@ -1241,12 +562,12 @@ void rl_perform_update( agent *my_agent, double op_value, Symbol *goal )
 	rl_data *data = goal->id.rl_info;
 	rl_et_map::iterator iter;
 
-	bool using_gaps = ( rl_get_parameter( my_agent, RL_PARAM_TEMPORAL_EXTENSION, RL_RETURN_LONG ) == RL_TE_ON );
+	bool using_gaps = ( my_agent->rl_params->temporal_extension->get_value() == soar_module::on );
 
-	double alpha = rl_get_parameter( my_agent, RL_PARAM_LEARNING_RATE );
-	double lambda = rl_get_parameter( my_agent, RL_PARAM_ET_DECAY_RATE );
-	double gamma = rl_get_parameter( my_agent, RL_PARAM_DISCOUNT_RATE );
-	double tolerance = rl_get_parameter( my_agent, RL_PARAM_ET_TOLERANCE );
+	double alpha = my_agent->rl_params->learning_rate->get_value();
+	double lambda = my_agent->rl_params->et_decay_rate->get_value();
+	double gamma = my_agent->rl_params->discount_rate->get_value();
+	double tolerance = my_agent->rl_params->et_tolerance->get_value();
 
 	// compute TD update, set stat
 	double update = data->reward;
@@ -1256,7 +577,7 @@ void rl_perform_update( agent *my_agent, double op_value, Symbol *goal )
 
 	update += ( pow( gamma, (double) data->step ) * op_value );
 	update -= data->previous_q;
-	rl_set_stat( my_agent, (const long) RL_STAT_UPDATE_ERROR, (double) ( -update ) );
+	my_agent->rl_stats->update_error->set_value( (double) ( -update ) );
 
 	// Iterate through eligibility_traces, decay traces. If less than TOLERANCE, remove from map.
 	if ( lambda == 0 )
