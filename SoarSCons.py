@@ -4,6 +4,7 @@
 
 # swt.jar 3.3 digests
 OSX_DIGEST = '63e66248fed82dcf4bc2639b487ec111'
+OSX64_DIGEST = 'b80f13fccb067323ddc7085b931fff64'
 WIN_DIGEST = '33ac049c1f70126f5fe190da2bd9ff77'
 GTK_DIGEST = '3f5abcc5769c413fc731585b36fe61c2'
 
@@ -51,7 +52,10 @@ def CheckJarmd5(env):
 	    m.update(d)
 	    
 	if sys.platform == 'darwin':
-		return OSX_DIGEST == m.hexdigest()
+		if env['m64']:
+			return OSX64_DIGEST == m.hexdigest()
+		else:
+			return OSX_DIGEST == m.hexdigest()
 	elif sys.platform == 'cygwin':
 		return WIN_DIGEST == m.hexdigest()
 	else:
@@ -67,7 +71,10 @@ def CheckForSWTJar(env):
 		
 	try:
 		if sys.platform == 'darwin':
-			urllib.urlretrieve('http://ai.eecs.umich.edu/~soar/sitemaker/misc/jars/osx/swt.jar', 'SoarLibrary/bin/swt.jar')
+			if env['m64']:
+				urllib.urlretrieve('http://winter.eecs.umich.edu/~nlderbin/osx64/swt.jar', 'SoarLibrary/bin/swt.jar')
+			else:
+				urllib.urlretrieve('http://ai.eecs.umich.edu/~soar/sitemaker/misc/jars/osx/swt.jar', 'SoarLibrary/bin/swt.jar')
 		elif sys.platform == 'cygwin':
 			urllib.urlretrieve('http://ai.eecs.umich.edu/~soar/sitemaker/misc/jars/windows/swt.jar', 'SoarLibrary/bin/swt.jar')
 		else:
