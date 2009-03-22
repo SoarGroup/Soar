@@ -45,10 +45,6 @@ typedef void* xml_handle;
 /* JC ADDED: Included so we can put the RHS functions in here */
 typedef struct rhs_function_struct rhs_function;
 
-// Soar-RL types
-typedef struct rl_parameter_struct rl_parameter;
-typedef struct rl_stat_struct rl_stat;
-
 // select types
 typedef struct select_info_struct select_info;
 
