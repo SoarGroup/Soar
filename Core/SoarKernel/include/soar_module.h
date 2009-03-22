@@ -98,7 +98,7 @@ namespace soar_module
 	template <typename T>
 	class agent_predicate: public predicate<T>
 	{
-		private:
+		protected:
 			agent *my_agent;
 
 		public:
@@ -142,7 +142,7 @@ namespace soar_module
 	template <typename T>
 	class primitive_param: public param
 	{
-		private:
+		protected:
 			T value;
 			predicate<T> *val_pred;
 			predicate<T> *prot_pred;
@@ -150,7 +150,7 @@ namespace soar_module
 		public:
 			primitive_param( const char *new_name, T new_value, predicate<T> *new_val_pred, predicate<T> *new_prot_pred ): param( new_name ), value( new_value ), val_pred( new_val_pred ), prot_pred( new_prot_pred ) {};
 			
-			~primitive_param() 
+			virtual ~primitive_param() 
 			{ 
 				delete val_pred; 
 				delete prot_pred;
@@ -207,7 +207,7 @@ namespace soar_module
 	// a string param deals with character strings
 	class string_param: public param
 	{
-		private:
+		protected:
 			std::string *value;
 			predicate<const char *> *val_pred;
 			predicate<const char *> *prot_pred;
@@ -218,7 +218,7 @@ namespace soar_module
 				value = new std::string( new_value );
 			};
 			
-			~string_param()
+			virtual ~string_param()
 			{
 				delete value;
 				delete val_pred;
@@ -266,7 +266,7 @@ namespace soar_module
 	template <typename T>
 	class constant_param: public param
 	{
-		private:		
+		protected:		
 			T value;
 			std::map<T, const char *> *value_to_string;
 			std::map<std::string, T> *string_to_value;
@@ -279,7 +279,7 @@ namespace soar_module
 				string_to_value = new std::map<std::string, T>();
 			};
 			
-			~constant_param()
+			virtual ~constant_param()
 			{				
 				delete value_to_string;
 				delete string_to_value;
@@ -385,6 +385,8 @@ namespace soar_module
 			param_map *params;
 			
 		protected:			
+			agent *my_agent;
+			
 			void add_param( param *new_param )
 			{
 				std::string temp_str( new_param->get_name() );
@@ -392,7 +394,7 @@ namespace soar_module
 			};
 			
 		public:
-			param_container()
+			param_container( agent *new_agent ): my_agent( new_agent )
 			{
 				params = new param_map();
 			};
@@ -454,11 +456,15 @@ namespace soar_module
 		private:
 			T value;
 			T reset_val;
+			predicate<T> *prot_pred;
 		
 		public:
-			primitive_stat( const char *new_name, T new_value ): stat( new_name ), value( new_value ), reset_val( new_value ) {};
+			primitive_stat( const char *new_name, T new_value, predicate<T> *new_prot_pred ): stat( new_name ), value( new_value ), reset_val( new_value ), prot_pred( new_prot_pred ) {};
 			
-			~primitive_stat() {};
+			virtual ~primitive_stat() 
+			{
+				delete prot_pred;
+			};
 			
 			//
 			
@@ -475,7 +481,8 @@ namespace soar_module
 
 			void reset()
 			{
-				value = reset_val;
+				if ( !(*prot_pred)( value ) )
+					value = reset_val;
 			};
 			
 			//
@@ -503,6 +510,8 @@ namespace soar_module
 			stat_map *stats;
 			
 		protected:			
+			agent *my_agent;
+			
 			void add_stat( stat *new_stat )
 			{
 				std::string temp_str( new_stat->get_name() );
@@ -510,7 +519,7 @@ namespace soar_module
 			};
 			
 		public:
-			stat_container()
+			stat_container( agent *new_agent ): my_agent( new_agent )
 			{
 				stats = new stat_map();
 			};

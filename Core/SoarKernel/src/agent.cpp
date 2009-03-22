@@ -310,8 +310,8 @@ agent * create_soar_agent (char * agent_name) {                                 
   newAgent->exploration_params[ EXPLORATION_PARAM_TEMPERATURE ] = exploration_add_parameter( 25, &exploration_validate_temperature, "temperature" );
   
   // rl initialization
-  newAgent->rl_params = new rl_param_container();
-  newAgent->rl_stats = new rl_stat_container();  
+  newAgent->rl_params = new rl_param_container( newAgent );
+  newAgent->rl_stats = new rl_stat_container( newAgent );  
 
   rl_initialize_template_tracking( newAgent );
   

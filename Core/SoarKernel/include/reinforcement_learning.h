@@ -40,7 +40,7 @@ class rl_param_container: public param_container
 		boolean_param *temporal_extension;
 		boolean_param *hrl_discount;
 				
-		rl_param_container()
+		rl_param_container( agent *new_agent ): param_container( new_agent )
 		{
 			// learning
 			learning = new boolean_param( "learning", off, new f_predicate<boolean>() );
@@ -89,18 +89,18 @@ class rl_stat_container: public stat_container
 		decimal_stat *total_reward;
 		decimal_stat *global_reward;
 				
-		rl_stat_container()
+		rl_stat_container( agent *new_agent ): stat_container( new_agent )
 		{
 			// update-error
-			update_error = new decimal_stat( "update-error", 0 );
+			update_error = new decimal_stat( "update-error", 0, new f_predicate<double>() );
 			add_stat( update_error );
 
 			// total-reward
-			total_reward = new decimal_stat( "total-reward", 0 );
+			total_reward = new decimal_stat( "total-reward", 0, new f_predicate<double>() );
 			add_stat( total_reward );
 
 			// global-reward
-			global_reward = new decimal_stat( "global-reward", 0 );
+			global_reward = new decimal_stat( "global-reward", 0, new f_predicate<double>() );
 			add_stat( global_reward );
 		};
 };
