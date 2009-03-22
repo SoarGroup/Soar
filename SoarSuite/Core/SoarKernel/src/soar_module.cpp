@@ -375,7 +375,9 @@ namespace soar_module
 	template <typename T>
 	char *primitive_stat<T>::get_string()
 	{				
-		std::string *temp_str = to_string( value );			
+		T my_val = get_value();
+		
+		std::string *temp_str = to_string( my_val );
 		char *return_val = new char[ temp_str->length() + 1 ];
 		strcpy( return_val, temp_str->c_str() );
 		return_val[ temp_str->length() ] = '\0';
