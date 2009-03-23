@@ -21,19 +21,3 @@ sp {apply*initialize-simple-robot*config
 -->
    (<out> ^configure.yaw-format float)
 }
-
-#sp {elaborate*initialize-simple-robot*set-desired
-#   (state <s> ^waypoints.waypoint <w>)
-#   (<w> ^x -2 ^y -1)
-#-->
-#   (<s> ^desired <w>)
-#}
-#
-#sp {at-goal
-#   (state <s> ^superstate nil
-#              ^desired <w>
-#              ^waypoints.current-waypoint <w>)
-#-->
-#   (write (crlf) |At goal|)
-#   (halt)
-#}
