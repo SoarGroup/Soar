@@ -178,7 +178,7 @@ epmem_param_container::epmem_param_container( agent *new_agent ): param_containe
 	add_param( balance );
 
 	// exclusions - this is initialized with "epmem" directly after hash tables
-	exclusions = new set_param( "exclusions", new f_predicate<const char *>, my_agent );			
+	exclusions = new set_param( "exclusions", new f_predicate<const char *>, my_agent );
 	add_param( exclusions );
 
 	// timers
@@ -205,7 +205,7 @@ void epmem_path_param::set_value( const char *new_value )
 		print( my_agent, const_cast<char *>( msg ) );
 		xml_generate_message( my_agent, const_cast<char *>( msg ) );
 	}
-	
+
 	value->assign( new_value );
 }
 
@@ -216,12 +216,12 @@ epmem_graph_match_param::epmem_graph_match_param( const char *new_name, boolean 
 bool epmem_graph_match_param::validate_string( const char *new_string )
 {
 	bool return_val = false;
-	
+
 	std::map<std::string, soar_module::boolean>::iterator p;
 	std::string temp_str( new_string );
-	
+
 	p = string_to_value->find( temp_str );
-	
+
 	if ( p != string_to_value->end() )
 	{
 		return_val = ( ( p->second == soar_module::off ) || ( my_agent->epmem_params->mode->get_value() == epmem_param_container::graph ) );
@@ -238,17 +238,17 @@ void epmem_mode_param::set_value( epmem_param_container::mode_choices new_value 
 {
 	if ( new_value != epmem_param_container::graph )
 		my_agent->epmem_params->graph_match->set_value( soar_module::off );
-	
+
 	value = new_value;
 }
 
 //
 
 template <typename T>
-epmem_db_predicate<T>::epmem_db_predicate( agent *new_agent ): agent_predicate( new_agent ) {};
+epmem_db_predicate<T>::epmem_db_predicate( agent *new_agent ): agent_predicate<T>( new_agent ) {};
 
 template <typename T>
-bool epmem_db_predicate<T>::operator() ( T /*val*/ ) { return ( my_agent->epmem_db_status != EPMEM_DB_CLOSED ); };
+bool epmem_db_predicate<T>::operator() ( T /*val*/ ) { return ( this->my_agent->epmem_db_status != EPMEM_DB_CLOSED ); };
 
 
 /***************************************************************************
@@ -345,7 +345,7 @@ epmem_stat_container::epmem_stat_container( agent *new_agent ): stat_container( 
 	/////////////////////////////
 	// connect to rit state
 	/////////////////////////////
-	
+
 	// tree
 	epmem_rit_state_tree.add_query = EPMEM_STMT_ONE_ADD_NODE_RANGE;
 	epmem_rit_state_tree.timer = EPMEM_TIMER_NCB_NODE_RIT;
@@ -1174,7 +1174,7 @@ void epmem_rit_insert_interval( agent *my_agent, epmem_time_id lower, epmem_time
 		epmem_set_variable( my_agent, rit_state->offset.var_key, offset );
 
 		// update stat
-		rit_state->offset.stat->set_value( offset );		
+		rit_state->offset.stat->set_value( offset );
 	}
 
 	// get node
@@ -1197,7 +1197,7 @@ void epmem_rit_insert_interval( agent *my_agent, epmem_time_id lower, epmem_time
 			epmem_set_variable( my_agent, rit_state->leftroot.var_key, left_root );
 
 			// update stat
-			rit_state->leftroot.stat->set_value( left_root );			
+			rit_state->leftroot.stat->set_value( left_root );
 		}
 
 		// update right_root
@@ -1209,7 +1209,7 @@ void epmem_rit_insert_interval( agent *my_agent, epmem_time_id lower, epmem_time
 			epmem_set_variable( my_agent, rit_state->rightroot.var_key, right_root );
 
 			// update stat
-			rit_state->rightroot.stat->set_value( right_root );			
+			rit_state->rightroot.stat->set_value( right_root );
 		}
 
 		// update min_step
@@ -1224,7 +1224,7 @@ void epmem_rit_insert_interval( agent *my_agent, epmem_time_id lower, epmem_time
 			epmem_set_variable( my_agent, rit_state->minstep.var_key, min_step );
 
 			// update stat
-			rit_state->minstep.stat->set_value( min_step );			
+			rit_state->minstep.stat->set_value( min_step );
 		}
 	}
 
@@ -1275,7 +1275,7 @@ void epmem_close( agent *my_agent )
 
 				delete p->second;
 			}
-			
+
 			my_agent->epmem_id_repository->clear();
 			my_agent->epmem_id_replacement->clear();
 
@@ -1486,7 +1486,7 @@ void epmem_init_db( agent *my_agent, bool readonly = false )
 			long stored_mode = NULL;
 			if ( epmem_get_variable( my_agent, var_mode, &stored_mode ) )
 			{
-				my_agent->epmem_params->mode->set_value( (epmem_param_container::mode_choices) stored_mode );				
+				my_agent->epmem_params->mode->set_value( (epmem_param_container::mode_choices) stored_mode );
 				mode = stored_mode;
 			}
 			else
@@ -1692,7 +1692,7 @@ void epmem_init_db( agent *my_agent, bool readonly = false )
 			if ( sqlite3_step( create ) == SQLITE_ROW )
 				my_agent->epmem_stats->time->set_value( ( EPMEM_SQLITE_COLUMN_INT( create, 0 ) + 1 ) );
 			sqlite3_finalize( create );
-			time_max = my_agent->epmem_stats->time->get_value();			
+			time_max = my_agent->epmem_stats->time->get_value();
 
 			if ( !readonly )
 			{
@@ -1748,17 +1748,17 @@ void epmem_init_db( agent *my_agent, bool readonly = false )
 			my_agent->epmem_edge_maxes->clear();
 			my_agent->epmem_edge_removals->clear();
 
-			(*my_agent->epmem_id_repository)[ EPMEM_NODEID_ROOT ] = new epmem_hashed_id_pool();			
+			(*my_agent->epmem_id_repository)[ EPMEM_NODEID_ROOT ] = new epmem_hashed_id_pool();
 
 			// initialize time
 			my_agent->epmem_stats->time->set_value( 1 );
 
 			// initialize next_id
-			my_agent->epmem_stats->next_id->set_value( 1 );			
+			my_agent->epmem_stats->next_id->set_value( 1 );
 			{
 				long stored_id = NULL;
 				if ( epmem_get_variable( my_agent, var_next_id, &stored_id ) )
-					my_agent->epmem_stats->next_id->set_value( stored_id );					
+					my_agent->epmem_stats->next_id->set_value( stored_id );
 				else
 					epmem_set_variable( my_agent, var_next_id, my_agent->epmem_stats->next_id->get_value() );
 			}
@@ -2072,8 +2072,8 @@ void epmem_init_db( agent *my_agent, bool readonly = false )
 			my_assert = ( sqlite3_prepare_v2( my_agent->epmem_db, "SELECT MAX(id) FROM times", EPMEM_DB_PREP_STR_MAX, &create, &tail ) == SQLITE_OK );
 			assert( my_assert );
 			if ( sqlite3_step( create ) == SQLITE_ROW )
-				my_agent->epmem_stats->time->set_value( ( EPMEM_SQLITE_COLUMN_INT( create, 0 ) + 1 ) );				
-			sqlite3_finalize( create );			
+				my_agent->epmem_stats->time->set_value( ( EPMEM_SQLITE_COLUMN_INT( create, 0 ) + 1 ) );
+			sqlite3_finalize( create );
 			time_max = my_agent->epmem_stats->time->get_value();
 
 			// insert non-NOW intervals for all current NOW's
@@ -2420,7 +2420,7 @@ void epmem_new_episode( agent *my_agent )
 						continue;
 
 					// prevent exclusions from being recorded
-					if ( my_agent->epmem_params->exclusions->in_set( wmes[i]->attr ) )					
+					if ( my_agent->epmem_params->exclusions->in_set( wmes[i]->attr ) )
 						continue;
 
 					// if we haven't seen this WME before
@@ -2636,7 +2636,7 @@ void epmem_new_episode( agent *my_agent )
 							continue;
 
 						// prevent exclusions from being recorded
-						if ( my_agent->epmem_params->exclusions->in_set( wmes[i]->attr ) )					
+						if ( my_agent->epmem_params->exclusions->in_set( wmes[i]->attr ) )
 							continue;
 
 						// if still here, create reservation
@@ -2679,7 +2679,7 @@ void epmem_new_episode( agent *my_agent )
 						continue;
 
 					// prevent exclusions from being recorded
-					if ( my_agent->epmem_params->exclusions->in_set( wmes[i]->attr ) )					
+					if ( my_agent->epmem_params->exclusions->in_set( wmes[i]->attr ) )
 						continue;
 
 					if ( wmes[i]->value->common.symbol_type == IDENTIFIER_SYMBOL_TYPE )
@@ -2722,7 +2722,7 @@ void epmem_new_episode( agent *my_agent )
 									// if something leftover, use it
 									if ( !(*my_id_repo)->empty() )
 									{
-										epmem_reverse_constraint_list::iterator rcp;										
+										epmem_reverse_constraint_list::iterator rcp;
 										pool_p = (*my_id_repo)->begin();
 
 										do
@@ -2732,19 +2732,19 @@ void epmem_new_episode( agent *my_agent )
 											{
 												(*my_agent->epmem_identifier_to_id)[ wmes[i]->value ] = pool_p->first;
 												(*my_agent->epmem_id_to_identifier)[ pool_p->first ] = wmes[i]->value;
-												
+
 												wmes[i]->epmem_id = pool_p->second;
 												wmes[i]->value->id.epmem_id = pool_p->first;
 												(*my_id_repo)->erase( pool_p );
 												(*my_agent->epmem_id_replacement)[ wmes[i]->epmem_id ] = (*my_id_repo);
-												
+
 												pool_p = (*my_id_repo)->end();
 											}
 											else
 											{
 												pool_p++;
 											}
-										} while ( pool_p != (*my_id_repo)->end() );									
+										} while ( pool_p != (*my_id_repo)->end() );
 									}
 									else
 									{
@@ -2766,7 +2766,7 @@ void epmem_new_episode( agent *my_agent )
 								{
 									// update next id
 									wmes[i]->value->id.epmem_id = my_agent->epmem_stats->next_id->get_value();
-									my_agent->epmem_stats->next_id->set_value( wmes[i]->value->id.epmem_id + 1 );									
+									my_agent->epmem_stats->next_id->set_value( wmes[i]->value->id.epmem_id + 1 );
 									epmem_set_variable( my_agent, var_next_id, wmes[i]->value->id.epmem_id + 1 );
 
 									// add repository
@@ -3083,7 +3083,7 @@ void epmem_install_memory( agent *my_agent, Symbol *state, epmem_time_id memory_
 
 	// initialize stat
 	long num_wmes = 0;
-	my_agent->epmem_stats->ncb_wmes->set_value( num_wmes );	
+	my_agent->epmem_stats->ncb_wmes->set_value( num_wmes );
 
 	// if no memory, say so
 	if ( ( memory_id == EPMEM_MEMID_NONE ) ||
@@ -3429,7 +3429,7 @@ void epmem_install_memory( agent *my_agent, Symbol *state, epmem_time_id memory_
 		}
 	}
 
-	// adjust stat	
+	// adjust stat
 	my_agent->epmem_stats->ncb_wmes->set_value( num_wmes );
 
 	////////////////////////////////////////////////////////////////////////////
