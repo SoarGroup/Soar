@@ -58,7 +58,7 @@ rl_param_container::rl_param_container( agent *new_agent ): param_container( new
 	// learning-policy
 	learning_policy = new constant_param<learning_choices>( "learning-policy", sarsa, new f_predicate<learning_choices>() );
 	learning_policy->add_mapping( sarsa, "sarsa" );
-	learning_policy->add_mapping( q, "q" );
+	learning_policy->add_mapping( q, "q-learning" );
 	add_param( learning_policy );
 
 	// eligibility-trace-decay-rate
