@@ -13,7 +13,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import jmat.MathUtil;
+
 import org.apache.log4j.Logger;
+import org.msoar.sps.control.PIDController.Gains;
 
 import com.sun.net.httpserver.Headers;
 import com.sun.net.httpserver.HttpExchange;
@@ -24,18 +27,24 @@ final class HttpController {
 	private static final Logger logger = Logger.getLogger(HttpController.class);
 	private static final int HTTP_PORT = 8000;
 	
+	static HttpController newInstance() {
+		return new HttpController();
+	}
+	
 	private final String ACTION = "action";
 	private enum Actions {
-		postmessage;
+		postmessage, heading, angvel, linvel, estop, agains, lgains, hgains
 	}
 	
 	private enum Keys {
-		message;
+		message, heading, angvel, linvel, pgain, igain, dgain
 	}
 	
-	private IndexHandler indexHandler = new IndexHandler();
+	private final IndexHandler indexHandler = new IndexHandler();
+	private DifferentialDriveCommand ddc;
+	private SplinterModel splinter;
 	
-	HttpController() {
+	private HttpController() {
 		try {
 		    HttpServer server = HttpServer.create(new InetSocketAddress(HTTP_PORT), 0);
 		    server.createContext("/", new IndexHandler());
@@ -48,6 +57,10 @@ final class HttpController {
 		}
 		
 		logger.info("http server running on port " + HTTP_PORT);
+	}
+	
+	void setSplinter(SplinterModel splinter) {
+		this.splinter = splinter;
 	}
 	
 	private class IndexHandler implements HttpHandler {
@@ -72,11 +85,30 @@ final class HttpController {
 
 			String line;
 			while ((line = br.readLine()) != null) {
+				line = performSubstitutions(line);
 				response.append(line);
 				response.append("\n");
 			}
 
 			sendResponse(xchg, response.toString());
+		}
+		
+		private String performSubstitutions(String line) {
+			Gains hgains = splinter.getHGains();
+			line = line.replaceAll("%hpgain%", Double.toString(hgains.p));
+			line = line.replaceAll("%higain%", Double.toString(hgains.i));
+			line = line.replaceAll("%hdgain%", Double.toString(hgains.d));
+
+			Gains agains = splinter.getAGains();
+			line = line.replaceAll("%apgain%", Double.toString(agains.p));
+			line = line.replaceAll("%aigain%", Double.toString(agains.i));
+			line = line.replaceAll("%adgain%", Double.toString(agains.d));
+
+			Gains lgains = splinter.getLGains();
+			line = line.replaceAll("%lpgain%", Double.toString(lgains.p));
+			line = line.replaceAll("%ligain%", Double.toString(lgains.i));
+			line = line.replaceAll("%ldgain%", Double.toString(lgains.d));
+			return line;
 		}
 
 		private void handlePost(HttpExchange xchg) throws IOException {
@@ -116,6 +148,20 @@ final class HttpController {
 			
 			if (properties.get(ACTION).equals(Actions.postmessage.name())) {
 				postMessage(xchg, properties);
+			} else if (properties.get(ACTION).equals(Actions.heading.name())) {
+				heading(xchg, properties);
+			} else if (properties.get(ACTION).equals(Actions.angvel.name())) {
+				angvel(xchg, properties);
+			} else if (properties.get(ACTION).equals(Actions.linvel.name())) {
+				linvel(xchg, properties);
+			} else if (properties.get(ACTION).equals(Actions.estop.name())) {
+				estop(xchg);
+			} else if (properties.get(ACTION).equals(Actions.agains.name())) {
+				agains(xchg, properties);
+			} else if (properties.get(ACTION).equals(Actions.lgains.name())) {
+				lgains(xchg, properties);
+			} else if (properties.get(ACTION).equals(Actions.hgains.name())) {
+				hgains(xchg, properties);
 			} else {
 				logger.error("Unknown action: " + properties.get(ACTION));
 				sendFile(xchg, "/org/msoar/sps/control/html/error.html");
@@ -124,6 +170,7 @@ final class HttpController {
 		}
 		
 		private void postMessage(HttpExchange xchg, Map<String, String> properties) throws IOException {
+			logger.trace("postMessage");
 			String message = properties.get(Keys.message.name());
 			if (message == null) {
 				sendFile(xchg, "/org/msoar/sps/control/html/index.html");
@@ -150,8 +197,141 @@ final class HttpController {
 		    	response.append("Cleared all messages.\n");
 		    }
 		    
+			logger.debug(response);
 		    sendResponse(xchg, response.toString());
 		}
+		
+		private void heading(HttpExchange xchg, Map<String, String> properties) throws IOException {
+			logger.trace("heading");
+			String headingString = properties.get(Keys.heading.name());
+			if (headingString == null) {
+				sendFile(xchg, "/org/msoar/sps/control/html/index.html");
+				return;
+			}
+			
+			try {
+				double yaw = Math.toRadians(Double.parseDouble(headingString));
+				yaw = MathUtil.mod2pi(yaw);
+				ddc = DifferentialDriveCommand.newHeadingCommand(yaw);
+				logger.debug(ddc);
+				sendFile(xchg, "/org/msoar/sps/control/html/index.html");
+			} catch (NumberFormatException e) {
+				sendResponse(xchg, "Invalid number");
+				return;
+			}
+		}
+		
+		private void angvel(HttpExchange xchg, Map<String, String> properties) throws IOException {
+			logger.trace("angvel");
+			String angvelString = properties.get(Keys.angvel.name());
+			if (angvelString == null) {
+				sendFile(xchg, "/org/msoar/sps/control/html/index.html");
+				return;
+			}
+			
+			try {
+				double angvel = Math.toRadians(Double.parseDouble(angvelString));
+				ddc = DifferentialDriveCommand.newAngularVelocityCommand(angvel);
+				logger.debug(ddc);
+				sendFile(xchg, "/org/msoar/sps/control/html/index.html");
+			} catch (NumberFormatException e) {
+				sendResponse(xchg, "Invalid number");
+				return;
+			}
+		}
+		
+		private void linvel(HttpExchange xchg, Map<String, String> properties) throws IOException {
+			logger.trace("linvel");
+			String linvelString = properties.get(Keys.linvel.name());
+			if (linvelString == null) {
+				sendFile(xchg, "/org/msoar/sps/control/html/index.html");
+				return;
+			}
+			
+			try {
+				double linvel = Double.parseDouble(linvelString);
+				ddc = DifferentialDriveCommand.newLinearVelocityCommand(linvel);
+				logger.debug(ddc);
+				sendFile(xchg, "/org/msoar/sps/control/html/index.html");
+			} catch (NumberFormatException e) {
+				sendResponse(xchg, "Invalid number");
+				return;
+			}
+		}
+		
+		private void estop(HttpExchange xchg) throws IOException {
+			logger.trace("estop");
+			ddc = DifferentialDriveCommand.newEStopCommand();
+			sendFile(xchg, "/org/msoar/sps/control/html/index.html");
+		}
+
+		private double parseDefault(String value) {
+			double out = 0;
+			try {
+				out = Double.parseDouble(value);
+			} catch (NullPointerException ignored) {
+				// ignored, use 0
+			}
+			return out;
+		}
+		
+		private void agains(HttpExchange xchg, Map<String, String> properties) throws IOException {
+			logger.trace("agains");
+			double p = 0;
+			double i = 0;
+			double d = 0;
+
+			try {
+				p = parseDefault(properties.get(Keys.pgain.name()));
+				i = parseDefault(properties.get(Keys.igain.name()));
+				d = parseDefault(properties.get(Keys.dgain.name()));
+			} catch (NumberFormatException e) {
+				sendResponse(xchg, "Invalid number");
+				return;
+			}
+			
+			splinter.setAGains(new Gains(p, i, d));
+			sendFile(xchg, "/org/msoar/sps/control/html/index.html");
+		}
+		
+		private void lgains(HttpExchange xchg, Map<String, String> properties) throws IOException {
+			logger.trace("lgains");
+			double p = 0;
+			double i = 0;
+			double d = 0;
+
+			try {
+				p = parseDefault(properties.get(Keys.pgain.name()));
+				i = parseDefault(properties.get(Keys.igain.name()));
+				d = parseDefault(properties.get(Keys.dgain.name()));
+			} catch (NumberFormatException e) {
+				sendResponse(xchg, "Invalid number");
+				return;
+			}
+			
+			splinter.setLGains(new Gains(p, i, d));
+			sendFile(xchg, "/org/msoar/sps/control/html/index.html");
+		}
+		
+		private void hgains(HttpExchange xchg, Map<String, String> properties) throws IOException {
+			logger.trace("hgains");
+			double p = 0;
+			double i = 0;
+			double d = 0;
+
+			try {
+				p = parseDefault(properties.get(Keys.pgain.name()));
+				i = parseDefault(properties.get(Keys.igain.name()));
+				d = parseDefault(properties.get(Keys.dgain.name()));
+			} catch (NumberFormatException e) {
+				sendResponse(xchg, "Invalid number");
+				return;
+			}
+			
+			splinter.setHGains(new Gains(p, i, d));
+			sendFile(xchg, "/org/msoar/sps/control/html/index.html");
+		}
+		
 	}
 	
 	private class DebugHandler implements HttpHandler {
@@ -186,6 +366,16 @@ final class HttpController {
 	List<String> getMessageTokens() {
 		List<String> temp = indexHandler.tokens;
 		indexHandler.tokens = null;
+		return temp;
+	}
+
+	boolean hasDDCommand() {
+		return ddc != null;
+	}
+
+	DifferentialDriveCommand getDDCommand() {
+		DifferentialDriveCommand temp = ddc;
+		ddc = null;
 		return temp;
 	}
 	

@@ -6,7 +6,6 @@ import org.apache.log4j.Logger;
 
 import jmat.LinAlg;
 import jmat.MathUtil;
-import lcmtypes.pose_t;
 import sml.Agent;
 import sml.FloatElement;
 import sml.Identifier;
@@ -84,11 +83,11 @@ final class WaypointIL {
 		return other.equals(name);
 	}
 
-	void update(pose_t pose) {
-		double distanceValue = LinAlg.distance(pose.pos, xyz, 2);
-		double[] delta = LinAlg.subtract(xyz, pose.pos);
+	void update(SplinterState splinter) {
+		double distanceValue = LinAlg.distance(splinter.getSplinterPose().pos, xyz, 2);
+		double[] delta = LinAlg.subtract(xyz, splinter.getSplinterPose().pos);
 		yawValueRad = Math.atan2(delta[1], delta[0]);
-		relativeBearingValueRad = yawValueRad - LinAlg.quatToRollPitchYaw(pose.orientation)[2];
+		relativeBearingValueRad = yawValueRad - LinAlg.quatToRollPitchYaw(splinter.getSplinterPose().orientation)[2];
 		relativeBearingValueRad = MathUtil.mod2pi(relativeBearingValueRad);
 
 		if (logger.isTraceEnabled()) {

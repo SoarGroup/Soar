@@ -18,7 +18,7 @@ final class Components implements DoneListener {
 		private static final String DOT_CONFIG = ".config";
 		private static final String DOT_ENVIRONMENT = ".environment";
 
-		private Names() { assert false; }
+		private Names() { throw new AssertionError(); }
 	}
 	
 	private final Map<String, RemoteConnection> connections = new ConcurrentHashMap<String, RemoteConnection>();

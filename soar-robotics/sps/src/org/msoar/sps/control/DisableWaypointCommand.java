@@ -5,23 +5,23 @@ package org.msoar.sps.control;
 
 import org.apache.log4j.Logger;
 
-import lcmtypes.pose_t;
 import sml.Identifier;
 
 final class DisableWaypointCommand implements Command {
 	private static final Logger logger = Logger.getLogger(DisableWaypointCommand.class);
-	
-	public CommandStatus execute(InputLinkInterface inputLink, Identifier command, pose_t pose, OutputLinkManager outputLinkManager) {
+	static final String NAME = "disable-waypoint";
+
+	public CommandStatus execute(InputLinkInterface inputLink, Identifier command, SplinterState splinter, OutputLinkManager outputLinkManager) {
 		String id = command.GetParameterValue("id");
 		if (id == null) {
-			logger.warn("No id on disable-waypoint command");
+			logger.warn(NAME + ": No id on command");
 			return CommandStatus.error;
 		}
 
-		logger.debug(String.format("disable-waypoint: %16s", id));
+		logger.debug(String.format(NAME + ": %16s", id));
 
 		if (inputLink.disableWaypoint(id) == false) {
-			logger.warn("Unable to disable waypoint " + id + ", no such waypoint");
+			logger.warn(NAME + ": Unable to disable waypoint " + id + ", no such waypoint");
 			return CommandStatus.error;
 		}
 
@@ -32,11 +32,11 @@ final class DisableWaypointCommand implements Command {
 		return false;
 	}
 
-	public boolean modifiesInput() {
+	public boolean createsDDC() {
 		return false;
 	}
 
-	public void updateInput(SplinterInput input) {
-		assert false;
+	public DifferentialDriveCommand getDDC() {
+		throw new AssertionError();
 	}
 }

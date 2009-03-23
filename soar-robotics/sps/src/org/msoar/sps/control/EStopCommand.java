@@ -7,14 +7,13 @@ import org.apache.log4j.Logger;
 
 import sml.Identifier;
 
-final class ClearMessagesCommand implements Command {
-	private static final Logger logger = Logger.getLogger(ClearMessagesCommand.class);
-	static final String NAME = "clear-messages";
+final class EStopCommand implements Command {
+	private static final Logger logger = Logger.getLogger(EStopCommand.class);
+	static final String NAME = "estop";
 
 	public CommandStatus execute(InputLinkInterface inputLink, Identifier command, SplinterState splinter, OutputLinkManager outputLinkManager) {
-		inputLink.clearMessages();
-		logger.info(NAME + ":");
-		return CommandStatus.complete;
+		logger.debug(NAME + ":");
+		return CommandStatus.accepted;
 	}
 
 	public boolean isInterruptable() {
@@ -22,10 +21,10 @@ final class ClearMessagesCommand implements Command {
 	}
 
 	public boolean createsDDC() {
-		return false;
+		return true;
 	}
 
 	public DifferentialDriveCommand getDDC() {
-		throw new AssertionError();
+		return DifferentialDriveCommand.newEStopCommand();
 	}
 }

@@ -5,14 +5,14 @@ package org.msoar.sps.control;
 
 import org.apache.log4j.Logger;
 
-import lcmtypes.pose_t;
 import sml.Identifier;
 
 final class BroadcastMessageCommand implements Command {
 	private static final Logger logger = Logger.getLogger(BroadcastMessageCommand.class);
-	
-	public CommandStatus execute(InputLinkInterface inputLink, Identifier command, pose_t pose, OutputLinkManager outputLinkManager) {
-		logger.warn("broadcast-message command not implemented, ignoring");
+	static final String NAME = "broadcast-message";
+
+	public CommandStatus execute(InputLinkInterface inputLink, Identifier command, SplinterState splinter, OutputLinkManager outputLinkManager) {
+		logger.warn(NAME + ": command not implemented, ignoring");
 		return CommandStatus.error;
 	}
 
@@ -20,11 +20,11 @@ final class BroadcastMessageCommand implements Command {
 		return false;
 	}
 
-	public boolean modifiesInput() {
+	public boolean createsDDC() {
 		return false;
 	}
 
-	public void updateInput(SplinterInput input) {
-		assert false;
+	public DifferentialDriveCommand getDDC() {
+		throw new AssertionError();
 	}
 }

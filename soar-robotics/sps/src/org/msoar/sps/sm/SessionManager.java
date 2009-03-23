@@ -19,7 +19,7 @@ final class SessionManager {
 			"Working directory must be soar-robotics/sps.\n";
 		private static final String INCLUDE = "include";
 		
-		private Names() { assert false; }
+		private Names() { throw new AssertionError(); }
 	}
 	
 	private static final Logger logger = Logger.getLogger(SessionManager.class);

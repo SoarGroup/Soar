@@ -5,13 +5,13 @@ package org.msoar.sps.control;
 
 import org.apache.log4j.Logger;
 
-import lcmtypes.pose_t;
 import sml.Identifier;
 
 final class ConfigureCommand implements Command {
 	private static final Logger logger = Logger.getLogger(ConfigureCommand.class);
-	
-	public CommandStatus execute(InputLinkInterface inputLink, Identifier command, pose_t pose, OutputLinkManager outputLinkManager) {
+	static final String NAME = "configure";
+
+	public CommandStatus execute(InputLinkInterface inputLink, Identifier command, SplinterState splinter, OutputLinkManager outputLinkManager) {
 		String yawFormat = command.GetParameterValue("yaw-format");
 		if (yawFormat != null) {
 			if (yawFormat.equals("float")) {
@@ -19,10 +19,10 @@ final class ConfigureCommand implements Command {
 			} else if (yawFormat.equals("int")) {
 				outputLinkManager.useFloatYawWmes = false;
 			} else {
-				logger.warn("Unknown yaw-format: " + yawFormat);
+				logger.warn(NAME + ": Unknown format: " + yawFormat);
 				return CommandStatus.error;
 			}
-			logger.info("yaw-format set to " + yawFormat);
+			logger.info(NAME + ": set to " + yawFormat);
 		}
 		return CommandStatus.complete;
 	}
@@ -31,11 +31,11 @@ final class ConfigureCommand implements Command {
 		return false;
 	}
 
-	public boolean modifiesInput() {
+	public boolean createsDDC() {
 		return false;
 	}
 
-	public void updateInput(SplinterInput input) {
-		assert false;
+	public DifferentialDriveCommand getDDC() {
+		throw new AssertionError();
 	}
 }

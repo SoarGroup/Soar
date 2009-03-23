@@ -1,13 +1,24 @@
 package org.msoar.sps.control;
 
+import java.io.DataInputStream;
+import java.io.IOException;
+
+import org.apache.log4j.Logger;
+import org.msoar.sps.SharedNames;
+
+import lcm.lcm.LCM;
+import lcm.lcm.LCMSubscriber;
 import lcmtypes.laser_t;
 import sml.Agent;
 import sml.Identifier;
 
-final class RangerIL {
+final class RangerIL implements LCMSubscriber {
+	private static final Logger logger = Logger.getLogger(RangerIL.class);
+
 	private long utimeLast = 0;
 	private final RangeIL[] slices;
-
+	private laser_t laser;
+	
 	RangerIL(Agent agent, Identifier ranges, int count) {
 		this.slices = new RangeIL[count];
 		for (int index = 0; index < count; ++index) {
@@ -15,7 +26,7 @@ final class RangerIL {
 		}
 	}
 
-	void update(laser_t laser, boolean useFloatYawWmes) {
+	void update(boolean useFloatYawWmes) {
 		if (laser == null) {
 			return;
 		}
@@ -48,5 +59,14 @@ final class RangerIL {
 			slices[slice].update(start, end, distance, useFloatYawWmes);
 		}
 	}
-
+	
+	public void messageReceived(LCM lcm, String channel, DataInputStream ins) {
+		if (channel.equals(SharedNames.LASER_CHANNEL)) {
+			try {
+				laser = new laser_t(ins);
+			} catch (IOException e) {
+				logger.error("Error decoding laser_t message: " + e.getMessage());
+			}
+		}
+	}
 }

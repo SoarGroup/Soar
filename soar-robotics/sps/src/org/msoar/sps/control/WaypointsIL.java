@@ -2,7 +2,6 @@ package org.msoar.sps.control;
 
 import java.util.HashMap;
 
-import lcmtypes.pose_t;
 import sml.Agent;
 import sml.Identifier;
 
@@ -34,13 +33,13 @@ final class WaypointsIL {
 		return true;
 	}
 
-	boolean enable(String name, pose_t pose) {
+	boolean enable(String name, SplinterState splinter) {
 		WaypointIL waypoint = waypointList.get(name);
 		if (name == null) {
 			return false;
 		}
 
-		waypoint.update(pose);
+		waypoint.update(splinter);
 		return true;
 	}
 
@@ -54,9 +53,9 @@ final class WaypointsIL {
 		return true;
 	}
 
-	void update(pose_t pose) {
+	void update(SplinterState splinter) {
 		for (WaypointIL waypoint : waypointList.values()) {
-			waypoint.update(pose);
+			waypoint.update(splinter);
 		}
 	}
 }

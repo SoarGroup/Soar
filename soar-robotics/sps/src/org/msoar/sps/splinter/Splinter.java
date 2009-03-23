@@ -15,6 +15,7 @@ import orc.Orc;
 import orc.OrcStatus;
 
 import org.apache.log4j.Logger;
+import org.msoar.sps.HzChecker;
 import org.msoar.sps.SharedNames;
 import org.msoar.sps.Odometry;
 import org.msoar.sps.config.Config;
@@ -38,6 +39,7 @@ public final class Splinter extends TimerTask implements LCMSubscriber {
 	public static final double DEFAULT_TICKMETERS = 0.0000428528;
 	
 	private final Timer timer = new Timer();
+	private final HzChecker hzChecker = new HzChecker(logger);
 	private final Orc orc;
 	private final Motor[] motor = new Motor[2];
 	private final int[] ports;
@@ -46,6 +48,7 @@ public final class Splinter extends TimerTask implements LCMSubscriber {
 	private final double tickMeters;
 	private final double baselineMeters;
 	private final double[] command = { 0, 0 };
+	private final double[] minimumMotion = { 0.1299, 0.1481 };
 	private final double maxThrottleChangePerUpdate;
 
 	private OdometryLogger capture;
@@ -53,6 +56,9 @@ public final class Splinter extends TimerTask implements LCMSubscriber {
 	private long lastSeenDCTime = 0;
 	private long lastUtime = 0;
 	private boolean failsafeSpew = false;
+	
+	private enum CalibrateState { NO, STOP1, RIGHT, STOP2, LEFT, YES }
+	private CalibrateState calibrated = CalibrateState.YES;
 
 	// for odometry update
 	private final Odometry odometry;
@@ -95,8 +101,12 @@ public final class Splinter extends TimerTask implements LCMSubscriber {
 		lcm.subscribe(SharedNames.DRIVE_CHANNEL, this);
 	
 		double updatePeriodMS = 1000 / updateHz;
-		logger.debug("Splinter thread running, period " + updatePeriodMS);
+		logger.debug("Splinter thread running, period set to " + updatePeriodMS);
 		timer.schedule(this, 0, (long)updatePeriodMS); 
+		
+		if (logger.isDebugEnabled()) {
+			timer.schedule(hzChecker, 0, 5000); 
+		}
 	}
 	
 	private void getOdometry(odom_t dest, OrcStatus currentStatus) {
@@ -105,36 +115,114 @@ public final class Splinter extends TimerTask implements LCMSubscriber {
 		dest.right = currentStatus.qeiPosition[ports[RIGHT]] * (invert[RIGHT] ? 1 : -1);
 	}
 	
+	private void calibrate(OrcStatus currentStatus) {
+		double dt = (currentStatus.utime - lastUtime) / 1000000.0;
+		boolean moving = (currentStatus.qeiVelocity[0] != 0) || (currentStatus.qeiVelocity[1] != 0);
+		switch (calibrated) {
+		case NO:
+			logger.info("Calibrating, please wait...");
+			commandFailSafe();
+			calibrated = CalibrateState.STOP1;
+			break;
+			
+		case STOP1:
+			if (moving) {
+				break;
+			}
+			calibrated = CalibrateState.RIGHT;
+			// falls through
+
+		case RIGHT:
+			if (!moving) {
+				command[RIGHT] += 0.10 * dt;
+				motor[RIGHT].setPWM(command[RIGHT]);
+				break;
+			}
+			minimumMotion[RIGHT] = command[RIGHT];
+			commandFailSafe();
+			calibrated = CalibrateState.STOP2;
+			break;
+			
+		case STOP2:
+			if (moving) {
+				break;
+			}
+			calibrated = CalibrateState.LEFT;
+			// falls through
+
+		case LEFT:
+			if (!moving) {
+				command[LEFT] += 0.10 * dt;
+				motor[LEFT].setPWM(command[LEFT]);
+				break;
+			}
+			lastUtime = 0;
+			minimumMotion[LEFT] = command[LEFT];
+			commandFailSafe();
+			calibrated = CalibrateState.YES;
+			// values are always going to be high due to system delay, back of 20%
+			minimumMotion[LEFT] *= .8;
+			minimumMotion[RIGHT] *= .8;
+			logger.info(String.format("Minimum motion throttle l%1.4f r%1.4f", minimumMotion[LEFT], minimumMotion[RIGHT]));
+			break;
+		}
+		if (calibrated == CalibrateState.YES) {
+			lastUtime = 0;
+		} else {
+			lastUtime = currentStatus.utime;
+		}
+	}
+	
 	@Override
 	public void run() {
-		// Get OrcStatus
-		OrcStatus currentStatus = orc.getStatus();
-		
-		boolean moving = (currentStatus.qeiVelocity[0] != 0) || (currentStatus.qeiVelocity[1] != 0);
-		
-		getOdometry(newOdom, currentStatus);
-		
-		// don't update odom unless moving
-		if (moving) {
-			odometry.propagate(newOdom, oldOdom, pose);
-
-			if (capture != null) {
-				try {
-					capture.record(newOdom);
-				} catch (IOException e) {
-					logger.error("IOException while writing odometry: " + e.getMessage());
+		try {
+			if (logger.isDebugEnabled()) {
+				hzChecker.tick();
+			}
+			
+			// Get OrcStatus
+			OrcStatus currentStatus = orc.getStatus();
+	
+			if (calibrated != CalibrateState.YES) {
+				calibrate(currentStatus);
+				return;
+			}
+			
+			boolean moving = (currentStatus.qeiVelocity[0] != 0) || (currentStatus.qeiVelocity[1] != 0);
+			
+			getOdometry(newOdom, currentStatus);
+			
+			// don't update odom unless moving
+			if (moving) {
+				odometry.propagate(newOdom, oldOdom, pose);
+	
+				if (capture != null) {
+					try {
+						capture.record(newOdom);
+					} catch (IOException e) {
+						logger.error("IOException while writing odometry: " + e.getMessage());
+					}
 				}
 			}
+	
+			// save old state
+			oldOdom.left = newOdom.left;
+			oldOdom.right = newOdom.right;
+			
+			pose.utime = currentStatus.utime;
+			lcm.publish(SharedNames.POSE_CHANNEL, pose);
+			
+			commandMotors();
+		} catch (Exception e) {
+			e.printStackTrace();
+			logger.error("Uncaught exception: " + e);
+			commandFailSafe();
 		}
-
-		// save old state
-		oldOdom.left = newOdom.left;
-		oldOdom.right = newOdom.right;
-		
-		pose.utime = currentStatus.utime;
-		lcm.publish(SharedNames.POSE_CHANNEL, pose);
-		
-		commandMotors();
+	}
+	
+	private double mapThrottle(double input, int motor) {
+		double output = ((1 - minimumMotion[motor]) * Math.abs(input)) + minimumMotion[motor];
+		return Math.signum(input) * output;
 	}
 	
 	private void commandMotors() {
@@ -189,7 +277,7 @@ public final class Splinter extends TimerTask implements LCMSubscriber {
 			}
 
 			command[LEFT] += delta;
-			motor[LEFT].setPWM(command[LEFT]);
+			motor[LEFT].setPWM(mapThrottle(command[LEFT], LEFT));
 		} else {
 			motor[LEFT].idle();
 		}
@@ -204,7 +292,7 @@ public final class Splinter extends TimerTask implements LCMSubscriber {
 			}
 
 			command[RIGHT] += delta;
-			motor[RIGHT].setPWM(command[RIGHT]);
+			motor[RIGHT].setPWM(mapThrottle(command[RIGHT], RIGHT));
 		} else {
 			motor[RIGHT].idle();
 		}
@@ -217,6 +305,8 @@ public final class Splinter extends TimerTask implements LCMSubscriber {
 	}
 	
 	private void commandFailSafe() {
+		command[RIGHT] = 0;
+		command[LEFT] = 0;
 		motor[LEFT].setPWM(0);
 		motor[RIGHT].setPWM(0);
 	}

@@ -2,9 +2,6 @@ package org.msoar.sps.control;
 
 import java.util.HashMap;
 
-import lcmtypes.differential_drive_command_t;
-import lcmtypes.pose_t;
-
 import org.apache.log4j.Logger;
 
 import sml.Agent;
@@ -15,77 +12,76 @@ import sml.Identifier;
  *         other parts of the system.
  */
 final class OutputLinkManager {
-	private static final Logger logger = Logger
-			.getLogger(OutputLinkManager.class);
+	private static final Logger logger = Logger.getLogger(OutputLinkManager.class);
 
+	private final SplinterState splinter;
 	private final Agent agent;
-	private final SplinterInput input = new SplinterInput();
 	private final InputLinkInterface inputLink;
 	private final HashMap<String, Command> commands = new HashMap<String, Command>();
 
 	boolean useFloatYawWmes = true;
+	
 	private Identifier runningCommandWme;
-	private CommandStatus runningCommandStatus;
 	private boolean runningCommandIsInterruptable = false;
 
-	OutputLinkManager(Agent agent, InputLinkInterface inputLink) {
+	OutputLinkManager(Agent agent, InputLinkInterface inputLink, SplinterState splinter) {
+		this.splinter = splinter;
 		this.agent = agent;
 		this.inputLink = inputLink;
 
-		commands.put("motor", new MotorCommand());
-		commands.put("move", new MoveCommand());
-		commands.put("rotate", new RotateCommand());
-		commands.put("rotate-to", new RotateToCommand());
-		commands.put("stop", new StopCommand());
-		commands.put("add-waypoint", new AddWaypointCommand());
-		commands.put("remove-waypoint", new RemoveWaypointCommand());
-		commands.put("enable-waypoint", new EnableWaypointCommand());
-		commands.put("disable-waypoint", new DisableWaypointCommand());
-		commands.put("broadcast-message", new BroadcastMessageCommand());
-		commands.put("remove-message", new RemoveMessageCommand());
-		commands.put("clear-messages", new ClearMessagesCommand());
-		commands.put("configure", new ConfigureCommand());
+		commands.put(MotorCommand.NAME, new MotorCommand());
+		commands.put(SetVelocityCommand.NAME, new SetVelocityCommand());
+		commands.put(SetHeadingCommand.NAME, new SetHeadingCommand());
+		commands.put(StopCommand.NAME, new StopCommand());
+		commands.put(EStopCommand.NAME, new EStopCommand());
+		commands.put(AddWaypointCommand.NAME, new AddWaypointCommand());
+		commands.put(RemoveWaypointCommand.NAME, new RemoveWaypointCommand());
+		commands.put(EnableWaypointCommand.NAME, new EnableWaypointCommand());
+		commands.put(DisableWaypointCommand.NAME, new DisableWaypointCommand());
+		commands.put(BroadcastMessageCommand.NAME, new BroadcastMessageCommand());
+		commands.put(RemoveMessageCommand.NAME, new RemoveMessageCommand());
+		commands.put(ClearMessagesCommand.NAME, new ClearMessagesCommand());
+		commands.put(ConfigureCommand.NAME, new ConfigureCommand());
+		commands.put(SetOffsetCommand.NAME, new SetOffsetCommand());
 	}
 
 	boolean getUseFloatYawWmes() {
 		return useFloatYawWmes;
 	}
 
-	boolean getDC(differential_drive_command_t dc, pose_t pose) {
-		synchronized (input) {
-			if (!input.hasInput()) {
-				return false;
+	private void interruptCurrentCommand() {
+		if (runningCommandWme != null) {
+			if (runningCommandIsInterruptable) {
+				CommandStatus.interrupted.addStatus(agent, runningCommandWme);
+			} else {
+				CommandStatus.complete.addStatus(agent, runningCommandWme);
 			}
-			CommandStatus status = input.getDC(dc, pose);
-			if (runningCommandWme != null) {
-				if (status == CommandStatus.executing) {
-					if (runningCommandStatus == CommandStatus.accepted) {
-						runningCommandStatus = CommandStatus.executing;
-						CommandStatus.executing.addStatus(agent,
-								runningCommandWme);
-					}
-				} else if (status == CommandStatus.complete) {
-					CommandStatus.complete.addStatus(agent, runningCommandWme);
-					runningCommandWme = null;
-				}
-			}
+			runningCommandWme = null;
 		}
-		return true;
 	}
 
-	void update(pose_t pose, long lastUpdate) {
+	private void setCurrentCommand(Identifier commandWme, boolean interruptable, CommandStatus status) {
+		runningCommandWme = commandWme;
+		runningCommandIsInterruptable = interruptable;
+	}
+
+	DifferentialDriveCommand update() {
+		// TODO: update status of running command
+		
 		// process output
-		boolean producedInput = false;
+		DifferentialDriveCommand ddc = null;
 		for (int i = 0; i < agent.GetNumberCommands(); ++i) {
 			Identifier commandWme = agent.GetCommand(i);
-			if (runningCommandWme != null) {
-				if (commandWme.GetTimeTag() == runningCommandWme.GetTimeTag()) {
+
+			// is it already running?
+			synchronized (this) {
+				if (runningCommandWme != null && runningCommandWme.GetTimeTag() == commandWme.GetTimeTag()) {
 					continue;
 				}
 			}
-
+			
 			String commandName = commandWme.GetAttribute();
-			logger.trace(commandName + " " + commandWme.GetTimeTag());
+			logger.debug(commandName + " " + commandWme.GetTimeTag());
 
 			Command commandObject = commands.get(commandName);
 			if (commandObject == null) {
@@ -93,15 +89,14 @@ final class OutputLinkManager {
 				CommandStatus.error.addStatus(agent, commandWme);
 				continue;
 			}
-
-			if (commandObject.modifiesInput() && producedInput) {
-				logger.warn("Multiple input commands received, skipping "
-						+ commandName);
+			
+			if (ddc != null && commandObject.createsDDC()) {
+				logger.warn("Ignoring command " + commandName + " because already have " + ddc);
+				CommandStatus.error.addStatus(agent, commandWme);
 				continue;
 			}
 
-			CommandStatus status = commandObject.execute(inputLink, commandWme,
-					pose, this);
+			CommandStatus status = commandObject.execute(inputLink, commandWme, splinter, this);
 			if (status == CommandStatus.error) {
 				CommandStatus.error.addStatus(agent, commandWme);
 				continue;
@@ -121,38 +116,20 @@ final class OutputLinkManager {
 			} else {
 				throw new IllegalStateException();
 			}
-
-			if (commandObject.modifiesInput()) {
-				producedInput = true;
-				synchronized (input) {
-					if (runningCommandWme != null) {
-						if (runningCommandIsInterruptable) {
-							CommandStatus.interrupted.addStatus(agent,
-									runningCommandWme);
-						} else {
-							CommandStatus.complete.addStatus(agent,
-									runningCommandWme);
-						}
-						runningCommandWme = null;
-					}
-
-					if (status != CommandStatus.complete) {
-						runningCommandWme = commandWme;
-						runningCommandIsInterruptable = commandObject
-								.isInterruptable();
-						runningCommandStatus = status;
-					}
-
-					commandObject.updateInput(input);
-					input.setUtime(lastUpdate);
+			
+			if (commandObject.createsDDC()) {
+				ddc = commandObject.getDDC();
+				logger.debug(ddc);
+				
+				interruptCurrentCommand();
+				if (status != CommandStatus.complete) {
+					setCurrentCommand(commandWme, commandObject.isInterruptable(), status);
 				}
-			}
-		}
 
-		if (!producedInput) {
-			synchronized (input) {
-				input.setUtime(lastUpdate);
+				commandObject.getDDC();
 			}
 		}
+		
+		return ddc;
 	}
 }

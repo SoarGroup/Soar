@@ -1,29 +1,29 @@
 package org.msoar.sps.control;
 
-import java.io.DataInputStream;
-import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Timer;
 
 import org.apache.log4j.Logger;
-import org.msoar.sps.SharedNames;
+import org.msoar.sps.HzChecker;
+import org.msoar.sps.config.Config;
 
 import sml.Agent;
 import sml.Kernel;
 import sml.smlSystemEventId;
 import sml.smlUpdateEventId;
 
-import lcm.lcm.LCM;
-import lcm.lcm.LCMSubscriber;
-import lcmtypes.differential_drive_command_t;
-import lcmtypes.laser_t;
-import lcmtypes.pose_t;
-
-final class SoarInterface implements Kernel.UpdateEventInterface, Kernel.SystemEventInterface, LCMSubscriber {
+final class SoarInterface implements Kernel.UpdateEventInterface, Kernel.SystemEventInterface {
 	private static final Logger logger = Logger.getLogger(SoarInterface.class);
 
-	private final static long DCDELAY_THRESHOLD_USEC = 250000L; // 250 ms
+	private final static int DEFAULT_RANGES_COUNT = 5;
+	
+	static SoarInterface newInstance(Config config, SplinterState splinter) {
+		return new SoarInterface(config, splinter);
+	}
 
+	private final Timer timer = new Timer();
+	private final HzChecker hzChecker = new HzChecker(logger);
 	private final Kernel kernel;
 	private final Agent agent;
 	private final InputLinkManager input;
@@ -31,12 +31,10 @@ final class SoarInterface implements Kernel.UpdateEventInterface, Kernel.SystemE
 
 	private boolean stopSoar = false;
 	private boolean running = false;
-	private boolean failsafeSpew = false;
 	private List<String> tokens;
-	private pose_t pose;
-	private laser_t laser;
+	private DifferentialDriveCommand ddc;
 	
-	SoarInterface(String productions, int rangesCount) {
+	private SoarInterface(Config config, SplinterState splinter) {
 		kernel = Kernel.CreateKernelInNewThread();
 		if (kernel.HadError()) {
 			logger.error("Soar error: " + kernel.GetLastErrorDescription());
@@ -52,6 +50,7 @@ final class SoarInterface implements Kernel.UpdateEventInterface, Kernel.SystemE
 		}
 
 		// load productions
+		String productions = config.getString("productions");
 		if (productions != null && !agent.LoadProductions(productions)) {
 			logger.error("Failed to load productions: " + productions);
 			logger.error("Agent error: " + agent.GetLastErrorDescription());
@@ -59,48 +58,17 @@ final class SoarInterface implements Kernel.UpdateEventInterface, Kernel.SystemE
 			agent.ExecuteCommandLine("waitsnc -e");
 		}
 		
-		LCM lcm = LCM.getSingleton();
-		lcm.subscribe(SharedNames.POSE_CHANNEL, this);
-		lcm.subscribe(SharedNames.LASER_CHANNEL, this);
-		
-		input = new InputLinkManager(agent, rangesCount);
-		output = new OutputLinkManager(agent, input.getInterface());
+		int rangesCount = config.getInt("ranges_count", DEFAULT_RANGES_COUNT);
+		input = new InputLinkManager(agent, rangesCount, splinter);
+		output = new OutputLinkManager(agent, input.getInterface(), splinter);
 		
 		kernel.RegisterForUpdateEvent(smlUpdateEventId.smlEVENT_AFTER_ALL_OUTPUT_PHASES, this, null);
 		kernel.RegisterForSystemEvent(smlSystemEventId.smlEVENT_SYSTEM_START, this, null);
 		kernel.RegisterForSystemEvent(smlSystemEventId.smlEVENT_SYSTEM_STOP, this, null);
-	}
-	
-	void getDC(differential_drive_command_t dc) {
-		if (!output.getDC(dc, pose)) {
-			failSafe(dc);
-			return;
-		}
-
-		// is it timely
-		long dcDelay = getCurrentUtime() - dc.utime;
-		if (dcDelay > DCDELAY_THRESHOLD_USEC) {
-			// not timely, fail-safe
-			if (failsafeSpew == false) {
-				logger.error("Obsolete drive command " + dcDelay + " usec");
-				failsafeSpew = true;
-			}
-			failSafe(dc);
-			return;
-		}
 		
-		if (failsafeSpew) {
-			logger.info("Receiving valid commands again, leaving fail-safe.");
-			failsafeSpew = false;
+		if (logger.isDebugEnabled()) {
+			timer.schedule(hzChecker, 0, 5000); 
 		}
-	}
-
-	private void failSafe(differential_drive_command_t dc) {
-		dc.left_enabled = true;
-		dc.right_enabled = true;
-		dc.left = 0;
-		dc.right = 0;
-		dc.utime = getCurrentUtime();
 	}
 	
 	private class SoarRunner implements Runnable {
@@ -123,26 +91,26 @@ final class SoarInterface implements Kernel.UpdateEventInterface, Kernel.SystemE
 		}
 	}
 
-	public void updateEventHandler(int arg0, Object arg1, Kernel arg2, int arg3) {
+	public void updateEventHandler(int eventID, Object data, Kernel kernel, int arg3) {
+		if (logger.isDebugEnabled()) {
+			hzChecker.tick();
+		}
+		
 		if (stopSoar) {
 			logger.debug("Stopping Soar");
 			kernel.StopAllAgents();
 		}
 
-		output.update(pose, getCurrentUtime());
+		ddc = output.update();
 		
 		synchronized (this) {
-			input.update(pose, laser, tokens, output.getUseFloatYawWmes());
+			input.update(tokens, output.getUseFloatYawWmes());
 			tokens = null;
 		}
 		
 		agent.Commit();
 	}
 	
-	long getCurrentUtime() {
-		return System.nanoTime() / 1000L;
-	}
-
 	void shutdown() {
 		stopSoar = true;
 		try {
@@ -165,22 +133,6 @@ final class SoarInterface implements Kernel.UpdateEventInterface, Kernel.SystemE
 		}
 	}
 
-	public void messageReceived(LCM lcm, String channel, DataInputStream ins) {
-		if (channel.equals(SharedNames.POSE_CHANNEL)) {
-			try {
-				pose = new pose_t(ins);
-			} catch (IOException e) {
-				logger.error("Error decoding pose_t message: " + e.getMessage());
-			}
-		} else if (channel.equals(SharedNames.LASER_CHANNEL)) {
-			try {
-				laser = new laser_t(ins);
-			} catch (IOException e) {
-				logger.error("Error decoding laser_t message: " + e.getMessage());
-			}
-		}
-	}
-
 	void setStringInput(List<String> tokens) {
 		List<String> warn = null;
 		synchronized (this) {
@@ -193,5 +145,18 @@ final class SoarInterface implements Kernel.UpdateEventInterface, Kernel.SystemE
 					+ " with "
 					+ Arrays.toString(tokens.toArray(new String[tokens.size()])));
 		}
+	}
+
+	boolean hasDDCommand() {
+		if (!running) {
+			return false;
+		}
+		return ddc != null;
+	}
+
+	DifferentialDriveCommand getDDCommand() {
+		DifferentialDriveCommand temp = ddc;
+		ddc = null;
+		return temp;
 	}
 }

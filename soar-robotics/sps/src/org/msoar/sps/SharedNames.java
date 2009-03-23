@@ -21,6 +21,6 @@ public final class SharedNames {
 	}
 
 	private SharedNames() {
-		assert false;
+		throw new AssertionError();
 	}
 }

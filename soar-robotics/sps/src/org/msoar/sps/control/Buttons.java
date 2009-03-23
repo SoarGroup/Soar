@@ -3,7 +3,7 @@ package org.msoar.sps.control;
 import org.apache.log4j.Logger;
 
 enum Buttons {
-	OVERRIDE, SOAR, TANK, SLOW, TAG;
+	OVERRIDE, SOAR, GPMODE, SLOW, TAG;
 	
 	private static final Logger logger = Logger.getLogger(Buttons.class);
 	private static Gamepad gp;
@@ -23,8 +23,12 @@ enum Buttons {
 	}
 	
 	boolean checkAndDisable() {
+		if (modeEnabled == false) {
+			return false;
+		}
 		boolean temp = modeEnabled;
 		modeEnabled = false;
+		logger.debug(name() + " changed to " + (modeEnabled ? "enabled" : "disabled"));
 		return temp;
 	}
 	
@@ -36,7 +40,7 @@ enum Buttons {
 		// change on leading edge
 		if (!buttonState && button) {
 			modeEnabled = !modeEnabled;
-			logger.info(name() + " changed to " + (modeEnabled ? "enabled" : "disabled"));
+			logger.debug(name() + " changed to " + (modeEnabled ? "enabled" : "disabled"));
 		}
 		buttonState = button;
 	}

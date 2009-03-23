@@ -50,11 +50,8 @@ final class ClientConnection implements DoneListener {
 			Runner runner = null;
 			
 			while ((inputLine = in.readLine()) != null) {
+				
 				ServerCommands command = ServerCommands.valueOf(inputLine);
-				if (command == null) {
-					// This is not recoverable.
-					throw new IOException("Unknown command: " + inputLine);
-				}
 				
 				boolean close = false;
 				switch (command) {

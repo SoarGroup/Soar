@@ -55,10 +55,6 @@ final class RemoteConnection implements Runnable {
 			String inputLine;
 			while ((inputLine = in.readLine()) != null) {
 				ClientCommands command = ClientCommands.valueOf(inputLine);
-				if (command == null) {
-					// This is not recoverable.
-					throw new IOException("Unknown command: " + inputLine);
-				}
 				
 				boolean close = false;
 				switch (command) {

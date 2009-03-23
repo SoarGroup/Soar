@@ -4,9 +4,6 @@ import java.util.List;
 
 import org.apache.log4j.Logger;
 
-import lcmtypes.laser_t;
-import lcmtypes.pose_t;
-
 import sml.Agent;
 import sml.Identifier;
 
@@ -22,7 +19,7 @@ final class InputLinkManager {
 	private final SelfIL selfIL;
 	private final RangerIL rangerIL;
 
-	InputLinkManager(Agent agent, int rangesCount) {
+	InputLinkManager(Agent agent, int rangesCount, SplinterState splinter) {
 		this.agent = agent;
 		this.agent.SetBlinkIfNoChange(false);
 
@@ -34,7 +31,7 @@ final class InputLinkManager {
 		timeIL = new TimeIL(agent, time);
 
 		Identifier self = agent.CreateIdWME(inputLink, "self");
-		selfIL = new SelfIL(agent, self);
+		selfIL = new SelfIL(agent, self, splinter);
 
 		Identifier ranges = agent.CreateIdWME(inputLink, "ranges");
 		rangerIL = new RangerIL(agent, ranges, rangesCount);
@@ -42,13 +39,14 @@ final class InputLinkManager {
 		agent.Commit();
 	}
 
-	void update(pose_t pose, laser_t laser, List<String> tokens, boolean useFloatYawWmes) {
+	void update(List<String> tokens, boolean useFloatYawWmes) {
 		timeIL.update();
-		selfIL.update(pose, tokens, useFloatYawWmes);
-		rangerIL.update(laser, useFloatYawWmes);
+		selfIL.update(tokens, useFloatYawWmes);
+		rangerIL.update(useFloatYawWmes);
 	}
 	
 	InputLinkInterface getInterface() {
 		return selfIL;
 	}
+
 }

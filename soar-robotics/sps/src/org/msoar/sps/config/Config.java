@@ -272,7 +272,7 @@ public class Config {
 			}
 		} catch (IllegalAccessException e) {
 			// This shouldn't happen as long as all fields are public.
-			assert false;
+			throw new AssertionError();
 		}
 	}
 

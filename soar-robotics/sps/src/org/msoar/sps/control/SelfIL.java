@@ -5,7 +5,6 @@ import java.util.List;
 
 import jmat.LinAlg;
 import jmat.MathUtil;
-import lcmtypes.pose_t;
 import sml.Agent;
 import sml.FloatElement;
 import sml.Identifier;
@@ -17,15 +16,21 @@ final class SelfIL implements InputLinkInterface {
 	private final FloatElement xwme;
 	private final FloatElement ywme;
 	private final FloatElement zwme;
+	private final FloatElement xvelwme;
+	private final FloatElement yvelwme;
+	private final FloatElement yawvelwme;
 	private final Identifier posewme;
 	private final long utimeLast = 0;
 	private final ReceivedMessagesIL receivedMessagesIL;
+	private final SplinterState splinter;
 	
 	private IntElement yawwmei;
 	private FloatElement yawwmef;
 	
-	SelfIL(Agent agent, Identifier self) {
+	SelfIL(Agent agent, Identifier self, SplinterState splinter) {
 		this.agent = agent;
+		this.splinter = splinter;
+		
 		agent.CreateStringWME(self, "name", agent.GetAgentName());
 
 		posewme = agent.CreateIdWME(self, "pose");
@@ -33,6 +38,10 @@ final class SelfIL implements InputLinkInterface {
 		ywme = agent.CreateFloatWME(posewme, "y", 0);
 		zwme = agent.CreateFloatWME(posewme, "z", 0);
 		yawwmef = agent.CreateFloatWME(posewme, "yaw", 0);
+
+		xvelwme = agent.CreateFloatWME(posewme, "x-velocity", 0);
+		yvelwme = agent.CreateFloatWME(posewme, "y-velocity", 0);
+		yawvelwme = agent.CreateFloatWME(posewme, "yaw-velocity", 0);
 		
 		Identifier waypoints = agent.CreateIdWME(self, "waypoints");
 		waypointsIL = new WaypointsIL(agent, waypoints);
@@ -61,23 +70,27 @@ final class SelfIL implements InputLinkInterface {
 		}
 	}
 	
-	void update(pose_t pose, List<String> tokens, boolean useFloatYawWmes) {
-		if (pose == null) {
+	void update(List<String> tokens, boolean useFloatYawWmes) {
+		if (splinter.getSplinterPose() == null) {
 			return; // no info
 		}
 		
-		if (utimeLast == pose.utime) {
+		if (utimeLast == splinter.getSplinterPose().utime) {
 			return; // same info
 		}
 
-		agent.Update(xwme, pose.pos[0]);
-		agent.Update(ywme, pose.pos[1]);
-		agent.Update(zwme, pose.pos[2]);
-		double yawRadians = LinAlg.quatToRollPitchYaw(pose.orientation)[2];
+		agent.Update(xwme, splinter.getSplinterPose().pos[0]);
+		agent.Update(ywme, splinter.getSplinterPose().pos[1]);
+		agent.Update(zwme, splinter.getSplinterPose().pos[2]);
+		agent.Update(xvelwme, splinter.getSplinterPose().vel[0]);
+		agent.Update(yvelwme, splinter.getSplinterPose().pos[1]);
+
+		double yawRadians = LinAlg.quatToRollPitchYaw(splinter.getSplinterPose().orientation)[2];
 		yawRadians = MathUtil.mod2pi(yawRadians);
 		updateYawWme(useFloatYawWmes, yawRadians);
+		agent.Update(yawvelwme, Math.toDegrees(splinter.getSplinterPose().rotation_rate[2]));
 		
-		waypointsIL.update(pose);
+		waypointsIL.update(splinter);
 		
 		// TODO support multiple sources
 		if (tokens != null) {
@@ -110,8 +123,8 @@ final class SelfIL implements InputLinkInterface {
 		return waypointsIL.disable(id);
 	}
 
-	public boolean enableWaypoint(String id, pose_t pose) {
-		return waypointsIL.enable(id, pose);
+	public boolean enableWaypoint(String id, SplinterState splinter) {
+		return waypointsIL.enable(id, splinter);
 	}
 
 	public boolean removeMessage(int id) {
