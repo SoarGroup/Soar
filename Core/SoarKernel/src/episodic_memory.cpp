@@ -5594,6 +5594,59 @@ void epmem_consider_new_episode( agent *my_agent )
 				new_memory = ( wme_count != 0 );
 				my_agent->bottom_goal->id.epmem_info->last_ol_count = wme_count;
 			}
+			
+			// I'm sticking with shallow check for now, since I imagine environment
+			// status messages could be a problem.  In any case, recursive code is below.
+
+			/*int tc = get_new_tc_number( my_agent );
+			std::queue<Symbol *> syms;
+			Symbol *parent_sym;
+			unsigned long wme_count = 0;
+			wme **wmes;			
+			unsigned long len;
+			unsigned long i;
+
+			// initialize BFS at command
+			syms.push( my_agent->io_header_output );
+
+			while ( !syms.empty() )
+			{
+				// get state
+				parent_sym = syms.front();
+				syms.pop();
+			
+				// get children of the current identifier
+				wmes = epmem_get_augs_of_id( my_agent, parent_sym, tc, &len );
+
+				if ( wmes )
+				{
+					for ( i=0; i<len; i++ )
+					{
+						wme_count++;
+
+						if ( wmes[i]->timetag > my_agent->bottom_goal->id.epmem_info->last_ol_time )
+						{
+							new_memory = true;
+							my_agent->bottom_goal->id.epmem_info->last_ol_time = wmes[i]->timetag;
+						}
+
+						if ( wmes[i]->value->common.symbol_type == IDENTIFIER_SYMBOL_TYPE )
+						{
+							syms.push( wmes[i]->value );
+						}
+					}
+					
+					// free space from aug list
+					free_memory( my_agent, wmes, MISCELLANEOUS_MEM_USAGE );
+				}
+			}
+
+			// see if any WMEs were removed
+			if ( my_agent->bottom_goal->id.epmem_info->last_ol_count != wme_count )
+			{
+				new_memory = ( wme_count != 0 );
+				my_agent->bottom_goal->id.epmem_info->last_ol_count = wme_count;
+			}*/
 		}
 		else if ( trigger == epmem_param_container::dc )
 		{
@@ -5655,10 +5708,7 @@ void epmem_respond_to_cmd( agent *my_agent )
 	epmem_time_id before, after;
 	bool good_cue;
 	int path;
-
-	slot *s;
-	wme *w;
-	Symbol *epmem_cmd;
+	
 	unsigned long wme_count;
 	bool new_cue;
 
@@ -5667,22 +5717,43 @@ void epmem_respond_to_cmd( agent *my_agent )
 		// make sure this state has had some sort of change to the cmd
 		new_cue = false;
 		wme_count = 0;
-		{
-			epmem_cmd = state->id.epmem_cmd_header;
+		{			
+			int tc = get_new_tc_number( my_agent );
+			std::queue<Symbol *> syms;
+			Symbol *parent_sym;			
 
-			// examine all entries on the cmd header
-			// that appeared since last cue was encountered
-			for ( s = epmem_cmd->id.slots; s != NIL; s = s->next )
+			// initialize BFS at command
+			syms.push( state->id.epmem_cmd_header );
+
+			while ( !syms.empty() )
 			{
-				for ( w = s->wmes; w != NIL; w = w->next )
-				{
-					wme_count++;
+				// get state
+				parent_sym = syms.front();
+				syms.pop();
+			
+				// get children of the current identifier
+				wmes = epmem_get_augs_of_id( my_agent, parent_sym, tc, &len );
 
-					if ( w->timetag > state->id.epmem_info->last_cmd_time )
+				if ( wmes )
+				{
+					for ( i=0; i<len; i++ )
 					{
-						new_cue = true;
-						state->id.epmem_info->last_cmd_time = w->timetag;
+						wme_count++;
+
+						if ( wmes[i]->timetag > state->id.epmem_info->last_cmd_time )
+						{
+							new_cue = true;
+							state->id.epmem_info->last_cmd_time = wmes[i]->timetag;
+						}
+
+						if ( wmes[i]->value->common.symbol_type == IDENTIFIER_SYMBOL_TYPE )
+						{
+							syms.push( wmes[i]->value );
+						}
 					}
+					
+					// free space from aug list
+					free_memory( my_agent, wmes, MISCELLANEOUS_MEM_USAGE );
 				}
 			}
 
