@@ -7,17 +7,24 @@ import java.util.Arrays;
 
 import org.apache.log4j.Logger;
 
+import sml.Agent;
 import sml.Identifier;
 
-final class AddWaypointCommand implements Command {
+/**
+ * @author voigtjr
+ *
+ * Add a waypoint to the waypoint system.
+ */
+final class AddWaypointCommand extends NoDDCAdapter implements Command {
 	private static final Logger logger = Logger.getLogger(AddWaypointCommand.class);
 	static final String NAME = "add-waypoint";
 
-	public CommandStatus execute(InputLinkInterface inputLink, Identifier command, SplinterState splinter, OutputLinkManager outputLinkManager) {
+	public boolean execute(InputLinkInterface inputLink, Agent agent, Identifier command, SplinterState splinter, OutputLinkManager outputLinkManager) {
 		String id = command.GetParameterValue("id");
 		if (id == null) {
 			logger.warn(NAME + ": No id on command");
-			return CommandStatus.error;
+			CommandStatus.error.addStatus(agent, command);
+			return false;
 		}
 
 		if (splinter == null) {
@@ -31,7 +38,8 @@ final class AddWaypointCommand implements Command {
 			// no x param is ok, use current
 		} catch (NumberFormatException e) {
 			logger.warn(NAME + ": Unable to parse x: " + command.GetParameterValue("x"));
-			return CommandStatus.error;
+			CommandStatus.error.addStatus(agent, command);
+			return false;
 		}
 
 		try {
@@ -40,24 +48,15 @@ final class AddWaypointCommand implements Command {
 			// no y param is ok, use current
 		} catch (NumberFormatException e) {
 			logger.warn(NAME + ": Unable to parse y: " + command.GetParameterValue("y"));
-			return CommandStatus.error;
+			CommandStatus.error.addStatus(agent, command);
+			return false;
 		}
 
 		logger.debug(String.format(NAME + ": %16s %10.3f %10.3f", id, pos[0], pos[1]));
 		inputLink.addWaypoint(pos, id, outputLinkManager.useFloatYawWmes);
 
-		return CommandStatus.complete;
-	}
-
-	public boolean isInterruptable() {
-		return false;
-	}
-
-	public boolean createsDDC() {
-		return false;
-	}
-
-	public DifferentialDriveCommand getDDC() {
-		throw new AssertionError();
+		CommandStatus.accepted.addStatus(agent, command);
+		CommandStatus.complete.addStatus(agent, command);
+		return true;
 	}
 }

@@ -5,38 +5,38 @@ package org.msoar.sps.control;
 
 import org.apache.log4j.Logger;
 
+import sml.Agent;
 import sml.Identifier;
 
-final class EnableWaypointCommand implements Command {
+/**
+ * @author voigtjr
+ *
+ * Enable waypoint.
+ */
+final class EnableWaypointCommand extends NoDDCAdapter implements Command {
 	private static final Logger logger = Logger.getLogger(EnableWaypointCommand.class);
 	static final String NAME = "enable-waypoint";
 
-	public CommandStatus execute(InputLinkInterface inputLink, Identifier command, SplinterState splinter, OutputLinkManager outputLinkManager) {
+	public boolean execute(InputLinkInterface inputLink, Agent agent,
+			Identifier command, SplinterState splinter,
+			OutputLinkManager outputLinkManager) {
 		String id = command.GetParameterValue("id");
 		if (id == null) {
 			logger.warn(NAME + ": No id on command");
-			return CommandStatus.error;
+			CommandStatus.error.addStatus(agent, command);
+			return false;
 		}
 
 		logger.debug(String.format(NAME + ": %16s", id));
 
 		if (inputLink.enableWaypoint(id, splinter) == false) {
 			logger.warn(NAME + ": Unable to enable waypoint " + id + ", no such waypoint");
-			return CommandStatus.error;
+			CommandStatus.error.addStatus(agent, command);
+			return false;
 		}
 
-		return CommandStatus.complete;
-	}
-
-	public boolean isInterruptable() {
-		return false;
-	}
-
-	public boolean createsDDC() {
-		return false;
-	}
-
-	public DifferentialDriveCommand getDDC() {
-		throw new AssertionError();
+		CommandStatus.accepted.addStatus(agent, command);
+		CommandStatus.complete.addStatus(agent, command);
+		return true;
 	}
 }

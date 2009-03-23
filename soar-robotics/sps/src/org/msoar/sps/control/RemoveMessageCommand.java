@@ -5,43 +5,45 @@ package org.msoar.sps.control;
 
 import org.apache.log4j.Logger;
 
+import sml.Agent;
 import sml.Identifier;
 
-final class RemoveMessageCommand implements Command {
+/**
+ * @author voigtjr
+ *
+ * Removes a message from the received message list.
+ */
+final class RemoveMessageCommand extends NoDDCAdapter implements Command {
 	private static final Logger logger = Logger.getLogger(RemoveMessageCommand.class);
 	static final String NAME = "remove-message";
 
-	public CommandStatus execute(InputLinkInterface inputLink, Identifier command, SplinterState splinter, OutputLinkManager outputLinkManager) {
+	public boolean execute(InputLinkInterface inputLink, Agent agent,
+			Identifier command, SplinterState splinter,
+			OutputLinkManager outputLinkManager) {
+
 		int id = -1;
 		try {
 			id = Integer.parseInt(command.GetParameterValue("id"));
 		} catch (NullPointerException ignored) {
 			logger.warn(NAME + ": No id on command");
-			return CommandStatus.error;
+			CommandStatus.error.addStatus(agent, command);
+			return false;
 		} catch (NumberFormatException e) {
 			logger.warn(NAME + ": Unable to parse id: " + command.GetParameterValue("id"));
-			return CommandStatus.error;
+			CommandStatus.error.addStatus(agent, command);
+			return false;
 		}
 
 		logger.debug(String.format(NAME + ": %d", id));
 		
 		if (inputLink.removeMessage(id) == false) {
 			logger.warn(NAME + ": Unable to remove message " + id + ", no such message");
-			return CommandStatus.error;
+			CommandStatus.error.addStatus(agent, command);
+			return false;
 		}
 
-		return CommandStatus.complete;
-	}
-
-	public boolean isInterruptable() {
-		return false;
-	}
-
-	public boolean createsDDC() {
-		return false;
-	}
-
-	public DifferentialDriveCommand getDDC() {
-		throw new AssertionError();
+		CommandStatus.accepted.addStatus(agent, command);
+		CommandStatus.complete.addStatus(agent, command);
+		return true;
 	}
 }

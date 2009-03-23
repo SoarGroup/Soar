@@ -5,13 +5,21 @@ package org.msoar.sps.control;
 
 import org.apache.log4j.Logger;
 
+import sml.Agent;
 import sml.Identifier;
 
-final class ConfigureCommand implements Command {
+/**
+ * @author voigtjr
+ *
+ * Configure robot.
+ */
+final class ConfigureCommand extends NoDDCAdapter implements Command {
 	private static final Logger logger = Logger.getLogger(ConfigureCommand.class);
 	static final String NAME = "configure";
 
-	public CommandStatus execute(InputLinkInterface inputLink, Identifier command, SplinterState splinter, OutputLinkManager outputLinkManager) {
+	public boolean execute(InputLinkInterface inputLink, Agent agent,
+			Identifier command, SplinterState splinter,
+			OutputLinkManager outputLinkManager) {
 		String yawFormat = command.GetParameterValue("yaw-format");
 		if (yawFormat != null) {
 			if (yawFormat.equals("float")) {
@@ -20,22 +28,14 @@ final class ConfigureCommand implements Command {
 				outputLinkManager.useFloatYawWmes = false;
 			} else {
 				logger.warn(NAME + ": Unknown format: " + yawFormat);
-				return CommandStatus.error;
+				CommandStatus.error.addStatus(agent, command);
+				return false;
 			}
 			logger.info(NAME + ": set to " + yawFormat);
 		}
-		return CommandStatus.complete;
-	}
-
-	public boolean isInterruptable() {
-		return false;
-	}
-
-	public boolean createsDDC() {
-		return false;
-	}
-
-	public DifferentialDriveCommand getDDC() {
-		throw new AssertionError();
+		
+		CommandStatus.accepted.addStatus(agent, command);
+		CommandStatus.complete.addStatus(agent, command);
+		return true;
 	}
 }

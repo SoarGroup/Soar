@@ -21,8 +21,7 @@ final class OutputLinkManager {
 
 	boolean useFloatYawWmes = true;
 	
-	private Identifier runningCommandWme;
-	private boolean runningCommandIsInterruptable = false;
+	private Command runningCommand;
 
 	OutputLinkManager(Agent agent, InputLinkInterface inputLink, SplinterState splinter) {
 		this.splinter = splinter;
@@ -49,22 +48,6 @@ final class OutputLinkManager {
 		return useFloatYawWmes;
 	}
 
-	private void interruptCurrentCommand() {
-		if (runningCommandWme != null) {
-			if (runningCommandIsInterruptable) {
-				CommandStatus.interrupted.addStatus(agent, runningCommandWme);
-			} else {
-				CommandStatus.complete.addStatus(agent, runningCommandWme);
-			}
-			runningCommandWme = null;
-		}
-	}
-
-	private void setCurrentCommand(Identifier commandWme, boolean interruptable, CommandStatus status) {
-		runningCommandWme = commandWme;
-		runningCommandIsInterruptable = interruptable;
-	}
-
 	DifferentialDriveCommand update() {
 		// TODO: update status of running command
 		
@@ -75,7 +58,7 @@ final class OutputLinkManager {
 
 			// is it already running?
 			synchronized (this) {
-				if (runningCommandWme != null && runningCommandWme.GetTimeTag() == commandWme.GetTimeTag()) {
+				if (runningCommand != null && runningCommand.wme().GetTimeTag() == commandWme.GetTimeTag()) {
 					continue;
 				}
 			}
@@ -90,44 +73,33 @@ final class OutputLinkManager {
 				continue;
 			}
 			
-			if (ddc != null && commandObject.createsDDC()) {
-				logger.warn("Ignoring command " + commandName + " because already have " + ddc);
-				CommandStatus.error.addStatus(agent, commandWme);
-				continue;
-			}
-
-			CommandStatus status = commandObject.execute(inputLink, commandWme, splinter, this);
-			if (status == CommandStatus.error) {
-				CommandStatus.error.addStatus(agent, commandWme);
-				continue;
-			}
-
-			if (status == CommandStatus.accepted) {
-				CommandStatus.accepted.addStatus(agent, commandWme);
-
-			} else if (status == CommandStatus.executing) {
-				CommandStatus.accepted.addStatus(agent, commandWme);
-				CommandStatus.executing.addStatus(agent, commandWme);
-
-			} else if (status == CommandStatus.complete) {
-				CommandStatus.accepted.addStatus(agent, commandWme);
-				CommandStatus.complete.addStatus(agent, commandWme);
-
-			} else {
-				throw new IllegalStateException();
+			if (commandObject.createsDDC()) {
+				if (ddc != null) {
+					logger.warn("Ignoring command " + commandName + " because already have " + ddc);
+					CommandStatus.error.addStatus(agent, commandWme);
+					continue;
+				}
+				runningCommand.interrupt();
+				runningCommand = null;
 			}
 			
+			if (!commandObject.execute(inputLink, agent, commandWme, splinter, this)) {
+				if (commandObject.createsDDC()) {
+					logger.warn("Error with new drive command, commanding estop.");
+					ddc = DifferentialDriveCommand.newEStopCommand();
+				}
+				continue;
+			}
+
 			if (commandObject.createsDDC()) {
 				ddc = commandObject.getDDC();
+				runningCommand = commandObject;
 				logger.debug(ddc);
-				
-				interruptCurrentCommand();
-				if (status != CommandStatus.complete) {
-					setCurrentCommand(commandWme, commandObject.isInterruptable(), status);
-				}
-
-				commandObject.getDDC();
 			}
+		}
+		
+		if (runningCommand.update(splinter)) {
+			runningCommand = null;
 		}
 		
 		return ddc;

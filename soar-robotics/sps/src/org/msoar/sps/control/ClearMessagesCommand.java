@@ -5,27 +5,26 @@ package org.msoar.sps.control;
 
 import org.apache.log4j.Logger;
 
+import sml.Agent;
 import sml.Identifier;
 
-final class ClearMessagesCommand implements Command {
+/**
+ * @author voigtjr
+ *
+ * Removes all messages from message list.
+ */
+final class ClearMessagesCommand extends NoDDCAdapter implements Command {
 	private static final Logger logger = Logger.getLogger(ClearMessagesCommand.class);
 	static final String NAME = "clear-messages";
 
-	public CommandStatus execute(InputLinkInterface inputLink, Identifier command, SplinterState splinter, OutputLinkManager outputLinkManager) {
+	public boolean execute(InputLinkInterface inputLink, Agent agent,
+			Identifier command, SplinterState splinter,
+			OutputLinkManager outputLinkManager) {
 		inputLink.clearMessages();
 		logger.info(NAME + ":");
-		return CommandStatus.complete;
-	}
 
-	public boolean isInterruptable() {
-		return false;
-	}
-
-	public boolean createsDDC() {
-		return false;
-	}
-
-	public DifferentialDriveCommand getDDC() {
-		throw new AssertionError();
+		CommandStatus.accepted.addStatus(agent, command);
+		CommandStatus.complete.addStatus(agent, command);
+		return true;
 	}
 }
