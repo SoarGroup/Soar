@@ -375,11 +375,11 @@ agent * create_soar_agent (char * agent_name) {                                 
   
   newAgent->epmem_node_removals = new std::map<epmem_node_id, bool>();
   newAgent->epmem_node_mins = new std::vector<epmem_time_id>();
-  newAgent->epmem_node_maxes = new std::vector<epmem_time_id>();
+  newAgent->epmem_node_maxes = new std::vector<bool>();
 
   newAgent->epmem_edge_removals = new std::map<epmem_node_id, bool>();
   newAgent->epmem_edge_mins = new std::vector<epmem_time_id>();
-  newAgent->epmem_edge_maxes = new std::vector<epmem_time_id>();
+  newAgent->epmem_edge_maxes = new std::vector<bool>();
 
   newAgent->epmem_id_repository = new epmem_parent_id_pool();
   newAgent->epmem_id_replacement = new epmem_return_id_pool();

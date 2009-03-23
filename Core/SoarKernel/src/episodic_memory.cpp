@@ -1732,7 +1732,7 @@ void epmem_init_db( agent *my_agent, bool readonly = false )
 			{
 				unsigned long num_ids = EPMEM_SQLITE_COLUMN_INT( create, 0 );
 
-				my_agent->epmem_node_maxes->resize( num_ids, EPMEM_MEMID_NONE );
+				my_agent->epmem_node_maxes->resize( num_ids, true );
 				my_agent->epmem_node_mins->resize( num_ids, time_max );
 			}
 			sqlite3_finalize( create );
@@ -2148,7 +2148,7 @@ void epmem_init_db( agent *my_agent, bool readonly = false )
 					{
 						unsigned long num_ids = EPMEM_SQLITE_COLUMN_INT( create, 0 );
 
-						my_agent->epmem_node_maxes->resize( num_ids, EPMEM_MEMID_NONE );
+						my_agent->epmem_node_maxes->resize( num_ids, true );
 						my_agent->epmem_node_mins->resize( num_ids, time_max );
 					}
 					sqlite3_finalize( create );
@@ -2164,7 +2164,7 @@ void epmem_init_db( agent *my_agent, bool readonly = false )
 					{
 						unsigned long num_ids = EPMEM_SQLITE_COLUMN_INT( create, 0 );
 
-						my_agent->epmem_edge_maxes->resize( num_ids, EPMEM_MEMID_NONE );
+						my_agent->epmem_edge_maxes->resize( num_ids, true );
 						my_agent->epmem_edge_mins->resize( num_ids, time_max );
 					}
 					sqlite3_finalize( create );
@@ -2488,19 +2488,19 @@ void epmem_new_episode( agent *my_agent )
 						// new nodes definitely start
 						epmem[ wmes[i]->epmem_id ] = true;
 						my_agent->epmem_node_mins->push_back( time_counter );
-						my_agent->epmem_node_maxes->push_back( time_counter );
+						my_agent->epmem_node_maxes->push_back( false );
 					}
 					else
 					{
-						// definitely don't update/delete
+						// definitely don't remove
 						(*my_agent->epmem_node_removals)[ wmes[i]->epmem_id ] = false;
 
-						// we insert if current time is > 1+ max
-						if ( (*my_agent->epmem_node_maxes)[ wmes[i]->epmem_id - 1 ] < ( time_counter - 1 ) )
+						// we add ONLY if the last thing we did was a remove
+						if ( (*my_agent->epmem_node_maxes)[ wmes[i]->epmem_id - 1 ] )
+						{
 							epmem[ wmes[i]->epmem_id ] = true;
-
-						// update max irrespectively
-						(*my_agent->epmem_node_maxes)[ wmes[i]->epmem_id - 1 ] = time_counter;
+							(*my_agent->epmem_node_maxes)[ wmes[i]->epmem_id - 1 ] = false;
+						}
 					}
 
 					// keep track of identifiers (for further study)
@@ -2561,6 +2561,9 @@ void epmem_new_episode( agent *my_agent )
 				// node
 				else
 					epmem_rit_insert_interval( my_agent, range_start, range_end, r->first, &epmem_rit_state_tree );
+
+				// update max
+				(*my_agent->epmem_node_maxes)[ r->first - 1 ] = true;
 			}
 
 			r++;
@@ -2786,33 +2789,21 @@ void epmem_new_episode( agent *my_agent )
 								// new nodes definitely start
 								epmem_edge.push( wmes[i]->epmem_id );
 								my_agent->epmem_edge_mins->push_back( time_counter );
-								my_agent->epmem_edge_maxes->push_back( time_counter );
+								my_agent->epmem_edge_maxes->push_back( false );
 							}
 							else
 							{
-								// definitely don't update/delete
+								// definitely don't remove
 								(*my_agent->epmem_edge_removals)[ wmes[i]->epmem_id ] = false;
 
-								// we insert if current time is > 1+ max
-								if ( (*my_agent->epmem_edge_maxes)[ wmes[i]->epmem_id - 1 ] < ( time_counter - 1 ) )
+								// we add ONLY if the last thing we did was remove
+								if ( (*my_agent->epmem_edge_maxes)[ wmes[i]->epmem_id - 1 ] )
+								{
 									epmem_edge.push( wmes[i]->epmem_id );
-
-								// update max irrespectively
-								(*my_agent->epmem_edge_maxes)[ wmes[i]->epmem_id - 1 ] = time_counter;
+									(*my_agent->epmem_edge_maxes)[ wmes[i]->epmem_id - 1 ] = false;
+								}
 							}
-						}
-						else
-						{
-							// definitely don't update/delete
-							(*my_agent->epmem_edge_removals)[ wmes[i]->epmem_id ] = false;
-
-							// we insert if current time is > 1+ max
-							if ( (*my_agent->epmem_edge_maxes)[ wmes[i]->epmem_id - 1 ] < ( time_counter - 1 ) )
-								epmem_edge.push( wmes[i]->epmem_id );
-
-							// update max irrespectively
-							(*my_agent->epmem_edge_maxes)[ wmes[i]->epmem_id - 1 ] = time_counter;
-						}
+						}						
 
 						// path id in cache?
 						seen_p = seen_ids.find( wmes[i]->value->id.epmem_id );
@@ -2863,19 +2854,19 @@ void epmem_new_episode( agent *my_agent )
 								// new nodes definitely start
 								epmem_node.push( wmes[i]->epmem_id );
 								my_agent->epmem_node_mins->push_back( time_counter );
-								my_agent->epmem_node_maxes->push_back( time_counter );
+								my_agent->epmem_node_maxes->push_back( false );
 							}
 							else
 							{
-								// definitely don't update/delete
+								// definitely don't remove
 								(*my_agent->epmem_node_removals)[ wmes[i]->epmem_id ] = false;
 
-								// we insert if current time is > 1+ max
-								if ( (*my_agent->epmem_node_maxes)[ wmes[i]->epmem_id - 1 ] < ( time_counter - 1 ) )
+								// add ONLY if the last thing we did was add
+								if ( (*my_agent->epmem_node_maxes)[ wmes[i]->epmem_id - 1 ] )
+								{
 									epmem_node.push( wmes[i]->epmem_id );
-
-								// update max irrespectively
-								(*my_agent->epmem_node_maxes)[ wmes[i]->epmem_id - 1 ] = time_counter;
+									(*my_agent->epmem_node_maxes)[ wmes[i]->epmem_id - 1 ] = false;
+								}
 							}
 						}
 					}
@@ -2959,6 +2950,9 @@ void epmem_new_episode( agent *my_agent )
 					// node
 					else
 						epmem_rit_insert_interval( my_agent, range_start, range_end, r->first, &( epmem_rit_state_graph[ EPMEM_RIT_STATE_NODE ] ) );
+
+					// update max
+					(*my_agent->epmem_node_maxes)[ r->first - 1 ] = true;
 				}
 
 				r++;
@@ -2991,6 +2985,9 @@ void epmem_new_episode( agent *my_agent )
 					// node
 					else
 						epmem_rit_insert_interval( my_agent, range_start, range_end, r->first, &( epmem_rit_state_graph[ EPMEM_RIT_STATE_EDGE ] ) );
+
+					// update max
+					(*my_agent->epmem_edge_maxes)[ r->first - 1 ] = true;
 				}
 
 				r++;

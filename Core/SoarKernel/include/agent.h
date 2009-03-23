@@ -816,11 +816,11 @@ kernel time and total_cpu_time greater than the derived total CPU time. REW */
 
   std::map<epmem_node_id, bool> *epmem_node_removals;
   std::vector<epmem_time_id> *epmem_node_mins;
-  std::vector<epmem_time_id> *epmem_node_maxes;
+  std::vector<bool> *epmem_node_maxes;
 
   std::map<epmem_node_id, bool> *epmem_edge_removals;
   std::vector<epmem_time_id> *epmem_edge_mins;
-  std::vector<epmem_time_id> *epmem_edge_maxes;
+  std::vector<bool> *epmem_edge_maxes;
 
   epmem_parent_id_pool *epmem_id_repository;
   epmem_return_id_pool *epmem_id_replacement;
