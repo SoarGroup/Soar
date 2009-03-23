@@ -24,6 +24,8 @@ final class RangerIL implements LCMSubscriber {
 		for (int index = 0; index < count; ++index) {
 			slices[index] = new RangeIL(agent, ranges, index - (count / 2));
 		}
+		
+		LCM.getSingleton().subscribe(SharedNames.LASER_CHANNEL, this);
 	}
 
 	void update(boolean useFloatYawWmes) {
@@ -55,6 +57,10 @@ final class RangerIL implements LCMSubscriber {
 			}
 
 			double end = laser.rad0 + (index - 1) * laser.radstep;
+			
+			if (logger.isTraceEnabled()) {
+				System.out.println(String.format("%d: %1.3f %1.3f %1.2f", slice, start, end, distance));
+			}
 			
 			slices[slice].update(start, end, distance, useFloatYawWmes);
 		}

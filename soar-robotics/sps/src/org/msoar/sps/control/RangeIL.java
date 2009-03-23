@@ -1,11 +1,15 @@
 package org.msoar.sps.control;
 
+//import org.apache.log4j.Logger;
+
 import sml.Agent;
 import sml.FloatElement;
 import sml.Identifier;
 import sml.IntElement;
 
 final class RangeIL {
+	//private static final Logger logger = Logger.getLogger(RangeIL.class);
+	
 	private final Identifier rangewme;
 	private final Agent agent;
 

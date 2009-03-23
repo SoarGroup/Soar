@@ -25,7 +25,7 @@ class SetVelocityCommand extends DDCCommand implements Command {
 	private double angularVelocity;
 	
 	public DifferentialDriveCommand getDDC() {
-		return DifferentialDriveCommand.newLinearVelocityCommand(linearVelocity);
+		return DifferentialDriveCommand.newVelocityCommand(angularVelocity, linearVelocity);
 	}
 
 	public boolean execute(InputLinkInterface inputLink, Agent agent,

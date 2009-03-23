@@ -12,7 +12,8 @@ sp {apply*initialize
 -->
    (<s> ^name simple-robot
         ^parameters <p>)
-   (<p> ^throttle 0.5
+   (<p> ^linear-velocity 0.5
+        ^angular-velocity 10
         ^range-tolerance 1.0)
 }
 

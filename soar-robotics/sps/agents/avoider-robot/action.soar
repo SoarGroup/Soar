@@ -29,36 +29,35 @@ sp {simple-robot*compare*action
 sp {simple-robot*propose*turn-left
    (state <s> ^name simple-robot
               ^io.input-link.ranges <rs>
-              ^parameters.throttle <thr>)
+              ^parameters.angular-velocity <av>)
   -(<rs> ^range.blocked false)
 -->
    (<s> ^operator <op> + =)
    (<op> ^name action
          ^action <a>)
-   (<a> ^rotate <params>)
-   (<params> ^direction left
-             ^throttle <thr>)
+   (<a> ^set-velocity <m>)
+   (<m> ^linear-velocity 0.0
+        ^angular-velocity <av>)
 }
 
 sp {apply*action
    (state <s> ^operator <op>
               ^io.output-link <ol>)
    (<op> ^name action
-         ^action <a>)
-   (<a> ^<action> <params>)
-   (<params> ^direction <dir>
-             ^throttle <thr>)
+         ^action.set-velocity <m>)
+   (<m> ^linear-velocity <lv>
+        ^angular-velocity <av>)
 -->
-   (<ol> ^<action> <acopy>)
-   (<acopy> ^direction <dir>
-            ^throttle <thr>)
+   (<ol> ^set-velocity <mcopy>)
+   (<mcopy> ^linear-velocity <lv>
+            ^angular-velocity <av>)
 }
 
 sp {monitor*action
    (state <s> ^operator.action <a>)
-   (<a> ^<action> <p>)
-   (<p> ^direction <d>
-        ^throttle <thr>)
+   (<a> ^set-velocity <p>)
+   (<p> ^linear-velocity <lv>
+        ^angular-velocity <av>)
 -->
-   (write (crlf) <action> | | <d> | at | <thr>)
+   (write (crlf) lv: | | <lv> | av: | <av>)
 }

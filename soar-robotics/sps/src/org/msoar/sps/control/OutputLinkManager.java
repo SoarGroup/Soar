@@ -64,7 +64,7 @@ final class OutputLinkManager {
 			}
 			
 			String commandName = commandWme.GetAttribute();
-			logger.debug(commandName + " " + commandWme.GetTimeTag());
+			logger.debug(commandName + " timetag:" + commandWme.GetTimeTag());
 
 			Command commandObject = commands.get(commandName);
 			if (commandObject == null) {
@@ -79,8 +79,10 @@ final class OutputLinkManager {
 					CommandStatus.error.addStatus(agent, commandWme);
 					continue;
 				}
-				runningCommand.interrupt();
-				runningCommand = null;
+				if (runningCommand != null) {
+					runningCommand.interrupt();
+					runningCommand = null;
+				}
 			}
 			
 			if (!commandObject.execute(inputLink, agent, commandWme, splinter, this)) {
@@ -98,7 +100,7 @@ final class OutputLinkManager {
 			}
 		}
 		
-		if (runningCommand.update(splinter)) {
+		if (runningCommand != null && runningCommand.update(splinter)) {
 			runningCommand = null;
 		}
 		

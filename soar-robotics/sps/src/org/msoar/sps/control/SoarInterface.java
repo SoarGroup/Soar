@@ -92,23 +92,31 @@ final class SoarInterface implements Kernel.UpdateEventInterface, Kernel.SystemE
 	}
 
 	public void updateEventHandler(int eventID, Object data, Kernel kernel, int arg3) {
-		if (logger.isDebugEnabled()) {
-			hzChecker.tick();
+		try {
+			if (logger.isDebugEnabled()) {
+				hzChecker.tick();
+			}
+			
+			if (stopSoar) {
+				logger.debug("Stopping Soar");
+				kernel.StopAllAgents();
+			}
+	
+			DifferentialDriveCommand newddc = output.update();
+			if (newddc != null) {
+				ddc = newddc;
+			}
+			
+			synchronized (this) {
+				input.update(tokens, output.getUseFloatYawWmes());
+				tokens = null;
+			}
+			
+			agent.Commit();
+		} catch (Exception e) {
+			e.printStackTrace();
+			logger.error("Uncaught exception in Soar update thread: " + e);
 		}
-		
-		if (stopSoar) {
-			logger.debug("Stopping Soar");
-			kernel.StopAllAgents();
-		}
-
-		ddc = output.update();
-		
-		synchronized (this) {
-			input.update(tokens, output.getUseFloatYawWmes());
-			tokens = null;
-		}
-		
-		agent.Commit();
 	}
 	
 	void shutdown() {
@@ -126,9 +134,11 @@ final class SoarInterface implements Kernel.UpdateEventInterface, Kernel.SystemE
 	public void systemEventHandler(int eventId, Object arg1, Kernel arg2) {
 		if (eventId == smlSystemEventId.smlEVENT_SYSTEM_START.swigValue()) {
 			logger.info("Soar started.");
+			ddc = DifferentialDriveCommand.newEStopCommand();
 			running = true;
 		} else if (eventId == smlSystemEventId.smlEVENT_SYSTEM_STOP.swigValue()) {
 			logger.info("Soar stopped.");
+			ddc = DifferentialDriveCommand.newEStopCommand();
 			running = false;
 		}
 	}
@@ -148,9 +158,6 @@ final class SoarInterface implements Kernel.UpdateEventInterface, Kernel.SystemE
 	}
 
 	boolean hasDDCommand() {
-		if (!running) {
-			return false;
-		}
 		return ddc != null;
 	}
 

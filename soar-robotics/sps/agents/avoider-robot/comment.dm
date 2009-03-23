@@ -17,24 +17,7 @@
 0 
 0 world time
 
-0 create a waypoint in the system and enable it
-
-0 broadcast a message to listeners
-
-0 disable a currently enabled waypoint
-
-0 enable a currently disabled waypoint
-
-0 directly command motors, overrides all except stop
-
-0 move forward or backward indefinitely
-
-0 disable and remove a waypoint from the system
-
-0 rotate indefinitely
-
-0 rotate to a specific yaw
-
+0 
 0 directly command all motors to stop, overrides all except motor
 
 0 
@@ -117,6 +100,7 @@
 
 0 
 0 
+0 
 0 distance to nearest obstacle in arc
 
 0 arc endpoint
@@ -162,6 +146,11 @@
 
 0 desired final yaw
 
+0 
+0 
+0 
+0 
+0 
 0 
 0 
 0 

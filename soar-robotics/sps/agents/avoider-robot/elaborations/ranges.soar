@@ -19,37 +19,37 @@ sp {go-to-waypoint*elaborate*range*not-blocked
 sp {go-to-waypoint*elaborate*range*move-forward
    (state <s> ^name simple-robot
               ^io.input-link.ranges.range <r>
-              ^parameters.throttle <thr>)
+              ^parameters.linear-velocity <lv>)
    (<r> ^id 0)
 -->
    (<r> ^action <a>)
-   (<a> ^move <m>)
-   (<m> ^direction forward
-        ^throttle <thr>)
+   (<a> ^set-velocity <m>)
+   (<m> ^linear-velocity <lv>
+        ^angular-velocity 0.)
 }
 
 sp {go-to-waypoint*elaborate*range*rotate-left
    (state <s> ^name simple-robot
               ^io.input-link.ranges.range <r>
-              ^parameters.throttle <thr>)
+              ^parameters.angular-velocity <av>)
    (<r> ^id > 0)
 -->
    (<r> ^action <a>)
-   (<a> ^rotate <m>)
-   (<m> ^direction left
-        ^throttle <thr>)
+   (<a> ^set-velocity <m>)
+   (<m> ^linear-velocity 0.0
+        ^angular-velocity <av>)
 }
 
 sp {go-to-waypoint*elaborate*range*rotate-right
    (state <s> ^name simple-robot
               ^io.input-link.ranges.range <r>
-              ^parameters.throttle <thr>)
+              ^parameters.angular-velocity <av>)
    (<r> ^id < 0)
 -->
    (<r> ^action <a>)
-   (<a> ^rotate <m>)
-   (<m> ^direction right
-        ^throttle <thr>)
+   (<a> ^set-velocity <m>)
+   (<m> ^linear-velocity 0.0
+        ^angular-velocity (- 0 <av>))
 }
 
 sp {go-to-waypoint*elaborate*range*dist-from-goal*0

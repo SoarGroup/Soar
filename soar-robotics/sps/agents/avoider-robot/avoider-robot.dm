@@ -1,4 +1,4 @@
-93
+102
 SOAR_ID 0
 SOAR_ID 1
 SOAR_ID 2
@@ -69,7 +69,7 @@ FLOAT_RANGE 66 0.0 1.0
 ENUMERATION 67 3 left right stop
 FLOAT_RANGE 68 0.0 359.989990234375
 FLOAT_RANGE 69 0.0 1.0
-ENUMERATION 70 2 complete error
+ENUMERATION 70 4 accepted complete error interrupted
 ENUMERATION 71 2 complete error
 ENUMERATION 72 2 complete error
 ENUMERATION 73 2 complete error
@@ -85,18 +85,27 @@ INTEGER_RANGE 82 1 2147483647
 FLOAT_RANGE 83 0.0 Infinity
 FLOAT_RANGE 84 0.0 180.0
 SOAR_ID 85
-FLOAT_RANGE 86 0.0 1.0
-FLOAT_RANGE 87 0.0 Infinity
-ENUMERATION 88 2 false true
+FLOAT_RANGE 86 0.0 Infinity
+ENUMERATION 87 2 false true
+SOAR_ID 88
 SOAR_ID 89
-SOAR_ID 90
-ENUMERATION 91 1 action
-FLOAT_RANGE 92 -180.0 180.0
-107
+ENUMERATION 90 1 action
+FLOAT_RANGE 91 -180.0 180.0
+SOAR_ID 92
+ENUMERATION 93 3 accepted complete error
+FLOAT_RANGE 94 -0.5 0.5
+FLOAT_RANGE 95 -180.0 180.0
+FLOAT_RANGE 96 -180.0 180.0
+FLOAT_RANGE 97 -0.5 0.5
+INTEGER_RANGE 98 -2 2
+SOAR_ID 99
+FLOAT_RANGE 100 -180.0 180.0
+FLOAT_RANGE 101 -0.5 0.5
+105
 0 io 1
 0 name 7
 0 operator 4
-0 operator 90
+0 operator 89
 0 parameters 85
 0 superstate 6
 0 top-state 0
@@ -107,15 +116,7 @@ FLOAT_RANGE 92 -180.0 180.0
 2 ranges 9
 2 self 10
 2 time 11
-3 add-waypoint 50
-3 broadcast-message 55
-3 disable-waypoint 53
-3 enable-waypoint 52
-3 motor 46
-3 move 47
-3 remove-waypoint 51
-3 rotate 48
-3 rotate-to 54
+3 set-velocity 92
 3 stop 49
 4 name 8
 9 range 41
@@ -162,8 +163,9 @@ FLOAT_RANGE 92 -180.0 180.0
 32 x 34
 32 y 35
 32 yaw 36
-41 action 89
-41 blocked 88
+41 action 88
+41 ang-distance 98
+41 blocked 87
 41 distance 43
 41 end 44
 41 id 42
@@ -193,10 +195,15 @@ FLOAT_RANGE 92 -180.0 180.0
 54 tolerance 83
 54 yaw 68
 55 status 79
-85 range-tolerance 87
-85 throttle 86
-89 move 47
-89 rotate 48
-90 action 89
-90 distance 92
-90 name 91
+85 angular-velocity 96
+85 linear-velocity 97
+85 range-tolerance 86
+88 set-velocity 99
+89 action 88
+89 distance 91
+89 name 90
+92 angular-velocity 95
+92 linear-velocity 94
+92 status 93
+99 angular-velocity 100
+99 linear-velocity 101
