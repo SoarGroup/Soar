@@ -45,37 +45,37 @@ rl_param_container::rl_param_container( agent *new_agent ): param_container( new
 {
 	// learning
 	learning = new boolean_param( "learning", off, new f_predicate<boolean>() );
-	add_param( learning );
+	add( learning );
 
 	// discount-rate
 	discount_rate = new decimal_param( "discount-rate", 0.9, new btw_predicate<double>( 0, 1, true ), new f_predicate<double>() );
-	add_param( discount_rate );
+	add( discount_rate );
 
 	// learning-rate
 	learning_rate = new decimal_param( "learning-rate", 0.3, new btw_predicate<double>( 0, 1, true ), new f_predicate<double>() );
-	add_param( learning_rate );
+	add( learning_rate );
 
 	// learning-policy
 	learning_policy = new constant_param<learning_choices>( "learning-policy", sarsa, new f_predicate<learning_choices>() );
 	learning_policy->add_mapping( sarsa, "sarsa" );
 	learning_policy->add_mapping( q, "q-learning" );
-	add_param( learning_policy );
+	add( learning_policy );
 
 	// eligibility-trace-decay-rate
 	et_decay_rate = new decimal_param( "eligibility-trace-decay-rate", 0, new btw_predicate<double>( 0, 1, true ), new f_predicate<double>() );
-	add_param( et_decay_rate );
+	add( et_decay_rate );
 
 	// eligibility-trace-tolerance
 	et_tolerance = new decimal_param( "eligibility-trace-tolerance", 0.001, new gt_predicate<double>( 0, false ), new f_predicate<double>() );
-	add_param( et_tolerance );
+	add( et_tolerance );
 
 	// temporal-extension
 	temporal_extension = new boolean_param( "temporal-extension", on, new f_predicate<boolean>() );
-	add_param( temporal_extension );
+	add( temporal_extension );
 
 	// hrl-discount
 	hrl_discount = new boolean_param( "hrl-discount", on, new f_predicate<boolean>() );
-	add_param( hrl_discount );
+	add( hrl_discount );
 };
 
 /////////////////////////////////////////////////////
@@ -89,15 +89,15 @@ rl_stat_container::rl_stat_container( agent *new_agent ): stat_container( new_ag
 {
 	// update-error
 	update_error = new decimal_stat( "update-error", 0, new f_predicate<double>() );
-	add_stat( update_error );
+	add( update_error );
 
 	// total-reward
 	total_reward = new decimal_stat( "total-reward", 0, new f_predicate<double>() );
-	add_stat( total_reward );
+	add( total_reward );
 
 	// global-reward
 	global_reward = new decimal_stat( "global-reward", 0, new f_predicate<double>() );
-	add_stat( global_reward );
+	add( global_reward );
 };
 
 /////////////////////////////////////////////////////
