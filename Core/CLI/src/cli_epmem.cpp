@@ -102,7 +102,7 @@ bool CommandLineInterface::ParseEpMem( std::vector<std::string>& argv )
 			return SetError( CLIError::kTooManyArgs );
 
 		// check attribute name here
-		soar_module::param *my_param = m_pAgentSoar->epmem_params->get_param( argv[2].c_str() );
+		soar_module::param *my_param = m_pAgentSoar->epmem_params->get( argv[2].c_str() );
 		if ( my_param )
 			return DoEpMem( 'g', &( argv[2] ) );
 		else
@@ -118,7 +118,7 @@ bool CommandLineInterface::ParseEpMem( std::vector<std::string>& argv )
 			return SetError( CLIError::kTooManyArgs );
 
 		// check attribute name/potential vals here
-		soar_module::param *my_param = m_pAgentSoar->epmem_params->get_param( argv[2].c_str() );
+		soar_module::param *my_param = m_pAgentSoar->epmem_params->get( argv[2].c_str() );
 		if ( my_param )
 		{
 			if ( !my_param->validate_string( argv[3].c_str() ) )
@@ -138,7 +138,7 @@ bool CommandLineInterface::ParseEpMem( std::vector<std::string>& argv )
 		else if ( m_NonOptionArguments == 1 )
 		{
 			// check attribute name
-			soar_module::stat *my_stat = m_pAgentSoar->epmem_stats->get_stat( argv[2].c_str() );
+			soar_module::stat *my_stat = m_pAgentSoar->epmem_stats->get( argv[2].c_str() );
 			if ( my_stat )
 				return DoEpMem( 'S', &( argv[2] ) );
 			else
@@ -365,7 +365,7 @@ bool CommandLineInterface::DoEpMem( const char pOp, const std::string* pAttr, co
 	}
 	else if ( pOp == 'g' )
 	{
-		char *temp2 = m_pAgentSoar->epmem_params->get_param( pAttr->c_str() )->get_string();
+		char *temp2 = m_pAgentSoar->epmem_params->get( pAttr->c_str() )->get_string();
 		std::string output( temp2 );
 		delete temp2;		
 
@@ -378,7 +378,7 @@ bool CommandLineInterface::DoEpMem( const char pOp, const std::string* pAttr, co
 	}
 	else if ( pOp == 's' )
 	{
-		bool result = m_pAgentSoar->epmem_params->get_param( pAttr->c_str() )->set_string( pVal->c_str() );
+		bool result = m_pAgentSoar->epmem_params->get( pAttr->c_str() )->set_string( pVal->c_str() );
 
 		// since parameter name and value have been validated,
 		// this can only mean the parameter is protected
@@ -484,7 +484,7 @@ bool CommandLineInterface::DoEpMem( const char pOp, const std::string* pAttr, co
 		}
 		else
 		{
-			char *temp2 = m_pAgentSoar->epmem_stats->get_stat( pAttr->c_str() )->get_string();
+			char *temp2 = m_pAgentSoar->epmem_stats->get( pAttr->c_str() )->get_string();
 			std::string output( temp2 );
 			delete temp2;			
 

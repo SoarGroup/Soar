@@ -86,7 +86,7 @@ bool CommandLineInterface::ParseRL( std::vector<std::string>& argv )
 			return SetError( CLIError::kTooManyArgs );
 		
 		// check attribute name here
-		soar_module::param *my_param = m_pAgentSoar->rl_params->get_param( argv[2].c_str() );
+		soar_module::param *my_param = m_pAgentSoar->rl_params->get( argv[2].c_str() );
 		if ( my_param )
 			return DoRL( 'g', &( argv[2] ) );		
 		else
@@ -102,7 +102,7 @@ bool CommandLineInterface::ParseRL( std::vector<std::string>& argv )
 			return SetError( CLIError::kTooManyArgs );
 		
 		// check attribute name/potential vals here
-		soar_module::param *my_param = m_pAgentSoar->rl_params->get_param( argv[2].c_str() );
+		soar_module::param *my_param = m_pAgentSoar->rl_params->get( argv[2].c_str() );
 		if ( my_param )
 		{
 			if ( !my_param->validate_string( argv[3].c_str() ) )
@@ -122,7 +122,7 @@ bool CommandLineInterface::ParseRL( std::vector<std::string>& argv )
 		else if ( m_NonOptionArguments == 1 )
 		{
 			// check attribute name
-			soar_module::stat *my_stat = m_pAgentSoar->rl_stats->get_stat( argv[2].c_str() );
+			soar_module::stat *my_stat = m_pAgentSoar->rl_stats->get( argv[2].c_str() );
 
 			if ( my_stat )
 				return DoRL( 'S', &( argv[2] ) );
@@ -268,7 +268,7 @@ bool CommandLineInterface::DoRL( const char pOp, const std::string* pAttr, const
 	}
 	else if ( pOp == 'g' )
 	{	
-		soar_module::param *my_param = m_pAgentSoar->rl_params->get_param( pAttr->c_str() );
+		soar_module::param *my_param = m_pAgentSoar->rl_params->get( pAttr->c_str() );
 		char *temp2 = my_param->get_string();
 		std::string output( temp2 );
 		delete temp2;
@@ -282,7 +282,7 @@ bool CommandLineInterface::DoRL( const char pOp, const std::string* pAttr, const
 	}
 	else if ( pOp == 's' )
 	{
-		soar_module::param *my_param = m_pAgentSoar->rl_params->get_param( pAttr->c_str() );
+		soar_module::param *my_param = m_pAgentSoar->rl_params->get( pAttr->c_str() );
 		return my_param->set_string( pVal->c_str() );
 	}
 	else if ( pOp == 'S' )
@@ -321,7 +321,7 @@ bool CommandLineInterface::DoRL( const char pOp, const std::string* pAttr, const
 		}
 		else
 		{
-			soar_module::stat *my_stat = m_pAgentSoar->rl_stats->get_stat( pAttr->c_str() );
+			soar_module::stat *my_stat = m_pAgentSoar->rl_stats->get( pAttr->c_str() );
 			char *temp = my_stat->get_string();
 			std::string output( temp );
 			delete temp;			

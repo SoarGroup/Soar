@@ -2,7 +2,7 @@
 
 /*************************************************************************
  * PLEASE SEE THE FILE "license.txt" (INCLUDED WITH THIS SOFTWARE PACKAGE)
- * FOR LICENSE AND COPYRIGHT INFORMATION. 
+ * FOR LICENSE AND COPYRIGHT INFORMATION.
  *************************************************************************/
 
 /*************************************************************************
@@ -15,16 +15,10 @@
  */
 
 #include "soar_module.h"
-
-using namespace soar_module;
-
-///////////////////////////////////////////////////////////////////////////
-// Predicates
-///////////////////////////////////////////////////////////////////////////
+#include "utilities.h"
 
 namespace soar_module
 {
-	
 	/////////////////////////////////////////////////////////////
 	// predicate
 	/////////////////////////////////////////////////////////////
@@ -49,9 +43,9 @@ namespace soar_module
 	btw_predicate<T>::btw_predicate( T new_min, T new_max, bool new_inclusive ): my_min( new_min ), my_max( new_max ), inclusive( new_inclusive ) {};
 
 	template <typename T>
-	bool btw_predicate<T>::operator ()(T val) 
-	{ 
-		return ( ( inclusive )?( ( val >= my_min ) && ( val <= my_max ) ):( ( val > my_min ) && ( val < my_max ) ) ); 
+	bool btw_predicate<T>::operator ()(T val)
+	{
+		return ( ( inclusive )?( ( val >= my_min ) && ( val <= my_max ) ):( ( val > my_min ) && ( val < my_max ) ) );
 	};
 
 	/////////////////////////////////////////////////////////////
@@ -59,11 +53,11 @@ namespace soar_module
 	/////////////////////////////////////////////////////////////
 	template <typename T>
 	gt_predicate<T>::gt_predicate( T new_min, bool new_inclusive ): my_min( new_min ), inclusive( new_inclusive ) {};
-		
+
 	template <typename T>
-	bool gt_predicate<T>::operator() ( T val ) 
-	{ 
-		return ( ( inclusive )?( ( val >= my_min ) ):( ( val > my_min ) ) ); 
+	bool gt_predicate<T>::operator() ( T val )
+	{
+		return ( ( inclusive )?( ( val >= my_min ) ):( ( val > my_min ) ) );
 	};
 
 	/////////////////////////////////////////////////////////////
@@ -71,11 +65,11 @@ namespace soar_module
 	/////////////////////////////////////////////////////////////
 	template <typename T>
 	lt_predicate<T>::lt_predicate( T new_max, bool new_inclusive ): my_max( new_max ), inclusive( new_inclusive ) {};
-	
+
 	template <typename T>
-	bool lt_predicate<T>::operator() ( T val ) 
-	{ 
-		return ( ( inclusive )?( ( val <= my_max ) ):( ( val < my_max ) ) ); 
+	bool lt_predicate<T>::operator() ( T val )
+	{
+		return ( ( inclusive )?( ( val <= my_max ) ):( ( val < my_max ) ) );
 	};
 
 
@@ -91,16 +85,71 @@ namespace soar_module
 	/////////////////////////////////////////////////////////////
 	/////////////////////////////////////////////////////////////
 
+	/////////////////////////////////////////////////////////////
+	// named_object
+	/////////////////////////////////////////////////////////////
+	named_object::named_object(const char *new_name): name( new_name ) {};
+
+	named_object::~named_object() {};
+
+	const char *named_object::get_name() { return name; };
+
+
+	/////////////////////////////////////////////////////////////
+	// object_container
+	/////////////////////////////////////////////////////////////
+
+	template <class T>
+	void object_container<T>::add( T *new_object )
+	{
+		std::string temp_str( new_object->get_name() );
+		(*objects)[ temp_str ] = new_object;
+	};
+
+	template <class T>
+	object_container<T>::object_container( agent *new_agent ): my_agent( new_agent )
+	{
+		objects = new std::map<std::string, T *>();
+
+		// hack?
+		// so most likely the get function will never be used inside the kernel,
+		// thus the code is not likely to be instantiated till a CLI call, at which
+		// point we have already processed the cpp.
+		// by making a bogus call, we force instantiation of the code.
+		get("");
+	};
+
+	template <class T>
+	object_container<T>::~object_container()
+	{
+		typename std::map<std::string, T *>::iterator p;
+
+		for ( p=objects->begin(); p!=objects->end(); p++ )
+			delete p->second;
+
+		delete objects;
+	};
+
+	template <class T>
+	T *object_container<T>::get( const char *name )
+	{
+		std::string temp_str( name );
+		typename std::map<std::string, T *>::iterator p = objects->find( temp_str );
+
+		if ( p == objects->end() )
+			return NULL;
+		else
+			return p->second;
+	};
+
 
 	/////////////////////////////////////////////////////////////
 	// param
-	/////////////////////////////////////////////////////////////	
-	param::param( const char *new_name ): name( new_name ) {};
+	/////////////////////////////////////////////////////////////
+	param::param( const char *new_name ): named_object( new_name ) {};
 
 	param::~param() {};
 
-	const char *param::get_name() { return name; };
-			
 
 	/////////////////////////////////////////////////////////////
 	// prim_param
@@ -110,29 +159,29 @@ namespace soar_module
 
 	template <typename T>
 	primitive_param<T>::~primitive_param()
-	{ 
-		delete val_pred; 
+	{
+		delete val_pred;
 		delete prot_pred;
 	};
 
 	template <typename T>
 	char *primitive_param<T>::get_string()
-	{				
-		std::string *temp_str = to_string( value );			
+	{
+		std::string *temp_str = to_string( value );
 		char *return_val = new char[ temp_str->length() + 1 ];
 		strcpy( return_val, temp_str->c_str() );
 		return_val[ temp_str->length() ] = '\0';
 		delete temp_str;
-		
-		return return_val;				
+
+		return return_val;
 	};
 
 	template <typename T>
 	bool primitive_param<T>::set_string( const char *new_string )
 	{
-		T new_val;				
-		from_string( new_val, new_string );				
-		
+		T new_val;
+		from_string( new_val, new_string );
+
 		if ( !(*val_pred)( new_val ) || (*prot_pred)( new_val ) )
 		{
 			return false;
@@ -147,9 +196,9 @@ namespace soar_module
 	template <typename T>
 	bool primitive_param<T>::validate_string( const char *new_string )
 	{
-		T new_val;				
+		T new_val;
 		from_string( new_val, new_string );
-		
+
 		return (*val_pred)( new_val );
 	};
 
@@ -175,17 +224,17 @@ namespace soar_module
 		delete prot_pred;
 	};
 
-	char *string_param::get_string() 
-	{				
+	char *string_param::get_string()
+	{
 		char *return_val = new char[ value->length() + 1 ];
 		strcpy( return_val, value->c_str() );
 		return_val[ value->length() ] = '\0';
-		
+
 		return return_val;
 	};
 
-	bool string_param::set_string( const char *new_string ) 
-	{ 
+	bool string_param::set_string( const char *new_string )
+	{
 		if ( !(*val_pred)( new_string ) || (*prot_pred)( new_string ) )
 		{
 			return false;
@@ -197,8 +246,8 @@ namespace soar_module
 		}
 	};
 
-	bool string_param::validate_string( const char *new_value ) 
-	{ 
+	bool string_param::validate_string( const char *new_value )
+	{
 		return (*val_pred)( new_value );
 	};
 
@@ -331,7 +380,7 @@ namespace soar_module
 	// constant_param
 	/////////////////////////////////////////////////////////////
 	template <typename T>
-	constant_param<T>::constant_param( const char *new_name, T new_value, predicate<T> *new_prot_pred ): param( new_name ), value( new_value ), prot_pred( new_prot_pred ) 
+	constant_param<T>::constant_param( const char *new_name, T new_value, predicate<T> *new_prot_pred ): param( new_name ), value( new_value ), prot_pred( new_prot_pred )
 	{
 		value_to_string = new std::map<T, const char *>();
 		string_to_value = new std::map<std::string, T>();
@@ -339,28 +388,28 @@ namespace soar_module
 
 	template <typename T>
 	constant_param<T>::~constant_param()
-	{				
+	{
 		delete value_to_string;
 		delete string_to_value;
 		delete prot_pred;
-	};	
+	};
 
 	template <typename T>
 	char *constant_param<T>::get_string()
 	{
 		typename std::map<T, const char *>::iterator p;
 		p = value_to_string->find( value );
-		
+
 		if ( p == value_to_string->end() )
 			return NULL;
 		else
-		{					
+		{
 			size_t len = strlen( p->second );
 			char *return_val = new char[ len + 1 ];
-			
+
 			strcpy( return_val, p->second );
 			return_val[ len ] = '\0';
-			
+
 			return return_val;
 		}
 	};
@@ -370,7 +419,7 @@ namespace soar_module
 	{
 		typename std::map<std::string, T>::iterator p;
 		std::string temp_str( new_string );
-		
+
 		p = string_to_value->find( temp_str );
 
 		if ( ( p == string_to_value->end() ) || (*prot_pred)( p->second ) )
@@ -389,9 +438,9 @@ namespace soar_module
 	{
 		typename std::map<std::string, T>::iterator p;
 		std::string temp_str( new_string );
-		
+
 		p = string_to_value->find( temp_str );
-		
+
 		return ( p != string_to_value->end() );
 	};
 
@@ -405,10 +454,10 @@ namespace soar_module
 	void constant_param<T>::add_mapping( T val, const char *str )
 	{
 		std::string my_string( str );
-		
+
 		// string to value
 		(*string_to_value)[ my_string ] = val;
-		
+
 		// value to string
 		(*value_to_string)[ val ] = str;
 	};
@@ -434,35 +483,7 @@ namespace soar_module
 	// Parameter Container
 	/////////////////////////////////////////////////////////////
 
-	void param_container::add_param( param *new_param )
-	{
-		std::string temp_str( new_param->get_name() );
-		(*params)[ temp_str ] = new_param;
-	};
-
-	param_container::param_container( agent *new_agent ): my_agent( new_agent )
-	{
-		params = new param_map();
-	};
-
-	param_container::~param_container()
-	{
-		for ( param_map::iterator p=params->begin(); p!=params->end(); p++ )
-			delete p->second;
-			
-		delete params;
-	};
-
-	param *param_container::get_param( const char *name )
-	{
-		std::string temp_str( name );
-		param_map::iterator p = params->find( temp_str );
-		
-		if ( p == params->end() )
-			return NULL;
-		else
-			return p->second;
-	};
+	// no code necessary
 
 
 	/////////////////////////////////////////////////////////////
@@ -474,11 +495,9 @@ namespace soar_module
 	/////////////////////////////////////////////////////////////
 	// stat
 	/////////////////////////////////////////////////////////////
-	stat::stat( const char *new_name ): name( new_name ) {};
-			
+	stat::stat( const char *new_name ): named_object( new_name ) {};
+
 	stat::~stat() {};
-			
-	const char *stat::get_name() { return name; };
 
 	/////////////////////////////////////////////////////////////
 	// prim_stat
@@ -487,23 +506,23 @@ namespace soar_module
 	primitive_stat<T>::primitive_stat( const char *new_name, T new_value, predicate<T> *new_prot_pred ): stat( new_name ), value( new_value ), reset_val( new_value ), prot_pred( new_prot_pred ) {};
 
 	template <typename T>
-	primitive_stat<T>::~primitive_stat() 
+	primitive_stat<T>::~primitive_stat()
 	{
 		delete prot_pred;
 	};
 
 	template <typename T>
 	char *primitive_stat<T>::get_string()
-	{				
+	{
 		T my_val = get_value();
-		
+
 		std::string *temp_str = to_string( my_val );
 		char *return_val = new char[ temp_str->length() + 1 ];
 		strcpy( return_val, temp_str->c_str() );
 		return_val[ temp_str->length() ] = '\0';
 		delete temp_str;
-		
-		return return_val;				
+
+		return return_val;
 	};
 
 	template <typename T>
@@ -521,47 +540,83 @@ namespace soar_module
 
 
 	/////////////////////////////////////////////////////////////
-	/////////////////////////////////////////////////////////////
-	/////////////////////////////////////////////////////////////
-	/////////////////////////////////////////////////////////////
-
-
-	/////////////////////////////////////////////////////////////
 	// Statistic Container
 	/////////////////////////////////////////////////////////////
-	void stat_container::add_stat( stat *new_stat )
+
+	stat_container::stat_container( agent *new_agent ): object_container<stat>( new_agent ) {};
+
+	void stat_container::reset()
 	{
-		std::string temp_str( new_stat->get_name() );
-		(*stats)[ temp_str ] = new_stat;
+		for ( std::map<std::string, stat *>::iterator p=objects->begin(); p!=objects->end(); p++ )
+			p->second->reset();
 	};
 
-	stat_container::stat_container( agent *new_agent ): my_agent( new_agent )
+
+	/////////////////////////////////////////////////////////////
+	/////////////////////////////////////////////////////////////
+	/////////////////////////////////////////////////////////////
+	/////////////////////////////////////////////////////////////
+
+
+	/////////////////////////////////////////////////////////////
+	// timer
+	/////////////////////////////////////////////////////////////
+	timer::timer( const char *new_name, agent *new_agent, timer_level new_level, predicate<timer_level> *new_pred ): named_object( new_name ), my_agent( new_agent ), level( new_level ), pred( new_pred )
 	{
-		stats = new stat_map();
+		reset();
 	};
 
-	stat_container::~stat_container()
+	timer::~timer()
 	{
-		for ( stat_map::iterator p=stats->begin(); p!=stats->end(); p++ )
-			delete p->second;
-			
-		delete stats;
+		delete pred;
 	};
 
-	stat *stat_container::get_stat( const char *name )
+	char *timer::get_string()
 	{
-		std::string temp_str( name );
-		stat_map::iterator p = stats->find( temp_str );
-		
-		if ( p == stats->end() )
-			return NULL;
-		else
-			return p->second;
+		double my_value = value();
+
+		std::string *temp_str = to_string( my_value );
+		char *return_val = new char[ temp_str->length() + 1 ];
+		strcpy( return_val, temp_str->c_str() );
+		return_val[ temp_str->length() ] = '\0';
+		delete temp_str;
+
+		return return_val;
 	};
 
-	void stat_container::reset_stats()
+	void timer::reset()
 	{
-		for ( stat_map::iterator p=stats->begin(); p!=stats->end(); p++ )
+		reset_timer( &start_t );
+		reset_timer( &total_t );
+	};
+
+	double timer::value()
+	{
+		return timer_value( &total_t );
+	};
+
+	void timer::start()
+	{
+		if ( (*pred)( level ) )
+			start_timer( my_agent, &start_t );
+	};
+
+	void timer::stop()
+	{
+		if ( (*pred)( level ) )
+			stop_timer( my_agent, &start_t, &total_t );
+	};
+
+
+	/////////////////////////////////////////////////////////////
+	// Timer Container
+	/////////////////////////////////////////////////////////////
+
+	timer_container::timer_container( agent *new_agent ): object_container<timer>( new_agent ) {};
+
+	void timer_container::reset()
+	{
+		for ( std::map<std::string, timer *>::iterator p=objects->begin(); p!=objects->end(); p++ )
 			p->second->reset();
 	};
 }

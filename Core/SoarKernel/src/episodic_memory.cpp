@@ -127,59 +127,59 @@ epmem_param_container::epmem_param_container( agent *new_agent ): param_containe
 {
 	// learning
 	learning = new boolean_param( "learning", on, new f_predicate<boolean>() );
-	add_param( learning );
+	add( learning );
 
 	// database
 	database = new constant_param<db_choices>( "database", memory, new epmem_db_predicate<db_choices>( my_agent ) );
 	database->add_mapping( memory, "memory" );
 	database->add_mapping( file, "file" );
-	add_param( database );
+	add( database );
 
 	// path
 	path = new epmem_path_param( "path", "", new predicate<const char *>(), new epmem_db_predicate<const char *>( my_agent ), my_agent );
-	add_param( path );
+	add( path );
 
 	// commit
 	commit = new integer_param( "commit", 1, new gt_predicate<long>( 1, true ), new f_predicate<long>() );
-	add_param( commit );
+	add( commit );
 
 	// mode
 	mode = new epmem_mode_param( "mode", graph, new epmem_db_predicate<mode_choices>( my_agent ), my_agent );
 	mode->add_mapping( tree, "tree" );
 	mode->add_mapping( graph, "graph" );
-	add_param( mode );
+	add( mode );
 
 	// graph-match
 	graph_match = new epmem_graph_match_param( "graph-match", on, new f_predicate<boolean>(), my_agent );
-	add_param( graph_match );
+	add( graph_match );
 
 	// phase
 	phase = new constant_param<phase_choices>( "phase", phase_output, new f_predicate<phase_choices>() );
 	phase->add_mapping( phase_output, "output" );
 	phase->add_mapping( phase_selection, "selection" );
-	add_param( phase );
+	add( phase );
 
 	// trigger
 	trigger = new constant_param<trigger_choices>( "trigger", output, new f_predicate<trigger_choices>() );
 	trigger->add_mapping( none, "none" );
 	trigger->add_mapping( output, "output" );
 	trigger->add_mapping( dc, "dc" );
-	add_param( trigger );
+	add( trigger );
 
 	// force
 	force = new constant_param<force_choices>( "force", force_off, new f_predicate<force_choices>() );
 	force->add_mapping( remember, "remember" );
 	force->add_mapping( ignore, "ignore" );
 	force->add_mapping( force_off, "off" );
-	add_param( force );
+	add( force );
 
 	// balance
 	balance = new decimal_param( "balance", 0.5, new btw_predicate<double>( 0, 1, true ), new f_predicate<double>() );
-	add_param( balance );
+	add( balance );
 
 	// exclusions - this is initialized with "epmem" directly after hash tables
 	exclusions = new set_param( "exclusions", new f_predicate<const char *>, my_agent );
-	add_param( exclusions );
+	add( exclusions );
 
 	// timers
 	timers = new constant_param<timers_choices>( "timers", timers_off, new f_predicate<timers_choices>() );
@@ -187,7 +187,7 @@ epmem_param_container::epmem_param_container( agent *new_agent ): param_containe
 	timers->add_mapping( one, "one" );
 	timers->add_mapping( two, "two" );
 	timers->add_mapping( three, "three" );
-	add_param( timers );
+	add( timers );
 };
 
 //
@@ -271,75 +271,75 @@ epmem_stat_container::epmem_stat_container( agent *new_agent ): stat_container( 
 {
 	// time
 	time = new integer_stat( "time", 0, new epmem_db_predicate<long>( my_agent ) );
-	add_stat( time );
+	add( time );
 
 	// mem-usage
 	mem_usage = new epmem_mem_usage_stat( "mem-usage", 0, new predicate<long>() );
-	add_stat( mem_usage );
+	add( mem_usage );
 
 	// mem-high
 	mem_high = new epmem_mem_high_stat( "mem-high", 0, new predicate<long>() );
-	add_stat( mem_high );
+	add( mem_high );
 
 	// ncb-wmes
 	ncb_wmes = new integer_stat( "ncb-wmes", 0, new f_predicate<long>() );
-	add_stat( ncb_wmes );
+	add( ncb_wmes );
 
 	// qry-pos
 	qry_pos = new integer_stat( "qry-pos", 0, new f_predicate<long>() );
-	add_stat( qry_pos );
+	add( qry_pos );
 
 	// qry-neg
 	qry_neg = new integer_stat( "qry-neg", 0, new f_predicate<long>() );
-	add_stat( qry_neg );
+	add( qry_neg );
 
 	// qry-ret
 	qry_ret = new integer_stat( "qry-ret", 0, new f_predicate<long>() );
-	add_stat( qry_ret );
+	add( qry_ret );
 
 	// qry-pos
 	qry_card = new integer_stat( "qry-card", 0, new f_predicate<long>() );
-	add_stat( qry_card );
+	add( qry_card );
 
 	// qry-pos
 	qry_lits = new integer_stat( "qry-lits", 0, new f_predicate<long>() );
-	add_stat( qry_lits );
+	add( qry_lits );
 
 	// next-id
 	next_id = new integer_stat( "next-id", 0, new epmem_db_predicate<long>( my_agent ) );
-	add_stat( next_id );
+	add( next_id );
 
 	// rit-offset-1
 	rit_offset_1 = new integer_stat( "rit-offset-1", 0, new epmem_db_predicate<long>( my_agent ) );
-	add_stat( rit_offset_1 );
+	add( rit_offset_1 );
 
 	// rit-left-root-1
 	rit_left_root_1 = new integer_stat( "rit-left-root-1", 0, new epmem_db_predicate<long>( my_agent ) );
-	add_stat( rit_left_root_1 );
+	add( rit_left_root_1 );
 
 	// rit-right-root-1
 	rit_right_root_1 = new integer_stat( "rit-right-root-1", 0, new epmem_db_predicate<long>( my_agent ) );
-	add_stat( rit_right_root_1 );
+	add( rit_right_root_1 );
 
 	// rit-min-step-1
 	rit_min_step_1 = new integer_stat( "rit-min-step-1", 0, new epmem_db_predicate<long>( my_agent ) );
-	add_stat( rit_min_step_1 );
+	add( rit_min_step_1 );
 
 	// rit-offset-2
 	rit_offset_2 = new integer_stat( "rit-offset-2", 0, new epmem_db_predicate<long>( my_agent ) );
-	add_stat( rit_offset_2 );
+	add( rit_offset_2 );
 
 	// rit-left-root-2
 	rit_left_root_2 = new integer_stat( "rit-left-root-2", 0, new epmem_db_predicate<long>( my_agent ) );
-	add_stat( rit_left_root_2 );
+	add( rit_left_root_2 );
 
 	// rit-right-root-2
 	rit_right_root_2 = new integer_stat( "rit-right-root-2", 0, new epmem_db_predicate<long>( my_agent ) );
-	add_stat( rit_right_root_2 );
+	add( rit_right_root_2 );
 
 	// rit-min-step-2
 	rit_min_step_2 = new integer_stat( "rit-min-step-2", 0, new epmem_db_predicate<long>( my_agent ) );
-	add_stat( rit_min_step_2 );
+	add( rit_min_step_2 );
 
 
 	/////////////////////////////

@@ -56,11 +56,11 @@ wma_param_container::wma_param_container( agent *new_agent ): param_container( n
 	 * WMA on/off
 	 */
 	activation = new boolean_param( "activation", on, new f_predicate<boolean>() );
-	add_param( activation );
+	add( activation );
 
 	// decay-rate
 	decay_rate = new wma_decay_param( "decay-rate", -0.8, new btw_predicate<double>( 0, 1, true ), new wma_activation_predicate<double>( my_agent ) );
-	add_param( decay_rate );
+	add( decay_rate );
 
 	/**
 	 * Specifies what WMEs will have decay values.
@@ -74,13 +74,13 @@ wma_param_container::wma_param_container( agent *new_agent ): param_container( n
 	criteria->add_mapping( crit_agent, "o-agent" );
 	criteria->add_mapping( crit_agent_arch, "o-agent-arch" );
 	criteria->add_mapping( crit_all, "all" );
-	add_param( criteria );
+	add( criteria );
 
 	/**
 	 * Are WMEs removed from WM when activation gets too low?
 	 */
 	forgetting = new boolean_param( "forgetting", off, new wma_activation_predicate<boolean>( my_agent ) );
-	add_param( forgetting );
+	add( forgetting );
 
 	/**
 	 * Specifies the mode in which i-supported WMEs
@@ -101,14 +101,14 @@ wma_param_container::wma_param_container( agent *new_agent ): param_container( n
 	isupport->add_mapping( none, "none" );
 	isupport->add_mapping( no_create, "no-create" );
 	isupport->add_mapping( uniform, "uniform" );
-	add_param( isupport );
+	add( isupport );
 
 	/**
 	 * Whether or not an instantiation activates WMEs just once,
 	 * or every cycle until it is retracted.
 	 */
 	persistence = new boolean_param( "persistence", off, new wma_activation_predicate<boolean>( my_agent ) );
-	add_param( persistence );
+	add( persistence );
 
 	/**
 	 * Level of precision with which activation levels are calculated.
@@ -116,7 +116,7 @@ wma_param_container::wma_param_container( agent *new_agent ): param_container( n
 	precision = new constant_param<precision_choices>( "precision", low, new wma_activation_predicate<precision_choices>( my_agent ) );
 	precision->add_mapping( low, "low" );
 	precision->add_mapping( high, "high" );
-	add_param( precision );
+	add( precision );
 };
 
 /////////////////////////////////////////////////////
@@ -131,7 +131,7 @@ wma_stat_container::wma_stat_container( agent *new_agent ): stat_container( new_
 {
 	// update-error
 	dummy = new integer_stat( "dummy", 0, new f_predicate<long>() );
-	add_stat( dummy );
+	add( dummy );
 };
 
 /////////////////////////////////////////////////////

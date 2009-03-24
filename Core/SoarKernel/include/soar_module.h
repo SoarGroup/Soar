@@ -104,7 +104,51 @@ namespace soar_module
 
 	///////////////////////////////////////////////////////////////////////////
 	///////////////////////////////////////////////////////////////////////////
-	
+
+
+	///////////////////////////////////////////////////////////////////////////
+	// Common for params, stats, timers, etc.
+	///////////////////////////////////////////////////////////////////////////
+
+	class named_object
+	{
+		private:
+			const char *name;
+
+		public:
+			named_object( const char *new_name );
+			virtual ~named_object();
+
+			//
+
+			const char *get_name();
+
+			//
+
+			virtual char *get_string() = 0;
+	};
+		
+	// this class provides for efficient 
+	// string->object access
+	template <class T>
+	class object_container
+	{					
+		protected:
+			agent *my_agent;
+			std::map<std::string, T *> *objects;
+			
+			void add( T *new_object );
+
+		public:
+			object_container( agent *new_agent );
+			virtual ~object_container();
+
+			T *get( const char *name );
+	};
+
+	///////////////////////////////////////////////////////////////////////////
+	///////////////////////////////////////////////////////////////////////////
+
 	
 	///////////////////////////////////////////////////////////////////////////
 	// Parameters
@@ -113,22 +157,14 @@ namespace soar_module
 	// all parameters have a name and
 	// can be manipulated generically
 	// via strings
-	class param
-	{
-		private:
-			const char *name;
-			
+	class param: public named_object
+	{			
 		public:		
 			param( const char *new_name );
 			virtual ~param();
-
-			// 
-
-			const char *get_name();
 			
-			//
+			//			
 			
-			virtual char *get_string() = 0;
 			virtual bool set_string( const char *new_string ) = 0;
 			virtual bool validate_string( const char *new_string ) = 0;			
 	};
@@ -261,29 +297,9 @@ namespace soar_module
 
 	///////////////////////////////////////////////////////////////////////////
 	// Parameter Containers
-	///////////////////////////////////////////////////////////////////////////
+	///////////////////////////////////////////////////////////////////////////	
 
-	// shortcut definition
-	typedef std::map<std::string, param *> param_map;
-	
-	// this class provides for efficient 
-	// string->parameter access
-	class param_container
-	{
-		private:
-			param_map *params;
-			
-		protected:			
-			agent *my_agent;
-			
-			void add_param( param *new_param );
-			
-		public:
-			param_container( agent *new_agent );			
-			virtual ~param_container();
-
-			param *get_param( const char *name );
-	};
+	typedef object_container<param> param_container;
 
 	///////////////////////////////////////////////////////////////////////////
 	///////////////////////////////////////////////////////////////////////////
@@ -295,22 +311,14 @@ namespace soar_module
 	// all statistics have a name and
 	// can be retrieved generically
 	// via strings
-	class stat
-	{
-		private:
-			const char *name;
-			
+	class stat: public named_object
+	{			
 		public:		
 			stat( const char *new_name );
-			virtual ~stat();
-			
-			// 
-					
-			const char *get_name();
+			virtual ~stat();			
 			
 			//
 			
-			virtual char *get_string() = 0;
 			virtual void reset() = 0;
 	};
 
@@ -347,28 +355,68 @@ namespace soar_module
 	// Statistic Containers
 	///////////////////////////////////////////////////////////////////////////
 
-	// shortcut definition
-	typedef std::map<std::string, stat *> stat_map;
-	
-	// this class provides for efficient 
-	// string->stat access
-	class stat_container
+	class stat_container: public object_container<stat>
 	{
-		private:
-			stat_map *stats;
-			
-		protected:			
+		public:
+			stat_container( agent *new_agent );
+
+			void reset();
+	};
+
+
+	///////////////////////////////////////////////////////////////////////////
+	///////////////////////////////////////////////////////////////////////////
+
+
+	///////////////////////////////////////////////////////////////////////////
+	// timers
+	///////////////////////////////////////////////////////////////////////////
+
+	enum timer_level { zero, one, two, three, four, five };
+
+	class timer: public named_object
+	{
+		protected:
 			agent *my_agent;
 			
-			void add_stat( stat *new_stat );
-			
+			struct timeval start_t;
+			struct timeval total_t;
+
+			timer_level level;
+			predicate<timer_level> *pred;			
+
 		public:
-			stat_container( agent *new_agent );			
-			virtual ~stat_container();
-			
-			stat *get_stat( const char *name );
-			void reset_stats();
+			timer( const char *new_name, agent *new_agent, timer_level new_level, predicate<timer_level> *new_pred );
+			virtual ~timer();
+
+			//
+
+			virtual char *get_string();
+
+			//
+
+			virtual void reset();
+			virtual double value();
+
+			//
+
+			virtual void start();
+			virtual void stop();
 	};
+
+
+	///////////////////////////////////////////////////////////////////////////
+	// Timer Containers
+	///////////////////////////////////////////////////////////////////////////
+
+	class timer_container: public object_container<timer>
+	{
+		public:
+			timer_container( agent *new_agent );
+
+			void reset();
+	};
+
 }
 
 #endif
