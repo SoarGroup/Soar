@@ -15,16 +15,10 @@
  */
 
 #include "soar_module.h"
-
-using namespace soar_module;
-
-///////////////////////////////////////////////////////////////////////////
-// Predicates
-///////////////////////////////////////////////////////////////////////////
+#include "utilities.h"
 
 namespace soar_module
-{
-	
+{	
 	/////////////////////////////////////////////////////////////
 	// predicate
 	/////////////////////////////////////////////////////////////
@@ -91,15 +85,68 @@ namespace soar_module
 	/////////////////////////////////////////////////////////////
 	/////////////////////////////////////////////////////////////
 
+	/////////////////////////////////////////////////////////////
+	// named_object
+	/////////////////////////////////////////////////////////////
+	named_object::named_object(const char *new_name): name( new_name ) {};
+
+	named_object::~named_object() {};
+
+	const char *named_object::get_name() { return name; };
+
+
+	/////////////////////////////////////////////////////////////
+	// object_container
+	/////////////////////////////////////////////////////////////
+
+	template <class T>
+	void object_container<T>::add( T *new_object )
+	{
+		std::string temp_str( new_object->get_name() );
+		(*objects)[ temp_str ] = new_object;
+	};
+
+	template <class T>
+	object_container<T>::object_container( agent *new_agent ): my_agent( new_agent )
+	{
+		objects = new std::map<std::string, T *>();
+
+		// hack?
+		// so most likely the get function will never be used inside the kernel,
+		// thus the code is not likely to be instantiated till a CLI call, at which
+		// point we have already processed the cpp.
+		// by making a bogus call, we force instantiation of the code.
+		get("");
+	};
+
+	template <class T>
+	object_container<T>::~object_container()
+	{
+		for ( std::map<std::string, T *>::iterator p=objects->begin(); p!=objects->end(); p++ )
+			delete p->second;
+			
+		delete objects;
+	};
+
+	template <class T>
+	T *object_container<T>::get( const char *name )
+	{
+		std::string temp_str( name );
+		std::map<std::string, T *>::iterator p = objects->find( temp_str );
+		
+		if ( p == objects->end() )
+			return NULL;
+		else
+			return p->second;
+	};	
+
 
 	/////////////////////////////////////////////////////////////
 	// param
-	/////////////////////////////////////////////////////////////	
-	param::param( const char *new_name ): name( new_name ) {};
+	/////////////////////////////////////////////////////////////
+	param::param( const char *new_name ): named_object( new_name ) {};
 
 	param::~param() {};
-
-	const char *param::get_name() { return name; };
 			
 
 	/////////////////////////////////////////////////////////////
@@ -314,35 +361,7 @@ namespace soar_module
 	// Parameter Container
 	/////////////////////////////////////////////////////////////
 
-	void param_container::add_param( param *new_param )
-	{
-		std::string temp_str( new_param->get_name() );
-		(*params)[ temp_str ] = new_param;
-	};
-
-	param_container::param_container( agent *new_agent ): my_agent( new_agent )
-	{
-		params = new param_map();
-	};
-
-	param_container::~param_container()
-	{
-		for ( param_map::iterator p=params->begin(); p!=params->end(); p++ )
-			delete p->second;
-			
-		delete params;
-	};
-
-	param *param_container::get_param( const char *name )
-	{
-		std::string temp_str( name );
-		param_map::iterator p = params->find( temp_str );
-		
-		if ( p == params->end() )
-			return NULL;
-		else
-			return p->second;
-	};
+	// no code necessary
 
 
 	/////////////////////////////////////////////////////////////
@@ -354,11 +373,9 @@ namespace soar_module
 	/////////////////////////////////////////////////////////////
 	// stat
 	/////////////////////////////////////////////////////////////
-	stat::stat( const char *new_name ): name( new_name ) {};
+	stat::stat( const char *new_name ): named_object( new_name ) {};
 			
 	stat::~stat() {};
-			
-	const char *stat::get_name() { return name; };
 
 	/////////////////////////////////////////////////////////////
 	// prim_stat
@@ -401,47 +418,83 @@ namespace soar_module
 
 
 	/////////////////////////////////////////////////////////////
-	/////////////////////////////////////////////////////////////
-	/////////////////////////////////////////////////////////////
-	/////////////////////////////////////////////////////////////
-
-
-	/////////////////////////////////////////////////////////////
 	// Statistic Container
+	/////////////////////////////////////////////////////////////	
+
+	stat_container::stat_container( agent *new_agent ): object_container<stat>( new_agent ) {};
+
+	void stat_container::reset()
+	{
+		for ( std::map<std::string, stat *>::iterator p=objects->begin(); p!=objects->end(); p++ )
+			p->second->reset();
+	};
+
+
 	/////////////////////////////////////////////////////////////
-	void stat_container::add_stat( stat *new_stat )
-	{
-		std::string temp_str( new_stat->get_name() );
-		(*stats)[ temp_str ] = new_stat;
-	};
+	/////////////////////////////////////////////////////////////
+	/////////////////////////////////////////////////////////////
+	/////////////////////////////////////////////////////////////
 
-	stat_container::stat_container( agent *new_agent ): my_agent( new_agent )
-	{
-		stats = new stat_map();
-	};
 
-	stat_container::~stat_container()
-	{
-		for ( stat_map::iterator p=stats->begin(); p!=stats->end(); p++ )
-			delete p->second;
+	/////////////////////////////////////////////////////////////
+	// timer
+	/////////////////////////////////////////////////////////////
+	timer::timer( const char *new_name, agent *new_agent, timer_level new_level, predicate<timer_level> *new_pred ): named_object( new_name ), my_agent( new_agent ), level( new_level ), pred( new_pred )
+	{		
+		reset();
+	};
 			
-		delete stats;
-	};
-
-	stat *stat_container::get_stat( const char *name )
+	timer::~timer() 
 	{
-		std::string temp_str( name );
-		stat_map::iterator p = stats->find( temp_str );
+		delete pred;
+	};
+	
+	char *timer::get_string()
+	{				
+		double my_value = value();
 		
-		if ( p == stats->end() )
-			return NULL;
-		else
-			return p->second;
+		std::string *temp_str = to_string( my_value );
+		char *return_val = new char[ temp_str->length() + 1 ];
+		strcpy( return_val, temp_str->c_str() );
+		return_val[ temp_str->length() ] = '\0';
+		delete temp_str;
+		
+		return return_val;				
 	};
 
-	void stat_container::reset_stats()
+	void timer::reset()
 	{
-		for ( stat_map::iterator p=stats->begin(); p!=stats->end(); p++ )
+		reset_timer( &start_t );
+		reset_timer( &total_t );
+	};
+
+	double timer::value()
+	{
+		return timer_value( &total_t );
+	};
+
+	void timer::start()
+	{
+		if ( (*pred)( level ) )
+			start_timer( my_agent, &start_t );
+	};
+
+	void timer::stop()
+	{
+		if ( (*pred)( level ) )
+			stop_timer( my_agent, &start_t, &total_t );
+	};
+
+
+	/////////////////////////////////////////////////////////////
+	// Timer Container
+	/////////////////////////////////////////////////////////////	
+
+	timer_container::timer_container( agent *new_agent ): object_container<timer>( new_agent ) {};
+
+	void timer_container::reset()
+	{
+		for ( std::map<std::string, timer *>::iterator p=objects->begin(); p!=objects->end(); p++ )
 			p->second->reset();
 	};
 }

@@ -388,7 +388,7 @@ bool reinitialize_soar (agent* thisAgent) {
 
   rl_reset_data( thisAgent );
   clear_goal_stack (thisAgent);
-  thisAgent->rl_stats->reset_stats();
+  thisAgent->rl_stats->reset();
 
   if (thisAgent->operand2_mode == TRUE) {
      thisAgent->active_level = 0; /* Signal that everything should be retracted */
