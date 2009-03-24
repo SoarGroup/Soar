@@ -15,6 +15,7 @@
 
 #include <map>
 #include <string>
+#include <functional>
 
 #include "misc.h"
 
@@ -28,7 +29,7 @@ namespace soar_module
 	
 	// a functor for validating parameter values
 	template <typename T>
-	class predicate
+	class predicate: public std::unary_function<T, bool>
 	{
 		public:
 			virtual ~predicate();			
@@ -143,6 +144,8 @@ namespace soar_module
 			virtual ~object_container();
 
 			T *get( const char *name );
+
+			void for_each( std::unary_function<T *, void> &f  ) const;
 	};
 
 	///////////////////////////////////////////////////////////////////////////
