@@ -6,6 +6,8 @@ import org.apache.log4j.Logger;
 
 import sml.Agent;
 import sml.Identifier;
+import sml.Kernel;
+import sml.smlSystemEventId;
 
 /**
  * @author voigtjr
@@ -19,7 +21,7 @@ final class InputLinkManager {
 	private final SelfIL selfIL;
 	private final RangerIL rangerIL;
 
-	InputLinkManager(Agent agent, int rangesCount, SplinterState splinter) {
+	InputLinkManager(Agent agent, Kernel kernel, int rangesCount, SplinterState splinter) {
 		this.agent = agent;
 		this.agent.SetBlinkIfNoChange(false);
 
@@ -29,6 +31,8 @@ final class InputLinkManager {
 
 		Identifier time = agent.CreateIdWME(inputLink, "time");
 		timeIL = new TimeIL(agent, time);
+		kernel.RegisterForSystemEvent(smlSystemEventId.smlEVENT_SYSTEM_START, timeIL, null);
+		kernel.RegisterForSystemEvent(smlSystemEventId.smlEVENT_SYSTEM_STOP, timeIL, null);
 
 		Identifier self = agent.CreateIdWME(inputLink, "self");
 		selfIL = new SelfIL(agent, self, splinter);
