@@ -495,8 +495,7 @@ bool exploration_set_reduction_rate( agent *my_agent, const long parameter, cons
  * Function     : exploration_choose_according_to_policy
  **************************************************************************/
 preference *exploration_choose_according_to_policy( agent *my_agent, slot *s, preference *candidates )
-{
-	double top_value = candidates->numeric_value;
+{	
 	const long exploration_policy = exploration_get_policy( my_agent );
 	preference *return_val = NULL;
 
@@ -504,11 +503,21 @@ preference *exploration_choose_according_to_policy( agent *my_agent, slot *s, pr
 	for ( preference *cand = candidates; cand != NIL; cand = cand->next_candidate )
 		exploration_compute_value_of_candidate( my_agent, cand, s );
 
+	double top_value = candidates->numeric_value;
+	bool top_rl = candidates->rl_contribution;
+
 	// should find highest valued candidate in q-learning
 	if ( rl_enabled( my_agent ) && ( my_agent->rl_params->learning_policy->get_value() == rl_param_container::q ) )
+	{
 		for ( preference *cand=candidates; cand!=NIL; cand=cand->next_candidate )
+		{
 			if ( cand->numeric_value > top_value )
+			{
 				top_value = cand->numeric_value;
+				top_rl = cand->rl_contribution;
+			}
+		}
+	}
 	
 	switch ( exploration_policy )
 	{
@@ -539,13 +548,13 @@ preference *exploration_choose_according_to_policy( agent *my_agent, slot *s, pr
 
 	// should perform update here for chosen candidate in sarsa
 	if ( rl_enabled( my_agent ) && ( my_agent->rl_params->learning_policy->get_value() == rl_param_container::sarsa ) )
-		rl_perform_update( my_agent, return_val->numeric_value, s->id );
+		rl_perform_update( my_agent, return_val->numeric_value, return_val->rl_contribution, s->id );
 	else if ( rl_enabled( my_agent ) && ( my_agent->rl_params->learning_policy->get_value() == rl_param_container::q ) )
 	{
 		if ( return_val->numeric_value != top_value )
 			rl_watkins_clear( my_agent, s->id );
 
-		rl_perform_update( my_agent, top_value, s->id );
+		rl_perform_update( my_agent, top_value, top_rl, s->id );
 	}
 	
 	return return_val;
@@ -805,6 +814,7 @@ void exploration_compute_value_of_candidate( agent *my_agent, preference *cand, 
 	// initialize candidate values
 	cand->total_preferences_for_candidate = 0;
 	cand->numeric_value = 0;
+	cand->rl_contribution = false;
 	
 	// all numeric indifferents
 	for ( pref = s->preferences[ NUMERIC_INDIFFERENT_PREFERENCE_TYPE ]; pref != NIL; pref = pref->next) 
@@ -813,6 +823,9 @@ void exploration_compute_value_of_candidate( agent *my_agent, preference *cand, 
 		{
 			cand->total_preferences_for_candidate += 1;
 			cand->numeric_value += get_number_from_symbol( pref->referent );
+
+			if ( pref->inst->prod->rl_rule )
+				cand->rl_contribution = true;
 		}
 	}
 
