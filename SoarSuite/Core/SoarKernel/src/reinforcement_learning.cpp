@@ -132,7 +132,6 @@ void rl_reset_data( agent *my_agent )
 		data->reward = 0;
 		data->step = 0;
 		data->reward_age = 0;
-		data->impasse_type = NONE_IMPASSE_TYPE;
 		
 		goal = goal->id.lower_goal;
 	}
@@ -425,18 +424,12 @@ void rl_add_goal_or_impasse_tests_to_conds( agent *my_agent, condition *all_cond
  **************************************************************************/
 void rl_tabulate_reward_value_for_goal( agent *my_agent, Symbol *goal )
 {
-	rl_data *data = goal->id.rl_info;
-
-	// Only count rewards at top state... 
-	// or for op no-change impasses.
-	//if ( ( data->impasse_type != NONE_IMPASSE_TYPE ) && ( data->impasse_type != OP_NO_CHANGE_IMPASSE_TYPE ) )  
-	//	return;
-	
+	rl_data *data = goal->id.rl_info;	
 	slot *s = goal->id.reward_header->id.slots;
 	slot *t;
 	wme *w, *x;
 	double reward = 0.0;
-	unsigned int reward_count = 0;
+	double discount_rate = my_agent->rl_params->discount_rate->get_value();
 
 	if ( s )
 	{
@@ -446,11 +439,10 @@ void rl_tabulate_reward_value_for_goal( agent *my_agent, Symbol *goal )
 					for ( t = w->value->id.slots; t; t = t->next )
 						for ( x = t->wmes; x; x = x->next )
 							if ( ( x->value->common.symbol_type == FLOAT_CONSTANT_SYMBOL_TYPE ) || ( x->value->common.symbol_type == INT_CONSTANT_SYMBOL_TYPE ) )
-							{
 								reward = reward + get_number_from_symbol( x->value );
-								reward_count++;
-							}
-		data->reward += rl_discount_reward( my_agent, reward, data->step );
+		
+		
+		data->reward += ( reward * pow( discount_rate, (double) data->step ) );
 	}
 
 	// update stats
@@ -458,8 +450,13 @@ void rl_tabulate_reward_value_for_goal( agent *my_agent, Symbol *goal )
 	my_agent->rl_stats->total_reward->set_value( reward );
 	my_agent->rl_stats->global_reward->set_value( global_reward + reward );
 	
-	if ( ( my_agent->rl_params->hrl_discount->get_value() == soar_module::on ) || ( goal == my_agent->bottom_goal ) )
-		data->step++;
+	if ( ( my_agent->rl_params->hrl_discount->get_value() == soar_module::on ) )
+	{
+		if ( goal != my_agent->bottom_goal )
+			data->step++;
+		else
+			data->step = 0;
+	}
 }
 
 /***************************************************************************
@@ -477,23 +474,12 @@ void rl_tabulate_reward_values( agent *my_agent )
 }
 
 /***************************************************************************
- * Function     : rl_discount_reward
- **************************************************************************/
-double rl_discount_reward( agent *my_agent, double reward, unsigned int step )
-{
-	double rate = my_agent->rl_params->discount_rate->get_value();
-
-	return ( reward * pow( rate, (double) step ) );
-}
-
-/***************************************************************************
  * Function     : rl_store_data
  **************************************************************************/
 void rl_store_data( agent *my_agent, Symbol *goal, preference *cand )
 {
 	rl_data *data = goal->id.rl_info;
-	Symbol *op = cand->value;
-    data->previous_q = cand->numeric_value;
+	Symbol *op = cand->value;    
 
 	bool using_gaps = ( my_agent->rl_params->temporal_extension->get_value() == soar_module::on );
 	
@@ -515,7 +501,7 @@ void rl_store_data( agent *my_agent, Symbol *goal, preference *cand )
 
 	if ( just_fired )
 	{
-		if ( my_agent->sysparams[ TRACE_RL_SYSPARAM ] )
+		if ( my_agent->sysparams[ TRACE_RL_SYSPARAM ] && using_gaps )
 		{
 			if ( data->reward_age != 0 )
 			{
@@ -529,10 +515,11 @@ void rl_store_data( agent *my_agent, Symbol *goal, preference *cand )
 		
 		data->reward_age = 0;
 		data->num_prev_op_rl_rules = just_fired;
+		data->previous_q = cand->numeric_value;
 	}
 	else
 	{
-		if ( my_agent->sysparams[ TRACE_RL_SYSPARAM ] )
+		if ( my_agent->sysparams[ TRACE_RL_SYSPARAM ] && using_gaps )
 		{
 			if ( data->reward_age == 0 )
 			{
@@ -548,6 +535,7 @@ void rl_store_data( agent *my_agent, Symbol *goal, preference *cand )
 		{
 			data->prev_op_rl_rules = NIL;
 			data->num_prev_op_rl_rules = 0;
+			data->previous_q = cand->numeric_value;
 		}
 		
 		data->reward_age++;
@@ -557,112 +545,122 @@ void rl_store_data( agent *my_agent, Symbol *goal, preference *cand )
 /***************************************************************************
  * Function     : rl_perform_update
  **************************************************************************/
-void rl_perform_update( agent *my_agent, double op_value, Symbol *goal )
+void rl_perform_update( agent *my_agent, double op_value, bool op_rl, Symbol *goal )
 {
-	rl_data *data = goal->id.rl_info;
-	rl_et_map::iterator iter;
-
 	bool using_gaps = ( my_agent->rl_params->temporal_extension->get_value() == soar_module::on );
 
-	double alpha = my_agent->rl_params->learning_rate->get_value();
-	double lambda = my_agent->rl_params->et_decay_rate->get_value();
-	double gamma = my_agent->rl_params->discount_rate->get_value();
-	double tolerance = my_agent->rl_params->et_tolerance->get_value();
-
-	// compute TD update, set stat
-	double update = data->reward;
-
-	if ( using_gaps )
-		update *= pow( gamma, (double) data->reward_age );
-
-	update += ( pow( gamma, (double) data->step ) * op_value );
-	update -= data->previous_q;
-	my_agent->rl_stats->update_error->set_value( (double) ( -update ) );
-
-	// Iterate through eligibility_traces, decay traces. If less than TOLERANCE, remove from map.
-	if ( lambda == 0 )
-	{
-		if ( !data->eligibility_traces->empty() )
-			data->eligibility_traces->clear();
-	}
-	else
-	{
-		for ( iter = data->eligibility_traces->begin(); iter != data->eligibility_traces->end(); )
-		{
-			iter->second *= lambda;
-			iter->second *= pow( gamma, (double) data->step );
-			if ( iter->second < tolerance ) 
-				data->eligibility_traces->erase( iter++ );
-			else 
-				++iter;
-		}
-	}
-	
-	// Update trace for just fired prods
-	if ( data->num_prev_op_rl_rules )
-	{
-		double trace_increment = ( 1.0 / data->num_prev_op_rl_rules );
+	if ( !using_gaps || op_rl )
+	{		
+		rl_data *data = goal->id.rl_info;
 		
-		for ( cons *c = data->prev_op_rl_rules; c; c = c->rest )
+		if ( data->num_prev_op_rl_rules )
 		{
-			if ( c->first )
+			rl_et_map::iterator iter;
+			
+			double alpha = my_agent->rl_params->learning_rate->get_value();
+			double lambda = my_agent->rl_params->et_decay_rate->get_value();
+			double gamma = my_agent->rl_params->discount_rate->get_value();
+			double tolerance = my_agent->rl_params->et_tolerance->get_value();
+
+			// compute TD update, set stat
+			double update = data->reward;
+
+			if ( using_gaps )
+				update *= pow( gamma, (double) data->reward_age );
+
+			update += ( gamma * op_value );
+			update -= data->previous_q;
+			my_agent->rl_stats->update_error->set_value( (double) ( -update ) );
+
+			// Iterate through eligibility_traces, decay traces. If less than TOLERANCE, remove from map.
+			if ( lambda == 0 )
 			{
-				iter = data->eligibility_traces->find( (production *) c->first );
-				if ( iter != data->eligibility_traces->end() ) 
-					iter->second += trace_increment;
-				else 
-					(*data->eligibility_traces)[ (production *) c->first ] = trace_increment;
+				if ( !data->eligibility_traces->empty() )
+					data->eligibility_traces->clear();
 			}
-		}
-	}
-	
-	// For each prod in map, add alpha*delta*trace to value
-	for ( iter = data->eligibility_traces->begin(); iter != data->eligibility_traces->end(); iter++ )
-	{	
-		production *prod = iter->first;
-		double temp = get_number_from_symbol( rhs_value_to_symbol( prod->action_list->referent ) );
-
-		// update is applied depending upon type of accumulation mode
-		// sum: add the update to the existing value
-		// avg: average the update with the existing value
-
-    double delta = (update * alpha * iter->second);
-
-    if ( my_agent->sysparams[ TRACE_RL_SYSPARAM ] ) { // SBW 12/18/08
-      std::string* oldValString = to_string(temp);
-      double newVal = temp + delta;
-      std::string* newValString = to_string(newVal);
-      std::string message = "updating RL rule " + std::string(prod->name->sc.name) + " from " + *oldValString + " to " + *newValString; 
-      print( my_agent, const_cast<char *>( message.c_str() ) );
-      xml_generate_message( my_agent, const_cast<char *>( message.c_str() ) );
-      delete oldValString;
-      delete newValString;
-		}
-    
-    temp += delta;
-
-		// Change value of rule
-		symbol_remove_ref( my_agent, rhs_value_to_symbol( prod->action_list->referent ) );
-		prod->action_list->referent = symbol_to_rhs_value( make_float_constant( my_agent, temp ) );
-		prod->rl_update_count += 1;
-
-		// Change value of preferences generated by current instantiations of this rule
-		if ( prod->instantiations )
-		{
-			for ( instantiation *inst = prod->instantiations; inst; inst = inst->next )
+			else
 			{
-				for ( preference *pref = inst->preferences_generated; pref; pref = pref->inst_next )
+				for ( iter = data->eligibility_traces->begin(); iter != data->eligibility_traces->end(); )
 				{
-					symbol_remove_ref( my_agent, pref->referent );
-					pref->referent = make_float_constant( my_agent, temp );
+					iter->second *= lambda;
+					iter->second *= pow( gamma, (double) data->step );
+					if ( iter->second < tolerance ) 
+						data->eligibility_traces->erase( iter++ );
+					else 
+						++iter;
 				}
 			}
-		}	
-	}
+			
+			// Update trace for just fired prods
+			if ( data->num_prev_op_rl_rules )
+			{
+				double trace_increment = ( 1.0 / data->num_prev_op_rl_rules );
+				
+				for ( cons *c = data->prev_op_rl_rules; c; c = c->rest )
+				{
+					if ( c->first )
+					{
+						iter = data->eligibility_traces->find( (production *) c->first );
+						if ( iter != data->eligibility_traces->end() ) 
+							iter->second += trace_increment;
+						else 
+							(*data->eligibility_traces)[ (production *) c->first ] = trace_increment;
+					}
+				}
+			}
+			
+			// For each prod in map, add alpha*delta*trace to value
+			for ( iter = data->eligibility_traces->begin(); iter != data->eligibility_traces->end(); iter++ )
+			{	
+				production *prod = iter->first;
+				double temp = get_number_from_symbol( rhs_value_to_symbol( prod->action_list->referent ) );
 
-	data->reward = 0.0;
-	data->step = 0;
-	data->impasse_type = NONE_IMPASSE_TYPE;
+				// update is applied depending upon type of accumulation mode
+				// sum: add the update to the existing value
+				// avg: average the update with the existing value
+
+				double delta = (update * alpha * iter->second);
+
+				// SBW 12/18/08
+				if ( my_agent->sysparams[ TRACE_RL_SYSPARAM ] ) 
+				{ 
+					std::string* oldValString = to_string( temp );
+					double newVal = temp + delta;
+					std::string* newValString = to_string(newVal);
+					std::string message = "updating RL rule " + std::string(prod->name->sc.name) + " from " + *oldValString + " to " + *newValString; 
+					
+					print( my_agent, const_cast<char *>( message.c_str() ) );
+					xml_generate_message( my_agent, const_cast<char *>( message.c_str() ) );
+					
+					delete oldValString;
+					delete newValString;
+				}
+			    
+				temp += delta;
+
+				// Change value of rule
+				symbol_remove_ref( my_agent, rhs_value_to_symbol( prod->action_list->referent ) );
+				prod->action_list->referent = symbol_to_rhs_value( make_float_constant( my_agent, temp ) );
+				prod->rl_update_count += 1;
+
+				// Change value of preferences generated by current instantiations of this rule
+				if ( prod->instantiations )
+				{
+					for ( instantiation *inst = prod->instantiations; inst; inst = inst->next )
+					{
+						for ( preference *pref = inst->preferences_generated; pref; pref = pref->inst_next )
+						{
+							symbol_remove_ref( my_agent, pref->referent );
+							pref->referent = make_float_constant( my_agent, temp );
+						}
+					}
+				}	
+			}
+		}
+
+		data->reward = 0.0;
+		data->step = 0;
+	}
 }
 
 /***************************************************************************
