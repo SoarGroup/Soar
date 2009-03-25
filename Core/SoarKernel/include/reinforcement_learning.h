@@ -81,7 +81,6 @@ typedef struct rl_data_struct {
 	unsigned int reward_age;	// the number of steps since a cycle containing rl rules
 	unsigned int num_prev_op_rl_rules;
 	unsigned int step;			// the number of steps the current operator has been installed at the goal
-	signed int impasse_type;	// if this goal is an impasse, what type
 } rl_data;
 
 //
@@ -159,9 +158,6 @@ extern void rl_tabulate_reward_value_for_goal( agent *my_agent, Symbol *goal );
 // tabulation of all agent goal reward
 extern void rl_tabulate_reward_values( agent *my_agent );
 
-// shortcut function to discount a reward value based upon current discount mode
-extern double rl_discount_reward( agent *my_agent, double reward, unsigned int step );
-
 //////////////////////////////////////////////////////////
 // Updates
 //////////////////////////////////////////////////////////
@@ -170,7 +166,7 @@ extern double rl_discount_reward( agent *my_agent, double reward, unsigned int s
 extern void rl_store_data( agent *my_agent, Symbol *goal, preference *cand );
 
 // update the value of Soar-RL rules
-extern void rl_perform_update( agent *my_agent, double op_value, Symbol *goal );
+extern void rl_perform_update( agent *my_agent, double op_value, bool op_rl, Symbol *goal );
 
 // clears eligibility traces in accordance with watkins
 extern void rl_watkins_clear( agent *my_agent, Symbol *goal );

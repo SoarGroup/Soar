@@ -219,6 +219,7 @@ typedef struct preference_struct {
 
   unsigned int total_preferences_for_candidate;
   double numeric_value;
+  bool rl_contribution;
 
 } preference;
 

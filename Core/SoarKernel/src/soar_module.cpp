@@ -14,6 +14,8 @@
  * =======================================================================
  */
 
+#include <algorithm>
+
 #include "soar_module.h"
 #include "utilities.h"
 
@@ -140,6 +142,12 @@ namespace soar_module
 			return NULL;
 		else
 			return p->second;
+	};
+
+	template <class T>
+	void object_container<T>::for_each( std::unary_function<T *, void> &f ) const
+	{
+		std::for_each( objects->begin(), objects->end(), f );
 	};
 
 
