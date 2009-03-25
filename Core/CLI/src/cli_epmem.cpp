@@ -156,7 +156,8 @@ bool CommandLineInterface::ParseEpMem( std::vector<std::string>& argv )
 		else if ( m_NonOptionArguments == 1 )
 		{
 			// check attribute name
-			if ( epmem_valid_timer( m_pAgentSoar, argv[2].c_str() ) )
+			soar_module::timer *my_timer = m_pAgentSoar->epmem_timers->get( argv[2].c_str() );
+			if ( my_timer )
 				return DoEpMem( 't', &( argv[2] ) );
 			else
 				return SetError( CLIError::kInvalidAttribute );
@@ -500,10 +501,11 @@ bool CommandLineInterface::DoEpMem( const char pOp, const std::string* pAttr, co
 	{
 		if ( !pAttr )
 		{
+			/*
 			double temp;
 			std::string output;
 			std::string *temp_str;
-
+			
 			for ( int i=0; i<EPMEM_TIMERS; i++ )
 			{
 				output = epmem_get_timer_name( m_pAgentSoar, (const long) i );
@@ -516,19 +518,18 @@ bool CommandLineInterface::DoEpMem( const char pOp, const std::string* pAttr, co
 					m_Result << output << "\n";
 				else
 					AppendArgTagFast( sml_Names::kParamValue, sml_Names::kTypeString, output.c_str() );
-			}
+			}*/
 		}
 		else
 		{
-			double temp = epmem_get_timer_value( m_pAgentSoar, pAttr->c_str() );
-			std::string *temp_str = to_string( temp );
-			std::string output = (*temp_str);
-			delete temp_str;
+			char *temp2 = m_pAgentSoar->epmem_timers->get( pAttr->c_str() )->get_string();
+			std::string output( temp2 );
+			delete temp2;			
 
 			if ( m_RawOutput )
 				m_Result << output;
 			else
-				AppendArgTagFast( sml_Names::kParamValue, sml_Names::kTypeDouble, output.c_str() );
+				AppendArgTagFast( sml_Names::kParamValue, sml_Names::kTypeString, output.c_str() );
 		}
 
 		return true;

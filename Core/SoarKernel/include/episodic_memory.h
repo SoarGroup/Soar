@@ -72,42 +72,6 @@ typedef struct wme_struct wme;
 // EpMem Constants
 //////////////////////////////////////////////////////////
 
-#define EPMEM_TIMERS_OFF 0
-#define EPMEM_TIMERS_ONE 1
-#define EPMEM_TIMERS_TWO 2
-#define EPMEM_TIMERS_THREE 3
-
-// timers
-#define EPMEM_TIMER_TOTAL							0
-#define EPMEM_TIMER_STORAGE							1
-#define EPMEM_TIMER_NCB_RETRIEVAL					2
-#define EPMEM_TIMER_QUERY							3
-#define EPMEM_TIMER_API								4
-#define EPMEM_TIMER_TRIGGER							5
-#define EPMEM_TIMER_INIT							6
-#define EPMEM_TIMER_NEXT							7
-#define EPMEM_TIMER_PREV							8
-#define EPMEM_TIMER_NCB_EDGE						9
-#define EPMEM_TIMER_NCB_EDGE_RIT					10
-#define EPMEM_TIMER_NCB_NODE						11
-#define EPMEM_TIMER_NCB_NODE_RIT					12
-#define EPMEM_TIMER_QUERY_DNF						13
-#define EPMEM_TIMER_QUERY_GRAPH_MATCH				14
-#define EPMEM_TIMER_QUERY_POS_START_EP				15
-#define EPMEM_TIMER_QUERY_POS_START_NOW				16
-#define EPMEM_TIMER_QUERY_POS_START_POINT			17
-#define EPMEM_TIMER_QUERY_POS_END_EP				18
-#define EPMEM_TIMER_QUERY_POS_END_NOW				19
-#define EPMEM_TIMER_QUERY_POS_END_POINT				20
-#define EPMEM_TIMER_QUERY_NEG_START_EP				21
-#define EPMEM_TIMER_QUERY_NEG_START_NOW				22
-#define EPMEM_TIMER_QUERY_NEG_START_POINT			23
-#define EPMEM_TIMER_QUERY_NEG_END_EP				24
-#define EPMEM_TIMER_QUERY_NEG_END_NOW				25
-#define EPMEM_TIMER_QUERY_NEG_END_POINT				26
-
-#define EPMEM_TIMERS								27 // must be 1+ last epmem timer
-
 // statements
 // 0 - 19 => common
 // 20 - ( EPMEM_MAX_STATEMENTS - 1 ) => mode
@@ -208,8 +172,7 @@ class epmem_param_container: public param_container
 		enum mode_choices { tree, graph };
 		enum phase_choices { phase_output, phase_selection };
 		enum trigger_choices { none, output, dc };
-		enum force_choices { remember, ignore, force_off };
-		enum timers_choices { timers_off, one, two, three };
+		enum force_choices { remember, ignore, force_off };		
 
 		boolean_param *learning;
 		constant_param<db_choices> *database;
@@ -224,7 +187,7 @@ class epmem_param_container: public param_container
 		constant_param<force_choices> *force;
 		decimal_param *balance;
 		set_param *exclusions;
-		constant_param<timers_choices> *timers;
+		constant_param<timer::timer_level> *timers;
 				
 		epmem_param_container( agent *new_agent );
 };
@@ -304,8 +267,6 @@ class epmem_stat_container: public stat_container
 		epmem_stat_container( agent *my_agent );
 };
 
-//
-
 class epmem_mem_usage_stat: public integer_stat
 {
 	public:
@@ -324,17 +285,63 @@ class epmem_mem_high_stat: public integer_stat
 
 
 //////////////////////////////////////////////////////////
-// Timer Types
+// EpMem Timers
 //////////////////////////////////////////////////////////
 
-typedef struct epmem_timer_struct
+class epmem_timer_container: public timer_container
 {
-	struct timeval start_timer;
-	struct timeval total_timer;
-	const char *name;
+	public:
+		timer *total;
+		timer *storage;
+		timer *ncb_retrieval;
+		timer *query;
+		timer *api;
+		timer *trigger;
+		timer *init;
+		timer *next;
+		timer *prev;
 
-	long level;
-} epmem_timer;
+		timer *ncb_edge;
+		timer *ncb_edge_rit;
+		timer *ncb_node;
+		timer *ncb_node_rit;
+
+		timer *query_dnf;
+		timer *query_graph_match;
+		timer *query_pos_start_ep;
+		timer *query_pos_start_now;
+		timer *query_pos_start_point;
+		timer *query_pos_end_ep;
+		timer *query_pos_end_now;
+		timer *query_pos_end_point;
+		timer *query_neg_start_ep;
+		timer *query_neg_start_now;
+		timer *query_neg_start_point;
+		timer *query_neg_end_ep;
+		timer *query_neg_end_now;
+		timer *query_neg_end_point;
+		
+		epmem_timer_container( agent *my_agent );
+};
+
+class epmem_timer_level_predicate: public agent_predicate<timer::timer_level>
+{	
+	public:
+		epmem_timer_level_predicate( agent *new_agent );
+		bool operator() ( timer::timer_level val );
+};
+
+class epmem_timer: public timer
+{
+	public:
+		epmem_timer( const char *new_name, agent *new_agent, timer_level new_level );
+};
+
+
+//
+
+void epmem_start_timer( agent *my_agent, long timer );
+void epmem_stop_timer( agent *my_agent, long timer );
 
 
 //////////////////////////////////////////////////////////
@@ -365,7 +372,7 @@ typedef struct epmem_rit_state_struct
 	epmem_rit_state_param minstep;
 
 	long add_query;
-	long timer;
+	timer *timer;
 } epmem_rit_state;
 
 //////////////////////////////////////////////////////////
@@ -408,9 +415,9 @@ typedef struct epmem_range_query_struct
 	epmem_time_id val;						// current b-tree leaf value
 
 	double weight;							// wma value
-	long ct;						// cardinality w.r.t. positive/negative query
+	long ct;								// cardinality w.r.t. positive/negative query
 
-	long timer;								// timer to update upon executing the query
+	timer *timer;							// timer to update upon executing the query
 } epmem_range_query;
 
 // functor to maintain a priority cue of b-tree pointers
@@ -516,7 +523,7 @@ typedef struct epmem_shared_query_struct
 {
 	sqlite3_stmt *stmt;						// associated sqlite query
 	epmem_time_id val;						// current b-tree leaf value
-	long timer;								// timer to update upon executing the query
+	timer *timer;							// timer to update upon executing the query
 
 	epmem_shared_literal_list *triggers;	// literals to update when stepping this b-tree
 } epmem_shared_query;
@@ -544,38 +551,6 @@ typedef std::priority_queue<epmem_shared_query *, std::vector<epmem_shared_query
 
 // shortcut for determining if EpMem is enabled
 extern bool epmem_enabled( agent *my_agent );
-
-
-//////////////////////////////////////////////////////////
-// Timer Functions (see cpp for comments)
-//////////////////////////////////////////////////////////
-
-// memory clean
-extern void epmem_clean_timers( agent *my_agent );
-extern void epmem_reset_timers( agent *my_agent );
-
-// add timer
-extern epmem_timer *epmem_new_timer( const char *name, long timer );
-
-// convert timer
-extern const long epmem_convert_timer( agent *my_agent, const char *name );
-extern const char *epmem_convert_timer( agent *my_agent, const long timer );
-
-// valid timer
-extern bool epmem_valid_timer( agent *my_agent, const char *name );
-extern bool epmem_valid_timer( agent *my_agent, const long timer );
-
-// get timer
-extern double epmem_get_timer_value( agent *my_agent, const char *name );
-extern double epmem_get_timer_value( agent *my_agent, const long timer );
-
-// get timer name
-extern const char *epmem_get_timer_name( agent *my_agent, const char *name );
-extern const char *epmem_get_timer_name( agent *my_agent, const long timer );
-
-// timer functions
-extern void epmem_start_timer( agent *my_agent, const long timer );
-extern void epmem_stop_timer( agent *my_agent, const long timer );
 
 
 //////////////////////////////////////////////////////////

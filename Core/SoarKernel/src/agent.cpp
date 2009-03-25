@@ -335,38 +335,10 @@ agent * create_soar_agent (char * agent_name) {                                 
   newAgent->prediction = new std::string();
   predict_init( newAgent );
 
-  // epmem initialization
+  // epmem initialization - timers should come before stats
+  newAgent->epmem_timers = new epmem_timer_container( newAgent );
   newAgent->epmem_params = new epmem_param_container( newAgent );
-  newAgent->epmem_stats = new epmem_stat_container( newAgent );
-
-
-  newAgent->epmem_timers[ EPMEM_TIMER_TOTAL ] = epmem_new_timer( "epmem_total", EPMEM_TIMERS_ONE );
-  newAgent->epmem_timers[ EPMEM_TIMER_STORAGE ] = epmem_new_timer( "epmem_storage", EPMEM_TIMERS_TWO );
-  newAgent->epmem_timers[ EPMEM_TIMER_NCB_RETRIEVAL ] = epmem_new_timer( "epmem_ncb_retrieval", EPMEM_TIMERS_TWO );
-  newAgent->epmem_timers[ EPMEM_TIMER_QUERY ] = epmem_new_timer( "epmem_query", EPMEM_TIMERS_TWO );
-  newAgent->epmem_timers[ EPMEM_TIMER_API ] = epmem_new_timer( "epmem_api", EPMEM_TIMERS_TWO );
-  newAgent->epmem_timers[ EPMEM_TIMER_TRIGGER ] = epmem_new_timer( "epmem_trigger", EPMEM_TIMERS_TWO );
-  newAgent->epmem_timers[ EPMEM_TIMER_INIT ] = epmem_new_timer( "epmem_init", EPMEM_TIMERS_TWO );
-  newAgent->epmem_timers[ EPMEM_TIMER_NEXT ] = epmem_new_timer( "epmem_next", EPMEM_TIMERS_TWO );
-  newAgent->epmem_timers[ EPMEM_TIMER_PREV ] = epmem_new_timer( "epmem_prev", EPMEM_TIMERS_TWO );
-  newAgent->epmem_timers[ EPMEM_TIMER_NCB_EDGE ] = epmem_new_timer( "ncb_edge", EPMEM_TIMERS_THREE );
-  newAgent->epmem_timers[ EPMEM_TIMER_NCB_EDGE_RIT ] = epmem_new_timer( "ncb_edge_rit", EPMEM_TIMERS_THREE );
-  newAgent->epmem_timers[ EPMEM_TIMER_NCB_NODE ] = epmem_new_timer( "ncb_node", EPMEM_TIMERS_THREE );
-  newAgent->epmem_timers[ EPMEM_TIMER_NCB_NODE_RIT ] = epmem_new_timer( "ncb_node_rit", EPMEM_TIMERS_THREE );
-  newAgent->epmem_timers[ EPMEM_TIMER_QUERY_DNF ] = epmem_new_timer( "query_dnf", EPMEM_TIMERS_THREE );
-  newAgent->epmem_timers[ EPMEM_TIMER_QUERY_GRAPH_MATCH ] = epmem_new_timer( "query_graph_match", EPMEM_TIMERS_THREE );
-  newAgent->epmem_timers[ EPMEM_TIMER_QUERY_POS_START_EP ] = epmem_new_timer( "query_pos_start_ep", EPMEM_TIMERS_THREE );
-  newAgent->epmem_timers[ EPMEM_TIMER_QUERY_POS_START_NOW ] = epmem_new_timer( "query_pos_start_now", EPMEM_TIMERS_THREE );
-  newAgent->epmem_timers[ EPMEM_TIMER_QUERY_POS_START_POINT ] = epmem_new_timer( "query_pos_start_point", EPMEM_TIMERS_THREE );
-  newAgent->epmem_timers[ EPMEM_TIMER_QUERY_POS_END_EP ] = epmem_new_timer( "query_pos_end_ep", EPMEM_TIMERS_THREE );
-  newAgent->epmem_timers[ EPMEM_TIMER_QUERY_POS_END_NOW ] = epmem_new_timer( "query_pos_end_now", EPMEM_TIMERS_THREE );
-  newAgent->epmem_timers[ EPMEM_TIMER_QUERY_POS_END_POINT ] = epmem_new_timer( "query_pos_end_point", EPMEM_TIMERS_THREE );
-  newAgent->epmem_timers[ EPMEM_TIMER_QUERY_NEG_START_EP ] = epmem_new_timer( "query_neg_start_ep", EPMEM_TIMERS_THREE );
-  newAgent->epmem_timers[ EPMEM_TIMER_QUERY_NEG_START_NOW ] = epmem_new_timer( "query_neg_start_now", EPMEM_TIMERS_THREE );
-  newAgent->epmem_timers[ EPMEM_TIMER_QUERY_NEG_START_POINT ] = epmem_new_timer( "query_neg_start_point", EPMEM_TIMERS_THREE );
-  newAgent->epmem_timers[ EPMEM_TIMER_QUERY_NEG_END_EP ] = epmem_new_timer( "query_neg_end_ep", EPMEM_TIMERS_THREE );
-  newAgent->epmem_timers[ EPMEM_TIMER_QUERY_NEG_END_NOW ] = epmem_new_timer( "query_neg_end_now", EPMEM_TIMERS_THREE );
-  newAgent->epmem_timers[ EPMEM_TIMER_QUERY_NEG_END_POINT ] = epmem_new_timer( "query_neg_end_point", EPMEM_TIMERS_THREE );
+  newAgent->epmem_stats = new epmem_stat_container( newAgent );  
 
   newAgent->epmem_db = NULL;
   newAgent->epmem_db_status = EPMEM_DB_CLOSED;
@@ -443,8 +415,7 @@ void destroy_soar_agent (agent * delete_agent)
   epmem_close( delete_agent );
   delete delete_agent->epmem_params;
   delete delete_agent->epmem_stats;
-
-  epmem_clean_timers( delete_agent );
+  delete delete_agent->epmem_timers;
 
   delete delete_agent->epmem_node_removals;
   delete delete_agent->epmem_node_mins;

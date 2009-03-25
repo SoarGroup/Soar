@@ -182,11 +182,11 @@ epmem_param_container::epmem_param_container( agent *new_agent ): param_containe
 	add( exclusions );
 
 	// timers
-	timers = new constant_param<timers_choices>( "timers", timers_off, new f_predicate<timers_choices>() );
-	timers->add_mapping( timers_off, "off" );
-	timers->add_mapping( one, "one" );
-	timers->add_mapping( two, "two" );
-	timers->add_mapping( three, "three" );
+	timers = new constant_param<soar_module::timer::timer_level>( "timers", soar_module::timer::zero, new f_predicate<soar_module::timer::timer_level>() );
+	timers->add_mapping( soar_module::timer::zero, "off" );
+	timers->add_mapping( soar_module::timer::one, "one" );
+	timers->add_mapping( soar_module::timer::two, "two" );
+	timers->add_mapping( soar_module::timer::three, "three" );
 	add( timers );
 };
 
@@ -348,7 +348,7 @@ epmem_stat_container::epmem_stat_container( agent *new_agent ): stat_container( 
 
 	// tree
 	epmem_rit_state_tree.add_query = EPMEM_STMT_ONE_ADD_NODE_RANGE;
-	epmem_rit_state_tree.timer = EPMEM_TIMER_NCB_NODE_RIT;
+	epmem_rit_state_tree.timer = my_agent->epmem_timers->ncb_node_rit;
 	epmem_rit_state_tree.offset.stat = rit_offset_1;
 	epmem_rit_state_tree.offset.var_key = var_rit_offset_1;
 	epmem_rit_state_tree.leftroot.stat = rit_left_root_1;
@@ -360,7 +360,7 @@ epmem_stat_container::epmem_stat_container( agent *new_agent ): stat_container( 
 
 	// graph
 	epmem_rit_state_graph[ EPMEM_RIT_STATE_NODE ].add_query = EPMEM_STMT_THREE_ADD_NODE_RANGE;
-	epmem_rit_state_graph[ EPMEM_RIT_STATE_NODE ].timer = EPMEM_TIMER_NCB_NODE_RIT;
+	epmem_rit_state_graph[ EPMEM_RIT_STATE_NODE ].timer = my_agent->epmem_timers->ncb_node_rit;
 	epmem_rit_state_graph[ EPMEM_RIT_STATE_NODE ].offset.stat = rit_offset_1;
 	epmem_rit_state_graph[ EPMEM_RIT_STATE_NODE ].offset.var_key = var_rit_offset_1;
 	epmem_rit_state_graph[ EPMEM_RIT_STATE_NODE ].leftroot.stat = rit_left_root_1;
@@ -371,7 +371,7 @@ epmem_stat_container::epmem_stat_container( agent *new_agent ): stat_container( 
 	epmem_rit_state_graph[ EPMEM_RIT_STATE_NODE ].minstep.var_key = var_rit_minstep_1;
 
 	epmem_rit_state_graph[ EPMEM_RIT_STATE_EDGE ].add_query = EPMEM_STMT_THREE_ADD_EDGE_RANGE;
-	epmem_rit_state_graph[ EPMEM_RIT_STATE_EDGE ].timer = EPMEM_TIMER_NCB_EDGE_RIT;
+	epmem_rit_state_graph[ EPMEM_RIT_STATE_EDGE ].timer = my_agent->epmem_timers->ncb_edge_rit;
 	epmem_rit_state_graph[ EPMEM_RIT_STATE_EDGE ].offset.stat = rit_offset_2;
 	epmem_rit_state_graph[ EPMEM_RIT_STATE_EDGE ].offset.var_key = var_rit_offset_2;
 	epmem_rit_state_graph[ EPMEM_RIT_STATE_EDGE ].leftroot.stat = rit_left_root_2;
@@ -407,155 +407,105 @@ long epmem_mem_high_stat::get_value()
 //////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////
 
-/***************************************************************************
- * Function     : epmem_clean_timers
- * Author		: Nate Derbinsky
- * Notes		: Cleans up memory for timers
- **************************************************************************/
-void epmem_clean_timers( agent *my_agent )
+epmem_timer_container::epmem_timer_container( agent *new_agent ): timer_container( new_agent )
 {
-	for ( int i=0; i<EPMEM_TIMERS; i++ )
-		delete my_agent->epmem_timers[ i ];
-}
+	// one
+	
+	total = new epmem_timer( "epmem_total", my_agent, timer::one );
+	add( total );
 
-/***************************************************************************
- * Function     : epmem_reset_timers
- * Author		: Nate Derbinsky
- * Notes		: Resets all timers
- **************************************************************************/
-void epmem_reset_timers( agent *my_agent )
-{
-	for ( int i=0; i<EPMEM_TIMERS; i++ )
-	{
-		reset_timer( &my_agent->epmem_timers[ i ]->start_timer );
-		reset_timer( &my_agent->epmem_timers[ i ]->total_timer );
-	}
-}
+	// two
 
-/***************************************************************************
- * Function     : epmem_new_timer
- * Author		: Nate Derbinsky
- * Notes		: Creates a new initialized timer
- **************************************************************************/
-epmem_timer *epmem_new_timer( const char *name, long level )
-{
-	// new timer entry
-	epmem_timer *newbie = new epmem_timer;
-	newbie->name = name;
-	newbie->level = level;
+	storage = new epmem_timer( "epmem_storage", my_agent, timer::two );
+	add( storage );
 
-	reset_timer( &newbie->start_timer );
-	reset_timer( &newbie->total_timer );
+	ncb_retrieval = new epmem_timer( "epmem_ncb_retrieval", my_agent, timer::two );
+	add( ncb_retrieval );
 
-	return newbie;
-}
+	query = new epmem_timer( "epmem_query", my_agent, timer::two );
+	add( query );
 
-/***************************************************************************
- * Function     : epmem_convert_timer
- * Author		: Nate Derbinsky
- * Notes		: Convert a timer name<=>number
- **************************************************************************/
-const long epmem_convert_timer( agent *my_agent, const char *name )
-{
-	for ( int i=0; i<EPMEM_TIMERS; i++ )
-		if ( !strcmp( name, my_agent->epmem_timers[ i ]->name ) )
-			return i;
+	api = new epmem_timer( "epmem_api", my_agent, timer::two );
+	add( api );
 
-	return EPMEM_TIMERS;
-}
+	trigger = new epmem_timer( "epmem_trigger", my_agent, timer::two );
+	add( trigger );
 
-const char *epmem_convert_timer( agent *my_agent, const long timer )
-{
-	if ( ( timer < 0 ) || ( timer >= EPMEM_TIMERS ) )
-		return NULL;
+	init = new epmem_timer( "epmem_init", my_agent, timer::two );
+	add( init );
 
-	return my_agent->epmem_timers[ timer ]->name;
-}
+	next = new epmem_timer( "epmem_next", my_agent, timer::two );
+	add( next );
 
-/***************************************************************************
- * Function     : epmem_valid_timer
- * Author		: Nate Derbinsky
- * Notes		: Determines if the timer name/number is valid
- **************************************************************************/
-bool epmem_valid_timer( agent *my_agent, const char *name )
-{
-	return ( epmem_convert_timer( my_agent, name ) != EPMEM_TIMERS );
-}
+	prev = new epmem_timer( "epmem_prev", my_agent, timer::two );
+	add( prev );
 
-bool epmem_valid_timer( agent *my_agent, const long timer )
-{
-	return ( epmem_convert_timer( my_agent, timer ) != NULL );
-}
+	// three
 
-/***************************************************************************
- * Function     : epmem_get_timer_value
- * Author		: Nate Derbinsky
- * Notes		: Returns the current value of the timer
- **************************************************************************/
-double epmem_get_timer_value( agent *my_agent, const char *name )
-{
-	const long timer = epmem_convert_timer( my_agent, name );
-	if ( timer == EPMEM_TIMERS )
-		return 0.0;
+	ncb_edge = new epmem_timer( "ncb_edge", my_agent, timer::three );
+	add( ncb_edge );
 
-	return timer_value( &my_agent->epmem_timers[ timer ]->total_timer );
-}
+	ncb_edge_rit = new epmem_timer( "ncb_edge_rit", my_agent, timer::three );
+	add( ncb_edge_rit );
 
-double epmem_get_timer_value( agent *my_agent, const long timer )
-{
-	if ( !epmem_valid_timer( my_agent, timer ) )
-		return 0.0;
+	ncb_node = new epmem_timer( "ncb_node", my_agent, timer::three );
+	add( ncb_node );
 
-	return timer_value( &my_agent->epmem_timers[ timer ]->total_timer );
-}
+	ncb_node_rit = new epmem_timer( "ncb_node_rit", my_agent, timer::three );
+	add( ncb_node_rit );
 
-/***************************************************************************
- * Function     : epmem_get_timer_name
- * Author		: Nate Derbinsky
- * Notes		: Returns the timer name
- **************************************************************************/
-const char *epmem_get_timer_name( agent *my_agent, const char *name )
-{
-	const long timer = epmem_convert_timer( my_agent, name );
-	if ( timer == EPMEM_TIMERS )
-		return 0;
+	query_dnf = new epmem_timer( "query_dnf", my_agent, timer::three );
+	add( query_dnf );
 
-	return my_agent->epmem_timers[ timer ]->name;
-}
+	query_graph_match = new epmem_timer( "query_graph_match", my_agent, timer::three );
+	add( query_graph_match );
 
-const char *epmem_get_timer_name( agent *my_agent, const long timer )
-{
-	if ( !epmem_valid_timer( my_agent, timer ) )
-		return 0;
+	query_pos_start_ep = new epmem_timer( "query_pos_start_ep", my_agent, timer::three );
+	add( query_pos_start_ep );
 
-	return my_agent->epmem_timers[ timer ]->name;
-}
+	query_pos_start_now = new epmem_timer( "query_pos_start_now", my_agent, timer::three );
+	add( query_pos_start_now );
 
-/***************************************************************************
- * Function     : epmem_start_timer
- * Author		: Nate Derbinsky
- * Notes		: Starts a timer
- **************************************************************************/
-void epmem_start_timer( agent *my_agent, const long timer )
-{
-	if ( epmem_valid_timer( my_agent, timer ) && ( my_agent->epmem_params->timers->get_value() >= my_agent->epmem_timers[ timer ]->level ) )
-	{
-		start_timer( my_agent, &my_agent->epmem_timers[ timer ]->start_timer );
-	}
-}
+	query_pos_start_point = new epmem_timer( "query_pos_start_point", my_agent, timer::three );
+	add( query_pos_start_point );
 
-/***************************************************************************
- * Function     : epmem_stop_timer
- * Author		: Nate Derbinsky
- * Notes		: Stops a timer
- **************************************************************************/
-void epmem_stop_timer( agent *my_agent, const long timer )
-{
-	if ( epmem_valid_timer( my_agent, timer ) && ( my_agent->epmem_params->timers->get_value() >= my_agent->epmem_timers[ timer ]->level ) )
-	{
-		stop_timer( my_agent, &my_agent->epmem_timers[ timer ]->start_timer, &my_agent->epmem_timers[ timer ]->total_timer );
-	}
-}
+	query_pos_end_ep = new epmem_timer( "query_pos_end_ep", my_agent, timer::three );
+	add( query_pos_end_ep );
+
+	query_pos_end_now = new epmem_timer( "query_pos_end_now", my_agent, timer::three );
+	add( query_pos_end_now );
+
+	query_pos_end_point = new epmem_timer( "query_pos_end_point", my_agent, timer::three );
+	add( query_pos_end_point );
+
+	query_neg_start_ep = new epmem_timer( "query_neg_start_ep", my_agent, timer::three );
+	add( query_neg_start_ep );
+
+	query_neg_start_now = new epmem_timer( "query_neg_start_now", my_agent, timer::three );
+	add( query_neg_start_now );
+
+	query_neg_start_point = new epmem_timer( "query_neg_start_point", my_agent, timer::three );
+	add( query_neg_start_point );
+
+	query_neg_end_ep = new epmem_timer( "query_neg_end_ep", my_agent, timer::three );
+	add( query_neg_end_ep );
+
+	query_neg_end_now = new epmem_timer( "query_neg_end_now", my_agent, timer::three );
+	add( query_neg_end_now );
+
+	query_neg_end_point = new epmem_timer( "query_neg_end_point", my_agent, timer::three );
+	add( query_neg_end_point );
+};
+
+//
+
+epmem_timer_level_predicate::epmem_timer_level_predicate( agent *new_agent ): agent_predicate<soar_module::timer::timer_level>( new_agent ) {};
+
+bool epmem_timer_level_predicate::operator() ( soar_module::timer::timer_level val ) { return ( my_agent->epmem_params->timers->get_value() >= val ); };
+
+//
+
+epmem_timer::epmem_timer(const char *new_name, agent *new_agent, soar_module::timer::timer_level new_level): soar_module::timer( new_name, new_agent, new_level, new epmem_timer_level_predicate( new_agent ) ) {};
 
 
 //////////////////////////////////////////////////////////
@@ -844,13 +794,13 @@ void epmem_remove_fake_preference( agent *my_agent, wme *w )
  * Author		: Nate Derbinsky
  * Notes		: Starts/stops a timer around query execution
  **************************************************************************/
-int epmem_exec_query( agent *my_agent, sqlite3_stmt *stmt, const long timer )
+int epmem_exec_query( sqlite3_stmt *stmt, soar_module::timer *timer )
 {
 	int return_val;
 
-	epmem_start_timer( my_agent, timer );
-	return_val = sqlite3_step( stmt );
-	epmem_stop_timer( my_agent, timer );
+	timer->start();	
+	return_val = sqlite3_step( stmt );	
+	timer->stop();
 
 	return return_val;
 }
@@ -860,9 +810,9 @@ int epmem_exec_query( agent *my_agent, sqlite3_stmt *stmt, const long timer )
  * Author		: Nate Derbinsky
  * Notes		: Easy timer function for range query structs
  **************************************************************************/
-int epmem_exec_range_query( agent *my_agent, epmem_range_query *stmt )
+int epmem_exec_range_query( epmem_range_query *stmt )
 {
-	return epmem_exec_query( my_agent, stmt->stmt, stmt->timer );
+	return epmem_exec_query( stmt->stmt, stmt->timer );
 }
 
 /***************************************************************************
@@ -870,9 +820,9 @@ int epmem_exec_range_query( agent *my_agent, epmem_range_query *stmt )
  * Author		: Nate Derbinsky
  * Notes		: Easy timer function for shared query structs
  **************************************************************************/
-int epmem_exec_shared_query( agent *my_agent, epmem_shared_query *stmt )
+int epmem_exec_shared_query( epmem_shared_query *stmt )
 {
-	return epmem_exec_query( my_agent, stmt->stmt, stmt->timer );
+	return epmem_exec_query( stmt->stmt, stmt->timer );
 }
 
 
@@ -1075,7 +1025,7 @@ void epmem_rit_add_right( agent *my_agent, epmem_time_id id )
 void epmem_rit_prep_left_right( agent *my_agent, epmem_time_id lower, epmem_time_id upper, epmem_rit_state *rit_state )
 {
 	////////////////////////////////////////////////////////////////////////////
-	epmem_start_timer( my_agent, rit_state->timer );
+	rit_state->timer->start();	
 	////////////////////////////////////////////////////////////////////////////
 
 	long offset = rit_state->offset.stat->get_value();
@@ -1153,7 +1103,7 @@ void epmem_rit_prep_left_right( agent *my_agent, epmem_time_id lower, epmem_time
 	}
 
 	////////////////////////////////////////////////////////////////////////////
-	epmem_stop_timer( my_agent, rit_state->timer );
+	rit_state->timer->stop();
 	////////////////////////////////////////////////////////////////////////////
 }
 
@@ -1381,7 +1331,7 @@ void epmem_init_db( agent *my_agent, bool readonly = false )
 		return;
 
 	////////////////////////////////////////////////////////////////////////////
-	epmem_start_timer( my_agent, EPMEM_TIMER_INIT );
+	my_agent->epmem_timers->init->start();	
 	////////////////////////////////////////////////////////////////////////////
 
 	const char *db_path;
@@ -2210,7 +2160,7 @@ void epmem_init_db( agent *my_agent, bool readonly = false )
 	}
 
 	////////////////////////////////////////////////////////////////////////////
-	epmem_stop_timer( my_agent, EPMEM_TIMER_INIT );
+	my_agent->epmem_timers->init->stop();	
 	////////////////////////////////////////////////////////////////////////////
 }
 
@@ -2351,7 +2301,7 @@ void epmem_new_episode( agent *my_agent )
 		return;
 
 	////////////////////////////////////////////////////////////////////////////
-	epmem_start_timer( my_agent, EPMEM_TIMER_STORAGE );
+	my_agent->epmem_timers->storage->start();	
 	////////////////////////////////////////////////////////////////////////////
 
 	epmem_time_id time_counter = my_agent->epmem_stats->time->get_value();
@@ -3004,7 +2954,7 @@ void epmem_new_episode( agent *my_agent )
 	}
 
 	////////////////////////////////////////////////////////////////////////////
-	epmem_stop_timer( my_agent, EPMEM_TIMER_STORAGE );
+	my_agent->epmem_timers->storage->stop();	
 	////////////////////////////////////////////////////////////////////////////
 }
 
@@ -3072,7 +3022,7 @@ void epmem_install_memory( agent *my_agent, Symbol *state, epmem_time_id memory_
 	wme *new_wme;
 
 	////////////////////////////////////////////////////////////////////////////
-	epmem_start_timer( my_agent, EPMEM_TIMER_NCB_RETRIEVAL );
+	my_agent->epmem_timers->ncb_retrieval->start();	
 	////////////////////////////////////////////////////////////////////////////
 
 	// get the ^result header for this state
@@ -3092,7 +3042,8 @@ void epmem_install_memory( agent *my_agent, Symbol *state, epmem_time_id memory_
 
 		state->id.epmem_info->last_memory = EPMEM_MEMID_NONE;
 
-		epmem_stop_timer( my_agent, EPMEM_TIMER_NCB_RETRIEVAL );
+		my_agent->epmem_timers->ncb_retrieval->stop();
+		
 		return;
 	}
 
@@ -3144,7 +3095,7 @@ void epmem_install_memory( agent *my_agent, Symbol *state, epmem_time_id memory_
 		EPMEM_SQLITE_BIND_INT( my_agent->epmem_statements[ EPMEM_STMT_ONE_GET_EPISODE ], 2, memory_id );
 		EPMEM_SQLITE_BIND_INT( my_agent->epmem_statements[ EPMEM_STMT_ONE_GET_EPISODE ], 3, memory_id );
 		EPMEM_SQLITE_BIND_INT( my_agent->epmem_statements[ EPMEM_STMT_ONE_GET_EPISODE ], 4, memory_id );
-		while ( epmem_exec_query( my_agent, my_agent->epmem_statements[ EPMEM_STMT_ONE_GET_EPISODE ], EPMEM_TIMER_NCB_NODE ) == SQLITE_ROW )
+		while ( epmem_exec_query( my_agent->epmem_statements[ EPMEM_STMT_ONE_GET_EPISODE ], my_agent->epmem_timers->ncb_node ) == SQLITE_ROW )
 		{
 			// e.id, i.parent_id, i.name, i.value, i.attr_type, i.value_type
 			child_id = EPMEM_SQLITE_COLUMN_INT( my_agent->epmem_statements[ EPMEM_STMT_ONE_GET_EPISODE ], 0 );
@@ -3259,7 +3210,7 @@ void epmem_install_memory( agent *my_agent, Symbol *state, epmem_time_id memory_
 			EPMEM_SQLITE_BIND_INT( my_agent->epmem_statements[ EPMEM_STMT_THREE_GET_EDGES ], 2, memory_id );
 			EPMEM_SQLITE_BIND_INT( my_agent->epmem_statements[ EPMEM_STMT_THREE_GET_EDGES ], 3, memory_id );
 			EPMEM_SQLITE_BIND_INT( my_agent->epmem_statements[ EPMEM_STMT_THREE_GET_EDGES ], 4, memory_id );
-			while ( epmem_exec_query( my_agent, my_agent->epmem_statements[ EPMEM_STMT_THREE_GET_EDGES ], EPMEM_TIMER_NCB_EDGE ) == SQLITE_ROW )
+			while ( epmem_exec_query( my_agent->epmem_statements[ EPMEM_STMT_THREE_GET_EDGES ], my_agent->epmem_timers->ncb_edge ) == SQLITE_ROW )
 			{
 				// q0, w, q1, w_type
 				q0 = EPMEM_SQLITE_COLUMN_INT( my_agent->epmem_statements[ EPMEM_STMT_THREE_GET_EDGES ], 0 );
@@ -3369,7 +3320,7 @@ void epmem_install_memory( agent *my_agent, Symbol *state, epmem_time_id memory_
 			EPMEM_SQLITE_BIND_INT( my_agent->epmem_statements[ EPMEM_STMT_THREE_GET_NODES ], 2, memory_id );
 			EPMEM_SQLITE_BIND_INT( my_agent->epmem_statements[ EPMEM_STMT_THREE_GET_NODES ], 3, memory_id );
 			EPMEM_SQLITE_BIND_INT( my_agent->epmem_statements[ EPMEM_STMT_THREE_GET_NODES ], 4, memory_id );
-			while ( epmem_exec_query( my_agent, my_agent->epmem_statements[ EPMEM_STMT_THREE_GET_NODES ], EPMEM_TIMER_NCB_NODE ) == SQLITE_ROW )
+			while ( epmem_exec_query( my_agent->epmem_statements[ EPMEM_STMT_THREE_GET_NODES ], my_agent->epmem_timers->ncb_node ) == SQLITE_ROW )
 			{
 				// f.child_id, f.parent_id, f.name, f.value, f.attr_type, f.value_type
 				child_id = EPMEM_SQLITE_COLUMN_INT( my_agent->epmem_statements[ EPMEM_STMT_THREE_GET_NODES ], 0 );
@@ -3430,7 +3381,7 @@ void epmem_install_memory( agent *my_agent, Symbol *state, epmem_time_id memory_
 	my_agent->epmem_stats->ncb_wmes->set_value( num_wmes );
 
 	////////////////////////////////////////////////////////////////////////////
-	epmem_stop_timer( my_agent, EPMEM_TIMER_NCB_RETRIEVAL );
+	my_agent->epmem_timers->ncb_retrieval->stop();
 	////////////////////////////////////////////////////////////////////////////
 }
 
@@ -3444,7 +3395,7 @@ void epmem_install_memory( agent *my_agent, Symbol *state, epmem_time_id memory_
 epmem_time_id epmem_next_episode( agent *my_agent, epmem_time_id memory_id )
 {
 	////////////////////////////////////////////////////////////////////////////
-	epmem_start_timer( my_agent, EPMEM_TIMER_NEXT );
+	my_agent->epmem_timers->next->start();
 	////////////////////////////////////////////////////////////////////////////
 
 	const long mode = my_agent->epmem_params->mode->get_value();
@@ -3468,7 +3419,7 @@ epmem_time_id epmem_next_episode( agent *my_agent, epmem_time_id memory_id )
 	}
 
 	////////////////////////////////////////////////////////////////////////////
-	epmem_stop_timer( my_agent, EPMEM_TIMER_NEXT );
+	my_agent->epmem_timers->next->stop();
 	////////////////////////////////////////////////////////////////////////////
 
 	return return_val;
@@ -3484,7 +3435,7 @@ epmem_time_id epmem_next_episode( agent *my_agent, epmem_time_id memory_id )
 epmem_time_id epmem_previous_episode( agent *my_agent, epmem_time_id memory_id )
 {
 	////////////////////////////////////////////////////////////////////////////
-	epmem_start_timer( my_agent, EPMEM_TIMER_PREV );
+	my_agent->epmem_timers->prev->start();	
 	////////////////////////////////////////////////////////////////////////////
 
 	const long mode = my_agent->epmem_params->mode->get_value();
@@ -3508,7 +3459,7 @@ epmem_time_id epmem_previous_episode( agent *my_agent, epmem_time_id memory_id )
 	}
 
 	////////////////////////////////////////////////////////////////////////////
-	epmem_stop_timer( my_agent, EPMEM_TIMER_PREV );
+	my_agent->epmem_timers->prev->stop();
 	////////////////////////////////////////////////////////////////////////////
 
 	return return_val;
@@ -3621,7 +3572,7 @@ epmem_leaf_node *epmem_create_leaf_node( epmem_node_id leaf_id, double leaf_weig
  * Notes		: Implements a step in the range search algorithm for
  * 				  WM Tree (see above description).
  **************************************************************************/
-void epmem_incremental_row( agent *my_agent, epmem_range_query_list *queries, epmem_time_id &id, long &ct, double &v, long &updown, const unsigned int list )
+void epmem_incremental_row( epmem_range_query_list *queries, epmem_time_id &id, long &ct, double &v, long &updown, const unsigned int list )
 {
 	// initialize variables
 	id = queries[ list ].top()->val;
@@ -3647,7 +3598,7 @@ void epmem_incremental_row( agent *my_agent, epmem_range_query_list *queries, ep
 		ct += temp_query->ct;
 
 		// check if more endpoints exist for this leaf wme
-		more_data = ( epmem_exec_range_query( my_agent, temp_query ) == SQLITE_ROW );
+		more_data = ( epmem_exec_range_query( temp_query ) == SQLITE_ROW );
 		if ( more_data )
 		{
 			// if so, add back to the priority queue
@@ -3728,7 +3679,7 @@ void epmem_shared_flip( epmem_shared_literal *flip, const unsigned int list, lon
  * Notes		: Implements a step in the range search algorithm for
  * 				  WM Graph (see above description).
  **************************************************************************/
-void epmem_shared_increment( agent *my_agent, epmem_shared_query_list *queries, epmem_time_id &id, long &ct, double &v, long &updown, const unsigned int list )
+void epmem_shared_increment( epmem_shared_query_list *queries, epmem_time_id &id, long &ct, double &v, long &updown, const unsigned int list )
 {
 	// initialize variables
 	id = queries[ list ].top()->val;
@@ -3754,7 +3705,7 @@ void epmem_shared_increment( agent *my_agent, epmem_shared_query_list *queries, 
 			epmem_shared_flip( (*literal_p), list, ct, v, updown );
 
 		// check if more endpoints exist for this wme
-		more_data = ( epmem_exec_shared_query( my_agent, temp_query ) == SQLITE_ROW );
+		more_data = ( epmem_exec_shared_query( temp_query ) == SQLITE_ROW );
 		if ( more_data )
 		{
 			// if so, add back to the priority queue
@@ -4046,7 +3997,7 @@ unsigned long epmem_graph_match( epmem_shared_literal_group *literals, epmem_con
 void epmem_process_query( agent *my_agent, Symbol *state, Symbol *query, Symbol *neg_query, epmem_time_list *prohibit, epmem_time_id before, epmem_time_id after, int level=3 )
 {
 	////////////////////////////////////////////////////////////////////////////
-	epmem_start_timer( my_agent, EPMEM_TIMER_QUERY );
+	my_agent->epmem_timers->query->start();
 	////////////////////////////////////////////////////////////////////////////
 
 	unsigned long len_query = 0, len_neg_query = 0;
@@ -4222,7 +4173,7 @@ void epmem_process_query( agent *my_agent, Symbol *state, Symbol *query, Symbol 
 
 						epmem_range_query *new_query = NULL;
 						sqlite3_stmt *new_stmt = NULL;
-						long new_timer = NULL;
+						soar_module::timer *new_timer = NULL;
 
 						for ( i=EPMEM_NODE_POS; i<=EPMEM_NODE_NEG; i++ )
 						{
@@ -4237,15 +4188,15 @@ void epmem_process_query( agent *my_agent, Symbol *state, Symbol *query, Symbol 
 											switch ( k )
 											{
 												case EPMEM_RANGE_EP:
-													new_timer = ( ( i == EPMEM_NODE_POS )?( ( j == EPMEM_RANGE_START )?( EPMEM_TIMER_QUERY_POS_START_EP ):( EPMEM_TIMER_QUERY_POS_END_EP ) ):( ( j == EPMEM_RANGE_START )?( EPMEM_TIMER_QUERY_NEG_START_EP ):( EPMEM_TIMER_QUERY_NEG_END_EP ) ) );
+													new_timer = ( ( i == EPMEM_NODE_POS )?( ( j == EPMEM_RANGE_START )?( my_agent->epmem_timers->query_pos_start_ep ):( my_agent->epmem_timers->query_pos_end_ep ) ):( ( j == EPMEM_RANGE_START )?( my_agent->epmem_timers->query_neg_start_ep ):( my_agent->epmem_timers->query_neg_end_ep ) ) );
 													break;
 
 												case EPMEM_RANGE_NOW:
-													new_timer = ( ( i == EPMEM_NODE_POS )?( ( j == EPMEM_RANGE_START )?( EPMEM_TIMER_QUERY_POS_START_NOW ):( EPMEM_TIMER_QUERY_POS_END_NOW ) ):( ( j == EPMEM_RANGE_START )?( EPMEM_TIMER_QUERY_NEG_START_NOW ):( EPMEM_TIMER_QUERY_NEG_END_NOW ) ) );
+													new_timer = ( ( i == EPMEM_NODE_POS )?( ( j == EPMEM_RANGE_START )?( my_agent->epmem_timers->query_pos_start_now ):( my_agent->epmem_timers->query_pos_end_now ) ):( ( j == EPMEM_RANGE_START )?( my_agent->epmem_timers->query_neg_start_now ):( my_agent->epmem_timers->query_neg_end_now ) ) );
 													break;
 
 												case EPMEM_RANGE_POINT:
-													new_timer = ( ( i == EPMEM_NODE_POS )?( ( j == EPMEM_RANGE_START )?( EPMEM_TIMER_QUERY_POS_START_POINT ):( EPMEM_TIMER_QUERY_POS_END_POINT ) ):( ( j == EPMEM_RANGE_START )?( EPMEM_TIMER_QUERY_NEG_START_POINT ):( EPMEM_TIMER_QUERY_NEG_END_POINT ) ) );
+													new_timer = ( ( i == EPMEM_NODE_POS )?( ( j == EPMEM_RANGE_START )?( my_agent->epmem_timers->query_pos_start_point ):( my_agent->epmem_timers->query_pos_end_point ) ):( ( j == EPMEM_RANGE_START )?( my_agent->epmem_timers->query_neg_start_point ):( my_agent->epmem_timers->query_neg_end_point ) ) );
 													break;
 											}
 
@@ -4260,7 +4211,7 @@ void epmem_process_query( agent *my_agent, Symbol *state, Symbol *query, Symbol 
 												EPMEM_SQLITE_BIND_INT( new_stmt, position++, time_now );
 											EPMEM_SQLITE_BIND_INT( new_stmt, position, (*leaf_p)->leaf_id );
 
-											if ( epmem_exec_query( my_agent, new_stmt, new_timer ) == SQLITE_ROW )
+											if ( epmem_exec_query( new_stmt, new_timer ) == SQLITE_ROW )
 											{
 												new_query = new epmem_range_query;
 												new_query->val = EPMEM_SQLITE_COLUMN_INT( new_stmt, 0 );
@@ -4321,7 +4272,7 @@ void epmem_process_query( agent *my_agent, Symbol *state, Symbol *query, Symbol 
 
 						// initialize current as last end
 						// initialize next end
-						epmem_incremental_row( my_agent, queries, current_id, current_ct, current_v, current_updown, EPMEM_RANGE_END );
+						epmem_incremental_row( queries, current_id, current_ct, current_v, current_updown, EPMEM_RANGE_END );
 						end_id = ( ( queries[ EPMEM_RANGE_END ].empty() )?( EPMEM_MEMID_NONE ):( queries[ EPMEM_RANGE_END ].top()->val ) );
 
 						// initialize next start
@@ -4414,7 +4365,7 @@ void epmem_process_query( agent *my_agent, Symbol *state, Symbol *query, Symbol 
 								if ( !done )
 								{
 									// based upon choice, update variables
-									epmem_incremental_row( my_agent, queries, current_id, current_ct, current_v, current_updown, next_list );
+									epmem_incremental_row( queries, current_id, current_ct, current_v, current_updown, next_list );
 									current_id = current_end - 1;
 									current_ct *= ( ( next_list == EPMEM_RANGE_START )?( -1 ):( 1 ) );
 									current_v *= ( ( next_list == EPMEM_RANGE_START )?( -1 ):( 1 ) );
@@ -4499,7 +4450,7 @@ void epmem_process_query( agent *my_agent, Symbol *state, Symbol *query, Symbol 
 						symbol_remove_ref( my_agent, my_meta );
 
 						////////////////////////////////////////////////////////////////////////////
-						epmem_stop_timer( my_agent, EPMEM_TIMER_QUERY );
+						my_agent->epmem_timers->query->stop();
 						////////////////////////////////////////////////////////////////////////////
 
 						// actual memory
@@ -4513,7 +4464,7 @@ void epmem_process_query( agent *my_agent, Symbol *state, Symbol *query, Symbol 
 						state->id.epmem_info->epmem_wmes->push( new_wme );
 
 						////////////////////////////////////////////////////////////////////////////
-						epmem_stop_timer( my_agent, EPMEM_TIMER_QUERY );
+						my_agent->epmem_timers->query->stop();
 						////////////////////////////////////////////////////////////////////////////
 					}
 				}
@@ -4525,7 +4476,7 @@ void epmem_process_query( agent *my_agent, Symbol *state, Symbol *query, Symbol 
 				state->id.epmem_info->epmem_wmes->push( new_wme );
 
 				////////////////////////////////////////////////////////////////////////////
-				epmem_stop_timer( my_agent, EPMEM_TIMER_QUERY );
+				my_agent->epmem_timers->query->stop();
 				////////////////////////////////////////////////////////////////////////////
 			}
 		}
@@ -4559,7 +4510,7 @@ void epmem_process_query( agent *my_agent, Symbol *state, Symbol *query, Symbol 
 			epmem_time_id time_now = my_agent->epmem_stats->time->get_value() - 1;
 
 			////////////////////////////////////////////////////////////////////////////
-			epmem_start_timer( my_agent, EPMEM_TIMER_QUERY_DNF );
+			my_agent->epmem_timers->query_dnf->start();
 			////////////////////////////////////////////////////////////////////////////
 
 			// simultaneously process cue, construct DNF graph, and add queries to priority cue
@@ -4608,7 +4559,7 @@ void epmem_process_query( agent *my_agent, Symbol *state, Symbol *query, Symbol 
 				epmem_wme_cache_element *new_cache_element = NULL;
 				epmem_shared_literal_list *new_trigger_list = NULL;
 				epmem_shared_literal_group *new_literal_group = NULL;
-				long new_timer = NULL;
+				soar_module::timer *new_timer = NULL;
 				sqlite3_stmt *new_stmt = NULL;
 
 				// identity (i.e. database id)
@@ -4855,15 +4806,15 @@ void epmem_process_query( agent *my_agent, Symbol *state, Symbol *query, Symbol 
 													switch ( m )
 													{
 														case EPMEM_RANGE_EP:
-															new_timer = ( ( i == EPMEM_NODE_POS )?( ( k == EPMEM_RANGE_START )?( EPMEM_TIMER_QUERY_POS_START_EP ):( EPMEM_TIMER_QUERY_POS_END_EP ) ):( ( k == EPMEM_RANGE_START )?( EPMEM_TIMER_QUERY_NEG_START_EP ):( EPMEM_TIMER_QUERY_NEG_END_EP ) ) );
+															new_timer = ( ( i == EPMEM_NODE_POS )?( ( k == EPMEM_RANGE_START )?( my_agent->epmem_timers->query_pos_start_ep ):( my_agent->epmem_timers->query_pos_end_ep ) ):( ( k == EPMEM_RANGE_START )?( my_agent->epmem_timers->query_neg_start_ep ):( my_agent->epmem_timers->query_neg_end_ep ) ) );
 															break;
 
 														case EPMEM_RANGE_NOW:
-															new_timer = ( ( i == EPMEM_NODE_POS )?( ( k == EPMEM_RANGE_START )?( EPMEM_TIMER_QUERY_POS_START_NOW ):( EPMEM_TIMER_QUERY_POS_END_NOW ) ):( ( k == EPMEM_RANGE_START )?( EPMEM_TIMER_QUERY_NEG_START_NOW ):( EPMEM_TIMER_QUERY_NEG_END_NOW ) ) );
+															new_timer = ( ( i == EPMEM_NODE_POS )?( ( k == EPMEM_RANGE_START )?( my_agent->epmem_timers->query_pos_start_now ):( my_agent->epmem_timers->query_pos_end_now ) ):( ( k == EPMEM_RANGE_START )?( my_agent->epmem_timers->query_neg_start_now ):( my_agent->epmem_timers->query_neg_end_now ) ) );
 															break;
 
 														case EPMEM_RANGE_POINT:
-															new_timer = ( ( i == EPMEM_NODE_POS )?( ( k == EPMEM_RANGE_START )?( EPMEM_TIMER_QUERY_POS_START_POINT ):( EPMEM_TIMER_QUERY_POS_END_POINT ) ):( ( k == EPMEM_RANGE_START )?( EPMEM_TIMER_QUERY_NEG_START_POINT ):( EPMEM_TIMER_QUERY_NEG_END_POINT ) ) );
+															new_timer = ( ( i == EPMEM_NODE_POS )?( ( k == EPMEM_RANGE_START )?( my_agent->epmem_timers->query_pos_start_point ):( my_agent->epmem_timers->query_pos_end_point ) ):( ( k == EPMEM_RANGE_START )?( my_agent->epmem_timers->query_neg_start_point ):( my_agent->epmem_timers->query_neg_end_point ) ) );
 															break;
 													}
 
@@ -4879,7 +4830,7 @@ void epmem_process_query( agent *my_agent, Symbol *state, Symbol *query, Symbol 
 													EPMEM_SQLITE_BIND_INT( new_stmt, position, unique_identity );
 
 													// take first step
-													if ( epmem_exec_query( my_agent, new_stmt, new_timer ) == SQLITE_ROW )
+													if ( epmem_exec_query( new_stmt, new_timer ) == SQLITE_ROW )
 													{
 														new_query = new epmem_shared_query;
 														new_query->val = EPMEM_SQLITE_COLUMN_INT( new_stmt, 0 );
@@ -5043,15 +4994,15 @@ void epmem_process_query( agent *my_agent, Symbol *state, Symbol *query, Symbol 
 													switch ( m )
 													{
 														case EPMEM_RANGE_EP:
-															new_timer = ( ( i == EPMEM_NODE_POS )?( ( k == EPMEM_RANGE_START )?( EPMEM_TIMER_QUERY_POS_START_EP ):( EPMEM_TIMER_QUERY_POS_END_EP ) ):( ( k == EPMEM_RANGE_START )?( EPMEM_TIMER_QUERY_NEG_START_EP ):( EPMEM_TIMER_QUERY_NEG_END_EP ) ) );
+															new_timer = ( ( i == EPMEM_NODE_POS )?( ( k == EPMEM_RANGE_START )?( my_agent->epmem_timers->query_pos_start_ep ):( my_agent->epmem_timers->query_pos_end_ep ) ):( ( k == EPMEM_RANGE_START )?( my_agent->epmem_timers->query_neg_start_ep ):( my_agent->epmem_timers->query_neg_end_ep ) ) );
 															break;
 
 														case EPMEM_RANGE_NOW:
-															new_timer = ( ( i == EPMEM_NODE_POS )?( ( k == EPMEM_RANGE_START )?( EPMEM_TIMER_QUERY_POS_START_NOW ):( EPMEM_TIMER_QUERY_POS_END_NOW ) ):( ( k == EPMEM_RANGE_START )?( EPMEM_TIMER_QUERY_NEG_START_NOW ):( EPMEM_TIMER_QUERY_NEG_END_NOW ) ) );
+															new_timer = ( ( i == EPMEM_NODE_POS )?( ( k == EPMEM_RANGE_START )?( my_agent->epmem_timers->query_pos_start_now ):( my_agent->epmem_timers->query_pos_end_now ) ):( ( k == EPMEM_RANGE_START )?( my_agent->epmem_timers->query_neg_start_now ):( my_agent->epmem_timers->query_neg_end_now ) ) );
 															break;
 
 														case EPMEM_RANGE_POINT:
-															new_timer = ( ( i == EPMEM_NODE_POS )?( ( k == EPMEM_RANGE_START )?( EPMEM_TIMER_QUERY_POS_START_POINT ):( EPMEM_TIMER_QUERY_POS_END_POINT ) ):( ( k == EPMEM_RANGE_START )?( EPMEM_TIMER_QUERY_NEG_START_POINT ):( EPMEM_TIMER_QUERY_NEG_END_POINT ) ) );
+															new_timer = ( ( i == EPMEM_NODE_POS )?( ( k == EPMEM_RANGE_START )?( my_agent->epmem_timers->query_pos_start_point ):( my_agent->epmem_timers->query_pos_end_point ) ):( ( k == EPMEM_RANGE_START )?( my_agent->epmem_timers->query_neg_start_point ):( my_agent->epmem_timers->query_neg_end_point ) ) );
 															break;
 													}
 
@@ -5067,7 +5018,7 @@ void epmem_process_query( agent *my_agent, Symbol *state, Symbol *query, Symbol 
 													EPMEM_SQLITE_BIND_INT( new_stmt, position, unique_identity );
 
 													// take first step
-													if ( epmem_exec_query( my_agent, new_stmt, new_timer ) == SQLITE_ROW )
+													if ( epmem_exec_query( new_stmt, new_timer ) == SQLITE_ROW )
 													{
 														new_query = new epmem_shared_query;
 														new_query->val = EPMEM_SQLITE_COLUMN_INT( new_stmt, 0 );
@@ -5120,7 +5071,7 @@ void epmem_process_query( agent *my_agent, Symbol *state, Symbol *query, Symbol 
 			}
 
 			////////////////////////////////////////////////////////////////////////////
-			epmem_stop_timer( my_agent, EPMEM_TIMER_QUERY_DNF );
+			my_agent->epmem_timers->query_dnf->stop();
 			////////////////////////////////////////////////////////////////////////////
 
 			my_agent->epmem_stats->qry_pos->set_value( leaf_ids[ EPMEM_NODE_POS ] );
@@ -5178,7 +5129,7 @@ void epmem_process_query( agent *my_agent, Symbol *state, Symbol *query, Symbol 
 
 				// initialize current as last end
 				// initialize next end
-				epmem_shared_increment( my_agent, queries, current_id, current_ct, current_v, current_updown, EPMEM_RANGE_END );
+				epmem_shared_increment( queries, current_id, current_ct, current_v, current_updown, EPMEM_RANGE_END );
 				end_id = ( ( queries[ EPMEM_RANGE_END ].empty() )?( EPMEM_MEMID_NONE ):( queries[ EPMEM_RANGE_END ].top()->val ) );
 
 				// initialize next start
@@ -5260,13 +5211,13 @@ void epmem_process_query( agent *my_agent, Symbol *state, Symbol *query, Symbol 
 										current_constraints.clear();
 
 										////////////////////////////////////////////////////////////////////////////
-										epmem_start_timer( my_agent, EPMEM_TIMER_QUERY_GRAPH_MATCH );
+										my_agent->epmem_timers->query_graph_match->start();
 										////////////////////////////////////////////////////////////////////////////
 
 										current_graph_match_counter = epmem_graph_match( graph_match_roots, &current_constraints );
 
 										////////////////////////////////////////////////////////////////////////////
-										epmem_stop_timer( my_agent, EPMEM_TIMER_QUERY_GRAPH_MATCH );
+										my_agent->epmem_timers->query_graph_match->stop();
 										////////////////////////////////////////////////////////////////////////////
 
 										if ( ( king_id == EPMEM_MEMID_NONE ) ||
@@ -5343,7 +5294,7 @@ void epmem_process_query( agent *my_agent, Symbol *state, Symbol *query, Symbol 
 						if ( !done )
 						{
 							// based upon choice, update variables
-							epmem_shared_increment( my_agent, queries, current_id, current_ct, current_v, current_updown, next_list );
+							epmem_shared_increment( queries, current_id, current_ct, current_v, current_updown, next_list );
 							current_id = current_end - 1;
 							current_ct *= ( ( next_list == EPMEM_RANGE_START )?( -1 ):( 1 ) );
 							current_v *= ( ( next_list == EPMEM_RANGE_START )?( -1 ):( 1 ) );
@@ -5499,7 +5450,7 @@ void epmem_process_query( agent *my_agent, Symbol *state, Symbol *query, Symbol 
 				}
 
 				////////////////////////////////////////////////////////////////////////////
-				epmem_stop_timer( my_agent, EPMEM_TIMER_QUERY );
+				my_agent->epmem_timers->query->stop();
 				////////////////////////////////////////////////////////////////////////////
 
 				// actual memory
@@ -5516,7 +5467,7 @@ void epmem_process_query( agent *my_agent, Symbol *state, Symbol *query, Symbol 
 				state->id.epmem_info->epmem_wmes->push( new_wme );
 
 				////////////////////////////////////////////////////////////////////////////
-				epmem_stop_timer( my_agent, EPMEM_TIMER_QUERY );
+				my_agent->epmem_timers->query->stop();
 				////////////////////////////////////////////////////////////////////////////
 			}
 		}
@@ -5531,7 +5482,7 @@ void epmem_process_query( agent *my_agent, Symbol *state, Symbol *query, Symbol 
 		free_memory( my_agent, wmes_neg_query, MISCELLANEOUS_MEM_USAGE );
 
 		////////////////////////////////////////////////////////////////////////////
-		epmem_stop_timer( my_agent, EPMEM_TIMER_QUERY );
+		my_agent->epmem_timers->query->stop();
 		////////////////////////////////////////////////////////////////////////////
 	}
 }
@@ -5552,7 +5503,7 @@ void epmem_process_query( agent *my_agent, Symbol *state, Symbol *query, Symbol 
 void epmem_consider_new_episode( agent *my_agent )
 {
 	////////////////////////////////////////////////////////////////////////////
-	epmem_start_timer( my_agent, EPMEM_TIMER_TRIGGER );
+	my_agent->epmem_timers->trigger->start();
 	////////////////////////////////////////////////////////////////////////////
 
 	const long force = my_agent->epmem_params->force->get_value();
@@ -5662,7 +5613,7 @@ void epmem_consider_new_episode( agent *my_agent )
 	}
 
 	////////////////////////////////////////////////////////////////////////////
-	epmem_stop_timer( my_agent, EPMEM_TIMER_TRIGGER );
+	my_agent->epmem_timers->trigger->stop();
 	////////////////////////////////////////////////////////////////////////////
 
 	if ( new_memory )
@@ -5685,7 +5636,7 @@ void epmem_respond_to_cmd( agent *my_agent )
 		return;
 
 	////////////////////////////////////////////////////////////////////////////
-	epmem_start_timer( my_agent, EPMEM_TIMER_API );
+	my_agent->epmem_timers->api->start();
 	////////////////////////////////////////////////////////////////////////////
 
 	// start at the bottom and work our way up
@@ -5906,7 +5857,7 @@ void epmem_respond_to_cmd( agent *my_agent )
 				good_cue = false;
 
 			////////////////////////////////////////////////////////////////////////////
-			epmem_stop_timer( my_agent, EPMEM_TIMER_API );
+			my_agent->epmem_timers->api->stop();
 			////////////////////////////////////////////////////////////////////////////
 
 			// process command
@@ -5954,7 +5905,7 @@ void epmem_respond_to_cmd( agent *my_agent )
  **************************************************************************/
 void epmem_go( agent *my_agent )
 {
-	epmem_start_timer( my_agent, EPMEM_TIMER_TOTAL );
+	my_agent->epmem_timers->total->start();
 
 #ifndef EPMEM_EXPERIMENT
 
@@ -6088,5 +6039,5 @@ void epmem_go( agent *my_agent )
 
 #endif // EPMEM_EXPERIMENT
 
-	epmem_stop_timer( my_agent, EPMEM_TIMER_TOTAL );
+	my_agent->epmem_timers->total->stop();	
 }

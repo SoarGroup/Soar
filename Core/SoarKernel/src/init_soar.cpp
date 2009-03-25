@@ -352,7 +352,7 @@ void reset_statistics (agent* thisAgent) {
      reset_timer (&thisAgent->gds_cpu_time[ii]);
   }
 
-  epmem_reset_timers( thisAgent );
+  thisAgent->epmem_timers->reset();  
 }
 
 bool reinitialize_soar (agent* thisAgent) {
@@ -1485,7 +1485,7 @@ void init_agent_memory(agent* thisAgent)
      reset_timer (&thisAgent->gds_cpu_time[ii]);
   }
 
-  epmem_reset_timers( thisAgent );
+  thisAgent->epmem_timers->reset();
 
   // This is an important part of the state of the agent for io purposes
   // (see io.cpp for details)
