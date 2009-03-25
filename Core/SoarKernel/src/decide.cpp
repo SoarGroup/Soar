@@ -2046,7 +2046,6 @@ void create_new_context (agent* thisAgent, Symbol *attr_of_impasse, byte impasse
   id->id.rl_info->reward = 0;
   id->id.rl_info->reward_age = 0;
   id->id.rl_info->num_prev_op_rl_rules = 0;
-  id->id.rl_info->step = 0;  
 
   id->id.epmem_info = static_cast<epmem_data *>( allocate_memory( thisAgent, sizeof( epmem_data ), MISCELLANEOUS_MEM_USAGE ) );
   id->id.epmem_info->last_ol_time = 0;
