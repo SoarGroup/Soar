@@ -20,6 +20,10 @@ final class ConfigureCommand extends NoDDCAdapter implements Command {
 	public boolean execute(InputLinkInterface inputLink, Agent agent,
 			Identifier command, SplinterState splinter,
 			OutputLinkManager outputLinkManager) {
+		if (splinter == null) {
+			throw new AssertionError();
+		}
+		
 		String yawFormat = command.GetParameterValue("yaw-format");
 		if (yawFormat != null) {
 			if (yawFormat.equals("float")) {
@@ -31,7 +35,31 @@ final class ConfigureCommand extends NoDDCAdapter implements Command {
 				CommandStatus.error.addStatus(agent, command);
 				return false;
 			}
-			logger.info(NAME + ": set to " + yawFormat);
+			logger.info(NAME + ": yaw-format set to " + yawFormat);
+		}
+		
+		String offsetX = command.GetParameterValue("offset-x");
+		String offsetY = command.GetParameterValue("offset-y");
+		if (offsetX != null || offsetY != null) {
+			double[] offset = null;
+			if (offsetX == null) {
+				offsetX = "0";
+			}
+			if (offsetY == null) {
+				offsetY = "0";
+			}
+			try {
+				offset = new double[] {
+						Double.parseDouble(offsetX),
+						Double.parseDouble(offsetY),
+				};
+			} catch (NumberFormatException e) {
+				logger.warn(NAME + ": Error parsing coordinates: " + offsetX + ", " + offsetY);
+				CommandStatus.error.addStatus(agent, command);
+				return false;
+			}
+			splinter.setOffset(offset);
+			logger.debug(String.format("%s: offset set to x%10.3f y%10.3f", NAME, offset[0], offset[1]));
 		}
 		
 		CommandStatus.accepted.addStatus(agent, command);

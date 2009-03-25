@@ -41,7 +41,6 @@ final class OutputLinkManager {
 		commands.put(RemoveMessageCommand.NAME, new RemoveMessageCommand());
 		commands.put(ClearMessagesCommand.NAME, new ClearMessagesCommand());
 		commands.put(ConfigureCommand.NAME, new ConfigureCommand());
-		commands.put(SetOffsetCommand.NAME, new SetOffsetCommand());
 	}
 
 	boolean getUseFloatYawWmes() {

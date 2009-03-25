@@ -26,7 +26,7 @@ final class EStopCommand extends DDCCommand implements Command {
 			OutputLinkManager outputLinkManager) {
 		logger.debug(NAME + ":");
 		CommandStatus.accepted.addStatus(agent, command);
-		CommandStatus.executing.addStatus(agent, command);
+		CommandStatus.complete.addStatus(agent, command);
 		
 		this.agent = agent;
 		this.command = command;
