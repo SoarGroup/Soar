@@ -2021,7 +2021,6 @@ void create_new_context (agent* thisAgent, Symbol *attr_of_impasse, byte impasse
   id->id.rl_info->reward = 0;
   id->id.rl_info->reward_age = 0;
   id->id.rl_info->num_prev_op_rl_rules = 0;
-  id->id.rl_info->step = 0;  
 
   /* --- invoke callback routine --- */
   soar_invoke_callbacks(thisAgent, 
