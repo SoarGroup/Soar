@@ -80,7 +80,6 @@ typedef struct rl_data_struct {
 	double reward;
 	unsigned int reward_age;	// the number of steps since a cycle containing rl rules
 	unsigned int num_prev_op_rl_rules;
-	unsigned int step;			// the number of steps the current operator has been installed at the goal
 } rl_data;
 
 //
