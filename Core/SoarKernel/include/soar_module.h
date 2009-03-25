@@ -128,6 +128,14 @@ namespace soar_module
 
 			virtual char *get_string() = 0;
 	};
+
+	template <typename T>
+	class accumulator: public std::unary_function<T, void>
+	{
+		public:
+			virtual ~accumulator();
+			virtual void operator() ( T val );
+	};
 		
 	// this class provides for efficient 
 	// string->object access
@@ -146,7 +154,7 @@ namespace soar_module
 
 			T *get( const char *name );
 
-			void for_each( std::unary_function<T *, void> &f  ) const;
+			void for_each( accumulator<T *> &f  );
 	};
 
 	///////////////////////////////////////////////////////////////////////////

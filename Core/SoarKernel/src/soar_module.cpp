@@ -98,6 +98,16 @@ namespace soar_module
 
 
 	/////////////////////////////////////////////////////////////
+	// accumulator
+	/////////////////////////////////////////////////////////////
+	template <typename T>
+	accumulator<T>::~accumulator() {};
+
+	template <typename T>
+	void accumulator<T>::operator ()( T /*val*/ ) {};
+
+
+	/////////////////////////////////////////////////////////////
 	// object_container
 	/////////////////////////////////////////////////////////////
 
@@ -119,6 +129,9 @@ namespace soar_module
 		// point we have already processed the cpp.
 		// by making a bogus call, we force instantiation of the code.
 		get("");
+
+		accumulator<T *> foo;		
+		for_each( foo );
 	};
 
 	template <class T>
@@ -145,9 +158,14 @@ namespace soar_module
 	};
 
 	template <class T>
-	void object_container<T>::for_each( std::unary_function<T *, void> &f ) const
+	void object_container<T>::for_each( accumulator<T *> &f  )
 	{
-		std::for_each( objects->begin(), objects->end(), f );
+		typename std::map<std::string, T *>::iterator p;
+
+		for ( p=objects->begin(); p!=objects->end(); p++ )
+		{
+			f( p->second );
+		}
 	};
 
 

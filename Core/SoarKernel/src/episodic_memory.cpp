@@ -411,7 +411,7 @@ epmem_timer_container::epmem_timer_container( agent *new_agent ): timer_containe
 {
 	// one
 	
-	total = new epmem_timer( "epmem_total", my_agent, timer::one );
+	total = new epmem_timer( "_total", my_agent, timer::one );
 	add( total );
 
 	// two

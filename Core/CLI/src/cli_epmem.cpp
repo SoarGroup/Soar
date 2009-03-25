@@ -348,7 +348,6 @@ bool CommandLineInterface::DoEpMem( const char pOp, const std::string* pAttr, co
 			AppendArgTagFast( sml_Names::kParamValue, sml_Names::kTypeString, "" );
 		}
 
-
 		return true;
 	}
 	else if ( pOp == 'c' )
@@ -501,24 +500,32 @@ bool CommandLineInterface::DoEpMem( const char pOp, const std::string* pAttr, co
 	{
 		if ( !pAttr )
 		{
-			/*
-			double temp;
-			std::string output;
-			std::string *temp_str;
+			struct foo: public soar_module::accumulator< soar_module::timer * >
+			{				
+				private:
+					bool raw;
+					cli::CommandLineInterface *this_cli;
+
+				public:				
+					foo( bool m_RawOutput, cli::CommandLineInterface *new_cli ): raw( m_RawOutput ), this_cli( new_cli ) {};
+					
+					void operator() ( soar_module::timer *t )
+					{
+						std::string output( t->get_name() );
+						output += ": ";
+						
+						char *temp = t->get_string();
+						output += temp;
+						delete temp;
+
+						if ( raw )
+							m_Result << output << "\n";
+						else
+							this_cli->AppendArgTagFast( sml_Names::kParamValue, sml_Names::kTypeString, output.c_str() );
+					}
+			} bar( m_RawOutput, this );
 			
-			for ( int i=0; i<EPMEM_TIMERS; i++ )
-			{
-				output = epmem_get_timer_name( m_pAgentSoar, (const long) i );
-				output += ": ";
-				temp = epmem_get_timer_value( m_pAgentSoar, (const long) i );
-				temp_str = to_string( temp );
-				output += (*temp_str);
-				delete temp_str;
-				if ( m_RawOutput )
-					m_Result << output << "\n";
-				else
-					AppendArgTagFast( sml_Names::kParamValue, sml_Names::kTypeString, output.c_str() );
-			}*/
+			m_pAgentSoar->epmem_timers->for_each( bar );
 		}
 		else
 		{
