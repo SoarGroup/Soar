@@ -126,7 +126,7 @@ typedef struct wme_struct wme;
 
 // variables (rit vars must be same as stat versions)
 enum epmem_variable_key
-{ 
+{
 	var_rit_offset_1, var_rit_leftroot_1, var_rit_rightroot_1, var_rit_minstep_1,
 	var_rit_offset_2, var_rit_leftroot_2, var_rit_rightroot_2, var_rit_minstep_2,
 	var_mode, var_next_id
@@ -172,7 +172,7 @@ class epmem_param_container: public param_container
 		enum mode_choices { tree, graph };
 		enum phase_choices { phase_output, phase_selection };
 		enum trigger_choices { none, output, dc };
-		enum force_choices { remember, ignore, force_off };		
+		enum force_choices { remember, ignore, force_off };
 
 		boolean_param *learning;
 		constant_param<db_choices> *database;
@@ -188,7 +188,7 @@ class epmem_param_container: public param_container
 		decimal_param *balance;
 		set_param *exclusions;
 		constant_param<timer::timer_level> *timers;
-				
+
 		epmem_param_container( agent *new_agent );
 };
 
@@ -224,7 +224,7 @@ class epmem_mode_param: public constant_param<epmem_param_container::mode_choice
 
 template <typename T>
 class epmem_db_predicate: public agent_predicate<T>
-{	
+{
 	public:
 		epmem_db_predicate( agent *new_agent );
 		bool operator() ( T val );
@@ -263,7 +263,7 @@ class epmem_stat_container: public stat_container
 		integer_stat *rit_left_root_2;
 		integer_stat *rit_right_root_2;
 		integer_stat *rit_min_step_2;
-		
+
 		epmem_stat_container( agent *my_agent );
 };
 
@@ -320,12 +320,12 @@ class epmem_timer_container: public timer_container
 		timer *query_neg_end_ep;
 		timer *query_neg_end_now;
 		timer *query_neg_end_point;
-		
+
 		epmem_timer_container( agent *my_agent );
 };
 
 class epmem_timer_level_predicate: public agent_predicate<timer::timer_level>
-{	
+{
 	public:
 		epmem_timer_level_predicate( agent *new_agent );
 		bool operator() ( timer::timer_level val );
@@ -372,7 +372,7 @@ typedef struct epmem_rit_state_struct
 	epmem_rit_state_param minstep;
 
 	long add_query;
-	timer *timer;
+	soar_module::timer *timer;
 } epmem_rit_state;
 
 //////////////////////////////////////////////////////////
@@ -382,18 +382,18 @@ typedef struct epmem_rit_state_struct
 // data associated with each state
 typedef struct epmem_data_struct
 {
-	unsigned long last_ol_time;	// last update to output-link
+	unsigned long last_ol_time;		// last update to output-link
 	unsigned long last_ol_count;	// last count of output-link
 
 	unsigned long last_cmd_time;	// last update to epmem.command
 	unsigned long last_cmd_count;	// last update to epmem.command
 
-	epmem_time_id last_memory;				// last retrieved memory
+	epmem_time_id last_memory;		// last retrieved memory
 
 	wme *ss_wme;
 
-	std::set<wme *> *cue_wmes;				// wmes in last cue
-	std::stack<wme *> *epmem_wmes;			// wmes in last epmem
+	std::set<wme *> *cue_wmes;		// wmes in last cue
+	std::stack<wme *> *epmem_wmes;	// wmes in last epmem
 } epmem_data;
 
 
@@ -417,7 +417,7 @@ typedef struct epmem_range_query_struct
 	double weight;							// wma value
 	long ct;								// cardinality w.r.t. positive/negative query
 
-	timer *timer;							// timer to update upon executing the query
+	soar_module::timer *timer;				// timer to update upon executing the query
 } epmem_range_query;
 
 // functor to maintain a priority cue of b-tree pointers
@@ -523,7 +523,7 @@ typedef struct epmem_shared_query_struct
 {
 	sqlite3_stmt *stmt;						// associated sqlite query
 	epmem_time_id val;						// current b-tree leaf value
-	timer *timer;							// timer to update upon executing the query
+	soar_module::timer *timer;				// timer to update upon executing the query
 
 	epmem_shared_literal_list *triggers;	// literals to update when stepping this b-tree
 } epmem_shared_query;

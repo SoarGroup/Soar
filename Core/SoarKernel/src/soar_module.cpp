@@ -100,8 +100,6 @@ namespace soar_module
 	/////////////////////////////////////////////////////////////
 	// accumulator
 	/////////////////////////////////////////////////////////////
-	template <typename T>
-	accumulator<T>::~accumulator() {};
 
 	template <typename T>
 	void accumulator<T>::operator ()( T /*val*/ ) {};
@@ -130,8 +128,13 @@ namespace soar_module
 		// by making a bogus call, we force instantiation of the code.
 		get("");
 
-		accumulator<T *> foo;		
-		for_each( foo );
+		struct foo: public accumulator<T *>
+		{
+			public:
+				foo() {};
+				void operator() ( T * /*t*/ ) {};
+		} bar;
+		for_each( bar );
 	};
 
 	template <class T>
@@ -292,26 +295,26 @@ namespace soar_module
 	};
 
 	set_param::~set_param()
-	{				
+	{
 		for ( std::set<Symbol *>::iterator p=my_set->begin(); p!=my_set->end(); p++ )
 			symbol_remove_ref( my_agent, (*p) );
-		
+
 		delete my_set;
 		delete value;
 		delete prot_pred;
 	};
 
-	char *set_param::get_string() 
-	{				
+	char *set_param::get_string()
+	{
 		char *return_val = new char[ value->length() + 1 ];
 		strcpy( return_val, value->c_str() );
 		return_val[ value->length() ] = '\0';
-		
+
 		return return_val;
 	};
 
-	bool set_param::set_string( const char *new_string ) 
-	{ 
+	bool set_param::set_string( const char *new_string )
+	{
 		if ( (*prot_pred)( new_string ) )
 		{
 			return false;
@@ -360,20 +363,20 @@ namespace soar_module
 		return return_val;
 	};
 
-	bool set_param::validate_string( const char * /*new_value*/ ) 
-	{ 
+	bool set_param::validate_string( const char * /*new_value*/ )
+	{
 		return true;
 	};
 
-	void set_param::set_value( const char *new_value ) 
-	{ 
+	void set_param::set_value( const char *new_value )
+	{
 		Symbol *my_sym = make_sym_constant( my_agent, new_value );
 		std::set<Symbol *>::iterator p = my_set->find( my_sym );
 
 		if ( p != my_set->end() )
 		{
 			my_set->erase( p );
-			
+
 			// remove for now and when added to the set
 			symbol_remove_ref( my_agent, my_sym );
 			symbol_remove_ref( my_agent, my_sym );

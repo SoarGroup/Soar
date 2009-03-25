@@ -1,6 +1,6 @@
 /*************************************************************************
  * PLEASE SEE THE FILE "license.txt" (INCLUDED WITH THIS SOFTWARE PACKAGE)
- * FOR LICENSE AND COPYRIGHT INFORMATION. 
+ * FOR LICENSE AND COPYRIGHT INFORMATION.
  *************************************************************************/
 
 /*************************************************************************
@@ -27,13 +27,13 @@ namespace soar_module
 	///////////////////////////////////////////////////////////////////////////
 	// Predicates
 	///////////////////////////////////////////////////////////////////////////
-	
+
 	// a functor for validating parameter values
 	template <typename T>
 	class predicate: public std::unary_function<T, bool>
 	{
 		public:
-			virtual ~predicate();			
+			virtual ~predicate();
 			virtual bool operator() ( T val );
 	};
 
@@ -41,10 +41,10 @@ namespace soar_module
 	template <typename T>
 	class f_predicate: public predicate<T>
 	{
-		public:			
+		public:
 			virtual bool operator() ( T val );
 	};
-	
+
 	// predefined predicate for validating
 	// a value between two values known at
 	// predicate initialization
@@ -55,12 +55,12 @@ namespace soar_module
 			T my_min;
 			T my_max;
 			bool inclusive;
-		
+
 		public:
-			btw_predicate( T new_min, T new_max, bool new_inclusive );		
+			btw_predicate( T new_min, T new_max, bool new_inclusive );
 			bool operator() ( T val );
 	};
-	
+
 	// predefined predicate for validating
 	// a value greater than a value known at
 	// predicate initialization
@@ -68,14 +68,14 @@ namespace soar_module
 	class gt_predicate: public predicate<T>
 	{
 		private:
-			T my_min;			
+			T my_min;
 			bool inclusive;
-		
+
 		public:
-			gt_predicate( T new_min, bool new_inclusive );		
+			gt_predicate( T new_min, bool new_inclusive );
 			bool operator() ( T val );
 	};
-	
+
 	// predefined predicate for validating
 	// a value less than a value known at
 	// predicate initialization
@@ -83,11 +83,11 @@ namespace soar_module
 	class lt_predicate: public predicate<T>
 	{
 		private:
-			T my_max;			
+			T my_max;
 			bool inclusive;
-		
+
 		public:
-			lt_predicate( T new_max, bool new_inclusive );		
+			lt_predicate( T new_max, bool new_inclusive );
 			bool operator() ( T val );
 	};
 
@@ -133,19 +133,19 @@ namespace soar_module
 	class accumulator: public std::unary_function<T, void>
 	{
 		public:
-			virtual ~accumulator();
+			virtual ~accumulator() {};
 			virtual void operator() ( T val );
 	};
-		
-	// this class provides for efficient 
+
+	// this class provides for efficient
 	// string->object access
 	template <class T>
 	class object_container
-	{					
+	{
 		protected:
 			agent *my_agent;
 			std::map<std::string, T *> *objects;
-			
+
 			void add( T *new_object );
 
 		public:
@@ -160,26 +160,26 @@ namespace soar_module
 	///////////////////////////////////////////////////////////////////////////
 	///////////////////////////////////////////////////////////////////////////
 
-	
+
 	///////////////////////////////////////////////////////////////////////////
 	// Parameters
 	///////////////////////////////////////////////////////////////////////////
-	
+
 	// all parameters have a name and
 	// can be manipulated generically
 	// via strings
 	class param: public named_object
-	{			
-		public:		
+	{
+		public:
 			param( const char *new_name );
 			virtual ~param();
-			
-			//			
-			
+
+			//
+
 			virtual bool set_string( const char *new_string ) = 0;
-			virtual bool validate_string( const char *new_string ) = 0;			
+			virtual bool validate_string( const char *new_string ) = 0;
 	};
-	
+
 	// a primitive parameter can take any primitive
 	// data type as value and is validated via
 	// any unary predicate
@@ -190,27 +190,27 @@ namespace soar_module
 			T value;
 			predicate<T> *val_pred;
 			predicate<T> *prot_pred;
-		
+
 		public:
-			primitive_param( const char *new_name, T new_value, predicate<T> *new_val_pred, predicate<T> *new_prot_pred );			
+			primitive_param( const char *new_name, T new_value, predicate<T> *new_val_pred, predicate<T> *new_prot_pred );
 			virtual ~primitive_param();
-			
+
 			//
-			
-			virtual char *get_string();			
-			virtual bool set_string( const char *new_string );			
+
+			virtual char *get_string();
+			virtual bool set_string( const char *new_string );
 			virtual bool validate_string( const char *new_string );
-			
+
 			//
-			
+
 			virtual T get_value();
 			virtual void set_value( T new_value );
 	};
-	
+
 	// these are easy definitions for int and double parameters
 	typedef primitive_param<long> integer_param;
 	typedef primitive_param<double> decimal_param;
-	
+
 
 	// a string param deals with character strings
 	class string_param: public param
@@ -219,24 +219,24 @@ namespace soar_module
 			std::string *value;
 			predicate<const char *> *val_pred;
 			predicate<const char *> *prot_pred;
-		
+
 		public:
-			string_param( const char *new_name, const char *new_value, predicate<const char *> *new_val_pred, predicate<const char *> *new_prot_pred );			
+			string_param( const char *new_name, const char *new_value, predicate<const char *> *new_val_pred, predicate<const char *> *new_prot_pred );
 			virtual ~string_param();
-			
+
 			//
-			
+
 			virtual char *get_string();
 			virtual bool set_string( const char *new_string );
 			virtual bool validate_string( const char *new_value );
-			
+
 			//
-			
+
 			virtual const char *get_value();
 			virtual void set_value( const char *new_value );
 	};
 
-	// a set param maintains a set of strings	
+	// a set param maintains a set of strings
 	class set_param: public param
 	{
 		protected:
@@ -245,52 +245,52 @@ namespace soar_module
 			predicate<const char *> *prot_pred;
 
 			agent *my_agent;
-		
+
 		public:
-			set_param( const char *new_name, predicate<const char *> *new_prot_pred, agent *new_agent );			
+			set_param( const char *new_name, predicate<const char *> *new_prot_pred, agent *new_agent );
 			virtual ~set_param();
-			
+
 			//
-			
+
 			virtual char *get_string();
 			virtual bool set_string( const char *new_string );
 			virtual bool validate_string( const char *new_value );
-			
+
 			//
 
 			virtual bool in_set( Symbol *test_sym );
 			virtual void set_value( const char *new_value );
 	};
-	
+
 	// a constant parameter deals in discrete values
 	// for efficiency, internally we use enums, elsewhere
 	// strings for user-readability
 	template <typename T>
 	class constant_param: public param
 	{
-		protected:		
+		protected:
 			T value;
 			std::map<T, const char *> *value_to_string;
 			std::map<std::string, T> *string_to_value;
-			predicate<T> *prot_pred;			
-			
-		public:						
-			constant_param( const char *new_name, T new_value, predicate<T> *new_prot_pred );			
-			virtual ~constant_param();		
-			
+			predicate<T> *prot_pred;
+
+		public:
+			constant_param( const char *new_name, T new_value, predicate<T> *new_prot_pred );
+			virtual ~constant_param();
+
 			//
-			
-			virtual char *get_string();			
-			virtual bool set_string( const char *new_string );			
+
+			virtual char *get_string();
+			virtual bool set_string( const char *new_string );
 			virtual bool validate_string( const char *new_string );
 
 			//
-			
+
 			virtual T get_value();
 			virtual void set_value( T new_value );
-			
+
 			//
-			
+
 			virtual void add_mapping( T val, const char *str );
 	};
 
@@ -301,14 +301,14 @@ namespace soar_module
 		public:
 			boolean_param( const char *new_name, boolean new_value, predicate<boolean> *new_prot_pred );
 	};
-	
+
 	///////////////////////////////////////////////////////////////////////////
 	///////////////////////////////////////////////////////////////////////////
-	
+
 
 	///////////////////////////////////////////////////////////////////////////
 	// Parameter Containers
-	///////////////////////////////////////////////////////////////////////////	
+	///////////////////////////////////////////////////////////////////////////
 
 	typedef object_container<param> param_container;
 
@@ -318,18 +318,18 @@ namespace soar_module
 	///////////////////////////////////////////////////////////////////////////
 	// Statistics
 	///////////////////////////////////////////////////////////////////////////
-	
+
 	// all statistics have a name and
 	// can be retrieved generically
 	// via strings
 	class stat: public named_object
-	{			
-		public:		
+	{
+		public:
 			stat( const char *new_name );
-			virtual ~stat();			
-			
+			virtual ~stat();
+
 			//
-			
+
 			virtual void reset() = 0;
 	};
 
@@ -342,22 +342,22 @@ namespace soar_module
 			T value;
 			T reset_val;
 			predicate<T> *prot_pred;
-		
+
 		public:
-			primitive_stat( const char *new_name, T new_value, predicate<T> *new_prot_pred );			
+			primitive_stat( const char *new_name, T new_value, predicate<T> *new_prot_pred );
 			virtual ~primitive_stat();
-			
+
 			//
-			
+
 			virtual char *get_string();
 			void reset();
-			
+
 			//
-			
+
 			virtual T get_value();
-			virtual void set_value( T new_value );			
+			virtual void set_value( T new_value );
 	};
-	
+
 	// these are easy definitions for int and double parameters
 	typedef primitive_stat<long> integer_stat;
 	typedef primitive_stat<double> decimal_stat;
@@ -381,21 +381,21 @@ namespace soar_module
 
 	///////////////////////////////////////////////////////////////////////////
 	// timers
-	///////////////////////////////////////////////////////////////////////////	
+	///////////////////////////////////////////////////////////////////////////
 
 	class timer: public named_object
 	{
 		public:
 			enum timer_level { zero, one, two, three, four, five };
-	
+
 		protected:
 			agent *my_agent;
-			
+
 			struct timeval start_t;
 			struct timeval total_t;
 
 			timer_level level;
-			predicate<timer_level> *pred;			
+			predicate<timer_level> *pred;
 
 		public:
 			timer( const char *new_name, agent *new_agent, timer_level new_level, predicate<timer_level> *new_pred );
