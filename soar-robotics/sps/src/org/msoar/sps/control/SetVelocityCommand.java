@@ -48,7 +48,7 @@ class SetVelocityCommand extends DDCCommand implements Command {
 		}
 
 		try {
-			angularVelocity = Double.parseDouble(command.GetParameterValue(ANGVEL));
+			angularVelocity = Math.toRadians(Double.parseDouble(command.GetParameterValue(ANGVEL)));
 		} catch (NullPointerException ex) {
 			logger.warn(NAME + ": No " + ANGVEL + " on command");
 			CommandStatus.error.addStatus(agent, command);
