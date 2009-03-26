@@ -135,6 +135,13 @@ namespace soar_module
 			virtual ~accumulator();
 			virtual void operator() ( T val );
 	};
+
+	template <typename T>
+	accumulator<T>::~accumulator() {};
+
+	template <typename T>
+	void accumulator<T>::operator ()( T /*val*/ ) {};
+
 		
 	// this class provides for efficient 
 	// string->object access
@@ -155,6 +162,30 @@ namespace soar_module
 
 			void for_each( accumulator<T *> &f  );
 	};
+
+	template <class T>
+	T *object_container<T>::get( const char *name )
+	{
+		std::string temp_str( name );
+		typename std::map<std::string, T *>::iterator p = objects->find( temp_str );
+
+		if ( p == objects->end() )
+			return NULL;
+		else
+			return p->second;
+	};
+
+	template <class T>
+	void object_container<T>::for_each( accumulator<T *> &f  )
+	{
+		typename std::map<std::string, T *>::iterator p;
+
+		for ( p=objects->begin(); p!=objects->end(); p++ )
+		{
+			f( p->second );
+		}
+	};
+
 
 	///////////////////////////////////////////////////////////////////////////
 	///////////////////////////////////////////////////////////////////////////
