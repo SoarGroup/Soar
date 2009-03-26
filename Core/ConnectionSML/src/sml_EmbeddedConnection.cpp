@@ -193,20 +193,17 @@ bool EmbeddedConnection::AttachConnection(char const* pLibraryName, bool optimiz
 	HMODULE hLibrary = LoadLibrary(libraryName.c_str()) ;
 
 #elif defined(LINUX_SHARED) 
-	std::string newLibraryName = "lib" + libraryName + ".so";
+
+
+
+	std::string newLibraryName = "lib" + libraryName;
+#ifdef SCONS_DARWIN
+	newLibraryName.append(".dylib");
+#else
+	newLibraryName.append(".so");
+#endif
 	void* hLibrary = 0;
 	hLibrary = dlopen(newLibraryName.c_str(), RTLD_LAZY);
-	if (!hLibrary) {
-		//printf("dlopen failed for %s: %s\n", newLibraryName.c_str(), dlerror());
-		// Try again with mac extention
-		newLibraryName = "lib" + libraryName + ".dylib";
-		hLibrary = dlopen(newLibraryName.c_str(), RTLD_LAZY);
-		if (!hLibrary)
-		{
-			//printf("dlopen failed for %s: %s\n", newLibraryName.c_str(), dlerror());
-		}
-	}
-	// FIXME error details can be returned by a call to dlerror()
 #endif
 
 #if defined(LINUX_SHARED) || defined(WINDOWS_SHARED)
