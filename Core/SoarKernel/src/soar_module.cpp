@@ -98,14 +98,6 @@ namespace soar_module
 
 
 	/////////////////////////////////////////////////////////////
-	// accumulator
-	/////////////////////////////////////////////////////////////
-
-	template <typename T>
-	void accumulator<T>::operator ()( T /*val*/ ) {};
-
-
-	/////////////////////////////////////////////////////////////
 	// object_container
 	/////////////////////////////////////////////////////////////
 
@@ -120,21 +112,6 @@ namespace soar_module
 	object_container<T>::object_container( agent *new_agent ): my_agent( new_agent )
 	{
 		objects = new std::map<std::string, T *>();
-
-		// hack?
-		// so most likely the get function will never be used inside the kernel,
-		// thus the code is not likely to be instantiated till a CLI call, at which
-		// point we have already processed the cpp.
-		// by making a bogus call, we force instantiation of the code.
-		get("");
-
-		struct foo: public accumulator<T *>
-		{
-			public:
-				foo() {};
-				void operator() ( T * /*t*/ ) {};
-		} bar;
-		for_each( bar );
 	};
 
 	template <class T>
@@ -146,29 +123,6 @@ namespace soar_module
 			delete p->second;
 
 		delete objects;
-	};
-
-	template <class T>
-	T *object_container<T>::get( const char *name )
-	{
-		std::string temp_str( name );
-		typename std::map<std::string, T *>::iterator p = objects->find( temp_str );
-
-		if ( p == objects->end() )
-			return NULL;
-		else
-			return p->second;
-	};
-
-	template <class T>
-	void object_container<T>::for_each( accumulator<T *> &f  )
-	{
-		typename std::map<std::string, T *>::iterator p;
-
-		for ( p=objects->begin(); p!=objects->end(); p++ )
-		{
-			f( p->second );
-		}
 	};
 
 
