@@ -2,7 +2,7 @@
 # update code as noted in "how the code works" below.
 
 # Notes: JEL - 2/27/2009 
-# 1. Check whether throttle is needs for all actions - must mod data map and action files
+# 1. Check whether linear-velocity is needs for all actions - must mod data map and action files
 # 3. Does rotation stop forward progress?
 # 4. Need ^status executing while external operator is executing
 # 5. Just find neighboring ones go-to-waypoint*elaborate*range*dist-from-goal*left

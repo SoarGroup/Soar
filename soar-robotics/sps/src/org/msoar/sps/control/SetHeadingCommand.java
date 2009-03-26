@@ -32,7 +32,7 @@ final class SetHeadingCommand extends DDCCommand implements Command {
 			Identifier command, SplinterState splinter,
 			OutputLinkManager outputLinkManager) {
 		if (this.agent != null || this.command != null || this.status == null) {
-			throw new IllegalStateException();
+			//throw new IllegalStateException();
 		}
 		
 		try {
@@ -69,7 +69,7 @@ final class SetHeadingCommand extends DDCCommand implements Command {
 	}
 
 	public boolean update(SplinterState splinter) {
-		if (agent != null || command != null || status != null) {
+		if (agent == null || command == null || status == null) {
 			throw new IllegalStateException();
 		}
 		

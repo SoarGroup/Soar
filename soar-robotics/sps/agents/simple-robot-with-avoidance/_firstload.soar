@@ -1,16 +1,11 @@
 # watch 0
 # timers --off
+multi-attributes range 5
+multi-attributes waypoint 10
+
 
 srand 0
-
-#add-wme i2 ^self *
-#add-wme i4 ^current-location *
-#add-wme i5 ^x -7
-#add-wme i5 ^y -7
-#add-wme i2 ^time *
-#add-wme i6 ^seconds 1
-#add-wme i4 ^name me
-#add-wme i4 ^received-messages *
+epmem --set learning off
 
 pushd ../default
 source selection.soar

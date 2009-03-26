@@ -36,7 +36,7 @@ sp {apply*unhide*note-not-hiding
 sp {apply*unhide*destination-waypoint
    (state <s> ^operator <op>
               ^io.output-link <ol>
-              ^parameters.throttle <thr>)
+              ^parameters.linear-velocity <thr>)
    (<op> ^name unhide
          ^move-now true
          ^waypoint <h>)

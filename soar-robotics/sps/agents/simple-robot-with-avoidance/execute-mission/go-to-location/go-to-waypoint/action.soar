@@ -2,7 +2,6 @@
 sp {go-to-waypoint*propose*action
    (state <s> ^name go-to-waypoint
               ^destination-in-front true
-              ^parameters.throttle <thr>
               ^io.input-link.ranges.range <r>)
    (<r> ^blocked false
         ^action <a>
@@ -28,7 +27,9 @@ sp {go-to-waypoint*compare*action
    (<s> ^operator <op1> > <op2>)
 }
 
+############################################
 # if all arcs are blocked, propose turning left
+
 sp {go-to-waypoint*propose*turn-left
    (state <s> ^name go-to-waypoint
               ^destination-in-front true
@@ -54,38 +55,55 @@ sp {goto-waypoint*apply*action*record*purpose
    (<dw> ^last-action-purpose <purpose>)
 }
 
+################################################
 
-sp {apply*action*rotate
+sp {apply*action*rotate*right
    (state <s> ^operator <op>
-              ^parameters.rotation-throttle <thr>
+              ^parameters.rotation-velocity <thr>
               ^io.output-link <ol>)
    (<op> ^name action
          ^action <a>)
    (<a> ^rotate <params>)
-   (<params> ^direction <dir>)
+   (<params> ^direction right)
 -->
-   (<ol> ^rotate <acopy>)
-   (<acopy> ^direction <dir>
-            ^throttle <thr>)
+  # (interrupt)
+   (<ol> ^set-velocity <acopy>)
+   (<acopy> ^angular-velocity (- 0 <thr>)
+            ^linear-velocity 0)
 }
 
 
+sp {apply*action*rotate*left
+   (state <s> ^operator <op>
+              ^parameters.rotation-velocity <thr>
+              ^io.output-link <ol>)
+   (<op> ^name action
+         ^action <a>)
+   (<a> ^rotate <params>)
+   (<params> ^direction left)
+-->
+ #  (interrupt)
+   (<ol> ^set-velocity <acopy>)
+   (<acopy> ^angular-velocity <thr>
+            ^linear-velocity 0)
+}
+
 sp {apply*action*move
    (state <s> ^operator <op>
-              ^parameters.throttle <thr>
+              ^parameters.linear-velocity <thr>
               ^io.output-link <ol>)
    (<op> ^name action
          ^action <a>)
    (<a> ^move <params>)
    (<params> ^direction <dir>)
 -->
-   (<ol> ^move <acopy>)
-   (<acopy> ^direction <dir>
-            ^throttle <thr>)
+   (<ol> ^set-velocity <acopy>)
+   (<acopy> ^angular-velocity 0
+            ^linear-velocity <thr>)
 }
 sp {monitor*action*move
    (state <s> ^operator.action <a>
-              ^parameters.throttle <thr>)
+              ^parameters.linear-velocity <thr>)
    (<a> ^move <p>)
    (<p> ^direction <d>)
 -->
@@ -93,9 +111,55 @@ sp {monitor*action*move
 }
 sp {monitor*action*rotate
    (state <s> ^operator.action <a>
-              ^parameters.rotation-throttle <thr>)
+              ^parameters.rotation-velocity <thr>)
    (<a> ^rotate <p>)
    (<p> ^direction <d>)
 -->
    (write (crlf) |rotate | <d> | at | <thr>)
 }
+
+# # Original actions
+#sp {apply*action*rotate
+#   (state <s> ^operator <op>
+#              ^parameters.rotation-velocity <thr>
+#              ^io.output-link <ol>)
+#   (<op> ^name action
+#         ^action <a>)
+#   (<a> ^rotate <params>)
+#   (<params> ^direction <dir>)
+#-->
+#   (<ol> ^rotate <acopy>)
+#   (<acopy> ^direction <dir>
+#            ^linear-velocity <thr>)
+#}
+#
+#
+#sp {apply*action*move
+#   (state <s> ^operator <op>
+#              ^parameters.linear-velocity <thr>
+#              ^io.output-link <ol>)
+#   (<op> ^name action
+#         ^action <a>)
+#   (<a> ^move <params>)
+#   (<params> ^direction <dir>)
+#-->
+#   (<ol> ^move <acopy>)
+#   (<acopy> ^direction <dir>
+#            ^linear-velocity <thr>)
+#}
+#sp {monitor*action*move
+#   (state <s> ^operator.action <a>
+#              ^parameters.linear-velocity <thr>)
+#   (<a> ^move <p>)
+#   (<p> ^direction <d>)
+#-->
+#   (write (crlf) |move | <d> | at | <thr>)
+#}
+#sp {monitor*action*rotate
+#   (state <s> ^operator.action <a>
+#              ^parameters.rotation-velocity <thr>)
+#   (<a> ^rotate <p>)
+#   (<p> ^direction <d>)
+#-->
+#   (write (crlf) |rotate | <d> | at | <thr>)
+#}

@@ -25,7 +25,8 @@ sp {apply*process-message*ignore-self
 
 # this will fire when the next message comes in
 sp {apply*process-message*status-processed
-   (state <s> ^io <io>)
+   (state <s> ^superstate nil
+              ^io <io>)
    (<io> ^input-link <il>
          ^output-link <ol>)
    (<il> ^self.received-messages.message <m>)
