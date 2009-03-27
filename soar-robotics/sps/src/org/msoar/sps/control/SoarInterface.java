@@ -33,6 +33,7 @@ final class SoarInterface implements Kernel.UpdateEventInterface, Kernel.SystemE
 	private boolean running = false;
 	private List<String> tokens;
 	private DifferentialDriveCommand ddc;
+	private DifferentialDriveCommand soarddc;
 	
 	private SoarInterface(Config config, SplinterState splinter) {
 		kernel = Kernel.CreateKernelInNewThread();
@@ -104,6 +105,7 @@ final class SoarInterface implements Kernel.UpdateEventInterface, Kernel.SystemE
 	
 			DifferentialDriveCommand newddc = output.update();
 			if (newddc != null) {
+				soarddc = newddc;
 				ddc = newddc;
 			}
 			
@@ -134,7 +136,9 @@ final class SoarInterface implements Kernel.UpdateEventInterface, Kernel.SystemE
 	public void systemEventHandler(int eventId, Object arg1, Kernel arg2) {
 		if (eventId == smlSystemEventId.smlEVENT_SYSTEM_START.swigValue()) {
 			logger.info("Soar started.");
-			ddc = DifferentialDriveCommand.newEStopCommand();
+			if (soarddc != null) {
+				ddc = soarddc;
+			}
 			running = true;
 		} else if (eventId == smlSystemEventId.smlEVENT_SYSTEM_STOP.swigValue()) {
 			logger.info("Soar stopped.");
