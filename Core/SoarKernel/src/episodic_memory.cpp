@@ -661,6 +661,31 @@ const char *epmem_symbol_to_string( agent *my_agent, Symbol *sym )
 	return "";
 }
 
+
+void _epmem_add_wme( agent *my_agent, Symbol *state, Symbol *id, Symbol *attr, Symbol *value, bool add_to_remove )
+{	
+	slot *my_slot = make_slot( my_agent, id, attr );
+	
+	wme *w = make_wme( my_agent, id, attr, value, false);
+	w->preference = epmem_make_fake_preference( my_agent, state, w );
+	insert_at_head_of_dll( my_slot->wmes, w, next, prev );
+	add_wme_to_wm( my_agent, w );
+	
+	if ( add_to_remove )
+		state->id.epmem_info->epmem_wmes->push( w );
+}
+
+void epmem_add_retrieved_wme( agent *my_agent, Symbol *state, Symbol *id, Symbol *attr, Symbol *value )
+{
+	_epmem_add_wme( my_agent, state, id, attr, value, false );
+}
+
+void epmem_add_meta_wme( agent *my_agent, Symbol *state, Symbol *id, Symbol *attr, Symbol *value )
+{
+	_epmem_add_wme( my_agent, state, id, attr, value, true );
+}
+
+
 //////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////
 // Preference Functions (epmem::prefs)
@@ -1260,10 +1285,17 @@ void epmem_close( agent *my_agent )
  **************************************************************************/
 void epmem_clear_result( agent *my_agent, Symbol *state )
 {
+	slot *my_slot;
+	wme *w;
+	
 	while ( !state->id.epmem_info->epmem_wmes->empty() )
 	{
-		epmem_remove_fake_preference( my_agent, state->id.epmem_info->epmem_wmes->top() );
-		remove_input_wme( my_agent, state->id.epmem_info->epmem_wmes->top() );
+		w = state->id.epmem_info->epmem_wmes->top();
+
+		my_slot = find_slot( w->id, w->attr );
+		remove_from_dll( my_slot->wmes, w, next, prev );
+		remove_wme_from_wm( my_agent, w );
+
 		state->id.epmem_info->epmem_wmes->pop();
 	}
 }
@@ -3019,8 +3051,6 @@ bool epmem_valid_episode( agent *my_agent, epmem_time_id memory_id )
  **************************************************************************/
 void epmem_install_memory( agent *my_agent, Symbol *state, epmem_time_id memory_id, epmem_id_mapping *id_reuse = NULL )
 {
-	wme *new_wme;
-
 	////////////////////////////////////////////////////////////////////////////
 	my_agent->epmem_timers->ncb_retrieval->start();	
 	////////////////////////////////////////////////////////////////////////////
@@ -3036,13 +3066,12 @@ void epmem_install_memory( agent *my_agent, Symbol *state, epmem_time_id memory_
 	if ( ( memory_id == EPMEM_MEMID_NONE ) ||
 		 !epmem_valid_episode( my_agent, memory_id ) )
 	{
-		new_wme = add_input_wme( my_agent, result_header, my_agent->epmem_retrieved_symbol, my_agent->epmem_no_memory_symbol );
-		new_wme->preference = epmem_make_fake_preference( my_agent, state, new_wme );
-		state->id.epmem_info->epmem_wmes->push( new_wme );
-
+		epmem_add_meta_wme( my_agent, state, result_header, my_agent->epmem_retrieved_symbol, my_agent->epmem_no_memory_symbol );
 		state->id.epmem_info->last_memory = EPMEM_MEMID_NONE;
 
+		////////////////////////////////////////////////////////////////////////////
 		my_agent->epmem_timers->ncb_retrieval->stop();
+		////////////////////////////////////////////////////////////////////////////
 		
 		return;
 	}
@@ -3052,9 +3081,7 @@ void epmem_install_memory( agent *my_agent, Symbol *state, epmem_time_id memory_
 
 	// create a new ^retrieved header for this result
 	Symbol *retrieved_header = make_new_identifier( my_agent, 'R', result_header->id.level );
-	new_wme = add_input_wme( my_agent, result_header, my_agent->epmem_retrieved_symbol, retrieved_header );
-	new_wme->preference = epmem_make_fake_preference( my_agent, state, new_wme );
-	state->id.epmem_info->epmem_wmes->push( new_wme );
+	epmem_add_meta_wme( my_agent, state, result_header, my_agent->epmem_retrieved_symbol, retrieved_header );	
 	symbol_remove_ref( my_agent, retrieved_header );
 
 	// add *-id wme's
@@ -3062,15 +3089,11 @@ void epmem_install_memory( agent *my_agent, Symbol *state, epmem_time_id memory_
 		Symbol *my_meta;
 
 		my_meta = make_int_constant( my_agent, memory_id );
-		new_wme = add_input_wme( my_agent, result_header, my_agent->epmem_memory_id_symbol, my_meta );
-		new_wme->preference = epmem_make_fake_preference( my_agent, state, new_wme );
-		state->id.epmem_info->epmem_wmes->push( new_wme );
+		epmem_add_meta_wme( my_agent, state, result_header, my_agent->epmem_memory_id_symbol, my_meta );		
 		symbol_remove_ref( my_agent, my_meta );
 
 		my_meta = make_int_constant( my_agent, my_agent->epmem_stats->time->get_value() );
-		new_wme = add_input_wme( my_agent, result_header, my_agent->epmem_present_id_symbol, my_meta );
-		new_wme->preference = epmem_make_fake_preference( my_agent, state, new_wme );
-		state->id.epmem_info->epmem_wmes->push( new_wme );
+		epmem_add_meta_wme( my_agent, state, result_header, my_agent->epmem_present_id_symbol, my_meta );		
 		symbol_remove_ref( my_agent, my_meta );
 	}
 
@@ -3126,10 +3149,7 @@ void epmem_install_memory( agent *my_agent, Symbol *state, epmem_time_id memory_
 			if ( value_type == IDENTIFIER_SYMBOL_TYPE )
 			{
 				value = make_new_identifier( my_agent, ( ( attr_type == SYM_CONSTANT_SYMBOL_TYPE )?( attr->sc.name[0] ):('E') ), parent->id.level );
-
-				new_wme = add_input_wme( my_agent, parent, attr, value );
-				new_wme->preference = epmem_make_fake_preference( my_agent, state, new_wme );
-				state->id.epmem_info->epmem_wmes->push( new_wme );
+				epmem_add_retrieved_wme( my_agent, state, parent, attr, value );
 
 				ids[ child_id ] = value;
 			}
@@ -3150,9 +3170,7 @@ void epmem_install_memory( agent *my_agent, Symbol *state, epmem_time_id memory_
 						break;
 				}
 
-				new_wme = add_input_wme( my_agent, parent, attr, value );
-				new_wme->preference = epmem_make_fake_preference( my_agent, state, new_wme );
-				state->id.epmem_info->epmem_wmes->push( new_wme );
+				epmem_add_retrieved_wme( my_agent, state, parent, attr, value );				
 				num_wmes++;
 			}
 
@@ -3244,9 +3262,7 @@ void epmem_install_memory( agent *my_agent, Symbol *state, epmem_time_id memory_
 					if ( !existing_identifier )
 						(*value) = make_new_identifier( my_agent, ( ( w_type == SYM_CONSTANT_SYMBOL_TYPE )?( attr->sc.name[0] ):('E') ), parent->id.level );
 
-					new_wme = add_input_wme( my_agent, parent, attr, (*value) );
-					new_wme->preference = epmem_make_fake_preference( my_agent, state, new_wme );
-					state->id.epmem_info->epmem_wmes->push( new_wme );
+					epmem_add_retrieved_wme( my_agent, state, parent, attr, (*value) );
 					num_wmes++;
 
 					symbol_remove_ref( my_agent, attr );
@@ -3286,9 +3302,7 @@ void epmem_install_memory( agent *my_agent, Symbol *state, epmem_time_id memory_
 					if ( !existing_identifier )
 						(*value) = make_new_identifier( my_agent, ( ( attr->common.symbol_type == SYM_CONSTANT_SYMBOL_TYPE )?( attr->sc.name[0] ):('E') ), parent->id.level );
 
-					new_wme = add_input_wme( my_agent, parent, orphan->w, (*value) );
-					new_wme->preference = epmem_make_fake_preference( my_agent, state, new_wme );
-					state->id.epmem_info->epmem_wmes->push( new_wme );
+					epmem_add_retrieved_wme( my_agent, state, parent, orphan->w, (*value) );
 					num_wmes++;
 
 					symbol_remove_ref( my_agent, orphan->w );
@@ -3363,9 +3377,7 @@ void epmem_install_memory( agent *my_agent, Symbol *state, epmem_time_id memory_
 						break;
 				}
 
-				new_wme = add_input_wme( my_agent, parent, attr, value );
-				new_wme->preference = epmem_make_fake_preference( my_agent, state, new_wme );
-				state->id.epmem_info->epmem_wmes->push( new_wme );
+				epmem_add_retrieved_wme( my_agent, state, parent, attr, value );
 				num_wmes++;
 
 				symbol_remove_ref( my_agent, attr );
@@ -4019,8 +4031,6 @@ void epmem_process_query( agent *my_agent, Symbol *state, Symbol *query, Symbol 
 
 		if ( mode == epmem_param_container::tree )
 		{
-			wme *new_wme;
-
 			// BFS to get the leaf id's
 			std::list<epmem_leaf_node *> leaf_ids[2];
 			std::list<epmem_leaf_node *>::iterator leaf_p;
@@ -4417,36 +4427,26 @@ void epmem_process_query( agent *my_agent, Symbol *state, Symbol *query, Symbol 
 						my_agent->epmem_stats->qry_card->set_value( king_cardinality );
 
 						// status
-						new_wme = add_input_wme( my_agent, state->id.epmem_result_header, my_agent->epmem_status_symbol, my_agent->epmem_success_symbol );
-						new_wme->preference = epmem_make_fake_preference( my_agent, state, new_wme );
-						state->id.epmem_info->epmem_wmes->push( new_wme );
+						epmem_add_meta_wme( my_agent, state, state->id.epmem_result_header, my_agent->epmem_status_symbol, my_agent->epmem_success_symbol );						
 
 						// match score
 						my_meta = make_float_constant( my_agent, king_score );
-						new_wme = add_input_wme( my_agent, state->id.epmem_result_header, my_agent->epmem_match_score_symbol, my_meta );
-						new_wme->preference = epmem_make_fake_preference( my_agent, state, new_wme );
-						state->id.epmem_info->epmem_wmes->push( new_wme );
+						epmem_add_meta_wme( my_agent, state, state->id.epmem_result_header, my_agent->epmem_match_score_symbol, my_meta );						
 						symbol_remove_ref( my_agent, my_meta );
 
 						// cue-size
 						my_meta = make_int_constant( my_agent, cue_size );
-						new_wme = add_input_wme( my_agent, state->id.epmem_result_header, my_agent->epmem_cue_size_symbol, my_meta );
-						new_wme->preference = epmem_make_fake_preference( my_agent, state, new_wme );
-						state->id.epmem_info->epmem_wmes->push( new_wme );
+						epmem_add_meta_wme( my_agent, state, state->id.epmem_result_header, my_agent->epmem_cue_size_symbol, my_meta );						
 						symbol_remove_ref( my_agent, my_meta );
 
 						// normalized-match-score
 						my_meta = make_float_constant( my_agent, ( king_score / perfect_match ) );
-						new_wme = add_input_wme( my_agent, state->id.epmem_result_header, my_agent->epmem_normalized_match_score_symbol, my_meta );
-						new_wme->preference = epmem_make_fake_preference( my_agent, state, new_wme );
-						state->id.epmem_info->epmem_wmes->push( new_wme );
+						epmem_add_meta_wme( my_agent, state, state->id.epmem_result_header, my_agent->epmem_normalized_match_score_symbol, my_meta );						
 						symbol_remove_ref( my_agent, my_meta );
 
 						// match-cardinality
 						my_meta = make_int_constant( my_agent, king_cardinality );
-						new_wme = add_input_wme( my_agent, state->id.epmem_result_header, my_agent->epmem_match_cardinality_symbol, my_meta );
-						new_wme->preference = epmem_make_fake_preference( my_agent, state, new_wme );
-						state->id.epmem_info->epmem_wmes->push( new_wme );
+						epmem_add_meta_wme( my_agent, state, state->id.epmem_result_header, my_agent->epmem_match_cardinality_symbol, my_meta );						
 						symbol_remove_ref( my_agent, my_meta );
 
 						////////////////////////////////////////////////////////////////////////////
@@ -4459,9 +4459,7 @@ void epmem_process_query( agent *my_agent, Symbol *state, Symbol *query, Symbol 
 					}
 					else
 					{
-						new_wme = add_input_wme( my_agent, state->id.epmem_result_header, my_agent->epmem_status_symbol, my_agent->epmem_failure_symbol );
-						new_wme->preference = epmem_make_fake_preference( my_agent, state, new_wme );
-						state->id.epmem_info->epmem_wmes->push( new_wme );
+						epmem_add_meta_wme( my_agent, state, state->id.epmem_result_header, my_agent->epmem_status_symbol, my_agent->epmem_failure_symbol );						
 
 						////////////////////////////////////////////////////////////////////////////
 						my_agent->epmem_timers->query->stop();
@@ -4471,9 +4469,7 @@ void epmem_process_query( agent *my_agent, Symbol *state, Symbol *query, Symbol 
 			}
 			else
 			{
-				new_wme = add_input_wme( my_agent, state->id.epmem_result_header, my_agent->epmem_status_symbol, my_agent->epmem_failure_symbol );
-				new_wme->preference = epmem_make_fake_preference( my_agent, state, new_wme );
-				state->id.epmem_info->epmem_wmes->push( new_wme );
+				epmem_add_meta_wme( my_agent, state, state->id.epmem_result_header, my_agent->epmem_status_symbol, my_agent->epmem_failure_symbol );				
 
 				////////////////////////////////////////////////////////////////////////////
 				my_agent->epmem_timers->query->stop();
@@ -4506,7 +4502,6 @@ void epmem_process_query( agent *my_agent, Symbol *state, Symbol *query, Symbol 
 
 			unsigned long leaf_ids[2] = { 0, 0 };
 
-			wme *new_wme;
 			epmem_time_id time_now = my_agent->epmem_stats->time->get_value() - 1;
 
 			////////////////////////////////////////////////////////////////////////////
@@ -5369,36 +5364,26 @@ void epmem_process_query( agent *my_agent, Symbol *state, Symbol *query, Symbol 
 				my_agent->epmem_stats->qry_card->set_value( king_cardinality );
 
 				// status
-				new_wme = add_input_wme( my_agent, state->id.epmem_result_header, my_agent->epmem_status_symbol, my_agent->epmem_success_symbol );
-				new_wme->preference = epmem_make_fake_preference( my_agent, state, new_wme );
-				state->id.epmem_info->epmem_wmes->push( new_wme );
+				epmem_add_meta_wme( my_agent, state, state->id.epmem_result_header, my_agent->epmem_status_symbol, my_agent->epmem_success_symbol );				
 
 				// match score
 				my_meta = make_float_constant( my_agent, king_score );
-				new_wme = add_input_wme( my_agent, state->id.epmem_result_header, my_agent->epmem_match_score_symbol, my_meta );
-				new_wme->preference = epmem_make_fake_preference( my_agent, state, new_wme );
-				state->id.epmem_info->epmem_wmes->push( new_wme );
+				epmem_add_meta_wme( my_agent, state, state->id.epmem_result_header, my_agent->epmem_match_score_symbol, my_meta );				
 				symbol_remove_ref( my_agent, my_meta );
 
 				// cue-size
 				my_meta = make_int_constant( my_agent, cue_size );
-				new_wme = add_input_wme( my_agent, state->id.epmem_result_header, my_agent->epmem_cue_size_symbol, my_meta );
-				new_wme->preference = epmem_make_fake_preference( my_agent, state, new_wme );
-				state->id.epmem_info->epmem_wmes->push( new_wme );
+				epmem_add_meta_wme( my_agent, state, state->id.epmem_result_header, my_agent->epmem_cue_size_symbol, my_meta );				
 				symbol_remove_ref( my_agent, my_meta );
 
 				// normalized-match-score
 				my_meta = make_float_constant( my_agent, ( king_score / perfect_match ) );
-				new_wme = add_input_wme( my_agent, state->id.epmem_result_header, my_agent->epmem_normalized_match_score_symbol, my_meta );
-				new_wme->preference = epmem_make_fake_preference( my_agent, state, new_wme );
-				state->id.epmem_info->epmem_wmes->push( new_wme );
+				epmem_add_meta_wme( my_agent, state, state->id.epmem_result_header, my_agent->epmem_normalized_match_score_symbol, my_meta );				
 				symbol_remove_ref( my_agent, my_meta );
 
 				// match-cardinality
 				my_meta = make_int_constant( my_agent, king_cardinality );
-				new_wme = add_input_wme( my_agent, state->id.epmem_result_header, my_agent->epmem_match_cardinality_symbol, my_meta );
-				new_wme->preference = epmem_make_fake_preference( my_agent, state, new_wme );
-				state->id.epmem_info->epmem_wmes->push( new_wme );
+				epmem_add_meta_wme( my_agent, state, state->id.epmem_result_header, my_agent->epmem_match_cardinality_symbol, my_meta );				
 				symbol_remove_ref( my_agent, my_meta );
 
 				// graph match
@@ -5406,9 +5391,7 @@ void epmem_process_query( agent *my_agent, Symbol *state, Symbol *query, Symbol 
 				{
 					// graph-match 0/1
 					my_meta = make_int_constant( my_agent, ( ( king_graph_match == len_query )?(1):(0) ) );
-					new_wme = add_input_wme( my_agent, state->id.epmem_result_header, my_agent->epmem_graph_match_symbol, my_meta );
-					new_wme->preference = epmem_make_fake_preference( my_agent, state, new_wme );
-					state->id.epmem_info->epmem_wmes->push( new_wme );
+					epmem_add_meta_wme( my_agent, state, state->id.epmem_result_header, my_agent->epmem_graph_match_symbol, my_meta );					
 					symbol_remove_ref( my_agent, my_meta );
 
 					// full mapping if appropriate
@@ -5418,9 +5401,7 @@ void epmem_process_query( agent *my_agent, Symbol *state, Symbol *query, Symbol 
 						Symbol *my_meta3;
 
 						my_meta = make_new_identifier( my_agent, 'M', state->id.epmem_result_header->id.level );
-						new_wme = add_input_wme( my_agent, state->id.epmem_result_header, my_agent->epmem_graph_match_mapping_symbol, my_meta );
-						new_wme->preference = epmem_make_fake_preference( my_agent, state, new_wme );
-						state->id.epmem_info->epmem_wmes->push( new_wme );
+						epmem_add_meta_wme( my_agent, state, state->id.epmem_result_header, my_agent->epmem_graph_match_mapping_symbol, my_meta );						
 						symbol_remove_ref( my_agent, my_meta );
 
 						my_mapping = new epmem_id_mapping();
@@ -5428,21 +5409,15 @@ void epmem_process_query( agent *my_agent, Symbol *state, Symbol *query, Symbol 
 						{
 							// create the node
 							my_meta2 = make_new_identifier( my_agent, 'N', my_meta->id.level );
-							new_wme = add_input_wme( my_agent, my_meta, my_agent->epmem_graph_match_mapping_node_symbol, my_meta2 );
-							new_wme->preference = epmem_make_fake_preference( my_agent, state, new_wme );
-							state->id.epmem_info->epmem_wmes->push( new_wme );
+							epmem_add_meta_wme( my_agent, state, my_meta, my_agent->epmem_graph_match_mapping_node_symbol, my_meta2 );							
 							symbol_remove_ref( my_agent, my_meta2 );
 
 							// point to the cue identifier
-							new_wme = add_input_wme( my_agent, my_meta2, my_agent->epmem_graph_match_mapping_cue_symbol, c_p->first );
-							new_wme->preference = epmem_make_fake_preference( my_agent, state, new_wme );
-							state->id.epmem_info->epmem_wmes->push( new_wme );
+							epmem_add_meta_wme( my_agent, state, my_meta2, my_agent->epmem_graph_match_mapping_cue_symbol, c_p->first );							
 
 							// create and store away the [yet-to-be-retrieved] identifier
 							my_meta3 = make_new_identifier( my_agent, c_p->first->id.name_letter, my_meta2->id.level );
-							new_wme = add_input_wme( my_agent, my_meta2, my_agent->epmem_retrieved_symbol, my_meta3 );
-							new_wme->preference = epmem_make_fake_preference( my_agent, state, new_wme );
-							state->id.epmem_info->epmem_wmes->push( new_wme );
+							epmem_add_meta_wme( my_agent, state, my_meta2, my_agent->epmem_retrieved_symbol, my_meta3 );							
 							symbol_remove_ref( my_agent, my_meta3 );
 							(*my_mapping)[ c_p->second ] = my_meta3;
 						}
@@ -5462,9 +5437,7 @@ void epmem_process_query( agent *my_agent, Symbol *state, Symbol *query, Symbol 
 			}
 			else
 			{
-				new_wme = add_input_wme( my_agent, state->id.epmem_result_header, my_agent->epmem_status_symbol, my_agent->epmem_failure_symbol );
-				new_wme->preference = epmem_make_fake_preference( my_agent, state, new_wme );
-				state->id.epmem_info->epmem_wmes->push( new_wme );
+				epmem_add_meta_wme( my_agent, state, state->id.epmem_result_header, my_agent->epmem_status_symbol, my_agent->epmem_failure_symbol );				
 
 				////////////////////////////////////////////////////////////////////////////
 				my_agent->epmem_timers->query->stop();
@@ -5474,9 +5447,7 @@ void epmem_process_query( agent *my_agent, Symbol *state, Symbol *query, Symbol 
 	}
 	else
 	{
-		wme *new_wme = add_input_wme( my_agent, state->id.epmem_result_header, my_agent->epmem_status_symbol, my_agent->epmem_bad_cmd_symbol );
-		new_wme->preference = epmem_make_fake_preference( my_agent, state, new_wme );
-		state->id.epmem_info->epmem_wmes->push( new_wme );
+		epmem_add_meta_wme( my_agent, state, state->id.epmem_result_header, my_agent->epmem_status_symbol, my_agent->epmem_bad_cmd_symbol );		
 
 		free_memory( my_agent, wmes_query, MISCELLANEOUS_MEM_USAGE );
 		free_memory( my_agent, wmes_neg_query, MISCELLANEOUS_MEM_USAGE );
@@ -5881,9 +5852,7 @@ void epmem_respond_to_cmd( agent *my_agent )
 			}
 			else
 			{
-				wme *new_wme = add_input_wme( my_agent, state->id.epmem_result_header, my_agent->epmem_status_symbol, my_agent->epmem_bad_cmd_symbol );
-				new_wme->preference = epmem_make_fake_preference( my_agent, state, new_wme );
-				state->id.epmem_info->epmem_wmes->push( new_wme );
+				epmem_add_meta_wme( my_agent, state, state->id.epmem_result_header, my_agent->epmem_status_symbol, my_agent->epmem_bad_cmd_symbol );				
 			}
 
 			// free prohibit list
