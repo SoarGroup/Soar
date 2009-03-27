@@ -176,6 +176,10 @@ final class HttpController {
 				sendFile(xchg, "/org/msoar/sps/control/html/index.html");
 				return;
 			}
+			
+			// test
+			//Say.newMessage(message);
+			
 			List<String> newTokens = Arrays.asList(message.split(" "));
 			
 			Iterator<String> iter = newTokens.iterator();

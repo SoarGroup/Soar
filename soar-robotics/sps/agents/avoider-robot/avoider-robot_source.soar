@@ -6,4 +6,5 @@ pushd elaborations
 source elaborations_source.soar
 popd
 source action.soar
+source announce-self.soar
 source initialize.soar

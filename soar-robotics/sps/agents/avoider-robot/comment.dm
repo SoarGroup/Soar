@@ -8,6 +8,7 @@
 0 
 0 
 0 
+0 
 0 executing status not used
 
 0 if active, commands that should be passed directly to output link for debugging
@@ -146,6 +147,7 @@
 
 0 desired final yaw
 
+0 
 0 
 0 
 0 

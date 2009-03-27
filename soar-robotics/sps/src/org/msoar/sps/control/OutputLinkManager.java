@@ -1,6 +1,8 @@
 package org.msoar.sps.control;
 
 import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Set;
 
 import org.apache.log4j.Logger;
 
@@ -18,7 +20,8 @@ final class OutputLinkManager {
 	private final Agent agent;
 	private final InputLinkInterface inputLink;
 	private final HashMap<String, Command> commands = new HashMap<String, Command>();
-
+	private final Set<Integer> errorTimeTags = new HashSet<Integer>();
+	
 	boolean useFloatYawWmes = true;
 	
 	private Command runningCommand;
@@ -37,7 +40,7 @@ final class OutputLinkManager {
 		commands.put(RemoveWaypointCommand.NAME, new RemoveWaypointCommand());
 		commands.put(EnableWaypointCommand.NAME, new EnableWaypointCommand());
 		commands.put(DisableWaypointCommand.NAME, new DisableWaypointCommand());
-		commands.put(BroadcastMessageCommand.NAME, new BroadcastMessageCommand());
+		commands.put(SendMessageCommand.NAME, new SendMessageCommand());
 		commands.put(RemoveMessageCommand.NAME, new RemoveMessageCommand());
 		commands.put(ClearMessagesCommand.NAME, new ClearMessagesCommand());
 		commands.put(ConfigureCommand.NAME, new ConfigureCommand());
@@ -55,20 +58,27 @@ final class OutputLinkManager {
 		for (int i = 0; i < agent.GetNumberCommands(); ++i) {
 			Identifier commandWme = agent.GetCommand(i);
 
+			// is it already an error?
+			Integer timetag = Integer.valueOf(commandWme.GetTimeTag());
+			if (errorTimeTags.contains(timetag)) {
+				continue;
+			}
+			
 			// is it already running?
 			synchronized (this) {
-				if (runningCommand != null && runningCommand.wme().GetTimeTag() == commandWme.GetTimeTag()) {
+				if (runningCommand != null && runningCommand.wme().GetTimeTag() == timetag) {
 					continue;
 				}
 			}
 			
 			String commandName = commandWme.GetAttribute();
-			logger.debug(commandName + " timetag:" + commandWme.GetTimeTag());
+			logger.debug(commandName + " timetag:" + timetag);
 
 			Command commandObject = commands.get(commandName);
 			if (commandObject == null) {
 				logger.warn("Unknown command: " + commandName);
 				CommandStatus.error.addStatus(agent, commandWme);
+				errorTimeTags.add(timetag);
 				continue;
 			}
 			
@@ -76,6 +86,7 @@ final class OutputLinkManager {
 				if (ddc != null) {
 					logger.warn("Ignoring command " + commandName + " because already have " + ddc);
 					CommandStatus.error.addStatus(agent, commandWme);
+					errorTimeTags.add(timetag);
 					continue;
 				}
 				if (runningCommand != null) {
@@ -89,6 +100,7 @@ final class OutputLinkManager {
 					logger.warn("Error with new drive command, commanding estop.");
 					ddc = DifferentialDriveCommand.newEStopCommand();
 				}
+				errorTimeTags.add(timetag);
 				continue;
 			}
 

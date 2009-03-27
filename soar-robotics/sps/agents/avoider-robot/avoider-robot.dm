@@ -1,4 +1,4 @@
-102
+104
 SOAR_ID 0
 SOAR_ID 1
 SOAR_ID 2
@@ -101,11 +101,14 @@ INTEGER_RANGE 98 -2 2
 SOAR_ID 99
 FLOAT_RANGE 100 -180.0 180.0
 FLOAT_RANGE 101 -0.5 0.5
-105
+SOAR_ID 102
+ENUMERATION 103 1 announce-self
+107
 0 io 1
 0 name 7
 0 operator 4
 0 operator 89
+0 operator 102
 0 parameters 85
 0 superstate 6
 0 top-state 0
@@ -207,3 +210,4 @@ FLOAT_RANGE 101 -0.5 0.5
 92 status 93
 99 angular-velocity 100
 99 linear-velocity 101
+102 name 103
