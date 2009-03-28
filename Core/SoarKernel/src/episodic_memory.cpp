@@ -2565,6 +2565,7 @@ void epmem_new_episode( agent *my_agent )
 
 		// id repository
 		epmem_id_pool **my_id_repo;
+		epmem_id_pool *my_id_repo2;
 		epmem_id_pool::iterator pool_p;
 		std::map<wme *, epmem_id_reservation *> id_reservations;
 		std::map<wme *, epmem_id_reservation *>::iterator r_p;
@@ -2578,6 +2579,11 @@ void epmem_new_episode( agent *my_agent )
 		// initialize BFS
 		parent_syms.push( my_agent->top_goal );
 		parent_ids.push( EPMEM_NODEID_ROOT );
+
+		// three cases for sharing ids amongst identifiers in two passes:
+		// 1. value known in phase one (try reservation)
+		// 2. value unknown in phase one, but known at phase two (try assignment adhering to constraint)
+		// 3. value unknown in phase one/two (if anything is left, unconstrained assignment)
 
 		while ( !parent_syms.empty() )
 		{
@@ -2607,7 +2613,7 @@ void epmem_new_episode( agent *my_agent )
 						if ( my_agent->epmem_params->exclusions->in_set( wmes[i]->attr ) )
 							continue;
 
-						// if still here, create reservation
+						// if still here, create reservation (case 1)
 						new_id_reservation = new epmem_id_reservation;
 						new_id_reservation->my_hash = epmem_temporal_hash( my_agent, wmes[i]->attr );
 						new_id_reservation->my_id = EPMEM_NODEID_ROOT;
@@ -2658,7 +2664,10 @@ void epmem_new_episode( agent *my_agent )
 							wmes[i]->epmem_valid = my_agent->epmem_validation;
 							wmes[i]->epmem_id = NULL;
 
-							// in the case of a known child, we already have a reservation
+							my_hash = NULL;							
+							my_id_repo2 = NULL;
+
+							// in the case of a known child, we already have a reservation (case 1)						
 							if ( wmes[i]->value->id.epmem_id )
 							{
 								r_p = id_reservations.find( wmes[i] );
@@ -2667,19 +2676,51 @@ void epmem_new_episode( agent *my_agent )
 								{
 									// restore reservation info
 									my_hash = r_p->second->my_hash;
-									(*my_id_repo) = r_p->second->my_pool;
+									my_id_repo2 = r_p->second->my_pool;
 
 									if ( r_p->second->my_id != EPMEM_NODEID_ROOT )
 									{
 										wmes[i]->epmem_id = r_p->second->my_id;
-										(*my_agent->epmem_id_replacement)[ wmes[i]->epmem_id ] = (*my_id_repo);
+										(*my_agent->epmem_id_replacement)[ wmes[i]->epmem_id ] = my_id_repo2;
 									}
 
 									// delete reservation and map entry
 									delete r_p->second;
 									id_reservations.erase( r_p );
 								}
+								// OR a shared identifier at the same level, in which case we need an exact match (case 2)
+								else
+								{
+									// get temporal hash
+									my_hash = epmem_temporal_hash( my_agent, wmes[i]->attr );
+
+									// try to get an id that matches new information
+									my_id_repo =& (*(*my_agent->epmem_id_repository)[ parent_id ])[ my_hash ];
+									if ( (*my_id_repo) )
+									{
+										if ( !(*my_id_repo)->empty() )
+										{
+											pool_p = (*my_id_repo)->find( wmes[i]->value->id.epmem_id );
+											if ( pool_p != (*my_id_repo)->end() )
+											{
+												wmes[i]->epmem_id = pool_p->second;
+												(*my_id_repo)->erase( pool_p );
+
+												(*my_agent->epmem_id_replacement)[ wmes[i]->epmem_id ] = (*my_id_repo);											
+											}
+										}
+									}
+									else
+									{
+										// add repository
+										(*my_id_repo) = new epmem_id_pool();
+									}
+
+									// keep the address for later use
+									my_id_repo2 = (*my_id_repo);
+								}
 							}
+							// case 3
 							else
 							{
 								// get temporal hash
@@ -2715,21 +2756,19 @@ void epmem_new_episode( agent *my_agent )
 												pool_p++;
 											}
 										} while ( pool_p != (*my_id_repo)->end() );
-									}
-									else
-									{
-										// a child identifier was set AFTER pre-processing (i.e. reservation)
-										my_hash = epmem_temporal_hash( my_agent, wmes[i]->attr );
-									}
+									}									
 								}
 								else
 								{
 									// add repository
 									(*my_id_repo) = new epmem_id_pool();
-								}							
+								}
+
+								// keep the address for later use
+								my_id_repo2 = (*my_id_repo);
 							}
 
-							// add path
+							// add path if no success above
 							if ( wmes[i]->epmem_id == NULL )
 							{
 								if ( wmes[i]->value->id.epmem_id == NULL )
@@ -2751,7 +2790,7 @@ void epmem_new_episode( agent *my_agent )
 								sqlite3_reset( my_agent->epmem_statements[ EPMEM_STMT_THREE_ADD_EDGE_UNIQUE ] );
 
 								wmes[i]->epmem_id = (epmem_node_id) sqlite3_last_insert_rowid( my_agent->epmem_db );
-								(*my_agent->epmem_id_replacement)[ wmes[i]->epmem_id ] = (*my_id_repo);
+								(*my_agent->epmem_id_replacement)[ wmes[i]->epmem_id ] = my_id_repo2;
 
 								// new nodes definitely start
 								epmem_edge.push( wmes[i]->epmem_id );
