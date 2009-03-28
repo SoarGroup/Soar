@@ -2639,8 +2639,7 @@ void epmem_new_episode( agent *my_agent )
 								pool_p = (*my_id_repo)->find( wmes[i]->value->id.epmem_id );
 								if ( pool_p != (*my_id_repo)->end() )
 								{
-									new_id_reservation->my_id = pool_p->second;
-									new_id_reservation->my_pool = (*my_id_repo);
+									new_id_reservation->my_id = pool_p->second;									
 
 									(*my_id_repo)->erase( pool_p );
 								}
@@ -2649,9 +2648,10 @@ void epmem_new_episode( agent *my_agent )
 						else
 						{
 							// add repository
-							(*my_id_repo) = new epmem_id_pool();
+							(*my_id_repo) = new epmem_id_pool();							
 						}
 
+						new_id_reservation->my_pool = (*my_id_repo);
 						id_reservations[ wmes[i] ] = new_id_reservation;
 						new_id_reservation = NULL;
 					}
@@ -2684,10 +2684,12 @@ void epmem_new_episode( agent *my_agent )
 								{
 									// restore reservation info
 									my_hash = r_p->second->my_hash;
+									(*my_id_repo) = r_p->second->my_pool;
+
 									if ( r_p->second->my_id != EPMEM_NODEID_ROOT )
 									{
 										wmes[i]->epmem_id = r_p->second->my_id;
-										(*my_agent->epmem_id_replacement)[ wmes[i]->epmem_id ] = r_p->second->my_pool;
+										(*my_agent->epmem_id_replacement)[ wmes[i]->epmem_id ] = (*my_id_repo);
 									}
 
 									// delete reservation and map entry
@@ -2741,7 +2743,7 @@ void epmem_new_episode( agent *my_agent )
 								{
 									// add repository
 									(*my_id_repo) = new epmem_id_pool();
-								}
+								}							
 							}
 
 							// add path
