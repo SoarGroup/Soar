@@ -1256,16 +1256,15 @@ Symbol *create_new_impasse (agent* thisAgent, Bool isa_goal, Symbol *object, Sym
   {
     add_impasse_wme (thisAgent, id, thisAgent->superstate_symbol, object, NIL);
 
-	id->id.reward_header = make_new_identifier( thisAgent, 'R', level );	
+	id->id.reward_header = make_new_identifier( thisAgent, 'R', level );
+	soar_module::add_module_wme( thisAgent, id, thisAgent->reward_link_symbol, id->id.reward_header );
 
-	add_input_wme( thisAgent, id, thisAgent->reward_link_symbol, id->id.reward_header );	
-
-	id->id.epmem_header = make_new_identifier( thisAgent, 'E', level );	
-	id->id.epmem_wme = add_input_wme( thisAgent, id, thisAgent->epmem_symbol, id->id.epmem_header );
+	id->id.epmem_header = make_new_identifier( thisAgent, 'E', level );		
+	soar_module::add_module_wme( thisAgent, id, thisAgent->epmem_symbol, id->id.epmem_header );
 	id->id.epmem_cmd_header = make_new_identifier( thisAgent, 'C', level );
-	id->id.epmem_cmd_wme = add_input_wme( thisAgent, id->id.epmem_header, thisAgent->epmem_cmd_symbol, id->id.epmem_cmd_header );	
+	soar_module::add_module_wme( thisAgent, id->id.epmem_header, thisAgent->epmem_cmd_symbol, id->id.epmem_cmd_header );	
 	id->id.epmem_result_header = make_new_identifier( thisAgent, 'R', level );
-	id->id.epmem_result_wme = add_input_wme( thisAgent, id->id.epmem_header, thisAgent->epmem_result_symbol, id->id.epmem_result_header );
+	soar_module::add_module_wme( thisAgent, id->id.epmem_header, thisAgent->epmem_result_symbol, id->id.epmem_result_header );
 
   }
   else
@@ -2054,21 +2053,8 @@ void create_new_context (agent* thisAgent, Symbol *attr_of_impasse, byte impasse
   id->id.epmem_info->last_cmd_count = 0;
   id->id.epmem_info->cue_wmes = new std::set<wme *>();
   
-  // mark the top state
-  if ( thisAgent->top_goal != id )
-	id->id.epmem_info->ss_wme = epmem_get_aug_of_id( thisAgent, id, "superstate", NULL );
-  else
-	  id->id.epmem_info->ss_wme = NULL;
-  
   id->id.epmem_info->last_memory = EPMEM_MEMID_NONE;  
-  id->id.epmem_info->epmem_wmes = new std::stack<wme *>(); 
-
-  if ( id->id.epmem_header != NIL )
-  {	  
-	  id->id.epmem_wme->preference = epmem_make_fake_preference( thisAgent, id, id->id.epmem_wme );	  
-	  id->id.epmem_cmd_wme->preference = epmem_make_fake_preference( thisAgent, id, id->id.epmem_cmd_wme );
-	  id->id.epmem_result_wme->preference = epmem_make_fake_preference( thisAgent, id, id->id.epmem_result_wme );
-  }
+  id->id.epmem_info->epmem_wmes = new std::stack<wme *>();
 
   /* --- invoke callback routine --- */
   soar_invoke_callbacks(thisAgent, 

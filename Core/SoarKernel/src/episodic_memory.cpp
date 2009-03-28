@@ -514,6 +514,9 @@ epmem_timer::epmem_timer(const char *new_name, agent *new_agent, soar_module::ti
 //////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////
 
+// forward declare
+preference *epmem_make_fake_preference( agent *my_agent, Symbol *state, wme *w );
+
 /***************************************************************************
  * Function     : epmem_get_augs_of_id
  * Author		: Andy Nuxoll
@@ -663,14 +666,10 @@ const char *epmem_symbol_to_string( agent *my_agent, Symbol *sym )
 
 
 void _epmem_add_wme( agent *my_agent, Symbol *state, Symbol *id, Symbol *attr, Symbol *value, bool add_to_remove )
-{	
-	slot *my_slot = make_slot( my_agent, id, attr );
-	
-	wme *w = make_wme( my_agent, id, attr, value, false);
+{		
+	wme *w = soar_module::add_module_wme( my_agent, id, attr, value );
 	w->preference = epmem_make_fake_preference( my_agent, state, w );
-	insert_at_head_of_dll( my_slot->wmes, w, next, prev );
-	add_wme_to_wm( my_agent, w );
-	
+
 	if ( add_to_remove )
 		state->id.epmem_info->epmem_wmes->push( w );
 }
@@ -710,7 +709,7 @@ void epmem_add_meta_wme( agent *my_agent, Symbol *state, Symbol *id, Symbol *att
 preference *epmem_make_fake_preference( agent *my_agent, Symbol *state, wme *w )
 {
 	// if we are on the top state, don't make the preference
-	if ( state->id.epmem_info->ss_wme == NULL )
+	if ( state == my_agent->top_state )
 		return NIL;
 
 	// make fake preference
@@ -742,13 +741,9 @@ preference *epmem_make_fake_preference( agent *my_agent, Symbol *state, wme *w )
 	inst->okay_to_variablize = TRUE;
 	inst->backtrace_number = 0;
 	inst->in_ms = FALSE;
-
-	// create a condition for each cue WME (superstate if no cue)
-	bool no_cue = state->id.epmem_info->cue_wmes->empty();
+	
 	condition *cond = NULL;
-	condition *prev_cond = NULL;
-	if ( no_cue )
-		state->id.epmem_info->cue_wmes->insert( state->id.epmem_info->ss_wme );
+	condition *prev_cond = NULL;	
 	{
 		std::set<wme *>::iterator p = state->id.epmem_info->cue_wmes->begin();
 
@@ -786,8 +781,6 @@ preference *epmem_make_fake_preference( agent *my_agent, Symbol *state, wme *w )
 			p++;
 		}
 	}
-	if ( no_cue )
-		state->id.epmem_info->cue_wmes->clear();
 
     return pref;
 }
@@ -1285,17 +1278,12 @@ void epmem_close( agent *my_agent )
  **************************************************************************/
 void epmem_clear_result( agent *my_agent, Symbol *state )
 {
-	slot *my_slot;
 	wme *w;
 	
 	while ( !state->id.epmem_info->epmem_wmes->empty() )
 	{
 		w = state->id.epmem_info->epmem_wmes->top();
-
-		my_slot = find_slot( w->id, w->attr );
-		remove_from_dll( my_slot->wmes, w, next, prev );
-		remove_wme_from_wm( my_agent, w );
-
+		soar_module::remove_module_wme( my_agent, w );
 		state->id.epmem_info->epmem_wmes->pop();
 	}
 }
@@ -1326,11 +1314,6 @@ void epmem_reset( agent *my_agent, Symbol *state )
 
 		// clear off any result stuff (takes care of epmem_wmes)
 		epmem_clear_result( my_agent, state );
-
-		// remove fake preferences
-		epmem_remove_fake_preference( my_agent, state->id.epmem_wme );
-		epmem_remove_fake_preference( my_agent, state->id.epmem_cmd_wme );
-		epmem_remove_fake_preference( my_agent, state->id.epmem_result_wme );
 
 		state = state->id.lower_goal;
 	}

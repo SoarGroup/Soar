@@ -390,8 +390,6 @@ typedef struct epmem_data_struct
 
 	epmem_time_id last_memory;		// last retrieved memory
 
-	wme *ss_wme;
-
 	std::set<wme *> *cue_wmes;		// wmes in last cue
 	std::stack<wme *> *epmem_wmes;	// wmes in last epmem
 } epmem_data;
@@ -563,11 +561,5 @@ extern void epmem_close( agent *my_agent );
 
 // perform epmem actions
 extern void epmem_go( agent *my_agent );
-
-// Called to create/remove a fake preference for an epmem wme
-extern preference *epmem_make_fake_preference( agent *my_agent, Symbol *state, wme *w );
-
-// Called to get a specific symbol augmentation
-extern wme *epmem_get_aug_of_id( agent *my_agent, Symbol *sym, char *attr_name, char *value_name );
 
 #endif
