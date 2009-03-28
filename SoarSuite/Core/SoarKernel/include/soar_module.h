@@ -484,7 +484,7 @@ namespace soar_module
 	class boolean_param: public constant_param<boolean>
 	{
 		public:
-			boolean_param::boolean_param( const char *new_name, boolean new_value, predicate<boolean> *new_prot_pred ): constant_param<boolean>( new_name, new_value, new_prot_pred )
+			boolean_param( const char *new_name, boolean new_value, predicate<boolean> *new_prot_pred ): constant_param<boolean>( new_name, new_value, new_prot_pred )
 			{
 				add_mapping( off, "off" );
 				add_mapping( on, "on" );
