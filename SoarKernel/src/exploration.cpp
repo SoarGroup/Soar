@@ -27,6 +27,7 @@
 
 #include "reinforcement_learning.h"
 #include "misc.h"
+#include "instantiations.h"
 
 using namespace soar_TraceNames;
 
