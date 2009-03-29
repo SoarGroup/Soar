@@ -1,0 +1,137 @@
+#source simple-robot-with-avoidance.soar
+
+
+sp {apply*initialize-simple-robot*parameters
+   (state <s> ^operator <op>)
+   (<op> ^name initialize-simple-robot)
+-->
+   (<s> ^parameters <p>)
+   (<p> ^waypoint-tolerance 0.3 # how close (in meters) the agent needs to be to a waypoint to be considered "at" it
+        ^min-progress-distance 0.1 # how much progress the agent has to make when trying to get to a location for it to be considered progress (i.e., to reset cutoff time)
+        ^replan-time 2000 # how many seconds (as reported on the input-link) the agent should let the collision avoidance algorithm try to make progress towards the waypoint before replanning
+        ^message-update-time 3 # after how many seconds (as reported on the input-link) the agent should send another positition update of an unfriendly entity)
+        ^rotation-tolerance 15 # how many degrees the agent's yaw can be off when it has a desired yaw
+        ^range-tolerance 1 # distance at which a range arc is considered blocked
+        ^throttle 0.5 # throttle at which to move
+   )
+}
+
+sp {apply*waypoints
+   (state <s> ^operator <op>)
+   (<op> ^name initialize-simple-robot)
+-->
+   (<s> ^waypoints <w>)
+   (<w> ^waypoint <w1>  <w2>  <w3>  <w4>  <w5>  <w6>  <w7>  <w8>  <w9>  <w10>
+                  <w11> <w12> <w13> <w14> <w15> <w16> <w17> <w18> <w19> <w20>
+                  <w21>)
+   (<w1>  ^x  0.0  ^y  0.00 ^id w1   ^next <w2>  <w3>  <w13>)
+   (<w2>  ^x  4.3  ^y  0.34 ^id w2   ^next <w1>  <w3>  <w5>  <w8>  <w11> <w13>)
+   (<w3>  ^x  3.46 ^y  3.78 ^id w3   ^next <w1>  <w4>  <w5>  <w8>  <w2>)
+   (<w4>  ^x  5.3  ^y  7.38 ^id w4   ^next <w3>  <w5>)
+   (<w5>  ^x  8.02 ^y  3.72 ^id w5   ^next <w2>  <w3>  <w4>  <w6>  <w7>  <w8>)
+   (<w6>  ^x 10.76 ^y  7.50 ^id w6   ^next <w5>  <w7>)
+   (<w7>  ^x 11.80 ^y  3.60 ^id w7   ^next <w5>  <w6>  <w8>)
+   (<w8>  ^x  9.56 ^y  0.22 ^id w8   ^next <w2>  <w3>  <w5>  <w7>  <w14> <w9> <w11>)
+   (<w9>  ^x 11.42 ^y -3.10 ^id w9   ^next <w8>  <w11> <w10>)
+   (<w10> ^x  8.84 ^y -5.38 ^id w10  ^next <w11> <w9>)
+   (<w11> ^x  6.30 ^y -3.58 ^id w11  ^next <w12> <w13> <w2>  <w8>  <w9>  <w10>)
+   (<w12> ^x  3.24 ^y -6.50 ^id w12  ^next <w13> <w11>)
+   (<w13> ^x  2.66 ^y -3.04 ^id w13  ^next <w1>  <w2>  <w8>  <w11> <w12>)
+   (<w14> ^x 14.44 ^y  0.26 ^id w14  ^next <w8>  <w15> <w21>)
+   (<w15> ^x 14.72 ^y  6.64 ^id w15  ^next <w14> <w16>)
+   (<w16> ^x 19.52 ^y  6.58 ^id w16  ^next <w15> <w17>)
+   (<w17> ^x 24.26 ^y  6.48 ^id w17  ^next <w16> <w18>)
+   (<w18> ^x 24.48 ^y  0.02 ^id w18  ^next <w17> <w19>)
+   (<w19> ^x 24.74 ^y -7.18 ^id w19  ^next <w18> <w20>)
+   (<w20> ^x 19.82 ^y -6.98 ^id w20  ^next <w19> <w21>)
+   (<w21> ^x 14.84 ^y -7.02 ^id w21  ^next <w14> <w20>)
+
+}
+
+sp {apply*initialize-simple-robot*create-mission
+   (state <s> ^operator <op>)
+   (<op> ^name initialize-simple-robot)
+-->
+   (<s> ^mission <m>)
+   (<m> ^first <s1>)
+   (<s1> ^name localize
+         ^id w1
+	 ^next <s2>)
+   (<s2> ^name go-to-location
+         ^id w3
+         ^next <s3>)
+   (<s3> ^name go-to-location
+         ^id w2
+	 ^next <s4>)
+   (<s4> ^name go-to-location
+         ^id w10
+	 ^next <s5>)
+   (<s5> ^name go-to-location
+         ^id w5
+	 ^next <s6>)
+   (<s6> ^name go-to-location
+         ^id w6
+	 ^next <s7>)
+   (<s7> ^name go-to-location
+         ^id w7
+	 ^next <s8>)
+   (<s8> ^name go-to-location
+         ^id w8
+	 ^next <s9>)
+   (<s9> ^name go-to-location
+         ^id w9
+	 ^next <s10>)
+   (<s10> ^name go-to-location
+          ^id w10
+	  ^next <s11>)
+   (<s11> ^name go-to-location
+          ^id w11
+          ^next <s12>)
+   (<s12> ^name go-to-location
+          ^id w12
+          ^next <s13>)
+   (<s13> ^name go-to-location
+          ^id w13
+          ^next <s14>)
+   (<s14> ^name go-to-location
+          ^id w8
+          ^next <s15>)
+   (<s15> ^name go-to-location
+          ^id w14
+          ^next <s16>)
+   (<s16> ^name go-to-location
+          ^id w15
+          ^next <s17>)
+   (<s17> ^name go-to-location
+          ^id w16
+          ^next <s18>)
+   (<s18> ^name go-to-location
+          ^id w17
+          ^next <s19>)
+   (<s19> ^name go-to-location
+          ^id w18
+          ^next <s20>)
+   (<s20> ^name go-to-location
+          ^id w19
+          ^next <s21>)
+   (<s21> ^name go-to-location
+          ^id w20
+          ^next <s22>)
+   (<s22> ^name go-to-location
+          ^id w21
+          ^next <s23>)
+   (<s23> ^name go-to-location
+          ^id w14
+          ^next <s24>)
+   (<s24> ^name go-to-location
+          ^id w1
+          ^next <s2>)
+
+}
+
+sp {mission-complete*stop
+(state <s> ^mission.current nil
+           ^io.output-link <ol>)
+-->
+(<ol> ^stop <stop>)
+}
