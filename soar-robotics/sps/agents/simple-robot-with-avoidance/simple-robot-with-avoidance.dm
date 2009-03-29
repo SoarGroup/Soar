@@ -1,4 +1,4 @@
-292
+294
 SOAR_ID 0
 SOAR_ID 1
 SOAR_ID 2
@@ -291,7 +291,9 @@ ENUMERATION 288 1 red
 ENUMERATION 289 1 epmem-query
 SOAR_ID 290
 SOAR_ID 291
-388
+FLOAT_RANGE 292 -Infinity Infinity
+FLOAT_RANGE 293 -Infinity Infinity
+390
 0 abandoned-waypoint 230
 0 attribute 84
 0 choices 83
@@ -354,7 +356,9 @@ SOAR_ID 291
 22 y-velocity 260
 22 yaw-velocity 261
 23 x 24
+23 x-velocity 292
 23 y 25
+23 y-velocity 293
 23 yaw 155
 23 yaw-velocity 275
 26 current-waypoint 27

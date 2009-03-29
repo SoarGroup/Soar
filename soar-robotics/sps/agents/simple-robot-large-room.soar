@@ -13,7 +13,7 @@ sp {apply*initialize-simple-robot*parameters
         ^rotation-tolerance 15 # how many degrees the agent's yaw can be off when it has a desired yaw
         ^range-tolerance 1 # distance at which a range arc is considered blocked
         ^throttle 0.5 # throttle at which to move
-   )
+                  )
 }
 
 sp {apply*waypoints
@@ -45,7 +45,6 @@ sp {apply*waypoints
    (<w19> ^x 24.74 ^y -7.18 ^id w19  ^next <w18> <w20>)
    (<w20> ^x 19.82 ^y -6.98 ^id w20  ^next <w19> <w21>)
    (<w21> ^x 14.84 ^y -7.02 ^id w21  ^next <w14> <w20>)
-
 }
 
 sp {apply*initialize-simple-robot*create-mission
@@ -56,34 +55,34 @@ sp {apply*initialize-simple-robot*create-mission
    (<m> ^first <s1>)
    (<s1> ^name localize
          ^id w1
-	 ^next <s2>)
+         ^next <s2>)
    (<s2> ^name go-to-location
-         ^id w3
+         ^id w14
          ^next <s3>)
    (<s3> ^name go-to-location
          ^id w2
-	 ^next <s4>)
+         ^next <s4>)
    (<s4> ^name go-to-location
          ^id w10
-	 ^next <s5>)
+         ^next <s5>)
    (<s5> ^name go-to-location
          ^id w5
-	 ^next <s6>)
+         ^next <s6>)
    (<s6> ^name go-to-location
          ^id w6
-	 ^next <s7>)
+         ^next <s7>)
    (<s7> ^name go-to-location
          ^id w7
-	 ^next <s8>)
+         ^next <s8>)
    (<s8> ^name go-to-location
          ^id w8
-	 ^next <s9>)
+         ^next <s9>)
    (<s9> ^name go-to-location
          ^id w9
-	 ^next <s10>)
+         ^next <s10>)
    (<s10> ^name go-to-location
           ^id w10
-	  ^next <s11>)
+          ^next <s11>)
    (<s11> ^name go-to-location
           ^id w11
           ^next <s12>)
@@ -126,12 +125,11 @@ sp {apply*initialize-simple-robot*create-mission
    (<s24> ^name go-to-location
           ^id w1
           ^next <s2>)
-
 }
 
 sp {mission-complete*stop
-(state <s> ^mission.current nil
-           ^io.output-link <ol>)
+   (state <s> ^mission.current nil
+              ^io.output-link <ol>)
 -->
-(<ol> ^stop <stop>)
+   (<ol> ^stop <stop>)
 }

@@ -64,6 +64,8 @@
 0 
 0 
 0 
+0 
+0 
 0 Detect near waypoint - i-support
 
 0 

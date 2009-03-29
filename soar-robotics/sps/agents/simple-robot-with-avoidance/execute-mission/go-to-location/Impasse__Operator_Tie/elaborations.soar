@@ -11,8 +11,16 @@ sp {Impasse__Operator_Conflict*elaborate*stop
 
 sp {Impasse__Operator_tie*elaborate*stop
    (state <s> ^impasse tie
-              ^superstate.top-state.io.output-link <ol>)
+              ^superstate.top-state.io <io>)
+   (<io> ^input-link.self.pose <self>
+         ^output-link <ol>)
+  - (<self> ^yaw-velocity 0.0
+            ^x-velocity 0.0
+            ^y-velocity 0.0)
 -->
-   (<ol> ^stop <x>)
+   (<ol> #^stop <x>)
+            ^set-velocity <sv>)
+   (<sv> ^angular-velocity 0.0
+         ^linear-velocity 0.0)
 }
 
