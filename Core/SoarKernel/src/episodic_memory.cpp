@@ -5739,6 +5739,8 @@ void epmem_respond_to_cmd( agent *my_agent )
 			// process top-level symbols
 			for ( i=0; i<len; i++ )
 			{
+				state->id.epmem_info->cue_wmes->insert( wmes[i] );
+				
 				if ( good_cue )
 				{
 					// get attribute name
@@ -5750,7 +5752,7 @@ void epmem_respond_to_cmd( agent *my_agent )
 						if ( ( wmes[ i ]->value->ic.common_symbol_info.symbol_type == INT_CONSTANT_SYMBOL_TYPE ) &&
 							 ( path == 0 ) &&
 							 ( wmes[ i ]->value->ic.value > 0 ) )
-						{
+						{							
 							retrieve = wmes[ i ]->value->ic.value;
 							path = 1;
 						}
@@ -5761,7 +5763,7 @@ void epmem_respond_to_cmd( agent *my_agent )
 					{
 						if ( ( wmes[ i ]->value->id.common_symbol_info.symbol_type == IDENTIFIER_SYMBOL_TYPE ) &&
 							 ( path == 0 ) )
-						{
+						{							
 							next = true;
 							path = 2;
 						}
