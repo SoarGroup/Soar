@@ -5,7 +5,7 @@ multi-attributes waypoint 10
 
 
 srand 0
-epmem --set learning off
+#epmem --set learning off
 
 pushd ../default
 source selection.soar

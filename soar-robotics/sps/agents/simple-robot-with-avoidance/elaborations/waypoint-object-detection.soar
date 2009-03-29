@@ -1,0 +1,39 @@
+sp {simple-robot*elaborate*waypoint1*red-object
+   (state <s> ^name simple-robot
+              ^waypoints.near-waypoint <w>)
+   (<w> ^id one)
+-->
+   (<w> ^sensed-object.color white )
+}
+
+sp {simple-robot*elaborate*waypoint2*red-object
+   (state <s> ^name simple-robot
+              ^waypoints.near-waypoint <w>)
+   (<w> ^id two)
+-->
+   (<w> ^sensed-object.color red )
+}
+
+sp {simple-robot*elaborate*waypoint3*red-object
+   (state <s> ^name simple-robot
+              ^waypoints.near-waypoint <w>)
+   (<w> ^id three)
+-->
+   (<w> ^sensed-object.color blue )
+}
+
+sp {simple-robot*elaborate*waypoint4*red-object
+   (state <s> ^name simple-robot
+              ^waypoints.near-waypoint <w>)
+   (<w> ^id four)
+-->
+   (<w> ^sensed-object.color green )
+}
+
+sp {simple-robot*elaborate*waypoint5*red-object
+   (state <s> ^name simple-robot
+              ^waypoints.near-waypoint <w>)
+   (<w> ^id five)
+-->
+   (<w> ^sensed-object.color orange )
+}

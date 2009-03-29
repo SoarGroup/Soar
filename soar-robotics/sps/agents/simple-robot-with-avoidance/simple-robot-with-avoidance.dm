@@ -1,4 +1,4 @@
-271
+292
 SOAR_ID 0
 SOAR_ID 1
 SOAR_ID 2
@@ -68,7 +68,7 @@ ENUMERATION 65 1 go-to-location
 SOAR_ID 66
 SOAR_ID 67
 ENUMERATION 68 1 state
-ENUMERATION 69 1 go-to-location
+ENUMERATION 69 2 go-to-location localize
 SOAR_ID 70
 SOAR_ID 71
 ENUMERATION 72 1 complete
@@ -255,22 +255,43 @@ ENUMERATION 252 1 choose-waypoint
 SOAR_ID 253
 FLOAT_RANGE 254 -Infinity Infinity
 ENUMERATION 255 2 false true
-SOAR_ID 256
-ENUMERATION 257 1 near-waypoint
-SOAR_ID 258
-ENUMERATION 259 2 float integer
+ENUMERATION 256 1 near-waypoint
+SOAR_ID 257
+ENUMERATION 258 2 float integer
+FLOAT_RANGE 259 -Infinity Infinity
 FLOAT_RANGE 260 -Infinity Infinity
 FLOAT_RANGE 261 -Infinity Infinity
-FLOAT_RANGE 262 -Infinity Infinity
-SOAR_ID 263
-FLOAT_RANGE 264 -Infinity Infinity
-SOAR_ID 265
-FLOAT_RANGE 266 -180.0 180.0
-SOAR_ID 267
-FLOAT_RANGE 268 -1.0 1.0
-ENUMERATION 269 1 move-forward-with-correction
+SOAR_ID 262
+FLOAT_RANGE 263 -Infinity Infinity
+SOAR_ID 264
+FLOAT_RANGE 265 -180.0 180.0
+SOAR_ID 266
+FLOAT_RANGE 267 -1.0 1.0
+ENUMERATION 268 1 move-forward-with-correction
+SOAR_ID 269
 SOAR_ID 270
-360
+ENUMERATION 271 8 black blue green orange purple red white yellow
+ENUMERATION 272 7 blue green orange purple red white yellow
+FLOAT_RANGE 273 0.0 180.0
+ENUMERATION 274 3 conflict no-change tie
+FLOAT_RANGE 275 -Infinity Infinity
+ENUMERATION 276 2 no-change tie
+ENUMERATION 277 1 epmem-retrieval
+SOAR_ID 278
+SOAR_ID 279
+SOAR_ID 280
+ENUMERATION 281 3 bad-cmd failure success
+FLOAT_RANGE 282 -Infinity Infinity
+INTEGER_RANGE 283 -2147483648 2147483647
+FLOAT_RANGE 284 -Infinity Infinity
+INTEGER_RANGE 285 -2147483648 2147483647
+INTEGER_RANGE 286 -2147483648 2147483647
+INTEGER_RANGE 287 -2147483648 2147483647
+ENUMERATION 288 1 red
+ENUMERATION 289 1 epmem-query
+SOAR_ID 290
+SOAR_ID 291
+388
 0 abandoned-waypoint 230
 0 attribute 84
 0 choices 83
@@ -282,6 +303,7 @@ SOAR_ID 270
 0 initialized 234
 0 io 1
 0 item 18
+0 last-completed-waypoint 230
 0 mission 70
 0 name 82
 0 operator 4
@@ -304,12 +326,12 @@ SOAR_ID 270
 2 time 20
 3 add-waypoint 207
 3 broadcast-message 94
-3 configure 258
-3 motor 267
+3 configure 257
+3 motor 266
 3 remove-message 96
 3 remove-waypoint 224
-3 set-heading 265
-3 set-velocity 263
+3 set-heading 264
+3 set-velocity 262
 3 stop 10
 4 name 7
 8 direction 11
@@ -328,12 +350,13 @@ SOAR_ID 270
 22 pose 23
 22 received-messages 85
 22 waypoints 185
-22 x-velocity 260
-22 y-velocity 261
-22 yaw-velocity 262
+22 x-velocity 259
+22 y-velocity 260
+22 yaw-velocity 261
 23 x 24
 23 y 25
 23 yaw 155
+23 yaw-velocity 275
 26 current-waypoint 27
 26 near-waypoint 27
 26 waypoint 27
@@ -344,6 +367,7 @@ SOAR_ID 270
 27 id 106
 27 id 109
 27 next 27
+27 sensed-object 270
 27 x 28
 27 y 29
 27 yaw 144
@@ -369,12 +393,13 @@ SOAR_ID 270
 39 tried-tied-operator 54
 39 type 40
 39 waypoints 26
-43 destination 27
+43 destination 230
 43 name 42
 44 default-state-copy 46
-44 dont-copy 257
+44 dont-copy 256
 44 name 45
 44 two-level-attributes 47
+48 impasse 274
 48 item 31
 48 name 50
 48 operator 56
@@ -382,6 +407,7 @@ SOAR_ID 270
 48 superstate-set 0
 48 top-state 0
 48 type 49
+51 impasse 276
 51 name 53
 51 superstate 39
 51 superstate-set 0
@@ -410,14 +436,18 @@ SOAR_ID 270
 66 desired-waypoint 27
 66 id 227
 66 name 65
-67 desired 256
+66 object-color 288
+67 desired 27
 67 desired-waypoint 27
+67 epmem 279
 67 io 1
 67 name 69
 67 operator 80
 67 operator 218
 67 operator 249
 67 operator 251
+67 operator 278
+67 operator 290
 67 parameters 211
 67 problem-space 44
 67 success 27
@@ -434,6 +464,7 @@ SOAR_ID 270
 71 id 229
 71 name 73
 71 next 71
+71 object-color 272
 71 previous 71
 71 return-time 161
 71 start-time 76
@@ -531,7 +562,7 @@ SOAR_ID 270
 164 operator 232
 164 operator 241
 164 operator 78
-164 operator 270
+164 operator 269
 164 parameters 211
 164 superoperator 80
 164 superstate 67
@@ -597,6 +628,7 @@ SOAR_ID 270
 211 range-tolerance 196
 211 rotation-tolerance 156
 211 rotation-velocity 247
+211 slow-rotation-velocity 273
 211 waypoint-tolerance 160
 216 name 215
 218 destination 27
@@ -618,16 +650,33 @@ SOAR_ID 270
 232 name 231
 241 name 240
 249 name 248
+249 old-waypoint 186
+249 waypoint 186
 251 name 250
 253 name 252
-258 status 226
-258 yaw-format 259
-263 angular-velocity 264
-263 linear-velocity 264
-263 status 226
-265 status 226
-265 yaw 266
-267 left 268
-267 right 268
-267 status 226
-270 name 269
+257 status 226
+257 yaw-format 258
+262 angular-velocity 263
+262 linear-velocity 263
+262 status 226
+264 status 226
+264 yaw 265
+266 left 267
+266 right 267
+266 status 226
+269 name 268
+270 color 271
+278 name 277
+278 object-color 272
+279 command 280
+279 result 291
+280 query 0
+290 name 289
+291 cue-size 283
+291 match-cardinality 285
+291 match-score 282
+291 memory-id 286
+291 normalized-match-score 284
+291 present-id 287
+291 retrieved 0
+291 status 281

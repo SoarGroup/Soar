@@ -1,0 +1,21 @@
+sp {go-to-location*propose*epmem-retrieved
+   (state <s> ^name go-to-location
+              ^epmem.result.retrieved
+              ^superstate.operator <so>)
+   (<so> ^name go-to-location
+        -^id)
+-->
+   (<s> ^operator <o> +, =, >)
+   (<o> ^name epmem-retrieval)}
+
+sp {go-to-location*apply*epmem-retrieved
+   (state <s> ^operator.name epmem-retrieval
+              ^superstate.operator <so>
+              ^epmem <epmem>)
+   (<epmem> ^command <com>
+            ^result.retrieved.waypoints.near-waypoint.id <id>)
+   (<com> ^query <q>)
+-->
+   (<so> ^id <id>)
+   (<com> ^query <q> -)
+}

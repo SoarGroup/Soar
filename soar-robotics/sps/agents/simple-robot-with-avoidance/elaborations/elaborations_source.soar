@@ -6,3 +6,4 @@ source parameters.soar
 source ranges.soar
 source top-state.soar
 source waypoint.soar
+source waypoint-object-detection.soar

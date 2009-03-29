@@ -4,11 +4,10 @@ sp {Impasse__Operator_Tie*elaborate*superstate-set
 -->
    (<s> ^superstate-set <ss>)}
 
-sp {Impasse__Operator_Conflict*elaborate*
+sp {Impasse__Operator_Conflict*elaborate*stop
    (state <s> ^impasse conflict)
 -->
-   (interrupt)
-   (<s> ^interrupt t)}
+   (interrupt)}
 
 sp {Impasse__Operator_tie*elaborate*stop
    (state <s> ^impasse tie

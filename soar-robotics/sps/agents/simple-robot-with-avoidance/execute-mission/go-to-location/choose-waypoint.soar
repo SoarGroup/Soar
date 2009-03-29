@@ -70,8 +70,8 @@ sp {apply*choose-waypoint*remove-abandoned-waypoint
 
 sp {select*choose-waypoint
    (state <s> ^operator <op> +
-              ^top-state.mission.current <mission>)
-   (<mission> ^id <waypoint>
+              ^superstate.operator <so>)
+   (<so> ^id <waypoint>
               ^name go-to-location)
    (<op> ^name choose-waypoint
          ^destination.id <waypoint>)

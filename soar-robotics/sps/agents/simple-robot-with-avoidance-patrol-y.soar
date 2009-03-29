@@ -27,10 +27,10 @@ sp {apply*initialize-simple-robot*create-mission
          ^id five
          ^next <s5>)
    (<s5> ^name go-to-location
-         ^id four
+         ^object-color green  #id four
          ^next <s6>)
    (<s6> ^name go-to-location
-         ^id two
+         ^object-color red    #id two
          ^next <s7>)
    (<s7> ^name go-to-location
          ^id one
