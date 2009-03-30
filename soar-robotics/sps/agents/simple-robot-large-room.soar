@@ -1,4 +1,4 @@
-#source simple-robot-with-avoidance.soar
+source simple-robot-with-avoidance.soar
 
 
 sp {apply*initialize-simple-robot*parameters

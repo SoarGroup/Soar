@@ -43,6 +43,7 @@ sp {go-to-location*propose*choose-waypoint*abandoned-waypoint
 
 sp {apply*choose-waypoint*create-destination-waypoint
    (state <s> ^operator <op>
+             -^name evaluate-operator
               ^top-state <ts>
               ^waypoints.current-waypoint <current>)
    (<op> ^name choose-waypoint

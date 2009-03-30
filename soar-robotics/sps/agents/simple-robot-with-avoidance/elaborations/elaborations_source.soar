@@ -4,6 +4,7 @@ source monitor.soar
 source output.soar
 source parameters.soar
 source ranges.soar
+source speech-monitor.soar
 source top-state.soar
 source waypoint.soar
 source waypoint-object-detection.soar

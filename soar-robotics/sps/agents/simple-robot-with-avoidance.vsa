@@ -11,57 +11,58 @@ VERSION 4
 8	4	FOPERATOR output output.soar 9
 9	4	FOPERATOR parameters parameters.soar 10
 10	4	FOPERATOR ranges ranges.soar 11
-11	4	FOPERATOR top-state top-state.soar 12
-12	4	FOPERATOR waypoint waypoint.soar 13
-13	4	FOPERATOR waypoint-object-detection waypoint-object-detection.soar 14
-14	0	FOPERATOR _readme _readme.soar 15
-15	0	FOPERATOR maintain-entity-area maintain-entity-area.soar 16
-16	0	FOPERATOR maintain-entity-from-input maintain-entity-from-input.soar 17
-17	0	HLOPERATOR execute-mission execute-mission.soar execute-mission 60 18
-18	17	FOPERATOR elaborations elaborations.soar 19
-19	17	FOPERATOR propose-mission-operator propose-mission-operator.soar 20
-20	17	HLOPERATOR go-to-location go-to-location.soar go-to-location 67 21
-21	20	FOPERATOR elaborations elaborations.soar 22
-22	20	HLIOPERATOR Impasse__Operator_Tie Impasse__Operator_Tie.soar Impasse__Operator_Tie 48 23
-23	22	FOPERATOR elaborations elaborations.soar 24
-24	22	HLOPERATOR evaluate-operator evaluate-operator.soar evaluate-operator 39 25
-25	24	FOPERATOR elaborations elaborations.soar 26
-26	24	OPERATOR choose-waypoint choose-waypoint.soar 27
-27	24	OPERATOR go-to-waypoint go-to-waypoint.soar 28
-28	24	HLIOPERATOR Impasse__Operator_Tie Impasse__Operator_Tie.soar Impasse__Operator_Tie 51 29
-29	28	FOPERATOR elaborations elaborations.soar 30
-30	20	FOPERATOR selection selection.soar 31
-31	20	OPERATOR choose-waypoint choose-waypoint.soar 32
-32	20	OPERATOR detect-waypoint detect-waypoint.soar 33
-33	20	OPERATOR epmem-query epmem-query.soar 34
-34	20	OPERATOR epmem-retrieval epmem-retrieval.soar 35
-35	20	HLOPERATOR go-to-waypoint go-to-waypoint.soar go-to-waypoint 164 36
-36	35	FOPERATOR elaborations elaborations.soar 37
-37	35	OPERATOR action action.soar 38
-38	35	OPERATOR give-up-on-destination-waypoint give-up-on-destination-waypoint.soar 39
-39	35	OPERATOR initialize-progress initialize-progress.soar 40
-40	35	OPERATOR move-forward-with-correction move-forward-with-correction.soar 41
-41	35	OPERATOR record-progress record-progress.soar 42
-42	35	OPERATOR rotate-to rotate-to.soar 43
-43	20	OPERATOR set-waypoint-computer set-waypoint-computer.soar 44
-44	17	OPERATOR localize localize.soar 45
-45	17	OPERATOR reset-mission reset-mission.soar 46
-46	17	HLOPERATOR scout scout.soar scout 121 47
-47	46	FOPERATOR elaborations elaborations.soar 48
-48	46	HLOPERATOR hide hide.soar hide 168 49
-49	48	FOPERATOR elaborations elaborations.soar 50
-50	48	OPERATOR rotate-to rotate-to.soar 51
-51	46	OPERATOR rotate rotate.soar 52
-52	46	OPERATOR send-entity-report send-entity-report.soar 53
-53	46	HLOPERATOR unhide unhide.soar unhide 173 54
-54	53	FOPERATOR elaborations elaborations.soar 55
-55	53	OPERATOR rotate-to rotate-to.soar 56
-56	17	OPERATOR start start.soar 57
-57	0	OPERATOR initialize-simple-robot initialize-simple-robot.soar 58
-58	0	OPERATOR maintain-entity-make-persistent-copy maintain-entity-make-persistent-copy.soar 59
-59	0	OPERATOR maintain-entity-new maintain-entity-new.soar 60
-60	0	OPERATOR maintain-entity-remove-persistent-copy maintain-entity-remove-persistent-copy.soar 61
-61	0	HLOPERATOR process-message process-message.soar process-message 99 62
-62	61	FOPERATOR elaborations elaborations.soar 63
-63	61	OPERATOR ignore-unknown-message ignore-unknown-message.soar 64
+11	4	FOPERATOR speech-monitor speech-monitor.soar 65
+12	4	FOPERATOR top-state top-state.soar 12
+13	4	FOPERATOR waypoint waypoint.soar 13
+14	4	FOPERATOR waypoint-object-detection waypoint-object-detection.soar 14
+15	0	FOPERATOR _readme _readme.soar 15
+16	0	FOPERATOR maintain-entity-area maintain-entity-area.soar 16
+17	0	FOPERATOR maintain-entity-from-input maintain-entity-from-input.soar 17
+18	0	HLOPERATOR execute-mission execute-mission.soar execute-mission 60 18
+19	18	FOPERATOR elaborations elaborations.soar 19
+20	18	FOPERATOR propose-mission-operator propose-mission-operator.soar 20
+21	18	HLOPERATOR go-to-location go-to-location.soar go-to-location 67 21
+22	21	FOPERATOR elaborations elaborations.soar 22
+23	21	HLIOPERATOR Impasse__Operator_Tie Impasse__Operator_Tie.soar Impasse__Operator_Tie 48 23
+24	23	FOPERATOR elaborations elaborations.soar 24
+25	23	HLOPERATOR evaluate-operator evaluate-operator.soar evaluate-operator 39 25
+26	25	FOPERATOR elaborations elaborations.soar 26
+27	25	OPERATOR choose-waypoint choose-waypoint.soar 27
+28	25	OPERATOR go-to-waypoint go-to-waypoint.soar 28
+29	25	HLIOPERATOR Impasse__Operator_Tie Impasse__Operator_Tie.soar Impasse__Operator_Tie 51 29
+30	29	FOPERATOR elaborations elaborations.soar 30
+31	21	FOPERATOR selection selection.soar 31
+32	21	OPERATOR choose-waypoint choose-waypoint.soar 32
+33	21	OPERATOR detect-waypoint detect-waypoint.soar 33
+34	21	OPERATOR epmem-query epmem-query.soar 34
+35	21	OPERATOR epmem-retrieval epmem-retrieval.soar 35
+36	21	HLOPERATOR go-to-waypoint go-to-waypoint.soar go-to-waypoint 164 36
+37	36	FOPERATOR elaborations elaborations.soar 37
+38	36	OPERATOR action action.soar 38
+39	36	OPERATOR give-up-on-destination-waypoint give-up-on-destination-waypoint.soar 39
+40	36	OPERATOR initialize-progress initialize-progress.soar 40
+41	36	OPERATOR move-forward-with-correction move-forward-with-correction.soar 41
+42	36	OPERATOR record-progress record-progress.soar 42
+43	36	OPERATOR rotate-to rotate-to.soar 43
+44	21	OPERATOR set-waypoint-computer set-waypoint-computer.soar 44
+45	18	OPERATOR localize localize.soar 45
+46	18	OPERATOR reset-mission reset-mission.soar 46
+47	18	HLOPERATOR scout scout.soar scout 121 47
+48	47	FOPERATOR elaborations elaborations.soar 48
+49	47	HLOPERATOR hide hide.soar hide 168 49
+50	49	FOPERATOR elaborations elaborations.soar 50
+51	49	OPERATOR rotate-to rotate-to.soar 51
+52	47	OPERATOR rotate rotate.soar 52
+53	47	OPERATOR send-entity-report send-entity-report.soar 53
+54	47	HLOPERATOR unhide unhide.soar unhide 173 54
+55	54	FOPERATOR elaborations elaborations.soar 55
+56	54	OPERATOR rotate-to rotate-to.soar 56
+57	18	OPERATOR start start.soar 57
+58	0	OPERATOR initialize-simple-robot initialize-simple-robot.soar 58
+59	0	OPERATOR maintain-entity-make-persistent-copy maintain-entity-make-persistent-copy.soar 59
+60	0	OPERATOR maintain-entity-new maintain-entity-new.soar 60
+61	0	OPERATOR maintain-entity-remove-persistent-copy maintain-entity-remove-persistent-copy.soar 61
+62	0	HLOPERATOR process-message process-message.soar process-message 99 62
+63	62	FOPERATOR elaborations elaborations.soar 63
+64	62	OPERATOR ignore-unknown-message ignore-unknown-message.soar 64
 END
