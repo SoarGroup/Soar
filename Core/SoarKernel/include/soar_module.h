@@ -15,10 +15,13 @@
 
 #include <map>
 #include <string>
+#include <set>
 #include <functional>
 
 #include "misc.h"
-#include "wmem.h"
+
+typedef struct wme_struct wme;
+typedef struct preference_struct preference;
 
 double timer_value( struct timeval * );
 void reset_timer( struct timeval * );
@@ -32,9 +35,12 @@ namespace soar_module
 	/////////////////////////////////////////////////////////////
 	// Utility functions
 	/////////////////////////////////////////////////////////////
+
+	typedef std::set<wme *> wme_set;
 	
 	wme *add_module_wme( agent *my_agent, Symbol *id, Symbol *attr, Symbol *value );
 	void remove_module_wme( agent *my_agent, wme *w );
+	preference *make_fake_preference( agent *my_agent, Symbol *state, wme *w, wme_set *conditions );
 	
 	///////////////////////////////////////////////////////////////////////////
 	// Predicates
