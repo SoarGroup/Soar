@@ -46,7 +46,6 @@
 // timers 						epmem::timers
 
 // wme-related					epmem::wmes
-// preference-related 			epmem::prefs
 
 // sqlite query					epmem::query
 // sqlite transactions			epmem::transaction
@@ -514,9 +513,6 @@ epmem_timer::epmem_timer(const char *new_name, agent *new_agent, soar_module::ti
 //////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////
 
-// forward declare
-preference *epmem_make_fake_preference( agent *my_agent, Symbol *state, wme *w );
-
 /***************************************************************************
  * Function     : epmem_get_augs_of_id
  * Author		: Andy Nuxoll
@@ -668,7 +664,7 @@ const char *epmem_symbol_to_string( agent *my_agent, Symbol *sym )
 void _epmem_add_wme( agent *my_agent, Symbol *state, Symbol *id, Symbol *attr, Symbol *value, bool add_to_remove )
 {		
 	wme *w = soar_module::add_module_wme( my_agent, id, attr, value );
-	w->preference = epmem_make_fake_preference( my_agent, state, w );
+	w->preference = soar_module::make_fake_preference( my_agent, state, w, state->id.epmem_info->cue_wmes );
 
 	if ( add_to_remove )
 		state->id.epmem_info->epmem_wmes->push( w );
@@ -682,122 +678,6 @@ void epmem_add_retrieved_wme( agent *my_agent, Symbol *state, Symbol *id, Symbol
 void epmem_add_meta_wme( agent *my_agent, Symbol *state, Symbol *id, Symbol *attr, Symbol *value )
 {
 	_epmem_add_wme( my_agent, state, id, attr, value, true );
-}
-
-
-//////////////////////////////////////////////////////////
-//////////////////////////////////////////////////////////
-// Preference Functions (epmem::prefs)
-//////////////////////////////////////////////////////////
-//////////////////////////////////////////////////////////
-
-/***************************************************************************
- * Function     : epmem_make_fake_preference
- * Author		: Andy Nuxoll/Nate Derbinsky
- * Notes		: This function adds a fake preference to a WME so that
- *                it will not be added to the goal dependency set of the
- *                state it is attached to.  This is used to prevents the
- *                GDS from removing a state whenever a epmem is retrieved
- *                that is attached to it.
- *
- *                The conditions of the preference refer to the WMEs
- *                in the current cue.
- *
- *                (The bulk of the content of this function is taken from
- *                 make_fake_preference_for_goal_item() in decide.c)
- **************************************************************************/
-preference *epmem_make_fake_preference( agent *my_agent, Symbol *state, wme *w )
-{
-	// if we are on the top state, don't make the preference
-	if ( state == my_agent->top_state )
-		return NIL;
-
-	// make fake preference
-	preference *pref = make_preference( my_agent, ACCEPTABLE_PREFERENCE_TYPE, w->id, w->attr, w->value, NIL );
-	pref->o_supported = TRUE;
-	symbol_add_ref( pref->id );
-	symbol_add_ref( pref->attr );
-	symbol_add_ref( pref->value );
-
-	// add preference to goal list
-	insert_at_head_of_dll( state->id.preferences_from_goal, pref, all_of_goal_next, all_of_goal_prev );
-	pref->on_goal_list = TRUE;
-
-	// add reference
-	preference_add_ref( pref );
-
-	// make fake instantiation
-	instantiation *inst;
-	allocate_with_pool( my_agent, &( my_agent->instantiation_pool ), &inst );
-	pref->inst = inst;
-	pref->inst_next = pref->inst_prev = NULL;
-	inst->preferences_generated = pref;
-	inst->prod = NULL;
-	inst->next = inst->prev = NULL;
-	inst->rete_token = NULL;
-	inst->rete_wme = NULL;
-	inst->match_goal = state;
-	inst->match_goal_level = state->id.level;
-	inst->okay_to_variablize = TRUE;
-	inst->backtrace_number = 0;
-	inst->in_ms = FALSE;
-	
-	condition *cond = NULL;
-	condition *prev_cond = NULL;	
-	{
-		std::set<wme *>::iterator p = state->id.epmem_info->cue_wmes->begin();
-
-		while ( p != state->id.epmem_info->cue_wmes->end() )
-		{
-			// construct the condition
-			allocate_with_pool( my_agent, &( my_agent->condition_pool ), &cond );
-			cond->type = POSITIVE_CONDITION;
-			cond->prev = prev_cond;
-			cond->next = NULL;
-			if ( prev_cond != NULL )
-			{
-				prev_cond->next = cond;
-			}
-			else
-			{
-				inst->top_of_instantiated_conditions = cond;
-				inst->bottom_of_instantiated_conditions = cond;
-				inst->nots = NULL;
-			}
-			cond->data.tests.id_test = make_equality_test( (*p)->id );
-			cond->data.tests.attr_test = make_equality_test( (*p)->attr );
-			cond->data.tests.value_test = make_equality_test( (*p)->value );
-			cond->test_for_acceptable_preference = TRUE;
-			cond->bt.wme_ = (*p);
-			wme_add_ref( (*p) );
-			cond->bt.level = (*p)->id->id.level;
-			cond->bt.trace = (*p)->preference;
-			if ( cond->bt.trace )
-				preference_add_ref( cond->bt.trace );
-			cond->bt.prohibits = NULL;
-
-			prev_cond = cond;
-
-			p++;
-		}
-	}
-
-    return pref;
-}
-
-/***************************************************************************
- * Function     : epmem_remove_fake_preference
- * Author		: Andy Nuxoll
- * Notes		: This function removes a fake preference on a WME
- *                created by epmem_make_fake_preference().  While it's
- *                a one-line function I thought it was important to
- *                create so it would be clear what's going on in this
- *                case.
- **************************************************************************/
-void epmem_remove_fake_preference( agent *my_agent, wme *w )
-{
-	if ( w->preference )
-		preference_remove_ref( my_agent, w->preference );
 }
 
 
