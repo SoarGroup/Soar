@@ -15,13 +15,18 @@
  */
 
 #include "soar_module.h"
-#include "tempmem.h"
+
 #include "gdatastructs.h"
+
+#include "instantiations.h"
+#include "tempmem.h"
+#include "prefmem.h"
 #include "mem.h"
 #include "print.h"
 #include "decide.h"
-#include "agent.h"
 #include "xml.h"
+#include "wmem.h"
+#include "agent.h"
 #include "soar_TraceNames.h"
 
 wme *make_wme (agent* thisAgent, Symbol *id, Symbol *attr, Symbol *value, Bool acceptable);
@@ -80,6 +85,81 @@ namespace soar_module
 
 			remove_wme_from_wm( my_agent, w );
 		}
+	}
+
+	preference *make_fake_preference( agent *my_agent, Symbol *state, wme *w, wme_set *conditions )
+	{
+		// if we are on the top state, don't make the preference
+		if ( state == my_agent->top_state )
+			return NIL;
+
+		// make fake preference
+		preference *pref = make_preference( my_agent, ACCEPTABLE_PREFERENCE_TYPE, w->id, w->attr, w->value, NIL );
+		pref->o_supported = TRUE;
+		symbol_add_ref( pref->id );
+		symbol_add_ref( pref->attr );
+		symbol_add_ref( pref->value );
+
+		// make fake instantiation
+		instantiation *inst;
+		allocate_with_pool( my_agent, &( my_agent->instantiation_pool ), &inst );
+		pref->inst = inst;
+		pref->inst_next = pref->inst_prev = NULL;
+		inst->preferences_generated = pref;
+		inst->prod = NULL;
+		inst->next = inst->prev = NULL;
+		inst->rete_token = NULL;
+		inst->rete_wme = NULL;
+		inst->match_goal = state;
+		inst->match_goal_level = state->id.level;
+		inst->okay_to_variablize = TRUE;
+		inst->backtrace_number = 0;
+		inst->in_ms = FALSE;
+		
+		condition *cond = NULL;
+		condition *prev_cond = NULL;	
+		{
+			wme_set::iterator p = conditions->begin();
+
+			while ( p != conditions->end() )
+			{
+				// construct the condition
+				allocate_with_pool( my_agent, &( my_agent->condition_pool ), &cond );
+				cond->type = POSITIVE_CONDITION;
+				cond->prev = prev_cond;
+				cond->next = NULL;
+				if ( prev_cond != NULL )
+				{
+					prev_cond->next = cond;
+				}
+				else
+				{
+					inst->top_of_instantiated_conditions = cond;
+					inst->bottom_of_instantiated_conditions = cond;
+					inst->nots = NULL;
+				}
+				cond->data.tests.id_test = make_equality_test( (*p)->id );
+				cond->data.tests.attr_test = make_equality_test( (*p)->attr );
+				cond->data.tests.value_test = make_equality_test( (*p)->value );
+				cond->test_for_acceptable_preference = TRUE;
+				cond->bt.wme_ = (*p);
+				wme_add_ref( (*p) );
+				cond->bt.level = (*p)->id->id.level;
+				cond->bt.trace = (*p)->preference;
+				if ( cond->bt.trace )
+					preference_add_ref( cond->bt.trace );
+				cond->bt.prohibits = NULL;
+
+				prev_cond = cond;
+
+				p++;
+			}
+		}
+
+		// add the preference to preference/temporary memory
+		add_preference_to_tm( my_agent, pref );
+
+		return pref;
 	}
 }
 
