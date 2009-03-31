@@ -160,9 +160,6 @@ namespace soar_module
 			}
 		}
 
-		// add the preference to preference/temporary memory
-		add_preference_to_tm( my_agent, pref );
-
 		return pref;
 	}
 }

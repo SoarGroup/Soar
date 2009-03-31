@@ -661,12 +661,15 @@ const char *epmem_symbol_to_string( agent *my_agent, Symbol *sym )
 }
 
 
-void _epmem_add_wme( agent *my_agent, Symbol *state, Symbol *id, Symbol *attr, Symbol *value, bool add_to_remove )
+void _epmem_add_wme( agent *my_agent, Symbol *state, Symbol *id, Symbol *attr, Symbol *value, bool meta )
 {		
 	wme *w = soar_module::add_module_wme( my_agent, id, attr, value );
 	w->preference = soar_module::make_fake_preference( my_agent, state, w, state->id.epmem_info->cue_wmes );
 
-	if ( add_to_remove )
+	if ( w->preference )
+		add_preference_to_tm( my_agent, w->preference );
+
+	if ( meta )
 		state->id.epmem_info->epmem_wmes->push( w );
 }
 
@@ -1163,7 +1166,12 @@ void epmem_clear_result( agent *my_agent, Symbol *state )
 	while ( !state->id.epmem_info->epmem_wmes->empty() )
 	{
 		w = state->id.epmem_info->epmem_wmes->top();
+
+		if ( w->preference )
+			remove_preference_from_tm( my_agent, w->preference );
+
 		soar_module::remove_module_wme( my_agent, w );
+
 		state->id.epmem_info->epmem_wmes->pop();
 	}
 }
