@@ -2,7 +2,7 @@
 sp {scout*elaborate*state*desired-yaw
    (state <s> ^name scout
              -^top-state.hiding true
-              ^waypoints.current-waypoint.yaw <yaw>)
+              ^top-state.current-waypoint.yaw <yaw>)
 -->
    (<s> ^desired-yaw <yaw>)
 }
@@ -10,7 +10,7 @@ sp {scout*elaborate*state*desired-yaw
 sp {scout*elaborate*state*desired-yaw*hiding
    (state <s> ^name scout
               ^top-state.hiding true
-              ^waypoints.current-waypoint <w>)
+              ^top-state.current-waypoint <w>)
    (<w> ^hiding <wo>
         ^yaw <yaw>)
 -->

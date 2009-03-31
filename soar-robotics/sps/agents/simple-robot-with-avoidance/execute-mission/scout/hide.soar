@@ -1,7 +1,8 @@
 sp {scout*propose*hide
    (state <s> ^name scout
-              ^top-state.entities.entity.area <a>
-              ^waypoints.current-waypoint <w>)
+              ^top-state <ts>)
+   (<ts> ^entities.entity.area <a>
+         ^current-waypoint <w>)
    (<w> ^hide <wh>)
    (<wh> ^area <a>)
 -->
@@ -12,8 +13,9 @@ sp {scout*propose*hide
 
 sp {scout*propose*hide*switch-hiding-location
    (state <s> ^name scout
-              ^top-state.entities.entity.area <a>
-              ^waypoints.current-waypoint <wh>)
+              ^top-state <ts>)
+   (<ts> ^entities.entity.area <a>
+         ^current-waypoint <wh>)
    (<wh> ^hiding <w>)
    (<w> ^hide {<wh-o> <> <wh>})
    (<wh-o> ^area <a>)

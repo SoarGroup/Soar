@@ -1,10 +1,11 @@
 sp {evaluate-operator*apply*choose-waypoint
    (state <s> ^name evaluate-operator
               ^operator <op>
-              ^waypoints <ws>)
-   (<ws> ^current-waypoint <a>)
+              ^top-state <ts>)
    (<op> ^name choose-waypoint
          ^destination <d>)
+   (<ts> ^current-waypoint <a>)
 -->
-   (<ws> ^current-waypoint <a> - <d>)
+   (<ts> ^current-waypoint <a> -
+                           <d>)
 }

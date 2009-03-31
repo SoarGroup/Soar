@@ -4,6 +4,7 @@ source go-to-location.soar
 pushd go-to-location
 source go-to-location_source.soar
 popd
+source halt.soar
 source localize.soar
 source reset-mission.soar
 source scout.soar

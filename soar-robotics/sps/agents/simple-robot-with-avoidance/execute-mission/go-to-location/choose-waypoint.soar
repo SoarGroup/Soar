@@ -7,7 +7,7 @@
 
 sp {go-to-location*propose*choose-waypoint*at-current-waypoint
    (state <s> ^name go-to-location
-              ^waypoints.current-waypoint.next <w> # at a waypoint
+              ^top-state.current-waypoint.next <w> # at a waypoint
              -^top-state.destination-waypoint) # not already going to a location
 -->
    (<s> ^operator <op> +)
@@ -17,7 +17,7 @@ sp {go-to-location*propose*choose-waypoint*at-current-waypoint
 
 sp {go-to-location*propose*choose-waypoint*not-at-current-waypoint
    (state <s> ^name go-to-location
-             -^waypoints.current-waypoint # not at a waypoint
+             -^top-state.current-waypoint # not at a waypoint
              -^top-state.abandoned-waypoint.source <source>
              -^top-state.destination-waypoint
               ^waypoints.waypoint <w>) # not already going to a location
@@ -33,7 +33,7 @@ sp {go-to-location*propose*choose-waypoint*not-at-current-waypoint
 sp {go-to-location*propose*choose-waypoint*abandoned-waypoint
    (state <s> ^name go-to-location
               ^top-state.abandoned-waypoint.source <source>
-             -^waypoints.current-waypoint # not at a waypoint
+             -^top-state.current-waypoint # not at a waypoint
              -^top-state.destination-waypoint) # not already going to a location
 -->
    (<s> ^operator <op> +, <)
@@ -44,8 +44,8 @@ sp {go-to-location*propose*choose-waypoint*abandoned-waypoint
 sp {apply*choose-waypoint*create-destination-waypoint
    (state <s> ^operator <op>
              -^name evaluate-operator
-              ^top-state <ts>
-              ^waypoints.current-waypoint <current>)
+              ^top-state <ts>)
+   (<ts> ^current-waypoint <current>)
    (<op> ^name choose-waypoint
          ^destination <dest>)
 -->

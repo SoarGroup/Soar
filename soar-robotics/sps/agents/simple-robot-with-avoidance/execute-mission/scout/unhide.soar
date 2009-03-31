@@ -1,7 +1,7 @@
 sp {scout*propose*unhide
    (state <s> ^name scout
              -^top-state.entities.entity.area <a>
-              ^waypoints.current-waypoint <wh>)
+              ^top-state.current-waypoint <wh>)
    (<wh> ^hiding <w>)
    (<w> ^hide <wh>)
    (<wh> ^area <a>)

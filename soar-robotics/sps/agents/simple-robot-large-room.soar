@@ -57,7 +57,7 @@ sp {apply*initialize-simple-robot*create-mission
          ^id w1
          ^next <s2>)
    (<s2> ^name go-to-location
-         ^id w14
+         ^id w18
          ^next <s3>)
    (<s3> ^name go-to-location
          ^id w2

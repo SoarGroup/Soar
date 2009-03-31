@@ -1,4 +1,4 @@
-294
+307
 SOAR_ID 0
 SOAR_ID 1
 SOAR_ID 2
@@ -46,7 +46,7 @@ SOAR_ID 43
 SOAR_ID 44
 ENUMERATION 45 1 go-to-location
 ENUMERATION 46 1 yes
-ENUMERATION 47 1 waypoints
+ENUMERATION 47 2 top-state waypoints
 SOAR_ID 48
 ENUMERATION 49 1 state
 ENUMERATION 50 1 selection
@@ -293,10 +293,24 @@ SOAR_ID 290
 SOAR_ID 291
 FLOAT_RANGE 292 -Infinity Infinity
 FLOAT_RANGE 293 -Infinity Infinity
-390
+FLOAT_RANGE 294 -Infinity Infinity
+SOAR_ID 295
+STRING 296
+SOAR_ID 297
+STRING 298
+ENUMERATION 299 1 nil
+SOAR_ID 300
+ENUMERATION 301 1 success
+ENUMERATION 302 1 halt
+SOAR_ID 303
+ENUMERATION 304 1 nil
+ENUMERATION 305 1 epmem-failed
+SOAR_ID 306
+408
 0 abandoned-waypoint 230
 0 attribute 84
 0 choices 83
+0 current-waypoint 27
 0 desired 27
 0 desired-waypoint 27
 0 destination-waypoint 230
@@ -316,6 +330,7 @@ FLOAT_RANGE 293 -Infinity Infinity
 0 operator 138
 0 operator 140
 0 parameters 211
+0 path-cost 294
 0 superstate 6
 0 top-state 0
 0 type 5
@@ -332,6 +347,7 @@ FLOAT_RANGE 293 -Infinity Infinity
 3 motor 266
 3 remove-message 96
 3 remove-waypoint 224
+3 send-message 295
 3 set-heading 264
 3 set-velocity 262
 3 stop 10
@@ -361,7 +377,6 @@ FLOAT_RANGE 293 -Infinity Infinity
 23 y-velocity 293
 23 yaw 155
 23 yaw-velocity 275
-26 current-waypoint 27
 26 near-waypoint 27
 26 waypoint 27
 27 area 145
@@ -387,6 +402,8 @@ FLOAT_RANGE 293 -Infinity Infinity
 33 time 34
 33 update-dist 163
 33 waypoint 27
+39 desired 27
+39 desired-waypoint 27
 39 failure 27
 39 name 41
 39 operator 43
@@ -403,6 +420,7 @@ FLOAT_RANGE 293 -Infinity Infinity
 44 dont-copy 256
 44 name 45
 44 two-level-attributes 47
+48 evaluation 300
 48 impasse 274
 48 item 31
 48 name 50
@@ -417,6 +435,7 @@ FLOAT_RANGE 293 -Infinity Infinity
 51 superstate-set 0
 51 top-state 0
 51 type 52
+56 evaluation 300
 56 name 57
 56 superoperator 31
 58 mission 70
@@ -430,6 +449,7 @@ FLOAT_RANGE 293 -Infinity Infinity
 60 operator 216
 60 operator 220
 60 operator 222
+60 operator 303
 60 parameters 211
 60 superstate 0
 60 top-state 0
@@ -452,6 +472,7 @@ FLOAT_RANGE 293 -Infinity Infinity
 67 operator 251
 67 operator 278
 67 operator 290
+67 operator 306
 67 parameters 211
 67 problem-space 44
 67 success 27
@@ -460,6 +481,7 @@ FLOAT_RANGE 293 -Infinity Infinity
 67 type 68
 67 waypoints 26
 70 current 71
+70 current 304
 70 first 71
 70 resetting 71
 71 delay-time 74
@@ -684,3 +706,12 @@ FLOAT_RANGE 293 -Infinity Infinity
 291 present-id 287
 291 retrieved 0
 291 status 281
+295 destination 296
+295 first 297
+297 next 297
+297 next 299
+297 word 298
+300 desired 27
+300 symbolic-value 301
+303 name 302
+306 name 305

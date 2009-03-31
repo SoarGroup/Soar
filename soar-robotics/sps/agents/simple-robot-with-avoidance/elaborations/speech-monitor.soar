@@ -2,7 +2,7 @@
 sp {speech-monitor*waypoints*at-waypoint
    (state <s> ^superstate nil
               ^io.output-link <out>
-              ^waypoints.current-waypoint.id <id>)
+              ^current-waypoint.id <id>)
 -->
    (<out> ^send-message <sm>)
    (<sm> ^destination say
@@ -17,7 +17,7 @@ sp {speech-monitor*waypoints*at-waypoint
 sp {speech-monitor*waypoints*object-color
    (state <s> ^superstate nil
               ^io.output-link <out>
-              ^waypoints.current-waypoint.sensed-object.color <color>)
+              ^current-waypoint.sensed-object.color <color>)
 -->
    (<out> ^send-message <sm>)
    (<sm> ^destination say
@@ -40,24 +40,6 @@ sp {speech-monitor*waypoints*destination-waypoint
    (<first> ^word going
             ^next <second>)
    (<second> ^word via
-             ^next <third>)
-   (<third> ^word <id>
-            ^next nil)
-}
-
-
-sp {speech-monitor*waypoints*destination-waypoint-goto
-   (state <s> ^operator <o>
-              ^io.output-link <out>)
-   (<o> ^name go-to-location
-        ^desired-waypoint.id <id>
--->
-   (<out> ^send-message <sm>)
-   (<sm> ^destination say
-         ^first <first>)
-   (<first> ^word going
-            ^next <second>)
-   (<second> ^word to
              ^next <third>)
    (<third> ^word <id>
             ^next nil)

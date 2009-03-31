@@ -11,6 +11,7 @@ sp {apply*initialize-simple-robot
    (<op> ^name initialize-simple-robot)
 -->
    (<s> ^name simple-robot
+        ^path-cost 0.0
         ^entities <e>)
 }
 

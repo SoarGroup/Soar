@@ -1,11 +1,11 @@
 sp {go-to-location*propose*go-to-waypoint*destination-waypoint
    (state <s> ^name go-to-location
-              ^waypoints <wps>
+              ^top-state <ts>
               ^top-state.destination-waypoint <dw>)
    (<dw> ^waypoint <wp>
          ^source <so>)
-  -(<wps> ^current-waypoint <> <so>)
-  -(<wps> ^current-waypoint <wp>)
+  -(<ts> ^current-waypoint <> <so>)
+  -(<ts> ^current-waypoint <wp>)
 -->
    (<s> ^operator <op> +)
    (<op> ^name go-to-waypoint
@@ -29,12 +29,13 @@ sp {elaborate*operator*go-to-waypoint*waypoint
 
 sp {apply*operator*go-to-waypoint*current-waypoint*remove
    (state <s> ^waypoints <wps>
+              ^top-state <ts>
               ^operator <o>)
    (<o> ^name go-to-waypoint)
-   (<wps> ^current-waypoint <cw>
-         -^near-waypoint <cw>)
+   (<ts> ^current-waypoint <cw>)
+   (<wps> -^near-waypoint <cw>)
 -->
-   (<wps> ^current-waypoint <cw> -)
+   (<ts> ^current-waypoint <cw> -)
 }
 
 sp {monitor*go-to-waypoint

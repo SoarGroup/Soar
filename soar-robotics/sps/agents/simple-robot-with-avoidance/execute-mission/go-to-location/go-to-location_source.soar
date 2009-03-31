@@ -6,6 +6,7 @@ popd
 source selection.soar
 source choose-waypoint.soar
 source detect-waypoint.soar
+source epmem-failed.soar
 source epmem-query.soar
 source epmem-retrieval.soar
 source go-to-waypoint.soar

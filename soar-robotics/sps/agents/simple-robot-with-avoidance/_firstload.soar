@@ -10,5 +10,8 @@ srand 0
 pushd ../default
 source selection.soar
 excise top-goal*halt*success
-source selection-iterative-deepening.soar
+#source selection-iterative-deepening.soar
+popd
+pushd ..
+source selection-astar.soar
 popd

@@ -1,9 +1,9 @@
 # if we're close enough to a waypoint, then mark that we are "at" the waypoint
 sp {go-to-location*propose*detect-waypoint
    (state <s> ^name << go-to-location localize >>
-              ^waypoints <ws>)
-   (<ws> ^near-waypoint <w>
-        -^current-waypoint <w>)
+              ^waypoints <ws>
+             -^top-state.current-waypoint <w>)
+   (<ws> ^near-waypoint <w>)
 -->
    (<s> ^operator <o> +, =, >)
  #  (interrupt)
@@ -12,21 +12,21 @@ sp {go-to-location*propose*detect-waypoint
 
 sp {go-to-location*apply*detect-waypoint
    (state <s> ^operator <o>
-              ^waypoints <ws>)
+              ^top-state <ts>)
    (<o> ^name detect-waypoint
         ^waypoint <w>)
 -->
-   (<ws> ^current-waypoint <w>)
+   (<ts> ^current-waypoint <w>)
 }
 
 sp {go-to-location*apply*detect-waypoint*remove
    (state <s> ^operator <o>
-              ^waypoints <ws>)
-   (<ws> ^current-waypoint <w>)
+              ^top-state <ts>)
+   (<ts> ^current-waypoint <w>)
    (<o> ^name detect-waypoint
         ^waypoint <> <w>)
 -->
-   (<ws> ^current-waypoint <w> -)
+   (<ts> ^current-waypoint <w> -)
 }
 
 sp {apply*detect-waypoint*arrived-at-destination*remove-destination-waypoint

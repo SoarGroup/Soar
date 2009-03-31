@@ -21,7 +21,7 @@
 
 sp {monitor*waypoints*at-waypoint
    (state <s> ^superstate nil
-              ^waypoints.current-waypoint <a>)
+              ^current-waypoint <a>)
    (<a> ^x <x> ^y <y>)
 -->
    (write (crlf) |Current-waypoint: (| <x> |,| <y> |)|)
@@ -29,7 +29,7 @@ sp {monitor*waypoints*at-waypoint
 
 sp {monitor*waypoints*at-waypoint*top
    (state <s> ^superstate nil
-              ^waypoints.current-waypoint <a>)
+              ^current-waypoint <a>)
    (<a> ^x <x> ^y <y>)
 -->
    (exec player-print |Current-waypoint: (| <x> |,| <y> |)|)
@@ -37,8 +37,7 @@ sp {monitor*waypoints*at-waypoint*top
 
 sp {monitor*multiple-ats
    (state <s> ^superstate nil
-              ^waypoints <ws>)
-   (<ws> ^current-waypoint <a1> {<a2> <> <a1>})
+              ^current-waypoint <a1> {<a2> <> <a1>})
    (<a1> ^next)
    (<a2> ^next)
 -->

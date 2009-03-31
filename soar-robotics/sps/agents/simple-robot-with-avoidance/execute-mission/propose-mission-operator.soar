@@ -3,7 +3,7 @@
 # propose an operator for the current step
 sp {execute-mission*propose*mission-operator
    (state <s> ^name execute-mission
-              ^mission.current)
+              ^mission.current <> nil)
 -->
   # (interrupt)
    (<s> ^operator <op> +)
