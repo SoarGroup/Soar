@@ -1,5 +1,0 @@
-Manifest-Version: 1.0
-Main-Class: org.msoar.gridmap2d.Gridmap2D
-Class-Path: swt.jar sml.jar ../../SoarLibrary/bin/tosca.jar ../../SoarLibrary/bin/swt.jar ../../SoarLibrary/bin/sml.jar jdom.jar ../../SoarLibrary/bin/log4j-1.2.15.jar
-
-

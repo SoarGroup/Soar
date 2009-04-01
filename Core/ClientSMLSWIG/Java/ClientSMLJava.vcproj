@@ -26,7 +26,7 @@
 			>
 			<Tool
 				Name="VCPreBuildEventTool"
-				Description="Remove previous Java files"
+				CommandLine=""
 				ExcludedFromBuild="true"
 			/>
 			<Tool
@@ -101,8 +101,7 @@
 			/>
 			<Tool
 				Name="VCPostBuildEventTool"
-				Description="Create sml.jar at release point"
-				CommandLine="echo on&#x0D;&#x0A;cd ..\..\..&#x0D;&#x0A;xcopy Core\ClientSMLSWIG\Java\build\*.java SoarLibrary\bin\sml\* /Y /I /Q&#x0D;&#x0A;&quot;%JAVA_HOME%/bin/javac&quot; SoarLibrary\bin\sml\*.java&#x0D;&#x0A;&quot;%JAVA_HOME%/bin/jar&quot; cf SoarLibrary\bin\sml.jar -C SoarLibrary\bin sml&#x0D;&#x0A;rmdir SoarLibrary\bin\sml /S /Q&#x0D;&#x0A;"
+				CommandLine="cd $(SolutionDir)&#x0D;&#x0A;echo &quot;Running ant...&quot;&#x0D;&#x0A;&quot;$(ANT_HOME)\bin\ant&quot;&#x0D;&#x0A;"
 			/>
 		</Configuration>
 		<Configuration
@@ -117,7 +116,7 @@
 			>
 			<Tool
 				Name="VCPreBuildEventTool"
-				Description="Remove previous Java files"
+				CommandLine=""
 			/>
 			<Tool
 				Name="VCCustomBuildTool"
@@ -194,8 +193,7 @@
 			/>
 			<Tool
 				Name="VCPostBuildEventTool"
-				Description="Create sml.jar at release point"
-				CommandLine="echo on&#x0D;&#x0A;cd ..\..\..&#x0D;&#x0A;xcopy Core\ClientSMLSWIG\Java\build\*.java SoarLibrary\bin\sml\* /Y /I /Q&#x0D;&#x0A;&quot;%JAVA_HOME%/bin/javac&quot; SoarLibrary\bin\sml\*.java&#x0D;&#x0A;&quot;%JAVA_HOME%/bin/jar&quot; cf SoarLibrary\bin\sml.jar -C SoarLibrary\bin sml&#x0D;&#x0A;rmdir SoarLibrary\bin\sml /S /Q&#x0D;&#x0A;"
+				CommandLine="cd $(SolutionDir)&#x0D;&#x0A;echo &quot;Running ant...&quot;&#x0D;&#x0A;&quot;$(ANT_HOME)\bin\ant&quot;&#x0D;&#x0A;"
 			/>
 		</Configuration>
 	</Configurations>
@@ -260,7 +258,7 @@
 				<Tool
 					Name="VCCustomBuildTool"
 					Description="Performing Custom Build Step on Java_sml_ClientInterface.i"
-					CommandLine="echo In order to function correctly, please ensure the following environment variables are correctly set:&#x0D;&#x0A;echo JAVA_HOME: %JAVA_HOME%&#x0D;&#x0A;echo SWIG_HOME: %SWIG_HOME%&#x0D;&#x0A;echo Clean up old java files&#x0D;&#x0A;echo on&#x0D;&#x0A;cd build&#x0D;&#x0A;del *.java&#x0D;&#x0A;cd ..&#x0D;&#x0A;&quot;$(SWIG_HOME)\swig.exe&quot; -Wall -c++ -package sml -I../../shared -I../../ClientSML/include -I../../ElementXML/include -I../../ConnectionSML/include -java -outdir build &quot;$(InputPath)&quot;&#x0D;&#x0A;"
+					CommandLine="echo In order to function correctly, please ensure the following environment variables are correctly set:&#x0D;&#x0A;echo JAVA_HOME: %JAVA_HOME%&#x0D;&#x0A;echo SWIG_HOME: %SWIG_HOME%&#x0D;&#x0A;echo ANT_HOME: %ANT_HOME%&#x0D;&#x0A;echo Checking for swt.jar&#x0D;&#x0A;cd &quot;$(SolutionDir)\SoarLibrary\lib&quot;&#x0D;&#x0A;if exist swt.jar goto gotit&#x0D;&#x0A;echo Fetching swt.jar&#x0D;&#x0A;&quot;$(SolutionDir)\SoarLibrary\bin\wget.exe&quot; -q http://ai.eecs.umich.edu/~soar/sitemaker/misc/jars/windows/swt.jar&#x0D;&#x0A;:gotit&#x0D;&#x0A;cd &quot;$(ProjectDir)&quot;&#x0D;&#x0A;echo Clean up old java files&#x0D;&#x0A;echo on&#x0D;&#x0A;mkdir src&#x0D;&#x0A;cd src&#x0D;&#x0A;mkdir sml&#x0D;&#x0A;cd sml&#x0D;&#x0A;del *.java&#x0D;&#x0A;cd ..&#x0D;&#x0A;cd ..&#x0D;&#x0A;&quot;$(SWIG_HOME)\swig.exe&quot; -c++ -java -Wall -package sml -I../../shared -I../../ClientSML/include -I../../ElementXML/include -I../../ConnectionSML/include -outdir src/sml &quot;$(InputPath)&quot;&#x0D;&#x0A;"
 					AdditionalDependencies="$(SolutionDir)\SoarLibrary\lib\ClientSML.lib;$(SolutionDir)\SoarLibrary\lib\ConnectionSML.lib;$(TargetDir)\ElementXML.dll"
 					Outputs="$(InputName)_wrap.cxx"
 				/>
@@ -271,7 +269,7 @@
 				<Tool
 					Name="VCCustomBuildTool"
 					Description="Performing Custom Build Step on Java_sml_ClientInterface.i"
-					CommandLine="echo In order to function correctly, please ensure the following environment variables are correctly set:&#x0D;&#x0A;echo JAVA_HOME: %JAVA_HOME%&#x0D;&#x0A;echo SWIG_HOME: %SWIG_HOME%&#x0D;&#x0A;echo Clean up old java files&#x0D;&#x0A;echo on&#x0D;&#x0A;cd build&#x0D;&#x0A;del *.java&#x0D;&#x0A;cd ..&#x0D;&#x0A;&quot;$(SWIG_HOME)\swig.exe&quot; -Wall -c++ -package sml -I../../shared -I../../ClientSML/include -I../../ElementXML/include -I../../ConnectionSML/include -java -outdir build &quot;$(InputPath)&quot;&#x0D;&#x0A;"
+					CommandLine="echo In order to function correctly, please ensure the following environment variables are correctly set:&#x0D;&#x0A;echo JAVA_HOME: %JAVA_HOME%&#x0D;&#x0A;echo SWIG_HOME: %SWIG_HOME%&#x0D;&#x0A;echo ANT_HOME: %ANT_HOME%&#x0D;&#x0A;echo Checking for swt.jar&#x0D;&#x0A;cd &quot;$(SolutionDir)\SoarLibrary\lib&quot;&#x0D;&#x0A;if exist swt.jar goto gotit&#x0D;&#x0A;echo Fetching swt.jar&#x0D;&#x0A;&quot;$(SolutionDir)\SoarLibrary\bin\wget.exe&quot; -q http://ai.eecs.umich.edu/~soar/sitemaker/misc/jars/windows/swt.jar&#x0D;&#x0A;:gotit&#x0D;&#x0A;cd &quot;$(ProjectDir)&quot;&#x0D;&#x0A;echo Clean up old java files&#x0D;&#x0A;echo on&#x0D;&#x0A;mkdir src&#x0D;&#x0A;cd src&#x0D;&#x0A;mkdir sml&#x0D;&#x0A;cd sml&#x0D;&#x0A;del *.java&#x0D;&#x0A;cd ..&#x0D;&#x0A;cd ..&#x0D;&#x0A;&quot;$(SWIG_HOME)\swig.exe&quot; -c++ -java -Wall -package sml -I../../shared -I../../ClientSML/include -I../../ElementXML/include -I../../ConnectionSML/include -outdir src/sml &quot;$(InputPath)&quot;&#x0D;&#x0A;"
 					AdditionalDependencies="$(SolutionDir)\SoarLibrary\lib\ClientSML.lib;$(SolutionDir)\SoarLibrary\lib\ConnectionSML.lib;$(TargetDir)\ElementXML.dll"
 					Outputs="$(InputName)_wrap.cxx"
 				/>

@@ -1,0 +1,72 @@
+<?xml version="1.0" ?>
+
+<project name="Soar2D" default="build" basedir=".">
+
+  <target name="build" depends="build-java,build-jar"/>
+
+  <target name="clean" depends="clean-java"/>
+
+  <target name="distclean" depends="clean">
+    <delete dir="build" quiet="true" />
+    <delete dir="docs" quiet="true" />
+  </target>
+
+  <target name="docs">
+    <mkdir dir="docs" />
+    <javadoc sourcepath="src/"
+             packagenames="*"
+             defaultexcludes="yes"
+             destdir="docs/api"
+             Public="yes"
+             source="1.5"
+	     />
+  </target>
+
+  <target name="build-jar">
+    <jar destfile="Soar2D.jar">
+      <fileset dir="build">
+		<include name="**/*.class" />
+      </fileset>
+      <fileset dir="src">
+		<include name="log4j.properties" />
+		<include name="*.cnf" />
+		<include name="org/msoar/gridmap2d/images/tanksoar/*" />
+      </fileset>
+      <manifest>
+	<attribute name="Main-Class" value="org.msoar.gridmap2d.Gridmap2D" />
+	<attribute name="Class-Path" value="../../SoarLibrary/lib/swt.jar ../../SoarLibrary/lib/sml.jar ../../SoarLibrary/lib/jdom.jar ../../SoarLibrary/lib/log4j-1.2.15.jar" />
+      </manifest>
+    </jar>
+  </target>
+
+  <target name="build-java">
+    <mkdir dir="build" />
+    <javac
+       srcdir="src"
+       includes="**/*.java"
+       debug="on"
+       optimize="off"
+       destdir="build"
+       compiler="extJavac"
+       deprecation="yes"
+       source="1.5"
+       target="1.5"
+       >
+      <classpath>
+        <pathelement location="src/"/>
+        <pathelement location="../../Core/ClientSMLSWIG/Java/sml.jar"/>
+        <pathelement location="../../SoarLibrary/lib/swt.jar"/>
+        <pathelement location="../../SoarLibrary/lib/jdom.jar"/>
+        <pathelement location="../../SoarLibrary/lib/log4j-1.2.15.jar"/>
+      </classpath>
+    </javac>
+  </target>
+
+  <target name="clean-java" >
+    <delete quiet="true">
+      <fileset dir="build" includes="**/*.class"/>
+      <fileset dir="." includes="Soar2D.jar"/>
+    </delete>
+  </target>
+
+</project>

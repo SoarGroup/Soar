@@ -6,10 +6,6 @@ Import('env')
 env = env.Clone()
 env.Prepend(CPPPATH = ['src', 'include',])
 
-if sys.platform == 'cygwin':
-	env.Append(CPPFLAGS = ' -D_USRDLL')
-	env['no_import_lib'] = 1
-
 if env['scu']:
 	ElementXML = env.SharedLibrary('ElementXML', 'ElementXML.cxx')
 else:

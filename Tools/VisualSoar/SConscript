@@ -1,22 +1,14 @@
 #!/usr/bin/python
-import glob
+import os
 import SoarSCons
-import sys
 
 Import('env')
 env = env.Clone()
 
-if sys.platform == 'cygwin':
-    SoarSCons.SetJavaPaths(env, '"Core/ClientSMLSWIG/Java/sml.jar;."', 'Tools/VisualSoar/Source')
-else:
-    SoarSCons.SetJavaPaths(env, 'Core/ClientSMLSWIG/Java/sml.jar:.', 'Tools/VisualSoar/Source')
-env['JAVACFLAGS'] = ' -source 1.4 '
+theJar = '#Tools/VisualSoar/VisualSoar.jar';
+sources = SoarSCons.JavaSources('src')
 
-env.Java(target = 'classes', source = 'Source')
+Depends(theJar, 'build.xml')
 
-env.Append(JARCHDIR = 'Tools/VisualSoar/classes')
-VisualSoar = env.Jar(target = 'VisualSoar.jar', source = [ 'classes', 'JarManifest', ])
+env.Command(theJar, sources, 'ant', chdir=1)
 
-env.Install('#SoarLibrary/bin', VisualSoar)
-
-env.Clean('classes', 'classes')
