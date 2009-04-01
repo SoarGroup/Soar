@@ -1,0 +1,27 @@
+<?xml version="1.0" ?>
+
+<project name="SoarSuite" default="build" basedir=".">
+
+  <target name="build">
+    <ant dir="Core/ClientSMLSWIG/Java" />
+    <ant dir="Environments/Soar2D" />
+    <ant dir="Environments/JavaTOH" />
+    <ant dir="Environments/JavaMissionaries" />
+    <ant dir="Tools/TestJavaSML" />
+    <ant dir="Tools/VisualSoar" />
+    <ant dir="Tools/LoggerJava" />
+    <ant dir="Tools/SoarJavaDebugger" />
+  </target>
+
+  <target name="clean">
+    <ant dir="Core/ClientSMLSWIG/Java" target="clean" />
+    <ant dir="Environments/Soar2D" target="clean" />
+    <ant dir="Environments/JavaTOH" target="clean" />
+    <ant dir="Environments/JavaMissionaries" target="clean" />
+    <ant dir="Tools/TestJavaSML" target="clean" />
+    <ant dir="Tools/VisualSoar" target="clean" />
+    <ant dir="Tools/LoggerJava" target="clean" />
+    <ant dir="Tools/SoarJavaDebugger" target="clean" />
+  </target>
+
+</project>

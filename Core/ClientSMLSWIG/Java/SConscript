@@ -3,80 +3,72 @@ import glob
 import os
 import SCons.Script
 import sys
+import SoarSCons
 
 Import('env')
-env = env.Clone()
-env.Prepend(CPPPATH = [
-			'#Core/ClientSML/include',
-			'#Core/ElementXML/include',
-			'#Core/ConnectionSML/include'
-			])
 
-if sys.platform == 'cygwin':
-	env.Append(CPPFLAGS = ' -D_USRDLL')
-	env['no_import_lib'] = 1
+####
+# Produce wrapper cpp
+wrapper_env = env.Clone()
+# Scanner for dependencies in .i files
+SWIGScanner = SCons.Scanner.ClassicCPP("SWIGScan",".i","CPPPATH",'^[ \t]*[%,#][ \t]*(?:include|import)[ \t]*(<|")([^>"]+)(>|")')
+wrapper_env.Append(SCANNERS=[SWIGScanner])
+src_folder_target = '#Core/ClientSMLSWIG/Java/src'
+wrapper_env.Command(src_folder_target, [], 'mkdir Core/ClientSMLSWIG/Java/src')
+src_sml_folder_target = '#Core/ClientSMLSWIG/Java/src/sml'
+wrapper_env.Command(src_sml_folder_target, [], 'mkdir Core/ClientSMLSWIG/Java/src/sml')
+Depends(src_folder_target, src_sml_folder_target)
+java_sml_interface_wrap_target = '#Core/ClientSMLSWIG/Java/Java_sml_ClientInterface_wrap.cpp'
+java_sml_interface_wrap_source = '#Core/ClientSMLSWIG/Java/Java_sml_ClientInterface.i'
+# sml folder must exist prior to swig running
+Depends(java_sml_interface_wrap_target, src_sml_folder_target)
+# Side effect: this produces src/*.java files (the SML Java interface)
+wrapper_env.Command(java_sml_interface_wrap_target, java_sml_interface_wrap_source, 'swig -o Core/ClientSMLSWIG/Java/Java_sml_ClientInterface_wrap.cpp -c++ -java -Wall -package sml -ICore/ClientSML/include -ICore/ElementXML/include -ICore/ConnectionSML/include -outdir Core/ClientSMLSWIG/Java/src/sml Core/ClientSMLSWIG/Java/Java_sml_ClientInterface.i')
+# Removes SML Java interface files
+wrapper_env.Clean(java_sml_interface_wrap_target, 'src')
+#### (end wrapper)
 
-SWIGScanner = SCons.Scanner.ClassicCPP(
-	"SWIGScan",
-	".i",
-	"CPPPATH",
-	'^[ \t]*[%,#][ \t]*(?:include|import)[ \t]*(<|")([^>"]+)(>|")'
-)
-
-env.Append(SCANNERS=[SWIGScanner])
-
-if os.name == 'posix':
+####
+# Produce shared library
+def determine_flags(env):
+	# Remove some optimizations
 	if env['CPPFLAGS'].find('fvisibility') >= 0:
-		env.Append(CPPFLAGS = ' -Wno-unused -fno-strict-aliasing -fvisibility=default')
-	else:
-		env.Append(CPPFLAGS = ' -Wno-unused -fno-strict-aliasing')
+		return ' -Wno-unused -fno-strict-aliasing -fvisibility=default'
+	return ' -Wno-unused -fno-strict-aliasing'
+def determine_shlib_target(env):
+	# Things a bit different on Mac
+	if sys.platform == 'darwin':
+		env.Append(SHLINKFLAGS = ' -framework JavaVM')
+		#env['SHLIBSUFFIX'] = '.jnilib'
+		return 'libJava_sml_ClientInterface.jnilib'
+	return 'Java_sml_ClientInterface'
+shlib_env = env.Clone()
+shlib_env.Prepend(CPPPATH = ['#Core/ClientSML/include', '#Core/ElementXML/include', '#Core/ConnectionSML/include', ])
+shlib_env.Append(CPPFLAGS = determine_flags(shlib_env))
+shlib_env.Append(LIBS = ['ClientSML', 'ConnectionSML', 'ElementXML', ])
+shlib_env.Append(LIBPATH = ['#Core/ClientSML', '#Core/ConnectionSML', '#Core/ElementXML', ])
+java_sml_interface_shlib_target = determine_shlib_target(shlib_env)
+java_sml_interface_shlib_source = 'Java_sml_ClientInterface_wrap.cpp'
+# Explicitly depend on the wrapper target
+Depends(java_sml_interface_shlib_target, java_sml_interface_wrap_target)
+java_sml_interface_shlib = shlib_env.SharedLibrary(java_sml_interface_shlib_target, java_sml_interface_shlib_source)
+shlib_env.Install('#SoarLibrary/lib', java_sml_interface_shlib)
+#### (end shlib)
 
-libadd = [
-	   'ClientSML',
-	   'ConnectionSML',
-	   'ElementXML',
-	   ]
-	   
-if sys.platform == 'cygwin':
-	libadd.extend(['ws2_32',])
+####
+# Produce jar
+jar_env = env.Clone()
+sml_jar_target = '#Core/ClientSMLSWIG/Java/sml.jar'
+Depends(sml_jar_target, 'build.xml')
+# Explicitly depend on previous targets because we can't depend on
+# side-effect java files
+Depends(sml_jar_target, src_sml_folder_target)
+Depends(sml_jar_target, java_sml_interface_wrap_target)
+Depends(sml_jar_target, java_sml_interface_shlib)
+jar_env.Append(SCANNERS=[SWIGScanner])
+# This command doesn't always fire when it should. The problem is because the
+# Java files are a side-effect of the swig step earlier and therefore aren't
+# detected the first time around.
+jar_env.Command(sml_jar_target, [], 'ant', chdir=1)
+#### (end jar)
 
-libpath = [ 
-	    '#Core/ClientSML',
-	    '#Core/ConnectionSML',
-	    '#Core/ElementXML', 
-	    ]
-
-swigflags = '-c++ -java -Wall -package sml -ICore/ClientSML/include -ICore/ElementXML/include -ICore/ConnectionSML/include -outdir Core/ClientSMLSWIG/Java/build'
-
-###
-# Changes suggested by Markus
-env_jni = env.Clone()
-targetname = 'Java_sml_ClientInterface'
-if sys.platform == 'darwin':
-	env_jni.Append(SHLINKFLAGS = ' -framework JavaVM')
-	targetname = 'libJava_sml_ClientInterface.jnilib'
-	#env_jni['SHLIBSUFFIX'] = '.jnilib'
-elif sys.platform == 'cygwin':
-    env_jni.Append(CCFLAGS = '-mno-cygwin')
-    env_jni.Append(SHLINKFLAGS = '-mno-cygwin -Wl,--kill-at')
-    targetname = 'Java_sml_ClientInterface'
-
-Java_sml_ClientInterface = env_jni.SharedLibrary(targetname, glob.glob('*.i'), 
-												 LIBS = libadd,LIBPATH = libpath, SWIGFLAGS = swigflags, 
-												 SWIGCXXFILESUFFIX = "_wrap.cpp")
-
-#voigtjr: for some reason it isn't picking this dependency up:
-Depends(Java_sml_ClientInterface, '#Core/ElementXML')
-
-#Java_sml_ClientInterface = env.SharedLibrary('Java_sml_ClientInterface', glob.glob('*.i'), LIBS = libadd, LIBPATH = libpath, SWIGFLAGS = swigflags, SWIGCXXFILESUFFIX = "_wrap.cpp")
-# end changes suggested by Markus
-###
-
-env.Install('#SoarLibrary/lib', Java_sml_ClientInterface)
-
-sml_jar_javac = env.Java('classes', 'build')
-
-env['JARCHDIR'] = 'Core/ClientSMLSWIG/Java/classes'
-sml_jar = env.Jar(target = 'sml.jar', source = 'classes')
-
-env.Install('#SoarLibrary/bin', sml_jar)

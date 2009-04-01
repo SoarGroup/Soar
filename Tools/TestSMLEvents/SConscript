@@ -13,9 +13,6 @@ libadd = [ 'ClientSML',
 	   'ElementXML', 
 	   ]
 
-if sys.platform == 'cygwin':
-	libadd.extend(['ws2_32',])
-
 libpath = [ '../../Core/ClientSML',
 	    '../../Core/ConnectionSML',
 	    '../../Core/ElementXML', 

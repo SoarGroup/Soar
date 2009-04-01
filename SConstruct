@@ -21,16 +21,16 @@ processor = os.popen( 'uname -p', 'r' ).read().strip()
 print "Detected processor:", processor
 
 if os.name != "posix":
-	print "Unsupported OS."
+	print "Unsupported OS: posix is required"
+	Exit(1)
+if sys.platform == 'cygwin':
+	print "Unsupported platform: cygwin"
 	Exit(1)
 
 #pythonDefault = 'yes'
 # changed to no because it doesn't work out of the box on ubuntu
 pythonDefault = 'no'
-if sys.platform == 'cygwin':
-	print "Disabling python by default, it will not yet build on this platform."
-	pythonDefault = 'no'
-	
+
 #################
 # Command line options
 
@@ -42,14 +42,12 @@ opts = Options()
 opts.AddOptions(
 	BoolOption('scu', 'Build using single compilation units (faster)', 'yes'), 
 	BoolOption('java', 'Build the Soar Java interface (required for debugger)', 'yes'), 
-	BoolOption('swt', 'Build Java SWT projects (required for debugger)', 'yes'), 
 	BoolOption('python', 'Build the Soar Python interface', pythonDefault), 
 	BoolOption('csharp', 'Build the Soar CSharp interface', 'no'), 
 	BoolOption('tcl', 'Build the Soar Tcl interface', 'no'), 
 	BoolOption('debug', 'Build with debugging symbols', 'yes'),
 	BoolOption('warnings', 'Build with warnings', 'yes'),
 	EnumOption('optimization', 'Build with optimization (May cause run-time errors!)', 'full', ['no','partial','full'], {}, 1),
-	BoolOption('eclipse', 'Build everything except the java projects (prepare for eclipse)', 'no'),
 	BoolOption('preprocessor', 'Only run preprocessor', 'no'),
 	BoolOption('verbose', 'Verbose compiler output', 'no'),
 	
@@ -99,13 +97,11 @@ if conf.env['java']:
 		print "You may disable java, see help (scons -h)"
 		print "Java Native Interface is required... Exiting"
 		Exit(1)
-
 	# This checks for the swt.jar and attempts to download it if it doesn't exist
-	if env['swt'] and not SoarSCons.CheckForSWTJar(conf.env):
+	if not SoarSCons.CheckForSWTJar(conf.env):
 		print "Could not find swt.jar. You can obtain the jar here:"
 		print "\thttp://ai.eecs.umich.edu/~soar/sitemaker/misc/jars"
 		print "Place swt.jar in SoarLibrary/bin"
-		print "You may disable swt, see help (scons -h)"
 		print "swt.jar required... Exiting"
 		Exit(1)
 
@@ -133,39 +129,27 @@ if conf.CheckVisibilityFlag():
 # configure misc command line options
 if conf.env['debug']:
 	conf.env.Append(CPPFLAGS = ' -g3')
-	#if sys.platform == 'cygwin':
-	#	conf.env.Append(CPPFLAGS = ' -D_DEBUG')
 if conf.env['warnings']:
 	conf.env.Append(CPPFLAGS = ' -Wall')
 if conf.env['optimization'] == 'partial':
 	conf.env.Append(CPPFLAGS = ' -O2')
 if conf.env['optimization'] == 'full':
 	conf.env.Append(CPPFLAGS = ' -O3')
-
-# Cross compile to mingw
-if sys.platform == 'cygwin':
-	conf.env.Tool('crossmingw', toolpath = ['.'])
-	conf.env.Append(CPPFLAGS = ' -mno-cygwin')
-	conf.env.Append(LINKFLAGS = ' -mno-cygwin')
-	#conf.env.Append(LINKFLAGS = ' -mno-cygwin -Wl,-add-stdcall-alias')
-
 if conf.env['preprocessor']:
 	conf.env.Append(CPPFLAGS = ' -E')
-
 if conf.env['verbose']:
 	conf.env.Append(CPPFLAGS = ' -v')
 	conf.env.Append(LINKFLAGS = ' -v')
 
 # check for required libraries
-if sys.platform != 'cygwin':
-	if not conf.CheckLib('dl'):
-		Exit(1)
-		
-	if not conf.CheckLib('m'):
-		Exit(1)
+if not conf.CheckLib('dl'):
+	Exit(1)
 	
-	if not conf.CheckLib('pthread'):
-		Exit(1)
+if not conf.CheckLib('m'):
+	Exit(1)
+
+if not conf.CheckLib('pthread'):
+	Exit(1)
 		
 # if this flag is not included, the linker will complain about not being able
 # to find the symbol __sync_sub_and_fetch_4 when using g++ 4.3
@@ -193,24 +177,17 @@ SConscript('#Core/CLI/SConscript')
 SConscript('#Core/ClientSML/SConscript')
 SConscript('#Core/KernelSML/SConscript')
 
-if sys.platform == 'cygwin':
-	SConscript('#Core/pcre/SConscript')
-
 if env['java']:
+	if env.GetOption('clean'):
+		Execute('ant clean')
 	SConscript('#Core/ClientSMLSWIG/Java/SConscript')
-
-	# Only build the interface if we're building for eclipse	
-	if not env['eclipse']:
-		SConscript('#Tools/LoggerJava/SConscript')
-		SConscript('#Tools/TestJavaSML/SConscript')
-		
-		SConscript('#Tools/VisualSoar/SConscript')
-			
-		if env['swt']:
-			SConscript('#Tools/SoarJavaDebugger/SConscript')
-			SConscript('#Environments/Soar2D/SConscript')
-			SConscript('#Environments/JavaMissionaries/SConscript')
-			SConscript('#Environments/JavaTOH/SConscript')
+	SConscript('#Tools/LoggerJava/SConscript')
+	SConscript('#Tools/TestJavaSML/SConscript')
+	SConscript('#Tools/VisualSoar/SConscript')
+	SConscript('#Tools/SoarJavaDebugger/SConscript')
+	SConscript('#Environments/Soar2D/SConscript')
+	SConscript('#Environments/JavaMissionaries/SConscript')
+	SConscript('#Environments/JavaTOH/SConscript')
 
 if env['python']:
 	SConscript('#Core/ClientSMLSWIG/Python/SConscript')

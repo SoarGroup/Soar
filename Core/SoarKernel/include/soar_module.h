@@ -308,12 +308,12 @@ namespace soar_module
 
 			//
 
-			inline virtual T get_value()
+			virtual T get_value()
 			{
 				return value;
 			}
 
-			inline virtual void set_value( T new_value )
+			virtual void set_value( T new_value )
 			{
 				value = new_value;
 			}
@@ -373,12 +373,12 @@ namespace soar_module
 
 			//
 
-			inline virtual const char *get_value()
+			virtual const char *get_value()
 			{
 				return value->c_str();
 			}
 
-			inline virtual void set_value( const char *new_value )
+			virtual void set_value( const char *new_value )
 			{
 				value->assign( new_value );
 			}
@@ -438,7 +438,7 @@ namespace soar_module
 
 			//
 
-			inline virtual bool in_set( Symbol *test_sym )
+			virtual bool in_set( Symbol *test_sym )
 			{
 				bool return_val = false;
 
@@ -475,7 +475,7 @@ namespace soar_module
 				return return_val;
 			}
 
-			inline virtual void set_value( const char *new_value )
+			virtual void set_value( const char *new_value )
 			{
 				Symbol *my_sym = make_sym_constant( my_agent, new_value );
 				std::set<Symbol *>::iterator p = my_set->find( my_sym );
@@ -585,12 +585,12 @@ namespace soar_module
 
 			//
 
-			inline virtual T get_value()
+			virtual T get_value()
 			{
 				return value;
 			}
 
-			inline virtual void set_value( T new_value )
+			virtual void set_value( T new_value )
 			{
 				value = new_value;
 			}
@@ -692,12 +692,12 @@ namespace soar_module
 
 			//
 
-			inline virtual T get_value()
+			virtual T get_value()
 			{
 				return value;
 			}
 
-			inline virtual void set_value( T new_value )
+			virtual void set_value( T new_value )
 			{
 				value = new_value;
 			}
@@ -775,26 +775,26 @@ namespace soar_module
 
 			//
 
-			inline virtual void reset()
+			virtual void reset()
 			{
 				reset_timer( &start_t );
 				reset_timer( &total_t );
 			}
 
-			inline virtual double value()
+			virtual double value()
 			{
 				return timer_value( &total_t );
 			}
 
 			//
 
-			inline virtual void start()
+			virtual void start()
 			{
 				if ( (*pred)( level ) )
 					start_timer( my_agent, &start_t );
 			}
 
-			inline virtual void stop()
+			virtual void stop()
 			{
 				if ( (*pred)( level ) )
 					stop_timer( my_agent, &start_t, &total_t );

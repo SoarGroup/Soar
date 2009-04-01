@@ -1,0 +1,64 @@
+<?xml version="1.0" ?>
+
+<project name="sml" default="build" basedir=".">
+
+  <target name="build" depends="build-java,build-jar"/>
+
+  <target name="clean" depends="clean-java"/>
+
+  <target name="distclean" depends="clean">
+    <delete dir="build" quiet="true"/>
+    <delete dir="docs" quiet="true"/>
+  </target>
+
+  <target name="docs">
+    <mkdir dir="docs" />
+    <javadoc sourcepath="src/"
+             packagenames="*"
+             defaultexcludes="yes"
+             destdir="docs/api"
+             Public="yes"
+             source="1.5"
+	     />
+  </target>
+
+  <target name="build-jar">
+    <jar destfile="sml.jar">
+      <fileset dir="build">
+		<include name="**/*.class" />
+      </fileset>
+      <fileset dir="src">
+		<include name="sml/*" />
+      </fileset>
+    </jar>
+    <copy file="sml.jar" todir="../../../SoarLibrary/lib" />
+  </target>
+
+  <target name="build-java">
+    <mkdir dir="build" />
+    <javac
+       srcdir="src"
+       includes="**/*.java"
+       debug="on"
+       optimize="off"
+       destdir="build"
+       compiler="extJavac"
+       deprecation="yes"
+       source="1.5"
+       target="1.5"
+       >
+      <classpath>
+        <pathelement location="src/"/>
+      </classpath>
+    </javac>
+  </target>
+
+  <target name="clean-java" >
+    <delete quiet="true">
+      <fileset dir="build" includes="**/*.class"/>
+      <fileset dir="." includes="sml.jar"/>
+      <fileset dir="../../../SoarLibrary/lib" includes="sml.jar"/>
+    </delete>
+  </target>
+
+</project>
