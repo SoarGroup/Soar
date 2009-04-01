@@ -33,7 +33,7 @@ final class HttpController {
 	
 	private final String ACTION = "action";
 	private enum Actions {
-		postmessage, heading, angvel, linvel, estop, agains, lgains, hgains
+		postmessage, heading, angvel, linvel, estop, stop, agains, lgains, hgains
 	}
 	
 	private enum Keys {
@@ -156,6 +156,8 @@ final class HttpController {
 				linvel(xchg, properties);
 			} else if (properties.get(ACTION).equals(Actions.estop.name())) {
 				estop(xchg);
+			} else if (properties.get(ACTION).equals(Actions.stop.name())) {
+				stop(xchg);
 			} else if (properties.get(ACTION).equals(Actions.agains.name())) {
 				agains(xchg, properties);
 			} else if (properties.get(ACTION).equals(Actions.lgains.name())) {
@@ -266,6 +268,12 @@ final class HttpController {
 		private void estop(HttpExchange xchg) throws IOException {
 			logger.trace("estop");
 			ddc = DifferentialDriveCommand.newEStopCommand();
+			sendFile(xchg, "/org/msoar/sps/control/html/index.html");
+		}
+
+		private void stop(HttpExchange xchg) throws IOException {
+			logger.trace("stop");
+			ddc = DifferentialDriveCommand.newVelocityCommand(0, 0);
 			sendFile(xchg, "/org/msoar/sps/control/html/index.html");
 		}
 

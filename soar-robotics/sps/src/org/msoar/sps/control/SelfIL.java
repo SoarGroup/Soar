@@ -18,6 +18,7 @@ final class SelfIL implements InputLinkInterface {
 	private final FloatElement zwme;
 	private final FloatElement xvelwme;
 	private final FloatElement yvelwme;
+	private final FloatElement speedwme;
 	private final FloatElement yawvelwme;
 	private final Identifier posewme;
 	private final long utimeLast = 0;
@@ -41,6 +42,7 @@ final class SelfIL implements InputLinkInterface {
 
 		xvelwme = agent.CreateFloatWME(posewme, "x-velocity", 0);
 		yvelwme = agent.CreateFloatWME(posewme, "y-velocity", 0);
+		speedwme = agent.CreateFloatWME(posewme, "speed", 0);
 		yawvelwme = agent.CreateFloatWME(posewme, "yaw-velocity", 0);
 		
 		Identifier waypoints = agent.CreateIdWME(self, "waypoints");
@@ -83,7 +85,8 @@ final class SelfIL implements InputLinkInterface {
 		agent.Update(ywme, splinter.getSplinterPose().pos[1]);
 		agent.Update(zwme, splinter.getSplinterPose().pos[2]);
 		agent.Update(xvelwme, splinter.getSplinterPose().vel[0]);
-		agent.Update(yvelwme, splinter.getSplinterPose().pos[1]);
+		agent.Update(yvelwme, splinter.getSplinterPose().vel[1]);
+		agent.Update(speedwme, LinAlg.magnitude(splinter.getSplinterPose().vel));
 
 		double yawRadians = LinAlg.quatToRollPitchYaw(splinter.getSplinterPose().orientation)[2];
 		yawRadians = MathUtil.mod2pi(yawRadians);

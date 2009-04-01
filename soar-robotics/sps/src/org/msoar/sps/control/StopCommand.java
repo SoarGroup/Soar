@@ -3,6 +3,7 @@
  */
 package org.msoar.sps.control;
 
+import jmat.LinAlg;
 import lcmtypes.pose_t;
 
 import org.apache.log4j.Logger;
@@ -62,7 +63,7 @@ final class StopCommand extends DDCCommand implements Command {
 		
 		pose_t pose = splinter.getSplinterPose();
 		
-		if (Double.compare(Math.abs(pose.vel[0]), TOLERANCE) < 0) {
+		if (Double.compare(LinAlg.magnitude(pose.vel), TOLERANCE) < 0) {
 			CommandStatus.complete.addStatus(agent, command);
 			agent = null;
 			command = null;
