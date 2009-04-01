@@ -9,7 +9,7 @@
 	<classpathentry kind="lib" path="/april-code/java/lcmtypes/lcmtypes.jar"/>
 	<classpathentry kind="lib" path="/april-code/java/vis/vis.jar"/>
 	<classpathentry kind="lib" path="/uorc/user/java/orc.jar"/>
-	<classpathentry kind="lib" path="/SoarSuite/SoarLibrary/bin/log4j-1.2.15.jar"/>
-	<classpathentry kind="lib" path="/SoarSuite/SoarLibrary/bin/sml.jar"/>
+	<classpathentry kind="lib" path="/SoarSuite/SoarLibrary/lib/log4j-1.2.15.jar"/>
+	<classpathentry kind="lib" path="/SoarSuite/SoarLibrary/lib/sml.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>
