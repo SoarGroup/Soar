@@ -12,10 +12,6 @@ env.Prepend(CPPPATH = ['src',
 		       '../ElementXML/include',
 		       '../ConnectionSML/include'])
 
-if sys.platform == 'cygwin':
-	env.Append(CPPFLAGS = ' -D_USRDLL')
-	env['no_import_lib'] = 1
-
 libadd = [
 	   'ElementXML',
 	   'ConnectionSML',
@@ -23,12 +19,6 @@ libadd = [
 	   'SoarKernel',
 	   ]
 
-if sys.platform == 'cygwin':
-	   libadd.extend(['pcre',])
-
-if sys.platform == 'cygwin':
-	libadd.extend(['ws2_32',])
-	 
 libpath = [ 
 	    '../SoarKernel',
 	    '../CLI',
