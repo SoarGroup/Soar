@@ -5,7 +5,6 @@
 # swt.jar 3.3 digests
 OSX_DIGEST = '63e66248fed82dcf4bc2639b487ec111'
 OSX64_DIGEST = 'b80f13fccb067323ddc7085b931fff64'
-WIN_DIGEST = '33ac049c1f70126f5fe190da2bd9ff77'
 GTK_DIGEST = '3f5abcc5769c413fc731585b36fe61c2'
 
 import os
@@ -36,10 +35,10 @@ def SetJavaPaths(env, classpath, sourcepath = None):
 		classpath = classpath.replace(':', ';')
 	env['CLASSPATH'] = classpath
 
-def CheckJarmd5(env):
+def CheckJarmd5(env, jarpath):
 	# open the swt.jar file
 	try:
-		f = file("SoarLibrary/bin/swt.jar", 'rb')
+		f = file(jarpath)
 	except:
 		return False
 	
@@ -56,41 +55,38 @@ def CheckJarmd5(env):
 			return OSX64_DIGEST == m.hexdigest()
 		else:
 			return OSX_DIGEST == m.hexdigest()
-	elif sys.platform == 'cygwin':
-		return WIN_DIGEST == m.hexdigest()
 	else:
 		return GTK_DIGEST == m.hexdigest()
 	
 def CheckForSWTJar(env):
-	if os.path.exists(os.path.join('SoarLibrary', 'bin', 'swt.jar')):
-		if CheckJarmd5(env):
+	jarpath = os.path.join('SoarLibrary', 'lib', 'swt.jar')
+	if os.path.exists(jarpath):
+		if CheckJarmd5(env, jarpath):
 			return True
 		else:
 			print "md5 of swt.jar failed, removing old jar."
-			os.remove("SoarLibrary/bin/swt.jar")
+			os.remove(jarpath)
 		
 	try:
 		if sys.platform == 'darwin':
 			if env['m64']:
-				urllib.urlretrieve('http://winter.eecs.umich.edu/~nlderbin/osx64/swt.jar', 'SoarLibrary/bin/swt.jar')
+				urllib.urlretrieve('http://ai.eecs.umich.edu/~soar/sitemaker/misc/jars/osx64/swt.jar', jarpath)
 			else:
-				urllib.urlretrieve('http://ai.eecs.umich.edu/~soar/sitemaker/misc/jars/osx/swt.jar', 'SoarLibrary/bin/swt.jar')
-		elif sys.platform == 'cygwin':
-			urllib.urlretrieve('http://ai.eecs.umich.edu/~soar/sitemaker/misc/jars/windows/swt.jar', 'SoarLibrary/bin/swt.jar')
+				urllib.urlretrieve('http://ai.eecs.umich.edu/~soar/sitemaker/misc/jars/osx32/swt.jar', jarpath)
 		else:
-			urllib.urlretrieve('http://ai.eecs.umich.edu/~soar/sitemaker/misc/jars/gtk/swt.jar', 'SoarLibrary/bin/swt.jar')
+			urllib.urlretrieve('http://ai.eecs.umich.edu/~soar/sitemaker/misc/jars/gtk/swt.jar', jarpath)
 	except IOError:
-		print "Error downloading swt.jar to SoarLibrary/bin: IOError"
+		print "Error downloading %s: IOError" % jarpath
 		return False
 	except ContentTooShortError:
-		print "Error downloading swt.jar to SoarLibrary/bin: IOError"
+		print "Error downloading %s: IOError" % jarpath
 		return False
 		
-	if not CheckJarmd5(env):
-		print "Error downloading swt.jar to SoarLibrary/bin, md5 failed again."
+	if not CheckJarmd5(env, jarpath):
+		print "Error downloading %s, md5 failed again." % jarpath
 		return False
 	
-	print "Successfully downloaded swt.jar to SoarLibrary/bin."
+	print "Successfully downloaded", jarpath
 	return True
 
 def osx_copy(dest, source, env):
@@ -155,9 +151,9 @@ def ConfigureJNI(env):
     """Configure the given environment for compiling Java Native Interface
        c or c++ language files."""
 
-    if not env.get('JAVAC'):
-        print "The Java compiler must be installed and in the current path."
-        return 0
+    #if not env.get('JAVAC'):
+    #    print "The Java compiler must be installed and in the current path."
+    #    return 0
 
     # first look for a shell variable called JAVA_HOME
     java_base = os.environ.get('JAVA_HOME')
@@ -176,13 +172,6 @@ def ConfigureJNI(env):
             # /usr/jdkX.X/bin/javac, java's home directory is /usr/jdkX.X
             java_base = os.path.join(jcdir, "..")
             print "found:", java_base
-
-    if sys.platform == 'cygwin':
-        # Cygwin and Sun Java have different ideas of how path names
-        # are defined. Use cygpath to convert the windows path to
-        # a cygwin path. i.e. C:\jdkX.X to /cygdrive/c/jdkX.X
-        java_base = string.replace( \
-                os.popen("cygpath -up '"+java_base+"'").read(), '\n', '')
 
     if sys.platform == 'darwin':
         # Apple does not use Sun's naming convention
@@ -207,22 +196,14 @@ def ConfigureJNI(env):
     # add Java's include and lib directory to the environment
     env.Append(CPPPATH = java_headers)
     env.Append(LIBPATH = java_libs)
-
-    ## The linking flags are specific for building jni libraries.
-    ## They must not be included in the overall environment!
-    # add any special platform-specific compilation or linking flags
-    #if sys.platform == 'darwin':
-    #    env.Append(SHLINKFLAGS = '-dynamiclib -framework JavaVM')
-    #    env['SHLIBSUFFIX'] = '.jnilib'
-    #elif sys.platform == 'cygwin':
-    #    env.Append(CCFLAGS = '-mno-cygwin')
-    #    env.Append(SHLINKFLAGS = '-mno-cygwin -Wl,--kill-at')
-
-    # Add extra potentially useful environment variables
-    env['JAVA_HOME'] = java_base
-    env['JNI_CPPPATH'] = java_headers
-    env['JNI_LIBPATH'] = java_libs
-    env['JAVAC'] = os.environ['JAVA_HOME'] + os.sep + 'bin' + os.sep + 'javac'
-    env['JAR'] = os.environ['JAVA_HOME'] + os.sep + 'bin' + os.sep + 'jar' 
     return 1
+
+def JavaSources(dir):
+	sources = list()
+	for root, dirs, files in os.walk(dir):
+		for f in files:
+			sources.append(os.path.join(root, f))
+		if '.svn' in dirs:
+			dirs.remove('.svn')
+	return sources
 

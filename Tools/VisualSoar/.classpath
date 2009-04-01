@@ -1,7 +1,0 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<classpath>
-	<classpathentry including="edu/|threepenny/" excluding="edu/umich/visualsoar/filemanager_unused/|edu/umich/visualsoar/statemap_unused/" kind="src" path="Source"/>
-	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
-	<classpathentry kind="lib" path="/SoarLibrary/bin/sml.jar"/>
-	<classpathentry kind="output" path="bin"/>
-</classpath>
