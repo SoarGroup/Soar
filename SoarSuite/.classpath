@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <classpath>
 	<classpathentry excluding="**/.svn/" kind="src" output="Tools/SoarJavaDebugger/bin" path="Tools/SoarJavaDebugger/src"/>
+	<classpathentry excluding="**/.svn/" kind="src" path="Tools/VisualSoar/src"/>
 	<classpathentry excluding="**/.svn/" kind="src" output="Environments/Soar2D/bin" path="Environments/Soar2D/test"/>
 	<classpathentry excluding="**/.svn/" kind="src" output="Tools/TestJavaSML/bin" path="Tools/TestJavaSML/src"/>
 	<classpathentry excluding="**/.svn/" kind="src" output="Tools/LoggerJava/bin" path="Tools/LoggerJava/src"/>
-	<classpathentry excluding="**/.svn/" kind="src" path="Tools/VisualSoar/Source"/>
 	<classpathentry excluding="**/.svn/" kind="src" output="Environments/JavaTOH/bin" path="Environments/JavaTOH/src"/>
 	<classpathentry excluding="**/.svn/" kind="src" output="Environments/Soar2D/bin" path="Environments/Soar2D/src"/>
 	<classpathentry excluding="**/.svn/" kind="src" output="Environments/JavaMissionaries/bin" path="Environments/JavaMissionaries/src"/>
