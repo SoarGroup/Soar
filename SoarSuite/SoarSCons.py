@@ -6,6 +6,10 @@
 OSX_DIGEST = '63e66248fed82dcf4bc2639b487ec111'
 OSX64_DIGEST = 'b80f13fccb067323ddc7085b931fff64'
 GTK_DIGEST = '3f5abcc5769c413fc731585b36fe61c2'
+GTK64_DIGEST = '0641c331c1eb58c065e1630d07c73b1b'
+
+# swt.jar 3.4 digests
+GTK64_DIGEST_3_4 = '69358481ec9d44b068bfe1dc1da57737'
 
 import os
 import sys
@@ -56,7 +60,10 @@ def CheckJarmd5(env, jarpath):
 		else:
 			return OSX_DIGEST == m.hexdigest()
 	else:
-		return GTK_DIGEST == m.hexdigest()
+		if env['m64']:
+			return GTK64_DIGEST == m.hexdigest()
+		else:
+			return GTK_DIGEST == m.hexdigest()
 	
 def CheckForSWTJar(env):
 	jarpath = os.path.join('SoarLibrary', 'lib', 'swt.jar')
@@ -74,7 +81,10 @@ def CheckForSWTJar(env):
 			else:
 				urllib.urlretrieve('http://ai.eecs.umich.edu/~soar/sitemaker/misc/jars/osx32/swt.jar', jarpath)
 		else:
-			urllib.urlretrieve('http://ai.eecs.umich.edu/~soar/sitemaker/misc/jars/gtk/swt.jar', jarpath)
+			if env['m64']:
+				urllib.urlretrieve('http://ai.eecs.umich.edu/~soar/sitemaker/misc/jars/gtk64/swt.jar', jarpath)
+			else:
+				urllib.urlretrieve('http://ai.eecs.umich.edu/~soar/sitemaker/misc/jars/gtk32/swt.jar', jarpath)
 	except IOError:
 		print "Error downloading %s: IOError" % jarpath
 		return False
