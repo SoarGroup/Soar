@@ -3,5 +3,5 @@ include = common;
 all = [sick, splinter, control, debugger, viewer];
 
 control_config {
-	productions = "agents/simple-robot-with-avoidance-patrol-lab.soar";
+	productions = "agents/simple-robot-with-avoidance-patrol-y.soar";
 }
