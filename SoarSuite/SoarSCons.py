@@ -2,14 +2,10 @@
 # This file is a bunch of utility functions for the SConstruct file.
 
 
-# swt.jar 3.3 digests
-OSX_DIGEST = '63e66248fed82dcf4bc2639b487ec111'
-OSX64_DIGEST = 'b80f13fccb067323ddc7085b931fff64'
-GTK_DIGEST = '3f5abcc5769c413fc731585b36fe61c2'
-GTK64_DIGEST = '0641c331c1eb58c065e1630d07c73b1b'
-
 # swt.jar 3.4 digests
-GTK64_DIGEST_3_4 = '69358481ec9d44b068bfe1dc1da57737'
+OSX_DIGEST = '7dab557faeb4e182281be824baebd856'
+GTK_DIGEST = '28b79f2cb0bc09c1efd4b711c0cd52a7'
+GTK64_DIGEST = '69358481ec9d44b068bfe1dc1da57737'
 
 import os
 import sys
@@ -55,10 +51,7 @@ def CheckJarmd5(env, jarpath):
 	    m.update(d)
 	    
 	if sys.platform == 'darwin':
-		if env['m64']:
-			return OSX64_DIGEST == m.hexdigest()
-		else:
-			return OSX_DIGEST == m.hexdigest()
+		return OSX_DIGEST == m.hexdigest()
 	else:
 		if env['m64']:
 			return GTK64_DIGEST == m.hexdigest()
@@ -76,10 +69,7 @@ def CheckForSWTJar(env):
 		
 	try:
 		if sys.platform == 'darwin':
-			if env['m64']:
-				urllib.urlretrieve('http://ai.eecs.umich.edu/~soar/sitemaker/misc/jars/osx64/swt.jar', jarpath)
-			else:
-				urllib.urlretrieve('http://ai.eecs.umich.edu/~soar/sitemaker/misc/jars/osx32/swt.jar', jarpath)
+			urllib.urlretrieve('http://ai.eecs.umich.edu/~soar/sitemaker/misc/jars/osx/swt.jar', jarpath)
 		else:
 			if env['m64']:
 				urllib.urlretrieve('http://ai.eecs.umich.edu/~soar/sitemaker/misc/jars/gtk64/swt.jar', jarpath)
