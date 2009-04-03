@@ -47,6 +47,7 @@ opts.AddOptions(
 	BoolOption('tcl', 'Build the Soar Tcl interface', 'no'), 
 	BoolOption('debug', 'Build with debugging symbols', 'yes'),
 	BoolOption('warnings', 'Build with warnings', 'yes'),
+	BoolOption('werrors', 'Build with warnings as errors', 'no'),
 	EnumOption('optimization', 'Build with optimization (May cause run-time errors!)', 'full', ['no','partial','full'], {}, 1),
 	BoolOption('preprocessor', 'Only run preprocessor', 'no'),
 	BoolOption('verbose', 'Verbose compiler output', 'no'),
@@ -131,6 +132,8 @@ if conf.env['debug']:
 	conf.env.Append(CPPFLAGS = ' -g3')
 if conf.env['warnings']:
 	conf.env.Append(CPPFLAGS = ' -Wall')
+if conf.env['werrors']:
+	conf.env.Append(CPPFLAGS = ' -Werror')
 if conf.env['optimization'] == 'partial':
 	conf.env.Append(CPPFLAGS = ' -O2')
 if conf.env['optimization'] == 'full':
