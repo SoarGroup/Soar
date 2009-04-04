@@ -100,19 +100,6 @@ const char *epmem_range_queries[2][2][3] =
 	},
 };
 
-// these constants hold pointers to all information
-// necessary to share RIT code amongst any tables
-// implementing the RIT spec (node, start, end, id)
-//
-// array locations are indicated by the
-// EPMEM_RIT_STATE_OFFSET - EPMEM_RIT_STATE_TIMER
-// predefines
-epmem_rit_state epmem_rit_state_tree;
-
-// first array adheres to the EPMEM_RIT_STATE_NODE/EDGE
-// predefines
-epmem_rit_state epmem_rit_state_graph[2];
-
 
 //////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////
@@ -344,33 +331,33 @@ epmem_stat_container::epmem_stat_container( agent *new_agent ): stat_container( 
 	/////////////////////////////
 
 	// tree		
-	epmem_rit_state_tree.offset.stat = rit_offset_1;
-	epmem_rit_state_tree.offset.var_key = var_rit_offset_1;
-	epmem_rit_state_tree.leftroot.stat = rit_left_root_1;
-	epmem_rit_state_tree.leftroot.var_key = var_rit_leftroot_1;
-	epmem_rit_state_tree.rightroot.stat = rit_right_root_1;
-	epmem_rit_state_tree.rightroot.var_key = var_rit_rightroot_1;
-	epmem_rit_state_tree.minstep.stat = rit_min_step_1;
-	epmem_rit_state_tree.minstep.var_key = var_rit_minstep_1;
+	my_agent->epmem_rit_state_tree.offset.stat = rit_offset_1;
+	my_agent->epmem_rit_state_tree.offset.var_key = var_rit_offset_1;
+	my_agent->epmem_rit_state_tree.leftroot.stat = rit_left_root_1;
+	my_agent->epmem_rit_state_tree.leftroot.var_key = var_rit_leftroot_1;
+	my_agent->epmem_rit_state_tree.rightroot.stat = rit_right_root_1;
+	my_agent->epmem_rit_state_tree.rightroot.var_key = var_rit_rightroot_1;
+	my_agent->epmem_rit_state_tree.minstep.stat = rit_min_step_1;
+	my_agent->epmem_rit_state_tree.minstep.var_key = var_rit_minstep_1;
 
 	// graph		
-	epmem_rit_state_graph[ EPMEM_RIT_STATE_NODE ].offset.stat = rit_offset_1;
-	epmem_rit_state_graph[ EPMEM_RIT_STATE_NODE ].offset.var_key = var_rit_offset_1;
-	epmem_rit_state_graph[ EPMEM_RIT_STATE_NODE ].leftroot.stat = rit_left_root_1;
-	epmem_rit_state_graph[ EPMEM_RIT_STATE_NODE ].leftroot.var_key = var_rit_leftroot_1;
-	epmem_rit_state_graph[ EPMEM_RIT_STATE_NODE ].rightroot.stat = rit_right_root_1;
-	epmem_rit_state_graph[ EPMEM_RIT_STATE_NODE ].rightroot.var_key = var_rit_rightroot_1;
-	epmem_rit_state_graph[ EPMEM_RIT_STATE_NODE ].minstep.stat = rit_min_step_1;
-	epmem_rit_state_graph[ EPMEM_RIT_STATE_NODE ].minstep.var_key = var_rit_minstep_1;	
+	my_agent->epmem_rit_state_graph[ EPMEM_RIT_STATE_NODE ].offset.stat = rit_offset_1;
+	my_agent->epmem_rit_state_graph[ EPMEM_RIT_STATE_NODE ].offset.var_key = var_rit_offset_1;
+	my_agent->epmem_rit_state_graph[ EPMEM_RIT_STATE_NODE ].leftroot.stat = rit_left_root_1;
+	my_agent->epmem_rit_state_graph[ EPMEM_RIT_STATE_NODE ].leftroot.var_key = var_rit_leftroot_1;
+	my_agent->epmem_rit_state_graph[ EPMEM_RIT_STATE_NODE ].rightroot.stat = rit_right_root_1;
+	my_agent->epmem_rit_state_graph[ EPMEM_RIT_STATE_NODE ].rightroot.var_key = var_rit_rightroot_1;
+	my_agent->epmem_rit_state_graph[ EPMEM_RIT_STATE_NODE ].minstep.stat = rit_min_step_1;
+	my_agent->epmem_rit_state_graph[ EPMEM_RIT_STATE_NODE ].minstep.var_key = var_rit_minstep_1;	
 	
-	epmem_rit_state_graph[ EPMEM_RIT_STATE_EDGE ].offset.stat = rit_offset_2;
-	epmem_rit_state_graph[ EPMEM_RIT_STATE_EDGE ].offset.var_key = var_rit_offset_2;
-	epmem_rit_state_graph[ EPMEM_RIT_STATE_EDGE ].leftroot.stat = rit_left_root_2;
-	epmem_rit_state_graph[ EPMEM_RIT_STATE_EDGE ].leftroot.var_key = var_rit_leftroot_2;
-	epmem_rit_state_graph[ EPMEM_RIT_STATE_EDGE ].rightroot.stat = rit_right_root_2;
-	epmem_rit_state_graph[ EPMEM_RIT_STATE_EDGE ].rightroot.var_key = var_rit_rightroot_2;
-	epmem_rit_state_graph[ EPMEM_RIT_STATE_EDGE ].minstep.stat = rit_min_step_2;
-	epmem_rit_state_graph[ EPMEM_RIT_STATE_EDGE ].minstep.var_key = var_rit_minstep_2;
+	my_agent->epmem_rit_state_graph[ EPMEM_RIT_STATE_EDGE ].offset.stat = rit_offset_2;
+	my_agent->epmem_rit_state_graph[ EPMEM_RIT_STATE_EDGE ].offset.var_key = var_rit_offset_2;
+	my_agent->epmem_rit_state_graph[ EPMEM_RIT_STATE_EDGE ].leftroot.stat = rit_left_root_2;
+	my_agent->epmem_rit_state_graph[ EPMEM_RIT_STATE_EDGE ].leftroot.var_key = var_rit_leftroot_2;
+	my_agent->epmem_rit_state_graph[ EPMEM_RIT_STATE_EDGE ].rightroot.stat = rit_right_root_2;
+	my_agent->epmem_rit_state_graph[ EPMEM_RIT_STATE_EDGE ].rightroot.var_key = var_rit_rightroot_2;
+	my_agent->epmem_rit_state_graph[ EPMEM_RIT_STATE_EDGE ].minstep.stat = rit_min_step_2;
+	my_agent->epmem_rit_state_graph[ EPMEM_RIT_STATE_EDGE ].minstep.var_key = var_rit_minstep_2;
 };
 
 //
@@ -492,11 +479,11 @@ epmem_timer_container::epmem_timer_container( agent *new_agent ): timer_containe
 	/////////////////////////////
 
 	// tree		
-	epmem_rit_state_tree.timer = ncb_node_rit;
+	my_agent->epmem_rit_state_tree.timer = ncb_node_rit;
 
 	// graph
-	epmem_rit_state_graph[ EPMEM_RIT_STATE_NODE ].timer = ncb_node_rit;
-	epmem_rit_state_graph[ EPMEM_RIT_STATE_EDGE ].timer = ncb_edge_rit;
+	my_agent->epmem_rit_state_graph[ EPMEM_RIT_STATE_NODE ].timer = ncb_node_rit;
+	my_agent->epmem_rit_state_graph[ EPMEM_RIT_STATE_EDGE ].timer = ncb_edge_rit;
 };
 
 //
@@ -1374,11 +1361,11 @@ void epmem_init_db( agent *my_agent, bool readonly = false )
 
 			// variable initialization
 			my_agent->epmem_stats->time->set_value( 1 );
-			epmem_rit_state_tree.add_query = my_agent->epmem_stmts_tree->add_node_range;
-			epmem_rit_state_tree.offset.stat->set_value( EPMEM_RIT_OFFSET_INIT );
-			epmem_rit_state_tree.leftroot.stat->set_value( 0 );
-			epmem_rit_state_tree.rightroot.stat->set_value( 0 );
-			epmem_rit_state_tree.minstep.stat->set_value( LONG_MAX );
+			my_agent->epmem_rit_state_tree.add_query = my_agent->epmem_stmts_tree->add_node_range;
+			my_agent->epmem_rit_state_tree.offset.stat->set_value( EPMEM_RIT_OFFSET_INIT );
+			my_agent->epmem_rit_state_tree.leftroot.stat->set_value( 0 );
+			my_agent->epmem_rit_state_tree.rightroot.stat->set_value( 0 );
+			my_agent->epmem_rit_state_tree.minstep.stat->set_value( LONG_MAX );
 			my_agent->epmem_node_mins->clear();
 			my_agent->epmem_node_maxes->clear();
 			my_agent->epmem_node_removals->clear();
@@ -1390,28 +1377,28 @@ void epmem_init_db( agent *my_agent, bool readonly = false )
 				long var_val;
 
 				// offset
-				if ( epmem_get_variable( my_agent, epmem_rit_state_tree.offset.var_key, &var_val ) )
-					epmem_rit_state_tree.offset.stat->set_value( var_val );
+				if ( epmem_get_variable( my_agent, my_agent->epmem_rit_state_tree.offset.var_key, &var_val ) )
+					my_agent->epmem_rit_state_tree.offset.stat->set_value( var_val );
 				else
-					epmem_set_variable( my_agent, epmem_rit_state_tree.offset.var_key, epmem_rit_state_tree.offset.stat->get_value() );
+					epmem_set_variable( my_agent, my_agent->epmem_rit_state_tree.offset.var_key, my_agent->epmem_rit_state_tree.offset.stat->get_value() );
 
 				// leftroot
-				if ( epmem_get_variable( my_agent, epmem_rit_state_tree.leftroot.var_key, &var_val ) )
-					epmem_rit_state_tree.leftroot.stat->set_value( var_val );
+				if ( epmem_get_variable( my_agent, my_agent->epmem_rit_state_tree.leftroot.var_key, &var_val ) )
+					my_agent->epmem_rit_state_tree.leftroot.stat->set_value( var_val );
 				else
-					epmem_set_variable( my_agent, epmem_rit_state_tree.leftroot.var_key, epmem_rit_state_tree.leftroot.stat->get_value() );
+					epmem_set_variable( my_agent, my_agent->epmem_rit_state_tree.leftroot.var_key, my_agent->epmem_rit_state_tree.leftroot.stat->get_value() );
 
 				// rightroot
-				if ( epmem_get_variable( my_agent, epmem_rit_state_tree.rightroot.var_key, &var_val ) )
-					epmem_rit_state_tree.rightroot.stat->set_value( var_val );
+				if ( epmem_get_variable( my_agent, my_agent->epmem_rit_state_tree.rightroot.var_key, &var_val ) )
+					my_agent->epmem_rit_state_tree.rightroot.stat->set_value( var_val );
 				else
-					epmem_set_variable( my_agent, epmem_rit_state_tree.rightroot.var_key, epmem_rit_state_tree.rightroot.stat->get_value() );
+					epmem_set_variable( my_agent, my_agent->epmem_rit_state_tree.rightroot.var_key, my_agent->epmem_rit_state_tree.rightroot.stat->get_value() );
 
 				// minstep
-				if ( epmem_get_variable( my_agent, epmem_rit_state_tree.minstep.var_key, &var_val ) )
-					epmem_rit_state_tree.minstep.stat->set_value( var_val );
+				if ( epmem_get_variable( my_agent, my_agent->epmem_rit_state_tree.minstep.var_key, &var_val ) )
+					my_agent->epmem_rit_state_tree.minstep.stat->set_value( var_val );
 				else
-					epmem_set_variable( my_agent, epmem_rit_state_tree.minstep.var_key, epmem_rit_state_tree.minstep.stat->get_value() );
+					epmem_set_variable( my_agent, my_agent->epmem_rit_state_tree.minstep.var_key, my_agent->epmem_rit_state_tree.minstep.stat->get_value() );
 			}
 
 			// get max time
@@ -1447,7 +1434,7 @@ void epmem_init_db( agent *my_agent, bool readonly = false )
 						temp_q->execute( soar_module::op_reinit );
 					}
 					else
-						epmem_rit_insert_interval( my_agent, range_start, time_last, temp_q2->column_int( 0 ), &epmem_rit_state_tree );
+						epmem_rit_insert_interval( my_agent, range_start, time_last, temp_q2->column_int( 0 ), &( my_agent->epmem_rit_state_tree ) );
 				}
 				delete temp_q2;
 				temp_q2 = NULL;
@@ -1510,13 +1497,13 @@ void epmem_init_db( agent *my_agent, bool readonly = false )
 			// initialize rit state
 			for ( int i=EPMEM_RIT_STATE_NODE; i<=EPMEM_RIT_STATE_EDGE; i++ )
 			{
-				epmem_rit_state_graph[ i ].offset.stat->set_value( EPMEM_RIT_OFFSET_INIT );
-				epmem_rit_state_graph[ i ].leftroot.stat->set_value( 0 );
-				epmem_rit_state_graph[ i ].rightroot.stat->set_value( 1 );
-				epmem_rit_state_graph[ i ].minstep.stat->set_value( LONG_MAX );
+				my_agent->epmem_rit_state_graph[ i ].offset.stat->set_value( EPMEM_RIT_OFFSET_INIT );
+				my_agent->epmem_rit_state_graph[ i ].leftroot.stat->set_value( 0 );
+				my_agent->epmem_rit_state_graph[ i ].rightroot.stat->set_value( 1 );
+				my_agent->epmem_rit_state_graph[ i ].minstep.stat->set_value( LONG_MAX );
 			}
-			epmem_rit_state_graph[ EPMEM_RIT_STATE_NODE ].add_query = my_agent->epmem_stmts_graph->add_node_range;
-			epmem_rit_state_graph[ EPMEM_RIT_STATE_EDGE ].add_query = my_agent->epmem_stmts_graph->add_edge_range;		
+			my_agent->epmem_rit_state_graph[ EPMEM_RIT_STATE_NODE ].add_query = my_agent->epmem_stmts_graph->add_node_range;
+			my_agent->epmem_rit_state_graph[ EPMEM_RIT_STATE_EDGE ].add_query = my_agent->epmem_stmts_graph->add_edge_range;		
 
 			////
 
@@ -1527,28 +1514,28 @@ void epmem_init_db( agent *my_agent, bool readonly = false )
 				for ( int i=EPMEM_RIT_STATE_NODE; i<=EPMEM_RIT_STATE_EDGE; i++ )
 				{
 					// offset
-					if ( epmem_get_variable( my_agent, epmem_rit_state_graph[ i ].offset.var_key, &var_val ) )
-						epmem_rit_state_graph[ i ].offset.stat->set_value( var_val );
+					if ( epmem_get_variable( my_agent, my_agent->epmem_rit_state_graph[ i ].offset.var_key, &var_val ) )
+						my_agent->epmem_rit_state_graph[ i ].offset.stat->set_value( var_val );
 					else
-						epmem_set_variable( my_agent, epmem_rit_state_graph[ i ].offset.var_key, epmem_rit_state_graph[ i ].offset.stat->get_value() );
+						epmem_set_variable( my_agent, my_agent->epmem_rit_state_graph[ i ].offset.var_key, my_agent->epmem_rit_state_graph[ i ].offset.stat->get_value() );
 
 					// leftroot
-					if ( epmem_get_variable( my_agent, epmem_rit_state_graph[ i ].leftroot.var_key, &var_val ) )
-						epmem_rit_state_graph[ i ].leftroot.stat->set_value( var_val );
+					if ( epmem_get_variable( my_agent, my_agent->epmem_rit_state_graph[ i ].leftroot.var_key, &var_val ) )
+						my_agent->epmem_rit_state_graph[ i ].leftroot.stat->set_value( var_val );
 					else
-						epmem_set_variable( my_agent, epmem_rit_state_graph[ i ].leftroot.var_key, epmem_rit_state_graph[ i ].leftroot.stat->get_value() );
+						epmem_set_variable( my_agent, my_agent->epmem_rit_state_graph[ i ].leftroot.var_key, my_agent->epmem_rit_state_graph[ i ].leftroot.stat->get_value() );
 
 					// rightroot
-					if ( epmem_get_variable( my_agent, epmem_rit_state_graph[ i ].rightroot.var_key, &var_val ) )
-						epmem_rit_state_graph[ i ].rightroot.stat->set_value( var_val );
+					if ( epmem_get_variable( my_agent, my_agent->epmem_rit_state_graph[ i ].rightroot.var_key, &var_val ) )
+						my_agent->epmem_rit_state_graph[ i ].rightroot.stat->set_value( var_val );
 					else
-						epmem_set_variable( my_agent, epmem_rit_state_graph[ i ].rightroot.var_key, epmem_rit_state_graph[ i ].rightroot.stat->get_value() );
+						epmem_set_variable( my_agent, my_agent->epmem_rit_state_graph[ i ].rightroot.var_key, my_agent->epmem_rit_state_graph[ i ].rightroot.stat->get_value() );
 
 					// minstep
-					if ( epmem_get_variable( my_agent, epmem_rit_state_graph[ i ].minstep.var_key, &var_val ) )
-						epmem_rit_state_graph[ i ].minstep.stat->set_value( var_val );
+					if ( epmem_get_variable( my_agent, my_agent->epmem_rit_state_graph[ i ].minstep.var_key, &var_val ) )
+						my_agent->epmem_rit_state_graph[ i ].minstep.stat->set_value( var_val );
 					else
-						epmem_set_variable( my_agent, epmem_rit_state_graph[ i ].minstep.var_key, epmem_rit_state_graph[ i ].minstep.stat->get_value() );
+						epmem_set_variable( my_agent, my_agent->epmem_rit_state_graph[ i ].minstep.var_key, my_agent->epmem_rit_state_graph[ i ].minstep.stat->get_value() );
 					}
 			}
 
@@ -1594,7 +1581,7 @@ void epmem_init_db( agent *my_agent, bool readonly = false )
 							temp_q->execute( soar_module::op_reinit );
 						}
 						else
-							epmem_rit_insert_interval( my_agent, range_start, time_last, temp_q2->column_int( 0 ), &epmem_rit_state_graph[i] );
+							epmem_rit_insert_interval( my_agent, range_start, time_last, temp_q2->column_int( 0 ), &( my_agent->epmem_rit_state_graph[i] ) );
 					}
 					delete temp_q2;
 					temp_q2 = NULL;
@@ -2009,7 +1996,7 @@ void epmem_new_episode( agent *my_agent )
 				}
 				// node
 				else
-					epmem_rit_insert_interval( my_agent, range_start, range_end, r->first, &epmem_rit_state_tree );
+					epmem_rit_insert_interval( my_agent, range_start, range_end, r->first, &( my_agent->epmem_rit_state_tree ) );
 
 				// update max
 				(*my_agent->epmem_node_maxes)[ r->first - 1 ] = true;
@@ -2421,7 +2408,7 @@ void epmem_new_episode( agent *my_agent )
 					}
 					// node
 					else
-						epmem_rit_insert_interval( my_agent, range_start, range_end, r->first, &( epmem_rit_state_graph[ EPMEM_RIT_STATE_NODE ] ) );
+						epmem_rit_insert_interval( my_agent, range_start, range_end, r->first, &( my_agent->epmem_rit_state_graph[ EPMEM_RIT_STATE_NODE ] ) );
 
 					// update max
 					(*my_agent->epmem_node_maxes)[ r->first - 1 ] = true;
@@ -2454,7 +2441,7 @@ void epmem_new_episode( agent *my_agent )
 					}
 					// node
 					else
-						epmem_rit_insert_interval( my_agent, range_start, range_end, r->first, &( epmem_rit_state_graph[ EPMEM_RIT_STATE_EDGE ] ) );
+						epmem_rit_insert_interval( my_agent, range_start, range_end, r->first, &( my_agent->epmem_rit_state_graph[ EPMEM_RIT_STATE_EDGE ] ) );
 
 					// update max
 					(*my_agent->epmem_edge_maxes)[ r->first - 1 ] = true;
@@ -2604,7 +2591,7 @@ void epmem_install_memory( agent *my_agent, Symbol *state, epmem_time_id memory_
 
 		ids[ 0 ] = retrieved_header;
 
-		epmem_rit_prep_left_right( my_agent, memory_id, memory_id, &epmem_rit_state_tree );
+		epmem_rit_prep_left_right( my_agent, memory_id, memory_id, &( my_agent->epmem_rit_state_tree ) );
 
 		my_q->bind_int( 1, memory_id );
 		my_q->bind_int( 2, memory_id );
@@ -2717,7 +2704,7 @@ void epmem_install_memory( agent *my_agent, Symbol *state, epmem_time_id memory_
 			std::queue<epmem_edge *> orphans;
 			epmem_edge *orphan;			
 
-			epmem_rit_prep_left_right( my_agent, memory_id, memory_id, &( epmem_rit_state_graph[ EPMEM_RIT_STATE_EDGE ] ) );
+			epmem_rit_prep_left_right( my_agent, memory_id, memory_id, &( my_agent->epmem_rit_state_graph[ EPMEM_RIT_STATE_EDGE ] ) );
 
 			my_q->bind_int( 1, memory_id );
 			my_q->bind_int( 2, memory_id );
@@ -2824,7 +2811,7 @@ void epmem_install_memory( agent *my_agent, Symbol *state, epmem_time_id memory_
 
 			Symbol *value = NULL;
 
-			epmem_rit_prep_left_right( my_agent, memory_id, memory_id, &( epmem_rit_state_graph[ EPMEM_RIT_STATE_NODE ] ) );
+			epmem_rit_prep_left_right( my_agent, memory_id, memory_id, &( my_agent->epmem_rit_state_graph[ EPMEM_RIT_STATE_NODE ] ) );
 
 			my_q->bind_int( 1, memory_id );
 			my_q->bind_int( 2, memory_id );

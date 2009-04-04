@@ -847,6 +847,9 @@ kernel time and total_cpu_time greater than the derived total CPU time. REW */
   epmem_constraint_list *epmem_identifier_to_id;
   epmem_reverse_constraint_list *epmem_id_to_identifier;
 
+  epmem_rit_state epmem_rit_state_tree;
+  epmem_rit_state epmem_rit_state_graph[2];
+
   epmem_time_id epmem_validation;
   bool epmem_first_switch;
 
