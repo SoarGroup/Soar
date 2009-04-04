@@ -21,41 +21,14 @@
 #include <set>
 #include <queue>
 
-#include "sqlite3.h"
-
 #include "soar_module.h"
+#include "soar_db.h"
 
 using namespace soar_module;
 
 typedef union symbol_union Symbol;
 typedef struct wme_struct wme;
 
-//////////////////////////////////////////////////////////
-// EpMem Capacity
-//
-// There's an inherent problem in the storage capacity
-// difference between the EpMem code, the Soar kernel
-// (mainly Symbols), the STL, and SQLite.  Integer
-// symbols are currently 32-bit. STL depends upon
-// compiler options.  SQLite can go either way.
-//
-// portability.h defines EPMEM_64 (because epmem types
-// are scattered throughout the kernel).  Here we use it
-// to define the appropriate sqlite function names.
-//
-//////////////////////////////////////////////////////////
-
-#ifdef EPMEM_64
-
-#define EPMEM_SQLITE_BIND_INT sqlite3_bind_int64
-#define EPMEM_SQLITE_COLUMN_INT sqlite3_column_int64
-
-#else
-
-#define EPMEM_SQLITE_BIND_INT sqlite3_bind_int
-#define EPMEM_SQLITE_COLUMN_INT sqlite3_column_int
-
-#endif
 
 //////////////////////////////////////////////////////////
 // EpMem Experimentation
@@ -72,58 +45,6 @@ typedef struct wme_struct wme;
 // EpMem Constants
 //////////////////////////////////////////////////////////
 
-// statements
-// 0 - 19 => common
-// 20 - ( EPMEM_MAX_STATEMENTS - 1 ) => mode
-#define EPMEM_STMT_BEGIN							0
-#define EPMEM_STMT_COMMIT							1
-#define EPMEM_STMT_ROLLBACK							2
-#define EPMEM_STMT_VAR_GET							3
-#define EPMEM_STMT_VAR_SET							4
-
-#define EPMEM_STMT_RIT_ADD_LEFT						5
-#define EPMEM_STMT_RIT_TRUNCATE_LEFT				6
-#define EPMEM_STMT_RIT_ADD_RIGHT					7
-#define EPMEM_STMT_RIT_TRUNCATE_RIGHT				8
-
-#define EPMEM_STMT_GET_HASH							9
-#define EPMEM_STMT_ADD_HASH							10
-
-#define EPMEM_STMT_ONE_ADD_TIME						20
-#define EPMEM_STMT_ONE_ADD_NODE_RANGE				21
-#define EPMEM_STMT_ONE_ADD_NODE_UNIQUE				22
-#define EPMEM_STMT_ONE_FIND_NODE_UNIQUE				23
-#define EPMEM_STMT_ONE_FIND_IDENTIFIER				24
-#define EPMEM_STMT_ONE_VALID_EPISODE				25
-#define EPMEM_STMT_ONE_NEXT_EPISODE					26
-#define EPMEM_STMT_ONE_PREV_EPISODE					27
-#define EPMEM_STMT_ONE_GET_EPISODE					28
-#define EPMEM_STMT_ONE_ADD_NODE_NOW					29
-#define EPMEM_STMT_ONE_DELETE_NODE_NOW				30
-#define EPMEM_STMT_ONE_ADD_NODE_POINT				31
-
-#define EPMEM_STMT_THREE_ADD_TIME					20
-#define EPMEM_STMT_THREE_ADD_NODE_NOW				21
-#define EPMEM_STMT_THREE_DELETE_NODE_NOW			22
-#define EPMEM_STMT_THREE_ADD_EDGE_NOW				23
-#define EPMEM_STMT_THREE_DELETE_EDGE_NOW			24
-#define EPMEM_STMT_THREE_ADD_NODE_POINT				25
-#define EPMEM_STMT_THREE_ADD_EDGE_POINT				26
-#define EPMEM_STMT_THREE_ADD_NODE_RANGE				27
-#define EPMEM_STMT_THREE_ADD_EDGE_RANGE				28
-#define EPMEM_STMT_THREE_FIND_NODE_UNIQUE			29
-#define EPMEM_STMT_THREE_ADD_NODE_UNIQUE			30
-#define EPMEM_STMT_THREE_FIND_EDGE_UNIQUE			31
-#define EPMEM_STMT_THREE_FIND_EDGE_UNIQUE_SHARED	32
-#define EPMEM_STMT_THREE_ADD_EDGE_UNIQUE			33
-#define EPMEM_STMT_THREE_VALID_EPISODE				34
-#define EPMEM_STMT_THREE_NEXT_EPISODE				35
-#define EPMEM_STMT_THREE_PREV_EPISODE				36
-#define EPMEM_STMT_THREE_GET_NODES					37
-#define EPMEM_STMT_THREE_GET_EDGES					38
-
-#define EPMEM_MAX_STATEMENTS 						40 // must be at least 1+ largest of any STMT constant
-
 // variables (rit vars must be same as stat versions)
 enum epmem_variable_key
 {
@@ -133,9 +54,6 @@ enum epmem_variable_key
 };
 
 // algorithm constants
-#define EPMEM_DB_CLOSED								-1 // initialize db_status to this (sqlite error codes are positive)
-#define EPMEM_DB_PREP_STR_MAX						-1 // non-zero nByte param indicates to read to zero terminator
-
 #define EPMEM_MEMID_NONE							-1
 #define EPMEM_NODEID_ROOT							0
 
@@ -269,8 +187,11 @@ class epmem_stat_container: public stat_container
 
 class epmem_mem_usage_stat: public integer_stat
 {
+	protected:
+		agent *my_agent;
+
 	public:
-		epmem_mem_usage_stat( const char *new_name, long new_value, predicate<long> *new_prot_pred );
+		epmem_mem_usage_stat( agent *new_agent, const char *new_name, long new_value, predicate<long> *new_prot_pred );
 		long get_value();
 };
 
@@ -278,8 +199,11 @@ class epmem_mem_usage_stat: public integer_stat
 
 class epmem_mem_high_stat: public integer_stat
 {
+	protected:
+		agent *my_agent;
+
 	public:
-		epmem_mem_high_stat( const char *new_name, long new_value, predicate<long> *new_prot_pred );
+		epmem_mem_high_stat( agent *new_agent, const char *new_name, long new_value, predicate<long> *new_prot_pred );
 		long get_value();
 };
 
@@ -345,6 +269,103 @@ void epmem_stop_timer( agent *my_agent, long timer );
 
 
 //////////////////////////////////////////////////////////
+// EpMem Statements
+//////////////////////////////////////////////////////////
+
+class epmem_common_statement_container: public sqlite_statement_container
+{
+	public:
+		sqlite_statement *begin;
+		sqlite_statement *commit;
+		sqlite_statement *rollback;
+
+		sqlite_statement *var_get;
+		sqlite_statement *var_set;
+
+		sqlite_statement *rit_add_left;
+		sqlite_statement *rit_truncate_left;
+		sqlite_statement *rit_add_right;
+		sqlite_statement *rit_truncate_right;
+
+		sqlite_statement *hash_get;
+		sqlite_statement *hash_add;
+
+		epmem_common_statement_container( agent *new_agent );
+};
+
+class epmem_tree_statement_container: public sqlite_statement_container
+{
+	public:
+		sqlite_statement *add_time;
+
+		//
+		
+		sqlite_statement *add_node_now;
+		sqlite_statement *delete_node_now;
+		sqlite_statement *add_node_point;
+		sqlite_statement *add_node_range;
+
+		//
+
+		sqlite_statement *add_node_unique;
+		sqlite_statement *find_node_unique;
+		sqlite_statement *find_identifier;
+
+		//
+
+		sqlite_statement *valid_episode;
+		sqlite_statement *next_episode;
+		sqlite_statement *prev_episode;
+
+		sqlite_statement *get_episode;
+
+		//
+
+		epmem_tree_statement_container( agent *new_agent );
+};
+
+class epmem_graph_statement_container: public sqlite_statement_container
+{
+	public:
+		sqlite_statement *add_time;
+
+		//
+
+		sqlite_statement *add_node_now;
+		sqlite_statement *delete_node_now;
+		sqlite_statement *add_node_point;
+		sqlite_statement *add_node_range;
+
+		sqlite_statement *add_node_unique;
+		sqlite_statement *find_node_unique;
+
+		//
+
+		sqlite_statement *add_edge_now;
+		sqlite_statement *delete_edge_now;
+		sqlite_statement *add_edge_point;
+		sqlite_statement *add_edge_range;
+
+		sqlite_statement *add_edge_unique;
+		sqlite_statement *find_edge_unique;
+		sqlite_statement *find_edge_unique_shared;
+
+		//
+
+		sqlite_statement *valid_episode;
+		sqlite_statement *next_episode;
+		sqlite_statement *prev_episode;
+
+		sqlite_statement *get_nodes;
+		sqlite_statement *get_edges;
+
+		//		
+		
+		epmem_graph_statement_container( agent *new_agent );
+};
+
+
+//////////////////////////////////////////////////////////
 // Common Types
 //////////////////////////////////////////////////////////
 
@@ -356,6 +377,9 @@ typedef long epmem_time_id;
 
 // represents a vector of times
 typedef std::vector<epmem_time_id> epmem_time_list;
+
+// represents a list of wmes
+typedef std::list<wme *> epmem_wme_list;
 
 // keeping state for multiple RIT's
 typedef struct epmem_rit_state_param_struct
@@ -371,8 +395,8 @@ typedef struct epmem_rit_state_struct
 	epmem_rit_state_param rightroot;
 	epmem_rit_state_param minstep;
 
-	long add_query;
 	soar_module::timer *timer;
+	sqlite_statement *add_query;	
 } epmem_rit_state;
 
 //////////////////////////////////////////////////////////
@@ -409,13 +433,11 @@ typedef struct epmem_leaf_node_struct
 // maintains state within sqlite b-trees
 typedef struct epmem_range_query_struct
 {
-	sqlite3_stmt *stmt;						// sqlite query
+	sqlite_statement *stmt;					// query
 	epmem_time_id val;						// current b-tree leaf value
 
 	double weight;							// wma value
 	long ct;								// cardinality w.r.t. positive/negative query
-
-	soar_module::timer *timer;				// timer to update upon executing the query
 } epmem_range_query;
 
 // functor to maintain a priority cue of b-tree pointers
@@ -472,9 +494,8 @@ typedef struct epmem_edge_struct
 // represents cached children of an identifier in working memory
 typedef struct epmem_wme_cache_element_struct
 {
-	wme **wmes;								// child wmes
-	unsigned long len;			// number of children
-	unsigned long parents;		// number of parents
+	epmem_wme_list *wmes;					// child wmes	
+	unsigned long parents;					// number of parents
 
 	epmem_literal_mapping *lits;			// child literals
 } epmem_wme_cache_element;
@@ -484,9 +505,9 @@ typedef struct epmem_wme_cache_element_struct
 typedef struct epmem_shared_match_struct
 {
 	double value_weight;					// wma value
-	long value_ct;				// cardinality w.r.t. positive/negative query
+	long value_ct;							// cardinality w.r.t. positive/negative query
 
-	unsigned long ct;				// number of contributing literals that are "on"
+	unsigned long ct;						// number of contributing literals that are "on"
 } epmem_shared_match;
 
 // represents a list of literals grouped
@@ -506,8 +527,8 @@ struct epmem_shared_literal_struct
 {
 	epmem_node_id shared_id;				// shared q1, if identifier
 
-	unsigned long ct;				// number of contributing literals that are "on"
-	unsigned long max;			// number of contributing literals that *need* to be on
+	unsigned long ct;						// number of contributing literals that are "on"
+	unsigned long max;						// number of contributing literals that *need* to be on
 
 	struct wme_struct *wme;					// associated cue wme
 	bool wme_kids;							// does the cue wme have children (indicative of leaf wme status)
@@ -519,9 +540,8 @@ struct epmem_shared_literal_struct
 // maintains state within sqlite b-trees
 typedef struct epmem_shared_query_struct
 {
-	sqlite3_stmt *stmt;						// associated sqlite query
-	epmem_time_id val;						// current b-tree leaf value
-	soar_module::timer *timer;				// timer to update upon executing the query
+	sqlite_statement *stmt;					// associated query
+	epmem_time_id val;						// current b-tree leaf value	
 
 	epmem_shared_literal_list *triggers;	// literals to update when stepping this b-tree
 } epmem_shared_query;
@@ -548,7 +568,7 @@ typedef std::priority_queue<epmem_shared_query *, std::vector<epmem_shared_query
 //////////////////////////////////////////////////////////
 
 // shortcut for determining if EpMem is enabled
-extern bool epmem_enabled( agent *my_agent );
+inline extern bool epmem_enabled( agent *my_agent );
 
 
 //////////////////////////////////////////////////////////

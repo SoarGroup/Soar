@@ -30,14 +30,11 @@
 #include "lexer.h"
 #include "chunk.h"
 #include "callback.h"
-#include <map>
 
 #include "exploration.h"
 #include "reinforcement_learning.h"
 #include "wma.h"
-
 #include "episodic_memory.h"
-#include "sqlite3.h"
 
 #include <string>
 #include <map>
@@ -309,6 +306,15 @@ typedef struct agent_struct {
   Symbol            * epmem_success_symbol;
   Symbol            * epmem_failure_symbol;
   Symbol            * epmem_bad_cmd_symbol;
+
+  Symbol			* epmem_retrieve_symbol;
+  Symbol			* epmem_next_symbol;
+  Symbol			* epmem_prev_symbol;
+  Symbol			* epmem_query_symbol;
+  Symbol			* epmem_negquery_symbol;
+  Symbol			* epmem_before_symbol;
+  Symbol			* epmem_after_symbol;
+  Symbol			* epmem_prohibit_symbol;
 
   /* ----------------------- Symbol table stuff -------------------------- */
 
@@ -804,15 +810,29 @@ kernel time and total_cpu_time greater than the derived total CPU time. REW */
   unsigned long predict_seed;
   std::string *prediction;
 
+  // wma
+  wma_param_container *wma_params;
+  wma_stat_container *wma_stats;
+
+  wma_timelist_element wma_timelist[ WMA_MAX_TIMELIST + 1 ];
+  wma_timelist_element *wma_timelist_current;
+
+  double wma_power_array[ WMA_POWER_SIZE ];
+  int wma_quick_boost[ WMA_DECAY_HISTORY + 1 ];
+  bool wma_initialized;
+  bool wma_first;
+  tc_number wma_tc_counter;
 
   // epmem
   epmem_param_container *epmem_params;  
   epmem_stat_container *epmem_stats;
-  epmem_timer_container *epmem_timers;  
+  epmem_timer_container *epmem_timers;
 
-  sqlite3 *epmem_db;
-  int epmem_db_status;
-  sqlite3_stmt *epmem_statements[ EPMEM_MAX_STATEMENTS ];
+  soar_module::sqlite_database *epmem_db;
+  epmem_common_statement_container *epmem_stmts_common;
+  epmem_tree_statement_container *epmem_stmts_tree;
+  epmem_graph_statement_container *epmem_stmts_graph;
+  
 
   std::map<epmem_node_id, bool> *epmem_node_removals;
   std::vector<epmem_time_id> *epmem_node_mins;
@@ -829,21 +849,6 @@ kernel time and total_cpu_time greater than the derived total CPU time. REW */
 
   epmem_time_id epmem_validation;
   bool epmem_first_switch;
-
-
-  // wma
-  wma_param_container *wma_params;
-  wma_stat_container *wma_stats;
-
-  wma_timelist_element wma_timelist[ WMA_MAX_TIMELIST + 1 ];
-  wma_timelist_element *wma_timelist_current;
-
-  double wma_power_array[ WMA_POWER_SIZE ];
-  int wma_quick_boost[ WMA_DECAY_HISTORY + 1 ];
-  bool wma_initialized;
-  bool wma_first;
-  tc_number wma_tc_counter;
-
 
 
   // JRV: Added to support XML management inside Soar

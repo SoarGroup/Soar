@@ -662,6 +662,15 @@ void create_predefined_symbols (agent* thisAgent) {
   thisAgent->epmem_success_symbol = make_sym_constant( thisAgent, "success" );
   thisAgent->epmem_failure_symbol = make_sym_constant( thisAgent, "failure" );
   thisAgent->epmem_bad_cmd_symbol = make_sym_constant( thisAgent, "bad-cmd" );
+
+  thisAgent->epmem_retrieve_symbol = make_sym_constant( thisAgent, "retrieve" );
+  thisAgent->epmem_next_symbol = make_sym_constant( thisAgent, "next" );
+  thisAgent->epmem_prev_symbol = make_sym_constant( thisAgent, "previous" );
+  thisAgent->epmem_query_symbol = make_sym_constant( thisAgent, "query" );
+  thisAgent->epmem_negquery_symbol = make_sym_constant( thisAgent, "neg-query" );
+  thisAgent->epmem_before_symbol = make_sym_constant( thisAgent, "before" );
+  thisAgent->epmem_after_symbol = make_sym_constant( thisAgent, "after" );
+  thisAgent->epmem_prohibit_symbol = make_sym_constant( thisAgent, "prohibit" );
 }
 
 void release_helper(agent* thisAgent, Symbol** sym) {
@@ -735,5 +744,14 @@ void release_predefined_symbols(agent* thisAgent) {
   release_helper( thisAgent, &( thisAgent->epmem_graph_match_mapping_cue_symbol ) );
   release_helper( thisAgent, &( thisAgent->epmem_success_symbol ) );
   release_helper( thisAgent, &( thisAgent->epmem_failure_symbol ) );
-  release_helper( thisAgent, &( thisAgent->epmem_bad_cmd_symbol ) );  
+  release_helper( thisAgent, &( thisAgent->epmem_bad_cmd_symbol ) ); 
+
+  release_helper( thisAgent, &( thisAgent->epmem_retrieve_symbol ) );
+  release_helper( thisAgent, &( thisAgent->epmem_next_symbol ) );
+  release_helper( thisAgent, &( thisAgent->epmem_prev_symbol ) );
+  release_helper( thisAgent, &( thisAgent->epmem_query_symbol ) );
+  release_helper( thisAgent, &( thisAgent->epmem_negquery_symbol ) );
+  release_helper( thisAgent, &( thisAgent->epmem_before_symbol ) );
+  release_helper( thisAgent, &( thisAgent->epmem_after_symbol ) );
+  release_helper( thisAgent, &( thisAgent->epmem_prohibit_symbol ) );
 }

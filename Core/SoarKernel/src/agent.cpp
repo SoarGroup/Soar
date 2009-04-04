@@ -335,15 +335,15 @@ agent * create_soar_agent (char * agent_name) {                                 
   newAgent->prediction = new std::string();
   predict_init( newAgent );
 
-  // epmem initialization - timers should come before stats
-  newAgent->epmem_timers = new epmem_timer_container( newAgent );
+  // epmem initialization - timers should come before stats  
   newAgent->epmem_params = new epmem_param_container( newAgent );
   newAgent->epmem_stats = new epmem_stat_container( newAgent );  
+  newAgent->epmem_timers = new epmem_timer_container( newAgent );
 
-  newAgent->epmem_db = NULL;
-  newAgent->epmem_db_status = EPMEM_DB_CLOSED;
-  for ( int i=0; i<EPMEM_MAX_STATEMENTS; i++ )
-  	newAgent->epmem_statements[ i ] = NULL;
+  newAgent->epmem_db = new soar_module::sqlite_database();
+  newAgent->epmem_stmts_common = NULL;
+  newAgent->epmem_stmts_tree = NULL;
+  newAgent->epmem_stmts_graph = NULL;
   
   newAgent->epmem_node_removals = new std::map<epmem_node_id, bool>();
   newAgent->epmem_node_mins = new std::vector<epmem_time_id>();
@@ -427,6 +427,8 @@ void destroy_soar_agent (agent * delete_agent)
   delete delete_agent->epmem_id_replacement;
   delete delete_agent->epmem_identifier_to_id;
   delete delete_agent->epmem_id_to_identifier;
+
+  delete delete_agent->epmem_db;
 
   /////////////////////////////////////////////////////////
   /////////////////////////////////////////////////////////
