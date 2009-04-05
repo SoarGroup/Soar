@@ -14,6 +14,8 @@
 #define SOAR_DB_H
 
 #include <list>
+
+#include "soar_module.h"
 #include "sqlite3.h"
 
 // separates this functionality

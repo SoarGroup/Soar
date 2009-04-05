@@ -15,10 +15,13 @@
  */
 
 #include "soar_db.h"
-#include "sqlite3.h"
-#include "agent.h"
 
 #include <assert.h>
+#include <list>
+
+#include "soar_module.h"
+#include "agent.h"
+#include "sqlite3.h"
 
 namespace soar_module
 {

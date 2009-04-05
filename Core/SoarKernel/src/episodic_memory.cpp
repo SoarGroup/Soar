@@ -418,6 +418,9 @@ epmem_timer_container::epmem_timer_container( agent *new_agent ): timer_containe
 	prev = new epmem_timer( "epmem_prev", my_agent, timer::two );
 	add( prev );
 
+	hash = new epmem_timer( "epmem_hash", my_agent, timer::two );
+	add( hash );
+
 	// three
 
 	ncb_edge = new epmem_timer( "ncb_edge", my_agent, timer::three );
@@ -1689,76 +1692,78 @@ long epmem_temporal_hash( agent *my_agent, Symbol *sym, bool add_on_fail = true 
 {
 	long return_val = NULL;
 
-	// basic process:
-	// - search
-	// - if found, return
-	// - else, add
-	if ( sym->common.symbol_type == SYM_CONSTANT_SYMBOL_TYPE )
+	////////////////////////////////////////////////////////////////////////////
+	my_agent->epmem_timers->hash->start();
+	////////////////////////////////////////////////////////////////////////////
+	
+	if ( ( sym->common.symbol_type == SYM_CONSTANT_SYMBOL_TYPE ) ||
+		 ( sym->common.symbol_type == INT_CONSTANT_SYMBOL_TYPE ) ||
+		 ( sym->common.symbol_type == FLOAT_CONSTANT_SYMBOL_TYPE ) )
 	{
-		// search (type, value)
+		if ( ( sym->common.epmem_hash ) && ( sym->common.epmem_valid == my_agent->epmem_validation ) )
 		{
-			my_agent->epmem_stmts_common->hash_get->bind_int( 1, SYM_CONSTANT_SYMBOL_TYPE );
-			my_agent->epmem_stmts_common->hash_get->bind_text( 2, (const char *) sym->sc.name );
+			return_val = sym->common.epmem_hash;
+		}
+		else
+		{		
+			// basic process:
+			// - search
+			// - if found, return
+			// - else, add
+			
+			my_agent->epmem_stmts_common->hash_get->bind_int( 1, sym->common.symbol_type );
+			switch ( sym->common.symbol_type )
+			{
+				case SYM_CONSTANT_SYMBOL_TYPE:
+					my_agent->epmem_stmts_common->hash_get->bind_text( 2, (const char *) sym->sc.name );
+					break;
+
+				case INT_CONSTANT_SYMBOL_TYPE:
+					my_agent->epmem_stmts_common->hash_get->bind_int( 2, sym->ic.value );
+					break;
+
+				case FLOAT_CONSTANT_SYMBOL_TYPE:
+					my_agent->epmem_stmts_common->hash_get->bind_double( 2, sym->fc.value );
+					break;
+			}
+
 			if ( my_agent->epmem_stmts_common->hash_get->execute() == soar_module::row )
 				return_val = my_agent->epmem_stmts_common->hash_get->column_int( 0 );
 
 			my_agent->epmem_stmts_common->hash_get->reinitialize();
-		}
 
-		// add (type, value)
-		if ( !return_val && add_on_fail )
-		{
-			my_agent->epmem_stmts_common->hash_add->bind_int( 1, SYM_CONSTANT_SYMBOL_TYPE );
-			my_agent->epmem_stmts_common->hash_add->bind_text( 2, (const char *) sym->sc.name );
-			my_agent->epmem_stmts_common->hash_add->execute( soar_module::op_reinit );
+			//
 
-			return_val = (long) my_agent->epmem_db->last_insert_rowid();
-		}
-	}
-	else if ( sym->common.symbol_type == INT_CONSTANT_SYMBOL_TYPE )
-	{
-		// search (type, value)
-		{
-			my_agent->epmem_stmts_common->hash_get->bind_int( 1, INT_CONSTANT_SYMBOL_TYPE );
-			my_agent->epmem_stmts_common->hash_get->bind_int( 2, sym->ic.value );
-			if ( my_agent->epmem_stmts_common->hash_get->execute() == soar_module::row )
-				return_val = my_agent->epmem_stmts_common->hash_get->column_int( 0 );
+			if ( !return_val && add_on_fail )
+			{
+				my_agent->epmem_stmts_common->hash_add->bind_int( 1, sym->common.symbol_type );
+				switch ( sym->common.symbol_type )
+				{
+					case SYM_CONSTANT_SYMBOL_TYPE:
+						my_agent->epmem_stmts_common->hash_add->bind_text( 2, (const char *) sym->sc.name );
+						break;
 
-			my_agent->epmem_stmts_common->hash_get->reinitialize();		
-		}
+					case INT_CONSTANT_SYMBOL_TYPE:
+						my_agent->epmem_stmts_common->hash_add->bind_int( 2, sym->ic.value );
+						break;
 
-		// add (type, value)
-		if ( !return_val && add_on_fail )
-		{
-			my_agent->epmem_stmts_common->hash_add->bind_int( 1, INT_CONSTANT_SYMBOL_TYPE );
-			my_agent->epmem_stmts_common->hash_add->bind_int( 2, sym->ic.value );
-			my_agent->epmem_stmts_common->hash_add->execute( soar_module::op_reinit );
+					case FLOAT_CONSTANT_SYMBOL_TYPE:
+						my_agent->epmem_stmts_common->hash_add->bind_double( 2, sym->fc.value );
+						break;
+				}
 
-			return_val = (long) my_agent->epmem_db->last_insert_rowid();			
+				my_agent->epmem_stmts_common->hash_add->execute( soar_module::op_reinit );
+				return_val = (long) my_agent->epmem_db->last_insert_rowid();
+			}			
+
+			sym->common.epmem_hash = return_val;
+			sym->common.epmem_valid = my_agent->epmem_validation;
 		}
 	}
-	else if ( sym->common.symbol_type == FLOAT_CONSTANT_SYMBOL_TYPE )
-	{
-		// search (type, value)
-		{
-			my_agent->epmem_stmts_common->hash_get->bind_int( 1, FLOAT_CONSTANT_SYMBOL_TYPE );
-			my_agent->epmem_stmts_common->hash_get->bind_double( 2, sym->fc.value );
-			if ( my_agent->epmem_stmts_common->hash_get->execute() == soar_module::row )
-				return_val = my_agent->epmem_stmts_common->hash_get->column_int( 0 );
 
-			my_agent->epmem_stmts_common->hash_get->reinitialize();	
-		}
-
-		// add (type, value)
-		if ( !return_val && add_on_fail )
-		{
-			my_agent->epmem_stmts_common->hash_add->bind_int( 1, FLOAT_CONSTANT_SYMBOL_TYPE );
-			my_agent->epmem_stmts_common->hash_add->bind_double( 2, sym->fc.value );
-			my_agent->epmem_stmts_common->hash_add->execute( soar_module::op_reinit );
-
-			return_val = (long) my_agent->epmem_db->last_insert_rowid();
-		}
-	}
+	////////////////////////////////////////////////////////////////////////////
+	my_agent->epmem_timers->hash->stop();
+	////////////////////////////////////////////////////////////////////////////
 
 	return return_val;
 }

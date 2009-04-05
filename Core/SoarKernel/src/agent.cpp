@@ -48,11 +48,8 @@
 #include "exploration.h"
 #include "reinforcement_learning.h"
 #include "decision_manipulation.h"
-
-#include "episodic_memory.h"
-#include "sqlite3.h"
-
 #include "wma.h"
+#include "episodic_memory.h"
 
 
 /* ================================================================== */

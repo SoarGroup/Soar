@@ -224,6 +224,7 @@ class epmem_timer_container: public timer_container
 		timer *init;
 		timer *next;
 		timer *prev;
+		timer *hash;
 
 		timer *ncb_edge;
 		timer *ncb_edge_rit;

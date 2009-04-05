@@ -356,6 +356,8 @@ Symbol *make_sym_constant (agent* thisAgent, char const*name) {
     sym->common.symbol_type = SYM_CONSTANT_SYMBOL_TYPE;
     sym->common.reference_count = 1;
     sym->common.hash_id = get_next_symbol_hash_id(thisAgent);
+	sym->common.epmem_hash = NULL;
+	sym->common.epmem_valid = NULL;
     sym->sc.name = make_memory_block_for_string (thisAgent, name);
     sym->sc.production = NIL;
     add_to_hash_table (thisAgent, thisAgent->sym_constant_hash_table, sym);
@@ -374,6 +376,8 @@ Symbol *make_int_constant (agent* thisAgent, long value) {
     sym->common.symbol_type = INT_CONSTANT_SYMBOL_TYPE;
     sym->common.reference_count = 1;
     sym->common.hash_id = get_next_symbol_hash_id(thisAgent);
+	sym->common.epmem_hash = NULL;
+	sym->common.epmem_valid = NULL;
     sym->ic.value = value;
     add_to_hash_table (thisAgent, thisAgent->int_constant_hash_table, sym);
   }
@@ -391,6 +395,8 @@ Symbol *make_float_constant (agent* thisAgent, double value) {
     sym->common.symbol_type = FLOAT_CONSTANT_SYMBOL_TYPE;
     sym->common.reference_count = 1;
     sym->common.hash_id = get_next_symbol_hash_id(thisAgent);
+	sym->common.epmem_hash = NULL;
+	sym->common.epmem_valid = NULL;
     sym->fc.value = value;
     add_to_hash_table (thisAgent, thisAgent->float_constant_hash_table, sym);
   }

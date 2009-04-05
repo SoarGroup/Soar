@@ -163,6 +163,9 @@ typedef struct symbol_common_data_struct {
     unsigned long retesave_symindex; /* used for rete fastsave/fastload */
   } a;
   unsigned long hash_id;           /* used for hashing in the rete */
+
+  long epmem_hash;
+  long epmem_valid;
 } symbol_common_data;
 
 /* WARNING:  In the following structures (the five kinds of symbols),
