@@ -337,19 +337,9 @@ Symbol *make_new_identifier (agent* thisAgent, char name_letter, goal_stack_leve
   sym->id.reward_header = NIL;
 
   sym->id.epmem_header = NIL;
-  sym->id.epmem_wme = NIL;
   sym->id.epmem_cmd_header = NIL;
-  sym->id.epmem_cmd_wme = NIL;
   sym->id.epmem_result_header = NIL;
-  sym->id.epmem_result_wme = NIL;
   sym->id.epmem_id = NIL;
-
-  sym->id.smem_header = NIL;
-  sym->id.smem_wme = NIL;
-  sym->id.smem_cmd_header = NIL;
-  sym->id.smem_cmd_wme = NIL;
-  sym->id.smem_result_header = NIL;
-  sym->id.smem_result_wme = NIL;
 
   add_to_hash_table (thisAgent, thisAgent->identifier_hash_table, sym);
   return sym;
@@ -366,6 +356,8 @@ Symbol *make_sym_constant (agent* thisAgent, char const*name) {
     sym->common.symbol_type = SYM_CONSTANT_SYMBOL_TYPE;
     sym->common.reference_count = 1;
     sym->common.hash_id = get_next_symbol_hash_id(thisAgent);
+	sym->common.epmem_hash = NULL;
+	sym->common.epmem_valid = NULL;
     sym->sc.name = make_memory_block_for_string (thisAgent, name);
     sym->sc.production = NIL;
     add_to_hash_table (thisAgent, thisAgent->sym_constant_hash_table, sym);
@@ -384,6 +376,8 @@ Symbol *make_int_constant (agent* thisAgent, long value) {
     sym->common.symbol_type = INT_CONSTANT_SYMBOL_TYPE;
     sym->common.reference_count = 1;
     sym->common.hash_id = get_next_symbol_hash_id(thisAgent);
+	sym->common.epmem_hash = NULL;
+	sym->common.epmem_valid = NULL;
     sym->ic.value = value;
     add_to_hash_table (thisAgent, thisAgent->int_constant_hash_table, sym);
   }
@@ -401,6 +395,8 @@ Symbol *make_float_constant (agent* thisAgent, double value) {
     sym->common.symbol_type = FLOAT_CONSTANT_SYMBOL_TYPE;
     sym->common.reference_count = 1;
     sym->common.hash_id = get_next_symbol_hash_id(thisAgent);
+	sym->common.epmem_hash = NULL;
+	sym->common.epmem_valid = NULL;
     sym->fc.value = value;
     add_to_hash_table (thisAgent, thisAgent->float_constant_hash_table, sym);
   }
@@ -673,9 +669,14 @@ void create_predefined_symbols (agent* thisAgent) {
   thisAgent->epmem_failure_symbol = make_sym_constant( thisAgent, "failure" );
   thisAgent->epmem_bad_cmd_symbol = make_sym_constant( thisAgent, "bad-cmd" );
 
-  thisAgent->smem_symbol = make_sym_constant( thisAgent, "smem" );
-  thisAgent->smem_cmd_symbol = make_sym_constant( thisAgent, "command" );
-  thisAgent->smem_result_symbol = make_sym_constant( thisAgent, "result" );
+  thisAgent->epmem_retrieve_symbol = make_sym_constant( thisAgent, "retrieve" );
+  thisAgent->epmem_next_symbol = make_sym_constant( thisAgent, "next" );
+  thisAgent->epmem_prev_symbol = make_sym_constant( thisAgent, "previous" );
+  thisAgent->epmem_query_symbol = make_sym_constant( thisAgent, "query" );
+  thisAgent->epmem_negquery_symbol = make_sym_constant( thisAgent, "neg-query" );
+  thisAgent->epmem_before_symbol = make_sym_constant( thisAgent, "before" );
+  thisAgent->epmem_after_symbol = make_sym_constant( thisAgent, "after" );
+  thisAgent->epmem_prohibit_symbol = make_sym_constant( thisAgent, "prohibit" );
 }
 
 void release_helper(agent* thisAgent, Symbol** sym) {
@@ -749,9 +750,14 @@ void release_predefined_symbols(agent* thisAgent) {
   release_helper( thisAgent, &( thisAgent->epmem_graph_match_mapping_cue_symbol ) );
   release_helper( thisAgent, &( thisAgent->epmem_success_symbol ) );
   release_helper( thisAgent, &( thisAgent->epmem_failure_symbol ) );
-  release_helper( thisAgent, &( thisAgent->epmem_bad_cmd_symbol ) );  
+  release_helper( thisAgent, &( thisAgent->epmem_bad_cmd_symbol ) ); 
 
-  release_helper( thisAgent, &( thisAgent->smem_symbol ) );
-  release_helper( thisAgent, &( thisAgent->smem_cmd_symbol ) );
-  release_helper( thisAgent, &( thisAgent->smem_result_symbol ) );
+  release_helper( thisAgent, &( thisAgent->epmem_retrieve_symbol ) );
+  release_helper( thisAgent, &( thisAgent->epmem_next_symbol ) );
+  release_helper( thisAgent, &( thisAgent->epmem_prev_symbol ) );
+  release_helper( thisAgent, &( thisAgent->epmem_query_symbol ) );
+  release_helper( thisAgent, &( thisAgent->epmem_negquery_symbol ) );
+  release_helper( thisAgent, &( thisAgent->epmem_before_symbol ) );
+  release_helper( thisAgent, &( thisAgent->epmem_after_symbol ) );
+  release_helper( thisAgent, &( thisAgent->epmem_prohibit_symbol ) );
 }

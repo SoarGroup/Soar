@@ -48,13 +48,8 @@
 #include "exploration.h"
 #include "reinforcement_learning.h"
 #include "decision_manipulation.h"
-
-#include "episodic_memory.h"
-#include "sqlite3.h"
-
-#include "semantic_memory.h"
-
 #include "wma.h"
+#include "episodic_memory.h"
 
 
 /* ================================================================== */
@@ -87,6 +82,8 @@ void init_soar_agent(agent* thisAgent) {
   init_explain(thisAgent);  /* AGR 564 */
   select_init(thisAgent);
   predict_init(thisAgent);
+
+  thisAgent->epmem_params->exclusions->set_value( "epmem" );
 
 #ifdef REAL_TIME_BEHAVIOR
   /* RMJ */
@@ -320,18 +317,8 @@ agent * create_soar_agent (char * agent_name) {                                 
   newAgent->exploration_params[ EXPLORATION_PARAM_TEMPERATURE ] = exploration_add_parameter( 25, &exploration_validate_temperature, "temperature" );
 
   // rl initialization
-  newAgent->rl_params[ RL_PARAM_LEARNING ] = rl_add_parameter( "learning", RL_LEARNING_OFF, &rl_validate_learning, &rl_convert_learning, &rl_convert_learning );
-  newAgent->rl_params[ RL_PARAM_DISCOUNT_RATE ] = rl_add_parameter( "discount-rate", 0.9, &rl_validate_discount );
-  newAgent->rl_params[ RL_PARAM_LEARNING_RATE ] = rl_add_parameter( "learning-rate", 0.3, &rl_validate_learning_rate );
-  newAgent->rl_params[ RL_PARAM_LEARNING_POLICY ] = rl_add_parameter( "learning-policy", RL_LEARNING_SARSA, &rl_validate_learning_policy, &rl_convert_learning_policy, &rl_convert_learning_policy );
-  newAgent->rl_params[ RL_PARAM_ET_DECAY_RATE ] = rl_add_parameter( "eligibility-trace-decay-rate", 0, &rl_validate_decay_rate );
-  newAgent->rl_params[ RL_PARAM_ET_TOLERANCE ] = rl_add_parameter( "eligibility-trace-tolerance", 0.001, &rl_validate_trace_tolerance );
-  newAgent->rl_params[ RL_PARAM_TEMPORAL_EXTENSION ] = rl_add_parameter( "temporal-extension", RL_TE_ON, &rl_validate_te_enabled, &rl_convert_te_enabled, &rl_convert_te_enabled );
-  newAgent->rl_params[ RL_PARAM_HRL_DISCOUNT ] = rl_add_parameter( "hrl-discount", RL_HRL_D_ON, &rl_validate_hrl_discount, &rl_convert_hrl_discount, &rl_convert_hrl_discount );
-
-  newAgent->rl_stats[ RL_STAT_UPDATE_ERROR ] = rl_add_stat( "update-error" );
-  newAgent->rl_stats[ RL_STAT_TOTAL_REWARD ] = rl_add_stat( "total-reward" );
-  newAgent->rl_stats[ RL_STAT_GLOBAL_REWARD ] = rl_add_stat( "global-reward" );
+  newAgent->rl_params = new rl_param_container( newAgent );
+  newAgent->rl_stats = new rl_stat_container( newAgent ); 
 
   rl_initialize_template_tracking( newAgent );
 
@@ -345,88 +332,23 @@ agent * create_soar_agent (char * agent_name) {                                 
   newAgent->prediction = new std::string();
   predict_init( newAgent );
 
-  // epmem initialization
-  newAgent->epmem_params[ EPMEM_PARAM_LEARNING ] = epmem_new_parameter( "learning", EPMEM_LEARNING_ON, &epmem_validate_learning, &epmem_convert_learning, &epmem_convert_learning );
-  newAgent->epmem_params[ EPMEM_PARAM_DB ] = epmem_new_parameter( "database", EPMEM_DB_MEM, &epmem_validate_database, &epmem_convert_database, &epmem_convert_database );
-  newAgent->epmem_params[ EPMEM_PARAM_PATH ] = epmem_new_parameter( "path", "", &epmem_validate_path );
-  newAgent->epmem_params[ EPMEM_PARAM_COMMIT ] = epmem_new_parameter( "commit", 1.0, &epmem_validate_commit );
+  // epmem initialization - timers should come before stats  
+  newAgent->epmem_params = new epmem_param_container( newAgent );
+  newAgent->epmem_stats = new epmem_stat_container( newAgent );  
+  newAgent->epmem_timers = new epmem_timer_container( newAgent );
 
-  newAgent->epmem_params[ EPMEM_PARAM_MODE ] = epmem_new_parameter( "mode", EPMEM_MODE_THREE, &epmem_validate_mode, &epmem_convert_mode, &epmem_convert_mode );
-  newAgent->epmem_params[ EPMEM_PARAM_GRAPH_MATCH ] = epmem_new_parameter( "graph-match", EPMEM_GRAPH_MATCH_ON, &epmem_validate_graph_match, &epmem_convert_graph_match, &epmem_convert_graph_match );
-
-  newAgent->epmem_params[ EPMEM_PARAM_PHASE ] = epmem_new_parameter( "phase", EPMEM_PHASE_OUTPUT, &epmem_validate_phase, &epmem_convert_phase, &epmem_convert_phase );
-  newAgent->epmem_params[ EPMEM_PARAM_TRIGGER ] = epmem_new_parameter( "trigger", EPMEM_TRIGGER_OUTPUT, &epmem_validate_trigger, &epmem_convert_trigger, &epmem_convert_trigger );
-  newAgent->epmem_params[ EPMEM_PARAM_FORCE ] = epmem_new_parameter( "force", EPMEM_FORCE_OFF, &epmem_validate_force, &epmem_convert_force, &epmem_convert_force );
-  newAgent->epmem_params[ EPMEM_PARAM_BALANCE ] = epmem_new_parameter( "balance", 0.5, &epmem_validate_balance );
-  newAgent->epmem_params[ EPMEM_PARAM_EXCLUSIONS ] = epmem_new_parameter( "exclusions", "", &epmem_validate_exclusions );
-  newAgent->epmem_params[ EPMEM_PARAM_TIMERS ] = epmem_new_parameter( "timers", EPMEM_TIMERS_OFF, &epmem_validate_ext_timers, &epmem_convert_ext_timers, &epmem_convert_ext_timers );
-
-  newAgent->epmem_stats[ EPMEM_STAT_TIME ] = epmem_new_stat( "time" );
-  newAgent->epmem_stats[ EPMEM_STAT_MEM_USAGE ] = epmem_new_stat( "mem_usage" );
-  newAgent->epmem_stats[ EPMEM_STAT_MEM_HIGH ] = epmem_new_stat( "mem_high" );
-  newAgent->epmem_stats[ EPMEM_STAT_NCB_WMES ] = epmem_new_stat( "ncb_wmes" );
-  newAgent->epmem_stats[ EPMEM_STAT_QRY_POS ] = epmem_new_stat( "qry_pos" );
-  newAgent->epmem_stats[ EPMEM_STAT_QRY_NEG ] = epmem_new_stat( "qry_neg" );
-  newAgent->epmem_stats[ EPMEM_STAT_QRY_RET ] = epmem_new_stat( "qry_ret" );
-  newAgent->epmem_stats[ EPMEM_STAT_QRY_CARD ] = epmem_new_stat( "qry_card" );
-  newAgent->epmem_stats[ EPMEM_STAT_QRY_LITS ] = epmem_new_stat( "qry_lits" );
-
-  newAgent->epmem_stats[ EPMEM_STAT_NEXT_ID ] = epmem_new_stat( "next_id" );
-
-  newAgent->epmem_stats[ EPMEM_STAT_RIT_OFFSET_1 ] = epmem_new_stat( "rit_offset_1" );
-  newAgent->epmem_stats[ EPMEM_STAT_RIT_LEFTROOT_1 ] = epmem_new_stat( "rit_left_root_1" );
-  newAgent->epmem_stats[ EPMEM_STAT_RIT_RIGHTROOT_1 ] = epmem_new_stat( "rit_right_root_1" );
-  newAgent->epmem_stats[ EPMEM_STAT_RIT_MINSTEP_1 ] = epmem_new_stat( "rit_min_step_1" );
-
-  newAgent->epmem_stats[ EPMEM_STAT_RIT_OFFSET_2 ] = epmem_new_stat( "rit_offset_2" );
-  newAgent->epmem_stats[ EPMEM_STAT_RIT_LEFTROOT_2 ] = epmem_new_stat( "rit_left_root_2" );
-  newAgent->epmem_stats[ EPMEM_STAT_RIT_RIGHTROOT_2 ] = epmem_new_stat( "rit_right_root_2" );
-  newAgent->epmem_stats[ EPMEM_STAT_RIT_MINSTEP_2 ] = epmem_new_stat( "rit_min_step_2" );
-
-
-  newAgent->epmem_timers[ EPMEM_TIMER_TOTAL ] = epmem_new_timer( "epmem_total", EPMEM_TIMERS_ONE );
-  newAgent->epmem_timers[ EPMEM_TIMER_STORAGE ] = epmem_new_timer( "epmem_storage", EPMEM_TIMERS_TWO );
-  newAgent->epmem_timers[ EPMEM_TIMER_NCB_RETRIEVAL ] = epmem_new_timer( "epmem_ncb_retrieval", EPMEM_TIMERS_TWO );
-  newAgent->epmem_timers[ EPMEM_TIMER_QUERY ] = epmem_new_timer( "epmem_query", EPMEM_TIMERS_TWO );
-  newAgent->epmem_timers[ EPMEM_TIMER_API ] = epmem_new_timer( "epmem_api", EPMEM_TIMERS_TWO );
-  newAgent->epmem_timers[ EPMEM_TIMER_TRIGGER ] = epmem_new_timer( "epmem_trigger", EPMEM_TIMERS_TWO );
-  newAgent->epmem_timers[ EPMEM_TIMER_INIT ] = epmem_new_timer( "epmem_init", EPMEM_TIMERS_TWO );
-  newAgent->epmem_timers[ EPMEM_TIMER_NEXT ] = epmem_new_timer( "epmem_next", EPMEM_TIMERS_TWO );
-  newAgent->epmem_timers[ EPMEM_TIMER_PREV ] = epmem_new_timer( "epmem_prev", EPMEM_TIMERS_TWO );
-  newAgent->epmem_timers[ EPMEM_TIMER_NCB_EDGE ] = epmem_new_timer( "ncb_edge", EPMEM_TIMERS_THREE );
-  newAgent->epmem_timers[ EPMEM_TIMER_NCB_EDGE_RIT ] = epmem_new_timer( "ncb_edge_rit", EPMEM_TIMERS_THREE );
-  newAgent->epmem_timers[ EPMEM_TIMER_NCB_NODE ] = epmem_new_timer( "ncb_node", EPMEM_TIMERS_THREE );
-  newAgent->epmem_timers[ EPMEM_TIMER_NCB_NODE_RIT ] = epmem_new_timer( "ncb_node_rit", EPMEM_TIMERS_THREE );
-  newAgent->epmem_timers[ EPMEM_TIMER_QUERY_DNF ] = epmem_new_timer( "query_dnf", EPMEM_TIMERS_THREE );
-  newAgent->epmem_timers[ EPMEM_TIMER_QUERY_GRAPH_MATCH ] = epmem_new_timer( "query_graph_match", EPMEM_TIMERS_THREE );
-  newAgent->epmem_timers[ EPMEM_TIMER_QUERY_POS_START_EP ] = epmem_new_timer( "query_pos_start_ep", EPMEM_TIMERS_THREE );
-  newAgent->epmem_timers[ EPMEM_TIMER_QUERY_POS_START_NOW ] = epmem_new_timer( "query_pos_start_now", EPMEM_TIMERS_THREE );
-  newAgent->epmem_timers[ EPMEM_TIMER_QUERY_POS_START_POINT ] = epmem_new_timer( "query_pos_start_point", EPMEM_TIMERS_THREE );
-  newAgent->epmem_timers[ EPMEM_TIMER_QUERY_POS_END_EP ] = epmem_new_timer( "query_pos_end_ep", EPMEM_TIMERS_THREE );
-  newAgent->epmem_timers[ EPMEM_TIMER_QUERY_POS_END_NOW ] = epmem_new_timer( "query_pos_end_now", EPMEM_TIMERS_THREE );
-  newAgent->epmem_timers[ EPMEM_TIMER_QUERY_POS_END_POINT ] = epmem_new_timer( "query_pos_end_point", EPMEM_TIMERS_THREE );
-  newAgent->epmem_timers[ EPMEM_TIMER_QUERY_NEG_START_EP ] = epmem_new_timer( "query_neg_start_ep", EPMEM_TIMERS_THREE );
-  newAgent->epmem_timers[ EPMEM_TIMER_QUERY_NEG_START_NOW ] = epmem_new_timer( "query_neg_start_now", EPMEM_TIMERS_THREE );
-  newAgent->epmem_timers[ EPMEM_TIMER_QUERY_NEG_START_POINT ] = epmem_new_timer( "query_neg_start_point", EPMEM_TIMERS_THREE );
-  newAgent->epmem_timers[ EPMEM_TIMER_QUERY_NEG_END_EP ] = epmem_new_timer( "query_neg_end_ep", EPMEM_TIMERS_THREE );
-  newAgent->epmem_timers[ EPMEM_TIMER_QUERY_NEG_END_NOW ] = epmem_new_timer( "query_neg_end_now", EPMEM_TIMERS_THREE );
-  newAgent->epmem_timers[ EPMEM_TIMER_QUERY_NEG_END_POINT ] = epmem_new_timer( "query_neg_end_point", EPMEM_TIMERS_THREE );
-
-  newAgent->epmem_db = NULL;
-  newAgent->epmem_db_status = EPMEM_DB_CLOSED;
-  for ( int i=0; i<EPMEM_MAX_STATEMENTS; i++ )
-  	newAgent->epmem_statements[ i ] = NULL;
-
-  newAgent->epmem_exclusions = new std::list<const char *>();
-  epmem_set_parameter( newAgent, EPMEM_PARAM_EXCLUSIONS, "epmem" );
-
+  newAgent->epmem_db = new soar_module::sqlite_database();
+  newAgent->epmem_stmts_common = NULL;
+  newAgent->epmem_stmts_tree = NULL;
+  newAgent->epmem_stmts_graph = NULL;
+  
   newAgent->epmem_node_removals = new std::map<epmem_node_id, bool>();
   newAgent->epmem_node_mins = new std::vector<epmem_time_id>();
-  newAgent->epmem_node_maxes = new std::vector<epmem_time_id>();
+  newAgent->epmem_node_maxes = new std::vector<bool>();
 
   newAgent->epmem_edge_removals = new std::map<epmem_node_id, bool>();
   newAgent->epmem_edge_mins = new std::vector<epmem_time_id>();
-  newAgent->epmem_edge_maxes = new std::vector<epmem_time_id>();
+  newAgent->epmem_edge_maxes = new std::vector<bool>();
 
   newAgent->epmem_id_repository = new epmem_parent_id_pool();
   newAgent->epmem_id_replacement = new epmem_return_id_pool();
@@ -438,42 +360,12 @@ agent * create_soar_agent (char * agent_name) {                                 
 
 
   // wma initialization
-  newAgent->wma_params[ WMA_PARAM_ACTIVATION ] = wma_add_parameter( "activation", WMA_ACTIVATION_ON, &wma_validate_activation, &wma_convert_activation, &wma_convert_activation );
-  newAgent->wma_params[ WMA_PARAM_DECAY_RATE ] = wma_add_parameter( "decay-rate", -0.8, &wma_validate_decay );
-  newAgent->wma_params[ WMA_PARAM_CRITERIA ] = wma_add_parameter( "criteria", WMA_CRITERIA_ALL, &wma_validate_criteria, &wma_convert_criteria, &wma_convert_criteria );
-  newAgent->wma_params[ WMA_PARAM_FORGETTING ] = wma_add_parameter( "forgetting", WMA_FORGETTING_OFF, &wma_validate_forgetting, &wma_convert_forgetting, &wma_convert_forgetting );
-  newAgent->wma_params[ WMA_PARAM_I_SUPPORT ] = wma_add_parameter( "i-support", WMA_I_UNIFORM, &wma_validate_i_support, &wma_convert_i_support, &wma_convert_i_support );
-  newAgent->wma_params[ WMA_PARAM_PERSISTENCE ] = wma_add_parameter( "persistence", WMA_PERSISTENCE_OFF, &wma_validate_persistence, &wma_convert_persistence, &wma_convert_persistence );
-  newAgent->wma_params[ WMA_PARAM_PRECISION ] = wma_add_parameter( "precision", WMA_PRECISION_LOW, &wma_validate_precision, &wma_convert_precision, &wma_convert_precision );
-
-  newAgent->wma_stats[ WMA_STAT_DUMMY ] = wma_add_stat( "dummy" );
+  newAgent->wma_params = new wma_param_container( newAgent );
+  newAgent->wma_stats = new wma_stat_container( newAgent );
 
   newAgent->wma_initialized = false;
   newAgent->wma_first = true;
 
-
-  // smem initialization
-  newAgent->smem_params[ SMEM_PARAM_LEARNING ] = smem_new_parameter( "learning", SMEM_LEARNING_ON, &smem_validate_learning, &smem_convert_learning, &smem_convert_learning );
-
-  newAgent->smem_params[ SMEM_PARAM_DB ] = smem_new_parameter( "database", SMEM_DB_MEM, &smem_validate_database, &smem_convert_database, &smem_convert_database );
-  newAgent->smem_params[ SMEM_PARAM_PATH ] = smem_new_parameter( "path", "", &smem_validate_path );
-  newAgent->smem_params[ SMEM_PARAM_COMMIT ] = smem_new_parameter( "commit", 1.0, &smem_validate_commit );
-
-  newAgent->smem_params[ SMEM_PARAM_TIMERS ] = smem_new_parameter( "timers", SMEM_TIMERS_OFF, &smem_validate_ext_timers, &smem_convert_ext_timers, &smem_convert_ext_timers );
-
-
-  newAgent->smem_stats[ SMEM_STAT_MEM_USAGE ] = smem_new_stat( "mem_usage" );
-  newAgent->smem_stats[ SMEM_STAT_MEM_HIGH ] = smem_new_stat( "mem_high" );
-  newAgent->smem_stats[ SMEM_STAT_NEXT_ID ] = smem_new_stat( "next_id" );
-
-  newAgent->smem_timers[ SMEM_TIMER_TOTAL ] = smem_new_timer( "smem_total", SMEM_TIMERS_ONE );
-  newAgent->smem_timers[ SMEM_TIMER_STORAGE ] = smem_new_timer( "smem_storage", SMEM_TIMERS_TWO );
-  newAgent->smem_timers[ SMEM_TIMER_NCB_RETRIEVAL ] = smem_new_timer( "smem_ncb_retrieval", SMEM_TIMERS_TWO );
-  newAgent->smem_timers[ SMEM_TIMER_QUERY ] = smem_new_timer( "smem_query", SMEM_TIMERS_TWO );
-  newAgent->smem_timers[ SMEM_TIMER_API ] = smem_new_timer( "smem_api", SMEM_TIMERS_TWO );
-  newAgent->smem_timers[ SMEM_TIMER_INIT ] = smem_new_timer( "smem_init", SMEM_TIMERS_TWO );
-
-  newAgent->smem_db_status = SMEM_DB_CLOSED;
 
   return newAgent;
 }
@@ -492,6 +384,51 @@ void destroy_soar_agent (agent * delete_agent)
 //  /* Destroy X window associated with agent */
 //  destroy_agent_window (delete_agent);
 //#endif /* USE_X_DISPLAY */
+
+  /////////////////////////////////////////////////////////
+  // Soar Modules - could potentially rely on hash tables
+  /////////////////////////////////////////////////////////
+
+  // cleanup exploration
+  for ( int i=0; i<EXPLORATION_PARAMS; i++ )
+	  delete delete_agent->exploration_params[ i ];
+
+  // cleanup Soar-RL
+  delete delete_agent->rl_params;
+  delete delete_agent->rl_stats;
+
+  // cleanup select
+  select_init( delete_agent );
+  delete delete_agent->select;
+
+  // cleanup predict
+  delete delete_agent->prediction;
+
+  // cleanup wma
+  delete delete_agent->wma_params;
+  delete delete_agent->wma_stats;
+
+  // cleanup epmem
+  epmem_close( delete_agent );
+  delete delete_agent->epmem_params;
+  delete delete_agent->epmem_stats;
+  delete delete_agent->epmem_timers;
+
+  delete delete_agent->epmem_node_removals;
+  delete delete_agent->epmem_node_mins;
+  delete delete_agent->epmem_node_maxes;
+  delete delete_agent->epmem_edge_removals;
+  delete delete_agent->epmem_edge_mins;
+  delete delete_agent->epmem_edge_maxes;
+  delete delete_agent->epmem_id_repository;
+  delete delete_agent->epmem_id_replacement;
+  delete delete_agent->epmem_identifier_to_id;
+  delete delete_agent->epmem_id_to_identifier;
+
+  delete delete_agent->epmem_db;
+
+  /////////////////////////////////////////////////////////
+  /////////////////////////////////////////////////////////
 
   remove_built_in_rhs_functions(delete_agent);
 
@@ -574,54 +511,6 @@ void destroy_soar_agent (agent * delete_agent)
   }
 
   /* RPM 9/06 end */
-
-  // cleanup exploration
-  for ( int i=0; i<EXPLORATION_PARAMS; i++ )
-	  delete delete_agent->exploration_params[ i ];
-
-  // cleanup Soar-RL
-  rl_clean_parameters( delete_agent );
-  rl_clean_stats( delete_agent );
-
-  // cleanup select
-  select_init( delete_agent );
-  delete delete_agent->select;
-
-  // cleanup predict
-  delete delete_agent->prediction;
-
-  // cleanup EpMem
-  epmem_close( delete_agent );
-  epmem_clean_parameters( delete_agent );
-  epmem_clean_stats( delete_agent );
-  epmem_clean_timers( delete_agent );
-
-  for ( std::list<const char *>::iterator e_p=delete_agent->epmem_exclusions->begin();
-	    e_p!=delete_agent->epmem_exclusions->end();
-		e_p++ )
-    delete (*e_p);
-
-  delete delete_agent->epmem_exclusions;
-  delete delete_agent->epmem_node_removals;
-  delete delete_agent->epmem_node_mins;
-  delete delete_agent->epmem_node_maxes;
-  delete delete_agent->epmem_edge_removals;
-  delete delete_agent->epmem_edge_mins;
-  delete delete_agent->epmem_edge_maxes;
-  delete delete_agent->epmem_id_repository;
-  delete delete_agent->epmem_id_replacement;
-  delete delete_agent->epmem_identifier_to_id;
-  delete delete_agent->epmem_id_to_identifier;
-
-  // cleanup wma
-  wma_clean_parameters( delete_agent );
-  wma_clean_stats( delete_agent );
-
-  // cleanup smem
-  smem_close( delete_agent );
-  smem_clean_parameters( delete_agent );
-  smem_clean_stats( delete_agent );
-  smem_clean_timers( delete_agent );
 
   // JRV: Frees data used by XML generation
   xml_destroy( delete_agent );

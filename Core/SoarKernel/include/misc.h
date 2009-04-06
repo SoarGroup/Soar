@@ -49,7 +49,7 @@ template <class T> bool from_string( T &val, std::string str )
 	std::stringstream i( str );
 	i >> val;
 
-	return i.good();
+	return !i.fail();
 }
 
 // Determine if a string represents a natural number (i.e. all numbers)

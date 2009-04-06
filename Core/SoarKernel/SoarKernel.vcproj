@@ -822,7 +822,7 @@
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath=".\src\semantic_memory.cpp"
+				RelativePath=".\src\soar_module.cpp"
 				>
 				<FileConfiguration
 					Name="Debug SCU|Win32"
@@ -1140,7 +1140,11 @@
 				>
 			</File>
 			<File
-				RelativePath=".\include\semantic_memory.h"
+				RelativePath=".\include\soar_db.h"
+				>
+			</File>
+			<File
+				RelativePath=".\include\soar_module.h"
 				>
 			</File>
 			<File

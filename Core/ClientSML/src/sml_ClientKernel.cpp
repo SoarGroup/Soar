@@ -2472,20 +2472,24 @@ std::string Kernel::LoadExternalLibrary(const char *pLibraryCommand) {
 	HMODULE hLibrary = LoadLibrary(libraryName.c_str()) ;
 
 #else
-	std::string newLibraryName = "lib" + libraryName + ".so";
-	void* hLibrary = 0;
-	hLibrary = dlopen(newLibraryName.c_str(), RTLD_LAZY);
-	if (!hLibrary) {
-		// Try again with mac extention
-		newLibraryName = "lib" + libraryName + ".dylib";
-		hLibrary = dlopen(newLibraryName.c_str(), RTLD_LAZY);
-	}
-	// FIXME error details can be returned by a call to dlerror()
-#endif
+        std::string newLibraryName = "lib" + libraryName;
+#ifdef SCONS_DARWIN
+        newLibraryName.append(".dylib");
+#else
+        newLibraryName.append(".so");
+#endif // !SCONS_DARWIN
+        void* hLibrary = 0;
+        hLibrary = dlopen(newLibraryName.c_str(), RTLD_LAZY);
+#endif // !_WIN32
+
 	std::string resultString;
 
 	if(!hLibrary) {
+#ifdef _WIN32
 		return "Library not found.";
+#else
+		return std::string(dlerror());
+#endif
 	} else {
 		InitLibraryFunction pInitLibraryFunction = (InitLibraryFunction)GetProcAddress(hLibrary, "sml_InitLibrary") ;
 

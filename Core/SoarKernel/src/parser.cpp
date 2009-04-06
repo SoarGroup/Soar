@@ -1652,6 +1652,13 @@ action *parse_attr_value_make (agent* thisAgent, Symbol *id)
     last->next = all_actions;
     all_actions = new_actions;
 
+	/* NLD Added. Once we create an action for the
+	   intermediate dot notation attribute/value pair,
+	   remove references for each.  Prevents memory
+	   leaks for rules containing dot notation. */
+	deallocate_rhs_value (thisAgent, attr);
+	symbol_remove_ref(thisAgent, new_var);
+
     /* if there was a "." then there must be another attribute
        set id for next action and get the next attribute */
     id = new_var;

@@ -1,0 +1,76 @@
+<?xml version="1.0" ?>
+
+<project name="SoarJavaDebugger" default="build" basedir=".">
+
+  <target name="build" depends="build-java,build-jar"/>
+
+  <target name="clean" depends="clean-java"/>
+
+  <target name="distclean" depends="clean">
+    <delete dir="build" quiet="true" />
+    <delete dir="docs" quiet="true" />
+  </target>
+
+  <target name="docs">
+    <mkdir dir="docs" />
+    <javadoc sourcepath="src/"
+             packagenames="*"
+             defaultexcludes="yes"
+             destdir="docs/api"
+             Public="yes"
+             source="1.5"
+	     />
+  </target>
+
+  <target name="build-jar">
+    <jar destfile="SoarJavaDebugger.jar">
+      <fileset dir="build">
+		<include name="**/*.class" />
+      </fileset>
+      <fileset dir="src">
+		<include name="*.dlf" />
+		<include name="images/*" />
+		<include name="altimages/*" />
+      </fileset>
+      <manifest>
+	<attribute name="Main-Class" value="debugger.Application" />
+	<attribute name="Class-Path" value="../lib/swt.jar ../lib/sml.jar ../lib/jcommon-1.0.10.jar ../lib/jfreechart-1.0.6.jar ../lib/jfreechart-1.0.6-swt.jar ../lib/swtgraphics2d.jar" />
+      </manifest>
+    </jar>
+    <copy file="SoarJavaDebugger.jar" todir="../../SoarLibrary/bin" />
+  </target>
+
+  <target name="build-java">
+    <mkdir dir="build" />
+    <javac
+       srcdir="src"
+       includes="**/*.java"
+       debug="on"
+       optimize="off"
+       destdir="build"
+       compiler="extJavac"
+       deprecation="yes"
+       source="1.5"
+       target="1.5"
+       >
+      <classpath>
+        <pathelement location="src/"/>
+        <pathelement location="../../Core/ClientSMLSWIG/Java/sml.jar"/>
+        <pathelement location="../../SoarLibrary/lib/swt.jar"/>
+        <pathelement location="../../SoarLibrary/lib/jcommon-1.0.10.jar"/>
+        <pathelement location="../../SoarLibrary/lib/jfreechart-1.0.6.jar"/>
+        <pathelement location="../../SoarLibrary/lib/jfreechart-1.0.6-swt.jar"/>
+        <pathelement location="../../SoarLibrary/lib/swtgraphics2d.jar"/>
+      </classpath>
+    </javac>
+  </target>
+
+  <target name="clean-java" >
+    <delete quiet="true">
+      <fileset dir="build" includes="**/*.class"/>
+      <fileset dir="." includes="SoarJavaDebugger.jar"/>
+      <fileset dir="../../SoarLibrary/bin" includes="SoarJavaDebugger.jar"/>
+    </delete>
+  </target>
+
+</project>

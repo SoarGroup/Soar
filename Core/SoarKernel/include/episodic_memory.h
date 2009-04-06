@@ -21,37 +21,14 @@
 #include <set>
 #include <queue>
 
-#include "sqlite3.h"
+#include "soar_module.h"
+#include "soar_db.h"
+
+using namespace soar_module;
 
 typedef union symbol_union Symbol;
 typedef struct wme_struct wme;
 
-//////////////////////////////////////////////////////////
-// EpMem Capacity
-//
-// There's an inherent problem in the storage capacity
-// difference between the EpMem code, the Soar kernel
-// (mainly Symbols), the STL, and SQLite.  Integer
-// symbols are currently 32-bit. STL depends upon
-// compiler options.  SQLite can go either way.
-//
-// portability.h defines EPMEM_64 (because epmem types
-// are scattered throughout the kernel).  Here we use it
-// to define the appropriate sqlite function names.
-//
-//////////////////////////////////////////////////////////
-
-#ifdef EPMEM_64
-
-#define EPMEM_SQLITE_BIND_INT sqlite3_bind_int64
-#define EPMEM_SQLITE_COLUMN_INT sqlite3_column_int64
-
-#else
-
-#define EPMEM_SQLITE_BIND_INT sqlite3_bind_int
-#define EPMEM_SQLITE_COLUMN_INT sqlite3_column_int
-
-#endif
 
 //////////////////////////////////////////////////////////
 // EpMem Experimentation
@@ -63,184 +40,20 @@ typedef struct wme_struct wme;
 
 //#define EPMEM_EXPERIMENT
 
+
 //////////////////////////////////////////////////////////
 // EpMem Constants
 //////////////////////////////////////////////////////////
-#define EPMEM_RETURN_LONG 0.1
-#define EPMEM_RETURN_STRING ""
-
-// parameters
-// - protected are [ DB, MODE ]
-#define EPMEM_PARAM_LEARNING						0
-#define EPMEM_PARAM_DB								1
-#define EPMEM_PARAM_COMMIT							2
-#define EPMEM_PARAM_PATH							3
-#define EPMEM_PARAM_MODE							4
-#define EPMEM_PARAM_GRAPH_MATCH						5
-#define EPMEM_PARAM_PHASE							6
-#define EPMEM_PARAM_TRIGGER							7
-#define EPMEM_PARAM_FORCE							8
-#define EPMEM_PARAM_BALANCE							9
-#define EPMEM_PARAM_EXCLUSIONS						10
-#define EPMEM_PARAM_TIMERS							11
-#define EPMEM_PARAMS								12 // must be 1+ last epmem param
-
-// parameter settings
-#define EPMEM_LEARNING_ON 1
-#define EPMEM_LEARNING_OFF 2
-
-#define EPMEM_DB_MEM 1
-#define EPMEM_DB_FILE 2
-
-#define EPMEM_MODE_ONE 1   // tree
-#define EPMEM_MODE_THREE 3 // graph
-
-#define EPMEM_GRAPH_MATCH_OFF 1
-#define EPMEM_GRAPH_MATCH_ON 2
-
-#define EPMEM_TRIGGER_NONE 1
-#define EPMEM_TRIGGER_OUTPUT 2
-#define EPMEM_TRIGGER_DC 3
-
-#define EPMEM_PHASE_OUTPUT 1
-#define EPMEM_PHASE_SELECTION 2
-
-#define EPMEM_FORCE_REMEMBER 1
-#define EPMEM_FORCE_IGNORE 2
-#define EPMEM_FORCE_OFF 3
-
-#define EPMEM_TIMERS_OFF 1
-#define EPMEM_TIMERS_ONE 2
-#define EPMEM_TIMERS_TWO 3
-#define EPMEM_TIMERS_THREE 4
-
-// statistics
-// * = protected
-#define EPMEM_STAT_TIME								0 // *
-#define EPMEM_STAT_MEM_USAGE						1
-#define EPMEM_STAT_MEM_HIGH							2
-#define EPMEM_STAT_NCB_WMES							3
-#define EPMEM_STAT_QRY_POS							4
-#define EPMEM_STAT_QRY_NEG							5
-#define EPMEM_STAT_QRY_RET							6
-#define EPMEM_STAT_QRY_CARD							7
-#define EPMEM_STAT_QRY_LITS							8
-
-#define EPMEM_STAT_NEXT_ID							9 // *
-
-#define EPMEM_STAT_RIT_OFFSET_1						10 // *
-#define EPMEM_STAT_RIT_LEFTROOT_1					11 // *
-#define EPMEM_STAT_RIT_RIGHTROOT_1					12 // *
-#define EPMEM_STAT_RIT_MINSTEP_1					13 // *
-
-#define EPMEM_STAT_RIT_OFFSET_2						14 // *
-#define EPMEM_STAT_RIT_LEFTROOT_2					15 // *
-#define EPMEM_STAT_RIT_RIGHTROOT_2					16 // *
-#define EPMEM_STAT_RIT_MINSTEP_2					17 // *
-
-#define EPMEM_STATS									18 // must be 1+ last epmem stat
-
-// timers
-#define EPMEM_TIMER_TOTAL							0
-#define EPMEM_TIMER_STORAGE							1
-#define EPMEM_TIMER_NCB_RETRIEVAL					2
-#define EPMEM_TIMER_QUERY							3
-#define EPMEM_TIMER_API								4
-#define EPMEM_TIMER_TRIGGER							5
-#define EPMEM_TIMER_INIT							6
-#define EPMEM_TIMER_NEXT							7
-#define EPMEM_TIMER_PREV							8
-#define EPMEM_TIMER_NCB_EDGE						9
-#define EPMEM_TIMER_NCB_EDGE_RIT					10
-#define EPMEM_TIMER_NCB_NODE						11
-#define EPMEM_TIMER_NCB_NODE_RIT					12
-#define EPMEM_TIMER_QUERY_DNF						13
-#define EPMEM_TIMER_QUERY_GRAPH_MATCH				14
-#define EPMEM_TIMER_QUERY_POS_START_EP				15
-#define EPMEM_TIMER_QUERY_POS_START_NOW				16
-#define EPMEM_TIMER_QUERY_POS_START_POINT			17
-#define EPMEM_TIMER_QUERY_POS_END_EP				18
-#define EPMEM_TIMER_QUERY_POS_END_NOW				19
-#define EPMEM_TIMER_QUERY_POS_END_POINT				20
-#define EPMEM_TIMER_QUERY_NEG_START_EP				21
-#define EPMEM_TIMER_QUERY_NEG_START_NOW				22
-#define EPMEM_TIMER_QUERY_NEG_START_POINT			23
-#define EPMEM_TIMER_QUERY_NEG_END_EP				24
-#define EPMEM_TIMER_QUERY_NEG_END_NOW				25
-#define EPMEM_TIMER_QUERY_NEG_END_POINT				26
-
-#define EPMEM_TIMERS								27 // must be 1+ last epmem timer
-
-// statements
-// 0 - 19 => common
-// 20 - ( EPMEM_MAX_STATEMENTS - 1 ) => mode
-#define EPMEM_STMT_BEGIN							0
-#define EPMEM_STMT_COMMIT							1
-#define EPMEM_STMT_ROLLBACK							2
-#define EPMEM_STMT_VAR_GET							3
-#define EPMEM_STMT_VAR_SET							4
-
-#define EPMEM_STMT_RIT_ADD_LEFT						5
-#define EPMEM_STMT_RIT_TRUNCATE_LEFT				6
-#define EPMEM_STMT_RIT_ADD_RIGHT					7
-#define EPMEM_STMT_RIT_TRUNCATE_RIGHT				8
-
-#define EPMEM_STMT_GET_HASH							9
-#define EPMEM_STMT_ADD_HASH							10
-
-#define EPMEM_STMT_ONE_ADD_TIME						20
-#define EPMEM_STMT_ONE_ADD_NODE_RANGE				21
-#define EPMEM_STMT_ONE_ADD_NODE_UNIQUE				22
-#define EPMEM_STMT_ONE_FIND_NODE_UNIQUE				23
-#define EPMEM_STMT_ONE_FIND_IDENTIFIER				24
-#define EPMEM_STMT_ONE_VALID_EPISODE				25
-#define EPMEM_STMT_ONE_NEXT_EPISODE					26
-#define EPMEM_STMT_ONE_PREV_EPISODE					27
-#define EPMEM_STMT_ONE_GET_EPISODE					28
-#define EPMEM_STMT_ONE_ADD_NODE_NOW					29
-#define EPMEM_STMT_ONE_DELETE_NODE_NOW				30
-#define EPMEM_STMT_ONE_ADD_NODE_POINT				31
-
-#define EPMEM_STMT_THREE_ADD_TIME					20
-#define EPMEM_STMT_THREE_ADD_NODE_NOW				21
-#define EPMEM_STMT_THREE_DELETE_NODE_NOW			22
-#define EPMEM_STMT_THREE_ADD_EDGE_NOW				23
-#define EPMEM_STMT_THREE_DELETE_EDGE_NOW			24
-#define EPMEM_STMT_THREE_ADD_NODE_POINT				25
-#define EPMEM_STMT_THREE_ADD_EDGE_POINT				26
-#define EPMEM_STMT_THREE_ADD_NODE_RANGE				27
-#define EPMEM_STMT_THREE_ADD_EDGE_RANGE				28
-#define EPMEM_STMT_THREE_FIND_NODE_UNIQUE			29
-#define EPMEM_STMT_THREE_ADD_NODE_UNIQUE			30
-#define EPMEM_STMT_THREE_FIND_EDGE_UNIQUE			31
-#define EPMEM_STMT_THREE_FIND_EDGE_UNIQUE_SHARED	32
-#define EPMEM_STMT_THREE_ADD_EDGE_UNIQUE			33
-#define EPMEM_STMT_THREE_VALID_EPISODE				34
-#define EPMEM_STMT_THREE_NEXT_EPISODE				35
-#define EPMEM_STMT_THREE_PREV_EPISODE				36
-#define EPMEM_STMT_THREE_GET_NODES					37
-#define EPMEM_STMT_THREE_GET_EDGES					38
-
-#define EPMEM_MAX_STATEMENTS 						40 // must be at least 1+ largest of any STMT constant
 
 // variables (rit vars must be same as stat versions)
-#define EPMEM_VAR_RIT_OFFSET_1						EPMEM_STAT_RIT_OFFSET_1
-#define EPMEM_VAR_RIT_LEFTROOT_1					EPMEM_STAT_RIT_LEFTROOT_1
-#define EPMEM_VAR_RIT_RIGHTROOT_1					EPMEM_STAT_RIT_RIGHTROOT_1
-#define EPMEM_VAR_RIT_MINSTEP_1						EPMEM_STAT_RIT_MINSTEP_1
-
-#define EPMEM_VAR_RIT_OFFSET_2						EPMEM_STAT_RIT_OFFSET_2
-#define EPMEM_VAR_RIT_LEFTROOT_2					EPMEM_STAT_RIT_LEFTROOT_2
-#define EPMEM_VAR_RIT_RIGHTROOT_2					EPMEM_STAT_RIT_RIGHTROOT_2
-#define EPMEM_VAR_RIT_MINSTEP_2						EPMEM_STAT_RIT_MINSTEP_2
-
-#define EPMEM_VAR_MODE								EPMEM_VAR_RIT_MINSTEP_2 + 1
-#define EPMEM_VAR_NEXT_ID							EPMEM_VAR_MODE + 1
+enum epmem_variable_key
+{
+	var_rit_offset_1, var_rit_leftroot_1, var_rit_rightroot_1, var_rit_minstep_1,
+	var_rit_offset_2, var_rit_leftroot_2, var_rit_rightroot_2, var_rit_minstep_2,
+	var_mode, var_next_id
+};
 
 // algorithm constants
-#define EPMEM_DB_CLOSED								-1 // initialize db_status to this (sqlite error codes are positive)
-#define EPMEM_DB_PREP_STR_MAX						-1 // non-zero nByte param indicates to read to zero terminator
-
 #define EPMEM_MEMID_NONE							-1
 #define EPMEM_NODEID_ROOT							0
 
@@ -258,81 +71,299 @@ typedef struct wme_struct wme;
 
 #define EPMEM_DNF									2
 
-// keeping state for multiple RIT's
-#define EPMEM_RIT_STATE_OFFSET						0
-#define EPMEM_RIT_STATE_LEFTROOT					1
-#define EPMEM_RIT_STATE_RIGHTROOT					2
-#define EPMEM_RIT_STATE_MINSTEP						3
-#define EPMEM_RIT_STATE_ADD							4
-#define EPMEM_RIT_STATE_TIMER						5
-
 #define EPMEM_RIT_STATE_NODE						0
 #define EPMEM_RIT_STATE_EDGE						1
 
-//////////////////////////////////////////////////////////
-// Parameter Types
-//////////////////////////////////////////////////////////
-
-enum epmem_param_type { epmem_param_constant = 1, epmem_param_number = 2, epmem_param_string = 3, epmem_param_invalid = 4 };
-
-typedef struct epmem_constant_parameter_struct
-{
-	long value;
-	bool (*val_func)( const long );
-	const char *(*to_str)( const long );
-	const long (*from_str)( const char * );
-} epmem_constant_parameter;
-
-typedef struct epmem_number_parameter_struct
-{
-	double value;
-	bool (*val_func)( double );
-} epmem_number_parameter;
-
-typedef struct epmem_string_parameter_struct
-{
-	std::string *value;
-	bool (*val_func)( const char * );
-} epmem_string_parameter;
-
-typedef union epmem_parameter_union_class
-{
-	epmem_constant_parameter constant_param;
-	epmem_number_parameter number_param;
-	epmem_string_parameter string_param;
-} epmem_parameter_union;
-
-typedef struct epmem_parameter_struct
-{
-	epmem_parameter_union *param;
-	epmem_param_type type;
-	const char *name;
-} epmem_parameter;
-
 
 //////////////////////////////////////////////////////////
-// Stat Types
+// EpMem Parameters
 //////////////////////////////////////////////////////////
 
-typedef struct epmem_stat_struct
+class epmem_path_param;
+class epmem_graph_match_param;
+class epmem_mode_param;
+
+class epmem_param_container: public param_container
 {
-	long value;
-	const char *name;
-} epmem_stat;
+	public:
+		enum db_choices { memory, file };
+		enum mode_choices { tree, graph };
+		enum phase_choices { phase_output, phase_selection };
+		enum trigger_choices { none, output, dc };
+		enum force_choices { remember, ignore, force_off };
 
+		boolean_param *learning;
+		constant_param<db_choices> *database;
+		epmem_path_param *path;
+		integer_param *commit;
 
-//////////////////////////////////////////////////////////
-// Timer Types
-//////////////////////////////////////////////////////////
+		epmem_mode_param *mode;
+		epmem_graph_match_param *graph_match;
 
-typedef struct epmem_timer_struct
+		constant_param<phase_choices> *phase;
+		constant_param<trigger_choices> *trigger;
+		constant_param<force_choices> *force;
+		decimal_param *balance;
+		set_param *exclusions;
+		constant_param<timer::timer_level> *timers;
+
+		epmem_param_container( agent *new_agent );
+};
+
+class epmem_path_param: public string_param
 {
-	struct timeval start_timer;
-	struct timeval total_timer;
-	const char *name;
+	protected:
+		agent *my_agent;
 
-	long level;
-} epmem_timer;
+	public:
+		epmem_path_param( const char *new_name, const char *new_value, predicate<const char *> *new_val_pred, predicate<const char *> *new_prot_pred, agent *new_agent );
+		virtual void set_value( const char *new_value );
+};
+
+class epmem_graph_match_param: public boolean_param
+{
+	protected:
+		agent *my_agent;
+
+	public:
+		epmem_graph_match_param( const char *new_name, boolean new_value, predicate<boolean> *new_prot_pred, agent *new_agent );
+		virtual bool validate_string( const char *new_string );
+};
+
+class epmem_mode_param: public constant_param<epmem_param_container::mode_choices>
+{
+	protected:
+		agent *my_agent;
+
+	public:
+		epmem_mode_param( const char *new_name, epmem_param_container::mode_choices new_value, predicate<epmem_param_container::mode_choices> *new_prot_pred, agent *new_agent );
+		virtual void set_value( epmem_param_container::mode_choices new_value );
+};
+
+template <typename T>
+class epmem_db_predicate: public agent_predicate<T>
+{
+	public:
+		epmem_db_predicate( agent *new_agent );
+		bool operator() ( T val );
+};
+
+
+//////////////////////////////////////////////////////////
+// EpMem Statistics
+//////////////////////////////////////////////////////////
+
+class epmem_mem_usage_stat;
+class epmem_mem_high_stat;
+
+class epmem_stat_container: public stat_container
+{
+	public:
+		integer_stat *time;
+		epmem_mem_usage_stat *mem_usage;
+		epmem_mem_high_stat *mem_high;
+		integer_stat *ncb_wmes;
+
+		integer_stat *qry_pos;
+		integer_stat *qry_neg;
+		integer_stat *qry_ret;
+		integer_stat *qry_card;
+		integer_stat *qry_lits;
+
+		integer_stat *next_id;
+
+		integer_stat *rit_offset_1;
+		integer_stat *rit_left_root_1;
+		integer_stat *rit_right_root_1;
+		integer_stat *rit_min_step_1;
+
+		integer_stat *rit_offset_2;
+		integer_stat *rit_left_root_2;
+		integer_stat *rit_right_root_2;
+		integer_stat *rit_min_step_2;
+
+		epmem_stat_container( agent *my_agent );
+};
+
+class epmem_mem_usage_stat: public integer_stat
+{
+	protected:
+		agent *my_agent;
+
+	public:
+		epmem_mem_usage_stat( agent *new_agent, const char *new_name, long new_value, predicate<long> *new_prot_pred );
+		long get_value();
+};
+
+//
+
+class epmem_mem_high_stat: public integer_stat
+{
+	protected:
+		agent *my_agent;
+
+	public:
+		epmem_mem_high_stat( agent *new_agent, const char *new_name, long new_value, predicate<long> *new_prot_pred );
+		long get_value();
+};
+
+
+//////////////////////////////////////////////////////////
+// EpMem Timers
+//////////////////////////////////////////////////////////
+
+class epmem_timer_container: public timer_container
+{
+	public:
+		timer *total;
+		timer *storage;
+		timer *ncb_retrieval;
+		timer *query;
+		timer *api;
+		timer *trigger;
+		timer *init;
+		timer *next;
+		timer *prev;
+		timer *hash;
+
+		timer *ncb_edge;
+		timer *ncb_edge_rit;
+		timer *ncb_node;
+		timer *ncb_node_rit;
+
+		timer *query_dnf;
+		timer *query_graph_match;
+		timer *query_pos_start_ep;
+		timer *query_pos_start_now;
+		timer *query_pos_start_point;
+		timer *query_pos_end_ep;
+		timer *query_pos_end_now;
+		timer *query_pos_end_point;
+		timer *query_neg_start_ep;
+		timer *query_neg_start_now;
+		timer *query_neg_start_point;
+		timer *query_neg_end_ep;
+		timer *query_neg_end_now;
+		timer *query_neg_end_point;
+
+		epmem_timer_container( agent *my_agent );
+};
+
+class epmem_timer_level_predicate: public agent_predicate<timer::timer_level>
+{
+	public:
+		epmem_timer_level_predicate( agent *new_agent );
+		bool operator() ( timer::timer_level val );
+};
+
+class epmem_timer: public timer
+{
+	public:
+		epmem_timer( const char *new_name, agent *new_agent, timer_level new_level );
+};
+
+
+//
+
+void epmem_start_timer( agent *my_agent, long timer );
+void epmem_stop_timer( agent *my_agent, long timer );
+
+
+//////////////////////////////////////////////////////////
+// EpMem Statements
+//////////////////////////////////////////////////////////
+
+class epmem_common_statement_container: public sqlite_statement_container
+{
+	public:
+		sqlite_statement *begin;
+		sqlite_statement *commit;
+		sqlite_statement *rollback;
+
+		sqlite_statement *var_get;
+		sqlite_statement *var_set;
+
+		sqlite_statement *rit_add_left;
+		sqlite_statement *rit_truncate_left;
+		sqlite_statement *rit_add_right;
+		sqlite_statement *rit_truncate_right;
+
+		sqlite_statement *hash_get;
+		sqlite_statement *hash_add;
+
+		epmem_common_statement_container( agent *new_agent );
+};
+
+class epmem_tree_statement_container: public sqlite_statement_container
+{
+	public:
+		sqlite_statement *add_time;
+
+		//
+		
+		sqlite_statement *add_node_now;
+		sqlite_statement *delete_node_now;
+		sqlite_statement *add_node_point;
+		sqlite_statement *add_node_range;
+
+		//
+
+		sqlite_statement *add_node_unique;
+		sqlite_statement *find_node_unique;
+		sqlite_statement *find_identifier;
+
+		//
+
+		sqlite_statement *valid_episode;
+		sqlite_statement *next_episode;
+		sqlite_statement *prev_episode;
+
+		sqlite_statement *get_episode;
+
+		//
+
+		epmem_tree_statement_container( agent *new_agent );
+};
+
+class epmem_graph_statement_container: public sqlite_statement_container
+{
+	public:
+		sqlite_statement *add_time;
+
+		//
+
+		sqlite_statement *add_node_now;
+		sqlite_statement *delete_node_now;
+		sqlite_statement *add_node_point;
+		sqlite_statement *add_node_range;
+
+		sqlite_statement *add_node_unique;
+		sqlite_statement *find_node_unique;
+
+		//
+
+		sqlite_statement *add_edge_now;
+		sqlite_statement *delete_edge_now;
+		sqlite_statement *add_edge_point;
+		sqlite_statement *add_edge_range;
+
+		sqlite_statement *add_edge_unique;
+		sqlite_statement *find_edge_unique;
+		sqlite_statement *find_edge_unique_shared;
+
+		//
+
+		sqlite_statement *valid_episode;
+		sqlite_statement *next_episode;
+		sqlite_statement *prev_episode;
+
+		sqlite_statement *get_nodes;
+		sqlite_statement *get_edges;
+
+		//		
+		
+		epmem_graph_statement_container( agent *new_agent );
+};
 
 
 //////////////////////////////////////////////////////////
@@ -348,6 +379,27 @@ typedef long epmem_time_id;
 // represents a vector of times
 typedef std::vector<epmem_time_id> epmem_time_list;
 
+// represents a list of wmes
+typedef std::list<wme *> epmem_wme_list;
+
+// keeping state for multiple RIT's
+typedef struct epmem_rit_state_param_struct
+{
+	soar_module::integer_stat *stat;
+	epmem_variable_key var_key;
+} epmem_rit_state_param;
+
+typedef struct epmem_rit_state_struct
+{
+	epmem_rit_state_param offset;
+	epmem_rit_state_param leftroot;
+	epmem_rit_state_param rightroot;
+	epmem_rit_state_param minstep;
+
+	soar_module::timer *timer;
+	sqlite_statement *add_query;	
+} epmem_rit_state;
+
 //////////////////////////////////////////////////////////
 // Soar Integration Types
 //////////////////////////////////////////////////////////
@@ -355,18 +407,16 @@ typedef std::vector<epmem_time_id> epmem_time_list;
 // data associated with each state
 typedef struct epmem_data_struct
 {
-	unsigned long last_ol_time;	// last update to output-link
+	unsigned long last_ol_time;		// last update to output-link
 	unsigned long last_ol_count;	// last count of output-link
 
 	unsigned long last_cmd_time;	// last update to epmem.command
 	unsigned long last_cmd_count;	// last update to epmem.command
 
-	epmem_time_id last_memory;				// last retrieved memory
+	epmem_time_id last_memory;		// last retrieved memory
 
-	wme *ss_wme;
-
-	std::set<wme *> *cue_wmes;				// wmes in last cue
-	std::stack<wme *> *epmem_wmes;			// wmes in last epmem
+	std::set<wme *> *cue_wmes;		// wmes in last cue
+	std::stack<wme *> *epmem_wmes;	// wmes in last epmem
 } epmem_data;
 
 
@@ -384,13 +434,11 @@ typedef struct epmem_leaf_node_struct
 // maintains state within sqlite b-trees
 typedef struct epmem_range_query_struct
 {
-	sqlite3_stmt *stmt;						// sqlite query
+	sqlite_statement *stmt;					// query
 	epmem_time_id val;						// current b-tree leaf value
 
 	double weight;							// wma value
-	long ct;						// cardinality w.r.t. positive/negative query
-
-	long timer;								// timer to update upon executing the query
+	long ct;								// cardinality w.r.t. positive/negative query
 } epmem_range_query;
 
 // functor to maintain a priority cue of b-tree pointers
@@ -447,9 +495,8 @@ typedef struct epmem_edge_struct
 // represents cached children of an identifier in working memory
 typedef struct epmem_wme_cache_element_struct
 {
-	wme **wmes;								// child wmes
-	unsigned long len;			// number of children
-	unsigned long parents;		// number of parents
+	epmem_wme_list *wmes;					// child wmes	
+	unsigned long parents;					// number of parents
 
 	epmem_literal_mapping *lits;			// child literals
 } epmem_wme_cache_element;
@@ -459,9 +506,9 @@ typedef struct epmem_wme_cache_element_struct
 typedef struct epmem_shared_match_struct
 {
 	double value_weight;					// wma value
-	long value_ct;				// cardinality w.r.t. positive/negative query
+	long value_ct;							// cardinality w.r.t. positive/negative query
 
-	unsigned long ct;				// number of contributing literals that are "on"
+	unsigned long ct;						// number of contributing literals that are "on"
 } epmem_shared_match;
 
 // represents a list of literals grouped
@@ -481,8 +528,8 @@ struct epmem_shared_literal_struct
 {
 	epmem_node_id shared_id;				// shared q1, if identifier
 
-	unsigned long ct;				// number of contributing literals that are "on"
-	unsigned long max;			// number of contributing literals that *need* to be on
+	unsigned long ct;						// number of contributing literals that are "on"
+	unsigned long max;						// number of contributing literals that *need* to be on
 
 	struct wme_struct *wme;					// associated cue wme
 	bool wme_kids;							// does the cue wme have children (indicative of leaf wme status)
@@ -494,9 +541,8 @@ struct epmem_shared_literal_struct
 // maintains state within sqlite b-trees
 typedef struct epmem_shared_query_struct
 {
-	sqlite3_stmt *stmt;						// associated sqlite query
-	epmem_time_id val;						// current b-tree leaf value
-	long timer;								// timer to update upon executing the query
+	sqlite_statement *stmt;					// associated query
+	epmem_time_id val;						// current b-tree leaf value	
 
 	epmem_shared_literal_list *triggers;	// literals to update when stepping this b-tree
 } epmem_shared_query;
@@ -522,166 +568,8 @@ typedef std::priority_queue<epmem_shared_query *, std::vector<epmem_shared_query
 // Parameter Functions (see cpp for comments)
 //////////////////////////////////////////////////////////
 
-// clean memory
-extern void epmem_clean_parameters( agent *my_agent );
-
-// add parameter
-extern epmem_parameter *epmem_new_parameter( const char *name, double value, bool (*val_func)( double ) );
-extern epmem_parameter *epmem_new_parameter( const char *name, const long value, bool (*val_func)( const long ), const char *(*to_str)( long ), const long (*from_str)( const char * ) );
-extern epmem_parameter *epmem_new_parameter( const char *name, const char *value, bool (*val_func)( const char * ) );
-
-// convert parameter
-extern const char *epmem_convert_parameter( agent *my_agent, const long param );
-extern const long epmem_convert_parameter( agent *my_agent, const char *name );
-
-// validate parameter
-extern bool epmem_valid_parameter( agent *my_agent, const char *name );
-extern bool epmem_valid_parameter( agent *my_agent, const long param );
-
-// parameter type
-extern epmem_param_type epmem_get_parameter_type( agent *my_agent, const char *name );
-extern epmem_param_type epmem_get_parameter_type( agent *my_agent, const long param );
-
-// get parameter
-extern const long epmem_get_parameter( agent *my_agent, const char *name, const double test );
-extern const char *epmem_get_parameter( agent *my_agent, const char *name, const char *test );
-extern double epmem_get_parameter( agent *my_agent, const char *name );
-
-extern const long epmem_get_parameter( agent *my_agent, const long param, const double test );
-extern const char *epmem_get_parameter( agent *my_agent, const long param, const char *test );
-extern double epmem_get_parameter( agent *my_agent, const long param );
-
-// validate parameter value
-extern bool epmem_valid_parameter_value( agent *my_agent, const char *name, double new_val );
-extern bool epmem_valid_parameter_value( agent *my_agent, const char *name, const char *new_val );
-extern bool epmem_valid_parameter_value( agent *my_agent, const char *name, const long new_val );
-
-extern bool epmem_valid_parameter_value( agent *my_agent, const long param, double new_val );
-extern bool epmem_valid_parameter_value( agent *my_agent, const long param, const char *new_val );
-extern bool epmem_valid_parameter_value( agent *my_agent, const long param, const long new_val );
-
-// set parameter
-extern bool epmem_set_parameter( agent *my_agent, const char *name, double new_val );
-extern bool epmem_set_parameter( agent *my_agent, const char *name, const char *new_val );
-extern bool epmem_set_parameter( agent *my_agent, const char *name, const long new_val );
-
-extern bool epmem_set_parameter( agent *my_agent, const long param, double new_val );
-extern bool epmem_set_parameter( agent *my_agent, const long param, const char *new_val );
-extern bool epmem_set_parameter( agent *my_agent, const long param, const long new_val );
-
-// learning
-extern bool epmem_validate_learning( const long new_val );
-extern const char *epmem_convert_learning( const long val );
-extern const long epmem_convert_learning( const char *val );
-
-// database
-extern bool epmem_validate_database( const long new_val );
-extern const char *epmem_convert_database( const long val );
-extern const long epmem_convert_database( const char *val );
-
-// path
-extern bool epmem_validate_path( const char *new_val );
-
-// mode
-extern bool epmem_validate_mode( const long new_val );
-extern const char *epmem_convert_mode( const long val );
-extern const long epmem_convert_mode( const char *val );
-
-// graph match
-extern bool epmem_validate_graph_match( const long new_val );
-extern const char *epmem_convert_graph_match( const long val );
-extern const long epmem_convert_graph_match( const char *val );
-
-// phase
-extern bool epmem_validate_phase( const long new_val );
-extern const char *epmem_convert_phase( const long val );
-extern const long epmem_convert_phase( const char *val );
-
-// trigger
-extern bool epmem_validate_trigger( const long new_val );
-extern const char *epmem_convert_trigger( const long val );
-extern const long epmem_convert_trigger( const char *val );
-
-// force
-extern bool epmem_validate_force( const long new_val );
-extern const char *epmem_convert_force( const long val );
-extern const long epmem_convert_force( const char *val );
-
-// balance
-extern bool epmem_validate_balance( const double new_val );
-
-// exclusions
-extern bool epmem_validate_exclusions( const char *new_val );
-
-// commit
-extern bool epmem_validate_commit( const double new_val );
-
-// timers
-extern bool epmem_validate_ext_timers( const long new_val );
-extern const char *epmem_convert_ext_timers( const long val );
-extern const long epmem_convert_ext_timers( const char *val );
-
 // shortcut for determining if EpMem is enabled
-extern bool epmem_enabled( agent *my_agent );
-
-//////////////////////////////////////////////////////////
-// Stat Functions (see cpp for comments)
-//////////////////////////////////////////////////////////
-
-// memory clean
-extern void epmem_clean_stats( agent *my_agent );
-extern void epmem_reset_stats( agent *my_agent );
-
-// add stat
-extern epmem_stat *epmem_new_stat( const char *name );
-
-// convert stat
-extern const long epmem_convert_stat( agent *my_agent, const char *name );
-extern const char *epmem_convert_stat( agent *my_agent, const long stat );
-
-// valid stat
-extern bool epmem_valid_stat( agent *my_agent, const char *name );
-extern bool epmem_valid_stat( agent *my_agent, const long stat );
-
-// get stat
-extern long epmem_get_stat( agent *my_agent, const char *name );
-extern long epmem_get_stat( agent *my_agent, const long stat );
-
-// set stat
-extern bool epmem_set_stat( agent *my_agent, const char *name, long new_val );
-extern bool epmem_set_stat( agent *my_agent, const long stat, long new_val );
-
-
-//////////////////////////////////////////////////////////
-// Timer Functions (see cpp for comments)
-//////////////////////////////////////////////////////////
-
-// memory clean
-extern void epmem_clean_timers( agent *my_agent );
-extern void epmem_reset_timers( agent *my_agent );
-
-// add timer
-extern epmem_timer *epmem_new_timer( const char *name, long timer );
-
-// convert timer
-extern const long epmem_convert_timer( agent *my_agent, const char *name );
-extern const char *epmem_convert_timer( agent *my_agent, const long timer );
-
-// valid timer
-extern bool epmem_valid_timer( agent *my_agent, const char *name );
-extern bool epmem_valid_timer( agent *my_agent, const long timer );
-
-// get timer
-extern double epmem_get_timer_value( agent *my_agent, const char *name );
-extern double epmem_get_timer_value( agent *my_agent, const long timer );
-
-// get timer name
-extern const char *epmem_get_timer_name( agent *my_agent, const char *name );
-extern const char *epmem_get_timer_name( agent *my_agent, const long timer );
-
-// timer functions
-extern void epmem_start_timer( agent *my_agent, const long timer );
-extern void epmem_stop_timer( agent *my_agent, const long timer );
+inline extern bool epmem_enabled( agent *my_agent );
 
 
 //////////////////////////////////////////////////////////
@@ -694,11 +582,5 @@ extern void epmem_close( agent *my_agent );
 
 // perform epmem actions
 extern void epmem_go( agent *my_agent );
-
-// Called to create/remove a fake preference for an epmem wme
-extern preference *epmem_make_fake_preference( agent *my_agent, Symbol *state, wme *w );
-
-// Called to get a specific symbol augmentation
-extern wme *epmem_get_aug_of_id( agent *my_agent, Symbol *sym, char *attr_name, char *value_name );
 
 #endif

@@ -30,16 +30,11 @@
 #include "lexer.h"
 #include "chunk.h"
 #include "callback.h"
-#include <map>
 
 #include "exploration.h"
 #include "reinforcement_learning.h"
 #include "wma.h"
-
 #include "episodic_memory.h"
-#include "sqlite3.h"
-
-#include "semantic_memory.h"
 
 #include <string>
 #include <map>
@@ -51,22 +46,10 @@ typedef void* xml_handle;
 /* JC ADDED: Included so we can put the RHS functions in here */
 typedef struct rhs_function_struct rhs_function;
 
-// Soar-RL types
-typedef struct rl_parameter_struct rl_parameter;
-typedef struct rl_stat_struct rl_stat;
-
 // select types
 typedef struct select_info_struct select_info;
 
-
-// EpMem types
-typedef struct epmem_parameter_struct epmem_parameter;
-typedef struct epmem_stat_struct epmem_stat;
-
-
 // WMA types
-typedef struct wma_parameter_struct wma_parameter;
-typedef struct wma_stat_struct wma_stat;
 typedef struct wma_timelist_element_struct wma_timelist_element;
 
 
@@ -324,9 +307,14 @@ typedef struct agent_struct {
   Symbol            * epmem_failure_symbol;
   Symbol            * epmem_bad_cmd_symbol;
 
-  Symbol            * smem_symbol;
-  Symbol            * smem_cmd_symbol;
-  Symbol            * smem_result_symbol;
+  Symbol			* epmem_retrieve_symbol;
+  Symbol			* epmem_next_symbol;
+  Symbol			* epmem_prev_symbol;
+  Symbol			* epmem_query_symbol;
+  Symbol			* epmem_negquery_symbol;
+  Symbol			* epmem_before_symbol;
+  Symbol			* epmem_after_symbol;
+  Symbol			* epmem_prohibit_symbol;
 
   /* ----------------------- Symbol table stuff -------------------------- */
 
@@ -809,8 +797,8 @@ kernel time and total_cpu_time greater than the derived total CPU time. REW */
   exploration_parameter *exploration_params[ EXPLORATION_PARAMS ];
 
   // reinforcement learning
-  rl_parameter *rl_params[ RL_PARAMS ];
-  rl_stat *rl_stats[ RL_STATS ];
+  rl_param_container *rl_params;
+  rl_stat_container *rl_stats;
 
   int rl_template_count;
   bool rl_first_switch;
@@ -822,38 +810,9 @@ kernel time and total_cpu_time greater than the derived total CPU time. REW */
   unsigned long predict_seed;
   std::string *prediction;
 
-
-  // epmem
-  epmem_parameter *epmem_params[ EPMEM_PARAMS ];
-  epmem_stat *epmem_stats[ EPMEM_STATS ];
-  epmem_timer *epmem_timers[ EPMEM_TIMERS ];
-
-  sqlite3 *epmem_db;
-  int epmem_db_status;
-  sqlite3_stmt *epmem_statements[ EPMEM_MAX_STATEMENTS ];
-
-  std::list<const char *> *epmem_exclusions;
-
-  std::map<epmem_node_id, bool> *epmem_node_removals;
-  std::vector<epmem_time_id> *epmem_node_mins;
-  std::vector<epmem_time_id> *epmem_node_maxes;
-
-  std::map<epmem_node_id, bool> *epmem_edge_removals;
-  std::vector<epmem_time_id> *epmem_edge_mins;
-  std::vector<epmem_time_id> *epmem_edge_maxes;
-
-  epmem_parent_id_pool *epmem_id_repository;
-  epmem_return_id_pool *epmem_id_replacement;
-  epmem_constraint_list *epmem_identifier_to_id;
-  epmem_reverse_constraint_list *epmem_id_to_identifier;
-
-  epmem_time_id epmem_validation;
-  bool epmem_first_switch;
-
-
   // wma
-  wma_parameter *wma_params[ WMA_PARAMS ];
-  wma_stat *wma_stats[ WMA_STATS ];
+  wma_param_container *wma_params;
+  wma_stat_container *wma_stats;
 
   wma_timelist_element wma_timelist[ WMA_MAX_TIMELIST + 1 ];
   wma_timelist_element *wma_timelist_current;
@@ -864,15 +823,35 @@ kernel time and total_cpu_time greater than the derived total CPU time. REW */
   bool wma_first;
   tc_number wma_tc_counter;
 
-  // smem
-  smem_parameter *smem_params[ SMEM_PARAMS ];
-  smem_stat *smem_stats[ SMEM_STATS ];
-  smem_timer *smem_timers[ SMEM_TIMERS ];
+  // epmem
+  epmem_param_container *epmem_params;  
+  epmem_stat_container *epmem_stats;
+  epmem_timer_container *epmem_timers;
 
-  int smem_db_status;
+  soar_module::sqlite_database *epmem_db;
+  epmem_common_statement_container *epmem_stmts_common;
+  epmem_tree_statement_container *epmem_stmts_tree;
+  epmem_graph_statement_container *epmem_stmts_graph;
+  
 
-  bool smem_first_switch;
+  std::map<epmem_node_id, bool> *epmem_node_removals;
+  std::vector<epmem_time_id> *epmem_node_mins;
+  std::vector<bool> *epmem_node_maxes;
 
+  std::map<epmem_node_id, bool> *epmem_edge_removals;
+  std::vector<epmem_time_id> *epmem_edge_mins;
+  std::vector<bool> *epmem_edge_maxes;
+
+  epmem_parent_id_pool *epmem_id_repository;
+  epmem_return_id_pool *epmem_id_replacement;
+  epmem_constraint_list *epmem_identifier_to_id;
+  epmem_reverse_constraint_list *epmem_id_to_identifier;
+
+  epmem_rit_state epmem_rit_state_tree;
+  epmem_rit_state epmem_rit_state_graph[2];
+
+  epmem_time_id epmem_validation;
+  bool epmem_first_switch;
 
 
   // JRV: Added to support XML management inside Soar

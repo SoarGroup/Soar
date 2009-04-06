@@ -231,8 +231,7 @@ void init_sysparams (agent* thisAgent) {
   thisAgent->sysparams[LEARNING_ONLY_SYSPARAM] = FALSE;  /* AGR MVL1 */
   thisAgent->sysparams[LEARNING_EXCEPT_SYSPARAM] = FALSE;  /* KJC 8/96 */
   thisAgent->sysparams[LEARNING_ALL_GOALS_SYSPARAM] = TRUE;
-  thisAgent->sysparams[USER_SELECT_MODE_SYSPARAM] = USER_SELECT_SOFTMAX;
-  thisAgent->sysparams[RL_ENABLED] = RL_LEARNING_OFF;
+  thisAgent->sysparams[USER_SELECT_MODE_SYSPARAM] = USER_SELECT_SOFTMAX;  
   thisAgent->sysparams[USER_SELECT_REDUCE_SYSPARAM] = FALSE;
   thisAgent->sysparams[PRINT_WARNINGS_SYSPARAM] = TRUE;
   thisAgent->sysparams[PRINT_ALIAS_SYSPARAM] = TRUE;  /* AGR 627 */
@@ -243,16 +242,6 @@ void init_sysparams (agent* thisAgent) {
   
   // JRV: Chunk through local negations by default
   thisAgent->sysparams[CHUNK_THROUGH_LOCAL_NEGATIONS_SYSPARAM] = TRUE;
-
-  
-  thisAgent->sysparams[EPMEM_ENABLED] = EPMEM_LEARNING_ON;
-
-
-  thisAgent->sysparams[WMA_ENABLED] = WMA_ACTIVATION_ON;
-
-
-  thisAgent->sysparams[SMEM_ENABLED] = SMEM_LEARNING_ON;
-
 }
 
 /* ===================================================================
@@ -363,8 +352,7 @@ void reset_statistics (agent* thisAgent) {
      reset_timer (&thisAgent->gds_cpu_time[ii]);
   }
 
-  epmem_reset_timers( thisAgent );
-  smem_reset_timers( thisAgent );
+  thisAgent->epmem_timers->reset();  
 }
 
 bool reinitialize_soar (agent* thisAgent) {
@@ -407,12 +395,10 @@ bool reinitialize_soar (agent* thisAgent) {
 
   rl_reset_data( thisAgent );
   wma_deinit( thisAgent );
-  clear_goal_stack (thisAgent);
-  rl_reset_stats( thisAgent );
-  epmem_reset_stats( thisAgent );
-  wma_reset_stats( thisAgent );
-  smem_reset_stats( thisAgent );
-
+  clear_goal_stack (thisAgent);  
+  thisAgent->rl_stats->reset();
+  thisAgent->wma_stats->reset();
+  thisAgent->epmem_stats->reset();
 
   if (thisAgent->operand2_mode == TRUE) {
      thisAgent->active_level = 0; /* Signal that everything should be retracted */
@@ -894,7 +880,7 @@ void do_one_top_level_phase (agent* thisAgent)
 	  if ( wma_enabled( thisAgent ) )
 		  wma_move_and_remove_wmes( thisAgent );
 
-	  if ( epmem_enabled( thisAgent ) && ( epmem_get_parameter( thisAgent, (const long) EPMEM_PARAM_PHASE, EPMEM_RETURN_LONG ) == EPMEM_PHASE_OUTPUT ) )
+	  if ( epmem_enabled( thisAgent ) && ( thisAgent->epmem_params->phase->get_value() == epmem_param_container::phase_output ) )
 		  epmem_go( thisAgent );
 
 	  // Count the outputs the agent generates (or times reaching max-nil-outputs without sending output)
@@ -1085,7 +1071,7 @@ void do_one_top_level_phase (agent* thisAgent)
       #endif
 	  /* REW: end 28.07.96 */
 
-	  if ( epmem_enabled( thisAgent ) && ( epmem_get_parameter( thisAgent, (const long) EPMEM_PARAM_PHASE, EPMEM_RETURN_LONG ) == EPMEM_PHASE_SELECTION ) )
+	  if ( epmem_enabled( thisAgent ) && ( thisAgent->epmem_params->phase->get_value() == epmem_param_container::phase_selection ) )
 		epmem_go( thisAgent );
 
 	  break;  /* end DECISION phase */
@@ -1117,7 +1103,7 @@ void do_one_top_level_phase (agent* thisAgent)
 		  for ( Symbol *g = thisAgent->bottom_goal; g; g = g->id.higher_goal)
 		  {
 			  rl_tabulate_reward_value_for_goal( thisAgent, g );
-			  rl_perform_update( thisAgent, 0, g );
+			  rl_perform_update( thisAgent, 0, true, g );
 		  }
 	  }
   }
@@ -1499,8 +1485,7 @@ void init_agent_memory(agent* thisAgent)
      reset_timer (&thisAgent->gds_cpu_time[ii]);
   }
 
-  epmem_reset_timers( thisAgent );
-  smem_reset_timers( thisAgent );
+  thisAgent->epmem_timers->reset();
 
   // This is an important part of the state of the agent for io purposes
   // (see io.cpp for details)
