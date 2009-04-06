@@ -506,9 +506,9 @@ epmem_timer::epmem_timer(const char *new_name, agent *new_agent, soar_module::ti
 //////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////
 
-epmem_common_statement_container::epmem_common_statement_container( agent *new_agent ): sqlite_statement_container( new_agent )
+epmem_common_statement_container::epmem_common_statement_container( agent *new_agent ): sqlite_statement_container( new_agent->epmem_db )
 {
-	sqlite_database *new_db = my_agent->epmem_db;
+	sqlite_database *new_db = new_agent->epmem_db;
 
 	//
 
@@ -564,9 +564,9 @@ epmem_common_statement_container::epmem_common_statement_container( agent *new_a
 }
 
 
-epmem_tree_statement_container::epmem_tree_statement_container( agent *new_agent ): sqlite_statement_container( new_agent )
+epmem_tree_statement_container::epmem_tree_statement_container( agent *new_agent ): sqlite_statement_container( new_agent->epmem_db )
 {
-	sqlite_database *new_db = my_agent->epmem_db;
+	sqlite_database *new_db = new_agent->epmem_db;
 
 	//
 
@@ -630,13 +630,13 @@ epmem_tree_statement_container::epmem_tree_statement_container( agent *new_agent
 	prev_episode = new sqlite_statement( new_db, "SELECT id FROM times WHERE id<? ORDER BY id DESC LIMIT 1" );
 	add( prev_episode );
 
-	get_episode = new sqlite_statement( new_db, "SELECT i.child_id, i.parent_id, h1.sym_const, h2.sym_const, h1.sym_type, h2.sym_type FROM node_unique i, temporal_symbol_hash h1, temporal_symbol_hash h2 WHERE i.child_id IN (SELECT n.id FROM node_now n WHERE n.start<= ? UNION ALL SELECT p.id FROM node_point p WHERE p.start=? UNION ALL SELECT e1.id FROM node_range e1, rit_left_nodes lt WHERE e1.rit_node=lt.min AND e1.end >= ? UNION ALL SELECT e2.id FROM node_range e2, rit_right_nodes rt WHERE e2.rit_node = rt.node AND e2.start <= ?) AND i.attrib=h1.id AND i.value=h2.id ORDER BY i.child_id ASC", my_agent->epmem_timers->ncb_node );
+	get_episode = new sqlite_statement( new_db, "SELECT i.child_id, i.parent_id, h1.sym_const, h2.sym_const, h1.sym_type, h2.sym_type FROM node_unique i, temporal_symbol_hash h1, temporal_symbol_hash h2 WHERE i.child_id IN (SELECT n.id FROM node_now n WHERE n.start<= ? UNION ALL SELECT p.id FROM node_point p WHERE p.start=? UNION ALL SELECT e1.id FROM node_range e1, rit_left_nodes lt WHERE e1.rit_node=lt.min AND e1.end >= ? UNION ALL SELECT e2.id FROM node_range e2, rit_right_nodes rt WHERE e2.rit_node = rt.node AND e2.start <= ?) AND i.attrib=h1.id AND i.value=h2.id ORDER BY i.child_id ASC", new_agent->epmem_timers->ncb_node );
 	add( get_episode );
 }
 
-epmem_graph_statement_container::epmem_graph_statement_container( agent *new_agent ): sqlite_statement_container( new_agent )
+epmem_graph_statement_container::epmem_graph_statement_container( agent *new_agent ): sqlite_statement_container( new_agent->epmem_db )
 {
-	sqlite_database *new_db = my_agent->epmem_db;
+	sqlite_database *new_db = new_agent->epmem_db;
 
 	//
 
@@ -738,10 +738,10 @@ epmem_graph_statement_container::epmem_graph_statement_container( agent *new_age
 	add( prev_episode );
 
 
-	get_nodes = new sqlite_statement( new_db, "SELECT f.child_id, f.parent_id, h1.sym_const, h2.sym_const, h1.sym_type, h2.sym_type FROM node_unique f, temporal_symbol_hash h1, temporal_symbol_hash h2 WHERE f.child_id IN (SELECT n.id FROM node_now n WHERE n.start<= ? UNION ALL SELECT p.id FROM node_point p WHERE p.start=? UNION ALL SELECT e1.id FROM node_range e1, rit_left_nodes lt WHERE e1.rit_node=lt.min AND e1.end >= ? UNION ALL SELECT e2.id FROM node_range e2, rit_right_nodes rt WHERE e2.rit_node = rt.node AND e2.start <= ?) AND f.attrib=h1.id AND f.value=h2.id ORDER BY f.child_id ASC", my_agent->epmem_timers->ncb_node );
+	get_nodes = new sqlite_statement( new_db, "SELECT f.child_id, f.parent_id, h1.sym_const, h2.sym_const, h1.sym_type, h2.sym_type FROM node_unique f, temporal_symbol_hash h1, temporal_symbol_hash h2 WHERE f.child_id IN (SELECT n.id FROM node_now n WHERE n.start<= ? UNION ALL SELECT p.id FROM node_point p WHERE p.start=? UNION ALL SELECT e1.id FROM node_range e1, rit_left_nodes lt WHERE e1.rit_node=lt.min AND e1.end >= ? UNION ALL SELECT e2.id FROM node_range e2, rit_right_nodes rt WHERE e2.rit_node = rt.node AND e2.start <= ?) AND f.attrib=h1.id AND f.value=h2.id ORDER BY f.child_id ASC", new_agent->epmem_timers->ncb_node );
 	add( get_nodes );
 
-	get_edges = new sqlite_statement( new_db, "SELECT f.q0, h.sym_const, f.q1, h.sym_type FROM edge_unique f INNER JOIN temporal_symbol_hash h ON f.w=h.id WHERE f.parent_id IN (SELECT n.id FROM edge_now n WHERE n.start<= ? UNION ALL SELECT p.id FROM edge_point p WHERE p.start=? UNION ALL SELECT e1.id FROM edge_range e1, rit_left_nodes lt WHERE e1.rit_node=lt.min AND e1.end >= ? UNION ALL SELECT e2.id FROM edge_range e2, rit_right_nodes rt WHERE e2.rit_node = rt.node AND e2.start <= ?) ORDER BY f.q0 ASC, f.q1 ASC", my_agent->epmem_timers->ncb_edge );
+	get_edges = new sqlite_statement( new_db, "SELECT f.q0, h.sym_const, f.q1, h.sym_type FROM edge_unique f INNER JOIN temporal_symbol_hash h ON f.w=h.id WHERE f.parent_id IN (SELECT n.id FROM edge_now n WHERE n.start<= ? UNION ALL SELECT p.id FROM edge_point p WHERE p.start=? UNION ALL SELECT e1.id FROM edge_range e1, rit_left_nodes lt WHERE e1.rit_node=lt.min AND e1.end >= ? UNION ALL SELECT e2.id FROM edge_range e2, rit_right_nodes rt WHERE e2.rit_node = rt.node AND e2.start <= ?) ORDER BY f.q0 ASC, f.q1 ASC", new_agent->epmem_timers->ncb_edge );
 	add( get_edges );
 }
 

@@ -822,26 +822,6 @@
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath=".\src\soar_db.cpp"
-				>
-				<FileConfiguration
-					Name="Debug SCU|Win32"
-					ExcludedFromBuild="true"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Release SCU|Win32"
-					ExcludedFromBuild="true"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-					/>
-				</FileConfiguration>
-			</File>
-			<File
 				RelativePath=".\src\soar_module.cpp"
 				>
 				<FileConfiguration
