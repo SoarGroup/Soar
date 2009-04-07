@@ -172,11 +172,11 @@ epmem_param_container::epmem_param_container( agent *new_agent ): param_containe
 	timers->add_mapping( soar_module::timer::two, "two" );
 	timers->add_mapping( soar_module::timer::three, "three" );
 	add( timers );
-};
+}
 
 //
 
-epmem_path_param::epmem_path_param( const char *new_name, const char *new_value, predicate<const char *> *new_val_pred, predicate<const char *> *new_prot_pred, agent *new_agent ): string_param( new_name, new_value, new_val_pred, new_prot_pred ), my_agent( new_agent ) {};
+epmem_path_param::epmem_path_param( const char *new_name, const char *new_value, predicate<const char *> *new_val_pred, predicate<const char *> *new_prot_pred, agent *new_agent ): string_param( new_name, new_value, new_val_pred, new_prot_pred ), my_agent( new_agent ) {}
 
 void epmem_path_param::set_value( const char *new_value )
 {
@@ -195,7 +195,7 @@ void epmem_path_param::set_value( const char *new_value )
 
 //
 
-epmem_graph_match_param::epmem_graph_match_param( const char *new_name, boolean new_value, predicate<boolean> *new_prot_pred, agent *new_agent ): boolean_param( new_name, new_value, new_prot_pred ), my_agent( new_agent ) {};
+epmem_graph_match_param::epmem_graph_match_param( const char *new_name, boolean new_value, predicate<boolean> *new_prot_pred, agent *new_agent ): boolean_param( new_name, new_value, new_prot_pred ), my_agent( new_agent ) {}
 
 bool epmem_graph_match_param::validate_string( const char *new_string )
 {
@@ -216,7 +216,7 @@ bool epmem_graph_match_param::validate_string( const char *new_string )
 
 //
 
-epmem_mode_param::epmem_mode_param( const char *new_name, epmem_param_container::mode_choices new_value, predicate<epmem_param_container::mode_choices> *new_prot_pred, agent *new_agent ): constant_param<epmem_param_container::mode_choices>( new_name, new_value, new_prot_pred ), my_agent( new_agent ) {};
+epmem_mode_param::epmem_mode_param( const char *new_name, epmem_param_container::mode_choices new_value, predicate<epmem_param_container::mode_choices> *new_prot_pred, agent *new_agent ): constant_param<epmem_param_container::mode_choices>( new_name, new_value, new_prot_pred ), my_agent( new_agent ) {}
 
 void epmem_mode_param::set_value( epmem_param_container::mode_choices new_value )
 {
@@ -229,10 +229,10 @@ void epmem_mode_param::set_value( epmem_param_container::mode_choices new_value 
 //
 
 template <typename T>
-epmem_db_predicate<T>::epmem_db_predicate( agent *new_agent ): agent_predicate<T>( new_agent ) {};
+epmem_db_predicate<T>::epmem_db_predicate( agent *new_agent ): agent_predicate<T>( new_agent ) {}
 
 template <typename T>
-bool epmem_db_predicate<T>::operator() ( T /*val*/ ) { return ( this->my_agent->epmem_db->get_status() == soar_module::connected ); };
+bool epmem_db_predicate<T>::operator() ( T /*val*/ ) { return ( this->my_agent->epmem_db->get_status() == soar_module::connected ); }
 
 
 /***************************************************************************
@@ -358,25 +358,25 @@ epmem_stat_container::epmem_stat_container( agent *new_agent ): stat_container( 
 	my_agent->epmem_rit_state_graph[ EPMEM_RIT_STATE_EDGE ].rightroot.var_key = var_rit_rightroot_2;
 	my_agent->epmem_rit_state_graph[ EPMEM_RIT_STATE_EDGE ].minstep.stat = rit_min_step_2;
 	my_agent->epmem_rit_state_graph[ EPMEM_RIT_STATE_EDGE ].minstep.var_key = var_rit_minstep_2;
-};
+}
 
 //
 
-epmem_mem_usage_stat::epmem_mem_usage_stat( agent *new_agent, const char *new_name, long new_value, predicate<long> *new_prot_pred ): integer_stat( new_name, new_value, new_prot_pred ), my_agent( new_agent ) {};
+epmem_mem_usage_stat::epmem_mem_usage_stat( agent *new_agent, const char *new_name, long new_value, predicate<long> *new_prot_pred ): integer_stat( new_name, new_value, new_prot_pred ), my_agent( new_agent ) {}
 
 long epmem_mem_usage_stat::get_value()
 {
 	return my_agent->epmem_db->memory_usage();
-};
+}
 
 //
 
-epmem_mem_high_stat::epmem_mem_high_stat( agent *new_agent, const char *new_name, long new_value, predicate<long> *new_prot_pred ): integer_stat( new_name, new_value, new_prot_pred ), my_agent( new_agent ) {};
+epmem_mem_high_stat::epmem_mem_high_stat( agent *new_agent, const char *new_name, long new_value, predicate<long> *new_prot_pred ): integer_stat( new_name, new_value, new_prot_pred ), my_agent( new_agent ) {}
 
 long epmem_mem_high_stat::get_value()
 {
 	return my_agent->epmem_db->memory_highwater();
-};
+}
 
 
 //////////////////////////////////////////////////////////
@@ -487,17 +487,17 @@ epmem_timer_container::epmem_timer_container( agent *new_agent ): timer_containe
 	// graph
 	my_agent->epmem_rit_state_graph[ EPMEM_RIT_STATE_NODE ].timer = ncb_node_rit;
 	my_agent->epmem_rit_state_graph[ EPMEM_RIT_STATE_EDGE ].timer = ncb_edge_rit;
-};
+}
 
 //
 
-epmem_timer_level_predicate::epmem_timer_level_predicate( agent *new_agent ): agent_predicate<soar_module::timer::timer_level>( new_agent ) {};
+epmem_timer_level_predicate::epmem_timer_level_predicate( agent *new_agent ): agent_predicate<soar_module::timer::timer_level>( new_agent ) {}
 
-bool epmem_timer_level_predicate::operator() ( soar_module::timer::timer_level val ) { return ( my_agent->epmem_params->timers->get_value() >= val ); };
+bool epmem_timer_level_predicate::operator() ( soar_module::timer::timer_level val ) { return ( my_agent->epmem_params->timers->get_value() >= val ); }
 
 //
 
-epmem_timer::epmem_timer(const char *new_name, agent *new_agent, soar_module::timer::timer_level new_level): soar_module::timer( new_name, new_agent, new_level, new epmem_timer_level_predicate( new_agent ) ) {};
+epmem_timer::epmem_timer(const char *new_name, agent *new_agent, soar_module::timer::timer_level new_level): soar_module::timer( new_name, new_agent, new_level, new epmem_timer_level_predicate( new_agent ) ) {}
 
 
 //////////////////////////////////////////////////////////
