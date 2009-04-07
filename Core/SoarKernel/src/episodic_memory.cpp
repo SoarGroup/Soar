@@ -4694,7 +4694,7 @@ void epmem_process_query( agent *my_agent, Symbol *state, Symbol *query, Symbol 
 
 										if ( ( king_id == EPMEM_MEMID_NONE ) ||
 											 ( current_score > king_score ) ||
-											 ( current_graph_match_counter == perfect_match ) )
+											 ( current_graph_match_counter == graph_match_roots->wmes->size() ) )
 										{
 											king_id = current_valid_end;
 											king_score = current_score;
@@ -4706,13 +4706,13 @@ void epmem_process_query( agent *my_agent, Symbol *state, Symbol *query, Symbol 
 											if ( my_agent->sysparams[ TRACE_EPMEM_SYSPARAM ] )
 											{
 												char buf[256];
-												SNPRINTF( buf, 254, "NEW KING (perfect, graph-match): (true, %s)", ( ( king_graph_match == perfect_match )?("true"):("false") ) );
+												SNPRINTF( buf, 254, "NEW KING (perfect, graph-match): (true, %s)", ( ( king_graph_match == graph_match_roots->wmes->size() )?("true"):("false") ) );
 
 												print( my_agent, buf );
 												xml_generate_warning( my_agent, buf );
 											}
 
-											if ( king_graph_match == perfect_match )
+											if ( king_graph_match == graph_match_roots->wmes->size() )
 												done = true;
 										}
 									}
