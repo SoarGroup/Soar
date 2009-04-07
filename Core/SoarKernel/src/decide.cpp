@@ -2047,8 +2047,7 @@ void create_new_context (agent* thisAgent, Symbol *attr_of_impasse, byte impasse
   id->id.rl_info->num_prev_op_rl_rules = 0;
 
   id->id.epmem_info = static_cast<epmem_data *>( allocate_memory( thisAgent, sizeof( epmem_data ), MISCELLANEOUS_MEM_USAGE ) );
-  id->id.epmem_info->last_ol_time = 0;
-  id->id.epmem_info->last_ol_count = 0;
+  id->id.epmem_info->last_ol_time = 0;  
   id->id.epmem_info->last_cmd_time = 0;
   id->id.epmem_info->last_cmd_count = 0;
   id->id.epmem_info->cue_wmes = new std::set<wme *>();

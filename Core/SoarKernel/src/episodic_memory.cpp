@@ -912,7 +912,7 @@ void epmem_set_variable( agent *my_agent, epmem_variable_key variable_id, long v
 	var_set->bind_int( 1, variable_id );
 	var_set->bind_int( 2, variable_value );
 
-	var_set->execute(soar_module::op_reinit);	
+	var_set->execute( soar_module::op_reinit );	
 }
 
 //////////////////////////////////////////////////////////
@@ -1261,8 +1261,7 @@ void epmem_reset( agent *my_agent, Symbol *state )
 	{
 		epmem_data *data = state->id.epmem_info;
 
-		data->last_ol_time = 0;
-		data->last_ol_count = 0;
+		data->last_ol_time = 0;		
 
 		data->last_cmd_time = 0;
 		data->last_cmd_count = 0;
@@ -1700,12 +1699,11 @@ long epmem_temporal_hash( agent *my_agent, Symbol *sym, bool add_on_fail = true 
 		 ( sym->common.symbol_type == INT_CONSTANT_SYMBOL_TYPE ) ||
 		 ( sym->common.symbol_type == FLOAT_CONSTANT_SYMBOL_TYPE ) )
 	{
-		if ( ( sym->common.epmem_hash ) && ( sym->common.epmem_valid == my_agent->epmem_validation ) )
-		{
-			return_val = sym->common.epmem_hash;
-		}
-		else
+		if ( ( !sym->common.epmem_hash ) || ( sym->common.epmem_valid != my_agent->epmem_validation ) )
 		{		
+			sym->common.epmem_hash = NULL;
+			sym->common.epmem_valid = my_agent->epmem_validation;
+			
 			// basic process:
 			// - search
 			// - if found, return
@@ -1756,9 +1754,12 @@ long epmem_temporal_hash( agent *my_agent, Symbol *sym, bool add_on_fail = true 
 				return_val = (long) my_agent->epmem_db->last_insert_rowid();
 			}			
 
+			// cache results for later re-use
 			sym->common.epmem_hash = return_val;
 			sym->common.epmem_valid = my_agent->epmem_validation;
 		}
+
+		return_val = sym->common.epmem_hash;
 	}
 
 	////////////////////////////////////////////////////////////////////////////
@@ -4974,8 +4975,7 @@ void epmem_consider_new_episode( agent *my_agent )
 		{
 			slot *s;
 			wme *w;
-			Symbol *ol = my_agent->io_header_output;
-			unsigned long wme_count = 0;
+			Symbol *ol = my_agent->io_header_output;			
 
 			// examine all commands on the output-link for any
 			// that appeared since last memory was recorded
@@ -4983,8 +4983,6 @@ void epmem_consider_new_episode( agent *my_agent )
 			{
 				for ( w = s->wmes; w != NIL; w = w->next )
 				{
-					wme_count++;
-
 					if ( w->timetag > my_agent->bottom_goal->id.epmem_info->last_ol_time )
 					{
 						new_memory = true;
@@ -4992,13 +4990,6 @@ void epmem_consider_new_episode( agent *my_agent )
 					}
 				}
 			}
-
-			// check for change in the number of WMEs (catches the case of a removed WME)
-			if ( my_agent->bottom_goal->id.epmem_info->last_ol_count != wme_count )
-			{
-				new_memory = ( wme_count != 0 );
-				my_agent->bottom_goal->id.epmem_info->last_ol_count = wme_count;
-			}			
 		}
 		else if ( trigger == epmem_param_container::dc )
 		{
