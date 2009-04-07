@@ -189,7 +189,7 @@ SConscript('#Core/KernelSML/SConscript')
 
 if env['java']:
 	if env.GetOption('clean'):
-		Execute('ant clean')
+		Execute('ant -q clean')
 	SConscript('#Core/ClientSMLSWIG/Java/SConscript')
 	SConscript('#Tools/LoggerJava/SConscript')
 	SConscript('#Tools/TestJavaSML/SConscript')
