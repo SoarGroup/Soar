@@ -326,15 +326,26 @@ agent * create_soar_agent (char * agent_name) {                                 
 
   newAgent->rl_first_switch = true;
 
+
   // select initialization
   newAgent->select = new select_info;
   select_init( newAgent );
+
 
   // predict initialization
   newAgent->prediction = new std::string();
   predict_init( newAgent );
 
-  // epmem initialization - timers should come before stats  
+
+  // wma initialization
+  newAgent->wma_params = new wma_param_container( newAgent );
+  newAgent->wma_stats = new wma_stat_container( newAgent );
+
+  newAgent->wma_initialized = false;
+  newAgent->wma_first = true;
+
+
+  // epmem initialization
   newAgent->epmem_params = new epmem_param_container( newAgent );
   newAgent->epmem_stats = new epmem_stat_container( newAgent );  
   newAgent->epmem_timers = new epmem_timer_container( newAgent );
@@ -367,15 +378,6 @@ agent * create_soar_agent (char * agent_name) {                                 
 
   newAgent->smem_db = new soar_module::sqlite_database();
   newAgent->smem_first_switch = true;
-
-
-  // wma initialization
-  newAgent->wma_params = new wma_param_container( newAgent );
-  newAgent->wma_stats = new wma_stat_container( newAgent );
-
-  newAgent->wma_initialized = false;
-  newAgent->wma_first = true;
-
 
   return newAgent;
 }

@@ -26,9 +26,6 @@
 
 using namespace soar_module;
 
-typedef union symbol_union Symbol;
-typedef struct wme_struct wme;
-
 
 //////////////////////////////////////////////////////////
 // EpMem Experimentation
@@ -261,12 +258,6 @@ class epmem_timer: public timer
 	public:
 		epmem_timer( const char *new_name, agent *new_agent, timer_level new_level );
 };
-
-
-//
-
-void epmem_start_timer( agent *my_agent, long timer );
-void epmem_stop_timer( agent *my_agent, long timer );
 
 
 //////////////////////////////////////////////////////////

@@ -287,35 +287,35 @@ typedef struct agent_struct {
 
   Symbol            * reward_link_symbol;
 
-  Symbol            * epmem_symbol;
-  Symbol            * epmem_cmd_symbol;
-  Symbol            * epmem_result_symbol;
+  Symbol            * epmem_sym;
+  Symbol            * epmem_sym_cmd;
+  Symbol            * epmem_sym_result;
 
-  Symbol            * epmem_retrieved_symbol;
-  Symbol            * epmem_status_symbol;
-  Symbol            * epmem_match_score_symbol;
-  Symbol            * epmem_cue_size_symbol;
-  Symbol            * epmem_normalized_match_score_symbol;
-  Symbol            * epmem_match_cardinality_symbol;
-  Symbol            * epmem_memory_id_symbol;
-  Symbol            * epmem_present_id_symbol;
-  Symbol            * epmem_no_memory_symbol;
-  Symbol            * epmem_graph_match_symbol;
-  Symbol            * epmem_graph_match_mapping_symbol;
-  Symbol            * epmem_graph_match_mapping_node_symbol;
-  Symbol            * epmem_graph_match_mapping_cue_symbol;
-  Symbol            * epmem_success_symbol;
-  Symbol            * epmem_failure_symbol;
-  Symbol            * epmem_bad_cmd_symbol;
+  Symbol            * epmem_sym_retrieved;
+  Symbol            * epmem_sym_status;
+  Symbol            * epmem_sym_match_score;
+  Symbol            * epmem_sym_cue_size;
+  Symbol            * epmem_sym_normalized_match_score;
+  Symbol            * epmem_sym_match_cardinality;
+  Symbol            * epmem_sym_memory_id;
+  Symbol            * epmem_sym_present_id;
+  Symbol            * epmem_sym_no_memory;
+  Symbol            * epmem_sym_graph_match;
+  Symbol            * epmem_sym_graph_match_mapping;
+  Symbol            * epmem_sym_graph_match_mapping_node;
+  Symbol            * epmem_sym_graph_match_mapping_cue;
+  Symbol            * epmem_sym_success;
+  Symbol            * epmem_sym_failure;
+  Symbol            * epmem_sym_bad_cmd;
 
-  Symbol			* epmem_retrieve_symbol;
-  Symbol			* epmem_next_symbol;
-  Symbol			* epmem_prev_symbol;
-  Symbol			* epmem_query_symbol;
-  Symbol			* epmem_negquery_symbol;
-  Symbol			* epmem_before_symbol;
-  Symbol			* epmem_after_symbol;
-  Symbol			* epmem_prohibit_symbol;
+  Symbol			* epmem_sym_retrieve;
+  Symbol			* epmem_sym_next;
+  Symbol			* epmem_sym_prev;
+  Symbol			* epmem_sym_query;
+  Symbol			* epmem_sym_negquery;
+  Symbol			* epmem_sym_before;
+  Symbol			* epmem_sym_after;
+  Symbol			* epmem_sym_prohibit;
 
 
   Symbol            * smem_symbol;
