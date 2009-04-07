@@ -11,12 +11,16 @@
 import os
 import sys
 import SoarSCons
+import platform
 
 # TODO: pull this version string out of shared/soarversion.h
 soarversionstring = "9.0.0"
 print "Soar", soarversionstring
 print "Detected OS:", os.name
 print "Detected platform:", sys.platform
+print "Platform.machine:", platform.machine()
+print "Platform.architecture:",platform.architecture()
+
 processor = os.popen( 'uname -p', 'r' ).read().strip()
 print "Detected processor:", processor
 
