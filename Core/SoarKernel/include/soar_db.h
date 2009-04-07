@@ -164,6 +164,9 @@ namespace soar_module
 						case op_clean:
 							clean();
 							break;
+							
+						case op_none:
+							break;
 					}
 				}
 

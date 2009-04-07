@@ -1633,7 +1633,7 @@ void remove_wme_from_rete (agent* thisAgent, wme *w) {
   rete_node *node, *next, *child;
   token *tok, *left;
 
-  if ( ( w->epmem_id != NULL ) && ( w->epmem_valid == thisAgent->epmem_validation ) )
+  if ( ( w->epmem_id != NIL ) && ( w->epmem_valid == thisAgent->epmem_validation ) )
   {
 	if ( thisAgent->epmem_db->get_status() == soar_module::connected )
 	{
