@@ -648,35 +648,35 @@ void create_predefined_symbols (agent* thisAgent) {
 
   thisAgent->reward_link_symbol = make_sym_constant( thisAgent, "reward-link" );
 
-  thisAgent->epmem_symbol = make_sym_constant( thisAgent, "epmem" );
-  thisAgent->epmem_cmd_symbol = make_sym_constant( thisAgent, "command" );
-  thisAgent->epmem_result_symbol = make_sym_constant( thisAgent, "result" );
+  thisAgent->epmem_sym = make_sym_constant( thisAgent, "epmem" );
+  thisAgent->epmem_sym_cmd = make_sym_constant( thisAgent, "command" );
+  thisAgent->epmem_sym_result = make_sym_constant( thisAgent, "result" );
 
-  thisAgent->epmem_retrieved_symbol = make_sym_constant( thisAgent, "retrieved" );
-  thisAgent->epmem_status_symbol = make_sym_constant( thisAgent, "status" );
-  thisAgent->epmem_match_score_symbol = make_sym_constant( thisAgent, "match-score" );
-  thisAgent->epmem_cue_size_symbol = make_sym_constant( thisAgent, "cue-size" );
-  thisAgent->epmem_normalized_match_score_symbol = make_sym_constant( thisAgent, "normalized-match-score" );
-  thisAgent->epmem_match_cardinality_symbol = make_sym_constant( thisAgent, "match-cardinality" );
-  thisAgent->epmem_memory_id_symbol = make_sym_constant( thisAgent, "memory-id" );
-  thisAgent->epmem_present_id_symbol = make_sym_constant( thisAgent, "present-id" );
-  thisAgent->epmem_no_memory_symbol = make_sym_constant( thisAgent, "no-memory" );
-  thisAgent->epmem_graph_match_symbol = make_sym_constant( thisAgent, "graph-match" );
-  thisAgent->epmem_graph_match_mapping_symbol = make_sym_constant( thisAgent, "mapping" );
-  thisAgent->epmem_graph_match_mapping_node_symbol = make_sym_constant( thisAgent, "node" );
-  thisAgent->epmem_graph_match_mapping_cue_symbol = make_sym_constant( thisAgent, "cue" );
-  thisAgent->epmem_success_symbol = make_sym_constant( thisAgent, "success" );
-  thisAgent->epmem_failure_symbol = make_sym_constant( thisAgent, "failure" );
-  thisAgent->epmem_bad_cmd_symbol = make_sym_constant( thisAgent, "bad-cmd" );
+  thisAgent->epmem_sym_retrieved = make_sym_constant( thisAgent, "retrieved" );
+  thisAgent->epmem_sym_status = make_sym_constant( thisAgent, "status" );
+  thisAgent->epmem_sym_match_score = make_sym_constant( thisAgent, "match-score" );
+  thisAgent->epmem_sym_cue_size = make_sym_constant( thisAgent, "cue-size" );
+  thisAgent->epmem_sym_normalized_match_score = make_sym_constant( thisAgent, "normalized-match-score" );
+  thisAgent->epmem_sym_match_cardinality = make_sym_constant( thisAgent, "match-cardinality" );
+  thisAgent->epmem_sym_memory_id = make_sym_constant( thisAgent, "memory-id" );
+  thisAgent->epmem_sym_present_id = make_sym_constant( thisAgent, "present-id" );
+  thisAgent->epmem_sym_no_memory = make_sym_constant( thisAgent, "no-memory" );
+  thisAgent->epmem_sym_graph_match = make_sym_constant( thisAgent, "graph-match" );
+  thisAgent->epmem_sym_graph_match_mapping = make_sym_constant( thisAgent, "mapping" );
+  thisAgent->epmem_sym_graph_match_mapping_node = make_sym_constant( thisAgent, "node" );
+  thisAgent->epmem_sym_graph_match_mapping_cue = make_sym_constant( thisAgent, "cue" );
+  thisAgent->epmem_sym_success = make_sym_constant( thisAgent, "success" );
+  thisAgent->epmem_sym_failure = make_sym_constant( thisAgent, "failure" );
+  thisAgent->epmem_sym_bad_cmd = make_sym_constant( thisAgent, "bad-cmd" );
 
-  thisAgent->epmem_retrieve_symbol = make_sym_constant( thisAgent, "retrieve" );
-  thisAgent->epmem_next_symbol = make_sym_constant( thisAgent, "next" );
-  thisAgent->epmem_prev_symbol = make_sym_constant( thisAgent, "previous" );
-  thisAgent->epmem_query_symbol = make_sym_constant( thisAgent, "query" );
-  thisAgent->epmem_negquery_symbol = make_sym_constant( thisAgent, "neg-query" );
-  thisAgent->epmem_before_symbol = make_sym_constant( thisAgent, "before" );
-  thisAgent->epmem_after_symbol = make_sym_constant( thisAgent, "after" );
-  thisAgent->epmem_prohibit_symbol = make_sym_constant( thisAgent, "prohibit" );
+  thisAgent->epmem_sym_retrieve = make_sym_constant( thisAgent, "retrieve" );
+  thisAgent->epmem_sym_next = make_sym_constant( thisAgent, "next" );
+  thisAgent->epmem_sym_prev = make_sym_constant( thisAgent, "previous" );
+  thisAgent->epmem_sym_query = make_sym_constant( thisAgent, "query" );
+  thisAgent->epmem_sym_negquery = make_sym_constant( thisAgent, "neg-query" );
+  thisAgent->epmem_sym_before = make_sym_constant( thisAgent, "before" );
+  thisAgent->epmem_sym_after = make_sym_constant( thisAgent, "after" );
+  thisAgent->epmem_sym_prohibit = make_sym_constant( thisAgent, "prohibit" );
 }
 
 void release_helper(agent* thisAgent, Symbol** sym) {
@@ -731,33 +731,33 @@ void release_predefined_symbols(agent* thisAgent) {
 
   release_helper( thisAgent, &( thisAgent->reward_link_symbol ) );
 
-  release_helper( thisAgent, &( thisAgent->epmem_symbol ) );
-  release_helper( thisAgent, &( thisAgent->epmem_cmd_symbol ) );
-  release_helper( thisAgent, &( thisAgent->epmem_result_symbol ) );
+  release_helper( thisAgent, &( thisAgent->epmem_sym ) );
+  release_helper( thisAgent, &( thisAgent->epmem_sym_cmd ) );
+  release_helper( thisAgent, &( thisAgent->epmem_sym_result ) );
 
-  release_helper( thisAgent, &( thisAgent->epmem_retrieved_symbol ) );
-  release_helper( thisAgent, &( thisAgent->epmem_status_symbol ) );
-  release_helper( thisAgent, &( thisAgent->epmem_match_score_symbol ) );
-  release_helper( thisAgent, &( thisAgent->epmem_cue_size_symbol ) );
-  release_helper( thisAgent, &( thisAgent->epmem_normalized_match_score_symbol ) );
-  release_helper( thisAgent, &( thisAgent->epmem_match_cardinality_symbol ) );
-  release_helper( thisAgent, &( thisAgent->epmem_memory_id_symbol ) );
-  release_helper( thisAgent, &( thisAgent->epmem_present_id_symbol ) );
-  release_helper( thisAgent, &( thisAgent->epmem_no_memory_symbol ) );
-  release_helper( thisAgent, &( thisAgent->epmem_graph_match_symbol ) );
-  release_helper( thisAgent, &( thisAgent->epmem_graph_match_mapping_symbol ) );
-  release_helper( thisAgent, &( thisAgent->epmem_graph_match_mapping_node_symbol ) );
-  release_helper( thisAgent, &( thisAgent->epmem_graph_match_mapping_cue_symbol ) );
-  release_helper( thisAgent, &( thisAgent->epmem_success_symbol ) );
-  release_helper( thisAgent, &( thisAgent->epmem_failure_symbol ) );
-  release_helper( thisAgent, &( thisAgent->epmem_bad_cmd_symbol ) ); 
+  release_helper( thisAgent, &( thisAgent->epmem_sym_retrieved ) );
+  release_helper( thisAgent, &( thisAgent->epmem_sym_status ) );
+  release_helper( thisAgent, &( thisAgent->epmem_sym_match_score ) );
+  release_helper( thisAgent, &( thisAgent->epmem_sym_cue_size ) );
+  release_helper( thisAgent, &( thisAgent->epmem_sym_normalized_match_score ) );
+  release_helper( thisAgent, &( thisAgent->epmem_sym_match_cardinality ) );
+  release_helper( thisAgent, &( thisAgent->epmem_sym_memory_id ) );
+  release_helper( thisAgent, &( thisAgent->epmem_sym_present_id ) );
+  release_helper( thisAgent, &( thisAgent->epmem_sym_no_memory ) );
+  release_helper( thisAgent, &( thisAgent->epmem_sym_graph_match ) );
+  release_helper( thisAgent, &( thisAgent->epmem_sym_graph_match_mapping ) );
+  release_helper( thisAgent, &( thisAgent->epmem_sym_graph_match_mapping_node ) );
+  release_helper( thisAgent, &( thisAgent->epmem_sym_graph_match_mapping_cue ) );
+  release_helper( thisAgent, &( thisAgent->epmem_sym_success ) );
+  release_helper( thisAgent, &( thisAgent->epmem_sym_failure ) );
+  release_helper( thisAgent, &( thisAgent->epmem_sym_bad_cmd ) ); 
 
-  release_helper( thisAgent, &( thisAgent->epmem_retrieve_symbol ) );
-  release_helper( thisAgent, &( thisAgent->epmem_next_symbol ) );
-  release_helper( thisAgent, &( thisAgent->epmem_prev_symbol ) );
-  release_helper( thisAgent, &( thisAgent->epmem_query_symbol ) );
-  release_helper( thisAgent, &( thisAgent->epmem_negquery_symbol ) );
-  release_helper( thisAgent, &( thisAgent->epmem_before_symbol ) );
-  release_helper( thisAgent, &( thisAgent->epmem_after_symbol ) );
-  release_helper( thisAgent, &( thisAgent->epmem_prohibit_symbol ) );
+  release_helper( thisAgent, &( thisAgent->epmem_sym_retrieve ) );
+  release_helper( thisAgent, &( thisAgent->epmem_sym_next ) );
+  release_helper( thisAgent, &( thisAgent->epmem_sym_prev ) );
+  release_helper( thisAgent, &( thisAgent->epmem_sym_query ) );
+  release_helper( thisAgent, &( thisAgent->epmem_sym_negquery ) );
+  release_helper( thisAgent, &( thisAgent->epmem_sym_before ) );
+  release_helper( thisAgent, &( thisAgent->epmem_sym_after ) );
+  release_helper( thisAgent, &( thisAgent->epmem_sym_prohibit ) );
 }
