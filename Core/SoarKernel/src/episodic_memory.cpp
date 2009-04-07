@@ -16,20 +16,13 @@
 
 #include "episodic_memory.h"
 
-#include "instantiations.h"
-#include "io_soar.h"
-#include "misc.h"
+#include "agent.h"
 #include "prefmem.h"
-#include "print.h"
-#include "utilities.h"
+#include "symtab.h"
 #include "wmem.h"
+#include "print.h"
 #include "xml.h"
 
-#include <string>
-#include <list>
-#include <queue>
-#include <map>
-#include <algorithm>
 #include <cmath>
 
 

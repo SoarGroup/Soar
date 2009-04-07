@@ -10,13 +10,13 @@
 #include <portability.h>
 
 #include "cli_CommandLineInterface.h"
-
 #include "cli_Commands.h"
 #include "cli_CLIError.h"
 
 #include "sml_Names.h"
 
 #include "episodic_memory.h"
+#include "agent.h"
 #include "misc.h"
 
 using namespace cli;

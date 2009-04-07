@@ -26,9 +26,6 @@
 
 using namespace soar_module;
 
-typedef union symbol_union Symbol;
-typedef struct wme_struct wme;
-
 
 //////////////////////////////////////////////////////////
 // EpMem Experimentation
