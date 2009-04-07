@@ -28,12 +28,18 @@ public:
 
   const sml::Kernel & operator*() const          {return *m_kernel_ptr;}
   sml::Kernel & operator*()                      {return *m_kernel_ptr;}
-  const sml::Kernel * const & operator->() const {return  m_kernel_ptr;}
+  const sml::Kernel * const & operator->() const {
+	  const sml::Kernel* const* k = &m_kernel_ptr;
+	  return *k;
+  }
   sml::Kernel * operator->()                     {return  m_kernel_ptr;}
 
   operator const sml::Kernel & () const          {return *m_kernel_ptr;}
   operator sml::Kernel & ()                      {return *m_kernel_ptr;}
-  operator const sml::Kernel * const & () const  {return  m_kernel_ptr;}
+  operator const sml::Kernel * const & () const  {
+	  const sml::Kernel* const* k = &m_kernel_ptr;
+	  return *k;
+  }
   operator sml::Kernel * const & ()              {return  m_kernel_ptr;}
 
 private:

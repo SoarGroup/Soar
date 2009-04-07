@@ -25,6 +25,8 @@ namespace config
 	class ConfigSource 
 	{
 	public:
+		virtual ~ConfigSource() {}
+
 		virtual ConfigSource* copy() = 0;
 		virtual void save(std::string path) = 0;
 

@@ -130,4 +130,5 @@ NamedPipe* ListenerNamedPipe::CheckForClientConnection()
 	return pConnection ;
 }
 
-#endif ENABLE_NAMED_PIPES
+#endif // ENABLE_NAMED_PIPES
+

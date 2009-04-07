@@ -1003,7 +1003,7 @@ TEST_DEFINITION( testSimpleCopy )
 
 	// Register for the trace output
 	std::stringstream trace ;	// We'll pass this into the handler and build up the output in it
-	int callbackp = m_pAgent->RegisterForPrintEvent( sml::smlEVENT_PRINT, Handlers::MyPrintEventHandler, &trace) ;
+	/*int callbackp = */m_pAgent->RegisterForPrintEvent( sml::smlEVENT_PRINT, Handlers::MyPrintEventHandler, &trace) ;
 
 	// Set to true for more detail on this
 	m_pKernel->SetTraceCommunications(false) ;

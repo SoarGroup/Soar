@@ -30,8 +30,8 @@
 #include "gdatastructs.h"
 
 #ifdef __cplusplus
-extern "C"
-{
+//extern "C"
+//{
 #endif
 
 typedef char Bool;
@@ -89,7 +89,7 @@ Symbol * highest_active_goal_apply(agent* thisAgent, Symbol* start_goal, Bool no
 /* REW: end   08.20.97 */
 
 #ifdef __cplusplus
-}
+//}
 #endif
 
 #endif

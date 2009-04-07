@@ -59,8 +59,8 @@
 #define PRODUCTION_H
 
 #ifdef __cplusplus
-extern "C"
-{
+//extern "C"
+//{
 #endif
 
 #define UNDECLARED_SUPPORT 0
@@ -319,7 +319,7 @@ extern Bool action_is_in_tc (action *a, tc_number tc);
 extern void reset_variable_generator (agent* thisAgent, 
 									  condition *conds_with_vars_to_avoid,
                                       action *actions_with_vars_to_avoid);
-extern Symbol *generate_new_variable (agent* thisAgent, char *prefix);
+extern Symbol *generate_new_variable (agent* thisAgent, const char *prefix);
 
 /* -------------------------------------------------------------------
                          Production Management
@@ -392,7 +392,7 @@ inline void production_remove_ref(agent* thisAgent, production * p)
 #endif /* USE_MACROS */
 
 #ifdef __cplusplus
-}
+//}
 #endif
 
 #endif

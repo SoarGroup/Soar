@@ -9,8 +9,8 @@
 #define INSTANTIATIONS_H
 
 #ifdef __cplusplus
-extern "C"
-{
+//extern "C"
+//{
 #endif
 
 /* -------------------------------------------------------------------
@@ -110,7 +110,7 @@ typedef struct pi_struct {
 /* REW: end   09.15.96 */
 
 #ifdef __cplusplus
-}
+//}
 #endif
 
 #endif

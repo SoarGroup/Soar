@@ -91,7 +91,7 @@ Bool number_starters[256];    /* could the character initiate a number? */
   the corresponding start_lex_from_file() call.
 ====================================================================== */
 
-void start_lex_from_file (agent* thisAgent, char *filename, 
+void start_lex_from_file (agent* thisAgent, const char *filename, 
 						  FILE *already_opened_file) {
   lexer_source_file *lsf;
 

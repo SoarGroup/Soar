@@ -12,8 +12,8 @@
 #define REORDER_H
 
 #ifdef __cplusplus
-extern "C"
-{
+//extern "C"
+//{
 #endif
 
 typedef char Bool;
@@ -33,7 +33,7 @@ extern void init_reorderer (agent* thisAgent);
 extern list *collect_root_variables(agent* thisAgent, condition *, tc_number, Bool);
 
 #ifdef __cplusplus
-}
+//}
 #endif
 
 #endif

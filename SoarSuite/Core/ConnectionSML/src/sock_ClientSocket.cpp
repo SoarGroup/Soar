@@ -110,7 +110,7 @@ bool ClientSocket::ConnectToServer(char const* pNetAddress, unsigned short port)
 	sockaddr_in address ;
 	SOCKET sock;
 
-	int res;
+	int res = 0;
 
 #ifdef ENABLE_LOCAL_SOCKETS
 

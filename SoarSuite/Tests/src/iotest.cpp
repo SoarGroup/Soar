@@ -394,7 +394,7 @@ void IOTest::testOutputLeak1()
 	pAgent->LoadProductions( productionsPath.str().c_str() ) ;
 	CPPUNIT_ASSERT_MESSAGE( "loadProductions", pAgent->GetLastCommandLineResult() );
 
-	sml::Identifier* pOutputLink = pAgent->GetOutputLink();
+	/*sml::Identifier* pOutputLink = */pAgent->GetOutputLink();
 
 	pKernel->RunAllAgents( 1 );
 

@@ -593,23 +593,52 @@ SoarTextIO::PrintOutput()
 
 		cout << GetRelevant( holder );
 #else
-		system("tput sc"); // save the cursor position
-		if(print_position == 5)
-			system("tput cuu 5"); // move the cursor 3 lines up
-		else if(print_position == 4)
-			system("tput cuu 4"); // move the cursor up 2 lines
-		else if(print_position == 3) // move the cursor up one line
-			system("tput cuu 3");
-		else if(print_position == 2)
-			system("tput cuu 2");
-		else if(print_position == 1)
-			system("tput cuu 1");
+		int ret = system("tput sc"); // save the cursor position
+		if (ret < 0) {
+			// TODO: system call failed
+		}
+		if(print_position == 5) {
+			ret = system("tput cuu 5"); // move the cursor 3 lines up
+			if (ret < 0) {
+				// TODO: system call failed
+			}
+		} else if(print_position == 4) {
+			ret = system("tput cuu 4"); // move the cursor up 2 lines
+			if (ret < 0) {
+				// TODO: system call failed
+			}
+		} else if(print_position == 3) { // move the cursor up one line
+			ret = system("tput cuu 3");
+			if (ret < 0) {
+				// TODO: system call failed
+			}
+		} else if(print_position == 2) {
+			ret = system("tput cuu 2");
+			if (ret < 0) {
+				// TODO: system call failed
+			}
+		} else if(print_position == 1) {
+			ret = system("tput cuu 1");
+			if (ret < 0) {
+				// TODO: system call failed
+			}
+		}
 		
-		system("tput hpa 0"); // move the cursor to the start of the row
+		ret = system("tput hpa 0"); // move the cursor to the start of the row
+		if (ret < 0) {
+			// TODO: system call failed
+		}
 		if(print_position == 0) // now we have to erase stuff in our way
 		{
-			system("tput el"); // clear to the end of the line
-			system("tput hpa 0"); // move the cursor back to the start
+			ret = system("tput el"); // clear to the end of the line
+			if (ret < 0) {
+				// TODO: system call failed
+			}
+
+			ret = system("tput hpa 0"); // move the cursor back to the start
+			if (ret < 0) {
+				// TODO: system call failed
+			}
 		}
 
 		cout << ": ";
@@ -617,7 +646,10 @@ SoarTextIO::PrintOutput()
 
 		if(print_position != 0)
 		{
-			system("tput rc"); // return the cursor to its saved situation
+			ret = system("tput rc"); // return the cursor to its saved situation
+			if (ret < 0) {
+				// TODO: system call failed
+			}
 			print_position--;
 		}
 		else
@@ -839,7 +871,11 @@ SoarTextIO::spawnDebugger()
 		cout << "fork failed" << endl;
 	else if (pid == 0)
 	{
-		system("java -jar SoarJavaDebugger.jar -remote");
+		int ret = system("java -jar SoarJavaDebugger.jar -remote");
+		if (ret < 0) {
+			// TODO: system call failed
+			exit(1);
+		}
 		pKernel->CheckForIncomingCommands();
 		exit(1); // this forked process dies
 	}

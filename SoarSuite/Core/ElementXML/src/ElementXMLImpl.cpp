@@ -242,7 +242,12 @@ bool ElementXMLImpl::IsValidID(xmlStringConst str)
 {
 	for (char const* p = str ; *p != NUL ; p++)
 	{
-		if (!(*p >= '0' && *p <= '9' || *p >= 'a' && *p <= 'z' || *p >= 'A' && *p <= 'Z' || *p == '.' || *p == '-' || *p == '_'))
+		if (!((*p >= '0' && *p <= '9')
+				|| (*p >= 'a' && *p <= 'z')
+				|| (*p >= 'A' && *p <= 'Z')
+				|| (*p == '.')
+				|| (*p == '-') 
+				|| (*p == '_')))
 			return false ;
 	}
 

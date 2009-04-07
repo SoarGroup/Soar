@@ -21,8 +21,8 @@
 #define PARSER_H
 
 #ifdef __cplusplus
-extern "C"
-{
+//extern "C"
+//{
 #endif
    typedef char Bool;
    typedef char * test;
@@ -38,7 +38,7 @@ extern "C"
    extern Symbol *make_symbol_for_current_lexeme (agent* thisAgent);
 
 #ifdef __cplusplus
-}
+//}
 #endif
 
 #endif
