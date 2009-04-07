@@ -16,6 +16,15 @@ import shutil
 import urllib
 import md5
 
+def Mac_m64_Capable():
+	proc = subprocess.Popen('sysctl -n hw.optional.x86_64', shell=True, stdout=subprocess.PIPE,)
+	stdout_value = proc.communicate()[0]
+	if proc.returncode != 0:
+		return False
+	if stdout_value == '1':
+		return True
+	return False
+
 def DoCopy(target, source, env):
 	target_files = map(lambda x: str(x), target)
 	source_files = map(lambda x: str(x), source)
