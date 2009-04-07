@@ -919,7 +919,8 @@ void chunk_instantiation (agent* thisAgent,
   chunk_cond *top_cc, *bottom_cc;
   
   explain_chunk_str temp_explain_chunk;
-  
+  memset(temp_explain_chunk.name, 0, EXPLAIN_CHUNK_STRUCT_NAME_BUFFER_SIZE);
+
 #ifndef NO_TIMING_STUFF
 #ifdef DETAILED_TIMING_STATS
   struct timeval saved_start_tv;
@@ -1264,7 +1265,8 @@ void chunk_instantiation (agent* thisAgent,
      otherwise some of the variables might get deallocated by the call to
   add_production_to_rete() when it throws away chunk variable names. */
   if (thisAgent->sysparams[EXPLAIN_SYSPARAM]) {
-	  condition *new_top, *new_bottom;
+	  condition *new_top = 0;
+	  condition *new_bottom = 0;
 	  copy_condition_list (thisAgent, lhs_top, &new_top, &new_bottom);
 	  temp_explain_chunk.conds = new_top;
 	  temp_explain_chunk.actions = copy_and_variablize_result_list (thisAgent, results);
@@ -1276,7 +1278,7 @@ void chunk_instantiation (agent* thisAgent,
 	  /* If didn't immediately excise the chunk from the rete net   
   then record the temporary structure in the list of explained chunks. */
   
-  if (thisAgent->sysparams[EXPLAIN_SYSPARAM])
+  if (thisAgent->sysparams[EXPLAIN_SYSPARAM]) {
 	  if ((rete_addition_result != DUPLICATE_PRODUCTION) &&
 		  ((prod_type != JUSTIFICATION_PRODUCTION_TYPE) ||
 		  (rete_addition_result != REFRACTED_INST_DID_NOT_MATCH) )) {
@@ -1288,6 +1290,7 @@ void chunk_instantiation (agent* thisAgent,
 		  deallocate_condition_list (thisAgent, temp_explain_chunk.conds);
 		  deallocate_action_list (thisAgent, temp_explain_chunk.actions);
 	  }
+  }
 	  
 	  /* --- deallocate chunks conds and variablized conditions --- */
 	  deallocate_condition_list (thisAgent, lhs_top);

@@ -23,7 +23,7 @@
 #include "print.h"
 #include "rete.h" // for get_node_count_statistics
 
-extern char *bnode_type_names[256];
+extern const char *bnode_type_names[256];
 
 #include <iomanip>
 

@@ -80,11 +80,11 @@ extern void gds_invalid_so_remove_goal (agent* thisAgent, wme *w);
 
 void add_input_function (agent* thisAgent, soar_callback_fn f, 
 			 soar_callback_data cb_data, 
-			 soar_callback_free_fn free_fn, char * name) {
+			 soar_callback_free_fn free_fn, const char * name) {
   soar_add_callback(thisAgent, INPUT_PHASE_CALLBACK, f, INPUT_PHASE_CALLBACK, cb_data, free_fn, name);
 }
 
-void remove_input_function (agent* thisAgent, char * name) {
+void remove_input_function (agent* thisAgent, const char * name) {
   soar_remove_callback(thisAgent, INPUT_PHASE_CALLBACK, name);
 }
 
@@ -93,7 +93,7 @@ void add_output_function (agent* thisAgent,
 			  soar_callback_data cb_data, 
 			  soar_callback_free_fn free_fn,
 			  int eventID,
-			  char * output_link_name)
+			  const char * output_link_name)
 {
   if (soar_exists_callback_id (thisAgent, OUTPUT_PHASE_CALLBACK, output_link_name)
       != NULL)
@@ -111,7 +111,7 @@ void add_output_function (agent* thisAgent,
     }
 }
 
-void remove_output_function (agent* thisAgent, char * name) {
+void remove_output_function (agent* thisAgent, const char * name) {
 	soar_callback * cb;
 	output_link *ol;
 

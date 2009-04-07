@@ -102,7 +102,7 @@ unsigned long hash_string (const char *s) {   /* AGR 600 */
    Hashing symbols using their basic info 
 ----------------------------------------- */
 
-unsigned long hash_variable_raw_info (char *name, short num_bits) {
+unsigned long hash_variable_raw_info (const char *name, short num_bits) {
   return compress (hash_string(name), num_bits);
 }
 
@@ -207,7 +207,7 @@ void init_symbol_tables (agent* thisAgent) {
    name letter/number combination like J37.
 ------------------------------------------------------------------- */
 
-Symbol *find_variable (agent* thisAgent, char *name) {
+Symbol *find_variable (agent* thisAgent, const char *name) {
   unsigned long hash_value;
   Symbol *sym;
 
@@ -272,7 +272,7 @@ Symbol *find_float_constant (agent* thisAgent, double value) {
   return NIL;
 }
 
-Symbol *make_variable (agent* thisAgent, char *name) {
+Symbol *make_variable (agent* thisAgent, const char *name) {
   Symbol *sym;
 
   sym = find_variable(thisAgent, name);
@@ -498,8 +498,9 @@ Bool print_identifier_ref_info(agent* thisAgent, void* item, FILE* f) {
          print (thisAgent, msg);
 		 xml_generate_warning(thisAgent, msg);
 
-		 if (f)
-			 fprintf(f, msg) ;
+		 if (f) {
+			 fprintf(f, "%s", msg) ;
+		 }
       }
    } else {
       print (thisAgent, "\tERROR: HASHTABLE ITEM IS NOT AN IDENTIFIER!\n");
@@ -580,7 +581,7 @@ void print_internal_symbols (agent* thisAgent) {
   do_for_all_items_in_hash_table (thisAgent, thisAgent->variable_hash_table, print_sym,0);
 }
 
-Symbol *generate_new_sym_constant (agent* thisAgent, char *prefix, unsigned long *counter) {
+Symbol *generate_new_sym_constant (agent* thisAgent, const char *prefix, unsigned long *counter) {
 #define GENERATE_NEW_SYM_CONSTANT_BUFFER_SIZE 2000 /* that ought to be long enough! */ /* and what if it's not!? -voigtjr */
   char name[GENERATE_NEW_SYM_CONSTANT_BUFFER_SIZE];  
   Symbol *New;

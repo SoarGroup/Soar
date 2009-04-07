@@ -116,7 +116,8 @@ void reset_backtrace_list (agent* thisAgent) {
 
 condition * copy_cond_list(agent* thisAgent, condition *top_list) {
 
-condition *new_top, *new_bottom;
+  condition *new_top = 0;
+  condition *new_bottom = 0;
 
   copy_condition_list(thisAgent, top_list,&new_top,&new_bottom);
   return (new_top);

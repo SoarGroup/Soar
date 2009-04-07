@@ -218,7 +218,7 @@ void substitute_for_placeholders_in_action_list (agent* thisAgent, action *a) {
 
 ================================================================= */
 
-char *help_on_lhs_grammar[] = {
+const char *help_on_lhs_grammar[] = {
 "Grammar for left hand sides of productions:",
 "",
 "   <lhs> ::= <cond>+",
@@ -1068,7 +1068,7 @@ condition *parse_lhs (agent* thisAgent) {
       lexeme here
 ===================================================================== */
 
-char *help_on_rhs_grammar[] = {
+const char *help_on_rhs_grammar[] = {
 "Grammar for right hand sides of productions:",
 "",
 "   <rhs> ::= <rhs_action>*",

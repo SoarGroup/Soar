@@ -1169,7 +1169,7 @@ void calculate_compile_time_o_support (agent* thisAgent, condition *lhs,
     /* --- any action with id in the TC gets support --- */
     for (a=rhs; a!=NIL; a=a->next)  {
 
-      if (action_is_in_tc (a, tc)) 
+      if (action_is_in_tc (a, tc)) {
 	/* SBH 7/1/94 Avoid resetting of support that was previously set to I_SUPPORT. */
 	/* gap 10/6/94 If the action has an attribue of operator, then you
 	   don't know if it should get o-support until run time because of
@@ -1181,8 +1181,9 @@ void calculate_compile_time_o_support (agent* thisAgent, condition *lhs,
 	} else {
 	  if (a->support != I_SUPPORT) a->support = O_SUPPORT;
 	}
+	}
         /* end SBH 7/1/94 */
-    }
+	}
   }
   
   if (lhs_oc_support == YES) {    /* --- look for RHS o-c support --- */

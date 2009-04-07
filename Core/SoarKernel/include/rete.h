@@ -57,8 +57,8 @@
 #include <stdio.h>	// Needed for FILE token below
 
 #ifdef __cplusplus
-extern "C"
-{
+//extern "C"
+//{
 #endif
 
 struct not_struct;
@@ -154,7 +154,7 @@ extern Bool save_rete_net (agent* thisAgent, FILE *dest_file);
 extern Bool load_rete_net (agent* thisAgent, FILE *source_file);
 
 #ifdef __cplusplus
-}
+//}
 #endif
 
 #endif

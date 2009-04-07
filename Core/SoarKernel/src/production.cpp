@@ -317,15 +317,16 @@ void deallocate_test (agent* thisAgent, test t) {
 #else
 inline void quickly_deallocate_test(agent* thisAgent, test t)
 {
-  if (! test_is_blank_test(t)) 
-    if (test_is_blank_or_equality_test(t)) 
-	{
-	  symbol_remove_ref (thisAgent, referent_of_equality_test(t));
-    }
-    else 
-    {
-      deallocate_test (thisAgent, t);
-    }    
+	if (! test_is_blank_test(t))  {
+		if (test_is_blank_or_equality_test(t)) 
+		{
+		  symbol_remove_ref (thisAgent, referent_of_equality_test(t));
+		}
+		else 
+		{
+		  deallocate_test (thisAgent, t);
+		}   
+	}
 }
 #endif
 
@@ -337,7 +338,7 @@ inline void quickly_deallocate_test(agent* thisAgent, test t)
 
 void add_new_test_to_test (agent* thisAgent, 
 						   test *t, test add_me) {
-  complex_test *ct;
+  complex_test *ct = 0;
   cons *c;
   Bool already_a_conjunctive_test;
 
@@ -1457,7 +1458,7 @@ void reset_variable_generator (agent* thisAgent,
   free_list (thisAgent, var_list);
 }
 
-Symbol *generate_new_variable (agent* thisAgent, char *prefix) {
+Symbol *generate_new_variable (agent* thisAgent, const char *prefix) {
 #define GENERATE_NEW_VARIABLE_BUFFER_SIZE 200 /* that ought to be long enough! */ /* but what if it isn't?! -voigtjr */
   char name[GENERATE_NEW_VARIABLE_BUFFER_SIZE];
   Symbol *New;

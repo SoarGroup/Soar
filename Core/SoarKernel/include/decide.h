@@ -28,8 +28,8 @@
 #define DECIDE_H
 
 #ifdef __cplusplus
-extern "C"
-{
+//extern "C"
+//{
 #endif
 
 typedef char Bool;
@@ -107,7 +107,7 @@ extern byte type_of_existing_impasse (agent* thisAgent, Symbol *goal);
 unsigned int count_candidates(preference * candidates);
 
 #ifdef __cplusplus
-}
+//}
 #endif
 
 #endif

@@ -368,7 +368,10 @@ void QL_Interface::spawn_debugger()
 		throw Error("fork failed");
 	else if (pid == 0)
 	{
-		system("java -jar SoarJavaDebugger.jar -remote");
+		int ret = system("java -jar SoarJavaDebugger.jar -remote");
+		if (ret < 0) {
+			throw Error("Debugger spawn failed");
+		}
 		m_pKernel->CheckForIncomingCommands();
 		exit(1); // this forked process dies
 	}

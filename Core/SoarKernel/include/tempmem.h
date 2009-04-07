@@ -30,8 +30,8 @@
 #define TEMPMEM_H
 
 #ifdef __cplusplus
-extern "C"
-{
+//extern "C"
+//{
 #endif
 
 typedef char Bool;
@@ -46,7 +46,7 @@ extern void mark_slot_for_possible_removal (agent* thisAgent, slot *s);
 extern void remove_garbage_slots (agent* thisAgent);
 
 #ifdef __cplusplus
-}
+//}
 #endif
 
 #endif

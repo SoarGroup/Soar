@@ -75,10 +75,6 @@ int SimpleListener::run()
 		pauseMsecsTotal /= 10 ; 
 	}
 
-	// How often we check to see if the list of connections has changed.
-	int checkConnections = 500 / pauseMsecsTotal ;
-	int counter = checkConnections ;
-
 	for (int i = 0 ; i < life && !g_Cancel && !shutdownMessageReceived ; i++)
 	{
 		// Don't need to check for incoming as we're using the NewThread model.

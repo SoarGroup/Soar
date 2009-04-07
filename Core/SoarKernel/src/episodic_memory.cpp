@@ -3274,7 +3274,7 @@ unsigned long epmem_graph_match( epmem_shared_literal_group *literals, epmem_con
 
 	// current values from the stacks
 	epmem_shared_literal_list::size_type c_p;
-	epmem_constraint_list *c_c;
+	epmem_constraint_list *c_c = NULL;
 	epmem_node_id c_id;
 
 	// derived values from current values

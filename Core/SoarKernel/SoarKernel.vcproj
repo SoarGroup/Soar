@@ -1232,6 +1232,38 @@
 			<File
 				RelativePath=".\sqlite\sqlite3.c"
 				>
+				<FileConfiguration
+					Name="Debug|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						WarningLevel="3"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						WarningLevel="3"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Debug SCU|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						WarningLevel="3"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release SCU|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						WarningLevel="3"
+					/>
+				</FileConfiguration>
 			</File>
 		</Filter>
 	</Files>
