@@ -15,6 +15,7 @@ import re
 import shutil
 import urllib
 import md5
+import subprocess
 
 def Mac_m64_Capable():
 	proc = subprocess.Popen('sysctl -n hw.optional.x86_64', shell=True, stdout=subprocess.PIPE,)
