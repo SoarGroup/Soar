@@ -40,8 +40,8 @@
 #include "gdatastructs.h"
 
 #ifdef __cplusplus
-extern "C"
-{
+//extern "C"
+//{
 #endif
 
 typedef char Bool;
@@ -87,7 +87,7 @@ extern void process_o_rejects_and_deallocate_them (agent* thisAgent,
 												   preference *o_rejects);
 
 #ifdef __cplusplus
-}
+//}
 #endif
 
 #endif

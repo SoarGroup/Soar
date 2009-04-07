@@ -9,8 +9,8 @@
 #define KERNEL_H
 
 #ifdef __cplusplus
-extern "C"
-{
+//extern "C"
+//{
 #endif
 
 /* When the Soar Kernel was moved to a C++ compiler, the 
@@ -95,7 +95,7 @@ struct rete_node_struct;
 
 
 #ifdef __cplusplus
-#define extern extern "C"
+//#define extern extern "C"
 #endif
 
 /* necessary for function prototypes below */
@@ -256,11 +256,11 @@ void print (char *format, ... );
 /*extern void do_print_for_identifier (Symbol *id, int depth, Bool internal);*/
 
 #ifdef __cplusplus
-#undef extern
+//#undef extern
 #endif
 
 #ifdef __cplusplus
-}
+//}
 #endif
 
 #endif

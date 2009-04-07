@@ -35,7 +35,7 @@
 #include "prefmem.h"
 #include "print.h"
 
-char * preference_name[] =
+const char * preference_name[] =
 { "acceptable",
   "require",
   "reject",

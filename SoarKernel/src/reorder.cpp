@@ -835,7 +835,8 @@ void reorder_simplified_conditions (agent* thisAgent,
   condition *first_cond, *last_cond;
   condition *cond, *next_cond;
   condition *min_cost_conds, *chosen;
-  long cost, min_cost;
+  long cost = 0;
+  long min_cost = 0;
   list *new_vars;
 
   remaining_conds = *top_of_conds;

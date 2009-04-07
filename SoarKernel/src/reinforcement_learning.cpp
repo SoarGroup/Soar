@@ -512,7 +512,7 @@ void rl_store_data( agent *my_agent, Symbol *goal, preference *cand )
 			( data->reward_age == 0 ) && data->num_prev_op_rl_rules )
 		{			
 			char buf[256];
-			SNPRINTF( buf, 254, "gap started (%c%d)", goal->id.name_letter, goal->id.name_number );
+			SNPRINTF( buf, 254, "gap started (%c%lu)", goal->id.name_letter, goal->id.name_number );
 			
 			print( my_agent, buf );
 			xml_generate_warning( my_agent, buf );
@@ -559,7 +559,7 @@ void rl_perform_update( agent *my_agent, double op_value, bool op_rl, Symbol *go
 			if ( my_agent->sysparams[ TRACE_RL_SYSPARAM ] && using_gaps && data->reward_age )
 			{
 				char buf[256];
-				SNPRINTF( buf, 254, "gap ended (%c%d)", goal->id.name_letter, goal->id.name_number );
+				SNPRINTF( buf, 254, "gap ended (%c%lu)", goal->id.name_letter, goal->id.name_number );
 				
 				print( my_agent, buf );
 				xml_generate_warning( my_agent, buf );			
