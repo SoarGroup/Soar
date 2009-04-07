@@ -40,8 +40,8 @@
 #define TRACE_H
 
 #ifdef __cplusplus
-extern "C"
-{
+//extern "C"
+//{
 #endif
 
 /* trace format type restrictions */
@@ -55,7 +55,7 @@ typedef union symbol_union Symbol;
 
 extern void init_tracing (agent* thisAgent);
 extern Bool add_trace_format (agent* thisAgent, Bool stack_trace, int type_restriction,
-                              Symbol *name_restriction, char *format_string);
+                              Symbol *name_restriction, const char *format_string);
 extern Bool remove_trace_format (agent* thisAgent, Bool stack_trace, int type_restriction,
                                  Symbol *name_restriction);
 extern void print_all_trace_formats (agent* thisAgent, Bool stack_trace);
@@ -69,7 +69,7 @@ extern void print_stack_trace (agent* thisAgent, Symbol *object, Symbol *state, 
 extern char * help_on_trace_format_escapes[];
 
 #ifdef __cplusplus
-}
+//}
 #endif
 
 #endif

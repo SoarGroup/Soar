@@ -137,8 +137,8 @@
 #endif // !_WIN32
 
 #ifdef __cplusplus
-extern "C"
-{
+//extern "C"
+//{
 #endif
 
 extern void init_memory_utilities (agent* thisAgent);
@@ -153,7 +153,7 @@ extern void init_memory_utilities (agent* thisAgent);
 #define fill_with_garbage(block,size) memset((void *)(block), 0xBB, (size))
 #else // !USE_MACROS
 #ifdef __cplusplus
-}
+//}
 #endif // __cplusplus
 
 template <typename T>
@@ -163,8 +163,8 @@ inline void fill_with_garbage(T * block, size_t size)
 }
 
 #ifdef __cplusplus
-extern "C"
-{
+//extern "C"
+//{
 #endif // __cplusplus
 
 #endif // !USE_MACROS
@@ -232,7 +232,7 @@ inline char * text_of_growable_string(growable_string gs)
 #endif /* USE_MACROS */
 
 extern growable_string make_blank_growable_string (agent* thisAgent);
-extern void add_to_growable_string (agent* thisAgent, growable_string *gs, char *string_to_add);
+extern void add_to_growable_string (agent* thisAgent, growable_string *gs, const char *string_to_add);
 extern void free_growable_string (agent* thisAgent, growable_string gs);
 
 /* ------------ */
@@ -253,7 +253,7 @@ typedef struct memory_pool_struct {
 } memory_pool;
 
 extern void add_block_to_memory_pool (agent* thisAgent, memory_pool *p);
-extern void init_memory_pool (agent* thisAgent, memory_pool *p, long item_size, char *name);
+extern void init_memory_pool (agent* thisAgent, memory_pool *p, long item_size, const char *name);
 extern void free_memory_pool (agent*, memory_pool *p); /* RPM 6/09, with help from AMN */
 
 #ifdef MEMORY_POOL_STATS
@@ -266,7 +266,7 @@ extern void free_memory_pool (agent*, memory_pool *p); /* RPM 6/09, with help fr
 #else
 
 #ifdef __cplusplus
-}
+//}
 #endif
 
 template <typename P>
@@ -282,8 +282,8 @@ inline void decrement_used_count(P p)
 }
 
 #ifdef __cplusplus
-extern "C"
-{
+//extern "C"
+//{
 #endif
 
 #endif /* USE_MACROS */
@@ -295,25 +295,8 @@ extern "C"
 
 #endif /* MEMORY_POOL_STATS */
 
-#ifndef __cplusplus
-
-/* old C macro, replaced with template function in port to C++ due to casting problems */
-#define allocate_with_pool(thisAgent, p,dest_item_pointer) { \
-  if (! (p)->free_list) add_block_to_memory_pool(thisAgent, p); \
-  *(dest_item_pointer) = (p)->free_list; \
-  (p)->free_list = *(void * *)(*(dest_item_pointer)); \
-  fill_with_garbage (*(dest_item_pointer), (p)->item_size); \
-  increment_used_count(p); }
-
-#define free_with_pool(p,item) { \
-  fill_with_garbage ((item), (p)->item_size); \
-  *(void * *)(item) = (p)->free_list; \
-  (p)->free_list = (void *)(item); \
-  decrement_used_count(p); }
-
-#else
-
-}
+#ifdef __cplusplus
+//}
 
 #define MEM_POOLS_ENABLED 1
 
@@ -362,8 +345,8 @@ inline void free_with_pool(memory_pool* p, T * item)
 #endif // !MEM_POOLS_ENABLED
 }
 
-extern "C"
-{
+//extern "C"
+//{
 
 #endif
 
@@ -521,7 +504,7 @@ extern void do_for_all_items_in_hash_bucket (struct hash_table_struct *ht,
                                              unsigned long hash_value);
 
 #ifdef __cplusplus
-}
+//}
 #endif
 
 #endif

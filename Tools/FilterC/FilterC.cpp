@@ -115,7 +115,7 @@ int main(int argc, char* argv[])
 	}
 
 	// Record a filter
-	int clientFilter = pKernel->RegisterForClientMessageEvent(sml_Names::kFilterName, &MyFilter, 0) ;
+	/*int clientFilter = */pKernel->RegisterForClientMessageEvent(sml_Names::kFilterName, &MyFilter, 0) ;
 
 	g_pInputThread = new InputThread() ;
 	g_pInputThread->Start() ;

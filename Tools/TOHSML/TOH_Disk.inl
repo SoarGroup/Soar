@@ -15,8 +15,8 @@
 #include "TOH_Tower.h"
 
 TOH_Disk::TOH_Disk(sml::Agent &agent, const int &size_)
-: m_agent_ptr(&agent),
-m_size(size_),
+: m_size(size_),
+m_agent_ptr(&agent),
 m_holds(0),
 m_disk_size_1(0),
 m_disk_size_2(0),

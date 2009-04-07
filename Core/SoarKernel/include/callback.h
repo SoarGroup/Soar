@@ -38,8 +38,8 @@
 #define CALLBACK_H_INCLUDED
 
 #ifdef __cplusplus
-extern "C"
-{
+//extern "C"
+//{
 #endif
 
  /* First we define the possible callbacks in an enum.  Then we  */
@@ -331,7 +331,7 @@ enum SOAR_CALLBACK_TYPE
 
 //typedef list * soar_callback_array[NUMBER_OF_CALLBACKS];
 typedef char Bool;
-typedef char * soar_callback_id;
+typedef const char * soar_callback_id;
 typedef void * soar_callback_data;
 typedef void * soar_call_data;
 typedef int	   soar_callback_event_id;
@@ -347,9 +347,11 @@ typedef struct cons_struct cons;
 typedef cons list;
 typedef struct agent_struct agent;
 
+#include <string>
+
 typedef struct callback_struct 
 {
-  soar_callback_id      id;
+  std::string           id;
   soar_callback_fn      function;
   soar_callback_data    data;
   soar_callback_event_id eventid ;
@@ -364,7 +366,7 @@ extern void soar_add_callback (agent* thisAgent,
 			       soar_callback_free_fn, 
 			       soar_callback_id);
 extern void soar_callback_data_free_string (soar_callback_data);
-extern char * soar_callback_enum_to_name (SOAR_CALLBACK_TYPE, Bool);
+extern const char * soar_callback_enum_to_name (SOAR_CALLBACK_TYPE, Bool);
 extern SOAR_CALLBACK_TYPE soar_callback_name_to_enum (char *, Bool);
 extern void soar_destroy_callback(soar_callback *);
 extern Bool soar_exists_callback (agent*, SOAR_CALLBACK_TYPE);
@@ -398,7 +400,7 @@ extern void soar_test_all_monitorable_callbacks(agent*);
 #endif
 
 #ifdef __cplusplus
-}
+//}
 #endif
 
 #endif

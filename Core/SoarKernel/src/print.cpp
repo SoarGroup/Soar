@@ -74,8 +74,8 @@ void tell_printer_that_output_column_has_been_reset (agent* thisAgent) {
 
 
 
-void print_string (agent* thisAgent, char *s) {
-	char *ch;
+void print_string (agent* thisAgent, const char *s) {
+	const char *ch;
 
 	for (ch=s; *ch!=0; ch++) {
 		if (*ch=='\n')
@@ -84,7 +84,7 @@ void print_string (agent* thisAgent, char *s) {
 			thisAgent->printer_output_column++;
 	}
 
-	soar_invoke_first_callback(thisAgent, PRINT_CALLBACK, /*(ClientData)*/ static_cast<void*>(s));
+	soar_invoke_first_callback(thisAgent, PRINT_CALLBACK, /*(ClientData)*/ (void*)(s));
 }
 
 /* ---------------------------------------------------------------
@@ -99,7 +99,7 @@ void print_string (agent* thisAgent, char *s) {
 /* --- size of output buffer for a single call to one of these routines --- */
 #define PRINT_BUFSIZE 5000   /* This better be large enough!! */
 
-void print (agent* thisAgent, char *format, ...) {
+void print (agent* thisAgent, const char *format, ...) {
   va_list args;
   char buf[PRINT_BUFSIZE];
 
@@ -110,7 +110,7 @@ void print (agent* thisAgent, char *format, ...) {
 }
 
 void print_with_symbols (agent* thisAgent, 
-						 char *format, ...) {
+						 const char *format, ...) {
   va_list args;
   char buf[PRINT_BUFSIZE];
   char *ch;
@@ -1111,7 +1111,7 @@ void print_list_of_conditions(agent* thisAgent, condition *cond) {
   }
 }
 
-void print_phase (agent* thisAgent, char * s, bool end_of_phase)
+void print_phase (agent* thisAgent, const char * s, bool end_of_phase)
 {
   // should be more consistent with creating string, but for now, for
   // consistency with previous versions, we'll let calling code set string.

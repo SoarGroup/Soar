@@ -211,6 +211,7 @@ private:
 			{
 				add = 0;
 			}
+			return *this;
 		}
 
 		unsigned long dc;

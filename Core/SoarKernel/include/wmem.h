@@ -37,8 +37,8 @@
 #define WMEM_H
 
 #ifdef __cplusplus
-extern "C"
-{
+//extern "C"
+//{
 #endif
 
 typedef char Bool;
@@ -173,7 +173,7 @@ inline void wme_remove_ref(agent* thisAgent, wme * w)
 
 
 #ifdef __cplusplus
-}
+//}
 #endif
 
 #endif

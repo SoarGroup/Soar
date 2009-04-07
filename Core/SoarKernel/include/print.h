@@ -46,8 +46,8 @@
 #include <stdio.h>	// Needed for FILE token below
 
 #ifdef __cplusplus
-extern "C"
-{
+//extern "C"
+//{
 #endif
 
 typedef char Bool;
@@ -74,11 +74,11 @@ extern void tell_printer_that_output_column_has_been_reset (agent* thisAgent);
 extern void start_redirection_to_file (agent* thisAgent, FILE *already_opened_file);
 extern void stop_redirection_to_file (agent* thisAgent);
 
-extern void print_string (agent* thisAgent, char *s);
-extern void print_phase  (agent* thisAgent, char *s, bool end_phase);
+extern void print_string (agent* thisAgent, const char *s);
+extern void print_phase  (agent* thisAgent, const char *s, bool end_phase);
 
-extern void print (agent* thisAgent, char *format, ... );
-extern void print_with_symbols (agent* thisAgent, char *format, ...);
+extern void print (agent* thisAgent, const char *format, ... );
+extern void print_with_symbols (agent* thisAgent, const char *format, ...);
 extern void print_spaces (agent* thisAgent, int n);
 
 extern void filtered_print_wme_remove(agent* thisAgent, wme *w);
@@ -179,7 +179,7 @@ extern void print_instantiation_with_wmes (agent* thisAgent,
 extern void print_list_of_conditions(agent* thisAgent, condition *cond); 
 
 #ifdef __cplusplus
-}
+//}
 #endif
 
 #endif

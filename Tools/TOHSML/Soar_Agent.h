@@ -28,15 +28,24 @@ public:
   
   const sml::Agent & operator*() const          {return *m_agent_ptr;}
   sml::Agent & operator*()                      {return *m_agent_ptr;}
-  const sml::Agent * const & operator->() const {return  m_agent_ptr;}
+  const sml::Agent * const & operator->() const {
+	  const sml::Agent* const* a = &m_agent_ptr;
+	  return *a;
+  }
   sml::Agent * operator->()                     {return  m_agent_ptr;}
 
   operator const sml::Agent & () const          {return *m_agent_ptr;}
   operator sml::Agent & ()                      {return *m_agent_ptr;}
-  operator const sml::Agent * const & () const  {return  m_agent_ptr;}
+  operator const sml::Agent * const & () const  {
+	  const sml::Agent* const* a = &m_agent_ptr;
+	  return *a;
+  }
   operator sml::Agent * const & ()              {return  m_agent_ptr;}
 
-  const sml::Kernel * const & get_kernel() const {return m_kernel_ptr;}
+  const sml::Kernel * const & get_kernel() const {
+	  const sml::Kernel* const* k = &m_kernel_ptr;
+	  return *k;
+  }
   sml::Kernel * const & get_kernel()             {return m_kernel_ptr;}
   
   inline void LoadProductions(const std::string &productions);

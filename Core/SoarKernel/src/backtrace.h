@@ -22,7 +22,7 @@
 
 #ifdef __cplusplus
 extern "C"
-{
+//{
 #endif
 
 typedef char Bool;
@@ -57,7 +57,7 @@ extern void backtrace_through_instantiation (agent* thisAgent,
 void report_local_negation (agent* thisAgent, condition* c);
 
 #ifdef __cplusplus
-}
+//}
 #endif
 
 #endif

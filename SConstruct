@@ -47,7 +47,7 @@ opts.AddOptions(
 	BoolOption('tcl', 'Build the Soar Tcl interface', 'no'), 
 	BoolOption('debug', 'Build with debugging symbols', 'yes'),
 	BoolOption('warnings', 'Build with warnings', 'yes'),
-	BoolOption('werrors', 'Build with warnings as errors', 'no'),
+	BoolOption('werrors', 'Build with warnings as errors', 'yes'),
 	EnumOption('optimization', 'Build with optimization (May cause run-time errors!)', 'full', ['no','partial','full'], {}, 1),
 	BoolOption('preprocessor', 'Only run preprocessor', 'no'),
 	BoolOption('verbose', 'Verbose compiler output', 'no'),

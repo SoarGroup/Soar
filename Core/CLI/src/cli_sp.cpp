@@ -59,7 +59,7 @@ bool CommandLineInterface::DoSP(const std::string& productionString) {
 	// voigtjr: note: this TODO from gSKI:
 	// TODO: This should not be needed, FIX!
 	// contents of gSKI ProductionManager::soarAlternateInput function:
-	soarAlternateInput( m_pAgentSoar, productionString.c_str(), ") ", true );
+	soarAlternateInput( m_pAgentSoar, productionString.c_str(), const_cast<char*>(") "), true );
 	set_lexer_allow_ids( m_pAgentSoar, false );
 	get_lexeme( m_pAgentSoar );
 
