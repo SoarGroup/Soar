@@ -337,7 +337,7 @@ inline rete_node * real_parent_node(rete_node * x);
 /*
  * Initialize the list with all empty strings.
  */
-char *bnode_type_names[256] =
+const char *bnode_type_names[256] =
 {
    "","","","","","","","","","","","","","","","",   
    "","","","","","","","","","","","","","","","",   
@@ -1634,7 +1634,7 @@ void remove_wme_from_rete (agent* thisAgent, wme *w) {
   rete_node *node, *next, *child;
   token *tok, *left;
 
-  if ( ( w->epmem_id != NULL ) && ( w->epmem_valid == thisAgent->epmem_validation ) )
+  if ( ( w->epmem_id != NIL ) && ( w->epmem_valid == thisAgent->epmem_validation ) )
   {
 	if ( thisAgent->epmem_db->get_status() == soar_module::connected )
 	{
@@ -2708,7 +2708,7 @@ node_varnames *make_nvn_for_posneg_cond (agent* thisAgent,
 node_varnames *get_nvn_for_condition_list (agent* thisAgent, 
                                                                                    condition *cond_list,
                                            node_varnames *parent_nvn) {
-  node_varnames *New;
+  node_varnames *New = 0;
   condition *cond;
   list *vars;
   
@@ -2889,6 +2889,8 @@ void add_rete_tests_for_test (agent* thisAgent, test t,
                               rete_test **rt,
                               Symbol **alpha_constant) {
   var_location where;
+  where.var_location_struct::field_num = 0;
+  where.var_location_struct::levels_up = 0;
   cons *c;
   rete_test *new_rt;
   complex_test *ct;
@@ -3144,6 +3146,8 @@ rete_node *make_node_for_positive_cond (agent* thisAgent,
   rete_test *rt;
   Bool hash_this_node;
   var_location left_hash_loc;
+  left_hash_loc.var_location_struct::field_num = 0;
+  left_hash_loc.var_location_struct::levels_up = 0;
   list *vars_bound_here;
   
   alpha_id = alpha_attr = alpha_value = NIL;
@@ -3269,6 +3273,8 @@ rete_node *make_node_for_negative_cond (agent* thisAgent,
   rete_test *rt;
   Bool hash_this_node;
   var_location left_hash_loc;
+  left_hash_loc.var_location_struct::field_num = 0;
+  left_hash_loc.var_location_struct::levels_up = 0;
   list *vars_bound_here;
   
   alpha_id = alpha_attr = alpha_value = NIL;
@@ -3497,6 +3503,8 @@ void fixup_rhs_value_variable_references (agent* thisAgent, rhs_value *rv,
   cons *c;
   Symbol *sym;
   var_location var_loc;
+  var_loc.var_location_struct::levels_up = 0;
+  var_loc.var_location_struct::field_num = 0;
   unsigned long index;
   
   if (rhs_value_is_symbol(*rv)) {
@@ -5825,9 +5833,10 @@ void p_node_left_addition (agent* thisAgent, rete_node *node, token *tok, wme *w
 							temp_tok = temp_tok->parent;
 						}  /* end while (temp_tok != NIL) ... */
 
-						if (prod_type == PE_PRODS)
-							if ((thisAgent->o_support_calculation_type != 3) && (thisAgent->o_support_calculation_type != 4)) break;
-							else if (op_elab == TRUE) {
+						if (prod_type == PE_PRODS) {
+							if ((thisAgent->o_support_calculation_type != 3) && (thisAgent->o_support_calculation_type != 4)) {
+								break;
+							} else if (op_elab == TRUE) {
 
 								/* warn user about mixed actions */
 
@@ -5860,6 +5869,7 @@ void p_node_left_addition (agent* thisAgent, rete_node *node, token *tok, wme *w
 									break;
 								}
 							}
+						}
 					}  /* end for pass =  */
 				}        /* end for loop checking all matches */
 
@@ -6398,7 +6408,7 @@ unsigned long reteload_four_bytes (FILE* f) {
 
 char reteload_string_buf[4*MAX_LEXEME_LENGTH];
 
-void retesave_string (char *s, FILE* f) {
+void retesave_string (const char *s, FILE* f) {
   while (*s) {
     retesave_one_byte (*s,f);
     s++;

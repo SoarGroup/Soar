@@ -118,7 +118,7 @@ wme *make_wme (agent* thisAgent, Symbol *id, Symbol *attr, Symbol *value, Bool a
 
   w->wma_decay_element = NIL;
   w->wma_has_decay_element = false;
-  w->wma_tc_value = -1;
+  w->wma_tc_value = 0;
 
   return w;
 }

@@ -1094,7 +1094,7 @@ void assert_new_preferences (agent* thisAgent)
 ----------------------------------------------------------------------- */
 
 void do_preference_phase (agent* thisAgent) {
-  instantiation *inst;
+  instantiation *inst = 0;
 
 
 /* AGR 617/634:  These are 2 bug reports that report the same problem,
@@ -1156,9 +1156,9 @@ void do_preference_phase (agent* thisAgent) {
 	  thisAgent->newly_created_instantiations = NIL;
 
 	  Bool assertionsExist = FALSE;
-	  production *prod;
-	  struct token_struct *tok;
-	  wme *w;
+	  production *prod = 0;
+	  struct token_struct *tok = 0;
+	  wme *w = 0;
 	  Bool once = TRUE;
 	  while (postpone_assertion (thisAgent, &prod, &tok, &w)) {
 		  assertionsExist = TRUE;

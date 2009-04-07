@@ -11,8 +11,8 @@
 #define CHUNK_H
 
 #ifdef __cplusplus
-extern "C"
-{
+//extern "C"
+//{
 #endif
 
 typedef char Bool;
@@ -59,7 +59,7 @@ extern Bool add_to_chunk_cond_set (agent* thisAgent, chunk_cond_set *set, chunk_
 extern void add_results_for_id (agent* thisAgent, Symbol *id);
 
 #ifdef __cplusplus
-}
+//}
 #endif
 
 #endif

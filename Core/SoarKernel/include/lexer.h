@@ -47,8 +47,8 @@
 #include <stdio.h>	// Needed for FILE token below
 
 #ifdef __cplusplus
-extern "C"
-{
+//extern "C"
+//{
 #endif
 
 typedef char Bool;
@@ -116,7 +116,7 @@ extern void determine_possible_symbol_types_for_string (char *s,
                                                         Bool *rereadable);
 
 extern void init_lexer (agent* thisAgent);
-extern void start_lex_from_file (agent* thisAgent, char *filename, 
+extern void start_lex_from_file (agent* thisAgent, const char *filename, 
 								 FILE *already_opened_file);
 extern void stop_lex_from_file (agent* thisAgent);
 
@@ -156,7 +156,7 @@ typedef struct lexer_source_file_struct {
 } lexer_source_file;
 
 #ifdef __cplusplus
-}
+//}
 #endif
 
 #endif // LEXER_H

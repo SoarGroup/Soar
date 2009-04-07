@@ -11,8 +11,8 @@
 #define INIT_SOAR_H
 
 #ifdef __cplusplus
-extern "C"
-{
+//extern "C"
+//{
 #endif
 
 typedef char Bool;
@@ -137,7 +137,7 @@ enum top_level_phase { INPUT_PHASE = 0,
 /* REW: end   05.05.97 */
 
 #ifdef __cplusplus
-}
+//}
 #endif
 
 #endif

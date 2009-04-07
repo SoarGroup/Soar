@@ -168,7 +168,7 @@ growable_string make_blank_growable_string (agent* thisAgent) {
 }
 
 void add_to_growable_string (agent* thisAgent, growable_string *gs, 
-							 char *string_to_add) {
+							 const char *string_to_add) {
   int current_length, length_to_add, new_length, new_memsize;
   growable_string New;
 
@@ -284,7 +284,7 @@ void free_memory_pool (agent* thisAgent, memory_pool *p) {
 	p->num_blocks = 0;
 }
 
-void init_memory_pool (agent* thisAgent, memory_pool *p, long item_size, char *name) {
+void init_memory_pool (agent* thisAgent, memory_pool *p, long item_size, const char *name) {
   if (item_size < (long)sizeof(char *)) item_size = sizeof(char *);
   while (item_size & 3) item_size++; /* make sure item_size is multiple of 4 */
   p->item_size = item_size;

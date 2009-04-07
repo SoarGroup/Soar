@@ -22,10 +22,10 @@
 using namespace sml ;
 
 WMElement::WMElement(Agent* pAgent, IdentifierSymbol* pParentSymbol, char const* pID, char const* pAttributeName, long timeTag)
-: m_TimeTag( timeTag )
-, m_Agent( pAgent )
-, m_ID( NULL )
 {
+	m_TimeTag = timeTag;
+	m_Agent = pAgent;
+	m_ID = NULL;
 	// BADBAD: duplicated code in both ctors
 
 	// parent and attribute name can both be NULL if this is at the top of the tree.

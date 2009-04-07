@@ -100,20 +100,20 @@ long lapse_duration;
 
 void abort_with_fatal_error (agent* thisAgent, char *msg) {
   FILE *f;
-  char* warning = "Soar cannot recover from this error. \nYou will have to restart Soar to run an agent.\nData is still available for inspection, but may be corrupt.\nIf a log was open, it has been closed for safety.";
+  const char* warning = "Soar cannot recover from this error. \nYou will have to restart Soar to run an agent.\nData is still available for inspection, but may be corrupt.\nIf a log was open, it has been closed for safety.";
   
   print (thisAgent, "%s", msg);
   print (thisAgent, "%s", warning);
   
   fprintf (stderr,"%s",msg);
-  fprintf (stderr,warning);
+  fprintf (stderr,"%s",warning);
   
   xml_generate_error(thisAgent, msg);
   xml_generate_error(thisAgent, warning);
 
   f = fopen("soarerror", "w");
   fprintf (f,"%s",msg);
-  fprintf (f,warning);
+  fprintf (f,"%s",warning);
   fclose(f);
 
   assert(false);

@@ -216,7 +216,7 @@ Symbol *halt_rhs_function_code (agent* thisAgent, list * /*args*/, void* /*user_
 
 // MVP 6-27-94 */
 //
-char * RHS_interrupt_msg = "*** RHS Function Interrupt ***";
+const char * RHS_interrupt_msg = "*** RHS Function Interrupt ***";
 //
 /*
   Replacing this with a new style rhs function through gSKI.
@@ -254,23 +254,21 @@ return NIL;
 -------------------------------------------------------------------- */
 
 Symbol *make_constant_symbol_rhs_function_code (agent* thisAgent, list *args, void* /*user_data*/) {
-#define MAKE_CONSTANT_SYMBOL_RHS_BUFFER_SIZE 1000 /* that ought to be long enough */ /* sigh -voigtjr */
-  char buf[MAKE_CONSTANT_SYMBOL_RHS_BUFFER_SIZE];
-  char *string;
-  cons *c;
+	std::stringstream buf;
+	char *string;
+	cons *c;
 
-  if (!args) {
-    strncpy (buf, "constant", MAKE_CONSTANT_SYMBOL_RHS_BUFFER_SIZE);
-  } else {
-    buf[0] = 0;
-    for (c=args; c!=NIL; c=c->rest) {
-      string = symbol_to_string (thisAgent, static_cast<symbol_union *>(c->first), FALSE, NIL, 0);
-      strncat (buf, string, MAKE_CONSTANT_SYMBOL_RHS_BUFFER_SIZE);
-	  buf[MAKE_CONSTANT_SYMBOL_RHS_BUFFER_SIZE - 1] = 0; /* ensure null termination */
-    }
-  }
-  if ((!args) && (!find_sym_constant (thisAgent, buf))) return make_sym_constant (thisAgent, buf);
-  return generate_new_sym_constant (thisAgent, buf, &thisAgent->mcs_counter);
+	if (!args) {
+		buf << "constant";
+	} else {
+		for (c=args; c!=NIL; c=c->rest) {
+			string = symbol_to_string (thisAgent, static_cast<symbol_union *>(c->first), FALSE, NIL, 0);
+			buf << string;
+		}
+	}
+	if ((!args) && (!find_sym_constant (thisAgent, buf.str().c_str()))) 
+		return make_sym_constant (thisAgent, buf.str().c_str());
+	return generate_new_sym_constant (thisAgent, buf.str().c_str(), &thisAgent->mcs_counter);
 }
 
 

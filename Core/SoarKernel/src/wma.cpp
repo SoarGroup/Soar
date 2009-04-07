@@ -210,7 +210,7 @@ void wma_init( agent *my_agent )
 		long n;
 
 		long history_iter;
-		long test_iter;
+		unsigned long test_iter;
 		long time_iter;
 		long avg;
 
@@ -1226,7 +1226,7 @@ void wma_print_activated_wmes( agent *my_agent, long n )
 	for ( long i=0; i<n; i++ )
 	{
 		char buf[32];
-		sprintf( buf, "%.2d     ", i );
+		sprintf( buf, "%.2ld     ", i );
 
 		decay_pos = ( ( decay_pos > 0 ) ? ( decay_pos - 1 ) : ( WMA_MAX_TIMELIST - 1 ) );
 
@@ -1237,10 +1237,10 @@ void wma_print_activated_wmes( agent *my_agent, long n )
 			{
 				print( my_agent, buf );
 
-				sprintf( act_buf, "(%d: ", decay_element->this_wme->timetag );
+				sprintf( act_buf, "(%lu: ", decay_element->this_wme->timetag );
 				print( my_agent, act_buf );
 				print_with_symbols( my_agent, "%y ^%y %y", decay_element->this_wme->id, decay_element->this_wme->attr, decay_element->this_wme->value );
-				sprintf( act_buf, ")      num refs: %d      activation: ", decay_element->num_references);
+				sprintf( act_buf, ")      num refs: %lu      activation: ", decay_element->num_references);
 				print( my_agent, act_buf );
 
 				// Calculate and print the activation level

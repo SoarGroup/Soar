@@ -24,7 +24,7 @@
 #include "xml.h"
 
 #include <cmath>
-
+#include <algorithm>
 
 //////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////
@@ -1804,7 +1804,7 @@ void epmem_new_episode( agent *my_agent )
 	if ( my_agent->sysparams[ TRACE_EPMEM_SYSPARAM ] )
 	{
 		char buf[256];
-		SNPRINTF( buf, 254, "NEW EPISODE: (%c%d, %d)", my_agent->bottom_goal->id.name_letter, my_agent->bottom_goal->id.name_number, time_counter );
+		SNPRINTF( buf, 254, "NEW EPISODE: (%c%lu, %ld)", my_agent->bottom_goal->id.name_letter, my_agent->bottom_goal->id.name_number, time_counter );
 
 		print( my_agent, buf );
 		xml_generate_warning( my_agent, buf );
@@ -1832,8 +1832,8 @@ void epmem_new_episode( agent *my_agent )
 		std::map<epmem_node_id, bool> epmem;
 
 		// wme hashing improves search speed
-		long my_hash;	// attribute
-		long my_hash2;	// value
+		long my_hash = NULL;	// attribute
+		long my_hash2 = NULL;	// value
 
 		// prevents infinite loops
 		int tc = get_new_tc_number( my_agent );
@@ -1864,9 +1864,9 @@ void epmem_new_episode( agent *my_agent )
 					// if we haven't seen this WME before
 					// or we haven't seen it within this database...
 					// look it up in the database
-					if ( ( (*w_p)->epmem_id == NULL ) || ( (*w_p)->epmem_valid != my_agent->epmem_validation ) )
+					if ( ( (*w_p)->epmem_id == NIL ) || ( (*w_p)->epmem_valid != my_agent->epmem_validation ) )
 					{
-						(*w_p)->epmem_id = NULL;
+						(*w_p)->epmem_id = NIL;
 						(*w_p)->epmem_valid = my_agent->epmem_validation;
 
 						if ( (*w_p)->value->common.symbol_type != IDENTIFIER_SYMBOL_TYPE )
@@ -1901,7 +1901,7 @@ void epmem_new_episode( agent *my_agent )
 					}
 
 					// insert on no id
-					if ( (*w_p)->epmem_id == NULL )
+					if ( (*w_p)->epmem_id == NIL )
 					{
 						// insert (parent_id,attr,value)
 						my_agent->epmem_stmts_tree->add_node_unique->bind_int( 1, parent_id );
@@ -2069,7 +2069,7 @@ void epmem_new_episode( agent *my_agent )
 				for ( w_p=wmes->begin(); w_p!=wmes->end(); w_p++ )
 				{
 					if ( ( (*w_p)->value->common.symbol_type == IDENTIFIER_SYMBOL_TYPE ) &&
-						 ( ( (*w_p)->epmem_id == NULL ) || ( (*w_p)->epmem_valid != my_agent->epmem_validation ) ) &&
+						 ( ( (*w_p)->epmem_id == NIL ) || ( (*w_p)->epmem_valid != my_agent->epmem_validation ) ) &&
 						 ( (*w_p)->value->id.epmem_id ) )
 					{
 						// prevent exclusions from being recorded
@@ -2118,10 +2118,10 @@ void epmem_new_episode( agent *my_agent )
 					if ( (*w_p)->value->common.symbol_type == IDENTIFIER_SYMBOL_TYPE )
 					{
 						// have we seen this WME during this database?
-						if ( ( (*w_p)->epmem_id == NULL ) || ( (*w_p)->epmem_valid != my_agent->epmem_validation ) )
+						if ( ( (*w_p)->epmem_id == NIL ) || ( (*w_p)->epmem_valid != my_agent->epmem_validation ) )
 						{
 							(*w_p)->epmem_valid = my_agent->epmem_validation;
-							(*w_p)->epmem_id = NULL;
+							(*w_p)->epmem_id = NIL;
 
 							my_hash = NULL;							
 							my_id_repo2 = NULL;
@@ -2228,9 +2228,9 @@ void epmem_new_episode( agent *my_agent )
 							}
 
 							// add path if no success above
-							if ( (*w_p)->epmem_id == NULL )
+							if ( (*w_p)->epmem_id == NIL )
 							{
-								if ( (*w_p)->value->id.epmem_id == NULL )
+								if ( (*w_p)->value->id.epmem_id == NIL )
 								{
 									// update next id
 									(*w_p)->value->id.epmem_id = my_agent->epmem_stats->next_id->get_value();
@@ -2281,7 +2281,7 @@ void epmem_new_episode( agent *my_agent )
 					else
 					{
 						// have we seen this node in this database?
-						if ( ( (*w_p)->epmem_id == NULL ) || ( (*w_p)->epmem_valid != my_agent->epmem_validation ) )
+						if ( ( (*w_p)->epmem_id == NIL ) || ( (*w_p)->epmem_valid != my_agent->epmem_validation ) )
 						{
 							(*w_p)->epmem_id = NULL;
 							(*w_p)->epmem_valid = my_agent->epmem_validation;
@@ -2303,7 +2303,7 @@ void epmem_new_episode( agent *my_agent )
 							}
 
 							// act depending on new/existing feature
-							if ( (*w_p)->epmem_id == NULL )
+							if ( (*w_p)->epmem_id == NIL )
 							{
 								// insert (parent_id,attr,value)
 								my_agent->epmem_stmts_graph->add_node_unique->bind_int( 1, parent_id );
@@ -3274,7 +3274,7 @@ unsigned long epmem_graph_match( epmem_shared_literal_group *literals, epmem_con
 
 	// current values from the stacks
 	epmem_shared_literal_list::size_type c_p;
-	epmem_constraint_list *c_c;
+	epmem_constraint_list *c_c = NULL;
 	epmem_node_id c_id;
 
 	// derived values from current values
@@ -3528,7 +3528,7 @@ void epmem_process_query( agent *my_agent, Symbol *state, Symbol *query, Symbol 
 			std::list<epmem_leaf_node *>::iterator leaf_p;
 			epmem_time_list::iterator prohibit_p;
 			{
-				epmem_wme_list **wmes;
+				epmem_wme_list **wmes = NULL;
 
 				std::queue<Symbol *> parent_syms;
 				std::queue<epmem_node_id> parent_ids;
@@ -3545,7 +3545,7 @@ void epmem_process_query( agent *my_agent, Symbol *state, Symbol *query, Symbol 
 
 				int i;
 				epmem_wme_list::iterator w_p;
-				bool just_started;
+				bool just_started = true;
 
 				// initialize pos/neg lists
 				for ( i=EPMEM_NODE_POS; i<=EPMEM_NODE_NEG; i++ )
@@ -3810,7 +3810,7 @@ void epmem_process_query( agent *my_agent, Symbol *state, Symbol *query, Symbol 
 								else
 									current_valid_end = ( ( current_id < before )?( current_id ):( before - 1 ) );
 
-								while ( ( current_prohibit != EPMEM_MEMID_NONE ) && ( current_valid_end >= current_end ) && ( current_valid_end <= (*prohibit)[ current_prohibit ] ) )
+								while ( ( current_prohibit < prohibit->size() ) && ( current_valid_end >= current_end ) && ( current_valid_end <= (*prohibit)[ current_prohibit ] ) )
 								{
 									if ( current_valid_end == (*prohibit)[ current_prohibit ] )
 										current_valid_end--;
@@ -3829,7 +3829,7 @@ void epmem_process_query( agent *my_agent, Symbol *state, Symbol *query, Symbol 
 									if ( my_agent->sysparams[ TRACE_EPMEM_SYSPARAM ] )
 									{
 										char buf[256];
-										SNPRINTF( buf, 254, "CONSIDERING EPISODE (time, cardinality, score): (%d, %d, %f)", current_valid_end, sum_ct, current_score );
+										SNPRINTF( buf, 254, "CONSIDERING EPISODE (time, cardinality, score): (%ld, %ld, %f)", current_valid_end, sum_ct, current_score );
 
 										print( my_agent, buf );
 										xml_generate_warning( my_agent, buf );
@@ -3975,7 +3975,7 @@ void epmem_process_query( agent *my_agent, Symbol *state, Symbol *query, Symbol 
 
 			// graph match
 			const long graph_match = my_agent->epmem_params->graph_match->get_value();
-			epmem_shared_literal_group *graph_match_roots;
+			epmem_shared_literal_group *graph_match_roots = NULL;
 			if ( graph_match != soar_module::off )
 			{
 				graph_match_roots = new epmem_shared_literal_group();
@@ -4051,7 +4051,7 @@ void epmem_process_query( agent *my_agent, Symbol *state, Symbol *query, Symbol 
 
 				// fully populate wme cache (we need to know parent info a priori)
 				{
-					epmem_wme_list *starter_wmes;
+					epmem_wme_list *starter_wmes = NULL;
 
 					// query
 					new_cache_element = new epmem_wme_cache_element;					
@@ -4644,7 +4644,7 @@ void epmem_process_query( agent *my_agent, Symbol *state, Symbol *query, Symbol 
 						else
 							current_valid_end = ( ( current_id < before )?( current_id ):( before - 1 ) );
 
-						while ( ( current_prohibit != EPMEM_MEMID_NONE ) && ( current_valid_end >= current_end ) && ( current_valid_end <= (*prohibit)[ current_prohibit ] ) )
+						while ( ( current_prohibit < prohibit->size() ) && ( current_valid_end >= current_end ) && ( current_valid_end <= (*prohibit)[ current_prohibit ] ) )
 						{
 							if ( current_valid_end == (*prohibit)[ current_prohibit ] )
 								current_valid_end--;
@@ -4663,7 +4663,7 @@ void epmem_process_query( agent *my_agent, Symbol *state, Symbol *query, Symbol 
 							if ( my_agent->sysparams[ TRACE_EPMEM_SYSPARAM ] )
 							{
 								char buf[256];
-								SNPRINTF( buf, 254, "CONSIDERING EPISODE (time, cardinality, score): (%d, %d, %f)", current_valid_end, sum_ct, current_score );
+								SNPRINTF( buf, 254, "CONSIDERING EPISODE (time, cardinality, score): (%ld, %ld, %f)", current_valid_end, sum_ct, current_score );
 
 								print( my_agent, buf );
 								xml_generate_warning( my_agent, buf );

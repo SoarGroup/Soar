@@ -18,8 +18,8 @@
 #include "kernel.h" /* needed for definition of NIL */
 
 #ifdef __cplusplus
-extern "C"
-{
+//extern "C"
+//{
 #endif
 
 typedef char Bool;
@@ -178,14 +178,14 @@ inline Bool preference_is_binary(byte p)
 
 #endif /* USE_MACROS */
 
-#ifdef _cplusplus
-extern "C" {
+#ifdef __cplusplus
+//extern "C" {
 #endif
 
-   extern char * preference_name[NUM_PREFERENCE_TYPES];
+   extern const char * preference_name[NUM_PREFERENCE_TYPES];
 
-#ifdef _cplusplus
-}
+#ifdef __cplusplus
+//}
 #endif
 
 typedef struct preference_struct {
@@ -538,7 +538,7 @@ typedef struct condition_struct {
 } condition;
 
 #ifdef __cplusplus
-}
+//}
 #endif
 
 #endif

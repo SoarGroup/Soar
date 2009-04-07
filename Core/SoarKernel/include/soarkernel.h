@@ -35,8 +35,8 @@
 /* -------------------------------------------------- */
 
 #ifdef __cplusplus
-extern "C"
-{
+//extern "C"
+//{
 #endif
 
 struct token_struct;
@@ -52,7 +52,7 @@ struct rete_node_struct;
 struct node_varnames_struct;
 
 #ifdef __cplusplus
-}
+//}
 #endif
 
 /* ======================================================================*/
@@ -89,8 +89,8 @@ struct node_varnames_struct;
 /* ======================================================================= */
 
 #ifdef __cplusplus
-extern "C"
-{
+//extern "C"
+//{
 #endif
 
 //#ifdef USE_X_DISPLAY
@@ -117,7 +117,7 @@ extern "C"
 //#endif
 
 #ifdef __cplusplus
-}
+//}
 #endif
 
 /*=====================================================================*/
@@ -128,8 +128,8 @@ extern "C"
 /*=====================================================================*/
 
 #ifdef __cplusplus
-extern "C"
-{
+//extern "C"
+//{
 #endif
 
 /* These functions define the protocol functions for the X interface to  */
@@ -160,7 +160,7 @@ extern "C"
 //extern char * c_interrupt_msg;
 
 #ifdef __cplusplus
-}
+//}
 #endif
 
 #endif /* _SOAR_H_INCLUDED */
