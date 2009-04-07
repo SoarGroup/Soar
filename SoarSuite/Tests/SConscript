@@ -16,7 +16,7 @@ env.Prepend(CPPPATH = [
 			'../Core/ConnectionSML/include'])
 
 if sys.platform == "darwin":
-	if platform.name() != 'Power Macintosh':
+	if platform.machine() != 'Power Macintosh':
 		if env['m64']:
 			libadd = [ 'ClientSML', 
 				   'ConnectionSML',
