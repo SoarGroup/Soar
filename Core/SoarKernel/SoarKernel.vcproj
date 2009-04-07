@@ -822,6 +822,26 @@
 				</FileConfiguration>
 			</File>
 			<File
+				RelativePath=".\src\semantic_memory.cpp"
+				>
+				<FileConfiguration
+					Name="Debug SCU|Win32"
+					ExcludedFromBuild="true"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release SCU|Win32"
+					ExcludedFromBuild="true"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+					/>
+				</FileConfiguration>
+			</File>
+			<File
 				RelativePath=".\src\soar_module.cpp"
 				>
 				<FileConfiguration
@@ -1137,6 +1157,10 @@
 			</File>
 			<File
 				RelativePath=".\include\rhsfun_math.h"
+				>
+			</File>
+			<File
+				RelativePath=".\include\semantic_memory.h"
 				>
 			</File>
 			<File

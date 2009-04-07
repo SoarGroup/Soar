@@ -48,10 +48,9 @@
 #include <time.h>
 
 #include "reinforcement_learning.h"
-
-#include "episodic_memory.h"
-
 #include "wma.h"
+#include "episodic_memory.h"
+#include "semantic_memory.h"
 
 
 #define INIT_FILE       "init.soar"

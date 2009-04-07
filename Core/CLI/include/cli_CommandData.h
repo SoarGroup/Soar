@@ -180,6 +180,14 @@ namespace cli {
 		RUN_INTERLEAVE_OUTPUT,
 	};
 
+	enum eSMemOptions {		
+		SMEM_GET,		
+		SMEM_SET,
+		SMEM_STAT,
+		SMEM_TIMER,
+		SMEM_NUM_OPTIONS,	// must be last
+	};
+
 	enum eSourceMode { 
 		SOURCE_DISABLE, 
 		SOURCE_DEFAULT, 
@@ -210,6 +218,7 @@ namespace cli {
 		WATCH_RL,
 		WATCH_WATERFALL,
 		WATCH_EPMEM,
+		WATCH_SMEM,
 		WATCH_NUM_OPTIONS, // must be last
 	};
 

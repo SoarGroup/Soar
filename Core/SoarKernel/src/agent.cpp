@@ -50,6 +50,7 @@
 #include "decision_manipulation.h"
 #include "wma.h"
 #include "episodic_memory.h"
+#include "semantic_memory.h"
 
 
 /* ================================================================== */
@@ -84,6 +85,7 @@ void init_soar_agent(agent* thisAgent) {
   predict_init(thisAgent);
 
   thisAgent->epmem_params->exclusions->set_value( "epmem" );
+  thisAgent->epmem_params->exclusions->set_value( "smem" );
 
 #ifdef REAL_TIME_BEHAVIOR
   /* RMJ */
@@ -358,6 +360,14 @@ agent * create_soar_agent (char * agent_name) {                                 
   newAgent->epmem_validation = 0;
   newAgent->epmem_first_switch = true;
 
+  // smem initialization
+  newAgent->smem_params = new smem_param_container( newAgent );
+  newAgent->smem_stats = new smem_stat_container( newAgent );  
+  newAgent->smem_timers = new smem_timer_container( newAgent );
+
+  newAgent->smem_db = new soar_module::sqlite_database();
+  newAgent->smem_first_switch = true;
+
 
   // wma initialization
   newAgent->wma_params = new wma_param_container( newAgent );
@@ -426,6 +436,15 @@ void destroy_soar_agent (agent * delete_agent)
   delete delete_agent->epmem_id_to_identifier;
 
   delete delete_agent->epmem_db;
+
+
+  // cleanup smem
+  delete delete_agent->smem_params;
+  delete delete_agent->smem_stats;
+  delete delete_agent->smem_timers;
+
+  delete delete_agent->smem_db;
+
 
   /////////////////////////////////////////////////////////
   /////////////////////////////////////////////////////////

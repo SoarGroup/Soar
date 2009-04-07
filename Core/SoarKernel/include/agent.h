@@ -35,6 +35,7 @@
 #include "reinforcement_learning.h"
 #include "wma.h"
 #include "episodic_memory.h"
+#include "semantic_memory.h"
 
 #include <string>
 #include <map>
@@ -315,6 +316,12 @@ typedef struct agent_struct {
   Symbol			* epmem_before_symbol;
   Symbol			* epmem_after_symbol;
   Symbol			* epmem_prohibit_symbol;
+
+
+  Symbol            * smem_symbol;
+  Symbol            * smem_cmd_symbol;
+  Symbol            * smem_result_symbol;
+
 
   /* ----------------------- Symbol table stuff -------------------------- */
 
@@ -824,7 +831,7 @@ kernel time and total_cpu_time greater than the derived total CPU time. REW */
   tc_number wma_tc_counter;
 
   // epmem
-  epmem_param_container *epmem_params;  
+  epmem_param_container *epmem_params;
   epmem_stat_container *epmem_stats;
   epmem_timer_container *epmem_timers;
 
@@ -852,6 +859,17 @@ kernel time and total_cpu_time greater than the derived total CPU time. REW */
 
   epmem_time_id epmem_validation;
   bool epmem_first_switch;
+
+
+  // smem
+  smem_param_container *smem_params;
+  smem_stat_container *smem_stats;
+  smem_timer_container *smem_timers;
+
+  soar_module::sqlite_database *smem_db;
+  smem_statement_container *smem_stmts;
+  bool smem_first_switch;
+
 
 
   // JRV: Added to support XML management inside Soar

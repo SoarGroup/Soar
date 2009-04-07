@@ -42,6 +42,7 @@ bool CommandLineInterface::ParseWatch(std::vector<std::string>& argv) {
 		{'P',"productions",				OPTARG_OPTIONAL},
 		{'r',"preferences",				OPTARG_OPTIONAL},
 		{'R',"rl",						OPTARG_OPTIONAL},
+		{'s',"smem",					OPTARG_OPTIONAL},
 		{'t',"timetags",				OPTARG_NONE},
 		{'T',"template",				OPTARG_OPTIONAL},
 		{'u',"user-productions",		OPTARG_OPTIONAL},
@@ -204,6 +205,16 @@ bool CommandLineInterface::ParseWatch(std::vector<std::string>& argv) {
 					settings.reset(WATCH_RL);
 				} else {
 					settings.set(WATCH_RL);
+				}
+				break;
+
+			case 's'://smem
+				options.set(WATCH_SMEM);
+				if (m_OptionArgument.size()) {
+					if (!CheckOptargRemoveOrZero()) return false; //error, code set in CheckOptargRemoveOrZero
+					settings.reset(WATCH_SMEM);
+				} else {
+					settings.set(WATCH_SMEM);
 				}
 				break;
 
@@ -427,6 +438,7 @@ bool CommandLineInterface::DoWatch(const WatchBitset& options, const WatchBitset
 			m_Result << "\n  Soar-RL:  " << (pSysparams[TRACE_RL_SYSPARAM] ? "on" : "off");
 			m_Result << "\n  Waterfall:  " << (pSysparams[TRACE_WATERFALL_SYSPARAM] ? "on" : "off");
 			m_Result << "\n  EpMem:  " << (pSysparams[TRACE_EPMEM_SYSPARAM] ? "on" : "off");
+			m_Result << "\n  SMem:  " << (pSysparams[TRACE_SMEM_SYSPARAM] ? "on" : "off");
 		} else {
 			char buf[kMinBufferSize];
 			AppendArgTag(sml_Names::kParamWatchDecisions, sml_Names::kTypeBoolean, 
@@ -477,6 +489,9 @@ bool CommandLineInterface::DoWatch(const WatchBitset& options, const WatchBitset
 			
 			AppendArgTag(sml_Names::kParamWatchEpMem, sml_Names::kTypeBoolean, 
 				pSysparams[TRACE_EPMEM_SYSPARAM] ? sml_Names::kTrue : sml_Names::kFalse);
+
+			AppendArgTag(sml_Names::kParamWatchSMem, sml_Names::kTypeBoolean, 
+				pSysparams[TRACE_SMEM_SYSPARAM] ? sml_Names::kTrue : sml_Names::kFalse);
 		}
 
 		return true;
@@ -525,6 +540,10 @@ bool CommandLineInterface::DoWatch(const WatchBitset& options, const WatchBitset
 
 	if (options.test(WATCH_PREFERENCES)) {
 		pKernelHack->SetSysparam(m_pAgentSML, TRACE_FIRINGS_PREFERENCES_SYSPARAM, settings.test(WATCH_PREFERENCES));
+	}
+
+	if (options.test(WATCH_SMEM)) {
+		pKernelHack->SetSysparam(m_pAgentSML, TRACE_SMEM_SYSPARAM, settings.test(WATCH_SMEM));
 	}
 
 	if (options.test(WATCH_USER)) {

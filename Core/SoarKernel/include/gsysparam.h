@@ -184,8 +184,11 @@ typedef byte wme_trace_type;   /* must be one of the above constants */
 /* NLD: EpMem trace information */
 #define TRACE_EPMEM_SYSPARAM					 42
 
+/* NLD: SMem trace information */
+#define TRACE_SMEM_SYSPARAM						 43
+
 /* --- Warning: if you add sysparams, be sure to update the next line! --- */
-#define HIGHEST_SYSPARAM_NUMBER                  42
+#define HIGHEST_SYSPARAM_NUMBER                  43
 
 /* -----------------------------------------
    Sysparams[] stores the parameters; set_sysparam()

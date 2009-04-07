@@ -24,6 +24,7 @@
 #include "src/rete.cpp"
 #include "src/rhsfun.cpp"
 #include "src/rhsfun_math.cpp"
+#include "src/semantic_memory.cpp"
 #include "src/soar_module.cpp"
 #include "src/soar_rand.cpp"
 #include "src/symtab.cpp"

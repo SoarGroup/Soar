@@ -84,6 +84,7 @@ struct node_varnames_struct;
 #include "exploration.h"
 #include "reinforcement_learning.h"
 #include "episodic_memory.h"
+#include "semantic_memory.h"
 
 /* ======================================================================= */
 

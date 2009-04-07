@@ -238,6 +238,13 @@ typedef struct identifier_struct {
   union symbol_union *epmem_result_header;
   struct epmem_data_struct *epmem_info;		// various EpMem information
 
+
+  union symbol_union *smem_header;
+  union symbol_union *smem_cmd_header;
+  union symbol_union *smem_result_header;
+  struct smem_data_struct *smem_info;		// various SMem information
+
+
   /* REW: begin 09.15.96 */
   struct gds_struct *gds;    /* Pointer to a goal's dependency set */
   /* REW: begin 09.15.96 */
