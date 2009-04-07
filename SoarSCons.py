@@ -22,7 +22,7 @@ def Mac_m64_Capable():
 	stdout_value = proc.communicate()[0]
 	if proc.returncode != 0:
 		return False
-	if stdout_value == '1':
+	if stdout_value.strip() == '1':
 		return True
 	return False
 
