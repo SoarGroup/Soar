@@ -144,12 +144,12 @@ void deallocate_trace_format_list (agent* thisAgent, trace_format *tf) {
    the end-of-string, a "[" or "]", or the end of the escape sequence.
 ---------------------------------------------------------------------- */
 
-char *format;
-char *format_string_error_message;
+const char *format;
+const char *format_string_error_message;
 
 trace_format *parse_item_from_format_string (agent* thisAgent);
 
-trace_format *parse_format_string (agent* thisAgent, char *string) {
+trace_format *parse_format_string (agent* thisAgent, const char *string) {
   trace_format *first, *prev, *New;
 
   format = string;
@@ -728,7 +728,7 @@ Bool add_trace_format (agent* thisAgent,
 					   Bool stack_trace,
                        int type_restriction,
                        Symbol *name_restriction,
-                       char *format_string) {
+                       const char *format_string) {
   tracing_rule *tr;
   trace_format *new_tf;
   hash_table *ht;

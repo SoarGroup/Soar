@@ -17,8 +17,8 @@
 #define RHSFUN_MATH_H
 
 #ifdef __cplusplus
-extern "C"
-{
+//extern "C"
+//{
 #endif
 
 typedef char Bool;
@@ -28,7 +28,7 @@ extern void init_built_in_rhs_math_functions (agent* thisAgent);
 extern void remove_built_in_rhs_math_functions (agent* thisAgent);
 
 #ifdef __cplusplus
-}
+//}
 #endif
 
 #endif

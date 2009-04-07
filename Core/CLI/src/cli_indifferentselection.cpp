@@ -185,11 +185,13 @@ bool CommandLineInterface::ParseIndifferentSelection(std::vector<std::string>& a
 				else
 					return SetError( CLIError::kInvalidValue );
 			}
-			else if ( options.test( INDIFFERENT_TEMPERATURE ) )
-				if ( exploration_valid_parameter_value( m_pAgentSoar, "temperature", new_val ) )
+			else if ( options.test( INDIFFERENT_TEMPERATURE ) ) {
+				if ( exploration_valid_parameter_value( m_pAgentSoar, "temperature", new_val ) ) {
 					return DoIndifferentSelection( 't', &( argv[2] ) );
-				else
+				} else {
 					return SetError( CLIError::kInvalidValue );
+				}
+			}
 		}
 		else
 			return SetError( CLIError::kTooManyArgs );

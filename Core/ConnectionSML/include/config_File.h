@@ -197,6 +197,8 @@ namespace config {
 			this->path = "(in memory)";
 		}
 
+		virtual ~ConfigFile() {}
+
 		Config* getConfig() {
 			return new Config(this);
 		}
@@ -360,7 +362,7 @@ namespace config {
 			std::vector<double>* v = new std::vector<double>(vs.size());
 			for (unsigned i = 0; i < vs.size(); i++) {
 				double vi = 0;
-				if (sscanf(vs.at(i).c_str(), "%f", &vi) != 1) {
+				if (sscanf(vs.at(i).c_str(), "%lf", &vi) != 1) {
 					throw std::exception(/*"Failed to parse double."*/);
 				}
 				v->push_back(vi);

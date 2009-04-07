@@ -115,8 +115,8 @@ bool CommandLineInterface::DoRemoveWME(unsigned long timetag) {
 					{
 						std::stringstream removeMessage;
 						removeMessage << "DoRemoveWME: Removing state S" << pWme->gds->goal->id.level << " because element in GDS changed.";
-						print( m_pAgentSoar, "\n%s", removeMessage.str() );
-						print( m_pAgentSoar, " WME: " ); 
+						print( m_pAgentSoar, const_cast<char*>("\n%s"), removeMessage.str().c_str() );
+						print( m_pAgentSoar, const_cast<char*>(" WME: ") ); 
 
 						xml_begin_tag( m_pAgentSoar, soar_TraceNames::kTagVerbose );
 						xml_att_val( m_pAgentSoar, soar_TraceNames::kTypeString, removeMessage.str().c_str() );

@@ -83,9 +83,11 @@ bool acquiring_new_connection = false;
 int main()
 {
 #ifdef _WIN32
+#ifdef _DEBUG
 	_CrtMemState memState;
 	_CrtMemCheckpoint( &memState );
 	//_CrtSetBreakAlloc( 165 );
+#endif //_DEBUG
 #endif //_WIN32
 
 	{
@@ -154,7 +156,9 @@ int main()
 		ql_interface.QL_Shutdown();
 	}
 #ifdef _WIN32
+#ifdef _DEBUG
 	_CrtMemDumpAllObjectsSince( &memState );
+#endif // _DEBUG
 #endif //_WIN32
 }
 

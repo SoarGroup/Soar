@@ -591,8 +591,8 @@ list *read_pattern_and_get_matching_wmes (agent* agnt)
 
 
 void  soar_alternate_input(agent *ai_agent,
-	char  *ai_string, 
-	char  *ai_suffix, 
+	const char  *ai_string, 
+	const char  *ai_suffix, 
 	bool   ai_exit   )
 {
 	ai_agent->alternate_input_string = ai_string;
@@ -816,7 +816,7 @@ void print_preference_and_source (agent* agnt, preference *pref,
 
 
 bool string_match_up_to (char * string1, 
-	char * string2, 
+	const char * string2, 
 	unsigned int positions)
 {
 	unsigned int i,num;

@@ -14,8 +14,8 @@
 #define EXPLAIN_H
 
 #ifdef __cplusplus
-extern "C"
-{
+//extern "C"
+//{
 #endif
 
 typedef char Bool;
@@ -112,7 +112,7 @@ extern Bool explain_interface_routine (void);
 extern char *help_on_explain[];
 
 #ifdef __cplusplus
-}
+//}
 #endif
 
 #endif

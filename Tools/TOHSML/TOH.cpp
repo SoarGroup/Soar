@@ -75,7 +75,7 @@ inline bool arg_remote(bool &remote,
     const std::string ip_port = *arg;
     const size_t colon = ip_port.find(':');
 
-    if(colon != -1) {
+	if(colon != std::string::npos) {
       ip_address = ip_port.substr(0, colon);
       port = atoi(*arg + (colon + 1));
     }

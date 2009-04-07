@@ -29,8 +29,8 @@
 #include "callback.h"
 
 #ifdef __cplusplus
-extern "C"
-{
+//extern "C"
+//{
 #endif
 
 typedef char Bool;
@@ -200,17 +200,17 @@ extern void deallocate_io_wme_list (agent* thisAgent, io_wme *iw) ;
 extern void add_input_function (agent * a, soar_callback_fn f, 
 				soar_callback_data cb_data, 
 				soar_callback_free_fn free_fn,
-				char * name);
-extern void remove_input_function (agent * a, char * name);
+				const char * name);
+extern void remove_input_function (agent * a, const char * name);
 extern void add_output_function (agent* thisAgent, soar_callback_fn f, 
 				 soar_callback_data cb_data, 
 				 soar_callback_free_fn free_fn,
 				 int eventID,
-				 char * output_link_name);
-extern void remove_output_function (agent* thisAgent, char * name);
+				 const char * output_link_name);
+extern void remove_output_function (agent* thisAgent, const char * name);
 
 #ifdef __cplusplus
-}
+//}
 #endif
 
 #endif

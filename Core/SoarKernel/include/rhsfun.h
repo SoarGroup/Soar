@@ -56,8 +56,8 @@
 #define RHSFUN_H
 
 #ifdef __cplusplus
-extern "C"
-{
+//extern "C"
+//{
 #endif
 
 typedef char * rhs_value;
@@ -245,7 +245,7 @@ extern void init_built_in_rhs_functions(agent* thisAgent);
 extern void remove_built_in_rhs_functions(agent* thisAgent);
 
 #ifdef __cplusplus
-}
+//}
 #endif
 
 #endif

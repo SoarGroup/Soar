@@ -37,7 +37,7 @@ using namespace soar_TraceNames;
 
 bool exploration_valid_policy( const char *policy_name )
 {
-	return ( exploration_convert_policy( policy_name ) != NULL );
+	return ( exploration_convert_policy( policy_name ) != 0 );
 }
 
 bool exploration_valid_policy( const long policy )
@@ -91,7 +91,7 @@ bool exploration_set_policy( agent *my_agent, const char *policy_name )
 {	
 	const long policy = exploration_convert_policy( policy_name );
 	
-	if ( policy != NULL )
+	if ( policy != 0 )
 		return exploration_set_policy( my_agent, policy );
 	
 	return false;
@@ -417,9 +417,9 @@ bool exploration_valid_reduction_rate( agent *my_agent, const long parameter, co
 			break;
 			
 		default:
-			return false;
 			break;
 	}
+	return false;
 }
 
 /***************************************************************************

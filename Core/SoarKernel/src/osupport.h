@@ -17,8 +17,8 @@
 #define OSUPPORT_H
 
 #ifdef __cplusplus
-extern "C"
-{
+//extern "C"
+//{
 #endif
 
 typedef char Bool;
@@ -33,7 +33,7 @@ extern void calculate_compile_time_o_support (condition *lhs, action *rhs);
 extern void dougs_calculate_support_for_instantiation_preferences (agent* thisAgent, instantiation *inst);
 
 #ifdef __cplusplus
-}
+//}
 #endif
 
 #endif

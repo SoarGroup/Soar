@@ -129,8 +129,8 @@
 #define SYMTAB_H
 
 #ifdef __cplusplus
-extern "C"
-{
+//extern "C"
+//{
 #endif
 
 #define VARIABLE_SYMBOL_TYPE 0
@@ -319,13 +319,13 @@ typedef union symbol_union {
 
 extern void init_symbol_tables (agent* thisAgent);
 
-extern Symbol *find_variable (agent* thisAgent, char *name);
+extern Symbol *find_variable (agent* thisAgent, const char *name);
 extern Symbol *find_identifier (agent* thisAgent, char name_letter, unsigned long name_number);
 extern Symbol *find_sym_constant (agent* thisAgent, const char *name);  /* AGR 600 */
 extern Symbol *find_int_constant (agent* thisAgent, long value);
 extern Symbol *find_float_constant (agent* thisAgent, double value);
 
-extern Symbol *make_variable (agent* thisAgent, char *name);
+extern Symbol *make_variable (agent* thisAgent, const char *name);
 extern Symbol *make_sym_constant (agent* thisAgent, char const *name);
 extern Symbol *make_int_constant (agent* thisAgent, long value);
 extern Symbol *make_float_constant (agent* thisAgent, double value);
@@ -337,7 +337,7 @@ extern bool reset_id_counters (agent* thisAgent);
 extern void reset_id_and_variable_tc_numbers (agent* thisAgent);
 extern void reset_variable_gensym_numbers (agent* thisAgent);
 extern void print_internal_symbols (agent* thisAgent);
-extern Symbol *generate_new_sym_constant (agent* thisAgent, char *prefix,unsigned long *counter);
+extern Symbol *generate_new_sym_constant (agent* thisAgent, const char *prefix,unsigned long *counter);
 
 #ifdef USE_MACROS
 
@@ -389,7 +389,7 @@ extern void create_predefined_symbols (agent* thisAgent);
 extern void release_predefined_symbols (agent* thisAgent);
 
 #ifdef __cplusplus
-}
+//}
 #endif
 
 #endif

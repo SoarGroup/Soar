@@ -401,7 +401,7 @@ namespace soar_module
 			predicate<T> *prot_pred;			
 			
 		public:						
-			constant_param( const char *new_name, T new_value, predicate<T> *new_prot_pred ): param( new_name ), value( new_value ), prot_pred( new_prot_pred ), value_to_string( new std::map<T, const char *>() ), string_to_value( new std::map<std::string, T> ) {}
+			constant_param( const char *new_name, T new_value, predicate<T> *new_prot_pred ): param( new_name ), value( new_value ), value_to_string( new std::map<T, const char *>() ), string_to_value( new std::map<std::string, T> ), prot_pred( new_prot_pred ) {}
 			
 			virtual ~constant_param()
 			{
