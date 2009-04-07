@@ -263,12 +263,6 @@ class epmem_timer: public timer
 };
 
 
-//
-
-void epmem_start_timer( agent *my_agent, long timer );
-void epmem_stop_timer( agent *my_agent, long timer );
-
-
 //////////////////////////////////////////////////////////
 // EpMem Statements
 //////////////////////////////////////////////////////////
