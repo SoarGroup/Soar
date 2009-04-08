@@ -451,6 +451,7 @@ typedef std::priority_queue<epmem_range_query *, std::vector<epmem_range_query *
 // see below
 typedef struct epmem_shared_literal_struct epmem_shared_literal;
 typedef std::vector<epmem_shared_literal *> epmem_shared_literal_list;
+typedef std::set<epmem_node_id> epmem_unique_set;
 typedef std::list<epmem_shared_literal_list::size_type> epmem_shared_wme_list;
 
 // lookup tables to facilitate shared identifiers
@@ -527,6 +528,8 @@ struct epmem_shared_literal_struct
 
 	epmem_shared_match *match;				// associated match, if leaf wme
 	epmem_shared_literal_group *children;	// grouped child literals, if not leaf wme
+
+	epmem_unique_set *inbound;				// unique ids referencing this literal
 };
 
 // maintains state within sqlite b-trees
