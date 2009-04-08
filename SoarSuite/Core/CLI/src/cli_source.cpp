@@ -319,10 +319,10 @@ bool CommandLineInterface::StreamSource( std::istream& soarStream, const std::st
 		}
 
 		// Fire off the command
-		unsigned oldResultSize = m_Result.str().size();
+		size_t oldResultSize = m_Result.str().size();
 		if (DoCommandInternal(command)) {
 			// Add trailing newline if result changed size
-			unsigned newResultSize = m_Result.str().size();
+			size_t newResultSize = m_Result.str().size();
 			if (newResultSize > 0 && (oldResultSize != newResultSize)) {
 				// but don't add after sp's
 				if (m_Result.str()[m_Result.str().size()-1] != '*') {
