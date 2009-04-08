@@ -512,7 +512,7 @@ epmem_common_statement_container::epmem_common_statement_container( agent *new_a
 	add_structure( "CREATE UNIQUE INDEX IF NOT EXISTS temporal_symbol_hash_const_type ON temporal_symbol_hash (sym_type,sym_const)" );
 	
 	// workaround for tree: 1 = IDENTIFIER_SYMBOL_TYPE
-	add_structure( "INSERT INTO temporal_symbol_hash (id,sym_const,sym_type) VALUES (0,NULL,1)" );
+	add_structure( "INSERT OR IGNORE INTO temporal_symbol_hash (id,sym_const,sym_type) VALUES (0,NULL,1)" );
 
 	//
 	
