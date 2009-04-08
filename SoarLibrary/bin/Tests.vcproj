@@ -144,7 +144,7 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="..\..\Tests\lib\cppunitd_dll.lib"
+				AdditionalDependencies="..\..\Tests\lib\cppunitd64_dll.lib"
 				OutputFile="$(SolutionDir)\SoarLibrary\bin\$(ProjectName).exe"
 				LinkIncremental="2"
 				GenerateDebugInformation="true"
@@ -301,7 +301,7 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="..\..\Tests\lib\cppunit_dll.lib"
+				AdditionalDependencies="..\..\Tests\lib\cppunit64_dll.lib"
 				OutputFile="$(SolutionDir)\SoarLibrary\bin\$(ProjectName).exe"
 				LinkIncremental="1"
 				GenerateDebugInformation="true"

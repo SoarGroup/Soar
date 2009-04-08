@@ -107,7 +107,7 @@ struct lexeme_info {
 };
 
 extern void determine_possible_symbol_types_for_string (char *s,
-                                                        int length_of_s,
+                                                        size_t length_of_s,
                                                         Bool *possible_id,
                                                         Bool *possible_var,
                                                         Bool *possible_sc,

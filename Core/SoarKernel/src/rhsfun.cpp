@@ -475,7 +475,7 @@ Symbol *strlen_rhs_function_code (agent* thisAgent, list *args, void* /*user_dat
      version of it --- */
   string = symbol_to_string (thisAgent, arg, FALSE, NIL, 0);
 
-  return make_int_constant (thisAgent, strlen(string));
+  return make_int_constant (thisAgent, static_cast<long>(strlen(string)));
 }
 /* AGR 520     end */
 

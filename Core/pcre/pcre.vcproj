@@ -115,7 +115,7 @@
 				BasicRuntimeChecks="3"
 				RuntimeLibrary="3"
 				EnableFunctionLevelLinking="true"
-				WarningLevel="3"
+				WarningLevel="2"
 				Detect64BitPortabilityProblems="false"
 				DebugInformationFormat="3"
 			/>
@@ -242,7 +242,7 @@
 				StringPooling="false"
 				RuntimeLibrary="2"
 				EnableFunctionLevelLinking="true"
-				WarningLevel="3"
+				WarningLevel="2"
 				Detect64BitPortabilityProblems="false"
 				DebugInformationFormat="3"
 			/>
@@ -373,7 +373,7 @@
 				BasicRuntimeChecks="3"
 				RuntimeLibrary="3"
 				EnableFunctionLevelLinking="true"
-				WarningLevel="3"
+				WarningLevel="2"
 				Detect64BitPortabilityProblems="false"
 				DebugInformationFormat="3"
 			/>
@@ -500,7 +500,7 @@
 				StringPooling="false"
 				RuntimeLibrary="2"
 				EnableFunctionLevelLinking="true"
-				WarningLevel="3"
+				WarningLevel="2"
 				Detect64BitPortabilityProblems="false"
 				DebugInformationFormat="3"
 			/>
