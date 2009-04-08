@@ -183,8 +183,8 @@ inline void fill_with_garbage(T * block, size_t size)
 
 #define NUM_MEM_USAGE_CODES 5
 
-extern void *allocate_memory (agent* thisAgent, unsigned long size, int usage_code);
-extern void *allocate_memory_and_zerofill (agent* thisAgent, unsigned long size, int usage_code);
+extern void *allocate_memory (agent* thisAgent, size_t size, int usage_code);
+extern void *allocate_memory_and_zerofill (agent* thisAgent, size_t size, int usage_code);
 extern void free_memory (agent* thisAgent, void *mem, int usage_code);
 extern void print_memory_statistics (agent* thisAgent);
 
