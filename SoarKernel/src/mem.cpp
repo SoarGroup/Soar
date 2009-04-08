@@ -175,7 +175,7 @@ void add_to_growable_string (agent* thisAgent, growable_string *gs,
   current_length = length_of_growable_string(*gs);
   length_to_add = strlen (string_to_add);
   new_length = current_length + length_to_add;
-  if (new_length + 1 > memsize_of_growable_string(*gs)) {
+  if (new_length + 1 > static_cast<size_t>(memsize_of_growable_string(*gs))) {
     new_memsize = memsize_of_growable_string(*gs);
     while (new_length + 1 > new_memsize) new_memsize = new_memsize * 2;
     New = allocate_memory (thisAgent, new_memsize + 2*sizeof(int *), STRING_MEM_USAGE);
