@@ -210,7 +210,7 @@ char *symbolToString (Symbol *sym,
 			return dest;
 		}
 		determine_possible_symbol_types_for_string (sym->sc.name,
-			(int)strlen (sym->sc.name),
+			strlen (sym->sc.name),
 			&possible_id,
 			&possible_var,
 			&possible_sc,
