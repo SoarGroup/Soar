@@ -10,5 +10,5 @@ sources = SoarSCons.JavaSources('src')
 
 Depends(theJar, 'build.xml')
 
-env.Command(theJar, sources, 'ant', chdir=1)
+env.Command(theJar, sources, 'ant -q', chdir=1)
 
