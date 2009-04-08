@@ -166,7 +166,9 @@ if not conf.CheckLib('pthread'):
 # only do not include it if we're on powerpc
 if platform.machine() != 'Power Macintosh':
 	if env['m64']:
-		print "Note: Targeting x86_64"
+		print "*"
+		print "* Note: Targeting x86_64 (64-bit native)"
+		print "*"
 		conf.env.Append(CPPFLAGS = ' -m64 -DSOAR_64 -fPIC')
 		conf.env.Append(LINKFLAGS = ' -m64')
 	else:
