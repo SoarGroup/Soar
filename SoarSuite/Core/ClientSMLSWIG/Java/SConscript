@@ -69,6 +69,6 @@ jar_env.Append(SCANNERS=[SWIGScanner])
 # This command doesn't always fire when it should. The problem is because the
 # Java files are a side-effect of the swig step earlier and therefore aren't
 # detected the first time around.
-jar_env.Command(sml_jar_target, [], 'ant', chdir=1)
+jar_env.Command(sml_jar_target, [], 'ant -q', chdir=1)
 #### (end jar)
 
