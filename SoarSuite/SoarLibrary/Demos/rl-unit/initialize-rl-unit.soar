@@ -1,0 +1,17 @@
+sp {propose*initialize-rl-unit
+   (state <s> ^superstate nil
+             -^name)
+-->
+   (<s> ^operator <o> +)
+   (<o> ^name initialize-rl-unit)
+}
+
+sp {apply*initialize-rl-unit
+   (state <s> ^operator <op>)
+   (<op> ^name initialize-rl-unit)
+-->
+   (<s> ^name rl-unit
+        ^case one
+        ^max-cases five)
+}
+
