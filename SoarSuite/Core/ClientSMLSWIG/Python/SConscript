@@ -6,56 +6,42 @@ import os
 import SCons.Script
 
 Import('env')
-env = env.Clone()
-env.Prepend(CPPPATH = [
-			'#Core/ClientSML/include',
-			'#Core/ElementXML/include',
-			'#Core/ConnectionSML/include',
-			distutils.sysconfig.get_python_inc()
-			])
 
-SWIGScanner = SCons.Scanner.ClassicCPP(
-	"SWIGScan",
-	".i",
-	"CPPPATH",
-	'^[ \t]*[%,#][ \t]*(?:include|import)[ \t]*(<|")([^>"]+)(>|")'
-)
+####
+# Produce wrapper cpp
+wrapper_env = env.Clone()
 
-env.Append(SCANNERS=[SWIGScanner])
+# Scanner for dependencies in .i files
+SWIGScanner = SCons.Scanner.ClassicCPP("SWIGScan",".i","CPPPATH",'^[ \t]*[%,#][ \t]*(?:include|import)[ \t]*(<|")([^>"]+)(>|")')
+wrapper_env.Append(SCANNERS=[SWIGScanner])
 
+python_sml_interface_wrap_target = '#Core/ClientSMLSWIG/Python/Python_sml_ClientInterface_wrap.cpp'
+python_sml_interface_wrap_source = '#Core/ClientSMLSWIG/Python/Python_sml_ClientInterface.i'
+wrapper_env.Command(python_sml_interface_wrap_target, python_sml_interface_wrap_source, 'swig -o Core/ClientSMLSWIG/Python/Python_sml_ClientInterface_wrap.cpp -c++ -python -Wall -ICore/ClientSML/include -ICore/ElementXML/include -ICore/ConnectionSML/include Core/ClientSMLSWIG/Python/Python_sml_ClientInterface.i')
+
+# Side effect: this produces Core/ClientSMLSWIG/Python/Python_sml_ClientInterface.py
+python_sml_interface_py = '#Core/ClientSMLSWIG/Python/Python_sml_ClientInterface.py'
+wrapper_env.SideEffect(python_sml_interface_py, python_sml_interface_wrap_target)
+wrapper_env.Install('#SoarLibrary/lib', python_sml_interface_py)
+#### (end wrapper)
+
+####
+# Produce shared library
+shlib_env = env.Clone()
+shlib_env.Prepend(CPPPATH = ['#Core/ClientSML/include','#Core/ElementXML/include','#Core/ConnectionSML/include',distutils.sysconfig.get_python_inc(), ])
 if os.name == 'posix':
-	env.Append(CXXFLAGS = ' -Wno-unused -fno-strict-aliasing')
-
-libadd = [
-	   'ClientSML',
-	   'ConnectionSML',
-	   'ElementXML',
-	   ]
-
-libpath = [ 
-	    '#Core/ClientSML',
-	    '#Core/ConnectionSML',
-	    '#Core/ElementXML', 
-	    ]
-
-swigflags = '-c++ -python -Wall -ICore/ClientSML/include -ICore/ElementXML/include -ICore/ConnectionSML/include '
-
+	shlib_env.Append(CXXFLAGS = ' -Wno-unused -fno-strict-aliasing')
+shlib_env.Append(LIBS = ['ClientSML', 'ConnectionSML', 'ElementXML', ])
+shlib_env.Append(LIBPATH = ['#Core/ClientSML', '#Core/ConnectionSML', '#Core/ElementXML', ])
 if sys.platform == 'darwin':
-	env['SHLINKFLAGS'] = '$LINKFLAGS -bundle -flat_namespace -undefined suppress'
-	env['SHLIBSUFFIX'] = '.so'
-
-env.Append(CPPFLAGS = ' -w')
-
-env.SharedLibrary('Python_sml_ClientInterface', 
-	       glob.glob('*.i'), 
-	       LIBS = libadd, 
-	       LIBPATH = libpath, 
-	       SWIGFLAGS = swigflags, 
-	       SWIGCXXFILESUFFIX = "_wrap.cpp")
-
-#libPython_sml_ClientInterface.so is not the correct naming convention for python dynamic code
-#it must be named, in this case, _Python_sml_ClientInterface.so
-env.InstallAs('#SoarLibrary/lib/_Python_sml_ClientInterface.so', 'libPython_sml_ClientInterface.so')
-
-env.Install('#SoarLibrary/lib', 'Python_sml_ClientInterface.py')
+	shlib_env['SHLINKFLAGS'] = '$LINKFLAGS -bundle -flat_namespace -undefined suppress'
+	shlib_env['SHLIBSUFFIX'] = '.so'
+shlib_env.Append(CPPFLAGS = ' -w')
+python_sml_interface_shlib_target = 'Python_sml_ClientInterface'
+python_sml_interface_shlib_source = 'Python_sml_ClientInterface_wrap.cpp'
+python_sml_interface_shlib = shlib_env.SharedLibrary(python_sml_interface_shlib_target, python_sml_interface_shlib_source) 
+# libPython_sml_ClientInterface.so is not the correct naming convention for python dynamic code
+# it must be named, in this case, _Python_sml_ClientInterface.so
+shlib_env.InstallAs('#SoarLibrary/lib/_Python_sml_ClientInterface.so', python_sml_interface_shlib)
+#### (end shlib)
 
