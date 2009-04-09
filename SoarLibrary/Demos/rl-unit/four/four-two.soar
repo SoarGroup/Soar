@@ -1,0 +1,15 @@
+sp {four*propose*four-two
+   (state <s> ^name four
+              ^phase two)
+-->
+   (<s> ^operator <op> + =)
+   (<op> ^name four-two)
+}
+
+sp {apply*four-two
+   (state <s> ^operator <op>)
+   (<op> ^name four-two)
+-->
+   (<s> ^phase two -
+        ^phase three)
+}

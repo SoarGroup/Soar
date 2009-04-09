@@ -1,0 +1,6 @@
+rl --set learning on
+
+rl --set learning-rate 0.1
+rl --set discount-rate 0.5
+
+watch --rl

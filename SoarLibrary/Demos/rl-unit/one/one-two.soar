@@ -1,0 +1,18 @@
+sp {one*propose*one-two
+   (state <s> ^name one
+              ^phase two)
+-->
+   (<s> ^operator <op> +)
+   (<op> ^name one-two
+         ^rl alpha)
+}
+
+sp {apply*one-two
+   (state <s> ^operator <op>
+              ^superstate <ss>)
+   (<op> ^name one-two)
+   (<ss> ^operator <ss-op>)
+-->
+   (<ss> ^case one -
+         ^case two)
+}
