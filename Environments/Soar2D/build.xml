@@ -67,6 +67,7 @@
       <fileset dir="build" includes="**/*.class"/>
       <fileset dir="." includes="Soar2D.jar"/>
     </delete>
+    <delete dir="build" />
   </target>
 
 </project>

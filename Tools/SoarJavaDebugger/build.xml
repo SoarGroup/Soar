@@ -71,6 +71,7 @@
       <fileset dir="." includes="SoarJavaDebugger.jar"/>
       <fileset dir="../../SoarLibrary/bin" includes="SoarJavaDebugger.jar"/>
     </delete>
+    <delete dir="build" />
   </target>
 
 </project>
