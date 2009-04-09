@@ -32,9 +32,6 @@ if platform.machine() not in ['x86_64', 'i686', 'i386', 'Power Macintosh', ]:
 
 #################
 # Option defaults based on architecture
-python_default = 'no'
-print "*** Not using python by default. Remove this message when fixed."
-
 m64_default = 'no'
 if sys.platform == 'linux2':
 	if platform.machine() == 'x86_64':
@@ -50,7 +47,7 @@ opts = Options()
 opts.AddOptions(
 	BoolOption('scu', 'Build using single compilation units (faster)', 'yes'), 
 	BoolOption('java', 'Build the Soar Java interface (required for debugger)', 'yes'), 
-	BoolOption('python', 'Build the Soar Python interface', python_default), 
+	BoolOption('python', 'Build the Soar Python interface', 'yes'), 
 	BoolOption('csharp', 'Build the Soar CSharp interface', 'no'), 
 	BoolOption('tcl', 'Build the Soar Tcl interface', 'no'), 
 	BoolOption('debug', 'Build with debugging symbols', 'yes'),
