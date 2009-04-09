@@ -59,6 +59,7 @@
       <fileset dir="." includes="sml.jar"/>
       <fileset dir="../../../SoarLibrary/lib" includes="sml.jar"/>
     </delete>
+    <delete dir="build" />
   </target>
 
 </project>
