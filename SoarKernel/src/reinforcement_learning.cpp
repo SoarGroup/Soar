@@ -130,7 +130,9 @@ void rl_reset_data( agent *my_agent )
 
 		data->previous_q = 0;
 		data->reward = 0;
-		data->reward_age = 0;
+
+		data->gap_age = 0;
+		data->hrl_age = 0;
 		
 		goal = goal->id.lower_goal;
 	}
@@ -427,36 +429,44 @@ void rl_tabulate_reward_value_for_goal( agent *my_agent, Symbol *goal )
 	
 	if ( data->num_prev_op_rl_rules )
 	{
-		slot *s = goal->id.reward_header->id.slots;
+		slot *s = make_slot( my_agent, goal->id.reward_header, my_agent->rl_sym_reward );
 		slot *t;
 		wme *w, *x;
 		
 		double reward = 0.0;
-		double discount_rate = my_agent->rl_params->discount_rate->get_value();	
+		double discount_rate = my_agent->rl_params->discount_rate->get_value();
 
 		if ( s )
-		{
-			for ( ; s; s = s->next )
-				for ( w = s->wmes ; w; w = w->next)
-					if ( w->value->common.symbol_type == IDENTIFIER_SYMBOL_TYPE )
-						for ( t = w->value->id.slots; t; t = t->next )
-							for ( x = t->wmes; x; x = x->next )
-								if ( ( x->value->common.symbol_type == FLOAT_CONSTANT_SYMBOL_TYPE ) || ( x->value->common.symbol_type == INT_CONSTANT_SYMBOL_TYPE ) )
-									reward = reward + get_number_from_symbol( x->value );
+		{			
+			for ( w=s->wmes; w; w=w->next )
+			{
+				if ( w->value->common.symbol_type == IDENTIFIER_SYMBOL_TYPE )
+				{
+					t = make_slot( my_agent, w->value, my_agent->rl_sym_value );
+					if ( t )
+					{
+						for ( x=t->wmes; x; x=x->next )
+						{
+							if ( ( x->value->common.symbol_type == FLOAT_CONSTANT_SYMBOL_TYPE ) || ( x->value->common.symbol_type == INT_CONSTANT_SYMBOL_TYPE ) )
+							{
+								reward += get_number_from_symbol( x->value );
+							}
+						}
+					}
+				}
+			}
 			
-			
-			data->reward += ( reward * pow( discount_rate, (double) data->reward_age ) );
+			data->reward += ( reward * pow( discount_rate, (double) ( data->gap_age + data->hrl_age ) ) );
 		}
 
 		// update stats
 		double global_reward = my_agent->rl_stats->global_reward->get_value();
 		my_agent->rl_stats->total_reward->set_value( reward );
 		my_agent->rl_stats->global_reward->set_value( global_reward + reward );
-		
-		if ( ( my_agent->rl_params->hrl_discount->get_value() == soar_module::on ) )
+
+		if ( ( goal != my_agent->bottom_goal ) && ( my_agent->rl_params->hrl_discount->get_value() == soar_module::on ) )
 		{
-			if ( goal != my_agent->bottom_goal )
-				data->reward_age++;
+			data->hrl_age++;
 		}
 	}
 }
@@ -488,10 +498,12 @@ void rl_store_data( agent *my_agent, Symbol *goal, preference *cand )
 	// Make list of just-fired prods
 	unsigned int just_fired = 0;
 	for ( preference *pref = goal->id.operator_slot->preferences[ NUMERIC_INDIFFERENT_PREFERENCE_TYPE ]; pref; pref = pref->next )
+	{
 		if ( ( op == pref->value ) && pref->inst->prod->rl_rule )
+		{
 			if ( pref->inst->prod->rl_rule ) 
 			{
-				if ( !just_fired )
+				if ( !just_fired && data->prev_op_rl_rules )
 				{
 					free_list( my_agent, data->prev_op_rl_rules );
 					data->prev_op_rl_rules = NIL;
@@ -500,6 +512,8 @@ void rl_store_data( agent *my_agent, Symbol *goal, preference *cand )
 				push( my_agent, pref->inst->prod, data->prev_op_rl_rules );
 				just_fired++;
 			}
+		}
+	}
 
 	if ( just_fired )
 	{		
@@ -509,7 +523,7 @@ void rl_store_data( agent *my_agent, Symbol *goal, preference *cand )
 	else
 	{
 		if ( my_agent->sysparams[ TRACE_RL_SYSPARAM ] && using_gaps &&
-			( data->reward_age == 0 ) && data->num_prev_op_rl_rules )
+			( data->gap_age == 0 ) && data->num_prev_op_rl_rules )
 		{			
 			char buf[256];
 			SNPRINTF( buf, 254, "gap started (%c%lu)", goal->id.name_letter, goal->id.name_number );
@@ -520,6 +534,9 @@ void rl_store_data( agent *my_agent, Symbol *goal, preference *cand )
 		
 		if ( !using_gaps )
 		{
+			if ( data->prev_op_rl_rules )
+				free_list( my_agent, data->prev_op_rl_rules );
+			
 			data->prev_op_rl_rules = NIL;
 			data->num_prev_op_rl_rules = 0;
 			data->previous_q = cand->numeric_value;
@@ -527,7 +544,9 @@ void rl_store_data( agent *my_agent, Symbol *goal, preference *cand )
 		else
 		{		
 			if ( data->num_prev_op_rl_rules )
-				data->reward_age++;
+			{
+				data->gap_age++;
+			}
 		}
 	}
 }
@@ -551,19 +570,19 @@ void rl_perform_update( agent *my_agent, double op_value, bool op_rl, Symbol *go
 			double lambda = my_agent->rl_params->et_decay_rate->get_value();
 			double gamma = my_agent->rl_params->discount_rate->get_value();
 			double tolerance = my_agent->rl_params->et_tolerance->get_value();
-
-			// compute TD update, set stat
-			double update = data->reward;
-			double discount = pow( gamma, (double) data->reward_age );
-
-			if ( my_agent->sysparams[ TRACE_RL_SYSPARAM ] && using_gaps && data->reward_age )
+			
+			if ( data->gap_age && using_gaps && my_agent->sysparams[ TRACE_RL_SYSPARAM ] )
 			{
 				char buf[256];
 				SNPRINTF( buf, 254, "gap ended (%c%lu)", goal->id.name_letter, goal->id.name_number );
-				
+
 				print( my_agent, buf );
-				xml_generate_warning( my_agent, buf );			
-			}			
+				xml_generate_warning( my_agent, buf );
+			}
+
+			// compute TD update, set stat
+			double update = data->reward;
+			double discount = pow( gamma, (double) ( data->gap_age + data->hrl_age + 1 ) );
 
 			update += ( discount * op_value );
 			update -= data->previous_q;
@@ -655,7 +674,8 @@ void rl_perform_update( agent *my_agent, double op_value, bool op_rl, Symbol *go
 			}
 		}
 
-		data->reward_age = 0;
+		data->gap_age = 0;
+		data->hrl_age = 0;
 		data->reward = 0.0;
 	}
 }

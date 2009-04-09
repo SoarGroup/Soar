@@ -75,11 +75,15 @@ typedef std::map<production *, double, std::less<production *>, SoarMemoryAlloca
 
 typedef struct rl_data_struct {
  	rl_et_map *eligibility_traces;
+	
 	::list *prev_op_rl_rules;
-	double previous_q;
-	double reward;
-	unsigned int reward_age;	// the number of steps since a cycle containing rl rules
 	unsigned int num_prev_op_rl_rules;
+	
+	double previous_q;
+	double reward;	
+
+	unsigned int gap_age;	// the number of steps since a cycle containing rl rules
+	unsigned int hrl_age;	// the number of steps in a subgoal
 } rl_data;
 
 //
