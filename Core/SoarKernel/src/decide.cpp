@@ -834,6 +834,7 @@ byte require_preference_semantics (agent *thisAgent, slot *s, preference **resul
   /* --- the lone require is the winner --- */
   if ( candidates && rl_enabled( thisAgent ) )
   {
+	  rl_tabulate_reward_values( thisAgent );
 	  exploration_compute_value_of_candidate( thisAgent, candidates, s, 0 );
 	  rl_perform_update( thisAgent, candidates->numeric_value, candidates->rl_contribution, s->id );
   }
@@ -868,6 +869,7 @@ byte run_preference_semantics (agent* thisAgent, slot *s, preference **result_ca
 
 			  if ( !predict && rl_enabled( thisAgent ) )
 			  {
+				  rl_tabulate_reward_values( thisAgent );
 				  exploration_compute_value_of_candidate( thisAgent, force_result, s, 0 );
 				  rl_perform_update( thisAgent, force_result->numeric_value, force_result->rl_contribution, s->id );
 			  }
@@ -924,6 +926,7 @@ byte run_preference_semantics (agent* thisAgent, slot *s, preference **result_ca
 	if ( !consistency && rl_enabled( thisAgent ) && candidates )
 	{
 		// perform update here for just one candidate
+		rl_tabulate_reward_values( thisAgent );
 		exploration_compute_value_of_candidate( thisAgent, candidates, s, 0 );
 		rl_perform_update( thisAgent, candidates->numeric_value, candidates->rl_contribution, s->id );
 	}
@@ -1094,6 +1097,7 @@ byte run_preference_semantics (agent* thisAgent, slot *s, preference **result_ca
 	  if ( !consistency && rl_enabled( thisAgent ) && candidates )
 	  {
 		  // perform update here for just one candidate
+		  rl_tabulate_reward_values( thisAgent );
 		  exploration_compute_value_of_candidate( thisAgent, candidates, s, 0 );
 		  rl_perform_update( thisAgent, candidates->numeric_value, candidates->rl_contribution, s->id );
 	  }
@@ -1256,8 +1260,8 @@ Symbol *create_new_impasse (agent* thisAgent, Bool isa_goal, Symbol *object, Sym
   {
     add_impasse_wme (thisAgent, id, thisAgent->superstate_symbol, object, NIL);
 
-	id->id.reward_header = make_new_identifier( thisAgent, 'R', level );
-	soar_module::add_module_wme( thisAgent, id, thisAgent->reward_link_symbol, id->id.reward_header );
+	id->id.reward_header = make_new_identifier( thisAgent, 'R', level );	
+	soar_module::add_module_wme( thisAgent, id, thisAgent->rl_sym_reward_link, id->id.reward_header );	
 
 	id->id.epmem_header = make_new_identifier( thisAgent, 'E', level );		
 	soar_module::add_module_wme( thisAgent, id, thisAgent->epmem_sym, id->id.epmem_header );
@@ -1265,7 +1269,6 @@ Symbol *create_new_impasse (agent* thisAgent, Bool isa_goal, Symbol *object, Sym
 	soar_module::add_module_wme( thisAgent, id->id.epmem_header, thisAgent->epmem_sym_cmd, id->id.epmem_cmd_header );	
 	id->id.epmem_result_header = make_new_identifier( thisAgent, 'R', level );
 	soar_module::add_module_wme( thisAgent, id->id.epmem_header, thisAgent->epmem_sym_result, id->id.epmem_result_header );
-
   }
   else
     add_impasse_wme (thisAgent, id, thisAgent->object_symbol, object, NIL);
@@ -2041,10 +2044,11 @@ void create_new_context (agent* thisAgent, Symbol *attr_of_impasse, byte impasse
   id->id.rl_info = static_cast<rl_data *>( allocate_memory( thisAgent, sizeof( rl_data ), MISCELLANEOUS_MEM_USAGE ) );
   id->id.rl_info->eligibility_traces = new rl_et_map( std::less<production *>(), SoarMemoryAllocator<std::pair<production* const, double> >( thisAgent, MISCELLANEOUS_MEM_USAGE ) );
   id->id.rl_info->prev_op_rl_rules = NIL;
+  id->id.rl_info->num_prev_op_rl_rules = 0;
   id->id.rl_info->previous_q = 0;
   id->id.rl_info->reward = 0;
-  id->id.rl_info->reward_age = 0;
-  id->id.rl_info->num_prev_op_rl_rules = 0;
+  id->id.rl_info->gap_age = 0;
+  id->id.rl_info->hrl_age = 0;  
 
   id->id.epmem_info = static_cast<epmem_data *>( allocate_memory( thisAgent, sizeof( epmem_data ), MISCELLANEOUS_MEM_USAGE ) );
   id->id.epmem_info->last_ol_time = 0;  
@@ -2431,10 +2435,7 @@ void do_working_memory_phase (agent* thisAgent) {
 }
 
 void do_decision_phase (agent* thisAgent, bool predict) 
-{
-	if ( !predict && rl_enabled( thisAgent ) )
-		rl_tabulate_reward_values( thisAgent );
-
+{	
 	predict_srand_restore_snapshot( thisAgent, !predict );
 	
 	/* phase printing moved to init_soar: do_one_top_level_phase */

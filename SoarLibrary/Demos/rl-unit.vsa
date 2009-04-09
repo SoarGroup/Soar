@@ -1,0 +1,37 @@
+VERSION 4
+\rl-unit\rl-unit.dm
+0	ROOT rl-unit rl-unit 1
+1	0	FOPERATOR _firstload _firstload.soar 3
+2	0	FOLDER all all 4
+3	0	FOLDER elaborations elaborations 2
+4	3	FOPERATOR _all _all.soar 5
+5	3	FOPERATOR reward reward.soar 8
+6	3	FOPERATOR rl rl.soar 10
+7	3	FOPERATOR top-state top-state.soar 6
+8	0	FOPERATOR README README.soar 20
+9	0	OPERATOR done done.soar 11
+10	0	HLOPERATOR four four.soar four 47 27
+11	10	FOPERATOR elaborations elaborations.soar 28
+12	10	OPERATOR four-four four-four.soar 34
+13	10	OPERATOR four-one four-one.soar 29
+14	10	HLOPERATOR four-three four-three.soar four-three 56 31
+15	14	FOPERATOR elaborations elaborations.soar 32
+16	14	OPERATOR four-three-one four-three-one.soar 33
+17	10	OPERATOR four-two four-two.soar 30
+18	0	OPERATOR initialize-rl-unit initialize-rl-unit.soar 7
+19	0	HLOPERATOR one one.soar one 13 9
+20	19	FOPERATOR elaborations elaborations.soar 12
+21	19	OPERATOR one-one one-one.soar 13
+22	19	OPERATOR one-two one-two.soar 14
+23	0	HLOPERATOR three three.soar three 33 21
+24	23	FOPERATOR elaborations elaborations.soar 22
+25	23	HLOPERATOR three-one three-one.soar three-one 40 23
+26	25	FOPERATOR elaborations elaborations.soar 25
+27	25	OPERATOR three-one-one three-one-one.soar 26
+28	23	OPERATOR three-two three-two.soar 24
+29	0	HLOPERATOR two two.soar two 22 15
+30	29	FOPERATOR elaborations elaborations.soar 16
+31	29	OPERATOR two-one two-one.soar 17
+32	29	OPERATOR two-three two-three.soar 19
+33	29	OPERATOR two-two two-two.soar 18
+END

@@ -1,0 +1,5 @@
+sp {reward
+   (state <s> ^reward-link <rl>)
+-->
+   (<rl> ^reward.value 100)
+}

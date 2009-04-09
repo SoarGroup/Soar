@@ -7,23 +7,26 @@ import SoarSCons
 
 Import('env')
 
+# This directory must exist for swig not to fail
+if not env.GetOption('clean'):
+	if not os.path.exists('src/sml'):
+		if not os.path.exists('src'):
+			os.mkdir('src')
+		os.mkdir('src/sml')
+
 ####
 # Produce wrapper cpp
 wrapper_env = env.Clone()
 # Scanner for dependencies in .i files
 SWIGScanner = SCons.Scanner.ClassicCPP("SWIGScan",".i","CPPPATH",'^[ \t]*[%,#][ \t]*(?:include|import)[ \t]*(<|")([^>"]+)(>|")')
 wrapper_env.Append(SCANNERS=[SWIGScanner])
-src_folder_target = '#Core/ClientSMLSWIG/Java/src'
-wrapper_env.Command(src_folder_target, [], 'mkdir Core/ClientSMLSWIG/Java/src')
-src_sml_folder_target = '#Core/ClientSMLSWIG/Java/src/sml'
-wrapper_env.Command(src_sml_folder_target, [], 'mkdir Core/ClientSMLSWIG/Java/src/sml')
-Depends(src_folder_target, src_sml_folder_target)
 java_sml_interface_wrap_target = '#Core/ClientSMLSWIG/Java/Java_sml_ClientInterface_wrap.cpp'
 java_sml_interface_wrap_source = '#Core/ClientSMLSWIG/Java/Java_sml_ClientInterface.i'
-# sml folder must exist prior to swig running
-Depends(java_sml_interface_wrap_target, src_sml_folder_target)
+wrapper_env.Command('#Core/ClientSMLSWIG/Java/src', java_sml_interface_wrap_source, 'mkdir Core/ClientSMLSWIG/Java/src')
+wrapper_env.Command('#Core/ClientSMLSWIG/Java/src/sml', java_sml_interface_wrap_source, 'mkdir Core/ClientSMLSWIG/Java/src/sml')
 # Side effect: this produces src/*.java files (the SML Java interface)
 wrapper_env.Command(java_sml_interface_wrap_target, java_sml_interface_wrap_source, 'swig -o Core/ClientSMLSWIG/Java/Java_sml_ClientInterface_wrap.cpp -c++ -java -Wall -package sml -ICore/ClientSML/include -ICore/ElementXML/include -ICore/ConnectionSML/include -outdir Core/ClientSMLSWIG/Java/src/sml Core/ClientSMLSWIG/Java/Java_sml_ClientInterface.i')
+wrapper_env.SideEffect('src/sml/*.java', java_sml_interface_wrap_target)
 # Removes SML Java interface files
 wrapper_env.Clean(java_sml_interface_wrap_target, 'src')
 #### (end wrapper)
@@ -60,15 +63,6 @@ shlib_env.Install('#SoarLibrary/lib', java_sml_interface_shlib)
 jar_env = env.Clone()
 sml_jar_target = '#Core/ClientSMLSWIG/Java/sml.jar'
 Depends(sml_jar_target, 'build.xml')
-# Explicitly depend on previous targets because we can't depend on
-# side-effect java files
-Depends(sml_jar_target, src_sml_folder_target)
-Depends(sml_jar_target, java_sml_interface_wrap_target)
-Depends(sml_jar_target, java_sml_interface_shlib)
-jar_env.Append(SCANNERS=[SWIGScanner])
-# This command doesn't always fire when it should. The problem is because the
-# Java files are a side-effect of the swig step earlier and therefore aren't
-# detected the first time around.
-jar_env.Command(sml_jar_target, [], 'ant', chdir=1)
+jar_env.Command(sml_jar_target, 'src/sml/*.java', 'ant -q', chdir=1)
 #### (end jar)
 

@@ -500,6 +500,15 @@ preference *exploration_choose_according_to_policy( agent *my_agent, slot *s, pr
 	const long exploration_policy = exploration_get_policy( my_agent );
 	preference *return_val = NULL;
 
+	bool my_rl_enabled = rl_enabled( my_agent );
+
+	/// Initialization to eliminate warning
+	rl_param_container::learning_choices my_learning_policy = rl_param_container::q;
+	if ( my_rl_enabled )
+	{
+		my_learning_policy = my_agent->rl_params->learning_policy->get_value();
+	}
+
 	// get preference values for each candidate
 	for ( preference *cand = candidates; cand != NIL; cand = cand->next_candidate )
 		exploration_compute_value_of_candidate( my_agent, cand, s );
@@ -508,7 +517,7 @@ preference *exploration_choose_according_to_policy( agent *my_agent, slot *s, pr
 	bool top_rl = candidates->rl_contribution;
 
 	// should find highest valued candidate in q-learning
-	if ( rl_enabled( my_agent ) && ( my_agent->rl_params->learning_policy->get_value() == rl_param_container::q ) )
+	if ( my_rl_enabled && ( my_learning_policy == rl_param_container::q ) )
 	{
 		for ( preference *cand=candidates; cand!=NIL; cand=cand->next_candidate )
 		{
@@ -547,15 +556,24 @@ preference *exploration_choose_according_to_policy( agent *my_agent, slot *s, pr
 			break;
 	}
 
-	// should perform update here for chosen candidate in sarsa
-	if ( rl_enabled( my_agent ) && ( my_agent->rl_params->learning_policy->get_value() == rl_param_container::sarsa ) )
-		rl_perform_update( my_agent, return_val->numeric_value, return_val->rl_contribution, s->id );
-	else if ( rl_enabled( my_agent ) && ( my_agent->rl_params->learning_policy->get_value() == rl_param_container::q ) )
+	// should perform update here for chosen candidate in sarsa	
+	if ( my_rl_enabled )
 	{
-		if ( return_val->numeric_value != top_value )
-			rl_watkins_clear( my_agent, s->id );
+		rl_tabulate_reward_values( my_agent );
 
-		rl_perform_update( my_agent, top_value, top_rl, s->id );
+		if ( my_learning_policy == rl_param_container::sarsa )
+		{
+			rl_perform_update( my_agent, return_val->numeric_value, return_val->rl_contribution, s->id );
+		}
+		else if ( my_learning_policy == rl_param_container::q )
+		{
+			if ( return_val->numeric_value != top_value )
+			{
+				rl_watkins_clear( my_agent, s->id );
+			}
+
+			rl_perform_update( my_agent, top_value, top_rl, s->id );
+		}
 	}
 	
 	return return_val;
