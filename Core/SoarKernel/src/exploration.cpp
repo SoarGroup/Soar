@@ -501,8 +501,10 @@ preference *exploration_choose_according_to_policy( agent *my_agent, slot *s, pr
 	preference *return_val = NULL;
 
 	bool my_rl_enabled = rl_enabled( my_agent );
-	rl_param_container::learning_choices my_learning_policy;
-	if ( rl_enabled )
+
+	/// Initialization to eliminate warning
+	rl_param_container::learning_choices my_learning_policy = rl_param_container::q;
+	if ( my_rl_enabled )
 	{
 		my_learning_policy = my_agent->rl_params->learning_policy->get_value();
 	}
