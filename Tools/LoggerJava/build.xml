@@ -62,6 +62,7 @@
       <fileset dir="." includes="LoggerJava.jar"/>
       <fileset dir="../../SoarLibrary/bin" includes="LoggerJava.jar"/>
     </delete>
+    <delete dir="build" />
   </target>
 
 </project>
