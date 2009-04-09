@@ -1,0 +1,8 @@
+sp {rl-unit*propose*three
+   (state <s> ^name rl-unit
+              ^case three)
+-->
+   (<s> ^operator <op> +)
+   (<op> ^name three)
+}
+
