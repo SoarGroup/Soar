@@ -44,6 +44,8 @@ if sys.platform == 'darwin':
 	env['SHLINKFLAGS'] = '$LINKFLAGS -bundle -flat_namespace -undefined suppress'
 	env['SHLIBSUFFIX'] = '.so'
 
+env.Append(CPPFLAGS = ' -w')
+
 env.SharedLibrary('Python_sml_ClientInterface', 
 	       glob.glob('*.i'), 
 	       LIBS = libadd, 
