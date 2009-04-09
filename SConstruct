@@ -161,16 +161,33 @@ if not conf.CheckLib('pthread'):
 # if this flag is not included, the linker will complain about not being able
 # to find the symbol __sync_sub_and_fetch_4 when using g++ 4.3
 # only do not include it if we're on powerpc
-if platform.machine() != 'Power Macintosh':
+if platform.machine() == 'Power Macintosh':
 	if env['m64']:
-		print "*"
-		print "* Note: Targeting x86_64 (64-bit native)"
-		print "*"
-		conf.env.Append(CPPFLAGS = ' -m64 -DSOAR_64 -fPIC')
-		conf.env.Append(LINKFLAGS = ' -m64')
-	else:
-		conf.env.Append(CPPFLAGS = ' -m32')
-		conf.env.Append(LINKFLAGS = ' -m32')
+		print "Cannot target 64 bit on", platform.machine()
+		Exit(1)
+
+# As of 4/2009, python binaries available on mac are not x86_64 and
+# therefore cannot load x86_64 targeted libraries. Verbosely warn.
+if sys.platform == 'darwin':
+	if env['m64']:
+		if env['python']:
+			print "*"
+			print "* Warning: 64-bit python binaries may not be available on your system."
+			print "* You may need to rebuild with m64=no to use Python Soar bindings."
+			print "*"
+
+# 64 bit is still experimental, even though it is enabled by default
+# (how else are we going to test it?)
+# Warn verbosely.
+if env['m64']:
+	print "*"
+	print "* Note: Targeting x86_64 (64-bit native)"
+	print "*"
+	conf.env.Append(CPPFLAGS = ' -m64 -DSOAR_64 -fPIC')
+	conf.env.Append(LINKFLAGS = ' -m64')
+else:
+	conf.env.Append(CPPFLAGS = ' -m32')
+	conf.env.Append(LINKFLAGS = ' -m32')
 
 env = conf.Finish()
 Export('env')
