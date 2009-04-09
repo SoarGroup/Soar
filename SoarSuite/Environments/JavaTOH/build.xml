@@ -60,6 +60,7 @@
       <fileset dir="build" includes="**/*.class"/>
       <fileset dir="." includes="JavaTOH.jar"/>
     </delete>
+    <delete dir="build" />
   </target>
 
 </project>
