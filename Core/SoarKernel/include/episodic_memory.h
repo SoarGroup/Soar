@@ -26,7 +26,6 @@
 
 using namespace soar_module;
 
-
 //////////////////////////////////////////////////////////
 // EpMem Experimentation
 //
@@ -548,7 +547,7 @@ struct epmem_shared_literal_pair_struct
 	epmem_node_id q0;
 	epmem_node_id q1;
 
-	wme *wme;
+	struct wme_struct *wme;
 
 	epmem_shared_literal *lit;
 };
