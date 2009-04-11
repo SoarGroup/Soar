@@ -3661,6 +3661,8 @@ void epmem_process_query( agent *my_agent, Symbol *state, Symbol *query, Symbol 
 											parent_ids.push( (epmem_node_id) my_agent->epmem_stmts_tree->find_identifier->column_int( 0 ) );
 											parent_wmes.push( (*w_p) );
 										}
+
+										my_agent->epmem_stmts_tree->find_identifier->reinitialize();
 									}
 								}
 							}
