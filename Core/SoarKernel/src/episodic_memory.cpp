@@ -3313,7 +3313,7 @@ unsigned long epmem_graph_match( epmem_shared_literal_group *literals, epmem_con
 		c_p = 0;
 		c_l = literals->literals->front();
 		c_f = literals->wme_index->begin();
-		literals->c_wme = c_l->lit->wme;
+		literals->c_wme = c_l->wme;
 
 		// current constraints = previous constraints
 		c_c = new epmem_constraint_list( *constraints );
@@ -3332,6 +3332,7 @@ unsigned long epmem_graph_match( epmem_shared_literal_group *literals, epmem_con
 			// determine if literal is a match
 			{
 				good_literal = false;
+				n_c = NULL;
 
 				// must be ON
 				if ( c_l->lit->ct == c_l->lit->max )
@@ -3352,20 +3353,23 @@ unsigned long epmem_graph_match( epmem_shared_literal_group *literals, epmem_con
 								if ( epmem_graph_match( c_l->lit->children, n_c ) == c_l->lit->children->wme_index->size() )
 								{
 									// on success, keep new constraints
-									good_literal = true;
-									(*c_c) = (*n_c);
+									good_literal = true;									
 
 									// update constraints with this literal
-									(*c_c)[ c_l->lit->wme->value ] = c_l->lit->shared_id;
+									(*n_c)[ c_l->lit->wme->value ] = c_l->lit->shared_id;
 								}
-
-								delete n_c;
+								else
+								{
+									delete n_c;
+								}								
 							}
 							// otherwise winner by default, pass along constraint
 							else
 							{
 								good_literal = true;
-								(*c_c)[ c_l->lit->wme->value ] = c_l->lit->shared_id;
+
+								n_c = new epmem_constraint_list( *c_c );
+								(*n_c)[ c_l->lit->wme->value ] = c_l->lit->shared_id;
 							}
 						}
 						else
@@ -3373,12 +3377,22 @@ unsigned long epmem_graph_match( epmem_shared_literal_group *literals, epmem_con
 							// if shared identifier, we don't need to perform recursion
 							// (we rely upon previous results)
 							good_literal = ( c_id == c_l->lit->shared_id );
+
+							if ( good_literal )
+							{
+								n_c = new epmem_constraint_list( *c_c );
+							}
 						}
 					}
 					// leaf node, non-identifier
 					else
 					{
 						good_literal = ( c_l->lit->match->ct != 0 );
+
+						if ( good_literal )
+						{
+							n_c = new epmem_constraint_list( *c_c );
+						}
 					}
 				}
 			}
@@ -3394,6 +3408,9 @@ unsigned long epmem_graph_match( epmem_shared_literal_group *literals, epmem_con
 				// yippee (potential success)
 				if ( c_f == literals->wme_index->end() )
 				{
+					(*c_c) = (*n_c);
+					delete n_c;
+
 					done = true;
 				}
 				else
@@ -3405,9 +3422,9 @@ unsigned long epmem_graph_match( epmem_shared_literal_group *literals, epmem_con
 
 					c_p = (*c_f);
 					c_l = (*literals->literals)[ c_p ];
-					literals->c_wme = c_l->lit->wme;
+					literals->c_wme = c_l->wme;
 
-					c_c = new epmem_constraint_list( *c_c );
+					c_c = n_c;
 
 					// get constraint for this identifier, if exists
 					c_id = EPMEM_NODEID_ROOT;
@@ -3432,18 +3449,14 @@ unsigned long epmem_graph_match( epmem_shared_literal_group *literals, epmem_con
 					c_p++;
 
 					// if end of the road, failure
-					if ( c_p >= literals->literals->size() )
-					{
-						done = true;
-					}
-					else
-					{
+					if ( c_p < literals->literals->size() )
+					{						
 						// else, look at the literal
 						c_l = (*literals->literals)[ c_p ];
 
 						// if still within the wme, we can try again
 						// with current constraints
-						if ( c_l->lit->wme == literals->c_wme )
+						if ( c_l->wme == literals->c_wme )
 						{
 							good_pop = true;
 
@@ -3456,38 +3469,35 @@ unsigned long epmem_graph_match( epmem_shared_literal_group *literals, epmem_con
 									c_id = c->second;
 							}
 						}
+					}
+						
+					if ( !good_pop )
+					{
+						// if nothing left on the stack, failure
+						if ( c_ps.empty() )
+						{
+							done = true;
+						}
 						else
 						{
-							// if nothing left on the stack, failure
-							if ( c_ps.empty() )
-							{
-								done = true;
-							}
-							else
-							{
-								// otherwise, backtrack:
-								// - pop previous state, remove last constraint
-								// - repeat trying to increment (and possibly have to recursively pop again)
+							// otherwise, backtrack:
+							// - pop previous state, remove last constraint
+							// - repeat trying to increment (and possibly have to recursively pop again)
 
-								// recover state
-								c_p = c_ps.top();
-								c_ps.pop();
+							// recover state
+							c_p = c_ps.top();
+							c_ps.pop();
 
-								c_l = (*literals->literals)[ c_p ];
-								literals->c_wme = c_l->lit->wme;
+							c_l = (*literals->literals)[ c_p ];
+							literals->c_wme = c_l->wme;
 
-								c_f--;
-								return_val--;
+							c_f--;
+							return_val--;
 
-								// recover constraints
-								delete c_c;
-								c_c = c_cs.top();
-								c_cs.pop();
-
-								// remove last constraint
-								c = c_c->find( c_l->lit->wme->value );
-								c_c->erase( c );
-							}
+							// recover constraints
+							delete c_c;
+							c_c = c_cs.top();
+							c_cs.pop();
 						}
 					}
 				} while ( !good_pop && !done );
