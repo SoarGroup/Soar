@@ -3,7 +3,8 @@ sp {propose*initialize-rl-unit
              -^name)
 -->
    (<s> ^operator <o> +)
-   (<o> ^name initialize-rl-unit)
+   (<o> ^name initialize-rl-unit
+        ^rl alpha)
 }
 
 sp {apply*initialize-rl-unit
