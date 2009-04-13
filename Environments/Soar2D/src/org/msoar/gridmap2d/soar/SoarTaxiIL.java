@@ -16,6 +16,7 @@ class SoarTaxiIL {
 	private SelfIL self = new SelfIL();
 	private ViewIL view = new ViewIL();
 	private CellIL cell = new CellIL();
+	private CheatIL cheat = new CheatIL();
 	
 	SoarTaxiIL(Agent agent) {
 		this.agent = agent;
@@ -25,6 +26,7 @@ class SoarTaxiIL {
 		self.create();
 		view.create();
 		cell.create();
+		cheat.create();
 		
 		if (!agent.Commit()) {
 			throw new CommitException();
@@ -35,6 +37,7 @@ class SoarTaxiIL {
 		self.update(moved, pos, map, reward, fuel);
 		view.update(pos, map);
 		cell.update(pos, map);
+		cheat.update(map);
 		
 		if (!agent.Commit()) {
 			throw new CommitException();
@@ -45,6 +48,7 @@ class SoarTaxiIL {
 		self.destroy();
 		view.destroy();
 		cell.destroy();
+		cheat.destroy();
 		
 		if (!agent.Commit()) {
 			throw new CommitException();
@@ -248,6 +252,41 @@ class SoarTaxiIL {
 			if (cellWME != null) {
 				agent.DestroyWME(cellWME);
 				cellWME = null;
+			}
+		}
+	}
+	
+	private class CheatIL {
+		private Identifier cheatWME;
+		private StringElement source;
+		private StringElement destination;
+
+		private void create() {
+			cheatWME = agent.CreateIdWME(agent.GetInputLink(), "cheat");
+			
+			Identifier oracle = agent.CreateIdWME(cheatWME, "oracle");
+			source = agent.CreateStringWME(oracle, "source", "none");
+			destination = agent.CreateStringWME(oracle, "destination", "none");
+		}
+		
+		private void update(TaxiMap map) {
+			assert cheatWME != null;
+			
+			String sourceColor = map.getPassengerSourceColor();
+			if (!sourceColor.equals(source.GetValue())) {
+				agent.Update(source, sourceColor);
+			}
+			
+			String destColor = map.getPassengerDestination();
+			if (!destColor.equals(destination.GetValue())) {
+				agent.Update(destination, destColor);
+			}
+		}
+		
+		private void destroy() {
+			if (cheatWME != null) {
+				agent.DestroyWME(cheatWME);
+				cheatWME = null;
 			}
 		}
 	}
