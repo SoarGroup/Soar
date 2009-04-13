@@ -763,17 +763,30 @@ epmem_wme_list *epmem_get_augs_of_id( Symbol * id, tc_number tc )
 	{
 		id->id.tc_num = tc;
 
+		// impasse wmes
 		for ( w=id->id.impasse_wmes; w!=NIL; w=w->next )
-			return_val->push_back( w );
+		{
+			if ( !w->acceptable )
+			{
+				return_val->push_back( w );
+			}
+		}
 
+		// input wmes
 		for ( w=id->id.input_wmes; w!=NIL; w=w->next )
+		{
 			return_val->push_back( w );
+		}
 
+		// regular wmes
 		for ( s=id->id.slots; s!=NIL; s=s->next )
 		{
 			for ( w=s->wmes; w!=NIL; w=w->next )
 			{
-				return_val->push_back( w );
+				if ( !w->acceptable )
+				{				
+					return_val->push_back( w );
+				}
 			}
 		}
 	}
