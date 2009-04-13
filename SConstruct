@@ -11,38 +11,43 @@
 import os
 import sys
 import SoarSCons
+import platform
+import socket
 
-# TODO: pull this version string out of shared/soarversion.h
-soarversionstring = "9.0.0"
-print "Soar", soarversionstring
-print "Detected OS:", os.name
-print "Detected platform:", sys.platform
-processor = os.popen( 'uname -p', 'r' ).read().strip()
-print "Detected processor:", processor
+# host:                  winter,           seagull,          macsoar,       fugu,
+# os.name:               posix,            posix,            posix,         posix,
+# sys.platform:          linux2,           linux2,           darwin,        darwin,
+# platform.machine:      x86_64,           i686,             i386,          Power Macintosh,
+# platform.architecture: ('64bit', 'ELF'), ('32bit', 'ELF'), ('32bit', ''), ('32bit', '')
+print socket.gethostname(), os.name, sys.platform, platform.machine(), platform.architecture()
 
-if os.name != "posix":
-	print "Unsupported OS: posix is required"
+if os.name not in ['posix', ]:
+	print "Unsupported os.name:", os.name
 	Exit(1)
-if sys.platform == 'cygwin':
-	print "Unsupported platform: cygwin"
+if sys.platform not in ['linux2', 'darwin']:
+	print "Unsupported sys.platform:", sys.platform
 	Exit(1)
+if platform.machine() not in ['x86_64', 'i686', 'i386', 'Power Macintosh', ]:
+	print "Unsupported platform.machine:", platform.machine()
 
-#pythonDefault = 'yes'
-# changed to no because it doesn't work out of the box on ubuntu
-pythonDefault = 'no'
+#################
+# Option defaults based on architecture
+m64_default = 'no'
+if sys.platform == 'linux2':
+	if platform.machine() == 'x86_64':
+		m64_default = 'yes'
+elif sys.platform == 'darwin':
+	if platform.machine() == 'i386':
+		if SoarSCons.Mac_m64_Capable():
+			m64_default = 'yes'
 
 #################
 # Command line options
-
-# OSX is identified as os.name 'posix' and sys.platform 'darwin'
-# For now we're assuming other 'posix' platforms are linux
-# and will deal with portability issues as they appear.
-
 opts = Options()
 opts.AddOptions(
 	BoolOption('scu', 'Build using single compilation units (faster)', 'yes'), 
 	BoolOption('java', 'Build the Soar Java interface (required for debugger)', 'yes'), 
-	BoolOption('python', 'Build the Soar Python interface', pythonDefault), 
+	BoolOption('python', 'Build the Soar Python interface', 'yes'), 
 	BoolOption('csharp', 'Build the Soar CSharp interface', 'no'), 
 	BoolOption('tcl', 'Build the Soar Tcl interface', 'no'), 
 	BoolOption('debug', 'Build with debugging symbols', 'yes'),
@@ -51,9 +56,8 @@ opts.AddOptions(
 	EnumOption('optimization', 'Build with optimization (May cause run-time errors!)', 'full', ['no','partial','full'], {}, 1),
 	BoolOption('preprocessor', 'Only run preprocessor', 'no'),
 	BoolOption('verbose', 'Verbose compiler output', 'no'),
-	
 	BoolOption('gcc42', 'Use GCC-4.2 (experimental, Darwin only)', 'no'),
-	BoolOption('m64', 'Compile to 64-bit (experimental)', 'no'),
+	BoolOption('m64', 'Compile to 64-bit (experimental)', m64_default),
 )
 
 # Create the environment using the options
@@ -157,14 +161,33 @@ if not conf.CheckLib('pthread'):
 # if this flag is not included, the linker will complain about not being able
 # to find the symbol __sync_sub_and_fetch_4 when using g++ 4.3
 # only do not include it if we're on powerpc
-if processor != 'powerpc':
+if platform.machine() == 'Power Macintosh':
 	if env['m64']:
-		conf.env.Append(CPPFLAGS = ' -m64 -DSOAR_64 -fPIC')
-		conf.env.Append(LINKFLAGS = ' -m64')
-	else:
-		conf.env.Append(CPPFLAGS = ' -m32')
-		conf.env.Append(LINKFLAGS = ' -m32')
-conf.env[ 'processor' ] = processor
+		print "Cannot target 64 bit on", platform.machine()
+		Exit(1)
+
+# As of 4/2009, python binaries available on mac are not x86_64 and
+# therefore cannot load x86_64 targeted libraries. Verbosely warn.
+if sys.platform == 'darwin':
+	if env['m64']:
+		if env['python']:
+			print "*"
+			print "* Warning: 64-bit python binaries may not be available on your system."
+			print "* You may need to rebuild with m64=no to use Python Soar bindings."
+			print "*"
+
+# 64 bit is still experimental, even though it is enabled by default
+# (how else are we going to test it?)
+# Warn verbosely.
+if env['m64']:
+	print "*"
+	print "* Note: Targeting x86_64 (64-bit native)"
+	print "*"
+	conf.env.Append(CPPFLAGS = ' -m64 -DSOAR_64 -fPIC')
+	conf.env.Append(LINKFLAGS = ' -m64')
+else:
+	conf.env.Append(CPPFLAGS = ' -m32')
+	conf.env.Append(LINKFLAGS = ' -m32')
 
 env = conf.Finish()
 Export('env')
@@ -182,7 +205,7 @@ SConscript('#Core/KernelSML/SConscript')
 
 if env['java']:
 	if env.GetOption('clean'):
-		Execute('ant clean')
+		Execute('ant -q clean')
 	SConscript('#Core/ClientSMLSWIG/Java/SConscript')
 	SConscript('#Tools/LoggerJava/SConscript')
 	SConscript('#Tools/TestJavaSML/SConscript')
@@ -203,7 +226,5 @@ SConscript('#Tools/TOHSML/SConscript')
 SConscript('#Tools/TestSMLEvents/SConscript')
 SConscript('#Tools/TestSMLPerformance/SConscript')
 SConscript('#Tools/TestSoarPerformance/SConscript')
-
-if not ( env['m64'] and ( env[ 'processor' ] == 'powerpc' ) ):
-	SConscript('#Tests/SConscript')
+SConscript('#Tests/SConscript')
 

@@ -26,7 +26,6 @@
 
 using namespace soar_module;
 
-
 //////////////////////////////////////////////////////////
 // EpMem Experimentation
 //
@@ -450,8 +449,14 @@ typedef std::priority_queue<epmem_range_query *, std::vector<epmem_range_query *
 
 // see below
 typedef struct epmem_shared_literal_struct epmem_shared_literal;
+typedef struct epmem_shared_literal_pair_struct epmem_shared_literal_pair;
 typedef std::vector<epmem_shared_literal *> epmem_shared_literal_list;
-typedef std::list<epmem_shared_literal_list::size_type> epmem_shared_wme_list;
+typedef std::vector<epmem_shared_literal_pair *> epmem_shared_literal_pair_list;
+typedef std::list<epmem_shared_literal_list::size_type> epmem_shared_wme_index;
+typedef std::vector<wme *> epmem_shared_wme_list;
+typedef struct epmem_shared_wme_counter_struct epmem_shared_wme_counter;
+typedef std::map<epmem_node_id, unsigned long> epmem_shared_literal_counter;
+typedef std::map<wme *, epmem_shared_wme_counter *> epmem_shared_wme_book;
 
 // lookup tables to facilitate shared identifiers
 typedef std::map<epmem_node_id, Symbol *> epmem_id_mapping;
@@ -478,64 +483,84 @@ typedef struct epmem_id_reservation_struct
 // follows cs theory notation of finite automata: q1 = d( q0, w )
 typedef struct epmem_edge_struct
 {
-	epmem_node_id q0;						// id
-	Symbol *w;								// attr
-	epmem_node_id q1;						// value
+	epmem_node_id q0;							// id
+	Symbol *w;									// attr
+	epmem_node_id q1;							// value
 } epmem_edge;
 
 // represents cached children of an identifier in working memory
 typedef struct epmem_wme_cache_element_struct
 {
-	epmem_wme_list *wmes;					// child wmes	
-	unsigned long parents;					// number of parents
+	epmem_wme_list *wmes;						// child wmes	
+	unsigned long parents;						// number of parents
 
-	epmem_literal_mapping *lits;			// child literals
+	epmem_literal_mapping *lits;				// child literals
 } epmem_wme_cache_element;
 
 // represents state of a leaf wme
 // at a particular episode
 typedef struct epmem_shared_match_struct
 {
-	double value_weight;					// wma value
-	long value_ct;							// cardinality w.r.t. positive/negative query
+	double value_weight;						// wma value
+	long value_ct;								// cardinality w.r.t. positive/negative query
 
-	unsigned long ct;						// number of contributing literals that are "on"
+	unsigned long ct;							// number of contributing literals that are "on"
 } epmem_shared_match;
 
 // represents a list of literals grouped
 // sequentially by cue wme
 typedef struct epmem_shared_literal_group_struct
 {
-	epmem_shared_literal_list *literals;	// vector of sequentially grouped literals
-	epmem_shared_wme_list *wmes;			// list of indexes to the start of wmes
+	epmem_shared_literal_pair_list *literals;	// vector of sequentially grouped literals
+	epmem_shared_wme_index *wme_index;			// list of indexes to the start of wmes
 
-	wme *c_wme;								// current wme (used during building and using groups)
+	wme *c_wme;									// current wme (used during building and using groups)
 } epmem_shared_literal_group;
+
+struct epmem_shared_wme_counter_struct
+{
+	unsigned long wme_ct;
+	epmem_shared_literal_counter *lit_ct;
+};
 
 // represents state of one historical
 // identity of a cue wme at a particular
 // episode
 struct epmem_shared_literal_struct
 {
-	epmem_node_id shared_id;				// shared q1, if identifier
+	epmem_node_id shared_id;					// shared q1, if identifier
 
-	unsigned long ct;						// number of contributing literals that are "on"
-	unsigned long max;						// number of contributing literals that *need* to be on
+	unsigned long ct;							// number of contributing literals that are "on"
+	unsigned long max;							// number of contributing literals that *need* to be on	
+	epmem_shared_wme_book *wme_ct;				// bookkeeping to ensure literal count
 
-	struct wme_struct *wme;					// associated cue wme
-	bool wme_kids;							// does the cue wme have children (indicative of leaf wme status)
+	struct wme_struct *wme;						// associated cue wme
+	bool wme_kids;								// does the cue wme have children (indicative of leaf wme status)	
 
-	epmem_shared_match *match;				// associated match, if leaf wme
-	epmem_shared_literal_group *children;	// grouped child literals, if not leaf wme
+	epmem_shared_match *match;					// associated match, if leaf wme
+	epmem_shared_literal_group *children;		// grouped child literals, if not leaf wme
+};
+
+struct epmem_shared_literal_pair_struct
+{
+	epmem_node_id unique_id;
+	epmem_node_id q0;
+	epmem_node_id q1;
+
+	struct wme_struct *wme;
+
+	epmem_shared_literal *lit;
 };
 
 // maintains state within sqlite b-trees
 typedef struct epmem_shared_query_struct
 {
-	sqlite_statement *stmt;					// associated query
-	epmem_time_id val;						// current b-tree leaf value	
+	sqlite_statement *stmt;						// associated query
+	epmem_time_id val;							// current b-tree leaf value
 
-	epmem_shared_literal_list *triggers;	// literals to update when stepping this b-tree
+	epmem_node_id unique_id;					// id searched by this statement
+
+	epmem_shared_literal_pair_list *triggers;	// literals to update when stepping this b-tree
 } epmem_shared_query;
 
 // functor to maintain a priority cue of b-tree pointers

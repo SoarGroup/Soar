@@ -839,7 +839,7 @@ SoarTextIO::spawnDebugger()
 	// spawn the debugger asynchronously
 	
 	
-	int ret = _spawnlp(_P_NOWAIT, "javaw.exe", "javaw.exe", "-jar", "SoarJavaDebugger.jar", "-remote", NULL);
+	intptr_t ret = _spawnlp(_P_NOWAIT, "javaw.exe", "javaw.exe", "-jar", "SoarJavaDebugger.jar", "-remote", NULL);
 	if(ret == -1) {
 		switch (errno) {
 				case E2BIG:

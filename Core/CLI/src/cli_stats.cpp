@@ -143,11 +143,11 @@ bool CommandLineInterface::DoStats(const StatsBitset& options) {
 	AppendArgTagFast(sml_Names::kParamStatsChunkingTimeDecisionPhase,			sml_Names::kTypeDouble, Double2String(timer_value(&m_pAgentSoar->chunking_cpu_time[DECISION_PHASE]), buf, kMinBufferSize));
 	AppendArgTagFast(sml_Names::kParamStatsChunkingTimeProposePhase,			sml_Names::kTypeDouble, Double2String(timer_value(&m_pAgentSoar->chunking_cpu_time[PROPOSE_PHASE]), buf, kMinBufferSize));
 	AppendArgTagFast(sml_Names::kParamStatsChunkingTimeApplyPhase,				sml_Names::kTypeDouble, Double2String(timer_value(&m_pAgentSoar->chunking_cpu_time[APPLY_PHASE]), buf, kMinBufferSize));
-	AppendArgTagFast(sml_Names::kParamStatsMemoryUsageMiscellaneous,			sml_Names::kTypeInt,	Int2String(m_pAgentSoar->memory_for_usage[MISCELLANEOUS_MEM_USAGE], buf, kMinBufferSize));
-	AppendArgTagFast(sml_Names::kParamStatsMemoryUsageHash,						sml_Names::kTypeInt,	Int2String(m_pAgentSoar->memory_for_usage[HASH_TABLE_MEM_USAGE], buf, kMinBufferSize));
-	AppendArgTagFast(sml_Names::kParamStatsMemoryUsageString,					sml_Names::kTypeInt,	Int2String(m_pAgentSoar->memory_for_usage[STRING_MEM_USAGE], buf, kMinBufferSize));
-	AppendArgTagFast(sml_Names::kParamStatsMemoryUsagePool,						sml_Names::kTypeInt,	Int2String(m_pAgentSoar->memory_for_usage[POOL_MEM_USAGE], buf, kMinBufferSize));
-	AppendArgTagFast(sml_Names::kParamStatsMemoryUsageStatsOverhead,			sml_Names::kTypeInt,	Int2String(m_pAgentSoar->memory_for_usage[STATS_OVERHEAD_MEM_USAGE], buf, kMinBufferSize));
+	AppendArgTagFast(sml_Names::kParamStatsMemoryUsageMiscellaneous,			sml_Names::kTypeInt,	Int2String(static_cast<long>(m_pAgentSoar->memory_for_usage[MISCELLANEOUS_MEM_USAGE]), buf, kMinBufferSize));
+	AppendArgTagFast(sml_Names::kParamStatsMemoryUsageHash,						sml_Names::kTypeInt,	Int2String(static_cast<long>(m_pAgentSoar->memory_for_usage[HASH_TABLE_MEM_USAGE]), buf, kMinBufferSize));
+	AppendArgTagFast(sml_Names::kParamStatsMemoryUsageString,					sml_Names::kTypeInt,	Int2String(static_cast<long>(m_pAgentSoar->memory_for_usage[STRING_MEM_USAGE]), buf, kMinBufferSize));
+	AppendArgTagFast(sml_Names::kParamStatsMemoryUsagePool,						sml_Names::kTypeInt,	Int2String(static_cast<long>(m_pAgentSoar->memory_for_usage[POOL_MEM_USAGE]), buf, kMinBufferSize));
+	AppendArgTagFast(sml_Names::kParamStatsMemoryUsageStatsOverhead,			sml_Names::kTypeInt,	Int2String(static_cast<long>(m_pAgentSoar->memory_for_usage[STATS_OVERHEAD_MEM_USAGE]), buf, kMinBufferSize));
 
 	return true;
 }
@@ -347,7 +347,7 @@ void CommandLineInterface::GetSystemStats()
 
 void CommandLineInterface::GetMemoryStats()
 {
-	unsigned long total = 0;
+	size_t total = 0;
 	for (int i = 0; i < NUM_MEM_USAGE_CODES; i++)
 	{
 		total += m_pAgentSoar->memory_for_usage[i];

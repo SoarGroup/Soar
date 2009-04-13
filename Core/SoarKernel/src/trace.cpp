@@ -518,7 +518,7 @@ void print_trace_format_list (agent* thisAgent, trace_format *tf) {
     switch (tf->type) {
     case STRING_TFT:
       { char *s;
-        int i, len;
+        size_t i, len;
         
         s = string_to_escaped_string (thisAgent, tf->data.string, '"', NULL);
         len = strlen (s);

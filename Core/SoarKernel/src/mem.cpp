@@ -41,7 +41,7 @@
    Print_memory_statistics() prints out stats on the memory usage.
 ==================================================================== */
 
-void *allocate_memory (agent* thisAgent, unsigned long size, int usage_code) {
+void *allocate_memory (agent* thisAgent, size_t size, int usage_code) {
   char *p;
 
   thisAgent->memory_for_usage[usage_code] += size;
@@ -51,7 +51,7 @@ void *allocate_memory (agent* thisAgent, unsigned long size, int usage_code) {
   p = (char *) malloc (size);
   if (p==NULL) {
     char msg[BUFFER_MSG_SIZE];
-    SNPRINTF(msg, BUFFER_MSG_SIZE, "\nmem.c: Error:  Tried but failed to allocate %lu bytes of memory.\n", size);
+    SNPRINTF(msg, BUFFER_MSG_SIZE, "\nmem.c: Error:  Tried but failed to allocate %lu bytes of memory.\n", static_cast<unsigned long>(size));
 	msg[BUFFER_MSG_SIZE - 1] = 0; /* ensure null termination */
     abort_with_fatal_error (thisAgent, msg);
   }
@@ -64,13 +64,13 @@ void *allocate_memory (agent* thisAgent, unsigned long size, int usage_code) {
 
   fill_with_garbage (p, size);
 
-  *((unsigned long *)p) = size;
+  *((size_t *)p) = size;
   p += sizeof(char *);
 
   return (void *)p;
 }
 
-void *allocate_memory_and_zerofill (agent* thisAgent, unsigned long size, int usage_code) {
+void *allocate_memory_and_zerofill (agent* thisAgent, size_t size, int usage_code) {
   void *p;
 
   p = allocate_memory (thisAgent, size, usage_code);
@@ -94,7 +94,7 @@ void free_memory (agent* thisAgent, void *mem, int usage_code) {
 }
 
 void print_memory_statistics (agent* thisAgent) {
-  unsigned long total;
+  size_t total;
   int i;
 
   total = 0;
@@ -141,7 +141,7 @@ void print_memory_statistics (agent* thisAgent) {
 
 char *make_memory_block_for_string (agent* thisAgent, char const*s) {
   char *p;
-  unsigned long size;
+  size_t size;
 
   size = strlen(s)+1; /* plus one for trailing null character */
   p = static_cast<char *>(allocate_memory (thisAgent, size, STRING_MEM_USAGE));
@@ -169,23 +169,23 @@ growable_string make_blank_growable_string (agent* thisAgent) {
 
 void add_to_growable_string (agent* thisAgent, growable_string *gs, 
 							 const char *string_to_add) {
-  int current_length, length_to_add, new_length, new_memsize;
+  size_t current_length, length_to_add, new_length, new_memsize;
   growable_string New;
 
   current_length = length_of_growable_string(*gs);
   length_to_add = strlen (string_to_add);
   new_length = current_length + length_to_add;
-  if (new_length + 1 > memsize_of_growable_string(*gs)) {
+  if (new_length + 1 > static_cast<size_t>(memsize_of_growable_string(*gs))) {
     new_memsize = memsize_of_growable_string(*gs);
     while (new_length + 1 > new_memsize) new_memsize = new_memsize * 2;
     New = allocate_memory (thisAgent, new_memsize + 2*sizeof(int *), STRING_MEM_USAGE);
-    memsize_of_growable_string(New) = new_memsize;
+    memsize_of_growable_string(New) = static_cast<int>(new_memsize);
     strcpy (text_of_growable_string(New), text_of_growable_string(*gs));
     free_memory (thisAgent, *gs, STRING_MEM_USAGE);
     *gs = New;
   }
   strcpy (text_of_growable_string(*gs)+current_length, string_to_add);
-  length_of_growable_string(*gs) = new_length;
+  length_of_growable_string(*gs) = static_cast<int>(new_length);
 }
 
 void free_growable_string (agent* thisAgent, growable_string gs) {

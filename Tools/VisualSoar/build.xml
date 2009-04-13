@@ -49,6 +49,7 @@
       <fileset dir="." includes="VisualSoar.jar"/>
       <fileset dir="../../SoarLibrary/bin" includes="VisualSoar.jar"/>
     </delete>
+    <delete dir="build" />
   </target>
 
 </project>
