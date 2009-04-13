@@ -23,6 +23,7 @@ wrapper_env.Command(python_sml_interface_wrap_target, python_sml_interface_wrap_
 python_sml_interface_py = '#Core/ClientSMLSWIG/Python/Python_sml_ClientInterface.py'
 wrapper_env.SideEffect(python_sml_interface_py, python_sml_interface_wrap_target)
 wrapper_env.Install('#SoarLibrary/lib', python_sml_interface_py)
+wrapper_env.Clean(python_sml_interface_wrap_target, '#SoarLibrary/lib/Python_sml_ClientInterface.pyc')
 #### (end wrapper)
 
 ####
