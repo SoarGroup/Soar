@@ -5140,7 +5140,8 @@ void epmem_respond_to_cmd( agent *my_agent )
 	// (could go in the opposite direction as well)
 	Symbol *state = my_agent->bottom_goal;
 
-	epmem_wme_list *wmes;	
+	epmem_wme_list *wmes;
+	epmem_wme_list *cmds = NIL;
 	epmem_wme_list::iterator w_p;	
 
 	epmem_time_id retrieve;
@@ -5176,7 +5177,6 @@ void epmem_respond_to_cmd( agent *my_agent )
 			
 				// get children of the current identifier
 				wmes = epmem_get_augs_of_id( parent_sym, tc );
-				
 				{
 					for ( w_p=wmes->begin(); w_p!=wmes->end(); w_p++ )
 					{
@@ -5195,7 +5195,14 @@ void epmem_respond_to_cmd( agent *my_agent )
 					}
 					
 					// free space from aug list
-					delete wmes;
+					if ( cmds == NIL )
+					{
+						cmds = wmes;
+					}
+					else
+					{
+						delete wmes;
+					}
 				}
 			}
 
@@ -5232,11 +5239,8 @@ void epmem_respond_to_cmd( agent *my_agent )
 			good_cue = true;
 			path = 0;
 
-			// get all top-level symbols
-			wmes = epmem_get_augs_of_id( state->id.epmem_cmd_header, get_new_tc_number( my_agent ) );
-
 			// process top-level symbols
-			for ( w_p=wmes->begin(); w_p!=wmes->end(); w_p++ )
+			for ( w_p=cmds->begin(); w_p!=cmds->end(); w_p++ )
 			{
 				state->id.epmem_info->cue_wmes->insert( (*w_p) );
 				
@@ -5378,11 +5382,11 @@ void epmem_respond_to_cmd( agent *my_agent )
 			}
 
 			// free prohibit list
-			delete prohibit;
-
-			// free space from aug list
-			delete wmes;
+			delete prohibit;			
 		}
+
+		// free space from command aug list
+		delete cmds;
 
 		state = state->id.higher_goal;
 	}
