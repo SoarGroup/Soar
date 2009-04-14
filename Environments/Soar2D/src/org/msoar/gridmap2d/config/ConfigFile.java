@@ -23,6 +23,7 @@ public class ConfigFile extends ConfigSource {
 
 		Tokenizer t = new Tokenizer(path);
 		parse(t, "");
+		t.close();
 	}
 
 	public ConfigFile() {
@@ -256,6 +257,13 @@ public class ConfigFile extends ConfigSource {
 
 		public Tokenizer(String path) throws IOException {
 			ins = new BufferedReader(new FileReader(path));
+		}
+		
+		public void close() {
+			try {
+				ins.close();
+			} catch (IOException ignored) {
+			}
 		}
 
 		// doesn't support string literals spread across multiple lines.
