@@ -25,6 +25,7 @@
 
 #include <list>
 #include <map>
+#include <queue>
 
 
 //////////////////////////////////////////////////////////
@@ -46,6 +47,7 @@
 
 // storage						smem::storage
 // non-cue-based retrieval		smem::ncb
+// cue-based retrieval			smem::cbr
 
 // initialization				smem::init
 // api							smem::api
@@ -219,6 +221,7 @@ smem_statement_container::smem_statement_container( agent *new_agent ): sqlite_s
 
 	add_structure( "CREATE TABLE IF NOT EXISTS web (parent_id INTEGER, attr INTEGER, val_const INTEGER, val_lti INTEGER)" );
 	add_structure( "CREATE INDEX IF NOT EXISTS web_parent_attr_val_lti ON web (parent_id, attr, val_const, val_lti)" );
+	add_structure( "CREATE INDEX IF NOT EXISTS web_attr_val_lti ON web (attr, val_const, val_lti)" );
 
 	add_structure( "CREATE TABLE IF NOT EXISTS ct_attr (attr INTEGER PRIMARY KEY, ct INTEGER)" );
 
@@ -267,6 +270,12 @@ smem_statement_container::smem_statement_container( agent *new_agent ): sqlite_s
 	lti_get = new sqlite_statement( new_db, "SELECT id FROM lti WHERE letter=? AND num=?" );
 	add( lti_get );
 
+	lti_letter_num = new sqlite_statement( new_db, "SELECT letter, num FROM lti WHERE id=?" );
+	add( lti_letter_num );
+
+	lti_max = new sqlite_statement( new_db, "SELECT letter, MAX(num) FROM lti GROUP BY letter" );
+	add( lti_max );
+
 	//
 
 	web_add = new sqlite_statement( new_db, "INSERT INTO web (parent_id, attr, val_const, val_lti) VALUES (?,?,?,?)" );
@@ -277,6 +286,39 @@ smem_statement_container::smem_statement_container( agent *new_agent ): sqlite_s
 
 	web_expand = new sqlite_statement( new_db, "SELECT tsh_a.sym_const AS attr_const, tsh_a.sym_type AS attr_type, vcl.sym_const AS value_const, vcl.sym_type AS value_type, vcl.letter AS value_letter, vcl.num AS value_num, vcl.val_lti AS value_lti FROM ((web w LEFT JOIN temporal_symbol_hash tsh_v ON w.val_const=tsh_v.id) vc LEFT JOIN lti ON vc.val_lti=lti.id) vcl INNER JOIN temporal_symbol_hash tsh_a ON vcl.attr=tsh_a.id WHERE parent_id=?" );
 	add( web_expand );
+
+	//
+
+	web_attr_ct = new sqlite_statement( new_db, "SELECT attr, COUNT(*) AS ct FROM web WHERE parent_id=? GROUP BY attr" );
+	add( web_attr_ct );
+
+	web_const_ct = new sqlite_statement( new_db, "SELECT attr, val_const, COUNT(*) AS ct FROM web WHERE parent_id=? AND val_const IS NOT NULL GROUP BY attr, val_const" );
+	add( web_const_ct );
+
+	web_lti_ct = new sqlite_statement( new_db, "SELECT attr, val_lti, COUNT(*) AS ct FROM web WHERE parent_id=? AND val_const IS NULL GROUP BY attr, val_const, val_lti" );
+	add( web_lti_ct );
+
+	//
+
+	web_attr_all = new sqlite_statement( new_db, "SELECT parent_id FROM web w INNER JOIN activation a ON w.parent_id=a.lti WHERE attr=? ORDER BY cycle DESC" );
+	add( web_attr_all );
+
+	web_const_all = new sqlite_statement( new_db, "SELECT parent_id FROM web w INNER JOIN activation a ON w.parent_id=a.lti WHERE attr=? AND val_const=? ORDER BY cycle DESC" );
+	add( web_const_all );
+
+	web_lti_all = new sqlite_statement( new_db, "SELECT parent_id FROM web w INNER JOIN activation a ON w.parent_id=a.lti WHERE attr=? AND val_const IS NULL AND val_lti=? ORDER BY cycle DESC" );
+	add( web_lti_all );
+
+	//
+
+	web_attr_child = new sqlite_statement( new_db, "SELECT parent_id FROM web WHERE parent_id=? AND attr=?" );
+	add( web_attr_child );
+
+	web_const_child = new sqlite_statement( new_db, "SELECT parent_id FROM web WHERE parent_id=? AND attr=? AND val_const=?" );
+	add( web_const_child );
+
+	web_lti_child = new sqlite_statement( new_db, "SELECT parent_id FROM web WHERE parent_id=? AND attr=? AND val_const IS NULL AND val_lti=?" );
+	add( web_lti_child );
 
 	//
 
@@ -302,13 +344,13 @@ smem_statement_container::smem_statement_container( agent *new_agent ): sqlite_s
 
 	//
 
-	ct_attr_get = new sqlite_statement( new_db, "SELECT attr, COUNT(*) AS ct FROM web WHERE parent_id=? GROUP BY attr" );
+	ct_attr_get = new sqlite_statement( new_db, "SELECT ct FROM ct_attr WHERE attr=?" );
 	add( ct_attr_get );
 
-	ct_const_get = new sqlite_statement( new_db, "SELECT attr, val_const, COUNT(*) AS ct FROM web WHERE parent_id=? AND val_const IS NOT NULL GROUP BY attr, val_const" );
+	ct_const_get = new sqlite_statement( new_db, "SELECT ct FROM ct_const WHERE attr=? AND val_const=?" );
 	add( ct_const_get );
 
-	ct_lti_get = new sqlite_statement( new_db, "SELECT attr, val_lti, COUNT(*) AS ct FROM web WHERE parent_id=? AND val_const IS NULL GROUP BY attr, val_const, val_lti" );
+	ct_lti_get = new sqlite_statement( new_db, "SELECT ct FROM ct_lti WHERE attr=? AND val_lti=?" );
 	add( ct_lti_get );
 
 	//
@@ -634,6 +676,31 @@ Symbol *smem_lti_make( agent *my_agent, char name_letter, unsigned long name_num
 	return return_val;
 }
 
+void smem_reset_id_counters( agent *my_agent )
+{
+	if ( my_agent->smem_db->get_status() == soar_module::connected )
+	{
+		// letter, max
+		while ( my_agent->smem_stmts->lti_max->execute() == soar_module::row )
+		{
+			unsigned long name_letter = (unsigned long) my_agent->smem_stmts->lti_max->column_int( 0 );
+			unsigned long letter_max = (unsigned long) my_agent->smem_stmts->lti_max->column_int( 1 );
+
+			// shift to alphabet
+			name_letter -= (unsigned long) 'A';
+
+			unsigned long *letter_ct =& my_agent->id_counter[ name_letter ];
+
+			if ( (*letter_ct) <= letter_max )
+			{
+				(*letter_ct) = ( letter_max + 1 );
+			}
+		}
+
+		my_agent->smem_stmts->lti_max->reinitialize();
+	}	
+}
+
 
 //////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////
@@ -646,45 +713,45 @@ void smem_disconnect_chunk( agent *my_agent, smem_lti_id parent_id )
 	// adjust attribute counts
 	{
 		// get all old counts
-		my_agent->smem_stmts->ct_attr_get->bind_int( 1, parent_id );
-		while ( my_agent->smem_stmts->ct_attr_get->execute() == soar_module::row )
+		my_agent->smem_stmts->web_attr_ct->bind_int( 1, parent_id );
+		while ( my_agent->smem_stmts->web_attr_ct->execute() == soar_module::row )
 		{
 			// adjust in opposite direction ( adjust, attribute )
-			my_agent->smem_stmts->ct_attr_update->bind_int( 1, -( my_agent->smem_stmts->ct_attr_get->column_int( 1 ) ) );
-			my_agent->smem_stmts->ct_attr_update->bind_int( 2, my_agent->smem_stmts->ct_attr_get->column_int( 0 ) );
+			my_agent->smem_stmts->ct_attr_update->bind_int( 1, -( my_agent->smem_stmts->web_attr_ct->column_int( 1 ) ) );
+			my_agent->smem_stmts->ct_attr_update->bind_int( 2, my_agent->smem_stmts->web_attr_ct->column_int( 0 ) );
 			my_agent->smem_stmts->ct_attr_update->execute( soar_module::op_reinit );
 		}
-		my_agent->smem_stmts->ct_attr_get->reinitialize();
+		my_agent->smem_stmts->web_attr_ct->reinitialize();
 	}
 
 	// adjust const counts
 	{
 		// get all old counts
-		my_agent->smem_stmts->ct_const_get->bind_int( 1, parent_id );
-		while ( my_agent->smem_stmts->ct_const_get->execute() == soar_module::row )
+		my_agent->smem_stmts->web_const_ct->bind_int( 1, parent_id );
+		while ( my_agent->smem_stmts->web_const_ct->execute() == soar_module::row )
 		{
 			// adjust in opposite direction ( adjust, attribute, const )
-			my_agent->smem_stmts->ct_const_update->bind_int( 1, -( my_agent->smem_stmts->ct_const_get->column_int( 2 ) ) );
-			my_agent->smem_stmts->ct_const_update->bind_int( 2, my_agent->smem_stmts->ct_const_get->column_int( 0 ) );
-			my_agent->smem_stmts->ct_const_update->bind_int( 3, my_agent->smem_stmts->ct_const_get->column_int( 1 ) );
+			my_agent->smem_stmts->ct_const_update->bind_int( 1, -( my_agent->smem_stmts->web_const_ct->column_int( 2 ) ) );
+			my_agent->smem_stmts->ct_const_update->bind_int( 2, my_agent->smem_stmts->web_const_ct->column_int( 0 ) );
+			my_agent->smem_stmts->ct_const_update->bind_int( 3, my_agent->smem_stmts->web_const_ct->column_int( 1 ) );
 			my_agent->smem_stmts->ct_const_update->execute( soar_module::op_reinit );
 		}
-		my_agent->smem_stmts->ct_const_get->reinitialize();
+		my_agent->smem_stmts->web_const_ct->reinitialize();
 	}
 
 	// adjust lti counts
 	{
 		// get all old counts
-		my_agent->smem_stmts->ct_lti_get->bind_int( 1, parent_id );
-		while ( my_agent->smem_stmts->ct_lti_get->execute() == soar_module::row )
+		my_agent->smem_stmts->web_lti_ct->bind_int( 1, parent_id );
+		while ( my_agent->smem_stmts->web_lti_ct->execute() == soar_module::row )
 		{
 			// adjust in opposite direction ( adjust, attribute, lti )
-			my_agent->smem_stmts->ct_lti_update->bind_int( 1, -( my_agent->smem_stmts->ct_lti_get->column_int( 2 ) ) );
-			my_agent->smem_stmts->ct_lti_update->bind_int( 2, my_agent->smem_stmts->ct_lti_get->column_int( 0 ) );
-			my_agent->smem_stmts->ct_lti_update->bind_int( 3, my_agent->smem_stmts->ct_lti_get->column_int( 1 ) );
+			my_agent->smem_stmts->ct_lti_update->bind_int( 1, -( my_agent->smem_stmts->web_lti_ct->column_int( 2 ) ) );
+			my_agent->smem_stmts->ct_lti_update->bind_int( 2, my_agent->smem_stmts->web_lti_ct->column_int( 0 ) );
+			my_agent->smem_stmts->ct_lti_update->bind_int( 3, my_agent->smem_stmts->web_lti_ct->column_int( 1 ) );
 			my_agent->smem_stmts->ct_lti_update->execute( soar_module::op_reinit );
 		}
-		my_agent->smem_stmts->ct_lti_get->reinitialize();
+		my_agent->smem_stmts->web_lti_ct->reinitialize();
 	}
 
 	// disconnect
@@ -855,7 +922,7 @@ void smem_store( agent *my_agent, Symbol *id, smem_storage_type store_type = sto
 //////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////
 
-void smem_install_memory( agent *my_agent, Symbol *state, Symbol *lti )
+void smem_install_memory( agent *my_agent, Symbol *state, smem_lti_id parent_id, Symbol *lti = NIL )
 {
 	////////////////////////////////////////////////////////////////////////////
 	my_agent->smem_timers->ncb_retrieval->start();
@@ -863,65 +930,323 @@ void smem_install_memory( agent *my_agent, Symbol *state, Symbol *lti )
 
 	// get the ^result header for this state
 	Symbol *result_header = state->id.smem_result_header;
-	
-	if ( lti->id.smem_lti == NIL )
+
+	// get identifier if not known
+	if ( lti == NIL )
 	{
-		smem_add_meta_wme( my_agent, state, result_header, my_agent->smem_sym_status, my_agent->smem_sym_failure );
+		sqlite_statement *q = my_agent->smem_stmts->lti_letter_num;
+		
+		q->bind_int( 1, parent_id );
+		q->execute();
+
+		lti = smem_lti_make( my_agent, (char) q->column_int( 0 ), (unsigned long) q->column_int( 1 ), result_header->id.level );
+
+		q->reinitialize();
 	}
-	else
+	
+	// activate lti
+	smem_lti_activate( my_agent, parent_id );
+
+	// point retrieved to lti
+	smem_add_meta_wme( my_agent, state, result_header, my_agent->smem_sym_retrieved, lti );	
+
+	// if no children, then retrieve children
+	if ( ( lti->id.impasse_wmes == NIL ) && 
+		 ( lti->id.input_wmes == NIL ) &&
+		 ( lti->id.slots == NIL ) )
 	{
-		smem_lti_id parent_id = lti->id.smem_lti;
-
-		// activate lti
-		smem_lti_activate( my_agent, parent_id );
-
-		// point retrieved
-		smem_add_meta_wme( my_agent, state, result_header, my_agent->smem_sym_retrieved, lti );
-
-		// success
-		smem_add_meta_wme( my_agent, state, result_header, my_agent->smem_sym_status, my_agent->smem_sym_success );
-
-		// if no children, then retrieve children
-		if ( ( lti->id.impasse_wmes == NIL ) && 
-			 ( lti->id.input_wmes == NIL ) &&
-			 ( lti->id.slots == NIL ) )
+		sqlite_statement *expand_q = my_agent->smem_stmts->web_expand;
+		Symbol *attr_sym;
+		Symbol *value_sym;
+		
+		// get direct children: attr_const, attr_type, value_const, value_type, value_letter, value_num, value_lti
+		expand_q->bind_int( 1, parent_id );
+		while ( expand_q->execute() == soar_module::row )
 		{
-			sqlite_statement *expand_q = my_agent->smem_stmts->web_expand;
-			Symbol *attr_sym;
-			Symbol *value_sym;
+			// make the identifier symbol irrespective of value type
+			attr_sym = smem_statement_to_symbol( my_agent, expand_q, 1, 0 );				
 			
-			// get direct children: attr_const, attr_type, value_const, value_type, value_letter, value_num, value_lti
-			expand_q->bind_int( 1, parent_id );
-			while ( expand_q->execute() == soar_module::row )
+			// identifier vs. constant
+			if ( my_agent->smem_stmts->web_expand->column_type( 2 ) == soar_module::null_t )
 			{
-				// make the identifier symbol irrespective of value type
-				attr_sym = smem_statement_to_symbol( my_agent, expand_q, 1, 0 );				
-				
-				// identifier vs. constant
-				if ( my_agent->smem_stmts->web_expand->column_type( 2 ) == soar_module::null_t )
-				{
-					value_sym = smem_lti_make( my_agent, (char) expand_q->column_int( 4 ), (unsigned long) expand_q->column_int( 5 ), lti->id.level );
-					value_sym->id.smem_lti = expand_q->column_int( 6 );					
-				}
-				else
-				{
-					value_sym = smem_statement_to_symbol( my_agent, expand_q, 3, 2 );					
-				}
-
-				// add wme
-				smem_add_retrieved_wme( my_agent, state, lti, attr_sym, value_sym );
-
-				// deal with ref counts
-				symbol_remove_ref( my_agent, attr_sym );
-				symbol_remove_ref( my_agent, value_sym );
+				value_sym = smem_lti_make( my_agent, (char) expand_q->column_int( 4 ), (unsigned long) expand_q->column_int( 5 ), lti->id.level );
+				value_sym->id.smem_lti = expand_q->column_int( 6 );					
 			}
-			expand_q->reinitialize();
+			else
+			{
+				value_sym = smem_statement_to_symbol( my_agent, expand_q, 3, 2 );					
+			}
+
+			// add wme
+			smem_add_retrieved_wme( my_agent, state, lti, attr_sym, value_sym );
+
+			// deal with ref counts
+			symbol_remove_ref( my_agent, attr_sym );
+			symbol_remove_ref( my_agent, value_sym );
 		}
+		expand_q->reinitialize();
 	}
 
 	////////////////////////////////////////////////////////////////////////////
 	my_agent->smem_timers->ncb_retrieval->stop();
 	////////////////////////////////////////////////////////////////////////////
+}
+
+
+//////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////
+// Cue-Based Retrieval Functions (smem::cbr)
+//////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////
+
+void smem_process_query( agent *my_agent, Symbol *state, Symbol *query, smem_lti_set *prohibit )
+{
+	smem_wme_list *cue;
+	smem_weighted_cue weighted_cue;
+	smem_weighted_cue_element *new_cue_element;
+	bool good_cue;
+
+	sqlite_statement *q = NULL;
+
+	smem_lti_id king_id = NIL;
+	
+	////////////////////////////////////////////////////////////////////////////
+	my_agent->smem_timers->query->start();
+	////////////////////////////////////////////////////////////////////////////
+
+	cue = smem_get_direct_augs_of_id( query );
+	good_cue = true;
+
+	// prepare query stats	
+	{
+		smem_wme_list::iterator cue_p;
+
+		long attr_hash;
+		long value_hash;
+		smem_lti_id value_lti;
+		smem_cue_element_type element_type = attr_t;
+
+		wme *w;
+
+		for ( cue_p=cue->begin(); cue_p!=cue->end(); cue_p++ )
+		{
+			w = (*cue_p);
+
+			state->id.smem_info->cue_wmes->insert( w );
+
+			if ( good_cue )
+			{			
+				// we only have to do hard work if 
+				attr_hash = smem_temporal_hash( my_agent, w->attr, false );
+				if ( attr_hash != NIL )
+				{
+					if ( smem_symbol_is_constant( w->value ) )
+					{
+						value_lti = NIL;
+						value_hash = smem_temporal_hash( my_agent, w->value, false );
+
+						if ( value_hash != NIL )
+						{
+							q = my_agent->smem_stmts->ct_const_get;
+							q->bind_int( 1, attr_hash );
+							q->bind_int( 2, value_hash );
+
+							element_type = value_const_t;
+						}
+						else
+						{
+							good_cue = false;							
+						}
+					}
+					else
+					{
+						value_lti = w->value->id.smem_lti;
+						value_hash = NIL;
+						
+						if ( value_lti == NIL )
+						{
+							q = my_agent->smem_stmts->ct_attr_get;
+							q->bind_int( 1, attr_hash );
+
+							element_type = attr_t;
+						}
+						else
+						{					
+							q = my_agent->smem_stmts->ct_lti_get;
+							q->bind_int( 1, attr_hash );
+							q->bind_int( 2, value_lti );
+
+							element_type = value_lti_t;
+						}
+					}
+
+					if ( q->execute() == soar_module::row )
+					{
+						new_cue_element = new smem_weighted_cue_element;
+						
+						new_cue_element->weight = q->column_int( 0 );
+						new_cue_element->attr_hash = attr_hash;
+						new_cue_element->value_hash = value_hash;
+						new_cue_element->value_lti = value_lti;
+						new_cue_element->cue_element = w;
+
+						new_cue_element->element_type = element_type;
+
+						weighted_cue.push( new_cue_element );
+						new_cue_element = NULL;						
+					}
+					else
+					{
+						good_cue = false;
+					}
+
+					q->reinitialize();
+				}
+				else
+				{
+					good_cue = false;					
+				}
+			}
+		}
+	}
+
+	// perform search only if necessary
+	if ( good_cue && !weighted_cue.empty() )
+	{		
+		smem_lti_list candidates;		
+		smem_lti_list::iterator cand_p;	
+
+		// get initial candidate list (most restrictive, minus prohibitions)
+		{		
+			smem_lti_set::iterator prohibit_p;
+			smem_lti_id cand;
+
+			// get most restrictive cue element
+			new_cue_element = weighted_cue.top();
+			weighted_cue.pop();
+			
+			if ( new_cue_element->element_type == attr_t )
+			{
+				// attr=?
+				q = my_agent->smem_stmts->web_attr_all;				
+			}
+			else if ( new_cue_element->element_type == value_const_t )
+			{
+				// attr=? AND val_const=?
+				q = my_agent->smem_stmts->web_const_all;				
+				q->bind_int( 2, new_cue_element->value_hash );
+			}
+			else if ( new_cue_element->element_type == value_lti_t )
+			{
+				// attr=? AND val_lti=?
+				q = my_agent->smem_stmts->web_lti_all;
+				q->bind_int( 1, new_cue_element->attr_hash );				
+			}
+
+			// all require hash as first parameter
+			q->bind_int( 1, new_cue_element->attr_hash );
+			while ( q->execute() == soar_module::row )
+			{
+				cand = q->column_int( 0 );
+
+				prohibit_p = prohibit->find( cand );
+				if ( prohibit_p == prohibit->end() )
+				{
+					candidates.push_back( cand );
+				}
+			}
+			q->reinitialize();
+
+			delete new_cue_element;
+		}
+
+		// proceed through remainder of cue
+		while ( !candidates.empty() && !weighted_cue.empty() )
+		{
+			new_cue_element = weighted_cue.top();
+			weighted_cue.pop();
+
+			if ( new_cue_element->element_type == attr_t )
+			{
+				// parent=? AND attr=?
+				q = my_agent->smem_stmts->web_attr_child;				
+			}
+			else if ( new_cue_element->element_type == value_const_t )
+			{
+				// parent=? AND attr=? AND val_const=?
+				q = my_agent->smem_stmts->web_const_child;				
+				q->bind_int( 3, new_cue_element->value_hash );
+			}
+			else if ( new_cue_element->element_type == value_lti_t )
+			{
+				// parent=? AND attr=? AND val_lti=?
+				q = my_agent->smem_stmts->web_lti_child;				
+				q->bind_int( 3, new_cue_element->value_lti );
+			}
+
+			// all require attribute
+			q->bind_int( 2, new_cue_element->attr_hash );
+
+			// iterate over remaining candidates, submit each to the cue element
+			cand_p = candidates.begin();
+			do
+			{				
+				// all require their own id for child search
+				q->bind_int( 1, (*cand_p) );
+
+				if ( q->execute( soar_module::op_reinit ) != soar_module::row )
+				{
+					cand_p = candidates.erase( cand_p );
+				}
+				else
+				{
+					cand_p++;
+				}
+			} while ( cand_p != candidates.end() );	
+			
+			// de-allocate cue element
+			delete new_cue_element;
+		}
+
+		// if candidates left, front is winner
+		if ( !candidates.empty() )
+		{
+			king_id = candidates.front();
+		}
+	}
+
+	// clean cue
+	delete cue;
+
+	// clean weighted cue remnants
+	while ( !weighted_cue.empty() )
+	{
+		new_cue_element = weighted_cue.top();
+		weighted_cue.pop();
+
+		delete new_cue_element;
+	}
+
+	// produce results
+	if ( king_id != NIL )
+	{
+		// success!
+		smem_add_meta_wme( my_agent, state, state->id.smem_result_header, my_agent->smem_sym_status, my_agent->smem_sym_success );
+		
+		////////////////////////////////////////////////////////////////////////////
+		my_agent->smem_timers->query->stop();
+		////////////////////////////////////////////////////////////////////////////
+
+		smem_install_memory( my_agent, state, king_id );
+	}
+	else
+	{
+		smem_add_meta_wme( my_agent, state, state->id.smem_result_header, my_agent->smem_sym_status, my_agent->smem_sym_failure );
+
+		////////////////////////////////////////////////////////////////////////////
+		my_agent->smem_timers->query->stop();
+		////////////////////////////////////////////////////////////////////////////
+	}
 }
 
 
@@ -997,6 +1322,11 @@ void smem_init_db( agent *my_agent, bool readonly )
 		my_agent->smem_stmts->structure();
 		my_agent->smem_stmts->prepare();
 
+		// reset identifier counters
+		smem_reset_id_counters( my_agent );
+
+		my_agent->smem_stmts->begin->execute( soar_module::op_reinit );
+
 		if ( !readonly )
 		{
 			// reset lti activation
@@ -1015,12 +1345,14 @@ void smem_init_db( agent *my_agent, bool readonly )
 					temp_q->prepare();
 					temp_q->bind_int( 1, ( cycle_min - 1 ) );
 					temp_q->execute();
-				}			
+				}
 				
 				delete temp_q;
 				temp_q = NULL;
 			}
 		}
+
+		my_agent->smem_stmts->commit->execute( soar_module::op_reinit );
 	}
 
 	////////////////////////////////////////////////////////////////////////////
@@ -1069,7 +1401,7 @@ void smem_respond_to_cmd( agent *my_agent )
 
 	Symbol *query;
 	Symbol *retrieve;	
-	smem_lti_list *prohibit;
+	smem_lti_set *prohibit;
 	smem_sym_list *store;
 	
 	enum path_type { blank_slate, cmd_bad, cmd_retrieve, cmd_query, cmd_store } path;
@@ -1156,7 +1488,7 @@ void smem_respond_to_cmd( agent *my_agent )
 			// initialize command vars
 			retrieve = NIL;			
 			query = NIL;
-			prohibit = new smem_lti_list;
+			prohibit = new smem_lti_set;
 			store = new smem_sym_list;
 			path = blank_slate;			
 
@@ -1202,7 +1534,7 @@ void smem_respond_to_cmd( agent *my_agent )
 							 ( ( path == blank_slate ) || ( path == cmd_query ) ) &&
 							 ( (*w_p)->value->id.smem_lti != NIL ) )
 						{
-							prohibit->push_back( (*w_p)->value->id.smem_lti );
+							prohibit->insert( (*w_p)->value->id.smem_lti );
 							path = cmd_query;
 						}
 						else
@@ -1256,13 +1588,25 @@ void smem_respond_to_cmd( agent *my_agent )
 				
 					// retrieve
 					if ( path == cmd_retrieve )
-					{
-						smem_install_memory( my_agent, state, retrieve );
+					{						
+						if ( retrieve->id.smem_lti == NIL )
+						{
+							// retrieve is not pointing to an lti!
+							smem_add_meta_wme( my_agent, state, state->id.smem_result_header, my_agent->smem_sym_status, my_agent->smem_sym_failure );
+						}
+						else
+						{
+							// status: success
+							smem_add_meta_wme( my_agent, state, state->id.smem_result_header, my_agent->smem_sym_status, my_agent->smem_sym_success );
+							
+							// install memory directly onto the retrieve identifier
+							smem_install_memory( my_agent, state, retrieve->id.smem_lti, retrieve );
+						}					
 					}				
 					// query
 					else if ( path == cmd_query )
 					{
-						//epmem_process_query( my_agent, state, query, neg_query, prohibit, before, after );
+						smem_process_query( my_agent, state, query, prohibit );						
 					}
 					else if ( path == cmd_store )
 					{

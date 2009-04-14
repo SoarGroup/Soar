@@ -19,6 +19,7 @@
 #include <set>
 #include <list>
 #include <vector>
+#include <queue>
 
 #include "soar_module.h"
 #include "soar_db.h"
@@ -166,10 +167,24 @@ class smem_statement_container: public sqlite_statement_container
 
 		sqlite_statement *lti_add;
 		sqlite_statement *lti_get;
+		sqlite_statement *lti_letter_num;
+		sqlite_statement *lti_max;
 
 		sqlite_statement *web_add;
 		sqlite_statement *web_truncate;
 		sqlite_statement *web_expand;
+
+		sqlite_statement *web_attr_ct;
+		sqlite_statement *web_const_ct;
+		sqlite_statement *web_lti_ct;
+
+		sqlite_statement *web_attr_all;
+		sqlite_statement *web_const_all;
+		sqlite_statement *web_lti_all;
+
+		sqlite_statement *web_attr_child;
+		sqlite_statement *web_const_child;
+		sqlite_statement *web_lti_child;
 
 		sqlite_statement *ct_attr_add;
 		sqlite_statement *ct_const_add;
@@ -210,8 +225,9 @@ typedef unsigned long smem_lti_id;
 // represents an activation cycle
 typedef unsigned long smem_activation_cycle;
 
-// represents a vector of long-term identifiers
-typedef std::vector<smem_lti_id> smem_lti_list;
+// represents a collection of long-term identifiers
+typedef std::list<smem_lti_id> smem_lti_list;
+typedef std::set<smem_lti_id> smem_lti_set;
 
 // a list of symbols
 typedef std::list<Symbol *> smem_sym_list;
@@ -232,13 +248,41 @@ typedef struct smem_data_struct
 	std::stack<wme *> *smem_wmes;	// wmes in last smem
 } smem_data;
 
+//
+
+enum smem_cue_element_type { attr_t, value_const_t, value_lti_t };
+
+typedef struct smem_weighted_cue_element_struct
+{
+	unsigned long weight;
+	
+	struct wme_struct *cue_element;
+	long attr_hash;
+	long value_hash;
+	smem_lti_id value_lti;
+
+	smem_cue_element_type element_type;
+
+} smem_weighted_cue_element;
+
+struct smem_compare_weighted_cue_elements
+{
+	bool operator() ( const smem_weighted_cue_element *a, const smem_weighted_cue_element *b ) const
+	{
+		return ( a->weight > b->weight );
+	}
+};
+
+typedef std::priority_queue<smem_weighted_cue_element *, std::vector<smem_weighted_cue_element *>, smem_compare_weighted_cue_elements> smem_weighted_cue;
+
 
 //////////////////////////////////////////////////////////
 // Soar Functions (see cpp for comments)
 //////////////////////////////////////////////////////////
 
-inline extern bool smem_enabled( agent *my_agent );
+extern inline bool smem_enabled( agent *my_agent );
 
+extern void smem_reset_id_counters( agent *my_agent );
 extern void smem_init_db( agent *my_agent, bool readonly = false );
 extern void smem_close( agent *my_agent );
 

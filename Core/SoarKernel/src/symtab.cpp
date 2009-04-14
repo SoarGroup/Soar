@@ -171,8 +171,6 @@ inline unsigned long get_next_symbol_hash_id(agent* thisAgent)
 }
 
 void init_symbol_tables (agent* thisAgent) {
-  int i;
-
   thisAgent->variable_hash_table = make_hash_table (thisAgent, 0, hash_variable);
   thisAgent->identifier_hash_table = make_hash_table (thisAgent, 0, hash_identifier);
   thisAgent->sym_constant_hash_table = make_hash_table (thisAgent, 0, hash_sym_constant);
@@ -186,7 +184,7 @@ void init_symbol_tables (agent* thisAgent) {
   init_memory_pool (thisAgent, &thisAgent->float_constant_pool, sizeof(float_constant),
                     "float constant");
 
-  for (i=0; i<26; i++) thisAgent->id_counter[i]=1;
+  reset_id_counters( thisAgent );
 }
 
 /* -------------------------------------------------------------------
@@ -552,7 +550,13 @@ bool reset_id_counters (agent* thisAgent) {
 
     return false;
   }
-  for (i=0; i<26; i++) thisAgent->id_counter[i]=1;  
+  for (i=0; i<26; i++) thisAgent->id_counter[i]=1;
+  
+  if ( smem_enabled( thisAgent ) )
+  {
+	smem_reset_id_counters( thisAgent );
+  }
+
   return true ;
 }
 
