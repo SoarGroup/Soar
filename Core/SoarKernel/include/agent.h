@@ -320,9 +320,20 @@ typedef struct agent_struct {
   Symbol			* epmem_sym_prohibit;
 
 
-  Symbol            * smem_symbol;
-  Symbol            * smem_cmd_symbol;
-  Symbol            * smem_result_symbol;
+  Symbol            * smem_sym;
+  Symbol            * smem_sym_cmd;
+  Symbol            * smem_sym_result;
+
+  Symbol			* smem_sym_retrieved;
+  Symbol			* smem_sym_status;
+  Symbol			* smem_sym_success;
+  Symbol			* smem_sym_failure;
+  Symbol			* smem_sym_bad_cmd;
+
+  Symbol			* smem_sym_retrieve;
+  Symbol			* smem_sym_query;
+  Symbol			* smem_sym_prohibit;
+  Symbol			* smem_sym_store;
 
 
   /* ----------------------- Symbol table stuff -------------------------- */
@@ -870,8 +881,9 @@ kernel time and total_cpu_time greater than the derived total CPU time. REW */
 
   soar_module::sqlite_database *smem_db;
   smem_statement_container *smem_stmts;
-  bool smem_first_switch;
 
+  long smem_validation;
+  bool smem_first_switch;
 
 
   // JRV: Added to support XML management inside Soar

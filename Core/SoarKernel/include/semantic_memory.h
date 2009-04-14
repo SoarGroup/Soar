@@ -17,11 +17,25 @@
 
 #include <stack>
 #include <set>
+#include <list>
+#include <vector>
 
 #include "soar_module.h"
 #include "soar_db.h"
 
 using namespace soar_module;
+
+
+//////////////////////////////////////////////////////////
+// SMem Experimentation
+//
+// If defined, we hijack the main SMem function
+// for tight-loop experimentation/timing.
+//
+//////////////////////////////////////////////////////////
+
+//#define SMEM_EXPERIMENT
+
 
 //////////////////////////////////////////////////////////
 // SMem Parameters
@@ -36,8 +50,7 @@ class smem_param_container: public param_container
 
 		boolean_param *learning;
 		constant_param<db_choices> *database;
-		smem_path_param *path;
-		integer_param *commit;
+		smem_path_param *path;		
 		
 		constant_param<timer::timer_level> *timers;
 
@@ -73,8 +86,6 @@ class smem_mem_high_stat;
 class smem_stat_container: public stat_container
 {
 	public:
-		integer_stat *next_id;
-
 		smem_mem_usage_stat *mem_usage;
 		smem_mem_high_stat *mem_high;
 
@@ -116,9 +127,7 @@ class smem_timer_container: public timer_container
 		timer *ncb_retrieval;
 		timer *query;
 		timer *api;		
-		timer *init;
-		timer *next;
-		timer *prev;
+		timer *init;		
 		timer *hash;
 
 		smem_timer_container( agent *my_agent );
@@ -155,13 +164,63 @@ class smem_statement_container: public sqlite_statement_container
 		sqlite_statement *hash_get;
 		sqlite_statement *hash_add;
 
+		sqlite_statement *lti_add;
+		sqlite_statement *lti_get;
+
+		sqlite_statement *web_add;
+		sqlite_statement *web_truncate;
+		sqlite_statement *web_expand;
+
+		sqlite_statement *ct_attr_add;
+		sqlite_statement *ct_const_add;
+		sqlite_statement *ct_lti_add;
+
+		sqlite_statement *ct_attr_update;
+		sqlite_statement *ct_const_update;
+		sqlite_statement *ct_lti_update;
+
+		sqlite_statement *ct_attr_get;
+		sqlite_statement *ct_const_get;
+		sqlite_statement *ct_lti_get;
+
+		sqlite_statement *act_set;
+
 		smem_statement_container( agent *new_agent );
+};
+
+
+//////////////////////////////////////////////////////////
+// Soar Constants
+//////////////////////////////////////////////////////////
+
+enum smem_variable_key
+{
+	var_stuff
 };
 
 
 //////////////////////////////////////////////////////////
 // Soar Integration Types
 //////////////////////////////////////////////////////////
+
+// represents the unique identification of a
+// long-term identifier
+typedef unsigned long smem_lti_id;
+
+// represents an activation cycle
+typedef unsigned long smem_activation_cycle;
+
+// represents a vector of long-term identifiers
+typedef std::vector<smem_lti_id> smem_lti_list;
+
+// a list of symbols
+typedef std::list<Symbol *> smem_sym_list;
+
+// ways to store an identifier
+enum smem_storage_type { store_level, store_recursive };
+
+// represents a list of wmes
+typedef std::list<wme *> smem_wme_list;
 
 // data associated with each state
 typedef struct smem_data_struct
@@ -173,5 +232,17 @@ typedef struct smem_data_struct
 	std::stack<wme *> *smem_wmes;	// wmes in last smem
 } smem_data;
 
+
+//////////////////////////////////////////////////////////
+// Soar Functions (see cpp for comments)
+//////////////////////////////////////////////////////////
+
+inline extern bool smem_enabled( agent *my_agent );
+
+extern void smem_init_db( agent *my_agent, bool readonly = false );
+extern void smem_close( agent *my_agent );
+
+// perform smem actions
+extern void smem_go( agent *my_agent );
 
 #endif

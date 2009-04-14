@@ -149,6 +149,7 @@ typedef struct dl_cons_struct dl_cons;
 typedef cons list;
 
 typedef unsigned long epmem_node_id;
+typedef unsigned long smem_lti_id;
 
 /* WARNING:  In the following structure, next_in_hash_table MUST be the
    first field.  This field is used by the resizable hash table routines. */
@@ -166,6 +167,9 @@ typedef struct symbol_common_data_struct {
 
   long epmem_hash;
   long epmem_valid;
+
+  long smem_hash;
+  long smem_valid;
 } symbol_common_data;
 
 /* WARNING:  In the following structures (the five kinds of symbols),
@@ -265,6 +269,8 @@ typedef struct identifier_struct {
   int depth; /* used to track depth of print (bug 988) RPM 4/07 */
 
   epmem_node_id epmem_id;
+
+  smem_lti_id smem_lti;
 } identifier;
 
 typedef union symbol_union {
@@ -348,7 +354,7 @@ extern Symbol *make_variable (agent* thisAgent, const char *name);
 extern Symbol *make_sym_constant (agent* thisAgent, char const *name);
 extern Symbol *make_int_constant (agent* thisAgent, long value);
 extern Symbol *make_float_constant (agent* thisAgent, double value);
-extern Symbol *make_new_identifier (agent* thisAgent, char name_letter, goal_stack_level level);
+extern Symbol *make_new_identifier (agent* thisAgent, char name_letter, goal_stack_level level, unsigned long name_number = NIL);
 
 extern void deallocate_symbol (agent* thisAgent, Symbol *sym);
 

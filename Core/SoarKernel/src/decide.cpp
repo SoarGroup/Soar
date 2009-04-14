@@ -1272,11 +1272,11 @@ Symbol *create_new_impasse (agent* thisAgent, Bool isa_goal, Symbol *object, Sym
 	soar_module::add_module_wme( thisAgent, id->id.epmem_header, thisAgent->epmem_sym_result, id->id.epmem_result_header );
 
 	id->id.smem_header = make_new_identifier( thisAgent, 'S', level );		
-	soar_module::add_module_wme( thisAgent, id, thisAgent->smem_symbol, id->id.smem_header );
+	soar_module::add_module_wme( thisAgent, id, thisAgent->smem_sym, id->id.smem_header );
 	id->id.smem_cmd_header = make_new_identifier( thisAgent, 'C', level );
-	soar_module::add_module_wme( thisAgent, id->id.smem_header, thisAgent->smem_cmd_symbol, id->id.smem_cmd_header );	
+	soar_module::add_module_wme( thisAgent, id->id.smem_header, thisAgent->smem_sym_cmd, id->id.smem_cmd_header );	
 	id->id.smem_result_header = make_new_identifier( thisAgent, 'R', level );
-	soar_module::add_module_wme( thisAgent, id->id.smem_header, thisAgent->smem_result_symbol, id->id.smem_result_header );
+	soar_module::add_module_wme( thisAgent, id->id.smem_header, thisAgent->smem_sym_result, id->id.smem_result_header );
 
   }
   else
