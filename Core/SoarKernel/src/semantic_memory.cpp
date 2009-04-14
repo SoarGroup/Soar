@@ -771,8 +771,8 @@ void smem_store_chunk( agent *my_agent, smem_lti_id parent_id, smem_wme_list *ch
 	smem_lti_id value_lti = NULL;
 
 	std::map<long, unsigned long> attr_ct_adjust;
-	std::map<long, std::map<long, unsigned long>> const_ct_adjust;
-	std::map<long, std::map<smem_lti_id, unsigned long>> lti_ct_adjust;
+	std::map<long, std::map<long, unsigned long> > const_ct_adjust;
+	std::map<long, std::map<smem_lti_id, unsigned long> > lti_ct_adjust;
 	
 	// clear web, adjust counts
 	smem_disconnect_chunk( my_agent, parent_id );
@@ -835,7 +835,7 @@ void smem_store_chunk( agent *my_agent, smem_lti_id parent_id, smem_wme_list *ch
 
 	// update constant counts
 	{
-		std::map<long, std::map<long, unsigned long>>::iterator p1;
+		std::map<long, std::map<long, unsigned long> >::iterator p1;
 		std::map<long, unsigned long>::iterator p2;
 
 		for ( p1=const_ct_adjust.begin(); p1!=const_ct_adjust.end(); p1++ )
@@ -858,7 +858,7 @@ void smem_store_chunk( agent *my_agent, smem_lti_id parent_id, smem_wme_list *ch
 
 	// update lti counts
 	{
-		std::map<long, std::map<smem_lti_id, unsigned long>>::iterator p1;
+		std::map<long, std::map<smem_lti_id, unsigned long> >::iterator p1;
 		std::map<smem_lti_id, unsigned long>::iterator p2;
 
 		for ( p1=lti_ct_adjust.begin(); p1!=lti_ct_adjust.end(); p1++ )
