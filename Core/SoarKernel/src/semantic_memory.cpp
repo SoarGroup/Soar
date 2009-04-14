@@ -1064,7 +1064,7 @@ void smem_respond_to_cmd( agent *my_agent )
 	Symbol *state = my_agent->bottom_goal;
 
 	smem_wme_list *wmes;
-	smem_wme_list *cmds = NIL;
+	smem_wme_list *cmds;
 	smem_wme_list::iterator w_p;	
 
 	Symbol *query;
@@ -1086,6 +1086,7 @@ void smem_respond_to_cmd( agent *my_agent )
 		// make sure this state has had some sort of change to the cmd
 		new_cue = false;
 		wme_count = 0;
+		cmds = NIL;
 		{			
 			int tc = get_new_tc_number( my_agent );
 			std::queue<Symbol *> syms;
