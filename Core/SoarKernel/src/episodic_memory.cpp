@@ -5137,7 +5137,7 @@ void epmem_respond_to_cmd( agent *my_agent )
 	Symbol *state = my_agent->bottom_goal;
 
 	epmem_wme_list *wmes;
-	epmem_wme_list *cmds = NIL;
+	epmem_wme_list *cmds;
 	epmem_wme_list::iterator w_p;	
 
 	epmem_time_id retrieve;
@@ -5161,6 +5161,7 @@ void epmem_respond_to_cmd( agent *my_agent )
 		// make sure this state has had some sort of change to the cmd
 		new_cue = false;
 		wme_count = 0;
+		cmds = NULL;
 		{			
 			int tc = get_new_tc_number( my_agent );
 			std::queue<Symbol *> syms;
@@ -5392,7 +5393,8 @@ void epmem_respond_to_cmd( agent *my_agent )
 		}
 
 		// free space from command aug list
-		delete cmds;
+		if ( cmds )
+			delete cmds;
 
 		state = state->id.higher_goal;
 	}
