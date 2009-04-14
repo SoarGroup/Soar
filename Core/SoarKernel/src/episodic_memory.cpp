@@ -5132,10 +5132,6 @@ void epmem_respond_to_cmd( agent *my_agent )
 	if ( my_agent->epmem_db->get_status() != soar_module::connected )
 		return;
 
-	////////////////////////////////////////////////////////////////////////////
-	my_agent->epmem_timers->api->start();
-	////////////////////////////////////////////////////////////////////////////
-
 	// start at the bottom and work our way up
 	// (could go in the opposite direction as well)
 	Symbol *state = my_agent->bottom_goal;
@@ -5158,6 +5154,10 @@ void epmem_respond_to_cmd( agent *my_agent )
 
 	while ( state != NULL )
 	{
+		////////////////////////////////////////////////////////////////////////////
+		my_agent->epmem_timers->api->start();
+		////////////////////////////////////////////////////////////////////////////
+		
 		// make sure this state has had some sort of change to the cmd
 		new_cue = false;
 		wme_count = 0;
@@ -5383,6 +5383,12 @@ void epmem_respond_to_cmd( agent *my_agent )
 
 			// free prohibit list
 			delete prohibit;			
+		}
+		else
+		{
+			////////////////////////////////////////////////////////////////////////////
+			my_agent->epmem_timers->api->stop();
+			////////////////////////////////////////////////////////////////////////////
 		}
 
 		// free space from command aug list
