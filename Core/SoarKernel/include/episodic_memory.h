@@ -41,7 +41,6 @@ using namespace soar_module;
 // EpMem Constants
 //////////////////////////////////////////////////////////
 
-// variables (rit vars must be same as stat versions)
 enum epmem_variable_key
 {
 	var_rit_offset_1, var_rit_leftroot_1, var_rit_rightroot_1, var_rit_minstep_1,
