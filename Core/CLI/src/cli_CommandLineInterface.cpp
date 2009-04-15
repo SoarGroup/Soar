@@ -43,7 +43,6 @@ EXPORT CommandLineInterface::CommandLineInterface() {
 	// Map command names to processing function pointers
 	m_CommandMap[Commands::kCLIAddWME]						= &cli::CommandLineInterface::ParseAddWME;
 	m_CommandMap[Commands::kCLIAlias]						= &cli::CommandLineInterface::ParseAlias;
-	m_CommandMap[Commands::kCLIAttributePreferencesMode]	= &cli::CommandLineInterface::ParseAttributePreferencesMode;
 	m_CommandMap[Commands::kCLICaptureInput]				= &cli::CommandLineInterface::ParseCaptureInput;
 	m_CommandMap[Commands::kCLICD]							= &cli::CommandLineInterface::ParseCD;
 	m_CommandMap[Commands::kCLIChunkNameFormat]				= &cli::CommandLineInterface::ParseChunkNameFormat;
@@ -62,7 +61,6 @@ EXPORT CommandLineInterface::CommandLineInterface() {
 	m_CommandMap[Commands::kCLIHelp]						= &cli::CommandLineInterface::ParseHelp;
 	m_CommandMap[Commands::kCLIIndifferentSelection]		= &cli::CommandLineInterface::ParseIndifferentSelection;
 	m_CommandMap[Commands::kCLIInitSoar]					= &cli::CommandLineInterface::ParseInitSoar;
-	m_CommandMap[Commands::kCLIInputPeriod]					= &cli::CommandLineInterface::ParseInputPeriod;
 	m_CommandMap[Commands::kCLIInternalSymbols]				= &cli::CommandLineInterface::ParseInternalSymbols;
 	m_CommandMap[Commands::kCLILearn]						= &cli::CommandLineInterface::ParseLearn;
 	m_CommandMap[Commands::kCLILoadLibrary]					= &cli::CommandLineInterface::ParseLoadLibrary;
@@ -93,7 +91,6 @@ EXPORT CommandLineInterface::CommandLineInterface() {
 	m_CommandMap[Commands::kCLISaveBacktraces]				= &cli::CommandLineInterface::ParseSaveBacktraces;
 	m_CommandMap[Commands::kCLISelect]						= &cli::CommandLineInterface::ParseSelect;
 	m_CommandMap[Commands::kCLISetLibraryLocation]			= &cli::CommandLineInterface::ParseSetLibraryLocation;
-	m_CommandMap[Commands::kCLISoar8]						= &cli::CommandLineInterface::ParseSoar8;
 	m_CommandMap[Commands::kCLISoarNews]					= &cli::CommandLineInterface::ParseSoarNews;
 	m_CommandMap[Commands::kCLISource]						= &cli::CommandLineInterface::ParseSource;
 	m_CommandMap[Commands::kCLISP]							= &cli::CommandLineInterface::ParseSP;
@@ -115,7 +112,6 @@ EXPORT CommandLineInterface::CommandLineInterface() {
 	// FIXME: missing stuff like GDSPRINT?
 	m_EchoMap[Commands::kCLIAddWME]						= true ;
 	m_EchoMap[Commands::kCLIAlias]						= true ;
-	m_EchoMap[Commands::kCLIAttributePreferencesMode]	= true ;
 	m_EchoMap[Commands::kCLICaptureInput]				= true ;
 	m_EchoMap[Commands::kCLICD]							= true ;
 	m_EchoMap[Commands::kCLIChunkNameFormat]			= true ;
@@ -128,7 +124,6 @@ EXPORT CommandLineInterface::CommandLineInterface() {
 	m_EchoMap[Commands::kCLIGP]							= true ;
 	m_EchoMap[Commands::kCLIIndifferentSelection]		= true ;
 	m_EchoMap[Commands::kCLIInitSoar]					= true ;
-	m_EchoMap[Commands::kCLIInputPeriod]				= true ;
 	m_EchoMap[Commands::kCLILearn]						= true ;
 	m_EchoMap[Commands::kCLILoadLibrary]				= true ; // TODO: figure out if we actually want to echo this
 	m_EchoMap[Commands::kCLIMaxChunks]					= true ;
@@ -148,7 +143,6 @@ EXPORT CommandLineInterface::CommandLineInterface() {
 	m_EchoMap[Commands::kCLIRun]						= true ;
 	m_EchoMap[Commands::kCLISelect]						= true ;
 	m_EchoMap[Commands::kCLISetLibraryLocation]			= true ;
-	m_EchoMap[Commands::kCLISoar8]						= true ;
 	m_EchoMap[Commands::kCLISource]						= true ;
 	m_EchoMap[Commands::kCLISP]							= true ;
 	m_EchoMap[Commands::kCLISRand]						= true ;

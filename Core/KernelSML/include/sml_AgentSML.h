@@ -417,8 +417,6 @@ public:
 	smlPhase GetCurrentPhase() ;
 	AgentRunCallback* GetAgentRunCallback() { return m_pAgentRunCallback ; }
 
-	bool IsSoar7Mode() ;
-
 	unsigned long GetRunCounter(smlRunStepSize runStepSize) ;
 
 	// Request that the agent stop soon.

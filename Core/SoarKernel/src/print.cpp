@@ -1134,16 +1134,14 @@ void print_phase (agent* thisAgent, const char * s, bool end_of_phase)
     break;
   case WM_PHASE:
 	  xml_att_val(thisAgent, kPhase_Name, kPhaseName_WM);
-	  if (thisAgent->operand2_mode == TRUE) {
-		  switch (thisAgent->FIRING_TYPE) {
-		  case PE_PRODS:  /* no longer needed;  Soar8 has PROPOSE/APPLY */
-			  xml_att_val(thisAgent, kPhase_FiringType, kPhaseFiringType_PE);
-              break;
-		  case IE_PRODS:
-			  xml_att_val(thisAgent, kPhase_FiringType, kPhaseFiringType_IE);
-              break;
-		  }
-      }
+	  switch (thisAgent->FIRING_TYPE) {
+	  case PE_PRODS:  /* no longer needed;  Soar8 has PROPOSE/APPLY */
+		  xml_att_val(thisAgent, kPhase_FiringType, kPhaseFiringType_PE);
+          break;
+	  case IE_PRODS:
+		  xml_att_val(thisAgent, kPhase_FiringType, kPhaseFiringType_IE);
+          break;
+	  }
 	  break;
   case DECISION_PHASE:
 	xml_att_val(thisAgent, kPhase_Name, kPhaseName_Decision);
@@ -1155,10 +1153,7 @@ void print_phase (agent* thisAgent, const char * s, bool end_of_phase)
 	xml_att_val(thisAgent, kPhase_Name, kPhaseName_Propose);
     break;
   case APPLY_PHASE:
-    if (thisAgent->operand2_mode == TRUE)
-    {
-		xml_att_val(thisAgent, kPhase_Name, kPhaseName_Apply);
-	}
+	xml_att_val(thisAgent, kPhase_Name, kPhaseName_Apply);
     break;
   default:
 	xml_att_val(thisAgent, kPhase_Name, kPhaseName_Unknown);
