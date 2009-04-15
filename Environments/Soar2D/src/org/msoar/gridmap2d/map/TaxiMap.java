@@ -18,6 +18,7 @@ public class TaxiMap implements GridMap, CellObjectObserver {
 
 	private CellObject passenger;
 	private int[] passengerLocation;
+	private String passengerSourceColor;
 	private String passengerDestination;
 	private String passengerDefaultDestination;
 	private boolean passengerDelivered;
@@ -33,6 +34,7 @@ public class TaxiMap implements GridMap, CellObjectObserver {
 	public void reset() throws Exception {
 		destinations.clear();
 		passengerDestination = null;
+		passengerSourceColor = null;
 		
 		data = GridMapUtil.loadFromConfigFile(mapPath, this);
 		
@@ -100,7 +102,20 @@ public class TaxiMap implements GridMap, CellObjectObserver {
 		
 		if (added.hasProperty("passenger")) {
 			passengerLocation = org.msoar.gridmap2d.Arrays.copyOf(location, location.length);
+			if (passengerSourceColor == null) {
+				List<CellObject> dests = data.cells.getCell(passengerLocation).getAllWithProperty("destination");
+				if (dests.size() != 0) {
+					passengerSourceColor = dests.get(0).getProperty("color");
+				}
+			}
 		}
+	}
+	
+	public String getPassengerSourceColor() {
+		if (passengerSourceColor == null) {
+			return "none";
+		}
+		return passengerSourceColor;
 	}
 
 	public void removalStateUpdate(int [] location, CellObject removed) {
