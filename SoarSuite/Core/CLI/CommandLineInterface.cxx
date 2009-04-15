@@ -2,7 +2,6 @@
 
 #include "src/cli_addwme.cpp"
 #include "src/cli_alias.cpp"
-#include "src/cli_attributepreferencesmode.cpp"
 #include "src/cli_captureinput.cpp"
 #include "src/cli_cd.cpp"
 #include "src/cli_chunknameformat.cpp"
@@ -21,7 +20,6 @@
 #include "src/cli_help.cpp"
 #include "src/cli_indifferentselection.cpp"
 #include "src/cli_initsoar.cpp"
-#include "src/cli_inputperiod.cpp"
 #include "src/cli_internalsymbols.cpp"
 #include "src/cli_learn.cpp"
 #include "src/cli_loadLibrary.cpp"
@@ -53,7 +51,6 @@
 #include "src/cli_select.cpp"
 #include "src/cli_setlibrarylocation.cpp"
 #include "src/cli_setstopphase.cpp"
-#include "src/cli_soar8.cpp"
 #include "src/cli_soarnews.cpp"
 #include "src/cli_source.cpp"
 #include "src/cli_sp.cpp"

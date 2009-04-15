@@ -826,25 +826,6 @@ void get_lexeme (agent* thisAgent) {
   thisAgent->lexeme.length = 0;
   thisAgent->lexeme.string[0] = 0;
 
-//#ifndef USE_X_DISPLAY
-if (thisAgent->lexeme.type==EOF_LEXEME && 
-    reading_from_top_level(thisAgent) &&
-    current_lexer_parentheses_level(thisAgent)==0 &&  /* AGR 534 */
-    thisAgent->print_prompt_flag)
-//#ifdef USE_TCL
-  {}
-//#else
-//
-// /* REW: begin 09.15.96 */
-// if (thisAgent->operand2_mode == TRUE)
-//   print ("\nOPERAND %s> ", thisAgent->name);
-// /* REW: end   09.15.96 */
-// else
-//   print ("\n%s> ", thisAgent->name);
-//
-//#endif /* USE_TCL */
-//#endif /* USE_X_DISPLAY */
-
 /* AGR 534  The only time a prompt should be printed out is if there's
    a command being expected; ie. the prompt shouldn't print out if we're
    in the middle of entering a production.  So if we're in the middle of
@@ -862,22 +843,6 @@ if (thisAgent->lexeme.type==EOF_LEXEME &&
               do_fake_rparen(thisAgent);
               return;
          }
-//#ifndef USE_X_DISPLAY
-         if (current_lexer_parentheses_level(thisAgent)==0 &&  /* AGR 534 */
-             thisAgent->print_prompt_flag)
-//#ifdef USE_TCL
-         {}
-//#else
-//
-//	 /* REW: begin 09.15.96 */
-//         if (thisAgent->operand2_mode == TRUE)
-//	   print ("\nOPERAND %s> ", thisAgent->name);
-//	 /* REW: end   09.15.96 */
-//	 else
-//	   print ("\n%s> ", thisAgent->name);
-//
-//#endif /* USE_TCL */
-//#endif /* USE_X_DISPLAY */
       }
       get_next_char(thisAgent);
       continue;
