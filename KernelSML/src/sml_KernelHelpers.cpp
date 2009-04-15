@@ -792,8 +792,8 @@ bool read_attribute_from_string (agent* agnt, Symbol *id, char * the_lexeme, Sym
 ===============================
 */
 void print_preference_and_source (agent* agnt, preference *pref,
-	bool print_source,
-	wme_trace_type wtt) 
+								  bool print_source,
+								  wme_trace_type wtt) 
 {
 	print_string (agnt, "  ");
 	if (pref->attr == agnt->operator_symbol) {
@@ -801,7 +801,7 @@ void print_preference_and_source (agent* agnt, preference *pref,
 	} else {					
 		print_with_symbols (agnt, "(%y ^%y %y) ", pref->id, pref->attr, pref->value);
 	} 	
-	if (! agnt->operand2_mode || (pref->attr == agnt->operator_symbol)) {
+	if (pref->attr == agnt->operator_symbol) {
 		print (agnt, " %c", preference_type_indicator (agnt, pref->type));
 	}
 	if (preference_is_binary(pref->type)) print_object_trace (agnt, pref->referent);
@@ -905,26 +905,26 @@ int soar_ecPrintPreferences(agent* soarAgent, char *szId, char *szAttr, bool obj
 	if (!id->id.isa_goal && !strcmp(szAttr, "operator")) {
 		attr = NIL;
 	} else {
-	if ( szAttr && !object) { // default ^attr is ^operator, unless specified --object on cmdline
-		if (!read_attribute_from_string(soarAgent, id, szAttr, &attr)) {		
-			// NOT tested:  but here goes...
-			// This is code to determine whether ^attr arg is misspelled 
-			// or an arch-wme.  Had to modify read_attribute_from_string() to  
-			// always set the attr:  symbol exists but no slot, or attr = NIL.
-			if (attr) {
-				print (soarAgent,"  This is probably an io- or arch-wme and does not have preferences\n");							
-				return 0;										
+		if ( szAttr && !object) { // default ^attr is ^operator, unless specified --object on cmdline
+			if (!read_attribute_from_string(soarAgent, id, szAttr, &attr)) {		
+				// NOT tested:  but here goes...
+				// This is code to determine whether ^attr arg is misspelled 
+				// or an arch-wme.  Had to modify read_attribute_from_string() to  
+				// always set the attr:  symbol exists but no slot, or attr = NIL.
+				if (attr) {
+					print (soarAgent,"  This is probably an io- or arch-wme and does not have preferences\n");							
+					return 0;										
+				}
+				print(soarAgent, "Could not find prefs for the id,attribute pair: %s %s\n", szId, szAttr);
+				return -2;
+			}			
+			s = find_slot(id, attr);
+			if (!s && !object) {
+				// Should we check for input wmes and arch-wmes ?? ...covered above...
+				print(soarAgent, "Could not find preferences for %s ^%s.", szId, szAttr);
+				return -3;
 			}
-			print(soarAgent, "Could not find prefs for the id,attribute pair: %s %s\n", szId, szAttr);
-			return -2;
-		}			
-		s = find_slot(id, attr);
-		if (!s && !object) {
-			// Should we check for input wmes and arch-wmes ?? ...covered above...
-			print(soarAgent, "Could not find preferences for %s ^%s.", szId, szAttr);
-			return -3;
 		}
-	}
 	}
 
 	// We have one of three cases now, as of v8.6.3
@@ -942,7 +942,7 @@ int soar_ecPrintPreferences(agent* soarAgent, char *szId, char *szAttr, bool obj
 				print_with_symbols(soarAgent, "Support for %y ^%y:\n", s->id, s->attr);				
 			for (i = 0; i < NUM_PREFERENCE_TYPES; i++) {
 				if (s->preferences[i]) {
-					if (!soarAgent->operand2_mode || s->isa_context_slot) print(soarAgent, "\n%ss:\n", preference_name[i]);
+					if (s->isa_context_slot) print(soarAgent, "\n%ss:\n", preference_name[i]);
 					for (p = s->preferences[i]; p; p = p->next) {
 						print_preference_and_source(soarAgent, p, print_prod, wtt);
 					}
@@ -959,7 +959,7 @@ int soar_ecPrintPreferences(agent* soarAgent, char *szId, char *szAttr, bool obj
 		for (w=id->id.input_wmes; w!=NIL; w=w->next) {
 			print_wme(soarAgent, w);
 		}
-	
+
 		return 0;
 	} else if (!id->id.isa_goal && !attr ) {  
 		// find wme(s?) whose value is <ID> and print prefs if they exist
@@ -1777,26 +1777,24 @@ int RemoveWme(agent* pSoarAgent, wme* pWme)
 #endif // USE_CAPTURE_REPLAY
 
 	/* REW: begin 09.15.96 */
-	if (pSoarAgent->operand2_mode) {
-		if (pWme->gds) {
-			if (pWme->gds->goal != NIL) {
-				if (pSoarAgent->soar_verbose_flag || pSoarAgent->sysparams[TRACE_WM_CHANGES_SYSPARAM])
-					{
-						print(pSoarAgent, "\nremove_input_wme: Removing state S%d because element in GDS changed.", pWme->gds->goal->id.level);
-						print(pSoarAgent, " WME: "); 
+	if (pWme->gds) {
+		if (pWme->gds->goal != NIL) {
+			if (pSoarAgent->soar_verbose_flag || pSoarAgent->sysparams[TRACE_WM_CHANGES_SYSPARAM])
+				{
+					print(pSoarAgent, "\nremove_input_wme: Removing state S%d because element in GDS changed.", pWme->gds->goal->id.level);
+					print(pSoarAgent, " WME: "); 
 
-						char buf[256];
-						SNPRINTF(buf, 254, "remove_input_wme: Removing state S%d because element in GDS changed.", pWme->gds->goal->id.level);
-						xml_begin_tag(pSoarAgent, kTagVerbose);
-						xml_att_val(pSoarAgent, kTypeString, buf);
-						print_wme(pSoarAgent, pWme);
-						xml_end_tag(pSoarAgent, kTagVerbose);
-					}
+					char buf[256];
+					SNPRINTF(buf, 254, "remove_input_wme: Removing state S%d because element in GDS changed.", pWme->gds->goal->id.level);
+					xml_begin_tag(pSoarAgent, kTagVerbose);
+					xml_att_val(pSoarAgent, kTypeString, buf);
+					print_wme(pSoarAgent, pWme);
+					xml_end_tag(pSoarAgent, kTagVerbose);
+				}
 
-				gds_invalid_so_remove_goal(pSoarAgent, pWme);
-				/* NOTE: the call to remove_wme_from_wm will take care of checking if
-				GDS should be removed */
-			}
+			gds_invalid_so_remove_goal(pSoarAgent, pWme);
+			/* NOTE: the call to remove_wme_from_wm will take care of checking if
+			GDS should be removed */
 		}
 	}
 	/* REW: end   09.15.96 */

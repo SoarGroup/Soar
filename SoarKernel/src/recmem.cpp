@@ -291,72 +291,56 @@ Symbol *instantiate_rhs_value (agent* thisAgent, rhs_value rv,
 }
 
 preference *execute_action (agent* thisAgent, action *a, struct token_struct *tok, wme *w) {
-  Symbol *id, *attr, *value, *referent;
-  char first_letter;
-  
-  if (a->type==FUNCALL_ACTION) {
-    value = instantiate_rhs_value (thisAgent, a->value, -1, 'v', tok, w);
-    if (value) symbol_remove_ref (thisAgent, value);
-    return NIL;
-  }
+	Symbol *id, *attr, *value, *referent;
+	char first_letter;
 
-  attr = NIL;
-  value = NIL;
-  referent = NIL;
-  
-  id = instantiate_rhs_value (thisAgent, a->id, -1, 's', tok, w);
-  if (!id) goto abort_execute_action;
-  if (id->common.symbol_type!=IDENTIFIER_SYMBOL_TYPE) {
-    print_with_symbols (thisAgent, "Error: RHS makes a preference for %y (not an identifier)\n", id);
-    goto abort_execute_action;
-  }
-  
-  attr = instantiate_rhs_value (thisAgent, a->attr, id->id.level, 'a', tok, w);
-  if (!attr) goto abort_execute_action;
+	if (a->type==FUNCALL_ACTION) {
+		value = instantiate_rhs_value (thisAgent, a->value, -1, 'v', tok, w);
+		if (value) symbol_remove_ref (thisAgent, value);
+		return NIL;
+	}
 
-  first_letter = first_letter_from_symbol (attr);
-  
-  value = instantiate_rhs_value (thisAgent, a->value, id->id.level,
-                                 first_letter, tok, w);
-  if (!value) goto abort_execute_action;
+	attr = NIL;
+	value = NIL;
+	referent = NIL;
 
-  if (preference_is_binary(a->preference_type)) {
-    referent = instantiate_rhs_value (thisAgent, a->referent, id->id.level,
-                                      first_letter, tok, w);
-    if (!referent) goto abort_execute_action;
-  }
+	id = instantiate_rhs_value (thisAgent, a->id, -1, 's', tok, w);
+	if (!id) goto abort_execute_action;
+	if (id->common.symbol_type!=IDENTIFIER_SYMBOL_TYPE) {
+		print_with_symbols (thisAgent, "Error: RHS makes a preference for %y (not an identifier)\n", id);
+		goto abort_execute_action;
+	}
 
-  /* --- RBD 4/17/95 added stuff to handle attribute_preferences_mode --- */
-  if (((a->preference_type != ACCEPTABLE_PREFERENCE_TYPE) &&
-     (a->preference_type != REJECT_PREFERENCE_TYPE)) &&
-     (! (id->id.isa_goal && (attr==thisAgent->operator_symbol)) )) {
-     if ((thisAgent->attribute_preferences_mode==2) ||
-        (thisAgent->operand2_mode ==TRUE) ) {
-        print_with_symbols (thisAgent, "\nError: attribute preference other than +/- for %y ^%y -- ignoring it.", id, attr);
-        goto abort_execute_action;
-     } else if (thisAgent->attribute_preferences_mode==1) {
-        print_with_symbols (thisAgent, "\nWarning: attribute preference other than +/- for %y ^%y.", id, attr);
+	attr = instantiate_rhs_value (thisAgent, a->attr, id->id.level, 'a', tok, w);
+	if (!attr) goto abort_execute_action;
 
-		growable_string gs = make_blank_growable_string(thisAgent);
-		add_to_growable_string(thisAgent, &gs, "Warning: attribute preference other than +/- for ");
-		add_to_growable_string(thisAgent, &gs, symbol_to_string(thisAgent, id, true, 0, 0));
-		add_to_growable_string(thisAgent, &gs, " ^");
-		add_to_growable_string(thisAgent, &gs, symbol_to_string(thisAgent, attr, true, 0, 0));
-		add_to_growable_string(thisAgent, &gs, ".");
-		xml_generate_warning(thisAgent, text_of_growable_string(gs));
-		free_growable_string(thisAgent, gs);
+	first_letter = first_letter_from_symbol (attr);
 
-     }  
-  }
+	value = instantiate_rhs_value (thisAgent, a->value, id->id.level,
+		first_letter, tok, w);
+	if (!value) goto abort_execute_action;
 
-  return make_preference (thisAgent, a->preference_type, id, attr, value, referent);
+	if (preference_is_binary(a->preference_type)) {
+		referent = instantiate_rhs_value (thisAgent, a->referent, id->id.level,
+			first_letter, tok, w);
+		if (!referent) goto abort_execute_action;
+	}
 
-  abort_execute_action:   /* control comes here when some error occurred */
-  if (id) symbol_remove_ref (thisAgent, id);  
-  if (attr) symbol_remove_ref (thisAgent, attr);  
-  if (value) symbol_remove_ref (thisAgent, value);  
-  if (referent) symbol_remove_ref (thisAgent, referent);
-  return NIL;
+	if (((a->preference_type != ACCEPTABLE_PREFERENCE_TYPE) &&
+		(a->preference_type != REJECT_PREFERENCE_TYPE)) &&
+		(! (id->id.isa_goal && (attr==thisAgent->operator_symbol)) )) {
+			print_with_symbols (thisAgent, "\nError: attribute preference other than +/- for %y ^%y -- ignoring it.", id, attr);
+			goto abort_execute_action;
+	}
+
+	return make_preference (thisAgent, a->preference_type, id, attr, value, referent);
+
+abort_execute_action:   /* control comes here when some error occurred */
+	if (id) symbol_remove_ref (thisAgent, id);  
+	if (attr) symbol_remove_ref (thisAgent, attr);  
+	if (value) symbol_remove_ref (thisAgent, value);  
+	if (referent) symbol_remove_ref (thisAgent, referent);
+	return NIL;
 }
 
 /* -----------------------------------------------------------------------
@@ -546,208 +530,188 @@ inline Bool trace_firings_of_inst(agent* thisAgent, instantiation * inst)
    do any necessary chunk or justification building.
 ----------------------------------------------------------------------- */
 
-void create_instantiation (agent* thisAgent, production *prod,
-                           struct token_struct *tok,
-                           wme *w) {
-   instantiation *inst;
-   condition *cond;
-   preference *pref;
-   action *a;
-   cons *c;
-   Bool need_to_do_support_calculations;
-   Bool trace_it;
-   long index;
-   Symbol **cell;
+void create_instantiation (agent* thisAgent, production *prod, struct token_struct *tok, wme *w) {
+	instantiation *inst;
+	condition *cond;
+	preference *pref;
+	action *a;
+	cons *c;
+	Bool need_to_do_support_calculations;
+	Bool trace_it;
+	long index;
+	Symbol **cell;
 
 #ifdef BUG_139_WORKAROUND
-    /* New waterfall model: this is now checked for before we call this function */
-    assert(prod->type != JUSTIFICATION_PRODUCTION_TYPE);
-    /* RPM workaround for bug #139: don't fire justifications */
-    //if (prod->type == JUSTIFICATION_PRODUCTION_TYPE) {
-    //    return;
-    //}
+	/* New waterfall model: this is now checked for before we call this function */
+	assert(prod->type != JUSTIFICATION_PRODUCTION_TYPE);
+	/* RPM workaround for bug #139: don't fire justifications */
+	//if (prod->type == JUSTIFICATION_PRODUCTION_TYPE) {
+	//    return;
+	//}
 #endif
 
-   allocate_with_pool (thisAgent, &thisAgent->instantiation_pool, &inst);
-   inst->next = thisAgent->newly_created_instantiations;
-   thisAgent->newly_created_instantiations = inst;
-   inst->prod = prod;
-   inst->rete_token = tok;
-   inst->rete_wme = w;
-   inst->okay_to_variablize = TRUE;
-   inst->in_ms = TRUE;
+	allocate_with_pool (thisAgent, &thisAgent->instantiation_pool, &inst);
+	inst->next = thisAgent->newly_created_instantiations;
+	thisAgent->newly_created_instantiations = inst;
+	inst->prod = prod;
+	inst->rete_token = tok;
+	inst->rete_wme = w;
+	inst->okay_to_variablize = TRUE;
+	inst->in_ms = TRUE;
 
-   /* REW: begin   09.15.96 */
-   /*  We want to initialize the GDS_evaluated_already flag
-    *  when a new instantiation is created.
-    */
+	/* REW: begin   09.15.96 */
+	/*  We want to initialize the GDS_evaluated_already flag
+	*  when a new instantiation is created.
+	*/
 
-   inst->GDS_evaluated_already = FALSE;
+	inst->GDS_evaluated_already = FALSE;
 
-   if (thisAgent->operand2_mode == TRUE) {
-       if (thisAgent->soar_verbose_flag == TRUE) {
-         print_with_symbols(thisAgent, "\n   in create_instantiation: %y",
-               inst->prod->name);
-         char buf[256];
-         SNPRINTF(buf, 254, "in create_instantiation: %s", symbol_to_string(thisAgent, inst->prod->name, true, 0, 0));
-         xml_generate_verbose(thisAgent, buf);
-       }
-   }
-   /* REW: end   09.15.96 */
+	if (thisAgent->soar_verbose_flag == TRUE) {
+		print_with_symbols(thisAgent, "\n   in create_instantiation: %y",
+			inst->prod->name);
+		char buf[256];
+		SNPRINTF(buf, 254, "in create_instantiation: %s", symbol_to_string(thisAgent, inst->prod->name, true, 0, 0));
+		xml_generate_verbose(thisAgent, buf);
+	}
+	/* REW: end   09.15.96 */
 
 
-   thisAgent->production_being_fired = inst->prod;
-   prod->firing_count++;
-   thisAgent->production_firing_count++;
+	thisAgent->production_being_fired = inst->prod;
+	prod->firing_count++;
+	thisAgent->production_firing_count++;
 
-   /* --- build the instantiated conditions, and bind LHS variables --- */
-   p_node_to_conditions_and_nots (thisAgent, prod->p_node, tok, w,
-         &(inst->top_of_instantiated_conditions),
-         &(inst->bottom_of_instantiated_conditions),
-         &(inst->nots), NIL);
+	/* --- build the instantiated conditions, and bind LHS variables --- */
+	p_node_to_conditions_and_nots (thisAgent, prod->p_node, tok, w,
+		&(inst->top_of_instantiated_conditions),
+		&(inst->bottom_of_instantiated_conditions),
+		&(inst->nots), NIL);
 
-   /* --- record the level of each of the wmes that was positively tested --- */
-   for (cond=inst->top_of_instantiated_conditions; cond!=NIL; cond=cond->next) {
-      if (cond->type==POSITIVE_CONDITION) {
-         cond->bt.level = cond->bt.wme_->id->id.level;
-         cond->bt.trace = cond->bt.wme_->preference;
-      }
-   }
+	/* --- record the level of each of the wmes that was positively tested --- */
+	for (cond=inst->top_of_instantiated_conditions; cond!=NIL; cond=cond->next) {
+		if (cond->type==POSITIVE_CONDITION) {
+			cond->bt.level = cond->bt.wme_->id->id.level;
+			cond->bt.trace = cond->bt.wme_->preference;
+		}
+	}
 
-   /* --- print trace info --- */
-   trace_it = trace_firings_of_inst (thisAgent, inst);
-   if (trace_it) {
-      if (get_printer_output_column(thisAgent)!=1) print (thisAgent, "\n");  /* AGR 617/634 */
-      print (thisAgent, "Firing ");
-      print_instantiation_with_wmes
-         (thisAgent, inst, 
-		 (wme_trace_type)(thisAgent->sysparams[TRACE_FIRINGS_WME_TRACE_TYPE_SYSPARAM]), 0);
-   }
+	/* --- print trace info --- */
+	trace_it = trace_firings_of_inst (thisAgent, inst);
+	if (trace_it) {
+		if (get_printer_output_column(thisAgent)!=1) print (thisAgent, "\n");  /* AGR 617/634 */
+		print (thisAgent, "Firing ");
+		print_instantiation_with_wmes
+			(thisAgent, inst, 
+			(wme_trace_type)(thisAgent->sysparams[TRACE_FIRINGS_WME_TRACE_TYPE_SYSPARAM]), 0);
+	}
 
-   /* --- initialize rhs_variable_bindings array with names of variables
-      (if there are any stored on the production -- for chunks there won't
-      be any) --- */
-   index = 0;
-   cell = thisAgent->rhs_variable_bindings;
-   for (c=prod->rhs_unbound_variables; c!=NIL; c=c->rest) {
-      *(cell++) = static_cast<symbol_union *>(c->first);
-      index++;
-   }
-   thisAgent->firer_highest_rhs_unboundvar_index = index - 1;
+	/* --- initialize rhs_variable_bindings array with names of variables
+	(if there are any stored on the production -- for chunks there won't
+	be any) --- */
+	index = 0;
+	cell = thisAgent->rhs_variable_bindings;
+	for (c=prod->rhs_unbound_variables; c!=NIL; c=c->rest) {
+		*(cell++) = static_cast<symbol_union *>(c->first);
+		index++;
+	}
+	thisAgent->firer_highest_rhs_unboundvar_index = index - 1;
 
-   /* 7.1/8 merge: Not sure about this.  This code in 704, but not in either 7.1 or 703/soar8 */
-   /* --- Before executing the RHS actions, tell the user that the -- */
-   /* --- phase has changed to output by printing the arrow --- */
-   if (trace_it && thisAgent->sysparams[TRACE_FIRINGS_PREFERENCES_SYSPARAM]) {
-      print (thisAgent, " -->\n");
-	  xml_object( thisAgent, kTagActionSideMarker );
-   }
+	/* 7.1/8 merge: Not sure about this.  This code in 704, but not in either 7.1 or 703/soar8 */
+	/* --- Before executing the RHS actions, tell the user that the -- */
+	/* --- phase has changed to output by printing the arrow --- */
+	if (trace_it && thisAgent->sysparams[TRACE_FIRINGS_PREFERENCES_SYSPARAM]) {
+		print (thisAgent, " -->\n");
+		xml_object( thisAgent, kTagActionSideMarker );
+	}
 
-   /* --- execute the RHS actions, collect the results --- */
-   inst->preferences_generated = NIL;
-   need_to_do_support_calculations = FALSE;
-   for (a=prod->action_list; a!=NIL; a=a->next) {
-      
-	   if ( prod->type != TEMPLATE_PRODUCTION_TYPE )
-	   {
+	/* --- execute the RHS actions, collect the results --- */
+	inst->preferences_generated = NIL;
+	need_to_do_support_calculations = FALSE;
+	for (a=prod->action_list; a!=NIL; a=a->next) {
+
+		if ( prod->type != TEMPLATE_PRODUCTION_TYPE )
+		{
 			pref = execute_action (thisAgent, a, tok, w);
-	   }
-	   else
-	   {
-		   pref = NIL;
-		   /*Symbol *result = */rl_build_template_instantiation( thisAgent, inst, tok, w );
-	   }
-	  
-	   /* SoarTech changed from an IF stmt to a WHILE loop to support GlobalDeepCpy */
-      while (pref) {   
-         pref->inst = inst;
-         insert_at_head_of_dll (inst->preferences_generated, pref,
-               inst_next, inst_prev);
-         if (inst->prod->declared_support==DECLARED_O_SUPPORT)
-            pref->o_supported = TRUE;
-         else if (inst->prod->declared_support==DECLARED_I_SUPPORT)
-         {  
-            pref->o_supported = FALSE;
-         }
-         else {
+		}
+		else
+		{
+			pref = NIL;
+			/*Symbol *result = */rl_build_template_instantiation( thisAgent, inst, tok, w );
+		}
 
-            if (thisAgent->operand2_mode == TRUE) {
-               pref->o_supported =
-                  (thisAgent->FIRING_TYPE == PE_PRODS) ? TRUE : FALSE;
-            }
-            /* REW: end   09.15.96 */
+		/* SoarTech changed from an IF stmt to a WHILE loop to support GlobalDeepCpy */
+		while (pref) {   
+			pref->inst = inst;
+			insert_at_head_of_dll (inst->preferences_generated, pref,
+				inst_next, inst_prev);
+			if (inst->prod->declared_support==DECLARED_O_SUPPORT)
+				pref->o_supported = TRUE;
+			else if (inst->prod->declared_support==DECLARED_I_SUPPORT)
+			{  
+				pref->o_supported = FALSE;
+			}
+			else {
 
-            else {
-               if (a->support==O_SUPPORT) pref->o_supported = TRUE;
-               else if (a->support==I_SUPPORT) pref->o_supported = FALSE;
-               else {
-                  need_to_do_support_calculations = TRUE;
-                  if (thisAgent->soar_verbose_flag == TRUE) {
-                     printf("\n\nin create_instantiation():  need_to_do_support_calculations == TRUE!!!\n\n");
-                     xml_generate_verbose(thisAgent, "in create_instantiation():  need_to_do_support_calculations == TRUE!!!");
-                  }
-               }
+				pref->o_supported =
+					(thisAgent->FIRING_TYPE == PE_PRODS) ? TRUE : FALSE;
+				/* REW: end   09.15.96 */
+			}
 
-            }
+			/* TEMPORARY HACK (Ideally this should be doable through
+			the external kernel interface but for now using a 
+			couple of global STL lists to get this information
+			from the rhs function to this prefference adding code)
 
-         }
+			Getting the next pref from the set of possible prefs 
+			added by the deep copy rhs function */
+			if ( glbDeepCopyWMEs != 0 ) {
+				wme* tempwme = glbDeepCopyWMEs;
+				pref = make_preference(thisAgent, 
+					a->preference_type, 
+					tempwme->id, 
+					tempwme->attr, 
+					tempwme->value, 0);
+				glbDeepCopyWMEs = tempwme->next;
+				deallocate_wme(thisAgent, tempwme);
+			} else {
+				pref = 0;
+			}
+		}
+	}
 
-         /* TEMPORARY HACK (Ideally this should be doable through
-            the external kernel interface but for now using a 
-            couple of global STL lists to get this information
-            from the rhs function to this prefference adding code)
+	/* --- reset rhs_variable_bindings array to all zeros --- */
+	index = 0;
+	cell = thisAgent->rhs_variable_bindings;
+	while (index++ <= thisAgent->firer_highest_rhs_unboundvar_index) *(cell++) = NIL;
 
-            Getting the next pref from the set of possible prefs 
-            added by the deep copy rhs function */
-           if ( glbDeepCopyWMEs != 0 ) {
-            wme* tempwme = glbDeepCopyWMEs;
-            pref = make_preference(thisAgent, 
-                                   a->preference_type, 
-                                   tempwme->id, 
-                                   tempwme->attr, 
-                                   tempwme->value, 0);
-            glbDeepCopyWMEs = tempwme->next;
-            deallocate_wme(thisAgent, tempwme);
-         } else {
-            pref = 0;
-         }
-        }
-   }
+	/* --- fill in lots of other stuff --- */
+	fill_in_new_instantiation_stuff (thisAgent, inst, need_to_do_support_calculations);
 
-   /* --- reset rhs_variable_bindings array to all zeros --- */
-   index = 0;
-   cell = thisAgent->rhs_variable_bindings;
-   while (index++ <= thisAgent->firer_highest_rhs_unboundvar_index) *(cell++) = NIL;
+	/* --- print trace info: printing preferences --- */
+	/* Note: can't move this up, since fill_in_new_instantiation_stuff gives
+	the o-support info for the preferences we're about to print */
+	if (trace_it && thisAgent->sysparams[TRACE_FIRINGS_PREFERENCES_SYSPARAM]) {
+		for (pref=inst->preferences_generated; pref!=NIL; pref=pref->inst_next) {
+			print (thisAgent, " ");
+			print_preference (thisAgent, pref);
+		}
+	}
 
-   /* --- fill in lots of other stuff --- */
-   fill_in_new_instantiation_stuff (thisAgent, inst, need_to_do_support_calculations);
+	/* mvp 5-17-94 */
+	build_prohibits_list (thisAgent, inst);
 
-   /* --- print trace info: printing preferences --- */
-   /* Note: can't move this up, since fill_in_new_instantiation_stuff gives
-      the o-support info for the preferences we're about to print */
-   if (trace_it && thisAgent->sysparams[TRACE_FIRINGS_PREFERENCES_SYSPARAM]) {
-      for (pref=inst->preferences_generated; pref!=NIL; pref=pref->inst_next) {
-         print (thisAgent, " ");
-         print_preference (thisAgent, pref);
-      }
-   }
+	thisAgent->production_being_fired = NIL;
 
-   /* mvp 5-17-94 */
-   build_prohibits_list (thisAgent, inst);
+	/* --- build chunks/justifications if necessary --- */
+	chunk_instantiation (thisAgent, inst, thisAgent->sysparams[LEARNING_ON_SYSPARAM] != 0);
 
-   thisAgent->production_being_fired = NIL;
+	/* MVP 6-8-94 */
+	if (!thisAgent->system_halted) {
+		/* --- invoke callback function --- */
+		soar_invoke_callbacks(thisAgent, 
+			FIRING_CALLBACK,
+			(soar_call_data) inst);
 
-   /* --- build chunks/justifications if necessary --- */
-   chunk_instantiation (thisAgent, inst, thisAgent->sysparams[LEARNING_ON_SYSPARAM] != 0);
-
-    /* MVP 6-8-94 */
-   if (!thisAgent->system_halted) {
-      /* --- invoke callback function --- */
-      soar_invoke_callbacks(thisAgent, 
-            FIRING_CALLBACK,
-            (soar_call_data) inst);
-
-   }
+	}
 }
 
 /**
@@ -944,37 +908,36 @@ void retract_instantiation (agent* thisAgent, instantiation *inst) {
 
 void assert_new_preferences (agent* thisAgent) 
 {
-   instantiation *inst, *next_inst;
-   preference *pref, *next_pref;
-   preference *o_rejects;
-   
-   o_rejects = NIL;  
-   
-   
-   /* REW: begin 09.15.96 */
-   if ((thisAgent->operand2_mode == TRUE) &&
-       (thisAgent->soar_verbose_flag == TRUE)) {
-           printf("\n   in assert_new_preferences:");
-           xml_generate_verbose(thisAgent, "in assert_new_preferences:");
-       }
-   /* REW: end   09.15.96 */
-   
+	instantiation *inst, *next_inst;
+	preference *pref, *next_pref;
+	preference *o_rejects;
+
+	o_rejects = NIL;  
+
+
+	/* REW: begin 09.15.96 */
+	if ((thisAgent->soar_verbose_flag == TRUE)) {
+		printf("\n   in assert_new_preferences:");
+		xml_generate_verbose(thisAgent, "in assert_new_preferences:");
+	}
+	/* REW: end   09.15.96 */
+
 #ifdef O_REJECTS_FIRST
-    {
+	{
 
-        //slot *s;
-        //preference *p, *next_p;
+		//slot *s;
+		//preference *p, *next_p;
 
-        /* Do an initial loop to process o-rejects, then re-loop
-           to process normal preferences.
-         */
-        for (inst = thisAgent->newly_created_instantiations; inst != NIL; inst = next_inst) {
-            next_inst = inst->next;
+		/* Do an initial loop to process o-rejects, then re-loop
+		to process normal preferences.
+		*/
+		for (inst = thisAgent->newly_created_instantiations; inst != NIL; inst = next_inst) {
+			next_inst = inst->next;
 
-            for (pref = inst->preferences_generated; pref != NIL; pref = next_pref) {
-                next_pref = pref->inst_next;
-                if ((pref->type == REJECT_PREFERENCE_TYPE) && (pref->o_supported)) {
-                    /* --- o-reject: just put it in the buffer for later --- */
+			for (pref = inst->preferences_generated; pref != NIL; pref = next_pref) {
+				next_pref = pref->inst_next;
+				if ((pref->type == REJECT_PREFERENCE_TYPE) && (pref->o_supported)) {
+					/* --- o-reject: just put it in the buffer for later --- */
 					pref->next = o_rejects;
 					o_rejects = pref;
 				}
@@ -983,100 +946,97 @@ void assert_new_preferences (agent* thisAgent)
 
 		if (o_rejects) 
 			process_o_rejects_and_deallocate_them (thisAgent, o_rejects);
-		
-     //               s = find_slot(pref->id, pref->attr);
-     //               if (s) {
-     //                   /* --- remove all pref's in the slot that have the same value --- */
-     //                   p = s->all_preferences;
-     //                   while (p) {
-     //                       next_p = p->all_of_slot_next;
-     //                       if (p->value == pref->value)
-     //                           remove_preference_from_tm(thisAgent, p);
-     //                       p = next_p;
-     //                   }
-     //               }
-					////preference_remove_ref (thisAgent, pref);
-     //           }
-     //       }
-     //   }
-		
-    }
+
+		//               s = find_slot(pref->id, pref->attr);
+		//               if (s) {
+		//                   /* --- remove all pref's in the slot that have the same value --- */
+		//                   p = s->all_preferences;
+		//                   while (p) {
+		//                       next_p = p->all_of_slot_next;
+		//                       if (p->value == pref->value)
+		//                           remove_preference_from_tm(thisAgent, p);
+		//                       p = next_p;
+		//                   }
+		//               }
+		////preference_remove_ref (thisAgent, pref);
+		//           }
+		//       }
+		//   }
+
+	}
 #endif
-   
-   for (inst=thisAgent->newly_created_instantiations;
-        inst!=NIL;
-        inst=next_inst) 
-   {
-      next_inst = inst->next;
-      if (inst->in_ms)
-         insert_at_head_of_dll (inst->prod->instantiations, inst, next, prev);
-      
-      /* REW: begin 09.15.96 */
-      if (thisAgent->operand2_mode == TRUE) 
-      {
-          if (thisAgent->soar_verbose_flag == TRUE) {
-            print_with_symbols(thisAgent, "\n      asserting instantiation: %y\n",
-            inst->prod->name);
-            char buf[256];
-            SNPRINTF(buf, 254, "asserting instantiation: %s", symbol_to_string(thisAgent, inst->prod->name, true, 0, 0));
-            xml_generate_verbose(thisAgent, buf);
-          }
-      }
-      /* REW: end   09.15.96 */
-      
-      for (pref=inst->preferences_generated; pref!=NIL; pref=next_pref) 
-      {
-         next_pref = pref->inst_next;
-         if ((pref->type==REJECT_PREFERENCE_TYPE) && (pref->o_supported)) 
-         {
+
+	for (inst=thisAgent->newly_created_instantiations;
+		inst!=NIL;
+		inst=next_inst) 
+	{
+		next_inst = inst->next;
+		if (inst->in_ms)
+			insert_at_head_of_dll (inst->prod->instantiations, inst, next, prev);
+
+		/* REW: begin 09.15.96 */
+		if (thisAgent->soar_verbose_flag == TRUE) {
+			print_with_symbols(thisAgent, "\n      asserting instantiation: %y\n",
+				inst->prod->name);
+			char buf[256];
+			SNPRINTF(buf, 254, "asserting instantiation: %s", symbol_to_string(thisAgent, inst->prod->name, true, 0, 0));
+			xml_generate_verbose(thisAgent, buf);
+		}
+		/* REW: end   09.15.96 */
+
+		for (pref=inst->preferences_generated; pref!=NIL; pref=next_pref) 
+		{
+			next_pref = pref->inst_next;
+			if ((pref->type==REJECT_PREFERENCE_TYPE) && (pref->o_supported)) 
+			{
 #ifndef O_REJECTS_FIRST
-            /* --- o-reject: just put it in the buffer for later --- */
-            pref->next = o_rejects;
-            o_rejects = pref;
+				/* --- o-reject: just put it in the buffer for later --- */
+				pref->next = o_rejects;
+				o_rejects = pref;
 #endif            
-            
-            /* REW: begin 09.15.96 */
-            /* No knowledge retrieval necessary in Operand2 */
-            /* REW: end   09.15.96 */
-            
-         } 
-         else if (inst->in_ms || pref->o_supported) 
-         {
-            /* --- normal case --- */
-            add_preference_to_tm (thisAgent, pref);
-            
-            
-            /* REW: begin 09.15.96 */
-            /* No knowledge retrieval necessary in Operand2 */
-            /* REW: end   09.15.96 */
-            
-            
-         } 
-         else 
-         {
-         /* --- inst. is refracted chunk, and pref. is not o-supported:
-            remove the preference --- */
-            
-            /* --- first splice it out of the clones list--otherwise we might
-            accidentally deallocate some clone that happens to have refcount==0
-            just because it hasn't been asserted yet --- */
-            
-            if (pref->next_clone) 
-               pref->next_clone->prev_clone = pref->prev_clone;
-            if (pref->prev_clone) 
-               pref->prev_clone->next_clone = pref->next_clone;
-            pref->next_clone = pref->prev_clone = NIL;
-            
-            /* --- now add then remove ref--this should result in deallocation */
-            preference_add_ref (pref);
-            preference_remove_ref (thisAgent, pref);
-         }
-      }
-   }
-   
+
+				/* REW: begin 09.15.96 */
+				/* No knowledge retrieval necessary in Operand2 */
+				/* REW: end   09.15.96 */
+
+			} 
+			else if (inst->in_ms || pref->o_supported) 
+			{
+				/* --- normal case --- */
+				add_preference_to_tm (thisAgent, pref);
+
+
+				/* REW: begin 09.15.96 */
+				/* No knowledge retrieval necessary in Operand2 */
+				/* REW: end   09.15.96 */
+
+
+			} 
+			else 
+			{
+				/* --- inst. is refracted chunk, and pref. is not o-supported:
+				remove the preference --- */
+
+				/* --- first splice it out of the clones list--otherwise we might
+				accidentally deallocate some clone that happens to have refcount==0
+				just because it hasn't been asserted yet --- */
+
+				if (pref->next_clone) 
+					pref->next_clone->prev_clone = pref->prev_clone;
+				if (pref->prev_clone) 
+					pref->prev_clone->next_clone = pref->next_clone;
+				pref->next_clone = pref->prev_clone = NIL;
+
+				/* --- now add then remove ref--this should result in deallocation */
+				preference_add_ref (pref);
+				preference_remove_ref (thisAgent, pref);
+			}
+		}
+	}
+
 #ifndef O_REJECTS_FIRST
-   if (o_rejects) 
-      process_o_rejects_and_deallocate_them (thisAgent, o_rejects);
+	if (o_rejects) 
+		process_o_rejects_and_deallocate_them (thisAgent, o_rejects);
 #endif
 }
 
@@ -1098,29 +1058,24 @@ void do_preference_phase (agent* thisAgent) {
 
 
   if (thisAgent->sysparams[TRACE_PHASES_SYSPARAM]) {
-	  if (thisAgent->operand2_mode == TRUE) {
-		  if (thisAgent->current_phase == APPLY_PHASE) {  /* it's always IE for PROPOSE */
-			  xml_begin_tag( thisAgent, kTagSubphase );
-			  xml_att_val( thisAgent, kPhase_Name, kSubphaseName_FiringProductions );
-			  switch (thisAgent->FIRING_TYPE) {
-					case PE_PRODS:
-						print (thisAgent, "\t--- Firing Productions (PE) For State At Depth %d ---\n", thisAgent->active_level); // SBW 8/4/2008: added active_level
-						xml_att_val( thisAgent, kPhase_FiringType, kPhaseFiringType_PE );
-						break;
-					case IE_PRODS:
-            print (thisAgent, "\t--- Firing Productions (IE) For State At Depth %d ---\n", thisAgent->active_level); // SBW 8/4/2008: added active_level
-						xml_att_val( thisAgent, kPhase_FiringType, kPhaseFiringType_IE );
-						break;
-			  }
-        std::string* levelString = to_string(thisAgent->active_level);
-        xml_att_val( thisAgent, kPhase_LevelNum, levelString->c_str()); // SBW 8/4/2008: active_level for XML output mode
-        xml_end_tag( thisAgent, kTagSubphase );
-        delete levelString;
+	  if (thisAgent->current_phase == APPLY_PHASE) {  /* it's always IE for PROPOSE */
+		  xml_begin_tag( thisAgent, kTagSubphase );
+		  xml_att_val( thisAgent, kPhase_Name, kSubphaseName_FiringProductions );
+		  switch (thisAgent->FIRING_TYPE) {
+				case PE_PRODS:
+					print (thisAgent, "\t--- Firing Productions (PE) For State At Depth %d ---\n", thisAgent->active_level); // SBW 8/4/2008: added active_level
+					xml_att_val( thisAgent, kPhase_FiringType, kPhaseFiringType_PE );
+					break;
+				case IE_PRODS:
+        print (thisAgent, "\t--- Firing Productions (IE) For State At Depth %d ---\n", thisAgent->active_level); // SBW 8/4/2008: added active_level
+					xml_att_val( thisAgent, kPhase_FiringType, kPhaseFiringType_IE );
+					break;
 		  }
+		std::string* levelString = to_string(thisAgent->active_level);
+		xml_att_val( thisAgent, kPhase_LevelNum, levelString->c_str()); // SBW 8/4/2008: active_level for XML output mode
+		xml_end_tag( thisAgent, kTagSubphase );
+		delete levelString;
 	  }
-	  else
-		  // the XML for this is generated in this function
-		  print_phase (thisAgent, "\n--- Preference Phase ---\n",0);
   }
 
   /* New waterfall model: */
@@ -1243,17 +1198,11 @@ void do_preference_phase (agent* thisAgent) {
   special data strucutre (because they don't appear on any goal) 
   REW.  */
 
-  if (thisAgent->operand2_mode && thisAgent->nil_goal_retractions) {
+  if (thisAgent->nil_goal_retractions) {
 	  while (get_next_nil_goal_retraction (thisAgent, &inst))
 		  retract_instantiation (thisAgent, inst);
   }
   /* REW: end   08.20.97 */
-
-  if (thisAgent->sysparams[TRACE_PHASES_SYSPARAM]) {
-     if (! thisAgent->operand2_mode) {
- 	  print_phase (thisAgent, "\n--- END Preference Phase ---\n",1);
-	 }
-  }
 
 }
 

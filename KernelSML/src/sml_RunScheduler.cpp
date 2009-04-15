@@ -474,8 +474,6 @@ void RunScheduler::MoveTo_StopBeforePhase(bool forever, smlRunStepSize runStepSi
 				AgentSML* pAgent = pAgentSML ;
 				smlPhase phase = pAgentSML->GetCurrentPhase() ;
 				smlRunResult runResult = pAgentSML->GetResultOfLastRun() ;
-				//if (! pAgent->GetOperand2Mode()) continue;  // we don't support for agents in Soar7 mode...
-				if (pAgent->IsSoar7Mode()) continue ;
 
 				// as in Bug 648, it's possible that a client has requested STOP_AFTER_DECISION
 				// while the agent was stopped at the m_StopBeforePhase, yet the agent run logic has
@@ -518,8 +516,6 @@ void RunScheduler::MoveTo_StopBeforePhase(bool forever, smlRunStepSize runStepSi
 				AgentSML* pAgent = pAgentSML ;
 				smlPhase phase = pAgentSML->GetCurrentPhase() ;
 				smlRunResult runResult = pAgentSML->GetResultOfLastRun() ;
-				//if (! pAgent->GetOperand2Mode()) continue;  // we don't support for agents in Soar7 mode...
-				if (pAgent->IsSoar7Mode()) continue ;
  
 				while ((phase != m_StopBeforePhase) && (sml_RUN_COMPLETED == runResult))
 				{

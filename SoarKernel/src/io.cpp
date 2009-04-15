@@ -241,55 +241,52 @@ wme* find_input_wme_by_timetag_from_id (agent* thisAgent, Symbol* idSym, unsigne
 }
 
 Bool remove_input_wme (agent* thisAgent, wme *w) {
-   wme *temp;
+	wme *temp;
 
-   /* --- a little bit of error checking --- */
-   if (!w) {
-      print (thisAgent, "Error: an input routine called remove_input_wme on a NULL wme.\n");
-      return FALSE;
-   }
-   for (temp=w->id->id.input_wmes; temp!=NIL; temp=temp->next)
-      if (temp==w) break;
-   if (!temp) {
-      print (thisAgent, "Error: an input routine called remove_input_wme on a wme that\n");
-      print (thisAgent, "isn't one of the input wmes currently in working memory.\n");
-      return FALSE;
-   }
-   /* Note: for efficiency, it might be better to use a hash table for the
-   above test, rather than scanning the linked list.  We could have one
-   global hash table for all the input wmes in the system. */
-   /* --- go ahead and remove the wme --- */
-   remove_from_dll (w->id->id.input_wmes, w, next, prev);
-   /* REW: begin 09.15.96 */
-   if (thisAgent->operand2_mode){
-      if (w->gds) {
-         if (w->gds->goal != NIL){
-             if (thisAgent->soar_verbose_flag || thisAgent->sysparams[TRACE_WM_CHANGES_SYSPARAM]) 
-			 {
-				 char buf[256];
-				 SNPRINTF(buf, 254, "remove_input_wme: Removing state S%d because element in GDS changed.", w->gds->goal->id.level);
+	/* --- a little bit of error checking --- */
+	if (!w) {
+		print (thisAgent, "Error: an input routine called remove_input_wme on a NULL wme.\n");
+		return FALSE;
+	}
+	for (temp=w->id->id.input_wmes; temp!=NIL; temp=temp->next)
+		if (temp==w) break;
+	if (!temp) {
+		print (thisAgent, "Error: an input routine called remove_input_wme on a wme that\n");
+		print (thisAgent, "isn't one of the input wmes currently in working memory.\n");
+		return FALSE;
+	}
+	/* Note: for efficiency, it might be better to use a hash table for the
+	above test, rather than scanning the linked list.  We could have one
+	global hash table for all the input wmes in the system. */
+	/* --- go ahead and remove the wme --- */
+	remove_from_dll (w->id->id.input_wmes, w, next, prev);
+	/* REW: begin 09.15.96 */
+	if (w->gds) {
+		if (w->gds->goal != NIL){
+			if (thisAgent->soar_verbose_flag || thisAgent->sysparams[TRACE_WM_CHANGES_SYSPARAM]) 
+		 {
+			 char buf[256];
+			 SNPRINTF(buf, 254, "remove_input_wme: Removing state S%d because element in GDS changed.", w->gds->goal->id.level);
 
-              	 print(thisAgent, buf );
-				 print(thisAgent, " WME: "); 
+			 print(thisAgent, buf );
+			 print(thisAgent, " WME: "); 
 
-                 xml_begin_tag( thisAgent, kTagVerbose );
-                 xml_att_val( thisAgent, kTypeString, buf );
-                 print_wme(thisAgent, w);
-                 xml_end_tag( thisAgent, kTagVerbose );
-			 }
+			 xml_begin_tag( thisAgent, kTagVerbose );
+			 xml_att_val( thisAgent, kTypeString, buf );
+			 print_wme(thisAgent, w);
+			 xml_end_tag( thisAgent, kTagVerbose );
+		 }
 
-			 gds_invalid_so_remove_goal(thisAgent, w);
-            /* NOTE: the call to remove_wme_from_wm will take care
-            of checking if GDS should be removed */
-         }
-      }
-   }
-  
-  /* REW: end   09.15.96 */
-  
-  remove_wme_from_wm (thisAgent, w);
+			gds_invalid_so_remove_goal(thisAgent, w);
+			/* NOTE: the call to remove_wme_from_wm will take care
+			of checking if GDS should be removed */
+		}
+	}
+	/* REW: end   09.15.96 */
 
-  return TRUE;
+	remove_wme_from_wm (thisAgent, w);
+
+	return TRUE;
 }
 
 

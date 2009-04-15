@@ -973,42 +973,35 @@ void chunk_instantiation (agent* thisAgent,
   */
   
   
-  if (thisAgent->operand2_mode == TRUE) {
-	  
-      if (thisAgent->sysparams[LEARNING_ON_SYSPARAM] == TRUE) {
-		  if (pref->id->id.level < (inst->match_goal_level - 1)) {
-			  making_topmost_chunk     = FALSE;
-			  allow_variablization     = FALSE;
-			  inst->okay_to_variablize = FALSE;
-			  
-              if (thisAgent->soar_verbose_flag == TRUE) {
-				  printf("\n   in chunk_instantiation: making justification only");
-                  xml_generate_verbose(thisAgent, "in chunk_instantiation: making justification only");
-              }
+  if (thisAgent->sysparams[LEARNING_ON_SYSPARAM] == TRUE) {
+	  if (pref->id->id.level < (inst->match_goal_level - 1)) {
+		  making_topmost_chunk     = FALSE;
+		  allow_variablization     = FALSE;
+		  inst->okay_to_variablize = FALSE;
+
+		  if (thisAgent->soar_verbose_flag == TRUE) {
+			  printf("\n   in chunk_instantiation: making justification only");
+			  xml_generate_verbose(thisAgent, "in chunk_instantiation: making justification only");
 		  }
-		  
-		  else {
-			  making_topmost_chunk     = TRUE;
-			  allow_variablization     = (thisAgent->sysparams[LEARNING_ON_SYSPARAM] != 0);
-			  inst->okay_to_variablize = (byte) thisAgent->sysparams[LEARNING_ON_SYSPARAM];
-			  
-              if (thisAgent->soar_verbose_flag == TRUE) {
-				  printf("\n   in chunk_instantiation: resetting allow_variablization to %s", ((allow_variablization) ? "TRUE" : "FALSE"));
-                  if(allow_variablization) {
-                      xml_generate_verbose(thisAgent, "in chunk_instantiation: resetting allow_variablization to TRUE");
-                  } else {
-                      xml_generate_verbose(thisAgent, "in chunk_instantiation: resetting allow_variablization to FALSE");
-                  }
-              }
+	  }
+	  else {
+		  making_topmost_chunk     = TRUE;
+		  allow_variablization     = (thisAgent->sysparams[LEARNING_ON_SYSPARAM] != 0);
+		  inst->okay_to_variablize = (byte) thisAgent->sysparams[LEARNING_ON_SYSPARAM];
+
+		  if (thisAgent->soar_verbose_flag == TRUE) {
+			  printf("\n   in chunk_instantiation: resetting allow_variablization to %s", ((allow_variablization) ? "TRUE" : "FALSE"));
+			  if(allow_variablization) {
+				  xml_generate_verbose(thisAgent, "in chunk_instantiation: resetting allow_variablization to TRUE");
+			  } else {
+				  xml_generate_verbose(thisAgent, "in chunk_instantiation: resetting allow_variablization to FALSE");
+			  }
 		  }
-      }
-	  
-      else {
-		  making_topmost_chunk = TRUE;
-      }
-	  
+	  }
   }
-  
+  else {
+	  making_topmost_chunk = TRUE;
+  }
   /* REW: end   09.15.96 */
   
   
