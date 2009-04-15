@@ -330,19 +330,6 @@ void AgentSML::ResetLastOutputCount()
 }
 
 //=============================
-// Special compatability mode to use Soar 7 decision cycle
-// Intended to allow easier upgrade from Soar 7 to Soar 8.
-//=============================
-bool AgentSML::IsSoar7Mode()
-{
-	// This mode signals Soar 8
-	if (m_agent->operand2_mode)
-		return false ;
-
-	return true ;
-}
-
-//=============================
 // Returns the current phase (which generally means the phase that is next going to execute
 // if you inspect this in between runs)
 //=============================
