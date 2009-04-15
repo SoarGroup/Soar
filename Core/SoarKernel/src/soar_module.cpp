@@ -89,10 +89,6 @@ namespace soar_module
 
 	preference *make_fake_preference( agent *my_agent, Symbol *state, wme *w, wme_set *conditions )
 	{
-		// if we are on the top state, don't make the preference
-		if ( state == my_agent->top_state )
-			return NIL;
-
 		// make fake preference
 		preference *pref = make_preference( my_agent, ACCEPTABLE_PREFERENCE_TYPE, w->id, w->attr, w->value, NIL );
 		pref->o_supported = TRUE;
