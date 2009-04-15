@@ -662,16 +662,25 @@ void smem_lti_activate( agent *my_agent, smem_lti_id lti )
 	my_agent->smem_stmts->act_set->execute( soar_module::op_reinit );
 }
 
-Symbol *smem_lti_make( agent *my_agent, char name_letter, unsigned long name_number, goal_stack_level level )
+Symbol *smem_lti_make( agent *my_agent, smem_lti_id lti, char name_letter, unsigned long name_number, goal_stack_level level )
 {
 	Symbol *return_val;
 
 	// try to find existing
 	return_val = find_identifier( my_agent, name_letter, name_number );
+
+	// otherwise create
 	if ( return_val == NIL )
 	{
-		return_val = make_new_identifier( my_agent, name_letter, level, name_number );	
+		return_val = make_new_identifier( my_agent, name_letter, level, name_number );		
 	}
+	else
+	{
+		symbol_add_ref( return_val );
+	}
+
+	// set lti field irrespective
+	return_val->id.smem_lti = lti;
 
 	return return_val;
 }
@@ -939,7 +948,7 @@ void smem_install_memory( agent *my_agent, Symbol *state, smem_lti_id parent_id,
 		q->bind_int( 1, parent_id );
 		q->execute();
 
-		lti = smem_lti_make( my_agent, (char) q->column_int( 0 ), (unsigned long) q->column_int( 1 ), result_header->id.level );
+		lti = smem_lti_make( my_agent, parent_id, (char) q->column_int( 0 ), (unsigned long) q->column_int( 1 ), result_header->id.level );
 
 		q->reinitialize();
 	}
@@ -948,7 +957,8 @@ void smem_install_memory( agent *my_agent, Symbol *state, smem_lti_id parent_id,
 	smem_lti_activate( my_agent, parent_id );
 
 	// point retrieved to lti
-	smem_add_meta_wme( my_agent, state, result_header, my_agent->smem_sym_retrieved, lti );	
+	smem_add_meta_wme( my_agent, state, result_header, my_agent->smem_sym_retrieved, lti );
+	symbol_remove_ref( my_agent, lti );
 
 	// if no children, then retrieve children
 	if ( ( lti->id.impasse_wmes == NIL ) && 
@@ -969,8 +979,7 @@ void smem_install_memory( agent *my_agent, Symbol *state, smem_lti_id parent_id,
 			// identifier vs. constant
 			if ( my_agent->smem_stmts->web_expand->column_type( 2 ) == soar_module::null_t )
 			{
-				value_sym = smem_lti_make( my_agent, (char) expand_q->column_int( 4 ), (unsigned long) expand_q->column_int( 5 ), lti->id.level );
-				value_sym->id.smem_lti = expand_q->column_int( 6 );					
+				value_sym = smem_lti_make( my_agent, (smem_lti_id) expand_q->column_int( 6 ), (char) expand_q->column_int( 4 ), (unsigned long) expand_q->column_int( 5 ), lti->id.level );
 			}
 			else
 			{
