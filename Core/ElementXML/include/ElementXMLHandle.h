@@ -19,7 +19,7 @@ extern "C" {
 /* arbitrary handle.  If this is ever a problem, it can be typedef'd to a long. */
 struct ElementXML_InterfaceStruct
 {
-	unsigned int n;	/* So that we compiles under 'C' */
+	intptr_t n;	/* So that we compiles under 'C' */
 };
 typedef ElementXML_InterfaceStruct* ElementXML_Handle ;
 
