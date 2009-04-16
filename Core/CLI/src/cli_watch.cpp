@@ -131,7 +131,11 @@ bool CommandLineInterface::ParseWatch(std::vector<std::string>& argv) {
 				break;
 
 			case 'l'://level
-				if (!ProcessWatchLevelSettings(ParseLevelOptarg(), options, settings, wmeSetting, learnSetting)) return false; //error, code set in ProcessWatchLevel
+				{
+					int level = 0;
+					if ( !from_string( level, m_OptionArgument ) ) return SetError( CLIError::kIntegerExpected );
+					if (!ProcessWatchLevelSettings(level, options, settings, wmeSetting, learnSetting)) return false; //error, code set in ProcessWatchLevel
+				}
 				break;
 
 			case 'N'://none
@@ -251,8 +255,9 @@ bool CommandLineInterface::ParseWatch(std::vector<std::string>& argv) {
 	// Allow watch level by itself
 	if (m_NonOptionArguments == 1) {
 		int optind = m_Argument - m_NonOptionArguments;
-		if (!IsInteger(argv[optind])) return SetError(CLIError::kIntegerExpected);
-		if (!ProcessWatchLevelSettings(atoi(argv[optind].c_str()), options, settings, wmeSetting, learnSetting)) return false; //error, code set in ProcessWatchLevel
+		int level = 0;
+		if ( !from_string( level, argv[optind] ) ) return SetError(CLIError::kIntegerExpected);
+		if (!ProcessWatchLevelSettings(level, options, settings, wmeSetting, learnSetting)) return false; //error, code set in ProcessWatchLevel
 	}
 
 	return DoWatch(options, settings, wmeSetting, learnSetting);
@@ -325,14 +330,6 @@ bool CommandLineInterface::ProcessWatchLevelSettings(const int level, WatchBitse
 	}
 	return true;
 }
-int CommandLineInterface::ParseLevelOptarg() {
-	if (!IsInteger(m_OptionArgument)) {
-		SetError(CLIError::kIntegerExpected);
-		return -1;
-	}
-	return atoi(m_OptionArgument.c_str());
-}
-
 int CommandLineInterface::ParseLearningOptarg() {
 	if (m_OptionArgument == "noprint"   || m_OptionArgument == "0") return 0;
 	if (m_OptionArgument == "print"     || m_OptionArgument == "1") return 1;
