@@ -797,6 +797,9 @@ protected:
 	void PushAgent( sml::AgentSML* pAgent );
 	void PopAgent();
 
+	// For help system
+	bool ListHelpTopics(const std::string& directory, std::list< std::string >& topics);
+
 ////////////////////////////////////////////
 	// New options code
 
