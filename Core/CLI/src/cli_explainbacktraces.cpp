@@ -42,8 +42,7 @@ bool CommandLineInterface::ParseExplainBacktraces(std::vector<std::string>& argv
 				break;
 
 			case 'c':
-				if (!IsInteger(m_OptionArgument)) return SetError(CLIError::kIntegerExpected);
-				condition = atoi(m_OptionArgument.c_str());
+				if ( !from_string( condition, m_OptionArgument ) ) return SetError(CLIError::kIntegerExpected);
 				if (condition <= 0) return SetError(CLIError::kIntegerMustBePositive);
 				break;
 			default:

@@ -50,8 +50,7 @@ bool CommandLineInterface::ParseChunkNameFormat(std::vector<std::string>& argv) 
 			case 'c': 
 				countFlag = true;
 				if (m_OptionArgument.size()) {
-					if (!IsInteger(m_OptionArgument)) return SetError(CLIError::kIntegerExpected);
-					count = atoi(m_OptionArgument.c_str());
+					if ( !from_string( count, m_OptionArgument ) ) return SetError(CLIError::kIntegerExpected);
 					if (count < 0) return SetError(CLIError::kIntegerMustBeNonNegative);
 				}
 				break;
