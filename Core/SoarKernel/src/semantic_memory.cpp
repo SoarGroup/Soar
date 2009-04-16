@@ -1149,7 +1149,7 @@ void smem_process_query( agent *my_agent, Symbol *state, Symbol *query, smem_lti
 			{
 				// attr=? AND val_lti=?
 				q = my_agent->smem_stmts->web_lti_all;
-				q->bind_int( 1, new_cue_element->attr_hash );				
+				q->bind_int( 2, new_cue_element->value_lti );				
 			}
 
 			// all require hash as first parameter
