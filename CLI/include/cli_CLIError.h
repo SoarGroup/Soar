@@ -98,6 +98,7 @@ namespace cli {
 			kCloseFileFail						= 93,
 			kFileOpen							= 94,
 			kFileNotOpen						= 95,
+			kRealExpected						= 96,
 		};
 
 		static char const* GetErrorDescription(ErrorCode code) {
@@ -183,6 +184,7 @@ namespace cli {
 				case kCloseFileFail:					return "File close failed.";
 				case kFileOpen:							return "File already open.";
 				case kFileNotOpen:						return "File is not open.";
+				case kRealExpected:						return "Real number expected.";
 				default:								return "Unknown error code.";
 			}
 		}

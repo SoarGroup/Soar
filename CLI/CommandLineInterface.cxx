@@ -42,6 +42,7 @@
 #include "src/cli_pwatch.cpp"
 #include "src/cli_pwd.cpp"
 #include "src/cli_quit.cpp"
+#include "src/cli_rand.cpp"
 #include "src/cli_removewme.cpp"
 #include "src/cli_replayinput.cpp"
 #include "src/cli_retenet.cpp"

@@ -79,14 +79,14 @@ bool CommandLineInterface::ParseMemories(std::vector<std::string>& argv) {
 	int n = 0;
 	if (m_NonOptionArguments == 1) {
 		int optind = m_Argument - m_NonOptionArguments;
-		if (!IsInteger(argv[optind])) {
+		if ( from_string( n, argv[optind] ) ) {
+			// number
+			if (n <= 0) return SetError(CLIError::kIntegerMustBePositive);
+		} else {
 			// production
 			if (options.any()) return SetError(CLIError::kNoProdTypeWhenProdName);
 			return DoMemories(options, 0, &argv[optind]);
 		}
-		// number
-		n = atoi(argv[optind].c_str());
-		if (n <= 0) return SetError(CLIError::kIntegerMustBePositive);
 	}
 
 	// Default to all types when no production and no type specified

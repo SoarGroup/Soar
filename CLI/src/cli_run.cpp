@@ -90,8 +90,7 @@ bool CommandLineInterface::ParseRun(std::vector<std::string>& argv) {
 	int count = -1;
 	if (m_NonOptionArguments == 1) {
 		int optind = m_Argument - m_NonOptionArguments;
-		if (!IsInteger(argv[optind])) return SetError(CLIError::kIntegerExpected);
-		count = atoi(argv[optind].c_str());
+		if ( !from_string( count, argv[optind] ) ) return SetError(CLIError::kIntegerExpected);
 		// Allow "run 0" for decisions -- which means run agents to the current stop-before phase
 		if (count < 0 || (count == 0 && specifiedType && !options.test(RUN_DECISION))) return SetError(CLIError::kIntegerMustBePositive);
 	} 
