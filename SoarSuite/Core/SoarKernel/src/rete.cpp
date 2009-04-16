@@ -5571,15 +5571,18 @@ void p_node_left_addition (agent* thisAgent, rete_node *node, token *tok, wme *w
 			remove_from_dll (msc->goal->id.ms_retractions, msc,
 				next_in_level, prev_in_level);
 		} else {
-			// BUGBUG FIXME BADBAD TODO
 			// RPM 6/05
 			// This if statement is to avoid a crash we get on most platforms in Soar 7 mode
 			// It's unknown what consequences it has, but the Soar 7 demos seem to work
 			// To return things to how they were, simply remove the if statement (but leave
 			//  the remove_from_dll line).
-			if(thisAgent->nil_goal_retractions)
+			
+			// voigtjr 2009: returning things to how they were now that soar7 is removed
+			//if(thisAgent->nil_goal_retractions)
+			{
 				remove_from_dll (thisAgent->nil_goal_retractions,
 				msc, next_in_level, prev_in_level); 
+			}
 		}
 		/* REW: end   08.20.97 */
 
