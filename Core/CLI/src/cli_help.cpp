@@ -32,7 +32,7 @@ bool CommandLineInterface::ParseHelp(std::vector<std::string>& argv) {
 	return DoHelp();
 }
 
-bool listHelpTopics(const std::string& directory, std::list< std::string >& topics) {
+bool CommandLineInterface::ListHelpTopics(const std::string& directory, std::list< std::string >& topics) {
 
 #ifdef WIN32
 	// Windows-specific directory listing
@@ -60,28 +60,27 @@ bool listHelpTopics(const std::string& directory, std::list< std::string >& topi
 	return true;
 
 #else // WIN32
-	//DIR* directoryPointer;
-	//struct dirent* entry;
+	DIR* directoryPointer;
+	struct dirent* entry;
 
-	//// Get the current working directory and store in dir
-	//std::string dir;
-	//if ( !GetCurrentWorkingDirectory( dir ) ) return false;
+	// Open the directory for reading
+	if ( ( directoryPointer = opendir( directory.c_str() ) ) == 0 ) {
+		return SetError(CLIError::kDirectoryOpenFailure);
+	}
 
-	//// Open the directory for reading
-	//if ((directoryPointer = opendir(dir.c_str())) == 0) return SetError(CLIError::kDirectoryOpenFailure);
+	// Read the files
+	errno = 0;
+	while ( ( entry = readdir( directoryPointer ) ) != 0 ) {
+		if ( entry->d_type != DT_DIR ) {
+			topics.push_back( std::string( entry->d_name ) );
+		}
+	}
 
-	//// Read the files
-	//errno = 0;
-	//while ((entry = readdir(directoryPointer)) != 0) {
-	//	m_Result << '\n';
-	//	PrintFilename(entry->d_name, entry->d_type == DT_DIR);
-	//}
+	// Check for error
+	if ( errno != 0 ) return SetError( CLIError::kDirectoryEntryReadFailure );
 
-	//// Check for error
-	//if (errno != 0) return SetError(CLIError::kDirectoryEntryReadFailure);
-
-	//// Ignoring close error
-	//closedir(directoryPointer);
+	// Ignoring close error
+	closedir( directoryPointer );
 
 	return true;
 #endif // WIN32
@@ -92,7 +91,7 @@ bool CommandLineInterface::DoHelp(const std::string* pCommand) {
 	std::string helpFile;
 	if (!pCommand || !pCommand->size()) {
 		std::list< std::string > topics;
-		if ( !listHelpTopics( m_LibraryDirectory + "/CLIHelp", topics ) ) {
+		if ( !ListHelpTopics( m_LibraryDirectory + "/CLIHelp", topics ) ) {
 			return SetError( CLIError::kDirectoryOpenFailure );
 		}
 
@@ -100,6 +99,8 @@ bool CommandLineInterface::DoHelp(const std::string* pCommand) {
 			SetErrorDetail("The library location appears to be incorrect, please use set-library-location <path> where path leads to SoarLibrary.");
 			return SetError(CLIError::kNoHelpFile);
 		}
+		
+		topics.sort();
 
 		std::list< std::string >::iterator iter = topics.begin();
 		m_Result << "Help is available for the following topics:\n";
