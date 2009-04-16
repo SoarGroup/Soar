@@ -222,6 +222,7 @@ public:
 	bool ParsePWatch(std::vector<std::string>& argv);
 	bool ParsePWD(std::vector<std::string>& argv);
 	bool ParseQuit(std::vector<std::string>& argv);
+	bool ParseRand(std::vector<std::string>& argv);
 	bool ParseRemoveWME(std::vector<std::string>& argv);
 	bool ParseReplayInput(std::vector<std::string>& argv);
 	bool ParseReteNet(std::vector<std::string>& argv);
@@ -532,6 +533,11 @@ public:
 	bool DoQuit();
 
 	/*************************************************************
+	* @brief rand command
+	*************************************************************/
+	bool DoRand( bool integer, std::string* bound );
+
+	/*************************************************************
 	* @brief remove-wme command
 	* @param timetag The timetag of the wme to remove
 	*************************************************************/
@@ -729,11 +735,6 @@ protected:
 	bool ProcessWatchLevelSettings(const int level, WatchBitset& options, WatchBitset& settings, int& wmeSetting, int& learnSetting);
 
 	eRunInterleaveMode ParseRunInterleaveOptarg();
-
-	/*************************************************************
-	* @brief 
-	*************************************************************/
-	bool IsInteger(const std::string& s);
 
 	/*************************************************************
 	* @brief 

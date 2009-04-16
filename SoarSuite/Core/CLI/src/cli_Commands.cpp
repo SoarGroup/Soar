@@ -58,6 +58,7 @@ char const* Commands::kCLIPWD						= "pwd";
 char const* Commands::kCLIQuit						= "quit";
 char const* Commands::kCLIRemoveWME					= "remove-wme";
 char const* Commands::kCLIReplayInput				= "replay-input";
+char const* Commands::kCLIRand						= "rand";
 char const* Commands::kCLIReteNet					= "rete-net";
 char const* Commands::kCLIRL						= "rl";
 char const* Commands::kCLIRun						= "run";

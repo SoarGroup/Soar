@@ -55,6 +55,7 @@ namespace cli {
 		static char const* kCLIPWatch;
 		static char const* kCLIPWD;
 		static char const* kCLIQuit;
+		static char const* kCLIRand;
 		static char const* kCLIRemoveWME;
 		static char const* kCLIReplayInput;
 		static char const* kCLIReteNet;

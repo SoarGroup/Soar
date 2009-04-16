@@ -83,6 +83,7 @@ EXPORT CommandLineInterface::CommandLineInterface() {
 	m_CommandMap[Commands::kCLIPWatch]						= &cli::CommandLineInterface::ParsePWatch;
 	m_CommandMap[Commands::kCLIPWD]							= &cli::CommandLineInterface::ParsePWD;
 	m_CommandMap[Commands::kCLIQuit]						= &cli::CommandLineInterface::ParseQuit;
+	m_CommandMap[Commands::kCLIRand]						= &cli::CommandLineInterface::ParseRand;
 	m_CommandMap[Commands::kCLIRemoveWME]					= &cli::CommandLineInterface::ParseRemoveWME;
 	m_CommandMap[Commands::kCLIReplayInput]					= &cli::CommandLineInterface::ParseReplayInput;
 	m_CommandMap[Commands::kCLIReteNet]						= &cli::CommandLineInterface::ParseReteNet;
@@ -136,6 +137,7 @@ EXPORT CommandLineInterface::CommandLineInterface() {
 	m_EchoMap[Commands::kCLIPreferences]				= true ;
 	m_EchoMap[Commands::kCLIPushD]						= true ;
 	m_EchoMap[Commands::kCLIQuit]						= true ;
+	m_EchoMap[Commands::kCLIRand]						= true ;
 	m_EchoMap[Commands::kCLIRemoveWME]					= true ;
 	m_EchoMap[Commands::kCLIReplayInput]				= true ;
 	m_EchoMap[Commands::kCLIReteNet]					= true ;
@@ -665,25 +667,6 @@ bool CommandLineInterface::GetCurrentWorkingDirectory(std::string& directory) {
 
 	// Store directory in output parameter and return success
 	directory = buf;
-	return true;
-}
-
-bool CommandLineInterface::IsInteger(const std::string& s) {
-	std::string::const_iterator iter = s.begin();
-	
-	// Allow negatives
-	if (s.length() > 1) {
-		if (*iter == '-') {
-			++iter;
-		}
-	}
-
-	while (iter != s.end()) {
-		if (!isdigit(*iter)) {
-			return false;
-		}
-		++iter;
-	}
 	return true;
 }
 
