@@ -275,7 +275,7 @@ void free_memory_pool (agent* thisAgent, memory_pool *p) {
 
 	char *cur_block = static_cast<char*>(p->first_block);
 	char *next_block;
-	for(int i=0; i<p->num_blocks; i++) {
+	for(size_t i=0; i<p->num_blocks; i++) {
 		// the first 4 bytes point to the next block
 		next_block = *(char **)cur_block;
 		free_memory(thisAgent, cur_block, POOL_MEM_USAGE);
