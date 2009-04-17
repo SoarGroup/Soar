@@ -91,7 +91,7 @@ bool CommandLineInterface::DoSetStopPhase(bool setPhase, bool before, smlPhase p
 		// The "stop after" form is just a courtesy to the user in case they prefer to think that way.
 		if (!before)
 		{
-			phase = (smlPhase)(((int)phase)+1) ;
+			phase = smlPhase(phase + 1);
 			if (phase > sml_OUTPUT_PHASE)
 				phase = sml_INPUT_PHASE ;
 		}
@@ -104,7 +104,7 @@ bool CommandLineInterface::DoSetStopPhase(bool setPhase, bool before, smlPhase p
 
 	if (!before)
 	{
-		stopPhase = (smlPhase)(((int)stopPhase)-1) ;
+		stopPhase = smlPhase(stopPhase - 1);
 		if (stopPhase < sml_INPUT_PHASE)
 			stopPhase = sml_OUTPUT_PHASE ;
 	}

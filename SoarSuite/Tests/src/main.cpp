@@ -50,7 +50,7 @@ int main( int argc, char** argv )
 		if ( std::string( argv[1] ) == "--nopause" ) pause = false;
 	}
 
-	srand( (unsigned)time( NULL ) );
+	srand( static_cast<unsigned>( time( NULL ) ) );
 
 	//--- Create the event manager and test controller
 	CPPUNIT_NS::TestResult controller;

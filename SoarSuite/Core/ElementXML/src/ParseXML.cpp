@@ -193,7 +193,7 @@ void ParseXML::GetNextToken()
 				GetNextChar() ;
 
 				// Check if we've reached --> which marks the end of the comment
-				int len = (int)comment.str().size() ;
+				int len = static_cast<int>(comment.str().size()) ;
 				done = (last == kCloseTagChar && len > 3 && comment.str().at(len-3) == '-' && comment.str().at(len-2) == '-' && comment.str().at(len-1) == '>');
 			}
 

@@ -26,7 +26,7 @@ public:
 		for(unsigned int i=0; i<numbers.size(); i++) {
 			total += numbers[i];
 		}
-		return total/(double)numbers.size();
+		return total/static_cast<double>(numbers.size());
 	}
 
 	double GetHigh(vector<double> numbers) {

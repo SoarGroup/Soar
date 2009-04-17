@@ -19,6 +19,8 @@
 #include "sml_RunScheduler.h"
 #include "cli_CLIError.h"
 
+#include "misc.h"
+
 using namespace cli;
 using namespace sml;
 
@@ -232,7 +234,8 @@ bool CommandLineInterface::DoRun(const RunBitset& options, int count, eRunInterl
 				// NOTE: I don't think this is currently possible
 				m_Result << "\nRun stopped (still executing).";
 			} else {
-				AppendArgTagFast(sml_Names::kParamRunResult, sml_Names::kTypeInt, Int2String((int)runResult, buf, kMinBufferSize));
+				std::string temp;
+				AppendArgTagFast(sml_Names::kParamRunResult, sml_Names::kTypeInt, to_string( runResult, temp ).c_str() );
 			}
 			break;
 
