@@ -67,7 +67,7 @@ ElementXML_Handle ArgMap::GetArgHandle(char const* pName, int position) const
 	// Check if we're asking for a position that doesn't exist
 	// in this argument list.  (This isn't necessarily an error
 	// if we have optional arguments).
-	if (position < 0 || position >= (int)m_ArgList.size())
+	if (position < 0 || position >= static_cast<int>(m_ArgList.size()))
 	{
 		return NULL ;
 	}

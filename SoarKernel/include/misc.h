@@ -43,6 +43,22 @@ template<class T> std::string *to_string( T &x )
 	return return_val;
 }
 
+// Conversion of value to string
+template<class T> std::string& to_string( T &x, std::string& dest )
+{
+	// instantiate stream
+	std::ostringstream o;
+	
+	// get value into stream
+	o << std::setprecision( 16 ) << x;
+	
+	// spit value back as string
+	dest.assign( o.str() );
+	o.flush();
+
+	return dest;
+}
+
 // Conversion from string to value
 template <class T> bool from_string( T &val, std::string str )
 {

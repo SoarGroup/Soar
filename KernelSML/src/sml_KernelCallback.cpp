@@ -154,7 +154,7 @@ void KernelCallback::RegisterWithKernel(int eventID)
 	else if (eventID != smlEVENT_BEFORE_PHASE_EXECUTED && eventID != smlEVENT_AFTER_PHASE_EXECUTED)
 	{
 		// This is the standard case
-		SOAR_CALLBACK_TYPE callbackType = (SOAR_CALLBACK_TYPE)GetCallbackFromEventID(eventID) ;
+		SOAR_CALLBACK_TYPE callbackType = SOAR_CALLBACK_TYPE(GetCallbackFromEventID(eventID)) ;
 		soar_add_callback (pAgent, callbackType, KernelCallbackStatic, eventID, this, NULL, (char*)callbackID.c_str()) ;
 	}
 	else
@@ -171,7 +171,7 @@ void KernelCallback::RegisterWithKernel(int eventID)
 			// as the eventID so the event comes back to us with that label allowing us to pass it directly up to the caller who is expecting an
 			// event of that type, not a subevent.
 			int phaseEvent = events[i] ;
-			SOAR_CALLBACK_TYPE callbackType = (SOAR_CALLBACK_TYPE)GetCallbackFromEventID(phaseEvent) ;
+			SOAR_CALLBACK_TYPE callbackType = SOAR_CALLBACK_TYPE(GetCallbackFromEventID(phaseEvent)) ;
 			soar_add_callback (pAgent, callbackType, KernelCallbackStatic, eventID, this, NULL, (char*)callbackID.c_str()) ;
 		}
 	}
@@ -196,8 +196,8 @@ void KernelCallback::UnregisterWithKernel(int eventID)
 	}
 	else if (eventID != smlEVENT_BEFORE_PHASE_EXECUTED && eventID != smlEVENT_AFTER_PHASE_EXECUTED)
 	{
-		SOAR_CALLBACK_TYPE callbackType = (SOAR_CALLBACK_TYPE)GetCallbackFromEventID(eventID) ;
-		soar_remove_callback(pAgent, callbackType, (char*)callbackID.c_str()) ;
+		SOAR_CALLBACK_TYPE callbackType = SOAR_CALLBACK_TYPE(GetCallbackFromEventID(eventID));
+		soar_remove_callback(pAgent, callbackType, callbackID.c_str()) ;
 	}
 	else
 	{
@@ -210,8 +210,8 @@ void KernelCallback::UnregisterWithKernel(int eventID)
 		for (int i = 0 ; i < 7 ; i++)
 		{
 			int phaseEvent = events[i] ;
-			SOAR_CALLBACK_TYPE callbackType = (SOAR_CALLBACK_TYPE)GetCallbackFromEventID(phaseEvent) ;
-			soar_remove_callback (pAgent, callbackType, (char*)callbackID.c_str()) ;
+			SOAR_CALLBACK_TYPE callbackType = SOAR_CALLBACK_TYPE(GetCallbackFromEventID(phaseEvent)) ;
+			soar_remove_callback (pAgent, callbackType, callbackID.c_str()) ;
 		}
 	}
 }

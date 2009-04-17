@@ -626,8 +626,8 @@ void soar_test_all_monitorable_callbacks(agent* thisAgent)
   for(i = 1; i < NUMBER_OF_MONITORABLE_CALLBACKS; i++)
     {
       soar_add_callback(thisAgent, static_cast<SOAR_CALLBACK_TYPE>(i), 
-			(soar_callback_fn) soar_callback_test_callback, i,
-			(void*)soar_callback_enum_to_name(static_cast<SOAR_CALLBACK_TYPE>(i), TRUE), 
+			reinterpret_cast<soar_callback_fn>(soar_callback_test_callback), i,
+			reinterpret_cast<void*>(const_cast<char*>(soar_callback_enum_to_name(static_cast<SOAR_CALLBACK_TYPE>(i), TRUE))), 
 			NULL, test_callback_name);
     }
 }

@@ -38,7 +38,7 @@ Symbol* RhsFunction::RhsFunctionCallback(agent* thisAgent, list* args, void* use
 
 	// Check to make sure we have the right number of arguments.   
 	if( (rhsFunction->GetNumExpectedParameters() == kPARAM_NUM_VARIABLE) ||
-	  ((int)symVector.size() == rhsFunction->GetNumExpectedParameters()) )
+	  (static_cast<int>(symVector.size()) == rhsFunction->GetNumExpectedParameters()) )
 	{
 		 // Actually make the call.  We can do the dynamic cast because we passed in the
 		 //  symbol factory and thus know how the symbol was created.

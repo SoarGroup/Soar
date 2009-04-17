@@ -36,7 +36,7 @@ double get_number_from_symbol( Symbol *sym )
 	if ( sym->common.symbol_type == FLOAT_CONSTANT_SYMBOL_TYPE )
 		return sym->fc.value;
 	else if ( sym->common.symbol_type == INT_CONSTANT_SYMBOL_TYPE )
-		return (double) sym->ic.value;
+		return static_cast<double>(sym->ic.value);
 	
 	return 0.0;
 }

@@ -73,7 +73,7 @@ void RunListener::OnKernelEvent(int eventID, AgentSML* pAgentSML, void* pCallDat
 {
 	// Get the first listener for this event (or return if there are none)
 	ConnectionListIter connectionIter ;
-	if (!EventManager<smlRunEventId>::GetBegin((smlRunEventId)eventID, &connectionIter))
+	if (!EventManager<smlRunEventId>::GetBegin(smlRunEventId(eventID), &connectionIter))
 		return ;
 
 	// We need the first connection for when we're building the message.  Perhaps this is a sign that
@@ -83,8 +83,8 @@ void RunListener::OnKernelEvent(int eventID, AgentSML* pAgentSML, void* pCallDat
 	// Convert eventID to a string
 	char const* event = m_pKernelSML->ConvertEventToString(eventID) ;
 
-	// Convert phase to a string (cast through long long to prevent warning about pointer truncation from void*)
-	int phase = (int)(long long)pCallData ;
+	// Convert phase to a string
+	int phase = reinterpret_cast<int>(pCallData) ;
 
 	char phaseStr[kMinBufferSize] ;
 	Int2String(phase, phaseStr, sizeof(phaseStr)) ;
@@ -97,7 +97,7 @@ void RunListener::OnKernelEvent(int eventID, AgentSML* pAgentSML, void* pCallDat
 
 	// Send the message out
 	AnalyzeXML response ;
-	SendEvent(pAgentSML, pConnection, pMsg, &response, connectionIter, GetEnd((smlRunEventId)eventID)) ;
+	SendEvent(pAgentSML, pConnection, pMsg, &response, connectionIter, GetEnd(smlRunEventId(eventID))) ;
 
 	// Clean up
 	delete pMsg ;
