@@ -235,8 +235,8 @@ Symbol *instantiate_rhs_value (agent* thisAgent, rhs_value rv,
   }
 
   if (rhs_value_is_reteloc(rv)) {
-    result = get_symbol_from_rete_loc ((unsigned short) rhs_value_to_reteloc_levels_up(rv),
-                                       (byte)rhs_value_to_reteloc_field_num(rv),
+    result = get_symbol_from_rete_loc (static_cast<unsigned short>(rhs_value_to_reteloc_levels_up(rv)), 
+                                       static_cast<byte>(rhs_value_to_reteloc_field_num(rv)),
                                        tok, w);
     symbol_add_ref (result);
     return result;
@@ -709,7 +709,7 @@ void create_instantiation (agent* thisAgent, production *prod, struct token_stru
 		/* --- invoke callback function --- */
 		soar_invoke_callbacks(thisAgent, 
 			FIRING_CALLBACK,
-			(soar_call_data) inst);
+			reinterpret_cast<soar_call_data>(inst));
 
 	}
 }
@@ -747,8 +747,8 @@ Bool shouldCreateInstantiation (agent* thisAgent, production *prod, struct token
 			sym = rhs_value_to_symbol(a->id);
 		} else {
 			if (rhs_value_is_reteloc(a->id)) {
-				sym = get_symbol_from_rete_loc ((unsigned short) rhs_value_to_reteloc_levels_up(a->id),
-					(byte)rhs_value_to_reteloc_field_num(a->id),
+				sym = get_symbol_from_rete_loc (static_cast<unsigned short>(rhs_value_to_reteloc_levels_up(a->id)),
+					static_cast<byte>(rhs_value_to_reteloc_field_num(a->id)),
 					tok, w);
 			}
 		}
@@ -837,7 +837,7 @@ void retract_instantiation (agent* thisAgent, instantiation *inst) {
   /* --- invoke callback function --- */
   soar_invoke_callbacks(thisAgent, 
 			RETRACTION_CALLBACK,
-			(soar_call_data) inst);
+			reinterpret_cast<soar_call_data>(inst));
    
   retracted_a_preference = FALSE;
   
@@ -855,7 +855,7 @@ void retract_instantiation (agent* thisAgent, instantiation *inst) {
 			if (get_printer_output_column(thisAgent)!=1) print (thisAgent, "\n");  /* AGR 617/634 */
 			print (thisAgent, "Retracting ");
             print_instantiation_with_wmes (thisAgent, inst, 
-				(wme_trace_type)thisAgent->sysparams[TRACE_FIRINGS_WME_TRACE_TYPE_SYSPARAM],1);
+				static_cast<wme_trace_type>(thisAgent->sysparams[TRACE_FIRINGS_WME_TRACE_TYPE_SYSPARAM]),1);
 			if (thisAgent->sysparams[TRACE_FIRINGS_PREFERENCES_SYSPARAM]) {
 				print (thisAgent, " -->\n");
 				xml_object( thisAgent, kTagActionSideMarker );
@@ -1113,7 +1113,7 @@ void do_preference_phase (agent* thisAgent) {
 			  thisAgent->system_halted = TRUE;
 			  soar_invoke_callbacks(thisAgent, 
 				  AFTER_HALT_SOAR_CALLBACK,
-				  (soar_call_data) NULL);
+				  0);
 			  return;
 		  }
 

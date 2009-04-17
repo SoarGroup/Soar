@@ -70,7 +70,7 @@ bool CommandLineInterface::DoTime(std::vector<std::string>& argv) {
 		- (realStart.tv_sec + (realStart.tv_usec / 1000000.0));
 #endif
 
-	double procElapsed = (procFinish - procStart) / (double)CLOCKS_PER_SEC;
+	double procElapsed = (procFinish - procStart) / static_cast<double>(CLOCKS_PER_SEC);
 
 	// Print elapsed time and return
 	char buf[kMinBufferSize];

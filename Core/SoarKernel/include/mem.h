@@ -243,17 +243,17 @@ extern void free_growable_string (agent* thisAgent, growable_string gs);
 
 typedef struct memory_pool_struct {
   void *free_list;             /* header of chain of free items */
-  long used_count;             /* used for statistics only when #def'd MEMORY_POOL_STATS */
-  long item_size;               /* bytes per item */
-  long items_per_block;        /* number of items in each big block */
-  long num_blocks;             /* number of big blocks in use by this pool */
+  size_t used_count;             /* used for statistics only when #def'd MEMORY_POOL_STATS */
+  size_t item_size;               /* bytes per item */
+  size_t items_per_block;        /* number of items in each big block */
+  size_t num_blocks;             /* number of big blocks in use by this pool */
   void *first_block;           /* header of chain of blocks */
   char name[MAX_POOL_NAME_LENGTH];  /* name of the pool (for memory-stats) */
   struct memory_pool_struct *next;  /* next in list of all memory pools */
 } memory_pool;
 
 extern void add_block_to_memory_pool (agent* thisAgent, memory_pool *p);
-extern void init_memory_pool (agent* thisAgent, memory_pool *p, long item_size, const char *name);
+extern void init_memory_pool (agent* thisAgent, memory_pool *p, size_t item_size, const char *name);
 extern void free_memory_pool (agent*, memory_pool *p); /* RPM 6/09, with help from AMN */
 
 #ifdef MEMORY_POOL_STATS

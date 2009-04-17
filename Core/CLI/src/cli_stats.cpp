@@ -297,20 +297,20 @@ void CommandLineInterface::GetSystemStats()
 		<< (m_pAgentSoar->decision_phases_count ? total_kernel_msec / m_pAgentSoar->decision_phases_count : 0.0)
 		<< " msec/decision)\n";
 	m_Result << m_pAgentSoar->e_cycle_count << " elaboration cycles ("
-		<< (m_pAgentSoar->decision_phases_count ? (double) m_pAgentSoar->e_cycle_count / m_pAgentSoar->decision_phases_count : 0)
+		<< (m_pAgentSoar->decision_phases_count ? static_cast<double>(m_pAgentSoar->e_cycle_count) / m_pAgentSoar->decision_phases_count : 0)
 		<< " ec's per dc, "
 		<< (m_pAgentSoar->e_cycle_count ? total_kernel_msec / m_pAgentSoar->e_cycle_count : 0)
 		<< " msec/ec)\n";
 	m_Result << m_pAgentSoar->inner_e_cycle_count << " inner elaboration cycles\n";
 
 	m_Result << m_pAgentSoar->pe_cycle_count << " p-elaboration cycles ("
-		<< (m_pAgentSoar->decision_phases_count ? (double) m_pAgentSoar->pe_cycle_count / m_pAgentSoar->decision_phases_count : 0) 
+		<< (m_pAgentSoar->decision_phases_count ? static_cast<double>(m_pAgentSoar->pe_cycle_count) / m_pAgentSoar->decision_phases_count : 0) 
 		<< " pe's per dc, "
 		<< (m_pAgentSoar->pe_cycle_count ? total_kernel_msec / m_pAgentSoar->pe_cycle_count : 0)
 		<< " msec/pe)\n";
 
 	m_Result << m_pAgentSoar->production_firing_count << " production firings ("
-		<< (m_pAgentSoar->e_cycle_count ? (double) m_pAgentSoar->production_firing_count / m_pAgentSoar->e_cycle_count : 0.0)
+		<< (m_pAgentSoar->e_cycle_count ? static_cast<double>(m_pAgentSoar->production_firing_count) / m_pAgentSoar->e_cycle_count : 0.0)
 		<< " pf's per ec, "
 		<< (m_pAgentSoar->production_firing_count ? total_kernel_msec / m_pAgentSoar->production_firing_count : 0.0) 
 		<< " msec/pf)\n";

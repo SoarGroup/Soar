@@ -200,7 +200,7 @@ Symbol *halt_rhs_function_code (agent* thisAgent, list * /*args*/, void* /*user_
   thisAgent->system_halted = TRUE;
   	  soar_invoke_callbacks(thisAgent,
 		  AFTER_HALT_SOAR_CALLBACK,
-		  (soar_call_data) NULL);
+		  0);
 
   return NIL;
 }

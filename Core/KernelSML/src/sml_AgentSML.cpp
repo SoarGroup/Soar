@@ -103,7 +103,7 @@ AgentSML::~AgentSML()
 	// Base the id on the address of this object which ensures it's unique
 	std::ostringstream callbackId;
 	callbackId << "id_0x" << this << "_evt_" << INPUT_WME_GARBAGE_COLLECTED_CALLBACK;
-	soar_remove_callback( GetSoarAgent(), INPUT_WME_GARBAGE_COLLECTED_CALLBACK, const_cast< char* >( callbackId.str().c_str() ) ) ;
+	soar_remove_callback( GetSoarAgent(), INPUT_WME_GARBAGE_COLLECTED_CALLBACK, callbackId.str().c_str() ) ;
 
 	delete m_pAgentRunCallback ;
 
@@ -448,7 +448,7 @@ void AgentSML::FireRunEvent(smlRunEventId eventId) {
 	// Trigger a callback from the kernel to propagate the event out to listeners.
 	// This allows us to use a single uniform model for all run events (even when some are really originating here in SML).
 	int callbackEvent = KernelCallback::GetCallbackFromEventID(eventId) ;
-	soar_invoke_callbacks(m_agent, (SOAR_CALLBACK_TYPE)callbackEvent,(soar_call_data) m_agent->current_phase); // BADBAD cast int to void*
+	soar_invoke_callbacks(m_agent, SOAR_CALLBACK_TYPE(callbackEvent),reinterpret_cast<soar_call_data>(m_agent->current_phase));
 }
 
 void AgentSML::FireSimpleXML(char const* pMsg)
@@ -465,14 +465,10 @@ static bool maxStepsReached(unsigned long steps, unsigned long maxSteps)
 }
 
 smlRunResult AgentSML::Step(smlRunStepSize stepSize)
-{    
-   // NOTE: This only works because they have the same ordering
-   // BADBAD: Eventually we should dispose of one of these types and fold them into a single enum
-   smlRunStepSize runStepSize = (smlRunStepSize)stepSize ;
-
+{
    // This method runs a single agent
    unsigned long count = 1 ;
-   unsigned long startCount        = GetRunCounter(runStepSize) ; // getReleventCounter(stepSize);
+   unsigned long startCount        = GetRunCounter(stepSize) ; // getReleventCounter(stepSize);
    const unsigned long  END_COUNT  = startCount + count ;
 
    bool interrupted  = (m_runState == sml_RUNSTATE_INTERRUPTED)? true: false;
@@ -533,7 +529,7 @@ smlRunResult AgentSML::Step(smlRunStepSize stepSize)
    {
 	   // if the agent halted because it is in an infinite loop of no-change impasses
 	   // interrupt the agents and allow the user to try to recover.
-	   if ((long)m_agent->bottom_goal->id.level >=  m_agent->sysparams[MAX_GOAL_DEPTH])
+	   if (m_agent->bottom_goal->id.level >=  m_agent->sysparams[MAX_GOAL_DEPTH])
 	   {// the agent halted because it seems to be in an infinite loop, so throw interrupt
 		   m_pKernelSML->InterruptAllAgents(sml_STOP_AFTER_PHASE) ;
 		   m_agent->system_halted = FALSE; // hack! otherwise won't run again.  
@@ -558,7 +554,7 @@ smlRunResult AgentSML::Step(smlRunStepSize stepSize)
 		   FireSimpleXML("This Agent halted.") ;
 	   }
    }
-   else if(maxStepsReached(GetRunCounter(runStepSize), END_COUNT)) 
+   else if(maxStepsReached(GetRunCounter(stepSize), END_COUNT)) 
    {
 	   if(interrupted)
 	   {
@@ -1017,7 +1013,7 @@ bool AgentSML::AddIdInputWME(char const* pID, char const* pAttribute, char const
 		if ( isalpha( pAttribute[0] ) )
 		{
 			idValueLetter = pAttribute[0];				// take the first letter of the attribute
-			idValueLetter = (char)toupper( idValueLetter );	// make it upper case
+			idValueLetter = static_cast<char>(toupper( idValueLetter ));	// make it upper case
 		} 
 		else 
 		{
@@ -1102,8 +1098,7 @@ bool AgentSML::AddInputWME(char const* pID, char const* pAttribute, char const* 
 	else if (IsStringEqual(sml_Names::kTypeDouble, pType)) 
 	{
 		// Creating a WME with a float value
-		float value = (float)atof(pValue) ;
-		return AddDoubleInputWME(pID, pAttribute, value, clientTimeTag);
+		return AddDoubleInputWME(pID, pAttribute, atof(pValue), clientTimeTag);
 
 	} 
 	else if (IsStringEqual(sml_Names::kTypeID, pType)) 

@@ -286,7 +286,7 @@ JNIEXPORT jlong JNICALL Java_sml_smlJNI_Agent_1RegisterForRunEvent(JNIEnv *jenv,
 	pJavaData->m_CallbackID = arg1->RegisterForRunEvent(arg2, &RunEventHandler, pJavaData) ;
 
 	// Pass the callback info back to the Java client.  We need to do this so we can delete this later when the method is unregistered
-	return (jlong)pJavaData ;
+	return reinterpret_cast<jlong>(pJavaData) ;
 }
 
 
@@ -356,7 +356,7 @@ JNIEXPORT jlong JNICALL Java_sml_smlJNI_Agent_1RegisterForOutputNotification(JNI
 	pJavaData->m_CallbackID = arg1->RegisterForOutputNotification(&OutputNotificationHandler, pJavaData) ;
 
 	// Pass the callback info back to the Java client.  We need to do this so we can delete this later when the method is unregistered
-	return (jlong)pJavaData ;
+	return reinterpret_cast<jlong>(pJavaData) ;
 }
 
 
@@ -441,7 +441,7 @@ JNIEXPORT jlong JNICALL Java_sml_smlJNI_Agent_1RegisterForProductionEvent(JNIEnv
 	pJavaData->m_CallbackID = arg1->RegisterForProductionEvent(arg2, &ProductionEventHandler, pJavaData) ;
 
 	// Pass the callback info back to the Java client.  We need to do this so we can delete this later when the method is unregistered
-	return (jlong)pJavaData ;
+	return reinterpret_cast<jlong>(pJavaData) ;
 }
 
 
@@ -524,7 +524,7 @@ JNIEXPORT jlong JNICALL Java_sml_smlJNI_Agent_1RegisterForPrintEvent(JNIEnv *jen
 	pJavaData->m_CallbackID = arg1->RegisterForPrintEvent(arg2, &PrintEventHandler, pJavaData, (jarg7 != JNI_FALSE)) ;
 
 	// Pass the callback info back to the Java client.  We need to do this so we can delete this later when the method is unregistered
-	return (jlong)pJavaData ;
+	return reinterpret_cast<jlong>(pJavaData) ;
 }
 
 JNIEXPORT bool JNICALL Java_sml_smlJNI_Agent_1UnregisterForPrintEvent(JNIEnv *jenv, jclass jcls, jlong jarg1, jint jarg2)
@@ -640,7 +640,7 @@ JNIEXPORT jlong JNICALL Java_sml_smlJNI_Agent_1RegisterForXMLEvent(JNIEnv *jenv,
 	pJavaData->m_CallbackID = arg1->RegisterForXMLEvent(arg2, &XMLEventHandler, pJavaData) ;
 
 	// Pass the callback info back to the Java client.  We need to do this so we can delete this later when the method is unregistered
-	return (jlong)pJavaData ;
+	return reinterpret_cast<jlong>(pJavaData) ;
 }
 
 JNIEXPORT bool JNICALL Java_sml_smlJNI_Agent_1UnregisterForXMLEvent(JNIEnv *jenv, jclass jcls, jlong jarg1, jint jarg2)
@@ -780,7 +780,7 @@ JNIEXPORT jlong JNICALL Java_sml_smlJNI_Agent_1AddOutputHandler(JNIEnv *jenv, jc
 	pJavaData->m_CallbackID = arg1->AddOutputHandler(pAttributeName, &OutputEventHandler, pJavaData) ;
 
 	// Pass the callback info back to the Java client.  We need to do this so we can delete this later when the method is unregistered
-	return (jlong)pJavaData ;
+	return reinterpret_cast<jlong>(pJavaData) ;
 }
 
 JNIEXPORT bool JNICALL Java_sml_smlJNI_Agent_1RemoveOutputHandler(JNIEnv *jenv, jclass jcls, jlong jarg1, jint jarg2)
@@ -856,7 +856,7 @@ JNIEXPORT jlong JNICALL Java_sml_smlJNI_Kernel_1RegisterForSystemEvent(JNIEnv *j
 	pJavaData->m_CallbackID = arg1->RegisterForSystemEvent(arg2, &SystemEventHandler, pJavaData) ;
 
 	// Pass the callback info back to the Java client.  We need to do this so we can delete this later when the method is unregistered
-	return (jlong)pJavaData ;
+	return reinterpret_cast<jlong>(pJavaData) ;
 }
 
 JNIEXPORT bool JNICALL Java_sml_smlJNI_Kernel_1UnregisterForSystemEvent(JNIEnv *jenv, jclass jcls, jlong jarg1, jint jarg2)
@@ -932,7 +932,7 @@ JNIEXPORT jlong JNICALL Java_sml_smlJNI_Kernel_1RegisterForUpdateEvent(JNIEnv *j
 	pJavaData->m_CallbackID = arg1->RegisterForUpdateEvent(arg2, &UpdateEventHandler, pJavaData) ;
 
 	// Pass the callback info back to the Java client.  We need to do this so we can delete this later when the method is unregistered
-	return (jlong)pJavaData ;
+	return reinterpret_cast<jlong>(pJavaData) ;
 }
 
 JNIEXPORT bool JNICALL Java_sml_smlJNI_Kernel_1UnregisterForUpdateEvent(JNIEnv *jenv, jclass jcls, jlong jarg1, jint jarg2)
@@ -1049,7 +1049,7 @@ JNIEXPORT jlong JNICALL Java_sml_smlJNI_Kernel_1RegisterForStringEvent(JNIEnv *j
 	pJavaData->m_CallbackID = arg1->RegisterForStringEvent(arg2, &StringEventHandler, pJavaData) ;
 
 	// Pass the callback info back to the Java client.  We need to do this so we can delete this later when the method is unregistered
-	return (jlong)pJavaData ;
+	return reinterpret_cast<jlong>(pJavaData) ;
 }
 
 JNIEXPORT bool JNICALL Java_sml_smlJNI_Kernel_1UnregisterForStringEvent(JNIEnv *jenv, jclass jcls, jlong jarg1, jint jarg2)
@@ -1241,7 +1241,7 @@ JNIEXPORT jlong JNICALL Java_sml_smlJNI_Kernel_1AddRhsFunction(JNIEnv *jenv, jcl
 	jenv->ReleaseStringUTFChars(jarg2, pFunctionName);
 
 	// Pass the callback info back to the Java client.  We need to do this so we can delete this later when the method is unregistered
-	return (jlong)pJavaData ;
+	return reinterpret_cast<jlong>(pJavaData) ;
 }
 
 JNIEXPORT bool JNICALL Java_sml_smlJNI_Kernel_1RemoveRhsFunction(JNIEnv *jenv, jclass jcls, jlong jarg1, jint jarg2)
@@ -1284,7 +1284,7 @@ JNIEXPORT jlong JNICALL Java_sml_smlJNI_Kernel_1RegisterForClientMessageEvent(JN
 	jenv->ReleaseStringUTFChars(jarg2, pFunctionName);
 
 	// Pass the callback info back to the Java client.  We need to do this so we can delete this later when the method is unregistered
-	return (jlong)pJavaData ;
+	return reinterpret_cast<jlong>(pJavaData) ;
 }
 
 JNIEXPORT bool JNICALL Java_sml_smlJNI_Kernel_1UnregisterForClientMessageEvent(JNIEnv *jenv, jclass jcls, jlong jarg1, jint jarg2)
@@ -1368,7 +1368,7 @@ JNIEXPORT jlong JNICALL Java_sml_smlJNI_Kernel_1RegisterForAgentEvent(JNIEnv *je
 	pJavaData->m_CallbackID = arg1->RegisterForAgentEvent(arg2, &AgentEventHandler, pJavaData) ;
 
 	// Pass the callback info back to the Java client.  We need to do this so we can delete this later when the method is unregistered
-	return (jlong)pJavaData ;
+	return reinterpret_cast<jlong>(pJavaData) ;
 }
 
 JNIEXPORT bool JNICALL Java_sml_smlJNI_Kernel_1UnregisterForAgentEvent(JNIEnv *jenv, jclass jcls, jlong jarg1, jint jarg2)

@@ -63,7 +63,7 @@ void DeltaList::Clear(bool deleteContents)
 {
 	if (deleteContents)
 	{
-		for (int i = 0 ; i < (int)m_DeltaList.size() ; i++)
+		for (size_t i = 0 ; i < m_DeltaList.size() ; i++)
 		{
 			TagWme* pDelta = m_DeltaList[i] ;
 			delete pDelta ;
