@@ -251,7 +251,7 @@ Symbol *read_identifier_or_context_variable (agent* agnt)
 #define ONE_MILLION (1000000)
 
 double timer_value (struct timeval *tv) {
-  return (double)(tv->tv_sec) + (double)(tv->tv_usec)/(double)ONE_MILLION;
+  return tv->tv_sec + tv->tv_usec/static_cast<double>(ONE_MILLION);
 }
 
 void reset_timer (struct timeval *tv_to_reset) {
@@ -275,13 +275,13 @@ struct rusage {
 static unsigned long long
 __to_clock_t (FILETIME * src, int flag)
 {
-  unsigned long long total = ((unsigned long long) src->dwHighDateTime << 32) + ((unsigned)src->dwLowDateTime);
+  unsigned long long total = (static_cast<unsigned long long>(src->dwHighDateTime) << 32) + static_cast<unsigned>(src->dwLowDateTime);
 
   /* Convert into clock ticks - the total is in 10ths of a usec.  */
   if (flag)
     total -= FACTOR;
   
-  total /= (unsigned long long) (NSPERSEC / CLOCKS_PER_SEC);
+  total /= NSPERSEC / CLOCKS_PER_SEC;
   return total;
 }
 static void totimeval (struct timeval *dst, FILETIME *src, int sub, int flag)

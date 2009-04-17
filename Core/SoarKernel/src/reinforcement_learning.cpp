@@ -295,7 +295,7 @@ void rl_revert_template_id( agent *my_agent )
 	referent = instantiate_rhs_value( my_agent, my_action->referent, id->id.level, first_letter, tok, w );
 
 	if ( referent->common.symbol_type == INT_CONSTANT_SYMBOL_TYPE )
-		init_value = (double) referent->ic.value;
+		init_value = static_cast< double >( referent->ic.value );
 	else if ( referent->common.symbol_type == FLOAT_CONSTANT_SYMBOL_TYPE )
 		init_value = referent->fc.value;
 

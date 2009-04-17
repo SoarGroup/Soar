@@ -71,7 +71,7 @@ void ProductionListener::OnKernelEvent(int eventID, AgentSML* pAgentSML, void* p
 	// TODO: all event handlers should be doing this:
 	assert(IsProductionEventID(eventID)) ;
 
-	smlProductionEventId smlEventID = (smlProductionEventId)eventID ;	
+	smlProductionEventId smlEventID = smlProductionEventId(eventID) ;	
 
 	std::string productionName ;
 
@@ -94,7 +94,7 @@ void ProductionListener::OnKernelEvent(int eventID, AgentSML* pAgentSML, void* p
 
 	// Get the first listener for this event (or return if there are none)
 	ConnectionListIter connectionIter ;
-	if (!EventManager<smlProductionEventId>::GetBegin((smlProductionEventId)eventID, &connectionIter))
+	if (!EventManager<smlProductionEventId>::GetBegin(smlProductionEventId(eventID), &connectionIter))
 		return ;
 
 	// We need the first connection for when we're building the message.  Perhaps this is a sign that
@@ -112,7 +112,7 @@ void ProductionListener::OnKernelEvent(int eventID, AgentSML* pAgentSML, void* p
 
 	// Send the message out
 	AnalyzeXML response ;
-	SendEvent(pAgentSML, pConnection, pMsg, &response, connectionIter, GetEnd((smlProductionEventId)eventID)) ;
+	SendEvent(pAgentSML, pConnection, pMsg, &response, connectionIter, GetEnd(smlProductionEventId(eventID))) ;
 
 	// Clean up
 	delete pMsg ;

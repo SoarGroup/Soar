@@ -2390,8 +2390,8 @@ Bool find_var_location (Symbol *var, rete_node_level current_depth,
   void *dummy;
   if (! var->var.rete_binding_locations) return FALSE;
   dummy = var->var.rete_binding_locations->first;
-  result->levels_up = current_depth - (rete_node_level)dummy_to_varloc_depth (dummy);
-  result->field_num = (byte)dummy_to_varloc_field_num (dummy);
+  result->levels_up = current_depth - static_cast<rete_node_level>(dummy_to_varloc_depth (dummy));
+  result->field_num = static_cast<byte>(dummy_to_varloc_field_num (dummy));
   return TRUE;
 }
 
@@ -3723,8 +3723,7 @@ byte add_production_to_rete (agent* thisAgent, production *p, condition *lhs_top
 	}
 
 	/* --- invoke callback functions --- */
-	soar_invoke_callbacks (thisAgent, PRODUCTION_JUST_ADDED_CALLBACK,
-		(soar_call_data) p);
+	soar_invoke_callbacks (thisAgent, PRODUCTION_JUST_ADDED_CALLBACK, reinterpret_cast<soar_call_data>(p));
 
 	//#ifdef _WINDOWS
 	//        add_production_to_stat_lists(new_prod);
@@ -3745,9 +3744,7 @@ void excise_production_from_rete (agent* thisAgent, production *p)
   rete_node *p_node, *parent;
   ms_change *msc;
 
-  soar_invoke_callbacks (thisAgent, 
-                         PRODUCTION_JUST_ABOUT_TO_BE_EXCISED_CALLBACK,
-                         (soar_call_data) p);
+  soar_invoke_callbacks (thisAgent, PRODUCTION_JUST_ABOUT_TO_BE_EXCISED_CALLBACK, reinterpret_cast<soar_call_data>(p));
    
 //#ifdef _WINDOWS
 //        remove_production_from_stat_lists(prod_to_be_excised);
@@ -4253,8 +4250,8 @@ rhs_value copy_rhs_value_and_substitute_varnames (agent* thisAgent,
   
   if (rhs_value_is_reteloc(rv)) {
     sym = var_bound_in_reconstructed_conds (thisAgent, cond,
-                                 (byte)rhs_value_to_reteloc_field_num(rv),
-                                 (rete_node_level)rhs_value_to_reteloc_levels_up(rv));
+                                 static_cast<byte>(rhs_value_to_reteloc_field_num(rv)),
+                                 static_cast<rete_node_level>(rhs_value_to_reteloc_levels_up(rv)));
     symbol_add_ref (sym);
     return symbol_to_rhs_value (sym);
   }
@@ -5757,7 +5754,7 @@ void p_node_left_addition (agent* thisAgent, rete_node *node, token *tok, wme *w
 														op_elab = TRUE;
 												} else if ( (thisAgent->o_support_calculation_type == 4) 
 													&& (rhs_value_is_reteloc(act->id)) 
-													&& (temp_tok->w->value == get_symbol_from_rete_loc( (byte)rhs_value_to_reteloc_levels_up(act->id),(byte)rhs_value_to_reteloc_field_num(act->id), tok, w ))) {
+													&& (temp_tok->w->value == get_symbol_from_rete_loc( static_cast<byte>(rhs_value_to_reteloc_levels_up(act->id)),static_cast<byte>(rhs_value_to_reteloc_field_num(act->id)), tok, w ))) {
 														op_elab = TRUE;
 												} else {
 													/* this is not an operator elaboration */
@@ -6440,7 +6437,7 @@ void reteload_all_symbols (agent* thisAgent, FILE* f) {
   for (i=0; i<num_float_constants; i++) {
     reteload_string(f);
     *(current_place_in_symtab++) = 
-      make_float_constant (thisAgent, (double)my_strtod(reteload_string_buf,NULL,10));
+      make_float_constant (thisAgent, my_strtod(reteload_string_buf,NULL,10));
   }
 }
 
@@ -6688,7 +6685,7 @@ void retesave_rhs_value (rhs_value rv, FILE* f) {
       retesave_rhs_value ((rhs_value)(c->first),f);
   } else if (rhs_value_is_reteloc(rv)) {
     retesave_one_byte (2,f);
-    retesave_one_byte ((byte)rhs_value_to_reteloc_field_num(rv),f);
+    retesave_one_byte (static_cast<byte>(rhs_value_to_reteloc_field_num(rv)),f);
     retesave_two_bytes (rhs_value_to_reteloc_levels_up(rv),f);
   } else {
     retesave_one_byte (3,f);
@@ -7203,8 +7200,7 @@ void reteload_node_and_children (agent* thisAgent, rete_node *parent, FILE* f) {
     update_node_with_matches_from_above (thisAgent, New);
 
      /* --- invoke callback on the production --- */
-    soar_invoke_callbacks (thisAgent, PRODUCTION_JUST_ADDED_CALLBACK,
-                          (soar_call_data) prod);
+    soar_invoke_callbacks (thisAgent, PRODUCTION_JUST_ADDED_CALLBACK, reinterpret_cast<soar_call_data>(prod));
  
     break;
 

@@ -446,19 +446,19 @@ void Kernel::ReceivedEvent(AnalyzeXML* pIncoming, ElementXML* pResponse)
 
 	if (IsSystemEventID(id))
 	{
-		ReceivedSystemEvent((smlSystemEventId)id, pIncoming, pResponse) ;
+		ReceivedSystemEvent(smlSystemEventId(id), pIncoming, pResponse) ;
 	} else if (IsAgentEventID(id))
 	{
-		ReceivedAgentEvent((smlAgentEventId)id, pIncoming, pResponse) ;
+		ReceivedAgentEvent(smlAgentEventId(id), pIncoming, pResponse) ;
 	} else if (IsRhsEventID(id))
 	{
-		ReceivedRhsEvent((smlRhsEventId)id, pIncoming, pResponse) ;
+		ReceivedRhsEvent(smlRhsEventId(id), pIncoming, pResponse) ;
 	} else if (IsUpdateEventID(id))
 	{
-		ReceivedUpdateEvent((smlUpdateEventId)id, pIncoming, pResponse) ;
+		ReceivedUpdateEvent(smlUpdateEventId(id), pIncoming, pResponse) ;
 	} else if (IsStringEventID(id))
 	{
-		ReceivedStringEvent((smlStringEventId)id, pIncoming, pResponse) ;
+		ReceivedStringEvent(smlStringEventId(id), pIncoming, pResponse) ;
 	}
 }
 
@@ -506,7 +506,7 @@ void Kernel::ReceivedUpdateEvent(smlUpdateEventId id, AnalyzeXML* pIncoming, Ele
 	unused(pResponse) ;
 
 	// Retrieve the event arguments
-	smlRunFlags runFlags = (smlRunFlags)pIncoming->GetArgInt(sml_Names::kParamValue, 0) ;
+	smlRunFlags runFlags = smlRunFlags(pIncoming->GetArgInt(sml_Names::kParamValue, 0)) ;
 
 	// Look up the handler(s) from the map
 	UpdateEventMap::ValueList* pHandlers = m_UpdateEventMap.getList(id) ;
@@ -960,7 +960,7 @@ bool Kernel::HasConnectionInfoChanged()
 
 int	Kernel::GetNumberConnections()
 {
-	return (int)m_ConnectionInfoList.size() ;
+	return static_cast<int>(m_ConnectionInfoList.size()) ;
 }
 
 ConnectionInfo const* Kernel::GetConnectionInfo(int i)
@@ -1255,7 +1255,8 @@ char const* Kernel::RunAllAgents(unsigned long numberSteps, smlRunStepSize stepS
 #ifdef SML_DIRECT
 		if (GetConnection()->IsDirectConnection())
 		{
-			((EmbeddedConnection*)GetConnection())->DirectRun(NULL, false, stepSize, interleaveStepSize, (int)numberSteps) ;
+			EmbeddedConnection* ec = dynamic_cast<EmbeddedConnection*>(GetConnection());
+			ec->DirectRun(NULL, false, stepSize, interleaveStepSize, (int)numberSteps) ;
 			return "DirectRun completed" ;
 		}
 #endif
@@ -2210,7 +2211,7 @@ int Kernel::RegisterForClientMessageEvent(char const* pClientName, ClientMessage
 
 	// We actually use the RHS function code internally to process this message (since it's almost exactly like calling a RHS function that's
 	// processed on a client).
-	return InternalAddRhsFunction(id, pClientName, (RhsEventHandler)handler, pUserData, addToBack) ;
+	return InternalAddRhsFunction(id, pClientName, static_cast<RhsEventHandler>(handler), pUserData, addToBack) ;
 }
 
 /*************************************************************
@@ -2491,7 +2492,7 @@ std::string Kernel::LoadExternalLibrary(const char *pLibraryCommand) {
 		return std::string(dlerror());
 #endif
 	} else {
-		InitLibraryFunction pInitLibraryFunction = (InitLibraryFunction)GetProcAddress(hLibrary, "sml_InitLibrary") ;
+		InitLibraryFunction pInitLibraryFunction = reinterpret_cast<InitLibraryFunction>(GetProcAddress(hLibrary, "sml_InitLibrary")) ;
 
 		// Create main-style argc/argv (argv is null-terminated);
 		int argc = static_cast<int>(vectorArgv.size());

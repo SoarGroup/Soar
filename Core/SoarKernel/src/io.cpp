@@ -295,7 +295,7 @@ void do_input_cycle (agent* thisAgent) {
   if (thisAgent->prev_top_state && (!thisAgent->top_state)) {
     /* --- top state was just removed --- */
     soar_invoke_callbacks(thisAgent, INPUT_PHASE_CALLBACK, 
-			 (soar_call_data) TOP_STATE_JUST_REMOVED);
+			 reinterpret_cast<soar_call_data>(TOP_STATE_JUST_REMOVED) );
     release_io_symbol (thisAgent, thisAgent->io_header);
     release_io_symbol (thisAgent, thisAgent->io_header_input);
     release_io_symbol (thisAgent, thisAgent->io_header_output);
@@ -336,7 +336,7 @@ void do_input_cycle (agent* thisAgent) {
 
   if (thisAgent->top_state) {
     soar_invoke_callbacks(thisAgent, INPUT_PHASE_CALLBACK, 
-			 (soar_call_data) NORMAL_INPUT_CYCLE);
+			 reinterpret_cast<soar_call_data>(NORMAL_INPUT_CYCLE) );
   }
 
   /* --- do any WM resulting changes --- */
@@ -853,7 +853,7 @@ Symbol *get_io_symbol_from_tio_constituent_string (agent* thisAgent, char *input
   /* --- check whether it's a floating point number --- */
   if (possible_fc) {
     errno = 0;
-    float_val = (double) my_strtod (input_string,NULL,10); 
+    float_val = my_strtod (input_string,NULL,10); 
     if (errno) {
       print (thisAgent, "Text Input Error: bad floating point number\n");
       return NIL;
@@ -917,10 +917,10 @@ void init_soar_io (agent* thisAgent) {
   /* --- setup constituent_char array --- */
   for (i=0; i<256; i++) tio_constituent_char[i] = (isalnum(i) != 0);
   for (i=0; i<strlen(extra_tio_constituents); i++)
-    tio_constituent_char[(int)extra_tio_constituents[i]]=TRUE;
+    tio_constituent_char[extra_tio_constituents[i]]=TRUE;
   
   /* --- setup whitespace array --- */
   for (i=0; i<256; i++) tio_whitespace[i] = (isspace(i) != 0);
-  tio_whitespace[(int)'\n']=FALSE;  /* for text i/o, crlf isn't whitespace */
+  tio_whitespace['\n']=FALSE;  /* for text i/o, crlf isn't whitespace */
 }
 

@@ -987,7 +987,7 @@ void chunk_instantiation (agent* thisAgent,
 	  else {
 		  making_topmost_chunk     = TRUE;
 		  allow_variablization     = (thisAgent->sysparams[LEARNING_ON_SYSPARAM] != 0);
-		  inst->okay_to_variablize = (byte) thisAgent->sysparams[LEARNING_ON_SYSPARAM];
+		  inst->okay_to_variablize = static_cast<byte>(thisAgent->sysparams[LEARNING_ON_SYSPARAM]);
 
 		  if (thisAgent->soar_verbose_flag == TRUE) {
 			  printf("\n   in chunk_instantiation: resetting allow_variablization to %s", ((allow_variablization) ? "TRUE" : "FALSE"));

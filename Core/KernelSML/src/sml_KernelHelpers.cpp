@@ -1415,7 +1415,7 @@ bool tests_are_equal_with_bindings (agent* agnt, test t1, test test2, list **bin
 		for (c1=ct1->data.conjunct_list, c2=ct2->data.conjunct_list;
 			((c1!=NIL)&&(c2!=NIL)); c1=c1->rest, c2=c2->rest)
 		{
-			if (! tests_are_equal_with_bindings(agnt, (test)c1->first, (test)c2->first, bindings)) 
+			if (! tests_are_equal_with_bindings(agnt, reinterpret_cast<test>(c1->first), reinterpret_cast<test>(c2->first), bindings)) 
 				dealloc_and_return(agnt, t2,FALSE)
 		}
 		if (c1==c2) 

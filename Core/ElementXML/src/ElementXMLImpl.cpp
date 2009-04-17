@@ -66,30 +66,30 @@ static char const* kNewLine		  = "\n" ;
 
 static char const* kEncodeHex = "bin_encoding=\"hex\"" ;
 
-static const int kLenLT   = (int)strlen(kLT) ;
-static const int kLenGT   = (int)strlen(kGT) ;
-static const int kLenAMP  = (int)strlen(kAMP) ;
-static const int kLenQUOT = (int)strlen(kQUOT) ;
-static const int kLenAPOS = (int)strlen(kAPOS) ;
+static const int kLenLT   = static_cast<int>(strlen(kLT)) ;
+static const int kLenGT   = static_cast<int>(strlen(kGT)) ;
+static const int kLenAMP  = static_cast<int>(strlen(kAMP)) ;
+static const int kLenQUOT = static_cast<int>(strlen(kQUOT)) ;
+static const int kLenAPOS = static_cast<int>(strlen(kAPOS)) ;
 
-static const int kLenCDataStart = (int)strlen(kCDataStart) ;
-static const int kLenCDataEnd   = (int)strlen(kCDataEnd) ;
+static const int kLenCDataStart = static_cast<int>(strlen(kCDataStart)) ;
+static const int kLenCDataEnd   = static_cast<int>(strlen(kCDataEnd)) ;
 
-static const int kLenStartTagOpen  = (int)strlen(kStartTagOpen) ;
-static const int kLenStartTagClose = (int)strlen(kStartTagClose) ;
-static const int kLenEndTagOpen    = (int)strlen(kEndTagOpen) ;
-static const int kLenEndTagClose   = (int)strlen(kEndTagClose) ;
+static const int kLenStartTagOpen  = static_cast<int>(strlen(kStartTagOpen)) ;
+static const int kLenStartTagClose = static_cast<int>(strlen(kStartTagClose)) ;
+static const int kLenEndTagOpen    = static_cast<int>(strlen(kEndTagOpen)) ;
+static const int kLenEndTagClose   = static_cast<int>(strlen(kEndTagClose)) ;
 
-static const int kLenNewLine	   = (int)strlen(kNewLine) ;
+static const int kLenNewLine	   = static_cast<int>(strlen(kNewLine)) ;
 
-static const int kLenEquals		   = (int)strlen(kEquals) ;
-static const int kLenSpace		   = (int)strlen(kSpace) ;
-static const int kLenQuote		   = (int)strlen(kQuote) ;
+static const int kLenEquals		   = static_cast<int>(strlen(kEquals)) ;
+static const int kLenSpace		   = static_cast<int>(strlen(kSpace)) ;
+static const int kLenQuote		   = static_cast<int>(strlen(kQuote)) ;
 
-static const int kLenEncodeHex	   = (int)strlen(kEncodeHex) ;
+static const int kLenEncodeHex	   = static_cast<int>(strlen(kEncodeHex)) ;
 
-static const int kLenCommentStartString = (int)strlen(kCommentStartString) ;
-static const int kLenCommentEndString = (int)strlen(kCommentEndString) ;
+static const int kLenCommentStartString = static_cast<int>(strlen(kCommentStartString)) ;
+static const int kLenCommentEndString = static_cast<int>(strlen(kCommentEndString)) ;
 
 inline static char const* ConvertSpecial(char base)
 {
@@ -153,7 +153,7 @@ static char binaryVal(char c)
 static void HexCharsToBinary(char const* pHexString, char*& pBinaryBuffer, int& length)
 {
 	// This length should always be an exact multiple of 2
-	int stringLength = (int)strlen(pHexString) ;
+	int stringLength = static_cast<int>(strlen(pHexString)) ;
 
 	// The output will be exactly half the length of the input
 	length = (stringLength+1)/2 ;
@@ -601,7 +601,7 @@ void ElementXMLImpl::AddChild(ElementXMLImpl* pChild)
 *************************************************************/
 int ElementXMLImpl::GetNumberChildren() const
 {
-	return (int)this->m_Children.size() ;
+	return static_cast<int>(this->m_Children.size()) ;
 }
 
 /*************************************************************
@@ -614,7 +614,7 @@ int ElementXMLImpl::GetNumberChildren() const
 *************************************************************/
 ElementXMLImpl const* ElementXMLImpl::GetChild(int index) const
 {
-	if (index < 0 || index >= (int)m_Children.size())
+	if (index < 0 || index >= static_cast<int>(m_Children.size()))
 		return NULL ;
 
 	return m_Children[index] ;
@@ -728,7 +728,7 @@ bool ElementXMLImpl::AddAttributeFastFast(char const* attributeName, char const*
 *************************************************************/
 int ElementXMLImpl::GetNumberAttributes() const
 {
-	return (int)m_AttributeMap.size() ;
+	return static_cast<int>(m_AttributeMap.size()) ;
 }
 
 /*************************************************************
@@ -960,7 +960,7 @@ int	 ElementXMLImpl::GetCharacterDataLength() const
 	if (m_DataIsBinary)
 		return this->m_BinaryDataLength ;
 	else
-		return (int)strlen(m_CharacterData)+1 ;
+		return static_cast<int>(strlen(m_CharacterData))+1 ;
 }
 
 /*************************************************************
@@ -1028,7 +1028,7 @@ int ElementXMLImpl::DetermineXMLStringLength(int depth, bool includeChildren, bo
 	// The comment
 	if (m_Comment)
 	{
-		len += kLenCommentStartString + (int)strlen(m_Comment) + kLenCommentEndString ;
+		len += kLenCommentStartString + static_cast<int>(strlen(m_Comment)) + kLenCommentEndString ;
 	}
 
 	if (insertNewLines)
@@ -1037,7 +1037,7 @@ int ElementXMLImpl::DetermineXMLStringLength(int depth, bool includeChildren, bo
 	// The start tag
 	if (m_TagName)
 	{
-		len += kLenStartTagOpen + (int)strlen(this->m_TagName) + kLenStartTagClose ;
+		len += kLenStartTagOpen + static_cast<int>(strlen(this->m_TagName)) + kLenStartTagClose ;
 	}
 
 	// The character data
@@ -1054,7 +1054,7 @@ int ElementXMLImpl::DetermineXMLStringLength(int depth, bool includeChildren, bo
 		}
 		else if (m_UseCData)
 		{
-			len += kLenCDataStart + (int)strlen(m_CharacterData) + kLenCDataEnd ;
+			len += kLenCDataStart + static_cast<int>(strlen(m_CharacterData)) + kLenCDataEnd ;
 		}
 		else
 		{
@@ -1070,7 +1070,7 @@ int ElementXMLImpl::DetermineXMLStringLength(int depth, bool includeChildren, bo
 		xmlStringConst val = mapIter->second ;
 
 		// The attribute name is an identifier and can't contain special chars
-		len += kLenSpace + (int)strlen(att) + kLenEquals ;
+		len += kLenSpace + static_cast<int>(strlen(att)) + kLenEquals ;
 
 		// The value can contain special chars
 		len += kLenQuote + CountXMLLength(val) + kLenQuote ;
@@ -1110,7 +1110,7 @@ int ElementXMLImpl::DetermineXMLStringLength(int depth, bool includeChildren, bo
 	// The end tag
 	if (m_TagName)
 	{
-		len += kLenEndTagOpen + (int)strlen(this->m_TagName) + kLenEndTagClose ;
+		len += kLenEndTagOpen + static_cast<int>(strlen(this->m_TagName)) + kLenEndTagClose ;
 	}
 
 	if (insertNewLines)
@@ -1319,7 +1319,7 @@ char* ElementXMLImpl::CopyString(char const* original)
 
 	return strdup(original) ;
 
-	//int len = (int)strlen(original) ;
+	//int len = static_cast<int>(strlen(original)) ;
 	//xmlString str = AllocateString(len) ;
 
 	//char* q = str ;

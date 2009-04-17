@@ -77,14 +77,14 @@ EXPORT Connection_Receiver_Handle sml_CreateEmbeddedConnection(Connection_Sender
 	pConnection->RegisterCallback(ReceivedCall, NULL, sml_Names::kDocType_Call, true) ;
 
 	// The original sender is a receiver to us so we need to reverse the type.
-	pConnection->AttachConnectionInternal((Connection_Receiver_Handle)hSenderConnection, pProcessMessage) ;
+	pConnection->AttachConnectionInternal(reinterpret_cast<Connection_Receiver_Handle>(hSenderConnection), pProcessMessage) ;
 
 	// Record this as one of the active connections
 	// Must only do this after the pConnection object has been fully initialized
 	// as the receiver thread may access it once it has been added to this list.
 	pKernelSML->AddConnection(pConnection) ;
 
-	return (Connection_Receiver_Handle)pConnection ;
+	return reinterpret_cast<Connection_Receiver_Handle>(pConnection) ;
 }
 
 EXPORT ElementXML_Handle sml_ProcessMessage(Connection_Receiver_Handle hReceiverConnection, ElementXML_Handle hIncomingMsg, int action)
