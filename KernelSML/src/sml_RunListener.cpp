@@ -32,7 +32,9 @@
 #include "sml_KernelSML.h"
 #include "sml_AgentSML.h"
 
-#include "assert.h"
+#include <assert.h>
+
+#include "misc.h"
 
 using namespace sml ;
 
@@ -84,16 +86,15 @@ void RunListener::OnKernelEvent(int eventID, AgentSML* pAgentSML, void* pCallDat
 	char const* event = m_pKernelSML->ConvertEventToString(eventID) ;
 
 	// Convert phase to a string
-	int phase = reinterpret_cast<int>(pCallData) ;
+	intptr_t phase = reinterpret_cast<intptr_t>(pCallData) ;
 
-	char phaseStr[kMinBufferSize] ;
-	Int2String(phase, phaseStr, sizeof(phaseStr)) ;
+	std::string temp;
 
 	// Build the SML message we're doing to send.
 	soarxml::ElementXML* pMsg = pConnection->CreateSMLCommand(sml_Names::kCommand_Event) ;
 	pConnection->AddParameterToSMLCommand(pMsg, sml_Names::kParamAgent, pAgentSML->GetName()) ;
 	pConnection->AddParameterToSMLCommand(pMsg, sml_Names::kParamEventID, event) ;
-	pConnection->AddParameterToSMLCommand(pMsg, sml_Names::kParamPhase, phaseStr) ;
+	pConnection->AddParameterToSMLCommand(pMsg, sml_Names::kParamPhase, to_string( phase, temp ).c_str() ) ;
 
 	// Send the message out
 	AnalyzeXML response ;

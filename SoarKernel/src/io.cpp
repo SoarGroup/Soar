@@ -917,10 +917,10 @@ void init_soar_io (agent* thisAgent) {
   /* --- setup constituent_char array --- */
   for (i=0; i<256; i++) tio_constituent_char[i] = (isalnum(i) != 0);
   for (i=0; i<strlen(extra_tio_constituents); i++)
-    tio_constituent_char[extra_tio_constituents[i]]=TRUE;
+    tio_constituent_char[static_cast<int>(extra_tio_constituents[i])]=TRUE;
   
   /* --- setup whitespace array --- */
   for (i=0; i<256; i++) tio_whitespace[i] = (isspace(i) != 0);
-  tio_whitespace['\n']=FALSE;  /* for text i/o, crlf isn't whitespace */
+  tio_whitespace[static_cast<int>('\n')]=FALSE;  /* for text i/o, crlf isn't whitespace */
 }
 
