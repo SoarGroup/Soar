@@ -149,6 +149,7 @@ public abstract class AbstractTextView extends AbstractComboView
 		
 		// Set the newly found text to be selected
 		m_Text.setSelection(start, end) ;
+		m_Text.showSelection();
 		
 		return true ;
 	}
