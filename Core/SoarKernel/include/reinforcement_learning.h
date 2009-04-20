@@ -165,6 +165,9 @@ extern void rl_tabulate_reward_values( agent *my_agent );
 // Updates
 //////////////////////////////////////////////////////////
 
+// Returns true if goal's reward-link contains ^final-status true
+extern bool rl_final_update( agent *my_agent, Symbol *goal );
+
 // Store and update data that will be needed later to perform a Bellman update for the current operator
 extern void rl_store_data( agent *my_agent, Symbol *goal, preference *cand );
 
