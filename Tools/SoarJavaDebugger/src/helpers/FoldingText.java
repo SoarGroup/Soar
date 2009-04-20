@@ -806,6 +806,7 @@ public class FoldingText
 	public void setSelection(int start, int end)
 	{
 		m_Text.setSelection(start, end) ;
+		m_Text.showSelection();
 		
 		// May have scrolled, so need to redraw the icons
 		m_IconBar.redraw() ;
