@@ -559,16 +559,9 @@ public class TankSoarWorld implements World {
 		WorldUtil.checkWinningScore(stopMessages, players.getSortedScores());
 		
 		if (stopMessages.size() > 0) {
-			boolean stopping = Gridmap2D.control.checkRunsTerminal();
+			Gridmap2D.control.stopSimulation();
+			boolean stopping = Gridmap2D.control.getRunsTerminal() <= 0;
 			WorldUtil.dumpStats(players.getSortedScores(), players.getAllAsPlayers(), stopping, stopMessages);
-
-			if (stopping) {
-				Gridmap2D.control.stopSimulation();
-			} else {
-				// reset and continue;
-				reset();
-				Gridmap2D.control.startSimulation(false, false);
-			}
 		}
 	}
 	

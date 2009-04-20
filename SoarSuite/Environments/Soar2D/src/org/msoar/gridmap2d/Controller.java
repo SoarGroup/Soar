@@ -6,7 +6,6 @@ import org.msoar.gridmap2d.players.Player;
 import org.msoar.gridmap2d.visuals.WindowManager;
 import org.msoar.gridmap2d.world.World;
 
-
 /**
  * @author voigtjr
  *
@@ -83,7 +82,6 @@ public class Controller implements Runnable {
 			Gridmap2D.wm.setStatus("Running", WindowManager.black);
 		}
 		
-		// the old style
 		// spawn a thread or just run it in this one
 		if (newThread) {
 			runThread = new Thread(this);
@@ -124,38 +122,52 @@ public class Controller implements Runnable {
 	 */
 	public void run() {
 		
-		// if there are soar agents
-		if (cogArch.haveAgents()) {
-			
-			// have soar control things
-			// it will call startEvent, tickEvent, and stopEvent in callbacks.
-			if (step) {
-				cogArch.runStep();
+		do {
+			// if there are soar agents
+			if (cogArch.haveAgents()) {
+				
+				// have soar control things
+				// it will call startEvent, tickEvent, and stopEvent in callbacks.
+				if (step) {
+					cogArch.runStep();
+				} else {
+					cogArch.runForever();
+				}
 			} else {
-				cogArch.runForever();
-			}
-		} else {
-			
-			// there are no soar agents, call the start event
-			startEvent();
-			
-			// run as necessary
-			try {
-				if (!step) {
-					while (!stop) {
+				
+				// there are no soar agents, call the start event
+				startEvent();
+				
+				// run as necessary
+				try {
+					if (!step) {
+						while (!stop) {
+							tickEvent();
+						}
+					} else {
 						tickEvent();
 					}
-				} else {
-					tickEvent();
+				} catch (Exception e) {
+					e.printStackTrace();
+					error(e.getMessage());
 				}
-			} catch (Exception e) {
-				e.printStackTrace();
-				error(e.getMessage());
+				
+				// call the stop event
+				stopEvent();
 			}
-			
-			// call the stop event
-			stopEvent();
-		}
+			if (this.runsTerminal > 0) {
+				try {
+					Gridmap2D.simulation.reset();
+				} catch (Exception e) {
+					logger.error("Exception thrown resetting simulation");
+					this.runsTerminal = 0;
+					if (Gridmap2D.wm.using()) {
+						// we're stopped, this updates buttons
+						Gridmap2D.wm.stop();
+					}
+				}
+			}
+		} while (this.runsTerminal > 0);
 
 		// reset the status message
 		Gridmap2D.wm.setStatus("Ready", WindowManager.black);
@@ -184,6 +196,7 @@ public class Controller implements Runnable {
 	 * a loop if necessary.
 	 */
 	public void tickEvent() throws Exception {
+		logger.trace("Tick event.");
 		// this is 50 except for book, where it is configurable
 		timeSlice = Gridmap2D.config.generalConfig().cycle_time_slice / 1000.0f;
 		totalTime += timeSlice;
@@ -216,9 +229,11 @@ public class Controller implements Runnable {
 		logger.trace(Names.Trace.stopEvent);
 		running = false;
 		
-		if (Gridmap2D.wm.using()) {
-//			 this updates buttons and what-not
-			Gridmap2D.wm.stop();
+		if (checkRunsTerminal()) {
+			if (Gridmap2D.wm.using()) {
+				// we're stopped, this updates buttons
+				Gridmap2D.wm.stop();
+			}
 		}
 	}
 	
@@ -278,7 +293,10 @@ public class Controller implements Runnable {
 	public void setRunsTerminal(int runsTerminal) {
 		this.runsTerminal = runsTerminal;
 	}
-	public boolean checkRunsTerminal() {
+	public int getRunsTerminal() {
+		return this.runsTerminal;
+	}
+	private boolean checkRunsTerminal() {
 		boolean stopNow = true;
 		
 		if (this.runsTerminal > 0) {
@@ -286,6 +304,9 @@ public class Controller implements Runnable {
 			if (this.runsTerminal > 0) {
 				stopNow = false;
 			}
+		}
+		if (logger.isTraceEnabled()) {
+			logger.trace("runs terminal: " + this.runsTerminal);
 		}
 		return stopNow;
 	}

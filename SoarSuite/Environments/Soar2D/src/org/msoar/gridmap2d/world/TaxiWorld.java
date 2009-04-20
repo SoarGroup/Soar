@@ -27,7 +27,6 @@ public class TaxiWorld implements World {
 	private int refuel;
 	private boolean disableFuel;
 	private boolean forceHuman = false;
-	private boolean extraStep;
 
 	public TaxiWorld(CognitiveArchitecture cogArch, int fuelStartMin, int fuelStartMax, int refuel, boolean disableFuel) throws Exception {
 		this.cogArch = cogArch;
@@ -55,7 +54,6 @@ public class TaxiWorld implements World {
 	}
 	
 	private void resetState() throws Exception {
-		extraStep = false;
 		stopMessages.clear();
 		resetPlayers();
 	}
@@ -157,9 +155,7 @@ public class TaxiWorld implements World {
 				return;
 			}
 			players.setCommand(taxi, command);
-			if (!extraStep) {
-				WorldUtil.checkStopSim(stopMessages, command, taxi);
-			}
+			WorldUtil.checkStopSim(stopMessages, command, taxi);
 		}
 
 		moveTaxis();
@@ -168,30 +164,16 @@ public class TaxiWorld implements World {
 		}
 		updatePlayers();
 		
-		if (!extraStep) {
-			checkFuelRemaining();
-			checkPassengerDelivered();
-			checkPassengerPickedUp();
-			WorldUtil.checkMaxUpdates(stopMessages, worldCount);
-			WorldUtil.checkWinningScore(stopMessages, players.getSortedScores());
-		}
+		checkFuelRemaining();
+		checkPassengerDelivered();
+		checkPassengerPickedUp();
+		WorldUtil.checkMaxUpdates(stopMessages, worldCount);
+		WorldUtil.checkWinningScore(stopMessages, players.getSortedScores());
 		
 		if (stopMessages.size() > 0) {
-			if (!extraStep) {
-				// need to go one more step so that RL can work
-				extraStep = true;
-			} else {
-				boolean stopping = Gridmap2D.control.checkRunsTerminal();
-				WorldUtil.dumpStats(players.getSortedScores(), players.getAllAsPlayers(), stopping, stopMessages);
-	
-				if (stopping) {
-					Gridmap2D.control.stopSimulation();
-				} else {
-					// reset and continue;
-					reset();
-					Gridmap2D.control.startSimulation(false, false);
-				}
-			}
+			Gridmap2D.control.stopSimulation();
+			boolean stopping = Gridmap2D.control.getRunsTerminal() <= 0;
+			WorldUtil.dumpStats(players.getSortedScores(), players.getAllAsPlayers(), stopping, stopMessages);
 		}
 	}
 	
