@@ -216,7 +216,7 @@ WMElement* Identifier::FindFromTimeTag(long timeTag) const
 	// the saving could be significant.
 
 	if (this->GetTimeTag() == timeTag)
-		return (WMElement*)this ;
+		return const_cast<WMElement*>(static_cast<const WMElement*>(this)) ;
 
 	// Go through each child in turn and if it's an identifier search its children for a matching id.
 	for (ChildrenConstIter iter = m_pSymbol->m_Children.begin() ; iter != m_pSymbol->m_Children.end() ; iter++)
@@ -229,7 +229,8 @@ WMElement* Identifier::FindFromTimeTag(long timeTag) const
 		// If this is an identifer, we search deeper for the match
 		if (pWME->IsIdentifier())
 		{
-			WMElement* pResult = ((Identifier*)pWME)->FindFromTimeTag(timeTag) ;
+			Identifier* pId = static_cast<Identifier*>(pWME);
+			WMElement* pResult = pId->FindFromTimeTag(timeTag) ;
 
 			if (pResult)
 				return pResult ;

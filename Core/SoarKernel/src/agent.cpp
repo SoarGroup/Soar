@@ -121,7 +121,7 @@ void init_soar_agent(agent* thisAgent) {
 agent * create_soar_agent (char * agent_name) {                                          /* loop index */
   char cur_path[MAXPATHLEN];   /* AGR 536 */
 
-  agent* newAgent = (agent *) malloc(sizeof(agent));
+  agent* newAgent = reinterpret_cast<agent *>(malloc(sizeof(agent)));
 
   newAgent->current_tc_number = 0;
 
@@ -268,8 +268,8 @@ agent * create_soar_agent (char * agent_name) {                                 
 
   if(!getcwd(cur_path, MAXPATHLEN))
     print(newAgent, "Unable to set current directory while initializing agent.\n");
-  newAgent->top_dir_stack = (dir_stack_struct *) malloc(sizeof(dir_stack_struct));   /* AGR 568 */
-  newAgent->top_dir_stack->directory = (char *) malloc(MAXPATHLEN*sizeof(char));   /* AGR 568 */
+  newAgent->top_dir_stack = reinterpret_cast<dir_stack_struct *>(malloc(sizeof(dir_stack_struct)));   /* AGR 568 */
+  newAgent->top_dir_stack->directory = reinterpret_cast<char *>(malloc(MAXPATHLEN*sizeof(char)));   /* AGR 568 */
   newAgent->top_dir_stack->next = NIL;   /* AGR 568 */
   strcpy(newAgent->top_dir_stack->directory, cur_path);   /* AGR 568 */
 
@@ -378,7 +378,7 @@ void destroy_soar_agent (agent * delete_agent)
      
      symbol_remove_ref(delete_agent, curmattr->symbol);
      
-     free_memory(delete_agent, (void*) lastmattr, MISCELLANEOUS_MEM_USAGE);
+     free_memory(delete_agent, lastmattr, MISCELLANEOUS_MEM_USAGE);
      lastmattr = curmattr;
   }
   free_memory(delete_agent, lastmattr, MISCELLANEOUS_MEM_USAGE);
@@ -449,5 +449,5 @@ void destroy_soar_agent (agent * delete_agent)
   xml_destroy( delete_agent );
 
   /* Free soar agent structure */
-  free((void *) delete_agent);
+  free(delete_agent);
 }

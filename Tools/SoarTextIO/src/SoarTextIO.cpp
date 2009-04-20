@@ -139,7 +139,7 @@ SoarTextIO::runner()
 void
 SoarTextIO::RunForever( void* info )
 {
-	SoarTextIO* STIO = (SoarTextIO*)info;
+	SoarTextIO* STIO = reinterpret_cast<SoarTextIO*>(info);
 	if(!STIO->pKernel->IsSoarRunning())
 	{
 		STIO->m_IsRunning = true;
@@ -152,7 +152,7 @@ SoarTextIO::RunForever( void* info )
 void *
 RunForever( void* info )
 {
-	SoarTextIO* STIO = (SoarTextIO*)info;
+	SoarTextIO* STIO = reinterpret_cast<SoarTextIO*>(info);
 	if(!STIO->pKernel->IsSoarRunning())
 	{
 		STIO->m_IsRunning = true;
@@ -168,7 +168,7 @@ RunForever( void* info )
 /*void
 MyUpdateEventHandler(smlUpdateEventId id, void* pUserData, Kernel* pKernel, smlRunFlags runFlags)
 {
-	SoarTextIO* STIO = (SoarTextIO*)pUserData;
+	SoarTextIO* STIO = reinterpret_cast<SoarTextIO*>(pUserData);
 	STIO->make_buffered_changes();
 	if(STIO->m_StopNow == true)
 	{
@@ -187,14 +187,14 @@ MyUpdateEventHandler(smlUpdateEventId id, void* pUserData, Kernel* pKernel, smlR
 void
 MyStopSystemEventHandler(smlSystemEventId id, void* pUserData, Kernel* pKernel)
 {
-	SoarTextIO* STIO = (SoarTextIO*)pUserData;
+	SoarTextIO* STIO = reinterpret_cast<SoarTextIO*>(pUserData);
 	STIO->m_IsRunning = false;
 }
 
 void
 MyStartSystemEventHandler(smlSystemEventId id, void* pUserData, Kernel* pKernel)
 {
-	SoarTextIO* STIO = (SoarTextIO*)pUserData;
+	SoarTextIO* STIO = reinterpret_cast<SoarTextIO*>(pUserData);
 	STIO->m_IsRunning = true;
 }
 
@@ -203,7 +203,7 @@ MyAgentEventHandler(smlAgentEventId id, void* pUserData, Agent* pAgent)
 {
 	if(id == smlEVENT_BEFORE_AGENT_REINITIALIZED)
 	{
-		SoarTextIO* STIO = (SoarTextIO*)pUserData;
+		SoarTextIO* STIO = reinterpret_cast<SoarTextIO*>(pUserData);
 		if(STIO->LastSent.size() > 0)
 		{
 			//STIO->pAgent->DestroyWME(STIO->LastSent[0]->holder);
@@ -219,7 +219,7 @@ MyAgentEventHandler(smlAgentEventId id, void* pUserData, Agent* pAgent)
 void 
 MyRunEventHandler(smlRunEventId id, void* pUserData, Agent* pAgent, smlPhase phase)
 {
-	SoarTextIO* STIO = (SoarTextIO*)pUserData;
+	SoarTextIO* STIO = reinterpret_cast<SoarTextIO*>(pUserData);
 	STIO->make_buffered_changes();
 	if(STIO->m_StopNow == true)
 	{
@@ -238,7 +238,7 @@ void enact_init_soar(sml::smlAgentEventId id, void* pUserData, sml::Agent* pAgen
 {
 	if(id == smlEVENT_AFTER_AGENT_REINITIALIZED)
 	{
-		SoarTextIO* STIO = (SoarTextIO*)pUserData;
+		SoarTextIO* STIO = reinterpret_cast<SoarTextIO*>(pUserData);
 		STIO->init_soar = true;
 		STIO->init();
 		STIO->changes.clear();

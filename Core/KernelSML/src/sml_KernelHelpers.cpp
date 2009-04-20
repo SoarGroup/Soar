@@ -642,7 +642,7 @@ void KernelHelpers::PrintSymbol(AgentSML* thisAgent,
 		for (w=thisAgent->GetSoarAgent()->all_wmes_in_rete; w!=NIL; w=w->rete_next)
 			// RDF (08282002) Added the following cast to get rid of warning
 			// message
-			if (w->timetag == (unsigned long) thisAgent->GetSoarAgent()->lexeme.int_val) 
+			if (w->timetag == static_cast<unsigned long>(thisAgent->GetSoarAgent()->lexeme.int_val))
 				break;
 		if (w) 
 		{
@@ -674,7 +674,7 @@ void KernelHelpers::PrintSymbol(AgentSML* thisAgent,
 		soar_alternate_input(agnt, NIL, NIL, FALSE); 
 		agnt->current_char = ' ';
 		for (c = wmes; c != NIL; c = c->rest)
-			do_print_for_wme (agnt, (wme *)c->first, depth, internal, tree);
+			do_print_for_wme (agnt, reinterpret_cast<wme *>(c->first), depth, internal, tree);
 		free_list (agnt, wmes);
 		break;
 
@@ -817,15 +817,15 @@ void print_preference_and_source (agent* agnt, preference *pref,
 
 bool string_match_up_to (char * string1, 
 	const char * string2, 
-	unsigned int positions)
+	size_t positions)
 {
-	unsigned int i,num;
+	size_t i,num;
 
 	/*  what we really want is to require a match over the length of
 	the shorter of the two strings, with positions being a minimum */
 
-	num = (unsigned int)strlen(string1);
-	if (num > (unsigned int)strlen(string2)) num = (unsigned int)strlen(string2);
+	num = strlen(string1);
+	if (num > strlen(string2)) num = strlen(string2);
 	if (positions < num)  positions = num;
 
 	for (i = 0; i < positions; i++)
@@ -1078,8 +1078,8 @@ Symbol *get_binding (Symbol *f, list *bindings)
 
 	for (c=bindings;c!=NIL;c=c->rest) 
 	{
-		if (((Binding *) c->first)->from == f)
-			return ((Binding *) c->first)->to;
+		if (reinterpret_cast<Binding *>(c->first)->from == f)
+			return reinterpret_cast<Binding *>(c->first)->to;
 	}
 	return NIL;
 }
@@ -1106,7 +1106,7 @@ bool symbols_are_equal_with_bindings (agent* agnt, Symbol *s1, Symbol *s2, list 
 	/* Both are variables */
 	bvar = get_binding(s1,*bindings);
 	if (bvar == NIL) {
-		b = (Binding *) allocate_memory(agnt, sizeof(Binding),MISCELLANEOUS_MEM_USAGE);
+		b = reinterpret_cast<Binding *>(allocate_memory(agnt, sizeof(Binding),MISCELLANEOUS_MEM_USAGE));
 		b->from = s1;
 		b->to = s2;
 		push(agnt, b,*bindings);
@@ -1221,7 +1221,7 @@ void print_binding_list (agent* agnt, list *bindings)
 
 	for (c = bindings ; c != NIL ; c = c->rest)
 	{
-		print_with_symbols (agnt, "   (%y -> %y)\n",((Binding *) c->first)->from,((Binding *) c->first)->to);
+		print_with_symbols (agnt, "   (%y -> %y)\n", reinterpret_cast<Binding *>(c->first)->from, reinterpret_cast<Binding *>(c->first)->to);
 	}
 }
 
@@ -1487,7 +1487,7 @@ void read_pattern_and_get_matching_productions (agent* agnt,
 	current_binding_point = NIL;
 
 	/*  print("Parsing as a lhs...\n"); */
-	clist = (condition *) parse_lhs(agnt);
+	clist = parse_lhs(agnt);
 	if (!clist) {
 		print(agnt, "Error: not a valid condition list.\n");
 		current_pf_list = NIL;
@@ -1674,7 +1674,7 @@ void KernelHelpers::GetForceLearnStates(AgentSML* pAgent, std::stringstream& res
 	char buff[1024];
 
 	for (c = pSoarAgent->chunky_problem_spaces; c != NIL; c = c->rest) {
-		symbol_to_string(pSoarAgent, (Symbol *) (c->first), TRUE, buff, 1024);
+		symbol_to_string(pSoarAgent, reinterpret_cast<Symbol *>(c->first), TRUE, buff, 1024);
 		res << buff;
 	}
 }
@@ -1686,7 +1686,7 @@ void KernelHelpers::GetDontLearnStates(AgentSML* pAgent, std::stringstream& res)
 	char buff[1024];
 
 	for (c = pSoarAgent->chunk_free_problem_spaces; c != NIL; c = c->rest) {
-		symbol_to_string(pSoarAgent, (Symbol *) (c->first), TRUE, buff, 1024);
+		symbol_to_string(pSoarAgent, reinterpret_cast<Symbol *>(c->first), TRUE, buff, 1024);
 		res << buff;
 	}
 }

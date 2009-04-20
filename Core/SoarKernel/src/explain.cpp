@@ -93,7 +93,7 @@ backtrace_str *next_prod;
     deallocate_condition_list(thisAgent, prod->potentials);
     deallocate_condition_list(thisAgent, prod->locals);
     deallocate_condition_list(thisAgent, prod->negated);
-    free((void *) prod);
+    free(prod);
     prod = next_prod;
   }
 }
@@ -158,7 +158,7 @@ void explain_add_temp_to_backtrace_list
 
 backtrace_str *back;
 
-  back = (backtrace_str *)malloc(sizeof (backtrace_str));
+  back = reinterpret_cast<backtrace_str *>(malloc(sizeof (backtrace_str)));
   back->result = temp->result;
   back->trace_cond = copy_condition(thisAgent, temp->trace_cond);
   if (back->trace_cond != NULL)
@@ -192,7 +192,7 @@ void explain_add_temp_to_chunk_list(agent* thisAgent, explain_chunk_str *temp) {
    
 explain_chunk_str *chunk;
 
-  chunk = (explain_chunk_str *)malloc(sizeof (explain_chunk_str));
+  chunk = reinterpret_cast<explain_chunk_str *>(malloc(sizeof (explain_chunk_str)));
   chunk->conds   = temp->conds;
   chunk->actions = temp->actions;
   strncpy(chunk->name,temp->name,EXPLAIN_CHUNK_STRUCT_NAME_BUFFER_SIZE);
@@ -228,7 +228,7 @@ void free_explain_chunk(agent* thisAgent, explain_chunk_str *chunk) {
   deallocate_condition_list(thisAgent, chunk->all_grounds);
 
   /* Then free up this structure */
-  free((void *) chunk);
+  free(chunk);
 }
 
 /***************************************************************************

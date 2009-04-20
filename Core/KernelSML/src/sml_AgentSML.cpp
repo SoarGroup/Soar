@@ -335,7 +335,7 @@ void AgentSML::ResetLastOutputCount()
 //=============================
 smlPhase AgentSML::GetCurrentPhase()
 {
-	switch ( (unsigned short)m_agent->current_phase )
+	switch ( m_agent->current_phase )
 	{
 	case INPUT_PHASE:		return sml_INPUT_PHASE;
 	case PROPOSE_PHASE:		return sml_PROPOSAL_PHASE;

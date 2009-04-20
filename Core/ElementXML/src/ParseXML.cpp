@@ -390,7 +390,7 @@ ElementXMLImpl* ParseXML::ParseElement()
 			// Character data
 			ParseString contents = GetTokenValue() ;
 			
-			pElement->SetCharacterData((char*)contents.c_str(), true) ;
+			pElement->SetCharacterData(const_cast<char*>(contents.c_str()), true) ; // FIXME: inelegant, if const, this should assume false (force copy)
 
 			// If this buffer is really binary data, convert it over.
 			// Doing this just makes the user's life easier as they aren't

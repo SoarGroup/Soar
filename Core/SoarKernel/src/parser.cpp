@@ -154,7 +154,7 @@ void substitute_for_placeholders_in_test (agent* thisAgent, test *t) {
     return;
   case CONJUNCTIVE_TEST:
     for (c=ct->data.conjunct_list; c!=NIL; c=c->rest)
-      substitute_for_placeholders_in_test (thisAgent, (test *)(&(c->first)));
+      substitute_for_placeholders_in_test (thisAgent, reinterpret_cast<test *>(&(c->first)));
     return;
   default:  /* relational tests other than equality */
     substitute_for_placeholders_in_symbol (thisAgent, &(ct->data.referent));

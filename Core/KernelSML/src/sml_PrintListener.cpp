@@ -82,7 +82,7 @@ bool PrintListener::RemoveListener(smlPrintEventId eventID, Connection* pConnect
 // Called when an event occurs in the kernel
 void PrintListener::OnKernelEvent(int eventID, AgentSML* pAgentSML, void* pCallData)
 {
-	OnEvent(static_cast<smlPrintEventId>(eventID), pAgentSML, (const char*)pCallData) ;
+	OnEvent(static_cast<smlPrintEventId>(eventID), pAgentSML, reinterpret_cast<const char*>(pCallData)) ;
 }
 
 void PrintListener::OnEvent(smlPrintEventId eventID, AgentSML* pAgentSML, const char* msg)

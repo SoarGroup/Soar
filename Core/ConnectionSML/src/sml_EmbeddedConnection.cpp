@@ -46,7 +46,7 @@ EmbeddedConnection::~EmbeddedConnection()
 *************************************************************/
 EmbeddedConnection* GetConnectionFromHandle(Connection_Receiver_Handle hConnection)
 {
-	return (EmbeddedConnection*)hConnection ;
+	return reinterpret_cast<EmbeddedConnection*>(hConnection);
 }
 
 /*************************************************************
@@ -82,7 +82,7 @@ ElementXML_Handle LocalProcessMessage(Connection_Receiver_Handle hReceiverConnec
 {
 	// This is the connection object we created in this class, passed to the kernel and have
 	// now received back.
-	EmbeddedConnection* pConnection = (EmbeddedConnection*)hReceiverConnection ;
+	EmbeddedConnection* pConnection = reinterpret_cast<EmbeddedConnection*>(hReceiverConnection) ;
 
 	// Make sure we have been passed a valid connection object.
 	if (pConnection == NULL)
@@ -119,7 +119,8 @@ ElementXML_Handle LocalProcessMessage(Connection_Receiver_Handle hReceiverConnec
 	if (action == SML_MESSAGE_ACTION_ASYNCH)
 	{
 		// Store the incoming message on a queue and execute it on the receiver's thread (our thread) at a later point.
-		((EmbeddedConnectionAsynch*)pConnection)->AddToIncomingMessageQueue(hIncomingMsg) ;
+		EmbeddedConnectionAsynch* eca = reinterpret_cast<EmbeddedConnectionAsynch*>(pConnection);
+		eca->AddToIncomingMessageQueue(hIncomingMsg) ;
 
 		// There is no immediate response to an asynch message.
 		// The response will be sent back to the caller as another asynch message later, once the command has been executed.
