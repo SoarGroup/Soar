@@ -79,11 +79,11 @@ void ProductionListener::OnKernelEvent(int eventID, AgentSML* pAgentSML, void* p
 	production* p = 0;
 	if (smlEventID == smlEVENT_AFTER_PRODUCTION_ADDED || smlEventID == smlEVENT_BEFORE_PRODUCTION_REMOVED)
 	{
-		p = (production*) pCallData ;
+		p = reinterpret_cast<production*>(pCallData) ;
 	}
 	else
 	{
-		instantiation* inst = (instantiation*) pCallData ;
+		instantiation* inst = reinterpret_cast<instantiation*>(pCallData) ;
 		assert(inst) ;
 		p = inst->prod ;
 	}

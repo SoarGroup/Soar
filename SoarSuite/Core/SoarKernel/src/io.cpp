@@ -876,13 +876,13 @@ Symbol *get_next_io_symbol_from_text_input_line (agent* thisAgent,
   ch = *text_read_position;
   
   /* --- scan past any whitespace --- */
-  while (tio_whitespace[(unsigned char)(*ch)]) ch++;
+  while (tio_whitespace[static_cast<unsigned char>(*ch)]) ch++;
 
   /* --- if end of line, return NIL --- */
   if ((*ch=='\n')||(*ch==0)) { *text_read_position = ch; return NIL; }
 
   /* --- if not a constituent character, return single-letter symbol --- */
-  if (! tio_constituent_char[(unsigned char)(*ch)]) {
+  if (! tio_constituent_char[static_cast<unsigned char>(*ch)]) {
     input_string[0] = *ch++;
     input_string[1] = 0;
     *text_read_position = ch;
@@ -891,7 +891,7 @@ Symbol *get_next_io_symbol_from_text_input_line (agent* thisAgent,
     
   /* --- read string of constituents --- */
   input_lexeme_length = 0;
-  while (tio_constituent_char[(unsigned char)(*ch)])
+  while (tio_constituent_char[static_cast<unsigned char>(*ch)])
     input_string[input_lexeme_length++] = *ch++;
 
   /* --- return the appropriate kind of symbol --- */

@@ -21,7 +21,7 @@ using namespace soar_thread ;
 
 void ThreadStartFunction(void* pThreadObject)
 {
-	Thread* pThread = (Thread*)pThreadObject ;
+	Thread* pThread = reinterpret_cast<Thread*>(pThreadObject);
 	pThread->Run() ;
 
 	// When Run() terminates this "ThreadStartFunction" will terminate

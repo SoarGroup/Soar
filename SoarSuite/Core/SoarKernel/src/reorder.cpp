@@ -605,7 +605,7 @@ list *collect_root_variables (agent* thisAgent,
   /* --- unmark everything we just marked --- */
   unmark_variables_and_free_list (thisAgent, new_vars_from_value_slot);
   for (c=new_vars_from_id_slot; c!=NIL; c=c->rest)
-    ((Symbol *)(c->first))->var.tc_num = 0;
+    reinterpret_cast<Symbol *>(c->first)->var.tc_num = 0;
   
   /* --- make sure each root var has some condition with goal/impasse --- */
   if (allow_printing_warnings && thisAgent->sysparams[PRINT_WARNINGS_SYSPARAM]) {
@@ -625,14 +625,14 @@ list *collect_root_variables (agent* thisAgent,
         print (thisAgent, "\nWarning: On the LHS of production %s, identifier ",
                thisAgent->name_of_production_being_reordered);
         print_with_symbols (thisAgent, "%y is not connected to any goal or impasse.\n",
-                            (Symbol *)(c->first));
+                            reinterpret_cast<Symbol *>(c->first));
 
         // XML geneneration
         growable_string gs = make_blank_growable_string(thisAgent);
         add_to_growable_string(thisAgent, &gs, "Warning: On the LHS of production ");
         add_to_growable_string(thisAgent, &gs, thisAgent->name_of_production_being_reordered);
         add_to_growable_string(thisAgent, &gs, ", identifier ");
-        add_to_growable_string(thisAgent, &gs, symbol_to_string (thisAgent, (Symbol *)(c->first), true, 0, 0));
+        add_to_growable_string(thisAgent, &gs, symbol_to_string (thisAgent, reinterpret_cast<Symbol *>(c->first), true, 0, 0));
         add_to_growable_string(thisAgent, &gs, " is not connected to any goal or impasse.");
         xml_generate_warning(thisAgent, text_of_growable_string(gs));
         free_growable_string(thisAgent, gs);
@@ -773,7 +773,7 @@ long cost_of_adding_condition (agent* thisAgent,
      requiring bindings are actually bound.  If so, return 1, else
      return MAX_COST --- */
   for (c=cond->reorder.vars_requiring_bindings; c!=NIL; c=c->rest) {
-    if (((Symbol *)(c->first))->var.tc_num != tc) return MAX_COST;
+    if (reinterpret_cast<Symbol *>(c->first)->var.tc_num != tc) return MAX_COST;
   }
   return 1;
 }
@@ -965,7 +965,7 @@ void reorder_simplified_conditions (agent* thisAgent,
     if (roots) {
       cons *c;
       for (c=roots; c!=NIL; c=c->rest)
-        if (((Symbol *)(c->first))->var.tc_num != bound_vars_tc_number)
+        if (reinterpret_cast<Symbol *>(c->first)->var.tc_num != bound_vars_tc_number)
           break;
       if (!c) roots=NIL;
     }

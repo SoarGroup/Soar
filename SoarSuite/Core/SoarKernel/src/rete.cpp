@@ -104,8 +104,9 @@
 #include "lexer.h"
 #include "xml.h"
 #include "soar_TraceNames.h"
-
 #include "reinforcement_learning.h"
+
+#include "assert.h"
 
 #include <sstream>
 
@@ -447,14 +448,14 @@ inline rete_node * real_parent_node(rete_node * x)
   (((unsigned long)((node)->b.posneg.next_from_alpha_mem)) & 1)*/
 inline unsigned long node_is_right_unlinked(rete_node * node)
 {
-  return (((unsigned long)((node)->b.posneg.next_from_alpha_mem)) & 1);
+  return reinterpret_cast<unsigned long>(node->b.posneg.next_from_alpha_mem) & 1;
 }
 
 /*#define mark_node_as_right_unlinked(node) { \
   (node)->b.posneg.next_from_alpha_mem = static_cast<rete_node_struct *>((void *)1); }*/
 inline void mark_node_as_right_unlinked(rete_node * node)
 {
-  (node)->b.posneg.next_from_alpha_mem = static_cast<rete_node_struct *>((void *)1);
+  node->b.posneg.next_from_alpha_mem = reinterpret_cast<rete_node_struct *>(1);
 }
 
 //#define relink_to_right_mem(node) { 
@@ -531,14 +532,14 @@ inline void relink_to_right_mem(rete_node * node)
   (((unsigned long)((node)->a.pos.next_from_beta_mem)) & 1)*/
 inline unsigned long node_is_left_unlinked(rete_node * node)
 {
-  return (((unsigned long)((node)->a.pos.next_from_beta_mem)) & 1);
+  return reinterpret_cast<unsigned long>(node->a.pos.next_from_beta_mem) & 1;
 }
 
 /*#define mark_node_as_left_unlinked(node) { \
   (node)->a.pos.next_from_beta_mem = static_cast<rete_node_struct *>((void *)1); }*/
 inline void mark_node_as_left_unlinked(rete_node * node)
 {
-  (node)->a.pos.next_from_beta_mem = static_cast<rete_node_struct *>((void *)1);
+  node->a.pos.next_from_beta_mem = reinterpret_cast<rete_node_struct *>(1);
 }
 
 /* This macro cannot be easily converted to an inline function. 
@@ -1370,10 +1371,10 @@ Bool get_next_nil_goal_retraction (agent* thisAgent, instantiation **inst) {
   ((am)->acceptable==(w)->acceptable))*/
 inline Bool wme_matches_alpha_mem(wme * w, alpha_mem * am)
 {
-  return (((am)->id==NIL) || ((am)->id==(w)->id)) &&
-    (((am)->attr==NIL) || ((am)->attr==(w)->attr)) &&
-    (((am)->value==NIL) || ((am)->value==(w)->value)) &&
-    ((am)->acceptable==(w)->acceptable);
+  return ((am->id==NIL) || (am->id==w->id)) &&
+    ((am->attr==NIL) || (am->attr==w->attr)) &&
+    ((am->value==NIL) || (am->value==w->value)) &&
+    (am->acceptable==w->acceptable);
 }
 
 /* --- Returns hash value for the given id/attr/value symbols --- */
@@ -1384,10 +1385,11 @@ inline Bool wme_matches_alpha_mem(wme * w, alpha_mem * am)
    masks_for_n_low_order_bits[(num_bits)] )*/
 inline unsigned long alpha_hash_value(Symbol * i, Symbol * a, Symbol * v, short num_bits)
 {
-  return ( ( ((i) ? ((Symbol *)(i))->common.hash_id : 0) ^
-    ((a) ? ((Symbol *)(a))->common.hash_id : 0) ^
-    ((v) ? ((Symbol *)(v))->common.hash_id : 0) ) &
-    masks_for_n_low_order_bits[(num_bits)] );
+  return 
+	  ( ( (i ? i->common.hash_id : 0) ^
+          (a ? a->common.hash_id : 0) ^
+          (v ? v->common.hash_id : 0) ) &
+        masks_for_n_low_order_bits[(num_bits)] );
 }
 
 /* --- rehash funciton for resizable hash table routines --- */
@@ -1469,7 +1471,7 @@ alpha_mem *find_alpha_mem (agent* thisAgent, Symbol *id, Symbol *attr,
   ht = table_for_tests (thisAgent, id, attr, value, acceptable);
   hash_value = alpha_hash_value (id, attr, value, ht->log2size);
 
-  for (am = (alpha_mem *) (*(ht->buckets+hash_value)); am!=NIL;
+  for (am = reinterpret_cast<alpha_mem *>(*(ht->buckets+hash_value)); am!=NIL;
        am=am->next_in_hash_table)
     if ((am->id==id) && (am->attr==attr) &&
         (am->value==value) && (am->acceptable==acceptable))
@@ -1539,7 +1541,7 @@ void add_wme_to_aht (agent* thisAgent, hash_table *ht, unsigned long hash_value,
   rete_node *node, *next;
  
   hash_value = hash_value & masks_for_n_low_order_bits[ht->log2size];
-  am = (alpha_mem *) (*(ht->buckets+hash_value));
+  am = reinterpret_cast<alpha_mem *>(*(ht->buckets+hash_value));
   while (am!=NIL) {
     if (wme_matches_alpha_mem (w,am)) {
       /* --- found the right alpha memory, first add the wme --- */
@@ -2326,7 +2328,7 @@ void deallocate_rete_node (agent* thisAgent, rete_node *node) {
 //#define var_is_bound(v) (((Symbol *)(v))->var.rete_binding_locations != NIL)
 inline Bool var_is_bound(Symbol * v)
 {
-  return (((Symbol *)(v))->var.rete_binding_locations != NIL);
+  return v->var.rete_binding_locations != NIL;
 }
 
 /*
@@ -2337,29 +2339,28 @@ inline Bool var_is_bound(Symbol * v)
 
 inline void * varloc_to_dummy(rete_node_level depth, byte field_num)
 {
-  return ((void *)(((depth)<<2) + (field_num)));
+  return reinterpret_cast<void *>((depth << 2) + field_num);
 }
 
 inline unsigned long dummy_to_varloc_depth(void * d)
 {
-  return (((unsigned long)(d))>>2);
+  return reinterpret_cast<unsigned long>(d) >> 2;
 }
 
 inline unsigned long dummy_to_varloc_field_num(void * d)
 {
-  return (((unsigned long)(d)) & 3);
+  return reinterpret_cast<unsigned long>(d) & 3;
 }
 
 /*#define push_var_binding(v,depth,field_num) { \
   void *dummy_xy312; \
   dummy_xy312 = varloc_to_dummy ((depth), (field_num)); \
   push(thisAgent, dummy_xy312, ((Symbol *)(v))->var.rete_binding_locations); }*/
-inline void push_var_binding(agent* thisAgent, Symbol * v, 
-                                                         rete_node_level depth, byte field_num)
+inline void push_var_binding(agent* thisAgent, Symbol * v, rete_node_level depth, byte field_num)
 {
   void *dummy_xy312;
-  dummy_xy312 = varloc_to_dummy ((depth), (field_num));
-  push(thisAgent, dummy_xy312, ((Symbol *)(v))->var.rete_binding_locations);
+  dummy_xy312 = varloc_to_dummy (depth, field_num);
+  push(thisAgent, dummy_xy312, v->var.rete_binding_locations);
 }
 
 /*#define pop_var_binding(v) { \
@@ -2370,8 +2371,8 @@ inline void push_var_binding(agent* thisAgent, Symbol * v,
 inline void pop_var_binding(agent* thisAgent, void * v)
 {
   cons *c_xy312;
-  c_xy312 = ((Symbol *)(v))->var.rete_binding_locations;
-  ((Symbol *)(v))->var.rete_binding_locations = c_xy312->rest;
+  c_xy312 = reinterpret_cast<Symbol *>(v)->var.rete_binding_locations;
+  reinterpret_cast<Symbol *>(v)->var.rete_binding_locations = c_xy312->rest;
   free_cons (thisAgent, c_xy312);
 }
 
@@ -2508,12 +2509,12 @@ typedef char varnames;
 #define varnames_to_var_list(x) ((list *) (((char *)(x)) - 1))
 */
 
-inline varnames * one_var_to_varnames(Symbol * x) { return ((varnames *) (x)); }
-inline varnames * var_list_to_varnames(cons * x) { return ((varnames *) (((char *)(x)) + 1)); }
-inline unsigned long varnames_is_var_list(varnames * x) { return (((unsigned long)(x)) & 1); }
-inline Bool varnames_is_one_var(varnames * x) { return (! (varnames_is_var_list(x))); }
-inline Symbol * varnames_to_one_var(varnames * x) { return ((Symbol *) (x)); }
-inline list * varnames_to_var_list(varnames * x) { return ((list *) (((char *)(x)) - 1)); }
+inline varnames * one_var_to_varnames(Symbol * x) { return reinterpret_cast<varnames *>(x); }
+inline varnames * var_list_to_varnames(cons * x) { return reinterpret_cast<varnames *>(reinterpret_cast<char *>(x) + 1); }
+inline unsigned long varnames_is_var_list(varnames * x) { return reinterpret_cast<unsigned long>(x) & 1; }
+inline Bool varnames_is_one_var(varnames * x) { return ! varnames_is_var_list(x); }
+inline Symbol * varnames_to_one_var(varnames * x) { return reinterpret_cast<Symbol *>(x); }
+inline list * varnames_to_var_list(varnames * x) { return reinterpret_cast<list *>(reinterpret_cast<char *>(x) - 1); }
 
 typedef struct three_field_varnames_struct {
   varnames *id_varnames;
@@ -3461,7 +3462,7 @@ void fixup_rhs_value_variable_references (agent* thisAgent, rhs_value *rv,
     sym = rhs_value_to_symbol (*rv);
     if (sym->common.symbol_type!=VARIABLE_SYMBOL_TYPE) return;
     /* --- Found a variable.  Is is bound on the LHS? --- */
-    if (find_var_location (sym, (rete_node_level)(bottom_depth+1), &var_loc)) {
+    if (find_var_location (sym, static_cast<rete_node_level>(bottom_depth+1), &var_loc)) {
       /* --- Yes, replace it with reteloc --- */
       symbol_remove_ref (thisAgent, sym);
       *rv = reteloc_to_rhs_value (var_loc.field_num, var_loc.levels_up-1);
@@ -3472,9 +3473,9 @@ void fixup_rhs_value_variable_references (agent* thisAgent, rhs_value *rv,
         push(thisAgent, sym, rhs_unbound_vars_for_new_prod);
         sym->var.tc_num = rhs_unbound_vars_tc;
         index = num_rhs_unbound_vars_for_new_prod++;
-        sym->var.current_binding_value = (Symbol *)index;
+        sym->var.current_binding_value = reinterpret_cast<Symbol *>(index);
       } else {
-        index = (unsigned long)(sym->var.current_binding_value);
+        index = reinterpret_cast<unsigned long>(sym->var.current_binding_value);
       }
       *rv = unboundvar_to_rhs_value (index);
       symbol_remove_ref (thisAgent, sym);
@@ -3484,7 +3485,7 @@ void fixup_rhs_value_variable_references (agent* thisAgent, rhs_value *rv,
 
   if (rhs_value_is_funcall(*rv)) {
     for (c=rhs_value_to_funcall_list(*rv)->rest; c!=NIL; c=c->rest)
-      fixup_rhs_value_variable_references (thisAgent, (rhs_value *)(&(c->first)),
+      fixup_rhs_value_variable_references (thisAgent, reinterpret_cast<rhs_value *>(&(c->first)),
                                            bottom_depth, rhs_unbound_vars_for_new_prod, 
                                                                                    num_rhs_unbound_vars_for_new_prod, 
                                                                                    rhs_unbound_vars_tc);
@@ -3876,9 +3877,9 @@ Symbol *var_bound_in_reconstructed_conds (agent* thisAgent,
   ct = complex_test_from_test(t);
   if (ct->type==CONJUNCTIVE_TEST) {
     for (c=ct->data.conjunct_list; c!=NIL; c=c->rest)
-      if ( (! test_is_blank_test ((test)(c->first))) &&
-           (test_is_blank_or_equality_test ((test)(c->first))) )
-        return referent_of_equality_test ((test)(c->first));
+      if ( (! test_is_blank_test (reinterpret_cast<test>(c->first))) &&
+           (test_is_blank_or_equality_test (reinterpret_cast<test>(c->first))) )
+        return referent_of_equality_test (reinterpret_cast<test>(c->first));
   }
 
   abort_var_bound_in_reconstructed_conds:
@@ -4072,7 +4073,7 @@ void add_varnames_to_test (agent* thisAgent, varnames *vn, test *t) {
     add_new_test_to_test (thisAgent, t, New);
   } else {
     for (c=varnames_to_var_list(vn); c!=NIL; c=c->rest) {
-      New = make_equality_test ((Symbol *)(c->first));
+      New = make_equality_test (reinterpret_cast<Symbol *>(c->first));
       add_new_test_to_test (thisAgent, t, New);
     }
   }
@@ -5389,7 +5390,7 @@ void cn_node_left_addition (agent* thisAgent, rete_node *node, token *tok, wme *
   activation_entry_sanity_check();
   left_node_activation(node,TRUE);
 
-  hv = node->node_id ^ (unsigned long)tok ^ (unsigned long)w;
+  hv = node->node_id ^ reinterpret_cast<unsigned long>(tok) ^ reinterpret_cast<unsigned long>(w);
 
   /* --- look for a matching left token (since the partner node might have
      heard about this new token already, in which case it would have done
@@ -5436,7 +5437,7 @@ void cn_partner_node_left_addition (agent* thisAgent, rete_node *node,
   }
 
   /* --- look for the matching left token --- */
-  hv = partner->node_id ^ (unsigned long)tok ^ (unsigned long)w;
+  hv = partner->node_id ^ reinterpret_cast<unsigned long>(tok) ^ reinterpret_cast<unsigned long>(w);
   for (left=left_ht_bucket(thisAgent, hv); left!=NIL; left=left->a.ht.next_in_bucket)
     if ((left->node==partner)&&(left->parent==tok)&&(left->w==w)) break;
 
@@ -6148,8 +6149,8 @@ void remove_token_and_subtree (agent* thisAgent, token *root) {
     /* --- for CN nodes --- */
     } else if (node_type==CN_BNODE) {
       remove_token_from_left_ht (thisAgent, tok, node->node_id ^
-                                      (unsigned long)(tok->parent) ^
-                                      (unsigned long)(tok->w));
+                                      reinterpret_cast<unsigned long>(tok->parent) ^
+                                      reinterpret_cast<unsigned long>(tok->w));
       for (t=tok->negrm_tokens; t!=NIL; t=next_t) {
         next_t = t->a.neg.next_negrm;
         if (t->w) fast_remove_from_dll (t->w->tokens, t, token,
@@ -6291,8 +6292,8 @@ byte reteload_one_byte (FILE* f) {
 }
 
 void retesave_two_bytes (unsigned long w, FILE* f) {
-  retesave_one_byte ((byte)(w & 0xFF),f );
-  retesave_one_byte ((byte)((w >> 8) & 0xFF),f );
+  retesave_one_byte (static_cast<byte>(w & 0xFF),f );
+  retesave_one_byte (static_cast<byte>((w >> 8) & 0xFF),f );
 }
 
 unsigned long reteload_two_bytes (FILE* f) {
@@ -6303,10 +6304,10 @@ unsigned long reteload_two_bytes (FILE* f) {
 }
 
 void retesave_four_bytes (unsigned long w, FILE* f) {
-  retesave_one_byte ((byte)(w & 0xFF),f);
-  retesave_one_byte ((byte)((w >> 8) & 0xFF),f);
-  retesave_one_byte ((byte)((w >> 16) & 0xFF),f);
-  retesave_one_byte ((byte)((w >> 24) & 0xFF),f);
+  retesave_one_byte (static_cast<byte>(w & 0xFF),f);
+  retesave_one_byte (static_cast<byte>((w >> 8) & 0xFF),f);
+  retesave_one_byte (static_cast<byte>((w >> 16) & 0xFF),f);
+  retesave_one_byte (static_cast<byte>((w >> 24) & 0xFF),f);
 }
 
 unsigned long reteload_four_bytes (FILE* f) {
@@ -6498,7 +6499,7 @@ Bool retesave_alpha_mem_and_assign_index (agent* thisAgent, void *item, FILE* f)
   retesave_four_bytes (am->id ? am->id->common.a.retesave_symindex : 0,f);
   retesave_four_bytes (am->attr ? am->attr->common.a.retesave_symindex : 0,f);
   retesave_four_bytes (am->value ? am->value->common.a.retesave_symindex : 0,f);
-  retesave_one_byte ((byte)(am->acceptable ? 1 : 0),f);
+  retesave_one_byte (static_cast<byte>(am->acceptable ? 1 : 0),f);
   return FALSE;
 }
 
@@ -6584,7 +6585,7 @@ void retesave_varnames (varnames *names, FILE* f) {
     for (i=0, c=varnames_to_var_list(names); c!=NIL; i++, c=c->rest);
     retesave_four_bytes (i,f);
     for (c=varnames_to_var_list(names); c!=NIL; c=c->rest)
-      retesave_four_bytes (((Symbol *)(c->first))->common.a.retesave_symindex,f);
+      retesave_four_bytes (reinterpret_cast<Symbol *>(c->first)->common.a.retesave_symindex,f);
   }
 }
 
@@ -6676,13 +6677,13 @@ void retesave_rhs_value (rhs_value rv, FILE* f) {
   } else if (rhs_value_is_funcall(rv)) {
     retesave_one_byte (1,f);
     c = rhs_value_to_funcall_list (rv);
-    sym = ((rhs_function *)(c->first))->name;
+    sym = reinterpret_cast<rhs_function *>(c->first)->name;
     retesave_four_bytes (sym->common.a.retesave_symindex,f);
     c=c->rest;
     for (i=0; c!=NIL; i++, c=c->rest);
     retesave_four_bytes (i,f);
     for (c=rhs_value_to_funcall_list(rv)->rest; c!=NIL; c=c->rest)
-      retesave_rhs_value ((rhs_value)(c->first),f);
+      retesave_rhs_value (reinterpret_cast<rhs_value>(c->first),f);
   } else if (rhs_value_is_reteloc(rv)) {
     retesave_one_byte (2,f);
     retesave_one_byte (static_cast<byte>(rhs_value_to_reteloc_field_num(rv)),f);
@@ -6859,7 +6860,7 @@ void retesave_rete_test (rete_test *rt, FILE* f) {
     for (i=0, c=rt->data.disjunction_list; c!=NIL; i++, c=c->rest);
     retesave_two_bytes (i,f);
     for (c=rt->data.disjunction_list; c!=NIL; c=c->rest)
-      retesave_four_bytes (((Symbol *)(c->first))->common.a.retesave_symindex,f);
+      retesave_four_bytes (reinterpret_cast<Symbol *>(c->first)->common.a.retesave_symindex,f);
   }
 }
 
@@ -6878,7 +6879,7 @@ rete_test *reteload_rete_test (agent* thisAgent, FILE* f) {
     symbol_add_ref (rt->data.constant_referent);  
   } else if (test_is_variable_relational_test(rt->type)) {
     rt->data.variable_referent.field_num = reteload_one_byte(f);
-    rt->data.variable_referent.levels_up = (unsigned short)reteload_two_bytes(f);
+    rt->data.variable_referent.levels_up = static_cast<rete_node_level>(reteload_two_bytes(f));
   } else if (rt->type==DISJUNCTION_RETE_TEST) {
     count = reteload_two_bytes(f);
     temp = NIL;
@@ -7006,14 +7007,14 @@ void retesave_rete_node_and_children (agent* thisAgent, rete_node *node, FILE* f
   case UNHASHED_MP_BNODE:
     retesave_four_bytes (node->b.posneg.alpha_mem_->retesave_amindex,f);
     retesave_rete_test_list (node->b.posneg.other_tests,f);
-    retesave_one_byte ((byte)(node->a.np.is_left_unlinked ? 1 : 0),f);
+    retesave_one_byte (static_cast<byte>(node->a.np.is_left_unlinked ? 1 : 0),f);
     break;
 
   case POSITIVE_BNODE:
   case UNHASHED_POSITIVE_BNODE:
     retesave_four_bytes (node->b.posneg.alpha_mem_->retesave_amindex,f);
     retesave_rete_test_list (node->b.posneg.other_tests,f);
-    retesave_one_byte ((byte)(node_is_left_unlinked(node) ? 1 : 0),f);
+    retesave_one_byte (static_cast<byte>(node_is_left_unlinked(node) ? 1 : 0),f);
     break;
 
   case NEGATIVE_BNODE:
@@ -7050,7 +7051,7 @@ void retesave_rete_node_and_children (agent* thisAgent, rete_node *node, FILE* f
     for (i=0, c=prod->rhs_unbound_variables; c!=NIL; i++, c=c->rest);
     retesave_four_bytes (i,f);
     for (c=prod->rhs_unbound_variables; c!=NIL; c=c->rest)
-      retesave_four_bytes (((Symbol *)(c->first))->common.a.retesave_symindex,f);
+      retesave_four_bytes (static_cast<Symbol *>(c->first)->common.a.retesave_symindex,f);
     if (node->b.p.parents_nvn) {
       retesave_one_byte (1,f);
       retesave_node_varnames (node->b.p.parents_nvn, node->parent, f);
@@ -7092,13 +7093,13 @@ void reteload_node_and_children (agent* thisAgent, rete_node *parent, FILE* f) {
      It gets passed into some of the various make_new_??? functions
      below but is never used (hopefully) for UNHASHED node types.
   */
-  left_hash_loc.field_num = (byte) -1;
-  left_hash_loc.levels_up = (rete_node_level) -1;
+  left_hash_loc.field_num = static_cast<byte>(-1);
+  left_hash_loc.levels_up = static_cast<rete_node_level>(-1);
 
   switch (type) {
   case MEMORY_BNODE:
     left_hash_loc.field_num = reteload_one_byte(f);
-    left_hash_loc.levels_up = (unsigned short)reteload_two_bytes(f);
+    left_hash_loc.levels_up = static_cast<rete_node_level>(reteload_two_bytes(f));
     /* ... and fall through to the next case below ... */
   case UNHASHED_MEMORY_BNODE:
     New = make_new_mem_node (thisAgent, parent, type, left_hash_loc);
@@ -7106,7 +7107,7 @@ void reteload_node_and_children (agent* thisAgent, rete_node *parent, FILE* f) {
 
   case MP_BNODE:
     left_hash_loc.field_num = reteload_one_byte(f);
-    left_hash_loc.levels_up = (unsigned short)reteload_two_bytes(f);
+    left_hash_loc.levels_up = static_cast<rete_node_level>(reteload_two_bytes(f));
     /* ... and fall through to the next case below ... */
   case UNHASHED_MP_BNODE:
     am = reteload_am_from_index(thisAgent,f);
@@ -7129,7 +7130,7 @@ void reteload_node_and_children (agent* thisAgent, rete_node *parent, FILE* f) {
 
   case NEGATIVE_BNODE:
     left_hash_loc.field_num = reteload_one_byte(f);
-    left_hash_loc.levels_up = (unsigned short)reteload_two_bytes(f);
+    left_hash_loc.levels_up = static_cast<rete_node_level>(reteload_two_bytes(f));
     /* ... and fall through to the next case below ... */
   case UNHASHED_NEGATIVE_BNODE:
     am = reteload_am_from_index(thisAgent,f);
@@ -7728,7 +7729,7 @@ MS_trace *in_ms_trace(Symbol *sym, MS_trace *trace) {
   for(tmp = trace; tmp; tmp=tmp->next) {
     if(tmp->sym == sym) return tmp;
   }
-  return (MS_trace *)0;
+  return 0;
 }
 
 /* REW: begin 10.22.97 */
@@ -7737,7 +7738,7 @@ MS_trace *in_ms_trace_same_goal(Symbol *sym, MS_trace *trace, Symbol *goal) {
   for(tmp = trace; tmp; tmp=tmp->next) {
     if((tmp->sym == sym) && (goal == tmp->goal)) return tmp;
   }
-  return (MS_trace *)0;
+  return 0;
 }
 /* REW: end   10.22.97 */
 
@@ -7801,7 +7802,7 @@ void print_match_set (agent* thisAgent, wme_trace_type wtt, ms_trace_type mst) {
 					print(thisAgent, "(%d)\n", tmp->count);
 				else
 					print(thisAgent, "\n");
-				free_memory(thisAgent, (void *)tmp, MISCELLANEOUS_MEM_USAGE);
+				free_memory(thisAgent, tmp, MISCELLANEOUS_MEM_USAGE);
 			}
 		}
 	}
@@ -7858,7 +7859,7 @@ void print_match_set (agent* thisAgent, wme_trace_type wtt, ms_trace_type mst) {
 					print(thisAgent, "(%d)\n", tmp->count);
 				else
 					print(thisAgent, "\n");
-				free_memory(thisAgent, (void *)tmp, MISCELLANEOUS_MEM_USAGE);
+				free_memory(thisAgent, tmp, MISCELLANEOUS_MEM_USAGE);
 			}
 		}
 	}
@@ -7913,7 +7914,7 @@ void print_match_set (agent* thisAgent, wme_trace_type wtt, ms_trace_type mst) {
 					print(thisAgent, "(%d)\n", tmp->count);
 				else
 					print(thisAgent, "\n");
-				free_memory(thisAgent, (void *)tmp, MISCELLANEOUS_MEM_USAGE);
+				free_memory(thisAgent, tmp, MISCELLANEOUS_MEM_USAGE);
 			}
 		}
 	}
@@ -8399,7 +8400,7 @@ void xml_match_set (agent* thisAgent, wme_trace_type wtt, ms_trace_type mst) {
 				//  print(thisAgent, "(%d)\n", tmp->count);
 				//else
 				//  print(thisAgent, "\n");
-				free_memory(thisAgent, (void *)tmp, MISCELLANEOUS_MEM_USAGE);
+				free_memory(thisAgent, tmp, MISCELLANEOUS_MEM_USAGE);
 				xml_end_tag(thisAgent, kTagProduction) ;
 			}
 		}
@@ -8470,7 +8471,7 @@ void xml_match_set (agent* thisAgent, wme_trace_type wtt, ms_trace_type mst) {
 				//else
 				//  print(thisAgent, "\n");
 
-				free_memory(thisAgent, (void *)tmp, MISCELLANEOUS_MEM_USAGE);
+				free_memory(thisAgent, tmp, MISCELLANEOUS_MEM_USAGE);
 				xml_end_tag(thisAgent, kTagProduction) ;
 			}
 		}
@@ -8535,7 +8536,7 @@ void xml_match_set (agent* thisAgent, wme_trace_type wtt, ms_trace_type mst) {
 				//  print(thisAgent, "(%d)\n", tmp->count);
 				//else
 				//  print(thisAgent, "\n");
-				free_memory(thisAgent, (void *)tmp, MISCELLANEOUS_MEM_USAGE);
+				free_memory(thisAgent, tmp, MISCELLANEOUS_MEM_USAGE);
 				xml_end_tag(thisAgent, kTagProduction) ;
 			}
 		}

@@ -1108,7 +1108,7 @@ Identifier* Agent::GetCommand(int index)
 		if (pWME->IsIdentifier() && pWME->IsJustAdded())
 		{
 			if (index == 0)
-				return (Identifier*)pWME ;
+				return static_cast<Identifier*>(pWME) ;
 			index-- ;
 		}
 	}
@@ -1302,8 +1302,8 @@ char const* Agent::RunSelf(unsigned long numberSteps, smlRunStepSize stepSize)
 #ifdef SML_DIRECT
 		if (GetConnection()->IsDirectConnection())
 		{
-			EmbeddedConnection* ec = dynamic_cast<EmbeddedConnection*>(GetConnection());
-			ec->DirectRun(this->GetAgentName(), false, stepSize, sml_DECISION, (int)numberSteps) ;
+			EmbeddedConnection* ec = static_cast<EmbeddedConnection*>(GetConnection());
+			ec->DirectRun(this->GetAgentName(), false, stepSize, sml_DECISION, int(numberSteps)) ;
 			return "DirectRun completed" ;
 		}
 #endif
@@ -1343,7 +1343,8 @@ char const* Agent::RunSelfForever()
 #ifdef SML_DIRECT
 		if (GetConnection()->IsDirectConnection())
 		{
-			((EmbeddedConnection*)GetConnection())->DirectRun(this->GetAgentName(), true, sml_DECISION, sml_PHASE, 1) ;
+			EmbeddedConnection*	ec = static_cast<EmbeddedConnection*>(GetConnection());
+			ec->DirectRun(this->GetAgentName(), true, sml_DECISION, sml_PHASE, 1) ;
 			return "DirectRun completed" ;
 		}
 #endif
@@ -1438,7 +1439,8 @@ char const* Agent::RunSelfTilOutput()
 #ifdef SML_DIRECT
 		if (GetConnection()->IsDirectConnection())
 		{
-			((EmbeddedConnection*)GetConnection())->DirectRun(this->GetAgentName(), false, sml_UNTIL_OUTPUT, sml_PHASE, 1) ;
+			EmbeddedConnection*	ec = static_cast<EmbeddedConnection*>(GetConnection());
+			ec->DirectRun(this->GetAgentName(), false, sml_UNTIL_OUTPUT, sml_PHASE, 1) ;
 			return "DirectRun completed" ;
 		}
 #endif

@@ -35,14 +35,14 @@ soarxml::ElementXML* ReceivedCall(Connection* pConnection, soarxml::ElementXML* 
 	unused(pUserData) ;
 
 	// This must be initialized when the connection was created.
-	KernelSML* pKernel = (KernelSML*)pConnection->GetUserData() ;
+	KernelSML* pKernel = reinterpret_cast<KernelSML*>(pConnection->GetUserData()) ;
 
 	return pKernel->ProcessIncomingSML(pConnection, pIncoming) ;
 }
 
 static EmbeddedConnection* GetConnectionFromHandle(Connection_Receiver_Handle hConnection)
 {
-	return (EmbeddedConnection*)hConnection ;
+	return reinterpret_cast<EmbeddedConnection*>(hConnection) ;
 }
 
 EXPORT Connection_Receiver_Handle sml_CreateEmbeddedConnection(Connection_Sender_Handle hSenderConnection, ProcessMessageFunction pProcessMessage, int connectionType, int portToListenOn)
@@ -61,7 +61,7 @@ EXPORT Connection_Receiver_Handle sml_CreateEmbeddedConnection(Connection_Sender
 	// Record our kernel object with this connection.  I think we only want one kernel
 	// object even if there are many connections (because there's only one kernel) so for now
 	// that's how things are set up.
-	KernelSML* pKernelSML = KernelSML::CreateKernelSML((unsigned short)portToListenOn) ;
+	KernelSML* pKernelSML = KernelSML::CreateKernelSML(static_cast<unsigned short>(portToListenOn)) ;
 	pConnection->SetUserData(pKernelSML) ;
 
 	// If this is a synchronous connection then commands will execute on the embedded client's thread
@@ -138,7 +138,8 @@ EXPORT ElementXML_Handle sml_ProcessMessage(Connection_Receiver_Handle hReceiver
 	if (action == SML_MESSAGE_ACTION_ASYNCH)
 	{
 		// Store the incoming message on a queue and execute it on the receiver's thread (our thread) at a later point.
-		((EmbeddedConnectionAsynch*)pConnection)->AddToIncomingMessageQueue(hIncomingMsg) ;
+		EmbeddedConnectionAsynch* eca = reinterpret_cast<EmbeddedConnectionAsynch*>(pConnection);
+		eca->AddToIncomingMessageQueue(hIncomingMsg) ;
 
 		// There is no immediate response to an asynch message.
 		// The response will be sent back to the caller as another asynch message later, once the command has been executed.

@@ -535,7 +535,7 @@ void do_one_top_level_phase (agent* thisAgent)
     if (thisAgent->input_cycle_flag == TRUE) { /* Soar 7 flag, but always true for Soar8 */
       soar_invoke_callbacks(thisAgent, 
 		  BEFORE_INPUT_PHASE_CALLBACK,
-		  (soar_call_data) INPUT_PHASE);
+		  reinterpret_cast<soar_call_data>(INPUT_PHASE));
 
       do_input_cycle(thisAgent);
 
@@ -847,7 +847,7 @@ void do_one_top_level_phase (agent* thisAgent)
 	  do_output_cycle(thisAgent);
 
 	  // Count the outputs the agent generates (or times reaching max-nil-outputs without sending output)
-	  if (thisAgent->output_link_changed || ((++(thisAgent->run_last_output_count)) >= (unsigned long)thisAgent->sysparams[MAX_NIL_OUTPUT_CYCLES_SYSPARAM]))
+	  if (thisAgent->output_link_changed || ((++(thisAgent->run_last_output_count)) >= static_cast<unsigned long>(thisAgent->sysparams[MAX_NIL_OUTPUT_CYCLES_SYSPARAM])))
 	  {
 		  thisAgent->run_last_output_count = 0 ;
 		  thisAgent->run_generated_output_count++ ;
@@ -1156,7 +1156,7 @@ void run_for_n_decision_cycles (agent* thisAgent, long n) {
   if (d_cycles_at_start == 0)
     d_cycles_at_start++;
   while (!thisAgent->stop_soar) {
-    if (n==(long)(thisAgent->d_cycle_count-d_cycles_at_start)) break;
+    if (n == static_cast<long>(thisAgent->d_cycle_count-d_cycles_at_start)) break;
     do_one_top_level_phase(thisAgent);
   }
 #ifndef NO_TIMING_STUFF

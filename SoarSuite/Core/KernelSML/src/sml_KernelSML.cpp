@@ -866,7 +866,7 @@ EXPORT void sml_DirectRun(char const* pAgentName, bool forever, int stepSize, in
 		if (!pAgentSML)
 			return ;
 
-		runFlags = (smlRunFlags)(runFlags | sml_RUN_SELF) ;
+		runFlags = smlRunFlags(runFlags | sml_RUN_SELF) ;
 
 		// Schedule just this one agent to run
 		pScheduler->ScheduleAllAgentsToRun(false) ;
@@ -874,7 +874,7 @@ EXPORT void sml_DirectRun(char const* pAgentName, bool forever, int stepSize, in
 	}
 	else
 	{
-		runFlags = (smlRunFlags)(runFlags | sml_RUN_ALL) ;
+		runFlags = smlRunFlags(runFlags | sml_RUN_ALL) ;
 
 		// Ask all agents to run
 		pScheduler->ScheduleAllAgentsToRun(true) ;

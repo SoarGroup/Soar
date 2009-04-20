@@ -27,6 +27,7 @@
 
 #include "reinforcement_learning.h"
 #include "misc.h"
+#include "utilities.h"
 #include "instantiations.h"
 
 using namespace soar_TraceNames;
@@ -140,7 +141,7 @@ const long exploration_convert_parameter( agent *my_agent, const char *name )
 {
 	for ( int i=0; i<EXPLORATION_PARAMS; i++ )
 		if ( !strcmp( name, my_agent->exploration_params[ i ]->name ) )
-			return (const long) i;
+			return i;
 	
 	return EXPLORATION_PARAMS;
 }
@@ -716,7 +717,7 @@ preference *exploration_boltzmann_select( agent *my_agent, preference *candidate
 		 *  sum is negative, here that means a fractional probability
 		 */
 		double q_val = ( cand->numeric_value - q_diff );
-		total_probability += exp( (double) (  q_val / temp ) );
+		total_probability += exp( q_val / temp );
 		
 		/**
  		 * Let user know if adjusted q-value will overflow
@@ -736,7 +737,7 @@ preference *exploration_boltzmann_select( agent *my_agent, preference *candidate
 
 	for (cand = candidates; cand != NIL; cand = cand->next_candidate) 
 	{
-		current_sum += exp( (double) ( ( cand->numeric_value - q_diff ) / temp ) );
+		current_sum += exp( ( cand->numeric_value - q_diff ) / temp );
 		
 		if ( selected_probability <= current_sum )
 			return cand;
@@ -752,7 +753,7 @@ preference *exploration_epsilon_greedy_select( agent *my_agent, preference *cand
 {
 	preference *cand = 0;
 
-	double epsilon = exploration_get_parameter_value( my_agent, (const long) EXPLORATION_PARAM_EPSILON );
+	double epsilon = exploration_get_parameter_value( my_agent, static_cast< const long >( EXPLORATION_PARAM_EPSILON ) );
 
 	if ( my_agent->sysparams[ TRACE_INDIFFERENT_SYSPARAM ] )
 	{
