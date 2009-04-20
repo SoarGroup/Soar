@@ -47,7 +47,7 @@ public class DemoMenu
 				{ public void actionPerformed(ActionEvent e) { loadDemo(new File("blocks-world", "blocks-world.soar")) ; } } ;
 	private AbstractAction m_BlocksWorldOpSub = new AbstractAction("Blocks World Operator Subgoaling") 
 				{ public void actionPerformed(ActionEvent e) { loadDemo(new File("blocks-world", "blocks-world-operator-subgoaling.soar")) ; } } ;
-	private AbstractAction m_BlocksWorldLookahead = new AbstractAction("Blocks World Lookahead") 
+	private AbstractAction m_BlocksWorldLookahead = new AbstractAction("Blocks World Look-Ahead") 
 				{ public void actionPerformed(ActionEvent e) { loadDemo(new File("blocks-world", "blocks-world-look-ahead.soar")) ; } } ;
 
 	private AbstractAction m_EightPuzzle    = new AbstractAction("Eight puzzle") 
