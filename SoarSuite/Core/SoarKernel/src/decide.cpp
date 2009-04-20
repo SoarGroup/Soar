@@ -1842,8 +1842,11 @@ void remove_existing_context_and_descendents (agent* thisAgent, Symbol *goal) {
 
   if ( ( goal != thisAgent->top_goal ) && rl_enabled( thisAgent ) )
   {
-	rl_tabulate_reward_value_for_goal( thisAgent, goal );
-	rl_perform_update( thisAgent, 0, true, goal ); // this update only sees reward - there is no next state
+	if ( rl_final_update( thisAgent, goal ) )
+	{
+	  rl_tabulate_reward_value_for_goal( thisAgent, goal );
+	  rl_perform_update( thisAgent, 0, true, goal ); // this update only sees reward - there is no next state
+	}
   }
 
   /* --- disconnect this goal from the goal stack --- */

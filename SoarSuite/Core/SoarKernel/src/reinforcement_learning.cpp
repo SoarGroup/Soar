@@ -421,6 +421,30 @@ void rl_add_goal_or_impasse_tests_to_conds( agent *my_agent, condition *all_cond
 }
 
 /***************************************************************************
+ * Function     : rl_final_update
+ **************************************************************************/
+bool rl_final_update( agent *my_agent, Symbol *goal )
+{
+	bool return_val = false;
+	
+	slot *s = make_slot( my_agent, goal->id.reward_header, my_agent->rl_sym_final_update );
+	if ( s )
+	{
+		wme *w;
+
+		for ( w=s->wmes; w; w=w->next )
+		{
+			if ( w->value == my_agent->rl_sym_true )
+			{
+				return_val = true;
+			}
+		}
+	}
+
+	return return_val;
+}
+
+/***************************************************************************
  * Function     : rl_tabulate_reward_value_for_goal
  **************************************************************************/
 void rl_tabulate_reward_value_for_goal( agent *my_agent, Symbol *goal )
