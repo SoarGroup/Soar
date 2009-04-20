@@ -1242,7 +1242,7 @@ Symbol *create_new_impasse (agent* thisAgent, Bool isa_goal, Symbol *object, Sym
                             byte impasse_type, goal_stack_level level) {
   Symbol *id;
 
-  id = make_new_identifier (thisAgent, (char)(isa_goal ? 'S' : 'I'), level);
+  id = make_new_identifier (thisAgent, (isa_goal ? 'S' : 'I'), level);
   post_link_addition (thisAgent, NIL, id);  /* add the special link */
 
   add_impasse_wme (thisAgent, id, thisAgent->type_symbol, isa_goal ? thisAgent->state_symbol : thisAgent->impasse_symbol,
@@ -1968,7 +1968,7 @@ void create_new_context (agent* thisAgent, Symbol *attr_of_impasse, byte impasse
      /* Creating a sub-goal (or substate) */
     id = create_new_impasse (thisAgent, TRUE, thisAgent->bottom_goal,	                 
 	     	                    attr_of_impasse, impasse_type,
-                             (goal_stack_level) (thisAgent->bottom_goal->id.level + 1));
+                             static_cast<goal_stack_level>(thisAgent->bottom_goal->id.level + 1));
     id->id.higher_goal = thisAgent->bottom_goal;
     thisAgent->bottom_goal->id.lower_goal = id;
     thisAgent->bottom_goal = id;
@@ -2499,7 +2499,7 @@ void uniquely_add_to_head_of_dll(agent* thisAgent, instantiation *inst)
      #endif
   } /* end for loop */
 
-  new_pi = (parent_inst *) malloc(sizeof(parent_inst));
+  new_pi = reinterpret_cast<parent_inst *>(malloc(sizeof(parent_inst)));
   new_pi->next = NIL;
   new_pi->prev = NIL;
   new_pi->inst = inst;

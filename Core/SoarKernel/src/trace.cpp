@@ -539,7 +539,7 @@ void print_trace_format_list (agent* thisAgent, trace_format *tf) {
       else print_string (thisAgent, "%ao[");
       if (tf->data.attribute_path) {
         for (c=tf->data.attribute_path; c!=NIL; c=c->rest) {
-          print_string (thisAgent, ((Symbol *)(c->first))->sc.name);
+          print_string (thisAgent, reinterpret_cast<Symbol *>(c->first)->sc.name);
           if (c->rest) print_string (thisAgent, ".");
         }
       } else {
@@ -676,7 +676,7 @@ trace_format *lookup_trace_format (agent* thisAgent,
     else
       ht = thisAgent->object_tr_ht[type_restriction];
     hash_value = hash_name_restriction (name_restriction, ht->log2size);
-    tr = (tracing_rule *) (*(ht->buckets + hash_value));
+    tr = reinterpret_cast<tracing_rule *>(*(ht->buckets + hash_value));
     for ( ; tr!=NIL; tr = tr->next_in_hash_bucket)
       if (tr->name_restriction==name_restriction) return tr->format;
     return NIL;
@@ -703,7 +703,7 @@ Bool remove_trace_format (agent* thisAgent,
     else
       ht = thisAgent->object_tr_ht[type_restriction];
     hash_value = hash_name_restriction (name_restriction, ht->log2size);
-    tr = (tracing_rule *) (*(ht->buckets + hash_value));
+    tr = reinterpret_cast<tracing_rule *>(*(ht->buckets + hash_value));
     for ( ; tr!=NIL; tr = tr->next_in_hash_bucket)
       if (tr->name_restriction==name_restriction) break;
     if (! tr) return FALSE;
@@ -1391,7 +1391,7 @@ void print_stack_trace_xml(agent* thisAgent, Symbol *object, Symbol *state, int 
 		case FOR_STATES_TF:
 			//create XML trace for state object
 			xml_begin_tag( thisAgent, kTagState );
-			xml_att_val( thisAgent, kState_StackLevel, (unsigned long)(state->id.level - 1) );
+			xml_att_val( thisAgent, kState_StackLevel, static_cast<unsigned long>(state->id.level - 1) );
 			xml_att_val( thisAgent, kState_DecisionCycleCt, thisAgent->d_cycle_count );
 			xml_att_val( thisAgent, kState_ID, object );
 			
@@ -1418,7 +1418,7 @@ void print_stack_trace_xml(agent* thisAgent, Symbol *object, Symbol *state, int 
 		case FOR_OPERATORS_TF:
 			//create XML trace for operator object
 			xml_begin_tag( thisAgent, kTagOperator );
-			xml_att_val( thisAgent, kState_StackLevel, (unsigned long)(object->id.level - 1) );
+			xml_att_val( thisAgent, kState_StackLevel, static_cast<unsigned long>(object->id.level - 1) );
 			xml_att_val( thisAgent, kOperator_DecisionCycleCt, thisAgent->d_cycle_count );
 			
 			if (state->id.operator_slot->wmes)

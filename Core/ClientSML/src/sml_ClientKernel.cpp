@@ -308,7 +308,7 @@ bool Kernel::IsTracingCommunications()
 *************************************************************/
 ElementXML* Kernel::ReceivedCall(Connection* pConnection, ElementXML* pIncoming, void* pUserData)
 {
-	Kernel* pKernel = (Kernel*)pUserData ;
+	Kernel* pKernel = reinterpret_cast<Kernel*>(pUserData) ;
 
 	return pKernel->ProcessIncomingSML(pConnection, pIncoming) ;
 }
@@ -757,7 +757,7 @@ Kernel* Kernel::CreateRemoteConnection(bool sharedFileSystem, char const* pIPadd
 	sock::SocketLib* pLib = new sock::SocketLib() ;
 
 	// Connect to the remote socket
-	Connection* pConnection = Connection::CreateRemoteConnection(sharedFileSystem, pIPaddress, (unsigned short)port, &errorCode) ;
+	Connection* pConnection = Connection::CreateRemoteConnection(sharedFileSystem, pIPaddress, static_cast<unsigned short>(port), &errorCode) ;
 
 	// Even if pConnection is NULL, we still build a kernel object, so we have
 	// a clean way to pass the error code back to the caller.
@@ -1244,7 +1244,7 @@ bool Kernel::IsCommitRequired()
 * @returns The result of executing the run command.
 *		   The output from during the run is sent to a different callback.
 *************************************************************/
-char const* Kernel::RunAllAgents(unsigned long numberSteps, smlRunStepSize stepSize, smlRunStepSize interleaveStepSize)
+char const* Kernel::RunAllAgents(int numberSteps, smlRunStepSize stepSize, smlRunStepSize interleaveStepSize)
 {
 	if (IsCommitRequired())
 	{
@@ -1255,8 +1255,8 @@ char const* Kernel::RunAllAgents(unsigned long numberSteps, smlRunStepSize stepS
 #ifdef SML_DIRECT
 		if (GetConnection()->IsDirectConnection())
 		{
-			EmbeddedConnection* ec = dynamic_cast<EmbeddedConnection*>(GetConnection());
-			ec->DirectRun(NULL, false, stepSize, interleaveStepSize, (int)numberSteps) ;
+			EmbeddedConnection* ec = static_cast<EmbeddedConnection*>(GetConnection());
+			ec->DirectRun(NULL, false, stepSize, interleaveStepSize, numberSteps) ;
 			return "DirectRun completed" ;
 		}
 #endif
@@ -1313,7 +1313,8 @@ char const* Kernel::RunAllAgentsForever(smlRunStepSize interleaveStepSize)
 #ifdef SML_DIRECT
 		if (GetConnection()->IsDirectConnection())
 		{
-			((EmbeddedConnection*)GetConnection())->DirectRun(NULL, true, sml_DECISION, interleaveStepSize, 1) ;
+			EmbeddedConnection* ec = static_cast<EmbeddedConnection*>(GetConnection());
+			ec->DirectRun(NULL, true, sml_DECISION, interleaveStepSize, 1) ;
 			return "DirectRun completed" ;
 		}
 #endif
@@ -1371,7 +1372,8 @@ char const* Kernel::RunAllTilOutput(smlRunStepSize interleaveStepSize)
 #ifdef SML_DIRECT
 		if (GetConnection()->IsDirectConnection())
 		{
-			((EmbeddedConnection*)GetConnection())->DirectRun(NULL, false, sml_UNTIL_OUTPUT, interleaveStepSize, 1) ;
+			EmbeddedConnection* ec = static_cast<EmbeddedConnection*>(GetConnection());
+			ec->DirectRun(NULL, false, sml_UNTIL_OUTPUT, interleaveStepSize, 1) ;
 			return "DirectRun completed" ;
 		}
 #endif

@@ -26,7 +26,7 @@ using namespace sml ;
 
 void KernelCallback::KernelCallbackStatic(agent* pAgent, int eventID, void* pData, void* pCallData)
 {
-	KernelCallback* pThis = (KernelCallback*)pData ;
+	KernelCallback* pThis = reinterpret_cast<KernelCallback*>(pData) ;
 
 	// Make sure everything matches up correctly.
 	(void)pAgent; // silences warning in release mode
@@ -155,7 +155,7 @@ void KernelCallback::RegisterWithKernel(int eventID)
 	{
 		// This is the standard case
 		SOAR_CALLBACK_TYPE callbackType = SOAR_CALLBACK_TYPE(GetCallbackFromEventID(eventID)) ;
-		soar_add_callback (pAgent, callbackType, KernelCallbackStatic, eventID, this, NULL, (char*)callbackID.c_str()) ;
+		soar_add_callback (pAgent, callbackType, KernelCallbackStatic, eventID, this, NULL, callbackID.c_str()) ;
 	}
 	else
 	{
@@ -172,7 +172,7 @@ void KernelCallback::RegisterWithKernel(int eventID)
 			// event of that type, not a subevent.
 			int phaseEvent = events[i] ;
 			SOAR_CALLBACK_TYPE callbackType = SOAR_CALLBACK_TYPE(GetCallbackFromEventID(phaseEvent)) ;
-			soar_add_callback (pAgent, callbackType, KernelCallbackStatic, eventID, this, NULL, (char*)callbackID.c_str()) ;
+			soar_add_callback (pAgent, callbackType, KernelCallbackStatic, eventID, this, NULL, callbackID.c_str()) ;
 		}
 	}
 }

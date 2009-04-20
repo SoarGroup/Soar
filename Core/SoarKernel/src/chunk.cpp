@@ -224,7 +224,7 @@ void variablize_test (agent* thisAgent, test *t) {
     return;
   case CONJUNCTIVE_TEST:
     for (c=ct->data.conjunct_list; c!=NIL; c=c->rest)
-      variablize_test (thisAgent, (test *)(&(c->first)));
+      variablize_test (thisAgent, reinterpret_cast<test *>(&(c->first)));
     return;
   default:  /* relational tests other than equality */
     variablize_symbol (thisAgent, &(ct->data.referent));
@@ -1168,7 +1168,7 @@ void chunk_instantiation (agent* thisAgent,
   
   /* MVP 6-8-94 */
   if (thisAgent->chunks_this_d_cycle >
-      (unsigned long) thisAgent->sysparams[MAX_CHUNKS_SYSPARAM]) {
+      static_cast<unsigned long>(thisAgent->sysparams[MAX_CHUNKS_SYSPARAM]) ) {
 		  if (thisAgent->sysparams[PRINT_WARNINGS_SYSPARAM]) {
 		  print (thisAgent, "\nWarning: reached max-chunks! Halting system.");
 		  xml_generate_warning(thisAgent, "Warning: reached max-chunks! Halting system.");

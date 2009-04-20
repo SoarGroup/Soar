@@ -426,7 +426,7 @@ void QL_Interface::prepare_for_new_connection()
 		m_pKernel->Shutdown();
 		delete m_pKernel;
 		kernel_destroyed = true;
-		m_pKernel = (Kernel*)NULL;
+		m_pKernel = 0;
 	}
 }
 

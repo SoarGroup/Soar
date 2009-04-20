@@ -20,6 +20,7 @@
 #include "sml_KernelSML.h"
 #include "sml_KernelHelpers.h"
 #include "gsysparam.h"
+#include "misc.h"
 
 using namespace cli;
 using namespace sml;
