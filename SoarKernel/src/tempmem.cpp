@@ -124,7 +124,7 @@ void mark_slot_as_changed (agent* thisAgent, slot *s) {
     } else {
       thisAgent->highest_goal_whose_context_changed = s->id;
     }
-    s->changed = (dl_cons *)s;  /* just make it nonzero */
+    s->changed = reinterpret_cast<dl_cons *>(s);  /* just make it nonzero */
   } else {
     if (! s->changed) {
       allocate_with_pool (thisAgent, &thisAgent->dl_cons_pool, &dc);

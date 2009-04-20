@@ -99,7 +99,7 @@ void soar_init_callbacks (agent* the_agent)
 
   for (ct = 1; ct < NUMBER_OF_CALLBACKS; ct++)
     {
-      the_agent->soar_callbacks[ct] = (list *) NIL;
+      the_agent->soar_callbacks[ct] = NIL;
     }
 }
 
@@ -125,7 +125,7 @@ void soar_add_callback (agent* thisAgent,
 
 void soar_callback_data_free_string (soar_callback_data data)
 {
-  free((char *) data);
+  free(data);
 }
 
 const char * soar_callback_enum_to_name (SOAR_CALLBACK_TYPE i, 
@@ -614,7 +614,7 @@ void soar_callback_test_callback (agent* /*the_agent*/,
 				  soar_callback_data data,
 				  soar_call_data /*call_data*/)
 {
-  printf("%s test callback executed.\n", (char *) data);
+  printf("%s test callback executed.\n", reinterpret_cast<char *>(data));
 }
 
 

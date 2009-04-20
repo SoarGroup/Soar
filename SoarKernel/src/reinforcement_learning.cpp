@@ -325,7 +325,7 @@ void rl_revert_template_id( agent *my_agent )
 		new_name = ( "rl*" + empty_string + my_template->name->sc.name + "*" + (*temp_id) );
 		delete temp_id;
 	} while ( find_sym_constant( my_agent, new_name.c_str() ) != NIL );
-	new_name_symbol = make_sym_constant( my_agent, (char *) new_name.c_str() );
+	new_name_symbol = make_sym_constant( my_agent, new_name.c_str() );
 	
 	// prep conditions
 	copy_condition_list( my_agent, my_template_instance->top_of_instantiated_conditions, &cond_top, &cond_bottom );
@@ -412,7 +412,7 @@ void rl_add_goal_or_impasse_tests_to_conds( agent *my_agent, condition *all_cond
 		if ( ( id->id.isa_goal || id->id.isa_impasse ) && ( id->id.tc_num != tc ) ) 
 		{
 			allocate_with_pool( my_agent, &my_agent->complex_test_pool, &ct );
-			ct->type = (char) ( ( id->id.isa_goal )?( GOAL_ID_TEST ):( IMPASSE_ID_TEST ) );
+			ct->type = static_cast<byte>( ( id->id.isa_goal )?( GOAL_ID_TEST ):( IMPASSE_ID_TEST ) );
 			t = make_test_from_complex_test( ct );
 			add_new_test_to_test( my_agent, &( cond->data.tests.id_test ), t );
 			id->id.tc_num = tc;
@@ -456,7 +456,7 @@ void rl_tabulate_reward_value_for_goal( agent *my_agent, Symbol *goal )
 				}
 			}
 			
-			data->reward += ( reward * pow( discount_rate, (double) ( data->gap_age + data->hrl_age ) ) );
+			data->reward += ( reward * pow( discount_rate, static_cast< double >( data->gap_age + data->hrl_age ) ) );
 		}
 
 		// update stats
@@ -582,11 +582,11 @@ void rl_perform_update( agent *my_agent, double op_value, bool op_rl, Symbol *go
 
 			// compute TD update, set stat
 			double update = data->reward;
-			double discount = pow( gamma, (double) ( data->gap_age + data->hrl_age + 1 ) );
+			double discount = pow( gamma, static_cast< double >( data->gap_age + data->hrl_age + 1 ) );
 
 			update += ( discount * op_value );
 			update -= data->previous_q;
-			my_agent->rl_stats->update_error->set_value( (double) ( -update ) );
+			my_agent->rl_stats->update_error->set_value( -update );
 
 			// Iterate through eligibility_traces, decay traces. If less than TOLERANCE, remove from map.
 			if ( lambda == 0 )
@@ -616,11 +616,11 @@ void rl_perform_update( agent *my_agent, double op_value, bool op_rl, Symbol *go
 				{
 					if ( c->first )
 					{
-						iter = data->eligibility_traces->find( (production *) c->first );
+						iter = data->eligibility_traces->find( reinterpret_cast< production * >( c->first ) );
 						if ( iter != data->eligibility_traces->end() ) 
 							iter->second += trace_increment;
 						else 
-							(*data->eligibility_traces)[ (production *) c->first ] = trace_increment;
+							(*data->eligibility_traces)[ reinterpret_cast< production * >( c->first ) ] = trace_increment;
 					}
 				}
 			}

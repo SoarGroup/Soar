@@ -11,7 +11,6 @@
 #include "src/io.cpp"
 #include "src/lexer.cpp"
 #include "src/mem.cpp"
-#include "src/misc.cpp"
 #include "src/osupport.cpp"
 #include "src/parser.cpp"
 #include "src/prefmem.cpp"

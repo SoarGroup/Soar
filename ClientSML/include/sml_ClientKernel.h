@@ -493,7 +493,7 @@ public:
 	* @returns The result of executing the run command.
 	*		   The output from during the run is sent to a different callback.
 	*************************************************************/
-	char const* RunAllAgents(unsigned long numberSteps, smlRunStepSize stepSize = sml_DECISION, smlRunStepSize interleaveStepSize = sml_PHASE) ;
+	char const* RunAllAgents(int numberSteps, smlRunStepSize stepSize = sml_DECISION, smlRunStepSize interleaveStepSize = sml_PHASE) ;
 	char const* RunAllAgentsForever(smlRunStepSize interleaveStepSize = sml_PHASE) ;
 
 	/*************************************************************

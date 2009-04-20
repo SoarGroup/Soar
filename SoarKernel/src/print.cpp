@@ -84,7 +84,7 @@ void print_string (agent* thisAgent, const char *s) {
 			thisAgent->printer_output_column++;
 	}
 
-	soar_invoke_first_callback(thisAgent, PRINT_CALLBACK, /*(ClientData)*/ (void*)(s));
+	soar_invoke_first_callback(thisAgent, PRINT_CALLBACK, reinterpret_cast<soar_call_data>(const_cast<char *>(s)));
 }
 
 /* ---------------------------------------------------------------
@@ -937,7 +937,7 @@ void print_preference (agent* thisAgent, preference *pref) {
   char buf[2];
   buf[0] = pref_type;
   buf[1] = 0;
-  xml_att_val(thisAgent, kPreference_Type, (char*)buf);
+  xml_att_val(thisAgent, kPreference_Type, buf);
   
   if (preference_is_binary(pref->type)) {
 	  xml_att_val(thisAgent, kReferent, pref->referent);

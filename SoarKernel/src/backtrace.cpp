@@ -165,7 +165,7 @@ void print_consed_list_of_condition_wmes (agent* thisAgent, list *c, int indent)
     /* mvp 5-17-94 */
     print_spaces (thisAgent, indent);
     print (thisAgent, "     ");
-    print_wme (thisAgent, ((condition *)(c->first))->bt.wme_);
+    print_wme (thisAgent, (static_cast<condition *>(c->first))->bt.wme_);
   }
 }
 
@@ -466,7 +466,7 @@ void trace_locals (agent* thisAgent, goal_stack_level grounds_level) {
     }
 
     bt_pref = find_clone_for_level (cond->bt.trace, 
-		                            (goal_stack_level)(grounds_level+1));
+		                            static_cast<goal_stack_level>(grounds_level+1));
     /* --- if it has a trace at this level, backtrace through it --- */
     if (bt_pref) {
 
@@ -628,7 +628,7 @@ Bool trace_ungrounded_potentials (agent* thisAgent, goal_stack_level grounds_lev
     next_c = c->rest;
     potential = static_cast<condition_struct *>(c->first);
     bt_pref = find_clone_for_level (potential->bt.trace, 
-		                            (goal_stack_level)(grounds_level+1));
+		                            static_cast<goal_stack_level>(grounds_level+1));
     if (bt_pref) {
       if (prev_c) prev_c->rest = next_c; else thisAgent->positive_potentials = next_c;
       c->rest = pots_to_bt; pots_to_bt = c;
@@ -658,7 +658,7 @@ Bool trace_ungrounded_potentials (agent* thisAgent, goal_stack_level grounds_lev
       print_string (thisAgent, " ");
     }
     bt_pref = find_clone_for_level (potential->bt.trace, 
-		                            (goal_stack_level)(grounds_level+1));
+		                            static_cast<goal_stack_level>(grounds_level+1));
 
     /* mvp 5-17-94 */
     backtrace_through_instantiation (thisAgent, bt_pref->inst, grounds_level,potential,0);

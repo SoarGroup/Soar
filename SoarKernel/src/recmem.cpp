@@ -48,9 +48,10 @@
 #include "utilities.h"
 #include "soar_TraceNames.h"
 #include "consistency.h"
-
-#include <string> // SBW 8/4/08
 #include "misc.h"
+
+#include "assert.h"
+#include <string> // SBW 8/4/08
 
 using namespace soar_TraceNames;
 
@@ -284,7 +285,7 @@ Symbol *instantiate_rhs_value (agent* thisAgent, rhs_value rv,
   
   /* --- scan through arglist, dereference symbols and deallocate conses --- */
   for (c=arglist; c!=NIL; c=c->rest)
-    if (c->first) symbol_remove_ref (thisAgent, (Symbol *)(c->first));
+    if (c->first) symbol_remove_ref (thisAgent, reinterpret_cast<Symbol *>(c->first));
   free_list (thisAgent, arglist);
 
   return result;
@@ -601,7 +602,7 @@ void create_instantiation (agent* thisAgent, production *prod, struct token_stru
 		print (thisAgent, "Firing ");
 		print_instantiation_with_wmes
 			(thisAgent, inst, 
-			(wme_trace_type)(thisAgent->sysparams[TRACE_FIRINGS_WME_TRACE_TYPE_SYSPARAM]), 0);
+			static_cast<wme_trace_type>(thisAgent->sysparams[TRACE_FIRINGS_WME_TRACE_TYPE_SYSPARAM]), 0);
 	}
 
 	/* --- initialize rhs_variable_bindings array with names of variables
@@ -795,7 +796,7 @@ void deallocate_instantiation (agent* thisAgent, instantiation *inst) {
        c_old = c = cond->bt.prohibits;
        cond->bt.prohibits = NIL;
        for (; c!=NIL; c=c->rest) {
- 		   pref = (preference *) c->first;
+ 		   pref = reinterpret_cast<preference *>(c->first);
            #ifdef DO_TOP_LEVEL_REF_CTS
 		   preference_remove_ref (thisAgent, pref);
            #else
