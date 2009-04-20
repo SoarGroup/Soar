@@ -1,5 +1,5 @@
 VERSION 4
-/water-jug-rl/water-jug-rl.dm
+\water-jug-rl\water-jug-rl.dm
 0	ROOT water-jug-rl water-jug-rl 1
 1	0	FOPERATOR _firstload _firstload.soar 2
 2	0	FOLDER all all 3

@@ -46,7 +46,7 @@ EmbeddedConnection::~EmbeddedConnection()
 *************************************************************/
 EmbeddedConnection* GetConnectionFromHandle(Connection_Receiver_Handle hConnection)
 {
-	return (EmbeddedConnection*)hConnection ;
+	return reinterpret_cast<EmbeddedConnection*>(hConnection);
 }
 
 /*************************************************************
@@ -82,7 +82,7 @@ ElementXML_Handle LocalProcessMessage(Connection_Receiver_Handle hReceiverConnec
 {
 	// This is the connection object we created in this class, passed to the kernel and have
 	// now received back.
-	EmbeddedConnection* pConnection = (EmbeddedConnection*)hReceiverConnection ;
+	EmbeddedConnection* pConnection = reinterpret_cast<EmbeddedConnection*>(hReceiverConnection) ;
 
 	// Make sure we have been passed a valid connection object.
 	if (pConnection == NULL)
@@ -119,7 +119,8 @@ ElementXML_Handle LocalProcessMessage(Connection_Receiver_Handle hReceiverConnec
 	if (action == SML_MESSAGE_ACTION_ASYNCH)
 	{
 		// Store the incoming message on a queue and execute it on the receiver's thread (our thread) at a later point.
-		((EmbeddedConnectionAsynch*)pConnection)->AddToIncomingMessageQueue(hIncomingMsg) ;
+		EmbeddedConnectionAsynch* eca = reinterpret_cast<EmbeddedConnectionAsynch*>(pConnection);
+		eca->AddToIncomingMessageQueue(hIncomingMsg) ;
 
 		// There is no immediate response to an asynch message.
 		// The response will be sent back to the caller as another asynch message later, once the command has been executed.
@@ -240,20 +241,20 @@ bool EmbeddedConnection::AttachConnection(char const* pLibraryName, bool optimiz
 	}
 
 	// Get the functions that a DLL must export to support an embedded connection.
-	m_pProcessMessageFunction = (ProcessMessageFunction)GetProcAddress(hLibrary, "sml_ProcessMessage") ;
-	m_pCreateEmbeddedFunction = (CreateEmbeddedConnectionFunction)GetProcAddress(hLibrary, "sml_CreateEmbeddedConnection") ;
+	m_pProcessMessageFunction = reinterpret_cast<ProcessMessageFunction>(GetProcAddress(hLibrary, "sml_ProcessMessage")) ;
+	m_pCreateEmbeddedFunction = reinterpret_cast<CreateEmbeddedConnectionFunction>(GetProcAddress(hLibrary, "sml_CreateEmbeddedConnection")) ;
 
 #ifdef KERNEL_SML_DIRECT
-	m_pDirectAddWMEStringFunction =		(DirectAddWMEStringFunction)GetProcAddress(hLibrary, "sml_DirectAddWME_String") ;
-	m_pDirectAddWMEIntFunction =		(DirectAddWMEIntFunction)GetProcAddress(hLibrary, "sml_DirectAddWME_Int") ;
-	m_pDirectAddWMEDoubleFunction =		(DirectAddWMEDoubleFunction)GetProcAddress(hLibrary, "sml_DirectAddWME_Double") ;
-	m_pDirectRemoveWMEFunction =		(DirectRemoveWMEFunction)GetProcAddress(hLibrary, "sml_DirectRemoveWME") ;
+	m_pDirectAddWMEStringFunction =		reinterpret_cast<DirectAddWMEStringFunction>(GetProcAddress(hLibrary, "sml_DirectAddWME_String")) ;
+	m_pDirectAddWMEIntFunction =		reinterpret_cast<DirectAddWMEIntFunction>(GetProcAddress(hLibrary, "sml_DirectAddWME_Int")) ;
+	m_pDirectAddWMEDoubleFunction =		reinterpret_cast<DirectAddWMEDoubleFunction>(GetProcAddress(hLibrary, "sml_DirectAddWME_Double")) ;
+	m_pDirectRemoveWMEFunction =		reinterpret_cast<DirectRemoveWMEFunction>(GetProcAddress(hLibrary, "sml_DirectRemoveWME")) ;
 
-	m_pDirectAddIDFunction =			(DirectAddIDFunction)GetProcAddress(hLibrary, "sml_DirectAddID") ;
+	m_pDirectAddIDFunction =			reinterpret_cast<DirectAddIDFunction>(GetProcAddress(hLibrary, "sml_DirectAddID")) ;
 
-	m_pDirectGetAgentSMLHandleFunction = (DirectGetAgentSMLHandleFunction)GetProcAddress(hLibrary, "sml_DirectGetAgentSMLHandle") ;
+	m_pDirectGetAgentSMLHandleFunction = reinterpret_cast<DirectGetAgentSMLHandleFunction>(GetProcAddress(hLibrary, "sml_DirectGetAgentSMLHandle")) ;
 
-	m_pDirectRunFunction =			    (DirectRunFunction)GetProcAddress(hLibrary, "sml_DirectRun") ;
+	m_pDirectRunFunction =			    reinterpret_cast<DirectRunFunction>(GetProcAddress(hLibrary, "sml_DirectRun")) ;
 	
 	// Check that we got the list of functions and if so enable the direct connection
 	if (m_pDirectAddWMEStringFunction && m_pDirectAddWMEIntFunction && m_pDirectAddWMEDoubleFunction &&
@@ -285,7 +286,7 @@ bool EmbeddedConnection::AttachConnection(char const* pLibraryName, bool optimiz
 	// We only use the creation function once to create a connection object (which we'll pass back
 	// with each call).
 	int connectionType = this->IsAsynchronous() ? SML_ASYNCH_CONNECTION : SML_SYNCH_CONNECTION ;
-	m_hConnection = m_pCreateEmbeddedFunction( (Connection_Sender_Handle)this, LocalProcessMessage, connectionType, portToListenOn) ;
+	m_hConnection = m_pCreateEmbeddedFunction( reinterpret_cast<Connection_Sender_Handle>(this), LocalProcessMessage, connectionType, portToListenOn) ;
 
 	if (!m_hConnection)
 	{
@@ -333,7 +334,7 @@ void EmbeddedConnection::CloseConnection()
 	if (m_hConnection)
 	{
 		// Make the call to the kernel to close this connection
-		ElementXML_Handle hResponse = m_pProcessMessageFunction(m_hConnection, (ElementXML_Handle)NULL, SML_MESSAGE_ACTION_CLOSE) ;
+		ElementXML_Handle hResponse = m_pProcessMessageFunction(m_hConnection, 0, SML_MESSAGE_ACTION_CLOSE) ;
 		unused(hResponse) ;
 	}
 	
@@ -353,7 +354,7 @@ void EmbeddedConnection::SetTraceCommunications(bool state)
 	if (m_hConnection)
 	{
 		// Tell the kernel to turn tracing on or off
-		ElementXML_Handle hResponse = m_pProcessMessageFunction(m_hConnection, (ElementXML_Handle)NULL, state ? SML_MESSAGE_ACTION_TRACE_ON : SML_MESSAGE_ACTION_TRACE_OFF) ;
+		ElementXML_Handle hResponse = m_pProcessMessageFunction(m_hConnection, 0, state ? SML_MESSAGE_ACTION_TRACE_ON : SML_MESSAGE_ACTION_TRACE_OFF) ;
 		unused(hResponse) ;
 	}
 }

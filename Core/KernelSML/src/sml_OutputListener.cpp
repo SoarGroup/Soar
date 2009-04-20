@@ -100,7 +100,7 @@ void OutputListener::OnKernelEvent(int eventID, AgentSML* pAgentSML, void* pCall
 	int outputMode = oinfo->mode;
 
 	io_wme* pWmes = oinfo->outputs ;
-	SendOutput((smlWorkingMemoryEventId)eventID, pAgentSML, outputMode, pWmes) ;
+	SendOutput(smlWorkingMemoryEventId(eventID), pAgentSML, outputMode, pWmes) ;
 }
 
 // OutputMode is one of:

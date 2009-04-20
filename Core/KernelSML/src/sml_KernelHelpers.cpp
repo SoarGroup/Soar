@@ -642,7 +642,7 @@ void KernelHelpers::PrintSymbol(AgentSML* thisAgent,
 		for (w=thisAgent->GetSoarAgent()->all_wmes_in_rete; w!=NIL; w=w->rete_next)
 			// RDF (08282002) Added the following cast to get rid of warning
 			// message
-			if (w->timetag == (unsigned long) thisAgent->GetSoarAgent()->lexeme.int_val) 
+			if (w->timetag == static_cast<unsigned long>(thisAgent->GetSoarAgent()->lexeme.int_val))
 				break;
 		if (w) 
 		{
@@ -674,7 +674,7 @@ void KernelHelpers::PrintSymbol(AgentSML* thisAgent,
 		soar_alternate_input(agnt, NIL, NIL, FALSE); 
 		agnt->current_char = ' ';
 		for (c = wmes; c != NIL; c = c->rest)
-			do_print_for_wme (agnt, (wme *)c->first, depth, internal, tree);
+			do_print_for_wme (agnt, reinterpret_cast<wme *>(c->first), depth, internal, tree);
 		free_list (agnt, wmes);
 		break;
 
@@ -792,8 +792,8 @@ bool read_attribute_from_string (agent* agnt, Symbol *id, char * the_lexeme, Sym
 ===============================
 */
 void print_preference_and_source (agent* agnt, preference *pref,
-	bool print_source,
-	wme_trace_type wtt) 
+								  bool print_source,
+								  wme_trace_type wtt) 
 {
 	print_string (agnt, "  ");
 	if (pref->attr == agnt->operator_symbol) {
@@ -801,7 +801,7 @@ void print_preference_and_source (agent* agnt, preference *pref,
 	} else {					
 		print_with_symbols (agnt, "(%y ^%y %y) ", pref->id, pref->attr, pref->value);
 	} 	
-	if (! agnt->operand2_mode || (pref->attr == agnt->operator_symbol)) {
+	if (pref->attr == agnt->operator_symbol) {
 		print (agnt, " %c", preference_type_indicator (agnt, pref->type));
 	}
 	if (preference_is_binary(pref->type)) print_object_trace (agnt, pref->referent);
@@ -817,15 +817,15 @@ void print_preference_and_source (agent* agnt, preference *pref,
 
 bool string_match_up_to (char * string1, 
 	const char * string2, 
-	unsigned int positions)
+	size_t positions)
 {
-	unsigned int i,num;
+	size_t i,num;
 
 	/*  what we really want is to require a match over the length of
 	the shorter of the two strings, with positions being a minimum */
 
-	num = (unsigned int)strlen(string1);
-	if (num > (unsigned int)strlen(string2)) num = (unsigned int)strlen(string2);
+	num = strlen(string1);
+	if (num > strlen(string2)) num = strlen(string2);
 	if (positions < num)  positions = num;
 
 	for (i = 0; i < positions; i++)
@@ -905,26 +905,26 @@ int soar_ecPrintPreferences(agent* soarAgent, char *szId, char *szAttr, bool obj
 	if (!id->id.isa_goal && !strcmp(szAttr, "operator")) {
 		attr = NIL;
 	} else {
-	if ( szAttr && !object) { // default ^attr is ^operator, unless specified --object on cmdline
-		if (!read_attribute_from_string(soarAgent, id, szAttr, &attr)) {		
-			// NOT tested:  but here goes...
-			// This is code to determine whether ^attr arg is misspelled 
-			// or an arch-wme.  Had to modify read_attribute_from_string() to  
-			// always set the attr:  symbol exists but no slot, or attr = NIL.
-			if (attr) {
-				print (soarAgent,"  This is probably an io- or arch-wme and does not have preferences\n");							
-				return 0;										
+		if ( szAttr && !object) { // default ^attr is ^operator, unless specified --object on cmdline
+			if (!read_attribute_from_string(soarAgent, id, szAttr, &attr)) {		
+				// NOT tested:  but here goes...
+				// This is code to determine whether ^attr arg is misspelled 
+				// or an arch-wme.  Had to modify read_attribute_from_string() to  
+				// always set the attr:  symbol exists but no slot, or attr = NIL.
+				if (attr) {
+					print (soarAgent,"  This is probably an io- or arch-wme and does not have preferences\n");							
+					return 0;										
+				}
+				print(soarAgent, "Could not find prefs for the id,attribute pair: %s %s\n", szId, szAttr);
+				return -2;
+			}			
+			s = find_slot(id, attr);
+			if (!s && !object) {
+				// Should we check for input wmes and arch-wmes ?? ...covered above...
+				print(soarAgent, "Could not find preferences for %s ^%s.", szId, szAttr);
+				return -3;
 			}
-			print(soarAgent, "Could not find prefs for the id,attribute pair: %s %s\n", szId, szAttr);
-			return -2;
-		}			
-		s = find_slot(id, attr);
-		if (!s && !object) {
-			// Should we check for input wmes and arch-wmes ?? ...covered above...
-			print(soarAgent, "Could not find preferences for %s ^%s.", szId, szAttr);
-			return -3;
 		}
-	}
 	}
 
 	// We have one of three cases now, as of v8.6.3
@@ -942,7 +942,7 @@ int soar_ecPrintPreferences(agent* soarAgent, char *szId, char *szAttr, bool obj
 				print_with_symbols(soarAgent, "Support for %y ^%y:\n", s->id, s->attr);				
 			for (i = 0; i < NUM_PREFERENCE_TYPES; i++) {
 				if (s->preferences[i]) {
-					if (!soarAgent->operand2_mode || s->isa_context_slot) print(soarAgent, "\n%ss:\n", preference_name[i]);
+					if (s->isa_context_slot) print(soarAgent, "\n%ss:\n", preference_name[i]);
 					for (p = s->preferences[i]; p; p = p->next) {
 						print_preference_and_source(soarAgent, p, print_prod, wtt);
 					}
@@ -959,7 +959,7 @@ int soar_ecPrintPreferences(agent* soarAgent, char *szId, char *szAttr, bool obj
 		for (w=id->id.input_wmes; w!=NIL; w=w->next) {
 			print_wme(soarAgent, w);
 		}
-	
+
 		return 0;
 	} else if (!id->id.isa_goal && !attr ) {  
 		// find wme(s?) whose value is <ID> and print prefs if they exist
@@ -1078,8 +1078,8 @@ Symbol *get_binding (Symbol *f, list *bindings)
 
 	for (c=bindings;c!=NIL;c=c->rest) 
 	{
-		if (((Binding *) c->first)->from == f)
-			return ((Binding *) c->first)->to;
+		if (reinterpret_cast<Binding *>(c->first)->from == f)
+			return reinterpret_cast<Binding *>(c->first)->to;
 	}
 	return NIL;
 }
@@ -1106,7 +1106,7 @@ bool symbols_are_equal_with_bindings (agent* agnt, Symbol *s1, Symbol *s2, list 
 	/* Both are variables */
 	bvar = get_binding(s1,*bindings);
 	if (bvar == NIL) {
-		b = (Binding *) allocate_memory(agnt, sizeof(Binding),MISCELLANEOUS_MEM_USAGE);
+		b = reinterpret_cast<Binding *>(allocate_memory(agnt, sizeof(Binding),MISCELLANEOUS_MEM_USAGE));
 		b->from = s1;
 		b->to = s2;
 		push(agnt, b,*bindings);
@@ -1221,7 +1221,7 @@ void print_binding_list (agent* agnt, list *bindings)
 
 	for (c = bindings ; c != NIL ; c = c->rest)
 	{
-		print_with_symbols (agnt, "   (%y -> %y)\n",((Binding *) c->first)->from,((Binding *) c->first)->to);
+		print_with_symbols (agnt, "   (%y -> %y)\n", reinterpret_cast<Binding *>(c->first)->from, reinterpret_cast<Binding *>(c->first)->to);
 	}
 }
 
@@ -1415,7 +1415,7 @@ bool tests_are_equal_with_bindings (agent* agnt, test t1, test test2, list **bin
 		for (c1=ct1->data.conjunct_list, c2=ct2->data.conjunct_list;
 			((c1!=NIL)&&(c2!=NIL)); c1=c1->rest, c2=c2->rest)
 		{
-			if (! tests_are_equal_with_bindings(agnt, (test)c1->first, (test)c2->first, bindings)) 
+			if (! tests_are_equal_with_bindings(agnt, reinterpret_cast<test>(c1->first), reinterpret_cast<test>(c2->first), bindings)) 
 				dealloc_and_return(agnt, t2,FALSE)
 		}
 		if (c1==c2) 
@@ -1487,7 +1487,7 @@ void read_pattern_and_get_matching_productions (agent* agnt,
 	current_binding_point = NIL;
 
 	/*  print("Parsing as a lhs...\n"); */
-	clist = (condition *) parse_lhs(agnt);
+	clist = parse_lhs(agnt);
 	if (!clist) {
 		print(agnt, "Error: not a valid condition list.\n");
 		current_pf_list = NIL;
@@ -1674,7 +1674,7 @@ void KernelHelpers::GetForceLearnStates(AgentSML* pAgent, std::stringstream& res
 	char buff[1024];
 
 	for (c = pSoarAgent->chunky_problem_spaces; c != NIL; c = c->rest) {
-		symbol_to_string(pSoarAgent, (Symbol *) (c->first), TRUE, buff, 1024);
+		symbol_to_string(pSoarAgent, reinterpret_cast<Symbol *>(c->first), TRUE, buff, 1024);
 		res << buff;
 	}
 }
@@ -1686,7 +1686,7 @@ void KernelHelpers::GetDontLearnStates(AgentSML* pAgent, std::stringstream& res)
 	char buff[1024];
 
 	for (c = pSoarAgent->chunk_free_problem_spaces; c != NIL; c = c->rest) {
-		symbol_to_string(pSoarAgent, (Symbol *) (c->first), TRUE, buff, 1024);
+		symbol_to_string(pSoarAgent, reinterpret_cast<Symbol *>(c->first), TRUE, buff, 1024);
 		res << buff;
 	}
 }
@@ -1777,26 +1777,24 @@ int RemoveWme(agent* pSoarAgent, wme* pWme)
 #endif // USE_CAPTURE_REPLAY
 
 	/* REW: begin 09.15.96 */
-	if (pSoarAgent->operand2_mode) {
-		if (pWme->gds) {
-			if (pWme->gds->goal != NIL) {
-				if (pSoarAgent->soar_verbose_flag || pSoarAgent->sysparams[TRACE_WM_CHANGES_SYSPARAM])
-					{
-						print(pSoarAgent, "\nremove_input_wme: Removing state S%d because element in GDS changed.", pWme->gds->goal->id.level);
-						print(pSoarAgent, " WME: "); 
+	if (pWme->gds) {
+		if (pWme->gds->goal != NIL) {
+			if (pSoarAgent->soar_verbose_flag || pSoarAgent->sysparams[TRACE_WM_CHANGES_SYSPARAM])
+				{
+					print(pSoarAgent, "\nremove_input_wme: Removing state S%d because element in GDS changed.", pWme->gds->goal->id.level);
+					print(pSoarAgent, " WME: "); 
 
-						char buf[256];
-						SNPRINTF(buf, 254, "remove_input_wme: Removing state S%d because element in GDS changed.", pWme->gds->goal->id.level);
-						xml_begin_tag(pSoarAgent, kTagVerbose);
-						xml_att_val(pSoarAgent, kTypeString, buf);
-						print_wme(pSoarAgent, pWme);
-						xml_end_tag(pSoarAgent, kTagVerbose);
-					}
+					char buf[256];
+					SNPRINTF(buf, 254, "remove_input_wme: Removing state S%d because element in GDS changed.", pWme->gds->goal->id.level);
+					xml_begin_tag(pSoarAgent, kTagVerbose);
+					xml_att_val(pSoarAgent, kTypeString, buf);
+					print_wme(pSoarAgent, pWme);
+					xml_end_tag(pSoarAgent, kTagVerbose);
+				}
 
-				gds_invalid_so_remove_goal(pSoarAgent, pWme);
-				/* NOTE: the call to remove_wme_from_wm will take care of checking if
-				GDS should be removed */
-			}
+			gds_invalid_so_remove_goal(pSoarAgent, pWme);
+			/* NOTE: the call to remove_wme_from_wm will take care of checking if
+			GDS should be removed */
 		}
 	}
 	/* REW: end   09.15.96 */

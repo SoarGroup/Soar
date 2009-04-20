@@ -18,6 +18,8 @@
 #include "sml_ClientAgent.h"
 #include "sml_ClientIdentifier.h"
 
+#include "misc.h"
+
 using namespace sml ;
 
 IntElement::IntElement(Agent* pAgent, Identifier* pParent, char const* pID, char const* pAttributeName, int value, long timeTag) 
@@ -45,12 +47,11 @@ char const* IntElement::GetValueType() const
 // Returns a string form of the value stored here.
 char const* IntElement::GetValueAsString() const
 {
-	char buffer[kMinBufferSize] ;
-	Int2String(m_Value, buffer, sizeof(buffer)) ;
-
-	IntElement* pThis = (IntElement*)this ;
-	pThis->m_StringForm = buffer ;
-	return m_StringForm.c_str() ;
+	// note: this is a bit of a hack but the previous 
+	// hack casted around the member function's const keyword
+	static std::string temp; // c_str() needs to remain valid
+	to_string( m_Value, temp );
+	return temp.c_str() ;
 }
 
 #ifdef SML_DIRECT

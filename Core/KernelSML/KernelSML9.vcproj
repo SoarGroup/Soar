@@ -57,7 +57,7 @@
 				ObjectFile="$(IntDir)/"
 				ProgramDataBaseFileName="$(IntDir)/"
 				WarningLevel="4"
-				Detect64BitPortabilityProblems="true"
+				Detect64BitPortabilityProblems="false"
 				DebugInformationFormat="4"
 			/>
 			<Tool
@@ -77,269 +77,6 @@
 				GenerateDebugInformation="true"
 				ProgramDatabaseFile="$(OutDir)/$(ProjectName).pdb"
 				SubSystem="2"
-				RandomizedBaseAddress="1"
-				DataExecutionPrevention="0"
-				ImportLibrary="$(SolutionDir)\SoarLibrary\lib\$(ProjectName).lib"
-				TargetMachine="1"
-			/>
-			<Tool
-				Name="VCALinkTool"
-			/>
-			<Tool
-				Name="VCManifestTool"
-			/>
-			<Tool
-				Name="VCXDCMakeTool"
-			/>
-			<Tool
-				Name="VCBscMakeTool"
-			/>
-			<Tool
-				Name="VCFxCopTool"
-			/>
-			<Tool
-				Name="VCAppVerifierTool"
-			/>
-			<Tool
-				Name="VCPostBuildEventTool"
-			/>
-		</Configuration>
-		<Configuration
-			Name="Release|Win32"
-			OutputDirectory="build\$(ConfigurationName)"
-			IntermediateDirectory="$(OutDir)"
-			ConfigurationType="2"
-			InheritedPropertySheets="$(VCInstallDir)VCProjectDefaults\UpgradeFromVC71.vsprops"
-			CharacterSet="2"
-			WholeProgramOptimization="1"
-			>
-			<Tool
-				Name="VCPreBuildEventTool"
-			/>
-			<Tool
-				Name="VCCustomBuildTool"
-			/>
-			<Tool
-				Name="VCXMLDataGeneratorTool"
-			/>
-			<Tool
-				Name="VCWebServiceProxyGeneratorTool"
-			/>
-			<Tool
-				Name="VCMIDLTool"
-			/>
-			<Tool
-				Name="VCCLCompilerTool"
-				Optimization="2"
-				InlineFunctionExpansion="2"
-				OmitFramePointers="true"
-				AdditionalIncludeDirectories="..\CLI\include;include;..\ElementXML\include;..\ConnectionSML\include;..\SoarKernel\include;..\shared"
-				PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;_USRDLL;KERNELSML_EXPORTS;_CRT_SECURE_NO_DEPRECATE"
-				StringPooling="true"
-				RuntimeLibrary="2"
-				EnableFunctionLevelLinking="true"
-				UsePrecompiledHeader="0"
-				AssemblerListingLocation="$(IntDir)/"
-				ObjectFile="$(IntDir)/"
-				ProgramDataBaseFileName="$(IntDir)/"
-				WarningLevel="4"
-				Detect64BitPortabilityProblems="true"
-				DebugInformationFormat="3"
-			/>
-			<Tool
-				Name="VCManagedResourceCompilerTool"
-			/>
-			<Tool
-				Name="VCResourceCompilerTool"
-			/>
-			<Tool
-				Name="VCPreLinkEventTool"
-			/>
-			<Tool
-				Name="VCLinkerTool"
-				OutputFile="$(SolutionDir)\SoarLibrary\bin\Soar$(ProjectName).dll"
-				LinkIncremental="1"
-				AdditionalLibraryDirectories=""
-				IgnoreAllDefaultLibraries="false"
-				GenerateDebugInformation="true"
-				ProgramDatabaseFile="$(OutDir)/$(ProjectName).pdb"
-				SubSystem="2"
-				OptimizeReferences="2"
-				EnableCOMDATFolding="2"
-				RandomizedBaseAddress="1"
-				DataExecutionPrevention="0"
-				ImportLibrary="$(SolutionDir)\SoarLibrary\lib\$(ProjectName).lib"
-				TargetMachine="1"
-			/>
-			<Tool
-				Name="VCALinkTool"
-			/>
-			<Tool
-				Name="VCManifestTool"
-			/>
-			<Tool
-				Name="VCXDCMakeTool"
-			/>
-			<Tool
-				Name="VCBscMakeTool"
-			/>
-			<Tool
-				Name="VCFxCopTool"
-			/>
-			<Tool
-				Name="VCAppVerifierTool"
-			/>
-			<Tool
-				Name="VCPostBuildEventTool"
-			/>
-		</Configuration>
-		<Configuration
-			Name="Debug SCU|Win32"
-			OutputDirectory="build\$(ConfigurationName)"
-			IntermediateDirectory="$(OutDir)"
-			ConfigurationType="2"
-			InheritedPropertySheets="$(VCInstallDir)VCProjectDefaults\UpgradeFromVC71.vsprops"
-			CharacterSet="2"
-			>
-			<Tool
-				Name="VCPreBuildEventTool"
-			/>
-			<Tool
-				Name="VCCustomBuildTool"
-			/>
-			<Tool
-				Name="VCXMLDataGeneratorTool"
-			/>
-			<Tool
-				Name="VCWebServiceProxyGeneratorTool"
-			/>
-			<Tool
-				Name="VCMIDLTool"
-			/>
-			<Tool
-				Name="VCCLCompilerTool"
-				Optimization="0"
-				AdditionalIncludeDirectories="..\CLI\include;include;..\ElementXML\include;..\ConnectionSML\include;..\SoarKernel\include;..\shared"
-				PreprocessorDefinitions="WIN32;_DEBUG;_WINDOWS;_USRDLL;KERNELSML_EXPORTS;DEBUG;_CRT_SECURE_NO_DEPRECATE"
-				StringPooling="true"
-				MinimalRebuild="true"
-				BasicRuntimeChecks="3"
-				RuntimeLibrary="3"
-				EnableFunctionLevelLinking="true"
-				UsePrecompiledHeader="0"
-				AssemblerListingLocation="$(IntDir)/"
-				ObjectFile="$(IntDir)/"
-				ProgramDataBaseFileName="$(IntDir)/"
-				WarningLevel="4"
-				Detect64BitPortabilityProblems="true"
-				DebugInformationFormat="4"
-			/>
-			<Tool
-				Name="VCManagedResourceCompilerTool"
-			/>
-			<Tool
-				Name="VCResourceCompilerTool"
-			/>
-			<Tool
-				Name="VCPreLinkEventTool"
-			/>
-			<Tool
-				Name="VCLinkerTool"
-				OutputFile="$(SolutionDir)\SoarLibrary\bin\Soar$(ProjectName).dll"
-				LinkIncremental="2"
-				AdditionalLibraryDirectories=""
-				GenerateDebugInformation="true"
-				ProgramDatabaseFile="$(OutDir)/$(ProjectName).pdb"
-				SubSystem="2"
-				RandomizedBaseAddress="1"
-				DataExecutionPrevention="0"
-				ImportLibrary="$(SolutionDir)\SoarLibrary\lib\$(ProjectName).lib"
-				TargetMachine="1"
-			/>
-			<Tool
-				Name="VCALinkTool"
-			/>
-			<Tool
-				Name="VCManifestTool"
-			/>
-			<Tool
-				Name="VCXDCMakeTool"
-			/>
-			<Tool
-				Name="VCBscMakeTool"
-			/>
-			<Tool
-				Name="VCFxCopTool"
-			/>
-			<Tool
-				Name="VCAppVerifierTool"
-			/>
-			<Tool
-				Name="VCPostBuildEventTool"
-			/>
-		</Configuration>
-		<Configuration
-			Name="Release SCU|Win32"
-			OutputDirectory="build\$(ConfigurationName)"
-			IntermediateDirectory="$(OutDir)"
-			ConfigurationType="2"
-			InheritedPropertySheets="$(VCInstallDir)VCProjectDefaults\UpgradeFromVC71.vsprops"
-			CharacterSet="2"
-			WholeProgramOptimization="1"
-			>
-			<Tool
-				Name="VCPreBuildEventTool"
-			/>
-			<Tool
-				Name="VCCustomBuildTool"
-			/>
-			<Tool
-				Name="VCXMLDataGeneratorTool"
-			/>
-			<Tool
-				Name="VCWebServiceProxyGeneratorTool"
-			/>
-			<Tool
-				Name="VCMIDLTool"
-			/>
-			<Tool
-				Name="VCCLCompilerTool"
-				Optimization="2"
-				InlineFunctionExpansion="2"
-				OmitFramePointers="true"
-				AdditionalIncludeDirectories="..\CLI\include;include;..\ElementXML\include;..\ConnectionSML\include;..\SoarKernel\include;..\shared"
-				PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;_USRDLL;KERNELSML_EXPORTS;_CRT_SECURE_NO_DEPRECATE"
-				StringPooling="true"
-				RuntimeLibrary="2"
-				EnableFunctionLevelLinking="true"
-				UsePrecompiledHeader="0"
-				AssemblerListingLocation="$(IntDir)/"
-				ObjectFile="$(IntDir)/"
-				ProgramDataBaseFileName="$(IntDir)/"
-				WarningLevel="4"
-				Detect64BitPortabilityProblems="true"
-				DebugInformationFormat="3"
-			/>
-			<Tool
-				Name="VCManagedResourceCompilerTool"
-			/>
-			<Tool
-				Name="VCResourceCompilerTool"
-			/>
-			<Tool
-				Name="VCPreLinkEventTool"
-			/>
-			<Tool
-				Name="VCLinkerTool"
-				OutputFile="$(SolutionDir)\SoarLibrary\bin\Soar$(ProjectName).dll"
-				LinkIncremental="1"
-				AdditionalLibraryDirectories=""
-				IgnoreAllDefaultLibraries="false"
-				GenerateDebugInformation="true"
-				ProgramDatabaseFile="$(OutDir)/$(ProjectName).pdb"
-				SubSystem="2"
-				OptimizeReferences="2"
-				EnableCOMDATFolding="2"
 				RandomizedBaseAddress="1"
 				DataExecutionPrevention="0"
 				ImportLibrary="$(SolutionDir)\SoarLibrary\lib\$(ProjectName).lib"
@@ -406,7 +143,7 @@
 				ObjectFile="$(IntDir)/"
 				ProgramDataBaseFileName="$(IntDir)/"
 				WarningLevel="4"
-				Detect64BitPortabilityProblems="true"
+				Detect64BitPortabilityProblems="false"
 				DebugInformationFormat="3"
 			/>
 			<Tool
@@ -448,7 +185,93 @@
 				Name="VCAppVerifierTool"
 			/>
 			<Tool
-				Name="VCWebDeploymentTool"
+				Name="VCPostBuildEventTool"
+			/>
+		</Configuration>
+		<Configuration
+			Name="Release|Win32"
+			OutputDirectory="build\$(ConfigurationName)"
+			IntermediateDirectory="$(OutDir)"
+			ConfigurationType="2"
+			InheritedPropertySheets="$(VCInstallDir)VCProjectDefaults\UpgradeFromVC71.vsprops"
+			CharacterSet="2"
+			WholeProgramOptimization="1"
+			>
+			<Tool
+				Name="VCPreBuildEventTool"
+			/>
+			<Tool
+				Name="VCCustomBuildTool"
+			/>
+			<Tool
+				Name="VCXMLDataGeneratorTool"
+			/>
+			<Tool
+				Name="VCWebServiceProxyGeneratorTool"
+			/>
+			<Tool
+				Name="VCMIDLTool"
+			/>
+			<Tool
+				Name="VCCLCompilerTool"
+				Optimization="2"
+				InlineFunctionExpansion="2"
+				OmitFramePointers="true"
+				AdditionalIncludeDirectories="..\CLI\include;include;..\ElementXML\include;..\ConnectionSML\include;..\SoarKernel\include;..\shared"
+				PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;_USRDLL;KERNELSML_EXPORTS;_CRT_SECURE_NO_DEPRECATE"
+				StringPooling="true"
+				RuntimeLibrary="2"
+				EnableFunctionLevelLinking="true"
+				UsePrecompiledHeader="0"
+				AssemblerListingLocation="$(IntDir)/"
+				ObjectFile="$(IntDir)/"
+				ProgramDataBaseFileName="$(IntDir)/"
+				WarningLevel="4"
+				Detect64BitPortabilityProblems="false"
+				DebugInformationFormat="3"
+			/>
+			<Tool
+				Name="VCManagedResourceCompilerTool"
+			/>
+			<Tool
+				Name="VCResourceCompilerTool"
+			/>
+			<Tool
+				Name="VCPreLinkEventTool"
+			/>
+			<Tool
+				Name="VCLinkerTool"
+				OutputFile="$(SolutionDir)\SoarLibrary\bin\Soar$(ProjectName).dll"
+				LinkIncremental="1"
+				AdditionalLibraryDirectories=""
+				IgnoreAllDefaultLibraries="false"
+				GenerateDebugInformation="true"
+				ProgramDatabaseFile="$(OutDir)/$(ProjectName).pdb"
+				SubSystem="2"
+				OptimizeReferences="2"
+				EnableCOMDATFolding="2"
+				RandomizedBaseAddress="1"
+				DataExecutionPrevention="0"
+				ImportLibrary="$(SolutionDir)\SoarLibrary\lib\$(ProjectName).lib"
+				TargetMachine="1"
+			/>
+			<Tool
+				Name="VCALinkTool"
+			/>
+			<Tool
+				Name="VCManifestTool"
+			/>
+			<Tool
+				Name="VCXDCMakeTool"
+			/>
+			<Tool
+				Name="VCBscMakeTool"
+			/>
+			<Tool
+				Name="VCFxCopTool"
+			/>
+			<Tool
+				Name="VCAppVerifierTool"
 			/>
 			<Tool
 				Name="VCPostBuildEventTool"
@@ -494,7 +317,7 @@
 				ObjectFile="$(IntDir)/"
 				ProgramDataBaseFileName="$(IntDir)/"
 				WarningLevel="4"
-				Detect64BitPortabilityProblems="true"
+				Detect64BitPortabilityProblems="false"
 				DebugInformationFormat="3"
 			/>
 			<Tool
@@ -539,7 +362,89 @@
 				Name="VCAppVerifierTool"
 			/>
 			<Tool
-				Name="VCWebDeploymentTool"
+				Name="VCPostBuildEventTool"
+			/>
+		</Configuration>
+		<Configuration
+			Name="Debug SCU|Win32"
+			OutputDirectory="build\$(ConfigurationName)"
+			IntermediateDirectory="$(OutDir)"
+			ConfigurationType="2"
+			InheritedPropertySheets="$(VCInstallDir)VCProjectDefaults\UpgradeFromVC71.vsprops"
+			CharacterSet="2"
+			>
+			<Tool
+				Name="VCPreBuildEventTool"
+			/>
+			<Tool
+				Name="VCCustomBuildTool"
+			/>
+			<Tool
+				Name="VCXMLDataGeneratorTool"
+			/>
+			<Tool
+				Name="VCWebServiceProxyGeneratorTool"
+			/>
+			<Tool
+				Name="VCMIDLTool"
+			/>
+			<Tool
+				Name="VCCLCompilerTool"
+				Optimization="0"
+				AdditionalIncludeDirectories="..\CLI\include;include;..\ElementXML\include;..\ConnectionSML\include;..\SoarKernel\include;..\shared"
+				PreprocessorDefinitions="WIN32;_DEBUG;_WINDOWS;_USRDLL;KERNELSML_EXPORTS;DEBUG;_CRT_SECURE_NO_DEPRECATE"
+				StringPooling="true"
+				MinimalRebuild="true"
+				BasicRuntimeChecks="3"
+				RuntimeLibrary="3"
+				EnableFunctionLevelLinking="true"
+				UsePrecompiledHeader="0"
+				AssemblerListingLocation="$(IntDir)/"
+				ObjectFile="$(IntDir)/"
+				ProgramDataBaseFileName="$(IntDir)/"
+				WarningLevel="4"
+				Detect64BitPortabilityProblems="false"
+				DebugInformationFormat="4"
+			/>
+			<Tool
+				Name="VCManagedResourceCompilerTool"
+			/>
+			<Tool
+				Name="VCResourceCompilerTool"
+			/>
+			<Tool
+				Name="VCPreLinkEventTool"
+			/>
+			<Tool
+				Name="VCLinkerTool"
+				OutputFile="$(SolutionDir)\SoarLibrary\bin\Soar$(ProjectName).dll"
+				LinkIncremental="2"
+				AdditionalLibraryDirectories=""
+				GenerateDebugInformation="true"
+				ProgramDatabaseFile="$(OutDir)/$(ProjectName).pdb"
+				SubSystem="2"
+				RandomizedBaseAddress="1"
+				DataExecutionPrevention="0"
+				ImportLibrary="$(SolutionDir)\SoarLibrary\lib\$(ProjectName).lib"
+				TargetMachine="1"
+			/>
+			<Tool
+				Name="VCALinkTool"
+			/>
+			<Tool
+				Name="VCManifestTool"
+			/>
+			<Tool
+				Name="VCXDCMakeTool"
+			/>
+			<Tool
+				Name="VCBscMakeTool"
+			/>
+			<Tool
+				Name="VCFxCopTool"
+			/>
+			<Tool
+				Name="VCAppVerifierTool"
 			/>
 			<Tool
 				Name="VCPostBuildEventTool"
@@ -584,7 +489,7 @@
 				ObjectFile="$(IntDir)/"
 				ProgramDataBaseFileName="$(IntDir)/"
 				WarningLevel="4"
-				Detect64BitPortabilityProblems="true"
+				Detect64BitPortabilityProblems="false"
 				DebugInformationFormat="3"
 			/>
 			<Tool
@@ -626,7 +531,93 @@
 				Name="VCAppVerifierTool"
 			/>
 			<Tool
-				Name="VCWebDeploymentTool"
+				Name="VCPostBuildEventTool"
+			/>
+		</Configuration>
+		<Configuration
+			Name="Release SCU|Win32"
+			OutputDirectory="build\$(ConfigurationName)"
+			IntermediateDirectory="$(OutDir)"
+			ConfigurationType="2"
+			InheritedPropertySheets="$(VCInstallDir)VCProjectDefaults\UpgradeFromVC71.vsprops"
+			CharacterSet="2"
+			WholeProgramOptimization="1"
+			>
+			<Tool
+				Name="VCPreBuildEventTool"
+			/>
+			<Tool
+				Name="VCCustomBuildTool"
+			/>
+			<Tool
+				Name="VCXMLDataGeneratorTool"
+			/>
+			<Tool
+				Name="VCWebServiceProxyGeneratorTool"
+			/>
+			<Tool
+				Name="VCMIDLTool"
+			/>
+			<Tool
+				Name="VCCLCompilerTool"
+				Optimization="2"
+				InlineFunctionExpansion="2"
+				OmitFramePointers="true"
+				AdditionalIncludeDirectories="..\CLI\include;include;..\ElementXML\include;..\ConnectionSML\include;..\SoarKernel\include;..\shared"
+				PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;_USRDLL;KERNELSML_EXPORTS;_CRT_SECURE_NO_DEPRECATE"
+				StringPooling="true"
+				RuntimeLibrary="2"
+				EnableFunctionLevelLinking="true"
+				UsePrecompiledHeader="0"
+				AssemblerListingLocation="$(IntDir)/"
+				ObjectFile="$(IntDir)/"
+				ProgramDataBaseFileName="$(IntDir)/"
+				WarningLevel="4"
+				Detect64BitPortabilityProblems="false"
+				DebugInformationFormat="3"
+			/>
+			<Tool
+				Name="VCManagedResourceCompilerTool"
+			/>
+			<Tool
+				Name="VCResourceCompilerTool"
+			/>
+			<Tool
+				Name="VCPreLinkEventTool"
+			/>
+			<Tool
+				Name="VCLinkerTool"
+				OutputFile="$(SolutionDir)\SoarLibrary\bin\Soar$(ProjectName).dll"
+				LinkIncremental="1"
+				AdditionalLibraryDirectories=""
+				IgnoreAllDefaultLibraries="false"
+				GenerateDebugInformation="true"
+				ProgramDatabaseFile="$(OutDir)/$(ProjectName).pdb"
+				SubSystem="2"
+				OptimizeReferences="2"
+				EnableCOMDATFolding="2"
+				RandomizedBaseAddress="1"
+				DataExecutionPrevention="0"
+				ImportLibrary="$(SolutionDir)\SoarLibrary\lib\$(ProjectName).lib"
+				TargetMachine="1"
+			/>
+			<Tool
+				Name="VCALinkTool"
+			/>
+			<Tool
+				Name="VCManifestTool"
+			/>
+			<Tool
+				Name="VCXDCMakeTool"
+			/>
+			<Tool
+				Name="VCBscMakeTool"
+			/>
+			<Tool
+				Name="VCFxCopTool"
+			/>
+			<Tool
+				Name="VCAppVerifierTool"
 			/>
 			<Tool
 				Name="VCPostBuildEventTool"
@@ -672,7 +663,7 @@
 				ObjectFile="$(IntDir)/"
 				ProgramDataBaseFileName="$(IntDir)/"
 				WarningLevel="4"
-				Detect64BitPortabilityProblems="true"
+				Detect64BitPortabilityProblems="false"
 				DebugInformationFormat="3"
 			/>
 			<Tool
@@ -717,9 +708,6 @@
 				Name="VCAppVerifierTool"
 			/>
 			<Tool
-				Name="VCWebDeploymentTool"
-			/>
-			<Tool
 				Name="VCPostBuildEventTool"
 			/>
 		</Configuration>
@@ -727,18 +715,23 @@
 	<References>
 		<ProjectReference
 			ReferencedProjectIdentifier="{6B2CBC5A-4A7A-46BB-9274-6C91262E9374}"
+			RelativePathToProject=".\Core\CLI\CommandLineInterface9.vcproj"
 		/>
 		<ProjectReference
 			ReferencedProjectIdentifier="{161DC1AD-FB4B-4370-9FD5-B02E2A0D8A36}"
+			RelativePathToProject=".\Core\ConnectionSML\ConnectionSML9.vcproj"
 		/>
 		<ProjectReference
 			ReferencedProjectIdentifier="{E9AB0B6E-F1CA-4A63-817B-AB47F7E5417E}"
+			RelativePathToProject=".\Core\ElementXML\ElementXML9.vcproj"
 		/>
 		<ProjectReference
 			ReferencedProjectIdentifier="{844AB204-F1B2-43D5-A6E5-1EA19FF289F2}"
+			RelativePathToProject=".\Core\SoarKernel\SoarKernel9.vcproj"
 		/>
 		<ProjectReference
 			ReferencedProjectIdentifier="{6B0AE9F9-575C-4230-875A-3996BF2AC1E6}"
+			RelativePathToProject=".\Core\pcre\pcre9.vcproj"
 		/>
 	</References>
 	<Files>
@@ -759,7 +752,7 @@
 					/>
 				</FileConfiguration>
 				<FileConfiguration
-					Name="Release SCU|Win32"
+					Name="Debug SCU|x64"
 					ExcludedFromBuild="true"
 					>
 					<Tool
@@ -767,7 +760,7 @@
 					/>
 				</FileConfiguration>
 				<FileConfiguration
-					Name="Debug SCU|x64"
+					Name="Release SCU|Win32"
 					ExcludedFromBuild="true"
 					>
 					<Tool
@@ -795,7 +788,7 @@
 					/>
 				</FileConfiguration>
 				<FileConfiguration
-					Name="Release SCU|Win32"
+					Name="Debug SCU|x64"
 					ExcludedFromBuild="true"
 					>
 					<Tool
@@ -803,7 +796,7 @@
 					/>
 				</FileConfiguration>
 				<FileConfiguration
-					Name="Debug SCU|x64"
+					Name="Release SCU|Win32"
 					ExcludedFromBuild="true"
 					>
 					<Tool
@@ -831,7 +824,7 @@
 					/>
 				</FileConfiguration>
 				<FileConfiguration
-					Name="Release SCU|Win32"
+					Name="Debug SCU|x64"
 					ExcludedFromBuild="true"
 					>
 					<Tool
@@ -839,7 +832,7 @@
 					/>
 				</FileConfiguration>
 				<FileConfiguration
-					Name="Debug SCU|x64"
+					Name="Release SCU|Win32"
 					ExcludedFromBuild="true"
 					>
 					<Tool
@@ -867,7 +860,7 @@
 					/>
 				</FileConfiguration>
 				<FileConfiguration
-					Name="Release SCU|Win32"
+					Name="Debug SCU|x64"
 					ExcludedFromBuild="true"
 					>
 					<Tool
@@ -875,7 +868,7 @@
 					/>
 				</FileConfiguration>
 				<FileConfiguration
-					Name="Debug SCU|x64"
+					Name="Release SCU|Win32"
 					ExcludedFromBuild="true"
 					>
 					<Tool
@@ -903,7 +896,7 @@
 					/>
 				</FileConfiguration>
 				<FileConfiguration
-					Name="Release SCU|Win32"
+					Name="Debug SCU|x64"
 					ExcludedFromBuild="true"
 					>
 					<Tool
@@ -911,7 +904,7 @@
 					/>
 				</FileConfiguration>
 				<FileConfiguration
-					Name="Debug SCU|x64"
+					Name="Release SCU|Win32"
 					ExcludedFromBuild="true"
 					>
 					<Tool
@@ -939,7 +932,7 @@
 					/>
 				</FileConfiguration>
 				<FileConfiguration
-					Name="Release SCU|Win32"
+					Name="Debug SCU|x64"
 					ExcludedFromBuild="true"
 					>
 					<Tool
@@ -947,7 +940,7 @@
 					/>
 				</FileConfiguration>
 				<FileConfiguration
-					Name="Debug SCU|x64"
+					Name="Release SCU|Win32"
 					ExcludedFromBuild="true"
 					>
 					<Tool
@@ -975,7 +968,7 @@
 					/>
 				</FileConfiguration>
 				<FileConfiguration
-					Name="Release SCU|Win32"
+					Name="Debug SCU|x64"
 					ExcludedFromBuild="true"
 					>
 					<Tool
@@ -983,7 +976,7 @@
 					/>
 				</FileConfiguration>
 				<FileConfiguration
-					Name="Debug SCU|x64"
+					Name="Release SCU|Win32"
 					ExcludedFromBuild="true"
 					>
 					<Tool
@@ -1011,7 +1004,7 @@
 					/>
 				</FileConfiguration>
 				<FileConfiguration
-					Name="Release SCU|Win32"
+					Name="Debug SCU|x64"
 					ExcludedFromBuild="true"
 					>
 					<Tool
@@ -1019,7 +1012,7 @@
 					/>
 				</FileConfiguration>
 				<FileConfiguration
-					Name="Debug SCU|x64"
+					Name="Release SCU|Win32"
 					ExcludedFromBuild="true"
 					>
 					<Tool
@@ -1047,7 +1040,7 @@
 					/>
 				</FileConfiguration>
 				<FileConfiguration
-					Name="Release SCU|Win32"
+					Name="Debug SCU|x64"
 					ExcludedFromBuild="true"
 					>
 					<Tool
@@ -1055,7 +1048,7 @@
 					/>
 				</FileConfiguration>
 				<FileConfiguration
-					Name="Debug SCU|x64"
+					Name="Release SCU|Win32"
 					ExcludedFromBuild="true"
 					>
 					<Tool
@@ -1083,7 +1076,7 @@
 					/>
 				</FileConfiguration>
 				<FileConfiguration
-					Name="Release SCU|Win32"
+					Name="Debug SCU|x64"
 					ExcludedFromBuild="true"
 					>
 					<Tool
@@ -1091,7 +1084,7 @@
 					/>
 				</FileConfiguration>
 				<FileConfiguration
-					Name="Debug SCU|x64"
+					Name="Release SCU|Win32"
 					ExcludedFromBuild="true"
 					>
 					<Tool
@@ -1119,7 +1112,7 @@
 					/>
 				</FileConfiguration>
 				<FileConfiguration
-					Name="Release SCU|Win32"
+					Name="Debug SCU|x64"
 					ExcludedFromBuild="true"
 					>
 					<Tool
@@ -1127,7 +1120,7 @@
 					/>
 				</FileConfiguration>
 				<FileConfiguration
-					Name="Debug SCU|x64"
+					Name="Release SCU|Win32"
 					ExcludedFromBuild="true"
 					>
 					<Tool
@@ -1155,7 +1148,7 @@
 					/>
 				</FileConfiguration>
 				<FileConfiguration
-					Name="Release SCU|Win32"
+					Name="Debug SCU|x64"
 					ExcludedFromBuild="true"
 					>
 					<Tool
@@ -1163,7 +1156,7 @@
 					/>
 				</FileConfiguration>
 				<FileConfiguration
-					Name="Debug SCU|x64"
+					Name="Release SCU|Win32"
 					ExcludedFromBuild="true"
 					>
 					<Tool
@@ -1191,7 +1184,7 @@
 					/>
 				</FileConfiguration>
 				<FileConfiguration
-					Name="Release SCU|Win32"
+					Name="Debug SCU|x64"
 					ExcludedFromBuild="true"
 					>
 					<Tool
@@ -1199,7 +1192,7 @@
 					/>
 				</FileConfiguration>
 				<FileConfiguration
-					Name="Debug SCU|x64"
+					Name="Release SCU|Win32"
 					ExcludedFromBuild="true"
 					>
 					<Tool
@@ -1227,7 +1220,7 @@
 					/>
 				</FileConfiguration>
 				<FileConfiguration
-					Name="Release SCU|Win32"
+					Name="Debug SCU|x64"
 					ExcludedFromBuild="true"
 					>
 					<Tool
@@ -1235,7 +1228,7 @@
 					/>
 				</FileConfiguration>
 				<FileConfiguration
-					Name="Debug SCU|x64"
+					Name="Release SCU|Win32"
 					ExcludedFromBuild="true"
 					>
 					<Tool
@@ -1263,7 +1256,7 @@
 					/>
 				</FileConfiguration>
 				<FileConfiguration
-					Name="Release SCU|Win32"
+					Name="Debug SCU|x64"
 					ExcludedFromBuild="true"
 					>
 					<Tool
@@ -1271,7 +1264,7 @@
 					/>
 				</FileConfiguration>
 				<FileConfiguration
-					Name="Debug SCU|x64"
+					Name="Release SCU|Win32"
 					ExcludedFromBuild="true"
 					>
 					<Tool
@@ -1299,7 +1292,7 @@
 					/>
 				</FileConfiguration>
 				<FileConfiguration
-					Name="Release SCU|Win32"
+					Name="Debug SCU|x64"
 					ExcludedFromBuild="true"
 					>
 					<Tool
@@ -1307,7 +1300,7 @@
 					/>
 				</FileConfiguration>
 				<FileConfiguration
-					Name="Debug SCU|x64"
+					Name="Release SCU|Win32"
 					ExcludedFromBuild="true"
 					>
 					<Tool
@@ -1335,7 +1328,7 @@
 					/>
 				</FileConfiguration>
 				<FileConfiguration
-					Name="Release SCU|Win32"
+					Name="Debug SCU|x64"
 					ExcludedFromBuild="true"
 					>
 					<Tool
@@ -1343,7 +1336,7 @@
 					/>
 				</FileConfiguration>
 				<FileConfiguration
-					Name="Debug SCU|x64"
+					Name="Release SCU|Win32"
 					ExcludedFromBuild="true"
 					>
 					<Tool
@@ -1371,7 +1364,7 @@
 					/>
 				</FileConfiguration>
 				<FileConfiguration
-					Name="Release SCU|Win32"
+					Name="Debug SCU|x64"
 					ExcludedFromBuild="true"
 					>
 					<Tool
@@ -1379,7 +1372,7 @@
 					/>
 				</FileConfiguration>
 				<FileConfiguration
-					Name="Debug SCU|x64"
+					Name="Release SCU|Win32"
 					ExcludedFromBuild="true"
 					>
 					<Tool
@@ -1407,7 +1400,7 @@
 					/>
 				</FileConfiguration>
 				<FileConfiguration
-					Name="Release SCU|Win32"
+					Name="Debug SCU|x64"
 					ExcludedFromBuild="true"
 					>
 					<Tool
@@ -1415,7 +1408,7 @@
 					/>
 				</FileConfiguration>
 				<FileConfiguration
-					Name="Debug SCU|x64"
+					Name="Release SCU|Win32"
 					ExcludedFromBuild="true"
 					>
 					<Tool
@@ -1443,7 +1436,7 @@
 					/>
 				</FileConfiguration>
 				<FileConfiguration
-					Name="Release SCU|Win32"
+					Name="Debug SCU|x64"
 					ExcludedFromBuild="true"
 					>
 					<Tool
@@ -1451,7 +1444,7 @@
 					/>
 				</FileConfiguration>
 				<FileConfiguration
-					Name="Debug SCU|x64"
+					Name="Release SCU|Win32"
 					ExcludedFromBuild="true"
 					>
 					<Tool
@@ -1479,7 +1472,7 @@
 					/>
 				</FileConfiguration>
 				<FileConfiguration
-					Name="Release SCU|Win32"
+					Name="Debug SCU|x64"
 					ExcludedFromBuild="true"
 					>
 					<Tool
@@ -1487,7 +1480,7 @@
 					/>
 				</FileConfiguration>
 				<FileConfiguration
-					Name="Debug SCU|x64"
+					Name="Release SCU|Win32"
 					ExcludedFromBuild="true"
 					>
 					<Tool
@@ -1515,7 +1508,7 @@
 					/>
 				</FileConfiguration>
 				<FileConfiguration
-					Name="Release SCU|Win32"
+					Name="Debug SCU|x64"
 					ExcludedFromBuild="true"
 					>
 					<Tool
@@ -1523,7 +1516,7 @@
 					/>
 				</FileConfiguration>
 				<FileConfiguration
-					Name="Debug SCU|x64"
+					Name="Release SCU|Win32"
 					ExcludedFromBuild="true"
 					>
 					<Tool
@@ -1551,7 +1544,7 @@
 					/>
 				</FileConfiguration>
 				<FileConfiguration
-					Name="Release SCU|Win32"
+					Name="Debug SCU|x64"
 					ExcludedFromBuild="true"
 					>
 					<Tool
@@ -1559,7 +1552,7 @@
 					/>
 				</FileConfiguration>
 				<FileConfiguration
-					Name="Debug SCU|x64"
+					Name="Release SCU|Win32"
 					ExcludedFromBuild="true"
 					>
 					<Tool
@@ -1587,7 +1580,7 @@
 					/>
 				</FileConfiguration>
 				<FileConfiguration
-					Name="Release SCU|Win32"
+					Name="Debug SCU|x64"
 					ExcludedFromBuild="true"
 					>
 					<Tool
@@ -1595,7 +1588,7 @@
 					/>
 				</FileConfiguration>
 				<FileConfiguration
-					Name="Debug SCU|x64"
+					Name="Release SCU|Win32"
 					ExcludedFromBuild="true"
 					>
 					<Tool
@@ -1623,7 +1616,7 @@
 					/>
 				</FileConfiguration>
 				<FileConfiguration
-					Name="Release SCU|Win32"
+					Name="Debug SCU|x64"
 					ExcludedFromBuild="true"
 					>
 					<Tool
@@ -1631,7 +1624,7 @@
 					/>
 				</FileConfiguration>
 				<FileConfiguration
-					Name="Debug SCU|x64"
+					Name="Release SCU|Win32"
 					ExcludedFromBuild="true"
 					>
 					<Tool
@@ -1791,7 +1784,7 @@
 					/>
 				</FileConfiguration>
 				<FileConfiguration
-					Name="Release|Win32"
+					Name="Debug|x64"
 					ExcludedFromBuild="true"
 					>
 					<Tool
@@ -1799,7 +1792,7 @@
 					/>
 				</FileConfiguration>
 				<FileConfiguration
-					Name="Debug|x64"
+					Name="Release|Win32"
 					ExcludedFromBuild="true"
 					>
 					<Tool

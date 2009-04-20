@@ -23,7 +23,13 @@
 
 #if defined(_MSC_VER)
 
+#if defined(_WIN64)
+// on 64 bit, removes warning C4985: 'ceil': attributes not present on previous declaration.
+// see http://connect.microsoft.com/VisualStudio/feedback/ViewFeedback.aspx?FeedbackID=294649
+#include <math.h>
+#endif
 #include <intrin.h>
+
 #pragma intrinsic (_InterlockedIncrement)
 
 static inline long atomic_inc( volatile long  *v )

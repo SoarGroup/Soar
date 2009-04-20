@@ -8,5 +8,6 @@ sp {water-jug*detect*goal*achieved
    (<j> ^volume 3 ^contents 1)
 -->
    (write (crlf) |The problem has been solved.|)
-   (<rl> ^reward.value 10)
+   (<rl> ^reward.value 10
+         ^final-update true)
    (halt)}

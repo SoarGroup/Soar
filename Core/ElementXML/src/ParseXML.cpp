@@ -193,7 +193,7 @@ void ParseXML::GetNextToken()
 				GetNextChar() ;
 
 				// Check if we've reached --> which marks the end of the comment
-				int len = (int)comment.str().size() ;
+				int len = static_cast<int>(comment.str().size()) ;
 				done = (last == kCloseTagChar && len > 3 && comment.str().at(len-3) == '-' && comment.str().at(len-2) == '-' && comment.str().at(len-1) == '>');
 			}
 
@@ -390,7 +390,7 @@ ElementXMLImpl* ParseXML::ParseElement()
 			// Character data
 			ParseString contents = GetTokenValue() ;
 			
-			pElement->SetCharacterData((char*)contents.c_str(), true) ;
+			pElement->SetCharacterData(const_cast<char*>(contents.c_str()), true) ; // FIXME: inelegant, if const, this should assume false (force copy)
 
 			// If this buffer is really binary data, convert it over.
 			// Doing this just makes the user's life easier as they aren't

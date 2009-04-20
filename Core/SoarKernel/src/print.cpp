@@ -84,7 +84,7 @@ void print_string (agent* thisAgent, const char *s) {
 			thisAgent->printer_output_column++;
 	}
 
-	soar_invoke_first_callback(thisAgent, PRINT_CALLBACK, /*(ClientData)*/ (void*)(s));
+	soar_invoke_first_callback(thisAgent, PRINT_CALLBACK, reinterpret_cast<soar_call_data>(const_cast<char *>(s)));
 }
 
 /* ---------------------------------------------------------------
@@ -937,7 +937,7 @@ void print_preference (agent* thisAgent, preference *pref) {
   char buf[2];
   buf[0] = pref_type;
   buf[1] = 0;
-  xml_att_val(thisAgent, kPreference_Type, (char*)buf);
+  xml_att_val(thisAgent, kPreference_Type, buf);
   
   if (preference_is_binary(pref->type)) {
 	  xml_att_val(thisAgent, kReferent, pref->referent);
@@ -1134,16 +1134,14 @@ void print_phase (agent* thisAgent, const char * s, bool end_of_phase)
     break;
   case WM_PHASE:
 	  xml_att_val(thisAgent, kPhase_Name, kPhaseName_WM);
-	  if (thisAgent->operand2_mode == TRUE) {
-		  switch (thisAgent->FIRING_TYPE) {
-		  case PE_PRODS:  /* no longer needed;  Soar8 has PROPOSE/APPLY */
-			  xml_att_val(thisAgent, kPhase_FiringType, kPhaseFiringType_PE);
-              break;
-		  case IE_PRODS:
-			  xml_att_val(thisAgent, kPhase_FiringType, kPhaseFiringType_IE);
-              break;
-		  }
-      }
+	  switch (thisAgent->FIRING_TYPE) {
+	  case PE_PRODS:  /* no longer needed;  Soar8 has PROPOSE/APPLY */
+		  xml_att_val(thisAgent, kPhase_FiringType, kPhaseFiringType_PE);
+          break;
+	  case IE_PRODS:
+		  xml_att_val(thisAgent, kPhase_FiringType, kPhaseFiringType_IE);
+          break;
+	  }
 	  break;
   case DECISION_PHASE:
 	xml_att_val(thisAgent, kPhase_Name, kPhaseName_Decision);
@@ -1155,10 +1153,7 @@ void print_phase (agent* thisAgent, const char * s, bool end_of_phase)
 	xml_att_val(thisAgent, kPhase_Name, kPhaseName_Propose);
     break;
   case APPLY_PHASE:
-    if (thisAgent->operand2_mode == TRUE)
-    {
-		xml_att_val(thisAgent, kPhase_Name, kPhaseName_Apply);
-	}
+	xml_att_val(thisAgent, kPhase_Name, kPhaseName_Apply);
     break;
   default:
 	xml_att_val(thisAgent, kPhase_Name, kPhaseName_Unknown);

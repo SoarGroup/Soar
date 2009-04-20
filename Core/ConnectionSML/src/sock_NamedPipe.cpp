@@ -109,7 +109,7 @@ bool NamedPipe::SendBuffer(char const* pSendBuffer, size_t bufferSize)
 			success = WriteFile( 
 				hPipe,        // handle to pipe 
 				pSendBuffer,      // buffer to write from 
-				(unsigned long)bufferSize, // number of bytes to write 
+				static_cast<DWORD>(bufferSize), // number of bytes to write 
 				&thisSend,   // number of bytes written 
 				NULL);        // not overlapped I/O 
 

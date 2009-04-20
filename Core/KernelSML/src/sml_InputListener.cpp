@@ -42,7 +42,7 @@ void InputListener::OnKernelEvent(int eventID, AgentSML* pAgentSML, void* pCallD
 	switch (eventID) {
 		case smlEVENT_INPUT_PHASE_CALLBACK:
 		{
-			int callbacktype = (int)reinterpret_cast<long long>(pCallData);
+			intptr_t callbacktype = static_cast<int>(reinterpret_cast<intptr_t>(pCallData));
 
 			switch(callbacktype) {
 			case TOP_STATE_JUST_CREATED:

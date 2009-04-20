@@ -27,14 +27,14 @@ extern "C" {
 // but doesn't have to be and we shouldn't mix them up.
 struct Connection_Sender_InterfaceStruct
 {
-	unsigned int n;	/* So that we compiles under 'C' */
+	intptr_t n;	/* So that we compiles under 'C' */
 };
 typedef Connection_Sender_InterfaceStruct* Connection_Receiver_Handle;
 
 // A connection object that the client creates and owns
 struct Connection_Receiver_InterfaceStruct
 {
-	unsigned int n;	/* So that we compiles under 'C' */
+	intptr_t n;	/* So that we compiles under 'C' */
 };
 typedef Connection_Receiver_InterfaceStruct* Connection_Sender_Handle;
 
@@ -43,7 +43,7 @@ typedef Connection_Receiver_InterfaceStruct* Connection_Sender_Handle;
 // without otherwise accessing them.
 struct Direct_AgentSML_Struct
 {
-	unsigned int n;	/* So that we compiles under 'C' */
+	intptr_t n;	/* So that we compiles under 'C' */
 };
 typedef Direct_AgentSML_Struct* Direct_AgentSML_Handle;
 

@@ -212,8 +212,7 @@ void do_buffered_wm_changes (agent* thisAgent)
 
   /* --- invoke callback routine.  wmes_to_add and wmes_to_remove can   --- */
   /* --- be fetched from the agent structure.                           --- */
-  soar_invoke_callbacks(thisAgent, WM_CHANGES_CALLBACK, 
-			               (soar_call_data) NULL); 
+  soar_invoke_callbacks(thisAgent, WM_CHANGES_CALLBACK, 0); 
 
   /* --- stuff wme changes through the rete net --- */
 #ifndef NO_TIMING_STUFF

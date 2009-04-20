@@ -75,7 +75,7 @@ public:
 				{
 					if ( pWME->IsIdentifier() )
 					{
-						Identifier* pID = dynamic_cast< Identifier* >( pWME );
+						Identifier* pID = static_cast< Identifier* >( pWME );
 						pID->m_pSymbol->SetAreChildrenModified( false );
 					}
 				}

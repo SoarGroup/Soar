@@ -17,14 +17,14 @@ using namespace sock ;
 /////////////////////////////////////////////////////////////////////
 bool DataSender::SendString(char const* pString)
 {
-	unsigned long len = (unsigned long)strlen(pString) ;
+	unsigned long len = static_cast<unsigned long>(strlen(pString));
 
 	// Convert the value into network byte ordering (so it's compatible if we send it
 	// from a big-endian machine to a little endian one or vice-versa).
 	unsigned long netLen = htonl(len) ;
 
 	// Send the length out first
-	bool ok = SendBuffer((char*)&netLen, sizeof(netLen)) ;
+	bool ok = SendBuffer(reinterpret_cast<const char *>(&netLen), sizeof(netLen)) ;
 
 	// Now send the string of characters
 	ok = ok && SendBuffer(pString, len) ;

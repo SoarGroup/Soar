@@ -39,8 +39,8 @@ void select_next_operator( agent *my_agent, const char *operator_id )
 	select_init( my_agent );
 	
 	my_agent->select->select_enabled = true;
-	for ( unsigned int i=0; i<strlen( operator_id ); i++ )
-		my_agent->select->select_operator.push_back( (char) toupper( operator_id[i] ) );
+	for ( unsigned int i=0; i < strlen( operator_id ); i++ )
+		my_agent->select->select_operator.push_back( static_cast< char >( toupper( operator_id[i] ) )  );
 }
 
 /***************************************************************************

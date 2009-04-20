@@ -29,9 +29,6 @@ protected:
 	// The value for this wme is an int
 	int		m_Value ;
 
-	// We need to convert to a string form at times
-	std::string m_StringForm ;
-
 public:
 	// Returns the type of the value stored here (e.g. "string" or "int" etc.)
 	virtual char const* GetValueType() const	;

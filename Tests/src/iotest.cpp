@@ -399,10 +399,12 @@ void IOTest::testOutputLeak1()
 	pKernel->RunAllAgents( 1 );
 
 #ifdef _WIN32
+#ifdef _DEBUG
 	_CrtMemState memState;
 
 	_CrtMemCheckpoint( &memState );
 	//_CrtSetBreakAlloc( 3020 );
+#endif
 #endif
 
 	CPPUNIT_ASSERT( pAgent->GetNumberCommands() == 1 );
@@ -419,7 +421,9 @@ void IOTest::testOutputLeak1()
 	alreadyDestroyed = true;
 
 #ifdef _WIN32
+#ifdef _DEBUG
 	_CrtMemDumpAllObjectsSince( &memState );
+#endif
 #endif
 
 }

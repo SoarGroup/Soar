@@ -22,6 +22,8 @@
 #include <sstream>     
 #include <iomanip>
 
+#include "misc.h"
+
 using namespace sml ;
 
 FloatElement::FloatElement(Agent* pAgent, Identifier* pParent, char const* pID, char const* pAttributeName, double value, long timeTag) 
@@ -49,15 +51,11 @@ char const* FloatElement::GetValueType() const
 // Returns a string form of the value stored here.
 char const* FloatElement::GetValueAsString() const
 {
-	// Convert double to a string
-	std::ostringstream ostr ;
-	ostr << m_Value ;
-
-	// We keep ownership of the result here.
-	FloatElement* pThis = (FloatElement*)this ;
-	pThis->m_StringForm = ostr.str () ;
-
-	return m_StringForm.c_str() ;
+	// note: this is a bit of a hack but the previous 
+	// hack casted around the member function's const keyword
+	static std::string temp; // c_str() needs to remain valid
+	to_string( m_Value, temp );
+	return temp.c_str() ;
 }
 
 #ifdef SML_DIRECT
