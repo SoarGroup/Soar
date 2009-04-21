@@ -32,6 +32,11 @@
 #include <cassert>
 #include <string>
 
+#ifndef _WIN32
+#include <unistd.h>
+#include <sys/wait.h>
+#endif // !_WIN32
+
 using namespace sml;
 using namespace soarxml;
 
@@ -1663,13 +1668,13 @@ bool Agent::SpawnDebugger(int port, const char* hostname)
 	return true;
 
 #else // _WIN32
-	pid = fork();
-	if ( pid < 0 ) 
+	debuggerPid = fork();
+	if ( debuggerPid < 0 ) 
 	{ 
 		return false;
 	}
 
-	if ( pid == 0 ) 
+	if ( debuggerPid == 0 ) 
 	{
 		// child
 		std::stringstream jarstring;
@@ -1680,10 +1685,10 @@ bool Agent::SpawnDebugger(int port, const char* hostname)
 
 		if ( hostname != 0 ) 
 		{
-			execl("java", "java", "-jar", jarstring.str().c_str(), "-remote", "-port", portstring.str().c_str(), "-ip"0);
+			execl("java", "java", "-jar", jarstring.str().c_str(), "-remote", "-port", portstring.str().c_str(), "-ip", NULL );
 		}
 		else {
-			execl("java", "java", "-jar", jarstring.str().c_str(), "-remote", "-port", portstring.str().c_str(), 0);
+			execl("java", "java", "-jar", jarstring.str().c_str(), "-remote", "-port", portstring.str().c_str(), NULL );
 		}
 
 
@@ -1744,7 +1749,7 @@ bool Agent::KillDebugger()
 	return true;
 
 #else // _WIN32
-	if ( kill( pid, SIGTERM ) )
+	if ( kill( debuggerPid, SIGTERM ) )
 	{
 		return false;
 	}
