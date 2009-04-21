@@ -276,7 +276,7 @@ bool CommandProcessor::ProcessLine(std::string& commandLine) {
 		g_pWaitForInput->TriggerEvent();
 		return true;
 	} 
-	if (raw && commandLine == "spawn-debugger") {
+	if (commandLine == "spawn-debugger") {
 		sml::Agent* pAgent = pKernel->GetAgent( AGENT_NAME );
 		if (!pAgent->SpawnDebugger()) {
 			std::cout << "Debugger spawn failed." << std::endl;
@@ -285,7 +285,7 @@ bool CommandProcessor::ProcessLine(std::string& commandLine) {
 		g_pWaitForInput->TriggerEvent();
 		return true;
 	} 
-	if (raw && commandLine == "kill-debugger") {
+	if (commandLine == "kill-debugger") {
 		sml::Agent* pAgent = pKernel->GetAgent( AGENT_NAME );
 		if (!pAgent->KillDebugger()) {
 			std::cout << "Debugger kill failed." << std::endl;
