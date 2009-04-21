@@ -533,7 +533,11 @@ public abstract class AbstractComboView extends AbstractUpdateView implements Ag
 		if (m_Frame.isDebuggerCommand(expanded))
 		{
 			m_Updating = false ;
-			return (String)m_Frame.executeDebuggerCommand(this, expanded, echoCommand) ;
+			String result = m_Frame.executeDebuggerCommand(this, expanded, echoCommand);
+			if (result != null)
+			{
+				return result;
+			}
 		}
 		
 		if (echoCommand && !m_ClearEachCommand)
