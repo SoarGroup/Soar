@@ -1691,9 +1691,8 @@ bool Agent::SpawnDebugger(int port, const char* hostname)
 			execl("java", "java", "-jar", jarstring.str().c_str(), "-remote", "-port", portstring.str().c_str(), NULL );
 		}
 
-
 		// does not return on success
-		return false;
+		exit(1);
 	}
 
 	// parent
