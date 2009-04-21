@@ -701,6 +701,7 @@ protected:
 	*************************************************************/
 	bool DoCommandInternal(const std::string& commandLine);
 	bool DoCommandInternal(std::vector<std::string>& argv);
+	bool PartialMatch(std::vector<std::string>& argv);
 
 	void SetTrapPrintCallbacks(bool setting);
 
