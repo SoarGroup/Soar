@@ -1613,3 +1613,141 @@ bool Agent::SynchronizeOutputLink()
 {
 	return GetWM()->SynchronizeOutputLink() ;
 }
+
+bool Agent::SpawnDebugger(int port, const char* hostname) 
+{
+	std::string libraryLocation = this->m_Kernel->GetLibraryLocation();
+	if ( libraryLocation.length() == 0 ) 
+	{
+		return false;
+	}
+
+#ifdef _WIN32
+
+	ZeroMemory( &debuggerStartupInfo, sizeof( debuggerStartupInfo ) );
+	debuggerStartupInfo.cb = sizeof( debuggerStartupInfo );
+	ZeroMemory( &debuggerProcessInformation, sizeof( debuggerProcessInformation ) );
+
+	// Start the child process. 
+	std::stringstream commandLine;
+	commandLine << "java.exe -jar " << libraryLocation << "\\bin\\SoarJavaDebugger.jar -remote -port " << port;
+	if ( hostname != 0 ) 
+	{
+		commandLine << " -ip " << hostname;
+	}
+	//std::cout << commandLine.str() << std::endl;
+
+	BOOL ret = CreateProcess(
+		0,
+		const_cast< LPSTR >( commandLine.str().c_str() ),	// Command line
+		0,								// Process handle not inheritable
+		0,								// Thread handle not inheritable
+		FALSE,							// Set handle inheritance to FALSE
+		0,								// No creation flags
+		0,								// Use parent's environment block
+		0,								// Use parent's starting directory 
+		&debuggerStartupInfo,			// Pointer to STARTUPINFO structure
+		&debuggerProcessInformation );	// Pointer to PROCESS_INFORMATION structure
+
+	if ( ret == 0 ) 
+	{
+		std::cout << "Error code: " << GetLastError() << std::endl;
+		return false;
+	}
+	
+	if ( !WaitForDebugger() ) 
+	{
+		KillDebugger();
+		return false;
+	}
+	return true;
+
+#else // _WIN32
+	pid = fork();
+	if ( pid < 0 ) 
+	{ 
+		return false;
+	}
+
+	if ( pid == 0 ) 
+	{
+		// child
+		std::stringstream jarstring;
+		jarstring << libraryLocation << "/bin/SoarJavaDebugger.jar";
+
+		std::stringstream portstring;
+		portstring << port;
+
+		if ( hostname != 0 ) 
+		{
+			execl("java", "java", "-jar", jarstring.str().c_str(), "-remote", "-port", portstring.str().c_str(), "-ip"0);
+		}
+		else {
+			execl("java", "java", "-jar", jarstring.str().c_str(), "-remote", "-port", portstring.str().c_str(), 0);
+		}
+
+
+		// does not return on success
+		return false;
+	}
+
+	// parent
+
+	if ( !WaitForDebugger() ) 
+	{
+		KillDebugger();
+		return false;
+	}
+	return true;
+#endif // _WIN32
+}
+
+bool Agent::WaitForDebugger()
+{
+	bool connected = false;
+	for ( int tries = 0; tries < 40; ++tries )
+	{
+		m_Kernel->GetAllConnectionInfo();
+
+		for ( int i = 0; i < m_Kernel->GetNumberConnections(); ++i ) 
+		{
+			ConnectionInfo const* info =  m_Kernel->GetConnectionInfo(i);
+			//std::cout << "Connection: " << info->GetName() << std::endl;
+			if ( std::string( "java-debugger" ) == info->GetName() ) 
+			{
+				connected = true;
+				break;
+			}
+		}
+		if ( connected ) 
+		{ 
+			break;
+		}
+		
+		sml::Sleep( 0, 250 );
+	}
+	return connected;
+}
+
+bool Agent::KillDebugger()
+{
+#ifdef _WIN32
+
+	// Wait until child process exits.
+	BOOL ret = TerminateProcess(debuggerProcessInformation.hProcess, 0);
+	CloseHandle( debuggerProcessInformation.hProcess );
+	CloseHandle( debuggerProcessInformation.hThread );
+	if (ret == 0) 
+	{
+		return false;
+	}
+	return true;
+
+#else // _WIN32
+	if ( kill( pid, SIGTERM ) )
+	{
+		return false;
+	}
+	return true;
+#endif // _WIN32
+}
