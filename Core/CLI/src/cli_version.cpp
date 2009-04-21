@@ -32,8 +32,6 @@ bool CommandLineInterface::ParseVersion(std::vector<std::string>&) {
 
 bool CommandLineInterface::DoVersion() {
 
-	char buf[kMinBufferSize];
-
 	std::ostringstream timedatestamp;
 	timedatestamp << kDatestamp << " " << kTimestamp;
 	std::string sTimeDateStamp = timedatestamp.str();
@@ -43,9 +41,13 @@ bool CommandLineInterface::DoVersion() {
 		m_Result << "Build date: " << sTimeDateStamp.c_str() << " " ;
 
 	} else {
-		AppendArgTagFast(sml_Names::kParamVersionMajor, sml_Names::kTypeInt, Int2String(MAJOR_VERSION_NUMBER, buf, kMinBufferSize));
-		AppendArgTagFast(sml_Names::kParamVersionMinor, sml_Names::kTypeInt, Int2String(MINOR_VERSION_NUMBER, buf, kMinBufferSize));
-		AppendArgTagFast(sml_Names::kParamVersionMicro, sml_Names::kTypeInt, Int2String(MICRO_VERSION_NUMBER, buf, kMinBufferSize));
+		std::string temp;
+		int major = MAJOR_VERSION_NUMBER;
+		int minor = MINOR_VERSION_NUMBER;
+		int micro = MICRO_VERSION_NUMBER;
+		AppendArgTagFast(sml_Names::kParamVersionMajor, sml_Names::kTypeInt, to_string(major, temp).c_str());
+		AppendArgTagFast(sml_Names::kParamVersionMinor, sml_Names::kTypeInt, to_string(minor, temp).c_str());
+		AppendArgTagFast(sml_Names::kParamVersionMicro, sml_Names::kTypeInt, to_string(micro, temp).c_str());
 		AppendArgTag(sml_Names::kParamBuildDate, sml_Names::kTypeString, sTimeDateStamp.c_str());
 	}
 	return true;

@@ -19,6 +19,8 @@
 #include "sml_RunScheduler.h"
 #include "cli_CLIError.h"
 
+#include "misc.h"
+
 using namespace cli;
 using namespace sml;
 
@@ -90,8 +92,7 @@ bool CommandLineInterface::ParseRun(std::vector<std::string>& argv) {
 	int count = -1;
 	if (m_NonOptionArguments == 1) {
 		int optind = m_Argument - m_NonOptionArguments;
-		if (!IsInteger(argv[optind])) return SetError(CLIError::kIntegerExpected);
-		count = atoi(argv[optind].c_str());
+		if ( !from_string( count, argv[optind] ) ) return SetError(CLIError::kIntegerExpected);
 		// Allow "run 0" for decisions -- which means run agents to the current stop-before phase
 		if (count < 0 || (count == 0 && specifiedType && !options.test(RUN_DECISION))) return SetError(CLIError::kIntegerMustBePositive);
 	} 
@@ -161,7 +162,7 @@ bool CommandLineInterface::DoRun(const RunBitset& options, int count, eRunInterl
 
 	if (options.test(RUN_SELF))
 	{
-		runFlags = (smlRunFlags)(runFlags | sml_RUN_SELF) ;
+		runFlags = smlRunFlags(runFlags | sml_RUN_SELF) ;
 
 		// Schedule just this one agent to run
 		pScheduler->ScheduleAllAgentsToRun(false) ;
@@ -169,7 +170,7 @@ bool CommandLineInterface::DoRun(const RunBitset& options, int count, eRunInterl
 	}
 	else
 	{
-		runFlags = (smlRunFlags)(runFlags | sml_RUN_ALL) ;
+		runFlags = smlRunFlags(runFlags | sml_RUN_ALL) ;
 
 		// Ask all agents to run
 		pScheduler->ScheduleAllAgentsToRun(true) ;
@@ -222,7 +223,6 @@ bool CommandLineInterface::DoRun(const RunBitset& options, int count, eRunInterl
 	}
 
 
-	char buf[kMinBufferSize];
 	switch (runResult) {
 		case sml_RUN_ERROR:
 			return SetError(CLIError::kRunFailed);
@@ -233,7 +233,8 @@ bool CommandLineInterface::DoRun(const RunBitset& options, int count, eRunInterl
 				// NOTE: I don't think this is currently possible
 				m_Result << "\nRun stopped (still executing).";
 			} else {
-				AppendArgTagFast(sml_Names::kParamRunResult, sml_Names::kTypeInt, Int2String((int)runResult, buf, kMinBufferSize));
+				std::string temp;
+				AppendArgTagFast(sml_Names::kParamRunResult, sml_Names::kTypeInt, to_string( runResult, temp ).c_str() );
 			}
 			break;
 
@@ -243,7 +244,8 @@ bool CommandLineInterface::DoRun(const RunBitset& options, int count, eRunInterl
 			if (m_RawOutput) {
 				m_Result << "\nRun stopped (interrupted).";
 			} else {
-				AppendArgTagFast(sml_Names::kParamRunResult, sml_Names::kTypeInt, Int2String((int)runResult, buf, kMinBufferSize));
+				std::string temp;
+				AppendArgTagFast(sml_Names::kParamRunResult, sml_Names::kTypeInt, to_string( runResult, temp ).c_str());
 			}
 			if (pScheduler->AnAgentHaltedDuringRun())
 			{

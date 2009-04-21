@@ -17,7 +17,7 @@
 #include "wma.h"
 
 #include <cmath>
-#include <stdlib.h>
+#include <cstdlib>
 
 #include "wmem.h"
 #include "instantiations.h"
@@ -1092,12 +1092,8 @@ void wma_forget_wme( agent *my_agent, wme *w )
 			}
 		}
 	}
-
-	/* REW: begin 09.15.96 */
-#ifndef SOAR_8_ONLY
-	if ( ( my_agent->operand2_mode ) )
+	
 	{
-#endif
 		if ( w->gds )
 		{
 			if ( w->gds->goal != NIL )
@@ -1105,9 +1101,7 @@ void wma_forget_wme( agent *my_agent, wme *w )
 				gds_invalid_so_remove_goal( my_agent, w );
 			}
 		}
-#ifndef SOAR_8_ONLY
 	}
-#endif
 
 	remove_wme_from_wm( my_agent, w );
 }

@@ -55,7 +55,7 @@ Connection::Connection()
 #ifdef _DEBUG
 	// It's useful to start somewhere other than 0 in debug, especially when dealing with
 	// remote connections, so it's clear which id's come from which client.
-	int rand = (int)(clock() % 10) ;
+	int rand = static_cast<int>(clock() % 10) ;
 	m_MessageID = 100 * rand ;
 #endif
 
@@ -410,7 +410,7 @@ ElementXML* Connection::InvokeCallbacks(ElementXML *pIncomingMsg)
 {
 	ClearError() ;
 
-	MessageSML *pIncomingSML = (MessageSML*)pIncomingMsg ;
+	MessageSML *pIncomingSML = (MessageSML*)pIncomingMsg ; // MessageSML is a soarxml::ElementXML, not sml::ElementXML
 
 	// Check that we were passed a valid message.
 	if (pIncomingMsg == NULL)
@@ -944,7 +944,7 @@ ElementXML* Connection::CreateSMLResponse(ElementXML const* pIncomingMsg)
 		return NULL ;
 	}
 
-	MessageSML* pIncomingSML = (MessageSML*)pIncomingMsg ;
+	MessageSML* pIncomingSML = (MessageSML*)pIncomingMsg ; // MessageSML is a soarxml::ElementXML, not sml::ElementXML
 
 	if (!pIncomingSML->GetID())
 	{
@@ -957,7 +957,7 @@ ElementXML* Connection::CreateSMLResponse(ElementXML const* pIncomingMsg)
 	MessageSML* pMsg = new MessageSML(MessageSML::kResponse, GenerateID()) ;
 
 	// Messages must have an ID and we use that as the response
-	char const* pAck = ((MessageSML*)pIncomingMsg)->GetID() ;
+	char const* pAck = ((MessageSML*)pIncomingMsg)->GetID() ; // MessageSML is a soarxml::ElementXML, not sml::ElementXML
 
 	// Add an "ack=<id>" field to the response so the caller knows which
 	// message we are responding to.

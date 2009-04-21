@@ -36,7 +36,7 @@ static std::string s_LastParseErrorMessage ;
 
 inline static ElementXMLImpl* GetElementFromHandle(ElementXML_Handle hXML)
 {
-	return (ElementXMLImpl*)hXML ;
+	return reinterpret_cast<ElementXMLImpl*>(hXML) ;
 }
 
 ////////////////////////////////////////////////////////////////
@@ -50,7 +50,7 @@ inline static ElementXMLImpl* GetElementFromHandle(ElementXML_Handle hXML)
 *************************************************************/
 ElementXML_Handle soarxml_NewElementXML()
 {
-	return (ElementXML_Handle)new ElementXMLImpl() ;
+	return reinterpret_cast<ElementXML_Handle>(new ElementXMLImpl()) ;
 }
 
 /*************************************************************
@@ -186,6 +186,7 @@ int soarxml_GetNumberChildren(ElementXML_Handle const hXML)
 *************************************************************/
 ElementXML_Handle const soarxml_GetChild(ElementXML_Handle const hXML, int index)
 {
+	// FIXME can't use reinterpret cast here??
 	return (ElementXML_Handle)GetElementFromHandle(hXML)->GetChild(index) ;
 }
 
@@ -199,6 +200,7 @@ ElementXML_Handle const soarxml_GetChild(ElementXML_Handle const hXML, int index
 *************************************************************/
 ElementXML_Handle const soarxml_GetParent(ElementXML_Handle const hXML)
 {
+	// FIXME can't use reinterpret cast here??
 	return (ElementXML_Handle)GetElementFromHandle(hXML)->GetParent() ;
 }
 
@@ -211,7 +213,7 @@ ElementXML_Handle const soarxml_GetParent(ElementXML_Handle const hXML)
 *************************************************************/
 ElementXML_Handle const soarxml_MakeCopy(ElementXML_Handle const hXML)
 {
-	return (ElementXML_Handle)GetElementFromHandle(hXML)->MakeCopy() ;
+	return reinterpret_cast<ElementXML_Handle>(GetElementFromHandle(hXML)->MakeCopy()) ;
 }
 
 ////////////////////////////////////////////////////////////////
@@ -554,7 +556,7 @@ ElementXML_Handle soarxml_ParseXMLFromString(char const* pString)
 	if (!pXML)
 		s_LastParseErrorMessage = parser.GetErrorMessage() ;
 
-	return (ElementXML_Handle)pXML ;
+	return reinterpret_cast<ElementXML_Handle>(pXML) ;
 }
 
 /*************************************************************
@@ -581,7 +583,7 @@ ElementXML_Handle soarxml_ParseXMLFromStringSequence(char const* pString, size_t
 	if (!pXML)
 		s_LastParseErrorMessage = parser.GetErrorMessage() ;
 
-	return (ElementXML_Handle)pXML ;
+	return reinterpret_cast<ElementXML_Handle>(pXML) ;
 }
 
 /*************************************************************
@@ -612,7 +614,7 @@ ElementXML_Handle soarxml_ParseXMLFromFile(char const* pFilename)
 	if (!pXML)
 		s_LastParseErrorMessage = parser.GetErrorMessage() ;
 
-	return (ElementXML_Handle)pXML ;
+	return reinterpret_cast<ElementXML_Handle>(pXML) ;
 }
 
 /*************************************************************

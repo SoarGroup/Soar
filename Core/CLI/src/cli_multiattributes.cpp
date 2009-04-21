@@ -31,8 +31,7 @@ bool CommandLineInterface::ParseMultiAttributes(std::vector<std::string>& argv) 
 	int n = 0;
 	// If we have 3 arguments, third one is an integer
 	if (argv.size() > 2) {
-		if (!IsInteger(argv[2])) return SetError(CLIError::kIntegerExpected);
-		n = atoi(argv[2].c_str());
+		if ( !from_string( n, argv[2] ) ) return SetError(CLIError::kIntegerExpected);
 		if (n <= 0) return SetError(CLIError::kIntegerMustBeNonNegative);
 	}
 
@@ -110,7 +109,7 @@ bool CommandLineInterface::DoMultiAttributes(const std::string* pAttribute, int 
 	}
 
 	/* sym wasn't in the table if we get here, so add it */
-	maList = (multi_attribute *) allocate_memory(m_pAgentSoar, sizeof(multi_attribute), MISCELLANEOUS_MEM_USAGE);
+	maList = reinterpret_cast<multi_attribute *>(allocate_memory(m_pAgentSoar, sizeof(multi_attribute), MISCELLANEOUS_MEM_USAGE));
 	assert(maList);
 
 	maList->value = n;

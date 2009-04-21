@@ -42,32 +42,32 @@
 ==================================================================== */
 
 void *allocate_memory (agent* thisAgent, size_t size, int usage_code) {
-  char *p;
+	char *p;
 
-  thisAgent->memory_for_usage[usage_code] += size;
-  size += sizeof(char *);
-  thisAgent->memory_for_usage[STATS_OVERHEAD_MEM_USAGE] += sizeof(char *);
-  
-  p = (char *) malloc (size);
-  if (p==NULL) {
-    char msg[BUFFER_MSG_SIZE];
-    SNPRINTF(msg, BUFFER_MSG_SIZE, "\nmem.c: Error:  Tried but failed to allocate %lu bytes of memory.\n", static_cast<unsigned long>(size));
-	msg[BUFFER_MSG_SIZE - 1] = 0; /* ensure null termination */
-    abort_with_fatal_error (thisAgent, msg);
-  }
-  if (((unsigned long)p) & 3) {
-    char msg[BUFFER_MSG_SIZE];
-    strncpy (msg,"\nmem.c: Error:  Memory allocator returned an address that's not a multiple of 4.\n", BUFFER_MSG_SIZE);
-	msg[BUFFER_MSG_SIZE - 1] = 0; /* ensure null termination */
-    abort_with_fatal_error(thisAgent, msg);
-  }
+	thisAgent->memory_for_usage[usage_code] += size;
+	size += sizeof(size_t);
+	thisAgent->memory_for_usage[STATS_OVERHEAD_MEM_USAGE] += sizeof(char *);
 
-  fill_with_garbage (p, size);
+	p = reinterpret_cast<char *>(malloc (size));
+	if (p==NULL) {
+		char msg[BUFFER_MSG_SIZE];
+		SNPRINTF(msg, BUFFER_MSG_SIZE, "\nmem.c: Error:  Tried but failed to allocate %lu bytes of memory.\n", static_cast<unsigned long>(size));
+		msg[BUFFER_MSG_SIZE - 1] = 0; /* ensure null termination */
+		abort_with_fatal_error (thisAgent, msg);
+	}
+	if (reinterpret_cast<size_t>(p) & 3) {
+		char msg[BUFFER_MSG_SIZE];
+		strncpy (msg,"\nmem.c: Error:  Memory allocator returned an address that's not a multiple of 4.\n", BUFFER_MSG_SIZE);
+		msg[BUFFER_MSG_SIZE - 1] = 0; /* ensure null termination */
+		abort_with_fatal_error(thisAgent, msg);
+	}
 
-  *((size_t *)p) = size;
-  p += sizeof(char *);
+	fill_with_garbage (p, size);
 
-  return (void *)p;
+	*(reinterpret_cast<size_t *>(p)) = size;
+	p += sizeof(size_t);
+
+	return reinterpret_cast<void *>(p);
 }
 
 void *allocate_memory_and_zerofill (agent* thisAgent, size_t size, int usage_code) {
@@ -79,16 +79,16 @@ void *allocate_memory_and_zerofill (agent* thisAgent, size_t size, int usage_cod
 }
 
 void free_memory (agent* thisAgent, void *mem, int usage_code) {
-  unsigned long size;
+  size_t size;
   
   if ( mem == 0 ) return;
   
-  mem = ((char *)mem)-sizeof(char *);
-  size = *((unsigned long *)mem);
+  mem = reinterpret_cast<char *>(mem) - sizeof(size_t);
+  size = *(reinterpret_cast<size_t *>(mem));
   fill_with_garbage (mem, size);
 
-  thisAgent->memory_for_usage[STATS_OVERHEAD_MEM_USAGE] -= sizeof(char *);
-  thisAgent->memory_for_usage[usage_code] -= (size - sizeof(char *));
+  thisAgent->memory_for_usage[STATS_OVERHEAD_MEM_USAGE] -= sizeof(size_t);
+  thisAgent->memory_for_usage[usage_code] -= (size - sizeof(size_t));
 
   free (mem);
 }
@@ -222,52 +222,52 @@ void free_growable_string (agent* thisAgent, growable_string gs) {
 #define DEFAULT_BLOCK_SIZE 0x7FF0   /* about 32K bytes per block */
 
 void add_block_to_memory_pool (agent* thisAgent, memory_pool *p) {
-  char *new_block;
-  unsigned long size, i, item_num, interleave_factor;
-  char *item, *prev_item;
+	char *new_block;
+	size_t size, i, item_num, interleave_factor;
+	char *item, *prev_item;
 
-  /* --- allocate a new block for the pool --- */
-  size = p->item_size * p->items_per_block + sizeof(char *);
-  new_block = static_cast<char *>(allocate_memory (thisAgent, size, POOL_MEM_USAGE));
-  *(char * *)new_block = static_cast<char *>(p->first_block);
-  p->first_block = new_block;
-  p->num_blocks++;
+	/* --- allocate a new block for the pool --- */
+	size = p->item_size * p->items_per_block + sizeof(char *);
+	new_block = static_cast<char *>(allocate_memory (thisAgent, size, POOL_MEM_USAGE));
+	*(char * *)new_block = static_cast<char *>(p->first_block);
+	p->first_block = new_block;
+	p->num_blocks++;
 
-  /* somewhere in here, need to check if total mem usage exceeds limit set by user
-  we only check when increasing pools, because the other memories are small by comparison,
-  we shouldn't check for every block added to any pool, since that is unduly expensive 
-  can we keep a block counter on the agent and check it modulo some function of the limit?
-   */
- /*
-  unsigned long total = 0;
-  for (i=0; i<NUM_MEM_USAGE_CODES; i++) total += thisAgent->memory_for_usage[i];
-  
-  if (total > thisAgent->sysparams[MAX_MEMORY_USAGE_SYSPARAM]) {      
-	  soar_invoke_callbacks(thisAgent, thisAgent, 
-	                        MAX_MEMORY_USAGE_CALLBACK,
-							(soar_call_data) NULL);
-      print (thisAgent, "%8lu bytes total memory allocated\n", total);
-	  print (thisAgent, "exceeds total allowed for Soar: %8lu bytes \n", 
-	         thisAgent->sysparams[MAX_MEMORY_USAGE_SYSPARAM]);
+	/* somewhere in here, need to check if total mem usage exceeds limit set by user
+	we only check when increasing pools, because the other memories are small by comparison,
+	we shouldn't check for every block added to any pool, since that is unduly expensive 
+	can we keep a block counter on the agent and check it modulo some function of the limit?
+	*/
+	/*
+	unsigned long total = 0;
+	for (i=0; i<NUM_MEM_USAGE_CODES; i++) total += thisAgent->memory_for_usage[i];
+
+	if (total > thisAgent->sysparams[MAX_MEMORY_USAGE_SYSPARAM]) {      
+	soar_invoke_callbacks(thisAgent, thisAgent, 
+	MAX_MEMORY_USAGE_CALLBACK,
+	(soar_call_data) NULL);
+	print (thisAgent, "%8lu bytes total memory allocated\n", total);
+	print (thisAgent, "exceeds total allowed for Soar: %8lu bytes \n", 
+	thisAgent->sysparams[MAX_MEMORY_USAGE_SYSPARAM]);
 	}
- 
- */
 
-  /* --- link up the new entries onto the free list --- */
-  interleave_factor = DEFAULT_INTERLEAVE_FACTOR;
-  if (interleave_factor >= (unsigned)(p->items_per_block)) interleave_factor = 1;
-  
-  item_num = interleave_factor;
-  prev_item = new_block + sizeof(char *);  /* prev_item is item number 0 */
-  for (i=0; i < (unsigned)(p->items_per_block) - 1; i++) {
-    item = new_block + sizeof(char *) + item_num * p->item_size;
-    *(char * *)prev_item = item;
-    prev_item = item;
-    item_num = item_num + interleave_factor;
-    if (item_num >= (unsigned)(p->items_per_block)) item_num -= p->items_per_block;
-  }
-  *(char * *)prev_item = static_cast<char *>(p->free_list);
-  p->free_list = new_block + sizeof(char *);
+	*/
+
+	/* --- link up the new entries onto the free list --- */
+	interleave_factor = DEFAULT_INTERLEAVE_FACTOR;
+	if (interleave_factor >= p->items_per_block) interleave_factor = 1;
+
+	item_num = interleave_factor;
+	prev_item = new_block + sizeof(char *);  /* prev_item is item number 0 */
+	for (i=0; i < p->items_per_block - 1; i++) {
+		item = new_block + sizeof(char *) + item_num * p->item_size;
+		*(char * *)prev_item = item;
+		prev_item = item;
+		item_num = item_num + interleave_factor;
+		if (item_num >= p->items_per_block) item_num -= p->items_per_block;
+	}
+	*(char * *)prev_item = static_cast<char *>(p->free_list);
+	p->free_list = new_block + sizeof(char *);
 }
 
 /* RPM 6/09, with help from AMN */
@@ -275,7 +275,7 @@ void free_memory_pool (agent* thisAgent, memory_pool *p) {
 
 	char *cur_block = static_cast<char*>(p->first_block);
 	char *next_block;
-	for(int i=0; i<p->num_blocks; i++) {
+	for(size_t i=0; i<p->num_blocks; i++) {
 		// the first 4 bytes point to the next block
 		next_block = *(char **)cur_block;
 		free_memory(thisAgent, cur_block, POOL_MEM_USAGE);
@@ -284,27 +284,27 @@ void free_memory_pool (agent* thisAgent, memory_pool *p) {
 	p->num_blocks = 0;
 }
 
-void init_memory_pool (agent* thisAgent, memory_pool *p, long item_size, const char *name) {
-  if (item_size < (long)sizeof(char *)) item_size = sizeof(char *);
-  while (item_size & 3) item_size++; /* make sure item_size is multiple of 4 */
-  p->item_size = item_size;
-  p->items_per_block = DEFAULT_BLOCK_SIZE / item_size;
-  p->num_blocks = 0;
-  p->first_block = NIL;  
-  p->free_list = NIL;
+void init_memory_pool (agent* thisAgent, memory_pool *p, size_t item_size, const char *name) {
+	if (item_size < sizeof(char *)) item_size = sizeof(char *);
+	while (item_size & 3) item_size++; /* make sure item_size is multiple of 4 */
+	p->item_size = item_size;
+	p->items_per_block = DEFAULT_BLOCK_SIZE / item_size;
+	p->num_blocks = 0;
+	p->first_block = NIL;  
+	p->free_list = NIL;
 #ifdef MEMORY_POOL_STATS
-  p->used_count = 0;
+	p->used_count = 0;
 #endif
-  p->next = thisAgent->memory_pools_in_use;
-  thisAgent->memory_pools_in_use = p;
-  if (strlen(name) > MAX_POOL_NAME_LENGTH) {
-    char msg[2*MAX_POOL_NAME_LENGTH];
-    SNPRINTF(msg, 2*MAX_POOL_NAME_LENGTH, "mem.c: Internal error: memory pool name too long: %s\n",name);
-	msg[2*MAX_POOL_NAME_LENGTH - 1] = 0; /* ensure null termination */
-    abort_with_fatal_error(thisAgent, msg);
-  }
-  strncpy(p->name,name,MAX_POOL_NAME_LENGTH);
-  p->name[MAX_POOL_NAME_LENGTH - 1] = 0; /* ensure null termination */
+	p->next = thisAgent->memory_pools_in_use;
+	thisAgent->memory_pools_in_use = p;
+	if (strlen(name) > MAX_POOL_NAME_LENGTH) {
+		char msg[2*MAX_POOL_NAME_LENGTH];
+		SNPRINTF(msg, 2*MAX_POOL_NAME_LENGTH, "mem.c: Internal error: memory pool name too long: %s\n",name);
+		msg[2*MAX_POOL_NAME_LENGTH - 1] = 0; /* ensure null termination */
+		abort_with_fatal_error(thisAgent, msg);
+	}
+	strncpy(p->name,name,MAX_POOL_NAME_LENGTH);
+	p->name[MAX_POOL_NAME_LENGTH - 1] = 0; /* ensure null termination */
 }
 
 /* ====================================================================

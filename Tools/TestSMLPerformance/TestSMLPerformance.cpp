@@ -272,7 +272,7 @@ int main() {
 		int numWmes = 25;
 		int numCycles = 1000;
 
-		srand( (unsigned)time( NULL ) );
+		srand( static_cast<unsigned>(time( 0 )) );
 
 		RunTest1(numAgents, numWmes, numCycles);
 		ResetEventCounts();

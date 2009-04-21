@@ -265,357 +265,186 @@ Bool is_state_id(agent* thisAgent, Symbol *sym,Symbol *match_state)
    (instead of objects) for states or operators */
 
 void calculate_support_for_instantiation_preferences (agent* thisAgent, instantiation *inst) {
-  Symbol *match_goal, *match_state, *match_operator;
-  wme *match_operator_wme;
-  Bool lhs_tests_operator_installed;
-  Bool lhs_tests_operator_acceptable_or_installed;
-  Bool lhs_is_known_to_test_something_off_match_state;
-  Bool lhs_is_known_to_test_something_off_match_operator;
-  Bool rhs_does_an_operator_creation;
-  Bool oc_support_possible;
-  Bool om_support_possible;
-  Bool oa_support_possible;
-  preference *rhs, *pref;
-  wme *w;
-  condition *lhs, *c;
+	preference *pref;
+	wme *w;
+	condition *c;
 
 
-/* RCHONG: begin 10.11 */
+	/* RCHONG: begin 10.11 */
 
-  action    *act;
-  Bool      o_support,op_elab;
-  Bool      operator_proposal;
-  char      action_attr[50];
-  int       pass;
-  wme       *lowest_goal_wme;
+	action    *act;
+	Bool      o_support,op_elab;
+	Bool      operator_proposal;
+	char      action_attr[50];
+	int       pass;
+	wme       *lowest_goal_wme;
 
-/* RCHONG: end 10.11 */
+	/* RCHONG: end 10.11 */
 
 
 
-/* REW: begin 09.15.96 */
-
-  if (thisAgent->operand2_mode == TRUE) {
-
-      if (thisAgent->soar_verbose_flag == TRUE) {
-        printf("\n      in calculate_support_for_instantiation_preferences:");
-        xml_generate_verbose(thisAgent, "in calculate_support_for_instantiation_preferences:");
-      }
-     o_support = FALSE;
-	 op_elab = FALSE;
-
-     if (inst->prod->declared_support == DECLARED_O_SUPPORT)
-	o_support = TRUE;
-     else if (inst->prod->declared_support == DECLARED_I_SUPPORT)
-	o_support = FALSE;
-     else if (inst->prod->declared_support == UNDECLARED_SUPPORT) {
-
-	/*
-        check if the instantiation is proposing an operator.  if it
-        is, then this instantiation is i-supported.
-	*/
-
-        operator_proposal = FALSE;
-        for (act = inst->prod->action_list; act != NIL ; act = act->next) {
-           if ((act->type == MAKE_ACTION)  &&
-	       (rhs_value_is_symbol(act->attr))) {
-	      if ((strcmp(rhs_value_to_string (thisAgent, act->attr, action_attr, 50),
-			  "operator") == NIL) &&
-		  (act->preference_type == ACCEPTABLE_PREFERENCE_TYPE)) {
-		/* REW: 09.30.96.  Bug fix (next line was
-		   operator_proposal == TRUE;) */
-		 operator_proposal = TRUE;
-		 o_support = FALSE;
-		 break;
-	      }
-	   }
+	/* REW: begin 09.15.96 */
+	if (thisAgent->soar_verbose_flag == TRUE) {
+		printf("\n      in calculate_support_for_instantiation_preferences:");
+		xml_generate_verbose(thisAgent, "in calculate_support_for_instantiation_preferences:");
 	}
+	o_support = FALSE;
+	op_elab = FALSE;
+
+	if (inst->prod->declared_support == DECLARED_O_SUPPORT)
+		o_support = TRUE;
+	else if (inst->prod->declared_support == DECLARED_I_SUPPORT)
+		o_support = FALSE;
+	else if (inst->prod->declared_support == UNDECLARED_SUPPORT) {
+
+		/*
+		check if the instantiation is proposing an operator.  if it
+		is, then this instantiation is i-supported.
+		*/
+
+		operator_proposal = FALSE;
+		for (act = inst->prod->action_list; act != NIL ; act = act->next) {
+			if ((act->type == MAKE_ACTION)  &&
+				(rhs_value_is_symbol(act->attr))) {
+					if ((strcmp(rhs_value_to_string (thisAgent, act->attr, action_attr, 50),
+						"operator") == NIL) &&
+						(act->preference_type == ACCEPTABLE_PREFERENCE_TYPE)) {
+							/* REW: 09.30.96.  Bug fix (next line was
+							operator_proposal == TRUE;) */
+							operator_proposal = TRUE;
+							o_support = FALSE;
+							break;
+					}
+			}
+		}
 
 
-        if (operator_proposal == FALSE) {
+		if (operator_proposal == FALSE) {
 
-	   /*
-	   an operator wasn't being proposed, so now we need to test if
-	   the operator is being tested on the LHS.
+			/*
+			an operator wasn't being proposed, so now we need to test if
+			the operator is being tested on the LHS.
 
-	   i'll need to make two passes over the wmes that pertain to
-	   this instantiation.  the first pass looks for the lowest goal
-	   identifier.  the second pass looks for a wme of the form:
+			i'll need to make two passes over the wmes that pertain to
+			this instantiation.  the first pass looks for the lowest goal
+			identifier.  the second pass looks for a wme of the form:
 
-	      (<lowest-goal-id> ^operator ...)
+			(<lowest-goal-id> ^operator ...)
 
-	   if such a wme is found, then this o-support = TRUE; FALSE otherwise.
+			if such a wme is found, then this o-support = TRUE; FALSE otherwise.
 
-	   this code is essentially identical to that in
-	   p_node_left_addition() in rete.c.
+			this code is essentially identical to that in
+			p_node_left_addition() in rete.c.
 
-	   BUGBUG this check only looks at positive conditions.  we
-	   haven't really decided what testing the absence of the
-	   operator will do.  this code assumes that such a productions
-	   (instantiation) would get i-support.
-	   */
+			BUGBUG this check only looks at positive conditions.  we
+			haven't really decided what testing the absence of the
+			operator will do.  this code assumes that such a productions
+			(instantiation) would get i-support.
+			*/
 
-	   lowest_goal_wme = NIL;
+			lowest_goal_wme = NIL;
 
-	   for (pass = 0; pass != 2; pass++) {
+			for (pass = 0; pass != 2; pass++) {
 
-	      for (c=inst->top_of_instantiated_conditions; c!=NIL; c=c->next) {
-		 if (c->type==POSITIVE_CONDITION) {
-		    w = c->bt.wme_;
+				for (c=inst->top_of_instantiated_conditions; c!=NIL; c=c->next) {
+					if (c->type==POSITIVE_CONDITION) {
+						w = c->bt.wme_;
 
-		    if (pass == 0) {
+						if (pass == 0) {
 
-		       if (w->id->id.isa_goal == TRUE) {
+							if (w->id->id.isa_goal == TRUE) {
 
-			  if (lowest_goal_wme == NIL)
-			     lowest_goal_wme = w;
+								if (lowest_goal_wme == NIL)
+									lowest_goal_wme = w;
 
-			  else {
-			     if (w->id->id.level > lowest_goal_wme->id->id.level)
-				lowest_goal_wme = w;
-			  }
-		       }
-
-		    }
-
-			else {
-				if ((w->attr == thisAgent->operator_symbol) &&
-					(w->acceptable == FALSE) &&
-					(w->id == lowest_goal_wme->id)) {
- 					if (thisAgent->o_support_calculation_type == 3 || thisAgent->o_support_calculation_type == 4) {
-
-					/* iff RHS has only operator elaborations 
-				    	then it's IE_PROD, otherwise PE_PROD, so
-						look for non-op-elabs in the actions  KJC 1/00 */
-						for (act = inst->prod->action_list;
-						act != NIL ; act = act->next) {
-							if (act->type == MAKE_ACTION) {
-								if ((rhs_value_is_symbol(act->id)) &&
-									(rhs_value_to_symbol(act->id) == w->value)) {
-									op_elab = TRUE;
-                                } else if ( thisAgent->o_support_calculation_type == 4 
-										&& (rhs_value_is_reteloc(act->id)) 
-										&& w->value == get_symbol_from_rete_loc( (unsigned short)rhs_value_to_reteloc_levels_up( act->id ), (byte)rhs_value_to_reteloc_field_num( act->id ), inst->rete_token, w )) {
-								    op_elab = TRUE;
-                                } else {
-                                    /* this is not an operator elaboration */
-                                    o_support = TRUE;
+								else {
+									if (w->id->id.level > lowest_goal_wme->id->id.level)
+										lowest_goal_wme = w;
 								}
 							}
+
 						}
-					} else {					
-						o_support = TRUE;
-						break;
+
+						else {
+							if ((w->attr == thisAgent->operator_symbol) &&
+								(w->acceptable == FALSE) &&
+								(w->id == lowest_goal_wme->id)) {
+									if (thisAgent->o_support_calculation_type == 3 || thisAgent->o_support_calculation_type == 4) {
+
+										/* iff RHS has only operator elaborations 
+										then it's IE_PROD, otherwise PE_PROD, so
+										look for non-op-elabs in the actions  KJC 1/00 */
+										for (act = inst->prod->action_list;
+											act != NIL ; act = act->next) {
+												if (act->type == MAKE_ACTION) {
+													if ((rhs_value_is_symbol(act->id)) &&
+														(rhs_value_to_symbol(act->id) == w->value)) {
+															op_elab = TRUE;
+													} else if ( thisAgent->o_support_calculation_type == 4 
+														&& (rhs_value_is_reteloc(act->id)) 
+														&& w->value == get_symbol_from_rete_loc( static_cast<unsigned short>(rhs_value_to_reteloc_levels_up( act->id )), static_cast<byte>(rhs_value_to_reteloc_field_num( act->id )), inst->rete_token, w )) {
+															op_elab = TRUE;
+													} else {
+														/* this is not an operator elaboration */
+														o_support = TRUE;
+													}
+												}
+										}
+									} else {					
+										o_support = TRUE;
+										break;
+									}
+							}
+						}
+
+
+
 					}
 				}
 			}
-
-
-
-		 }
-	      }
-	   }
-	}
-     }
-
-
-    /* KJC 01/00: Warn if operator elabs mixed w/ applications */
-    if ( (thisAgent->o_support_calculation_type == 3 
-			|| thisAgent->o_support_calculation_type == 4 ) 
-			&& (o_support == TRUE)) {
-
-        if (op_elab == TRUE ) {
-
-			/* warn user about mixed actions */
-			if ( thisAgent->o_support_calculation_type == 3 ) {
-
-				print_with_symbols(thisAgent, "\nWARNING:  operator elaborations mixed with operator applications\nget o_support in prod %y", inst->prod->name);
-				
-				growable_string gs = make_blank_growable_string(thisAgent);
-				add_to_growable_string(thisAgent, &gs, "WARNING:  operator elaborations mixed with operator applications\nget o_support in prod ");
-				add_to_growable_string(thisAgent, &gs, symbol_to_string(thisAgent, inst->prod->name, true, 0, 0));
-				xml_generate_warning(thisAgent, text_of_growable_string(gs));
-				free_growable_string(thisAgent, gs);
-
-				o_support = TRUE;
-			} else if ( thisAgent->o_support_calculation_type == 4 ) {
-				print_with_symbols(thisAgent, "\nWARNING:  operator elaborations mixed with operator applications\nget i_support in prod %y", inst->prod->name);
-
-				growable_string gs = make_blank_growable_string(thisAgent);
-				add_to_growable_string(thisAgent, &gs, "WARNING:  operator elaborations mixed with operator applications\nget i_support in prod ");
-				add_to_growable_string(thisAgent, &gs, symbol_to_string(thisAgent, inst->prod->name, true, 0, 0));
-				xml_generate_warning(thisAgent, text_of_growable_string(gs));
-				free_growable_string(thisAgent, gs);
-
-				o_support = FALSE;
-			}
 		}
-    }
-
-	 /*
-     assign every preference the correct support
-     */  
-
-     for (pref=inst->preferences_generated; pref!=NIL; pref=pref->inst_next)
-       pref->o_supported = o_support;
-
-	 goto o_support_done;
-  }
-
-/* REW: end   09.15.96 */
+	}
 
 
-  /* --- initialize by giving everything NO o_support --- */  
-  for (pref=inst->preferences_generated; pref!=NIL; pref=pref->inst_next)
-    pref->o_supported = FALSE;
+	/* KJC 01/00: Warn if operator elabs mixed w/ applications */
+	if ( (thisAgent->o_support_calculation_type == 3 
+		|| thisAgent->o_support_calculation_type == 4 ) 
+		&& (o_support == TRUE)) {
 
-  /* --- find the match goal, match state, and match operator --- */
-  match_goal = inst->match_goal;
-  if (!match_goal) goto o_support_done;  /* nothing gets o-support */
+			if (op_elab == TRUE ) {
 
-  match_state = match_goal;
+				/* warn user about mixed actions */
+				if ( thisAgent->o_support_calculation_type == 3 ) {
 
-  match_operator_wme = match_goal->id.operator_slot->wmes;
-  if (match_operator_wme)
-    match_operator = match_operator_wme->value;
-  else
-    match_operator = NIL;
+					print_with_symbols(thisAgent, "\nWARNING:  operator elaborations mixed with operator applications\nget o_support in prod %y", inst->prod->name);
 
-  lhs = inst->top_of_instantiated_conditions;
-  rhs = inst->preferences_generated;
-  
-  /* --- scan through rhs to look for various things --- */
-  rhs_does_an_operator_creation = FALSE;  
+					growable_string gs = make_blank_growable_string(thisAgent);
+					add_to_growable_string(thisAgent, &gs, "WARNING:  operator elaborations mixed with operator applications\nget o_support in prod ");
+					add_to_growable_string(thisAgent, &gs, symbol_to_string(thisAgent, inst->prod->name, true, 0, 0));
+					xml_generate_warning(thisAgent, text_of_growable_string(gs));
+					free_growable_string(thisAgent, gs);
 
-  for (pref=rhs; pref!=NIL; pref=pref->inst_next) {
-    if ((pref->id==match_goal) &&
-        (pref->attr==thisAgent->operator_symbol) &&
-        ((pref->type==ACCEPTABLE_PREFERENCE_TYPE) ||
-         (pref->type==REQUIRE_PREFERENCE_TYPE)) )
-      rhs_does_an_operator_creation = TRUE;
-  }
+					o_support = TRUE;
+				} else if ( thisAgent->o_support_calculation_type == 4 ) {
+					print_with_symbols(thisAgent, "\nWARNING:  operator elaborations mixed with operator applications\nget i_support in prod %y", inst->prod->name);
 
-  /* --- scan through lhs to look for various tests --- */
-  lhs_tests_operator_acceptable_or_installed = FALSE;
-  lhs_tests_operator_installed = FALSE;
-  lhs_is_known_to_test_something_off_match_state = FALSE;
-  lhs_is_known_to_test_something_off_match_operator = FALSE;
+					growable_string gs = make_blank_growable_string(thisAgent);
+					add_to_growable_string(thisAgent, &gs, "WARNING:  operator elaborations mixed with operator applications\nget i_support in prod ");
+					add_to_growable_string(thisAgent, &gs, symbol_to_string(thisAgent, inst->prod->name, true, 0, 0));
+					xml_generate_warning(thisAgent, text_of_growable_string(gs));
+					free_growable_string(thisAgent, gs);
 
-  for (c=lhs; c!=NIL; c=c->next) {
-    if (c->type!=POSITIVE_CONDITION) continue;
-    w = c->bt.wme_;
-    /* For NNPSCM, count something as "off the match state" only
-       if it's not the OPERATOR. */
-    if ((w->id==match_state) && (w->attr != thisAgent->operator_symbol))
-      lhs_is_known_to_test_something_off_match_state = TRUE;
-    if (w->id==match_operator)
-      lhs_is_known_to_test_something_off_match_operator = TRUE;
-    if (w==match_operator_wme) lhs_tests_operator_installed = TRUE;
-    if ((w->id==match_goal)&&(w->attr==thisAgent->operator_symbol))
-      lhs_tests_operator_acceptable_or_installed = TRUE;
-  }
+					o_support = FALSE;
+				}
+			}
+	}
 
-  /* --- calcluate lhs support flags --- */
-  oa_support_possible = lhs_tests_operator_installed;
-  oc_support_possible = rhs_does_an_operator_creation; 
-  om_support_possible = lhs_tests_operator_acceptable_or_installed;
+	/*
+	assign every preference the correct support
+	*/  
 
-  if ((!oa_support_possible)&&(!oc_support_possible)&&(!om_support_possible))
-    goto o_support_done;
-
-  if (! lhs_is_known_to_test_something_off_match_state) {
-    begin_os_tc (thisAgent, NIL);
-    add_to_os_tc_if_id (thisAgent, match_state, TRUE);
-    if (! id_or_value_of_condition_list_is_in_os_tc (thisAgent, lhs, match_state,
-                                                     match_state)) {
-      oc_support_possible = FALSE;
-      om_support_possible = FALSE;
-    }
-  }
-
-  if (oa_support_possible) {
-    if (! lhs_is_known_to_test_something_off_match_operator) {
-      begin_os_tc (thisAgent, NIL);
-      add_to_os_tc_if_id (thisAgent, match_operator,FALSE);
-      if (! id_or_value_of_condition_list_is_in_os_tc (thisAgent, lhs, match_operator,
-                                                       NIL))
-        oa_support_possible = FALSE;
-    }
-  }
-
-  /* --- look for rhs oa support --- */
-  if (oa_support_possible) {
-    begin_os_tc (thisAgent, rhs);
-    add_to_os_tc_if_id (thisAgent, match_state,TRUE);
-    for (pref=rhs; pref!=NIL; pref=pref->inst_next) {
-      if (pref->id->id.tc_num==thisAgent->o_support_tc)
-        /* RBD 8/19/94 added extra NNPSCM test -- ^operator augs on the state
-                                                  don't get o-support */
-/* AGR 639 begin 94.11.01 */
-	/* gap 10/6/94 You need to check the id on all preferences that have
-	   an attribute of operator to see if this is an operator slot of a
-	   context being modified. */
-	if (!((pref->attr == thisAgent->operator_symbol) && 
-	    (is_state_id(thisAgent, pref->id,match_state))))
-/* AGR 639 end */
-        pref->o_supported = TRUE;
-    }
-  }
-
-  /* --- look for rhs oc support --- */
-  if (oc_support_possible) {
-    begin_os_tc (thisAgent, rhs);
-    for (pref=rhs; pref!=NIL; pref=pref->inst_next) {
-      if ((pref->id==match_goal) &&
-          (pref->attr==thisAgent->operator_symbol) &&
-          ((pref->type==ACCEPTABLE_PREFERENCE_TYPE) ||
-           (pref->type==REQUIRE_PREFERENCE_TYPE)) ) {
-          add_to_os_tc_if_id (thisAgent, pref->value,FALSE);
-      }
-    }
-    for (pref=rhs; pref!=NIL; pref=pref->inst_next) {
-      /* SBH 6/23/94 */
-      if ((pref->id->id.tc_num==thisAgent->o_support_tc) &&
-	  (pref->id != match_state))
-	/* SBH: Added 2nd test to avoid circular assignment of o-support
-	   to augmentations of the state: in, e.g.
-	   (sp p2
-             (state <g> ^problem-space)(state <ig> ^problem-space.name top-ps)
-	      -->
-	      (<g> ^operator <o>)(<o> ^name opx ^circular-goal-test <ig>))
-	   Here, the op acc. pref would get o-support (it's in the transitive
-	   closure); this test rules it out.
-	   
-	   BUGBUG: this is not fully general; it does not rule out assiging
-	   o-support to substructures of the state that are in the TC of an
-	   operator creation; e.g.
-	   (sp p2
-             (state <g> ^problem-space)(state <ig> ^problem-space.name top-ps)
-	      -->
-	      (<g> ^operator <o> ^other <x>)
-	      (<o> ^name opx ^circular-goal-test <ig>)
-	      (<x> ^THIS-GETS-O-SUPPORT T))
-	 */
-      /* end SBH 6/23/94 */
-        pref->o_supported = TRUE;
-    }
-  }
-  
-  /* --- look for rhs om support --- */
-  if (om_support_possible) {
-    begin_os_tc (thisAgent, rhs);
-    for (c=inst->top_of_instantiated_conditions; c!=NIL; c=c->next)
-      if (c->type==POSITIVE_CONDITION) {
-        w = c->bt.wme_;
-        if ((w->id==match_goal) && (w->attr==thisAgent->operator_symbol))
-          add_to_os_tc_if_id (thisAgent, w->value, FALSE);
-      }
-    for (pref=rhs; pref!=NIL; pref=pref->inst_next)
-      if (pref->id->id.tc_num==thisAgent->o_support_tc)
-        pref->o_supported = TRUE;
-  }
-
-  o_support_done:  {}
+	for (pref=inst->preferences_generated; pref!=NIL; pref=pref->inst_next)
+		pref->o_supported = o_support;
 }
 
 /* -----------------------------------------------------------------------
@@ -1022,243 +851,239 @@ void add_tc_through_lhs_and_rhs (agent* thisAgent, condition *lhs, action *rhs,
    the support doesn't matter.)
 ----------------------------------------------------------------------- */
 
-void calculate_compile_time_o_support (agent* thisAgent, condition *lhs, 
-									   action *rhs) {
-  list *known_goals;
-  cons *c;
-  Symbol  *match_state, *match_operator;
-  yes_no_maybe lhs_oa_support, lhs_oc_support, lhs_om_support;
-  action *a;
-  condition *cond;
-  yes_no_maybe ynm;
-  Bool operator_found, possible_operator_found;
-  tc_number tc;
+void calculate_compile_time_o_support (agent* thisAgent, condition *lhs, action *rhs) {
+	list *known_goals;
+	cons *c;
+	Symbol  *match_state, *match_operator;
+	yes_no_maybe lhs_oa_support, lhs_oc_support, lhs_om_support;
+	action *a;
+	condition *cond;
+	yes_no_maybe ynm;
+	Bool operator_found, possible_operator_found;
+	tc_number tc;
 
-  /* --- initialize:  mark all rhs actions as "unknown" --- */
-  for (a=rhs; a!=NIL; a=a->next)
-    if (a->type==MAKE_ACTION) a->support=UNKNOWN_SUPPORT;
+	/* --- initialize:  mark all rhs actions as "unknown" --- */
+	for (a=rhs; a!=NIL; a=a->next)
+		if (a->type==MAKE_ACTION) a->support=UNKNOWN_SUPPORT;
 
-  /* --- if "operator" doesn't appear in any LHS attribute slot, and there
-         are no RHS +/! makes for "operator", then nothing gets support --- */
-  operator_found = FALSE;
-  possible_operator_found = FALSE;
-  for (cond=lhs; cond!=NIL; cond=cond->next) {
-    if (cond->type != POSITIVE_CONDITION) continue;
-    ynm = test_is_for_symbol (cond->data.tests.attr_test, thisAgent->operator_symbol);
-    if (ynm==YES) { operator_found = possible_operator_found = TRUE; break; }
-    if (ynm==MAYBE) possible_operator_found = TRUE;
-  }
-  if (! operator_found)
-    for (a=rhs; a!=NIL; a=a->next) {
-      if (a->type != MAKE_ACTION) continue;
-      if (rhs_value_is_symbol(a->attr)) { /* RBD 3/29/95 general RHS attr's */
-        Symbol *attr;
-        attr = rhs_value_to_symbol(a->attr);
-        if (attr==thisAgent->operator_symbol)
-          { operator_found = possible_operator_found = TRUE; break; }
-        if (attr->common.symbol_type==VARIABLE_SYMBOL_TYPE)
-          possible_operator_found = TRUE;
-      } else {
-        possible_operator_found = TRUE; /* for funcall, must play it safe */
-      }
-    }
-  if (! possible_operator_found) {
-    for (a=rhs; a!=NIL; a=a->next) {
-      if (a->type == MAKE_ACTION) a->support=I_SUPPORT;
-    }
-    return;
-  }
+	/* --- if "operator" doesn't appear in any LHS attribute slot, and there
+	are no RHS +/! makes for "operator", then nothing gets support --- */
+	operator_found = FALSE;
+	possible_operator_found = FALSE;
+	for (cond=lhs; cond!=NIL; cond=cond->next) {
+		if (cond->type != POSITIVE_CONDITION) continue;
+		ynm = test_is_for_symbol (cond->data.tests.attr_test, thisAgent->operator_symbol);
+		if (ynm==YES) { operator_found = possible_operator_found = TRUE; break; }
+		if (ynm==MAYBE) possible_operator_found = TRUE;
+	}
+	if (! operator_found) {
+		for (a=rhs; a!=NIL; a=a->next) {
+			if (a->type != MAKE_ACTION) continue;
+			if (rhs_value_is_symbol(a->attr)) { /* RBD 3/29/95 general RHS attr's */
+				Symbol *attr;
+				attr = rhs_value_to_symbol(a->attr);
+				if (attr==thisAgent->operator_symbol)
+				{ operator_found = possible_operator_found = TRUE; break; }
+				if (attr->common.symbol_type==VARIABLE_SYMBOL_TYPE)
+					possible_operator_found = TRUE;
+			} else {
+				possible_operator_found = TRUE; /* for funcall, must play it safe */
+			}
+		}
+	}
+	if (! possible_operator_found) {
+		for (a=rhs; a!=NIL; a=a->next) {
+			if (a->type == MAKE_ACTION) a->support=I_SUPPORT;
+		}
+		return;
+	}
 
+	/* --- find known goals; RHS augmentations of goals get no support --- */
+	known_goals = find_known_goals (thisAgent, lhs);
+	/* SBH: In NNPSCM, the only RHS-goal augmentations that can't get support are
+	preferences for the "operator" slot. */
+	for (c=known_goals; c!=NIL; c=c->rest) {
+		for (a=rhs; a!=NIL; a=a->next) {
+			if (a->type != MAKE_ACTION) continue;
+			if (rhs_value_is_symbol(a->attr) &&  /* RBD 3/29/95 */
+				rhs_value_to_symbol(a->attr)==thisAgent->operator_symbol &&
+				(rhs_value_to_symbol(a->id) == c->first))
+				a->support = I_SUPPORT;
+		}
+	}
 
-  /* --- find known goals; RHS augmentations of goals get no support --- */
-  known_goals = find_known_goals (thisAgent, lhs);
- /* SBH: In NNPSCM, the only RHS-goal augmentations that can't get support are
-    preferences for the "operator" slot. */
-  for (c=known_goals; c!=NIL; c=c->rest)
-    for (a=rhs; a!=NIL; a=a->next) {
-      if (a->type != MAKE_ACTION) continue;
-      if (rhs_value_is_symbol(a->attr) &&  /* RBD 3/29/95 */
-          rhs_value_to_symbol(a->attr)==thisAgent->operator_symbol &&
-          (rhs_value_to_symbol(a->id) == c->first))
-        a->support = I_SUPPORT;
-    }
-
-  /* --- find match goal, state, and operator --- */
-  match_state = find_compile_time_match_goal (thisAgent, lhs, known_goals);
-  free_list (thisAgent, known_goals);
-  if (!match_state) return;
-  match_operator = find_thing_off_goal (thisAgent, lhs, match_state, thisAgent->operator_symbol);
-  /* --- If when checking (above) for "operator" appearing anywhere, we
-     found a possible operator but not a definite operator, now go back and
-     see if the possible operator was actually the match goal or match state;
-     if so, it's not a possible operator.  (Note:  by "possible operator" I
-     mean something appearing in the *attribute* field that might get bound
-     to the symbol "operator".)  --- */
-  if (possible_operator_found && !operator_found) {
-    possible_operator_found = FALSE;
-    for (cond=lhs; cond!=NIL; cond=cond->next) {
-      if (cond->type != POSITIVE_CONDITION) continue;
-      ynm = test_is_for_symbol (cond->data.tests.attr_test, thisAgent->operator_symbol);
-      if ((ynm!=NO) &&
-          (test_is_for_symbol (cond->data.tests.attr_test, match_state)!=YES))
-        { possible_operator_found = TRUE; break; }
-    }
-    if (! possible_operator_found) {
-      for (a=rhs; a!=NIL; a=a->next) {
-        if (a->type != MAKE_ACTION) continue;
-        /* we're looking for "operator" augs of goals only, and match_state
-           couldn't get bound to a goal */
-        if (rhs_value_to_symbol(a->id) == match_state) continue;
-        if (rhs_value_is_symbol(a->attr)) { /* RBD 3/29/95 */
-          Symbol *attr;
-          attr = rhs_value_to_symbol(a->attr);
-          if ((attr->common.symbol_type==VARIABLE_SYMBOL_TYPE) &&
-              (attr != match_state))
-            { possible_operator_found = TRUE; break; }
-        } else { /* RBD 3/29/95 */
-          possible_operator_found = TRUE; break;
-        }
-      }
-    }
-    if (! possible_operator_found) {
-      for (a=rhs; a!=NIL; a=a->next)
-        if (a->type == MAKE_ACTION) a->support=I_SUPPORT;
-      return;
-    }
-  }
+	/* --- find match goal, state, and operator --- */
+	match_state = find_compile_time_match_goal (thisAgent, lhs, known_goals);
+	free_list (thisAgent, known_goals);
+	if (!match_state) return;
+	match_operator = find_thing_off_goal (thisAgent, lhs, match_state, thisAgent->operator_symbol);
+	/* --- If when checking (above) for "operator" appearing anywhere, we
+	found a possible operator but not a definite operator, now go back and
+	see if the possible operator was actually the match goal or match state;
+	if so, it's not a possible operator.  (Note:  by "possible operator" I
+	mean something appearing in the *attribute* field that might get bound
+	to the symbol "operator".)  --- */
+	if (possible_operator_found && !operator_found) {
+		possible_operator_found = FALSE;
+		for (cond=lhs; cond!=NIL; cond=cond->next) {
+			if (cond->type != POSITIVE_CONDITION) continue;
+			ynm = test_is_for_symbol (cond->data.tests.attr_test, thisAgent->operator_symbol);
+			if ((ynm!=NO) &&
+				(test_is_for_symbol (cond->data.tests.attr_test, match_state)!=YES))
+			{ possible_operator_found = TRUE; break; }
+		}
+		if (! possible_operator_found) {
+			for (a=rhs; a!=NIL; a=a->next) {
+				if (a->type != MAKE_ACTION) continue;
+				/* we're looking for "operator" augs of goals only, and match_state
+				couldn't get bound to a goal */
+				if (rhs_value_to_symbol(a->id) == match_state) continue;
+				if (rhs_value_is_symbol(a->attr)) { /* RBD 3/29/95 */
+					Symbol *attr;
+					attr = rhs_value_to_symbol(a->attr);
+					if ((attr->common.symbol_type==VARIABLE_SYMBOL_TYPE) &&
+						(attr != match_state))
+					{ possible_operator_found = TRUE; break; }
+				} else { /* RBD 3/29/95 */
+					possible_operator_found = TRUE; break;
+				}
+			}
+		}
+		if (! possible_operator_found) {
+			for (a=rhs; a!=NIL; a=a->next)
+				if (a->type == MAKE_ACTION) a->support=I_SUPPORT;
+			return;
+		}
+	}
   
-  /* --- calculate LHS support predicates --- */
-  lhs_oa_support = MAYBE;
-  if (match_operator)
-
-/* SBH 7/1/94 #2 */
-    if ((condition_list_has_id_test_for_sym (lhs, match_operator)) &&
-	(match_state_tests_non_operator_slot(thisAgent, lhs,match_state)))
-/* end SBH 7/1/94 #2 */
-
-      lhs_oa_support = YES;
-
-  lhs_oc_support = MAYBE;
-  lhs_om_support = MAYBE;
-
-/* SBH 7/1/94 #2 */
-  /* For NNPSCM, must test that there is a test of a non-operator slot off 
-     of the match_state. */
-  if (match_state_tests_non_operator_slot(thisAgent, lhs,match_state)) 
-    {
-/* end SBH 7/1/94 #2 */
-
-    lhs_oc_support = YES; 
-    for (cond=lhs; cond!=NIL; cond=cond->next) {
-      if (cond->type != POSITIVE_CONDITION) continue;
-      if (test_is_for_symbol (cond->data.tests.id_test, match_state) != YES) continue;
-      if (test_is_for_symbol (cond->data.tests.attr_test, thisAgent->operator_symbol)
-          != YES)
-        continue;
-      lhs_om_support = YES;
-      break;
-    }
-  }     
-
-  if (lhs_oa_support == YES) {    /* --- look for RHS o-a support --- */
-    /* --- do TC(match_state) --- */
-    tc = get_new_tc_number(thisAgent);
-    add_symbol_to_tc (thisAgent, match_state, tc, NIL, NIL);
-    add_tc_through_lhs_and_rhs (thisAgent, lhs, rhs, tc, NIL, NIL);
-
-    /* --- any action with id in the TC gets support --- */
-    for (a=rhs; a!=NIL; a=a->next)  {
-
-      if (action_is_in_tc (a, tc)) {
-	/* SBH 7/1/94 Avoid resetting of support that was previously set to I_SUPPORT. */
-	/* gap 10/6/94 If the action has an attribue of operator, then you
-	   don't know if it should get o-support until run time because of
-	   the vagaries of knowing when this is matching a context object
-	   or not. */
-        if (rhs_value_is_symbol(a->attr) &&
-            (rhs_value_to_symbol(a->attr)==thisAgent->operator_symbol)) {
-	  if (a->support != I_SUPPORT) a->support = UNKNOWN_SUPPORT;
-	} else {
-	  if (a->support != I_SUPPORT) a->support = O_SUPPORT;
+	/* --- calculate LHS support predicates --- */
+	lhs_oa_support = MAYBE;
+	if (match_operator) {
+		/* SBH 7/1/94 #2 */
+		if ((condition_list_has_id_test_for_sym (lhs, match_operator)) &&
+			(match_state_tests_non_operator_slot(thisAgent, lhs,match_state))) {
+				/* end SBH 7/1/94 #2 */
+				lhs_oa_support = YES;
+		}
 	}
+
+	lhs_oc_support = MAYBE;
+	lhs_om_support = MAYBE;
+
+	/* SBH 7/1/94 #2 */
+	/* For NNPSCM, must test that there is a test of a non-operator slot off 
+	of the match_state. */
+	if (match_state_tests_non_operator_slot(thisAgent, lhs,match_state)) 
+	{
+		/* end SBH 7/1/94 #2 */
+
+		lhs_oc_support = YES; 
+		for (cond=lhs; cond!=NIL; cond=cond->next) {
+			if (cond->type != POSITIVE_CONDITION) continue;
+			if (test_is_for_symbol (cond->data.tests.id_test, match_state) != YES) continue;
+			if (test_is_for_symbol (cond->data.tests.attr_test, thisAgent->operator_symbol)
+				!= YES)
+				continue;
+			lhs_om_support = YES;
+			break;
+		}
+	}     
+
+	if (lhs_oa_support == YES) {    /* --- look for RHS o-a support --- */
+		/* --- do TC(match_state) --- */
+		tc = get_new_tc_number(thisAgent);
+		add_symbol_to_tc (thisAgent, match_state, tc, NIL, NIL);
+		add_tc_through_lhs_and_rhs (thisAgent, lhs, rhs, tc, NIL, NIL);
+
+		/* --- any action with id in the TC gets support --- */
+		for (a=rhs; a!=NIL; a=a->next)  {
+
+			if (action_is_in_tc (a, tc)) {
+				/* SBH 7/1/94 Avoid resetting of support that was previously set to I_SUPPORT. */
+				/* gap 10/6/94 If the action has an attribue of operator, then you
+				don't know if it should get o-support until run time because of
+				the vagaries of knowing when this is matching a context object
+				or not. */
+				if (rhs_value_is_symbol(a->attr) &&
+					(rhs_value_to_symbol(a->attr)==thisAgent->operator_symbol)) {
+						if (a->support != I_SUPPORT) a->support = UNKNOWN_SUPPORT;
+				} else {
+					if (a->support != I_SUPPORT) a->support = O_SUPPORT;
+				}
+			}
+			/* end SBH 7/1/94 */
+		}
 	}
-        /* end SBH 7/1/94 */
+
+	if (lhs_oc_support == YES) {    /* --- look for RHS o-c support --- */
+		/* --- do TC(rhs operators) --- */
+		tc = get_new_tc_number(thisAgent);
+		for (a=rhs; a!=NIL; a=a->next) {
+			if (a->type != MAKE_ACTION) continue;
+			if (
+				(rhs_value_to_symbol(a->id)==match_state) &&
+				(rhs_value_is_symbol(a->attr)) &&
+				(rhs_value_to_symbol(a->attr)==thisAgent->operator_symbol) &&
+				((a->preference_type==ACCEPTABLE_PREFERENCE_TYPE) ||
+				(a->preference_type==REQUIRE_PREFERENCE_TYPE)) ) {
+					if (rhs_value_is_symbol(a->value)) {
+						add_symbol_to_tc (thisAgent, rhs_value_to_symbol(a->value), tc, NIL,NIL);
+					}
+			}
+		}
+		add_tc_through_lhs_and_rhs (thisAgent, lhs, rhs, tc, NIL, NIL);
+
+		/* --- any action with id in the TC gets support --- */
+		for (a=rhs; a!=NIL; a=a->next)  {
+
+
+			if (action_is_in_tc (a, tc)) {
+
+				/* SBH 6/7/94:
+				Make sure the action is not already marked as "I_SUPPORT".  This
+				avoids giving o-support in the case where the operator
+				points back to the goal, thus adding the goal to the TC,
+				thus adding the operator proposal itself to the TC; thus
+				giving o-support to an operator proposal.
+				*/
+				if (a->support != I_SUPPORT) a->support = O_SUPPORT;
+				/* End SBH 6/7/94 */
+
+
+				/* REW: begin 09.15.96 */
+				/* in operand, operator proposals are now only i-supported.*/
+				if (thisAgent->soar_verbose_flag == TRUE) {
+					printf("\n         operator creation: setting a->support to I_SUPPORT");
+					xml_generate_verbose(thisAgent, "operator creation: setting a->support to I_SUPPORT");
+				}
+				a->support = I_SUPPORT;
+				/* REW: end   09.15.96 */
+
+			}
+		}
 	}
-  }
-  
-  if (lhs_oc_support == YES) {    /* --- look for RHS o-c support --- */
-    /* --- do TC(rhs operators) --- */
-    tc = get_new_tc_number(thisAgent);
-    for (a=rhs; a!=NIL; a=a->next) {
-      if (a->type != MAKE_ACTION) continue;
-      if (
-	  (rhs_value_to_symbol(a->id)==match_state) &&
-          (rhs_value_is_symbol(a->attr)) &&
-          (rhs_value_to_symbol(a->attr)==thisAgent->operator_symbol) &&
-          ((a->preference_type==ACCEPTABLE_PREFERENCE_TYPE) ||
-           (a->preference_type==REQUIRE_PREFERENCE_TYPE)) ) {
-        if (rhs_value_is_symbol(a->value)) {
-          add_symbol_to_tc (thisAgent, rhs_value_to_symbol(a->value), tc, NIL,NIL);
+
+	if (lhs_om_support == YES) {    /* --- look for RHS o-m support --- */
+		/* --- do TC(lhs operators) --- */
+		tc = get_new_tc_number(thisAgent);
+		for (cond=lhs; cond!=NIL; cond=cond->next) {
+			if (cond->type != POSITIVE_CONDITION) continue;
+			if (test_is_for_symbol (cond->data.tests.id_test, match_state) == YES) {
+				if (test_is_for_symbol (cond->data.tests.attr_test, thisAgent->operator_symbol) == YES) {
+					add_bound_variables_in_test (thisAgent, cond->data.tests.value_test, tc, NIL);
+				}
+			}
+		}
+		add_tc_through_lhs_and_rhs (thisAgent, lhs, rhs, tc, NIL, NIL);
+
+		/* --- any action with id in the TC gets support --- */
+		for (a=rhs; a!=NIL; a=a->next) {
+			if (action_is_in_tc (a, tc)) {
+				/* SBH 7/1/94 Avoid resetting of support that was previously set to I_SUPPORT. */
+				if (a->support != I_SUPPORT) a->support = O_SUPPORT;
+				/* end SBH 7/1/94 */
+			}
+		}
 	}
-      }
-    }
-    add_tc_through_lhs_and_rhs (thisAgent, lhs, rhs, tc, NIL, NIL);
-
-    /* --- any action with id in the TC gets support --- */
-    for (a=rhs; a!=NIL; a=a->next) 
-
-
-      if (action_is_in_tc (a, tc)) {
-
-	/* SBH 6/7/94:
-	   Make sure the action is not already marked as "I_SUPPORT".  This
-	   avoids giving o-support in the case where the operator
-	   points back to the goal, thus adding the goal to the TC,
-	   thus adding the operator proposal itself to the TC; thus
-	   giving o-support to an operator proposal.
-	*/
-	if (a->support != I_SUPPORT) a->support = O_SUPPORT;
-	/* End SBH 6/7/94 */
-
-
-       /* REW: begin 09.15.96 */
-       /*
-       in operand, operator proposals are now only i-supported.
-       */
-
-       if (thisAgent->operand2_mode == TRUE) {
-           if (thisAgent->soar_verbose_flag == TRUE) {
-               printf("\n         operator creation: setting a->support to I_SUPPORT");
-               xml_generate_verbose(thisAgent, "operator creation: setting a->support to I_SUPPORT");
-           }
-
-	  a->support = I_SUPPORT;
-       }
-       /* REW: end   09.15.96 */
-
-      }
-  }
-
-  if (lhs_om_support == YES) {    /* --- look for RHS o-m support --- */
-    /* --- do TC(lhs operators) --- */
-    tc = get_new_tc_number(thisAgent);
-    for (cond=lhs; cond!=NIL; cond=cond->next) {
-      if (cond->type != POSITIVE_CONDITION) continue;
-      if (test_is_for_symbol (cond->data.tests.id_test, match_state) == YES)
-        if (test_is_for_symbol (cond->data.tests.attr_test, thisAgent->operator_symbol)
-            == YES)
-          add_bound_variables_in_test (thisAgent, cond->data.tests.value_test, tc, NIL);
-    }
-    add_tc_through_lhs_and_rhs (thisAgent, lhs, rhs, tc, NIL, NIL);
-
-    /* --- any action with id in the TC gets support --- */
-    for (a=rhs; a!=NIL; a=a->next) 
-
-      if (action_is_in_tc (a, tc)) {
-	/* SBH 7/1/94 Avoid resetting of support that was previously set to I_SUPPORT. */
-	if (a->support != I_SUPPORT) a->support = O_SUPPORT;
-	/* end SBH 7/1/94 */
-      }
-  }
 }
 

@@ -299,7 +299,7 @@ bool Socket::IsReadDataAvailable(long secondsWait, long millisecondsWait)
 	zero.tv_usec = millisecondsWait * 1000 ;
 
 	// Check if anything is waiting to be read
-	int res = select( (int)hSock + 1, &set, NULL, NULL, &zero) ;
+	int res = select( static_cast<int>(hSock) + 1, &set, NULL, NULL, &zero) ;
 
 	// Did an error occur?
 	if (res == SOCKET_ERROR)

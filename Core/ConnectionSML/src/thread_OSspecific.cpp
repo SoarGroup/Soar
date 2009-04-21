@@ -59,7 +59,7 @@ public:
 
 		// LowPart is just the low order 32 bits
 		double elapsed = now.LowPart ;
-		double ms = (elapsed * 1000) / (double)frequency.LowPart ;
+		double ms = (elapsed * 1000.0) / frequency.LowPart ;
 		return ms ;
 	}
 } ;
@@ -293,8 +293,8 @@ public:
 
 		gettimeofday( &end, &zone );
 
-		double t1 =  (double)start.tv_sec + (double)start.tv_usec/(1000*1000);
-		double t2 =  (double)end.tv_sec + (double)end.tv_usec/(1000*1000);
+		double t1 =  static_cast<double>(start.tv_sec) + static_cast<double>(start.tv_usec)/(1000*1000);
+		double t2 =  static_cast<double>(end.tv_sec) + static_cast<double>(end.tv_usec)/(1000*1000);
 
 		return t2 - t1 ;
 	}

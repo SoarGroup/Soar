@@ -85,16 +85,16 @@ void Agent::ReceivedEvent(AnalyzeXML* pIncoming, ElementXML* pResponse)
 
 	if (IsRunEventID(id))
 	{
-		ReceivedRunEvent((smlRunEventId)id, pIncoming, pResponse) ;
+		ReceivedRunEvent(smlRunEventId(id), pIncoming, pResponse) ;
 	} else if (IsProductionEventID(id))
 	{
-		ReceivedProductionEvent((smlProductionEventId)id, pIncoming, pResponse) ;
+		ReceivedProductionEvent(smlProductionEventId(id), pIncoming, pResponse) ;
 	} else if (IsPrintEventID(id))
 	{
-		ReceivedPrintEvent((smlPrintEventId)id, pIncoming, pResponse) ;
+		ReceivedPrintEvent(smlPrintEventId(id), pIncoming, pResponse) ;
 	} else if (IsXMLEventID(id))
 	{
-		ReceivedXMLEvent((smlXMLEventId)id, pIncoming, pResponse) ;
+		ReceivedXMLEvent(smlXMLEventId(id), pIncoming, pResponse) ;
 	}
 }
 
@@ -109,7 +109,7 @@ void Agent::ReceivedRunEvent(smlRunEventId id, AnalyzeXML* pIncoming, ElementXML
 {
 	unused(pResponse) ;
 
-	smlPhase phase = (smlPhase)pIncoming->GetArgInt(sml_Names::kParamPhase, -1) ;
+	smlPhase phase = smlPhase(pIncoming->GetArgInt(sml_Names::kParamPhase, -1)) ;
 
 	// Look up the handler(s) from the map
 	RunEventMap::ValueList* pHandlers = m_RunEventMap.getList(id) ;
@@ -1108,7 +1108,7 @@ Identifier* Agent::GetCommand(int index)
 		if (pWME->IsIdentifier() && pWME->IsJustAdded())
 		{
 			if (index == 0)
-				return (Identifier*)pWME ;
+				return static_cast<Identifier*>(pWME) ;
 			index-- ;
 		}
 	}
@@ -1302,7 +1302,8 @@ char const* Agent::RunSelf(unsigned long numberSteps, smlRunStepSize stepSize)
 #ifdef SML_DIRECT
 		if (GetConnection()->IsDirectConnection())
 		{
-			((EmbeddedConnection*)GetConnection())->DirectRun(this->GetAgentName(), false, stepSize, sml_DECISION, (int)numberSteps) ;
+			EmbeddedConnection* ec = static_cast<EmbeddedConnection*>(GetConnection());
+			ec->DirectRun(this->GetAgentName(), false, stepSize, sml_DECISION, int(numberSteps)) ;
 			return "DirectRun completed" ;
 		}
 #endif
@@ -1342,7 +1343,8 @@ char const* Agent::RunSelfForever()
 #ifdef SML_DIRECT
 		if (GetConnection()->IsDirectConnection())
 		{
-			((EmbeddedConnection*)GetConnection())->DirectRun(this->GetAgentName(), true, sml_DECISION, sml_PHASE, 1) ;
+			EmbeddedConnection*	ec = static_cast<EmbeddedConnection*>(GetConnection());
+			ec->DirectRun(this->GetAgentName(), true, sml_DECISION, sml_PHASE, 1) ;
 			return "DirectRun completed" ;
 		}
 #endif
@@ -1385,7 +1387,7 @@ smlRunResult Agent::GetResultOfLastRun()
 	if (!ok)
 		return sml_RUN_ERROR ;
 
-	smlRunResult result = (smlRunResult)response.GetResultInt((int)sml_RUN_ERROR) ;
+	smlRunResult result = smlRunResult(response.GetResultInt(int(sml_RUN_ERROR))) ;
 
 	return result ;
 }
@@ -1437,7 +1439,8 @@ char const* Agent::RunSelfTilOutput()
 #ifdef SML_DIRECT
 		if (GetConnection()->IsDirectConnection())
 		{
-			((EmbeddedConnection*)GetConnection())->DirectRun(this->GetAgentName(), false, sml_UNTIL_OUTPUT, sml_PHASE, 1) ;
+			EmbeddedConnection*	ec = static_cast<EmbeddedConnection*>(GetConnection());
+			ec->DirectRun(this->GetAgentName(), false, sml_UNTIL_OUTPUT, sml_PHASE, 1) ;
 			return "DirectRun completed" ;
 		}
 #endif
@@ -1480,7 +1483,7 @@ smlPhase Agent::GetCurrentPhase()
 	if (!ok)
 		return sml_INPUT_PHASE ;
 
-	smlPhase phase = (smlPhase)response.GetResultInt((int)sml_INPUT_PHASE) ;
+	smlPhase phase = smlPhase(response.GetResultInt(int(sml_INPUT_PHASE))) ;
 
 	return phase ;
 }
@@ -1511,9 +1514,9 @@ smlRunState Agent::GetRunState()
 	bool ok = GetConnection()->SendAgentCommand(&response, sml_Names::kCommand_GetRunState, GetAgentName(), sml_Names::kParamValue, sml_Names::kParamRunState) ;
 
 	if (!ok)
-		return (smlRunState)0 ;
+		return smlRunState(0) ;
 
-	return (smlRunState)response.GetResultInt(0) ;
+	return smlRunState(response.GetResultInt(0)) ;
 }
 
 /*************************************************************

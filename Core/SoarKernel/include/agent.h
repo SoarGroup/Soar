@@ -288,6 +288,8 @@ typedef struct agent_struct {
   Symbol            * rl_sym_reward_link;
   Symbol            * rl_sym_reward;
   Symbol            * rl_sym_value;
+  Symbol			* rl_sym_final_update;
+  Symbol			* rl_sym_true;  
 
   Symbol            * epmem_sym;
   Symbol            * epmem_sym_cmd;
@@ -726,7 +728,6 @@ kernel time and total_cpu_time greater than the derived total CPU time. REW */
   
   /* ------------------- Experimental features ---------------------- */
   int                 o_support_calculation_type;
-  int                 attribute_preferences_mode;
 
   /* ------------------- Info about the agent itself ---------------------- */
   
@@ -768,7 +769,6 @@ kernel time and total_cpu_time greater than the derived total CPU time. REW */
   struct ms_change_struct * postponed_assertions;  /* New waterfall model: postponed assertion list */
 
   /* REW: begin 08.20.97 */
-  Bool       operand2_mode;
   goal_stack_level active_level;
   goal_stack_level previous_active_level;
   Symbol *active_goal;

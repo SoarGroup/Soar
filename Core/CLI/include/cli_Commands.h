@@ -15,7 +15,6 @@ namespace cli {
 	struct Commands {
 		static char const* kCLIAddWME;
 		static char const* kCLIAlias;
-		static char const* kCLIAttributePreferencesMode;
 		static char const* kCLICaptureInput;
 		static char const* kCLICD;
 		static char const* kCLIChunkNameFormat;
@@ -35,7 +34,6 @@ namespace cli {
 		static char const* kCLIHelp;
 		static char const* kCLIIndifferentSelection;
 		static char const* kCLIInitSoar;
-		static char const* kCLIInputPeriod;
 		static char const* kCLIInternalSymbols;
 		static char const* kCLILearn;
 		static char const* kCLILoadLibrary;
@@ -58,6 +56,7 @@ namespace cli {
 		static char const* kCLIPWatch;
 		static char const* kCLIPWD;
 		static char const* kCLIQuit;
+		static char const* kCLIRand;
 		static char const* kCLIRemoveWME;
 		static char const* kCLIReplayInput;
 		static char const* kCLIReteNet;
@@ -67,7 +66,6 @@ namespace cli {
 		static char const* kCLISelect;
 		static char const* kCLISetLibraryLocation;
 		static char const* kCLISMem;
-		static char const* kCLISoar8;
 		static char const* kCLISoarNews;
 		static char const* kCLISource;
 		static char const* kCLISP;

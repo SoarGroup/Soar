@@ -1,0 +1,1 @@
+sp {elaborate*halt (state <s> ^superstate nil) --> (halt)}

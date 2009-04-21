@@ -65,13 +65,8 @@ bool CommandLineInterface::ParsePrint(std::vector<std::string>& argv) {
 				break;
 			case 'd':
 				options.set(PRINT_DEPTH);
-				if (!IsInteger(m_OptionArgument)) {
-					return SetError(CLIError::kIntegerExpected);
-				}
-				depth = atoi(m_OptionArgument.c_str());
-				if (depth < 0) {
-					return SetError(CLIError::kIntegerMustBeNonNegative);
-				}
+				if ( !from_string( depth, m_OptionArgument ) ) return SetError(CLIError::kIntegerExpected);
+				if (depth < 0) return SetError(CLIError::kIntegerMustBeNonNegative);
 				break;
 			case 'D':
 				options.set(PRINT_DEFAULTS);

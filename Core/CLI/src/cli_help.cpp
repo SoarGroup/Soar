@@ -32,12 +32,84 @@ bool CommandLineInterface::ParseHelp(std::vector<std::string>& argv) {
 	return DoHelp();
 }
 
+bool CommandLineInterface::ListHelpTopics(const std::string& directory, std::list< std::string >& topics) {
+
+#ifdef WIN32
+	// Windows-specific directory listing
+	WIN32_FIND_DATA FindFileData;
+	HANDLE hFind;
+
+	std::stringstream fullpath;
+	fullpath << directory << "\\" << "*.*";
+
+	// Open a file find using the universal dos wildcard *.*
+	hFind = FindFirstFile( fullpath.str().c_str(), &FindFileData );
+	if ( hFind == INVALID_HANDLE_VALUE ) {
+		// Not a single file, or file system error, we'll just assume no files
+		return true;	
+	}
+
+	do {
+		if ( !( FindFileData.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY ) ) {
+			topics.push_back( std::string( FindFileData.cFileName ) );
+		}
+	} while ( FindNextFile(hFind, &FindFileData ) );
+
+	// Close the file find
+	FindClose( hFind );
+	return true;
+
+#else // WIN32
+	DIR* directoryPointer;
+	struct dirent* entry;
+
+	// Open the directory for reading
+	if ( ( directoryPointer = opendir( directory.c_str() ) ) == 0 ) {
+		return SetError(CLIError::kDirectoryOpenFailure);
+	}
+
+	// Read the files
+	errno = 0;
+	while ( ( entry = readdir( directoryPointer ) ) != 0 ) {
+		if ( entry->d_type != DT_DIR ) {
+			topics.push_back( std::string( entry->d_name ) );
+		}
+	}
+
+	// Check for error
+	if ( errno != 0 ) return SetError( CLIError::kDirectoryEntryReadFailure );
+
+	// Ignoring close error
+	closedir( directoryPointer );
+
+	return true;
+#endif // WIN32
+}
+
 bool CommandLineInterface::DoHelp(const std::string* pCommand) {
 
 	std::string helpFile;
 	if (!pCommand || !pCommand->size()) {
+		std::list< std::string > topics;
+		if ( !ListHelpTopics( m_LibraryDirectory + "/CLIHelp", topics ) ) {
+			return SetError( CLIError::kDirectoryOpenFailure );
+		}
+
+		if ( topics.size() == 0 ) {
+			SetErrorDetail("The library location appears to be incorrect, please use set-library-location <path> where path leads to SoarLibrary.");
+			return SetError(CLIError::kNoHelpFile);
+		}
+		
+		topics.sort();
+
+		std::list< std::string >::iterator iter = topics.begin();
 		m_Result << "Help is available for the following topics:\n";
-		helpFile = m_LibraryDirectory + "/CLIHelp/command-names";
+		while ( iter != topics.end() ) {
+			m_Result << "  " << *iter << std::endl;
+			++iter;
+		}
+		return true;
+
 	} else {
 		// check for aliases
 		if (m_Aliases.IsAlias(*pCommand)) {

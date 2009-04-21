@@ -204,16 +204,16 @@ Symbol *fp_divide_rhs_function_code (agent* thisAgent, list *args, void* /*user_
   if (! args->rest) {
     /* --- only one argument --- */
     arg = static_cast<symbol_union *>(args->first);
-    if (arg->common.symbol_type==INT_CONSTANT_SYMBOL_TYPE) f = (double)arg->ic.value;
+    if (arg->common.symbol_type==INT_CONSTANT_SYMBOL_TYPE) f = static_cast<double>(arg->ic.value);
     else f = arg->fc.value;
-    if (f != 0.0) return make_float_constant (thisAgent, (double)(1.0 / f));
+    if (f != 0.0) return make_float_constant (thisAgent, 1.0 / f);
     print (thisAgent, "Error: attempt to divide ('/') by zero.\n");
     return NIL;
   }
 
   /* --- two or more arguments --- */
   arg = static_cast<symbol_union *>(args->first);
-  if (arg->common.symbol_type==INT_CONSTANT_SYMBOL_TYPE) f = (double)arg->ic.value;
+  if (arg->common.symbol_type==INT_CONSTANT_SYMBOL_TYPE) f = static_cast<double>(arg->ic.value);
   else f = arg->fc.value;
   for (c=args->rest; c!=NIL; c=c->rest) {
     arg = static_cast<symbol_union *>(c->first);
@@ -315,13 +315,13 @@ Symbol *sin_rhs_function_code(agent* thisAgent, list *args, void* /*user_data*/)
     if (arg->common.symbol_type == FLOAT_CONSTANT_SYMBOL_TYPE)
 	arg_value = arg->fc.value;
     else if (arg->common.symbol_type == INT_CONSTANT_SYMBOL_TYPE)
-	arg_value = (double) arg->ic.value;
+	arg_value = static_cast<double>(arg->ic.value) ;
     else {
 	print_with_symbols(thisAgent, "Error: 'sin' function called with non-numeric argument %y\n", arg);
 	return NIL;
     }
 
-    return make_float_constant(thisAgent, (double)sin(arg_value));
+    return make_float_constant(thisAgent, sin(arg_value));
 }
 
 
@@ -344,12 +344,12 @@ Symbol *cos_rhs_function_code(agent* thisAgent, list *args, void* /*user_data*/)
     if (arg->common.symbol_type == FLOAT_CONSTANT_SYMBOL_TYPE)
 	arg_value = arg->fc.value;
     else if (arg->common.symbol_type == INT_CONSTANT_SYMBOL_TYPE)
-	arg_value = (double) arg->ic.value;
+	arg_value = static_cast<double>(arg->ic.value) ;
     else {
 	print_with_symbols(thisAgent, "Error: 'cos' function called with non-numeric argument %y\n", arg);
 	return NIL;
     }
-    return make_float_constant(thisAgent, (double)cos(arg_value));
+    return make_float_constant(thisAgent, cos(arg_value));
 }
 
 
@@ -372,12 +372,12 @@ Symbol *sqrt_rhs_function_code(agent* thisAgent, list *args, void* /*user_data*/
     if (arg->common.symbol_type == FLOAT_CONSTANT_SYMBOL_TYPE)
 	arg_value = arg->fc.value;
     else if (arg->common.symbol_type == INT_CONSTANT_SYMBOL_TYPE)
-	arg_value = (double)arg->ic.value;
+	arg_value = static_cast<double>(arg->ic.value);
     else {
 	print_with_symbols(thisAgent, "Error: 'sqrt' function called with non-numeric argument %y\n", arg);
 	return NIL;
     }
-    return make_float_constant(thisAgent, (double)sqrt(arg_value));
+    return make_float_constant(thisAgent, sqrt(arg_value));
 }
 
 
@@ -418,7 +418,7 @@ Symbol *atan2_rhs_function_code(agent* thisAgent, list *args, void* /*user_data*
     if (arg->common.symbol_type == FLOAT_CONSTANT_SYMBOL_TYPE)
 	numer_value = arg->fc.value;
     else
-	numer_value = (double) arg->ic.value;
+	numer_value = static_cast<double>(arg->ic.value) ;
 
     c = args->rest;
     if (c->rest) {
@@ -429,9 +429,9 @@ Symbol *atan2_rhs_function_code(agent* thisAgent, list *args, void* /*user_data*
     if (arg->common.symbol_type == FLOAT_CONSTANT_SYMBOL_TYPE)
 	denom_value = arg->fc.value;
     else
-	denom_value = (double) arg->ic.value;
+	denom_value = static_cast<double>(arg->ic.value) ;
 
-    return make_float_constant(thisAgent, (double)atan2(numer_value, denom_value));
+    return make_float_constant(thisAgent, atan2(numer_value, denom_value));
 }
 
 
@@ -452,7 +452,7 @@ Symbol *abs_rhs_function_code(agent* thisAgent, list *args, void* /*user_data*/)
 
     arg = static_cast<symbol_union *>(args->first);
     if (arg->common.symbol_type == FLOAT_CONSTANT_SYMBOL_TYPE)
-	return_value = make_float_constant(thisAgent, (double)fabs(arg->fc.value));
+	return_value = make_float_constant(thisAgent, fabs(arg->fc.value));
     else if (arg->common.symbol_type == INT_CONSTANT_SYMBOL_TYPE)
 	return_value = make_int_constant(thisAgent, (arg->ic.value<0) ? -arg->ic.value : arg->ic.value);
     else {
@@ -484,7 +484,7 @@ Symbol *int_rhs_function_code (agent* thisAgent, list *args, void* /*user_data*/
     return NIL;
   }
 
-  sym = (Symbol *) args->first;
+  sym = reinterpret_cast<Symbol *>(args->first);
   if (sym->common.symbol_type == VARIABLE_SYMBOL_TYPE) {
     print_with_symbols (thisAgent, "Error: variable (%y) passed to 'int' RHS function.\n",
 			sym);
@@ -509,8 +509,8 @@ Symbol *int_rhs_function_code (agent* thisAgent, list *args, void* /*user_data*/
     return sym;
   } else if (sym->common.symbol_type == FLOAT_CONSTANT_SYMBOL_TYPE) {
     double int_part;
-    modf((double)sym->fc.value, &int_part);
-    return make_int_constant(thisAgent, (long) int_part);
+    modf(sym->fc.value, &int_part);
+    return make_int_constant(thisAgent, static_cast<long>(int_part) );
   }
 
   print (thisAgent, "Error: unknown symbol type (%y) given to 'int' RHS function\n",
@@ -540,7 +540,7 @@ Symbol *float_rhs_function_code (agent* thisAgent, list *args, void* /*user_data
     return NIL;
   }
 
-  sym = (Symbol *) args->first;
+  sym = reinterpret_cast<Symbol *>(args->first);
   if (sym->common.symbol_type == VARIABLE_SYMBOL_TYPE) {
     print_with_symbols (thisAgent, "Error: variable (%y) passed to 'float' RHS function.\n",
 			sym);
@@ -559,12 +559,12 @@ Symbol *float_rhs_function_code (agent* thisAgent, list *args, void* /*user_data
 	     sym);
       return NIL;
     }
-    return make_float_constant (thisAgent, (double)float_val);
+    return make_float_constant (thisAgent, float_val);
   } else if (sym->common.symbol_type == FLOAT_CONSTANT_SYMBOL_TYPE) {
     symbol_add_ref(sym) ;
     return sym;
   } else if (sym->common.symbol_type == INT_CONSTANT_SYMBOL_TYPE) {
-    return make_float_constant(thisAgent, (double) sym->ic.value);
+    return make_float_constant(thisAgent, static_cast<double>(sym->ic.value) );
   }
 
   print (thisAgent, "Error: unknown symbol type (%y) given to 'float' RHS function\n",
@@ -616,9 +616,9 @@ long round_off_heading_int(long n, long m)
 
     /* need to round the first (i_n) to the nearest second (i_m) */
     if (n < 0)
-        unbounded_rounded = m * (long) ((n - (long) (m / 2)) / m);
+        unbounded_rounded = m * ((n - (m / 2L)) / m);
     else
-        unbounded_rounded = m * (long) ((n + (long) (m / 2)) / m);
+        unbounded_rounded = m * ((n + (m / 2L)) / m);
 
     return unbounded_rounded;
 }
@@ -632,24 +632,24 @@ double round_off_heading_float(double n, double m)
     /* OK.  Both n and m can have tenths, so multiply by 10 and treat
        as integers */
     modf((n * 10.0), &ip);
-    n_10 = (double) ip;
+    n_10 = ip;
     modf((m * 10.0), &ip);
-    m_10 = (double) ip;
+    m_10 = ip;
 
     if (n_10 < 0.0) {
 
         modf((m_10 / 2.0), &ip2);
         modf(((n_10 - ip2) / m_10), &ip);
-        unbounded_rounded = (double) (m_10 * ip);
+        unbounded_rounded = (m_10 * ip);
     } else {
 
         modf((m_10 / 2.0), &ip2);
         modf(((n_10 + ip2) / m_10), &ip);
-        unbounded_rounded = (double) (m_10 * ip);
+        unbounded_rounded = (m_10 * ip);
     }
 
     /* Divide by 10 to get tenths back and return */
-    return (double) (unbounded_rounded / 10.0);
+    return unbounded_rounded / 10.0;
 }
 
 Symbol *round_off_heading_air_rhs_function_code(agent* thisAgent, list *args, void* /*user_data*/)
@@ -672,9 +672,9 @@ Symbol *round_off_heading_air_rhs_function_code(agent* thisAgent, list *args, vo
     }
 
     /* --- two or more arguments --- */
-    arg = (Symbol *) args->first;
+    arg = reinterpret_cast<Symbol *>(args->first);
     if (arg->common.symbol_type == INT_CONSTANT_SYMBOL_TYPE)
-        n = (double) arg->ic.value;
+        n = static_cast<double>(arg->ic.value) ;
     else if (arg->common.symbol_type == FLOAT_CONSTANT_SYMBOL_TYPE) {
         n = arg->fc.value;
     }
@@ -685,9 +685,9 @@ Symbol *round_off_heading_air_rhs_function_code(agent* thisAgent, list *args, vo
         print(thisAgent, "Error: 'round_off_heading' function called with more than two arguments.\n");
         return NIL;
     }
-    arg = (Symbol *) c->first;
+    arg = reinterpret_cast<Symbol *>(c->first);
     if (arg->common.symbol_type == INT_CONSTANT_SYMBOL_TYPE)
-        i_m = (long) arg->ic.value;
+        i_m = arg->ic.value;
     else if (arg->common.symbol_type == FLOAT_CONSTANT_SYMBOL_TYPE) {
         float_found = TRUE;
         f_m = arg->fc.value;
@@ -697,7 +697,7 @@ Symbol *round_off_heading_air_rhs_function_code(agent* thisAgent, list *args, vo
     if (float_found)
         return make_float_constant(thisAgent, normalize_heading_float(round_off_heading_float(n, f_m)));
     else
-        return make_int_constant(thisAgent, normalize_heading_int(round_off_heading_int((long) n, i_m)));
+        return make_int_constant(thisAgent, normalize_heading_int(round_off_heading_int(static_cast<long>(n) , i_m)));
 
 }
 
@@ -728,9 +728,9 @@ Symbol *round_off_air_rhs_function_code(agent* thisAgent, list *args, void* /*us
     }
 
     /* --- two or more arguments --- */
-    arg = (Symbol *) args->first;
+    arg = reinterpret_cast<Symbol *>(args->first);
     if (arg->common.symbol_type == INT_CONSTANT_SYMBOL_TYPE)
-        n = (double) arg->ic.value;
+        n = static_cast<double>(arg->ic.value) ;
     else if (arg->common.symbol_type == FLOAT_CONSTANT_SYMBOL_TYPE) {
         n = arg->fc.value;
     }
@@ -741,7 +741,7 @@ Symbol *round_off_air_rhs_function_code(agent* thisAgent, list *args, void* /*us
         print(thisAgent, "Error: 'round_off' function called with more than two arguments.\n");
         return NIL;
     }
-    arg = (Symbol *) c->first;
+    arg = reinterpret_cast<Symbol *>(c->first);
     if (arg->common.symbol_type == INT_CONSTANT_SYMBOL_TYPE)
         i_m = arg->ic.value;
     else if (arg->common.symbol_type == FLOAT_CONSTANT_SYMBOL_TYPE) {
@@ -753,10 +753,9 @@ Symbol *round_off_air_rhs_function_code(agent* thisAgent, list *args, void* /*us
     if (float_found)
         return make_float_constant(thisAgent, round_off_heading_float(n, f_m));
     else
-        return make_int_constant(thisAgent, round_off_heading_int((long) n, i_m));
+        return make_int_constant(thisAgent, round_off_heading_int(static_cast<long>(n), i_m));
 }
 
-typedef double float64;
 #define PI 3.141592653589
 #define PI_OVER_TWO (PI/2)
 #define TWO_PI (PI*2)
@@ -765,16 +764,16 @@ typedef double float64;
 #define Y 1
 #define Z 2
 
-void vector_from_to_position(float64 pos1[3], float64 pos2[3], float64 vector[3])
+void vector_from_to_position(double pos1[3], double pos2[3], double vector[3])
 {
     vector[X] = pos2[X] - pos1[X];
     vector[Y] = pos2[Y] - pos1[Y];
     vector[Z] = pos2[Z] - pos1[Z];
 }
 
-void vec2_norm(float64 v[3], float64 r[3], int abort)
+void vec2_norm(double v[3], double r[3], int abort)
 {
-    float64 mag, mag2;
+    double mag, mag2;
     mag2 = v[X] * v[X] + v[Y] * v[Y];
     mag = sqrt(mag2);
     if (!abort && (mag < 0.01)) {
@@ -786,7 +785,7 @@ void vec2_norm(float64 v[3], float64 r[3], int abort)
     r[1] = v[1] / mag;
 }
 
-float64 convert_to_soar_angle(float64 heading_in_rads)
+double convert_to_soar_angle(double heading_in_rads)
 {
     double heading;
 
@@ -801,9 +800,9 @@ float64 convert_to_soar_angle(float64 heading_in_rads)
     return heading;
 }
 
-void hrl_xydof_to_heading(float64 xydof[3], float64 * output)
+void hrl_xydof_to_heading(double xydof[3], double * output)
 {
-    float64 heading_in_rads;
+    double heading_in_rads;
 
     heading_in_rads = convert_to_soar_angle(atan2(xydof[Y], xydof[X]));
 
@@ -816,12 +815,13 @@ long air_soar_round_off_angle(long n, long m)
 
     /* need to round the first (n) to the nearest second (m) */
     if (n < 0)
-        unbounded_rounded = m * (long) ((n - (long) (m / 2)) / m);
+        unbounded_rounded = m * ((n - (m / 2L)) / m);
     else
-        unbounded_rounded = m * (long) ((n + (long) (m / 2)) / m);
+        unbounded_rounded = m * ((n + (m / 2L)) / m);
 
     /* we need to make sure that -180 < value <= 180. */
 
+	// FIXME replace this code with the much faster mod2pi in ed olson's linalg library
     bounded_rounded = (unbounded_rounded % 360);
     if (bounded_rounded > 180)
         bounded_rounded -= 360;
@@ -831,29 +831,27 @@ long air_soar_round_off_angle(long n, long m)
     return bounded_rounded;
 }
 
-float64 bracket_rad_to_deg(float64 var)
+double bracket_rad_to_deg(double var)
 {
-    return (float64) air_soar_round_off_angle((long) RAD_TO_DEG(var), 1);
+    return static_cast<double>(air_soar_round_off_angle(static_cast<long>(RAD_TO_DEG(var)), 1)) ;
 }
 
-long convert(float64 flo)
+long convert(double flo)
 {
-    long tempx;
-    tempx = (long) flo;
-    return tempx;
+    return static_cast<long>(flo);
 }
 
 long heading_to_point(long current_x, long current_y, long x, long y)
 {
-    float64 plane_pos[3], waypoint_pos[3], dir[3];
-    float64 heading;
+    double plane_pos[3], waypoint_pos[3], dir[3];
+    double heading;
 
-    plane_pos[0] = (float64) current_x;
-    plane_pos[1] = (float64) current_y;
+    plane_pos[0] = static_cast<double>(current_x) ;
+    plane_pos[1] = static_cast<double>(current_y) ;
     plane_pos[2] = 0;
 
-    waypoint_pos[0] = (float64) x;
-    waypoint_pos[1] = (float64) y;
+    waypoint_pos[0] = static_cast<double>(x) ;
+    waypoint_pos[1] = static_cast<double>(y) ;
     waypoint_pos[2] = 0;
 
     vector_from_to_position(plane_pos, waypoint_pos, dir);
@@ -883,7 +881,7 @@ Symbol *compute_heading_rhs_function_code(agent* thisAgent, list *args, void* /*
     }
 
     for (c = args; c != NIL; c = c->rest) {
-        arg = (Symbol *) c->first;
+        arg = reinterpret_cast<Symbol *>(c->first);
         if ((arg->common.symbol_type != INT_CONSTANT_SYMBOL_TYPE) &&
             (arg->common.symbol_type != FLOAT_CONSTANT_SYMBOL_TYPE)) {
             print_with_symbols(thisAgent, "Error: non-number (%y) passed to - compute-heading\n", arg);
@@ -894,7 +892,7 @@ Symbol *compute_heading_rhs_function_code(agent* thisAgent, list *args, void* /*
     count = 1;
 
     for (c = args->rest; c != NIL; c = c->rest) {
-        arg = (Symbol *) c->first;
+        arg = reinterpret_cast<Symbol *>(c->first);
         if ((arg->common.symbol_type != INT_CONSTANT_SYMBOL_TYPE) &&
             (arg->common.symbol_type != FLOAT_CONSTANT_SYMBOL_TYPE)) {
             print_with_symbols(thisAgent, "Error: non-number (%y) passed to compute-heading function.\n", arg);
@@ -909,17 +907,17 @@ Symbol *compute_heading_rhs_function_code(agent* thisAgent, list *args, void* /*
         return NIL;
     }
 
-    arg = (Symbol *) args->first;
-    current_x = (arg->common.symbol_type == INT_CONSTANT_SYMBOL_TYPE) ? arg->ic.value : (long) arg->fc.value;
+    arg = reinterpret_cast<Symbol *>(args->first);
+    current_x = (arg->common.symbol_type == INT_CONSTANT_SYMBOL_TYPE) ? arg->ic.value : static_cast<long>(arg->fc.value);
 
-    arg = (Symbol *) args->rest->first;
-    current_y = (arg->common.symbol_type == INT_CONSTANT_SYMBOL_TYPE) ? arg->ic.value : (long) arg->fc.value;
+    arg = reinterpret_cast<Symbol *>(args->rest->first);
+    current_y = (arg->common.symbol_type == INT_CONSTANT_SYMBOL_TYPE) ? arg->ic.value : static_cast<long>(arg->fc.value);
 
-    arg = (Symbol *) args->rest->rest->first;
-    waypoint_x = (arg->common.symbol_type == INT_CONSTANT_SYMBOL_TYPE) ? arg->ic.value : (long) arg->fc.value;
+    arg = reinterpret_cast<Symbol *>(args->rest->rest->first);
+    waypoint_x = (arg->common.symbol_type == INT_CONSTANT_SYMBOL_TYPE) ? arg->ic.value : static_cast<long>(arg->fc.value);
 
-    arg = (Symbol *) args->rest->rest->rest->first;
-    waypoint_y = (arg->common.symbol_type == INT_CONSTANT_SYMBOL_TYPE) ? arg->ic.value : (long) arg->fc.value;
+    arg = reinterpret_cast<Symbol *>(args->rest->rest->rest->first);
+    waypoint_y = (arg->common.symbol_type == INT_CONSTANT_SYMBOL_TYPE) ? arg->ic.value : static_cast<long>(arg->fc.value);
 
     return make_int_constant(thisAgent, heading_to_point(current_x, current_y, waypoint_x, waypoint_y));
 }
@@ -944,7 +942,7 @@ Symbol *compute_range_rhs_function_code(agent* thisAgent, list *args, void* /*us
     }
 
     for (c = args; c != NIL; c = c->rest) {
-        arg = (Symbol *) c->first;
+        arg = reinterpret_cast<Symbol *>(c->first);
         if ((arg->common.symbol_type != INT_CONSTANT_SYMBOL_TYPE)
             && (arg->common.symbol_type != FLOAT_CONSTANT_SYMBOL_TYPE)) {
             print_with_symbols(thisAgent, "Error: non-number (%y) passed to - compute-range\n", arg);
@@ -955,7 +953,7 @@ Symbol *compute_range_rhs_function_code(agent* thisAgent, list *args, void* /*us
     count = 1;
 
     for (c = args->rest; c != NIL; c = c->rest) {
-        arg = (Symbol *) c->first;
+        arg = reinterpret_cast<Symbol *>(c->first);
         if ((arg->common.symbol_type != INT_CONSTANT_SYMBOL_TYPE)
             && (arg->common.symbol_type != FLOAT_CONSTANT_SYMBOL_TYPE)) {
             print_with_symbols(thisAgent, "Error: non-number (%y) passed to compute-range function.\n", arg);
@@ -970,22 +968,22 @@ Symbol *compute_range_rhs_function_code(agent* thisAgent, list *args, void* /*us
         return NIL;
     }
 
-    arg = (Symbol *) args->first;
-    current_x = (arg->common.symbol_type == INT_CONSTANT_SYMBOL_TYPE) ? (double) arg->ic.value : arg->fc.value;
+    arg = reinterpret_cast<Symbol *>(args->first);
+    current_x = (arg->common.symbol_type == INT_CONSTANT_SYMBOL_TYPE) ? static_cast<double>(arg->ic.value) : arg->fc.value;
 
-    arg = (Symbol *) args->rest->first;
-    current_y = (arg->common.symbol_type == INT_CONSTANT_SYMBOL_TYPE) ? (double) arg->ic.value : arg->fc.value;
+    arg = reinterpret_cast<Symbol *>(args->rest->first);
+    current_y = (arg->common.symbol_type == INT_CONSTANT_SYMBOL_TYPE) ? static_cast<double>(arg->ic.value) : arg->fc.value;
 
-    arg = (Symbol *) args->rest->rest->first;
-    waypoint_x = (arg->common.symbol_type == INT_CONSTANT_SYMBOL_TYPE) ? (double) arg->ic.value : arg->fc.value;
+    arg = reinterpret_cast<Symbol *>(args->rest->rest->first);
+    waypoint_x = (arg->common.symbol_type == INT_CONSTANT_SYMBOL_TYPE) ? static_cast<double>(arg->ic.value) : arg->fc.value;
 
-    arg = (Symbol *) args->rest->rest->rest->first;
-    waypoint_y = (arg->common.symbol_type == INT_CONSTANT_SYMBOL_TYPE) ? (double) arg->ic.value : arg->fc.value;
+    arg = reinterpret_cast<Symbol *>(args->rest->rest->rest->first);
+    waypoint_y = (arg->common.symbol_type == INT_CONSTANT_SYMBOL_TYPE) ? static_cast<double>(arg->ic.value) : arg->fc.value;
 
-    return make_int_constant(thisAgent, (long int) sqrt((current_x - waypoint_x)
+    return make_int_constant(thisAgent, static_cast<long>(sqrt((current_x - waypoint_x)
                                              * (current_x - waypoint_x)
                                              + (current_y - waypoint_y)
-                                             * (current_y - waypoint_y)));
+                                             * (current_y - waypoint_y))));
 }
 
 /* ====================================================================

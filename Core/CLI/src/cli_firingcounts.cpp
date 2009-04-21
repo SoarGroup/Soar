@@ -44,11 +44,12 @@ bool CommandLineInterface::ParseFiringCounts(std::vector<std::string>& argv) {
 
 	if (argv.size() == 2) {
 		// one argument, figure out if it is a non-negative integer or a production
-		if (IsInteger(argv[1])) {
-			numberToList = atoi(argv[1].c_str());
+		if ( from_string( numberToList, argv[1] ) ){
 			if (numberToList < 0) return SetError(CLIError::kIntegerMustBeNonNegative);
 
 		} else {
+			numberToList = -1;
+
 			// non-integer argument, hopfully a production
 			pProduction = &(argv[1]);
 		}

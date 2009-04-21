@@ -529,7 +529,7 @@ bool KernelSML::HandleFireEvent(AgentSML* /*pAgentSML*/, char const* pCommandNam
 	// Make the call.  These are the only events which we allow
 	// explicit client control over to date.
 	if (id == smlEVENT_SYSTEM_START || id == smlEVENT_SYSTEM_STOP)
-		this->FireSystemEvent((smlSystemEventId)id) ;
+		this->FireSystemEvent(smlSystemEventId(id)) ;
 
 	return true ;
 }

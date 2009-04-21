@@ -254,8 +254,7 @@ inline void record_position_of_start_of_lexeme(agent* thisAgent)
   get_next_char(); }*/
 inline void store_and_advance(agent* thisAgent)
 {
-  thisAgent->lexeme.string[thisAgent->lexeme.length++] =
-    (char)thisAgent->current_char;
+  thisAgent->lexeme.string[thisAgent->lexeme.length++] = thisAgent->current_char;
   get_next_char(thisAgent);
 }
 
@@ -272,7 +271,7 @@ void read_constituent_string (agent* thisAgent) {
 #endif
 
   while ((thisAgent->current_char!=EOF_AS_CHAR) &&
-         constituent_char[(unsigned char)thisAgent->current_char])
+         constituent_char[static_cast<unsigned char>(thisAgent->current_char)])
     store_and_advance(thisAgent);
   finish(thisAgent);
 }  
@@ -329,7 +328,7 @@ unsigned long my_strtoul (char *ch, char **p, int base) {
     errno = ERANGE;
     return 0;
   }
-  return (unsigned long) result;
+  return static_cast<unsigned long>(result);
 }
 
 Bool determine_type_of_constituent_string (agent* thisAgent) {
@@ -368,7 +367,7 @@ Bool determine_type_of_constituent_string (agent* thisAgent) {
   if (possible_fc) {
     errno = 0;
     thisAgent->lexeme.type = FLOAT_CONSTANT_LEXEME;
-    thisAgent->lexeme.float_val = (double) my_strtod (thisAgent->lexeme.string,NULL,10); 
+    thisAgent->lexeme.float_val = my_strtod (thisAgent->lexeme.string,NULL,10); 
     if (errno) {
       print (thisAgent, "Error: bad floating point number\n");
       print_location_of_most_recent_lexeme(thisAgent);
@@ -721,13 +720,13 @@ void lex_vbar (agent* thisAgent) {
     }
     if (thisAgent->current_char=='\\') {
       get_next_char(thisAgent);
-      thisAgent->lexeme.string[thisAgent->lexeme.length++] = (char)thisAgent->current_char;
+      thisAgent->lexeme.string[thisAgent->lexeme.length++] = thisAgent->current_char;
       get_next_char(thisAgent);
     } else if (thisAgent->current_char=='|') {
       get_next_char(thisAgent);
       break;
     } else {
-      thisAgent->lexeme.string[thisAgent->lexeme.length++] = (char)thisAgent->current_char;
+      thisAgent->lexeme.string[thisAgent->lexeme.length++] = thisAgent->current_char;
       get_next_char(thisAgent);
     }
   } while(TRUE);
@@ -750,13 +749,13 @@ void lex_quote (agent* thisAgent) {
     }
     if (thisAgent->current_char=='\\') {
       get_next_char(thisAgent);
-      thisAgent->lexeme.string[thisAgent->lexeme.length++] = (char)thisAgent->current_char;
+      thisAgent->lexeme.string[thisAgent->lexeme.length++] = thisAgent->current_char;
       get_next_char(thisAgent);
     } else if (thisAgent->current_char=='"') {
       get_next_char(thisAgent);
       break;
     } else {
-      thisAgent->lexeme.string[thisAgent->lexeme.length++] = (char)thisAgent->current_char;
+      thisAgent->lexeme.string[thisAgent->lexeme.length++] = thisAgent->current_char;
       get_next_char(thisAgent);
     }
   } while(TRUE);
@@ -826,25 +825,6 @@ void get_lexeme (agent* thisAgent) {
   thisAgent->lexeme.length = 0;
   thisAgent->lexeme.string[0] = 0;
 
-//#ifndef USE_X_DISPLAY
-if (thisAgent->lexeme.type==EOF_LEXEME && 
-    reading_from_top_level(thisAgent) &&
-    current_lexer_parentheses_level(thisAgent)==0 &&  /* AGR 534 */
-    thisAgent->print_prompt_flag)
-//#ifdef USE_TCL
-  {}
-//#else
-//
-// /* REW: begin 09.15.96 */
-// if (thisAgent->operand2_mode == TRUE)
-//   print ("\nOPERAND %s> ", thisAgent->name);
-// /* REW: end   09.15.96 */
-// else
-//   print ("\n%s> ", thisAgent->name);
-//
-//#endif /* USE_TCL */
-//#endif /* USE_X_DISPLAY */
-
 /* AGR 534  The only time a prompt should be printed out is if there's
    a command being expected; ie. the prompt shouldn't print out if we're
    in the middle of entering a production.  So if we're in the middle of
@@ -855,29 +835,13 @@ if (thisAgent->lexeme.type==EOF_LEXEME &&
 
   while (thisAgent->load_errors_quit==FALSE) {   /* AGR 527c */
     if (thisAgent->current_char==EOF_AS_CHAR) break;
-    if (whitespace[(unsigned char)thisAgent->current_char]) {
+    if (whitespace[static_cast<unsigned char>(thisAgent->current_char)]) {
       if (thisAgent->current_char == '\n')
       {    
          if (thisAgent->current_file->fake_rparen_at_eol) {
               do_fake_rparen(thisAgent);
               return;
          }
-//#ifndef USE_X_DISPLAY
-         if (current_lexer_parentheses_level(thisAgent)==0 &&  /* AGR 534 */
-             thisAgent->print_prompt_flag)
-//#ifdef USE_TCL
-         {}
-//#else
-//
-//	 /* REW: begin 09.15.96 */
-//         if (thisAgent->operand2_mode == TRUE)
-//	   print ("\nOPERAND %s> ", thisAgent->name);
-//	 /* REW: end   09.15.96 */
-//	 else
-//	   print ("\n%s> ", thisAgent->name);
-//
-//#endif /* USE_TCL */
-//#endif /* USE_X_DISPLAY */
       }
       get_next_char(thisAgent);
       continue;
@@ -943,7 +907,7 @@ if (thisAgent->lexeme.type==EOF_LEXEME &&
   /* --- no more whitespace, so go get the actual lexeme --- */
   record_position_of_start_of_lexeme(thisAgent);
   if (thisAgent->current_char!=EOF_AS_CHAR)
-    (*(lexer_routines[(unsigned char)thisAgent->current_char]))(thisAgent);
+    (*(lexer_routines[static_cast<unsigned char>(thisAgent->current_char)]))(thisAgent);
   else
     lex_eof(thisAgent);
 }
@@ -981,7 +945,7 @@ void init_lexer (agent* thisAgent)
         // character.  This is not the intent, so we exclude that case
         // here.
         //
-        if((strchr(extra_constituents, (char)(i)) != 0) && i != 0)
+        if((strchr(extra_constituents, i) != 0) && i != 0)
         {
            constituent_char[i]=TRUE;
         }
@@ -1241,7 +1205,7 @@ void determine_possible_symbol_types_for_string (char *s,
   *rereadable = FALSE;
 
   /* --- check if it's an integer or floating point number --- */
-  if (number_starters[(unsigned char)(*s)]) {
+  if (number_starters[static_cast<unsigned char>(*s)]) {
     ch = s;
     if ((*ch=='+')||(*ch=='-')) ch++;  /* optional leading + or - */
     while (isdigit(*ch)) ch++;         /* string of digits */
@@ -1261,7 +1225,7 @@ void determine_possible_symbol_types_for_string (char *s,
 
   /* --- make sure it's entirely constituent characters --- */
   for (ch=s; *ch!=0; ch++)
-    if (! constituent_char[(unsigned char)(*ch)]) return;
+    if (! constituent_char[static_cast<unsigned char>(*ch)]) return;
 
   /* --- check for rereadability --- */
   rereadability_questionable = FALSE;
