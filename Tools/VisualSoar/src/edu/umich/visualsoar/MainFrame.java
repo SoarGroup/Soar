@@ -13,6 +13,7 @@ import edu.umich.visualsoar.parser.TokenMgrError;
 import sml.Agent;
 import sml.Kernel;
 import sml.smlStringEventId;
+import sml.sml_Names;
 import threepenny.*;
 
 import java.awt.*;
@@ -1592,6 +1593,8 @@ public class MainFrame extends JFrame implements Kernel.StringEventInterface
 		soarRuntimeSendRawCommandAction.setEnabled(true);
 		soarRuntimeAgentMenu.setEnabled(true);
 		soarRuntimeSendAllFilesAction.setEnabled(true) ;
+		
+		m_Kernel.SetConnectionInfo("visual-soar", sml_Names.getKStatusReady(), sml_Names.getKStatusReady()) ;
 		
 		return true ;
 	}
