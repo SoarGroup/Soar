@@ -30,8 +30,9 @@ public class DebuggerCommands
 	public final static String kClear = "clear" ;
 	public final static String kQuit  = "quit" ;
 	public final static String kExit  = "exit" ;
+	public final static String kEditProduction = "edit-production" ;
 	
-	protected String[] kCommands = new String[] { kClear, kQuit, kExit } ;
+	protected String[] kCommands = new String[] { kClear, kQuit, kExit, kEditProduction } ;
 	
 	public DebuggerCommands(MainFrame frame, Document doc)
 	{
@@ -40,41 +41,40 @@ public class DebuggerCommands
 	}
 
 	// Providing a method for expanding the command line (so we can support aliases)
-	// but I'm not sure (a) that it's always safe (esp. for auto-update windows) and this is the day before release and
-	// (b) that it won't introduce a significant overhead (because we call here for all commands right now, not just user typed ones).
-	// So for now, not doing the expansion.
-	public String getExpandedCommand(String command)
+	public String getExpandedCommand(String commandLine)
 	{
-		return command ;
-//		return m_Document.getExpandedCommandLine(command) ;
+		return m_Document.getExpandedCommandLine(commandLine) ;
 	}
 	
-	public boolean isCommand(String command)
+	public boolean isCommand(String commandLine)
 	{
 		for (int i = 0 ; i < kCommands.length ; i++)
 		{
-			if (kCommands[i].equalsIgnoreCase(command))
+			if (commandLine.toLowerCase().startsWith(kCommands[i]))
 				return true ;
 		}
 		
 		return false ;
 	}
 	
-	public Object executeCommand(AbstractView view, String command, boolean echoCommand)
+	public String executeCommand(AbstractView view, String commandLine, boolean echoCommand)
 	{
-		String expanded = m_Document.getExpandedCommandLine(command) ;
-
-		if (kClear.equalsIgnoreCase(expanded))
+		if (commandLine.toLowerCase().startsWith(kClear))
 		{
 			view.clearDisplay() ;
-			return null ;
 		}
-		
-		if (kQuit.equalsIgnoreCase(expanded) || kExit.equalsIgnoreCase(expanded))
+		else if (commandLine.toLowerCase().startsWith(kQuit) || commandLine.toLowerCase().startsWith(kExit))
 		{
 			m_Frame.close() ;
 		}
-		
-		return null ;
+		else if (commandLine.toLowerCase().startsWith(kEditProduction)) 
+		{
+			if (!m_Document.isVisualSoarConnected())
+			{
+				m_Frame.displayTextInPrimeView("Error: Visual Soar is not connected.");
+			}
+			return null; // this means DO send the command to Soar, that we are adding behavior
+		}
+		return ""; // this means do not send the command to Soar
 	}
 }

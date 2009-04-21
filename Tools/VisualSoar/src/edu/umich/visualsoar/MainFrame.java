@@ -1487,11 +1487,23 @@ public class MainFrame extends JFrame implements Kernel.StringEventInterface
     {
 		// TODO: Should we match case?
 		
-		// Find the rule and open it
-		getOperatorWindow().findInProjectAndOpenRule(sProductionName, false /* match case */);
+		OperatorWindow ow = getOperatorWindow();
 		
-		// Bring our window to the front
-		toFront();
+		if (ow != null)
+		{
+			// Find the rule and open it
+			getOperatorWindow().findInProjectAndOpenRule(sProductionName, false /* match case */);
+		
+			// Bring our window to the front
+			toFront();
+		} else {
+			JOptionPane.showMessageDialog(
+                    MainFrame.this,
+                    "Edit-production event ignored because there is no project loaded.",
+                    "Edit-production event ignored",
+                    JOptionPane.ERROR_MESSAGE);
+
+		}
 	}
 	
 
