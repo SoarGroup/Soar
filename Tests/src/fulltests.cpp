@@ -11,6 +11,7 @@
 #include "sml_Client.h"
 #include "sml_Utils.h"
 #include "sml_ClientWMElement.h"
+#include "sml_Names.h"
 #include "thread_Event.h"
 #include "kernel.h"
 #include "soarversion.h"
@@ -42,25 +43,26 @@ class FullTests : public CPPUNIT_NS::TestCase
 {
 	CPPUNIT_TEST_SUITE( FullTests );
 
-	CPPUNIT_TEST( testInit );
-	CPPUNIT_TEST( testProductions );
-	CPPUNIT_TEST( testRHSHandler );
-	CPPUNIT_TEST( testClientMessageHandler );
-	CPPUNIT_TEST( testFilterHandler );
-	CPPUNIT_TEST( testWMEs );
-	CPPUNIT_TEST( testAlias );
-	CPPUNIT_TEST( testXML );
-	CPPUNIT_TEST( testAgent );
-	CPPUNIT_TEST( testSimpleCopy );
-	CPPUNIT_TEST( testSimpleReteNetLoader );
-	CPPUNIT_TEST( testOSupportCopyDestroy );
-	CPPUNIT_TEST( testOSupportCopyDestroyCircularParent );
-	CPPUNIT_TEST( testOSupportCopyDestroyCircular );
-	CPPUNIT_TEST( testSynchronize );
-	CPPUNIT_TEST( testRunningAgentCreation );
-	//CPPUNIT_TEST( testShutdownHandlerShutdown );
-	CPPUNIT_TEST( testEventOrdering ); // bug 1100
-	CPPUNIT_TEST( testStatusCompleteDuplication ); // bug 1042
+	//CPPUNIT_TEST( testInit );
+	//CPPUNIT_TEST( testProductions );
+	//CPPUNIT_TEST( testRHSHandler );
+	//CPPUNIT_TEST( testClientMessageHandler );
+	//CPPUNIT_TEST( testFilterHandler );
+	//CPPUNIT_TEST( testWMEs );
+	//CPPUNIT_TEST( testAlias );
+	//CPPUNIT_TEST( testXML );
+	//CPPUNIT_TEST( testAgent );
+	//CPPUNIT_TEST( testSimpleCopy );
+	//CPPUNIT_TEST( testSimpleReteNetLoader );
+	//CPPUNIT_TEST( testOSupportCopyDestroy );
+	//CPPUNIT_TEST( testOSupportCopyDestroyCircularParent );
+	//CPPUNIT_TEST( testOSupportCopyDestroyCircular );
+	//CPPUNIT_TEST( testSynchronize );
+	//CPPUNIT_TEST( testRunningAgentCreation );
+	////CPPUNIT_TEST( testShutdownHandlerShutdown );
+	//CPPUNIT_TEST( testEventOrdering ); // bug 1100
+	//CPPUNIT_TEST( testStatusCompleteDuplication ); // bug 1042
+	CPPUNIT_TEST( testStopSoarVsInterrupt ); // bug 782
 
 	CPPUNIT_TEST_SUITE_END();
 
@@ -83,6 +85,7 @@ public:
 	TEST_DECLARATION( testRunningAgentCreation );
 	TEST_DECLARATION( testEventOrdering );
 	TEST_DECLARATION( testStatusCompleteDuplication );
+	TEST_DECLARATION( testStopSoarVsInterrupt );
 
 	void testShutdownHandlerShutdown();
 
@@ -1330,4 +1333,59 @@ TEST_DEFINITION( testStatusCompleteDuplication )
 		// there should only be one
 		CPPUNIT_ASSERT( count == 1 );
 	}
+}
+
+TEST_DEFINITION( testStopSoarVsInterrupt )
+{
+	loadProductions( "/Tests/teststopsoar.soar" );
+
+	m_pAgent->ExecuteCommandLine("run -o 3");
+	CPPUNIT_ASSERT(m_pAgent->GetLastCommandLineResult());
+
+	// expected: agent stops after 15 decision cycles
+	{
+		sml::ClientAnalyzedXML response;
+		m_pAgent->ExecuteCommandLineXML("stats", &response);
+		CPPUNIT_ASSERT(response.GetArgInt(sml::sml_Names::kParamStatsCycleCountDecision, -1) == 15);
+	}
+
+	m_pAgent->InitSoar();
+	m_pAgent->ExecuteCommandLine("run 3");
+	CPPUNIT_ASSERT(m_pAgent->GetLastCommandLineResult());
+
+	// expected: agent stops after 1 decision cycle
+	{
+		sml::ClientAnalyzedXML response;
+		m_pAgent->ExecuteCommandLineXML("stats", &response);
+		CPPUNIT_ASSERT(response.GetArgInt(sml::sml_Names::kParamStatsCycleCountDecision, -1) == 1);
+	}
+
+	m_pAgent->ExecuteCommandLine("ex -a"); // side effect: init-soar
+	CPPUNIT_ASSERT(m_pAgent->GetLastCommandLineResult());
+
+	loadProductions( "/Tests/testinterrupt.soar" );
+
+	m_pAgent->ExecuteCommandLine("run -o 3");
+	CPPUNIT_ASSERT(m_pAgent->GetLastCommandLineResult());
+
+	// expected: agent stops after 1 elaboration
+	{
+		sml::ClientAnalyzedXML response;
+		m_pAgent->ExecuteCommandLineXML("stats", &response);
+		CPPUNIT_ASSERT(response.GetArgInt(sml::sml_Names::kParamStatsCycleCountDecision, -1) == 0);
+		CPPUNIT_ASSERT(response.GetArgInt(sml::sml_Names::kParamStatsCycleCountElaboration, -1) == 1);
+	}
+
+	m_pAgent->InitSoar();
+	m_pAgent->ExecuteCommandLine("run 3");
+	CPPUNIT_ASSERT(m_pAgent->GetLastCommandLineResult());
+
+	// expected: agent stops after 1 elaboration
+	{
+		sml::ClientAnalyzedXML response;
+		m_pAgent->ExecuteCommandLineXML("stats", &response);
+		CPPUNIT_ASSERT(response.GetArgInt(sml::sml_Names::kParamStatsCycleCountDecision, -1) == 0);
+		CPPUNIT_ASSERT(response.GetArgInt(sml::sml_Names::kParamStatsCycleCountElaboration, -1) == 1);
+	}
+
 }
