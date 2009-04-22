@@ -213,20 +213,13 @@ bool CommandLineInterface::DoRun(const RunBitset& options, int count, eRunInterl
 
 	SetTrapPrintCallbacks( true );
 
-	// Check for error
-	if (runResult == sml_RUN_ERROR) {
-		// FIXME: report extended run error
-        return SetError(CLIError::kRunFailed);
-	} else if (runResult == sml_RUN_ERROR_ALREADY_RUNNING) {
-		SetErrorDetail( "Soar is already running" );
-        return SetError(CLIError::kRunFailed);
-	}
-
-
 	switch (runResult) {
+		case sml_RUN_ERROR_ALREADY_RUNNING:
+			SetErrorDetail( "Soar is already running" );
+			return SetError(CLIError::kRunFailed);
+
 		case sml_RUN_ERROR:
 			return SetError(CLIError::kRunFailed);
-			break;
 
 		case sml_RUN_EXECUTING:
 			if (m_RawOutput) {
