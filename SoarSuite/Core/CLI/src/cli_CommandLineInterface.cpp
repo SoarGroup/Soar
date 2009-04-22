@@ -583,7 +583,7 @@ bool CommandLineInterface::PartialMatch(std::vector<std::string>& argv) {
 			// We have a partial match
 			argv[0] = (*(possibilities.begin()));
 		}
-		return false;
+		return true;
 	}
 	return true;
 }
