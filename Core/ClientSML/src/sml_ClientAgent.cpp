@@ -35,6 +35,7 @@
 #ifndef _WIN32
 #include <unistd.h>
 #include <sys/wait.h>
+#include <signal.h>
 #endif // !_WIN32
 
 using namespace sml;
