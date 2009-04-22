@@ -26,6 +26,7 @@ sp {arithmetic*apply*finish-problem*decrement-count
 ########## Print out problem and answer #############
 sp {arithmetic*apply*finish-problem*1column*result
    (state <s> ^name arithmetic
+              ^output yes
               ^operator <o>
               ^arithmetic-problem <ap>)
    (<o>  ^name finish-problem)
@@ -43,6 +44,7 @@ sp {arithmetic*apply*finish-problem*1column*result
 }
 sp {arithmetic*apply*finish-problem*2column*result
    (state <s> ^name arithmetic
+              ^output yes
               ^operator <o>
               ^arithmetic-problem <ap>)
    (<o>  ^name finish-problem)
@@ -65,6 +67,7 @@ sp {arithmetic*apply*finish-problem*2column*result
 
 sp {arithmetic*apply*finish-problem3*column*result
    (state <s> ^name arithmetic
+              ^output yes
               ^operator <o>
               ^arithmetic-problem <ap>)
    (<o>  ^name finish-problem)
@@ -92,6 +95,7 @@ sp {arithmetic*apply*finish-problem3*column*result
 
 sp {arithmetic*apply*finish-problem4*column*result
    (state <s> ^name arithmetic
+              ^output yes
               ^operator <o>
               ^arithmetic-problem <ap>)
    (<o>  ^name finish-problem)

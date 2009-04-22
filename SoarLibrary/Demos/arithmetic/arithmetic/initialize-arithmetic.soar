@@ -11,6 +11,7 @@ sp {arithmetic*apply*initialize-arithmetic
 -->
    (<s> ^name arithmetic
         ^fact-source smem
+        ^output yes
         ^count 1000)}
 
 
