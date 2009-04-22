@@ -1241,8 +1241,8 @@ TEST_DEFINITION( testRunningAgentCreation )
 	m_pKernel->RegisterForUpdateEvent( sml::smlEVENT_AFTER_ALL_OUTPUT_PHASES, Handlers::MyAgentCreationUpdateEventHandler, &data );
 	m_pKernel->RunAllAgents( 10 );
 
-	std::cout << std::endl;
-	std::cout << "count: " << data.count;
+	//std::cout << std::endl;
+	//std::cout << "count: " << data.count;
 	// FIXME: in a perfect world, this is 10 not 12 but since the run isn't forever, the newly created agent runs 10.
 	CPPUNIT_ASSERT( data.count == 12 );	
 	CPPUNIT_ASSERT( data.pOnTheFly );
