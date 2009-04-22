@@ -9,18 +9,19 @@
 
 #include <portability.h>
 
-#include "cli_CommandLineInterface.h"
+#include <vector>
+#include <map>
 
+#include "cli_CommandLineInterface.h"
 #include "cli_Commands.h"
 #include "cli_CLIError.h"
 
 #include "sml_Names.h"
 
+#include "agent.h"
+
 #include "reinforcement_learning.h"
 #include "misc.h"
-
-#include <vector>
-#include <map>
 
 using namespace cli;
 using namespace sml;
