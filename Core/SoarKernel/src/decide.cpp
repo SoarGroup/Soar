@@ -1857,11 +1857,8 @@ void remove_existing_context_and_descendents (agent* thisAgent, Symbol *goal) {
 
   if ( ( goal != thisAgent->top_goal ) && rl_enabled( thisAgent ) )
   {
-	if ( rl_final_update( thisAgent, goal ) )
-	{
 	  rl_tabulate_reward_value_for_goal( thisAgent, goal );
-	  rl_perform_update( thisAgent, 0, true, goal ); // this update only sees reward - there is no next state
-	}
+	  rl_perform_update( thisAgent, 0, true, goal, false ); // this update only sees reward - there is no next state
   }
 
   /* --- disconnect this goal from the goal stack --- */
@@ -1952,7 +1949,7 @@ void remove_existing_context_and_descendents (agent* thisAgent, Symbol *goal) {
   }
 
   delete goal->id.rl_info->eligibility_traces;
-  free_list( thisAgent, goal->id.rl_info->prev_op_rl_rules );
+  delete goal->id.rl_info->prev_op_rl_rules;  
   symbol_remove_ref( thisAgent, goal->id.reward_header );
   free_memory( thisAgent, goal->id.rl_info, MISCELLANEOUS_MEM_USAGE );
 
@@ -2035,9 +2032,8 @@ void create_new_context (agent* thisAgent, Symbol *attr_of_impasse, byte impasse
   id->id.allow_bottom_up_chunks = TRUE;
 
   id->id.rl_info = static_cast<rl_data *>( allocate_memory( thisAgent, sizeof( rl_data ), MISCELLANEOUS_MEM_USAGE ) );
-  id->id.rl_info->eligibility_traces = new rl_et_map( std::less<production *>(), SoarMemoryAllocator<std::pair<production* const, double> >( thisAgent, MISCELLANEOUS_MEM_USAGE ) );
-  id->id.rl_info->prev_op_rl_rules = NIL;
-  id->id.rl_info->num_prev_op_rl_rules = 0;
+  id->id.rl_info->eligibility_traces = new rl_et_map;
+  id->id.rl_info->prev_op_rl_rules = new rl_rule_list;
   id->id.rl_info->previous_q = 0;
   id->id.rl_info->reward = 0;
   id->id.rl_info->gap_age = 0;

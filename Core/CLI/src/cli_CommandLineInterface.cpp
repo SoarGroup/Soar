@@ -472,12 +472,15 @@ bool CommandLineInterface::ExpandCommandToString(const char* pCommandLine, std::
 	if (CLITokenize(pCommandLine, argv) == -1)
 		return false ;
 
-	// 2) Translate aliases
 	if (!argv.empty())
 	{
+		// 2) Translate aliases, irrelevant return value ignored
 		m_Aliases.Translate(argv);
-		
-		// 3) Reassemble the command line
+
+		// 3) Partial match, irrelevant return value ignored
+		PartialMatch(argv);
+
+		// 4) Reassemble the command line
 		for (unsigned int i = 0 ; i < argv.size() ; i++)
 		{
 			*pExpandedLine += argv[i] ;
@@ -516,6 +519,78 @@ bool CommandLineInterface::DoCommandInternal(const std::string& commandLine) {
 	return DoCommandInternal(argv);
 }
 
+bool CommandLineInterface::PartialMatch(std::vector<std::string>& argv) {
+	// Not an alias, check for partial match
+	std::list<std::string> possibilities;
+	std::list<std::string>::iterator liter;
+	bool exactMatch = false;
+
+	for(unsigned index = 0; index < (argv[0].size()); ++index) {
+
+		if (index == 0) {
+			// Bootstrap the list of possibilities
+			CommandMapConstIter citer = m_CommandMap.begin();
+
+			while (citer != m_CommandMap.end()) {
+				if (citer->first[index] == argv[0][index]) {
+					possibilities.push_back(citer->first);
+				}
+				++citer;
+			}
+
+		} else {
+			// Update the list of possiblities
+
+			// A more efficient search here would be nice.
+			liter = possibilities.begin();
+			while (liter != possibilities.end()) {
+				if ((*liter)[index] != argv[0][index]) {
+					// Remove this possibility from the list
+					liter = possibilities.erase(liter);
+				} else {
+					// check for exact match
+					if (argv[0] == (*liter)) {
+						// Exact match, we're done
+						argv[0] = (*liter);
+						exactMatch = true;
+						break;
+					}
+					++liter;
+				}
+			}
+			if (exactMatch) break;
+		}
+
+		if (!possibilities.size()) {
+			// Not implemented
+			SetErrorDetail("(No such command: " + argv[0] + ")");
+			return SetError(CLIError::kCommandNotImplemented);
+
+		} 
+	}
+
+	if (!exactMatch) {
+		if (possibilities.size() != 1) {
+			// Ambiguous
+			std::stringstream detail;
+			detail << "Ambiguous command, possibilities: ";
+			liter = possibilities.begin();
+			while (liter != possibilities.end()) {
+				detail << "'" << (*liter) << "' ";
+				++liter;
+			}
+			SetErrorDetail(detail.str());
+			return SetError(CLIError::kAmbiguousCommand);
+
+		} else {
+			// We have a partial match
+			argv[0] = (*(possibilities.begin()));
+		}
+		return false;
+	}
+	return true;
+}
+
 bool CommandLineInterface::DoCommandInternal(std::vector<std::string>& argv) {
 	if (!argv.size()) return true;
 
@@ -534,72 +609,10 @@ bool CommandLineInterface::DoCommandInternal(std::vector<std::string>& argv) {
 		}
 
 	} else {
-		// Not an alias, check for partial match
-		std::list<std::string> possibilities;
-		std::list<std::string>::iterator liter;
-		bool exactMatch = false;
-
-		for(unsigned index = 0; index < (argv[0].size()); ++index) {
-
-			if (index == 0) {
-				// Bootstrap the list of possibilities
-				CommandMapConstIter citer = m_CommandMap.begin();
-
-				while (citer != m_CommandMap.end()) {
-					if (citer->first[index] == argv[0][index]) {
-						possibilities.push_back(citer->first);
-					}
-					++citer;
-				}
-
-			} else {
-				// Update the list of possiblities
-
-				// A more efficient search here would be nice.
-				liter = possibilities.begin();
-				while (liter != possibilities.end()) {
-					if ((*liter)[index] != argv[0][index]) {
-						// Remove this possibility from the list
-						liter = possibilities.erase(liter);
-					} else {
-						// check for exact match
-						if (argv[0] == (*liter)) {
-							// Exact match, we're done
-							argv[0] = (*liter);
-							exactMatch = true;
-							break;
-						}
-						++liter;
-					}
-				}
-				if (exactMatch) break;
-			}
-
-			if (!possibilities.size()) {
-				// Not implemented
-				SetErrorDetail("(No such command: " + argv[0] + ")");
-				return SetError(CLIError::kCommandNotImplemented);
-
-			} 
-		}
-
-		if (!exactMatch) {
-			if (possibilities.size() != 1) {
-				// Ambiguous
-				std::stringstream detail;
-				detail << "Ambiguous command, possibilities: ";
-				liter = possibilities.begin();
-				while (liter != possibilities.end()) {
-					detail << "'" << (*liter) << "' ";
-					++liter;
-				}
-				SetErrorDetail(detail.str());
-				return SetError(CLIError::kAmbiguousCommand);
-
-			} else {
-				// We have a partial match
-				argv[0] = (*(possibilities.begin()));
-			}
+		if (!PartialMatch(argv)) 
+		{
+			// error set inside PartialMatch
+			return false;
 		}
 	}
 

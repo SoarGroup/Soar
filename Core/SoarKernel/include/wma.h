@@ -16,8 +16,6 @@
 #include <string>
 #include "soar_module.h"
 
-using namespace soar_module;
-
 typedef struct wme_struct wme;
 
 //////////////////////////////////////////////////////////
@@ -73,7 +71,7 @@ typedef struct wme_struct wme;
 
 class wma_decay_param;
 
-class wma_param_container: public param_container
+class wma_param_container: public soar_module::param_container
 {
 	public:	
 		
@@ -81,26 +79,26 @@ class wma_param_container: public param_container
 		enum isupport_choices { none, no_create, uniform };
 		enum precision_choices { low, high };		
 		
-		boolean_param *activation;
+		soar_module::boolean_param *activation;
 		wma_decay_param *decay_rate;
-		constant_param<criteria_choices> *criteria;
-		boolean_param *forgetting;
-		constant_param<isupport_choices> *isupport;
-		boolean_param *persistence;
-		constant_param<precision_choices> *precision;
+		soar_module::constant_param<criteria_choices> *criteria;
+		soar_module::boolean_param *forgetting;
+		soar_module::constant_param<isupport_choices> *isupport;
+		soar_module::boolean_param *persistence;
+		soar_module::constant_param<precision_choices> *precision;
 				
 		wma_param_container( agent *new_agent );
 };
 
-class wma_decay_param: public decimal_param
+class wma_decay_param: public soar_module::decimal_param
 {
 	public:
-		wma_decay_param( const char *new_name, double new_value, predicate<double> *new_val_pred, predicate<double> *new_prot_pred );
+		wma_decay_param( const char *new_name, double new_value, soar_module::predicate<double> *new_val_pred, soar_module::predicate<double> *new_prot_pred );
 		virtual void set_value( double new_value );
 };
 
 template <typename T>
-class wma_activation_predicate: public agent_predicate<T>
+class wma_activation_predicate: public soar_module::agent_predicate<T>
 {	
 	public:
 		wma_activation_predicate( agent *new_agent );
@@ -111,10 +109,10 @@ class wma_activation_predicate: public agent_predicate<T>
 // WMA Statistics
 //////////////////////////////////////////////////////////
 
-class wma_stat_container: public stat_container
+class wma_stat_container: public soar_module::stat_container
 {
 	public:	
-		integer_stat *dummy;		
+		soar_module::integer_stat *dummy;		
 				
 		wma_stat_container( agent *new_agent );
 };

@@ -17,10 +17,10 @@
 #include <string>
 #include <list>
 
-#include "production.h"
 #include "soar_module.h"
 
-using namespace soar_module;
+#include "chunk.h"
+#include "production.h"
 
 //////////////////////////////////////////////////////////
 // RL Constants
@@ -35,62 +35,73 @@ using namespace soar_module;
 // RL Parameters
 //////////////////////////////////////////////////////////
 
-class rl_param_container: public param_container
+class rl_learning_param;
+
+class rl_param_container: public soar_module::param_container
 {
 	public:
 		enum learning_choices { sarsa, q };
 		
-		boolean_param *learning;
-		decimal_param *discount_rate;
-		decimal_param *learning_rate;
-		constant_param<learning_choices> *learning_policy;
-		decimal_param *et_decay_rate;
-		decimal_param *et_tolerance;
-		boolean_param *temporal_extension;
-		boolean_param *hrl_discount;
+		rl_learning_param *learning;
+		soar_module::decimal_param *discount_rate;
+		soar_module::decimal_param *learning_rate;
+		soar_module::constant_param<learning_choices> *learning_policy;
+		soar_module::decimal_param *et_decay_rate;
+		soar_module::decimal_param *et_tolerance;
+		soar_module::boolean_param *temporal_extension;
+		soar_module::boolean_param *hrl_discount;
 
 		rl_param_container( agent *new_agent );
 };
+
+class rl_learning_param: public soar_module::boolean_param
+{
+	protected:
+		agent *my_agent;
+
+	public:
+		rl_learning_param( const char *new_name, soar_module::boolean new_value, soar_module::predicate<soar_module::boolean> *new_prot_pred, agent *new_agent );
+		void set_value( soar_module::boolean new_value );
+};
+
 
 //////////////////////////////////////////////////////////
 // RL Statistics
 //////////////////////////////////////////////////////////
 
-class rl_stat_container: public stat_container
+class rl_stat_container: public soar_module::stat_container
 {
 	public:	
-		decimal_stat *update_error;
-		decimal_stat *total_reward;
-		decimal_stat *global_reward;
+		soar_module::decimal_stat *update_error;
+		soar_module::decimal_stat *total_reward;
+		soar_module::decimal_stat *global_reward;
 				
 		rl_stat_container( agent *new_agent );
 };
+
 
 //////////////////////////////////////////////////////////
 // RL Types
 //////////////////////////////////////////////////////////
 
-template <class T> class SoarMemoryAllocator;
-typedef std::map<production *, double, std::less<production *>, SoarMemoryAllocator<std::pair<production* const, double> > > rl_et_map;
+// map of eligibility traces
+typedef std::map<production *, double> rl_et_map;
 
+// list of rules associated with the last operator
+typedef std::list<production *> rl_rule_list;
+
+// rl data associated with each state
 typedef struct rl_data_struct {
- 	rl_et_map *eligibility_traces;
+ 	rl_et_map *eligibility_traces;			// traces associated with productions	
+	rl_rule_list *prev_op_rl_rules;			// rl rules associated with the previous operator
 	
-	::list *prev_op_rl_rules;
-	unsigned int num_prev_op_rl_rules;
-	
-	double previous_q;
-	double reward;	
+	double previous_q;						// q-value of the previous state
+	double reward;							// accumulated discounted reward
 
-	unsigned int gap_age;	// the number of steps since a cycle containing rl rules
-	unsigned int hrl_age;	// the number of steps in a subgoal
+	unsigned int gap_age;					// the number of steps since a cycle containing rl rules
+	unsigned int hrl_age;					// the number of steps in a subgoal
 } rl_data;
 
-//
-// These must go below types
-//
-
-#include "stl_support.h"
 
 //////////////////////////////////////////////////////////
 // Parameter Maintenance
@@ -165,14 +176,11 @@ extern void rl_tabulate_reward_values( agent *my_agent );
 // Updates
 //////////////////////////////////////////////////////////
 
-// Returns true if goal's reward-link contains ^final-status true
-extern bool rl_final_update( agent *my_agent, Symbol *goal );
-
 // Store and update data that will be needed later to perform a Bellman update for the current operator
 extern void rl_store_data( agent *my_agent, Symbol *goal, preference *cand );
 
 // update the value of Soar-RL rules
-extern void rl_perform_update( agent *my_agent, double op_value, bool op_rl, Symbol *goal );
+extern void rl_perform_update( agent *my_agent, double op_value, bool op_rl, Symbol *goal, bool update_efr = true );
 
 // clears eligibility traces in accordance with watkins
 extern void rl_watkins_clear( agent *my_agent, Symbol *goal );

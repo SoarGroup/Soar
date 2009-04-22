@@ -19,6 +19,7 @@
 #include <functional>
 
 #include "misc.h"
+#include "symtab.h"
 
 typedef struct wme_struct wme;
 typedef struct preference_struct preference;

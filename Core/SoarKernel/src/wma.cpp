@@ -36,30 +36,30 @@
 // Parameters
 /////////////////////////////////////////////////////
 
-wma_decay_param::wma_decay_param( const char *new_name, double new_value, predicate<double> *new_val_pred, predicate<double> *new_prot_pred ): decimal_param( new_name, new_value, new_val_pred, new_prot_pred ) {};
+wma_decay_param::wma_decay_param( const char *new_name, double new_value, soar_module::predicate<double> *new_val_pred, soar_module::predicate<double> *new_prot_pred ): soar_module::decimal_param( new_name, new_value, new_val_pred, new_prot_pred ) {};
 
 void wma_decay_param::set_value( double new_value ) { value = -new_value; };
 
 //
 
 template <typename T>
-wma_activation_predicate<T>::wma_activation_predicate( agent *new_agent ): agent_predicate<T>( new_agent ) {};
+wma_activation_predicate<T>::wma_activation_predicate( agent *new_agent ): soar_module::agent_predicate<T>( new_agent ) {};
 
 template <typename T>
 bool wma_activation_predicate<T>::operator() ( T /*val*/ ) { return wma_enabled( this->my_agent ); };
 
 //
 
-wma_param_container::wma_param_container( agent *new_agent ): param_container( new_agent )
+wma_param_container::wma_param_container( agent *new_agent ): soar_module::param_container( new_agent )
 {
 	/**
 	 * WMA on/off
 	 */
-	activation = new boolean_param( "activation", on, new f_predicate<boolean>() );
+	activation = new soar_module::boolean_param( "activation", soar_module::on, new soar_module::f_predicate<soar_module::boolean>() );
 	add( activation );
 
 	// decay-rate
-	decay_rate = new wma_decay_param( "decay-rate", -0.8, new btw_predicate<double>( 0, 1, true ), new wma_activation_predicate<double>( my_agent ) );
+	decay_rate = new wma_decay_param( "decay-rate", -0.8, new soar_module::btw_predicate<double>( 0, 1, true ), new wma_activation_predicate<double>( my_agent ) );
 	add( decay_rate );
 
 	/**
@@ -70,7 +70,7 @@ wma_param_container::wma_param_container( agent *new_agent ): param_container( n
 	 *                architecture created WMEs
 	 * ALL - All wmes are activated
 	 */
-	criteria = new constant_param<criteria_choices>( "criteria", crit_all, new wma_activation_predicate<criteria_choices>( my_agent ) );
+	criteria = new soar_module::constant_param<criteria_choices>( "criteria", crit_all, new wma_activation_predicate<criteria_choices>( my_agent ) );
 	criteria->add_mapping( crit_agent, "o-agent" );
 	criteria->add_mapping( crit_agent_arch, "o-agent-arch" );
 	criteria->add_mapping( crit_all, "all" );
@@ -79,7 +79,7 @@ wma_param_container::wma_param_container( agent *new_agent ): param_container( n
 	/**
 	 * Are WMEs removed from WM when activation gets too low?
 	 */
-	forgetting = new boolean_param( "forgetting", off, new wma_activation_predicate<boolean>( my_agent ) );
+	forgetting = new soar_module::boolean_param( "forgetting", soar_module::off, new wma_activation_predicate<soar_module::boolean>( my_agent ) );
 	add( forgetting );
 
 	/**
@@ -97,7 +97,7 @@ wma_param_container::wma_param_container( agent *new_agent ): param_container( n
 	 *           boost regardless of "distance" (in the backtrace)
 	 *           from the tested WME.
 	 */
-	isupport = new constant_param<isupport_choices>( "i-support", uniform, new wma_activation_predicate<isupport_choices>( my_agent ) );
+	isupport = new soar_module::constant_param<isupport_choices>( "i-support", uniform, new wma_activation_predicate<isupport_choices>( my_agent ) );
 	isupport->add_mapping( none, "none" );
 	isupport->add_mapping( no_create, "no-create" );
 	isupport->add_mapping( uniform, "uniform" );
@@ -107,13 +107,13 @@ wma_param_container::wma_param_container( agent *new_agent ): param_container( n
 	 * Whether or not an instantiation activates WMEs just once,
 	 * or every cycle until it is retracted.
 	 */
-	persistence = new boolean_param( "persistence", off, new wma_activation_predicate<boolean>( my_agent ) );
+	persistence = new soar_module::boolean_param( "persistence", soar_module::off, new wma_activation_predicate<soar_module::boolean>( my_agent ) );
 	add( persistence );
 
 	/**
 	 * Level of precision with which activation levels are calculated.
 	 */
-	precision = new constant_param<precision_choices>( "precision", low, new wma_activation_predicate<precision_choices>( my_agent ) );
+	precision = new soar_module::constant_param<precision_choices>( "precision", low, new wma_activation_predicate<precision_choices>( my_agent ) );
 	precision->add_mapping( low, "low" );
 	precision->add_mapping( high, "high" );
 	add( precision );
@@ -127,10 +127,10 @@ wma_param_container::wma_param_container( agent *new_agent ): param_container( n
 // Statistics
 /////////////////////////////////////////////////////
 
-wma_stat_container::wma_stat_container( agent *new_agent ): stat_container( new_agent )
+wma_stat_container::wma_stat_container( agent *new_agent ): soar_module::stat_container( new_agent )
 {
 	// update-error
-	dummy = new integer_stat( "dummy", 0, new f_predicate<long>() );
+	dummy = new soar_module::integer_stat( "dummy", 0, new soar_module::f_predicate<long>() );
 	add( dummy );
 };
 

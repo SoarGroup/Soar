@@ -287,9 +287,7 @@ typedef struct agent_struct {
   Symbol            * rl_sym_reward_link;
   Symbol            * rl_sym_reward;
   Symbol            * rl_sym_value;
-  Symbol			* rl_sym_final_update;
-  Symbol			* rl_sym_true;  
-
+  
   Symbol            * epmem_sym;
   Symbol            * epmem_sym_cmd;
   Symbol            * epmem_sym_result;
@@ -319,7 +317,6 @@ typedef struct agent_struct {
   Symbol			* epmem_sym_before;
   Symbol			* epmem_sym_after;
   Symbol			* epmem_sym_prohibit;
-
   /* ----------------------- Symbol table stuff -------------------------- */
 
   unsigned long       current_symbol_hash_id;

@@ -276,6 +276,24 @@ bool CommandProcessor::ProcessLine(std::string& commandLine) {
 		g_pWaitForInput->TriggerEvent();
 		return true;
 	} 
+	if (commandLine == "spawn-debugger") {
+		sml::Agent* pAgent = pKernel->GetAgent( AGENT_NAME );
+		if (!pAgent->SpawnDebugger()) {
+			std::cout << "Debugger spawn failed." << std::endl;
+		}
+		DisplayPrompt(true);
+		g_pWaitForInput->TriggerEvent();
+		return true;
+	} 
+	if (commandLine == "kill-debugger") {
+		sml::Agent* pAgent = pKernel->GetAgent( AGENT_NAME );
+		if (!pAgent->KillDebugger()) {
+			std::cout << "Debugger kill failed." << std::endl;
+		}
+		DisplayPrompt(true);
+		g_pWaitForInput->TriggerEvent();
+		return true;
+	} 
 
 	bool quit = false;
 	if (g_pInputThread) {

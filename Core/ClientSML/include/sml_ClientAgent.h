@@ -763,6 +763,32 @@ public:
 	*		 and wants to get up to date on the current state of the output link.
 	*************************************************************/
 	bool SynchronizeOutputLink() ;
+
+	/*************************************************************
+	* @brief This method spawns the debugger and waits for it to
+	*        report in (as client java-debugger). java.exe must be
+	*        in the current process path.
+	* @param port Port that kernel is on
+	* @param hostname What machine the kernel is on, or null for localhost
+	*************************************************************/
+	bool SpawnDebugger( int port = 12121, const char* hostname = 0 );	// FIXME: pull 12121 constant from somewhere else
+
+	/*************************************************************
+	* @brief Kills the previously spawned debugger.
+	*************************************************************/
+	bool KillDebugger();
+
+protected:
+	// for {Spawn, Kill}Debugger()
+	bool WaitForDebugger();
+
+#ifdef _WIN32
+    STARTUPINFO debuggerStartupInfo;
+    PROCESS_INFORMATION debuggerProcessInformation;
+#else // _WIN32
+    pid_t debuggerPid;
+#endif // _WIN32
+
 };
 
 }//closes namespace

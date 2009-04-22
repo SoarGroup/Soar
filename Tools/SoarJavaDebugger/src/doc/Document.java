@@ -1044,4 +1044,18 @@ public class Document implements Kernel.AgentEventInterface, Kernel.SystemEventI
 		this.m_RHSFunctions.remove(functionName);
 		return this.m_Kernel.RemoveRhsFunction(callbackID);
 	}
+
+	public boolean isVisualSoarConnected() {
+		this.m_Kernel.GetAllConnectionInfo();
+		for (int i = 0; i < this.m_Kernel.GetNumberConnections(); ++i)
+		{
+			ConnectionInfo info = this.m_Kernel.GetConnectionInfo(i);
+			//System.out.println("Connection: " + info.GetName());
+			if (info.GetName().equalsIgnoreCase("visual-soar")) 
+			{
+				return true;
+			}
+		}
+		return false;
+	}
 }

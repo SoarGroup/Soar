@@ -14,6 +14,9 @@
  * =======================================================================
  */
 
+#include <cmath>
+#include <algorithm>
+
 #include "episodic_memory.h"
 
 #include "agent.h"
@@ -22,9 +25,6 @@
 #include "wmem.h"
 #include "print.h"
 #include "xml.h"
-
-#include <cmath>
-#include <algorithm>
 
 //////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////
@@ -100,24 +100,24 @@ const char *epmem_range_queries[2][2][3] =
 //////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////
 
-epmem_param_container::epmem_param_container( agent *new_agent ): param_container( new_agent )
+epmem_param_container::epmem_param_container( agent *new_agent ): soar_module::param_container( new_agent )
 {
 	// learning
-	learning = new boolean_param( "learning", on, new f_predicate<boolean>() );
+	learning = new soar_module::boolean_param( "learning", soar_module::on, new soar_module::f_predicate<soar_module::boolean>() );
 	add( learning );
 
 	// database
-	database = new constant_param<db_choices>( "database", memory, new epmem_db_predicate<db_choices>( my_agent ) );
+	database = new soar_module::constant_param<db_choices>( "database", memory, new epmem_db_predicate<db_choices>( my_agent ) );
 	database->add_mapping( memory, "memory" );
 	database->add_mapping( file, "file" );
 	add( database );
 
 	// path
-	path = new epmem_path_param( "path", "", new predicate<const char *>(), new epmem_db_predicate<const char *>( my_agent ), my_agent );
+	path = new epmem_path_param( "path", "", new soar_module::predicate<const char *>(), new epmem_db_predicate<const char *>( my_agent ), my_agent );
 	add( path );
 
 	// commit
-	commit = new integer_param( "commit", 1, new gt_predicate<long>( 1, true ), new f_predicate<long>() );
+	commit = new soar_module::integer_param( "commit", 1, new soar_module::gt_predicate<long>( 1, true ), new soar_module::f_predicate<long>() );
 	add( commit );
 
 	// mode
@@ -127,39 +127,39 @@ epmem_param_container::epmem_param_container( agent *new_agent ): param_containe
 	add( mode );
 
 	// graph-match
-	graph_match = new epmem_graph_match_param( "graph-match", on, new f_predicate<boolean>(), my_agent );
+	graph_match = new epmem_graph_match_param( "graph-match", soar_module::on, new soar_module::f_predicate<soar_module::boolean>(), my_agent );
 	add( graph_match );
 
 	// phase
-	phase = new constant_param<phase_choices>( "phase", phase_output, new f_predicate<phase_choices>() );
+	phase = new soar_module::constant_param<phase_choices>( "phase", phase_output, new soar_module::f_predicate<phase_choices>() );
 	phase->add_mapping( phase_output, "output" );
 	phase->add_mapping( phase_selection, "selection" );
 	add( phase );
 
 	// trigger
-	trigger = new constant_param<trigger_choices>( "trigger", output, new f_predicate<trigger_choices>() );
+	trigger = new soar_module::constant_param<trigger_choices>( "trigger", output, new soar_module::f_predicate<trigger_choices>() );
 	trigger->add_mapping( none, "none" );
 	trigger->add_mapping( output, "output" );
 	trigger->add_mapping( dc, "dc" );
 	add( trigger );
 
 	// force
-	force = new constant_param<force_choices>( "force", force_off, new f_predicate<force_choices>() );
+	force = new soar_module::constant_param<force_choices>( "force", force_off, new soar_module::f_predicate<force_choices>() );
 	force->add_mapping( remember, "remember" );
 	force->add_mapping( ignore, "ignore" );
 	force->add_mapping( force_off, "off" );
 	add( force );
 
 	// balance
-	balance = new decimal_param( "balance", 0.5, new btw_predicate<double>( 0, 1, true ), new f_predicate<double>() );
+	balance = new soar_module::decimal_param( "balance", 0.5, new soar_module::btw_predicate<double>( 0, 1, true ), new soar_module::f_predicate<double>() );
 	add( balance );
 
 	// exclusions - this is initialized with "epmem" directly after hash tables
-	exclusions = new set_param( "exclusions", new f_predicate<const char *>, my_agent );
+	exclusions = new soar_module::set_param( "exclusions", new soar_module::f_predicate<const char *>, my_agent );
 	add( exclusions );
 
 	// timers
-	timers = new constant_param<soar_module::timer::timer_level>( "timers", soar_module::timer::zero, new f_predicate<soar_module::timer::timer_level>() );
+	timers = new soar_module::constant_param<soar_module::timer::timer_level>( "timers", soar_module::timer::zero, new soar_module::f_predicate<soar_module::timer::timer_level>() );
 	timers->add_mapping( soar_module::timer::zero, "off" );
 	timers->add_mapping( soar_module::timer::one, "one" );
 	timers->add_mapping( soar_module::timer::two, "two" );
@@ -169,7 +169,7 @@ epmem_param_container::epmem_param_container( agent *new_agent ): param_containe
 
 //
 
-epmem_path_param::epmem_path_param( const char *new_name, const char *new_value, predicate<const char *> *new_val_pred, predicate<const char *> *new_prot_pred, agent *new_agent ): string_param( new_name, new_value, new_val_pred, new_prot_pred ), my_agent( new_agent ) {}
+epmem_path_param::epmem_path_param( const char *new_name, const char *new_value, soar_module::predicate<const char *> *new_val_pred, soar_module::predicate<const char *> *new_prot_pred, agent *new_agent ): soar_module::string_param( new_name, new_value, new_val_pred, new_prot_pred ), my_agent( new_agent ) {}
 
 void epmem_path_param::set_value( const char *new_value )
 {
@@ -188,7 +188,7 @@ void epmem_path_param::set_value( const char *new_value )
 
 //
 
-epmem_graph_match_param::epmem_graph_match_param( const char *new_name, boolean new_value, predicate<boolean> *new_prot_pred, agent *new_agent ): boolean_param( new_name, new_value, new_prot_pred ), my_agent( new_agent ) {}
+epmem_graph_match_param::epmem_graph_match_param( const char *new_name, soar_module::boolean new_value, soar_module::predicate<soar_module::boolean> *new_prot_pred, agent *new_agent ): soar_module::boolean_param( new_name, new_value, new_prot_pred ), my_agent( new_agent ) {}
 
 bool epmem_graph_match_param::validate_string( const char *new_string )
 {
@@ -209,12 +209,14 @@ bool epmem_graph_match_param::validate_string( const char *new_string )
 
 //
 
-epmem_mode_param::epmem_mode_param( const char *new_name, epmem_param_container::mode_choices new_value, predicate<epmem_param_container::mode_choices> *new_prot_pred, agent *new_agent ): constant_param<epmem_param_container::mode_choices>( new_name, new_value, new_prot_pred ), my_agent( new_agent ) {}
+epmem_mode_param::epmem_mode_param( const char *new_name, epmem_param_container::mode_choices new_value, soar_module::predicate<epmem_param_container::mode_choices> *new_prot_pred, agent *new_agent ): soar_module::constant_param<epmem_param_container::mode_choices>( new_name, new_value, new_prot_pred ), my_agent( new_agent ) {}
 
 void epmem_mode_param::set_value( epmem_param_container::mode_choices new_value )
 {
 	if ( new_value != epmem_param_container::graph )
+	{
 		my_agent->epmem_params->graph_match->set_value( soar_module::off );
+	}
 
 	value = new_value;
 }
@@ -222,7 +224,7 @@ void epmem_mode_param::set_value( epmem_param_container::mode_choices new_value 
 //
 
 template <typename T>
-epmem_db_predicate<T>::epmem_db_predicate( agent *new_agent ): agent_predicate<T>( new_agent ) {}
+epmem_db_predicate<T>::epmem_db_predicate( agent *new_agent ): soar_module::agent_predicate<T>( new_agent ) {}
 
 template <typename T>
 bool epmem_db_predicate<T>::operator() ( T /*val*/ ) { return ( this->my_agent->epmem_db->get_status() == soar_module::connected ); }
@@ -244,78 +246,78 @@ bool epmem_enabled( agent *my_agent )
 //////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////
 
-epmem_stat_container::epmem_stat_container( agent *new_agent ): stat_container( new_agent )
+epmem_stat_container::epmem_stat_container( agent *new_agent ): soar_module::stat_container( new_agent )
 {
 	// time
-	time = new integer_stat( "time", 0, new epmem_db_predicate<long>( my_agent ) );
+	time = new soar_module::integer_stat( "time", 0, new epmem_db_predicate<long>( my_agent ) );
 	add( time );
 
 	// mem-usage
-	mem_usage = new epmem_mem_usage_stat( my_agent, "mem-usage", 0, new predicate<long>() );
+	mem_usage = new epmem_mem_usage_stat( my_agent, "mem-usage", 0, new soar_module::predicate<long>() );
 	add( mem_usage );
 
 	// mem-high
-	mem_high = new epmem_mem_high_stat( my_agent, "mem-high", 0, new predicate<long>() );
+	mem_high = new epmem_mem_high_stat( my_agent, "mem-high", 0, new soar_module::predicate<long>() );
 	add( mem_high );
 
 	// ncb-wmes
-	ncb_wmes = new integer_stat( "ncb-wmes", 0, new f_predicate<long>() );
+	ncb_wmes = new soar_module::integer_stat( "ncb-wmes", 0, new soar_module::f_predicate<long>() );
 	add( ncb_wmes );
 
 	// qry-pos
-	qry_pos = new integer_stat( "qry-pos", 0, new f_predicate<long>() );
+	qry_pos = new soar_module::integer_stat( "qry-pos", 0, new soar_module::f_predicate<long>() );
 	add( qry_pos );
 
 	// qry-neg
-	qry_neg = new integer_stat( "qry-neg", 0, new f_predicate<long>() );
+	qry_neg = new soar_module::integer_stat( "qry-neg", 0, new soar_module::f_predicate<long>() );
 	add( qry_neg );
 
 	// qry-ret
-	qry_ret = new integer_stat( "qry-ret", 0, new f_predicate<long>() );
+	qry_ret = new soar_module::integer_stat( "qry-ret", 0, new soar_module::f_predicate<long>() );
 	add( qry_ret );
 
 	// qry-pos
-	qry_card = new integer_stat( "qry-card", 0, new f_predicate<long>() );
+	qry_card = new soar_module::integer_stat( "qry-card", 0, new soar_module::f_predicate<long>() );
 	add( qry_card );
 
 	// qry-pos
-	qry_lits = new integer_stat( "qry-lits", 0, new f_predicate<long>() );
+	qry_lits = new soar_module::integer_stat( "qry-lits", 0, new soar_module::f_predicate<long>() );
 	add( qry_lits );
 
 	// next-id
-	next_id = new integer_stat( "next-id", 0, new epmem_db_predicate<long>( my_agent ) );
+	next_id = new soar_module::integer_stat( "next-id", 0, new epmem_db_predicate<long>( my_agent ) );
 	add( next_id );
 
 	// rit-offset-1
-	rit_offset_1 = new integer_stat( "rit-offset-1", 0, new epmem_db_predicate<long>( my_agent ) );
+	rit_offset_1 = new soar_module::integer_stat( "rit-offset-1", 0, new epmem_db_predicate<long>( my_agent ) );
 	add( rit_offset_1 );
 
 	// rit-left-root-1
-	rit_left_root_1 = new integer_stat( "rit-left-root-1", 0, new epmem_db_predicate<long>( my_agent ) );
+	rit_left_root_1 = new soar_module::integer_stat( "rit-left-root-1", 0, new epmem_db_predicate<long>( my_agent ) );
 	add( rit_left_root_1 );
 
 	// rit-right-root-1
-	rit_right_root_1 = new integer_stat( "rit-right-root-1", 0, new epmem_db_predicate<long>( my_agent ) );
+	rit_right_root_1 = new soar_module::integer_stat( "rit-right-root-1", 0, new epmem_db_predicate<long>( my_agent ) );
 	add( rit_right_root_1 );
 
 	// rit-min-step-1
-	rit_min_step_1 = new integer_stat( "rit-min-step-1", 0, new epmem_db_predicate<long>( my_agent ) );
+	rit_min_step_1 = new soar_module::integer_stat( "rit-min-step-1", 0, new epmem_db_predicate<long>( my_agent ) );
 	add( rit_min_step_1 );
 
 	// rit-offset-2
-	rit_offset_2 = new integer_stat( "rit-offset-2", 0, new epmem_db_predicate<long>( my_agent ) );
+	rit_offset_2 = new soar_module::integer_stat( "rit-offset-2", 0, new epmem_db_predicate<long>( my_agent ) );
 	add( rit_offset_2 );
 
 	// rit-left-root-2
-	rit_left_root_2 = new integer_stat( "rit-left-root-2", 0, new epmem_db_predicate<long>( my_agent ) );
+	rit_left_root_2 = new soar_module::integer_stat( "rit-left-root-2", 0, new epmem_db_predicate<long>( my_agent ) );
 	add( rit_left_root_2 );
 
 	// rit-right-root-2
-	rit_right_root_2 = new integer_stat( "rit-right-root-2", 0, new epmem_db_predicate<long>( my_agent ) );
+	rit_right_root_2 = new soar_module::integer_stat( "rit-right-root-2", 0, new epmem_db_predicate<long>( my_agent ) );
 	add( rit_right_root_2 );
 
 	// rit-min-step-2
-	rit_min_step_2 = new integer_stat( "rit-min-step-2", 0, new epmem_db_predicate<long>( my_agent ) );
+	rit_min_step_2 = new soar_module::integer_stat( "rit-min-step-2", 0, new epmem_db_predicate<long>( my_agent ) );
 	add( rit_min_step_2 );
 
 
@@ -355,7 +357,7 @@ epmem_stat_container::epmem_stat_container( agent *new_agent ): stat_container( 
 
 //
 
-epmem_mem_usage_stat::epmem_mem_usage_stat( agent *new_agent, const char *new_name, long new_value, predicate<long> *new_prot_pred ): integer_stat( new_name, new_value, new_prot_pred ), my_agent( new_agent ) {}
+epmem_mem_usage_stat::epmem_mem_usage_stat( agent *new_agent, const char *new_name, long new_value, soar_module::predicate<long> *new_prot_pred ): soar_module::integer_stat( new_name, new_value, new_prot_pred ), my_agent( new_agent ) {}
 
 long epmem_mem_usage_stat::get_value()
 {
@@ -364,7 +366,7 @@ long epmem_mem_usage_stat::get_value()
 
 //
 
-epmem_mem_high_stat::epmem_mem_high_stat( agent *new_agent, const char *new_name, long new_value, predicate<long> *new_prot_pred ): integer_stat( new_name, new_value, new_prot_pred ), my_agent( new_agent ) {}
+epmem_mem_high_stat::epmem_mem_high_stat( agent *new_agent, const char *new_name, long new_value, soar_module::predicate<long> *new_prot_pred ): soar_module::integer_stat( new_name, new_value, new_prot_pred ), my_agent( new_agent ) {}
 
 long epmem_mem_high_stat::get_value()
 {
@@ -378,96 +380,96 @@ long epmem_mem_high_stat::get_value()
 //////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////
 
-epmem_timer_container::epmem_timer_container( agent *new_agent ): timer_container( new_agent )
+epmem_timer_container::epmem_timer_container( agent *new_agent ): soar_module::timer_container( new_agent )
 {
 	// one
 	
-	total = new epmem_timer( "_total", my_agent, timer::one );
+	total = new epmem_timer( "_total", my_agent, soar_module::timer::one );
 	add( total );
 
 	// two
 
-	storage = new epmem_timer( "epmem_storage", my_agent, timer::two );
+	storage = new epmem_timer( "epmem_storage", my_agent, soar_module::timer::two );
 	add( storage );
 
-	ncb_retrieval = new epmem_timer( "epmem_ncb_retrieval", my_agent, timer::two );
+	ncb_retrieval = new epmem_timer( "epmem_ncb_retrieval", my_agent, soar_module::timer::two );
 	add( ncb_retrieval );
 
-	query = new epmem_timer( "epmem_query", my_agent, timer::two );
+	query = new epmem_timer( "epmem_query", my_agent, soar_module::timer::two );
 	add( query );
 
-	api = new epmem_timer( "epmem_api", my_agent, timer::two );
+	api = new epmem_timer( "epmem_api", my_agent, soar_module::timer::two );
 	add( api );
 
-	trigger = new epmem_timer( "epmem_trigger", my_agent, timer::two );
+	trigger = new epmem_timer( "epmem_trigger", my_agent, soar_module::timer::two );
 	add( trigger );
 
-	init = new epmem_timer( "epmem_init", my_agent, timer::two );
+	init = new epmem_timer( "epmem_init", my_agent, soar_module::timer::two );
 	add( init );
 
-	next = new epmem_timer( "epmem_next", my_agent, timer::two );
+	next = new epmem_timer( "epmem_next", my_agent, soar_module::timer::two );
 	add( next );
 
-	prev = new epmem_timer( "epmem_prev", my_agent, timer::two );
+	prev = new epmem_timer( "epmem_prev", my_agent, soar_module::timer::two );
 	add( prev );
 
-	hash = new epmem_timer( "epmem_hash", my_agent, timer::two );
+	hash = new epmem_timer( "epmem_hash", my_agent, soar_module::timer::two );
 	add( hash );
 
 	// three
 
-	ncb_edge = new epmem_timer( "ncb_edge", my_agent, timer::three );
+	ncb_edge = new epmem_timer( "ncb_edge", my_agent, soar_module::timer::three );
 	add( ncb_edge );
 
-	ncb_edge_rit = new epmem_timer( "ncb_edge_rit", my_agent, timer::three );
+	ncb_edge_rit = new epmem_timer( "ncb_edge_rit", my_agent, soar_module::timer::three );
 	add( ncb_edge_rit );
 
-	ncb_node = new epmem_timer( "ncb_node", my_agent, timer::three );
+	ncb_node = new epmem_timer( "ncb_node", my_agent, soar_module::timer::three );
 	add( ncb_node );
 
-	ncb_node_rit = new epmem_timer( "ncb_node_rit", my_agent, timer::three );
+	ncb_node_rit = new epmem_timer( "ncb_node_rit", my_agent, soar_module::timer::three );
 	add( ncb_node_rit );
 
-	query_dnf = new epmem_timer( "query_dnf", my_agent, timer::three );
+	query_dnf = new epmem_timer( "query_dnf", my_agent, soar_module::timer::three );
 	add( query_dnf );
 
-	query_graph_match = new epmem_timer( "query_graph_match", my_agent, timer::three );
+	query_graph_match = new epmem_timer( "query_graph_match", my_agent, soar_module::timer::three );
 	add( query_graph_match );
 
-	query_pos_start_ep = new epmem_timer( "query_pos_start_ep", my_agent, timer::three );
+	query_pos_start_ep = new epmem_timer( "query_pos_start_ep", my_agent, soar_module::timer::three );
 	add( query_pos_start_ep );
 
-	query_pos_start_now = new epmem_timer( "query_pos_start_now", my_agent, timer::three );
+	query_pos_start_now = new epmem_timer( "query_pos_start_now", my_agent, soar_module::timer::three );
 	add( query_pos_start_now );
 
-	query_pos_start_point = new epmem_timer( "query_pos_start_point", my_agent, timer::three );
+	query_pos_start_point = new epmem_timer( "query_pos_start_point", my_agent, soar_module::timer::three );
 	add( query_pos_start_point );
 
-	query_pos_end_ep = new epmem_timer( "query_pos_end_ep", my_agent, timer::three );
+	query_pos_end_ep = new epmem_timer( "query_pos_end_ep", my_agent, soar_module::timer::three );
 	add( query_pos_end_ep );
 
-	query_pos_end_now = new epmem_timer( "query_pos_end_now", my_agent, timer::three );
+	query_pos_end_now = new epmem_timer( "query_pos_end_now", my_agent, soar_module::timer::three );
 	add( query_pos_end_now );
 
-	query_pos_end_point = new epmem_timer( "query_pos_end_point", my_agent, timer::three );
+	query_pos_end_point = new epmem_timer( "query_pos_end_point", my_agent, soar_module::timer::three );
 	add( query_pos_end_point );
 
-	query_neg_start_ep = new epmem_timer( "query_neg_start_ep", my_agent, timer::three );
+	query_neg_start_ep = new epmem_timer( "query_neg_start_ep", my_agent, soar_module::timer::three );
 	add( query_neg_start_ep );
 
-	query_neg_start_now = new epmem_timer( "query_neg_start_now", my_agent, timer::three );
+	query_neg_start_now = new epmem_timer( "query_neg_start_now", my_agent, soar_module::timer::three );
 	add( query_neg_start_now );
 
-	query_neg_start_point = new epmem_timer( "query_neg_start_point", my_agent, timer::three );
+	query_neg_start_point = new epmem_timer( "query_neg_start_point", my_agent, soar_module::timer::three );
 	add( query_neg_start_point );
 
-	query_neg_end_ep = new epmem_timer( "query_neg_end_ep", my_agent, timer::three );
+	query_neg_end_ep = new epmem_timer( "query_neg_end_ep", my_agent, soar_module::timer::three );
 	add( query_neg_end_ep );
 
-	query_neg_end_now = new epmem_timer( "query_neg_end_now", my_agent, timer::three );
+	query_neg_end_now = new epmem_timer( "query_neg_end_now", my_agent, soar_module::timer::three );
 	add( query_neg_end_now );
 
-	query_neg_end_point = new epmem_timer( "query_neg_end_point", my_agent, timer::three );
+	query_neg_end_point = new epmem_timer( "query_neg_end_point", my_agent, soar_module::timer::three );
 	add( query_neg_end_point );
 
 	/////////////////////////////
@@ -484,7 +486,7 @@ epmem_timer_container::epmem_timer_container( agent *new_agent ): timer_containe
 
 //
 
-epmem_timer_level_predicate::epmem_timer_level_predicate( agent *new_agent ): agent_predicate<soar_module::timer::timer_level>( new_agent ) {}
+epmem_timer_level_predicate::epmem_timer_level_predicate( agent *new_agent ): soar_module::agent_predicate<soar_module::timer::timer_level>( new_agent ) {}
 
 bool epmem_timer_level_predicate::operator() ( soar_module::timer::timer_level val ) { return ( my_agent->epmem_params->timers->get_value() >= val ); }
 
@@ -499,9 +501,9 @@ epmem_timer::epmem_timer(const char *new_name, agent *new_agent, soar_module::ti
 //////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////
 
-epmem_common_statement_container::epmem_common_statement_container( agent *new_agent ): sqlite_statement_container( new_agent->epmem_db )
+epmem_common_statement_container::epmem_common_statement_container( agent *new_agent ): soar_module::sqlite_statement_container( new_agent->epmem_db )
 {
-	sqlite_database *new_db = new_agent->epmem_db;
+	soar_module::sqlite_database *new_db = new_agent->epmem_db;
 
 	//
 
@@ -516,50 +518,50 @@ epmem_common_statement_container::epmem_common_statement_container( agent *new_a
 
 	//
 	
-	begin = new sqlite_statement( new_db, "BEGIN" );
+	begin = new soar_module::sqlite_statement( new_db, "BEGIN" );
 	add( begin );
 
-	commit = new sqlite_statement( new_db, "COMMIT" );
+	commit = new soar_module::sqlite_statement( new_db, "COMMIT" );
 	add( commit );
 
-	rollback = new sqlite_statement( new_db, "ROLLBACK" );
+	rollback = new soar_module::sqlite_statement( new_db, "ROLLBACK" );
 	add( rollback );
 
 	//
 
-	var_get = new sqlite_statement( new_db, "SELECT value FROM vars WHERE id=?" );
+	var_get = new soar_module::sqlite_statement( new_db, "SELECT value FROM vars WHERE id=?" );
 	add( var_get );
 
-	var_set = new sqlite_statement( new_db, "REPLACE INTO vars (id,value) VALUES (?,?)" );
+	var_set = new soar_module::sqlite_statement( new_db, "REPLACE INTO vars (id,value) VALUES (?,?)" );
 	add( var_set );
 
 	//
 
-	rit_add_left = new sqlite_statement( new_db, "INSERT INTO rit_left_nodes (min,max) VALUES (?,?)" );
+	rit_add_left = new soar_module::sqlite_statement( new_db, "INSERT INTO rit_left_nodes (min,max) VALUES (?,?)" );
 	add( rit_add_left );
 
-	rit_truncate_left = new sqlite_statement( new_db, "DELETE FROM rit_left_nodes" );
+	rit_truncate_left = new soar_module::sqlite_statement( new_db, "DELETE FROM rit_left_nodes" );
 	add( rit_truncate_left );
 
-	rit_add_right = new sqlite_statement( new_db, "INSERT INTO rit_right_nodes (node) VALUES (?)" );
+	rit_add_right = new soar_module::sqlite_statement( new_db, "INSERT INTO rit_right_nodes (node) VALUES (?)" );
 	add( rit_add_right );
 
-	rit_truncate_right = new sqlite_statement( new_db, "DELETE FROM rit_right_nodes" );
+	rit_truncate_right = new soar_module::sqlite_statement( new_db, "DELETE FROM rit_right_nodes" );
 	add( rit_truncate_right );
 
 	//
 
-	hash_get = new sqlite_statement( new_db, "SELECT id FROM temporal_symbol_hash WHERE sym_type=? AND sym_const=?" );
+	hash_get = new soar_module::sqlite_statement( new_db, "SELECT id FROM temporal_symbol_hash WHERE sym_type=? AND sym_const=?" );
 	add( hash_get );
 
-	hash_add = new sqlite_statement( new_db, "INSERT INTO temporal_symbol_hash (sym_type,sym_const) VALUES (?,?)" );
+	hash_add = new soar_module::sqlite_statement( new_db, "INSERT INTO temporal_symbol_hash (sym_type,sym_const) VALUES (?,?)" );
 	add( hash_add );
 }
 
 
-epmem_tree_statement_container::epmem_tree_statement_container( agent *new_agent ): sqlite_statement_container( new_agent->epmem_db )
+epmem_tree_statement_container::epmem_tree_statement_container( agent *new_agent ): soar_module::sqlite_statement_container( new_agent->epmem_db )
 {
-	sqlite_database *new_db = new_agent->epmem_db;
+	soar_module::sqlite_database *new_db = new_agent->epmem_db;
 
 	//
 
@@ -584,52 +586,52 @@ epmem_tree_statement_container::epmem_tree_statement_container( agent *new_agent
 
 	//
 
-	add_time = new sqlite_statement( new_db, "INSERT INTO times (id) VALUES (?)" );
+	add_time = new soar_module::sqlite_statement( new_db, "INSERT INTO times (id) VALUES (?)" );
 	add( add_time );
 
 	//
 
-	add_node_now = new sqlite_statement( new_db, "INSERT INTO node_now (id,start) VALUES (?,?)" );
+	add_node_now = new soar_module::sqlite_statement( new_db, "INSERT INTO node_now (id,start) VALUES (?,?)" );
 	add( add_node_now );
 
-	delete_node_now = new sqlite_statement( new_db, "DELETE FROM node_now WHERE id=?" );
+	delete_node_now = new soar_module::sqlite_statement( new_db, "DELETE FROM node_now WHERE id=?" );
 	add( delete_node_now );
 
-	add_node_point = new sqlite_statement( new_db, "INSERT INTO node_point (id,start) VALUES (?,?)" );
+	add_node_point = new soar_module::sqlite_statement( new_db, "INSERT INTO node_point (id,start) VALUES (?,?)" );
 	add( add_node_point );
 
-	add_node_range = new sqlite_statement( new_db, "INSERT INTO node_range (rit_node,start,end,id) VALUES (?,?,?,?)" );
+	add_node_range = new soar_module::sqlite_statement( new_db, "INSERT INTO node_range (rit_node,start,end,id) VALUES (?,?,?,?)" );
 	add( add_node_range );
 
 	//
 
-	add_node_unique = new sqlite_statement( new_db, "INSERT INTO node_unique (parent_id,attrib,value) VALUES (?,?,?)" );
+	add_node_unique = new soar_module::sqlite_statement( new_db, "INSERT INTO node_unique (parent_id,attrib,value) VALUES (?,?,?)" );
 	add( add_node_unique );
 
-	find_node_unique = new sqlite_statement( new_db, "SELECT child_id FROM node_unique WHERE parent_id=? AND attrib=? AND value=?" );
+	find_node_unique = new soar_module::sqlite_statement( new_db, "SELECT child_id FROM node_unique WHERE parent_id=? AND attrib=? AND value=?" );
 	add( find_node_unique );
 
-	find_identifier = new sqlite_statement( new_db, "SELECT child_id FROM node_unique WHERE parent_id=? AND attrib=? AND value=0" );
+	find_identifier = new soar_module::sqlite_statement( new_db, "SELECT child_id FROM node_unique WHERE parent_id=? AND attrib=? AND value=0" );
 	add( find_identifier );
 
 	//
 
-	valid_episode = new sqlite_statement( new_db, "SELECT COUNT(*) AS ct FROM times WHERE id=?" );
+	valid_episode = new soar_module::sqlite_statement( new_db, "SELECT COUNT(*) AS ct FROM times WHERE id=?" );
 	add( valid_episode );
 
-	next_episode = new sqlite_statement( new_db, "SELECT id FROM times WHERE id>? ORDER BY id ASC LIMIT 1" );
+	next_episode = new soar_module::sqlite_statement( new_db, "SELECT id FROM times WHERE id>? ORDER BY id ASC LIMIT 1" );
 	add( next_episode );
 
-	prev_episode = new sqlite_statement( new_db, "SELECT id FROM times WHERE id<? ORDER BY id DESC LIMIT 1" );
+	prev_episode = new soar_module::sqlite_statement( new_db, "SELECT id FROM times WHERE id<? ORDER BY id DESC LIMIT 1" );
 	add( prev_episode );
 
-	get_episode = new sqlite_statement( new_db, "SELECT i.child_id, i.parent_id, h1.sym_const, h2.sym_const, h1.sym_type, h2.sym_type FROM node_unique i, temporal_symbol_hash h1, temporal_symbol_hash h2 WHERE i.child_id IN (SELECT n.id FROM node_now n WHERE n.start<= ? UNION ALL SELECT p.id FROM node_point p WHERE p.start=? UNION ALL SELECT e1.id FROM node_range e1, rit_left_nodes lt WHERE e1.rit_node=lt.min AND e1.end >= ? UNION ALL SELECT e2.id FROM node_range e2, rit_right_nodes rt WHERE e2.rit_node = rt.node AND e2.start <= ?) AND i.attrib=h1.id AND i.value=h2.id ORDER BY i.child_id ASC", new_agent->epmem_timers->ncb_node );
+	get_episode = new soar_module::sqlite_statement( new_db, "SELECT i.child_id, i.parent_id, h1.sym_const, h2.sym_const, h1.sym_type, h2.sym_type FROM node_unique i, temporal_symbol_hash h1, temporal_symbol_hash h2 WHERE i.child_id IN (SELECT n.id FROM node_now n WHERE n.start<= ? UNION ALL SELECT p.id FROM node_point p WHERE p.start=? UNION ALL SELECT e1.id FROM node_range e1, rit_left_nodes lt WHERE e1.rit_node=lt.min AND e1.end >= ? UNION ALL SELECT e2.id FROM node_range e2, rit_right_nodes rt WHERE e2.rit_node = rt.node AND e2.start <= ?) AND i.attrib=h1.id AND i.value=h2.id ORDER BY i.child_id ASC", new_agent->epmem_timers->ncb_node );
 	add( get_episode );
 }
 
-epmem_graph_statement_container::epmem_graph_statement_container( agent *new_agent ): sqlite_statement_container( new_agent->epmem_db )
+epmem_graph_statement_container::epmem_graph_statement_container( agent *new_agent ): soar_module::sqlite_statement_container( new_agent->epmem_db )
 {
-	sqlite_database *new_db = new_agent->epmem_db;
+	soar_module::sqlite_database *new_db = new_agent->epmem_db;
 
 	//
 
@@ -671,70 +673,70 @@ epmem_graph_statement_container::epmem_graph_statement_container( agent *new_age
 
 	//
 
-	add_time = new sqlite_statement( new_db, "INSERT INTO times (id) VALUES (?)" );
+	add_time = new soar_module::sqlite_statement( new_db, "INSERT INTO times (id) VALUES (?)" );
 	add( add_time );
 
 	//
 
-	add_node_now = new sqlite_statement( new_db, "INSERT INTO node_now (id,start) VALUES (?,?)" );
+	add_node_now = new soar_module::sqlite_statement( new_db, "INSERT INTO node_now (id,start) VALUES (?,?)" );
 	add( add_node_now );
 
-	delete_node_now = new sqlite_statement( new_db, "DELETE FROM node_now WHERE id=?" );
+	delete_node_now = new soar_module::sqlite_statement( new_db, "DELETE FROM node_now WHERE id=?" );
 	add( delete_node_now );
 
-	add_node_point = new sqlite_statement( new_db, "INSERT INTO node_point (id,start) VALUES (?,?)" );
+	add_node_point = new soar_module::sqlite_statement( new_db, "INSERT INTO node_point (id,start) VALUES (?,?)" );
 	add( add_node_point );
 
-	add_node_range = new sqlite_statement( new_db, "INSERT INTO node_range (rit_node,start,end,id) VALUES (?,?,?,?)" );
+	add_node_range = new soar_module::sqlite_statement( new_db, "INSERT INTO node_range (rit_node,start,end,id) VALUES (?,?,?,?)" );
 	add( add_node_range );
 
 
-	add_node_unique = new sqlite_statement( new_db, "INSERT INTO node_unique (parent_id,attrib,value) VALUES (?,?,?)" );
+	add_node_unique = new soar_module::sqlite_statement( new_db, "INSERT INTO node_unique (parent_id,attrib,value) VALUES (?,?,?)" );
 	add( add_node_unique );
 
-	find_node_unique = new sqlite_statement( new_db, "SELECT child_id FROM node_unique WHERE parent_id=? AND attrib=? AND value=?" );
+	find_node_unique = new soar_module::sqlite_statement( new_db, "SELECT child_id FROM node_unique WHERE parent_id=? AND attrib=? AND value=?" );
 	add( find_node_unique );
 
 	//
 
-	add_edge_now = new sqlite_statement( new_db, "INSERT INTO edge_now (id,start) VALUES (?,?)" );
+	add_edge_now = new soar_module::sqlite_statement( new_db, "INSERT INTO edge_now (id,start) VALUES (?,?)" );
 	add( add_edge_now );
 
-	delete_edge_now = new sqlite_statement( new_db, "DELETE FROM edge_now WHERE id=?" );
+	delete_edge_now = new soar_module::sqlite_statement( new_db, "DELETE FROM edge_now WHERE id=?" );
 	add( delete_edge_now );
 
-	add_edge_point = new sqlite_statement( new_db, "INSERT INTO edge_point (id,start) VALUES (?,?)" );
+	add_edge_point = new soar_module::sqlite_statement( new_db, "INSERT INTO edge_point (id,start) VALUES (?,?)" );
 	add( add_edge_point );
 
-	add_edge_range = new sqlite_statement( new_db, "INSERT INTO edge_range (rit_node,start,end,id) VALUES (?,?,?,?)" );
+	add_edge_range = new soar_module::sqlite_statement( new_db, "INSERT INTO edge_range (rit_node,start,end,id) VALUES (?,?,?,?)" );
 	add( add_edge_range );
 
 
-	add_edge_unique = new sqlite_statement( new_db, "INSERT INTO edge_unique (q0,w,q1) VALUES (?,?,?)" );
+	add_edge_unique = new soar_module::sqlite_statement( new_db, "INSERT INTO edge_unique (q0,w,q1) VALUES (?,?,?)" );
 	add( add_edge_unique );
 
-	find_edge_unique = new sqlite_statement( new_db, "SELECT parent_id, q1 FROM edge_unique WHERE q0=? AND w=?" );
+	find_edge_unique = new soar_module::sqlite_statement( new_db, "SELECT parent_id, q1 FROM edge_unique WHERE q0=? AND w=?" );
 	add( find_edge_unique );
 
-	find_edge_unique_shared = new sqlite_statement( new_db, "SELECT parent_id FROM edge_unique WHERE q0=? AND w=? AND q1=?" );
+	find_edge_unique_shared = new soar_module::sqlite_statement( new_db, "SELECT parent_id FROM edge_unique WHERE q0=? AND w=? AND q1=?" );
 	add( find_edge_unique_shared );
 
 	//
 
-	valid_episode = new sqlite_statement( new_db, "SELECT COUNT(*) AS ct FROM times WHERE id=?" );
+	valid_episode = new soar_module::sqlite_statement( new_db, "SELECT COUNT(*) AS ct FROM times WHERE id=?" );
 	add( valid_episode );
 
-	next_episode = new sqlite_statement( new_db, "SELECT id FROM times WHERE id>? ORDER BY id ASC LIMIT 1" );
+	next_episode = new soar_module::sqlite_statement( new_db, "SELECT id FROM times WHERE id>? ORDER BY id ASC LIMIT 1" );
 	add( next_episode );
 
-	prev_episode = new sqlite_statement( new_db, "SELECT id FROM times WHERE id<? ORDER BY id DESC LIMIT 1" );
+	prev_episode = new soar_module::sqlite_statement( new_db, "SELECT id FROM times WHERE id<? ORDER BY id DESC LIMIT 1" );
 	add( prev_episode );
 
 
-	get_nodes = new sqlite_statement( new_db, "SELECT f.child_id, f.parent_id, h1.sym_const, h2.sym_const, h1.sym_type, h2.sym_type FROM node_unique f, temporal_symbol_hash h1, temporal_symbol_hash h2 WHERE f.child_id IN (SELECT n.id FROM node_now n WHERE n.start<= ? UNION ALL SELECT p.id FROM node_point p WHERE p.start=? UNION ALL SELECT e1.id FROM node_range e1, rit_left_nodes lt WHERE e1.rit_node=lt.min AND e1.end >= ? UNION ALL SELECT e2.id FROM node_range e2, rit_right_nodes rt WHERE e2.rit_node = rt.node AND e2.start <= ?) AND f.attrib=h1.id AND f.value=h2.id ORDER BY f.child_id ASC", new_agent->epmem_timers->ncb_node );
+	get_nodes = new soar_module::sqlite_statement( new_db, "SELECT f.child_id, f.parent_id, h1.sym_const, h2.sym_const, h1.sym_type, h2.sym_type FROM node_unique f, temporal_symbol_hash h1, temporal_symbol_hash h2 WHERE f.child_id IN (SELECT n.id FROM node_now n WHERE n.start<= ? UNION ALL SELECT p.id FROM node_point p WHERE p.start=? UNION ALL SELECT e1.id FROM node_range e1, rit_left_nodes lt WHERE e1.rit_node=lt.min AND e1.end >= ? UNION ALL SELECT e2.id FROM node_range e2, rit_right_nodes rt WHERE e2.rit_node = rt.node AND e2.start <= ?) AND f.attrib=h1.id AND f.value=h2.id ORDER BY f.child_id ASC", new_agent->epmem_timers->ncb_node );
 	add( get_nodes );
 
-	get_edges = new sqlite_statement( new_db, "SELECT f.q0, h.sym_const, f.q1, h.sym_type FROM edge_unique f INNER JOIN temporal_symbol_hash h ON f.w=h.id WHERE f.parent_id IN (SELECT n.id FROM edge_now n WHERE n.start<= ? UNION ALL SELECT p.id FROM edge_point p WHERE p.start=? UNION ALL SELECT e1.id FROM edge_range e1, rit_left_nodes lt WHERE e1.rit_node=lt.min AND e1.end >= ? UNION ALL SELECT e2.id FROM edge_range e2, rit_right_nodes rt WHERE e2.rit_node = rt.node AND e2.start <= ?) ORDER BY f.q0 ASC, f.q1 ASC", new_agent->epmem_timers->ncb_edge );
+	get_edges = new soar_module::sqlite_statement( new_db, "SELECT f.q0, h.sym_const, f.q1, h.sym_type FROM edge_unique f INNER JOIN temporal_symbol_hash h ON f.w=h.id WHERE f.parent_id IN (SELECT n.id FROM edge_now n WHERE n.start<= ? UNION ALL SELECT p.id FROM edge_point p WHERE p.start=? UNION ALL SELECT e1.id FROM edge_range e1, rit_left_nodes lt WHERE e1.rit_node=lt.min AND e1.end >= ? UNION ALL SELECT e2.id FROM edge_range e2, rit_right_nodes rt WHERE e2.rit_node = rt.node AND e2.start <= ?) ORDER BY f.q0 ASC, f.q1 ASC", new_agent->epmem_timers->ncb_edge );
 	add( get_edges );
 }
 
