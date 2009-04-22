@@ -58,7 +58,7 @@ class FullTests : public CPPUNIT_NS::TestCase
 	CPPUNIT_TEST( testOSupportCopyDestroyCircularParent );
 	CPPUNIT_TEST( testOSupportCopyDestroyCircular );
 	CPPUNIT_TEST( testSynchronize );
-	CPPUNIT_TEST( testRunningAgentCreation );
+	CPPUNIT_TEST( testRunningAgentCreation );  // bug 952
 	//CPPUNIT_TEST( testShutdownHandlerShutdown );
 	CPPUNIT_TEST( testEventOrdering ); // bug 1100
 	CPPUNIT_TEST( testStatusCompleteDuplication ); // bug 1042
@@ -1233,27 +1233,32 @@ TEST_DEFINITION( testSynchronize )
 
 TEST_DEFINITION( testRunningAgentCreation )
 {
-	sml::Agent* pOnTheFlyAgent = 0;
-	int callback = -1;
+	// SEE BUG 952
+	RunningAgentData data;
+	data.count = 0;
+	data.pOnTheFly = 0;
+
+	m_pKernel->RegisterForUpdateEvent( sml::smlEVENT_AFTER_ALL_OUTPUT_PHASES, Handlers::MyAgentCreationUpdateEventHandler, &data );
+	m_pKernel->RunAllAgents( 10 );
+
+	std::cout << std::endl;
+	std::cout << "count: " << data.count;
+	// FIXME: in a perfect world, this is 10 not 12 but since the run isn't forever, the newly created agent runs 10.
+	CPPUNIT_ASSERT( data.count == 12 );	
+	CPPUNIT_ASSERT( data.pOnTheFly );
 	
-	callback = m_pKernel->RegisterForUpdateEvent( sml::smlEVENT_AFTER_ALL_OUTPUT_PHASES, Handlers::MyAgentCreationUpdateEventHandler, &pOnTheFlyAgent );
-
-	m_pKernel->RunAllAgents( 1 );
-
-	CPPUNIT_ASSERT( pOnTheFlyAgent );
-	
-	CPPUNIT_ASSERT( m_pKernel->UnregisterForUpdateEvent( callback ) );
-	callback = 0;
-
-	int outputPhases1( 0 );
-	m_pAgent->RegisterForRunEvent( sml::smlEVENT_AFTER_OUTPUT_PHASE, Handlers::MyRunEventHandler, &outputPhases1 );
-
-	int outputPhases2( 0 );
-	pOnTheFlyAgent->RegisterForRunEvent( sml::smlEVENT_AFTER_OUTPUT_PHASE, Handlers::MyRunEventHandler, &outputPhases2 );
-
-	m_pKernel->RunAllAgents( 5 );
-
-	CPPUNIT_ASSERT( outputPhases1 == outputPhases2 );
+	sml::ClientAnalyzedXML response1;
+	m_pAgent->ExecuteCommandLineXML("stats", &response1);
+	sml::ClientAnalyzedXML response2;
+	data.pOnTheFly->ExecuteCommandLineXML("stats", &response2);
+	//std::cout << "original: " << response1.GetArgInt(sml::sml_Names::kParamStatsCycleCountDecision, -1);
+	//std::cout << " " << response1.GetArgInt(sml::sml_Names::kParamStatsCycleCountElaboration, -1);
+	//std::cout << " " << response1.GetArgInt(sml::sml_Names::kParamStatsCycleCountInnerElaboration, -1);
+	//std::cout << " onthefly: " << response2.GetArgInt(sml::sml_Names::kParamStatsCycleCountDecision, -1);
+	//std::cout << " " << response2.GetArgInt(sml::sml_Names::kParamStatsCycleCountElaboration, -1);
+	//std::cout << " " << response2.GetArgInt(sml::sml_Names::kParamStatsCycleCountInnerElaboration, -1) << std::endl;
+	CPPUNIT_ASSERT(response1.GetArgInt(sml::sml_Names::kParamStatsCycleCountDecision, -1) == 10);
+	CPPUNIT_ASSERT(response2.GetArgInt(sml::sml_Names::kParamStatsCycleCountDecision, -1) == 10);
 }
 
 void FullTests::testShutdownHandlerShutdown()

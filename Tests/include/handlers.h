@@ -7,6 +7,12 @@
 #include "sml_Client.h"
 #include "sml_Utils.h"
 
+struct RunningAgentData
+{
+	sml::Agent* pOnTheFly;
+	int count;
+};
+
 class Handlers
 {
 public:

@@ -690,6 +690,9 @@ smlRunResult RunScheduler::RunScheduledAgents(bool forever, smlRunStepSize runSt
 	// We store this as a member so we can access it in gSKI event handlers
 	m_RunFlags = runFlags ;
 
+	// Stored as a member so agents created on the fly can init themselves with it
+	m_CurrentRunStepSize = runStepSize;
+
 	// Make sure the args of the Run command are valid.
 	VerifyStepSizeForRunType(forever, runStepSize, interleaveStepSize) ;
 

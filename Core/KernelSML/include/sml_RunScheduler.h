@@ -25,6 +25,7 @@ protected:
 	KernelSML*	m_pKernelSML ;
 	smlRunFlags	m_RunFlags ;
 	bool		m_IsRunning ;
+	smlRunStepSize m_CurrentRunStepSize ;
 
 	// When running by decision stop before this phase runs.
 	smlPhase m_StopBeforePhase ;
@@ -84,6 +85,11 @@ public:
 	* @brief	Returns true if at least one agent is currently running.
 	*************************************************************/	
 	bool IsRunning() ;
+
+	/*************************************************************
+	* @brief	Returns current run step size, only valid if IsRunning
+	*************************************************************/	
+	smlRunStepSize GetCurrentRunStepSize() { return m_CurrentRunStepSize; }
 
 	/*************************************************************
 	* @brief	Returns true if at least any scheduled agent halted during run.
