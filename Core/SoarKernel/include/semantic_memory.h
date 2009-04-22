@@ -197,6 +197,7 @@ class smem_statement_container: public soar_module::sqlite_statement_container
 		soar_module::sqlite_statement *ct_lti_get;
 
 		soar_module::sqlite_statement *act_set;
+		soar_module::sqlite_statement *act_add;
 
 		smem_statement_container( agent *new_agent );
 };
@@ -208,7 +209,7 @@ class smem_statement_container: public soar_module::sqlite_statement_container
 
 enum smem_variable_key
 {
-	var_stuff
+	var_max_cycle
 };
 
 
@@ -219,9 +220,6 @@ enum smem_variable_key
 // represents the unique identification of a
 // long-term identifier
 typedef unsigned long smem_lti_id;
-
-// represents an activation cycle
-typedef unsigned long smem_activation_cycle;
 
 // represents a collection of long-term identifiers
 typedef std::list<smem_lti_id> smem_lti_list;

@@ -236,8 +236,7 @@ smem_statement_container::smem_statement_container( agent *new_agent ): soar_mod
 	add_structure( "CREATE UNIQUE INDEX IF NOT EXISTS ct_lti_attr_val ON ct_lti (attr, val_lti)" );
 
 	add_structure( "CREATE TABLE IF NOT EXISTS activation (lti INTEGER PRIMARY KEY, cycle INTEGER)" );
-	add_structure( "CREATE INDEX IF NOT EXISTS activation_cycle ON activation (cycle)" );
-	add_structure( "INSERT OR IGNORE INTO activation (lti,cycle) VALUES (0,0)" );
+	add_structure( "CREATE INDEX IF NOT EXISTS activation_cycle ON activation (cycle)" );	
 
 	//
 	
@@ -359,8 +358,11 @@ smem_statement_container::smem_statement_container( agent *new_agent ): soar_mod
 
 	//
 
-	act_set = new soar_module::sqlite_statement( new_db, "REPLACE INTO activation (lti, cycle) VALUES (?,(SELECT MAX(cycle)+1 FROM activation))" );
+	act_set = new soar_module::sqlite_statement( new_db, "UPDATE activation SET cycle=? WHERE lti=?" );
 	add( act_set );
+
+	act_add = new soar_module::sqlite_statement( new_db, "INSERT OR IGNORE INTO activation (lti, cycle) VALUES (?,?)" );
+	add( act_add );
 }
 
 
@@ -626,6 +628,24 @@ long smem_temporal_hash( agent *my_agent, Symbol *sym, bool add_on_fail = true )
 //////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////
 
+void smem_lti_activate( agent *my_agent, smem_lti_id lti, bool new_lti )
+{	
+	if ( new_lti )
+	{
+		// lti, cycle
+		my_agent->smem_stmts->act_add->bind_int( 1, lti );
+		my_agent->smem_stmts->act_add->bind_int( 2, ( my_agent->smem_max_cycle++ ) );
+		my_agent->smem_stmts->act_add->execute( soar_module::op_reinit );
+	}
+	else
+	{
+		// cycle=? WHERE lti=?
+		my_agent->smem_stmts->act_set->bind_int( 1, ( my_agent->smem_max_cycle++ ) );
+		my_agent->smem_stmts->act_set->bind_int( 2, lti );		
+		my_agent->smem_stmts->act_set->execute( soar_module::op_reinit );
+	}
+}
+
 smem_lti_id smem_lti_add( agent *my_agent, Symbol *id )
 {		
 	if ( ( id->common.symbol_type == IDENTIFIER_SYMBOL_TYPE ) &&
@@ -654,16 +674,13 @@ smem_lti_id smem_lti_add( agent *my_agent, Symbol *id )
 			my_agent->smem_stmts->lti_add->execute( soar_module::op_reinit );
 
 			id->id.smem_lti = (smem_lti_id) my_agent->smem_db->last_insert_rowid();
+
+			// insert activation			
+			smem_lti_activate( my_agent, id->id.smem_lti, true );
 		}
 	}
 
 	return id->id.smem_lti;
-}
-
-void smem_lti_activate( agent *my_agent, smem_lti_id lti )
-{	
-	my_agent->smem_stmts->act_set->bind_int( 1, lti );
-	my_agent->smem_stmts->act_set->execute( soar_module::op_reinit );
 }
 
 Symbol *smem_lti_make( agent *my_agent, smem_lti_id lti, char name_letter, unsigned long name_number, goal_stack_level level )
@@ -893,7 +910,7 @@ void smem_store_chunk( agent *my_agent, smem_lti_id parent_id, smem_wme_list *ch
 	}
 
 	// activate parent
-	smem_lti_activate( my_agent, parent_id );
+	smem_lti_activate( my_agent, parent_id, false );
 }
 
 void smem_store( agent *my_agent, Symbol *id, smem_storage_type store_type = store_level, tc_number tc = NIL )
@@ -958,7 +975,7 @@ void smem_install_memory( agent *my_agent, Symbol *state, smem_lti_id parent_id,
 	}
 	
 	// activate lti
-	smem_lti_activate( my_agent, parent_id );
+	smem_lti_activate( my_agent, parent_id, false );
 
 	// point retrieved to lti
 	smem_add_meta_wme( my_agent, state, result_header, my_agent->smem_sym_retrieved, lti );
@@ -1324,7 +1341,7 @@ void smem_init_db( agent *my_agent, bool readonly )
 	}
 	else
 	{
-		soar_module::sqlite_statement *temp_q = NULL;
+		//soar_module::sqlite_statement *temp_q = NULL;
 		//soar_module::sqlite_statement *temp_q2 = NULL;
 
 		// update validation count
@@ -1342,26 +1359,9 @@ void smem_init_db( agent *my_agent, bool readonly )
 
 		if ( !readonly )
 		{
-			// reset lti activation
-			{			
-				// find lowest cycle
-				temp_q = new soar_module::sqlite_statement( my_agent->smem_db, "SELECT MIN(cycle) FROM activation WHERE cycle>0" );
-				temp_q->prepare();
-				temp_q->execute();
-				if ( temp_q->column_type( 0 ) != soar_module::null_t )
-				{					
-					smem_activation_cycle cycle_min = (smem_activation_cycle) temp_q->column_int( 0 );
-					delete temp_q;
-
-					// shift all others down
-					temp_q = new soar_module::sqlite_statement( my_agent->smem_db, "UPDATE activation SET cycle=cycle - ? WHERE cycle>0" );
-					temp_q->prepare();
-					temp_q->bind_int( 1, ( cycle_min - 1 ) );
-					temp_q->execute();
-				}
-				
-				delete temp_q;
-				temp_q = NULL;
+			if ( !smem_variable_get( my_agent, var_max_cycle, &( my_agent->smem_max_cycle ) ) )
+			{
+				my_agent->smem_max_cycle = 1;				
 			}
 		}
 
@@ -1389,6 +1389,9 @@ void smem_close( agent *my_agent )
 {
 	if ( my_agent->smem_db->get_status() == soar_module::connected )
 	{
+		// store max cycle for future use of the smem database
+		smem_variable_set( my_agent, var_max_cycle, my_agent->smem_max_cycle );
+		
 		// if lazy, commit
 		if ( my_agent->smem_params->lazy_commit->get_value() == soar_module::on )
 		{

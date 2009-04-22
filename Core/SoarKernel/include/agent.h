@@ -881,6 +881,7 @@ kernel time and total_cpu_time greater than the derived total CPU time. REW */
 
   long smem_validation;
   bool smem_first_switch;
+  long smem_max_cycle;
 
 
   // JRV: Added to support XML management inside Soar
