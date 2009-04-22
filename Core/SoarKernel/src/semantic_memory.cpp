@@ -232,7 +232,7 @@ smem_statement_container::smem_statement_container( agent *new_agent ): soar_mod
 	add_structure( "CREATE UNIQUE INDEX IF NOT EXISTS ct_lti_attr_val ON ct_lti (attr, val_lti)" );
 
 	add_structure( "CREATE TABLE IF NOT EXISTS activation (lti INTEGER PRIMARY KEY, cycle INTEGER)" );
-	add_structure( "CREATE UNIQUE INDEX IF NOT EXISTS activation_cycle ON activation (cycle)" );
+	add_structure( "CREATE INDEX IF NOT EXISTS activation_cycle ON activation (cycle)" );
 	add_structure( "INSERT OR IGNORE INTO activation (lti,cycle) VALUES (0,0)" );
 
 	//
