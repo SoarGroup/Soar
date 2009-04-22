@@ -92,6 +92,7 @@
 // Tell SWIG to include these files in the generated wrapper code
 //
 %{
+#include "portability.h"
 #include "sml_Names.h"
 #include "ElementXML.h"
 #include "sml_AnalyzeXML.h"

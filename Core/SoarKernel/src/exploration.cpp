@@ -845,7 +845,9 @@ void exploration_compute_value_of_candidate( agent *my_agent, preference *cand, 
 			cand->numeric_value += get_number_from_symbol( pref->referent );
 
 			if ( pref->inst->prod->rl_rule )
+			{
 				cand->rl_contribution = true;
+			}
 		}
 	}
 
@@ -868,5 +870,7 @@ void exploration_compute_value_of_candidate( agent *my_agent, preference *cand, 
 	
 	// accomodate average mode
 	if ( my_agent->numeric_indifferent_mode == NUMERIC_INDIFFERENT_MODE_AVG )
+	{
 		cand->numeric_value = cand->numeric_value / cand->total_preferences_for_candidate;
+	}
 }

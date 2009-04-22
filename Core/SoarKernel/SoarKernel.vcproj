@@ -1075,42 +1075,6 @@
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath=".\src\misc.cpp"
-				>
-				<FileConfiguration
-					Name="Debug SCU|Win32"
-					ExcludedFromBuild="true"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Debug SCU|x64"
-					ExcludedFromBuild="true"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Release SCU|Win32"
-					ExcludedFromBuild="true"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Release SCU|x64"
-					ExcludedFromBuild="true"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-					/>
-				</FileConfiguration>
-			</File>
-			<File
 				RelativePath=".\src\osupport.cpp"
 				>
 				<FileConfiguration
@@ -1913,27 +1877,11 @@
 				>
 			</File>
 			<File
-				RelativePath=".\include\misc.h"
-				>
-			</File>
-			<File
 				RelativePath=".\src\osupport.h"
 				>
 			</File>
 			<File
 				RelativePath=".\include\parser.h"
-				>
-			</File>
-			<File
-				RelativePath="..\shared\portability.h"
-				>
-			</File>
-			<File
-				RelativePath="..\shared\portability_posix.h"
-				>
-			</File>
-			<File
-				RelativePath="..\shared\portability_windows.h"
 				>
 			</File>
 			<File
@@ -1989,15 +1937,7 @@
 				>
 			</File>
 			<File
-				RelativePath="..\shared\soar_TraceNames.h"
-				>
-			</File>
-			<File
 				RelativePath=".\include\soarkernel.h"
-				>
-			</File>
-			<File
-				RelativePath="..\shared\soarversion.h"
 				>
 			</File>
 			<File
@@ -2117,6 +2057,42 @@
 						WarningLevel="3"
 					/>
 				</FileConfiguration>
+			</File>
+		</Filter>
+		<Filter
+			Name="Shared"
+			>
+			<File
+				RelativePath="..\shared\Export.h"
+				>
+			</File>
+			<File
+				RelativePath="..\shared\misc.h"
+				>
+			</File>
+			<File
+				RelativePath="..\shared\pcreposix.h"
+				>
+			</File>
+			<File
+				RelativePath="..\shared\portability.h"
+				>
+			</File>
+			<File
+				RelativePath="..\shared\portability_posix.h"
+				>
+			</File>
+			<File
+				RelativePath="..\shared\portability_windows.h"
+				>
+			</File>
+			<File
+				RelativePath="..\shared\soar_TraceNames.h"
+				>
+			</File>
+			<File
+				RelativePath="..\shared\soarversion.h"
+				>
 			</File>
 		</Filter>
 	</Files>

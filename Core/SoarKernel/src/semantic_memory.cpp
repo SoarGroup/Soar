@@ -59,26 +59,26 @@
 //////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////
 
-smem_param_container::smem_param_container( agent *new_agent ): param_container( new_agent )
+smem_param_container::smem_param_container( agent *new_agent ): soar_module::param_container( new_agent )
 {
 	// learning
-	learning = new boolean_param( "learning", on, new f_predicate<boolean>() );
+	learning = new soar_module::boolean_param( "learning", soar_module::on, new soar_module::f_predicate<soar_module::boolean>() );
 	add( learning );
 
 	// database
-	database = new constant_param<db_choices>( "database", memory, new smem_db_predicate<db_choices>( my_agent ) );
+	database = new soar_module::constant_param<db_choices>( "database", memory, new smem_db_predicate<db_choices>( my_agent ) );
 	database->add_mapping( memory, "memory" );
 	database->add_mapping( file, "file" );
 	add( database );
 
 	// path
-	path = new smem_path_param( "path", "", new predicate<const char *>(), new smem_db_predicate<const char *>( my_agent ), my_agent );
+	path = new smem_path_param( "path", "", new soar_module::predicate<const char *>(), new smem_db_predicate<const char *>( my_agent ), my_agent );
 	add( path );
 
 	//
 
 	// timers
-	timers = new constant_param<soar_module::timer::timer_level>( "timers", soar_module::timer::zero, new f_predicate<soar_module::timer::timer_level>() );
+	timers = new soar_module::constant_param<soar_module::timer::timer_level>( "timers", soar_module::timer::zero, new soar_module::f_predicate<soar_module::timer::timer_level>() );
 	timers->add_mapping( soar_module::timer::zero, "off" );
 	timers->add_mapping( soar_module::timer::one, "one" );
 	timers->add_mapping( soar_module::timer::two, "two" );	
@@ -87,7 +87,7 @@ smem_param_container::smem_param_container( agent *new_agent ): param_container(
 
 //
 
-smem_path_param::smem_path_param( const char *new_name, const char *new_value, predicate<const char *> *new_val_pred, predicate<const char *> *new_prot_pred, agent *new_agent ): string_param( new_name, new_value, new_val_pred, new_prot_pred ), my_agent( new_agent ) {}
+smem_path_param::smem_path_param( const char *new_name, const char *new_value, soar_module::predicate<const char *> *new_val_pred, soar_module::predicate<const char *> *new_prot_pred, agent *new_agent ): soar_module::string_param( new_name, new_value, new_val_pred, new_prot_pred ), my_agent( new_agent ) {}
 
 void smem_path_param::set_value( const char *new_value )
 {
@@ -107,7 +107,7 @@ void smem_path_param::set_value( const char *new_value )
 //
 
 template <typename T>
-smem_db_predicate<T>::smem_db_predicate( agent *new_agent ): agent_predicate<T>( new_agent ) {}
+smem_db_predicate<T>::smem_db_predicate( agent *new_agent ): soar_module::agent_predicate<T>( new_agent ) {}
 
 template <typename T>
 bool smem_db_predicate<T>::operator() ( T /*val*/ ) { return ( this->my_agent->smem_db->get_status() == soar_module::connected ); }
@@ -125,20 +125,20 @@ bool smem_enabled( agent *my_agent )
 //////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////
 
-smem_stat_container::smem_stat_container( agent *new_agent ): stat_container( new_agent )
+smem_stat_container::smem_stat_container( agent *new_agent ): soar_module::stat_container( new_agent )
 {
 	// mem-usage
-	mem_usage = new smem_mem_usage_stat( my_agent, "mem-usage", 0, new predicate<long>() );
+	mem_usage = new smem_mem_usage_stat( my_agent, "mem-usage", 0, new soar_module::predicate<long>() );
 	add( mem_usage );
 
 	// mem-high
-	mem_high = new smem_mem_high_stat( my_agent, "mem-high", 0, new predicate<long>() );
+	mem_high = new smem_mem_high_stat( my_agent, "mem-high", 0, new soar_module::predicate<long>() );
 	add( mem_high );
 }
 
 //
 
-smem_mem_usage_stat::smem_mem_usage_stat( agent *new_agent, const char *new_name, long new_value, predicate<long> *new_prot_pred ): integer_stat( new_name, new_value, new_prot_pred ), my_agent( new_agent ) {}
+smem_mem_usage_stat::smem_mem_usage_stat( agent *new_agent, const char *new_name, long new_value, soar_module::predicate<long> *new_prot_pred ): soar_module::integer_stat( new_name, new_value, new_prot_pred ), my_agent( new_agent ) {}
 
 long smem_mem_usage_stat::get_value()
 {
@@ -147,7 +147,7 @@ long smem_mem_usage_stat::get_value()
 
 //
 
-smem_mem_high_stat::smem_mem_high_stat( agent *new_agent, const char *new_name, long new_value, predicate<long> *new_prot_pred ): integer_stat( new_name, new_value, new_prot_pred ), my_agent( new_agent ) {}
+smem_mem_high_stat::smem_mem_high_stat( agent *new_agent, const char *new_name, long new_value, soar_module::predicate<long> *new_prot_pred ): soar_module::integer_stat( new_name, new_value, new_prot_pred ), my_agent( new_agent ) {}
 
 long smem_mem_high_stat::get_value()
 {
@@ -161,37 +161,37 @@ long smem_mem_high_stat::get_value()
 //////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////
 
-smem_timer_container::smem_timer_container( agent *new_agent ): timer_container( new_agent )
+smem_timer_container::smem_timer_container( agent *new_agent ): soar_module::timer_container( new_agent )
 {
 	// one
 	
-	total = new smem_timer( "_total", my_agent, timer::one );
+	total = new smem_timer( "_total", my_agent, soar_module::timer::one );
 	add( total );
 
 	// two
 
-	storage = new smem_timer( "smem_storage", my_agent, timer::two );
+	storage = new smem_timer( "smem_storage", my_agent, soar_module::timer::two );
 	add( storage );
 
-	ncb_retrieval = new smem_timer( "smem_ncb_retrieval", my_agent, timer::two );
+	ncb_retrieval = new smem_timer( "smem_ncb_retrieval", my_agent, soar_module::timer::two );
 	add( ncb_retrieval );
 
-	query = new smem_timer( "smem_query", my_agent, timer::two );
+	query = new smem_timer( "smem_query", my_agent, soar_module::timer::two );
 	add( query );
 
-	api = new smem_timer( "smem_api", my_agent, timer::two );
+	api = new smem_timer( "smem_api", my_agent, soar_module::timer::two );
 	add( api );
 
-	init = new smem_timer( "smem_init", my_agent, timer::two );
+	init = new smem_timer( "smem_init", my_agent, soar_module::timer::two );
 	add( init );	
 
-	hash = new smem_timer( "smem_hash", my_agent, timer::two );
+	hash = new smem_timer( "smem_hash", my_agent, soar_module::timer::two );
 	add( hash );
 }
 
 //
 
-smem_timer_level_predicate::smem_timer_level_predicate( agent *new_agent ): agent_predicate<soar_module::timer::timer_level>( new_agent ) {}
+smem_timer_level_predicate::smem_timer_level_predicate( agent *new_agent ): soar_module::agent_predicate<soar_module::timer::timer_level>( new_agent ) {}
 
 bool smem_timer_level_predicate::operator() ( soar_module::timer::timer_level val ) { return ( my_agent->smem_params->timers->get_value() >= val ); }
 
@@ -206,9 +206,9 @@ smem_timer::smem_timer(const char *new_name, agent *new_agent, soar_module::time
 //////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////
 
-smem_statement_container::smem_statement_container( agent *new_agent ): sqlite_statement_container( new_agent->smem_db )
+smem_statement_container::smem_statement_container( agent *new_agent ): soar_module::sqlite_statement_container( new_agent->smem_db )
 {
-	sqlite_database *new_db = new_agent->smem_db;
+	soar_module::sqlite_database *new_db = new_agent->smem_db;
 
 	//
 
@@ -237,125 +237,125 @@ smem_statement_container::smem_statement_container( agent *new_agent ): sqlite_s
 
 	//
 	
-	begin = new sqlite_statement( new_db, "BEGIN" );
+	begin = new soar_module::sqlite_statement( new_db, "BEGIN" );
 	add( begin );
 
-	commit = new sqlite_statement( new_db, "COMMIT" );
+	commit = new soar_module::sqlite_statement( new_db, "COMMIT" );
 	add( commit );
 
-	rollback = new sqlite_statement( new_db, "ROLLBACK" );
+	rollback = new soar_module::sqlite_statement( new_db, "ROLLBACK" );
 	add( rollback );
 
 	//
 
-	var_get = new sqlite_statement( new_db, "SELECT value FROM vars WHERE id=?" );
+	var_get = new soar_module::sqlite_statement( new_db, "SELECT value FROM vars WHERE id=?" );
 	add( var_get );
 
-	var_set = new sqlite_statement( new_db, "REPLACE INTO vars (id,value) VALUES (?,?)" );
+	var_set = new soar_module::sqlite_statement( new_db, "REPLACE INTO vars (id,value) VALUES (?,?)" );
 	add( var_set );
 
 	//
 
-	hash_get = new sqlite_statement( new_db, "SELECT id FROM temporal_symbol_hash WHERE sym_type=? AND sym_const=?" );
+	hash_get = new soar_module::sqlite_statement( new_db, "SELECT id FROM temporal_symbol_hash WHERE sym_type=? AND sym_const=?" );
 	add( hash_get );
 
-	hash_add = new sqlite_statement( new_db, "INSERT INTO temporal_symbol_hash (sym_type,sym_const) VALUES (?,?)" );
+	hash_add = new soar_module::sqlite_statement( new_db, "INSERT INTO temporal_symbol_hash (sym_type,sym_const) VALUES (?,?)" );
 	add( hash_add );
 
 	//
 
-	lti_add = new sqlite_statement( new_db, "INSERT INTO lti (letter,num) VALUES (?,?)" );
+	lti_add = new soar_module::sqlite_statement( new_db, "INSERT INTO lti (letter,num) VALUES (?,?)" );
 	add( lti_add );
 
-	lti_get = new sqlite_statement( new_db, "SELECT id FROM lti WHERE letter=? AND num=?" );
+	lti_get = new soar_module::sqlite_statement( new_db, "SELECT id FROM lti WHERE letter=? AND num=?" );
 	add( lti_get );
 
-	lti_letter_num = new sqlite_statement( new_db, "SELECT letter, num FROM lti WHERE id=?" );
+	lti_letter_num = new soar_module::sqlite_statement( new_db, "SELECT letter, num FROM lti WHERE id=?" );
 	add( lti_letter_num );
 
-	lti_max = new sqlite_statement( new_db, "SELECT letter, MAX(num) FROM lti GROUP BY letter" );
+	lti_max = new soar_module::sqlite_statement( new_db, "SELECT letter, MAX(num) FROM lti GROUP BY letter" );
 	add( lti_max );
 
 	//
 
-	web_add = new sqlite_statement( new_db, "INSERT INTO web (parent_id, attr, val_const, val_lti) VALUES (?,?,?,?)" );
+	web_add = new soar_module::sqlite_statement( new_db, "INSERT INTO web (parent_id, attr, val_const, val_lti) VALUES (?,?,?,?)" );
 	add( web_add );
 
-	web_truncate = new sqlite_statement( new_db, "DELETE FROM web WHERE parent_id=?" );
+	web_truncate = new soar_module::sqlite_statement( new_db, "DELETE FROM web WHERE parent_id=?" );
 	add( web_truncate );
 
-	web_expand = new sqlite_statement( new_db, "SELECT tsh_a.sym_const AS attr_const, tsh_a.sym_type AS attr_type, vcl.sym_const AS value_const, vcl.sym_type AS value_type, vcl.letter AS value_letter, vcl.num AS value_num, vcl.val_lti AS value_lti FROM ((web w LEFT JOIN temporal_symbol_hash tsh_v ON w.val_const=tsh_v.id) vc LEFT JOIN lti ON vc.val_lti=lti.id) vcl INNER JOIN temporal_symbol_hash tsh_a ON vcl.attr=tsh_a.id WHERE parent_id=?" );
+	web_expand = new soar_module::sqlite_statement( new_db, "SELECT tsh_a.sym_const AS attr_const, tsh_a.sym_type AS attr_type, vcl.sym_const AS value_const, vcl.sym_type AS value_type, vcl.letter AS value_letter, vcl.num AS value_num, vcl.val_lti AS value_lti FROM ((web w LEFT JOIN temporal_symbol_hash tsh_v ON w.val_const=tsh_v.id) vc LEFT JOIN lti ON vc.val_lti=lti.id) vcl INNER JOIN temporal_symbol_hash tsh_a ON vcl.attr=tsh_a.id WHERE parent_id=?" );
 	add( web_expand );
 
 	//
 
-	web_attr_ct = new sqlite_statement( new_db, "SELECT attr, COUNT(*) AS ct FROM web WHERE parent_id=? GROUP BY attr" );
+	web_attr_ct = new soar_module::sqlite_statement( new_db, "SELECT attr, COUNT(*) AS ct FROM web WHERE parent_id=? GROUP BY attr" );
 	add( web_attr_ct );
 
-	web_const_ct = new sqlite_statement( new_db, "SELECT attr, val_const, COUNT(*) AS ct FROM web WHERE parent_id=? AND val_const IS NOT NULL GROUP BY attr, val_const" );
+	web_const_ct = new soar_module::sqlite_statement( new_db, "SELECT attr, val_const, COUNT(*) AS ct FROM web WHERE parent_id=? AND val_const IS NOT NULL GROUP BY attr, val_const" );
 	add( web_const_ct );
 
-	web_lti_ct = new sqlite_statement( new_db, "SELECT attr, val_lti, COUNT(*) AS ct FROM web WHERE parent_id=? AND val_const IS NULL GROUP BY attr, val_const, val_lti" );
+	web_lti_ct = new soar_module::sqlite_statement( new_db, "SELECT attr, val_lti, COUNT(*) AS ct FROM web WHERE parent_id=? AND val_const IS NULL GROUP BY attr, val_const, val_lti" );
 	add( web_lti_ct );
 
 	//
 
-	web_attr_all = new sqlite_statement( new_db, "SELECT parent_id FROM web w INNER JOIN activation a ON w.parent_id=a.lti WHERE attr=? ORDER BY cycle DESC" );
+	web_attr_all = new soar_module::sqlite_statement( new_db, "SELECT parent_id FROM web w INNER JOIN activation a ON w.parent_id=a.lti WHERE attr=? ORDER BY cycle DESC" );
 	add( web_attr_all );
 
-	web_const_all = new sqlite_statement( new_db, "SELECT parent_id FROM web w INNER JOIN activation a ON w.parent_id=a.lti WHERE attr=? AND val_const=? ORDER BY cycle DESC" );
+	web_const_all = new soar_module::sqlite_statement( new_db, "SELECT parent_id FROM web w INNER JOIN activation a ON w.parent_id=a.lti WHERE attr=? AND val_const=? ORDER BY cycle DESC" );
 	add( web_const_all );
 
-	web_lti_all = new sqlite_statement( new_db, "SELECT parent_id FROM web w INNER JOIN activation a ON w.parent_id=a.lti WHERE attr=? AND val_const IS NULL AND val_lti=? ORDER BY cycle DESC" );
+	web_lti_all = new soar_module::sqlite_statement( new_db, "SELECT parent_id FROM web w INNER JOIN activation a ON w.parent_id=a.lti WHERE attr=? AND val_const IS NULL AND val_lti=? ORDER BY cycle DESC" );
 	add( web_lti_all );
 
 	//
 
-	web_attr_child = new sqlite_statement( new_db, "SELECT parent_id FROM web WHERE parent_id=? AND attr=?" );
+	web_attr_child = new soar_module::sqlite_statement( new_db, "SELECT parent_id FROM web WHERE parent_id=? AND attr=?" );
 	add( web_attr_child );
 
-	web_const_child = new sqlite_statement( new_db, "SELECT parent_id FROM web WHERE parent_id=? AND attr=? AND val_const=?" );
+	web_const_child = new soar_module::sqlite_statement( new_db, "SELECT parent_id FROM web WHERE parent_id=? AND attr=? AND val_const=?" );
 	add( web_const_child );
 
-	web_lti_child = new sqlite_statement( new_db, "SELECT parent_id FROM web WHERE parent_id=? AND attr=? AND val_const IS NULL AND val_lti=?" );
+	web_lti_child = new soar_module::sqlite_statement( new_db, "SELECT parent_id FROM web WHERE parent_id=? AND attr=? AND val_const IS NULL AND val_lti=?" );
 	add( web_lti_child );
 
 	//
 
-	ct_attr_add = new sqlite_statement( new_db, "INSERT OR IGNORE INTO ct_attr (attr, ct) VALUES (?,0)" );
+	ct_attr_add = new soar_module::sqlite_statement( new_db, "INSERT OR IGNORE INTO ct_attr (attr, ct) VALUES (?,0)" );
 	add( ct_attr_add );
 
-	ct_const_add = new sqlite_statement( new_db, "INSERT OR IGNORE INTO ct_const (attr, val_const, ct) VALUES (?,?,0)" );
+	ct_const_add = new soar_module::sqlite_statement( new_db, "INSERT OR IGNORE INTO ct_const (attr, val_const, ct) VALUES (?,?,0)" );
 	add( ct_const_add );
 
-	ct_lti_add = new sqlite_statement( new_db, "INSERT OR IGNORE INTO ct_lti (attr, val_lti, ct) VALUES (?,?,0)" );
+	ct_lti_add = new soar_module::sqlite_statement( new_db, "INSERT OR IGNORE INTO ct_lti (attr, val_lti, ct) VALUES (?,?,0)" );
 	add( ct_lti_add );
 
 	//
 
-	ct_attr_update = new sqlite_statement( new_db, "UPDATE ct_attr SET ct = ct + ? WHERE attr=?" );
+	ct_attr_update = new soar_module::sqlite_statement( new_db, "UPDATE ct_attr SET ct = ct + ? WHERE attr=?" );
 	add( ct_attr_update );
 
-	ct_const_update = new sqlite_statement( new_db, "UPDATE ct_const SET ct = ct + ? WHERE attr=? AND val_const=?" );
+	ct_const_update = new soar_module::sqlite_statement( new_db, "UPDATE ct_const SET ct = ct + ? WHERE attr=? AND val_const=?" );
 	add( ct_const_update );
 
-	ct_lti_update = new sqlite_statement( new_db, "UPDATE ct_lti SET ct = ct + ? WHERE attr=? AND val_lti=?" );
+	ct_lti_update = new soar_module::sqlite_statement( new_db, "UPDATE ct_lti SET ct = ct + ? WHERE attr=? AND val_lti=?" );
 	add( ct_lti_update );
 
 	//
 
-	ct_attr_get = new sqlite_statement( new_db, "SELECT ct FROM ct_attr WHERE attr=?" );
+	ct_attr_get = new soar_module::sqlite_statement( new_db, "SELECT ct FROM ct_attr WHERE attr=?" );
 	add( ct_attr_get );
 
-	ct_const_get = new sqlite_statement( new_db, "SELECT ct FROM ct_const WHERE attr=? AND val_const=?" );
+	ct_const_get = new soar_module::sqlite_statement( new_db, "SELECT ct FROM ct_const WHERE attr=? AND val_const=?" );
 	add( ct_const_get );
 
-	ct_lti_get = new sqlite_statement( new_db, "SELECT ct FROM ct_lti WHERE attr=? AND val_lti=?" );
+	ct_lti_get = new soar_module::sqlite_statement( new_db, "SELECT ct FROM ct_lti WHERE attr=? AND val_lti=?" );
 	add( ct_lti_get );
 
 	//
 
-	act_set = new sqlite_statement( new_db, "REPLACE INTO activation (lti, cycle) VALUES (?,(SELECT MAX(cycle)+1 FROM activation))" );
+	act_set = new soar_module::sqlite_statement( new_db, "REPLACE INTO activation (lti, cycle) VALUES (?,(SELECT MAX(cycle)+1 FROM activation))" );
 	add( act_set );
 }
 
@@ -427,7 +427,7 @@ bool smem_symbol_is_constant( Symbol *sym )
 
 //
 
-inline void smem_symbol_to_bind( Symbol *sym, sqlite_statement *q, int type_field, int val_field )
+inline void smem_symbol_to_bind( Symbol *sym, soar_module::sqlite_statement *q, int type_field, int val_field )
 {		
 	q->bind_int( type_field, sym->common.symbol_type );
 	switch ( sym->common.symbol_type )
@@ -446,7 +446,7 @@ inline void smem_symbol_to_bind( Symbol *sym, sqlite_statement *q, int type_fiel
 	}
 }
 
-inline Symbol *smem_statement_to_symbol( agent *my_agent, sqlite_statement *q, int type_field, int val_field )
+inline Symbol *smem_statement_to_symbol( agent *my_agent, soar_module::sqlite_statement *q, int type_field, int val_field )
 {
 	Symbol *return_val = NULL;
 
@@ -943,7 +943,7 @@ void smem_install_memory( agent *my_agent, Symbol *state, smem_lti_id parent_id,
 	// get identifier if not known
 	if ( lti == NIL )
 	{
-		sqlite_statement *q = my_agent->smem_stmts->lti_letter_num;
+		soar_module::sqlite_statement *q = my_agent->smem_stmts->lti_letter_num;
 		
 		q->bind_int( 1, parent_id );
 		q->execute();
@@ -965,7 +965,7 @@ void smem_install_memory( agent *my_agent, Symbol *state, smem_lti_id parent_id,
 		 ( lti->id.input_wmes == NIL ) &&
 		 ( lti->id.slots == NIL ) )
 	{
-		sqlite_statement *expand_q = my_agent->smem_stmts->web_expand;
+		soar_module::sqlite_statement *expand_q = my_agent->smem_stmts->web_expand;
 		Symbol *attr_sym;
 		Symbol *value_sym;
 		
@@ -1015,7 +1015,7 @@ void smem_process_query( agent *my_agent, Symbol *state, Symbol *query, smem_lti
 	smem_weighted_cue_element *new_cue_element;
 	bool good_cue;
 
-	sqlite_statement *q = NULL;
+	soar_module::sqlite_statement *q = NULL;
 
 	smem_lti_id king_id = NIL;
 	
@@ -1341,7 +1341,7 @@ void smem_init_db( agent *my_agent, bool readonly )
 			// reset lti activation
 			{			
 				// find lowest cycle
-				temp_q = new sqlite_statement( my_agent->smem_db, "SELECT MIN(cycle) FROM activation WHERE cycle>0" );
+				temp_q = new soar_module::sqlite_statement( my_agent->smem_db, "SELECT MIN(cycle) FROM activation WHERE cycle>0" );
 				temp_q->prepare();
 				temp_q->execute();
 				if ( temp_q->column_type( 0 ) != soar_module::null_t )
@@ -1350,7 +1350,7 @@ void smem_init_db( agent *my_agent, bool readonly )
 					delete temp_q;
 
 					// shift all others down
-					temp_q = new sqlite_statement( my_agent->smem_db, "UPDATE activation SET cycle=cycle - ? WHERE cycle>0" );
+					temp_q = new soar_module::sqlite_statement( my_agent->smem_db, "UPDATE activation SET cycle=cycle - ? WHERE cycle>0" );
 					temp_q->prepare();
 					temp_q->bind_int( 1, ( cycle_min - 1 ) );
 					temp_q->execute();

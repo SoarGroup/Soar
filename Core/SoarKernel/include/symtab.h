@@ -125,6 +125,8 @@
   We deallocate a symbol when its reference count goes to 0.
 ======================================================================= */
 
+#include "kernel.h"
+
 #ifndef SYMTAB_H
 #define SYMTAB_H
 

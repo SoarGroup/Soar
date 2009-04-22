@@ -24,8 +24,6 @@
 #include "soar_module.h"
 #include "soar_db.h"
 
-using namespace soar_module;
-
 //////////////////////////////////////////////////////////
 // EpMem Experimentation
 //
@@ -78,7 +76,7 @@ class epmem_path_param;
 class epmem_graph_match_param;
 class epmem_mode_param;
 
-class epmem_param_container: public param_container
+class epmem_param_container: public soar_module::param_container
 {
 	public:
 		enum db_choices { memory, file };
@@ -87,56 +85,56 @@ class epmem_param_container: public param_container
 		enum trigger_choices { none, output, dc };
 		enum force_choices { remember, ignore, force_off };
 
-		boolean_param *learning;
-		constant_param<db_choices> *database;
+		soar_module::boolean_param *learning;
+		soar_module::constant_param<db_choices> *database;
 		epmem_path_param *path;
-		integer_param *commit;
+		soar_module::integer_param *commit;
 
 		epmem_mode_param *mode;
 		epmem_graph_match_param *graph_match;
 
-		constant_param<phase_choices> *phase;
-		constant_param<trigger_choices> *trigger;
-		constant_param<force_choices> *force;
-		decimal_param *balance;
-		set_param *exclusions;
-		constant_param<timer::timer_level> *timers;
+		soar_module::constant_param<phase_choices> *phase;
+		soar_module::constant_param<trigger_choices> *trigger;
+		soar_module::constant_param<force_choices> *force;
+		soar_module::decimal_param *balance;
+		soar_module::set_param *exclusions;
+		soar_module::constant_param<soar_module::timer::timer_level> *timers;
 
 		epmem_param_container( agent *new_agent );
 };
 
-class epmem_path_param: public string_param
+class epmem_path_param: public soar_module::string_param
 {
 	protected:
 		agent *my_agent;
 
 	public:
-		epmem_path_param( const char *new_name, const char *new_value, predicate<const char *> *new_val_pred, predicate<const char *> *new_prot_pred, agent *new_agent );
+		epmem_path_param( const char *new_name, const char *new_value, soar_module::predicate<const char *> *new_val_pred, soar_module::predicate<const char *> *new_prot_pred, agent *new_agent );
 		virtual void set_value( const char *new_value );
 };
 
-class epmem_graph_match_param: public boolean_param
+class epmem_graph_match_param: public soar_module::boolean_param
 {
 	protected:
 		agent *my_agent;
 
 	public:
-		epmem_graph_match_param( const char *new_name, boolean new_value, predicate<boolean> *new_prot_pred, agent *new_agent );
+		epmem_graph_match_param( const char *new_name, soar_module::boolean new_value, soar_module::predicate<soar_module::boolean> *new_prot_pred, agent *new_agent );
 		virtual bool validate_string( const char *new_string );
 };
 
-class epmem_mode_param: public constant_param<epmem_param_container::mode_choices>
+class epmem_mode_param: public soar_module::constant_param<epmem_param_container::mode_choices>
 {
 	protected:
 		agent *my_agent;
 
 	public:
-		epmem_mode_param( const char *new_name, epmem_param_container::mode_choices new_value, predicate<epmem_param_container::mode_choices> *new_prot_pred, agent *new_agent );
+		epmem_mode_param( const char *new_name, epmem_param_container::mode_choices new_value, soar_module::predicate<epmem_param_container::mode_choices> *new_prot_pred, agent *new_agent );
 		virtual void set_value( epmem_param_container::mode_choices new_value );
 };
 
 template <typename T>
-class epmem_db_predicate: public agent_predicate<T>
+class epmem_db_predicate: public soar_module::agent_predicate<T>
 {
 	public:
 		epmem_db_predicate( agent *new_agent );
@@ -151,54 +149,54 @@ class epmem_db_predicate: public agent_predicate<T>
 class epmem_mem_usage_stat;
 class epmem_mem_high_stat;
 
-class epmem_stat_container: public stat_container
+class epmem_stat_container: public soar_module::stat_container
 {
 	public:
-		integer_stat *time;
+		soar_module::integer_stat *time;
 		epmem_mem_usage_stat *mem_usage;
 		epmem_mem_high_stat *mem_high;
-		integer_stat *ncb_wmes;
+		soar_module::integer_stat *ncb_wmes;
 
-		integer_stat *qry_pos;
-		integer_stat *qry_neg;
-		integer_stat *qry_ret;
-		integer_stat *qry_card;
-		integer_stat *qry_lits;
+		soar_module::integer_stat *qry_pos;
+		soar_module::integer_stat *qry_neg;
+		soar_module::integer_stat *qry_ret;
+		soar_module::integer_stat *qry_card;
+		soar_module::integer_stat *qry_lits;
 
-		integer_stat *next_id;
+		soar_module::integer_stat *next_id;
 
-		integer_stat *rit_offset_1;
-		integer_stat *rit_left_root_1;
-		integer_stat *rit_right_root_1;
-		integer_stat *rit_min_step_1;
+		soar_module::integer_stat *rit_offset_1;
+		soar_module::integer_stat *rit_left_root_1;
+		soar_module::integer_stat *rit_right_root_1;
+		soar_module::integer_stat *rit_min_step_1;
 
-		integer_stat *rit_offset_2;
-		integer_stat *rit_left_root_2;
-		integer_stat *rit_right_root_2;
-		integer_stat *rit_min_step_2;
+		soar_module::integer_stat *rit_offset_2;
+		soar_module::integer_stat *rit_left_root_2;
+		soar_module::integer_stat *rit_right_root_2;
+		soar_module::integer_stat *rit_min_step_2;
 
 		epmem_stat_container( agent *my_agent );
 };
 
-class epmem_mem_usage_stat: public integer_stat
+class epmem_mem_usage_stat: public soar_module::integer_stat
 {
 	protected:
 		agent *my_agent;
 
 	public:
-		epmem_mem_usage_stat( agent *new_agent, const char *new_name, long new_value, predicate<long> *new_prot_pred );
+		epmem_mem_usage_stat( agent *new_agent, const char *new_name, long new_value, soar_module::predicate<long> *new_prot_pred );
 		long get_value();
 };
 
 //
 
-class epmem_mem_high_stat: public integer_stat
+class epmem_mem_high_stat: public soar_module::integer_stat
 {
 	protected:
 		agent *my_agent;
 
 	public:
-		epmem_mem_high_stat( agent *new_agent, const char *new_name, long new_value, predicate<long> *new_prot_pred );
+		epmem_mem_high_stat( agent *new_agent, const char *new_name, long new_value, soar_module::predicate<long> *new_prot_pred );
 		long get_value();
 };
 
@@ -207,51 +205,51 @@ class epmem_mem_high_stat: public integer_stat
 // EpMem Timers
 //////////////////////////////////////////////////////////
 
-class epmem_timer_container: public timer_container
+class epmem_timer_container: public soar_module::timer_container
 {
 	public:
-		timer *total;
-		timer *storage;
-		timer *ncb_retrieval;
-		timer *query;
-		timer *api;
-		timer *trigger;
-		timer *init;
-		timer *next;
-		timer *prev;
-		timer *hash;
+		soar_module::timer *total;
+		soar_module::timer *storage;
+		soar_module::timer *ncb_retrieval;
+		soar_module::timer *query;
+		soar_module::timer *api;
+		soar_module::timer *trigger;
+		soar_module::timer *init;
+		soar_module::timer *next;
+		soar_module::timer *prev;
+		soar_module::timer *hash;
 
-		timer *ncb_edge;
-		timer *ncb_edge_rit;
-		timer *ncb_node;
-		timer *ncb_node_rit;
+		soar_module::timer *ncb_edge;
+		soar_module::timer *ncb_edge_rit;
+		soar_module::timer *ncb_node;
+		soar_module::timer *ncb_node_rit;
 
-		timer *query_dnf;
-		timer *query_graph_match;
-		timer *query_pos_start_ep;
-		timer *query_pos_start_now;
-		timer *query_pos_start_point;
-		timer *query_pos_end_ep;
-		timer *query_pos_end_now;
-		timer *query_pos_end_point;
-		timer *query_neg_start_ep;
-		timer *query_neg_start_now;
-		timer *query_neg_start_point;
-		timer *query_neg_end_ep;
-		timer *query_neg_end_now;
-		timer *query_neg_end_point;
+		soar_module::timer *query_dnf;
+		soar_module::timer *query_graph_match;
+		soar_module::timer *query_pos_start_ep;
+		soar_module::timer *query_pos_start_now;
+		soar_module::timer *query_pos_start_point;
+		soar_module::timer *query_pos_end_ep;
+		soar_module::timer *query_pos_end_now;
+		soar_module::timer *query_pos_end_point;
+		soar_module::timer *query_neg_start_ep;
+		soar_module::timer *query_neg_start_now;
+		soar_module::timer *query_neg_start_point;
+		soar_module::timer *query_neg_end_ep;
+		soar_module::timer *query_neg_end_now;
+		soar_module::timer *query_neg_end_point;
 
 		epmem_timer_container( agent *my_agent );
 };
 
-class epmem_timer_level_predicate: public agent_predicate<timer::timer_level>
+class epmem_timer_level_predicate: public soar_module::agent_predicate<soar_module::timer::timer_level>
 {
 	public:
 		epmem_timer_level_predicate( agent *new_agent );
-		bool operator() ( timer::timer_level val );
+		bool operator() ( soar_module::timer::timer_level val );
 };
 
-class epmem_timer: public timer
+class epmem_timer: public soar_module::timer
 {
 	public:
 		epmem_timer( const char *new_name, agent *new_agent, timer_level new_level );
@@ -262,92 +260,92 @@ class epmem_timer: public timer
 // EpMem Statements
 //////////////////////////////////////////////////////////
 
-class epmem_common_statement_container: public sqlite_statement_container
+class epmem_common_statement_container: public soar_module::sqlite_statement_container
 {
 	public:
-		sqlite_statement *begin;
-		sqlite_statement *commit;
-		sqlite_statement *rollback;
+		soar_module::sqlite_statement *begin;
+		soar_module::sqlite_statement *commit;
+		soar_module::sqlite_statement *rollback;
 
-		sqlite_statement *var_get;
-		sqlite_statement *var_set;
+		soar_module::sqlite_statement *var_get;
+		soar_module::sqlite_statement *var_set;
 
-		sqlite_statement *rit_add_left;
-		sqlite_statement *rit_truncate_left;
-		sqlite_statement *rit_add_right;
-		sqlite_statement *rit_truncate_right;
+		soar_module::sqlite_statement *rit_add_left;
+		soar_module::sqlite_statement *rit_truncate_left;
+		soar_module::sqlite_statement *rit_add_right;
+		soar_module::sqlite_statement *rit_truncate_right;
 
-		sqlite_statement *hash_get;
-		sqlite_statement *hash_add;
+		soar_module::sqlite_statement *hash_get;
+		soar_module::sqlite_statement *hash_add;
 
 		epmem_common_statement_container( agent *new_agent );
 };
 
-class epmem_tree_statement_container: public sqlite_statement_container
+class epmem_tree_statement_container: public soar_module::sqlite_statement_container
 {
 	public:
-		sqlite_statement *add_time;
+		soar_module::sqlite_statement *add_time;
 
 		//
 		
-		sqlite_statement *add_node_now;
-		sqlite_statement *delete_node_now;
-		sqlite_statement *add_node_point;
-		sqlite_statement *add_node_range;
+		soar_module::sqlite_statement *add_node_now;
+		soar_module::sqlite_statement *delete_node_now;
+		soar_module::sqlite_statement *add_node_point;
+		soar_module::sqlite_statement *add_node_range;
 
 		//
 
-		sqlite_statement *add_node_unique;
-		sqlite_statement *find_node_unique;
-		sqlite_statement *find_identifier;
+		soar_module::sqlite_statement *add_node_unique;
+		soar_module::sqlite_statement *find_node_unique;
+		soar_module::sqlite_statement *find_identifier;
 
 		//
 
-		sqlite_statement *valid_episode;
-		sqlite_statement *next_episode;
-		sqlite_statement *prev_episode;
+		soar_module::sqlite_statement *valid_episode;
+		soar_module::sqlite_statement *next_episode;
+		soar_module::sqlite_statement *prev_episode;
 
-		sqlite_statement *get_episode;
+		soar_module::sqlite_statement *get_episode;
 
 		//
 
 		epmem_tree_statement_container( agent *new_agent );
 };
 
-class epmem_graph_statement_container: public sqlite_statement_container
+class epmem_graph_statement_container: public soar_module::sqlite_statement_container
 {
 	public:
-		sqlite_statement *add_time;
+		soar_module::sqlite_statement *add_time;
 
 		//
 
-		sqlite_statement *add_node_now;
-		sqlite_statement *delete_node_now;
-		sqlite_statement *add_node_point;
-		sqlite_statement *add_node_range;
+		soar_module::sqlite_statement *add_node_now;
+		soar_module::sqlite_statement *delete_node_now;
+		soar_module::sqlite_statement *add_node_point;
+		soar_module::sqlite_statement *add_node_range;
 
-		sqlite_statement *add_node_unique;
-		sqlite_statement *find_node_unique;
-
-		//
-
-		sqlite_statement *add_edge_now;
-		sqlite_statement *delete_edge_now;
-		sqlite_statement *add_edge_point;
-		sqlite_statement *add_edge_range;
-
-		sqlite_statement *add_edge_unique;
-		sqlite_statement *find_edge_unique;
-		sqlite_statement *find_edge_unique_shared;
+		soar_module::sqlite_statement *add_node_unique;
+		soar_module::sqlite_statement *find_node_unique;
 
 		//
 
-		sqlite_statement *valid_episode;
-		sqlite_statement *next_episode;
-		sqlite_statement *prev_episode;
+		soar_module::sqlite_statement *add_edge_now;
+		soar_module::sqlite_statement *delete_edge_now;
+		soar_module::sqlite_statement *add_edge_point;
+		soar_module::sqlite_statement *add_edge_range;
 
-		sqlite_statement *get_nodes;
-		sqlite_statement *get_edges;
+		soar_module::sqlite_statement *add_edge_unique;
+		soar_module::sqlite_statement *find_edge_unique;
+		soar_module::sqlite_statement *find_edge_unique_shared;
+
+		//
+
+		soar_module::sqlite_statement *valid_episode;
+		soar_module::sqlite_statement *next_episode;
+		soar_module::sqlite_statement *prev_episode;
+
+		soar_module::sqlite_statement *get_nodes;
+		soar_module::sqlite_statement *get_edges;
 
 		//		
 		
@@ -386,7 +384,7 @@ typedef struct epmem_rit_state_struct
 	epmem_rit_state_param minstep;
 
 	soar_module::timer *timer;
-	sqlite_statement *add_query;	
+	soar_module::sqlite_statement *add_query;	
 } epmem_rit_state;
 
 //////////////////////////////////////////////////////////
@@ -423,7 +421,7 @@ typedef struct epmem_leaf_node_struct
 // maintains state within sqlite b-trees
 typedef struct epmem_range_query_struct
 {
-	sqlite_statement *stmt;					// query
+	soar_module::sqlite_statement *stmt;	// query
 	epmem_time_id val;						// current b-tree leaf value
 
 	double weight;							// wma value
@@ -554,7 +552,7 @@ struct epmem_shared_literal_pair_struct
 // maintains state within sqlite b-trees
 typedef struct epmem_shared_query_struct
 {
-	sqlite_statement *stmt;						// associated query
+	soar_module::sqlite_statement *stmt;		// associated query
 	epmem_time_id val;							// current b-tree leaf value
 
 	epmem_node_id unique_id;					// id searched by this statement

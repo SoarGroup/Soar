@@ -24,9 +24,6 @@
 #include "soar_module.h"
 #include "soar_db.h"
 
-using namespace soar_module;
-
-
 //////////////////////////////////////////////////////////
 // SMem Experimentation
 //
@@ -44,32 +41,32 @@ using namespace soar_module;
 
 class smem_path_param;
 
-class smem_param_container: public param_container
+class smem_param_container: public soar_module::param_container
 {
 	public:
 		enum db_choices { memory, file };		
 
-		boolean_param *learning;
-		constant_param<db_choices> *database;
+		soar_module::boolean_param *learning;
+		soar_module::constant_param<db_choices> *database;
 		smem_path_param *path;		
 		
-		constant_param<timer::timer_level> *timers;
+		soar_module::constant_param<soar_module::timer::timer_level> *timers;
 
 		smem_param_container( agent *new_agent );
 };
 
-class smem_path_param: public string_param
+class smem_path_param: public soar_module::string_param
 {
 	protected:
 		agent *my_agent;
 
 	public:
-		smem_path_param( const char *new_name, const char *new_value, predicate<const char *> *new_val_pred, predicate<const char *> *new_prot_pred, agent *new_agent );
+		smem_path_param( const char *new_name, const char *new_value, soar_module::predicate<const char *> *new_val_pred, soar_module::predicate<const char *> *new_prot_pred, agent *new_agent );
 		virtual void set_value( const char *new_value );
 };
 
 template <typename T>
-class smem_db_predicate: public agent_predicate<T>
+class smem_db_predicate: public soar_module::agent_predicate<T>
 {
 	public:
 		smem_db_predicate( agent *new_agent );
@@ -84,7 +81,7 @@ class smem_db_predicate: public agent_predicate<T>
 class smem_mem_usage_stat;
 class smem_mem_high_stat;
 
-class smem_stat_container: public stat_container
+class smem_stat_container: public soar_module::stat_container
 {
 	public:
 		smem_mem_usage_stat *mem_usage;
@@ -93,25 +90,25 @@ class smem_stat_container: public stat_container
 		smem_stat_container( agent *my_agent );
 };
 
-class smem_mem_usage_stat: public integer_stat
+class smem_mem_usage_stat: public soar_module::integer_stat
 {
 	protected:
 		agent *my_agent;
 
 	public:
-		smem_mem_usage_stat( agent *new_agent, const char *new_name, long new_value, predicate<long> *new_prot_pred );
+		smem_mem_usage_stat( agent *new_agent, const char *new_name, long new_value, soar_module::predicate<long> *new_prot_pred );
 		long get_value();
 };
 
 //
 
-class smem_mem_high_stat: public integer_stat
+class smem_mem_high_stat: public soar_module::integer_stat
 {
 	protected:
 		agent *my_agent;
 
 	public:
-		smem_mem_high_stat( agent *new_agent, const char *new_name, long new_value, predicate<long> *new_prot_pred );
+		smem_mem_high_stat( agent *new_agent, const char *new_name, long new_value, soar_module::predicate<long> *new_prot_pred );
 		long get_value();
 };
 
@@ -120,31 +117,31 @@ class smem_mem_high_stat: public integer_stat
 // SMem Timers
 //////////////////////////////////////////////////////////
 
-class smem_timer_container: public timer_container
+class smem_timer_container: public soar_module::timer_container
 {
 	public:
-		timer *total;
-		timer *storage;
-		timer *ncb_retrieval;
-		timer *query;
-		timer *api;		
-		timer *init;		
-		timer *hash;
+		soar_module::timer *total;
+		soar_module::timer *storage;
+		soar_module::timer *ncb_retrieval;
+		soar_module::timer *query;
+		soar_module::timer *api;		
+		soar_module::timer *init;		
+		soar_module::timer *hash;
 
 		smem_timer_container( agent *my_agent );
 };
 
-class smem_timer_level_predicate: public agent_predicate<timer::timer_level>
+class smem_timer_level_predicate: public soar_module::agent_predicate<soar_module::timer::timer_level>
 {
 	public:
 		smem_timer_level_predicate( agent *new_agent );
-		bool operator() ( timer::timer_level val );
+		bool operator() ( soar_module::timer::timer_level val );
 };
 
-class smem_timer: public timer
+class smem_timer: public soar_module::timer
 {
 	public:
-		smem_timer( const char *new_name, agent *new_agent, timer_level new_level );
+		smem_timer( const char *new_name, agent *new_agent, soar_module::timer::timer_level new_level );
 };
 
 
@@ -152,53 +149,53 @@ class smem_timer: public timer
 // EpMem Statements
 //////////////////////////////////////////////////////////
 
-class smem_statement_container: public sqlite_statement_container
+class smem_statement_container: public soar_module::sqlite_statement_container
 {
 	public:
-		sqlite_statement *begin;
-		sqlite_statement *commit;
-		sqlite_statement *rollback;
+		soar_module::sqlite_statement *begin;
+		soar_module::sqlite_statement *commit;
+		soar_module::sqlite_statement *rollback;
 
-		sqlite_statement *var_get;
-		sqlite_statement *var_set;
+		soar_module::sqlite_statement *var_get;
+		soar_module::sqlite_statement *var_set;
 
-		sqlite_statement *hash_get;
-		sqlite_statement *hash_add;
+		soar_module::sqlite_statement *hash_get;
+		soar_module::sqlite_statement *hash_add;
 
-		sqlite_statement *lti_add;
-		sqlite_statement *lti_get;
-		sqlite_statement *lti_letter_num;
-		sqlite_statement *lti_max;
+		soar_module::sqlite_statement *lti_add;
+		soar_module::sqlite_statement *lti_get;
+		soar_module::sqlite_statement *lti_letter_num;
+		soar_module::sqlite_statement *lti_max;
 
-		sqlite_statement *web_add;
-		sqlite_statement *web_truncate;
-		sqlite_statement *web_expand;
+		soar_module::sqlite_statement *web_add;
+		soar_module::sqlite_statement *web_truncate;
+		soar_module::sqlite_statement *web_expand;
 
-		sqlite_statement *web_attr_ct;
-		sqlite_statement *web_const_ct;
-		sqlite_statement *web_lti_ct;
+		soar_module::sqlite_statement *web_attr_ct;
+		soar_module::sqlite_statement *web_const_ct;
+		soar_module::sqlite_statement *web_lti_ct;
 
-		sqlite_statement *web_attr_all;
-		sqlite_statement *web_const_all;
-		sqlite_statement *web_lti_all;
+		soar_module::sqlite_statement *web_attr_all;
+		soar_module::sqlite_statement *web_const_all;
+		soar_module::sqlite_statement *web_lti_all;
 
-		sqlite_statement *web_attr_child;
-		sqlite_statement *web_const_child;
-		sqlite_statement *web_lti_child;
+		soar_module::sqlite_statement *web_attr_child;
+		soar_module::sqlite_statement *web_const_child;
+		soar_module::sqlite_statement *web_lti_child;
 
-		sqlite_statement *ct_attr_add;
-		sqlite_statement *ct_const_add;
-		sqlite_statement *ct_lti_add;
+		soar_module::sqlite_statement *ct_attr_add;
+		soar_module::sqlite_statement *ct_const_add;
+		soar_module::sqlite_statement *ct_lti_add;
 
-		sqlite_statement *ct_attr_update;
-		sqlite_statement *ct_const_update;
-		sqlite_statement *ct_lti_update;
+		soar_module::sqlite_statement *ct_attr_update;
+		soar_module::sqlite_statement *ct_const_update;
+		soar_module::sqlite_statement *ct_lti_update;
 
-		sqlite_statement *ct_attr_get;
-		sqlite_statement *ct_const_get;
-		sqlite_statement *ct_lti_get;
+		soar_module::sqlite_statement *ct_attr_get;
+		soar_module::sqlite_statement *ct_const_get;
+		soar_module::sqlite_statement *ct_lti_get;
 
-		sqlite_statement *act_set;
+		soar_module::sqlite_statement *act_set;
 
 		smem_statement_container( agent *new_agent );
 };
