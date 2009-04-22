@@ -48,7 +48,8 @@ class smem_param_container: public soar_module::param_container
 
 		soar_module::boolean_param *learning;
 		soar_module::constant_param<db_choices> *database;
-		smem_path_param *path;		
+		smem_path_param *path;
+		soar_module::boolean_param *lazy_commit;
 		
 		soar_module::constant_param<soar_module::timer::timer_level> *timers;
 

@@ -201,12 +201,24 @@ bool CommandLineInterface::DoSMem( const char pOp, const std::string* pAttr, con
 		temp += temp2;
 		delete temp2;
 		if ( m_RawOutput )
+			m_Result << temp << "\n";
+		else
+		{			
+			AppendArgTagFast( sml_Names::kParamValue, sml_Names::kTypeString, "" );
+		}
+
+		temp = "lazy-commit: ";
+		temp2 = m_pAgentSoar->smem_params->lazy_commit->get_string();
+		temp += temp2;
+		delete temp2;
+		if ( m_RawOutput )
 			m_Result << temp << "\n\n";
 		else
 		{
 			AppendArgTagFast( sml_Names::kParamValue, sml_Names::kTypeString, temp.c_str() );
 			AppendArgTagFast( sml_Names::kParamValue, sml_Names::kTypeString, "" );
-		}		
+		}
+
 
 		temp = "timers: ";
 		temp2 = m_pAgentSoar->smem_params->timers->get_string();

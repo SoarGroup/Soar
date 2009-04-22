@@ -75,6 +75,10 @@ smem_param_container::smem_param_container( agent *new_agent ): soar_module::par
 	path = new smem_path_param( "path", "", new soar_module::predicate<const char *>(), new smem_db_predicate<const char *>( my_agent ), my_agent );
 	add( path );
 
+	// auto-commit
+	lazy_commit = new soar_module::boolean_param( "lazy-commit", soar_module::on, new smem_db_predicate<soar_module::boolean>( my_agent ) );
+	add( lazy_commit );
+
 	//
 
 	// timers
@@ -1362,6 +1366,12 @@ void smem_init_db( agent *my_agent, bool readonly )
 		}
 
 		my_agent->smem_stmts->commit->execute( soar_module::op_reinit );
+
+		// if lazy commit, then we encapsulate the entire lifetime of the agent in a single transaction
+		if ( my_agent->smem_params->lazy_commit->get_value() == soar_module::on )
+		{
+			my_agent->smem_stmts->begin->execute( soar_module::op_reinit );
+		}
 	}
 
 	////////////////////////////////////////////////////////////////////////////
@@ -1379,6 +1389,12 @@ void smem_close( agent *my_agent )
 {
 	if ( my_agent->smem_db->get_status() == soar_module::connected )
 	{
+		// if lazy, commit
+		if ( my_agent->smem_params->lazy_commit->get_value() == soar_module::on )
+		{
+			my_agent->smem_stmts->commit->execute( soar_module::op_reinit );
+		}
+		
 		// de-allocate common statements
 		delete my_agent->smem_stmts;		
 
@@ -1590,54 +1606,57 @@ void smem_respond_to_cmd( agent *my_agent )
 			// process command
 			if ( path != cmd_bad )
 			{
-				// start transaction
-				my_agent->smem_stmts->begin->execute( soar_module::op_reinit );
-
-				{
-				
-					// retrieve
-					if ( path == cmd_retrieve )
-					{						
-						if ( retrieve->id.smem_lti == NIL )
-						{
-							// retrieve is not pointing to an lti!
-							smem_add_meta_wme( my_agent, state, state->id.smem_result_header, my_agent->smem_sym_status, my_agent->smem_sym_failure );
-						}
-						else
-						{
-							// status: success
-							smem_add_meta_wme( my_agent, state, state->id.smem_result_header, my_agent->smem_sym_status, my_agent->smem_sym_success );
-							
-							// install memory directly onto the retrieve identifier
-							smem_install_memory( my_agent, state, retrieve->id.smem_lti, retrieve );
-						}					
-					}				
-					// query
-					else if ( path == cmd_query )
+				// retrieve
+				if ( path == cmd_retrieve )
+				{						
+					if ( retrieve->id.smem_lti == NIL )
 					{
-						smem_process_query( my_agent, state, query, prohibit );						
+						// retrieve is not pointing to an lti!
+						smem_add_meta_wme( my_agent, state, state->id.smem_result_header, my_agent->smem_sym_status, my_agent->smem_sym_failure );
 					}
-					else if ( path == cmd_store )
+					else
 					{
-						smem_sym_list::iterator sym_p;
-
-						////////////////////////////////////////////////////////////////////////////
-						my_agent->smem_timers->storage->start();
-						////////////////////////////////////////////////////////////////////////////
+						// status: success
+						smem_add_meta_wme( my_agent, state, state->id.smem_result_header, my_agent->smem_sym_status, my_agent->smem_sym_success );
 						
-						for ( sym_p=store->begin(); sym_p!=store->end(); sym_p++ )
-						{
-							smem_store( my_agent, (*sym_p) );
-						}
-
-						////////////////////////////////////////////////////////////////////////////
-						my_agent->smem_timers->storage->stop();
-						////////////////////////////////////////////////////////////////////////////
-					}
+						// install memory directly onto the retrieve identifier
+						smem_install_memory( my_agent, state, retrieve->id.smem_lti, retrieve );
+					}					
+				}				
+				// query
+				else if ( path == cmd_query )
+				{
+					smem_process_query( my_agent, state, query, prohibit );						
 				}
+				else if ( path == cmd_store )
+				{
+					smem_sym_list::iterator sym_p;
 
-				// commit transaction
-				my_agent->smem_stmts->commit->execute( soar_module::op_reinit );
+					////////////////////////////////////////////////////////////////////////////
+					my_agent->smem_timers->storage->start();
+					////////////////////////////////////////////////////////////////////////////
+
+					// start transaction (if not lazy)
+					if ( my_agent->smem_params->lazy_commit->get_value() == soar_module::off )
+					{
+						my_agent->smem_stmts->begin->execute( soar_module::op_reinit );
+					}
+					
+					for ( sym_p=store->begin(); sym_p!=store->end(); sym_p++ )
+					{
+						smem_store( my_agent, (*sym_p) );
+					}
+
+					// commit transaction (if not lazy)
+					if ( my_agent->smem_params->lazy_commit->get_value() == soar_module::off )
+					{
+						my_agent->smem_stmts->commit->execute( soar_module::op_reinit );
+					}
+
+					////////////////////////////////////////////////////////////////////////////
+					my_agent->smem_timers->storage->stop();
+					////////////////////////////////////////////////////////////////////////////
+				}
 			}
 			else
 			{
