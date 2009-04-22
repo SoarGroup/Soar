@@ -895,8 +895,8 @@ bool KernelSML::HandleCommandLine(AgentSML* pAgentSML, char const* pCommandName,
 		sml::PrintDebugFormat("Filtered line is %s\n", pFilteredLine) ;
 
 	// Make the call.
-	m_CommandLineInterface.SetRawOutput(rawOutput);
-	bool result = m_CommandLineInterface.DoCommand(pConnection, pAgentSML, pFilteredLine, echoResults, pResponse) ;
+	//std::cout << std::endl << "handling: " << pFilteredLine;
+	bool result = m_CommandLineInterface.DoCommand(pConnection, pAgentSML, pFilteredLine, echoResults, rawOutput, pResponse) ;
 
 	if (kDebugCommandLine)
 		sml::PrintDebugFormat("Completed %s", pLine) ;
