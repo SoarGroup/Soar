@@ -43,7 +43,8 @@ public class DebuggerCommands
 	// Providing a method for expanding the command line (so we can support aliases)
 	public String getExpandedCommand(String commandLine)
 	{
-		return m_Document.getExpandedCommandLine(commandLine) ;
+		return commandLine;
+		//return m_Document.getExpandedCommandLine(commandLine) ;
 	}
 	
 	public boolean isCommand(String commandLine)
