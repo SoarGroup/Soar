@@ -1,16 +1,37 @@
-sp {arithmetic*propose*generate-facts
-   (state <s> ^name arithmetic
-             -^arithmetic.facts)
+sp {generate-facts*propose*store
+   (state <s> ^name generate-facts
+              ^phase store)
 -->
-   (<s> ^operator <op> + =, >)
-   (<op> ^name generate-facts)
+   (<s> ^operator <op> + =)
+   (<op> ^name store)
 }
 
-sp {arithmetic*apply*generate-facts*add*sub
-   (state <s> ^operator.name generate-facts
-              ^fact-source wm)
+sp {apply*store
+   (state <s> ^operator <op>)
+   (<op> ^name store)
 -->
-   (<s> ^arithmetic.facts
+   (<s> ^phase store -
+        ^phase clean)
+}
+
+
+sp {arithmetic*apply*store*add
+   (state <s> ^operator.name store
+              ^smem.command <cmd>)
+   (<cmd> ^store <arithmetic>)
+-->
+   (<cmd> ^store
+                          <a01> <a02> <a03> <a04> <a05> <a06> <a07> <a08> <a09> <a00>
+                          <a11> <a12> <a13> <a14> <a15> <a16> <a17> <a18> <a19> <a10>
+                          <a21> <a22> <a23> <a24> <a25> <a26> <a27> <a28> <a29> <a20>
+                          <a31> <a32> <a33> <a34> <a35> <a36> <a37> <a38> <a39> <a30>
+                          <a41> <a42> <a43> <a44> <a45> <a46> <a47> <a48> <a49> <a40>
+                          <a51> <a52> <a53> <a54> <a55> <a56> <a57> <a58> <a59> <a50>
+                          <a61> <a62> <a63> <a64> <a65> <a66> <a67> <a68> <a69> <a60>
+                          <a71> <a72> <a73> <a74> <a75> <a76> <a77> <a78> <a79> <a70>
+                          <a81> <a82> <a83> <a84> <a85> <a86> <a87> <a88> <a89> <a80>
+                          <a91> <a92> <a93> <a94> <a95> <a96> <a97> <a98> <a99> <a90>)
+   (<arithmetic> ^facts
                           <a01> <a02> <a03> <a04> <a05> <a06> <a07> <a08> <a09> <a00>
                           <a11> <a12> <a13> <a14> <a15> <a16> <a17> <a18> <a19> <a10>
                           <a21> <a22> <a23> <a24> <a25> <a26> <a27> <a28> <a29> <a20>
@@ -123,11 +144,23 @@ sp {arithmetic*apply*generate-facts*add*sub
    (<a99> ^digit1 9 ^digit2 9 ^sum 8 ^carry-borrow 1)
 }
 
-sp {arithmetic*apply*generate-facts*sub
-   (state <s> ^operator.name generate-facts
-              ^fact-source wm)
+sp {arithmetic*apply*store*sub
+   (state <s> ^operator.name store
+              ^smem.command <cmd>)
+   (<cmd> ^store <arithmetic>)
 -->
-   (<s> ^arithmetic.subtraction-facts
+   (<cmd> ^store
+                          <a01> <a02> <a03> <a04> <a05> <a06> <a07> <a08> <a09> <a00>
+                          <a11> <a12> <a13> <a14> <a15> <a16> <a17> <a18> <a19> <a10>
+                          <a21> <a22> <a23> <a24> <a25> <a26> <a27> <a28> <a29> <a20>
+                          <a31> <a32> <a33> <a34> <a35> <a36> <a37> <a38> <a39> <a30>
+                          <a41> <a42> <a43> <a44> <a45> <a46> <a47> <a48> <a49> <a40>
+                          <a51> <a52> <a53> <a54> <a55> <a56> <a57> <a58> <a59> <a50>
+                          <a61> <a62> <a63> <a64> <a65> <a66> <a67> <a68> <a69> <a60>
+                          <a71> <a72> <a73> <a74> <a75> <a76> <a77> <a78> <a79> <a70>
+                          <a81> <a82> <a83> <a84> <a85> <a86> <a87> <a88> <a89> <a80>
+                          <a91> <a92> <a93> <a94> <a95> <a96> <a97> <a98> <a99> <a90>)
+   (<arithmetic> ^subtraction-facts
                           <a01> <a02> <a03> <a04> <a05> <a06> <a07> <a08> <a09> <a00>
                           <a11> <a12> <a13> <a14> <a15> <a16> <a17> <a18> <a19> <a10>
                           <a21> <a22> <a23> <a24> <a25> <a26> <a27> <a28> <a29> <a20>
@@ -240,12 +273,14 @@ sp {arithmetic*apply*generate-facts*sub
    (<a99> ^digit1 9 ^digit2 9 ^result 0)
 }
 
-
-sp {arithmetic*apply*generate-facts*add10
-   (state <s> ^operator.name generate-facts
-              ^fact-source wm)
+sp {arithmetic*apply*store*add10
+   (state <s> ^operator.name store
+              ^smem.command <cmd>)
+   (<cmd> ^store <arithmetic>)
 -->
-   (<s> ^arithmetic.add10-facts
+   (<cmd> ^store
+                          <a01> <a02> <a03> <a04> <a05> <a06> <a07> <a08> <a09> <a00>)
+   (<arithmetic> ^add10-facts
                           <a01> <a02> <a03> <a04> <a05> <a06> <a07> <a08> <a09> <a00>)
    (<a00> ^digit1 0 ^digit-10 10)
    (<a01> ^digit1 1 ^digit-10 11)
@@ -258,6 +293,4 @@ sp {arithmetic*apply*generate-facts*add10
    (<a08> ^digit1 8 ^digit-10 18)
    (<a09> ^digit1 9 ^digit-10 19)
 }
-
-
 

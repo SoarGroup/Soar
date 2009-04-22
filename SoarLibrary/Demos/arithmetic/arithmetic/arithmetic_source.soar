@@ -7,6 +7,9 @@ source elaborations_source.soar
 popd
 source finish-problem.soar
 source generate-facts.soar
+pushd generate-facts
+source generate-facts_source.soar
+popd
 source generate-problem.soar
 pushd generate-problem
 source generate-problem_source.soar

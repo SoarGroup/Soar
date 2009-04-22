@@ -1,4 +1,4 @@
-97
+110
 SOAR_ID 0
 SOAR_ID 1
 SOAR_ID 2
@@ -96,7 +96,20 @@ SOAR_ID 93
 SOAR_ID 94
 INTEGER_RANGE 95 -2147483648 2147483647
 INTEGER_RANGE 96 -2147483648 2147483647
-136
+SOAR_ID 97
+ENUMERATION 98 1 state
+ENUMERATION 99 1 generate-facts
+ENUMERATION 100 1 init
+SOAR_ID 101
+ENUMERATION 102 1 store
+SOAR_ID 103
+ENUMERATION 104 1 clean
+SOAR_ID 105
+ENUMERATION 106 1 check
+SOAR_ID 107
+SOAR_ID 108
+ENUMERATION 109 1 semantic
+150
 0 arithmetic 39
 0 arithmetic-problem 13
 0 count 78
@@ -109,6 +122,7 @@ INTEGER_RANGE 96 -2147483648 2147483647
 0 operator 50
 0 operator 57
 0 operator 79
+0 operator 108
 0 superstate 6
 0 top-state 0
 0 type 5
@@ -233,3 +247,16 @@ INTEGER_RANGE 96 -2147483648 2147483647
 93 name 92
 94 digit-10 96
 94 digit1 95
+97 name 99
+97 operator 101
+97 operator 103
+97 operator 105
+97 operator 107
+97 superstate 0
+97 top-state 0
+97 type 98
+101 name 100
+103 name 102
+105 name 104
+107 name 106
+108 name 109
