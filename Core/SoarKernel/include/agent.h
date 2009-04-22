@@ -280,8 +280,6 @@ typedef struct agent_struct {
   Symbol            * rl_sym_reward_link;
   Symbol            * rl_sym_reward;
   Symbol            * rl_sym_value;
-  Symbol			* rl_sym_final_update;
-  Symbol			* rl_sym_true;
   
   /* ----------------------- Symbol table stuff -------------------------- */
 
