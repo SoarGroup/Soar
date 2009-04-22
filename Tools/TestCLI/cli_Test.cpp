@@ -29,6 +29,7 @@ soar_thread::Event*	g_pInputQueueWriteEvent = 0;
 soar_thread::Event*	g_pWaitForInput = 0;
 InputThread*		g_pInputThread = 0;
 int					g_TraceCallbackID = 0;
+bool				g_Quit = false;
 
 InputThread::InputThread() {
 }
@@ -97,7 +98,7 @@ char getKey(bool block) {
 	if (block) {
 		// yes, blocking, follow the following loop
 		// lock, check size (break if true (input available)), unlock, wait for event, repeat
-		while (!g_pInputQueue->size()) {
+		while (!g_Quit && !g_pInputQueue->size()) {
 			// unlock queue
 			delete lock;
 
@@ -114,6 +115,10 @@ char getKey(bool block) {
 			delete lock;
 			return ret;
 		}
+	}
+
+	if (g_Quit) {
+		return 0;
 	}
 
 	// we have a locked queue with stuff in it
@@ -160,8 +165,11 @@ bool CommandProcessor::ProcessCharacter(int c) {
 
 	std::string lineCopy;
 	switch (c) {
-		// Ignore null
+		// Check for quit on null
 		case 0:
+			if (g_Quit) {
+				return false;
+			}
 			break;
 
 		// If the input was enter, process the command line
@@ -295,14 +303,14 @@ bool CommandProcessor::ProcessLine(std::string& commandLine) {
 		return true;
 	} 
 
-	bool quit = false;
+	g_Quit = false;
 	if (g_pInputThread) {
 		string expandedCommandLine = pKernel->ExpandCommandLine(commandLine.c_str());
 		if (commandLine == "quit" || expandedCommandLine == "quit") {
 			g_pInputThread->Stop(false);
 			g_pWaitForInput->TriggerEvent();
 			g_pInputThread->Stop(true);
-			quit = true;
+			g_Quit = true;
 		} else {
 			g_pWaitForInput->TriggerEvent();
 		}
@@ -349,7 +357,7 @@ bool CommandProcessor::ProcessLine(std::string& commandLine) {
 		cout << output << endl;
 	}
 
-	if (quit) {
+	if (g_Quit) {
 		return false;
 	}
 

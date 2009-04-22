@@ -126,6 +126,25 @@ bool KernelSML::HandleCreateAgent(AgentSML* pAgentSML, char const* pCommandName,
 
 	//pAgentSML->m_inputlink->GetInputLinkMemory()->m_RemoveWmeCallback = RemoveInputWMERecordsCallback;
 
+	if (this->m_pRunScheduler->IsRunning()) 
+	{
+		// bug 952: if soar is running, the agent should start running
+
+		// FIXME: this is duplicated code from the following functions:
+		// InitializeRunCounters():
+		pAgentSML->ResetLastOutputCount() ;
+		unsigned long count = pAgentSML->GetRunCounter(this->m_pRunScheduler->GetCurrentRunStepSize()) ;
+		pAgentSML->SetInitialRunCount(count) ;
+		pAgentSML->ResetLocalRunCounters() ;
+		// InitializeUpdateWorldEvents():
+		pAgentSML->SetCompletedOutputPhase(false) ;
+		pAgentSML->SetGeneratedOutput(false) ;
+		pAgentSML->SetInitialOutputCount(pAgentSML->GetNumOutputsGenerated()) ;
+		pAgentSML->GetAgentRunCallback()->RegisterWithKernel(smlEVENT_AFTER_OUTPUT_PHASE) ;
+
+		this->m_pRunScheduler->ScheduleAgentToRun(pAgentSML, true);
+	}
+
 	// Return true if we got an agent constructed.
 	return true ;
 }

@@ -364,17 +364,17 @@ void Handlers::MyCallStopOnUpdateEventHandler( sml::smlUpdateEventId, void*, sml
 void Handlers::MyAgentCreationUpdateEventHandler( sml::smlUpdateEventId, void* pUserData, sml::Kernel* pKernel, sml::smlRunFlags )
 {
 	CPPUNIT_ASSERT( pUserData );
-	sml::Agent** ppAgent = static_cast< sml::Agent** >( pUserData );
-	if ( *ppAgent != 0 )
-	{
-		return;
+	RunningAgentData* pData = static_cast< RunningAgentData* >( pUserData );
+
+	pData->count += 1;
+	//std::cout << std::endl << "Update: " << pData->count;
+
+	if (pData->count == 2) {
+		pData->pOnTheFly = pKernel->CreateAgent( "onthefly" );
+		CPPUNIT_ASSERT_MESSAGE( pKernel->GetLastErrorDescription(), !pKernel->HadError() );
+		CPPUNIT_ASSERT( pData->pOnTheFly );
+		//std::cout << std::endl << "Created onthefly agent";
 	}
-
-	sml::Agent* pAgent = pKernel->CreateAgent( "onthefly" );
-	CPPUNIT_ASSERT_MESSAGE( pKernel->GetLastErrorDescription(), !pKernel->HadError() );
-
-	*ppAgent = pAgent;
-	CPPUNIT_ASSERT( *ppAgent != 0 );
 }
 
 void Handlers::MyOrderingPrintHandler( sml::smlPrintEventId /*id*/, void* pUserData, sml::Agent* /*pAgent*/, char const* pMessage )

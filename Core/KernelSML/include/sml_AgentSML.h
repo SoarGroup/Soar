@@ -397,7 +397,10 @@ public:
 	void ResetLocalRunCounters()                    { m_localRunCount = 0 ; m_localStepCount = 0 ; }
 	void IncrementLocalRunCounter()                 { m_localRunCount++ ; }
 	void IncrementLocalStepCounter()                { m_localStepCount++ ; }
-	bool CompletedRunType(unsigned long count)      { return (count > (m_InitialRunCount + m_localRunCount)) ; }
+	bool CompletedRunType(unsigned long count)      { 
+		//std::cout << std::endl << GetName() << ": (count" << count << " > (m_InitialRunCount" << m_InitialRunCount << " + m_localRunCount" << m_localRunCount << "))";
+		return (count > (m_InitialRunCount + m_localRunCount)) ; 
+	}
 	void SetCompletedOutputPhase(bool state)		{ m_CompletedOutputPhase = state ; }
 	bool HasCompletedOutputPhase()					{ return m_CompletedOutputPhase ; }
 
