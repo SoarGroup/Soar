@@ -1636,7 +1636,7 @@ bool Agent::SpawnDebugger(int port, const char* hostname)
 
 	// Start the child process. 
 	std::stringstream commandLine;
-	commandLine << "java.exe -jar " << libraryLocation << "\\bin\\SoarJavaDebugger.jar -remote -port " << port;
+	commandLine << "java.exe -jar \"" << libraryLocation << "\\bin\\SoarJavaDebugger.jar\" -remote -port " << port;
 	if ( hostname != 0 ) 
 	{
 		commandLine << " -ip " << hostname;
