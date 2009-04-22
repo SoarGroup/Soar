@@ -109,7 +109,9 @@ typedef struct production_struct {
   
   bool rl_rule;					/* if true, is a Soar-RL rule */
   double rl_update_count;		/* number of (potentially fractional) updates to this rule */
-  
+
+  double rl_ecr;				// expected current reward (discounted reward)
+  double rl_efr;				// expected future reward (discounted next state)
 } production;
 
 /* ========================================================================
