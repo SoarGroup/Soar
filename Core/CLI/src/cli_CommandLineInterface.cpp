@@ -221,13 +221,13 @@ EXPORT bool CommandLineInterface::ShouldEchoCommand(char const* pCommandLine)
 * @param echoResults If true send a copy of the result to the echo event
 * @param pResponse Pointer to XML response object
 *************************************************************/
-EXPORT bool CommandLineInterface::DoCommand(Connection* pConnection, sml::AgentSML* pAgent, const char* pCommandLine, bool echoResults, ElementXML* pResponse) {
+EXPORT bool CommandLineInterface::DoCommand(Connection* pConnection, sml::AgentSML* pAgent, const char* pCommandLine, bool echoResults, bool rawOutput, ElementXML* pResponse) {
 	if (!m_pKernelSML) return false;
 
 	// No way to return data
 	if (!pConnection) return false;
 	if (!pResponse) return false;
-	PushAgent( pAgent );
+	PushCall( CallData(pAgent, rawOutput) );
 
 	// Log input
 	if (m_pLogFile) {
@@ -253,19 +253,19 @@ EXPORT bool CommandLineInterface::DoCommand(Connection* pConnection, sml::AgentS
 
 	GetLastResultSML(pConnection, pResponse);
 
-	PopAgent();
+	PopCall();
 
 	// Always returns true to indicate that we've generated any needed error message already
 	return true;
 }
 
-void CommandLineInterface::PushAgent( sml::AgentSML* pAgent )
+void CommandLineInterface::PushCall( CallData callData )
 {
-	m_pAgentSMLStack.push( pAgent );
+	m_pCallDataStack.push( callData );
 
-	if (pAgent) 
+	if (callData.pAgent) 
 	{
-		m_pAgentSML = pAgent;
+		m_pAgentSML = callData.pAgent;
 		m_pAgentSoar = m_pAgentSML->GetSoarAgent();
 		assert( m_pAgentSoar );
 	} else {
@@ -273,18 +273,22 @@ void CommandLineInterface::PushAgent( sml::AgentSML* pAgent )
 		m_pAgentSoar = 0;
 	}
 
+	m_RawOutput = callData.rawOutput;
+
 	// For kernel callback class we inherit
 	SetAgentSML(m_pAgentSML) ;
 }
 
-void CommandLineInterface::PopAgent()
+void CommandLineInterface::PopCall()
 {
-	m_pAgentSMLStack.pop();
+	m_pCallDataStack.pop();
 	sml::AgentSML* pAgent = 0;
 	
-	if ( m_pAgentSMLStack.size() )
+	if ( m_pCallDataStack.size() )
 	{
-		pAgent = m_pAgentSMLStack.top();
+		const CallData& callData = m_pCallDataStack.top();
+		pAgent = callData.pAgent;
+		m_RawOutput = callData.rawOutput;
 	}
 
 	// reset these for the next command
@@ -588,7 +592,7 @@ bool CommandLineInterface::PartialMatch(std::vector<std::string>& argv) {
 			// We have a partial match
 			argv[0] = (*(possibilities.begin()));
 		}
-		return false;
+		return true;
 	}
 	return true;
 }

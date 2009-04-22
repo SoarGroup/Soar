@@ -58,8 +58,9 @@ class CommandLineInterface;
 class GetOpt;
 }
 typedef int ErrorCode;
+
 namespace cli {
-  using ::ErrorCode;
+using ::ErrorCode;
 
 // Define the CommandFunction which we'll call to process commands
 typedef bool (CommandLineInterface::*CommandFunction)(std::vector<std::string>& argv);
@@ -108,6 +109,14 @@ struct Options {
 	eOptionArgument argument;
 };
 
+// for nested command calls
+struct CallData {
+	CallData(sml::AgentSML* pAgent, bool rawOutput) : pAgent(pAgent), rawOutput(rawOutput) {}
+
+	sml::AgentSML* pAgent;
+	bool rawOutput;
+};
+
 CommandLineInterface* GetCLI() ;
 
 class CommandLineInterface : public sml::KernelCallback {
@@ -126,21 +135,16 @@ public:
 	EXPORT void SetKernel(sml::KernelSML* pKernelSML = 0);
 
 	/*************************************************************
-	* @brief Set the output style to raw or structured.
-	* @param rawOutput Set true for raw (string) output, false for structured output
-	*************************************************************/
-	EXPORT void SetRawOutput(bool rawOutput) { m_RawOutput = rawOutput; }
-
-	/*************************************************************
 	* @brief Process a command.  Give it a command line and it will parse
 	*		 and execute the command using system calls.
 	* @param pConnection The connection, for communication to the client
 	* @param pAgent The pointer to the agent interface
 	* @param pCommandLine The command line string, arguments separated by spaces
 	* @param echoResults If true send a copy of the result to the echo event
+	* @param rawOutput If false, return structured output
 	* @param pResponse Pointer to XML response object
 	*************************************************************/
-	EXPORT bool DoCommand(sml::Connection* pConnection, sml::AgentSML* pAgent, const char* pCommandLine, bool echoResults, soarxml::ElementXML* pResponse);
+	EXPORT bool DoCommand(sml::Connection* pConnection, sml::AgentSML* pAgent, const char* pCommandLine, bool echoResults, bool rawOutput, soarxml::ElementXML* pResponse);
 
 	/*************************************************************
 	* @brief Takes a command line and expands any aliases and returns
@@ -835,8 +839,8 @@ protected:
 	bool StreamSource( std::istream& soarStream, const std::string* pFilename );
 
 	// These help manage nested CLI calls
-	void PushAgent( sml::AgentSML* pAgent );
-	void PopAgent();
+	void PushCall( CallData callData );
+	void PopCall();
 
 	// For help system
 	bool ListHelpTopics(const std::string& directory, std::list< std::string >& topics);
@@ -884,7 +888,7 @@ protected:
 	CommandMap			m_CommandMap;			// Mapping of command names to function pointers
 	sml::KernelSML*		m_pKernelSML;
 	sml::AgentSML*		m_pAgentSML;			// Agent we're currently working with
-	std::stack< sml::AgentSML* > m_pAgentSMLStack;	// Agent we're currently working with
+	std::stack< CallData > m_pCallDataStack;	// Call data we're currently working with
 	agent*				m_pAgentSoar;			// Agent we're currently working with (soar kernel)
 	std::string			m_LibraryDirectory;		// The library directory, server side, see help command
 	StringStack			m_DirectoryStack;		// Directory stack for pushd/popd
