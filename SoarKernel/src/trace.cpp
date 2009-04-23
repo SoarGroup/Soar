@@ -539,7 +539,7 @@ void print_trace_format_list (agent* thisAgent, trace_format *tf) {
       else print_string (thisAgent, "%ao[");
       if (tf->data.attribute_path) {
         for (c=tf->data.attribute_path; c!=NIL; c=c->rest) {
-          print_string (thisAgent, reinterpret_cast<Symbol *>(c->first)->sc.name);
+          print_string (thisAgent, static_cast<Symbol *>(c->first)->sc.name);
           if (c->rest) print_string (thisAgent, ".");
         }
       } else {

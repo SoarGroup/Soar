@@ -119,7 +119,7 @@ ElementXML_Handle LocalProcessMessage(Connection_Receiver_Handle hReceiverConnec
 	if (action == SML_MESSAGE_ACTION_ASYNCH)
 	{
 		// Store the incoming message on a queue and execute it on the receiver's thread (our thread) at a later point.
-		EmbeddedConnectionAsynch* eca = reinterpret_cast<EmbeddedConnectionAsynch*>(pConnection);
+		EmbeddedConnectionAsynch* eca = static_cast<EmbeddedConnectionAsynch*>(pConnection);
 		eca->AddToIncomingMessageQueue(hIncomingMsg) ;
 
 		// There is no immediate response to an asynch message.

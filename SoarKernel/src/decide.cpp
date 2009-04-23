@@ -1301,7 +1301,7 @@ void create_new_attribute_impasse_for_slot (agent* thisAgent, slot *s, byte impa
 
   soar_invoke_callbacks(thisAgent, 
                        CREATE_NEW_ATTRIBUTE_IMPASSE_CALLBACK, 
-                       reinterpret_cast<soar_call_data>(s) );
+                       static_cast<soar_call_data>(s) );
 }
 
 void remove_existing_attribute_impasse_for_slot (agent* thisAgent, slot *s) {
@@ -1309,7 +1309,7 @@ void remove_existing_attribute_impasse_for_slot (agent* thisAgent, slot *s) {
 
   soar_invoke_callbacks(thisAgent, 
                        REMOVE_ATTRIBUTE_IMPASSE_CALLBACK, 
-                       reinterpret_cast<soar_call_data>(s) );
+                       static_cast<soar_call_data>(s) );
 
   id = s->impasse_id;
   s->impasse_id = NIL;
@@ -1838,7 +1838,7 @@ void remove_existing_context_and_descendents (agent* thisAgent, Symbol *goal) {
   /* --- invoke callback routine --- */
   soar_invoke_callbacks(thisAgent, 
                        POP_CONTEXT_STACK_CALLBACK, 
-                       reinterpret_cast<soar_call_data>(goal) );
+                       static_cast<soar_call_data>(goal) );
 
   if ( ( goal != thisAgent->top_goal ) && rl_enabled( thisAgent ) )
   {
@@ -2018,7 +2018,7 @@ void create_new_context (agent* thisAgent, Symbol *attr_of_impasse, byte impasse
   /* --- invoke callback routine --- */
   soar_invoke_callbacks(thisAgent, 
                        CREATE_NEW_CONTEXT_CALLBACK, 
-                       reinterpret_cast<soar_call_data>(id) );
+                       static_cast<soar_call_data>(id) );
 }
 
 /* ------------------------------------------------------------------
@@ -2498,7 +2498,7 @@ void uniquely_add_to_head_of_dll(agent* thisAgent, instantiation *inst)
      #endif
   } /* end for loop */
 
-  new_pi = reinterpret_cast<parent_inst *>(malloc(sizeof(parent_inst)));
+  new_pi = static_cast<parent_inst *>(malloc(sizeof(parent_inst)));
   new_pi->next = NIL;
   new_pi->prev = NIL;
   new_pi->inst = inst;
