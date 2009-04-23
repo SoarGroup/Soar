@@ -689,14 +689,12 @@ void KernelHelpers::PrintSymbol(AgentSML* thisAgent,
 }
 
 void KernelHelpers::PrintUser(AgentSML*       thisAgent,
-	char*         arg,
+	char*         /*arg*/,
 	bool          internal,
 	bool          print_filename,
 	bool          full_prod,
 	unsigned int  productionType)
 {
-	unused(arg) ;
-
 	//bool output_arg = true; /* TEST for Soar-Bugs #161 */
 	for (production* prod=thisAgent->GetSoarAgent()->all_productions_of_type[productionType];  
 		prod != NIL; prod = prod->next)

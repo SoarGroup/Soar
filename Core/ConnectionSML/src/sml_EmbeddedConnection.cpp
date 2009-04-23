@@ -334,8 +334,7 @@ void EmbeddedConnection::CloseConnection()
 	if (m_hConnection)
 	{
 		// Make the call to the kernel to close this connection
-		ElementXML_Handle hResponse = m_pProcessMessageFunction(m_hConnection, 0, SML_MESSAGE_ACTION_CLOSE) ;
-		unused(hResponse) ;
+		m_pProcessMessageFunction(m_hConnection, 0, SML_MESSAGE_ACTION_CLOSE) ;
 	}
 	
 	m_hConnection = NULL ;
@@ -354,7 +353,6 @@ void EmbeddedConnection::SetTraceCommunications(bool state)
 	if (m_hConnection)
 	{
 		// Tell the kernel to turn tracing on or off
-		ElementXML_Handle hResponse = m_pProcessMessageFunction(m_hConnection, 0, state ? SML_MESSAGE_ACTION_TRACE_ON : SML_MESSAGE_ACTION_TRACE_OFF) ;
-		unused(hResponse) ;
+		m_pProcessMessageFunction(m_hConnection, 0, state ? SML_MESSAGE_ACTION_TRACE_ON : SML_MESSAGE_ACTION_TRACE_OFF) ;
 	}
 }
