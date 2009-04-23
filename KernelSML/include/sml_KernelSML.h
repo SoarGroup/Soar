@@ -25,7 +25,7 @@ typedef struct wme_struct wme;
 #include "sml_AgentListener.h"
 #include "sml_UpdateListener.h"
 #include "sml_StringListener.h"
-#include "sml_Utils.h" // required for release builds for unused macro
+#include "sml_Utils.h"
 #include "sml_Events.h"
 #include "init_soar.h"
 

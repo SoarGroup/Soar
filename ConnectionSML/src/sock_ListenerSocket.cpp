@@ -44,11 +44,9 @@ ListenerSocket::~ListenerSocket()
 //					on a specific port.
 //
 /////////////////////////////////////////////////////////////////////
-bool ListenerSocket::CreateListener(unsigned short port, bool local)
+bool ListenerSocket::CreateListener(unsigned short port, bool /*local*/)
 {
 	CTDEBUG_ENTER_METHOD("ListenerSocket::CreateListener");
-
-	unused(local);
 
 	// Should only call this once
 	if (m_hSocket)

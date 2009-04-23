@@ -81,13 +81,10 @@ void EmbeddedConnectionSynch::SendMsg(ElementXML* pMsg)
 *		and this must match the message we just sent (since its a synchronous
 *		connection so it's executed immediately).
 *************************************************************/
-ElementXML* EmbeddedConnectionSynch::GetResponseForID(char const* pID, bool wait)
+ElementXML* EmbeddedConnectionSynch::GetResponseForID(char const* /*pID*/, bool /*wait*/)
 {
 	// For the embedded connection there's no ambiguity over what was the "last" call.
-	unused(pID) ;
-
 	// There's also no need to wait, we always have the result on hand.
-	unused(wait) ;
 	
 	ClearError() ;
 

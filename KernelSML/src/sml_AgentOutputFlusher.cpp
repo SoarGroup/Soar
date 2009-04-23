@@ -31,12 +31,10 @@ AgentOutputFlusher::~AgentOutputFlusher()
 	this->UnregisterWithKernel(smlEVENT_AFTER_RUNNING) ;
 }
 
-void AgentOutputFlusher::OnKernelEvent(int eventID, AgentSML* pAgentSML, void* pCallData)
+void AgentOutputFlusher::OnKernelEvent(int eventID, AgentSML* /*pAgentSML*/, void* /*pCallData*/)
 {
-	assert(eventID == smlEVENT_AFTER_DECISION_CYCLE || eventID == smlEVENT_AFTER_RUNNING);
 	unused(eventID);
-	unused(pAgentSML);
-	unused(pCallData);
+	assert(eventID == smlEVENT_AFTER_DECISION_CYCLE || eventID == smlEVENT_AFTER_RUNNING);
 
 	if (m_pPrintListener)
 		m_pPrintListener->FlushOutput(static_cast<smlPrintEventId>(m_EventID));

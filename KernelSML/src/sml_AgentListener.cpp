@@ -67,9 +67,8 @@ bool AgentListener::RemoveListener(smlAgentEventId eventID, Connection* pConnect
 }
 
 // Called when an event occurs in the kernel
-void AgentListener::OnKernelEvent(int eventID, AgentSML* pAgentSML, void* pCallData)
+void AgentListener::OnKernelEvent(int eventID, AgentSML* pAgentSML, void* /*pCallData*/)
 {
-	unused(pCallData) ;
 	OnEvent(static_cast<smlAgentEventId>(eventID), pAgentSML) ;
 }
 

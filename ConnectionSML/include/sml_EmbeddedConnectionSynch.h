@@ -39,7 +39,7 @@ public:
 	virtual bool IsAsynchronous() { return false ; }
 	virtual void SendMsg(soarxml::ElementXML* pMsg) ;
 	virtual soarxml::ElementXML* GetResponseForID(char const* pID, bool wait) ;
-	virtual bool ReceiveMessages(bool allMessages)		{ unused(allMessages) ; ClearError() ; return false ; } 
+	virtual bool ReceiveMessages(bool /*allMessages*/)		{ ClearError() ; return false ; } 
 };
 
 } // End of namespace
