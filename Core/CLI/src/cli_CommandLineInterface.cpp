@@ -1072,7 +1072,7 @@ void CommandLineInterface::OnKernelEvent(int eventID, AgentSML*, void* pCallData
 		++m_NumProductionsExcised;
 
 		if (m_SourceVerbose) {
-			production* p = reinterpret_cast<production*>(pCallData);
+			production* p = static_cast<production*>(pCallData);
 			assert(p) ;
 			assert(p->name->sc.name) ;
 
@@ -1083,7 +1083,7 @@ void CommandLineInterface::OnKernelEvent(int eventID, AgentSML*, void* pCallData
 	}
 	else if (eventID == smlEVENT_PRINT)
 	{
-		char const* msg = reinterpret_cast<char const*>(pCallData);
+		char const* msg = static_cast<char const*>(pCallData);
 
 		if (m_TrapPrintEvents || m_pLogFile)
 		{

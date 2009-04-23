@@ -158,7 +158,7 @@ void explain_add_temp_to_backtrace_list
 
 backtrace_str *back;
 
-  back = reinterpret_cast<backtrace_str *>(malloc(sizeof (backtrace_str)));
+  back = static_cast<backtrace_str *>(malloc(sizeof (backtrace_str)));
   back->result = temp->result;
   back->trace_cond = copy_condition(thisAgent, temp->trace_cond);
   if (back->trace_cond != NULL)
@@ -192,7 +192,7 @@ void explain_add_temp_to_chunk_list(agent* thisAgent, explain_chunk_str *temp) {
    
 explain_chunk_str *chunk;
 
-  chunk = reinterpret_cast<explain_chunk_str *>(malloc(sizeof (explain_chunk_str)));
+  chunk = static_cast<explain_chunk_str *>(malloc(sizeof (explain_chunk_str)));
   chunk->conds   = temp->conds;
   chunk->actions = temp->actions;
   strncpy(chunk->name,temp->name,EXPLAIN_CHUNK_STRUCT_NAME_BUFFER_SIZE);

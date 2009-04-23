@@ -19,7 +19,7 @@
 
 void toh_update_event_handler(sml::smlUpdateEventId /*id*/, void *user_data_ptr, sml::Kernel* kernel_ptr, sml::smlRunFlags /*run_flags*/) {
   assert(user_data_ptr);
-  reinterpret_cast<TOH_Game *>(user_data_ptr)->update(*kernel_ptr);
+  static_cast<TOH_Game *>(user_data_ptr)->update(*kernel_ptr);
 }
 
 TOH_Game::TOH_Game(const std::string &agent_productions,

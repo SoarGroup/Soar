@@ -314,7 +314,7 @@ inline void allocate_with_pool(agent* thisAgent, memory_pool* p, T** dest_item_p
   //  member of memory_pool, but I tried changing that and it still works, so now I'm at a loss
   // if it helps, we think this line is equivalent to the following
   //  (at least, everything appears to work properly if you swap these lines):
-  // (p)->free_list = (*reinterpret_cast<P*>(dest_item_pointer))->free_list;
+  // (p)->free_list = (*static_cast<P*>(dest_item_pointer))->free_list;
   (p)->free_list =  *(void * *)(*(dest_item_pointer));
 
   fill_with_garbage (*(dest_item_pointer), (p)->item_size);

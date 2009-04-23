@@ -26,7 +26,7 @@ using namespace sml ;
 
 void KernelCallback::KernelCallbackStatic(agent* pAgent, int eventID, void* pData, void* pCallData)
 {
-	KernelCallback* pThis = reinterpret_cast<KernelCallback*>(pData) ;
+	KernelCallback* pThis = static_cast<KernelCallback*>(pData) ;
 
 	// Make sure everything matches up correctly.
 	(void)pAgent; // silences warning in release mode

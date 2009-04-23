@@ -174,7 +174,7 @@ void remove_wme_list_from_wm (agent* thisAgent, wme *w, bool updateWmeMap)
 
 		if (updateWmeMap) 
 		{
-			soar_invoke_callbacks( thisAgent, INPUT_WME_GARBAGE_COLLECTED_CALLBACK, reinterpret_cast< soar_call_data >( w ) ); 
+			soar_invoke_callbacks( thisAgent, INPUT_WME_GARBAGE_COLLECTED_CALLBACK, static_cast< soar_call_data >( w ) ); 
 			//remove_wme_from_wmeMap (thisAgent, w);
 		}
 		remove_wme_from_wm (thisAgent, w);
