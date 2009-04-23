@@ -641,6 +641,25 @@ void create_instantiation (agent* thisAgent, production *prod, struct token_stru
 
 		/* SoarTech changed from an IF stmt to a WHILE loop to support GlobalDeepCpy */
 		while (pref) {   
+      /* The parser assumes that any rhs preference of the form 
+       *
+       * (<s> ^operator <o> = <x>)
+       * 
+       * is a binary indifferent preference, because it assumes <x> is an
+       * operator. However, it could be the case that <x> is actually bound to
+       * a number, which would make this a numeric indifferent preference. The
+       * parser had no way of easily figuring this out, but it's easy to check
+       * here.
+       *
+       * jzxu April 22, 2009
+       */
+      if ((pref->type == BINARY_INDIFFERENT_PREFERENCE_TYPE) &&
+          ((pref->referent->var.common_symbol_info.symbol_type == FLOAT_CONSTANT_SYMBOL_TYPE) || 
+           (pref->referent->var.common_symbol_info.symbol_type == INT_CONSTANT_SYMBOL_TYPE)))
+      {
+        pref->type = NUMERIC_INDIFFERENT_PREFERENCE_TYPE;
+      }
+
 			pref->inst = inst;
 			insert_at_head_of_dll (inst->preferences_generated, pref,
 				inst_next, inst_prev);
