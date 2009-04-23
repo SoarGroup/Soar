@@ -607,8 +607,8 @@ static void XMLEventHandler(sml::smlXMLEventId id, void* pUserData, sml::Agent* 
 	// If a Java user wishes to keep pXML it will have to make a copy, just like in C++.
 	// NOTE: Java long == C++ (long long) (i.e. 64-bit)
 	// Trying to cast from a pointer to long long in a way that doesn't offend gcc.
-	//long long javaPointer = reinterpret_cast<long long>(pXML) ;
-	// NOTE: reinterpret_cast doesn't play nice on big-endian machines
+	//long long javaPointer = static_cast<long long>(pXML) ;
+	// NOTE: static_cast doesn't play nice on big-endian machines
 	// This code emulates SWIG's method of dealing with this problem.
 	jlong javaPointer;
 	*(sml::ClientXML **)&javaPointer = pXML;
@@ -739,8 +739,8 @@ static void OutputEventHandler(void* pUserData, sml::Agent* pAgent, char const* 
 	// If a Java user wishes to keep pWmeAdded it will have to make a copy, just like in C++.
 	// NOTE: Java long == C++ (long long) (i.e. 64-bit)
 	// Trying to cast from a pointer to long long in a way that doesn't offend gcc.
-	//long long javaPointer = reinterpret_cast<long long>(pXML) ;
-	// NOTE: reinterpret_cast doesn't play nice on big-endian machines
+	//long long javaPointer = static_cast<long long>(pXML) ;
+	// NOTE: static_cast doesn't play nice on big-endian machines
 	// This code emulates SWIG's method of dealing with this problem.
 	jlong javaPointer;
 	*(sml::WMElement **)&javaPointer = pWmeAdded;

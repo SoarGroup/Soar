@@ -285,7 +285,7 @@ Symbol *instantiate_rhs_value (agent* thisAgent, rhs_value rv,
   
   /* --- scan through arglist, dereference symbols and deallocate conses --- */
   for (c=arglist; c!=NIL; c=c->rest)
-    if (c->first) symbol_remove_ref (thisAgent, reinterpret_cast<Symbol *>(c->first));
+    if (c->first) symbol_remove_ref (thisAgent, static_cast<Symbol *>(c->first));
   free_list (thisAgent, arglist);
 
   return result;
@@ -710,7 +710,7 @@ void create_instantiation (agent* thisAgent, production *prod, struct token_stru
 		/* --- invoke callback function --- */
 		soar_invoke_callbacks(thisAgent, 
 			FIRING_CALLBACK,
-			reinterpret_cast<soar_call_data>(inst));
+			static_cast<soar_call_data>(inst));
 
 	}
 }
@@ -796,7 +796,7 @@ void deallocate_instantiation (agent* thisAgent, instantiation *inst) {
        c_old = c = cond->bt.prohibits;
        cond->bt.prohibits = NIL;
        for (; c!=NIL; c=c->rest) {
- 		   pref = reinterpret_cast<preference *>(c->first);
+ 		   pref = static_cast<preference *>(c->first);
            #ifdef DO_TOP_LEVEL_REF_CTS
 		   preference_remove_ref (thisAgent, pref);
            #else
@@ -838,7 +838,7 @@ void retract_instantiation (agent* thisAgent, instantiation *inst) {
   /* --- invoke callback function --- */
   soar_invoke_callbacks(thisAgent, 
 			RETRACTION_CALLBACK,
-			reinterpret_cast<soar_call_data>(inst));
+			static_cast<soar_call_data>(inst));
    
   retracted_a_preference = FALSE;
   

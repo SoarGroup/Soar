@@ -1203,8 +1203,8 @@ void AgentSML::InputWmeGarbageCollectedHandler( agent* /*pSoarAgent*/, int event
 	(void)eventID; // silences warning in release mode
 	assert( eventID == static_cast< int >( INPUT_WME_GARBAGE_COLLECTED_CALLBACK ) );
 
-	wme* pWME = reinterpret_cast< wme* >( pCallData );
-	AgentSML* pAgent = reinterpret_cast< AgentSML* >( pData );
+	wme* pWME = static_cast< wme* >( pCallData );
+	AgentSML* pAgent = static_cast< AgentSML* >( pData );
 
 	pAgent->RemoveWmeFromWmeMap( pWME );
 }
