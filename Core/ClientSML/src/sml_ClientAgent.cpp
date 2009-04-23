@@ -111,10 +111,8 @@ void Agent::ReceivedEvent(AnalyzeXML* pIncoming, ElementXML* pResponse)
 * @param pIncoming	The event command
 * @param pResponse	The reply (no real need to fill anything in here currently)
 *************************************************************/
-void Agent::ReceivedRunEvent(smlRunEventId id, AnalyzeXML* pIncoming, ElementXML* pResponse)
+void Agent::ReceivedRunEvent(smlRunEventId id, AnalyzeXML* pIncoming, ElementXML* /*pResponse*/)
 {
-	unused(pResponse) ;
-
 	smlPhase phase = smlPhase(pIncoming->GetArgInt(sml_Names::kParamPhase, -1)) ;
 
 	// Look up the handler(s) from the map
@@ -172,10 +170,8 @@ void Agent::FireOutputNotification()
 * @param pIncoming	The event command
 * @param pResponse	The reply (no real need to fill anything in here currently)
 *************************************************************/
-void Agent::ReceivedPrintEvent(smlPrintEventId id, AnalyzeXML* pIncoming, ElementXML* pResponse)
+void Agent::ReceivedPrintEvent(smlPrintEventId id, AnalyzeXML* pIncoming, ElementXML* /*pResponse*/)
 {
-	unused(pResponse) ;
-
 	char const* pMessage = pIncoming->GetArgString(sml_Names::kParamMessage) ;
 
 	// This argument is only present on echo messages.
@@ -212,10 +208,8 @@ void Agent::ReceivedPrintEvent(smlPrintEventId id, AnalyzeXML* pIncoming, Elemen
 * @param pIncoming	The event command
 * @param pResponse	The reply (no real need to fill anything in here currently)
 *************************************************************/
-void Agent::ReceivedProductionEvent(smlProductionEventId id, AnalyzeXML* pIncoming, ElementXML* pResponse)
+void Agent::ReceivedProductionEvent(smlProductionEventId id, AnalyzeXML* pIncoming, ElementXML* /*pResponse*/)
 {
-	unused(pResponse) ;
-
 	char const* pProductionName = pIncoming->GetArgString(sml_Names::kParamName) ;
 	char const* pInstance = 0 ;	// gSKI defines this but doesn't support it yet.
 
@@ -849,10 +843,8 @@ bool Agent::UnregisterForPrintEvent(int callbackID)
 	return true ;
 }
 
-void Agent::ReceivedXMLEvent(smlXMLEventId id, AnalyzeXML* pIncoming, ElementXML* pResponse)
+void Agent::ReceivedXMLEvent(smlXMLEventId id, AnalyzeXML* pIncoming, ElementXML* /*pResponse*/)
 {
-	unused(pResponse) ;
-
 	// Retrieve the original message
 	ElementXML* pXMLMessage = new ElementXML(pIncoming->GetElementXMLHandle()) ;
 
@@ -882,10 +874,8 @@ void Agent::ReceivedXMLEvent(smlXMLEventId id, AnalyzeXML* pIncoming, ElementXML
 	}
 }
 
-void Agent::ReceivedXMLTraceEvent(smlXMLEventId id, ElementXML* pIncoming, ElementXML* pResponse)
+void Agent::ReceivedXMLTraceEvent(smlXMLEventId id, ElementXML* pIncoming, ElementXML* /*pResponse*/)
 {
-	unused(pResponse) ;
-
 #ifdef _DEBUG
 	char* pStr = pIncoming->GenerateXMLString(true) ;
 	pIncoming->DeleteString(pStr) ;

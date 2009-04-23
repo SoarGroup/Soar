@@ -158,12 +158,10 @@ bool NamedPipe::SendBuffer(char const* pSendBuffer, size_t bufferSize)
 //					indicating that the pipe is closed.
 //
 /////////////////////////////////////////////////////////////////////
-bool NamedPipe::IsReadDataAvailable(long secondsWait, long millisecondsWait)
+bool NamedPipe::IsReadDataAvailable(long /*secondsWait*/, long millisecondsWait)
 {
-	assert(millisecondsWait<1000 && "specified milliseconds must be less than 1000");
-
-	unused(secondsWait);
 	unused(millisecondsWait);
+	assert(millisecondsWait<1000 && "specified milliseconds must be less than 1000");
 
 	CTDEBUG_ENTER_METHOD("NamedPipe::IsReadDataAvailable");
 
