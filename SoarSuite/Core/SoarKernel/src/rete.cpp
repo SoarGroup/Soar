@@ -2372,8 +2372,8 @@ inline void push_var_binding(agent* thisAgent, Symbol * v, rete_node_level depth
 inline void pop_var_binding(agent* thisAgent, void * v)
 {
   cons *c_xy312;
-  c_xy312 = reinterpret_cast<Symbol *>(v)->var.rete_binding_locations;
-  reinterpret_cast<Symbol *>(v)->var.rete_binding_locations = c_xy312->rest;
+  c_xy312 = static_cast<Symbol *>(v)->var.rete_binding_locations;
+  static_cast<Symbol *>(v)->var.rete_binding_locations = c_xy312->rest;
   free_cons (thisAgent, c_xy312);
 }
 
@@ -2515,7 +2515,7 @@ inline varnames * var_list_to_varnames(cons * x) { return reinterpret_cast<varna
 inline unsigned long varnames_is_var_list(varnames * x) { return reinterpret_cast<unsigned long>(x) & 1; }
 inline Bool varnames_is_one_var(varnames * x) { return ! varnames_is_var_list(x); }
 inline Symbol * varnames_to_one_var(varnames * x) { return reinterpret_cast<Symbol *>(x); }
-inline list * varnames_to_var_list(varnames * x) { return reinterpret_cast<list *>(reinterpret_cast<char *>(x) - 1); }
+inline list * varnames_to_var_list(varnames * x) { return reinterpret_cast<list *>(static_cast<char *>(x) - 1); }
 
 typedef struct three_field_varnames_struct {
   varnames *id_varnames;
@@ -3725,7 +3725,7 @@ byte add_production_to_rete (agent* thisAgent, production *p, condition *lhs_top
 	}
 
 	/* --- invoke callback functions --- */
-	soar_invoke_callbacks (thisAgent, PRODUCTION_JUST_ADDED_CALLBACK, reinterpret_cast<soar_call_data>(p));
+	soar_invoke_callbacks (thisAgent, PRODUCTION_JUST_ADDED_CALLBACK, static_cast<soar_call_data>(p));
 
 	//#ifdef _WINDOWS
 	//        add_production_to_stat_lists(new_prod);
@@ -3746,7 +3746,7 @@ void excise_production_from_rete (agent* thisAgent, production *p)
   rete_node *p_node, *parent;
   ms_change *msc;
 
-  soar_invoke_callbacks (thisAgent, PRODUCTION_JUST_ABOUT_TO_BE_EXCISED_CALLBACK, reinterpret_cast<soar_call_data>(p));
+  soar_invoke_callbacks (thisAgent, PRODUCTION_JUST_ABOUT_TO_BE_EXCISED_CALLBACK, static_cast<soar_call_data>(p));
    
 //#ifdef _WINDOWS
 //        remove_production_from_stat_lists(prod_to_be_excised);
@@ -3878,9 +3878,9 @@ Symbol *var_bound_in_reconstructed_conds (agent* thisAgent,
   ct = complex_test_from_test(t);
   if (ct->type==CONJUNCTIVE_TEST) {
     for (c=ct->data.conjunct_list; c!=NIL; c=c->rest)
-      if ( (! test_is_blank_test (reinterpret_cast<test>(c->first))) &&
-           (test_is_blank_or_equality_test (reinterpret_cast<test>(c->first))) )
-        return referent_of_equality_test (reinterpret_cast<test>(c->first));
+      if ( (! test_is_blank_test (static_cast<test>(c->first))) &&
+           (test_is_blank_or_equality_test (static_cast<test>(c->first))) )
+        return referent_of_equality_test (static_cast<test>(c->first));
   }
 
   abort_var_bound_in_reconstructed_conds:
@@ -4074,7 +4074,7 @@ void add_varnames_to_test (agent* thisAgent, varnames *vn, test *t) {
     add_new_test_to_test (thisAgent, t, New);
   } else {
     for (c=varnames_to_var_list(vn); c!=NIL; c=c->rest) {
-      New = make_equality_test (reinterpret_cast<Symbol *>(c->first));
+      New = make_equality_test (static_cast<Symbol *>(c->first));
       add_new_test_to_test (thisAgent, t, New);
     }
   }
@@ -6586,7 +6586,7 @@ void retesave_varnames (varnames *names, FILE* f) {
     for (i=0, c=varnames_to_var_list(names); c!=NIL; i++, c=c->rest);
     retesave_four_bytes (i,f);
     for (c=varnames_to_var_list(names); c!=NIL; c=c->rest)
-      retesave_four_bytes (reinterpret_cast<Symbol *>(c->first)->common.a.retesave_symindex,f);
+      retesave_four_bytes (static_cast<Symbol *>(c->first)->common.a.retesave_symindex,f);
   }
 }
 
@@ -6678,13 +6678,13 @@ void retesave_rhs_value (rhs_value rv, FILE* f) {
   } else if (rhs_value_is_funcall(rv)) {
     retesave_one_byte (1,f);
     c = rhs_value_to_funcall_list (rv);
-    sym = reinterpret_cast<rhs_function *>(c->first)->name;
+    sym = static_cast<rhs_function *>(c->first)->name;
     retesave_four_bytes (sym->common.a.retesave_symindex,f);
     c=c->rest;
     for (i=0; c!=NIL; i++, c=c->rest);
     retesave_four_bytes (i,f);
     for (c=rhs_value_to_funcall_list(rv)->rest; c!=NIL; c=c->rest)
-      retesave_rhs_value (reinterpret_cast<rhs_value>(c->first),f);
+      retesave_rhs_value (static_cast<rhs_value>(c->first),f);
   } else if (rhs_value_is_reteloc(rv)) {
     retesave_one_byte (2,f);
     retesave_one_byte (static_cast<byte>(rhs_value_to_reteloc_field_num(rv)),f);
@@ -6861,7 +6861,7 @@ void retesave_rete_test (rete_test *rt, FILE* f) {
     for (i=0, c=rt->data.disjunction_list; c!=NIL; i++, c=c->rest);
     retesave_two_bytes (i,f);
     for (c=rt->data.disjunction_list; c!=NIL; c=c->rest)
-      retesave_four_bytes (reinterpret_cast<Symbol *>(c->first)->common.a.retesave_symindex,f);
+      retesave_four_bytes (static_cast<Symbol *>(c->first)->common.a.retesave_symindex,f);
   }
 }
 
@@ -7210,7 +7210,7 @@ void reteload_node_and_children (agent* thisAgent, rete_node *parent, FILE* f) {
     update_node_with_matches_from_above (thisAgent, New);
 
      /* --- invoke callback on the production --- */
-    soar_invoke_callbacks (thisAgent, PRODUCTION_JUST_ADDED_CALLBACK, reinterpret_cast<soar_call_data>(prod));
+    soar_invoke_callbacks (thisAgent, PRODUCTION_JUST_ADDED_CALLBACK, static_cast<soar_call_data>(prod));
  
     break;
 

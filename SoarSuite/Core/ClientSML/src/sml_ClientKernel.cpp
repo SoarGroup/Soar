@@ -308,7 +308,7 @@ bool Kernel::IsTracingCommunications()
 *************************************************************/
 ElementXML* Kernel::ReceivedCall(Connection* pConnection, ElementXML* pIncoming, void* pUserData)
 {
-	Kernel* pKernel = reinterpret_cast<Kernel*>(pUserData) ;
+	Kernel* pKernel = static_cast<Kernel*>(pUserData) ;
 
 	return pKernel->ProcessIncomingSML(pConnection, pIncoming) ;
 }

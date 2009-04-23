@@ -202,7 +202,7 @@ soar_callback * soar_exists_callback_id (agent* the_agent,
 	{
 		soar_callback * cb;
 
-		cb = reinterpret_cast< soar_callback* >(c->first);
+		cb = static_cast< soar_callback* >(c->first);
 
 		if (cb->id == id)
 		{
@@ -302,7 +302,7 @@ void soar_invoke_callbacks (agent* thisAgent,
     {
       soar_callback * cb;
 
-      cb = reinterpret_cast< soar_callback* >(c->first);
+      cb = static_cast< soar_callback* >(c->first);
 	  cb->function(thisAgent, cb->eventid, cb->data, call_data);
     }
 
@@ -409,7 +409,7 @@ void soar_invoke_first_callback (agent* thisAgent,
  
       soar_callback * cb;
 
-      cb = reinterpret_cast< soar_callback* >(head->first);
+      cb = static_cast< soar_callback* >(head->first);
 	  cb->function(thisAgent, cb->eventid, cb->data, call_data);
     
 
@@ -488,7 +488,7 @@ void soar_list_all_callbacks_for_event (agent* thisAgent,
     {
       soar_callback * cb;
       
-      cb = reinterpret_cast< soar_callback* >(c->first);
+      cb = static_cast< soar_callback* >(c->first);
 
 	  print(thisAgent, "%s ", cb->id.c_str());
     }
@@ -515,7 +515,7 @@ void soar_pop_callback (agent* thisAgent,
       return;
     }
 
-  cb = reinterpret_cast< soar_callback* >(head->first);
+  cb = static_cast< soar_callback* >(head->first);
 
   thisAgent->soar_callbacks[callback_type] = head->rest;
   soar_destroy_callback(cb);
@@ -563,7 +563,7 @@ void soar_remove_all_callbacks_for_event (agent* thisAgent,
     {
       soar_callback * cb;
       
-      cb = reinterpret_cast< soar_callback* >(c->first);
+      cb = static_cast< soar_callback* >(c->first);
 	  
       next = next->rest;
       soar_destroy_callback(cb);
@@ -587,7 +587,7 @@ void soar_remove_callback (agent* thisAgent,
     {
       soar_callback * cb;
 
-      cb = reinterpret_cast< soar_callback* >(c->first);
+      cb = static_cast< soar_callback* >(c->first);
 
       if (cb->id == id)
 	{
@@ -614,7 +614,7 @@ void soar_callback_test_callback (agent* /*the_agent*/,
 				  soar_callback_data data,
 				  soar_call_data /*call_data*/)
 {
-  printf("%s test callback executed.\n", reinterpret_cast<char *>(data));
+  printf("%s test callback executed.\n", static_cast<char *>(data));
 }
 
 
@@ -627,7 +627,7 @@ void soar_test_all_monitorable_callbacks(agent* thisAgent)
     {
       soar_add_callback(thisAgent, static_cast<SOAR_CALLBACK_TYPE>(i), 
 			reinterpret_cast<soar_callback_fn>(soar_callback_test_callback), i,
-			reinterpret_cast<void*>(const_cast<char*>(soar_callback_enum_to_name(static_cast<SOAR_CALLBACK_TYPE>(i), TRUE))), 
+			static_cast<void*>(const_cast<char*>(soar_callback_enum_to_name(static_cast<SOAR_CALLBACK_TYPE>(i), TRUE))), 
 			NULL, test_callback_name);
     }
 }

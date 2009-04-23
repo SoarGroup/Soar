@@ -48,7 +48,7 @@ void *allocate_memory (agent* thisAgent, size_t size, int usage_code) {
 	size += sizeof(size_t);
 	thisAgent->memory_for_usage[STATS_OVERHEAD_MEM_USAGE] += sizeof(char *);
 
-	p = reinterpret_cast<char *>(malloc (size));
+	p = static_cast<char *>(malloc (size));
 	if (p==NULL) {
 		char msg[BUFFER_MSG_SIZE];
 		SNPRINTF(msg, BUFFER_MSG_SIZE, "\nmem.c: Error:  Tried but failed to allocate %lu bytes of memory.\n", static_cast<unsigned long>(size));
@@ -67,7 +67,7 @@ void *allocate_memory (agent* thisAgent, size_t size, int usage_code) {
 	*(reinterpret_cast<size_t *>(p)) = size;
 	p += sizeof(size_t);
 
-	return reinterpret_cast<void *>(p);
+	return static_cast<void *>(p);
 }
 
 void *allocate_memory_and_zerofill (agent* thisAgent, size_t size, int usage_code) {
@@ -83,8 +83,8 @@ void free_memory (agent* thisAgent, void *mem, int usage_code) {
   
   if ( mem == 0 ) return;
   
-  mem = reinterpret_cast<char *>(mem) - sizeof(size_t);
-  size = *(reinterpret_cast<size_t *>(mem));
+  mem = static_cast<char *>(mem) - sizeof(size_t);
+  size = *(static_cast<size_t *>(mem));
   fill_with_garbage (mem, size);
 
   thisAgent->memory_for_usage[STATS_OVERHEAD_MEM_USAGE] -= sizeof(size_t);
