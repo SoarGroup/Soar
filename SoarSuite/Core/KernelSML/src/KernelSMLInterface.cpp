@@ -30,10 +30,8 @@
 
 using namespace sml ;
 
-soarxml::ElementXML* ReceivedCall(Connection* pConnection, soarxml::ElementXML* pIncoming, void* pUserData)
+soarxml::ElementXML* ReceivedCall(Connection* pConnection, soarxml::ElementXML* pIncoming, void* /*pUserData*/)
 {
-	unused(pUserData) ;
-
 	// This must be initialized when the connection was created.
 	KernelSML* pKernel = static_cast<KernelSML*>(pConnection->GetUserData()) ;
 

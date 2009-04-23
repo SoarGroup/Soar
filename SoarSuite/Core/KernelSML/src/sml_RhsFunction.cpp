@@ -85,10 +85,8 @@ Symbol* RhsFunction::RhsFunctionCallback(agent* thisAgent, list* args, void* use
 	return pSoarReturn;
 }
 
-Symbol* sml::InterruptRhsFunction::Execute(std::vector<Symbol*>* pArguments)
+Symbol* sml::InterruptRhsFunction::Execute(std::vector<Symbol*>* /*pArguments*/)
 {
-	unused(pArguments) ;
-
 	// BADBAD?  Should this be just an interrupt on this agent?  Existing semantics are for all agents so doing that here too.
 	m_pAgentSML->GetKernelSML()->InterruptAllAgents(sml_STOP_AFTER_SMALLEST_STEP) ;
 	return 0 ;

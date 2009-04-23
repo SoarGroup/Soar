@@ -884,10 +884,7 @@ EXPORT void sml_DirectRun(char const* pAgentName, bool forever, int stepSize, in
 	bool synchronizeAtStart = (runType == sml_DECISION) ;
 
 	// Do the run
-	smlRunResult runResult = pScheduler->RunScheduledAgents(forever, runType, count, runFlags, smlRunStepSize(interleaveSize), synchronizeAtStart) ;
-
-	unused(runResult) ;
-
+	pScheduler->RunScheduledAgents(forever, runType, count, runFlags, smlRunStepSize(interleaveSize), synchronizeAtStart) ;
 	return ;
 }
 

@@ -101,11 +101,8 @@ Kernel::Kernel(Connection* pConnection)
 * @brief Called when an init-soar event happens so we know
 *		 to refresh the input/output links.
 *************************************************************/
-static void InitSoarHandler(smlAgentEventId id, void* pUserData, Agent* pAgent)
+static void InitSoarHandler(smlAgentEventId /*id*/, void* /*pUserData*/, Agent* pAgent)
 {
-	unused(pUserData) ;
-	unused(id) ;
-
 	pAgent->Refresh() ;
 }
 
@@ -113,11 +110,8 @@ static void InitSoarHandler(smlAgentEventId id, void* pUserData, Agent* pAgent)
 * @brief Called when an init-soar event happens so we know
 *		 to refresh the input/output links.
 *************************************************************/
-static std::string LoadLibraryHandler(smlStringEventId id, void* pUserData, Kernel* pKernel, char const* pString)
+static std::string LoadLibraryHandler(smlStringEventId /*id*/, void* /*pUserData*/, Kernel* pKernel, char const* pString)
 {
-	unused(pUserData) ;
-	unused(id) ;
-
 	return pKernel->LoadExternalLibrary(pString);
 }
 
@@ -469,11 +463,8 @@ void Kernel::ReceivedEvent(AnalyzeXML* pIncoming, ElementXML* pResponse)
 * @param pIncoming	The event command
 * @param pResponse	The reply (no real need to fill anything in here currently)
 *************************************************************/
-void Kernel::ReceivedSystemEvent(smlSystemEventId id, AnalyzeXML* pIncoming, ElementXML* pResponse)
+void Kernel::ReceivedSystemEvent(smlSystemEventId id, AnalyzeXML* /*pIncoming*/, ElementXML* /*pResponse*/)
 {
-	unused(pResponse) ;
-	unused(pIncoming) ;
-
 	// Look up the handler(s) from the map
 	SystemEventMap::ValueList* pHandlers = m_SystemEventMap.getList(id) ;
 
@@ -501,10 +492,8 @@ void Kernel::ReceivedSystemEvent(smlSystemEventId id, AnalyzeXML* pIncoming, Ele
 * @param pIncoming	The event command
 * @param pResponse	The reply (no real need to fill anything in here currently)
 *************************************************************/
-void Kernel::ReceivedUpdateEvent(smlUpdateEventId id, AnalyzeXML* pIncoming, ElementXML* pResponse)
+void Kernel::ReceivedUpdateEvent(smlUpdateEventId id, AnalyzeXML* pIncoming, ElementXML* /*pResponse*/)
 {
-	unused(pResponse) ;
-
 	// Retrieve the event arguments
 	smlRunFlags runFlags = smlRunFlags(pIncoming->GetArgInt(sml_Names::kParamValue, 0)) ;
 
@@ -569,10 +558,8 @@ void Kernel::ReceivedStringEvent(smlStringEventId id, AnalyzeXML* pIncoming, Ele
 * @param pIncoming	The event command
 * @param pResponse	The reply (no real need to fill anything in here currently)
 *************************************************************/
-void Kernel::ReceivedAgentEvent(smlAgentEventId id, AnalyzeXML* pIncoming, ElementXML* pResponse)
+void Kernel::ReceivedAgentEvent(smlAgentEventId id, AnalyzeXML* pIncoming, ElementXML* /*pResponse*/)
 {
-	unused(pResponse) ;
-
 	// Get the name of the agent this event refers to.
 	char const* pAgentName = pIncoming->GetArgString(sml_Names::kParamName) ;
 
