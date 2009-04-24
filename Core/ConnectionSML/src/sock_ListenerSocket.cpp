@@ -44,7 +44,7 @@ ListenerSocket::~ListenerSocket()
 //					on a specific port.
 //
 /////////////////////////////////////////////////////////////////////
-bool ListenerSocket::CreateListener(unsigned short port, bool /*local*/)
+bool ListenerSocket::CreateListener(unsigned short port, bool local)
 {
 	CTDEBUG_ENTER_METHOD("ListenerSocket::CreateListener");
 
@@ -66,6 +66,8 @@ bool ListenerSocket::CreateListener(unsigned short port, bool /*local*/)
 		hListener = socket(AF_UNIX, SOCK_STREAM, 0);
 	}
 	else 
+#else
+        unused(local);
 #endif
 	{
 		hListener = socket(AF_INET, SOCK_STREAM, 0) ;
