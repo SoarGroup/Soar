@@ -271,6 +271,44 @@ struct smem_compare_weighted_cue_elements
 
 typedef std::priority_queue<smem_weighted_cue_element *, std::vector<smem_weighted_cue_element *>, smem_compare_weighted_cue_elements> smem_weighted_cue;
 
+//
+
+typedef struct smem_chunk_struct smem_chunk;
+typedef union smem_chunk_value_union smem_chunk_value;
+typedef std::list<smem_chunk_value *> smem_slot;
+typedef std::map<Symbol *, smem_slot *> smem_slot_map;
+
+struct smem_chunk_struct
+{
+	Symbol *soar_id;
+	smem_lti_id lti_id;
+
+	char lti_letter;
+	unsigned long lti_number;	
+
+	smem_slot_map *slots;
+};
+
+struct smem_chunk_value_constant
+{
+	smem_cue_element_type val_type;
+	Symbol *val_value;
+};
+
+struct smem_chunk_value_lti
+{
+	smem_cue_element_type val_type;
+	smem_chunk *val_value;
+};
+
+union smem_chunk_value_union
+{
+	struct smem_chunk_value_constant val_const;
+	struct smem_chunk_value_lti val_lti;
+};
+
+typedef std::map<std::string, smem_chunk *> smem_str_to_chunk_map;
+typedef std::map<Symbol *, smem_chunk *> smem_sym_to_chunk_map;
 
 //////////////////////////////////////////////////////////
 // Soar Functions (see cpp for comments)
@@ -278,8 +316,9 @@ typedef std::priority_queue<smem_weighted_cue_element *, std::vector<smem_weight
 
 extern inline bool smem_enabled( agent *my_agent );
 
+extern bool smem_parse_chunks( agent *my_agent, const std::string *chunks, std::string **err_msg );
+
 extern void smem_reset_id_counters( agent *my_agent );
-extern void smem_init_db( agent *my_agent, bool readonly = false );
 extern void smem_close( agent *my_agent );
 
 // perform smem actions

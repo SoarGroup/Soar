@@ -481,12 +481,6 @@ bool reinitialize_soar (agent* thisAgent) {
 void do_one_top_level_phase (agent* thisAgent) 
 {
   //  Symbol *iterate_goal_sym;  kjc commented /* RCHONG: end 10.11 */
-
-
-	if ( thisAgent->smem_db->get_status() == soar_module::disconnected )
-	{
-	  smem_init_db( thisAgent );
-	}
   
 	if (thisAgent->system_halted) 
 	{

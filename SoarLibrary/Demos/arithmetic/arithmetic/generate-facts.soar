@@ -6,6 +6,16 @@ sp {arithmetic*propose*generate-facts
    (<op> ^name generate-facts)
 }
 
+# comment out this rule (and all smem add commands
+# in _firstload) to have a sub-goal store all these
+# facts using rules
+sp {arithmetic*apply*generate-facts*smem
+   (state <s> ^operator.name generate-facts
+              ^fact-source smem)
+-->
+   (<s> ^arithmetic.facts preloaded)
+}
+
 sp {arithmetic*apply*generate-facts*add*sub
    (state <s> ^operator.name generate-facts
               ^fact-source wm)

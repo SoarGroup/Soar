@@ -181,6 +181,7 @@ namespace cli {
 	};
 
 	enum eSMemOptions {		
+		SMEM_ADD,
 		SMEM_GET,		
 		SMEM_SET,
 		SMEM_STAT,

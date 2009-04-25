@@ -27,6 +27,7 @@ bool CommandLineInterface::ParseSMem( std::vector<std::string>& argv )
 {
 	Options optionsData[] =
 	{		
+		{'a', "add",		OPTARG_NONE},
 		{'g', "get",		OPTARG_NONE},
 		{'s', "set",		OPTARG_NONE},
 		{'S', "stats",		OPTARG_NONE},
@@ -44,6 +45,10 @@ bool CommandLineInterface::ParseSMem( std::vector<std::string>& argv )
 
 		switch (m_Option)
 		{
+			case 'a':
+				options.set( SMEM_ADD );
+				break;
+		
 			case 'g':
 				options.set( SMEM_GET );
 				break;
@@ -78,7 +83,20 @@ bool CommandLineInterface::ParseSMem( std::vector<std::string>& argv )
 
 	// case: nothing = full configuration information
 	if ( argv.size() == 1 )
+	{
 		return DoSMem();
+	}
+	
+	// case: add requires one non-option argument
+	else if ( options.test( SMEM_ADD ) )
+	{
+		if ( m_NonOptionArguments < 1 )
+			return SetError( CLIError::kTooFewArgs );
+		else if ( m_NonOptionArguments > 1 )
+			return SetError( CLIError::kTooManyArgs );
+		
+		return DoSMem( 'a', &( argv[2] ) );
+	}
 	
 	// case: get requires one non-option argument
 	else if ( options.test( SMEM_GET ) )
@@ -233,7 +251,28 @@ bool CommandLineInterface::DoSMem( const char pOp, const std::string* pAttr, con
 		}
 
 		return true;
-	}	
+	}
+	else if ( pOp == 'a' )
+	{
+		std::string *err = NULL;
+		bool result = smem_parse_chunks( m_pAgentSoar, pAttr, &( err ) );
+
+		if ( !result )
+		{
+			if ( m_RawOutput )
+			{
+				m_Result << (*err);
+			}
+			else
+			{
+				AppendArgTagFast( sml_Names::kParamValue, sml_Names::kTypeString, err->c_str() );
+			}
+
+			delete err;
+		}
+
+		return result;
+	}
 	else if ( pOp == 'g' )
 	{
 		char *temp2 = m_pAgentSoar->smem_params->get( pAttr->c_str() )->get_string();

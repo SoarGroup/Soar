@@ -309,6 +309,14 @@ Symbol *make_new_identifier (agent* thisAgent, char name_letter, goal_stack_leve
   {
 	name_number = thisAgent->id_counter[name_letter-'A']++;
   }
+  else
+  {
+    unsigned long *current_number = &( thisAgent->id_counter[ name_letter - 'A' ] );
+	if ( name_number >= (*current_number) )
+	{
+	  (*current_number) = ( name_number + 1 );
+	}
+  }
   sym->id.name_number = name_number;
 
   sym->id.level = level;
