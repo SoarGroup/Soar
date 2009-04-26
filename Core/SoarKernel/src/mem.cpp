@@ -450,6 +450,11 @@ dl_list *extract_dl_list_elements (agent* thisAgent, dl_list **header, dl_cons_t
   return first_extracted_element;
 }
 
+Bool cons_equality_fn (agent*, cons *c, void *data) 
+{
+  return (c->first == data);
+}
+
 /* ====================================================================
 
                    Resizable Hash Table Routines
