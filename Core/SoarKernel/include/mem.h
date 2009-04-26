@@ -460,6 +460,8 @@ extern ::list *extract_list_elements (agent* thisAgent, ::list **header, cons_te
 
 extern dl_list *extract_dl_list_elements (agent* thisAgent, dl_list **header, dl_cons_test_fn f);
 
+extern Bool cons_equality_fn (agent*, cons *c, void *data);
+
 /* ----------------------------- */
 /* Resizable hash table routines */
 /* ----------------------------- */
