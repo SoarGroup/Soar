@@ -764,6 +764,18 @@ inline void smem_reset_id_counters( agent *my_agent )
 //////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////
 
+inline smem_slot *smem_make_slot( smem_slot_map *slots, Symbol *attr )
+{
+	smem_slot **s =& (*slots)[ attr ];
+
+	if ( !(*s) )
+	{
+		(*s) = new smem_slot;
+	}
+
+	return (*s);
+}
+
 void smem_disconnect_chunk( agent *my_agent, smem_lti_id parent_id )
 {
 	// adjust attribute counts
@@ -972,19 +984,13 @@ void smem_soar_store( agent *my_agent, Symbol *id, smem_storage_type store_type 
 		smem_slot_map slots;
 		smem_slot_map::iterator s_p;
 		smem_slot::iterator v_p;
-		smem_slot **s;
+		smem_slot *s;
 		smem_chunk_value *v;
 
 		for ( w=children->begin(); w!=children->end(); w++ )
 		{
 			// get slot
-			s =& slots[ (*w)->attr ];
-
-			// if slot doesn't exist, make it
-			if ( !(*s) )
-			{
-				(*s) = new smem_slot;
-			}
+			s = smem_make_slot( &( slots ), (*w)->attr );			
 
 			// create value, per type
 			v = new smem_chunk_value;
@@ -1015,7 +1021,7 @@ void smem_soar_store( agent *my_agent, Symbol *id, smem_storage_type store_type 
 			}
 
 			// add value to slot
-			(*s)->push_back( v );
+			s->push_back( v );
 		}
 
 		smem_store_chunk( my_agent, smem_lti_soar_add( my_agent, id ), &( slots ) );
@@ -1540,15 +1546,15 @@ void smem_deallocate_chunk( agent *my_agent, smem_chunk *chunk )
 			// iterate over slots
 			for ( s=chunk->slots->begin(); s!=chunk->slots->end(); s++ )
 			{
-				// deallocate attribute
-				symbol_remove_ref( my_agent, s->first );
-
 				// proceed to slot contents
 				if ( s->second )
 				{					
 					// iterate over each value
 					for ( v=s->second->begin(); v!=s->second->end(); v++ )
 					{
+						// deallocate attribute for each corresponding value
+						symbol_remove_ref( my_agent, s->first );
+						
 						// de-allocation of value is dependent upon type
 						if ( (*v)->val_const.val_type == value_const_t )
 						{
@@ -1604,13 +1610,37 @@ inline std::string *smem_parse_lti_name( struct lexeme_info *lexeme, char *id_le
 	return return_val;
 }
 
+inline Symbol *smem_parse_constant_attr( agent *my_agent, struct lexeme_info *lexeme )
+{
+	Symbol *return_val = NIL;
+
+	if ( ( (*lexeme).type == SYM_CONSTANT_LEXEME ) )
+	{
+		return_val = make_sym_constant( my_agent, static_cast<const char *>( (*lexeme).string ) );
+	}
+	else if ( (*lexeme).type == INT_CONSTANT_LEXEME )
+	{
+		return_val = make_int_constant( my_agent, (*lexeme).int_val );
+	}
+	else if ( (*lexeme).type == FLOAT_CONSTANT_LEXEME )
+	{
+		return_val = make_float_constant( my_agent, (*lexeme).float_val );
+	}
+
+	return return_val;
+}
+
 bool smem_parse_chunk( agent *my_agent, smem_str_to_chunk_map *chunks )
 {
 	bool return_val = false;	
-	smem_chunk *new_chunk = new smem_chunk();
+	
+	smem_chunk *new_chunk = new smem_chunk;
 	std::string *chunk_name = NULL;
+	
 	char temp_letter;
 	unsigned long temp_number;
+
+	//
 
 	// consume left paren
 	get_lexeme( my_agent );
@@ -1621,33 +1651,33 @@ bool smem_parse_chunk( agent *my_agent, smem_str_to_chunk_map *chunks )
 		chunk_name = smem_parse_lti_name( &( my_agent->lexeme ), &( temp_letter ), &( temp_number ) );
 		new_chunk->lti_letter = temp_letter;
 		new_chunk->lti_number = temp_number;
+		new_chunk->soar_id = NIL;
+		new_chunk->slots = new smem_slot_map;
 
 		// consume id
 		get_lexeme( my_agent );
 
-		// populate slots
-		new_chunk->slots = new smem_slot_map;
+		//
+
+		unsigned long intermediate_counter = 1;
+		smem_chunk *intermediate_parent;
+		smem_chunk *temp_chunk;
+		std::string temp_key;
+		std::string *temp_key2;		
 		Symbol *chunk_attr;
 		smem_chunk_value *chunk_value;
+		smem_slot *s;
+
+		// populate slots
 		while ( my_agent->lexeme.type == UP_ARROW_LEXEME )
 		{			
+			intermediate_parent = new_chunk;
+			
 			// go on to attribute
 			get_lexeme( my_agent );
 
 			// get the appropriate constant type
-			chunk_attr = NIL;
-			if ( ( my_agent->lexeme.type == SYM_CONSTANT_LEXEME ) )
-			{
-				chunk_attr = make_sym_constant( my_agent, static_cast<const char *>( my_agent->lexeme.string ) );
-			}
-			else if ( my_agent->lexeme.type == INT_CONSTANT_LEXEME )
-			{
-				chunk_attr = make_int_constant( my_agent, my_agent->lexeme.int_val );
-			}
-			else if ( my_agent->lexeme.type == FLOAT_CONSTANT_LEXEME )
-			{
-				chunk_attr = make_float_constant( my_agent, my_agent->lexeme.float_val );
-			}
+			chunk_attr = smem_parse_constant_attr( my_agent, &( my_agent->lexeme ) );
 
 			// if constant attribute, proceed to value
 			if ( chunk_attr != NIL )
@@ -1655,96 +1685,138 @@ bool smem_parse_chunk( agent *my_agent, smem_str_to_chunk_map *chunks )
 				// consume attribute
 				get_lexeme( my_agent );
 
-				do
+				// support for dot notation:
+				// when we encounter a dot, instantiate
+				// the previous attribute as a temporary
+				// identifier and use that as the parent
+				while ( my_agent->lexeme.type == PERIOD_LEXEME )
 				{
-					// value by type
-					chunk_value = NIL;
-					if ( ( my_agent->lexeme.type == SYM_CONSTANT_LEXEME ) )
-					{
-						chunk_value = new smem_chunk_value;
-						chunk_value->val_const.val_type = value_const_t;
-						chunk_value->val_const.val_value = make_sym_constant( my_agent, static_cast<const char *>( my_agent->lexeme.string ) );
-					}
-					else if ( ( my_agent->lexeme.type == INT_CONSTANT_LEXEME ) )
-					{
-						chunk_value = new smem_chunk_value;
-						chunk_value->val_const.val_type = value_const_t;
-						chunk_value->val_const.val_value = make_int_constant( my_agent, my_agent->lexeme.int_val );
-					}
-					else if ( ( my_agent->lexeme.type == FLOAT_CONSTANT_LEXEME ) )
-					{
-						chunk_value = new smem_chunk_value;
-						chunk_value->val_const.val_type = value_const_t;
-						chunk_value->val_const.val_value = make_float_constant( my_agent, my_agent->lexeme.float_val );
-					}
-					else if ( ( my_agent->lexeme.type == IDENTIFIER_LEXEME ) || ( my_agent->lexeme.type == VARIABLE_LEXEME ) )
-					{
-						// create new value
-						chunk_value = new smem_chunk_value;
-						chunk_value->val_lti.val_type = value_lti_t;
-						
-						// get key
-						std::string *value_name = smem_parse_lti_name( &( my_agent->lexeme ), &( temp_letter ), &( temp_number ) );						
+					// create a new chunk
+					temp_chunk = new smem_chunk;
+					temp_chunk->lti_letter = ( ( chunk_attr->common.symbol_type == SYM_CONSTANT_SYMBOL_TYPE )?( static_cast<char>( static_cast<int>( chunk_attr->sc.name[0] ) ) ):( 'X' ) );
+					temp_chunk->lti_number = ( intermediate_counter++ );
+					temp_chunk->slots = new smem_slot_map;
+					temp_chunk->soar_id = NIL;
 
-						// search for an existing chunk
-						smem_str_to_chunk_map::iterator p = chunks->find( (*value_name) );
+					// add it as a child to the current parent
+					chunk_value = new smem_chunk_value;
+					chunk_value->val_lti.val_type = value_lti_t;
+					chunk_value->val_lti.val_value = temp_chunk;
+					s = smem_make_slot( intermediate_parent->slots, chunk_attr );
+					s->push_back( chunk_value );
 
-						// if exists, point; else create new
-						if ( p != chunks->end() )
+					// create a key guaranteed to be unique
+					temp_key2 = to_string( temp_chunk->lti_number );					
+					temp_key.assign( "<" );
+					temp_key.append( 1, temp_chunk->lti_letter );
+					temp_key.append( "#" );
+					temp_key.append( (*temp_key2) );
+					temp_key.append( ">" );
+					delete temp_key2;
+
+					// insert the new chunk
+					(*chunks)[ temp_key ] = temp_chunk;
+
+					// the new chunk is our parent for this set of values (or further dots)
+					intermediate_parent = temp_chunk;
+					temp_chunk = NULL;
+
+					// get the next attribute
+					get_lexeme( my_agent );
+					chunk_attr = smem_parse_constant_attr( my_agent, &( my_agent->lexeme ) );
+
+					// consume attribute
+					get_lexeme( my_agent );
+				}
+
+				if ( chunk_attr != NIL )
+				{
+					do
+					{
+						// value by type
+						chunk_value = NIL;
+						if ( ( my_agent->lexeme.type == SYM_CONSTANT_LEXEME ) )
 						{
-							chunk_value->val_lti.val_value = p->second;							
+							chunk_value = new smem_chunk_value;
+							chunk_value->val_const.val_type = value_const_t;
+							chunk_value->val_const.val_value = make_sym_constant( my_agent, static_cast<const char *>( my_agent->lexeme.string ) );
 						}
-						else
+						else if ( ( my_agent->lexeme.type == INT_CONSTANT_LEXEME ) )
 						{
-							// create new chunk
-							smem_chunk *new_parent = new smem_chunk;
-							new_parent->lti_id = NIL;
-							new_parent->lti_letter = temp_letter;
-							new_parent->lti_number = temp_number;
-							new_parent->slots = NULL;
+							chunk_value = new smem_chunk_value;
+							chunk_value->val_const.val_type = value_const_t;
+							chunk_value->val_const.val_value = make_int_constant( my_agent, my_agent->lexeme.int_val );
+						}
+						else if ( ( my_agent->lexeme.type == FLOAT_CONSTANT_LEXEME ) )
+						{
+							chunk_value = new smem_chunk_value;
+							chunk_value->val_const.val_type = value_const_t;
+							chunk_value->val_const.val_value = make_float_constant( my_agent, my_agent->lexeme.float_val );
+						}
+						else if ( ( my_agent->lexeme.type == IDENTIFIER_LEXEME ) || ( my_agent->lexeme.type == VARIABLE_LEXEME ) )
+						{
+							// create new value
+							chunk_value = new smem_chunk_value;
+							chunk_value->val_lti.val_type = value_lti_t;
+							
+							// get key
+							temp_key2 = smem_parse_lti_name( &( my_agent->lexeme ), &( temp_letter ), &( temp_number ) );						
 
-							// associate with value
-							chunk_value->val_lti.val_value = new_parent;
+							// search for an existing chunk
+							smem_str_to_chunk_map::iterator p = chunks->find( (*temp_key2) );
 
-							// add to chunks
-							(*chunks)[ (*value_name) ] = new_parent;
+							// if exists, point; else create new
+							if ( p != chunks->end() )
+							{
+								chunk_value->val_lti.val_value = p->second;							
+							}
+							else
+							{
+								// create new chunk
+								temp_chunk = new smem_chunk;
+								temp_chunk->lti_id = NIL;
+								temp_chunk->lti_letter = temp_letter;
+								temp_chunk->lti_number = temp_number;
+								temp_chunk->slots = NULL;
+
+								// associate with value
+								chunk_value->val_lti.val_value = temp_chunk;
+
+								// add to chunks
+								(*chunks)[ (*temp_key2) ] = temp_chunk;
+							}
+
+							delete temp_key2;
 						}
 
-						delete value_name;
-					}
-
-					if ( chunk_value != NIL )
-					{
-						// consume
-						get_lexeme( my_agent );
-
-						// add to appropriate slot
-						smem_slot **s =& (*new_chunk->slots)[ chunk_attr ];
-						if ( !(*s) )
+						if ( chunk_value != NIL )
 						{
-							(*s) = new smem_slot;
-						}
-						(*s)->push_back( chunk_value );
-
-						// if this was the last attribute
-						if ( my_agent->lexeme.type == R_PAREN_LEXEME )
-						{
-							return_val = true;
+							// consume
 							get_lexeme( my_agent );
-							chunk_value = NIL;
+
+							// add to appropriate slot
+							s = smem_make_slot( intermediate_parent->slots, chunk_attr );					
+							s->push_back( chunk_value );
+
+							// if this was the last attribute
+							if ( my_agent->lexeme.type == R_PAREN_LEXEME )
+							{
+								return_val = true;
+								get_lexeme( my_agent );
+								chunk_value = NIL;
+							}
 						}
-					}
-				} while ( chunk_value != NIL );
+					} while ( chunk_value != NIL );
+				}
 			}
 		}		
 	}
-
-	// de-allocate chunk unless successful
-	if ( !return_val )
-	{
-		smem_deallocate_chunk( my_agent, new_chunk );
-	}
 	else
+	{
+		delete new_chunk;
+	}
+	
+	if ( return_val )
 	{
 		// search for an existing chunk (occurs if value comes before id)
 		smem_chunk **p =& (*chunks)[ (*chunk_name ) ];
@@ -1858,7 +1930,10 @@ bool smem_parse_chunks( agent *my_agent, const std::string *chunks, std::string 
 				// store all chunks
 				for ( c=chunks.begin(); c!=chunks.end(); c++ )
 				{
-					smem_store_chunk( my_agent, c->second->lti_id, c->second->slots );
+					if ( c->second->slots != NIL )
+					{
+						smem_store_chunk( my_agent, c->second->lti_id, c->second->slots );
+					}
 				}
 			}
 		}
