@@ -126,21 +126,18 @@ int sml::Tokenize(std::string cmdline, std::vector<std::string>& argumentVector)
 	// Trim leading whitespace and comments from line
 	if (!Trim(cmdline)) return -1;
 
+	iter = cmdline.begin();
 	for (;;) {
 
-		// Is there anything to work with?
-		if(cmdline.empty()) break;
-
-		// Remove leading whitespace
-		iter = cmdline.begin();
+		// Skip leading whitespace
 		while (isspace(*iter)) {
-			iter = cmdline.erase(iter);
-
-			if ( iter == cmdline.end() ) break; //Nothing but space left
+			if ( ++iter == cmdline.end() ) {
+				break;
+			}
 		}
-
-		// Was it actually trailing whitespace?
-		if (!cmdline.length()) break;// Nothing left to do
+		if ( iter == cmdline.end() ) {
+			break; // Nothing but space
+		}
 
 		// We have an argument
 		++argc;
@@ -186,13 +183,12 @@ int sml::Tokenize(std::string cmdline, std::vector<std::string>& argumentVector)
 			// Add to argument (if we eat quotes, this has to be moved into the else above
 			arg << (*iter);
 
-			// Delete the character and move on on
-			cmdline.erase(iter);
-			iter = cmdline.begin();
+			// Move on
+			++iter;
 
 			// Are we at the end of the string?
-			if (iter == cmdline.end()) {
-
+			if ( iter == cmdline.end() ) 
+			{
 				// Did they close their quotes or brackets?
 				if (quotes || pipes || brackets || parens) {
 					// FIXME: note that Trim will fail with bad pipes before parsing gets here,
@@ -210,6 +206,11 @@ int sml::Tokenize(std::string cmdline, std::vector<std::string>& argumentVector)
 
 		// Store the arg
 		argumentVector.push_back( arg.str() );
+
+		if ( iter == cmdline.end() ) 
+		{
+			break;
+		}
 	}
 
 	// Return the number of args found
